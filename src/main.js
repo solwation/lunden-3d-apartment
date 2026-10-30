@@ -3225,7 +3225,7 @@ function step(dt) {
   const moved = Math.hypot(player.pos.x - lastWeatherPos.x, player.pos.z - lastWeatherPos.z); // on foot (not a jump / spawn)
   lastWeatherPos.copy(player.pos);
   weather.update(dt, !player.outdoors || player.below || player.inCore, moved < 1 ? moved : 0, car.occupied ? car.openness : null, player.inPlayroom); // enclosed off-map clubhouse (#1485); (the garage: dry and muffled, #357) // after the day: it sets the overcast / flash the next day.update applies (#248)
-  squirrels?.update(dt, player.below); // #1672: asleep (no AI, nothing drawn) in the snow months, far away and underground
+  squirrels?.update(dt, player.below, day.daylight); // #1672: asleep (no AI, nothing drawn) in the snow months, far away and underground
   paddock?.update(dt, player.below, weather.kind === 'snow' ? 0 : weather.rain); // #1280: the ponies move only while the paddock is within view distance
   balloon.update(player, player.below); // #1646: before player.update, which stands on / is walled in by the basket
   birds?.update(dt, day.above > 0.5 ? 0 : weather.rain, player.below); // #1252: after the weather's rain; none at night, in rain or in the whiteout

@@ -114,3 +114,13 @@ test('#1686: a nut another player holds (held + by) is not found by a squirrel a
   run(w, [], 2000, 1); assert.ok(s.alive && s.born === born, 'a held nut stays');
   w.nuts.remove(s); assert.equal(s.by, null);
 });
+
+// #1697: the nut glint follows the daylight (dark at night and dusk, full by day)
+test('nut glint strength by daylight', async () => {
+  const { markStrength } = await import('../src/squirrels.js');
+  assert.equal(markStrength(0), C.markNight);
+  assert.ok(markStrength(0.2) <= C.markNight + 1e-9);
+  assert.equal(markStrength(1), 1);
+  assert.ok(markStrength(0.6) > 0.3 && markStrength(0.6) < 0.7);
+  assert.ok(markStrength(0.5) < markStrength(0.7));
+});

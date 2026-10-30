@@ -682,6 +682,7 @@ ground, no marker, and the squirrels ate them quickly (sense 6 m, respawn 20-60 
 (`anchors()`: you and the other players' ghosts) and 40 % in a heap (`heap`, `heapRadius`) beside a nut already out. Every nut lying out has
 a glint, a flat ring and a thin fading beam (`markGeometry`, ONE `InstancedMesh`, additive, up to `markDist` 45 m, growing with distance);
 a nut's own mesh is drawn only within `nutNear` 14 m, so the draw calls stay at the nuts nearby + 1.
+#1697: the glint's opacity follows `DayCycle.daylight` (`markStrength`, `markDay`, `markNight`): full by day, gone at night and dusk (no light, no extra draw call).
 
 Sharing (`src/squirrelsync.js` client, `cloudflare/squirrels.js` room relay; message type `{ t: 'sq', k }`, protocol in both file headers):
 the room, like the pony paddock (#1644), simulates nothing and stores nothing (memory only, **no KV**, no timers). The players within

@@ -61,6 +61,12 @@ const nutGeos = [
   mergeGeometries([blob(0.0145, 0.0155, 0.0145, 0, 0.0145, 0, 0xc19a5b), blob(0.012, 0.007, 0.012, 0, 0.004, 0, 0x7d6038)]),
 ];
 
+/** #1697: how strong the glint is at a daylight level (0 night … 1 day): dark at night and dusk, full by day, eased in between. */
+export function markStrength(daylight) {
+  const [a, b] = C.markDay, t = Math.min(1, Math.max(0, (daylight - a) / (b - a)));
+  return C.markNight + (1 - C.markNight) * t * t * (3 - 2 * t);
+}
+
 /** #1686: the glint under every nut lying out: a flat ring and a thin crossed beam, vertex colours fading the beam to black (additive), one geometry. */
 function markGeometry() {
   const parts = [], paintFade = (g, top) => {
@@ -118,7 +124,7 @@ export class Squirrels {
   /** `feet`: surroundings.js treeFeet, `crowns`: its aoTrees, `ground(x, z)`: the walkable surface, `walkable(x, z)` / `nutOk(x, z)`: where it may run / a nut may lie,
    * `onFeed(brain)`: scoring. `rnd`: injectable for tests. */
   constructor({ scene, camera, player, feet, crowns, ground, walkable, nutOk, onFeed, rnd = Math.random }) {
-    Object.assign(this, { scene, camera, player, ground, onFeed, rnd, winter: true, time: 0, speed: 0, acc: [], lastX: NaN, lastZ: NaN, lure: false, net: null, cand: [], remoteSpeed: new Map(), markT: 0 });
+    Object.assign(this, { scene, camera, player, ground, onFeed, rnd, winter: true, time: 0, speed: 0, acc: [], lastX: NaN, lastZ: NaN, lure: false, net: null, cand: [], remoteSpeed: new Map(), markT: 0, daylight: 1 });
     const parkPatches = new Set([...(SITE.riverPark.patches ?? []).map((q) => q.name), 'bridge-west']), // (the other `patch` names in treeFeet belong to the street/backdrop areas)
       paddock = PADDOCK.trees ?? [], same = (a, b) => Math.abs(a.x - b[0]) < 0.01 && Math.abs(a.z - b[1]) < 0.01;
     this.trees = linkTrees(feet.filter((f) => parkPatches.has(f.patch) || paddock.some(([x, z]) => same(f, [x, z]))).map((f) => {
@@ -207,16 +213,18 @@ export class Squirrels {
   /** Per frame: the glint under each nut lying out within `markDist` m (one instanced mesh). */
   updateMarks() {
     const m = this.marks, cam = this.camera.position; let n = 0;
+    const str = markStrength(this.daylight); m.material.opacity = str; // (additive: opacity 0 = no light at all; nothing is drawn below 2 %)
     for (const s of this.nuts.slots) {
       if (!s.alive || s.held) continue;
       const d = Math.hypot(cam.x - s.x, cam.z - s.z); if (d > C.markDist) continue;
       const k = (1 + Math.max(0, d - 5) * 0.07) * (1 + 0.1 * Math.sin(this.time * 3 + n));
       m.setMatrixAt(n++, MAT.makeScale(k, k, k).setPosition(s.x, s.y, s.z));
     }
-    m.count = n; m.visible = n > 0; m.instanceMatrix.needsUpdate = true;
+    m.count = n; m.visible = n > 0 && str > 0.02; m.instanceMatrix.needsUpdate = true;
   }
   /** Per frame. `hidden`: underground (nothing runs). */
-  update(dt, hidden = false) {
+  update(dt, hidden = false, daylight = 1) {
+    this.daylight = daylight;
     this.hearts.update(dt);
     const on = !this.winter && !hidden && this.animals.length > 0;
     this.nuts.setActive(!this.winter && this.animals.length > 0);
