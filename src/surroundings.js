@@ -651,16 +651,22 @@ function schoolGrounds() {
   });
   const wall = mergeGeometries(walls.map((g) => g.toNonIndexed()));
   const copings = plan.rects.map((r) => new THREE.BoxGeometry(r.x1 - r.x0 + 0.06, 0.06, r.z1 - r.z0 + 0.08).translate((r.x0 + r.x1) / 2, plan.h + 0.03, (r.z0 + r.z1) / 2));
-  const fittings = [], sh = plan.shelter;
+  const fittings = [], timber = [], sh = plan.shelter;
+  // vertex colours let the shelter's grey timber, black fittings and grey cabinet share the greenhouse frame's one batch (#1702)
+  const paint = (g, hex) => { const c = new THREE.Color(hex), n = g.attributes.position.count, a = new Float32Array(n * 3); for (let i = 0; i < n; i++) c.toArray(a, i * 3); g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g; };
   if (sh) {
     const R = sh.roof, P = sh.post, B = sh.bench, I = sh.bin, box = (x0, x1, y0, y1, z0, z1) => new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0).translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
-    copings.push(box(R.x0, R.x1, R.y0, R.y1, R.z0, R.z1),                                  // the flat roof
-      box(sh.x0 - plan.t, sh.x1, plan.h + 0.06, R.y0, R.z0, R.z0 + plan.t + 0.05),          // the timber beam carrying it on the back wall
-      box(R.x0, R.x1, R.y0 - 0.12, R.y0, R.z1 - 0.12, R.z1));                                // the front fascia
-    fittings.push(box(P.x - P.s / 2, P.x + P.s / 2, 0, R.y0, P.z - P.s / 2, P.z + P.s / 2), // the post
-      box(B.x0, B.x1, B.h - B.t, B.h, B.z0, B.z1),                                           // the bench's seat
-      ...[B.x0 + 0.3, (B.x0 + B.x1) / 2, B.x1 - 0.3].map((x) => box(x - 0.04, x + 0.04, 0, B.h - B.t, B.z0 + 0.05, B.z1 - 0.05)), // its legs
-      box(I.x - I.w / 2, I.x + I.w / 2, I.y0, I.y1, I.z - I.d / 2, I.z + I.d / 2));         // the bin on the back wall
+    const K = { post: 0x6d6a64, bench: 0x9b9a95, black: 0x1d1f21, cabinet: 0x8c9094, sign: 0xe8ecef };
+    timber.push(box(R.x0, R.x1, R.y0, R.y1, R.z0, R.z1),                                    // the flat roof: one thick slab of dark weathered timber, its fascia the slab's edge
+      box(sh.x0 - plan.t, sh.x1, R.y0 - R.beam, R.y0, sh.backZ - plan.t, sh.backZ + 0.25)); // the lower beam along the back wall carrying it
+    fittings.push(paint(box(P.x - P.s / 2, P.x + P.s / 2, 0, R.y0, P.z - P.s / 2, P.z + P.s / 2), K.post),   // the grey timber post
+      paint(box(P.x - 0.07, P.x + 0.07, 0.95, 1.1, P.z - P.s / 2 - 0.1, P.z - P.s / 2), K.black),            // the small black box on its street side
+      paint(box(B.x0, B.x1, B.h - B.t, B.h, B.z0, B.z1), K.bench),                                           // the bench's seat
+      ...[B.x0 + 0.3, (B.x0 + B.x1) / 2, B.x1 - 0.3].map((x) => paint(box(x - 0.04, x + 0.04, 0, B.h - B.t, B.z0 + 0.05, B.z1 - 0.05), K.bench)), // its timber legs
+      paint(box(I.x - I.w / 2, I.x + I.w / 2, I.y0, I.y1, I.z - I.d / 2, I.z + I.d / 2), K.black),           // the tall bin on the back wall
+      paint(new THREE.CylinderGeometry(sh.pipe.r, sh.pipe.r, sh.pipe.y1, 6).translate(sh.pipe.x, sh.pipe.y1 / 2, sh.pipe.z), K.black), // the downpipe
+      paint(box(sh.sign.x - sh.sign.w / 2, sh.sign.x + sh.sign.w / 2, sh.sign.y, sh.sign.y + sh.sign.h, sh.sign.z, sh.sign.z + 0.02), K.sign), // the street-name plate
+      paint(box(sh.cabinet.x0, sh.cabinet.x1, 0, sh.cabinet.h, sh.cabinet.z0, sh.cabinet.z1), K.cabinet));    // the sheet-metal cabinet
   }
   const coping = mergeGeometries(copings.map((g) => g.toNonIndexed()));
   const campus=S.east?.buildings.find(b=>b.source==='88457612'),main=S.blocks.find(b=>b.style==='school')??{base:0,x0:Math.min(...campus.polygon.map(p=>p[0])),x1:Math.max(...campus.polygon.map(p=>p[0])),z0:Math.min(...campus.polygon.map(p=>p[1])),z1:Math.max(...campus.polygon.map(p=>p[1]))};
@@ -677,7 +683,8 @@ function schoolGrounds() {
   panes.push(new THREE.PlaneGeometry(G.x1 - G.x0, G.h).translate(cx, G.h / 2, G.z0), new THREE.PlaneGeometry(G.x1 - G.x0, G.h).translate(cx, G.h / 2, G.z1));
   for (const x of [G.x0, G.x1]) panes.push(new THREE.PlaneGeometry(d, G.h).rotateY(Math.PI / 2).translate(x, G.h / 2, cz));
   frame.push(...fittings);
-  return { wall: [wall], coping: [coping, ...chimneys], frame, panes };
+  for (const g of frame) if (!g.attributes.color) paint(g, 0x2b2e31); // the greenhouse frame's own dark grey
+  return { wall: [wall], coping: [coping, ...chimneys], frame, panes, timber };
 }
 
 /** One storey × one window bay of brick façade with a white-framed window (`plain`: the bricks only, for the
@@ -2019,7 +2026,8 @@ export function* surroundingsParts({ grass, husL = null }) {
     const sg = schoolGrounds();
     mesh(sg.wall, new THREE.MeshStandardMaterial({ map: historicBrick, roughness: 0.95 }));
     mesh(sg.coping, new THREE.MeshStandardMaterial({ color: 0x1f2124, roughness: 0.5, metalness: 0.3 }), SEASON.snow.roof);
-    mesh(sg.frame, new THREE.MeshStandardMaterial({ color: 0x2b2e31, roughness: 0.5, metalness: 0.4 }));
+    mesh(sg.frame, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, metalness: 0.2 }));
+    if (sg.timber.length) mesh(sg.timber, new THREE.MeshStandardMaterial({ color: 0x4a443d, roughness: 0.9 }), SEASON.snow.roof); // #1702: the shelter's roof, one extra draw call
     const glassMat = new THREE.MeshStandardMaterial({ color: 0xdfe8ec, roughness: 0.05, transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide });
     const gm = new THREE.Mesh(mergeGeometries(sg.panes), glassMat);
     group.add(gm);

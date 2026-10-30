@@ -446,15 +446,24 @@ export const SITE = {
     // #1534 (the user's photo docs/foton/mur-overgangsstalle-busskur-mittemot.jpg, taken from Lunden's verge west of the
     // crossing looking NNE): the wall is ~2 m high and ends at the campus road into Realgymnasiet's yard (the photo's right,
     // with the barrier, the long building and Klockhuset beyond: the EAST end) in a bus shelter. The wall turns back in a
-    // short angle (the shelter's west gable) to a recessed brick back wall; a flat dark roof juts out over the pavement on a
-    // single post at the open east corner; a long bench against the back wall, a bin on it. Every number is a *guess*
-    // read off the photo (heights from the bench seat), positioned so that the crossing (#128) lands just west of it.
+    // short angle (the shelter's west gable) to a recessed brick back wall; a flat roof juts out over the pavement on a
+    // single post; a long bench against the back wall, a bin on it. #1702 (the user's close-up
+    // docs/foton/busskur-murhorn-narbild.jpg) corrected the details: the roof is dark weathered timber with a thick
+    // fascia and reaches ~2.8 m out from the back wall, a grey timber post ~0.15 m stands under its front edge east of
+    // the middle, a black downpipe runs down the wall at the roof's east end, the bench is light grey weathered timber,
+    // and the back wall *continues* east in the same line (`wallEast` m) with a street-name plate and ends at a grey
+    // sheet-metal cabinet and a big boulder. Every number is a *guess* read off the photos (heights from the bench seat ~0.45 m).
     wall: { x0: -26, x1: 13.6, z: -32.15, h: 2.0, t: 0.3,
       shelter: { len: 6.0, depth: 1.3, // along the street from the wall's end (x1); the back wall's line `depth` m behind the wall's
-        roof: { y: 2.45, t: 0.16, front: 0.9, east: 0.5, west: 0.1 }, // underside y; out past the wall line / the open end / the gable
-        post: { s: 0.1, inset: 0.35 },                                  // one slender square post, inset from the roof's SE corner
-        bench: { len: 4.2, depth: 0.42, h: 0.45, t: 0.06, gap: 0.05 }, // timber bench along the back wall (gap = off the bricks)
-        bin: { w: 0.42, h: 0.55, d: 0.28, y: 0.5, from: 0.6 } } },      // a bin hung on the back wall `from` m inside the open end
+        wallEast: 5.5,                 // #1702: the back wall goes on this far east of the open end, in its line (*guess*, ~5-7 m in the photo)
+        roof: { y: 2.5, t: 0.22, out: 2.8, east: 0.6, west: 0.9, beam: 0.25 }, // underside y, slab thickness; out = m past the back wall's front face; the open end / the gable overhang; the carrying beam's depth below the slab (along the back wall)
+        post: { s: 0.15, east: 0.6, inset: 0.4 },                        // grey timber post: `east` m east of the shelter's middle, `inset` m behind the roof's front edge
+        bench: { len: 4.4, depth: 0.42, h: 0.45, t: 0.06, gap: 0.05 }, // light grey timber bench along the back wall (gap = off the bricks)
+        bin: { w: 0.38, h: 0.8, d: 0.28, y: 0.5, from: 2.0 },          // a tall black bin hung on the back wall `from` m inside the open end (just east of the post)
+        pipe: { r: 0.045, off: 0.1 },                                  // black downpipe `off` m east of the open end, from the roof down the wall
+        sign: { w: 0.6, h: 0.1, y: 1.45, from: 2.6 },                  // street-name plate on the continuing wall, `from` m east of the open end
+        cabinet: { w: 0.35, d: 0.9, h: 1.5, gap: 0.5 },                // grey sheet-metal cabinet `gap` m past the wall's east end (d along the street)
+        boulder: { r: 0.65, gap: 1.6, back: 0.2 } } },                 // the big stone: `gap` m past the wall's end, `back` m off the back wall's line
     // #1534: the greenhouse stands west of the shelter and the big maple (x 9) in the photo; it was x 13…21 (*guess*, #126)
     greenhouse: { x0: 0, x1: 8, z0: -36.8, z1: -33.6, h: 2.2, ridge: 1.0 },
     chimneys: [-14, -3, 8, 17] },
@@ -522,7 +531,7 @@ export const SITE = {
     // (on to the campus road's mouth); a grey timetable pillar at its edge, two big stones by the campus road (all *guess*)
     shelterPaving: { x0: 8.5, x1: 22.5, lift: 0.02, step: 0.5, curb: 0.1, behind: 2.5 }, // `behind`: m further north past the shelter's open end
     timetable: { at: [21.3, -31.5], w: 0.38, d: 0.24, h: 1.85 },
-    stones: [[22.4, -33.3, 0.55], [25.6, -33.8, 0.5]], // [x, z, radius]
+    stones: [], // [x, z, radius]; #1702: the big boulder at the continuing wall's end is `wall.shelter.boulder`
     // #1554 (docs/foton/skolbyggnad-fran-brofastet.jpg): the pedestrian crossing at the road bridge's north end with a refuge island and two yellow bollards, blue crossing signs
     // either side, and the orange vertical HEMSÖ flag by the school's yard mouth. The snapshot has no crossing/island/flag nodes: every position and size is a *guess*, placed by eye from the photo.
     // `crossings`: bars 50 cm wide along the traffic, repeated across the road (`axis: 'x'`: the road runs north-south here) between x0…x1, z0…z1 deep; bars stay clear of the island.

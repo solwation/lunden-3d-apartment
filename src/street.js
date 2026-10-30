@@ -145,7 +145,7 @@ function shelterPaving(groundY) {
   const P = S.shelterPaving, plan = schoolWallPlan();
   if (!P || !plan) return [];
   const sh = plan.shelter, front = SITE.school.wall.z + plan.t / 2;
-  const top = (x) => (sh && x > sh.x1 ? sh.backZ - P.behind : sh && x >= sh.x0 ? sh.backZ : front); // past the open end: on into the campus road's mouth
+  const top = (x) => (sh && x > (sh.wallEnd ?? sh.x1) ? sh.backZ - P.behind : sh && x >= sh.x0 ? sh.backZ : front); // past the open end: on into the campus road's mouth
   const xs = [];
   for (let x = P.x0; x < P.x1; x += P.step) xs.push(x);
   xs.push(P.x1);
@@ -163,7 +163,7 @@ function shelterPaving(groundY) {
   slabs.computeVertexNormals();
   const T = S.timetable, [tx, tz] = T.at;
   const out = [slabs, new THREE.BoxGeometry(T.w, T.h, T.d).translate(tx, groundY(tx, tz) + T.h / 2, tz)];
-  for (const [x, z, r] of S.stones) out.push(new THREE.IcosahedronGeometry(r, 0).scale(1.25, 0.7, 1).translate(x, groundY(x, z) + r * 0.45, z));
+  for (const [x, z, r] of [...S.stones, ...(sh?.boulder ? [[sh.boulder.x, sh.boulder.z, sh.boulder.r]] : [])]) out.push(new THREE.IcosahedronGeometry(r, 0).scale(1.25, 0.7, 1).translate(x, groundY(x, z) + r * 0.45, z));
   return out;
 }
 
