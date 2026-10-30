@@ -118,22 +118,80 @@ export function brickFacade(kit, { plinthTop, floorY, overhang }) {
  * footprint edge's plinth and brick wall, eave frieze, belt courses and far windows (the generic far-facade rhythm: every
  * SITE.south.bay along the face, every storey); `flush(parts)` adds the building to the batches as one geometry each.
  */
-export function brickPavilion(b, base, bottom, eave) {
-  const S = SITE.south, P = S.brickStyle, kit = brickKit();
+export function brickPavilion(b, base, bottom, eave, ctx = {}) {
+  const S = SITE.south, P = S.brickStyle, E = S.brickEntrance, kit = brickKit();
   const fac = brickFacade(kit, { plinthTop: base + P.plinth, floorY: k => base + k * S.storey, overhang: P.frieze / 0.6 });
-  const frieze = rgb(BRICK_STYLE.frieze), dark = rgb(BRICK_STYLE.brickDark);
+  const frieze = rgb(BRICK_STYLE.frieze), dark = rgb(BRICK_STYLE.brickDark), frameCol = rgb(BRICK_STYLE.frame), doorCol = rgb(BRICK_STYLE.door), plinthCol = rgb(BRICK_STYLE.plinth), pipe = rgb(BRICK_STYLE.pipe);
+  const ground = ctx.ground ?? (() => base), entrances = planEntrances(b, ctx.streets ?? [], E), byEdge = new Map(entrances.map(e => [e.key, e]));
+  let skippedWindows = 0;
+  // #1722: a simple entrance on a face: white frame, dark double door, a flat canopy and steps down to the ground. Written into
+  // the facade batch only (no glass, no new geometry per batch).
+  const entrance = (f, s) => {
+    const w = E.w, h = E.h, y1 = base + h, t = 0.03;
+    f.rect(s - w / 2 - E.frame, s + w / 2 + E.frame, base, y1 + E.frame, 0.02, frameCol);
+    f.rect(s - w / 2, s + w / 2, base, y1, t, doorCol);
+    f.rect(s - 0.025, s + 0.025, base, y1, t + 0.01, pipe); // the leaves' meeting line
+    const cw = w / 2 + E.canopy.side, cy = y1 + E.canopy.lift;
+    f.rect(s - cw, s + cw, cy - E.canopy.t, cy, E.canopy.out, frameCol);
+    f.under(s - cw, s + cw, cy - E.canopy.t, 0, E.canopy.out, frameCol);
+    kit.quad(kit.F, f.at(s - cw, cy, 0), f.at(s + cw, cy, 0), f.at(s + cw, cy, E.canopy.out), f.at(s - cw, cy, E.canopy.out), [0, 1, 0], frameCol);
+    // steps: each box from its own top down to the ground below it; the top one is the landing at the door's sill
+    const sw = w / 2 + E.side, lowAt = (s0, s1, t0, t1) => Math.min(...[[s0, t0], [s1, t0], [s0, t1], [s1, t1]].map(([ss, tt]) => { const q = f.at(ss, 0, tt); return ground(q[0], q[2]); }));
+    const depth = i => E.landing + i * E.tread, drop = Math.max(0, base - lowAt(s - sw, s + sw, 0, depth(E.maxSteps - 1)));
+    const n = Math.max(1, Math.min(E.maxSteps, Math.ceil(drop / E.rise))), h1 = Math.max(drop, 0.12) / n;
+    for (let i = 0; i < n; i++) {
+      const top = base - i * h1, d = depth(i), lo = Math.min(lowAt(s - sw, s + sw, 0, d), top - h1) - 0.05, col = i === 0 ? plinthCol : frameCol;
+      const [a0, a1, b0, b1] = [s - sw, s + sw, 0, d], dd = [f.du, 0, f.dv];
+      kit.quad(kit.F, f.at(a0, top, b0), f.at(a1, top, b0), f.at(a1, top, b1), f.at(a0, top, b1), [0, 1, 0], col);
+      f.rect(a0, a1, lo, top, b1, col);
+      kit.quad(kit.F, f.at(a0, lo, b0), f.at(a0, lo, b1), f.at(a0, top, b1), f.at(a0, top, b0), dd.map(v => -v), col);
+      kit.quad(kit.F, f.at(a1, lo, b0), f.at(a1, lo, b1), f.at(a1, top, b1), f.at(a1, top, b0), dd, col);
+    }
+    return n;
+  };
   return {
+    entrances, get skippedWindows() { return skippedWindows; },
     edge(a, c, sign) {
       const dx = c[0] - a[0], dz = c[1] - a[1], d = Math.hypot(dx, dz);
       if (d < 1e-6) return;
-      const f = kit.face(a[0], a[1], c[0], c[1], sign * dz / d, -sign * dx / d);
+      const f = kit.face(a[0], a[1], c[0], c[1], sign * dz / d, -sign * dx / d), door = byEdge.get(a[0] + ',' + a[1]);
       fac.wall(f, 0, d, bottom, eave);
       fac.band(f, 0, d, eave, 0.18, P.frieze, frieze); // corbel frieze under the eave
       fac.band(f, 0, d, eave - 0.18, 0.3, 0.06, dark);
       for (const k of P.belts) if (k < b.levels) fac.band(f, 0, d, base + k * S.storey + P.beltLift, 0.16, 0.08, frieze);
-      for (let k = 1; k * S.bay + S.window[0] / 2 < d; k++) for (let floor = 0; floor < b.levels; floor++)
+      if (door) door.steps = entrance(f, door.s);
+      for (let k = 1; k * S.bay + S.window[0] / 2 < d; k++) for (let floor = 0; floor < b.levels; floor++) {
+        if (door && floor === 0 && Math.abs(k * S.bay - door.s) < E.w / 2 + S.window[0] / 2 + E.clear) { skippedWindows++; continue; } // the door stands where a ground-floor window would
         fac.farWindow(f, k * S.bay, base + floor * S.storey + S.sill, S.window[0], S.window[1], P.rise, P.frame);
+      }
     },
     flush: parts => kit.flush(parts),
   };
+}
+
+/**
+ * #1722: where a pavilion's entrances stand (*guess*: no entrance nodes in the repo's OSM data). On the outer ring, the faces of at
+ * least `E.minEdge` m that look towards the nearest street (`streets`: polylines of Sankt Lars väg, the service ways and paths,
+ * within `E.reach` m); the nearest one gets an entrance, a second face another when it is nearly as close and `E.apart` m from
+ * the first. The door stands where the street's nearest point projects onto the face, `E.margin` m from its ends at the least.
+ * Returns [{ key, a, c, s, dist }]; `key` identifies the face's start corner for `edge()`.
+ */
+export function planEntrances(b, streets, E = SITE.south.brickEntrance) {
+  const p = b.polygon.slice(0, -1), sign = Math.sign(p.reduce((s, q, i) => { const r = p[(i + 1) % p.length]; return s + q[0] * r[1] - r[0] * q[1]; }, 0));
+  const nearest = m => { let best = { d: Infinity }; for (const l of streets) for (let i = 0; i < l.length - 1; i++) {
+    const [ax, az] = l[i], dx = l[i + 1][0] - ax, dz = l[i + 1][1] - az, t = Math.max(0, Math.min(1, ((m[0] - ax) * dx + (m[1] - az) * dz) / (dx * dx + dz * dz || 1))), q = [ax + t * dx, az + t * dz], d = Math.hypot(m[0] - q[0], m[1] - q[1]);
+    if (d < best.d) best = { d, q }; } return best; };
+  const cands = [];
+  for (let i = 0; i < p.length; i++) {
+    const a = p[i], c = p[(i + 1) % p.length], dx = c[0] - a[0], dz = c[1] - a[1], d = Math.hypot(dx, dz);
+    if (d < E.minEdge) continue;
+    const nx = sign * dz / d, nz = -sign * dx / d, mid = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2], near = nearest(mid);
+    if (!(near.d <= E.reach) || ((near.q[0] - mid[0]) * nx + (near.q[1] - mid[1]) * nz) / (near.d || 1) < 0.5) continue;
+    const s = Math.max(E.margin, Math.min(d - E.margin, ((near.q[0] - a[0]) * dx + (near.q[1] - a[1]) * dz) / d));
+    cands.push({ key: a[0] + ',' + a[1], a, c, s, dist: near.d, at: [a[0] + dx / d * s, a[1] + dz / d * s] });
+  }
+  cands.sort((x, y) => x.dist - y.dist);
+  const out = cands.slice(0, 1);
+  for (const q of cands.slice(1)) if (out.length < E.max && q.dist <= out[0].dist * E.second && Math.hypot(q.at[0] - out[0].at[0], q.at[1] - out[0].at[1]) >= E.apart) out.push(q);
+  return out;
 }

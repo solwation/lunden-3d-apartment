@@ -928,6 +928,14 @@ export const SITE = {
     // frieze's projection, `belts` the storey lines with a belt course (floor k), `beltLift` its top over that floor,
     // `rise` the segmental head's peak over the window's sides, `frame` the white frame's width (all m).
     // The small two-storey houses and the Sävsländegatan/Nattsländegatan/Hattsnäckegränden terraces keep their style.
+    // #1722: the pavilions' street entrances (src/brickstyle.js planEntrances). No OSM entrance nodes are in the repo, so the places
+    // are *guess*: the faces of at least `minEdge` m looking at the nearest street (Sankt Lars väg, service ways, paths) within `reach` m
+    // get a door where the street's nearest point meets them (`margin` m from the ends at least); a second face too when it is within
+    // `second` x the first's distance and `apart` m from its door, `max` per building. Door `w` x `h`, white `frame` width, canopy
+    // (`out` projection, `side` extra width each way, `t` thickness, `lift` over the door head), `clear` m kept free of windows beside
+    // the door; steps: a `landing` m deep, then `tread` m deeper per step of about `rise` m (at most `maxSteps`, down to the ground). All m.
+    brickEntrance: { minEdge: 12, reach: 45, margin: 3.5, second: 1.6, apart: 12, max: 2, w: 1.5, h: 2.3, frame: 0.1, canopy: { out: 0.8, side: 0.3, t: 0.12, lift: 0.3 },
+      clear: 0.4, landing: 1.0, tread: 0.32, rise: 0.17, maxSteps: 8, side: 0.25 },
     brickStyle: { plinth: 0.7, frieze: 0.15, belts: [1], beltLift: 0.1, rise: 0.2, frame: 0.07, sources: [
       '88457576', '88457590', 'relation/1309428', '88457592', '88457598', '88457594', '88457599', // Sankt Lars väg 42, 43, 44, 45, 46, 47, 54
     ] },
