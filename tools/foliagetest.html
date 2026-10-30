@@ -71,9 +71,17 @@ f.onload = async () => {
     SE.applySeason(1);
     const m = new A.scene.matrix.constructor(), s = new A.camera.position.constructor(), q = A.camera.quaternion.clone(), t = s.clone();
     let maxWinter = 0;
-    const seasonal = crowns.filter((c) => c.name !== 'courtyard-shrubs'); // the courtyard's plantings stay green (as before #679)
+    const derived = (c) => { for (let p = c.parent; p; p = p.parent) if (p.name === 'site-instance-batches') return true; return false; };
+    // the courtyard's plantings stay green (as before #679); the site-instance batches (#1459) are per-frame packed COPIES of
+    // the tree-crowns batches (src/siteinstancebatch.js) and hold the last drawn matrices until the next render, so they are
+    // checked below after a rendered frame instead of by their stale matrices (#1727)
+    const seasonal = crowns.filter((c) => c.name !== 'courtyard-shrubs' && !derived(c));
     for (const c of seasonal) for (let i = 0; i < c.count; i++) { c.getMatrixAt(i, m); m.decompose(t, q, s); maxWinter = Math.max(maxWinter, s.x); }
     check(seasonal.length >= 3 && maxWinter < 0.01, `January: every seasonal crown bare in ${seasonal.length} batches (largest scale ${maxWinter.toFixed(4)})`);
+    // the packed copies must carry no crown at all once a frame has been drawn in January (the hidden sources are skipped)
+    A.renderer.render(A.scene, A.camera); // no A.step: the game loop re-applies the URL's month (July)
+    const packed = crowns.filter(derived);
+    check(packed.every((c) => !c.visible || c.count === 0), `January: the packed site-instance crown copies draw nothing after a frame (${packed.length} batches, ${packed.map((c) => c.visible ? c.count : 0).join('/') || '-'} instances)`);
     SE.applySeason(7);
     const back = snap();
     check(summer.every((a, i) => a.every((x, k) => Math.abs(x - back[i][k]) < 1e-6)), 'July: the crowns back as they were');
