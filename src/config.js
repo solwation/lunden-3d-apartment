@@ -672,9 +672,14 @@ export const SITE = {
     // NE along the road = model north, so its left is model west, the GC side; hoje-a-fran-stora-bron-norrut.jpg shows the
     // green parapet close up). Every size and colour here is a *guess* read from the photos; the 7.2 m deck width is kept.
     // West (−x, towards GC): carriageway | verge with guard rail | granite kerb | raised footway | green parapet (wide top
-    // rail, X braces between posts, close vertical bars). East (+x): granite kerb | guard rail | black plate edge with a steel
-    // handrail. Concrete edge beams (kantbalkar) on both sides stand above the deck and keep the slab's underside (#1285).
-    roadDeck:{edge:{w:.3,up:.25,out:.05},walk:{w:1.4,h:.12},kerb:{w:.15,h:.13},verge:.4,
+    // rail, X braces between posts, close vertical bars). East (+x): granite kerb | guard rail | #1704 raised G/C path | green parapet (the black plate edge is gone). Concrete edge beams (kantbalkar) on both sides stand above the deck and keep the slab's underside (#1285).
+    // #1704 (photo docs/foton/vagbron-gc-bana-bada-sidor.jpg): the east side has a gång- och cykelbana too, built as part of the road
+    // bridge's own cross-section (`eastWalk`, *guess* 3 m wide like the west gc bridge, same raised height and green parapet as the west
+    // footway), not as a separate bridge: the photo shows it carried by the same slab outside the guard rail, and a separate span would
+    // have to sit beside the abutments. The slab, abutments and edge beams widen to the east only; the underside height stays (#1285).
+    // West (#1704): the raised footway and the GC bridge (0.4-0.7 m apart, the gap runs out with the two centrelines) read as ONE wide path in the photo, so the
+    // road's west parapet and the GC truss's east side are dropped, `westFill` (*guess*) closes the gap on the road slab and the GC bridge's own outer truss is the path's outer rail.
+    roadDeck:{eastWalk:{w:3,h:.12},westFill:{w:.75},edge:{w:.3,up:.25,out:.05},walk:{w:1.4,h:.12},kerb:{w:.15,h:.13},verge:.4,
       parapet:{h:1.15,inset:.08,top:[.15,.04],mid:.12,low:.33,post:.1,bay:2.6,brace:[.06,.02],slat:[.02,.012],slatStep:.11},
       plate:{h:.9,t:.03,rail:1.1,post:.08,bay:2.6},
       guard:{h:.6,beam:.3,t:.05,post:.1,step:3.2,gap:.15},

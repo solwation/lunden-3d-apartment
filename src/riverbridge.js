@@ -6,12 +6,16 @@ const B=SITE.bridges,R=SITE.river;
 const along=[0];for(let i=1;i<R.path.length;i++)along.push(along[i-1]+Math.hypot(R.path[i][0]-R.path[i-1][0],R.path[i][1]-R.path[i-1][1]));
 export const bridgeRecords=['road','gc'].map(kind=>{
  const s=B[kind],[a,b]=s.ends,full=Math.hypot(b[0]-a[0],b[1]-a[1]),len=s.length??full;
- return {kind,...s,x:(a[0]+b[0])/2,z:(a[1]+b[1])/2,dx:(b[0]-a[0])/full,dz:(b[1]-a[1])/full,len,full};
+ const ext=kind==='road'?B.roadDeck.eastWalk.w+B.roadDeck.edge.out:0; // #1704: the road slab's extra width on the east (+x mesh) side
+ const extW=kind==='road'?B.roadDeck.westFill.w:0; // #1704: closes the gap to the GC bridge on the west (-x mesh) side
+ return {kind,...s,ext,extW,x:(a[0]+b[0])/2,z:(a[1]+b[1])/2,dx:(b[0]-a[0])/full,dz:(b[1]-a[1])/full,len,full};
 });
+// local() across-coordinate b is the mesh's x mirrored (b = -x), so the east extension lies at b < 0.
+const inSlab=(r,b)=>b<=r.width/2+r.extW&&b>=-(r.width/2+r.ext);
 const local=(r,x,z)=>[(x-r.x)*r.dx+(z-r.z)*r.dz,-(x-r.x)*r.dz+(z-r.z)*r.dx];
-export function deckAt(x,z){return bridgeRecords.some(r=>{const[a,b]=local(r,x,z);return Math.abs(a)<=(r.full??r.len)/2&&Math.abs(b)<=r.width/2})?B.deckY:null;}
+export function deckAt(x,z){return bridgeRecords.some(r=>{const[a,b]=local(r,x,z);return Math.abs(a)<=(r.full??r.len)/2&&inSlab(r,b)})?B.deckY:null;}
 /** The underside of the deck over (x, z) (each bridge has its own slab thickness: road .45, GC .18, #1289), else null. */
-export function deckUnderAt(x,z){const r=bridgeRecords.find(r=>{const[a,b]=local(r,x,z);return Math.abs(a)<=r.len/2&&Math.abs(b)<=r.width/2});return r?B.deckY-r.slab:null;}
+export function deckUnderAt(x,z){const r=bridgeRecords.find(r=>{const[a,b]=local(r,x,z);return Math.abs(a)<=r.len/2&&inSlab(r,b)});return r?B.deckY-r.slab:null;}
 export function roadBridgeSpan(x,z){const r=bridgeRecords[0];return Math.abs(local(r,x,z)[0])<=r.len/2;}
 /** Nearest sourced river segment, with interpolated visual width/bank estimates. */
 // #1358: riverAt runs several times per groundY/water query (thousands per walking frame), so the scan allocates nothing, only builds
@@ -63,7 +67,7 @@ export function riverGround(x,z,base){
 function roadDeckParts(r,y,box,beam,slats){
  const D=B.roadDeck,C=D.colors,w=r.width/2,L=r.len,e=D.edge,P=D.parapet,Q=D.plate,G=D.guard;
  // Edge beams (kantbalkar): from the slab's underside (clearance unchanged) to e.up above the deck, slightly proud of the slab.
- for(const side of [-1,1])box('concrete',e.w+e.out,r.slab+e.up,L,side*(w-e.w+(e.w+e.out)/2),y-r.slab+(r.slab+e.up)/2,0);
+ box('concrete',e.w+e.out,r.slab+e.up,L,w-e.w+(e.w+e.out)/2,y-r.slab+(r.slab+e.up)/2,0); // inner east edge beam (#1704: none on the west, the footway runs on to the GC bridge)
  // West: verge with guard rail, granite kerb, raised footway (top D.walk.h over the deck).
  const walkIn=-w+e.w+D.walk.w,kerbIn=walkIn+D.kerb.w,verge=kerbIn+D.verge;
  box('asphalt',D.walk.w,D.walk.h,L,-w+e.w+D.walk.w/2,y+D.walk.h/2,0);
@@ -73,18 +77,21 @@ function roadDeckParts(r,y,box,beam,slats){
  for(const gx of [verge-G.gap,w-e.w-D.kerb.w-G.gap]){const s=Math.sign(gx),face=gx-s*(G.post/2+G.t/2);
   box('steel',G.t,G.beam,L,face,y+G.h-G.beam/2,0,C.galv);
   for(let z=-L/2+.4;z<=L/2-.4+1e-6;z+=G.step)beam('steel',[gx,y,z],[gx,y+G.h,z],G.post,C.galv,true);}
- // West parapet (photo close-up): posts, a wide flat top rail, mid/bottom rails, X braces per bay and close vertical bars.
- const px=-w+P.inset,base=y+e.up,n=Math.max(1,Math.round(L/P.bay)),bay=L/n;
+ // West parapet.
+ const parapet=px=>{ // photo close-up: posts, a wide flat top rail, mid/bottom rails, X braces per bay and close vertical bars (centred at x = px)
+ const base=y+e.up,n=Math.max(1,Math.round(L/P.bay)),bay=L/n;
  box('steel',P.top[0],P.top[1],L,px,y+P.h-P.top[1]/2,0,C.green);
  for(const h of [P.h-P.mid,P.low])box('steel',.05,.035,L,px,y+h,0,C.green);
  for(let i=0;i<=n;i++){const z=-L/2+i*bay;beam('steel',[px,base,z],[px,y+P.h-P.top[1],z],P.post,C.green,true);
   if(i<n)for(const k of [0,1])beam('steel',[px+(k?.01:-.01),base,z+(k?bay:0)],[px+(k?.01:-.01),y+P.h-P.top[1],z+(k?0:bay)],P.brace[0],C.green,true,P.brace[1]);}
  slats(px,y+P.low,y+P.h-P.mid,-L/2,L/2,P.slatStep,P.slat,C.green);
- // East: black plate edge (massiv plåtkant) on the edge beam with a steel handrail on posts.
- const qx=w-P.inset,m=Math.max(1,Math.round(L/Q.bay));
- box('steel',Q.t,Q.h-e.up,L,qx,y+e.up+(Q.h-e.up)/2,0,C.black);
- box('steel',.06,.05,L,qx,y+Q.rail,0,C.black);
- for(let i=0;i<=m;i++)beam('steel',[qx,y+e.up,-L/2+i*L/m],[qx,y+Q.rail,-L/2+i*L/m],Q.post,C.black,true);
+};
+ box('asphalt',D.westFill.w+e.w,D.walk.h,L,-w+(e.w-D.westFill.w)/2,y+D.walk.h/2,0); // #1704: footway continues over the former west edge beam to the GC bridge (no parapet any more)
+ // East (#1704): raised G/C path outside the guard rail on the slab's extension, an outer edge beam and the same green parapet as the west.
+ const xe=w+r.ext; // outer edge of the slab
+ box('asphalt',r.ext-e.out,D.eastWalk.h,L,w+e.out+(r.ext-e.out)/2,y+D.eastWalk.h/2,0);
+ box('concrete',e.w+e.out,r.slab+e.up,L,xe-(e.w+e.out)/2,y-r.slab+(r.slab+e.up)/2,0);
+ parapet(xe-P.inset-e.out);
 }
 
 /** Two background bridges, merged by material, independent of the walking boundary. No new lights or render passes. */
@@ -107,8 +114,10 @@ export function buildRiverBridges(approachGround=()=>B.deckY){
   // Construct along local +z then rotate into the registered centreline.
   box('concrete',r.width,r.slab,r.len,0,y-r.slab/2,0);
   box('asphalt',r.width-.3,.035,r.len,0,y+.005,0);
+  if(r.extW)box('concrete',r.extW,r.slab,r.len,-r.width/2-r.extW/2,y-r.slab/2,0); // #1704: west gap fill (under the footway's level)
+  if(r.ext)box('concrete',r.ext,r.slab,r.len,r.width/2+r.ext/2,y-r.slab/2,0); // #1704: east G/C path slab
   if(r.kind==='gc'){const railY=y+r.truss,w=r.width/2-.05,c=B.roadDeck.colors.gcSteel;
-   for(const side of [-1,1]){
+   for(const side of [-1]){ // #1704: only the outer (west) truss; the east side joins the road's footway as one path
     beam('steel',[side*w,railY,-r.len/2],[side*w,railY,r.len/2],r.steel,c);
     beam('steel',[side*w,y+.12,-r.len/2],[side*w,y+.12,r.len/2],r.steel,c);
     for(let i=0;i<=r.panels;i++){const z=-r.len/2+i*r.len/r.panels;beam('steel',[side*w,y+.12,z],[side*w,railY,z],r.steel,c);
@@ -116,7 +125,7 @@ export function buildRiverBridges(approachGround=()=>B.deckY){
     for(let z=-r.len/2;z<r.len/2;z+=B.railStep)beam('steel',[side*w,y+.15,z],[side*w,y+B.rail,z],B.post*.55,c);
    }
   }else roadDeckParts(r,y,box,beam,slats);
-  for(const end of [-1,1])box('concrete',r.width+.6,y-B.bedY,1.25,0,(y+B.bedY)/2,end*r.len/2);
+  for(const end of [-1,1])box('concrete',r.width+.6+r.ext,y-B.bedY,1.25,r.ext/2,(y+B.bedY)/2,end*r.len/2);
   if(r.kind==='road')for(const z of [-r.len/3,0,r.len/3])for(const side of [-1,1]){
    const x=side*r.width*.29;box('concrete',r.pier,y-r.slab-B.bedY,r.pier,x,(y-r.slab+B.bedY)/2,z);
    box('concrete',r.foot,.45,r.foot,x,B.bedY+.225,z);
@@ -126,6 +135,11 @@ export function buildRiverBridges(approachGround=()=>B.deckY){
  }
  const gc=bridgeRecords[1],ends=[-1,1].map(s=>[gc.x+gc.dx*gc.len/2*s,gc.z+gc.dz*gc.len/2*s]);
  for(let i=0;i<2;i++){const[x,z]=ends[i],sign=i===0?-1:1;parts.asphalt.push(pathStrip({path:[[x,z],[x+.8,z+sign*B.approach],[20,z+sign*B.approach*1.6]],w:B.gc.width},w=>-w/2,w=>w/2,.025,approachGround));}
+ // #1704: the east G/C path continues past both bridge ends as an approach strip (same asphalt batch, straight on along the road), so it meets the ground/paths
+ // like the GC bridge's approaches do; its width/centre follow the raised path on the slab.
+ {const r=bridgeRecords[0],D=B.roadDeck,mx=r.width/2+(r.ext+D.edge.out)/2;
+  for(const sign of [-1,1]){const ex=r.x+r.dz*mx+r.dx*r.len/2*sign,ez=r.z-r.dx*mx+r.dz*r.len/2*sign;
+   parts.asphalt.push(pathStrip({path:[[ex,ez],[ex+r.dx*sign*B.approach,ez+r.dz*sign*B.approach]],w:r.ext-D.edge.out},w=>-w/2,w=>w/2,.025,approachGround));}}
  // #1684: the water ribbon runs under the whole bank slope (the same span riverGround uses, per vertex), so the visible shoreline is where the sloping
  // bank meets the water line, not a hard-edged sheet floating over a strip of bank below the water line. The bank above it hides the extra width.
  const slope=i=>Math.min((R.banks?R.banks[i]:R.bank)*(R.bankScale??1)*.4,2.5),widths=R.path.map((_,i)=>(R.widths?R.widths[i]:R.width)+2*slope(i));

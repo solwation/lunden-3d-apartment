@@ -17,7 +17,7 @@ const ringSegs = (p) => {
   return out;
 };
 const overlaps = (s, x0, x1, z0, z1) => Math.max(s[0], s[2]) > x0 && Math.min(s[0], s[2]) < x1 && Math.max(s[1], s[3]) > z0 && Math.min(s[1], s[3]) < z1;
-const railSegs = (cx, cz, dx, dz, len, half) => [-1, 1].map((k) => {
+const railSegs = (cx, cz, dx, dz, len, half, sides = [-1, 1]) => sides.map((k) => {
   const at = (a) => [cx + a * dx - k * half * dz, cz + a * dz + k * half * dx];
   return [...at(-len / 2), ...at(len / 2)];
 });
@@ -44,7 +44,11 @@ export function farSegments() {
   // draws both outside OUTDOOR, so only their roof walk knew them): solid from the ground too. #1534: the wall's boxes
   // include the bus shelter's gable and back wall and its post (src/schoolwall.js); its open front stays walkable.
   for (const r of [...schoolWallSolids(), SITE.school?.greenhouse].filter(Boolean)) out.push(...boxSegments(r));
-  for (const r of bridgeRecords) rails.push(...railSegs(r.x, r.z, r.dx, r.dz, r.len, r.width / 2 - 0.03)); // the bridges' side rails (the deck ends stay open)
+  // #1704: the road slab is wider on its east (+mesh x = (dz,-dx)) side (G/C path); its west rail (k = +1) and the GC bridge's east rail (k = -1) are gone,
+  // the footway and the GC bridge are one path whose outer rail is the GC bridge's west truss (k = +1).
+  for (const r of bridgeRecords) rails.push(...(r.kind === 'road'
+    ? railSegs(r.x + r.dz * r.ext / 2, r.z - r.dx * r.ext / 2, r.dx, r.dz, r.len, r.width / 2 + r.ext / 2 - 0.03, [-1]) // (the east rail only)
+    : railSegs(r.x, r.z, r.dx, r.dz, r.len, r.width / 2 - 0.03, [1])));
   for (const p of pierBoxes()) { // the road bridge's piers: a square each, turned with the bridge
     const c = (u, v) => [p.x + (u * p.dz + v * p.dx) * p.half, p.z + (-u * p.dx + v * p.dz) * p.half], q = [c(-1, -1), c(1, -1), c(1, 1), c(-1, 1)];
     for (let i = 0; i < 4; i++) piers.push([...q[i], ...q[(i + 1) % 4]]);

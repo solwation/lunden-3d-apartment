@@ -92,7 +92,10 @@ const R = [
   ['GC-bron söderut över anslutningen till slänten', [17.8,140], [[17.8,146],[18.6,152],[19,157]], () => player.pos.z>156&&player.pos.y>-1],
   ['GC-anslutningen norrut tillbaka över bron', [19,157], [[18.6,152],[17.8,146],[17.8,140]], () => player.pos.z<141&&Math.abs(player.pos.y+3)<.1],
   // #1271: the river footpath (OSM 44447963) runs UNDER both decks, in the cut; walk it east -> west and back
-  ['vägbrons räcke stoppar: ut över sidan', [23.5, 125], [[30, 125]], () => player.pos.x < 27.5 + 0.3 && player.pos.y > -3.05],
+  // #1704: the road slab now carries the east G/C path (3 m), so the outer rail stands at x ~30.3 (was ~27.5)
+  ['vägbrons räcke stoppar: ut över sidan', [23.5, 125], [[34, 125]], () => player.pos.x < 30.3 + 0.3 && player.pos.y > -3.05],
+  ['östra gång- och cykelbanan: gång från norra till södra änden, över däcket och upp på vägbanken', [29.3, 96], [[28.9, 125], [28.6, 150]], () => player.pos.z > 148 && player.pos.y > -3.2],
+  ['östra gång- och cykelbanan: tillbaka söderifrån norrut', [28.6, 150], [[28.9, 125], [29.3, 96]], () => player.pos.z < 98 && Math.abs(player.pos.y + 3) < 0.2],
   ['HepCat Store: byggnaden stoppar', [24, 0], [[34, 0]], () => player.pos.x < 28],
   ['Villan i parken: väggen stoppar', [-70, 75], [[-55, 75]], () => player.pos.x < -63],
   // #1542: round the school wall's east end (it stands x -26…13.6 along the far pavement, solid from the ground); #1534: the
