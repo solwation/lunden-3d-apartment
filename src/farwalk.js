@@ -10,6 +10,7 @@ import { fenceSegments, stile, stileWalls } from './paddockgeo.js';
 import { parkedCarSegments } from './parkinglayout.js';
 import { busStopSegments } from './busstopgeo.js';
 import { schoolWallSolids, boxSegments } from './schoolwall.js';
+import { cabinetSolid } from './elcabinetbody.js';
 
 const ringSegs = (p) => {
   const out = [], n = p.length, closed = p[0][0] === p[n - 1][0] && p[0][1] === p[n - 1][1], m = closed ? n - 1 : n;
@@ -44,6 +45,7 @@ export function farSegments() {
   // draws both outside OUTDOOR, so only their roof walk knew them): solid from the ground too. #1534: the wall's boxes
   // include the bus shelter's gable and back wall and its post (src/schoolwall.js); its open front stays walkable.
   for (const r of [...schoolWallSolids(), SITE.school?.greenhouse].filter(Boolean)) out.push(...boxSegments(r));
+  out.push(...boxSegments(cabinetSolid())); // #1707: the electrical cabinet by Sankt Lars väg
   // #1704: the road slab is wider on its east (+mesh x = (dz,-dx)) side (G/C path); its west rail (k = +1) and the GC bridge's east rail (k = -1) are gone,
   // the footway and the GC bridge are one path whose outer rail is the GC bridge's west truss (k = +1).
   for (const r of bridgeRecords) rails.push(...(r.kind === 'road'

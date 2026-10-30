@@ -69,7 +69,7 @@ import { setScoreElement, totalScore, stats, keepMieleDay, awardTarget, bump, aw
 import { Minimap } from './minimap.js';
 import { Compass } from './compass.js';
 import { Measure } from './measure.js';
-import { cloudTexture, groundY, renderedTerrainY, treeFeet, aoTrees } from './surroundings.js';
+import { cloudTexture, groundY, renderedTerrainY, lampGroundY, treeFeet, aoTrees } from './surroundings.js';
 import { Squirrels } from './squirrels.js';
 import { onRoad, onWalk } from './roads.js';
 import { onParkPath } from './riverpark.js';
@@ -180,6 +180,9 @@ import { Ghosts } from './ghosts.js';
 import { Combat } from './combat.js';
 import { Bow, Arrows } from './bow.js';
 import { buildMailbox, mailboxGround } from './mailbox.js'; // #1706: the yellow letterbox and the binoculars
+import { buildElCabinet } from './elcabinet.js'; // #1707: the electrical cabinet with the spray cans
+import { Graffiti, collisionHit } from './graffiti.js'; // #1707: the spray paint (72 h, local)
+import { farWalls } from './farwalk.js'; // (#1707: the paint's surfaces on phones)
 import { Chat } from './chat.js';
 import { BASKET, COMBAT, CHAT, GHOSTS, TOUCH, NEW_YEAR, TOAST, TOAST_LINES, CAT_CARD, SOUNDS } from './config.js';
 import { Basketball, Hoop } from './basket.js';
@@ -883,6 +886,14 @@ const mailbox = buildMailbox(scene, camera, mailboxGround(renderedTerrainY)); //
 const binoculars = mailbox.binoculars;
 world.lids.push(mailbox.lid);
 holdables.push(binoculars);
+// #1707: the spray paint (one instanced mesh, kept 72 h in this browser) and the cabinet by Sankt Lars väg with the cans
+const graffiti = new Graffiti(scene, { segment: (from, to, list) => marks.segment(from, to, list), exclude: [camera],
+  fallback: lowMemory && !new URLSearchParams(location.search).has('keepgeo') ? collisionHit({ walls: (x, z, y) => [...player.segments()[0], ...farWalls(x, z, y)], // phones: walls, trunks and the ground from the walking data
+    ground: (x, z, y) => Math.max(player.groundAt(x, z, y + 0.3), player.inFootprint(x, z) ? -Infinity : renderedTerrainY(x, z) + 0.02) }) : null });
+const sprayHooks = { score: () => totalScore(), pay: () => penalize('spray'), say: (() => { let at = -1e9; return (t) => { if (performance.now() - at > 1500) { at = performance.now(); badge(t, false); } }; })() };
+const elCabinet = buildElCabinet(scene, camera, lampGroundY, graffiti, sprayHooks); // its body is in street.js's pole batch
+world.lids.push(elCabinet.lid);
+holdables.push(...elCabinet.cans);
 { const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? hoop.segments() : [])]; } // its base is in the way
 // the parked car and the hoop's base as closed boxes: one that appears round the visitor pushes them out (#314)
 world.movingPolys = (lvl) => lvl === 0 ? [car.segments(), hoop.segments()].filter((sg) => sg.length).map((sg) => sg.map(([x, z]) => [x, z])).concat([dropoff.poly]) : []; // + the rubbish containers (#387)
@@ -2038,6 +2049,9 @@ for(const b of remoteSeekControls.querySelectorAll('[data-remote-seek]'))b.addEv
 remoteSeekControls.addEventListener('pointerdown',e=>e.stopPropagation());
 turnBtn.addEventListener('click', () => turnPlacement());
 powerBtn.addEventListener('click', () => heldItem()?.useAlt?.());
+// #1707: the spray can's touch button sprays while it is held down
+powerBtn.addEventListener('pointerdown', () => { if (heldItem()?.isSprayCan) heldItem().trigger(true); });
+for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) powerBtn.addEventListener(ev, () => { if (heldItem()?.isSprayCan) heldItem().trigger(false); });
 // touch: the jump button (#600, #636) = Space's press, suit or not (the suit's high jump, wall / strand let-go: player.js)
 document.getElementById('jump-btn').addEventListener('pointerdown', (e) => { e.preventDefault(); if (slideRide.active) slideRide.cancel(); else if (active()) player.jumpPress = true; });
 const stripKeys = new Set(); // keys pressed while a strip / the note is open
@@ -2429,7 +2443,7 @@ function updateFocus() {
   remoteSeekControls.hidden=!touch.enabled||reading||!remoteAim||!tvMedia.seekable(remote.findTv());
   powerBtn.hidden = !touch.enabled || !heldItem()?.useAlt || reading;
   turnBtn.hidden = !touch.enabled || reading || focused?.kind !== 'place' || !!focused.blocked || !itemGhost.visible; // ⟳ (#368)
-  if (!powerBtn.hidden) setIcon(powerBtn,heldItem().altIcon==='🏀'?'basketball':heldItem().altIcon==='🥂'?'cheers':heldItem().altIcon==='🔭'?'binoculars':'power',heldItem().altLabel??'Stäng av / slå på TV:n');
+  if (!powerBtn.hidden) setIcon(powerBtn,heldItem().altIcon==='🏀'?'basketball':heldItem().altIcon==='🥂'?'cheers':heldItem().altIcon==='🔭'?'binoculars':heldItem().altIcon==='🎨'?'spray':'power',heldItem().altLabel??'Stäng av / slå på TV:n');
 }
 
 // --- furniture on/off (F / 🛋) ---------------------------------------------
@@ -3038,7 +3052,7 @@ function ringBell() {
 let bellAt = -1e9;
 bellBtn.addEventListener('click', ringBell);
 greet.mineAvatar = () => ghosts.selfGhost().avatar; // (#1122: your spoken lines move your mirror image's mouth)
-window.__binoculars = binoculars; window.__mailbox = mailbox; window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows; window.__presence = presence;
+window.__binoculars = binoculars; window.__mailbox = mailbox; window.__graffiti = graffiti; window.__elCabinet = elCabinet; window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows; window.__presence = presence;
 chat = new Chat({ ghosts, log: document.getElementById('chat-log'), setting: document.getElementById('menu-chat-setting'), name: () => leaderboard.name, // #675
   camera, layer: document.getElementById('speech'), hidden: (p) => behindWall(p) }); // bubbles over the ghosts (#676)
 terminalInput.addEventListener('input', () => {
@@ -3138,6 +3152,8 @@ function step(dt) {
   player.boost = turbo.speed;
   // #1706: the binoculars' scope always goes down when they leave the hand, on the menu, in a fall / death, riding or reading
   if (binoculars.zoomed && (heldItem() !== binoculars || !overlay.hidden || fall.active || player.riding || reading || statsOpen)) binoculars.setZoom(false);
+  if (heldItem()?.firing && heldItem().isSprayCan && (!overlay.hidden || fall.active || player.riding || reading || statsOpen)) heldItem().trigger(false); // #1707: no spraying from the menu, a fall or the saddle
+  graffiti.update(dt);
   const fov = binoculars.fov(72 + TURBO.fov * turbo.k);
   if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
   updateCameraNear();

@@ -513,6 +513,12 @@ src/binoculars.js      the binoculars (#1706, BINOCULARS), a Holdable lying in t
                        are the ordinary holdable path (keep.js `things`, key `kikaren|home`). Right mouse button / the touch power button (`useAlt`, `altIcon` '🔭') raises
                        the scope: fov = baseFov / zoom (×5, *guess*), a black double-circle SVG mask (`#binoculars-mask`, no texture), look speed ÷ zoom (main.js `look`).
                        `setZoom(false)` on put/stow, menu, fall/death/wake, riding or reading (main.js `step` checks every frame). Not a weapon (no `clickIsUse`/`shoots`).
+src/spraycan.js        the spray cans (#1707, SPRAY), six Holdables on the shelf of the grey electrical cabinet (src/elcabinet.js, its door an Openable in
+                       world.lids); take / put back / saving as any loose thing. `clickIsUse` (a left click never becomes "put it down") + `trigger(on)`:
+                       the left mouse button or the touch spray button (`useAlt`'s power button, held: main.js pointerdown/up) sprays; E / a tap = a S.tap burst.
+                       Each started second costs SCORE.penalties.spray via stats.js `penalize('spray')` (−1 Sprayfärg); with 0 points it refuses and says so.
+                       Not a weapon. src/graffiti.js paints spots where the eye's ray meets a surface (marks.js `segment`, no glass / leaf cards / E targets;
+                       phones: walls, trunks and ground from the collision data, `collisionHit`, since #628 frees the meshes' CPU copies).
 src/ghosts.js #673     greeting another player: each ghost has an invisible pick box (`Ghost.pick`, door { kind: 'ghost', verb
                        'hälsa på', name }) that main.js adds to what the look ray tries (`ghosts.targets()`, connected only, within
                        HOLD.reach like everything else); E / a tap → `greetPlayer`: `ghosts.greet(g)` picks a line from GHOSTS.hello

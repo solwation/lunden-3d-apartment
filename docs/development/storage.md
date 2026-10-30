@@ -252,6 +252,9 @@ src/layoutmigrations.js  retire old grouped poster layout ids while preserving l
 src/keep.js            the world's state across a page-made reload (#277): saveWorld / loadWorld, one part per module
                        (`clock` #1145: `{ h, y, m, d, p }` plus `o` = ms ahead of the real clock while running; a running record without `o`, from the 60-minute day, keeps the real time; a paused one its exact time)
 src/realweather.js    the weather cache (#674): localStorage `lunden.weather.<YYYY-MM>` = `{ v:1, at, final, d:{ y, m, t, p, s, c } }` (hourly temperature, precipitation, snowfall, weather code of one month, ~15–20 KB); archive months (`final`) never expire, forecast months are used for 3 h and refreshed in the background; at most `WEATHER.real.keepMonths` (12) kept, the oldest dropped first, and all of them if the quota is full; a bad/short entry is ignored. Not in RESET_KEEP: "Återställ" clears it (it is only a cache)
+src/graffiti.js       the spray paint (#1707): localStorage `lunden.graffiti` = `{ v:1, s:[[x,y,z,nx,ny,nz,colour,size cm,t s]…] }`, at most SPRAY.max
+                       spots (~45 B each), written ≤ every SPRAY.saveEvery s and on pagehide; spots older than SPRAY.hours (72) are dropped on load and every
+                       20 s. Local only, not cleared by a new game; nothing goes to KV (#1689). Sharing between players is a follow-up.
 src/cinemaposters.js   the BIO's film posters (#1575): localStorage `lunden.cinemaPosters` = `{ v:2, day, items:[{ id, title, channel }] }`, the last good daily list from
                        GET /cinema/posters, shown when the Worker cannot be reached (validated again on read; a bad record → generic posters). Only a cache: "Återställ" clears it
 src/playroomphotos.js  the playhouse's real posters (#1670): localStorage `lunden.playroomPosters` = `{ v:1, day, rooms:{ hall, spel, biljard:[{ src, w, h, title, artist, licence }] } }`,

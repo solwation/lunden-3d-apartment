@@ -809,6 +809,12 @@ export const sfx = {
     noise(t, 0.12, d, { type: 'lowpass', freq: 1400, gain: 0.35, attack: 0.002 });
     tone(t, 0.08, d, { type: 'sine', from: 320, to: 90, gain: 0.15 });
   },
+  /** A spray can's short hiss (#1707), repeated while it sprays. */
+  spray(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.6);
+    noise(t, 0.3, d, { type: 'highpass', freq: 4200, gain: 0.14, attack: 0.02 });
+  },
   /** A web shot (#597): a quick rising "thwip" of filtered noise and a short whistle. */
   thwip(pos = null) {
     if (!ready()) return;

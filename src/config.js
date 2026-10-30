@@ -3589,7 +3589,8 @@ export const SCORE = {
   // `fall`: hurt by falling more than FALL.hurt (#361)
   penalties: { fridgeOpen: 5, fridgeLonger: 2, fridgeMax: 3, burnt: 3, smokeAlarm: 5, spill: 2, fall: 10,
     catShot: { rifle: 20, saber: 10, dart: 5, wand: 3 }, kittenShot: { rifle: 30, saber: 15, dart: 8, wand: 5 }, // a kitten: extra bad (#363)
-    pvpHurt: 2 }, // hit by another player in a fight (#667, *guess*)
+    pvpHurt: 2, // hit by another player in a fight (#667, *guess*)
+    spray: 1 }, // #1707: each started second of spraying with a spray can (the user: "kostar poäng"; 1 per second is a *guess*)
 };
 // The fridge and freezer door alarm (#288, fridge.js): open for `after` s (game time) it beeps every `every` s and a red
 // LED blinks on the door until it is shut (a real one waits ~1–2 min; ours 60 s). The freezer's timer stands still while
@@ -7294,4 +7295,36 @@ export const BINOCULARS = {
   grip: [0.0, -0.02, 0.0], // model-local grip point (the hand fit is a visual guess)
   size: { barrel: 0.026, length: 0.15, gap: 0.062, bell: 0.034 }, // barrel radius, length, axis distance, objective bell radius (m, *guess*: compact 8×32)
   mask: { radius: 0.34, offset: 0.16 }, // each circle's radius and its centre's offset from the middle (fractions of the shorter screen side)
+};
+
+// The grey electrical cabinet by Sankt Lars väg with the spray cans (#1707, src/elcabinet.js, src/spraycan.js, src/graffiti.js).
+// The user (2026-10-30): "färgburkar i ett elskåp sådant där som finns utmed vägen. Någonstans i syd östra området". A generic
+// Swedish sheet-metal junction cabinet (no logo, no text), on the verge west of the west pavement of Sankt Lars väg, south of
+// Hus A (the pavement's outer edge is x ≈ 20), its door facing the street (east). Position and every size are *guess*:
+// real kopplingsskåp are about 0.5–0.8 × 0.25–0.35 × 1.0–1.4 m. The fixed body joins street.js's metal pole batch (its grey).
+export const ELCABINET = {
+  x: 19.45, z: 66, yaw: 90, // the body's back-centre at the ground; the door faces `yaw` (0 = south, 90 = east)
+  w: 0.6, d: 0.3, h: 1.2, plinth: 0.06, wall: 0.02, roof: 0.03, // outside width / depth / height, the sunk plinth, sheet and lid thickness (m)
+  shelf: 0.5, // the inner shelf's top above the cabinet's bottom (m), the cans stand on it
+  open: 110, speed: 1.8, // the door's stop (°, side-hinged on the left seen from the street) and its speed
+  colors: { door: 0x9ba0a3, handle: 0x2b2d2f, label: 0xe9e4d4, vent: 0x6f7477 }, // the body takes the pole batch's own grey
+};
+// The spray cans and the paint (#1707). Spraying never fights (no `shoots`, no weapon key); it costs SCORE.penalties.spray per started second.
+export const SPRAY = {
+  cans: [ // name (Swedish UI), paint colour, cap colour; the user asked for several colours
+    { name: 'röda sprayburken', color: 0xd7262e }, { name: 'blå sprayburken', color: 0x1f5bd6 }, { name: 'gröna sprayburken', color: 0x2e9e45 },
+    { name: 'gula sprayburken', color: 0xf3c814 }, { name: 'svarta sprayburken', color: 0x1b1b1d }, { name: 'vita sprayburken', color: 0xf3f3f1 },
+  ],
+  can: { r: 0.033, h: 0.19, cap: 0.045 }, // a standard 400 ml can: Ø 65 mm × 190 mm (+ the cap; *guess*)
+  held: { x: 0.15, y: -0.2, z: -0.36 }, grip: [0, -0.04, 0], // camera-space pose in the hand and the model-local grip point (*guess*)
+  range: 2.5, // m: how far the paint reaches from the eye (*guess*, generous for play; a real can sprays ~0.3–1 m)
+  every: 0.05, // s between paint spots while the button is held
+  gap: 0.035, // m: a new spot closer than this to the last one is skipped (holding still does not pile 20 spots a second)
+  size: 0.2, grow: 0.06, // a spot's diameter at the surface (m) and how much it grows per metre of distance (*guess*)
+  jitter: 0.012, // rad of random aim per spot (a soft, uneven line)
+  tap: 0.3, // s: a click / tap / E without a press sprays this long
+  max: 1200, // the cap on spots (the oldest goes first); one instanced mesh, so one draw call whatever the number (*guess*)
+  hours: 72, // the user: the paint stays 72 hours, then it is gone (also across reloads)
+  storageKey: 'lunden.graffiti', // localStorage { v: 1, s: [[x, y, z, nx, ny, nz, colour index, size cm, t (s since epoch)] …] }
+  saveEvery: 2, // s: the store is written at most this often while painting (and on leaving the page)
 };

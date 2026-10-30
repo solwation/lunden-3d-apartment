@@ -7,6 +7,7 @@ import { registerSeasonal } from './seasons.js';
 import { samples, onRoad, along, filletOutline } from './roads.js';
 import { glowMaterial, poolGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { schoolWallPlan } from './schoolwall.js';
+import { cabinetBodyParts } from './elcabinetbody.js';
 
 // Sankt Lars väg's details (#128, SITE.street; the user's photos in docs/foton/): granite curbs, darker patches
 // in the asphalt, slender street lamps with a curved arm (their heads glow at night, and a soft pool of light lies on
@@ -296,6 +297,7 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
     g.fillStyle = '#e8883a'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.translate(w / 2, h / 2); g.rotate(-Math.PI / 2);
     g.font = `bold ${Math.round(w * 0.72)}px sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('HEMSÖ', 0, 0);
   }, F.w, F.h, [...F.at, F.yaw], F.pole - F.h / 2, { tex: 128 });
+  poles.push(...cabinetBodyParts(pathGround)); // #1707: the grey electrical cabinet's body (its door and the spray cans: src/elcabinet.js); no draw call of its own
   group.add(merged(poles, new THREE.MeshStandardMaterial({ color: 0x8e9296, roughness: 0.4, metalness: 0.5 })), ...faces);
   // fallen leaves on the pavements and verges in the autumn months (one instanced mesh)
   let seed = 9; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);

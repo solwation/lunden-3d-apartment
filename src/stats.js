@@ -254,9 +254,9 @@ export function awardTask(id, title, day = null, record = null) {
 // what the deductions are called (#288): the red "−N" next to the score, and the stats panel
 const PENALTY_TEXT = { fridgeOpen: 'Kylen stod öppen', freezerOpen: 'Frysen stod öppen', fridgeLonger: 'Kylen står fortfarande öppen',
   freezerLonger: 'Frysen står fortfarande öppen', burnt: 'Bränt!', smokeAlarm: 'Brandlarmet!', spill: 'Spill',
-  catShot: 'Stackars katten!', kittenShot: 'Stackars kattungen!', fall: 'Du slog dig', pvpHurt: 'Träffad!' };
+  catShot: 'Stackars katten!', kittenShot: 'Stackars kattungen!', fall: 'Du slog dig', pvpHurt: 'Träffad!', spray: 'Sprayfärg' };
 const PENALTY_ROWS = [['Kyl/frys öppen', ['fridgeOpen', 'freezerOpen', 'fridgeLonger', 'freezerLonger']], ['bränt', ['burnt']],
-  ['brandlarm', ['smokeAlarm']], ['spill', ['spill']], ['katten', ['catShot', 'kittenShot']], ['fall', ['fall']], ['träffad i strid', ['pvpHurt']]];
+  ['brandlarm', ['smokeAlarm']], ['spill', ['spill']], ['katten', ['catShot', 'kittenShot']], ['fall', ['fall']], ['träffad i strid', ['pvpHurt']], ['sprayfärg', ['spray']]];
 
 /** A deduction (#288, SCORE.penalties): `key` (+ `sub`, the weapon for catShot); the freezer's keys use the fridge's
  * points. Counted in stats.penalties; takes at most what the score has, so it never goes below 0 (and leaves no debt). */
