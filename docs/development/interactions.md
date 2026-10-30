@@ -509,6 +509,10 @@ src/bow.js             the bow (#690, BOW): our own recurve bow (one vertex-colo
                        are never hit) for BOW.stick s. In a fight it is weapon 'bow': each arrow is one shot message with its
                        speed; combat.js `aimArc` judges a hit along the arc, the others see the arrow in the same pool.
                        tools/bowtest.cjs (one page; frames driven by hand), combattest's bow step
+src/binoculars.js      the binoculars (#1706, BINOCULARS), a Holdable lying in the yellow letterbox (src/mailbox.js): take / hold / put down / put back and saving
+                       are the ordinary holdable path (keep.js `things`, key `kikaren|home`). Right mouse button / the touch power button (`useAlt`, `altIcon` '🔭') raises
+                       the scope: fov = baseFov / zoom (×5, *guess*), a black double-circle SVG mask (`#binoculars-mask`, no texture), look speed ÷ zoom (main.js `look`).
+                       `setZoom(false)` on put/stow, menu, fall/death/wake, riding or reading (main.js `step` checks every frame). Not a weapon (no `clickIsUse`/`shoots`).
 src/ghosts.js #673     greeting another player: each ghost has an invisible pick box (`Ghost.pick`, door { kind: 'ghost', verb
                        'hälsa på', name }) that main.js adds to what the look ray tries (`ghosts.targets()`, connected only, within
                        HOLD.reach like everything else); E / a tap → `greetPlayer`: `ghosts.greet(g)` picks a line from GHOSTS.hello

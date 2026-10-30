@@ -179,6 +179,7 @@ let resetFrameRate = () => {}; // safe before the HUD is initialized during star
 import { Ghosts } from './ghosts.js';
 import { Combat } from './combat.js';
 import { Bow, Arrows } from './bow.js';
+import { buildMailbox, mailboxGround } from './mailbox.js'; // #1706: the yellow letterbox and the binoculars
 import { Chat } from './chat.js';
 import { BASKET, COMBAT, CHAT, GHOSTS, TOUCH, NEW_YEAR, TOAST, TOAST_LINES, CAT_CARD, SOUNDS } from './config.js';
 import { Basketball, Hoop } from './basket.js';
@@ -511,6 +512,7 @@ jetpack.onFlight = () => bump('flights', 1, 'jetpack'); // each take-off; the fi
 jetpack.onLeftAtDoor = () => badge('🚀 Jetpacken står kvar utanför', false);
 jetpack.onRoofed = () => badge('🚀 Inte inomhus', false); // Space under the garage's ceiling (#441)
 fall.onWake.push(() => jetpack.goHome());
+fall.onWake.push(() => binoculars.setZoom(false)); // #1706
 // the Spider-Man suit in Walter & Kian's MALM drawer (#597): E on / off like the jetpack; climbs façades, shoots webs
 const suit = new SpiderSuit({ scene, camera, player, drawer: scene.getObjectByName('spidersuit-drawer'), button: document.getElementById('web-btn') });
 suit.onWear = () => badge(touch.enabled ? '🕷 Dräkten på: klättra på ytterväggar, 🕸 skjuter nät, hoppknappen hoppar' : '🕷 Dräkten på: klättra på ytterväggar, klicka för nät, Mellanslag hoppar och släpper', false);
@@ -877,6 +879,10 @@ scene.traverse((o) => { if (o.userData.box?.item?.inside === 'bow') bowBox = o; 
 const arrows = new Arrows(scene, { camera });
 const bow = bowBox ? new Bow(scene, camera, bowBox, arrows) : null;
 if (bow) holdables.push(bow);
+const mailbox = buildMailbox(scene, camera, mailboxGround(renderedTerrainY)); // #1706: the hatch (a world.lids cabinet door: E, saved, &open) and the binoculars in it (a holdable: saved like any loose thing)
+const binoculars = mailbox.binoculars;
+world.lids.push(mailbox.lid);
+holdables.push(binoculars);
 { const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? hoop.segments() : [])]; } // its base is in the way
 // the parked car and the hoop's base as closed boxes: one that appears round the visitor pushes them out (#314)
 world.movingPolys = (lvl) => lvl === 0 ? [car.segments(), hoop.segments()].filter((sg) => sg.length).map((sg) => sg.map(([x, z]) => [x, z])).concat([dropoff.poly]) : []; // + the rubbish containers (#387)
@@ -1387,6 +1393,7 @@ const djInput = new DJInput({canvas,room:playroom,camera,touch:()=>touch.enabled
   blocked:p=>behindWall(p),use:t=>use(t)});
 
 function look(dyaw, dpitch) {
+  const k = binoculars.lookScale(); dyaw *= k; dpitch *= k; // #1706: slower while the binoculars are raised
   camera.rotation.y -= dyaw;
   camera.rotation.x = THREE.MathUtils.clamp(camera.rotation.x - dpitch, -1.45, 1.45);
   rest.clampLook(camera); // sitting / lying: only so far
@@ -2416,12 +2423,13 @@ function updateFocus() {
     promptEl.hidden = touch.enabled && !power.holding;
     promptEl.style.backgroundImage = `linear-gradient(90deg, rgba(70,170,100,.85) ${pct}%, transparent ${pct}%)`;
   } else if (promptEl.style.backgroundImage) promptEl.style.backgroundImage = '';
+  if (heldItem() === binoculars && !focused && !touch.enabled && !reading) { promptEl.textContent = binoculars.zoomed ? 'Högerklick: sänk kikaren' : 'Högerklick: kika'; promptEl.hidden = false; } // #1706
   if (heldItem() === ball && !focused && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att skjuta · högerklick: studsa bollen'; promptEl.hidden = false; }
   actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || (!!choices.rows && !reading) || clockPanel.open || calPanel.open || blindPanel.open || sonos.open || !!viewing || isAvatarCustomizerOpen(); // the strips have their own ×
   remoteSeekControls.hidden=!touch.enabled||reading||!remoteAim||!tvMedia.seekable(remote.findTv());
   powerBtn.hidden = !touch.enabled || !heldItem()?.useAlt || reading;
   turnBtn.hidden = !touch.enabled || reading || focused?.kind !== 'place' || !!focused.blocked || !itemGhost.visible; // ⟳ (#368)
-  if (!powerBtn.hidden) setIcon(powerBtn,heldItem().altIcon==='🏀'?'basketball':heldItem().altIcon==='🥂'?'cheers':'power',heldItem().altLabel??'Stäng av / slå på TV:n');
+  if (!powerBtn.hidden) setIcon(powerBtn,heldItem().altIcon==='🏀'?'basketball':heldItem().altIcon==='🥂'?'cheers':heldItem().altIcon==='🔭'?'binoculars':'power',heldItem().altLabel??'Stäng av / slå på TV:n');
 }
 
 // --- furniture on/off (F / 🛋) ---------------------------------------------
@@ -2892,7 +2900,7 @@ const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboa
   state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, look: [0, camera.rotation.x], c: player.crouched, dn: playroom.music.dancing ? 1 : 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 ? 2 : 1) : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
 const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, basket: ball, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows, life, fruit, fish, chicken, fries, beer, beerCans,
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
-  onDie: () => { goToStart(() => respawnOutdoors(player)); badge('💀 Slut på liv – du lever igen', false); } }); // only the place changes (#665)
+  onDie: () => { binoculars.setZoom(false); goToStart(() => respawnOutdoors(player)); badge('💀 Slut på liv – du lever igen', false); } }); // only the place changes (#665)
 // #1007: terminal IDs come from actual Glass/Contents consumption, never pouring or restore.
 for (const thing of things) if (thing.kind === 'glass') thing.onConsume = (_, id) => { combat.consume(id).catch(() => {}); };
 // Fall owns injury/death timing; Combat owns the same authoritative or offline health as shots.
@@ -3030,7 +3038,7 @@ function ringBell() {
 let bellAt = -1e9;
 bellBtn.addEventListener('click', ringBell);
 greet.mineAvatar = () => ghosts.selfGhost().avatar; // (#1122: your spoken lines move your mirror image's mouth)
-window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows; window.__presence = presence;
+window.__binoculars = binoculars; window.__mailbox = mailbox; window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows; window.__presence = presence;
 chat = new Chat({ ghosts, log: document.getElementById('chat-log'), setting: document.getElementById('menu-chat-setting'), name: () => leaderboard.name, // #675
   camera, layer: document.getElementById('speech'), hidden: (p) => behindWall(p) }); // bubbles over the ghosts (#676)
 terminalInput.addEventListener('input', () => {
@@ -3128,7 +3136,9 @@ function step(dt) {
   // Kaffeturbo (#217): faster feet, a wider view, the speakers turned down under the tune
   turbo.update(dt);
   player.boost = turbo.speed;
-  const fov = 72 + TURBO.fov * turbo.k;
+  // #1706: the binoculars' scope always goes down when they leave the hand, on the menu, in a fall / death, riding or reading
+  if (binoculars.zoomed && (heldItem() !== binoculars || !overlay.hidden || fall.active || player.riding || reading || statsOpen)) binoculars.setZoom(false);
+  const fov = binoculars.fov(72 + TURBO.fov * turbo.k);
   if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
   updateCameraNear();
   const clipsNear = laptops.some((l) => l.on && l.screen.getWorldPosition(tmpV).distanceTo(camera.position) < LAPTOP.near); // Tilly's clips playing near (#283)

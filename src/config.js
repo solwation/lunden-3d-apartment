@@ -1176,7 +1176,7 @@ export const SITE = {
     buildings: [
       {"source":"88457546","polygon":[[39.82,-133.52],[50.71,-133.78],[50.79,-130.68],[64.45,-131.0],[64.9,-113.43],[50.44,-113.08],[50.33,-117.48],[45.1,-117.36],[45.18,-114.52],[26.82,-114.08],[26.39,-131.02],[39.88,-131.33],[39.82,-133.52]],"name":"Sankt Thomas skola / byggnad 1 (Klockhuset)","levels":2,"levelsSource":"Commons 2014 photo and Hemsö: two tall storeys","storey":4.6,"frameColor":15657439,
         "campus":{"style":"klockhuset","chimneys":[[33,-122.5],[58,-122.5],[45.5,-129]],
-          "centre":{"x":[39.6,51.6],"face":-112.6,"normal":1,"depth":5,"render":4.75,"pilasters":true,"pediment":2.1,"roofBack":2.2,
+          "centre":{"mailbox":true,"x":[39.6,51.6],"face":-112.6,"normal":1,"depth":5,"render":4.75,"pilasters":true,"pediment":2.1,"roofBack":2.2,
             "window":{"sill":4.9,"height":3.9,"width":2.6},
             "tower":{"z":-116.6,"base":1.4,"width":3.6,"stage":4.0,"clock":.8,"clockFace":15328456,"clockRim":2829099,"lantern":2.3,"lanternHeight":2.7,"opening":2829099,"dome":1.7,"spire":2.4,"gilt":13280832}}}},
       {"source":"88457547","polygon":[[138.12,-129.52],[138.19,-137.81],[133.49,-137.87],[133.57,-147.48],[137.9,-147.43],[137.94,-151.12],[149.85,-150.99],[149.82,-147.73],[154.48,-147.67],[154.39,-138.06],[150.15,-138.11],[150.07,-129.28],[166.05,-129.1],[165.94,-116.99],[149.39,-117.17],[148.9,-63.59],[161.35,-63.45],[161.24,-52.48],[136.64,-52.75],[136.71,-59.94],[136.28,-59.94],[136.91,-129.54],[138.12,-129.52]],"name":"H\u00f6jebroskolan / byggnad 9","levels":1,"levelsSource":"Commons 2014 photo of the south block and long wing: one storey","storey":4.7,"frameColor":15657439,
@@ -7271,4 +7271,27 @@ export const EDGE_BACKDROP = {
     { name: 'Trädgårdar Tors väg', n: 50, polygon: [[-330, -660], [120, -620], [140, -520], [-300, -500]] },
   ],
   lowMemory: { houses: false, trees: false }, // phones: the land mesh only (viewlod.js's idea: far detail is the first to go)
+};
+
+// The yellow letterbox with the hidden binoculars (#1706, src/mailbox.js, src/binoculars.js). A generic Swedish wall box
+// without any logo, screwed to the west flank of the Klockhuset's risalit (SITE.east `campus.centre`, x 39.6, front face
+// z −112.6, the wing's front z ≈ −114.3), in the 1.7 m recess between wing and risalit, out of sight from the courtyard side.
+// The position and every size are *guess*: Peab's / the Commons photos show no letterbox there; real wall boxes are about
+// 0.35 × 0.45 × 0.2 m, mounted at 1.2–1.4 m. The back plate sits on the flank, the front faces `yaw` (0 = south, −90 = west).
+export const MAILBOX = {
+  x: 39.6, z: -113.45, yaw: -90, height: 1.2, // back-plate centre on the wall, the box's bottom above the ground, front direction (°)
+  w: 0.38, h: 0.46, d: 0.2, wall: 0.016, // outside width / height / depth and the sheet's thickness (m)
+  open: 100, speed: 2.0, // the hatch's stop (° — it hangs down in front of the box) and its speed
+  colors: { body: 0xffcf1a, inside: 0x4a4430, slot: 0x2a2a2a, latch: 0x8a8d90 }, // generic signal yellow, dark slot and latch
+  reach: 2.2, // (E reach is the door raycaster's own)
+};
+// The binoculars (#1706): a Holdable lying in the letterbox. Right mouse button / the touch button = scope mode (never a weapon).
+export const BINOCULARS = {
+  zoom: 5, // the view's field of view is divided by this while the scope is up (×4–6 asked for; *guess*)
+  baseFov: 72, // the ordinary view's field of view (main.js step: 72 + TURBO.fov × turbo.k); the scope ignores the turbo's widening
+  sensitivity: 1, // mouse / touch look speed while zoomed = 1 / zoom × this (a narrower view turns slower in the picture)
+  held: { x: 0.12, y: -0.2, z: -0.34 }, // camera-space pose of the held binoculars (m, *guess*)
+  grip: [0.0, -0.02, 0.0], // model-local grip point (the hand fit is a visual guess)
+  size: { barrel: 0.026, length: 0.15, gap: 0.062, bell: 0.034 }, // barrel radius, length, axis distance, objective bell radius (m, *guess*: compact 8×32)
+  mask: { radius: 0.34, offset: 0.16 }, // each circle's radius and its centre's offset from the middle (fractions of the shorter screen side)
 };

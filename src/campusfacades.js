@@ -1,7 +1,8 @@
 import * as THREE from 'three';
-import { SITE, CAMPUS_LOD } from './config.js';
+import { SITE, CAMPUS_LOD, MAILBOX } from './config.js';
 import { lowMemory } from './lowmemory.js';
 import { schoolRoofTint } from './schoolfacade.js';
+import { mailboxBodyParts } from './mailboxbody.js';
 
 // Photo-specific facades for the old hospital buildings east of the site (#576–#581). The OSM footprint
 // stays the building's outline; `sections` raise boxes of it to more storeys, and every part gets plinth,
@@ -248,6 +249,7 @@ function buildCentre(p, base, pieces, eaveOf, S, parts, windows) {
   // The risalit block itself, slightly proud of the flanks and white-rendered on the ground floor.
   if (depth) parts.schoolBrick.push(tint(plain(new THREE.BoxGeometry(w, eave - base + .3, depth).translate(cx, base + (eave - base + .3) / 2 - .3, zc)), S.wall));
   const front = (x, y, ww, hh, d = .12, color = S.trim, list = parts.modern) => list.push(tint(plain((d < .096 ? new THREE.PlaneGeometry(ww, hh) : new THREE.BoxGeometry(ww, hh, d)).rotateY(n > 0 ? 0 : Math.PI).translate(x, y, z + n * d / 2)), color));
+  if (C.mailbox) for (const { geo, color } of mailboxBodyParts(base + MAILBOX.height)) parts.modern.push(tint(plain(geo), color)); // #1706: the yellow letterbox on the west flank (its hatch and the binoculars: src/mailbox.js); no draw call of its own
   if (C.render) front(cx, base + C.render / 2, w + .1, C.render, .08);
   if (C.pilasters) for (const x of [x0 + .45, x1 - .45, x0 + w * .3, x1 - w * .3]) front(x, (base + eave) / 2, .7, eave - base, .14);
   if (depth) for (const [dy, h, d] of S.profile) front(cx, eave + dy, w + .3, h, d + .02);
