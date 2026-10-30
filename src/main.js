@@ -150,7 +150,7 @@ import { CatCards, idbStore } from './catcards.js';
 import { withStore as idbWithStore } from './idb.js';
 import { Lights } from './lights.js';
 import { VisitLights } from './visitlights.js';
-import { setupInstall } from './install.js';
+import { setupInstall, standalone } from './install.js';
 import { Marks } from './marks.js';
 import { Breaker } from './breaking.js';
 import { Target } from './target.js';
@@ -3595,6 +3595,11 @@ const resetHome = {
 };
 // Call close directly in the user gesture. Ordinary browser tabs may refuse it;
 // keep the menu usable and explain how to close manually in that case.
+// An installed app (iOS home-screen, Android standalone/fullscreen) cannot close itself, so the button would be dead there (#1721).
+if (standalone()) { // the install button never shows there either, so the section heading would be left over
+  document.getElementById('quit').hidden = true;
+  document.getElementById('app-section-title').hidden = true;
+}
 onTap(document.getElementById('quit'), () => {
   keepSession();
   if (life.dirty) life.flush();

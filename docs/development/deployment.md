@@ -24,7 +24,8 @@ src/version.js         BUILD/CONTENT stamps + polling for publications later dur
 src/changelog.js       changelog list + the note on the freezer (newest `t` first, "Nytt" by the highest `t` seen, #341; E to read; `scrollNote`: ↑ ↓ / W S, PageUp/Down, Space,
                        Home/End scroll it, the wheel is passed on under pointer lock, #275)
 src/install.js         iPhone "add to home screen" sheet (no fullscreen API there); install link
-                       where the browser offers beforeinstallprompt
+                       where the browser offers beforeinstallprompt; exports standalone(), which main.js uses to hide
+                       the menu's Avsluta button and its heading in an installed app (window.close() does nothing there, #1721)
 manifest.webmanifest   web app manifest; icons/ = icon.svg rendered to PNG (192, 512, apple-touch 180)
                        + qr-site.svg, the start screen's QR code to the site (#193; made with OpenCV's
                        cv2.QRCodeEncoder, level M, and checked with cv2.QRCodeDetector on a screenshot; hidden on phones)

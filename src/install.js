@@ -3,7 +3,7 @@
 // the page to the home screen first, with a way to play in the browser anyway. Browsers that
 // offer their own install prompt (Chrome on Android/desktop) get a link on the start screen.
 
-const standalone = () => navigator.standalone === true
+export const standalone = () => navigator.standalone === true
   || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches;
 
 const SKIP_KEY = 'lunden.installSkipped';
