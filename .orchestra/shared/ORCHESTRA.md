@@ -189,6 +189,10 @@ Agents running at the same time share one filesystem, so isolate them:
 - Give each checkout its own ports, server configuration, temporary/evidence
   directories and build output. Share a cache, database or device only when it is
   safe for concurrent use or taken in turns.
+- Stop processes you started by PID, never by name pattern: sibling agents run
+  identical commands. Stop them, and release shared locks, before reporting.
+- Never send personal data from the user's environment (name, e-mail address, account
+  identifiers) to external services; use the project's public identity as a contact.
 - Only the integration owner brings changes into the integration checkout. Remove a
   worktree only after its work is integrated or preserved.
 

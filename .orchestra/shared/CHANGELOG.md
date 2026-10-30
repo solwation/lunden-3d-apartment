@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+## 0.6.1 — 2026-10-30
+
+- Adopt rule suggestions from the Historia-globen field report (#26): distinct
+  insertion anchors for parallel additions to one file, keep-both resolution of
+  append-only log conflicts, stated merge order for dependent PRs, short turns in the
+  shared verification queue, chat answers recorded on the issue, and for workers:
+  stop processes by PID and before reporting, commit at each milestone, and never send
+  personal data to external services (#27).
+
 ## 0.6.0 — 2026-10-28
 
 - Resume unfinished work first: at conductor startup/resume of any run, look for

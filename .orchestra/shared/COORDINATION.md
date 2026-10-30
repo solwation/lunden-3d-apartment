@@ -66,11 +66,21 @@ very small change or when delegation is unavailable, and record why.
 
 Schedule expensive verification (browser/e2e suites, devices, shared environments) as a
 queued shared resource: workers implement and run fast checks in parallel and take turns
-for the expensive run, so its cost does not set the worker cap. Each concurrent issue
+for the expensive run, so its cost does not set the worker cap. Keep each turn short
+(for example under five minutes) and split long scenarios into several turns, so the
+queue stays fair. Each concurrent issue
 runs in its own worktree under the
 [isolation rules](ORCHESTRA.md#choose-the-smallest-useful-team). Isolate each worktree's
 servers: its own ports and configuration, no reuse of another checkout's server, and a
 check that the server serves that worker's revision before its evidence counts.
+
+When several workers add records to the same append-mostly file, give each a distinct
+insertion anchor in its brief (for example "insert after record X"); changes at
+distinct anchors merge cleanly in any order. Resolve a conflict in an append-only log,
+such as a decision log, by keeping both sides in merge order; the conductor does this
+without asking. When deliveries in a pass depend on each other, state the merge order
+and the reason in each affected PR body, and refresh the remaining branches after each
+merge.
 
 Metadata can be retained as context, but never silently substitute an old snapshot
 for a required fresh check. Keep complete raw pages privately outside the repository
@@ -144,7 +154,9 @@ remove another active owner's label. Blocked work stays open. A missing physical
 or user test is not a blocker: diagnose, deliver the best supported fix and close under
 [best-guess closure](ORCHESTRA.md#close-after-a-best-guess-fix), stating what remained
 unverified, unless the host or issue explicitly gates closure on that device. Product questions go through the configured
-channel; an actual user answer removes the blocker, not merely a new comment.
+channel; an actual user answer removes the blocker, not merely a new comment. When the
+user answers in the chat instead, the conductor records the answer on the issue with
+the date, so the decision remains findable.
 
 ## Review the session
 

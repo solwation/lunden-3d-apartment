@@ -22,7 +22,13 @@ Heartbeat, question channel and required result evidence:
 Work only in your assigned checkout: never edit files or run state-changing git
 commands in another agent's checkout or the integration owner's checkout. Use only your own
 ports, servers and temporary/build directories, and confirm servers serve your
-checkout before collecting evidence. Work only the assigned scope. Preserve others' changes. When you start the first active
+checkout before collecting evidence. Start background servers as `cmd & pid=$!` and
+stop them with `kill "$pid"`; never kill processes by name pattern (`pkill -f`), since
+sibling workers run identical commands. Commit (and push when the host allows) at each
+meaningful milestone, so your progress survives the loss of the worker. Never send
+personal data from the user's environment (name, e-mail address, account identifiers)
+to external services in headers, URLs or request bodies; when a service asks for a
+contact, use the project's public identity. Work only the assigned scope. Preserve others' changes. When you start the first active
 sub-issue of a parent, also add the parent's work label if it is missing; leave its
 removal and the parent's closure to the conductor. Use existing helpers/harnesses;
 verify the agreed risks, then stop expanding the task. Tell the conductor promptly if
@@ -32,6 +38,8 @@ or raise model effort for an ordinary command/environment failure. Do not bypass
 A helper returns its revision/patch, checks and limitations to the integration owner;
 it does not independently publish or close the issue.
 
-Return outcome, commit, checks/evidence, remaining acceptance and rough phase times if
-known. Wait for a new assignment after completion. Never autonomously continue a queue
+Before returning, stop every background process you started (servers, watchers, test
+runs) and release shared locks; the conductor stops a reported worker that still has
+background work instead of waiting for it. Return outcome, commit, checks/evidence,
+remaining acceptance and rough phase times if known. Wait for a new assignment after completion. Never autonomously continue a queue
 chain. Resume an existing interrupted checkout rather than duplicate finished work.
