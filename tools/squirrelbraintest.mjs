@@ -1,8 +1,9 @@
 // #1672: node --test tools/squirrelbraintest.mjs  (the squirrels' state machine, the nut field and the winter rule; no browser)
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SQUIRRELS as C, SEASON } from '../src/config.js';
-import { SquirrelBrain, NutField, linkTrees, winterMonth, pickNutSpot } from '../src/squirrelbrain.js';
+import { SQUIRRELS as C, SEASON, SITE } from '../src/config.js';
+import { SquirrelBrain, NutField, linkTrees, winterMonth, pickNutSpot, riverFrame, treeRoute, climbPoint } from '../src/squirrelbrain.js';
+import { encodeAnimal, STATES } from '../src/squirrelsync.js';
 
 const rng = (seed) => () => ((seed = seed * 16807 % 2147483647) / 2147483647);
 const trees = () => linkTrees([[0, 0], [8, 3], [15, -2], [6, 14], [-9, 9], [22, 8]].map(([x, z]) => ({ x, z, y: 0, cy: 6, r: 3.5 })));
@@ -66,8 +67,8 @@ test('a foraging squirrel finds a nut on the ground and eats it', () => {
   const b = new SquirrelBrain(C.animals[0], w.env, 0), s = w.nuts.slots[0];
   Object.assign(s, { alive: true, x: 1.5, z: 2, y: 0, age: 0, life: 1e9 }); for (const o of w.nuts.slots) if (o !== s) o.wait = 1e9;
   Object.assign(b, { x: 0, z: 0, y: 0 }); b.startForage();
-  let ate = false; run(w, [b], 8, 0.1, () => { if (b.state === 'eat') ate = true; });
-  assert.ok(ate && !s.alive, 'it ate the nut');
+  let ate = false; run(w, [b], 8, 0.1, () => { if (b.state === 'eat' || b.state === 'stash' || b.state === 'bury') ate = true; }); // (#1716: or buried it for later)
+  assert.ok(ate && !s.alive, 'it ate (or buried) the nut');
 });
 
 test('#1698: a ground squirrel flees from a visitor moving fast nearby, but not from a still one (standing or crouching)', () => {
@@ -75,7 +76,7 @@ test('#1698: a ground squirrel flees from a visitor moving fast nearby, but not 
   Object.assign(b, { x: 3, z: 3, y: 0 }); b.startForage();
   const v = { x: 3 + sp.shy - 1, z: 3, v: 0, rose: false }; w.scares.push(v);
   run(w, [b], 20, 0.1); assert.ok(!['flee', 'up'].includes(b.state) && b.calmT <= 0, `a still visitor does not frighten: ${b.state}`);
-  v.v = C.scareSpeed + 0.5; run(w, [b], 1, 0.1); assert.ok(['flee', 'up'].includes(b.state), `frightened: ${b.state}`);
+  Object.assign(v, { x: b.x + sp.shy - 1, z: b.z }); v.v = C.scareSpeed + 0.5; run(w, [b], 1, 0.1); // (#1716: next to where it now runs about) assert.ok(['flee', 'up'].includes(b.state), `frightened: ${b.state}`);
   v.v = 0; run(w, [b], 12, 0.1); assert.ok(['up', 'perch'].includes(b.state), 'up a tree');
 });
 
@@ -158,4 +159,103 @@ test('nut glint strength by daylight', async () => {
   assert.equal(markStrength(1), 1);
   assert.ok(markStrength(0.6) > 0.3 && markStrength(0.6) < 0.7);
   assert.ok(markStrength(0.5) < markStrength(0.7));
+});
+
+// #1716: the whole Höje å valley. A synthetic tree line along the real river centre line (SITE.river.path): a tree every 7-13 m on alternating
+// banks 8-28 m out, with a few longer gaps, so the graph is like the game's (crown hops where trees stand close, ground runs, joined gaps).
+const valley = (seed = 21) => {
+  const rnd = rng(seed), fr = riverFrame(SITE.river.path), list = [];
+  for (let s = 2, k = 0; s < fr.total - 2; s += 7 + rnd() * 6 + (k % 9 === 8 ? 30 : 0), k++) {
+    const c = fr.at(s), n = fr.at(Math.min(fr.total, s + 1)), dx = n.x - c.x, dz = n.z - c.z, l = Math.hypot(dx, dz) || 1, side = k % 2 ? 1 : -1, off = 8 + rnd() * 20;
+    list.push({ x: c.x - dz / l * off * side, z: c.z + dx / l * off * side, y: 0, cy: 7, r: 3.5 });
+  }
+  const walkable = (x, z) => fr(x, z).d > 6; // (the water: 12 m wide here)
+  const crossings = [fr(-30, 128).s, fr(-128, 206).s].map((s) => { const c = fr.at(s), n = fr.at(s + 1), dx = n.x - c.x, dz = n.z - c.z, l = Math.hypot(dx, dz); return [[c.x - dz / l * 9, c.z + dx / l * 9], [c.x + dz / l * 9, c.z - dx / l * 9]]; }); // (two bridges, 18 m)
+  const ts = linkTrees(list, { path: SITE.river.path, walkable, crossings }), nuts = new NutField(ts, ground, walkable, rnd);
+  const clock = { t: 0, h: 12 }, player = { x: 1e5, z: 1e5, lure: false, hx: 1e5, hz: 1e5 };
+  return { rnd, fr, ts, nuts, clock, player, env: { trees: ts, ground, walkable, nuts, player, scares: [], rnd, onTake: () => false, now: () => clock.t, hour: () => clock.h } };
+};
+const startNear = (ts, [x, z]) => ts.reduce((best, t, i) => (Math.hypot(t.x - x, t.z - z) < Math.hypot(ts[best].x - x, ts[best].z - z) ? i : best), 0);
+
+test('#1716: the valley graph: every tree reachable, routes follow the trees, no ground run through the river', () => {
+  const v = valley(), { ts } = v;
+  assert.ok(ts.length >= 35 && ts.sMax - ts.sMin > v.fr.total * 0.9, `trees along the whole river: ${ts.length}, ${ts.sMin.toFixed(0)}…${ts.sMax.toFixed(0)} of ${v.fr.total.toFixed(0)} m`);
+  assert.equal(new Set(ts.map((t) => t.comp)).size, 1, 'one graph: the banks are joined over the bridges');
+  const a = ts.byS[0], b = ts.byS[ts.length - 1], r = treeRoute(ts, a, b);
+  assert.equal(r[r.length - 1], b); assert.ok(r.length > 10, `many steps end to end: ${r.length}`);
+  let prev = a; for (const j of r) { assert.ok(ts[prev].links.includes(j), 'every step is an edge of the graph'); prev = j; }
+  for (const t of ts) for (const j of t.links) if (!t.near.includes(j) && !t.via?.[j] && t.side !== ts[j].side) {
+    const u = ts[j]; for (let k = 0.1; k < 1; k += 0.1) assert.ok(v.env.walkable(t.x + (u.x - t.x) * k, t.z + (u.z - t.z) * k), 'a ground run across the banks stays on land');
+  }
+  const o = climbPoint(ts[0], 0.5, 0, ground), q = climbPoint(ts[0], 0.5, 0.4, ground);
+  assert.ok(Math.abs(o.a - (0.5 - C.roam.spiral * Math.PI * 2)) < 1e-9 && Math.abs(q.a - 0.5) > 0.5, 'it spirals round the trunk while it climbs');
+});
+
+test('#1716: over a few simulated hours a squirrel roams along most of the river, not just round its start trees', () => {
+  const v = valley(), { ts } = v, start = startNear(ts, C.starts[1]), b = new SquirrelBrain(C.animals[1], v.env, start), seen = new Set(), ss = [];
+  v.nuts.setActive(true);
+  for (let i = 0; i < 4 * 3600 * 10; i++) { v.clock.t += 0.1; v.nuts.update(0.1); b.update(0.1); if (b.state === 'perch') { seen.add(b.tree); ss.push(ts[b.tree].s); } assert.ok(Number.isFinite(b.x + b.z + b.y)); }
+  const lo = Math.min(...ss), hi = Math.max(...ss), span = ts.sMax - ts.sMin;
+  assert.ok(hi - lo > span * 0.5, `covered ${(hi - lo).toFixed(0)} of ${span.toFixed(0)} m of the river (start s ${ts[start].s.toFixed(0)})`);
+  assert.ok(seen.size > 25, `perched in ${seen.size} different trees`);
+  const startArea = [...seen].filter((i) => Math.abs(ts[i].s - ts[start].s) < C.roam.range).length;
+  assert.ok(startArea < seen.size / 2, `most of them away from the start: ${startArea}/${seen.size}`);
+});
+
+test('#1716: the coarse off-screen brain roams the same way (tree to tree only) and catches up after a long gap', () => {
+  const v = valley(4), { ts } = v, start = startNear(ts, C.starts[0]), b = new SquirrelBrain(C.animals[0], v.env, start), ss = [];
+  for (let i = 0; i < 4 * 3600; i++) { v.clock.t += 1; b.coarse(1); assert.ok(['perch', 'nest'].includes(b.state)); ss.push(ts[b.tree].s); }
+  assert.ok(Math.max(...ss) - Math.min(...ss) > (ts.sMax - ts.sMin) * 0.5, 'covered most of the river');
+  for (let i = 0; i < 30; i++) { v.clock.t += 60; b.coarse(60); } // (60 s steps: no catch-up yet, it walks there)
+  assert.ok(Math.abs(ts[b.tree].s - b.homeS()) <= C.roam.range * 1.5, 'in or near its home range');
+  v.clock.t += 3 * 3600; b.coarse(3 * 3600);
+  assert.ok(Math.abs(ts[b.tree].s - b.homeS()) <= C.roam.range, 'a long gap: straight into its home range');
+  b.update(0.1); assert.ok(Number.isFinite(b.x) && b.state === 'perch', 'the full brain carries on from there');
+});
+
+test('#1716: the day: busiest in the morning and afternoon, asleep in the drey at night, awake again in the morning', () => {
+  const v = valley(5), { ts } = v, b = new SquirrelBrain(C.animals[0], v.env, startNear(ts, C.starts[0]));
+  v.clock.h = 8; const morning = b.activity(); v.clock.h = 12.3; const noon = b.activity(); v.clock.h = 16.5; const afternoon = b.activity();
+  assert.ok(morning > noon && afternoon > noon && noon > 0, `${morning} ${noon} ${afternoon}`);
+  v.clock.h = 22; let nest = false; for (let i = 0; i < 6000 && !nest; i++) { v.clock.t += 0.1; b.update(0.1); nest = b.state === 'nest'; }
+  assert.ok(nest && b.tree === b.nest, 'gone to its drey');
+  const at = [b.x, b.z]; for (let i = 0; i < 3000; i++) { v.clock.t += 0.1; b.update(0.1); } assert.ok(b.state === 'nest' && b.x === at[0], 'it sleeps');
+  v.player.lure = true; Object.assign(v.player, { x: b.x + 2, z: b.z, hx: b.x + 2, hz: b.z }); for (let i = 0; i < 100; i++) b.update(0.1); assert.equal(b.state, 'nest', 'no feeding at night'); v.player.lure = false;
+  v.clock.h = 6.5; b.update(0.1); assert.equal(b.state, 'perch', 'up in the morning');
+});
+
+test('#1716: a found nut is sometimes buried and dug up again later', () => {
+  const w = world(13); w.nuts.setActive(true); for (const o of w.nuts.slots) o.wait = 1e9;
+  let clock = 0; w.env.now = () => clock;
+  const b = new SquirrelBrain(C.animals[0], w.env, 0); let buried = 0;
+  for (let n = 0; n < 30 && !b.caches.length; n++) { // nuts in front of it until one is buried rather than eaten
+    const s = w.nuts.slots[0]; Object.assign(s, { alive: true, held: false, x: b.tr.x + 1.5, z: b.tr.z + 2, y: 0, age: 0, life: 1e9 });
+    Object.assign(b, { x: b.tr.x, z: b.tr.z, y: 0, calmT: 0, hasNut: false }); b.startForage(); b.sense = 0;
+    run(w, [b], 20, 0.1, () => { clock += 0.1; if (b.state === 'bury') buried++; });
+  }
+  assert.ok(buried && b.caches.length === 1, 'buried one');
+  const c = b.caches[0]; clock += c.ripe + 1;
+  b.route = []; b.target = c; b.tree = c.tree; let dug = false, ate = false;
+  b.enterPerch(c.tree, 0); b.t = b.dur; b.p = { ...b.p, ground: 0 }; // (it goes down for the cache, not to forage)
+  run(w, [b], 60, 0.1, () => { clock += 0.1; if (b.state === 'dig') dug = true; if (dug && b.state === 'eat' && b.hasNut) ate = true; });
+  assert.ok(dug && ate && b.caches.length === 0, `dug it up and ate it: ${b.log.slice(-8).join(' ')}`);
+});
+
+test('#1716: two squirrels on the ground: one now and then chases the other up a tree', () => {
+  const w = world(17), a = new SquirrelBrain(C.animals[0], w.env, 0), o = new SquirrelBrain(C.animals[1], w.env, 1); w.env.others = [a, o];
+  let chased = false;
+  for (let n = 0; n < 200 && !chased; n++) {
+    for (const [q, x] of [[a, 2], [o, 5]]) { Object.assign(q, { x, z: 2, y: 0, calmT: 0 }); q.startForage(); }
+    run(w, [a, o], 3, 0.1, () => { if (a.state === 'chase' || o.state === 'chase') chased = true; });
+  }
+  assert.ok(chased, 'a chase happened');
+  run(w, [a, o], 20, 0.1); assert.ok(!['chase'].includes(a.state) && !['chase'].includes(o.state), 'and it ends');
+});
+
+test('#1716: the shared pose keeps the old wire states, so older clients and the room understand it', () => {
+  const w = world(), b = new SquirrelBrain(C.animals[0], w.env, 0), wire = { travel: 'toTree', stash: 'toTree', seek: 'toTree', bury: 'eat', dig: 'eat', chase: 'flee', nest: 'perch' };
+  assert.equal(STATES.length, 12);
+  for (const [st, old] of Object.entries(wire)) { b.state = st; assert.equal(STATES[encodeAnimal(b)[7]], old, st); }
+  b.state = 'approach'; assert.equal(STATES[encodeAnimal(b)[7]], 'approach');
+  b.x = 300; b.z = 300; b.state = 'perch'; b.route = [3]; b.resync(); assert.ok(b.route.length === 0 && b.state === 'perch' && Math.hypot(b.x - b.tr.x, b.z - b.tr.z) < 5, 'after following: settled on the nearest tree');
 });

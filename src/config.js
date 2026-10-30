@@ -7190,11 +7190,30 @@ export const SQUIRRELS = {
   still: 0.12, stillFor: 0.5, scareSpeed: 1.1, scareReach: 1.5, touch: 1.5, roseFor: 1.5, scareTime: [14, 30], // #1698: 'still' = under 0.12 m/s (about a slow shuffle) for 0.5 s, crouched with a nut; a visitor (any, also far ghosts) faster than 1.1 m/s within scareReach x the squirrel's shy range, or one who rises (1.5 s) within it, or anyone within 1.5 m, frightens it up the nearest tree; it stays up scareTime s x its calm (all *guess*)
   chirp: { gain: 0.5, notes: 3, gap: 0.075, dur: 0.06, hz: 3600, rise: 1.35, pitchJitter: 0.12 }, // #1699: the happy 'tjipp-tjipp' when a squirrel takes the nut: `notes` short rising sine chirps `gap` s apart, `dur` s each, from `hz` up by x`rise`, a squirrel's own pitch +-`pitchJitter`, played from the squirrel (all *guess*)
   reach: 0.45, take: 0.6, hearts: 8, heartScale: 2.5, carry: 14, handAhead: 0.45,
+  // #1716: the whole Höje å valley. `valley`: trees whose trunk is within this many m of the river's centre line (SITE.river.path) and inside WALK
+  // join the squirrels' trees (besides the park patches and the paddock). `link`: the longest ordinary ground run between two trunks; pieces of the
+  // tree graph further apart are joined by their nearest pair up to `join` m (a longer dash along the shore). The home range is `range` m either
+  // side of a centre that drifts along the valley with the wall clock (the sum of three slow waves, `periods` s, `weights`, over `span` x the valley
+  // length round the start tree; all players see the same drift), so over a few hours each squirrel covers most of the river. `journey`: the chance a
+  // perch ends with a longer move (to a favourite tree `favBack` of the time, a cache when one is ripe, else another tree in the range); `fav` favourite
+  // trees are remembered. Off screen (beyond farDist) the brain only steps from tree to tree every `coarse` s; a gap over `catchUp` s puts it straight
+  // into its home range. On the ground it moves in `dash` s rushes and `pause` s wary stops (quick head turns); `spiral`: turns round the trunk while
+  // climbing. `rest`: a short sit between the hops of a journey (s). Each animal's `phase` (radians) offsets its drift. All *guess*.
+  roam: { valley: 45, link: 30, join: 120, range: 40, span: 0.75, periods: [14400, 5400, 2100], weights: [0.5, 0.3, 0.2], journey: 0.22, favBack: 0.35, fav: 3,
+    coarse: 1, catchUp: 180, dash: [0.35, 1.3], pause: [0.2, 0.8], spiral: 1.25, rest: [0.4, 1.6] },
+  // #1716: a found nut is buried `chance` of the time (at most `max` caches each) `stash` m from where it lay, and dug up again on a later journey
+  // once it is `ripe` s old; `bury` / `dig` s. Two squirrels on the ground within `chase.range` m: `chase.chance` per s that one chases the other
+  // for `chase.time` s at `chase.speed` x the flee speed. The day: in the drey from `day.sleep` to `day.wake` (hours), busiest round `day.peaks`
+  // (± `day.width` h), `day.midday` = how lively in between (perch time and ground trips follow). All *guess*.
+  cache: { chance: 0.4, max: 6, stash: [3, 8], ripe: [240, 1500], bury: 2.4, dig: 2.2 },
+  chase: { range: 12, chance: 0.03, time: [2.5, 5], speed: 0.95, calm: 4 },
+  day: { wake: 6, sleep: 20.5, peaks: [8, 16.5], width: 2, midday: 0.45 },
+  look: { near: 15 }, // #1716: the detailed squirrel (fluffy tail, tufted ears) within `near` m of the eye, a cheaper one with the same outline beyond (*guess*)
   starts: [[-150, 215], [-30, 128], [-62, 168]], // first tree = nearest eligible tree to these plan points (*guess*: by the paddock bridge, the foot bridge, the south bank)
   animals: [
-    { name: 'Den stora', scale: 1.25, width: 1, color: 0x8a5632, belly: 0xd9c3a0, tail: 0x9a6338, tip: null, ground: 0.7, shy: 4, lure: 24, delay: 0.8, speed: 1.0, perch: 1, calm: 0.7 },
-    { name: 'Vitsvansen', scale: 1.0, width: 1, color: 0xa4673a, belly: 0xe6d4b4, tail: 0xb3733f, tip: 0xf4f1e8, ground: 0.45, shy: 6.5, lure: 18, delay: 0.5, speed: 1.15, perch: 0.7, calm: 1 },
-    { name: 'Den smala', scale: 0.92, width: 0.78, color: 0x4f3626, belly: 0xb9a88c, tail: 0x5c4130, tip: null, ground: 0.3, shy: 9, lure: 12, delay: 1.4, speed: 1.3, perch: 1.4, calm: 1.5 },
+    { name: 'Den stora', phase: 0.4, scale: 1.25, width: 1, color: 0x8a5632, belly: 0xd9c3a0, tail: 0x9a6338, tip: null, ground: 0.7, shy: 4, lure: 24, delay: 0.8, speed: 1.0, perch: 1, calm: 0.7 },
+    { name: 'Vitsvansen', phase: 2.3, scale: 1.0, width: 1, color: 0xa4673a, belly: 0xe6d4b4, tail: 0xb3733f, tip: 0xf4f1e8, ground: 0.45, shy: 6.5, lure: 18, delay: 0.5, speed: 1.15, perch: 0.7, calm: 1 },
+    { name: 'Den smala', phase: 4.4, scale: 0.92, width: 0.78, color: 0x4f3626, belly: 0xb9a88c, tail: 0x5c4130, tip: null, ground: 0.3, shy: 9, lure: 12, delay: 1.4, speed: 1.3, perch: 1.4, calm: 1.5 },
   ],
 };
 

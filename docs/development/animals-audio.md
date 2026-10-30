@@ -661,8 +661,8 @@ This gameplay-only room has no A/B/C/L house variant or public downstream equiva
 
 ## Squirrels and nuts (#1672)
 
-Three squirrels (the big one, the white-tail-tip one, the slim darker one) live in the crowns round the river park and the pony
-paddock. `src/squirrelbrain.js` (no three.js, node-testable) holds the per-animal state machine (perch, leap, down, forage, search,
+Three squirrels (the big one, the white-tail-tip one, the slim darker one) live in the crowns along Höje å, the river park and the pony
+paddock, and roam the whole valley over time (#1716 below). `src/squirrelbrain.js` (no three.js, node-testable) holds the per-animal state machine (perch, leap, down, forage, search,
 fetch, eat, toTree, flee, up, approach, take) and the `NutField` (at most `SQUIRRELS.maxNuts` acorns/hazelnuts on the ground 1.5-9 m
 from a squirrel tree, expiring and respawning). `src/squirrels.js` draws them (one merged vertex-coloured mesh per squirrel, shared
 material, no light or shadow caster; the nut in the mouth is a child shown only while carried) and wires them to the game: trees come
@@ -671,8 +671,36 @@ ordinary `Holdable`s pushed onto main.js `holdables` (flag `isSquirrelNut`, excl
 still (< `SQUIRRELS.still` m/s) visitor holding a nut lures squirrels within their personality's `lure` range; the take scores
 `SCORE.each.squirrelFeeds` (stats key `squirrelFeeds`) and bursts hearts (`Hearts` from pingping.js). Standing up or moving aborts the approach.
 In the snow months (`registerSeasonal`, `SEASON.snowMonths`) nothing is visible, no AI runs and no nuts exist. Cost control: AI every frame
-within `simDist`, every `farStep` s up to `farDist`, asleep beyond; `&nosquirrels` disables the module. Config: the `SQUIRRELS` block at the end
+within `simDist`, every `farStep` s up to `farDist`, beyond only the coarse tree-graph step (#1716); `&nosquirrels` disables the module. Config: the `SQUIRRELS` block at the end
 of `src/config.js` (all *guess*). Test: `node --test tools/squirrelbraintest.mjs`; browser check `tools/squirrelstest.cjs`. #1686 below.
+
+### Roaming the valley and a fluffier look (#1716)
+
+Trees: besides the park patches and the paddock, every `treeFeet` trunk within `SQUIRRELS.roam.valley` m of the river centre line and inside
+`WALK` (today the park patches already cover the whole river, 236 trees, s 0-526 m). `linkTrees(trees, { path, walkable, crossings })` builds a
+tree graph: crown hops (`near`, ≤ `leapRange`), ground runs ≤ `roam.link` m that stay on land (`walkable` sampled every 2 m when the trunks are on
+opposite banks), one run over each bridge in `crossings` (the timber footbridge and the gc bridge: `via` holds the two bridge ends, the deck leg is
+level between them) and Kruskal joins of separate pieces up to `roam.join`; `comp` marks the piece, `s`/`side` the position along / beside the river
+(`riverFrame`). `treeRoute` is a plain Dijkstra over `links` (only on a journey start).
+
+Brain: the home range is `roam.range` m either side of a centre that drifts along the river with the **wall clock** (`homeS()`: three slow sine
+waves, `roam.periods`/`weights`/`span`, per-animal `phase`), so every client agrees roughly where each squirrel is. A perch ends through `plan()`:
+outside the range it follows it (a route through the graph); sometimes (`roam.journey` x activity x boldness) a longer move to a ripe cache, a
+favourite tree (most visited) or another tree in the range; otherwise the old hop / ground trip. Journey legs are leaps or `travel` runs. Ground
+movement goes in dashes and wary stops (`dashTo`: half sitting up, quick yaw jerks, a tail flick); trunks are climbed in a spiral (`roam.spiral`
+turns). A found nut is buried `cache.chance` of the time (`stash` → `bury`) and dug up later (`seek` → `dig` → `eat`); two foraging squirrels
+sometimes `chase`. The day (`SQUIRRELS.day`, from `DayCycle.hour` via `Squirrels.update(…, hour)`): busiest round the morning/afternoon peaks,
+asleep in the drey (`nest`, hidden in the crown, no lure) from `sleep` to `wake`. Beyond `farDist` the `coarse(dt)` brain runs every `roam.coarse` s:
+perch to perch through the graph with the travel time as delay, no animation; a gap over `roam.catchUp` s puts it straight into its range. When a
+follower starts simulating again, `resync()` settles each brain on its nearest tree. On the wire the new states map to old ones (`WIRE` in
+squirrelsync.js: travel/stash/seek → toTree, bury/dig → eat, chase → flee, nest → perch), so the room's validation is unchanged.
+
+Look: `squirrelParts` builds a head with cheeks, muzzle, nose, eyes with a glint, cone ears with dark hair tufts, fore legs with paws, hind legs with
+long feet, a mottled coat (vertex colour noise) and a flat bushy tail (wide core blobs plus 66 soft rounded hair locks lying flat towards the tip, frosted; the tip
+colour per animal). Still one merged mesh and draw call per squirrel, with three morph targets (tail flick, head left, head right) driven in
+`pose()`; the group's origin sits at the haunch (`HAUNCH`), so sitting up (`rise`) pivots there and the head turns less while sitting. Two geometries: the detailed one (~3.3 k triangles) within `SQUIRRELS.look.near` m, a cheaper one (~1.4 k, before: ~1.9 k for every
+distance) beyond. Tests: `tools/squirrelbraintest.mjs` (valley graph, hours of roaming, coarse brain, day/nest, caches, chase, wire states).
+Pictures: `docs/verification/1716/`.
 
 ### More nuts and shared squirrels (#1686)
 
