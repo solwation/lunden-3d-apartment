@@ -5,6 +5,7 @@ import { SITE, SEASON } from './config.js';
 import { onRoad, onWalk, pathStrip, vehicleTrim, finish as surfaceMesh } from './roads.js';
 import { onBusStop } from './busstopgeo.js';
 import { riverAt, waterYAt, shoreYAt, deckAt, underpassAt } from './riverbridge.js';
+import { inPoly as inPaddockPoly, outline as paddockOutline, ringDist as paddockRingDist } from './paddockgeo.js';
 import { registerSnow, registerSeasonal } from './seasons.js';
 const P = SITE.riverPark;
 const random = (seed) => () => ((seed = seed * 16807 % 2147483647) / 2147483647);
@@ -118,9 +119,11 @@ export function parkRampFill(terrain=null) {
 export const parkFillFootprint=(x,z,m=0)=>{const R=P.woodBridge.ramp;return rampEnds().some(e=>{const {s,o}=rampLocal(e,x,z);return Math.abs(o)<=R.reach+m&&s>=-rampFront(e)-m&&s<=R.length+m;});};
 /** The two ramps' deck ends and headings, for tests: [{ x, z, dx, dz }]. */
 export const parkRampEnds=()=>rampEnds().map(({x,z,dx,dz})=>({x,z,dx,dz}));
+/** #1701: the pony paddock (mapped meadow outline) plus a margin; park trees and shrubs keep out of it. */
+const inPaddock=(x,z,m=1.5)=>inPaddockPoly(paddockOutline,x,z)||paddockRingDist(paddockOutline,x,z)<m;
 function clear(x,z) {
   const r=riverAt(x,z);
-  return z>64 && !onEastBuilding(x,z) && !onEastAccess(x,z,.5) && !onWestBuilding(x,z) && !onWestAccess(x,z,.5) && !inParkGlade(x,z) && !onParkPath(x,z,P.pathClearance) &&
+  return z>64 && !inPaddock(x,z) && !onEastBuilding(x,z) && !onEastAccess(x,z,.5) && !onWestBuilding(x,z) && !onWestAccess(x,z,.5) && !inParkGlade(x,z) && !onParkPath(x,z,P.pathClearance) &&
     !onRoad(x,z,P.bridgeClearance) && !onWalk(x,z,.5) && !onBusStop(x,z,2.5) && deckAt(x,z)===null && !underpassAt(x,z) && parkDeckAt(x,z)===null && !parkFillFootprint(x,z,1) &&
     r.distance>r.width/2+2 && !SITE.blocks.some(b=>x>b.x0-2&&x<b.x1+2&&z>b.z0-2&&z<b.z1+2);
 }
