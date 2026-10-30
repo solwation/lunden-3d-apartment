@@ -1,0 +1,36 @@
+start: calls 369 tris 835025 geoms 392 tex 64
+kitchen: calls 343 tris 552090 geoms 610 tex 87
+living: calls 334 tris 851318 geoms 776 tex 100
+upstairs: calls 308 tris 735707 geoms 935 tex 116
+patio: calls 144 tris 626072 geoms 945 tex 117
+courtyard: calls 173 tris 609354 geoms 990 tex 122
+courtyard bikes: calls 199 tris 646460 geoms 1007 tex 123
+karpvagen: calls 138 tris 602034 geoms 1017 tex 125
+garage: calls 280 tris 807122 geoms 1069 tex 130
+bike yard: calls 228 tris 742780 geoms 1074 tex 130
+park: calls 331 tris 753516 geoms 1107 tex 134
+east: calls 100 tris 488531 geoms 1107 tex 134
+east lot: calls 65 tris 380048 geoms 1111 tex 134
+paddock: calls 54 tris 407287 geoms 1116 tex 137
+bus stop: calls 57 tris 371174 geoms 1116 tex 137
+paddock above: calls 53 tris 405891 geoms 1116 tex 137
+sankt lars 42: calls 19 tris 219559 geoms 1116 tex 137
+south edge: calls 19 tris 219559 geoms 1116 tex 137
+big hall: calls 242 tris 774259 geoms 1157 tex 140
+basement: calls 265 tris 847426 geoms 1166 tex 142
+bike room: calls 186 tris 725420 geoms 1167 tex 142
+patio corner: calls 337 tris 884599 geoms 1211 tex 147
+patio far: calls 368 tris 860948 geoms 1250 tex 151
+budget (phone): most calls 369 at start (≤ 370), most triangles 884599 at patio corner (≤ 950000), textures ~104 MB in 345 (≤ 225 MB)
+PASS within the performance budget
+mess cap: calls 316 → 318 with 400 added, drawn crumb 48/48 dust 32/32 spots 80
+quality scale: kitchen calls high 342 → low 315
+PASS quality scale reduced draw calls
+PASS adaptive level drops on a low frame rate
+PASS repeated hitches drop a level within 2.64 s
+PASS no step up right after a step down
+PASS adaptive level recovers on a high frame rate
+level 0: auto 60: p50 16.7 ms cpu ? (unknown) · switches 3 · stalls 0 · resolution: px 0.60 · shadows: 1024² every 1 s · mirrors: off · weather: particles ×0.35 · detail: distance ×0.6
+level 3: auto 60: p50 16.7 ms cpu ? (unknown) · switches 3 · stalls 0 · resolution: px 1.00 · shadows: 1536² every 0.4 s · mirrors: 512² every 1 frame(s) · weather: particles ×1 · detail: distance ×1
+PASS quality knobs registered
+ALL PASS
