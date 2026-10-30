@@ -212,8 +212,6 @@ for (const [name, start, points, ok] of R) {
   check(slid > 30 && maxUp < 0.9 && player.pos.y < y0 + 0.9 && !splashes.length, `för brant slänt (gräns sänkt till 0.3): går inte att klättra upp, du glider tillbaka (${slid} bilder, högst ${maxUp.toFixed(2)} m upp, ${at()})`);
   check(flips <= 40, `glidningen flimrar inte vid gränsen: ${flips} växlingar under 400 bilder med W nedtryckt uppför`);
   // standing on it: slides down with a smooth speed to the calm shore path and stops there
-  // (#1712: spawn() keeps the walker's slide state, so a slide still running out from the climb above would start this one at slideV > 0 and count the carried speed as a jump; stand still first.)
-  player.slideV = 0; player.sliding = false; player.slideDir = null;
   player.spawn(-41, 127, 0); let vmax = 0, dv = 0, pv = 0;
   for (let i = 0; i < 600; i++) { player.update(dt); vmax = Math.max(vmax, player.slideV); dv = Math.max(dv, Math.abs(player.slideV - pv)); pv = player.slideV; }
   check(!player.sliding && player.slideV === 0 && !splashes.length && player.pos.z > 129 && vmax > 1 && dv <= WALK.slideAccel * dt * 2.02, `står man på för brant mark glider man ner med jämn acceleration (högsta fart ${vmax.toFixed(1)} m/s, största fartsprång ${dv.toFixed(3)}) och stannar på lugn mark (${at()})`);

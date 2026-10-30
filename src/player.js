@@ -93,6 +93,7 @@ export class Player {
     this.glide = null; // (an unstick under way is for the old place, #314)
     this.fall = null; // (a teleport is no fall, #361)
     this.flying = false; this.jv.x = this.jv.z = 0;
+    this.slideV = 0; this.sliding = false; this.slideDir = null; // (#1725: a teleport/revival keeps no slide speed from the old place)
     this.climb = null; this.swing = null; this.fling = null;
     this.eyeY = this.pos.y + PLAYER.eye;
     this.camera.position.set(x, this.eyeY, z);
@@ -815,7 +816,7 @@ export class Player {
 
     if (!this.flying && !this.aloft && !this.inFootprint() && !this.unit && !this.inPlayroom) { // #1236: landed inside a far building / its closed courtyard: out onto the street
       const out = buildingRescue(this.pos.x, this.pos.z);
-      if (out && this.pos.y <= groundY(this.pos.x, this.pos.z) + 0.05) { this.pos.set(out.x, groundY(out.x, out.z), out.z); this.vy = 0; this.fall = null; this.fling = null; this.onWaterRescue?.('building'); }
+      if (out && this.pos.y <= groundY(this.pos.x, this.pos.z) + 0.05) { this.pos.set(out.x, groundY(out.x, out.z), out.z); this.vy = 0; this.fall = null; this.fling = null; this.slideV = 0; this.sliding = false; this.slideDir = null; this.onWaterRescue?.('building'); }
       this.edgeNotice(); // the outer wall: say so once in a while
     }
     if (this.flying) { this.jv.x = (this.pos.x - x0) / dt; this.jv.z = (this.pos.z - z0) / dt; } // (a wall takes the speed)
