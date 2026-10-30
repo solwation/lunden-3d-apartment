@@ -2486,7 +2486,8 @@ function toggleFurniture(on = !world.furnitureOn) {
   if (!on) car.radio.stop(); // and the car's (#268)
   try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
 }
-world.looseItems.push(...holdables.filter((h) => h !== beer).flatMap((h) => (h.homeParent ? [h.holder] : [h.holder, h.model])), ...toys.deco); // (the secretary's things go home into it with F, and the secret drawer shows one at a time, #183)
+world.looseItems.push(...holdables.filter((h) => h !== beer && !h.isSquirrelNut).flatMap((h) => (h.homeParent ? [h.holder] : [h.holder, h.model])), ...toys.deco); // (the secretary's things go home into it with F, and the secret drawer shows one at a time, #183)
+// #1720: not the squirrels' nuts: they are outdoors and squirrels.js owns their visibility; F's show-all drew all 18 (even those not lying out) at the origin
 const milk = fridge?.milkAt ? new Milk(scene, camera, fridge) : null; // the milk carton in the fridge (#168): not hidden with F, only sent home
 if (milk) { holdables.push(milk); life.keepPart('milk', { save: () => milk.keepState(), load: (v) => milk.loadKeep(v) }); } // what is left in it is kept with the life sim's things (#382)
 const beerCans = beerShelf ? beerShelf.packages.map((p, i) => new BeerCan(scene, camera, beerShelf, p, i)) : []; // the beers on the fridge shelf, taken and drunk from (#587): like the milk, sent home with F

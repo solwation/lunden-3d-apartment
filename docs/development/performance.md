@@ -2154,3 +2154,26 @@ Evidence image: `docs/verification/1628/matning.png`.
 
 #1676: the hospital pavilions' roof detail (dormers, risalit gables, chimneys; `src/pavilionroof.js`) adds 1 342 triangles to `south-backdrop` (56 461 -> 57 803, swiftshader; lowmem 55 879 -> 56 839), draw calls unchanged (perfcount-style spots norr 115 and broarna 474 calls before and after, lowmem 129 and 387); `southbackdroptest.html` ceiling raised to 59 000 (+~2 %).
 #1682: the world's edge (`src/edgebackdrop.js`, `EDGE_BACKDROP`) adds two merged meshes (`edge-land` 1 121 triangles, `edge-houses` 912) and ~338 tree instances in the south backdrop's two existing batches (~15 k triangles whole-batch; they are outside `tools/southbackdroptest.html`'s coverage ceiling, which now subtracts `userData.edgeTrees`). Whole-frame desktop views: 395→396/397 calls (+1 to +2 depending on which mesh is in view), +18–19 k triangles. Ground view `at=30,340,90,-6,4`: 40→42 calls, 320 695→340 392 triangles (the trees are culled as one batch, not per tree, so they count even where fog hides them). `&lowmem&quality=0` (phones) draws the land mesh only: 331→332 calls, +1 121 triangles. No texture or light is added. Measured in swiftshader headless Chromium, `time=13&month=9&day=20&freeze&weather=clear`, fog and cloud deck hidden in the page only.
+
+## Start-view calls and texture memory back within budget (#1720)
+
+perfcount failed on main fda9c529 in both profiles: phone (`?cloud=&lowmem&w=844&h=390`) 387 calls at `start` (≤ 370), desktop
+(`?cloud=&weather=clear&freeze`) ~330 MB of textures (≤ 320). Bisected with a start-view-only copy of perfcount's counting
+(headless Chromium 1243, SwiftShader, same numbers as the issue's 1208 run).
+
+- **Calls: 18 invisible squirrel nuts.** 366 at f745427e; +6 from 939ec43a (#1672, 6 nuts), +12 from ba9f2a3a (#1686, 18 nuts),
+  +3 from the south backdrop/valley trees (55e83be8, 23112ed9). main.js put every holdable's model into `world.looseItems`
+  (F hides/shows them), so `world.refreshFurniture()` — run at start through the Christmas season's `Rearrange.refresh` —
+  set `visible = true` on every nut, including the ones not lying out (`broken`, parked at the origin under the flat).
+  `squirrels.js` only re-hides nuts when their slot changes, so all 18 stayed drawn from everywhere. The nuts are now left
+  out of `looseItems` (they are outdoors; squirrels.js owns their visibility): phone start 369, desktop start 484 → 466.
+  `tools/squirrelstest.cjs` checks that no nut that is not lying out is visible after `refreshFurniture()` (fails on fda9c529).
+- **Textures: gradual growth, last crossing 6940d264** (#1574, the playhouse poster atlas 1536 × 1280, +10 MB:
+  318.4 → 328.4). Before it: ~304 MB on 2026-10-14, ~312 on 10-23. No single new texture was wasteful, so the saving is taken
+  where it is invisible: the rug roughness maps (`pileTextures` for the two round rugs, `zigzagRugTextures` for the Sovrum 1
+  shag rug) hold only soft pile patches and are now painted at `RUG_ROUGHNESS.scale` = 0.5 per side of their colour map
+  (−16 MB; the colour maps keep full size). Desktop ~330.5 → ~314 MB.
+
+Full perfcount after the fix: phone ALL PASS, most calls 369 at start (patio far 368), 884 455 triangles, ~104 MB;
+desktop ALL PASS, most calls 466 at start, 868 378 triangles at the park, ~314 MB. `PERF.budget` is unchanged. The phone
+start view has 1 call of headroom: the next addition visible from the street will need its own saving.

@@ -5784,6 +5784,9 @@ export const POWER = {
   pick: { out: 0.05 },   // the fuse box's pick box reaches this far in front of the breakers, m (*guess*)
 };
 
+// #1720: the rug roughness maps (furniture.js pileTextures / zigzagRugTextures) hold only soft pile patches, so they are painted at this
+// share of the colour map's size per side (a quarter of the pixels, -16 MB estimated texture memory); the colour maps keep full size. *guess*
+export const RUG_ROUGHNESS = { scale: 0.5 };
 // Furniture cheat (#465): interaction distance and support tolerance are gameplay choices, not surveyed dimensions.
 // #995: visual assumptions for the generic rug swatches, not fabric measurements.
 // #1009: visual guesses, metres; effective flat support uses the maximum (backing h + .002 gap + fiberHeight); the plush surface varies below it.

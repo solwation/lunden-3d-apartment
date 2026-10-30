@@ -148,6 +148,10 @@ let failed = 0; const check = (ok, name, data) => { console.log(`${ok ? 'PASS' :
       return { visibleSquirrels: vis, on, off, extra: on - off, nuts: S.nuts.count, pos: S.animals.map((q) => [q.group.position.x - c.x, q.group.position.y - c.y, q.group.position.z - c.z].map((v) => +v.toFixed(1))), dir: [d.x, d.y, d.z].map((v) => +v.toFixed(2)) };
     });
     check(cost.extra <= 3 + cost.nuts, 'draw calls added by squirrels and nuts in view stay small', cost);
+    // #1720: F's show-all (world.refreshFurniture, also run by the Christmas season at start) must not draw the nuts that are not lying out
+    const hidden = await page.evaluate(() => { const { a, S } = T; a.world.refreshFurniture(); a.step(0.1);
+      const out = S.nutItems.filter((n) => n.broken && n.model.visible).length; return { brokenVisible: out, broken: S.nutItems.filter((n) => n.broken).length }; });
+    check(hidden.brokenVisible === 0, 'nuts not lying out stay hidden after the furniture refresh', hidden);
     check(errors.length === 0, 'no page or WebGL errors', errors.slice(0, 5));
   } finally { await browser.close(); }
   process.exit(failed ? 1 : 0);

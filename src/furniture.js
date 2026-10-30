@@ -2,7 +2,7 @@ import { tillydesk, batmanchair } from './tillydesk.js';
 import { COMPUTER_MEDIA } from './config.js';
 import { upholsterySurface } from './upholstery.js';
 import { materialChoice } from './materialcatalog.js';
-import { MATERIAL_LIBRARY, LONG_PILE, SHADE_CANOPY_TEXTILES } from './config.js';
+import { MATERIAL_LIBRARY, LONG_PILE, SHADE_CANOPY_TEXTILES, RUG_ROUGHNESS } from './config.js';
 import { windPlant, windMaterial } from './plantwind.js';
 import { MusicLoop } from './music.js';
 import { buildShelfDressing } from './shelves.js';
@@ -3084,6 +3084,13 @@ function archRugTexture(item) {
   return tex;
 }
 
+/** #1720: a rug's roughness canvas at RUG_ROUGHNESS.scale of the colour map's W x H, its context scaled so it is drawn in the colour map's
+ * pixel coordinates (only soft patches go on it, so the smaller texture looks the same and costs a quarter of the memory). */
+function smallRough(rough, W, H) {
+  const k = RUG_ROUGHNESS.scale; rough.width = Math.max(1, Math.round(W * k)); rough.height = Math.max(1, Math.round(H * k));
+  const r = rough.getContext('2d'); r.scale(rough.width / W, rough.height / H); return r;
+}
+
 /**
  * The grey shag rug in Sovrum 1 (#317, docs/matta-gra-sicksack-sovrum1.jpg): thin, fuzzy off-white lines in a stepped
  * zig-zag of nested open rectangles running diagonally (45°), rows offset by half a cell; over it the shag: soft light
@@ -3092,8 +3099,8 @@ function archRugTexture(item) {
  */
 function zigzagRugTextures(item) {
   const ppm = 512, map = document.createElement('canvas'), rough = document.createElement('canvas');
-  map.width = rough.width = Math.round(item.w * ppm); map.height = rough.height = Math.round(item.d * ppm);
-  const W = map.width, H = map.height, g = map.getContext('2d'), r = rough.getContext('2d');
+  map.width = Math.round(item.w * ppm); map.height = Math.round(item.d * ppm);
+  const W = map.width, H = map.height, g = map.getContext('2d'), r = smallRough(rough, W, H);
   g.fillStyle = item.color; g.fillRect(0, 0, W, H);
   r.fillStyle = '#e0e0e0'; r.fillRect(0, 0, W, H);
   let seed = item.seed ?? 17;
@@ -3163,8 +3170,8 @@ function rugTexture(item) {
  */
 function pileTextures(item) {
   const n = 1024, map = document.createElement('canvas'), rough = document.createElement('canvas');
-  map.width = map.height = rough.width = rough.height = n;
-  const g = map.getContext('2d'), r = rough.getContext('2d');
+  map.width = map.height = n;
+  const g = map.getContext('2d'), r = smallRough(rough, n, n);
   g.fillStyle = item.color; g.fillRect(0, 0, n, n);
   r.fillStyle = '#f2f2f2'; r.fillRect(0, 0, n, n);
   let seed = item.seed ?? 31;
