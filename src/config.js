@@ -743,6 +743,13 @@ export const SITE = {
       // (docs/references/surrounding-views/osm-south-2026-10-08.json) projected by sitegeo.js; `n` (exact, not multiplied by treeDensity) and `scale` are *guess* values for the dense canopy of the Google 3D view.
       {"name":"forest-165719099","source":"165719099","polygon":[[-48.6,180.3],[-31,171.5],[-11.9,165.3],[7.6,166.3],[14.2,171.7],[14.2,184.9],[10.9,213.3],[2.1,223.5],[-25.6,230.1],[-37.7,231.7],[-52.6,219.1],[-57.1,205.9]],"n":34,"exact":true,"spacing":8.5,"scale":[1.7,2.5]},
       {"name":"forest-333646812","source":"333646812","polygon":[[-129.1,196],[-119.7,176],[-120.2,169.1],[-110.1,164.7],[-98.8,159.9],[-87.5,153.1],[-70.7,143.9],[-61.4,139],[-56,140.4],[-48.9,145],[-46.2,147.4],[-59.3,155.1],[-75.5,166.3],[-90.1,177.7],[-101.7,189.8],[-112.9,198.5],[-121.8,201.5],[-127.3,201]],"n":16,"exact":true,"spacing":8.5,"scale":[1.7,2.5]},
+      // #1685: the rest of the valley's wooded slopes, which Google 3D shows as continuous canopy (OSM has no more landuse=forest ways inside the park). *guess* polygons that follow the corridor beyond the older
+      // patches (north of the western reach and its far tip; the pony paddock along the south bank is left alone; both sides of the eastern reach and the south side of its bend); same big crowns and spacing as #1674, placed after every older patch so they only fill the gaps between earlier trees.
+      {"name":"forest-west-north","polygon":[[-262,218],[-238,196],[-205,186],[-160,185],[-142,193],[-146,200],[-190,197],[-232,222]],"n":14,"exact":true,"spacing":8.5,"scale":[1.7,2.5]},
+      {"name":"forest-west-south","polygon":[[-300,262],[-282,252],[-262,262],[-266,276],[-290,276]],"n":4,"exact":true,"spacing":8.5,"scale":[1.7,2.5]},
+      {"name":"forest-east-north","polygon":[[36,98],[70,92],[100,96],[112,104],[84,108],[40,106]],"n":6,"exact":true,"spacing":8.5,"scale":[1.7,2.5]},
+      {"name":"forest-east-south","polygon":[[38,146],[84,142],[116,126],[124,134],[96,156],[60,168],[40,168]],"n":7,"exact":true,"spacing":8.5,"scale":[1.7,2.5]},
+      {"name":"forest-bend-south","polygon":[[139,98],[183,97],[211,85],[218,94],[186,112],[140,116]],"n":6,"exact":true,"spacing":8.5,"scale":[1.7,2.5]},
     ],
     glades: [
       {"name":"central-lawn","polygon":[[-93,89],[-76,83],[-46,86],[-46,111],[-65,121],[-86,124]]},
