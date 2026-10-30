@@ -124,7 +124,7 @@ export class Squirrels {
   /** `feet`: surroundings.js treeFeet, `crowns`: its aoTrees, `ground(x, z)`: the walkable surface, `walkable(x, z)` / `nutOk(x, z)`: where it may run / a nut may lie,
    * `onFeed(brain)`: scoring. `rnd`: injectable for tests. */
   constructor({ scene, camera, player, feet, crowns, ground, walkable, nutOk, onFeed, rnd = Math.random }) {
-    Object.assign(this, { scene, camera, player, ground, onFeed, rnd, winter: true, time: 0, speed: 0, acc: [], lastX: NaN, lastZ: NaN, lure: false, net: null, cand: [], remoteSpeed: new Map(), markT: 0, daylight: 1 });
+    Object.assign(this, { scene, camera, player, ground, onFeed, rnd, winter: true, time: 0, speed: 0, acc: [], lastX: NaN, lastZ: NaN, lure: false, net: null, cand: [], track: new Map(), markT: 0, daylight: 1 });
     const parkPatches = new Set([...(SITE.riverPark.patches ?? []).map((q) => q.name), 'bridge-west']), // (the other `patch` names in treeFeet belong to the street/backdrop areas)
       paddock = PADDOCK.trees ?? [], same = (a, b) => Math.abs(a.x - b[0]) < 0.01 && Math.abs(a.z - b[1]) < 0.01;
     this.trees = linkTrees(feet.filter((f) => parkPatches.has(f.patch) || paddock.some(([x, z]) => same(f, [x, z]))).map((f) => {
@@ -134,7 +134,7 @@ export class Squirrels {
     this.player_ = { x: 0, z: 0, lure: false, hx: 0, hz: 0, id: '' };
     this.nuts = new NutField(this.trees, ground, nutOk, rnd);
     this.nuts.anchors = () => [{ x: camera.position.x, z: camera.position.z }, ...(this.net?.remotes?.() ?? []).map((r) => ({ x: r.x, z: r.z }))];
-    const env = { trees: this.trees, ground, walkable, nuts: this.nuts, player: this.player_, rnd, onTake: (b) => this.take(b) };
+    const env = { trees: this.trees, ground, walkable, nuts: this.nuts, player: this.player_, scares: this.cand, rnd, onTake: (b) => this.take(b) };
     this.material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92 });
     this.nutMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6 });
     this.hearts = new Hearts(scene, C.hearts, C.heartScale);
@@ -160,22 +160,31 @@ export class Squirrels {
     this.hide();
   }
   hide() { for (const a of this.animals) a.group.visible = false; }
-  /** The visitor's hand: a nut held, crouched all the way down, hardly moving. */
+  /** #1698: what a visitor (this one, or a ghost the leader sees) does: speed, how long still, and whether they just rose from a crouch. `crouch`: 0 … 1. */
+  trackVisitor(id, dt, speed, crouch) {
+    let t = this.track.get(id); if (!t) this.track.set(id, t = { still: 0, crouch, rose: 0 });
+    t.still = speed < C.still ? t.still + dt : 0;
+    t.rose = crouch < 0.6 && t.crouch > 0.85 ? C.roseFor : Math.max(0, t.rose - dt);
+    t.crouch = crouch; t.seen = this.time; return t;
+  }
+  /** The visitor's hand: a nut held, crouched all the way down, and still (under `still` m/s for `stillFor` s). Everybody near is also a possible scare (`cand`: v, rose). */
   watchPlayer(dt) {
     const pos = this.camera.getWorldPosition(V), p = this.player_;
-    if (Number.isFinite(this.lastX) && dt > 0) this.speed += (Math.hypot(pos.x - this.lastX, pos.z - this.lastZ) / dt - this.speed) * Math.min(1, dt * 6);
+    if (Number.isFinite(this.lastX) && dt > 0) this.speed += (Math.hypot(pos.x - this.lastX, pos.z - this.lastZ) / dt - this.speed) * Math.min(1, dt * 12);
     this.lastX = pos.x; this.lastZ = pos.z;
-    const it = heldItem();
-    p.x = pos.x; p.z = pos.z; p.lure = !!(this.player.crouched && it?.isSquirrelNut && this.speed < C.still);
+    const it = heldItem(), me = this.net?.me?.() ?? '', mt = this.trackVisitor(me, dt, this.speed, this.player.crouched ? 1 : 0);
+    p.x = pos.x; p.z = pos.z; p.lure = !!(this.player.crouched && it?.isSquirrelNut && mt.still >= C.stillFor);
     const d = this.camera.getWorldDirection(new THREE.Vector3()), l = Math.hypot(d.x, d.z) || 1;
     p.hx = pos.x + d.x / l * C.handAhead; p.hz = pos.z + d.z / l * C.handAhead;
-    p.id = this.net?.me?.() ?? '';
-    // #1686: the leader also lets the other players' lures count (what it knows of their ghosts), but only for a nut the room says they hold
-    this.cand.length = 0; this.cand.push({ id: p.id, x: p.x, z: p.z, lure: p.lure, hx: p.hx, hz: p.hz });
+    p.id = me;
+    // #1686: the leader also lets the other players' lures count (what it knows of their ghosts), but only for a nut the room says they hold.
+    // #1698: and their speed (the ghosts' own estimate from position snapshots, no extra traffic) can scare.
+    this.cand.length = 0; this.cand.push({ id: p.id, x: p.x, z: p.z, lure: p.lure, hx: p.hx, hz: p.hz, v: this.speed, rose: mt.rose > 0 });
     if (this.sync.lead && this.sync.sharing) for (const r of this.net?.remotes?.() ?? []) {
-      const lure = r.hi === 'nut' && r.crouch > 0.85 && r.vh < C.still && this.sync.remoteHeld.has(r.id);
-      this.cand.push({ id: r.id, x: r.x, z: r.z, lure, hx: r.x - Math.sin(r.yaw) * C.handAhead, hz: r.z - Math.cos(r.yaw) * C.handAhead });
+      const rt = this.trackVisitor(r.id, dt, r.vh, r.crouch), lure = r.hi === 'nut' && r.crouch > 0.85 && rt.still >= C.stillFor && this.sync.remoteHeld.has(r.id);
+      this.cand.push({ id: r.id, x: r.x, z: r.z, lure, hx: r.x - Math.sin(r.yaw) * C.handAhead, hz: r.z - Math.cos(r.yaw) * C.handAhead, v: r.vh, rose: rt.rose > 0 });
     }
+    if (this.track.size > 8) for (const [k, t] of this.track) if (this.time - t.seen > 5) this.track.delete(k);
   }
   /** The visitor a squirrel pays attention to: the nearest one holding a lure within its range, else the nearest of all. Copied into the brains' `player`. */
   focus(b) {

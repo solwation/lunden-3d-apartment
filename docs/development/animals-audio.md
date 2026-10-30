@@ -698,3 +698,13 @@ snapshots it has, the room hands it the claims (`L.c`); a player leaving with a 
 (validation, arbitration, hand-over, through the real PlayerRoom) and the two-browser `tools/squirrelsynctest.cjs` (needs `cloudflare/dev.mjs`).
 Known limits: the squirrels' poses are 2 Hz snapshots (visible smoothing, no per-frame sync); the leader is whoever came first, not the
 nearest; ghosts further than the others' `G.max` are not lures.
+
+### Shy squirrels (#1698)
+
+"Still" is now strict: under `SQUIRRELS.still` (0.12 m/s, smoothed over ~0.1 s) for `stillFor` (0.5 s), crouched, with a nut; any movement
+ends the lure at once (`Squirrels.trackVisitor`, per visitor id; ghosts use the `vh` speed the ghost already estimates from its position
+snapshots, so there is no new traffic or KV write). `Squirrels.cand` (every visitor the leader knows: `v`, `rose`) is also `env.scares` of the brains;
+`SquirrelBrain.scared()` frightens a ground/approach/take squirrel when any visitor, local or remote, moves faster than `scareSpeed` or has just
+risen from a crouch (`roseFor` s) within `scareReach` x its `shy` range, or is within `touch` m and not a lure holder. `frighten()` runs it up the nearest tree
+(`startToTree(true)`) and sets `calmT` = `scareTime` x the animal's `calm`: it perches at least that long and ignores lures meanwhile.
+A visitor standing still, even close, no longer scares (the old "standing within `shy`" rule is gone). All *guess*.

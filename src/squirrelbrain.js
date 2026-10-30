@@ -85,11 +85,13 @@ export class NutField {
   }
 }
 
+const GROUND = new Set(['forage', 'search', 'fetch', 'eat', 'approach', 'take']);
+
 export class SquirrelBrain {
   /** env: { trees, ground, walkable(x, z), nuts: NutField, player: { x, z, lure, hx, hz }, onTake(brain) -> bool, rnd }; start: tree index. */
   constructor(spec, env, start) {
     Object.assign(this, { spec, env, p: spec, x: 0, y: 0, z: 0, yaw: 0, pitch: 0, rise: 0, run: 0, state: 'perch', t: 0, dur: 1, hasNut: false, react: 0, slot: null,
-      tree: start, ang: 0, goal: { x: 0, z: 0 }, from: { x: 0, y: 0, z: 0 }, to: { x: 0, y: 0, z: 0 }, tree2: 0, ang2: 0, approachAfter: false, left: 0, sense: 0, log: [] });
+      tree: start, ang: 0, goal: { x: 0, z: 0 }, from: { x: 0, y: 0, z: 0 }, to: { x: 0, y: 0, z: 0 }, tree2: 0, ang2: 0, approachAfter: false, calmT: 0, left: 0, sense: 0, log: [] });
     this.enterPerch(start, env.rnd() * Math.PI * 2);
     this.t = env.rnd() * 3;
   }
@@ -102,7 +104,7 @@ export class SquirrelBrain {
     this.tree = tree; this.ang = ang; this.pitch = 0; this.rise = 0;
     this.place(perchPoint(this.tr, ang));
     this.yaw = ang + Math.PI / 2;
-    this.set('perch', this.hasNut ? C.carry : between(C.perch, this.env.rnd) * this.p.perch);
+    this.set('perch', Math.max(this.calmT, this.hasNut ? C.carry : between(C.perch, this.env.rnd) * this.p.perch));
     this.react = 0;
   }
   startLeap(tree, ang) {
@@ -142,6 +144,18 @@ export class SquirrelBrain {
     this.tree2 = best; this.ang2 = a; footPoint(t, a, e.ground, this.goal);
     this.set(flee ? 'flee' : 'toTree', 30);
   }
+  /** #1698: a visitor (env.scares: every one near, with `v` m/s and `rose`) moving fast, rising or right on top of it. */
+  scared() {
+    const sc = this.env.scares; if (!sc) return false;
+    const reach = this.p.shy * C.scareReach;
+    for (const c of sc) {
+      const d = Math.hypot(c.x - this.x, c.z - this.z);
+      if ((d < C.touch && !c.lure) || (d < reach && (c.v > C.scareSpeed || c.rose))) return true;
+    }
+    return false;
+  }
+  /** Up the nearest tree, and stay there a while (`calm`: the personality). */
+  frighten() { this.rise = 0; this.slot = null; this.calmT = between(C.scareTime, this.env.rnd) * this.p.calm; this.startToTree(true); }
   startApproach() { this.set('approach', 60); this.react = 0; }
 
   /** Ground movement towards `goal`; true on arrival. */
@@ -157,10 +171,11 @@ export class SquirrelBrain {
 
   update(dt) {
     const e = this.env, pl = e.player, p = this.p, rnd = e.rnd;
-    this.t += dt;
+    this.t += dt; if (this.calmT > 0) this.calmT -= dt;
+    if (GROUND.has(this.state) && this.scared()) { this.frighten(); return; }
     switch (this.state) {
       case 'perch': {
-        if (pl.lure && !this.hasNut && this.playerDist() < p.lure) { if ((this.react += dt) > p.delay) { this.startDown(true); break; } } else this.react = 0;
+        if (pl.lure && !this.hasNut && this.calmT <= 0 && this.playerDist() < p.lure) { if ((this.react += dt) > p.delay) { this.startDown(true); break; } } else this.react = 0;
         if (this.t < this.dur) break;
         this.hasNut = false;
         const near = this.tr.near;
@@ -219,8 +234,7 @@ export class SquirrelBrain {
   /** forage / search / fetch / eat: on the ground, no lure. */
   onGround(dt) {
     const e = this.env, pl = e.player, p = this.p, C_ = C;
-    if (pl.lure && this.playerDist() < p.lure && !this.hasNut) { this.rise = 0; this.startApproach(); return; }
-    if (!pl.lure && this.playerDist() < p.shy) { this.rise = 0; this.slot = null; this.startToTree(true); return; }
+    if (pl.lure && this.calmT <= 0 && this.playerDist() < p.lure && !this.hasNut) { this.rise = 0; this.startApproach(); return; }
     switch (this.state) {
       case 'forage': case 'fetch': {
         if (this.state === 'fetch' && !(this.slot?.alive && !this.slot.held)) { this.slot = null; this.pickGoal(); return; }

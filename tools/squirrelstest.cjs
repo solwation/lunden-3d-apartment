@@ -85,14 +85,40 @@ let failed = 0; const check = (ok, name, data) => { console.log(`${ok ? 'PASS' :
     const cancel = await page.evaluate(() => {
       const { a, S } = T; a.player.crouch = false; T.run(15);
       const slot = S.nuts.slots.find((s) => s.alive && !s.held), item = S.nutItems[S.nuts.slots.indexOf(slot)];
-      T.stand(slot.x + 0.6, slot.z + 0.3); a.player.crouch = true; T.run(12); T.aim(slot.x, slot.y + 0.02, slot.z); a.use(a.focus().focused);
+      T.stand(slot.x + 0.6, slot.z + 0.3); a.player.crouch = true; T.run(12); T.aim(slot.x, slot.y + 0.02, slot.z); a.use(a.focus().focused); T.run(15, 0.05);
       const b = S.animals[1].brain, pl = a.player.pos, d = a.camera.getWorldDirection(new (a.camera.position.constructor)()), l = Math.hypot(d.x, d.z) || 1;
-      b.hasNut = false; const gx = pl.x + d.x / l * 6, gz = pl.z + d.z / l * 6; Object.assign(b, { x: gx, z: gz, y: S.ground(gx, gz) }); b.startForage(); b.set('forage', 30); b.goal.x = gx; b.goal.z = gz;
+      b.calmT = 0; b.hasNut = false; const gx = pl.x + d.x / l * 6, gz = pl.z + d.z / l * 6; Object.assign(b, { x: gx, z: gz, y: S.ground(gx, gz) }); b.startForage(); b.set('forage', 30); b.goal.x = gx; b.goal.z = gz;
       const f0 = a.stats.squirrelFeeds; let approached = false; for (let i = 0; i < 300 && !approached; i++) { T.run(1, 0.05); approached = b.state === 'approach'; }
       a.player.crouch = false; T.run(3, 0.1); const after = b.state;
       T.run(60, 0.1); return { approached, after, fed: a.stats.squirrelFeeds - f0, stillHolding: a.heldItem()?.isSquirrelNut === true };
     });
     check(cancel.approached && !['approach', 'take'].includes(cancel.after) && cancel.fed === 0 && cancel.stillHolding, 'standing up cancels the approach: no nut taken', cancel);
+    // (4b) #1698: somebody runs past a squirrel that creeps up to a still, crouching feeder: it takes fright and runs up a tree
+    const scare = await page.evaluate(() => {
+      const { a, S } = T; a.player.crouch = false; T.run(15); S.animals.forEach((q) => { q.brain.hasNut = false; q.brain.calmT = 0; });
+      const slot = S.nuts.slots.find((s) => s.alive && !s.held); T.stand(slot.x + 0.6, slot.z + 0.3); a.player.crouch = true; T.run(12); T.aim(slot.x, slot.y + 0.02, slot.z); a.use(a.focus().focused);
+      T.run(15, 0.05); const still = S.player_.lure; // (still crouched with the nut for 0.75 s)
+      const b = S.animals[1].brain, pl = a.player.pos, d = a.camera.getWorldDirection(new (a.camera.position.constructor)()), l = Math.hypot(d.x, d.z) || 1;
+      const gx = pl.x + d.x / l * 6, gz = pl.z + d.z / l * 6; Object.assign(b, { x: gx, z: gz, y: S.ground(gx, gz) }); b.startForage(); b.set('forage', 30); b.goal.x = gx; b.goal.z = gz;
+      let approached = false; for (let i = 0; i < 300 && !approached; i++) { T.run(1, 0.05); approached = b.state === 'approach'; }
+      T.look(b.x, b.y + 0.15, b.z);
+      return { still, approached, state: b.state };
+    });
+    check(scare.still && scare.approached, 'still and crouched with a nut for half a second: a squirrel creeps up', scare);
+    await kit.shot(page, `${out}/6-ekorre-narmar-sig.png`);
+    const run = await page.evaluate(() => {
+      const { a, S } = T, b = S.animals[1].brain, seen = new Set(), fed = a.stats.squirrelFeeds;
+      // the other visitor: a sprinting body beside the squirrel (what a ghost's speed estimate says); the crouched feeder stays put
+      const other = { id: 'x', x: b.x + 1.5, z: b.z, lure: false, hx: 0, hz: 0, v: 5, rose: false };
+      b.env.scares = [other]; // (watchPlayer rebuilds S.cand every frame: the visitor goes in the brains' own list)
+      const step = () => T.run(1, 0.05);
+      for (let i = 0; i < 6; i++) { step(); seen.add(b.state); }
+      const up = { fled: seen.has('flee') || seen.has('up'), calm: b.calmT, fed: a.stats.squirrelFeeds - fed };
+      for (let i = 0; i < 400 && b.state !== 'perch'; i++) { step(); seen.add(b.state); }
+      T.look(b.x, b.y + 0.1, b.z); return { ...up, seen: [...seen], perch: b.state, high: b.y - S.ground(b.x, b.z) };
+    });
+    check(run.fled && run.calm > 0 && run.fed === 0 && run.perch === 'perch' && run.high > 2, 'another visitor running past: it flees up a tree without taking the nut', run);
+    await kit.shot(page, `${out}/7-ekorre-flyr-upp.png`);
     // (5) winter
     const winter = await page.evaluate(() => {
       const { a, S } = T; a.heldItem()?.putBack?.(); a.day.month = 1; T.run(5);

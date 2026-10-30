@@ -7170,12 +7170,13 @@ export const SQUIRRELS = {
   nutNearPlayer: 60, nutBias: 0.7, heap: 0.4, heapRadius: [0.15, 0.6], // #1686: 70 % of new nuts under the trees within 60 m of a visitor; 40 % land in a heap beside a nut already out
   markDist: 45, markRing: 0.2, markBeam: 1.1, markDay: [0.35, 0.85], markNight: 0, nutNear: 14, // #1697: the glint's strength follows the daylight (DayCycle.daylight): 0 below markDay[0], full above markDay[1], eased between; markNight = what is left at night (0 = hidden). #1686: the glint ring + beam (one instanced mesh) shows up to 45 m; the nut's own mesh only within 14 m (draw calls stay low)
   sync: { every: 0.5, nutEvery: 0.4, enter: 120, leave: 160, reach: 6, follow: 3 }, // #1686: the shared leader's snapshot every 0.5 s; nuts at most every 0.4 s; a visitor within 120 m of a squirrel joins (leaves beyond 160); a put-down within 6 m; followers simulate on their own again after 3 s without a snapshot
-  still: 0.4, reach: 0.45, take: 0.6, hearts: 8, heartScale: 2.5, carry: 14, handAhead: 0.45,
+  still: 0.12, stillFor: 0.5, scareSpeed: 1.1, scareReach: 1.5, touch: 1.5, roseFor: 1.5, scareTime: [14, 30], // #1698: 'still' = under 0.12 m/s (about a slow shuffle) for 0.5 s, crouched with a nut; a visitor (any, also far ghosts) faster than 1.1 m/s within scareReach x the squirrel's shy range, or one who rises (1.5 s) within it, or anyone within 1.5 m, frightens it up the nearest tree; it stays up scareTime s x its calm (all *guess*)
+  reach: 0.45, take: 0.6, hearts: 8, heartScale: 2.5, carry: 14, handAhead: 0.45,
   starts: [[-150, 215], [-30, 128], [-62, 168]], // first tree = nearest eligible tree to these plan points (*guess*: by the paddock bridge, the foot bridge, the south bank)
   animals: [
-    { name: 'Den stora', scale: 1.25, width: 1, color: 0x8a5632, belly: 0xd9c3a0, tail: 0x9a6338, tip: null, ground: 0.7, shy: 4, lure: 24, delay: 0.8, speed: 1.0, perch: 1 },
-    { name: 'Vitsvansen', scale: 1.0, width: 1, color: 0xa4673a, belly: 0xe6d4b4, tail: 0xb3733f, tip: 0xf4f1e8, ground: 0.45, shy: 6.5, lure: 18, delay: 0.5, speed: 1.15, perch: 0.7 },
-    { name: 'Den smala', scale: 0.92, width: 0.78, color: 0x4f3626, belly: 0xb9a88c, tail: 0x5c4130, tip: null, ground: 0.3, shy: 9, lure: 12, delay: 1.4, speed: 1.3, perch: 1.4 },
+    { name: 'Den stora', scale: 1.25, width: 1, color: 0x8a5632, belly: 0xd9c3a0, tail: 0x9a6338, tip: null, ground: 0.7, shy: 4, lure: 24, delay: 0.8, speed: 1.0, perch: 1, calm: 0.7 },
+    { name: 'Vitsvansen', scale: 1.0, width: 1, color: 0xa4673a, belly: 0xe6d4b4, tail: 0xb3733f, tip: 0xf4f1e8, ground: 0.45, shy: 6.5, lure: 18, delay: 0.5, speed: 1.15, perch: 0.7, calm: 1 },
+    { name: 'Den smala', scale: 0.92, width: 0.78, color: 0x4f3626, belly: 0xb9a88c, tail: 0x5c4130, tip: null, ground: 0.3, shy: 9, lure: 12, delay: 1.4, speed: 1.3, perch: 1.4, calm: 1.5 },
   ],
 };
 

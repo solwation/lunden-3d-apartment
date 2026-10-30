@@ -9,8 +9,8 @@ const trees = () => linkTrees([[0, 0], [8, 3], [15, -2], [6, 14], [-9, 9], [22, 
 const ground = () => 0;
 const world = (seed = 7) => {
   const rnd = rng(seed), ts = trees(), nuts = new NutField(ts, ground, () => true, rnd);
-  const player = { x: 500, z: 500, lure: false, hx: 500, hz: 500 }, taken = [];
-  return { rnd, ts, nuts, player, taken, env: { trees: ts, ground, walkable: () => true, nuts, player, rnd, onTake: (b) => { taken.push(b); player.lure = false; return true; } } }; // (the nut leaves the hand: the lure ends)
+  const player = { x: 500, z: 500, lure: false, hx: 500, hz: 500 }, taken = [], scares = [];
+  return { rnd, ts, nuts, player, taken, scares, env: { trees: ts, ground, walkable: () => true, nuts, player, scares, rnd, onTake: (b) => { taken.push(b); player.lure = false; return true; } } }; // (the nut leaves the hand: the lure ends)
 };
 const run = (w, brains, seconds, dt = 0.1, each = null) => { for (let t = 0; t < seconds; t += dt) { w.nuts.update(dt); for (const b of brains) b.update(dt); each?.(t); } };
 
@@ -70,12 +70,47 @@ test('a foraging squirrel finds a nut on the ground and eats it', () => {
   assert.ok(ate && !s.alive, 'it ate the nut');
 });
 
-test('a ground squirrel flees from a standing visitor but not from a still crouching one with a nut', () => {
-  const w = world(), b = new SquirrelBrain(C.animals[2], w.env, 0);
+test('#1698: a ground squirrel flees from a visitor moving fast nearby, but not from a still one (standing or crouching)', () => {
+  const sp = C.animals[2], w = world(), b = new SquirrelBrain(sp, w.env, 0);
   Object.assign(b, { x: 3, z: 3, y: 0 }); b.startForage();
-  w.player.x = 3 + C.animals[2].shy - 1; w.player.z = 3; w.player.hx = w.player.x; w.player.hz = w.player.z;
-  run(w, [b], 1, 0.1); assert.ok(['flee', 'up'].includes(b.state), `frightened: ${b.state}`);
-  run(w, [b], 12, 0.1); assert.ok(['up', 'perch'].includes(b.state), 'up a tree');
+  const v = { x: 3 + sp.shy - 1, z: 3, v: 0, rose: false }; w.scares.push(v);
+  run(w, [b], 20, 0.1); assert.ok(!['flee', 'up'].includes(b.state) && b.calmT <= 0, `a still visitor does not frighten: ${b.state}`);
+  v.v = C.scareSpeed + 0.5; run(w, [b], 1, 0.1); assert.ok(['flee', 'up'].includes(b.state), `frightened: ${b.state}`);
+  v.v = 0; run(w, [b], 12, 0.1); assert.ok(['up', 'perch'].includes(b.state), 'up a tree');
+});
+
+test('#1698: a fast visitor beyond the reach range does not frighten; rising near it does', () => {
+  const sp = C.animals[1], w = world(), b = new SquirrelBrain(sp, w.env, 0);
+  Object.assign(b, { x: 3, z: 3, y: 0 }); b.startForage();
+  const v = { x: 3 + sp.shy * C.scareReach + 3, z: 3, v: 5, rose: false }; w.scares.push(v);
+  run(w, [b], 1, 0.1); assert.ok(!['flee', 'up'].includes(b.state), 'too far away to care');
+  v.x = 3 + sp.shy; v.v = 0; v.rose = true; run(w, [b], 0.3, 0.1); assert.ok(['flee', 'up'].includes(b.state), `rising scares: ${b.state}`);
+});
+
+test('#1698: a frightened squirrel stays up for a while per personality, then comes down again', () => {
+  const stay = C.animals.map((sp, i) => {
+    const w = world(3 + i), b = new SquirrelBrain(sp, w.env, 0); Object.assign(b, { x: 3, z: 3, y: 0 }); b.startForage();
+    w.scares.push({ x: 4, z: 3, v: 4, rose: false }); run(w, [b], 0.2, 0.1); assert.ok(b.calmT > 0);
+    w.scares.length = 0; let t = 0, down = false; run(w, [b], 400, 0.1, () => { t += 0.1; if (!down && b.state === 'down') down = true; if (!down) stay_ = t; }); assert.ok(down, 'came down again');
+    return stay_;
+  });
+  var stay_; // (set by the loop above)
+  assert.ok(stay.every((t) => t >= C.scareTime[0] * 0.5), `stayed up at least a while: ${stay}`);
+});
+
+test('#1698: a lure is ignored while the squirrel is still frightened', () => {
+  const w = world(), b = new SquirrelBrain(C.animals[0], w.env, 0);
+  b.calmT = 20; Object.assign(w.player, { x: 4, z: 2, hx: 4.4, hz: 2, lure: true });
+  const trail = new Set(); run(w, [b], 15, 0.05, () => trail.add(b.state)); assert.ok(!trail.has('approach'), [...trail].join());
+});
+
+test('#1698: another player running past frightens a squirrel that is creeping up to a still, crouching feeder', () => {
+  const w = world(), b = new SquirrelBrain(C.animals[0], w.env, 0);
+  Object.assign(w.player, { x: 4, z: 2, hx: 4.4, hz: 2, lure: true });
+  const other = { x: 40, z: 40, v: 0, rose: false }; w.scares.push(other);
+  let near = false; run(w, [b], 60, 0.05, () => { if (b.state === 'approach' && !near) { near = true; Object.assign(other, { x: b.x, z: b.z + 3, v: 5 }); } });
+  assert.ok(near && w.taken.length === 0, 'no nut taken');
+  assert.ok(['flee', 'up', 'perch'].includes(b.state) && b.calmT >= 0, `fled: ${b.state}`);
 });
 
 test('feeding: the lure brings it down, it takes the nut, and flees up a tree with it in its mouth', () => {
