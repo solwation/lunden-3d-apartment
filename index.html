@@ -401,6 +401,9 @@
     #privacy-dialog .priv-scroll ul { margin: 4px 0; padding-left: 20px; }
     .share-note { font-size: 12px; opacity: .75; margin: 6px 0 10px; line-height: 1.4; }
     .share-note[hidden] { display: none; }
+    #leaderboard-dialog .lb-pick { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; }
+    #leaderboard-dialog .lb-pick select { flex: 1; min-width: 0; min-height: 40px; font: inherit; padding: 4px 8px; }
+    #lb-board-hint:empty { display: none; }
     #leaderboard-dialog .lb-scroll { max-height: min(340px, calc(60vh)); overflow-y: auto; margin: 10px 0; }
     #corner-qr { position: fixed; left: calc(var(--badge-inset) + var(--sl)); top: calc(var(--hud-badge-bottom) + 40px); z-index: 20; background: rgba(20, 35, 45, 0.75); color: #fff; padding: 10px; border-radius: 10px; backdrop-filter: blur(3px); display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: auto; }
     #corner-qr[hidden] { display: none; }
@@ -1118,6 +1121,8 @@
       <div class="kicker">TOPPLISTAN</div>
       <h1>Bästa resultaten</h1>
       <p>Resultat uppnådda av besökare i lägenheten.</p>
+      <label class="lb-pick">Lista <select id="lb-board" aria-label="Välj topplista"><option value="score">Totalpoäng</option></select></label>
+      <p id="lb-board-hint" class="share-note"></p>
       <div class="lb-scroll">
         <ol id="lb-dialog-list" class="lb"></ol>
       </div>

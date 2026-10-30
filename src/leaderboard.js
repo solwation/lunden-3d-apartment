@@ -114,6 +114,7 @@ export class Leaderboard {
   openLeaderboardDialog() {
     if (!this.lbDialog) return;
     this.refresh();
+    this.boards?.refresh(); // #1710: the picked alternative list
     this.renderDialogList();
     this.lbDialog.hidden = false;
   }
@@ -124,6 +125,7 @@ export class Leaderboard {
 
   renderDialogList() {
     if (!this.dialogList) return;
+    if (this.boards?.active()) return this.boards.render(); // #1710: an alternative list is picked (src/boards.js)
     this.fill(this.dialogList, 'Inga resultat ännu');
   }
 

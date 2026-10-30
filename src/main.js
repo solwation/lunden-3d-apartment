@@ -169,6 +169,7 @@ import { createRealWeather } from './realweather.js';
 import { Posters, HeldDrawing, paperOnly } from './posters.js';
 import { PaperBalls } from './paperball.js';
 import { Cloud } from './cloud.js';
+import { Boards } from './boards.js';
 import { Leaderboard } from './leaderboard.js';
 import { Presence } from './presence.js';
 import { heldCatState } from './ghostcat.js';
@@ -1009,6 +1010,7 @@ const leaderboard = new Leaderboard(cloud.url, totalScore, {
     resetHome.go(location.href);
   }
 });
+leaderboard.boards = new Boards(leaderboard, stats, { select: document.getElementById('lb-board'), list: document.getElementById('lb-dialog-list'), hint: document.getElementById('lb-board-hint') }); // #1710
 document.getElementById('menu-leaderboard')?.addEventListener('click', () => leaderboard.openLeaderboardDialog());
 document.getElementById('leaderboard-dialog-close')?.addEventListener('click', () => leaderboard.closeLeaderboardDialog());
 const privacyDialog = document.getElementById('privacy-dialog'); // #723: what is stored and sent

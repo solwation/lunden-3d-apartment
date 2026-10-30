@@ -30,7 +30,10 @@ let layoutGate = Promise.resolve();
 const layoutStorage = { get: async (k) => structuredClone(layouts.get(k)), put: async (k,v) => layouts.set(k, structuredClone(v)) };
 const reports = new Map();
 const reportStorage = { get: async k => structuredClone(reports.get(k)), put: async (k,v) => reports.set(k,structuredClone(v)) };
-const env = { LUNDEN, layoutStorage, reportStorage, REPORT_SESSION_SECRET: process.env.LUNDEN_REPORT_SESSION_SECRET, ADMIN_TOKEN: process.argv[3] ?? 'testtoken' };
+const boards = new Map(); // #1710: the alternative top lists (the DrawingRoom storage in production)
+const boardStorage = { get: async (k) => structuredClone(boards.get(k)), put: async (k, v) => boards.set(k, structuredClone(v)), delete: async (k) => boards.delete(k),
+  list: async (o = {}) => new Map([...boards].filter(([k]) => k.startsWith(o.prefix ?? '')).map(([k, v]) => [k, structuredClone(v)])) };
+const env = { LUNDEN, layoutStorage, reportStorage, boardStorage, REPORT_SESSION_SECRET: process.env.LUNDEN_REPORT_SESSION_SECRET, ADMIN_TOKEN: process.argv[3] ?? 'testtoken' };
 env.PLAYERS = fakeNamespace(PlayerRoom, env); // the players' room (#666): ws://localhost:<port>/players
 
 http.createServer(async (req, res) => {

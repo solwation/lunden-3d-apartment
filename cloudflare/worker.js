@@ -6,6 +6,7 @@ import { layoutFetch } from './layout.js';
 import { crashFetch } from './crash.js';
 import { gamesFetch, cleanLook, publicRows } from './games.js';
 import { PlayerRoom, refuse, CLOSE } from './players.js';
+import { boardsFetch } from './boards.js';
 export { PlayerRoom };
 // Kv. Lunden L1007 — the shared world (#178, #119): a small Cloudflare Worker with one KV namespace (binding
 // LUNDEN). It keeps the drawings taped up in the flat, and the sheet on the Sovrum 3 desk,
@@ -25,6 +26,8 @@ export { PlayerRoom };
 //                                  local UUID; an invalid avatar is ignored and keeps the row's old look); a score can't grow faster than
 //                                  SCORE_RATE per minute since that row's last post (SCORE_START for a new row). name '' = "Anonym" (#677;
 //                                  an anonymous post never strips the name of an existing row; equal points: named first)
+//   GET    /boards                → { lists: { <id>: [{ key, name, value, updated, avatar? }] } } alternative top lists (#1710, boards.js; DrawingRoom storage, not KV)
+//   POST   /boards                ← { id, name, c: { counter: n }, avatar? } the player's stats counters, <= 1 write per player per 30 s, rate-capped per counter
 //   GET    /games/:game           → [{ key, name, score, updated, avatar? }] the top 10 of ormstriden | klossar | meteoriter (#1577, games.js)
 //   POST   /games/:game           ← { id, name, score, ms, lines | wave, avatar? } klossar / meteoriter only: one best row per id and
 //                                  game, bounded by what the rules allow in ms (Ormstriden rows come from the players' room)
@@ -153,6 +156,11 @@ const worker = {
       const r = await playerRoom(env).fetch(new Request('https://players/admin', { method: m === 'PUT' || m === 'DELETE' ? m : 'GET' }));
       playersBlock = m === 'DELETE' ? { code: CLOSE.off, until: Date.now() + 5 * 60_000 } : m === 'PUT' ? null : playersBlock;
       if (id === 'players') return json(await r.json(), 200, h);
+    }
+    if (what === 'boards' && !id) { // #1710: alternative top lists live in the DrawingRoom's own storage (cloudflare/boards.js), not KV
+      if (m === 'POST' && !env.boardStorage && await limited(request, env)) return fail(429, 'too many writes', h);
+      if (!env.boardStorage && env.DRAWINGS) return env.DRAWINGS.get(env.DRAWINGS.idFromName('shared')).fetch(request);
+      return boardsFetch(request, env, m, json, fail, h);
     }
     // One authority for drawing metadata: KV read/modify/write loses concurrent moves.
     if (env.DRAWINGS && (what === 'furniture' || what === 'drawings' || (what === 'admin' && (id === 'all' || id === 'drawings')))) {
@@ -346,6 +354,9 @@ export class DrawingRoom {
       const storage = this.ctx.storage, kv = this.env.LUNDEN;
       if (new URL(request.url).pathname.startsWith('/reports')) {
         return worker.fetch(request, { ...this.env, DRAWINGS: undefined, PLAYERS: undefined, reportStorage: storage, reportForwarded: true });
+      }
+      if (new URL(request.url).pathname === '/boards') {
+        return worker.fetch(request, { ...this.env, DRAWINGS: undefined, PLAYERS: undefined, boardStorage: storage });
       }
       if (new URL(request.url).pathname === '/furniture') {
         return worker.fetch(request, { ...this.env, DRAWINGS: undefined, PLAYERS: undefined, layoutStorage: storage });
