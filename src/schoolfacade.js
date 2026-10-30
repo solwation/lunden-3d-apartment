@@ -113,7 +113,7 @@ export function buildSchoolFacade(p, base, bottom, eave, parts, lite = lowMemory
   for(const [x,z] of P.chimneys) {
     const y=top(x,z);
     parts.schoolBrick.push(plain(new THREE.BoxGeometry(...P.chimney).translate(x,y+.5,z)));
-    parts.schoolRoof.push(new THREE.BoxGeometry(...P.cap).toNonIndexed().translate(x,y+1.28,z));
+    parts.schoolRoof.push(tint(new THREE.BoxGeometry(...P.cap).toNonIndexed().translate(x,y+1.28,z),schoolRoofTint())); // #1696: own dark-metal tint, not the building's roof tone
   }
   return {windows,ridge:eave+P.roofRise,roofY:top};
 }

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { SITE, CAMPUS_LOD } from './config.js';
 import { lowMemory } from './lowmemory.js';
+import { schoolRoofTint } from './schoolfacade.js';
 
 // Photo-specific facades for the old hospital buildings east of the site (#576–#581). The OSM footprint
 // stays the building's outline; `sections` raise boxes of it to more storeys, and every part gets plinth,
@@ -171,7 +172,7 @@ export function buildCampusFacade(b, p, holes, base, bottom, parts, lite = lowMe
     for (const [x, z] of (S.chimneys ?? []).filter(([x, z]) => inside(x, z, piece.poly) && !coveredBy(piece, x, z))) {
       const y = top(x, z);
       parts.schoolBrick.push(tint(plain(new THREE.BoxGeometry(...S.chimney).translate(x, y + S.chimney[1] / 2 - .4, z)), S.chimneyTint ?? 0xffffff));
-      parts.schoolRoof.push(new THREE.BoxGeometry(S.chimney[0] + .16, .12, S.chimney[2] + .16).toNonIndexed().translate(x, y + S.chimney[1] - .34, z));
+      parts.schoolRoof.push(tint(new THREE.BoxGeometry(S.chimney[0] + .16, .12, S.chimney[2] + .16).toNonIndexed().translate(x, y + S.chimney[1] - .34, z), schoolRoofTint())); // #1696: own dark-metal tint, not the building's roof tone
     }
     piece.eave = eave; piece.ridge = eave + R.rise; piece.top = top;
   }
