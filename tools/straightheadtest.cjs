@@ -10,7 +10,7 @@ const check=(ok,label)=>{checks++;console.log(`${ok?'PASS':'FAIL'} ${label}`);if
  fs.mkdirSync(out,{recursive:true});
  const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||undefined,args:['--no-sandbox']});
  try {
- for(const weapon of (baseline?['jetpack']:['wand','web','saber','jetpack'])) {
+ for(const weapon of ['wand','web','saber']) {
   const context=await browser.newContext({viewport:{width:390,height:480}}), pages=[];
   try {
    for(let i=0;i<2;i++) {

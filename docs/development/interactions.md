@@ -202,7 +202,7 @@ not promise exact mesh contact or lag compensation.
 #893 reuses the same boxes for wand/web rays. `Combat.straightContact` preserves
 existing capsule body targets and saber swing/cone eligibility; a saber receives
 head damage only if its actual aim ray also reaches the selected head before a
-native body surface or world obstacle. The jetpack retains its old vertical flame
+native body surface or world obstacle. (Historical, removed in #1705: the jetpack no longer attacks.) The jetpack retained its old vertical flame
 footprint and target order. It may add a head contact only along its actual downward
 ray, from the existing feet+1m origin, before native body/world obstruction. Offset
 flame contacts remain body damage. The shared `straightBoxHeadContact` validates the
@@ -518,13 +518,12 @@ src/ghosts.js #673     greeting another player: each ghost has an invisible pick
                        GHOSTS.wave s, no extra mesh or draw call) with the line in a bubble over it (greet.js `say`, `Ghost.head`). Points:
                        bump('greets', 1, 'player:<name>') once per player and session (SCORE.first / again.greets). tools/ghosttest.cjs
 src/combat.js          fights between players (#667, on the ghosts of #666): only two players who BOTH hold a weapon (COMBAT.weapons:
-                       saber, nerf, wand, rifle, ball, web = the suit with empty hands, jetpack = worn; main.js `weaponKey`, in that
+                       saber, nerf, wand, rifle, ball, web = the suit with empty hands; the jetpack is NO weapon (#1705: it neither hurts nor arms, only a held weapon counts, also while flying); main.js `weaponKey`, in that
                        order; remove a key to leave it out) can damage each other (+ a small prop in the
                        avatar's hand; #1025: avatars always display their normal chosen appearance without ghost outline), the unarmed cannot be hit. main.js wraps each weapon's use (onUse / rifle.onShot /
                        suit.onShot) → `combat.fire(key)`: the nearest armed player along the view within the room's range (the
                        saber: in front within reach, `saberCone`; a vertical capsule COMBAT.body, `hitRadius`), not behind a wall
-                       (a raycast; ghosts, see-through and `userData.moving` things ignored); the jetpack hits whoever is under it
-                       while thrusting (`jetBelow`, `jetAcross`). ONE small message per shot, misses too ({ t: 'a', w, o, d, s?, to? }:
+                       (a raycast; ghosts, see-through and `userData.moving` things ignored); ONE small message per shot, misses too ({ t: 'a', w, o, d, s?, to? }:
                        start, unit direction, speed for things on an arc — a dart from the blasters' pool, the ball; eye + view
                        otherwise; `to` = the id hit), sharing the 5 Hz budget with the states and sent first (ghosts.js `fire`, an
                        outbox of GHOSTS.outbox, a miss dropped before a hit); the room passes it on to the armed others, who draw it
@@ -537,7 +536,7 @@ src/combat.js          fights between players (#667, on the ghosts of #666): onl
                        lazily, grip at the hand, −z forward); the state's `h` carries no variant, so one blaster / wand stands for all.
                        Check: `node tools/ghostpropstest.cjs BASE OUT` (tools/ghostprops.html, one Ghost per weapon).
                        Bicycle bell (#1302): B while riding / the touch 🔔 button (hudicons `bell`, touchlayout 'Ringklocka', slot of the turn button) rings it; see animals-audio.md.
-                       Jetpack on others (#1286): the wire field `jp` (1 worn, 2 thrusting; Worker `cleanState` validates, old clients ignore it; an older client's `h: 'jetpack'` counts as 1) puts the real pack (jetpack.js `packGeometry`, 0.8 scale) on the ghost's torso bone, `Ghost.setJetpack` / ghostprops.js `ghostJetpack`, plus the flames child at jp 2. Checks: `node tools/ghostattachtest.cjs BASE OUT` (tools/ghostattach.html), `node tools/ghostjetpackpeertest.cjs GAME WORKER` (two real Ghosts via a local Worker).
+                       Jetpack on others (#1286): the wire field `jp` (1 worn, 2 thrusting; Worker `cleanState` validates, old clients ignore it; an older client's `h: 'jetpack'` counts as 1 and as unarmed, #1705) puts the real pack (jetpack.js `packGeometry`, 0.8 scale) on the ghost's torso bone, `Ghost.setJetpack` / ghostprops.js `ghostJetpack`, plus the flames child at jp 2. Checks: `node tools/ghostattachtest.cjs BASE OUT` (tools/ghostattach.html), `node tools/ghostjetpackpeertest.cjs GAME WORKER` (two real Ghosts via a local Worker).
                        Bicycle (#1286): wire field `bk` (the bike's heading in camera-yaw convention, only while `player.riding`; Worker: finite |bk| ≤ 100, rounded) → `Ghost.setBike` / `bikeAt` / `poseBike`: ghostprops.js `ghostBike` (streetlife.js bikeGeometry baked, 1 draw call), the body faces the bike's heading, the head the look, hands on the handlebar, feet on the pedals. `node tools/ghostbiketest.cjs GAME WORKER` mounts a real bike in the app and checks a peer sees it. Held items other than weapons: #1297.
                        Held things on others (#1297, part of #1286): wire field `hi`, a category key from the whitelist `HELD_CATEGORIES` (src/heldcategory.js: cup, plate, food, bottle, book, paper, tool, plant, cue, box — never a name, photo or drawing content). `heldCategory(heldItem())` (pure, by class name / life-item tags, unknown held things = `box`, a `BilliardCue` = `cue` (#1687: a 1.2 m stick at the hand, 48 triangles; hidden while `Ghost.cue` is set because billiards.js then draws the aiming cue), weapons / the cat = none) is sent by main.js's state callback (not while riding); weapons keep `h`. Worker `cleanState` drops anything not on the whitelist. `Ghost.setItem` → `ghostItem(key)` (ghostprops.js: flat-colour merged proxy, 12–96 triangles, one draw call, shared material, no textures) at the right hand like the weapon props; shown only within AVATAR.poseFar (the posed avatar), never with a weapon prop or on the bike; the mirror self-ghost shows our own. Tests: `node --test src/heldcategory.test.mjs cloudflare/players.test.mjs`, tools/ghostitemtest.cjs (component page tools/ghostitem.html), tools/ghostitempeertest.cjs (real app + Worker).
                        The room checks a hit (cloudflare/players.js COMBAT: armed both, distance ≤ range +

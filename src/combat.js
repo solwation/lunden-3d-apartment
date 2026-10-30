@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { fallDamage } from './falldamage.js';
 import { recordPlayerKill, awardPvpRange } from './stats.js';
 import { HitMarker } from './hitmarker.js';
-import { COMBAT as C, TOYS, BASKET, pvpHitPoints, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, straightBoxHeadContact, playerBodyContact, playerBodySegment, splitAvatarCode } from './config.js';
+import { COMBAT as C, TOYS, BASKET, pvpHitPoints, PVP_HEAD_BOXES as HB, rifleBoxHeadContact, playerBodyContact, playerBodySegment, splitAvatarCode } from './config.js';
 import { nerfSegments, nerfPlayerContact } from './nerf.js';
 import { bowSegments, bowPlayerContact } from './bowflight.js';
 import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld } from './combatworld.js';
@@ -52,7 +52,7 @@ export function nerfContact(origin, direction, length, feet) {
 export class Combat {
   /** ghosts (Ghosts), camera, scene, weapon(): key or '', feet(): our feet (Vector3), jetpack, onDie(): back to the start; score / hurt / sfx hooks. */
   constructor({ ghosts, camera, scene, weapon, feet, jetpack = null, basket = null, darts = null, sparkles = null, arrows = null, life = null, fruit = null, fish = null, chicken = null, fries = null, beer = null, beerCans = null, onDie = () => {}, onHit = () => {}, onHurt = () => {}, sfx = null }) {
-    Object.assign(this, { ghosts, camera, scene, weapon, feet, jetpack, basket, darts, sparkles, arrows, lifeSystem: life, onDie, onHitCb: onHit, onHurtCb: onHurt, sfx, lives: C.lives, jetT: 0, flashT: 0,
+    Object.assign(this, { ghosts, camera, scene, weapon, feet, jetpack, basket, darts, sparkles, arrows, lifeSystem: life, onDie, onHitCb: onHit, onHurtCb: onHurt, sfx, lives: C.lives, flashT: 0,
       hits: 0, hurts: 0, deaths: 0, fired: 0, seen: 0, lastShot: null, lastSeen: null, consumed: new Set() });
     if (life?.onEvent) {
       life.onEvent((kind, d) => {
@@ -65,7 +65,7 @@ export class Combat {
     this.hookBeer({ beer, beerCans });
     ghosts.onShot = (m, g) => this.remote(m, g);
     prepareCombatWorld(scene, ghosts.group, camera);
-    // the others' shots (#667): one LineSegments for every streak (rifle, wand, web, jetpack flames; vertex colours, one
+    // the others' shots (#667): one LineSegments for every streak (rifle, wand, web; vertex colours, one
     // draw call) and a few balls; their darts are the blasters' own pool (toys.js Darts, `remote`: drawn only)
     const n = C.lines;
     this.lineGeo = new THREE.BufferGeometry();
@@ -375,7 +375,6 @@ export class Combat {
       const b = this.balls[this.nextBall++ % this.balls.length];
       b.m.position.copy(o); b.v.copy(d).multiplyScalar(m.s || 8); b.life = C.shotLife; b.flying = true; b.m.visible = true;
     } else if (m.w === 'saber') g.swing();
-    else if (m.w === 'jetpack') { const back = g.root.localToWorld(new THREE.Vector3(0, 1.0, 0.2)); this.streak(back, back.clone().setY(back.y - 1.6), 0xff8a2a, 0.3); }
     else {
       const end = o.clone().addScaledVector(d, this.reach(o, d, W.range));
       const from = m.w === 'web' || m.w === 'wand' ? hand : o.clone().addScaledVector(d, 0.5).setY(o.y - 0.15);
@@ -408,7 +407,7 @@ export class Combat {
     }
   }
 
-  /** Each frame: the jetpack's flames on whoever is under us, the hearts, the red flash fading. */
+  /** Each frame: the hearts, the red flash fading. */
   // #867 offline uses this same Combat replica; online health is only written by room events.
   recoveryClock(now = Date.now()) {
     if (this.ghosts.connected || this.lives >= this.maxLives) delete this.healAt;
@@ -424,49 +423,9 @@ export class Combat {
     this.recoveryClock(now);
   }
 
-  /** Flame-volume body contact uses the same solid-world policy as other combat rays (#978).
-   * Aim at the nearest surface of the existing generous body capsule, including offset targets;
-   * unlike clear(), do not leave a .3 m blind gap immediately before that surface. */
-  jetBodyClear(origin, feet) {
-    const axis = feet.clone().setY(THREE.MathUtils.clamp(origin.y, feet.y + C.body[0], feet.y + C.body[1]));
-    dir.subVectors(axis, origin);
-    const distance = Math.max(0, dir.length() - C.hitRadius);
-    if (distance === 0) return true; // the flame origin already lies in the body volume
-    ray.set(origin, dir.normalize()); ray.far = distance;
-    ray.layers.mask = this.camera.layers.mask; ray.camera = this.camera;
-    return combatWorldHits(this.scene, this.ghosts.group, this.camera, ray).length === 0;
-  }
-
   update(dt) {
     this.hitMarker.update();
     this.recoverOffline();
-    this.jetT = Math.max(0, this.jetT - dt);
-    const jet = this.jetpack;
-    if (jet?.thrusting && this.weapon() === 'jetpack' && this.jetT === 0) {
-      const me = this.feet();
-      for (const g of this.foes()) {
-        const dy = me.y - g.feet.y; // their feet this far under ours; their head at most jetBelow[1] under our feet
-        if (dy >= C.jetBelow[0] && dy - C.body[1] <= C.jetBelow[1] && Math.hypot(g.feet.x - me.x, g.feet.z - me.z) <= C.jetAcross) {
-          // A blocked attempt keeps the same cadence instead of querying a wall every frame.
-          this.jetT = this.rules.weapons?.jetpack?.every ?? 1;
-          const round = v => Math.round(v * 100) / 100;
-          const shot = { t: 'a', w: 'jetpack', o: [me.x, me.y + 1, me.z].map(round), d: [0, -1, 0], to: g.id };
-          const state = { p: g.feet.toArray(), r: g.root.rotation.y, c: g.crouch ?? 0, pose: g.pose, ...splitAvatarCode(g.avatarCode) };
-          const head = straightBoxHeadContact(g.id, state, shot, this.rules.weapons.jetpack.range);
-          if (head) {
-            const origin = new THREE.Vector3(...shot.o), point = new THREE.Vector3(...head.point);
-            ray.set(origin, new THREE.Vector3(0, -1, 0)); ray.far = head.distance;
-            ray.layers.mask = this.camera.layers.mask; ray.camera = this.camera;
-            g.root.updateMatrixWorld(true);
-            const body = ray.intersectObject(g.avatar.mesh, false).find(hit => playerBodyContact(g.id, state, hit.point.toArray()));
-            if (!body && this.clear(origin, point.clone().add(new THREE.Vector3(0, -.3, 0)))) shot.hc = [HB.version, ...head.point];
-          }
-          if (!shot.hc && !this.jetBodyClear(new THREE.Vector3(...shot.o), g.feet)) continue;
-          this.lastShot = shot; this.ghosts.fire(shot);
-          break;
-        }
-      }
-    }
     for (const job of [...this.nerfPending]) if (!this.ghosts.connected || this.weapon() !== 'nerf') { job.cancel = true; job.finish(null); }
     this.moveShots(dt);
     const on = this.active || this.lives < this.maxLives;

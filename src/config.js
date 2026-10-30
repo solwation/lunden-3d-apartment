@@ -3707,8 +3707,7 @@ export const AVATAR_SKIN = {
 // `weapons` = what counts, in the order they are looked for (the room's list must have each one: there its range and rate);
 // remove one here to leave it out. Both armed: drawn solid (`solid` opacity), else a ghost. A hit is judged by the shooter
 // against the other's body (a vertical capsule `body` [from, to] m above the feet, `hitRadius` m), not through a wall; the
-// lightsaber is a swing (anything within its range and `saberCone`, the cosine of the half-angle, in front); the jetpack's
-// flames hit someone `jetBelow` [min, max] m under you and within `jetAcross` m sideways while it thrusts. `lives` until the
+// lightsaber is a swing (anything within its range and `saberCone`, the cosine of the half-angle, in front). The jetpack is no weapon (#1705). `lives` until the
 // room's welcome says otherwise. The HUD's hearts only while a fight is on. All our picks (*guess*).
 // #873: gameplay balance guesses, not surveyed distances: first 5 m retain the existing 5-point hit;
 // each complete 2 m thereafter adds 1 point, capped at 15 extra. Geometry is the room's accepted feet-to-feet distance.
@@ -3718,13 +3717,13 @@ export function pvpHitPoints(distance) {
   if (!Number.isFinite(distance) || distance < 0) return 0;
   return SCORE.each.pvpHits + Math.min(PVP_SCORE.maxBonus, Math.floor(Math.max(0, distance - PVP_SCORE.nearMetres) / PVP_SCORE.metresPerPoint));
 }
-export const COMBAT = { weapons: ['saber', 'nerf', 'wand', 'rifle', 'ball', 'bow', 'web', 'jetpack'], lives: 10, portionLife: 1, solid: 1,
+export const COMBAT = { weapons: ['saber', 'nerf', 'wand', 'rifle', 'ball', 'bow', 'web'], lives: 10, portionLife: 1, solid: 1,
   // Confirmed-hit HUD duration/spacing: brief, clear of the crosshair (UX assumptions, #875).
   hitMarker: { lifeMs: 700, offsetPx: 20, livesGapPx: 6 }, // #904: UI clearance choice, not a physical measurement
   // Technical collision limits: fixed bitsets plus reserved bookkeeping, built during short idle slices (#715).
   // Native cold-query chunks bound triangle work; the existing2ms/2s clocks remain cooperative, not hard frame guarantees.
   collision: { cells: 32, clusters: 32, spatialBudgetBytes: 16 * 1024 * 1024, maxSpatialEntries: 1024, predictionMs: 2000, nativeChunkTriangles: 128, budgetBytes: 1024 * 1024, recordReserve: 4096, buildMs: 2, minTriangles: 200, queryCells: 512 },
-  body: [0.25, 1.75], hitRadius: 0.4, saberCone: 0.5, jetBelow: [0.3, 4], jetAcross: 1.2, flash: 0.35,
+  body: [0.25, 1.75], hitRadius: 0.4, saberCone: 0.5, flash: 0.35,
   // the others' shots drawn here: at most `lines` streaks (rifle, wand, web, flames) and `balls` balls at once, each gone
   // after `shotLife` s; their darts reuse the blasters' pool (in `dartColor`)
   lines: 16, balls: 3, shotLife: 4, dartColor: 0x1f6fff };
@@ -6914,14 +6913,7 @@ export function rifleBoxHeadContact(seed, state, origin, direction, range, radiu
 
 /** #893: straight attacks share the logical boxes, while keeping their original attack shape. */
 export function straightBoxHeadContact(seed, state, shot, range) {
-  if (!['wand', 'web', 'saber', 'jetpack'].includes(shot?.w) || shot.t !== 'a') return null;
-  if (shot.w === 'jetpack') {
-    // The original flame is vertical, from one metre above the shooter's feet.
-    if (shot.d?.[0] !== 0 || shot.d?.[1] !== -1 || shot.d?.[2] !== 0 || !state?.p || !shot.o) return null;
-    const below = shot.o[1] - 1 - state.p[1];
-    if (below < COMBAT.jetBelow[0] || below - COMBAT.body[1] > COMBAT.jetBelow[1] ||
-      Math.hypot(shot.o[0] - state.p[0], shot.o[2] - state.p[2]) > COMBAT.jetAcross) return null;
-  }
+  if (!['wand', 'web', 'saber'].includes(shot?.w) || shot.t !== 'a') return null;
   return rifleBoxHeadContact(seed, state, shot.o, shot.d, range);
 }
 

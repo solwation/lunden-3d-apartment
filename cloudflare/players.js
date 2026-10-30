@@ -112,7 +112,6 @@ export const COMBAT = {
     ball: { range: 10, every: 1 },       // the basketball, thrown
     bow: { range: 60, every: 0.6 },      // the bow (#690): an arrow on its arc
     web: { range: 30, every: 0.6 },      // the Spider-Man suit's web (empty hands)
-    jetpack: { range: 4, every: 1 },     // the jetpack's flames on whoever is under you
   },
 };
 

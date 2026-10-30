@@ -6987,7 +6987,7 @@ retained under `/tmp/lunden-priority-894/`; no live shot, World or phone test is
 
 ## Jetpack body obstacles (#978)
 
-`tools/jetobstacletest.cjs game worker output` drives actual `Combat.update()` flame
+(Removed in #1705: the jetpack no longer attacks, and `tools/jetobstacletest.cjs` is gone.) It drove actual `Combat.update()` flame
 attacks through two native Ghosts/PlayerRoom WebSocket clients. It checks the original
 horizontal-wall bug, a thin obstacle just before body contact, diagonal side walls,
 a corner, open passage, ordinary head/body damage, old side-volume reach, transparent

@@ -163,7 +163,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.heldCat.set(cat, this.root);
     this.avatar.setSuit(sp);
     this.bikeWire = Number.isFinite(bk) ? bk : null; // (#1286: the bicycle's heading while riding)
-    this.setJetpack(h === 'jetpack' && !jp ? 1 : jp); // (an older client only says h: 'jetpack')
+    this.setJetpack(h === 'jetpack' && !jp ? 1 : jp); // (an older client only says h: 'jetpack', which is no weapon, #1705)
     this.refreshBadge();
     const prev = this.snaps.at(-1);
     if (prev && Math.hypot(p[0] - prev.p.x, p[1] - prev.p.y, p[2] - prev.p.z) > G.jump) this.snaps.length = 0; // a teleport (#1319: into / out of the children's room): appear there, no streak across the map

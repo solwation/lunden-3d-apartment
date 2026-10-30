@@ -316,6 +316,23 @@ test('ghost score is forwarded, included on welcome and bounded like leaderboard
   }
 });
 
+test('jetpack is no weapon (#1705): h: jetpack counts as unarmed, a jetpack shot is never accepted', async () => {
+  const env = setup();
+  const a = await connect(env, 'A'), b = await connect(env, 'B');
+  const ib = b.got[0].i;
+  const hits = () => a.got.filter((m) => m.t === 'hit');
+  assert.equal('jetpack' in COMBAT.weapons, false);
+  a.send({ p: [0, 2, 0], r: 0, h: 'jetpack', jp: 2 }); b.send({ p: [0, 0, 0], r: 0, h: 'nerf' }); await settle(env);
+  assert.equal(b.states().at(-1).h, '', 'an older client\'s h: jetpack is unarmed');
+  assert.equal(b.states().at(-1).jp, 2, 'the flames still show');
+  for (const h of ['jetpack', 'nerf']) {
+    a.send({ p: [0, 2, 0], r: 0, h, jp: 2 }); await settle(env);
+    now += 2000;
+    a.send({ t: 'a', w: 'jetpack', o: [0, 3, 0], d: [0, -1, 0], to: ib }); a.send({ t: 'f', w: 'jetpack', to: ib }); await settle(env);
+    assert.equal(hits().length, 0, 'w: jetpack never hits (holding ' + h + ')');
+  }
+});
+
 test('Nerf (#714): shared longer range accepts 22 m, rejects range/rate/unarmed and relays misses without hits', async () => {
   const { TOYS } = await import('../src/config.js');
   assert.equal(COMBAT.weapons.nerf.range, TOYS.nerf.dart.range);

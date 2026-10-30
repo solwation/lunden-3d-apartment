@@ -89,7 +89,7 @@ test('straight weapon box heads retain body fallback, legacy packets, origin/ran
     await settle(env); return { ws, got, id: got[0].i, send: m => ws.send(JSON.stringify(m)) };
   };
   try {
-    for (const w of ['wand', 'web', 'saber', 'jetpack']) {
+    for (const w of ['wand', 'web', 'saber']) {
       const a = await connect(), b = await connect(), tall = avatarLook(b.id).tall;
       const feet = w === 'jetpack' ? [2, 2, 0] : [0, 0, 0];
       a.send({ p: feet, r: 0, h: w }); b.send({ p: [2, 0, 0], r: 0, h: 'rifle' }); await settle(env);
