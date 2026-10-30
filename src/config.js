@@ -2090,6 +2090,7 @@ export const ELEVATION = { protect: { x0: -86, x1: 46, z0: -36, z1: 72 }, ramp: 
 export const WALK = { x0: -260, x1: 320, z0: -200, z1: 452, cell: 40, maxSlope: 0.7, // gradient (rise/run, ~35°) above which the ground cannot be climbed and you slide back (#1281, *guess*; the park paths (0.3-0.45) stay under it; the drop from the shore path into the water (up to ~0.8), the steepest bank edges and the bridge embankments are over)
   slideOut: 0.85, slideSpeed: 3.5, slideAccel: 9, // #1281: hysteresis (sliding stops below maxSlope * slideOut), the slide's top speed (m/s) and acceleration (m/s²), *guess*
   waterDepth: 0.15, splashSafe: 2, // #1281: feet this far under the water line (m) are in the river; no fall damage for `splashSafe` s after the splash
+  bikeEdge: 1.6, // #1719: the edge notice's margin (m) on the bicycle, which stops ~1 m short of the wall (measured in farwalktest, z 450.9 vs 452); on foot 0.6
   bankStep: 1, bankMax: 40, bankDry: 0.4, bankClear: 1.5, // #1281: the bank search's ring step and reach (m), how far over the water line a bank point must be (m) and the dry margin round it (m)
   trunk: { big: 0.45, tree: 0.3, birch: 0.2, young: 0.15 } }; // `trunk`: half-width of a tree trunk's collision diamond by kind (*guess*, the drawn trunks are thinner than a body)
 

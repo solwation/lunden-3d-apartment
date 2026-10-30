@@ -355,7 +355,7 @@ for (const [name, start, points, ok] of R) {
     let told = 0; player.onEdge = () => told++; player.edgeAt = undefined;
     const a = [[10, WALK.z1 - 6], [10, WALK.z1 + 25]];
     if (bike) bikeWalk(a); else { player.spawn(...a[0], 0); walk([a[1]]); }
-    if (bike) check(player.pos.z <= WALK.z1 + 0.5 && player.pos.z > WALK.z1 - 3, `södra ytterkanten (z ${WALK.z1}) stoppar cykeln (${at()})`); // the bike gets no edge message anywhere (bikeStep skips atEdge; own issue)
+    if (bike) check(told === 1 && player.pos.z <= WALK.z1 + 0.5 && player.pos.z > WALK.z1 - 3, `södra ytterkanten (z ${WALK.z1}) stoppar cykeln och säger ifrån en gång (#1719: ${told}, ${at()})`);
     else check(told === 1 && player.pos.z <= WALK.z1 + 0.5, `södra ytterkanten (z ${WALK.z1}) säger ifrån en gång (${told}, ${at()})`);
   }
   player.onEdge = undefined; player.keys = new Set();

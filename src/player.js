@@ -672,6 +672,13 @@ export class Player {
     return true;
   }
 
+  /** The outer wall of the walkable area: `onEdge` at most once per 20 s when within `margin` of it (#1236; #1719: also for the bicycle, which stops
+   * about a metre short of the edge, hence its wider margin). */
+  edgeNotice(margin) {
+    if (!atEdge(this.pos.x, this.pos.z, margin)) return;
+    const now = performance.now(); if (now - (this.edgeAt ?? -1e9) > 20000) { this.edgeAt = now; this.onEdge?.(); }
+  }
+
   bikeStep(dt) {
     dt = Math.max(0, Math.min(BICYCLE.maxDt, Number.isFinite(dt) ? dt : 0));
     const r = this.riding, C = BICYCLE, k = this.keys;
@@ -711,6 +718,7 @@ export class Player {
       if(this.fall&&!r.airborne) {const f=this.fall;this.fall=null;this.vy=0;this.onLand?.(f.top-this.pos.y,f.gap);if(this.riding!==r)return;}
     }
     this.bikeSplash(); // #1304: into the river
+    this.edgeNotice(WALK.bikeEdge); // #1719: the bicycle stops ~1 m short of the edge, so a wider margin than on foot
     this.camera.rotation.y = r.yaw - Math.PI / 2; this.sprinting = false; this.jumpPress = false; this.crouch = this.crouched = false;
     this.bikePose();
   }
@@ -808,7 +816,7 @@ export class Player {
     if (!this.flying && !this.aloft && !this.inFootprint() && !this.unit && !this.inPlayroom) { // #1236: landed inside a far building / its closed courtyard: out onto the street
       const out = buildingRescue(this.pos.x, this.pos.z);
       if (out && this.pos.y <= groundY(this.pos.x, this.pos.z) + 0.05) { this.pos.set(out.x, groundY(out.x, out.z), out.z); this.vy = 0; this.fall = null; this.fling = null; this.onWaterRescue?.('building'); }
-      if (atEdge(this.pos.x, this.pos.z)) { const now = performance.now(); if (now - (this.edgeAt ?? -1e9) > 20000) { this.edgeAt = now; this.onEdge?.(); } } // the outer wall: say so once in a while
+      this.edgeNotice(); // the outer wall: say so once in a while
     }
     if (this.flying) { this.jv.x = (this.pos.x - x0) / dt; this.jv.z = (this.pos.z - z0) / dt; } // (a wall takes the speed)
 
