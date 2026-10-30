@@ -699,6 +699,13 @@ snapshots it has, the room hands it the claims (`L.c`); a player leaving with a 
 Known limits: the squirrels' poses are 2 Hz snapshots (visible smoothing, no per-frame sync); the leader is whoever came first, not the
 nearest; ghosts further than the others' `G.max` are not lures.
 
+### Squirrel chirp (#1699)
+
+Taking a nut plays `sfx.chirp(pos, pitch)` (audio.js; synthesised, three short rising sine chirps, `SQUIRRELS.chirp`, all *guess*) from
+the squirrel through the ordinary positional/mute path. `Squirrels.chirp` is called beside the hearts burst: in `take` (leader, own or a
+remote player's nut) and in `fedBy` (followers, when the shared 'F' is applied), so everyone hears it once and no new traffic exists.
+`tools/squirrelstest.cjs` swaps `S.sfx` for a mock and checks both paths. The sound itself is untested by ear.
+
 ### Shy squirrels (#1698)
 
 "Still" is now strict: under `SQUIRRELS.still` (0.12 m/s, smoothed over ~0.1 s) for `stillFor` (0.5 s), crouched, with a nut; any movement

@@ -3,7 +3,7 @@ import { synthFootstep } from './footsteps.js';
 // given a world position and is panned/attenuated relative to the camera.
 // The AudioContext can only start after a user gesture — call initAudio() from a click.
 
-import { SOUNDS, KISS, PLAYROOM, SANTA, FOOTSTEPS } from './config.js';
+import { SOUNDS, KISS, PLAYROOM, SANTA, FOOTSTEPS, SQUIRRELS } from './config.js';
 import { distanceGain, VoiceCap } from './spatialsound.js';
 
 let ctx = null, master = null, noiseBuf = null;
@@ -107,6 +107,16 @@ function thump(t, dest, gain = 0.8) {
 }
 
 export const sfx = {
+  /** #1699: a squirrel's happy 'tjipp-tjipp' when it gets the nut: a few short, bright rising chirps; ordinary positional/mute output. `pitch` ~1. */
+  chirp(pos, pitch = 1) {
+    if (!ready()) return;
+    const C = SQUIRRELS.chirp, t0 = ctx.currentTime, d = out(pos, C.gain);
+    for (let i = 0; i < C.notes; i++) {
+      const t = t0 + i * C.gap, hz = C.hz * pitch * (1 + (i % 2) * 0.06);
+      tone(t, C.dur, d, { from: hz, to: hz * C.rise, gain: 0.6 });
+      tone(t, C.dur, d, { from: hz * 2, to: hz * 2 * C.rise, gain: 0.12 });
+    }
+  },
   /** A low, breathy three-beat chuckle after Santa's greeting; ordinary positional/mute output. */
   santaLaugh(pos) {
     if (!ready()) return;

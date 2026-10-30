@@ -52,15 +52,19 @@ let failed = 0; const check = (ok, name, data) => { console.log(`${ok ? 'PASS' :
     check(pick.visibleNut && pick.targeted && pick.held, 'a nut on the ground is aimed at and taken into the hand with E', pick);
     // (3) crouch still with the nut: feeding
     const feed = await page.evaluate(() => {
-      const { a, S } = T, b = S.animals[0].brain, pl = a.player.pos, d = a.camera.getWorldDirection(new (a.camera.position.constructor)());
+      const { a, S } = T, b = S.animals[0].brain, pl = a.player.pos; window.chirps = []; S.sfx = { chirp: (p, k) => window.chirps.push({ x: p.x, y: p.y, z: p.z, k }) }; const d = a.camera.getWorldDirection(new (a.camera.position.constructor)());
       const l = Math.hypot(d.x, d.z) || 1, gx = pl.x + d.x / l * 5, gz = pl.z + d.z / l * 5;
       Object.assign(b, { x: gx, z: gz, y: S.ground(gx, gz) }); b.startForage(); b.set('forage', 30); b.goal.x = gx; b.goal.z = gz;
       a.stats.squirrelFeeds = 0; const s0 = a.totalScore(), trail = new Set(); let lure = false, hearts = false; const crouched = a.player.crouched;
       for (let i = 0; i < 700 && !b.hasNut; i++) { T.run(1, 0.05); trail.add(b.state); lure ||= S.player_.lure; }
       hearts = S.hearts.points.visible; const fed = a.stats.squirrelFeeds, ds = a.totalScore() - s0, heldAfter = a.heldItem();
-      return { lure, crouched, trail: [...trail], hasNut: b.hasNut, fed, ds, hearts, heldAfter: !!heldAfter };
+      return { lure, crouched, trail: [...trail], hasNut: b.hasNut, fed, ds, hearts, heldAfter: !!heldAfter, chirps: window.chirps, at: { x: b.x, z: b.z } };
     });
     check(feed.lure && feed.hasNut && feed.fed === 1 && feed.ds > 0 && feed.hearts && !feed.heldAfter && feed.trail.includes('approach'), 'crouching still with a nut: a squirrel creeps up, takes it, score and hearts, hand empty', feed);
+    check(feed.chirps.length === 1 && Math.hypot(feed.chirps[0].x - feed.at.x, feed.chirps[0].z - feed.at.z) < 0.5, 'feeding plays the chirp once, at the squirrel', feed.chirps);
+    // (3b) a follower applying the leader's 'F' chirps once too, from that squirrel
+    const fol = await page.evaluate(() => { const { S } = T, b = S.animals[1].brain; window.chirps.length = 0; S.fedBy(1, 'someone-else'); return { n: window.chirps.length, ok: window.chirps[0] && Math.hypot(window.chirps[0].x - b.x, window.chirps[0].z - b.z) < 0.01 }; });
+    check(fol.n === 1 && fol.ok, "a remote feeding ('F' applied) plays the chirp once at the squirrel", fol);
     const flee = await page.evaluate(() => {
       const { a, S } = T, q = S.animals[0], b = q.brain, seen = new Set(); let mouth = false;
       for (let i = 0; i < 600 && !(b.state === 'perch' && b.hasNut); i++) { T.run(1, 0.05); seen.add(b.state); mouth ||= q.mouth.visible; }

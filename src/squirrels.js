@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SQUIRRELS as C, PADDOCK, SITE } from './config.js';
 import { Holdable, heldItem, setHeld } from './holdable.js';
 import { Hearts } from './pingping.js';
+import { sfx } from './audio.js';
 import { registerSeasonal } from './seasons.js';
 import { SquirrelBrain, NutField, linkTrees, winterMonth } from './squirrelbrain.js';
 import { SquirrelSync } from './squirrelsync.js';
@@ -124,7 +125,7 @@ export class Squirrels {
   /** `feet`: surroundings.js treeFeet, `crowns`: its aoTrees, `ground(x, z)`: the walkable surface, `walkable(x, z)` / `nutOk(x, z)`: where it may run / a nut may lie,
    * `onFeed(brain)`: scoring. `rnd`: injectable for tests. */
   constructor({ scene, camera, player, feet, crowns, ground, walkable, nutOk, onFeed, rnd = Math.random }) {
-    Object.assign(this, { scene, camera, player, ground, onFeed, rnd, winter: true, time: 0, speed: 0, acc: [], lastX: NaN, lastZ: NaN, lure: false, net: null, cand: [], track: new Map(), markT: 0, daylight: 1 });
+    Object.assign(this, { sfx, scene, camera, player, ground, onFeed, rnd, winter: true, time: 0, speed: 0, acc: [], lastX: NaN, lastZ: NaN, lure: false, net: null, cand: [], track: new Map(), markT: 0, daylight: 1 });
     const parkPatches = new Set([...(SITE.riverPark.patches ?? []).map((q) => q.name), 'bridge-west']), // (the other `patch` names in treeFeet belong to the street/backdrop areas)
       paddock = PADDOCK.trees ?? [], same = (a, b) => Math.abs(a.x - b[0]) < 0.01 && Math.abs(a.z - b[1]) < 0.01;
     this.trees = linkTrees(feet.filter((f) => parkPatches.has(f.patch) || paddock.some(([x, z]) => same(f, [x, z]))).map((f) => {
@@ -206,13 +207,18 @@ export class Squirrels {
       if (!slot || !slot.held) return false;
       this.sync.feed(slot, who, an); this.nuts.remove(slot); this.nutItems[i].sync();
     }
-    V.set(brain.x, brain.y + 0.2 * brain.spec.scale, brain.z); this.hearts.burst(V);
+    V.set(brain.x, brain.y + 0.2 * brain.spec.scale, brain.z); this.hearts.burst(V); this.chirp(brain);
     return true;
+  }
+  /** #1699: the happy chirp from the squirrel's position, once per feeding (leader: where it takes; follower: where the 'F' is applied). Pitch varies per squirrel. */
+  chirp(brain) {
+    const k = Math.max(0, this.animals.findIndex((q) => q.brain === brain)) - 1;
+    this.sfx?.chirp({ x: brain.x, y: brain.y + 0.2 * brain.spec.scale, z: brain.z }, 1 + k * C.chirp.pitchJitter);
   }
   /** Follower: the leader's squirrel `an` took `who`'s nut: hearts for everybody, the nut and the points for the feeder. */
   fedBy(an, who) {
     const a = this.animals[an]; if (!a) return;
-    V.set(a.brain.x, a.brain.y + 0.2 * a.brain.spec.scale, a.brain.z); this.hearts.burst(V);
+    V.set(a.brain.x, a.brain.y + 0.2 * a.brain.spec.scale, a.brain.z); this.hearts.burst(V); this.chirp(a.brain);
     if (who !== (this.net?.me?.() ?? '')) return;
     const it = heldItem(); if (!it?.isSquirrelNut) return;
     it.slot.alive = false; it.slot.held = false; it.sync(); this.onFeed?.(a.brain, a);
