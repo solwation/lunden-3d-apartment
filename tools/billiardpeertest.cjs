@@ -26,10 +26,19 @@ const COMPONENT = async (page, at, name, look = [0, 0.58, 0]) => { // a light cl
     b.events = []; b.onEvent = (t) => b.events.push(t);
     const renderer = new T.WebGLRenderer({ antialias: false }); renderer.setSize(720, 480); document.body.prepend(renderer.domElement); renderer.domElement.style.cssText = 'position:fixed;left:0;top:0;z-index:9';
     let last = performance.now();
-    setInterval(() => { const t = performance.now(), dt = (t - last) / 1000; last = t; g.update(); b.update(Math.min(dt, 0.1), camera, window.__aimed ?? true); renderer.render(scene, camera); }, 33);
-    window.__c = { b, g, camera, table: () => JSON.stringify(S.snapshotTable(b.physics, b.rules, b.seq)), S };
+    const frame = () => { const t = performance.now(), dt = (t - last) / 1000; last = t; g.update(); b.update(Math.min(dt, 0.1), camera, window.__aimed ?? true); renderer.render(scene, camera); };
+    let timer = setInterval(frame, 33);
+    window.__c = { b, g, camera, still: () => { clearInterval(timer); renderer.render(scene, camera); }, resume: () => { last = performance.now(); timer = setInterval(frame, 33); }, table: () => JSON.stringify(S.snapshotTable(b.physics, b.rules, b.seq)), S };
   }, { worker, at, name, look });
 };
+// #1694: one full-app render at quality=3 in SwiftShader keeps the GPU process at ~350 % CPU for 18+ minutes (the whole apartment,
+// shadows and all) and the screenshot waits for it, so the full-app screenshots of A are opt-in (BILLIARD_A_SHOTS=1); B's component
+// pages (the real Billiards/Ghosts classes) are cheap and always shot. Nothing asserts on A's picture.
+const shotA = async (name) => { if (!process.env.BILLIARD_A_SHOTS) return;
+  await A_PAGE.evaluate(() => { const a = window.__app; a.renderer.render = window.__render; window.__bt.render(); a.renderer.render = () => {}; }); await A_PAGE.screenshot({ path: `${shots}/${name}.png` }); };
+let A_PAGE;
+// B's 30 Hz SwiftShader render loop starves the screenshot (page.screenshot timed out at 30 s): stop the loop, draw one frame, shoot, resume.
+const shotB = async (page, name) => { await page.evaluate(() => window.__c.still()); try { await page.screenshot({ path: `${shots}/${name}.png`, timeout: 120000 }); } finally { await page.evaluate(() => window.__c.resume()); } };
 const state = (page) => page.evaluate(() => window.__c.table());
 const until = async (f, n = 150) => { for (let i = 0; i < n; i++) { if (await f()) return true; await sleep(200); } return false; };
 
@@ -38,7 +47,7 @@ const until = async (f, n = 150) => { for (let i = 0; i < n; i++) { if (await f(
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH, args });
   try {
     // --- client A: the whole app, in the children's room at the west end of the table
-    const A = await (await browser.newContext({ viewport: { width: 1000, height: 700 } })).newPage(); const errors = [];
+    const A = A_PAGE = await (await browser.newContext({ viewport: { width: 1000, height: 700 } })).newPage(); const errors = [];
     A.on('pageerror', (e) => errors.push(e.message));
     await A.addInitScript(() => { localStorage.setItem('lunden.name', 'Anna'); sessionStorage.setItem('lunden.nameSkipped', '1'); });
     await A.goto(`${game}/?shot&quality=3&time=12&month=6&freeze&cloud=${encodeURIComponent(worker)}`, { waitUntil: 'commit' });
@@ -101,8 +110,7 @@ const until = async (f, n = 150) => { for (let i = 0; i < n; i++) { if (await f(
     await sleep(1500);
     const s3 = await same([A, B], 'two (nearly) simultaneous board presses leave ONE game, identical on both clients', q0 + 1);
     check(s3.q <= q0 + 2, 'no more than the two requests were applied (a request on a stale q is refused; the Worker tests race exactly the same q)', { q0, q: s3.q });
-    await A.evaluate(() => { const a = window.__app, r = a.renderer.render; a.renderer.render = window.__render; window.__bt.render(); a.renderer.render = () => {}; });
-    await A.screenshot({ path: `${shots}/A-app.png` }); await B.screenshot({ path: `${shots}/B-table.png` }); await lookAtBoard(); await sleep(500); await B.screenshot({ path: `${shots}/B-board.png` });
+    await shotA('A-app'); await shotB(B, 'B-table'); await lookAtBoard(); await sleep(500); await shotB(B, 'B-board');
 
     // --- #1637: B sees A's cue while A aims and charges, and A's charged stroke; a short vs a long charge = a weak vs a hard stroke
     if (s3.m !== 'free') { await B.evaluate(() => window.__c.b.toggleMode()); await same([A, B], 'back to free play for the power checks', s3.q + 1); }
@@ -123,14 +131,14 @@ const until = async (f, n = 150) => { for (let i = 0; i < n; i++) { if (await f(
     const chargeA = await A.evaluate(() => { const b = window.__app.world.playroom.billiards; return { power: b.chargePower, label: document.getElementById('action')?.textContent, meter: !document.getElementById('cue-power').hidden }; });
     const r2 = await remote();
     check(chargeA.power > .5 && chargeA.meter && /^Stöt \d+ %$/.test(chargeA.label) && r2.visible && r2.pull > .04 && r2.dist > r1.dist + .04, 'A charging (touch label + meter): B sees A\'s cue drawn back', { chargeA, r2 });
-    await B.screenshot({ path: `${shots}/B-sees-A-charge.png` });
-    await A.evaluate(() => { const a = window.__app; a.renderer.render = window.__render; window.__bt.render(); a.renderer.render = () => {}; }); await A.screenshot({ path: `${shots}/A-charge-touch.png` });
+    await shotB(B, 'B-sees-A-charge');
+    await shotA('A-charge-touch');
     const drawCalls = await B.evaluate(() => { const b = window.__c.b; return { remoteMeshes: b.remoteCues.length, sharedGeometry: b.remoteCues.every((m) => m.geometry === b.cue.geometry && m.material === b.cue.material) }; });
     check(drawCalls.remoteMeshes === 1 && drawCalls.sharedGeometry, 'one extra cue mesh (one draw) per remote aimer, sharing the cue geometry + material', drawCalls);
     await B.evaluate(() => { window.__strokes = []; });
     const powerA = await A.evaluate(() => { const a = window.__app, b = a.world.playroom.billiards, w = Math.round(b.chargePower * 100) / 100; a.use(a.focus().focused); return w; });
     check(await until(() => B.evaluate(() => window.__c.b.strokeT > 0 && window.__c.b.strokePull > 0), 30), 'B animates A\'s charged stroke with A\'s cue', await B.evaluate(() => ({ strokeT: window.__c.b.strokeT, pull: window.__c.b.strokePull })));
-    await sleep(60); await B.screenshot({ path: `${shots}/B-sees-A-stroke.png` });
+    await sleep(60); await shotB(B, 'B-sees-A-stroke');
     const sMsg = await B.evaluate(() => window.__strokes.find((m) => m.k === 'S'));
     check(sMsg && Math.abs(sMsg.w - powerA) < .011, 'the stroke reaches B with A\'s power', { sent: powerA, got: sMsg?.w });
     check(await until(async () => !(await remote()).visible, 20), 'B hides A\'s aiming cue while the balls roll');
@@ -147,14 +155,14 @@ const until = async (f, n = 150) => { for (let i = 0; i < n; i++) { if (await f(
       return { w: m?.w, ms: m?.ms, cue: Math.hypot(end.p[0] - start.p[0], end.p[1] - start.p[1]), moved: end.p.filter((v, i) => v !== start.p[i]).length };
     };
     const weak = await strokeWith(0), hard = await strokeWith(1250);
-    check(weak.w === 0.15 && hard.w === 1 && weak.ms < hard.ms && weak.moved < hard.moved, 'a short charge = a weak stroke (15 %), a long one = full power: shorter roll, fewer balls moved', { weak, hard });
+    check(weak.w >= 0.15 && weak.w < 0.3 && hard.w === 1 && weak.ms < hard.ms && weak.moved < hard.moved, 'a short charge = a weak stroke (15 % + the ~50-100 ms between the two E presses; #1694), a long one = full power: shorter roll, fewer balls moved', { weak, hard });
 
     // --- a late client C and a reconnect: the existing table, not a new rack
     await B.evaluate(() => window.__c.g.disconnect()); await B.close();
     const C2 = await (await browser.newContext({ viewport: { width: 760, height: 500 } })).newPage(); C2.on('pageerror', (e) => errors.push(e.message)); await COMPONENT(C2, [0, 1.3], 'Cecilia');
     check(await until(() => C2.evaluate(() => window.__c.b.seq > 0)), 'C: a late visitor gets a table');
     await same([A, C2], 'C (late / reconnecting) sees the same table as A');
-    await C2.screenshot({ path: `${shots}/C-late.png` });
+    await shotB(C2, 'C-late');
     check(errors.length === 0, 'no page errors', errors);
   } finally { await browser.close(); }
   console.log(failed ? `${failed} FAILED` : 'ALL PASSED'); process.exit(failed ? 1 : 0);
