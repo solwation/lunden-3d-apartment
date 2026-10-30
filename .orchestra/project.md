@@ -212,9 +212,9 @@ The conductor runs this loop in every `/orkester` queue session:
 
 ## Shared version and maintenance
 
-Shared release: **v0.6.0**, commit **aecd631907c3374800e562c98125d905863ff925**. Imported as a squashed subtree
-at `.orchestra/shared`; upgraded from v0.4.1 in original #1666, with the matching public import tracked in
-[public #172](https://github.com/solwation/kvarteret-lunden/issues/172). Existing session IDs remain valid; new
+Shared release: **v0.6.1**, commit **432e1879416a91215b4e174699c7af705fd0359d**. Imported as a squashed subtree
+at `.orchestra/shared`; upgraded from v0.6.0 in original #1717, with the matching public import tracked in
+[public #189](https://github.com/solwation/kvarteret-lunden/issues/189). Existing session IDs remain valid; new
 sessions follow the shared host/model format, and startup resumes unfinished work before new selection.
 See [installation](shared/INSTALL.md) and [contribution](shared/CONTRIBUTING.md) instructions.
 Improve the core in its own clean repository, release it, then explicitly update both
