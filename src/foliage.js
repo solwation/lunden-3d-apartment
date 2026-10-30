@@ -137,7 +137,7 @@ export function lobeGeometry(level = 'tree') {
   };
   const push = (p, n, u, v, shade = 1) => { pos.push(p.x, p.y, p.z); nor.push(n.x, n.y, n.z); uv.push(u, v); const k = occl(p) * shade; col.push(k, k, k); };
   // the core: a lumpy icosphere (three builds it non-indexed), radial normals, the opaque atlas cell wrapped round it
-  const core = new THREE.IcosahedronGeometry(F.core, F.coreDetail[level]), cp = core.attributes.position;
+  const core = new THREE.IcosahedronGeometry(F.core * F.coreScale[level], F.coreDetail[level]), cp = core.attributes.position;
   const p = new THREE.Vector3(), n = new THREE.Vector3(), jv = new THREE.Vector3();
   const lump = (v) => 1 + F.lump * (Math.sin(v.x * 3.1 + 1.3) * Math.sin(v.y * 2.7 + 0.4) * Math.sin(v.z * 3.3 + 2.1));
   const inset = 0.03; // keep clear of the neighbouring cells (their transparent ground would bleed into the mipmaps)
@@ -164,7 +164,7 @@ export function lobeGeometry(level = 'tree') {
     t2.crossVectors(n, t1);
     q.setFromAxisAngle(n, r() * 6.28); t1.applyQuaternion(q); t2.applyQuaternion(q);
     q.setFromAxisAngle(t1, (r() - 0.5) * 2 * F.tilt); t2.applyQuaternion(q);
-    const s = F.size * (0.8 + r() * 0.45) / 2, cell = Math.floor(r() * 3), u0 = (cell % 2) * 0.5, v0 = cell < 2 ? 0.5 : 0; // flipY: cells 0/1 are the top row
+    const s = F.size * F.cardScale[level] * (0.8 + r() * 0.45) / 2, cell = Math.floor(r() * 3), u0 = (cell % 2) * 0.5, v0 = cell < 2 ? 0.5 : 0; // flipY: cells 0/1 are the top row
     const corners = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([a1, a2]) => c.clone().addScaledVector(t1, a1 * s).addScaledVector(t2, a2 * s));
     const uvs = [[u0, v0], [u0 + 0.5, v0], [u0 + 0.5, v0 + 0.5], [u0, v0 + 0.5]];
     const jit = new THREE.Vector3((r() - 0.5) * F.jitter, (r() - 0.5) * F.jitter, (r() - 0.5) * F.jitter);

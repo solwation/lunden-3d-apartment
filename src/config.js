@@ -1845,6 +1845,9 @@ export const SEASON = {
 export const FOLIAGE = {
   atlas: 512, atlasPhone: 256,
   cards: { tree: [20, 18], shrub: [14, 10], far: [8, 5] }, coreDetail: { tree: 0, shrub: 0, far: 0 }, coreHoles: 220,
+  // #1723: a far lobe has only 8 (phone 5) cards, so its opaque 20-triangle core read as a solid faceted block in the crown
+  // from the south street; the far core is smaller and its few cards larger (same triangles per lobe; *guess*, by eye)
+  coreScale: { tree: 1, shrub: 1, far: 0.62 }, cardScale: { tree: 1, shrub: 1, far: 1.4 },
   core: 0.42, lump: 0.18, coreJitter: 0.45, coreShade: 0.95, shell: [0.45, 0.85], size: 0.72, tilt: 0.6, jitter: 0.35,
   ao: 0.45, bright: 1.22, leafLight: [0.62, 1.0], coreGround: 0.45, alphaTest: 0.4,
   trunk: { base: 0.2, top: 0.1, sides: 5, branches: 3, forks: 2, from: 0.5, reach: 0.95, rise: 0.3, color: 0x8a735f, birchColor: 0xf2efe8 },
