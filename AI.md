@@ -18,16 +18,22 @@ of two agents including the conductor. Use [WORKER.md](WORKER.md) for assignment
 Respect platform limits on delegation and model selection; disclose unavailable
 controls once rather than pretending they were used.
 
-Each maintainer request starts a single scoped task. A request without a scope starts
-one bounded pass over this repository's open issues under
-[COORDINATION.md](COORDINATION.md#run-a-bounded-pass). The pass is unattended: ask
-nothing in the chat. Post a question only the maintainer can answer as a comment on
-the affected issue with options and a recommendation, add the `user question` label
-and continue with other work; skip such issues until answered, and whoever resumes
-one removes the label.
-Queue polling and idle watching are disabled unless explicitly requested. For an
-authorized queue session, also read COORDINATION.md and establish its scope and timer
-settings.
+An ordinary maintainer request starts a single scoped task. `/orkester`, with or
+without a scope, starts a queue session over this repository's open issues under
+[COORDINATION.md](COORDINATION.md#poll-idle-and-stop); a given scope still bounds the
+work. Run a single [bounded pass](COORDINATION.md#run-a-bounded-pass) without timers
+only when one is explicitly requested.
+
+| Queue setting | Value |
+| --- | --- |
+| Queue poll | Every 300 seconds during active work and idle; also before every new selection |
+| Idle watch | 60 minutes after the latest issue this session resolved (first idle entry if none) |
+| Intake hooks | None |
+
+The session is unattended: ask nothing in the chat. Post a question only the
+maintainer can answer as a comment on the affected issue with options and a
+recommendation, add the `user question` label and continue with other work; skip such
+issues until answered, and whoever resumes one removes the label.
 
 ## Consume the orchestra from this checkout
 
