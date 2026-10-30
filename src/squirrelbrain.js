@@ -96,7 +96,8 @@ export function climbPoint(t, ang, k, ground, o = {}) {
   const up = Math.min(1, k / 0.78), out = Math.max(0, (k - 0.78) / 0.22), a = ang - (1 - up) * R.spiral * Math.PI * 2;
   const f = footPoint(t, ang, ground, {}), p = perchPoint(t, ang, {});
   if (out > 0) { o.x = f.x + (p.x - f.x) * out; o.z = f.z + (p.z - f.z) * out; } else { o.x = t.x + Math.cos(a) * 0.3; o.z = t.z + Math.sin(a) * 0.3; }
-  o.y = f.y + (p.y - f.y) * up; o.a = out > 0 ? ang : a; return o;
+  // #1728: the foot of the spiral is on the ground where the squirrel is, not where `ang` would put it (on a bank those differ by up to ~0.1 m); the top still meets the perch exactly
+  const gy = out > 0 ? f.y : ground(o.x, o.z); o.y = gy + (p.y - gy) * up; o.a = out > 0 ? ang : a; return o;
 }
 
 /** Nut spots round the squirrels' trees: one random place 1.5 … `spread` m from a random trunk, where `ok(x, z)` agrees. Null after `tries` misses.
