@@ -2486,6 +2486,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   if (!on) car.radio.stop(); // and the car's (#268)
   try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
 }
+for (const h of holdables) h.model.userData.keepHidden = () => h.broken; // #1726: F's show-all must not bring shot-to-pieces things back
 world.looseItems.push(...holdables.filter((h) => h !== beer && !h.isSquirrelNut).flatMap((h) => (h.homeParent ? [h.holder] : [h.holder, h.model])), ...toys.deco); // (the secretary's things go home into it with F, and the secret drawer shows one at a time, #183)
 // #1720: not the squirrels' nuts: they are outdoors and squirrels.js owns their visibility; F's show-all drew all 18 (even those not lying out) at the origin
 const milk = fridge?.milkAt ? new Milk(scene, camera, fridge) : null; // the milk carton in the fridge (#168): not hidden with F, only sent home
@@ -2549,6 +2550,7 @@ const christmasGifts = new ChristmasGifts(scene, camera, {
   onMessage: text => badge(text, false),
   onItem: item => {
     holdables.push(item);
+    item.model.userData.keepHidden = () => item.broken; // #1726
     world.looseItems.push(item.holder, item.model);
     item.model.visible = world.furnitureOn !== false;
     detail?.refresh();

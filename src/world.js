@@ -1324,7 +1324,7 @@ function* worldParts(plan) {
   const looseItems = [furniture.object, sillPlants, hallWall.object, ...signs, ...interiorLoose];
   const platforms = []; // low seats you can jump up on and stand on (#693, player.js `groundAt`): the footprints that carry a `top`
   const setFurniture = (on) => {
-    for (const o of looseItems) o.visible = on;
+    for (const o of looseItems) o.visible = on && !o.userData.keepHidden?.(); // (#1726: shot-to-pieces things stay gone: the owner's visibility wins)
     platforms.length = 0;
     levels.forEach((l, i) => {
       const court = i === 0 ? courtyard.seats : { segments: [], footprints: [] }; // the courtyard's benches + tables (#438): F keeps them

@@ -152,6 +152,13 @@ let failed = 0; const check = (ok, name, data) => { console.log(`${ok ? 'PASS' :
     const hidden = await page.evaluate(() => { const { a, S } = T; a.world.refreshFurniture(); a.step(0.1);
       const out = S.nutItems.filter((n) => n.broken && n.model.visible).length; return { brokenVisible: out, broken: S.nutItems.filter((n) => n.broken).length }; });
     check(hidden.brokenVisible === 0, 'nuts not lying out stay hidden after the furniture refresh', hidden);
+    // #1726: a shot-to-pieces holdable (hidden by shatter) must stay hidden through the same refresh, while an intact one is shown
+    const shot = await page.evaluate(() => { const { a } = T, hs = a.world.looseItems.filter((o) => o.userData.keepHidden), item = a.breaker.items.find((i) => hs.includes(i.model)), m = item.model;
+      const other = hs.find((o) => o !== m); other.visible = false;
+      const was = m.visible; item.shatter(); a.world.refreshFurniture(); a.step(0.1);
+      const r = { found: hs.length, wasVisible: was, brokenFlag: item.broken, brokenVisible: m.visible, otherVisible: other.visible };
+      item.mend(); a.world.refreshFurniture(); r.mendedVisible = m.visible; return r; });
+    check(shot.found > 3 && shot.brokenFlag && !shot.brokenVisible && shot.otherVisible && shot.mendedVisible, 'a shot-to-pieces thing stays hidden after the furniture refresh, others are shown', shot);
     check(errors.length === 0, 'no page or WebGL errors', errors.slice(0, 5));
   } finally { await browser.close(); }
   process.exit(failed ? 1 : 0);
