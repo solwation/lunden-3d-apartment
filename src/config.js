@@ -2759,6 +2759,11 @@ export const BASKET = {
   },
 };
 
+// #1708: the target's own points (rings × distance, up to 40 a shot) stay as they are on the board and in the
+// statistics; the game score gets only `perPoint` of each, and at most `perDay` per local day, for every weapon
+// (a rifle hits every 0.25 s). Both numbers are guesses: a perfect shot ≈ 4 points, a minute of rifle fire hits the cap.
+export const TARGET_SCORE = { perPoint: 0.1, perDay: 30 };
+
 export const TARGET = {
   x: 12.45, z: 25.7, rot: 90, y: 1.4, r: 0.4, // #1017: east landing, back toward the fence (source-based placement, not surveyed)
   rings: [10, 8, 6, 4, 2, 1],
@@ -3503,7 +3508,7 @@ export const SCORE = {
     ponyPets: 1,                                          // a pat of a paddock pony (#1320)
     squirrelFeeds: 6,                                     // a squirrel took a nut from the hand (#1672, *guess*)
     kittenPets: 12,                                       // a kitten's pat on top of `petted` (#363)
-    target: 1, splashes: 0.2, cuts: 0.1, magic: 0.3,      // Nerf target: per target point (rings × distance = skill)
+    target: 0, splashes: 0.2, cuts: 0.1, magic: 0.3,      // Nerf target: scored via TARGET_SCORE (#1708), not here
     baskets: 6, threes: 6, dribbles: 0.1,                 // a three = a basket + a three (12)
     turbo: 20,                                            // three cups of coffee in five minutes
     beer: 0.3, coffee: 0.3, wine: 0.3, champagne: 0.3, whisky: 0.3, milk: 0.3, kask: 0.6, water: 0.2, // sips (water: the drinking glass, #382)

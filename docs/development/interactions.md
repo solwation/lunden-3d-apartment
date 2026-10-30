@@ -779,7 +779,11 @@ tools/wandtest.html    headless test: a wand's magic on the wall (stars + butter
 tools/nerfcombattest.html scoped Nerf range/trajectory/confirmed-audio and deferred-shot lifecycle fixture (#714)
 tools/nerftest.html    headless test: a dart leaves a paint splash in the blaster's colour on the wall, drops, fades
 tools/targettest.html  headless test: target points (rings × distance bonus), a dart in the bullseye, E clears the score;
-                       down in the ground empty-handed, up with a blaster / the saber / a wand (#179)
+                       down in the ground empty-handed, up with a blaster / the saber / a wand (#179); #1708: a bullseye is +10
+                       in stats.target but only a few game points
+tools/targetscoretest.mjs node test (#1708): `TARGET_SCORE` (src/config.js, src/targetscore.js): 0.1 game point per target point,
+                       30 a local day for every weapon, older saves converted once; the server cannot see the source, so its
+                       SCORE_RATE cap is unchanged
 tools/booktest.html    headless test: take the book, read, turn pages, close, put it down, back on the side table
 tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home; the preview
                        (#368): the cup's ghost on the grid inside the table, ⟳ / R turn 45°, looking away cancels, down as the ghost;

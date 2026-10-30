@@ -41,11 +41,14 @@ f.onload = async () => {
   pass &= check(target.points(c.clone().addScaledVector(right, 0.35), at(1)) === 1, `the outer ring: ${target.points(c.clone().addScaledVector(right, 0.35), at(1))}`);
   pass &= check(target.points(c.clone().addScaledVector(right, 0.5), at(1)) === 0, 'outside the face: 0');
   // a real dart from 1 m, straight at the middle (it drops ~4 cm on the way: still the bullseye)
+  const sc0 = w.__app.totalScore(), st0 = w.__app.stats.target;
   const standing = at(1.3); player.spawn(standing.x, standing.z, 0); step(1 / 60);
   toys.darts.fire(at(1), front.clone().negate().add(new V(0, 0.02, 0)).normalize(), 0xff7a1a);
   for (let i = 0; i < 30; i++) step(1 / 60);
   pass &= check(target.score.total === 10 && target.score.best === 10 && target.score.hits === 1, `a dart in the bullseye: total ${target.score.total}, best ${target.score.best}`);
   pass &= check(w.__app.marks.live.some((l) => l.kind === 'splash'), 'a paint mark on the board');
+  // #1708: the statistic counts all 10 board points; the game score gets only a few
+  pass &= check(w.__app.stats.target - st0 === 10 && w.__app.totalScore() - sc0 <= 2, `a bullseye: stats +${w.__app.stats.target - st0}, game score +${w.__app.totalScore() - sc0} (#1708)`);
   use(target.target);
   pass &= check(target.score.total === 0 && target.score.best === 0, 'E on the target clears the score');
   toys.blasters[0].putBack();

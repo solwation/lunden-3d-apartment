@@ -3,6 +3,7 @@ import { playerLocalStorage as localStorage } from './playerprofiles.js';
 // survive a reload. The panel is hidden (Tab held / T / the 📊 button shows it); instead a
 // small badge ("✋ Klappat katt +1") pops up for each counted event.
 import { KISS, SECRET, SCORE } from './config.js';
+import { targetScoreOf, creditTarget } from './targetscore.js';
 const KEY = 'lunden.stats';
 
 const fresh = () => ({ love: 0, loveReceipts: [], pvpKills: 0, killReceipts: {}, cats: 0, rare: 0, byVariant: {}, petted: 0, ponyPets: 0, squirrelFeeds: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, carMusic: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0, freeThrows: 0, twoPointers: 0, basketPoints: 0,
@@ -115,6 +116,7 @@ export function rawScore() {
   const S = SCORE, n = (o) => Object.keys(o ?? {}).length;
   let t = 0;
   for (const [k, pts] of Object.entries(S.each)) t += (stats[k] ?? 0) * pts;
+  t += targetScoreOf(stats); // #1708: low conversion, daily cap
   t += stats.pvpRangePoints ?? 0; // #873: extra distance reward; legacy pvpHits still supply the unchanged base
   t += stats.legacyTaskPoints ?? 0;
   t += stats.taskBonusPoints ?? 0; // awarded amounts survive later tuning of SCORE.taskDayBonus
@@ -131,6 +133,14 @@ export function rawScore() {
   for (const [b, pts] of Object.entries(S.breeds)) t += (stats.byBreed[b] ?? 0) * pts;
   t += n(stats.secretKinds) * S.secrets.kinds + n(stats.secretRare) * S.secrets.rare;
   return t;
+}
+
+/** The target's own points (#1708): the statistic counts them all, the game score only a small, daily-capped part. */
+export function awardTarget(pts) {
+  creditTarget(stats, pts); // first: an older save converts its points so far before this shot is added
+  stats.target = (stats.target ?? 0) + pts;
+  dirty = true;
+  renderScore();
 }
 
 /** Count `n` of `key`; `id` names the thing (a door, a lamp …) for the bigger points the first time (SCORE.first).

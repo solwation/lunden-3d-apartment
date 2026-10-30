@@ -65,7 +65,7 @@ import { stairHeight, stairUnderside } from './stairs.js';
 import { rugLift } from './rugs.js';
 import { loadChangelog, retryChangelog, renderChangelog, buildNote, scrollNote } from './changelog.js';
 import { loadTodo, buildTodoNotes } from './todo.js';
-import { setScoreElement, totalScore, stats, keepMieleDay, bump, awardLove, badge, catFound, keepCatCounts, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement, penalize } from './stats.js';
+import { setScoreElement, totalScore, stats, keepMieleDay, awardTarget, bump, awardLove, badge, catFound, keepCatCounts, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement, penalize } from './stats.js';
 import { Minimap } from './minimap.js';
 import { Compass } from './compass.js';
 import { Measure } from './measure.js';
@@ -927,7 +927,7 @@ posterPanel.querySelector('[data-act=close]').addEventListener('click', () => sh
 target.onSink = () => marks.dropUnder(target.object); // its marks don't hang in the air as it sinks (#179)
 for (const h of [saber, ...toys.wands, toys.darts]) Object.assign(h, { marks, cat });
 for (const wd of toys.wands) wd.onMagic = () => bump('magic'); // statistics and points (#197)
-target.onHit = (pts) => bump('target', pts);
+target.onHit = (pts) => awardTarget(pts); // #1708: statistic in full, game score low + daily cap
 car.radio.onPlay = (ch) => bump('carMusic', 1, ch); // each song in the car once (#268)
 core.lift.onArrive = (k) => bump('liftFloors', 1, `v${k}`); // each storey reached by lift once (#415)
 coreA.lift.onArrive = (k) => bump('liftFloors', 1, `a${k}`); // Hus A's (#637)
