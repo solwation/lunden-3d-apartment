@@ -126,6 +126,8 @@ function indexCurbBoxes(geometries) {
   }
   return cells;
 }
+/** Number of curb boxes; they are the first boxes in buildStreet's grey batch (36 vertices each), before the shelter paving and the island kerb (#1729). */
+export function curbBoxCount(groundY) { const geos=curbGeometries(groundY),n=geos.length;for(const g of geos)g.dispose();return n; }
 /** StreetLife registers its actual existing 5 cm concrete edges before merging their render geometry. */
 export function registerBicycleYardEdges(geometries) { yardCurbCells=indexCurbBoxes(geometries); }
 /** Bicycle-only curb top. A 2 m spatial index keeps wheel queries independent of scene size. */
