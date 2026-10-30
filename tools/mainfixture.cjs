@@ -15,6 +15,8 @@ const DEFAULTS = {
   santa: '{visible:false,pickable:{}}',  // #1544: updateFocus offers santa.pickable only while visible
   santaDelivery: 'null',
   santaTV: '{tv:null,active:false,activate:()=>false}',
+  djInput: '{key:()=>false}',            // #1713: DJ booth input (#1664); the key handler asks it first
+  binoculars: '{zoomed:false,lookScale:()=>1,fov:f=>f,setZoom(){}}', // #1706: updateFocus/look read the binoculars from the mailbox
   tvMedia: '{seekable:()=>false,show(){},power(){}}',
   remote: '{findTv:()=>null,seek(){},update(){}}', // #1653: the key handler / updateFocus compare heldItem() with the TV remote
   lightModes: '{page:"top",rows:()=>[],release(){},update(){}}',

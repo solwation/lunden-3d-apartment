@@ -104,17 +104,17 @@ const check=(ok,text)=>{console.log(`${ok?'PASS':'FAIL'} ${text}`);if(!ok)failur
   await page.evaluate(()=>{fixtureHeld=null;suit.worn=true;focused=near.door;ghosts.greetAt=-Infinity;ghosts.lastSent=-Infinity;});
   check(await page.evaluate(()=>{const n=effects.weapon,l=effects.lines.length;const result=fns.click(0);fns.use(near.door);fns.greetPlayer(near);return fns.weaponKey()==='web'&&result==='web'&&effects.weapon===n+2&&effects.lines.length===l;}),'empty suit hands keep web action and block stale greeting');
   await page.evaluate(()=>{suit.worn=false;jetpack.worn=true;focused=near.door;ghosts.greetAt=-Infinity;ghosts.lastSent=-Infinity;});const jet=await focus();
-  check(!jet.kind&&await page.evaluate(()=>{const n=effects.lines.length;fns.greetPlayer(near);return fns.weaponKey()===''&&effects.lines.length===n+1;}),'worn jetpack is no weapon (#1705): empty hands greet as unarmed');
+  check(jet.kind==='ghost'&&jet.clickIsE&&await page.evaluate(()=>{const n=effects.lines.length;fns.greetPlayer(near);return fns.weaponKey()===''&&effects.lines.length===n+1;}),'worn jetpack is no weapon (#1705): empty hands greet as unarmed');
   await page.evaluate(()=>{jetpack.worn=false;fixtureHeld=null;touch.enabled=true;locked=false;ghosts.greetAt=-Infinity;ghosts.lastSent=-Infinity;});
   const back=await focus();check(back.kind==='ghost'&&/hälsa på/i.test(back.label),'putting weapon away restores unarmed greeting focus');
   await page.evaluate(()=>{touch.enabled=false;locked=true;});
-  await page.keyboard.press('e');check(await page.evaluate(()=>effects.lines.length===2&&effects.wire.filter(m=>m.t==='g').length===2),'keyboard greeting still emits only when unarmed');
+  await page.keyboard.press('e');check(await page.evaluate(()=>effects.lines.length===3&&effects.wire.filter(m=>m.t==='g').length===3),'keyboard greeting still emits only when unarmed');
   await page.evaluate(()=>{fixtureHeld=nerf;const mesh=new THREE.Mesh(new THREE.BoxGeometry(.3,.3,.3),new THREE.MeshBasicMaterial());mesh.position.set(0,1,-.5);mesh.userData.door={name:'dörren',kind:'door',toggle(){effects.door++;}};scene.add(mesh);pickables.push(mesh);window.useDoor=d=>d.toggle();scene.updateMatrixWorld(true);});
   const ordinary=await focus();check(ordinary.kind==='door','armed ordinary close object still receives its existing focus');
   await page.keyboard.press('e');check(await page.evaluate(()=>effects.door===1),'ordinary E object interaction remains intact while armed');
   await page.evaluate(()=>{pickables.length=0;touch.enabled=true;locked=false;fixtureHeld=nerf;scene.updateMatrixWorld(true);fns.updateFocus();});
   await page.screenshot({path:path.join(out,'armed-touch.png')});
-  check(await page.evaluate(()=>effects.lines.length===2&&effects.wire.filter(m=>m.t==='g').length===2),'armed attempts emitted no extra greeting message or line');
+  check(await page.evaluate(()=>effects.lines.length===3&&effects.wire.filter(m=>m.t==='g').length===3),'armed attempts emitted no extra greeting message or line');
   check(await page.evaluate(()=>webglCalls===0)&&errors.length===0,'no WebGL calls or page errors: '+JSON.stringify(errors));
  }catch(error){check(false,error.stack);}finally{await browser.close();}
  console.log(failures?'SOME FAILED':'ALL PASS');process.exitCode=failures?1:0;
