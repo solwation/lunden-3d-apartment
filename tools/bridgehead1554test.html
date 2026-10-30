@@ -1,5 +1,5 @@
 <!doctype html><html><meta charset="utf-8"><title>Bridgehead #1554</title><pre id="out">running…</pre><script type="module">
-// #1554: the car park in front of Realgymnasiet (guessed outline + aisle on the shared east-lot engine, #1278), the pedestrian crossing with a refuge island,
+// #1554: the car park in front of Realgymnasiet (guessed outline + single stall row (#1703) on the shared east-lot engine, #1278), the pedestrian crossing with a refuge island,
 // bollards and signs at the road bridge's north end, and the Hemsö flag. The OSM snapshot has none of these (only service way 44447967), so every position is a *guess*;
 // the test checks that they lie where intended: inside the lot / on the road, on the ground, clear of buildings, the footways and the bridge.
 // Open: tools/bridgehead1554test.html (served from the repo root). Prints PASS/FAIL lines and ALL PASS.
@@ -7,21 +7,21 @@ const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'
 try{const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../index.html?test&shot&month=6&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
 const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),C=await w.eval("import('/src/config.js')"),L=await w.eval("import('/src/parkinglayout.js')"),S=await w.eval("import('/src/surroundings.js')"),R=await w.eval("import('/src/roads.js')"),St=await w.eval("import('/src/street.js')");
 const SG=S;const E=C.SITE.east,BH=C.SITE.street.bridgehead,ground=S.renderedTerrainY;
-const lot=E.access.find(a=>a.source==='guess-1554'),aisle=E.access.find(a=>a.source==='guess-1554-aisle'),real=E.buildings.find(b=>b.source==='130681301');
+const lot=E.access.find(a=>a.source==='guess-1554'),aisle=E.access.find(a=>a.source==='guess-1554-aisle'),house=E.buildings.find(b=>b.source==='guess-1703'),real=E.buildings.find(b=>b.source==='130681301');
 const {lots,cars}=L.parkingLots(),mine=lots.find(l=>l.source==='guess-1554');
 // the other lots keep their own stalls and cars (the new lot is last in the access list, so the shared random sequence is untouched)
-check(lot&&lot.capacitySource==='guess'&&aisle&&mine&&JSON.stringify(E.access.filter(a=>a.polygon&&a.capacity).map(a=>a.source))==='["145221623","44447969","guess-1554"]','the guessed lot (capacity *guess*, outline and west aisle without an OSM source) is the last lot of the east engine');
+check(lot&&lot.capacitySource==='guess'&&!aisle&&mine&&JSON.stringify(E.access.filter(a=>a.polygon&&a.capacity).map(a=>a.source))==='["145221623","44447969","guess-1554"]','the guessed lot (#1703: a single row, capacity *guess*, outline without an OSM source, no aisle of its own) is the last lot of the east engine');
 const others=lots.filter(l=>l!==mine),oc=cars.filter(c=>c.lot!=='guess-1554');check(others.length===2&&others.find(l=>l.source==='145221623').bays.length===36&&others.find(l=>l.source==='44447969').bays.length===10&&oc.length===19,`the two OSM lots are unchanged (baseline f130faf2: HepCat lot 36 stalls, east campus lot 10, 19 cars; now ${others.map(l=>l.bays.length)} stalls, ${oc.length} cars)`);
 const ring=lot.polygon;
-check(mine.bays.length>=12&&mine.bays.length<=25,`${mine.bays.length} whole 2.5×5 m stalls in the lot (guess capacity ${lot.capacity})`);
+check(mine.bays.length===7&&mine.runs.length===1&&mine.bays.every(b=>Math.abs(b.n[0])>.999),`${mine.bays.length} whole 2.5×5 m stalls in one row square to the street (guess capacity ${lot.capacity})`);
 const corners=b=>[[-1,-1],[1,-1],[1,1],[-1,1],[0,0]].map(([a,c])=>[b.cx+b.u[0]*a*b.hw+b.n[0]*c*b.hd,b.cz+b.u[1]*a*b.hw+b.n[1]*c*b.hd]);
 let bad=0;for(const b of mine.bays)for(const[x,z]of corners(b))if(!L.insidePoly(x,z,ring)||L.onEastBuildingAt(x,z)||L.onEastRoad(x,z,-.0999))bad++;
 check(bad===0,'every stall lies inside the outline, off the building and off the aisles');
 const myCars=cars.filter(c=>c.lot==='guess-1554');let carBad=0,why=[];for(const c of myCars)for(const[x,z]of c.foot)if(L.onEastBuildingAt(x,z)||L.onEastRoad(x,z,-.05)||!L.insidePoly(x,z,ring)){carBad++;why.push([x.toFixed(2),z.toFixed(2),L.onEastBuildingAt(x,z),L.onEastRoad(x,z,-.05),L.insidePoly(x,z,ring)].join('/'));}
 check(myCars.length>=3&&carBad===0,`${myCars.length} parked cars, each wholly in the lot, off the aisles and the building ${why.join(' ')}`);
-// the aisle joins way 44447967's west end and lies inside the lot, off the building and clear of Sankt Lars väg
-const way=E.access.find(a=>a.source==='44447967');
-check(Math.hypot(aisle.path[1][0]-way.path[0][0],aisle.path[1][1]-way.path[0][1])<1e-9&&aisle.path.every(([x,z])=>L.insidePoly(x,z,ring)&&!L.onEastBuildingAt(x,z)),'the west aisle ends where mapped way 44447967 begins, inside the lot');
+// #1703: cars stand nose to the street (west, -x), the low brick house behind the row has a flat roof and touches no stall or car
+check(myCars.every(c=>Math.cos(c.yaw)<-.9||myCars.filter(d=>Math.cos(d.yaw)>.9).length<=1)&&myCars.filter(c=>Math.cos(c.yaw)<-.9).length>=5,'the cars stand nose to the street (at most one the other way)');
+check(house&&house.roof==='flat'&&!mine.bays.some(b=>corners(b).some(([x,z])=>L.insidePoly(x,z,house.polygon.slice(0,-1))))&&!myCars.some(c=>c.foot.some(([x,z])=>L.insidePoly(x,z,house.polygon.slice(0,-1)))),'the low house (guess-1703, flat roof) stands behind the row and clear of every stall and car');
 const road=C.SITE.roads.find(r=>r.name==='Sankt Lars väg');let onSLV=0;for(let x=ring[0][0];x<ring[1][0];x+=.5)for(let z=ring[0][1];z<ring[2][1];z+=.5)if(L.insidePoly(x,z,ring)&&R.onRoad(x,z,0,null))onSLV++;
 // (onRoad covers every site road incl. the lot's own aisles: look at Sankt Lars väg only)
 const slv=R.samples(road),edge=(z)=>{let k=0;while(k<slv.length-2&&slv[k+1].z<z)k++;const a=slv[k],b=slv[k+1],t=(z-a.z)/(b.z-a.z||1),cx=a.x+(b.x-a.x)*t,hw=(a.w+(b.w-a.w)*t)/2;return[cx-hw,cx+hw,cx];};

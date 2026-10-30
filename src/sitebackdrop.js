@@ -122,7 +122,7 @@ function buildBackdrop(W,key,ground,brick=null,reflectiveGlass=null,karp=null){
    const dx=c[0]-a[0],dz=c[1]-a[1],len=Math.hypot(dx,dz);
    const orientation=(hole?-1:1)*Math.sign(ring.reduce((sum,q,j)=>{const r=ring[(j+1)%ring.length];return sum+q[0]*r[1]-r[0]*q[1];},0));
    const nx=orientation*dz/len,nz=-orientation*dx/len; // A double-sided decal avoids assuming footprint winding from map data.
-   if(len<W.bay)continue;
+   if(len<W.bay||b.windows===false)continue;
    for(let k=1;k*W.bay+W.window[0]/2+W.frame<len;k++)for(let floor=0;floor<b.levels;floor++){
     const x=a[0]+dx/len*k*W.bay,z=a[1]+dz/len*k*W.bay,y=base+floor*height+W.sill;
     const frame=plain(new THREE.PlaneGeometry(W.window[0]+W.frame*2,W.window[1]+W.frame*2).rotateY(Math.atan2(nx,nz)).translate(x+nx*.015,y+W.window[1]/2,z+nz*.015));frame.userData.tint=b.frameColor??0xe3e0d6;(brick?parts.glass:parts.facade).push(frame);

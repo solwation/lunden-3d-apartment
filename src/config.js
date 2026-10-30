@@ -1207,6 +1207,9 @@ export const SITE = {
           "gableDormer":{"a":1.0,"b":[3.5,8.0],"top":7.5},
           "dormers":[{"a":0.8,"b":[16.0,20.0],"top":7.0},{"a":0.8,"b":[24.5,26.0],"top":6.6},{"a":0.8,"b":[29.5,31.0],"top":6.6}],
           "downpipes":[0.5,11.2,38.6],"vents":[[13.5,16.5,3.0,8.0,1.2]]}},
+      // #1703 (docs/foton/parkering-brofaste-nedsankt-hus.jpg, -oversikt.jpg): the low brick house behind the car row, one storey with a flat dark roof about 1-1.5 m over the cars. The photos
+      // give no dimensions: footprint, height and colour are all *guess*; simple wall box + flat roof in the shared batches, no windows (`windows: false`), adjoining the gable house's south front.
+      {"source":"guess-1703","polygon":[[37,62],[61,62],[61,76],[37,76],[37,62]],"name":"Lågt tegelhus bakom parkeringen (guess)","levels":1,"levelsSource":"guess from docs/foton/parkering-brofaste-nedsankt-hus.jpg","storey":2.4,"roof":"flat","windows":false,"facade":14513752},
       {"source":"145221568","polygon":[[43.51,2.27],[43.59,-7.33],[50.43,-7.26],[50.34,2.34],[43.51,2.27]],"name":"Komplementbyggnad 145221568","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
       {"source":"88457613","polygon":[[-64.12,-68.25],[-63.81,-121.44],[-67.62,-121.47],[-67.63,-120.2],[-77.62,-120.28],[-77.54,-133.09],[-67.3,-133.01],[-67.32,-130.44],[-64.01,-130.41],[-64.01,-132.44],[-63.91,-149.78],[-59.73,-149.75],[-59.7,-153.85],[-51.38,-153.78],[-51.4,-150.45],[-46.25,-150.41],[-46.3,-141.13],[-50.67,-141.15],[-50.68,-139.83],[-57.96,-139.88],[-58.01,-132.56],[-50.03,-132.49],[-50.46,-56.41],[-74.94,-56.6],[-74.87,-68.33],[-64.12,-68.25]],"name":"Montessorigrundskolan / byggnad 4","levels":1,"levelsSource":"Commons 2014 photo: one-storey wards; two-storey block from Hemsö By4 photo (position guess)","storey":4.7,"frameColor":15657439,
         "campus":{"style":"ward","sections":[{"name":"two-storey block","box":[-64.3,-133.2,-49.8,-120.1],"levels":2}],"chimneys":[[-57.2,-72],[-57.2,-92],[-57.2,-112],[-57,-126.6],[-55.5,-146]]}},
@@ -1239,10 +1242,11 @@ export const SITE = {
       {"source":"145221567","name":"Förskolan Freinet gård","surface":"paved","polygon":[[129.42,-89.2],[66.93,-86.35],[66.75,-136.67],[66.68,-157.77],[128.42,-159.55],[128.56,-151.91]]},
       {"source":"145221572","name":"Sankt Thomas skolgård","surface":"gravel","polygon":[[18.5,-86.12],[66.93,-86.35],[66.75,-136.67],[17.39,-134.96]]},
       {"source":"145221740","name":"Realgymnasiet gård","surface":"paved","polygon":[[22.16,-40.01],[21.34,-85.05],[62.29,-83.09],[60.36,-26.09],[37.75,-26.74],[27.84,-26.65],[23.63,-26.86],[21.37,-33.48]]},
-      // #1554: the car park in front of Realgymnasiet's gable house (docs/foton/skolbyggnad-fran-brofastet.jpg: an asphalt car park with cars between the road and the building's south front). The OSM snapshot has NO parking area or aisle there
-      // (only service way 44447967 along the south front, which becomes the lot's east aisle), so the outline, the west aisle `guess-1554-aisle` (continues that way to the road) and the capacity are all *guess*; stalls, lines, kerb strip and cars come from the shared east-lot engine (PARKING_LOT, #1278).
-      {"source":"guess-1554","name":"Parkering framför Realgymnasiet (guess)","surface":"asphalt","capacity":25,"capacitySource":"guess","fill":0.4,"polygon":[[30.5,59.2],[75,59.2],[75,74.8],[30.5,74.8]]},
-      {"source":"guess-1554-aisle","name":"Parkeringsgång framför Realgymnasiet (guess)","surface":"asphalt","path":[[31.5,65.4],[52.88,64.43]],"w":4.5},
+      // #1703 (docs/foton/parkering-brofaste-*.jpg): the bridgehead car park is ONE row of about 7 stalls square to Sankt Lars väg (cars nose to the street, no aisle of its own),
+      // standing at the kerb from the south corner of Realgymnasiet's gable house to the crossing; behind it stands the low "sunken" brick house (`guess-1703` in `buildings`).
+      // The OSM snapshot has no parking area there, so the outline, the row (`row.path` = the kerb line, `side` -1 = stalls on its +x side), the capacity and the fill are all *guess*;
+      // stalls, lines, kerb strip and cars come from the shared east-lot engine (PARKING_LOT, #1278). Replaces #1554's 15 m deep two-sided lot and its aisle `guess-1554-aisle`.
+      {"source":"guess-1554","name":"Parkeringsrad vid bron (guess)","surface":"asphalt","capacity":7,"capacitySource":"guess","fill":0.9,"reversed":0.1,"noseToAisle":true,"row":{"path":[[31.5,59.6],[31.5,77.1]],"side":-1},"polygon":[[31,59.2],[37,59.2],[37,77.5],[31,77.5]]},
       {"source":"94054863","name":"Höjebroskolan skolgård","surface":"paved","polygon":[[130.09,-49.96],[129.42,-89.2],[128.56,-151.91],[167.4,-153.51],[171.8,-51.62]]},
       {"source":"145221570","name":"Lunds Montessorigrundskola gård","surface":"gravel","polygon":[[-105.75,-85.22],[-106.28,-142.26],[-76.54,-155.82],[-44.43,-155.28],[-47.41,-52.64],[-84.23,-55.41],[-103.88,-73.75]]},
     ],
