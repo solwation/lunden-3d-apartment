@@ -254,7 +254,9 @@ src/keep.js            the world's state across a page-made reload (#277): saveW
 src/realweather.js    the weather cache (#674): localStorage `lunden.weather.<YYYY-MM>` = `{ v:1, at, final, d:{ y, m, t, p, s, c } }` (hourly temperature, precipitation, snowfall, weather code of one month, ~15–20 KB); archive months (`final`) never expire, forecast months are used for 3 h and refreshed in the background; at most `WEATHER.real.keepMonths` (12) kept, the oldest dropped first, and all of them if the quota is full; a bad/short entry is ignored. Not in RESET_KEEP: "Återställ" clears it (it is only a cache)
 src/graffiti.js       the spray paint (#1707): localStorage `lunden.graffiti` = `{ v:1, s:[[x,y,z,nx,ny,nz,colour,size cm,t s]…] }`, at most SPRAY.max
                        spots (~45 B each), written ≤ every SPRAY.saveEvery s and on pagehide; spots older than SPRAY.hours (72) are dropped on load and every
-                       20 s. Local only, not cleared by a new game; nothing goes to KV (#1689). Sharing between players is a follow-up.
+                       20 s. Not cleared by a new game; nothing goes to KV (#1689). #1724: the store also keeps the other players' spots
+                       (`merge`), so it holds the union this browser has seen; src/graffitiwire.js has the record / wire helpers (no three.js),
+                       src/graffitisync.js shares them through the players' room (cloudflare/graffiti.js, see "Shared spray paint" below).
 src/cinemaposters.js   the BIO's film posters (#1575): localStorage `lunden.cinemaPosters` = `{ v:2, day, items:[{ id, title, channel }] }`, the last good daily list from
                        GET /cinema/posters, shown when the Worker cannot be reached (validated again on read; a bad record → generic posters). Only a cache: "Återställ" clears it
 src/playroomphotos.js  the playhouse's real posters (#1670): localStorage `lunden.playroomPosters` = `{ v:1, day, rooms:{ hall, spel, biljard:[{ src, w, h, title, artist, licence }] } }`,
@@ -1461,6 +1463,22 @@ Shared playroom music (#1624): the same room also owns the children's-room music
 Shared pony paddock (#1644): the room also picks one leader among the players near the paddock and relays its pony snapshots
 (`{ t: 'pk', k: 's' }`), grass mask (`{ t: 'pkg' }`, up to `PADDOCK_SYNC.maxGrass` characters) and the others' pats; nothing is stored.
 Protocol in [animals-audio.md](animals-audio.md#shared-paddock-1644). `cloud.yml` also redeploys on `src/paddockgeo.js` changes.
+
+Shared spray paint (#1724, `cloudflare/graffiti.js` `RoomGraffiti`, client `src/graffitisync.js`): gossip, no storage. The room keeps the union
+of the spots its players bring in memory only (no KV per spot, #1689; no Durable Object storage: DO-SQLite with an alarm was the
+rejected cost alternative), and every client keeps the union it has seen in `lunden.graffiti`, so the paint lasts while somebody who saw it
+comes back within SPRAY.hours. Wire spot = the store's record `[x, y, z, nx, ny, nz, colour, size cm, t s]`, identity `x,y,z,colour,t`.
+Client → room `{ t: 'gf', s: [spot …] }`: at most `GRAFFITI_SYNC.block` (120) spots and `maxBytes` (8192) characters — the one message
+besides the paddock's grass mask allowed past PLAYERS.maxBytes — one per connection a second (sooner ones dropped); a malformed spot
+drops the whole block. Room → client: `{ t: 'gf', w: 1, s }` (the union) right after the welcome, always; the client then sends only
+what the room lacks, newest first, one block per SPRAY.share.every s through the ghosts' 5 Hz outbox (one waiting at a time), and each
+new spot it paints. `{ t: 'gf', s }` = somebody's new spots (never echoed). `{ t: 'gf', k: 'ask' }` goes to the most recently active
+player when a newcomer finds a room whose memory is fresh (constructed after hibernation) with others still connected: that player
+sends its whole store again. Limits (*guess*): per connection a bucket of SPRAY.max spots refilled with 25 a second; per room 6000 new
+spots a minute; the union at most SPRAY.max (the oldest go), nothing older than SPRAY.hours or more than 300 s ahead of the room's
+clock. The union is forgotten when the last player leaves. Billing: an ordinary session sends a few blocks (1/20 request each); a full
+store is 10. Tests: `cloudflare/graffiti.test.mjs` (validation, size, union, 72 h, cap, limits, hibernation, two clients through the
+Worker) and `tools/graffitisynctest.cjs` (two real pages through `cloudflare/dev.mjs`: both ways, reload, newcomer, 72 h; screenshots).
 
 
 ## Love receipts in visitor statistics (#1398)

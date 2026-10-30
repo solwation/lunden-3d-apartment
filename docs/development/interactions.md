@@ -519,6 +519,8 @@ src/spraycan.js        the spray cans (#1707, SPRAY), six Holdables on the shelf
                        Each started second costs SCORE.penalties.spray via stats.js `penalize('spray')` (−1 Sprayfärg); with 0 points it refuses and says so.
                        Not a weapon. src/graffiti.js paints spots where the eye's ray meets a surface (marks.js `segment`, no glass / leaf cards / E targets;
                        phones: walls, trunks and ground from the collision data, `collisionHit`, since #628 frees the meshes' CPU copies).
+                       #1724: the paint is shared with the other players through the players' room (src/graffitisync.js; protocol in
+                       storage.md "Shared spray paint"); it is still one InstancedMesh, so other players' spots add no draw call.
 src/ghosts.js #673     greeting another player: each ghost has an invisible pick box (`Ghost.pick`, door { kind: 'ghost', verb
                        'hälsa på', name }) that main.js adds to what the look ray tries (`ghosts.targets()`, connected only, within
                        HOLD.reach like everything else); E / a tap → `greetPlayer`: `ghosts.greet(g)` picks a line from GHOSTS.hello

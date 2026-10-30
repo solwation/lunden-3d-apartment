@@ -182,6 +182,7 @@ import { Bow, Arrows } from './bow.js';
 import { buildMailbox, mailboxGround } from './mailbox.js'; // #1706: the yellow letterbox and the binoculars
 import { buildElCabinet } from './elcabinet.js'; // #1707: the electrical cabinet with the spray cans
 import { Graffiti, collisionHit } from './graffiti.js'; // #1707: the spray paint (72 h, local)
+import { GraffitiSync } from './graffitisync.js'; // #1724: … shared with the other players
 import { farWalls } from './farwalk.js'; // (#1707: the paint's surfaces on phones)
 import { Chat } from './chat.js';
 import { BASKET, COMBAT, CHAT, GHOSTS, TOUCH, NEW_YEAR, TOAST, TOAST_LINES, CAT_CARD, SOUNDS } from './config.js';
@@ -2960,6 +2961,8 @@ ghosts.onGreet = (m, g, other) => greet.say({ head: g.head, s: 1 }, (m.k === KIS
 ghosts.onNotice = (text) => badge(text, false);
 playroom.billiards.net = { ready: () => ghosts.connected, send: (m) => ghosts.pool(m), id: () => ghosts.me, name: id => id===ghosts.me?ghosts.name():ghosts.others.get(id)?.name }; // #1355/#1495: shared table, wall-screen names
 ghosts.onPool = (m) => playroom.billiards.onNet(m);
+const graffitiSync = new GraffitiSync(graffiti, { ready: () => ghosts.connected, send: (m) => ghosts.graffiti(m), me: () => ghosts.me }); // #1724: the spray paint shared by gossip
+ghosts.onGraffiti = (m) => graffitiSync.receive(m);
 playroom.billiards.peers = () => ghosts.others.values(); // #1637: the others' cues while they aim at the table
 playroom.music.net = { ready: () => ghosts.connected, send: (m) => ghosts.music(m) }; // #1624: the room's shared music
 ghosts.onMusic = (m) => playroom.music.sync(m);
@@ -3055,7 +3058,7 @@ function ringBell() {
 let bellAt = -1e9;
 bellBtn.addEventListener('click', ringBell);
 greet.mineAvatar = () => ghosts.selfGhost().avatar; // (#1122: your spoken lines move your mirror image's mouth)
-window.__binoculars = binoculars; window.__mailbox = mailbox; window.__graffiti = graffiti; window.__elCabinet = elCabinet; window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows; window.__presence = presence;
+window.__binoculars = binoculars; window.__mailbox = mailbox; window.__graffiti = graffiti; window.__graffitiSync = graffitiSync; window.__elCabinet = elCabinet; window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows; window.__presence = presence;
 chat = new Chat({ ghosts, log: document.getElementById('chat-log'), setting: document.getElementById('menu-chat-setting'), name: () => leaderboard.name, // #675
   camera, layer: document.getElementById('speech'), hidden: (p) => behindWall(p) }); // bubbles over the ghosts (#676)
 terminalInput.addEventListener('input', () => {
@@ -3156,7 +3159,7 @@ function step(dt) {
   // #1706: the binoculars' scope always goes down when they leave the hand, on the menu, in a fall / death, riding or reading
   if (binoculars.zoomed && (heldItem() !== binoculars || !overlay.hidden || fall.active || player.riding || reading || statsOpen)) binoculars.setZoom(false);
   if (heldItem()?.firing && heldItem().isSprayCan && (!overlay.hidden || fall.active || player.riding || reading || statsOpen)) heldItem().trigger(false); // #1707: no spraying from the menu, a fall or the saddle
-  graffiti.update(dt);
+  graffitiSync.tick(dt); graffiti.update(dt);
   const fov = binoculars.fov(72 + TURBO.fov * turbo.k);
   if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
   updateCameraNear();

@@ -1,14 +1,16 @@
 import * as THREE from 'three';
 import { SPRAY as S } from './config.js';
+import { readSpots, writeSpots, mergeSpots } from './graffitiwire.js';
 
 // The spray paint (#1707): soft round spots where a spray can's ray meets a facade, a wall, the ground, a tree trunk …
 // Every spot keeps its world position, normal, colour, size and the time it was painted; after S.hours it is gone, also
-// across reloads. Local only: the spots live in this browser's localStorage (S.storageKey, written at most every
-// S.saveEvery s while painting and when the page is left) — never in KV (#1689); sharing them is a follow-up.
+// across reloads. The spots live in this browser's localStorage (S.storageKey, written at most every
+// S.saveEvery s while painting and when the page is left) — never in KV (#1689). #1724: src/graffitisync.js shares them with the
+// other players through the players' room (gossip: every client keeps the union it has seen; `merge` takes the others' spots).
 // Drawing: ONE InstancedMesh (one draw call) with a small canvas texture tinted per instance, hidden while there are no
 // spots and frustum-culled by the spots' own bounding sphere, at most S.max spots (the oldest goes). No lights.
 
-const DAY_MS = 3600 * 1000;
+const DAY_MS = 3600 * 1000; // (an hour)
 const Z = new THREE.Vector3(0, 0, 1), m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), qs = new THREE.Quaternion(), sc = new THREE.Vector3(), pv = new THREE.Vector3(), nv = new THREE.Vector3();
 
 /** A soft spray spot: a dense round core fading out, with a fringe of fine droplets (white, tinted per spot). */
@@ -37,26 +39,7 @@ const store = {
   set(k, v) { try { globalThis.localStorage?.setItem(k, v); return true; } catch { return false; } },
 };
 
-/** Parse a stored record into spots, dropping malformed and expired ones (and anything from the future by > a day). */
-export function readSpots(text, now = Date.now()) {
-  let rec; try { rec = JSON.parse(text); } catch { return []; }
-  if (rec?.v !== 1 || !Array.isArray(rec.s)) return [];
-  const life = S.hours * DAY_MS, out = [];
-  for (const a of rec.s) {
-    if (!Array.isArray(a) || a.length !== 9 || !a.every(Number.isFinite)) continue;
-    const t = a[8] * 1000;
-    if (now - t >= life || t - now > 24 * DAY_MS) continue;
-    if (!Number.isInteger(a[6]) || a[6] < 0 || a[6] >= S.cans.length) continue;
-    out.push({ p: [a[0], a[1], a[2]], n: [a[3], a[4], a[5]], c: a[6], s: Math.min(1, Math.max(0.02, a[7] / 100)), t });
-  }
-  out.sort((x, y) => x.t - y.t);
-  return out.slice(-S.max);
-}
-/** The record for spots (cm / centi-units / seconds keep it small: ~45 bytes a spot). */
-export function writeSpots(spots) {
-  const r = (v) => Math.round(v * 100) / 100;
-  return JSON.stringify({ v: 1, s: spots.map((s) => [r(s.p[0]), r(s.p[1]), r(s.p[2]), r(s.n[0]), r(s.n[1]), r(s.n[2]), s.c, Math.round(s.s * 100), Math.round(s.t / 1000)]) });
-}
+export { readSpots, writeSpots, spotWire, wireKey } from './graffitiwire.js';
 
 /**
  * Phones (#628: `lowMemory` frees every mesh's CPU copy after upload, so no mesh can be ray-tested): the paint finds its
@@ -148,7 +131,16 @@ export class Graffiti {
     this.spots.push({ p: [point.x + normal.x * 0.004, point.y + normal.y * 0.004, point.z + normal.z * 0.004], n: [normal.x, normal.y, normal.z], c, s, t: this.now() });
     if (this.spots.length > S.max) this.spots.splice(0, this.spots.length - S.max);
     this.dirty = this.unsaved = true;
+    this.onSpot?.(); // #1724: graffitisync.js sends it to the players' room
     return true;
+  }
+
+  /** Spots painted by other players (#1724, wire records from the players' room): the new ones join ours, in time order,
+   * expired / malformed ones and duplicates skipped, at most S.max (the oldest go). Returns how many were new. */
+  merge(list, now = this.now()) {
+    const { spots, added } = mergeSpots(this.spots, list, now);
+    if (added) { this.spots = spots; this.dirty = this.unsaved = true; }
+    return added;
   }
 
   /** Drop the spots older than S.hours. */

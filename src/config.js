@@ -7342,4 +7342,8 @@ export const SPRAY = {
   hours: 72, // the user: the paint stays 72 hours, then it is gone (also across reloads)
   storageKey: 'lunden.graffiti', // localStorage { v: 1, s: [[x, y, z, nx, ny, nz, colour index, size cm, t (s since epoch)] …] }
   saveEvery: 2, // s: the store is written at most this often while painting (and on leaving the page)
+  // #1724: sharing through the players' room (src/graffitisync.js; the room's own limits are cloudflare/graffiti.js GRAFFITI_SYNC).
+  // `block` spots per message (kept equal by hand with GRAFFITI_SYNC.block), at most one message every `every` s (the room allows one
+  // a second; each message is 1/20 of a billed request, so a full store of S.max spots is 10 messages). *guess*
+  share: { block: 120, every: 1.2 },
 };
