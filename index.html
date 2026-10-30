@@ -405,6 +405,32 @@
     #leaderboard-dialog .lb-pick select { flex: 1; min-width: 0; min-height: 40px; font: inherit; padding: 4px 8px; }
     #lb-board-hint:empty { display: none; }
     #leaderboard-dialog .lb-scroll { max-height: min(340px, calc(60vh)); overflow-y: auto; margin: 10px 0; }
+    /* #1711: medals (the grid in Meny → Medaljer) and the spinning medal in the middle of the screen */
+    #medal-dialog { position: fixed; inset: 0; z-index: 45; display: grid; place-items: center; background: rgba(20, 35, 45, 0.7); }
+    #medal-dialog[hidden] { display: none; }
+    #medal-dialog .card { width: min(560px, calc(100vw - 32px)); box-sizing: border-box; max-height: calc(100dvh - 24px); display: flex; flex-direction: column; }
+    #medal-dialog .medal-scroll { overflow-y: auto; min-height: 0; margin: 8px 0 0; overscroll-behavior: contain; }
+    #medal-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+    .medal-card { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; padding: 10px 8px; border-radius: 10px; background: #eaf1f5; border: 1px solid #c8d6df; font-size: 13px; line-height: 1.3; min-width: 0; }
+    .medal-card .mc-icon { font-size: 30px; line-height: 1.1; filter: grayscale(1) opacity(.45); }
+    .medal-card.got { background: #fff6dc; border-color: #e3c466; }
+    .medal-card.got .mc-icon { filter: none; }
+    .medal-card.secret { background: #dfe6ea; }
+    .medal-card .mc-sub, .medal-card .mc-prog { font-size: 11.5px; opacity: .8; word-break: break-word; }
+    .medal-card .mc-bar { align-self: stretch; height: 6px; border-radius: 3px; background: #c8d6df; margin-top: 4px; overflow: hidden; }
+    .medal-card .mc-bar i { display: block; height: 100%; background: #3b8f6a; }
+    #medal-pop { position: fixed; inset: 0; z-index: 44; display: grid; place-items: center; pointer-events: none; }
+    #medal-pop[hidden] { display: none; }
+    #medal-pop .medal-box { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 26px; border-radius: 18px; background: rgba(20, 35, 45, 0.78); color: #fff; text-align: center; opacity: 0; perspective: 600px; }
+    #medal-pop .medal-disc { width: 104px; height: 104px; border-radius: 50%; display: grid; place-items: center; font-size: 54px; background: radial-gradient(circle at 35% 30%, #fff3b8, #e2b33c 62%, #a8741a); box-shadow: 0 0 0 4px #f6df8b, 0 0 28px rgba(255, 214, 90, .7); }
+    #medal-pop .medal-name { font-size: 18px; font-weight: 700; }
+    #medal-pop .medal-level { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; opacity: .85; }
+    #medal-pop .medal-bonus { font-size: 15px; font-weight: 700; color: #ffd75e; }
+    #medal-pop.go .medal-box { animation: medal-in 2.6s ease-out forwards; }
+    #medal-pop.go .medal-disc { animation: medal-spin 2.6s cubic-bezier(.3, .6, .3, 1) forwards; }
+    @keyframes medal-in { 0% { opacity: 0; transform: scale(.4); } 12% { opacity: 1; transform: scale(1.06); } 20% { transform: scale(1); } 85% { opacity: 1; } 100% { opacity: 0; transform: scale(1); } }
+    @keyframes medal-spin { from { transform: rotateY(0); } to { transform: rotateY(1440deg); } }
+    @media (prefers-reduced-motion: reduce) { #medal-pop.go .medal-disc { animation: none; } }
     #corner-qr { position: fixed; left: calc(var(--badge-inset) + var(--sl)); top: calc(var(--hud-badge-bottom) + 40px); z-index: 20; background: rgba(20, 35, 45, 0.75); color: #fff; padding: 10px; border-radius: 10px; backdrop-filter: blur(3px); display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: auto; }
     #corner-qr[hidden] { display: none; }
     #corner-qr img { width: 100px; height: 100px; border-radius: 4px; image-rendering: pixelated; background: #fff; }
@@ -996,6 +1022,13 @@
           </span>
           <span class="btn-icon" aria-hidden="true">🏆</span>
         </button>
+        <button id="menu-medals" class="menu-btn" type="button" aria-haspopup="dialog" aria-controls="medal-dialog">
+          <span class="btn-text">
+            <b>Medaljer</b>
+            <span class="btn-desc">Achievements med nivåer och bonuspoäng</span>
+          </span>
+          <span class="btn-icon" aria-hidden="true">🏅</span>
+        </button>
         <button id="menu-settings" class="menu-btn" type="button" aria-haspopup="dialog" aria-controls="settings-dialog">
           <span class="btn-text"><b>Inställningar</b><span class="btn-desc">Chatt, kontroller, återställning och data</span></span>
           <span class="btn-icon" aria-hidden="true">⚙</span>
@@ -1127,6 +1160,18 @@
         <ol id="lb-dialog-list" class="lb"></ol>
       </div>
     </div>
+  </div>
+  <div id="medal-dialog" hidden role="dialog" aria-label="Medaljer">
+    <div class="card dialog-card">
+      <button id="medal-dialog-close" type="button" aria-label="Stäng" class="dialog-close">×</button>
+      <div class="kicker">ACHIEVEMENTS</div>
+      <h1>Medaljer</h1>
+      <p id="medal-count" class="share-note"></p>
+      <div class="medal-scroll"><ul id="medal-grid"></ul></div>
+    </div>
+  </div>
+  <div id="medal-pop" hidden aria-hidden="true">
+    <div class="medal-box"><div class="medal-disc"><span class="medal-icon"></span></div><div class="medal-level"></div><div class="medal-name"></div><div class="medal-bonus"></div></div>
   </div>
   <div id="privacy-dialog" hidden role="dialog" aria-label="Integritet och cookies">
     <div class="card dialog-card">

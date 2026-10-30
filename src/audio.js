@@ -107,6 +107,13 @@ function thump(t, dest, gain = 0.8) {
 }
 
 export const sfx = {
+  /** #1711: a new medal level: a short bright fanfare (four rising notes and a shimmer), not positional; mutes with the rest. */
+  medal() {
+    if (!ready()) return;
+    const t0 = ctx.currentTime, d = out(undefined, 0.6);
+    [523.25, 659.25, 783.99, 1046.5].forEach((hz, i) => { tone(t0 + i * 0.13, 0.5, d, { type: 'triangle', from: hz, to: hz * 1.01, gain: 0.5 }); tone(t0 + i * 0.13, 0.4, d, { from: hz * 2, gain: 0.12 }); });
+    noise(t0 + 0.5, 0.9, d, { type: 'highpass', freq: 5000, gain: 0.05, attack: 0.1 });
+  },
   /** #1699: a squirrel's happy 'tjipp-tjipp' when it gets the nut: a few short, bright rising chirps; ordinary positional/mute output. `pitch` ~1. */
   chirp(pos, pitch = 1) {
     if (!ready()) return;

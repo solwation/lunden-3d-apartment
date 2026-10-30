@@ -3505,6 +3505,7 @@ export const SCORE = {
   each: {
     love: 100, // #1398: the initiator earns +100 for a completed, server-accepted kiss (user).
     petted: 8, catPhotos: 2, catFish: 25,                 // a pat (a cat to find first), its photo; feeding one takes a plan
+    medalPoints: 1,                                       // medal bonus points (#1711, src/medalcatalog.js bonusFor), added via bump('medalPoints', n)
     ponyPets: 1,                                          // a pat of a paddock pony (#1320)
     squirrelFeeds: 6,                                     // a squirrel took a nut from the hand (#1672, *guess*)
     kittenPets: 12,                                       // a kitten's pat on top of `petted` (#363)

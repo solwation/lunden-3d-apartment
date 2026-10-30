@@ -49,8 +49,17 @@ export class Boards {
     try {
       if (beacon && navigator.sendBeacon) { if (navigator.sendBeacon(`${this.lb.url}/boards`, new Blob([body], { type: 'text/plain' }))) this.sent = c + this.lb.name + this.lb.lookCode; return; }
       const r = await fetch(`${this.lb.url}/boards`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body, keepalive: true });
-      if (r.ok) this.sent = c + this.lb.name + this.lb.lookCode;
+      if (r.ok) { this.sent = c + this.lb.name + this.lb.lookCode; this.onMedals?.((await r.json().catch(() => null))?.m); }
     } catch { /* offline: the next tick retries */ }
+  }
+
+  /** The medals the Worker has for this player id (#1711): a new device gets them back; read-only on the server. */
+  async restore() {
+    if (!this.on) return null;
+    try {
+      const r = await fetch(`${this.lb.url}/boards`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ id: this.lb.id, restore: true }) });
+      return r.ok ? ((await r.json()).m ?? null) : null;
+    } catch { return null; }
   }
 
   async refresh() {

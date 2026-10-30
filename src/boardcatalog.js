@@ -1,7 +1,8 @@
+import { counterValue } from './medalcatalog.js';
 // The catalogue of alternative top lists (#1710, part of #1709). One source for the page (the picker in the leaderboard
 // dialog, src/boards.js, which also decides which counters are synced) and the Worker (cloudflare/boards.js: which
 // counters it accepts and how fast each may grow). The counters are src/stats.js's own (stats[counter]), so lists and
-// the later achievements (#1711) cannot drift apart. Add a list = add a row; a new counter also needs `perMin`/`start`.
+// the achievements (#1711, src/medalcatalog.js) cannot drift apart. Add a list = add a row; a new counter also needs `perMin`/`start`.
 //
 // kind 'most'  : the highest count wins; shown as "N unit".
 // kind 'first' : whoever got the counter above 0 first wins; the Worker stamps the time of the first sync that has it.
@@ -23,6 +24,20 @@ export const COUNTERS = {
   vacuumed: { perMin: 60, start: 20000 }, // m², rounded
   steps: { perMin: 500, start: 2_000_000 },
   dribbles: { perMin: 150, start: 50000 },
+  // for the medals (#1711, src/medalcatalog.js); task_<id> is stats.taskCounts[id]
+  stairs: { perMin: 60, start: 20000 },
+  flights: { perMin: 10, start: 1000 },
+  hotdogs: { perMin: 6, start: 2000 },
+  falls: { perMin: 20, start: 2000 },
+  burnt: { perMin: 10, start: 1000 },
+  pingpingHugs: { perMin: 30, start: 2000 },
+  task_makeSandwich: { perMin: 3, start: 500 },
+  task_resetKitchen: { perMin: 3, start: 500 },
+  task_snackClean: { perMin: 3, start: 500 },
+  task_tidyHall: { perMin: 3, start: 500 },
+  task_grillChicken: { perMin: 3, start: 500 },
+  task_washDish: { perMin: 3, start: 500 },
+  task_makeBed: { perMin: 3, start: 500 },
 };
 
 export const BOARD_LISTS = [
@@ -54,8 +69,8 @@ export const BOARD_LISTS = [
 export function boardCounters(stats) {
   const out = {};
   for (const k of Object.keys(COUNTERS)) {
-    const v = Math.floor(Number(stats?.[k]));
-    if (Number.isFinite(v) && v > 0) out[k] = v;
+    const v = counterValue(stats, k);
+    if (v > 0) out[k] = v;
   }
   return out;
 }

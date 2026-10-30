@@ -7,7 +7,7 @@ name: Deploy the shared-world Worker
 on:
   push:
     branches: [main]
-    paths: ['cloudflare/**', 'src/beershelfschema.js', 'src/privatecodes.js', 'src/falldamage.js', 'src/config.js', 'src/materialcatalog.js', 'src/nerf.js', 'src/bowflight.js', 'src/ballflight.js', 'src/billiardsync.js', 'src/djstate.js', 'src/billiardphysics.js', 'src/billiardrules.js', 'src/snakearena.js', 'src/rowkey.js', 'src/heldcategory.js', 'src/hug.js', 'src/kiss.js', 'src/layoutmigrations.js', 'src/reportauthor.js', 'src/santaconfig.js', 'src/santagiftconfig.js', 'src/santatvconfig.js', 'src/paddockgeo.js', 'src/squirrelsync.js', 'src/boardcatalog.js']
+    paths: ['cloudflare/**', 'src/beershelfschema.js', 'src/privatecodes.js', 'src/falldamage.js', 'src/config.js', 'src/materialcatalog.js', 'src/nerf.js', 'src/bowflight.js', 'src/ballflight.js', 'src/billiardsync.js', 'src/djstate.js', 'src/billiardphysics.js', 'src/billiardrules.js', 'src/snakearena.js', 'src/rowkey.js', 'src/heldcategory.js', 'src/hug.js', 'src/kiss.js', 'src/layoutmigrations.js', 'src/reportauthor.js', 'src/santaconfig.js', 'src/santagiftconfig.js', 'src/santatvconfig.js', 'src/paddockgeo.js', 'src/squirrelsync.js', 'src/boardcatalog.js', 'src/medalcatalog.js']
   workflow_dispatch:
 
 permissions:
