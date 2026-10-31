@@ -10,6 +10,7 @@ import { lowMemory } from './lowmemory.js';
 import { parkingLots, onEastRoad, onEastBuildingAt } from './parkinglayout.js';
 import { buildKarpFacade, karpBrickTexture } from './karpfacade.js';
 import { buildRealgym20 } from './realgym20.js';
+import { schoolyardParts } from './schoolyard.js';
 const W=SITE.west;
 const PAVE_MESH=4, PAVE_LIFT=.03; // m: #1305, paved/gravel polygons (school yards, squares) are cut into triangles no longer than PAVE_MESH and lie PAVE_LIFT higher, so they stay on the sloping terrain whose own triangles differ (*guess*)
 const PAVE_CUT=100; // m: #1310, with the terrain's grid the paving is cut along the terrain's own lines (cutAtTerrain) instead of into PAVE_MESH triangles: it lies on the ground exactly and needs far fewer triangles
@@ -133,12 +134,14 @@ function buildBackdrop(W,key,ground,brick=null,reflectiveGlass=null,karp=null){
   }
   records.push({...b,base,bottom,eave,ridge:eave+rise,windows,roofY:(x,z)=>top([x,z])}); // roofY: the drawn roof's height, for the walkable roof (#1294)
  }
+ // #1305: a flat polygon cut into small triangles so the paving follows the real ground, `lift` m over the paths' own lift (#1737: also a yard's lawn and sand)
+ const drape=(poly,lift)=>{const pos=[],grid=ground.grid?.();if(grid){const tris=refinedTriangles(ring(poly),PAVE_CUT);for(let t=0;t<tris.length;t+=3)for(const q of cutAtTerrain(tris.slice(t,t+3),grid)){if(key==='east'&&q.every(([x,z])=>onEastBuildingAt(x,z)))continue;for(const[x,z]of q)pos.push(x,ground(x,z)+W.pathLift+lift,z);}}else for(const[x,z]of refinedTriangles(ring(poly),PAVE_MESH))pos.push(x,ground(x,z)+W.pathLift+lift,z);return flatGeometry(pos);};
  for(const p of [...W.paths,...W.access]){
   const surfColor=p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397);
   if(p.path){const s=plain(pathStrip(p,w=>-w/2,w=>w/2,W.pathLift,ground,false,undefined,isVehicleWay(p)?null:vehicleTrim())); // #1351: clip every triangle at the drawn carriageway edge, including oblique junctions
   s.userData.tint=surfColor;parts.access.push(s);}
   else if(key==='east'&&p.capacity&&parkingLots().lots.some(l=>l.source===p.source))continue; // a car park: drawn below (#1278)
-  else{const pos=[],grid=ground.grid?.();if(grid){const tris=refinedTriangles(ring(p.polygon),PAVE_CUT);for(let t=0;t<tris.length;t+=3)for(const q of cutAtTerrain(tris.slice(t,t+3),grid)){if(key==='east'&&q.every(([x,z])=>onEastBuildingAt(x,z)))continue;for(const[x,z]of q)pos.push(x,ground(x,z)+W.pathLift+PAVE_LIFT,z);}}else for(const[x,z]of refinedTriangles(ring(p.polygon),PAVE_MESH))pos.push(x,ground(x,z)+W.pathLift+PAVE_LIFT,z);const pl=flatGeometry(pos);pl.userData.tint=surfColor;parts.access.push(pl);} // #1305: cut into small triangles so the paving follows the real ground
+  else{const pl=drape(p.polygon,PAVE_LIFT);pl.userData.tint=surfColor;parts.access.push(pl);if(p.yard)parts.access.push(...schoolyardParts(p.yard,ground,drape));} // #1737: a yard's lawn, sand, hedges and play frames join the same batch
  }
  if(key==='east')eastLotParts(ground,parts.access,p=>p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397));
  const mats={facade:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),roof:new THREE.MeshStandardMaterial({color:W.roof,roughness:.85,side:THREE.DoubleSide}),glass:new THREE.MeshStandardMaterial({color:brick?0xffffff:W.glass,vertexColors:!!brick,roughness:.3,metalness:.25,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units}),access:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units})}; // #1309: paths/asphalt wear the decal depth bias too, so a coarse sample cannot sink under a terrain crease as green slivers (same as kvarteret-lunden#70)
