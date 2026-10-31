@@ -87,7 +87,13 @@ async function run() {
       const [ax, az] = ring[best.i], [bx, bz] = ring[best.i + 1], mx = (ax + bx) / 2, mz = (az + bz) / 2;
       let nx = -(bz - az) / best.l, nz = (bx - ax) / best.l;
       if (inRing(ring, mx + nx * 0.5, mz + nz * 0.5)) { nx = -nx; nz = -nz; } // outward
-      const ex = mx - nx * 1.2, ez = mz - nz * 1.2, etop = drawnTop(ex, ez); // 1.2 m in from the edge: the slope of a gable / hip
+      // 1.2 m in from the edge: the slope of a gable / hip. The old pavilions' dormers and risalit gables (#1676) stand on that
+      // slope without collision, so probe along the edge and take the lowest drawn point: the roof surface itself (#1750).
+      let ex = mx - nx * 1.2, ez = mz - nz * 1.2, etop = drawnTop(ex, ez);
+      for (const t of [-6, -4.5, -3, -1.5, 1.5, 3, 4.5, 6]) {
+        const px = mx - nx * 1.2 + (bx - ax) / best.l * t, pz = mz - nz * 1.2 + (bz - az) / best.l * t, pt = drawnTop(px, pz);
+        if (pt !== null && (etop === null || pt < etop - 0.05) && inRing(ring, px, pz) && !b.holes.some((h) => inRing(h, px, pz))) { ex = px; ez = pz; etop = pt; }
+      }
       if (inRing(ring, ex, ez) && !b.holes.some((h) => inRing(h, ex, ez)) && etop > gy + 1.5) {
         edgeAudited.push(b.name);
         const e = land(ex, ez, etop);
