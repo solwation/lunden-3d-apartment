@@ -314,15 +314,15 @@ for (const [name, start, points, ok] of R) {
 // #1714: the walkable south (WALK.z1 452): from Lunden along Sankt Lars väg to Sankt Lars väg 42's north side and round 44's courtyard, on foot and by bike; trunks, walls and the new edge.
 {
   const route42 = [[25, 200], [11.5, 247.7], [-10, 291.5], [-43.8, 315], [-58, 295.2], [-72.1, 305.3], [-63, 317.8]];
-  const bikeWalk = (pts) => { // rides the waypoints with W held (same mock bike as the timber bridge); returns the first waypoint it stuck on, or -1
+  const bikeWalk = (pts, max = 1500) => { // rides the waypoints with W held (same mock bike as the timber bridge), at most `max` steps per waypoint; returns the first waypoint it stuck on, or -1
     const bk = { position: new THREE.Vector3(), ridden: true, pick: { visible: false }, place(p) { this.position.copy(p); }, restore() {} };
     player.spawn(pts[0][0], pts[0][1], 0); splashes.length = 0; player.safeUntil = 0;
     for (let i = 1; i < pts.length; i++) {
       const [x, zz] = pts[i];
       if (!player.riding) player.riding = { bike: bk, yaw: Math.atan2(-(x - player.pos.x), -(zz - player.pos.z)) + Math.PI / 2, pitch: 0, lastStanding: player.pos.clone() };
       player.keys = new Set(['KeyW']); let n = 0;
-      while (Math.hypot(player.pos.x - x, player.pos.z - zz) > 1.2 && n++ < 1500) { camera.rotation.y = Math.atan2(-(x - player.pos.x), -(zz - player.pos.z)); player.update(dt); }
-      if (n >= 1500) { player.keys = new Set(); if (player.riding) player.dismountBicycle(); return i; }
+      while (Math.hypot(player.pos.x - x, player.pos.z - zz) > 1.2 && n++ < max) { camera.rotation.y = Math.atan2(-(x - player.pos.x), -(zz - player.pos.z)); player.update(dt); }
+      if (n >= max) { player.keys = new Set(); if (player.riding) player.dismountBicycle(); return i; }
     }
     player.keys = new Set(); if (player.riding) player.dismountBicycle(); return -1;
   };
@@ -354,7 +354,9 @@ for (const [name, start, points, ok] of R) {
   for (const bike of [false, true]) {
     let told = 0; player.onEdge = () => told++; player.edgeAt = undefined;
     const a = [[10, WALK.z1 - 6], [10, WALK.z1 + 25]];
-    if (bike) bikeWalk(a); else { player.spawn(...a[0], 0); walk([a[1]]); }
+    // #1739: the 20 s notice gap is wall-clock time (performance.now), these steps are not: 1500 steps held against the wall took ~22 s
+    // under load and earned a second, correct, notice. The bike reaches the wall within ~50 steps, so 300 (5 s of riding) is enough.
+    if (bike) bikeWalk(a, 300); else { player.spawn(...a[0], 0); walk([a[1]]); }
     if (bike) check(told === 1 && player.pos.z <= WALK.z1 + 0.5 && player.pos.z > WALK.z1 - 3, `södra ytterkanten (z ${WALK.z1}) stoppar cykeln och säger ifrån en gång (#1719: ${told}, ${at()})`);
     else check(told === 1 && player.pos.z <= WALK.z1 + 0.5, `södra ytterkanten (z ${WALK.z1}) säger ifrån en gång (${told}, ${at()})`);
   }
