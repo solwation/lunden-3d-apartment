@@ -1227,9 +1227,15 @@ export const SITE = {
           "gableDormer":{"a":1.0,"b":[3.5,8.0],"top":7.5},
           "dormers":[{"a":0.8,"b":[16.0,20.0],"top":7.0},{"a":0.8,"b":[24.5,26.0],"top":6.6},{"a":0.8,"b":[29.5,31.0],"top":6.6}],
           "downpipes":[0.5,11.2,38.6],"vents":[[13.5,16.5,3.0,8.0,1.2]]}},
-      // #1703 (docs/foton/parkering-brofaste-nedsankt-hus.jpg, -oversikt.jpg): the low brick house behind the car row, one storey with a flat dark roof about 1-1.5 m over the cars. The photos
-      // give no dimensions: footprint, height and colour are all *guess*; simple wall box + flat roof in the shared batches, no windows (`windows: false`), adjoining the gable house's south front.
-      {"source":"guess-1703","polygon":[[37,62],[61,62],[61,76],[37,76],[37,62]],"name":"Lågt tegelhus bakom parkeringen (guess)","levels":1,"levelsSource":"guess from docs/foton/parkering-brofaste-nedsankt-hus.jpg","storey":2.4,"roof":"flat","windows":false,"facade":14513752},
+      // #1703 (docs/foton/parkering-brofaste-nedsankt-hus.jpg, -oversikt.jpg): the low brick house behind the car row, one storey with a flat dark roof about 1-1.5 m over the cars;
+      // simple wall box + flat roof in the shared batches, no windows (`windows: false`). Every number is a *guess*.
+      // #1731: position and size read from the user's Google Maps top view (docs/foton/satellit-sankt-lars-bro-skala-20m.png, 0.196 m/px, mapped with #1715's transform) and
+      // oblique view (docs/foton/snedbild-realgymnasiet-lagt-hus-bakbyggnad.png): the roof is ~9 x 9 m, x ~34...43.5, z 58.5 (against the gable house's south front, under
+      // its south windows) ... ~67.5; not in a notch of the OSM outline, whose SW corner the image confirms. The west edge stays at x 36.8, just behind the guessed stalls
+      // (`guess-1554`, x 31.5...36.5), which the top view puts ~3-4 m further west (#1735). The house is sunken towards the river, which the flat model terrain here
+      // does not show: one 2.6 m storey with its floor `sunk` 1.15 m, so the roof stands 1.45 m over the ground, about the cars' roof height, and the gable's south windows
+      // above it look as if they start at the roof, as in docs/foton/parkering-brofaste-nedsankt-hus.jpg (their model sill is 1.0 m). The OSM service way 44447967 (x 52.9) is now clear of it.
+      {"source":"guess-1703","polygon":[[36.8,58.55],[43.5,58.55],[43.5,67.5],[36.8,67.5],[36.8,58.55]],"name":"Lågt tegelhus bakom parkeringen (guess)","levels":1,"levelsSource":"guess from docs/foton/parkering-brofaste-nedsankt-hus.jpg and the top view (#1731)","storey":2.6,"sunk":1.15,"roof":"flat","windows":false,"facade":14513752},
       {"source":"145221568","polygon":[[43.51,2.27],[43.59,-7.33],[50.43,-7.26],[50.34,2.34],[43.51,2.27]],"name":"Komplementbyggnad 145221568","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
       {"source":"88457613","polygon":[[-64.12,-68.25],[-63.81,-121.44],[-67.62,-121.47],[-67.63,-120.2],[-77.62,-120.28],[-77.54,-133.09],[-67.3,-133.01],[-67.32,-130.44],[-64.01,-130.41],[-64.01,-132.44],[-63.91,-149.78],[-59.73,-149.75],[-59.7,-153.85],[-51.38,-153.78],[-51.4,-150.45],[-46.25,-150.41],[-46.3,-141.13],[-50.67,-141.15],[-50.68,-139.83],[-57.96,-139.88],[-58.01,-132.56],[-50.03,-132.49],[-50.46,-56.41],[-74.94,-56.6],[-74.87,-68.33],[-64.12,-68.25]],"name":"Montessorigrundskolan / byggnad 4","levels":1,"levelsSource":"Commons 2014 photo: one-storey wards; two-storey block from Hemsö By4 photo (position guess)","storey":4.7,"frameColor":15657439,
         "campus":{"style":"ward","sections":[{"name":"two-storey block","box":[-64.3,-133.2,-49.8,-120.1],"levels":2}],"chimneys":[[-57.2,-72],[-57.2,-92],[-57.2,-112],[-57,-126.6],[-55.5,-146]]}},
