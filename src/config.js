@@ -1340,7 +1340,7 @@ export const SITE = {
         windows: [{ sill: .8, head: 2.6, width: 2.1, bars: false, rails: [.22] }, { sill: .75, head: 2.55, width: 2.1, bars: false, rails: [.22] }],
         plinth: .4, plinthColor: 0xa9a59d, cornice: [], soffit: { depth: .6, color: 0xf1efe9 }, frame: .08, mullion: .05,
         piers: { width: .5, depth: .16, edge: .25, brick: true, color: 0xffffff },
-        roof: { rise: 3.4, slope: .6, grid: 2, inward: true } }, // #1733: steeper outer slopes as in Google 3D (rise/slope *guess*)
+        roof: { rise: 4.5, slope: .9, grid: 2, inward: true } }, // #1733: steep outer slopes up to the glazing as in Google 3D (rise/slope *guess*)
       // Byggnad 19 (#581, Axel Kumlien 1910-11, the laundry): plain red brick without the white render of the older
       // wards: segmental windows under brick arches with white frames, a centre post and transom, a dark string course
       // at each floor, a corbelled brick eave and dark standing-seam hips; the top floor has paired windows.
