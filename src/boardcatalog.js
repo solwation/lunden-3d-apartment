@@ -6,6 +6,9 @@ import { counterValue } from './medalcatalog.js';
 //
 // kind 'most'  : the highest count wins; shown as "N unit".
 // kind 'first' : whoever got the counter above 0 first wins; the Worker stamps the time of the first sync that has it.
+// kind 'medals-total' / 'medals-top' (#1749): no counter; the Worker derives them from the medals it computed itself
+//   (cloudflare/boards.js medalsOf): the sum of all levels, and the single highest level (the row carries `medal` + `level`).
+//   Ties: whoever reached the value first (server times of the levels).
 // counters: counter → { perMin: the most it can physically grow per minute (*guess*, a generous human maximum),
 //   start: what a brand new row may bring on its first sync (an old save has history; *guess*) }.
 export const COUNTERS = {
@@ -41,6 +44,8 @@ export const COUNTERS = {
 };
 
 export const BOARD_LISTS = [
+  { id: 'medaljer-total', kind: 'medals-total', title: 'Flest utmärkelser 🏅', unit: 'utmärkelser' },
+  { id: 'medaljer-hogsta', kind: 'medals-top', title: 'Högsta utmärkelse 🏆' },
   { id: 'flest-squirrelFeeds', kind: 'most', counter: 'squirrelFeeds', title: 'Flest ekorrar matade', unit: 'ekorrar' },
   { id: 'flest-petted', kind: 'most', counter: 'petted', title: 'Flest klappade katter', unit: 'klappar' },
   { id: 'flest-catButts', kind: 'most', counter: 'catButts', title: 'Flest kattrumpor sedda', unit: 'rumpor' },

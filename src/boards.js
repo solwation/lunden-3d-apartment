@@ -1,4 +1,5 @@
 import { BOARD_LISTS, boardCounters } from './boardcatalog.js';
+import { MEDALS } from './medalcatalog.js';
 import { portraitThumb } from './playerportraits.js';
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
 // The alternative top lists (#1710, part of #1709): the picker in the "Topplista" dialog (Totalpoäng is the default; the
@@ -35,6 +36,7 @@ export class Boards {
     const group = (label, items) => { const g = document.createElement('optgroup'); g.label = label; for (const [v, t] of items) g.append(new Option(t, v)); return g; };
     s.replaceChildren(new Option('Totalpoäng', 'score'),
       group('Flest', BOARD_LISTS.filter((l) => l.kind === 'most').map((l) => [l.id, l.title])),
+      group('Medaljer', BOARD_LISTS.filter((l) => l.kind.startsWith('medals')).map((l) => [l.id, l.title])),
       group('Först', BOARD_LISTS.filter((l) => l.kind === 'first').map((l) => [l.id, l.title])));
     s.value = this.pick;
   }
@@ -81,7 +83,8 @@ export class Boards {
       const label = document.createElement('span'); label.textContent = `${i + 1}. ${r.name || 'Anonym'}`;
       who.append(portraitThumb(r.avatar), label);
       const v = document.createElement('b');
-      v.textContent = l.kind === 'first' ? new Date(r.value).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' }) : `${fmt(r.value)} ${l.unit}`;
+      const medal = l.kind === 'medals-top' ? MEDALS.find((m) => m.id === r.medal) : null;
+      v.textContent = medal ? `${medal.icon} ${medal.name} nivå ${r.value}` : l.kind === 'first' ? new Date(r.value).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' }) : `${fmt(r.value)} ${l.unit}`;
       li.append(who, v); return li;
     });
     if (!items.length) { const li = document.createElement('li'), t = document.createElement('span'); t.textContent = this.lists ? 'Ingen har hamnat på den här listan ännu' : 'Hämtar listan…'; li.append(t); items.push(li); }

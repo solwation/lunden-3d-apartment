@@ -56,10 +56,34 @@ export function medalsOf(row) {
 
 const rowsOf = async (storage) => [...(await storage.list({ prefix: 'b:' })).values()];
 
+/**
+ * A row's standing on the two medal lists (#1749), from the server's own medals (medalsOf), never the client's claims:
+ * total = the sum of all levels, `totalAt` = when the row reached that sum (the latest of its level times);
+ * top = the highest single level, with the medal and the time that level was reached (the earliest among equal levels).
+ */
+export function medalStanding(row) {
+  const m = medalsOf(row), times = [];
+  let top = null;
+  for (const [id, ts] of Object.entries(m).sort(([a], [b]) => (a < b ? -1 : 1))) {
+    times.push(...ts);
+    const level = ts.length, at = ts[level - 1];
+    if (!top || level > top.level || (level === top.level && at < top.at)) top = { medal: id, level, at };
+  }
+  return { total: times.length, totalAt: times.length ? Math.max(...times) : 0, top };
+}
+
 /** Build every list's top rows from all stored rows. */
 export async function buildLists(rows) {
   const lists = {};
+  const standing = new Map(rows.map((r) => [r, medalStanding(r)]));
   for (const l of BOARD_LISTS) {
+    if (l.kind === 'medals-total' || l.kind === 'medals-top') {
+      const isTotal = l.kind === 'medals-total', val = (r) => (isTotal ? standing.get(r).total : standing.get(r).top?.level ?? 0), at = (r) => (isTotal ? standing.get(r).totalAt : standing.get(r).top?.at ?? 0);
+      const ranked = rows.filter((r) => val(r) > 0).sort((a, b) => val(b) - val(a) || at(a) - at(b) || a.t - b.t).slice(0, TOP);
+      lists[l.id] = await Promise.all(ranked.map(async (r) => ({ key: await rowKey(r.id), name: r.name, value: val(r), updated: r.t,
+        ...(isTotal ? {} : { medal: standing.get(r).top.medal }), ...(r.avatar ? { avatar: r.avatar } : {}) })));
+      continue;
+    }
     const ranked = rows.filter((r) => (l.kind === 'first' ? r.f?.[l.counter] : r.c?.[l.counter]) > 0)
       .sort(l.kind === 'first' ? (a, b) => a.f[l.counter] - b.f[l.counter] : (a, b) => b.c[l.counter] - a.c[l.counter] || a.t - b.t).slice(0, TOP);
     lists[l.id] = await Promise.all(ranked.map(async (r) => ({ key: await rowKey(r.id), name: r.name, value: l.kind === 'first' ? r.f[l.counter] : r.c[l.counter],

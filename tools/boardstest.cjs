@@ -6,7 +6,7 @@ const [site,worker,out]=process.argv.slice(2);
 const api=(p,b)=>fetch(worker+p,{method:b?'POST':'GET',headers:{Origin:'http://localhost','Content-Type':'text/plain'},body:b&&JSON.stringify(b)}).then(r=>r.json());
 (async()=>{
  fs.mkdirSync(out,{recursive:true});
- const seed=[['seed-ada-0001','Ada',{squirrelFeeds:240,catButts:12,steps:90000},'241302112'],['seed-sam-0001','Sam',{squirrelFeeds:120,catButts:30,steps:40000},'310220010165'],['seed-bea-0001','Bea',{squirrelFeeds:15,steps:1200},undefined]];
+ const seed=[['seed-ada-0001','Ada',{squirrelFeeds:240,catButts:300,steps:90000},'241302112'],['seed-sam-0001','Sam',{squirrelFeeds:120,catButts:30,steps:40000},'310220010165'],['seed-bea-0001','Bea',{squirrelFeeds:15,steps:1200},undefined]];
  for(const [id,name,c,avatar] of seed){await api('/boards',{id,name,c,avatar});await new Promise(r=>setTimeout(r,60));}
  const lists=(await api('/boards')).lists;console.log('GET /boards squirrels',JSON.stringify(lists['flest-squirrelFeeds']));
  assert(!JSON.stringify(lists).includes('seed-'),'no private ids');
@@ -35,6 +35,13 @@ const api=(p,b)=>fetch(worker+p,{method:b?'POST':'GET',headers:{Origin:'http://l
    const first=await p.evaluate(()=>[...document.querySelectorAll('#lb-dialog-list li')].map(li=>li.textContent));
    console.log('first',JSON.stringify(first));assert(/Ada/.test(first[0]),'first by server time');
    await p.locator('#leaderboard-dialog .card').screenshot({path:`${out}/${touch?'telefon-':''}forst-kattrumpor.png`,timeout:120000});
+   for(const [id,file,re] of [['medaljer-total','medaljer-flest',/Ada.*9 utmärkelser/],['medaljer-hogsta','medaljer-hogsta',/Ada.*Vandrare nivå 4/]]){
+    await p.selectOption('#lb-board',id);await p.waitForTimeout(800);
+    const m=await p.evaluate(()=>[...document.querySelectorAll('#lb-dialog-list li')].map(li=>li.textContent));
+    console.log(id,JSON.stringify(m));assert(re.test(m[0]),id+' leader: '+m[0]);
+    await p.locator('#leaderboard-dialog .card').screenshot({path:`${out}/${touch?'telefon-':''}${file}.png`,timeout:120000});
+   }
+   await p.selectOption('#lb-board','forst-catButts');await p.waitForTimeout(300);
    assert.equal(await p.evaluate(()=>localStorage.getItem('lunden.board')),'forst-catButts','pick is kept locally');
    if(touch){const w=await p.evaluate(()=>[document.documentElement.scrollWidth,innerWidth]);assert(w[0]<=w[1],'no horizontal scroll '+w);}
    await p.selectOption('#lb-board','score');await p.waitForTimeout(300);
