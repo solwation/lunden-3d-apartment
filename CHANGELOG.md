@@ -2,6 +2,61 @@
 
 ## Unreleased
 
+## 0.7.0 — 2026-10-31
+
+- Add a *Terms* table to COORDINATION.md defining scoped task, bounded pass, queue
+  session, eligible, startable, blocker, claim, active label, slot, integration owner,
+  resolved and drain; "reservation" is now "claim" throughout (#38).
+- Describe waiting per runtime: the core waits with the host's wait mechanism, and a
+  runtime that cannot wait finishes as a bounded pass and says so; PROJECT.example.md
+  gains a *Wait mechanism* line, and AI.md names background timers or Monitor for
+  interactive Claude Code and a bounded pass for `claude -p` and one-shot runs (#32).
+- Add `scripts/check-links.py`, a dependency-free check of relative Markdown links and
+  heading anchors, and a GitHub Action running it on push and pull request; the
+  maintainer "Check instructions" hook points to it. Maintainer tooling only: no
+  requirement for consuming projects (#34).
+- Align the maintainer host policy AI.md with PROJECT.example.md: add the missing settings
+  (model selection, capacity, claims, heartbeat, review), trim the hooks to project-specific
+  ones and document the `gh issue view` and "Fixes #N" pitfalls (#31).
+- Add a release checklist to CONTRIBUTING.md and `scripts/check-release.sh`, which checks that
+  the pins in README.md and INSTALL.md equal the latest tag, that every tag has a GitHub
+  release and that CHANGELOG has a heading for it. Maintainer tooling only (#33).
+- Record the Issueflow guide's file change commit instead of the repository's main SHA,
+  compare the fetched guide with the bundled snapshot (at most two API calls) and open
+  an issue to refresh the snapshot on a difference; snapshot provenance is now the file
+  change commit `e22d6dc` (#35).
+- Restructure ORCHESTRA.md by phase (`planning` … `follow-up`, matching the hook phase
+  names) with a read map and a one-screen gate checklist at the top, and give each rule
+  one home that other files link to: unattended questions in COORDINATION.md *Ask
+  through the issue*, best-guess closure and isolation in ORCHESTRA.md, label rules in
+  the Issueflow guide, resume-first in ORCHESTRA.md. An empty scope is now described
+  once as a host setting with a bounded pass as default. The anchor
+  `#choose-the-smallest-useful-team` no longer holds the isolation list; link
+  `ORCHESTRA.md#isolate-concurrent-agents` instead (#28, #29).
+- Document agent entry files (Claude Code, Codex, Gemini CLI, Cursor, GitHub Copilot) in
+  INSTALL.md with a copyable entry snippet and a copyable `/orkester` adapter, as a
+  Claude Code command and as a plain prompt, so consumers need not write one (#40).
+- Split the worker brief in WORKER.md into a session block written once and a short
+  assignment block, recommend a shared batch brief for issues that follow one pattern,
+  and group the worker rules by isolation, scope, escalation and reporting (#36).
+- Make the core rules project-neutral: verification now says "a partial check is not
+  evidence for the whole", "claim performance only for the measured environment" and
+  "repeat only the faulty check", with the former camera/emulator/phone wording moved to
+  a marked *Examples* section in ORCHESTRA.md; all time limits (update-check reuse,
+  verification and progress review points, shared verification turns, wait length) are
+  collected in *Default time limits* as host-adjustable review points (#30).
+- Add a *Field reports* section to CONTRIBUTING.md and an issue template
+  `.github/ISSUE_TEMPLATE/field-report.md` (headings from the Historia-globen report):
+  the way in is an issue in this repository, asked for by the maintainer. Maintainer
+  and contributor tooling only: no requirement for consuming projects (#39).
+- Describe PR delivery mode: a delivery-mode line in PROJECT.example.md, and in the
+  core the "PR open, not on main" result, issue closure after merge, paused labels,
+  a merge rehearsal of open PRs at session review and refreshing branches per merge (#37).
+- Remove the stale verification images and README from `docs/verification` (they show a
+  README state that no longer exists); the evidence stays in the v0.1.2 history and is
+  linked from #6. Verification evidence goes in the issue or the release, not in the
+  repository, since `git subtree` copies every file to each consumer (#41).
+
 ## 0.6.1 — 2026-10-30
 
 - Adopt rule suggestions from the Historia-globen field report (#26): distinct

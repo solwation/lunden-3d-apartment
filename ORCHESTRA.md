@@ -2,308 +2,274 @@
 
 A model-independent workflow for delivering scoped, verified changes with a conductor
 and optional workers. *Dirigenten* (the conductor) is the agent thread the user talks
-to, which spawns, briefs, monitors, integrates and reviews; *orkestern* (the orchestra)
-is the workers it directs. Read the host project's policy first.
-For GitHub issue work, also load the authoritative [Issueflow workflow](ISSUE-WORKFLOW.md)
-before creating issues or changing labels/state. This file defines the
-shared method; repository names, issue systems, permissions, release rules and timers
-belong in the host policy. User instructions and platform restrictions take precedence.
-Reading or maintaining these files does not start an unattended queue session.
-A request without a scope, such as a bare `/orkester`, asks the conductor to choose
-the work: run one unattended [bounded pass](COORDINATION.md#run-a-bounded-pass) that
-asks no chat questions and posts user-only questions on the affected issue.
+to; it spawns, briefs, monitors, integrates and reviews *orkestern* (the orchestra),
+the workers it directs. This file is the shared method; repositories, issue systems,
+permissions, release rules and timers belong in the host policy. User instructions and
+platform restrictions take precedence.
 
-## Check the installed workflow
+## Read map
 
-At conductor startup/resume, follow the host's upstream/version settings and
-[update-discovery procedure](INSTALL.md#check-for-upstream-updates). Reuse a successful
-check for up to 24 hours by default. Always propose relevant published bug fixes;
-other upgrades are optional. Keep the installed workflow pinned until a reviewed
-update is authorized; discovery does not enable unattended work or automatic imports.
-
-## Resume unfinished work first
-
-At conductor startup/resume of any run (scoped task, bounded pass or queue session),
-before selecting new work, look for unfinished work in the checkouts this run will use:
-uncommitted changes, local commits not on the remote main branch, leftover worktrees
-and branches, and open claims or active labels left by an earlier session. Fetch the
-remote, then decide each item from evidence, not from its age:
-
-- **Already on main.** Another orchestra or session may have delivered the same work.
-  Treat it as delivered when its content is in `origin/main`: for example
-  `git diff origin/main -- <paths>` shows nothing, `git cherry origin/main <branch>`
-  marks every commit `-`, or the linked issue was closed with a revision on main that
-  contains the change. Then discard the local copy (restore the files, drop the
-  commits, remove the worktree and branch, release the stale claim) and continue with
-  the next issue. If only part of it landed, keep and resume just the missing part.
-- **Not on main.** Resume it before new selection: identify its issue (branch or
-  worktree name, commit message, claim, matching open issue), claim it under the
-  host's rules and finish it as a normal delivery. Still-useful work without an issue
-  is delivered under a matching or new one.
-- **Owned by someone else.** Never touch a checkout, worktree or claim of a visibly
-  active agent ([isolation](#choose-the-smallest-useful-team),
-  [takeover](COORDINATION.md#coordinate-and-recover)); it is not leftover work.
-
-Discard only after the check proves the content is on main; when in doubt, preserve it
-(a commit on a private branch) and resume or record it. Note what was resumed or
-discarded in the status or result note. Keep the check brief; it does not replace the
-fresh queue fetch before selection.
-
-## Start with a short delivery plan
-
-Before implementation, write at most a few lines in the assignment or issue:
-
-- Outcome and boundary: what must work, and which modules/data can change.
-- Critical path: what must happen in order; which independent work can overlap.
-- Checks: normally 2–3 checks tied to specific failure risks, plus mandatory gates.
-- Ownership and done: worker, checkout, integration owner and release/closure evidence.
-- Follow-up: owner, evidence format, destination and timing, chosen for the acceptance.
-- Project hooks: applicable phase activities and their required evidence.
-
-Spend minutes, not a planning phase, on an ordinary issue. Read relevant modules and
-topic docs; do not inventory the entire application by default. Resolve a material
-unknown with one focused investigation, then update the plan. A file count or elapsed
-time alone is a signal to reassess, not a reason to manufacture child issues.
-
-## Apply project hooks at each phase
-
-Projects can extend the workflow with activities documented in their host policy or
-linked topic documents. These hooks are instructions for the agent, including manual
-steps or existing commands; this package installs no hook runner. The shared phase
-names and boundaries are:
-
-| Phase | Boundary for project activities |
+| Run | Read, in order |
 | --- | --- |
-| `planning` | Read relevant context and finalize the short delivery plan before implementation |
-| `implementation` | Make the scoped change before handing it to verification |
-| `verification` | Collect evidence for the affected behavior before review |
-| `review` | Review the combined diff and evidence before authorizing delivery |
-| `delivery` | Integrate/publish under host rules and verify the delivered revision |
-| `follow-up` | Publish results and required evidence before issue closure or final handoff |
+| Scoped task (an ordinary request) | Host policy, this file, [ISSUE-WORKFLOW.md](ISSUE-WORKFLOW.md) for GitHub issues |
+| Bounded pass or queue session | The above plus [COORDINATION.md](COORDINATION.md) and the host's queue/timer settings |
+| Worker assignment | Host policy, [WORKER.md](WORKER.md), the brief and the phase sections it names |
 
-For each hook, the project defines a stable name, phase, trigger and timing (entry,
-exit or a specific event within that phase), practical procedure or document link,
-owner, expected evidence/destination and whether it is required or optional. List
-multiple hooks in execution order within a phase. Use
-[PROJECT.example.md](PROJECT.example.md) as the configuration template.
+Reading or maintaining these files never starts an unattended run. An empty scope,
+such as a bare `/orkester`, lets the conductor choose the work: by default one
+[bounded pass](COORDINATION.md#run-a-bounded-pass); a host policy may configure a queue
+session instead.
 
-During planning, resolve applicable hooks and put their owners and evidence needs in
-the existing plan/worker brief. Read the linked procedure before executing a hook.
-At each phase boundary, the conductor checks the relevant hook outcomes before moving
-on. A hook with a false trigger is not applicable; record that briefly when it affects
-expected evidence. Without configured hooks, follow the core workflow normally.
+## Checklist
 
-A failed or unavailable required hook blocks the dependent phase transition or
-closure; preserve evidence, report the next action and continue only independent work.
-Report skipped or failed optional hooks without treating them as required acceptance.
-Record outcomes in existing check/result notes, bound to the revision and environment.
-Reuse valid evidence; repeat a hook only when its trigger recurs and evidence is no
-longer valid, its procedure explicitly requires repetition, or a relevant failure needs
-rechecking. Reassess a failed approach rather than retrying it blindly.
+| Phase | Gate |
+| --- | --- |
+| Start | [Update check](#check-the-installed-workflow) per host settings; [resume or discard unfinished work](#resume-unfinished-work-first) |
+| `planning` | [Short plan](#start-with-a-short-delivery-plan); issue claimed under Issueflow; [resources](#spend-resources-deliberately) and [team](#choose-the-smallest-useful-team) chosen; [hooks](#apply-project-hooks-at-each-phase) resolved |
+| `implementation` | Own checkout under the [isolation rules](#isolate-concurrent-agents); assigned scope only |
+| `verification` | [Agreed risk-based checks](#verification) pass on the delivered revision |
+| `review` | [Conductor reads the combined diff](#review) against acceptance |
+| `delivery` | [Published under host rules](#delivery); delivered revision verified |
+| `follow-up` | [Completion comment](#follow-up) with evidence before closure; active labels removed |
 
-Hooks add project activities without weakening core checks, acceptance or permission
-boundaries. They do not grant deployment/messaging permissions or enable unattended
-monitoring. Queue intake hooks remain governed by [COORDINATION.md](COORDINATION.md);
-reuse their outcomes when valid rather than running the same activity twice.
+## Start and resume
 
-## Spend resources deliberately
+### Check the installed workflow
 
-Minimize the total work needed for an accepted result: model effort, context, tool
-calls, setup and coordination as well as elapsed time. Apply this on every platform,
-even when only one model is available. Quality, authorization, required evidence and
-host queue/timer rules remain gates; do not save resources by silently weakening them.
+At conductor startup/resume, follow the host's upstream settings and
+[update-discovery procedure](INSTALL.md#check-for-upstream-updates); reuse a successful
+check within the update-check [time limit](#default-time-limits). Always propose relevant published bug fixes; other
+upgrades are optional. Discovery never imports updates or enables unattended work.
 
-Before assigning work, choose the smallest sufficient capability and effort:
+### Resume unfinished work first
+
+At startup/resume of any run, before selecting new work, look in the checkouts this run
+will use for uncommitted changes, commits not on the remote main branch, leftover
+worktrees and branches, and claims or active labels left by an earlier session. Fetch,
+then decide each item from evidence, not age:
+
+- **Already on main** (another session may have delivered it): `git diff origin/main --
+  <paths>` is empty, `git cherry origin/main <branch>` marks every commit `-`, or the
+  linked issue closed with a revision containing the change. Discard the local copy,
+  worktree, branch and stale claim; if only part landed, resume the missing part.
+- **Not on main**: identify its issue (branch, commit message, claim, matching issue),
+  claim it and finish it as a normal delivery before new selection; useful work without
+  an issue goes under a matching or new one.
+- **Owned by a visibly active agent**: not leftover; never touch it
+  ([takeover](COORDINATION.md#coordinate-and-recover)).
+
+Discard only on proof; when in doubt, preserve it as a commit on a private branch.
+Note what was resumed or discarded. This brief check does not replace the queue fetch.
+
+## Planning
+
+### Start with a short delivery plan
+
+Before implementation, write a few lines in the assignment or issue:
+
+- Outcome and boundary: what must work, which modules/data can change.
+- Critical path: what must happen in order, what can overlap.
+- Checks: normally 2–3 tied to specific failure risks, plus mandatory gates.
+- Ownership and done: worker, checkout, integration owner, closure evidence.
+- Follow-up: owner, evidence format, destination and timing.
+- Project hooks that apply and their evidence.
+
+Spend minutes on it. Read relevant modules and topic docs, not the whole application.
+Resolve a material unknown with one focused investigation, then update the plan. File
+count or elapsed time is a signal to reassess, not a reason to create child issues.
+
+### Apply project hooks at each phase
+
+A host policy can add activities (manual steps or existing commands; no hook runner is
+installed) to the phases named by this file's sections. Each hook states name, phase,
+trigger and timing, procedure, owner, evidence/destination and whether it is required;
+hooks in a phase run in listed order ([template](PROJECT.example.md)). Resolve them while
+planning, put owners and evidence in the plan/brief and read a procedure before running
+it; the conductor checks outcomes at
+each phase boundary. A false trigger means not applicable. A failed or unavailable
+required hook blocks the dependent transition or closure: preserve evidence, name the
+next action, continue only independent work; optional failures are reported, not
+acceptance. Record outcomes bound to revision and environment and repeat a hook only
+when its trigger recurs with stale evidence, its procedure says so, or a failure needs
+rechecking. Hooks never weaken core checks or grant permissions or monitoring; queue
+intake hooks follow [COORDINATION.md](COORDINATION.md#select-and-claim).
+
+### Spend resources deliberately
+
+Minimize total work for an accepted result (model effort, context, tool calls, setup,
+coordination, elapsed time) on every platform; quality, authorization, evidence and host
+timers stay gates.
 
 | Task and risk | Starting choice |
 | --- | --- |
-| Clear implementation following an established pattern, bounded edits or routine checks | Lower-cost capable worker and low/moderate reasoning where selectable |
+| Established pattern, bounded edits or routine checks | Lower-cost capable worker, low/moderate reasoning where selectable |
 | Uncertain diagnosis, coupled design, unfamiliar boundaries or high-impact failure | Stronger reasoning for the uncertain part; delegate resolved implementation economically |
-| Conductor planning and review | Enough reasoning for dependencies and risk; routine queue/status work does not automatically need maximum effort |
+| Conductor planning and review | Enough for dependencies and risk; routine queue work needs no maximum effort |
 
-Use actual available capabilities and known cost information; do not assume a provider's
-model names imply price or invent savings. The host adapter supplies concrete model
-identifiers and supported effort settings. When selection is supported and authorized,
-set these explicitly for the assignment rather than blindly inheriting the conductor's
-strongest setting. When selection is unavailable or locked, state that limitation once
-and conserve effort through scope, context, tools and verification. Never claim a model
-was selected unless the tool actually used it. Do not ask the user to choose routine
-resource settings unless their input is required.
+The host adapter names model identifiers and effort controls; set them per assignment
+when supported instead of inheriting the conductor's strongest setting, and assume no
+price from a model name. When selection is locked, say so once and save through scope,
+context and tools. Never claim a model the tool did not use or ask the user about
+routine settings. Record the choice in one plan line: capability/effort, why, and a
+stop/reassessment condition. Brief workers with a [session block once and a short
+assignment block](WORKER.md) carrying acceptance, paths and findings; prefer targeted searches, bounded output and batched reads; reuse fresh
+setup, data and evidence; stop exploring once acceptance is met.
 
-Keep the decision to a line in the existing plan/brief: capability/effort, why it fits,
-and a task-specific stop/reassessment condition. This is not a new reporting phase.
-Choose direct work when a handoff would cost more than it saves. A helper must save
-expected total work or materially shorten the critical path; idle capacity alone is
-not a reason to add one to the same issue or duplicate an investigation. In a queue
-session or bounded pass, the next independent issue is a separate delivery, not a
-helper; [coordination](COORDINATION.md#select-and-claim) fills capacity with those.
+Escalate for a concrete capability gap, ambiguity, high-impact risk or failed bounded
+approach, not for a failed command: fix environment issues directly, correct known defects in
+scope, and apply stronger
+reasoning only to the remaining difficulty (immediately for demonstrated risk). If an
+approach fails again without new evidence, stop and reassess; preserve checkout, patch
+and diagnosis rather than restart. Record the reason, and return to the economical
+setting once the uncertainty is resolved.
 
-Give workers a compact brief, acceptance, relevant paths and the current findings.
-Keep mandatory host rules accessible, but do not copy the entire conversation, queue
-or repository into every assignment. Prefer targeted searches, bounded output and
-independent batched reads. Reuse valid setup, fetched data and source-bound evidence
-within their freshness requirements; do not replay startup on every poll or continue
-exploring alternatives once acceptance is met.
+### Choose the smallest useful team
 
-Escalate for a concrete capability gap, unresolved ambiguity, high-impact risk or a
-failed bounded approach, not merely because a tool/check failed. Inspect the failure:
-fix a command/environment issue directly, make a scoped correction for a known defect,
-and use stronger reasoning/model only where it addresses the remaining difficulty.
-Starting stronger immediately is appropriate for demonstrated risk. If the same
-approach fails again without new evidence, stop repeating it and reassess. Preserve
-the checkout, patch, evidence and diagnosis for a handoff; do not restart the task
-blindly. Record the reason and changed capability/scope in the existing brief/status.
-Return routine follow-on work to the economical setting when the uncertainty is resolved.
+Within one issue, prefer direct work when a handoff costs more than it saves: one
+implementer and one conductor review (the conductor may implement when policy allows).
+Without delegation, perform the roles in turn and say so; never simulate subagents. Add
+a second worker only when independent investigation, a separate area or verification
+preparation saves total work or shortens the critical path, never just to fill idle
+capacity; state its output and files. Helpers and reviewers count against the worker
+cap; workers do not spawn teams. Independent reads need no extra agent. Across issues,
+independent deliveries run concurrently up to capacity
+([coordination](COORDINATION.md#select-and-claim)).
 
-## Choose the smallest useful team
+One integration owner combines and publishes each issue. A helper needs no child issue
+for tests, docs or review and verifies on the owner's exact revision. Keep coupled edits
+together; serialise overlapping writes and integration. Create child issues only for
+independently useful deliveries; children inherit priority constraints and parent
+acceptance stays visible. Publish larger work as verified slices, never unfinished code
+to meet a timer.
 
-These team rules apply within one issue. Across independent issues in a queue session
-or bounded pass, run separate deliveries concurrently up to the host's capacity.
+## Implementation
 
-For a small cohesive change use one implementer and one conductor review. The conductor
-may implement directly when project policy allows; if delegation is unavailable,
-perform the roles sequentially and report that limitation. Do not simulate subagents.
+Make the scoped change; unrelated defects become separate issues.
 
-Use a second worker when independent investigation, a separate implementation area,
-or verification preparation shortens the critical path. State its concrete output and
-file ownership. Count helpers and reviewers against the project's total worker cap;
-workers must not spawn an unbounded nested team. Parallelize independent reads/API
-fetches too, without adding agents just to run shell commands.
+### Isolate concurrent agents
 
-One integration owner combines changes and publishes each issue. A helper can work
-under that issue without creating a child just for tests, docs or review. It must use
-the implementation owner's exact revision before claiming final verification. Keep
-closely coupled edits together. Serialise overlapping writes and integration.
+- Each writing agent, the implementing conductor included, works in its own checkout
+  (for example a `git worktree` on its own branch). Never edit or run state-changing git
+  commands (checkout, switch, stash, reset, clean, rebase, commit) in a checkout you do
+  not own; reading is fine. Only the integration owner changes the integration checkout.
+- Worktrees share stash and refs: never `git stash` beside other agents; park work in a
+  commit on your own uniquely named branch.
+- Give each checkout its own ports, server configuration, temporary/evidence and build
+  directories, and confirm a server serves this checkout's revision before its evidence
+  counts. Share caches, databases or devices only when safe or taken in turns.
+- Stop processes you started by PID, never by name pattern, and release shared locks
+  before reporting.
+- Never send personal data from the user's environment (name, e-mail, account IDs) to
+  external services; use the project's public identity.
+- Remove a worktree only after its work is integrated or preserved.
 
-Agents running at the same time share one filesystem, so isolate them:
+## Verification
 
-- Each writing agent, including the conductor when it implements, works in its own
-  checkout, such as a `git worktree` on its own branch. Never edit files or run
-  state-changing git commands (checkout, switch, stash, reset, clean, rebase, commit)
-  in a checkout you do not own; the integration checkout belongs to the integration
-  owner. Reading another checkout is fine.
-- Worktrees of one repository share its stash, refs and object store. Do not use
-  `git stash` while other agents work in sibling worktrees: one agent's `stash pop`
-  can restore another's change. Park work in a commit on your own branch or a
-  separate worktree instead, and keep branch/tag names unique per worker.
-- Give each checkout its own ports, server configuration, temporary/evidence
-  directories and build output. Share a cache, database or device only when it is
-  safe for concurrent use or taken in turns.
-- Stop processes you started by PID, never by name pattern: sibling agents run
-  identical commands. Stop them, and release shared locks, before reporting.
-- Never send personal data from the user's environment (name, e-mail address, account
-  identifiers) to external services; use the project's public identity as a contact.
-- Only the integration owner brings changes into the integration checkout. Remove a
-  worktree only after its work is integrated or preserved.
-
-Create child issues only for independently useful deliveries that genuinely reduce
-coordination or unblock work. Keep parent acceptance visible; children inherit project
-priority constraints. One small issue normally needs one complete delivery. For larger
-work publish useful, verified slices, never unfinished code merely to meet a timer.
-
-## Verify the affected behavior
-
-Choose checks from the change's dependency path, inputs and failure modes, not from
-historical test inventories. Existing fast suites and project release gates still apply.
+Choose checks from the change's dependency path, inputs and failure modes; existing fast
+suites and release gates still apply.
 
 | Change | Minimum useful evidence |
 | --- | --- |
 | Documentation/instructions | Diff, links and consistency with retained requirements |
 | Local behavior | Relevant component check and affected real integration/route |
-| Shared protocol, persistence, security or renderer | Changed boundaries and representative consumers; broaden for a stated risk |
+| Shared protocol, persistence, security or other shared component | Changed boundaries and representative consumers; broaden for a stated risk |
 
-Use the existing harness when possible. Add a regression check when it catches a
-meaningful failure; do not build a framework or test that merely repeats the code.
-Diagnose failed scoped checks, fix failures caused by this change, and rerun affected
-checks before delivery. Track proven unrelated baseline defects separately; they do
-not waive required acceptance. A component render is not evidence for the whole application. Do not claim native
-hardware performance from emulation. Hard contracts and explicit user acceptance gates
-cannot be waived to save time. Evidence that only a physical device or the user's own
-experience can supply is not a closing gate by default; see
-[best-guess closure](#close-after-a-best-guess-fix).
+Use the existing harness; add a regression check only when it catches a meaningful
+failure. Fix failures this change caused and rerun affected checks; track proven
+unrelated baseline defects separately (they waive no acceptance). A partial check is
+not evidence for the whole; do not claim performance for an environment other than the
+one measured ([examples](#examples)). Hard contracts and explicit user gates are never waived; evidence only a
+device or the user can supply is no closing gate by default
+([best-guess closure](#close-after-a-best-guess-fix)).
 
-Bind results to the revision, relevant inputs, environment and quality mode. Reuse
-valid evidence after unrelated rebases; rerun only checks affected by changed code,
-inputs, conflicts, a failure or a concrete unresolved risk. Share expensive setup where
-safe. Correct a bad evidence camera and repeat that check, not every scene/platform.
-A guessed historical performance threshold alone does not justify optimization work.
+Bind results to revision, inputs, environment and quality mode; after an unrelated
+rebase rerun only checks touched by changed code, inputs, conflicts or a concrete risk.
+Correct a faulty evidence setup and repeat only that check. A guessed historical
+threshold alone does not justify optimization. Stop once agreed checks pass; when
+verification passes its [time limit](#default-time-limits), reassess and pick the
+smallest check for the missing proof, without skipping required verification or hiding failures.
 
-Stop expanding coverage once the agreed checks pass and acceptance is met. At about
-10 minutes of verification, reassess before another costly sweep: identify the missing
-proof and use the smallest reliable check. This is a review point, not permission to
-skip required verification or conceal failures.
+## Review
 
-## Review and deliver once
+The conductor reads the combined diff and results (and required images) for missed
+acceptance, integration errors and scope creep. No routine reruns of green checks and
+no second review agent; request one bounded correction per concrete defect, not for
+wording preferences.
 
-The conductor reads the diff and existing results, checks relevant images if required,
-and looks for missed acceptance, integration errors and scope creep. Do not routinely
-rerun green checks or add a second review agent. Request one bounded correction for a
-concrete defect. Routine wording/preferences are not a new implementation cycle.
+## Delivery
 
-Follow host release rules, preserve concurrent work, and never bypass denied actions
-through another agent. Inspect changed upstream files after syncing; repeat affected
-checks only. Publish result evidence before auto-closing an issue if required. A commit,
-a successful deployment and verified behavior are distinct; report exactly what exists.
-Remove ownership labels when finished or released; leave incomplete acceptance open.
-Unrelated defects become separately scoped issues, not opportunistic fixes.
+Follow host release rules, preserve concurrent work, and never route a denied action
+through another agent. After syncing, inspect changed upstream files and repeat only
+affected checks. A commit, a deployment and verified behavior are distinct; report
+exactly what exists: outcome, revision, checks, limitations, deployment, remaining work.
+Attribution names the actual tool when required.
 
-Record a short result: outcome, revision, checks and limitations, deployment when
-applicable, remaining work. Attribution must name the actual tool if required; never
-pretend another provider generated the work.
+*PR mode* (the host's delivery mode is a PR the user merges, see
+[PROJECT.example.md](PROJECT.example.md)): the result note says "PR open, not on main";
+the issue closes only after the merge, or by the host's rule, and until then its active
+labels are removed (paused under [Issueflow](ISSUE-WORKFLOW.md)); whichever session's
+queue fetch first sees the merge posts the completion comment and closes. Merge order and
+refreshing branches after each merge: [Select and claim](COORDINATION.md#select-and-claim).
 
-## Follow up with evidence that fits the change
+## Follow-up
 
-The conductor owns follow-up unless a named owner is assigned in the short plan.
-Choose the smallest useful evidence and an accessible destination under host rules:
+The conductor owns follow-up unless the plan names another owner, and picks the smallest
+useful evidence in an authorized, accessible destination: a screenshot with revision
+and environment for visible changes (supporting, not replacing, functional checks), a
+test or reproduction result for behavior, a link to the published text and what was
+checked for documentation, and the deployed revision and post-deployment check for
+deployments.
 
-| Delivered change | Useful follow-up |
-| --- | --- |
-| Visible UI or rendered content | Screenshot of the affected state, with revision and environment; before/after when comparison helps |
-| Behavior or bug fix | Relevant test result or reproduction outcome tied to the delivered revision |
-| Documentation or policy | Link to the published change and a short explanation of what was checked |
-| Deployment | Target environment, deployed revision and outcome of the relevant post-deployment check |
-
-For issue work, post a completion comment before closure: outcome, delivered revision,
-checks, links or attachments to relevant evidence, limitations and remaining acceptance.
-A screenshot supports visual acceptance; it does not replace functional checks. Inspect
-captured images before posting and use an authorized destination without exposing
-private data. If attachments cannot be posted, provide an accessible artifact link or
-report the limitation; never claim an upload that did not happen.
-
-Perform required post-publication checks before declaring their acceptance complete.
-If other required evidence is unavailable, keep the relevant acceptance open and name
-the next action and owner. Only schedule later monitoring when authorized; follow-up
-does not itself enable unattended polling. Reuse the existing result note and evidence
-rather than adding a separate reporting phase.
+Before closing an issue, post a completion comment: outcome, delivered revision,
+checks, evidence links, limitations and remaining acceptance; then release labels under
+[Issueflow](ISSUE-WORKFLOW.md) and leave unmet acceptance open with next action and
+owner. Inspect images before posting and expose no private data; never claim an upload
+that did not happen. Run required post-publication checks before claiming them, and
+schedule later monitoring only when authorized. Reuse the result note; follow-up is no
+separate reporting phase.
 
 ### Close after a best-guess fix
 
-Work as autonomously as the host's permissions allow. When the only missing evidence is
-a physical device, a specific user's hardware or the user's own experience (a crash on
-their phone, touch behavior on one device, "does it feel right now"), do not park the
-issue waiting for it. Diagnose with the available reports and tools, make the best
-supported fix, verify what can be verified (emulation, measurement, tests), and close
-the issue. The completion comment states plainly what was verified, what could not be
-and why, so the user can report again or reopen if the problem persists; never present
-untested behavior as tested. A device test is not a user-only question: do not post one
-through the question channel. Keep an issue open only when the host policy or the issue
-itself explicitly makes that device or user acceptance a closing gate, or when no
-plausible fix exists yet; then record the diagnosis, next action and owner.
+When the only missing evidence is a physical device, a specific user's hardware or the
+user's own experience ([examples](#examples)), do not park
+the issue or post it as a user question. Diagnose with available reports and tools,
+make the best supported fix, verify what can be verified (simulation, measurement,
+tests) and close; the completion comment says what was and was not verified and why, so
+the user can reopen. Never present untested behavior as tested. Keep the issue open only
+when the host policy or issue makes that device or user acceptance a closing gate, or
+no plausible fix exists yet; then record diagnosis, next action and owner.
 
 ## Keep progress observable
 
-Use host heartbeat/deadline rules. Reassess at roughly 30 minutes without a useful
-delivery; diagnose at 45–60 minutes without concrete progress. Inspect hung processes,
-resume existing work and preserve evidence rather than restart. Split only if it helps.
-Do not let setup, test polish or coordination quietly consume hours.
+Follow host heartbeat rules. Reassess and then diagnose when a delivery passes the
+progress [time limits](#default-time-limits) without useful output: inspect hung processes, resume and
+preserve evidence rather than restart, and do not let setup, polish or coordination
+consume hours. Record coarse phase times, worker count and rerun reasons in the
+completion note; claim speedups only from comparable tasks and reopen rates, never from
+issue timestamps.
 
-Record coarse phase times (plan/setup, implementation, verification/review, release
-wait) in the existing completion note when available, plus worker count and rerun
-reasons. Do not infer implementation duration from issue creation/closure timestamps.
-Compare similar tasks and reopen/regression rates before claiming a speed improvement;
-collect this information in normal delivery, not a new benchmark project.
+## Default time limits
 
-For a bounded pass or an unattended queue session, also read
-[coordination](COORDINATION.md) and the host's queue/timer settings, including the
-[session review](COORDINATION.md#review-the-session) when the queue drains. For a worker
-assignment use [the compact brief](WORKER.md).
+Review points, not deadlines, and only where the runtime shows elapsed time; a host
+policy can change any of them.
+
+| Limit | Default | Where |
+| --- | --- | --- |
+| Reuse a successful update check | 24 hours | [Check the installed workflow](#check-the-installed-workflow) |
+| Reassess verification before another costly sweep | about 10 minutes of verification | [Verification](#verification) |
+| Reassess, then diagnose, a delivery without useful output | about 30, then 45–60 minutes | [Keep progress observable](#keep-progress-observable) |
+| One turn on shared expensive verification | under about 5 minutes | [Select and claim](COORDINATION.md#select-and-claim) |
+| Longest wait before noticing a user stop, while polling or idle | about 60 seconds, as the wait mechanism allows | [Poll, idle and stop](COORDINATION.md#poll-idle-and-stop) |
+
+## Examples
+
+Illustrations of generic rules above; they add no rules.
+
+- *A partial check is not evidence for the whole*: a component render or a single
+  route does not show the whole application working.
+- *Performance only for the measured environment*: frame rates in an emulator or a
+  headless browser say nothing about native hardware.
+- *Repeat only the faulty check*: a screenshot taken with a wrong camera angle is
+  recaptured for that view, not for every scene and platform.
+- *Best-guess closure*: a crash reported on the user's phone, touch behavior on one
+  device, or "does it feel right now".

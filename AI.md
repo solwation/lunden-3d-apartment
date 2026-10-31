@@ -6,10 +6,9 @@ the established language of the files being edited.
 
 ## Follow the orchestra
 
-Read this file, [ORCHESTRA.md](ORCHESTRA.md) and
-[ISSUE-WORKFLOW.md](ISSUE-WORKFLOW.md) before making changes. Apply the orchestra
-to this repository's own maintenance, including a short delivery plan, deliberate
-resource use, scoped verification and one conductor review.
+Read this file first, then the core files the
+[read map](ORCHESTRA.md#read-map) names for the run, and apply the orchestra to this
+repository's own maintenance.
 
 The agent receiving the request acts as conductor and integration owner. It may
 implement directly and review its own diff for small cohesive changes. Use an
@@ -18,11 +17,11 @@ of two agents including the conductor. Use [WORKER.md](WORKER.md) for assignment
 Respect platform limits on delegation and model selection; disclose unavailable
 controls once rather than pretending they were used.
 
-An ordinary maintainer request starts a single scoped task. `/orkester`, with or
-without a scope, starts a queue session over this repository's open issues under
-[COORDINATION.md](COORDINATION.md#poll-idle-and-stop); a given scope still bounds the
-work. Run a single [bounded pass](COORDINATION.md#run-a-bounded-pass) without timers
-only when one is explicitly requested.
+An ordinary maintainer request starts a single scoped task. Overriding the core's
+empty-scope default, `/orkester`, with or without a scope, starts a queue session over
+this repository's open issues under [COORDINATION.md](COORDINATION.md#poll-idle-and-stop);
+a given scope still bounds the work. Run a single
+[bounded pass](COORDINATION.md#run-a-bounded-pass) only when one is explicitly requested.
 
 | Queue setting | Value |
 | --- | --- |
@@ -30,10 +29,8 @@ only when one is explicitly requested.
 | Idle watch | 60 minutes after the latest issue this session resolved (first idle entry if none) |
 | Intake hooks | None |
 
-The session is unattended: ask nothing in the chat. Post a question only the
-maintainer can answer as a comment on the affected issue with options and a
-recommendation, add the `user question` label and continue with other work; skip such
-issues until answered, and whoever resumes one removes the label.
+Questions only the maintainer can answer go to the affected issue with the
+`user question` label ([ask through the issue](COORDINATION.md#ask-through-the-issue)).
 
 ## Consume the orchestra from this checkout
 
@@ -48,49 +45,56 @@ session; record which revision a delivery followed when that matters. Consumers
 importing this repository by subtree receive the adapter under
 `.orchestra/shared/.claude/`, where hosts do not load it.
 
+## Host settings
+
+Each row answers a line of [PROJECT.example.md](PROJECT.example.md); "core default"
+means the shared rules apply unchanged.
+
+| Setting | Value |
+| --- | --- |
+| Repository and coordination | `solwation/dirigenten-och-orkestern` only; its open issues are the queue, there is no separate status issue. Cross-project boundaries: none; the core stays free of project details |
+| Excluded and session labels | Issues labelled `user question` are skipped until answered; no other exclusions. Session ID `<host>-<model>-<YYYYMMDD>[<suffix>]` (project short name omitted: one repository), label prefix `orkester: ` |
+| Claims, races, expiry, handover | Core default: the `orkester:` label claims an issue, never take over a visibly active one |
+| Capacity | At most two agents including the conductor; the conductor's own implementation counts as a slot and is allowed for small cohesive changes. No expensive shared verification (no browser/e2e/device runs) |
+| Isolation | No servers or ports. In Claude Code, give a worker its own checkout with the Agent tool's `isolation: "worktree"` |
+| Runtime/model selection | Claude Code's Agent tool chooses a model per worker (`sonnet`, `opus`, `haiku`, `fable` aliases). Reasoning effort follows the agent definition and is not set per call unless the maintainer asks. Choose per the resource rules in [ORCHESTRA.md](ORCHESTRA.md) and disclose when a control is unavailable; no price assumptions |
+| Heartbeat, stale work | Core default |
+| Delivery mode | Direct to `main` (see *Commit and push requested changes*); PR mode does not apply |
+| Wait mechanism | Interactive Claude Code blocks a foreground `sleep`: wait with a background timer (Bash `run_in_background` running `sleep 300`, which re-invokes the conductor when it exits) or the Monitor tool with an until-loop; a finishing worker or a maintainer message also wakes the conductor. `claude -p '/orkester'` and one-shot cloud runs cannot wait: they run a bounded pass and say that no poll or idle watch ran |
+| Session review on drain | Core default |
+| Workspace/server setup | None; Markdown only |
+| Required checks | `python3 scripts/check-links.py` and the maintainer checks below |
+| Installed version, upstream discovery | Not applicable: the root files are the installed core and the conductor already runs the newest revision (see above) |
+| Shell pitfall | `gh issue view` without `--json` may fail here with "GraphQL: Projects (classic) is being deprecated ... (repository.issue.projectCards)". Use `gh api repos/solwation/dirigenten-och-orkestern/issues/N` and `.../issues/N/comments` instead |
+| Attribution and licenses | Commit trailers and PR notes name the tool and model that did the work; never another provider. The repository license is [LICENSE.md](LICENSE.md); the Issueflow snapshot keeps its own [license](issueflow/LICENSE.md) |
+| Auto-close pitfall | A commit message with "Fixes #N" closes the issue on push, before the required completion comment. Write "(#N)" in commit messages and close manually after the comment |
+
 ## Project phase hooks
 
-Apply ORCHESTRA.md's hook contract. All hooks below are required when their trigger
-applies and owned by the conductor; delegate only explicit scoped activities.
+The core phase gates apply as written; only project-specific activities are listed.
+Both hooks are required and owned by the conductor.
 
 | Hook | Phase and trigger/timing | Procedure and completion evidence |
 | --- | --- | --- |
-| Plan repository work | `planning`: every change, before implementation | Read the relevant policy/topic docs and create/reuse the issue with labels and a short plan under the GitHub rules below |
-| Preserve scope | `implementation`: every change, before verification | Inspect the patch for unrelated edits and preserve concurrent work |
-| Check instructions | `verification`: documentation changes, before review | Check diff, relative links and consistency; walk through changed workflow scenarios and record results in the issue completion note |
-| Review delivery | `review`: every change, before publishing | Read the combined diff and check acceptance against existing evidence; correct concrete defects |
+| Check instructions | `verification`: documentation changes, before review | Check diff and consistency; run `python3 scripts/check-links.py` for relative links and anchors; walk through changed workflow scenarios and record results in the issue completion note |
 | Publish main | `delivery`: every completed requested change | Follow the publishing rules below; confirm the delivered commit is on remote main |
-| Complete issue | `follow-up`: every tracked change, before closure | Post the completion comment and relevant evidence under the rules below, remove active labels and close only if acceptance is met |
 
-No screenshot hook is configured for ordinary instruction changes. When a task has
-visual acceptance, add the relevant capture, inspection and sharing procedure to its
-plan as described below. No additional hooks or timers are enabled implicitly.
+No screenshot hook is configured; no other hooks or timers are enabled implicitly.
 
 ## Track actual work in GitHub
 
 Use the current authoritative Issueflow guide as resolved by ISSUE-WORKFLOW.md;
 record its revision in the issue or delivery note once per session.
 
-- Reuse a matching issue or create one before implementation, with the expected
-  result, acceptance criteria, short plan and integration owner.
-- Set exactly one canonical priority label: `priority: high`, `priority: medium`
-  or `priority: low`. Default to medium and briefly explain the priority.
-- Apply `in-progress` only while actively working. Keep ownership separate from
-  work status; never remove another active owner's labels.
-- Remove all recognized active-work labels when pausing, handing off or finishing.
-- Record the delivered revision, checks, limitations and remaining acceptance in
-  the issue before closing it. Close only after acceptance and verification pass
-  and the requested change has reached `origin/main`.
+Labels, priority and work status follow that guide. Project specifics: every issue
+names its integration owner in the plan, and closes only after its change has reached
+`origin/main`.
 
 ## Adapt follow-up to the change
 
-Apply ORCHESTRA.md's follow-up rules. Name its owner, evidence format, destination
-and timing in the short plan. Always post a completion comment on this repository's
-issue before closure, linking the delivered commit and relevant evidence. For a
-rendering change, capture and inspect the affected rendered state when visual
-acceptance requires it; for instructions, link the published text and record the
-consistency checks. Post images or artifact links when useful and supported by the
-authorized tools. Disclose missing evidence and keep unmet acceptance open.
+The core [follow-up](ORCHESTRA.md#follow-up) applies. For instructions the evidence is
+a link to the published text plus the recorded consistency checks; a rendering change
+with visual acceptance adds capture and inspection to its plan.
 
 ## Commit and push requested changes
 
@@ -106,11 +110,13 @@ combined changes and repeat affected checks. Push normally; never force-push or
 bypass branch protection. If direct push is blocked, preserve the work and report
 the actual blocker.
 
-For documentation changes, check the diff, relative links and consistency with the
+For documentation changes, check the diff, relative links (`python3 scripts/check-links.py`,
+also run by CI) and consistency with the
 shared rules. Exercise distribution changes in a disposable repository as required
 by [CONTRIBUTING.md](CONTRIBUTING.md#maintainer-checks). Release only when a fresh complete fetch shows no open issues in this
 repository (or when the maintainer requests one), bundling everything under
-*Unreleased* in CHANGELOG; choose patch/minor under the
+*Unreleased* in CHANGELOG, following the
+[release checklist](CONTRIBUTING.md#release-checklist); choose patch/minor under the
 [versioning rules](CONTRIBUTING.md#improve-it-across-projects), while a major
 release needs an answered issue question. Close an issue whose only remaining
 criterion is inclusion in a release once its change is on `main` under *Unreleased*.
