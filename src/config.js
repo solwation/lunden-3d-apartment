@@ -7354,7 +7354,9 @@ export const MAILBOX = {
 };
 // The binoculars (#1706): a Holdable lying in the letterbox. Right mouse button / the touch button = scope mode (never a weapon).
 export const BINOCULARS = {
-  zoom: 5, // the view's field of view is divided by this while the scope is up (×4–6 asked for; *guess*)
+  zoom: 5, // (#1706, superseded by `zooms` since #1747: the old single ×5, kept as the reference)
+  zooms: [2, 4, 8], zoomStart: 1, // #1747: the selectable magnifications (the fov is divided by the chosen one; mouse wheel / pinch-less +/− buttons) and the index used on raising (*guess*: compact 8×32 up to ×8)
+  hint: 'Kikaren: tryck på kikarknappen (höger klick på dator) för att zooma · + / − eller mushjulet ändrar förstoringen', // #1747: shown once when taken
   baseFov: 72, // the ordinary view's field of view (main.js step: 72 + TURBO.fov × turbo.k); the scope ignores the turbo's widening
   sensitivity: 1, // mouse / touch look speed while zoomed = 1 / zoom × this (a narrower view turns slower in the picture)
   held: { x: 0.12, y: -0.2, z: -0.34 }, // camera-space pose of the held binoculars (m, *guess*)

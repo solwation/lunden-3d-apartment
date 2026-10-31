@@ -38,6 +38,29 @@ export function binocularGeometry() {
   return mergeGeometries(parts);
 }
 
+/** #1747: the magnification read-out ("4×") with − / + buttons (always shown while zoomed; the buttons only on touch, the wheel does it on a computer). */
+function buildControls(step) {
+  if (typeof document === 'undefined') return null;
+  const el = document.createElement('div');
+  el.id = 'binoculars-zoom';
+  el.hidden = true;
+  el.style.cssText = 'position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:3;display:none;align-items:center;gap:10px;pointer-events:none;font:700 18px system-ui,sans-serif;color:#fff;text-shadow:0 1px 4px #000';
+  const btn = (txt, d, label) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = txt; b.dataset.step = String(d); b.setAttribute('aria-label', label);
+    b.className = 'binoc-step';
+    b.style.cssText = 'display:none;width:52px;height:52px;border-radius:50%;border:1px solid rgba(255,255,255,.5);background:rgba(24,30,36,.7);color:#fff;font:700 26px system-ui,sans-serif;pointer-events:auto;touch-action:manipulation;padding:0';
+    b.addEventListener('click', (e) => { e.stopPropagation(); step(d); });
+    return b;
+  };
+  const out = document.createElement('span');
+  out.className = 'binoc-read'; out.style.cssText = 'min-width:2.4em;text-align:center';
+  el.append(btn('−', -1, 'Mindre förstoring'), out, btn('+', 1, 'Större förstoring'));
+  document.head.appendChild(Object.assign(document.createElement('style'), { textContent: 'body.touch #binoculars-zoom .binoc-step{display:block!important}' }));
+  document.body.appendChild(el);
+  return el;
+}
+
 const NONE = { name: '', kind: 'none', pickable: new THREE.Object3D(), blocked: true };
 
 /** The black double-circle mask: two overlapping round windows, sized by the shorter side of the screen. */
@@ -78,7 +101,9 @@ export class Binoculars extends Holdable {
       pick: { pos: pickPos, size: [Math.abs(ext.x), Math.abs(ext.y), Math.abs(ext.z)] },
       cooldown: 0.25, grip: B.grip, // (no useLabel: the touch button beside the action button is `useAlt`'s, main.js)
     });
-    Object.assign(this, { isBinoculars: true, lid, zoomed: false, altIcon: '🔭', altLabel: 'Kika', mask: buildMask(), zoomCount: 0 });
+    Object.assign(this, { isBinoculars: true, lid, zoomed: false, altIcon: '🔭', altLabel: 'Kika', mask: buildMask(), zoomCount: 0, zoomIdx: B.zoomStart });
+    this.controls = buildControls((d) => this.stepZoom(d));
+    this.updateControls();
   }
 
   get lidOpen() { return this.lid.t > 0.02; }
@@ -91,7 +116,7 @@ export class Binoculars extends Holdable {
 
   idle() { this.model.visible = this.placed || this.lidOpen; }
 
-  onTake() { this.model.visible = true; sfx.click?.(this.where()); }
+  onTake() { this.model.visible = true; sfx.click?.(this.where()); this.onHint?.(B.hint); } // #1747: main.js shows the hint as a badge
   onPut() { this.setZoom(false); }
   goHome() { super.goHome(); this.model.visible = !!this.lid && this.lidOpen; } // (the constructor's first goHome runs before `lid` is set)
 
@@ -101,16 +126,33 @@ export class Binoculars extends Holdable {
     if (on === this.zoomed) return;
     this.zoomed = on;
     if (on) this.zoomCount++;
+    if (on) this.zoomIdx = B.zoomStart; // each raising starts at the middle step
+    this.updateControls();
     if (this.mask) { this.mask.hidden = !on; this.mask.style.display = on ? '' : 'none'; }
     this.model.visible = !on; // (their own barrels would fill the view)
     if (this.held) sfx.click?.(this.where());
+  }
+  /** The chosen magnification (#1747). */
+  get zoom() { return B.zooms[this.zoomIdx]; }
+  /** Step the magnification up (+1) / down (−1) within B.zooms while looking; returns whether it changed. */
+  stepZoom(d) {
+    if (!this.zoomed) return false;
+    const i = Math.max(0, Math.min(B.zooms.length - 1, this.zoomIdx + Math.sign(d)));
+    if (i === this.zoomIdx) return false;
+    this.zoomIdx = i; this.updateControls(); sfx.click?.(this.where());
+    return true;
+  }
+  updateControls() {
+    const c = this.controls; if (!c) return;
+    c.hidden = !this.zoomed; c.style.display = this.zoomed ? 'flex' : 'none';
+    c.querySelector('.binoc-read').textContent = `${this.zoom}×`;
   }
   onUse() { this.setZoom(!this.zoomed); }
   /** The right mouse button / the touch button. */
   useAlt() { this.use(); }
 
   /** The camera's field of view for the ordinary one `base` (null: not zoomed). */
-  fov(base = B.baseFov) { return this.zoomed ? B.baseFov / B.zoom : base; }
+  fov(base = B.baseFov) { return this.zoomed ? B.baseFov / this.zoom : base; }
   /** How much of a look movement is applied: slower while zoomed. */
-  lookScale() { return this.zoomed ? B.sensitivity / B.zoom : 1; }
+  lookScale() { return this.zoomed ? B.sensitivity / this.zoom : 1; }
 }

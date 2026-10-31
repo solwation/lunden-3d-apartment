@@ -887,6 +887,8 @@ const mailbox = buildMailbox(scene, camera, mailboxGround(renderedTerrainY)); //
 const binoculars = mailbox.binoculars;
 world.lids.push(mailbox.lid);
 holdables.push(binoculars);
+binoculars.onHint = (t) => badge(t, false); // #1747: the one-line how-to when they are taken
+document.addEventListener('wheel', (e) => { if (binoculars.zoomed) { e.preventDefault(); e.stopImmediatePropagation(); binoculars.stepZoom(e.deltaY < 0 ? 1 : -1); } }, { passive: false, capture: true }); // #1747: the wheel changes the magnification while looking (and nothing else)
 // #1707: the spray paint (one instanced mesh, kept 72 h in this browser) and the cabinet by Sankt Lars väg with the cans
 const graffiti = new Graffiti(scene, { segment: (from, to, list) => marks.segment(from, to, list), exclude: [camera],
   fallback: lowMemory && !new URLSearchParams(location.search).has('keepgeo') ? collisionHit({ walls: (x, z, y) => [...player.segments()[0], ...farWalls(x, z, y)], // phones: walls, trunks and the ground from the walking data

@@ -511,7 +511,9 @@ src/bow.js             the bow (#690, BOW): our own recurve bow (one vertex-colo
                        tools/bowtest.cjs (one page; frames driven by hand), combattest's bow step
 src/binoculars.js      the binoculars (#1706, BINOCULARS), a Holdable lying in the yellow letterbox (src/mailbox.js): take / hold / put down / put back and saving
                        are the ordinary holdable path (keep.js `things`, key `kikaren|home`). Right mouse button / the touch power button (`useAlt`, `altIcon` '🔭') raises
-                       the scope: fov = baseFov / zoom (×5, *guess*), a black double-circle SVG mask (`#binoculars-mask`, no texture), look speed ÷ zoom (main.js `look`).
+                       the scope: fov = baseFov / zoom, a black double-circle SVG mask (`#binoculars-mask`, no texture), look speed ÷ zoom (main.js `look`).
+                       #1747: the zoom is one of `BINOCULARS.zooms` (2/4/8, start 4×): mouse wheel while zoomed (main.js captures it, nothing else sees it) or the −/+ buttons of `#binoculars-zoom`
+                       (touch only; the "4×" read-out is always shown); a one-line hint badge on taking. Test: `tools/binocularstest.cjs`.
                        `setZoom(false)` on put/stow, menu, fall/death/wake, riding or reading (main.js `step` checks every frame). Not a weapon (no `clickIsUse`/`shoots`).
 src/spraycan.js        the spray cans (#1707, SPRAY), six Holdables on the shelf of the grey electrical cabinet (src/elcabinet.js, its door an Openable in
                        world.lids); take / put back / saving as any loose thing. `clickIsUse` (a left click never becomes "put it down") + `trigger(on)`:
