@@ -65,11 +65,14 @@ flowchart TD
 3. While they work, the conductor runs your intake hooks, for example turning incoming
    reports into new issues.
 4. Each worker plans briefly, implements, runs the checks that matter and hands back.
-5. The conductor reviews the combined diff and evidence, pushes, posts the result on
-   the issue and closes it, then gives the free worker the next issue.
+5. The conductor reviews the combined diff and evidence, delivers it (a push to main,
+   or a pull request if your project merges through PRs), posts the result on the
+   issue and closes it once the change is on main, then gives the free worker the next
+   issue.
 6. When the queue is empty, the conductor reviews everything delivered in the session
    (with workers for parts if that helps); findings become new issues and the loop
-   continues. With nothing left, an optional idle watch waits for new issues.
+   continues. With nothing left, an optional idle watch waits for new issues; a runtime
+   that cannot wait runs one bounded pass and says so.
 7. Anything only you can decide waits on its issue, not in your chat. Everything else
    keeps moving.
 
@@ -102,14 +105,15 @@ flowchart TD
 
 ```sh
 git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.6.1 --squash
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.7.0 --squash
 cp .orchestra/shared/PROJECT.example.md .orchestra/project.md
 ```
 
 Fill in `.orchestra/project.md`, point your agent's entry file (`AGENTS.md`,
 `CLAUDE.md`, …) at it and at `.orchestra/shared/ORCHESTRA.md`, and ask for a change.
-Optionally add a thin `/orkester` command that does the same. Pinning, updates and
-the upstream release check are in [INSTALL.md](INSTALL.md).
+Optionally add a thin `/orkester` command that does the same (entry files and a
+copyable adapter are in [INSTALL.md](INSTALL.md#connect-agent-entry-points)). Pinning,
+updates and the upstream release check are in [INSTALL.md](INSTALL.md).
 
 ## What's inside
 
@@ -120,8 +124,8 @@ the upstream release check are in [INSTALL.md](INSTALL.md).
 | [COORDINATION.md](COORDINATION.md) | Bounded passes and queue sessions over open issues |
 | [ISSUE-WORKFLOW.md](ISSUE-WORKFLOW.md) | GitHub labels and issue state via Issueflow |
 | [PROJECT.example.md](PROJECT.example.md) | Template for your project policy and hooks |
-| [INSTALL.md](INSTALL.md) | Install, update and release discovery |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Improving the package and maintainer checks |
+| [INSTALL.md](INSTALL.md) | Install, agent entry points, updates and release discovery |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Improving the package, field reports, maintainer checks and releases |
 
 Changes are listed in [CHANGELOG.md](CHANGELOG.md). MIT licensed; see
 [LICENSE.md](LICENSE.md).
