@@ -292,14 +292,15 @@ export class Squirrels {
   }
   /** The room refused our take (somebody was first): the nut leaves the hand again. */
   dropHeld(slot) { const it = this.nutItems[this.nuts.slots.indexOf(slot)]; if (!it?.held) return; slot.alive = false; slot.held = false; it.sync(); }
-  /** Per frame: the glint under each nut lying out within `markDist` m (one instanced mesh). */
+  /** Per frame: the glint under each nut lying out within `markDist` m, eased in by distance (one instanced mesh). */
   updateMarks() {
     const m = this.marks, cam = this.camera.position; let n = 0;
     const str = markStrength(this.daylight); m.material.opacity = str; // (additive: opacity 0 = no light at all; nothing is drawn below 2 %)
     for (const s of this.nuts.slots) {
       if (!s.alive || s.held) continue;
       const d = Math.hypot(cam.x - s.x, cam.z - s.z); if (d > C.markDist) continue;
-      const k = (1 + Math.max(0, d - 5) * 0.07) * (1 + 0.1 * Math.sin(this.time * 3 + n));
+      const t = Math.min(1, (d - C.markFade) / (C.markDist - C.markFade)), k = (t > 0 ? 1 - t * t * (3 - 2 * t) : 1) * (1 + 0.1 * Math.sin(this.time * 3 + n)); // #1742: shrinks away between markFade and markDist
+      if (k < 0.01) continue;
       m.setMatrixAt(n++, MAT.makeScale(k, k, k).setPosition(s.x, s.y, s.z));
     }
     m.count = n; m.visible = n > 0 && str > 0.02; m.instanceMatrix.needsUpdate = true;

@@ -708,7 +708,7 @@ Diagnosis of "impossible to find a nut": only 6 nuts over the whole river park (
 ground, no marker, and the squirrels ate them quickly (sense 6 m, respawn 20-60 s). Now `SQUIRRELS.maxNuts` is 18 (all *guess*), `nutSize`
 2.4 (7 cm), respawn 6-20 s, `sense` 4.5; `NutField.spot()` puts 70 % of new nuts under the trees within `nutNearPlayer` (60 m) of a visitor
 (`anchors()`: you and the other players' ghosts) and 40 % in a heap (`heap`, `heapRadius`) beside a nut already out. Every nut lying out has
-a glint, a flat ring and a thin fading beam (`markGeometry`, ONE `InstancedMesh`, additive, up to `markDist` 45 m, growing with distance);
+a glint, a flat ring and a thin fading beam (`markGeometry`, ONE `InstancedMesh`, additive, up to `markDist` 6 m, #1742: full within `markFade` 3.5 m and shrinking away to nothing at 6 m, so the park is not lit up from afar);
 a nut's own mesh is drawn only within `nutNear` 14 m, so the draw calls stay at the nuts nearby + 1.
 #1697: the glint's opacity follows `DayCycle.daylight` (`markStrength`, `markDay`, `markNight`): full by day, gone at night and dusk (no light, no extra draw call).
 

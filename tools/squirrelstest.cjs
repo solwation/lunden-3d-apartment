@@ -12,6 +12,7 @@
 const kit = require('./testkit.cjs'), fs = require('node:fs');
 const [base = 'http://localhost:8761', out = '/tmp/squirrels'] = process.argv.slice(2); fs.mkdirSync(out, { recursive: true });
 let failed = 0; const check = (ok, name, data) => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name} ${JSON.stringify(data)}`); if (!ok) failed++; };
+const S_farHas = (g) => g.far.n > 0 && g.far.n !== g.far.expect;
 (async () => {
   const browser = await kit.launch(); const errors = [];
   try {
@@ -53,6 +54,13 @@ let failed = 0; const check = (ok, name, data) => { console.log(`${ok ? 'PASS' :
       return { seen: [...seen], grounded: landed, state: b.state, y: y0, ground: g0, endState: st0 };
     });
     check(down.seen.includes('down') && down.grounded, 'it climbs down and stands on the ground', down);
+    // (1b) #1742: the glint ring + beam shows only close to a nut (SQUIRRELS.markDist), not across the park
+    const glint = await page.evaluate(async () => {
+      T.seed(4); const { a, S } = T, C = (await import('/src/config.js')).SQUIRRELS, slot = S.nuts.slots.find((s) => s.alive), md = S.marks, out = {};
+      const count = () => { a.step(0.05); const c = a.camera.position; return { n: md.count, vis: md.visible, expect: S.nuts.slots.filter((s) => s.alive && !s.held && Math.hypot(c.x - s.x, c.z - s.z) <= C.markDist).length }; };
+      T.stand(slot.x + 1.0, slot.z); out.near = count(); T.stand(slot.x + 25, slot.z); out.far = count(); return out;
+    });
+    check(glint.near.vis && glint.near.n >= 1 && glint.near.n === glint.near.expect && glint.far.n === glint.far.expect && !S_farHas(glint), 'the nut glint shows within a few metres and is hidden at a distance', glint);
     // (2) a nut within reach, E takes it
     const pick = await page.evaluate(() => {
       T.seed(3); const { a, S } = T, slot = S.nuts.slots.find((s) => s.alive); const item = S.nutItems[S.nuts.slots.indexOf(slot)];
