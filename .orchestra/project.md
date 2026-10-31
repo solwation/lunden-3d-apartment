@@ -9,7 +9,8 @@ Reading or improving the instructions does not start an unattended orchestra.
 
 Follow [Issue workflow instructions](shared/ISSUE-WORKFLOW.md) from github-dashboard
 for labels, work intervals, priority assessment and closure. Resolve the current guide
-once per session; record its SHA, or disclose the reviewed offline fallback. It takes
+once per session; record the guide file's change commit (or "identical to snapshot"),
+or disclose the reviewed offline fallback. It takes
 precedence over older local label/status descriptions. These host rules add scope,
 ancestor/port constraints, claims and release requirements. Do not import the dashboard
 project's internal deployment gates. This integration uses GitHub, not a GitLab API.
@@ -45,6 +46,8 @@ uses ordinary triage. Refresh the queue after label corrections before selecting
 | Phase hooks | [Project phase hooks](#project-phase-hooks); report intake under [queue intake hooks](#queue-intake-hooks) |
 | Resource policy | [Smallest sufficient capability/effort](shared/ORCHESTRA.md#spend-resources-deliberately); explicit supported selection, compact context, justified escalation |
 | Queue poll | Every 300 seconds during active work and idle; also before every new selection |
+| Wait mechanism | Interactive Claude Code: a background timer (Bash `run_in_background` with `sleep`, at most 60 s per wait) or Monitor; a finishing worker or user message also wakes the conductor. A runtime that cannot wait (`claude -p`, one-shot cloud runs) runs a bounded pass and says that no poll or idle watch ran |
+| Delivery mode | Direct to `main`, no PRs or feature branches ([workspace and delivery](#workspace-and-delivery)) |
 | Idle watch | 60 minutes after latest resolved implementation issue by this session in either repository, else from first idle entry |
 | Heartbeat | Swedish issue comment every 30 minutes, first at 25–30; done/current/remaining estimate |
 
@@ -54,7 +57,7 @@ session with the polling, idle watch and heartbeat above; the core's bounded pas
 Both stay unattended: user-only questions go on the issue (`user-question`), never chat.
 
 Default scope is both repositories. Explicit scope limits implementation, never visibility
-of the other queue. Fetch all open pages in both before each selection, reservation,
+of the other queue. Fetch all open pages in both before each selection, claim,
 takeover, chain continuation and idle check. Fetch the two repositories concurrently:
 
 ```sh
@@ -81,8 +84,8 @@ itself is idle, and closes the parent only after its own acceptance. A parent's 
 no capacity slot. Same-file work needs distinct block/module ownership; actual
 coupled dependencies may require serial work, not bypassing priority for convenience.
 
-Existing future reservations expire after 30 minutes without start. Announce taking
-an unstarted reservation when its owner has no capacity; release your own unused ones.
+Existing future claims expire after 30 minutes without start. Announce taking
+an unstarted claim when its owner has no capacity; release your own unused ones.
 An active issue may be taken over only after 90 minutes without commit/comment/status
 and no evidence its agent is running (missing from status, or session status older than
 90 minutes). A 3-hour-old session status is abandoned, but never seize visibly active
@@ -212,9 +215,9 @@ The conductor runs this loop in every `/orkester` queue session:
 
 ## Shared version and maintenance
 
-Shared release: **v0.6.1**, commit **432e1879416a91215b4e174699c7af705fd0359d**. Imported as a squashed subtree
-at `.orchestra/shared`; upgraded from v0.6.0 in original #1717, with the matching public import tracked in
-[public #189](https://github.com/solwation/kvarteret-lunden/issues/189). Existing session IDs remain valid; new
+Shared release: **v0.7.0**, commit **2bd00217aa1704134c6e2a3d5c9614c6b7fdbfbe**. Imported as a squashed subtree
+at `.orchestra/shared`; upgraded from v0.6.1 in original #1740, with the matching public import tracked in
+[public #208](https://github.com/solwation/kvarteret-lunden/issues/208). Existing session IDs remain valid; new
 sessions follow the shared host/model format, and startup resumes unfinished work before new selection.
 See [installation](shared/INSTALL.md) and [contribution](shared/CONTRIBUTING.md) instructions.
 Improve the core in its own clean repository, release it, then explicitly update both

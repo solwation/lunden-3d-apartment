@@ -81,7 +81,7 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   (`Fixes #N` closes it, but does not remove work labels — remove all recognized ones too), and when you **reopen** an
   issue. A reopened issue starts without the label until someone picks it up again.
 - **Orchestrated work also gets `orkester: <id>`.** Use the orchestrator's stable session id, matching its #420
-  status/reservations. Add it together with `in-progress` on each actively worked issue; remove both when finished,
+  status/claims. Add it together with `in-progress` on each actively worked issue; remove both when finished,
   closed, reopened, paused without active work, or released. Do not label future queued issues or idle parents.
   The orchestrator creates the label if missing, reconciles its own active issues on resume/status updates, and
   records the exact label in #420. Never remove another active orchestrator's label. The `orkester:` prefix is
@@ -129,7 +129,7 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   Docs-only changes need diff/link/contradiction review, no browser or triangle counts. Local behaviour needs a
   relevant component and affected route/view; wider profiles need concrete global risk. Reuse source-bound green
   evidence across unrelated rebases; the conductor reviews it rather than automatically rerunning it. Reassess
-  verification cost near 10 minutes. Follow the [orchestra policy](.orchestra/shared/ORCHESTRA.md#verify-the-affected-behavior)
+  verification cost near 10 minutes. Follow the [orchestra policy](.orchestra/shared/ORCHESTRA.md#verification)
   and [verification guide](docs/development/verification.md#verification-policy). Never claim untested behaviour as tested.
 - **Result images before closing (user, 2026-10-22).** Before closing an implementation issue, save
   representative screenshots of the finished result under `docs/verification/<issue-number>/`, commit and push
