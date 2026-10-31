@@ -4,17 +4,27 @@
 // medal counts one task (stats.taskCounts[id], counter key `task_<id>`). Add a medal = add a row (and its counter to
 // src/boardcatalog.js COUNTERS if it is not there: that is what the Worker accepts and rate-limits).
 //
-// Levels: level L is reached at L × base of the counter (100, 200, 300 … for base 100), so there is always a next one
-// (Untappd style). `base` values are *guess*. A secret medal is shown as "???" until its first level is unlocked.
-export const MAX_LEVEL = 50;
-/** Bonus points for reaching `level` (via the ordinary score, stats.medalPoints): 10 × level (*guess*). Paid once per level and device. */
-export const bonusFor = (level) => 10 * level;
+// Levels (#1748): an exponential curve with a cap. The step from level L-1 to L is base × STEP_FACTOR^(L-1), so level L is
+// reached at base × (F^L − 1) / (F − 1) of the counter: with F = 1.5 the steps are 1, 1.5, 2.25 … × base and the top level
+// MAX_LEVEL takes ~113 × base (the last steps are deliberately silly-hard but possible). STEP_FACTOR, MAX_LEVEL and every
+// `base` are *guess*. `base` = the first level (user example: ~100 cat butts). A secret medal is shown as "???" until its
+// first level is unlocked.
+//
+// Migration (#1748): the first release (#1711) used level L at L × base, capped at 50. Levels already unlocked are never
+// taken back and their bonus is never refunded: a stored level counts up to LEGACY_MAX_LEVEL, the next level is then the
+// next one on the new curve (stored level + 1; a player above MAX_LEVEL is simply done), and `legacyLevelOf` rebuilds the
+// old levels of a Worker row written before `mt` existed. `oldBase` marks a medal whose base changed with #1748.
+export const STEP_FACTOR = 1.5;
+export const MAX_LEVEL = 10;
+export const LEGACY_MAX_LEVEL = 50;
+/** Bonus points for reaching `level` (via the ordinary score, stats.medalPoints): 10 × the level's step factor, so it follows the difficulty (*guess*): 10, 15, 23, 34 … Paid once per level and device. */
+export const bonusFor = (level) => Math.round(10 * STEP_FACTOR ** (Math.max(1, level) - 1));
 export const TASK_PREFIX = 'task_';
 
 export const MEDALS = [
   { id: 'squirrels', counter: 'squirrelFeeds', icon: '🐿️', name: 'Ekorrvän', unit: 'ekorrar matade', base: 50 },
   { id: 'cats', counter: 'petted', icon: '🐈', name: 'Kattklappare', unit: 'katter klappade', base: 100 },
-  { id: 'butts', counter: 'catButts', icon: '🍑', name: 'Rumpspanare', unit: 'kattrumpor sedda', base: 25 },
+  { id: 'butts', counter: 'catButts', icon: '🍑', name: 'Rumpspanare', unit: 'kattrumpor sedda', base: 100, oldBase: 25 },
   { id: 'ponies', counter: 'ponyPets', icon: '🐴', name: 'Ponyvän', unit: 'hästar klappade', base: 100 },
   { id: 'flushes', counter: 'flushes', icon: '🚽', name: 'Spolmästare', unit: 'spolningar', base: 50 },
   { id: 'doors', counter: 'doors', icon: '🚪', name: 'Dörrvakt', unit: 'dörrar öppnade', base: 500 },
@@ -24,7 +34,7 @@ export const MEDALS = [
   { id: 'sandwiches', counter: 'sandwiches', icon: '🥪', name: 'Mackmästare', unit: 'mackor', base: 25 },
   { id: 'hotdogs', counter: 'hotdogs', icon: '🌭', name: 'Korvkung', unit: 'korvar med bröd', base: 25 },
   { id: 'vacuumed', counter: 'vacuumed', icon: '🧹', name: 'Dammsugarkung', unit: 'm² dammsugna', base: 500 },
-  { id: 'steps', counter: 'steps', icon: '👣', name: 'Vandrare', unit: 'steg', base: 20000 },
+  { id: 'steps', counter: 'steps', icon: '👣', name: 'Vandrare', unit: 'steg', base: 10000, oldBase: 20000 },
   { id: 'stairs', counter: 'stairs', icon: '🔼', name: 'Trappspringare', unit: 'trappturer', base: 100 },
   { id: 'jetpack', counter: 'flights', icon: '🚀', name: 'Jetpackpilot', unit: 'flygningar', base: 25 },
   { id: 'dribbles', counter: 'dribbles', icon: '🏀', name: 'Basketstudsare', unit: 'studsar', base: 500 },
@@ -50,10 +60,17 @@ export function counterValue(stats, counter) {
   return Number.isFinite(v) && v > 0 ? v : 0;
 }
 
-/** The level a counter value gives this medal (0 = none yet). */
-export const levelOf = (medal, value) => Math.min(MAX_LEVEL, Math.floor(Math.max(0, Number(value) || 0) / medal.base));
-/** The counter value where `level` is reached. */
-export const thresholdOf = (medal, level) => medal.base * level;
+/** The counter value where `level` is reached on the new curve (a whole number; level 0 = 0). */
+export const thresholdOf = (medal, level) => (level <= 0 ? 0 : Math.round(medal.base * (STEP_FACTOR ** level - 1) / (STEP_FACTOR - 1)));
+/** The level a counter value gives this medal on the new curve (0 = none yet, at most MAX_LEVEL). */
+export function levelOf(medal, value) {
+  const v = Math.max(0, Number(value) || 0);
+  let l = 0;
+  while (l < MAX_LEVEL && v >= thresholdOf(medal, l + 1)) l++;
+  return l;
+}
+/** The level the first release (#1711) gave: L × base (the old base where it changed), capped at LEGACY_MAX_LEVEL. For rows that predate `mt`. */
+export const legacyLevelOf = (medal, value) => Math.min(LEGACY_MAX_LEVEL, Math.floor(Math.max(0, Number(value) || 0) / (medal.oldBase ?? medal.base)));
 
 /** Every medal's level from a counter bag ({ counter: n }, as the Worker stores it): { medalId: level } for levels above 0. */
 export function levelsFrom(counters) {
@@ -66,5 +83,12 @@ export function levelsFrom(counters) {
 export function levelsOfStats(stats) {
   const out = {};
   for (const m of MEDALS) { const l = levelOf(m, counterValue(stats, m.counter)); if (l > 0) out[m.id] = l; }
+  return out;
+}
+
+/** The old (#1711) levels from a counter bag: { medalId: level } above 0. Only for Worker rows written before `mt` existed (cloudflare/boards.js). */
+export function legacyLevelsFrom(counters) {
+  const out = {};
+  for (const m of MEDALS) { const l = legacyLevelOf(m, counters?.[m.counter]); if (l > 0) out[m.id] = l; }
   return out;
 }

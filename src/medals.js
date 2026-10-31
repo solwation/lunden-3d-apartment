@@ -1,4 +1,4 @@
-import { MEDALS, bonusFor, levelsOfStats, counterValue, thresholdOf, levelOf, MAX_LEVEL } from './medalcatalog.js';
+import { MEDALS, bonusFor, levelsOfStats, counterValue, thresholdOf, levelOf, MAX_LEVEL, LEGACY_MAX_LEVEL } from './medalcatalog.js';
 // Medals with levels (#1711, part of #1709): the grid in Meny → Medaljer, the spinning medal in the middle of the screen on a
 // new level, and the bonus points. State lives in stats.medals ({ id: { l: level, t: [time of level 1, 2 …] } }, localStorage
 // with the other statistics) and the Worker keeps the same per player id (cloudflare/boards.js: derived from validated counters).
@@ -22,7 +22,7 @@ const day = (t) => new Date(t).toLocaleDateString('sv-SE', { day: 'numeric', mon
 export function medalState(stats) {
   if (!stats.medals || typeof stats.medals !== 'object' || Array.isArray(stats.medals)) stats.medals = {};
   for (const [id, m] of Object.entries(stats.medals)) {
-    if (!MEDALS.some((x) => x.id === id) || !m || !Number.isInteger(m.l) || m.l < 1 || m.l > MAX_LEVEL) delete stats.medals[id];
+    if (!MEDALS.some((x) => x.id === id) || !m || !Number.isInteger(m.l) || m.l < 1 || m.l > LEGACY_MAX_LEVEL) delete stats.medals[id];
     else m.t = Array.from({ length: m.l }, (_, i) => (Number.isFinite(m.t?.[i]) ? m.t[i] : Date.now()));
   }
   return stats.medals;
@@ -55,7 +55,7 @@ export function mergeServer(stats, server) {
   const medals = medalState(stats); let added = 0;
   for (const [id, times] of Object.entries(server && typeof server === 'object' ? server : {})) {
     if (!MEDALS.some((x) => x.id === id) || !Array.isArray(times)) continue;
-    const level = Math.min(MAX_LEVEL, times.length), cur = medals[id] ?? { l: 0, t: [] };
+    const level = Math.min(LEGACY_MAX_LEVEL, times.length), cur = medals[id] ?? { l: 0, t: [] };
     if (level < 1) continue;
     const t = Array.from({ length: Math.max(level, cur.l) }, (_, i) => {
       const a = cur.t[i], b = Number(times[i]);

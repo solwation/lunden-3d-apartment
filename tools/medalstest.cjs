@@ -32,7 +32,7 @@ const [site,worker,out]=process.argv.slice(2);
    await p.locator('#medal-dialog .card').screenshot({path:`${out}/${pre}menyn.png`,timeout:120000});
    await p.evaluate(()=>document.getElementById('medal-dialog-close').click());
    // a live level while playing: two at once -> a queue, one spinning at a time, each ends, bonus once each
-   await p.evaluate(()=>{document.getElementById('overlay').hidden=true;window.__pts0=__app.stats.medalPoints??0;const s=__app.stats;s.squirrelFeeds=100;s.sandwiches=26;});
+   await p.evaluate(()=>{document.getElementById('overlay').hidden=true;window.__pts0=__app.stats.medalPoints??0;const s=__app.stats;s.squirrelFeeds=125;s.sandwiches=26;});
    await p.waitForFunction(()=>!document.getElementById('medal-pop').hidden,null,{timeout:15000});
    await p.waitForTimeout(900);
    const first=await p.evaluate(()=>({name:document.querySelector('#medal-pop .medal-name').textContent,lvl:document.querySelector('#medal-pop .medal-level').textContent,q:__app.medals.queue.length}));
@@ -40,23 +40,23 @@ const [site,worker,out]=process.argv.slice(2);
    await p.screenshot({path:`${out}/${pre}medaljen-mitt-i-rutan.png`,timeout:120000});
    await p.waitForFunction(()=>document.getElementById('medal-pop').hidden&&!__app.medals.queue.length&&!__app.medals.showing,null,{timeout:20000});
    const paid=await p.evaluate(()=>__app.stats.medalPoints-window.__pts0);
-   assert.equal(paid,30,'bonus: squirrels level 2 (+20) and sandwiches level 1 (+10)');
+   assert.equal(paid,25,'bonus: squirrels level 2 (+15) and sandwiches level 1 (+10), #1748 curve');
    await p.waitForTimeout(4000);
    assert.equal(await p.evaluate(()=>__app.stats.medalPoints-window.__pts0),paid,'bonus is paid once');
    // the menu opening while it spins drops it and puts it back
-   await p.evaluate(()=>{__app.stats.petted=300;});
+   await p.evaluate(()=>{__app.stats.petted=260;});
    await p.waitForFunction(()=>!document.getElementById('medal-pop').hidden,null,{timeout:15000});
    await p.evaluate(()=>{document.getElementById('overlay').hidden=false;});
    await p.waitForFunction(()=>document.getElementById('medal-pop').hidden&&__app.medals.queue.length===1,null,{timeout:8000});
    await p.evaluate(()=>{document.getElementById('overlay').hidden=true;});
-   await p.waitForFunction(()=>document.getElementById('medal-pop').hidden&&!__app.medals.queue.length&&!__app.medals.showing&&__app.stats.medals.cats.l===3,null,{timeout:20000});
+   await p.waitForFunction(()=>document.getElementById('medal-pop').hidden&&!__app.medals.queue.length&&!__app.medals.showing&&__app.stats.medals.cats.l===2,null,{timeout:20000});
    // sync, then a second device with the same player id gets the medals back silently
    await p.evaluate(async()=>{await __app.leaderboard.boards.send();});
    if(!touch){
     const q=await open(false,'Provspelare',pid);
     const r=await q.evaluate(()=>({sq:__app.stats.medals.squirrels?.l,cats:__app.stats.medals.cats?.l,pts:__app.stats.medalPoints,pop:!document.getElementById('medal-pop').hidden,seeded:__app.stats.medalsSeeded}));
     console.log('second device',JSON.stringify(r));
-    assert.equal(r.sq,2);assert.equal(r.cats,2,'the server caps the jump 230 -> 300 at perMin (cats level 2 only)');assert.equal(r.pts,0,'restore pays no bonus');assert.equal(r.pop,false);
+    assert.equal(r.sq,2);assert.equal(r.cats,1,'the server caps the jump 230 -> 260 at perMin (cats level 1 only)');assert.equal(r.pts,0,'restore pays no bonus');assert.equal(r.pop,false);
     await q.context().close();
    }
    await p.context().close();

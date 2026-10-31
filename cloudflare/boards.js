@@ -1,7 +1,7 @@
 import { rowKey } from '../src/rowkey.js';
 import { cleanLook } from './games.js';
 import { COUNTERS, BOARD_LISTS } from '../src/boardcatalog.js';
-import { levelsFrom } from '../src/medalcatalog.js';
+import { levelsFrom, legacyLevelsFrom } from '../src/medalcatalog.js';
 // Alternative top lists (#1710, part of #1709): GET /boards → { lists: { <listId>: [{ key, name, value, updated, avatar? }] } }, the top
 // TOP rows of every list in src/boardcatalog.js; POST /boards ← { id, name, c: { <counter>: n }, avatar? } the player's
 // counters (src/stats.js numbers), one row per player id (the same id as /scores; rows are public only as rowKey(id)).
@@ -37,13 +37,19 @@ export function clampCounters(input, old, now) {
   return out;
 }
 
-/** The medals of a stored row: { medalId: [time of level 1, level 2 …] }; levels a row got before `mt` existed get the row's time. */
+/**
+ * The medals of a stored row: { medalId: [time of level 1, level 2 …] }; levels a row got before `mt` existed get the row's time.
+ * Never lower than the levels already stored (#1748 migration: the curve got harder, unlocked levels stay): the stored `mt`
+ * lengths, or for a row older than `mt` the first release's linear levels, count next to the new curve.
+ */
 export function medalsOf(row) {
   const out = {};
   if (!row) return out;
-  for (const [id, level] of Object.entries(levelsFrom(row.c))) {
-    const t = row.mt?.[id] ?? [];
-    out[id] = Array.from({ length: level }, (_, i) => t[i] ?? row.t);
+  const kept = row.mt ? Object.fromEntries(Object.entries(row.mt).map(([id, t]) => [id, Array.isArray(t) ? t.length : 0])) : legacyLevelsFrom(row.c);
+  const now = levelsFrom(row.c);
+  for (const id of new Set([...Object.keys(kept), ...Object.keys(now)])) {
+    const level = Math.max(kept[id] ?? 0, now[id] ?? 0), t = row.mt?.[id] ?? [];
+    if (level > 0) out[id] = Array.from({ length: level }, (_, i) => t[i] ?? row.t);
   }
   return out;
 }
@@ -82,9 +88,11 @@ export async function record(storage, body, now = Date.now()) {
   }
   const f = { ...(old?.f ?? {}) };
   for (const k of Object.keys(c)) if (!f[k]) f[k] = now;
-  const mt = {};
-  const before = medalsOf(old);
-  for (const [id, level] of Object.entries(levelsFrom(c))) { const had = before[id] ?? []; mt[id] = Array.from({ length: level }, (_, i) => had[i] ?? now); }
+  const mt = {}, before = medalsOf(old), cur = levelsFrom(c);
+  for (const id of new Set([...Object.keys(before), ...Object.keys(cur)])) {
+    const had = before[id] ?? [], level = Math.max(had.length, cur[id] ?? 0); // a level once unlocked stays (#1748)
+    mt[id] = Array.from({ length: level }, (_, i) => had[i] ?? now);
+  }
   await storage.put(key, { id: body.id, name, c, f, mt, t: now, ...(avatar ? { avatar } : {}) });
   cache.delete(storage);
   return true;
