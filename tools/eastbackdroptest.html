@@ -40,7 +40,7 @@ check(b88.campus&&!b88.modern&&b88.pieces[0].levels===2&&b88.windows.length>60&&
 const roofY=x=>new T.Raycaster(new T.Vector3(x,60,-60),new T.Vector3(0,-1,0),0,80).intersectObject(A.scene.getObjectByName('east-schoolRoof'))[0]?.point.y;
 check(roofY(26)<roofY(33)-1&&roofY(33)>b88.eave+1.5,`88: sawtooth rises inward from the outer eave (${roofY(26)?.toFixed(2)} → ${roofY(33)?.toFixed(2)})`);
 const court=new T.Raycaster(new T.Vector3(43.5,b88.eave+1.2,-58),new T.Vector3(-1,0,0),0,10).intersectObject(schoolGlass)[0];
-check(court&&court.point.x>35.5,'88: glazed sawtooth faces towards the inner court');
+check(court===undefined,'88: no glazed wall round the open court (#1744)');check(roofY(35.8)<b88.eave+.8&&roofY(35.8)<roofY(31)-1,`88: roof falls back to the eave at the open court (${roofY(35.8)?.toFixed(2)} vs ${roofY(31)?.toFixed(2)}, #1744)`);
 // #581: byggnad 19 is plain brick: a three-storey block behind a two-storey front and a one-storey annex, segmental windows
 // throughout, paired on the top floor (also above the front's roof), and a lower two-storey eastern part.
 const b19=ward('88457581'),b19e=ward('88457601'),lv=b19.pieces.map(q=>q.levels).join();
