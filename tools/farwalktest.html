@@ -109,7 +109,9 @@ const R = [
   ['busskuren: stolpen stoppar', [17.2, -28.5], [[17.2, -32]], () => player.pos.z > -30.9 + 0.075 && player.pos.z < -29.8],
   ['busskuren: murens förlängning stoppar från gatan', [22.5, -29], [[22.5, -38]], () => player.pos.z > -33.3 && player.pos.z < -32.3],
   ['busskuren: plåtskåpet stoppar', [25.6, -29], [[25.6, -38]], () => player.pos.z > -32.3 && player.pos.z < -31],
-  ['Klockhuset: fasaden med klocktornet stoppar', [45, -109], [[45, -125]], () => player.pos.z > -113.5],
+  // #1733: the risalit with the clock tower faces the park (−z); the courtyard front is the plain wing wall (z ≈ −114.3)
+  ['Klockhuset: gårdsfasaden stoppar', [35, -109], [[35, -125]], () => player.pos.z > -114.8 && player.pos.z < -113.5],
+  ['Klockhuset: risaliten med klocktornet stoppar från parksidan', [45, -145], [[45, -125]], () => player.pos.z < -133.9 && player.pos.z > -135],
   ['skolområdet: öster om Klockhuset mellan byggnaderna', [45, -109], [[70, -108], [100, -108], [130, -105], [130, -60]], () => player.pos.z > -62 && player.pos.x > 125],
   ['skolbyggnaden öster om Klockhuset stoppar', [100, -108], [[100, -125]], () => player.pos.z > -112.6 && player.pos.z < -111.5],
   ['skolområdet: söderut mellan Höjebroskolan och Kunskapsskolan tillbaka till kvarteret', [130, -60], [[130, -30], [75, -25], [40, -20], [25, -5]], () => player.pos.x < 30],
