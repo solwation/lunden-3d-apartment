@@ -1190,6 +1190,8 @@ export const SITE = {
         // (docs/foton/snedbild-klockhuset-sankt-thomas.png) shows the tower behind the roof from the courtyard, which has a
         // one-storey front wing instead (#1734). x / face are the projection's edges 0.1–0.2 m proud (*guess*); the tower keeps
         // its 4 m offset behind the face.
+        // #1743: the tower stands on the main roof's park-side slope (eave +0 at z -131, ridge +4.4 at z -125.3), so its south dial
+        // sank into the slope behind the ridge; `tower.base` 1.4 → 3.0 lifts the white plinth block and the dials clear of the roof (*guess*).
         // #1734 (same snapshot): towards the courtyard two two-storey pavilions with their own taller hips, a recessed
         // two-storey centre (court wall z -120) with three tall round-arched upper windows and a canted bay next to the east
         // pavilion, and a one-storey wing with a low lean-to hip in front of it (the base outline, `levels` 1). Every
@@ -1201,7 +1203,7 @@ export const SITE = {
           "court":{"face":-120,"normal":1,"arches":[44.2,47.4,50.6],"sill":5.6,"height":3.0,"width":1.5,"bay":{"x":[53,55.8],"depth":1.1,"from":5.5}},
           "centre":{"mailbox":true,"x":[39.6,51.0],"face":-133.9,"normal":-1,"depth":5,"render":4.75,"pilasters":true,"pediment":2.1,"roofBack":2.2,
             "window":{"sill":4.9,"height":3.9,"width":2.6},
-            "tower":{"z":-129.9,"base":1.4,"width":3.6,"stage":4.0,"clock":.8,"clockFace":15328456,"clockRim":2829099,"lantern":2.3,"lanternHeight":2.7,"opening":2829099,"dome":1.7,"spire":2.4,"gilt":13280832}}}},
+            "tower":{"z":-129.9,"base":3.0,"width":3.6,"stage":4.0,"clock":.8,"clockFace":15328456,"clockRim":2829099,"lantern":2.3,"lanternHeight":2.7,"opening":2829099,"dome":1.7,"spire":2.4,"gilt":13280832}}}},
       {"source":"88457547","polygon":[[138.12,-129.52],[138.19,-137.81],[133.49,-137.87],[133.57,-147.48],[137.9,-147.43],[137.94,-151.12],[149.85,-150.99],[149.82,-147.73],[154.48,-147.67],[154.39,-138.06],[150.15,-138.11],[150.07,-129.28],[166.05,-129.1],[165.94,-116.99],[149.39,-117.17],[148.9,-63.59],[161.35,-63.45],[161.24,-52.48],[136.64,-52.75],[136.71,-59.94],[136.28,-59.94],[136.91,-129.54],[138.12,-129.52]],"name":"H\u00f6jebroskolan / byggnad 9","levels":1,"levelsSource":"Commons 2014 photo of the south block and long wing: one storey","storey":4.7,"frameColor":15657439,
         "campus":{"style":"ward","chimneys":[[143,-75],[143,-95],[143,-115],[149,-57.5],[144,-142]]}},
       {"source":"88457552","polygon":[[105.08,-126.68],[116.15,-126.46],[116.21,-129.88],[126.08,-129.69],[126.0,-126.27],[127.31,-126.24],[127.14,-117.41],[125.83,-117.44],[125.71,-111.53],[115.85,-111.72],[115.97,-117.63],[104.89,-117.86],[104.79,-112.25],[91.54,-112.51],[91.65,-118.12],[80.5,-118.34],[80.35,-111.1],[70.85,-111.29],[71.23,-130.27],[80.74,-130.08],[80.68,-127.17],[91.83,-126.95],[91.87,-129.08],[105.11,-128.82],[105.08,-126.68]],"name":"F\u00f6rskolan Freinet / byggnad 7","levels":2,"levelsSource":"Commons 2014 photo (Freinetskolan sign) and Hemsö By7: two storeys","storey":4.3,"frameColor":15657439,
