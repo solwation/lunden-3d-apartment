@@ -1,0 +1,121 @@
+{
+ "source": "https://overpass-api.de/api/interpreter",
+ "queries": [
+  "[out:json];way[\"building\"](around:200,55.6846418,13.1798577);out geom tags; (the first, WRONG, search position: that Google Maps pin is the searched address, not the gym)",
+  "[out:json];way[\"building\"](55.6855,13.1745,55.6900,13.1830);out geom tags; (second search; plus nwr[name~Nordic|Wellness|Sportcenter], nwr[leisure~fitness] in 55.675,13.165,55.695,13.195: 0 results)"
+ ],
+ "retrieved": "2026-10-31",
+ "attribution": "© OpenStreetMap contributors (ODbL)",
+ "result": "No OSM feature is tagged Nordic Wellness or fitness. The gym stands in OSM way 88457612 (addr Sankt Lars väg 3, building=yes, amenity=school, name NTI-gymnasiet, wikidata Q89192443): a stale school tag on a comb-shaped outline whose bounding box (~55 x 19 m) matches the box in the user's Google 3D views, east of Sankt Lars väg, between Skånevägen and building 88, opposite IES. The model uses that bounding box (src/nordicgym.js, #1745); floors, heights and details are guesses.",
+ "way_88457612": {
+  "type": "way",
+  "id": 88457612,
+  "bounds": {
+   "minlat": 55.6853385,
+   "minlon": 13.1811354,
+   "maxlat": 55.685842,
+   "maxlon": 13.1818347
+  },
+  "geometry": [
+   {
+    "lat": 55.6855592,
+    "lon": 13.1815739
+   },
+   {
+    "lat": 55.6854719,
+    "lon": 13.1816717
+   },
+   {
+    "lat": 55.6855012,
+    "lon": 13.1817535
+   },
+   {
+    "lat": 55.6854287,
+    "lon": 13.1818347
+   },
+   {
+    "lat": 55.6853385,
+    "lon": 13.1815824
+   },
+   {
+    "lat": 55.6854107,
+    "lon": 13.1815015
+   },
+   {
+    "lat": 55.6854304,
+    "lon": 13.1815565
+   },
+   {
+    "lat": 55.6855176,
+    "lon": 13.1814588
+   },
+   {
+    "lat": 55.6855035,
+    "lon": 13.1814193
+   },
+   {
+    "lat": 55.6856015,
+    "lon": 13.1813095
+   },
+   {
+    "lat": 55.6856157,
+    "lon": 13.1813492
+   },
+   {
+    "lat": 55.6856991,
+    "lon": 13.1812557
+   },
+   {
+    "lat": 55.6856859,
+    "lon": 13.1812187
+   },
+   {
+    "lat": 55.6857602,
+    "lon": 13.1811354
+   },
+   {
+    "lat": 55.685842,
+    "lon": 13.1813644
+   },
+   {
+    "lat": 55.685767,
+    "lon": 13.1814484
+   },
+   {
+    "lat": 55.6857397,
+    "lon": 13.181372
+   },
+   {
+    "lat": 55.6856573,
+    "lon": 13.1814643
+   },
+   {
+    "lat": 55.6856816,
+    "lon": 13.1815323
+   },
+   {
+    "lat": 55.6855836,
+    "lon": 13.1816421
+   },
+   {
+    "lat": 55.6855592,
+    "lon": 13.1815739
+   }
+  ],
+  "tags": {
+   "addr:city": "Lund",
+   "addr:country": "SE",
+   "addr:housenumber": "3",
+   "addr:postcode": "22270",
+   "addr:street": "Sankt Lars väg",
+   "amenity": "school",
+   "building": "yes",
+   "education": "school",
+   "name": "NTI-gymnasiet",
+   "operator": "NTI",
+   "operator:type": "private",
+   "wheelchair": "yes",
+   "wikidata": "Q89192443"
+  }
+ }
+}
