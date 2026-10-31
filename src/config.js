@@ -1302,10 +1302,12 @@ export const SITE = {
       [33.52,-204.74,"564870163"],
       [57.09,-179.06,"564870229"],
     ],
-    treeScale: [1.2,1.8],
+    treeScale: [1.45,2.4], // #1738: larger crowns, as in the Google 3D oblique (guess; was 1.2-1.8)
     // Approximate aerial-interpreted avenue strips and park clusters; not individually mapped trees.
     treeRows: [{"name":"west-campus-avenue","from":[58,-151],"to":[60,-30],"step":13},{"name":"central-crossing","from":[74,-19],"to":[181,-19],"step":14},{"name":"eastern-park-avenue","from":[207,-151],"to":[209,-57],"step":14},{"name":"northern-courtyard","from":[73,-166],"to":[182,-166],"step":15}],
-    treePatches: [{"name":"east-park","polygon":[[177,-148],[192,-144],[190,-75],[174,-69]],"n":10},{"name":"east-meadow-edge","polygon":[[206,-22],[219,-60],[242,-46],[227,-5]],"n":12},{"name":"far-park","polygon":[[269,-153],[302,-147],[299,-96],[274,-100]],"n":8}],
+    treePatches: [{"name":"east-park","polygon":[[177,-148],[192,-144],[190,-75],[174,-69]],"n":10},{"name":"east-meadow-edge","polygon":[[206,-22],[219,-60],[242,-46],[227,-5]],"n":12},{"name":"far-park","polygon":[[269,-153],[302,-147],[299,-96],[274,-100]],"n":8},
+    // #1738: denser groves north and east of the Klockhuset and between the buildings, read from the Google 3D oblique (docs/foton/snedbild-klockhuset-sankt-thomas.png); positions and counts are a *guess*. Appended last so the earlier patches keep their random positions; spots on buildings/paths are filtered out.
+    {"name":"klockhuset-north","polygon":[[18,-195],[112,-195],[112,-152],[18,-152]],"n":26},{"name":"klockhuset-northwest","polygon":[[-8,-170],[22,-170],[22,-120],[-8,-120]],"n":12},{"name":"klockhuset-east-between","polygon":[[66,-150],[126,-150],[126,-135],[66,-135]],"n":10},{"name":"east-park-dense","polygon":[[177,-160],[195,-160],[195,-70],[177,-70]],"n":14}],
     // Mapped tree positions; dimensions/age/species are assumptions. Slight size variation, no random relocation.
     // #576–#581 (src/campusfacades.js): photo-based facades of the old hospital buildings, from the Commons photos
     // (Peter Sondhauss, March 2014) and Hemsö's historical photos in docs/references/east-campus/. Proportions are read
