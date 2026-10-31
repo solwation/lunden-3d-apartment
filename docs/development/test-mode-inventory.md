@@ -69,7 +69,7 @@ The old #738 after-only `9645849` handoff and recovered #740 branch are historic
 | [colddrawertest.html](../../tools/colddrawertest.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
 | [combatremotetest.cjs](../../tools/combatremotetest.cjs) | Standalone | Own module/controlled DOM fixture; no apartment bootstrap. [source](../../tools/combatremotetest.cjs) |
 | [combatremotetest.html](../../tools/combatremotetest.html) | Standalone | Actual modules/own scene, CPU, canvas, storage or audio; no apartment iframe. [source](../../tools/combatremotetest.html) |
-| [combatsteps.cjs](../../tools/combatsteps.cjs) | Support | Runner, activation driver, peer orchestration or testkit; not an independent migration fixture. [runner](verification.md#test-runner-toolsruntestscjs--737--736) |
+| [combatsteps.cjs](../../tools/combatsteps.cjs) | Support | Runner, activation driver, peer orchestration or testkit; not an independent migration fixture. [runner](verification.md#test-runner-toolsruntestscjs-737--736) |
 | [combatstepstest.cjs](../../tools/combatstepstest.cjs) | Standalone | Own module/controlled DOM fixture; no apartment bootstrap. [source](../../tools/combatstepstest.cjs) |
 | [combattest.cjs](../../tools/combattest.cjs) | Prior test mode | Already flagged in #703; historical CJS evidence is not a current complete pair. [#703 source/evidence](verification.md#test-mode-test-703) |
 | [combatworldtest.html](../../tools/combatworldtest.html) | Standalone | Actual modules/own scene, CPU, canvas, storage or audio; no apartment iframe. [source](../../tools/combatworldtest.html) |
@@ -183,17 +183,17 @@ The old #738 after-only `9645849` handoff and recovered #740 branch are historic
 | [rollreplacetest.html](../../tools/rollreplacetest.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
 | [rooftest.html](../../tools/rooftest.html) | Intentional exception | Full lamp-pool allocation and quality-dependent DetailCuller visibility. [owner scope](verification.md) |
 | [roomtest.html](../../tools/roomtest.html) | Standalone | Actual modules/own scene, CPU, canvas, storage or audio; no apartment iframe. [source](../../tools/roomtest.html) |
-| [runneriteration.test.cjs](../../tools/runneriteration.test.cjs) | Standalone | Actual CLI/server/browser native DOM/query/reload/isolation in temporary repo; no apartment/WebGL. [#860 scope](verification.md#test-runner-toolsruntestscjs--737--736) |
-| [runnerverdict.cjs](../../tools/runnerverdict.cjs) | Support | Runner, activation driver, peer orchestration or testkit; not an independent migration fixture. [runner](verification.md#test-runner-toolsruntestscjs--737--736) |
+| [runneriteration.test.cjs](../../tools/runneriteration.test.cjs) | Standalone | Actual CLI/server/browser native DOM/query/reload/isolation in temporary repo; no apartment/WebGL. [#860 scope](verification.md#test-runner-toolsruntestscjs-737--736) |
+| [runnerverdict.cjs](../../tools/runnerverdict.cjs) | Support | Runner, activation driver, peer orchestration or testkit; not an independent migration fixture. [runner](verification.md#test-runner-toolsruntestscjs-737--736) |
 | [runnerverdict.test.cjs](../../tools/runnerverdict.test.cjs) | Standalone | Own module/controlled DOM fixture; no apartment bootstrap. [source](../../tools/runnerverdict.test.cjs) |
-| [runtests.cjs](../../tools/runtests.cjs) | Support | Runner, activation driver, peer orchestration or testkit; not an independent migration fixture. [runner](verification.md#test-runner-toolsruntestscjs--737--736) |
+| [runtests.cjs](../../tools/runtests.cjs) | Support | Runner, activation driver, peer orchestration or testkit; not an independent migration fixture. [runner](verification.md#test-runner-toolsruntestscjs-737--736) |
 | [sabertest.html](../../tools/sabertest.html) | Retained full / actual difference | Complete native comparison differs; actual values/assertions preserved, no normalization or new migration. [measured evidence](#published-native-pairs) |
 | [savecompacttest.html](../../tools/savecompacttest.html) | Standalone | Actual modules/own scene, CPU, canvas, storage or audio; no apartment iframe. [source](../../tools/savecompacttest.html) |
 | [scoretest.html](../../tools/scoretest.html) | Retained full / actual difference | Complete native comparison differs; actual values/assertions preserved, no normalization or new migration. [measured evidence](#published-native-pairs) |
 | [secret-test-inputs.cjs](../../tools/secret-test-inputs.cjs) | Support | Explicit external private fixture input validation/redaction; no independent migration fixture. [source](../../tools/secret-test-inputs.cjs) |
 | [secretarytest.html](../../tools/secretarytest.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
 | [secretfixture.cjs](../../tools/secretfixture.cjs) | Support | Native HTML companion provisions only authored fixture inputs and preserves app setup; no standalone acceptance inferred. [source](../../tools/secretfixture.cjs) |
-| [sonosstart.cjs](../../tools/sonosstart.cjs) | Support | Runner, activation driver, peer orchestration or testkit; not an independent migration fixture. [runner](verification.md#test-runner-toolsruntestscjs--737--736) |
+| [sonosstart.cjs](../../tools/sonosstart.cjs) | Support | Runner, activation driver, peer orchestration or testkit; not an independent migration fixture. [runner](verification.md#test-runner-toolsruntestscjs-737--736) |
 | [sonostest.html](../../tools/sonostest.html) | Retained full / actual difference | Complete native comparison differs; actual values/assertions preserved, no normalization or new migration. [measured evidence](#published-native-pairs) |
 | [southbackdroptest.html](../../tools/southbackdroptest.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
 | [spidersuittest.html](../../tools/spidersuittest.html) | Intentional exception | Original900×600 touch jump/crouch/web rectangle/gap predicates. [owner scope](verification.md) |
@@ -210,7 +210,7 @@ The old #738 after-only `9645849` handoff and recovered #740 branch are historic
 | [terracedecortest.html](../../tools/terracedecortest.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
 | [terracetest.html](../../tools/terracetest.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
 | [terraintest.html](../../tools/terraintest.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
-| [testkit.cjs](../../tools/testkit.cjs) | Support | Runner, activation driver, peer orchestration or testkit; not an independent migration fixture. [runner](verification.md#test-runner-toolsruntestscjs--737--736) |
+| [testkit.cjs](../../tools/testkit.cjs) | Support | Runner, activation driver, peer orchestration or testkit; not an independent migration fixture. [runner](verification.md#test-runner-toolsruntestscjs-737--736) |
 | [thingtest.html](../../tools/thingtest.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
 | [toastertest.html](../../tools/toastertest.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
 | [toasttest.html](../../tools/toasttest.html) | Migrated / measured | Complete published native full/test acceptance; image/timing/optional-path limitations remain in owner evidence. [measured evidence](#published-native-pairs) |
@@ -255,7 +255,7 @@ The table records one selected published acceptance/disposition per fixture and 
 | `beercantest` | 20 PASS/0 FAIL / 20 PASS/0 FAIL | identical; PASS/PASS | 190.690 → 137.552 | [source/mode/capture limits](verification.md#beer-can-reload-startup-order-fix-and-complete-native-acceptance-841); `/tmp/runtests-551600/` |
 | `beershelfmodeltest` | 15 PASS/0 FAIL / 15 PASS/0 FAIL | identical; PASS/PASS | 137.345 → 80.238 | [source/mode/capture limits](verification.md#test-mode-source-inventory-ac-778); `/tmp/runtests-390315/` |
 | `beertest` | 24 PASS/0 FAIL / 24 PASS/0 FAIL | identical; PASS/PASS | 192.099 → 145.222 | [source/mode/capture limits](verification.md#test-mode-source-inventory-ac-778); `/tmp/runtests-405778/` |
-| `bestaplacementtest` | 11 PASS/0 FAIL / 11 PASS/0 FAIL | identical; PASS/PASS | 157.834 → 146.059 | [source/mode/capture limits](verification.md#placement-and-stored-photos-best-acceptance-808-partial); `/tmp/runtests-410251/` |
+| `bestaplacementtest` | 11 PASS/0 FAIL / 11 PASS/0 FAIL | identical; PASS/PASS | 157.834 → 146.059 | [source/mode/capture limits](verification.md#placement-and-stored-photos-bestå-acceptance-808-partial); `/tmp/runtests-410251/` |
 | `bestatest` | 11 PASS/0 FAIL / 11 PASS/0 FAIL | identical; PASS/PASS | 154.887 → 84.142 | [source/mode/capture limits](verification.md#test-mode-source-inventory-ac-778); `/tmp/runtests-442389/` |
 | `blindtest` | 31 PASS/0 FAIL / 31 PASS/0 FAIL | identical; PASS/PASS | 179.647 → 136.102 | [source/mode/capture limits](verification.md#test-mode-source-inventory-ac-778); `/tmp/runtests-457979/` |
 | `boardtest` | 13 PASS/0 FAIL / 13 PASS/0 FAIL | identical; PASS/PASS | 265.790 → 112.978 | [source/mode/capture limits](verification.md#placement-and-stored-photos-board-acceptance-808); `/tmp/runtests-426465/` |
@@ -391,7 +391,7 @@ Known red history is retained: rest133 PASS/19 FAIL, streetlight9/2, stuck8/9 an
 
 ## Separate iteration-workflow observation (#860)
 
-The newer published [#860 representative PC workflow](verification.md#test-runner-toolsruntestscjs--737--736)
+The newer published [#860 representative PC workflow](verification.md#test-runner-toolsruntestscjs-737--736)
 on frozen `297f9e8` is kept separate from the historical PC acceptance above and
 from the #753 cohort. One current unchanged-PC pair had9 identical PASS/ALL PASS,
 actual CLI0: full 46.342s + test 30.282s, process 77.233 s, captures 9.150/5.079 s.

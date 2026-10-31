@@ -8275,7 +8275,7 @@ are geometry-display observations, not verified gameplay budgets or product regr
 
 Public already has the neutral projection fix in5cfecd3d5eab5a778529f63b19ec3b9d1698524f
 (#105), so no new transfer is needed. This is Chromium/SwiftShader, not physical-phone evidence.
-[Local evidence and fixture notes](/home/olw/.local/state/lunden-orkester/codex-surface-20261020/surface1420/README.md)
+Local evidence and fixture notes (private, not in the repository: `/home/olw/.local/state/lunden-orkester/codex-surface-20261020/surface1420/README.md`)
 retain before/after images, all raw successes and failed/interrupted fixture attempts.
 
 ## Courtyard slide (#1414)
@@ -8298,7 +8298,7 @@ segments are exact; mode off/on adds0draws/triangles. Actual courtyard snapshots
 within unchanged profile caps. These are targeted views, not a full global budget sweep.
 Ordinary drop tracking seeded by the existing top deck is cleared on validated entry;
 fatal fall recovery still prevents entry. Top native entry and actual session save use feetY0.
-[Persistent raw logs, screenshots and fixture notes](/home/olw/.local/state/lunden-orkester/codex-surface-20261020/slide1414/README.md).
+Persistent raw logs, screenshots and fixture notes (private, not in the repository: `/home/olw/.local/state/lunden-orkester/codex-surface-20261020/slide1414/README.md`).
 
 ## Old Sankt Lars pavilions in nr 41's brick style (#1556)
 
@@ -8328,7 +8328,7 @@ triangle-derived normals keep actual ray evidence independent of those freed arr
 The desktop comparison retains all prepack attributes. Standard budgets allPASS:
 desktop437draws/996784tri/~309MiB, landscape369/831161/~97MiB,
 portrait290/722245/~101MiB. Caps are unchanged; only960window triangles are added.
-[Persistent raw checks and fixture limitations](/home/olw/.local/state/lunden-orkester/codex-surface-20261020/windows1418/README.md).
+Persistent raw checks and fixture limitations (private, not in the repository: `/home/olw/.local/state/lunden-orkester/codex-surface-20261020/windows1418/README.md`).
 
 These raw profiles precede the independent reviewed#1417 apron merge (+344triangles/
 0draws); the additive desktop upper bound997128 stays below1M. The final rebase
@@ -8354,7 +8354,7 @@ floor support,12/12 neighboring wall blocks and both1.92m L routes. Old wall
 unions stop at0.22m; open paths finish1.12m beyond each facade. Surroundings
 26,453,512bytes/502attributes are unchanged; matched A-NE/C-NE images differ by
 0pixels, with156/533062 and160/638359draws/triangles identical in both states.
-[Persistent raw logs, pixel comparison and fixture notes](/home/olw/.local/state/lunden-orkester/codex-surface-20261020/loggia1430/README.md).
+Persistent raw logs, pixel comparison and fixture notes (private, not in the repository: `/home/olw/.local/state/lunden-orkester/codex-surface-20261020/loggia1430/README.md`).
 
 ## Upper loggias carry the visitor (#1471)
 
@@ -8378,7 +8378,7 @@ The de1bc21b ordinary desktop19/quality/texture check is ALL PASS; latest-road
 composition remains within its limits, while the separately measured latest patio
 target still exceeds1M and #1448 remains open pending railing child #1454. Phone quality0
 figures are inherited/composed with exact unchanged batching, not freshly measured. See
-[performance](performance.md#complete-roof-terrace-batches-1448) for numbers/limits.
+[performance](performance.md#complete-roof-terrace-batches-1448-partial-source-delivery) for numbers/limits.
 
 Architectural terrace rail batching (#1454): run the existing `tools/terracetest.html`
 against the actual World; aggregate every named terraceRails mesh for the original

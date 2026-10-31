@@ -1,7 +1,7 @@
 # Animals, audio and smart devices
 
 The clubhouse cinema search endpoint and first browser selection slice are
-documented in [interactions](interactions.md#cinema-search-1472-first-slice).
+documented in [interactions](interactions.md).
 It uses the private Worker secret `YOUTUBE_API_KEY`; never put its value in
 source, test fixtures, logs, or issue comments. Shared playback ownership,
 late-arrival position and reconnect handling are implemented on the physical
