@@ -1184,20 +1184,29 @@ export const SITE = {
 
   east: {
     buildings: [
-      {"source":"88457546","polygon":[[39.82,-133.52],[50.71,-133.78],[50.79,-130.68],[64.45,-131.0],[64.9,-113.43],[50.44,-113.08],[50.33,-117.48],[45.1,-117.36],[45.18,-114.52],[26.82,-114.08],[26.39,-131.02],[39.88,-131.33],[39.82,-133.52]],"name":"Sankt Thomas skola / byggnad 1 (Klockhuset)","levels":2,"levelsSource":"Commons 2014 photo and Hemsö: two tall storeys","storey":4.6,"frameColor":15657439,
+      {"source":"88457546","polygon":[[39.82,-133.52],[50.71,-133.78],[50.79,-130.68],[64.45,-131.0],[64.9,-113.43],[50.44,-113.08],[50.33,-117.48],[45.1,-117.36],[45.18,-114.52],[26.82,-114.08],[26.39,-131.02],[39.88,-131.33],[39.82,-133.52]],"name":"Sankt Thomas skola / byggnad 1 (Klockhuset)","levels":1,"levelsSource":"Commons 2014 photo and Hemsö: two tall storeys; Google 3D (#1734): a one-storey front wing towards the courtyard","storey":4.6,"frameColor":15657439,
         // #1733: the centre (risalit, pediment, great arched window, entrance, clock tower) stands on the park side (model −z,
         // true NE) over the OSM outline's 11 m projection (x 39.8–50.8, z −131.3 → −133.8), not on the courtyard side: Google 3D
         // (docs/foton/snedbild-klockhuset-sankt-thomas.png) shows the tower behind the roof from the courtyard, which has a
         // one-storey front wing instead (#1734). x / face are the projection's edges 0.1–0.2 m proud (*guess*); the tower keeps
-        // its 4 m offset behind the face; the third chimney moved off the tower to the courtyard half.
-        "campus":{"style":"klockhuset","chimneys":[[33,-122.5],[58,-122.5],[45.5,-119]],
+        // its 4 m offset behind the face.
+        // #1734 (same snapshot): towards the courtyard two two-storey pavilions with their own taller hips, a recessed
+        // two-storey centre (court wall z -120) with three tall round-arched upper windows and a canted bay next to the east
+        // pavilion, and a one-storey wing with a low lean-to hip in front of it (the base outline, `levels` 1). Every
+        // boundary, the pavilions' 0.6 m raise, the wing's slope and the arch/bay sizes are *guess*es read off the oblique view.
+        // `roofs`: the wing's hip parts (split where its court front steps by 1.4 m); a section's own box is its hip part.
+        "campus":{"style":"klockhuset","chimneys":[[32,-122.5],[60.5,-124],[53,-125.6]],
+          "sections":[{"name":"west pavilion","box":[26,-132,38.2,-113.5],"levels":2,"raise":.6},{"name":"centre","box":[38.2,-134.5,56.5,-120],"levels":2,"roofs":[[38.2,-131.1,56.5,-120]]},{"name":"east pavilion","box":[56.5,-132,65.5,-117],"levels":2,"raise":.6}],
+          "roofs":[{"box":[38.2,-120,45.15,-112],"slope":.12},{"box":[45.15,-120,65.5,-112],"slope":.12}],
+          "court":{"face":-120,"normal":1,"arches":[44.2,47.4,50.6],"sill":5.6,"height":3.0,"width":1.5,"bay":{"x":[53,55.8],"depth":1.1,"from":5.5}},
           "centre":{"mailbox":true,"x":[39.6,51.0],"face":-133.9,"normal":-1,"depth":5,"render":4.75,"pilasters":true,"pediment":2.1,"roofBack":2.2,
             "window":{"sill":4.9,"height":3.9,"width":2.6},
             "tower":{"z":-129.9,"base":1.4,"width":3.6,"stage":4.0,"clock":.8,"clockFace":15328456,"clockRim":2829099,"lantern":2.3,"lanternHeight":2.7,"opening":2829099,"dome":1.7,"spire":2.4,"gilt":13280832}}}},
       {"source":"88457547","polygon":[[138.12,-129.52],[138.19,-137.81],[133.49,-137.87],[133.57,-147.48],[137.9,-147.43],[137.94,-151.12],[149.85,-150.99],[149.82,-147.73],[154.48,-147.67],[154.39,-138.06],[150.15,-138.11],[150.07,-129.28],[166.05,-129.1],[165.94,-116.99],[149.39,-117.17],[148.9,-63.59],[161.35,-63.45],[161.24,-52.48],[136.64,-52.75],[136.71,-59.94],[136.28,-59.94],[136.91,-129.54],[138.12,-129.52]],"name":"H\u00f6jebroskolan / byggnad 9","levels":1,"levelsSource":"Commons 2014 photo of the south block and long wing: one storey","storey":4.7,"frameColor":15657439,
         "campus":{"style":"ward","chimneys":[[143,-75],[143,-95],[143,-115],[149,-57.5],[144,-142]]}},
       {"source":"88457552","polygon":[[105.08,-126.68],[116.15,-126.46],[116.21,-129.88],[126.08,-129.69],[126.0,-126.27],[127.31,-126.24],[127.14,-117.41],[125.83,-117.44],[125.71,-111.53],[115.85,-111.72],[115.97,-117.63],[104.89,-117.86],[104.79,-112.25],[91.54,-112.51],[91.65,-118.12],[80.5,-118.34],[80.35,-111.1],[70.85,-111.29],[71.23,-130.27],[80.74,-130.08],[80.68,-127.17],[91.83,-126.95],[91.87,-129.08],[105.11,-128.82],[105.08,-126.68]],"name":"F\u00f6rskolan Freinet / byggnad 7","levels":2,"levelsSource":"Commons 2014 photo (Freinetskolan sign) and Hemsö By7: two storeys","storey":4.3,"frameColor":15657439,
-        "campus":{"style":"stenhammar","sections":[{"name":"west pavilion","box":[70.5,-130.6,80.6,-110.8],"raise":1.2},{"name":"centre","box":[91.7,-129.4,104.95,-112],"raise":1.2},{"name":"east pavilion","box":[115.95,-130.2,127.6,-111.2],"raise":1.2}],
+        "campus":{"style":"stenhammar","sections":[{"name":"west pavilion","box":[70.5,-130.6,80.6,-110.8],"raise":1.2},{"name":"centre","box":[91.7,-129.4,104.95,-112],"raise":1.2},{"name":"east pavilion","box":[115.95,-130.2,127.6,-111.2],"raise":1.2,"roofs":[[115.95,-130.2,126.05,-111.2],[126.05,-126.5,127.6,-117.2]]}],
+          "roofs":[{"box":[80.8,-128,91.5,-117],"dormers":3},{"box":[105.1,-128,115.9,-116.5],"dormers":3}],
           "chimneys":[[75.8,-120.7],[98.3,-120.6],[121.5,-120.6],[86,-122.6],[110.5,-122.2]]}},
       {"source":"88457558","polygon":[[273.63,-69.61],[292.05,-79.29],[296.27,-71.27],[277.85,-61.58],[273.63,-69.61]],"name":"Komplementbyggnad 88457558","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
       {"source":"88457565","polygon":[[228.12,-65.56],[261.7,-65.44],[261.68,-53.62],[260.67,-53.63],[260.66,-49.35],[252.87,-49.38],[252.88,-54.29],[228.1,-54.38],[228.12,-65.56]],"name":"F\u00f6rskolan Kastanjen","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
@@ -1215,13 +1224,15 @@ export const SITE = {
       {"source":"88457601","polygon":[[147.34,-3.67],[125.29,-3.73],[124.91,-1.56],[115.38,-1.76],[115.37,4.0],[125.33,4.25],[126.01,24.18],[148.79,24.33],[147.34,-3.67]],"name":"\u00d6stra paviljongen vid Kunskapsskolan / byggnad 19","levels":2,"levelsSource":"guess: lower eastern part of byggnad 19 (Hemsö map), not photographed","storey":3.9,"frameColor":15657439,
         "campus":{"style":"laundry","chimneys":[[137,10]]}},
       {"source":"88457606","polygon":[[105.93,-66.55],[116.99,-66.33],[117.06,-69.76],[126.92,-69.55],[126.86,-66.13],[128.15,-66.1],[127.98,-57.28],[126.68,-57.3],[126.56,-51.39],[116.7,-51.6],[116.82,-57.49],[105.74,-57.72],[105.64,-52.11],[92.39,-52.39],[92.49,-57.98],[81.35,-58.21],[81.21,-50.96],[71.71,-51.16],[72.07,-70.14],[81.58,-69.94],[81.53,-67.04],[92.67,-66.81],[92.72,-68.95],[105.96,-68.68],[105.93,-66.55]],"name":"F\u00f6rskolan Framtiden / byggnad 8","levels":2,"levelsSource":"Commons 2014 photo and Hemsö By8: two storeys","storey":4.3,"frameColor":15657439,
-        "campus":{"style":"stenhammar","sections":[{"name":"west pavilion","box":[71,-70.6,81.4,-50.5],"raise":1.2},{"name":"centre","box":[92.55,-69.4,105.85,-51.7],"raise":1.2},{"name":"east pavilion","box":[116.9,-70.2,128.6,-50.9],"raise":1.2}],
+        "campus":{"style":"stenhammar","sections":[{"name":"west pavilion","box":[71,-70.6,81.4,-50.5],"raise":1.2},{"name":"centre","box":[92.55,-69.4,105.85,-51.7],"raise":1.2},{"name":"east pavilion","box":[116.9,-70.2,128.6,-50.9],"raise":1.2,"roofs":[[116.9,-70.2,126.9,-50.9],[126.9,-66.5,128.6,-56.9]]}],
+          "roofs":[[81.5,-68,92.5,-57],[106,-67.5,116.8,-56.5]],
           "centre":{"x":[92.72,105.96],"face":-68.82,"normal":-1,"depth":0,"pedDepth":1.6,"pediment":1.9,"roofBack":2.5},
           "chimneys":[[76.6,-61.2],[122.6,-61],[99.3,-61.5],[87,-62.6],[111.5,-62.2]]}},
       {"source":"88457612","polygon":[[-5.23,-65.15],[6.26,-65.2],[6.22,-71.29],[15.76,-71.33],[15.89,-52.58],[6.38,-52.54],[6.35,-56.62],[-5.13,-56.57],[-5.11,-53.63],[-18.01,-53.57],[-18.04,-56.52],[-29.02,-56.47],[-29.0,-53.72],[-38.79,-53.67],[-38.89,-70.68],[-29.02,-70.73],[-28.98,-65.05],[-18.13,-65.1],[-18.17,-70.15],[-5.26,-70.22],[-5.23,-65.15]],"name":"NTI / skolan \u00f6ver gatan","levels":2,"levelsSource":"visual assumption","storey":4.3,"roofRise":3,"frameColor":15657439,"classic":true},
       {"source":"130578352","polygon":[[125.46,40.62],[119.55,40.67],[119.67,53.05],[125.59,53.0],[125.46,40.62]],"name":"Komplementbyggnad 130578352","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
       {"source":"130678797","polygon":[[-41.57,-134.49],[-31.06,-134.87],[-30.95,-131.92],[-21.25,-132.27],[-21.36,-135.15],[-5.68,-135.72],[-5.58,-133.09],[4.47,-133.45],[4.35,-136.54],[15.03,-136.93],[15.85,-115.25],[4.21,-114.83],[3.94,-121.73],[-3.76,-121.45],[-3.63,-117.88],[-19.49,-117.3],[-19.68,-122.28],[-31.94,-121.83],[-31.75,-116.71],[-40.87,-116.38],[-41.57,-134.49]],"name":"\u00d6stra borgg\u00e5rden, byggnad 2","levels":2,"levelsSource":"Commons 2014 photo: two storeys","storey":4.3,"frameColor":15657439,
         "campus":{"style":"stenhammar","sections":[{"name":"west pavilion","box":[-42,-135.2,-31.3,-115.9],"raise":1.2},{"name":"centre","box":[-21.3,-136,-5.62,-117],"raise":1.2},{"name":"east pavilion","box":[4.2,-137.3,16.3,-114.6],"raise":1.2}],
+          "roofs":[{"box":[-30.9,-133.5,-21.4,-120],"dormers":3},{"box":[-5.5,-134.5,4.1,-121.4],"dormers":3},[-5.62,-121.4,-3.5,-117.5]],
           "chimneys":[[-36.3,-125.3],[-13.5,-126.5],[10,-125.9],[-26.4,-127],[-0.6,-127.5]]}},
       {"source":"130681301","polygon":[[72.93,40.79],[46.47,40.46],[46.68,19.41],[28.4,19.19],[28.0,58.28],[72.74,58.83],[72.93,40.79]],"name":"Realgymnasiet, Sankt Lars v\u00e4g 20 (l\u00e5nga tegelbyggnaden)","levels":1,"levelsSource":"user photos docs/foton/skolbyggnad-*.jpg 2026-10-23 (#1532): a one-storey range and gable house, a two-storey hall","storey":3.8,"roofRise":2,"frameColor":13675862,"template":"realgym20",
         // #1532 (src/realgym20.js): three volumes on the kept OSM outline, read from the user's two photos; every metre here is *guess*.
@@ -1312,12 +1323,16 @@ export const SITE = {
       // Byggnad 2, 7 and 8 (#577, #578): Stenhammar's two-storey wards like the school (#564, byggnad 3): red brick, white
       // rusticated quoins, plinth and floor band, a white cornice with dentils, segmental ground-floor windows with keystones
       // and straight upper ones under cornice crowns. End pavilions and centre stand taller than the linking wings
-      // (`sections` with `raise`); low dark metal hips with brick chimneys.
+      // (`sections` with `raise`); dark metal hips with brick chimneys. #1733: Google 3D (docs/foton/snedbild-klockhuset-sankt-thomas.png)
+      // shows steep hips (~40-45°) with a ridge over every pavilion, centre and wing, and rows of gabled dormers on the
+      // wings of byggnad 2 and 7: `hip` roofs with `slope` (rise per metre, *guess*), parts from the sections and the
+      // building's `roofs` boxes (src/campusfacades.js), eaves `overhang` m; `dormer` sizes and spacing in m, *guess*.
       stenhammar: { storeys: [4.3, 4.3], bay: 2.75, margin: 2.45, wall: 0xffffff, trim: 0xeeeae1, joint: 0xc3bbb0, glass: 0x405660,
         windows: [{ sill: 1.05, head: 3.45, width: 1.35, arch: .2, crown: 'key' }, { sill: .95, head: 3.2, width: 1.35, crown: 'cornice' }],
         plinth: .8, bands: [{ h: .22 }], cornice: [[-.45, .32, .12], [-.23, .14, .23], [-.08, .16, .34]],
         dentil: { step: .55, width: .16, height: .22, depth: .09 }, quoin: .65, jointStep: .43, frame: .12, mullion: .045,
-        roof: { rise: 1.1, slope: .26, grid: 2 }, chimney: [.65, 1.45, .65] },
+        roof: { hip: true, slope: .95, overhang: .15, rise: 1.1, grid: 2 }, chimney: [.65, 1.45, .65],
+        dormer: { width: 1.3, height: 1.15, gable: .6, inset: 1.3, spacing: 3.0, margin: 1.6 } },
       // Byggnad 88 (#580, Klas Anshelm 1959-60): two storeys of red brick with projecting brick piers between broad
       // white-framed windows (centre post, low transom), a deep white eave soffit, and four sawtooth roofs that rise from
       // the outer eaves to glazed faces towards the inner court (`inward`), so that from outside it reads as a low hip.
@@ -1325,7 +1340,7 @@ export const SITE = {
         windows: [{ sill: .8, head: 2.6, width: 2.1, bars: false, rails: [.22] }, { sill: .75, head: 2.55, width: 2.1, bars: false, rails: [.22] }],
         plinth: .4, plinthColor: 0xa9a59d, cornice: [], soffit: { depth: .6, color: 0xf1efe9 }, frame: .08, mullion: .05,
         piers: { width: .5, depth: .16, edge: .25, brick: true, color: 0xffffff },
-        roof: { rise: 2.4, slope: .25, grid: 2, inward: true } },
+        roof: { rise: 3.4, slope: .6, grid: 2, inward: true } }, // #1733: steeper outer slopes as in Google 3D (rise/slope *guess*)
       // Byggnad 19 (#581, Axel Kumlien 1910-11, the laundry): plain red brick without the white render of the older
       // wards: segmental windows under brick arches with white frames, a centre post and transom, a dark string course
       // at each floor, a corbelled brick eave and dark standing-seam hips; the top floor has paired windows.
@@ -1338,13 +1353,13 @@ export const SITE = {
         cornice: [[-.3, .22, .1], [-.12, .16, .2]], frame: .07, mullion: .05,
         roof: { rise: 3.2, slope: .55, grid: 2 }, chimney: [.9, 2.2, .9] },
       // Byggnad 1 / Klockhuset (#579, Stenhammar 1877-79): a white-rendered ground floor, brick upper floor between white
-      // pilasters, dentil cornice and low hip; on the park-side axis (#1733) a projecting centre with pediment, a great
+      // pilasters, dentil cornice and steep hips per part (#1733, as `stenhammar`); on the park-side axis (#1733) a projecting centre with pediment, a great
       // round-arched window and a clock tower (four dials, open arched lantern, dark bell roof, gilded spire), after the 2014 photo.
       klockhuset: { storeys: [4.6, 4.5], bay: 3.0, margin: 1.6, wall: 0xffffff, trim: 0xf0ede6, joint: 0xd2ccc2, glass: 0x405660,
         windows: [{ sill: 1.2, head: 3.5, width: 1.25, arch: .18 }, { sill: 1.0, head: 3.3, width: 1.25, crown: 'cornice' }],
         plinth: .7, apron: 4.75, piers: { width: .7, depth: .06, edge: .35 }, bands: [{ h: .26 }],
         cornice: [[-.4, .3, .12], [-.2, .14, .24], [-.06, .16, .36]], dentil: { step: .5, width: .16, height: .22, depth: .09 },
-        quoin: .7, frame: .12, mullion: .045, roof: { rise: 2.2, slope: .3, grid: 2 }, chimney: [.65, 1.4, .65] },
+        quoin: .7, frame: .12, mullion: .045, roof: { hip: true, slope: .95, overhang: .15, rise: 2.2, grid: 2 }, chimney: [.65, 1.4, .65] },
     },
     // #1679 (docs/references/google-3d-2026-10-29/): roof colours read off Google's 3D views, where the campus roofs are
     // blue-grey slate rather than the old near-black metal. All values are *guess*es, not measurements; they tint the one

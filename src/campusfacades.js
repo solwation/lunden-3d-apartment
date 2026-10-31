@@ -63,9 +63,21 @@ export function buildCampusFacade(b, p, holes, base, bottom, parts, lite = lowMe
   const pieces = [{ poly: p, holes, levels, raise: 0, box: null }];
   for (const s of S.sections ?? []) {
     const poly = clipBox(p, s.box);
-    if (poly.length >= 3 && Math.abs(signedArea(poly)) > 4) pieces.push({ poly, holes: [], levels: s.levels ?? levels, raise: s.raise ?? 0, box: s.box, name: s.name, roof: s.roof });
+    if (poly.length >= 3 && Math.abs(signedArea(poly)) > 4) pieces.push({ poly, holes: [], levels: s.levels ?? levels, raise: s.raise ?? 0, box: s.box, name: s.name, roof: s.roof, roofs: s.roofs });
   }
   const eaveOf = piece => base + height(piece.levels) + piece.raise;
+  const hip = !!S.roof.hip;
+  for (const piece of pieces) piece.eave = eaveOf(piece);
+  if (hip) {
+    hipParts(p, holes, pieces, S, outlineAngle(p));
+    for (const piece of pieces) {
+      piece.top = (x, z) => { let y = -Infinity; for (const h of piece.hips) y = Math.max(y, hipTop(h, x, z)); return y > -Infinity ? y : piece.eave; };
+      piece.ridge = Math.max(piece.eave, ...piece.hips.map(h => {
+        const R = h.rect, span = (a, b, w) => (h.sloped[a] && h.sloped[b] ? w / 2 : h.sloped[a] || h.sloped[b] ? w : Infinity);
+        return h.eave + h.slope * Math.min(span('u0', 'u1', R.u1 - R.u0), span('v0', 'v1', R.v1 - R.v0));
+      }));
+    }
+  }
   // A point on a piece is covered when a taller piece's box holds it: no trim or windows of the lower piece there.
   // A projecting centre (risalit) hides the walls and windows behind it.
   const C = S.centre, risalit = C?.depth ? [C.x[0], Math.min(C.face, C.face - C.normal * C.depth), C.x[1], Math.max(C.face, C.face - C.normal * C.depth)] : null;
@@ -109,11 +121,13 @@ export function buildCampusFacade(b, p, holes, base, bottom, parts, lite = lowMe
             const px = a[0] + ux * mid + nx * .3, pz = a[1] + uz * mid + nz * .3;
             const next = pieces.filter(o => o !== piece && (o.box ? inBox(px, pz, o.box) : true) && eaveOf(o) < eave).sort((o, q) => eaveOf(q) - eaveOf(o))[0];
             if (!next) continue;
-            const nTop = eaveOf(next) + (next.box ? 0 : Math.min(S.roof.rise, ringDist(px, pz, outline) * S.roof.slope));
+            const nTop = hip ? next.top(px, pz) : eaveOf(next) + (next.box ? 0 : Math.min(S.roof.rise, ringDist(px, pz, outline) * S.roof.slope));
             const count = w - 2 * S.margin < 0 ? 0 : Math.floor((w - 2 * S.margin) / S.bay) + 1;
             for (let k = 0; k < count; k++) for (let floor = 0; floor < piece.levels; floor++) {
               const W = S.windows[Math.min(floor, S.windows.length - 1)];
               if (base + height(floor) + W.sill < nTop + .1) continue;
+              const wx = a[0] + ux * (mid + (k - (count - 1) / 2) * S.bay) + nx * .3, wz = a[1] + uz * (mid + (k - (count - 1) / 2) * S.bay) + nz * .3;
+              if (S.court && courtBusy(S.court, wx, wz)) continue; // #1734: the arches and the bay take this stretch
               for (const offset of W.pair ? [-W.pair / 2, W.pair / 2] : [0]) windows.push(windowAt(a, ux, uz, nx, nz, angle, mid + (k - (count - 1) / 2) * S.bay + offset, base + height(floor), W, S, parts, i, floor));
             }
             continue;
@@ -162,10 +176,13 @@ export function buildCampusFacade(b, p, holes, base, bottom, parts, lite = lowMe
     }
     // A low hip that follows the piece's own outline; a sawtooth ring rises inward to glazed faces.
     const rings = [piece.poly, ...piece.holes], R = { ...S.roof, ...piece.roof }, outer = [piece.poly];
-    const top = (x, z) => eave + Math.min(R.rise, (R.inward ? ringDist(x, z, outer) : ringDist(x, z, rings)) * R.slope);
-    const higher = pieces.filter(o => o !== piece && o.box && eaveOf(o) > eave + .05).map(o => o.box);
-    parts.schoolRoof.push(footprintRoof(piece.poly, piece.holes, top, (R.grid ?? 1.5) * (lite ? CAMPUS_LOD.roofGrid : 1), S.seam ?? .6, higher));
-    if (R.inward) for (const h of piece.holes) for (let i = 0; i < h.length; i++) {
+    const top = hip ? piece.top : (x, z) => eave + Math.min(R.rise, (R.inward ? ringDist(x, z, outer) : ringDist(x, z, rings)) * R.slope);
+    if (hip) for (const h of piece.hips) buildHip(h, S, parts, wallParts, lite);
+    else {
+      const higher = pieces.filter(o => o !== piece && o.box && eaveOf(o) > eave + .05).map(o => o.box);
+      parts.schoolRoof.push(footprintRoof(piece.poly, piece.holes, top, (R.grid ?? 1.5) * (lite ? CAMPUS_LOD.roofGrid : 1), S.seam ?? .6, higher));
+    }
+    if (!hip && R.inward) for (const h of piece.holes) for (let i = 0; i < h.length; i++) {
       const a = h[i], c = h[(i + 1) % h.length], g = new THREE.BufferGeometry();
       g.setAttribute('position', new THREE.Float32BufferAttribute([a[0], eave, a[1], c[0], eave, c[1], c[0], top(...c), c[1], a[0], eave, a[1], c[0], top(...c), c[1], a[0], top(...a), a[1]], 3));
       g.computeVertexNormals(); (parts.schoolGlass ?? parts.glass).push(tint(g, S.glass));
@@ -175,9 +192,10 @@ export function buildCampusFacade(b, p, holes, base, bottom, parts, lite = lowMe
       parts.schoolBrick.push(tint(plain(new THREE.BoxGeometry(...S.chimney).translate(x, y + S.chimney[1] / 2 - .4, z)), S.chimneyTint ?? 0xffffff));
       parts.schoolRoof.push(tint(new THREE.BoxGeometry(S.chimney[0] + .16, .12, S.chimney[2] + .16).toNonIndexed().translate(x, y + S.chimney[1] - .34, z), schoolRoofTint())); // #1696: own dark-metal tint, not the building's roof tone
     }
-    piece.eave = eave; piece.ridge = eave + R.rise; piece.top = top;
+    if (!hip) { piece.ridge = eave + R.rise; piece.top = top; }
   }
   if (S.centre) Object.assign(S, buildCentre(p, base, pieces, eaveOf, S, parts, windows));
+  if (S.court) buildCourt(base, pieces, S, parts, windows);
   const roofY = (x, z) => pieces.reduce((y, q) => (inside(x, z, q.poly) && !q.holes.some((h) => inside(x, z, h)) ? Math.max(y, q.top(x, z)) : y), -Infinity); // the drawn roof's height, for the walkable roof (#1294)
   return { roofY, windows, eave: Math.max(...pieces.map(eaveOf)), ridge: Math.max(...pieces.map(q => q.ridge)), pieces: pieces.map(q => ({ name: q.name, levels: q.levels, eave: q.eave, ridge: q.ridge, area: Math.abs(signedArea(q.poly)) })), tower: S.towerTop, clock: S.clock };
 }
@@ -212,6 +230,147 @@ function windowAt(a, ux, uz, nx, nz, angle, t, fy, W, S, parts, edge, floor) {
   return { x: x + nx * .075, y: low + h / 2, z: z + nz * .075, n: [nx, nz], width, height: h, edge, floor, arched: !!rise };
 }
 
+// #1733: steep hipped roofs per roof part (`roof.hip`). Every part is a rectangle in the outline's own frame (the
+// clipped outline's bounds), hipped on its free edges with one slope, so the ridges and hips are exact planes and a
+// part costs a handful of triangles. Where an end runs into a taller part it is carried on under that roof (hidden);
+// a long side against a taller wall becomes a lean-to's back; an end against an equal part is cut off with a gable.
+const outlineAngle = p => {
+  let sx = 0, sz = 0;
+  for (let i = 0; i < p.length; i++) {
+    const a = p[i], b = p[(i + 1) % p.length], len = Math.hypot(b[0] - a[0], b[1] - a[1]), t = Math.atan2(b[1] - a[1], b[0] - a[0]) * 4;
+    sx += len * Math.cos(t); sz += len * Math.sin(t);
+  }
+  return Math.atan2(sz, sx) / 4;
+};
+/** Keep the part of a convex-or-not polygon where the linear function f([u, v]) <= 0. */
+const clipLinear = (poly, f) => {
+  const out = [];
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], b = poly[(i + 1) % poly.length], fa = f(a), fb = f(b);
+    if (fa <= 1e-9) out.push(a);
+    if ((fa < -1e-9 && fb > 1e-9) || (fa > 1e-9 && fb < -1e-9)) { const t = fa / (fa - fb); out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); }
+  }
+  return out;
+};
+/** Flat triangles [[x,y,z]×3, …] as one geometry with face normals (pointing up / away from `ref` for walls) and planar uv. */
+function triGeometry(tris, seam, uv = true, ref = null) {
+  const pos = [], nor = [], uvs = [];
+  for (let [a, b, c] of tris) {
+    let n = new THREE.Vector3(b[0] - a[0], b[1] - a[1], b[2] - a[2]).cross(new THREE.Vector3(c[0] - a[0], c[1] - a[1], c[2] - a[2]));
+    if (n.lengthSq() < 1e-10) continue;
+    const flip = ref ? n.x * (a[0] - ref[0]) + n.y * (a[1] - ref[1]) + n.z * (a[2] - ref[2]) < 0 : n.y < 0;
+    if (flip) { [b, c] = [c, b]; n.negate(); }
+    n.normalize();
+    for (const q of [a, b, c]) { pos.push(...q); nor.push(n.x, n.y, n.z); uvs.push(q[0] / seam, q[2] / seam); }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  if (uv) g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  return g;
+}
+const fan = poly => { const t = []; for (let j = 1; j < poly.length - 1; j++) t.push([poly[0], poly[j], poly[j + 1]]); return t; };
+
+/** The hip parts of every piece: { rect, sloped, eave, slope, dormers } in the frame turned by `angle`. */
+function hipParts(p, holes, pieces, S, angle) {
+  const c = Math.cos(angle), s = Math.sin(angle), H = S.roof;
+  const toLocal = ([x, z]) => [x * c + z * s, -x * s + z * c], toWorld = (u, v) => [u * c - v * s, u * s + v * c];
+  const eaveAt = (x, z) => pieces.reduce((y, q) => (inside(x, z, q.poly) && !q.holes.some(h => inside(x, z, h)) ? Math.max(y, q.eave) : y), -Infinity);
+  for (const piece of pieces) {
+    const list = piece.box ? (piece.roofs ?? [piece.box]) : (S.roofs ?? []);
+    piece.hips = [];
+    for (const raw of list) {
+      const r = Array.isArray(raw) ? { box: raw } : raw, poly = clipBox(p, r.box);
+      if (poly.length < 3 || Math.abs(signedArea(poly)) < 4) continue;
+      const loc = poly.map(toLocal), us = loc.map(q => q[0]), vs = loc.map(q => q[1]);
+      const rect = { u0: Math.min(...us), u1: Math.max(...us), v0: Math.min(...vs), v1: Math.max(...vs) };
+      // The neighbour across each edge: the tallest piece just outside it (sampled at three points along it).
+      const near = {};
+      for (const e of ['u0', 'u1', 'v0', 'v1']) {
+        const onU = e[0] === 'u', sign = e[1] === '0' ? -1 : 1;
+        let n = -Infinity;
+        for (const f of [.2, .5, .8]) {
+          const u = onU ? rect[e] + sign * .8 : rect.u0 + (rect.u1 - rect.u0) * f, v = onU ? rect.v0 + (rect.v1 - rect.v0) * f : rect[e] + sign * .8;
+          n = Math.max(n, eaveAt(...toWorld(u, v)));
+        }
+        near[e] = n > piece.eave + .05 ? 'higher' : Math.abs(n - piece.eave) <= .05 ? 'equal' : 'free';
+      }
+      // The ridge runs between the two parts a linking wing joins, else along the longer side.
+      const links = a => near[a + '0'] !== 'free' && near[a + '1'] !== 'free';
+      const alongU = links('u') !== links('v') ? links('u') : rect.u1 - rect.u0 >= rect.v1 - rect.v0;
+      const half = (alongU ? rect.v1 - rect.v0 : rect.u1 - rect.u0) / 2;
+      const sloped = { u0: true, u1: true, v0: true, v1: true }, butt = [], o = H.overhang ?? .15, grow = { u0: o, u1: o, v0: o, v1: o };
+      for (const e of ['u0', 'u1', 'v0', 'v1']) {
+        const end = (e[0] === 'u') === alongU, higher = near[e] === 'higher', equal = near[e] === 'equal';
+        if (end && higher) { grow[e] = half + .3; continue; }
+        if (end && equal) { sloped[e] = false; grow[e] = 0; butt.push(e); continue; }
+        if (!end && higher) { sloped[e] = false; grow[e] = .05; }
+      }
+      if (!sloped.u0 && !sloped.u1 && !sloped.v0 && !sloped.v1) sloped.v0 = sloped.v1 = true;
+      const orig = { ...rect };
+      rect.u0 -= grow.u0; rect.u1 += grow.u1; rect.v0 -= grow.v0; rect.v1 += grow.v1;
+      const slope = r.slope ?? piece.roof?.slope ?? H.slope;
+      piece.hips.push({ rect, orig, alongU, sloped, butt, eave: piece.eave, slope, dormers: r.dormers, toWorld, toLocal });
+    }
+  }
+}
+const hipDist = (h, u, v) => {
+  const R = h.rect, d = { u0: u - R.u0, u1: R.u1 - u, v0: v - R.v0, v1: R.v1 - v };
+  let m = Infinity; for (const e in d) if (h.sloped[e]) m = Math.min(m, d[e]);
+  return m;
+};
+/** Height of a hip part at a world point, -Infinity outside its rectangle. */
+const hipTop = (h, x, z) => { const [u, v] = h.toLocal([x, z]), R = h.rect; return u < R.u0 || u > R.u1 || v < R.v0 || v > R.v1 ? -Infinity : h.eave + h.slope * hipDist(h, u, v); };
+/** Draw one hip part: its roof planes, gables on cut-off ends and the dormers on its long slopes. */
+function buildHip(h, S, parts, wallParts, lite) {
+  const R = h.rect, edges = ['u0', 'u1', 'v0', 'v1'].filter(e => h.sloped[e]);
+  const dist = { u0: q => q[0] - R.u0, u1: q => R.u1 - q[0], v0: q => q[1] - R.v0, v1: q => R.v1 - q[1] };
+  const W = (u, v, y) => { const [x, z] = h.toWorld(u, v); return [x, y, z]; }, at = (u, v) => h.eave + h.slope * hipDist(h, u, v);
+  const tris = [];
+  for (const e of edges) {
+    let poly = [[R.u0, R.v0], [R.u1, R.v0], [R.u1, R.v1], [R.u0, R.v1]];
+    for (const f of edges) if (f !== e) poly = clipLinear(poly, q => dist[e](q) - dist[f](q));
+    if (poly.length >= 3) tris.push(...fan(poly.map(q => W(q[0], q[1], h.eave + h.slope * dist[e](q)))));
+  }
+  const roofTris = [...tris], wallTris = [], trimTris = [], glassTris = [];
+  // A gable closes an end cut off against an equal part (its profile: the end corners and the ridge between them).
+  for (const e of h.butt) {
+    const onU = e[0] === 'u', a = onU ? R.v0 : R.u0, b = onU ? R.v1 : R.u1, P = t => (onU ? [R[e], t] : [t, R[e]]);
+    const ts = [a, (a + b) / 2, b];
+    for (let i = 0; i < ts.length - 1; i++) {
+      const p0 = P(ts[i]), p1 = P(ts[i + 1]), y0 = at(...p0), y1 = at(...p1);
+      if (Math.max(y0, y1) < h.eave + .02) continue;
+      wallTris.push([W(...p0, h.eave), W(...p1, h.eave), W(...p1, y1)], [W(...p0, h.eave), W(...p1, y1), W(...p0, y0)]);
+    }
+  }
+  // Dormers (*guess* sizes, S.dormer) evenly along the visible part of each long sloped side.
+  const D = S.dormer, alongU = h.alongU;
+  if (h.dormers && D) for (const e of alongU ? ['v0', 'v1'] : ['u0', 'u1']) {
+    if (!h.sloped[e]) continue;
+    const out = { u0: [-1, 0], u1: [1, 0], v0: [0, -1], v1: [0, 1] }[e], tan = [Math.abs(out[1]), Math.abs(out[0])];
+    const s0 = alongU ? h.orig.u0 : h.orig.v0, s1 = alongU ? h.orig.u1 : h.orig.v1, len = s1 - s0 - 2 * D.margin;
+    if (len < 0) continue;
+    const n = Math.min(h.dormers, Math.floor(len / D.spacing) + 1), edge = R[e];
+    for (let k = 0; k < n; k++) {
+      if (lite && k % 2) continue;
+      const s = (s0 + s1) / 2 + (k - (n - 1) / 2) * D.spacing;
+      const L = (along, dIn, y) => { const u = tan[0] * along + (out[0] ? edge - out[0] * dIn : 0), v = tan[1] * along + (out[1] ? edge - out[1] * dIn : 0); return W(u, v, y); };
+      const yf = h.eave + h.slope * D.inset, yt = yf + D.height, yr = yt + D.gable, dp = D.height / h.slope + .05, dr = (D.height + D.gable) / h.slope + .05, w = D.width / 2, ov = .12;
+      const fl = L(s - w, D.inset, yf - .1), fr = L(s + w, D.inset, yf - .1), tl = L(s - w, D.inset, yt), tr = L(s + w, D.inset, yt), apex = L(s, D.inset, yr);
+      trimTris.push([fl, fr, tr], [fl, tr, tl], [tl, tr, apex]);
+      trimTris.push([fl, tl, L(s - w, D.inset + dp, yt)], [fr, tr, L(s + w, D.inset + dp, yt)]);
+      const el = L(s - w - ov, D.inset - ov, yt - .06), er = L(s + w + ov, D.inset - ov, yt - .06), ap = L(s, D.inset - ov, yr + .02);
+      const elb = L(s - w - ov, D.inset + dp, yt - .06), erb = L(s + w + ov, D.inset + dp, yt - .06), apb = L(s, D.inset + dr, yr + .02);
+      roofTris.push([el, ap, apb], [el, apb, elb], [er, ap, apb], [er, apb, erb]);
+      if (!lite) { const pw = D.width * .55, g0 = yf + .12, g1 = yt - .15, d = D.inset - .02; glassTris.push([L(s - pw / 2, d, g0), L(s + pw / 2, d, g0), L(s + pw / 2, d, g1)], [L(s - pw / 2, d, g0), L(s + pw / 2, d, g1), L(s - pw / 2, d, g1)]); }
+    }
+  }
+  const ref = W((R.u0 + R.u1) / 2, (R.v0 + R.v1) / 2, h.eave - 3);
+  parts.schoolRoof.push(triGeometry(roofTris, S.seam ?? .6));
+  if (wallTris.length) wallParts.push(tint(triGeometry(wallTris, 1, false, ref), S.wall));
+  if (trimTris.length) parts.modern.push(tint(triGeometry(trimTris, 1, false, ref), S.trim));
+  if (glassTris.length) (parts.schoolGlass ?? parts.glass).push(tint(triGeometry(glassTris, 1, false, ref), S.glass));
+}
+
 /** Roof over an outline (with holes) at height top(x,z): small grid cells so the hip follows every wing. */
 const minusBox = (poly, [x0, z0, x1, z1]) => {
   const rest = clip(poly, 0, x0, 1), middle = clip(rest, 0, x1, -1);
@@ -242,9 +401,48 @@ export function footprintRoof(p, holes, top, step, seam, without = []) {
   return g;
 }
 
+/** #1734: true where the recessed court wall's arched windows or bay stand (no ordinary window there). */
+const courtBusy = (K, x, z) => Math.abs(z - K.face) < 1 && ((x > Math.min(...K.arches) - 2 && x < Math.max(...K.arches) + 2) || (K.bay && x > K.bay.x[0] - 1 && x < K.bay.x[1] + 1));
+
+/** #1734: Klockhuset's recessed court wall: tall round-arched upper windows and a canted bay (all sizes *guess*). */
+function buildCourt(base, pieces, S, parts, windows) {
+  const K = S.court, z = K.face, n = K.normal, rot = n > 0 ? 0 : Math.PI, xs = K.arches;
+  const behind = pieces.filter(q => inside((xs[0] + xs[xs.length - 1]) / 2, z - n, q.poly)), eave = Math.max(...behind.map(q => q.eave));
+  const arch = new THREE.Shape(), w = K.width, h = K.height;
+  arch.moveTo(-w / 2, 0); arch.lineTo(w / 2, 0); arch.lineTo(w / 2, h - w / 2); arch.absarc(0, h - w / 2, w / 2, 0, Math.PI, false); arch.closePath();
+  const flat = (g, x, y, out, color, list) => list.push(tint(plain(g.rotateY(rot).translate(x, y, z + n * out)), color));
+  for (const x of xs) {
+    const frame = new THREE.ShapeGeometry(arch, S.lite ? 5 : 8); frame.scale(1 + .3 / w, 1 + .2 / h, 1); frame.translate(0, -.1, 0);
+    flat(frame, x, base + K.sill, .07, S.trim, parts.modern);
+    flat(new THREE.ShapeGeometry(arch, S.lite ? 5 : 8), x, base + K.sill, .075, S.glass, parts.schoolGlass ?? parts.glass);
+    flat(new THREE.PlaneGeometry(.06, h - w / 2), x, base + K.sill + (h - w / 2) / 2, .1, S.trim, parts.modern);
+    flat(new THREE.PlaneGeometry(w, .06), x, base + K.sill + (h - w / 2) * .62, .1, S.trim, parts.modern);
+    flat(new THREE.BoxGeometry(w + .26, .1, .2), x, base + K.sill - .05, .1, S.trim, parts.modern);
+    windows.push({ x, y: base + K.sill + h * .4, z: z + n * .075, n: [0, n], width: w, height: h, edge: 'court', floor: 1, arched: true });
+  }
+  if (!K.bay) return;
+  // The canted bay: front and two 45° cheeks from above the wing's roof to under the eave, a window in each face, a low cap.
+  const B = K.bay, [x0, x1] = B.x, d = B.depth, y0 = base + B.from, y1 = eave - .35, pts = [[x0, z], [x0 + d, z + n * d], [x1 - d, z + n * d], [x1, z]];
+  const shape = new THREE.Shape(pts.map(([x, zz]) => new THREE.Vector2(x, -zz)));
+  (S.render ? parts.modern : parts.schoolBrick).push(tint(plain(new THREE.ExtrudeGeometry(shape, { depth: y1 - y0, bevelEnabled: false }).rotateX(-Math.PI / 2).translate(0, y0, 0)), S.wall));
+  parts.modern.push(tint(plain(new THREE.ExtrudeGeometry(shape, { depth: .25, bevelEnabled: false }).rotateX(-Math.PI / 2).translate(0, y1 - .25, 0)), S.trim));
+  for (let i = 0; i < 3; i++) {
+    const a = pts[i], c = pts[i + 1], len = Math.hypot(c[0] - a[0], c[1] - a[1]), nx = -(c[1] - a[1]) / len * n, nz = (c[0] - a[0]) / len * n, ang = Math.atan2(nx, nz);
+    const mx = (a[0] + c[0]) / 2 + nx * .03, mz = (a[1] + c[1]) / 2 + nz * .03, ww = Math.min(1.1, len - .4), wy = (y0 + y1) / 2 + .2, wh = Math.min(2.2, y1 - y0 - .8);
+    parts.modern.push(tint(plain(new THREE.PlaneGeometry(ww + .2, wh + .2).rotateY(ang).translate(mx, wy, mz)), S.trim));
+    (parts.schoolGlass ?? parts.glass).push(tint(plain(new THREE.PlaneGeometry(ww, wh).rotateY(ang).translate(mx + nx * .01, wy, mz + nz * .01)), S.glass));
+    windows.push({ x: mx + nx * .01, y: wy, z: mz + nz * .01, n: [nx, nz], width: ww, height: wh, edge: 'bay', floor: 1, arched: false });
+  }
+  const capTop = [(x0 + x1) / 2, y1 + .9, z - n * .3], cap = [];
+  for (let i = 0; i < 3; i++) cap.push([[pts[i][0], y1, pts[i][1]], [pts[i + 1][0], y1, pts[i + 1][1]], capTop]);
+  parts.schoolRoof.push(triGeometry(cap.map(t => t.map(q => [q[0] + (q[0] - capTop[0]) * .05, q[1], q[2] + (q[2] - capTop[2]) * .05])), S.seam ?? .6));
+}
+
 /** Projecting centre (risalit) with pediment, large round-arched window and an optional clock tower (byggnad 1). */
 function buildCentre(p, base, pieces, eaveOf, S, parts, windows) {
-  const C = S.centre, eave = Math.max(...pieces.map(eaveOf)), [x0, x1] = C.x, z = C.face, depth = C.depth, cx = (x0 + x1) / 2, n = C.normal;
+  const C = S.centre, [x0, x1] = C.x, z = C.face, depth = C.depth, cx = (x0 + x1) / 2, n = C.normal;
+  // The risalit's cornice follows the part of the building behind it (#1733: Klockhuset's pavilions stand taller).
+  const behind = pieces.filter(q => inside(cx, z - n * (depth + 1), q.poly)), eave = Math.max(...(behind.length ? behind : pieces).map(eaveOf));
   const w = x1 - x0, zc = z - n * depth / 2;
   // The risalit block itself, slightly proud of the flanks and white-rendered on the ground floor.
   if (depth) parts.schoolBrick.push(tint(plain(new THREE.BoxGeometry(w, eave - base + .3, depth).translate(cx, base + (eave - base + .3) / 2 - .3, zc)), S.wall));
