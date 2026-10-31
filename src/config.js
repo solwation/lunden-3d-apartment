@@ -679,7 +679,9 @@ export const SITE = {
     // have to sit beside the abutments. The slab, abutments and edge beams widen to the east only; the underside height stays (#1285).
     // West (#1704): the raised footway and the GC bridge (0.4-0.7 m apart, the gap runs out with the two centrelines) read as ONE wide path in the photo, so the
     // road's west parapet and the GC truss's east side are dropped, `westFill` (*guess*) closes the gap on the road slab and the GC bridge's own outer truss is the path's outer rail.
-    roadDeck:{eastWalk:{w:3,h:.12},westFill:{w:.75},edge:{w:.3,up:.25,out:.05},walk:{w:1.4,h:.12},kerb:{w:.15,h:.13},verge:.4,
+    // #1730 inner: x offsets (*guess*, from docs/foton/vagbron-gc-bana-bada-sidor.jpg) of the tall green slatted rail between the guard rail and the G/C path;
+    // west = metres beyond the footway's kerb, east = metres from the east slab edge (w, +x). Same profile as `parapet`.
+    roadDeck:{inner:{west:.09,east:-.12},eastWalk:{w:3,h:.12},westFill:{w:.75},edge:{w:.3,up:.25,out:.05},walk:{w:1.4,h:.12},kerb:{w:.15,h:.13},verge:.4,
       parapet:{h:1.15,inset:.08,top:[.15,.04],mid:.12,low:.33,post:.1,bay:2.6,brace:[.06,.02],slat:[.02,.012],slatStep:.11},
       plate:{h:.9,t:.03,rail:1.1,post:.08,bay:2.6},
       guard:{h:.6,beam:.3,t:.05,post:.1,step:3.2,gap:.15},

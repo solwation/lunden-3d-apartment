@@ -78,8 +78,8 @@ function roadDeckParts(r,y,box,beam,slats){
   box('steel',G.t,G.beam,L,face,y+G.h-G.beam/2,0,C.galv);
   for(let z=-L/2+.4;z<=L/2-.4+1e-6;z+=G.step)beam('steel',[gx,y,z],[gx,y+G.h,z],G.post,C.galv,true);}
  // West parapet.
- const parapet=px=>{ // photo close-up: posts, a wide flat top rail, mid/bottom rails, X braces per bay and close vertical bars (centred at x = px)
- const base=y+e.up,n=Math.max(1,Math.round(L/P.bay)),bay=L/n;
+ const parapet=(px,base=y+e.up)=>{ // photo close-up: posts, a wide flat top rail, mid/bottom rails, X braces per bay and close vertical bars (centred at x = px)
+ const n=Math.max(1,Math.round(L/P.bay)),bay=L/n;
  box('steel',P.top[0],P.top[1],L,px,y+P.h-P.top[1]/2,0,C.green);
  for(const h of [P.h-P.mid,P.low])box('steel',.05,.035,L,px,y+h,0,C.green);
  for(let i=0;i<=n;i++){const z=-L/2+i*bay;beam('steel',[px,base,z],[px,y+P.h-P.top[1],z],P.post,C.green,true);
@@ -92,6 +92,9 @@ function roadDeckParts(r,y,box,beam,slats){
  box('asphalt',r.ext-e.out,D.eastWalk.h,L,w+e.out+(r.ext-e.out)/2,y+D.eastWalk.h/2,0);
  box('concrete',e.w+e.out,r.slab+e.up,L,xe-(e.w+e.out)/2,y-r.slab+(r.slab+e.up)/2,0);
  parapet(xe-P.inset-e.out);
+ // #1730: the tall green slatted rail between the guard rail and the G/C path on BOTH sides (photo vagbron-gc-bana-bada-sidor.jpg), same profile as the outer one.
+ parapet(kerbIn+D.inner.west,y+D.walk.h); // west: behind the guard rail, on the raised footway
+ parapet(w+D.inner.east); // east: on the inner edge beam, between kerb and G/C path
 }
 
 /** Two background bridges, merged by material, independent of the walking boundary. No new lights or render passes. */
