@@ -30,7 +30,7 @@ import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js';
 
 const CAP_KEY = 'lunden.mp.capMonth';
 const monthNow = () => new Date().toISOString().slice(0, 7);
-const URGENT = new Set(['a', 'fall', 'consume']); // #1763: outbox messages that keep their slot ahead of a due state (stateDue)
+const URGENT = new Set(['a', 'fall', 'consume', 'dr']); // #1763: outbox messages that keep their slot ahead of a due state (stateDue)
 const params = new URLSearchParams(location.search);
 export const ANON = 'Anonym';
 
@@ -488,6 +488,7 @@ export class Ghosts {
     const t = performance.now();
     if (m.t === 'w') {
       this.me = m.i; this.rules = m.c ?? null; this.onWelcome?.(m);
+      if (Array.isArray(m.doors)) this.onDoors?.({ t: 'dr', list: m.doors }); // the doors standing open (#1775, src/doorsync.js)
       for (const p of m.ps ?? []) { const g = this.add(p.i, p.n, p.av && typeof p.ax === 'string' ? p.av + p.ax : p.av); if (g && p.p) g.push(p, t); }
     } else if (m.t === 'j') { if (this.add(m.i, m.n, m.av)) this.notice.joined(m.n); }
     else if (m.t === 's') (this.others.get(m.i) ?? this.add(m.i, '', m.av && typeof m.ax === 'string' ? m.av + m.ax : m.av))?.push(m, t);
@@ -512,6 +513,7 @@ export class Ghosts {
     else if (m.t === 'sq') this.onSquirrels?.(m); // the shared squirrels and nuts (#1686, src/squirrelsync.js): only sent to players near them
     else if (m.t === 'rf') this.onRiverFish?.(m); // the shared fish in Höje å (#1752, src/riverfishsync.js): the room's clock, seed and caught fish
     else if (m.t === 'pk' || m.t === 'pkg') this.onPaddock?.(m); // the shared pony paddock (#1644, src/paddock.js): only sent to players near it
+    else if (m.t === 'dr') this.onDoors?.(m); // a door opened / shut by somebody (#1775, src/doorsync.js)
     else if (m.t === 'gf') this.onGraffiti?.(m); // the shared spray paint (#1724, src/graffitisync.js)
     else if (m.t === 'pool') this.onPool?.(m); // the shared billiard table (#1355, src/billiards.js): only sent to players inside the children's room
     else if (m.t === 'm' || m.t === 'mx' || m.t === 'k') this.onTalk?.(m, this.others.get(m.i)); // chat (#675) and "skriver…" (#676), src/chat.js
@@ -668,6 +670,16 @@ export class Ghosts {
   squirrels(msg) {
     if (!this.connected) return false;
     if (msg.k === 's' || msg.k === 'n') this.outbox = this.outbox.filter((m) => m.t !== 'sq' || m.k !== msg.k);
+    this.outbox.push(msg);
+    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
+    this.sendShot();
+    return true;
+  }
+
+  /** A door message (#1775, src/doorsync.js) { t: 'dr', i, o }: only the newest for a door waits in the outbox. False when not connected. */
+  doors(msg) {
+    if (!this.connected) return false;
+    this.outbox = this.outbox.filter((m) => m.t !== 'dr' || m.i !== msg.i);
     this.outbox.push(msg);
     while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
     this.sendShot();

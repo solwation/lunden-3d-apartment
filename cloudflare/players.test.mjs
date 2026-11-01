@@ -1844,3 +1844,37 @@ test('standing head pitch forwards while walking crouched or cycling and clears 
   }
   a.ws.close(); b.ws.close(); await settle(env);
 });
+
+// #1775: doors opened and closed are seen by everybody; the room keeps the state in memory for the late-join welcome (no KV)
+test('doors: validation, broadcast to all (sender too), welcome for a late joiner, last writer wins, empty room forgets', async () => {
+  const env = setup();
+  const a = await connect(env, 'A'), b = await connect(env, 'B');
+  const doors = (c) => c.got.filter((m) => m.t === 'dr');
+  const door = async (c, m, wait = 1000) => { now += wait; c.send({ t: 'dr', ...m }); await settle(env); };
+  // validation: unknown group, index over the group's max, non-integer / padded index, bad state, extra type confusion
+  for (const bad of [{ i: 'z1', o: 1 }, { i: 'w40', o: 1 }, { i: 'w01', o: 1 }, { i: 'w-1', o: 1 }, { i: 'w1', o: 2 }, { i: 'w1', o: true }, { i: 5, o: 1 }, { i: 'q1', o: 1 }, { i: 'w1 ', o: 1 }]) await door(a, bad);
+  assert.equal(doors(a).length + doors(b).length, 0);
+  assert.equal(a.closed, null);
+  // a valid change reaches everybody, the sender included, stamped with the room's clock
+  await door(a, { i: 'w3', o: 1 });
+  for (const c of [a, b]) assert.deepEqual(doors(c).at(-1), { t: 'dr', i: 'w3', o: 1, at: now, by: a.got[0].i });
+  // a late joiner is welcomed with the doors standing open (and a door shut again is left out)
+  await door(b, { i: 'g7', o: 1 }); await door(b, { i: 'L1', o: 1 }); await door(b, { i: 'L1', o: 0 });
+  const c = await connect(env, 'C');
+  assert.deepEqual(c.got[0].doors, [['w3', 1], ['g7', 1]]);
+  // last writer wins: two changes in the same room millisecond are ordered, `at` strictly rising, everybody ends alike
+  now += 1000; a.send({ t: 'dr', i: 'A5', o: 1 }); b.send({ t: 'dr', i: 'A5', o: 0 }); await settle(env);
+  const ends = [a, b, c].map((x) => doors(x).filter((m) => m.i === 'A5'));
+  for (const e of ends) { assert.equal(e.length, 2); assert.ok(e[1].at > e[0].at); }
+  assert.deepEqual(ends.map((e) => e.at(-1).o), [0, 0, 0]);
+  // too fast from one connection: dropped
+  now += 1000; a.send({ t: 'dr', i: 'B2', o: 1 }); a.send({ t: 'dr', i: 'B3', o: 1 }); await settle(env);
+  assert.equal(doors(b).filter((m) => m.i === 'B3').length, 0);
+  assert.equal(doors(b).filter((m) => m.i === 'B2').length, 1);
+  // no door change in the welcome for nobody: when everybody has left the next player starts with every door shut
+  for (const x of [a, b, c]) x.ws.close();
+  await settle(env); await settle(env);
+  const d = await connect(env, 'D');
+  assert.equal(d.got[0].doors, undefined);
+  d.ws.close(); await settle(env);
+});

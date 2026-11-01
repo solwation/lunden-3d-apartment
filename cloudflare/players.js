@@ -19,6 +19,7 @@ import { RoomPaddock, cleanPaddock, PADDOCK_SYNC, GRASS_PREFIX } from './paddock
 import { RoomSquirrels, cleanSquirrels } from './squirrels.js';
 import { RoomRiverFish, cleanRiverFish } from './riverfish.js';
 import { RoomGraffiti, cleanGraffiti, GRAFFITI_SYNC } from './graffiti.js';
+import { RoomDoors, cleanDoor } from './doors.js';
 export { GRAFFITI_SYNC };
 
 // Other players as ghosts (#666): one Durable Object room for everybody (`idFromName('world')`), WebSockets with the
@@ -65,6 +66,7 @@ export { GRAFFITI_SYNC };
 // #1686: the squirrels and nuts near the park: { t: 'sq', k, … } relayed by cloudflare/squirrels.js (one leader, memory only, no KV; protocol in that file).
 // #1752: the fish in Höje å: { t: 'rf', k, … } answered by cloudflare/riverfish.js (the room's clock, seed and caught fish, memory only, no KV; protocol in that file).
 // #1769: the rare shark rides the same messages; its one catch record is kept in storage 'shark' (written at most once a week, deleted when expired).
+// #1775: doors opened and closed: { t: 'dr', i, o } relayed to everybody by cloudflare/doors.js (the room's state in memory only, no KV; protocol in that file); the welcome has doors: [[id, 1], …].
 // #1724: the spray paint shared by gossip: { t: 'gf', s } relayed by cloudflare/graffiti.js (the union in memory only, no KV or storage; protocol and limits in that file).
 // #1664: physical two-deck controls add {t:'mus',k:'d',c,s?,v?}; see src/djstate.js for bounded operations.
 // The same stored transport carries dj {ix,on,pos,at,gain,cross,volume,shuffle}; broadcasts include elapsed deck positions.
@@ -351,6 +353,7 @@ export class PlayerRoom {
     this.gameWrites=Promise.resolve();
     this.squirrels = new RoomSquirrels(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1686: the shared squirrels and nuts (relay only, memory only, no KV)
     this.riverFish = new RoomRiverFish(() => this.open().map((ws) => ({ ws, a: att(ws) })), send, Math.random, { storage: ctx.storage, test: !!env?.SHARK_TEST }); // #1752: the shared fish in Höje å (clock + caught fish, memory only, no KV); #1769: the shark's one catch record in storage 'shark'
+    this.doors = new RoomDoors(send, () => this.open().map((ws) => ({ ws }))); // #1775: the doors' state (memory only, no KV)
     this.graffiti = new RoomGraffiti(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1724: the shared spray paint (memory only, no KV)
     this.paddock = new RoomPaddock(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1644: the shared pony paddock (relay only)
     this.snake=new RoomSnake(()=>this.open().map(ws=>({ws,a:att(ws)})),()=>this.tvs,send,row=>{if(env?.LUNDEN)this.gameWrites=this.gameWrites.then(()=>recordGame(env.LUNDEN,'ormstriden',row)).catch(()=>{});});
@@ -547,11 +550,13 @@ export class PlayerRoom {
     const i = crypto.randomUUID().slice(0, 8), n = cleanName(url.searchParams.get('n'));
     const attachment = { i, n, s: null, turned: false, rightFirstTurn: null, leftTinyTurn: null, leftStandingTurn: null, frontTurn: null, rearFirstTurn: null, l: COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false, consumed: [] };
     server.serializeAttachment(attachment);
-    send(server, JSON.stringify({ t: 'w', i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons } }));
+    send(server, JSON.stringify({ t: 'w', i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons }, ...(others.length ? this.doorsWelcome() : (this.doors.reset(), {})) }));
     this.broadcast({ t: 'j', i, n, l: COMBAT.lives }, server);
     this.graffiti.join(server, others.map((ws) => ({ ws, a: att(ws) })), now); // #1724
     return new Response(null, { status: 101, webSocket: client });
   }
+
+  doorsWelcome() { const d = this.doors.list(); return d.length ? { doors: d } : {}; } // #1775
 
   async webSocketMessage(ws, message) {
     const b = await this.usage();
@@ -578,6 +583,7 @@ export class PlayerRoom {
     } catch {}
     let lifeChanged = false;
     const gf = message.startsWith(GRAFFITI_SYNC.prefix) ? cleanGraffiti(message) ?? false : null, plain = gf === null ? message : ''; // #1724: a graffiti block is never parsed as anything else
+    const dr = plain.startsWith('{"t":"dr"') ? cleanDoor(plain) : null; // #1775
     const talk = cleanTalk(plain), hello = !talk && cleanGreet(plain), toast = !talk && !hello && cleanToast(plain), sound = !talk && !hello && !toast && cleanSound(plain), react = !talk && !hello && !toast && !sound && cleanReact(plain), pool = !talk && !hello && !toast && !sound && !react && cleanPool(plain), mus = !talk && !hello && !toast && !sound && !react && !pool && cleanMusic(plain), cinema = !talk && !hello && !toast && !sound && !react && !pool && !mus && cleanCinema(plain), snake = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && cleanSnake(plain), paddock = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && cleanPaddock(plain), sq = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && cleanSquirrels(plain), rf = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && !sq && cleanRiverFish(plain), shot = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && !sq && !rf && cleanShot(plain);
     if (falling) {
       const damage = fallDamage(falling.drop, falling.gap, COMBAT.lives);
@@ -667,6 +673,7 @@ export class PlayerRoom {
     else if (paddock) this.paddock.handle(ws, a, paddock, now); // #1644
     else if (sq) this.squirrels.handle(ws, a, sq, now); // #1686
     else if (rf) this.riverFish.handle(ws, a, rf, now); // #1752
+    else if (dr) this.doors.handle(ws, a, dr, now); // #1775
     else if (gf !== null) { if (gf) this.graffiti.handle(ws, a, gf, now); } // #1724 (a malformed block is dropped)
     else if (shot) {
       // a shot is drawn by the others only from someone armed with that weapon, starting near where the room has them,

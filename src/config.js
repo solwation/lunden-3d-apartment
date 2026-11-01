@@ -7631,3 +7631,12 @@ export const OUTDOOR_CATS = {
       route: [[-70, 100], [-56, 98], [-60, 106], [-72, 108]] },
   ],
 };
+
+// #1775: doors opened and closed by one player are seen by everybody (src/doorsync.js, cloudflare/doors.js). A door id is a group letter
+// plus its index in that group's list, built identically on every client: w = the flat's / portik's doors (world.doors, wardrobe fronts
+// excluded), L / A / B / C = the stair-core doors of Hus L / A / B / C, g = the förråd and cage doors under the courtyard, q = the garage
+// gate. `max` = how many indexes a group may have (the room refuses anything above; counts + margin, *guess*). Our picks.
+export const DOOR_SYNC = {
+  max: { w: 40, L: 4, A: 40, B: 40, C: 40, g: 200, q: 1 },
+  every: 0.12, // s: a door message at most this often per connection (the room drops faster ones)
+};

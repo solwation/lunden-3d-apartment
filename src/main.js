@@ -187,6 +187,7 @@ import { Bow, Arrows } from './bow.js';
 import { buildMailbox, mailboxGround } from './mailbox.js'; // #1706: the yellow letterbox and the binoculars
 import { buildElCabinet } from './elcabinet.js'; // #1707: the electrical cabinet with the spray cans
 import { Graffiti, collisionHit } from './graffiti.js'; // #1707: the spray paint (72 h, local)
+import { DoorSync } from './doorsync.js'; // #1775: doors opened / shut, seen by the other players
 import { GraffitiSync } from './graffitisync.js'; // #1724: … shared with the other players
 import { farWalls } from './farwalk.js'; // (#1707: the paint's surfaces on phones)
 import { Chat } from './chat.js';
@@ -3026,6 +3027,18 @@ playroom.billiards.peers = () => ghosts.others.values(); // #1637: the others' c
 playroom.music.net = { ready: () => ghosts.connected, send: (m) => ghosts.music(m) }; // #1624: the room's shared music
 ghosts.onMusic = (m) => playroom.music.sync(m);
 playroom.music.peers = () => ghosts.others.values(); // #1667: existing dn poses also light the shared DJ dance-activity button
+{ // #1775: doors the others can see (the flat's and portik's, the stair cores of Hus L / A / B / C, the förråd cages, the garage gate; wardrobe fronts and cupboards stay local)
+  const doorSync = window.__doorSync = new DoorSync({ ready: () => ghosts.connected, send: (m) => ghosts.doors(m) });
+  const heard = (door, open) => { // a remote swing / sliding door: the same sound as useDoor at its opening (the others make their own)
+    const [x, z] = door.opening().center, pos = { x, y: player.pos.y + 1.1, z };
+    if (door.kind === 'swing') { if (open) sfx.doorOpen(pos); else sfx.doorClose(pos, 0.5); } else sfx.slide(pos, { dur: 0.45 });
+  };
+  world.doors.forEach((d, i) => { if (d.kind === 'swing' || d.kind === 'sliding') doorSync.register(`w${i}`, d, { sound: (o) => heard(d, o) }); else if (d.kind === 'cabinet') doorSync.register(`w${i}`, d); });
+  for (const [g, c] of [['L', core], ['A', coreA], ['B', coreB], ['C', coreC]]) c.doors.forEach((d, i) => doorSync.register(`${g}${i}`, d));
+  garage.targets.filter((t) => t.kind === 'cabinet' && t.door).forEach((t, i) => doorSync.register(`g${i}`, t));
+  if (garage.door) doorSync.register('q0', garage.door, { isOpen: () => garage.door.target > 0 });
+  ghosts.onDoors = (m) => doorSync.receive(m);
+}
 if (riverFish) { // #1752
   riverFish.net = { ready: () => ghosts.connected, send: (m) => ghosts.riverFish(m) };
   ghosts.onRiverFish = (m) => riverFish.sync.receive(m);
