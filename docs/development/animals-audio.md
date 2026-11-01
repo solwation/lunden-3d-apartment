@@ -738,8 +738,8 @@ This gameplay-only room has no A/B/C/L house variant or public downstream equiva
 
 ## Squirrels and nuts (#1672)
 
-Three squirrels (the big one, the white-tail-tip one, the slim darker one) live in the crowns along Höje å, the river park and the pony
-paddock, and roam the whole valley over time (#1716 below). `src/squirrelbrain.js` (no three.js, node-testable) holds the per-animal state machine (perch, leap, down, forage, search,
+Nine squirrels: three (the big one, the white-tail-tip one, the slim darker one) live in the crowns along Höje å, the river park and the pony
+paddock, and roam the whole valley over time (#1716 below); six more each keep to a home area (#1780 below). `src/squirrelbrain.js` (no three.js, node-testable) holds the per-animal state machine (perch, leap, down, forage, search,
 fetch, eat, toTree, flee, up, approach, take) and the `NutField` (at most `SQUIRRELS.maxNuts` acorns/hazelnuts on the ground 1.5-9 m
 from a squirrel tree, expiring and respawning). `src/squirrels.js` draws them (one merged vertex-coloured mesh per squirrel, shared
 material, no light or shadow caster; the nut in the mouth is a child shown only while carried) and wires them to the game: trees come
@@ -794,6 +794,30 @@ follower's dead reckoning (squirrelsync.js) waits at the leader's last place rat
 the test checks the shortcut changes no answer), which keeps the graph's extra checks to ~30 ms more at the start (desktop node: 59 → 88 ms).
 Tests: `node --test tools/squirrelbraintest.mjs` (#1764 cases: the synthetic valley and the real river with zero wet samples and bank
 changes only on bridges, a lure across the river, the `moveTo` guard, the follower's glide). Pictures: `docs/verification/1764/`.
+
+### More squirrels in home areas (#1780)
+
+"Hard to find": three squirrels drifting over a 500 m valley were rarely near anybody. Now `SQUIRRELS.animals` has nine (*guess*); the
+first three are unchanged, the six newer ones have `home` naming an entry of `SQUIRRELS.areas`: `court` (the courtyard deck's trees south of
+Hus L, 30-45 m from the start), `green` (the lawn between Hus A and Hus B), `clock` (the grove on Klockhuset's park side north of the campus
+road), `south` (the old trees east of Sankt Lars väg 42, `southTreeFeet`, which now carry `y`/`cy`/`r` from southbackdrop.js), `west` / `east`
+(Höje å beyond the two foot bridges). An area's home range is `r` m round its centre `at`, which wanders up to `wander` m on the same
+wall-clock waves (`homeS()` returns `{ x, z }` instead of an s along the river; `homeDist`/`inRange`/`rangeTrees`/`homeTree` handle both), so
+journeys, favourites and caches still happen but inside the area. An area with `box` is an own grove: `squirrels.js` adds the trees inside
+(trunk and a 1 m ring inside the fence, `groveTreeOk`) as tree group `g`; `linkTrees` never links two groups, samples a grove's runs every 0.5 m
+against `fences[g]` (`groveFences`: inside the box, `walkable`, and off every road: `roads.js onVehicle` with `roadMargin`, remembered per
+half-metre cell because it is costly), and keeps the bridges and the valley's s extent to the valley. A grove squirrel's `walk` is its fence
+(runs, foraging, stash, `moveTo` guard, the follower's glide); every brain only uses its own group's trees (`mine`). A nut within 1.5 x `spread`
+of a box lies inside it, so none lands in a house or on a road beside a grove. `startTree` picks each squirrel's first tree (by its area's
+centre). The road bridge's deck over the river counted as land for `squirrelWalk` (parkGround is the deck), so a squirrel could forage out over
+the water and change banks there; near the water `squirrelWalk` now also wants the terrain itself above it (the runs along each bank over the
+bridge's land ends still link the east part of the valley). Each look (colours, width, tail tip) builds its geometry once (`geoCache`).
+Sharing: an 's' snapshot of nine poses could pass `PLAYERS.maxBytes` (512: the room closes the socket), so `snapshotAnimals` sends only the
+animals within `drawDist` of a visitor (`b.ds`, from `Squirrels.update`), nearest first, within `sync.bytes` (480) characters, `null` for
+the rest; the room accepts nulls (at least one pose). The chirp's `ref` (3 m) makes it carry about 2.5 x as far. Tests: `squirrelbraintest`
+(the real site with the groves and real roads: every squirrel starts in its area and stays there over two hours, zero water / fence samples
+over four hours with all nine), `cloudflare/squirrels.test.mjs` (the widest snapshot fits; nulls), `tools/squirrelstest.cjs` (areas in the
+real scene). Pictures: `docs/verification/1780/`.
 
 ### More nuts and shared squirrels (#1686)
 

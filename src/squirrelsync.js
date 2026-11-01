@@ -24,6 +24,19 @@ const WIRE = { travel: 'toTree', stash: 'toTree', seek: 'toTree', bury: 'eat', d
 /** One animal's pose as 9 numbers: x y z yaw pitch rise run state nut. */
 export const encodeAnimal = (b) => [r2(b.x), r2(b.y), r2(b.z), r2(b.yaw), r2(b.pitch), r1(b.rise), r1(b.run), Math.max(0, STATES.indexOf(WIRE[b.state] ?? b.state)), b.hasNut ? 1 : 0];
 /** The nuts lying out as a flat integer list, 4 per nut: slot + 64 * kind, x cm, z cm, born. Held nuts are not in it. */
+/** #1780: the animals' poses for one 's' snapshot: a list as long as the animals, an animal's pose only when a visitor is within
+ * `drawDist` m of it (`b.ds`, set by squirrels.js; unknown counts as near), nearest first, as many as fit in `sync.bytes` characters (the room
+ * drops a message over PLAYERS.maxBytes); null for the rest (nobody near enough to draw it). Null when none fits. */
+export function snapshotAnimals(brains) {
+  const a = brains.map(() => null), order = brains.map((_, i) => i).filter((i) => !(brains[i].ds > C.drawDist)).sort((i, j) => (brains[i].ds ?? 0) - (brains[j].ds ?? 0));
+  let n = 0;
+  for (const i of order) {
+    a[i] = encodeAnimal(brains[i]);
+    if (JSON.stringify({ t: 'sq', k: 's', a }).length > C.sync.bytes) { a[i] = null; break; }
+    n++;
+  }
+  return n ? a : null;
+}
 export function encodeNuts(slots) {
   const v = [];
   slots.forEach((s, i) => { if (s.alive && !s.held) v.push(i + 64 * s.kind, Math.round(s.x * 100), Math.round(s.z * 100), s.born); });
@@ -76,7 +89,7 @@ export class SquirrelSync {
   /** The follower adopts a leader snapshot of the animals. */
   adopt(list) {
     list.forEach((q, i) => {
-      const b = this.brains[i]; if (!b) return;
+      const b = this.brains[i]; if (!b || !Array.isArray(q)) return; // (#1780: null: nobody near it, not in this snapshot)
       const prev = this.tg[i], dt = prev ? Math.min(1.5, Math.max(0.2, this.t - prev.at)) : 1;
       const g = { x: q[0], y: q[1], z: q[2], yaw: q[3], pitch: q[4], rise: q[5], run: q[6], st: q[7], nut: q[8], vx: 0, vz: 0, at: this.t };
       if (prev && Math.hypot(g.x - prev.x, g.z - prev.z) < 12) {
@@ -102,7 +115,7 @@ export class SquirrelSync {
   tick(dt) {
     this.t += dt;
     if (this.sharing && this.lead) {
-      if ((this.sT -= dt) <= 0) { this.sT = C.sync.every; if (this.say({ k: 's', a: this.brains.map(encodeAnimal) })) this.sent++; }
+      if ((this.sT -= dt) <= 0) { this.sT = C.sync.every; const a = snapshotAnimals(this.brains); if (a && this.say({ k: 's', a })) this.sent++; }
       this.nT -= dt;
       const v = encodeNuts(this.field.slots), key = v.join(',');
       if ((key !== this.nutKey || this.force) && this.nT <= 0 && this.say({ k: 'n', v })) { this.nutKey = key; this.force = false; this.nT = C.sync.nutEvery; this.sent++; }
@@ -111,7 +124,7 @@ export class SquirrelSync {
       const k = 1 - Math.exp(-dt * 8);
       this.brains.forEach((b, i) => {
         const g = this.tg[i]; if (!g) return;
-        const age = Math.min(0.6, this.t - g.at), w = b.env?.walkable;
+        const age = Math.min(0.6, this.t - g.at), w = b.walk ?? b.env?.walkable;
         let ax = g.x + g.vx * age, az = g.z + g.vz * age;
         // #1764: dead reckoning never carries a squirrel on the ground past the bank into Höje å (it waits at the leader's last place instead)
         if (w && (g.vx || g.vz) && !AIR.has(STATES[g.st]) && !w(ax, az) && w(g.x, g.z)) { ax = g.x; az = g.z; }

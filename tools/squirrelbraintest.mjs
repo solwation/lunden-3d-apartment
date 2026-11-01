@@ -1,8 +1,8 @@
 // #1672: node --test tools/squirrelbraintest.mjs  (the squirrels' state machine, the nut field and the winter rule; no browser)
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SQUIRRELS as C, SEASON, SITE } from '../src/config.js';
-import { SquirrelBrain, NutField, linkTrees, winterMonth, pickNutSpot, riverFrame, treeRoute, climbPoint } from '../src/squirrelbrain.js';
+import { SQUIRRELS as C, SEASON, SITE, COURTYARD } from '../src/config.js';
+import { SquirrelBrain, NutField, linkTrees, winterMonth, pickNutSpot, riverFrame, treeRoute, climbPoint, groveFences, groveTreeOk, startTree, inBox } from '../src/squirrelbrain.js';
 import { encodeAnimal, STATES } from '../src/squirrelsync.js';
 
 const rng = (seed) => () => ((seed = seed * 16807 % 2147483647) / 2147483647);
@@ -17,11 +17,20 @@ const run = (w, brains, seconds, dt = 0.1, each = null) => { for (let t = 0; t <
 
 test('the three animals differ as the issue asks: big, white tail tip, slim and darker', () => {
   const [big, tip, slim] = C.animals;
-  assert.equal(C.animals.length, 3);
+  assert.ok(C.animals.slice(0, 3).every((a) => !a.home), 'the first three still roam the whole valley');
   assert.ok(big.scale > tip.scale && big.scale > slim.scale, 'the big one is bigger');
   assert.ok(tip.tip && !big.tip && !slim.tip, 'only one has a white tail tip');
   assert.ok(slim.width < big.width && slim.color < big.color, 'the slim one is narrower and darker');
-  assert.ok(new Set(C.animals.map((a) => a.shy)).size === 3 && new Set(C.animals.map((a) => a.ground)).size === 3, 'personalities differ');
+  assert.ok(new Set(C.animals.slice(0, 3).map((a) => a.shy)).size === 3 && new Set(C.animals.slice(0, 3).map((a) => a.ground)).size === 3, 'personalities differ');
+});
+
+test('#1780: 8-10 squirrels, the newer ones each with its own home area, spread over at least 4 areas', () => {
+  assert.ok(C.animals.length >= 8 && C.animals.length <= 10, `count ${C.animals.length}`);
+  const homes = C.animals.map((a) => a.home ?? 'valley');
+  for (const h of homes) assert.ok(h === 'valley' || C.areas[h], `known area ${h}`);
+  assert.ok(new Set(homes).size >= 5, `areas: ${[...new Set(homes)]}`);
+  assert.equal(new Set(C.animals.map((a) => a.name)).size, C.animals.length, 'every name its own');
+  for (const [k, A] of Object.entries(C.areas)) if (A.box) assert.ok(inBox(A.box, A.at[0], A.at[1]), `${k}: the centre inside the box`);
 });
 
 test('a squirrel left alone cycles crown, hop, trunk, ground and back, and stays finite', () => {
@@ -263,9 +272,9 @@ test('#1716: the shared pose keeps the old wire states, so older clients and the
 // #1764: the squirrels never run through Höje å: every ground position (off a bridge deck) is on land, and they change banks only over a bridge.
 const GROUNDISH = new Set(['forage', 'search', 'fetch', 'eat', 'approach', 'take', 'travel', 'stash', 'bury', 'seek', 'dig', 'chase', 'toTree', 'flee']);
 const watchWater = (v, hours, dt = 0.1) => {
-  const { ts, env, fr } = v, brains = C.animals.map((sp, i) => new SquirrelBrain(sp, env, startNear(ts, C.starts[i])));
+  const { ts, env, fr } = v, taken = new Set(), brains = C.animals.map((sp, i) => { const b = new SquirrelBrain(sp, env, startTree(ts, sp, i, taken)); b.enterPerch(b.homeTree(b.homeS(), true), 0.5); return b; }); // (as squirrels.js: #1780 by the home area)
   env.others = brains; v.nuts.setActive(true);
-  const out = { samples: 0, wet: 0, wetBy: {}, flips: 0, decks: 0 }, side = [], onDeck = [], q = {};
+  const out = { samples: 0, wet: 0, wetBy: {}, flips: 0, decks: 0, fence: 0, fenceBy: {}, byArea: {} }, side = [], onDeck = [], q = {};
   for (let i = 0; i < hours * 3600 / dt; i++) {
     v.clock.t += dt; v.clock.h = 7 + ((i * dt / 3600) % 12); // (daytime: the night is spent in the drey)
     v.nuts.update(dt);
@@ -273,10 +282,11 @@ const watchWater = (v, hours, dt = 0.1) => {
       b.update(dt);
       if (!GROUNDISH.has(b.state)) { side[k] = null; onDeck[k] = false; return; }
       if (b.state === 'travel' && b.deck) { if (!onDeck[k]) out.decks++; onDeck[k] = true; side[k] = null; return; } // (on a bridge)
-      onDeck[k] = false; out.samples++;
+      onDeck[k] = false; out.samples++; const ar = b.spec.home ?? 'valley'; out.byArea[ar] = (out.byArea[ar] ?? 0) + 1;
       if (!env.walkable(b.x, b.z)) { out.wet++; out.wetBy[b.state] = (out.wetBy[b.state] ?? 0) + 1; }
-      fr(b.x, b.z, q); if (q.s < 1 || q.s > fr.total - 1) { side[k] = null; return; } // (past the river's ends the bank is undefined)
-      if (side[k] != null && side[k] !== q.side) out.flips++;
+      if (b.g && !env.fences[b.g](b.x, b.z)) { out.fence++; out.fenceBy[`${b.g}:${b.state}`] = (out.fenceBy[`${b.g}:${b.state}`] ?? 0) + 1; } // (#1780: out of its grove or on a road)
+      fr(b.x, b.z, q); if (b.g || q.s < 1 || q.s > fr.total - 1) { side[k] = null; return; } // (past the river's ends the bank is undefined; #1780: far from it in a grove too)
+      if (side[k] != null && side[k] !== q.side) { out.flips++; (out.flipAt ??= []).push([b.spec.name, b.state, +b.x.toFixed(1), +b.z.toFixed(1), +q.s.toFixed(1), +q.d.toFixed(1)]); }
       side[k] = q.side;
     });
   }
@@ -294,28 +304,64 @@ test('#1764: in the synthetic valley no squirrel runs through the water over thr
   }
 });
 
-test('#1764: the real Höje å (terrain, park trees, bridges): zero ground samples in the water over four hours', async (t) => {
+// The real site: Höje å's terrain, park trees and bridges (#1764) and (#1780) the home areas' own groves: the courtyard's and the green's
+// trees (COURTYARD.trees) and a 9 m grid of trees inside the clock and south boxes, with the real roads (roads.js onVehicle) fencing them.
+let realSite = null;
+async function site(t) {
+  if (realSite) return realSite;
   let real; try { // (needs the pinned local three.js, like riverfalltest.mjs)
-    const [{ groundY, renderedTerrainY }, { waterYAt, riverAt }, { parkTreeSpots }] = await Promise.all([import('../src/surroundings.js'), import('../src/riverbridge.js'), import('../src/riverpark.js')]);
-    real = { groundY, renderedTerrainY, waterYAt, riverAt, parkTreeSpots };
-  } catch (err) { t.skip(`three.js is not resolvable here: ${err.message}`); return; }
-  const { PADDOCK } = await import('../src/config.js'), { groundY, renderedTerrainY, waterYAt, riverAt, parkTreeSpots } = real;
+    const [{ groundY, renderedTerrainY }, { waterYAt, riverAt }, { parkTreeSpots }, { onVehicle }] = await Promise.all([import('../src/surroundings.js'), import('../src/riverbridge.js'), import('../src/riverpark.js'), import('../src/roads.js')]);
+    real = { groundY, renderedTerrainY, waterYAt, riverAt, parkTreeSpots, onVehicle };
+  } catch (err) { t.skip(`three.js is not resolvable here: ${err.message}`); return null; }
+  const { PADDOCK } = await import('../src/config.js'), { groundY, renderedTerrainY, waterYAt, riverAt, parkTreeSpots, onVehicle } = real;
   const ground = (x, z) => (z > SITE.backgroundGround.z1 ? -3.01 : Math.max(groundY(x, z), renderedTerrainY(x, z))); // (main.js parkGround / squirrelWalk)
-  const full = (x, z) => ground(x, z) > waterYAt(x, z) + 0.3, walkable = (x, z) => { const r = riverAt(x, z); return r.distance > r.width / 2 + C.dry || full(x, z); };
-  const rnd = rng(7), fr = riverFrame(SITE.river.path);
+  // (#1780: near the water the terrain itself must be above it too: the road bridge's deck over Höje å is no place to forage, nor a way across)
+  const full = (x, z) => ground(x, z) > waterYAt(x, z) + 0.3 && renderedTerrainY(x, z) > waterYAt(x, z) + 0.3, walkable = (x, z) => { const r = riverAt(x, z); return r.distance > r.width / 2 + C.dry || full(x, z); };
+  const rnd = rng(7), fr = riverFrame(SITE.river.path), fences = groveFences(walkable, onVehicle);
+  const feet = [...parkTreeSpots(renderedTerrainY), ...PADDOCK.trees.map(([x, z]) => ({ x, z, y: ground(x, z) }))].map((f) => ({ x: f.x, z: f.z, y: f.y, cy: f.y + 6, r: 3 }));
+  for (const [g, A] of Object.entries(C.areas)) {
+    if (!A.box) continue;
+    const pts = g === 'court' || g === 'green' ? COURTYARD.trees : [];
+    if (!pts.length) for (let x = A.box[0] + 3; x < A.box[1]; x += 9) for (let z = A.box[2] + 3; z < A.box[3]; z += 9) pts.push([x, z]);
+    for (const [x, z] of pts) if (groveTreeOk(fences[g], x, z)) { const y = ground(x, z); feet.push({ x, z, y, cy: y + 4.5, r: 2.4, g }); }
+  }
+  const ts = linkTrees(feet, { path: SITE.river.path, walkable, crossings: [SITE.riverPark.woodBridge.ends, SITE.bridges.gc.ends], fences });
+  const nuts = new NutField(ts, ground, walkable, rnd), clock = { t: 1e6, h: 12 }, player = { x: 1e5, z: 1e5, lure: false, hx: 1e5, hz: 1e5 };
+  realSite = { ts, fr, nuts, clock, real, ground, fences, env: { trees: ts, ground, walkable, fences, nuts, player, scares: [], rnd, onTake: () => false, now: () => clock.t, hour: () => clock.h } };
+  return realSite;
+}
+
+test('#1764: the real Höje å (terrain, park trees, bridges): zero ground samples in the water over four hours', async (t) => {
+  const v = await site(t); if (!v) return;
+  const { ground, real: { waterYAt, riverAt, renderedTerrainY } } = v, full = (x, z) => ground(x, z) > waterYAt(x, z) + 0.3 && renderedTerrainY(x, z) > waterYAt(x, z) + 0.3;
   for (let x = -265; x <= 215; x += 0.7) for (let z = 60; z <= 300; z += 0.7) { // (squirrelWalk's shortcut far from the river changes no answer)
     const r = riverAt(x, z); if (r.distance > r.width / 2 + C.dry && r.distance < r.width / 2 + C.dry + 25) assert.ok(full(x, z), `land beyond the shortcut at ${x.toFixed(1)}, ${z.toFixed(1)}`);
   }
-  const feet = [...parkTreeSpots(renderedTerrainY), ...PADDOCK.trees.map(([x, z]) => ({ x, z, y: ground(x, z) }))];
-  const ts = linkTrees(feet.map((f) => ({ x: f.x, z: f.z, y: f.y, cy: f.y + 6, r: 3 })), { path: SITE.river.path, walkable, crossings: [SITE.riverPark.woodBridge.ends, SITE.bridges.gc.ends] });
-  const nuts = new NutField(ts, ground, walkable, rnd), clock = { t: 1e6, h: 12 }, player = { x: 1e5, z: 1e5, lure: false, hx: 1e5, hz: 1e5 };
-  const v = { ts, fr, nuts, clock, env: { trees: ts, ground, walkable, nuts, player, scares: [], rnd, onTake: () => false, now: () => clock.t, hour: () => clock.h } };
-  assert.equal(new Set(ts.map((q) => q.comp)).size, 1, 'one graph over the two bridges');
+  assert.equal(new Set(v.ts.filter((q) => !q.g).map((q) => q.comp)).size, 1, 'one valley graph over the two bridges');
   const r = watchWater(v, 4);
+  console.log(`# #1780 ground samples by area: ${JSON.stringify(r.byArea)}`);
   assert.ok(r.samples > 100000, `enough ground time: ${r.samples}`);
   assert.equal(r.wet, 0, `ground samples in the water: ${JSON.stringify(r.wetBy)}`); // (before #1764: 2316 over four hours, seed 7)
-  assert.equal(r.flips, 0, 'no change of bank off a bridge');
+  assert.equal(r.flips, 0, `no change of bank off a bridge ${JSON.stringify(r.flipAt)}`);
   assert.ok(r.decks > 0, `crossed a bridge: ${r.decks}`);
+  assert.equal(r.fence, 0, `#1780: a grove squirrel out of its box or on a road: ${JSON.stringify(r.fenceBy)}`);
+  assert.ok(Object.keys(r.byArea).length >= 5, `#1780: squirrels on the ground in many areas: ${Object.keys(r.byArea)}`);
+});
+
+test('#1780: on the real site every squirrel starts in its own area and stays there; no grove run crosses a road or leaves its box', async (t) => {
+  const v = await site(t); if (!v) return;
+  const { ts, env, clock, fences } = v, taken = new Set();
+  for (const g of Object.keys(fences)) assert.ok(ts.filter((q) => q.g === g).length >= 3, `trees in the ${g} grove: ${ts.filter((q) => q.g === g).length}`);
+  for (const q of ts) for (const j of q.links) { assert.equal(ts[j].g ?? null, q.g ?? null, 'no link between groups'); if (q.g && !q.near.includes(j)) { const u = ts[j]; for (let k = 0.05; k < 1; k += 0.05) assert.ok(fences[q.g](q.x + (u.x - q.x) * k, q.z + (u.z - q.z) * k), `a ${q.g} ground run stays in its box, off the roads`); } }
+  const brains = C.animals.map((sp, i) => { const b = new SquirrelBrain(sp, env, startTree(ts, sp, i, taken)); b.enterPerch(b.homeTree(b.homeS(), true), 0.5); return b; });
+  const inArea = (b, k = 1) => { const A = b.area; if (!A) return b.g === null && !b.tr.g; return Math.hypot(b.tr.x - A.at[0], b.tr.z - A.at[1]) <= A.r * k + (A.wander ?? 0) + 1 && (b.tr.g ?? null) === b.g; };
+  brains.forEach((b) => { if (b.spec.home) assert.ok(b.area, `${b.spec.name}: its area ${b.spec.home} is active`); assert.ok(inArea(b), `${b.spec.name} starts in ${b.spec.home ?? 'the valley'}: ${b.tr.x.toFixed(0)}, ${b.tr.z.toFixed(0)}`); });
+  const at = brains.map((b) => [b.tr.x, b.tr.z]); let minGap = Infinity;
+  at.forEach((p, i) => at.forEach((q, j) => { if (i < j && brains[i].spec.home && brains[j].spec.home) minGap = Math.min(minGap, Math.hypot(p[0] - q[0], p[1] - q[1])); }));
+  assert.ok(minGap > 15, `the home-area squirrels start apart: ${minGap.toFixed(0)} m`);
+  for (let i = 0; i < 2 * 3600; i++) { clock.t += 1; brains.forEach((b) => b.coarse(1)); } // (two hours off screen: tree to tree)
+  // (in or near its range: a route between two of its trees may bend outside it)
+  brains.forEach((b) => { if (b.area) assert.ok(inArea(b, 1.5), `${b.spec.name} still in ${b.spec.home}: ${b.tr.x.toFixed(0)}, ${b.tr.z.toFixed(0)}`); });
 });
 
 test('#1764: a crouching visitor with a nut across the river does not lure a squirrel into the water', () => {

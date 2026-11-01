@@ -39,27 +39,35 @@ export const clearPath = (x0, z0, x1, z1, walkable, step = 1) => {
 };
 /** A ground run from trunk a to trunk b that stays on land (sampled every 2 m: the graph is built once at the start; the water is >= 8 m wide). */
 const clearRun = (a, b, walkable) => clearPath(a.x, a.z, b.x, b.z, walkable, 2);
+/** #1780: (x, z) inside box [x0, x1, z0, z1]. */
+export const inBox = (b, x, z) => x >= b[0] && x <= b[1] && z >= b[2] && z <= b[3];
 
 /** The squirrels' trees: each { x, z, y (ground at the trunk), cy (crown centre), r (crown radius) } gets `near` (trees within leapRange: a hop
  * from crown to crown) and, #1716, `links` (the tree graph: the crown hops plus ground runs up to `roam.link` m that stay on land, the runs over
  * each of the `crossings` ([[end, end]], bridge ends on land: `via` holds the two ends for that run, from this tree's side) and the nearest pairs
  * that join the graph's separate pieces, up to `roam.join` m), `s` (m along the river, with `path`), `side` and `comp` (its piece of the graph).
- * The array gets `sMin` / `sMax` (the valley's extent) and `byS` (indices sorted by s). `walkable(x, z)`: land a squirrel may run on (none: everywhere). */
-export function linkTrees(trees, { path = null, walkable = null, crossings = [] } = {}) {
+ * The array gets `sMin` / `sMax` (the valley's extent) and `byS` (indices sorted by s). `walkable(x, z)`: land a squirrel may run on (none: everywhere).
+ * #1780: a tree's `g` (an own grove, SQUIRRELS.areas with `box`; none: the valley) is a group of its own: trees of different groups are never
+ * linked, and a grove's ground runs use `fences[g]` (its box, off the roads) instead of `walkable`; the bridges and the valley's s extent are the valley's. */
+export function linkTrees(trees, { path = null, walkable = null, crossings = [], fences = {} } = {}) {
   const fr = path ? riverFrame(path) : null, q = {};
   trees.forEach((t, i) => { if (fr) { fr(t.x, t.z, q); t.s = q.s; t.side = q.side; } else { t.s = 0; t.side = 1; } t.near = []; t.links = []; t.via = null; });
   // #1764: every ground run is checked against the water, on the same bank too (`side` is the river's as a whole; where it bends a straight
   // run between two trees on one bank can cross it)
-  const can = (a, b) => !walkable || clearRun(a, b, walkable), parent = trees.map((_, i) => i);
+  const grp = (t) => t.g ?? null, can = (a, b) => { // (a grove's run sampled every 0.5 m: a road's corner is narrower than the valley's water)
+    if (grp(a) !== null && fences[grp(a)]) return clearPath(a.x, a.z, b.x, b.z, fences[grp(a)], 0.5);
+    return !walkable || clearRun(a, b, walkable);
+  }, parent = trees.map((_, i) => i);
   const root = (i) => { while (parent[i] !== i) i = parent[i] = parent[parent[i]]; return i; }, link = (i, j) => { trees[i].links.push(j); trees[j].links.push(i); parent[root(i)] = root(j); };
   const far = [];
   for (let i = 0; i < trees.length; i++) for (let j = i + 1; j < trees.length; j++) {
     const a = trees[i], b = trees[j], d = Math.hypot(a.x - b.x, a.z - b.z);
+    if (grp(a) !== grp(b)) continue;
     if (d <= C.leapRange) { a.near.push(j); b.near.push(i); link(i, j); } else if (d <= R.join) far.push([d, i, j]);
   }
   for (const [e1, e2] of fr && walkable ? crossings : []) { // over each bridge: the best pair of trees either side of it
     const p1 = { x: e1[0], z: e1[1] }, p2 = { x: e2[0], z: e2[1] }, deck = Math.hypot(p2.x - p1.x, p2.z - p1.z), s1 = fr(p1.x, p1.z).side, s2 = fr(p2.x, p2.z).side;
-    const side = (p, sd) => trees.map((t, i) => [Math.hypot(t.x - p.x, t.z - p.z), i]).filter(([d, i]) => d <= R.link && trees[i].side === sd && clearRun(trees[i], p, walkable)).sort((u, v) => u[0] - v[0]);
+    const side = (p, sd) => trees.map((t, i) => [Math.hypot(t.x - p.x, t.z - p.z), i]).filter(([d, i]) => d <= R.link && grp(trees[i]) === null && trees[i].side === sd && clearRun(trees[i], p, walkable)).sort((u, v) => u[0] - v[0]);
     const A = side(p1, s1), B = side(p2, s2);
     if (!A.length || !B.length || s1 === s2) continue;
     const i = A[0][1], j = B[0][1], len = A[0][0] + deck + B[0][0];
@@ -73,8 +81,28 @@ export function linkTrees(trees, { path = null, walkable = null, crossings = [] 
   }
   trees.forEach((t, i) => { t.comp = root(i); }); // (the piece of the graph it belongs to: without a crossing, each bank is its own)
   trees.byS = trees.map((_, i) => i).sort((i, j) => trees[i].s - trees[j].s);
-  trees.sMin = trees.length ? trees[trees.byS[0]].s : 0; trees.sMax = trees.length ? trees[trees.byS[trees.length - 1]].s : 0;
+  const vs = trees.byS.filter((i) => grp(trees[i]) === null); // (the valley's extent: the groves' s along the river means nothing)
+  trees.sMin = vs.length ? trees[vs[0]].s : 0; trees.sMax = vs.length ? trees[vs[vs.length - 1]].s : 0;
   return trees;
+}
+
+/** #1780: the home areas' own groves (SQUIRRELS.areas with a `box`): { [area]: (x, z) -> bool } inside its box, on `walkable` land and off every
+ * road (`road(x, z, margin)`, roads.js onVehicle: costly, so remembered per half-metre cell; the groves are small). */
+export function groveFences(walkable = null, road = null) {
+  const memo = new Map(), fences = {};
+  const offRoad = (x, z) => { if (!road) return true; const k = Math.round(x * 2) * 100003 + Math.round(z * 2); let v = memo.get(k); if (v === undefined) memo.set(k, v = !road(x, z, C.roadMargin)); return v; };
+  for (const [g, A] of Object.entries(C.areas ?? {})) if (A.box) fences[g] = (x, z) => inBox(A.box, x, z) && (!walkable || walkable(x, z)) && offRoad(x, z);
+  return fences;
+}
+/** #1780: a grove tree whose trunk stands well inside its fence (1 m round it too: the squirrel's foot and spiral stay inside). */
+export const groveTreeOk = (fence, x, z) => fence(x, z) && [0, 1, 2, 3, 4, 5, 6, 7].every((k) => fence(x + Math.cos(k * Math.PI / 4), z + Math.sin(k * Math.PI / 4)));
+/** #1780: the tree squirrel `i` (`spec`) starts from: the one nearest its home area's centre among its group's trees (no home: nearest
+ * SQUIRRELS.starts[i]), not one already in `taken` (which gets it). */
+export function startTree(trees, spec, i, taken = new Set()) {
+  const A = C.areas?.[spec.home], own = A?.box && trees.some((t) => t.g === spec.home), g = own ? spec.home : null, [sx, sz] = A ? A.at : C.starts[i % C.starts.length];
+  let best = 0, bd = Infinity;
+  trees.forEach((t, j) => { const d = Math.hypot(t.x - sx, t.z - sz) + (taken.has(j) ? 1e6 : 0) + ((t.g ?? null) === g ? 0 : 1e7); if (d < bd) { bd = d; best = j; } });
+  taken.add(best); return best;
 }
 
 /** #1716: how far it is from tree i to tree j along their edge (over the bridge for a crossing). */
@@ -179,6 +207,13 @@ export class SquirrelBrain {
    * now() -> s (the wall clock that drifts the home range; default: this brain's own clock), hour() -> 0 … 24 (default noon), others: [brains] };
    * start: tree index (the home range drifts round it). */
   constructor(spec, env, start) {
+    // #1780: a home area (SQUIRRELS.areas[spec.home]): `g` its own grove's group (with a `box` and trees of that group), `area` the range round
+    // its centre. A grove with no trees here, or a valley area with no tree near its centre (a test's own trees), is ignored: the valley drift.
+    let area = C.areas?.[spec.home] ?? null, g = null;
+    if (area?.box) { if (env.trees.some((t) => t.g === spec.home)) g = spec.home; else area = null; }
+    else if (area && !env.trees.some((t) => (t.g ?? null) === null && Math.hypot(t.x - area.at[0], t.z - area.at[1]) <= area.r * 1.5)) area = null;
+    this.area = area; this.g = g;
+    this.walk = (g !== null && env.fences?.[g]) || env.walkable || null; // where this squirrel may run (#1764: never the water; #1780: its grove's box, off the roads)
     Object.assign(this, { spec, env, p: spec, x: 0, y: 0, z: 0, yaw: 0, pitch: 0, rise: 0, run: 0, state: 'perch', t: 0, dur: 1, hasNut: false, react: 0, slot: null,
       tree: start, ang: 0, goal: { x: 0, z: 0 }, from: { x: 0, y: 0, z: 0 }, to: { x: 0, y: 0, z: 0 }, tree2: 0, ang2: 0, approachAfter: false, calmT: 0, left: 0, sense: 0, log: [],
       // #1716: roaming, caches, chases, the day
@@ -192,7 +227,9 @@ export class SquirrelBrain {
   playerDist() { const pl = this.env.player; return Math.hypot(pl.x - this.x, pl.z - this.z); }
   place(o) { this.x = o.x; this.y = o.y; this.z = o.z; }
   /** #1764: a straight ground run from (fx, fz) (default: where it is) to (x, z) stays on land: never through Höje å. */
-  clear(x, z, fx = this.x, fz = this.z) { return clearPath(fx, fz, x, z, this.env.walkable); }
+  clear(x, z, fx = this.x, fz = this.z) { return clearPath(fx, fz, x, z, this.walk); }
+  /** #1780: tree i is one of this squirrel's group (its grove's, or the valley's). */
+  mine(i) { return (this.env.trees[i].g ?? null) === this.g; }
   /** #1764: the lure's hand can be reached on land from (fx, fz) (re-tested only when the hand or the start moved). */
   lureClear(fx = this.x, fz = this.z) {
     const pl = this.env.player, c = this.lureC;
@@ -209,31 +246,40 @@ export class SquirrelBrain {
     const h = this.env.hour ? this.env.hour() : 12, D = C.day;
     return D.midday + (1 - D.midday) * Math.max(...D.peaks.map((c) => Math.exp(-(((h - c) / D.width) ** 2))));
   }
-  /** The home range's centre (m along the river): a slow wall-clock wander over the valley round the start tree, the same on every client. */
+  /** The home range's centre: m along the river (a slow wall-clock wander over the valley round the start tree, the same on every client), or
+   * (#1780, a home area) { x, z }: the area's centre wandering up to `wander` m with the same waves. */
   homeS() {
-    const tr = this.env.trees, lo = tr.sMin ?? 0, hi = tr.sMax ?? 0, t = this.now(), ph = this.p.phase ?? 0;
+    const tr = this.env.trees, t = this.now(), ph = this.p.phase ?? 0, A = this.area;
+    if (A) {
+      let u = 0, v = 0; R.periods.forEach((P, k) => { const a = (2 * Math.PI * t) / P; u += R.weights[k] * Math.sin(a + ph * (k + 1)); v += R.weights[k] * Math.cos(a * 1.3 + ph * (k + 2)); });
+      return { x: A.at[0] + u * (A.wander ?? 0), z: A.at[1] + v * (A.wander ?? 0) };
+    }
+    const lo = tr.sMin ?? 0, hi = tr.sMax ?? 0;
     let u = 0; R.periods.forEach((P, k) => { u += R.weights[k] * Math.sin((2 * Math.PI * t) / P + ph * (k + 1)); });
     return Math.max(lo, Math.min(hi, this.s0 + u * (hi - lo) * R.span));
   }
-  inRange(i, hs, k = 1) { return Math.abs(this.env.trees[i].s - hs) <= R.range * k; }
+  /** How far tree i is from the home range's centre `hs` (m along the river, or m from the area's centre). */
+  homeDist(i, hs) { const t = this.env.trees[i]; return typeof hs === 'number' ? Math.abs(t.s - hs) : Math.hypot(t.x - hs.x, t.z - hs.z); }
+  inRange(i, hs, k = 1) { return this.mine(i) && this.homeDist(i, hs) <= (this.area ? this.area.r : R.range) * k; }
   /** The trees within the range round `hs` (from the s-sorted index; all of them without one). */
   rangeTrees(hs) {
-    const tr = this.env.trees, by = tr.byS; if (!by) return tr.map((_, i) => i);
+    const tr = this.env.trees, by = tr.byS;
+    if (!by || typeof hs !== 'number') return tr.map((_, i) => i).filter((i) => this.inRange(i, hs));
     let lo = 0, hi = by.length; while (lo < hi) { const m = (lo + hi) >> 1; if (tr[by[m]].s < hs - R.range) lo = m + 1; else hi = m; }
-    const out = []; for (let i = lo; i < by.length && tr[by[i]].s <= hs + R.range; i++) out.push(by[i]);
+    const out = []; for (let i = lo; i < by.length && tr[by[i]].s <= hs + R.range; i++) if (this.mine(by[i])) out.push(by[i]);
     return out;
   }
-  /** The tree nearest the home range's centre that it can reach through the graph (`any`: wherever), where it sleeps and where a lost squirrel goes back to. */
+  /** The tree nearest the home range's centre that it can reach through the graph (`any`: wherever in its group), where it sleeps and where a lost squirrel goes back to. */
   homeTree(hs, any = false) {
     const tr = this.env.trees, comp = this.tr?.comp; let best = this.tree, bd = Infinity;
-    tr.forEach((t, i) => { const d = Math.abs(t.s - hs) + (any || t.comp === comp ? 0 : 1e6); if (d < bd) { bd = d; best = i; } });
+    tr.forEach((t, i) => { if (!this.mine(i)) return; const d = this.homeDist(i, hs) + (any || t.comp === comp ? 0 : 1e6); if (d < bd) { bd = d; best = i; } });
     return best;
   }
   /** The nearest trunk to (x, z); `reach` (#1764): the nearest one a straight ground run reaches without crossing the water. */
   nearestTree(x = this.x, z = this.z, reach = false) {
     const tr = this.env.trees;
-    if (reach) return tr.map((t, i) => [Math.hypot(t.x - x, t.z - z), i]).sort((a, b) => a[0] - b[0]).find(([, i]) => this.clear(tr[i].x, tr[i].z, x, z))?.[1] ?? this.tree;
-    let best = this.tree, bd = Infinity; tr.forEach((t, i) => { const d = Math.hypot(t.x - x, t.z - z); if (d < bd) { bd = d; best = i; } }); return best;
+    if (reach) return tr.map((t, i) => [Math.hypot(t.x - x, t.z - z), i]).filter(([, i]) => this.mine(i)).sort((a, b) => a[0] - b[0]).find(([, i]) => this.clear(tr[i].x, tr[i].z, x, z))?.[1] ?? this.tree;
+    let best = this.tree, bd = Infinity; tr.forEach((t, i) => { if (!this.mine(i)) return; const d = Math.hypot(t.x - x, t.z - z); if (d < bd) { bd = d; best = i; } }); return best;
   }
   favourites() { return [...this.visits].sort((a, b) => b[1] - a[1]).slice(0, R.fav).map((v) => v[0]); }
   /** Somewhere to go on a longer move: a ripe cache, a favourite tree (both in or near the range) or any other tree in the range. */
@@ -310,7 +356,7 @@ export class SquirrelBrain {
     const e = this.env, t = this.tr;
     for (let i = 0; i < 8; i++) {
       const a = e.rnd() * Math.PI * 2, d = 2 + e.rnd() * C.spread * 1.4, x = t.x + Math.cos(a) * d, z = t.z + Math.sin(a) * d;
-      if (e.walkable(x, z) && this.clear(x, z)) { this.goal.x = x; this.goal.z = z; this.set('forage', 30); return; } // (#1764: the way there too)
+      if ((!this.walk || this.walk(x, z)) && this.clear(x, z)) { this.goal.x = x; this.goal.z = z; this.set('forage', 30); return; } // (#1764: the way there too)
     }
     this.startToTree(false);
   }
@@ -328,7 +374,7 @@ export class SquirrelBrain {
     const e = this.env;
     for (let i = 0; i < 8; i++) {
       const a = e.rnd() * Math.PI * 2, d = between(C.cache.stash, e.rnd), x = this.x + Math.cos(a) * d, z = this.z + Math.sin(a) * d;
-      if (e.walkable(x, z) && this.clear(x, z)) { this.goal.x = x; this.goal.z = z; this.set('stash', 30); return; }
+      if ((!this.walk || this.walk(x, z)) && this.clear(x, z)) { this.goal.x = x; this.goal.z = z; this.set('stash', 30); return; }
     }
     this.set('bury', C.cache.bury);
   }
@@ -347,7 +393,7 @@ export class SquirrelBrain {
     const e = this.env, trees = e.trees, cand = [];
     trees.forEach((t, i) => {
       const d = Math.hypot(t.x - this.x, t.z - this.z);
-      if (d > C.groundHop) return;
+      if (d > C.groundHop || !this.mine(i)) return;
       cand.push([d + (!flee && i === this.tree ? 0 : !flee ? e.rnd() * 8 : 0), i]);
     });
     cand.sort((a, b) => a[0] - b[0]);
@@ -375,7 +421,7 @@ export class SquirrelBrain {
   moveTo(dt, speed, stop = 0) {
     const dx = this.goal.x - this.x, dz = this.goal.z - this.z, d = Math.hypot(dx, dz);
     if (d <= stop + 1e-6) { this.run = 0; return true; }
-    const step = Math.min(d - stop, speed * dt), nx = this.x + dx / d * step, nz = this.z + dz / d * step, w = this.env.walkable;
+    const step = Math.min(d - stop, speed * dt), nx = this.x + dx / d * step, nz = this.z + dz / d * step, w = this.walk;
     // #1764: the last guard: a step from land into the water (off a bridge deck) is never taken; the squirrel picks something else to do
     if (w && !this.deck && !w(nx, nz) && w(this.x, this.z)) { this.run = 0; this.blocked(); return false; }
     this.x = nx; this.z = nz; this.y = this.env.ground(this.x, this.z);

@@ -5,7 +5,7 @@ import { Holdable, heldItem, setHeld } from './holdable.js';
 import { Hearts } from './pingping.js';
 import { sfx } from './audio.js';
 import { registerSeasonal } from './seasons.js';
-import { SquirrelBrain, NutField, linkTrees, riverFrame, winterMonth } from './squirrelbrain.js';
+import { SquirrelBrain, NutField, linkTrees, riverFrame, winterMonth, inBox, groveFences, groveTreeOk, startTree } from './squirrelbrain.js';
 import { SquirrelSync } from './squirrelsync.js';
 
 // Squirrels and the nuts they look for (#1672). The brains live in squirrelbrain.js (no three.js); this file draws them and ties them to
@@ -109,8 +109,15 @@ function squirrelParts(s, far, pose = {}) {
   }
   return [...body, ...head, ...tail];
 }
-/** #1716: the merged squirrel (one draw call) with three morph targets: 0 the tail flicked, 1 / 2 the head turned left / right. */
+/** #1716: the merged squirrel (one draw call) with three morph targets: 0 the tail flicked, 1 / 2 the head turned left / right.
+ * #1780: shared by animals with the same look (colours, width, tail tip; the size is the mesh's scale). */
+const geoCache = new Map();
 function squirrelGeometry(s, far = false) {
+  const key = [s.color, s.belly, s.tail, s.tip, s.width, far].join();
+  if (!geoCache.has(key)) geoCache.set(key, buildSquirrelGeometry(s, far));
+  return geoCache.get(key);
+}
+function buildSquirrelGeometry(s, far) {
   const build = (pose) => { const parts = squirrelParts(s, far, pose), g = mergeGeometries(parts, false); for (const p of parts) p.dispose(); return g; };
   const g = build({}), poses = [{ flick: 1 }, { head: 1 }, { head: -1 }].map(build);
   g.morphAttributes.position = poses.map((q) => q.attributes.position); g.morphAttributes.normal = poses.map((q) => q.attributes.normal);
@@ -185,23 +192,36 @@ class Nut extends Holdable {
 
 export class Squirrels {
   /** `feet`: surroundings.js treeFeet, `crowns`: its aoTrees, `ground(x, z)`: the walkable surface, `walkable(x, z)` / `nutOk(x, z)`: where it may run / a nut may lie,
-   * `onFeed(brain)`: scoring. `rnd`: injectable for tests. */
-  constructor({ scene, camera, player, feet, crowns, ground, walkable, nutOk, onFeed, rnd = Math.random }) {
+   * `onFeed(brain)`: scoring. `rnd`: injectable for tests. #1780: `southFeet` (surroundings.js southTreeFeet, with their crowns) and `road(x, z, m)`
+   * (roads.js onVehicle) for the home areas' own groves (SQUIRRELS.areas with a `box`). */
+  constructor({ scene, camera, player, feet, crowns, ground, walkable, nutOk, onFeed, southFeet = [], road = null, rnd = Math.random }) {
     Object.assign(this, { sfx, scene, camera, player, ground, onFeed, rnd, winter: true, time: 0, speed: 0, acc: [], lastX: NaN, lastZ: NaN, lure: false, net: null, cand: [], track: new Map(), markT: 0, daylight: 1, hour: 12, wasFollow: false });
     const parkPatches = new Set([...(SITE.riverPark.patches ?? []).map((q) => q.name), 'bridge-west']), // (the other `patch` names in treeFeet belong to the street/backdrop areas)
       paddock = PADDOCK.trees ?? [], same = (a, b) => Math.abs(a.x - b[0]) < 0.01 && Math.abs(a.z - b[1]) < 0.01, river = riverFrame(SITE.river.path), q = {};
     // #1716: and every other tree along Höje å inside the walkable area (within roam.valley m of the river's centre line)
     const valley = (f) => f.x > WALK.x0 && f.x < WALK.x1 && f.z > WALK.z0 && f.z < WALK.z1 && river(f.x, f.z, q).d <= C.roam.valley;
     const wood = SITE.riverPark.woodBridge, gc = SITE.bridges?.gc, crossings = [wood?.ends, gc?.ends].filter(Boolean); // (the timber footbridge and the foot/cycle bridge)
-    this.trees = linkTrees(feet.filter((f) => parkPatches.has(f.patch) || paddock.some(([x, z]) => same(f, [x, z])) || valley(f)).map((f) => {
+    const crownOf = (f) => {
       let best = null, bd = 0.05; for (const c of crowns) { const d = Math.hypot(c.x - f.x, c.z - f.z); if (d < bd) { bd = d; best = c; } }
-      return { x: f.x, z: f.z, y: f.y, cy: best ? best.y : f.y + 5, r: best ? best.r : 3 };
-    }), { path: SITE.river.path, walkable, crossings });
+      return { x: f.x, z: f.z, y: f.y, cy: best ? best.y : f.cy ?? f.y + 5, r: best ? best.r : f.r ?? 3 };
+    };
+    // #1780: the home areas' own groves: their trees (a group each) and their ground: inside the box, on land and off every road
+    const groves = Object.entries(C.areas ?? {}).filter(([, A]) => A.box), fences = groveFences(walkable, road);
+    const own = groves.flatMap(([g, A]) => [...feet, ...southFeet].filter((f) => Number.isFinite(f.y) && inBox(A.box, f.x, f.z) && groveTreeOk(fences[g], f.x, f.z)).map((f) => ({ ...crownOf(f), g })));
+    this.trees = linkTrees([...feet.filter((f) => parkPatches.has(f.patch) || paddock.some(([x, z]) => same(f, [x, z])) || valley(f)).map(crownOf), ...own],
+      { path: SITE.river.path, walkable, crossings, fences });
+    this.fences = fences;
+    // (a nut near a grove lies inside it, where its squirrel may go: not in a house or on a road beside it)
+    const m = C.spread * 1.5, near = groves.map(([g, A]) => [g, A.box, [A.box[0] - m, A.box[1] + m, A.box[2] - m, A.box[3] + m]]);
+    const nutHere = (x, z) => {
+      const inside = near.find(([, b]) => inBox(b, x, z)); if (inside) return fences[inside[0]](x, z) && nutOk(x, z);
+      return !near.some(([, , o]) => inBox(o, x, z)) && nutOk(x, z);
+    };
     this.player_ = { x: 0, z: 0, lure: false, hx: 0, hz: 0, id: '' };
-    this.nuts = new NutField(this.trees, ground, nutOk, rnd);
+    this.nuts = new NutField(this.trees, ground, nutHere, rnd);
     this.nuts.anchors = () => [{ x: camera.position.x, z: camera.position.z }, ...(this.net?.remotes?.() ?? []).map((r) => ({ x: r.x, z: r.z }))];
     // #1716: the home ranges drift with the wall clock (the same for every player), the day comes from the game's clock (update's `hour`)
-    const env = { trees: this.trees, ground, walkable, nuts: this.nuts, player: this.player_, scares: this.cand, rnd, onTake: (b) => this.take(b), now: () => Date.now() / 1000, hour: () => this.hour, others: [] };
+    const env = { trees: this.trees, ground, walkable, fences, nuts: this.nuts, player: this.player_, scares: this.cand, rnd, onTake: (b) => this.take(b), now: () => Date.now() / 1000, hour: () => this.hour, others: [] };
     this.material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92 });
     this.nutMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6 });
     this.hearts = new Hearts(scene, C.hearts, C.heartScale);
@@ -211,9 +231,7 @@ export class Squirrels {
     Object.assign(this.marks, { frustumCulled: false, raycast: () => {}, visible: false, count: 0 }); this.marks.userData.noDetail = true; this.marks.userData.warmDraw = true; this.marks.name = 'squirrel-nut-marks'; scene.add(this.marks);
     const taken = new Set();
     this.animals = this.trees.length ? C.animals.map((spec, i) => {
-      const [sx, sz] = C.starts[i % C.starts.length]; let best = 0, bd = Infinity;
-      this.trees.forEach((t, j) => { const d = Math.hypot(t.x - sx, t.z - sz) + (taken.has(j) ? 1e6 : 0); if (d < bd) { bd = d; best = j; } });
-      taken.add(best);
+      const best = startTree(this.trees, spec, i, taken); // (#1780: by its home area's centre, among its group's trees)
       const brain = new SquirrelBrain(spec, env, best); brain.enterPerch(brain.homeTree(brain.homeS(), true), rnd() * Math.PI * 2); // (#1716: where its range is now)
       const geos = [squirrelGeometry(spec), squirrelGeometry(spec, true)], group = new THREE.Group(), body = new THREE.Mesh(geos[1], this.material); // #1716: near / far detail
       body.scale.setScalar(spec.scale); body.userData.noDetail = true; body.raycast = () => {}; body.name = `squirrel-${i}`;
@@ -330,6 +348,7 @@ export class Squirrels {
       const b = a.brain, d = Math.hypot(cam.x - b.x, cam.z - b.z);
       // #1686: the leader simulates for everybody: a squirrel is awake when ANY player near the squirrels is within range of it
       let ds = d; if (!follow) for (const c of this.cand) ds = Math.min(ds, Math.hypot(c.x - b.x, c.z - b.z));
+      b.ds = ds; // (#1780: the leader's snapshot carries only the animals somebody is near)
       if (d > C.farDist && (follow || ds > C.farDist)) { // #1716: nobody near: the coarse brain steps through the tree graph every roam.coarse s
         a.group.visible = false;
         if (!follow && (this.acc[i] += dt) >= C.roam.coarse) { b.coarse(this.acc[i]); this.acc[i] = 0; }

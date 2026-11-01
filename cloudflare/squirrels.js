@@ -4,8 +4,8 @@ import { STATES } from '../src/squirrelsync.js';
 // #1686: the squirrels and their nuts shared between the players near them. Like the pony paddock (#1644, cloudflare/paddock.js) the room
 // simulates nothing and writes NOTHING to storage or KV: it keeps, in memory only, the leader's last snapshots (so a newcomer sees the
 // scene at once) and the nut claims, and relays. Messages { t: 'sq', k, … } (src/squirrelsync.js documents the flow):
-//   client -> room: 'on' / 'off' (the player is within C.sync.enter m of a squirrel / left beyond C.sync.leave); from the leader 's' (3 animal poses,
-//   9 numbers each), 'n' (the nuts lying out, flat ints), 'f' { s, b, to, an } (a squirrel took the nut `to` held); from anybody 't' { s, b } (take
+//   client -> room: 'on' / 'off' (the player is within C.sync.enter m of a squirrel / left beyond C.sync.leave); from the leader 's' (one entry per animal:
+//   9 numbers, or null when nobody is near it, #1780), 'n' (the nuts lying out, flat ints), 'f' { s, b, to, an } (a squirrel took the nut `to` held); from anybody 't' { s, b } (take
 //   a nut), 'p' { s, b, x, z } (put a held nut down within C.sync.reach m of oneself).
 //   room -> client: 'L' { lead, n, c? } (you lead, with n others present and the claims c = [[slot, born, owner, kind]] / you follow / off);
 //   'ok' | 'no' { s, b } (the take is yours / somebody was first or the nut is not there); 'g' { s, b } (a nut was taken: gone for you);
@@ -27,7 +27,8 @@ export function cleanSquirrels(text) {
     case 'on': case 'off': return { k: m.k };
     case 's': {
       const ok = (q) => Array.isArray(q) && q.length === 9 && q.slice(0, 6).every((v) => fin(v, 5000)) && fin(q[6], 5) && int(q[7], 0, STATES.length - 1) && (q[8] === 0 || q[8] === 1);
-      return Array.isArray(m.a) && m.a.length === C.animals.length && m.a.every(ok) ? { k: 's', a: m.a.map((q) => q.map((v, i) => (i < 7 ? r2(v) : v))) } : null;
+      // #1780: an animal nobody is near is null (squirrelsync.js snapshotAnimals); at least one pose
+      return Array.isArray(m.a) && m.a.length === C.animals.length && m.a.every((q) => q === null || ok(q)) && m.a.some((q) => q !== null) ? { k: 's', a: m.a.map((q) => q && q.map((v, i) => (i < 7 ? r2(v) : v))) } : null;
     }
     case 'n': return Array.isArray(m.v) && m.v.length % 4 === 0 && m.v.length <= 4 * N() && m.v.every((v, i) => (i % 4 === 0 ? int(v, 0, 64 + 63) && (v & 63) < N() : i % 4 === 3 ? int(v, 0, 1e9) : int(v, -5e5, 5e5))) ? { k: 'n', v: m.v } : null;
     case 't': return int(m.s, 0, N() - 1) && int(m.b, 0, 1e9) ? { k: 't', s: m.s, b: m.b } : null;

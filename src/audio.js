@@ -49,14 +49,14 @@ export function updateListener(camera) {
 }
 
 /** Output node for one effect: positional panner (if pos given) → master. */
-function out(pos, gain = 1) {
+function out(pos, gain = 1, ref = 1.2) { // `ref`: m within which a positional sound plays at full loudness (#1780: the squirrels' chirp carries farther)
   const g = ctx.createGain();
   g.gain.value = gain;
   if (pos) {
     const p = ctx.createPanner();
     p.panningModel = 'equalpower';
     p.distanceModel = 'inverse';
-    p.refDistance = 1.2;
+    p.refDistance = ref;
     p.rolloffFactor = 1.2;
     p.positionX.value = pos.x; p.positionY.value = pos.y; p.positionZ.value = pos.z;
     g.connect(p).connect(master);
@@ -117,7 +117,7 @@ export const sfx = {
   /** #1699: a squirrel's happy 'tjipp-tjipp' when it gets the nut: a few short, bright rising chirps; ordinary positional/mute output. `pitch` ~1. */
   chirp(pos, pitch = 1) {
     if (!ready()) return;
-    const C = SQUIRRELS.chirp, t0 = ctx.currentTime, d = out(pos, C.gain);
+    const C = SQUIRRELS.chirp, t0 = ctx.currentTime, d = out(pos, C.gain, C.ref);
     for (let i = 0; i < C.notes; i++) {
       const t = t0 + i * C.gap, hz = C.hz * pitch * (1 + (i % 2) * 0.06);
       tone(t, C.dur, d, { from: hz, to: hz * C.rise, gain: 0.6 });

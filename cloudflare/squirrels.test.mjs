@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { SQUIRRELS as C } from '../src/config.js';
 import { NutField, SquirrelBrain, linkTrees } from '../src/squirrelbrain.js';
-import { SquirrelSync, encodeAnimal, STATES } from '../src/squirrelsync.js';
+import { SquirrelSync, encodeAnimal, snapshotAnimals, STATES } from '../src/squirrelsync.js';
 import { RoomSquirrels, cleanSquirrels } from './squirrels.js';
 import { PLAYERS } from './players.js';
 import { installRuntime, fakeNamespace } from './devws.mjs';
@@ -20,7 +20,7 @@ function world() {
   const room = new RoomSquirrels(() => peers.map((p) => ({ ws: p.ws, a: p.a })), (ws, text) => peers.find((p) => p.ws === ws).inbox.push(JSON.parse(text)));
   const join = (id, seed) => {
     const trees = mkTrees(), rnd = rng(seed), field = new NutField(trees, () => 0, () => true, rnd), p = { ws: { id, serializeAttachment() {} }, a: { i: id, s: { p: [0, 0, 0] } }, inbox: [] };
-    const brains = C.animals.map((spec, i) => new SquirrelBrain(spec, { trees, ground: () => 0, walkable: () => true, nuts: field, player: { x: 1e5, z: 1e5, lure: false, hx: 0, hz: 0 }, rnd, onTake: () => true }, i));
+    const brains = C.animals.map((spec, i) => new SquirrelBrain(spec, { trees, ground: () => 0, walkable: () => true, nuts: field, player: { x: 1e5, z: 1e5, lure: false, hx: 0, hz: 0 }, rnd, onTake: () => true }, i % trees.length));
     const fed = [], dropped = [];
     const sync = new SquirrelSync({ field, brains, send: (m) => { room.handle(p.ws, p.a, cleanSquirrels(JSON.stringify(m)), clock.now); return true; }, hooks: { fed: (an, who) => fed.push([an, who]), dropHeld: (s) => { dropped.push(s); s.alive = false; s.held = false; } } });
     Object.assign(p, { id, field, brains, sync, fed, dropped });
@@ -35,15 +35,24 @@ const clock = { now: 1_000_000 };
 const step = (w, secs = 1) => { for (let t = 0; t < secs; t += 0.1) { clock.now += 100; for (const p of w.peers) { p.field.setActive(true); if (!p.sync.follow) p.field.update(0.1); p.sync.tick(0.1); } w.all(); } };
 
 test('cleanSquirrels validates every message kind', () => {
-  const a9 = [1, 0, 2, 0.5, 0, 0.5, 1, 3, 1], good = { t: 'sq', k: 's', a: [a9, a9, a9] };
+  const a9 = [1, 0, 2, 0.5, 0, 0.5, 1, 3, 1], n = C.animals.length, good = { t: 'sq', k: 's', a: Array(n).fill(a9) };
   assert.deepEqual(cleanSquirrels(JSON.stringify({ t: 'sq', k: 'on' })), { k: 'on' });
-  assert.equal(cleanSquirrels(JSON.stringify(good)).a.length, 3);
-  for (const bad of [{ ...good, a: [a9, a9] }, { ...good, a: [a9, a9, [...a9.slice(0, 7), 12, 1]] }, { t: 'sq', k: 'n', v: [1, 2, 3] }, { t: 'sq', k: 'n', v: [200, 0, 0, 0] }, { t: 'sq', k: 'n', v: Array(4 * (C.maxNuts + 1)).fill(0) },
-    { t: 'sq', k: 't', s: C.maxNuts, b: 1 }, { t: 'sq', k: 't', s: 0 }, { t: 'sq', k: 'p', s: 0, b: 1, x: 'a', z: 0 }, { t: 'sq', k: 'f', s: 0, b: 1, to: 'x'.repeat(40), an: 0 }, { t: 'sq', k: 'f', s: 0, b: 1, to: 'a', an: 3 }, { t: 'sq', k: 'zz' }]) assert.equal(cleanSquirrels(JSON.stringify(bad)), null, JSON.stringify(bad));
+  assert.equal(cleanSquirrels(JSON.stringify(good)).a.length, n);
+  const some = { ...good, a: good.a.map((q, i) => (i === 1 ? q : null)) }; // #1780: only the animals somebody is near
+  assert.deepEqual(cleanSquirrels(JSON.stringify(some)).a, some.a);
+  for (const bad of [{ ...good, a: good.a.slice(1) }, { ...good, a: [...good.a.slice(1), [...a9.slice(0, 7), 12, 1]] }, { ...good, a: good.a.map(() => null) }, { ...good, a: [...good.a.slice(1), [1, 2]] }, { t: 'sq', k: 'n', v: [1, 2, 3] }, { t: 'sq', k: 'n', v: [200, 0, 0, 0] }, { t: 'sq', k: 'n', v: Array(4 * (C.maxNuts + 1)).fill(0) },
+    { t: 'sq', k: 't', s: C.maxNuts, b: 1 }, { t: 'sq', k: 't', s: 0 }, { t: 'sq', k: 'p', s: 0, b: 1, x: 'a', z: 0 }, { t: 'sq', k: 'f', s: 0, b: 1, to: 'x'.repeat(40), an: 0 }, { t: 'sq', k: 'f', s: 0, b: 1, to: 'a', an: n }, { t: 'sq', k: 'zz' }]) assert.equal(cleanSquirrels(JSON.stringify(bad)), null, JSON.stringify(bad));
   assert.equal(cleanSquirrels('nope'), null);
   const full = JSON.stringify({ t: 'sq', k: 'n', v: Array.from({ length: C.maxNuts }, (_, i) => [i + 64, -15012, 21688, 12345]).flat() });
   assert.ok(full.length < PLAYERS.maxBytes, `a full nut list fits the ordinary message size: ${full.length}`);
-  assert.ok(JSON.stringify(good).length < PLAYERS.maxBytes);
+  // #1780: the leader's snapshot never passes the room's message size, whatever the poses (widest numbers, every animal near)
+  const wide = C.animals.map(() => ({ x: -243.91, y: -13.01, z: -204.71, yaw: -3.14, pitch: -1.57, rise: 0.35, run: 0.85, state: 'approach', hasNut: true, ds: 10 }));
+  const snap = snapshotAnimals(wide), text = JSON.stringify({ t: 'sq', k: 's', a: snap });
+  assert.ok(text.length <= C.sync.bytes && C.sync.bytes < PLAYERS.maxBytes, `the widest snapshot fits: ${text.length} of ${C.sync.bytes} (${snap.filter(Boolean).length} of ${n} animals)`);
+  assert.ok(snap.filter(Boolean).length >= 6 && cleanSquirrels(text), 'most of them still go, and the room accepts it');
+  wide.forEach((b, i) => { b.ds = i < 3 ? 40 + i : 400; }); const near = snapshotAnimals(wide);
+  assert.deepEqual(near.map((q) => !!q), C.animals.map((_, i) => i < 3), 'only the animals within drawDist of a visitor');
+  wide.forEach((b) => { b.ds = 400; }); assert.equal(snapshotAnimals(wide), null, 'nobody near any: nothing to send');
 });
 
 test('the first player near the squirrels leads; a newcomer follows and gets the scene at once', () => {
@@ -159,9 +168,9 @@ test('through the Worker: leader, snapshots, a take and a feed between two socke
   await say(env, b, { k: 'on' });
   assert.deepEqual(b.sq().map((m) => m.k), ['L', 'n'], 'a newcomer follows and is sent the nuts at once');
   assert.deepEqual(b.sq().at(-1).v, v); assert.equal(a.sq().at(-1).n, 1);
-  const a9 = [1, 0, 2, 0.5, 0, 0.5, 1, 3, 1];
-  await say(env, a, { k: 's', a: [a9, a9, a9] }); assert.equal(b.sq().at(-1).k, 's');
-  await say(env, b, { k: 's', a: [a9, a9, a9] }, 1000); assert.equal(a.sq().filter((m) => m.k === 's').length, 0, 'a follower cannot send snapshots');
+  const a9 = [1, 0, 2, 0.5, 0, 0.5, 1, 3, 1], all = C.animals.map((_, i) => (i % 2 ? null : a9)); // (#1780: one entry per animal, null when nobody is near it)
+  await say(env, a, { k: 's', a: all }); assert.equal(b.sq().at(-1).k, 's'); assert.deepEqual(b.sq().at(-1).a, all);
+  await say(env, b, { k: 's', a: all }, 1000); assert.equal(a.sq().filter((m) => m.k === 's').length, 0, 'a follower cannot send snapshots');
   await say(env, b, { k: 't', s: 0, b: 7 }); assert.equal(b.sq().at(-1).k, 'ok'); assert.deepEqual(a.sq().at(-1), { t: 'sq', k: 't', s: 0, b: 7, i: a.sq().at(-1).i });
   await say(env, b, { k: 't', s: 1, b: 8 }); assert.equal(b.sq().at(-1).k, 'no', 'a nut that is not there');
   await say(env, a, { k: 'f', s: 0, b: 7, to: a.sq().at(-1).i, an: 1 });

@@ -48,8 +48,10 @@ const setup = () => {
       return na.length >= 6 && common >= Math.min(na.length, nb.length) - 2;
     });
     check(na.length >= 6 && common >= Math.min(na.length, nb.length) - 2, 'both see the same nuts (slot, place, spawn)', { a: na.length, b: nb.length, soloNuts, onlyA: na.filter((n) => !nb.some((m) => JSON.stringify(m) === JSON.stringify(n))), onlyB: nb.filter((n) => !na.some((m) => JSON.stringify(m) === JSON.stringify(n))) });
-    const posA = await pa(() => T.S.animals.map((q) => [q.brain.x, q.brain.z, q.brain.state])), posB = await pb(() => T.S.animals.map((q) => [q.brain.x, q.brain.z, q.brain.state]));
-    check(posA.every((p, i) => Math.hypot(p[0] - posB[i][0], p[1] - posB[i][1]) < 4), 'the squirrels are in about the same places for both', { posA, posB });
+    // (#1780: the leader shares only the squirrels a visitor is near, within SQUIRRELS.drawDist: those must agree; nobody can see the others)
+    const posA = await pa(() => T.S.animals.map((q) => [q.brain.x, q.brain.z, q.brain.state, q.brain.ds ?? 0])), posB = await pb(() => T.S.animals.map((q) => [q.brain.x, q.brain.z, q.brain.state]));
+    const shared = posA.map((p, i) => i).filter((i) => posA[i][3] <= 150);
+    check(shared.length >= 1 && shared.every((i) => Math.hypot(posA[i][0] - posB[i][0], posA[i][1] - posB[i][1]) < 4), 'the squirrels near the players are in about the same places for both', { shared, posA, posB });
     // B takes a nut next to it
     const take = await pb(async (sp) => {
       const slot = T.S.nuts.slots.filter((s) => s.alive && !s.held).sort((p, q) => Math.hypot(p.x - sp.x, p.z - sp.z) - Math.hypot(q.x - sp.x, q.z - sp.z))[0], i = T.S.nuts.slots.indexOf(slot);

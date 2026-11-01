@@ -172,14 +172,14 @@ const S_farHas = (g) => g.far.n > 0 && g.far.n !== g.far.expect;
     // (6) draw calls
     const cost = await page.evaluate(() => {
       const { a, S } = T; const b = S.animals[1].brain; b.enterPerch(b.tree, 0.8); T.near(1, 5, 0.8); T.run(2, 0.02);
-      const c = a.camera.position, d = a.camera.getWorldDirection(new (c.constructor)()); // worst case: all three on the ground in front of the eye
-      S.animals.forEach((q, i) => { const x = c.x + d.x * 3 - d.z * (i - 1) * 0.8, z = c.z + d.z * 3 + d.x * (i - 1) * 0.8; Object.assign(q.brain, { x, z, y: S.ground(x, z) }); q.brain.set('search', 99); });
+      const c = a.camera.position, d = a.camera.getWorldDirection(new (c.constructor)()), mid = (S.animals.length - 1) / 2; // worst case: all of them on the ground in front of the eye
+      S.animals.forEach((q, i) => { const x = c.x + d.x * 3 - d.z * (i - mid) * 0.45, z = c.z + d.z * 3 + d.x * (i - mid) * 0.45; Object.assign(q.brain, { x, z, y: S.ground(x, z) }); q.brain.set('search', 99); });
       T.run(1, 0.0001); const m = S.animals[1].brain; T.look(m.x, m.y + 0.1, m.z);
       const vis = S.animals.filter((q) => q.group.visible).length, on = T.calls(); const hold = S.animals.map((q) => q.group.visible); S.animals.forEach((q) => { q.group.visible = false; });
       S.nutItems.forEach((n) => { n._v = n.model.visible; n.model.visible = false; }); const off = T.calls(); S.nutItems.forEach((n) => { n.model.visible = n._v; }); S.animals.forEach((q, i) => { q.group.visible = hold[i]; });
       return { visibleSquirrels: vis, on, off, extra: on - off, nuts: S.nuts.count, pos: S.animals.map((q) => [q.group.position.x - c.x, q.group.position.y - c.y, q.group.position.z - c.z].map((v) => +v.toFixed(1))), dir: [d.x, d.y, d.z].map((v) => +v.toFixed(2)) };
     });
-    check(cost.extra <= 3 + cost.nuts, 'draw calls added by squirrels and nuts in view stay small', cost);
+    check(cost.extra <= cost.visibleSquirrels + cost.nuts, 'draw calls added by squirrels and nuts in view stay small (one per squirrel, one per near nut)', cost);
     // #1720: F's show-all (world.refreshFurniture, also run by the Christmas season at start) must not draw the nuts that are not lying out
     const hidden = await page.evaluate(() => { const { a, S } = T; a.world.refreshFurniture(); a.step(0.1);
       const out = S.nutItems.filter((n) => n.broken && n.model.visible).length; return { brokenVisible: out, broken: S.nutItems.filter((n) => n.broken).length }; });
@@ -191,6 +191,30 @@ const S_farHas = (g) => g.far.n > 0 && g.far.n !== g.far.expect;
       const r = { found: hs.length, wasVisible: was, brokenFlag: item.broken, brokenVisible: m.visible, otherVisible: other.visible };
       item.mend(); a.world.refreshFurniture(); r.mendedVisible = m.visible; return r; });
     check(shot.found > 3 && shot.brokenFlag && !shot.brokenVisible && shot.otherVisible && shot.mendedVisible, 'a shot-to-pieces thing stays hidden after the furniture refresh, others are shown', shot);
+    // (7) #1780: more squirrels, each in its home area: the groves have trees, every squirrel sits in its area, at least 4 areas are lived in
+    const areas = await page.evaluate(async () => {
+      const { S } = T, C = (await import('/src/config.js')).SQUIRRELS, groves = {};
+      for (const t of S.trees) if (t.g) groves[t.g] = (groves[t.g] ?? 0) + 1;
+      const where = S.animals.map((q) => { const b = q.brain, A = b.area, tr = b.tr, d = A ? Math.hypot(tr.x - A.at[0], tr.z - A.at[1]) : null;
+        return { name: q.spec.name, home: q.spec.home ?? 'valley', active: !q.spec.home || !!A, inside: A ? d <= A.r * 1.5 + (A.wander ?? 0) && (tr.g ?? null) === b.g : !tr.g, at: [Math.round(tr.x), Math.round(tr.z)] }; });
+      return { n: S.animals.length, groves, boxes: Object.keys(C.areas).filter((k) => C.areas[k].box), where, lived: [...new Set(where.filter((w) => w.inside).map((w) => w.home))] };
+    });
+    check(areas.n >= 8 && areas.boxes.every((g) => areas.groves[g] >= 3), '8-10 squirrels; every own grove has trees', { n: areas.n, groves: areas.groves });
+    check(areas.where.every((w) => w.active && w.inside) && areas.lived.length >= 4, 'every squirrel sits in its home area, at least 4 areas lived in', areas);
+    // (pictures: each home-area squirrel sitting up on the ground a few metres from one of its trees, seen from 4.5 m)
+    for (const [home, file] of [['court', '8-innergarden'], ['green', '9-grona-garden'], ['clock', '10-klocktornsparken'], ['south', '11-sankt-lars-42'], ['west', '12-an-vaster'], ['east', '13-an-oster']]) {
+      const seen = await page.evaluate(({ home }) => {
+        T.seed(1780); const { a, S } = T, i = S.animals.findIndex((q) => q.spec.home === home), q = S.animals[i], b = q.brain, t = b.tr;
+        let f = null; for (let k = 0; k < 16 && !f; k++) { const ang = k * Math.PI / 8, x = t.x + Math.cos(ang) * 2.5, z = t.z + Math.sin(ang) * 2.5, e = { x: x + Math.cos(ang) * 4.5, z: z + Math.sin(ang) * 4.5 }; if ((!b.walk || (b.walk(x, z) && b.walk(e.x, e.z)))) f = { x, z, ang, e }; }
+        Object.assign(b, { x: f.x, z: f.z, y: S.ground(f.x, f.z), calmT: 99, route: [], target: null }); b.set('search', 99); b.rise = 1; b.yaw = f.ang;
+        T.stand(f.e.x, f.e.z); T.run(2, 0.02); Object.assign(b, { x: f.x, z: f.z, y: S.ground(f.x, f.z) }); b.set('search', 99); b.rise = 1;
+        a.camera.zoom = 1.6; a.camera.updateProjectionMatrix(); T.run(1, 0.001); T.look(b.x, b.y + 0.6, b.z);
+        return { name: q.spec.name, visible: q.group.visible, state: b.state, at: [+b.x.toFixed(1), +b.y.toFixed(1), +b.z.toFixed(1)] };
+      }, { home });
+      await kit.shot(page, `${out}/${file}.png`);
+      await page.evaluate(() => { T.a.camera.zoom = 1; T.a.camera.updateProjectionMatrix(); });
+      check(seen.visible, `the ${home} squirrel shows by its tree`, seen);
+    }
     check(errors.length === 0, 'no page or WebGL errors', errors.slice(0, 5));
   } finally { await browser.close(); }
   process.exit(failed ? 1 : 0);

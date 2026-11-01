@@ -70,14 +70,14 @@ import { FishQuest } from './fishquest.js'; // #1754: the hidden fishing quest
 import { Minimap } from './minimap.js';
 import { Compass } from './compass.js';
 import { Measure } from './measure.js';
-import { cloudTexture, groundY, renderedTerrainY, lampGroundY, treeFeet, aoTrees } from './surroundings.js';
+import { cloudTexture, groundY, renderedTerrainY, lampGroundY, treeFeet, southTreeFeet, aoTrees } from './surroundings.js';
 import { Squirrels } from './squirrels.js';
 import { OutdoorCats } from './outdoorcats.js';
 import { Footprints } from './footprints.js';
 import { SHOE, PAW } from './footprinttrail.js';
 import { RiverFish } from './riverfish.js';
 import { Fishing } from './fishing.js'; // #1753: the rod under the road bridge, bites and caught fish
-import { onRoad, onWalk } from './roads.js';
+import { onRoad, onWalk, onVehicle } from './roads.js';
 import { onParkPath } from './riverpark.js';
 import { bindGroundAOShadow } from './groundao.js';
 import { Jetpack } from './jetpack.js';
@@ -566,8 +566,8 @@ if (pingping) pingping.onHug = () => bump('pingpingHugs');
 const sillPots = buildSillPots(scene, camera, world.sillPlants); // the pots on the window boards can be lifted (#185)
 const holdables = [saber, ...toys.items, remote, book, beer, ...things, ...sillPots]; // things you can take and hold, one at a time (holdable.js)
 // #1672: squirrels in the trees by the river and the paddock; the nuts they look for are holdables (E takes one; crouch still with it to feed)
-const squirrelWalk = (x, z) => { const r = riverAt(x, z); return r.distance > r.width / 2 + SQUIRRELS.dry || parkGround(x, z) > waterYAt(x, z, r) + 0.3; }; // (#1764: far from the river it is land, without the costly terrain lookup)
-const squirrels = params0.has('nosquirrels') ? null : new Squirrels({ scene, camera, player, feet: treeFeet, crowns: aoTrees, ground: parkGround, walkable: squirrelWalk,
+const squirrelWalk = (x, z) => { const r = riverAt(x, z); if (r.distance > r.width / 2 + SQUIRRELS.dry) return true; const w = waterYAt(x, z, r) + 0.3; return parkGround(x, z) > w && renderedTerrainY(x, z) > w; }; // (#1764: far from the river it is land, without the costly terrain lookup; #1780: near it the terrain itself is above the water too, so the road bridge's deck over Höje å is no place to forage nor a way across)
+const squirrels = params0.has('nosquirrels') ? null : new Squirrels({ scene, camera, player, feet: treeFeet, southFeet: southTreeFeet, road: onVehicle, crowns: aoTrees, ground: parkGround, walkable: squirrelWalk, // (#1780: southFeet / road: the home areas' own groves)
   nutOk: (x, z) => squirrelWalk(x, z) && !onRoad(x, z, 0.5) && !onWalk(x, z, 0.5) && !onParkPath(x, z, 0.4), onFeed: () => bump('squirrelFeeds') });
 if (squirrels) holdables.push(...squirrels.nutItems);
 // #1752: fish in Höje å and the rings they leave on the water, the same for every player (src/riverfish.js, src/riverfishsync.js, cloudflare/riverfish.js)

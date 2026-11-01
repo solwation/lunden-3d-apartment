@@ -1458,7 +1458,7 @@ function addSurroundingRoofWalk(b, walk) {
 
 /** Every tree's foot as built: [{ x, z, kind }] (tools/terraintest.html: none on asphalt or paving, #435). */
 export const treeFeet = [];
-/** #1714: the south backdrop's woodland and hospital-grass trunks ([{ x, z, kind: 'tree' | 'big' }], not the edge rows) so the walkable south (WALK.z1 ≈ 452) blocks on them like on `treeFeet`. */
+/** #1714: the south backdrop's woodland and hospital-grass trunks ([{ x, z, kind: 'tree' | 'big', y, cy, r }] (#1780: foot, crown centre and radius), not the edge rows) so the walkable south (WALK.z1 ≈ 452) blocks on them like on `treeFeet`. */
 export const southTreeFeet = [];
 /** Every tree's crown as built: [{ x, z, r (m), y (its centre) }] (groundao.js, #1079; flare.js, #1283). */
 export const aoTrees = [];
@@ -1911,7 +1911,9 @@ export function* surroundingsParts({ grass, husL = null }) {
   yield 0.55;
   backdrops.south = south;
   southTreeFeet.length = 0;
-  southTreeFeet.push(...(south.userData.trees ?? []).map((t) => ({ x: t.x, z: t.z, kind: 'tree' })), ...(south.userData.bigTrees ?? []).map((t) => ({ x: t.x, z: t.z, kind: 'big' })));
+  // (#1780: with the trunk's foot y and the crown's centre cy / radius r, southbackdrop.js's instances, so squirrels can sit in the big ones)
+  const sFoot = (t, kind) => ({ x: t.x, z: t.z, kind, y: t.y, cy: t.y + t.h * 0.7, r: t.r });
+  southTreeFeet.push(...(south.userData.trees ?? []).map((t) => sFoot(t, 'tree')), ...(south.userData.bigTrees ?? []).map((t) => sFoot(t, 'big')));
   // Kv. Lunden's own blocks and the old S:t Lars buildings: own façade texture and roof colour each,
   // plus a white cornice under the old roofs (#47)
   const modern = S.blocks.filter((b) => !b.style), oldB = S.blocks.filter((b) => b.style === 'old'), school = S.blocks.filter((b) => b.style === 'school');
