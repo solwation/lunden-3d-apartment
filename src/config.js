@@ -4026,13 +4026,13 @@ export const BIRDS = { center: { x: -30, z: 30 }, count: 10, lowMemoryCount: 5, 
 // (above the deck's top + fade). `fadeIn` s: scales up / down at the ends of the window (no collision until fully grown). Basket: a round
 // floor of `basketR` m with a `rim` m high wall (low enough for a jump to clear, so you can step out; flying clears it too). Envelope: radius
 // `envR` m, its lowest point `envLow` m over the floor; `stripes` coloured gores. Not drawn / not updated outside the window (nor underground).
-// #1770 (all *guess*): rarer, `window` 600 s of every `period` 9000 s (2.5 h; it was 600 of 1500 s, ~40 % of the time); the gores are the
+// #1770 (all *guess*): the gores are the rainbow; #1779 (user: never found it): common again, `window` 1800 s of every `period` 2400 s (~75 %; #1770 had 600 of 9000 s); the gores are the
 // rainbow, `rainbow` red, orange, yellow, green, blue, indigo, violet repeated round the envelope (14 `stripes` = two whole rainbows, so the
 // seam between the last and the first stripe is violet -> red like every other cycle). `beer`: `count` bottles of `ml` ml (Swedish 33 cl)
 // standing on the basket floor `ring` m from its centre, `step` rad apart round it; bottle `h` m tall, `r` m radius (a common 33 cl
 // long-neck), `name` the label's (made-up) name. They are drunk like the fridge-shelf beers (BEER_CAN.sips gulps) and restocked full at
 // every new appearance (src/balloonbeer.js).
-export const BALLOON = { center: { x: -30, z: 30 }, radius: 260, speed: 3.5, floor: 250, period: 9000, window: 600, fadeIn: 25, basketR: 1.15, rim: 0.6, envR: 8.5, envLow: 5, stripes: 14, far: 900,
+export const BALLOON = { center: { x: -30, z: 30 }, radius: 260, speed: 3.5, floor: 250, period: 2400, window: 1800, fadeIn: 25, basketR: 1.15, rim: 0.6, envR: 8.5, envLow: 5, stripes: 14, far: 900,
   rainbow: [0xe0302a, 0xf2851c, 0xf6d02a, 0x3fa83c, 0x2f6fd2, 0x4a3aa0, 0x8c3fb4],
   beer: { count: 4, ml: 330, ring: 0.8, step: 0.17, at: Math.PI * 0.75, h: 0.24, r: 0.031, name: 'Ballonglager' } };
 

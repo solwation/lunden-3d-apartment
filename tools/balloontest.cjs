@@ -1,7 +1,7 @@
 // Hot-air balloon (#1646, #1770, src/balloon.js, src/balloonbeer.js): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/balloontest.cjs http://localhost:8646 /tmp/shots1646`
 // Checks: hidden + no mesh work when not scheduled; visible when forced; landing in the basket, staying put and being carried over several
 // seconds of drift; the rim holds you in; one draw call for the whole balloon; #1770: the gores are in rainbow order, the schedule is rare
-// (2–3 h period, ≤ 10 min window), the basket's beers ride with it, can be taken and drunk (beer count, life portion) and are restocked at
+// (#1779: up ~75 % of the time), the basket's beers ride with it, can be taken and drunk (beer count, life portion) and are restocked at
 // the next appearance; screenshots.
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const base = process.argv[2] || 'http://localhost:8646', out = process.argv[3] || '/tmp/shots1646';
@@ -22,7 +22,7 @@ async function open(browser, q) {
   // 1. not scheduled: hidden, no draw call
   let page = await open(browser, '');
   const idle = await page.evaluate(() => {
-    const a = window.__app, b = a.balloon; b.clock = () => 1000; // 1000 s into the period, after the 600 s window: not scheduled
+    const a = window.__app, b = a.balloon; b.clock = () => 2100; // 2100 s into the 2400 s period, after the 1800 s window: not scheduled
     for (let i = 0; i < 5; i++) a.step(1 / 30);
     let n = 0; const r = a.renderer.renderBufferDirect; a.renderer.renderBufferDirect = function (c, s, g, m, o) { if (o === b.mesh) n++; return r.apply(this, arguments); };
     a.renderer.render(a.scene, a.camera); a.renderer.renderBufferDirect = r;
@@ -83,7 +83,7 @@ async function open(browser, q) {
     return { stripes: stripes.filter((x) => !x.ok).map((x) => x.s), n: B.stripes, colours: B.rainbow.length, period: B.period, window: B.window, frac: on * 5 / N };
   });
   check(look.stripes.length === 0 && look.colours === 7, 'envelope gores in rainbow order (red, orange, yellow, green, blue, indigo, violet, repeated)', JSON.stringify(look));
-  check(look.period >= 7200 && look.period <= 10800 && look.window <= 600 && look.frac < 0.08, 'rare schedule: 2–3 h period, ≤ 10 min window', JSON.stringify({ period: look.period, window: look.window, frac: +look.frac.toFixed(4) }));
+  check(look.frac >= 0.6 && look.window >= 1200 && look.period <= 3600, 'common schedule (#1779): up most of the time, ≥ 20 min window, period ≤ 1 h', JSON.stringify({ period: look.period, window: look.window, frac: +look.frac.toFixed(4) }));
   // 5. #1770: beers in the basket: ride along, taken + drunk like a shelf beer, restocked next appearance
   const beer = await page.evaluate(async () => {
     const { BALLOON: B } = await import('/src/config.js');
@@ -91,7 +91,7 @@ async function open(browser, q) {
     a.step = (dt) => { b.update(p, false); p.update(dt); for (const x of bs) x.update(dt); };
     const out = { count: bs.length };
     // hidden balloon: nothing to take
-    p.pos.set(b.pos.x + 30, b.pos.y + 5, b.pos.z); b.aboard = false; b.clock = () => 1000; a.step(1 / 30); out.hiddenTarget = bs.every((x) => x.target !== x.takeTarget) && !b.mesh.visible; // (not aboard: aboard keeps it up)
+    p.pos.set(b.pos.x + 30, b.pos.y + 5, b.pos.z); b.aboard = false; b.clock = () => 2100; a.step(1 / 30); out.hiddenTarget = bs.every((x) => x.target !== x.takeTarget) && !b.mesh.visible; // (not aboard: aboard keeps it up)
     b.clock = () => t; b.aboard = false; b.last.ok = false; a.step(1 / 30);
     p.pos.set(b.pos.x + 0.3, b.pos.y, b.pos.z - 0.2); p.vy = 0; p.fall = null; a.step(1 / 30);
     out.shownTarget = bs.every((x) => x.target === x.takeTarget);
@@ -120,7 +120,7 @@ async function open(browser, q) {
     let n = 0; const r = a.renderer.renderBufferDirect; a.renderer.renderBufferDirect = function (c, s, g, m, o) { if (meshes.has(o)) n++; return r.apply(this, arguments); };
     a.camera.position.set(b.pos.x, b.pos.y + 2, b.pos.z + 3); a.camera.lookAt(b.pos.x, b.pos.y, b.pos.z); a.camera.updateMatrixWorld();
     a.renderer.render(a.scene, a.camera); out.calls = n; n = 0;
-    b.clock = () => 1000; a.step(1 / 30); a.renderer.render(a.scene, a.camera); out.hiddenCalls = n; a.renderer.renderBufferDirect = r;
+    b.clock = () => 2100; a.step(1 / 30); a.renderer.render(a.scene, a.camera); out.hiddenCalls = n; a.renderer.renderBufferDirect = r;
     b.clock = () => t;
     return out;
   });
