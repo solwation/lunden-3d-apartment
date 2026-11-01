@@ -12,7 +12,7 @@ import { sharkNow, sharkAt, sharkUntil, cleanSharkRecord } from '../src/sharkswi
 //   'no' { f, b }; to everybody else near 'g' { f, b, u } (fish f is gone and comes back as life b at room time u).
 // Limits: ids 0..count-1, born 0..1e6; 'on' while on and 'off' while off are ignored (one 'L' per arrival); a catch at most once per
 // `catchEvery` s per connection, only from a player near the river whose last known position (a.s.p) is within `reach` m of where that fish
-// is now, only for the fish's current life and only while it is in the water. The gone list holds at most `count` entries.
+// is now, only for the fish's current life (or up to 50 later, #1778) and only while it is in the water. The gone list holds at most `count` entries.
 // #1769, the rare shark (src/sharkswim.js): client -> room 'sc' { p: [x, y, z], r } (catch the shark; its body lands at p, yaw r); room -> client
 // 'sok' / 'sno' to the catcher, 'S' { sh } (the catch record { w, at, p, r }) to everybody near, and 'L' also carries `sh` (the live record; left
 // out when there is none) and `sk: 1` when the room runs the test schedule (env SHARK_TEST: cloudflare/dev.mjs LUNDEN_SHARK_TEST=1). A shark catch shares the
@@ -23,6 +23,8 @@ import { sharkNow, sharkAt, sharkUntil, cleanSharkRecord } from '../src/sharkswi
 // catch (at most once a week), deleted when found expired on waking. Nothing goes to KV (#1689) and no alarm is set.
 
 const int = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
+// #1778: how many lives past its own record the room believes a client's catch (it forgets all of them when it hibernates).
+const AHEAD = 50;
 const between = ([a, b], r) => a + (b - a) * r;
 
 /** A river-fish message from a client, or null. */
@@ -75,8 +77,11 @@ export class RoomRiverFish {
     if (now - (a.rfc ?? 0) < C.sync.catchEvery * 1000) return; // (too soon: no answer, the client gives up on its own)
     a.rfc = now;
     if (m.k === 'sc') return this.catchShark(ws, a, m, now);
-    const e = this.lives.get(m.f), born = e?.b ?? 0, p = a.s?.p;
-    let ok = born === m.b && !(e && now < e.u) && Array.isArray(p);
+    const e = this.lives.get(m.f), p = a.s?.p;
+    // #1778: after hibernation the room is back at life 0 while a still-connected client has seen later lives; a catch of a LATER life
+    // (at most `ahead` beyond the room's) is believed and the room catches up (the reach check below still uses that life's position).
+    const known = e?.b ?? 0, ahead = m.b > known && m.b - known <= AHEAD, born = ahead ? m.b : known;
+    let ok = born === m.b && !(!ahead && e && now < e.u) && Array.isArray(p);
     if (ok) { const o = fishAt(fishSpec(m.f, born), fishTime(now)); ok = Math.hypot(p[0] - o.x, p[2] - o.z) <= C.sync.reach; }
     if (!ok) { this.send(ws, JSON.stringify({ t: 'rf', k: 'no', f: m.f, b: m.b })); return; }
     const next = { b: born + 1, u: Math.round(now + between(C.sync.respawn, this.random()) * 1000) };
