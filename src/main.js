@@ -981,9 +981,10 @@ coreB.lift.onArrive = (k) => bump('liftFloors', 1, `b${k}`); coreC.lift.onArrive
 sonos.onPlay = (ch) => bump('songs', 1, ch); // each song (channel) once // the saber burns, the wands do magic (#97), darts splash (#98)
 // the cat goes for a fish finger lying on the floor near it and eats it (#163)
 if (fish) {
-  cat.fishSource = () => fish.placed;
-  cat.onFishEaten = (f) => fish.eatenByCat(f);
+  cat.fishSource = () => [...fish.placed, ...fishing.feedable]; // + #1766: a raw caught fish, lying or held out
+  cat.onFishEaten = (f) => (f.isCaughtFish ? fishing.eatenByCat(f) : fish.eatenByCat(f));
   fish.onCatEaten = () => bump('catFish');
+  fishing.onCatFed = () => bump('catFishFeeds');
   cat.watchPoint = () => camera.position;
 }
 cat.onFound = (label, rare, breed, kitten) => { catFound(label, rare, breed); if (kitten) bump('kittens', 1, 'kattunge'); }; // a kitten (#363): more points

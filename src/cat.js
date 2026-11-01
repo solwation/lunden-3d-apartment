@@ -1282,7 +1282,7 @@ export class CatSpawner {
     for (const f of this.fishSource?.() ?? []) {
       if (f.state !== 'placed') continue;
       f.middle(v);
-      if (Math.abs(v.y - p.y) > 0.05) continue; // on a table, or on another floor
+      if (Math.abs(v.y - p.y) > (f.held ? 2 : 0.05)) continue; // on a table, or on another floor (a fish held out: the hand's height, #1766)
       const d = Math.hypot(v.x - p.x, v.z - p.z);
       if (d < bestD && this.clearPath(v.x, v.z)) { best = f; bestD = d; }
     }
@@ -1341,7 +1341,8 @@ export class CatSpawner {
     }
     if (F.phase === 'walk') {
       this.wantStand = 1; // up on all four first (#224), then it walks
-      const dx = F.at.x - o.position.x, dz = F.at.z - o.position.z, dist = Math.hypot(dx, dz);
+      if (F.f.held) F.f.middle(F.at); // a fish held out moves with the hand (#1766)
+      const dx = F.at.x - o.position.x, dz = F.at.z - o.position.z, dist = Math.max(1e-6, Math.hypot(dx, dz));
       const stop = CAT_FISH.stop * size;
       o.rotation.y = Math.atan2(dx, dz);
       const go = this.standing ? Math.min(CAT_FISH.speed * dt, Math.max(0, dist - stop)) : 0;

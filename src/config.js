@@ -3599,6 +3599,7 @@ export const SCORE = {
     washed: 0.3, scraped: 0.2, dishwasher: 3, rubbishOut: 3, // … a rubbish bag carried out to the drop-off (#387)
                 // … and a dishwasher programme run to the end (#385)                            // a thing washed up by hand, a plate scraped into the bin (#383)
     fish: 0.5, fried: 2, chicken: 1, cooked: 8, brews: 2, // cooked retains legacy earned points (#160)
+    catFishFeeds: 5, // #1766: a cat ate a raw caught fish (*guess*, once per fish; below a fish finger's catFish)
     fishEaten: 3, fishCooked: 4, // #1754: a caught fish eaten up / cooked through without burning (*guess*; the catch itself scores by species, FISHING.points)
     grilledChicken: 35, // #708: one whole chicken grilled golden (*guess*, issue suggests 30–40); once per bird
     fries: 0.2,                                           // per fry eaten (#301): a bunch is four

@@ -137,6 +137,14 @@ export class CaughtFish extends Holdable {
   get raw() { return this.cook < F.cook.done; }
   get cooked() { return !this.raw; }
   get burnt() { return this.cook >= F.cook.burn; }
+  /** #1766: what a cat sees: 'placed' for a raw fish lying loose on the ground or held out (cooked, burnt, on the heat, gone: not for the cats). */
+  get state() { return (this.placed || this.held) && this.raw && !this.heat && !this.broken ? 'placed' : 'other'; }
+  /** #1766: where a cat goes to eat it (world): on the ground where it lies (y = the floor), or right where the hand holds it. */
+  middle(out = new THREE.Vector3()) {
+    this.model.getWorldPosition(out);
+    if (!this.held) { this.rest ??= restPose(this.model); out.y -= this.rest.lift + 0.001; }
+    return out;
+  }
   /** 'raw' / 'cooked' / 'burnt'. */
   get cookState() { return this.burnt ? 'burnt' : this.cooked ? 'cooked' : 'raw'; }
   /** The name follows the cooking: "en abborre, 23 cm" → "en grillad abborre, 23 cm" / "en stekt …" / "en bränd …". */
@@ -233,7 +241,7 @@ export class Fishing {
    *  off the heat cooked, not burnt), onEaten(fish, state); `cookers` = { grills: [Grill], pan } (main.js) for keep.js. */
   constructor({ scene, camera, riverFish, player, groundY, onMessage = () => {}, onItem = () => {}, touch = () => false, rnd = Math.random }) {
     const nop = () => {};
-    Object.assign(this, { onRod: nop, onCatch: nop, onCooked: nop, onBurnt: nop, onTakenCooked: nop, onEaten: nop, cookers: { grills: [], pan: null } });
+    Object.assign(this, { onRod: nop, onCatch: nop, onCooked: nop, onBurnt: nop, onTakenCooked: nop, onEaten: nop, onCatFed: nop, cookers: { grills: [], pan: null } });
     Object.assign(this, { scene, camera, riverFish, player, onMessage, onItem, touch, rnd, state: 'idle', t: 0, fish: [], shy: new Map(), at: new THREE.Vector3(), from: new THREE.Vector3(), bite: null, pending: null, waitT: 0, hinted: false, peers: null, remote: [], aimAt: null, aimFrame: -1, frame: 0, catches: 0, misses: 0 });
     this.rod = new FishingRod(scene, camera, this, groundY);
     const fgeo = floatGeometry();
@@ -331,6 +339,10 @@ export class Fishing {
   takenOff(fish, from) { if (fish.cooked && !fish.burnt) this.onTakenCooked(fish, from.kind); }
   /** #1754: the last bite eaten (`state` = how it was cooked). */
   eaten(fish, state) { this.fish = this.fish.filter((f) => f !== fish); this.onEaten(fish, state); }
+  /** #1766: the raw fish lying loose or held out: what the cats may eat (`cat.fishSource`). */
+  get feedable() { return this.fish.filter((f) => f.state === 'placed'); }
+  /** #1766: a cat ate a raw fish: gone, counted by `onCatFed` (not eaten by you: the quest and `onEaten` stay out of it). */
+  eatenByCat(fish) { fish.remove(); this.fish = this.fish.filter((f) => f !== fish); this.onCatFed(fish); }
   /** #1754: the caught fish cooking in the pan / on grill `g` now (or null). */
   inPan(pan = this.cookers.pan) { return this.fish.find((f) => !f.broken && f.heat?.kind === 'pan' && f.heat.pan === pan) ?? null; }
   onGrill(g) { return this.fish.find((f) => !f.broken && f.heat?.kind === 'grill' && f.heat.grill === g) ?? null; }
