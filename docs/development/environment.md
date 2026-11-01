@@ -100,6 +100,10 @@ src/streetlife.js      life on the street (SITE.life, #113): the car park as on 
 src/patiohedge.js      all patio hedges (#680): rounded corners, tapered foot and a gently uneven top, one shared leaf atlas
                        (#1143: dented form, dark foot, stems and tone variation from the shared src/hedgeform.js, plants.md)
                        from boxwood.js; exterior.js merges ours and the neighbours into one mesh; original collision/snow kept
+src/screenwall.js      #1786: the patio / roof-terrace screen walls (skärmväggar, SCREEN_WALL, all *guess* from Peab's render
+                       docs/peab-radhusrad-innergard.png): greige-olive vertical boards in a cream frame, one shared canvas texture
+                       (u in metres along the wall, v over its height) + an end post per wall merged into the caller's batch
+                       (exterior.js's fence batch, world.js's own two walls); thickness, collision and occluders unchanged, no draw call
 src/patio.js           patio: Rusta Verona lounge + slatted table (#408), cushion box, parasol, planters with exotic plants;
                        #690: `dynbox(item)` with `inside: 'bow'` builds the same box empty (no blanket / cushions) and exposes
                        `userData.box` (lid, size); FURNITURE's second dynbox stands at the foot of the NW stair by Hus C's NW

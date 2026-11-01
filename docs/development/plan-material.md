@@ -172,7 +172,7 @@ material/              screenshots of our choices in Peab's option portal (local
   outwards behind a drawn blind. Blackout blinds up = the room gets dark by day (sun shadow + `DayCycle.dim`).
   An open casement plays `sfx.wind` (looping gusty noise) until it is closed. The front door has a brass letter
   flap (`letterFlap`, an Openable in world.lids riding on the leaf, kept out of the door's merge via `door.keep`).
-- Skärmvägg by the patio H 1.8 m, stair railing H 1.1 m (bofakta). The railing's middle run stands on Entréplan's wall between
+- Skärmvägg by the patio H 1.8 m, stair railing H 1.1 m (bofakta). Look (#1786, *guess* from `docs/peab-radhusrad-innergard.png`): greige-olive vertical boards in a light cream frame (`SCREEN_WALL`). The railing's middle run stands on Entréplan's wall between
   the flights, carried up to the upstairs floor (no slab in the hole), with newel posts (`STAIR.newel`) at its corner and ends (#232).
   Handrails (#419, `STAIR.handrail`, all sizes *guess*): one continuous wall-side rail (living-room wall along flight A,
   the east party wall round the winders, the north wall along flight B) and one per flight on the inner side (the Klk wall

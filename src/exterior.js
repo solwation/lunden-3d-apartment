@@ -9,6 +9,7 @@ import { groundY } from './surroundings.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow } from './groundglow.js';
 import { pavingTexture } from './patio.js';
 import { patioHedgeGeometry } from './patiohedge.js';
+import { screenWallParts } from './screenwall.js';
 import { portikPlan } from './portik.js';
 import { buildEntrancePlants } from './entranceplants.js';
 import { buildTerraceDecor } from './terracedecor.js';
@@ -336,7 +337,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
       const fx = (x) => (x < W / 2 ? ux0 : ux1) - ox;
       if (ox + fx(f.a[0]) > -0.25 && ox + fx(f.a[0]) < W + 0.25) continue;
       f = { a: [fx(f.a[0]), f.a[1]], b: [fx(f.b[0]), f.b[1]] };
-      fences.push(boxGeo(ox + f.a[0] - 0.025, ox + f.b[0] + 0.025, 0, FENCE_HEIGHT, Math.min(f.a[1], f.b[1]), Math.max(f.a[1], f.b[1])));
+      fences.push(...screenWallParts(ox + f.a[0] - 0.025, ox + f.b[0] + 0.025, 0, FENCE_HEIGHT, Math.min(f.a[1], f.b[1]), Math.max(f.a[1], f.b[1]))); // #1786 boards + posts
       fenceRects.push({ x0: ox + f.a[0] - 0.025, x1: ox + f.b[0] + 0.025, z0: Math.min(f.a[1], f.b[1]), z1: Math.max(f.a[1], f.b[1]), y0: 0, y1: FENCE_HEIGHT });
       segments.push([ox + f.a[0], f.a[1], ox + f.b[0], f.b[1]]);
     }
@@ -495,7 +496,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   }
   for (let i = 0; i + 1 < terraces.length; i++) { // skärmvägg h 1.8 where two terraces meet (not at the loft, the gables)
     const x = terraces[i].x1;
-    if (Math.abs(terraces[i + 1].x0 - x) < 1e-3) fences.push(boxGeo(x - 0.03, x + 0.03, deckY, deckY + C.screen, zs, zp));
+    if (Math.abs(terraces[i + 1].x0 - x) < 1e-3) fences.push(...screenWallParts(x - 0.03, x + 0.03, deckY, deckY + C.screen, zs, zp));
   }
   const edges = [...new Set(uppers.flatMap(([a, b]) => [a, b]).map((x) => +x.toFixed(3)))];
   const pw = H.pilaster / 2;

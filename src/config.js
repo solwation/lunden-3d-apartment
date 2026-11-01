@@ -1943,6 +1943,16 @@ export const FOLIAGE = {
 };
 
 export const FENCE_HEIGHT = 1.8; // bofakta: Skärmvägg H = 1,8 m
+// #1786: how the patio / roof-terrace screen walls (skärmväggar) look. Peab's courtyard render (docs/peab-radhusrad-innergard.png)
+// shows them as greige-olive vertical boards in a light cream frame, not a flat plane; boards, colours and post width are
+// read by eye from that render (*guess*). The thickness stays the drawn 5 cm (patio, plan.json site.fences) / 6 cm (terraces),
+// so collision, furniture clearances and occluders are unchanged; posts are as thick as the wall. One shared canvas texture,
+// UVs u in metres along the wall, v over the wall's height (src/screenwall.js) — no extra material or draw call.
+export const SCREEN_WALL = {
+  board: 0.09, boards: 8, // m per board, boards per texture repeat
+  color: [158, 151, 118], vary: 0.06, groove: [98, 92, 72], // boards (sRGB), ±vary brightness per board, the gaps between them
+  frame: [214, 207, 182], rail: 0.06, post: 0.07, // the cream top rail (m from the top) and the end posts (m along the wall)
+};
 
 export const BUILDING = { // unused (HUS_L replaced it); kept in step with VERTICAL
   upperStoreys: VERTICAL.upper.storeys,   // the stacked unit above (two storeys)
@@ -4196,7 +4206,7 @@ export const COLORS = {
   grass: 0x7fa65c,
   patio: 0xbdb7ab,
   hedge: 0x46703a,
-  fence: 0xa7b6aa, // grey-green screen wall (skärmvägg), Peab render
+  fence: 0xa7b6aa, // grey-green screen wall (skärmvägg) until #1786; the walls now use SCREEN_WALL's board texture
   brick: 0x8a3b2a,
   mortar: 0xcfc6b8,
   balcony: 0x8fa396, // pinnaräcke grågrön (brochure)
