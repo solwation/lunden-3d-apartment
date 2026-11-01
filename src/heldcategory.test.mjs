@@ -28,7 +28,7 @@ test('life items follow their tags', () => {
   assert.equal(heldCategory(life(['food'])), 'food');
   assert.equal(heldCategory(life(['food', 'package'])), 'box');
   assert.equal(heldCategory(life(['toiletRoll'])), 'paper');
-  assert.equal(heldCategory(life(['laundry'])), 'box');
+  assert.equal(heldCategory(life(['hallShoes'])), 'box');
 });
 test('every result is on the whitelist; cleanHeldCategory drops anything else', () => {
   for (const k of HELD_CATEGORIES) assert.equal(cleanHeldCategory(k), k);
@@ -41,4 +41,17 @@ test('#1687: a billiard cue is a cue (by flag and by class name), never the gene
   class BilliardCue {}
   assert.equal(heldCategory(new BilliardCue()), 'cue');
   assert.ok(HELD_CATEGORIES.includes('cue'));
+});
+
+test('#1755: binoculars, spray cans, gifts, bags and fish fingers are no longer the generic box', () => {
+  assert.equal(heldCategory({ isBinoculars: true }), 'binoculars');
+  assert.equal(heldCategory({ isSprayCan: true }), 'spray');
+  assert.equal(heldCategory(make('Binoculars')), 'binoculars');
+  assert.equal(heldCategory(make('SprayCan')), 'spray');
+  assert.equal(heldCategory(make('ChristmasGift')), 'gift');
+  assert.equal(heldCategory({ isFish: true }), 'food');
+  assert.equal(heldCategory(life(['rubbishBag'])), 'bag');
+  assert.equal(heldCategory(life(['laundry'])), 'bag');
+  assert.equal(heldCategory(make('Nut', { isSquirrelNut: true })), 'nut');
+  for (const k of ['nut', 'binoculars', 'spray', 'gift', 'bag']) assert.ok(HELD_CATEGORIES.includes(k), k);
 });

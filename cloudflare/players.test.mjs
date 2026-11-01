@@ -1631,6 +1631,11 @@ test('#1297 hi travels through the room: forwarded to others, in the late welcom
   assert.equal('hi' in b.states().at(-1), false, 'an empty hand clears it');
 });
 
+test('#1755 the new held categories (nut, binoculars, spray, gift, bag) reach the other client unchanged', async () => {
+  const env = setup(), a = await connect(env, 'Olof'), b = await connect(env);
+  for (const k of ['nut', 'binoculars', 'spray', 'gift', 'bag']) { now += 1000; a.send({ p: [1, 0, 2], r: 0, hi: k }); await settle(env); assert.equal(b.states().at(-1).hi, k, k); }
+});
+
 test('sound events (#1302): a whitelisted key only, to the players within range, rate-limited, never echoed; the client list matches', async () => {
   assert.deepEqual(PLAYERS.sounds, SOUNDS.kinds, 'the room\'s whitelist equals the client\'s');
   assert.ok(PLAYERS.soundEvery <= SOUNDS.every);

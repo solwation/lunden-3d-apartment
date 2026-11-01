@@ -70,6 +70,18 @@ const S_farHas = (g) => g.far.n > 0 && g.far.n !== g.far.expect;
       return { visibleNut: item.model.visible, targeted: seen, held: a.heldItem() === item, name: f?.name, count: S.nuts.count };
     });
     check(pick.visibleNut && pick.targeted && pick.held, 'a nut on the ground is aimed at and taken into the hand with E', pick);
+    // (2b) #1755: the nut in the hand goes down on the open ground (E on a 'place' target) and can be taken again; its slot follows
+    const put = await page.evaluate(() => {
+      T.seed(3); const { a, S } = T, item = a.heldItem(), slot = item.slot; a.player.crouch = false; T.run(12);
+      const p = a.camera.position, yaw = a.camera.rotation.y, gx = p.x - Math.sin(yaw) * 1.6, gz = p.z - Math.cos(yaw) * 1.6; T.aim(gx, S.ground(gx, gz), gz, 5);
+      const f = a.focus().focused, out = { kind: f?.kind, name: f?.name };
+      if (f?.kind === 'place') a.use(f);
+      T.run(3); out.held = a.heldItem() === item; out.heldFlag = slot.held; out.lying = slot.alive && !slot.held; out.atGround = Math.abs(item.model.position.y - S.ground(item.model.position.x, item.model.position.z)) < 0.1;
+      out.shown = item.model.visible; T.stand(item.model.position.x + 0.7, item.model.position.z + 0.4); a.player.crouch = true; T.run(12); T.aim(item.model.position.x, item.model.position.y, item.model.position.z);
+      const g = a.focus().focused; out.retarget = g?.item === item; if (g?.item === item) a.use(g); out.again = a.heldItem() === item; return out;
+    });
+    check(put.kind === 'place' && !put.held && put.lying && put.atGround && put.shown && put.retarget && put.again, 'a held nut is put down on open ground with E and taken up again (#1755)', put);
+    await page.evaluate(() => { const { a } = T; if (!a.heldItem()) return; });
     // (3) crouch still with the nut: feeding
     const feed = await page.evaluate(() => {
       T.seed(4); const { a, S } = T, b = S.animals[0].brain, pl = a.player.pos; window.chirps = []; S.sfx = { chirp: (p, k) => window.chirps.push({ x: p.x, y: p.y, z: p.z, k }) }; const d = a.camera.getWorldDirection(new (a.camera.position.constructor)());
@@ -120,7 +132,7 @@ const S_farHas = (g) => g.far.n > 0 && g.far.n !== g.far.expect;
     // (4b) #1698: somebody runs past a squirrel that creeps up to a still, crouching feeder: it takes fright and runs up a tree
     const scare = await page.evaluate(() => {
       T.seed(8); const { a, S } = T; a.player.crouch = false; T.run(15); S.animals.forEach((q) => { q.brain.hasNut = false; q.brain.calmT = 0; });
-      const slot = S.nuts.slots.find((s) => s.alive && !s.held); T.stand(slot.x + 0.6, slot.z + 0.3); a.player.crouch = true; T.run(12); T.aim(slot.x, slot.y + 0.02, slot.z); a.use(a.focus().focused);
+      const slot = S.nuts.slots.find((s) => s.alive && !s.held); T.stand(slot.x + 0.6, slot.z + 0.3); a.player.crouch = true; T.run(12); T.aim(slot.x, slot.y + 0.02, slot.z); if (!a.heldItem()) a.use(a.focus().focused); // (#1755: with a nut already in hand E on the ground now puts it down)
       T.run(15, 0.05); const still = S.player_.lure; // (still crouched with the nut for 0.75 s)
       const b = S.animals[1].brain, pl = a.player.pos, d = a.camera.getWorldDirection(new (a.camera.position.constructor)()), l = Math.hypot(d.x, d.z) || 1;
       const gx = pl.x + d.x / l * 6, gz = pl.z + d.z / l * 6; Object.assign(b, { x: gx, z: gz, y: S.ground(gx, gz) }); b.startForage(); b.set('forage', 30); b.goal.x = gx; b.goal.z = gz;

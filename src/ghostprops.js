@@ -137,7 +137,16 @@ const ITEM_PARTS = {
   cue: () => { const L = 1.2, tilt = -Math.PI / 2 - 0.3, bit = (g) => g.translate(0, -0.35, 0).rotateX(tilt);
     return [[bit(new THREE.CylinderGeometry(0.004, 0.009, L - 0.05, 6).translate(0, (L - 0.05) / 2, 0)), 0x976333, [0, 0, 0]], [bit(new THREE.CylinderGeometry(0.004, 0.004, 0.05, 6).translate(0, L - 0.025, 0)), 0xe9dfc4, [0, 0, 0]]]; },
   box: () => [[new THREE.BoxGeometry(0.13, 0.09, 0.13), 0xb98f5c, [0, 0.02, -0.1]]],
-  nut: () => [[new THREE.IcosahedronGeometry(0.035, 0), 0xc19a5b, [0, 0.03, -0.1]]], // #1686: a squirrel nut in the hand
+  // #1755: a recognisable nut instead of a faceted lump: an ovoid hazel-brown body with a darker acorn cup and a stalk (~60 triangles)
+  nut: () => [[new THREE.SphereGeometry(0.024, 6, 4).scale(1, 1.35, 1), 0xb9823f, [0, 0.03, -0.1]], [new THREE.SphereGeometry(0.026, 6, 2, 0, Math.PI * 2, 0, Math.PI / 2).translate(0, 0.012, 0), 0x5b3b1f, [0, 0.03, -0.1]], [new THREE.BoxGeometry(0.006, 0.014, 0.006), 0x3b2814, [0, 0.077, -0.1]]],
+  // #1755: binoculars (#1706): two barrels and a bridge, the lenses facing ahead
+  binoculars: () => [[new THREE.CylinderGeometry(0.03, 0.026, 0.13, 6).rotateX(Math.PI / 2), 0x2a2d31, [-0.04, 0.03, -0.12]], [new THREE.CylinderGeometry(0.03, 0.026, 0.13, 6).rotateX(Math.PI / 2), 0x2a2d31, [0.04, 0.03, -0.12]], [new THREE.BoxGeometry(0.05, 0.02, 0.05), 0x444a50, [0, 0.03, -0.12]]],
+  // #1755: a spray can (#1707): body, a coloured cap and the nozzle
+  spray: () => [[new THREE.CylinderGeometry(0.033, 0.033, 0.15, 6), 0xc9ccd0, [0, 0.04, -0.1]], [new THREE.CylinderGeometry(0.03, 0.033, 0.035, 6), 0xd23b3b, [0, 0.135, -0.1]], [new THREE.BoxGeometry(0.014, 0.012, 0.02), 0x222222, [0, 0.16, -0.108]]],
+  // #1755: a wrapped Christmas gift: a red box with a crossed ribbon
+  gift: () => [[new THREE.BoxGeometry(0.14, 0.12, 0.14), 0xb02a2a, [0, 0.03, -0.12]], [new THREE.BoxGeometry(0.146, 0.126, 0.026), 0xe8c24a, [0, 0.03, -0.12]], [new THREE.BoxGeometry(0.026, 0.126, 0.146), 0xe8c24a, [0, 0.03, -0.12]]],
+  // #1755: a rubbish / laundry bag: a soft sack with a knotted neck
+  bag: () => [[new THREE.IcosahedronGeometry(0.085, 0).scale(1, 1.15, 1), 0x56606b, [0, 0.03, -0.12]], [new THREE.CylinderGeometry(0.014, 0.022, 0.04, 5), 0x56606b, [0, 0.14, -0.12]]],
 };
 const itemCache = new Map();
 /** A new proxy mesh for held-item category `key`, or null for an unknown one; geometry and material shared by every ghost. */

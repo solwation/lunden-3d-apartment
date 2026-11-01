@@ -15,7 +15,7 @@ import { Ghost } from '../src/ghosts.js';
 import { HELD_CATEGORIES } from '../src/heldcategory.js';
 import { ghostItemTriangles } from '../src/ghostprops.js';
 const CASES = [...HELD_CATEGORIES.map((k) => [k, '']), ['', ''], ['cup', 'saber']]; // [hi, h]
-const W = 1800, Hh = 460, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+const W = 2400, Hh = 460, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 renderer.setSize(W, Hh); document.body.appendChild(renderer.domElement);
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
 scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));

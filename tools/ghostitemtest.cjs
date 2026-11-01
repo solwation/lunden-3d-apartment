@@ -3,12 +3,12 @@
 const fs = require('fs'), os = require('os'), path = require('path');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const [base = 'http://localhost:8791', out = '/tmp/shots1297'] = process.argv.slice(2);
-const CATS = ['cup', 'plate', 'food', 'bottle', 'book', 'paper', 'tool', 'plant', 'cue', 'box'];
+const CATS = ['cup', 'plate', 'food', 'bottle', 'book', 'paper', 'tool', 'plant', 'cue', 'box', 'nut', 'binoculars', 'spray', 'gift', 'bag']; // = HELD_CATEGORIES (#1755: the last five)
 (async () => {
   fs.mkdirSync(out, { recursive: true });
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghostitem-'));
   const ctx = await chromium.launchPersistentContext(dir, { headless: true, executablePath: process.env.CHROME_PATH,
-    viewport: { width: 1800, height: 460 }, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+    viewport: { width: 2400, height: 460 }, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   const errors = [];
   try {
     const page = await ctx.newPage();

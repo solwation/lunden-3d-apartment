@@ -154,7 +154,7 @@ class Nut extends Holdable {
     };
     super(scene, camera, { name: 'en nöt', verb: 'ta', backName: 'marken', backVerb: 'lägga', model: mesh, home: { pos: new THREE.Vector3(), rot: new THREE.Euler() },
       heldPose: { pos: new THREE.Vector3(0.14, -0.15, -0.36), rot: new THREE.Euler(0.5, 0.7, 0.3) }, pick: { pos: new THREE.Vector3(), size: [0.1, 0.1, 0.1] } });
-    Object.assign(this, { slot, host, isSquirrelNut: true, broken: true });
+    Object.assign(this, { slot, host, isSquirrelNut: true, outdoorPlace: true, broken: true }); // #1755: `outdoorPlace`: the park has no floor plane (floorSpot is indoor-only), so E puts it down on the ground like a cat (outdoorSpot)
     this.pickMesh = this.holder.children[this.holder.children.length - 1];
   }
   onTake() { this.slot.held = true; this.slot.by = null; this.slot.age = 0; this.host.sync.take(this.slot); }
