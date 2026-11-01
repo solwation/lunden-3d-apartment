@@ -7578,29 +7578,56 @@ export const SPRAY = {
   share: { block: 120, every: 1.2 },
 };
 
-// ---- Outdoor cats (#1767, src/outdoorcatroute.js, src/outdoorcats.js) ----
+// ---- Outdoor cats (#1767, src/outdoorcatroute.js, src/outdoorcats.js; #1772 brains: src/outdoorcatbrain.js) ----
 // A few cats of their own roam the area: two on the courtyard lawns, two in the river park's central lawn by Höje å. Each walks a
 // fixed loop of `route` points [x, z] (on grass, clear of roads and water, checked by tools/outdoorcatstest.cjs) and rests `rest` s at
-// each point (washing, looking about or asleep in the sun, drawn per lap); where it is is a pure function of the wall clock (s since
-// `epoch`, + its `phase` s), so every visitor sees roughly the same cat in the same place (no shared sync). Breeds and coats come
-// from cat.js BREEDS (by name). They shelter (fade out) in rain over `rain` and are away in the snow months (SEASON.snowMonths).
+// each point; where it is is a pure function of the wall clock (s since `epoch`, + its `phase` s), so every visitor sees roughly the
+// same cat in the same place (no shared sync). Breeds and coats come from cat.js BREEDS (by name). They shelter (fade out) in rain over
+// `rain` and are away in the snow months (SEASON.snowMonths).
 //  drawDist / drawDistPhone: m from the eye to a drawn cat (desktop / lowMemory); `near`: within this the full animated cat (~23 draw
 //    calls), beyond it one merged mesh (1 draw call, the sitting or standing pose). speed / returnSpeed: m/s along the route / going
 //    home. notice: m at which a cat stops and sits down to look at an approaching visitor; `take`: m at which it becomes the ordinary
 //    cat (cat.js CatSpawner: pet, carry, put down) while that cat is free; `release`: m walked away before it goes back to its loop;
 //    maxReturn: m beyond which (or with a road / water / a drop in the way) it fades out and turns up on its loop again after `away` s.
 //    fade: s to fade in / out. All numbers and names are our picks (*guess*).
+// #1772: each cat has a personality (`traits` 0 … 1: social, play, lazy, shy, curious; `kind` names it) and a brain
+// (src/outdoorcatbrain.js): at every rest stop a small utility AI weighs its needs (energy, play, company, hunger; `brain.needs`
+// drift / effects per behaviour) by its traits and picks what to do there: rest (wash / look about), sleep in the sun, wait for
+// company, explore (sniff about), stalk (creep and pounce), chase a butterfly, climb a tree. The choice and the whole outing are a pure
+// function of the wall clock and the cat's seed (the brain re-runs its needs from the start of each block of `brain.block` stops), so
+// every visitor still sees the same cat doing the same thing. Only how it meets *this* visitor is local, as before: a social cat walks
+// up from `brain.seekRange` × social m (all the way while it waits for company), and after being met follows a little; a shy one keeps
+// `brain.shyRange` m away unless the visitor stands still `brain.shyCalm` s. Outings go no further than `brain.reach` m from the stop,
+// on ground the cat may walk (the `walkable` / drop check of the way home, sampled every 0.5 m) and back the same way. Butterflies only
+// by day (`brain.butterflyHours`) in `brain.butterflyMonths`; a tree only within `brain.climbReach` m (surroundings.js treeFeet /
+// aoTrees, like the squirrels), up to `brain.branch` m. All numbers are our picks (*guess*).
 export const OUTDOOR_CATS = {
   epoch: 1793491200, drawDist: 32, drawDistPhone: 18, near: 7, speed: 0.42, returnSpeed: 0.85, notice: 4.5, take: 3.2, release: 8,
   maxReturn: 45, away: 30, fade: 1.2, rain: 0.12, maxStep: 0.6,
+  brain: {
+    block: 16, noise: 0.22, margin: 12, trot: 0.75, creep: 0.22, climb: 0.7, reach: 7, climbReach: 9, branch: [1.3, 2.6],
+    butterflyMonths: [5, 6, 7, 8, 9], butterflyHours: [9, 19], seekRange: 13, seekSpeed: 0.75, seekStop: 1.3, followTime: 8,
+    shyRange: 6, shyCalm: 4, fleeSpeed: 0.95, preyRange: 9,
+    // what an outing needs at least (s of the rest), and per behaviour the change of each need (energy up = rested; the others are urges)
+    minRest: { rest: 0, sleep: 25, seek: 15, explore: 22, stalk: 26, butterfly: 30, climb: 38 },
+    needs: {
+      drift: { energy: -0.05, play: 0.1, social: 0.09, hunger: 0.05 },
+      rest: { energy: 0.12 }, sleep: { energy: 0.45, play: -0.05 }, seek: { social: -0.6 }, explore: { energy: -0.06, play: -0.15 },
+      stalk: { energy: -0.12, hunger: -0.45, play: -0.2 }, butterfly: { energy: -0.22, play: -0.6 }, climb: { energy: -0.2, play: -0.55 },
+    },
+  },
   cats: [
-    { name: 'Sotis', breed: 'huskatt', coat: 'svart', zone: 'innergården', phase: 0, rest: [24, 10, 40, 14, 30, 8],
+    { name: 'Sotis', breed: 'huskatt', coat: 'svart', zone: 'innergården', phase: 0, rest: [50, 25, 80, 30, 70, 20], kind: 'social',
+      traits: { social: 0.95, play: 0.35, lazy: 0.3, shy: 0, curious: 0.45 },
       route: [[-10, 21], [-4, 20.6], [2, 21.4], [7, 23.4], [1, 24.2], [-6, 24]] },
-    { name: 'Kanel', breed: 'maine coon', coat: 'rödrandig', zone: 'innergården', phase: 140, rest: [30, 12, 20, 45, 10],
+    { name: 'Kanel', breed: 'maine coon', coat: 'rödrandig', zone: 'innergården', phase: 140, rest: [70, 30, 50, 90, 25], kind: 'lazy',
+      traits: { social: 0.45, play: 0.2, lazy: 0.95, shy: 0.1, curious: 0.25 },
       route: [[-43, 20.6], [-39.5, 21.2], [-39.5, 28.4], [-43, 28.6], [-44, 24.5]] },
-    { name: 'Findus', breed: 'norsk skogkatt', coat: 'grå', zone: 'parken vid Höje å', phase: 60, rest: [35, 15, 50, 12, 25, 18],
+    { name: 'Findus', breed: 'norsk skogkatt', coat: 'grå', zone: 'parken vid Höje å', phase: 60, rest: [75, 35, 90, 30, 60, 45], kind: 'playful',
+      traits: { social: 0.3, play: 0.95, lazy: 0.15, shy: 0.2, curious: 0.6 },
       route: [[-80, 95], [-62, 92], [-52, 100], [-58, 112], [-75, 115], [-85, 106]] },
-    { name: 'Smulan', breed: 'huskatt', coat: 'röd och vit', zone: 'parken vid Höje å', phase: 300, rest: [20, 40, 15, 30],
+    { name: 'Smulan', breed: 'huskatt', coat: 'röd och vit', zone: 'parken vid Höje å', phase: 300, rest: [45, 80, 35, 70], kind: 'shy',
+      traits: { social: 0.1, play: 0.4, lazy: 0.35, shy: 0.9, curious: 0.85 },
       route: [[-70, 100], [-56, 98], [-60, 106], [-72, 108]] },
   ],
 };

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { OUTDOOR_CATS, SEASON } from './config.js';
 import { BREEDS, createCatPuppet, catLabel } from './cat.js';
-import { routePlan, catAt } from './outdoorcatroute.js';
+import { OutdoorCatBrain, turnTo } from './outdoorcatbrain.js';
 import { registerSeasonal } from './seasons.js';
 
 // #1767: outdoor cats. A few cats of their own roam the courtyard and the river park (OUTDOOR_CATS in config.js): each walks its loop
@@ -13,6 +13,10 @@ import { registerSeasonal } from './seasons.js';
 // whatever else that cat can do later (being fed, #1766) comes with it. Walked away from (or put down outdoors and left), it turns
 // back into the roaming cat and walks home to its loop; carried off too far, indoors or with a road/water in the way it fades and
 // turns up on its loop again later. Hidden in rain (it shelters) and in the snow months. Per client, no shared sync.
+// #1772: each cat has a personality and a brain (outdoorcatbrain.js) that picks what it does at each rest stop (sleep, wait for
+// company, explore, stalk, chase a butterfly, climb a tree) and how it meets the visitor (a social cat walks up and follows a little,
+// a shy one keeps away). The brain owns where the cat is (x, z, h above the ground, yaw, pitch) and its state; this file draws it,
+// turns it into the ordinary cat and back, and fades it (isOut: sheltering, snow months).
 
 const C = OUTDOOR_CATS;
 
@@ -44,17 +48,37 @@ function bakePose(p, stand) {
 export class OutdoorCats {
   /**
    * `cat`: main.js's CatSpawner (the ordinary cat an outdoor cat turns into); `ground(x, z)`: the terrain height; `walkable(x, z)`:
-   * not road, not water (the way home is checked with it); `lowMemory`: phones draw nearer.
+   * not road, not water (the way home is checked with it); `lowMemory`: phones draw nearer. #1772: `free(x, z)`: no wall or fence there
+   * (outings); `feet` / `crowns`: surroundings.js treeFeet / aoTrees (the trees a cat may climb); `hour()` / `month()`: the game's day;
+   * `prey()`: squirrels on the ground [{ x, z }].
    */
-  constructor({ scene, camera, cat, ground, walkable = () => true, lowMemory = false }) {
+  constructor({ scene, camera, cat, ground, walkable = () => true, free = null, feet = [], crowns = [], hour = () => 12, month = () => 7, prey = null, lowMemory = false }) {
     Object.assign(this, { scene, camera, cat, ground, walkable });
     this.drawDist = lowMemory ? C.drawDistPhone : C.drawDist;
     this.now = () => Date.now() / 1000; // tests replace it
     this.winter = false;
     this.rain = 0;
+    this.still = 0; // s the visitor has stood still (a shy cat calms)
+    this.lastEye = null;
     this.bound = null; // the outdoor cat that is the ordinary cat just now
+    this.env = { now: () => this.now(), hour, month, ground, prey, free, clear: (ax, az, bx, bz) => this.clearWay(ax, az, bx, bz), trees: this.climbable(feet, crowns) };
+    this.bfGeo = butterflyGeometry();
     this.cats = C.cats.map((spec, id) => this.makeCat(spec, id));
     registerSeasonal((month) => { this.winter = SEASON.snowMonths.includes(month); });
+  }
+
+  /** The trees near the loops, each with its crown (for the branch height), like the squirrels' (squirrels.js), and its trunk's radius
+   * at the foot and height (`tr`, `th`: surroundings.js trees() and foliage.js trunkGeometry, base radius 0.2 × the trunk's width scale;
+   * the tree's scale from its crown). Young maples and weeping trees are too slender or too hanging to climb. */
+  climbable(feet, crowns) {
+    const near = (f) => C.cats.some((s) => s.route.some(([x, z]) => Math.hypot(f.x - x, f.z - z) < C.brain.reach + C.brain.climbReach));
+    const kinds = { big: [4.6, 0.4, 4.6], tree: [2.4, 0.2, 3.2], birch: [1.4, 0.11, 4.4] }; // crown r / s, trunk base radius / s, trunk height / s
+    return feet.filter((f) => kinds[f.kind] && near(f)).map((f) => {
+      let best = null, bd = 0.05; for (const c of crowns) { const d = Math.hypot(c.x - f.x, c.z - f.z); if (d < bd) { bd = d; best = c; } }
+      if (!best) return null;
+      const [cr, tr, th] = kinds[f.kind], s = best.r / cr;
+      return { x: f.x, z: f.z, y: f.y, cy: best.y, r: best.r, tr: tr * s, th: th * s };
+    }).filter(Boolean);
   }
 
   makeCat(spec, id) {
@@ -64,6 +88,7 @@ export class OutdoorCats {
     const group = new THREE.Group();
     group.name = `outdoor-cat-${spec.name}`;
     group.visible = false;
+    group.rotation.order = 'YXZ'; // (yaw, then the pitch of a cat on a trunk)
     const lodMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, transparent: true });
     const lods = [bakePose(puppet, 0), bakePose(puppet, 1)].map((g) => {
       const m = new THREE.Mesh(g, lodMat);
@@ -80,17 +105,22 @@ export class OutdoorCats {
     // its spot at start-up and hid it on the lawn
     group.traverse((o) => { if (o.isMesh) o.userData.noDetail = true; });
     this.scene.add(group);
-    const plan = routePlan(spec.route, spec.rest, C.speed);
-    const c = { id, spec, name: spec.name, breed, coat, puppet, group, lods, lodMat, plan, st: 'route', alpha: 0, x: 0, z: 0, yaw: 0,
-      awayUntil: 0, found: false, t: Math.random() * 6, at: null, checkT: 0 };
-    this.place(c, this.scheduled(c));
+    // #1772: the butterfly it chases (one mesh, drawn only near, only while it is about)
+    const bf = new THREE.Mesh(this.bfGeo, new THREE.MeshLambertMaterial({ color: spec.zone === 'innergården' ? 0xf2dc3c : 0xe8762a, side: THREE.DoubleSide })); // (a brimstone, a small tortoiseshell)
+    Object.assign(bf, { visible: false, name: `butterfly-${spec.name}` }); bf.raycast = () => {}; bf.userData.noDetail = true;
+    this.scene.add(bf);
+    const c = new OutdoorCatBrain(spec, id, this.env);
+    Object.assign(c, { breed, coat, puppet, group, lods, lodMat, bfMesh: bf, alpha: 0, awayUntil: 0, found: false, t: Math.random() * 6 });
     return c;
   }
 
-  /** Where `c`'s loop has it now. */
-  scheduled(c) { return catAt(c.plan, this.now() - C.epoch + c.spec.phase, c.id); }
+  /** #1772 / #1773: is the cat out at all (not sheltering from the rain, not in the snow months)? The one place that decides it. */
+  isOut() { return !this.winter && this.rain <= C.rain; }
 
-  place(c, s) { c.x = s.x; c.z = s.z; c.yaw = s.yaw; c.at = s; }
+  /** Where `c`'s loop has it now. */
+  scheduled(c) { return c.scheduled(this.now()); }
+
+  place(c, s) { c.x = s.x; c.z = s.z; c.yaw = s.yaw; c.h = 0; c.pitch = 0; c.at = s; }
 
   /** Is the straight way from (ax, az) to (bx, bz) on walkable ground with no drop (a retaining wall, a bank)? */
   clearWay(ax, az, bx, bz) {
@@ -121,14 +151,15 @@ export class OutdoorCats {
     k.pose(0);
     c.st = 'bound';
     this.bound = c;
-    c.group.visible = false;
+    c.group.visible = false; c.bfMesh.visible = false;
     if (!c.found) { c.found = true; k.onFound?.(catLabel(c.breed, c.coat), !!c.breed.rare, c.breed.name, false); } // found once per visit
   }
 
-  /** The ordinary cat that was `c` is left alone outdoors: `c` takes over again there and walks home. */
+  /** The ordinary cat that was `c` is left alone outdoors: `c` takes over again there and walks home (#1772: a social one follows a little first). */
   demote(c) {
     const k = this.cat, p = k.object.position;
-    Object.assign(c, { x: p.x, z: p.z, yaw: k.object.rotation.y, st: 'home', alpha: 1, checkT: 0 });
+    Object.assign(c, { x: p.x, z: p.z, yaw: k.object.rotation.y, h: 0, pitch: 0, alpha: 1 });
+    c.set(c.traits.social >= 0.6 ? 'follow' : 'home');
     k.outdoorCat = null;
     k.hide();
     Object.assign(c.puppet, { stand: 0, wantStand: 0 });
@@ -141,6 +172,9 @@ export class OutdoorCats {
   update(dt, hidden = false, rain = 0) {
     const eye = this.camera.position, k = this.cat;
     this.rain = rain;
+    const le = this.lastEye; // how long the visitor has stood still
+    this.still = le && dt > 0 && Math.hypot(eye.x - le.x, eye.z - le.z) / dt < 0.25 ? this.still + dt : dt > 0 ? 0 : this.still;
+    this.lastEye = { x: eye.x, z: eye.z };
     // a reload restored the ordinary cat sitting outdoors as one of ours (keep.js): it is that cat again
     if (!this.bound && k?.visible && k.outdoor && !k.held) {
       const c = this.cats.find((q) => q.name === k.catName && q.breed === k.breed && q.coat === k.variant);
@@ -158,84 +192,77 @@ export class OutdoorCats {
         && Math.abs(p.y - this.ground(p.x, p.z)) < 0.3) this.demote(c);
       return;
     }
-    const now = this.now(), s = this.scheduled(c), away = this.winter || this.rain > C.rain;
-    c.at = s;
+    const now = this.now(), out = this.isOut(c);
     if (c.st === 'away') {
-      if (now < c.awayUntil) { c.group.visible = false; return; }
-      c.st = 'route'; this.place(c, s); c.alpha = 0;
+      if (now < c.awayUntil) { c.group.visible = false; c.bfMesh.visible = false; return; }
+      c.resume(); c.alpha = 0;
     }
-    const gy = this.ground(c.x, c.z), d = Math.hypot(eye.x - c.x, eye.y - (Number.isFinite(gy) ? gy : 0), eye.z - c.z); // (3D: not drawn from a storey above)
-    // what it does: follow the loop, sit and look at a visitor coming up, or walk home
-    let walking = false, moved = 0, activity = 'look', faceEye = false;
-    if (c.st === 'route' || c.st === 'notice') {
-      const near = !hidden && !away && c.alpha > 0.5 && d < C.notice;
-      if (near) c.st = 'notice';
-      else if (c.st === 'notice' && d > C.notice + 1.5) c.st = 'home';
-    }
-    if (c.st === 'notice') {
-      faceEye = true;
-      if (d < C.take && c.puppet.stand < 0.05 && this.catFree()) { this.promote(c); return; }
-    } else if (c.st === 'home') {
-      const tx = s.x - c.x, tz = s.z - c.z, td = Math.hypot(tx, tz);
-      if (td < 0.25) c.st = 'route';
-      else {
-        if ((c.checkT -= dt) <= 0) { // a road, the river or a drop in the way, or too far: it fades and comes back later
-          c.checkT = 0.5;
-          if (td > C.maxReturn || !this.clearWay(c.x, c.z, s.x, s.z)) { c.st = 'away'; c.awayUntil = now + C.away; }
-        }
-        if (c.st === 'home') {
-          const go = Math.min(td, C.returnSpeed * dt * (c.puppet.stand > 0.8 ? 1 : 0));
-          c.x += tx / td * go; c.z += tz / td * go; moved = go; walking = true;
-          c.yaw = turnTo(c.yaw, Math.atan2(tx, tz), dt * 5);
-        }
-      }
-    }
-    if (c.st === 'route') {
-      moved = Math.hypot(s.x - c.x, s.z - c.z);
-      if (moved > 3) moved = 0; // (a jump: it was hidden or far away)
-      walking = s.walking; activity = s.activity;
-      c.x = s.x; c.z = s.z;
-      c.yaw = turnTo(c.yaw, s.yaw, dt * 4);
-    }
+    const gy = this.ground(c.x, c.z), d = Math.hypot(eye.x - c.x, eye.y - (Number.isFinite(gy) ? gy : 0) - c.h, eye.z - c.z); // (3D: not drawn from a storey above)
+    // the brain: its schedule (loop and outing) and how it meets the visitor; it only plans near the visitor
+    c.update(dt, { x: eye.x, z: eye.z, d, ok: !hidden && out && c.alpha > 0.5, still: this.still }, d < this.drawDist + C.brain.margin);
+    if (c.lost) { c.st = 'away'; c.awayUntil = now + C.away; } // a road, the river or a drop in the way home, or too far: it fades and comes back later
+    if (c.st === 'notice' && d < C.take && c.puppet.stand < 0.05 && c.h < 0.05 && this.catFree()) { this.promote(c); return; }
     // fade (sheltering, away, far) and draw
-    const show = !hidden && !away && c.st !== 'away';
+    const show = !hidden && out && c.st !== 'away';
     c.alpha = THREE.MathUtils.clamp(c.alpha + (show ? dt : -dt) / C.fade, 0, 1);
     const drawn = c.alpha > 0 && d < this.drawDist;
     c.group.visible = drawn;
-    if (!drawn) { if (c.st === 'notice') c.st = 'home'; return; }
+    if (!drawn) { if (c.st !== 'route' && c.st !== 'home' && c.st !== 'away') c.set('home'); c.bfMesh.visible = false; return; }
     const y = this.ground(c.x, c.z);
-    c.group.position.set(c.x, Number.isFinite(y) ? y : 0, c.z);
-    if (faceEye) c.yaw = turnTo(c.yaw, Math.atan2(eye.x - c.x, eye.z - c.z), dt * 3);
-    c.group.rotation.y = c.yaw;
-    const full = d < C.near, P = c.puppet;
+    c.group.position.set(c.x, (Number.isFinite(y) ? y : 0) + c.h, c.z);
+    c.group.rotation.set(c.pitchShown = turnTo(c.pitchShown ?? 0, c.pitch, dt * 5), c.yaw, 0);
+    const full = d < C.near, P = c.puppet, walking = c.walking;
     P.object.visible = full;
     c.lods[0].visible = !full && !walking;
     c.lods[1].visible = !full && walking;
     c.lodMat.opacity = c.alpha;
     for (const m of P.materials) m.opacity = c.alpha;
-    if (full) this.animate(c, dt, walking && !faceEye, moved, faceEye ? 'look' : activity);
+    if (full) this.animate(c, dt, walking && !c.faceEye, c.moved, c.faceEye ? 'look' : c.activity);
     else P.stand = walking ? 1 : 0;
+    // the butterfly, near only
+    const b = c.bf, bm = c.bfMesh;
+    bm.visible = !!b && full;
+    if (bm.visible) {
+      const by = this.ground(b.x, b.z);
+      bm.position.set(b.x, (Number.isFinite(by) ? by : 0) + b.y, b.z);
+      bm.rotation.y = Math.atan2(b.x - (bm.userData.px ?? b.x), b.z - (bm.userData.pz ?? b.z)) || bm.rotation.y;
+      bm.userData.px = b.x; bm.userData.pz = b.z;
+      bm.scale.set(0.25 + 0.75 * Math.abs(Math.sin(c.t * 16)), 1, 1); // its wings beat
+    }
   }
 
-  /** The full cat's pose this frame: walking, or sitting and washing / looking about / asleep. */
+  /** The full cat's pose this frame: walking (creeping, chasing, climbing), or sitting and washing / looking about / asleep /
+   * sniffing / crouching / pouncing. */
   animate(c, dt, walking, moved, activity) {
     const P = c.puppet;
     c.t += dt;
-    P.walked = false; P.hopY = 0; P.headOff.set(0, 0, 0);
-    P.wantStand = walking ? 1 : 0;
+    P.walked = false; P.hopY = c.hop ?? 0; P.headOff.set(0, 0, 0);
+    const up = activity === 'sniff' || activity === 'crouch' || activity === 'pounce'; // (on its feet without walking)
+    P.wantStand = walking || up ? 1 : 0;
     if (walking && P.stand > 0.5 && moved > 0) P.stride(moved);
     const sleep = !walking && activity === 'sleep';
     for (const e of P.eyes) { e.eye.visible = !sleep; e.shut.visible = sleep; }
+    P.leftShoulder.rotation.set(0, 0, 0);
     if (walking) {
       P.shoulder.rotation.z = 0;
-      P.head.rotation.set(0.12, 0, 0);
-      P.tailGroup.rotation.y = 0.3 * Math.sin(c.t * 4.5);
+      if (activity === 'creep') { P.headOff.set(0, -0.035, 0.015); P.head.rotation.set(0.15, 0, 0); P.tailGroup.rotation.y = 0.15 * Math.sin(c.t * 2); }
+      else if (activity === 'chase') {
+        const hop = c.hop ?? 0; P.head.rotation.set(-0.35, 0, 0); P.tailGroup.rotation.y = 0.5 * Math.sin(c.t * 7);
+        P.shoulder.rotation.set(-12 * hop, 0, 0); P.leftShoulder.rotation.set(-12 * hop, 0, 0); // (front paws up after it)
+      } else { P.head.rotation.set(activity === 'climb' ? -0.1 : 0.12, 0, 0); P.tailGroup.rotation.y = 0.3 * Math.sin(c.t * 4.5); }
+    } else if (activity === 'sniff') {
+      P.shoulder.rotation.set(0, 0, 0); P.headOff.set(0, -0.05, 0.03);
+      P.head.rotation.set(0.6 + 0.08 * Math.sin(c.t * 9), 0.35 * Math.sin(c.t * 0.8), 0); P.tailGroup.rotation.y = 0.1 * Math.sin(c.t * 1.7);
+    } else if (activity === 'crouch' || activity === 'pounce') {
+      const hop = c.hop ?? 0; P.headOff.set(0, -0.035 * (1 - hop * 8), 0.015);
+      P.shoulder.rotation.set(-12 * hop, 0, 0); P.leftShoulder.rotation.set(-12 * hop, 0, 0);
+      P.head.rotation.set(0.2 - 2 * hop, 0, 0); P.tailGroup.rotation.y = 0.5 * Math.sin(c.t * 25) * (1 - hop * 8); // (the bottom wiggle before the leap)
     } else if (activity === 'wash') { // the CatSpawner's washing cycle (cat.js behave)
       const t = c.t, cy = t % 6, sm = (a, b, x) => THREE.MathUtils.smoothstep(x, a, b);
-      const up = sm(0, 0.5, cy) * (1 - sm(3.2, 3.7, cy)), wipe = sm(2.0, 2.4, cy) * (1 - sm(2.9, 3.2, cy)), lick = Math.sin(t * 13) * 0.5 + 0.5;
-      P.shoulder.rotation.set(-2.85 * up - 0.25 * wipe, 0, 0.3 * up + 0.15 * wipe);
-      P.head.rotation.set(0.3 * up + 0.08 * lick * up * (1 - wipe) - 0.2 * wipe, 0.4 * up * (1 - wipe) + (1 - up) * 0.35 * Math.sin(t * 0.7), -0.15 * up + 0.3 * wipe);
-      P.tailGroup.rotation.y = 0.08 * Math.sin(t * 2.3) * (1 - up);
+      const u = sm(0, 0.5, cy) * (1 - sm(3.2, 3.7, cy)), wipe = sm(2.0, 2.4, cy) * (1 - sm(2.9, 3.2, cy)), lick = Math.sin(t * 13) * 0.5 + 0.5;
+      P.shoulder.rotation.set(-2.85 * u - 0.25 * wipe, 0, 0.3 * u + 0.15 * wipe);
+      P.head.rotation.set(0.3 * u + 0.08 * lick * u * (1 - wipe) - 0.2 * wipe, 0.4 * u * (1 - wipe) + (1 - u) * 0.35 * Math.sin(t * 0.7), -0.15 * u + 0.3 * wipe);
+      P.tailGroup.rotation.y = 0.08 * Math.sin(t * 2.3) * (1 - u);
     } else {
       P.shoulder.rotation.set(0, 0, 0);
       if (sleep) P.head.rotation.set(0.5, 0.15, 0.1); // head down, eyes shut: asleep in the sun
@@ -247,13 +274,19 @@ export class OutdoorCats {
 
   /** For tests: each cat's state. */
   state() {
-    return this.cats.map((c) => ({ name: c.name, zone: c.spec.zone, st: c.st, x: c.x, z: c.z, y: c.group.position.y, alpha: c.alpha,
-      visible: c.group.visible, full: c.puppet.object.visible, walking: c.at?.walking ?? false }));
+    return this.cats.map((c) => ({ name: c.name, zone: c.spec.zone, kind: c.spec.kind, st: c.st, behaviour: c.kind, activity: c.activity, x: c.x, z: c.z, h: c.h,
+      y: c.group.position.y, alpha: c.alpha, visible: c.group.visible, full: c.puppet.object.visible, walking: c.walking, butterfly: c.bfMesh.visible }));
   }
 }
 
-function turnTo(a, b, max) {
-  let d = b - a;
-  d = Math.atan2(Math.sin(d), Math.cos(d));
-  return a + Math.sign(d) * Math.min(Math.abs(d), max);
+/** #1772: a small butterfly: two wings in a shallow V (its x scale beats them), 1 draw call. */
+function butterflyGeometry() {
+  const w = 0.085, h = 0.03, l = 0.055, p = [
+    0, 0, l, -w, h, 0.008, 0, 0, -0.01, 0, 0, l, w, h, 0.008, 0, 0, -0.01, // the fore wings
+    0, 0, 0, -w * 0.75, h, -l, 0, 0, -l, 0, 0, 0, w * 0.75, h, -l, 0, 0, -l, // the hind wings
+  ];
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3));
+  g.computeVertexNormals();
+  return g;
 }

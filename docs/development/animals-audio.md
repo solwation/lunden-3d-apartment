@@ -60,8 +60,9 @@ change introduces no applicable geometry/navigation port or new public subsystem
 ```text
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
 src/outdoorcatroute.js the outdoor cats' loops as a pure function of the clock (#1767; node test src/outdoorcatroute.test.mjs)
-src/outdoorcats.js     the outdoor cats (#1767): puppets / merged far meshes, notice, become the ordinary cat, walk home
-tools/outdoorcatstest.cjs  outdoor cats in the real scene: routes, movement, pet/carry, walking home, rain/snow, draw calls
+src/outdoorcats.js     the outdoor cats (#1767): puppets / merged far meshes, notice, become the ordinary cat, walk home; isOut (#1772)
+src/outdoorcatbrain.js the outdoor cats' brains (#1772): personality, utility AI per rest stop, outings, meeting the visitor (node test tools/outdoorcatbraintest.mjs)
+tools/outdoorcatstest.cjs  outdoor cats in the real scene: routes, movement, pet/carry, walking home, rain/snow, draw calls; climb, butterfly, social approach (#1772)
 src/miele.js           Miele (#328): `HeartFireworks` (heart shells that pop into small hearts) and `MieleHeld` (a Holdable with no
                        home: the cat object rides in it, hand.js 'hug'; click / "Krama" hugs; put down she walks off)
 src/fireworks.js       midnight fireworks over the block (#1200, FIREWORKS in config): `init`/`start()`/`update(dt)`; a pool of rockets that burst
@@ -250,6 +251,36 @@ the ordinary cat until that cat leaves, then the same.
 Hidden (faded) underground, in the snow months and in rain over `rain`. `&nooutdoorcats` disables the module. Feeding them is not part of
 this (#1766 owns the eating path). Tests: `node --test src/outdoorcatroute.test.mjs`; browser `tools/outdoorcatstest.cjs` (routes on
 dry walkable ground off the roads, movement, pet/carry, walking home, rain/snow, draw calls). Images: [docs/verification/1767](../verification/1767/).
+
+### Personalities and brains (#1772)
+
+Each cat has `traits` (social, play, lazy, shy, curious, 0 … 1) and a `kind` in `OUTDOOR_CATS.cats`: Sotis social, Kanel lazy, Findus
+playful, Smulan shy and curious (*guess*). `src/outdoorcatbrain.js` (no three.js; modelled on `SquirrelBrain`) is the cat's brain, and
+the cat record in `outdoorcats.js` *is* an `OutdoorCatBrain` with the meshes added. It has two layers:
+
+- **Schedule (shared, deterministic).** At every rest stop of its loop a utility AI weighs the needs energy, play, social and hunger by the
+  traits (`utilities`, plus hashed noise `brain.noise`) and picks rest, sleep, seek (wait for company), explore (sniff about), stalk
+  (creep and pounce), butterfly (chase one) or climb (a tree). The needs drift per stop at trait-dependent rates and each behaviour spends
+  its own (`brain.needs`). They are re-run from a hashed start at each block of `brain.block` stops, so the choice is a pure function of
+  the stop number. The outing itself is a list of timed segments (`outingAt`) that goes out and back the same way and ends at the stop's
+  point when the rest ends. Positions, the tree and the butterfly's flight are pure functions of the time into the stop, so every client
+  sees the same cat doing the same thing without sync. The squirrels' leader model (#1686) was not used: there are no shared objects to
+  hand over, and a leader would add traffic for animals that are only seen from a few metres.
+- **Visitor (local, as #1767's notice).** A social cat walks up from `seekRange` × social m (×0.55 unless it is waiting for company),
+  stops `seekStop` m away and sits; it then becomes the ordinary cat as before. Demoted, a social cat (≥ 0.6) follows for `followTime`
+  s. A shy cat (> 0.5) moves off within `shyRange` m until the visitor has stood still `shyCalm` s. During a stalk it may creep after a
+  squirrel on the ground (`prey()`). A chasing cat ignores the visitor, and so does a climbing one. Afterwards it walks home to its
+  schedule; if it is up a tree, it waits at the trunk.
+
+Outings only use stops whose rest is long enough (`minRest`). Each way is checked with `clearWay` (walkable: no road, no water, no
+drop) and main.js `free` (player `isFree` with a cat-sized radius, so no wall or fence while the visitor is at street level). A
+butterfly's whole flight disc is checked too. Trees come from `treeFeet`/`aoTrees` within `climbReach` (big, ordinary and birch trunks;
+trunk radius and height are derived from the crown). The cat climbs nose-up against the bark to `branchHeight` (just under the crown),
+sits on a limb, then climbs down head-first. Butterflies (1 draw call each, only within `near`) appear by day in `butterflyMonths`.
+Far away (beyond `drawDist` + `brain.margin`) the brain does not plan and the cat stays on its loop. The snow/rain rule is the single
+`OutdoorCats.isOut()`. Tests: `node --test tools/outdoorcatbraintest.mjs` (fixed seed: personality mixes, the social cat by the visitor,
+climbing and chasing, never in water or on a road, the shy one); browser `tools/outdoorcatstest.cjs` (7)–(9). Images:
+[docs/verification/1772](../verification/1772/).
 
 ## Cat and sound
 

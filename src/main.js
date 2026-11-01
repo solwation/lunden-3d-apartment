@@ -1124,8 +1124,13 @@ if (params0.has('kitten')) cat.forceKitten = true; // &kitten: the next cat to t
 cat.mieleDaily = new MieleDaily({ load: () => stats.mieleDay, keep: keepMieleDay }); // at least once a play day (#1134)
 if (params0.has('miele')) cat.forceMiele = true; // &miele: the next cat to turn up is her (tests, screenshots)
 // #1767: outdoor cats roaming the courtyard and the river park; near, one becomes the ordinary cat (pet, carry); &nooutdoorcats disables them
+// #1772: each has a brain (outdoorcatbrain.js): outings round its rest stops (trees from treeFeet/aoTrees like the squirrels', no wall
+// in the way while the visitor is out on the street level), butterflies by the game's day, squirrels on the ground to stalk
 const outdoorCats = params0.has('nooutdoorcats') ? null : new OutdoorCats({ scene, camera, cat, ground: parkGround, lowMemory,
-  walkable: (x, z) => parkGround(x, z) > waterYAt(x, z) + 0.3 && !onRoad(x, z, 0.8) });
+  walkable: (x, z) => parkGround(x, z) > waterYAt(x, z) + 0.3 && !onRoad(x, z, 0.8), feet: treeFeet, crowns: aoTrees,
+  free: (x, z) => player.below || player.inCore || player.inPlayroom || player.unit || player.isFree(x, z, 0, 0.12 - PLAYER.radius),
+  hour: () => day.hour, month: () => day.month,
+  prey: () => (squirrels?.animals ?? []).filter((a) => a.group.visible && Math.abs(a.brain.y - parkGround(a.brain.x, a.brain.z)) < 0.15).map((a) => a.brain) });
 const mieleFrustum = new THREE.Frustum(), mieleAt = new THREE.Vector3();
 function checkMiele() {
   if (!cat.visible || !cat.isMiele || cat.seen || cat.held || cat.leaving?.hurt) return;
