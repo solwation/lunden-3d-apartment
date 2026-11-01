@@ -143,7 +143,7 @@ export class CatCalendar {
 /** The strip (#cal-panel): ◀ month ▶, a grid of day buttons, ×. A D / ← → month, W S / ↑ ↓ day. */
 export class CalendarPanel {
   constructor(cal, el) {
-    Object.assign(this, { cal, day: cal.day, el });
+    Object.assign(this, { cal, day: cal.day, el, onChange: () => {} }); // onChange: we set the date (#1774, src/timesync.js)
     this.titleEl = el.querySelector('.title');
     this.gridEl = el.querySelector('.days');
     el.querySelector('[data-act=prev]').addEventListener('click', () => this.page(-1));
@@ -168,6 +168,7 @@ export class CalendarPanel {
   /** Set the day cycle's date to day `d` of the page shown. */
   choose(d) {
     this.day.date = d;
+    this.onChange();
     this.cal.draw();
     this.render();
   }
@@ -180,6 +181,7 @@ export class CalendarPanel {
     if (code === 'ArrowLeft' || code === 'ArrowRight') this.page(code === 'ArrowLeft' ? -1 : 1);
     else {
       this.day.addDays(code === 'ArrowUp' ? 1 : -1);
+      this.onChange();
       this.cal.draw();
       this.render();
     }

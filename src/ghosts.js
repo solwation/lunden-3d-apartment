@@ -489,6 +489,7 @@ export class Ghosts {
     if (m.t === 'w') {
       this.me = m.i; this.rules = m.c ?? null; this.onWelcome?.(m);
       if (Array.isArray(m.doors)) this.onDoors?.({ t: 'dr', list: m.doors }); // the doors standing open (#1775, src/doorsync.js)
+      if (m.tm) this.onTime?.(m.tm, null); // the room's shared game time (#1774, src/timesync.js)
       for (const p of m.ps ?? []) { const g = this.add(p.i, p.n, p.av && typeof p.ax === 'string' ? p.av + p.ax : p.av); if (g && p.p) g.push(p, t); }
     } else if (m.t === 'j') { if (this.add(m.i, m.n, m.av)) this.notice.joined(m.n); }
     else if (m.t === 's') (this.others.get(m.i) ?? this.add(m.i, '', m.av && typeof m.ax === 'string' ? m.av + m.ax : m.av))?.push(m, t);
@@ -511,6 +512,7 @@ export class Ghosts {
     else if (m.t === 'snake') this.onSnake?.(m);
     else if (m.t === 'mus') this.onMusic?.(m); // the shared children's-room music (#1624, src/playroommusic.js): only sent to players inside the room
     else if (m.t === 'sq') this.onSquirrels?.(m); // the shared squirrels and nuts (#1686, src/squirrelsync.js): only sent to players near them
+    else if (m.t === 'tm') this.onTime?.(m, this.others.get(m.i) ?? { name: '' }); // (a player we have no pose from yet: no name) // somebody set the game time (#1774, src/timesync.js)
     else if (m.t === 'rf') this.onRiverFish?.(m); // the shared fish in Höje å (#1752, src/riverfishsync.js): the room's clock, seed and caught fish
     else if (m.t === 'pk' || m.t === 'pkg') this.onPaddock?.(m); // the shared pony paddock (#1644, src/paddock.js): only sent to players near it
     else if (m.t === 'dr') this.onDoors?.(m); // a door opened / shut by somebody (#1775, src/doorsync.js)
@@ -680,6 +682,15 @@ export class Ghosts {
   doors(msg) {
     if (!this.connected) return false;
     this.outbox = this.outbox.filter((m) => m.t !== 'dr' || m.i !== msg.i);
+    this.outbox.push(msg);
+    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
+    this.sendShot();
+    return true;
+  }
+
+  /** The game time we just set (#1774, src/timesync.js) { t: 'tm', o, p? }: a one-off event; the room rate-limits it. */
+  time(msg) {
+    if (!this.connected) return false;
     this.outbox.push(msg);
     while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
     this.sendShot();

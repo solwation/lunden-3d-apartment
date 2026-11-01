@@ -1878,3 +1878,27 @@ test('doors: validation, broadcast to all (sender too), welcome for a late joine
   assert.equal(d.got[0].doors, undefined);
   d.ws.close(); await settle(env);
 });
+
+test('#1774: the game time is shared: validated, relayed, in the welcome of a latecomer, rate-limited, gone when the room is empty', async () => {
+  const env = setup(), a = await connect(env, 'Olof'), b = await connect(env, 'Sara');
+  const tm = (c) => c.got.filter((m) => m.t === 'tm');
+  const H = 3600e3;
+  assert.equal(a.got[0].tm, undefined, 'an empty room is on real time: no tm in the welcome');
+  for (const bad of [{ t: 'tm' }, { t: 'tm', o: 'x' }, { t: 'tm', o: 1.5 }, { t: 'tm', o: 1e18 }, { t: 'tm', o: 5, p: 2 }, '{"t":"tm","o":']) { now += 400; a.send(bad); await settle(env); }
+  assert.equal(tm(b).length, 0, 'malformed / out of bounds messages are not relayed');
+  now += 400; a.send({ t: 'tm', o: 9 * H }); await settle(env);
+  assert.deepEqual(tm(b), [{ t: 'tm', i: a.got[0].i, o: 9 * H }]);
+  assert.equal(tm(a).length, 0, 'not echoed to the sender');
+  now += 10; a.send({ t: 'tm', o: 1 * H }); await settle(env);
+  assert.equal(tm(b).length, 1, 'a second one within 250 ms is dropped');
+  const c = await connect(env, 'Late');
+  assert.deepEqual(c.got[0].tm, { o: 9 * H }, 'the latecomer is told the room time in the welcome');
+  now += 400; b.send({ t: 'tm', o: -2 * H, p: 1 }); await settle(env);
+  assert.deepEqual(tm(a).at(-1), { t: 'tm', i: b.got[0].i, o: -2 * H, p: 1 });
+  now += 5000; const d = await connect(env, 'Paused');
+  assert.deepEqual(d.got[0].tm, { o: -2 * H - 5000, p: 1 }, 'a paused time reads the same stamp to the newcomer');
+  for (const x of [a, b, c, d]) x.ws.close(); await settle(env);
+  const e = await connect(env, 'After');
+  assert.equal(e.got[0].tm, undefined, 'the room is back on real time once it was empty');
+  e.ws.close(); await settle(env);
+});

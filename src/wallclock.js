@@ -111,7 +111,7 @@ export class WallClock {
  */
 export class ClockPanel {
   constructor(day, el) {
-    Object.assign(this, { day, el, held: new Map() }); // what is spooling: key/button → ±1
+    Object.assign(this, { day, el, held: new Map(), onChange: () => {} }); // onChange: we set the time (#1774, src/timesync.js); // what is spooling: key/button → ±1
     this.timeEl = el.querySelector('.time');
     this.infoEl = el.querySelector('.info');
     this.playBtn = el.querySelector('[data-act=play]');
@@ -169,6 +169,7 @@ export class ClockPanel {
     this.held.clear(); this.digits = ''; this.error = '';
     Object.assign(this.day, { hour: h + 1e-6, spool: 0, realAt: Date.now() }); // (a hair over: formatHour floors, 9.6667 must not read 09:39)
     this.day.update(0);
+    this.onChange();
     this.openForm(false);
     return true;
   }
@@ -178,21 +179,23 @@ export class ClockPanel {
   show(show) {
     this.el.hidden = !show;
     this.digits = ''; this.error = ''; if (this.form) this.form.hidden = true;
-    if (!show) { this.held.clear(); this.day.spool = 0; }
+    if (!show) { const was = this.day.spool; this.held.clear(); this.day.spool = 0; if (was) this.onChange(); }
     this.render();
   }
 
   /** Start (dir ±1) or stop (0) spooling from button `key`. */
   hold(key, dir) {
     if (dir) this.held.set(key, dir); else this.held.delete(key);
+    const was = this.day.spool;
     this.day.spool = this.held.size ? [...this.held.values()].at(-1) : 0;
+    if (was && !this.day.spool) this.onChange(); // (spooling let go: the new time is set)
     this.render();
   }
 
-  togglePause() { this.day.paused = !this.day.paused; this.render(); }
+  togglePause() { this.day.paused = !this.day.paused; this.onChange(); this.render(); }
 
   /** The visitor's own time and date again, running (#1145). */
-  toNow() { this.held.clear(); this.day.toNow(); this.render(); }
+  toNow() { this.held.clear(); this.day.toNow(); this.onChange(); this.render(); }
 
   /** Keyboard while the strip is open; returns true when the key was used. */
   key(code, down, repeat) {

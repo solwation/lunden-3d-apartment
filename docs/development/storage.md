@@ -226,6 +226,17 @@ bowl; an actual bicycle-hand receipt restores the same terminal portion to the
 hand afterward, using canonical empty scoops. See [food](food.md#fruit-remains-1056)
 and `tools/fruitremainstest.cjs` for the native reload checks and visual limits.
 
+## Shared game time (#1774)
+
+"Logged in" means connected to the shared players' room: the room is the only account model (anybody connected, named or Anonym, is in it), so
+solo/offline play sends and receives nothing. Setting the clock (typed time, spooling let go, play/pause, "Nu"/`realNow()`) or the date (calendar)
+sends `{ t: 'tm', o, p? }` (`src/timesync.js`, hooks `ClockPanel.onChange` / `CalendarPanel.onChange`): `o` = game time minus the sender's real clock in ms,
+`p: 1` = paused. `cloudflare/roomtime.js` validates (`|o|` <= 10 years, 0/1 for `p`), drops a second message from one socket within 250 ms (the client
+sends the last value 300 ms later), keeps that single value in memory (no storage, no KV, #1689), sends `{ t: 'tm', i, o, p? }` to the others and
+`tm: { o, p? }` in the welcome, and forgets it when the last player leaves (real time again). The client applies it with `DayCycle.setStamp` and shows
+"<namn> ställde klockan till HH:MM" (welcome: silent). A URL with `time`, `month`, `day`, `year`, `freeze` or `notimesync` neither sends nor receives, so
+test tools keep their own time. Tests: `cloudflare/players.test.mjs`, `cloudflare/timesync.test.mjs`, `tools/timesynctest.cjs` (two/four real clients).
+
 ## Module and test map
 
 Cat binder presentation (#1379): four stable collection pockets per page and
