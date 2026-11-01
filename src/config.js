@@ -4033,7 +4033,11 @@ export const BIRDS = { center: { x: -30, z: 30 }, count: 10, lowMemoryCount: 5, 
 // standing on the basket floor `ring` m from its centre, `step` rad apart round it; bottle `h` m tall, `r` m radius (a common 33 cl
 // long-neck), `name` the label's (made-up) name. They are drunk like the fridge-shelf beers (BEER_CAN.sips gulps) and restocked full at
 // every new appearance (src/balloonbeer.js).
-export const BALLOON = { center: { x: -30, z: 30 }, radius: 260, speed: 3.5, floor: 250, period: 2400, window: 1800, fadeIn: 25, basketR: 1.15, rim: 0.6, envR: 8.5, envLow: 5, stripes: 14, far: 900,
+// #1784 (user: still never seen): measured in headless Chromium with the real wall-clock schedule, it rendered correctly but was hard to find:
+// at `radius` 260 it was always ~290 m from the courtyard, ~25 px tall from above the deck and a hazy ~10 px dot from the ground, and up only 75 %
+// of the time. Now `radius` 100 (it circles over the houses, 40-150 m from the courtyard, visible overhead from the ground in clear weather) and
+// `window` 2160 s of 2400 (90 %, a 4 min gap keeps one restock per appearance). Both *guess*.
+export const BALLOON = { center: { x: -30, z: 30 }, radius: 100, speed: 3.5, floor: 250, period: 2400, window: 2160, fadeIn: 25, basketR: 1.15, rim: 0.6, envR: 8.5, envLow: 5, stripes: 14, far: 900,
   rainbow: [0xe0302a, 0xf2851c, 0xf6d02a, 0x3fa83c, 0x2f6fd2, 0x4a3aa0, 0x8c3fb4],
   beer: { count: 4, ml: 330, ring: 0.8, step: 0.17, at: Math.PI * 0.75, h: 0.24, r: 0.031, name: 'Ballonglager' } };
 

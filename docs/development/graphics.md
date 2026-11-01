@@ -158,9 +158,13 @@ src/balloon.js         hot-air balloon above the cloud deck (#1646, `BALLOON`, a
                        and the rim wall (`basketCollide`). `update` runs before player.update and carries a player standing in the basket; outside its window, underground or far
                        away the mesh is hidden and update returns at once. It stays up while the player is aboard. `&balloon` forces it on; `window.__app.balloon`.
                        #1770: the 14 gores are the rainbow (`BALLOON.rainbow`, red → violet twice round; each triangle takes its gore from its centroid, `stripeAt`), still in
-                       the one merged mesh; up most of the time (`window` 1800 s of every `period` 2400 s, #1779 after #1770 made it rare, *guess*). The basket's beers (`src/balloonbeer.js`, see food.md) are children of
+                       the one merged mesh; up most of the time (`window` 1800 s of every `period` 2400 s, #1779 after #1770 made it rare, *guess*; 2160 s since #1784). The basket's beers (`src/balloonbeer.js`, see food.md) are children of
                        the mesh's `beerGroup` (ride, scale and hide with it; one draw call per bottle only while the balloon is drawn); `stock` = the appearance
                        (`floor(t / period)`) they were last restocked for.
+                       #1784 (user: still never seen): measured with the real wall-clock schedule (no `&balloon`) it rendered correctly (visible, in the frustum,
+                       not hidden by the deck, sky or fog) but at `radius` 260 it stayed ~290 m from the courtyard (~0.08 % of the picture from a jetpack hover above the
+                       deck, a ~10 px hazy dot from the ground) and was up only 75 %. Now `radius` 100 (circles over the houses, ≤ ~150 m from the start spot) and
+                       `window` 2160 of 2400 s (90 %), both *guess*; `tools/balloontest.cjs` checks it drawn and ≥ 0.2 % of the picture from a hover at 260 m.
 src/birds.js           gulls (#1252, `BIRDS`, all numbers *guess*): ONE instanced draw call (`InstancedBufferGeometry`, 3 triangles per bird: tail wedge + two wings), no lights, no textures, no sound, no
                        raycast. Circling, banking and the wing flap are computed in the vertex shader from per-instance seeds (fixed mulberry32 seed, same flock every visit) and the accumulated game
                        time, so `update(dt, rain, hidden)` only sets uniforms (no allocations). `count` birds (`lowMemoryCount` on phones), the last `high` at `highAlt` m above the cloud deck

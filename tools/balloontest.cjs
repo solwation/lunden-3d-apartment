@@ -1,15 +1,19 @@
 // Hot-air balloon (#1646, #1770, src/balloon.js, src/balloonbeer.js): `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/balloontest.cjs http://localhost:8646 /tmp/shots1646`
 // Checks: hidden + no mesh work when not scheduled; visible when forced; landing in the basket, staying put and being carried over several
 // seconds of drift; the rim holds you in; one draw call for the whole balloon; #1770: the gores are in rainbow order, the schedule is rare
-// (#1779: up ~75 % of the time), the basket's beers ride with it, can be taken and drunk (beer count, life portion) and are restocked at
-// the next appearance; screenshots.
+// (#1779: up ~75 % of the time; #1784: 90 %), the basket's beers ride with it, can be taken and drunk (beer count, life portion) and are restocked at
+// the next appearance; #1784: drawn and findable with the real wall-clock schedule from a jetpack hover above the clouds; screenshots.
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const base = process.argv[2] || 'http://localhost:8646', out = process.argv[3] || '/tmp/shots1646';
 require('fs').mkdirSync(out, { recursive: true });
 let pass = true;
 const check = (ok, name, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name} ${extra}`); pass &&= !!ok; };
-async function open(browser, q) {
+async function open(browser, q, phase = null) {
   const page = await browser.newPage({ viewport: { width: 960, height: 600 } });
+  if (phase !== null) { // #1784: shift the page's real wall clock (Date.now) to `phase` s into the 2400 s period, nothing else overridden
+    const nowS = Date.now() / 1000, off = ((((phase - nowS) % 2400) + 2400) % 2400) * 1000;
+    await page.addInitScript((o) => { const n = Date.now.bind(Date); Date.now = () => n() + o; }, off);
+  }
   page.on('pageerror', (e) => { console.log('pageerror', e.message); pass = false; });
   page.on('console', (m) => { if (m.type() === 'error') console.log('console.error', m.text()); });
   await page.goto(`${base}/index.html?shot&test&time=12&month=7&day=10&weather=clear${q}`);
@@ -19,10 +23,35 @@ async function open(browser, q) {
 }
 (async () => {
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+  // 0. #1784: realistic visibility, no `&balloon`, no clock override: the real wall-clock schedule (Date shifted into the window), a jetpack
+  // hover 260 m over the courtyard start spot, looking level towards the balloon; it must be drawn and cover a findable share of the picture.
+  let page = await open(browser, '&jetpack', 900);
+  const real = await page.evaluate(async () => {
+    const { BALLOON: B } = await import('/src/config.js'), { balloonScale, balloonPos } = await import('/src/balloongeo.js');
+    const a = window.__app, b = a.balloon, p = a.player, cam = a.camera, R = a.renderer, gl = R.getContext();
+    const x = 2.9, z = -12, alt = 260; // the start spot in the courtyard
+    p.pos.set(x, alt, z); p.vy = 0; p.fall = null; p.eyeY = alt + 1.62; cam.position.set(x, alt + 1.62, z);
+    a.day.update(0); b.update(p, p.below);
+    cam.rotation.set(0, Math.atan2(-(b.pos.x - x), -(b.pos.z - z)), 0, 'YXZ'); cam.updateMatrixWorld();
+    const fr = new (cam.projectionMatrix.constructor)().multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
+    const sph = b.mesh.geometry.boundingSphere ?? (b.mesh.geometry.computeBoundingSphere(), b.mesh.geometry.boundingSphere);
+    const { Frustum } = await import('three'); const inView = new Frustum().setFromProjectionMatrix(fr).intersectsSphere(sph.clone().applyMatrix4(b.mesh.matrixWorld));
+    const read = () => { R.render(a.scene, cam); const w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, px = new Uint8Array(w * h * 4); gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px); return { px, w, h }; };
+    const v = b.mesh.visible, A = read(); b.mesh.visible = false; const Z = read(); b.mesh.visible = v;
+    let n = 0; for (let i = 0; i < A.px.length; i += 4) if (Math.abs(A.px[i] - Z.px[i]) + Math.abs(A.px[i + 1] - Z.px[i + 1]) + Math.abs(A.px[i + 2] - Z.px[i + 2]) > 24) n++;
+    let far = 0; const q = {}; for (let t = 0; t < 2 * Math.PI * B.radius / B.speed; t += 5) { balloonPos(t, q); far = Math.max(far, Math.hypot(q.x - x, q.z - z)); }
+    return { wall: Math.abs(b.clock() - Date.now() / 1000) < 2, forced: b.forced, scale: balloonScale(b.clock()), visible: v, inView, above: a.day.above, deck: a.day.deck.visible,
+      dist: Math.round(Math.hypot(b.pos.x - x, b.pos.z - z)), far: Math.round(far), cover: +(n / (A.w * A.h)).toFixed(5) };
+  });
+  check(real.wall && !real.forced && real.scale === 1 && real.visible && real.inView && real.above === 1 && real.deck, 'real schedule, above the deck: drawn and in view (no &balloon)', JSON.stringify(real));
+  check(real.far <= 160 && real.cover >= 0.002, '#1784: findable from a jetpack hover over the courtyard (≤ 160 m away on its whole circle, ≥ 0.2 % of the picture)', JSON.stringify({ far: real.far, dist: real.dist, cover: real.cover }));
+  await page.addStyleTag({ content: '#player-dialog, #qr, #corner-qr, [class*=qr] { display: none !important }' });
+  await page.screenshot({ path: `${out}/real-schedule-above-clouds.png` });
+  await page.close();
   // 1. not scheduled: hidden, no draw call
-  let page = await open(browser, '');
+  page = await open(browser, '');
   const idle = await page.evaluate(() => {
-    const a = window.__app, b = a.balloon; b.clock = () => 2100; // 2100 s into the 2400 s period, after the 1800 s window: not scheduled
+    const a = window.__app, b = a.balloon; b.clock = () => 2300; // 2300 s into the 2400 s period, after the 2160 s window (#1784): not scheduled
     for (let i = 0; i < 5; i++) a.step(1 / 30);
     let n = 0; const r = a.renderer.renderBufferDirect; a.renderer.renderBufferDirect = function (c, s, g, m, o) { if (o === b.mesh) n++; return r.apply(this, arguments); };
     a.renderer.render(a.scene, a.camera); a.renderer.renderBufferDirect = r;
@@ -91,7 +120,7 @@ async function open(browser, q) {
     a.step = (dt) => { b.update(p, false); p.update(dt); for (const x of bs) x.update(dt); };
     const out = { count: bs.length };
     // hidden balloon: nothing to take
-    p.pos.set(b.pos.x + 30, b.pos.y + 5, b.pos.z); b.aboard = false; b.clock = () => 2100; a.step(1 / 30); out.hiddenTarget = bs.every((x) => x.target !== x.takeTarget) && !b.mesh.visible; // (not aboard: aboard keeps it up)
+    p.pos.set(b.pos.x + 30, b.pos.y + 5, b.pos.z); b.aboard = false; b.clock = () => 2300; a.step(1 / 30); out.hiddenTarget = bs.every((x) => x.target !== x.takeTarget) && !b.mesh.visible; // (not aboard: aboard keeps it up)
     b.clock = () => t; b.aboard = false; b.last.ok = false; a.step(1 / 30);
     p.pos.set(b.pos.x + 0.3, b.pos.y, b.pos.z - 0.2); p.vy = 0; p.fall = null; a.step(1 / 30);
     out.shownTarget = bs.every((x) => x.target === x.takeTarget);
@@ -120,7 +149,7 @@ async function open(browser, q) {
     let n = 0; const r = a.renderer.renderBufferDirect; a.renderer.renderBufferDirect = function (c, s, g, m, o) { if (meshes.has(o)) n++; return r.apply(this, arguments); };
     a.camera.position.set(b.pos.x, b.pos.y + 2, b.pos.z + 3); a.camera.lookAt(b.pos.x, b.pos.y, b.pos.z); a.camera.updateMatrixWorld();
     a.renderer.render(a.scene, a.camera); out.calls = n; n = 0;
-    b.clock = () => 2100; a.step(1 / 30); a.renderer.render(a.scene, a.camera); out.hiddenCalls = n; a.renderer.renderBufferDirect = r;
+    b.clock = () => 2300; a.step(1 / 30); a.renderer.render(a.scene, a.camera); out.hiddenCalls = n; a.renderer.renderBufferDirect = r;
     b.clock = () => t;
     return out;
   });
