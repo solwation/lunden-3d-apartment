@@ -118,5 +118,73 @@
    "wikidata": "Q89192443"
   }
  },
- "correction_2026-11-01": "#1756, the user's report: the conclusion in `result` is WRONG. OSM way 88457612 (Sankt Lars väg 3) really is the old NTI school and was restored. Nordic Wellness S:t Lars Sportcenter is at Sankt Lars väg 90-92 (club page: St Lars väg 92; hitta.se: 90; 1177: Sankt Lars väg 90 = 55.68789 N, 13.18222 E), in the northern part of S:t Larsparken, as the park's entrance building from the north (Fojab, Wästbygg/Hemsö). geoToPlan(13.18222, 55.68789) = model (-203.8, -237.0), outside WALK (z >= -200) but inside SITE.backgroundGround. No footprint source was reachable (overpass, nominatim, hemsoe.com, fojab.se blocked), so the model keeps #1745's ~55 x 19 m box as a *guess* there (record guess-1756). The way_88457612 data below is the school's outline."
+ "correction_2026-11-01": "#1756, the user's report: the conclusion in `result` is WRONG. OSM way 88457612 (Sankt Lars väg 3) really is the old NTI school and was restored. Nordic Wellness S:t Lars Sportcenter is at Sankt Lars väg 90-92 (club page: St Lars väg 92; hitta.se: 90; 1177: Sankt Lars väg 90 = 55.68789 N, 13.18222 E), in the northern part of S:t Larsparken, as the park's entrance building from the north (Fojab, Wästbygg/Hemsö). geoToPlan(13.18222, 55.68789) = model (-203.8, -237.0), outside WALK (z >= -200) but inside SITE.backgroundGround. No footprint source was reachable (overpass, nominatim, hemsoe.com, fojab.se blocked), so the model keeps #1745's ~55 x 19 m box as a *guess* there (record guess-1756). The way_88457612 data below is the school's outline.",
+ "correction_2026-11-01_1762": "#1762, the user's second report: the #1756 placement is WRONG too. The 1177 geocode of Sankt Lars väg 90 lies inside OSM way 88457557 \"Grenhuset\" (addr Sankt Lars väg 90, operator Hemsö), WEST of Sankt Lars väg. Both Google 3D views show the gym EAST of the road, in the angle between Sankt Lars väg and Skånevägen (mot söder: left of the road, Skånevägen below; mot norr: right of the road, IES on the left). The #1745 bbox query stopped at lon 13.1830, just west of it. Overpass from the WSL host (2026-11-01, query below) has one building there: way 1136415461 (building=yes, no name or address), 68.8 x 36.7 m, its short WSW face towards Sankt Lars väg and its long NNW face parallel to Skånevägen, as in the views. The model (record guess-1762, osm 1136415461) uses its fitted rectangle, plan x -206.7...-160.0, z -367.5...-294.0, centre 55.68818 N 13.18366 E. That this way is the gym, its heights and details are *guess-1762*.",
+ "query_2026-11-01_1762": "[out:json][timeout:25];(way[\"building\"](55.6868,13.1805,55.6900,13.1860);way[\"highway\"](55.6868,13.1805,55.6900,13.1860););out geom tags;",
+ "way_1136415461": {
+  "type": "way",
+  "id": 1136415461,
+  "tags": {
+   "building": "yes"
+  },
+  "geometry": [
+   {
+    "lat": 55.6882081,
+    "lon": 13.1830433
+   },
+   {
+    "lat": 55.6884523,
+    "lon": 13.1840316
+   },
+   {
+    "lat": 55.6881531,
+    "lon": 13.1842922
+   },
+   {
+    "lat": 55.6879085,
+    "lon": 13.1832683
+   },
+   {
+    "lat": 55.6882081,
+    "lon": 13.1830433
+   }
+  ],
+  "plan_fitted_rectangle": [
+   [
+    -206.67,
+    -299.53
+   ],
+   [
+    -196.29,
+    -367.49
+   ],
+   [
+    -160.04,
+    -361.95
+   ],
+   [
+    -170.42,
+    -293.99
+   ],
+   [
+    -206.67,
+    -299.53
+   ]
+  ]
+ },
+ "way_88457557": {
+  "type": "way",
+  "id": 88457557,
+  "tags": {
+   "addr:city": "Lund",
+   "addr:country": "SE",
+   "addr:housenumber": "90",
+   "addr:postcode": "22270",
+   "addr:street": "Sankt Lars väg",
+   "building": "yes",
+   "name": "Grenhuset",
+   "operator": "Hemsö"
+  },
+  "note": "Grenhuset, west of Sankt Lars väg: contains the 1177 geocode used by #1756; not modelled. Geometry omitted (see OSM)."
+ }
 }
