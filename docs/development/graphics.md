@@ -157,6 +157,10 @@ src/balloon.js         hot-air balloon above the cloud deck (#1646, `BALLOON`, a
                        every `period` s, scaled in/out at the ends), the circling drift above the deck, the basket floor (`basketFloor`, a standable surface in Player.groundAt)
                        and the rim wall (`basketCollide`). `update` runs before player.update and carries a player standing in the basket; outside its window, underground or far
                        away the mesh is hidden and update returns at once. It stays up while the player is aboard. `&balloon` forces it on; `window.__app.balloon`.
+                       #1770: the 14 gores are the rainbow (`BALLOON.rainbow`, red → violet twice round; each triangle takes its gore from its centroid, `stripeAt`), still in
+                       the one merged mesh; rarer (`window` 600 s of every `period` 9000 s, *guess*). The basket's beers (`src/balloonbeer.js`, see food.md) are children of
+                       the mesh's `beerGroup` (ride, scale and hide with it; one draw call per bottle only while the balloon is drawn); `stock` = the appearance
+                       (`floor(t / period)`) they were last restocked for.
 src/birds.js           gulls (#1252, `BIRDS`, all numbers *guess*): ONE instanced draw call (`InstancedBufferGeometry`, 3 triangles per bird: tail wedge + two wings), no lights, no textures, no sound, no
                        raycast. Circling, banking and the wing flap are computed in the vertex shader from per-instance seeds (fixed mulberry32 seed, same flock every visit) and the accumulated game
                        time, so `update(dt, rain, hidden)` only sets uniforms (no allocations). `count` birds (`lowMemoryCount` on phones), the last `high` at `highAlt` m above the cloud deck

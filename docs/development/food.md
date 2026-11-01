@@ -140,6 +140,12 @@ src/beercan.js         #587: each shelf package as a Holdable (BEER_CAN, game pa
                        fridge is opened, as the milk); put down / back on its spot / F home. keep.js keeps it under `keepName`
                        (the shelf spot, since the daily beers change name) with its ml (`keepState`).
                        #1006: finishing a whole can/bottle restores +1 life via shared consume contract; per-gulp stats preserved.
+src/balloonbeer.js     #1770: four 33 cl "Ballonglager" bottles on the hot-air balloon's basket floor (`BALLOON.beer`, *guess*), each a BeerCan
+                       with the balloon's `beerGroup` as its shelf, so taking, gulps (stats.beer), pouring, the bin and the +1 life portion are the
+                       shelf beer's; a badge "🎈 Skål över molnen!" on the first gulp of each appearance. Takeable only while the balloon is up.
+                       Carried away it is a normal held / put-down beer; at the balloon's next appearance every bottle not in the hand is back
+                       full in the basket with a new portion id `balloonbeer:<appearance>:<spot>` (life claimed once per appearance). Not saved
+                       (keep.js skips `isBalloonBeer`). Checked by tools/balloontest.cjs.
 src/beershelfdata.js   daily startup refresh and complete durable metadata+image cache; see storage.md.
 src/beershelfschema.js shared strict wire format and Europe/Stockholm day.
 cloudflare/beershelf.js GET-only public-source adapter; globalByStyle normalized ranking, merge Double/Triple IPA styles,

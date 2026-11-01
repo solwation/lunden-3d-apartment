@@ -85,6 +85,7 @@ import { setEdgeLight } from './architectureedges.js';
 import { Flare } from './flare.js';
 import { Birds } from './birds.js';
 import { Balloon } from './balloon.js';
+import { makeBalloonBeers } from './balloonbeer.js';
 import { Paddock } from './paddock.js';
 import { WallClock, ClockPanel } from './wallclock.js';
 import { Patio, buildStringLights } from './patio.js';
@@ -2543,6 +2544,7 @@ const milk = fridge?.milkAt ? new Milk(scene, camera, fridge) : null; // the mil
 if (milk) { holdables.push(milk); life.keepPart('milk', { save: () => milk.keepState(), load: (v) => milk.loadKeep(v) }); } // what is left in it is kept with the life sim's things (#382)
 const beerCans = beerShelf ? beerShelf.packages.map((p, i) => new BeerCan(scene, camera, beerShelf, p, i)) : []; // the beers on the fridge shelf, taken and drunk from (#587): like the milk, sent home with F
 for (const c of beerCans) { c.onGulp = () => bump('beer'); holdables.push(c); } // (kept with the other things, keep.js)
+for (const b of makeBalloonBeers(scene, camera, balloon)) { b.onGulp = () => { bump('beer'); if (!balloon.toasted) { balloon.toasted = true; badge('🎈 Skål över molnen!', false); } }; holdables.push(b); } // #1770: the beers in the balloon's basket (not saved, keep.js)
 const popcornTubs = playroom.popcorn.makeTubs(scene, camera); holdables.push(...popcornTubs); // #1567: the playroom's popcorn tubs, kept with the other things
 life.keepPart('popcorn', { save: () => playroom.popcorn.keepState(), load: (v) => playroom.popcorn.loadKeep(v) }); // the cart's glass case and stack
 const billiardCues = playroom.cueRack.makeCues(scene, camera, playroom.billiards); holdables.push(...billiardCues); // #1661: wall-rack billiard cues
@@ -2969,6 +2971,7 @@ const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () =
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
   onDie: () => { binoculars.setZoom(false); goToStart(() => respawnOutdoors(player)); badge('💀 Slut på liv – du lever igen', false); } }); // only the place changes (#665)
 // #1007: terminal IDs come from actual Glass/Contents consumption, never pouring or restore.
+combat.hookBeer({ beerCans: balloon.beers }); // #1770: a balloon beer drunk up gives its life portion like a shelf beer
 for (const thing of things) if (thing.kind === 'glass') thing.onConsume = (_, id) => { combat.consume(id).catch(() => {}); };
 // Fall owns injury/death timing; Combat owns the same authoritative or offline health as shots.
 fall.onDamage = async (drop, gap) => {

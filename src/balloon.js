@@ -9,20 +9,25 @@ import { balloonScale, balloonPos, basketCarries } from './balloongeo.js';
 // `active` + `pos`; a visitor standing in the basket is carried along with it.
 
 const col = (g, hex) => { const c = new THREE.Color(hex), n = g.attributes.position.count, a = new Float32Array(n * 3); for (let i = 0; i < n; i++) a.set([c.r, c.g, c.b], i * 3); g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g; };
+/** #1770: the rainbow colour index (into B.rainbow) of the gore at plan angle `a` (atan2(z, x), radians) round the envelope. */
+export const stripeAt = (a, cfg = B) => (Math.floor((((a + Math.PI) / (Math.PI * 2)) % 1) * cfg.stripes) % cfg.stripes) % cfg.rainbow.length;
 const plain = (g) => { g.deleteAttribute('uv'); return g.index ? g.toNonIndexed() : g; };
 
 function balloonGeometry() {
   const parts = [], R = B.envR, cy = B.envLow + R * 0.92, segs = B.stripes * 2;
-  // envelope: a squashed sphere (a "teardrop" lower half), alternating coloured gores
+  // envelope: a squashed sphere (a "teardrop" lower half), coloured gores in rainbow order (#1770). Each triangle takes its stripe from its
+  // centroid's angle, so a gore is one flat colour (a vertex on a gore boundary would otherwise blend two).
   const env = plain(new THREE.SphereGeometry(R, segs, 14, 0, Math.PI * 2, 0, Math.PI * 0.86));
-  const pos = env.attributes.position, c = new Float32Array(pos.count * 3), cols = [new THREE.Color(0xd9382c), new THREE.Color(0xf2ead8), new THREE.Color(0x2a5fa8)];
-  for (let i = 0; i < pos.count; i++) {
-    const y = pos.getY(i), x = pos.getX(i), z = pos.getZ(i);
-    const k = Math.floor(((Math.atan2(z, x) + Math.PI) / (Math.PI * 2)) * B.stripes * 1.5 + 1e-4) % 3 ;
-    const t = (R - y) / (2 * R); const tint = 0.85 + 0.15 * (1 - t); // slightly darker towards the mouth
-    c.set([cols[k].r * tint, cols[k].g * tint, cols[k].b * tint], i * 3);
-    pos.setY(i, y * 1.12 + cy); // taller than wide
-    if (y < -R * 0.5) { pos.setX(i, x * (0.55 + 0.9 * (y + R) / R)); pos.setZ(i, z * (0.55 + 0.9 * (y + R) / R)); } // narrows to the mouth
+  const pos = env.attributes.position, c = new Float32Array(pos.count * 3), cols = B.rainbow.map((h) => new THREE.Color(h));
+  for (let i = 0; i < pos.count; i += 3) {
+    const k = stripeAt(Math.atan2(pos.getZ(i) + pos.getZ(i + 1) + pos.getZ(i + 2), pos.getX(i) + pos.getX(i + 1) + pos.getX(i + 2)));
+    for (let j = i; j < i + 3; j++) {
+      const y = pos.getY(j), x = pos.getX(j), z = pos.getZ(j);
+      const t = (R - y) / (2 * R); const tint = 0.85 + 0.15 * (1 - t); // slightly darker towards the mouth
+      c.set([cols[k].r * tint, cols[k].g * tint, cols[k].b * tint], j * 3);
+      pos.setY(j, y * 1.12 + cy); // taller than wide
+      if (y < -R * 0.5) { pos.setX(j, x * (0.55 + 0.9 * (y + R) / R)); pos.setZ(j, z * (0.55 + 0.9 * (y + R) / R)); } // narrows to the mouth
+    }
   }
   env.setAttribute('color', new THREE.BufferAttribute(c, 3));
   parts.push(env);
@@ -52,7 +57,14 @@ export class Balloon {
     this.mesh.visible = false; this.mesh.castShadow = false; this.mesh.receiveShadow = false; this.mesh.raycast = () => {};
     this.mesh.userData.noDetail = true; // far away and big: not for the small-detail culler (src/detail.js)
     scene.add(this.mesh);
+    // #1770: the basket's beers (src/balloonbeer.js) live in this group, a child of the mesh: they ride (and grow / shrink) with the basket and
+    // are hidden with it; `beers` is filled by main.js. `stock` = the appearance (wall-clock period index) they were last restocked for.
+    this.beerGroup = new THREE.Group(); this.mesh.add(this.beerGroup);
+    Object.assign(this, { beers: [], stock: null, toasted: false });
   }
+
+  /** #1770: which appearance (period index of the shared wall clock) `t` belongs to. */
+  appearance(t = this.clock()) { return Math.floor(t / B.period); }
 
   /** Per frame, BEFORE player.update: place / hide it; carry a visitor standing in the basket. `hidden` = underground. */
   update(player, hidden = false) {
@@ -69,6 +81,8 @@ export class Balloon {
       this.last.x = this.pos.x; this.last.z = this.pos.z; this.last.ok = true;
       this.aboard = this.scale >= 0.999 && basketCarries(this.pos, p.x, p.y, p.z);
       this.active = this.scale >= 0.999;
+      const k = this.appearance(t);
+      if (k !== this.stock) { this.stock = k; this.toasted = false; for (const b of this.beers) b.restock(k); } // a new appearance: full beers in the basket
       this.mesh.visible = true;
       this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
       this.mesh.scale.setScalar(Math.max(0.01, this.scale));
