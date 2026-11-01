@@ -6,14 +6,16 @@ const lines=[],CAMPUS_TRIS=84700,lite=/[?&]lowmem\b/.test(location.search);let p
 try{const f=document.createElement('iframe');f.width=lite?720:480;f.height=lite?480:300;f.src='../index.html?'+(lite?'':'test&')+'shot&month=6&cloud='+(lite?'&lowmem':'');document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),C=await w.eval("import('/src/config.js')"),S=await w.eval("import('/src/surroundings.js')"),G=await w.eval("import('/src/sitegeo.js')"),B=await w.eval("import('/src/sitebackdrop.js')"),W=C.SITE.east;
 const source=await fetch('../docs/references/surrounding-views/osm-2026-10-08.json').then(r=>r.json());
 const guessed=W.buildings.filter(b=>b.source.startsWith('guess-'));
-check(W.buildings.length===20&&new Set(W.buildings.map(b=>b.source)).size===20&&guessed.length===6,'fourteen sourced campus footprints plus the guessed low house (#1703), the four guessed volumes behind Realgymnasiet (#1732) and the Nordic Wellness gym (#1745, replacing the stale NTI outline)');
+check(W.buildings.length===21&&new Set(W.buildings.map(b=>b.source)).size===21&&guessed.length===6,'fifteen sourced campus footprints plus the guessed low house (#1703), the four guessed volumes behind Realgymnasiet (#1732) and the Nordic Wellness gym (#1756)');
 check(source.features.some(f=>f.id==='88457600')&&!W.buildings.some(b=>b.source==='88457600')&&guessed.filter(b=>b.osm==='88457600').length===3,'OSM 88457600 replaced by its three photo-read volumes (#1732)');
 for(const b of W.buildings){if(b.source.startsWith('guess-'))continue;const f=source.features.find(f=>f.id===b.source);check(f&&b.polygon.length===f.points.length&&b.polygon.every((q,i)=>{const p=G.geoToPlan(...f.points[i]);return Math.hypot(p[0]-q[0],p[1]-q[1])<.02}),`${b.name}: actual source polygon`);}
 check(C.SITE.blocks.filter(b=>b.style==='hepcat'||b.style==='hepcatWhite').length===2&&!C.SITE.blocks.some(b=>['school','longhouse'].includes(b.style)||b.name==='S:t Lars (old hospital)'),'HepCat detailed bodies retained, replaced school placeholders removed');
 const group=A.scene.getObjectByName('east-backdrop');
-{const gym=group?.userData.buildings.find(b=>b.source==='guess-1745'),G=gym?.nordicGym; // #1745: no OSM footprint exists (docs/references/surrounding-views/nordic-wellness-osm-check-2026-10-31.json)
-check(source.features.every(f=>!/nordic|wellness/i.test(JSON.stringify(f.tags)))&&G&&G.x1-G.x0>45&&G.z1-G.z0>18&&G.x1<=16&&G.x1>15&&G.z0<-70&&G.z1>-53&&gym.osm==='88457612'&&!W.buildings.some(b=>b.source==='88457612')&&gym.eave>gym.base+9&&Math.abs(gym.roofY(0,-65)-gym.roofY(-20,-65))<.01&&gym.roofY(-34,-56)<gym.roofY(0,-65)-4,'#1745 Nordic Wellness: ~55x19 m on OSM 88457612 (replacing NTI), three storeys, flat roof with a lower SW part');
-check(group.userData.buildings.filter(b=>b.source==='guess-1745').length===1,'the gym is one record merged into the existing batches');}check(group?.children.filter(m=>m.isMesh).length===(lite?8:10)&&group.userData.clocks.length===1,'original batches plus three desktop modern source groups (phone master) and one working four-face tower clock');
+{const gym=group?.userData.buildings.find(b=>b.source==='guess-1756'),NG=gym?.nordicGym; // #1756: Sankt Lars väg 90-92 (1177: 55.68789 N 13.18222 E), not on the NTI school's way 88457612 (#1745 was wrong)
+const at=G.geoToPlan(13.18222,55.68789);
+check(NG&&NG.x1-NG.x0>45&&NG.z1-NG.z0>18&&Math.hypot((NG.x0+NG.x1)/2-at[0],(NG.z0+NG.z1)/2-at[1])<5&&NG.z1<-200&&gym.eave>gym.base+9&&Math.abs(gym.roofY(-204,-237)-gym.roofY(-190,-237))<.01,'#1756 Nordic Wellness: ~55x19 m at the geocoded address, north of WALK.z0 -200, three storeys, flat roof');
+check(!W.buildings.some(b=>b.source==='guess-1745')&&W.buildings.some(b=>b.source==='88457612'&&b.classic),'#1756: the NTI school (88457612) is back as the classic school');
+check(group.userData.buildings.filter(b=>b.source==='guess-1756').length===1,'the gym is one record merged into the existing batches');}check(group?.children.filter(m=>m.isMesh).length===(lite?8:10)&&group.userData.clocks.length===1,'original batches plus three desktop modern source groups (phone master) and one working four-face tower clock');
 check(group.userData.buildings.every(b=>b.bottom<=Math.min(...b.polygon.map(p=>S.renderedTerrainY(...p)))&&b.eave>b.base+2),'plinths cover terrain');
 const glass=A.scene.getObjectByName('east-glass'),schoolGlass=A.scene.getObjectByName('east-schoolGlass'),facade=A.scene.getObjectByName('east-facade'),modern=group.children.filter(m=>m.name==='east-modern'||m.name.startsWith('east-modern-'));A.scene.updateMatrixWorld(true);let visible=0,total=0;
 // Geometric window centres are independent of arch tessellation and trim topology.
@@ -22,7 +24,10 @@ for(const b of group.userData.buildings)for(const win of b.windows??[]){
  if([glass,schoolGlass].includes(ray.intersectObjects([glass,schoolGlass,facade,...modern,A.scene.getObjectByName('east-schoolBrick')])[0]?.object))visible++;
 }
 check(visible===total&&total>300,`actual outward windows ${visible}/${total}`);
-// #1745: the one classic school (OSM 88457612, 'NTI') was replaced by the Nordic Wellness gym, so its #564 facade checks are gone (the classic builder stays in sitebackdrop.js).
+const school=group.userData.buildings.find(b=>b.classic);
+check([4,12].every(edge=>school.windows.filter(w=>w.edge===edge&&w.floor===0).length===2),'school outer fronts have two windows per floor');
+check(school.windows.filter(w=>w.floor===0).every(w=>w.arched)&&school.windows.filter(w=>w.floor===1).every(w=>!w.arched),'school shallow lower arches and straight upper windows');
+check(school.ridge-school.eave<1.1,'school roof stays low above continuous cornice');
 // #576: byggnad 4 and 9 are one-storey wards (2014 photos); only 4 keeps a two-storey block from its historical photo.
 const ward=src=>group.userData.buildings.find(b=>b.source===src),b4=ward('88457613'),b9=ward('88457547');
 check([b4,b9].every(b=>b.campus&&b.pieces[0].levels===1&&Math.abs(b.pieces[0].eave-b.base-4.7)<.01&&b.windows.length>40),'4 and 9: one-storey ward bodies with their own window rows');

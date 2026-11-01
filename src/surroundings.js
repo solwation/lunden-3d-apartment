@@ -669,7 +669,7 @@ function schoolGrounds() {
       paint(box(sh.cabinet.x0, sh.cabinet.x1, 0, sh.cabinet.h, sh.cabinet.z0, sh.cabinet.z1), K.cabinet));    // the sheet-metal cabinet
   }
   const coping = mergeGeometries(copings.map((g) => g.toNonIndexed()));
-  const campus=S.east?.buildings.find(b=>b.source==='88457612'||b.osm==='88457612'),main=S.blocks.find(b=>b.style==='school')??{base:0,x0:Math.min(...campus.polygon.map(p=>p[0])),x1:Math.max(...campus.polygon.map(p=>p[0])),z0:Math.min(...campus.polygon.map(p=>p[1])),z1:Math.max(...campus.polygon.map(p=>p[1]))};
+  const campus=S.east?.buildings.find(b=>b.source==='88457612'),main=S.blocks.find(b=>b.style==='school')??{base:0,x0:Math.min(...campus.polygon.map(p=>p[0])),x1:Math.max(...campus.polygon.map(p=>p[0])),z0:Math.min(...campus.polygon.map(p=>p[1])),z1:Math.max(...campus.polygon.map(p=>p[1]))};
   const chimneys=[],top=main.base+S.school.storey;
   const rise = S.school.roofPitch * Math.min(main.x1 - main.x0, main.z1 - main.z0) / 2 + 0.3;
   for (const x of (campus ? [] : S.school.chimneys).filter(x=>x>main.x0&&x<main.x1)) chimneys.push(new THREE.BoxGeometry(0.7, 1.6, 0.5).translate(x, top + rise + 0.2, (main.z0 + main.z1) / 2 + (x % 2 ? 0.8 : -0.8)));
