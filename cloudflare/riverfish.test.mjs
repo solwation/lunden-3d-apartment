@@ -154,3 +154,20 @@ test('through the Worker: clock and seed on arrival, a catch is gone for the oth
   assert.deepEqual(keys, [], 'nothing about the fish in storage');
   assert.ok(JSON.stringify(b.rf().at(-1)).length < PLAYERS.maxBytes);
 });
+
+test('#1753: catchCm is the same for everybody, inside the species range; giveUp ends a request the room never answered', async () => {
+  const { catchCm } = await import('../src/riverfishswim.js');
+  const { FISHING } = await import('../src/config.js');
+  for (const [name, { cm }] of Object.entries(FISHING.species)) {
+    assert.ok(C.species.some((s) => s.name === name), name);
+    for (let id = 0; id < C.count; id++) for (const born of [0, 1, 7]) { const v = catchCm(id, born, C.seed, cm); assert.ok(Number.isInteger(v) && v >= cm[0] && v <= cm[1], `${name} ${v}`); assert.equal(v, catchCm(id, born, C.seed, cm)); }
+  }
+  const sent = [], answers = [], s = new RiverFishSync({ send: (m) => { sent.push(m); return true; }, hooks: { caught: (id, ok) => answers.push([id, ok]) } });
+  s.setNear(true); s.receive({ k: 'L', now: Date.now(), s: C.seed, g: [] });
+  s.catch(3);
+  assert.ok(s.isGone(3), 'hidden while pending');
+  s.giveUp(3);
+  assert.deepEqual(answers, [[3, false]]); assert.equal(s.isGone(3), false, 'back in the river after giving up');
+  s.giveUp(3); assert.equal(answers.length, 1, 'only once');
+  s.receive({ k: 'ok', f: 3, b: 0 }); assert.equal(answers.length, 1, 'a late answer after giving up is ignored');
+});

@@ -762,3 +762,24 @@ hidden (no draw call) unless the eye is within `drawDist` m of the river centre 
 the fish within reach, `RiverFish.catchFish(id)` takes one out of the room (arbitrated, reach-checked; it returns as `born + 1` after
 `sync.respawn` s), `onCaught(id, ok)` reports the answer. Tests: `node --test cloudflare/riverfish.test.mjs`; browser `tools/riverfishtest.cjs`
 (two clients against `cloudflare/dev.mjs`); perfcount view `river`.
+
+## Fishing rod, bites and caught fish (#1753, part 2 of #1751)
+
+`src/fishing.js`, tunables `FISHING` (all *guess*). A 2 m rod (`FishingRod`, a Holdable, `isFishingRod`) lies on the north shore flat under the
+road bridge deck (`FISHING.home`, beside the north pier pair); it is taken, held, put down on the bank (`outdoorPlace`) and put back like any loose
+thing, kept by keep.js `things`, drawn only within `drawDist` m (nothing new at the start) and never a target from the deck above (more than 2.4 m
+height apart). It is no weapon. Held, a click / E / the touch button (`useLabel`: Kasta, Veva in, Haka!) casts where the eye's ray meets the river
+(`Fishing.aim`: `cast.min`…`max` m, `cast.edge` m off the bank, via `riverProject` / `riverPoint` / `waterAt`); while the line is out or the eye aims at
+the water the rod's `noPlace` stops main.js offering "put down", so the click stays the rod's. The float flies on an arc, lands with one additive
+ring and bobs; the line is a 12-point `THREE.Line` from the rod tip. A bite is a hazard per second: `wait.rate` x the sum over `RiverFish.near(float,
+wait.radius)` of the species' appetite (`FISHING.species[name].bite`) x closeness, never before `wait.min` s. Within `wait.window` s a strike calls
+`RiverFish.catchFish(id)` (the room arbitrates; the fish is gone for everybody); a miss makes that fish shy for `wait.shy` s and the float waits on.
+No answer within `wait.answer` s: `RiverFishSync.giveUp(id)` (the room's catch rate limit drops a request silently). A catch makes a `CaughtFish`
+(Holdable, `isCaughtFish`, name "en abborre, 23 cm", `catchCm(id, born, seed, range)` from `riverfishswim.js`, the same for everybody), lays the rod
+on the bank at your feet and puts the fish in the hand. It can be put down outdoors and indoors, has no home (taking something else lays it at your
+feet), and keep.js's `fishing` part (`saveState` / `loadState`, at most `FISHING.keep`) restores it in the hand or where it lay. `info` = `{ species,
+cm, raw }` is what #1754's cooking will use. The others see the held categories `rod` / `fish` (ghostprops.js, 46 / 42 triangles) and the float
+through the player state `fb` = `[x, y, z, bite]` (cloudflare/players.js `cleanFloat`); `Fishing.updateRemote` draws their floats and lines
+(from the rod proxy's `ROD_PROXY_TIP`) within `remoteDist` m. While the line is out the players connection stays open (`ghosts.keepConnected`),
+since an angler stands still. Tests: `node --test cloudflare/riverfish.test.mjs cloudflare/players.test.mjs src/heldcategory.test.mjs`; browser
+`tools/fishingtest.cjs` (two clients); `tools/ghostitemtest.cjs`. Images: [docs/verification/1753](../verification/1753/).

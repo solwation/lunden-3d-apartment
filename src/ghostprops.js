@@ -124,6 +124,9 @@ export function ghostBike() {
 // What an unarmed player holds (#1297): one simple proxy per category (heldcategory.js), flat colours, a few dozen triangles,
 // baked once into one vertex-coloured geometry (one draw call, the shared Lambert material, no textures). Prop space as the weapons':
 // the origin in the right hand, forward = -z; the things sit just in front of / above the palm.
+const ROD_LEN = 1.8, ROD_UP = 0.65; // #1753: the rod proxy's length (m) and elevation (rad) above level
+/** #1753: the rod proxy's tip in prop space. */
+export const ROD_PROXY_TIP = new THREE.Vector3(0, (ROD_LEN - 0.15) * Math.sin(ROD_UP), -(ROD_LEN - 0.15) * Math.cos(ROD_UP));
 const ITEM_PARTS = {
   cup: () => [[new THREE.CylinderGeometry(0.04, 0.034, 0.09, 8), 0xe9e6dc, [0, 0.02, -0.07]], [new THREE.BoxGeometry(0.012, 0.05, 0.03), 0xe9e6dc, [0.052, 0.02, -0.07]], [new THREE.CylinderGeometry(0.034, 0.034, 0.004, 8), 0x4a2c1a, [0, 0.062, -0.07]]],
   plate: () => [[new THREE.CylinderGeometry(0.12, 0.09, 0.016, 10), 0xf3f1ea, [0, 0, -0.14]], [new THREE.CylinderGeometry(0.06, 0.06, 0.012, 7), 0xd9a441, [0, 0.012, -0.14]]],
@@ -147,6 +150,11 @@ const ITEM_PARTS = {
   gift: () => [[new THREE.BoxGeometry(0.14, 0.12, 0.14), 0xb02a2a, [0, 0.03, -0.12]], [new THREE.BoxGeometry(0.146, 0.126, 0.026), 0xe8c24a, [0, 0.03, -0.12]], [new THREE.BoxGeometry(0.026, 0.126, 0.146), 0xe8c24a, [0, 0.03, -0.12]]],
   // #1755: a rubbish / laundry bag: a soft sack with a knotted neck
   bag: () => [[new THREE.IcosahedronGeometry(0.085, 0).scale(1, 1.15, 1), 0x56606b, [0, 0.03, -0.12]], [new THREE.CylinderGeometry(0.014, 0.022, 0.04, 5), 0x56606b, [0, 0.14, -0.12]]],
+  // #1753: the fishing rod, pointing ahead and up from the hand (ROD_PROXY_TIP: where src/fishing.js starts another player's line), and a caught fish hanging from the hand
+  rod: () => { const up = (g) => g.rotateX(-(Math.PI / 2 - ROD_UP));
+    return [[up(new THREE.CylinderGeometry(0.004, 0.009, ROD_LEN - 0.3, 5, 1, true).translate(0, 0.15 + (ROD_LEN - 0.3) / 2, 0)), 0x1f3d2c, [0, 0, 0]],
+      [up(new THREE.CylinderGeometry(0.016, 0.016, 0.3, 6).translate(0, 0, 0)), 0xb98a55, [0, 0, 0]], [new THREE.BoxGeometry(0.03, 0.05, 0.05), 0x3a3f44, [0, -0.045, -0.02]]]; },
+  fish: () => [[new THREE.SphereGeometry(0.1, 6, 4).scale(0.3, 1, 0.55), 0x8f9a74, [0, -0.17, -0.08]], [new THREE.ConeGeometry(0.045, 0.07, 3).scale(0.35, 1, 1), 0x5f6a4c, [0, -0.05, -0.08]]],
 };
 const itemCache = new Map();
 /** A new proxy mesh for held-item category `key`, or null for an unknown one; geometry and material shared by every ghost. */

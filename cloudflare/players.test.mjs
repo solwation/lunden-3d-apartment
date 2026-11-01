@@ -1636,6 +1636,14 @@ test('#1755 the new held categories (nut, binoculars, spray, gift, bag) reach th
   for (const k of ['nut', 'binoculars', 'spray', 'gift', 'bag']) { now += 1000; a.send({ p: [1, 0, 2], r: 0, hi: k }); await settle(env); assert.equal(b.states().at(-1).hi, k, k); }
 });
 
+test('#1753 the fishing rod, a caught fish and the float on the water reach the other client; a bad float is dropped', async () => {
+  const env = setup(), a = await connect(env, 'Olof'), b = await connect(env);
+  for (const k of ['rod', 'fish']) { now += 1000; a.send({ p: [1, 0, 2], r: 0, hi: k }); await settle(env); assert.equal(b.states().at(-1).hi, k, k); }
+  now += 1000; a.send({ p: [20, -5.5, 115], r: 0, hi: 'rod', fb: [21.234, -7.012, 121.5, 1] }); await settle(env);
+  assert.deepEqual(b.states().at(-1).fb, [21.23, -7.01, 121.5, 1]);
+  for (const fb of [[1, 2, 3], [1, 2, 3, 2], [1, 2, 9999, 0], ['1', 2, 3, 0], [1, 200, 3, 0]]) { now += 1000; a.send({ p: [20, -5.5, 115], r: 0, hi: 'rod', fb }); await settle(env); assert.equal('fb' in b.states().at(-1), false, JSON.stringify(fb)); }
+});
+
 test('sound events (#1302): a whitelisted key only, to the players within range, rate-limited, never echoed; the client list matches', async () => {
   assert.deepEqual(PLAYERS.sounds, SOUNDS.kinds, 'the room\'s whitelist equals the client\'s');
   assert.ok(PLAYERS.soundEvery <= SOUNDS.every);

@@ -55,3 +55,12 @@ test('#1755: binoculars, spray cans, gifts, bags and fish fingers are no longer 
   assert.equal(heldCategory(make('Nut', { isSquirrelNut: true })), 'nut');
   for (const k of ['nut', 'binoculars', 'spray', 'gift', 'bag']) assert.ok(HELD_CATEGORIES.includes(k), k);
 });
+
+test('#1753: the fishing rod and a caught fish have their own categories (a fish finger stays food)', () => {
+  assert.equal(heldCategory({ isFishingRod: true }), 'rod');
+  assert.equal(heldCategory({ isCaughtFish: true }), 'fish');
+  assert.equal(heldCategory(make('FishingRod')), 'rod');
+  assert.equal(heldCategory(make('CaughtFish')), 'fish');
+  assert.equal(heldCategory({ isFish: true }), 'food');
+  for (const k of ['rod', 'fish']) assert.ok(HELD_CATEGORIES.includes(k), k);
+});

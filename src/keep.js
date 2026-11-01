@@ -11,7 +11,7 @@ import { stowedItem, heldItem } from './holdable.js';
 // restoring: the clock and the date (a mid-visit update keeps the game's time, spooled or paused — a new visit still
 // starts at the real time, #143), the car, doors / lids / fronts, lamps, the TV / PC / hob / hood / grill, the coffee
 // in the jug, the music, the parasol, things put down and the one in the hand (cups with what is in them), sitting /
-// lying, the cat, the jetpack (#359), the Spider-Man suit (#597) (a thing's own state: `keepState()` / `loadKeep(s)`, e.g. the toaster plugged in, #401). Chicken cooking/parts/rewards live in Life extras (#708). Not kept (fresh as before): cooking (fish fingers, the fries, #301), taps, a loose non-stowed drawing in the hand.
+// lying, the cat, the jetpack (#359), the Spider-Man suit (#597), the fish caught in Höje å (#1753, `fishing`) (a thing's own state: `keepState()` / `loadKeep(s)`, e.g. the toaster plugged in, #401). Chicken cooking/parts/rewards live in Life extras (#708). Not kept (fresh as before): cooking (fish fingers, the fries, #301), taps, a loose non-stowed drawing in the hand.
 // `a` is the app: main.js hands over what the parts need.
 
 export const KEEP_VERSION = 1;
@@ -53,7 +53,7 @@ function holdKey(h) {
   const p = h.keepPos ?? h.local?.pos ?? h.home?.pos; // (keepPos: a fixed key position for a thing whose home moved, #1573)
   return `${h.keepName ?? h.name}|${p ? vec(p).join(',') : ''}`; // (keepName: a name that changes, the daily beers #587)
 }
-const keepable = (a, h) => h !== a.chicken && !h.isChristmasGift && !h.isSquirrelNut && !h.broken && !h.flying && !h.isMiele; // chicken has its own Life extra (and a ball in the air); Miele in your arms is the cat's (#328)
+const keepable = (a, h) => h !== a.chicken && !h.isChristmasGift && !h.isSquirrelNut && !h.isCaughtFish && !h.broken && !h.flying && !h.isMiele; // chicken has its own Life extra (and a ball in the air); Miele in your arms is the cat's (#328)
 
 const PARTS = {
   bicycleHand: {
@@ -311,6 +311,11 @@ const PARTS = {
     },
   },
 
+  fishing: { // #1753: the fish caught in Höje å (species, length, raw; lying where, or in the hand); the rod itself is one of the `things`
+    save: ({ fishing }) => fishing?.saveState() ?? null,
+    load: ({ fishing }, s) => fishing?.loadState(s),
+  },
+
   jetpack: { // the jetpack (#359): stood down somewhere (the spot), or on your back
     save: ({ jetpack }) => jetpack?.saveState() ?? null,
     load: ({ jetpack }, s) => jetpack?.loadState(s),
@@ -400,7 +405,7 @@ const restKey = (t) => `${t.name}|${t.spots[0] ? vec(t.spots[0].pos).join(',') :
 
 // the order things come back in: the clock before the lamps (dusk), the car before its seat, fronts before what
 // lies in them, the TV before sitting in front of it
-const ORDER = ['clock', 'santa', 'car', 'lift', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'jetpack', 'spidersuit', 'life', 'christmasGifts', 'rest', 'cat', 'bicycleHand'];
+const ORDER = ['clock', 'santa', 'car', 'lift', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'fishing', 'jetpack', 'spidersuit', 'life', 'christmasGifts', 'rest', 'cat', 'bicycleHand'];
 
 /** The world part of a reload record. */
 export function saveWorld(a) {

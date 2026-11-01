@@ -72,6 +72,7 @@ import { Measure } from './measure.js';
 import { cloudTexture, groundY, renderedTerrainY, lampGroundY, treeFeet, aoTrees } from './surroundings.js';
 import { Squirrels } from './squirrels.js';
 import { RiverFish } from './riverfish.js';
+import { Fishing } from './fishing.js'; // #1753: the rod under the road bridge, bites and caught fish
 import { onRoad, onWalk } from './roads.js';
 import { onParkPath } from './riverpark.js';
 import { bindGroundAOShadow } from './groundao.js';
@@ -564,6 +565,10 @@ const squirrels = params0.has('nosquirrels') ? null : new Squirrels({ scene, cam
 if (squirrels) holdables.push(...squirrels.nutItems);
 // #1752: fish in Höje å and the rings they leave on the water, the same for every player (src/riverfish.js, src/riverfishsync.js, cloudflare/riverfish.js)
 const riverFish = params0.has('nofish') ? null : new RiverFish({ scene, camera });
+// #1753: the fishing rod under the road bridge (a holdable, saved like any loose thing) and the fish caught with it (keep.js `fishing`)
+const fishing = new Fishing({ scene, camera, riverFish, player, groundY: (x, z) => player.groundAt(x, z, -4), onMessage: (t) => badge(t, false), touch: () => touch.enabled,
+  onItem: (f) => { holdables.push(f); f.model.userData.keepHidden = () => f.broken; } });
+holdables.push(fishing.rod);
 // #1686: the squirrels and nuts shared with the players near them (src/squirrelsync.js, cloudflare/squirrels.js); the ghosts give the leader the others' lures
 // (set after the ghosts exist, below)
 const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups in the wall cabinet (#90)
@@ -2296,7 +2301,7 @@ function updateFocus() {
     if (spot && item.softOnly && !top.object.userData.soft) { // Cats: not on a table or a worktop (#1061)
       if (!hit || spot.distance <= hit.distance + 0.05) focused = { name: '', kind: 'place', blocked: true, blockedText: `${item.name === 'Miele' ? 'Miele' : item.name === 'kattungen' ? 'Kattungen' : 'Katten'} får inte vara på bordet` };
       spot = null;
-    } else if (!spot) { const f = floorSpot() ?? (item.softOnly || item.outdoorPlace ? outdoorSpot() : null); if (f && f.distance < reach && (f.outdoor || !behindWall(f.point))) spot = f; } // a table top is always above (before) the floor
+    } else if (!spot) { const f = floorSpot() ?? (item.softOnly || (item.outdoorPlace && !item.noPlace) ? outdoorSpot() : null); if (f && f.distance < reach && (f.outdoor || !behindWall(f.point))) spot = f; } // a table top is always above (before) the floor
     if (spot && item.isVacuum && stairUnderside(spot.point.x, spot.point.z) !== null && stairUnderside(spot.point.x, spot.point.z) < spot.point.y + 0.3) {
       spot = null; // low headroom under the stair winders / soffit (#389)
     }
@@ -2444,6 +2449,7 @@ function updateFocus() {
     promptEl.style.backgroundImage = `linear-gradient(90deg, rgba(70,170,100,.85) ${pct}%, transparent ${pct}%)`;
   } else if (promptEl.style.backgroundImage) promptEl.style.backgroundImage = '';
   if (heldItem() === binoculars && !focused && !touch.enabled && !reading) { promptEl.textContent = binoculars.zoomed ? 'Högerklick: sänk kikaren' : 'Högerklick: kika'; promptEl.hidden = false; } // #1706
+  if (heldItem() === fishing.rod && !focused && !touch.enabled && !reading) { promptEl.textContent = { idle: fishing.aim() ? 'Klicka för att kasta' : 'Sikta mot vattnet i ån för att kasta', flight: 'Kastar …', wait: 'Väntar på napp · klicka för att veva in', bite: 'Napp! Klicka nu!', reel: 'Vevar in …' }[fishing.state]; promptEl.hidden = false; } // #1753
   if (heldItem() === ball && !focused && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att skjuta · högerklick: studsa bollen'; promptEl.hidden = false; }
   actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || (!!choices.rows && !reading) || clockPanel.open || calPanel.open || blindPanel.open || sonos.open || !!viewing || isAvatarCustomizerOpen(); // the strips have their own ×
   remoteSeekControls.hidden=!touch.enabled||reading||!remoteAim||!tvMedia.seekable(remote.findTv());
@@ -2475,7 +2481,7 @@ function toggleFurniture(on = !world.furnitureOn) {
     for (const l of world.lids.filter(l => l.coldDrawer)) { l.isOpen = false; l.t = 0; l.pose(0); } // close before their doors (#504)
     for (const l of world.lids) if (l.kind === 'fridge' && l.isOpen) l.toggle(); // the fridge and freezer doors shut: no alarm (#288)
     rifle?.reset(); // the dropped magazines go, a full one in (#196)
-    for (const h of holdables) if (h.placed && !(h === pan && (pan.egg || pan.dirty))) h.goHome(); // life-sim food and dirty cookware stay where left
+    for (const h of holdables) if (h.placed && !h.isCaughtFish && !(h === pan && (pan.egg || pan.dirty))) h.goHome(); // (#1753: a caught fish has no home: it stays where it lies) // life-sim food and dirty cookware stay where left
     jetpack.goHome(); // back on its hook by the garage (#359)
     suit.goHome(); // back in its drawer (#597)
     cups.reset(); // the cups standing out go, the cabinet is full again (#215)
@@ -2920,7 +2926,7 @@ const weaponIs = { saber: (h) => h === saber, nerf: (h) => toys.blasters.include
   rifle: (h) => !!h?.isRifle, ball: (h) => h === ball, bow: (h) => !!bow && h === bow, web: (h) => !h && suit.worn }; // (the jetpack is no weapon, #1705)
 const weaponKey = () => { if (player.riding) return ''; const h = heldItem(); return COMBAT.weapons.find((k) => weaponIs[k]?.(h)) ?? ''; };
 const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey, mirrored: () => !rest.active,
-  state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, look: [0, camera.rotation.x], c: player.crouched, dn: playroom.music.dancing ? 1 : 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 ? 2 : 1) : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
+  state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, look: [0, camera.rotation.x], c: player.crouched, dn: playroom.music.dancing ? 1 : 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 ? 2 : 1) : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, fb: fishing.wire, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
 const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, basket: ball, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows, life, fruit, fish, chicken, fries, beer, beerCans,
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
   onDie: () => { binoculars.setZoom(false); goToStart(() => respawnOutdoors(player)); badge('💀 Slut på liv – du lever igen', false); } }); // only the place changes (#665)
@@ -2968,6 +2974,7 @@ playroom.billiards.net = { ready: () => ghosts.connected, send: (m) => ghosts.po
 ghosts.onPool = (m) => playroom.billiards.onNet(m);
 const graffitiSync = new GraffitiSync(graffiti, { ready: () => ghosts.connected, send: (m) => ghosts.graffiti(m), me: () => ghosts.me }); // #1724: the spray paint shared by gossip
 ghosts.onGraffiti = (m) => graffitiSync.receive(m);
+fishing.peers = () => ghosts.others.values(); // #1753: the others' floats and lines
 playroom.billiards.peers = () => ghosts.others.values(); // #1637: the others' cues while they aim at the table
 playroom.music.net = { ready: () => ghosts.connected, send: (m) => ghosts.music(m) }; // #1624: the room's shared music
 ghosts.onMusic = (m) => playroom.music.sync(m);
@@ -2986,7 +2993,7 @@ tvMedia.connect(cinema.net);
 computerHub.connect({...cinema.net,snake:m=>ghosts.snake(m)});
 ghosts.onSnake=m=>computerHub.receiveSnake(m);
 ghosts.onCinema = m => m.screen?(computerHub.receive(m)||tvMedia.receive(m)):cinema.receive(m);
-ghosts.keepConnected = () => (player.inPlayroom && !!cinema.state?.video)||tvMedia.watching||computerHub.watching;
+ghosts.keepConnected = () => (player.inPlayroom && !!cinema.state?.video)||tvMedia.watching||computerHub.watching||fishing.state !== 'idle'; // (#1753: an angler waiting for a bite stands still for minutes; the others keep seeing the float)
 // toasting (#1222): "Skåla" with a glass in the hand (right click / 🥂): a clink, the glass raised (things.js), a line and one small
 // message; a player near us who holds a glass hears it and toasts back once (flagged, so no ping-pong); Olof answers from his car.
 toastHandler.fn = (glass, back = false) => {
@@ -3238,6 +3245,7 @@ function step(dt) {
   for (const t of world.furnitureTargets) t.update?.(dt);
   nests.update(dt); // the smart speakers: talk, wake lights, the display (#325)
   for (const h of holdables) h.update(dt);
+  fishing.update(dt); // #1753: the float, the line, bites and the others' floats
   grill.update(dt);
   world.boule.update(dt, player.pos); // #1370: drawn and simulated only near the court
   sausages.update(dt); // #1124
@@ -3754,7 +3762,7 @@ function continueAfterReload(r) {
   setTimeout(() => { reloadedEl.hidden = true; }, RELOAD_NOTE_S * 1000 + 700);
 }
 // the world's state for a reload made by the page (#277, keep.js): what each part needs
-const keepApp = { santa, christmasGifts, bicycleStow: { fruit, fish, fries, chicken }, life, jetpack, suit, car, world, lights, day, grill, sonos, patio, holdables, cups, beer, chicken, scene, rest, cat, BREEDS, VARIANTS,
+const keepApp = { fishing, santa, christmasGifts, bicycleStow: { fruit, fish, fries, chicken }, life, jetpack, suit, car, world, lights, day, grill, sonos, patio, holdables, cups, beer, chicken, scene, rest, cat, BREEDS, VARIANTS,
   sitAt: (target, spot, stand) => sitAt(target, spot, stand, true) };
 Object.assign(keepApp.bicycleStow, { miele, heldDrawing, drawing: heldDrawing, toiletPaper, paper: toiletPaper });
 function keepWorld() { try { return saveWorld(keepApp); } catch (e) { console.warn('keep', e); return null; } }
@@ -3784,4 +3792,4 @@ const openPanel = () => !overlay.hidden ? 'menu' : !reading ? (lowMemory && port
   : viewing ? 'poster' : isAvatarCustomizerOpen() ? 'avatar' : cinema.open || computerHub.open || tvMedia.open ? 'video' : 'other';
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding, panel: openPanel }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { medals, squirrels, riverFish, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
+window.__app = { medals, squirrels, riverFish, fishing, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };

@@ -7326,6 +7326,34 @@ export const RIVER_FISH = {
 };
 
 /**
+ * #1753 (part 2 of #1751): the fishing rod under the road bridge, casting, bites and caught fish (src/fishing.js). Every number is a
+ * *guess* (a plain 2 m spinning rod with a red-and-white float; species sizes typical for Skåne's streams, not measured in Höje å).
+ */
+export const FISHING = {
+  // where the rod lies: on the north shore flat under the road bridge (SITE.bridges.road, deck z 100…145.8), just south of the
+  // north pier pair (riverbridge.js pierBoxes: x 21.7 / 25.9, z 107.6), beside the walk under the deck; along x, so it reads as tucked away by the piers
+  home: { x: 23.8, z: 109.4, yaw: 1.65 },
+  rod: { length: 2.0, butt: 0.012, tip: 0.0025, handle: 0.32, reel: 0.03 }, // m: blank length, radii at the butt and the tip, cork handle, reel radius
+  held: { x: 0.17, y: -0.19, z: -0.4, pitch: 0.75, yaw: 0.12 }, // camera-space pose of the held rod (m, rad): low right, pointing ahead and up
+  grip: [0.02, 0, -0.01], // model-local point the hand closes round: the handle just behind the reel (hand.js gripOf)
+  cast: { min: 2, max: 14, edge: 0.35, flight: 0.7, arc: 1.6 }, // m from the eye (horizontal) a cast may land; m kept off the bank; s in the air; m of arc height
+  ring: { life: 1.6, r: [0.06, 0.7] }, // the ring where the float lands / dips (s, m): one flat additive ring
+  float: { r: 0.035, bob: [0.008, 1.7], dip: 0.06 }, // m: the float's radius; its idle bob (m, Hz); how far a bite pulls it under
+  // a bite: a hazard per second, rate x the sum over the fish within `radius` m of the float of their species' appetite (bite) x
+  // (1 - distance / radius); never before `min` s after the float lands. A missed bite (no strike within `window` s) scares that
+  // fish off for `shy` s; the float stays for the next one.
+  wait: { min: 3, rate: 0.05, radius: 10, window: 1.6, shy: 25, idleHint: 45, answer: 5 }, // (answer: s to wait for the room's verdict before giving up)
+  reach: 22, // m: walking this far from the float reels the line in
+  species: { // appetite (relative bite rate) and caught length range (cm) per RIVER_FISH species name
+    mört: { bite: 1.4, cm: [12, 30] }, abborre: { bite: 1.2, cm: [14, 36] }, braxen: { bite: 0.8, cm: [28, 55] },
+    gädda: { bite: 0.6, cm: [45, 95] }, öring: { bite: 0.7, cm: [28, 60] }, ål: { bite: 0.4, cm: [45, 85] },
+  },
+  keep: 6, // caught fish kept in the world (lying about or in the hand); a seventh takes the oldest one lying about away
+  remoteDist: 60, // m: other players' floats are drawn within this distance
+  drawDist: 45, // m: the rod lying about is drawn only this close (one draw call; none at the start)
+};
+
+/**
  * #1682: the world's edge. Far scenery outside SITE.backgroundGround (the modelled terrain rectangle): a feathered band round the
  * terrain, a ground slab north of it, fields, a cycle path, Malmövägen, low box silhouettes and tree rows. All plan coordinates
  * (x east, z south) and every number are *guess*: positions were read off the Google 3D views of 2026-10-29

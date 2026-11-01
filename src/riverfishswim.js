@@ -144,5 +144,7 @@ export function ringsAt(f, t, out = [], seed = C.seed) {
   }
   return out;
 }
+/** #1753: the length in cm of fish `id` in its life `born` when caught, within [lo, hi] (FISHING.species), smaller ones commoner; the same for everybody. */
+export const catchCm = (id, born, seed = C.seed, [lo, hi] = [15, 40]) => Math.round(lo + (hi - lo) * Math.pow(rng(hash(seed, id + 211, born + 3))(), 1.6));
 /** Seconds since RIVER_FISH.epoch for a wall-clock time in ms. */
 export const fishTime = (ms) => ms / 1000 - C.epoch;

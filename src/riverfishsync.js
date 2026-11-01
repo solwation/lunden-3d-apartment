@@ -50,6 +50,8 @@ export class RiverFishSync {
     this.gone.set(id, { b: b + 1, u: this.roomMs + C.sync.respawn[0] * 1000 }); this.hooks.caught?.(id, true);
     return true;
   }
+  /** #1753: stop waiting for the room's answer on our catch of fish `id` (it never came: the rate limit drops a request silently). */
+  giveUp(id) { if (this.pending.delete(id)) this.hooks.caught?.(id, false); }
   /** The connection dropped: join again when it is back. */
   reset() { this.near = false; this.pending.clear(); }
 }

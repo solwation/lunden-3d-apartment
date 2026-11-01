@@ -4,7 +4,7 @@
 // Weapons keep their own wire field `h`; this covers the ordinary held things heldItem() (holdable.js) can return.
 
 /** The whitelist: one simple proxy model per key (ghostprops.js ghostItem). */
-export const HELD_CATEGORIES = Object.freeze(['cup', 'plate', 'food', 'bottle', 'book', 'paper', 'tool', 'plant', 'cue', 'box', 'nut', 'binoculars', 'spray', 'gift', 'bag']); // 'nut' (#1686): a squirrel nut; a crouched, still player holding one lures the squirrels for the shared leader. #1755: binoculars (#1706), spray can (#1707), Christmas gift, rubbish/laundry bag: no longer the generic box
+export const HELD_CATEGORIES = Object.freeze(['cup', 'plate', 'food', 'bottle', 'book', 'paper', 'tool', 'plant', 'cue', 'box', 'nut', 'binoculars', 'spray', 'gift', 'bag', 'rod', 'fish']); // 'nut' (#1686): a squirrel nut; a crouched, still player holding one lures the squirrels for the shared leader. #1755: binoculars (#1706), spray can (#1707), Christmas gift, rubbish/laundry bag: no longer the generic box. #1753: the fishing rod and a caught fish
 const SET = new Set(HELD_CATEGORIES);
 /** `hi` as it goes on the wire / into a Ghost: a whitelisted key, else '' (none). */
 export const cleanHeldCategory = (v) => (typeof v === 'string' && SET.has(v) ? v : '');
@@ -15,7 +15,7 @@ const BY_CLASS = {
   Cup: 'cup', Glass: 'cup', Jug: 'bottle', Bottle: 'bottle', Milk: 'bottle', Beer: 'bottle', BeerCan: 'bottle',
   Book: 'book', HeldDrawing: 'paper', ToiletPaper: 'paper', Photo: 'paper',
   Pan: 'tool', Cloth: 'tool', Vacuum: 'tool', Flashlight: 'tool', Remote: 'tool', Scoop: 'tool', Toaster: 'box',
-  SillPot: 'plant', Nut: 'nut', Binoculars: 'binoculars', SprayCan: 'spray', ChristmasGift: 'gift', BilliardCue: 'cue', Fruit: 'food', FishFinger: 'food', FishPack: 'box', FriesBag: 'food', FriesBunch: 'food', PopcornTub: 'food', Chicken: 'food', ChickenPiece: 'food',
+  SillPot: 'plant', Nut: 'nut', Binoculars: 'binoculars', SprayCan: 'spray', ChristmasGift: 'gift', FishingRod: 'rod', CaughtFish: 'fish', BilliardCue: 'cue', Fruit: 'food', FishFinger: 'food', FishPack: 'box', FriesBag: 'food', FriesBunch: 'food', PopcornTub: 'food', Chicken: 'food', ChickenPiece: 'food',
 };
 const WEAPON_CLASSES = new Set(['Saber', 'Blaster', 'Wand', 'Bow', 'Basketball', 'MieleHeld']);
 
@@ -43,6 +43,8 @@ export function heldCategory(item) {
   }
   if (item.isBilliardCue) return 'cue'; // #1687: not the generic box
   if (item.isCup) return 'cup';
+  if (item.isFishingRod) return 'rod'; // #1753
+  if (item.isCaughtFish) return 'fish'; // #1753: a fish from Höje å (not the fish fingers below)
   if (item.isFish) return 'food'; // a fish finger (fishfingers.js builds a plain object, so no class name)
   if (item.isBinoculars) return 'binoculars';
   if (item.isSprayCan) return 'spray';
