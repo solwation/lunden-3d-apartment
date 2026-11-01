@@ -7368,10 +7368,55 @@ export const FISHING = {
   // #1754: cooking the catch on a kettle grill (src/grill.js, lit) or in the pan on a lit hob (src/pan.js). `done` / `burn` = s of
   // heat until it is cooked through / burnt (fish fingers 6 / 18, the whole chicken 10 / 30); `rate` per heat source (the pan is
   // hotter and closer); `bites` to eat it; `golden` / `char` the skin's colour cooked / burnt. All *guess*.
-  cook: { done: 16, burn: 42, rate: { grill: 1, pan: 1.25 }, bites: 4, golden: 0xb4783c, char: 0x261c14, cooldown: 0.45 },
+  // #1765: `skin` = the mean luminance the golden / charred tint is scaled to (the tint is divided by the species' own skin luminance, so the
+  // light belly of a silvery fish does not glow orange). *guess*
+  cook: { done: 16, burn: 42, rate: { grill: 1, pan: 1.25 }, bites: 4, golden: 0xb4783c, char: 0x261c14, cooldown: 0.45, skin: 0.75 },
   // #1754: points per fish caught by species (rarer = more; the RIVER_FISH weights 5 / 4 / 2.5 / 1.2 / 1.2 / 0.4), counted like the cat
   // breeds (stats.js rawScore, stats.fishBySpecies). *guess*
   points: { mört: 4, abborre: 5, braxen: 7, gädda: 12, öring: 15, ål: 25 },
+};
+
+/**
+ * #1765: the caught fish's own model (src/caughtfish.js), one cached geometry per RIVER_FISH species, in units of the fish's length (the
+ * nose at z = +0.5, the tail tips at -0.5; CaughtFish scales it by the caught length). Shapes, fins and colours are *guess*, after general
+ * pictures of the species, not measured. The river fish (src/riverfish.js) keep their cheap shape.
+ *  rings: the body's cross-sections (plus one at each bar / gap of a barred pattern and one at the gill line), around: vertices per section.
+ *  Per species: depth / width = the body's greatest height / width (x the length) at `peak` (0 = the caudal peduncle, 1 = the nose); ped = the
+ *  peduncle's share of that height; top = the share of the height above the centre line (a humped back > 0.5); head = the head's share of the body
+ *  (the gill line); nose [height, width] exponents of the head's taper (1 = pointed, 2 = round, 3+ = blunt: the pike's flat beak);
+ *  tail = the tail fin's share of the length, fork = how deep its notch is (0 = straight, < 0 = rounded), spread = half its height.
+ *  Fins in body u: dorsal / dorsal2 / adipose (top) and anal (below) = [u back, u front, height front, height back] (x the length); spiny = spines
+ *  of the first dorsal; pec / pelvic = [u, size]; long = the eel's fin round the tail [u top, u bottom, height]. eye = [u, radius].
+ *  Colours (sRGB): back / side / belly of the skin, fins = { dorsal, tail, paired (pectoral + pelvic), lower (anal) }, iris; bars = dark cross
+ *  bands [n, u from, u to, colour], spots = [[colour, count per side, u from, u to, lowest sin of the angle round, highest, radius]]: small
+ *  flat discs on the skin (4 triangles each).
+ */
+export const CAUGHT_FISH = {
+  rings: 16, around: 12,
+  pupil: 0x0c0c0c, gill: 0.62, mouth: 0x2a2018, // the pupil; the gill line darkens the side by this factor; the mouth (nose tip)
+  species: {
+    mört: { depth: 0.27, width: 0.12, peak: 0.6, ped: 0.3, top: 0.55, head: 0.23, nose: [2, 2], tail: 0.17, fork: 0.55, spread: 0.11,
+      dorsal: [0.5, 0.64, 0.13, 0.04], anal: [0.22, 0.34, 0.08, 0.03], pec: [0.74, 0.08], pelvic: [0.5, 0.07], eye: [0.9, 0.032],
+      back: 0x34463f, side: 0xc4c9c3, belly: 0xf0efe8, fins: { dorsal: 0x7a5a4c, tail: 0x8c5a48, paired: 0xc8462a, lower: 0xc8462a }, iris: 0xd0261a },
+    abborre: { depth: 0.28, width: 0.13, peak: 0.6, ped: 0.28, top: 0.6, head: 0.27, nose: [1.6, 2], tail: 0.16, fork: 0.3, spread: 0.1,
+      dorsal: [0.6, 0.86, 0.12, 0.05], spiny: 6, dorsal2: [0.3, 0.52, 0.09, 0.04], anal: [0.22, 0.34, 0.08, 0.03], pec: [0.7, 0.08], pelvic: [0.68, 0.08], eye: [0.88, 0.036],
+      back: 0x2e3a18, side: 0x98a03c, belly: 0xe6dfbc, fins: { dorsal: 0x4c4c34, tail: 0xb4602c, paired: 0xdc4c1c, lower: 0xdc4c1c }, iris: 0xd8a01c,
+      bars: [6, 0.14, 0.78, 0x1c220e] },
+    braxen: { depth: 0.36, width: 0.09, peak: 0.6, ped: 0.22, top: 0.6, head: 0.2, nose: [1.6, 1.6], tail: 0.17, fork: 0.65, spread: 0.13,
+      dorsal: [0.56, 0.66, 0.15, 0.03], anal: [0.08, 0.46, 0.09, 0.04], pec: [0.76, 0.08], pelvic: [0.56, 0.07], eye: [0.9, 0.03],
+      back: 0x3a3524, side: 0xa48646, belly: 0xd8c69c, fins: { dorsal: 0x3e3a30, tail: 0x3e3a30, paired: 0x5a4c3a, lower: 0x4a4436 }, iris: 0xc8b88c },
+    gädda: { depth: 0.14, width: 0.11, peak: 0.45, ped: 0.45, top: 0.5, head: 0.3, nose: [1.1, 3.5], tail: 0.14, fork: 0.35, spread: 0.08,
+      dorsal: [0.06, 0.22, 0.08, 0.05], anal: [0.05, 0.2, 0.07, 0.04], pec: [0.68, 0.06], pelvic: [0.44, 0.05], eye: [0.84, 0.024],
+      back: 0x27321a, side: 0x667438, belly: 0xe2dbbf, fins: { dorsal: 0x7c6236, tail: 0x7c6236, paired: 0x9a7038, lower: 0x8a6634 }, iris: 0xd8b02c,
+      spots: [[0xd6cf8c, 13, 0.06, 0.72, -0.55, 0.7, 0.014]] },
+    öring: { depth: 0.22, width: 0.12, peak: 0.55, ped: 0.34, top: 0.52, head: 0.24, nose: [1.7, 2], tail: 0.15, fork: 0.15, spread: 0.1,
+      dorsal: [0.46, 0.62, 0.11, 0.04], adipose: [0.12, 0.18, 0.035, 0.01], anal: [0.18, 0.3, 0.07, 0.03], pec: [0.72, 0.07], pelvic: [0.46, 0.06], eye: [0.88, 0.03],
+      back: 0x44463a, side: 0xb4a98a, belly: 0xefe9da, fins: { dorsal: 0x6c6250, tail: 0x6c6250, paired: 0x9a8a6a, lower: 0x9a8a6a }, iris: 0xccbc80,
+      spots: [[0x1a1714, 12, 0.14, 0.92, 0.05, 0.95, 0.009], [0xc0381e, 5, 0.18, 0.75, -0.3, 0.15, 0.008]] },
+    ål: { depth: 0.065, width: 0.06, peak: 0.62, ped: 0.3, top: 0.5, head: 0.13, nose: [1.8, 2.2], tail: 0.04, fork: -0.6, spread: 0.035,
+      long: [0.62, 0.42, 0.035], pec: [0.85, 0.03], eye: [0.955, 0.012],
+      back: 0x2b2d1e, side: 0x5a5634, belly: 0xd6c682, fins: { dorsal: 0x5c5836, tail: 0x5c5836, paired: 0x6c6640, lower: 0x6a6440 }, iris: 0xd0c49a },
+  },
 };
 
 /**

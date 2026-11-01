@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { FISHING as F, RIVER_FISH } from './config.js';
 import { Holdable, heldItem, setHeld, stowedItem, restPose } from './holdable.js';
 import { forgetBicycleHand } from './keep.js';
-import { fishGeometry } from './riverfish.js';
+import { caughtFishGeometry } from './caughtfish.js';
 import { riverProject, riverPoint, waterAt, catchCm } from './riverfishswim.js';
 import { ROD_PROXY_TIP } from './ghostprops.js';
 import { sfx } from './audio.js';
@@ -106,18 +106,18 @@ export class FishingRod extends Holdable {
   idle() { const p = this.model.position, c = this.camera.position; this.model.visible = Math.hypot(p.x - c.x, p.z - c.z) < F.drawDist; }
 }
 
-let fishGeo = null;
-const GOLDEN = new THREE.Color(F.cook.golden), CHAR = new THREE.Color(F.cook.char), TMP = new THREE.Color();
+const GOLDEN = new THREE.Color(F.cook.golden), CHAR = new THREE.Color(F.cook.char), TMP = new THREE.Color(), TMP2 = new THREE.Color();
 const COOKED_WORD = { grill: 'grillad', pan: 'stekt' };
 
 export class CaughtFish extends Holdable {
   /** host: the Fishing; info: { species, cm, raw, cook?, by?, bites? }; at: where it starts (a Vector3, the catcher's feet). */
   constructor(scene, camera, host, info, at) {
     const spec = RIVER_FISH.species.find((s) => s.name === info.species) ?? RIVER_FISH.species[0], L = info.cm / 100;
-    fishGeo ??= fishGeometry();
-    const mat = new THREE.MeshStandardMaterial({ vertexColors: true, color: spec.color, roughness: 0.45, metalness: 0.1 }); // its own: cooking browns it (#1754)
-    const mesh = new THREE.Mesh(fishGeo, mat);
-    mesh.scale.set(L * spec.w / spec.len * 1.4, L * spec.h / spec.len, L); // (a little plumper than the shape seen through the water)
+    // #1765: the species' own model (src/caughtfish.js: shape, fins, eyes and skin pattern in vertex colours, one cached geometry per species)
+    const geo = caughtFishGeometry(spec.name);
+    const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.45, metalness: 0.1, side: THREE.DoubleSide }); // its own: cooking browns it (#1754); the fins are single polygons
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.scale.setScalar(L); // (the geometry is in units of the fish's length)
     mesh.castShadow = true; mesh.userData.noDetail = true;
     const model = new THREE.Group(); model.add(mesh);
     const sphere = new THREE.Sphere(), hit = new THREE.Vector3(), reach = Math.max(0.14, L * 0.5);
@@ -144,12 +144,12 @@ export class CaughtFish extends Holdable {
     const word = this.burnt ? 'bränd' : this.cooked ? COOKED_WORD[this.by] : '';
     this.name = this.takeTarget.name = `en ${word ? `${word} ` : ''}${this.species}, ${this.cm} cm`;
   }
-  /** The skin's colour by the cooking: the species' colour → golden brown (cooked) → charred (burnt). */
+  /** The skin's colour by the cooking: the species' own colours (white tint) → golden brown (cooked) → charred (burnt). The tint is divided by
+   *  the skin's mean luminance (#1765), so a silvery roach and a dark eel both come out about FISHING.cook.golden (x `skin`), the pattern still faintly showing. */
   paint() {
-    const { done, burn } = F.cook, c = this.cook;
-    TMP.setHex(this.spec.color);
-    if (c < done) TMP.lerp(GOLDEN, c / done);
-    else TMP.copy(GOLDEN).lerp(CHAR, Math.min(1, (c - done) / (burn - done)));
+    const { done, burn } = F.cook, c = this.cook, k = F.cook.skin / Math.max(0.15, this.mesh.geometry.userData.lum ?? F.cook.skin);
+    if (c < done) TMP.setRGB(1, 1, 1).lerp(TMP2.copy(GOLDEN).multiplyScalar(k), c / done);
+    else TMP.copy(GOLDEN).lerp(CHAR, Math.min(1, (c - done) / (burn - done))).multiplyScalar(k);
     this.mat.color.copy(TMP); this.mat.roughness = c > 0 ? 0.7 : 0.45; this.mat.metalness = c > 0 ? 0 : 0.1;
     this.rename();
   }

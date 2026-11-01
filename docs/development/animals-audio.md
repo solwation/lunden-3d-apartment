@@ -794,7 +794,7 @@ No answer within `wait.answer` s: `RiverFishSync.giveUp(id)` (the room's catch r
 (Holdable, `isCaughtFish`, name "en abborre, 23 cm", `catchCm(id, born, seed, range)` from `riverfishswim.js`, the same for everybody), lays the rod
 on the bank at your feet and puts the fish in the hand. It can be put down outdoors and indoors, has no home (taking something else lays it at your
 feet), and keep.js's `fishing` part (`saveState` / `loadState`, at most `FISHING.keep`) restores it in the hand or where it lay. `info` = `{ species,
-cm, raw }` is what #1754's cooking will use. The others see the held categories `rod` / `fish` (ghostprops.js, 46 / 42 triangles) and the float
+cm, raw }` is what #1754's cooking will use; its model is the species' own since #1765 (below). The others see the held categories `rod` / `fish` (ghostprops.js, 46 / 42 triangles) and the float
 through the player state `fb` = `[x, y, z, bite]` (cloudflare/players.js `cleanFloat`); `Fishing.updateRemote` draws their floats and lines
 (from the rod proxy's `ROD_PROXY_TIP`) within `remoteDist` m. While the line is out the players connection stays open (`ghosts.keepConnected`),
 since an angler stands still. Tests: `node --test cloudflare/riverfish.test.mjs cloudflare/players.test.mjs src/heldcategory.test.mjs`; browser
@@ -819,3 +819,17 @@ the heat), optional `eat`; steps only count in order and are saved at once. Comp
 `bump('fishQuest')` (`SCORE.first.fishQuest` 150, once; no `again`) with the badge "Hemligt uppdrag klart: Fiskelycka!". Nothing shows before; afterwards
 the task list (tasks.js `secretQuests`, set by main.js) shows it on top with its steps. Tests: `node --test src/fishquest.test.mjs
 cloudflare/medals.test.mjs cloudflare/boards.test.mjs`; browser `tools/fishcooktest.cjs` (solo). Images: [docs/verification/1754](../verification/1754/).
+
+## The caught fish's look (#1765)
+
+`src/caughtfish.js` builds a caught fish's model per RIVER_FISH species from `CAUGHT_FISH` (config.js, all *guess* after general pictures):
+`caughtFishGeometry(name)` is cached and shared by every fish of that species (never dispose it), in units of the fish's length (nose at
+z = +0.5), so CaughtFish scales it by the caught length alone. The body is a loft of elliptical sections from the caudal peduncle to the nose
+(`depth`, `width`, `peak`, `ped`, `top`, the `nose` taper exponents: the pike's flat beak), with a section at each perch bar and at the gill
+line; fins are flat polygons (forked / rounded tail, dorsal, the perch's spiny dorsal, adipose, anal, pectoral and pelvic pairs, the eel's long
+fin); eyes and spots are small discs on the skin. Everything is vertex colour: no texture, one draw call, 409–547 triangles per species. The
+material is double-sided (the fins are single polygons) and white when raw; cooking (#1754 `paint`) tints it towards `FISHING.cook.golden` /
+`char`, divided by the species' mean skin luminance (`geometry.userData.lum`) and scaled by `cook.skin`, so every species browns alike with its
+pattern faintly showing. The river fish keep the cheap `fishGeometry()`; the `fish` ghost proxy is unchanged. Tests: `node tools/caughtfishtest.mjs`
+(triangle budget, one shared geometry, finite data, distinct shapes); browser `tools/fishingtest.cjs`, `tools/fishcooktest.cjs`. Images:
+[docs/verification/1765](../verification/1765/).
