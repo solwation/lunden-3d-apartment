@@ -7,8 +7,10 @@
 // Landing: on whatever roof is under you (roofs.js, #360), else the ground; as hard as the speed you came down at.
 // E with nothing else to do (touch: the action button "Ta av jetpacken") stands it down where you stand — the ground, a
 // roof, a terrace, the loftgång — and it stays there (keep.js keeps the spot across a page-made reload); E on it again.
-// Not indoors: walking in through a door with it on stands it down outside; in the garage (and Hus L's stairwell) it stays
-// on but gives no thrust under the ceiling ("Inte inomhus"). F sends it home to its hook, and
+// Indoors (#1783: the flat, a visited flat, the secret children's room) it stays on your back but cannot fly: no thrust,
+// no flame or roar, the touch ⬆ ⬇ hidden, one "Här inne går det inte att flyga" per entry; out again it flies at once.
+// It is put on and stood down outdoors only (*guess*: nothing stood down inside a flat). In the garage (and Hus L's
+// stairwell, the portik) it is outdoors but gives no thrust under the ceiling ("Inte inomhus", #441). F sends it home to its hook, and
 // so does waking up after a bad fall (fall.onWake). Flames + smoke from the nozzles, an orange glow at the bottom of the
 // view and a roar (sfx.jetRoar) while it thrusts. Draw calls: the model (1), the hook (1), flames (1), smoke (1).
 import * as THREE from 'three';
@@ -85,7 +87,7 @@ const SMOKE = 60;
 export class Jetpack {
   /** `groundY(x, z)`: the terrain (surroundings.js); `hud` = { el: #jetpack, glow: #jet-glow, up: #jet-up, down: #jet-down }. */
   constructor({ scene, camera, player, groundY, hud }) {
-    Object.assign(this, { scene, camera, player, hud, state: 'hook', heat: 0, cut: false, k: 0, warnT: 0, touchUp: false, touchDown: false, lastOut: null });
+    Object.assign(this, { scene, camera, player, hud, state: 'hook', heat: 0, cut: false, k: 0, warnT: 0, touchUp: false, touchDown: false, inside: false });
     this.onFlight = null; // a take-off (stats)
     const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.45, metalness: 0.35 });
     // the hook on the wall: a plate on the face, a bar out and up
@@ -177,19 +179,21 @@ export class Jetpack {
     this.wearOff();
   }
 
-  putOn() {
-    if (!this.player.outdoors) return; // (never indoors; in the garage yes, #441)
+  /** `restore`: keep.js puts it back on your back wherever you are (worn indoors stays worn, #1783). */
+  putOn(restore = false) {
+    if (!restore && !this.player.outdoors) return; // (put on outdoors only; in the garage yes, #441)
     this.state = 'worn';
     this.model.visible = false;
     this.heat = 0; this.cut = false;
     this.player.jet = this;
+    this.inside = !this.player.outdoors; this.indoorHint = false;
     this.showHud(true);
   }
 
   /** Can it be stood down now (on something, not in the air)? */
   get canTakeOff() {
     const p = this.player;
-    return this.worn && !p.flying && !p.fall && p.pos.y <= p.groundAt(p.pos.x, p.pos.z, p.pos.y) + 0.02;
+    return this.worn && p.outdoors && !p.flying && !p.fall && p.pos.y <= p.groundAt(p.pos.x, p.pos.z, p.pos.y) + 0.02;
   }
 
   /** Stand it down where you stand: a step in front of your feet when that is clear and level, else at your feet. */
@@ -218,8 +222,8 @@ export class Jetpack {
   showHud(on) {
     const { el, up, down, glow } = this.hud;
     if (el) el.hidden = !on;
-    if (up) up.hidden = !on;
-    if (down) down.hidden = !on;
+    if (up) up.hidden = !on || this.inside; // (indoors no flight: no ⬆ ⬇, #1783)
+    if (down) down.hidden = !on || this.inside;
     if (glow && !on) glow.style.opacity = 0;
   }
 
@@ -229,6 +233,12 @@ export class Jetpack {
     const up = k.has('Space') || this.touchUp;
     const down = k.has('KeyC') || k.has('ControlLeft') || k.has('ControlRight') || this.touchDown;
     if (this.cut && this.heat <= J.heat.resume) this.cut = false;
+    if (!this.player.outdoors) { // indoors (#1783): never any thrust or push; it cools; one hint per entry
+      if (up && !this.indoorHint) { this.indoorHint = true; this.onIndoors?.(); }
+      this.heat = Math.max(0, this.heat - J.heat.ground * dt);
+      this.thrusting = this.lifting = false;
+      return 0;
+    }
     const p=this.player.pos,portik=this.player.world.portik;
     const roofed = this.player.below || this.player.inCore || (portik?.contains(p.x,p.z)&&p.y<portik.height); // no thrust under garage/stairwell/portik ceilings (#441, #520)
     if (up && roofed && !this.roofedHint) this.onRoofed?.();
@@ -247,10 +257,14 @@ export class Jetpack {
   update(dt) {
     const p = this.player;
     if (this.worn) {
-      // not indoors: walking in through a door stands it down outside it
-      const inside = !p.outdoors; // (the flat; the garage keeps it on, #441)
-      if (inside && this.lastOut) { this.takeOff(this.lastOut); this.onLeftAtDoor?.(); }
-      else if (!inside && !p.flying && !p.fall) this.lastOut = { x: p.pos.x, y: p.pos.y, z: p.pos.z };
+      // indoors (#1783): it stays on, without flight; the touch ⬆ ⬇ go away while inside, the hint comes once per entry
+      const inside = !p.outdoors; // (the garage counts as outdoors, #441)
+      if (inside !== this.inside) {
+        this.inside = inside;
+        if (inside) { this.thrusting = false; this.touchUp = this.touchDown = false; }
+        else this.indoorHint = false;
+        this.showHud(true);
+      }
     }
     const on = this.worn && this.thrusting;
     this.k += ((on ? 1 : 0) - this.k) * Math.min(1, dt * (on ? 14 : 8));
@@ -311,6 +325,6 @@ export class Jetpack {
     if (s?.s === 'ground' && Array.isArray(s.p) && s.p.length === 3 && s.p.every(Number.isFinite)) {
       this.state = 'ground';
       this.place(s.p[0], s.p[1], s.p[2], Number(s.yaw) || 0);
-    } else if (s?.s === 'worn') this.putOn();
+    } else if (s?.s === 'worn') this.putOn(true); // (worn when the page went: still worn, indoors too, #1783)
   }
 }

@@ -522,7 +522,7 @@ player.onEdge = () => badge('Här slutar promenadområdet', false); // #1236: th
 const jetpack = new Jetpack({ scene, camera, player, groundY, hud: { el: document.getElementById('jetpack'), glow: document.getElementById('jet-glow'),
   up: document.getElementById('jet-up'), down: document.getElementById('jet-down') } });
 jetpack.onFlight = () => bump('flights', 1, 'jetpack'); // each take-off; the first one scores (SCORE.first.flights)
-jetpack.onLeftAtDoor = () => badge('🚀 Jetpacken står kvar utanför', false);
+jetpack.onIndoors = () => badge('🚀 Här inne går det inte att flyga', false); // up indoors, once per entry (#1783, *guess*)
 jetpack.onRoofed = () => badge('🚀 Inte inomhus', false); // Space under the garage's ceiling (#441)
 fall.onWake.push(() => jetpack.goHome());
 fall.onWake.push(() => binoculars.setZoom(false)); // #1706
@@ -2824,7 +2824,7 @@ const cheats = {
   'städa': () => cleanEverything({life,cups,pan,vacuum,cloth,marks,breaker,holdables,dishProg,toiletPaper,laundry,bedCare,hallCare,rest}),
   jetpack: () => {
     if (jetpack.worn) return 'Jetpacken är redan på.';
-    if (!player.outdoors) return 'Gå ut först. Jetpacken kan inte användas inne i hemmet.';
+    if (!player.outdoors) return 'Gå ut först. Jetpacken tas på utomhus.';
     jetpack.putOn(); return player.below || player.inCore ? 'Jetpacken på. Ingen flygning under tak.' : 'Jetpacken på. Mellanslag eller pil upp ger lyft.';
   },
   spiderman: () => {
@@ -2978,7 +2978,7 @@ const weaponIs = { saber: (h) => h === saber, nerf: (h) => toys.blasters.include
   rifle: (h) => !!h?.isRifle, ball: (h) => h === ball, bow: (h) => !!bow && h === bow, web: (h) => !h && suit.worn }; // (the jetpack is no weapon, #1705)
 const weaponKey = () => { if (player.riding) return ''; const h = heldItem(); return COMBAT.weapons.find((k) => weaponIs[k]?.(h)) ?? ''; };
 const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey, mirrored: () => !rest.active,
-  state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, look: [0, camera.rotation.x], c: player.crouched, dn: playroom.music.danceCode ?? 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 ? 2 : 1) : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, fb: fishing.wire, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
+  state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, look: [0, camera.rotation.x], c: player.crouched, dn: playroom.music.danceCode ?? 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 && player.outdoors ? 2 : 1) : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, fb: fishing.wire, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
 const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, basket: ball, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows, life, fruit, fish, chicken, fries, beer, beerCans,
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
   onDie: () => { binoculars.setZoom(false); goToStart(() => respawnOutdoors(player)); badge('💀 Slut på liv – du lever igen', false); } }); // only the place changes (#665)

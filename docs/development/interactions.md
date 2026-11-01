@@ -293,13 +293,17 @@ src/jetpack.js         (#1250: `JETPACK.ceiling` 320 m *guess*, above the cloud 
                        the jetpack (#359, JETPACK): our own unbranded pack (one vertex-coloured mesh) on the east wall of the portik's small room
                        (#520: `JETPACK.hook`, `face: -1`, `floor: 0`) under the yellow sign
                        "Låna Jetpack på eget ansvar. Se upp för fiskmåsar." (`sign`); E puts it on (hands free; outdoors and in the
-                       garage — under the garage / stairwell / portik's ceiling no thrust, "Inte inomhus", walking back in keeps it on),
+                       garage — under the garage / stairwell / portik's ceiling no thrust, "Inte inomhus", walking back in keeps it on, #441),
                        `player.jet` = it: Space / ⬆ (#jet-up) thrust, C / Ctrl / ⬇ down faster, WASD / the stick steer at `speed` with
                        inertia (`player.flying`, `player.jv`), no thrust = falling; `ceiling`, OUTDOOR's edge and the roofs' walls
                        hold (+ `roofs.blocks` / `above`: a roof edge or canopy in the way of the body); the landing hurts by the speed
                        it came down at (v² / 2g as the drop, fall.js); heat (#jetpack bar, `heat`) cuts the thrust when full.
-                       E with nothing else (`dropTarget`, touch: "Ta av dig jetpacken") stands it down in front of you; walking in
-                       through a door with it on stands it down outside; F / waking after a fall (`fall.onWake`) send it home; keep.js
+                       E with nothing else (`dropTarget`, touch: "Ta av dig jetpacken", outdoors only) stands it down in front of you;
+                       #1783: walking in (the flat, a visited flat, the playroom: `!player.outdoors`) keeps it on, but `lift` gives 0
+                       there (no flame/roar/heat, player.js keeps the walking physics: `jet` only outdoors, `jetOn` still blocks the jump),
+                       #jet-up/#jet-down hidden while `inside`, `onIndoors` badge "Här inne går det inte att flyga" once per entry
+                       (*guess*), `jp` never 2 indoors; put on / stood down outdoors only (*guess*), keep.js `worn` restores it
+                       indoors too (`putOn(true)`); out again it flies at once; F / waking after a fall (`fall.onWake`) send it home; keep.js
                        part `jetpack`; flames (rig on your back) + smoke (one Points) + #jet-glow + sfx.jetRoar; stats `flights`
                        (SCORE.first: the first take-off); `&jetpack` = on from the start (tools/jetpacktest.html)
 src/spidersuit.js      the Spider-Man suit (#597, SPIDER, all values *guess*): our own drawing (red top with web lines + a small spider,

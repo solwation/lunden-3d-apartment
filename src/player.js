@@ -746,9 +746,10 @@ export class Player {
     if (this.climb && this.climbStep(dt, fwd, side, pressed)) { this.settleEye(dt); return; } // on a wall (#597)
     // crouch (#70): down at once, up only where there is head room (under the stair there may be none)
     // the jetpack (#359): its thrust first (Space / ⬆; C / Ctrl / ⬇ down faster); off the ground it flies
-    const jet = this.jet?.worn ? this.jet : null;
-    const g0 = jet ? this.groundAt(this.pos.x, this.pos.z, this.pos.y) : 0;
-    const lift = jet ? jet.lift(dt, this.pos.y <= g0 + 0.02) : 0;
+    // (#1783: worn indoors it is just a backpack: `lift` gives 0 there and the walking physics stay; `jetOn` still blocks the jump)
+    const jetOn = this.jet?.worn ? this.jet : null, jet = jetOn && this.outdoors ? jetOn : null;
+    const g0 = jetOn ? this.groundAt(this.pos.x, this.pos.z, this.pos.y) : 0;
+    const lift = jetOn ? jetOn.lift(dt, this.pos.y <= g0 + 0.02) : 0;
     this.flying = !!jet && (this.pos.y > g0 + 0.02 || lift > GRAVITY);
     const thin = jet ? jetThin(this.pos.y - g0) : null; // thinner air higher up (#1282)
     this.crouched = !this.flying && (this.crouch || this.kneel || (this.crouched && !this.roomToStand()));
@@ -835,7 +836,7 @@ export class Player {
     // the jump (#600, #636): Space / the touch button, standing on something, without the jetpack, not in the stairwell / the
     // lift and with room to stand. The suit: SPIDER.jump (2.5 m); without it PLAYER.jump (~1 m, clears the entrance hedge).
     // The ceiling stops it (`ceilingAt`), so indoors the suit's jump is no higher than the room allows.
-    if (pressed && !jet && !this.fall && !this.inCore && !this.kneel && this.roomToStand()
+    if (pressed && !jetOn && !this.fall && !this.inCore && !this.kneel && this.roomToStand()
       && this.pos.y <= this.groundAt(this.pos.x, this.pos.z, this.pos.y) + 0.02) {
       const suit = !!this.suit?.worn;
       this.vy = suit ? SPIDER.jump : PLAYER.jump; this.crouched = false;
