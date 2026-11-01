@@ -104,6 +104,22 @@ test('rate limit: over perSecond dropped, repeated seconds close (4008); oversiz
   assert.equal(c.closed, CLOSE.big);
 });
 
+test('#1759: a burst (a stalled link catching up) drops the final state; the same state sent again later reaches the others', async () => {
+  const env = setup();
+  const a = await connect(env, 'Alma'), b = await connect(env, 'Bo');
+  const final = { p: [5, 0, 5], r: 0, hi: 'rod', fb: [10.5, -7.2, 20, 0] };
+  for (let i = 0; i < 9; i++) a.send({ p: [5, 0, 5], r: 0, hi: 'rod', fb: [10 + i * 0.05, -7.2, 20, 0] });
+  a.send(final); // the 10th in the same second: over perSecond
+  await settle(env);
+  assert.equal(b.states().length, PLAYERS.perSecond);
+  assert.notDeepEqual(b.states().at(-1).fb, final.fb, 'the final float is dropped');
+  now += 3000; a.send(final); // the client's resend after GHOSTS.resendMs (src/ghosts.js), with no change in between
+  await settle(env);
+  assert.deepEqual(b.states().at(-1).fb, final.fb);
+  assert.equal(b.states().at(-1).hi, 'rod');
+  assert.equal(a.closed, null, 'one flooded second is forgiven');
+});
+
 test('max players; idle sockets closed; bad origin and plain requests refused', async () => {
   const env = setup();
   const all = [];

@@ -63,15 +63,17 @@ const setup = async () => {
     const castAt = async (page, id, off, other) => page.evaluate(({ id, off, other }) => { const o = T.fish(id); T.bank(o.x, o.z, off, other); T.look(o.x, o.water, o.z); T.a.step(0.016); return { aim: T.Fi.aim()?.toArray() ?? null, o: [o.x, o.z], label: document.getElementById('action').textContent, place: T.a.focus().focused?.kind ?? null }; }, { id, off, other });
     let id = pick[0], c = await castAt(A.page, id, 2.5, false);
     check(!!c.aim && c.label === 'Kasta' && c.place !== 'place', 'looking at the river with the rod: a cast target on the water, the touch button says Kasta (not "put down")', c);
-    await castAt(B.page, id, 4, true); await pb(() => { T.F.sync.setNear(true); });
+    // (#1759: B stands across from A's aim, not from its own idea of where the fish is: B's river clock is stale while only A runs frames, so its fish can be ~100 m away)
+    await pb((aim) => { T.bank(aim[0], aim[2], 4, true); T.look(aim[0], aim[1], aim[2]); T.a.step(0.016); T.F.sync.setNear(true); }, c.aim);
     const fire = await pa(() => T.a.click(0));
     await pa(() => T.pump(3000, 0.05, () => T.Fi.state === 'wait'));
     const landed = await pa(() => T.info());
     check(fire === 'use' && landed.state === 'wait' && landed.float && landed.line && landed.ring && Math.hypot(landed.at[0] - c.aim[0], landed.at[2] - c.aim[2]) < 0.05, 'a click casts: the float lands on the water where aimed, with a ring and the line', { fire, landed });
     await pa(() => { T.clear(); }); await zshot(A.page, 'kast-flote-ring.png', 40);
-    await Promise.all([pa(() => T.pump(10000, 0.05, () => __ghosts.connected)), pb((at) => T.pump(10000, 0.05, () => __ghosts.connected && T.Fi.remote.some((x) => x.float.visible && Math.hypot(x.float.position.x - at[0], x.float.position.z - at[2]) < 0.05)), landed.at)]);
+    // (#1759: A runs frames until its state with the float is sent: a squirrel / paddock message in the outbox may take the first 5 Hz slot)
+    await Promise.all([pa(() => T.pump(10000, 0.05, () => __ghosts.connected && __ghosts.sent === __ghosts.prev)), pb((at) => T.pump(10000, 0.05, () => __ghosts.connected && T.Fi.remote.some((x) => x.float.visible && Math.hypot(x.float.position.x - at[0], x.float.position.z - at[2]) < 0.05)), landed.at)]);
     const seen = await pb((at) => { T.a.step(0.016); const r = T.Fi.remote.find((x) => x.float.visible); return { n: T.Fi.remoteShown, at: r?.float.position.toArray(), gap: r ? Math.hypot(r.float.position.x - at[0], r.float.position.z - at[2]) : null, line: r?.line.visible }; }, landed.at);
-    if (!(seen.n >= 1)) { seen.diagA = await pa(() => ({ con: __ghosts.connected, me: __ghosts.me, prevFb: __ghosts.prev?.fb ?? null, sentFb: __ghosts.sent?.fb ?? null, wire: T.Fi.wire, msgs: __ghosts.messages })); seen.diagB = await pb(() => ({ con: __ghosts.connected, me: __ghosts.me, others: [...__ghosts.others.values()].map((g) => ({ id: g.id, n: g.name, hi: g.hi, bob: g.bob, p: g.root.position.toArray().map((v) => Math.round(v)) })) })); }
+    if (!(seen.n >= 1)) { seen.diagA = await pa(() => ({ con: __ghosts.connected, me: __ghosts.me, prevFb: __ghosts.prev?.fb ?? null, sentFb: __ghosts.sent?.fb ?? null, wire: T.Fi.wire, msgs: __ghosts.messages })); seen.diagB = await pb(() => ({ con: __ghosts.connected, me: __ghosts.me, cam: T.a.camera.position.toArray().map((v) => Math.round(v * 10) / 10), others: [...__ghosts.others.values()].map((g) => ({ id: g.id, n: g.name, hi: g.hi, bob: g.bob, p: g.root.position.toArray().map((v) => Math.round(v)) })) })); }
     check(seen.n >= 1 && seen.gap < 0.05 && seen.line, 'the other client sees the float (and the line) where it landed', seen);
     await pb((at) => { T.look(at[0], at[1], at[2]); T.a.step(0.016); T.clear(3.5); }, landed.at); await zshot(B.page, 'annan-spelare-flote.png', 30);
     // 4. a bite that is missed: no fish, the fish stays in the river
