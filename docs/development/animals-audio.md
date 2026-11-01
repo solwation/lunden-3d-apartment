@@ -743,3 +743,22 @@ snapshots, so there is no new traffic or KV write). `Squirrels.cand` (every visi
 risen from a crouch (`roseFor` s) within `scareReach` x its `shy` range, or is within `touch` m and not a lure holder. `frighten()` runs it up the nearest tree
 (`startToTree(true)`) and sets `calmT` = `scareTime` x the animal's `calm`: it perches at least that long and ignores lures meanwhile.
 A visitor standing still, even close, no longer scares (the old "standing within `shy`" rule is gone). All *guess*.
+
+## Fish in Höje å (#1752, part of #1751)
+
+Eighteen fish (`RIVER_FISH.count`) swim in the modelled river: roach, perch, bream, pike, trout and the rare eel (`RIVER_FISH.species`,
+sizes, colours and weights *guess*). `src/riverfishswim.js` (no three.js, used by the Worker and node tests) makes every fish a **pure function
+of (seed, id, born, time)**: `fishSpec(id, born)` picks a species and a home stretch of the centre line (`swimIntervals`: inside
+`RIVER_FISH.ends`, outside the road bridge's piers, whose positions it re-derives from `SITE.bridges` exactly like `riverbridge.js pierBoxes`);
+`fishAt(f, t)` gives the position (two slow sine waves along, a share of the free half width sideways with blended vertex normals so a bend
+does not jump, depth between `bedAt` and `waterAt`, the #1350 fall anchored at the road bridge), heading and the `rise` (one chance per
+`rise.every` slot); `ringsAt(f, t)` the rings of the last rise (two per rise, `ring.second` s apart). Time is seconds since `RIVER_FISH.epoch`.
+`src/riverfish.js` draws them in two instanced meshes (`river-fish`, `river-fish-rings`; no texture, no light, no shadow, `warmDraw`): the water
+is opaque, so a fish under it is a flattened, widened, darkened, half-transparent shape just over the surface (`look`), getting its full height
+and colour when it rises so its back breaks the surface; rings are additive flat rings that grow and fade, dimmed at night. Both meshes are
+hidden (no draw call) unless the eye is within `drawDist` m of the river centre line, and only fish within that distance are filled in.
+`&nofish` disables the module. Sync: see [environment](environment.md#fish-in-höje-å-1752) and `src/riverfishsync.js`; the room
+(`cloudflare/riverfish.js`) supplies its clock, the seed and the caught fish, in memory only. Ready for #1753: `RiverFish.near(x, z, r)` lists
+the fish within reach, `RiverFish.catchFish(id)` takes one out of the room (arbitrated, reach-checked; it returns as `born + 1` after
+`sync.respawn` s), `onCaught(id, ok)` reports the answer. Tests: `node --test cloudflare/riverfish.test.mjs`; browser `tools/riverfishtest.cjs`
+(two clients against `cloudflare/dev.mjs`); perfcount view `river`.

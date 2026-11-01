@@ -7289,6 +7289,42 @@ export const SQUIRRELS = {
   ],
 };
 
+// ---- Fish in Höje å (#1752, part of #1751: src/riverfishswim.js, src/riverfishsync.js, src/riverfish.js, cloudflare/riverfish.js) ----
+// Fish swim under the surface of the modelled river (SITE.river) and now and then rise and leave a ring on the water. Every fish's path is a
+// pure function of (seed, id, born, time), so every client draws the same fish in the same places and the same rings at the same moments; the
+// players room only supplies its clock, the seed and which fish were caught (memory only, no KV). Species after #1751 (*guess* until checked):
+// roach, perch, bream, pike, trout/sea trout (they run up Höje å) and the rare eel. All sizes, colours, weights and timings are our picks (*guess*).
+//  count: fish in the whole river; seed: the shared seed (the room repeats it); epoch: s, time 0 of the swim functions (UTC 2026-11-01).
+//  species: `len`/`w`/`h` m body length/width/height, `color` (seen near the surface), `weight` relative frequency.
+//  ends: m kept clear of the two ends of the modelled river; range [min, max]: m, half the stretch one fish patrols; periods: s, its main swim
+//    wave [min, max] (a smaller second wave is 1.6-2.2 x faster); side: share of the free half width it uses; edge: m kept from the channel edge (the bed
+//    is flat out to width/2, riverbridge.js riverGround); depth [over the bed, under the surface] m for the body centre; pierClear: m beyond a
+//    road-bridge pier's footing (SITE.bridges.road.foot) where no fish swims.
+//  rise: a fish may rise once per `every` [min, max] s slot with `chance`; it takes `up` s to the surface and `down` s back; `show`: its back
+//    breaks the surface by this share of its height. ring: lives `life` s, radius `r` [start, end] m, a second ring `second` s later, strength
+//    `glow` (additive) by day, `night` share in the dark. drawDist: m from the eye (beyond: not drawn, nothing simulated). wag [rad, rad/s]: the
+//    tail-beat yaw. murk: how far a deep fish fades towards a dark water tone; opacity of the fish material. look: a fish under the surface is drawn
+//    `flat` x its height and `wide` x its width (the water blurs it), its colour x `shade`, fading to the water colour x `deepTone`.
+//  sync: a visitor within `enter` m of the river centre line joins the room's fish (`leave` m to leave); a catch (#1753) is accepted when the
+//    player stands within `reach` m of the fish, at most one per `catchEvery` s per connection; the caught fish comes back as a new fish
+//    (born + 1) after `respawn` [min, max] s.
+export const RIVER_FISH = {
+  count: 18, seed: 1754, epoch: 1793491200, // (seed 1754: the first lives of the 18 include pike, trout, bream, perch and roach; 1752 had no pike)
+  species: [
+    { name: 'mört', len: 0.2, w: 0.035, h: 0.06, color: 0xa3aca8, weight: 5 },
+    { name: 'abborre', len: 0.25, w: 0.045, h: 0.075, color: 0x7a8a40, weight: 4 },
+    { name: 'braxen', len: 0.42, w: 0.05, h: 0.15, color: 0x9a8858, weight: 2.5 },
+    { name: 'gädda', len: 0.75, w: 0.08, h: 0.1, color: 0x5f7040, weight: 1.2 },
+    { name: 'öring', len: 0.45, w: 0.06, h: 0.1, color: 0x8c846c, weight: 1.2 },
+    { name: 'ål', len: 0.65, w: 0.035, h: 0.035, color: 0x403e2e, weight: 0.4 },
+  ],
+  ends: 15, range: [8, 22], periods: [90, 200], side: 0.85, edge: 0.35, depth: [0.12, 0.1], pierClear: 0.6,
+  rise: { every: [16, 36], chance: 0.6, up: 1.1, down: 0.9, show: 0.35 },
+  ring: { life: 3.2, r: [0.1, 1.5], second: 0.5, glow: 0.5, night: 0.15 },
+  drawDist: 45, wag: [0.14, 7.5], murk: 0.5, opacity: 0.85, look: { flat: 0.45, wide: 1.9, shade: 0.55, deepTone: 0.6 },
+  sync: { enter: 70, leave: 90, reach: 30, catchEvery: 2, respawn: [300, 600] },
+};
+
 /**
  * #1682: the world's edge. Far scenery outside SITE.backgroundGround (the modelled terrain rectangle): a feathered band round the
  * terrain, a ground slab north of it, fields, a cycle path, Malmövägen, low box silhouettes and tree rows. All plan coordinates

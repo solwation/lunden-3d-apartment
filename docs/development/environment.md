@@ -937,3 +937,14 @@ Letterbox at the Klockhuset (#1706, `MAILBOX` in config.js, all *guess*): a gene
 Electrical cabinet by Sankt Lars väg (#1707, `ELCABINET` in config.js, all *guess*): a generic grey sheet-metal kopplingsskåp (0.6 × 0.3 × 1.2 m, no logo or text) on the verge just west of the west pavement, south of Hus A (x 19.45, z 66), its door facing the street. The body (`src/elcabinetbody.js`) is merged into street.js's metal pole batch (no draw call) and is solid (`farwalk.js`); the side-hinged door (`src/elcabinet.js`, an Openable in world.lids) is one small mesh, the six spray cans inside (see interactions.md) are drawn only while it is open. Phone profile: start view unchanged (387 calls); at the cabinet +1 call shut, +7 open. Port to kvarteret-lunden: the empty cabinet is a possible small street-furniture geometry port; the cans and the paint are game mechanics and are not ported.
 
 East campus trees (#1738): `SITE.east.treeScale` is 1.45-2.4 and four extra `treePatches` (`klockhuset-north`, `klockhuset-northwest`, `klockhuset-east-between`, `east-park-dense`) thicken the groves north and east of the Klockhuset and between the buildings, read from the Google 3D oblique (`docs/foton/snedbild-klockhuset-sankt-thomas.png`). Counts, sizes and polygons are a *guess*. They are appended after the older patches so those keep their random positions; `campusTreeSpots` still drops spots on buildings, roads, walks and access, and the trees stay in the same instanced batches (no new draw calls).
+
+## Fish in Höje å (#1752)
+
+Fish swim under the surface of the modelled river and sometimes rise and leave a ring on the water (#1751 part 1; the rod #1753 and cooking
+#1754 follow). They stay in the open channel of `SITE.river` (`widths`, minus `RIVER_FISH.edge` and half a body), between the bed (`bedY`) and
+the surface (`waterY`) with the #1350 fall, away from the river's two ends and clear of the road bridge's piers and footings; the timber
+footbridge and the GC bridge stand on the banks. Every fish is a pure function of the seed, its id, its life and the time
+(`src/riverfishswim.js`), so the players room only supplies its clock, the seed and which fish were caught (`cloudflare/riverfish.js`, messages
+`{ t: 'rf' }`, memory only, no KV or storage; a visitor joins within `RIVER_FISH.sync.enter` m of the centre line). Without a connection the local
+clock is used. Drawing and the API for the rod: [animals and audio](animals-audio.md#fish-in-höje-å-1752-part-of-1751). Two draw calls only near
+the river (within `drawDist` m of the centre line); the phone start view is unchanged. Result images: [docs/verification/1752](../verification/1752/).

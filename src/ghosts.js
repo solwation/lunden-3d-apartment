@@ -508,6 +508,7 @@ export class Ghosts {
     else if (m.t === 'snake') this.onSnake?.(m);
     else if (m.t === 'mus') this.onMusic?.(m); // the shared children's-room music (#1624, src/playroommusic.js): only sent to players inside the room
     else if (m.t === 'sq') this.onSquirrels?.(m); // the shared squirrels and nuts (#1686, src/squirrelsync.js): only sent to players near them
+    else if (m.t === 'rf') this.onRiverFish?.(m); // the shared fish in Höje å (#1752, src/riverfishsync.js): the room's clock, seed and caught fish
     else if (m.t === 'pk' || m.t === 'pkg') this.onPaddock?.(m); // the shared pony paddock (#1644, src/paddock.js): only sent to players near it
     else if (m.t === 'gf') this.onGraffiti?.(m); // the shared spray paint (#1724, src/graffitisync.js)
     else if (m.t === 'pool') this.onPool?.(m); // the shared billiard table (#1355, src/billiards.js): only sent to players inside the children's room
@@ -659,6 +660,15 @@ export class Ghosts {
   squirrels(msg) {
     if (!this.connected) return false;
     if (msg.k === 's' || msg.k === 'n') this.outbox = this.outbox.filter((m) => m.t !== 'sq' || m.k !== msg.k);
+    this.outbox.push(msg);
+    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
+    this.sendShot();
+    return true;
+  }
+
+  /** A river-fish message (#1752, src/riverfishsync.js): 'on' / 'off' and a catch request, all one-off events. */
+  riverFish(msg) {
+    if (!this.connected) return false;
     this.outbox.push(msg);
     while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
     this.sendShot();
