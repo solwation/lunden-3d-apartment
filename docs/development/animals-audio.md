@@ -739,7 +739,7 @@ out of play (`slot.held` + `slot.by`). A put-down is `p` (within `sync.reach` of
 get `F`: hearts for all, the point and the nut for the feeder only. Other players lure through their ghosts (`hi: 'nut'`, crouched, still;
 the new held category in `heldcategory.js`) and only for a nut the room says they hold. If the leader leaves, the next one leads from the
 snapshots it has, the room hands it the claims (`L.c`); a player leaving with a nut drops it. Tests: `node --test cloudflare/squirrels.test.mjs`
-(validation, arbitration, hand-over, through the real PlayerRoom) and the two-browser `tools/squirrelsynctest.cjs` (needs `cloudflare/dev.mjs`).
+(validation, arbitration, hand-over, through the real PlayerRoom) and the two-browser `tools/squirrelsynctest.cjs` (needs `cloudflare/dev.mjs`). `tools/squirrelratetest.cjs` (#1763) measures the leader's messages per type and checks its own state still reaches the follower every ~0.5 s.
 Known limits: the squirrels' poses are 2 Hz snapshots (visible smoothing, no per-frame sync); the leader is whoever came first, not the
 nearest; ghosts further than the others' `G.max` are not lures.
 

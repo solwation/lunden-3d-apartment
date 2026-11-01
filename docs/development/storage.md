@@ -331,7 +331,9 @@ src/crashlog.js        crash reports (#629), inert without the cloud (same switc
 src/ghosts.js          other players as ghosts with a name tag (#666), inert without the cloud, GHOSTS.enabled false or ?mp=0: a WebSocket
                        to `/players` while playing (overlay hidden, tab visible, moved within GHOSTS.idleMs); sends { p: feet, r: yaw, score }
                        at most GHOSTS.hz and only on a change, plus the last state once more GHOSTS.resendMs after it settles (#1759: the room's
-                       perSecond limit can drop the final state of a burst after a network stall; the resend is not activity), heartbeat 'p'
+                       perSecond limit can drop the final state of a burst after a network stall; the resend is not activity); a changed state
+                       waiting GHOSTS.stateEvery ms takes the next slot ahead of chat and the outbox, except shots/fall/consume (#1763: the
+                       squirrel/paddock leader's snapshots had starved it to ~1.3/s), heartbeat 'p'
                        (runtime auto-response 'q', never billed); draws each
                        other player GHOSTS.delay ms late, interpolated; one merged body mesh (vertex colours, opacity 0.25, no shadow,
                        depth-tested) + one name/score sprite (256 × 64 canvas shared per live name/score combination, "Anonym"). Close 4001 (month cap) →
@@ -366,7 +368,7 @@ cloudflare/players.js  the PlayerRoom Durable Object (#666; binding PLAYERS, mig
                        nothing stored, counted in the monthly cap like any message; #676 the typing flag { t: 'k', on } (a change
                        only: off always, on ≥ 0.5 s apart, a refresh ≥ 5 s; a line ends it); #719 `censor`: ROUGH words → ***
                        in every line (cloudflare/chat.test.mjs). Tests: cloudflare/players.test.mjs
-                       (runtime stand-ins cloudflare/devws.mjs, also used by dev.mjs for real ws://; its bridge drops a player on TCP end/half-close too, #1484: cloudflare/devws-bridge.test.mjs), tools/ghosttest.cjs (two pages), tools/resendtest.cjs (#1759: traffic standing / walking and a forced burst drop)
+                       (runtime stand-ins cloudflare/devws.mjs, also used by dev.mjs for real ws://; its bridge drops a player on TCP end/half-close too, #1484: cloudflare/devws-bridge.test.mjs), tools/ghosttest.cjs (two pages), tools/resendtest.cjs (#1759: traffic standing / walking and a forced burst drop), tools/squirrelratetest.cjs (#1763: a walking squirrel leader's traffic by type and state gaps at the follower)
 cloudflare/crash.js    POST /crash, admin GET /crash and /crash/<id>, DELETE /admin/crash: size cap 16 kB, plain-data cleaning, per-IP hour
                        limit, one report per browser+signature+day, 400 reports in all, KV TTL 14 days (test: cloudflare/crash.test.mjs)
                        #720 preserves snap/beat warm and history warm/worst through ingest and publicView, with a field-specific

@@ -30,6 +30,7 @@ import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js';
 
 const CAP_KEY = 'lunden.mp.capMonth';
 const monthNow = () => new Date().toISOString().slice(0, 7);
+const URGENT = new Set(['a', 'fall', 'consume']); // #1763: outbox messages that keep their slot ahead of a due state (stateDue)
 const params = new URLSearchParams(location.search);
 export const ANON = 'Anonym';
 
@@ -945,9 +946,14 @@ export class Ghosts {
     return true;
   }
 
+  /** #1763: a changed state has waited G.stateEvery ms since the last one: it takes the next slot of the GHOSTS.hz budget, before
+   * the chat and the outbox (the squirrel / paddock leader's snapshots otherwise took nearly every slot and the others saw us lag).
+   * Shots ('a', a rifle hit every 0.25 s) and the fall / consume claims keep going first: they are the game's own outcome. */
+  stateDue(t) { return (!this.sent || this.sent !== this.prev || this.sentAv !== this.avatarCode) && t - this.stateAt >= G.stateEvery; }
+
   sendShot() {
     const t = performance.now();
-    if (!this.outbox.length || !this.connected || t - this.lastSent < 1000 / G.hz) return false;
+    if (!this.outbox.length || !this.connected || t - this.lastSent < 1000 / G.hz || (!URGENT.has(this.outbox[0].t) && this.stateDue(t))) return false;
     const message = this.outbox.shift();
     this.ws.send(JSON.stringify(message));
     this.lastSent = this.lastBeat = t; if (message.t !== 'fall' && message.t !== 'consume') this.shots++; this.messages++;
@@ -967,7 +973,7 @@ export class Ghosts {
 
   sendTalk() {
     const t = performance.now();
-    if (!this.talkbox?.length || !this.connected || t - this.lastSent < 1000 / G.hz) return false;
+    if (!this.talkbox?.length || !this.connected || t - this.lastSent < 1000 / G.hz || this.stateDue(t)) return false;
     this.ws.send(JSON.stringify(this.talkbox.shift()));
     this.lastSent = this.lastBeat = t; this.messages++;
     return true;

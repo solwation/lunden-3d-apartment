@@ -3715,6 +3715,7 @@ export const LEADERBOARD = { show: 10, every: 30, nameMax: 20 };
 export const GHOST_CAT = { gripWidth: .16, gripY: 1.02, gripZ: .38, elbow: [.6, -.6, -.5] };
 // `jump`: a state this many metres from the last is a teleport (the children's room, #1319): the others' ghost appears there instead of streaking across the map
 export const GHOSTS = { enabled: true, hz: 5, move: 0.02, turn: 0.03, beatMs: 10_000, idleMs: 120_000,
+  stateEvery: 400, // #1763: a changed state is sent at least this often (ms) even while the outbox (squirrel / paddock snapshots, shots) waits; the rest of the hz budget stays the outbox's (*guess*, the issue's ~400 ms)
   resendMs: 3000, // #1759: a state left unchanged this long is sent once more (the room's per-second limit may have dropped it after a network stall's burst; *guess*)
   retry: [2000, 5000, 15_000, 30_000, 60_000, 300_000], fullRetry: 60_000, offRetry: 600_000,
   opacity: 0.25, delay: 200, jump: 100, far: 900, tagFar: 15, max: 30, // #1296: `far` reaches across the whole walk/fly area (WALK x -260..320, z -200..250 is ~740 m corner to corner, camera far 1000); beyond `tagFar` the tag grows with distance (constant angular size, never fogged) so a far player stays a visible marker instead of vanishing
