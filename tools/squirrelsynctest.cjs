@@ -12,7 +12,7 @@ const setup = () => {
     stand(x, z, yaw = 0) { a.player.spawn(x, z, yaw); a.step(0.05); },
     look(x, y, z) { const c = a.camera.position, dx = x - c.x, dz = z - c.z; a.camera.rotation.set(Math.atan2(y - c.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); a.camera.updateMatrixWorld(true); },
     aim(x, y, z) { const c = a.camera.position, dx = x - c.x, dz = z - c.z; for (let i = 0; i < 3; i++) { a.camera.rotation.set(Math.atan2(y - c.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); a.camera.updateMatrixWorld(true); a.step(0.05); } },
-    nuts() { return S.nuts.slots.map((s, i) => (s.alive && !(s.held && s.by) ? [i, Math.round(s.x * 10) / 10, Math.round(s.z * 10) / 10, s.born] : null)).filter(Boolean); },
+    nuts() { /* (cm, like the wire: a 0.1 m rounding differs between the leader's exact x and the follower's cm-rounded x at a .x5 boundary, #1768) */ return S.nuts.slots.map((s, i) => (s.alive && !(s.held && s.by) ? [i, Math.round(s.x * 100), Math.round(s.z * 100), s.born] : null)).filter(Boolean); },
     info() { return { lead: S.sync.lead, follow: S.sync.follow, near: S.sync.near, n: S.sync.n, sent: S.sync.sent, me: __ghosts.me, others: __ghosts.others.size }; } };
 };
 (async () => {
@@ -25,6 +25,8 @@ const setup = () => {
       await r.page.waitForFunction(() => window.__app?.squirrels && window.__ghosts?.connected, null, { timeout: 900000 });
       await r.page.evaluate(setup); return r;
     };
+    const SETTLE = 3000; // ms: six snapshot intervals (SQUIRRELS.sync.every = 0.5 s) incl. network latency; the poll returns as soon as the condition holds
+    const settle = async (read) => { const end = Date.now() + SETTLE; while (!(await read()) && Date.now() < end) await both(250); };
     const A = await open('Alma'), B = await open('Bo');
     const pa = (f, ...x) => A.page.evaluate(f, ...x), pb = (f, ...x) => B.page.evaluate(f, ...x), both = (ms) => Promise.all([pa((m) => T.pump(m), ms), pb((m) => T.pump(m), ms)]);
     // both far from the squirrels first, then A (alone) near them
@@ -38,9 +40,14 @@ const setup = () => {
     await both(5000);
     const roles = [await pa(() => T.info()), await pb(() => T.info())];
     check(roles[0].lead && roles[0].n === 1 && !roles[1].lead && roles[1].follow && roles[0].sent > 0, 'the second visitor follows the first', roles);
-    const [na, nb] = [await pa(() => T.nuts()), await pb(() => T.nuts())];
-    const common = na.filter((n) => nb.some((m) => JSON.stringify(m) === JSON.stringify(n))).length; // (a nut may spawn between the two reads)
-    check(na.length >= 6 && common >= Math.min(na.length, nb.length) - 2, 'both see the same nuts (slot, place, spawn)', { a: na.length, b: nb.length, soloNuts });
+    // (#1768: a follower only sees the leader's state with its next snapshot (SQUIRRELS.sync.every, nuts every nutEvery), so poll up to SETTLE ms instead of one immediate read)
+    let na, nb, common;
+    await settle(async () => {
+      [na, nb] = [await pa(() => T.nuts()), await pb(() => T.nuts())];
+      common = na.filter((n) => nb.some((m) => JSON.stringify(m) === JSON.stringify(n))).length; // (a nut may spawn between the two reads)
+      return na.length >= 6 && common >= Math.min(na.length, nb.length) - 2;
+    });
+    check(na.length >= 6 && common >= Math.min(na.length, nb.length) - 2, 'both see the same nuts (slot, place, spawn)', { a: na.length, b: nb.length, soloNuts, onlyA: na.filter((n) => !nb.some((m) => JSON.stringify(m) === JSON.stringify(n))), onlyB: nb.filter((n) => !na.some((m) => JSON.stringify(m) === JSON.stringify(n))) });
     const posA = await pa(() => T.S.animals.map((q) => [q.brain.x, q.brain.z, q.brain.state])), posB = await pb(() => T.S.animals.map((q) => [q.brain.x, q.brain.z, q.brain.state]));
     check(posA.every((p, i) => Math.hypot(p[0] - posB[i][0], p[1] - posB[i][1]) < 4), 'the squirrels are in about the same places for both', { posA, posB });
     // B takes a nut next to it
@@ -68,7 +75,11 @@ const setup = () => {
       if (s.feeds > f0[1]) fed = s;
     }
     if (!fed) console.log('DIAG', JSON.stringify(await pa(() => ({ remotes: T.S.net.remotes(), cand: T.S.cand, held: [...T.S.sync.remoteHeld], a0: [T.S.animals[0].brain.state, T.S.animals[0].brain.x, T.S.animals[0].brain.z, T.S.animals[0].brain.who], pl: T.S.player_, snaps: [...__ghosts.others.values()].map((g) => [g.snaps.length, g.snaps.at(-1)?.p?.toArray(), g.root.visible, g.dEye]), active: __ghosts.active() }))), JSON.stringify(await pb(() => ({ crouched: T.a.player.crouched, hi: T.a.heldItem()?.constructor.name, me: __ghosts.me, pos: T.a.camera.position.toArray(), msgs: __ghosts.messages, conn: __ghosts.connected, outbox: __ghosts.outbox.length, sentp: __ghosts.sent?.p, dropped: __ghosts.dropped }))));
-    const aft = [await pa(() => ({ feeds: T.a.stats.squirrelFeeds ?? 0, nut: T.S.animals.some((q) => q.brain.hasNut), slot: T.S.nuts.slots[0].held })), await pb(() => ({ feeds: T.a.stats.squirrelFeeds ?? 0, held: !!T.a.heldItem()?.isSquirrelNut, nut: T.S.animals.some((q) => q.brain.hasNut) }))];
+    let aft;
+    await settle(async () => { // (#1768: the leader's pose snapshot carries hasNut to B, B's feed message carries it to A; wait for both)
+      aft = [await pa(() => ({ feeds: T.a.stats.squirrelFeeds ?? 0, nut: T.S.animals.some((q) => q.brain.hasNut), slot: T.S.nuts.slots[0].held })), await pb(() => ({ feeds: T.a.stats.squirrelFeeds ?? 0, held: !!T.a.heldItem()?.isSquirrelNut, nut: T.S.animals.some((q) => q.brain.hasNut) }))];
+      return aft[0].nut && aft[1].nut;
+    });
     check(!!fed && !aft[1].held && aft[0].feeds === f0[0] && aft[1].feeds === f0[1] + 1, 'B fed the squirrel A simulates: the point goes to B only, the nut leaves B\'s hand', { f0, fed, aft });
     check(aft[0].nut && aft[1].nut, 'both see the squirrel with the nut in its mouth', aft);
     // pictures
