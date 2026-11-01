@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RIVER_FISH as C, COLORS } from './config.js';
 import { fishSpec, fishAt, ringsAt, riverProject } from './riverfishswim.js';
 import { RiverFishSync } from './riverfishsync.js';
+import { Shark } from './shark.js';
 
 // #1752 (part of #1751): fish in Höje å and the rings they leave on the water. Where a fish is comes from src/riverfishswim.js (pure functions
 // of the seed, its id, its life and the room's clock), so every player sees the same fish and the same rings (src/riverfishsync.js,
@@ -33,7 +34,11 @@ export class RiverFish {
   /** scene, camera; `net` is set by main.js: { ready(), send(m) }. */
   constructor({ scene, camera }) {
     Object.assign(this, { scene, camera, net: null, shown: [], ringList: [], hidden: false });
-    this.sync = new RiverFishSync({ send: (m) => this.net?.send(m) ?? false, hooks: { caught: (id, ok) => this.onCaught?.(id, ok) } });
+    // #1769: `&shark=now` turns on the shark's test schedule (SHARK.test); a solo catch is remembered in localStorage 'lunden.shark'
+    const sharkTest = typeof location !== 'undefined' && new URLSearchParams(location.search).get('shark') === 'now';
+    const store = { get: () => JSON.parse(localStorage.getItem('lunden.shark') ?? 'null'), set: (r) => localStorage.setItem('lunden.shark', JSON.stringify(r)) };
+    this.sync = new RiverFishSync({ send: (m) => this.net?.send(m) ?? false, sharkTest, store, hooks: { caught: (id, ok) => this.onCaught?.(id, ok), sharkCaught: (ok) => this.onCaught?.(-1, ok) } });
+    this.shark = new Shark({ scene, camera, sync: this.sync }); // #1769: the rare shark (src/shark.js; Fishing bites it through `shark.near`)
     const fishMat = new THREE.MeshLambertMaterial({ vertexColors: true, transparent: true, opacity: C.opacity, depthWrite: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     this.fish = new THREE.InstancedMesh(fishGeometry(), fishMat, C.count);
     const ringGeo = new THREE.RingGeometry(0.88, 1, 32, 1).rotateX(-Math.PI / 2);
@@ -66,6 +71,7 @@ export class RiverFish {
     const close = !hidden && q.abs < C.drawDist;
     const near = !!this.net?.ready?.() && q.abs < (this.sync.near ? C.sync.leave : C.sync.enter);
     if (!this.net?.ready?.()) { if (this.sync.near) this.sync.reset(); } else this.sync.setNear(near);
+    this.shark.update(dt, hidden, daylight); // #1769: its own distance checks (the fin within SHARK.drawDist m, the carcass on the bank)
     if (!close) { if (this.fish.visible || this.rings.visible) this.hide(); return; }
     const t = this.sync.t, seed = this.sync.seed, o = this.o ??= {}, rings = this.ringList;
     let n = 0; this.shown.length = 0; rings.length = 0;
@@ -100,5 +106,5 @@ export class RiverFish {
     this.rings.count = k; this.rings.visible = k > 0;
     this.rings.instanceMatrix.needsUpdate = true; this.rings.instanceColor.needsUpdate = true;
   }
-  state() { return { t: this.sync.t, near: this.sync.near, synced: this.sync.synced, fish: this.shown.slice(), rings: this.ringList.slice(), drawn: this.fish.count, ringsDrawn: this.rings.count }; }
+  state() { return { t: this.sync.t, near: this.sync.near, synced: this.sync.synced, fish: this.shown.slice(), rings: this.ringList.slice(), drawn: this.fish.count, ringsDrawn: this.rings.count, shark: this.shark.state() }; }
 }

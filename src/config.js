@@ -3638,6 +3638,7 @@ export const SCORE = {
     hotdogs: 20, // #1124: a hot dog (a grilled sausage in a bun) eaten: the first time, then `again` (guess)
     sandwiches: 40, // a sandwich made and eaten (#380): the first of each combination ("ost- och gurkmackan" …), then `again`
     tasks: 30, // legacy generic rewards (#392), retained only for #709 score migration
+    sharkFin: 400, // #1769: the shark caught in Höje å (src/shark.js), once; no `again` (*guess*)
     fishQuest: 150, // #1754: the hidden fishing quest (src/fishquest.js) completed, once; no `again`. The hardest daily task gives 45 the first time (*guess*)
     handBrew: 10, // the first pot brewed by hand: water and coffee filled first (#334); no `again` (each brew has `each.brews`)
   },
@@ -7384,6 +7385,37 @@ export const FISHING = {
   // #1754: points per fish caught by species (rarer = more; the RIVER_FISH weights 5 / 4 / 2.5 / 1.2 / 1.2 / 0.4), counted like the cat
   // breeds (stats.js rawScore, stats.fishBySpecies). *guess*
   points: { mört: 4, abborre: 5, braxen: 7, gädda: 12, öring: 15, ål: 25 },
+};
+
+/**
+ * #1769: the rare shark in Höje å (src/sharkswim.js: where and when, pure; src/shark.js: the fin, the carcass, the skeleton; the room
+ * cloudflare/riverfish.js arbitrates the catch and keeps one tiny record in its own Durable Object storage). Every number is a *guess*:
+ * the user asked for "about once a week", "about an hour" for the shark and "about a day" for the skeleton.
+ *  schedule: one window in every `period` s of the room's fish clock (RIVER_FISH.epoch), lasting `window` s (between), placed pseudo-randomly
+ *    within its period from the seed and the period's number, so nobody can tell exactly when. `test`: the window used with `&shark=now` or
+ *    a room started with SHARK_TEST (cloudflare/dev.mjs LUNDEN_SHARK_TEST=1): the whole of each `period`.
+ *  len / fin = the shark's length and the fin's height above the water (m); span = the longest stretch it patrols (m, back and forth over
+ *    `pass` s), kept `clear` m beyond its half length inside a RIVER_FISH swim stretch (so clear of the bridge piers); side = its share of
+ *    the channel's free half width sideways.
+ *  bite: its appetite in the FISHING bite hazard (the same sum as a fish's); strike = s to strike after a bite (shorter than FISHING.wait.window)
+ *    and the chance it tears loose anyway (before the room is asked); reach = m from the shark the catcher may stand (the room checks), land = m
+ *    from the catcher the carcass may land; landOff = m from the catcher, away from the river, it does land (src/fishing.js sharkSpot).
+ *  body / bones = s the whole shark lies on the bank, then s the skeleton lies there; drawDist = m from the eye the fin / carcass are drawn.
+ */
+export const SHARK = {
+  schedule: { period: 7 * 24 * 3600, window: [600, 1200] },
+  test: { period: 24 * 3600 },
+  len: 3.2, fin: 0.42, span: 140, pass: 260, clear: 2, side: 0.4,
+  bite: 4, strike: { window: 1.0, slip: 0.35 }, reach: 30, land: 4, landOff: 1.6,
+  body: 3600, bones: 24 * 3600, drawDist: 60, keepFins: 3, // (keepFins: fins kept in the world, like FISHING.keep)
+  ring: { every: 2.2, life: 3.4, r: [0.3, 2.0] }, wake: { len: 2.0, width: 1.4 },
+  // the carcass on the bank: a CAUGHT_FISH-style body spec (src/caughtfish.js, units of the length) of a large grey shark lying on its side; no
+  // first dorsal (that is the fin in your hand), a dark-red wound where it was. After general pictures of a porbeagle / blue shark (*guess*)
+  look: { depth: 0.19, width: 0.16, peak: 0.6, ped: 0.16, top: 0.52, head: 0.24, nose: [1.3, 1.7], tail: 0.21, fork: 0.32, spread: 0.18,
+    dorsal2: [0.25, 0.3, 0.05, 0.02], anal: [0.2, 0.25, 0.04, 0.015], pec: [0.66, 0.22], pelvic: [0.36, 0.07], eye: [0.9, 0.012],
+    back: 0x4c5862, side: 0x6a767f, belly: 0xe9e7e1, fins: { dorsal: 0x4e5963, tail: 0x4e5963, paired: 0x55616b, lower: 0x55616b }, iris: 0x202020,
+    spots: [[0x7c231d, 1, 0.52, 0.6, 0.985, 0.995, 0.03]] },
+  bone: 0xe6dfca, finColor: 0x59626b, cut: 0x8a2a24, // the skeleton's bone, the fin's grey skin and its cut base
 };
 
 /**

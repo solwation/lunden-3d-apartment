@@ -710,6 +710,7 @@ Object.assign(fishing, {
   onBurnt: () => { penalize('burnt'); badge('🔥 Fisken blev bränd', false); },
   onTakenCooked: () => fishQuest.step('cook'),
   onEaten: (f, state) => { bump('fishEaten'); if (state === 'cooked' && fishQuest.has('cook')) fishQuest.step('eat'); },
+  onSharkCatch: () => { bump('sharkFin'); sfx.pling?.(null, 0.8); }, // #1769: once, a big bonus (SCORE.first.sharkFin) with its badge
 });
 const turbo = new Turbo({ el: document.getElementById('turbo'), edge: document.getElementById('turbo-edge') }); // three cups of coffee: Kaffeturbo! (#217)
 turbo.onStart = () => bump('turbo');
@@ -2520,7 +2521,7 @@ function toggleFurniture(on = !world.furnitureOn) {
     for (const l of world.lids.filter(l => l.coldDrawer)) { l.isOpen = false; l.t = 0; l.pose(0); } // close before their doors (#504)
     for (const l of world.lids) if (l.kind === 'fridge' && l.isOpen) l.toggle(); // the fridge and freezer doors shut: no alarm (#288)
     rifle?.reset(); // the dropped magazines go, a full one in (#196)
-    for (const h of holdables) if (h.placed && !h.isCaughtFish && !(h === pan && (pan.egg || pan.dirty || fishing.inPan(pan)))) h.goHome(); // (#1753: a caught fish has no home: it stays where it lies) // life-sim food and dirty cookware stay where left
+    for (const h of holdables) if (h.placed && !h.isCaughtFish && !h.isSharkFin && !(h === pan && (pan.egg || pan.dirty || fishing.inPan(pan)))) h.goHome(); // (#1753: a caught fish has no home: it stays where it lies) // life-sim food and dirty cookware stay where left
     jetpack.goHome(); // back on its hook by the garage (#359)
     suit.goHome(); // back in its drawer (#597)
     cups.reset(); // the cups standing out go, the cabinet is full again (#215)

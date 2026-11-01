@@ -81,10 +81,10 @@ class Builder {
 const cache = new Map();
 /** The caught-fish geometry of RIVER_FISH species `name` (cached, shared: never dispose it). userData.lum = the skin's mean luminance
  *  (linear), so cooking can tint every species to the same golden brown. */
-export function caughtFishGeometry(name) {
+export function caughtFishGeometry(name, spec = null) { // (#1769: `spec` = a body spec of the same shape that is no RIVER_FISH species: the shark's carcass, SHARK.look)
   let g = cache.get(name);
   if (g) return g;
-  const s = C.species[name] ?? Object.values(C.species)[0], B = fishBody(s), M = C.around, us = sections(s), out = new Builder();
+  const s = spec ?? C.species[name] ?? Object.values(C.species)[0], B = fishBody(s), M = C.around, us = sections(s), out = new Builder();
   const V = () => new THREE.Vector3(), c = new THREE.Color(), fin = s.fins;
 
   // the body: an indexed loft (smooth normals), the last section the nose's point, a fan closing the peduncle

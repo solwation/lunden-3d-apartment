@@ -949,4 +949,6 @@ footbridge and the GC bridge stand on the banks. Every fish is a pure function o
 clock is used. Drawing and the API for the rod: [animals and audio](animals-audio.md#fish-in-höje-å-1752-part-of-1751). Two draw calls only near
 the river (within `drawDist` m of the centre line); the phone start view is unchanged. Result images: [docs/verification/1752](../verification/1752/).
 
+About once a week a large shark's fin passes along the river for 10–20 minutes (#1769); it can be caught with the rod and its body, then its skeleton, lies on the bank for a day: [animals and audio](animals-audio.md#the-rare-shark-in-höje-å-1769).
+
 A fishing rod (#1753) lies on the north shore flat under the road bridge deck (`FISHING.home`, south of the north pier pair); casting and catching: [animals and audio](animals-audio.md#fishing-rod-bites-and-caught-fish-1753-part-2-of-1751).

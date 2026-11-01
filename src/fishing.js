@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FISHING as F, RIVER_FISH } from './config.js';
+import { FISHING as F, RIVER_FISH, SHARK } from './config.js';
 import { Holdable, heldItem, setHeld, stowedItem, restPose } from './holdable.js';
 import { forgetBicycleHand } from './keep.js';
 import { caughtFishGeometry } from './caughtfish.js';
 import { riverProject, riverPoint, waterAt, catchCm } from './riverfishswim.js';
 import { ROD_PROXY_TIP } from './ghostprops.js';
 import { sfx } from './audio.js';
+import { SharkFin } from './shark.js';
 
 // #1753 (part 2 of #1751): the fishing rod under the road bridge, casting, bites and the fish you catch.
 // - The rod (FishingRod) is an ordinary Holdable lying on the north shore flat under the deck (FISHING.home): take, hold, put down on the bank
@@ -28,6 +29,9 @@ import { sfx } from './audio.js';
 //   (`intoPan`), raw → cooked (FISHING.cook.done s of heat, golden) → burnt (`burn` s, charred); a cooked one is eaten in the hand
 //   (`useLabel` "Ät", `cook.bites` bites). The host reports onCatch / onCooked / onBurnt / onTakenCooked / onEaten (main.js: score,
 //   the hidden quest src/fishquest.js). Cooking state and where it cooks are kept by keep.js's `fishing` part.
+// - #1769: the rare shark (src/shark.js, riverFish.shark) bites like a fish (its appetite SHARK.bite) but must be struck within SHARK.strike.window
+//   s and may tear loose anyway (`slip`); the room arbitrates the catch (RiverFishSync.catchShark, id -1 here). Caught, only its fin goes into
+//   the hand (SharkFin, kept in `fins` by the same keep.js part); the body lies on the bank where it landed (the room's record). onSharkCatch(fin).
 // Cost: nothing at the start. The rod is one mesh; while fishing one float, one line and one ring; one float + line per other angler near.
 
 const paint = (g, hex) => {
@@ -241,7 +245,7 @@ export class Fishing {
    *  off the heat cooked, not burnt), onEaten(fish, state); `cookers` = { grills: [Grill], pan } (main.js) for keep.js. */
   constructor({ scene, camera, riverFish, player, groundY, onMessage = () => {}, onItem = () => {}, touch = () => false, rnd = Math.random }) {
     const nop = () => {};
-    Object.assign(this, { onRod: nop, onCatch: nop, onCooked: nop, onBurnt: nop, onTakenCooked: nop, onEaten: nop, onCatFed: nop, cookers: { grills: [], pan: null } });
+    Object.assign(this, { fins: [], onSharkCatch: nop, onRod: nop, onCatch: nop, onCooked: nop, onBurnt: nop, onTakenCooked: nop, onEaten: nop, onCatFed: nop, cookers: { grills: [], pan: null } });
     Object.assign(this, { scene, camera, riverFish, player, onMessage, onItem, touch, rnd, state: 'idle', t: 0, fish: [], shy: new Map(), at: new THREE.Vector3(), from: new THREE.Vector3(), bite: null, pending: null, waitT: 0, hinted: false, peers: null, remote: [], aimAt: null, aimFrame: -1, frame: 0, catches: 0, misses: 0 });
     this.rod = new FishingRod(scene, camera, this, groundY);
     const fgeo = floatGeometry();
@@ -300,14 +304,25 @@ export class Fishing {
   }
   reelIn() {
     if (this.state === 'idle') return;
-    if (this.state === 'reel' && this.pending) this.riverFish?.sync?.giveUp?.(this.pending.id);
+    if (this.state === 'reel' && this.pending) this.giveUpPending();
     this.state = 'idle'; this.bite = null; this.pending = null;
     this.float.visible = this.line.visible = false;
   }
+  /** Stop waiting for the room's answer on the pending catch (a fish, or the shark: id -1). */
+  giveUpPending() { const s = this.riverFish?.sync; if (this.pending?.shark) s?.giveUpShark?.(); else s?.giveUp?.(this.pending.id); }
   strike() {
     const b = this.bite;
     if (!b || !this.riverFish) { this.state = 'wait'; return; }
+    if (b.shark && this.rnd() < SHARK.strike.slip) { // #1769: too strong: it tears loose before anybody is asked
+      this.shy.set(-1, performance.now() / 1000 + F.wait.shy); this.bite = null; this.misses++; this.state = 'wait'; this.t = 0; this.waitT = 0;
+      this.onMessage('Något stort slet sig loss!'); return;
+    }
     this.state = 'reel'; this.t = 0; this.pending = b; this.bite = null;
+    if (b.shark) { // #1769: the body lands beside you; the room decides
+      const { at, yaw } = this.sharkSpot(); b.spot = at;
+      if (!this.riverFish.sync.catchShark([at.x, at.y, at.z], yaw)) this.caught(-1, false);
+      return;
+    }
     this.riverFish.catchFish(b.id); // (solo: answered at once through `caught`)
   }
   /** The room's verdict on our catch (RiverFish.onCaught). */
@@ -315,8 +330,8 @@ export class Fishing {
     const b = this.pending;
     if (this.state !== 'reel' || !b || b.id !== id) return;
     this.pending = null;
-    if (!ok) { this.misses++; this.onMessage('Fisken slet sig loss'); this.state = 'wait'; this.waitT = 0; return; }
-    this.land(b);
+    if (!ok) { this.misses++; this.onMessage(b.shark ? 'Något stort slet sig loss!' : 'Fisken slet sig loss'); this.state = 'wait'; this.waitT = 0; return; }
+    if (b.shark) this.landShark(b); else this.land(b);
   }
   /** Where something laid down at your feet goes: `side` m to the right of where you stand, on the ground. */
   dropSpot(side = 0.45) {
@@ -334,6 +349,34 @@ export class Fishing {
     this.onMessage(`Du fick ${fish.name}!`);
     this.onCatch(fish);
     return fish;
+  }
+  /** #1769: where the shark's body lands: SHARK.landOff m from where you stand, away from the river, along the bank (yaw: its nose downstream). */
+  sharkSpot() {
+    const p = this.player.pos, q = riverProject(p.x, p.z), c = riverPoint(q.s), side = q.d >= 0 ? 1 : -1;
+    const x = p.x + c.nx * side * SHARK.landOff, z = p.z + c.nz * side * SHARK.landOff, y = this.player.groundAt(x, z, p.y + 0.5);
+    return { at: new THREE.Vector3(x, Number.isFinite(y) && Math.abs(y - p.y) < 1.5 ? y : p.y, z), yaw: Math.round(Math.atan2(c.nz, -c.nx) * 100) / 100 };
+  }
+  /** #1769: the shark landed: its fin in the hand, the rod at your feet, the body on the bank (drawn from the room's record by src/shark.js). */
+  landShark() {
+    this.reelIn();
+    this.catches++;
+    const fin = this.addFin(this.dropSpot(0.5));
+    if (this.rod.held) this.rod.placeAt(this.dropSpot(0.45), this.camera.rotation.y + Math.PI / 2 + 0.2);
+    fin.take();
+    sfx.splash?.(fin.where());
+    this.onMessage('En haj! Bara fenan går att bära – resten blir kvar på stranden.');
+    this.onSharkCatch(fin);
+    return fin;
+  }
+  /** #1769: a shark fin into the world (at most SHARK.keepFins; the oldest one lying about goes). */
+  addFin(at) {
+    const fin = new SharkFin(this.scene, this.camera, this, at);
+    this.fins.push(fin);
+    this.onItem(fin);
+    const alive = this.fins.filter((f) => !f.broken);
+    if (alive.length > SHARK.keepFins) alive.find((f) => !f.held && f !== heldItem() && f !== stowedItem())?.remove();
+    this.fins = this.fins.filter((f) => !f.broken);
+    return fin;
   }
   /** #1754: a fish taken off a grill / out of the pan (`from` = its heat). */
   takenOff(fish, from) { if (fish.cooked && !fish.burnt) this.onTakenCooked(fish, from.kind); }
@@ -359,7 +402,8 @@ export class Fishing {
   appetite() {
     if (!this.riverFish) return { rate: 0, pick: null };
     const now = performance.now() / 1000, list = this.riverFish.near(this.at.x, this.at.z, F.wait.radius).filter((f) => !((this.shy.get(f.id) ?? 0) > now));
-    let sum = 0; const w = list.map((f) => { const d = Math.hypot(f.x - this.at.x, f.z - this.at.z), k = (F.species[f.species]?.bite ?? 1) * Math.max(0, 1 - d / F.wait.radius); sum += k; return k; });
+    if (this.riverFish.shark) list.push(...this.riverFish.shark.near(this.at.x, this.at.z, F.wait.radius).filter((f) => !((this.shy.get(f.id) ?? 0) > now))); // #1769
+    let sum = 0; const w = list.map((f) => { const d = Math.hypot(f.x - this.at.x, f.z - this.at.z), k = (f.shark ? SHARK.bite : F.species[f.species]?.bite ?? 1) * Math.max(0, 1 - d / F.wait.radius); sum += k; return k; });
     let r = this.rnd() * sum, pick = null;
     for (let i = 0; i < list.length; i++) { r -= w[i]; if (r <= 0) { pick = list[i]; break; } }
     return { rate: F.wait.rate * sum, pick: pick ?? list.at(-1) ?? null };
@@ -386,19 +430,19 @@ export class Fishing {
           const { rate, pick } = this.appetite();
           if (pick && this.rnd() < 1 - Math.exp(-rate * dt)) {
             const seed = this.riverFish.sync.seed, range = F.species[pick.species]?.cm ?? [15, 40];
-            this.bite = { id: pick.id, born: pick.born, species: pick.species, cm: catchCm(pick.id, pick.born, seed, range) };
+            this.bite = pick.shark ? { shark: true, id: -1, born: 0, species: 'haj' } : { id: pick.id, born: pick.born, species: pick.species, cm: catchCm(pick.id, pick.born, seed, range) };
             this.state = 'bite'; this.t = 0; this.splash(this.at); sfx.splash?.(this.at);
-            this.onMessage(this.touch() ? 'Napp! Tryck på Haka!' : 'Napp! Klicka nu!');
+            this.onMessage(`${pick.shark ? 'Något stort nappar!' : 'Napp!'} ${this.touch() ? 'Tryck på Haka!' : 'Klicka nu!'}`);
           } else if (!pick && !this.hinted && this.waitT > F.wait.idleHint) { this.hinted = true; this.onMessage('Inga fiskar i närheten – prova ett annat ställe'); }
         }
       } else if (this.state === 'bite') {
         dip = F.float.dip * (0.6 + 0.4 * Math.sin(this.t * 22));
-        if (this.t > F.wait.window) {
+        if (this.t > (this.bite.shark ? SHARK.strike.window : F.wait.window)) {
           this.shy.set(this.bite.id, performance.now() / 1000 + F.wait.shy); this.bite = null; this.misses++;
           this.state = 'wait'; this.t = 0; this.waitT = 0; this.onMessage('Fisken simmade iväg');
         }
       } else if (this.t > F.wait.answer && this.pending) { // no answer from the room: given up (RiverFishSync forgets the request)
-        const id = this.pending.id; this.riverFish?.sync?.giveUp?.(id); if (this.pending?.id === id) this.caught(id, false);
+        const id = this.pending.id; this.giveUpPending(); if (this.pending?.id === id) this.caught(id, false);
       }
       const bob = F.float.bob[0] * Math.sin(this.t * F.float.bob[1] * Math.PI * 2);
       this.float.position.set(this.at.x, this.at.y + bob - dip, this.at.z); this.float.visible = true;
@@ -453,7 +497,12 @@ export class Fishing {
       }
       out.push(e);
     }
-    return out.length ? { v: 1, fish: out } : null;
+    const fins = this.fins.filter((f) => !f.broken).map((f) => { // #1769
+      if (f.held || f === stowedItem()) return { h: 1 };
+      const p = f.model.getWorldPosition(new THREE.Vector3()), q = f.model.getWorldQuaternion(new THREE.Quaternion());
+      return { p: [p.x, p.y, p.z].map((v) => Math.round(v * 1000) / 1000), q: [q.x, q.y, q.z, q.w].map((v) => Math.round(v * 1000) / 1000) };
+    });
+    return out.length || fins.length ? { v: 1, fish: out, ...(fins.length ? { fins } : {}) } : null;
   }
   loadState(s) {
     if (s?.v !== 1 || !Array.isArray(s.fish)) return;
@@ -469,6 +518,14 @@ export class Fishing {
       else if (placed) { fish.model.position.set(...e.p); fish.model.quaternion.set(...e.q); fish.placed = true; }
       else { fish.held = true; fish.putBack(); }
     }
+    for (const e of (Array.isArray(s.fins) ? s.fins : []).slice(0, SHARK.keepFins)) { // #1769
+      const placed = Array.isArray(e?.p) && e.p.length === 3 && e.p.every(Number.isFinite) && Array.isArray(e.q) && e.q.length === 4 && e.q.every(Number.isFinite);
+      if (!placed && !e?.h) continue;
+      const fin = this.addFin(placed ? new THREE.Vector3(...e.p) : this.dropSpot(0.5));
+      if (e.h && !heldItem()) fin.take();
+      else if (placed) { fin.model.position.set(...e.p); fin.model.quaternion.set(...e.q); fin.placed = true; }
+      else { fin.held = true; fin.putBack(); }
+    }
   }
-  state_() { return { state: this.state, at: this.at.toArray(), bite: this.bite, pending: this.pending, fish: this.fish.filter((f) => !f.broken).map((f) => ({ name: f.name, ...f.info, held: f.held, placed: f.placed, cook: f.cook, state: f.cookState, heat: f.heat?.kind ?? null, bites: f.bites })), remote: this.remoteShown ?? 0, catches: this.catches, misses: this.misses }; }
+  state_() { return { state: this.state, at: this.at.toArray(), bite: this.bite, pending: this.pending, fish: this.fish.filter((f) => !f.broken).map((f) => ({ name: f.name, ...f.info, held: f.held, placed: f.placed, cook: f.cook, state: f.cookState, heat: f.heat?.kind ?? null, bites: f.bites })), remote: this.remoteShown ?? 0, catches: this.catches, misses: this.misses, fins: this.fins.filter((f) => !f.broken).map((f) => ({ held: f.held, placed: f.placed, at: f.model.getWorldPosition(new THREE.Vector3()).toArray() })) }; }
 }

@@ -155,6 +155,8 @@ const ITEM_PARTS = {
     return [[up(new THREE.CylinderGeometry(0.004, 0.009, ROD_LEN - 0.3, 5, 1, true).translate(0, 0.15 + (ROD_LEN - 0.3) / 2, 0)), 0x1f3d2c, [0, 0, 0]],
       [up(new THREE.CylinderGeometry(0.016, 0.016, 0.3, 6).translate(0, 0, 0)), 0xb98a55, [0, 0, 0]], [new THREE.BoxGeometry(0.03, 0.05, 0.05), 0x3a3f44, [0, -0.045, -0.02]]]; },
   fish: () => [[new THREE.SphereGeometry(0.1, 6, 4).scale(0.3, 1, 0.55), 0x8f9a74, [0, -0.17, -0.08]], [new THREE.ConeGeometry(0.045, 0.07, 3).scale(0.35, 1, 1), 0x5f6a4c, [0, -0.05, -0.08]]],
+  // #1769: a shark fin held up by its base: a grey swept-back blade (a flattened, sheared three-sided cone) over a dark-red cut
+  sharkfin: () => [[new THREE.ConeGeometry(0.12, 0.42, 3).scale(0.25, 1, 1).applyMatrix4(new THREE.Matrix4().makeShear(0, 0, 0, -0.5, 0, 0)), 0x59626b, [0, 0.24, -0.14]], [new THREE.BoxGeometry(0.04, 0.025, 0.2), 0x8a2a24, [0, 0.02, -0.14]]],
 };
 const itemCache = new Map();
 /** A new proxy mesh for held-item category `key`, or null for an unknown one; geometry and material shared by every ghost. */

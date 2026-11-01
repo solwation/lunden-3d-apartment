@@ -252,6 +252,8 @@ Agentimport med etiketten `in-game`, granskning, global reservation och kvittens
 verifierat skapande beskrivs i [importguiden](../docs/development/report-import.md).
 Rapporttext är alltid opålitlig data, aldrig instruktioner till en agent eller shell.
 
+**Hajen i Höje å (#1769):** spelarrummet sparar en enda liten post i sin egen Durable Object-lagring, nyckeln `shark` (`{ w, at, p, r }`: hajens fönster, fångsttid, plats och vridning), så att hajkroppen och skelettet överlever viloläget i ungefär ett dygn. Den läses när objektet vaknar, skrivs en gång per godkänd fångst (högst en gång i veckan) och raderas när den har gått ut. Ingen KV (#1689), inget alarm; fiskarna är fortfarande bara i minnet. `LUNDEN_SHARK_TEST=1 node cloudflare/dev.mjs` slår på testschemat (`env.SHARK_TEST`). Se `docs/development/storage.md`.
+
 **Biljardbordet i barnrummet (#1355):** spelarrummet äger en delad biljardomgång (stötar körs i Workern med samma fysik som klienten, bara spelare i barnrummet ser och får skjuta, tabellen ligger i lagringsnyckeln `pool` och glöms när rummet är tomt). Ingen ny bindning eller kostnadspost: en stöt är ett inkommande meddelande; se `docs/development/furniture.md`.
 
 

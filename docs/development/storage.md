@@ -1485,6 +1485,16 @@ store is 10. Tests: `cloudflare/graffiti.test.mjs` (validation, size, union, 72 
 Worker) and `tools/graffitisynctest.cjs` (two real pages through `cloudflare/dev.mjs`: both ways, reload, newcomer, 72 h; screenshots).
 
 
+### The shark's catch record (#1769)
+
+The players room keeps one small value under the key `shark` in its own Durable Object storage: `{ w, at, p: [x, y, z], r }` (the shark's
+window, the room time it was caught, where its body lies and its yaw). It is read once when the object wakes (`RoomRiverFish.load` inside the
+constructor's `blockConcurrencyWhile`, beside `pool` / `mus`), written once per accepted catch (at most once a week on the real schedule), and
+deleted when found expired (after the skeleton's day) or malformed on waking. No KV (#1689), no alarm, no periodic write: the fish themselves
+stay memory only. Memory alone would lose the carcass whenever the room hibernates (any quiet minute), which the user's "about an hour, then a
+skeleton for a day" rules out; KV would be a billed write per catch on the costly path #1689 cut. Solo / offline catches use `localStorage`
+`lunden.shark` (the same record).
+
 ## Love receipts in visitor statistics (#1398)
 
 `stats.love` counts completed, server-accepted kisses initiated by this visitor; `SCORE.each.love` contributes 100 points each. `stats.loveReceipts` keeps the most recent `KISS.receipts` ids (256) in the existing `lunden.stats` save, sanitized when loading older/corrupt records. `awardLove(id)` rejects a duplicate before counting. Normal save/reload retains both points and receipts; no new key/store or destructive migration is introduced. Ghosts also deduplicates receipt packets in memory and cancels pending completion on disconnect. Ordinary greeting points are unchanged for ordinary greetings and are not granted for a kiss. The room supplies the accepted event identity, not a general server-owned score economy. This personal gameplay is not transferred to the public project.

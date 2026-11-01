@@ -876,3 +876,33 @@ material is double-sided (the fins are single polygons) and white when raw; cook
 pattern faintly showing. The river fish keep the cheap `fishGeometry()`; the `fish` ghost proxy is unchanged. Tests: `node tools/caughtfishtest.mjs`
 (triangle budget, one shared geometry, finite data, distinct shapes); browser `tools/fishingtest.cjs`, `tools/fishcooktest.cjs`. Images:
 [docs/verification/1765](../verification/1765/).
+
+## The rare shark in Höje å (#1769)
+
+About once a week (`SHARK.schedule`: one window of 10–20 min per week of the room's fish clock, placed pseudo-randomly in its week from the
+seed and the week's number, all *guess*) a large shark's fin cuts the surface of Höje å. `src/sharkswim.js` (no three.js; the Worker and node
+tests use it) makes it a pure function like the fish: `sharkWindow(k)` / `sharkNow(t)` / `nextSharkWindow(t)`, `sharkAt(w, t)` (back and forth
+along up to `span` m of one of the fish's swim stretches, so clear of the road bridge's piers, a little sideways, at the surface; `show` lets it
+rise at the start and sink at the end), `sharkPhase(record, ms)` ('body' for `SHARK.body` s, 'bones' for `SHARK.bones` s, then null) and
+`cleanSharkRecord`. `src/shark.js` draws the fin (34 triangles), a dark shape under it, a wake V and up to three rings (deterministic: one per
+`ring.every` s at the shark's place then) within `drawDist` m of the eye, and the caught shark lying on its side where it was landed: the body
+(`caughtFishGeometry('haj', SHARK.look)`, the #1765 loft with a dark-red wound where the fin was, ~470 triangles) for an hour, then the skeleton
+(`skeletonGeometry`, ~680 triangles: skull, jaws with teeth, spine, ribs, fin rays) for a day, then nothing; everything is built the first time
+it is needed (nothing at the start). `RiverFish` owns it (`riverFish.shark`, updated in `RiverFish.update`).
+
+Fishing (#1753): `Fishing.appetite` adds the shark (`shark.near`, id −1) with appetite `SHARK.bite`; its bite must be struck within
+`strike.window` s and tears loose with chance `strike.slip` before the room is asked ("Något stort slet sig loss!"). A strike calls
+`RiverFishSync.catchShark(p, yaw)` with the landing spot (`dropSpot(1.7)`); the room answers `sok` / `sno`. Caught: `landShark` lays the rod
+down and puts `SharkFin` ("hajfenan", a Holdable with no home, at most `keepFins`) in the hand; keep.js's `fishing` record gets `fins` (`h`, or
+`p` / `q`). The others see it as held category `sharkfin` (ghostprops.js proxy, ~10 triangles). main.js `onSharkCatch` pays `bump('sharkFin')`
+once (`SCORE.first.sharkFin` 400 with its badge); nothing about the shark is listed beforehand.
+
+Sync (`src/riverfishsync.js`, `cloudflare/riverfish.js`, protocol in that file): 'L' carries `sh` (the room's live catch record) and `sk: 1`
+when the room runs the test schedule; 'S' { sh } tells everybody near about a catch; 'sc' { p, r } asks for it. The room accepts one catch per
+window, from a player within `SHARK.reach` m of the shark, landing within `land` m of that player, and shares the fish catch's rate limit. The
+record (`{ w, at, p, r }`) is the one thing the players room keeps for the river in its own Durable Object storage (key `shark`, see
+[storage](storage.md#the-sharks-catch-record-1769)), so it outlives hibernation for the skeleton's day. Solo / offline the catch is local and kept
+in `localStorage` `lunden.shark`. Test: `&shark=now` (client) or `LUNDEN_SHARK_TEST=1 node cloudflare/dev.mjs` (the room; the clients follow its
+`sk`) open a window for the whole of every `SHARK.test.period`; push `riverFish.sync.offset` forward to see the phases. Tests: `node --test
+cloudflare/shark.test.mjs` (schedule, path, arbitration, phases, hibernation, solo, through the Worker); browser `tools/sharktest.cjs` (two
+clients). Images: [docs/verification/1769](../verification/1769/).

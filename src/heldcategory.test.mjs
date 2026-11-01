@@ -64,3 +64,9 @@ test('#1753: the fishing rod and a caught fish have their own categories (a fish
   assert.equal(heldCategory({ isFish: true }), 'food');
   for (const k of ['rod', 'fish']) assert.ok(HELD_CATEGORIES.includes(k), k);
 });
+
+test('#1769: a shark fin has its own category, and the Worker keeps it', () => {
+  assert.equal(heldCategory({ isSharkFin: true }), 'sharkfin');
+  assert.equal(heldCategory(make('SharkFin')), 'sharkfin');
+  assert.equal(cleanHeldCategory('sharkfin'), 'sharkfin');
+});
