@@ -259,3 +259,86 @@ test('#1716: the shared pose keeps the old wire states, so older clients and the
   b.state = 'approach'; assert.equal(STATES[encodeAnimal(b)[7]], 'approach');
   b.x = 300; b.z = 300; b.state = 'perch'; b.route = [3]; b.resync(); assert.ok(b.route.length === 0 && b.state === 'perch' && Math.hypot(b.x - b.tr.x, b.z - b.tr.z) < 5, 'after following: settled on the nearest tree');
 });
+
+// #1764: the squirrels never run through Höje å: every ground position (off a bridge deck) is on land, and they change banks only over a bridge.
+const GROUNDISH = new Set(['forage', 'search', 'fetch', 'eat', 'approach', 'take', 'travel', 'stash', 'bury', 'seek', 'dig', 'chase', 'toTree', 'flee']);
+const watchWater = (v, hours, dt = 0.1) => {
+  const { ts, env, fr } = v, brains = C.animals.map((sp, i) => new SquirrelBrain(sp, env, startNear(ts, C.starts[i])));
+  env.others = brains; v.nuts.setActive(true);
+  const out = { samples: 0, wet: 0, wetBy: {}, flips: 0, decks: 0 }, side = [], onDeck = [], q = {};
+  for (let i = 0; i < hours * 3600 / dt; i++) {
+    v.clock.t += dt; v.clock.h = 7 + ((i * dt / 3600) % 12); // (daytime: the night is spent in the drey)
+    v.nuts.update(dt);
+    brains.forEach((b, k) => {
+      b.update(dt);
+      if (!GROUNDISH.has(b.state)) { side[k] = null; onDeck[k] = false; return; }
+      if (b.state === 'travel' && b.deck) { if (!onDeck[k]) out.decks++; onDeck[k] = true; side[k] = null; return; } // (on a bridge)
+      onDeck[k] = false; out.samples++;
+      if (!env.walkable(b.x, b.z)) { out.wet++; out.wetBy[b.state] = (out.wetBy[b.state] ?? 0) + 1; }
+      fr(b.x, b.z, q); if (q.s < 1 || q.s > fr.total - 1) { side[k] = null; return; } // (past the river's ends the bank is undefined)
+      if (side[k] != null && side[k] !== q.side) out.flips++;
+      side[k] = q.side;
+    });
+  }
+  return out;
+};
+
+test('#1764: in the synthetic valley no squirrel runs through the water over three hours; banks change only over the bridges', () => {
+  const v = valley(21), r = watchWater(v, 3);
+  assert.ok(r.samples > 50000, `enough ground time: ${r.samples}`);
+  assert.equal(r.wet, 0, `ground samples in the water: ${JSON.stringify(r.wetBy)}`);
+  assert.equal(r.flips, 0, 'no change of bank off a bridge');
+  assert.ok(r.decks > 0, `crossed a bridge: ${r.decks}`);
+  for (const t of v.ts) for (const j of t.links) if (!t.near.includes(j) && !t.via?.[j]) { // every ground run in the graph, the same bank too
+    const u = v.ts[j]; for (let k = 0.05; k < 1; k += 0.05) assert.ok(v.env.walkable(t.x + (u.x - t.x) * k, t.z + (u.z - t.z) * k), 'a ground run stays on land');
+  }
+});
+
+test('#1764: the real Höje å (terrain, park trees, bridges): zero ground samples in the water over four hours', async (t) => {
+  let real; try { // (needs the pinned local three.js, like riverfalltest.mjs)
+    const [{ groundY, renderedTerrainY }, { waterYAt, riverAt }, { parkTreeSpots }] = await Promise.all([import('../src/surroundings.js'), import('../src/riverbridge.js'), import('../src/riverpark.js')]);
+    real = { groundY, renderedTerrainY, waterYAt, riverAt, parkTreeSpots };
+  } catch (err) { t.skip(`three.js is not resolvable here: ${err.message}`); return; }
+  const { PADDOCK } = await import('../src/config.js'), { groundY, renderedTerrainY, waterYAt, riverAt, parkTreeSpots } = real;
+  const ground = (x, z) => (z > SITE.backgroundGround.z1 ? -3.01 : Math.max(groundY(x, z), renderedTerrainY(x, z))); // (main.js parkGround / squirrelWalk)
+  const full = (x, z) => ground(x, z) > waterYAt(x, z) + 0.3, walkable = (x, z) => { const r = riverAt(x, z); return r.distance > r.width / 2 + C.dry || full(x, z); };
+  const rnd = rng(7), fr = riverFrame(SITE.river.path);
+  for (let x = -265; x <= 215; x += 0.7) for (let z = 60; z <= 300; z += 0.7) { // (squirrelWalk's shortcut far from the river changes no answer)
+    const r = riverAt(x, z); if (r.distance > r.width / 2 + C.dry && r.distance < r.width / 2 + C.dry + 25) assert.ok(full(x, z), `land beyond the shortcut at ${x.toFixed(1)}, ${z.toFixed(1)}`);
+  }
+  const feet = [...parkTreeSpots(renderedTerrainY), ...PADDOCK.trees.map(([x, z]) => ({ x, z, y: ground(x, z) }))];
+  const ts = linkTrees(feet.map((f) => ({ x: f.x, z: f.z, y: f.y, cy: f.y + 6, r: 3 })), { path: SITE.river.path, walkable, crossings: [SITE.riverPark.woodBridge.ends, SITE.bridges.gc.ends] });
+  const nuts = new NutField(ts, ground, walkable, rnd), clock = { t: 1e6, h: 12 }, player = { x: 1e5, z: 1e5, lure: false, hx: 1e5, hz: 1e5 };
+  const v = { ts, fr, nuts, clock, env: { trees: ts, ground, walkable, nuts, player, scares: [], rnd, onTake: () => false, now: () => clock.t, hour: () => clock.h } };
+  assert.equal(new Set(ts.map((q) => q.comp)).size, 1, 'one graph over the two bridges');
+  const r = watchWater(v, 4);
+  assert.ok(r.samples > 100000, `enough ground time: ${r.samples}`);
+  assert.equal(r.wet, 0, `ground samples in the water: ${JSON.stringify(r.wetBy)}`); // (before #1764: 2316 over four hours, seed 7)
+  assert.equal(r.flips, 0, 'no change of bank off a bridge');
+  assert.ok(r.decks > 0, `crossed a bridge: ${r.decks}`);
+});
+
+test('#1764: a crouching visitor with a nut across the river does not lure a squirrel into the water', () => {
+  const v = valley(21), { ts, fr, env } = v, i = ts.byS.find((j) => ts[j].s > 100 && fr(ts[j].x, ts[j].z).d < 14), t = ts[i], q = fr(t.x, t.z);
+  const c = fr.at(q.s), hx = c.x + (c.x - t.x) / q.d * 9, hz = c.z + (c.z - t.z) / q.d * 9; // (9 m past the centre line: the other bank)
+  assert.ok(env.walkable(hx, hz) && fr(hx, hz).side !== t.side && Math.hypot(hx - t.x, hz - t.z) < C.animals[0].lure, 'set-up: the hand on the far bank, within lure range');
+  Object.assign(v.player, { x: hx, z: hz, hx, hz, lure: true });
+  const b = new SquirrelBrain({ ...C.animals[0], ground: 0 }, env, i); b.enterPerch(i, 0); let wet = 0, seen = new Set();
+  for (let n = 0; n < 900; n++) { v.clock.t += 0.1; b.update(0.1); seen.add(b.state); if (GROUNDISH.has(b.state) && !env.walkable(b.x, b.z)) wet++; }
+  assert.equal(wet, 0); assert.ok(!seen.has('approach') && !seen.has('take'), `no approach over the water: ${[...seen]}`);
+});
+
+test('#1764: a ground run that would step into the water is refused and the squirrel picks something on land', () => {
+  const w = world(); w.env.walkable = (x) => x < 6; // (a "river" east of x = 6)
+  const b = new SquirrelBrain(C.animals[0], w.env, 0); Object.assign(b, { x: 4, z: 0, y: 0 }); b.set('forage', 30); b.goal.x = 12; b.goal.z = 0; b.dash = true; b.gaitT = 99; b.left = 30;
+  for (let n = 0; n < 200; n++) { b.update(0.05); assert.ok(!GROUNDISH.has(b.state) || b.x < 6, `${b.state} at ${b.x.toFixed(2)}`); }
+});
+
+test('#1764: a follower\'s dead reckoning does not carry a squirrel past the bank', async () => {
+  const { SquirrelSync } = await import('../src/squirrelsync.js');
+  const w = world(); w.env.walkable = (x) => x < 6;
+  const b = new SquirrelBrain(C.animals[0], w.env, 0), s = new SquirrelSync({ field: w.nuts, brains: [b], send: () => true });
+  s.lead = false; const pose = (x) => [x, 0, 0, 1.57, 0, 0, 1, STATES.indexOf('forage'), 0];
+  s.adopt([pose(3)]); s.tick(0.5); s.adopt([pose(5.8)]); // (running east at ~5.6 m/s, stopping on the bank)
+  for (let n = 0; n < 30; n++) { s.tick(0.02); assert.ok(b.x < 6, `glided to ${b.x.toFixed(2)}`); }
+});

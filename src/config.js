@@ -7268,6 +7268,7 @@ export const FOOTSTEPS = {
 //  the squirrel carries the nut `carry` s (visible in its mouth) up a tree.
 export const SQUIRRELS = {
   simDist: 70, farDist: 130, drawDist: 150, farStep: 0.25, leapRange: 11, groundHop: 22,
+  dry: 6, // #1764: farther than the river's half width + `dry` m from its centre line the park ground is always above the water (measured: the wet strip reaches at most 5.6 m from the centre line), so main.js squirrelWalk answers there without the terrain lookup
   run: 3.4, flee: 6.5, climb: 2.6, leap: 5.5, perch: [5, 12], forage: [14, 32], search: [1.2, 3.5], eat: 2.2,
   maxNuts: 18, spread: 9, life: [360, 900], respawn: [6, 20], sense: 4.5, nutSize: 2.4, // #1686: 18 at once (was 6), twice-as-big nuts, quicker respawn, a calmer nose (the squirrels ate most of the six before anyone found one) (all *guess*)
   nutNearPlayer: 60, nutBias: 0.7, heap: 0.4, heapRadius: [0.15, 0.6], // #1686: 70 % of new nuts under the trees within 60 m of a visitor; 40 % land in a heap beside a nut already out

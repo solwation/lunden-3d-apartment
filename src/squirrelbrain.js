@@ -29,8 +29,16 @@ export function riverFrame(path) {
   return f;
 }
 
-/** A ground run from trunk a to trunk b that stays on land (`walkable`, sampled every 2 m). */
-const clearRun = (a, b, walkable) => { const d = Math.hypot(b.x - a.x, b.z - a.z), n = Math.ceil(d / 2); for (let i = 1; i < n; i++) { const k = i / n; if (!walkable(a.x + (b.x - a.x) * k, a.z + (b.z - a.z) * k)) return false; } return true; };
+/** #1764: a straight ground run from (x0, z0) to (x1, z1) stays on land (`walkable`, sampled every `step` m; the two ends are not tested: a
+ * trunk's foot may stand on a steep bank). No `walkable`: everywhere is land. */
+export const clearPath = (x0, z0, x1, z1, walkable, step = 1) => {
+  if (!walkable) return true;
+  const n = Math.ceil(Math.hypot(x1 - x0, z1 - z0) / step);
+  for (let i = 1; i < n; i++) { const k = i / n; if (!walkable(x0 + (x1 - x0) * k, z0 + (z1 - z0) * k)) return false; }
+  return true;
+};
+/** A ground run from trunk a to trunk b that stays on land (sampled every 2 m: the graph is built once at the start; the water is >= 8 m wide). */
+const clearRun = (a, b, walkable) => clearPath(a.x, a.z, b.x, b.z, walkable, 2);
 
 /** The squirrels' trees: each { x, z, y (ground at the trunk), cy (crown centre), r (crown radius) } gets `near` (trees within leapRange: a hop
  * from crown to crown) and, #1716, `links` (the tree graph: the crown hops plus ground runs up to `roam.link` m that stay on land, the runs over
@@ -40,7 +48,9 @@ const clearRun = (a, b, walkable) => { const d = Math.hypot(b.x - a.x, b.z - a.z
 export function linkTrees(trees, { path = null, walkable = null, crossings = [] } = {}) {
   const fr = path ? riverFrame(path) : null, q = {};
   trees.forEach((t, i) => { if (fr) { fr(t.x, t.z, q); t.s = q.s; t.side = q.side; } else { t.s = 0; t.side = 1; } t.near = []; t.links = []; t.via = null; });
-  const can = (a, b) => !walkable || a.side === b.side || clearRun(a, b, walkable), parent = trees.map((_, i) => i);
+  // #1764: every ground run is checked against the water, on the same bank too (`side` is the river's as a whole; where it bends a straight
+  // run between two trees on one bank can cross it)
+  const can = (a, b) => !walkable || clearRun(a, b, walkable), parent = trees.map((_, i) => i);
   const root = (i) => { while (parent[i] !== i) i = parent[i] = parent[parent[i]]; return i; }, link = (i, j) => { trees[i].links.push(j); trees[j].links.push(i); parent[root(i)] = root(j); };
   const far = [];
   for (let i = 0; i < trees.length; i++) for (let j = i + 1; j < trees.length; j++) {
@@ -181,6 +191,14 @@ export class SquirrelBrain {
   set(state, dur = 1) { this.state = state; this.t = 0; this.dur = dur; this.run = 0; this.log.push(state); if (this.log.length > 40) this.log.shift(); }
   playerDist() { const pl = this.env.player; return Math.hypot(pl.x - this.x, pl.z - this.z); }
   place(o) { this.x = o.x; this.y = o.y; this.z = o.z; }
+  /** #1764: a straight ground run from (fx, fz) (default: where it is) to (x, z) stays on land: never through Höje å. */
+  clear(x, z, fx = this.x, fz = this.z) { return clearPath(fx, fz, x, z, this.env.walkable); }
+  /** #1764: the lure's hand can be reached on land from (fx, fz) (re-tested only when the hand or the start moved). */
+  lureClear(fx = this.x, fz = this.z) {
+    const pl = this.env.player, c = this.lureC;
+    if (c && Math.hypot(c.hx - pl.hx, c.hz - pl.hz) < 0.3 && Math.hypot(c.fx - fx, c.fz - fz) < 0.5) return c.ok;
+    this.lureC = { hx: pl.hx, hz: pl.hz, fx, fz, ok: this.clear(pl.hx, pl.hz, fx, fz) }; return this.lureC.ok;
+  }
 
   // --- #1716: the day, the home range and the tree graph ---
   now() { return this.env.now ? this.env.now() : this.clock; }
@@ -211,7 +229,12 @@ export class SquirrelBrain {
     tr.forEach((t, i) => { const d = Math.abs(t.s - hs) + (any || t.comp === comp ? 0 : 1e6); if (d < bd) { bd = d; best = i; } });
     return best;
   }
-  nearestTree(x = this.x, z = this.z) { let best = this.tree, bd = Infinity; this.env.trees.forEach((t, i) => { const d = Math.hypot(t.x - x, t.z - z); if (d < bd) { bd = d; best = i; } }); return best; }
+  /** The nearest trunk to (x, z); `reach` (#1764): the nearest one a straight ground run reaches without crossing the water. */
+  nearestTree(x = this.x, z = this.z, reach = false) {
+    const tr = this.env.trees;
+    if (reach) return tr.map((t, i) => [Math.hypot(t.x - x, t.z - z), i]).sort((a, b) => a[0] - b[0]).find(([, i]) => this.clear(tr[i].x, tr[i].z, x, z))?.[1] ?? this.tree;
+    let best = this.tree, bd = Infinity; tr.forEach((t, i) => { const d = Math.hypot(t.x - x, t.z - z); if (d < bd) { bd = d; best = i; } }); return best;
+  }
   favourites() { return [...this.visits].sort((a, b) => b[1] - a[1]).slice(0, R.fav).map((v) => v[0]); }
   /** Somewhere to go on a longer move: a ripe cache, a favourite tree (both in or near the range) or any other tree in the range. */
   journeyTarget(hs) {
@@ -287,7 +310,7 @@ export class SquirrelBrain {
     const e = this.env, t = this.tr;
     for (let i = 0; i < 8; i++) {
       const a = e.rnd() * Math.PI * 2, d = 2 + e.rnd() * C.spread * 1.4, x = t.x + Math.cos(a) * d, z = t.z + Math.sin(a) * d;
-      if (e.walkable(x, z)) { this.goal.x = x; this.goal.z = z; this.set('forage', 30); return; }
+      if (e.walkable(x, z) && this.clear(x, z)) { this.goal.x = x; this.goal.z = z; this.set('forage', 30); return; } // (#1764: the way there too)
     }
     this.startToTree(false);
   }
@@ -305,27 +328,31 @@ export class SquirrelBrain {
     const e = this.env;
     for (let i = 0; i < 8; i++) {
       const a = e.rnd() * Math.PI * 2, d = between(C.cache.stash, e.rnd), x = this.x + Math.cos(a) * d, z = this.z + Math.sin(a) * d;
-      if (e.walkable(x, z)) { this.goal.x = x; this.goal.z = z; this.set('stash', 30); return; }
+      if (e.walkable(x, z) && this.clear(x, z)) { this.goal.x = x; this.goal.z = z; this.set('stash', 30); return; }
     }
     this.set('bury', C.cache.bury);
   }
-  startSeek() { this.goal.x = this.target.x; this.goal.z = this.target.z; this.set('seek', 60); }
+  startSeek() {
+    if (!this.clear(this.target.x, this.target.z)) { this.caches = this.caches.filter((c) => c !== this.target); this.target = null; this.startForage(); return; } // (#1764: over the water: forgotten)
+    this.goal.x = this.target.x; this.goal.z = this.target.z; this.set('seek', 60);
+  }
   /** #1716: chase another squirrel on the ground for a few seconds; it flees up a tree. */
   startChase(o) {
     this.prey = o; this.set('chase', between(C.chase.time, this.env.rnd));
     o.route = []; o.target = null; o.rise = 0; o.slot = null; o.calmT = C.chase.calm * o.p.calm; o.startToTree(true);
   }
-  /** Run to a trunk: the nearest (or, relaxed, sometimes another one within groundHop) and up. */
-  startToTree(flee) {
-    const e = this.env, trees = e.trees;
-    let best = -1, bd = Infinity;
+  /** Run to a trunk: the nearest (or, relaxed, sometimes another one within groundHop) and up. #1764: only one a straight run reaches on land
+   * (else the nearest such trunk however far); `avoid`: a trunk it was just blocked on the way to. */
+  startToTree(flee, avoid = -1) {
+    const e = this.env, trees = e.trees, cand = [];
     trees.forEach((t, i) => {
       const d = Math.hypot(t.x - this.x, t.z - this.z);
       if (d > C.groundHop) return;
-      const score = d + (!flee && i === this.tree ? 0 : !flee ? e.rnd() * 8 : 0);
-      if (score < bd) { bd = score; best = i; }
+      cand.push([d + (!flee && i === this.tree ? 0 : !flee ? e.rnd() * 8 : 0), i]);
     });
-    if (best < 0) best = this.tree;
+    cand.sort((a, b) => a[0] - b[0]);
+    let best = cand.find(([, i]) => i !== avoid && this.clear(trees[i].x, trees[i].z))?.[1] ?? -1;
+    if (best < 0) best = this.nearestTree(this.x, this.z, true);
     const t = trees[best], a = Math.atan2(this.z - t.z, this.x - t.x);
     this.tree2 = best; this.ang2 = a; footPoint(t, a, e.ground, this.goal);
     this.set(flee ? 'flee' : 'toTree', 30);
@@ -348,11 +375,23 @@ export class SquirrelBrain {
   moveTo(dt, speed, stop = 0) {
     const dx = this.goal.x - this.x, dz = this.goal.z - this.z, d = Math.hypot(dx, dz);
     if (d <= stop + 1e-6) { this.run = 0; return true; }
-    const step = Math.min(d - stop, speed * dt);
-    this.x += dx / d * step; this.z += dz / d * step; this.y = this.env.ground(this.x, this.z);
+    const step = Math.min(d - stop, speed * dt), nx = this.x + dx / d * step, nz = this.z + dz / d * step, w = this.env.walkable;
+    // #1764: the last guard: a step from land into the water (off a bridge deck) is never taken; the squirrel picks something else to do
+    if (w && !this.deck && !w(nx, nz) && w(this.x, this.z)) { this.run = 0; this.blocked(); return false; }
+    this.x = nx; this.z = nz; this.y = this.env.ground(this.x, this.z);
     const want = Math.atan2(dx, dz); this.yaw += wrap(want - this.yaw) * Math.min(1, dt * 12);
     this.run = Math.min(1, speed / C.run); this.pitch = 0;
     return step >= d - stop - 1e-6;
+  }
+  /** #1764: the way on was blocked by the water: give up this goal for one on land. */
+  blocked() {
+    const st = this.state;
+    if (st === 'forage' || st === 'fetch') { this.slot = null; this.pickGoal(); }
+    else if (st === 'stash') { this.rise = 0; this.set('bury', C.cache.bury); }
+    else if (st === 'seek') { this.caches = this.caches.filter((c) => c !== this.target); this.target = null; this.pickGoal(); }
+    else if (st === 'toTree' || st === 'flee') this.startToTree(st === 'flee', this.tree2);
+    else if (st === 'approach') { this.lureC = { ...this.lureC, ok: false }; this.startToTree(false); }
+    else { this.route = []; this.target = null; this.prey = null; this.deck = false; this.wps = []; this.startToTree(false); }
   }
   /** #1716: jerky ground movement: short rushes (a little faster) and wary stops, half sitting up with quick head turns and a tail flick. */
   dashTo(dt, speed, stop = 0) {
@@ -371,7 +410,7 @@ export class SquirrelBrain {
     if (GROUND.has(this.state) && this.scared()) { this.frighten(); return; }
     switch (this.state) {
       case 'perch': {
-        if (pl.lure && !this.hasNut && this.calmT <= 0 && this.playerDist() < p.lure && !this.night()) { if ((this.react += dt) > p.delay) { this.startDown(true); break; } } else this.react = 0;
+        if (pl.lure && !this.hasNut && this.calmT <= 0 && this.playerDist() < p.lure && !this.night() && this.lureClear(this.tr.x, this.tr.z)) { if ((this.react += dt) > p.delay) { this.startDown(true); break; } } else this.react = 0; // (#1764: not across the river)
         if (this.t < this.dur) break;
         if (this.t > 2 && rnd() < dt * 0.6) this.flick = 1; // a wary twitch of the tail now and then
         this.act(this.plan());
@@ -409,7 +448,7 @@ export class SquirrelBrain {
       }
       case 'approach': {
         const d = Math.hypot(pl.hx - this.x, pl.hz - this.z);
-        if (!pl.lure || d > p.lure * 1.4) { if (this.playerDist() < 3) this.startToTree(true); else this.startForage(); break; }
+        if (!pl.lure || d > p.lure * 1.4 || !this.lureClear()) { if (this.playerDist() < 3) this.startToTree(true); else this.startForage(); break; }
         this.goal.x = pl.hx; this.goal.z = pl.hz;
         const creep = 0.55 + 0.45 * Math.abs(Math.sin(this.t * 2.2)); // stop-and-go: wary
         if (this.moveTo(dt, C.run * 0.7 * p.speed * creep, C.reach)) this.set('take', C.take);
@@ -431,11 +470,11 @@ export class SquirrelBrain {
   /** forage / search / fetch / eat and (#1716) travel / stash / bury / seek / dig / chase: on the ground, no lure. */
   onGround(dt) {
     const e = this.env, pl = e.player, p = this.p, C_ = C, rnd = e.rnd;
-    if (pl.lure && this.calmT <= 0 && this.playerDist() < p.lure && !this.hasNut) { this.rise = 0; this.startApproach(); return; }
+    if (pl.lure && this.calmT <= 0 && this.playerDist() < p.lure && !this.hasNut && this.lureClear()) { this.rise = 0; this.startApproach(); return; }
     if (LOWER.has(this.state) && e.others && (this.chaseT -= dt) <= 0) { // #1716: now and then it chases another squirrel near it off
       this.chaseT = 1;
       if (rnd() < C_.chase.chance * this.activity()) {
-        const o = e.others.find((q) => q !== this && LOWER.has(q.state) && q.calmT <= 0 && Math.hypot(q.x - this.x, q.z - this.z) < C_.chase.range);
+        const o = e.others.find((q) => q !== this && LOWER.has(q.state) && q.calmT <= 0 && Math.hypot(q.x - this.x, q.z - this.z) < C_.chase.range && this.clear(q.x, q.z));
         if (o) { this.startChase(o); return; }
       }
     }
@@ -444,7 +483,7 @@ export class SquirrelBrain {
         if (this.state === 'fetch' && !(this.slot?.alive && !this.slot.held)) { this.slot = null; this.pickGoal(); return; }
         if (this.state === 'forage' && ((this.sense -= dt) <= 0)) {
           this.sense = 0.5; const s = e.nuts.near(this.x, this.z, C_.sense);
-          if (s) { this.slot = s; this.goal.x = s.x; this.goal.z = s.z; this.set('fetch', 30); return; }
+          if (s && this.clear(s.x, s.z)) { this.slot = s; this.goal.x = s.x; this.goal.z = s.z; this.set('fetch', 30); return; }
         }
         this.left -= dt;
         const there = this.state === 'fetch' ? this.moveTo(dt, C_.run * p.speed, 0.08) : this.dashTo(dt, C_.run * p.speed);
@@ -487,7 +526,7 @@ export class SquirrelBrain {
         this.run = 0; this.rise = 0; this.pitch = -0.45 + 0.12 * Math.sin(this.t * 18); // nose down, scrabbling
         if (this.t < this.dur) return;
         this.pitch = 0;
-        if (this.state === 'bury') { this.hasNut = false; this.caches.push({ x: this.x, z: this.z, tree: this.nearestTree(), at: this.now(), ripe: between(C_.cache.ripe, rnd) }); this.pickGoal(); }
+        if (this.state === 'bury') { this.hasNut = false; this.caches.push({ x: this.x, z: this.z, tree: this.nearestTree(this.x, this.z, true), at: this.now(), ripe: between(C_.cache.ripe, rnd) }); this.pickGoal(); }
         else { this.caches = this.caches.filter((c) => c !== this.target); this.target = null; this.hasNut = true; this.set('eat', C_.eat * (0.8 + rnd() * 0.4)); this.rise = 1; }
         return;
       }

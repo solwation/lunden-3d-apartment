@@ -3,7 +3,7 @@ import { MenuSettings } from './menusettings.js';
 import { renderPlayingNow } from './playerportraits.js';
 import { saveStats } from './stats.js';
 import { playerLocalStorage as localStorage, playerSessionStorage as sessionStorage } from './playerprofiles.js';
-import { KISS, HUG, REACT, SCORE } from './config.js';
+import { KISS, HUG, REACT, SCORE, SQUIRRELS } from './config.js';
 import { MATERIAL_CHOICES, materialChoices, materialChoice } from './materialcatalog.js';
 import { crashlog } from './crashlog.js'; // first: its heartbeat and error hooks start before the rest loads (#629; inert without the cloud)
 import { CinemaPlayer } from './cinemaplayer.js';
@@ -52,7 +52,7 @@ import { BedCare } from './bedcare.js';
 import { HallCare } from './hallcare.js';
 import { Rearrange } from './rearrange.js';
 import { Player, inPoly, crosses } from './player.js';
-import { waterYAt } from './riverbridge.js';
+import { waterYAt, riverAt } from './riverbridge.js';
 import { Fall } from './fall.js';
 import { StatsPanel } from './statspanel.js';
 import { respawnOutdoors } from './respawn.js';
@@ -560,7 +560,7 @@ if (pingping) pingping.onHug = () => bump('pingpingHugs');
 const sillPots = buildSillPots(scene, camera, world.sillPlants); // the pots on the window boards can be lifted (#185)
 const holdables = [saber, ...toys.items, remote, book, beer, ...things, ...sillPots]; // things you can take and hold, one at a time (holdable.js)
 // #1672: squirrels in the trees by the river and the paddock; the nuts they look for are holdables (E takes one; crouch still with it to feed)
-const squirrelWalk = (x, z) => parkGround(x, z) > waterYAt(x, z) + 0.3;
+const squirrelWalk = (x, z) => { const r = riverAt(x, z); return r.distance > r.width / 2 + SQUIRRELS.dry || parkGround(x, z) > waterYAt(x, z, r) + 0.3; }; // (#1764: far from the river it is land, without the costly terrain lookup)
 const squirrels = params0.has('nosquirrels') ? null : new Squirrels({ scene, camera, player, feet: treeFeet, crowns: aoTrees, ground: parkGround, walkable: squirrelWalk,
   nutOk: (x, z) => squirrelWalk(x, z) && !onRoad(x, z, 0.5) && !onWalk(x, z, 0.5) && !onParkPath(x, z, 0.4), onFeed: () => bump('squirrelFeeds') });
 if (squirrels) holdables.push(...squirrels.nutItems);

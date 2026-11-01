@@ -13,6 +13,7 @@ import { SQUIRRELS as C } from './config.js';
 // still player holding a nut, hi 'nut'), so no extra per-frame traffic.
 
 export const STATES = ['perch', 'leap', 'down', 'up', 'forage', 'search', 'fetch', 'eat', 'toTree', 'flee', 'approach', 'take'];
+const AIR = new Set(['perch', 'leap', 'down', 'up']); // (#1764: the poses off the ground)
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const r2 = (v) => Math.round(v * 100) / 100;
 const r1 = (v) => Math.round(v * 10) / 10;
@@ -110,8 +111,11 @@ export class SquirrelSync {
       const k = 1 - Math.exp(-dt * 8);
       this.brains.forEach((b, i) => {
         const g = this.tg[i]; if (!g) return;
-        const age = Math.min(0.6, this.t - g.at);
-        b.x += (g.x + g.vx * age - b.x) * k; b.z += (g.z + g.vz * age - b.z) * k; b.y += (g.y - b.y) * k;
+        const age = Math.min(0.6, this.t - g.at), w = b.env?.walkable;
+        let ax = g.x + g.vx * age, az = g.z + g.vz * age;
+        // #1764: dead reckoning never carries a squirrel on the ground past the bank into Höje å (it waits at the leader's last place instead)
+        if (w && (g.vx || g.vz) && !AIR.has(STATES[g.st]) && !w(ax, az) && w(g.x, g.z)) { ax = g.x; az = g.z; }
+        b.x += (ax - b.x) * k; b.z += (az - b.z) * k; b.y += (g.y - b.y) * k;
         b.yaw += wrap(g.yaw - b.yaw) * k;
       });
     }

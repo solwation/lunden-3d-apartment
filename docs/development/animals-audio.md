@@ -694,8 +694,8 @@ of `src/config.js` (all *guess*). Test: `node --test tools/squirrelbraintest.mjs
 
 Trees: besides the park patches and the paddock, every `treeFeet` trunk within `SQUIRRELS.roam.valley` m of the river centre line and inside
 `WALK` (today the park patches already cover the whole river, 236 trees, s 0-526 m). `linkTrees(trees, { path, walkable, crossings })` builds a
-tree graph: crown hops (`near`, ≤ `leapRange`), ground runs ≤ `roam.link` m that stay on land (`walkable` sampled every 2 m when the trunks are on
-opposite banks), one run over each bridge in `crossings` (the timber footbridge and the gc bridge: `via` holds the two bridge ends, the deck leg is
+tree graph: crown hops (`near`, ≤ `leapRange`), ground runs ≤ `roam.link` m that stay on land (`walkable` sampled every 2 m, #1764: on the same bank too, where
+the river bends), one run over each bridge in `crossings` (the timber footbridge and the gc bridge: `via` holds the two bridge ends, the deck leg is
 level between them) and Kruskal joins of separate pieces up to `roam.join`; `comp` marks the piece, `s`/`side` the position along / beside the river
 (`riverFrame`). `treeRoute` is a plain Dijkstra over `links` (only on a journey start).
 
@@ -717,6 +717,22 @@ colour per animal). Still one merged mesh and draw call per squirrel, with three
 `pose()`; the group's origin sits at the haunch (`HAUNCH`), so sitting up (`rise`) pivots there and the head turns less while sitting. Two geometries: the detailed one (~3.3 k triangles) within `SQUIRRELS.look.near` m, a cheaper one (~1.4 k, before: ~1.9 k for every
 distance) beyond. Tests: `tools/squirrelbraintest.mjs` (valley graph, hours of roaming, coarse brain, day/nest, caches, chase, wire states).
 Pictures: `docs/verification/1716/`.
+
+### Never through the water (#1764)
+
+The squirrels ran down into Höje å and up the far bank: only the graph's cross-bank runs were tested against the water, so a same-bank run
+across a bend, a forage/stash goal on the far bank (only the end point was `walkable`), a run to the nearest trunk or a cache's tree across
+the river all went straight through it (measured with the real terrain, park trees and bridges: 2316 of 228 033 ground samples in the water
+over four simulated hours, seed 7). Now `clearPath` (exported) tests every straight ground run: the graph's runs (every 2 m), and in the brain
+(`clear()`, every 1 m) the forage and stash goals, the found nut, the chase, the trunk `startToTree` picks (the nearest reachable one, else
+the nearest reachable anywhere), a cache's tree and its dig-up, and the lure's hand (`lureClear`, cached; a visitor across the river lures
+nobody). The last guard is `moveTo`: a step from land into the water (off a bridge deck) is never taken, `blocked()` picks something on land.
+Banks change only over the timber footbridge and the gc bridge (the `via` runs) or along a bridge deck that `walkable` sees as ground. A
+follower's dead reckoning (squirrelsync.js) waits at the leader's last place rather than glide past the bank. main.js `squirrelWalk` answers
+`true` without the terrain lookup farther than the river's half width + `SQUIRRELS.dry` m from its centre line (the wet strip reaches 5.6 m;
+the test checks the shortcut changes no answer), which keeps the graph's extra checks to ~30 ms more at the start (desktop node: 59 → 88 ms).
+Tests: `node --test tools/squirrelbraintest.mjs` (#1764 cases: the synthetic valley and the real river with zero wet samples and bank
+changes only on bridges, a lure across the river, the `moveTo` guard, the follower's glide). Pictures: `docs/verification/1764/`.
 
 ### More nuts and shared squirrels (#1686)
 
