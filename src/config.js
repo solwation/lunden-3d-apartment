@@ -6871,11 +6871,16 @@ export const REACT = {
   duration: 3.5, ease: .3, every: 4,
 };
 
-// #1622: the playroom dance, offered at the speakers while the room music plays. `dn: 1` in the player state (like `c`).
+// #1622: the playroom dance, offered at the speakers while the room music plays. `dn: 1` (floss) / `2` (Gangnam, #1757) in the player state (like `c`).
 // Floss: the hips swing one way while both straight arms swing across the body the other way, one arm forward while the
 // other goes back. *guess*: by eye against the well-known move, not measured.
 export const DANCE = {
   floss: { hz: 1.9, hipSway: .07, bob: .025, armSide: .4, armDepth: .17, armFwd: .03, reach: .54, lean: .08 }, // hz: whole left-right cycles per second; metres / rad; reach: the straight arm's shoulder-to-hand distance (arm is .57 long)
+  // #1757 Gangnam Style, the horse-riding dance: `dn: 2`. A bouncy gallop on bent knees (one foot lifted per beat), wrists crossed
+  // in front holding the reins, and every other section one hand swinging a lasso overhead (left, then right). *guess*: by eye
+  // against the well-known move (about 132 beats a minute), not measured. hz: beats per second; metres / rad / seconds.
+  gangnam: { hz: 2.2, squat: .07, bounce: .035, lift: .09, footX: .16, footFwd: .05, reinsY: -.27, reinsZ: .32, cross: .04, pump: .025,
+    lean: .1, section: 3.6, blend: .35, lassoY: .5, lassoX: .1, lassoR: .1, lassoHz: 1.6 }, // section: seconds per reins/lasso part; reinsY: hands below the shoulders; cross: how far each wrist passes the middle; lassoHz: overhead circles per second
   ease: 6, // 1/s, how fast the pose blends in and out
   stepAway: .4, // m, walking further than this from where the dance started ends it
 };

@@ -1136,6 +1136,20 @@ const flossArm = (side, depth, sn, cs) => { // straight (reach = DANCE.floss.rea
   const dy = -Math.sqrt(Math.max(0.01, F.reach ** 2 - dx * dx - dz * dz));
   return { at: [side * SH[0] + dx, y0 + dy, dz], pole: [side * 0.2, -0.3, -1] };
 };
+/** #1757: Gangnam Style's hand targets at avatar time `t`, beat phase `ph` and shoulder height `shY` (figure frame):
+ * wrists crossed in front holding the reins, and in every other section one hand (left, then right) circling a lasso overhead. */
+const gangnamHands = (t, ph, shY) => {
+  const G = DANCE.gangnam, lph = t * G.lassoHz * Math.PI * 2; // the lasso's circle
+  const sec = t / G.section, part = Math.floor(sec) % 4, u = (sec - Math.floor(sec)) * G.section; // parts: reins, lasso L, reins, lasso R
+  const w = part % 2 ? THREE.MathUtils.smoothstep(Math.min(u, G.section - u), 0, G.blend) : 0, lasso = part === 1 ? 1 : part === 3 ? -1 : 0;
+  const y = shY + G.reinsY - G.pump * Math.abs(Math.cos(ph));
+  const hand = (side) => {
+    const reins = { at: [-side * G.cross, y, G.reinsZ], pole: [side, -0.4, -0.4] }; // each wrist passes the middle: crossed
+    if (side !== lasso || !w) return reins;
+    return mixHand(reins, { at: [side * G.lassoX + G.lassoR * Math.cos(lph), shY + G.lassoY, 0.02 + G.lassoR * Math.sin(lph)], pole: [side, 0.3, -0.3] }, w);
+  };
+  return [hand(1), hand(-1)];
+};
 const STRIDE = 0.78; // m per step cycle (one leg's whole swing; *guess*: a calm walk)
 const KNEE_REST = [0, 0.25, 1]; // poseOlof's default knee pole
 /** #1149: how far a shoulder moves (figure frame [x, y, z]) when the hips drop by `dy`, move by `dz` and the torso leans
@@ -1247,7 +1261,10 @@ export class Avatar {
    * the head's yaw against the body (rad), `pitch`: camera elevation (rad), `hands`: { L, R } overrides (see `armTarget`), `crouch`: 0 … 1. */
   update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
     this.time += dt;
-    const da = this.danceAmt = THREE.MathUtils.lerp(this.danceAmt ?? 0, dance ? 1 : 0, Math.min(1, dt * DANCE.ease)); // #1622: 0 … 1 into the floss
+    // #1622 / #1757: `dance` 1 (or true) = the floss, 2 = Gangnam Style; each blends in and out on its own, `danceAmt` = their sum
+    const want = dance === 2 ? 2 : dance ? 1 : 0, ez = Math.min(1, dt * DANCE.ease);
+    const fa = this.flossAmt = THREE.MathUtils.lerp(this.flossAmt ?? 0, want === 1 ? 1 : 0, ez), ga = this.gangnamAmt = THREE.MathUtils.lerp(this.gangnamAmt ?? 0, want === 2 ? 1 : 0, ez);
+    this.danceAmt = fa + ga;
     const walking = speed > A.walkSpeed, k = THREE.MathUtils.clamp(speed / 1.6, 0.4, 1.4);
     if (walking) this.phase += dt * speed / STRIDE * Math.PI * 2;
     this.gait = THREE.MathUtils.lerp(this.gait ?? 0, walking ? 1 : 0, Math.min(1, dt * 8));
@@ -1255,13 +1272,19 @@ export class Avatar {
     const breathe = Math.sin(this.time * 1.7) * 0.004;
     // #1149: crouching is a deep squat (AVATAR_CROUCH), every term linear in `crouch` (the head boxes follow the same hips and lean)
     const FL = DANCE.floss, flossPh = this.time * FL.hz * Math.PI * 2, flossSn = Math.sin(flossPh), flossCs = Math.cos(flossPh);
-    const sway = -flossSn * FL.hipSway * da, flossBob = FL.bob * (1 - Math.cos(2 * flossPh)) / 2 * da;
+    const sway = -flossSn * FL.hipSway * fa, flossBob = FL.bob * (1 - Math.cos(2 * flossPh)) / 2 * fa;
+    const GN = DANCE.gangnam, gp = ga > 0.001, gPh = this.time * GN.hz * Math.PI; // #1757: one leg per beat, half a sine cycle per beat
+    const gBob = gp ? (GN.squat + GN.bounce * Math.abs(Math.cos(gPh))) * ga : 0; // bent knees, lowest as the feet land on each beat
     const c = THREE.MathUtils.clamp(crouch, 0, 1), F = CR.feet, step = sw * (1 - CR.step * c);
     const rp = react ? reactionPose(react.kind, react.age, [HIP - 0.02, CR.hipForward * c]) : null;
-    const hipY = HIP - 0.02 - CR.hipDrop * c + (rp?.dy ?? 0) + kissLift * kiss - flossBob + breathe - 0.012 * g * Math.abs(Math.cos(ph)) * k, hipZ = CR.hipForward * c;
+    const hipY = HIP - 0.02 - CR.hipDrop * c + (rp?.dy ?? 0) + kissLift * kiss - flossBob - gBob + breathe - 0.012 * g * Math.abs(Math.cos(ph)) * k, hipZ = CR.hipForward * c;
     const lift = (v) => Math.max(0, v) * 0.12 * g * k * (1 - 0.5 * c);
     const fx = 0.11 + (F.x - 0.11) * c, fz = 0.02 + (F.z - 0.02) * c;
     const feet = [[fx - sway, F.y + lift(Math.cos(ph)), fz + step], [-fx - sway, F.y + lift(-Math.cos(ph)), fz - step]];
+    if (gp) feet.forEach((f, i) => { // #1757: a gallop, a little wider, one foot up and forward per beat
+      const side = i ? -1 : 1, up = Math.max(0, side * Math.sin(gPh));
+      f[0] += (side * GN.footX - f[0]) * ga; f[1] += GN.lift * up * ga; f[2] += GN.footFwd * up * ga;
+    });
     const armSwing = -step * 0.55;
     const rest = (side, swing) => {
       const r = armTarget.rest(side, swing), R = CR.rest;
@@ -1270,10 +1293,14 @@ export class Avatar {
     // a hand held out (a weapon, a wave) moves with the shoulder as the body goes down
     const held = (h) => { if (!c || !h) return h; const d = shoulderShift(c, hipY - (HIP - 0.02 + breathe), hipZ); return { ...h, at: h.at.map((v, i) => v + d[i]) }; };
     let handL = held(hands.L) ?? rest(1, armSwing), handR = held(hands.R) ?? rest(-1, -armSwing);
-    if (da > 0.001) { // #1622: the floss. Both straight arms swing across the hips one way while the hips go the other; the arms pass each other in depth.
-      const mix = (a, b) => ({ at: a.at.map((v, i) => v + (b.at[i] - v) * da), pole: a.pole.map((v, i) => v + (b.pole[i] - v) * da) });
-      if (!hands.L) handL = mix(handL, flossArm(1, 1, flossSn, flossCs));
-      if (!hands.R) handR = mix(handR, flossArm(-1, -1, flossSn, flossCs));
+    if (fa > 0.001) { // #1622: the floss. Both straight arms swing across the hips one way while the hips go the other; the arms pass each other in depth.
+      if (!hands.L) handL = mixHand(handL, flossArm(1, 1, flossSn, flossCs), fa);
+      if (!hands.R) handR = mixHand(handR, flossArm(-1, -1, flossSn, flossCs), fa);
+    }
+    if (gp) { // #1757: reins / lasso, at the dropped shoulders
+      const gh = gangnamHands(this.time, gPh, hipY + SH[1] * 0.98);
+      if (!hands.L) handL = mixHand(handL, gh[0], ga);
+      if (!hands.R) handR = mixHand(handR, gh[1], ga);
     }
     if (rp && !c) { // #1639: a BIO reaction (a crouch keeps its own pose)
       if (!hands.L) handL = mixHand(handL, rp.hands[0], rp.amt);
@@ -1284,7 +1311,7 @@ export class Avatar {
     this.material.userData.u.uKiss.value = kiss;
     if (kiss) this.material.userData.u.uMouth.value = 0;
     const knee = c ? CR.knees.map((v, i) => KNEE_REST[i] + (v - KNEE_REST[i]) * c) : KNEE_REST;
-    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: 0.03 * g + (rp?.lean ?? 0) + FL.lean * da + CR.lean * c - KISS.lean * kiss * kissReach, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
+    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: 0.03 * g + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
       knee, flat: c, toes: F.turn * c });
     if (sway) this.bones.hips.position.x = sway; // #1622: the feet targets were moved the other way, so they stay planted
   }

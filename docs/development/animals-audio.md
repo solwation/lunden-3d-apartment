@@ -579,11 +579,11 @@ passes its overlay/measurement readiness, wall and ordinary `use` callbacks, and
 the DJ key handler before movement keys. This is scoped input/room evidence, not a full-world
 startup, physical-phone or hardware-performance claim. Clubhouse gameplay is excluded downstream.
 
-### Playroom floss dance (#1622)
+### Playroom dances: floss (#1622) and Gangnam Style (#1757)
 
-**Dance button (#1636):** everybody inside the room gets their own `#dance-btn` ("Dansa" / "Sluta dansa", key **G** shown on the
+**Dance button (#1636):** everybody inside the room gets their own `#dance-btn` ("Dansa floss" / "Gangnam Style" / "Sluta dansa" since #1757, key **G** shown on the
 button on desktop) while `PlayroomMusic.canDance` (inside and playing, or already dancing) — no need to aim at the booth or speaker.
-main.js `updateDanceButton()` runs each frame; click/tap or G calls `toggleDance()`. On touch it is a short pill in a third ring above
+main.js `updateDanceButton()` runs each frame; click/tap or G calls main.js `toggleDance()`, which cycles the dances (#1757). On touch it is a short pill in a third ring above
 the power button (`hudicons.css`) and is registered in `touchlayout.js` TOUCH_CONTROLS. The speaker menu row below stays. Test:
 `tools/playroommusictest.mjs`.
 
@@ -598,6 +598,22 @@ moved the other way (planted), both arms sweep across the hips (one forward, one
 no new mesh, light or message. Tunables: `DANCE` in `src/config.js` (*guess*, by eye). The music itself is
 shared since #1624 (section below). Tests: `node --test tools/playroommusictest.mjs cloudflare/players.test.mjs` and
 `tools/flosstest.cjs GAME WORKER OUT [--render]` (dancer + observer through the Worker, mirror, two render phases).
+
+**Gangnam Style (#1757):** a second dance, `dn: 2`. The dance button / G (`PlayroomMusic.cycleDance`) steps
+not dancing → floss → Gangnam Style → stop, and its label names the next step (`Dansa floss`, `Gangnam Style`, `Sluta dansa`;
+`danceCode` is what main.js `state()` sends). The speaker menu offers `Dansa floss` and `Dansa Gangnam Style` side by side. The
+DJ booth's physical button still calls `toggleDance` (floss / stop any dance). Switching keeps `danceAt`, and the end rules
+are the floss's. Worker `cleanState` keeps a literal `1` or `2` (late welcome too); `Ghost.push`, the mirror and `g.dance` carry
+0/1/2. An old client that gets `dn: 2` simply shows no dance (it only accepted `1`). `Avatar.update({ dance })` takes 1 (or
+`true`) / 2 and blends `flossAmt` and `gangnamAmt` separately (`danceAmt` is their sum): hips down `squat` plus a per-beat
+`bounce` (bent knees through the leg IK), a gallop with one foot lifted and forward per beat, wrists crossed in front holding
+the reins (`gangnamHands`), and in sections 2 and 4 of every four (`section` s, smoothstep `blend`) the left, then the right
+hand circles a lasso overhead while the other keeps the reins. Existing joints only; no mesh, light or message. Tunables:
+`DANCE.gangnam` (*guess*, by eye, ~132 beats a minute). No music or lyrics were added; the dance follows the room's playlist.
+Tests: the `#1757` cases in `tools/playroommusictest.mjs` and `cloudflare/players.test.mjs`, `tools/flosstest.cjs` (Gangnam
+phase: observer switch, bent knees, bounce, alternating feet, crossed reins, both lassos, mirror; `--render` adds four Gangnam
+shots) and `tools/dancebuttontest.cjs GAME OUT` (production button code + CSS with a real `PlayroomMusic`: desktop clicks,
+844×390 / 390×844 taps, pill inside the screen and clear of the other touch controls).
 
 ### BIO reactions: cry, laugh, scream (#1639)
 

@@ -2926,7 +2926,7 @@ const weaponIs = { saber: (h) => h === saber, nerf: (h) => toys.blasters.include
   rifle: (h) => !!h?.isRifle, ball: (h) => h === ball, bow: (h) => !!bow && h === bow, web: (h) => !h && suit.worn }; // (the jetpack is no weapon, #1705)
 const weaponKey = () => { if (player.riding) return ''; const h = heldItem(); return COMBAT.weapons.find((k) => weaponIs[k]?.(h)) ?? ''; };
 const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey, mirrored: () => !rest.active,
-  state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, look: [0, camera.rotation.x], c: player.crouched, dn: playroom.music.dancing ? 1 : 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 ? 2 : 1) : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, fb: fishing.wire, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
+  state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, look: [0, camera.rotation.x], c: player.crouched, dn: playroom.music.danceCode ?? 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 ? 2 : 1) : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, fb: fishing.wire, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
 const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, basket: ball, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows, life, fruit, fish, chicken, fries, beer, beerCans,
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
   onDie: () => { binoculars.setZoom(false); goToStart(() => respawnOutdoors(player)); badge('💀 Slut på liv – du lever igen', false); } }); // only the place changes (#665)
@@ -3036,10 +3036,10 @@ const danceBtn = document.getElementById('dance-btn');
 let danceShown = '';
 function updateDanceButton() {
   const show = playroom.inside && playroom.music.canDance && !reading && !measure.active && !isAvatarCustomizerOpen();
-  const key = show ? (playroom.music.dancing ? 'Sluta dansa' : 'Dansa') : '';
-  if (key !== danceShown) { danceShown = key; danceBtn.hidden = !show; if (show) danceBtn.innerHTML = `${key}<kbd>G</kbd>`; }
+  const code = playroom.music.danceCode, key = show ? (code === 2 ? 'Sluta dansa' : code === 1 ? 'Gangnam Style' : 'Dansa floss') : ''; // #1757: the next step of floss → Gangnam → stop
+  if (key !== danceShown) { danceShown = key; danceBtn.hidden = !show; if (show) { danceBtn.innerHTML = `${key}<kbd>G</kbd>`; danceBtn.title = code === 1 ? 'Byt till Gangnam Style' : key; } }
 }
-const toggleDance = () => { if (!reading && playroom.inside) playroom.music.toggleDance(); updateDanceButton(); };
+const toggleDance = () => { if (!reading && playroom.inside) playroom.music.cycleDance(); updateDanceButton(); };
 danceBtn.addEventListener('click', toggleDance);
 // #1639: cry / laugh / scream in the BIO (the clubhouse's film room, seated or standing): three buttons (touch) / keys Y U I; our
 // mirror image plays it and the others in range see it (ghosts.react, a one-shot 'rx' message).

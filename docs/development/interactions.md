@@ -55,8 +55,11 @@ A drag remains camera look, and secondary/cancelled touches do nothing. All cont
 are labelled on the table, with track displays and concise prompts; there is no DJ HUD
 choice menu. Since #1667 every target/label stays on the real black panel; active
 PLAY/SLUMP/DANSA buttons glow and depress with their labels. DANSA lights while anybody
-in the room dances (the existing shared pose); the action still changes only your dance.
+in the room dances (the existing shared pose); the action still changes only your dance (floss / stop).
 See [audio](animals-audio.md#dj-bench-physical-two-deck-controls-1664).
+The room-wide `#dance-btn` (G on desktop, the `dance-btn` pill in `touchlayout.js` TOUCH_CONTROLS on touch) cycles
+floss → Gangnam Style → stop since #1757 and names the next step; `tools/dancebuttontest.cjs` checks the labels,
+clicks/taps and the pill's place at 844×390 and 390×844 ([audio](animals-audio.md#playroom-dances-floss-1622-and-gangnam-style-1757)).
 
 Cats (#1061): free-hand E / touch action takes adults and kittens into both arms; click / Krama cuddles, E on floor/bed/sofa puts them down. Occupied-hand E still pets. The shared `MieleHeld` preserves cat scale and adjusts hug grips; carry purrs cancel on release/hide/bicycle stow. See [animal behavior and verification](animals-audio.md#cat-and-sound).
 ## Two-point measurement (#1069)

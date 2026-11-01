@@ -170,7 +170,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     if (prev && Math.hypot(p[0] - prev.p.x, p[1] - prev.p.y, p[2] - prev.p.z) > G.jump) this.snaps.length = 0; // a teleport (#1319: into / out of the children's room): appear there, no streak across the map
     const last = this.snaps.at(-1);
     if (last && t - last.t > 1000 / G.hz * 1.5) this.snaps.push({ t: t - 1000 / G.hz, p: last.p, r: last.r, c: last.c, pose: last.pose, look: last.look, bk: last.bk, dn: last.dn });
-    this.snaps.push({ t, look, dn: dn === 1 ? 1 : 0, bk: this.bikeWire, p: new THREE.Vector3(...p), r, c: c === true ? 1 : 0, pose: pose >= 1 && pose <= 3 && Number.isInteger(pose) ? pose : 0 });
+    this.snaps.push({ t, look, dn: dn === 1 || dn === 2 ? dn : 0, bk: this.bikeWire, p: new THREE.Vector3(...p), r, c: c === true ? 1 : 0, pose: pose >= 1 && pose <= 3 && Number.isInteger(pose) ? pose : 0 });
     if (this.snaps.length > 8) this.snaps.splice(0, this.snaps.length - 8);
   }
 
@@ -290,7 +290,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.root.rotation.y = lerpAngle(a.r, b.r, k);
     this.crouch = THREE.MathUtils.lerp(a.c, b.c, k);
     this.pose = (k < 1 ? a : b).pose;
-    this.dance = (k < 1 ? a : b).dn === 1; // #1622
+    this.dance = (k < 1 ? a : b).dn ?? 0; // #1622 / #1757: 0, 1 floss or 2 Gangnam Style (validated in push)
     this.look = [THREE.MathUtils.lerp(a.look[0], b.look[0], k), THREE.MathUtils.lerp(a.look[1], b.look[1], k)];
     this.bikeAt(a, b, k);
     const d = this.root.position.distanceTo(eye), sec = b === a ? 0 : (b.t - a.t) / 1000;
@@ -355,7 +355,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     let react = null; // #1639
     if (this.react) { const ra = (t - this.react.start) / 1000; if (ra >= REACT.duration) this.react = null; else if (!kissed && !hugged) react = { kind: this.react.kind, age: ra }; }
     const amount = Math.max(kissed, hugged); // (the look and gait give way to either embrace)
-    this.avatar.update(dt, { speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: this.crouch ?? 0, dance: !!this.dance && !amount && !react, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0 });
+    this.avatar.update(dt, { speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0 });
     applyRestPose(this.avatar, this.pose, this.look, react);
     if (this.bikeMesh) this.poseBike(dt, Math.hypot(vx, vz), turn);
     this.heldCat.update(this.avatar, this.root);
@@ -550,7 +550,7 @@ export class Ghosts {
     s.pose = s.pose >= 1 && s.pose <= 3 && Number.isInteger(s.pose) ? s.pose : 0; // 3: long sit (#1237)
     s.sp = s.sp === true;
     s.jp = s.jp === 1 || s.jp === 2 ? s.jp : 0;
-    s.dn = s.dn === 1 ? 1 : 0; // #1622: floss, offered while the playroom music plays
+    s.dn = s.dn === 1 || s.dn === 2 ? s.dn : 0; // #1622 floss / #1757 Gangnam Style, offered while the playroom music plays
     s.hi = cleanHeldCategory(s.hi);
     s.bk = Number.isFinite(s.bk) ? s.bk : null;
     s.cq = Array.isArray(s.cq) ? s.cq.map((v) => Math.round(v * 100) / 100) : null; // #1637: the billiard cue while aiming / charging
@@ -572,7 +572,7 @@ export class Ghosts {
       const sent = this.sent;
       if (t - this.lastSent >= 1000 / G.hz && (!sent || sent !== this.prev || this.sentAv !== this.avatarCode)) {
         const p = this.prev ?? s;
-        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.hi ? { hi: p.hi } : {}), ...(p.c ? { c: true } : {}), ...(p.pose ? { pose: p.pose } : {}), ...(p.pose !== 2 ? { look: p.look.map(v => Math.round(v * 100) / 100) } : {}), ...(p.sp ? { sp: true } : {}), ...(p.jp ? { jp: p.jp } : {}), ...(p.dn ? { dn: 1 } : {}), ...(p.bk !== null && p.bk !== undefined ? { bk: Math.round(p.bk * 100) / 100 } : {}), ...(p.cat ? { cat: p.cat } : {}), ...(p.cq ? { cq: p.cq } : {}), ...(p.fb ? { fb: p.fb } : {}), ...(this.avatarCode ? avatarWire(this.avatarCode) : {}) }));
+        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}), ...(p.hi ? { hi: p.hi } : {}), ...(p.c ? { c: true } : {}), ...(p.pose ? { pose: p.pose } : {}), ...(p.pose !== 2 ? { look: p.look.map(v => Math.round(v * 100) / 100) } : {}), ...(p.sp ? { sp: true } : {}), ...(p.jp ? { jp: p.jp } : {}), ...(p.dn ? { dn: p.dn } : {}), ...(p.bk !== null && p.bk !== undefined ? { bk: Math.round(p.bk * 100) / 100 } : {}), ...(p.cat ? { cat: p.cat } : {}), ...(p.cq ? { cq: p.cq } : {}), ...(p.fb ? { fb: p.fb } : {}), ...(this.avatarCode ? avatarWire(this.avatarCode) : {}) }));
         this.sent = p; this.sentAv = this.avatarCode; this.lastSent = this.lastBeat = t; this.messages++;
       }
     }
@@ -739,7 +739,7 @@ export class Ghosts {
     g.look = m.look;
     g.avatar.setSuit(m.sp);
     g.setJetpack(m.jp);
-    g.dance = m.dn === 1; // #1622
+    g.dance = m.dn === 1 || m.dn === 2 ? m.dn : 0; // #1622 / #1757
     g.react = this.myReact ?? null; // #1639 (a Ghost drops it when over)
     g.root.position.copy(m.p);
     g.root.rotation.y = m.r;

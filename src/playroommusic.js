@@ -9,7 +9,7 @@ export { PLAYROOM_TRACKS };
 // Local clubhouse transport. Media is created only by a visitor's play action.
 export class PlayroomMusic {
   constructor() {
-    this.active = false; this.state = 'off'; this.volume = SONOS.start; this.generation = 0; this.index = 0; this.mixing = null; this.dancing = false; this.danceAt = null;
+    this.active = false; this.state = 'off'; this.volume = SONOS.start; this.generation = 0; this.index = 0; this.mixing = null; this.dancing = false; this.danceKind = 1; this.danceAt = null;
     this.shuffle = false; this.deckSide = 0; // #1659: shuffle mode and active turntable deck (0: left, 1: right)
     this.net = null; this.remote = null; // #1624: { ready(), send(msg) } set by main.js; a room state that arrived before we were inside
     this.hidden = () => { if (document.hidden) this.stopLocal(); };
@@ -103,16 +103,21 @@ export class PlayroomMusic {
       ]),
       { label: `Volym − (${this.volume}/${SONOS.steps})`, reason: this.volume === 0 ? 'Lägsta volym' : '', run: () => this.setVolume(this.volume - 1) },
       { label: `Volym + (${this.volume}/${SONOS.steps})`, reason: this.volume === SONOS.steps ? 'Högsta volym' : '', run: () => this.setVolume(this.volume + 1) },
-      // #1622: the floss is offered only while the music plays (not paused or off)
-      ...(this.state === 'playing' || this.dancing ? [{ label: this.dancing ? 'Sluta dansa' : 'Dansa floss', run: () => this.dancing ? this.stopDance() : this.startDance() }] : []),
+      // #1622: the floss is offered only while the music plays (not paused or off); #1757: and Gangnam Style beside it
+      ...(this.state === 'playing' || this.dancing ? [{ label: this.dancing ? 'Sluta dansa' : 'Dansa floss', run: () => this.dancing ? this.stopDance() : this.startDance(1) }] : []),
+      ...(this.state === 'playing' && !this.dancing ? [{ label: 'Dansa Gangnam Style', run: () => this.startDance(2) }] : []),
       ...(this.state === 'off' || !cur ? [] : [{ label: `Låt: ${cur.title} (${cur.artist})`, reason: `${this.index + 1}/${PLAYROOM_TRACKS.length}`, run: () => {} }]),
     ];
   }
-  /** #1622: the dance is sent as `dn: 1` in the player state (main.js); it ends with the music, a pause, leaving or walking away. */
+  /** #1622: the dance is sent as `dn: 1` (floss) / `2` (Gangnam Style, #1757) in the player state (main.js); it ends with the music, a pause, leaving or walking away. */
   /** #1636: the dance button/key (main.js) is offered to everybody inside while the music plays (or while they are already dancing, to stop). */
   get canDance() { return this.active && (this.state === 'playing' || this.dancing); }
-  toggleDance() { if (!this.canDance) return false; if (this.dancing) this.stopDance(); else this.startDance(); return true; }
-  startDance() { if (this.state === 'playing') { this.dancing = true; this.danceAt = null; } }
+  toggleDance() { if (!this.canDance) return false; if (this.dancing) this.stopDance(); else this.startDance(); return true; } // the DJ booth's button: floss / stop
+  /** #1757: the dance button / G: not dancing → floss → Gangnam Style → stop. Switching dance keeps where it began (`DANCE.stepAway`). */
+  cycleDance() { if (!this.canDance) return false; if (!this.dancing) this.startDance(1); else if (this.danceKind === 1) this.danceKind = 2; else this.stopDance(); return true; }
+  /** The `dn` sent in the player state: 0 not dancing, 1 floss, 2 Gangnam Style. */
+  get danceCode() { return this.dancing ? this.danceKind : 0; }
+  startDance(kind = 1) { if (this.state === 'playing') { this.dancing = true; this.danceKind = kind === 2 ? 2 : 1; this.danceAt = null; } }
   stopDance() { this.dancing = false; this.danceAt = null; }
   /** #1645: the four ceiling speakers' world positions; the mix then reaches the master through one positional (panner) source per speaker. */
   setSpeakers(positions) { this.speakers = positions; }

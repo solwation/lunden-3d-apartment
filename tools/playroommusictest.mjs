@@ -66,6 +66,19 @@ test('#1622: the floss is offered only while the music plays and ends with pause
  m.play();row().run();m.setInside(false);assert.equal(m.dancing,false);m.dispose();
 });
 
+test('#1757: the dance button cycles floss → Gangnam Style → stop; the speaker menu offers both; same end rules',()=>{
+ const m=new PlayroomMusic();m.setInside(true);assert.equal(m.cycleDance(),false,'no music');assert.equal(m.danceCode,0);
+ m.play();const gn=()=>m.options().find((o)=>/Gangnam/.test(o.label));assert.equal(gn().label,'Dansa Gangnam Style');
+ assert.equal(m.cycleDance(),true);assert.equal(m.danceCode,1);assert.equal(gn(),undefined,'only Sluta dansa while dancing');
+ m.tick({x:1,z:1});m.cycleDance();assert.equal(m.danceCode,2);assert.equal(m.dancing,true);
+ m.tick({x:1.3,z:1});assert.equal(m.danceCode,2,'switching keeps where the dance began');m.tick({x:1.5,z:1});assert.equal(m.danceCode,0,'walking away ends Gangnam too');
+ m.cycleDance();m.cycleDance();m.cycleDance();assert.equal(m.danceCode,0,'third press stops');
+ gn().run();assert.equal(m.danceCode,2,'the menu starts Gangnam directly');m.pause();m.tick({x:0,z:0});assert.equal(m.danceCode,0,'a pause ends it');
+ m.play();gn().run();m.stop();assert.equal(m.danceCode,0);m.play();gn().run();m.setInside(false);assert.equal(m.danceCode,0);
+ m.setInside(true);m.play();gn().run();assert.equal(m.toggleDance(),true);assert.equal(m.dancing,false,'the DJ booth button still stops any dance');
+ m.toggleDance();assert.equal(m.danceCode,1,'the DJ booth button starts the floss as before');m.dispose();
+});
+
 test('#1636: the dance button is offered to everybody inside while the music plays, wherever they aim',()=>{
  const m=new PlayroomMusic();assert.equal(m.canDance,false);m.setInside(true);assert.equal(m.canDance,false,'no music');assert.equal(m.toggleDance(),false);
  m.play();assert.equal(m.canDance,true);assert.equal(m.toggleDance(),true);assert.equal(m.dancing,true);assert.equal(m.canDance,true,'still offered to stop');
