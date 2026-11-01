@@ -146,6 +146,26 @@ const setup = async () => {
     });
     check(again.rawLeft, 'a raw fish cannot be eaten (no "Ät", a right click takes no bite)', again);
     check(again.took && again.state === 'cooked' && again.pts === 0 && again.sameT, 'another fish cooked and taken off pays no second quest reward', again);
+    // 5. #1760: the pan with a fish in it is not put away in its drawer (the fish never disappears into it)
+    const away = await p(() => {
+      const A = T.a, P = A.pan, z = A.world.hob.zone; A.heldItem()?.remove(); T.Fi.fish = T.Fi.fish.filter((f) => !f.broken); P.wash(); A.world.hob.set(true);
+      const fish = T.Fi.addFish({ species: 'gärs', cm: 20, raw: true }, z.clone()); fish.take();
+      if (!P.onHob) { if (!P.held) P.take(); P.placeAt(z.clone()); }
+      const f0 = T.aim(z.clone().setY(z.y + 0.02), z.x - 0.9, z.z), dbg = { kind: f0?.kind, name: f0?.name, blocked: !!f0?.blocked, onHob: P.onHob, held: T.held(), pHeld: P.held, pPlaced: P.placed, dirty: P.dirty };
+      A.use(f0); A.step(0.05);
+      const inPan0 = fish.model.parent === P.model;
+      P.take(); A.step(0.05);
+      const d = A.world.panDrawer, b = P.backTarget, out = { dbg, inPan0, blocked: !!b.blocked, text: b.blockedText };
+      if (d.open) d.open = false;
+      P.putBack(); A.step(0.05); // the F / hand-switch path too
+      const out2 = { ...out, panHeldOrOut: P.held || P.placed, panNotInDrawer: P.model.parent !== d.object, fishInPan: fish.model.parent === P.model, fishAlive: !fish.broken, heat: fish.heat?.kind };
+      T.a.pan.__fish = fish; return out2;
+    });
+    check(away.inPan0 && away.blocked && away.text === 'Ta ur maten först' && away.panNotInDrawer && away.fishInPan && away.fishAlive && away.heat === 'pan', 'the pan with a fish in it cannot be put back in its drawer (blocked, "Ta ur maten först"; the fish stays in the pan, still cooking)', away);
+    await p(() => { const A = T.a, P = A.pan, z = A.world.hob.zone; P.placeAt(z.clone()); T.heat(1); T.stand(z.x - 0.75, z.z + 0.15); T.look(z.x, z.y + 0.02, z.z); A.step(0.016); });
+    const after = await p(() => { const A = T.a, P = A.pan, fish = P.__fish; return { onHob: P.onHob, cook: fish.cook > 0, inPan: fish.model.parent === P.model }; });
+    check(after.onHob && after.cook && after.inPan, 'after the refusal the pan goes back on the hob and the fish keeps frying', after);
+    await shot('6-pan-med-fisk-stannar.png');
     check(errors.length === 0, 'no page errors', errors);
   } finally { await browser.close(); }
   console.log(failed ? `${failed} FAILED` : 'ALL PASSED'); process.exitCode = failed ? 1 : 0;

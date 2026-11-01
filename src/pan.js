@@ -39,8 +39,8 @@ export class Pan extends Holdable {
     const smear = new THREE.Mesh(new THREE.CircleGeometry(P.d * .35, 24).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x6d4c22, transparent: true, opacity: .45, depthWrite: false }));
     smear.position.y = .0045; smear.visible = false; smear.raycast = () => {}; this.model.add(smear); this.smear = smear;
     Object.defineProperties(this.backTarget, {
-      blocked: { get: () => !!this.egg || (LIFE.rules.washFirst && this.dirty) },
-      blockedText: { get: () => this.egg ? 'Ta ur maten först' : 'Diska stekpannan först' },
+      blocked: { get: () => !!this.egg || !!this.occupied?.() || (LIFE.rules.washFirst && this.dirty) },
+      blockedText: { get: () => this.egg || this.occupied?.() ? 'Ta ur maten först' : 'Diska stekpannan först' },
     });
     this.goHome();
   }
@@ -74,7 +74,7 @@ export class Pan extends Holdable {
   setDirty(on) { this.clean = on ? 'dirty' : 'clean'; if (this.smear) this.smear.visible = on; }
   wash() { this.setDirty(false); }
   putBack() {
-    if (this.held && (this.egg || LIFE.rules.washFirst && this.dirty) && this.eggs) {
+    if (this.held && (this.egg || this.occupied?.() || LIFE.rules.washFirst && this.dirty) && this.eggs) {
       // F / a hand switch must release the hand without hiding a dirty pan or its food.
       const p = this.lastPlaced?.pos ?? this.eggs.life.feet().pos;
       this.placeAt(new THREE.Vector3(...p)); return;
