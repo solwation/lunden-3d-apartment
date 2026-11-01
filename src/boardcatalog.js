@@ -34,6 +34,7 @@ export const COUNTERS = {
   falls: { perMin: 20, start: 2000 },
   burnt: { perMin: 10, start: 1000 },
   pingpingHugs: { perMin: 30, start: 2000 },
+  fishCaught: { perMin: 6, start: 500 }, // #1754: a cast, a wait of seconds at the least and a strike (FISHING.wait.min)
   task_makeSandwich: { perMin: 3, start: 500 },
   task_resetKitchen: { perMin: 3, start: 500 },
   task_snackClean: { perMin: 3, start: 500 },

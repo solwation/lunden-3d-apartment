@@ -45,6 +45,7 @@ src/life.js            the life simulator (epic #364) glue; the `&life` develope
                        utensil drawer's towels, the cutting board on its long edge against the splashback between sink and hob
                        (store 'boardRack', only the board, "Ställa skärbrädan på sin plats")
 src/tasks.js           optional everyday tasks (#392): TASK_NOTE card on the inside of the kitchen cup-cabinet door follows its hinge and opens a Swedish panel (E/click/touch).
+                       #1754: `secretQuests()` (main.js) adds completed hidden one-time quests (src/fishquest.js) on top of the list.
                        Domain events prepared/bite/ate, washed/dishwasher, wipe, rubbishOut and vacuumed complete goals in any
                        order; real kitchen worktops only, empty bins need no disposal. Sets deduplicate goals; life.keepPart('tasks')
                        saves v3 daily selection/progress alongside immediate score-record receipts, without replaying bonuses on load. SCORE.tasks holds per-id first/repeat

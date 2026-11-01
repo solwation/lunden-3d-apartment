@@ -454,6 +454,25 @@ export class TasksManager {
       bonus.textContent = `Alla uppdrag avklarade · +${this.bonusPoints}`;
       this.listEl.append(bonus);
     }
+    // #1754: hidden one-time quests (src/fishquest.js) join the list (on top) only once they are completed (`secretQuests`, set by main.js)
+    for (const q of this.secretQuests?.() ?? []) {
+      const card = document.createElement('div');
+      card.className = 'task-card done secret-quest';
+      card.dataset.quest = q.id;
+      const titleRow = document.createElement('div');
+      titleRow.className = 'task-title';
+      titleRow.innerHTML = `<span>🎣 Hemligt uppdrag: ${q.title}${q.points ? ` · +${q.points}` : ""}</span><span class="task-badge">✓ Utfört</span>`;
+      const goals = document.createElement('ul');
+      goals.className = 'task-goals';
+      for (const g of q.steps) {
+        const li = document.createElement('li');
+        li.className = g.done ? 'goal-done' : '';
+        li.innerHTML = `<span>${g.done ? '☑' : '☐'}</span> <span>${g.label}${g.optional ? ' (frivilligt)' : ''}</span>`;
+        goals.append(li);
+      }
+      card.append(titleRow, goals);
+      this.listEl.append(card);
+    }
     for (const task of this.tasks) {
       if (!task.active) continue;
       const card = document.createElement('div');

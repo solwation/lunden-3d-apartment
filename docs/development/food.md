@@ -42,6 +42,8 @@ src/toaster.js         the toaster (#401, TOASTER): an OBH Nordica Piano Black (
                        #442), the cord along the worktop and up the splashback to it; E on the lever / front toasts (glowing slots, tick + hum, pops with a pling after
                        TOASTER.seconds; again = STOP; unplugged: "Brödrosten är inte inkopplad"); taking it unplugs it; F: home, unplugged;
                        keep.js keeps it plugged in (`keepState` / `loadKeep`, a hook any Holdable can use); empty toasting for now (#394)
+src/fishing.js         #1754: the fish caught in Höje å cooks on either kettle grill or in the pan (raw/cooked/burnt) and is eaten; see
+                       [animals and audio](animals-audio.md#cooking-the-catch-and-the-hidden-fishing-quest-1754-part-3-of-1751)
 src/chicken.js         #708: whole fridge chicken cooks only on the existing courtyard grill; pan attempts keep it
                        in hand with a clear hint. E lifts the whole bird from the grate; off-grill cooked parts can be eaten.
                        CHICKEN.cookSeconds/burnSeconds and SCORE.each.grilledChicken=35 are guessed game parameters.

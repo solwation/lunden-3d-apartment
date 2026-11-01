@@ -311,7 +311,7 @@ const PARTS = {
     },
   },
 
-  fishing: { // #1753: the fish caught in Höje å (species, length, raw; lying where, or in the hand); the rod itself is one of the `things`
+  fishing: { // #1753: the fish caught in Höje å (species, length, raw; lying where, or in the hand; #1754: cooking, on a grill / in the pan); the rod itself is one of the `things`
     save: ({ fishing }) => fishing?.saveState() ?? null,
     load: ({ fishing }, s) => fishing?.loadState(s),
   },

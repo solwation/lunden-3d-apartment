@@ -3594,6 +3594,7 @@ export const SCORE = {
     washed: 0.3, scraped: 0.2, dishwasher: 3, rubbishOut: 3, // … a rubbish bag carried out to the drop-off (#387)
                 // … and a dishwasher programme run to the end (#385)                            // a thing washed up by hand, a plate scraped into the bin (#383)
     fish: 0.5, fried: 2, chicken: 1, cooked: 8, brews: 2, // cooked retains legacy earned points (#160)
+    fishEaten: 3, fishCooked: 4, // #1754: a caught fish eaten up / cooked through without burning (*guess*; the catch itself scores by species, FISHING.points)
     grilledChicken: 35, // #708: one whole chicken grilled golden (*guess*, issue suggests 30–40); once per bird
     fries: 0.2,                                           // per fry eaten (#301): a bunch is four
     cucumberSlices: 0.2,                                  // a slice of cucumber cut (#376)
@@ -3631,6 +3632,7 @@ export const SCORE = {
     hotdogs: 20, // #1124: a hot dog (a grilled sausage in a bun) eaten: the first time, then `again` (guess)
     sandwiches: 40, // a sandwich made and eaten (#380): the first of each combination ("ost- och gurkmackan" …), then `again`
     tasks: 30, // legacy generic rewards (#392), retained only for #709 score migration
+    fishQuest: 150, // #1754: the hidden fishing quest (src/fishquest.js) completed, once; no `again`. The hardest daily task gives 45 the first time (*guess*)
     handBrew: 10, // the first pot brewed by hand: water and coffee filled first (#334); no `again` (each brew has `each.brews`)
   },
   again: {
@@ -7356,6 +7358,13 @@ export const FISHING = {
   keep: 6, // caught fish kept in the world (lying about or in the hand); a seventh takes the oldest one lying about away
   remoteDist: 60, // m: other players' floats are drawn within this distance
   drawDist: 45, // m: the rod lying about is drawn only this close (one draw call; none at the start)
+  // #1754: cooking the catch on a kettle grill (src/grill.js, lit) or in the pan on a lit hob (src/pan.js). `done` / `burn` = s of
+  // heat until it is cooked through / burnt (fish fingers 6 / 18, the whole chicken 10 / 30); `rate` per heat source (the pan is
+  // hotter and closer); `bites` to eat it; `golden` / `char` the skin's colour cooked / burnt. All *guess*.
+  cook: { done: 16, burn: 42, rate: { grill: 1, pan: 1.25 }, bites: 4, golden: 0xb4783c, char: 0x261c14, cooldown: 0.45 },
+  // #1754: points per fish caught by species (rarer = more; the RIVER_FISH weights 5 / 4 / 2.5 / 1.2 / 1.2 / 0.4), counted like the cat
+  // breeds (stats.js rawScore, stats.fishBySpecies). *guess*
+  points: { mört: 4, abborre: 5, braxen: 7, gädda: 12, öring: 15, ål: 25 },
 };
 
 /**

@@ -799,3 +799,23 @@ through the player state `fb` = `[x, y, z, bite]` (cloudflare/players.js `cleanF
 (from the rod proxy's `ROD_PROXY_TIP`) within `remoteDist` m. While the line is out the players connection stays open (`ghosts.keepConnected`),
 since an angler stands still. Tests: `node --test cloudflare/riverfish.test.mjs cloudflare/players.test.mjs src/heldcategory.test.mjs`; browser
 `tools/fishingtest.cjs` (two clients); `tools/ghostitemtest.cjs`. Images: [docs/verification/1753](../verification/1753/).
+
+## Cooking the catch and the hidden fishing quest (#1754, part 3 of #1751)
+
+`src/fishing.js` `CaughtFish`, tunables `FISHING.cook` / `FISHING.points` (all *guess*). A caught fish not yet bitten into, aimed at either kettle grill
+(the courtyard's or L1007's patio kettle: the grill itself or a spot within 0.4 m of its grate) gives main.js's focus `grillCatch` ("lägga fisken på
+grillen"), at the pan standing on the hob `fryCatch` ("lägga fisken i stekpannan"); refused while the chicken lies on that grill, or while the pan holds
+anything (`pan.occupied` now includes the fish, so fish fingers, eggs and sausages wait too). `intoGrill` / `intoPan` lay it on the grate / in the pan
+(a child of the grill's group / the pan's model, posed with `restPose`); it cooks only while the grill burns / the hob is on (`cookTick`, rate per heat
+source): raw → cooked at `cook.done` s (golden, renamed "en grillad / stekt abborre, 23 cm", `bump('fishCooked')`) → burnt at `cook.burn` s (charred,
+"en bränd …", one `penalize('burnt')`). Taken off, a cooked fish is eaten with a right click / "Ät" in `cook.bites` bites (`bump('fishEaten')`); a raw
+one says it needs cooking. The grill's lid stays open over it (`occupied`), and F leaves the pan with a fish where it stands. keep.js's `fishing` record
+adds `ck` (cook seconds), `by` (grill / pan), `b` (bites) and `on` (`grill<i>` / `pan`), so a fish cooking is restored on its grill or in its pan.
+Each catch counts `stats.fishCaught` (the medal "Fiskelycka", `src/medalcatalog.js`, base 5; Worker counter `fishCaught` in `src/boardcatalog.js`)
+and `stats.fishBySpecies` (scored per species like the cat breeds, `FISHING.points`: the ål most).
+
+The hidden quest (`src/fishquest.js`, `stats.fishQuestSteps` = `{ s, t }`): `rod` (the rod taken), `catch`, `cook` (a cooked, not burnt fish taken off
+the heat), optional `eat`; steps only count in order and are saved at once. Completing the required ones writes `t`, saves, then pays
+`bump('fishQuest')` (`SCORE.first.fishQuest` 150, once; no `again`) with the badge "Hemligt uppdrag klart: Fiskelycka!". Nothing shows before; afterwards
+the task list (tasks.js `secretQuests`, set by main.js) shows it on top with its steps. Tests: `node --test src/fishquest.test.mjs
+cloudflare/medals.test.mjs cloudflare/boards.test.mjs`; browser `tools/fishcooktest.cjs` (solo). Images: [docs/verification/1754](../verification/1754/).

@@ -38,6 +38,7 @@ export const MEDALS = [
   { id: 'stairs', counter: 'stairs', icon: '🔼', name: 'Trappspringare', unit: 'trappturer', base: 100 },
   { id: 'jetpack', counter: 'flights', icon: '🚀', name: 'Jetpackpilot', unit: 'flygningar', base: 25 },
   { id: 'dribbles', counter: 'dribbles', icon: '🏀', name: 'Basketstudsare', unit: 'studsar', base: 500 },
+  { id: 'fish', counter: 'fishCaught', icon: '🎣', name: 'Fiskelycka', unit: 'fiskar fångade i Höje å', base: 5 }, // #1754 (*guess*: a catch takes minutes)
   { id: 'tasks', counter: 'tasks', icon: '📋', name: 'Städhjälte', unit: 'vardagsuppdrag klara', base: 20 },
   // one medal per everyday task (stats.taskCounts)
   { id: 't-makeSandwich', counter: `${TASK_PREFIX}makeSandwich`, icon: '🥪', name: 'Macksnickare', unit: 'gånger "Gör en macka"', base: 10 },
