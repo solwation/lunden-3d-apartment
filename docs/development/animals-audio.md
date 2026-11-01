@@ -59,6 +59,9 @@ change introduces no applicable geometry/navigation port or new public subsystem
 
 ```text
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
+src/outdoorcatroute.js the outdoor cats' loops as a pure function of the clock (#1767; node test src/outdoorcatroute.test.mjs)
+src/outdoorcats.js     the outdoor cats (#1767): puppets / merged far meshes, notice, become the ordinary cat, walk home
+tools/outdoorcatstest.cjs  outdoor cats in the real scene: routes, movement, pet/carry, walking home, rain/snow, draw calls
 src/miele.js           Miele (#328): `HeartFireworks` (heart shells that pop into small hearts) and `MieleHeld` (a Holdable with no
                        home: the cat object rides in it, hand.js 'hug'; click / "Krama" hugs; put down she walks off)
 src/fireworks.js       midnight fireworks over the block (#1200, FIREWORKS in config): `init`/`start()`/`update(dt)`; a pool of rockets that burst
@@ -229,6 +232,24 @@ A held cat goes down wherever the visitor stands outside the flat (ground, roofs
 spot is level with the feet, no wall between, within reach; `cat.outdoorAt`). `cat.outdoor`: the cat sits there (`on = 'sit'`, no walk-off,
 no height change), until picked up or, left alone `CAT_OUTDOOR.stay` s (600, *guess*), it fades where it sits. F in the air puts it on
 the surface below (`miele.dropSpot`). Kept across a reload (keep.js `out: 1`, same spot, the count goes on). Test: `tools/catputdowntest.cjs`.
+
+## Outdoor cats (#1767)
+
+Four cats of their own (`OUTDOOR_CATS.cats` in config.js: names, breeds, coats, loops and rests all *guess*) roam two zones: Sotis and Kanel
+the courtyard lawns, Findus and Smulan the river park's central lawn. `src/outdoorcatroute.js` (no three.js) makes each a **pure function of
+the wall clock**: a closed loop of route points walked at `speed`, a rest at each point, the rest's activity (wash / look / sleep) hashed per
+lap, so every client sees roughly the same cat in the same place without any sync. `src/outdoorcats.js` draws them: within `near` m (3D
+distance from the eye) the real animated cat (`cat.js createCatPuppet`, its own cloned transparent materials, ~22 draw calls), out to
+`drawDist` (`drawDistPhone` on `lowMemory`) one merged vertex-coloured mesh in the sitting or standing pose (1 call), beyond that nothing.
+Their meshes carry `userData.noDetail`: the small-detail culler would otherwise judge them by their start-up spot and hide them.
+A visitor within `notice` m makes it stop, sit and look; within `take` m, while the ordinary cat is free, it **becomes** the ordinary cat
+(`CatSpawner`, sitting outdoors as in #1287, `outdoorCat` = its name), so petting, carrying and putting down are the cat's own. Left alone
+`release` m away on the ground it turns back into the roaming cat and walks home to its loop (`returnSpeed`); a road, water, a drop
+(`clearWay`, `maxStep`) or more than `maxReturn` m in the way and it fades and is back on its loop after `away` s; put down indoors it stays
+the ordinary cat until that cat leaves, then the same.
+Hidden (faded) underground, in the snow months and in rain over `rain`. `&nooutdoorcats` disables the module. Feeding them is not part of
+this (#1766 owns the eating path). Tests: `node --test src/outdoorcatroute.test.mjs`; browser `tools/outdoorcatstest.cjs` (routes on
+dry walkable ground off the roads, movement, pet/carry, walking home, rain/snow, draw calls). Images: [docs/verification/1767](../verification/1767/).
 
 ## Cat and sound
 

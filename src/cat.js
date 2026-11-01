@@ -426,8 +426,12 @@ function distToSeg(x, z, [ax, az, bx, bz]) {
   return Math.hypot(x - (ax + dx * t), z - (az + dz * t));
 }
 
-/** A silent held-cat snapshot for remote avatars (#1147). Never runs spawning/audio/gameplay. */
-export function createHeldCatVisual(breed, coat, kitten = false) {
+/**
+ * A silent cat puppet (#1147, #1767): the real geometry, breed and coat with its own cloned materials, no spawning, audio or
+ * gameplay. `held` = the held pose (remote avatars); otherwise the caller drives `wantStand`/`stride`/`pose(dt)` itself
+ * (outdoorcats.js). The shared local-cat materials are restored afterwards.
+ */
+export function createCatPuppet(breed, coat, kitten = false, { held = false } = {}) {
   const saved = catMats().map(m => [m, m.clone()]);
   try {
     const parts = buildCat();
@@ -437,22 +441,28 @@ export function createHeldCatVisual(breed, coat, kitten = false) {
       gaitAmp: 0, gaitPhase: 0, tailU: 0, tailUK: -1, tailK: -1, t: 0,
     });
     cat.setCat(breed, coat, kitten);
-    cat.heldBehave(0);
+    if (held) cat.heldBehave(0);
     const materials = new Map();
     parts.cat.traverse(o => {
       if (!o.material) return;
       if (!materials.has(o.material)) {
-        const m = o.material.clone(); m.opacity = 1; m.transparent = false;
+        const m = o.material.clone(); m.opacity = 1; m.transparent = !held; // (a roaming puppet fades in and out)
         materials.set(o.material, m);
       }
       o.material = materials.get(o.material);
       o.castShadow = false;
       o.raycast = () => {};
     });
-    return parts.cat;
+    cat.materials = [...materials.values()];
+    return cat;
   } finally {
     for (const [material, copy] of saved) { material.copy(copy); material.needsUpdate = true; copy.dispose(); }
   }
+}
+
+/** A silent held-cat snapshot for remote avatars (#1147). Never runs spawning/audio/gameplay. */
+export function createHeldCatVisual(breed, coat, kitten = false) {
+  return createCatPuppet(breed, coat, kitten, { held: true }).object;
 }
 
 export class CatSpawner {
