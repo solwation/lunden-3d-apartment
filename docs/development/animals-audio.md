@@ -329,6 +329,12 @@ dry walkable ground off the roads, movement, pet/carry, walking home, rain/snow,
   turns its head and meows, gets up and walks there, eats it (head down, it shrinks,
   `sfx.chew`, then a purr) and washes again; taken up first → it looks at the visitor. Petting, hide and a new spot
   cancel it. Counted as `catFish` in the stats.
+  A raw caught fish (#1766) is food too: main.js feeds `cat.fishSource` with `fishing.feedable` as well, where
+  `CaughtFish.state` is `'placed'` only while the fish is raw, off the heat and lying loose or held out (cooked and burnt
+  fish are ignored). `CaughtFish.middle()` gives the eating spot: on the ground, or the hand itself for a fish held out
+  (the floor check allows the hand's height, and the walk follows the hand). The last bite calls `Fishing.eatenByCat`, which
+  removes the fish and fires `onCatFed` → `catFishFeeds` (`SCORE.each.catFishFeeds`, *guess*), never `onEaten`, so
+  `fishEaten` and the hidden fishing quest stay untouched. Test: `tools/catfishtest.cjs`.
 - Interaction raycasts only test pickables, so `behindWall` in main.js rejects hits whose eye →
   hit line crosses a wall outline (`levels[i].wallSegments`) or a slab / ceiling outside the stair hole (`throughSlab`, #446) — no
   switching lamps through walls, no bed upstairs through the kitchen ceiling.
