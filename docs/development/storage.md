@@ -344,7 +344,13 @@ src/ghosts.js          other players as ghosts with a name tag (#666), inert wit
                        at most GHOSTS.hz and only on a change, plus the last state once more GHOSTS.resendMs after it settles (#1759: the room's
                        perSecond limit can drop the final state of a burst after a network stall; the resend is not activity); a changed state
                        waiting GHOSTS.stateEvery ms takes the next slot ahead of chat and the outbox, except shots/fall/consume (#1763: the
-                       squirrel/paddock leader's snapshots had starved it to ~1.3/s), heartbeat 'p'
+                       squirrel/paddock leader's snapshots had starved it to ~1.3/s; #1777: an urgent message - shot, fall/consume, door 'dr',
+                       river fish 'rf' - goes even from behind a snapshot), heartbeat 'p'. #1777: every outbox push trims through
+                       src/outbox.js `trimOutbox` (node --test src/outbox.test.mjs): on overflow the oldest replaceable snapshot (sq 's'/'n',
+                       pk 's', pkg) goes first, then cosmetic events (a miss, rx, snd, c, g, then a hit), never fall/consume; the player's own
+                       one-off actions (rf on/off/c/sc, dr, tm, sq t/p/f, pk pet, pool, mus, cinema, snake, gf) wait up to GHOSTS.outboxHard,
+                       beyond that the oldest action goes and a catch request only last (before: the oldest non-fall/consume message went,
+                       so squirrel/paddock snapshots pushed out fishing catch requests and the fish "slipped" after FISHING.wait.answer)
                        (runtime auto-response 'q', never billed); draws each
                        other player GHOSTS.delay ms late, interpolated; one merged body mesh (vertex colours, opacity 0.25, no shadow,
                        depth-tested) + one name/score sprite (256 × 64 canvas shared per live name/score combination, "Anonym"). Close 4001 (month cap) →

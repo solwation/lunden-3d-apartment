@@ -15,6 +15,7 @@ import { canKiss, kissAmount } from './kiss.js';
 import { canHug, hugAmount, playerChoices } from './hug.js';
 import { Hearts } from './pingping.js';
 import { cleanHeldCategory } from './heldcategory.js';
+import { trimOutbox } from './outbox.js';
 import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
 
 // Other players as ghosts (#666): a WebSocket to the Worker's players' room (cloudflare/players.js, one Durable Object for
@@ -30,7 +31,7 @@ import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js';
 
 const CAP_KEY = 'lunden.mp.capMonth';
 const monthNow = () => new Date().toISOString().slice(0, 7);
-const URGENT = new Set(['a', 'fall', 'consume', 'dr']); // #1763: outbox messages that keep their slot ahead of a due state (stateDue)
+const URGENT = new Set(['a', 'fall', 'consume', 'dr', 'rf']); // #1763: outbox messages that go ahead of a due state (stateDue); #1777: wherever they wait, and the river fish's catch requests too
 const params = new URLSearchParams(location.search);
 export const ANON = 'Anonym';
 
@@ -623,7 +624,7 @@ export class Ghosts {
     this.myReact = { kind: k, start: t };
     if (this.connected) {
       this.outbox.push({ t: 'rx', k });
-      while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
+      this.trimOutbox();
       this.sendShot();
     }
     return true;
@@ -636,7 +637,7 @@ export class Ghosts {
     if (!this.connected || !SOUNDS.kinds.includes(k) || t - (this.soundSentAt ?? -1e9) < SOUNDS.every * 1000) return false;
     this.soundSentAt = t;
     this.outbox.push({ t: 'snd', k });
-    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
+    this.trimOutbox();
     this.sendShot();
     return true;
   }
@@ -644,7 +645,7 @@ export class Ghosts {
   /** A billiard table request (#1355) { t: 'pool', k, q, d? }; the room answers the sender (and everybody in the children's room). False when not connected. */
   pool(msg) {
     if (!this.connected) return false;
-    this.outbox.push(msg);
+    this.outbox.push(msg); this.trimOutbox();
     this.lastMove = performance.now(); this.sendShot();
     return true;
   }
@@ -652,7 +653,7 @@ export class Ghosts {
   /** A room-music command (#1624) { t: 'mus', k, ix? }; the room answers everybody inside the children's room. False when not connected. */
   music(msg) {
     if (!this.connected) return false;
-    this.outbox.push(msg);
+    this.outbox.push(msg); this.trimOutbox();
     this.lastMove = performance.now(); this.sendShot();
     return true;
   }
@@ -663,7 +664,7 @@ export class Ghosts {
     if (!this.connected) return false;
     this.outbox = this.outbox.filter((m) => m.t !== msg.t || m.k !== msg.k); // only the newest snapshot / mask waits
     this.outbox.push(msg);
-    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
+    this.trimOutbox();
     this.sendShot();
     return true;
   }
@@ -673,7 +674,7 @@ export class Ghosts {
     if (!this.connected) return false;
     if (msg.k === 's' || msg.k === 'n') this.outbox = this.outbox.filter((m) => m.t !== 'sq' || m.k !== msg.k);
     this.outbox.push(msg);
-    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
+    this.trimOutbox();
     this.sendShot();
     return true;
   }
@@ -683,7 +684,7 @@ export class Ghosts {
     if (!this.connected) return false;
     this.outbox = this.outbox.filter((m) => m.t !== 'dr' || m.i !== msg.i);
     this.outbox.push(msg);
-    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
+    this.trimOutbox();
     this.sendShot();
     return true;
   }
@@ -692,7 +693,7 @@ export class Ghosts {
   time(msg) {
     if (!this.connected) return false;
     this.outbox.push(msg);
-    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
+    this.trimOutbox();
     this.sendShot();
     return true;
   }
@@ -701,7 +702,7 @@ export class Ghosts {
   riverFish(msg) {
     if (!this.connected) return false;
     this.outbox.push(msg);
-    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
+    this.trimOutbox();
     this.sendShot();
     return true;
   }
@@ -711,7 +712,7 @@ export class Ghosts {
   graffiti(msg) {
     if (!this.connected || this.outbox.some((m) => m.t === 'gf')) return false;
     this.outbox.push(msg);
-    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
+    this.trimOutbox();
     this.sendShot();
     return true;
   }
@@ -719,7 +720,7 @@ export class Ghosts {
   /** Shared cinema requests are event-driven and use the existing bounded outbox. */
   cinema(msg) {
     if (!this.connected) return false;
-    this.outbox.push(msg); this.lastMove = performance.now(); this.sendShot(); return true;
+    this.outbox.push(msg); this.trimOutbox(); this.lastMove = performance.now(); this.sendShot(); return true;
   }
 
   /** Coalesce headings in the existing shared 5 Hz budget; never grow a game-input queue. */
@@ -936,7 +937,7 @@ export class Ghosts {
     this.greetAt = t;
     const k = kiss ? KISS.phrase : hug ? HUG.phrase : Math.floor(Math.random() * G.hello.length);
     this.outbox.push({ t: 'g', to: g.id, k, ...(kiss || hug ? { q: this.kissSeq = (this.kissSeq ?? 0) + 1 } : {}) });
-    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
+    this.trimOutbox();
     this.sendShot();
     return (kiss ? KISS.line : hug ? HUG.line : G.hello[k]).replace('{n}', g.name);
   }
@@ -948,23 +949,19 @@ export class Ghosts {
     if (!this.connected || t - (this.toastAt ?? -1e9) < TOAST.every * 1000) return false;
     this.toastAt = t;
     this.outbox.push({ t: 'c', k, ...(back ? { b: true } : {}) });
-    while (this.outbox.length > G.outbox) this.outbox.splice(this.outbox.findIndex(m => m.t !== 'fall' && m.t !== 'consume'), 1);
+    this.trimOutbox();
     this.sendShot();
     return true;
   }
 
   /** A shot (#667): { w, o: [x, y, z], d: [dx, dy, dz] unit, s?: speed, to?: the id it hit }, every one, misses too, so
    * the others can draw it. Shots share the GHOSTS.hz budget with the states and go first; at most GHOSTS.outbox wait
-   * (when full the oldest miss goes, never a hit before a miss). */
+   * (when full: a waiting snapshot first, then the oldest miss, never a hit before a miss; src/outbox.js #1777). */
   fire(shot) {
     if (!this.connected) return false;
     const r2 = (v) => Math.round(v * 100) / 100, r3 = (v) => Math.round(v * 1000) / 1000;
     this.outbox.push({ t: 'a', w: shot.w, o: shot.o.map(r2), d: shot.d.map(r3), ...(shot.s ? { s: r2(shot.s) } : {}), ...(shot.to ? { to: shot.to } : {}), ...(shot.hc ? { hc: [shot.hc[0], ...shot.hc.slice(1).map(r3)] } : {}) });
-    while (this.outbox.length > G.outbox) {
-      const miss = this.outbox.findIndex((x) => x.t !== 'fall' && x.t !== 'consume' && !x.to);
-      this.outbox.splice(miss >= 0 ? miss : this.outbox.findIndex(x => x.t !== 'fall' && x.t !== 'consume'), 1);
-      this.dropped++;
-    }
+    this.trimOutbox();
     this.sendShot();
     return true;
   }
@@ -974,10 +971,15 @@ export class Ghosts {
    * Shots ('a', a rifle hit every 0.25 s) and the fall / consume claims keep going first: they are the game's own outcome. */
   stateDue(t) { return (!this.sent || this.sent !== this.prev || this.sentAv !== this.avatarCode) && t - this.stateAt >= G.stateEvery; }
 
+  /** #1777: keep the outbox within GHOSTS.outbox (src/outbox.js: snapshots go first, the player's own actions wait up to GHOSTS.outboxHard). */
+  trimOutbox() { this.dropped += trimOutbox(this.outbox, G.outbox, G.outboxHard).length; }
+
   sendShot() {
     const t = performance.now();
-    if (!this.outbox.length || !this.connected || t - this.lastSent < 1000 / G.hz || (!URGENT.has(this.outbox[0].t) && this.stateDue(t))) return false;
-    const message = this.outbox.shift();
+    if (!this.outbox.length || !this.connected || t - this.lastSent < 1000 / G.hz) return false;
+    const at = this.stateDue(t) ? this.outbox.findIndex((m) => URGENT.has(m.t)) : 0; // #1777: an urgent one behind a snapshot goes too
+    if (at < 0) return false;
+    const message = this.outbox.splice(at, 1)[0];
     this.ws.send(JSON.stringify(message));
     this.lastSent = this.lastBeat = t; if (message.t !== 'fall' && message.t !== 'consume') this.shots++; this.messages++;
     return true;

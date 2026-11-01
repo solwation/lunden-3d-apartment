@@ -3743,6 +3743,7 @@ export const GHOSTS = { enabled: true, hz: 5, move: 0.02, turn: 0.03, beatMs: 10
   tagWidth: 0.64, tagHeight: 0.16, tagY: 1.98, tagNamePx: 22, tagScorePx: 18, // #672: 20% smaller sprite; two compact lines (*guess*)
   scoreMax: 1e7, // matches the existing leaderboard validation in cloudflare/worker.js; display only, not authoritative
   outbox: 3, // outbox: shots waiting for the 5 Hz budget (#667)
+  outboxHard: 8, // #1777: the player's own one-off actions (river fish catch, door, squirrel take / put / feed, pool, music …) may wait up to this many; snapshots / cosmetic events never beyond GHOSTS.outbox (*guess*: a few rare clicks within a 5 Hz budget)
   // #673: greeting another player (E on them): one of `hello` (an index goes to the room, never free text; {n} = their
   // name), at most one every `greetEvery` s (the room allows the same), the greeter's ghost waves its right arm `wave` s for
   // everybody who sees it. Our picks (*guess*).
