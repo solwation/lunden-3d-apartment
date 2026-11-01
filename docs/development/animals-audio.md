@@ -60,8 +60,9 @@ change introduces no applicable geometry/navigation port or new public subsystem
 ```text
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
 src/outdoorcatroute.js the outdoor cats' loops as a pure function of the clock (#1767; node test src/outdoorcatroute.test.mjs)
-src/outdoorcats.js     the outdoor cats (#1767): puppets / merged far meshes, notice, become the ordinary cat, walk home; isOut (#1772)
+src/outdoorcats.js     the outdoor cats (#1767): puppets / merged far meshes, notice, become the ordinary cat, walk home; isOut (#1772); eating a raw fish (#1782)
 src/outdoorcatbrain.js the outdoor cats' brains (#1772): personality, utility AI per rest stop, outings, meeting the visitor (node test tools/outdoorcatbraintest.mjs)
+tools/outdoorcatfishtest.cjs  outdoor cats eat a raw caught fish on the lawn or held out; cooked fish ignored; points once (#1782)
 tools/outdoorcatstest.cjs  outdoor cats in the real scene: routes, movement, pet/carry, walking home, rain/snow, draw calls; climb, butterfly, social approach (#1772)
 src/miele.js           Miele (#328): `HeartFireworks` (heart shells that pop into small hearts) and `MieleHeld` (a Holdable with no
                        home: the cat object rides in it, hand.js 'hug'; click / "Krama" hugs; put down she walks off)
@@ -251,8 +252,8 @@ the ordinary cat until that cat leaves, then the same.
 Hidden (faded) underground, in the snow months and in rain over `rain`. On snow days (#1773) a cat still goes out for short outings
 (`FOOTPRINTS.catOuting`: the first `out` s of some `slot`-s windows, hashed per cat and window, more often for playful/curious and less
 for lazy personalities when it has `traits`; `footprinttrail.js catOut`, a pure function of the clock) and leaves paw prints
-([graphics.md](graphics.md#footprints-in-the-snow-1773)). `&nooutdoorcats` disables the module. Feeding them is not part of
-this (#1766 owns the eating path). Tests: `node --test src/outdoorcatroute.test.mjs`; browser `tools/outdoorcatstest.cjs` (routes on
+([graphics.md](graphics.md#footprints-in-the-snow-1773)). `&nooutdoorcats` disables the module. Feeding a roaming cat: see
+[Feeding the outdoor cats raw fish (#1782)](#feeding-the-outdoor-cats-raw-fish-1782). Tests: `node --test src/outdoorcatroute.test.mjs`; browser `tools/outdoorcatstest.cjs` (routes on
 dry walkable ground off the roads, movement, pet/carry, walking home, rain/snow, draw calls). Images: [docs/verification/1767](../verification/1767/).
 
 ### Personalities and brains (#1772)
@@ -284,6 +285,22 @@ Far away (beyond `drawDist` + `brain.margin`) the brain does not plan and the ca
 `OutdoorCats.isOut()`. Tests: `node --test tools/outdoorcatbraintest.mjs` (fixed seed: personality mixes, the social cat by the visitor,
 climbing and chasing, never in water or on a road, the shy one); browser `tools/outdoorcatstest.cjs` (7)–(9). Images:
 [docs/verification/1772](../verification/1772/).
+
+### Feeding the outdoor cats raw fish (#1782)
+
+A roaming cat eats a raw caught fish on its own, without becoming the ordinary cat, so it works while that cat is busy. main.js passes
+`food: () => fishing.feedable` (raw, off the heat, lying loose or held out, as #1766) and `onFed: fishing.eatenByCat`. `OutdoorCats.feed`
+scans every `OUTDOOR_CATS.food.scan` s for a cat on the ground in `route`/`home`/`notice`/`seek`/`follow`/`flee`: a fish within `food.reach`
+× (0.8 … 1.2 by curiosity) on the ground (±0.15 m) or held out up to `food.held` m above it, within `maxReturn` − 5 m of its loop, on a
+`clearOut` way (no road, water, drop or wall), not already claimed. The fish gets `outdoorCat` = the cat's name (no other cat takes it;
+main.js leaves it out of the ordinary cat's `fishSource`, and a fish the ordinary cat is already after is skipped). The brain's `goFor`
+starts state `food`: it hesitates `foodWait()` (`food.wait` × personality: social/curious at once, lazy slower, shy slowest; a shy cat's wait
+only runs while the visitor near it stands still, up to `food.maxWait`), then walks at `food.speed` (the way checked every 0.5 s as other
+moves) to `CAT_FISH.stop` × its size short, following a fish held out. State `eat`: head down, the fish shrinks over `CAT_FISH.eat` s with
+`sfx.chew`, then `onFed` (gone, `catFishFeeds` once, never `fishEaten` or the hidden quest), a purr, and home to its loop. Taken off, cooked,
+blocked, faded or out of drawing range: it lets go (the fish whole again) and walks home. All numbers *guess*. Tests:
+`node --test tools/outdoorcatbraintest.mjs` (the food test); browser `tools/outdoorcatfishtest.cjs` (raw fish eaten with the ordinary cat
+busy, points once, cooked/burnt ignored, shy Smulan and a fish held out). Images: [docs/verification/1782](../verification/1782/).
 
 ## Cat and sound
 

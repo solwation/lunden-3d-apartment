@@ -7654,6 +7654,11 @@ export const SPRAY = {
 export const OUTDOOR_CATS = {
   epoch: 1793491200, drawDist: 32, drawDistPhone: 18, near: 7, speed: 0.42, returnSpeed: 0.85, notice: 4.5, take: 3.2, release: 8,
   maxReturn: 45, away: 30, fade: 1.2, rain: 0.12, maxStep: 0.6,
+  // #1782: a raw caught fish (fishing.feedable, as #1766) on the ground or held out within `reach` m (× 0.8 … 1.2 by curiosity) of a roaming
+  // cat on a clear way: it hesitates `wait` s (× its personality: a social / curious cat at once, a shy one longer and only once the visitor
+  // stands still, but at most `maxWait` s), walks there at `speed` m/s, stops CAT_FISH.stop × its size short and eats for CAT_FISH.eat s.
+  // `scan`: s between looks; `held`: m above the ground a held-out fish may be (the hand). All *guess*.
+  food: { reach: 6, wait: 1.5, maxWait: 20, speed: 0.6, scan: 0.4, held: 2 },
   brain: {
     block: 16, noise: 0.22, margin: 12, trot: 0.75, creep: 0.22, climb: 0.7, reach: 7, climbReach: 9, branch: [1.3, 2.6],
     butterflyMonths: [5, 6, 7, 8, 9], butterflyHours: [9, 19], seekRange: 13, seekSpeed: 0.75, seekStop: 1.3, followTime: 8,

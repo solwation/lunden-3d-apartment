@@ -988,7 +988,7 @@ coreB.lift.onArrive = (k) => bump('liftFloors', 1, `b${k}`); coreC.lift.onArrive
 sonos.onPlay = (ch) => bump('songs', 1, ch); // each song (channel) once // the saber burns, the wands do magic (#97), darts splash (#98)
 // the cat goes for a fish finger lying on the floor near it and eats it (#163)
 if (fish) {
-  cat.fishSource = () => [...fish.placed, ...fishing.feedable]; // + #1766: a raw caught fish, lying or held out
+  cat.fishSource = () => [...fish.placed, ...fishing.feedable.filter((f) => !f.outdoorCat)]; // + #1766: a raw caught fish, lying or held out (#1782: not one an outdoor cat is going for)
   cat.onFishEaten = (f) => (f.isCaughtFish ? fishing.eatenByCat(f) : fish.eatenByCat(f));
   fish.onCatEaten = () => bump('catFish');
   fishing.onCatFed = () => bump('catFishFeeds');
@@ -1134,6 +1134,7 @@ const outdoorCats = params0.has('nooutdoorcats') ? null : new OutdoorCats({ scen
   walkable: (x, z) => parkGround(x, z) > waterYAt(x, z) + 0.3 && !onRoad(x, z, 0.8), feet: treeFeet, crowns: aoTrees,
   free: (x, z) => player.below || player.inCore || player.inPlayroom || player.unit || player.isFree(x, z, 0, 0.12 - PLAYER.radius),
   hour: () => day.hour, month: () => day.month,
+  food: () => fishing.feedable, onFed: (f) => fishing.eatenByCat(f), // #1782: a raw caught fish nearby, eaten as the ordinary cat's (#1766)
   prey: () => (squirrels?.animals ?? []).filter((a) => a.group.visible && Math.abs(a.brain.y - parkGround(a.brain.x, a.brain.z)) < 0.15).map((a) => a.brain) });
 const mieleFrustum = new THREE.Frustum(), mieleAt = new THREE.Vector3();
 function checkMiele() {

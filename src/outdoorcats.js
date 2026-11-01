@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { OUTDOOR_CATS, SEASON } from './config.js';
+import { OUTDOOR_CATS, SEASON, CAT_FISH } from './config.js';
 import { BREEDS, createCatPuppet, catLabel } from './cat.js';
 import { OutdoorCatBrain, turnTo } from './outdoorcatbrain.js';
 import { registerSeasonal } from './seasons.js';
 import { catOut } from './footprinttrail.js';
+import { sfx } from './audio.js';
 
 // #1767: outdoor cats. A few cats of their own roam the courtyard and the river park (OUTDOOR_CATS in config.js): each walks its loop
 // (outdoorcatroute.js, a pure function of the wall clock, so every visitor sees roughly the same cat), rests, washes, looks about or
@@ -19,6 +20,9 @@ import { catOut } from './footprinttrail.js';
 // company, explore, stalk, chase a butterfly, climb a tree) and how it meets the visitor (a social cat walks up and follows a little,
 // a shy one keeps away). The brain owns where the cat is (x, z, h above the ground, yaw, pitch) and its state; this file draws it,
 // turns it into the ordinary cat and back, and fades it (isOut: sheltering, snow months).
+// #1782: a roaming cat eats a raw caught fish lying near it or held out (`food()`: fishing.feedable, as the ordinary cat's #1766), on its
+// own, whether or not the ordinary cat is busy: it hesitates (its personality), walks there on a clear way, eats (the fish shrinks) and
+// `onFed(fish)` (fishing.eatenByCat: gone, counted once). A fish one cat goes for is marked `outdoorCat` so no other cat takes it.
 
 const C = OUTDOOR_CATS;
 
@@ -52,10 +56,10 @@ export class OutdoorCats {
    * `cat`: main.js's CatSpawner (the ordinary cat an outdoor cat turns into); `ground(x, z)`: the terrain height; `walkable(x, z)`:
    * not road, not water (the way home is checked with it); `lowMemory`: phones draw nearer. #1772: `free(x, z)`: no wall or fence there
    * (outings); `feet` / `crowns`: surroundings.js treeFeet / aoTrees (the trees a cat may climb); `hour()` / `month()`: the game's day;
-   * `prey()`: squirrels on the ground [{ x, z }].
+   * `prey()`: squirrels on the ground [{ x, z }]. #1782: `food()`: the raw caught fish a cat may eat (fishing.feedable); `onFed(fish)`: one ate it.
    */
-  constructor({ scene, camera, cat, ground, walkable = () => true, free = null, feet = [], crowns = [], hour = () => 12, month = () => 7, prey = null, lowMemory = false }) {
-    Object.assign(this, { scene, camera, cat, ground, walkable });
+  constructor({ scene, camera, cat, ground, walkable = () => true, free = null, feet = [], crowns = [], hour = () => 12, month = () => 7, prey = null, food = null, onFed = null, lowMemory = false }) {
+    Object.assign(this, { scene, camera, cat, ground, walkable, food, onFed, foodScan: 0 });
     this.drawDist = lowMemory ? C.drawDistPhone : C.drawDist;
     this.now = () => Date.now() / 1000; // tests replace it
     this.winter = false;
@@ -171,11 +175,64 @@ export class OutdoorCats {
     this.bound = null;
   }
 
+  /** #1782: food. A cat going for a fish follows it (a fish held out moves with the hand) and lets go once it is no longer raw and loose
+   * or held out; a roaming cat on the ground looks for one now and then. `ok`: it is shown and out. */
+  feed(c, d, ok) {
+    const F = C.food, v = this.v ??= new THREE.Vector3();
+    if (c.fish) {
+      if (c.fish.state !== 'placed' || c.fish.broken) { this.letGo(c); if (c.st === 'food' || c.st === 'eat') c.set('home'); return; } // taken off, cooked or gone
+      if (c.st === 'food') { c.fish.middle(v); c.food.x = v.x; c.food.z = v.z; }
+      return;
+    }
+    if (!this.food || !ok || c.h > 0.05 || d > this.drawDist || !['route', 'home', 'notice', 'seek', 'follow', 'flee'].includes(c.st)) return;
+    if ((c.foodScan = (c.foodScan ?? Math.random() * F.scan) - this.dtNow) > 0) return;
+    c.foodScan = F.scan;
+    const reach = F.reach * (0.8 + 0.4 * c.traits.curious), home = c.at ?? this.scheduled(c), k = this.cat;
+    let best = null, bd = reach;
+    for (const f of this.food()) {
+      if (f.state !== 'placed' || f.outdoorCat || k?.fish?.f === f) continue; // (another cat is after it already)
+      f.middle(v);
+      const g = this.ground(v.x, v.z), up = v.y - g, dd = Math.hypot(v.x - c.x, v.z - c.z);
+      if (!Number.isFinite(g) || (f.held ? up < -0.1 || up > F.held : Math.abs(up) > 0.15)) continue; // on the ground, or in a hand held out over it
+      if (dd < bd && Math.hypot(v.x - home.x, v.z - home.z) < C.maxReturn - 5 && c.clearOut(c.x, c.z, v.x, v.z)) { best = f; bd = dd; }
+    }
+    if (!best) return;
+    best.middle(v);
+    c.fish = best; best.outdoorCat = c.name;
+    c.goFor(v.x, v.z, CAT_FISH.stop * (c.puppet.shape?.size ?? 1));
+    c.eatT = 0; c.chew = 0;
+    if (d < C.near * 2) sfx.meow({ x: c.x, y: this.ground(c.x, c.z) + 0.3, z: c.z }, (c.coat.pitch ?? 1) * (c.breed.pitch ?? 1), c.breed.voice); // "is that for me?"
+  }
+
+  /** #1782: a bite at a time: the fish shrinks, small munching sounds; at the end `onFed` (gone, counted) and a purr, then home. */
+  eat(c, dt) {
+    const f = c.fish; if (!f) { c.set('home'); return; }
+    c.eatT += dt; c.chew -= dt;
+    f.model.scale.setScalar(Math.max(0.05, 1 - c.eatT / CAT_FISH.eat));
+    const at = { x: c.x, y: this.ground(c.x, c.z) + 0.2, z: c.z };
+    if (c.chew <= 0 && c.eatT < CAT_FISH.eat && c.group.visible) { sfx.chew(at, 0.45); c.chew = 0.6; }
+    if (c.eatT < CAT_FISH.eat) return;
+    f.model.scale.setScalar(1);
+    c.fish = null; f.outdoorCat = null; c.food = null;
+    this.onFed?.(f);
+    if (c.group.visible) sfx.purr(at, 3, (c.coat.pitch ?? 1) * (c.breed.pitch ?? 1), c.breed.voice);
+    c.set('home');
+  }
+
+  /** #1782: it no longer goes for its fish (whole again, free for another cat). */
+  letGo(c) {
+    const f = c.fish; if (!f) return;
+    if (f.model) f.model.scale.setScalar(1);
+    if (f.outdoorCat === c.name) f.outdoorCat = null;
+    c.fish = null; c.food = null;
+  }
+
   unbind(c) { if (this.cat) this.cat.outdoorCat = null; this.bound = null; c.st = 'away'; c.awayUntil = this.now() + C.away; c.alpha = 0; }
 
   /** `hidden`: underground / no outdoor view; `rain`: weather.rain (0 in snow, which the season hides). */
   update(dt, hidden = false, rain = 0) {
     const eye = this.camera.position, k = this.cat;
+    this.dtNow = dt;
     this.rain = rain;
     const le = this.lastEye; // how long the visitor has stood still
     this.still = le && dt > 0 && Math.hypot(eye.x - le.x, eye.z - le.z) / dt < 0.25 ? this.still + dt : dt > 0 ? 0 : this.still;
@@ -199,12 +256,16 @@ export class OutdoorCats {
     }
     const now = this.now(), out = this.isOut(c);
     if (c.st === 'away') {
+      if (c.fish) this.letGo(c);
       if (now < c.awayUntil) { c.group.visible = false; c.bfMesh.visible = false; return; }
       c.resume(); c.alpha = 0;
     }
     const gy = this.ground(c.x, c.z), d = Math.hypot(eye.x - c.x, eye.y - (Number.isFinite(gy) ? gy : 0) - c.h, eye.z - c.z); // (3D: not drawn from a storey above)
+    this.feed(c, d, !hidden && out && c.alpha > 0.5);
     // the brain: its schedule (loop and outing) and how it meets the visitor; it only plans near the visitor
     c.update(dt, { x: eye.x, z: eye.z, d, ok: !hidden && out && c.alpha > 0.5, still: this.still }, d < this.drawDist + C.brain.margin);
+    if (c.st === 'eat') this.eat(c, dt);
+    if (c.fish && c.st !== 'food' && c.st !== 'eat') this.letGo(c); // (gave up: blocked, the visitor gone, faded)
     if (c.lost) { c.st = 'away'; c.awayUntil = now + C.away; } // a road, the river or a drop in the way home, or too far: it fades and comes back later
     if (c.st === 'notice' && d < C.take && c.puppet.stand < 0.05 && c.h < 0.05 && this.catFree()) { this.promote(c); return; }
     // fade (sheltering, away, far) and draw
@@ -262,6 +323,10 @@ export class OutdoorCats {
       const hop = c.hop ?? 0; P.headOff.set(0, -0.035 * (1 - hop * 8), 0.015);
       P.shoulder.rotation.set(-12 * hop, 0, 0); P.leftShoulder.rotation.set(-12 * hop, 0, 0);
       P.head.rotation.set(0.2 - 2 * hop, 0, 0); P.tailGroup.rotation.y = 0.5 * Math.sin(c.t * 25) * (1 - hop * 8); // (the bottom wiggle before the leap)
+    } else if (activity === 'eat') { // #1782: head down to the fish, munching (as cat.js updateFish)
+      const down = Math.min(1, (c.eatT ?? 0) / 0.4);
+      P.shoulder.rotation.set(0, 0, 0); P.headOff.set(0, -0.2 * down, 0.09 * down);
+      P.head.rotation.set(0.8 * down + 0.08 * Math.sin(c.t * 14), 0, 0); P.tailGroup.rotation.y = 0.12 * Math.sin(c.t * 2.3);
     } else if (activity === 'wash') { // the CatSpawner's washing cycle (cat.js behave)
       const t = c.t, cy = t % 6, sm = (a, b, x) => THREE.MathUtils.smoothstep(x, a, b);
       const u = sm(0, 0.5, cy) * (1 - sm(3.2, 3.7, cy)), wipe = sm(2.0, 2.4, cy) * (1 - sm(2.9, 3.2, cy)), lick = Math.sin(t * 13) * 0.5 + 0.5;

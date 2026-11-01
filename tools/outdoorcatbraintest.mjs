@@ -112,3 +112,18 @@ test('a shy cat keeps away from a moving visitor, and calms when the visitor sta
   for (let i = 0; i < 10; i++) { w.clock.t += 0.2; b.update(0.2, { ...v2, d: 3, ok: true, still: 10 }); }
   assert.equal(b.st, 'notice', 'a still visitor: it sits and looks');
 });
+
+test('#1782 food: a social cat comes for a fish at once, a shy one hesitates until the visitor stands still; the road blocks the way', () => {
+  const S = new OutdoorCatBrain(spec(PERS.social), 0, world().env), Y = new OutdoorCatBrain(spec(PERS.shy), 3, world().env);
+  assert.ok(S.foodWait() < 1 && Y.foodWait() > 3 * S.foodWait(), `${S.foodWait()} vs ${Y.foodWait()}`);
+  const go = (b, vis, secs) => { const x0 = b.x, z0 = b.z; b.goFor(x0 + 2, z0, 0.17); let ate = -1; for (let t = 0; t < secs; t += 0.1) { b.update(0.1, vis); if (b.st === 'eat' && ate < 0) ate = t; } return { ate, at: Math.hypot(b.x - x0 - 2, b.z - z0) }; };
+  const s = go(S, { x: S.x, z: S.z + 3, d: 3, ok: true, still: 0 }, 8);
+  assert.ok(s.ate >= 0 && s.ate < 5 && Math.abs(s.at - 0.17) < 0.1, `social: eats at ${s.ate} s, ${s.at} m from the fish`);
+  const moving = go(Y, { x: Y.x, z: Y.z + 3, d: 3, ok: true, still: 0 }, 10);
+  assert.equal(moving.ate, -1, 'shy: not while the visitor near it moves');
+  Y.set('route'); const calm = go(Y, { x: Y.x, z: Y.z + 3, d: 3, ok: true, still: 10 }, 12);
+  assert.ok(calm.ate > 2, `shy: comes once the visitor stands still (${calm.ate} s)`);
+  const B2 = new OutdoorCatBrain(spec(PERS.social), 0, world().env); B2.x = 10; B2.z = 0; B2.goFor(13, 0, 0.17); // (the road at x > 11)
+  for (let t = 0; t < 6; t += 0.1) B2.update(0.1, { x: 10, z: 3, d: 3, ok: true, still: 0 });
+  assert.ok(B2.x < 11 && B2.st !== 'eat', `never onto the road (x ${B2.x.toFixed(2)}, ${B2.st})`);
+});

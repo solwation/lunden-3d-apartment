@@ -16,6 +16,7 @@ import { hash01, routePlan, catAt } from './outdoorcatroute.js';
 //  2. The visitor (local, like #1767's "notice"): a social cat walks up to the visitor, a shy one keeps away, one that was met follows
 //     a little, a stalking one creeps after a squirrel on the ground; afterwards it walks home to its schedule. Different visitors are
 //     different people to meet, so this part stays per client.
+//     #1782: food is local too: a raw caught fish nearby (outdoorcats.js finds it) makes it hesitate by its personality, walk there and eat.
 // Outings and every local move are tested with `env.clear` (no road, no water, no drop) and, for outings, `env.free` (no wall or
 // fence, main.js); an outing goes out and back the same checked way.
 
@@ -77,7 +78,7 @@ export class OutdoorCatBrain {
   constructor(spec, id, env) {
     Object.assign(this, { spec, id, env, name: spec.name, traits: { ...TRAITS0, ...spec.traits }, plan: routePlan(spec.route, spec.rest, C.speed),
       st: 'route', x: 0, z: 0, h: 0, yaw: 0, pitch: 0, hop: 0, walking: false, activity: 'look', moved: 0, faceEye: false, lost: false,
-      at: null, outing: null, kind: 'rest', bf: null, legInfo: [], memo: { n: NaN, needs: null }, checkT: 0, reactT: 0, stateT: 0, seekCool: 0, prey: null });
+      at: null, outing: null, kind: 'rest', bf: null, legInfo: [], memo: { n: NaN, needs: null }, checkT: 0, reactT: 0, stateT: 0, seekCool: 0, prey: null, food: null });
     const s = this.scheduled(); this.x = s.x; this.z = s.z; this.yaw = s.yaw;
   }
   get L() { return this.plan.legs.length; }
@@ -304,6 +305,22 @@ export class OutdoorCatBrain {
         this.prey = q; tx = q.x; tz = q.z; stop = 1.8; speed = B.creep; activity = 'creep';
         break;
       }
+      case 'food': { // #1782: a raw fish nearby (outdoorcats.js keeps `food` at the fish): it hesitates by its personality, then walks there
+        const f = this.food;
+        if (!f || !vis.ok) { this.food = null; this.set('home'); break; }
+        const toF = Math.atan2(f.x - this.x, f.z - this.z);
+        if (f.t < f.wait) { // (a shy cat only makes up its mind once the visitor stands still, or after a long while)
+          if (!(t.shy > 0.5 && vis.d < B.shyRange && vis.still < B.shyCalm) || this.stateT > C.food.maxWait) f.t += dt;
+          this.yaw = turnTo(this.yaw, toF, dt * 3); break;
+        }
+        tx = f.x; tz = f.z; stop = f.stop; speed = C.food.speed;
+        if (Math.hypot(f.x - this.x, f.z - this.z) <= f.stop + 0.06) this.set('eat');
+        break;
+      }
+      case 'eat': // head down at the fish (outdoorcats.js counts the bites and ends it)
+        if (this.food) this.yaw = turnTo(this.yaw, Math.atan2(this.food.x - this.x, this.food.z - this.z), dt * 3);
+        activity = 'eat';
+        break;
       case 'home': { // back to the schedule (to the trunk's foot if the schedule has it up a tree)
         tx = sp.x; tz = sp.z; speed = C.returnSpeed;
         const td = Math.hypot(tx - this.x, tz - this.z);
@@ -327,11 +344,15 @@ export class OutdoorCatBrain {
       }
     }
     if (!walking && (this.faceEye || this.st === 'seek' || this.st === 'follow')) { this.faceEye = true; this.yaw = turnTo(this.yaw, toVis, dt * 3); }
-    this.walking = walking; this.activity = walking ? (activity === 'creep' ? 'creep' : 'walk') : activity === 'creep' ? 'crouch' : 'look';
+    this.walking = walking; this.activity = walking ? (activity === 'creep' ? 'creep' : 'walk') : activity === 'creep' ? 'crouch' : activity === 'eat' ? 'eat' : 'look';
   }
+  /** #1782: go for food at (x, z) (a raw fish), stopping `stop` m short; how long it hesitates first follows its personality (`foodWait`). */
+  goFor(x, z, stop) { this.food = { x, z, stop, t: 0, wait: this.foodWait() }; this.set('food'); }
+  /** #1782: s it hesitates before it walks to food: a social or curious cat comes at once, a lazy one slowly, a shy one slowest (*guess*). */
+  foodWait() { const t = this.traits; return C.food.wait * Math.max(0.25, Math.min(4, 1 + 2.5 * t.shy + 0.8 * t.lazy - 0.8 * t.social - 0.5 * t.curious)); }
   set(st) { this.st = st; this.stateT = 0; this.checkT = 0; }
   /** Back on its loop now (it was away). */
-  resume() { const s = this.scheduled(); Object.assign(this, { x: s.x, z: s.z, yaw: s.yaw, h: 0, pitch: 0 }); this.set('route'); this.outing = null; }
+  resume() { const s = this.scheduled(); Object.assign(this, { x: s.x, z: s.z, yaw: s.yaw, h: 0, pitch: 0 }); this.set('route'); this.outing = null; this.food = null; }
 }
 
 export function turnTo(a, b, max) {
