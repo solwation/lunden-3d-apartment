@@ -49,7 +49,7 @@ const setup = async () => {
       if (f?.item === r) T.a.use(f); T.a.step(0.05); return { held: T.held(), q: T.a.stats.fishQuestSteps?.s ?? [], focus: f?.name ?? null, kind: f?.kind, c: c.toArray(), cam: T.a.camera.position.toArray(), furn: T.a.world.furnitureOn };
     });
     check(took.held === 'fiskespöet' && took.q.includes('rod'), 'the rod taken with E: the quest\'s first step is reached (silently)', took);
-    await p(() => { Object.assign(T.cfg.FISHING.wait, { min: 0.5, rate: 6, window: 4 }); T.a.stats.fishCaught = 4; }); // (4 + this catch = the medal's first level)
+    await p(() => { Object.assign(T.cfg.FISHING.wait, { min: 0.5, rate: 6, window: 4 }); T.a.stats.fishCaught = 4; T.Fi.rnd = () => (T.Fi.state === 'bite' ? 0.999 : 1e-6); }); // (4 + this catch = the medal's first level; #1776: no dice in the cast: a fish within `radius` m of the float bites at once after `min`, the swimming stays real)
     let caught = null;
     for (let tries = 0; tries < 8 && !caught; tries++) {
       caught = await p(async (k) => {
@@ -58,7 +58,8 @@ const setup = async () => {
         T.Fi.reelIn(); T.bank(x.o.x, x.o.z, 2.5); T.look(x.o.x, x.o.water, x.o.z); T.a.step(0.016);
         if (!T.Fi.aim()) return null;
         const score0 = T.a.totalScore(); T.a.click(0);
-        if (!(await T.pump(15000, 0.05, () => T.Fi.state === 'bite'))) return null;
+        if (!(await T.pump(15000, 0.05, () => T.Fi.state === 'bite' || (T.Fi.state === 'wait' && T.Fi.t > T.cfg.FISHING.wait.min + 0.5 && T.F.near(T.Fi.at.x, T.Fi.at.z, T.cfg.FISHING.wait.radius).length === 0)))) return null; // (#1776: no fish within reach: cast at the next one)
+        if (T.Fi.state !== 'bite' || T.Fi.bite.shark) return null;
         const sp = T.Fi.bite.species; T.a.click(0); await T.pump(4000, 0.05, () => T.Fi.state === 'idle');
         const h = T.a.heldItem(); if (!h?.isCaughtFish) return null;
         return { sp, name: h.name, raw: h.raw, points: T.a.totalScore() - score0, expect: T.cfg.FISHING.points[sp], caught: T.a.stats.fishCaught, by: T.a.stats.fishBySpecies, q: T.a.stats.fishQuestSteps.s };

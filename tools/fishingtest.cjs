@@ -12,7 +12,8 @@ let failed = 0; const check = (ok, name, data) => { console.log(`${ok ? 'PASS' :
 const setup = async () => {
   const a = __app, F = a.riverFish, Fi = a.fishing; a.renderer.setAnimationLoop(null); a.showOverlay(false); a.touch.enabled = true; document.getElementById('corner-qr')?.style.setProperty('display', 'none');
   const [rb, sw, cfg, hc] = await Promise.all([import('/src/riverbridge.js'), import('/src/riverfishswim.js'), import('/src/config.js'), import('/src/heldcategory.js')]);
-  window.T = { a, F, Fi, rb, sw, cfg, hc, async pump(ms, dt = 0.05, until = null) { const end = performance.now() + ms; while (performance.now() < end) { a.step(dt); __ghosts.update(dt); if (until?.()) return true; await new Promise((r) => setTimeout(r, 50)); } return false; },
+  const msgs = []; { const om = Fi.onMessage; Fi.onMessage = (m) => { msgs.push([Fi.state, m]); om(m); }; } // (what the game said, for the failure data)
+  window.T = { a, F, Fi, rb, sw, cfg, hc, msgs, async pump(ms, dt = 0.05, until = null) { const end = performance.now() + ms; while (performance.now() < end) { a.step(dt); __ghosts.update(dt); if (until?.()) return true; await new Promise((r) => setTimeout(r, 50)); } return false; },
     stand(x, z, yaw = 0) { a.player.spawn(x, z, yaw); a.step(0.05); },
     /** stand on the lowest walkable ground at (x, z) (under the bridge deck, not on it) */
     standLow(x, z) { const P = a.player; P.spawn(x, z, 0); const g = P.groundAt(x, z, -4.5), d = P.eyeY - P.pos.y; P.pos.y = g; P.eyeY = g + d; a.step(0.05); return [P.pos.y, a.camera.position.y]; },
@@ -21,7 +22,30 @@ const setup = async () => {
     fish(id) { const f = sw.fishSpec(id, F.sync.born(id), F.sync.seed); return sw.fishAt(f, F.sync.t, {}, F.sync.seed); },
     clear(r = 1.2) { const c = a.camera.position, v = new a.camera.position.constructor(); a.scene.traverse((o) => { if (o.isMesh && o.visible && !o.isInstancedMesh && o.name !== 'fishing-float' && !o.name.startsWith('ghost-item')) { let p = o, mine = false; while (p) { if (p === a.camera) mine = true; p = p.parent; } if (mine) return; o.getWorldPosition(v); if (v.distanceTo(c) < r) o.visible = false; } }); },
     zoom(fov) { a.camera.userData.fov0 ??= a.camera.fov; a.camera.fov = fov ?? a.camera.userData.fov0; a.camera.updateProjectionMatrix(); },
-    info() { const s = Fi.state_(); return { ...s, held: a.heldItem()?.name ?? null, heldCat: T.hc.heldCategory(a.heldItem()), float: Fi.float.visible, line: Fi.line.visible, ring: Fi.ring.visible, label: document.getElementById('action').textContent, near: F.sync.near }; } };
+    /** #1776: the cast's dice are the only thing the test takes out of the bite rules (FISHING.wait's hazard sum and the fish within `radius` m are unchanged):
+     *  `Fi.rnd` (the injectable `rnd` of Fishing, `Math.random` in play) returns ~0 while waiting (0.999 at the strike, so the shark never slips), so the weighted pick takes the first fish in reach and the hazard
+     *  test passes on the first frame after `wait.min` as soon as ANY fish is within `wait.radius` of the float. Whether one is, stays the real swimming. */
+    dice() { Fi.rnd = () => (Fi.state === 'bite' ? 0.999 : 1e-6); }, // (the strike's own roll, the shark's slip, stays a no-slip)
+    /** the live fish on the open river (not under a deck), nearest to (x, z) first, as [{ id, o, d }] */
+    fishNear(x, z) { return [...Array(18).keys()].filter((id) => !F.sync.isGone(id)).map((id) => ({ id, o: T.fish(id) })).filter((q) => rb.deckAt(q.o.x, q.o.z) === null && Math.abs(q.o.x) < 200).map((q) => ({ ...q, d: Math.hypot(q.o.x - x, q.o.z - z) })).sort((p, q) => p.d - q.d); },
+    /** #1776: a bite on demand. Whatever the float's state, wait for a bite; a float with no fish within reach (they swim) is reeled in and cast again
+     *  at the fish nearest to `near` (x, z), up to `tries` casts. Returns { bit, casts, near }: the info at the bite (or the last one) and how often it had to cast. */
+    async bite(near, tries = 8, ms = 20000) {
+      let casts = 0, last = null;
+      for (let k = 0; k < tries; k++) {
+        if (Fi.state === 'idle') {
+          const x = T.fishNear(near[0], near[1])[0]; if (!x) { await T.pump(1000); continue; }
+          T.bank(x.o.x, x.o.z, 2.5, false); T.look(x.o.x, x.o.water, x.o.z); a.step(0.016); if (!Fi.aim()) continue;
+          a.click(0); casts++; await T.pump(3000, 0.05, () => Fi.state === 'wait');
+        }
+        // wait for the bite; give up on this float when its fish are all out of reach (and the bite would never come)
+        await T.pump(ms, 0.05, () => Fi.state === 'bite' || (Fi.state === 'wait' && Fi.t > cfg.FISHING.wait.min + 0.5 && F.near(Fi.at.x, Fi.at.z, cfg.FISHING.wait.radius).length === 0));
+        last = T.info(); if (Fi.state === 'bite' && !Fi.bite.shark) { const o = T.fish(Fi.bite.id), P = a.player.pos; last.dist = { fishPlayer: Math.round(Math.hypot(o.x - P.x, o.z - P.z)), fishFloat: Math.round(Math.hypot(o.x - Fi.at.x, o.z - Fi.at.z)), born: F.sync.born(Fi.bite.id), roomAt: Math.round(F.sync.roomMs) }; return { bit: last, casts }; } // (a shark bites only when no fish is in reach; this test is about fish, sharktest.cjs about the shark)
+        Fi.reelIn();
+      }
+      return { bit: last, casts };
+    },
+    info() { const s = Fi.state_(); return { ...s, msgs: msgs.slice(-6), net: { con: __ghosts.connected, connects: __ghosts.connects, idleS: Math.round((performance.now() - __ghosts.lastMove) / 1000), outbox: __ghosts.outbox.map((m) => m.t + (m.k ?? "")).join(), hidden: document.hidden, near: F.sync.near }, held: a.heldItem()?.name ?? null, heldCat: T.hc.heldCategory(a.heldItem()), float: Fi.float.visible, line: Fi.line.visible, ring: Fi.ring.visible, label: document.getElementById('action').textContent, near: F.sync.near }; } };
 };
 (async () => {
   const browser = await kit.launch(), errors = [];
@@ -56,7 +80,7 @@ const setup = async () => {
     check(take.name === 'fiskespöet' && took.held === 'fiskespöet' && took.heldCat === 'rod', 'the rod is aimed at and taken with E', { take, took });
     check(await pa(() => { const r = T.Fi.rod; return !r.clickIsUse && !r.shoots && !r.hitsTarget && !T.a.combat?.armed?.(); }), 'the rod is no weapon (no clickIsUse / shoots / hitsTarget)');
     // 3. by a fish: A on one bank, B on the other; cast at the fish
-    await pa(() => { const w = T.cfg.FISHING.wait; Object.assign(w, { min: 1.5, rate: 3 }); });
+    await pa(() => { const w = T.cfg.FISHING.wait; Object.assign(w, { min: 1.5, rate: 3 }); T.dice(); });
     await pa(() => T.stand(5, 118)); await pa(() => T.pump(2000));
     const pick = await pa(() => { const L = [...Array(18).keys()].map((id) => ({ id, o: T.fish(id) })).filter((x) => !T.F.sync.isGone(x.id) && T.rb.deckAt(x.o.x, x.o.z) === null && Math.abs(x.o.x) < 200); return L.map((x) => x.id); });
     // keep the waits short and the fish near: freeze the room clock is impossible, so cast right at the chosen fish's current place
@@ -77,8 +101,8 @@ const setup = async () => {
     check(seen.n >= 1 && seen.gap < 0.05 && seen.line, 'the other client sees the float (and the line) where it landed', seen);
     await pb((at) => { T.look(at[0], at[1], at[2]); T.a.step(0.016); T.clear(3.5); }, landed.at); await zshot(B.page, 'annan-spelare-flote.png', 30);
     // 4. a bite that is missed: no fish, the fish stays in the river
-    let bit = await pa(() => T.pump(30000, 0.05, () => T.Fi.state === 'bite').then(() => T.info()));
-    check(bit.state === 'bite' && !!bit.bite && bit.label === 'Haka!', 'after a short wait a fish bites; the touch button says Haka!', bit);
+    const got1 = await pa((at) => T.bite([at[0], at[2]]), landed.at); let bit = got1.bit; // (#1776: the float's own fish if they stay, else a cast at the nearest fish)
+    check(bit.state === 'bite' && !!bit.bite && bit.label === 'Haka!', 'after a short wait a fish bites; the touch button says Haka!', { ...bit, casts: got1.casts });
     if (bit.state === 'bite') { await pa(() => { T.clear(3); }); await zshot(A.page, 'napp.png', 30); }
     const missedId = bit.bite?.id;
     await pa(() => T.pump((T.cfg.FISHING.wait.window + 0.6) * 1000, 0.05, () => T.Fi.state === 'wait'));
@@ -88,17 +112,14 @@ const setup = async () => {
     check(missed.state === 'wait' && missed.held === 'fiskespöet' && missed.fish.length === 0 && missed.misses === 1 && !missed.gone && !missedB, 'a missed bite gives no fish; the fish stays in the river for both', missed);
     // 5. the next bite answered with the touch button: the fish in the hand, the rod on the bank, the fish gone for both
     await pa(() => T.Fi.shy.clear());
-    bit = await pa(() => T.pump(40000, 0.05, () => T.Fi.state === 'bite').then(() => T.info()));
-    if (bit.state !== 'bite') { // the fish swam off: cast again at another fish that is still near the bank
-      for (const other of pick.slice(1, 4)) { await pa(() => T.Fi.reelIn()); c = await castAt(A.page, other, 2.5, false); await pa(() => T.a.click(0)); bit = await pa(() => T.pump(30000, 0.05, () => T.Fi.state === 'bite').then(() => T.info())); if (bit.state === 'bite') break; }
-    }
+    bit = (await pa((at) => T.bite([at[0], at[2]]), landed.at)).bit; // (#1776: the same, instead of one more wait at a float whose fish have swum off)
     const caughtId = bit.bite?.id;
     await pa(() => document.getElementById('action').click());
     await pa(() => T.pump(6000, 0.05, () => T.Fi.state === 'idle'));
     await Promise.all([pa(() => T.pump(2500)), pb(() => T.pump(8000, 0.05, () => [...__ghosts.others.values()].find((x) => x.name === 'Alma')?.hi === 'fish'))]);
     const got = await pa((cid) => { const h = T.a.heldItem(), r = T.Fi.rod, p = T.a.player.pos; return { ...T.info(), isFish: !!h?.isCaughtFish, sp: h?.species, cm: h?.cm, raw: h?.raw, rodPlaced: r.placed && !r.held, rodGap: Math.hypot(r.model.position.x - p.x, r.model.position.z - p.z), gone: T.F.sync.isGone(cid) }; }, caughtId);
     const gotB = await pb((cid) => { const g = [...__ghosts.others.values()].find((x) => x.name === 'Alma'); return { gone: T.F.sync.isGone(cid), shown: T.F.state().fish.some((f) => f.id === cid), hi: g?.hi, bob: g?.bob ?? null, floats: T.Fi.remoteShown }; }, caughtId);
-    check(got.isFish && /^en \S+, \d+ cm$/.test(got.held) && got.sp === bit.bite?.species && got.cm === bit.bite?.cm && got.raw === true && got.heldCat === 'fish' && got.catches === 1, `a bite answered in time: ${got.held} in the hand (species, length, raw)`, got);
+    check(got.isFish && /^en \S+, \d+ cm$/.test(got.held) && got.sp === bit.bite?.species && got.cm === bit.bite?.cm && got.raw === true && got.heldCat === 'fish' && got.catches === 1, `a bite answered in time: ${got.held} in the hand (species, length, raw)`, { ...got, atBite: bit.dist, netAtBite: bit.net });
     check(got.rodPlaced && got.rodGap < 1.2 && !got.float && !got.line, 'the rod is laid on the bank at the feet; the line is in', got);
     check(got.gone && gotB.gone && !gotB.shown, 'the caught fish is gone from the river for both clients', { a: got.gone, b: gotB });
     check(gotB.hi === 'fish' && gotB.bob === null && gotB.floats === 0, 'the other client sees the fish in the catcher\'s hand and the float gone', gotB);
