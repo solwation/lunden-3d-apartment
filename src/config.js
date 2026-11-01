@@ -1890,6 +1890,25 @@ export const SEASON = {
   snow: { ground: 0xeef3f7, roof: 0xf4f7fa, hedge: 0xdfe8ec, paving: 0xe6ebee },
 };
 
+// Footprints in the snow (#1773, src/footprinttrail.js, src/footprints.js, cloudflare/trails.js). In the snow months players (shoe
+// prints, left and right) and the outdoor cats (small paw prints) leave prints where snow lies outdoors: not on the ploughed roads
+// (roads.js onRoad), not in water, not under a roof / canopy / balcony, not indoors. Each print fades out linearly and is gone `life`
+// s after it was made. All prints are one instanced quad mesh (one draw call, a canvas atlas: shoe | paw), at most `max` of them;
+// a print fades out with distance between `fadeFrom` × and 1 × `drawDist` (phone `drawDistPhone`) m and the mesh is hidden while no
+// live print is that near (no draw call). Shoe: `size` [width, length] m, `step` m between prints, `side` m off the line, a new line
+// after a gap over `jump` m; paw the same (cats walk nearly in one line). `opacity`: a fresh print's alpha. `room`: the players room's
+// bounded memory for late joiners (cloudflare/trails.js): a sparse point per `gap` m walked, a new trail after a jump over `jump` m,
+// at most `max` points, none older than `life`; memory only, no KV or storage (#1689), lost when the room hibernates. `catOuting`: on
+// snow days an outdoor cat goes out for `out` s of some `slot`-s windows (chance `chance`, scaled by its personality's traits when it
+// has them, #1772), a pure function of the clock so every client agrees and a late joiner rebuilds the last `life` s. All *guess*.
+export const FOOTPRINTS = {
+  life: 1800, max: 2000, drawDist: 30, drawDistPhone: 20, fadeFrom: 0.7, opacity: 0.55, color: 0x8796ab,
+  shoe: { size: [0.12, 0.29], step: 0.68, side: 0.1, jump: 3 },
+  paw: { size: [0.055, 0.06], step: 0.16, side: 0.035, jump: 2 },
+  room: { gap: 1.2, jump: 6, max: 1200 },
+  catOuting: { slot: 1500, out: 480, chance: 0.45 },
+};
+
 // Leaf-card crowns and branching trunks (#679, src/foliage.js) for the site's trees, shrubs, the courtyard's plantings and
 // vines and the far southern woodland. All visual choices (*guess*), tuned by eye against screenshots, no measurements:
 // `atlas` / `atlasPhone` px of the shared leaf atlas (2 × 2 cells); `cards` per lobe [desktop, phone] per level and the

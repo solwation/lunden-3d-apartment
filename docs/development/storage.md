@@ -1479,6 +1479,12 @@ Shared pony paddock (#1644): the room also picks one leader among the players ne
 (`{ t: 'pk', k: 's' }`), grass mask (`{ t: 'pkg' }`, up to `PADDOCK_SYNC.maxGrass` characters) and the others' pats; nothing is stored.
 Protocol in [animals-audio.md](animals-audio.md#shared-paddock-1644). `cloud.yml` also redeploys on `src/paddockgeo.js` changes.
 
+Recent paths for footprints (#1773, `cloudflare/trails.js` `RoomTrails`): the room keeps, in memory only (no KV, no Durable Object
+storage, #1689; lost when the object hibernates, the prints then start afresh), a sparse point `[key, x, y, z, ms]` per `FOOTPRINTS.room.gap`
+m walked from each accepted player state, a new `key` per unbroken trail (a jump over `jump` m, riding, the jetpack's thrust, sitting,
+a new connection), at most `room.max` points in a ring and none older than `FOOTPRINTS.life`. No message of its own: the welcome carries
+`trails: { k: [[key, x, y, z, age s], …] }` (~30 KB at most) and the client decides where snow lies ([graphics.md](graphics.md#footprints-in-the-snow-1773)).
+
 Shared spray paint (#1724, `cloudflare/graffiti.js` `RoomGraffiti`, client `src/graffitisync.js`): gossip, no storage. The room keeps the union
 of the spots its players bring in memory only (no KV per spot, #1689; no Durable Object storage: DO-SQLite with an alarm was the
 rejected cost alternative), and every client keeps the union it has seen in `lunden.graffiti`, so the paint lasts while somebody who saw it

@@ -3,7 +3,7 @@
 //   (2) the cats move along their loops with the (test) clock, standing on the ground
 //   (3) walking up: the cat stops, sits and becomes the ordinary cat; it can be petted (purring) and carried
 //   (4) put down outdoors and left: it turns back into the roaming cat and walks home to its loop
-//   (5) rain and the snow months: hidden; clear summer weather brings them back
+//   (5) rain and the snow months: hidden (except a snow-day outing, #1773); clear summer weather brings them back
 //   (6) draw calls near a cat (full / merged / none) and pictures of both zones
 //   #1772 brains: (7) a cat climbs up into a tree, sits on a branch and comes down; (8) one chases a butterfly; (9) the social cat
 //   walks up to a visitor standing off its loop and becomes the ordinary cat
@@ -137,7 +137,7 @@ let failed = 0; const check = (ok, name, data) => { console.log(`${ok ? 'PASS' :
       a.weather.force = 'clear'; T.run(30, 0.1);
       const after = c.group.visible;
       a.day.month = 1; T.run(30, 0.1);
-      const snow = O.cats.map((q) => q.group.visible).some(Boolean);
+      const snow = O.cats.some((q) => q.group.visible && !O.snowOut(q)); // (#1773: only a cat on a short snow-day outing is out)
       a.day.month = 7; T.run(30, 0.1);
       return { clear, rain, after, snowAnyVisible: snow, summer: c.group.visible };
     });

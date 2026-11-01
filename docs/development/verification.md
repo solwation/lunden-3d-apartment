@@ -41,6 +41,16 @@ Measured peaks (cgroup `memory.peak`, SwiftShader, full Chromium unless stated):
 | Blank page, 15 s pointer lock: headless-shell 1208 / full Chromium 1248 | 2.5 GB / 0.45 GB |
 | `playroomtest.cjs`: headless-shell 1208 / full Chromium 1248 | >12 GB (killed) / 1.9 GB, all 74 checks pass |
 
+## Footprints in the snow (#1773)
+
+Scoped plan: `node --test src/footprinttrail.test.mjs cloudflare/trails.test.mjs` (stride and placement, alternating feet, sampling
+independence, fading to gone at 30 min, the bounded ring and compaction, snow-day outings and personalities, the room's sparse bounded
+history, the welcome's `trails` for a late joiner, gone after 30 min) plus `cloudflare/players.test.mjs`; one three-client run
+`tools/browsertest.sh node tools/footprintstest.cjs GAME LOCAL_WORKER OUT` (in snow: A's prints on the lawn, B sees them, none on the
+ploughed road or indoors, a late C sees them from the room, paw prints behind a cat out, half faded at 15 min, gone at 30 min); and the
+phone perfcount `tools/perfcount.html?lowmem&w=844&h=390&quality=0&month=12` (start view unchanged: no prints near, no draw call).
+Images: [docs/verification/1773](../verification/1773/).
+
 ## Playhouse disco lamp on a phone (#1595)
 
 `node tools/verify_1595.cjs SITE OUT` runs the real app in an iPhone profile (852×393 @3, iPhone UA = lowMemory, touch)

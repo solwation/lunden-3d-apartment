@@ -21,6 +21,7 @@ import { RoomRiverFish, cleanRiverFish } from './riverfish.js';
 import { RoomTime, cleanTime } from './roomtime.js'; // #1774
 import { RoomGraffiti, cleanGraffiti, GRAFFITI_SYNC } from './graffiti.js';
 import { RoomDoors, cleanDoor } from './doors.js';
+import { RoomTrails } from './trails.js';
 export { GRAFFITI_SYNC };
 
 // Other players as ghosts (#666): one Durable Object room for everybody (`idFromName('world')`), WebSockets with the
@@ -68,6 +69,7 @@ export { GRAFFITI_SYNC };
 // #1752: the fish in Höje å: { t: 'rf', k, … } answered by cloudflare/riverfish.js (the room's clock, seed and caught fish, memory only, no KV; protocol in that file).
 // #1769: the rare shark rides the same messages; its one catch record is kept in storage 'shark' (written at most once a week, deleted when expired).
 // #1775: doors opened and closed: { t: 'dr', i, o } relayed to everybody by cloudflare/doors.js (the room's state in memory only, no KV; protocol in that file); the welcome has doors: [[id, 1], …].
+// #1773: footprints in the snow: no message of their own; the welcome's `trails` field carries the recent paths (cloudflare/trails.js, memory only, no KV).
 // #1724: the spray paint shared by gossip: { t: 'gf', s } relayed by cloudflare/graffiti.js (the union in memory only, no KV or storage; protocol and limits in that file).
 // #1664: physical two-deck controls add {t:'mus',k:'d',c,s?,v?}; see src/djstate.js for bounded operations.
 // The same stored transport carries dj {ix,on,pos,at,gain,cross,volume,shuffle}; broadcasts include elapsed deck positions.
@@ -357,6 +359,7 @@ export class PlayerRoom {
     this.doors = new RoomDoors(send, () => this.open().map((ws) => ({ ws }))); // #1775: the doors' state (memory only, no KV)
     this.roomTime = new RoomTime(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1774: the shared game time (one offset, memory only, no KV)
     this.graffiti = new RoomGraffiti(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1724: the shared spray paint (memory only, no KV)
+    this.trails = new RoomTrails(); // #1773: the recent paths for a late joiner's footprints (memory only, no KV)
     this.paddock = new RoomPaddock(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1644: the shared pony paddock (relay only)
     this.snake=new RoomSnake(()=>this.open().map(ws=>({ws,a:att(ws)})),()=>this.tvs,send,row=>{if(env?.LUNDEN)this.gameWrites=this.gameWrites.then(()=>recordGame(env.LUNDEN,'ormstriden',row)).catch(()=>{});});
     ctx.blockConcurrencyWhile?.(async () => { this.pool = (await ctx.storage.get('pool')) ?? null; this.mus = (await ctx.storage.get('mus')) ?? null;await this.cinema.load();for(const tv of this.tvs)await tv.load();await this.riverFish.load(); });
@@ -429,7 +432,7 @@ export class PlayerRoom {
     const a = att(ws);
     try { ws.close(code, reason); } catch { /* gone */ }
     if (a) this.broadcast({ t: 'x', i: a.i }, ws);
-    this.poolTrim(ws); this.paddock.trim(ws, a); this.squirrels.trim(ws, a); this.riverFish.trim(ws, a); this.graffiti.trim(this.open().filter((x) => x !== ws).length); this.roomTime.trim(this.open().filter((x) => x !== ws).length);
+    this.poolTrim(ws); this.paddock.trim(ws, a); this.squirrels.trim(ws, a); this.riverFish.trim(ws, a); this.trails.leave(a?.i); this.graffiti.trim(this.open().filter((x) => x !== ws).length); this.roomTime.trim(this.open().filter((x) => x !== ws).length);
     this.cinema.trim(ws);for(const tv of this.tvs)tv.trim(ws);this.snake.trim(ws);
     const cinemaSave=Promise.all([this.cinema.flush(),...this.tvs.map(tv=>tv.flush())]);this.ctx.waitUntil?.(cinemaSave);
   }
@@ -552,7 +555,7 @@ export class PlayerRoom {
     const i = crypto.randomUUID().slice(0, 8), n = cleanName(url.searchParams.get('n'));
     const attachment = { i, n, s: null, turned: false, rightFirstTurn: null, leftTinyTurn: null, leftStandingTurn: null, frontTurn: null, rearFirstTurn: null, l: COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false, consumed: [] };
     server.serializeAttachment(attachment);
-    send(server, JSON.stringify({ t: 'w', i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons }, ...(others.length ? this.doorsWelcome() : (this.doors.reset(), {})), ...(this.roomTime.welcome(now) ? { tm: this.roomTime.welcome(now) } : {}) }));
+    send(server, JSON.stringify({ t: 'w', i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons }, ...(others.length ? this.doorsWelcome() : (this.doors.reset(), {})), ...(this.roomTime.welcome(now) ? { tm: this.roomTime.welcome(now) } : {}), trails: this.trails.snapshot(now) })); // (#1773: trails)
     this.broadcast({ t: 'j', i, n, l: COMBAT.lives }, server);
     this.graffiti.join(server, others.map((ws) => ({ ws, a: att(ws) })), now); // #1724
     return new Response(null, { status: 101, webSocket: client });
@@ -724,6 +727,7 @@ export class PlayerRoom {
         }
         if (!a.s || s.r !== a.s.r || s.p.some((v, i) => v !== a.s.p[i])) a.movedAt = now;
         a.s = s; this.publishState(ws, a);
+        this.trails.record(a.i, s, now); // #1773
         this.poolPresence(ws, a); // #1355
         this.paddock.presence(ws, a, now); // #1644
         this.cinema.presence(ws,a,inPlayroom(a.s?.p));for(const tv of this.tvs)tv.presence(ws,a,tv.computer?computerViewer(tv.id,a.s?.p):tvViewer(tv.id,a.s?.p));
@@ -808,7 +812,7 @@ export class PlayerRoom {
     const a = att(ws);
     try { ws.close(code === 1005 || code === 1006 ? 1000 : code, 'bye'); } catch { /* already closed */ }
     if (a) this.broadcast({ t: 'x', i: a.i }, ws);
-    this.poolTrim(ws); this.paddock.trim(ws, a); this.squirrels.trim(ws, a); this.riverFish.trim(ws, a); this.graffiti.trim(this.open().filter((x) => x !== ws).length); this.roomTime.trim(this.open().filter((x) => x !== ws).length); await this.poolFlush();
+    this.poolTrim(ws); this.paddock.trim(ws, a); this.squirrels.trim(ws, a); this.riverFish.trim(ws, a); this.trails.leave(a?.i); this.graffiti.trim(this.open().filter((x) => x !== ws).length); this.roomTime.trim(this.open().filter((x) => x !== ws).length); await this.poolFlush();
     this.cinema.trim(ws);for(const tv of this.tvs)tv.trim(ws);this.snake.trim(ws);await this.cinema.flush();for(const tv of this.tvs)await tv.flush();
     await this.scheduleRecovery();
   }

@@ -204,6 +204,12 @@ src/reflections.js     mirror images: a Reflector per mirror, only the nearest o
                        without repainting or marking the texture dirty. The sprite reuses ghost tag dimensions and its existing above-head anchor (there is no own name tag). Owners lease one
                        material/texture; reset, self-name replacement and disposal release the lease, with the last owner disposing both resources.
 src/seasons.js         month → tree colours/leaf cover and snow on ground, roofs, hedges, paving (SEASON)
+src/footprints.js      footprints in the snow (#1773, FOOTPRINTS): one InstancedMesh of atlas quads (shoe | paw, a canvas), fade by
+                       age and distance in the shader (onBeforeCompile), hidden while no live print is within drawDist; walkers fed by main.js
+src/footprinttrail.js  #1773 without three.js: Stepper (prints every step m, alternating feet), PrintStore (bounded ring, fade, compact),
+                       catOut (snow-day outings), netTrails (the room's history). node test src/footprinttrail.test.mjs
+tools/footprintstest.cjs three clients against the local Worker in snow (#1773): A's prints on the lawn, none on the road or indoors, B sees
+                       them, a late C gets them from the room, paw prints behind a cat out, half faded at 15 min, gone at 30 min, pictures
 src/huego.js           the Philips Hue Go on Sovrum 1's window board (#409, #428, HUE_GO): the classic frosted bowl, a lamp of its own; its
                        action menu (#367, an ActionSet; FloorLamp `options`) = Tänd/Släck + Byt färg (scenes), the colour kept by keep.js
 src/screens.js         TV programmes drawn on a canvas (PROGRAMS: space, underwater, superheroes, unicorn …), channel
@@ -215,6 +221,25 @@ tools/weathertest.html headless test (#674 too: simTemp, RealWeather against a m
 ```
 
 ## Recent implementation notes
+
+### Footprints in the snow (#1773)
+
+In the snow months (`SEASON.snowMonths`, i.e. while the ground is white; snowfall in another month leaves none) players leave shoe
+prints, alternately left and right `FOOTPRINTS.shoe.step` m apart, and the outdoor cats small paw prints, where snow lies: main.js
+`snowY` says no inside our flat, off the ground (a roof, a deck, a bridge, in the air), on a ploughed road (`onRoad`), in a stairwell or
+visited flat, in the river and under a roof, canopy or balcony (`roofs.above` within 9 m). Each print is dated by when the walker was
+there and fades linearly to nothing in `FOOTPRINTS.life` s (30 min, real time). Our own prints come from `player.pos`, the other players'
+from their interpolated ghost positions (no new message; riding, the jetpack's thrust and sitting make none), the cats' from their loop
+positions while they are out (`outdoorcats.js snowOut`: short snow-day outings, a pure function of the clock, see
+[animals-audio.md](animals-audio.md#outdoor-cats-1767)). A late joiner gets the players' last 30 minutes from the room
+(`cloudflare/trails.js`, the welcome's `trails` field, [storage.md](storage.md)) and rebuilds the cats' from their loops.
+Drawing: all prints (at most `max`, 2000; the oldest give way) are one `InstancedMesh` of quads with a two-cell canvas atlas, a
+`MeshLambertMaterial` (no new light, no shadow), transparent without depth writes, polygon offset; per-instance `fpBorn` / `fpCode`
+attributes and an `onBeforeCompile` fade by age and by distance (`fadeFrom` × to 1 × `drawDist`, phone `drawDistPhone`). The mesh is
+hidden while no live print lies within the draw distance, so a view without prints near (the start view, also in December) gets
+no extra draw call; otherwise exactly one. Gone prints are compacted out every 20 s; only new slots are uploaded (`addUpdateRange`).
+`&nofootprints` disables the module. Tests: `node --test src/footprinttrail.test.mjs cloudflare/trails.test.mjs`, browser
+`tools/footprintstest.cjs`. Images: [docs/verification/1773](../verification/1773/).
 
 Takgardinernas ljus (#499): `CURTAIN_LIGHT` samlar antagen svag transparens, diffus transmission, råhet och genomlysning. Alla sex `Curtain`-uppsättningar använder matt, lätt transparent tyg med `depthWrite` och `forceSinglePass`; de vanliga täta skuggorna stoppar direkt sol. `daylightCut` styr rummets befintliga diffusa fyllnad via `Blinds.update`, fullängd från gemensam transmission, kappans lilla bidrag från `spec.dim`. Plissématerial och vertikal styrning är oförändrade; inga nya ljus/renderpass. `curtaintest` verifierar även alla sex lagrade lägen efter riktig omladdning och tygens dags-/kvällsgenomlysning. Vyer och begränsningar: `docs/validation/issue-499/README.md`.
 

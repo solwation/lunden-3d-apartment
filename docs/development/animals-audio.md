@@ -248,7 +248,10 @@ A visitor within `notice` m makes it stop, sit and look; within `take` m, while 
 `release` m away on the ground it turns back into the roaming cat and walks home to its loop (`returnSpeed`); a road, water, a drop
 (`clearWay`, `maxStep`) or more than `maxReturn` m in the way and it fades and is back on its loop after `away` s; put down indoors it stays
 the ordinary cat until that cat leaves, then the same.
-Hidden (faded) underground, in the snow months and in rain over `rain`. `&nooutdoorcats` disables the module. Feeding them is not part of
+Hidden (faded) underground, in the snow months and in rain over `rain`. On snow days (#1773) a cat still goes out for short outings
+(`FOOTPRINTS.catOuting`: the first `out` s of some `slot`-s windows, hashed per cat and window, more often for playful/curious and less
+for lazy personalities when it has `traits`; `footprinttrail.js catOut`, a pure function of the clock) and leaves paw prints
+([graphics.md](graphics.md#footprints-in-the-snow-1773)). `&nooutdoorcats` disables the module. Feeding them is not part of
 this (#1766 owns the eating path). Tests: `node --test src/outdoorcatroute.test.mjs`; browser `tools/outdoorcatstest.cjs` (routes on
 dry walkable ground off the roads, movement, pet/carry, walking home, rain/snow, draw calls). Images: [docs/verification/1767](../verification/1767/).
 

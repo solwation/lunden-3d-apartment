@@ -4,6 +4,7 @@ import { OUTDOOR_CATS, SEASON } from './config.js';
 import { BREEDS, createCatPuppet, catLabel } from './cat.js';
 import { OutdoorCatBrain, turnTo } from './outdoorcatbrain.js';
 import { registerSeasonal } from './seasons.js';
+import { catOut } from './footprinttrail.js';
 
 // #1767: outdoor cats. A few cats of their own roam the courtyard and the river park (OUTDOOR_CATS in config.js): each walks its loop
 // (outdoorcatroute.js, a pure function of the wall clock, so every visitor sees roughly the same cat), rests, washes, looks about or
@@ -12,7 +13,8 @@ import { registerSeasonal } from './seasons.js';
 // (cat.js CatSpawner, sitting outdoors like a cat put down outside, #1287): pet, carry and put down work exactly as for that cat, and
 // whatever else that cat can do later (being fed, #1766) comes with it. Walked away from (or put down outdoors and left), it turns
 // back into the roaming cat and walks home to its loop; carried off too far, indoors or with a road/water in the way it fades and
-// turns up on its loop again later. Hidden in rain (it shelters) and in the snow months. Per client, no shared sync.
+// turns up on its loop again later. Hidden in rain (it shelters) and in the snow months, except
+// short outings on snow days (#1773, footprinttrail.js catOut, a pure function of the clock) that leave paw prints. Per client, no shared sync.
 // #1772: each cat has a personality and a brain (outdoorcatbrain.js) that picks what it does at each rest stop (sleep, wait for
 // company, explore, stalk, chase a butterfly, climb a tree) and how it meets the visitor (a social cat walks up and follows a little,
 // a shy one keeps away). The brain owns where the cat is (x, z, h above the ground, yaw, pitch) and its state; this file draws it,
@@ -115,10 +117,13 @@ export class OutdoorCats {
   }
 
   /** #1772 / #1773: is the cat out at all (not sheltering from the rain, not in the snow months)? The one place that decides it. */
-  isOut() { return !this.winter && this.rain <= C.rain; }
+  isOut(c) { return (!this.winter || (!!c && this.snowOut(c))) && this.rain <= C.rain; } // (#1773: a snow-day outing)
 
   /** Where `c`'s loop has it now. */
   scheduled(c) { return c.scheduled(this.now()); }
+
+  /** #1773: is `c` out on a snow day at `t` (s, the wall clock)? (The snow months hide it otherwise.) */
+  snowOut(c, t = this.now()) { return catOut(c.spec, c.id, t - C.epoch + c.spec.phase); }
 
   place(c, s) { c.x = s.x; c.z = s.z; c.yaw = s.yaw; c.h = 0; c.pitch = 0; c.at = s; }
 

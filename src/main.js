@@ -73,6 +73,8 @@ import { Measure } from './measure.js';
 import { cloudTexture, groundY, renderedTerrainY, lampGroundY, treeFeet, aoTrees } from './surroundings.js';
 import { Squirrels } from './squirrels.js';
 import { OutdoorCats } from './outdoorcats.js';
+import { Footprints } from './footprints.js';
+import { SHOE, PAW } from './footprinttrail.js';
 import { RiverFish } from './riverfish.js';
 import { Fishing } from './fishing.js'; // #1753: the rod under the road bridge, bites and caught fish
 import { onRoad, onWalk } from './roads.js';
@@ -2987,6 +2989,47 @@ fall.onDamage = async (drop, gap) => {
   try { fall.resolve(await combat.fall(drop, gap)); }
   catch (error) { console.error('Fall damage failed', error); fall.resolve(null); }
 };
+// #1773: footprints in the snow (src/footprints.js): us, the other players (from their synced positions) and the outdoor cats out on a
+// snow day; the room's recent paths come with the welcome (cloudflare/trails.js). &nofootprints disables them.
+const footprints = params0.has('nofootprints') ? null : new Footprints({ scene, lowMemory, snowY: (x, y, z) => {
+  if (x > 0 && x < world.size.x && z > 0 && z < world.size.z) return null; // our flat
+  const g = parkGround(x, z);
+  if (!Number.isFinite(g) || Math.abs(y - g) > 0.45) return null; // in the air, up on a roof / a deck / a bridge, down in the garage
+  if (onRoad(x, z, 0.2) || world.core?.covers(x, z) || world.unitAt?.(x, z, y)) return null; // a ploughed road, a stairwell, a visited flat
+  const r = riverAt(x, z);
+  if (r.distance < r.width / 2 + 1 && g < waterYAt(x, z, r) + 0.05) return null; // the river
+  if ((world.roofs?.above(x, z, g + 0.2) ?? Infinity) < g + 9) return null; // under a roof, a canopy or a balcony
+  return g;
+} });
+if (footprints) {
+  { const w = ghosts.onWelcome; ghosts.onWelcome = (m) => { w?.(m); footprints.welcome(m.trails); }; } // (after combat's own)
+  const fpCatAt = (c, t) => c.scheduled(t); // (the loop; an outing at a rest stop is drawn live only)
+  footprints.catHistory = (t0, t1) => { // the cats' outings of the last FOOTPRINTS.life s, from their clock-driven loops (per outing a path)
+    const out = [], skew = footprints.skew;
+    for (const c of outdoorCats?.cats ?? []) {
+      let path = null;
+      for (let t = t0; t <= t1; t += 1) {
+        if (!outdoorCats.snowOut(c, t - skew)) { path = null; continue; }
+        const s = fpCatAt(c, t - skew);
+        if (!path) out.push(path = []);
+        path.push({ x: s.x, y: parkGround(s.x, s.z), z: s.z, t });
+      }
+    }
+    return out;
+  };
+  const list = [];
+  footprints.sources = () => {
+    list.length = 0;
+    const p = player.pos;
+    list.push({ key: 'me', kind: SHOE, x: p.x, y: p.y, z: p.z, ok: !player.riding && !car.occupied && !rest.active && !player.flying });
+    for (const g of ghosts.others.values()) { const f = g.feet; list.push({ key: `g${g.id}`, kind: SHOE, x: f.x, y: f.y, z: f.z, ok: g.snaps.length > 0 && g.bikeWire === null && g.jp !== 2 && !g.pose }); }
+    for (const c of outdoorCats?.cats ?? []) {
+      if (c.st === 'bound') { const o = cat.object.position; if (cat.visible && cat.outdoor && !cat.held) list.push({ key: `c${c.name}`, kind: PAW, x: o.x, y: o.y, z: o.z, ok: true }); continue; }
+      if (c.st !== 'away' && outdoorCats.isOut(c)) list.push({ key: `c${c.name}`, kind: PAW, x: c.x, y: parkGround(c.x, c.z), z: c.z, ok: true });
+    }
+    return list;
+  };
+}
 // each weapon's use is one shot message (hit or miss) for the others in the fight; the room decides a hit. Things that fly
 // on an arc send where they started and their velocity (a dart: the last one of the blasters' pool; the ball)
 const flight = (from, v) => ({ o: from.clone(), d: v.clone().normalize(), s: v.length() });
@@ -3361,6 +3404,7 @@ function step(dt) {
   greet.update(dt); // speech bubbles (#247)
   if (cat.visible && !cat.held && !cat.released) cat.followRug(); // #1009: idle floor support also follows material previews.
   outdoorCats?.update(dt, player.below || player.inCore || player.inPlayroom, weather.kind === 'snow' ? 0 : weather.rain); // #1767: before the cat, which one of them may have just become
+  footprints?.update(dt, footprints.sources, camera.position); // #1773: after the cats and the player have moved
   cat.update(dt);
   olofDriver.update(dt);
   checkCatButt();
@@ -3859,4 +3903,4 @@ const openPanel = () => !overlay.hidden ? 'menu' : !reading ? (lowMemory && port
   : viewing ? 'poster' : isAvatarCustomizerOpen() ? 'avatar' : cinema.open || computerHub.open || tvMedia.open ? 'video' : 'other';
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding, panel: openPanel }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { medals, squirrels, outdoorCats, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
+window.__app = { medals, squirrels, outdoorCats, footprints, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
