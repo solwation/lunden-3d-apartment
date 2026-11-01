@@ -7403,6 +7403,7 @@ export const FISHING = {
   // where the rod lies: on the north shore flat under the road bridge (SITE.bridges.road, deck z 100…145.8), just south of the
   // north pier pair (riverbridge.js pierBoxes: x 21.7 / 25.9, z 107.6), beside the walk under the deck; along x, so it reads as tucked away by the piers
   home: { x: 23.8, z: 109.4, yaw: 1.65 },
+  respawn: 240, // #1781 *guess*: s (wall clock, also across a reload) the rod may lie away from `home`, not in a hand, before it is back under the bridge (the one rod moves, none is added)
   rod: { length: 2.0, butt: 0.012, tip: 0.0025, handle: 0.32, reel: 0.03 }, // m: blank length, radii at the butt and the tip, cork handle, reel radius
   held: { x: 0.17, y: -0.19, z: -0.4, pitch: 0.75, yaw: 0.12 }, // camera-space pose of the held rod (m, rad): low right, pointing ahead and up
   grip: [0.02, 0, -0.01], // model-local point the hand closes round: the handle just behind the reel (hand.js gripOf)

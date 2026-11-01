@@ -243,10 +243,10 @@ export class Fishing {
    *  Holdable (main.js adds it to the holdables); touch(): touch controls on; rnd: injectable for tests.
    *  #1754: the hooks onRod() (the rod taken), onCatch(fish), onCooked(fish, kind), onBurnt(fish, kind), onTakenCooked(fish, kind) (taken
    *  off the heat cooked, not burnt), onEaten(fish, state); `cookers` = { grills: [Grill], pan } (main.js) for keep.js. */
-  constructor({ scene, camera, riverFish, player, groundY, onMessage = () => {}, onItem = () => {}, touch = () => false, rnd = Math.random }) {
+  constructor({ scene, camera, riverFish, player, groundY, onMessage = () => {}, onItem = () => {}, touch = () => false, rnd = Math.random, now = () => Date.now() }) {
     const nop = () => {};
     Object.assign(this, { fins: [], onSharkCatch: nop, onRod: nop, onCatch: nop, onCooked: nop, onBurnt: nop, onTakenCooked: nop, onEaten: nop, onCatFed: nop, cookers: { grills: [], pan: null } });
-    Object.assign(this, { scene, camera, riverFish, player, onMessage, onItem, touch, rnd, state: 'idle', t: 0, fish: [], shy: new Map(), at: new THREE.Vector3(), from: new THREE.Vector3(), bite: null, pending: null, waitT: 0, hinted: false, peers: null, remote: [], aimAt: null, aimFrame: -1, frame: 0, catches: 0, misses: 0 });
+    Object.assign(this, { scene, camera, riverFish, player, onMessage, onItem, touch, rnd, state: 'idle', t: 0, fish: [], shy: new Map(), at: new THREE.Vector3(), from: new THREE.Vector3(), bite: null, pending: null, waitT: 0, hinted: false, peers: null, remote: [], aimAt: null, aimFrame: -1, frame: 0, catches: 0, misses: 0, now, awaySince: null });
     this.rod = new FishingRod(scene, camera, this, groundY);
     const fgeo = floatGeometry();
     this.floatGeo = fgeo;
@@ -408,9 +408,19 @@ export class Fishing {
     for (let i = 0; i < list.length; i++) { r -= w[i]; if (r <= 0) { pick = list[i]; break; } }
     return { rate: F.wait.rate * sum, pick: pick ?? list.at(-1) ?? null };
   }
+  /** #1781: the rod lying away from its home (put down elsewhere, not in a hand, line in): after FISHING.respawn s the same rod is back under the
+   *  bridge (never a second one). `awaySince` (ms, wall clock) is kept by keep.js so a reload counts the time away. Local to this client. */
+  rodWatch() {
+    const r = this.rod, h = F.home, away = !r.held && stowedItem() !== r && r.placed && !r.broken && this.state === 'idle' && Math.hypot(r.model.position.x - h.x, r.model.position.z - h.z) > 1;
+    if (!away) { this.awaySince = null; return; }
+    const t = this.now();
+    if (this.awaySince === null || this.awaySince > t) this.awaySince = t;
+    else if (t - this.awaySince >= F.respawn * 1000) { r.goHome(); r.model.visible = false; this.awaySince = null; }
+  }
   /** Per frame: the float, the line, the bite and the others' floats. */
   update(dt) {
     this.frame++;
+    this.rodWatch();
     for (const f of this.fish) f.cookTick(dt); // #1754
     if (this.state !== 'idle' && (heldItem() !== this.rod || stowedItem() === this.rod)) this.reelIn();
     this.t += dt;
@@ -502,10 +512,14 @@ export class Fishing {
       const p = f.model.getWorldPosition(new THREE.Vector3()), q = f.model.getWorldQuaternion(new THREE.Quaternion());
       return { p: [p.x, p.y, p.z].map((v) => Math.round(v * 1000) / 1000), q: [q.x, q.y, q.z, q.w].map((v) => Math.round(v * 1000) / 1000) };
     });
-    return out.length || fins.length ? { v: 1, fish: out, ...(fins.length ? { fins } : {}) } : null;
+    const ra = Number.isFinite(this.awaySince) ? Math.round(this.awaySince) : 0; // #1781: when the rod was left away from home
+    return out.length || fins.length || ra ? { v: 1, fish: out, ...(fins.length ? { fins } : {}), ...(ra ? { ra } : {}) } : null;
   }
   loadState(s) {
     if (s?.v !== 1 || !Array.isArray(s.fish)) return;
+    if (Number.isFinite(s.ra) && s.ra > 0 && this.rod.placed && !this.rod.held) { // #1781 (`things` came first: the rod lies where it was left)
+      if (this.now() - s.ra >= F.respawn * 1000) { this.rod.goHome(); this.rod.model.visible = false; this.awaySince = null; } else this.awaySince = s.ra;
+    }
     for (const e of s.fish.slice(0, F.keep)) {
       const spec = RIVER_FISH.species.find((x) => x.name === e?.sp), range = F.species[e?.sp]?.cm;
       if (!spec || !range || !Number.isInteger(e.cm) || e.cm < range[0] || e.cm > range[1]) continue;

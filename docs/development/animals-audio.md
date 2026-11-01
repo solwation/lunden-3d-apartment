@@ -901,6 +901,8 @@ through the player state `fb` = `[x, y, z, bite]` (cloudflare/players.js `cleanF
 since an angler stands still. Tests: `node --test cloudflare/riverfish.test.mjs cloudflare/players.test.mjs src/heldcategory.test.mjs`; browser
 `tools/fishingtest.cjs` (two clients); `tools/ghostitemtest.cjs`. Images: [docs/verification/1753](../verification/1753/).
 
+**Rod returns home (#1781).** `Fishing.rodWatch()` (each `update`): a rod that is not held/stowed, lies `placed` more than 1 m from `FISHING.home` and has no line out is "away"; `awaySince` (wall-clock ms from the injectable `Fishing.now`) starts then and resets whenever it is held or home. After `FISHING.respawn` s (240, *guess*) the SAME rod `goHome()`s (never a second one, never while held or the line is out; hidden quest step unaffected). keep.js `fishing` stores `ra` (= `awaySince`); `loadState` (after `things`) sends it home when the gap has passed, otherwise carries the timer on. Local per client (the rod is not synced; the others only see the held category). Test: `tools/fishrespawntest.cjs GAME OUT` (solo, injected clock; images [docs/verification/1781](../verification/1781/)).
+
 ## Cooking the catch and the hidden fishing quest (#1754, part 3 of #1751)
 
 `src/fishing.js` `CaughtFish`, tunables `FISHING.cook` / `FISHING.points` (all *guess*). A caught fish not yet bitten into, aimed at either kettle grill
