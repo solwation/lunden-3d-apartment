@@ -4,6 +4,7 @@ import { playerLocalStorage as localStorage } from './playerprofiles.js';
 // small badge ("✋ Klappat katt +1") pops up for each counted event.
 import { KISS, SECRET, SCORE, FISHING } from './config.js';
 import { targetScoreOf, creditTarget } from './targetscore.js';
+import { addCount } from './statcount.js';
 const KEY = 'lunden.stats';
 
 const fresh = () => ({ love: 0, loveReceipts: [], pvpKills: 0, killReceipts: {}, cats: 0, rare: 0, byVariant: {}, petted: 0, ponyPets: 0, squirrelFeeds: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, carMusic: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0, freeThrows: 0, twoPointers: 0, basketPoints: 0,
@@ -147,7 +148,7 @@ export function awardTarget(pts) {
 /** Count `n` of `key`; `id` names the thing (a door, a lamp …) for the bigger points the first time (SCORE.first).
  * The badge for those only shows the first time. */
 export function bump(key, n = 1, id = key) {
-  stats[key] = (stats[key] ?? 0) + n;
+  if (!addCount(stats, key, n)) return; // #1761: never turn a stored object into "[object Object]1"
   let fresh = true;
   if (SCORE.first[key] !== undefined) {
     const seen = (stats.seen[key] ??= {});
