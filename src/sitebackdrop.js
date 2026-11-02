@@ -12,6 +12,7 @@ import { buildKarpFacade, karpBrickTexture } from './karpfacade.js';
 import { buildRealgym20 } from './realgym20.js';
 import { buildNordicGym } from './nordicgym.js';
 import { schoolyardParts } from './schoolyard.js';
+import { grassMaterial, grassUV } from './grass.js';
 const W=SITE.west;
 const PAVE_MESH=4, PAVE_LIFT=.03; // m: #1305, paved/gravel polygons (school yards, squares) are cut into triangles no longer than PAVE_MESH and lie PAVE_LIFT higher, so they stay on the sloping terrain whose own triangles differ (*guess*)
 const PAVE_CUT=100; // m: #1310, with the terrain's grid the paving is cut along the terrain's own lines (cutAtTerrain) instead of into PAVE_MESH triangles: it lies on the ground exactly and needs far fewer triangles
@@ -147,6 +148,11 @@ function buildBackdrop(W,key,ground,brick=null,reflectiveGlass=null,karp=null){
  }
  if(key==='east')eastLotParts(ground,parts.access,p=>p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397));
  const mats={facade:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),roof:new THREE.MeshStandardMaterial({color:W.roof,roughness:.85,side:THREE.DoubleSide}),glass:new THREE.MeshStandardMaterial({color:brick?0xffffff:W.glass,vertexColors:!!brick,roughness:.3,metalness:.25,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units}),access:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units})}; // #1309: paths/asphalt wear the decal depth bias too, so a coarse sample cannot sink under a terrain crease as green slivers (same as kvarteret-lunden#70)
+ // #1813: actual lawns use the same world-metre grass detail, autumn tint and snow as the surrounding terrain.
+ // Keep their already-draped triangles/lifts intact; sand, play pads and every other school part stay in access.
+ const lawns=parts.access.filter(g=>g.userData.schoolLawn);
+ if(lawns.length){parts.access=parts.access.filter(g=>!g.userData.schoolLawn);parts.lawn=lawns.map(grassUV);mats.lawn=grassMaterial();
+  Object.assign(mats.lawn,{polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units});}
  if(brick)mats.facade.map=brick;
  if(parts.modern){mats.modern=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide});}
  if(parts.schoolGlass)mats.schoolGlass=reflectiveGlass;
@@ -158,7 +164,7 @@ function buildBackdrop(W,key,ground,brick=null,reflectiveGlass=null,karp=null){
  for(const [k,list]of Object.entries(parts)){if(['facade','modern','schoolBrick','schoolRoof','access'].includes(k)||k==='glass'&&brick)for(const g of list)if(!g.attributes.color){const c=new THREE.Color(g.userData.tint??(k==='schoolRoof'?schoolRoofTint():k==='access'?0xa7a397:k==='glass'?W.glass:k==='schoolBrick'?0xffffff:W.facade)),cols=Array.from({length:g.attributes.position.count},()=>[c.r,c.g,c.b]).flat();g.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));}if(!list.length)continue;for(const g of list)if(k==='schoolBrick'||k==='facade'&&brick){const uv=[],a=g.attributes.position,n=g.attributes.normal;for(let i=0;i<a.count;i++)uv.push((Math.abs(n.getX(i))>Math.abs(n.getZ(i))?a.getZ(i):a.getX(i))/2,a.getY(i)/2);g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));}
   // Native per-camera/shadow frusta see complete source groups; phones retain the original master batch.
   const ends=key==='east'&&k==='modern'&&!lowMemory?[0,...modernEnds,list.length]:[0,list.length];
-  for(let i=1;i<ends.length;i++){const mesh=new THREE.Mesh(mergeGeometries(list.slice(ends[i-1],ends[i])),mats[k]);mesh.name=key+'-'+k+(i>1?'-'+i:'');mesh.receiveShadow=true;mesh.castShadow=k!=='access'&&k!=='schoolGlass'&&k!=='karpGlass';group.add(mesh);}
+  for(let i=1;i<ends.length;i++){const mesh=new THREE.Mesh(mergeGeometries(list.slice(ends[i-1],ends[i])),mats[k]);mesh.name=key+'-'+k+(i>1?'-'+i:'');mesh.receiveShadow=true;mesh.castShadow=k!=='access'&&k!=='lawn'&&k!=='schoolGlass'&&k!=='karpGlass';group.add(mesh);}
   list.forEach(g=>g.dispose());}
  const clocks=records.filter(b=>b.clock).map(b=>new TowerClock(b.clock));
  for(const clock of clocks)group.add(clock.object);

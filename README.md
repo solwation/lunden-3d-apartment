@@ -230,7 +230,7 @@ Jordrampernas öppna sidor vid den lilla träbron är tätade mot den ritade mar
 Den norra serviceinfarten söder om ån följer kartans fyra väglänkar och ansluter till Sankt Lars väg och parkeringarnas korta tillfarter. Vägbredd och asfalt är illustrativa antaganden; den befintliga promenadgränsen är oförändrad.
 Den södra tvärvägen och den smala servicevägen bakom hus 45 binder också ihop kartans vägnät; deras bredder och beläggning är illustrativa.
 
-Gräsmattorna på gården och längs gatan har fin grässtruktur och ojämna gröna toner; på hösten gulnar de och på vintern täcks de av snö.
+Gräsmattorna på gården, längs gatan och vid skolorna har fin grässtruktur och ojämna gröna toner; på hösten gulnar de och på vintern täcks de av snö.
 
 Västervyn har kartans husrad och angöring längs Karpvägen, som fortsätter mot nordväst förbi öppna parkytor. [Fotavtryck och sommar-/vinterjämförelse](docs/validation/issue-534/README.md).
 

@@ -41,6 +41,10 @@ furnishings are built once in `clubhousefurnishings.js`. No extra visible draws,
 image downloads or postprocessing are introduced. See the scoped evidence in
 [verification](verification.md#softer-clubhouse-rendering-1481).
 
+## School grass material (#1813)
+
+Confirmed school lawn polygons use `grassUV` and `grassMaterial()` in the single `east-lawn` batch, sharing the existing grass detail texture, world-metre scale, seasonal tint and snow map removal/restoration. The old fixed bright vertex tint remains unused for those lawn geometries; playground/sport pads and sand retain their own colors in access. Drape positions, normals, polygon lifts, source outlines and rendered triangle counts are unchanged. The original paving depth bias is retained to keep the lawns above the underlying yard surface. [Scoped test and seasonal views](verification.md#school-lawns-1813).
+
 ## Module and test map
 
 ```text
