@@ -1,0 +1,614 @@
+[
+ {
+  "file": "bilder/00_oversikt_h000.jpg",
+  "area": "Översikt hela Sankt Lars-området",
+  "target_lat": 55.6845,
+  "target_lng": 13.1795,
+  "camera_lat": 55.677006,
+  "camera_lng": 13.1795,
+  "camera_height_m": 700,
+  "tilt_deg": 50,
+  "heading_deg": 0,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6770060,13.1795000,700a,35y,0h,50t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/00_oversikt_h090.jpg",
+  "area": "Översikt hela Sankt Lars-området",
+  "target_lat": 55.6845,
+  "target_lng": 13.1795,
+  "camera_lat": 55.6845,
+  "camera_lng": 13.1662069,
+  "camera_height_m": 700,
+  "tilt_deg": 50,
+  "heading_deg": 90,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6845000,13.1662069,700a,35y,90h,50t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/00_oversikt_h180.jpg",
+  "area": "Översikt hela Sankt Lars-området",
+  "target_lat": 55.6845,
+  "target_lng": 13.1795,
+  "camera_lat": 55.691994,
+  "camera_lng": 13.1795,
+  "camera_height_m": 700,
+  "tilt_deg": 50,
+  "heading_deg": 180,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6919940,13.1795000,700a,35y,180h,50t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/00_oversikt_h270.jpg",
+  "area": "Översikt hela Sankt Lars-området",
+  "target_lat": 55.6845,
+  "target_lng": 13.1795,
+  "camera_lat": 55.6845,
+  "camera_lng": 13.1927931,
+  "camera_height_m": 700,
+  "tilt_deg": 50,
+  "heading_deg": 270,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6845000,13.1927931,700a,35y,270h,50t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/01_huvudbyggnad_h000.jpg",
+  "area": "Sankt Lars sjukhus, huvudbyggnad",
+  "target_lat": 55.6837,
+  "target_lng": 13.1774,
+  "camera_lat": 55.6812105,
+  "camera_lng": 13.1774,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 0,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6812105,13.1774000,160a,35y,0h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/01_huvudbyggnad_h045.jpg",
+  "area": "Sankt Lars sjukhus, huvudbyggnad",
+  "target_lat": 55.6837,
+  "target_lng": 13.1774,
+  "camera_lat": 55.6819397,
+  "camera_lng": 13.1742775,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 45,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6819397,13.1742775,160a,35y,45h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/01_huvudbyggnad_h090.jpg",
+  "area": "Sankt Lars sjukhus, huvudbyggnad",
+  "target_lat": 55.6837,
+  "target_lng": 13.1774,
+  "camera_lat": 55.6837,
+  "camera_lng": 13.1729842,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 90,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6837000,13.1729842,160a,35y,90h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/01_huvudbyggnad_h135.jpg",
+  "area": "Sankt Lars sjukhus, huvudbyggnad",
+  "target_lat": 55.6837,
+  "target_lng": 13.1774,
+  "camera_lat": 55.6854603,
+  "camera_lng": 13.1742775,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 135,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6854603,13.1742775,160a,35y,135h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/01_huvudbyggnad_h180.jpg",
+  "area": "Sankt Lars sjukhus, huvudbyggnad",
+  "target_lat": 55.6837,
+  "target_lng": 13.1774,
+  "camera_lat": 55.6861895,
+  "camera_lng": 13.1774,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 180,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6861895,13.1774000,160a,35y,180h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/01_huvudbyggnad_h225.jpg",
+  "area": "Sankt Lars sjukhus, huvudbyggnad",
+  "target_lat": 55.6837,
+  "target_lng": 13.1774,
+  "camera_lat": 55.6854603,
+  "camera_lng": 13.1805225,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 225,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6854603,13.1805225,160a,35y,225h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/01_huvudbyggnad_h270.jpg",
+  "area": "Sankt Lars sjukhus, huvudbyggnad",
+  "target_lat": 55.6837,
+  "target_lng": 13.1774,
+  "camera_lat": 55.6837,
+  "camera_lng": 13.1818158,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 270,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6837000,13.1818158,160a,35y,270h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/01_huvudbyggnad_h315.jpg",
+  "area": "Sankt Lars sjukhus, huvudbyggnad",
+  "target_lat": 55.6837,
+  "target_lng": 13.1774,
+  "camera_lat": 55.6819397,
+  "camera_lng": 13.1805225,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 315,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6819397,13.1805225,160a,35y,315h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/02_vastra_kvarteret_h000.jpg",
+  "area": "Västra sjukhuskvarteret (Restaurang 41 / Thermo Fisher)",
+  "target_lat": 55.6841,
+  "target_lng": 13.1748,
+  "camera_lat": 55.6816105,
+  "camera_lng": 13.1748,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 0,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6816105,13.1748000,160a,35y,0h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/02_vastra_kvarteret_h090.jpg",
+  "area": "Västra sjukhuskvarteret (Restaurang 41 / Thermo Fisher)",
+  "target_lat": 55.6841,
+  "target_lng": 13.1748,
+  "camera_lat": 55.6841,
+  "camera_lng": 13.1703841,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 90,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6841000,13.1703841,160a,35y,90h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/02_vastra_kvarteret_h180.jpg",
+  "area": "Västra sjukhuskvarteret (Restaurang 41 / Thermo Fisher)",
+  "target_lat": 55.6841,
+  "target_lng": 13.1748,
+  "camera_lat": 55.6865895,
+  "camera_lng": 13.1748,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 180,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6865895,13.1748000,160a,35y,180h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/02_vastra_kvarteret_h270.jpg",
+  "area": "Västra sjukhuskvarteret (Restaurang 41 / Thermo Fisher)",
+  "target_lat": 55.6841,
+  "target_lng": 13.1748,
+  "camera_lat": 55.6841,
+  "camera_lng": 13.1792159,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 270,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6841000,13.1792159,160a,35y,270h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/03_sodra_bebyggelse_h000.jpg",
+  "area": "Södra bebyggelsen (Nattvardsgatan/Säwalwägen)",
+  "target_lat": 55.6827,
+  "target_lng": 13.1794,
+  "camera_lat": 55.6802105,
+  "camera_lng": 13.1794,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 0,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6802105,13.1794000,160a,35y,0h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/03_sodra_bebyggelse_h090.jpg",
+  "area": "Södra bebyggelsen (Nattvardsgatan/Säwalwägen)",
+  "target_lat": 55.6827,
+  "target_lng": 13.1794,
+  "camera_lat": 55.6827,
+  "camera_lng": 13.1749843,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 90,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6827000,13.1749843,160a,35y,90h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/03_sodra_bebyggelse_h180.jpg",
+  "area": "Södra bebyggelsen (Nattvardsgatan/Säwalwägen)",
+  "target_lat": 55.6827,
+  "target_lng": 13.1794,
+  "camera_lat": 55.6851895,
+  "camera_lng": 13.1794,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 180,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6851895,13.1794000,160a,35y,180h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/03_sodra_bebyggelse_h270.jpg",
+  "area": "Södra bebyggelsen (Nattvardsgatan/Säwalwägen)",
+  "target_lat": 55.6827,
+  "target_lng": 13.1794,
+  "camera_lat": 55.6827,
+  "camera_lng": 13.1838157,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 270,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6827000,13.1838157,160a,35y,270h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/04_nybygge_h000.jpg",
+  "area": "Byggarbetsplatsen / nybygge vid St Lars väg",
+  "target_lat": 55.6853,
+  "target_lng": 13.1801,
+  "camera_lat": 55.6828105,
+  "camera_lng": 13.1801,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 0,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6828105,13.1801000,160a,35y,0h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/04_nybygge_h090.jpg",
+  "area": "Byggarbetsplatsen / nybygge vid St Lars väg",
+  "target_lat": 55.6853,
+  "target_lng": 13.1801,
+  "camera_lat": 55.6853,
+  "camera_lng": 13.175684,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 90,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6853000,13.1756840,160a,35y,90h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/04_nybygge_h180.jpg",
+  "area": "Byggarbetsplatsen / nybygge vid St Lars väg",
+  "target_lat": 55.6853,
+  "target_lng": 13.1801,
+  "camera_lat": 55.6877895,
+  "camera_lng": 13.1801,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 180,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6877895,13.1801000,160a,35y,180h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/04_nybygge_h270.jpg",
+  "area": "Byggarbetsplatsen / nybygge vid St Lars väg",
+  "target_lat": 55.6853,
+  "target_lng": 13.1801,
+  "camera_lat": 55.6853,
+  "camera_lng": 13.184516,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 270,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6853000,13.1845160,160a,35y,270h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/05_norra_skolor_h000.jpg",
+  "area": "Norra skolkvarteret (Realgymnasiet / Montessori)",
+  "target_lat": 55.6857,
+  "target_lng": 13.1821,
+  "camera_lat": 55.6832105,
+  "camera_lng": 13.1821,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 0,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6832105,13.1821000,160a,35y,0h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/05_norra_skolor_h090.jpg",
+  "area": "Norra skolkvarteret (Realgymnasiet / Montessori)",
+  "target_lat": 55.6857,
+  "target_lng": 13.1821,
+  "camera_lat": 55.6857,
+  "camera_lng": 13.1776839,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 90,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6857000,13.1776839,160a,35y,90h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/05_norra_skolor_h180.jpg",
+  "area": "Norra skolkvarteret (Realgymnasiet / Montessori)",
+  "target_lat": 55.6857,
+  "target_lng": 13.1821,
+  "camera_lat": 55.6881895,
+  "camera_lng": 13.1821,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 180,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6881895,13.1821000,160a,35y,180h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/05_norra_skolor_h270.jpg",
+  "area": "Norra skolkvarteret (Realgymnasiet / Montessori)",
+  "target_lat": 55.6857,
+  "target_lng": 13.1821,
+  "camera_lat": 55.6857,
+  "camera_lng": 13.1865161,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 270,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6857000,13.1865161,160a,35y,270h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/06_kunskapsskolan_h000.jpg",
+  "area": "Östra kvarteret (Kunskapsskolan)",
+  "target_lat": 55.6845,
+  "target_lng": 13.1817,
+  "camera_lat": 55.6820105,
+  "camera_lng": 13.1817,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 0,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6820105,13.1817000,160a,35y,0h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/06_kunskapsskolan_h090.jpg",
+  "area": "Östra kvarteret (Kunskapsskolan)",
+  "target_lat": 55.6845,
+  "target_lng": 13.1817,
+  "camera_lat": 55.6845,
+  "camera_lng": 13.1772841,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 90,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6845000,13.1772841,160a,35y,90h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/06_kunskapsskolan_h180.jpg",
+  "area": "Östra kvarteret (Kunskapsskolan)",
+  "target_lat": 55.6845,
+  "target_lng": 13.1817,
+  "camera_lat": 55.6869895,
+  "camera_lng": 13.1817,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 180,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6869895,13.1817000,160a,35y,180h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/06_kunskapsskolan_h270.jpg",
+  "area": "Östra kvarteret (Kunskapsskolan)",
+  "target_lat": 55.6845,
+  "target_lng": 13.1817,
+  "camera_lat": 55.6845,
+  "camera_lng": 13.1861159,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 270,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6845000,13.1861159,160a,35y,270h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/07_bostader_norr_h000.jpg",
+  "area": "Bostäder norr (Kallby ängar)",
+  "target_lat": 55.6866,
+  "target_lng": 13.1791,
+  "camera_lat": 55.6841105,
+  "camera_lng": 13.1791,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 0,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6841105,13.1791000,160a,35y,0h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/07_bostader_norr_h090.jpg",
+  "area": "Bostäder norr (Kallby ängar)",
+  "target_lat": 55.6866,
+  "target_lng": 13.1791,
+  "camera_lat": 55.6866,
+  "camera_lng": 13.1746838,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 90,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6866000,13.1746838,160a,35y,90h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/07_bostader_norr_h180.jpg",
+  "area": "Bostäder norr (Kallby ängar)",
+  "target_lat": 55.6866,
+  "target_lng": 13.1791,
+  "camera_lat": 55.6890895,
+  "camera_lng": 13.1791,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 180,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6890895,13.1791000,160a,35y,180h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ },
+ {
+  "file": "bilder/07_bostader_norr_h270.jpg",
+  "area": "Bostäder norr (Kallby ängar)",
+  "target_lat": 55.6866,
+  "target_lng": 13.1791,
+  "camera_lat": 55.6866,
+  "camera_lng": 13.1835162,
+  "camera_height_m": 160,
+  "tilt_deg": 60,
+  "heading_deg": 270,
+  "fov_y_deg": 35,
+  "url": "https://www.google.com/maps/@55.6866000,13.1835162,160a,35y,270h,60t/data=!3m1!1e3",
+  "image_px": [
+   1456,
+   831
+  ]
+ }
+]
