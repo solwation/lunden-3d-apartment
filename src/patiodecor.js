@@ -8,7 +8,7 @@ import { windMaterial, windShadow } from './plantwind.js';
 // gets its own varied furniture — bistro sets, dining groups, lounge sofas, sun loungers, grills, raised beds, parasols,
 // rugs and pot plants — from terracedecor.js's generic vertex-coloured models, laid out by a deterministic random
 // stream per flat (PATIO_DECOR in config; every placement and colour is a *guess*). L1007's patio stays unchanged (its
-// furniture is in FURNITURE). Decoration only: no pick targets, no collision, no lights.
+// furniture is in FURNITURE). Seat records are consumed by OutdoorSeats; other decor has no pick targets, collision or lights.
 // Cost: everything is baked into two merged meshes (solid; soft = foliage / cloth with plant wind).
 // A gate (`isLOD`: three calls its `update(camera)` while projecting) moves the meshes to layer 7 (as DetailCuller does)
 // when the camera is north on the street side behind Hus L (z < -0.3), or further away than `far` m.
@@ -152,6 +152,7 @@ export function buildPatioDecor({ units, xw, xe, D, roofTop = 5.5 }) {
       for (const g of all) { g.computeBoundingBox(); bb.union(g.boundingBox); if (p.solid.includes(g)) foot.union(g.boundingBox); }
       if (foot.isEmpty()) foot.copy(bb);
       rec.items.push({ k: it.k, u: it.u, v: it.v, x0: foot.min.x, x1: foot.max.x, z0: foot.min.z, z1: foot.max.z, y1: bb.max.y,
+        seat: ['chair', 'sofa', 'lounger'].includes(it.k) ? { ...it, x: u.ox + it.u, z: D + it.v, floor: 0, yaw } : null,
         crown: { x0: bb.min.x, x1: bb.max.x, z0: bb.min.z, z1: bb.max.z },
         // #1091: the way a seat faces (plan x, z)
         face: it.k === 'chair' || it.k === 'sofa' ? [Math.sin(yaw), Math.cos(yaw)] : null });

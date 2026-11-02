@@ -3,6 +3,10 @@
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [plan-material](plan-material.md), [interactions](interactions.md), [plants](plants.md).
+## Generic outdoor seating (#1818)
+
+The existing generic chairs, lounge sofas and loungers on neighbours' patios and roof terraces now publish explicit seat frames to `src/outdoorseats.js`. Model layout, size, floor and yaw remain owned by `terracedecor.js`/`patiodecor.js`; cushion tops and local sofa/lounger offsets follow their actual geometry. Invisible Rest picks sit under the same visibility gates; other decor remains non-interactive. Both shelter benches and rendered school benches/swings share the same ordinary sitting/standing flow. Existing indoor, courtyard and car seats retain their owners. [Interaction and verification details](interactions.md#outdoor-seats-and-school-swings-1818).
+
 ## Module and test map
 
 ```text

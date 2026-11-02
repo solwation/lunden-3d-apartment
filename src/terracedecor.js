@@ -8,7 +8,7 @@ import { windGeometry, windMaterial, windShadow } from './plantwind.js';
 
 // #605: the furnished roof terraces on Hus L — palms and pot plants, loungers, tables and chairs, parasols, grills, rugs,
 // railing boxes and string lights, one style per terrace (TERRACE_DECOR in config; every placement is a *guess*). L1201's
-// terrace stays empty (#573). Decoration only: no pick targets, no collision, no lights.
+// terrace stays empty (#573). Seat records are consumed by OutdoorSeats; other decor has no pick targets, collision or lights.
 // Cost: phones retain three combined meshes; desktops batch each complete source terrace with the same three materials — `solid` (vertex colours: furniture, pots, soil, boxes),
 // `soft` (vertex colours, double-sided, plant wind: foliage, flowers, parasol cloth) and `bulbs` (unlit; the string
 // lights' bulbs and lantern glass, warm after dusk). The pot plants reuse patio.js `planter` (the same shared cheap palm /
@@ -319,6 +319,7 @@ export function buildTerraceDecor(exterior, D) {
       for (const g of all) { g.computeBoundingBox(); bb.union(g.boundingBox); if (p.solid.includes(g)) foot.union(g.boundingBox); }
       if (foot.isEmpty()) foot.copy(bb);
       rec.items.push({ k: it.k, x0: foot.min.x, x1: foot.max.x, z0: foot.min.z, z1: foot.max.z, y1: bb.max.y - info.deck,
+        seat: ['chair', 'sofa', 'lounger'].includes(it.k) ? { ...it, x, z, floor: info.deck, yaw: -(it.r ?? 0) * Math.PI / 180 } : null,
         crown: { x0: bb.min.x, x1: bb.max.x, z0: bb.min.z, z1: bb.max.z },
         // #1091: the way a chair / sofa faces (plan x, z): built facing +z, turned by −r (so r 90 faces −x, west)
         face: it.k === 'chair' || it.k === 'sofa' ? [-Math.sin((it.r ?? 0) * Math.PI / 180), Math.cos((it.r ?? 0) * Math.PI / 180)] : null });

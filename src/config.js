@@ -4015,6 +4015,14 @@ export const HOME_DRAWINGS = [
 
 // Sitting and lying down (#71/#72, src/rest.js): eye height above the seat / mattress, how far you can
 // turn your head (yaw ± from the way the seat faces) and the pitch range, and the move time.
+// #1818: rest/pick anchors mirror the existing generic decor and schoolyard builders (metres; visual guesses).
+export const OUTDOOR_SEATS = {
+  pickHeight: .3, pitch: .6,
+  chair: { width: .42, depth: .4, seat: .47, cushion: .045 },
+  sofa: { depth: .75, seat: .44, offset: .08 },
+  lounger: { width: 1.9, depth: .62, seat: .32, offset: .3 },
+  schoolBench: { seat: .49, depth: .4 }, schoolSwing: { width: .45, depth: .2, thickness: .05, seat: .45, chain: .012 },
+};
 export const REST = {
   sitEye: 0.72, lieEye: 0.22, move: 0.5,
   // #1150: visual rest anchors, guesses based on the shared Olof skeleton (metres before avatar scaling).

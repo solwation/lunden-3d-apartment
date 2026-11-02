@@ -34,8 +34,8 @@ src/boule.js           #1370: local pétanque on the boule court (BOULE): throwi
                        rules/physics in boulerules.js / boulephysics.js (details: interactions.md "Courtyard pétanque")
 src/terracedecor.js    the furnished roof terraces (#605, TERRACE_DECOR, all *guess*): one style per terrace L1202–L1209 (palms /
                        bananas / agaves from patio.js `planter`, olive and box trees, loungers, tables and chairs, parasols, grills,
-                       rugs, a sofa, raised beds, railing boxes, string lights); L1201 stays EMPTY (#573). Decoration only (no
-                       targets, no collision, `raycast` off). Three merged meshes for the whole row (solid / soft with plant wind /
+                       rugs, a sofa, raised beds, railing boxes, string lights); L1201 stays EMPTY (#573). Seats have explicit Rest targets (#1818); visible
+                       batches keep collision off and `raycast` off. Three merged meshes for the whole row (solid / soft with plant wind /
                        bulbs, warm after dusk via exterior's update); an `isLOD` gate puts them on layer 7 from north of the
                        set-back wall below the roof and beyond `far`. Foliage is squeezed clear of screens / wall (`fitCrown`).
                        Hooked in by one line at the end of exterior.js (`userData.terraceDecor`)
@@ -322,6 +322,10 @@ Close and100m south/west images are captured for both desktop and low-memory cam
 - Sourced service access roads south of Höje å: ways 850235114, 850235115, 36918923, 189432572, 30633544, 30633545, 145221590, 145221588.
 - Materials and batching: asphalt (`0x5f6164`), gravel (`0xb5ac90`), paving (`0xa7a397`). East access and courtyards are merged into the existing `east-access` mesh with vertex colors. South parking, stall dividers, curbs, access roads, and paths are merged into the single existing `south-land` mesh with vertex colors. No new draw calls, textures, or lights are introduced, remaining strictly within the performance budget (`tools/perfcount.html`). Forest trees in the south exclude parking polygons (`!onParking(x, z)`).
 
+
+## Outdoor seat interaction (#1818)
+
+Both bus shelters (the school-wall bench and the mapped stop south of the bridge), schoolyard benches, patio/terrace chairs/sofas/loungers and every rendered school swing seat now use `src/outdoorseats.js` through the ordinary Rest/input flow. Seat frames come directly from the decor builders; school frames remain in their original backdrop batches while seats/chains share one moving batch. Optional school details remain omitted on phones, together with their targets. Native E/touch mounts and safe return to the original approach point are covered by `tools/outdoorseatsbrowser.cjs`; the complete catalogue/rotation/floor and swing geometry contracts are in `tools/outdoorseatstest.mjs`. Details: [interactions](interactions.md#outdoor-seats-and-school-swings-1818). Layouts, terrain, fences and houses A/B/C/L are unchanged; this interaction gameplay is not a public-project port.
 
 ## Pony paddock (#1280)
 

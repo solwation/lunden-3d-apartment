@@ -255,6 +255,16 @@ cloudflare/players.test.mjs` and `tools/headboxesbrowsertest.cjs` (two actual na
 Ghosts/Combat peers and local Worker, plus a rendered Avatar/box debug view; no full
 apartment or physical-phone performance claim).
 
+## Outdoor seats and school swings (#1818)
+
+`src/outdoorseats.js` registers only explicit outdoor seat records in `world.outdoorTargets`, separate from existing furniture/courtyard/car and exercise targets. The current desktop scene adds 47 targets: both shelter benches, four school benches, eight seats in four school swing frames, and 33 patio/terrace items (23 chairs, seven loungers, three sofas). `terracedecor.js` and `patiodecor.js` publish each authored seat's exact world origin, floor, yaw and model parameters in the existing item records; `OUTDOOR_SEATS` holds anchor dimensions matching those builders. Folded camping chairs in storage remain stored props.
+
+All use ordinary `restTarget`/`Rest`, native E and touch action/Res dig. The explicit `outdoorSeat` and `returnToEntry` flags keep them scoped: `standUp` restores the saved safe approach point only for these fixed seats, preserving its old search for all other targets. No new save key or persistent rest state is introduced; Player stays at that standing point while Rest moves the camera. Hidden patio/terrace LODs suppress their seat targets through the existing `seasonHidden` check.
+
+Schoolyard builders retain their fixed A-frames and beam; `OutdoorSeats` draws the seats/chains in one dynamic vertex-coloured mesh (288 triangles for eight seats, replacing 96 static seat triangles; one added visible batch, no texture/light). `world.updateSwings` updates both the existing courtyard owner and the school batch before Rest follows the moving eye. The school pick helper uses yaw-then-local-pitch (`YXZ`) just like the drawn matrix, including angled frames; unused seats settle gently, pause is inert, and dynamic CPU arrays are retained for phone uploads. Mobile targets follow the actual base geometry: optional desktop-only school details produce no invisible phone seats. Gameplay stays in the original project.
+
+Checks: `tools/outdoorseatstest.mjs` (catalogue, authored transforms/heights, LOD, native Rest/follow/exit, paused/settled motion, 90° frame axes and cost) and `tools/outdoorseatsbrowser.cjs` (full real-scene inventory, existing 96 rest spots/courtyard swing, native keyboard bench and touch school swing). [Result images](../verification/1818/).
+
 ## Module and test map
 
 ```text

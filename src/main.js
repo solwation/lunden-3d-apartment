@@ -1747,6 +1747,7 @@ function standUp() {
   if (slideRide.active) { slideRide.cancel(); return; }
   if (player.riding) { if (!player.dismountBicycle()) greet.sayMine('Här finns ingen säker plats att kliva av.'); return; }
   const film = rest.spot?.pc === 'film';
+  const returnToEntry = rest.target?.returnToEntry; // #1818: fixed outdoor seats/swings return to their known safe approach point
   const bed = rest.target?.rest === 'lie'; // lying or sitting up in a bed (#213)
   const seat = rest.spot?.pos.clone(), lying = rest.kind === 'lie', inCar = rest.spot?.car; // out of the car: back where you stood, by the door (#250)
   // you keep looking the way you looked while seated (#202); lying you were facing the ceiling: level
@@ -1756,7 +1757,7 @@ function standUp() {
   if (rest.tvOn) { if (rest.tvOn.isOpen) { rest.tvOn.toggle(); sfx.tvClick(rest.tvOn.pickable.getWorldPosition(new THREE.Vector3()), false); } rest.tvOn = null; } // (#213)
   // getting up from the film: the monitor goes back to the desk (and the game) — the PC stays on
   if (film) for (const t of world.furnitureTargets) if (t.kind === 'pc') t.watch(null);
-  const at = seat && !inCar ? standSpot(seat, yaw, s, bed) : s;
+  const at = seat && !inCar && !returnToEntry ? standSpot(seat, yaw, s, bed) : s;
   player.spawn(at.x, at.z, yaw);
   camera.rotation.x = pitch;
   player.pos.y = s.y; // spawn() finds the ground floor; upstairs we stood on Övre plan
@@ -2273,6 +2274,7 @@ function updateFocus() {
     ...(!weaponKey() ? ghosts.targets() : []), // only unarmed visitors greet other players (#872)
     ...suit.targets(), // the Spider-Man suit in its drawer / where it was laid (#597)
     ...world.courtyardTargets.map((t) => t.pickable),
+    ...(world.outdoorTargets ?? []).map((t) => t.pickable), // #1818: explicit school, shelter, patio and terrace seats
     ...(world.boule.active ? world.boule.controlPickables : []), // #1370: the scoreboard's two buttons
     ...(playroom.inside ? [playroom.exitTarget.pickable, playroom.billiards.target.pickable, ...playroom.targets.map((t) => t.pickable), ...playroom.billiards.controlPickables, ...playroom.controlPickables] : []), // the way out of the children's room (#1319), the billiard table (#1328), the sofa and stool (#1327)
     ...bicyclePickables(), // the courtyard's benches (#438): F keeps them

@@ -15,6 +15,10 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Outdoor seating and school swings (#1818)
+
+Run `THREE_DIR=/path/to/three node tools/outdoorseatstest.mjs` (three 0.170.0): the rendered desktop/phone catalogue, decor floor/yaw/cushion height, exact Rest return state, moving/frozen/settled swing anchors, 90° frame pick/render parity and bounded single-batch cost. Then `tools/browsertest.sh node tools/outdoorseatsbrowser.cjs GAME OUT` with `PLAYWRIGHT_MODULE`, `CHROME_PATH` and optional local `THREE_DIR`. One real-app run checks all 47 added targets and 96 existing rest spots/courtyard motion, native E/C on the school-wall bus bench, touch mount/motion/Res dig on a school swing and original approach-point restoration. `--south-bus-only` checks native E/C and captures the glass shelter bench south of the bridge, which is the bench in the original report, without repeating swings. Use the visible Starta/Touch entry, since `?shot` alone leaves the HUD parent's state unchanged. [Images/results](../verification/1818/). Touch is automated Chromium, not a physical-phone stability claim.
+
 ## Continued river ends (#1814)
 
 `node tools/riverfalltest.mjs` preserves all old station elevations and non-water bridge buffers while checking the extended local channel; `node tools/edgebackdroptest.mjs` covers retained land/batching contracts. `node tools/rivercontinuationtest.mjs` checks archived OSM registration, old station indices and endpoint distance beyond normal fog. Open `tools/rivercontinuationtest.html` in Chromium: its native Three.js ray checks cover actual emitted water at both terrain/far-land joins, bank/terrain continuity, submerged bank coverage and the existing two edge-backdrop meshes. Use the shared browser wrapper. Actual app ground/air views of both ends are saved in [docs/verification/1814](../verification/1814/). Heights and the last western tangent are assumptions; physical-device performance is not established.

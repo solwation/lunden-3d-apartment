@@ -25,7 +25,8 @@ function yardBody(Y,ground,drape){
  for(const p of Y.play){const y=ground(p.at[0],p.at[1]),yaw=p.yaw*Math.PI/180,c=Math.cos(yaw),s=Math.sin(yaw),at=(u,v)=>[p.at[0]+u*c+v*s,p.at[1]-u*s+v*c]; // u along the frame, v across
   if(p.kind==='swing'){const[L,h]=p.size;for(const u of[-L/2,L/2])for(const v of[-.6,.6]){const[x,z]=at(u,v*.5);out.push(box(.12,h+.2,.12,x,y+h/2-.1,z,yaw,C.wood,v>0?-.25:.25));} // two A-frames and the beam
    {const[x,z]=at(0,0);out.push(box(L+.3,.14,.14,x,y+h,z,yaw,C.wood));}
-   for(const u of[-L/4,L/4]){const[x,z]=at(u,0);out.push(box(.45,.05,.2,x,y+.45,z,yaw,C.seat));}}
+   // #1818: seats/chains are drawn and animated in OutdoorSeats' single school-swing batch.
+  }
   else if(p.kind==='bench'){const[w]=p.size,[x,z]=at(0,0),[bx,bz]=at(0,-.22);out.push(box(w,.08,.4,x,y+.45,z,yaw,C.wood),box(w,.4,.06,bx,y+.7,bz,yaw,C.wood)); // #1807
    for(const u of[-w/2+.15,w/2-.15]){const[lx,lz]=at(u,0);out.push(box(.08,.45,.36,lx,y+.225,lz,yaw,C.seat));}}
   else if(p.kind==='house'){const[w,d,h]=p.size,[x,z]=at(0,0);out.push(box(w,h,d,x,y+h/2,z,yaw,C.wood),box(w+.3,.12,d+.3,x,y+h+.06,z,yaw,C.roof));}
