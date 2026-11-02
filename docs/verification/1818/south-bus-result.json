@@ -1,0 +1,125 @@
+{
+  "pass": true,
+  "results": [
+    {
+      "ok": true,
+      "name": "every actual patio/terrace seat, shelter bench and school swing is registered",
+      "data": {
+        "authored": 33,
+        "registeredDecor": 33,
+        "byType": {
+          "chair": 23,
+          "lounger": 7,
+          "sofa": 3
+        },
+        "total": 47,
+        "schoolSwings": 8,
+        "allValid": true,
+        "oldValid": true,
+        "oldSpots": 96,
+        "oldSwing": true,
+        "ids": [
+          "school-wall-bench",
+          "south-bus-bench",
+          "patio-L1001-1",
+          "patio-L1001-2",
+          "patio-L1001-3",
+          "patio-L1001-4",
+          "patio-L1002-3",
+          "patio-L1002-4",
+          "patio-L1003-0",
+          "patio-L1003-1",
+          "patio-L1004-2",
+          "patio-L1004-3",
+          "patio-L1004-4",
+          "patio-L1004-5",
+          "patio-L1005-7",
+          "patio-L1006-1",
+          "patio-L1008-1",
+          "patio-L1008-2",
+          "terrace-L1202-2",
+          "terrace-L1202-3",
+          "terrace-L1203-3",
+          "terrace-L1204-1",
+          "terrace-L1204-2",
+          "terrace-L1204-3",
+          "terrace-L1204-4",
+          "terrace-L1205-1",
+          "terrace-L1205-5",
+          "terrace-L1206-6",
+          "terrace-L1206-7",
+          "terrace-L1207-0",
+          "terrace-L1207-1",
+          "terrace-L1208-3",
+          "terrace-L1208-4",
+          "terrace-L1209-1",
+          "terrace-L1209-2",
+          "swing-145221566-detail-0--1",
+          "swing-145221566-detail-0-1",
+          "school-145221566-detail-2",
+          "swing-145221567-detail-2--1",
+          "swing-145221567-detail-2-1",
+          "school-145221567-detail-3",
+          "swing-145221572-base-0--1",
+          "swing-145221572-base-0-1",
+          "school-94054863-detail-2",
+          "swing-145221570-detail-1--1",
+          "swing-145221570-detail-1-1",
+          "school-145221570-detail-2"
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "existing indoor/courtyard Rest anchors and courtyard swing still work",
+      "data": {
+        "oldSpots": 96,
+        "oldSwing": true
+      }
+    },
+    {
+      "ok": true,
+      "name": "native focus reaches shelter bench",
+      "data": {
+        "focused": "south-bus-bench",
+        "expected": "south-bus-bench",
+        "stand": [
+          36.058845885281535,
+          0.13382616750853504,
+          190.19318178458354
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "native E sits on the actual bus bench",
+      "data": {
+        "active": true,
+        "id": "south-bus-bench",
+        "camera": [
+          36.63746142025073,
+          1.375163820478724,
+          189.2576583681517
+        ],
+        "eye": [
+          36.63746142025073,
+          1.375163820478724,
+          189.2576583681517
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "native C returns safely to the exact approach point",
+      "data": {
+        "active": false,
+        "gap": 0
+      }
+    },
+    {
+      "ok": true,
+      "name": "no browser page errors",
+      "data": []
+    }
+  ]
+}
