@@ -9,6 +9,8 @@ import { lowRiseWindowParts } from './southwindows.js';
 import { buildStLars41 } from './stlars41.js';
 import { brickPavilion, BRICK_STYLE } from './brickstyle.js';
 import { pavilionRoofDetail } from './pavilionroof.js';
+import { lowMemory } from './lowmemory.js';
+import { schoolyardParts } from './schoolyard.js'; // #1805
 import { annexParts, annexPolygons } from './southannex.js'; // #1793
 import { paddockLandParts } from './paddock.js';
 import { busStopApron } from './busstopgeo.js';
@@ -148,6 +150,7 @@ export function* southBackdropParts(ground){
    }
   }
  }
+ if(S.yard&&!lowMemory)parts.land.push(...schoolyardParts(S.yard,farGround,null).map(g=>tint(g,g.userData.tint))); // #1805: clipped hedges along the hospital car parks (no lawns here: drape unused)
  yield .8;
  const mats={facade:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),roof:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),glass:new THREE.MeshStandardMaterial({color:0x35444d,roughness:.7,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units}),land:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1,side:THREE.DoubleSide})};
  registerSnow(mats.roof,SEASON.snow.roof);registerSnow(mats.land,SEASON.snow.ground);

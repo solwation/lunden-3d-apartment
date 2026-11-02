@@ -1130,6 +1130,17 @@ export const SITE = {
       {"source":"199056947","highway":"footway","surface":"asphalt","surfaceSource":"guess","widthSource":"guess","path":[[16.04,308.22],[39.28,341.23]],"w":2,"terrain":"triangles"},
     ],
     // #1262: sourced parking areas and street-side bays south of Höje å (OSM snapshot 2026-10-18)
+    // #1805 (Google 3D review 2026-11-02, 01_huvudbyggnad / 02_vastra_kvarteret): the hospital car parks are edged by clipped hedges in the
+    // references; the game left them bare. Reuses the #1737/#1797 `yard` mechanism (hedge boxes only, src/schoolyard.js) in the south `land` batch:
+    // no draw call. Each path runs 1 m outside one long edge of the OSM car park named in the comment. Lengths, height and colour are a *guess*
+    // read by eye; phones (`lowMemory`) skip them. Visual only, no collision.
+    yard: { lawns: [], sand: [], play: [], lift: { sand: 0.05, lawn: 0.08 }, colors: { hedge: 0x3b5828 },
+      hedge: { h: 1.0, w: 0.8, piece: 8, sink: 0.3, paths: [
+        [[-19.9, 258], [26.7, 225.1]],     // 145221619, NW edge
+        [[67.5, 381], [106, 353.6]],       // 145221626, NW edge
+        [[-125.4, 332.8], [-61.8, 287.2]], // 145221628, NW edge
+        [[-14.4, 383.2], [39.3, 345.1]],   // 145221629, NW edge
+      ] } },
     parking: [
       {"source":"145221619","name":"Parkering norr om Sankt Lars väg 45","surface":"asphalt","capacity":30,"capacitySource":"guess","polygon":[[-19.37,258.81],[27.25,225.93],[37.02,239.75],[-9.59,272.63]],"grade":{"transition":6,"transitionSource":"guess","anchor":[10,248],"anchorSource":"SOUTH_PLATEAU LM control"},"layout":{"start":1.5,"boxes":true,"entrance":{"road":"145221573","margin":0.25},"source":"guess"}}, // #1436: plane pinned to the sourced (10,248) control; its two fitted slopes and the 6 m inner edge transition are guesses (4 m raised the lot-edge slope, 8 m reached the control). #1437: two rows of 15 complete 2.5×5 m boxes (guess) from 1.5 m along the lot, a 6.93 m clear aisle over mapped service ways 145221573/145221582, and the north-west row and kerb left open where 145221573 enters from road 30633546 (its 4.5 m guessed strip + 0.25 m guessed margin)
       {"source":"850235113","name":"Parkering Sankt Lars väg 46","surface":"asphalt","capacity":25,"capacitySource":"guess","polygon":[[63.78,234.37],[53.36,220.22],[64.7,211.13],[77.05,225.2],[73.03,228.14],[74.46,230.92],[79.33,227.41],[92.14,245.05],[87.29,248.5],[86.43,247.22],[76.91,253.56],[68.67,242.1],[72.64,239.41],[69,230.78]],"grade":{"transition":4,"transitionSource":"guess"},"layout":{"aisle":{"road":"850235115"},"clear":["850235114"],"margin":0.25,"rows":[{"side":-1,"offset":2.55,"to":17},{"side":-1,"offset":3,"from":17},{"side":1,"offset":3}],"source":"guess"}}, // #1440: OSM has no floor levels; fitted plane and 4 m transition are assumptions. #1441: whole 2.5×5 m boxes (guess) either side of mapped way 850235115 as the aisle, 3 m from its centre line (a 6 m clear aisle, guess); side −1 is the north-east row, side +1 the south-west row. West of the neck (17 m along the way) the north-east row sits 2.55 m out (0.25 m clear of the slightly bent way's 4.5 m strip), where the opposite row has no room, so the clear aisle there stays wider than 6 m. Mapped entrance 850235114 and both way strips (+0.25 m guess) stay free of boxes

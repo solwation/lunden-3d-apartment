@@ -197,6 +197,7 @@ in the south woodland and the valley, and 36 desktop-only infill trees in the va
 | 03 southern villas | #1795 | facade colour, roof colour and roof rise per house from small palettes (`SITE.south.villas` / `whiteHouses`), hashed from the OSM id |
 | 05 northern schools | #1796 | shared `SITE.east.roofColors` lowered to dark slate; greyer yards, lawns at Freinet and Montessori. Facades unchanged |
 | 06 eastern quarter | #1797 | Kunskapsskolan roof (`laundry`) darker and bluer; a clipped hedge along the Klockhuset car park. #1703 bridge distance confirmed unchanged |
+| 07 hospital outdoor space | #1805 | Clipped hedges (`SITE.south.yard`, `schoolyardParts` from #1737, drawn into the south `land` batch) along one long edge of four hospital car parks (OSM 145221619, 145221626, 145221628, 145221629): 33 boxes, +396 triangles, no draw call; `lowMemory` skips them. Lawns, beds, benches, bike racks and bay lines (removed in #1794) not added: invisible at the 160 m reference distance for their triangle cost. Positions and sizes are *guess*. Not trees (#1804) |
 | 07 housing north | #1798 | 116 OSM footprints as edge houses (`EDGE_BACKDROP.footprints`, `footprintGeometries()`); the two red point blocks and the white office were not traced |
 
 ## No neighbours outside (#670)

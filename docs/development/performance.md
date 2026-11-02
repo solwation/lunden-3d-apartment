@@ -2178,3 +2178,5 @@ perfcount failed on main fda9c529 in both profiles: phone (`?cloud=&lowmem&w=844
 Full perfcount after the fix: phone ALL PASS, most calls 369 at start (patio far 368), 884 455 triangles, ~104 MB;
 desktop ALL PASS, most calls 466 at start, 868 378 triangles at the park, ~314 MB. `PERF.budget` is unchanged. The phone
 start view has 1 call of headroom: the next addition visible from the street will need its own saving.
+
+Southern backdrop ceiling raised (#1805): `tools/southbackdroptest.html` "bounded far detail" 59 000 -> 60 600. Clipped hedges along four hospital car parks (`SITE.south.yard`) add 396 triangles (58 933 -> 59 329 measured, desktop, headless Chromium/SwiftShader), more than the ~67 left after #1794; the ceiling is the measured count + ~2 %. Same `land` batch, draw calls unchanged, and `lowMemory` phones skip the hedges, so the phone budget (<= 370 calls, <= 950 000 triangles) is untouched. For the Surface Pro (Iris 640) 396 triangles are about 0.04 % of the ~920 000-triangle desktop frame.
