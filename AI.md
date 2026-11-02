@@ -93,8 +93,9 @@ names its integration owner in the plan, and closes only after its change has re
 ## Adapt follow-up to the change
 
 The core [follow-up](ORCHESTRA.md#follow-up) applies. For instructions the evidence is
-a link to the published text plus the recorded consistency checks; a rendering change
-with visual acceptance adds capture and inspection to its plan.
+a link to the published text plus the recorded consistency checks; any change touching
+UI/UX or rendered graphics with visual acceptance includes screenshots or captures in the
+completion comment, or records why visual capture was unavailable.
 
 ## Commit and push requested changes
 
