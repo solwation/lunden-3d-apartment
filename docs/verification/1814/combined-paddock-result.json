@@ -1,0 +1,189 @@
+{
+  "pass": true,
+  "baseline": false,
+  "results": [
+    {
+      "ok": true,
+      "name": "walk from outside over the existing stile ends inside",
+      "data": {
+        "ok": true,
+        "at": [
+          -119.26031173683775,
+          -3.1517702568724046,
+          226.71468179587154
+        ],
+        "inside": true,
+        "targets": {
+          "north": [
+            -164.5,
+            214.5
+          ],
+          "west": [
+            -272.5,
+            310.5
+          ],
+          "south": [
+            -265,
+            327
+          ]
+        },
+        "walkBounds": {
+          "x0": -285,
+          "x1": 320,
+          "z0": -200,
+          "z1": 452,
+          "cell": 40,
+          "maxSlope": 0.7,
+          "slideOut": 0.85,
+          "slideSpeed": 3.5,
+          "slideAccel": 9,
+          "waterDepth": 0.15,
+          "splashSafe": 2,
+          "bikeEdge": 1.6,
+          "bankStep": 1,
+          "bankMax": 40,
+          "bankDry": 0.4,
+          "bankClear": 1.5,
+          "trunk": {
+            "big": 0.45,
+            "tree": 0.3,
+            "birch": 0.2,
+            "young": 0.15
+          }
+        }
+      }
+    },
+    {
+      "ok": true,
+      "name": "continuous ground walk reaches north paddock",
+      "data": {
+        "ok": true,
+        "at": [
+          -164.49999999834654,
+          -5.698168887961331,
+          214.6679764885916
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "continuous ground walk reaches west paddock",
+      "data": {
+        "ok": true,
+        "at": [
+          -272.3225557242155,
+          -5.460713118870256,
+          310.4794577531727
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "the actual western fence still stops the same walk before the global boundary",
+      "data": {
+        "ok": false,
+        "target": [
+          -278.3225557242155,
+          310.4794577531727
+        ],
+        "at": [
+          -274.10660385201646,
+          -5.802157718968174,
+          310.38438018345374
+        ],
+        "inside": true,
+        "clearOfOuterWall": true
+      }
+    },
+    {
+      "ok": true,
+      "name": "continuous ground walk reaches south paddock",
+      "data": {
+        "ok": true,
+        "at": [
+          -265.00000000000193,
+          -3.0103852703292104,
+          326.83735949208665
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "same walk returns over the stile to the footpath",
+      "data": {
+        "back": {
+          "ok": true,
+          "at": [
+            -119.50000000000004,
+            -3.1524402813512173,
+            226.65689472701283
+          ]
+        },
+        "out": {
+          "ok": true,
+          "at": [
+            -114.52081641988391,
+            -3.2796978901963203,
+            223.99580175225933
+          ]
+        },
+        "outside": true,
+        "updates": 20134,
+        "flying": 0,
+        "maxGap": 0.5122777777777778,
+        "events": [],
+        "at": [
+          -114.52081641988391,
+          -3.2796978901963203,
+          223.99580175225933
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "route uses ground physics without flight, water rescue or building rescue",
+      "data": {
+        "back": {
+          "ok": true,
+          "at": [
+            -119.50000000000004,
+            -3.1524402813512173,
+            226.65689472701283
+          ]
+        },
+        "out": {
+          "ok": true,
+          "at": [
+            -114.52081641988391,
+            -3.2796978901963203,
+            223.99580175225933
+          ]
+        },
+        "outside": true,
+        "updates": 20134,
+        "flying": 0,
+        "maxGap": 0.5122777777777778,
+        "events": [],
+        "at": [
+          -114.52081641988391,
+          -3.2796978901963203,
+          223.99580175225933
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "closed gate/fence collision and river water guard remain in force",
+      "data": {
+        "gate": true,
+        "fenceSegments": 166,
+        "underWater": true
+      }
+    },
+    {
+      "ok": true,
+      "name": "no browser page errors",
+      "data": []
+    }
+  ]
+}

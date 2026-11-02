@@ -714,9 +714,12 @@ export const SITE = {
     // `upstream.count` OSM nodes of way 137217705 (same 2026-10-08 snapshot and registration, sitegeo.js) prepended up to the terrain's east
     // edge (x 340); EDGE_BACKDROP's 'Höje å uppströms' strip carries the river on from the edge to Malmövägen. The old section starts at index `count`.
     // North of z 60 the terrain only took the river's profile west of x 195 (the home block's guard); the valley opens over `open` x (m)
-    // east of it, and `edgeFade` m inside the terrain rectangle's edge the profile fades back to the ground so the trench meets the flat
-    // backdrop without a notch (both *guess*).
-    upstream: { count: 6, open: [195, 210], edgeFade: 8 },
+    // east of it. The old `edgeFade` transition remains outside the river corridor; #1814 joins the channel itself to carved far banks instead
+    // of rising over the water. Widths, bank/fall extrapolation and transitions remain *guess*.
+    upstream: { count: 6, open: [195, 210], edgeFade: 8, boundary: [340, 25.38] },
+    // #1814: further OSM way 137217705 nodes through the west terrain edge; existing path/station indices stay intact.
+    // Width, bank and relative fall beyond the sampled section remain the neighbouring visual assumptions.
+    downstream: { path: [[-256.19,263.74],[-268.91,283.27],[-292.46,311.54],[-308.44,332.5],[-322.75,343.94],[-338.5,351.1],[-350,355.5]] },
     // #1800: the terrain took the river's profile only south of z 60 (the home block's guard), a step of up to ~2.2 m at z 60 for x ~140-195;
     // north of z 60 the profile now eases out over `northFade` m (*guess*: the widest bank is 15 m). South of z 60 nothing changes.
     northFade: 16,
@@ -7698,10 +7701,17 @@ export const EDGE_BACKDROP = {
   ],
   // cycle path along the field edge in the south (asphalt, guess 3 m) and Malmövägen / väg 108 (guess 9 m); drawn only outside the terrain
   // #1790 (`rivers`, drawn by edgebackdrop.js `band` in the land batch): Höje å from the terrain's east edge to Malmövägen: OSM way 137217705 nodes from where the line crosses the terrain's
-  // east edge (x 340, between the nodes (333.48, 25.71) and (375.1, 23.63)), ending under this backdrop's Malmövägen strip (9 m), which crosses the line near (440.8, -12), 4 m past its centre line; the real road
-  // bridge (OSM 57357001) is ~17 m further, within the strip's ±50 m. Width 6 m like the terrain's channel and the colour (COLORS.water) are *guess*.
+  // east edge (x 340, between the nodes (333.48, 25.71) and (375.1, 23.63)); #1814 continues the sourced line past the road and into fog.
+  // The illustrative Malmövägen strip crosses near (440.8,-12), ~17 m from the sourced road bridge (OSM 57357001), within its ±50 m estimate. Width/colour remain *guess*.
   paths: [{ name: 'Gång- och cykelväg', width: 3, color: 0x8b8a84, path: [[-640, 560], [-470, 600], [-330, 650], [-200, 660], [-30, 650], [110, 600], [250, 570], [330, 560]] }],
-  rivers: [{ name: 'Höje å uppströms', width: 6, color: 0x47657a, path: [[340, 25.38], [375.1, 23.63], [402.15, 12.75], [416.34, 4.83], [427.46, -1.37], [443.9, -14.5]] }],
+  // #1814: the same archived 2026-10-08 OSM way continues beyond both terrain edges. Plan positions are sourced up to
+  // the west snapshot's (-537.66,407.78); only the last west point (-1400,352) is a tangent continuation (*guess*) hidden in fog.
+  // Far water holds the local edge's relative level (no elevation samples); channel/bank sizes, join distance and mesh step are *guess*.
+  riverContinuation: { step: 8, bank: 24, slope: 2.2, shore: 7.5, valley: 8.5, join: 30, seamStep: 1, overlap: 0.15, waterDepth: 0.6, shoreHeight: 1.5 },
+  rivers: [
+    { name: 'Höje å uppströms', width: 6, color: 0x47657a, path: [[340,25.38],[375.1,23.63],[402.15,12.75],[416.34,4.83],[427.46,-1.37],[470.23,-35.22],[496.28,-46.7],[538.14,-51.02],[558.33,-61.33],[577.1,-76],[627.22,-108.17],[668.21,-140.1],[690.24,-147.28],[716.88,-149.4],[741.42,-151.38],[767.35,-164.95],[793.62,-184.22],[809.24,-202.08],[820.45,-220.81],[832.75,-233.83],[845.15,-246.68],[863,-256.77],[890.7,-263.27],[956.2,-265.93],[995.35,-271.91],[1018.8,-282.51],[1028.82,-291.33],[1041.34,-302.36],[1063.96,-317.6],[1086.45,-334.46],[1128.69,-356.13],[1157.51,-378.51],[1178.44,-385.18],[1193.94,-396.46],[1203.78,-409.27],[1218.09,-422.35]] },
+    { name: 'Höje å nedströms', width: 6, color: 0x47657a, path: [[-350,355.5],[-354.14,357.09],[-364.33,362.66],[-369.34,368.25],[-371.81,376.88],[-365.17,396.99],[-362.95,409.39],[-364.15,420.41],[-367.53,426.76],[-374.21,430.64],[-392.74,431.19],[-427.34,428.75],[-450.23,431.15],[-465.9,436.15],[-479.62,433.36],[-490.17,425.67],[-512.31,413.71],[-533.33,408.06],[-537.66,407.78],[-1400,352]] },
+  ],
   roads: [{ name: 'Malmövägen / väg 108', width: 9, color: 0x5f6164, path: [[-440, -860], [-260, -660], [170, -313], [357, -100], [476, 25], [560, 130], [620, 250], [650, 380], [640, 500], [600, 600], [540, 680], [470, 760], [380, 880], [300, 1000]] }],
   // house groups: `rows` × `cols` boxes w × d × h (m) from `at`, turned `angle`° about y, `colGap`/`rowGap` m apart; walls / roofs cycle through the palettes
   houses: [

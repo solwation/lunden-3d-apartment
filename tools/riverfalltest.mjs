@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {SITE,WALK} from '../src/config.js';
-import {riverAt,riverFallAt,waterYAt,shoreYAt,riverGround,buildRiverBridges,bridgeRecords} from '../src/riverbridge.js';
+import {riverAt,riverFallAt,waterYAt,shoreYAt,riverGround,buildRiverBridges,bridgeRecords,riverPath} from '../src/riverbridge.js';
 import {groundBelowDeckY} from '../src/surroundings.js';
 import {inWater,splashBank,surfaceY} from '../src/farwalk.js';
 import {parkRampEnds,parkFillAt,parkDeckAt} from '../src/riverpark.js';
@@ -30,17 +30,12 @@ test('interpreted relative fall is tied to the checked source and preserves the 
 test('rendered water vertices follow the same continuous downstream level as the terrain and splash logic',()=>{
  const p=buildRiverBridges().getObjectByName('bridges-water').geometry.attributes.position;let lo=Infinity,hi=-Infinity;
  for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i),y=p.getY(i);near(y,waterYAt(x,z),2e-5);lo=Math.min(lo,y);hi=Math.max(hi,y);}
- // #1790: the ribbon spans the whole path (upstream stretch + the 0.482 m sampled section), the same 0.01 m window as before around it
- const total=riverAt(...R.path.at(-1)).along*R.fall.perM;assert(total>.6&&total<.65,`${total}`);assert(hi-lo>total-.002&&hi-lo<total+.008,`${hi-lo} vs ${total}`);
- // #1790: the upstream end vertex (OSM, x 333.5) lies in the terrain's edge fade (SITE.river.upstream.edgeFade), where the trench deliberately
- // rises to the flat backdrop: it is checked separately below; every other vertex keeps the full profile.
- const G=SITE.backgroundGround,edge=(x,z)=>Math.min(x-G.x0,G.x1-x,z-G.z0,G.z1-z),faded=R.path.filter(([x,z])=>edge(x,z)<R.upstream.edgeFade);
- assert.deepEqual(faded,[R.path[0]]);
- for(const[x,z]of R.path){if(edge(x,z)<R.upstream.edgeFade)continue;const bed=groundBelowDeckY(x,z);near(bed,waterYAt(x,z)-.6);near(shoreYAt(x,z)-waterYAt(x,z),1.5);assert(inWater(x,z,bed));}
- // along the centre line into the fade the ground climbs without a step from the bed to the backdrop's level at the edge: no notch, no wall
- const[ax,az]=R.path[1],[bx,bz]=R.path[0],dx=bx-ax,dz=bz-az,tEdge=(G.x1-ax)/dx;let prev=-Infinity;
- for(let t=(G.x1-R.upstream.edgeFade-1-ax)/dx;t<=tEdge+1e-9;t+=.01){const x=ax+dx*t,z=az+dz*t,y=groundBelowDeckY(x,z);assert(y>=prev-1e-9,`climbs at ${x}`);assert(y-prev<.6||prev===-Infinity,`no step at ${x}`);prev=y;}
- near(groundBelowDeckY(G.x1,az+dz*tEdge),-3,.05);
+ // #1814: the local western continuation extends the fall while every old station above remains exact.
+ const total=riverAt(...riverPath.at(-1)).along*R.fall.perM;assert(total>.7&&total<.8,`${total}`);assert(hi-lo>total-.002&&hi-lo<total+.008,`${hi-lo} vs ${total}`);
+ for(const[x,z]of riverPath){const bed=groundBelowDeckY(x,z);near(bed,waterYAt(x,z)-.6);near(shoreYAt(x,z)-waterYAt(x,z),1.5);assert(inWater(x,z,bed));}
+ // The continued channel now meets the far-bank cut at both terrain edges, rather than rising over the water.
+ for(const[x,z]of [R.upstream.boundary,riverPath.at(-1)])near(groundBelowDeckY(x,z),waterYAt(x,z)-.6,.08);
+
 });
 
 // #1684 re-baselined the concrete snapshot again: the abutments/piers reach the 0.8 m lower bed (SITE.bridges.bedY).

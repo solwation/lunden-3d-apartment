@@ -3,7 +3,9 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {SITE, COLORS, ELEVATION} from './config.js';
 import {pathStrip} from './roads.js';
 const B=SITE.bridges,R=SITE.river;
-const along=[0];for(let i=1;i<R.path.length;i++)along.push(along[i-1]+Math.hypot(R.path[i][0]-R.path[i-1][0],R.path[i][1]-R.path[i-1][1]));
+// #1814: append only; the historical source/station indices and bridge fall anchor stay unchanged.
+export const riverPath=R.path.concat(R.downstream?.path??[]);
+const along=[0];for(let i=1;i<riverPath.length;i++)along.push(along[i-1]+Math.hypot(riverPath[i][0]-riverPath[i-1][0],riverPath[i][1]-riverPath[i-1][1]));
 export const bridgeRecords=['road','gc'].map(kind=>{
  const s=B[kind],[a,b]=s.ends,full=Math.hypot(b[0]-a[0],b[1]-a[1]),len=s.length??full;
  const ext=kind==='road'?B.roadDeck.eastWalk.w+B.roadDeck.edge.out:0; // #1704: the road slab's extra width on the east (+x mesh) side
@@ -23,14 +25,19 @@ export function roadBridgeSpan(x,z){const r=bridgeRecords[0];return Math.abs(loc
 let lastX=NaN,lastZ=NaN,lastR=null;
 export function riverAt(x,z){
  if(x===lastX&&z===lastZ)return lastR;
- const P=R.path;let bi=-1,bd=Infinity;
+ const P=riverPath;let bi=-1,bd=Infinity;
+ // The short eastern join has negative chainage, so every historical station keeps its exact along value.
+ const h=R.upstream?.boundary;
+ let ht=0,hl=0;
+ if(h){const dx=P[0][0]-h[0],dz=P[0][1]-h[1];hl=Math.hypot(dx,dz);ht=Math.max(0,Math.min(1,((x-h[0])*dx+(z-h[1])*dz)/(hl*hl)));bd=Math.hypot(x-h[0]-ht*dx,z-h[1]-ht*dz);bi=0;}
  for(let i=1;i<P.length;i++){
   const a=P[i-1][0],b=P[i-1][1],dx=P[i][0]-a,dz=P[i][1]-b,len=Math.hypot(dx,dz),t=Math.max(0,Math.min(1,((x-a)*dx+(z-b)*dz)/(len*len))),
    distance=Math.hypot(x-a-t*dx,z-b-t*dz);
   if(distance<bd){bd=distance;bi=i;}}
  let best={distance:Infinity};
+ if(bi===0){const dx=P[0][0]-h[0],dz=P[0][1]-h[1];best={distance:bd,x:h[0]+ht*dx,z:h[1]+ht*dz,nx:-dz/hl,nz:dx/hl,width:R.widths?.[0]??R.width,valley:R.valleyWidths?.[0]??R.width,bank:(R.banks?.[0]??R.bank)*(R.bankScale??1),segment:0,t:ht,along:(ht-1)*hl};}
  if(bi>0){const i=bi,[a,b]=P[i-1],[c,d]=P[i],dx=c-a,dz=d-b,len=Math.hypot(dx,dz),t=Math.max(0,Math.min(1,((x-a)*dx+(z-b)*dz)/(len*len)));
-  const interp=(values,fallback)=>values?values[i-1]+(values[i]-values[i-1])*t:fallback;
+  const interp=(values,fallback)=>{if(!values)return fallback;const a=values[Math.min(i-1,values.length-1)],b=values[Math.min(i,values.length-1)];return a+(b-a)*t;};
   best={distance:bd,x:a+t*dx,z:b+t*dz,nx:-dz/len,nz:dx/len,width:interp(R.widths,R.width),valley:interp(R.valleyWidths??R.widths,R.width),bank:interp(R.banks,R.bank)*(R.bankScale??1),segment:i,t,along:along[i-1]+len*t};}
  lastX=x;lastZ=z;lastR=best;return best;}
 export function riverDistance(x,z){return riverAt(x,z).distance;}
@@ -148,8 +155,10 @@ export function buildRiverBridges(approachGround=()=>B.deckY){
    parts.asphalt.push(pathStrip({path:[[ex,ez],[ex+r.dx*sign*B.approach,ez+r.dz*sign*B.approach]],w:r.ext-D.edge.out},w=>-w/2,w=>w/2,.025,approachGround));}}
  // #1684: the water ribbon runs under the whole bank slope (the same span riverGround uses, per vertex), so the visible shoreline is where the sloping
  // bank meets the water line, not a hard-edged sheet floating over a strip of bank below the water line. The bank above it hides the extra width.
- const slope=i=>Math.min((R.banks?R.banks[i]:R.bank)*(R.bankScale??1)*.4,2.5),widths=R.path.map((_,i)=>(R.widths?R.widths[i]:R.width)+2*slope(i));
- parts.water.push(pathStrip({path:R.path,w:widths},w=>-w/2,w=>w/2,0,waterYAt));
+ const value=(a,i,fallback)=>a?a[Math.min(i,a.length-1)]:fallback,slope=i=>Math.min(value(R.banks,i,R.bank)*(R.bankScale??1)*.4,2.5),widths=riverPath.map((_,i)=>value(R.widths,i,R.width)+2*slope(i));
+ // The old eastern source vertex sits 6.5 m inside the terrain; overlap the continuation at the exact boundary.
+ const [east,z]=R.upstream.boundary;
+ parts.water.push(pathStrip({path:[[east,z],...riverPath],w:[widths[0],...widths]},w=>-w/2,w=>w/2,0,waterYAt));
  const mats={concrete:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95}),steel:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,metalness:.45,roughness:.55}),asphalt:new THREE.MeshStandardMaterial({color:COLORS.asphalt,roughness:.85}),water:new THREE.MeshStandardMaterial({color:COLORS.water,roughness:.15,metalness:.2})};
  for(const[k,list]of Object.entries(parts)){const geo=mergeGeometries(list.map(g=>g.index?g.toNonIndexed():g));const mesh=new THREE.Mesh(geo,mats[k]);mesh.name=`bridges-${k}`;mesh.castShadow=k!=='water';mesh.receiveShadow=true;group.add(mesh);list.forEach(g=>g.dispose());}
  group.userData.records=bridgeRecords;return group;

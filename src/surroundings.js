@@ -148,14 +148,15 @@ function terrainRawBaseY(x,z,southEdge=S.backgroundGround.z1) {
   return rw<=0?base:rw>=1?riverGround(x,z,base):base+rw*(riverGround(x,z,base)-base);
 }
 /** #1790: how much of the river's profile the terrain takes at (x, z): 1 south of z 60 (as before) and, east of x `upstream.open` (the
- *  valley of the upstream stretch, SITE.river.upstream), also north of it; fading to 0 within `upstream.edgeFade` m of the terrain's edge.
+ *  valley of the upstream stretch, SITE.river.upstream), also north of it. Outside the river corridor it fades within `upstream.edgeFade` m of the edge;
  *  #1800: elsewhere north of z 60 it eases from 1 at z 60 to 0 over `river.northFade` m, so the old z 60 guard leaves no step (x 140-195). */
 function riverWeight(x,z){
   const U=S.river.upstream,B=S.backgroundGround,F=S.river.northFade;
   const north=z>=60?1:F?smooth(Math.max(0,Math.min(1,(z-(60-F))/F))):0;
   if(!U)return north;
   let w=z<60?Math.max(north,smooth(Math.max(0,Math.min(1,(x-U.open[0])/(U.open[1]-U.open[0]))))):1;
-  if(w>0)w*=smooth(Math.max(0,Math.min(1,Math.min(x-B.x0,B.x1-x,z-B.z0,B.z1-z)/U.edgeFade)));
+  // #1814: the continued river now has a matching carved far-bank profile, so its edge stays a channel instead of rising over the water.
+  if(w>0&&riverDistance(x,z)>=ELEVATION.river[0])w*=smooth(Math.max(0,Math.min(1,Math.min(x-B.x0,B.x1-x,z-B.z0,B.z1-z)/U.edgeFade)));
   return w;
 }
 /** #1306: 0 inside the protected block rectangle and within ELEVATION.river[0] m of Höje å (the designed levels stay), 1 a few metres beyond. */

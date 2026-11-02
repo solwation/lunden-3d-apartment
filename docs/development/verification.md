@@ -15,6 +15,10 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Continued river ends (#1814)
+
+`node tools/riverfalltest.mjs` preserves all old station elevations and non-water bridge buffers while checking the extended local channel; `node tools/edgebackdroptest.mjs` covers retained land/batching contracts. `node tools/rivercontinuationtest.mjs` checks archived OSM registration, old station indices and endpoint distance beyond normal fog. Open `tools/rivercontinuationtest.html` in Chromium: its native Three.js ray checks cover actual emitted water at both terrain/far-land joins, bank/terrain continuity, submerged bank coverage and the existing two edge-backdrop meshes. Use the shared browser wrapper. Actual app ground/air views of both ends are saved in [docs/verification/1814](../verification/1814/). Heights and the last western tangent are assumptions; physical-device performance is not established.
+
 ## Walking through the full paddock (#1817)
 
 Run `tools/paddockgeotest.mjs` with the pinned three resolver (11 geometry checks) and `THREE_DIR=/path/to/three node tools/roadendstest.mjs` after changing WALK, since the road fog endpoints depend on it. The real-app route is `tools/browsertest.sh node tools/paddockwalktest.cjs GAME OUT` (optional `--baseline` reproduces the old west boundary). It uses one initial spawn outside the stile, then continuous production Player updates through north/west/south and back out. It records flight/rescue events, exact reached coordinates and retained gate/fence/water guards, and captures the actual reached western viewpoint with `testkit.shot`. [Result images and raw route result](../verification/1817/). No physical-phone verification is claimed.

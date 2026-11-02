@@ -6,9 +6,10 @@ import { cutAtTerrain } from './roads.js';
 import { grassMeanColor } from './grass.js';
 import { registerSnow, registerSeasonal } from './seasons.js';
 import { lowMemory } from './lowmemory.js';
+import { cutRiverParts, riverContinuationParts } from './riveredge.js';
 
 // #1682: the world's edge, far scenery outside the modelled terrain (data and caveats: EDGE_BACKDROP in config.js).
-// Two merged meshes (flat land: band, north slab, fields, paths, the upstream river strip, road; house boxes) plus tree spots for the south backdrop's batches.
+// Two merged meshes (flat land: band, north slab, fields, paths, the continued river channel, road; house boxes) plus tree spots for the south backdrop's batches.
 const B = SITE.backgroundGround, S = SITE.south;
 const inRect = (x, z, m = 0) => x > B.x0 - m && x < B.x1 + m && z > B.z0 - m && z < B.z1 + m;
 
@@ -52,27 +53,6 @@ export function ribbon(path, width, y, col, ground = null, over = 0.5) {
   return { pos, cols };
 }
 
-/** #1790: a polyline as one band `width` m wide with mitred joints (`ribbon`'s straight pieces leave wedge gaps at bends, which show on
- *  a 6 m water strip), resampled every ~3 m so it can follow the feathered band where that slopes down from a higher terrain edge (it
- *  would hide the strip, as it hides the road strip there): each vertex at least `y`, else `over` m above the band (it spans the band's creases between vertices). The caller keeps the
- *  line outside the terrain rectangle (EDGE_BACKDROP.rivers starts at its edge). */
-function band(path, width, y, col, ground, over = 0.35) {
-  const pts = [], L = [], R = [], pos = [], cols = [], c = new THREE.Color(col);
-  const nrm = (u, v) => { const dx = v[0] - u[0], dz = v[1] - u[1], l = Math.hypot(dx, dz) || 1; return [-dz / l, dx / l]; };
-  for (let i = 0; i + 1 < path.length; i++) {
-    const [a, b] = [path[i], path[i + 1]], n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 3));
-    for (let k = 0; k < n; k++) pts.push([a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n]);
-  }
-  pts.push(path[path.length - 1]);
-  pts.forEach((p, i) => {
-    const n0 = nrm(pts[Math.max(0, i - 1)], pts[Math.max(1, i)]), n1 = nrm(pts[Math.min(i, pts.length - 2)], pts[Math.min(i + 1, pts.length - 1)]);
-    let mx = n0[0] + n1[0], mz = n0[1] + n1[1]; const ml = Math.hypot(mx, mz) || 1; mx /= ml; mz /= ml;
-    const k = width / 2 / Math.max(0.5, mx * n1[0] + mz * n1[1]); // the mitre's half width (capped for very sharp bends)
-    for (const [side, out] of [[1, L], [-1, R]]) { const x = p[0] + side * mx * k, z = p[1] + side * mz * k; out.push([x, Math.max(y, skirtTop(x, z, ground) + over), z]); }
-  });
-  for (let i = 0; i + 1 < pts.length; i++) for (const v of [L[i], R[i], R[i + 1], L[i], R[i + 1], L[i + 1]]) { pos.push(...v); cols.push(c.r, c.g, c.b); }
-  return { pos, cols };
-}
 /** The feathered band's drawn height at (x, z) (-Infinity off it): the same steps, edge heights and triangles as `skirtParts`. */
 export function skirtTop(x, z, ground) {
   const K = E.skirt, y = E.level + E.lift.skirt, top = (p) => Math.max(y, ground(p[0], p[1]) + 0.03);
@@ -270,8 +250,10 @@ export function buildEdgeBackdrop(ground) {
   parts.push(...skirtParts(far, ground));
   for (const f of E.fields) parts.push(flat(f.polygon, E.level + lift.field, f.color));
   parts.push(...groundParts()); // #1808: lawns, car parks, roads and paths between the north-west houses
+  // #1814: remove only the continued river corridor from existing land before roads/paths are appended.
+  const carved = cutRiverParts(parts); parts.length = 0; parts.push(...carved);
+  parts.push(...riverContinuationParts((x,z) => Math.max(E.level, skirtTop(x,z,ground)), ground));
   for (const p of E.paths) parts.push(ribbon(p.path, p.width, E.level + lift.path, p.color));
-  for (const r of E.rivers ?? []) parts.push(band(r.path, r.width, E.level + lift.path, r.color, ground)); // #1790: under the road strip, which crosses it
   for (const p of E.roads) parts.push(ribbon(p.path, p.width, E.level + lift.road, p.color, ground)); // #1802: lifted over the sloping band, above the river strip's 0.35 m
   parts.push(...roadEndParts(ground)); // #1812: source road/pavement continuations fade naturally into the existing fog
   const land = new THREE.Mesh(geometry(parts), new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 1, side: THREE.DoubleSide }));
