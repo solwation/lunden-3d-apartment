@@ -168,6 +168,20 @@ tools/nonpctest.html   headless test (#670): no People / PEOPLE, nothing to gree
 ```
 
 
+## Google 3D review 2026-11-02 (#1791)
+
+The user's second Google Maps 3D reference set, [docs/references/google-3d-2026-11-02](../references/google-3d-2026-11-02/README.md)
+(36 views: one 700 m overview and seven area targets from four or eight compass headings, with camera data and the
+`?at=` game camera per image), drives a low-priority review of every building in the Sankt Lars area. The user's focus
+is the near-rectangle bounded by väg 108, Malmövägen, Skånevägen and Höjeådalen; outside it the `EDGE_BACKDROP`
+silhouettes suffice. Parent #1791; children: #1792 (game renders for all 36 cameras, first), #1793 (hospital pavilions
+south of Höje å, `SITE.south`), #1794 (western quarter: the Thermo Fisher hall, its car park and the large blocks west
+of the modelled pavilions are not modelled at all), #1795 (southern villas, #1677), #1796 (northern school quarter's
+white pavilions, byggnad 88, Klockhuset), #1797 (eastern quarter: Kunskapsskolan, HepCat, Realgymnasiet 20, the
+#1703 bridge distance), #1798 (Kallby ängar: slab blocks, the two red point blocks and the white office are only edge
+boxes or missing). The `04_nybygge` series shows the Lunden plot as a building site and is used only for its
+neighbours. Everything read from the images stays a *guess* until OSM, Peab or photos confirm it.
+
 ## No neighbours outside (#670)
 
 There are no figures outside except our car driver Olof (#599/#900) and the cats: the walkers with the dog, the cyclist on Sankt Lars väg (and its
