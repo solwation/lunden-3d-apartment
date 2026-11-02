@@ -221,10 +221,15 @@ The conductor runs this loop in every `/orkester` queue session:
 
 ## Shared version and maintenance
 
-Shared release: **v0.7.0**, commit **2bd00217aa1704134c6e2a3d5c9614c6b7fdbfbe**. Imported as a squashed subtree
-at `.orchestra/shared`; upgraded from v0.6.1 in original #1740, with the matching public import tracked in
-[public #208](https://github.com/solwation/kvarteret-lunden/issues/208). Existing session IDs remain valid; new
-sessions follow the shared host/model format, and startup resumes unfinished work before new selection.
+Shared release: **v0.7.1**, commit **94c81f236bf892e979ecf1b20ede9d12885cc3d2**. Imported as a squashed subtree
+at `.orchestra/shared`; upgraded from v0.7.0 in [original #1816](https://github.com/solwation/lunden-3d-apartment/issues/1816),
+with the matching public import tracked in [public #229](https://github.com/solwation/kvarteret-lunden/issues/229).
+The earlier v0.7.0 import from v0.6.1 remains recorded in original #1740 and public #208.
+Existing session IDs remain valid; new sessions follow the shared host/model format, and startup resumes unfinished work before new selection.
+
+v0.7.1 clarifies visual follow-up. This host's required Capture/Share result image hooks still take precedence over
+its generic unsupported-capture exception: representative images must be published and embedded before closing a visual
+implementation issue. Repository ordering, priority ceilings, ownership labels, queue/heartbeat timers and idle watch are unchanged.
 See [installation](shared/INSTALL.md) and [contribution](shared/CONTRIBUTING.md) instructions.
 Improve the core in its own clean repository, release it, then explicitly update both
 Lunden pins. Keep this local policy outside the subtree; do not export project history.

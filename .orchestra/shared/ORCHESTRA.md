@@ -215,18 +215,22 @@ refreshing branches after each merge: [Select and claim](COORDINATION.md#select-
 
 The conductor owns follow-up unless the plan names another owner, and picks the smallest
 useful evidence in an authorized, accessible destination: a screenshot with revision
-and environment for visible changes (supporting, not replacing, functional checks), a
+and environment for visible changes such as UI/UX, styling or 2D/3D graphics and rendering
+(supporting, not replacing, functional checks; before/after when comparison helps), a
 test or reproduction result for behavior, a link to the published text and what was
 checked for documentation, and the deployed revision and post-deployment check for
 deployments.
 
 Before closing an issue, post a completion comment: outcome, delivered revision,
-checks, evidence links, limitations and remaining acceptance; then release labels under
-[Issueflow](ISSUE-WORKFLOW.md) and leave unmet acceptance open with next action and
-owner. Inspect images before posting and expose no private data; never claim an upload
-that did not happen. Run required post-publication checks before claiming them, and
-schedule later monitoring only when authorized. Reuse the result note; follow-up is no
-separate reporting phase.
+checks, evidence links or attachments, limitations and remaining acceptance; then
+release labels under [Issueflow](ISSUE-WORKFLOW.md) and leave unmet acceptance open with
+next action and owner. For UI/UX, styling or 2D/3D graphics and rendering changes, include
+screenshots or rendered comparisons in the completion comment (as embedded images or
+accessible artifact links); if the environment or available tools cannot capture or host
+images, state that limitation and reason explicitly. Inspect images before posting and
+expose no private data; never claim an upload that did not happen. Run required
+post-publication checks before claiming them, and schedule later monitoring only when
+authorized. Reuse the result note; follow-up is no separate reporting phase.
 
 ### Close after a best-guess fix
 
