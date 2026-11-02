@@ -836,6 +836,20 @@ the rest; the room accepts nulls (at least one pose). The chirp's `ref` (3 m) ma
 over four hours with all nine), `cloudflare/squirrels.test.mjs` (the widest snapshot fits; nulls), `tools/squirrelstest.cjs` (areas in the
 real scene). Pictures: `docs/verification/1780/`.
 
+### More nuts, better visibility and valley squirrel (#1787)
+
+Mobile player feedback: nuts and squirrels were too rare and hard to find outdoors.
+Nuts: `SQUIRRELS.maxNuts` raised from 18 to 20, respawn accelerated from `[6, 20]` to `[4, 12]` s,
+spread increased to 11 m, visitor bias raised to 75 % within 65 m, and heap chance to 45 %. Nut size
+increased from 2.4 to 2.6 for better mobile contrast. Glint ring/beam markers (`markDist` 8 m, `markFade` 4.5 m)
+and close nut meshes (`nutNear` 16 m) ensure clear detection without cluttering the distant landscape.
+Squirrels: a tenth squirrel, `Parkekorren` (scale 1.08, ground probability 0.72, lure 22 m), was added to
+strengthen presence in the river valley and park. Midday activity (`day.midday`) increased from 0.45 to 0.65,
+perch times shortened to `[3.5, 8]` s, and ground foraging lengthened to `[16, 36]` s, with higher ground
+probabilities across all squirrels so they are seen foraging more frequently during daylight hours.
+Tests: `tools/squirrelbraintest.mjs`, `cloudflare/squirrels.test.mjs`, `tools/squirrelstest.cjs`,
+`tools/squirrelratetest.cjs`. Pictures: `docs/verification/1787/`.
+
 ### More nuts and shared squirrels (#1686)
 
 Diagnosis of "impossible to find a nut": only 6 nuts over the whole river park (a handful of trees each), 4.5 cm and the colour of the

@@ -140,7 +140,7 @@ export function climbPoint(t, ang, k, ground, o = {}) {
 
 /** Nut spots round the squirrels' trees: one random place 1.5 … `spread` m from a random trunk, where `ok(x, z)` agrees. Null after `tries` misses.
  * #1686: `anchors` (the visitors' places): most of the time the trunk is one within `nutNearPlayer` m of a random visitor, so nuts turn up where somebody looks. */
-export function pickNutSpot(trees, rnd, ok, tries = 12, anchors = null) {
+export function pickNutSpot(trees, rnd, ok, tries = 16, anchors = null) {
   if (!trees.length) return null;
   let pool = trees;
   if (anchors?.length && rnd() < C.nutBias) {

@@ -7313,10 +7313,10 @@ export const FOOTSTEPS = {
 export const SQUIRRELS = {
   simDist: 70, farDist: 130, drawDist: 150, farStep: 0.25, leapRange: 11, groundHop: 22,
   dry: 6, // #1764: farther than the river's half width + `dry` m from its centre line the park ground is always above the water (measured: the wet strip reaches at most 5.6 m from the centre line), so main.js squirrelWalk answers there without the terrain lookup
-  run: 3.4, flee: 6.5, climb: 2.6, leap: 5.5, perch: [5, 12], forage: [14, 32], search: [1.2, 3.5], eat: 2.2,
-  maxNuts: 18, spread: 9, life: [360, 900], respawn: [6, 20], sense: 4.5, nutSize: 2.4, // #1686: 18 at once (was 6), twice-as-big nuts, quicker respawn, a calmer nose (the squirrels ate most of the six before anyone found one) (all *guess*)
-  nutNearPlayer: 60, nutBias: 0.7, heap: 0.4, heapRadius: [0.15, 0.6], // #1686: 70 % of new nuts under the trees within 60 m of a visitor; 40 % land in a heap beside a nut already out
-  markDist: 6, markFade: 3.5, markRing: 0.2, markBeam: 1.1, markDay: [0.35, 0.85], markNight: 0, nutNear: 14, // #1697: the glint's strength follows the daylight (DayCycle.daylight): 0 below markDay[0], full above markDay[1], eased between; markNight = what is left at night (0 = hidden). #1686: the glint ring + beam (one instanced mesh) shows up to 45 m; the nut's own mesh only within 14 m (draw calls stay low). #1742: the glint shows only close to a nut: full within `markFade` m, shrinking away to nothing at `markDist` m (6 m; was 45 m, which lit up the whole park from afar) (*guess*)
+  run: 3.4, flee: 6.5, climb: 2.6, leap: 5.5, perch: [3.5, 8], forage: [16, 36], search: [1.2, 3.5], eat: 2.2, // #1787: quicker perch decisions, longer ground foraging
+  maxNuts: 20, spread: 11, life: [360, 900], respawn: [4, 12], sense: 4.5, nutSize: 2.6, // #1686: 18 at once; #1787: 20 nuts, quicker respawn [4, 12] s, spread 11 m, nutSize 2.6 for visibility
+  nutNearPlayer: 65, nutBias: 0.75, heap: 0.45, heapRadius: [0.15, 0.6], // #1686: 70 % near visitor; #1787: 75 % within 65 m, 45 % in heaps beside existing nuts
+  markDist: 8, markFade: 4.5, markRing: 0.22, markBeam: 1.15, markDay: [0.35, 0.85], markNight: 0, nutNear: 16, // #1697: daylight opacity; #1742: close-only; #1787: markDist 8 m with fade from 4.5 m, nutNear 16 m
   sync: { every: 0.5, nutEvery: 0.4, enter: 120, leave: 160, reach: 6, follow: 3, bytes: 480 }, // #1686: the shared leader's snapshot every 0.5 s (#1780: only the animals within drawDist of a visitor, nearest first, the message at most `bytes` long: the room drops one over PLAYERS.maxBytes 512); nuts at most every 0.4 s; a visitor within 120 m of a squirrel joins (leaves beyond 160); a put-down within 6 m; followers simulate on their own again after 3 s without a snapshot
   still: 0.12, stillFor: 0.5, scareSpeed: 1.1, scareReach: 1.5, touch: 1.5, roseFor: 1.5, scareTime: [14, 30], // #1698: 'still' = under 0.12 m/s (about a slow shuffle) for 0.5 s, crouched with a nut; a visitor (any, also far ghosts) faster than 1.1 m/s within scareReach x the squirrel's shy range, or one who rises (1.5 s) within it, or anyone within 1.5 m, frightens it up the nearest tree; it stays up scareTime s x its calm (all *guess*)
   chirp: { gain: 0.5, ref: 3, notes: 3, gap: 0.075, dur: 0.06, hz: 3600, rise: 1.35, pitchJitter: 0.12 }, // #1699: the happy 'tjipp-tjipp' when a squirrel takes the nut (#1780: `ref` m: full loudness within it, so it carries about 2.5 x as far as the ordinary 1.2 m): `notes` short rising sine chirps `gap` s apart, `dur` s each, from `hz` up by x`rise`, a squirrel's own pitch +-`pitchJitter`, played from the squirrel (all *guess*)
@@ -7338,9 +7338,9 @@ export const SQUIRRELS = {
   // (± `day.width` h), `day.midday` = how lively in between (perch time and ground trips follow). All *guess*.
   cache: { chance: 0.4, max: 6, stash: [3, 8], ripe: [240, 1500], bury: 2.4, dig: 2.2 },
   chase: { range: 12, chance: 0.03, time: [2.5, 5], speed: 0.95, calm: 4 },
-  day: { wake: 6, sleep: 20.5, peaks: [8, 16.5], width: 2, midday: 0.45 },
+  day: { wake: 6, sleep: 20.5, peaks: [8, 16.5], width: 2, midday: 0.65 }, // #1787: midday activity 0.65 (was 0.45) so squirrels stay lively through the day
   look: { near: 15 }, // #1716: the detailed squirrel (fluffy tail, tufted ears) within `near` m of the eye, a cheaper one with the same outline beyond (*guess*)
-  starts: [[-150, 215], [-30, 128], [-62, 168]], // first tree = nearest eligible tree to these plan points (*guess*: by the paddock bridge, the foot bridge, the south bank); an animal with a `home` starts by its area's centre instead
+  starts: [[-150, 215], [-30, 128], [-62, 168], [-105, 185]], // first tree = nearest eligible tree to these plan points (#1787: 4 start trees in the park/valley); an animal with a `home` starts by its area's centre instead
   // #1780: home areas, so more squirrels spread over the site instead of all drifting along the river. An animal with `home` keeps its home range
   // `r` m round the area's centre `at` [x, z], which wanders up to `wander` m with the same slow wall-clock waves (roam.periods), so it still
   // roams (journeys, favourites, caches) but stays in its area. `box` [x0, x1, z0, z1]: an own grove away from the river: the trees inside join
@@ -7360,16 +7360,17 @@ export const SQUIRRELS = {
     east: { at: [118, 110], r: 55, wander: 20 },
   },
   animals: [
-    { name: 'Den stora', phase: 0.4, scale: 1.25, width: 1, color: 0x8a5632, belly: 0xd9c3a0, tail: 0x9a6338, tip: null, ground: 0.7, shy: 4, lure: 24, delay: 0.8, speed: 1.0, perch: 1, calm: 0.7 },
-    { name: 'Vitsvansen', phase: 2.3, scale: 1.0, width: 1, color: 0xa4673a, belly: 0xe6d4b4, tail: 0xb3733f, tip: 0xf4f1e8, ground: 0.45, shy: 6.5, lure: 18, delay: 0.5, speed: 1.15, perch: 0.7, calm: 1 },
-    { name: 'Den smala', phase: 4.4, scale: 0.92, width: 0.78, color: 0x4f3626, belly: 0xb9a88c, tail: 0x5c4130, tip: null, ground: 0.3, shy: 9, lure: 12, delay: 1.4, speed: 1.3, perch: 1.4, calm: 1.5 },
-    // #1780: six more, one per home area (looks and personalities *guess*; the courtyard's is bold and often on the ground, so it is easy to find)
-    { name: 'Gårdsekorren', home: 'court', phase: 1.1, scale: 0.95, width: 0.92, color: 0x9a5e34, belly: 0xe2cfae, tail: 0xa86a3a, tip: null, ground: 0.75, shy: 4.5, lure: 22, delay: 0.6, speed: 1.05, perch: 0.8, calm: 0.6 },
-    { name: 'Tofsen', home: 'green', phase: 3.0, scale: 1.05, width: 1, color: 0x7c4a2c, belly: 0xd4bc96, tail: 0x8a5532, tip: null, ground: 0.55, shy: 5.5, lure: 20, delay: 0.9, speed: 1.0, perch: 1.1, calm: 0.9 },
-    { name: 'Klockan', home: 'clock', phase: 5.2, scale: 1.1, width: 0.95, color: 0xb0703f, belly: 0xebdcbf, tail: 0xbd7b45, tip: 0xf0e9dc, ground: 0.5, shy: 6, lure: 18, delay: 0.7, speed: 1.1, perch: 0.9, calm: 1.1 },
-    { name: 'Rödpälsen', home: 'south', phase: 0.7, scale: 1.0, width: 0.9, color: 0xa2552c, belly: 0xdcc5a2, tail: 0xb05f30, tip: null, ground: 0.45, shy: 7, lure: 16, delay: 1.0, speed: 1.15, perch: 1.0, calm: 1.2 },
-    { name: 'Svartsvansen', home: 'west', phase: 2.7, scale: 0.98, width: 0.85, color: 0x6a4630, belly: 0xc9b694, tail: 0x3e2a1e, tip: null, ground: 0.4, shy: 7.5, lure: 15, delay: 1.1, speed: 1.2, perch: 1.2, calm: 1.3 },
-    { name: 'Ljusbuken', home: 'east', phase: 4.0, scale: 1.02, width: 0.95, color: 0x93603a, belly: 0xf2e6cc, tail: 0x9e6a40, tip: null, ground: 0.6, shy: 5, lure: 20, delay: 0.8, speed: 1.05, perch: 0.9, calm: 0.8 },
+    { name: 'Den stora', phase: 0.4, scale: 1.25, width: 1, color: 0x8a5632, belly: 0xd9c3a0, tail: 0x9a6338, tip: null, ground: 0.88, shy: 4, lure: 26, delay: 0.8, speed: 1.0, perch: 1, calm: 0.7 },
+    { name: 'Vitsvansen', phase: 2.3, scale: 1.0, width: 1, color: 0xa4673a, belly: 0xe6d4b4, tail: 0xb3733f, tip: 0xf4f1e8, ground: 0.55, shy: 6.5, lure: 20, delay: 0.5, speed: 1.15, perch: 0.7, calm: 1 },
+    { name: 'Den smala', phase: 4.4, scale: 0.92, width: 0.78, color: 0x4f3626, belly: 0xb9a88c, tail: 0x5c4130, tip: null, ground: 0.35, shy: 9, lure: 15, delay: 1.4, speed: 1.3, perch: 1.4, calm: 1.5 },
+    // #1780: six home-area squirrels, and #1787: Parkekorren in the river park
+    { name: 'Parkekorren', phase: 3.7, scale: 1.08, width: 0.95, color: 0x8f522e, belly: 0xdfcbab, tail: 0x9b5c33, tip: 0xefe4d0, ground: 0.72, shy: 5, lure: 22, delay: 0.6, speed: 1.1, perch: 0.8, calm: 0.8 },
+    { name: 'Gårdsekorren', home: 'court', phase: 1.1, scale: 0.95, width: 0.92, color: 0x9a5e34, belly: 0xe2cfae, tail: 0xa86a3a, tip: null, ground: 0.85, shy: 4.5, lure: 24, delay: 0.6, speed: 1.05, perch: 0.8, calm: 0.6 },
+    { name: 'Tofsen', home: 'green', phase: 3.0, scale: 1.05, width: 1, color: 0x7c4a2c, belly: 0xd4bc96, tail: 0x8a5532, tip: null, ground: 0.70, shy: 5.5, lure: 22, delay: 0.9, speed: 1.0, perch: 1.1, calm: 0.9 },
+    { name: 'Klockan', home: 'clock', phase: 5.2, scale: 1.1, width: 0.95, color: 0xb0703f, belly: 0xebdcbf, tail: 0xbd7b45, tip: 0xf0e9dc, ground: 0.65, shy: 6, lure: 20, delay: 0.7, speed: 1.1, perch: 0.9, calm: 1.1 },
+    { name: 'Rödpälsen', home: 'south', phase: 0.7, scale: 1.0, width: 0.9, color: 0xa2552c, belly: 0xdcc5a2, tail: 0xb05f30, tip: null, ground: 0.65, shy: 7, lure: 18, delay: 1.0, speed: 1.15, perch: 1.0, calm: 1.2 },
+    { name: 'Svartsvansen', home: 'west', phase: 2.7, scale: 0.98, width: 0.85, color: 0x6a4630, belly: 0xc9b694, tail: 0x3e2a1e, tip: null, ground: 0.60, shy: 7.5, lure: 17, delay: 1.1, speed: 1.2, perch: 1.2, calm: 1.3 },
+    { name: 'Ljusbuken', home: 'east', phase: 4.0, scale: 1.02, width: 0.95, color: 0x93603a, belly: 0xf2e6cc, tail: 0x9e6a40, tip: null, ground: 0.75, shy: 5, lure: 22, delay: 0.8, speed: 1.05, perch: 0.9, calm: 0.8 },
   ],
 };
 
