@@ -7620,7 +7620,7 @@ export const EDGE_BACKDROP = {
   // field/forest crosses the edge (east z > 30 and the field south of it, the pony fields and the woodland at the south edge).
   skirt: { width: 70, innerTone: [1.13, 1, 1.13], step: 8, sides: [
     { side: 'west', from: -340, to: 460 }, { side: 'north', from: -350, to: 340 }, { side: 'east', from: -340, to: 30 },
-    { side: 'south', from: -350, to: -180 }, { side: 'south', from: -12, to: 205 },
+    { side: 'south', from: -350, to: -180 }, { side: 'south', from: 30, to: 205 }, // #1803: from x 30, not -12: the band (+0.08 m) hid the western car park 145221622 (x -33…26, z 468…531) east of x -12
   ] },
   fields: [
     { name: 'Åker sydväst', color: 0xa9ad62, polygon: [[-700, 430], [-380, 400], [-350, 640], [-640, 660]] },

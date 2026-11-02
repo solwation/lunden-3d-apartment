@@ -192,7 +192,7 @@ left out of scope in every child; it is tracked in #1804.
 |---|---|---|
 | Game renders | #1792 | `spel-*.png` for all 36 cameras beside the references; used `at` values in the reference README |
 | 01 hospital pavilions | #1793 | nr 48/49 in red brick (`SITE.south.brickHouses`); the low white service building at nr 47 and two small gabled brick pavilions (`SITE.south.annexes`, `src/southannex.js`) |
-| 02 western quarter | #1794 | Thermo Fisher hall, wing, barn and house as annexes; two OSM car parks (see above). Open: an `EDGE_BACKDROP` field patch covers the western lot (#1803); the south far-detail budget has only ~67 triangles left |
+| 02 western quarter | #1794 | Thermo Fisher hall, wing, barn and house as annexes; two OSM car parks (see above). Fixed in #1803 (the south side of `EDGE_BACKDROP.skirt` now starts at x 30, it hid the lot, not a field); the south far-detail budget has only ~67 triangles left |
 | 03 southern villas | #1795 | facade colour, roof colour and roof rise per house from small palettes (`SITE.south.villas` / `whiteHouses`), hashed from the OSM id |
 | 05 northern schools | #1796 | shared `SITE.east.roofColors` lowered to dark slate; greyer yards, lawns at Freinet and Montessori. Facades unchanged |
 | 06 eastern quarter | #1797 | Kunskapsskolan roof (`laundry`) darker and bluer; a clipped hedge along the Klockhuset car park. #1703 bridge distance confirmed unchanged |
