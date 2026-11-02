@@ -2,7 +2,7 @@
 //   node tools/edgebackdroptest.mjs
 import * as THREE from 'three';
 import { SITE, EDGE_BACKDROP as E } from '../src/config.js';
-import { ribbon, skirtTop, skirtParts, houseBoxes, edgeTreeSpots, footprintGeometries } from '../src/edgebackdrop.js';
+import { ribbon, skirtTop, skirtParts, houseBoxes, edgeTreeSpots, footprintGeometries, groundParts } from '../src/edgebackdrop.js';
 let fails = 0;
 const check = (ok, name) => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name}`); if (!ok) fails++; };
 const B = SITE.backgroundGround, inRect = (x, z) => x > B.x0 && x < B.x1 && z > B.z0 && z < B.z1;
@@ -58,6 +58,19 @@ check(fp.every((g) => { const n = g.attributes.normal.array; for (let i = 0; i <
 const slope = footprintGeometries((x, z) => (x <= B.x0 ? 5 : -Infinity)), lows = (a) => a.map((g) => { g.computeBoundingBox(); return g.boundingBox.min.y; });
 check(lows(slope).filter((y, i) => y > lows(fp)[i] + 1).length >= 3 && lows(slope).every((y, i) => y >= lows(fp)[i] - 1e-9), 'with a terrain height function the buildings in the feathered band stand on the higher ground (none lower)');
 check(E.lowMemory.houses === false, 'phones skip the footprints with the boxes (same batch)');
+// #1808: ground polygons / ribbons between the north-west houses, in the land batch
+{
+  const G = E.ground, parts = groundParts(), nv = parts.reduce((a, p) => a + p.pos.length / 3, 0), ys = parts.flatMap((p) => p.pos.filter((_, i) => i % 3 === 1));
+  const kinds = new Set(G.items.map((it) => it.kind));
+  check(['parking', 'green', 'scrub', 'road', 'path'].every((k) => kinds.has(k)) && G.items.every((it) => /^\d+$/.test(it.source) && G.colors[it.kind] !== undefined), 'ground items are OSM ways (numeric source) of a coloured kind: car parks, lawns, scrub, roads, paths');
+  check(parts.length > 80 && nv / 3 > 500 && nv / 3 < 6000, `ground: ${parts.length} parts, ${nv / 3} triangles (expect under 6000: flat, same land mesh)`);
+  check(parts.every((p) => { for (let i = 0; i < p.pos.length; i += 3) if (!Number.isFinite(p.pos[i]) || !Number.isFinite(p.pos[i + 2])) return false; return true; }) && Math.min(...ys) > E.level + E.lift.skirt && Math.max(...ys) < E.level + E.lift.road + 1e-9, 'ground is finite, above the band lift and under the road lift');
+  const near = [];
+  for (const p of parts) for (let i = 0; i < p.pos.length; i += 3) if (inRect(p.pos[i], p.pos[i + 2]) ) near.push(1);
+  check(near.length === 0 && G.clear >= E.skirt.width, `no ground vertex inside the terrain rectangle; clear ${G.clear} m is at least the band width ${E.skirt.width}`);
+  check(G.items.filter((it) => it.kind === 'parking').every((it) => it.polygon.length >= 3) && Math.max(...Object.values(G.lift)) < E.lift.road + 1e-9 && G.lift.yard > E.lift.field, 'ground layers sit between the fields and the road strip');
+  check(E.lowMemory.ground === false, 'phones skip the ground polygons (land mesh as before)');
+}
 // #1802: the road strips are lifted over the sloping band (a 6 m high terrain edge here), never below it, and stay flat elsewhere
 {
   const g = (x, z) => 6, eps = 1e-9;

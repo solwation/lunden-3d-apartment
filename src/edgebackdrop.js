@@ -180,6 +180,22 @@ export function footprintGeometries(ground = () => -Infinity) {
   return out;
 }
 
+/** #1808: the OSM ground features of EDGE_BACKDROP.ground (car parks, lawns, scrub, pitches, a pond, roads, paths, a ditch) as flat parts for the `edge-land` batch.
+ *  Features within `clear` m of the terrain rectangle are skipped (the feathered band slopes over them). Nothing on phones. */
+export function groundParts() {
+  const G = E.ground, out = [];
+  if (!G || (lowMemory && E.lowMemory.ground === false)) return out;
+  const L = { ...E.lift, ...G.lift };
+  for (const it of G.items) {
+    const pts = it.polygon ?? it.path;
+    if (pts.some(([x, z]) => inRect(x, z, G.clear))) continue;
+    const col = G.colors[it.kind];
+    if (it.polygon) out.push(flat(it.polygon, E.level + L[it.kind === 'green' ? 'yard' : it.kind], col));
+    else out.push(ribbon(it.path, it.width, E.level + (it.kind === 'ditch' ? L.water : L[it.kind]), col));
+  }
+  return out;
+}
+
 /** Tree spots [{x, z, y, h, r, edge}] for the south backdrop's instanced batches: rows along field edges and woods (none on phones). */
 export function edgeTreeSpots() {
   if (lowMemory && E.lowMemory.trees === false) return [];
@@ -203,6 +219,7 @@ export function buildEdgeBackdrop(ground) {
   parts.push(flat([[N.x0, N.z0], [N.x1, N.z0], [N.x1, B.z0], [N.x0, B.z0]], E.level, far));
   parts.push(...skirtParts(far, ground));
   for (const f of E.fields) parts.push(flat(f.polygon, E.level + lift.field, f.color));
+  parts.push(...groundParts()); // #1808: lawns, car parks, roads and paths between the north-west houses
   for (const p of E.paths) parts.push(ribbon(p.path, p.width, E.level + lift.path, p.color));
   for (const r of E.rivers ?? []) parts.push(band(r.path, r.width, E.level + lift.path, r.color, ground)); // #1790: under the road strip, which crosses it
   for (const p of E.roads) parts.push(ribbon(p.path, p.width, E.level + lift.road, p.color, ground)); // #1802: lifted over the sloping band, above the river strip's 0.35 m
