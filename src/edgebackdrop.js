@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE, SEASON, EDGE_BACKDROP as E } from './config.js';
+import { SITE, SEASON, ROAD_ENDS, EDGE_BACKDROP as E, COLORS } from './config.js';
+import { roadEndRoutes } from './roadends.js';
+import { cutAtTerrain } from './roads.js';
 import { grassMeanColor } from './grass.js';
 import { registerSnow, registerSeasonal } from './seasons.js';
 import { lowMemory } from './lowmemory.js';
@@ -212,6 +214,54 @@ export function edgeTreeSpots() {
   return out;
 }
 
+/** #1812: mapped outer path pieces and explicitly guessed road continuations, in the existing land batch.
+ * Follow the drawn terrain inside its rectangle and the skirt/flat ground beyond it; retain source widths and pavements. */
+export function roadEndParts(ground) {
+  const out = [], R = ROAD_ENDS, K = E.skirt, grid = ground.grid?.();
+  const distance = (x, z) => Math.max(B.x0 - x, x - B.x1, B.z0 - z, z - B.z1, 0);
+  for (const route of roadEndRoutes()) {
+    const pts = [];
+    for (let i = 0; i + 1 < route.path.length; i++) {
+      const a = route.path[i], b = route.path[i + 1], dx = b[0] - a[0], dz = b[1] - a[1], length = Math.hypot(dx, dz);
+      if (length < 1e-8) continue;
+      const near = inRect(a[0], a[1], K.width) || inRect(b[0], b[1], K.width), n = Math.max(1, Math.ceil(length / (near ? R.nearStep : R.farStep)));
+      const cuts = new Set(Array.from({ length: n }, (_, k) => k / n));
+      // Explicit terrain/skirt crossings prevent a long far triangle from bridging a change of ground plane.
+      for (const [v, d, edges] of [[a[0], dx, [B.x0 - K.width, B.x0, B.x1, B.x1 + K.width]], [a[1], dz, [B.z0 - K.width, B.z0, B.z1, B.z1 + K.width]]])
+        for (const e of edges) { const t = (e - v) / d; if (t > 0 && t < 1) cuts.add(t); }
+      for (const t of [...cuts].sort((a, b) => a - b)) pts.push([a[0] + dx * t, a[1] + dz * t]);
+    }
+    pts.push(route.path.at(-1));
+    const side = (i, offset) => {
+      const p = pts[i], a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)];
+      const normal = (u, v) => { const dx = v[0] - u[0], dz = v[1] - u[1], l = Math.hypot(dx, dz) || 1; return [-dz / l, dx / l]; };
+      const n0 = normal(i ? a : p, i ? p : b), n1 = normal(i + 1 < pts.length ? p : a, i + 1 < pts.length ? b : p);
+      let nx = n0[0] + n1[0], nz = n0[1] + n1[1], l = Math.hypot(nx, nz) || 1; nx /= l; nz /= l;
+      const m = offset / Math.max(.5, nx * n1[0] + nz * n1[1]);
+      return [p[0] + nx * m, p[1] + nz * m];
+    };
+    const height = (x, z, lift) => {
+      if (inRect(x, z) || distance(x, z) === 0) return ground(x, z) + lift;
+      const t = Math.min(1, distance(x, z) / K.width);
+      return Math.max(E.level, skirtTop(x, z, ground)) + lift + (E.lift.road - lift) * t;
+    };
+    for (const strip of [{ a: -route.width / 2, b: route.width / 2, color: route.color, lift: route.lift }, ...route.walks.map(k => ({
+      a: k.side > 0 ? route.width / 2 : -route.width / 2 - k.w, b: k.side > 0 ? route.width / 2 + k.w : -route.width / 2,
+      color: COLORS.paving, lift: .008,
+    }))]) {
+      const pos = [], cols = [], col = new THREE.Color(strip.color);
+      for (let i = 0; i + 1 < pts.length; i++) {
+        const poly = [side(i, strip.a), side(i, strip.b), side(i + 1, strip.b), side(i + 1, strip.a)];
+        const near = poly.some(([x, z]) => inRect(x, z));
+        const tris = near && grid ? cutAtTerrain(poly, grid) : [[poly[0], poly[1], poly[2]], [poly[0], poly[2], poly[3]]];
+        for (const tri of tris) for (const [x, z] of tri) { pos.push(x, height(x, z, strip.lift), z); cols.push(col.r, col.g, col.b); }
+      }
+      if (pos.length) out.push({ pos, cols, source: route.source });
+    }
+  }
+  return out;
+}
+
 /** The two meshes in one group: `edge-land` and `edge-houses`. */
 export function buildEdgeBackdrop(ground) {
   const group = new THREE.Group(), far = grassMeanColor(), lift = E.lift, parts = [], N = E.north;
@@ -223,6 +273,7 @@ export function buildEdgeBackdrop(ground) {
   for (const p of E.paths) parts.push(ribbon(p.path, p.width, E.level + lift.path, p.color));
   for (const r of E.rivers ?? []) parts.push(band(r.path, r.width, E.level + lift.path, r.color, ground)); // #1790: under the road strip, which crosses it
   for (const p of E.roads) parts.push(ribbon(p.path, p.width, E.level + lift.road, p.color, ground)); // #1802: lifted over the sloping band, above the river strip's 0.35 m
+  parts.push(...roadEndParts(ground)); // #1812: source road/pavement continuations fade naturally into the existing fog
   const land = new THREE.Mesh(geometry(parts), new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 1, side: THREE.DoubleSide }));
   land.name = 'edge-land';
   group.add(land);

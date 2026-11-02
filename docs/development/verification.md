@@ -15,6 +15,10 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Outer road ends (#1812)
+
+Run `THREE_DIR=/path/to/three node tools/roadendstest.mjs` (three 0.170.0) and the existing `edgebackdroptest.mjs` with the same bare-module resolver. The component check covers every selected endpoint, both Sankt Lars väg pavements, the sourced park-route portions outside the former drawing clip, raised ground/skirt and finite bounded geometry. In the real app, compare the school road from `?shot&at=-215,-230,47,-25,65&cloud=&month=6&time=13&freeze&weather=clear` and a ground view along its continuation. Use the browser wrapper, clear-weather fog and `testkit.shot` for actual rendering; preserve the source revision and camera in the result. Result images: [docs/verification/1812](../verification/1812/). No physical-device performance claim.
+
 ## Browser memory
 
 Run every browser test through `tools/browsertest.sh` (#1599), e.g.

@@ -7659,6 +7659,23 @@ export const CAUGHT_FISH = {
  * Nothing is collidable and `WALK` / `OUTDOOR` are untouched. Two merged draw calls (land, boxes); the trees are more instances
  * of the south backdrop's two tree batches.
  */
+// #1812: visual road continuations, not surveyed map geometry or an expansion of WALK.
+// Continue the last mapped heading until its end is at least 700 m beyond WALK (clear-weather fog ends at 650 m).
+// Step sizes, overlap and far-layer lift are visual guesses; source polylines and their real junctions stay unchanged.
+export const ROAD_ENDS = {
+  fogClearance: 700, nearStep: 3, farStep: 24, overlap: .25,
+  parkOverlap: 2, // m + half path width: covers the original 1.5 m whole-quad sampling and oblique edge clipping (*guess*)
+  parkClip: { x0: -270, x1: 330, z1: 260 }, // existing riverpark.js drawing limits; restore its sourced outer pieces
+  items: [
+    { group: 'roads', source: 'Sankt Lars väg', end: 0, lift: .012, color: 0x5d5f61 },
+    { group: 'north', source: '130442838', end: 0, lift: .025, color: 0x5f6164 },
+    { group: 'east', source: '44447965', end: -1, lift: .025, color: 0x5f6164 },
+    { group: 'south', source: '45211117', end: -1, lift: .025, color: 0x5f6164 },
+    { group: 'east', source: '61112064', end: -1, lift: .025, color: 0xb5ac90 },
+    { group: 'park', source: '27185148', end: -1 },
+    { group: 'park', source: '61112061', end: 0 },
+  ],
+};
 export const EDGE_BACKDROP = {
   level: -3.01,                    // m: the flat far ground the south backdrop already draws (SITE.south.ground)
   lift: { skirt: 0.08, field: 0.18, path: 0.28, road: 0.38 }, // m above it, one step per layer: from the ground at 600 m the depth buffer resolves ~0.2 m (VIEW_NEAR)
