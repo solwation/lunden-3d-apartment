@@ -928,7 +928,13 @@ export const SITE = {
     // after Sankt Lars väg) are red-brown with dark grey, low-pitched roofs, some with solar panels, in the Google 3D view of
     // 2026-10-29. Every colour, pitch and panel placement is a *guess* read from that image. `rise` replaces the 1.6 m gable (annexes `annexRise`);
     // `solar`: dark quad on the south slope, `along`/`across` fractions of the ridge length / half the span, `lift` over the roof (m).
+    // #1795 (Google 3D review 2026-11-02, 03_sodra_bebyggelse): the terraces are not one colour: salmon/pink-orange to beige render and
+    // grey to blue-grey roofs, a little different in pitch. `facades`/`roofs`/`rises` are small palettes; each house takes one entry
+    // from a hash of its OSM id (stable, not random; the first entries are the old single values). All *guess*, read by eye.
     villas: { facade: 0x9a4f3f, roof: 0x4b4e53, rise: 0.95,
+      facades: [0x9a4f3f, 0xb8664d, 0xc4806a, 0xa95c47, 0xc99a7c, 0xb2705a],
+      roofs: [0x4b4e53, 0x5d636b, 0x3f4349, 0x6b727c, 0x555d6b],
+      rises: [0.95, 0.8, 1.1],
       solar: { color: 0x1f2735, lift: 0.04, along: [0.12, 0.88], across: [0.1, 0.85], sources: [
         '367079611', '367079612', '333642395', '333642390', '403628164', '403628176', '333642385', '403628172',
       ] },
@@ -938,7 +944,12 @@ export const SITE = {
     // small bodies 88457554, 88457611, 145221620, 145221625, 145221627. Which OSM body is which house is read from the overview and is
     // a *guess*, like every colour. `barn`: the tall narrow barn-like body (OSM 88457556, 45 m long) has a dark, steeper and higher
     // gable roof (`rise` replaces the 1.6 m gable). Same vertex-colour batches as `villas`: no new draw call.
+    // #1795: Google shows white, cream, pale yellow and pale pink render with orange-red tile roofs (one blue-grey metal roof) and
+    // pitches from low to steep. Same hash palettes as `villas`; the barn keeps its own dark roof. *guess*
     whiteHouses: { facade: 0xf0ebe0, roof: 0x9c3b27, rise: 1.6,
+      facades: [0xf0ebe0, 0xf5f2ec, 0xe9dcc0, 0xe6cdbd, 0xdcd8cc],
+      roofs: [0x9c3b27, 0xb54a2e, 0x8a3324, 0xc65b33, 0x9c3b27, 0x6e7b8b],
+      rises: [1.6, 1.3, 2.0, 2.4],
       barn: { roof: 0x3a3d43, rise: 4.6, sources: ['88457556'] },
       sources: [...SOUTH_LARS_VAG, '88457554', '88457611', '145221620', '145221625', '145221627', '88457556'] },
     // #1556 (the user's in-game report): the old four-storey hospital pavilions take nr 41's brick style (#1529,
