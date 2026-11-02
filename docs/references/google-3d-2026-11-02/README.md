@@ -99,4 +99,4 @@ game camera ends up a little closer and further north), so compare roughly what 
   photos in `docs/foton/`) confirms them. Do not photogrammetrically reconstruct the images or republish them.
 - Review focus (the user, 2026-11-02): the near-rectangle bounded by väg 108, Malmövägen, Skånevägen and
   Höjeådalen is where the surroundings should become realistic; the review issues are listed in
-  [the environment topic](../../development/environment.md#google-3d-review-2026-11-02).
+  [the environment topic](../../development/environment.md#google-3d-review-2026-11-02-1791).
