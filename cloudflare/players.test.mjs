@@ -609,6 +609,18 @@ test('#1622: dance flag dn is forwarded only as literal 1 (or 2, #1757), also in
   }
 });
 
+test('#1799: air mode am is forwarded only as literal 1, 2 or 3, also in the late welcome', async () => {
+  const env = setup(), a = await connect(env, 'Flyer'), b = await connect(env, 'Watcher');
+  const state = { p:[0,0,0], r:0, h:'', score:0 };
+  for (const am of [1, 2, 3]) { now += 200; a.send({ ...state, am }); await settle(env); assert.equal(b.states().at(-1).am, am); }
+  const late = await connect(env, 'Late');
+  assert.equal(late.got[0].ps.find(p => p.i === a.got[0].i).am, 3);
+  for (const am of [0, false, true, 4, -1, 1.5, '1', [2], {}, null, undefined]) {
+    now += 200; a.send({ ...state, am }); await settle(env);
+    assert.equal(b.states().at(-1).am, undefined, 'anything but 1, 2 or 3 is on the ground');
+  }
+});
+
 test('#1757: dn 2 (Gangnam Style) is forwarded as 2, also in the late welcome; switching back to 1 works', async () => {
   const env = setup(), a = await connect(env, 'Rider'), b = await connect(env, 'Watcher');
   const state = { p:[0,0,0], r:0, h:'', score:0 };

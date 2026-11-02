@@ -12,7 +12,7 @@ const longest = (a) => a.reduce((m, s) => (s.length > m.length ? s : m), '');
 const widest = {
   p: [-4999.99, -4999.99, -4999.99], r: -99.99, score: 10_000_000,
   h: longest(Object.keys(COMBAT.weapons)), hi: longest(HELD_CATEGORIES),
-  c: true, pose: 3, look: [-0.3, -0.3], sp: true, jp: 2, dn: 1, bk: -99.99,
+  c: true, pose: 3, look: [-0.3, -0.3], sp: true, jp: 2, dn: 1, am: 3, bk: -99.99,
   cat: [7, 0, false], cq: [-0.99, -0.14, 0.99],
   av: '490374011190', ax: 'a123'.repeat(AVATAR_LOOK_EXT_MAX / 4),
 };
@@ -21,7 +21,7 @@ const MARGIN = 128; // bytes of headroom a future field may use before this test
 test('the widest state is accepted whole by cleanState', () => {
   const s = cleanState(JSON.stringify(widest));
   assert.ok(s);
-  for (const k of ['h', 'hi', 'c', 'pose', 'look', 'sp', 'jp', 'dn', 'bk', 'cat', 'cq', 'av', 'ax']) assert.ok(s[k] !== undefined && s[k] !== '', `${k} dropped`);
+  for (const k of ['h', 'hi', 'c', 'pose', 'look', 'sp', 'jp', 'dn', 'am', 'bk', 'cat', 'cq', 'av', 'ax']) assert.ok(s[k] !== undefined && s[k] !== '', `${k} dropped`);
 });
 
 test(`the widest state leaves at least ${MARGIN} bytes under PLAYERS.maxBytes`, () => {

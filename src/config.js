@@ -6953,6 +6953,21 @@ export const DANCE = {
   stepAway: .4, // m, walking further than this from where the dance started ends it
 };
 
+// #1799: the avatars' legs off the ground — no walking gait in the air. `am` in the player state (like `dn`): 1 flying (the
+// jetpack, or flung off a web strand), 2 swinging on a strand, 3 climbing a wall; older clients send none (they walk, as before).
+// Fly / swing: both legs hang almost straight, angled back from the hips (the "Superman" trail) further the faster the body
+// goes, and trail against the sideways / vertical movement; a slow pendulum on top. Climb: a ladder — feet towards the wall,
+// knees out, one foot lifted at a time, the steps' phase following the climbing speed (still when still).
+// *guess*: by eye against the well-known poses, not measured. m, rad, s, m/s.
+export const AVATAR_AIR = {
+  ease: 6, // 1/s, how fast the air pose blends in and out (walk → lift → land without a jump)
+  reach: [.97, .9], // share of the leg's length from hip to ankle, left / right (the right knee a little bent)
+  feetX: .1, // m, each ankle out from the middle
+  fly: { back: .28, perSpeed: .07, max: .95, side: .05, vertical: .05, sway: .05, swayHz: .35, lean: -.12 }, // back: rad behind the vertical at rest; perSpeed: rad per m/s forward; side / vertical: rad per m/s across / up
+  swing: { back: .12, perSpeed: .09, max: .9, side: .09, vertical: .04, sway: .03, swayHz: .5, lean: -.04 },
+  climb: { hipDrop: .08, feetZ: .2, feetX: .15, footY: .12, lift: .26, stride: .55, knees: [.9, .15, .7], lean: -.06 }, // stride: m climbed per whole step cycle; lift: m one foot rises per step; knees: the knee pole, x outward
+};
+
 // #974: ordinary gameplay approximation, independent of hair, facial polygons and animation history.
 // Three stacked head boxes (metres in the unscaled standing avatar), narrower at the crown; *guess* by the existing head.
 export const PVP_HEAD_BOXES = {

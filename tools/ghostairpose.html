@@ -1,0 +1,65 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Ghost air poses</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #1799 component page: other players (Ghost) walking, flying the jetpack, swinging on a web strand and climbing a wall,
+// posed by Ghost.animate with the synced `am` air mode. Driven by tools/ghostairposetest.cjs.
+// __run(frames, specs): animate every ghost `frames` × 1/30 s; specs[i] = { am, v (m/s forward), vy (m/s up), side (m/s to its left) };
+// returns each ghost's ankles in the figure's own frame per frame and its gait. __shot(view): render front / side / back.
+import * as THREE from 'three';
+import { Ghost } from '../src/ghosts.js';
+const MODES = [{ am: 0, jp: 0 }, { am: 1, jp: 2 }, { am: 2, jp: 0, sp: true }, { am: 3, jp: 0, sp: true }];
+const W = 1400, Hh = 560, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, Hh); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(20, 6), new THREE.MeshLambertMaterial({ color: 0x9aa39a }));
+ground.rotation.x = -Math.PI / 2; scene.add(ground);
+const ghosts = MODES.map((m, i) => {
+  const g = new Ghost(scene, i + 1, 'Spelare ' + (i + 1));
+  if (g.tag) g.tag.visible = false;
+  g.root.position.set((i - (MODES.length - 1) / 2) * 1.3, [0, 0.5, 0.5, 0.35][i], 0);
+  scene.add(g.root); g.root.visible = true;
+  g.setJetpack(m.jp); g.avatar.setSuit(!!m.sp);
+  return g;
+});
+// the climber's wall (seen edge-on from the side, where the climber faces −x)
+const wall = new THREE.Mesh(new THREE.BoxGeometry(0.06, 2.6, 1.2), new THREE.MeshLambertMaterial({ color: 0xc9b9a3 }));
+wall.position.set(ghosts[3].root.position.x - 0.33, 1.3, 0); scene.add(wall);
+let t = 1000, yaw = Math.PI;
+const tmp = new THREE.Vector3();
+window.__view = (view = 'front') => { wall.visible = view === 'side'; yaw = view === 'side' ? Math.PI / 2 : view === 'back' ? 0 : Math.PI; for (const g of ghosts) { g.root.rotation.y = yaw; g.have = false; } };
+window.__run = (frames, specs) => {
+  const out = ghosts.map(() => ({ L: [], R: [], gait: 0 }));
+  for (let f = 0; f < frames; f++) {
+    t += 1000 / 30;
+    ghosts.forEach((g, i) => {
+      const s = specs[i] ?? {}, v = s.v ?? 0, side = s.side ?? 0;
+      g.air = s.am ?? 0; g.vy = s.vy ?? 0;
+      // forward = the root's −z (its heading), its left = −x
+      const vx = -Math.sin(yaw) * v - Math.cos(yaw) * side, vz = -Math.cos(yaw) * v + Math.sin(yaw) * side;
+      g.animate(t, 1, vx, vz);
+      g.avatar.object.updateMatrixWorld(true);
+      for (const k of ['L', 'R']) { g.avatar.bones['foot' + k].getWorldPosition(tmp); g.avatar.object.worldToLocal(tmp); out[i][k].push([tmp.x, tmp.y, tmp.z].map((n) => Math.round(n * 1000) / 1000)); }
+      out[i].gait = g.avatar.gait;
+      out[i].hipZ = g.avatar.bones.hips.position.z; out[i].hipY = g.avatar.bones.hips.position.y;
+    });
+  }
+  return out;
+};
+window.__shot = (view = 'front') => {
+  const side = view === 'side';
+  const cam = new THREE.PerspectiveCamera(22, W / Hh, 0.05, 50);
+  cam.position.set(0, 1.4, 7.4); cam.lookAt(0, 1.05, 0);
+  renderer.info.reset(); renderer.render(scene, cam);
+  return { calls: renderer.info.render.calls, side };
+};
+window.__ready = true;
+</script></body></html>

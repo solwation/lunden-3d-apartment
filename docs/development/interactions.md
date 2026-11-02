@@ -326,6 +326,12 @@ src/spidersuit.js      the Spider-Man suit (#597, SPIDER, all values *guess*): o
                        The base look/colour attribute, skeleton, head silhouette, crouch and held props are untouched; removal restores the existing
                        solid/outline appearance. A suited unarmed figure is visually solid, while Ghost.solid/HP/combat eligibility keeps its armed rule.
                        The same temporary outfit appears in the local mirror; powers/fall/combat mechanics do not change.
+                       #1799: legs off the ground. main.js state sends `am` (1 flying: `player.flying` or flung off a strand, 2 `player.swing`,
+                       3 `player.climb`; the Worker's cleanState forwards only 1/2/3, older clients send none and walk as before). Ghost.animate
+                       passes it with the velocity in the figure's frame to `Avatar.update({ air, airV })`: no gait; fly/swing legs hang almost
+                       straight and trail back/against the movement (Superman), climbing is a ladder (feet to the wall, knees out, one foot up
+                       at a time on a phase paced by the climbing speed, still when still). Each pose blends in/out (`AVATAR_AIR`, *guess*);
+                       the mirror image uses the same path. Test: `tools/ghostairposetest.cjs BASE OUT [OLD_BASE]` (tools/ghostairpose.html).
                        #600: with it on fall.js never hurts (a soft landing). Space / the touch jump button (#jump-btn, directly right of 🧎 in the #1089 thumb-arc touch cluster;
                        on touch always, #636) is a *press* (`player.spaceDown` / `jumpPress`): standing it jumps at `jump` m/s (indoors
                        too, the ceiling stops it, `player.ceilingAt`); without the suit it is the low jump `PLAYER.jump`; on a wall it

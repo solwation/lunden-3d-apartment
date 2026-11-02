@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, DANCE, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, DANCE, AVATAR_AIR as AIR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { reactionPose, mixHand } from './reactpose.js';
-import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
+import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, THIGH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
 // The players' avatars (#705): a neutral human figure for the other players (src/ghosts.js) and for our own reflection in the
 // mirrors (#691). The skeleton, the proportions and the two-bone IK are Olof's (src/olof.js, #671); the figure itself is a
@@ -1159,6 +1159,30 @@ function shoulderShift(c, dy, dz) {
   return [0, dy + sy * Math.cos(a) - sy, dz + sy * Math.sin(a)];
 }
 
+/** #1799: the feet off the ground, mixed into the ground pose's `feet` by the air poses' amounts `aa` [fly, swing, climb];
+ * `v` the figure-frame velocity, the hips at [hy, hz]. Fly / swing: the legs hang, angled back and trailing (AVATAR_AIR);
+ * climb: a ladder, one foot up at a time on the climbing phase. */
+function airFeet(fig, feet, aa, v, hy, hz) {
+  const reach = THIGH + SHIN, t = fig.time, rest = 1 - aa[0] - aa[1] - aa[2], C = AIR.climb, cs = Math.sin(fig.climbPhase ?? 0);
+  feet.forEach((f, i) => {
+    const sx = i ? -1 : 1, out = [f[0] * rest, f[1] * rest, f[2] * rest];
+    [AIR.fly, AIR.swing].forEach((P, m) => {
+      if (aa[m] < 0.001) return;
+      const back = THREE.MathUtils.clamp(P.back + P.perSpeed * v[2] - P.vertical * v[1], -0.2, P.max) + P.sway * Math.sin(t * Math.PI * 2 * P.swayHz + i * 0.7);
+      const across = THREE.MathUtils.clamp(-P.side * v[0], -0.5, 0.5), L = reach * AIR.reach[i];
+      out[0] += (sx * AIR.feetX + Math.sin(across) * L) * aa[m];
+      out[1] += (hy - Math.cos(back) * Math.cos(across) * L) * aa[m];
+      out[2] += (hz - Math.sin(back) * Math.cos(across) * L) * aa[m];
+    });
+    if (aa[2] >= 0.001) {
+      out[0] += sx * C.feetX * aa[2];
+      out[1] += (C.footY + C.lift * Math.max(0, sx * cs)) * aa[2];
+      out[2] += C.feetZ * aa[2];
+    }
+    f[0] = out[0]; f[1] = out[1]; f[2] = out[2];
+  });
+}
+
 export class Avatar {
   /** `seed`: what the look comes from (name or id); `rim`: the outline's colour. */
   constructor(seed, rim = 0xcfe6ff) {
@@ -1258,14 +1282,22 @@ export class Avatar {
   }
 
   /** Pose it. `speed`: m/s along the ground (walks when above A.walkSpeed, the legs' phase follows the distance), `turn`:
-   * the head's yaw against the body (rad), `pitch`: camera elevation (rad), `hands`: { L, R } overrides (see `armTarget`), `crouch`: 0 … 1. */
-  update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
+   * the head's yaw against the body (rad), `pitch`: camera elevation (rad), `hands`: { L, R } overrides (see `armTarget`), `crouch`: 0 … 1.
+   * #1799 `air`: 1 flying, 2 swinging on a strand, 3 climbing a wall (no gait; AVATAR_AIR), `airV`: [x, y, z] m/s in the figure's
+   * frame (+x its left, +y up, +z forward) — what the hanging legs trail against and the climbing steps follow. */
+  update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null, air = 0, airV = null } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
     this.time += dt;
+    // #1799: each air pose blends in and out on its own (their sum ≤ 1, the rest is the ground pose)
+    const am = air === 1 || air === 2 || air === 3 ? air : 0, ae = Math.min(1, dt * AIR.ease), av = airV ?? [0, 0, 0];
+    const aa = this.airAmt ??= [0, 0, 0];
+    for (let i = 0; i < 3; i++) aa[i] = THREE.MathUtils.lerp(aa[i], am === i + 1 ? 1 : 0, ae);
+    const climbA = aa[2];
+    if (am === 3) this.climbPhase = (this.climbPhase ?? 0) + dt * Math.hypot(av[0], av[1]) / AIR.climb.stride * Math.PI * 2; // (still on the wall: the feet stay)
     // #1622 / #1757: `dance` 1 (or true) = the floss, 2 = Gangnam Style; each blends in and out on its own, `danceAmt` = their sum
     const want = dance === 2 ? 2 : dance ? 1 : 0, ez = Math.min(1, dt * DANCE.ease);
     const fa = this.flossAmt = THREE.MathUtils.lerp(this.flossAmt ?? 0, want === 1 ? 1 : 0, ez), ga = this.gangnamAmt = THREE.MathUtils.lerp(this.gangnamAmt ?? 0, want === 2 ? 1 : 0, ez);
     this.danceAmt = fa + ga;
-    const walking = speed > A.walkSpeed, k = THREE.MathUtils.clamp(speed / 1.6, 0.4, 1.4);
+    const walking = speed > A.walkSpeed && !am, k = THREE.MathUtils.clamp(speed / 1.6, 0.4, 1.4);
     if (walking) this.phase += dt * speed / STRIDE * Math.PI * 2;
     this.gait = THREE.MathUtils.lerp(this.gait ?? 0, walking ? 1 : 0, Math.min(1, dt * 8));
     const g = this.gait, ph = this.phase, s = Math.sin(ph), sw = s * 0.3 * k * g; // the leg swing (m forward / back of the hip)
@@ -1277,7 +1309,7 @@ export class Avatar {
     const gBob = gp ? (GN.squat + GN.bounce * Math.abs(Math.cos(gPh))) * ga : 0; // bent knees, lowest as the feet land on each beat
     const c = THREE.MathUtils.clamp(crouch, 0, 1), F = CR.feet, step = sw * (1 - CR.step * c);
     const rp = react ? reactionPose(react.kind, react.age, [HIP - 0.02, CR.hipForward * c]) : null;
-    const hipY = HIP - 0.02 - CR.hipDrop * c + (rp?.dy ?? 0) + kissLift * kiss - flossBob - gBob + breathe - 0.012 * g * Math.abs(Math.cos(ph)) * k, hipZ = CR.hipForward * c;
+    const hipY = HIP - 0.02 - CR.hipDrop * c + (rp?.dy ?? 0) + kissLift * kiss - flossBob - gBob + breathe - 0.012 * g * Math.abs(Math.cos(ph)) * k - AIR.climb.hipDrop * climbA, hipZ = CR.hipForward * c;
     const lift = (v) => Math.max(0, v) * 0.12 * g * k * (1 - 0.5 * c);
     const fx = 0.11 + (F.x - 0.11) * c, fz = 0.02 + (F.z - 0.02) * c;
     const feet = [[fx - sway, F.y + lift(Math.cos(ph)), fz + step], [-fx - sway, F.y + lift(-Math.cos(ph)), fz - step]];
@@ -1285,6 +1317,7 @@ export class Avatar {
       const side = i ? -1 : 1, up = Math.max(0, side * Math.sin(gPh));
       f[0] += (side * GN.footX - f[0]) * ga; f[1] += GN.lift * up * ga; f[2] += GN.footFwd * up * ga;
     });
+    if (aa[0] + aa[1] + climbA > 0.001) airFeet(this, feet, aa, av, hipY, hipZ);
     const armSwing = -step * 0.55;
     const rest = (side, swing) => {
       const r = armTarget.rest(side, swing), R = CR.rest;
@@ -1310,8 +1343,10 @@ export class Avatar {
     if (rp) { this.mouth = Math.max(this.mouth, rp.mouth); this.material.userData.u.uMouth.value = this.mouth; }
     this.material.userData.u.uKiss.value = kiss;
     if (kiss) this.material.userData.u.uMouth.value = 0;
-    const knee = c ? CR.knees.map((v, i) => KNEE_REST[i] + (v - KNEE_REST[i]) * c) : KNEE_REST;
-    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: 0.03 * g + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
+    let knee = c ? CR.knees.map((v, i) => KNEE_REST[i] + (v - KNEE_REST[i]) * c) : KNEE_REST;
+    if (climbA > 0.001) knee = knee.map((v, i) => v + (AIR.climb.knees[i] - v) * climbA); // #1799: knees out on the wall
+    const airLean = AIR.fly.lean * aa[0] + AIR.swing.lean * aa[1] + AIR.climb.lean * climbA;
+    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: airLean + 0.03 * g + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
       knee, flat: c, toes: F.turn * c });
     if (sway) this.bones.hips.position.x = sway; // #1622: the feet targets were moved the other way, so they stay planted
   }
