@@ -3,7 +3,7 @@
 // built from (SITE.west/east/north/south polygons, SITE.bridges, SITE.river), so what is drawn is what blocks. Segments are
 // [x0, z0, x1, z1]; `farWalls(x, z)` returns the ones in the buckets round a point (a stable array per bucket, no per-frame work).
 import { SITE, WALK, PLAYER, OUTDOOR, PADDOCK } from './config.js';
-import { riverAt, waterYAt, deckAt, bridgeRecords, pierBoxes } from './riverbridge.js';
+import { riverAt, waterYAt, deckAt, bridgeRecords, pierBoxes, upstreamRiverZone } from './riverbridge.js';
 import { parkDeckAt } from './riverpark.js';
 import { groundY, groundBelowDeckY, treeFeet, southTreeFeet } from './surroundings.js';
 import { fenceSegments, stile, stileWalls } from './paddockgeo.js';
@@ -118,21 +118,21 @@ export function slopeAt(x, z, y) {
 /** #1281: the downhill direction `{ dx, dz, s }` a walker on ground steeper than `WALK.maxSlope` slides along at (x, z), else null. Once sliding (`was`)
  * the ground must ease below `maxSlope * slideOut` to stop (hysteresis: no flicker on the threshold). Not on a deck. */
 export function slideAt(x, z, y, was = false) {
-  if (z < 60 || onDeck(x, z, y)) return null;
+  if ((z < 60 && !upstreamRiverZone(x, z)) || onDeck(x, z, y)) return null;
   const q = slopeAt(x, z, y);
   return q.s > WALK.maxSlope * (was ? WALK.slideOut : 1) ? { dx: -q.gx / q.s, dz: -q.gz / q.s, s: q.s } : null;
 }
 
 /** Ground too steep to climb at (x, z): a gradient over `maxSlope` (`WALK.maxSlope`; the walker slides back, `Player.slideStep`). Not on a deck. */
 export function tooSteep(x, z, maxSlope = WALK.maxSlope, y) {
-  if (z < 60 || onDeck(x, z, y)) return false;
+  if ((z < 60 && !upstreamRiverZone(x, z)) || onDeck(x, z, y)) return false;
   return slopeAt(x, z, y).s > maxSlope;
 }
 
 /** #1281: is (x, z) under the river's surface for feet `y`: the terrain there (the bed's slope, `riverGround`) lies `WALK.waterDepth` m
  * under the water line. The under-bridge footpath's floor (0.7 m over the local water) and the decks are dry; so is anything off the river's banks. */
 export function inWater(x, z, y) {
-  if (z < 60 || onDeck(x, z, y)) return false;
+  if ((z < 60 && !upstreamRiverZone(x, z)) || onDeck(x, z, y)) return false;
   const r = riverAt(x, z);
   return r.distance < r.width / 2 + r.bank && surfaceY(x, z, y) < waterYAt(x, z, r) - WALK.waterDepth;
 }

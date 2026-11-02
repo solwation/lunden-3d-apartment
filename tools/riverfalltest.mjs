@@ -9,23 +9,38 @@ import {riverAt,riverFallAt,waterYAt,shoreYAt,riverGround,buildRiverBridges,brid
 import {groundBelowDeckY} from '../src/surroundings.js';
 import {inWater,splashBank,surfaceY} from '../src/farwalk.js';
 import {parkRampEnds,parkFillAt,parkDeckAt} from '../src/riverpark.js';
-const B=SITE.bridges,R=SITE.river,report=JSON.parse(readFileSync('docs/references/elevation-hoje-a/fall-interpretation-2026-10-19.json'));
+const B=SITE.bridges,R=SITE.river,K=R.upstream?.count??0,report=JSON.parse(readFileSync('docs/references/elevation-hoje-a/fall-interpretation-2026-10-19.json'));
 const hash=value=>createHash('sha256').update(value).digest('hex');
 const near=(a,b,e=1e-9)=>assert(Math.abs(a-b)<e,`${a} close to ${b}`);
 
+// #1790: the 19 sampled stations are the #532 section, path[K …]; the K upstream vertices (OSM, no samples) come first, so the model's
+// `along` there is the station's alongM plus the upstream stretch's length, and the same per-metre trend is extrapolated over it.
 test('interpreted relative fall is tied to the checked source and preserves the road-bridge datum',()=>{
  assert.equal(hash(readFileSync(report.source)),report.sourceSha256);assert.equal(report.count,19);assert.equal(report.pairCount,171);
  near(R.fall.perM,report.fallPerM);near(report.totalFallM,0.4820700143316592);
  const r=bridgeRecords[0];near(riverFallAt(r.x,r.z),0);near(waterYAt(r.x,r.z),-7);
+ assert.equal(K,6);assert.equal(R.path.length-K,report.count);assert.equal(R.widths.length,R.path.length);assert.equal(R.valleyWidths.length,R.path.length);assert.equal(R.banks.length,R.path.length);
+ const up=riverAt(...R.path[K]).along;assert(up>130&&up<160,`upstream stretch ${up} m`);
  let last=Infinity;
- for(let i=0;i<R.path.length;i++){const[x,z]=R.path[i],a=riverAt(x,z);near(a.along,report.samples[i].alongM);const y=waterYAt(x,z);assert(y<last);last=y;}
+ for(let i=0;i<R.path.length;i++){const[x,z]=R.path[i],a=riverAt(x,z);if(i>=K)near(a.along-up,report.samples[i-K].alongM);const y=waterYAt(x,z);assert(y<last);last=y;}
+ // the sampled section's own fall is still exactly the report's; the upstream stretch only adds its extrapolated part
+ near(waterYAt(...R.path[K])-waterYAt(...R.path.at(-1)),report.totalFallM,1e-9);near(waterYAt(...R.path[0])-waterYAt(...R.path[K]),up*R.fall.perM,1e-9);
 });
 
 test('rendered water vertices follow the same continuous downstream level as the terrain and splash logic',()=>{
  const p=buildRiverBridges().getObjectByName('bridges-water').geometry.attributes.position;let lo=Infinity,hi=-Infinity;
  for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i),y=p.getY(i);near(y,waterYAt(x,z),2e-5);lo=Math.min(lo,y);hi=Math.max(hi,y);}
- assert(hi-lo>.48&&hi-lo<.49);
- for(const[x,z]of R.path){const bed=groundBelowDeckY(x,z);near(bed,waterYAt(x,z)-.6);near(shoreYAt(x,z)-waterYAt(x,z),1.5);assert(inWater(x,z,bed));}
+ // #1790: the ribbon spans the whole path (upstream stretch + the 0.482 m sampled section), the same 0.01 m window as before around it
+ const total=riverAt(...R.path.at(-1)).along*R.fall.perM;assert(total>.6&&total<.65,`${total}`);assert(hi-lo>total-.002&&hi-lo<total+.008,`${hi-lo} vs ${total}`);
+ // #1790: the upstream end vertex (OSM, x 333.5) lies in the terrain's edge fade (SITE.river.upstream.edgeFade), where the trench deliberately
+ // rises to the flat backdrop: it is checked separately below; every other vertex keeps the full profile.
+ const G=SITE.backgroundGround,edge=(x,z)=>Math.min(x-G.x0,G.x1-x,z-G.z0,G.z1-z),faded=R.path.filter(([x,z])=>edge(x,z)<R.upstream.edgeFade);
+ assert.deepEqual(faded,[R.path[0]]);
+ for(const[x,z]of R.path){if(edge(x,z)<R.upstream.edgeFade)continue;const bed=groundBelowDeckY(x,z);near(bed,waterYAt(x,z)-.6);near(shoreYAt(x,z)-waterYAt(x,z),1.5);assert(inWater(x,z,bed));}
+ // along the centre line into the fade the ground climbs without a step from the bed to the backdrop's level at the edge: no notch, no wall
+ const[ax,az]=R.path[1],[bx,bz]=R.path[0],dx=bx-ax,dz=bz-az,tEdge=(G.x1-ax)/dx;let prev=-Infinity;
+ for(let t=(G.x1-R.upstream.edgeFade-1-ax)/dx;t<=tEdge+1e-9;t+=.01){const x=ax+dx*t,z=az+dz*t,y=groundBelowDeckY(x,z);assert(y>=prev-1e-9,`climbs at ${x}`);assert(y-prev<.6||prev===-Infinity,`no step at ${x}`);prev=y;}
+ near(groundBelowDeckY(G.x1,az+dz*tEdge),-3,.05);
 });
 
 // #1684 re-baselined the concrete snapshot again: the abutments/piers reach the 0.8 m lower bed (SITE.bridges.bedY).

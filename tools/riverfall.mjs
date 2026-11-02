@@ -7,7 +7,9 @@ const path = process.argv[2] ?? 'docs/references/elevation-hoje-a/point-api-2026
 const raw = readFileSync(path), data = JSON.parse(raw);
 if (!data.complete || data.points.length !== data.expectedCount) throw new Error('Incomplete reference export');
 const samples = data.points.filter(p => p.offsetM === 0).sort((a,b) => a.alongM-b.alongM);
-if (samples.length !== SITE.river.path.length || samples.some((p,i) => p.station !== i || p.response.nodata || !Number.isFinite(p.response.hojd_m) || Math.hypot(p.x-SITE.river.path[i][0],p.z-SITE.river.path[i][1]) > 1e-6)) throw new Error('Reference centreline does not match the model');
+// #1790: the stations are the #532 section's vertices, which start at SITE.river.upstream.count (the upstream stretch has no samples).
+const sampled = SITE.river.path.slice(SITE.river.upstream?.count ?? 0);
+if (samples.length !== sampled.length || samples.some((p,i) => p.station !== i || p.response.nodata || !Number.isFinite(p.response.hojd_m) || Math.hypot(p.x-sampled[i][0],p.z-sampled[i][1]) > 1e-6)) throw new Error('Reference centreline does not match the model');
 const median = a => { a.sort((x,y)=>x-y); const n=a.length; return n%2 ? a[(n-1)/2] : (a[n/2-1]+a[n/2])/2; };
 const slopes=[];
 for (let i=0;i<samples.length;i++) for (let j=i+1;j<samples.length;j++) {

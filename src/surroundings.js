@@ -144,7 +144,16 @@ function terrainRawY(x,z) { return southPointGround(x,z,terrainRawBaseY); }
 function terrainRawBaseY(x,z,southEdge=S.backgroundGround.z1) {
   let base=terrainBase(x,z);
   const w=elevationWeight(x,z,southEdge);if(w>0)base+=w*(gridGround(x,z)-base); // #1305: the real ground levels outside the block
-  return z<60?base:riverGround(x,z,base);
+  const rw=riverWeight(x,z);
+  return rw<=0?base:rw>=1?riverGround(x,z,base):base+rw*(riverGround(x,z,base)-base);
+}
+/** #1790: how much of the river's profile the terrain takes at (x, z): 1 south of z 60 (as before) and, east of x `upstream.open` (the
+ *  valley of the upstream stretch, SITE.river.upstream), also north of it; fading to 0 within `upstream.edgeFade` m of the terrain's edge. */
+function riverWeight(x,z){
+  const U=S.river.upstream,B=S.backgroundGround;if(!U)return z<60?0:1;
+  let w=z<60?smooth(Math.max(0,Math.min(1,(x-U.open[0])/(U.open[1]-U.open[0])))):1;
+  if(w>0)w*=smooth(Math.max(0,Math.min(1,Math.min(x-B.x0,B.x1-x,z-B.z0,B.z1-z)/U.edgeFade)));
+  return w;
 }
 /** #1306: 0 inside the protected block rectangle and within ELEVATION.river[0] m of Höje å (the designed levels stay), 1 a few metres beyond. */
 function padWeight(x,z){
@@ -296,7 +305,7 @@ function terrainGeometry(southeastCells = null) {
     // Refine only the river corridor, including a flat buffer outside the widest bank.
     // Boundary samples interpolate any adjacent coarse edge, so mixed cells remain watertight.
     const fine=(i,j)=>i>=0&&j>=0&&i<X.length-1&&j<Z.length-1&&
-      (Z[j]+Z[j+1])/2>60&&riverDistance((X[i]+X[i+1])/2,(Z[j]+Z[j+1])/2)<S.river.terrainRefineRadius;
+      riverWeight((X[i]+X[i+1])/2,(Z[j]+Z[j+1])/2)>0&&riverDistance((X[i]+X[i+1])/2,(Z[j]+Z[j+1])/2)<S.river.terrainRefineRadius;
     const start = idx.length, lotGrades = clippedGradesAt(X[i],X[i+1],Z[j],Z[j+1]), lotGrade = lotGrades[0];
     if(lotGrade){
       // #1443: a cell touching a clipped parking lot is triangulated along the lot outline and its inset

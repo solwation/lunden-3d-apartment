@@ -694,19 +694,31 @@ export const SITE = {
     // #1350: interpreted relative downstream trend from #1349's 19 ground-model points (Lantmäteriet via kart-api, CC BY4.0).
     // Median of171 pairwise slopes, reproduced by tools/riverfall.mjs; ~0.482m fall over525.646m. NOT measured water/bathymetry.
     // Existing water/bed/shore levels stay anchored at the road-bridge centre; the bank/valley cross-section is still a guess.
+    // #1790: the 19 sampled stations are path[upstream.count …] (the #532 section); the trend is extrapolated over the upstream stretch
+    // (no elevation samples there, *guess*). It stays anchored at the road bridge, so every existing level is unchanged.
     fall: { perM: 0.0009170995546035121 },
     // #533 widths/bank spans are visual estimates from the aerial/2016 photos, not surveyed dimensions.
     // #1531: the user's photo from the bridges looking west (docs/foton/hoje-a-fran-stora-bron-norrut.jpg) shows a narrow, overgrown
-    // channel (~4–6 m of open water): vertices 6–10 (x 75 … −67, the stretch through the bridges) narrowed from 9,8,8,8,7 (*guess*).
+    // channel (~4–6 m of open water): #532-section vertices 6–10 (x 75 … −67, the stretch through the bridges; path index + upstream.count)
+    // narrowed from 9,8,8,8,7 (*guess*).
     // `valleyWidths` keeps the #533 widths for the shore flat/valley footprint (riverGround), so the walking shore, under-bridge paths
     // and piers stay put: the bank from bed to shore keeps its slope and the wider shore flat carries the reeds and understory.
-    widths:[6,6,7,8,8,9,7,4,3.5,4,5.5,7,6,6,6,7,7,6,6],
-    valleyWidths:[6,6,7,8,8,9,9,8,8,8,7,7,6,6,6,7,7,6,6],
-    banks:[13,14,15,12,11,12,13,11,10,10,12,14,13,7,3,3,13,12,10],
-    terrainSubdivisions:3, terrainRefineRadius:28, path:[[204.64,74.37],[190.76,79.13],[131.38,74.61],[127.15,83.64],[124.35,101.96],
+    // #1790: the six upstream vertices take the neighbouring #533 vertex's 6 m channel, 6 m valley and 13 m bank (*guess*: no photo or survey there).
+    widths:[6,6,6,6,6,6, 6,6,7,8,8,9,7,4,3.5,4,5.5,7,6,6,6,7,7,6,6],
+    valleyWidths:[6,6,6,6,6,6, 6,6,7,8,8,9,9,8,8,8,7,7,6,6,6,7,7,6,6],
+    banks:[13,13,13,13,13,13, 13,14,15,12,11,12,13,11,10,10,12,14,13,7,3,3,13,12,10],
+    // #1790 (the user: Höje å all the way to Malmövägen, which crosses it on a short bridge, OSM 57357001, ~(456, -24), east of the terrain):
+    // `upstream.count` OSM nodes of way 137217705 (same 2026-10-08 snapshot and registration, sitegeo.js) prepended up to the terrain's east
+    // edge (x 340); EDGE_BACKDROP's 'Höje å uppströms' strip carries the river on from the edge to Malmövägen. The old section starts at index `count`.
+    // North of z 60 the terrain only took the river's profile west of x 195 (the home block's guard); the valley opens over `open` x (m)
+    // east of it, and `edgeFade` m inside the terrain rectangle's edge the profile fades back to the ground so the trench meets the flat
+    // backdrop without a notch (both *guess*).
+    upstream: { count: 6, open: [195, 210], edgeFade: 8 },
+    terrainSubdivisions:3, terrainRefineRadius:28, path:[[333.48,25.71],[300.14,33.37],[280.48,38.61],[259.89,49.27],[228.37,59.59],[216.35,64.62],
+    [204.64,74.37],[190.76,79.13],[131.38,74.61],[127.15,83.64],[124.35,101.96],
     [116.11,114.02],[105.35,119.29],[74.99,119.53],[44.31,119.8],[1.16,125.14],[-15.1,129.89],[-67.45,166.11],
     [-89.43,183.37],[-101.32,198.71],[-110.41,205.34],[-181.7,207.36],[-220.92,225.61],[-235.63,235.51],[-248.18,251.46]],
-    source:'OSM river way 137217705, local section registered to the existing model; 2026-10-08'},
+    source:'OSM river way 137217705, local section registered to the existing model; 2026-10-08 (upstream nodes to x 340: #1790)'},
   // #533: main park paths are OSM 2026-10-08; canopy patches/glade traced approximately on the registered aerial.
   // Counts, species mix, widths, heights, branch detail and the small western timber bridge are visual ASSUMPTIONS.
   // Nearby Peab trees and OUTDOOR remain unchanged. No claim of an individual-tree survey.
@@ -766,6 +778,8 @@ export const SITE = {
       {"name":"forest-east-north","polygon":[[36,98],[70,92],[100,96],[112,104],[84,108],[40,106]],"n":6,"exact":true,"spacing":8.5,"scale":[1.7,2.5]},
       {"name":"forest-east-south","polygon":[[38,146],[84,142],[116,126],[124,134],[96,156],[60,168],[40,168]],"n":7,"exact":true,"spacing":8.5,"scale":[1.7,2.5]},
       {"name":"forest-bend-south","polygon":[[139,98],[183,97],[211,85],[218,94],[186,112],[140,116]],"n":6,"exact":true,"spacing":8.5,"scale":[1.7,2.5]},
+      // #1790 (*guess*): a loose belt of bank trees along the upstream stretch to the terrain's east edge (SITE.river.upstream); last, so every older patch keeps its trees
+      {"name":"upstream-banks","polygon":[[214,50],[240,40],[272,23],[300,15],[326,9],[328,42],[302,53],[280,59],[250,70],[226,80]],"n":10},
     ],
     glades: [
       {"name":"central-lawn","polygon":[[-93,89],[-76,83],[-46,86],[-46,111],[-65,121],[-86,124]]},
@@ -776,6 +790,9 @@ export const SITE = {
     shrubScale: [0.8,1.9],
     shrubCount: 190,
     shoreCount: 380,
+    // #1790 (*guess*): shore tufts and shrubs sampled along the six upstream segments (SITE.river.upstream) in their own seeded loops, about the
+    // older segments' density per segment, so the #533 stretch keeps its exact layout
+    upstream: { shore: 120, shrubs: 50, seed: 1790 },
     shoreHeight: [0.25,0.7],
     shoreOffset: [0.5,2.2],
     pathClearance: 0.6,
@@ -7580,7 +7597,11 @@ export const EDGE_BACKDROP = {
     { name: 'Åker öster 2', color: 0x6f8f46, polygon: [[700, 580], [940, 580], [990, 860], [740, 880]] },
   ],
   // cycle path along the field edge in the south (asphalt, guess 3 m) and Malmövägen / väg 108 (guess 9 m); drawn only outside the terrain
+  // #1790 (`rivers`, drawn by edgebackdrop.js `band` in the land batch): Höje å from the terrain's east edge to Malmövägen: OSM way 137217705 nodes from where the line crosses the terrain's
+  // east edge (x 340, between the nodes (333.48, 25.71) and (375.1, 23.63)), ending under this backdrop's Malmövägen strip (9 m), which crosses the line near (440.8, -12), 4 m past its centre line; the real road
+  // bridge (OSM 57357001) is ~17 m further, within the strip's ±50 m. Width 6 m like the terrain's channel and the colour (COLORS.water) are *guess*.
   paths: [{ name: 'Gång- och cykelväg', width: 3, color: 0x8b8a84, path: [[-640, 560], [-470, 600], [-330, 650], [-200, 660], [-30, 650], [110, 600], [250, 570], [330, 560]] }],
+  rivers: [{ name: 'Höje å uppströms', width: 6, color: 0x47657a, path: [[340, 25.38], [375.1, 23.63], [402.15, 12.75], [416.34, 4.83], [427.46, -1.37], [443.9, -14.5]] }],
   roads: [{ name: 'Malmövägen / väg 108', width: 9, color: 0x5f6164, path: [[-440, -860], [-260, -660], [170, -313], [357, -100], [476, 25], [560, 130], [620, 250], [650, 380], [640, 500], [600, 600], [540, 680], [470, 760], [380, 880], [300, 1000]] }],
   // house groups: `rows` × `cols` boxes w × d × h (m) from `at`, turned `angle`° about y, `colGap`/`rowGap` m apart; walls / roofs cycle through the palettes
   houses: [

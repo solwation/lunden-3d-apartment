@@ -25,7 +25,7 @@ const game=process.argv[2]||'http://localhost:8841',out=process.env.RESPAWN_OUTP
    const old=player.pos.clone();player.pos.set(2,60,5);
    const outdoor=chooseRespawn(player,random);check(!!outdoor&&player.pos.equals(new T.Vector3(2,60,5)),'candidate context ignores prior high indoor/roof pose and does not mutate it');player.pos.copy(old);
    check(safeRespawnPoint(player,2,5)===null&&SITE.blocks.every(block=>safeRespawnPoint(player,(block.x0+block.x1)/2,(block.z0+block.z1)/2)===null),'the actual configured house footprints are excluded');
-   const [waterX,waterZ]=SITE.river.path[9];check(safeRespawnPoint(player,waterX,waterZ)===null,'configured river water is never a spawn');
+   const [waterX,waterZ]=SITE.river.path[9+(SITE.river.upstream?.count??0)];check(safeRespawnPoint(player,waterX,waterZ)===null,'configured river water is never a spawn');
    check(safeRespawnPoint(player,OUTDOOR.x0,30)===null&&safeRespawnPoint(player,NaN,0)===null,'body radius boundary and nonfinite positions are refused');
    const green=RESPAWN.regions.find(region=>region.id==='green'),x=(green.x0+green.x1)/2,z=(green.z0+green.z1)/2;
    const square=[[x-1,z-1],[x+1,z-1],[x+1,z+1],[x-1,z+1]],ring=square.map((p,i)=>[...p,...square[(i+1)%4]]);

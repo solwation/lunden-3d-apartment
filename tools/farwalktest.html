@@ -363,7 +363,8 @@ for (const [name, start, points, ok] of R) {
   player.onEdge = undefined; player.keys = new Set();
 }
 // #1350: use actual Player.splashCheck just above/below the LOCAL water surface, not merely the channel floor.
-for(const i of[0,16]){
+// #1790: the #532 section's stations 0 and 16 (after the upstream vertices) plus upstream vertex 1 (x 300, north of z 60 inside WALK).
+for(const i of[SITE.river.upstream.count,16+SITE.river.upstream.count,1]){
  const[x,z]=SITE.river.path[i],water=waterYAt(x,z);player.spawn(x,z,0);splashes.length=0;player.pos.y=water+.05;
  check(!player.splashCheck()&&splashes.length===0,`station ${i}: feet above local water do not splash`);
  player.pos.y=water-WALK.waterDepth-.01;const rescued=player.splashCheck();

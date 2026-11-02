@@ -3,7 +3,7 @@ import { basketFloor, basketCollide } from './balloongeo.js';
 import { SITE, WALK, LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, jetThin, SPIDER, SOFFITS, BICYCLE } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY, groundBelowDeckY } from './surroundings.js';
-import { deckAt, deckUnderAt, waterYAt } from './riverbridge.js';
+import { deckAt, deckUnderAt, waterYAt, upstreamRiverZone } from './riverbridge.js';
 import { farWalls, slideAt, inWater, splashBank, tooSteep, buildingRescue, atEdge, surfaceY, underDeck, stileSurface } from './farwalk.js'; // #1236: walking beyond the block
 import { bicycleCurbY } from './street.js';
 import { stowBicycleHand, restoreBicycleHand } from './holdable.js';
@@ -881,7 +881,7 @@ export class Player {
   slideStep(dt, mx, mz) {
     const p = this.pos, d = this.slideD ??= { x: 0, z: 0 };
     d.x = d.z = 0;
-    const out = p.z > 60 && !this.inPlayroom && !this.flying && !this.aloft && !this.inCore && !this.unit && !this.climb && !this.swing && !this.inFootprint();
+    const out = (p.z > 60 || upstreamRiverZone(p.x, p.z)) && !this.inPlayroom && !this.flying && !this.aloft && !this.inCore && !this.unit && !this.climb && !this.swing && !this.inFootprint();
     const sl = out && p.y <= surfaceY(p.x, p.z, p.y) + 0.25 ? // (feet on the ground: a downhill step leaves them a hair above it, which is no fall)
        slideAt(p.x, p.z, p.y, this.sliding) : null;
     this.sliding = !!sl;
@@ -900,7 +900,7 @@ export class Player {
    * last dry spot), standing still and safe from fall damage for `WALK.splashSafe` s. True when it happened. Flying over the water does not count. */
   splashCheck() {
     const p = this.pos;
-    if (p.z <= 60 || this.inPlayroom || this.aloft || this.inCore || this.unit || this.inFootprint()) return false;
+    if ((p.z <= 60 && !upstreamRiverZone(p.x, p.z)) || this.inPlayroom || this.aloft || this.inCore || this.unit || this.inFootprint()) return false;
     if (!(p.y < waterYAt(p.x, p.z) - WALK.waterDepth) || !inWater(p.x, p.z, p.y)) {
       if (!this.sliding && p.y <= surfaceY(p.x, p.z, p.y) + 0.05) { const d = this.lastDry ??= { x: p.x, z: p.z }; d.x = p.x; d.z = p.z; } // (the fallback bank)
       return false;

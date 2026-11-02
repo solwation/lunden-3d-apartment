@@ -34,6 +34,9 @@ export function riverAt(x,z){
   best={distance:bd,x:a+t*dx,z:b+t*dz,nx:-dz/len,nz:dx/len,width:interp(R.widths,R.width),valley:interp(R.valleyWidths??R.widths,R.width),bank:interp(R.banks,R.bank)*(R.bankScale??1),segment:i,t,along:along[i-1]+len*t};}
  lastX=x;lastZ=z;lastR=best;return best;}
 export function riverDistance(x,z){return riverAt(x,z).distance;}
+/** #1790: (x, z) north of z 60 that still belongs to the river: the upstream stretch's corridor east of its valley opening
+ * (SITE.river.upstream.open[0]), within the protected river distance. The z 60 guards (splash, slide) use it to cover that stretch too. */
+export function upstreamRiverZone(x,z){const U=R.upstream;return !!U&&x>U.open[0]&&riverAt(x,z).distance<ELEVATION.river[0];}
 // #1350: a relative interpretation of ground data; preserve the road crossing's existing vertical datum.
 const fallAnchor=riverAt(bridgeRecords[0].x,bridgeRecords[0].z).along;
 const fall=r=>-(r.along-fallAnchor)*(R.fall?.perM??0);
