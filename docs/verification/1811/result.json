@@ -1,0 +1,189 @@
+{
+  "ok": true,
+  "codeRevision": "ca95c15f0f81110768dba9cfa2e13d5098479860",
+  "integrationBase": "48cf6fddd8b29172ec79485393074d951417195a",
+  "checkedAt": "2026-11-02T19:57:06.042455+00:00",
+  "checks": {
+    "keyboard": {
+      "ok": true,
+      "checks": [
+        {
+          "ok": true,
+          "message": "desktop: three distinct exercise targets"
+        },
+        {
+          "ok": true,
+          "message": "bounded six meshes and finite supported equipment"
+        },
+        {
+          "ok": true,
+          "message": "pullup: clear entry location"
+        },
+        {
+          "ok": true,
+          "message": "keyboard pullup: repeats while using equipment"
+        },
+        {
+          "ok": true,
+          "message": "pullup: equipment-specific movement"
+        },
+        {
+          "ok": true,
+          "message": "pullup: returns safely to the actual entry without active exercise"
+        },
+        {
+          "ok": true,
+          "message": "press: clear entry location"
+        },
+        {
+          "ok": true,
+          "message": "keyboard press: repeats while using equipment"
+        },
+        {
+          "ok": true,
+          "message": "press: equipment-specific movement"
+        },
+        {
+          "ok": true,
+          "message": "press: returns safely to the actual entry without active exercise"
+        },
+        {
+          "ok": true,
+          "message": "step: clear entry location"
+        },
+        {
+          "ok": true,
+          "message": "keyboard step: repeats while using equipment"
+        },
+        {
+          "ok": true,
+          "message": "step: equipment-specific movement"
+        },
+        {
+          "ok": true,
+          "message": "step: returns safely to the actual entry without active exercise"
+        },
+        {
+          "ok": true,
+          "message": "menu teleport cancels the gym through ordinary stand-up"
+        },
+        {
+          "ok": true,
+          "message": "desktop: no page errors"
+        }
+      ],
+      "limitation": "Initial graphics captures used shot mode; functional native keyboard path passed."
+    },
+    "touch": {
+      "ok": true,
+      "completed": true,
+      "driverError": null,
+      "checks": [
+        {
+          "ok": true,
+          "message": "touch: three distinct exercise targets"
+        },
+        {
+          "ok": true,
+          "message": "bounded six meshes and finite supported equipment"
+        },
+        {
+          "ok": true,
+          "message": "pullup: clear entry location"
+        },
+        {
+          "ok": true,
+          "message": "touch pullup: repeats while using equipment"
+        },
+        {
+          "ok": true,
+          "message": "pullup: equipment-specific movement"
+        },
+        {
+          "ok": true,
+          "message": "pullup: returns safely to the actual entry without active exercise"
+        },
+        {
+          "ok": true,
+          "message": "press: clear entry location"
+        },
+        {
+          "ok": true,
+          "message": "touch press: repeats while using equipment"
+        },
+        {
+          "ok": true,
+          "message": "press: equipment-specific movement"
+        },
+        {
+          "ok": true,
+          "message": "press: returns safely to the actual entry without active exercise"
+        },
+        {
+          "ok": true,
+          "message": "step: clear entry location"
+        },
+        {
+          "ok": true,
+          "message": "touch step: repeats while using equipment"
+        },
+        {
+          "ok": true,
+          "message": "step: equipment-specific movement"
+        },
+        {
+          "ok": true,
+          "message": "step: returns safely to the actual entry without active exercise"
+        },
+        {
+          "ok": true,
+          "message": "touch menu pauses exercise"
+        },
+        {
+          "ok": true,
+          "message": "menu teleport cancels the gym through ordinary stand-up"
+        },
+        {
+          "ok": true,
+          "message": "touch: no page errors"
+        }
+      ]
+    },
+    "mergedGymAndSeats": {
+      "ok": true,
+      "complete": true,
+      "error": null,
+      "base": "48cf6fddd8b29172ec79485393074d951417195a",
+      "code": "ca95c15f",
+      "checks": [
+        {
+          "ok": true,
+          "msg": "actual player collision blocks gym timber post"
+        },
+        {
+          "ok": true,
+          "msg": "gym remains in the combined focus registry"
+        },
+        {
+          "ok": true,
+          "msg": "gym E/C exits through retained safe-entry branch"
+        },
+        {
+          "ok": true,
+          "msg": "reported glass-shelter bench remains in combined focus registry"
+        },
+        {
+          "ok": true,
+          "msg": "glass-bench E/C retains outdoorSeat returnToEntry behavior"
+        }
+      ]
+    }
+  },
+  "limits": [
+    "Phone behavior is Chromium emulation, not a physical phone.",
+    "Lazy SwiftShader screenshots do not establish hardware FPS.",
+    "Dimensions and placement are visual assumptions.",
+    "No new multiplayer exercise pose or saved exercise history."
+  ],
+  "verificationReuse": "Keyboard exercise/motion evidence predates the initial pull-up gaze improvement; the complete native touch pass verifies that gaze and unchanged exercise code. After rebase, native E/C was repeated only on one gym station and the reported glass bench to cover the shared main.js merge."
+}
