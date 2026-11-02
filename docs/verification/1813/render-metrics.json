@@ -1,0 +1,48 @@
+{
+  "before": [
+    {
+      "month": 6,
+      "camera": [
+        195,
+        126.62,
+        15
+      ],
+      "calls": 321,
+      "triangles": 816967
+    },
+    {
+      "month": 11,
+      "camera": [
+        195,
+        126.62,
+        15
+      ],
+      "calls": 321,
+      "triangles": 820175
+    }
+  ],
+  "after": [
+    {
+      "month": 6,
+      "camera": [
+        195,
+        126.62,
+        15
+      ],
+      "calls": 322,
+      "triangles": 816967
+    },
+    {
+      "month": 11,
+      "camera": [
+        195,
+        126.62,
+        15
+      ],
+      "calls": 322,
+      "triangles": 820175
+    }
+  ],
+  "geometryUnchanged": true,
+  "note": "Only the first material reference assertion was wrong; these actual rendered comparisons are unchanged by its fixture correction."
+}
