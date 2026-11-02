@@ -186,7 +186,7 @@ Western quarter (#1794): the two large OSM car parks 145221622 and 145221630 (`d
 
 Outcome per area (all children closed 2026-11-02; every value read from the images is *guess*, all additions sit in existing
 batches). The cross-cutting gap the review found everywhere — far too sparse, too light tree cover compared with Google — was
-left out of scope in every child and is not yet tracked.
+left out of scope in every child; it is tracked in #1804.
 
 | Area | Issue | Final state |
 |---|---|---|
