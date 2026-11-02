@@ -63,15 +63,16 @@ Required or optional:
 Expected evidence, destination and completion condition:
 ```
 
-For example, a web project could define this screenshot lifecycle. This is an
-illustration, not a default screenshot requirement. The project must supply the actual
-routes, commands, viewports, test data and artifact/upload procedure in its own guide.
+For example, a project with UI/UX or 2D/3D graphics could define this screenshot lifecycle.
+This is an illustration, not a default screenshot requirement. The project must supply the
+actual routes, scenes, camera angles, viewports, test data and artifact/upload procedure
+in its own guide.
 
 | Hook | Phase and trigger/timing | Project procedure | Owner | Requirement and completion evidence |
-| --- | --- | --- | --- | --- | --- |
-| Capture UI | `verification`: UI changes, after the preview is ready | Follow the project's screenshot guide for affected states | Implementation worker, or conductor if working alone | Required when triggered: images plus revision/environment in the assigned artifact destination |
-| Inspect UI | `review`: UI changes, before approving delivery | Inspect captured images against acceptance and any reference images | Conductor | Required when triggered: review outcome recorded; defects corrected and affected images refreshed |
-| Share UI result | `follow-up`: UI changes, before issue closure | Follow the project's upload guide; link/attach reviewed images in the completion comment | Conductor | Required when triggered: accessible evidence for the delivered revision, or leave the unmet acceptance open |
+| --- | --- | --- | --- | --- |
+| Capture UI | `verification`: UI/UX or graphics changes, after preview/rendering is ready | Follow the project's screenshot guide for affected states/scenes | Implementation worker, or conductor if working alone | Required when triggered: images plus revision/environment in the assigned artifact destination |
+| Inspect UI | `review`: UI/UX or graphics changes, before approving delivery | Inspect captured images against acceptance and any reference images | Conductor | Required when triggered: review outcome recorded; defects corrected and affected images refreshed |
+| Share UI result | `follow-up`: UI/UX or graphics changes, before issue closure | Follow the project's upload guide; link or attach reviewed images in the completion comment | Conductor | Required when triggered: accessible evidence for the delivered revision, or report the capture limitation |
 
 For optional activities, mark them optional explicitly and report a failure or skip.
 An unavailable required tool does not silently make an activity optional. Existing
