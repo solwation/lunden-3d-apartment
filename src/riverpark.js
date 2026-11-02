@@ -150,6 +150,22 @@ export function parkTreeSpots(ground) {
   for(const [x,z,s,kind] of P.bridgeView?.specimens??[])if(clear(x,z))spots.push({x,z,y:ground(x,z),s,kind,patch:'bridge-west',specimen:true});
   return spots;
 }
+/** #1804: desktop-only infill of smaller ordinary trees in the gaps of the valley canopy (SITE.riverPark.infill, *guess*), its own seed and
+ * `spacing` from every tree in `park` (parkTreeSpots) and from each other, so the older patches keep their exact trees. Callers skip it on phones. */
+export function parkInfillSpots(ground,park=parkTreeSpots(ground)) {
+  const I=P.infill;if(!I)return [];
+  const rand=random(I.seed),spots=[],all=[...park];
+  for(const [name,n] of Object.entries(I.patches)) {
+    const patch=P.patches.find(p=>p.name===name);if(!patch)continue;
+    const xs=patch.polygon.map(p=>p[0]),zs=patch.polygon.map(p=>p[1]),x0=Math.min(...xs),z0=Math.min(...zs),dx=Math.max(...xs)-x0,dz=Math.max(...zs)-z0;
+    for(let k=0,count=0;k<n*80&&count<n;k++) {
+      const x=x0+rand()*dx,z=z0+rand()*dz;
+      if(!inside(x,z,patch.polygon)||!clear(x,z)||all.some(t=>Math.hypot(t.x-x,t.z-z)<I.spacing))continue;
+      const t={x,z,y:ground(x,z),s:I.scale[0]+rand()*(I.scale[1]-I.scale[0]),kind:'tree',source:'valley-infill'};spots.push(t);all.push(t);count++;
+    }
+  }
+  return spots;
+}
 /** #1531: points along the river stretch seen west from the bridges (SITE.riverPark.bridgeView.x), as the shore loops sample the river path. */
 function bridgeStretch(rand) {
   const [x0,x1]=P.bridgeView.x,x=x0+rand()*(x1-x0),p=SITE.river.path;

@@ -787,9 +787,13 @@ export const SITE = {
     glades: [
       {"name":"central-lawn","polygon":[[-93,89],[-76,83],[-46,86],[-46,111],[-65,121],[-86,124]]},
     ],
-    treeScale: [1.35,2.35],
+    treeScale: [1.2,2.6], // #1804 (*guess*): wider size spread for the valley canopy (was 1.35–2.35); positions unchanged
     treeSpacing: 6,
     treeDensity: 1.45, // #1233 (guess): multiplies each patch's `n`, denser woodland by the river
+    // #1804 (*guess*, Google 3D set 2026-11-02: the valley is a closed canopy): smaller ordinary trees (kind 'tree', one lobe each, ~106
+    // triangles) filling the gaps between the patch trees, `n` per named patch, at least `spacing` m from every park tree; their own
+    // `seed`, built after every other site tree. Desktop only: phones (lowMemory) keep exactly the older trees.
+    infill: { seed: 1804, spacing: 4.5, scale: [1.0, 1.6], patches: { 'western-bank': 6, 'north-bank': 8, 'south-bank': 8, 'bridge-east-bank': 5, 'eastern-bend': 5, 'forest-west-north': 4 } },
     shrubScale: [0.8,1.9],
     shrubCount: 190,
     shoreCount: 380,
@@ -1150,13 +1154,15 @@ export const SITE = {
     ],
     bay: 3.5,
     sill: 1,
+    // #1804 (*guess*, Google 3D set 2026-11-02): wider spread of woodland crown sizes (was height 8–14, radius 3–5), so the
+    // southern woodland screens read as a closed, uneven canopy; same instances, same triangles. Radius stays below bigTrees.radius.
     treeHeight: [
-      8,
-      14,
+      7,
+      16,
     ],
     treeRadius: [
-      3,
-      5,
+      2.8,
+      6.4,
     ],
     // #1675: old, broad-crowned broadleaf trees on the lawns between the hospital pavilions (nr 41–47, Asylen, Lime, Repligen) as in Google 3D / the aerial photo:
     // `height` / `radius` m of the crown ellipsoid (clearly bigger than the sparse woodland's treeHeight/treeRadius), `spacing` m between big trees, `clearance` m kept from
@@ -1948,10 +1954,13 @@ export const HUS_L = {
 export const SEASON = {
   snowMonths: [12, 1, 2],
   // month → [hue, sat, light, leaves]   (spring light yellow-green, summer deep green, autumn mixed)
+  // #1804 (*guess*, by eye against the Google 3D set docs/references/google-3d-2026-11-02): May–September darker and bluer
+  // (summer hue 0.28–0.29 → 0.31–0.32, light 0.27–0.30 → 0.16–0.18; September 0.2 / 0.32 read as autumn yellow-green), so
+  // the canopy reads as the dense dark blue-green of the reference. Spring, autumn and winter months are unchanged.
   trees: {
     1: [0.08, 0.2, 0.22, 0], 2: [0.08, 0.2, 0.22, 0], 3: [0.22, 0.45, 0.42, 0.45], 4: [0.24, 0.55, 0.45, 0.85],
-    5: [0.25, 0.55, 0.38, 1], 6: [0.28, 0.5, 0.3, 1], 7: [0.29, 0.5, 0.27, 1], 8: [0.27, 0.45, 0.28, 1],
-    9: [0.2, 0.5, 0.32, 1], 10: [0.09, 0.65, 0.38, 0.95], 11: [0.06, 0.45, 0.3, 0.45], 12: [0.08, 0.2, 0.22, 0],
+    5: [0.28, 0.45, 0.22, 1], 6: [0.33, 0.36, 0.12, 1], 7: [0.34, 0.34, 0.1, 1], 8: [0.33, 0.33, 0.11, 1],
+    9: [0.3, 0.35, 0.12, 1], 10: [0.09, 0.65, 0.38, 0.95], 11: [0.06, 0.45, 0.3, 0.45], 12: [0.08, 0.2, 0.22, 0],
   },
   blossomMonths: [4, 5], // some trees flower white/pink
   snow: { ground: 0xeef3f7, roof: 0xf4f7fa, hedge: 0xdfe8ec, paving: 0xe6ebee },

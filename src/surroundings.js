@@ -7,7 +7,7 @@ import { buildBusStop } from './busstop.js';
 import {southBackdropParts} from './southbackdrop.js';
 import {buildEdgeBackdrop} from './edgebackdrop.js';
 import {buildWestBackdrop,buildEastBackdrop,buildNorthBackdrop,westTreeSpots,eastTreeSpots,northTreeSpots} from './sitebackdrop.js';
-import { buildRiverPark, parkDeckAt, parkFillAt, renderedParkFillY, parkRampFill, parkTreeSpots, parkShrubSpots } from './riverpark.js';
+import { buildRiverPark, parkDeckAt, parkFillAt, renderedParkFillY, parkRampFill, parkTreeSpots, parkInfillSpots, parkShrubSpots } from './riverpark.js';
 import * as THREE from 'three';
 import { grassUV } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -1512,7 +1512,8 @@ function trees(rand) {
       spots.push({ x, z, y: groundY(x, z), s: area.young ? 0.8 + rand() * 0.25 : 0.75 + rand() * 0.6, kind: area.young ? 'young' : birch ? 'birch' : 'tree' });
     }
   }
-  spots.push(...parkTreeSpots(renderedTerrainY),...westTreeSpots(renderedTerrainY),...eastTreeSpots(renderedTerrainY),...northTreeSpots(renderedTerrainY));
+  const park = parkTreeSpots(renderedTerrainY);
+  spots.push(...park,...westTreeSpots(renderedTerrainY),...eastTreeSpots(renderedTerrainY),...northTreeSpots(renderedTerrainY));
   for (const [x, z, s] of S.bigTrees) spots.push({ x, z, y: groundY(x, z), s, kind: 'big' });
   for (const [x, z, s] of PADDOCK.trees) spots.push({ x, z, y: z > S.backgroundGround.z1 ? -3.01 : Math.max(groundY(x, z), renderedTerrainY(x, z)), s, kind: 'big' }); // the pony paddock's shade trees (#1316; the paddock's own ground level)
   for (const [x, z] of S.vergeTrees) spots.push({ x, z, y: groundY(x, z), s: 0.8 + rand() * 0.3, kind: 'tree' }); // by Karpvägen (#257)
@@ -1579,6 +1580,18 @@ function trees(rand) {
     const s = 0.45 + rand() * 0.2;
     lobes.push({ pos: new THREE.Vector3(x + (rand() - 0.5) * 0.2, 0.42 * s / 0.55, sh.z + (rand() - 0.5) * 0.15), rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)),
       scale: new THREE.Vector3(s * 1.2, s, s * 1.1), r1: 0.2 + rand() * 0.15, r2: 0.9, r3: 0.15 + rand() * 0.2, r4: 1 }); // one red-brown hedge; r2 high: some leaves stay; r4: no blossom
+  }
+  // #1804: desktop-only valley infill (SITE.riverPark.infill): ordinary one-lobe trees in the canopy's gaps, built last with their own
+  // random stream so every older tree and shrub keeps its exact look; phones (lowMemory) get none.
+  if (!lowMemory && S.riverPark.infill) {
+    let seed = S.riverPark.infill.seed + 1; const ir = () => ((seed = seed * 16807 % 2147483647) / 2147483647);
+    for (const t of parkInfillSpots(renderedTerrainY, park)) {
+      const h = 3.2 * t.s, sc = new THREE.Vector3(2.4, 2.6, 2.4).multiplyScalar(t.s), at = new THREE.Vector3(t.x, t.y + h + 1.6 * t.s, t.z);
+      treeFeet.push({ x: t.x, z: t.z, y: t.y, kind: t.kind, source: t.source });
+      trunkM.push(m.clone().compose(new THREE.Vector3(t.x, t.y, t.z), q.identity(), new THREE.Vector3(t.s, h, t.s)));
+      lobes.push({ pos: at, rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, ir() * 6, 0)), scale: fitCrown(at, sc), r1: ir(), r2: ir(), r3: ir(), r4: ir() });
+      aoTrees.push({ x: t.x, z: t.z, r: sc.x, y: at.y });
+    }
   }
   // #679: tapered trunks with branches into the crown, crowns of leaf cards round an opaque core (src/foliage.js)
   // #1246: one InstancedMesh per FOLIAGE.cell square (not one for the whole site) so frustum culling drops the cells behind the
