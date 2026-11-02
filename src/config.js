@@ -286,6 +286,9 @@ const SOUTH_VILLAS = [
 ];
 // #1678: OSM ids of the houses along Sankt Lars väg south of the hospital (nr 56-66; shared by the window rows and `south.whiteHouses`).
 const SOUTH_LARS_VAG = ['88457551', '88457559', '88457560', '88457562', '88457571', '88457572', '88457578', '88457584', '88457587', '88457589', '88457593', '88457596', '88457604'];
+// #1807 (Google 3D 05_norra_skolor_*, 06_kunskapsskolan_*): colours of the school yards' optional `detail` (play corners, see src/schoolyard.js): `fence` a mid green mesh fence, `pad` the teal
+// play surface that shows in the oblique views at the long pavilion; hex values, like every position and size in a `detail`, are a *guess*.
+const YARD_COLORS_1807 = {"lawn":0x5d8a3a,"sand":0xd6c39a,"hedge":0x3b5828,"wood":0x8a6a48,"seat":0x2f2f2f,"roof":0xa8483a,"slide":0xc9a227,"fence":0x3f8a52,"pad":0x2a9d8f};
 export const SITE = {
   // Terrain (#79). Kv. Lunden stands on a garage box: the courtyard ("den upphöjda gården", info brochure
   // p. 16) lies on the garage deck at our Entréplan / patio level (y 0; the lower row houses have their
@@ -1382,8 +1385,17 @@ export const SITE = {
       {"source":"44447969","name":"Östra campusparkeringen","surface":"asphalt","capacity":20,"capacitySource":"guess","polygon":[[196.06,-37.72],[189.82,-21.9],[192.2,7.75],[206.2,7.66],[204.71,-19.6]]},
       // #1262: sourced school area courtyards (OSM 2026-10-08 campus-areas)
       // #1796 (*guess*, Google 3D 05_norra_skolor_*): the yards are greyer than the old beige, and Freinet's and Montessori's get one lawn oval each (`yard` with only `lawns`, merged into the access batch: no draw call)
-      {"source":"145221566","name":"Förskolan Framtiden gård","surface":"paved","color":0x9a9a90,"polygon":[[129.42,-89.2],[66.93,-86.35],[64.6,-23.58],[104.66,-22.41],[120.84,-23.07],[130.35,-23.46],[130.2,-33.79],[130.09,-49.96]]},
-      {"source":"145221567","name":"Förskolan Freinet gård","surface":"paved","color":0x9a9a90,"polygon":[[129.42,-89.2],[66.93,-86.35],[66.75,-136.67],[66.68,-157.77],[128.42,-159.55],[128.56,-151.91]],"yard":{"sand":[],"hedge":{"paths":[],"h":1.0,"w":0.8,"piece":4,"sink":0.3},"play":[],"lawns":[{"centre":[97,-92],"radii":[27,16],"angle":0,"n":24}],"lift":{"sand":0.05,"lawn":0.08},"colors":{"lawn":0x5d8a3a,"sand":0xd6c39a,"hedge":0x3b5828,"wood":0x8a6a48,"seat":0x2f2f2f,"roof":0xa8483a,"slide":0xc9a227}}},
+      {"source":"145221566","name":"Förskolan Framtiden gård","surface":"paved","color":0x9a9a90,"polygon":[[129.42,-89.2],[66.93,-86.35],[64.6,-23.58],[104.66,-22.41],[120.84,-23.07],[130.35,-23.46],[130.2,-33.79],[130.09,-49.96]],
+       // #1807: a lawn and a fenced play corner south of building 8 (all *guess*; phone mode keeps the plain yard)
+       "yard":{"lawns":[],"sand":[],"play":[],"hedge":{"paths":[],"h":1.0,"w":0.8,"piece":4,"sink":0.3},"lift":{"sand":0.05,"lawn":0.08},
+        "detail":{"lawns":[{"centre":[104,-35],"radii":[22,9],"angle":0,"n":24}],"sand":[[[74,-47],[88,-47],[88,-38],[74,-38]]],
+         "play":[{"kind":"swing","at":[81,-42.5],"yaw":0,"size":[3,2.2]},{"kind":"climb","at":[77,-42],"yaw":0,"size":[2,2,1.8]},{"kind":"bench","at":[92,-44],"yaw":0,"size":[1.6]}],
+         "hedge":{"paths":[[[70,-49],[91,-49],[91,-30]]],"h":1.2,"w":0.12,"piece":4,"sink":0.3,"color":"fence"}},
+        "colors":YARD_COLORS_1807}},
+      {"source":"145221567","name":"Förskolan Freinet gård","surface":"paved","color":0x9a9a90,"polygon":[[129.42,-89.2],[66.93,-86.35],[66.75,-136.67],[66.68,-157.77],[128.42,-159.55],[128.56,-151.91]],"yard":{"sand":[],"hedge":{"paths":[],"h":1.0,"w":0.8,"piece":4,"sink":0.3},"play":[],"lawns":[{"centre":[97,-92],"radii":[27,16],"angle":0,"n":24}],"lift":{"sand":0.05,"lawn":0.08},"detail":{"sand":[[[131,-133],[138.5,-133],[138.5,-121],[131,-121]]],"pads":[[[131,-116],[138.5,-116],[138.5,-107],[131,-107]]],
+        "play":[{"kind":"climb","at":[133.2,-128],"yaw":0,"size":[2,2,1.8]},{"kind":"house","at":[136.6,-125],"yaw":0,"size":[1.6,1.6,1.4]},{"kind":"swing","at":[134.8,-111.5],"yaw":0,"size":[3,2.2]},{"kind":"bench","at":[135,-100],"yaw":90,"size":[1.6]}],
+        "hedge":{"paths":[[[130.5,-105],[139,-105]]],"h":1.2,"w":0.12,"piece":4,"sink":0.3,"color":"fence"}},
+        "colors":YARD_COLORS_1807}},
       {"source":"145221572","name":"Sankt Thomas skolgård","surface":"gravel","polygon":[[18.5,-86.12],[66.93,-86.35],[66.75,-136.67],[17.39,-134.96]],
        // #1737 (docs/foton/snedbild-klockhuset-sankt-thomas.png, Google 3D heading 99°): the playground in front of Klockhuset's yard face: an oval lawn,
        // play-sand patches round the wooden play frames, a sandbox, and clipped hedges along the yard's edges towards Realgymnasiet (z ≈ -87) and Förskolan Freinet
@@ -1401,8 +1413,16 @@ export const SITE = {
       // The OSM snapshot has no parking area there, so the outline, the row (`row.path` = the kerb line, `side` -1 = stalls on its +x side), the capacity and the fill are all *guess*;
       // stalls, lines, kerb strip and cars come from the shared east-lot engine (PARKING_LOT, #1278). Replaces #1554's 15 m deep two-sided lot and its aisle `guess-1554-aisle`.
       {"source":"guess-1554","name":"Parkeringsrad vid bron (guess)","surface":"asphalt","capacity":7,"capacitySource":"guess","fill":0.9,"reversed":0.1,"noseToAisle":true,"row":{"path":[[29.4,59.6],[29.4,77.1]],"side":-1},"polygon":[[29.05,59.2],[34.8,59.2],[34.8,77.5],[29.05,77.5]]},
-      {"source":"94054863","name":"Höjebroskolan skolgård","surface":"paved","color":0x9a9a90,"polygon":[[130.09,-49.96],[129.42,-89.2],[128.56,-151.91],[167.4,-153.51],[171.8,-51.62]]},
-      {"source":"145221570","name":"Lunds Montessorigrundskola gård","surface":"gravel","color":0xa89f86,"polygon":[[-105.75,-85.22],[-106.28,-142.26],[-76.54,-155.82],[-44.43,-155.28],[-47.41,-52.64],[-84.23,-55.41],[-103.88,-73.75]],"yard":{"sand":[],"hedge":{"paths":[],"h":1.0,"w":0.8,"piece":4,"sink":0.3},"play":[],"lawns":[{"centre":[-78,-102],"radii":[24,42],"angle":0,"n":24}],"lift":{"sand":0.05,"lawn":0.08},"colors":{"lawn":0x5d8a3a,"sand":0xd6c39a,"hedge":0x3b5828,"wood":0x8a6a48,"seat":0x2f2f2f,"roof":0xa8483a,"slide":0xc9a227}}},
+      {"source":"94054863","name":"Höjebroskolan skolgård","surface":"paved","color":0x9a9a90,"polygon":[[130.09,-49.96],[129.42,-89.2],[128.56,-151.91],[167.4,-153.51],[171.8,-51.62]],
+       // #1807: a play corner and lawn in the open court of the long pavilion (all *guess*, read off a top view; phone mode keeps the plain yard)
+       "yard":{"lawns":[],"sand":[],"play":[],"hedge":{"paths":[],"h":1.0,"w":0.8,"piece":4,"sink":0.3},"lift":{"sand":0.05,"lawn":0.08},
+        "detail":{"lawns":[{"centre":[160,-78],"radii":[5,14],"angle":0,"n":20}],"sand":[[[154.5,-112],[165.5,-112],[165.5,-102],[154.5,-102]]],
+         "play":[{"kind":"climb","at":[158,-107],"yaw":0,"size":[2,2,1.8]},{"kind":"house","at":[163,-107],"yaw":0,"size":[1.6,1.6,1.4]},{"kind":"bench","at":[160,-93],"yaw":0,"size":[1.6]}],
+         "hedge":{"paths":[[[154,-100],[166,-100]]],"h":1.2,"w":0.12,"piece":4,"sink":0.3,"color":"fence"}},
+        "colors":YARD_COLORS_1807}},
+      {"source":"145221570","name":"Lunds Montessorigrundskola gård","surface":"gravel","color":0xa89f86,"polygon":[[-105.75,-85.22],[-106.28,-142.26],[-76.54,-155.82],[-44.43,-155.28],[-47.41,-52.64],[-84.23,-55.41],[-103.88,-73.75]],"yard":{"sand":[],"hedge":{"paths":[],"h":1.0,"w":0.8,"piece":4,"sink":0.3},"play":[],"lawns":[{"centre":[-78,-102],"radii":[24,42],"angle":0,"n":24}],"lift":{"sand":0.05,"lawn":0.08},"detail":{"sand":[[[-72,-153],[-56,-153],[-56,-144.5],[-72,-145]]],"play":[{"kind":"climb","at":[-65,-149],"yaw":0,"size":[2,2,1.8]},{"kind":"swing","at":[-58,-150.5],"yaw":0,"size":[3,2.2]},{"kind":"bench","at":[-64,-143],"yaw":0,"size":[1.6]}],
+        "hedge":{"paths":[[[-74,-143],[-54,-143]]],"h":1.2,"w":0.12,"piece":4,"sink":0.3,"color":"fence"}},
+        "colors":YARD_COLORS_1807}},
     ],
     trees: [
       [56.94,-193.99,"564870146"],
