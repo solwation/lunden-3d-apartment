@@ -184,6 +184,20 @@ neighbours. Everything read from the images stays a *guess* until OSM, Peab or p
 
 Western quarter (#1794): the two large OSM car parks 145221622 and 145221630 (`docs/references/surrounding-views/osm-west-2026-11-02.json`) are now ordinary `SITE.south.parking` lots, and the unmapped Thermo Fisher hall (hipped pale-green roof, `Thermo Fisher hall`), its low dark wing, a barn and a house in the woods are `SITE.south.annexes.items` (`src/southannex.js`, new `roof: 'hip'` and per-item `wall` / `roofColor`), all in the south backdrop's existing facade/roof/land batches. Positions come from projecting the Google views through the game camera anchored on nr 44 (+-20-30 m; h000 and h270 disagree by ~100 m in x, h000 was used) and are *guess*. No further unmapped large residential blocks were found: OSM maps every block that Google shows in this quarter and they are already in `SITE.south.buildings`.
 
+Outcome per area (all children closed 2026-11-02; every value read from the images is *guess*, all additions sit in existing
+batches). The cross-cutting gap the review found everywhere — far too sparse, too light tree cover compared with Google — was
+left out of scope in every child and is not yet tracked.
+
+| Area | Issue | Final state |
+|---|---|---|
+| Game renders | #1792 | `spel-*.png` for all 36 cameras beside the references; used `at` values in the reference README |
+| 01 hospital pavilions | #1793 | nr 48/49 in red brick (`SITE.south.brickHouses`); the low white service building at nr 47 and two small gabled brick pavilions (`SITE.south.annexes`, `src/southannex.js`) |
+| 02 western quarter | #1794 | Thermo Fisher hall, wing, barn and house as annexes; two OSM car parks (see above). Open: an `EDGE_BACKDROP` field patch covers the western lot (#1803); the south far-detail budget has only ~67 triangles left |
+| 03 southern villas | #1795 | facade colour, roof colour and roof rise per house from small palettes (`SITE.south.villas` / `whiteHouses`), hashed from the OSM id |
+| 05 northern schools | #1796 | shared `SITE.east.roofColors` lowered to dark slate; greyer yards, lawns at Freinet and Montessori. Facades unchanged |
+| 06 eastern quarter | #1797 | Kunskapsskolan roof (`laundry`) darker and bluer; a clipped hedge along the Klockhuset car park. #1703 bridge distance confirmed unchanged |
+| 07 housing north | #1798 | 116 OSM footprints as edge houses (`EDGE_BACKDROP.footprints`, `footprintGeometries()`); the two red point blocks and the white office were not traced |
+
 ## No neighbours outside (#670)
 
 There are no figures outside except our car driver Olof (#599/#900) and the cats: the walkers with the dog, the cyclist on Sankt Lars väg (and its
