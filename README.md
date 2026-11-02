@@ -24,7 +24,7 @@ Bilen stannar för spelare i sin körväg även i svängar och vid backning.
 
 Återplacering på höjder i området använder markens verkliga modellhöjd, så att kameran stannar över marken.
 
-Vägar och gångstråk i utkanten fortsätter bort i dimman i stället för att sluta tvärt.
+Vägar och gångstråk i utkanten fortsätter bort i dimman i stället för att sluta tvärt. Hela hästhagen går också att nå till fots via den befintliga stättan.
 
 Promenadstråken i parken och längs Höje å samt vägarna i resten av området har lampor med varma ljusfläckar på marken efter skymningen. Lamporna följer även jordramperna vid den lilla träbron.
 

@@ -1,7 +1,7 @@
 // Pony paddock plan geometry (#1280, src/paddockgeo.js): `node --test tools/paddockgeotest.mjs`
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SITE, PADDOCK } from '../src/config.js';
+import { SITE, PADDOCK, WALK, PLAYER } from '../src/config.js';
 import * as g from '../src/paddockgeo.js';
 
 const segDist = (x, z, a, b) => { const dx = b[0] - a[0], dz = b[1] - a[1], l2 = dx * dx + dz * dz || 1, t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / l2)); return Math.hypot(x - a[0] - t * dx, z - a[1] - t * dz); };
@@ -11,6 +11,14 @@ test('the paddock is the mapped kidney-shaped field, fenced inside its outline',
   assert.ok(g.outline.length > 20);
   assert.ok(g.fenceLine.length >= g.outline.length - 2, 'no corner lost');
   for (const [x, z] of g.fenceLine) { assert.ok(g.inPoly(g.outline, x, z), 'fence inside the field'); assert.ok(g.ringDist(g.outline, x, z) >= PADDOCK.inset * 0.85, 'inset kept'); }
+});
+test('the whole paddock fits inside WALK with body margin, before the rendered terrain edge (#1817)', () => {
+  for (const [x,z] of g.fenceLine) {
+    assert.ok(x > WALK.x0 + PLAYER.radius && x < WALK.x1 - PLAYER.radius && z > WALK.z0 + PLAYER.radius && z < WALK.z1 - PLAYER.radius,
+      `fence at ${x},${z} must not hide an unreachable strip of meadow behind the global walking wall`);
+  }
+  assert.ok(WALK.x0 > SITE.backgroundGround.x0 + PLAYER.radius, 'the west boundary stays on drawn terrain');
+  assert.deepEqual([WALK.x1,WALK.z0,WALK.z1],[320,-200,452], 'other walking edges retain their existing extent');
 });
 test('posts are at most postStep apart and the fence never crosses itself', () => {
   const segs = g.fenceSegments();

@@ -326,6 +326,8 @@ Close and100m south/west images are captured for both desktop and low-memory cam
 The kidney-shaped meadow south of the timber footbridge (OSM field way 237019759, `SITE.south.fields`, ~9 700 m²) is a fenced paddock with two C ponies.
 Everything is a *guess* except the outline (`PADDOCK` in `src/config.js`: inset, post spacing, rail heights, gate, sizes, speeds, colours, view distance).
 
+**Whole paddock accessible (#1817):** the fence reaches x −274.34 while the old `WALK.x0` stopped the visitor at x −259.78, leaving a western strip behind an invisible boundary. `WALK.x0` is now −285 (*guess*, 65 m inside the rendered terrain edge), so every fence vertex and body margin fit inside the walking area. Fence/stile, river, terrain heights, other walking edges and houses A/B/C/L are unchanged. `tools/paddockwalktest.cjs` walks the production Player from outside over the existing stile to north (−164.5,214.5), west (−272.5,310.5), south (−265,327) and back out, without intermediate teleports or flight; it walks into the newly reached western fence to verify it still blocks before the global boundary, and checks retained gate and water guards. Geometry coverage is in `tools/paddockgeotest.mjs`. The dynamically computed road fog ends (#1812) also follow the wider WALK; their targeted test remains green. [Before/after evidence](../verification/1817/).
+
 ```text
 src/paddockgeo.js   plan geometry, no three.js: outline, the fence line (outline inset 1.2 m), posts (<= 3 m apart), the gate span nearest the footpath
                     (-116, 220), `fenceSegments()` (collision), `insideFence(x, z, margin)`; shared by farwalk.js, paddock.js and the node test

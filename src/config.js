@@ -2302,7 +2302,8 @@ export const PARKING_SEAM = { fade: 2 };
 export const ELEVATION = { protect: { x0: -86, x1: 46, z0: -36, z1: 72 }, ramp: 30, river: [32, 30], edge: 30,
   pad: 10, padRamp: 8, padMin: 0.4, southAnchor: 3, southApron: 4 }; // #1306: far buildings stand on a level pad (the ground's mean under them) that grades back over `pad` m, unless the ground under the footprint varies by less than `padMin` m (*guess*)
 // #1714: z1 452 (was 250) takes in Sankt Lars väg 42-47 with 44's courtyard and 54; the terrain ends at SITE.backgroundGround.z1 460, so the edge stays 8 m away (*guess*)
-export const WALK = { x0: -260, x1: 320, z0: -200, z1: 452, cell: 40, maxSlope: 0.7, // gradient (rise/run, ~35°) above which the ground cannot be climbed and you slide back (#1281, *guess*; the park paths (0.3-0.45) stay under it; the drop from the shore path into the water (up to ~0.8), the steepest bank edges and the bridge embankments are over)
+// #1817: the paddock's fence reaches x -274.34; x0 -285 leaves the whole meadow and body margin inside WALK, 65 m before the drawn terrain edge (*guess*).
+export const WALK = { x0: -285, x1: 320, z0: -200, z1: 452, cell: 40, maxSlope: 0.7, // gradient (rise/run, ~35°) above which the ground cannot be climbed and you slide back (#1281, *guess*; the park paths (0.3-0.45) stay under it; the drop from the shore path into the water (up to ~0.8), the steepest bank edges and the bridge embankments are over)
   slideOut: 0.85, slideSpeed: 3.5, slideAccel: 9, // #1281: hysteresis (sliding stops below maxSlope * slideOut), the slide's top speed (m/s) and acceleration (m/s²), *guess*
   waterDepth: 0.15, splashSafe: 2, // #1281: feet this far under the water line (m) are in the river; no fall damage for `splashSafe` s after the splash
   bikeEdge: 1.6, // #1719: the edge notice's margin (m) on the bicycle, which stops ~1 m short of the wall (measured in farwalktest, z 450.9 vs 452); on foot 0.6
