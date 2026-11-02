@@ -9,6 +9,7 @@ import { lowRiseWindowParts } from './southwindows.js';
 import { buildStLars41 } from './stlars41.js';
 import { brickPavilion, BRICK_STYLE } from './brickstyle.js';
 import { pavilionRoofDetail } from './pavilionroof.js';
+import { annexParts, annexPolygons } from './southannex.js'; // #1793
 import { paddockLandParts } from './paddock.js';
 import { busStopApron } from './busstopgeo.js';
 import { edgeTreeSpots } from './edgebackdrop.js';
@@ -54,7 +55,7 @@ export function* southBackdropParts(ground){
  const streets=[...SITE.roads.filter(r=>r.name==='Sankt Lars väg').map(r=>r.path),...S.access.map(r=>r.path),...S.paths.map(r=>r.path)]; // #1722: where the pavilions' entrances turn (guess)
  let built=0;for(const b of S.buildings){if(built++%6===5)yield .6*built/S.buildings.length;const foot=shape(b),p=b.polygon.slice(0,-1),base=b.keepBase??Math.max(...p.map(q=>farGround(...q))),bottom=Math.min(...p.map(q=>farGround(...q)))-.1,eave=base+b.levels*S.storey;
   if(b.template==='stlars41'){records.push({...b,base,bottom,...buildStLars41(b,p,base,bottom,parts)});continue;}
-  const pav=S.brickStyle.sources.includes(b.source)?brickPavilion(b,base,bottom,eave,{streets,ground:farGround}):null,V=S.villas.sources.includes(b.source)?S.villas:null,W=S.whiteHouses,WB=W.sources.includes(b.source)?{...W,...W.barn.sources.includes(b.source)?W.barn:{}}:null,wallColor=pav?BRICK_STYLE.brick:V?V.facade:WB?WB.facade:b.facade,rise=V?V.rise:WB?WB.rise:b.rise,roofColor=pav?S.pavilionRoof.roof:V?V.roof:WB?WB.roof:S.roofColor; // #1556: the old pavilions in nr 41's brick style
+  const pav=S.brickStyle.sources.includes(b.source)?brickPavilion(b,base,bottom,eave,{streets,ground:farGround}):null,V=S.villas.sources.includes(b.source)?S.villas:null,W=S.whiteHouses,WB=W.sources.includes(b.source)?{...W,...W.barn.sources.includes(b.source)?W.barn:{}}:null,BH=S.brickHouses?.roofs[b.source]!==undefined?S.brickHouses:null,wallColor=pav?BRICK_STYLE.brick:V?V.facade:BH?BH.facade:WB?WB.facade:b.facade,rise=V?V.rise:WB?WB.rise:b.rise,roofColor=pav?S.pavilionRoof.roof:V?V.roof:BH?BH.roofs[b.source]:WB?WB.roof:S.roofColor; // #1556: the old pavilions in nr 41's brick style
   if(!pav)parts.facade.push(tint(new THREE.ExtrudeGeometry(foot,{depth:eave-bottom,bevelEnabled:false}).rotateX(-Math.PI/2).translate(0,bottom,0),wallColor));
   let edge=0,len=0;for(let i=0;i<p.length;i++){const q=p[(i+1)%p.length],d=Math.hypot(q[0]-p[i][0],q[1]-p[i][1]);if(d>len){len=d;edge=i;}}
   const a=p[edge],c=p[(edge+1)%p.length],ux=(c[0]-a[0])/len,uz=(c[1]-a[1])/len,u=q=>ux*q[0]+uz*q[1],v=q=>-uz*q[0]+ux*q[1],us=p.map(u),vs=p.map(v),u0=Math.min(...us),u1=Math.max(...us),v0=Math.min(...vs),v1=Math.max(...vs),half=(v1-v0)/2;
@@ -77,6 +78,7 @@ export function* southBackdropParts(ground){
   }}pav?.flush(parts);if(pav)pavilionRoofDetail(b,[p,...(b.holes??[]).map(h=>h.slice(0,-1))],roofHeight,parts); // #1676
   records.push({...b,base,bottom,eave,roofY:(x,z)=>roofHeight([x,z])}); // roofY: the drawn roof's height, for the walkable roof (#1294)
  }
+ if(S.annexes)annexParts(farGround,parts); // #1793: low volumes OSM does not map, in the same facade/roof batches
  // Append new panes after all old glass: existing landmark/special facade geometry stays an exact prefix.
  for(const b of records)parts.glass.push(...lowRiseWindowParts(b,b.base));
  yield .6;
@@ -152,15 +154,16 @@ export function* southBackdropParts(ground){
  for(const[k,list]of Object.entries(parts)){if(!list.length)continue;const m=new THREE.Mesh(mergeGeometries(list),mats[k]);m.name='south-'+k;group.add(m);list.forEach(g=>g.dispose());}
  yield .9;
  for(const parts=leafAtlasParts();!parts.next().done;)yield .9; // the shared leaf atlas, drawn on first use: a long block of its own (#1133)
+ const solids=[...S.buildings.map(b=>b.polygon),...(S.annexes?annexPolygons():[])]; // #1793: trees keep off the annexes too
  let seed=536;const rand=()=>((seed=seed*16807%2147483647)/2147483647),trees=[];
- for(const f of S.forests){const xs=f.polygon.map(q=>q[0]),zs=f.polygon.map(q=>q[1]),x0=Math.min(...xs),x1=Math.max(...xs),z0=Math.min(...zs),z1=Math.max(...zs);let n=0;for(let i=0;i<f.n*30&&n<f.n;i++){const x=x0+rand()*(x1-x0),z=z0+rand()*(z1-z0);if(!inside(x,z,f.polygon)||onAccess(x,z)||onParking(x,z)||S.buildings.some(b=>inside(x,z,b.polygon))||S.fields.some(b=>inside(x,z,b.polygon)))continue;trees.push({x,z,y:farGround(x,z),source:f.source,h:S.treeHeight[0]+rand()*(S.treeHeight[1]-S.treeHeight[0]),r:S.treeRadius[0]+rand()*(S.treeRadius[1]-S.treeRadius[0])});n++;}}
+ for(const f of S.forests){const xs=f.polygon.map(q=>q[0]),zs=f.polygon.map(q=>q[1]),x0=Math.min(...xs),x1=Math.max(...xs),z0=Math.min(...zs),z1=Math.max(...zs);let n=0;for(let i=0;i<f.n*30&&n<f.n;i++){const x=x0+rand()*(x1-x0),z=z0+rand()*(z1-z0);if(!inside(x,z,f.polygon)||onAccess(x,z)||onParking(x,z)||solids.some(q=>inside(x,z,q))||S.fields.some(b=>inside(x,z,b.polygon)))continue;trees.push({x,z,y:farGround(x,z),source:f.source,h:S.treeHeight[0]+rand()*(S.treeHeight[1]-S.treeHeight[0]),r:S.treeRadius[0]+rand()*(S.treeRadius[1]-S.treeRadius[0])});n++;}}
  // #1675: big, old broadleaf trees between the hospital pavilions (nr 41–47 …), as more instances of the same two batches (no extra draw calls); polygons/counts/sizes are *guess* values in SITE.south.bigTrees
  {const B=S.bigTrees,distSeg=(x,z,a,b)=>{const dx=b[0]-a[0],dz=b[1]-a[1],l=dx*dx+dz*dz,t=l?Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/l)):0;return Math.hypot(x-a[0]-t*dx,z-a[1]-t*dz);},
    near=(x,z,poly,m)=>inside(x,z,poly)||poly.some((a,i)=>distSeg(x,z,a,poly[(i+1)%poly.length])<m),
    nearAccess=(x,z,m)=>[...S.paths,...(S.access??[])].some(p=>p.path.slice(1).some((c,i)=>distSeg(x,z,p.path[i],c)<p.w/2+m));
   if(B)for(const g of B.groups){const xs=g.polygon.map(q=>q[0]),zs=g.polygon.map(q=>q[1]),x0=Math.min(...xs),x1=Math.max(...xs),z0=Math.min(...zs),z1=Math.max(...zs),gap=g.spacing??B.spacing,placed=[];
    for(let i=0;i<g.n*60&&placed.length<g.n;i++){const x=x0+rand()*(x1-x0),z=z0+rand()*(z1-z0);
-    if(!inside(x,z,g.polygon)||nearAccess(x,z,B.clearance.road)||S.buildings.some(b=>near(x,z,b.polygon,B.clearance.building))||(S.parking??[]).some(p=>p.polygon&&near(x,z,p.polygon,B.clearance.parking))||S.fields.some(f=>inside(x,z,f.polygon))||trees.some(t=>Math.hypot(t.x-x,t.z-z)<(t.big?gap:B.clearance.forest)))continue;
+    if(!inside(x,z,g.polygon)||nearAccess(x,z,B.clearance.road)||solids.some(q=>near(x,z,q,B.clearance.building))||(S.parking??[]).some(p=>p.polygon&&near(x,z,p.polygon,B.clearance.parking))||S.fields.some(f=>inside(x,z,f.polygon))||trees.some(t=>Math.hypot(t.x-x,t.z-z)<(t.big?gap:B.clearance.forest)))continue;
     const t={x,z,y:farGround(x,z),source:g.name,big:true,h:B.height[0]+rand()*(B.height[1]-B.height[0]),r:B.radius[0]+rand()*(B.radius[1]-B.radius[0])};trees.push(t);placed.push(t);}}}
  trees.push(...edgeTreeSpots()); // #1682: the world-edge tree rows and woods, more instances of the same two batches
  const trunks=new THREE.InstancedMesh(new THREE.CylinderGeometry(.2,.35,1,4).translate(0,.5,0),new THREE.MeshStandardMaterial({color:0x5a4636,roughness:1}),trees.length),crowns=new THREE.InstancedMesh(lobeGeometry('far'),leafMaterial(),trees.length),seeds=[],m=new THREE.Matrix4(),q=new THREE.Quaternion();

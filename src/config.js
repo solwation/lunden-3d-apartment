@@ -954,6 +954,21 @@ export const SITE = {
       risalitEdge: 24, risalitWidth: 4.5, risalitHeight: 2.0, risalitGable: 1.4, risalitDepth: 2.2, risalitInset: 0.6,
       chimneys: 4, chimneySpacing: 18, chimneyBand: 1.0, chimneyEdge: 3, chimneySize: 0.9, chimneyRise: 1.6,
       liteSkip: true, liteChimneys: true },
+    // #1793: Google 3D review 2026-11-02 (docs/references/google-3d-2026-11-02, 01_huvudbyggnad). Everything below is read by eye from
+    // those oblique views (+-10-20 m, no measurements) and is *guess*. `brickHouses`: nr 48 and 49 are red-brick pavilions with
+    // dark mauve roofs, not white farm houses (`facade`; `roofs` per OSM id). `annexes`: low volumes OSM does not map next to the old
+    // pavilions, as plain boxes in the existing south facade/roof batches (no new draw call): `c` centre [x, z], `size` [along, across]
+    // m, `yaw` degrees turning the along axis from +x towards +z, `h` eave height over the lowest ground corner, `roof`
+    // 'flat' | 'gable' (ridge along `size[0]`) with `rise` m, `hoods` rooftop boxes [along, across, w, d, h] from the centre (pipes/vents).
+    brickHouses: { facade: 0x9b4a38, roofs: { '88457584': 0x7b4d4a, '88457589': 0x4e4a55 } },
+    annexes: { facade: 0xe6e4dc, roof: 0x9aa1a8, hood: 0xc9ccce, brick: 0x9b4a38, gableRoof: 0x6e4a48, items: [
+      // the low white service building on the south-east side of nr 47 (flat grey roof with ventilation hoods) and its lower wing
+      { name: 'Service building nr 47', c: [93, 368], size: [30, 15], yaw: -35, h: 5.5, roof: 'flat', hoods: [[-8, 0, 3, 2.5, 1.4], [0, 2, 4, 3, 1.8], [8, -1, 2.5, 2.5, 1.2]] },
+      { name: 'Service wing nr 47', c: [108, 381], size: [14, 9], yaw: -35, h: 3.6, roof: 'flat', hoods: [[0, 0, 2.5, 2, 1]] },
+      // small red-brick 1.5-storey pavilions with gable roofs (one south-east of nr 46, one west of nr 42)
+      { name: 'Pavilion by nr 46', c: [127, 332], size: [11, 7], yaw: -35, h: 4.2, roof: 'gable', rise: 2.4, brick: true },
+      { name: 'Pavilion by nr 42', c: [-125, 372], size: [12, 7.5], yaw: -35, h: 4.2, roof: 'gable', rise: 2.4, brick: true },
+    ] },
     buildings: [
       {"source":"88457551","polygon":[[246.3,350.37],[250.7,348.97],[251.42,351.23],[255.49,349.95],[258.92,360.68],[244.6,365.21],[241.15,354.37],[246.99,352.53],[246.3,350.37]],"levels":2,"levelsSource":"visual assumption","name":"Sankt Lars väg 64","roof":"gable","roofSource":"visual assumption","rise":1.6,"facade":13024420},
       {"source":"88457554","polygon":[[42.86,466.69],[57.77,455.6],[62.18,461.53],[47.28,472.62],[42.86,466.69]],"levels":2,"levelsSource":"visual assumption","name":"Sankt Lars 88457554","roof":"gable","roofSource":"visual assumption","rise":1.6,"facade":13024420},
