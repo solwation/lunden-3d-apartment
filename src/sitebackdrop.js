@@ -142,7 +142,7 @@ function buildBackdrop(W,key,ground,brick=null,reflectiveGlass=null,karp=null){
   const surfColor=p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397);
   if(p.path){const s=plain(pathStrip(p,w=>-w/2,w=>w/2,W.pathLift,ground,false,undefined,isVehicleWay(p)?null:vehicleTrim())); // #1351: clip every triangle at the drawn carriageway edge, including oblique junctions
   s.userData.tint=surfColor;parts.access.push(s);}
-  else if(key==='east'&&p.capacity&&parkingLots().lots.some(l=>l.source===p.source))continue; // a car park: drawn below (#1278)
+  else if(key==='east'&&p.capacity&&parkingLots().lots.some(l=>l.source===p.source)){if(p.yard)parts.access.push(...schoolyardParts(p.yard,ground,drape));continue;} // a car park: drawn below (#1278); #1797: its hedge (a `yard` with only hedges) still joins the access batch
   else{const pl=drape(p.polygon,PAVE_LIFT);pl.userData.tint=surfColor;parts.access.push(pl);if(p.yard)parts.access.push(...schoolyardParts(p.yard,ground,drape));} // #1737: a yard's lawn, sand, hedges and play frames join the same batch
  }
  if(key==='east')eastLotParts(ground,parts.access,p=>p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397));

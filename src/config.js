@@ -1346,7 +1346,12 @@ export const SITE = {
       {"source":"159284495","surface":"asphalt","path":[[103.93,63.38],[111.66,62.1],[124.13,56.78],[132.13,55.42],[151.46,51.2],[175.16,45.0],[190.09,38.61],[193.02,34.82]],"w":4.5},
       {"source":"159284525","surface":"asphalt","path":[[193.02,34.82],[195.65,30.96],[197.66,13.19],[197.5,-9.96],[194.66,-29.07],[188.29,-38.62]],"w":4.5},
       // #1262: sourced school area parking (OSM 2026-10-18)
-      {"source":"145221623","name":"Parkering vid Sankt Thomas/Klockhuset","surface":"asphalt","capacity":35,"capacitySource":"guess","polygon":[[38.68,15.41],[40.14,-19.07],[85.54,-17.08],[84.09,17.41]]},
+      {"source":"145221623","name":"Parkering vid Sankt Thomas/Klockhuset","surface":"asphalt","capacity":35,"capacitySource":"guess","polygon":[[38.68,15.41],[40.14,-19.07],[85.54,-17.08],[84.09,17.41]],
+       // #1797 (Google 3D review 2026-11-02, 06_kunskapsskolan_h000/h180): a clipped hedge lines the car park's north edge, which the game left bare; reuses the #1737 yard
+       // mechanism with hedges only (no sand, lawns or play frames). Two runs with a gap for the footpath into the yard (x ~56-62); path and height are a *guess* read by eye from the oblique views; drawn in the same `access` batch.
+       "yard":{"lawns":[],"sand":[],"play":[],"lift":{"sand":0.05,"lawn":0.08},
+        "hedge":{"paths":[[[46,-19.9],[55,-19.7]],[[63,-19.4],[71,-18.6]]],"h":0.7,"w":0.7,"piece":4,"sink":0.3},
+        "colors":{"lawn":0x5d8a3a,"sand":0xd6c39a,"hedge":0x3b5828,"wood":0x8a6a48,"seat":0x2f2f2f,"roof":0xa8483a,"slide":0xc9a227}}},
       {"source":"44447969","name":"Östra campusparkeringen","surface":"asphalt","capacity":20,"capacitySource":"guess","polygon":[[196.06,-37.72],[189.82,-21.9],[192.2,7.75],[206.2,7.66],[204.71,-19.6]]},
       // #1262: sourced school area courtyards (OSM 2026-10-08 campus-areas)
       // #1796 (*guess*, Google 3D 05_norra_skolor_*): the yards are greyer than the old beige, and Freinet's and Montessori's get one lawn oval each (`yard` with only `lawns`, merged into the access batch: no draw call)
@@ -1441,6 +1446,8 @@ export const SITE = {
         cornice: [[-.4, .3, .12], [-.2, .14, .24], [-.06, .16, .36]], dentil: { step: .5, width: .16, height: .22, depth: .09 },
         quoin: .7, frame: .12, mullion: .045, roof: { hip: true, slope: .95, overhang: .15, rise: 2.2, grid: 2 }, chimney: [.65, 1.4, .65] },
     },
+    // #1797: `laundry` (Kunskapsskolan / byggnad 19 and its eastern pavilion only; no other building uses it) rendered grey (0x4d5564 -> about 94,106,120 on screen) where Google's 06_kunskapsskolan shows
+    // a darker, bluer slate (about 60,75,105 on screen); 0x3c4864 is a *guess* by eye. The northern `ward`/`stenhammar`/`klockhuset` styles (#1796's area) are untouched here.
     // #1679 (docs/references/google-3d-2026-10-29/): roof colours read off Google's 3D views, where the campus roofs are
     // blue-grey slate rather than the old near-black metal. All values are *guess*es, not measurements; they tint the one
     // shared roof batch through vertex colours (no extra draw call). `styles` by `campus.style`, `classic` for the
@@ -1448,7 +1455,7 @@ export const SITE = {
     roofColors: {
       // #1796 (docs/references/google-3d-2026-11-02, 05_norra_skolor_*): the pavilions' roofs are dark slate grey in Google's views, so the
       // pale blues of #1679 are lowered to the same dark family as the laundry's; *guess*, read by eye from the oblique images.
-      styles: { ward: 0x4f5b72, stenhammar: 0x4c586f, anshelm: 0x464f60, laundry: 0x4d5564, klockhuset: 0x4f5b72 },
+      styles: { ward: 0x4f5b72, stenhammar: 0x4c586f, anshelm: 0x464f60, laundry: 0x3c4864, klockhuset: 0x4f5b72 },
       classic: 0x56627a,
       sources: {},
     },
