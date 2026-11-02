@@ -19,15 +19,19 @@ export function annexParts(ground, parts) {
   const A = SITE.south.annexes, polys = annexPolygons();
   A.items.forEach((a, n) => {
     const t = a.yaw * Math.PI / 180, ux = Math.cos(t), uz = Math.sin(t), [w, d] = a.size, ys = polys[n].map(q => ground(...q));
-    const bottom = Math.min(...ys) - .1, eave = Math.min(...ys) + a.h, wall = a.brick ? A.brick : A.facade;
+    const bottom = Math.min(...ys) - .1, eave = Math.min(...ys) + a.h, wall = a.wall ?? (a.brick ? A.brick : A.facade);
     parts.facade.push(tint(box(w, eave - bottom, d, a.c[0], (bottom + eave) / 2, a.c[1], t), wall));
-    if (a.roof === 'gable') { // ridge along the long axis: two slopes and the two triangular gable ends
+    if (a.roof === 'hip') { // #1794: hipped roof, ridge along the long axis (ridge length w - d), four slopes
+      const P = (i, j, y) => [a.c[0] + ux * i * w / 2 - uz * j * d / 2, y, a.c[1] + uz * i * w / 2 + ux * j * d / 2], top = eave + a.rise, k = Math.max(0, (w - d) / w);
+      const r0 = P(-k, 0, top), r1 = P(k, 0, top), c = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([i, j]) => P(i, j, eave));
+      parts.roof.push(tint(tri([c[0], c[1], r1, c[0], r1, r0, c[3], r1, c[2], c[3], r0, r1, c[0], r0, c[3], c[1], c[2], r1]), a.roofColor ?? A.hipRoof));
+    } else if (a.roof === 'gable') { // ridge along the long axis: two slopes and the two triangular gable ends
       const P = (i, j, y) => [a.c[0] + ux * i * w / 2 - uz * j * d / 2, y, a.c[1] + uz * i * w / 2 + ux * j * d / 2], top = eave + a.rise;
       const r = [[-1, 0], [1, 0]].map(([i]) => P(i, 0, top)), c = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([i, j]) => P(i, j, eave));
-      parts.roof.push(tint(tri([c[0], c[1], r[1], c[0], r[1], r[0], c[3], r[1], c[2], c[3], r[0], r[1]]), A.gableRoof));
+      parts.roof.push(tint(tri([c[0], c[1], r[1], c[0], r[1], r[0], c[3], r[1], c[2], c[3], r[0], r[1]]), a.roofColor ?? A.gableRoof));
       parts.facade.push(tint(tri([c[0], P(-1, 0, top), c[3], c[1], c[2], P(1, 0, top)]), wall));
     } else {
-      parts.roof.push(tint(box(w + .3, .25, d + .3, a.c[0], eave + .12, a.c[1], t), A.roof));
+      parts.roof.push(tint(box(w + .3, .25, d + .3, a.c[0], eave + .12, a.c[1], t), a.roofColor ?? A.roof));
       for (const [i, j, hw, hd, hh] of a.hoods ?? []) parts.roof.push(tint(box(hw, hh, hd, a.c[0] + ux * i - uz * j, eave + .25 + hh / 2, a.c[1] + uz * i + ux * j, t), A.hood));
     }
   });
