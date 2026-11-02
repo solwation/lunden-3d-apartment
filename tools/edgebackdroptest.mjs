@@ -2,7 +2,7 @@
 //   node tools/edgebackdroptest.mjs
 import * as THREE from 'three';
 import { SITE, EDGE_BACKDROP as E } from '../src/config.js';
-import { skirtParts, houseBoxes, edgeTreeSpots } from '../src/edgebackdrop.js';
+import { skirtParts, houseBoxes, edgeTreeSpots, footprintGeometries } from '../src/edgebackdrop.js';
 let fails = 0;
 const check = (ok, name) => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name}`); if (!ok) fails++; };
 const B = SITE.backgroundGround, inRect = (x, z) => x > B.x0 && x < B.x1 && z > B.z0 && z < B.z1;
@@ -45,5 +45,18 @@ let covered = 0; for (const p of skirt) for (let i = 0; i < p.pos.length; i += 9
 check(covered === 0, `the band does not cover a mapped field (${covered} vertices)`);
 check(E.lift.skirt < E.lift.field && E.lift.field < E.lift.path && E.lift.path < E.lift.road, 'layer lifts increase: band < fields < path < road');
 check(E.lowMemory.houses === false && E.lowMemory.trees === false, 'phones skip the house boxes and the trees (land only)');
+// #1798: OSM footprints of the north-west (Kallby ängar, Klostergården) in the same merged batch
+const F = E.footprints, fp = footprintGeometries();
+check(F.items.length >= 100 && fp.length === F.items.filter((it) => { const n = it.polygon.length; return !inRect(it.polygon.reduce((a, p) => a + p[0], 0) / n, it.polygon.reduce((a, p) => a + p[1], 0) / n); }).length, `footprints: ${fp.length} extruded (every item outside the terrain rectangle)`);
+check(F.items.every((it) => it.polygon.length >= 3 && /^\d+$/.test(it.source) && ['block', 'house', 'garage', 'parking'].includes(it.kind)), 'footprints are OSM ways (numeric source) of a known kind');
+const tris = fp.reduce((a, g) => a + g.attributes.position.count / 3, 0);
+check(tris > 1000 && tris < 8000, `footprint triangles: ${tris} (expect 1000–8000: one merged batch)`);
+const heights = fp.map((g) => { g.computeBoundingBox(); return g.boundingBox.max.y - g.boundingBox.min.y; });
+check(Math.min(...heights) > 2 && Math.max(...heights) < 35, `footprint heights ${Math.min(...heights).toFixed(1)}–${Math.max(...heights).toFixed(1)} m (2–35)`);
+check(fp.every((g) => ['position', 'normal', 'color'].every((k) => g.attributes[k]) && !g.index && g.attributes.position.array.every(Number.isFinite)), 'footprint geometry is non-indexed with position/normal/colour (mergeable with the boxes), all finite');
+check(fp.every((g) => { const n = g.attributes.normal.array; for (let i = 0; i < n.length; i++) if (!Number.isFinite(n[i])) return false; return true; }), 'footprint normals are finite (no degenerate triangles)');
+const slope = footprintGeometries((x, z) => (x <= B.x0 ? 5 : -Infinity)), lows = (a) => a.map((g) => { g.computeBoundingBox(); return g.boundingBox.min.y; });
+check(lows(slope).filter((y, i) => y > lows(fp)[i] + 1).length >= 3 && lows(slope).every((y, i) => y >= lows(fp)[i] - 1e-9), 'with a terrain height function the buildings in the feathered band stand on the higher ground (none lower)');
+check(E.lowMemory.houses === false, 'phones skip the footprints with the boxes (same batch)');
 console.log(fails ? `${fails} FAILED` : 'ALL PASS');
 process.exit(fails ? 1 : 0);
