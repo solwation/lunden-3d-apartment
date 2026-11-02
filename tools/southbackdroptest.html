@@ -16,7 +16,7 @@ check(group.children.length===6&&group.children.filter(m=>m.isInstancedMesh).len
 // #1676: the old pavilions' dormers, risalit gables and chimneys (src/pavilionroof.js) add 1 342 triangles; measured 56 399 at this change (before 55 057, same swiftshader run) + ~2 %, rounded up to the hundred. Draw calls unchanged.
 // #1805: 33 clipped hedge boxes (12 triangles each) along four hospital car parks add 396 triangles (58 933 → 59 329 measured, desktop, headless Chromium swiftshader);
 // the ~67 triangles of headroom left by #1794 could not hold them. 59 329 + ~2 %, rounded up to the hundred. Same `land` batch, draw calls unchanged; `lowMemory` phones skip the hedges (see docs/development/performance.md).
-const limit=60600; // #1675 + #1676 + #1805
+const limit=60600; // #1675 + #1676 + #1805; #1806 garden hedges add 544 (59 329 -> 59 873), no raise
 check(tris<limit,`bounded far detail: ${tris} triangles including instances (coverage limit ${limit})`);
 A.scene.updateMatrixWorld(true);const b=W.buildings.find(b=>b.source==='relation/1309428'),h=b.holes[0].slice(0,-1),x=h.reduce((s,p)=>s+p[0],0)/h.length,z=h.reduce((s,p)=>s+p[1],0)/h.length;check(!new T.Raycaster(new T.Vector3(x,60,z),new T.Vector3(0,-1,0),0,70).intersectObjects([A.scene.getObjectByName('south-facade'),A.scene.getObjectByName('south-roof')]).length,'Asylen building44 courtyard has actual open roof/body hole');
 check(group.userData.buildings.every(b=>b.eave>b.base&&Number.isFinite(b.bottom)),'finite landmark heights');
