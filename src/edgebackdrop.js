@@ -34,17 +34,18 @@ const geometry = (parts) => {
   return g;
 };
 /** A polyline as a ribbon `width` m wide, dropping every piece that lies inside the terrain rectangle. */
-function ribbon(path, width, y, col) {
+export function ribbon(path, width, y, col, ground = null, over = 0.5) {
   const pts = [], c = new THREE.Color(col), pos = [], cols = [];
   for (let i = 0; i + 1 < path.length; i++) {
-    const [a, b] = [path[i], path[i + 1]], n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 12));
+    // #1802: with `ground` the corners near the terrain (within the feathered band) are lifted `over` m above the band (see `band`), so pieces there are ~3 m
+    const [a, b] = [path[i], path[i + 1]], near = ground && inRect((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, E.skirt.width + 80), n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / (near ? 3 : 12)));
     for (let k = 0; k < n; k++) pts.push([[a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n], [a[0] + (b[0] - a[0]) * (k + 1) / n, a[1] + (b[1] - a[1]) * (k + 1) / n]]);
   }
   for (const [p, q] of pts) {
     if (inRect(p[0], p[1], 2) || inRect(q[0], q[1], 2)) continue;
     const dx = q[0] - p[0], dz = q[1] - p[1], l = Math.hypot(dx, dz) || 1, nx = -dz / l * width / 2, nz = dx / l * width / 2, ex = dx / l * 0.5, ez = dz / l * 0.5; // (0.5 m overlap hides the seams between pieces)
     const A = [p[0] - ex - nx, p[1] - ez - nz], Bq = [p[0] - ex + nx, p[1] - ez + nz], C = [q[0] + ex + nx, q[1] + ez + nz], D = [q[0] + ex - nx, q[1] + ez - nz];
-    for (const v of [A, Bq, C, A, C, D]) { pos.push(v[0], y, v[1]); cols.push(c.r, c.g, c.b); }
+    for (const v of [A, Bq, C, A, C, D]) { pos.push(v[0], ground ? Math.max(y, skirtTop(v[0], v[1], ground) + over) : y, v[1]); cols.push(c.r, c.g, c.b); }
   }
   return { pos, cols };
 }
@@ -71,7 +72,7 @@ function band(path, width, y, col, ground, over = 0.35) {
   return { pos, cols };
 }
 /** The feathered band's drawn height at (x, z) (-Infinity off it): the same steps, edge heights and triangles as `skirtParts`. */
-function skirtTop(x, z, ground) {
+export function skirtTop(x, z, ground) {
   const K = E.skirt, y = E.level + E.lift.skirt, top = (p) => Math.max(y, ground(p[0], p[1]) + 0.03);
   let best = -Infinity;
   for (const { side, from, to } of K.sides) {
@@ -204,7 +205,7 @@ export function buildEdgeBackdrop(ground) {
   for (const f of E.fields) parts.push(flat(f.polygon, E.level + lift.field, f.color));
   for (const p of E.paths) parts.push(ribbon(p.path, p.width, E.level + lift.path, p.color));
   for (const r of E.rivers ?? []) parts.push(band(r.path, r.width, E.level + lift.path, r.color, ground)); // #1790: under the road strip, which crosses it
-  for (const p of E.roads) parts.push(ribbon(p.path, p.width, E.level + lift.road, p.color));
+  for (const p of E.roads) parts.push(ribbon(p.path, p.width, E.level + lift.road, p.color, ground)); // #1802: lifted over the sloping band, above the river strip's 0.35 m
   const land = new THREE.Mesh(geometry(parts), new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 1, side: THREE.DoubleSide }));
   land.name = 'edge-land';
   group.add(land);

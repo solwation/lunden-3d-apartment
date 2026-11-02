@@ -2,7 +2,7 @@
 //   node tools/edgebackdroptest.mjs
 import * as THREE from 'three';
 import { SITE, EDGE_BACKDROP as E } from '../src/config.js';
-import { skirtParts, houseBoxes, edgeTreeSpots, footprintGeometries } from '../src/edgebackdrop.js';
+import { ribbon, skirtTop, skirtParts, houseBoxes, edgeTreeSpots, footprintGeometries } from '../src/edgebackdrop.js';
 let fails = 0;
 const check = (ok, name) => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name}`); if (!ok) fails++; };
 const B = SITE.backgroundGround, inRect = (x, z) => x > B.x0 && x < B.x1 && z > B.z0 && z < B.z1;
@@ -58,5 +58,16 @@ check(fp.every((g) => { const n = g.attributes.normal.array; for (let i = 0; i <
 const slope = footprintGeometries((x, z) => (x <= B.x0 ? 5 : -Infinity)), lows = (a) => a.map((g) => { g.computeBoundingBox(); return g.boundingBox.min.y; });
 check(lows(slope).filter((y, i) => y > lows(fp)[i] + 1).length >= 3 && lows(slope).every((y, i) => y >= lows(fp)[i] - 1e-9), 'with a terrain height function the buildings in the feathered band stand on the higher ground (none lower)');
 check(E.lowMemory.houses === false, 'phones skip the footprints with the boxes (same batch)');
+// #1802: the road strips are lifted over the sloping band (a 6 m high terrain edge here), never below it, and stay flat elsewhere
+{
+  const g = (x, z) => 6, eps = 1e-9;
+  for (const r of E.roads) {
+    const flat = ribbon(r.path, r.width, E.level + E.lift.road, r.color), lifted = ribbon(r.path, r.width, E.level + E.lift.road, r.color, g);
+    let low = 0, raised = 0, drawn = 0;
+    for (let i = 0; i < lifted.pos.length; i += 3) { const [x, y, z] = lifted.pos.slice(i, i + 3), t = skirtTop(x, z, g); if (t > -Infinity) { drawn++; if (y < t + 0.35 - eps) low++; if (y > E.level + E.lift.road + 1) raised++; } }
+    check(drawn === 0 || low === 0, `${r.name}: every corner over the band lies above it, clear of the river strip's 0.35 m (${drawn} corners over the band, ${low} too low)`);
+    check(raised > 0 === drawn > 0 && (lifted.pos.length - flat.pos.length) / 3 < 1500, `${r.name}: ${raised} corners lifted, ${lifted.pos.length / 3} vertices vs ${flat.pos.length / 3} flat, under +1500 (no new draw call: same mesh)`);
+  }
+}
 console.log(fails ? `${fails} FAILED` : 'ALL PASS');
 process.exit(fails ? 1 : 0);
