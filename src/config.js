@@ -4023,6 +4023,28 @@ export const OUTDOOR_SEATS = {
   lounger: { width: 1.9, depth: .62, seat: .32, offset: .3 },
   schoolBench: { seat: .49, depth: .4 }, schoolSwing: { width: .45, depth: .2, thickness: .05, seat: .45, chain: .012 },
 };
+
+// #1811: image-interpreted outdoor gym on the grass SW of Östra längan by Karpvägen.
+// Location, dimensions, timber/steel colours, clearance and exercise motions are visual/gameplay guesses from the report photo.
+export const OUTDOOR_GYM = {
+  at: [-143, 33], yaw: -45, pad: [14, 7.5], padStep: 1, padLift: .035,
+  wood: 0x9d714e, steel: 0x363d3e, chips: 0xb59c73, post: .085, bar: .03, board: .045,
+  entry: 2.3, eye: 1.62, bench: .52, logRadius: .11,
+  pullHeight: 2.35, pullRise: .42, stepHeight: .42, stepTravel: .48,
+  geometry: {
+    postSides: 8, logSides: 10,
+    pull: { postX: .85, topExtra: .12, braceDrop: .2, braceBack: .55, eyeZ: .35, lookZ: -.45 },
+    press: { postX: .65, logY: 1.25, logZ: .4, logLength: 1.75, benchW: .7, benchD: 1.85,
+      footZ: .7, footX: .24, slatX: .22, slatW: .2, crossD: .18, halfW: .38, halfD: .95, eyeZ: .62 },
+    step: { footX: .5, footZ: .28, boardW: 1.3, boardD: .25, halfW: .68, halfD: .44, eyeZ: .85 },
+  },
+  stations: [
+    { id: 'pullup', label: 'Räckhäv', name: 'räcket', x: -4.3, z: 0, period: 2.8, box: [1.95, 2.35, .7] },
+    { id: 'press', label: 'Bänkpress', name: 'bänkpressen', x: 0, z: 0, period: 2.6, box: [1.8, 1.4, 2.1], lift: .44 },
+    { id: 'step', label: 'Step-up', name: 'stepbrädan', x: 4.3, z: 0, period: 2.4, box: [1.5, .8, 1] },
+  ],
+};
+
 export const REST = {
   sitEye: 0.72, lieEye: 0.22, move: 0.5,
   // #1150: visual rest anchors, guesses based on the shared Olof skeleton (metres before avatar scaling).

@@ -35,6 +35,10 @@ Run `tools/paddockgeotest.mjs` with the pinned three resolver (11 geometry check
 
 Run `THREE_DIR=/path/to/three node tools/roadendstest.mjs` (three 0.170.0) and the existing `edgebackdroptest.mjs` with the same bare-module resolver. The component check covers every selected endpoint, both Sankt Lars väg pavements, the sourced park-route portions outside the former drawing clip, raised ground/skirt and finite bounded geometry. In the real app, compare the school road from `?shot&at=-215,-230,47,-25,65&cloud=&month=6&time=13&freeze&weather=clear` and a ground view along its continuation. Use the browser wrapper, clear-weather fog and `testkit.shot` for actual rendering; preserve the source revision and camera in the result. Result images: [docs/verification/1812](../verification/1812/). No physical-device performance claim.
 
+## Outdoor gym (#1811)
+
+`tools/browsertest.sh node tools/outdoorgymtest.cjs SITE OUT` runs six-mesh/finite-equipment checks and native keyboard/touch use of all three gym stations. It checks repeated equipment-specific movement, safe return to the actual clear entry and menu interruption. `GYM_TEST_MODE=touch` runs only the touch remainder when unchanged keyboard evidence already passed. `THREE_DIR` optionally routes the pinned CDN dependency to a local package. The result records driver completion/errors, so a partial run cannot be green. Initial fixture failures (wrong mouse entry and shot-mode hidden HUD) are not product failures. Images and source limits: [docs/verification/1811](../verification/1811/). No physical-phone or hardware-performance certification.
+
 ## Browser memory
 
 Run every browser test through `tools/browsertest.sh` (#1599), e.g.

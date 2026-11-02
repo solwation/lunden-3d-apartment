@@ -1,4 +1,5 @@
 import { stepSurface } from './stepsurface.js';
+import { OutdoorGym } from './outdoorgym.js';
 import { MenuSettings } from './menusettings.js';
 import { renderPlayingNow } from './playerportraits.js';
 import { saveStats } from './stats.js';
@@ -931,6 +932,12 @@ holdables.push(...elCabinet.cans);
 { const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? hoop.segments() : [])]; } // its base is in the way
 // the parked car and the hoop's base as closed boxes: one that appears round the visitor pushes them out (#314)
 world.movingPolys = (lvl) => lvl === 0 ? [car.segments(), hoop.segments()].filter((sg) => sg.length).map((sg) => sg.map(([x, z]) => [x, z])).concat([dropoff.poly]) : []; // + the rubbish containers (#387)
+// #1811: fixed outdoor exercise fittings, independent of household furnishings and their visibility switch.
+const outdoorGym = new OutdoorGym({scene,ground:parkGround,allowed:()=>!heldItem()&&!rest.active&&!player.riding&&!player.flying&&!fall.active&&!player.climb&&!player.swing&&!player.glide&&!jetpack.worn&&!suit.worn&&!roomMoving});
+{const segments=world.movingSegments,polys=world.movingPolys;
+ world.movingSegments=lvl=>[...segments(lvl),...(lvl===0?outdoorGym.segments:[])];
+ world.movingPolys=lvl=>[...polys(lvl),...(lvl===0?outdoorGym.polys:[])];}
+
 player.debug = new URLSearchParams(location.search).has('debug'); // log every unstick (#314)
 // drawings taped up on walls and the fridge (#176); the one in the hand
 const posters = new Posters(scene, world, marks, note);
@@ -1614,7 +1621,7 @@ function sitOrLie(target) {
   const spot = chooseSpot(target, raycaster.ray, cat.visible ? cat.object.position : null);
   if (!spot) return;
   sitAt(target, spot, { x: player.pos.x, z: player.pos.z, y: player.pos.y, yaw: camera.rotation.y });
-  if (!target.swing) bump(spot.kind === 'lie' ? 'lay' : 'sat', 1, `${target.name}@${spot.pos.x.toFixed(1)},${spot.pos.y.toFixed(1)},${spot.pos.z.toFixed(1)}`); // each ordinary seat / side of a bed once; playground swings add no reward (#1413)
+  if (!target.swing && target.kind !== 'outdoorGym') bump(spot.kind === 'lie' ? 'lay' : 'sat', 1, `${target.name}@${spot.pos.x.toFixed(1)},${spot.pos.y.toFixed(1)},${spot.pos.z.toFixed(1)}`); // each ordinary seat / side of a bed once; playground swings add no reward (#1413)
   sfx.rustle(spot.pos);
   if (target.name === 'loungesoffan') beer.serve(spot); // a big beer on the table (#117, #472)
 }
@@ -1752,12 +1759,14 @@ function standUp() {
   const seat = rest.spot?.pos.clone(), lying = rest.kind === 'lie', inCar = rest.spot?.car; // out of the car: back where you stood, by the door (#250)
   // you keep looking the way you looked while seated (#202); lying you were facing the ceiling: level
   const yaw = camera.rotation.y, pitch = lying ? 0 : camera.rotation.x;
+  const gymStand = outdoorGym.standAt(rest,player);
   const s = rest.end();
+  outdoorGym.update(0,rest);
   if (!s) return;
   if (rest.tvOn) { if (rest.tvOn.isOpen) { rest.tvOn.toggle(); sfx.tvClick(rest.tvOn.pickable.getWorldPosition(new THREE.Vector3()), false); } rest.tvOn = null; } // (#213)
   // getting up from the film: the monitor goes back to the desk (and the game) — the PC stays on
   if (film) for (const t of world.furnitureTargets) if (t.kind === 'pc') t.watch(null);
-  const at = seat && !inCar && !returnToEntry ? standSpot(seat, yaw, s, bed) : s;
+  const at = gymStand ?? (seat && !inCar && !returnToEntry ? standSpot(seat, yaw, s, bed) : s);
   player.spawn(at.x, at.z, yaw);
   camera.rotation.x = pitch;
   player.pos.y = s.y; // spawn() finds the ground floor; upstairs we stood on Övre plan
@@ -1792,6 +1801,7 @@ addEventListener('resize', () => { if (!choicesEl.hidden && touch.enabled) fitCh
 // Short touch labels only when the aimed-at object unambiguously owns the action (#502).
 // Item names and destinations remain in package/tool/transfer actions and blocked reasons.
 function shortButtonLabel(target, label) {
+  if(target?.kind==='outdoorGym')return `Träna – ${target.label}`;
   const text = label.trim(), name = target?.name;
   const structural = ['swing', 'sliding', 'cabinet', 'appliance', 'fridge', 'cardoor'].includes(target?.kind);
   const verbs = structural ? { öppna: 'Öppna', stänga: 'Stäng', 'dra ut': 'Dra ut', 'skjuta in': 'Skjut in' }
@@ -1889,6 +1899,7 @@ function leavePlayroom() {
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
   if (slideRide.active) { slideRide.cancel(); return; }
+  if (thing.kind === 'outdoorGym') {if(!thing.blocked){sitOrLie(thing);}return;}
   if (thing.kind === 'courtyardSlide') { if (slideRide.begin(thing)) life.interrupt('åker rutschkana'); else badge('Gå till stegen med tomma händer och utan annan utrustning',false); return; }
   if (player.riding && thing.kind !== 'bicycle') return; // both hands are reserved for the actual handlebars
   if (thing.kind === 'bicycle') { if (player.riding) { standUp(); return; } if (rest.active) return; if (!player.mountBicycle(thing.bicycle)) greet.sayMine('Här går det inte att ta ut cykeln säkert.'); return; }
@@ -2237,6 +2248,11 @@ function updateFocus() {
     powerBtn.hidden=turnBtn.hidden=true;actionBtn.hidden=!touch.enabled;actionBtn.textContent='Avbryt åket';
     promptEl.hidden=false;promptEl.textContent=touch.enabled?'Åker rutschkana':'Åker rutschkana · E / mellanslag avbryter';standBtn.hidden=true;interactionOutline.update(null);return;
   }
+  if(outdoorGym.isActive(rest)){
+    focused=null;focusPoint=null;showChoices(null,null);placeGhost.visible=itemGhost.visible=false;
+    powerBtn.hidden=turnBtn.hidden=standBtn.hidden=true;actionBtn.hidden=!touch.enabled;actionBtn.textContent='Avsluta träningen';
+    promptEl.hidden=false;promptEl.textContent=outdoorGym.status+(touch.enabled?'':' · E / mellanslag: avsluta');interactionOutline.update(null);return;
+  }
   setPressed(document.getElementById('furniture-btn'),world.furnitureOn);
   setPressed(document.getElementById('measure-btn'),measure.active);
   setPressed(document.getElementById('crouch-btn'),player.crouch);
@@ -2273,6 +2289,7 @@ function updateFocus() {
     ...jetpack.targets(), // the jetpack on its hook / where it was stood down (#359)
     ...(!weaponKey() ? ghosts.targets() : []), // only unarmed visitors greet other players (#872)
     ...suit.targets(), // the Spider-Man suit in its drawer / where it was laid (#597)
+    ...outdoorGym.targets.map(t=>t.pickable),
     ...world.courtyardTargets.map((t) => t.pickable),
     ...(world.outdoorTargets ?? []).map((t) => t.pickable), // #1818: explicit school, shelter, patio and terrace seats
     ...(world.boule.active ? world.boule.controlPickables : []), // #1370: the scoreboard's two buttons
@@ -3416,6 +3433,7 @@ function step(dt) {
   showFireworks.update(dt); // the midnight show (#1200): after day.update, it adds its flash to the lights
   measure.update(dt, gameView.w, gameView.h);
   if (touch.enabled) touch.update(dt); // the eased drag-to-look (#1088)
+  outdoorGym.update(active()&&!reading&&!drawing.active&&!fall.active?dt:0,rest);
   world.updateSwings(active() && !reading && !drawing.active && !fall.active ? dt : 0, rest.target); // #1413: move before the seated camera/pose, freeze with its other paused paths
   if (active() && reading) updateFocus();
   else if (drawing.active) drawing.update(dt); // drawing: the camera over the paper, nothing else moves you
@@ -3906,4 +3924,4 @@ const openPanel = () => !overlay.hidden ? 'menu' : !reading ? (lowMemory && port
   : viewing ? 'poster' : isAvatarCustomizerOpen() ? 'avatar' : cinema.open || computerHub.open || tvMedia.open ? 'video' : 'other';
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding, panel: openPanel }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { medals, squirrels, outdoorCats, footprints, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
+window.__app = { outdoorGym, medals, squirrels, outdoorCats, footprints, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };

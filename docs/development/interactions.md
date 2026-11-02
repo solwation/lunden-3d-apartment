@@ -62,6 +62,12 @@ floss → Gangnam Style → stop since #1757 and names the next step; `tools/dan
 clicks/taps and the pill's place at 844×390 and 390×844 ([audio](animals-audio.md#playroom-dances-floss-1622-and-gangnam-style-1757)).
 
 Cats (#1061): free-hand E / touch action takes adults and kittens into both arms; click / Krama cuddles, E on floor/bed/sofa puts them down. Occupied-hand E still pets. The shared `MieleHeld` preserves cat scale and adjusts hug grips; carry purrs cancel on release/hide/bicycle stow. See [animal behavior and verification](animals-audio.md#cat-and-sound).
+## Outdoor exercise (#1811)
+
+`src/outdoorgym.js` owns `outdoorGym` targets and transient station/phase/repetition state. `main.js` registers its targets and collision, starts the ordinary Rest entry glide with a moving `follow` spot, updates exercise before Rest, and gives active exercise a short status plus “Avsluta träningen”. No Rest or generic input API changes. E/click or the native touch action begins; E, Space/C or the touch action ends via ordinary stand-up, preferring the still-free original entry location. Menu teleport/death's usual stand path clears gym state and resets the moving press log. Pausing freezes the exercise; no exercise state or repetition history is persisted, and no ordinary sitting/lying point is awarded. Entry requires empty hands and standing without flight/riding/climbing/equipment. Existing multiplayer Rest poses remain; there is no new wire animation or scoring protocol.
+
+`OUTDOOR_GYM` contains the guessed placement, dimensions and different motions for pull-up, bench press and step-up. `tools/outdoorgymtest.cjs` checks actual station geometry and native keyboard/touch start → repetition/motion → clear entry return, plus menu interruption. Its mouse fixture must enter through #arm; its touch fixture must use the actual visible phone start-go button (which delegates to start-touch). Avoid `?shot` during touch setup: it can pre-hide the overlay, making showOverlay(false)'s early return leave the HUD parent hidden. This is a fixture constraint, not a product change. Browser screenshots live in [docs/verification/1811](../verification/1811/).
+
 ## Two-point measurement (#1069)
 
 `Measure.active` is an explicit mode, including before the first point. Q and

@@ -168,6 +168,12 @@ tools/nonpctest.html   headless test (#670): no People / PEOPLE, nothing to gree
 ```
 
 
+## Timber outdoor gym (#1811)
+
+`src/outdoorgym.js` builds three fixed timber exercise stations on a small terrain-following woodchip patch beside Östra längan at Karpvägen. `OUTDOOR_GYM` centralizes the interpreted location (-143,33), -45° heading, dimensions, colours and exercise timing: all are visual/gameplay assumptions from the report screenshot and reference photo, not surveyed installation details. The nearest retained tree is 10 m from the chosen centre; paths, existing trees and buildings stay in place. Three wood meshes, one shared steel batch, the chip patch and one moving bench-press log = six visible meshes; ordinary shared wood grain, no new lights or render passes. The pick helpers are invisible. Local footprints/segments join existing player collision; the patch is visual ground cover and does not change ground heights.
+
+Räckhäv raises the eye, bench press raises its timber log above the lying visitor, and step-up raises/moves the eye toward the platform. These transient original-game interactions are detailed in interactions.md. The exercise/score/first-person logic must not be copied into the public viewer; passive generic park fittings may be assessed separately by its own issue. [Result views](../verification/1811/).
+
 ## Google 3D review 2026-11-02 (#1791)
 
 The user's second Google Maps 3D reference set, [docs/references/google-3d-2026-11-02](../references/google-3d-2026-11-02/README.md)

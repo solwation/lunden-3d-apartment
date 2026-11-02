@@ -29,6 +29,8 @@ Du kan sitta på hållplats- och skolbänkar samt grannarnas utemöbler och gung
 Vägar och gångstråk i utkanten fortsätter bort i dimman i stället för att sluta tvärt. Hela hästhagen går också att nå till fots via den befintliga stättan.
 
 Promenadstråken i parken och längs Höje å samt vägarna i resten av området har lampor med varma ljusfläckar på marken efter skymningen. Lamporna följer även jordramperna vid den lilla träbron.
+På gräsremsan vid Karpvägen finns ett utegym i trä med räckhäv, bänkpress och step-up som går att använda med E eller touch.
+
 
 Med jetpacken kan du stiga genom ett molnlager och upp över ett tätt molnhav. Ovanför ligger marken dold under molnen även när vädret på marken är klart. Jetpacken sitter kvar på ryggen när du går in, men inomhus går det inte att flyga med den.
 
