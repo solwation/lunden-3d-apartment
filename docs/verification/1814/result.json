@@ -1,0 +1,220 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "ok": true,
+      "message": "two existing batches"
+    },
+    {
+      "ok": true,
+      "message": "bounded corridor subdivision, no new draw call"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: rendered surface at 0.1m outside terrain"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: water is visible, with no far-ground/skirt cap at 0.1m (-6.672598838806152 vs -6.672598647482322)"
+    },
+    {
+      "ok": true,
+      "message": "actual water in edge-land"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: rendered surface at 1m outside terrain"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: water is visible, with no far-ground/skirt cap at 1m (-6.672598838806152 vs -6.672598647482322)"
+    },
+    {
+      "ok": true,
+      "message": "actual water in edge-land"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: rendered surface at 3m outside terrain"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: water is visible, with no far-ground/skirt cap at 3m (-6.672598838806152 vs -6.672598647482322)"
+    },
+    {
+      "ok": true,
+      "message": "actual water in edge-land"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: rendered surface at 10m outside terrain"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: water is visible, with no far-ground/skirt cap at 10m (-6.672598838806152 vs -6.672598647482322)"
+    },
+    {
+      "ok": true,
+      "message": "actual water in edge-land"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: rendered surface at 25m outside terrain"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: water is visible, with no far-ground/skirt cap at 25m (-6.672598838806152 vs -6.672598647482322)"
+    },
+    {
+      "ok": true,
+      "message": "actual water in edge-land"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: submerged emitted bank at offset -3.2 is covered by emitted water"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: submerged emitted bank at offset -3.5 is covered by emitted water"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: submerged emitted bank at offset 3.2 is covered by emitted water"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: submerged emitted bank at offset 3.5 is covered by emitted water"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: actual submerged bank triangles were probed"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: bank rendered at offset 8"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: bank meets local terrain without a cliff at offset 8"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: bank rendered at offset 18"
+    },
+    {
+      "ok": true,
+      "message": "Höje å uppströms: bank meets local terrain without a cliff at offset 18"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: rendered surface at 0.1m outside terrain"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: water is visible, with no far-ground/skirt cap at 0.1m (-7.424990653991699 vs -7.424990590544272)"
+    },
+    {
+      "ok": true,
+      "message": "actual water in edge-land"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: rendered surface at 1m outside terrain"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: water is visible, with no far-ground/skirt cap at 1m (-7.424990653991699 vs -7.424990590544272)"
+    },
+    {
+      "ok": true,
+      "message": "actual water in edge-land"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: rendered surface at 3m outside terrain"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: water is visible, with no far-ground/skirt cap at 3m (-7.424990653991699 vs -7.424990590544272)"
+    },
+    {
+      "ok": true,
+      "message": "actual water in edge-land"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: rendered surface at 10m outside terrain"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: water is visible, with no far-ground/skirt cap at 10m (-7.424990653991699 vs -7.424990590544272)"
+    },
+    {
+      "ok": true,
+      "message": "actual water in edge-land"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: rendered surface at 25m outside terrain"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: water is visible, with no far-ground/skirt cap at 25m (-7.424990653991699 vs -7.424990590544272)"
+    },
+    {
+      "ok": true,
+      "message": "actual water in edge-land"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: submerged emitted bank at offset -3.2 is covered by emitted water"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: submerged emitted bank at offset -3.5 is covered by emitted water"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: submerged emitted bank at offset 3.2 is covered by emitted water"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: submerged emitted bank at offset 3.5 is covered by emitted water"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: actual submerged bank triangles were probed"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: bank rendered at offset 8"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: bank meets local terrain without a cliff at offset 8"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: bank rendered at offset 18"
+    },
+    {
+      "ok": true,
+      "message": "Höje å nedströms: bank meets local terrain without a cliff at offset 18"
+    }
+  ],
+  "codeRevision": "9a046ca6cbf4dd62403f07f277f0d3feb6c5a7a7",
+  "baselineRevision": "1fa9677f",
+  "checkedAt": "2026-11-02T19:27:56.045679+00:00",
+  "browser": "Full Chromium 1248 / SwiftShader for screenshots; native Three.js rays for geometry",
+  "checksSummary": {
+    "riverfall": "6/6 pass; historical station/fall and non-water bridge hashes retained",
+    "edgebackdrop": "ALL PASS",
+    "sourceRegistration": "1/1 pass",
+    "nativeEmittedGeometry": "50/50 assertions pass"
+  },
+  "limits": [
+    "No physical phone or hardware performance claim.",
+    "Far water/bank levels are visual assumptions.",
+    "Final western tangent beyond archived OSM is a guess."
+  ]
+}
