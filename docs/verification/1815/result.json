@@ -1,0 +1,104 @@
+{
+  "pass": true,
+  "results": [
+    {
+      "ok": true,
+      "name": "actual river habitat swims/walks with a continuous waterline",
+      "data": {
+        "states": [
+          "land",
+          "water"
+        ],
+        "maxStep": 0.032500158401536326,
+        "sound": 16,
+        "land": {
+          "x": -160.20570361365287,
+          "z": 199.74029177360688,
+          "y": -5.693844415667763,
+          "water": false
+        },
+        "water": {
+          "x": -160.00721590761302,
+          "z": 206.7453356169642,
+          "y": -7.313844415667763,
+          "water": true,
+          "waterY": -7.193844415667763
+        },
+        "count": 4,
+        "shared": true,
+        "vertices": 540,
+        "triangles": 640,
+        "lights": 0
+      }
+    },
+    {
+      "ok": true,
+      "name": "four bounded shared low-poly models without lights/shadows",
+      "data": 640
+    },
+    {
+      "ok": true,
+      "name": "normal open/dispense action yields one finite held slice and native duck focus",
+      "data": {
+        "bag": 11,
+        "type": "breadSlice",
+        "amount": 1,
+        "focused": "duck"
+      }
+    },
+    {
+      "ok": true,
+      "name": "native E feeds one bite, eating animation and positional quack",
+      "data": {
+        "amount": 0.75,
+        "feeds": 1,
+        "eating": 1.3,
+        "quacks": 1,
+        "audio": {
+          "osc": 3,
+          "state": "running"
+        }
+      }
+    },
+    {
+      "ok": true,
+      "name": "repeated E cannot consume during chewing cooldown"
+    },
+    {
+      "ok": true,
+      "name": "native touch consumes remaining three bites, removes slice and leaves the bag finite",
+      "data": {
+        "held": false,
+        "feeds": 4,
+        "bag": 11,
+        "quacks": 2
+      }
+    },
+    {
+      "ok": true,
+      "name": "actual body/bottom waddle changes in walking; all four float on water",
+      "data": {
+        "change": 0.12167163164072253,
+        "swimming": true,
+        "quacks": 2
+      }
+    },
+    {
+      "ok": true,
+      "name": "global mute prevents quack synthesis"
+    },
+    {
+      "ok": true,
+      "name": "far flock is invisible and not simulated; quacks stay rate limited",
+      "data": {
+        "sleep": true,
+        "quacks": 2
+      }
+    },
+    {
+      "ok": true,
+      "name": "no browser page errors",
+      "data": []
+    }
+  ]
+}
