@@ -107,6 +107,13 @@ function thump(t, dest, gain = 0.8) {
 }
 
 export const sfx = {
+  /** #1815: short nasal quack, ordinary positional/mute path; caller limits the flock to one per 3 s. */
+  quack(pos) {
+    if (!ready()) return;
+    const t=ctx.currentTime,d=out(pos,.32,2);
+    tone(t,.23,d,{type:'sawtooth',from:420,to:255,gain:.22});
+    noise(t,.22,d,{freq:950,q:2.5,gain:.45,attack:.018});
+  },
   /** #1711: a new medal level: a short bright fanfare (four rising notes and a shimmer), not positional; mutes with the rest. */
   medal() {
     if (!ready()) return;

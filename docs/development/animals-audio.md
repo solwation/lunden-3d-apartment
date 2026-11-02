@@ -997,3 +997,27 @@ in `localStorage` `lunden.shark`. Test: `&shark=now` (client) or `LUNDEN_SHARK_T
 `sk`) open a window for the whole of every `SHARK.test.period`; push `riverFish.sync.offset` forward to see the phases. Tests: `node --test
 cloudflare/shark.test.mjs` (schedule, path, arbitration, phases, hibernation, solo, through the Worker); browser `tools/sharktest.cjs` (two
 clients). Images: [docs/verification/1769](../verification/1769/).
+
+
+## Ducks by the river (#1815)
+
+`duckbrain.js` owns a four-duck local flock's pure walking/swimming, food approach, eating pause,
+distance-driven waddle phase and seeded occasional quacks. `ducks.js` draws one shared 640-triangle,
+vertex-coloured model per duck, with no lights, shadow casters or material textures. The guessed home
+reach is centred near (-160, 207), west of the timber bridge ramps. Shore goals are on the northern
+bank, clear of the paddock fence. Existing river shape, terrain, water and shore levels are unchanged.
+Surface contact uses the actual supplied park ground and `waterYAt`; 3D stride length slows the duck
+on steep banks. The fixed reach avoids bridge decks and valley walls. AI sleeps beyond 65 m or
+underground; meshes are hidden beyond 100 m. A shared three-second cooldown bounds positional
+`audio.js` quacks, which follow the ordinary AudioContext and global mute path.
+
+E / the touch action button on a duck feeds **one existing bread bite**, not a spawned item. A normal
+Life bread bag is opened and dispenses a held `breadSlice` (one unit, four bites). `heldBread` validates
+the authoritative live Items instance, physical hand, plain bread and idle action runner. `feedBread`
+uses `Items.consume(amount / bites)`, preserving view/save notifications; the last bite removes the
+instance through Items. Feeding has reach/height checks and a chewing cooldown. Bags, topped bread,
+stowed/stale hands and a reserved Life action cannot feed a duck. No player eating/health or scoring
+is awarded for giving food away. The flock is local gameplay, without a new multiplayer protocol or
+public-project transfer. Checks and images: [#1815 verification](verification.md#river-ducks-1815).
+
+Duck habitat, model dimensions, movement and feeding tuning are centralized in `DUCKS` in `src/config.js`; `duckbrain.js` reexports the same object. Native keyboard/touch integration was rerun after this mechanical relocation (#1815).

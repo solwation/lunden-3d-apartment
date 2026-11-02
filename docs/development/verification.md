@@ -15,6 +15,19 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## River ducks (#1815)
+
+Scoped checks: `node tools/ducktest.mjs` covers pure swim/shore transitions, surface continuity,
+food attraction, eating cooldown, seeded quack timing and the real Items finite bread contract.
+`tools/browsertest.sh node tools/duckbrowser.cjs SITE docs/verification/1815` checks the actual
+terrain/water habitat and shared mesh budget, opens/dispenses a normal Life bread bag, uses native
+keyboard E followed by native touch to feed all four bites, checks slice removal/bag depletion,
+body waddle, floating, generated Web Audio oscillators, mute, far culling and page errors. Use the
+shared browser lock, pinned Chromium/Playwright and optional THREE_DIR from local-development.
+Images and raw result: [docs/verification/1815](../verification/1815/). `river-without-ducks-control.png`
+is the same final scene/camera with only the new flock hidden, for visual comparison; it is not a
+separate historical build. No physical phone, loudspeaker listening or multiplayer claim is made.
+
 ## School lawns (#1813)
 
 Run the browser wrapper with `node tools/schoolgrasstest.cjs GAME OUT before`, then `after` on the changed source (`PLAYWRIGHT_MODULE`, full `CHROME_PATH`, optional `THREE_DIR`). One school overview at `?shot&at=195,15,40,-38,125&cloud=&month=6&day=2&time=13&freeze&weather=clear` is captured in June and November before/after. The contract compares all 51,510 emitted access/lawn position+normal vertices and authored drape polygons/lifts/other parts, world-metre UVs and shared standard terrain grass color/map/shader under summer, autumn, snow and return to summer. Choose the material with `GRASS.summer`; streetlife intentionally uses a darker variant. `after --contract-only` repeats only that contract without retaking valid images. Same-view result: +1 draw call, identical triangle counts in both months. [Evidence](../verification/1813/). No physical-phone or broad performance claim.
