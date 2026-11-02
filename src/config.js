@@ -714,6 +714,9 @@ export const SITE = {
     // east of it, and `edgeFade` m inside the terrain rectangle's edge the profile fades back to the ground so the trench meets the flat
     // backdrop without a notch (both *guess*).
     upstream: { count: 6, open: [195, 210], edgeFade: 8 },
+    // #1800: the terrain took the river's profile only south of z 60 (the home block's guard), a step of up to ~2.2 m at z 60 for x ~140-195;
+    // north of z 60 the profile now eases out over `northFade` m (*guess*: the widest bank is 15 m). South of z 60 nothing changes.
+    northFade: 16,
     terrainSubdivisions:3, terrainRefineRadius:28, path:[[333.48,25.71],[300.14,33.37],[280.48,38.61],[259.89,49.27],[228.37,59.59],[216.35,64.62],
     [204.64,74.37],[190.76,79.13],[131.38,74.61],[127.15,83.64],[124.35,101.96],
     [116.11,114.02],[105.35,119.29],[74.99,119.53],[44.31,119.8],[1.16,125.14],[-15.1,129.89],[-67.45,166.11],
