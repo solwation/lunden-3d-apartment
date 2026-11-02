@@ -30,6 +30,12 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   applies, then enforce the full ancestor ceiling. Preserve ownership, dependencies and the original
   issue's own priority. Continue to review both queues and transfer applicable improvements; independent
   public-project work that is not a port keeps its ordinary triage.
+- **The original always ranks above the public project (user, 2026-11-02).** When one orchestra sees both queues,
+  every open `solwation/lunden-3d-apartment` issue is selected before every `solwation/kvarteret-lunden` issue,
+  whatever their priority labels: a `priority: high` public issue still ranks below a `priority: low` original
+  issue. Priority labels order work only within each repository; keep them assigned by the ordinary rules (do not
+  relabel public issues to express this). Active work is not interrupted when the ordering changes; the rule
+  applies at the next selection.
 - **Material-library scope (user, 2026-10-14):** #991 covers furniture upholstery/visible furnishing textiles,
   rugs and curtains; hanging towels are also approved. Do not add material editing for garments, wardrobe/cupboard/drawer
   contents, stored textiles/towels or cleaning cloths. #1028/#1030/#1031/#1032/#1033 are cancelled, not prerequisites.
@@ -90,7 +96,7 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   assessed by impact and urgency with a short rationale; do not assign high automatically
   because it is a bug. Preserve explicit user priorities and existing labels unless
   directed otherwise, except the automatic child/port corrections below. Missing priority
-  counts as medium. Choose highest-priority startable work, oldest first; the complete
+  counts as medium. Choose highest-priority startable work, oldest first, original repository before public (see above); the complete
   cross-repository selection/claim rules are in [.orchestra/project.md](.orchestra/project.md).
   Architecture issues whose
   exact measurements are missing from Peab's material keep their geometry preliminary: centralise and mark the values as

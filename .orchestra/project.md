@@ -32,6 +32,12 @@ Original-to-public ports and their children always have `priority: low` unless t
 explicitly overrides it; original priority does not transfer. Independent public work
 uses ordinary triage. Refresh the queue after label corrections before selecting.
 
+Repository rank overrides priority labels (user, 2026-11-02): the original queue is
+exhausted (nothing startable) before any public issue is selected, so even a public
+`priority: high` ranks below an original `priority: low`. Labels still follow ordinary
+triage within each repository; never relabel to express the rank. Running work is not
+interrupted; the rank applies at the next selection.
+
 ## Scope, queue and ownership
 
 | Setting | Value |
@@ -40,7 +46,7 @@ uses ordinary triage. Refresh the queue after label corrections before selecting
 | Repositories | `solwation/lunden-3d-apartment`, `solwation/kvarteret-lunden` |
 | Coordination | Original #420 and public #4; cross-link the same editable session comments |
 | Exclusions | PRs, those two coordination issues and exact `orkester` coordination label |
-| Ordering | high → medium → low, then `created_at`, full repo name, numeric issue |
+| Ordering | Repository first: every open `lunden-3d-apartment` issue before every `kvarteret-lunden` issue (user, 2026-11-02); within a repository high → medium → low, then `created_at`, numeric issue |
 | Active ownership | `in-progress` and `orkester: <stable-session-id>` during actual work only |
 | Capacity | At most 2 workers including helpers per conductor, at least 1 while startable work exists |
 | Phase hooks | [Project phase hooks](#project-phase-hooks); report intake under [queue intake hooks](#queue-intake-hooks) |
@@ -198,7 +204,7 @@ valid outcome rather than running the same intake twice.
 
 The conductor runs this loop in every `/orkester` queue session:
 
-1. Dispatch workers (≤ capacity) to the highest-priority startable issues.
+1. Dispatch workers (≤ capacity) to the highest-ranked startable issues (original repository first, then priority).
 2. While they work, run due report intake: create issues and remove the reports from KV.
 3. When a worker finishes, check its result lightly (diff, evidence, acceptance; no
    routine reruns) before delivery.
