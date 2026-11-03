@@ -1,0 +1,160 @@
+TAP version 13
+# Subtest: every list has a known counter with limits; ids are unique
+ok 1 - every list has a known counter with limits; ids are unique
+  ---
+  duration_ms: 1.887993
+  type: 'test'
+  ...
+# Subtest: a new row is capped at its start, later growth at perMin per minute (+1), and counters never fall
+ok 2 - a new row is capped at its start, later growth at perMin per minute (+1), and counters never fall
+  ---
+  duration_ms: 0.451398
+  type: 'test'
+  ...
+# Subtest: writes are collected: a post inside the gap or an unchanged post costs no write; one row per id
+ok 3 - writes are collected: a post inside the gap or an unchanged post costs no write; one row per id
+  ---
+  duration_ms: 2.267592
+  type: 'test'
+  ...
+# Subtest: the oldest row makes room at the row cap
+ok 4 - the oldest row makes room at the row cap
+  ---
+  duration_ms: 1.640994
+  type: 'test'
+  ...
+# Subtest: GET /boards: most lists rank by count, first lists by the server time; ids never leak; names are cleaned
+ok 5 - GET /boards: most lists rank by count, first lists by the server time; ids never leak; names are cleaned
+  ---
+  duration_ms: 31.433286
+  type: 'test'
+  ...
+# Subtest: POST /boards validates, answers ok and stores via the board storage
+ok 6 - POST /boards validates, answers ok and stores via the board storage
+  ---
+  duration_ms: 2.463891
+  type: 'test'
+  ...
+# Subtest: the Worker forwards /boards to the DrawingRoom storage when it has the binding
+ok 7 - the Worker forwards /boards to the DrawingRoom storage when it has the binding
+  ---
+  duration_ms: 0.698297
+  type: 'test'
+  ...
+# Subtest: medal lists: sum of levels, highest single level, ties by time, migrated rows, client claims ignored
+ok 8 - medal lists: sum of levels, highest single level, ties by time, migrated rows, client claims ignored
+  ---
+  duration_ms: 3.097089
+  type: 'test'
+  ...
+# Subtest: medalStanding: equal sums go to the one whose last level came first; equal top level to the earliest time
+ok 9 - medalStanding: equal sums go to the one whose last level came first; equal top level to the earliest time
+  ---
+  duration_ms: 0.470698
+  type: 'test'
+  ...
+# Subtest: GET /boards carries both medal lists from a recorded row, with no extra write
+ok 10 - GET /boards carries both medal lists from a recorded row, with no extra write
+  ---
+  duration_ms: 2.161792
+  type: 'test'
+  ...
+# Subtest: catalogue: unique ids, every counter is one the Worker accepts, task medals read taskCounts
+ok 11 - catalogue: unique ids, every counter is one the Worker accepts, task medals read taskCounts
+  ---
+  duration_ms: 1.292395
+  type: 'test'
+  ...
+# Subtest: levels: exponential curve, strictly growing steps, a cap, levelOf and thresholdOf are inverse (\#1748)
+ok 12 - levels: exponential curve, strictly growing steps, a cap, levelOf and thresholdOf are inverse (\#1748)
+  ---
+  duration_ms: 1.857593
+  type: 'test'
+  ...
+# Subtest: the bonus follows the difficulty: growing with every level
+ok 13 - the bonus follows the difficulty: growing with every level
+  ---
+  duration_ms: 0.1844
+  type: 'test'
+  ...
+# Subtest: migration: old linear levels are rebuilt for a row without mt and never lost (\#1748)
+ok 14 - migration: old linear levels are rebuilt for a row without mt and never lost (\#1748)
+  ---
+  duration_ms: 0.612498
+  type: 'test'
+  ...
+# Subtest: a client with a legacy saved level keeps it, is paid nothing for it, and the next level is the new curve's
+ok 15 - a client with a legacy saved level keeps it, is paid nothing for it, and the next level is the new curve's
+  ---
+  duration_ms: 0.642698
+  type: 'test'
+  ...
+# Subtest: a live level pays its bonus once; repeated checks and a restart pay nothing more
+ok 16 - a live level pays its bonus once; repeated checks and a restart pay nothing more
+  ---
+  duration_ms: 0.472698
+  type: 'test'
+  ...
+# Subtest: starting levels are silent: no bonus, no animation, counted once for the summary
+ok 17 - starting levels are silent: no bonus, no animation, counted once for the summary
+  ---
+  duration_ms: 0.186699
+  type: 'test'
+  ...
+# Subtest: server levels restore silently on another device and the bonus is not paid again
+ok 18 - server levels restore silently on another device and the bonus is not paid again
+  ---
+  duration_ms: 0.392598
+  type: 'test'
+  ...
+# Subtest: the grid view: locked medals show progress, secrets stay hidden until unlocked
+ok 19 - the grid view: locked medals show progress, secrets stay hidden until unlocked
+  ---
+  duration_ms: 0.318199
+  type: 'test'
+  ...
+# Subtest: server: levels come from validated counters only, times are the server's, a client cannot invent a level
+ok 20 - server: levels come from validated counters only, times are the server's, a client cannot invent a level
+  ---
+  duration_ms: 1.425195
+  type: 'test'
+  ...
+# Subtest: POST /boards answers the medals, restore is read-only and creates no row
+ok 21 - POST /boards answers the medals, restore is read-only and creates no row
+  ---
+  duration_ms: 29.462493
+  type: 'test'
+  ...
+# Subtest: a row from before medals gets its levels with the row's time
+ok 22 - a row from before medals gets its levels with the row's time
+  ---
+  duration_ms: 0.231099
+  type: 'test'
+  ...
+# Subtest: actual bump counts every feeding once but game score stops at daily ceiling; no uncapped generic path
+ok 23 - actual bump counts every feeding once but game score stops at daily ceiling; no uncapped generic path
+  ---
+  duration_ms: 1.868393
+  type: 'test'
+  ...
+# Subtest: finite kitchen bread, no bread/package/stale or consumed slice grants no successful feed event
+ok 24 - finite kitchen bread, no bread/package/stale or consumed slice grants no successful feed event
+  ---
+  duration_ms: 0.837597
+  type: 'test'
+  ...
+# Subtest: duck medal advances beyond daily score cap, pays once, Worker accepts counter and derives medal
+ok 25 - duck medal advances beyond daily score cap, pays once, Worker accepts counter and derives medal
+  ---
+  duration_ms: 1.835493
+  type: 'test'
+  ...
+1..25
+# tests 25
+# suites 0
+# pass 25
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 159.617022

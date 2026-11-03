@@ -36,7 +36,7 @@ export class Ducks {
  targets(){return this.animals.filter(a=>a.mesh.visible).map(a=>a.pick);}
  feed(brain){
   if(brain.cooldown>0 || Math.hypot(this.camera.position.x-brain.x,this.camera.position.z-brain.z)>DUCKS.feedReach || Math.abs(this.camera.position.y-brain.y)>DUCKS.maxFeedHeight || !feedBread(this.life,heldItem()))return false;
-  brain.feed();this.feeds++;this.say('Ankan åt en bit bröd');this.quack(brain);return true;
+  brain.feed();this.feeds++;this.onFeed?.();this.say('Ankan åt en bit bröd');this.quack(brain);return true;
  }
  quack(b){if(this.quackCooldown>0)return;this.quackCooldown=DUCKS.quackCooldown;this.quacks++;sfx.quack({x:b.x,y:b.y+.5,z:b.z});}
  update(dt,hidden){

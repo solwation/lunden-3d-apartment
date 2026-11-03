@@ -22,6 +22,7 @@ export const bonusFor = (level) => Math.round(10 * STEP_FACTOR ** (Math.max(1, l
 export const TASK_PREFIX = 'task_';
 
 export const MEDALS = [
+  { id: 'ducks', counter: 'duckFeeds', icon: '🦆', name: 'Ankmamma', unit: 'ankor matade', base: 50 }, // #1827: first level50 is a gameplay guess
   { id: 'squirrels', counter: 'squirrelFeeds', icon: '🐿️', name: 'Ekorrvän', unit: 'ekorrar matade', base: 50 },
   { id: 'cats', counter: 'petted', icon: '🐈', name: 'Kattklappare', unit: 'katter klappade', base: 100 },
   { id: 'butts', counter: 'catButts', icon: '🍑', name: 'Rumpspanare', unit: 'kattrumpor sedda', base: 100, oldBase: 25 },

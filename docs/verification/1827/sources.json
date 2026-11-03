@@ -1,0 +1,12 @@
+{
+  "src/ducks.js": "931ce76ef06fdb838d565bb7ddd2d5076aaf3ea9588b83412b0d667732bde307",
+  "src/duckbrain.js": "cc24ca40a69b2e4891b1a10916ee647968c9531292760813816d5efcd701ecf2",
+  "src/duckscore.js": "be8dc54023135c3f69a669bd53066cad3c4d33dd86fee156807acbbe56eff2da",
+  "src/stats.js": "af480a603604dd0b7309d0bb1d5ce83ba72170dd1a56f0f86b72e6313c537b50",
+  "src/main.js": "cbdbd5be4739292bf5e6a33c479ed92dd3bff32074ad5099a2b0371f18652453",
+  "src/config.js": "4da4755baa0b4b2fb048af49e8960ad28e4402d448a50b5b077f7d55b9cee144",
+  "src/medalcatalog.js": "7100b63f1e23b892d27a236c341ec91356fedfddac434eb96425881d5dfa8253",
+  "src/boardcatalog.js": "b20c332cc9194978e43cc525ff73254e602c950e87ac0d8a34e58d820bfc9dea",
+  "tools/duckrewardtest.mjs": "1f2f32ae073b92bc166b790b32ef0c70416de873c6be3870fb5d6188ec926a34",
+  "tools/duckrewardbrowser.cjs": "911e232674c9612bfe147b2aa7976c28cca8d3d8e8e46d7af06b88c0d8b6e42d"
+}

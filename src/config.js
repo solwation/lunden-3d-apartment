@@ -3751,6 +3751,7 @@ export const SCORE = {
     petted: 8, catPhotos: 2, catFish: 25,                 // a pat (a cat to find first), its photo; feeding one takes a plan
     medalPoints: 1,                                       // medal bonus points (#1711, src/medalcatalog.js bonusFor), added via bump('medalPoints', n)
     ponyPets: 1,                                          // a pat of a paddock pony (#1320)
+    duckFeeds: 6,                                         // #1827 (*guess*): capped via DUCKS.scorePerDay, every feed still counts
     squirrelFeeds: 6,                                     // a squirrel took a nut from the hand (#1672, *guess*)
     kittenPets: 12,                                       // a kitten's pat on top of `petted` (#363)
     target: 0, splashes: 0.2, cuts: 0.1, magic: 0.3,      // Nerf target: scored via TARGET_SCORE (#1708), not here
@@ -8200,6 +8201,7 @@ export const DOOR_SYNC = {
 
 // #1815: four local ducks; model dimensions, habitat, motion and timing are visual/gameplay guesses.
 export const DUCKS = Object.freeze({
+  scorePerDay: 120, // #1827 gameplay guess:20 rewarded bread bites/day, medals keep counting afterwards
   count: 4, near: 65, draw: 100, speed: .65, swimSpeed: .85, feedReach: 2.6, cooldown: 2.4,
   eat: 1.3, quackFirst: [3, 2], quackInterval: [14, 20], quackCooldown: 3,
   lureReach: 9, goalReach: .25, stopReach: .2, maxStep: .1, phaseSwim: 5, phaseWalk: 15,

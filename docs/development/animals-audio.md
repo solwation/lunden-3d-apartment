@@ -1016,8 +1016,20 @@ Life bread bag is opened and dispenses a held `breadSlice` (one unit, four bites
 the authoritative live Items instance, physical hand, plain bread and idle action runner. `feedBread`
 uses `Items.consume(amount / bites)`, preserving view/save notifications; the last bite removes the
 instance through Items. Feeding has reach/height checks and a chewing cooldown. Bags, topped bread,
-stowed/stale hands and a reserved Life action cannot feed a duck. No player eating/health or scoring
-is awarded for giving food away. The flock is local gameplay, without a new multiplayer protocol or
+stowed/stale hands and a reserved Life action cannot feed a duck. Player eating/health is unchanged;
+#1827 adds the successful-feed counter and capped reward described below. The flock is local gameplay, without a new multiplayer protocol or
 public-project transfer. Checks and images: [#1815 verification](verification.md#river-ducks-1815).
 
 Duck habitat, model dimensions, movement and feeding tuning are centralized in `DUCKS` in `src/config.js`; `duckbrain.js` reexports the same object. Native keyboard/touch integration was rerun after this mechanical relocation (#1815).
+
+## Duck feeding rewards (#1827)
+
+`Ducks.onFeed` fires once, only after `feedBread` successfully consumes an existing held Life bread bite.
+`main.js` maps that to `bump('duckFeeds')`; the full counter drives the Ankmamma medal and accepted board lists.
+The source remains the kitchen pantry's ordinary bread bag, with four finite bites per dispensed slice.
+No new bread source, reach, cooldown or portion rule is introduced. The 6-point reward, 120 direct points
+per local day and medal base50 are gameplay guesses; the existing independent medal-level bonuses remain.
+`duckscore.js` persists a separate score/day ledger in the statistics so the full medal count cannot bypass
+the daily cap through generic `SCORE.each` multiplication. Counters and medal progress continue after the cap.
+The Worker's board counter ceiling is100/minute (four ducks with2.4s cooldown, before bread/approach time).
+[Actual kitchen bread, native feeding and medal-progress evidence](../verification/1827/). Gameplay remains original-only.

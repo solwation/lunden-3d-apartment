@@ -1,0 +1,94 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "native E without bread grants no feeding or score",
+      "data": {
+        "count": 0,
+        "score": 5,
+        "feeds": 0
+      }
+    },
+    {
+      "ok": true,
+      "label": "existing kitchen pantry package dispenses one finite slice, no outdoor bread source",
+      "data": {
+        "bags": 1,
+        "place": {
+          "at": "slot",
+          "store": "pantry",
+          "slot": 0
+        },
+        "bag": 11,
+        "held": "breadSlice",
+        "amount": 1,
+        "home": {
+          "at": "slot",
+          "store": "pantry",
+          "slot": 0
+        }
+      }
+    },
+    {
+      "ok": true,
+      "label": "carried kitchen bread reaches real river duck focus",
+      "data": {
+        "count": 0,
+        "score": 6,
+        "duckScore": 0,
+        "focused": "duck"
+      }
+    },
+    {
+      "ok": true,
+      "label": "successful native E consumes one bite and grants one counter plus6 points",
+      "data": {
+        "amount": 0.75,
+        "count": 1,
+        "duckScore": 6,
+        "score": 12,
+        "feeds": 1,
+        "badges": [
+          "🦆 Matat en anka +1",
+          "Ankan åt en bit bröd"
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "label": "chewing cooldown refuses duplicate E without points",
+      "data": {
+        "amount": 0.75,
+        "count": 1,
+        "score": 12
+      }
+    },
+    {
+      "ok": true,
+      "label": "native touch awards remaining3 bites exactly once and removes depleted slice",
+      "data": {
+        "held": false,
+        "stale": null,
+        "count": 4,
+        "duckScore": 24,
+        "feeds": 4,
+        "bag": 11
+      }
+    },
+    {
+      "ok": true,
+      "label": "empty hand after consumed slice cannot grant another award"
+    },
+    {
+      "ok": true,
+      "label": "medal menu shows real4/50 duck-feeding progress",
+      "data": "🦆AnkmammaLåst4 / 50 ankor matade"
+    },
+    {
+      "ok": true,
+      "label": "zero browser page errors",
+      "data": []
+    }
+  ],
+  "errors": []
+}

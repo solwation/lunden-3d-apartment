@@ -47,6 +47,17 @@ proves exactly one added draw and two triangles. `GYM_SOURCE_DIR` can explicitly
 config/nordicgym inputs during parallel integration; hashes and that override are recorded in the evidence.
 [Images, results and limits](../verification/1825/). Existing facade/geometry checks from #1823/#1824 are reused.
 
+## Duck feeding rewards (#1827)
+
+`node --test tools/duckrewardtest.mjs cloudflare/boards.test.mjs cloudflare/medals.test.mjs` verifies actual
+`bump`/rawScore daily capping, persistence/day rollover, finite pantry bread, medal progress/one-time bonus
+and Worker acceptance/medal derivation. `node tools/ducktest.mjs` retains existing portions/cooldown checks.
+`tools/browsertest.sh node tools/duckrewardbrowser.cjs GAME docs/verification/1827` gets a slice from the
+actual kitchen pantry package, then uses native E/touch at the river. It checks +6 points/one feed, no award
+without bread/during cooldown/after depletion, four finite bites, and actual Ankmamma4/50 menu progress.
+The fixture uses controlled spawns between kitchen and river; it does not certify a continuous walk.
+[Images, raw results and source hashes](../verification/1827/).
+
 ## River ducks (#1815)
 
 Scoped checks: `node tools/ducktest.mjs` covers pure swim/shore transitions, surface continuity,

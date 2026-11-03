@@ -12,6 +12,7 @@ import { counterValue } from './medalcatalog.js';
 // counters: counter → { perMin: the most it can physically grow per minute (*guess*, a generous human maximum),
 //   start: what a brand new row may bring on its first sync (an old save has history; *guess*) }.
 export const COUNTERS = {
+  duckFeeds: { perMin: 100, start: 3000 }, // four ducks,2.4s cooldown: up to100 bites/minute before bread/approach time
   squirrelFeeds: { perMin: 12, start: 3000 },
   petted: { perMin: 30, start: 5000 },
   catButts: { perMin: 30, start: 5000 },
@@ -47,6 +48,7 @@ export const COUNTERS = {
 export const BOARD_LISTS = [
   { id: 'medaljer-total', kind: 'medals-total', title: 'Flest utmärkelser 🏅', unit: 'utmärkelser' },
   { id: 'medaljer-hogsta', kind: 'medals-top', title: 'Högsta utmärkelse 🏆' },
+  { id: 'flest-duckFeeds', kind: 'most', counter: 'duckFeeds', title: 'Flest ankor matade', unit: 'matningar' },
   { id: 'flest-squirrelFeeds', kind: 'most', counter: 'squirrelFeeds', title: 'Flest ekorrar matade', unit: 'ekorrar' },
   { id: 'flest-petted', kind: 'most', counter: 'petted', title: 'Flest klappade katter', unit: 'klappar' },
   { id: 'flest-catButts', kind: 'most', counter: 'catButts', title: 'Flest kattrumpor sedda', unit: 'rumpor' },
@@ -63,6 +65,7 @@ export const BOARD_LISTS = [
   { id: 'flest-steps', kind: 'most', counter: 'steps', title: 'Flest steg', unit: 'steg' },
   { id: 'flest-dribbles', kind: 'most', counter: 'dribbles', title: 'Flest basketstudsar', unit: 'studsar' },
   { id: 'forst-catButts', kind: 'first', counter: 'catButts', title: 'Först att se en kattrumpa' },
+  { id: 'forst-duckFeeds', kind: 'first', counter: 'duckFeeds', title: 'Först att mata en anka' },
   { id: 'forst-squirrelFeeds', kind: 'first', counter: 'squirrelFeeds', title: 'Först att mata en ekorre' },
   { id: 'forst-ponyPets', kind: 'first', counter: 'ponyPets', title: 'Först att klappa en häst' },
   { id: 'forst-flushes', kind: 'first', counter: 'flushes', title: 'Först att spola på toaletten' },
