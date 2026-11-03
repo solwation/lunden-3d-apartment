@@ -81,6 +81,9 @@ import { cloudTexture, groundY, renderedTerrainY, lampGroundY, treeFeet, southTr
 import { Squirrels } from './squirrels.js';
 import { Ducks } from './ducks.js';
 import { OutdoorCats } from './outdoorcats.js';
+import { catHabitatFree, createCatGround } from './cathabitat.js';
+import { skirtTop as catSkirtTop } from './edgebackdrop.js';
+import { EDGE_BACKDROP as CAT_EDGE, OUTDOOR_CATS } from './config.js';
 import { Footprints } from './footprints.js';
 import { SHOE, PAW } from './footprinttrail.js';
 import { RiverFish } from './riverfish.js';
@@ -1149,10 +1152,10 @@ const ducks = new Ducks({scene,camera,life,ground:renderedTerrainY,say:t=>badge(
 ducks.onFeed = () => bump('duckFeeds'); // #1827: successful finite bread consumption only
 // #1772: each has a brain (outdoorcatbrain.js): outings round its rest stops (trees from treeFeet/aoTrees like the squirrels', no wall
 // in the way while the visitor is out on the street level), butterflies by the game's day, squirrels on the ground to stalk
-const outdoorCatGround = (x,z) => z > OUTDOOR.z1 ? renderedTerrainY(x,z) : parkGround(x,z); // #1840: park triangles; preserve the garage courtyard deck
+const outdoorCatGround = createCatGround(parkGround,renderedTerrainY,catSkirtTop,OUTDOOR,CAT_EDGE.level); // #1844: existing deck, drawn triangles and northern skirt/parking surfaces
 const outdoorCats = params0.has('nooutdoorcats') ? null : new OutdoorCats({ scene, camera, cat, ground: outdoorCatGround, lowMemory,
-  walkable: (x, z) => outdoorCatGround(x, z) > waterYAt(x, z) + 0.3 && !onRoad(x, z, 0.8), feet: treeFeet, crowns: aoTrees,
-  free: (x, z) => player.below || player.inCore || player.inPlayroom || player.unit || player.isFree(x, z, 0, 0.12 - PLAYER.radius),
+  walkable: (x, z) => outdoorCatGround(x, z) > waterYAt(x, z) + 0.3 && !onRoad(x, z, 0.8) && !onVehicle(x,z,OUTDOOR_CATS.exploration.roadMargin), feet: treeFeet, crowns: aoTrees,
+  free: (x, z) => catHabitatFree(x,z) && (player.below || player.inCore || player.inPlayroom || player.unit || player.isFree(x, z, 0, OUTDOOR_CATS.exploration.footRadius - PLAYER.radius)),
   hour: () => day.hour, month: () => day.month,
   food: () => fishing.feedable, onFed: (f) => fishing.eatenByCat(f), // #1782: a raw caught fish nearby, eaten as the ordinary cat's (#1766)
   prey: () => (squirrels?.animals ?? []).filter((a) => a.group.visible && Math.abs(a.brain.y - parkGround(a.brain.x, a.brain.z)) < 0.15).map((a) => a.brain) });

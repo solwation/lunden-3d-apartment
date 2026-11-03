@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { OUTDOOR_CATS, SEASON, CAT_FISH } from './config.js';
 import { BREEDS, createCatPuppet, catLabel } from './cat.js';
+import {prepareClimbContact,alignClimbContact} from './catclimb.js';
 import { OutdoorCatBrain, turnTo } from './outdoorcatbrain.js';
 import { registerSeasonal } from './seasons.js';
 import { catOut } from './footprinttrail.js';
@@ -104,6 +105,7 @@ export class OutdoorCats {
       group.add(m);
       return m;
     });
+    const climbContact=prepareClimbContact(puppet);
     Object.assign(puppet, { stand: 0, wantStand: 0, tailK: -1 });
     puppet.pose(0);
     group.add(puppet.object);
@@ -116,7 +118,7 @@ export class OutdoorCats {
     Object.assign(bf, { visible: false, name: `butterfly-${spec.name}` }); bf.raycast = () => {}; bf.userData.noDetail = true;
     this.scene.add(bf);
     const c = new OutdoorCatBrain(spec, id, this.env);
-    Object.assign(c, { breed, coat, puppet, group, lods, lodMat, bfMesh: bf, alpha: 0, awayUntil: 0, found: false, t: Math.random() * 6 });
+    Object.assign(c, { breed, coat, puppet, group, climbContact, lods, lodMat, bfMesh: bf, alpha: 0, awayUntil: 0, found: false, t: Math.random() * 6 });
     return c;
   }
 
@@ -129,7 +131,8 @@ export class OutdoorCats {
   /** #1773: is `c` out on a snow day at `t` (s, the wall clock)? (The snow months hide it otherwise.) */
   snowOut(c, t = this.now()) { return catOut(c.spec, c.id, t - C.epoch + c.spec.phase); }
 
-  place(c, s) { c.x = s.x; c.z = s.z; c.yaw = s.yaw; c.h = 0; c.pitch = 0; c.at = s; }
+  floorAt(c,x,z) { return c.onSurface(x,z)?c.at.surface.y:this.ground(x,z); }
+  place(c, s) { c.x = s.x; c.z = s.z; c.yaw = s.yaw; c.h = s.elevated?s.y-this.ground(s.x,s.z):0; c.pitch = 0; c.at = s; }
 
   /** Is the straight way from (ax, az) to (bx, bz) on walkable ground with no drop (a retaining wall, a bank)? */
   clearWay(ax, az, bx, bz) {
@@ -168,7 +171,7 @@ export class OutdoorCats {
   /** The ordinary cat that was `c` is left alone outdoors: `c` takes over again there and walks home (#1772: a social one follows a little first). */
   demote(c) {
     const k = this.cat, p = k.object.position;
-    Object.assign(c, { x: p.x, z: p.z, yaw: k.object.rotation.y, h: 0, pitch: 0, alpha: 1 });
+    Object.assign(c, { x: p.x, z: p.z, yaw: k.object.rotation.y, h: p.y-this.ground(p.x,p.z), pitch: 0, alpha: 1 });
     c.set(c.traits.social >= 0.6 ? 'follow' : 'home');
     k.outdoorCat = null;
     k.hide();
@@ -185,7 +188,7 @@ export class OutdoorCats {
       if (c.st === 'food') { c.fish.middle(v); c.food.x = v.x; c.food.z = v.z; }
       return;
     }
-    if (!this.food || !ok || c.h > 0.05 || d > this.drawDist || !['route', 'home', 'notice', 'seek', 'follow', 'flee'].includes(c.st)) return;
+    if (!this.food || !ok || (c.h > 0.05 && !c.at?.surface) || d > this.drawDist || !['route', 'home', 'notice', 'seek', 'follow', 'flee'].includes(c.st)) return;
     if ((c.foodScan = (c.foodScan ?? Math.random() * F.scan) - this.dtNow) > 0) return;
     c.foodScan = F.scan;
     const reach = F.reach * (0.8 + 0.4 * c.traits.curious), home = c.at ?? this.scheduled(c), k = this.cat;
@@ -193,7 +196,7 @@ export class OutdoorCats {
     for (const f of this.food()) {
       if (f.state !== 'placed' || f.outdoorCat || k?.fish?.f === f) continue; // (another cat is after it already)
       f.middle(v);
-      const g = this.ground(v.x, v.z), up = v.y - g, dd = Math.hypot(v.x - c.x, v.z - c.z);
+      const g = this.floorAt(c,v.x,v.z), up = v.y - g, dd = Math.hypot(v.x - c.x, v.z - c.z);
       if (!Number.isFinite(g) || (f.held ? up < -0.1 || up > F.held : Math.abs(up) > 0.15)) continue; // on the ground, or in a hand held out over it
       if (dd < bd && Math.hypot(v.x - home.x, v.z - home.z) < C.maxReturn - 5 && c.clearOut(c.x, c.z, v.x, v.z)) { best = f; bd = dd; }
     }
@@ -202,7 +205,7 @@ export class OutdoorCats {
     c.fish = best; best.outdoorCat = c.name;
     c.goFor(v.x, v.z, CAT_FISH.stop * (c.puppet.shape?.size ?? 1));
     c.eatT = 0; c.chew = 0;
-    if (d < C.near * 2) sfx.meow({ x: c.x, y: this.ground(c.x, c.z) + 0.3, z: c.z }, (c.coat.pitch ?? 1) * (c.breed.pitch ?? 1), c.breed.voice); // "is that for me?"
+    if (d < C.near * 2) sfx.meow({ x: c.x, y: this.floorAt(c,c.x,c.z) + 0.3, z: c.z }, (c.coat.pitch ?? 1) * (c.breed.pitch ?? 1), c.breed.voice); // "is that for me?"
   }
 
   /** #1782: a bite at a time: the fish shrinks, small munching sounds; at the end `onFed` (gone, counted) and a purr, then home. */
@@ -210,7 +213,7 @@ export class OutdoorCats {
     const f = c.fish; if (!f) { c.set('home'); return; }
     c.eatT += dt; c.chew -= dt;
     f.model.scale.setScalar(Math.max(0.05, 1 - c.eatT / CAT_FISH.eat));
-    const at = { x: c.x, y: this.ground(c.x, c.z) + 0.2, z: c.z };
+    const at = { x: c.x, y: this.floorAt(c,c.x,c.z) + 0.2, z: c.z };
     if (c.chew <= 0 && c.eatT < CAT_FISH.eat && c.group.visible) { sfx.chew(at, 0.45); c.chew = 0.6; }
     if (c.eatT < CAT_FISH.eat) return;
     f.model.scale.setScalar(1);
@@ -252,7 +255,7 @@ export class OutdoorCats {
       if (!k.visible || k.outdoorCat !== c.name || k.breed !== c.breed || k.variant !== c.coat) { this.unbind(c); return; } // faded, walked off indoors, or another cat now
       const p = k.object.position;
       if (!k.held && !k.petting && !k.released && !k.leaving && k.outdoor && Math.hypot(eye.x - p.x, eye.z - p.z) > C.release
-        && Math.abs(p.y - this.ground(p.x, p.z)) < 0.3) this.demote(c);
+        && Math.abs(p.y - this.floorAt(c,p.x,p.z)) < 0.3) this.demote(c);
       return;
     }
     const now = this.now(), out = this.isOut(c);
@@ -268,7 +271,7 @@ export class OutdoorCats {
     if (c.st === 'eat') this.eat(c, dt);
     if (c.fish && c.st !== 'food' && c.st !== 'eat') this.letGo(c); // (gave up: blocked, the visitor gone, faded)
     if (c.lost) { c.st = 'away'; c.awayUntil = now + C.away; } // a road, the river or a drop in the way home, or too far: it fades and comes back later
-    if (c.st === 'notice' && d < C.take && c.puppet.stand < 0.05 && c.h < 0.05 && this.catFree()) { this.promote(c); return; }
+    if (c.st === 'notice' && d < C.take && c.puppet.stand < 0.05 && (c.h < 0.05 || c.at?.surface) && this.catFree()) { this.promote(c); return; }
     // fade (sheltering, away, far) and draw
     const show = !hidden && out && c.st !== 'away';
     c.alpha = THREE.MathUtils.clamp(c.alpha + (show ? dt : -dt) / C.fade, 0, 1);
@@ -286,6 +289,7 @@ export class OutdoorCats {
     for (const m of P.materials) m.opacity = c.alpha;
     if (full) this.animate(c, dt, walking && !c.faceEye, c.moved, c.faceEye ? 'look' : c.activity);
     else P.stand = walking ? 1 : 0;
+    alignClimbContact(c,full);
     // the butterfly, near only
     const b = c.bf, bm = c.bfMesh;
     bm.visible = !!b && full;

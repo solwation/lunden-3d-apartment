@@ -1,0 +1,124 @@
+{
+  "phase": "climb-mid-final",
+  "steps": 111,
+  "clock": 1793535531.6303434,
+  "at": [
+    2.5,
+    1.525000063312109,
+    28.5
+  ],
+  "state": "route",
+  "trace": 111,
+  "contacts": [
+    {
+      "clock": 1793535531.3813202,
+      "root": [
+        2.5,
+        1.3880373038173603,
+        28.681003730860457
+      ],
+      "blend": 1,
+      "gap": 0.004999999999999005,
+      "pitch": -1.15,
+      "full": false
+    },
+    {
+      "clock": 1793535531.4813201,
+      "root": [
+        2.5,
+        1.4430372513652598,
+        28.681003730860457
+      ],
+      "blend": 1,
+      "gap": 0.004999999999999005,
+      "pitch": -1.15,
+      "full": false
+    },
+    {
+      "clock": 1793535531.58132,
+      "root": [
+        2.5,
+        1.4980371989131593,
+        28.681003730860457
+      ],
+      "blend": 1,
+      "gap": 0.004999999999999005,
+      "pitch": -1.15,
+      "full": false
+    },
+    {
+      "clock": 1793535531.6303434,
+      "root": [
+        2.5,
+        1.525000063312109,
+        28.681003730860457
+      ],
+      "blend": 1,
+      "gap": 0.004999999999999005,
+      "pitch": -1.15,
+      "full": false
+    }
+  ],
+  "checks": [
+    {
+      "ok": true,
+      "label": "actual approach reaches wall climb continuously without visitor following",
+      "data": {
+        "steps": 111,
+        "clock": 1793535531.6303434,
+        "at": [
+          2.5,
+          1.525000063312109,
+          28.5
+        ],
+        "state": "route",
+        "trace": 111
+      }
+    },
+    {
+      "ok": true,
+      "label": "actual approach reaches wall climb continuously without visitor following",
+      "data": {
+        "steps": 111,
+        "clock": 1793535531.6303434,
+        "at": [
+          2.5,
+          1.525000063312109,
+          28.5
+        ],
+        "state": "route",
+        "trace": 111
+      }
+    },
+    {
+      "ok": true,
+      "label": "actual approach reaches wall climb continuously without visitor following",
+      "data": {
+        "steps": 111,
+        "clock": 1793535531.6303434,
+        "at": [
+          2.5,
+          1.525000063312109,
+          28.5
+        ],
+        "state": "route",
+        "trace": 111
+      }
+    },
+    {
+      "ok": true,
+      "label": "actual approach reaches wall climb continuously without visitor following",
+      "data": {
+        "steps": 111,
+        "clock": 1793535531.6303434,
+        "at": [
+          2.5,
+          1.525000063312109,
+          28.5
+        ],
+        "state": "route",
+        "trace": 111
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+SCENE READY
+COMMAND COMPLETE
+COMMAND COMPLETE
+page.evaluate: TypeError: Failed to resolve module specifier "/src/config.js". Invalid relative url or base scheme isn't hierarchical.
+COMMAND COMPLETE
+COMMAND COMPLETE
+COMMAND COMPLETE
+COMMAND COMPLETE
+COMMAND COMPLETE
+COMMAND COMPLETE
+COMMAND COMPLETE
+COMMAND COMPLETE
+SHOT climb-wall
+COMMAND COMPLETE
+SHOT roof-rest
+COMMAND COMPLETE
+SHOT roof-rest
+COMMAND COMPLETE
+COMMAND COMPLETE
+COMMAND COMPLETE
+COMMAND COMPLETE
+COMMAND COMPLETE
+COMMAND COMPLETE
+SHOT Nordic-rear
+COMMAND COMPLETE
+SHOT Nordic-rear
+COMMAND COMPLETE
+SHOT Nordic-rear-near
+COMMAND COMPLETE
+COMMAND COMPLETE
+COMMAND COMPLETE
+SHOT actual-travel-overview
+tools/browsertest.sh: line 39: 1243005 Killed                  timeout --kill-after=15s "$limit" "$@"

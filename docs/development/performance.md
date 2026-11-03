@@ -2220,3 +2220,6 @@ quality remain; these figures are Chromium/SwiftShader observations, not physica
 ## Outdoor-cat patrol scheduling (#1840)
 
 Larger loops use a constructor-time table per direction and a wall-clock hash; `catAt` makes O(1) lookups with one possible boundary correction. Brain caches are bounded to two sets of legs. Existing models/materials and32 m desktop /18 m phone /7 m puppet rules stay unchanged. Actual per-body delta remains24 calls/10,008 triangles near,1/10,008 merged far,0/0 outside drawDist. The trace overview is an explicitly labelled test overlay absent during measurement and from product UI. [Scoped evidence and limits](../verification/1840/README.md).
+
+
+#1844 outdoor-cat goal planning uses18 nodes,21 source-validated connections, one small all-pairs preparation, at most56 goal decisions /1008 candidate evaluations per cat/day, a12-plan cache and binary pose lookup. No global/per-frame pathfinding. `catclimb.js` reuses existing paw/body bounds only on the selected visible climb, without rebuilding vertices/materials or adding draws. Measured puppet/LOD/far render deltas remain24/1/0 calls (10008/10008/0 triangles); desktop32m, phone18m and puppet7m gates are preserved. [Scope, timing and evidence](../verification/1844/README.md).

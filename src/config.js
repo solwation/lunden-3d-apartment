@@ -8186,6 +8186,9 @@ export const SPRAY = {
 // by day (`brain.butterflyHours`) in `brain.butterflyMonths`; a tree only within `brain.climbReach` m (surroundings.js treeFeet /
 // aoTrees, like the squirrels), up to `brain.branch` m. All numbers are our picks (*guess*).
 export const OUTDOOR_CATS = {
+  // #1844 guesses: one shared wall-clock day, bounded goal choices and progressive exploration.
+  exploration: { daySeconds:86400,maxGoals:56,minGoals:8,speed:.55,initialRadius:100,growth:70,distanceCost:600,minRest:90,rest:1200,
+    lazyGoalReduction:.6,curiosityBase:.4,repeatNovelty:.08,noise:.9,specialWeight:.25,homeLazyWeight:.25,seatReserve:2,cachePlans:12,footRadius:.12,roadMargin:.2,climbPitch:1.15,climbContactBlend:.3,climbMaxOffset:.5,climbPawInset:.005 },
   epoch: 1793491200, drawDist: 32, drawDistPhone: 18, near: 7, speed: 0.42, returnSpeed: 0.85, notice: 4.5, take: 3.2, release: 8,
   maxReturn: 45, away: 30, fade: 1.2, rain: 0.12, maxStep: 0.6,
   // #1782: a raw caught fish (fishing.feedable, as #1766) on the ground or held out within `reach` m (× 0.8 … 1.2 by curiosity) of a roaming
@@ -8208,16 +8211,16 @@ export const OUTDOOR_CATS = {
   // #1840: guessed larger patrol loops; offline-prevalidated against the actual site. No runtime pathfinder.
   // Zero rests mark navigation bends; other stops retain personality-specific rests. Each lap hashes its direction.
   cats: [
-    { name: 'Sotis', breed: 'huskatt', coat: 'svart', zone: 'innergården', phase: 0, rest: [0,50,0,0,0,25,0,0,0,0,80,0,0,0,30,0,0,0,70,0,20,50,0,25], vary: true, kind: 'social',
+    { name: 'Sotis', explore:true, breed: 'huskatt', coat: 'svart', zone: 'innergården', phase: 0, rest: [0,50,0,0,0,25,0,0,0,0,80,0,0,0,30,0,0,0,70,0,20,50,0,25], vary: true, kind: 'social',
       traits: { social: 0.95, play: 0.35, lazy: 0.3, shy: 0, curious: 0.45 },
       route: [[-16,18],[4,19],[5,18],[12,27],[13,31],[14,30],[14,22],[14,30],[13,31],[12,26],[6,26],[5,27],[-6,26],[-12,26],[-14,27],[-15,26],[-15,28],[-16,29],[-35,27],[-36,27],[-45,24],[-46,23],[-36,18],[-17,19]] },
-    { name: 'Kanel', breed: 'maine coon', coat: 'rödrandig', zone: 'innergården', phase: 140, rest: [0,70,0,0,30,50,90,25,70,30], vary: true, kind: 'lazy',
+    { name: 'Kanel', explore:true, breed: 'maine coon', coat: 'rödrandig', zone: 'innergården', phase: 140, rest: [0,70,0,0,30,50,90,25,70,30], vary: true, kind: 'lazy',
       traits: { social: 0.45, play: 0.2, lazy: 0.95, shy: 0.1, curious: 0.25 },
       route: [[-40,21],[-29,20],[-28,20],[-23,20],[-20,22],[-18,22],[-19,30],[-34,31],[-48,28],[-48,24]] },
-    { name: 'Findus', breed: 'norsk skogkatt', coat: 'grå', zone: 'parken vid Höje å', phase: 60, rest: [75,35,0,90,0,30,60,45,75,0,35], vary: true, kind: 'playful',
+    { name: 'Findus', explore:true, breed: 'norsk skogkatt', coat: 'grå', zone: 'parken vid Höje å', phase: 60, rest: [75,35,0,90,0,30,60,45,75,0,35], vary: true, kind: 'playful',
       traits: { social: 0.3, play: 0.95, lazy: 0.15, shy: 0.2, curious: 0.6 },
       route: [[-80,95],[-45,95],[-28,110],[-31,116],[-40,142],[-73,162],[-75,163],[-115,151],[-138,125],[-124,99],[-111,109]] },
-    { name: 'Smulan', breed: 'huskatt', coat: 'röd och vit', zone: 'parken vid Höje å', phase: 300, rest: [45,80,0,35,0,70,45,80,35,70], vary: true, kind: 'shy',
+    { name: 'Smulan', explore:true, breed: 'huskatt', coat: 'röd och vit', zone: 'parken vid Höje å', phase: 300, rest: [45,80,0,35,0,70,45,80,35,70], vary: true, kind: 'shy',
       traits: { social: 0.1, play: 0.4, lazy: 0.35, shy: 0.9, curious: 0.85 },
       route: [[-70,96],[-49,96],[-38,110],[-50,127],[-53,133],[-56,133],[-82,136],[-101,121],[-98,104],[-87,96]] },
   ],

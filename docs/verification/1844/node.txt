@@ -1,0 +1,126 @@
+TAP version 13
+# {"groundSamples":7579,"sourceSegments":4305,"sourceSolids":221,"nodes":18,"edges":21}
+# Subtest: shipped graph equals inspected scene export and every ground segment avoids source walls/buildings/vehicle ways
+ok 1 - shipped graph equals inspected scene export and every ground segment avoids source walls/buildings/vehicle ways
+  ---
+  duration_ms: 2590.897467
+  type: 'test'
+  ...
+# Subtest: local outings reject the same grazing Nordic corner while the corrected passage stays free
+ok 2 - local outings reject the same grazing Nordic corner while the corrected passage stays free
+  ---
+  duration_ms: 0.158
+  type: 'test'
+  ...
+# [{"name":"Sotis","goals":18,"span":530.4183767814067,"walked":3901.731476842584,"decisions":46,"daily":[{"day":0,"homeMinutes":140,"daytimeGoals":13,"eveningGoals":5,"walked":3901.731476842584,"decisions":46,"evaluations":828,"discovered":18},{"day":1,"homeMinutes":110,"daytimeGoals":12,"eveningGoals":8,"walked":5356.729286866894,"decisions":46,"evaluations":828,"discovered":18},{"day":2,"homeMinutes":0,"daytimeGoals":7,"eveningGoals":6,"walked":5632.2824603254585,"decisions":46,"evaluations":828,"discovered":18},{"day":3,"homeMinutes":0,"daytimeGoals":6,"eveningGoals":5,"walked":5448.319506180945,"decisions":46,"evaluations":828,"discovered":18},{"day":4,"homeMinutes":62,"daytimeGoals":7,"eveningGoals":6,"walked":5201.832462074326,"decisions":46,"evaluations":828,"discovered":18},{"day":5,"homeMinutes":46,"daytimeGoals":8,"eveningGoals":10,"walked":5393.892932703358,"decisions":46,"evaluations":828,"discovered":18},{"day":6,"homeMinutes":0,"daytimeGoals":7,"eveningGoals":7,"walked":5957.8593577901875,"decisions":46,"evaluations":828,"discovered":16}]},{"name":"Kanel","goals":18,"span":530.1496787096175,"walked":2479.468032896867,"decisions":24,"daily":[{"day":0,"homeMinutes":60,"daytimeGoals":11,"eveningGoals":2,"walked":2479.468032896867,"decisions":24,"evaluations":432,"discovered":18},{"day":1,"homeMinutes":296,"daytimeGoals":5,"eveningGoals":5,"walked":1468.2385938138996,"decisions":24,"evaluations":432,"discovered":10},{"day":2,"homeMinutes":411,"daytimeGoals":5,"eveningGoals":4,"walked":972.1619680224076,"decisions":24,"evaluations":432,"discovered":8},{"day":3,"homeMinutes":0,"daytimeGoals":10,"eveningGoals":2,"walked":2383.384274902123,"decisions":24,"evaluations":432,"discovered":18},{"day":4,"homeMinutes":59,"daytimeGoals":8,"eveningGoals":4,"walked":3319.6365354264017,"decisions":24,"evaluations":432,"discovered":15},{"day":5,"homeMinutes":59,"daytimeGoals":11,"eveningGoals":5,"walked":2607.9392960977084,"decisions":24,"evaluations":432,"discovered":18},{"day":6,"homeMinutes":0,"daytimeGoals":6,"eveningGoals":4,"walked":2394.057816441371,"decisions":24,"evaluations":432,"discovered":14}]},{"name":"Findus","goals":18,"span":530.4443618207051,"walked":4230.777431895419,"decisions":51,"daily":[{"day":0,"homeMinutes":0,"daytimeGoals":14,"eveningGoals":6,"walked":4230.777431895419,"decisions":51,"evaluations":918,"discovered":18},{"day":1,"homeMinutes":24,"daytimeGoals":6,"eveningGoals":8,"walked":5828.434816343584,"decisions":51,"evaluations":918,"discovered":18},{"day":2,"homeMinutes":51,"daytimeGoals":9,"eveningGoals":5,"walked":5003.953260850911,"decisions":51,"evaluations":918,"discovered":18},{"day":3,"homeMinutes":148,"daytimeGoals":9,"eveningGoals":8,"walked":4977.736160319533,"decisions":51,"evaluations":918,"discovered":18},{"day":4,"homeMinutes":0,"daytimeGoals":5,"eveningGoals":10,"walked":5191.810459167887,"decisions":51,"evaluations":918,"discovered":18},{"day":5,"homeMinutes":0,"daytimeGoals":9,"eveningGoals":10,"walked":5813.222041744258,"decisions":51,"evaluations":918,"discovered":18},{"day":6,"homeMinutes":0,"daytimeGoals":6,"eveningGoals":5,"walked":6083.946619849233,"decisions":51,"evaluations":918,"discovered":18}]},{"name":"Smulan","goals":18,"span":530.272161449664,"walked":4678.913117567245,"decisions":44,"daily":[{"day":0,"homeMinutes":0,"daytimeGoals":6,"eveningGoals":5,"walked":4678.913117567245,"decisions":44,"evaluations":792,"discovered":18},{"day":1,"homeMinutes":141,"daytimeGoals":12,"eveningGoals":7,"walked":5040.325783265245,"decisions":44,"evaluations":792,"discovered":18},{"day":2,"homeMinutes":0,"daytimeGoals":7,"eveningGoals":5,"walked":4978.525520822609,"decisions":44,"evaluations":792,"discovered":18},{"day":3,"homeMinutes":0,"daytimeGoals":7,"eveningGoals":6,"walked":6032.744567044513,"decisions":44,"evaluations":792,"discovered":18},{"day":4,"homeMinutes":52,"daytimeGoals":12,"eveningGoals":6,"walked":5291.617081051696,"decisions":44,"evaluations":792,"discovered":18},{"day":5,"homeMinutes":147,"daytimeGoals":8,"eveningGoals":7,"walked":4449.108605959585,"decisions":44,"evaluations":792,"discovered":18},{"day":6,"homeMinutes":177,"daytimeGoals":7,"eveningGoals":7,"walked":4799.475481205929,"decisions":44,"evaluations":792,"discovered":18}]}]
+# Subtest: seeded goal selection grows, visits hundreds of metres and varies by cat/day
+ok 3 - seeded goal selection grows, visits hundreds of metres and varies by cat/day
+  ---
+  duration_ms: 496.608092
+  type: 'test'
+  ...
+# Subtest: 3D edges are reversible, daily boundary continuous, reload identical and cache bounded
+ok 4 - 3D edges are reversible, daily boundary continuous, reload identical and cache bounded
+  ---
+  duration_ms: 23.073781
+  type: 'test'
+  ...
+# Subtest: production brain preserves roof support and pauses/resumes the current goal through local food/visitor states
+ok 5 - production brain preserves roof support and pauses/resumes the current goal through local food/visitor states
+  ---
+  duration_ms: 2.962798
+  type: 'test'
+  ...
+# social {"rest":0.34,"sleep":0.11,"seek":0.32,"explore":0.03,"stalk":0.09,"butterfly":0.05,"climb":0.05}
+# lazy {"rest":0.4,"sleep":0.22,"seek":0.18,"explore":0.05,"stalk":0.11,"butterfly":0.04,"climb":0}
+# playful {"rest":0.42,"sleep":0.11,"seek":0.09,"explore":0,"stalk":0.09,"butterfly":0.1,"climb":0.2}
+# shy {"rest":0.43,"sleep":0.12,"seek":0,"explore":0.25,"stalk":0.13,"butterfly":0.04,"climb":0.02}
+# social {
+#   nearShare: 0.215,
+#   top: 0,
+#   climbs: 0,
+#   chase: 907,
+#   states: 'route,seek,notice,home',
+#   bad: 0
+# }
+# lazy {
+#   nearShare: 0,
+#   top: 0,
+#   climbs: 0,
+#   chase: 2702,
+#   states: 'route,notice,home',
+#   bad: 0
+# }
+# playful {
+#   nearShare: 0,
+#   top: 2.6,
+#   climbs: 15,
+#   chase: 5403,
+#   states: 'route,notice,home',
+#   bad: 0
+# }
+# shy {
+#   nearShare: 0,
+#   top: 0,
+#   climbs: 0,
+#   chase: 2830,
+#   states: 'route,notice,home',
+#   bad: 0
+# }
+# Subtest: every cat has a personality with all five traits, and they differ
+ok 6 - every cat has a personality with all five traits, and they differ
+  ---
+  duration_ms: 1.145599
+  type: 'test'
+  ...
+# Subtest: the utility AI: needs steer the choice, spending a behaviour lowers its need
+ok 7 - the utility AI: needs steer the choice, spending a behaviour lowers its need
+  ---
+  duration_ms: 0.439599
+  type: 'test'
+  ...
+# Subtest: fixed seed: the same clock gives the same choice and the same pose on every client
+ok 8 - fixed seed: the same clock gives the same choice and the same pose on every client
+  ---
+  duration_ms: 19.892684
+  type: 'test'
+  ...
+# Subtest: each personality has a noticeably different mix of behaviours
+ok 9 - each personality has a noticeably different mix of behaviours
+  ---
+  duration_ms: 32.754073
+  type: 'test'
+  ...
+# Subtest: no butterflies at night or in winter months; no climbing without a tree
+ok 10 - no butterflies at night or in winter months; no climbing without a tree
+  ---
+  duration_ms: 4.276996
+  type: 'test'
+  ...
+# Subtest: in three hours: the social cat comes up to the visitor, the playful one climbs and chases, none goes into the water or onto the road
+ok 11 - in three hours: the social cat comes up to the visitor, the playful one climbs and chases, none goes into the water or onto the road
+  ---
+  duration_ms: 274.526474
+  type: 'test'
+  ...
+# Subtest: a shy cat keeps away from a moving visitor, and calms when the visitor stands still
+ok 12 - a shy cat keeps away from a moving visitor, and calms when the visitor stands still
+  ---
+  duration_ms: 0.737499
+  type: 'test'
+  ...
+# Subtest: \#1782 food: a social cat comes for a fish at once, a shy one hesitates until the visitor stands still; the road blocks the way
+ok 13 - \#1782 food: a social cat comes for a fish at once, a shy one hesitates until the visitor stands still; the road blocks the way
+  ---
+  duration_ms: 1.813699
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2723.938957

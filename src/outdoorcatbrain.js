@@ -1,4 +1,6 @@
 import { OUTDOOR_CATS } from './config.js';
+import { CatExploration } from './catexploration.js';
+import { CAT_AFFORDANCES } from './cataffordances.js';
 import { hash01, routePlan, catAt, lapPlan } from './outdoorcatroute.js';
 
 // #1772: an outdoor cat's brain (no three.js, so a node test can drive it: tools/outdoorcatbraintest.mjs). Modelled on the squirrels'
@@ -21,6 +23,8 @@ import { hash01, routePlan, catAt, lapPlan } from './outdoorcatroute.js';
 // fence, main.js); an outing goes out and back the same checked way.
 
 const C = OUTDOOR_CATS, B = C.brain;
+let exploration;
+const explorer = () => exploration ??= new CatExploration(CAT_AFFORDANCES, C.exploration);
 export const BEHAVIOURS = ['rest', 'sleep', 'seek', 'explore', 'stalk', 'butterfly', 'climb'];
 export const NEEDS = ['energy', 'play', 'social', 'hunger'];
 const TRAITS0 = { social: 0.5, play: 0.5, lazy: 0.5, shy: 0.2, curious: 0.5 };
@@ -76,7 +80,7 @@ export class OutdoorCatBrain {
   /** env: { now() s, hour() 0 … 24, month() 1 … 12, ground(x, z), clear(ax, az, bx, bz) (walkable, no drop), free(x, z) (no wall; optional),
    *  trees: [{ x, z, y, cy, r }] (trunk foot, crown centre height and radius), prey() -> [{ x, z }] (squirrels on the ground; optional) } */
   constructor(spec, id, env) {
-    Object.assign(this, { spec, id, env, name: spec.name, traits: { ...TRAITS0, ...spec.traits }, plan: routePlan(spec.route, spec.rest, C.speed, spec.vary),
+    Object.assign(this, { spec, id, env, explores:!!(spec.explore&&C.exploration), name: spec.name, traits: { ...TRAITS0, ...spec.traits }, plan: routePlan(spec.route, spec.rest, C.speed, spec.vary),
       st: 'route', x: 0, z: 0, h: 0, yaw: 0, pitch: 0, hop: 0, walking: false, activity: 'look', moved: 0, faceEye: false, lost: false,
       at: null, outing: null, kind: 'rest', bf: null, legInfo: [], memo: { n: NaN, needs: null }, checkT: 0, reactT: 0, stateT: 0, seekCool: 0, prey: null, food: null });
     const s = this.scheduled(); this.x = s.x; this.z = s.z; this.yaw = s.yaw;
@@ -85,7 +89,10 @@ export class OutdoorCatBrain {
   /** The cat's own clock (s into its loop). */
   T(now = this.env.now()) { return now - C.epoch + this.spec.phase; }
   /** Where its loop has it: catAt (outdoorcatroute.js). */
-  scheduled(now) { return catAt(this.plan, this.T(now), this.id); }
+  scheduled(now = this.env.now()) {
+    if (!this.explores) return catAt(this.plan, this.T(now), this.id);
+    return explorer().at(this.id, (this.pauseAt ?? now) - (this.clockDelay ?? 0) - C.epoch + this.spec.phase, this.traits);
+  }
   /** The global number of the rest stop at the end of leg `leg` of lap `lap`. */
   stopOf(lap, leg) { return lap * this.L + leg; }
 
@@ -93,15 +100,16 @@ export class OutdoorCatBrain {
 
   /** The stop `m`'s leg, lap, rest point, rest length and its wall-clock start. */
   stop(m) {
+    if (this.explorationStop?.m === m) return this.explorationStop;
     const L = this.L, leg = ((m % L) + L) % L, lap = Math.floor(m / L), g = lapPlan(this.plan,lap,this.id).legs[leg];
     return { m, leg, lap, P: { x: g.bx, z: g.bz }, R: g.rest, start: C.epoch - this.spec.phase + lap * this.plan.period + g.t0 + g.walk };
   }
   /** What there is round a stop's point (computed once per leg, when it first matters): reachable trees and outing spots. */
-  info(leg,lap=0) {
-    const plan=lapPlan(this.plan,lap,this.id),key=(plan===this.plan?0:this.L)+leg;
+  info(leg,lap=0,point=null) {
+    const plan=lapPlan(this.plan,lap,this.id),key=point ? point.x+','+point.z : (plan===this.plan?0:this.L)+leg;
     let I = this.legInfo[key];
     if (I) return I;
-    const g = plan.legs[leg], P = { x: g.bx, z: g.bz }, env = this.env, way = (a, b) => this.clearOut(a.x, a.z, b.x, b.z);
+    const g = point ? {bx:point.x,bz:point.z} : plan.legs[leg], P = { x: g.bx, z: g.bz }, env = this.env, way = (a, b) => this.clearOut(a.x, a.z, b.x, b.z);
     const trees = (env.trees ?? []).map((t) => [Math.hypot(t.x - P.x, t.z - P.z), t]).filter(([d]) => d > 0.6 && d < B.climbReach).sort((a, b) => a[0] - b[0])
       .map(([d, t]) => { const ux = (P.x - t.x) / d, uz = (P.z - t.z) / d; const o = (t.tr ?? 0.2) + 0.12; return { t, F: { x: t.x + ux * o, z: t.z + uz * o }, ux, uz }; }) // (F: at the trunk's foot, against the bark)
       .filter((q) => way(P, q.F)).slice(0, 3);
@@ -124,12 +132,15 @@ export class OutdoorCatBrain {
   }
   /** A straight outing way: walkable, no drop, and (main.js) no wall. */
   clearOut(ax, az, bx, bz) {
+    const surface=this.at?.surface;
+    if(surface) return this.onSurface(ax,az)&&this.onSurface(bx,bz);
     if (!this.env.clear(ax, az, bx, bz)) return false;
     const f = this.env.free; if (!f) return true;
     const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 0.5));
     for (let k = 0; k <= n; k++) if (!f(ax + (bx - ax) * k / n, az + (bz - az) * k / n)) return false;
     return true;
   }
+  onSurface(x,z) { const s=this.at?.surface;return !!s&&x>s.x0&&x<s.x1&&z>s.z0&&z<s.z1; }
   hourAt(t) { const h = this.env.hour?.() ?? 12; return (((h - (this.env.now() - t) / 3600) % 24) + 24) % 24; }
   ctx(m) {
     const s = this.stop(m), I = this.info(s.leg,s.lap), hr = this.hourAt(s.start), mo = this.env.month?.() ?? 7;
@@ -155,8 +166,8 @@ export class OutdoorCatBrain {
   /** The outing at stop `m`: a list of timed segments (out and back the same checked ways), ending at the stop's point after its rest. */
   outingAt(m) {
     if (this.outing?.m === m) return this.outing;
-    const s = this.stop(m), { P, R } = s, I = this.info(s.leg,s.lap), h = (k) => hash01(this.id, m, k), segs = [];
-    let kind = this.decide(m).kind, t = 0;
+    const s = this.stop(m), { P, R } = s, I = this.info(s.leg,s.lap,s.exploration?s.P:null), h = (k) => hash01(this.id, m, k), segs = [];
+    let kind = s.exploration ? choose(startNeeds(this.id,m),this.traits,{rest:R,tree:I.trees.length>0,spots:I.explore.length>0&&I.stalk.length>0,butterflies:I.butterfly.length>0&&B.butterflyMonths.includes(this.env.month?.()??7)&&(this.env.hour?.()??12)>=B.butterflyHours[0]&&(this.env.hour?.()??12)<B.butterflyHours[1],sunny:(this.env.hour?.()??12)>=10&&(this.env.hour?.()??12)<16},k=>h(BEHAVIOURS.indexOf(k))) : this.decide(m).kind, t = 0;
     const add = (type, dur, a, b = a, extra = {}) => { segs.push({ type, t0: t, t1: t + dur, a, b, ...extra }); t += dur; };
     const walk = (a, b, v = B.trot, type = 'walk') => add(type, Math.hypot(b.x - a.x, b.z - a.z) / v, a, b);
     const sit = (act, until, at) => { if (until > t) add('sit', until - t, at, at, { act }); };
@@ -239,6 +250,15 @@ export class OutdoorCatBrain {
   /** The scheduled pose now: on the loop while walking (or far away), the outing while resting near the visitor. */
   schedulePose(near) {
     const s = this.scheduled(); this.at = s;
+    if (this.explores) {
+      const h = s.elevated ? s.y - this.env.ground(s.x,s.z) : 0;
+      const pose = { ...s,h,pitch:s.climbing?s.pitch:0,hop:0,bf:null };
+      this.kind=s.walking?s.activity:'rest';
+      if(s.walking || !near || Math.abs(h)>.05) return pose;
+      const sg=s.plan.segs[s.segment],m=s.day*1000000+s.segment;
+      this.explorationStop={m,P:{x:s.x,z:s.z},R:sg.t1-sg.t0,start:this.env.now()-s.elapsed,leg:0,lap:0,exploration:true};
+      const o=this.outingAt(m),r=this.poseAt(o,s.elapsed);this.kind=o.kind;if(r.yaw==null)r.yaw=s.yaw;return r;
+    }
     if (s.walking || !near) { this.bf = null; this.kind = s.walking ? 'walk' : this.kind; return { x: s.x, z: s.z, h: 0, pitch: 0, hop: 0, yaw: s.yaw, walking: s.walking, activity: s.walking ? 'walk' : s.activity, bf: null }; }
     const m = this.stopOf(s.lap, s.leg), o = this.outingAt(m), g = lapPlan(this.plan,s.lap,this.id).legs[s.leg];
     this.kind = o.kind;
@@ -253,9 +273,9 @@ export class OutdoorCatBrain {
    * `near`: within reach of being seen (the brain only plans then; far away it stays on its loop). */
   update(dt, vis, near = true) {
     this.lost = false; this.faceEye = false; this.stateT += dt; this.seekCool = Math.max(0, this.seekCool - dt);
-    const sp = this.schedulePose(near), t = this.traits, px = this.x, pz = this.z, onGround = this.h < 0.05;
+    const sp = this.schedulePose(near), t = this.traits, px = this.x, pz = this.z, onGround = this.h < 0.05 || !!this.at?.surface;
     this.bf = this.st === 'route' ? sp.bf : null;
-    if ((this.st === 'route' || this.st === 'home') && vis.ok && onGround && sp.h < 0.05 && !(this.st === 'route' && sp.activity === 'chase') && (this.reactT -= dt) <= 0) { // (all eyes for the butterfly)
+    if ((this.st === 'route' || this.st === 'home') && vis.ok && onGround && (sp.h < 0.05 || sp.surface) && !(this.st === 'route' && sp.activity === 'chase') && (this.reactT -= dt) <= 0) { // (all eyes for the butterfly)
       this.reactT = 0.25;
       const seekR = B.seekRange * t.social * (this.kind === 'seek' ? 1 : 0.55);
       if (t.shy > 0.5 && vis.d < B.shyRange && vis.still < B.shyCalm) this.set('flee');
@@ -324,19 +344,20 @@ export class OutdoorCatBrain {
         break;
       case 'home': { // back to the schedule (to the trunk's foot if the schedule has it up a tree)
         tx = sp.x; tz = sp.z; speed = C.returnSpeed;
+        if(sp.surface&&!this.onSurface(this.x,this.z)){this.lost=true;break;}
         const td = Math.hypot(tx - this.x, tz - this.z);
-        if (td < 0.25) { if (sp.h < 0.05) { this.set('route'); return this.update(0, vis, near); } speed = 0; }
+        if (td < 0.25) { if (sp.h < 0.05 || sp.surface) { this.set('route'); return this.update(0, vis, near); } speed = 0; }
         else if ((this.checkT -= dt) <= 0) { this.checkT = 0.5; if (td > C.maxReturn || !this.env.clear(this.x, this.z, tx, tz)) this.lost = true; }
         break;
       }
     }
     // walk on the ground towards (tx, tz), stopping `stop` m short; every 0.5 s the way ahead is checked (no road, water, drop)
-    this.h = Math.max(0, this.h - dt * 2); this.pitch = 0; this.hop = 0; this.moved = 0;
+    this.h = this.onSurface(this.x,this.z) ? this.at.surface.y-this.env.ground(this.x,this.z) : Math.max(0, this.h - dt * 2); this.pitch = 0; this.hop = 0; this.moved = 0;
     const dx = tx - this.x, dz = tz - this.z, dd = Math.hypot(dx, dz) - stop;
     if (speed > 0 && dd > 0.05 && this.st !== 'notice') {
       if (this.st !== 'home' && (this.checkT -= dt) <= 0) {
         this.checkT = 0.5; const L = Math.min(dd, 1.5), l = Math.hypot(dx, dz);
-        if (!this.env.clear(this.x, this.z, this.x + dx / l * L, this.z + dz / l * L)) { this.set(this.st === 'flee' ? 'flee' : 'home'); this.faceEye = this.st === 'flee'; speed = 0; }
+        if (!this.clearOut(this.x, this.z, this.x + dx / l * L, this.z + dz / l * L)) { this.set(this.st === 'flee' ? 'flee' : 'home'); this.faceEye = this.st === 'flee'; speed = 0; }
       }
       if (speed > 0) {
         const go = Math.min(dd, speed * dt), l = Math.hypot(dx, dz);
@@ -351,9 +372,15 @@ export class OutdoorCatBrain {
   goFor(x, z, stop) { this.food = { x, z, stop, t: 0, wait: this.foodWait() }; this.set('food'); }
   /** #1782: s it hesitates before it walks to food: a social or curious cat comes at once, a lazy one slowly, a shy one slowest (*guess*). */
   foodWait() { const t = this.traits; return C.food.wait * Math.max(0.25, Math.min(4, 1 + 2.5 * t.shy + 0.8 * t.lazy - 0.8 * t.social - 0.5 * t.curious)); }
-  set(st) { this.st = st; this.stateT = 0; this.checkT = 0; }
+  set(st) {
+    if(this.explores){
+      if(this.st==='route' && st!=='route')this.pauseAt=this.env.now();
+      if(st==='route' && this.pauseAt!=null){this.clockDelay=(this.clockDelay??0)+this.env.now()-this.pauseAt;this.pauseAt=null;}
+    }
+    this.st = st; this.stateT = 0; this.checkT = 0;
+  }
   /** Back on its loop now (it was away). */
-  resume() { const s = this.scheduled(); Object.assign(this, { x: s.x, z: s.z, yaw: s.yaw, h: 0, pitch: 0 }); this.set('route'); this.outing = null; this.food = null; }
+  resume() { const s = this.scheduled(); Object.assign(this, { x: s.x, z: s.z, yaw: s.yaw, h: s.elevated?s.y-this.env.ground(s.x,s.z):0, pitch: 0 }); this.set('route'); this.outing = null; this.food = null; }
 }
 
 export function turnTo(a, b, max) {

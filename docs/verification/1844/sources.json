@@ -1,0 +1,89 @@
+{
+  "base": "1227a7317129d3225d98e44dc8abc21b11e40b67",
+  "implementation": {
+    "src/catexploration.js": "729c6c0fc19a1433ab5718b3e5f0f503cc6f305227c95c9ed434fdfbd8fde49d",
+    "src/cataffordances.js": "b17e9dc7ce0d157a382361f0e16b6d82c27553d6d68917ac6f002dd57b4a4a8f",
+    "src/cathabitat.js": "0f5233073131f6cb2bc66a24db41e88f6610db7af94d5fb1c6db7d2f3c315f11",
+    "src/catclimb.js": "cf3af0433578dc913302568498d311b9662634c1d7fed740329f96b46c6c30d5",
+    "src/outdoorcatbrain.js": "d641065fa0024c77f0e7ae829ae3507e42ae1ae2ebe2102a35524fd8fa9960d5",
+    "src/outdoorcats.js": "433550e924b8e7e2c8643d350167a8a59a01edefdaa62e3d6ad3fed0f7edbccd",
+    "src/config.js": "85de82a39581d2fcab0c24fea746b4eeb1ee67b7d97fa51f43078f196b9e3b35",
+    "src/main.js": "3323bf47d5dc696d0433ba38b700caf42ea07c4515cb42aa260563d9e62d9cfd"
+  },
+  "unchangedGeometrySource": {
+    "src/cat.js": {
+      "base": "18fdae74388ecbb084cd65ec62b901f9dc8acd9fdc07ce9ea752e3f553ceb7f0",
+      "final": "18fdae74388ecbb084cd65ec62b901f9dc8acd9fdc07ce9ea752e3f553ceb7f0",
+      "identical": true
+    },
+    "src/surroundings.js": {
+      "base": "fc2f9e35c828e67abf2815534d51be3056ac8f2f7540fb853a08b03ba2010e90",
+      "final": "fc2f9e35c828e67abf2815534d51be3056ac8f2f7540fb853a08b03ba2010e90",
+      "identical": true
+    },
+    "src/nordicgym.js": {
+      "base": "720bfe4d61048ea071068d12a7b712d2465034221fabe0df67ccb757021045f7",
+      "final": "720bfe4d61048ea071068d12a7b712d2465034221fabe0df67ccb757021045f7",
+      "identical": true
+    },
+    "src/sitebackdrop.js": {
+      "base": "dd32d8dbe1d690f14889877fcc6f0eae5e0278506489400606ce0cc2754a9f67",
+      "final": "dd32d8dbe1d690f14889877fcc6f0eae5e0278506489400606ce0cc2754a9f67",
+      "identical": true
+    },
+    "src/edgebackdrop.js": {
+      "base": "9cb9dc1f6a8bda75e4eba02aa9983057645ce77cbe576a51ad6203260953fe66",
+      "final": "9cb9dc1f6a8bda75e4eba02aa9983057645ce77cbe576a51ad6203260953fe66",
+      "identical": true
+    },
+    "src/roofs.js": {
+      "base": "9381e1538ce3603f11d346bc1efbbcedb40d37166d6c82a5b9710e7070ca9bf4",
+      "final": "9381e1538ce3603f11d346bc1efbbcedb40d37166d6c82a5b9710e7070ca9bf4",
+      "identical": true
+    },
+    "src/farwalk.js": {
+      "base": "7970b955dd337c8318331d5b0fddfbac6599a93bce0411b0a99726f4b7ed03b8",
+      "final": "7970b955dd337c8318331d5b0fddfbac6599a93bce0411b0a99726f4b7ed03b8",
+      "identical": true
+    }
+  },
+  "sceneSnapshotBefore": "6b4302a3dad3e44aca4cb1b269406d970200e588f47d832964b7679c4080e691",
+  "sceneSnapshotAfter": "6b4302a3dad3e44aca4cb1b269406d970200e588f47d832964b7679c4080e691",
+  "checks": {
+    "node": {
+      "passed": 13,
+      "failed": 0,
+      "logSha256": "6644539877d69f9ead8b89bcb1beffda3e64a5d0933eda1d8c0ed648a5ec1852"
+    },
+    "browserDistinct": 15,
+    "browserAssertionCalls": 19,
+    "browserLogSha256": "50c42a4124d02d4314a6de69dfed7a21ba15206c483e7a2d0861a457626fdfe8",
+    "sourceGroundSamples": 7579
+  },
+  "images": {
+    "climb-wall.png": "4b291fb4154259b12f7178a00405398a7bd2493cb96bf03732275b074eaac695",
+    "actual-travel-map.png": "040352f3e6c37ea3d770173cef3c1ee6e57d0cc026101433efdc9db408f1aade",
+    "Nordic-rear-near.png": "e7b5c7c39ef78ac29230b7104be4615f47fd86bc0b0086ef15738fef6ff9cf20",
+    "Nordic-rear.png": "7337439ebff35ce229deeecc11ff9ad7f9140442329efb7faba09bd20cdfd58a",
+    "roof-rest.png": "231fba0ad1a36fb03f5c57692aa37fb0d5314300a39c18794c0f32c61c3e626c"
+  },
+  "sourcePhases": [
+    "Initial final app loaded ordinary production modules. Contact/brain imports refreshed with cache-busted specifiers only; corrected before accepted climb/roof images and reverse-travel checks.",
+    "Two northern link bend points shifted0.6m and source polygon radius tightened before final Nordic-return/interaction evidence. The roof path/poses are unchanged across those northern/local corrections.",
+    "Final onSurface carry guard only affects a cat put down outside the roof; covered by pure regression after browser. Stable captured roof/ground paths unchanged."
+  ],
+  "offlineMap": {
+    "source": "browser.json actual saved model positions + map-source.json source contours",
+    "tool": "tools/catexploremap.py",
+    "backend": "installed Cairo via Python ctypes",
+    "noNewAppBootstrap": true
+  },
+  "limits": [
+    "Controlled clock/camera, offscreen stationary rest skips and one fixture-created raw caught fish; no native fishing or real-time hours-long exercise claim.",
+    "Player WALK bounds unchanged; northern cat/camera visits do not establish ordinary player access.",
+    "Final browser stopped at40min fixture limit after functional evidence and four accepted app images; offline map replaces fog-obscured initial overview.",
+    "Separate pre-existing Nordic rear ground geometry finding tracked as original1850."
+  ],
+  "publicFollowup": "Conductor consolidates generic anonymous AI into public245; names/gameplay/services excluded.",
+  "dataFormatting": "Captured JSON values preserved; large trace/scene datasets compacted without filtering. node.txt and browser.log retain raw tool text."
+}

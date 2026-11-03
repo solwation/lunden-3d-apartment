@@ -1,0 +1,214 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "actual approach reaches wall climb continuously without visitor following",
+      "data": {
+        "steps": 111,
+        "clock": 1793535531.6303434,
+        "at": [
+          2.5,
+          1.525000063312109,
+          28.5
+        ],
+        "state": "route",
+        "trace": 111
+      }
+    },
+    {
+      "ok": true,
+      "label": "continuous climb arrives on existing Hus A roof surface",
+      "data": {
+        "steps": 33,
+        "clock": 1793535542.6946406,
+        "at": [
+          0.75,
+          2.99,
+          28.48
+        ],
+        "state": "route",
+        "trace": 143
+      }
+    },
+    {
+      "ok": true,
+      "label": "actual downward mesh ray supports roof paws",
+      "data": {
+        "hit": [
+          0.75,
+          2.990000009536743,
+          28.48
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "label": "actual reverse climb returns safely to ground without resetting goal history",
+      "data": {
+        "steps": 59,
+        "clock": 1793537299.7976453,
+        "at": [
+          2.999999987682388,
+          0,
+          26.999999987682386
+        ],
+        "state": "route",
+        "trace": 201
+      }
+    },
+    {
+      "ok": true,
+      "label": "entire visible cat hull stays outside brick during climb and descent",
+      "data": {
+        "minGap": 0.004999999999999005,
+        "fullFrames": 43,
+        "maxPawGap": 0.004999999999999005
+      }
+    },
+    {
+      "ok": true,
+      "label": "actual model approach/mantle/descent remain continuous",
+      "data": {
+        "maxStep": 0.5500000000011116,
+        "samples": 201,
+        "restSkips": [
+          {
+            "dt": 4.2642998695373535,
+            "drift": 0
+          },
+          {
+            "dt": 1743.3911822144655,
+            "drift": 0
+          }
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "label": "actual excursion reaches behind Nordic from southern grounds continuously",
+      "data": {
+        "steps": 1289,
+        "clock": 1793509777.931426,
+        "at": [
+          -155.45,
+          1.199485318055257,
+          -374.55
+        ],
+        "state": "route",
+        "trace": 1283
+      }
+    },
+    {
+      "ok": true,
+      "label": "actual northern skirt mesh supports Nordic rear paws",
+      "data": {
+        "root": [
+          -154.56504870602558,
+          1.0174230417907113,
+          -375.7611405629756
+        ],
+        "hit": [
+          -154.56504870602558,
+          1.0174230890804297,
+          -375.7611405629756
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "label": "actual Nordic excursion returns to southern grounds",
+      "data": {
+        "steps": 1773,
+        "clock": 1793530772.2418683,
+        "at": [
+          -212,
+          1.8710169024488326,
+          23.000000031656494
+        ],
+        "state": "route",
+        "trace": 3044
+      }
+    },
+    {
+      "ok": true,
+      "label": "real model travel covers hundreds of metres with continuous steps",
+      "data": {
+        "extent": 397.93629194354435,
+        "length": 1652.5343072515152,
+        "maxStep": 0.7529838969021189,
+        "samples": 3044
+      }
+    },
+    {
+      "ok": true,
+      "label": "real raw-fish lifecycle still feeds and counts once in expanded territory",
+      "data": {
+        "before": 0,
+        "after": 1,
+        "location": [
+          -212,
+          23.000000031656494
+        ],
+        "fishPresent": false,
+        "state": "route"
+      }
+    },
+    {
+      "ok": true,
+      "label": "unchanged actual puppet/merged/far draws and desktop/phone gates",
+      "data": {
+        "near": {
+          "calls": 24,
+          "triangles": 10008
+        },
+        "medium": {
+          "calls": 1,
+          "triangles": 10008
+        },
+        "far": {
+          "calls": 0,
+          "triangles": 0
+        }
+      }
+    },
+    {
+      "ok": true,
+      "label": "approach promotes the same named cat and real pet action still counts",
+      "data": {
+        "state": "bound",
+        "name": "Findus",
+        "owner": "Findus",
+        "beforePet": 0,
+        "afterPet": 1,
+        "position": [
+          -205.50615230961944,
+          1.9494397515421753,
+          42.42288826465386
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "label": "real carry action still takes the promoted cat",
+      "data": {
+        "held": true,
+        "name": "Findus"
+      }
+    },
+    {
+      "ok": true,
+      "label": "put down preserves the same cat instance",
+      "data": {
+        "held": false,
+        "position": [
+          -205.50615230961944,
+          1.9494397515421753,
+          42.42288826465386
+        ],
+        "same": true
+      }
+    }
+  ],
+  "rawAssertionCalls": 19,
+  "rawFile": "browser.json"
+}

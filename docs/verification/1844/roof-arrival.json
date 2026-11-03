@@ -1,0 +1,122 @@
+{
+  "phase": "roof-final",
+  "steps": 33,
+  "clock": 1793535542.6946406,
+  "at": [
+    0.75,
+    2.99,
+    28.48
+  ],
+  "state": "route",
+  "trace": 143,
+  "checks": [
+    {
+      "ok": true,
+      "label": "actual approach reaches wall climb continuously without visitor following",
+      "data": {
+        "steps": 111,
+        "clock": 1793535531.6303434,
+        "at": [
+          2.5,
+          1.525000063312109,
+          28.5
+        ],
+        "state": "route",
+        "trace": 111
+      }
+    },
+    {
+      "ok": true,
+      "label": "actual approach reaches wall climb continuously without visitor following",
+      "data": {
+        "steps": 111,
+        "clock": 1793535531.6303434,
+        "at": [
+          2.5,
+          1.525000063312109,
+          28.5
+        ],
+        "state": "route",
+        "trace": 111
+      }
+    },
+    {
+      "ok": true,
+      "label": "actual approach reaches wall climb continuously without visitor following",
+      "data": {
+        "steps": 111,
+        "clock": 1793535531.6303434,
+        "at": [
+          2.5,
+          1.525000063312109,
+          28.5
+        ],
+        "state": "route",
+        "trace": 111
+      }
+    },
+    {
+      "ok": true,
+      "label": "actual approach reaches wall climb continuously without visitor following",
+      "data": {
+        "steps": 111,
+        "clock": 1793535531.6303434,
+        "at": [
+          2.5,
+          1.525000063312109,
+          28.5
+        ],
+        "state": "route",
+        "trace": 111
+      }
+    },
+    {
+      "ok": true,
+      "label": "continuous climb arrives on existing Hus A roof surface",
+      "data": {
+        "steps": 33,
+        "clock": 1793535542.6946406,
+        "at": [
+          0.75,
+          2.99,
+          28.48
+        ],
+        "state": "route",
+        "trace": 143
+      }
+    },
+    {
+      "ok": true,
+      "label": "actual downward mesh ray supports roof paws",
+      "data": {
+        "hit": [
+          0.75,
+          2.990000009536743,
+          28.48
+        ]
+      }
+    }
+  ],
+  "pose": [
+    0.75,
+    2.99,
+    28.48
+  ],
+  "surface": {
+    "id": "canopy-Hus A-0",
+    "x0": 0.2,
+    "x1": 2.25,
+    "z0": 28.25,
+    "z1": 28.65,
+    "y": 2.99,
+    "sourceBounds": {
+      "id": "canopy-Hus A-0",
+      "name": "Entrétaket, Hus A",
+      "x0": 0.030000000000000027,
+      "x1": 2.42,
+      "z0": 28.1,
+      "z1": 29.1,
+      "y": 2.99
+    }
+  }
+}
