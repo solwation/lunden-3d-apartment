@@ -721,7 +721,7 @@ export class Player {
       if(!support)continue;
       const groundVy = (support.y - this.pos.y) / h;
       const launch = !r.airborne && !this.fall && !p.equals(this.pos)
-        ? bicycleTakeoff(r.speed, r.groundVy ?? 0, groundVy, h, this.pos.y + (r.groundVy ?? 0) * h - .5 * C.motion.gravity * h * h - support.y) : 0;
+        ? bicycleTakeoff(r.speed, r.groundVy ?? 0, groundVy, h, this.pos.y + (r.groundVy ?? 0) * h - C.motion.gravity * h * h - support.y) : 0;
       const falling = !!this.fall || !!r.airborne || launch > 0 || this.pos.y-support.y>C.maxDrop;
       let vy=launch || this.vy, y=support.y;
       if(falling) { vy-=C.motion.gravity*h;y=Math.max(support.y,this.pos.y+vy*h); }
@@ -732,11 +732,11 @@ export class Player {
       const steps=Math.max(1,Math.ceil((Math.abs(y-this.pos.y)+Math.abs(nextPitch-(r.pitch??previous.pitch))*C.height)/C.step));let clear=true;
       for(let j=1;j<=steps;j++) { const q=this.pos.clone().lerp(new THREE.Vector3(p.x,y,p.z),j/steps);if(!this.bikeHull(q,r.yaw+(yaw-r.yaw)*j/steps,[],{...support,pitch:THREE.MathUtils.lerp(r.pitch??previous.pitch,nextPitch,j/steps)})){clear=false;break;} }
       if(!clear) { this.vy=0;r.speed=0;continue; }
-      if(falling) {
+      if(falling && (airborne || this.fall)) {
         const f=(this.fall??={top:this.pos.y,gap:0});f.top=Math.max(f.top,this.pos.y);f.gap=Math.max(f.gap,this.pos.y-support.y);
       }
-      this.pos.set(p.x,y,p.z);previous=support;r.yaw=yaw;r.pitch=nextPitch;this.vy=falling?vy:0;r.airborne=airborne;r.groundVy=airborne?0:groundVy;
-      if(this.fall&&!r.airborne) {const f=this.fall;this.fall=null;this.vy=0;this.onLand?.(f.top-this.pos.y,f.gap);if(this.riding!==r)return;}
+      this.pos.set(p.x,y,p.z);previous=support;r.yaw=yaw;r.pitch=nextPitch;this.vy=airborne?vy:0;r.airborne=airborne;r.groundVy=airborne?0:groundVy;
+      if(this.fall&&!r.airborne) {const f=this.fall;this.fall=null;this.vy=0;if(f.gap>0 && f.top>this.pos.y)this.onLand?.(f.top-this.pos.y,f.gap);if(this.riding!==r)return;}
     }
     this.bikeSplash(); // #1304: into the river
     this.edgeNotice(WALK.bikeEdge); // #1719: the bicycle stops ~1 m short of the edge, so a wider margin than on foot
