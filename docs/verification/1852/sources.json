@@ -1,0 +1,15 @@
+{
+  "sourceRevision": "49233f38a8ef1eb3f5d8049103fd13e5607c5ebf",
+  "runtimeRevision": "336b535dbb86a271aedbe90d7375fc5390da5e2f",
+  "runtimeChanges": false,
+  "note": "Actual app test=lazy; full-quality captures with kit.shot. One diagnostic bootstrap; no new implementation, CI or after-state claim. Main animation loop stopped before camera candidates and finite export. Source geometry/metadata hashes bind this archive.",
+  "sha256": {
+    "src/sitebackdrop.js": "dd32d8dbe1d690f14889877fcc6f0eae5e0278506489400606ce0cc2754a9f67",
+    "src/surroundings.js": "fc2f9e35c828e67abf2815534d51be3056ac8f2f7540fb853a08b03ba2010e90",
+    "src/exterior.js": "e6347ad9558aed1e3deaecfd77cd889136868431f7ceeb58ba0000f6ebaf8143",
+    "src/config.js": "f083c956febce79b9e7c268d445d8c4a96ffff9401d0ca9873527d72d4f51686",
+    "docs/development/plan-material.md": "52356a0da6fc3b1190be8eb4e125f29d76dd0e688d8d274ddca2ffbae50586eb",
+    "docs/peab/situationsplan.png": "4ae5f7a29d5ae71976da3dc1c604ced2489d4f986617bc3a77c0d86856aa8a2c",
+    "docs/ingame-reports/380ac6df-6252-4e09-95d3-0f26f134a98e.jpg": "31a68733cd53cebef1b609c9fecdfb9a59fe0a41ad5e0a120d6bf25f8ab90d17"
+  }
+}

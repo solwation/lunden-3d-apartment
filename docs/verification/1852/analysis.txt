@@ -1,0 +1,124 @@
+{
+  "geometry": [
+    {
+      "name": "Hunnerupshemmet / 85",
+      "source": "88457603",
+      "triangles": 16,
+      "footprintArea": 990.990600000001,
+      "roofProjectedArea": 990.9906668917974,
+      "areaError": 0.00006689179645036347,
+      "maxCenterHeightError": 6.051004834972673e-7,
+      "maxUpNormalError": 0.0000028837798329572895,
+      "degenerate": 0,
+      "outside": 0,
+      "internalUnpairedEdges": 0,
+      "badSeams": []
+    },
+    {
+      "name": "Norra vinklade byggnaden",
+      "source": "130578354",
+      "triangles": 16,
+      "footprintArea": 1372.4384000000027,
+      "roofProjectedArea": 1372.4379418579047,
+      "areaError": 0.0004581420980684925,
+      "maxCenterHeightError": 4.550073953168976e-7,
+      "maxUpNormalError": 0,
+      "degenerate": 0,
+      "outside": 0,
+      "internalUnpairedEdges": 0,
+      "badSeams": []
+    },
+    {
+      "name": "Norra tegelpaviljongen",
+      "source": "88457569",
+      "triangles": 16,
+      "footprintArea": 763.6107999999986,
+      "roofProjectedArea": 763.6106106229709,
+      "areaError": 0.0001893770277092699,
+      "maxCenterHeightError": 0.0000021297936125819206,
+      "maxUpNormalError": 0.00006271153927028816,
+      "degenerate": 0,
+      "outside": 0,
+      "internalUnpairedEdges": 0,
+      "badSeams": []
+    },
+    {
+      "name": "Östra längan vid Karpvägen",
+      "source": "88457595",
+      "triangles": 12,
+      "footprintArea": 1014.1956500000005,
+      "roofProjectedArea": 1014.1955704149786,
+      "areaError": 0.00007958502180827054,
+      "maxCenterHeightError": 5.368958611029484e-7,
+      "maxUpNormalError": 3.8506282989958507e-7,
+      "degenerate": 0,
+      "outside": 0,
+      "internalUnpairedEdges": 0,
+      "badSeams": []
+    },
+    {
+      "name": "Komplementbyggnad 476125237",
+      "source": "476125237",
+      "triangles": 4,
+      "footprintArea": 26.767799999999625,
+      "roofProjectedArea": 26.767834984959336,
+      "areaError": 0.000034984959711437114,
+      "maxCenterHeightError": 5.78845839260822e-7,
+      "maxUpNormalError": 4.6848691714895807e-7,
+      "degenerate": 0,
+      "outside": 0,
+      "internalUnpairedEdges": 0,
+      "badSeams": []
+    },
+    {
+      "name": "Komplementbyggnad 476125238",
+      "source": "476125238",
+      "triangles": 4,
+      "footprintArea": 87.61199999999917,
+      "roofProjectedArea": 87.61193213271326,
+      "areaError": 0.00006786728590668645,
+      "maxCenterHeightError": 6.813491348900413e-7,
+      "maxUpNormalError": 2.701841345653655e-7,
+      "degenerate": 0,
+      "outside": 0,
+      "internalUnpairedEdges": 0,
+      "badSeams": []
+    },
+    {
+      "name": "Komplementbyggnad 476125239",
+      "source": "476125239",
+      "triangles": 4,
+      "footprintArea": 94.11834999999883,
+      "roofProjectedArea": 94.11828219506424,
+      "areaError": 0.0000678049345879117,
+      "maxCenterHeightError": 5.92323281534135e-7,
+      "maxUpNormalError": 3.6710512309190424e-7,
+      "degenerate": 0,
+      "outside": 0,
+      "internalUnpairedEdges": 0,
+      "badSeams": []
+    }
+  ]
+}
+{
+  "normals": [
+    {
+      "mesh": "north-roof",
+      "triangles": 48,
+      "degenerate": 0,
+      "maxStoredNormalError": 2.81921502809368e-8
+    },
+    {
+      "mesh": "west-roof",
+      "triangles": 24,
+      "degenerate": 0,
+      "maxStoredNormalError": 2.516712305222768e-8
+    },
+    {
+      "mesh": "west-karpRoof",
+      "triangles": 16,
+      "degenerate": 0,
+      "maxStoredNormalError": 6.123234262925839e-17
+    }
+  ]
+}
