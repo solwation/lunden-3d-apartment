@@ -545,6 +545,7 @@ player.onEdge = () => badge('Här slutar promenadområdet', false); // #1236: th
 const jetpack = new Jetpack({ scene, camera, player, groundY, hud: { el: document.getElementById('jetpack'), glow: document.getElementById('jet-glow'),
   up: document.getElementById('jet-up'), down: document.getElementById('jet-down') } });
 jetpack.onFlight = () => bump('flights', 1, 'jetpack'); // each take-off; the first one scores (SCORE.first.flights)
+player.onJetRise = metres => bump('jetpackMetres', metres); // #1857: fractional actual ascent, ordinary stats/save cadence
 jetpack.onIndoors = () => badge('🚀 Här inne går det inte att flyga', false); // up indoors, once per entry (#1783, *guess*)
 jetpack.onRoofed = () => badge('🚀 Inte inomhus', false); // Space under the garage's ceiling (#441)
 fall.onWake.push(() => jetpack.goHome());

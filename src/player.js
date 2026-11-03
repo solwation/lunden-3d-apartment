@@ -883,6 +883,9 @@ export class Player {
         if (this.pos.y > top) { this.pos.y = Math.max(Math.min(y0, top), g); this.vy = Math.min(0, this.vy); }
       }
       if (this.pos.y === g) { impact = -this.vy; this.vy = 0; }
+      // #1857: only the actual upward jetpack physics displacement, after ceilings.
+      // Ground steps, lift snaps, spawn/rescue and other position changes never reach this hook.
+      if (jet && this.flying && this.vy > 0 && this.pos.y > y0) this.onJetRise?.(this.pos.y - y0);
     }
     if (this.splashCheck()) { this.world.core?.snap(this); this.settleEye(dt); return; } // #1281: into the river (before a landing counts as a fall)
     if (this.fall && this.pos.y <= g) { // landed: with the jetpack on, as hard as the speed it came down at (a soft landing on thrust)

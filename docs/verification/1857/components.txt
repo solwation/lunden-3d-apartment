@@ -1,0 +1,112 @@
+TAP version 13
+# Subtest: every list has a known counter with limits; ids are unique
+ok 1 - every list has a known counter with limits; ids are unique
+  ---
+  duration_ms: 1.557704
+  type: 'test'
+  ...
+# Subtest: a new row is capped at its start, later growth at perMin per minute (+1), and counters never fall
+ok 2 - a new row is capped at its start, later growth at perMin per minute (+1), and counters never fall
+  ---
+  duration_ms: 0.374501
+  type: 'test'
+  ...
+# Subtest: writes are collected: a post inside the gap or an unchanged post costs no write; one row per id
+ok 3 - writes are collected: a post inside the gap or an unchanged post costs no write; one row per id
+  ---
+  duration_ms: 0.833602
+  type: 'test'
+  ...
+# Subtest: the oldest row makes room at the row cap
+ok 4 - the oldest row makes room at the row cap
+  ---
+  duration_ms: 2.583407
+  type: 'test'
+  ...
+# Subtest: GET /boards: most lists rank by count, first lists by the server time; ids never leak; names are cleaned
+ok 5 - GET /boards: most lists rank by count, first lists by the server time; ids never leak; names are cleaned
+  ---
+  duration_ms: 27.988168
+  type: 'test'
+  ...
+# Subtest: POST /boards validates, answers ok and stores via the board storage
+ok 6 - POST /boards validates, answers ok and stores via the board storage
+  ---
+  duration_ms: 1.952405
+  type: 'test'
+  ...
+# Subtest: the Worker forwards /boards to the DrawingRoom storage when it has the binding
+ok 7 - the Worker forwards /boards to the DrawingRoom storage when it has the binding
+  ---
+  duration_ms: 0.649601
+  type: 'test'
+  ...
+# Subtest: medal lists: sum of levels, highest single level, ties by time, migrated rows, client claims ignored
+ok 8 - medal lists: sum of levels, highest single level, ties by time, migrated rows, client claims ignored
+  ---
+  duration_ms: 2.891307
+  type: 'test'
+  ...
+# Subtest: medalStanding: equal sums go to the one whose last level came first; equal top level to the earliest time
+ok 9 - medalStanding: equal sums go to the one whose last level came first; equal top level to the earliest time
+  ---
+  duration_ms: 0.468702
+  type: 'test'
+  ...
+# Subtest: GET /boards carries both medal lists from a recorded row, with no extra write
+ok 10 - GET /boards carries both medal lists from a recorded row, with no extra write
+  ---
+  duration_ms: 2.479006
+  type: 'test'
+  ...
+# Subtest: the Worker deploy workflow triggers on every src/ file the Worker imports
+ok 11 - the Worker deploy workflow triggers on every src/ file the Worker imports
+  ---
+  duration_ms: 10.621526
+  type: 'test'
+  ...
+# Subtest: actual legacy stats default to zero; fractional metres persist, existing receipts and points remain
+ok 12 - actual legacy stats default to zero; fractional metres persist, existing receipts and points remain
+  ---
+  duration_ms: 4.643812
+  type: 'test'
+  ...
+# Subtest: actual ascent sums metres, independent of per-frame rounding at 20/60/120 Hz
+ok 13 - actual ascent sums metres, independent of per-frame rounding at 20/60/120 Hz
+  ---
+  duration_ms: 5.738114
+  type: 'test'
+  ...
+# Subtest: descent, unworn/indoor pack, ground steps, ceiling and spawn never credit height
+ok 14 - descent, unworn/indoor pack, ground steps, ceiling and spawn never credit height
+  ---
+  duration_ms: 0.737102
+  type: 'test'
+  ...
+# Subtest: paused time and restored position do not replay already counted altitude
+ok 15 - paused time and restored position do not replay already counted altitude
+  ---
+  duration_ms: 0.397901
+  type: 'test'
+  ...
+# Subtest: Astronaut has stable independent id, curve and exactly-once existing medal bonus
+ok 16 - Astronaut has stable independent id, curve and exactly-once existing medal bonus
+  ---
+  duration_ms: 1.315603
+  type: 'test'
+  ...
+# Subtest: real Worker catalogue floors only at sync, bounds growth and derives Astronaut
+ok 17 - real Worker catalogue floors only at sync, bounds growth and derives Astronaut
+  ---
+  duration_ms: 0.863302
+  type: 'test'
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 338.219621

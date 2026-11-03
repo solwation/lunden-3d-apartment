@@ -34,7 +34,7 @@ Promenadstråken i parken och längs Höje å samt vägarna i resten av området
 Vid Karpvägen finns ett utegym på grus med cortenkant, orangebruna trästationer, bänkar och en svart hinderbana. Börja med E eller touch: räckhäv, bänkpress, step-up, sit-ups, dips, armgång, sidoklättring på nätet, stubbsteg och balansgång. Ta i med snabba F-tryck eller drag upp och ner i träningsrutan; gångövningarna kräver en aktiv runda ut och tillbaka före en hel kraftcykel. Andra spelare ser själva övningen och bänkpressens rörliga stock. Repetitionerna ger poäng med dagstak och räknas till medaljen Utegymmare. Träningen bygger även avatarens överarmar; effekten avtar till normal storlek under tre dygn utan träning och syns också för andra spelare.
 
 
-Med jetpacken kan du stiga genom ett molnlager och upp över ett tätt molnhav. Ovanför ligger marken dold under molnen även när vädret på marken är klart. Jetpacken sitter kvar på ryggen när du går in, men inomhus går det inte att flyga med den.
+Med jetpacken kan du stiga genom ett molnlager och upp över ett tätt molnhav. Ovanför ligger marken dold under molnen även när vädret på marken är klart. Jetpacken sitter kvar på ryggen när du går in, men inomhus går det inte att flyga med den. Medaljen Astronaut belönar sammanlagda höjdmeter uppåt med jetpacken; första nivån nås efter 100 meter. Nedfärd och teleportering räknas inte.
 
 Vintervyerna kräver mindre ritarbete när trädens och klängväxternas löv har fallit.
 

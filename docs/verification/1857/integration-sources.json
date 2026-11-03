@@ -1,0 +1,8 @@
+{
+  "acceptedRaw": "8654ca81073a2cb7c3e4284f59c93528f5c064a0",
+  "serverStage": "fadb26260acdf829f5950c7b559c1b8eef850e37",
+  "preservedBike": "0f0b0371",
+  "sourceParity": "All accepted source manifest entries exact except Player; Player delta from published bicycle code is exactly the three reviewed positive-height callback lines. Prior bicycle code preserved.",
+  "playerSHA256": "d7e21cc3294b26e7988f49b37f8c1819d2f5f3bfbbe7b2e78ad7347bd142a696",
+  "verification": "Reused17/17 source-bound component checks and inspected native app; merged Player/main/stats syntax green. No redundant app or broad rerun."
+}

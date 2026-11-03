@@ -1,0 +1,29 @@
+{
+  "issue": 1857,
+  "base": "c8a0415984862f9703150aa0b19a22b63e90d11c",
+  "runtimeCheckpoint": "e3d84a2fa736d53fe3f41f6a00f166c341510049",
+  "runtimeSameAsCheckpoint": true,
+  "serverStage": [
+    "src/boardcatalog.js",
+    "src/medalcatalog.js"
+  ],
+  "clientStage": [
+    "src/player.js",
+    "src/main.js",
+    "src/stats.js"
+  ],
+  "checks": "17/17 source-bound component tests; one held actual app/native-touch ascent + ordinary medal dialog",
+  "files": {
+    "src/player.js": "19434c3faf4eb9bc96849e2e82613603fda23c0295a35861374da93054f517d7",
+    "src/main.js": "7868e14a28ee6e79a0d49005b564b938b21cad92fe0894553ba21c1f38735f53",
+    "src/stats.js": "ce864f92a38e1fd0a7763ee8d8b9d6d567dadc2430073af9e86f454411d50795",
+    "src/boardcatalog.js": "e80ac35f121a7cd5ec3764e8ccaed972bd39c04116c600f700eb1125cfa938b9",
+    "src/medalcatalog.js": "e891fea52f10af460c2858e4936eb8ec9b058d394eeb96c61aa4fab61417e366",
+    "tools/astronaut1857test.mjs": "cdda1a12e05e9be6334d492c708f1945539e9c0d9d4eca73e1c4fcfb5f52a9a1",
+    "tools/astronaut1857stats.mjs": "7feea904d9f85b8ca824d39bc3c292cf6e9d2b8bb08a097eeb0cbfbe5729344c",
+    "tools/astronaut1857browser.cjs": "67a7d69b8884ebd07fe552169b1e3cb487abbbdb720ef43af38da082acefed8d",
+    "docs/verification/1857/app/astronaut-medal.png": "3051e5974b02270880a134505ab3fcc983e10c822c703afdf8ade011ba29c121",
+    "docs/verification/1857/app/ascent.json": "225d603642a8bb31939f31c7f1f69ab4c7a9a1627d63aca18977a974ad4eada7"
+  },
+  "limit": "Local98mseed +6.245mactualascent; paused30x50mssteps; SwiftShader/hasTouch; no physical phone or FPS claim."
+}

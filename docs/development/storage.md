@@ -1637,3 +1637,7 @@ Local per-profile stats save `footballGoals` together with `footballRecord` (mat
 own former socket IDs and cumulative credited counts). Matching server credits add one existing
 score point each, exactly once across reload/reconnect/late goal receipt. Other activity ledgers
 and caps are unchanged. [Protocol/receipt tests and exact scope](../verification/1853/README.md).
+
+## Astronaut altitude (#1857)
+
+The existing per-profile `lunden.stats` record gains `jetpackMetres` (finite nonnegative float, legacy default 0). Every actual upward jetpack physics step adds its unrounded displacement. Only the displayed/exported counter is floored, so no fractional credit is discarded each frame. The existing two-second/pagehide save cadence, profile ownership and reset path apply; interrupted/blocked storage has the same existing durability limit. No extra key, inventory or network cadence is introduced. `astronaut` uses the ordinary medal receipts/bonus-once/restore rules; Jetpackpilot (`jetpack`/`flights`) remains unchanged. Metres themselves give no points. Worker `COUNTERS.jetpackMetres` accepts 1200/min (physical thin-air cap 18 m/s = 1080/min), initial allowance 100000 m is a bounded **guess**. Publish shared board/medal catalogues to the Worker before Pages so ordinary sync accepts the new counter immediately; older Worker ignores it while local progression still works. This gameplay/medal feature is not applicable to the public project.
