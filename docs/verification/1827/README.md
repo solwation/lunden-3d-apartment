@@ -47,3 +47,6 @@ or food lifecycle logic changed. Rewards are original-only gameplay, so no publi
 
 One worker, about8 minutes implementation and3 minutes active verification. The gym sibling used separate
 keys/anchors; conductor owns the shared stats merge, one targeted combined ledger check, publication and closure.
+
+
+Levererat i `a500445725edbc72d5866f2d947851e14435c649`. [Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/41607090023) och [Worker](https://github.com/solwation/lunden-3d-apartment/actions/runs/41607089936) lyckades; Worker-loggen bekräftar faktisk Wrangler-deploy och den publika sidans version.json visar `a500445`. Dirigentens kombinerade diff-/bildgranskning är klar. Bild-URL:erna ovan är åtkomliga och bytekontrollerade. Ingen rutinmässig omkörning av gröna kontroller efter orelaterad integration. Ärendet stängs genom efterföljande verifieringscommit och aktiva etiketter tas bort.
