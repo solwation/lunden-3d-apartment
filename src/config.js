@@ -4907,9 +4907,8 @@ export const STRING_SHELF = { W: 0.81, D: 0.325, H: 0.755, t: 0.016, boards: [0.
   board: 0x4a2a20, white: 0xf0eee8, bottom: 1.84 };
 
 // The cat card binder as an object (#1255, src/catbinderprop.js, built into furniture.js `coffeetable`): a small ring binder
-// lying on the coffee table's slat shelf, in the table's local frame (x along the length, z across, y up from the floor).
-// `w` × `d` × `h` = the closed binder (A5-ish, *guess*), `x` / `z` its centre on the shelf (towards the sofa side, so a
-// crouching visitor sees its spine), `turn` its yaw in degrees (the long side along the table), colours are our pick.
+// #1848: lying on the coffee tabletop, in the table's local frame (x along the length, z across, y up from the floor).
+// `w` × `d` × `h` = the closed binder (A5-ish, *guess*), `x` / `z` its centre on the top (clear of the default fruit bowl and remote; checked in #1848), `turn` its yaw in degrees (the long side along the table), colours are our pick.
 // No texture: flat colours, two small gold marks (a paw on the cover).
 export const CAT_BINDER = { w: 0.3, d: 0.22, h: 0.035, x: 0.05, z: 0.085, turn: 6, cover: 0x2f4f86, pages: 0xf1ead8, gold: 0xd8b24a };
 

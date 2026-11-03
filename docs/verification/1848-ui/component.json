@@ -1,0 +1,275 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "name": "keys actual registered families loaded",
+      "data": {
+        "seen": 4,
+        "found": 3,
+        "total": 65,
+        "families": [
+          {
+            "id": "cats",
+            "label": "Katter",
+            "order": 1,
+            "seen": 3,
+            "found": 3,
+            "total": 37
+          },
+          {
+            "id": "squirrels",
+            "label": "Ekorrar",
+            "order": 2,
+            "seen": 0,
+            "found": 0,
+            "total": 10
+          },
+          {
+            "id": "ducks",
+            "label": "Änder",
+            "order": 3,
+            "seen": 0,
+            "found": 0,
+            "total": 2
+          },
+          {
+            "id": "birds",
+            "label": "Fåglar",
+            "order": 4,
+            "seen": 1,
+            "found": 0,
+            "total": 1
+          },
+          {
+            "id": "fish",
+            "label": "Fiskar",
+            "order": 5,
+            "seen": 0,
+            "found": 0,
+            "total": 7
+          },
+          {
+            "id": "ponies",
+            "label": "Ponnyer",
+            "order": 6,
+            "seen": 0,
+            "found": 0,
+            "total": 2
+          },
+          {
+            "id": "insects",
+            "label": "Fjärilar",
+            "order": 7,
+            "seen": 0,
+            "found": 0,
+            "total": 3
+          },
+          {
+            "id": "figures",
+            "label": "Figurer & besökare",
+            "order": 8,
+            "seen": 0,
+            "found": 0,
+            "total": 3
+          }
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "keys grouped numbered grid, actual silhouette, counts and bounded lazy queue",
+      "data": {
+        "tiles": 65,
+        "unknown": 61,
+        "images": 7,
+        "max": 1,
+        "counts": "Hittade3 / 654 %Sedda4 / 656 %",
+        "complete": true,
+        "width": [
+          1280,
+          1280
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "keys real model detail spread, chain, player stats/photos",
+      "data": {
+        "cards": 2,
+        "unclipped": true,
+        "chain": 4,
+        "stats": "Dina mötenFörsta mötet3 nov. 2026Sedd1Hittad1Klappningar1",
+        "photos": 1,
+        "text": "#001Huskatt · kattungeVanlig…Katter · svartvitInformationStorlekLiten kattunge (modellens proportioner)ViktVäxer fortfarandePlatsHemmet, gården och parkens stråkNärOlika tider på dygnetTycker omLugn närhet och klapparDen vanligaste katten i huset.Finns i många färger.Dina mötenFörsta mötet3 nov. 2026Sedd1Hittad1Klappningar1MötesfotonFormer och utveckling…#001 Huskatt · kattunge→…#002 Huskatt#002HuskattVanlig…Katter · svartvitInformationStorlekVuxen kattVikt3.5–5 kg (uppskattning)PlatsHemmet, gården och parkens stråkNärOlika tider på dygnetTycker omLugn närhet och klapparDen vanligaste katten i huset.Finns i många färger.Dina mötenFörsta mötet3 nov. 2026Sedd1Hittad1Klappningar1MötesfotonInga mötesfoton ännu.Former och utveckling…#001 Huskatt · kattunge→…#002 Huskatt"
+      }
+    },
+    {
+      "ok": true,
+      "name": "keys photo opens"
+    },
+    {
+      "ok": true,
+      "name": "keys escape returns photo to card"
+    },
+    {
+      "ok": true,
+      "name": "keys arrow turns numbered card"
+    },
+    {
+      "ok": true,
+      "name": "keys detail back returns grid"
+    },
+    {
+      "ok": true,
+      "name": "keys new registration appears automatically, arbitrary chain and storage error visible",
+      "data": {
+        "total": 66,
+        "chain": 8,
+        "error": "Samlingen sparas bara under detta besök."
+      }
+    },
+    {
+      "ok": true,
+      "name": "keys close drops pending image jobs"
+    },
+    {
+      "ok": true,
+      "name": "touch actual registered families loaded",
+      "data": {
+        "seen": 4,
+        "found": 3,
+        "total": 65,
+        "families": [
+          {
+            "id": "cats",
+            "label": "Katter",
+            "order": 1,
+            "seen": 3,
+            "found": 3,
+            "total": 37
+          },
+          {
+            "id": "squirrels",
+            "label": "Ekorrar",
+            "order": 2,
+            "seen": 0,
+            "found": 0,
+            "total": 10
+          },
+          {
+            "id": "ducks",
+            "label": "Änder",
+            "order": 3,
+            "seen": 0,
+            "found": 0,
+            "total": 2
+          },
+          {
+            "id": "birds",
+            "label": "Fåglar",
+            "order": 4,
+            "seen": 1,
+            "found": 0,
+            "total": 1
+          },
+          {
+            "id": "fish",
+            "label": "Fiskar",
+            "order": 5,
+            "seen": 0,
+            "found": 0,
+            "total": 7
+          },
+          {
+            "id": "ponies",
+            "label": "Ponnyer",
+            "order": 6,
+            "seen": 0,
+            "found": 0,
+            "total": 2
+          },
+          {
+            "id": "insects",
+            "label": "Fjärilar",
+            "order": 7,
+            "seen": 0,
+            "found": 0,
+            "total": 3
+          },
+          {
+            "id": "figures",
+            "label": "Figurer & besökare",
+            "order": 8,
+            "seen": 0,
+            "found": 0,
+            "total": 3
+          }
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "touch grouped numbered grid, actual silhouette, counts and bounded lazy queue",
+      "data": {
+        "tiles": 65,
+        "unknown": 61,
+        "images": 7,
+        "max": 1,
+        "counts": "Hittade3 / 654 %Sedda4 / 656 %",
+        "complete": true,
+        "width": [
+          390,
+          390
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "touch real model detail spread, chain, player stats/photos",
+      "data": {
+        "cards": 1,
+        "unclipped": true,
+        "chain": 4,
+        "stats": "Dina mötenFörsta mötet3 nov. 2026Sedd1Hittad1Klappningar1",
+        "photos": 1,
+        "text": "#001Huskatt · kattungeVanlig…Katter · svartvitInformationStorlekLiten kattunge (modellens proportioner)ViktVäxer fortfarandePlatsHemmet, gården och parkens stråkNärOlika tider på dygnetTycker omLugn närhet och klapparDen vanligaste katten i huset.Finns i många färger.Dina mötenFörsta mötet3 nov. 2026Sedd1Hittad1Klappningar1MötesfotonFormer och utveckling…#001 Huskatt · kattunge→…#002 Huskatt#002HuskattVanlig…Katter · svartvitInformationStorlekVuxen kattVikt3.5–5 kg (uppskattning)PlatsHemmet, gården och parkens stråkNärOlika tider på dygnetTycker omLugn närhet och klapparDen vanligaste katten i huset.Finns i många färger.Dina mötenFörsta mötet3 nov. 2026Sedd1Hittad1Klappningar1MötesfotonInga mötesfoton ännu.Former och utveckling…#001 Huskatt · kattunge→…#002 Huskatt"
+      }
+    },
+    {
+      "ok": true,
+      "name": "touch photo opens"
+    },
+    {
+      "ok": true,
+      "name": "touch escape returns photo to card"
+    },
+    {
+      "ok": true,
+      "name": "touch arrow turns numbered card"
+    },
+    {
+      "ok": true,
+      "name": "touch detail back returns grid"
+    },
+    {
+      "ok": true,
+      "name": "touch new registration appears automatically, arbitrary chain and storage error visible",
+      "data": {
+        "total": 66,
+        "chain": 8,
+        "error": "Samlingen sparas bara under detta besök."
+      }
+    },
+    {
+      "ok": true,
+      "name": "touch close drops pending image jobs"
+    },
+    {
+      "ok": true,
+      "name": "no page errors",
+      "data": []
+    }
+  ],
+  "errors": [],
+  "scope": "Actual index/BinderPanel and target source registry/collection/model image provider with a small offscreen renderer, fixture-only encounters/photos; no apartment bootstrap."
+}

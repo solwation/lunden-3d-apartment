@@ -213,19 +213,64 @@
     #note .text { display: block; font: 16px/1.45 system-ui, sans-serif; color: #23324a; }
     #note small { display: block; margin: -8px 0 14px; color: #6a7c84; font: 13px system-ui, sans-serif; }
     body.phone #note .kbd, body.touch #note .kbd { display: none; } /* #275: the keys only for the keyboard */
-    #binder-view { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(20, 35, 45, 0.55); }
-    #binder-view[hidden] { display: none; }
-    #binder-view .binder { position: relative; width: min(940px, calc(100vw - 24px - var(--sl) - var(--sr))); max-height: calc(100vh - 24px - var(--st) - var(--sb)); overflow: auto; background: #f1ead8; color: #23324a; border: 12px solid #2f4f86; border-radius: 10px; box-shadow: 0 14px 40px rgba(0,0,0,.45); padding: 14px 16px 12px; box-sizing: border-box; font: 15px/1.35 system-ui, sans-serif; -webkit-overflow-scrolling: touch; }
-    #binder-view header { display: flex; align-items: baseline; gap: 12px; padding-right: 48px; margin-bottom: 8px; }
-    #binder-view h2 { margin: 0; font-size: 22px; }
-    #binder-view .count { font-size: 13px; opacity: .75; }
-    #binder-view .spread { display: grid; grid-template-columns: 270px 1fr; gap: 16px; align-items: start; }
-    #binder-view .card { border: 3px solid #8a93a6; border-radius: 12px; background: #fff; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; min-height: 250px; box-sizing: border-box; }
-    #binder-view .card.tier-uncommon { border-color: #4f9a62; } #binder-view .card.tier-rare { border-color: #3f7fc4; } #binder-view .card.tier-epic { border-color: #8a56c4; } #binder-view .card.tier-legendary { border-color: #d8a62a; }
-    /* rarity visuals (#1256; CAT_CARD.fx, src/catbinder.js): pure CSS layers inside the card, text stays above them */
-    #binder-view .card { position: relative; isolation: isolate; overflow: hidden; transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .15s ease-out; }
-    #binder-view .card > :not(.fx) { position: relative; z-index: 2; }
-    #binder-view .card .fx { position: absolute; pointer-events: none; z-index: 1; }
+    /* #1848: a numbered model collection, with a separate detail spread. */
+    #binder-view { position:fixed; inset:0; z-index:5; display:grid; place-items:center; background:#12232edb; color:#23324a; }
+    #binder-view[hidden],#binder-view [hidden] { display:none !important; }
+    #binder-view .binder { position:relative; display:flex; flex-direction:column; width:min(1160px,calc(100vw - 24px - var(--sl) - var(--sr))); height:min(900px,calc(100dvh - 24px - var(--st) - var(--sb))); background:#f3eedf; border:9px solid #294f77; border-radius:16px; padding:18px; box-sizing:border-box; box-shadow:0 15px 50px #0008; font:15px/1.4 system-ui; }
+    #binder-view .dex-heading { display:flex; gap:12px; align-items:baseline; padding-right:44px; flex-wrap:wrap; }
+    #binder-view h2 { margin:0; font-size:28px; } #binder-view .dex-subtitle { font-size:13px; color:#576976; }
+    #binder-view .dex-counts { display:flex; gap:12px; padding:12px 0; }
+    #binder-view .dex-count { display:grid; grid-template-columns:auto auto; align-items:baseline; gap:0 14px; min-width:160px; padding:8px 14px; border-radius:10px; background:#e2e9e5; }
+    #binder-view .dex-count>span { font-weight:700; } #binder-view .dex-count strong { font-size:21px; } #binder-view .dex-count small { grid-column:2; text-align:right; }
+    #binder-view .dex-body { flex:1; min-height:0; overflow:auto; overscroll-behavior:contain; padding:2px 8px 12px 2px; scrollbar-gutter:stable; }
+    #binder-view .dex-family { margin:0 0 24px; } #binder-view .dex-family-head { display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin:6px 0 10px; }
+    #binder-view .dex-family-head h3 { margin:0; font-size:20px; } #binder-view .dex-family-head>span { font-size:13px; }
+    #binder-view .dex-complete { color:#216b3d; font-weight:700; }
+    #binder-view .dex-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(116px,1fr)); gap:10px; }
+    #binder-view button { color:inherit; font:inherit; cursor:pointer; touch-action:manipulation; }
+    #binder-view button:focus-visible { outline:3px solid #df7e22; outline-offset:3px; }
+    #binder-view .dex-tile { display:flex; flex-direction:column; align-items:center; gap:3px; min-height:170px; border:2px solid var(--rarity,#8a93a6); border-radius:10px; padding:6px; background:#fffdf7; }
+    #binder-view .dex-tile.found { box-shadow:0 0 0 1px #3f7d54; } #binder-view .dex-tile.unknown { background:#e6e4da; }
+    #binder-view .dex-name { font-size:12px; line-height:1.25; min-height:30px; } #binder-view .dex-number { color:#536271; font-size:12px; font-weight:700; }
+    #binder-view .dex-state { font-size:11px; } #binder-view .found .dex-state { color:#216b3d; font-weight:700; }
+    #binder-view .dex-rarity { display:inline-block; align-self:center; max-width:100%; box-sizing:border-box; padding:2px 6px; border:1px solid var(--rarity,#8a93a6); border-radius:5px; color:#23324a; background:#fff9; font-size:10px; font-weight:700; }
+    #binder-view .dex-art { position:relative; display:grid; place-items:center; width:96px; height:96px; flex-shrink:0; margin:auto; background:radial-gradient(ellipse at 50% 80%,#dbe4e2,transparent 70%); }
+    #binder-view .dex-art img { display:block; width:100%; height:100%; object-fit:contain; }
+    #binder-view .dex-art.silhouette img { filter:brightness(0); opacity:.72; }
+    #binder-view .dex-image-wait { position:absolute; inset:0; display:grid; place-items:center; color:#8b9396; font-size:30px; }
+    #binder-view .dex-art.loaded .dex-image-wait { display:none; }
+    #binder-view .dex-nav { display:flex; gap:8px; align-items:center; padding:10px 0 0; flex-wrap:wrap; }
+    #binder-view .dex-nav:empty { display:none; }
+    #binder-view .dex-nav button,#binder-view .dex-photo button { min-height:44px; min-width:80px; border:1px solid #294f77; border-radius:8px; padding:8px 12px; background:#fffdf8; }
+    #binder-view .dex-nav button:first-child { margin-right:auto; background:#294f77; color:#fff; } #binder-view button:disabled { opacity:.4; cursor:default; }
+    #binder-view .dex-position { font-size:12px; }
+    #binder-view .dex-status { margin:6px 0; padding:8px; border:1px solid #bd8d44; border-radius:6px; background:#fff1d0; font-size:13px; }
+    #binder-view .dex-hint { flex-shrink:0; margin:8px 0 0; color:#65757c; font-size:12px; }
+    #binder-view .dex-spread { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:18px; align-items:start; }
+    #binder-view .dex-card { max-width:none; max-height:none; margin:0; box-sizing:border-box; position:relative; overflow:hidden; display:flex; flex-direction:column; gap:10px; border:3px solid var(--rarity,#8a93a6); border-radius:13px; padding:18px; background:#fffdf7; min-width:0; }
+    #binder-view .dex-card>*:not(.fx) { position:relative; z-index:2; } #binder-view .dex-card .fx { position:absolute; pointer-events:none; z-index:1; }
+    #binder-view .dex-card-head { display:grid; grid-template-columns:auto 1fr; gap:4px 10px; align-items:baseline; }
+    #binder-view .dex-card-head h3 { margin:0; font-size:23px; } #binder-view .dex-card-head .dex-rarity { grid-column:1 / -1; justify-self:start; font-size:12px; }
+    #binder-view .dex-card>.dex-art { width:min(320px,100%); height:auto; aspect-ratio:1; }
+    #binder-view .dex-family-name { margin:0; text-align:center; font-weight:600; }
+    #binder-view .dex-card h4 { margin:0 0 6px; font-size:15px; }
+    #binder-view .dex-card dl { display:grid; grid-template-columns:minmax(70px,auto) minmax(0,1fr); gap:4px 12px; margin:0; font-size:13px; }
+    #binder-view .dex-card dt { font-weight:650; } #binder-view .dex-card dd { margin:0; overflow-wrap:anywhere; }
+    #binder-view .dex-fact { margin:0; padding:10px; background:#e6eef1d9; border-radius:8px; font-size:13px; }
+    #binder-view .dex-unknown-note { min-height:110px; color:#5b6870; text-align:center; }
+    #binder-view .dex-chain { margin-top:6px; border-top:1px solid #bbb8; padding-top:12px; }
+    #binder-view .dex-chain-row { display:flex; align-items:center; gap:6px; overflow-x:auto; padding:3px 3px 8px; }
+    #binder-view .dex-chain-link { flex:0 0 102px; min-height:132px; background:#fff8; border:1px solid #a8b5bf; border-radius:8px; padding:3px; }
+    #binder-view .dex-chain-link[aria-current] { border:3px solid #294f77; } #binder-view .dex-chain-link>span { display:block; font-size:10px; }
+    #binder-view .dex-photo-strip { display:flex; gap:7px; overflow-x:auto; padding:3px; }
+    #binder-view .dex-photo-strip button { flex:0 0 96px; height:76px; padding:0; border:1px solid #a8b5bf; border-radius:6px; overflow:hidden; background:#fff; }
+    #binder-view .dex-photo-strip img { width:100%; height:100%; object-fit:contain; }
+    #binder-view .dex-photo { position:absolute; inset:0; z-index:8; display:grid; place-items:center; padding:20px; box-sizing:border-box; background:#14232df2; }
+    #binder-view .dex-photo>div { display:flex; flex-direction:column; align-items:center; gap:10px; width:min(900px,100%); max-height:100%; color:#fff; }
+    #binder-view .dex-photo img { width:auto; max-width:100%; max-height:calc(100dvh - 160px); object-fit:contain; }
+    #binder-view .dex-photo-caption { margin:0; }
+    @media(max-width:940px) { #binder-view .dex-spread { grid-template-columns:minmax(0,1fr); } #binder-view .dex-next-card { display:none; } }
+    @media(max-width:560px) { #binder-view .binder { padding:10px; border-width:6px; width:calc(100vw - 12px); height:calc(100dvh - 12px - var(--st) - var(--sb)); } #binder-view h2 { font-size:24px; } #binder-view .dex-subtitle { display:none; } #binder-view .dex-counts { gap:7px; padding:8px 0; } #binder-view .dex-count { flex:1; min-width:0; padding:6px 8px; gap:0 6px; } #binder-view .dex-count strong { font-size:17px; } #binder-view .dex-grid { grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:7px; } #binder-view .dex-card { padding:12px; } #binder-view .dex-nav { gap:5px; } #binder-view .dex-nav button { min-width:60px; padding:6px; } #binder-view .dex-hint { font-size:11px; } }
     #binder-view .card.fx-1 { background: linear-gradient(160deg, #fff 55%, #e9f4ec); box-shadow: inset 0 0 0 2px rgba(79,154,98,.35), 0 0 10px rgba(79,154,98,.35); }
     #binder-view .card.fx-2 { background: linear-gradient(135deg, #f4f9ff, #cfe2f7 45%, #f7fbff 60%, #b9d3ee); box-shadow: inset 0 0 0 2px rgba(255,255,255,.7), 0 0 14px rgba(63,127,196,.5); }
     #binder-view .card.fx-3 { background: linear-gradient(135deg, #f6efff, #d8c4f0 40%, #f9f3ff 58%, #c3a6e6); box-shadow: inset 0 0 0 2px rgba(255,255,255,.75), 0 0 18px rgba(138,86,196,.65); }
@@ -250,82 +295,6 @@
     @keyframes card-twinkle { 0%, 100% { opacity: .15; } 50% { opacity: 1; } }
     @keyframes card-spin { to { --spin: 360deg; } }
     @media (prefers-reduced-motion: reduce) { #binder-view .card, #binder-view .card .fx, #binder-view .card .glitter::before, #binder-view .card .glitter::after, #binder-view .card.fx-4::before { animation: none !important; transition: none !important; } #binder-view .card .shine { left: 35%; opacity: .5; } #binder-view .card .glitter::before, #binder-view .card .glitter::after { opacity: .7; } #binder-view .card .star-fx { opacity: .9; } }
-    #binder-view .card.unknown { background: #e6e1d3; border-style: dashed; border-color: #a29d8f; color: #6a6659; }
-    #binder-view .card .no { font-size: 12px; opacity: .7; }
-    #binder-view .card h3 { margin: 0; font-size: 24px; }
-    #binder-view .card .tier { font-size: 13px; font-weight: 600; }
-    #binder-view .card .qm { margin: 8px 0; text-align: center; font-size: 76px; font-weight: 700; opacity: .4; }
-    #binder-view .card .note { margin: 0; font-size: 14px; }
-    #binder-view .facts { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 4px 0; }
-    #binder-view .facts dt { font-weight: 600; } #binder-view .facts dd { margin: 0; }
-    #binder-view .lore { margin: 4px 0 0; padding-left: 18px; font-size: 14px; }
-    #binder-view .photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
-    #binder-view .photo { position: relative; margin: 0; background: #fbfaf6; padding: 6px 6px 4px; box-shadow: 0 3px 8px rgba(0,0,0,.3); display: flex; flex-direction: column; box-sizing: border-box; }
-    #binder-view .photo img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #ddd; display: block; }
-    #binder-view .photo figcaption { display: flex; flex-direction: column; font-size: 12px; padding-top: 3px; } #binder-view .photo figcaption b { font-size: 14px; }
-    #binder-view .photo .badge { position: absolute; top: 10px; right: 10px; font-style: normal; font-size: 11px; font-weight: 700; background: #d8141e; color: #fff; border-radius: 6px; padding: 1px 6px; }
-    #binder-view .photo.empty { min-width: 0; aspect-ratio: 4 / 3; align-items: center; justify-content: center; background: transparent; box-shadow: none; border: 2px dashed #b7b09c; color: #8d8672; font-size: 13px; }
-    #binder-view .pager { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; }
-    #binder-view .pager button[data-nav=prev], #binder-view .pager button[data-nav=next] { min-width: 96px; min-height: 44px; border: 0; border-radius: 8px; background: #2f4f86; color: #fff; font: 600 14px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; }
-    #binder-view .pager button:disabled { opacity: .35; cursor: default; }
-    #binder-view .dots { display: flex; flex-wrap: wrap; justify-content: center; }
-    #binder-view .dot { width: 44px; height: 44px; border: 0; background: none; padding: 0; cursor: pointer; touch-action: manipulation; position: relative; }
-    #binder-view .dot::after { content: ''; position: absolute; inset: 15px; border-radius: 50%; background: #2f4f86; }
-    #binder-view .dot.empty::after { background: transparent; box-shadow: inset 0 0 0 2px #8a93a6; } #binder-view .dot.star::after { background: #d8a62a; } #binder-view .dot.on::after { inset: 12px; }
-    /* photo menu (#1257): save / throw buttons, the enlarged photo and the throw-away question; DOM + CSS only, targets >= 44 px */
-    #binder-view .photo .pic { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; touch-action: manipulation; }
-    #binder-view .photo .acts { display: flex; gap: 6px; margin-top: 5px; }
-    /* 'body' beats hudicons.css's .hud-button glass on these panel buttons */
-    body #binder-view button.save, body #binder-view button.throw, body #binder-view .photosbtn, body #binder-view .vacts button, body #binder-view .confirm button { min-height: 44px; min-width: 44px; border: 2px solid #2f4f86; border-radius: 8px; background: #fff; color: #2f4f86; font: 600 14px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; padding: 0 10px; }
-    body #binder-view .photo .acts button { flex: 1; padding: 0 4px; }
-    body #binder-view button.save.on, body #binder-view .vacts button[aria-pressed=true] { background: #2f4f86; color: #fff; }
-    body #binder-view button.throw, body #binder-view .confirm .danger { border-color: #b3261e; color: #b3261e; } body #binder-view .confirm .danger { background: #b3261e; color: #fff; }
-    body #binder-view .photosbtn { margin-top: 4px; } body #binder-view .photosbtn:disabled { opacity: .4; cursor: default; }
-    #binder-view button:focus-visible { outline: 3px solid #d8a62a; outline-offset: 2px; }
-    #binder-view .slotline { margin: 2px 0 0; font-size: 13px; } #binder-view .slotline.full { color: #b3261e; font-weight: 600; }
-    #binder-view .photo.next-out { outline: 2px dashed #d97a1a; outline-offset: 1px; }
-    #binder-view .photo .badge.out { background: #d97a1a; }
-    #binder-view .viewer, #binder-view .confirm { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(15, 25, 35, .8); z-index: 3; padding: 8px; box-sizing: border-box; }
-    #binder-view .confirm { z-index: 4; } #binder-view .viewer[hidden], #binder-view .confirm[hidden] { display: none; }
-    #binder-view .vbox { display: flex; flex-direction: column; gap: 8px; max-width: min(900px, 100%); max-height: 100%; background: #f1ead8; color: #23324a; padding: 10px; border-radius: 10px; box-sizing: border-box; }
-    #binder-view .vbox img { width: 100%; aspect-ratio: 4 / 3; min-height: 0; max-height: calc(100vh - 230px - var(--st) - var(--sb)); object-fit: contain; background: #222; border-radius: 6px; }
-    #binder-view .viewer .cap { display: flex; flex-direction: column; font-size: 13px; } #binder-view .viewer .cap b { font-size: 17px; } #binder-view .viewer .cap .st.on { color: #b3261e; font-weight: 700; }
-    #binder-view .vacts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; } #binder-view .vacts .close { margin-left: auto; }
-    #binder-view .cbox { background: #fff; color: #23324a; border-radius: 12px; padding: 16px; max-width: 360px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
-    #binder-view .cbox .q { margin: 0 0 4px; font-size: 18px; font-weight: 700; } #binder-view .cbox .sub { margin: 0 0 12px; font-size: 14px; } #binder-view .cbox .row { display: flex; gap: 10px; } #binder-view .cbox .row button { flex: 1; }
-    @media (max-height: 520px) { #binder-view .vbox { flex-direction: row; align-items: stretch; } #binder-view .vbox img { flex: none; width: min(52vw, calc((100vh - 60px - var(--st) - var(--sb)) * 1.333)); max-height: none; height: auto; aspect-ratio: 4 / 3; } #binder-view .viewer .side { display: flex; flex-direction: column; justify-content: space-between; min-width: 0; } }
-    #cat-notice { position: fixed; top: calc(16px + var(--st)); left: 50%; transform: translateX(-50%); z-index: 12; pointer-events: none; background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.35); font-size: 15px; max-width: min(520px, calc(100vw - 24px)); text-align: center; border: 2px solid #d8a62a; }
-    #cat-notice[hidden] { display: none; }
-    #binder-view .hint { text-align: center; font-size: 12px; opacity: .7; margin: 6px 0 0; }
-    @media (max-height: 520px) { #binder-view .binder { padding: 6px 12px 8px; border-width: 8px; } #binder-view header { margin-bottom: 4px; } #binder-view h2 { font-size: 18px; } #binder-view .spread { grid-template-columns: 220px 1fr; gap: 10px; } #binder-view .card { min-height: 0; padding: 8px 10px; gap: 3px; } #binder-view .card h3 { font-size: 20px; } #binder-view .card .qm { font-size: 44px; margin: 0; } #binder-view .photos { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; } #binder-view .photo figcaption { font-size: 11px; } #binder-view .pager { margin-top: 4px; } #binder-view .hint { display: none; } }
-    @media (max-width: 720px) { #binder-view .spread { grid-template-columns: 1fr; } #binder-view .card { min-height: 0; } #binder-view .photos { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; } #binder-view .hint { display: none; } }
-    /* #1379: stable collection pockets; photos live behind the variant's card. */
-    body #binder-view .binder.dialog-card { display: flex; flex-direction: column; overflow: hidden; }
-    #binder-view .binder > .page { min-height: 0; overflow: auto; padding: 8px; margin: -8px; }
-    #binder-view .binder > header, #binder-view .binder > .pager, #binder-view .binder > .hint { flex-shrink: 0; }
-    #binder-view .page-label { margin: 0 0 10px; font-size: 13px; color: #59677b; }
-    #binder-view .pockets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-    #binder-view .pocket { display: flex; justify-content: center; padding: 10px; border: 1px solid #b5bfcc; border-radius: 12px; background: linear-gradient(125deg, #ffffff88, #b2c2d333); box-shadow: inset 0 1px 0 #fff; min-width: 0; }
-    body #binder-view .collection-card { width: 100%; max-width: 290px; min-height: 0; padding: 10px; gap: 4px; color: #23324a; font: 14px/1.3 system-ui, sans-serif; text-align: left; align-self: stretch; }
-    body #binder-view button.collection-card { cursor: pointer; touch-action: manipulation; }
-    #binder-view .collection-card h3 { font-size: 18px; min-height: 24px; }
-    #binder-view .collection-card .portrait { height: 86px; display: flex; align-items: center; justify-content: center; background: #dde4e9; border-radius: 7px; overflow: hidden; margin: 3px 0; }
-    #binder-view .portrait img { display: block; width: 100%; height: 100%; min-height: 0; min-width: 0; object-fit: contain; }
-    #binder-view .cat-name { font-size: 15px; }
-    #binder-view .collection-card .tier, #binder-view .card-count { font-size: 12px; }
-    #binder-view .cat-silhouette { display: block; width: 62px; height: 58px; border-radius: 44% 44% 40% 40%; background: #919eaa; position: relative; }
-    #binder-view .cat-silhouette::before, #binder-view .cat-silhouette::after { content: ''; position: absolute; top: -15px; width: 28px; height: 35px; background: inherit; clip-path: polygon(0 0, 100% 70%, 0 100%); }
-    #binder-view .cat-silhouette::before { left: 0; } #binder-view .cat-silhouette::after { right: 0; transform: scaleX(-1); }
-    #binder-view .collection-card.unknown .portrait { background: transparent; }
-    #binder-view .collection-card.unknown .note { text-align: center; font-size: 13px; }
-    #binder-view .album { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; padding: 12px; background: #15232deb; box-sizing: border-box; }
-    #binder-view .album[hidden] { display: none; }
-    #binder-view .album-book { width: min(1080px, 100%); max-height: 100%; overflow: auto; box-sizing: border-box; background: #f1ead8; border-radius: 12px; padding: 18px; }
-    #binder-view .album header { justify-content: space-between; align-items: center; padding: 0; }
-    #binder-view .album-title { margin: 0; font-size: 20px; }
-    body #binder-view .album [data-act=aclose] { min-width: 84px; min-height: 44px; border: 0; border-radius: 8px; padding: 0 14px; background: #2f4f86; color: #fff; font: 600 14px system-ui; touch-action: manipulation; cursor: pointer; }
-    #binder-view .album .photos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    @media (max-width: 520px) { #binder-view .binder { border-width: 8px; padding: 12px 10px; } #binder-view header { flex-wrap: wrap; gap: 3px; } #binder-view .pockets { gap: 8px; } #binder-view .pocket { padding: 5px; } body #binder-view .collection-card { padding: 7px; } #binder-view .collection-card h3 { font-size: 14px; min-height: 36px; } #binder-view .collection-card .portrait { height: 86px; } #binder-view .collection-card .cat-name { font-size: 13px; } #binder-view .collection-card .tier, #binder-view .card-count { font-size: 11px; } #binder-view .album { padding: 8px; } #binder-view .album-book { padding: 12px; } #binder-view .album header { flex-wrap: nowrap; gap: 8px; } #binder-view .album-title { font-size: 18px; } }
     #task-note { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(20, 35, 45, 0.35); }
     #task-note[hidden] { display: none; }
     #task-note .paper { position: relative; width: min(480px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; box-sizing: border-box; padding: 26px 28px 22px; background: #fffbe9; color: #23324a; box-shadow: 0 14px 40px rgba(0,0,0,.35); transform: rotate(0.8deg); border-radius: 3px; font-family: 'Segoe Print', 'Comic Sans MS', 'Comic Neue', cursive, system-ui; }
@@ -1308,35 +1277,18 @@
       <div id="task-list"></div>
     </div>
   </div>
-  <div id="binder-view" hidden role="dialog" aria-label="Kattpärmen">
+  <div id="binder-view" hidden role="dialog" aria-modal="true" aria-label="Djurpärmen">
     <div class="binder dialog-card">
-      <button id="binder-close" aria-label="Stäng" class="dialog-close">×</button>
-      <header><h2>Kattpärmen</h2><span class="count"></span></header>
-      <div class="page"></div>
-      <nav class="pager"><button type="button" data-nav="prev">Förra</button><div class="dots"></div><button type="button" data-nav="next">Nästa</button></nav>
-      <p class="hint">Tryck på ett kort för mötesbilder · Piltangenter bläddrar · E / Esc tillbaka</p>
+      <button id="binder-close" aria-label="Stäng djurpärmen" class="dialog-close">×</button>
+      <header class="dex-heading"><h2>Djurpärmen</h2><span class="dex-subtitle">Alla djur och varelser · upptäck, hitta och samla</span></header>
+      <div class="dex-counts" aria-live="polite"></div>
+      <p class="dex-status" role="status" hidden></p>
+      <div class="dex-body" tabindex="-1"></div>
+      <nav class="dex-nav" aria-label="Bläddra i djurpärmen"></nav>
+      <p class="dex-hint">Välj en varelse · ← → bläddrar · E / Esc tillbaka</p>
     </div>
-    <div class="album" hidden role="dialog" aria-label="Kattens mötesbilder">
-      <div class="album-book"><header><h3 class="album-title"></h3><button type="button" data-act="aclose">Till pärmen</button></header><div class="album-body"></div></div>
-    </div>
-    <div class="viewer" hidden role="dialog" aria-label="Foto">
-      <div class="vbox">
-        <img alt="">
-        <div class="side">
-          <div class="cap"></div>
-          <div class="vacts">
-            <button type="button" data-act="save" aria-pressed="false">☆ Spara</button>
-            <button type="button" data-act="throw" class="throw">Kasta</button>
-            <button type="button" data-act="vprev" aria-label="Förra fotot">‹</button>
-            <button type="button" data-act="vnext" aria-label="Nästa foto">›</button>
-            <button type="button" data-act="vclose" class="close">Tillbaka</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="confirm" hidden role="alertdialog" aria-label="Kasta foto">
-      <div class="cbox"><p class="q"></p><p class="sub"></p>
-        <div class="row"><button type="button" data-act="no">Behåll</button><button type="button" data-act="yes" class="danger">Kasta</button></div></div>
+    <div class="dex-photo" hidden role="dialog" aria-label="Mötesfoto">
+      <div><img alt=""><p class="dex-photo-caption"></p><button type="button" data-act="photo-back">Till kortet</button></div>
     </div>
   </div>
   <div id="cat-notice" hidden role="status" aria-live="polite"></div>

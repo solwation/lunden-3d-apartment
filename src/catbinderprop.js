@@ -2,10 +2,10 @@ import * as THREE from 'three';
 import { CAT_BINDER as B } from './config.js';
 import { mergeStatic } from './merge.js';
 
-// The cat card binder as an object (#1255): a small ring binder lying on the coffee table's slat shelf. Three flat-colour
-// materials, merged into three meshes, no texture, no light, no shadow casting (it sits in the table's shade). Built into
+// The animal collection binder (#1848): a small ring binder resting on the coffee tabletop. Three flat-colour
+// materials merged into three meshes, no texture, no light or added shadow caster. Built into
 // furniture.js `coffeetable`, so it moves with the table (F rearranging, saved layouts). E on it opens the browse UI (main.js
-// `showBinder`); `occluded` refuses a pick through the table top from above, because the pick ray has no table in it.
+// `showBinder`); `occluded` refuses picks from below through the tabletop.
 
 const mats = {
   cover: new THREE.MeshStandardMaterial({ color: B.cover, roughness: 0.55 }),
@@ -13,7 +13,7 @@ const mats = {
   gold: new THREE.MeshStandardMaterial({ color: B.gold, roughness: 0.35, metalness: 0.6 }),
 };
 
-/** `y` = the shelf's top (the table's local frame), `tableTop` = the underside of the table's top, `hx` / `hz` its half extents. */
+/** `y` = the tabletop (the table's local frame), `tableTop` = the underside of the table's top, `hx` / `hz` its half extents. */
 export function buildBinderProp({ y, tableTop, hx, hz, level = 0 }) {
   const g = new THREE.Group();
   const { w, d, h } = B, t = 0.004;
@@ -29,7 +29,7 @@ export function buildBinderProp({ y, tableTop, hx, hz, level = 0 }) {
   mergeStatic(g); // three meshes (one per material)
   g.position.set(B.x, y, B.z);
   g.rotation.y = THREE.MathUtils.degToRad(B.turn);
-  const target = { name: 'kattpärmen', kind: 'binder', verb: 'bläddra i', pickable: g, object: g, level,
+  const target = { name: 'djurpärmen', kind: 'binder', verb: 'bläddra i', pickable: g, object: g, level,
     /** True when the line from the eye to the hit point passes through the table top (the ray itself has no table in it). */
     occluded(from, to) {
       const p = g.parent;

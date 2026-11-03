@@ -1,371 +1,90 @@
-import { CAT_CARD as C } from './config.js';
-
-// #1379: fixed collection pockets in CAT_CARD.breeds order; each found card opens its own photo album.
-// The album retains facts, counters, saved flags and photo actions; the old board photos retain their extra page.
-// #1399: eight-photo normal capacity; older larger archives remain visible without automatic rotation.
-// Pure DOM + CatCards (src/catcards.js); keys: ← → (A / D) turn the page, Home / End jump,
-// E / Esc close (main.js). Rarity visuals (#1256): a card gets `fx-N` (CAT_CARD.fx level by tier) and decorative layers
-// (foil, shine, glitter, holo, ★ sparkles) drawn by CSS in index.html; pointer / touch movement tilts it and moves the holo
-// sheen (not under prefers-reduced-motion). Photo menu (#1257): every photo has Spara / Sparad (toggle: a saved card is never rotated
-// out) and Kasta (asks first); tapping a photo, or the card's "Visa foton" button, opens it enlarged (#binder-view .viewer, ‹ ›
-// browse the page's photos, same buttons). `.confirm` is the throw-away question. Esc / E close the topmost layer first
-// (`back()`), a new find's "rotated out" / "full" notice is shown by main.js (#cat-notice) and the page says what the next find does.
-
-const fmtTime = (t) => new Date(t).toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-const kg = (n) => n.toLocaleString('sv-SE', { maximumFractionDigits: 1 });
-const weight = ([a, b]) => `ca ${a === b ? kg(a) : `${kg(a)}–${kg(b)}`} kg`;
-const times = (n) => (n === 1 ? '1 gång' : `${n} gånger`);
-const photoCount = (n) => n === 1 ? '1 mötesbild' : `${n} mötesbilder`;
-
+import { CAT_CARD } from './config.js';
+// #1848: model-driven collection UI. Discovery/storage/model rendering belong to their providers, never to this panel.
+const text=(tag,cls='',value='')=>{const n=document.createElement(tag);n.className=cls;n.textContent=String(value??'');return n;};
+const button=(label,act,id)=>{const n=text('button','',label);n.type='button';n.dataset.act=act;if(id)n.dataset.id=id;return n;};
+const number=n=>Number(n||0).toLocaleString('sv-SE');
+const date=n=>Number.isFinite(n)&&n>0?new Date(n).toLocaleDateString('sv-SE',{year:'numeric',month:'short',day:'numeric'}):'Inte ännu';
+const code=n=>`#${String(n).padStart(3,'0')}`;
+const actionNames={pet:'Klappningar',hug:'Kramar',feed:'Matningar',catch:'Fångster',scare:'Skrämningar',greet:'Hälsningar'};
 export class BinderPanel {
-  /** `cards`: the CatCards; `el`: #binder-view. */
-  constructor(cards, el) {
-    Object.assign(this, { cards, el, open: false, index: 0 });
-    this.body = el.querySelector('.page');
-    this.dots = el.querySelector('.dots');
-    this.title = el.querySelector('.count');
-    this.viewer = el.querySelector('.viewer');
-    this.confirm = el.querySelector('.confirm');
-    this.album = el.querySelector('.album');
-    this.albumKey = null;
-    this.view = null; // { ids, i }: the enlarged photo and the photos of its page
-    this.asking = null; // id of the card the throw-away question is about
-    el.addEventListener('click', (e) => {
-      const a = e.target.closest('[data-act]');
-      if (a) { this.act(a.dataset.act, a.dataset.id); return; }
-      const b = e.target.closest('button[data-nav]');
-      if (!b) return;
-      const v = b.dataset.nav;
-      if (v === 'prev') this.turn(-1); else if (v === 'next') this.turn(1); else this.go(Number(v));
-    });
-    // a swipe sideways turns the page (touch)
-    let x0 = null;
-    el.addEventListener('touchstart', (e) => { x0 = e.touches.length === 1 ? e.touches[0].clientX : null; }, { passive: true });
-    el.addEventListener('touchend', (e) => {
-      if (x0 === null) return;
-      const dx = e.changedTouches[0].clientX - x0; x0 = null;
-      if (Math.abs(dx) <= 60 || this.asking || (this.albumKey && !this.view)) return;
-      if (this.view) this.step(dx < 0 ? 1 : -1); else this.turn(dx < 0 ? 1 : -1); // (an enlarged photo swipes between photos)
-    }, { passive: true });
+  constructor({registry,collection,images},el){
+    Object.assign(this,{registry,collection,images,el,open:false,selected:null,mode:'grid',photo:null,generation:0,queue:[],busy:false});
+    this.body=el.querySelector('.dex-body');this.counts=el.querySelector('.dex-counts');this.status=el.querySelector('.dex-status');this.nav=el.querySelector('.dex-nav');this.photoBox=el.querySelector('.dex-photo');
+    this.tab=e=>{if(!this.open||e.key!=='Tab')return;const root=this.photo?this.photoBox:el,all=[...root.querySelectorAll('button:not([disabled]),[tabindex="0"]')].filter(n=>n.getClientRects().length);if(!all.length)return;const i=all.indexOf(document.activeElement);if(e.shiftKey&&i<=0||!e.shiftKey&&(i<0||i===all.length-1)){e.preventDefault();e.stopPropagation();all[e.shiftKey?all.length-1:0].focus();}};
+    el.addEventListener('click',e=>{const b=e.target.closest('button[data-act]');if(!b)return;const a=b.dataset.act,id=b.dataset.id;if(a==='entry')this.detail(id);else if(a==='grid')this.grid();else if(a==='prev')this.step(-1);else if(a==='next')this.step(1);else if(a==='photo')this.showPhoto(id);else if(a==='photo-back')this.closePhoto();});
   }
-
-  /** The pages in order: the breeds, then the legacy page if the old photos left any. */
-  get pages() {
-    const slots = this.cards.slots(), p = [];
-    for (let i = 0; i < slots.length; i += C.pageSize) p.push({ slots: slots.slice(i, i + C.pageSize), start: i });
-    const old = this.cards.legacy();
-    if (old.length) p.push({ legacy: old });
-    return p;
+  list(){return this.registry.list();}
+  record(id){return this.collection.get(id)||{};}
+  show(show){
+    if(this.open===show)return;this.open=show;this.el.hidden=!show;this.photo=null;this.photoBox.hidden=true;
+    if(show){this.mode='grid';this.body.scrollTop=0;this.offRegistry=this.registry.subscribe(()=>{if(this.open)this.render();});this.offCollection=this.collection.subscribe(()=>{if(this.open)this.render();});window.addEventListener('keydown',this.tab,true);this.render();this.focus(`[data-act=entry]`);}
+    else{this.clearImages();this.offRegistry?.();this.offCollection?.();window.removeEventListener('keydown',this.tab,true);}
   }
-
-  show(show, index = null) {
-    this.open = show;
-    this.el.hidden = !show;
-    this.view = this.asking = null;
-    this.albumKey = null; this.album.hidden = true;
-    this.viewer.hidden = this.confirm.hidden = true;
-    if (show) { this.index = index ?? this.firstFound(); this.render(); }
+  dispose(){this.show(false);this.clearImages();}
+  back(){if(this.photo){this.closePhoto();return true;}if(this.mode==='detail'){this.grid();return true;}return false;}
+  focus(selector){this.el.querySelector(selector)?.focus({preventScroll:true});}
+  detail(id){if(!this.list().some(e=>e.id===id))return;this.selected=id;this.mode='detail';this.photo=null;this.photoBox.hidden=true;this.body.scrollTop=0;this.render();this.focus('[data-act=grid]');}
+  grid(){this.mode='grid';this.photo=null;this.photoBox.hidden=true;this.render();const tile=[...this.body.querySelectorAll('[data-act=entry]')].find(n=>n.dataset.id===this.selected);tile?.focus({preventScroll:true});tile?.scrollIntoView({block:'nearest'});}
+  step(d){const entries=this.list(),i=entries.findIndex(e=>e.id===this.selected);this.detail(entries[Math.max(0,Math.min(entries.length-1,i+d))]?.id);}
+  key(key){
+    if(this.photo)return false;
+    if(this.mode==='detail'){if(['ArrowRight','KeyD','PageDown'].includes(key))this.step(1);else if(['ArrowLeft','KeyA','PageUp'].includes(key))this.step(-1);else if(key==='Home')this.detail(this.list()[0]?.id);else if(key==='End')this.detail(this.list().at(-1)?.id);else return false;return true;}
+    const keys=['ArrowRight','ArrowLeft','ArrowDown','ArrowUp','Home','End'];if(!keys.includes(key))return false;
+    const tiles=[...this.body.querySelectorAll('[data-act=entry]')],at=Math.max(0,tiles.indexOf(document.activeElement));let next=at;
+    if(key==='Home')next=0;else if(key==='End')next=tiles.length-1;else if(key==='ArrowRight')next++;else if(key==='ArrowLeft')next--;else{const current=tiles[at],group=current?.parentElement,cols=group?getComputedStyle(group).gridTemplateColumns.split(' ').length:1;next+=key==='ArrowDown'?cols:-cols;}
+    tiles[Math.max(0,Math.min(tiles.length-1,next))]?.focus();return true;
   }
-
-  /** E / Esc: close the topmost layer (question, then enlarged photo). True if one was closed, false: close the whole panel. */
-  back() {
-    if (this.asking) { this.ask(null); return true; }
-    if (this.view) { this.look(null); return true; }
-    if (this.albumKey) { this.openAlbum(null); return true; }
-    return false;
+  clearImages(){this.generation++;this.observer?.disconnect();this.queue=[];this.visible=new Set();}
+  image(id,size,unknown=false){
+    const box=text('div',`dex-art${unknown?' silhouette':''}`),img=document.createElement('img'),waiting=text('span','dex-image-wait','…');img.width=size;img.height=size;img.alt='';img.decoding='async';img.hidden=true;box.append(img,waiting);
+    const job={id,size,img,box,generation:this.generation};this.jobs.set(box,job);this.observer?this.observer.observe(box):this.enqueue(job);return box;
   }
-
-  act(a, id) {
-    if (a === 'save') this.save(id);
-    else if (a === 'throw') this.ask(id);
-    else if (a === 'yes') this.throwAway();
-    else if (a === 'no') this.ask(null);
-    else if (a === 'look') this.look(id);
-    else if (a === 'photos') this.look(this.current().ids.at(-1) ?? null);
-    else if (a === 'vprev') this.step(-1);
-    else if (a === 'vnext') this.step(1);
-    else if (a === 'vclose') this.look(null);
-    else if (a === 'album') this.openAlbum(id);
-    else if (a === 'aclose') this.openAlbum(null);
+  enqueue(job){if(this.visible.has(job.img))return;this.visible.add(job.img);this.queue.push(job);queueMicrotask(()=>this.pump());}
+  pump(){
+    if(this.busy||!this.open)return;let job;
+    while(this.queue.length){const next=this.queue.shift();if(next.generation===this.generation&&next.img.isConnected&&this.visible.has(next.img)){job=next;break;}}
+    if(!job)return;this.busy=true;
+    const run=async()=>{try{if(!this.open||job.generation!==this.generation||!this.visible.has(job.img))return;const data=await this.images.get(job.id,job.size);if(this.open&&job.generation===this.generation&&job.img.isConnected){job.img.src=data;job.img.hidden=false;job.box.classList.add('loaded');}}catch{if(job.generation===this.generation)job.box.querySelector('.dex-image-wait').textContent='?';}finally{this.busy=false;if(this.open)requestAnimationFrame(()=>this.pump());}};
+    if(globalThis.requestIdleCallback)requestIdleCallback(run,{timeout:250});else setTimeout(run,0);
   }
-
-  /** The photos of the current page, oldest first (the same order the cards are stored in). */
-  current() { const p = this.pages[this.index]; return { ids: (this.albumKey ? this.cards.of(this.albumKey) : p?.legacy ?? []).map((c) => c.id) }; }
-  card(id) { return this.cards.cards.find((c) => c.id === id) ?? null; }
-
-  openAlbum(key) {
-    const old = this.albumKey;
-    this.albumKey = key; this.view = null; this.viewer.hidden = true;
-    this.renderAlbum();
-    this.focusOn(key ? '.album [data-act=aclose]' : `[data-act=album][data-id="${old}"]`);
+  rarity(entry){const r=entry.rarity||{},badge=text('span','dex-rarity',`${r.level?'★'.repeat(r.level)+' ':''}${r.label||'Vanlig'}`);badge.style.setProperty('--rarity',r.color||'#8a93a6');return badge;}
+  render(){
+    if(!this.open)return;const focused=document.activeElement?.dataset,focusId=focused?.id,focusAct=focused?.act,scroll=this.body.scrollTop;this.clearImages();this.jobs=new WeakMap();
+    if(globalThis.IntersectionObserver)this.observer=new IntersectionObserver(entries=>{for(const e of entries){const job=this.jobs.get(e.target);if(!job)continue;if(e.isIntersecting)this.enqueue(job);else this.visible.delete(job.img);}},{root:this.body,rootMargin:'96px'});
+    const summary=this.collection.summary();this.counts.replaceChildren();
+    for(const[k,label]of[['found','Hittade'],['seen','Sedda']]){const n=Number(summary[k]||0),total=Number(summary.total||0),item=text('div','dex-count');item.append(text('span','',label),text('strong','',`${number(n)} / ${number(total)}`),text('small','',`${total?Math.floor(n/total*100):0} %`));this.counts.append(item);}
+    this.status.textContent=this.collection.error||'';this.status.hidden=!this.collection.error;this.body.replaceChildren();this.nav.replaceChildren();
+    if(this.mode==='grid')this.renderGrid(summary);else this.renderDetail();this.body.scrollTop=scroll;
+    if(focusAct){const found=[...this.el.querySelectorAll('button[data-act]')].find(n=>n.dataset.act===focusAct&&n.dataset.id===focusId);found?.focus({preventScroll:true});}
+    if(this.photo)this.renderPhoto();
   }
-
-  renderAlbum() {
-    this.album.hidden = !this.albumKey;
-    if (!this.albumKey) return;
-    const slot = this.cards.slot(this.albumKey), index = C.breeds.findIndex((b) => b.key === this.albumKey);
-    this.album.querySelector('.album-title').textContent = `${slot.label} · mötesbilder`;
-    this.album.querySelector('.album-body').replaceChildren(this.breedPage(slot, index));
-  }
-
-  async save(id) {
-    const done = this.cards.toggleSave(id); // the flag flips at once, the store write follows
-    this.render();
-    this.focusOn(`${this.view ? '.viewer ' : ''}[data-act=save][data-id="${id}"]`);
-    await done;
-  }
-
-  ask(id) {
-    this.asking = id;
-    this.confirm.hidden = !id;
-    if (!id) { this.focusOn(this.view ? '.viewer [data-act=throw]' : `[data-act=throw][data-id="${this.last}"]`); return; }
-    this.last = id;
-    const c = this.card(id);
-    this.confirm.querySelector('.q').textContent = `Kasta fotot${c ? ` av ${c.name} (${fmtTime(c.time)})` : ''}?`;
-    this.confirm.querySelector('.sub').textContent = c?.saved ? 'Fotot är sparat. Det försvinner för gott och går inte att ångra.' : 'Det försvinner för gott och går inte att ångra.';
-    this.focusOn('.confirm [data-act=no]'); // the safe answer has focus
-  }
-
-  async throwAway() {
-    const id = this.asking, i = this.view ? this.view.i : 0;
-    this.asking = null; this.confirm.hidden = true;
-    if (!id) return;
-    const ids = this.view?.ids ?? [];
-    await this.cards.discard(id);
-    if (this.view) {
-      const rest = ids.filter((x) => x !== id);
-      this.view = rest.length ? { ids: rest, i: Math.min(i, rest.length - 1) } : null;
+  renderGrid(summary){
+    const groups=new Map();for(const entry of this.list()){const id=entry.family.id;if(!groups.has(id))groups.set(id,{family:entry.family,entries:[]});groups.get(id).entries.push(entry);}
+    for(const{id,label,order}of[...groups.values()].map(g=>g.family).sort((a,b)=>a.order-b.order)){
+      const group=groups.get(id),section=text('section','dex-family'),head=text('div','dex-family-head'),progress=summary.families?.find(f=>f.id===id)||{},complete=progress.seen===progress.total&&progress.total>0;head.append(text('h3','',label),text('span',complete?'dex-complete':'',`${number(progress.seen)} / ${number(progress.total||group.entries.length)} sedda · ${number(progress.found)} hittade${complete?' · Alla sedda, komplett ✓':''}`));section.append(head);const grid=text('div','dex-grid');
+      for(const entry of group.entries){const r=this.record(entry.id),b=button('', 'entry',entry.id);b.className=`dex-tile${r.found?' found':r.seen?' seen':' unknown'}`;b.style.setProperty('--rarity',entry.rarity?.color||'#8a93a6');b.setAttribute('aria-label',`${code(entry.no)} ${r.seen?entry.name:'Oupptäckt'} · ${r.found?'Hittad':r.seen?'Sedd':'Okänd'}`);b.append(this.image(entry.id,96,!r.seen),text('span','dex-number',code(entry.no)),text('strong','dex-name',r.seen?entry.name:'???'),this.rarity(entry),text('small','dex-state',r.found?'✓ Hittad':r.seen?entry.interactive===false?'◉ Sedd · sedd-post':'◉ Sedd':'? Oupptäckt'));grid.append(b);}section.append(grid);this.body.append(section);
     }
-    this.render();
-    this.focusOn(this.view ? '.viewer [data-act=throw]' : this.albumKey ? '.album [data-act=aclose]' : '.pager [data-nav=next]');
   }
-
-  /** Open a photo enlarged (null closes it). */
-  look(id) {
-    if (!id) {
-      const was = this.view && this.view.ids[this.view.i];
-      this.view = null; this.viewer.hidden = true;
-      this.focusOn(`[data-act=look][data-id="${was}"]`);
-      return;
-    }
-    const ids = this.current().ids.slice().reverse(); // newest first, like the page
-    this.view = { ids, i: Math.max(0, ids.indexOf(id)) };
-    this.render();
-    this.focusOn('.viewer [data-act=vclose]');
+  renderDetail(){
+    const entries=this.list(),index=entries.findIndex(e=>e.id===this.selected);if(index<0){this.mode='grid';this.renderGrid(this.collection.summary());return;}
+    const back=button('← Alla djur','grid'),prev=button('← Förra','prev'),next=button('Nästa →','next');prev.disabled=index===0;next.disabled=index===entries.length-1;this.nav.append(back,prev,text('span','dex-position',`${index+1} / ${entries.length}`),next);
+    const spread=text('div','dex-spread');spread.append(this.card(entries[index]));if(entries[index+1]){const adjacent=this.card(entries[index+1]);adjacent.classList.add('dex-next-card');spread.append(adjacent);}this.body.append(spread);
   }
-  step(d) {
-    if (!this.view) return;
-    const n = this.view.ids.length;
-    this.view.i = (this.view.i + d + n) % n;
-    this.renderViewer();
+  card(entry){
+    const r=this.record(entry.id),card=text('article','card dex-card'),head=text('header','dex-card-head');card.style.setProperty('--rarity',entry.rarity?.color||'#8a93a6');head.append(text('span','dex-number',code(entry.no)),text('h3','',r.seen?entry.name:'Oupptäckt'),this.rarity(entry));card.append(head,this.image(entry.id,320,!r.seen),text('p','dex-family-name',`${entry.family.label}${r.seen&&entry.variant?' · '+entry.variant:''}`));
+    if(r.seen){if(entry.interactive===false)card.append(text('p','dex-observe-only','Sedd-post: den här varelsen upptäcks genom att synas. Den har inget eget fyndmoment.'));const info=text('section','dex-info');info.append(text('h4','','Information'));const dl=text('dl');for(const[k,label]of[['size','Storlek'],['weight','Vikt'],['where','Plats'],['when','När'],['likes','Tycker om']])if(entry.info?.[k])dl.append(text('dt','',label),text('dd','',Array.isArray(entry.info[k])?entry.info[k].join(' – '):entry.info[k]));info.append(dl);card.append(info);for(const fact of(entry.facts||[]).slice(0,2))card.append(text('p','dex-fact',fact));
+      const stats=text('section','dex-stats');stats.append(text('h4','','Dina möten'));const list=text('dl');for(const[k,v]of[['Första mötet',date(r.firstSeen)],['Sedd',number(r.seenCount)],['Hittad',number(r.foundCount)]])list.append(text('dt','',k),text('dd','',v));for(const[k,label]of Object.entries(actionNames))if(r.actions?.[k])list.append(text('dt','',label),text('dd','',number(r.actions[k])));if(r.best?.cm)list.append(text('dt','','Längsta fångst'),text('dd','',`${number(r.best.cm)} cm`));if(r.best?.kg)list.append(text('dt','','Tyngsta fångst'),text('dd','',`${number(r.best.kg)} kg`));stats.append(list);card.append(stats);
+      const photos=text('section','dex-photos');photos.append(text('h4','','Mötesfoton'));if(r.photos?.length){const strip=text('div','dex-photo-strip');for(const photo of r.photos){const b=button('','photo',`${entry.id}|${photo.id}`),img=document.createElement('img');img.src=photo.data;img.alt=`Mötesfoto, ${date(photo.time)}`;img.loading='lazy';b.append(img);strip.append(b);}photos.append(strip);}else photos.append(text('p','','Inga mötesfoton ännu.'));card.append(photos);
+    }else card.append(text('p','dex-unknown-note','Du har inte sett den här varelsen ännu. Silhuetten visar vad som återstår att upptäcka.'));
+    if(entry.chain?.length){const chain=text('section','dex-chain');chain.append(text('h4','','Former och utveckling'));const row=text('div','dex-chain-row');entry.chain.forEach((id,i)=>{const e=this.list().find(e=>e.id===id);if(!e)return;const b=button('','entry',id),known=!!this.record(id).seen;b.className='dex-chain-link';if(id===entry.id)b.setAttribute('aria-current','true');b.append(this.image(id,96,!known),text('span','',`${code(e.no)} ${known?e.name:'???'}`));if(i)row.append(text('span','dex-chain-arrow','→'));row.append(b);});chain.append(row);card.append(chain);}
+    decorate(card,entry.rarity?.level||0);return card;
   }
-
-  focusOn(sel) { try { (this.el.querySelector(sel) ?? this.el.querySelector('.dialog-close'))?.focus({ preventScroll: true }); } catch { /* UI only */ } }
-
-  renderViewer() {
-    const v = this.viewer;
-    if (!this.view) { v.hidden = true; return; }
-    const c = this.card(this.view.ids[this.view.i]);
-    if (!c) { this.view = null; v.hidden = true; return; }
-    const n = this.view.ids.length;
-    v.hidden = false;
-    const img = v.querySelector('img');
-    img.src = c.data; img.alt = `${c.name}, ${fmtTime(c.time)}`;
-    v.querySelector('.cap').replaceChildren(el('b', '', c.kitten ? `${c.name} (kattunge)` : c.name), el('span', '', `${fmtTime(c.time)} · foto ${this.view.i + 1} av ${n}`),
-      el('span', c.saved ? 'st on' : 'st', c.saved ? 'Sparad: byts aldrig ut' : this.out(c) ? 'Osparad: byts ut först av nästa fynd' : 'Osparad'));
-    const sv = v.querySelector('[data-act=save]'), th = v.querySelector('[data-act=throw]');
-    sv.dataset.id = th.dataset.id = c.id;
-    sv.textContent = c.saved ? '★ Sparad' : '☆ Spara'; sv.setAttribute('aria-pressed', String(c.saved));
-    v.querySelector('[data-act=vprev]').disabled = v.querySelector('[data-act=vnext]').disabled = n < 2;
-  }
-  /** Is this the card the next find of its breed would push out? */
-  out(c) { return !c.legacy && this.cards.nextOut(c.breed)?.id === c.id; }
-
-  /** The binder opens at the first page with a card, else the first one. */
-  firstFound() { const i = this.pages.findIndex((p) => p.slots?.some((s) => s.has)); return i < 0 ? 0 : i; }
-
-  go(i) { const n = this.pages.length; this.albumKey = null; this.view = null; this.index = Math.max(0, Math.min(n - 1, i)); this.render(); }
-  turn(d) { this.go(this.index + d); }
-
-  /** A key while the panel is open; true if it was used. */
-  key(code) {
-    if (this.asking) return true; // the question takes no paging keys (Tab / Enter / Space still reach its buttons)
-    if (this.view) {
-      if (code === 'ArrowRight' || code === 'KeyD') this.step(1); else if (code === 'ArrowLeft' || code === 'KeyA') this.step(-1); else return false;
-      return true;
-    }
-    if (this.albumKey) return false; // Tab/Enter operate the album; paging never changes the hidden collection.
-    if (code === 'ArrowRight' || code === 'KeyD' || code === 'PageDown') this.turn(1);
-    else if (code === 'ArrowLeft' || code === 'KeyA' || code === 'PageUp') this.turn(-1);
-    else if (code === 'Home') this.go(0);
-    else if (code === 'End') this.go(this.pages.length - 1);
-    else return false;
-    return true;
-  }
-
-  render() {
-    const pages = this.pages;
-    this.index = Math.min(this.index, pages.length - 1);
-    const page = pages[this.index];
-    this.title.textContent = `${this.cards.collected()} av ${C.breeds.length} katter hittade`;
-    this.body.replaceChildren(page.legacy ? this.legacyPage(page.legacy) : this.collectionPage(page));
-    this.dots.replaceChildren(...pages.map((p, i) => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.dataset.nav = String(i);
-      b.className = `dot${i === this.index ? ' on' : ''}${p.slots?.every((s) => !s.has) ? ' empty' : ''}`;
-      b.setAttribute('aria-label', p.legacy ? 'Äldre foton' : `Sida ${i + 1}: kort ${p.start + 1}–${p.start + p.slots.length}`);
-      if (i === this.index) b.setAttribute('aria-current', 'page');
-      return b;
-    }));
-    this.el.querySelector('[data-nav=prev]').disabled = this.index === 0;
-    this.el.querySelector('[data-nav=next]').disabled = this.index === pages.length - 1;
-    this.el.dataset.page = String(this.index);
-    this.renderAlbum();
-    this.renderViewer();
-  }
-
-  collectionPage(page) {
-    const wrap = el('div', 'collection-page');
-    wrap.append(el('p', 'page-label', `Sida ${this.index + 1} av ${Math.ceil(C.breeds.length / C.pageSize)} · Kort ${page.start + 1}–${page.start + page.slots.length}`));
-    const pockets = el('div', 'pockets');
-    for (let i = 0; i < C.pageSize; i++) {
-      const s = page.slots[i], pocket = el('div', 'pocket');
-      if (s) pocket.append(this.collectionCard(s, page.start + i));
-      else { pocket.classList.add('unused'); pocket.setAttribute('aria-hidden', 'true'); }
-      pockets.append(pocket);
-    }
-    wrap.append(pockets); return wrap;
-  }
-
-  collectionCard(s, i) {
-    const card = el(s.has ? 'button' : 'div', `card collection-card tier-${s.tier.id}${s.has ? '' : ' unknown'}`);
-    card.dataset.slot = s.key;
-    if (s.has) {
-      card.type = 'button'; card.dataset.act = 'album'; card.dataset.id = s.key;
-      card.setAttribute('aria-label', `Öppna ${s.label}, ${photoCount(s.cards.length)}`);
-      decorate(card, C.tiers.indexOf(s.tier), !!C.breeds[i].star);
-    } else card.setAttribute('aria-label', `Kort ${i + 1}, ej hittad`);
-    card.append(el('small', 'no', `#${String(i + 1).padStart(2, '0')} / ${String(C.breeds.length).padStart(2, '0')}`), el('h3', '', s.has ? s.label : 'Ej hittad'));
-    const portrait = el('div', 'portrait'), photo = s.cards.at(-1);
-    if (s.has && photo?.data) {
-      const img = el('img'); img.src = photo.data; img.alt = `${photo.name}${photo.coat ? `, ${photo.coat}` : ''}`; portrait.append(img);
-    } else { const icon = el('span', 'cat-silhouette'); icon.setAttribute('aria-hidden', 'true'); portrait.append(icon); }
-    card.append(portrait);
-    if (s.has) {
-      card.append(el('b', 'cat-name', photo ? `${photo.name}${photo.kitten ? ' · kattunge' : ''}` : s.label), el('span', 'tier', `${s.tier.label} · ${s.points} poäng`), el('span', 'card-count', `${photoCount(s.cards.length)} · Hittad ${times(s.found)}`));
-    } else card.append(el('p', 'note', 'En plats väntar på din nästa katt.'));
-    return card;
-  }
-
-  breedPage(s, i) {
-    const wrap = el('div', 'spread');
-    const card = el('div', `card tier-${s.tier.id}${s.has ? '' : ' unknown'}`);
-    if (s.has) decorate(card, C.tiers.indexOf(s.tier), !!C.breeds.find((b) => b.key === s.key)?.star);
-    card.append(el('small', 'no', `Plats ${i + 1} av ${C.breeds.length}`));
-    if (!s.has) {
-      card.append(el('h3', '', '???'), el('p', 'qm', '?'), el('p', 'note', 'Ingen katt av den här sorten har hittats än. Klappa en katt så får du ett kort!'));
-    } else {
-      card.append(el('h3', '', s.label), el('span', 'tier', `${s.tier.label} · ${s.points} poäng`));
-      const dl = el('dl', 'facts');
-      dl.append(...row('Vikt', weight(s.weightKg)), ...row('Hittad', times(s.found)), ...row('Klappad', times(s.pets)), ...row('Kramad', times(s.hugs)));
-      card.append(dl);
-      const ul = el('ul', 'lore');
-      ul.append(...s.facts.map((f) => el('li', '', f)));
-      card.append(ul);
-      card.append(el('p', `slotline${this.cards.isFull(s.key) ? ' full' : ''}`, this.slotLine(s)));
-      const pb = el('button', 'photosbtn', `Visa foton (${s.cards.length}${this.cards.isArchive(s.key) ? ' i äldre arkiv' : ` av ${C.max}`})`);
-      pb.type = 'button'; pb.dataset.act = 'photos'; pb.disabled = !s.cards.length;
-      card.append(pb);
-    }
-    const photos = el('div', 'photos');
-    photos.setAttribute('aria-label', 'Foton av var katten hittats');
-    const cards = [...s.cards].reverse(); // newest first
-    for (let k = 0; k < Math.max(C.albumSlots, cards.length); k++) photos.append(cards[k] ? this.photoEl(cards[k]) : el('div', 'photo empty', s.has ? 'Tom fotoplats' : ''));
-    wrap.append(card, photos);
-    return wrap;
-  }
-
-  /** What the next find of this breed will do, in words (#1257). */
-  slotLine(s) {
-    if (this.cards.isArchive(s.key)) return `Äldre arkiv: ${s.cards.length} foton, ${s.saved} sparade. Alla bilder behålls. Nya fynd läggs inte till när arkivet har fler än ${C.max} foton. Du kan själv kasta foton; avmarkering raderar inget.`;
-    const sv = `Sparade: ${s.saved} av ${C.max}. `;
-    if (this.cards.isFull(s.key)) return `${sv}Alla platser är sparade, så nya fynd läggs inte till. Avmarkera eller kasta ett foto för att få plats.`;
-    const out = this.cards.nextOut(s.key);
-    if (out) return `${sv}Nästa fynd byter ut det äldsta osparade fotot (${out.name}).`;
-    return `${sv}Spara de foton du vill behålla.`;
-  }
-
-  photoEl(c) {
-    const f = el('figure', `photo${c.saved ? ' saved' : ''}${this.out(c) ? ' next-out' : ''}`);
-    const open = el('button', 'pic'); open.type = 'button'; open.dataset.act = 'look'; open.dataset.id = c.id;
-    open.setAttribute('aria-label', `Visa fotot av ${c.name}, ${fmtTime(c.time)}, större`);
-    const img = document.createElement('img');
-    img.alt = ''; img.src = c.data;
-    open.append(img);
-    const cap = el('figcaption', '', '');
-    cap.append(el('b', '', c.kitten ? `${c.name} (kattunge)` : c.name), el('span', '', fmtTime(c.time)));
-    f.append(open, cap);
-    if (c.saved) f.append(el('i', 'badge', 'Sparad'));
-    else if (this.out(c)) f.append(el('i', 'badge out', 'Byts ut först'));
-    const acts = el('div', 'acts');
-    const sv = el('button', `save${c.saved ? ' on' : ''}`, c.saved ? '★ Sparad' : '☆ Spara');
-    sv.type = 'button'; sv.dataset.act = 'save'; sv.dataset.id = c.id; sv.setAttribute('aria-pressed', String(c.saved));
-    const th = el('button', 'throw', 'Kasta'); th.type = 'button'; th.dataset.act = 'throw'; th.dataset.id = c.id;
-    th.setAttribute('aria-label', `Kasta fotot av ${c.name}`);
-    acts.append(sv, th);
-    f.append(acts);
-    return f;
-  }
-
-  legacyPage(list) {
-    const wrap = el('div', 'spread legacy');
-    const card = el('div', 'card');
-    card.append(el('small', 'no', 'Extra sida'), el('h3', '', 'Äldre foton'),
-      el('p', 'note', 'Bilder från den gamla anslagstavlan i köket där rasen inte sparades.'));
-    const photos = el('div', 'photos many');
-    for (const c of [...list].reverse()) photos.append(this.photoEl(c));
-    wrap.append(card, photos);
-    return wrap;
-  }
+  showPhoto(key){const split=key.indexOf('|'),entryId=key.slice(0,split),photoId=key.slice(split+1),photo=this.record(entryId).photos?.find(p=>String(p.id)===photoId);if(!photo)return;this.photo={entryId,photoId};this.renderPhoto();this.focus('[data-act=photo-back]');}
+  renderPhoto(){const p=this.record(this.photo.entryId).photos?.find(p=>String(p.id)===this.photo.photoId);if(!p){this.closePhoto();return;}const img=this.photoBox.querySelector('img');img.src=p.data;img.alt=`Mötesfoto, ${date(p.time)}`;this.photoBox.querySelector('.dex-photo-caption').textContent=date(p.time);this.photoBox.hidden=false;}
+  closePhoto(){const key=this.photo?`${this.photo.entryId}|${this.photo.photoId}`:null;this.photo=null;this.photoBox.hidden=true;const b=[...this.el.querySelectorAll('[data-act=photo]')].find(b=>b.dataset.id===key);b?.focus({preventScroll:true});}
 }
-
-/** Rarity layers (#1256): level / ★ count / tilt from CAT_CARD.fx by tier index; Miele (`star`) adds `miele` + extra ★. */
-function decorate(card, t, star) {
-  const F = C.fx, level = F.level[t] ?? 0;
-  card.classList.add(`fx-${level}`);
-  if (star) card.classList.add('miele');
-  card.dataset.fx = String(level);
-  if (level < 2) return;
-  for (const c of ['foil', 'shine', ...(level >= 3 ? ['glitter', 'holo'] : [])]) { const l = el('span', `fx ${c}`); l.setAttribute('aria-hidden', 'true'); card.append(l); }
-  const n = (F.stars[t] ?? 0) + (star ? F.starExtra : 0);
-  for (let i = 0; i < n; i++) {
-    const s = el('span', 'fx star-fx', '★');
-    s.setAttribute('aria-hidden', 'true');
-    // a golden-angle spread around the card's edge band, sizes and twinkle phases vary
-    const a = i * 2.39996, x = 50 + 46 * Math.cos(a), y = 50 + 46 * Math.sin(a);
-    s.style.cssText = `left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;font-size:${10 + (i * 7) % 9}px;animation-delay:${(-(i * 0.55) % 3).toFixed(2)}s`;
-    card.append(s);
-  }
-  const tilt = F.tilt[t] ?? 0;
-  if (!tilt || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const move = (e) => {
-    const r = card.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
-    card.style.setProperty('--ry', `${((px - 0.5) * 2 * tilt).toFixed(1)}deg`);
-    card.style.setProperty('--rx', `${((0.5 - py) * 2 * tilt).toFixed(1)}deg`);
-    card.style.setProperty('--mx', `${Math.round(px * 100)}%`);
-    card.style.setProperty('--my', `${Math.round(py * 100)}%`);
-  };
-  const rest = () => { for (const v of ['--rx', '--ry', '--mx', '--my']) card.style.removeProperty(v); };
-  card.addEventListener('pointermove', move);
-  card.addEventListener('pointerleave', rest);
-  card.addEventListener('pointercancel', rest);
+function decorate(card,level){
+  const fx=CAT_CARD.fx,kind=fx.level[level]||0;card.classList.add(`fx-${kind}`);if(kind<2)return;
+  for(const name of['foil','shine',...(kind>=3?['glitter','holo']:[])]){const layer=text('span',`fx ${name}`);layer.setAttribute('aria-hidden','true');card.append(layer);}
+  const stars=fx.stars[level]||0;for(let i=0;i<stars;i++){const star=text('span','fx star-fx','★');star.setAttribute('aria-hidden','true');const angle=i*2.39996;star.style.cssText=`left:${50+46*Math.cos(angle)}%;top:${50+46*Math.sin(angle)}%;animation-delay:${-i*.3}s`;card.append(star);}
 }
-
-function el(tag, cls = '', text = '') {
-  const e = document.createElement(tag);
-  if (cls) e.className = cls;
-  if (text) e.textContent = text;
-  return e;
-}
-function row(k, v) { return [el('dt', '', k), el('dd', '', v)]; }

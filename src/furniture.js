@@ -902,8 +902,8 @@ function coffeetable(item) {
     g.add(dowel);
   }
   g.traverse((m) => { m.castShadow = m.receiveShadow = true; });
-  // the cat card binder (#1255) lies on the slat shelf: E opens it; it is the piece's child, so it moves with the table
-  const binder = buildBinderProp({ y: sy + 0.02 + C.slat, tableTop: legH, hx: w / 2, hz: d / 2, level: item.level });
+  // #1848: the animal collection binder lies ON the tabletop, following the table's saved/rearranged transform.
+  const binder = buildBinderProp({ y: h, tableTop: legH, hx: w / 2, hz: d / 2, level: item.level });
   g.add(binder.group);
   (g.userData.targets ??= []).push(binder.target);
   (g.userData.keep ??= []).push(binder.group);

@@ -1,0 +1,16 @@
+{
+  "base": "131b5d9d9c11a5853320d7b36b4bf61409367f39",
+  "scope": "UI/prop only. Production UI snapshot state/1848-ui is supplied to integration owner; component used target registry/models in an isolated small renderer, not the whole app.",
+  "files": {
+    "src/catbinder.js": "4826f05e6216c8f7f5243c72845033755106240c74a443c7db2b00dcbb59b801",
+    "src/catbinderprop.js": "cd576ac2f84e3d94e46253efcb9003584db959bb013331a29118af5aa941287f",
+    "src/furniture.js": "071c1eef9c23d6cc7e587844be1091c5a2acc0db79aaec7683d7ea178b8eb4f6",
+    "src/config.js": "b1b0b0b09b765814b2e5bbd4dfa64e74b8f3877b46a4644176a2659822b422c4",
+    "index.html": "424f089a4bb51b3e8eb741b4d649e6d52829c6aee008fc2bd723d76b0d54c330",
+    "tools/bestiarynative.cjs": "24f13bf306937cb2078f5300f2df231344714e9801eac8a907bf88dc3cfd4332",
+    "tools/bestiaryuitest.cjs": "54850c9ac639d4326aec1ee50ab76b445fb62449c459891b481bea4b45cc9bd1",
+    "tools/bestiaryproptest.mjs": "af05b18248ea73f6e3227d1c04da4a1b7cf3eedaeac349e42feb3660b3325aab",
+    "tools/bindertest.cjs": "e17f3958955c1c28c8e5fe1aac1d17450f6948274c0be3bdcc3d0e01696fd0f6"
+  },
+  "integration": "See ../1848/app-sources.json and app/browser.json in core delivery. Same world before/after UI and real seen\u2192pet/found/photo; late show scroll guard hot-applied without new bootstrap."
+}

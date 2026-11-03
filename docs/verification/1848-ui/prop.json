@@ -1,0 +1,21 @@
+{
+  "pass": true,
+  "tableHeight": 0.47,
+  "bounds": [
+    3.5293235788698083,
+    0.4819999999050051,
+    10.519923321989085,
+    3.8506764211301916,
+    0.5175999991297722,
+    10.770076678010915
+  ],
+  "meshes": 3,
+  "triangles": 118,
+  "lights": 0,
+  "bowlXGap": 0.05932357827376178,
+  "remoteXGap": 0.08249091837018474,
+  "seasonalFlutesClear": true,
+  "abovePick": true,
+  "belowOccluded": true,
+  "rearrangedTransform": true
+}
