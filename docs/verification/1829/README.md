@@ -35,3 +35,6 @@ Dansdrake 6/180. Emoji fonts are absent in this headless environment.
 Source hashes: [SHA-256 manifest](source-sha256.txt). Images and raw output correspond to these sources.
 
 Integration: the catfish and dance catalogue rows were merged together. The scoped dance/cat/gym/duck suites pass 16/16 on the combined source (integration-statistics.txt in #1829 evidence); existing counters and daily ledgers are preserved. Individual browser captures preceded the sibling catalogue merge, which only adds another independent medal card; the tested feeding/dancing progress is unchanged. No duplicate browser run was needed.
+
+
+Levererat i `79228f12235c0a6e99330e16ec61c0b093f27ce2`. [Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/41614231300) och [Worker](https://github.com/solwation/lunden-3d-apartment/actions/runs/41614231195) lyckades; Worker-loggen bekräftar faktisk Wrangler-deploy och den publika sidans version.json visar `79228f1`. Dirigentens kombinerade diff-/bildgranskning är klar. Verifieringslänkarna ovan är permanenta; eventuella resultatbilder är granskade och bytekontrollerade. Ingen rutinmässig omkörning av gröna kontroller efter orelaterad integration. Ärendet stängs genom efterföljande verifieringscommit och aktiva etiketter tas bort.
