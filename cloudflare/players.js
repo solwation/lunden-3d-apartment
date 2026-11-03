@@ -1,3 +1,4 @@
+import { RoomBoule, cleanBoule } from './roomboule.js';
 import {gymPoseWire} from '../src/gymposewire.js';
 import { pumpWire } from '../src/gympump.js';
 import { REST, TV_MEDIA, tvViewer, COMPUTER_MEDIA, computerViewer } from '../src/config.js';
@@ -360,6 +361,7 @@ export class PlayerRoom {
     this.squirrels = new RoomSquirrels(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1686: the shared squirrels and nuts (relay only, memory only, no KV)
     this.riverFish = new RoomRiverFish(() => this.open().map((ws) => ({ ws, a: att(ws) })), send, Math.random, { storage: ctx.storage, test: !!env?.SHARK_TEST }); // #1752: the shared fish in Höje å (clock + caught fish, memory only, no KV); #1769: the shark's one catch record in storage 'shark'
     this.target = new RoomTarget(send, () => this.open().map(ws => ({ws,a:att(ws)})));
+    this.boule = new RoomBoule(ctx, () => this.open().map(ws => ({ ws, a: att(ws) })), send);
     this.doors = new RoomDoors(send, () => this.open().map((ws) => ({ ws }))); // #1775: the doors' state (memory only, no KV)
     this.roomTime = new RoomTime(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1774: the shared game time (one offset, memory only, no KV)
     this.graffiti = new RoomGraffiti(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1724: the shared spray paint (memory only, no KV)
@@ -539,6 +541,7 @@ export class PlayerRoom {
   }
 
   async fetch(request) {
+    await this.boule.ready;
     const url = new URL(request.url), storage = this.ctx.storage;
     const b = await this.usage();
     b.req++; await this.save(); // every request to the object is billed
@@ -561,7 +564,7 @@ export class PlayerRoom {
     if (!others.length) this.target.reset();
     attachment.tgs = {...this.target.state};
     server.serializeAttachment(attachment);
-    send(server, JSON.stringify({ t: 'w', target: this.target.snapshot(), i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons }, ...(others.length ? this.doorsWelcome() : (this.doors.reset(), {})), ...(this.roomTime.welcome(now) ? { tm: this.roomTime.welcome(now) } : {}), trails: this.trails.snapshot(now) })); // (#1773: trails)
+    send(server, JSON.stringify({ t: 'w', boule: this.boule.snapshot(), target: this.target.snapshot(), i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons }, ...(others.length ? this.doorsWelcome() : (this.doors.reset(), {})), ...(this.roomTime.welcome(now) ? { tm: this.roomTime.welcome(now) } : {}), trails: this.trails.snapshot(now) })); // (#1773: trails)
     this.broadcast({ t: 'j', i, n, l: COMBAT.lives }, server);
     this.graffiti.join(server, others.map((ws) => ({ ws, a: att(ws) })), now); // #1724
     return new Response(null, { status: 101, webSocket: client });
@@ -594,6 +597,7 @@ export class PlayerRoom {
     } catch {}
     let lifeChanged = false;
     const gf = message.startsWith(GRAFFITI_SYNC.prefix) ? cleanGraffiti(message) ?? false : null, plain = gf === null ? message : ''; // #1724: a graffiti block is never parsed as anything else
+    const bl = plain.startsWith('{"t":"bl"') ? cleanBoule(plain) : null;
     const tg = plain.startsWith('{"t":"tg"') ? cleanTarget(plain) : null;
     const dr = plain.startsWith('{"t":"dr"') ? cleanDoor(plain) : null; // #1775
     const tm = plain.startsWith('{"t":"tm"') ? cleanTime(plain) : null; // #1774 (a malformed one is an ordinary, ignored state)
@@ -679,7 +683,8 @@ export class PlayerRoom {
           if (q && Math.hypot(q[0] - a.s.p[0], q[1] - a.s.p[1], q[2] - a.s.p[2]) <= PLAYERS.soundRange) send(x, out);
         }
       }
-    } else if (pool) this.poolMsg(ws, a, pool, now); // #1355
+    } else if (bl) await this.boule.handle(ws, a, bl, now);
+    else if (pool) this.poolMsg(ws, a, pool, now); // #1355
     else if (mus) this.musCmd(ws, a, mus, now); // #1624
     else if(cinema){const screen=cinema.screen?this.tvs.find(tv=>tv.id===cinema.screen):this.cinema;screen?.handle(ws,a,cinema,now);}
     else if(snake)this.snake.handle(ws,a,snake,now);

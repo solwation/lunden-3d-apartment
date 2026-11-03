@@ -1565,6 +1565,7 @@ export const GRILL = { flames: 16, height: 1.0, sparks: 40, light: 3.2, burnSeco
 // FIPJP rules (boule 70.5–80 mm, 650–800 g; jack 30 ± 1 mm wooden); the rest are playability *guess*es scaled to the
 // 3.2 × 8.8 m court (the rules' 6–10 m jack distance does not fit, so `jackMin`/`jackMax` are shortened).
 export const BOULE = {
+  sync: { version: 1, every: 400, maxSeconds: 12, step: 1 / 120, sample: 4, pendingMs: 5000, reachSlack: .15, controlReach: 4, maxCoord: 1000 }, // #1854: bounded command/replay limits (*guess*); no per-frame traffic
   ballR: 0.0375, ballMass: 0.7, jackR: 0.015, jackMass: 0.015, // FIPJP sizes; masses in kg
   surface: 0.03, edge: 0.08,         // the gravel's top and the timber edge's thickness (courtyard.js draws them)
   friction: 1.6,                     // rolling deceleration on stenmjöl, m/s² (*guess*: a boule stops ~0.5 m after landing)
