@@ -1,0 +1,27 @@
+{
+  "lowMemory": true,
+  "names": [
+    "east-access",
+    "east-facade",
+    "east-glass",
+    "east-lawn",
+    "east-modern",
+    "east-roof",
+    "east-schoolBrick",
+    "east-schoolGlass",
+    "east-schoolRoof"
+  ],
+  "expected": [
+    "east-access",
+    "east-facade",
+    "east-glass",
+    "east-lawn",
+    "east-modern",
+    "east-roof",
+    "east-schoolBrick",
+    "east-schoolGlass",
+    "east-schoolRoof"
+  ],
+  "clock": 1,
+  "ok": true
+}

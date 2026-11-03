@@ -68,6 +68,18 @@ path pairs, same20-slot cap and8m glints, then native E pickup and ordinary crou
 from one of those exact spawned nuts. Controlled player/squirrel preparation is recorded explicitly.
 [Images, raw results and source hashes](../verification/1831/).
 
+## East backdrop batch contract (#1833)
+
+`tools/eastbackdroptest.html` now checks explicit intended batch names, including #1813's shared
+`east-lawn`:11 desktop batches (three modern groups),9 phone batches (one modern master), plus the
+existing four-face clock. It does not infer expectations from observed output or weaken the check
+to a lower bound. All window, source, geometry, budget and phone-detail assertions are retained.
+The final real-app run passes all52 checks, including1,019 visible windows and87,714 triangles. A
+small separate actual `lowMemory` builder check confirms all9 intended phone batch names/one clock,
+without a second full-app bootstrap. [Raw output and nonvisual verification record](../verification/1833/).
+Historical #1823/#1824 evidence truthfully retains its then-failing stale assertion; this fix supplies
+the later green harness result. No player-visible change or result image applies.
+
 ## River ducks (#1815)
 
 Scoped checks: `node tools/ducktest.mjs` covers pure swim/shore transitions, surface continuity,

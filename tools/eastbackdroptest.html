@@ -19,7 +19,11 @@ const rec=W.buildings.find(b=>b.source==='guess-1762'),east=G.geoToPlan(13.1845,
 check(NG&&NG.x1-NG.x0>65&&NG.z1-NG.z0>35&&rec.osm==='1136415461'&&rec.polygon.slice(0,4).every((q,i)=>Math.hypot(q[0]-osm[i][0],q[1]-osm[i][1])<1.5)&&gym.eave>gym.base+9&&Math.abs(gym.roofY(-190,-320)-gym.roofY(-175,-340))<.01&&gym.roofY(-150,-320)===-Infinity,'#1762 Nordic Wellness: ~69x37 m on OSM 1136415461 (fitted within 1.5 m), three storeys, flat roof, turned outline');
 check(here.s===ref.s&&side(...G.geoToPlan(13.18222,55.68789)).s!==ref.s&&osm.every(q=>side(...q).d>10)&&NG.centre[1]<-200,'#1762: the gym is on the east side of Sankt Lars väg (the old 1177 spot is on the west), 10+ m from the road centreline, north of WALK.z0 -200');
 check(!W.buildings.some(b=>b.source==='guess-1745')&&W.buildings.some(b=>b.source==='88457612'&&b.classic),'#1756: the NTI school (88457612) is back as the classic school');
-check(group.userData.buildings.filter(b=>b.source==='guess-1762').length===1,'the gym is one record merged into the existing batches');}check(group?.children.filter(m=>m.isMesh).length===(lite?8:10)&&group.userData.clocks.length===1,'original batches plus three desktop modern source groups (phone master) and one working four-face tower clock');
+check(group.userData.buildings.filter(b=>b.source==='guess-1762').length===1,'the gym is one record merged into the existing batches');}
+// #1833: source batch contract, including #1813's shared school lawn. Only desktop splits modern into three.
+const expectedBatches=['east-facade','east-roof','east-glass','east-access','east-modern','east-schoolGlass','east-schoolBrick','east-schoolRoof','east-lawn',...(!lite?['east-modern-2','east-modern-3']:[])].sort();
+const actualBatches=group?.children.filter(m=>m.isMesh).map(m=>m.name).sort()??[];
+check(JSON.stringify(actualBatches)===JSON.stringify(expectedBatches)&&group.userData.clocks.length===1,`explicit ${lite?'phone':'desktop'} batch names include school lawn (${expectedBatches.length}) and one working four-face tower clock`);
 check(group.userData.buildings.every(b=>b.bottom<=Math.min(...b.polygon.map(p=>S.renderedTerrainY(...p)))&&b.eave>b.base+2),'plinths cover terrain');
 const glass=A.scene.getObjectByName('east-glass'),schoolGlass=A.scene.getObjectByName('east-schoolGlass'),facade=A.scene.getObjectByName('east-facade'),modern=group.children.filter(m=>m.name==='east-modern'||m.name.startsWith('east-modern-'));A.scene.updateMatrixWorld(true);let visible=0,total=0;
 // Geometric window centres are independent of arch tessellation and trim topology.
