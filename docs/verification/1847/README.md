@@ -25,3 +25,6 @@ Gameplay/topplista/Cloudflare är original-only. Ingen offentlig port ska göras
 ## Dirigentens integration
 
 Katalogen och8berörda kärnmoduler är byteidentiska med arbetarens gröna underlag; se [integration-sources.json](integration-sources.json). Alla4nya changelogposter har egna unika stigande tilldelade id, visas nyast först; alla gamla poster bevaras. De två bilderna är direkt granskade. Inga nya UI-/gymrundor behövs efter de orelaterade katt-/ankändringarna. Faktisk Pages-/Worker-verifiering följer före stängning.
+
+
+Levererat i `131b5d9d9c11a5853320d7b36b4bf61409367f39`. [Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/41670475448) och [Worker](https://github.com/solwation/lunden-3d-apartment/actions/runs/41670475388) lyckades; Worker-loggen bekräftar faktisk Wrangler-deploy och den publika sidans version.json visar `131b5d9`. Dirigentens kombinerade diff-/bildgranskning är klar. Verifieringslänkarna ovan är permanenta; eventuella resultatbilder är granskade och bytekontrollerade. Ingen rutinmässig omkörning av gröna kontroller efter orelaterad integration. Ärendet stängs genom efterföljande verifieringscommit och aktiva etiketter tas bort.
