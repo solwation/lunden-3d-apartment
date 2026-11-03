@@ -1,0 +1,211 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "name": "mouse existing default score list"
+    },
+    {
+      "ok": true,
+      "name": "mouse exact title, rep ranking, actual own-row/avatar and saved selection",
+      "data": {
+        "title": "Styrkelyft",
+        "rows": [
+          {
+            "text": "1. Gymprov B150 rep",
+            "mine": true,
+            "avatar": true
+          },
+          {
+            "text": "2. Gymprov A120 rep",
+            "mine": false,
+            "avatar": true
+          }
+        ],
+        "stored": "styrkelyft",
+        "width": [
+          1100,
+          1100
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "mouse other list preserved"
+    },
+    {
+      "ok": true,
+      "name": "mouse real close button"
+    },
+    {
+      "ok": true,
+      "name": "mouse chosen list remains on reopen"
+    },
+    {
+      "ok": true,
+      "name": "touch existing default score list"
+    },
+    {
+      "ok": true,
+      "name": "touch exact title, rep ranking, actual own-row/avatar and saved selection",
+      "data": {
+        "title": "Styrkelyft",
+        "rows": [
+          {
+            "text": "1. Gymprov B150 rep",
+            "mine": true,
+            "avatar": true
+          },
+          {
+            "text": "2. Gymprov A120 rep",
+            "mine": false,
+            "avatar": true
+          }
+        ],
+        "stored": "styrkelyft",
+        "width": [
+          844,
+          844
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "touch other list preserved"
+    },
+    {
+      "ok": true,
+      "name": "touch real close button"
+    },
+    {
+      "ok": true,
+      "name": "touch chosen list remains on reopen"
+    },
+    {
+      "ok": true,
+      "name": "no page errors",
+      "data": []
+    },
+    {
+      "ok": true,
+      "name": "all board requests stay on local intercept; no production rows",
+      "data": [
+        {
+          "url": "http://localhost:8913/fixture-api/scores",
+          "method": "GET"
+        },
+        {
+          "url": "http://localhost:8913/fixture-api/scores",
+          "method": "GET"
+        },
+        {
+          "url": "http://localhost:8913/fixture-api/boards",
+          "method": "GET"
+        },
+        {
+          "url": "http://localhost:8913/fixture-api/boards",
+          "method": "GET"
+        },
+        {
+          "url": "http://localhost:8913/fixture-api/boards",
+          "method": "GET"
+        },
+        {
+          "url": "http://localhost:8913/fixture-api/scores",
+          "method": "GET"
+        },
+        {
+          "url": "http://localhost:8913/fixture-api/boards",
+          "method": "GET"
+        },
+        {
+          "url": "http://localhost:8913/fixture-api/scores",
+          "method": "GET"
+        },
+        {
+          "url": "http://localhost:8913/fixture-api/scores",
+          "method": "GET"
+        },
+        {
+          "url": "http://localhost:8913/fixture-api/boards",
+          "method": "GET"
+        },
+        {
+          "url": "http://localhost:8913/fixture-api/boards",
+          "method": "GET"
+        },
+        {
+          "url": "http://localhost:8913/fixture-api/boards",
+          "method": "GET"
+        },
+        {
+          "url": "http://localhost:8913/fixture-api/scores",
+          "method": "GET"
+        },
+        {
+          "url": "http://localhost:8913/fixture-api/boards",
+          "method": "GET"
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "api": [
+    {
+      "url": "http://localhost:8913/fixture-api/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8913/fixture-api/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8913/fixture-api/boards",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8913/fixture-api/boards",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8913/fixture-api/boards",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8913/fixture-api/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8913/fixture-api/boards",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8913/fixture-api/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8913/fixture-api/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8913/fixture-api/boards",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8913/fixture-api/boards",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8913/fixture-api/boards",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8913/fixture-api/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8913/fixture-api/boards",
+      "method": "GET"
+    }
+  ],
+  "scope": "Actual index.html DOM/CSS plus real Leaderboard and Boards; only 3D bootstrap intercepted, local Worker-produced /boards response, no full world/gameplay route."
+}

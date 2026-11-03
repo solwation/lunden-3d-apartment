@@ -234,6 +234,8 @@ Vägbron och den separata gång- och cykelbron vid Sankt Lars väg syns över en
 
 Utekatterna väljer själva utflyktsmål över hundratals meter, upptäcker nya platser och kan vila på Hus A:s entrétak eller bakom Nordic Wellness. De behåller sina personligheter och går fortfarande att mata, klappa och bära.
 
+I Topplista kan du välja **Styrkelyft**, som jämför fullbordade gymrepetitioner i rep. Listan använder dina befintliga repetitioner och påverkas inte av gympoängens dagstak eller bicepsens avklingning.
+
 Vid ån finns fyra ankor, bruna honor och grönhövdade hanar, som följer varandra i par mellan strandplatser och ibland samlas i en lös flock. Håll fram en brödskiva och använd E eller touch för att mata dem; varje tugga förbrukar en fjärdedel av skivan. Parmedlemmarna kan ibland stanna och pussas näbb mot näbb med fem små hjärtan; matning går före och sedan fortsätter de tillsammans. Kvackandet följer ljudinställningen. Brödet hämtas i kökets skafferi, och lyckad matning ger poäng samt framsteg mot medaljen Ankmamma; matningspoängen har ett dagstak.
 
 

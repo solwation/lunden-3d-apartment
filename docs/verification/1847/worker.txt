@@ -1,0 +1,2 @@
+PASS existing gymReps rows appear with original timestamp tie order, no GET writes; all lists retained
+PASS actual local Worker POST/GET: descending rep list, private ids hidden, avatars/other list retained

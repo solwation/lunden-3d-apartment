@@ -49,6 +49,7 @@ export const COUNTERS = {
 };
 
 export const BOARD_LISTS = [
+  { id: 'styrkelyft', kind: 'most', counter: 'gymReps', title: 'Styrkelyft', unit: 'rep' },
   { id: 'medaljer-total', kind: 'medals-total', title: 'Flest utmärkelser 🏅', unit: 'utmärkelser' },
   { id: 'medaljer-hogsta', kind: 'medals-top', title: 'Högsta utmärkelse 🏆' },
   { id: 'flest-duckFeeds', kind: 'most', counter: 'duckFeeds', title: 'Flest ankor matade', unit: 'matningar' },

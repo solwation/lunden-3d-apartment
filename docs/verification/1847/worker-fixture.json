@@ -1,0 +1,117 @@
+{
+  "response": {
+    "lists": {
+      "styrkelyft": [
+        {
+          "key": "e0837132d8cb8ff3",
+          "name": "Gymprov B",
+          "value": 150,
+          "updated": 1793721301774,
+          "avatar": "310220010165"
+        },
+        {
+          "key": "8543ae4b44a6da43",
+          "name": "Gymprov A",
+          "value": 120,
+          "updated": 1793721241748,
+          "avatar": "241302112"
+        }
+      ],
+      "medaljer-total": [
+        {
+          "key": "8543ae4b44a6da43",
+          "name": "Gymprov A",
+          "value": 1,
+          "updated": 1793721241748,
+          "avatar": "241302112"
+        },
+        {
+          "key": "e0837132d8cb8ff3",
+          "name": "Gymprov B",
+          "value": 1,
+          "updated": 1793721301774,
+          "avatar": "310220010165"
+        }
+      ],
+      "medaljer-hogsta": [
+        {
+          "key": "8543ae4b44a6da43",
+          "name": "Gymprov A",
+          "value": 1,
+          "updated": 1793721241748,
+          "medal": "gym",
+          "avatar": "241302112"
+        },
+        {
+          "key": "e0837132d8cb8ff3",
+          "name": "Gymprov B",
+          "value": 1,
+          "updated": 1793721301774,
+          "medal": "gym",
+          "avatar": "310220010165"
+        }
+      ],
+      "flest-duckFeeds": [],
+      "flest-squirrelFeeds": [],
+      "flest-petted": [
+        {
+          "key": "e0837132d8cb8ff3",
+          "name": "Gymprov B",
+          "value": 7,
+          "updated": 1793721301774,
+          "avatar": "310220010165"
+        },
+        {
+          "key": "8543ae4b44a6da43",
+          "name": "Gymprov A",
+          "value": 3,
+          "updated": 1793721241748,
+          "avatar": "241302112"
+        }
+      ],
+      "flest-catButts": [],
+      "flest-ponyPets": [],
+      "flest-flushes": [],
+      "flest-doors": [],
+      "flest-lids": [],
+      "flest-taps": [],
+      "flest-sat": [],
+      "flest-washed": [],
+      "flest-sandwiches": [],
+      "flest-tasks": [],
+      "flest-vacuumed": [],
+      "flest-steps": [],
+      "flest-dribbles": [],
+      "forst-catButts": [],
+      "forst-duckFeeds": [],
+      "forst-squirrelFeeds": [],
+      "forst-ponyPets": [],
+      "forst-flushes": [],
+      "forst-vacuumed": [],
+      "forst-tasks": [],
+      "forst-sandwiches": []
+    }
+  },
+  "own": {
+    "key": "e0837132d8cb8ff3",
+    "name": "Gymprov B",
+    "id": "strength-fixture-b"
+  },
+  "tie": [
+    {
+      "key": "8543ae4b44a6da43",
+      "name": "Gymprov A",
+      "value": 120,
+      "updated": 1793721241748,
+      "avatar": "241302112"
+    },
+    {
+      "key": "e0837132d8cb8ff3",
+      "name": "Gymprov B",
+      "value": 120,
+      "updated": 1793721271747,
+      "avatar": "310220010165"
+    }
+  ],
+  "writes": 3
+}
