@@ -1,0 +1,26 @@
+{
+  "before": {
+    "reps": 0,
+    "points": 0,
+    "sat": 0,
+    "lay": 0
+  },
+  "first": {
+    "reps": 1,
+    "points": 1,
+    "sat": 0,
+    "lay": 0,
+    "station": 1,
+    "total": 1,
+    "score": "22°12:00Poäng 1+1——FPS",
+    "badges": "💪 Träningsrepetition +1"
+  },
+  "progress": "💪UtegymmareLåst1 / 100 repetitioner",
+  "ended": {
+    "reps": 1,
+    "unchanged": true,
+    "active": false
+  },
+  "errors": [],
+  "freeze": "exercise time held only while result pictures were captured; pause check restores actual update"
+}

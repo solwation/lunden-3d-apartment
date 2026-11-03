@@ -1,0 +1,39 @@
+{
+  "ok": true,
+  "completed": true,
+  "driverError": null,
+  "checks": [
+    {
+      "ok": true,
+      "message": "standing at the station grants no repetitions or exercise points"
+    },
+    {
+      "ok": true,
+      "message": "full native-entered repetitions increment both count and daily exercise points once"
+    },
+    {
+      "ok": true,
+      "message": "gym entry grants no ordinary sit/lie reward"
+    },
+    {
+      "ok": true,
+      "message": "ordinary HUD score remains visible"
+    },
+    {
+      "ok": true,
+      "message": "actual pause menu stops exercise counter and reward"
+    },
+    {
+      "ok": true,
+      "message": "Utegymmare shows actual counted progress towards its first level"
+    },
+    {
+      "ok": true,
+      "message": "standing up cancels training without another repetition"
+    },
+    {
+      "ok": true,
+      "message": "route has no page errors"
+    }
+  ]
+}

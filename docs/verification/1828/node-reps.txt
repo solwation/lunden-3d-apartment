@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: pullup: only full cycles count, exactly once, including multiple cycles in one update
+ok 1 - pullup: only full cycles count, exactly once, including multiple cycles in one update
+  ---
+  duration_ms: 1.734394
+  type: 'test'
+  ...
+# Subtest: press: only full cycles count, exactly once, including multiple cycles in one update
+ok 2 - press: only full cycles count, exactly once, including multiple cycles in one update
+  ---
+  duration_ms: 0.371999
+  type: 'test'
+  ...
+# Subtest: step: only full cycles count, exactly once, including multiple cycles in one update
+ok 3 - step: only full cycles count, exactly once, including multiple cycles in one update
+  ---
+  duration_ms: 0.2187
+  type: 'test'
+  ...
+# Subtest: entry glide, pause, ordinary seats, leaving mid-cycle and switching stations grant no extra cycle
+ok 4 - entry glide, pause, ordinary seats, leaving mid-cycle and switching stations grant no extra cycle
+  ---
+  duration_ms: 0.288898
+  type: 'test'
+  ...
+# Subtest: daily award ceiling, saved ledger and next local day leave all repetitions available to the medal
+ok 5 - daily award ceiling, saved ledger and next local day leave all repetitions available to the medal
+  ---
+  duration_ms: 0.781397
+  type: 'test'
+  ...
+# Subtest: invalid repetitions never credit points, older saves start without retrospective gym rewards
+ok 6 - invalid repetitions never credit points, older saves start without retrospective gym rewards
+  ---
+  duration_ms: 0.342199
+  type: 'test'
+  ...
+# Subtest: Worker accepts gym repetitions and derives Utegymmare at the same 100-repetition boundary
+ok 7 - Worker accepts gym repetitions and derives Utegymmare at the same 100-repetition boundary
+  ---
+  duration_ms: 0.898197
+  type: 'test'
+  ...
+# Subtest: actual stats.bump/rawScore never add the uncapped per-repetition path as well
+ok 8 - actual stats.bump/rawScore never add the uncapped per-repetition path as well
+  ---
+  duration_ms: 13.307152
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 199.033577

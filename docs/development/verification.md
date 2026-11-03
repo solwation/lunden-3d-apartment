@@ -8965,3 +8965,8 @@ already show these distances under the old policy, so it is not the regression c
 ## Nordic Wellness photo-read volumes (#1822–24)
 
 `THREE_DIR=/path/to/three node tools/nordicgymtest.mjs` checks the actual combined brick front, green hall and entrance geometry: 26 outward panes, seven wall washes, exposed treads on both flights/faces, globes/door visibility, unchanged eave/roofY, existing batch lists and the campus budget. Optional `NORDIC_GYM_MODULE` / `NORDIC_GYM_CONFIG` absolute paths bind a composed child delivery before integration; `NORDIC_GYM_COMPARE_MODULE` / `NORDIC_GYM_COMPARE_CONFIG` additionally compare emitted position/normal/colour bytes after non-geometric refactors. No full-world hardware performance claim. The combined source/captures and retained known `eastbackdroptest` batch-count failure (#1833) are documented in [#1824 evidence](../verification/1824/).
+
+
+## Outdoor gym rewards (#1828)
+
+`THREE_DIR=/path/to/three node --test tools/gymrepstest.mjs` checks completed cycles on all three stations, entry/partial-cycle/pause/switch exclusion, daily cap persistence/new day, the actual stats score path and the shared Worker/medal boundary. Existing `cloudflare/boards.test.mjs` and `cloudflare/medals.test.mjs` verify the catalogue. `tools/browsertest.sh node tools/gymrewardsbrowser.cjs GAME OUT` checks one actual native-E pull-up route, visible points, no sit/lie reward, pause and the Utegymmare progress card. `GYM_REWARDS_LOGIC_ONLY=1` repeats a corrected logic fixture while preserving already valid images. Screenshot-only exercise-time hold is explicit in state.json; no physical-phone/performance claim. [Result images](../verification/1828/).

@@ -1,0 +1,11 @@
+{
+  "src/stats.js": "7e85830314430b91f21817aac403602b1eda1deb3f894c824b2a230f8347f564",
+  "src/config.js": "f9f7d21017dbd9275919c712225242eaf7ccd2a1f9c0166243b4038008a953f9",
+  "src/duckscore.js": "be8dc54023135c3f69a669bd53066cad3c4d33dd86fee156807acbbe56eff2da",
+  "src/gymscore.js": "bb2a226df9230a75dca4c644a3cdeac0f0581434cf03ecb876feca7b543d1f32",
+  "src/boardcatalog.js": "0d591046436d4918f4edfa79553ad1b7b8c1667f857dc5241fc8e2c4498818ea",
+  "src/medalcatalog.js": "b9d61f8186149e0f759e57c0afcebac33f84163c213adef0fcb27903904b18e6",
+  "src/outdoorgym.js": "ca0132847d38d69e50d403c5bc92ed0dea728cf5c0dc3dfca1f87b2326c2bbbb",
+  "src/main.js": "4e0e5f2bb0bc827a9216f8266dca34bc356ff89b115d9656569736b936d1fcf6",
+  "tools/gymrepstest.mjs": "4cd1d758be58ddceee2facc6786d03a83a3e6973ca5635c8510c1072cc0ba083"
+}

@@ -1,0 +1,76 @@
+TAP version 13
+# Subtest: actual bump counts every feeding once but game score stops at daily ceiling; no uncapped generic path
+ok 1 - actual bump counts every feeding once but game score stops at daily ceiling; no uncapped generic path
+  ---
+  duration_ms: 1.664496
+  type: 'test'
+  ...
+# Subtest: finite kitchen bread, no bread/package/stale or consumed slice grants no successful feed event
+ok 2 - finite kitchen bread, no bread/package/stale or consumed slice grants no successful feed event
+  ---
+  duration_ms: 0.792698
+  type: 'test'
+  ...
+# Subtest: duck medal advances beyond daily score cap, pays once, Worker accepts counter and derives medal
+ok 3 - duck medal advances beyond daily score cap, pays once, Worker accepts counter and derives medal
+  ---
+  duration_ms: 1.678196
+  type: 'test'
+  ...
+# Subtest: pullup: only full cycles count, exactly once, including multiple cycles in one update
+ok 4 - pullup: only full cycles count, exactly once, including multiple cycles in one update
+  ---
+  duration_ms: 1.606695
+  type: 'test'
+  ...
+# Subtest: press: only full cycles count, exactly once, including multiple cycles in one update
+ok 5 - press: only full cycles count, exactly once, including multiple cycles in one update
+  ---
+  duration_ms: 0.278799
+  type: 'test'
+  ...
+# Subtest: step: only full cycles count, exactly once, including multiple cycles in one update
+ok 6 - step: only full cycles count, exactly once, including multiple cycles in one update
+  ---
+  duration_ms: 0.162299
+  type: 'test'
+  ...
+# Subtest: entry glide, pause, ordinary seats, leaving mid-cycle and switching stations grant no extra cycle
+ok 7 - entry glide, pause, ordinary seats, leaving mid-cycle and switching stations grant no extra cycle
+  ---
+  duration_ms: 0.227699
+  type: 'test'
+  ...
+# Subtest: daily award ceiling, saved ledger and next local day leave all repetitions available to the medal
+ok 8 - daily award ceiling, saved ledger and next local day leave all repetitions available to the medal
+  ---
+  duration_ms: 0.379299
+  type: 'test'
+  ...
+# Subtest: invalid repetitions never credit points, older saves start without retrospective gym rewards
+ok 9 - invalid repetitions never credit points, older saves start without retrospective gym rewards
+  ---
+  duration_ms: 0.1926
+  type: 'test'
+  ...
+# Subtest: Worker accepts gym repetitions and derives Utegymmare at the same 100-repetition boundary
+ok 10 - Worker accepts gym repetitions and derives Utegymmare at the same 100-repetition boundary
+  ---
+  duration_ms: 0.617199
+  type: 'test'
+  ...
+# Subtest: actual stats.bump/rawScore never add the uncapped per-repetition path as well
+ok 11 - actual stats.bump/rawScore never add the uncapped per-repetition path as well
+  ---
+  duration_ms: 13.065463
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 164.069836

@@ -1586,3 +1586,6 @@ are rate-limited and bounded to ring×range point values. The room chooses an in
 it toward its last accepted shooter position; clients never supply a destination. Personal board scores stay local
 and daily game-score limits are unchanged. `src/targetmove.js` supplies the same local fallback when disconnected;
 a new room welcome replaces local movement progress.
+
+
+Outdoor exercise rewards (#1828): the existing per-player `lunden.stats` record stores cumulative `gymReps`, awarded `gymScore` and only the current local-day `gymRewardDay` (`day`, awarded `pts`). No new storage key or service is added. Old saves default to zero exercise rewards; existing awarded points survive later tuning, and the ordinary stats reset/save/pagehide path applies. All completed repetitions count for medals even after the 30-point daily exercise cap. This is original-only gameplay.

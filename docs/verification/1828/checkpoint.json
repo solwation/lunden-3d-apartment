@@ -1,0 +1,27 @@
+{
+  "before": {
+    "reps": 0,
+    "points": 0,
+    "sat": 0,
+    "lay": 0
+  },
+  "first": {
+    "reps": 1,
+    "points": 1,
+    "sat": 0,
+    "lay": 0,
+    "station": 1,
+    "total": 1,
+    "score": "22°12:00Poäng 1+1——FPS",
+    "badges": "💪 Träningsrepetition +1"
+  },
+  "progress": "💪UtegymmareLåst1 / 100 repetitioner",
+  "paused": true,
+  "resume": {
+    "locked": true,
+    "active": true,
+    "focused": "",
+    "overlayHidden": true,
+    "medalsHidden": true
+  }
+}

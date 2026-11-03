@@ -6,9 +6,10 @@ import { KISS, SECRET, SCORE, FISHING } from './config.js';
 import { targetScoreOf, creditTarget } from './targetscore.js';
 import { addCount } from './statcount.js';
 import { creditDuckFeeds, duckScoreOf } from './duckscore.js';
+import { gymScoreOf, creditGym } from './gymscore.js';
 const KEY = 'lunden.stats';
 
-const fresh = () => ({ love: 0, loveReceipts: [], pvpKills: 0, killReceipts: {}, cats: 0, rare: 0, byVariant: {}, petted: 0, ponyPets: 0, squirrelFeeds: 0, duckFeeds: 0, duckScore: 0, duckFeedDay: null, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, carMusic: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0, freeThrows: 0, twoPointers: 0, basketPoints: 0,
+const fresh = () => ({ love: 0, loveReceipts: [], pvpKills: 0, killReceipts: {}, cats: 0, rare: 0, byVariant: {}, petted: 0, ponyPets: 0, squirrelFeeds: 0, duckFeeds: 0, duckScore: 0, duckFeedDay: null, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, gymReps: 0, gymScore: 0, gymRewardDay: null, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, carMusic: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0, freeThrows: 0, twoPointers: 0, basketPoints: 0,
   byBreed: {}, seen: {}, secretRare: {}, tv: 0, pc: 0, parasol: 0, clock: 0, calendar: 0, cooked: 0, brews: 0, drawn: 0, splashes: 0, cuts: 0, dribbles: 0, catButts: 0, shattered: 0, shatterRange: 0, pingpingHugs: 0, blinds: 0, curtains: 0, airfried: 0, clips: 0, penalties: {}, penaltyPoints: 0, kittens: 0, kittenPets: 0, petsByBreed: {}, hugsByBreed: {}, vacuumed: 0, tasks: 0, taskCounts: {}, taskRewardDays: {}, taskBonusDays: {}, taskBonusPoints: 0, taskDay: null, mieleDay: null, legacyTaskPoints: 0, pvpRangePoints: 0, medals: {}, medalsSeeded: false, medalPoints: 0, fishCaught: 0, fishBySpecies: {}, fishEaten: 0 });
 
 
@@ -41,7 +42,7 @@ let dirty = false;
 // Badge text per counter; counters missing here (metres, seconds) never get a badge
 const BADGES = {
   petted: '✋ Klappat katt', ponyPets: '🐴 Klappat en häst', squirrelFeeds: '🐿️ Matat en ekorre', duckFeeds: '🦆 Matat en anka', doors: '🚪 Dörr öppnad', lids: '🚽 Toalettlock', flushes: '🌊 Spolat', toiletPaper: '🧻 Toapapper slängt', handwash: '🧼 Tvättat händerna', handdry: '🧺 Torkat händerna', taps: '💧 Kran påslagen',
-  fridge: '🍗 Kylskåpet öppnat', appliances: '🍳 Ugn/mikro öppnad', cabinets: '🗄 Skåp öppnat', beer: '🍺 Klunk öl', coffee: '☕ Klunk kaffe', turbo: '⚡ Kaffeturbo!', fish: '🐟 Fiskpinne uppäten', fruit: '🍎 Frukt uppäten', fried: '🍳 Fiskpinne stekt', airfried: '🍟 Airfryern klar', toaster: '🍞 Brödrosten rostar', fries: '🍟 Pommes uppäten', sandwiches: '🥪 Du gjorde en macka!', hotdogs: '🌭 Korv med bröd!', friesCooked: '🍟 Pommes frites klara', friesBurnt: '🔥 Pommes brända', burnt: '🔥 Fiskpinne bränd', catFish: '🐈 Katten åt en fiskpinne', catFishFeeds: '🐈 Katten åt en rå fisk', catButts: '🍑 Kattens rumpa', chicken: '🍗 Kycklingbit uppäten', fishEaten: '🐟 Fisken är uppäten', fishCooked: '🔥 Fisken är klar', sharkFin: '🦈 En haj i Höje å! Hajfenan är din.', wine: '🍷 Klunk vin', champagne: '🥂 Klunk champagne', whisky: '🥃 Klunk whisky', milk: '🥛 Klunk mjölk', kask: '☕ Klunk kaffekask', lights: '💡 Lampa tänd', stairs: '🔼 Trapptur',
+  fridge: '🍗 Kylskåpet öppnat', appliances: '🍳 Ugn/mikro öppnad', cabinets: '🗄 Skåp öppnat', beer: '🍺 Klunk öl', coffee: '☕ Klunk kaffe', turbo: '⚡ Kaffeturbo!', fish: '🐟 Fiskpinne uppäten', fruit: '🍎 Frukt uppäten', fried: '🍳 Fiskpinne stekt', airfried: '🍟 Airfryern klar', toaster: '🍞 Brödrosten rostar', fries: '🍟 Pommes uppäten', sandwiches: '🥪 Du gjorde en macka!', hotdogs: '🌭 Korv med bröd!', friesCooked: '🍟 Pommes frites klara', friesBurnt: '🔥 Pommes brända', burnt: '🔥 Fiskpinne bränd', catFish: '🐈 Katten åt en fiskpinne', catFishFeeds: '🐈 Katten åt en rå fisk', catButts: '🍑 Kattens rumpa', chicken: '🍗 Kycklingbit uppäten', fishEaten: '🐟 Fisken är uppäten', fishCooked: '🔥 Fisken är klar', sharkFin: '🦈 En haj i Höje å! Hajfenan är din.', wine: '🍷 Klunk vin', champagne: '🥂 Klunk champagne', whisky: '🥃 Klunk whisky', milk: '🥛 Klunk mjölk', kask: '☕ Klunk kaffekask', lights: '💡 Lampa tänd', stairs: '🔼 Trapptur', gymReps: '💪 Träningsrepetition',
   love: '💕 Kärlek +100', pvpHits: '🎯 Träffade en spelare', greets: '👋 Hälsade på en spelare', olof: '👋 Vinkat till Olof', sat: '💺 Satt ner', lay: '🛏 Lagt sig', posted: '📌 Teckning uppsatt', thrown: '🗑 Teckning slängd',
   grilledChicken: '🍗 Kycklingen är grillad', catPhotos: '📸 Kattfoto', cooked: '🍗 Kycklingen är klar', brews: '☕ Kaffet är klart', tv: '📺 Tv på', pc: '🎮 Datorn på', parasol: '⛱ Parasollet', clock: '🕰 Väggklockan', calendar: '📅 Kattkalendern', grill: '🔥 Grillen tänd', hood: '🌀 Fläkten på', songs: '🎵 Musik på', carMusic: '🚗 Musik i bilen', read: '📖 Läste boken', pingpingHugs: '🐧 Kramat Pingping', mieleHugs: '💖 Kramat Miele', car: '🚗 Bilen kallad', magic: '✨ Trolleri', blinds: '🖼 Plisségardin', curtains: '🦓 Gardinerna', clips: '📱 Nytt klipp', nest: '🔊 Smart högtalare', roofs: '🏠 Uppe på taket', liftFloors: '🏢 Hissen', flights: '🚀 Jetpacken lyfter',
   kittens: '🐾 Kattunge!', washed: '🧽 Diskat', dishwasher: '🍽 Disken är klar', rubbishOut: '🗑 Soporna utburna', tasks: '📋 Uppdrag utfört!',
@@ -117,8 +118,9 @@ export function totalScore() { return Math.floor(Math.max(0, rawScore() - (stats
 export function rawScore() {
   const S = SCORE, n = (o) => Object.keys(o ?? {}).length;
   let t = 0;
-  for (const [k, pts] of Object.entries(S.each)) if (k !== 'duckFeeds') t += (stats[k] ?? 0) * pts;
+  for (const [k, pts] of Object.entries(S.each)) if (k !== 'duckFeeds' && k !== 'gymReps') t += (stats[k] ?? 0) * pts;
   t += duckScoreOf(stats); // #1827: bounded daily duck reward, not counter × uncapped points
+  t += gymScoreOf(stats); // #1828: all repetitions count, only awarded daily-capped points score
   t += targetScoreOf(stats); // #1708: low conversion, daily cap
   t += stats.pvpRangePoints ?? 0; // #873: extra distance reward; legacy pvpHits still supply the unchanged base
   t += stats.legacyTaskPoints ?? 0;
@@ -150,7 +152,9 @@ export function awardTarget(pts) {
 /** Count `n` of `key`; `id` names the thing (a door, a lamp …) for the bigger points the first time (SCORE.first).
  * The badge for those only shows the first time. */
 export function bump(key, n = 1, id = key) {
+  if (key === 'gymReps' && (!Number.isSafeInteger(n) || n <= 0)) return;
   if (!addCount(stats, key, n)) return; // #1761: never turn a stored object into "[object Object]1"
+  if (key === 'gymReps') creditGym(stats, n);
   if (key === 'duckFeeds') creditDuckFeeds(stats, n); // counter keeps advancing after the daily score cap
   let fresh = true;
   if (SCORE.first[key] !== undefined) {
@@ -394,6 +398,7 @@ export function statRows() {
     ['🚀 Jetpackturer', `${stats.flights ?? 0}`], // take-offs (#359)
     ['💺 Satt ner', `${stats.sat}`],
     ['🛏 Lagt sig', `${stats.lay}`],
+    ...(stats.gymReps ? [['💪 Repetitioner på utegymmet', `${stats.gymReps}`]] : []), // #1828
     ['💧 Kranar påslagna', `${stats.taps}`],
     ['🍗 Kylskåpet öppnat', `${stats.fridge}`],
     ['🍳 Ugn/mikro öppnad', `${stats.appliances}`],

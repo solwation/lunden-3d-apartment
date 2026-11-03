@@ -10,7 +10,7 @@ export class OutdoorGym {
   constructor({scene,ground,allowed=()=>true}) {
     this.group=new THREE.Group();this.group.name='outdoor-gym';scene.add(this.group);
     this.ground=ground;this.allowed=allowed;this.targets=[];this.polys=[];this.segments=[];
-    this.active=null;this.elapsed=0;this.repetitions=0;
+    this.active=null;this.elapsed=0;this.repetitions=0;this.onRep=null;
     const yaw=C.yaw*Math.PI/180,c=Math.cos(yaw),s=Math.sin(yaw);
     this.point=(x,z)=>[C.at[0]+c*x+s*z,C.at[1]-s*x+c*z];
     const materials={wood:woodMaterial(C.wood,.85),steel:new THREE.MeshStandardMaterial({color:C.steel,roughness:.65,metalness:.35}),chips:new THREE.MeshStandardMaterial({color:C.chips,roughness:1})};
@@ -78,9 +78,11 @@ export class OutdoorGym {
       if(this.active){this.active.spot.pos.copy(this.active.origin);if(this.active.stock)this.active.stock.position.copy(this.active.stockOrigin);}
       this.active=station;this.elapsed=0;this.repetitions=0;
     }
-    if(!station||rest.t<1)return;
+    if(!station||rest.t<1||!Number.isFinite(dt)||dt<=0)return;
     this.elapsed+=dt;const phase=this.elapsed/station.spec.period,cycle=(1-Math.cos(phase*Math.PI*2))/2;
-    this.repetitions=Math.floor(phase);station.spot.pos.copy(station.origin);
+    const repetitions=Math.floor(phase),completed=repetitions-this.repetitions;this.repetitions=repetitions;
+    if(completed>0)this.onRep?.(completed,station.spec.id);
+    station.spot.pos.copy(station.origin);
     if(station.spec.id==='pullup')station.spot.pos.y+=cycle*C.pullRise*rest.scale;
     else if(station.spec.id==='press')station.stock.position.y=station.stockOrigin.y+cycle*station.spec.lift;
     else {station.spot.pos.y+=cycle*C.stepHeight*rest.scale;const p=station.world(0,0,C.geometry.step.eyeZ-cycle*C.stepTravel);station.spot.pos.x=p.x;station.spot.pos.z=p.z;}

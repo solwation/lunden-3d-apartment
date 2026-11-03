@@ -1,0 +1,28 @@
+{
+  "baseline": "46f7be89",
+  "sourceSha256": {
+    "src/outdoorgym.js": "ca0132847d38d69e50d403c5bc92ed0dea728cf5c0dc3dfca1f87b2326c2bbbb",
+    "src/gymscore.js": "bb2a226df9230a75dca4c644a3cdeac0f0581434cf03ecb876feca7b543d1f32",
+    "src/stats.js": "3333d61fd8cea3d9bc6897daf4d2501ec9e7b86825dea28e3b33c6885e4df164",
+    "src/main.js": "7caed8422ce38cbbcbc6fdc2b46fa784556d0abbd62e52eab67cec336620a22f",
+    "src/config.js": "0ba3fef881fbdf7e7caff5b113d0ae5e247bc0946deead7a8faa34c5658d8478",
+    "src/boardcatalog.js": "d0232d3de24772cef4f09ed1d76e52daa913ca7a4b778d390b5371cee6fcedb5",
+    "src/medalcatalog.js": "30cd7f52af2936957ae051e890ed142739b9f1ca353ce0d4e16142b5cf347182",
+    "tools/gymrepstest.mjs": "a4dc18f102b98ac74efc85250e3fb5e39542b567b3680b4fa21c4a400429a391",
+    "tools/gymrewardsbrowser.cjs": "f23c17d88f77e72fa00e62f1c80bc0ec4c9804e97b337b8aa971866fc665594e"
+  },
+  "checks": {
+    "gymNode": "8/8 PASS",
+    "existingBoardsMedals": "22/22 PASS (unchanged source, earlier run)",
+    "browser": "8/8 PASS, zero page errors; logic-only correction reused valid screenshot evidence",
+    "syntax": "PASS",
+    "diffWhitespace": "PASS"
+  },
+  "environment": "Chromium1248/SwiftShader,1280x800,June12:00clear/freeze, THREE0.170.0, actual native keyboard route",
+  "limits": [
+    "No physical phone/hardware performance claim",
+    "Some emoji glyphs missing in headless font setup",
+    "Exercise time held only for static images; actual update restored for pause/exit checks"
+  ],
+  "publicTransfer": "Not applicable: original-only gameplay"
+}

@@ -935,6 +935,7 @@ holdables.push(...elCabinet.cans);
 world.movingPolys = (lvl) => lvl === 0 ? [car.segments(), hoop.segments()].filter((sg) => sg.length).map((sg) => sg.map(([x, z]) => [x, z])).concat([dropoff.poly]) : []; // + the rubbish containers (#387)
 // #1811: fixed outdoor exercise fittings, independent of household furnishings and their visibility switch.
 const outdoorGym = new OutdoorGym({scene,ground:parkGround,allowed:()=>!heldItem()&&!rest.active&&!player.riding&&!player.flying&&!fall.active&&!player.climb&&!player.swing&&!player.glide&&!jetpack.worn&&!suit.worn&&!roomMoving});
+outdoorGym.onRep = n => bump('gymReps', n); // #1828: completed cycles only; ordinary Rest entry still grants nothing
 {const segments=world.movingSegments,polys=world.movingPolys;
  world.movingSegments=lvl=>[...segments(lvl),...(lvl===0?outdoorGym.segments:[])];
  world.movingPolys=lvl=>[...polys(lvl),...(lvl===0?outdoorGym.polys:[])];}

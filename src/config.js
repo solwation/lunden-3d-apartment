@@ -3768,6 +3768,7 @@ export const SCORE = {
     cucumberSlices: 0.2,                                  // a slice of cucumber cut (#376)
     posted: 3, thrown: 0.5, drawn: 2,
     secrets: 1, stairs: 0.3, steps: 0.01,
+    gymReps: 1, // #1828: per completed outdoor exercise cycle (*guess*), daily-capped by OUTDOOR_GYM.scorePerDay
     shatterRange: 1,                                      // something shot to pieces from afar: per range point (#263)
     pvpHits: 5,                                           // another player hit (#667); the room allows COMBAT.perMinute points a minute
   },
@@ -4042,6 +4043,7 @@ export const OUTDOOR_SEATS = {
 // #1811: image-interpreted outdoor gym on the grass SW of Östra längan by Karpvägen.
 // Location, dimensions, timber/steel colours, clearance and exercise motions are visual/gameplay guesses from the report photo.
 export const OUTDOOR_GYM = {
+  scorePerDay: 30, // #1828: exercise-point ceiling per local day (*guess*); all repetitions still count for medals
   at: [-143, 33], yaw: -45, pad: [14, 7.5], padStep: 1, padLift: .035,
   wood: 0x9d714e, steel: 0x363d3e, chips: 0xb59c73, post: .085, bar: .03, board: .045,
   entry: 2.3, eye: 1.62, bench: .52, logRadius: .11,
