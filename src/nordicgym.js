@@ -142,12 +142,12 @@ export function buildNordicGym(b, p, base, bottom, parts) {
 
   // Window bays on the brick faces (flat dark panes, one row per storey); the glass corner and the low part have their own.
   const windows = [];
-  const pane = (x, y, z, w, h, nx, nz) => {
+  const pane = (x, y, z, w, h, nx, nz, hex = M.windowColor, frontFloor = null) => {
     const g = new THREE.PlaneGeometry(w, h).rotateY(Math.atan2(nx, nz)).translate(x + nx * .03, y, z + nz * .03).toNonIndexed();
-    g.deleteAttribute('uv'); const c = rgb(M.windowColor), n = g.attributes.position.count, col = new Float32Array(n * 3);
+    g.deleteAttribute('uv'); const c = rgb(hex), n = g.attributes.position.count, col = new Float32Array(n * 3);
     for (let i = 0; i < n; i++) { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; }
     g.setAttribute('color', new THREE.BufferAttribute(col, 3)); local.glass.push(g);
-    windows.push({ x: x + nx * .03, y, z: z + nz * .03, n: [nx, nz], width: w, height: h });
+    windows.push({ x: x + nx * .03, y, z: z + nz * .03, n: [nx, nz], width: w, height: h, ...(frontFloor === null ? {} : { frontFloor }) });
   };
   for (let f = 0; f < b.levels; f++) {
     const y = base + f * M.storey + M.window.sill + M.window.h / 2;
@@ -159,14 +159,61 @@ export function buildNordicGym(b, p, base, bottom, parts) {
     for (let x = x0 + 3; x < x1 - 2.5; x += M.window.bay) {
       pane(x, y, z0, M.window.w, M.window.h, 0, -1);
     }
-    // West end towards Sankt Lars väg (x0): glass covers z1 - gw to z1
-    for (let z = z0 + 3; z < z1 - gw - 2.5; z += M.window.bay) {
-      pane(x0, y, z, M.window.w, M.window.h, -1, 0);
-    }
+    // The photo-read road front has its own seven-bay rhythm below (#1822).
     // East end far from road (x1): low part is on floor 0 at lowZ0..z1
     for (let z = z0 + 3; z < z1 - 2.5; z += M.window.bay) {
       if (f > 0 || z < lowZ0 - 1) pane(x1, y, z, M.window.w, M.window.h, 1, 0);
     }
+  }
+
+  // #1822: the short road face is predominantly brick, with a narrow entrance strip on its right.
+  // The photograph gives the count and proportions; the dimensions in M.front remain guesses.
+  const F = M.front, frontEnd = z1 - gw, frontSpan = frontEnd - z0;
+  box(.008, eave - bottom, frontSpan, x0 - .004, bottom, (z0 + frontEnd) / 2, F.brick, local.facade);
+  box(.07, F.roofTrimH, frontSpan, x0 - .045, eave - F.roofTrimH, (z0 + frontEnd) / 2, F.frameColor, local.glass);
+  for (let f = 0; f < b.levels; f++) for (let k = 0; k < F.count; k++) {
+    const z = z0 + F.margin + k * (frontSpan - F.margin * 2) / (F.count - 1);
+    const h = f ? F.upperH : F.groundH, w = f ? F.upperW : F.groundW;
+    const sill = f ? F.upperSill : F.groundSill, y = base + f * M.storey + sill + h / 2;
+    // A shallow dark frame and a warm lower pane share the existing glass batch.
+    box(.035, h + F.frame * 2, w + F.frame * 2, x0 - .018, y - h / 2 - F.frame, z, F.frameColor, local.glass);
+    pane(x0 - .025, y, z, w, h, -1, 0, f ? F.paneColor : F.litColor, f);
+    if (!f) {
+      // Window bars and a bright ceiling strip read as an occupied gym without a copied interior texture.
+      box(.025, h, F.frame * .45, x0 - .065, y - h / 2, z, F.frameColor, local.glass);
+      box(.025, F.frame * .5, w * .75, x0 - .065, y + h * .37, z, F.lightColor, local.glass);
+    }
+  }
+  // Seven small wall lamps, offset beside the windows as in the photo. Their soft wall washes
+  // use a radial vertex fall-off (groundglow's principle) baked into brick colours: no light/material/texture.
+  for (let k = 0; k < F.count; k++) {
+    const z = z0 + F.margin + k * (frontSpan - F.margin * 2) / (F.count - 1) + F.groundW * .65;
+    const top = base + F.groundSill + F.groundH + F.frame * 1.5;
+    box(.15, .11, F.lampW, x0 - .09, top, z, F.frameColor, local.glass);
+    const centerY = top - F.washH * .43, verts = [], colors = [], brick = rgb(F.brick), glow = rgb(F.lightColor);
+    const vertex = (r, a) => {
+      verts.push(x0 - .015, centerY + Math.cos(a) * F.washH / 2 * r, z + Math.sin(a) * F.washW / 2 * r);
+      const c = brick.clone().lerp(glow, (1 - r) ** 1.5 * .82); colors.push(c.r, c.g, c.b);
+    };
+    const rings = 3, segments = 12;
+    for (let r = 0; r < rings; r++) for (let j = 0; j < segments; j++) {
+      const r0 = r / rings, r1 = (r + 1) / rings, a0 = j / segments * Math.PI * 2, a1 = (j + 1) / segments * Math.PI * 2;
+      vertex(r0, a0); vertex(r1, a1); vertex(r1, a0);
+      if (r) { vertex(r0, a0); vertex(r0, a1); vertex(r1, a1); }
+    }
+    const wash = new THREE.BufferGeometry(); wash.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+    wash.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3)); wash.computeVertexNormals(); local.facade.push(wash);
+  }
+
+  // Two small photo-read tree silhouettes share the glass batch too. Using the global tree
+  // instances here would activate two otherwise-culled trunk/foliage draws at this remote road.
+  for (const fraction of F.treeFractions) {
+    const x = x0 - F.treeOffset, z = z0 + frontSpan * fraction;
+    box(.12, F.treeH * .72, .12, x, base, z, F.treeBark, local.glass);
+    const crown = new THREE.IcosahedronGeometry(F.treeR, 0).scale(1, 1.45, 1).translate(x, base + F.treeH - F.treeR * 1.45, z);
+    crown.deleteAttribute('uv'); const c = rgb(F.treeLeaf), colors = new Float32Array(crown.attributes.position.count * 3);
+    for (let i = 0; i < colors.length; i += 3) { colors[i] = c.r; colors[i + 1] = c.g; colors[i + 2] = c.b; }
+    crown.setAttribute('color', new THREE.BufferAttribute(colors, 3)); local.glass.push(crown);
   }
 
   const yaw = Math.atan2(-uz, ux); // three's rotateY(yaw) takes local +x to (ux, uz) and local +z to (-uz, ux)
