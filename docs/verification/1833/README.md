@@ -48,3 +48,6 @@ No public verification result is claimed.
 
 One worker, about one minute implementation and two minutes verification. The conductor owns
 publication, completion comment/nonvisual exception and closure; no unrelated suites were run.
+
+
+Levererat i `04dcf10f34f5a2b133c419ad0c0ef4bb06c5f712`. [Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/41611942936) och [Worker](https://github.com/solwation/lunden-3d-apartment/actions/runs/41611942933) lyckades; Worker-loggen bekräftar faktisk Wrangler-deploy och den publika sidans version.json visar `04dcf10`. Dirigentens kombinerade diff-/bildgranskning är klar. Verifieringslänkarna ovan är permanenta; eventuella resultatbilder är granskade och bytekontrollerade. Ingen rutinmässig omkörning av gröna kontroller efter orelaterad integration. Ärendet stängs genom efterföljande verifieringscommit och aktiva etiketter tas bort.
