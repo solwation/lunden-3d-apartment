@@ -1,0 +1,13 @@
+{
+  "worker": "edda2db372016bcde221308ae1ebc401790b1149",
+  "integrated": "748719bdf248b1c56c743d45f8f0f05f6e8d2565",
+  "byteIdenticalPlayerAndBridgeSources": {
+    "src/player.js": "c3b11557cf8006c02fc2bc05ae39998ea9cac128695040a8603a2aee575a36fc",
+    "src/riverpark.js": "cf92686aabc3b1aad5a92443e4c6dec7b99ced05391a9fe4fa72c2510627e160",
+    "src/riverbridge.js": "7c5959f5835a760f6d86cce2d4711103d73fdf491cf9f85a94e5adf4823f4faa",
+    "src/surroundings.js": "fc2f9e35c828e67abf2815534d51be3056ac8f2f7540fb853a08b03ba2010e90"
+  },
+  "checksReused": "3 source-bound regression groups and actual before/after Player keyboard/touch traces; three directly inspected images. Unrelated1848 collection/UI changes do not modify these sources. No new browser or geometry profile.",
+  "changelog": "Next1428, all prior rows preserved.",
+  "deployScope": "Player/verification/changelog only; Pages expected. No Worker source/watch path changed; verify actual run list rather than forcing or claiming a Worker deployment."
+}

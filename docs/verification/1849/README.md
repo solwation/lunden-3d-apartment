@@ -41,3 +41,8 @@ PLAYWRIGHT_MODULE=/path/to/playwright tools/browsertest.sh node tools/bridgefall
 ```
 
 Föredrivern kräver gammal Player-källa för reproduktion. Slutdrivern håller scenen efter resultatet; `touch /tmp/1849-release` släpper den. Lokal devserve använder ordinarie källa utan CDN-behov. Ingen fysisk telefon eller produktionsdata/tjänst används. Offentlig selektiv buggrättningsport bedöms av dirigenten efter källpublicering; detta arbete gör ingen port.
+
+
+## Dirigentens integration
+
+Player och de tre berörda bro-/markkällorna är byteidentiska med arbetarens granskade slutunderlag, se [integration-sources.json](integration-sources.json). Ändringen består av den lokala fyllningsspärren; Djurpärmens orelaterade ändringar kräver ingen omkörning av grön rörelsedata. Alla tre slutbilder är direkt granskade. Changelog1428 följer efter1427 med alla gamla poster bevarade. Filerna väntas utlösa Pages, ingen Worker-ändring; faktisk körlista kontrolleras före stängning.
