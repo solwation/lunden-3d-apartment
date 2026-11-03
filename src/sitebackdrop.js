@@ -11,6 +11,7 @@ import { parkingLots, onEastRoad, onEastBuildingAt } from './parkinglayout.js';
 import { buildKarpFacade, karpBrickTexture } from './karpfacade.js';
 import { buildRealgym20 } from './realgym20.js';
 import { buildNordicGym } from './nordicgym.js';
+import { buildNordicGymSign } from './nordicgymsign.js';
 import { schoolyardParts } from './schoolyard.js';
 import { grassMaterial, grassUV } from './grass.js';
 const W=SITE.west;
@@ -105,7 +106,7 @@ function buildBackdrop(W,key,ground,brick=null,reflectiveGlass=null,karp=null){
  for(const b of W.buildings){const p=b.polygon.slice(0,-1),holes=(b.holes??[]).map(h=>h.slice(0,-1)),height=b.storey??W.storey,heights=p.map(v=>ground(...v)),base=Math.max(...heights)-(b.sunk??0),bottom=Math.min(...heights,base)-.1,eave=base+b.levels*height;const footprint=shape(p);footprint.holes=holes.map(h=>new THREE.Path(h.map(([x,z])=>new THREE.Vector2(x,-z))));const wallParts=b.modern?parts.modern:parts.facade,roofFrom=parts.schoolRoof?.length??0;
   if(b.karp&&karp){parts.karpBrick??=[];parts.karpGlass??=[];parts.karpRoof??=[];records.push({...b,base,bottom,...buildKarpFacade(b,p,base,bottom,height,parts)});continue;}
   if(b.template==='realgym20'){records.push({...b,base,bottom,...buildRealgym20(b,p,base,bottom,parts,ground)});continue;} // #1532: photo-based volumes in the existing batches
-  if(b.template==='nordicgym'){records.push({...b,base,bottom,...buildNordicGym(b,p,base,bottom,parts)});continue;} // #1745: the gym (no OSM footprint), merged into the existing batches
+  if(b.template==='nordicgym'){records.push({...b,base,bottom,...buildNordicGym(b,p,base,bottom,parts,ground)});continue;} // #1745: the gym (no OSM footprint), merged into the existing batches
   if(b.classic){if(reflectiveGlass)parts.schoolGlass??=[];parts.schoolBrick??=[];parts.schoolRoof??=[];const school=buildSchoolFacade(p,base,bottom,eave,parts);tintRoof(W,b,parts,roofFrom);records.push({...b,base,bottom,eave,...school});continue;}
   // #576–#581: photo-specific hospital facades share the school's brick, trim, glass and roof batches.
   if(b.campus){if(reflectiveGlass)parts.schoolGlass??=[];parts.schoolBrick??=[];parts.schoolRoof??=[];records.push({...b,base,bottom,...buildCampusFacade(b,p,holes,base,bottom,parts)});tintRoof(W,b,parts,roofFrom);
@@ -166,6 +167,7 @@ function buildBackdrop(W,key,ground,brick=null,reflectiveGlass=null,karp=null){
   const ends=key==='east'&&k==='modern'&&!lowMemory?[0,...modernEnds,list.length]:[0,list.length];
   for(let i=1;i<ends.length;i++){const mesh=new THREE.Mesh(mergeGeometries(list.slice(ends[i-1],ends[i])),mats[k]);mesh.name=key+'-'+k+(i>1?'-'+i:'');mesh.receiveShadow=true;mesh.castShadow=k!=='access'&&k!=='lawn'&&k!=='schoolGlass'&&k!=='karpGlass';group.add(mesh);}
   list.forEach(g=>g.dispose());}
+ for(const b of records.filter(b=>b.template==='nordicgym'&&b.model.front.sign))group.add(buildNordicGymSign(b));
  const clocks=records.filter(b=>b.clock).map(b=>new TowerClock(b.clock));
  for(const clock of clocks)group.add(clock.object);
  group.userData.clocks=clocks;group.userData.updateClocks=hour=>{for(const clock of clocks)clock.update(hour);};

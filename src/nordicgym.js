@@ -95,10 +95,9 @@ function buildGrenhuset(parts, brickHex, roofHex, windowHex) {
   }
 }
 
-/** Build the gym from a rectangular outline `p`; returns `eave`, `windows` and `roofY(x, z)`.
- * #1788: The glass corner is turned to the road (x0, z1), wrapping the west face x0 and south face z1.
- * The low brick part sits at the far ENE end (x1, z1). Also builds Grenhuset across Sankt Lars väg. */
-export function buildNordicGym(b, p, base, bottom, parts) {
+/** Build the photo-read brick front/green hall from OSM outline `p`, with the glazed road corner at (x0, z1).
+ * Returns `eave`, actual `windows` and uniform flat `roofY(x, z)`. Also builds Grenhuset across Sankt Lars väg. */
+export function buildNordicGym(b, p, base, bottom, parts, ground = () => base) {
   const M = b.model, ex = p[1][0] - p[0][0], ez = p[1][1] - p[0][1], el = Math.hypot(ex, ez), ux = ex / el, uz = ez / el;
   const ox = p.reduce((s, q) => s + q[0], 0) / p.length, oz = p.reduce((s, q) => s + q[1], 0) / p.length; // pivot: the outline's centre
   const toLocal = (x, z) => [(x - ox) * ux + (z - oz) * uz, -(x - ox) * uz + (z - oz) * ux];
@@ -106,38 +105,134 @@ export function buildNordicGym(b, p, base, bottom, parts) {
   const L = p.map(q => toLocal(q[0], q[1])), xs = L.map(q => q[0]), zs = L.map(q => q[1]);
   const x0 = Math.min(...xs), x1 = Math.max(...xs), z0 = Math.min(...zs), z1 = Math.max(...zs);
   const local = { facade: [], roof: [], glass: [] }; // built in the local frame, then turned and moved into `parts`
-  const eave = base + b.levels * M.storey, lowEave = base + M.lowHeight, cx = (x0 + x1) / 2;
-  const lowX0 = x1 - M.low.w, lowZ0 = z1 - M.low.d; // #1788: low part at the far east end (x1, z1)
-  const inLow = (x, z) => x > lowX0 && z > lowZ0;
+  const eave = base + b.levels * M.storey, H = M.hall, hallStart = x0 + H.frontDepth;
+  const lowX0 = x1 - M.low.w, lowZ0 = z1 - M.low.d; // historical outline metadata; the photo has no low rear corner
+  const entranceDepth = M.glass.east;
 
-  // Brick: the tall block as two boxes around the low corner, the low part, a plinth band; roofs as thin slabs.
-  box(x1 - x0, eave - bottom, lowZ0 - z0, cx, bottom, (z0 + lowZ0) / 2, M.brick, local.facade);
-  box(lowX0 - x0, eave - bottom, z1 - lowZ0, (x0 + lowX0) / 2, bottom, (lowZ0 + z1) / 2, M.brick, local.facade);
-  box(M.low.w, lowEave - bottom, M.low.d, (lowX0 + x1) / 2, bottom, (lowZ0 + z1) / 2, M.brickLow, local.facade);
-  const slab = (xa, xb, za, zb, y) => box(xb - xa, M.roofThick, zb - za, (xa + xb) / 2, y, (za + zb) / 2, M.roof, local.roof);
-  slab(x0, x1, z0, lowZ0, eave); slab(x0, lowX0, lowZ0, z1, eave); slab(lowX0, x1, lowZ0, z1, lowEave);
-  for (const g of local.roof.slice(-3)) g.deleteAttribute('color'); // the roof batch has no vertex colours (one uniform roof colour)
+  // #1824: a short brick front and a full-height metal hall. The circulation corner stays
+  // clear for #1823's glazed entrance/stair: x0..hallStart, z1-6..z1 (photo-read guesses).
+  box(H.frontDepth, eave - bottom, z1 - z0 - entranceDepth, (x0 + hallStart) / 2, bottom, (z0 + z1 - entranceDepth) / 2, M.brick, local.facade);
+  box(x1 - hallStart, H.plinthH + base - bottom, z1 - z0, (hallStart + x1) / 2, bottom, (z0 + z1) / 2, H.concrete, local.glass);
+  box(x1 - hallStart, eave - base - H.plinthH, z1 - z0, (hallStart + x1) / 2, base + H.plinthH, (z0 + z1) / 2, H.baseColor, local.glass);
+  box(x1 - x0, M.roofThick, z1 - z0, (x0 + x1) / 2, eave, (z0 + z1) / 2, M.roof, local.roof);
+  local.roof.at(-1).deleteAttribute('color');
+
+  const facePlane = (x, y, z, w, h, nx, nz, hex, list = local.glass) => {
+    const g = new THREE.PlaneGeometry(w, h).rotateY(Math.atan2(nx, nz)).translate(x, y, z).toNonIndexed();
+    g.deleteAttribute('uv'); const c = rgb(hex), colors = new Float32Array(g.attributes.position.count * 3);
+    for (let i = 0; i < colors.length; i += 3) { colors[i] = c.r; colors[i + 1] = c.g; colors[i + 2] = c.b; }
+    g.setAttribute('color', new THREE.BufferAttribute(colors, 3)); list.push(g); return g;
+  };
+  // One quad per vertical panel; narrow gaps expose the darker backing. Staggered seams and
+  // shallow offsets distinguish the three horizontal bands without extra seam boxes/textures.
+  const panelBottom = base + H.plinthH, bandH = (eave - panelBottom) / H.bands;
+  const panelFaces = [
+    { a: hallStart, b: x1, nx: 0, nz: -1, fixed: z0 },
+    { a: hallStart, b: x1, nx: 0, nz: 1, fixed: z1 },
+    { a: z0, b: z1, nx: 1, nz: 0, fixed: x1 },
+  ];
+  for (let band = 0; band < H.bands; band++) for (const side of panelFaces) {
+    const off = (H.bands - band) * H.bandOffset, y = panelBottom + (band + .5) * bandH;
+    for (let a = side.a - band * H.bandShift; a < side.b; a += H.bay) {
+      const lo = Math.max(side.a, a) + H.seam / 2, hi = Math.min(side.b, a + H.bay) - H.seam / 2;
+      if (hi <= lo) continue;
+      const along = (lo + hi) / 2;
+      facePlane(side.nx ? side.fixed + off : along, y, side.nz ? side.fixed + side.nz * off : along,
+        hi - lo, bandH - H.seam, side.nx, side.nz, H.panelColors[band]);
+    }
+  }
 
   // Solar panels: dark-blue rows over the tall roof, a walkway margin round the edge and one gap for a rooftop unit.
   const top = eave + M.roofThick, ph = M.panelHeight, m = M.panelMargin;
   for (let z = z0 + m; z + M.panelRow <= z1 - m + 1e-6; z += M.panelRow + M.panelGap) {
-    const from = x0 + m, to = z + M.panelRow > lowZ0 ? lowX0 - m : x1 - M.panelEastInset;
+    const from = x0 + m, to = x1 - M.panelEastInset;
     if (to > from) box(to - from, ph, M.panelRow, (from + to) / 2, top, z + M.panelRow / 2, M.panel, local.glass);
   }
   const [unitX, unitZ] = toLocal(M.unit.x, M.unit.z); // plan coordinates, so the unit moves with the record
   box(M.unit.w, M.unit.h, M.unit.d, unitX, top, unitZ, M.unitColor, local.glass);
 
-  // #1788 Glass corner: facing Sankt Lars väg at (x0, z1), wrapping the west (road) and south (park) faces over every storey.
-  const gw = M.glass.east, gs = M.glass.south, gb = base + M.glass.sill, gt = eave - M.glass.head;
-  const mull = (x, z, hx, hz) => box(hx, gt - gb + .3, hz, x, gb - .15, z, M.mullion, local.glass);
-  box(.1, gt - gb, gw, x0 - .06, gb, z1 - gw / 2, M.glassColor, local.glass);
-  box(gs, gt - gb, .1, x0 + gs / 2, gb, z1 + .06, M.glassColor, local.glass);
-  for (let k = 0; k <= Math.round(gw / M.glass.bay); k++) mull(x0 - .09, z1 - k * gw / Math.round(gw / M.glass.bay), .08, .12);
-  for (let k = 0; k <= Math.round(gs / M.glass.bay); k++) mull(x0 + k * gs / Math.round(gs / M.glass.bay), z1 + .09, .12, .08);
-  for (let f = 1; f < b.levels; f++) {
-    const y = base + f * M.storey - .12;
-    box(.14, .24, gw, x0 - .09, y, z1 - gw / 2, M.mullion, local.glass);
-    box(gs, .24, .14, x0 + gs / 2, y, z1 + .09, M.mullion, local.glass);
+  // #1823: photo-read green entrance cage, not a glass wrap over half of the hall.
+  // Opaque blue reflection backplanes sit behind a shallow stair scene and the front profiles: a backdrop
+  // approximation of reflective glazing without a transparent material, extra mesh, texture or light.
+  const G = M.glass, gw = G.east, gs = G.south, gb = base + G.sill, gt = eave - G.head;
+  const rect = (axis, a, y, w, h, at, color) => {
+    const geo = new THREE.PlaneGeometry(w, h).rotateY(axis === 'road' ? -Math.PI / 2 : 0)
+      .translate(axis === 'road' ? at : a, y, axis === 'road' ? a : at).toNonIndexed();
+    geo.deleteAttribute('uv'); const c = rgb(color), colors = new Float32Array(geo.attributes.position.count * 3);
+    for (let i = 0; i < colors.length; i += 3) { colors[i] = c.r; colors[i + 1] = c.g; colors[i + 2] = c.b; }
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3)); local.glass.push(geo); return geo;
+  };
+  const beam = (a, b, width, color) => {
+    const v = new THREE.Vector3(...b).sub(new THREE.Vector3(...a)), length = v.length();
+    const geo = box(width, length, width, 0, -length / 2, 0, color, local.glass);
+    geo.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), v.normalize()))
+      .translate((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2);
+  };
+  for (const [axis, start, span, face, back] of [
+    ['road', z1 - gw, gw, x0 - G.offset, x0 + G.recess],
+    ['side', x0, gs, z1 + G.offset, z1 - G.recess]
+  ]) {
+    const bays = Math.round(span / G.bay), bay = span / bays, h = gt - gb;
+    // Different sky tones and broad upper reflection bands make the glazing blue, while leaving the stair readable.
+    for (let k = 0; k < bays; k++) {
+      const a = start + (k + .5) * bay;
+      rect(axis, a, (gb + gt) / 2, bay, h, back, k % 2 ? G.backColor : G.skyColor);
+      rect(axis, a, gb + h * .79, bay, h * .18, back + (axis === 'road' ? -G.offset : G.offset), G.reflectionColor);
+    }
+    for (let k = 0; k <= bays; k++) rect(axis, start + k * bay, (gb + gt) / 2, G.frame, h + G.frame, face, G.frameColor);
+    for (const y of [gb, base + M.storey, base + M.storey * 2, gt]) rect(axis, start + span / 2, y, span + G.frame, G.frame, face, G.frameColor);
+    // Small top-hung opening lights, alternating bays as in the side photograph.
+    for (let k = 1; k < bays; k += 2) {
+      const a = start + (k + .5) * bay, y = gt - G.openH / 2;
+      rect(axis, a, y, bay - G.frame * 2, G.openH, face, G.openColor);
+      rect(axis, a, y - G.openH / 2, bay - G.frame * 2, G.frame, face + (axis === 'road' ? -G.offset : G.offset), G.frameColor);
+    }
+  }
+  // Two stacked flights behind the side glazing, plus their visible return along the road face.
+  // Flat treads over one sloping stringer are sufficient at backdrop distance; no invisible stair boxes.
+  for (const axis of ['side', 'road']) for (let f = 0; f < b.levels - 1; f++) {
+    const run = axis === 'side' ? gs - G.stair.margin * 2 : gw - G.stair.margin * 2;
+    const at = t => {
+      const a = (f % 2 ? 1 - t : t) * run + G.stair.margin;
+      return axis === 'side' ? [x0 + a, base + f * M.storey + t * M.storey, z1 - G.stair.inset]
+        : [x0 + G.stair.inset, base + f * M.storey + t * M.storey, z1 - a];
+    };
+    beam(at(0), at(1), G.stair.stringer, G.stairColor);
+    for (let k = 1; k <= G.stair.steps; k++) {
+      const t = k / G.stair.steps, p = at(t), step = run / G.stair.steps;
+      const geo = new THREE.PlaneGeometry(axis === 'side' ? step : G.stair.width, axis === 'side' ? G.stair.width : step)
+        .rotateX(-Math.PI / 2).translate(p[0], p[1], p[2]).toNonIndexed();
+      geo.deleteAttribute('uv'); const c = rgb(G.stairColor), colors = new Float32Array(geo.attributes.position.count * 3);
+      for (let i = 0; i < colors.length; i += 3) { colors[i] = c.r; colors[i + 1] = c.g; colors[i + 2] = c.b; }
+      geo.setAttribute('color', new THREE.BufferAttribute(colors, 3)); local.glass.push(geo);
+    }
+    const rail = t => { const p = at(t); p[1] += G.stair.railH; if (axis === 'side') p[2] += G.stair.width / 2; else p[0] -= G.stair.width / 2; return p; };
+    beam(rail(0), rail(1), G.stair.rail, G.frameColor);
+    for (const t of [0, .5, 1]) { const p = rail(t), q = [...p]; q[1] -= G.stair.railH; beam(q, p, G.stair.rail, G.frameColor); }
+  }
+  // Warm globes hang inside the profiles; they are coloured meshes, never actual lights.
+  for (let i = 0; i < G.globes.length; i++) {
+    const [along, height] = G.globes[i], x = x0 + G.stair.inset, z = z1 - along, y = base + height;
+    beam([x, gt, z], [x, y, z], G.cord, G.frameColor);
+    const globe = new THREE.SphereGeometry(G.globeR, 8, 4).translate(x, y, z).toNonIndexed();
+    globe.deleteAttribute('uv'); const c = rgb(G.globeColor), colors = new Float32Array(globe.attributes.position.count * 3);
+    for (let k = 0; k < colors.length; k += 3) { colors[k] = c.r; colors[k + 1] = c.g; colors[k + 2] = c.b; }
+    globe.setAttribute('color', new THREE.BufferAttribute(colors, 3)); local.glass.push(globe);
+  }
+  // Road-facing decorative door. Narrow dark seals make the leaf legible within the green grid.
+  const dz = z1 - G.door.along, dy = base + G.door.h / 2, dx = x0 - G.offset * 2;
+  rect('road', dz, dy, G.door.w, G.door.h, dx, G.doorColor);
+  for (const z of [dz - G.door.w / 2, dz + G.door.w / 2]) rect('road', z, dy, G.frame, G.door.h, dx - G.offset, G.frameColor);
+  rect('road', dz, base + G.door.h, G.door.w, G.frame, dx - G.offset, G.frameColor);
+  rect('road', dz, base + G.door.railY, G.door.w, G.frame, dx - G.offset, G.frameColor);
+  box(G.door.handleOut, G.door.handleH, G.door.handleW, dx - G.door.handleOut / 2, base + G.door.handleY, dz + G.door.w * .3, G.rackColor, local.glass);
+  box(G.door.canopy, G.frame, G.door.w + G.frame * 2, x0 - G.door.canopy / 2, base + G.door.h + G.frame, dz, G.frameColor, local.glass);
+  // Small paved entry pad and two hoop cycle stands beside the circulation bay (same existing opaque batch).
+  box(G.pad.depth, G.pad.thick, gw + G.pad.extra, x0 - G.pad.depth / 2, base - G.pad.thick, z1 - gw / 2, G.pavingColor, local.glass);
+  for (let i = 0; i < G.rack.count; i++) {
+    const x = x0 + G.stair.margin + i * G.rack.spacing, z = z1 + G.rack.offset;
+    for (const sx of [-1, 1]) box(G.rack.bar, G.rack.h, G.rack.bar, x + sx * G.rack.w / 2, base, z, G.rackColor, local.glass);
+    box(G.rack.w, G.rack.bar, G.rack.bar, x, base + G.rack.h, z, G.rackColor, local.glass);
   }
 
   // Window bays on the brick faces (flat dark panes, one row per storey); the glass corner and the low part have their own.
@@ -149,21 +244,68 @@ export function buildNordicGym(b, p, base, bottom, parts) {
     g.setAttribute('color', new THREE.BufferAttribute(col, 3)); local.glass.push(g);
     windows.push({ x: x + nx * .03, y, z: z + nz * .03, n: [nx, nz], width: w, height: h, ...(frontFloor === null ? {} : { frontFloor }) });
   };
-  for (let f = 0; f < b.levels; f++) {
-    const y = base + f * M.storey + M.window.sill + M.window.h / 2;
-    // South face (z1): glass covers x0 to x0 + gs; low part at lowX0..x1 (floor 0 only)
-    for (let x = x0 + gs + 2.5; x < x1 - 2.5; x += M.window.bay) {
-      if (f === 0 || x < lowX0 - 1) pane(x, y, z1, M.window.w, M.window.h, 0, 1);
+  // #1824: the hall has one dark row in its middle side band, rather than generic brick windows on every floor.
+  const hallWindowY = panelBottom + H.windowBand * bandH + H.windowSill + H.windowH / 2;
+  for (let k = 0; k < H.windowCount; k++) {
+    const x = hallStart + H.windowStart + k * H.windowBay;
+    pane(x, hallWindowY, z1 + H.bands * H.bandOffset + H.windowFaceGap, H.windowW, H.windowH, 0, 1, H.windowColor);
+  }
+  facePlane(hallStart + H.loadingOffset, base + H.loadingSill + H.loadingH / 2, z1 + H.loadingFaceOffset, H.loadingW, H.loadingH, 0, 1, H.windowColor);
+
+  // Rear parking: sampled at the actual rendered ground, in the existing untextured batch.
+  // Cars are omitted to keep this delivery in the existing backdrop batches, without additional vehicle setup.
+  const surface = (xa, xb, za, zb, hex, lift = H.parkingLift, heightAt = (x, z) => ground(...toWorld(x, z)), cut = null) => {
+    const vertices = [], corners = [[xa, za], [xb, za], [xb, zb], [xa, zb]];
+    const clip = sign => {
+      const out = [];
+      for (let i = 0; i < corners.length; i++) {
+        const a = corners[i], b = corners[(i + 1) % corners.length], da = cut(...a) * sign, db = cut(...b) * sign;
+        if (da >= 0) out.push(a);
+        if (da * db < 0) { const t = da / (da - db); out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); }
+      }
+      return out;
+    };
+    for (const poly of cut ? [clip(-1), clip(1)] : [corners]) for (let i = 1; i + 1 < poly.length; i++) {
+      for (const q of [poly[0], poly[i + 1], poly[i]]) vertices.push(q[0], heightAt(...q) + lift, q[1]);
     }
-    // North face (z0): along Skånevägen
-    for (let x = x0 + 3; x < x1 - 2.5; x += M.window.bay) {
-      pane(x, y, z0, M.window.w, M.window.h, 0, -1);
-    }
-    // The photo-read road front has its own seven-bay rhythm below (#1822).
-    // East end far from road (x1): low part is on floor 0 at lowZ0..z1
-    for (let z = z0 + 3; z < z1 - 2.5; z += M.window.bay) {
-      if (f > 0 || z < lowZ0 - 1) pane(x1, y, z, M.window.w, M.window.h, 1, 0);
-    }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); g.computeVertexNormals();
+    const c = rgb(hex), colors = new Float32Array(vertices.length);
+    for (let i = 0; i < colors.length; i += 3) { colors[i] = c.r; colors[i + 1] = c.g; colors[i + 2] = c.b; }
+    g.setAttribute('color', new THREE.BufferAttribute(colors, 3)); local.glass.push(g);
+  };
+  const parkX0 = x1 + H.parkingInset, parkX1 = parkX0 + H.parkingDepth, parkZ0 = z0 + H.parkingInset, parkZ1 = z1 - H.parkingInset;
+  surface(parkX0, parkX1, parkZ0, parkZ1, H.asphalt);
+  // Stall paint follows the rendered asphalt triangles, not independent terrain samples below that deck.
+  const heights = [[parkX0, parkZ0], [parkX1, parkZ0], [parkX1, parkZ1], [parkX0, parkZ1]].map(q => ground(...toWorld(...q)));
+  const parkingHeight = (x, z) => {
+    const u = (x - parkX0) / (parkX1 - parkX0), v = (z - parkZ0) / (parkZ1 - parkZ0);
+    return v <= u ? heights[0] * (1 - u) + heights[1] * (u - v) + heights[2] * v
+      : heights[0] * (1 - v) + heights[3] * (v - u) + heights[2] * u;
+  };
+  for (let k = 0; k <= H.stalls; k++) {
+    const z = parkZ0 + k * H.stallW; surface(parkX0, parkX0 + H.stallD, z, z + H.lineW, H.line, H.lineLift, parkingHeight, (x, z) => (z - parkZ0) / (parkZ1 - parkZ0) - (x - parkX0) / (parkX1 - parkX0));
+  }
+  // Low planted islands at the row ends, simple leaves in the same batch, with no extra tree draws.
+  for (const z of [parkZ0 - H.plantR, parkZ1 + H.plantR]) {
+    const x = parkX0 + H.stallD / 2, y = ground(...toWorld(x, z));
+    box(H.stallD, H.planterH, H.plantR * 2, x, y, z, H.concrete, local.glass);
+    const crown = new THREE.IcosahedronGeometry(H.plantR, 0).scale(...H.plantScale).translate(x, y + H.plantR * H.plantScale[1], z);
+    crown.deleteAttribute('uv'); const c = rgb(H.plantColor), colors = new Float32Array(crown.attributes.position.count * 3);
+    for (let i = 0; i < colors.length; i += 3) { colors[i] = c.r; colors[i + 1] = c.g; colors[i + 2] = c.b; }
+    crown.setAttribute('color', new THREE.BufferAttribute(colors, 3)); local.glass.push(crown);
+  }
+  // Narrow steel escape stair at the rear gable. Open treads and three long rail segments keep its cost bounded.
+  const stairX = x1 + H.stairXOffset, stairZ = z1 - H.parkingInset - H.stairRun, stairBase = ground(...toWorld(stairX, stairZ));
+  for (let k = 1; k <= H.stairSteps; k++) {
+    box(H.stairW, H.treadThick, H.stairRun / H.stairSteps, stairX, stairBase + k / H.stairSteps * H.stairH,
+      stairZ + k / H.stairSteps * H.stairRun, H.steel, local.glass);
+  }
+  box(H.stairW, H.landingThick, H.landingD, stairX, stairBase + H.stairH, stairZ + H.stairRun + H.landingD / 2, H.steel, local.glass);
+  for (const sign of [-1, 1]) {
+    const x = stairX + sign * H.stairW / 2;
+    for (const t of [0, .5, 1]) box(H.railSize, H.railH, H.railSize, x, stairBase + t * H.stairH, stairZ + t * H.stairRun, H.steel, local.glass);
+    const g = box(H.railSize, H.railSize, Math.hypot(H.stairRun, H.stairH), 0, -H.railSize / 2, 0, H.steel, []);
+    g.rotateX(-Math.atan2(H.stairH, H.stairRun)).translate(x, stairBase + H.stairH / 2 + H.railH, stairZ + H.stairRun / 2); local.glass.push(g);
   }
 
   // #1822: the short road face is predominantly brick, with a narrow entrance strip on its right.
@@ -226,7 +368,7 @@ export function buildNordicGym(b, p, base, bottom, parts) {
   const roofY = (wx, wz) => {
     const [x, z] = toLocal(wx, wz);
     if (x >= x0 && x <= x1 && z >= z0 && z <= z1) {
-      return inLow(x, z) ? lowEave + M.roofThick : eave + M.roofThick;
+      return eave + M.roofThick;
     }
     if (inGrenhuset(wx, wz)) {
       return 16.5; // Grenhuset roof (eave 16.2 + 0.3)
@@ -234,5 +376,5 @@ export function buildNordicGym(b, p, base, bottom, parts) {
     return -Infinity;
   };
 
-  return { base, eave, ridge: eave + M.roofThick, windows, roofY, nordicGym: { x0, x1, z0, z1, lowX0, lowZ0, centre: [ox, oz], axis: [ux, uz] } };
+  return { base, eave, ridge: eave + M.roofThick, windows, roofY, nordicGym: { x0, x1, z0, z1, lowX0, lowZ0, hallStart, centre: [ox, oz], axis: [ux, uz] } };
 }

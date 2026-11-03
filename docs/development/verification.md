@@ -28,6 +28,25 @@ Screenshots show the initial landing and the new front face from nearby clear pa
 The relocation does not promise uninterrupted sight from the previous shooter through intervening houses.
 This is component/network evidence on Chromium/SwiftShader, not full-apartment or physical-device performance.
 
+## Nordic Wellness glass entrance (#1823)
+
+The glass scene depends on #1824's opaque corner cut; validate their exact combined source. The scoped
+combined component check preserves 21 front and five hall panes, seven wall washes and eave/roofY, then
+casts actual geometry rays onto four stair flights, two globes and the road door. Full app road, side and
+entry captures use June/noon/clear weather and unchanged render quality. `tools/eastbackdroptest.html`
+confirms 1,019 exposed windows and 87,703 recursive east triangles; its old 10-mesh assertion is the
+known baseline bug #1833 (11 including school lawns), not a passing assertion.
+[Saved images, hashes, raw test output and reproduction](../verification/1823/).
+
+## Nordic Wellness sign (#1825)
+
+`tools/browsertest.sh node tools/nordicgymsigntest.cjs GAME docs/verification/1825` loads the actual app, checks
+the FrontSide quad above the upper windows, canvas title/subtitle colours and native LOD at 179/181/179 m,
+then captures the road, footway and close view at full quality. An identical hidden-sign frame at each camera
+proves exactly one added draw and two triangles. `GYM_SOURCE_DIR` can explicitly point at frozen combined
+config/nordicgym inputs during parallel integration; hashes and that override are recorded in the evidence.
+[Images, results and limits](../verification/1825/). Existing facade/geometry checks from #1823/#1824 are reused.
+
 ## River ducks (#1815)
 
 Scoped checks: `node tools/ducktest.mjs` covers pure swim/shore transitions, surface continuity,
@@ -8930,3 +8949,8 @@ culling along each shot, saved result images and street draw-call parity. Uses n
 1280×800 quality 0 rendering without test mode; it records the actual culler quality
 scale and reproduces the old distance cutoff on the far-court shot. Quality 3 can
 already show these distances under the old policy, so it is not the regression case.
+
+
+## Nordic Wellness photo-read volumes (#1822–24)
+
+`THREE_DIR=/path/to/three node tools/nordicgymtest.mjs` checks the actual combined brick front, green hall and entrance geometry: 26 outward panes, seven wall washes, exposed treads on both flights/faces, globes/door visibility, unchanged eave/roofY, existing batch lists and the campus budget. Optional `NORDIC_GYM_MODULE` / `NORDIC_GYM_CONFIG` absolute paths bind a composed child delivery before integration; `NORDIC_GYM_COMPARE_MODULE` / `NORDIC_GYM_COMPARE_CONFIG` additionally compare emitted position/normal/colour bytes after non-geometric refactors. No full-world hardware performance claim. The combined source/captures and retained known `eastbackdroptest` batch-count failure (#1833) are documented in [#1824 evidence](../verification/1824/).
