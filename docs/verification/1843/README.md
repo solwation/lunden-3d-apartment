@@ -24,6 +24,9 @@ The accepted overview is reused from the first app turn, after the local restora
 
 This is actual original-app Chromium/SwiftShader rendering with controlled local inspection spawns. It is not a continuous walking/bus journey, physical-device/FPS measurement or wider campus verification. No collision behavior or route is changed.
 
-Public transfer: this generic environment improvement needs a new dedicated low-priority downstream task after conductor duplicate review/exact source publication. Only procedural config/rendering changes are eligible; no original report/reference photographs or personal content. The worker creates no port issue or publication; the conductor owns that follow-up and final deployment/issue evidence.
+Public transfer: this generic environment improvement is tracked in dedicated low-priority [public #247](https://github.com/solwation/kvarteret-lunden/issues/247), created after conductor duplicate review/exact source publication. Only procedural config/rendering changes are eligible; no original report/reference photographs or personal content. The worker creates no port issue or publication; the conductor owns that follow-up and final deployment/issue evidence.
 
 Dirigentens integration bevarar flerbilderstödet och startup-/katt-/ankändringarna. Street-modulen är byte-identisk med workerresultatet och SITE.street samma data; sammanslagna2/2 komponentkontroller passerar (integration-node.txt). Browser-/bildbevis återanvänds på samma berörda källa, inga extra profiler.
+
+
+Levererat i `3d455f4cda94d4ec58b66704f87823000d7a859d`. [Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/41649566382) och [Worker](https://github.com/solwation/lunden-3d-apartment/actions/runs/41649566199) lyckades; Worker-loggen bekräftar faktisk Wrangler-deploy och den publika sidans version.json visar `3d455f4`. Dirigentens kombinerade diff-/bildgranskning är klar. Verifieringslänkarna ovan är permanenta; eventuella resultatbilder är granskade och bytekontrollerade. Ingen rutinmässig omkörning av gröna kontroller efter orelaterad integration. Ärendet stängs genom efterföljande verifieringscommit och aktiva etiketter tas bort.
