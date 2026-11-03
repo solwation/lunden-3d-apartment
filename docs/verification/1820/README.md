@@ -40,3 +40,9 @@ Verification setup fixes: initial scanner was started before its server remained
 foreground server and semantic DOM navigation. The invalid overview capture above was removed after inspection.
 No unrelated green browser tests were repeated. One worker; session dispatch at approximately 07:51 UTC and handoff at approximately 08:07 UTC.
 Active browser verification took under 5 minutes; queue waiting is separate. Conductor owns publication and closure.
+
+Delivered implementation: `73b38e20f1d56cc2b8b132977453ae89d78d0f3c`.
+[Pages run](https://github.com/solwation/lunden-3d-apartment/actions/runs/41601252146) and
+[Worker run](https://github.com/solwation/lunden-3d-apartment/actions/runs/41601252238) succeeded.
+The Worker log confirms an actual Wrangler deployment (version `5dbf1e9f-ac18-4f8c-8509-cc7c66ccf150`);
+the public Pages version.json reports `73b38e2`. No additional production-player session was run.
