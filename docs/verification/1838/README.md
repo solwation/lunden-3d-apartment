@@ -39,7 +39,7 @@ Desktop image counters match 496 calls/924,614 triangles. The phone representati
 
 `measured-sources.json` records the exact profiled source. After profiling, a scalar fallback guard was added in `startupcache.js`: non-number returns (including the terrain sampler's possible `null`) bypass Float64 storage and retain their exact type/value/identity. The existing pure test now explicitly covers null, undefined, string/object fallback, colliding coordinates, signed zero, mutation isolation and late imports after release. This fallback-only guard was not given another whole-scene profile; final source hashes are in `sources.json` and the difference is explicit. It does not change the measured numeric construction samples.
 
-This delivers construction-time reuse. No persistent graphics cache, new storage key, SW or bundler was introduced. A new document/version has no old memo entries. Hardware device testing remains outside this bounded measurement. Generic terrain reuse may apply to the public downstream; conductor owns the separate low-priority transfer assessment/issue after the source commit is fixed.
+This delivers construction-time reuse. No persistent graphics cache, new storage key, SW or bundler was introduced. A new document/version has no old memo entries. Hardware device testing remains outside this bounded measurement. Generic terrain reuse is tracked in low-priority [public #246](https://github.com/solwation/kvarteret-lunden/issues/246), with explicit adaptation for its mutable parkingPatch/sampler and walking support.
 
 ![Desktop before](before/desktop-warm.png)
 ![Desktop after](after/desktop-warm.png)
@@ -47,3 +47,6 @@ This delivers construction-time reuse. No persistent graphics cache, new storage
 ![Phone after](after/phone-warm.png)
 
 Dirigentens integration bevarar1839:s ankcallback och1840:s kattrundor/markcallback. Cachehelper, surroundings och riverbridge är byte-identiska med slutligt verifierat workerresultat; STARTUP-data är lika och rena cachekontrakt passerar på sammanslagen källa. Mätvärdena ovan gäller den uttryckligen frysta8647ab37-basen med cacheändringen, inte en ny tidsprofil av senare orelaterade katt-/ankändringar. Inga rutinmässiga breda omtag.
+
+
+Levererat i `59c6957a25442ef93d06e564b2082aee4a6a5159`. [Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/41641392481) och [Worker](https://github.com/solwation/lunden-3d-apartment/actions/runs/41641392486) lyckades; Worker-loggen bekräftar faktisk Wrangler-deploy och den publika sidans version.json visar `59c6957`. Dirigentens kombinerade diff-/bildgranskning är klar. Verifieringslänkarna ovan är permanenta; eventuella resultatbilder är granskade och bytekontrollerade. Ingen rutinmässig omkörning av gröna kontroller efter orelaterad integration. Ärendet stängs genom efterföljande verifieringscommit och aktiva etiketter tas bort.
