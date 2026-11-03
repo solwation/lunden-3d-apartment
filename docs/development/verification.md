@@ -9032,3 +9032,7 @@ steps earn six points; stopped music earns none. [Evidence and limits](../verifi
 ## #1848 — Djurpärmen
 
 The complete 65-form personal creature collection is verified in three risk groups: 18 source-catalogue/event/storage/profile/cap checks; 65 actual model recipes with IndexedDB v3→v4/cache and ownership/renderer isolation; 14 actual-app native UI/encounter/photo/reload/draw checks. The companion UI worker owns UI/prop component checks. All six actual result images were directly inspected; no extra world bootstrap after the documented observer-enabled/source and UI-scroll guard phases. [Scope, exact combined source manifests, raw results and images](../verification/1848/README.md). Original-only personal gameplay, no applicable public transfer.
+
+## #1849 — Solid timber-bridge fill
+
+`node --experimental-default-type=module --test tools/bridgefall1849test.mjs` checks the timber fill edge with a negative control, 20/30fps collision and reversal, both ramps/deck at walk/sprint in both directions (20/60fps), and retained road/GC traversal. The scoped real-world browser fixture uses native keys/CDP touch with a controlled Player frame pump; see [method and limits](../verification/1849/README.md). No house-variant sweep applies to this bridge-local support fix.

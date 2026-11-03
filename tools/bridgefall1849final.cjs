@@ -1,0 +1,19 @@
+// Actual full world; deterministic frame pump isolates 20fps movement. Native keyboard events and native CDP touch use production Player/setupTouch.
+const fs=require('node:fs'),path=require('node:path'),kit=require('./testkit.cjs');
+const out=process.argv[3]||'docs/verification/1849',base=process.argv[2]||'http://localhost:8916';
+(async()=>{if(fs.existsSync('/tmp/1849-release'))fs.unlinkSync('/tmp/1849-release');const browser=await kit.launch();try{const ctx=await browser.newContext({viewport:kit.SMALL,hasTouch:true});const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(base+'/?shot&cloud=&month=6&time=13&freeze&weather=clear&at=-137,195.4,270,0&test=lazy',{waitUntil:'commit'});await page.waitForFunction(()=>window.__app?.player,null,{timeout:240000});await kit.skipNameDialog(page);
+ await page.evaluate(()=>{const A=window.__app;A.showOverlay(false);A.touch.enabled=false;window.requestAnimationFrame=()=>0;window.proof={A,results:[]};document.addEventListener('keydown',e=>{if(e.isTrusted)A.player.keys.add(e.code);});document.addEventListener('keyup',e=>A.player.keys.delete(e.code));A.player.spawn(-137,195.4,Math.PI*1.5);});
+ await page.keyboard.down('Shift');await page.keyboard.down('w');
+ const keys=await page.evaluate(()=>{const p=proof.A.player,trace=[];for(let i=0;i<60;i++){p.update(.05);trace.push({pos:p.pos.toArray(),finite:Number.isFinite(p.groundAt(p.pos.x,p.pos.z,p.pos.y))});}return {keys:[...p.keys],trace};});await page.keyboard.up('w');await page.keyboard.up('Shift');
+ const capture=async name=>{await page.setViewportSize(kit.FULL);await page.evaluate(()=>{const A=proof.A;A.testMode.setFull(true);A.step(0);A.testMode.draw();});await page.screenshot({path:path.join(out,name)});return page.evaluate(()=>({...proof.A.renderer.info.render,at:proof.A.player.pos.toArray()}));};
+ const keyView=await capture('after-keyboard-stop.png');
+ await page.keyboard.down('s');const reverse=await page.evaluate(()=>{const p=proof.A.player;for(let i=0;i<20;i++)p.update(.05);return p.pos.toArray();});await page.keyboard.up('s');
+ await page.setViewportSize({width:844,height:390});await page.evaluate(()=>{const A=proof.A;A.player.spawn(-137,195.4,Math.PI*1.5);A.touch.enabled=true;});
+ const cdp=await ctx.newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:150,y:280}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:150,y:170}]});
+ const touch=await page.evaluate(()=>{const A=proof.A,p=A.player,analog={...A.touch.analog},trace=[];p.analog.x=analog.x;p.analog.y=analog.y;for(let i=0;i<60;i++){p.update(.05);trace.push({pos:p.pos.toArray(),finite:Number.isFinite(p.groundAt(p.pos.x,p.pos.z,p.pos.y))});}return {analog,sprint:p.sprinting,trace};});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.evaluate(()=>{proof.A.player.analog.x=proof.A.player.analog.y=0;});
+ await page.evaluate(()=>{const A=proof.A;A.step(0);A.testMode.draw();});await page.screenshot({path:path.join(out,'after-touch-stop.png')});
+ const pass=keys.keys.includes('KeyW')&&keys.keys.includes('ShiftLeft')&&keys.trace.every(q=>q.finite)&&keys.trace.at(-1).pos[0]<-136.8&&reverse[0]<-138&&touch.analog.y>.95&&touch.sprint&&touch.trace.every(q=>q.finite)&&touch.trace.at(-1).pos[0]<-136.8&&errors.length===0;
+ fs.writeFileSync(path.join(out,'browser.json'),JSON.stringify({pass,keys,reverse,touch,keyView,errors},null,2));console.log(JSON.stringify({pass,keyView,reverse,touch:touch.analog,errors}));
+ fs.writeFileSync('/tmp/1849-final-ready','ready');while(!fs.existsSync('/tmp/1849-release'))await new Promise(r=>setTimeout(r,500));if(!pass)process.exitCode=1;
+ }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});

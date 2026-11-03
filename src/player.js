@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { basketFloor, basketCollide } from './balloongeo.js';
+import { parkFillAt } from './riverpark.js';
 import { SITE, WALK, LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, jetThin, SPIDER, SOFFITS, BICYCLE } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY, groundBelowDeckY } from './surroundings.js';
@@ -204,6 +205,13 @@ export class Player {
   blockedByStair(x, z, feet) {
     const s = this.stairAt(x, z, feet);
     return s !== null && s > feet + PLAYER.stepUp && this.stairUnder(x, z, feet) < feet + PLAYER.headroom;
+  }
+
+  /** #1849: the timber bridge earth fill is solid, including its exposed edge faces.
+   * A higher-than-step edge must stop horizontal movement before groundAt rejects its only floor. */
+  blockedByBridgeFill(x, z, feet) {
+    const fill = parkFillAt(x, z);
+    return fill !== null && fill > feet + PLAYER.stepUp;
   }
 
   segments() {
@@ -796,12 +804,12 @@ export class Player {
       }
       const px = this.pos.x - bx, pz = this.pos.z - bz, pl = Math.hypot(px, pz);
       if (pl > 1e-5) wallN = { nx: px / pl, nz: pz / pl };
-      if (this.blockedByStair(this.pos.x, this.pos.z, this.pos.y)) {
+      if (this.blockedByStair(this.pos.x, this.pos.z, this.pos.y) || this.blockedByBridgeFill(this.pos.x, this.pos.z, this.pos.y)) {
         // slide: try each axis separately
         const tryX = new THREE.Vector3(this.pos.x, prev.y, prev.z);
         const tryZ = new THREE.Vector3(prev.x, prev.y, this.pos.z);
-        if (!this.blockedByStair(tryX.x, tryX.z, prev.y)) this.pos.copy(tryX);
-        else if (!this.blockedByStair(tryZ.x, tryZ.z, prev.y)) this.pos.copy(tryZ);
+        if (!this.blockedByStair(tryX.x, tryX.z, prev.y) && !this.blockedByBridgeFill(tryX.x, tryX.z, prev.y)) this.pos.copy(tryX);
+        else if (!this.blockedByStair(tryZ.x, tryZ.z, prev.y) && !this.blockedByBridgeFill(tryZ.x, tryZ.z, prev.y)) this.pos.copy(tryZ);
         else this.pos.copy(prev);
       }
       if (this.sliding && surfaceY(this.pos.x, this.pos.z, this.pos.y) > surfaceY(prev.x, prev.z, prev.y) + 1e-4) { this.pos.x = prev.x; this.pos.z = prev.z; } // #1281: no height gained on ground too steep to climb (along the contour is fine)

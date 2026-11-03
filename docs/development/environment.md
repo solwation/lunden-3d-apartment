@@ -5,6 +5,8 @@ Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code
 Related: [architecture](architecture.md), [plants](plants.md), [plan-material](plan-material.md).
 Neighbor openings (#516): `src/exterior.js` keeps all existing opening extents, floor placements, split panes/transoms and end-unit variations. All four street/courtyard storeys now have 6 cm outer jambs and 4.5 cm sash rails matching the existing L1007 window model; patio leaves use doors.js's 7 cm rails/10 cm bottom rail and shared chrome handle dimensions. Existing green ground/loft entrance leaves retain entryParts/entryHandleParts and gain outer jambs/hinges. Rubber seals and visible hardware join merged material batches. No neighbor interactions/interiors or collision changes. `tools/neighboropeningstest.html` checks every exposed pane against its original opening bounds, all eight face/storey combinations, shared reflection materials, night lighting and unchanged L1007 functions; `entrancedoortest` checks opaque static glazing separately from the real entrance's clear pane. [Validation](../validation/issue-516/README.md).
 
+The timber footbridge's earth fill is solid at its exposed edge as well as walkable on top. `Player.blockedByBridgeFill` rejects horizontal substeps that enter fill above the reachable step height, including axis-slide alternatives; this prevents a low-frame-rate sprint from entering the fill while `groundAt` rejects its only candidate. It reuses `parkFillAt` without changing terrain, deck, water or the earth mesh. Ordinary ramp/deck traversal and road/GC bridge support remain unchanged. See [bridge-edge verification](../verification/1849/README.md).
+
 ## Module and test map
 
 ```text
