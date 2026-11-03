@@ -149,6 +149,8 @@ dyker upp för att öppna och stänga dörrar. 📊 visar statistiken.
 
 Entréhallen har en svart IKEA NISSEDAL-spegel, 65 × 150 cm.
 Garderobernas stängda skjutdörrar har täckta fogar även från sneda vinklar.
+Utekatter som möts kan ibland närma sig och mysa nos mot nos med några små hjärtan. De fortsätter sedan sina egna rundor; matning och klappning går före mötet.
+
 Öppna dörrar och garderober — ibland sitter det en katt där och tvättar sig, även i städklädkammaren under trappan. Gå fram och tryck
 <kbd>E</kbd> eller välj **Klappa** för att klappa katten eller kattungen. Välj **Ta upp** (2 på tangentbordet) för att bära den i famnen medan den spinner. Miele har fortfarande Ta upp som första val. Klicka eller tryck Krama för en kram, och använd E mot golvet för att sätta ner den: den jamar och går därifrån. Håller du redan något kan du klappa katten med E. 🐈 Statistiken (katter, dörrar, steg …) sparas i webbläsaren; varje
 sak du gör visas som en liten bricka ("✋ Klappat katt +1").

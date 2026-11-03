@@ -8196,6 +8196,8 @@ export const OUTDOOR_CATS = {
   // stands still, but at most `maxWait` s), walks there at `speed` m/s, stops CAT_FISH.stop × its size short and eats for CAT_FISH.eat s.
   // `scan`: s between looks; `held`: m above the ground a held-out fish may be (the hand). All *guess*.
   food: { reach: 6, wait: 1.5, maxWait: 20, speed: 0.6, scan: 0.4, held: 2 },
+  // #1845: local social timing/metres and small pooled hearts, all guess; only near visible idle ground cats.
+  nuzzle: { scan: 3, chance: .65, cooldown: 150, reach: 5, minDistance: 1.1, speed: .32, turn: 2.5, face: .12, arrive: .008, settle: .8, duration: 3, timeout: 25, maxHeadShift: .14, viewerGap: .5, maxStep: .1, rub: .06, rubHz: [3,2], heartLift: .08, hearts: 5, heartScale: 2.5 },
   brain: {
     block: 16, noise: 0.22, margin: 12, trot: 0.75, creep: 0.22, climb: 0.7, reach: 7, climbReach: 9, branch: [1.3, 2.6],
     butterflyMonths: [5, 6, 7, 8, 9], butterflyHours: [9, 19], seekRange: 13, seekSpeed: 0.75, seekStop: 1.3, followTime: 8,

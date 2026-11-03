@@ -1,0 +1,55 @@
+TAP version 13
+# Subtest: bounded pair selection, active approach/contact once, cooldown and return
+ok 1 - bounded pair selection, active approach/contact once, cooldown and return
+  ---
+  duration_ms: 2.488595
+  type: 'test'
+  ...
+# Subtest: busy/feed, lost view, blocked way and chance never strand or steal a cat
+ok 2 - busy/feed, lost view, blocked way and chance never strand or steal a cat
+  ---
+  duration_ms: 0.450099
+  type: 'test'
+  ...
+# Subtest: contact destinations face each other and keep standing bodies apart
+ok 3 - contact destinations face each other and keep standing bodies apart
+  ---
+  duration_ms: 0.164199
+  type: 'test'
+  ...
+# Subtest: actual breed models touch nose surfaces while torso bounds remain separated
+ok 4 - actual breed models touch nose surfaces while torso bounds remain separated
+  ---
+  duration_ms: 109.179395
+  type: 'test'
+  ...
+# Subtest: agreed \#1844 brain freezes and resumes the same exploration anchor through social/home
+not ok 5 - agreed \#1844 brain freezes and resumes the same exploration anchor through social/home
+  ---
+  duration_ms: 9.420982
+  type: 'test'
+  location: '/home/devcontainers/orkester-olw-win10-gpt6-20261103/cat-nuzzle/tools/catnuzzletest.mjs:20:33'
+  failureType: 'testCodeFailure'
+  error: "Cannot find module '/home/devcontainers/orkester-olw-win10-gpt6-20261103/state/1844-final/outdoorcatroute.js' imported from /home/devcontainers/orkester-olw-win10-gpt6-20261103/state/1844-final/outdoorcatbrain.js"
+  code: 'ERR_MODULE_NOT_FOUND'
+  stack: |-
+    finalizeResolution (node:internal/modules/esm/resolve:274:11)
+    moduleResolve (node:internal/modules/esm/resolve:859:10)
+    defaultResolve (node:internal/modules/esm/resolve:983:11)
+    nextResolve (node:internal/modules/esm/hooks:748:28)
+    resolve (data:text/javascript,const%20root%3D%22file%3A%2F%2F%2Fhome%2Fdevcontainers%2F.cache%2Fthree-0.170.0%2F%22%3Bexport%20async%20function%20resolve(s%2Cc%2Cn)%7Bif(s%3D%3D%3D'three')return%7Burl%3Aroot%2B'build%2Fthree.module.js'%2CshortCircuit%3Atrue%7D%3Bif(s.startsWith('three%2Faddons%2F'))return%7Burl%3Aroot%2B'examples%2Fjsm%2F'%2Bs.slice(13)%2CshortCircuit%3Atrue%7D%3Breturn%20n(s%2Cc)%3B%7D:1:277)
+    nextResolve (node:internal/modules/esm/hooks:748:28)
+    Hooks.resolve (node:internal/modules/esm/hooks:240:30)
+    handleMessage (node:internal/modules/esm/worker:199:24)
+    Immediate.checkForMessages (node:internal/modules/esm/worker:141:28)
+    process.processImmediate (node:internal/timers:485:21)
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 4
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 216.912793

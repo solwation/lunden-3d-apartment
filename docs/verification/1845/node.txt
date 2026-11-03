@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: bounded pair selection, active approach/contact once, cooldown and return
+ok 1 - bounded pair selection, active approach/contact once, cooldown and return
+  ---
+  duration_ms: 2.544895
+  type: 'test'
+  ...
+# Subtest: busy/feed, lost view, blocked way and chance never strand or steal a cat
+ok 2 - busy/feed, lost view, blocked way and chance never strand or steal a cat
+  ---
+  duration_ms: 0.480299
+  type: 'test'
+  ...
+# Subtest: contact destinations face each other and keep standing bodies apart
+ok 3 - contact destinations face each other and keep standing bodies apart
+  ---
+  duration_ms: 0.163999
+  type: 'test'
+  ...
+# Subtest: actual breed models touch nose surfaces while torso bounds remain separated
+ok 4 - actual breed models touch nose surfaces while torso bounds remain separated
+  ---
+  duration_ms: 110.025805
+  type: 'test'
+  ...
+# Subtest: agreed \#1844 brain freezes and resumes the same exploration anchor through social/home
+ok 5 - agreed \#1844 brain freezes and resumes the same exploration anchor through social/home
+  ---
+  duration_ms: 36.261635
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 227.519796

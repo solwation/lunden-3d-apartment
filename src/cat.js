@@ -334,7 +334,7 @@ function buildCat() {
   head.add(blob(ROLE.coat, 0.072, 0.064, 0.068, 0, 0, 0));
   const muzzle = blob(ROLE.face, 0.042, 0.032, 0.035, 0, -0.022, 0.05);
   head.add(muzzle);
-  head.add(blob(pink, 0.009, 0.007, 0.006, 0, -0.008, 0.083));           // nose
+  const nose = blob(pink, 0.009, 0.007, 0.006, 0, -0.008, 0.083); nose.name = 'cat-nose'; head.add(nose);           // nose
   const blaze = blob(ROLE.blaze, 0.016, 0.03, 0.01, 0, 0.03, 0.058);         // blaze
   head.add(blaze);
   const eyes = [], ears = [];

@@ -1,3 +1,6 @@
+import {CatNuzzle} from './catnuzzle.js';
+import {catNoseShape,poseCatNuzzle} from './catnuzzlepose.js';
+import {Hearts} from './pingping.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { OUTDOOR_CATS, SEASON, CAT_FISH } from './config.js';
@@ -71,7 +74,18 @@ export class OutdoorCats {
     this.env = { now: () => this.now(), hour, month, ground, prey, free, clear: (ax, az, bx, bz) => this.clearWay(ax, az, bx, bz), trees: this.climbable(feet, crowns) };
     this.bfGeo = butterflyGeometry();
     this.cats = C.cats.map((spec, id) => this.makeCat(spec, id));
+    this.nuzzle = new CatNuzzle({config:C.nuzzle,now:()=>this.now(),ground,clear:(c,...q)=>c.clearOut(...q),
+      available:(c,active)=>!this.socialHidden&&this.isOut(c)&&c.alpha>.9&&c.h<.05&&!c.at?.surface&&!c.fish&&c!==this.bound&&Math.hypot(c.x-camera.position.x,c.z-camera.position.z)>C.take+C.nuzzle.viewerGap&&(active?c.st==='social':c.st==='route'&& !['climb','chase','sleep','crouch','pounce'].includes(c.activity)),
+      seen:c=>this.socialVisible(c),shape:c=>c.nuzzleShape,
+      burst:p=>{this.socialHearts??=new Hearts(scene,C.nuzzle.hearts,C.nuzzle.heartScale);this.socialHearts.burst({...p.point,y:p.point.y+C.nuzzle.heartLift});}});
     registerSeasonal((month) => { this.winter = SEASON.snowMonths.includes(month); });
+  }
+
+  socialVisible(c){
+    const eye=this.camera.position,y=this.ground(c.x,c.z)+c.nuzzleShape.y;
+    if(Math.hypot(c.x-eye.x,y-eye.y,c.z-eye.z)>=Math.min(C.near,this.drawDist))return false;
+    this.camera.updateMatrixWorld();const v=(this.socialV??=new THREE.Vector3()).set(c.x,y,c.z).project(this.camera);
+    return Math.abs(v.x)<1&&Math.abs(v.y)<1&&v.z>-1&&v.z<1;
   }
 
   /** The trees near the loops, each with its crown (for the branch height), like the squirrels' (squirrels.js), and its trunk's radius
@@ -119,6 +133,7 @@ export class OutdoorCats {
     this.scene.add(bf);
     const c = new OutdoorCatBrain(spec, id, this.env);
     Object.assign(c, { breed, coat, puppet, group, climbContact, lods, lodMat, bfMesh: bf, alpha: 0, awayUntil: 0, found: false, t: Math.random() * 6 });
+    c.nuzzleShape=catNoseShape(puppet);puppet.stand=puppet.wantStand=0;puppet.pose(0);
     return c;
   }
 
@@ -188,7 +203,7 @@ export class OutdoorCats {
       if (c.st === 'food') { c.fish.middle(v); c.food.x = v.x; c.food.z = v.z; }
       return;
     }
-    if (!this.food || !ok || (c.h > 0.05 && !c.at?.surface) || d > this.drawDist || !['route', 'home', 'notice', 'seek', 'follow', 'flee'].includes(c.st)) return;
+    if (!this.food || !ok || (c.h > 0.05 && !c.at?.surface) || d > this.drawDist || !['route', 'home', 'notice', 'seek', 'follow', 'flee', 'social'].includes(c.st)) return;
     if ((c.foodScan = (c.foodScan ?? Math.random() * F.scan) - this.dtNow) > 0) return;
     c.foodScan = F.scan;
     const reach = F.reach * (0.8 + 0.4 * c.traits.curious), home = c.at ?? this.scheduled(c), k = this.cat;
@@ -246,7 +261,9 @@ export class OutdoorCats {
       const c = this.cats.find((q) => q.name === k.catName && q.breed === k.breed && q.coat === k.variant);
       if (c) { c.st = 'bound'; c.group.visible = false; this.bound = c; k.outdoorCat = c.name; }
     }
+    this.socialHidden=hidden;this.nuzzle.update(Math.min(dt,C.nuzzle.maxStep),this.cats);
     for (const c of this.cats) this.step(c, dt, eye, hidden);
+    if(this.socialHearts){if(hidden||!this.nuzzle.pair)this.socialHearts.points.visible=false;else this.socialHearts.update(dt);}
   }
 
   step(c, dt, eye, hidden) {
@@ -268,6 +285,7 @@ export class OutdoorCats {
     this.feed(c, d, !hidden && out && c.alpha > 0.5);
     // the brain: its schedule (loop and outing) and how it meets the visitor; it only plans near the visitor
     c.update(dt, { x: eye.x, z: eye.z, d, ok: !hidden && out && c.alpha > 0.5, still: this.still }, d < this.drawDist + C.brain.margin);
+    this.nuzzle.apply(c);
     if (c.st === 'eat') this.eat(c, dt);
     if (c.fish && c.st !== 'food' && c.st !== 'eat') this.letGo(c); // (gave up: blocked, the visitor gone, faded)
     if (c.lost) { c.st = 'away'; c.awayUntil = now + C.away; } // a road, the river or a drop in the way home, or too far: it fades and comes back later
@@ -308,7 +326,7 @@ export class OutdoorCats {
     const P = c.puppet;
     c.t += dt;
     P.walked = false; P.hopY = c.hop ?? 0; P.headOff.set(0, 0, 0);
-    const up = activity === 'sniff' || activity === 'crouch' || activity === 'pounce'; // (on its feet without walking)
+    const up = activity === 'sniff' || activity === 'crouch' || activity === 'pounce' || activity === 'nuzzle'; // (on its feet without walking)
     P.wantStand = walking || up ? 1 : 0;
     if (walking && P.stand > 0.5 && moved > 0) P.stride(moved);
     const sleep = !walking && activity === 'sleep';
@@ -321,6 +339,7 @@ export class OutdoorCats {
         const hop = c.hop ?? 0; P.head.rotation.set(-0.35, 0, 0); P.tailGroup.rotation.y = 0.5 * Math.sin(c.t * 7);
         P.shoulder.rotation.set(-12 * hop, 0, 0); P.leftShoulder.rotation.set(-12 * hop, 0, 0); // (front paws up after it)
       } else { P.head.rotation.set(activity === 'climb' ? -0.1 : 0.12, 0, 0); P.tailGroup.rotation.y = 0.3 * Math.sin(c.t * 4.5); }
+    } else if(activity==='nuzzle'){P.shoulder.rotation.set(0,0,0);P.head.rotation.set(0,0,0);P.tailGroup.rotation.y=.08*Math.sin(c.t*2);
     } else if (activity === 'sniff') {
       P.shoulder.rotation.set(0, 0, 0); P.headOff.set(0, -0.05, 0.03);
       P.head.rotation.set(0.6 + 0.08 * Math.sin(c.t * 9), 0.35 * Math.sin(c.t * 0.8), 0); P.tailGroup.rotation.y = 0.1 * Math.sin(c.t * 1.7);
@@ -345,6 +364,7 @@ export class OutdoorCats {
       P.tailGroup.rotation.y = sleep ? 0 : 0.08 * Math.sin(c.t * 2.3);
     }
     P.pose(dt);
+    if(c.st==='social'&&this.nuzzle.pair)poseCatNuzzle(c,this.nuzzle.pair,C.nuzzle);
   }
 
   /** For tests: each cat's state. */

@@ -1,0 +1,23 @@
+{
+  "base": "26b32dcbf76570c2bd7cd41400b56faef51d5635",
+  "composition": "Own26b32dcb config outside OUTDOOR_CATS; only CAT block composed from initial frozen1844 plus nuzzle. Main differs only by1844 cat habitat/ground hook. Frozen OutdoorCats excludes later climb helper; final1844 also changed Nordic bends and building-edge radius, to be reviewed at integration. Full behavior/browser check used heartScale1.3; held capture-only final uses constructor-equivalent k/heartScale2.5 and point size0.1125, unchanged count5.",
+  "served": {
+    "outdoorcats.js": "f3f215ecf1c5badc474a774f9b5b4d8a243e238ccffdfcca34f6f2d73b637a0d",
+    "config.js": "ca7315b050d9857f07262a42c1b13050841f57de8627be6ec391bb4137d944f2",
+    "outdoorcatbrain.js": "1c64c01b462a801fad1ddc70ffe013919e336709416a5d8d7742c04cc82f23b0",
+    "catexploration.js": "4cdb1c2e37552755ed861a7f7e4dbeeab98c4eeafd436f9510415eaea3cddc28",
+    "cataffordances.js": "662a88af20b6dd6b14133f1390322129dfa851151e6ddbb01c435cb2c1bd8ecc",
+    "cathabitat.js": "526c0aced719cef216c0d289bcc31f07ca271576ad9bbcf973935c7a96383e10",
+    "main.js": "3323bf47d5dc696d0433ba38b700caf42ea07c4515cb42aa260563d9e62d9cfd"
+  },
+  "own": {
+    "src/catnuzzle.js": "63970453126222cf9fb0ee50e3d406e0a0846f70b7feb1414f0962fa9a359d08",
+    "src/catnuzzlepose.js": "267f3dbee2c5f793c7f0e4da86722fb03d618f83bf391a1adf8e56a8f6aa9948",
+    "src/cat.js": "2370c688bc25cfdcb3b7bcb29fc8df0e607da28dd8562c4160b22e6fb258309d"
+  },
+  "phases": {
+    "acceptedBehaviorConfigSha256": "02195ca18578e30b7d08a409b721596215f8607036d54b1f329c958eb8a9782a",
+    "finalVisualConfigSha256": "ca7315b050d9857f07262a42c1b13050841f57de8627be6ec391bb4137d944f2",
+    "finalVisual": "Same held scene, same natural meeting replay; existing pool k/material size set to constructor-equivalent2.5/0.1125. Count5 unchanged."
+  }
+}

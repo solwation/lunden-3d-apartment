@@ -1,0 +1,134 @@
+[
+  {
+    "ok": true,
+    "name": "natural schedule pair starts without actor relocation",
+    "data": {
+      "found": {
+        "t": 86222,
+        "ids": [
+          2,
+          3
+        ],
+        "mx": -73.11421038039362,
+        "mz": 41.49934082844405,
+        "q": [
+          {
+            "x": -72.91401934680574,
+            "z": 39.747669284550284,
+            "activity": "walk"
+          },
+          {
+            "x": -73.31440141398147,
+            "z": 43.25101237233781,
+            "activity": "walk"
+          }
+        ]
+      },
+      "ids": [
+        "Findus",
+        "Smulan"
+      ],
+      "positions": [
+        [
+          -72.91583609226431,
+          39.76356580731279
+        ],
+        [
+          -73.3125846685229,
+          43.23511584957531
+        ]
+      ],
+      "phoneDist": 18,
+      "near": 7
+    }
+  },
+  {
+    "ok": true,
+    "name": "real model contact and five pooled hearts",
+    "data": {
+      "contact": 1.1500000000000004,
+      "gap": 2.6471880243406076e-15,
+      "roots": [
+        [
+          -73.076194981673,
+          41.16670608963869
+        ],
+        [
+          -73.14588987932746,
+          41.77653644411519
+        ]
+      ],
+      "noses": [
+        [
+          -73.11339284493725,
+          -2.7118,
+          41.49218739320092
+        ],
+        [
+          -73.11489165994058,
+          -2.7118,
+          41.50530202447999
+        ]
+      ],
+      "hearts": true,
+      "count": 5,
+      "states": [
+        "social",
+        "social"
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "bounded visible effect draw delta",
+    "data": {
+      "off": {
+        "frame": 29,
+        "calls": 332,
+        "triangles": 892175,
+        "points": 80,
+        "lines": 5613
+      },
+      "on": {
+        "frame": 30,
+        "calls": 333,
+        "triangles": 892175,
+        "points": 85,
+        "lines": 5613
+      },
+      "deltaCalls": 1,
+      "deltaTriangles": 0,
+      "deltaPoints": 5,
+      "lights": 9
+    }
+  },
+  {
+    "ok": true,
+    "name": "both resume own exploration; hearts expire",
+    "data": {
+      "after": [
+        {
+          "st": "route",
+          "pauseAt": null,
+          "clockDelay": 9.899990558624268
+        },
+        {
+          "st": "route",
+          "pauseAt": null,
+          "clockDelay": 9.999990463256836
+        }
+      ],
+      "states": [
+        "route",
+        "route"
+      ],
+      "pair": false,
+      "hearts": false
+    }
+  },
+  {
+    "ok": true,
+    "name": "no page errors after corrected retry",
+    "data": []
+  }
+]
