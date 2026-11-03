@@ -413,7 +413,7 @@ test('chat (#675): forwarded to the others with the name, cleaned, limited, refu
   await later(61_000); a.send({ t: 'm', m: 'over the cap' }); await settle(env);
   assert.equal(a.closed, CLOSE.cap); assert.equal(b.closed, CLOSE.cap);
   assert.notEqual(chats(b).at(-1).m, 'over the cap', 'nothing passes over the cap');
-  assert.deepEqual([...env.PLAYERS.ctx('world').data.keys()].filter((k) => !k.startsWith('bill:')), [], 'nothing stored but the month counter');
+  assert.deepEqual([...env.PLAYERS.ctx('world').data.keys()].filter((k) => !k.startsWith('bill:')), ['football'], 'only the month counter and shared football snapshot are stored; no chat history');
 });
 
 // "skriver…" (#676): only the flag, to the others, rate-limited; off with the line, the close and a refresh

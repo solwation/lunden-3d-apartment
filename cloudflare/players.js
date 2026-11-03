@@ -1,4 +1,7 @@
 import { RoomBoule, cleanBoule } from './roomboule.js';
+import {RoomFootball} from './football.js';
+import {cleanFootballCommand} from '../src/footballwire.js';
+import {FOOTBALL} from '../src/config.js';
 import {gymPoseWire} from '../src/gymposewire.js';
 import { pumpWire } from '../src/gympump.js';
 import { REST, TV_MEDIA, tvViewer, COMPUTER_MEDIA, computerViewer } from '../src/config.js';
@@ -362,6 +365,7 @@ export class PlayerRoom {
     this.riverFish = new RoomRiverFish(() => this.open().map((ws) => ({ ws, a: att(ws) })), send, Math.random, { storage: ctx.storage, test: !!env?.SHARK_TEST }); // #1752: the shared fish in Höje å (clock + caught fish, memory only, no KV); #1769: the shark's one catch record in storage 'shark'
     this.target = new RoomTarget(send, () => this.open().map(ws => ({ws,a:att(ws)})));
     this.boule = new RoomBoule(ctx, () => this.open().map(ws => ({ ws, a: att(ws) })), send);
+    this.football=new RoomFootball(ctx,FOOTBALL,send,()=>this.open().map(ws=>({ws,a:att(ws)})));
     this.doors = new RoomDoors(send, () => this.open().map((ws) => ({ ws }))); // #1775: the doors' state (memory only, no KV)
     this.roomTime = new RoomTime(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1774: the shared game time (one offset, memory only, no KV)
     this.graffiti = new RoomGraffiti(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1724: the shared spray paint (memory only, no KV)
@@ -440,6 +444,7 @@ export class PlayerRoom {
     if (a) this.broadcast({ t: 'x', i: a.i }, ws);
     this.poolTrim(ws); this.paddock.trim(ws, a); this.squirrels.trim(ws, a); this.riverFish.trim(ws, a); this.trails.leave(a?.i); this.graffiti.trim(this.open().filter((x) => x !== ws).length); this.roomTime.trim(this.open().filter((x) => x !== ws).length);
     this.cinema.trim(ws);for(const tv of this.tvs)tv.trim(ws);this.snake.trim(ws);
+    this.football.trim(ws,a);
     const cinemaSave=Promise.all([this.cinema.flush(),...this.tvs.map(tv=>tv.flush())]);this.ctx.waitUntil?.(cinemaSave);
   }
   closeAll(code, reason) { for (const ws of this.open()) this.drop(ws, code, reason); }
@@ -542,6 +547,7 @@ export class PlayerRoom {
 
   async fetch(request) {
     await this.boule.ready;
+    await this.football.ready;
     const url = new URL(request.url), storage = this.ctx.storage;
     const b = await this.usage();
     b.req++; await this.save(); // every request to the object is billed
@@ -564,7 +570,7 @@ export class PlayerRoom {
     if (!others.length) this.target.reset();
     attachment.tgs = {...this.target.state};
     server.serializeAttachment(attachment);
-    send(server, JSON.stringify({ t: 'w', boule: this.boule.snapshot(), target: this.target.snapshot(), i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons }, ...(others.length ? this.doorsWelcome() : (this.doors.reset(), {})), ...(this.roomTime.welcome(now) ? { tm: this.roomTime.welcome(now) } : {}), trails: this.trails.snapshot(now) })); // (#1773: trails)
+    send(server, JSON.stringify({ t: 'w', boule: this.boule.snapshot(), target: this.target.snapshot(), football:this.football.join(server,attachment,now), i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons }, ...(others.length ? this.doorsWelcome() : (this.doors.reset(), {})), ...(this.roomTime.welcome(now) ? { tm: this.roomTime.welcome(now) } : {}), trails: this.trails.snapshot(now) })); // (#1773: trails)
     this.broadcast({ t: 'j', i, n, l: COMBAT.lives }, server);
     this.graffiti.join(server, others.map((ws) => ({ ws, a: att(ws) })), now); // #1724
     return new Response(null, { status: 101, webSocket: client });
@@ -573,6 +579,7 @@ export class PlayerRoom {
   doorsWelcome() { const d = this.doors.list(); return d.length ? { doors: d } : {}; } // #1775
 
   async webSocketMessage(ws, message) {
+    await this.football.ready;
     const b = await this.usage();
     b.msg++;
     if (++this.unsaved >= PLAYERS.flushEvery) await this.save();
@@ -598,6 +605,7 @@ export class PlayerRoom {
     let lifeChanged = false;
     const gf = message.startsWith(GRAFFITI_SYNC.prefix) ? cleanGraffiti(message) ?? false : null, plain = gf === null ? message : ''; // #1724: a graffiti block is never parsed as anything else
     const bl = plain.startsWith('{"t":"bl"') ? cleanBoule(plain) : null;
+    let ft=null;try{ft=cleanFootballCommand(JSON.parse(plain));}catch{}
     const tg = plain.startsWith('{"t":"tg"') ? cleanTarget(plain) : null;
     const dr = plain.startsWith('{"t":"dr"') ? cleanDoor(plain) : null; // #1775
     const tm = plain.startsWith('{"t":"tm"') ? cleanTime(plain) : null; // #1774 (a malformed one is an ordinary, ignored state)
@@ -691,6 +699,7 @@ export class PlayerRoom {
     else if (paddock) this.paddock.handle(ws, a, paddock, now); // #1644
     else if (sq) this.squirrels.handle(ws, a, sq, now); // #1686
     else if (rf) this.riverFish.handle(ws, a, rf, now); // #1752
+    else if (ft) this.football.handle(ws,a,ft,now);
     else if (tg) this.target.handle(ws, a, tg, now);
     else if (dr) this.doors.handle(ws, a, dr, now); // #1775
     else if (tm) this.roomTime.handle(ws, a, tm, now); // #1774
@@ -740,6 +749,7 @@ export class PlayerRoom {
         }
         if (!a.s || s.r !== a.s.r || s.p.some((v, i) => v !== a.s.p[i])) a.movedAt = now;
         a.s = s; this.publishState(ws, a);
+        this.football.onState(ws,a,now);
         this.trails.record(a.i, s, now); // #1773
         this.poolPresence(ws, a); // #1355
         this.paddock.presence(ws, a, now); // #1644
@@ -820,13 +830,16 @@ export class PlayerRoom {
   }
 
   async webSocketClose(ws, code) {
+    await this.football.ready;
     const b = await this.usage();
     b.req++; await this.save(); // counted as a whole request (conservative)
     const a = att(ws);
     try { ws.close(code === 1005 || code === 1006 ? 1000 : code, 'bye'); } catch { /* already closed */ }
     if (a) this.broadcast({ t: 'x', i: a.i }, ws);
     this.poolTrim(ws); this.paddock.trim(ws, a); this.squirrels.trim(ws, a); this.riverFish.trim(ws, a); this.trails.leave(a?.i); this.graffiti.trim(this.open().filter((x) => x !== ws).length); this.roomTime.trim(this.open().filter((x) => x !== ws).length); await this.poolFlush();
-    this.cinema.trim(ws);for(const tv of this.tvs)tv.trim(ws);this.snake.trim(ws);await this.cinema.flush();for(const tv of this.tvs)await tv.flush();
+    this.cinema.trim(ws);for(const tv of this.tvs)tv.trim(ws);this.snake.trim(ws);
+    this.football.trim(ws,a);await this.cinema.flush();for(const tv of this.tvs)await tv.flush();
+    await this.football.flush();
     await this.scheduleRecovery();
   }
 

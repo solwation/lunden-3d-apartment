@@ -2966,6 +2966,26 @@ export const DAYBED_Z = 12.2337 - 0.12 - 2.07 / 2;
 // `assist`: looking within this many metres of the rim aims at the rim. Court lines follow FIBA regulations.
 // Ball return (#1036): a ball that bounces or is thrown outside walkable space (over fences/railings, down inaccessible
 // slopes or beyond OUTDOOR) smoothly returns to the basketball court (at the free throw line / court centre).
+// #1853: small informal football field on the open grass west/southwest of Hunnerup/85.
+// Placement, dimensions, fittings and rolling/control values are visual/play assumptions, not surveyed dimensions.
+// The location is bounded by existing trees/paths and WALK; the static site samples the actual rendered terrain.
+export const FOOTBALL = {
+  at: [-262, -21], yaw: 0, width: 16, length: 24, runoff: 2, apron: 5, apronSpan: [-8, 12],
+  goalWidth: 3, goalHeight: 1.8, goalDepth: 1.3, postR: .035, netStep: .32,
+  lineWidth: .07, lineLift: .025, centerRadius: 2.5, circleSteps: 32, boxWidth: 7, boxDepth: 4,
+  drawDist: 140, ballDrawDist: 60, ballR: .11, ballDetail: 2,
+  reserveSpacing: 1.5, footAhead: .65, reach: 1.8, maxDribbleSpeed: 10, moveSlack: .5,
+  groundRange: [2.2, 3.4], heightSlack: .6, playHeightSlack: .35, kick: [7, 13], maxBallSpeed: 19,
+  friction: 2, tickMs: 10, maxTicks: 1400, stopSpeed: .025, postBounce: .55, ballBounce: .6,
+  goalResetMs: 2200, outResetMs: 1500, commandMs: 150, confirmMs: 350,
+  maxGoals: 1000000, creditPlayers: 48,
+  bench: { side: 12, offsets: [-5, 5], length: 2.1, depth: .48, seat: .48, slat: .05, back: .4, leg: .065 },
+  fountain: { at: [12, 9], height: .9, base: .44, bowlR: .18, streamR: .006, streamRise: .12,
+    drinkSeconds: 1.2, everyMs: 5000, ml: 50 },
+  colors: { line: 0xf0efe6, frame: 0xe3e5e4, net: 0xc6ccc8, wood: 0x986b45, metal: 0x686e72,
+    water: 0xbde1ef, ball: 0xf3f1e9, patch: 0x24262a, reserve: 0x245e91 },
+};
+
 export const BASKET = {
   ball: { r: 0.115, level: 1, x: 0.202, z: DAYBED_Z, y: 1.5, held: { x: 0.17, y: -0.17, z: -0.5 },
     gravity: 9.81, entry: 0.85, flat: 0.25, maxSpeed: 13, jitter: 0.015, dribble: 4.6,
@@ -3757,6 +3777,7 @@ export const SCORE = {
     squirrelFeeds: 6,                                     // a squirrel took a nut from the hand (#1672, *guess*)
     kittenPets: 12,                                       // a kitten's pat on top of `petted` (#363)
     target: 0, splashes: 0.2, cuts: 0.1, magic: 0.3,      // Nerf target: scored via TARGET_SCORE (#1708), not here
+    footballGoals: 1, // #1853: exactly one base point per server-counted goal, no new medal/bonus
     baskets: 6, threes: 6, dribbles: 0.1,                 // a three = a basket + a three (12)
     turbo: 20,                                            // three cups of coffee in five minutes
     beer: 0.3, coffee: 0.3, wine: 0.3, champagne: 0.3, whisky: 0.3, milk: 0.3, kask: 0.6, water: 0.2, // sips (water: the drinking glass, #382)
