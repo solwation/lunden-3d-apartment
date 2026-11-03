@@ -26,6 +26,9 @@ All three final images were inspected by the worker and conductor. The loose gro
 ![Temporary loose group reached by the seeded AI](loose-group.png)
 ![Native feeding at the second reach](downstream-fed.png)
 
-Public transfer: #235 is historical and complete. The new generic model/pair/group/range slice requires a new dedicated low-priority downstream issue after conductor queue/duplicate review. Feeding, bread, Life, rewards, audio/services and personal content are excluded from that slice. No downstream work or issue was created by this worker.
+Public transfer: #235 is historical and complete. The new generic model/pair/group/range slice is tracked in dedicated low-priority [public #244](https://github.com/solwation/kvarteret-lunden/issues/244), created after conductor queue/duplicate review. Feeding, bread, Life, rewards, audio/services and personal content are excluded from that slice. No downstream work or issue was created by this worker.
 
 Dirigentens integration behåller biceps/effort/onRep och byter endast Ducks markcallback till den verifierade ritade ytan. Duck-modulerna är byte-identiska med de granskade runtimekällorna; 5/5 sammanslagna ank-/rewardtester passerar (integration-node.txt). Ingen extra browserprofil efter orelaterad sammanslagning.
+
+
+Levererat i `a5f467093495a230a49061acbcdbc4bd5fc56536`. [Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/41636082087) och [Worker](https://github.com/solwation/lunden-3d-apartment/actions/runs/41636081837) lyckades; Worker-loggen bekräftar faktisk Wrangler-deploy och den publika sidans version.json visar `a5f4670`. Dirigentens kombinerade diff-/bildgranskning är klar. Verifieringslänkarna ovan är permanenta; eventuella resultatbilder är granskade och bytekontrollerade. Ingen rutinmässig omkörning av gröna kontroller efter orelaterad integration. Ärendet stängs genom efterföljande verifieringscommit och aktiva etiketter tas bort.
