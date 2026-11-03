@@ -4114,7 +4114,8 @@ export const PLAYER = {
   eye: 1.62,
   radius: 0.22,
   walk: 1.6,   // m/s
-  run: 3.2,   // sprint (Shift / stick all the way out), indoors and outdoors (#546)
+  run: 3.2,   // indoor sprint (Shift / full stick); retained in flats, cores and garage (#546, #1832)
+  runOutdoor: 4.8, // #1832: faster outdoor sprint (+50%, gameplay guess); ordinary walking is unchanged
   sprintStick: 0.95, // joystick deflection that counts as "all the way out"
   strideWalk: 0.62, strideRun: 0.95, // metres per footstep sound
   turnSpeed: 1.9, // rad/s for the arrow keys

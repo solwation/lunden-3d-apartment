@@ -135,6 +135,8 @@ Tillys rum har en personlig datorhörna på östra väggen med två skärmar, r�
 | <kbd>K</kbd> | visa/dölj bara minikartan (den syns annars ihop med statistiken) |
 | <kbd>Esc</kbd> | släpp musen |
 
+Utomhus springer du nu snabbare med Shift eller styrspaken längst ut; gång och inomhustempo är oförändrade.
+
 **Touch (mobil, surfplatta, Surface):** välj *Touch* på startskärmen (på telefon och surfplatta finns
 bara en *Börja*-knapp). Spelbildens storlek följer skärmens visningsyta även vid rotation under laddningen. Vänster tumme är en joystick
 (tryck ut den helt för att springa), dra med höger tumme för att titta, och tryck på knappen som

@@ -888,9 +888,7 @@ Top-right segmented badge (#582, unified by #707): index.html groups furniture, 
 - Phones/tablets: the Touch button goes fullscreen and calls `screen.orientation.lock('landscape')`
   (Android); in portrait with a coarse pointer (≤ 1100 px wide) a "rotate" overlay covers the page
   (iOS can't lock). Headless Chrome doesn't emulate `pointer: coarse` — test the overlay by hand.
-- Sprint (#43, #546): Shift, or the touch stick pushed past `PLAYER.sprintStick`, runs at `PLAYER.run` —
-  both indoors and outdoors, with continuous speed through doorways. The
-  stick's knob turns green while sprinting; footsteps use a longer stride. Moves are sub-stepped (5 cm).
+- Sprint (#43, #546, #1832): Shift or the touch stick past `PLAYER.sprintStick` runs at `PLAYER.runOutdoor` (4.8 m/s, +50% gameplay guess) outdoors. Ordinary walking stays1.6 m/s; flats, garage, hidden room and all stair cores retain `PLAYER.run` (3.2 m/s). `Player.runSpeed` uses the actual indoor/outdoor classification; `world.core.contains` includes attached A/B/C cores as well as L. Crossing a doorway changes the selected sprint pace. The stick knob turns green and footsteps use the existing longer stride. Movement retains5cm collision substeps. `tools/outdoorsprinttest.mjs`, `tools/walktest.html?sprint` and the native-input `tools/outdoorsprintbrowser.cjs` cover pace, shared indoor boundaries and stopping at thin walls. [Result images](../verification/1832/).
 - Jump (#600, #636): Space / the touch ⤒ button (#jump-btn; hud icon 'jump'), always visible on touch.
   It sits straight above the primary pill, right of crouch, nearest the resting thumb; see [thumb-arc placement (#1089)](#thumb-arc-placement-1089-part-3-of-1082)
   for current target sizes, safe-area placement and equipment cells. A press, not a hold. Outdoors and indoors, off the floor, a stair tread, a roof; never with
@@ -898,7 +896,7 @@ Top-right segmented badge (#582, unified by #707): index.html groups furniture, 
   (`ceilingAt`), so an indoor jump with the suit is at most ~1.1 m on Entréplan (RH 3.0), 0.95 m on Övreplan (2.8), 0.65 m under the 2.5 m soffits; the plain jump (#696, `PLAYER.jump` 3.7 m/s ≈ 0.70 m, *guess*) is under every ceiling, so it is never stopped by one (tools/spidersuittest.html measures both apexes).
   The clipped entrance hedge is a low collision obstacle (0.58 m, `SITE.life.strip.hedge`) that the plain jump clears at a sprint
   (#696 lowered it: at 3.7 m/s the feet stay above `top − hurdle` (hurdle 0.22) for ~0.5 s, ≈ 0.84 m of walk against the hedge's 0.88 m of
-  path, so a walk just fails, a sprint (3.2 m/s) clears it; the suit's jump walks over it. The path is the
+  path, so a walk just fails and a sprint clears it (3.2 m/s in the original #696 proof, now4.8 m/s outdoors); the suit's jump walks over it. The path is the
   body's radius on both sides + its 0.44 m depth). Space is always `preventDefault`ed in play (it never scrolls
   or presses a focused button) and the Space that stands you up from a seat is no jump.
   #693, #699: landing on low things (`STAND_ON` in config.js: sofa, armchair, ottoman and the BYÅS TV bench at 0.45 m, the IDANÄS bed 0.64 m (+ a rug's few cm), Tilly's daybed 0.59 m; the courtyard's benches 0.46 m; #701 the patio lounge's seat cushions 0.42 m and its slatted table 0.40 m, the courtyard's four raised beds 0.5 m; #702 the living room's coffee table 0.47 m): the plain

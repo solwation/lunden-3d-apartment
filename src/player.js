@@ -155,6 +155,9 @@ export class Player {
     return (!this.inFootprint() && !this.unit) || this.aloft;
   }
 
+  /** #1832: faster sprint only outside; the shared outdoors flag also covers basement/core footprints. */
+  get runSpeed() { return this.outdoors && !this.below && !this.inCore ? PLAYER.runOutdoor : PLAYER.run; }
+
   /** The flat's level the visitor is on (0 outdoors, up on the roofs too). */
   get level() {
     if (!this.inFootprint() || this.aloft) return 0;
@@ -736,7 +739,7 @@ export class Player {
     const fwd = keyFwd || this.analog.y;
     const side = keySide || this.analog.x;
     // analog stick: speed follows how far it's pushed; Shift or the stick pushed all the way out
-    // sprints at the same pace indoors and outdoors (#546)
+    // uses the existing sprint input; #1832 increases only its outdoor pace
     const amount = keyFwd || keySide ? 1 : Math.min(1, Math.hypot(this.analog.x, this.analog.y));
     const wantsRun = k.has('ShiftLeft') || k.has('ShiftRight') || (!keyFwd && !keySide && amount > PLAYER.sprintStick);
     // Space / the touch jump button pressed this frame (#600): a jump, letting go of the wall / the strand
@@ -754,7 +757,7 @@ export class Player {
     const thin = jet ? jetThin(this.pos.y - g0) : null; // thinner air higher up (#1282)
     this.crouched = !this.flying && (this.crouch || this.kneel || (this.crouched && !this.roomToStand()));
     this.sprinting = wantsRun && !this.crouched && (keyFwd || keySide || amount > 0);
-    const speed = (this.sprinting ? PLAYER.run : PLAYER.walk * amount) * (this.crouched ? PLAYER.crouchSpeed : 1) * (this.boost ?? 1); // boost: Kaffeturbo (#217)
+    const speed = (this.sprinting ? this.runSpeed : PLAYER.walk * amount) * (this.crouched ? PLAYER.crouchSpeed : 1) * (this.boost ?? 1); // boost: Kaffeturbo (#217)
 
     const yaw = this.camera.rotation.y;
     const fx = -Math.sin(yaw), fz = -Math.cos(yaw);

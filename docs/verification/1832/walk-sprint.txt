@@ -1,0 +1,9 @@
+ALL PASS
+PASS sprint på parkplanet söder om Hus B (4.80 m/s)
+PASS sprint utomhus (4.80 m/s, vill 4.8)
+PASS sprint inomhus med Shift (3.20 m/s, vill 3.2)
+PASS sprint tunnlar inte genom häcken (z 17.82)
+PASS full touch stick retains the indoor sprint pace
+PASS indoor sprint does not tunnel through bathroom wall at 30fps
+PASS indoor sprint stops at closed entrance door
+PASS outdoor/indoor sprint pace follows actual region across open entrance

@@ -1,0 +1,164 @@
+{
+  "walk": {
+    "from": [
+      2.875,
+      0,
+      -12
+    ],
+    "to": [
+      1.274999999999996,
+      0,
+      -12
+    ],
+    "distance": 1.600000000000004,
+    "speed": 1.600000000000004,
+    "input": {
+      "keys": [
+        "KeyW"
+      ],
+      "analog": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "outdoors": true,
+    "sprinting": false
+  },
+  "outside": {
+    "from": [
+      2.875,
+      0,
+      -12
+    ],
+    "to": [
+      -1.9250000000000032,
+      0,
+      -12
+    ],
+    "distance": 4.800000000000003,
+    "speed": 4.800000000000003,
+    "input": {
+      "keys": [
+        "ShiftLeft",
+        "KeyW"
+      ],
+      "analog": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "outdoors": true,
+    "sprinting": true
+  },
+  "inside": {
+    "from": [
+      1.3,
+      0,
+      0.8
+    ],
+    "to": [
+      1.3,
+      0,
+      1.4399999999999988
+    ],
+    "distance": 0.6399999999999988,
+    "speed": 3.199999999999994,
+    "input": {
+      "keys": [
+        "ShiftLeft",
+        "KeyW"
+      ],
+      "analog": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "outdoors": false,
+    "sprinting": true
+  },
+  "route": {
+    "source": "44447973",
+    "start": [
+      -147.516,
+      165.88
+    ],
+    "yaw": 0.4741258434588974
+  },
+  "before": {
+    "from": [
+      -147.516,
+      -3.0576599645374376,
+      165.88
+    ],
+    "to": [
+      -151.89898455831272,
+      -2.9041802197784237,
+      157.33895519496775
+    ],
+    "distance": 9.599999999998754,
+    "speed": 3.199999999999585,
+    "input": {
+      "keys": [
+        "ShiftLeft",
+        "KeyW"
+      ],
+      "analog": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "outdoors": true,
+    "sprinting": true
+  },
+  "after": {
+    "from": [
+      -147.516,
+      -3.0576599645374376,
+      165.88
+    ],
+    "to": [
+      -154.09047683746908,
+      -2.0927895382903987,
+      153.06843279244652
+    ],
+    "distance": 14.400000000002684,
+    "speed": 4.800000000000895,
+    "input": {
+      "keys": [
+        "ShiftLeft",
+        "KeyW"
+      ],
+      "analog": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "outdoors": true,
+    "sprinting": true
+  },
+  "touch": {
+    "from": [
+      2.875,
+      0,
+      -12
+    ],
+    "to": [
+      -1.9250000000000032,
+      0,
+      -12
+    ],
+    "distance": 4.800000000000003,
+    "speed": 4.800000000000003,
+    "input": {
+      "keys": [],
+      "analog": {
+        "x": 0,
+        "y": 1
+      }
+    },
+    "outdoors": true,
+    "sprinting": true
+  },
+  "errors": [],
+  "limits": "Native inputs with controlled ordinary Player updates; baseline comparison changes only runOutdoor to retained indoor3.2. No hardware FPS claim."
+}

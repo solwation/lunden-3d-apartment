@@ -1,0 +1,30 @@
+{
+  "baseline": "33116bd5",
+  "sourceSha256": {
+    "src/player.js": "87c34ec6f7b7dbf839b3cf797954327f7f02e7151619946203e181c19b094821",
+    "src/config.js": "afb375c476613f7d65fed62571ee96e6b3556369d3c3b0136f970f6899a24044",
+    "tools/outdoorsprinttest.mjs": "11806cd4b998cc0f89da4634fe99a10cd6fa10961736ead874e5cfcae366d0ac",
+    "tools/walktest.html": "5e058da0bb084add0f06ac8818b01a01d913b72ad6f05341b74aa81fe21e887e",
+    "tools/outdoorsprintbrowser.cjs": "2c67e75f766b637ad3884e30a3aa0cd1b8e9ba1c148e34dfa9500b8d38480219"
+  },
+  "checks": {
+    "node": "5/5 PASS",
+    "realWorldSprintContracts": "8/8 PASS",
+    "actualApp": "8/8 PASS including reused green World fixture; zero page errors",
+    "syntax": "PASS",
+    "diffWhitespace": "PASS"
+  },
+  "pacesMps": {
+    "walk": 1.6,
+    "indoorSprint": 3.2,
+    "outdoorSprint": 4.8
+  },
+  "comparison": "Same final scene and mapped route, old-value runOutdoor=3.2 vs4.8, native inputs and identical three seconds of controlled Player updates",
+  "environment": "Chromium1248/SwiftShader,1280x800,June12:00clear/freeze, Three0.170.0",
+  "limits": [
+    "No physical phone claim",
+    "No wall-clock FPS or hardware-performance improvement claim",
+    "Representative core classification covers L/A/B/C; no geometry changed",
+    "Public port assessed read-only, separate low issue remains conductor follow-up"
+  ]
+}

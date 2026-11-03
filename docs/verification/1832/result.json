@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "completed": true,
+  "driverError": null,
+  "checks": [
+    {
+      "ok": true,
+      "message": "reuse unchanged green eight-contract World sprint fixture"
+    },
+    {
+      "ok": true,
+      "message": "actual keyboard walk remains1.6m/s"
+    },
+    {
+      "ok": true,
+      "message": "actual Shift key runs outdoors at4.8m/s"
+    },
+    {
+      "ok": true,
+      "message": "actual indoor Shift run remains3.2m/s"
+    },
+    {
+      "ok": true,
+      "message": "same real park path:3seconds reaches9.6m before and14.4m after"
+    },
+    {
+      "ok": true,
+      "message": "actual touch drag reaches the existing full-stick sprint threshold"
+    },
+    {
+      "ok": true,
+      "message": "actual full touch stick uses4.8m/s outdoors"
+    },
+    {
+      "ok": true,
+      "message": "movement route has no page errors"
+    }
+  ],
+  "errors": []
+}

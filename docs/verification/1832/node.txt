@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: outdoor sprint rises from 3.2 to 4.8m/s; ordinary walking and indoor sprint retain their old paces
+ok 1 - outdoor sprint rises from 3.2 to 4.8m/s; ordinary walking and indoor sprint retain their old paces
+  ---
+  duration_ms: 23.752634
+  type: 'test'
+  ...
+# Subtest: full touch stick uses faster outdoor sprint, partial stick/crouch retain walk pace; diagonal does not multiply speed
+ok 2 - full touch stick uses faster outdoor sprint, partial stick/crouch retain walk pace; diagonal does not multiply speed
+  ---
+  duration_ms: 7.956177
+  type: 'test'
+  ...
+# Subtest: core, basement garage, visited flat and hidden room all keep indoor sprint despite exterior footprints
+ok 3 - core, basement garage, visited flat and hidden room all keep indoor sprint despite exterior footprints
+  ---
+  duration_ms: 1.992495
+  type: 'test'
+  ...
+# Subtest: 5cm substeps stop outdoor sprint and coffee-boosted sprint at a thin wall, including a one-second frame
+ok 4 - 5cm substeps stop outdoor sprint and coffee-boosted sprint at a thin wall, including a one-second frame
+  ---
+  duration_ms: 37.992395
+  type: 'test'
+  ...
+# Subtest: actual composed Core.contains keeps representative L/A/B/C stairwell points at indoor pace
+ok 5 - actual composed Core.contains keeps representative L/A/B/C stairwell points at indoor pace
+  ---
+  duration_ms: 14.33816
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 428.369307
