@@ -32,3 +32,6 @@ An early fixture accidentally supplied a1920 px synthetic screenshot and correct
 [Full import schema, field/file/review mapping and credential boundary](../../development/report-import.md#multiple-own-pictures-1841). The conductor owns publication, deployment and final issue evidence/closure.
 
 Dirigentens integration behåller de senare ank-/kattrundorna och startup-cachen. Rapportklient, markup, Worker, encoder, bilagehelper och importverktyg är byte-identiska med slutligt verifierat workerresultat; REPORTS är samma data. Sammanslagna16/16 rapport-/deploypathkontroller passerar (integration-worker.txt). Python/UI/protokollbevis återanvänds på identisk berörd källa, inga extra browseromtag.
+
+
+Levererat i `aa0241e68471e995747c185693ed056fcba013dd`. [Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/41644518419) och [Worker](https://github.com/solwation/lunden-3d-apartment/actions/runs/41644518584) lyckades; Worker-loggen bekräftar faktisk Wrangler-deploy och den publika sidans version.json visar `aa0241e`. Dirigentens kombinerade diff-/bildgranskning är klar. Verifieringslänkarna ovan är permanenta; eventuella resultatbilder är granskade och bytekontrollerade. Ingen rutinmässig omkörning av gröna kontroller efter orelaterad integration. Ärendet stängs genom efterföljande verifieringscommit och aktiva etiketter tas bort.
