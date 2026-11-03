@@ -1,0 +1,95 @@
+TAP version 13
+# Subtest: hidden/ignored/transparent objects never start spatial work; an opaque object behind still blocks
+ok 1 - hidden/ignored/transparent objects never start spatial work; an opaque object behind still blocks
+  ---
+  duration_ms: 5.801499
+  type: 'test'
+  ...
+# Subtest: mixed material groups, moving closed/open doors, instances and exact vertical/target margins
+ok 2 - mixed material groups, moving closed/open doors, instances and exact vertical/target margins
+  ---
+  duration_ms: 3.607699
+  type: 'test'
+  ...
+# Subtest: near blocker stops work before complex far grids; weapon/mark all-hit segment contract remains
+ok 3 - near blocker stops work before complex far grids; weapon/mark all-hit segment contract remains
+  ---
+  duration_ms: 50.224487
+  type: 'test'
+  ...
+# Subtest: exact ray/box rejection preserves padded large-coordinate hits and ignores narrow authored bounds
+ok 4 - exact ray/box rejection preserves padded large-coordinate hits and ignores narrow authored bounds
+  ---
+  duration_ms: 1.0836
+  type: 'test'
+  ...
+# Subtest: registration is numbered, duplicate-safe and independent of insertion/group ordering
+ok 5 - registration is numbered, duplicate-safe and independent of insertion/group ordering
+  ---
+  duration_ms: 2.355699
+  type: 'test'
+  ...
+# Subtest: visible observation never finds; real events deduplicate and reload without losing progress
+ok 6 - visible observation never finds; real events deduplicate and reload without losing progress
+  ---
+  duration_ms: 0.9405
+  type: 'test'
+  ...
+# Subtest: latest-three photos are transactional, separate from metadata, and survive reload
+ok 7 - latest-three photos are transactional, separate from metadata, and survive reload
+  ---
+  duration_ms: 1.1633
+  type: 'test'
+  ...
+# Subtest: blocked storage preserves visit progress and reports failure without changing scores
+ok 8 - blocked storage preserves visit progress and reports failure without changing scores
+  ---
+  duration_ms: 0.229699
+  type: 'test'
+  ...
+# Subtest: collection metadata and photo/cache databases follow the pinned player and reject deleted-player writes
+ok 9 - collection metadata and photo/cache databases follow the pinned player and reject deleted-player writes
+  ---
+  duration_ms: 0.995
+  type: 'test'
+  ...
+# Subtest: concurrent photos serialize per entry and keep the same three persisted and visible records
+ok 10 - concurrent photos serialize per entry and keep the same three persisted and visible records
+  ---
+  duration_ms: 0.7953
+  type: 'test'
+  ...
+# Subtest: event photographs use one global job, recheck visibility and bound/de-duplicate the queue
+ok 11 - event photographs use one global job, recheck visibility and bound/de-duplicate the queue
+  ---
+  duration_ms: 0.4031
+  type: 'test'
+  ...
+# {"emptyCellReplay":[{"cells":74088,"ms":4.769497999999999,"hits":3},{"cells":64,"ms":0.15049999999999386,"hits":3}]}
+# Subtest: historical transformed indexed groups, sides, authored bounds and big triangles retain exact hits
+ok 12 - historical transformed indexed groups, sides, authored bounds and big triangles retain exact hits
+  ---
+  duration_ms: 52.997087
+  type: 'test'
+  ...
+# Subtest: Float32 rounding across positive/negative half-metre and large-coordinate cell boundaries
+ok 13 - Float32 rounding across positive/negative half-metre and large-coordinate cell boundaries
+  ---
+  duration_ms: 0.6498
+  type: 'test'
+  ...
+# Subtest: long diagonal removes only empty cell visits, with exact hit parity
+ok 14 - long diagonal removes only empty cell visits, with exact hit parity
+  ---
+  duration_ms: 12.157397
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 193.998751

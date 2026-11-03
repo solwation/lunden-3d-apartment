@@ -3,7 +3,7 @@
   "final": {
     "src/marks.js": "2994f2317e437a053064104f1944380e888003ba5b6d2c3b8a79c11116eeb211",
     "src/trigrid.js": "26e73d1837245dc7481cd1edc48e658c443b97af3167271dbda47919c42510f3",
-    "tools/trigrid1851test.mjs": "16759283f4705d9b71fb9d2033ea512db951b748d95d34d641a5ab1895397811",
+    "tools/trigrid1851test.mjs": "0a94fc798aec979470e9e6f98f49177bebdd49e517cd21c53884ff6dc274e368",
     "tools/bestiarysight1851test.mjs": "2c5890ddd293f79d3c4de74ac6f4f2502de4f40d15fa2b75e4aee53fa98b308d",
     "tools/bestiarytest.mjs": "62875b95be3c5b8c75e63f9c15848759286a66fa773e69f9a09e32f46b3b5369"
   },
@@ -11,5 +11,11 @@
   "appEvidenceSources": {
     "src/marks.js": "2994f2317e437a053064104f1944380e888003ba5b6d2c3b8a79c11116eeb211",
     "src/trigrid.js": "4c3670d06a0920d2009360469404739e0b6aacbbbbe0dc98fd39aab94131a26c"
+  },
+  "parityReference": {
+    "file": "tools/fixtures/trigrid-before-1851.mjs",
+    "source": "b54b444b5e41aad90b336413a5cadadf9832aa41:src/trigrid.js",
+    "sha256": "4c3670d06a0920d2009360469404739e0b6aacbbbbe0dc98fd39aab94131a26c",
+    "note": "Frozen pre1851 baseline; no mutable HEAD or historical Git objects needed when replaying after commit or from a shallow checkout."
   }
 }

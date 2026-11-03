@@ -1,0 +1,10 @@
+{
+  "workerSource": "2d3380de3848321d03f4702b57b0b4dd452aecad",
+  "integrationBase": "16d82654",
+  "runtimeByteParity": {
+    "src/marks.js": "2994f2317e437a053064104f1944380e888003ba5b6d2c3b8a79c11116eeb211",
+    "src/trigrid.js": "26e73d1837245dc7481cd1edc48e658c443b97af3167271dbda47919c42510f3"
+  },
+  "testRepair": "Mutable HEAD parity oracle replaced by exact frozen pre1851 fixture; all14 relevant cases pass after integration; no runtime change.",
+  "retained": "All current report images and1852question checkpoint preserved; all old changelog rows retained, next1430."
+}
