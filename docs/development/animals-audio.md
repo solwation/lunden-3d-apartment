@@ -55,6 +55,8 @@ this is not an exhaustive survey of every remote footpath or furnishing.
 The public walkthrough has no audio engine or footsteps; this audio-only game
 change introduces no applicable geometry/navigation port or new public subsystem.
 
+#1830: Kattmatare uses the existing `catFishFeeds` counter (first level 25, gameplay guess), including roaming cats and the promoted `CatSpawner`. Promotion sets `on:null` for the ground cat so raw-fish feeding stays enabled; `leave()` retains its fade in place via the `outdoorCat` marker. Furniture feeding remains gated. Outdoor petting preserves the ordinary `cat.onPet` callback and `petted` counter. No additional raw-fish score is awarded.
+
 ## Module and test map
 
 ```text
@@ -62,6 +64,8 @@ src/cat.js             the cat: random coat, washing animation, appears/moves/va
 src/outdoorcatroute.js the outdoor cats' loops as a pure function of the clock (#1767; node test src/outdoorcatroute.test.mjs)
 src/outdoorcats.js     the outdoor cats (#1767): puppets / merged far meshes, notice, become the ordinary cat, walk home; isOut (#1772); eating a raw fish (#1782)
 src/outdoorcatbrain.js the outdoor cats' brains (#1772): personality, utility AI per rest stop, outings, meeting the visitor (node test tools/outdoorcatbraintest.mjs)
+tools/catmedaltest.cjs  #1830 real indoor / promoted / roaming raw-fish callbacks, held feeding, outdoor pet counter and medal progress
+tools/catmedaltest.mjs  #1830 shared client/Worker Kattmatare boundary, history and counter limits
 tools/outdoorcatfishtest.cjs  outdoor cats eat a raw caught fish on the lawn or held out; cooked fish ignored; points once (#1782)
 tools/outdoorcatstest.cjs  outdoor cats in the real scene: routes, movement, pet/carry, walking home, rain/snow, draw calls; climb, butterfly, social approach (#1772)
 src/miele.js           Miele (#328): `HeartFireworks` (heart shells that pop into small hearts) and `MieleHeld` (a Holdable with no

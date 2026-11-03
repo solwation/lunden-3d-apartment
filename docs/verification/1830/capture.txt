@@ -1,0 +1,3 @@
+browsertest: waiting for /home/devcontainers/.local/state/orkester/browser.lock (another browser test is running)
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS capture-only promoted cat eating held raw fish {"name":"Sotis","phase":"eat","held":true,"scale":0.6666666666666665,"camera":[5.009601908667896,0.8,21.740971828043868]}

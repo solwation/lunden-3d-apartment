@@ -1146,7 +1146,7 @@ export class CatSpawner {
   /** Pick a way out: away from the visitor, the longest clear straight walk (up to CAT_LEAVE.dist) among a fan of directions. */
   leave() {
     const o = this.object, p = o.position, f = this.petFrom ?? { x: p.x, z: p.z - 1 };
-    if (this.on) { // up on the furniture: it turns away and fades where it is
+    if (this.on || (this.outdoor && this.outdoorCat)) { // furniture / promoted outdoor cat: turn away and fade in place (#1830)
       this.leaveY = p.y;
       this.leaving = { t: 0, yaw: Math.atan2(p.x - f.x, p.z - f.z), d: 0, gone: 0, from: o.rotation.y };
       return;

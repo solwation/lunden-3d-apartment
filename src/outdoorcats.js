@@ -154,7 +154,8 @@ export class OutdoorCats {
     k.catName = c.name;
     k.object.position.copy(c.group.position);
     k.object.rotation.set(0, c.yaw, 0);
-    Object.assign(k, { on: 'sit', outdoor: true, rugY: null, door: null, closedSince: false, ignored: 0, t: Math.random() * 4,
+    // #1830: ground cat, not furniture: keep the ordinary raw-fish path enabled.
+    Object.assign(k, { on: null, outdoor: true, rugY: null, door: null, closedSince: false, ignored: 0, t: Math.random() * 4,
       nextMeow: 1 + Math.random() * 2, stand: 0, wantStand: 0, outdoorCat: c.name });
     k.object.visible = true;
     k.pose(0);

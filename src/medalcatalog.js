@@ -25,6 +25,7 @@ export const MEDALS = [
   { id: 'ducks', counter: 'duckFeeds', icon: '🦆', name: 'Ankmamma', unit: 'ankor matade', base: 50 }, // #1827: first level50 is a gameplay guess
   { id: 'squirrels', counter: 'squirrelFeeds', icon: '🐿️', name: 'Ekorrvän', unit: 'ekorrar matade', base: 50 },
   { id: 'cats', counter: 'petted', icon: '🐈', name: 'Kattklappare', unit: 'katter klappade', base: 100 },
+  { id: 'catfish', counter: 'catFishFeeds', icon: '🐟', name: 'Kattmatare', unit: 'fiskar till katter', base: 25 }, // #1830: first level is a gameplay guess
   { id: 'butts', counter: 'catButts', icon: '🍑', name: 'Rumpspanare', unit: 'kattrumpor sedda', base: 100, oldBase: 25 },
   { id: 'ponies', counter: 'ponyPets', icon: '🐴', name: 'Ponyvän', unit: 'hästar klappade', base: 100 },
   { id: 'flushes', counter: 'flushes', icon: '🚽', name: 'Spolmästare', unit: 'spolningar', base: 50 },

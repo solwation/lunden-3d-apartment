@@ -1,0 +1,12 @@
+{
+  "src/cat.js": "18fdae74388ecbb084cd65ec62b901f9dc8acd9fdc07ce9ea752e3f553ceb7f0",
+  "src/outdoorcats.js": "16a3b793108c2e6f394aededb872a6bad2e82b6591a84209117d8cf8565f94a1",
+  "src/main.js": "ff7f8d8d03e6d19c841877b581dec3ab12ad5f33bf0d0f5dd139ee15ab70d32a",
+  "src/fishing.js": "a8935d38f6784984636d506bf39caa889783ac6d343d5724d9183895e73b11fb",
+  "src/config.js": "7cfb2eb2bba915b1b7bd0d74f3d912caaf302b340d14ae502c56eb9741ff7339",
+  "src/medalcatalog.js": "d6b76d2620eb6a41725bf2c817cca313fca7e81c7de53111906cd2c82bddceb6",
+  "src/boardcatalog.js": "04a4f6af4e856774045c529dc91ddd95c890ca98f4bcfacda3c052e69592944e",
+  "src/stats.js": "7e85830314430b91f21817aac403602b1eda1deb3f894c824b2a230f8347f564",
+  "tools/catmedaltest.cjs": "5f830ad8c196ac8d30a96d1ce4256f9fd8a140b56463b8e0142ef4570ec60bc9",
+  "tools/catmedaltest.mjs": "def35afb3271a89dadccfa5b4574b7289557de6cada89c64bec73e7d5664c0e3"
+}

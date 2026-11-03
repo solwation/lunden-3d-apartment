@@ -1,0 +1,69 @@
+[
+  {
+    "ok": true,
+    "name": "roaming cat: held raw fish once, five existing points",
+    "data": {
+      "held": true,
+      "gone": true,
+      "handEmpty": true,
+      "feeds": 1,
+      "points": 5,
+      "fishEaten": 0,
+      "questSame": true
+    }
+  },
+  {
+    "ok": true,
+    "name": "promoted outdoor cat: barehand pet uses petted once per ongoing pat",
+    "data": {
+      "name": "Sotis",
+      "bound": "bound",
+      "empty": true,
+      "petting": true,
+      "first": 1,
+      "afterRepeated": 1,
+      "points": 8
+    }
+  },
+  {
+    "ok": false,
+    "name": "promoted cat eats raw caught fish out of hand",
+    "data": {
+      "held": true,
+      "eating": false,
+      "outdoorCat": "Sotis"
+    }
+  },
+  {
+    "ok": false,
+    "name": "promoted cat completes meal: counter once and five existing points",
+    "data": {
+      "handEmpty": false,
+      "feeds": 0,
+      "points": 15
+    }
+  },
+  {
+    "ok": false,
+    "name": "indoor CatSpawner callback advances same medal counter once",
+    "data": {
+      "feeds": 0,
+      "points": 0,
+      "y": 0,
+      "outdoor": false
+    }
+  },
+  {
+    "ok": false,
+    "name": "visible Kattmatare progress from three real meals",
+    "data": {
+      "count": 1,
+      "text": "🐟KattmatareLåst1 / 25 fiskar till katter"
+    }
+  },
+  {
+    "ok": true,
+    "name": "no page errors",
+    "data": []
+  }
+]

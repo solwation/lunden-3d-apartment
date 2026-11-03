@@ -1,0 +1,8 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS roaming cat: held raw fish once, five existing points {"held":true,"gone":true,"handEmpty":true,"feeds":1,"points":5,"fishEaten":0,"questSame":true}
+PASS promoted outdoor cat: barehand pet uses petted once per ongoing pat {"name":"Sotis","bound":"bound","empty":true,"petting":true,"first":1,"afterRepeated":1,"points":8}
+PASS promoted cat eats raw caught fish out of hand {"held":true,"eating":true,"phase":"eat","outdoorCat":"Sotis"}
+PASS promoted cat completes meal: counter once and five existing points {"gone":true,"handEmpty":true,"feeds":1,"points":5,"fadeInPlace":true,"fadeMoved":0}
+PASS indoor CatSpawner callback advances same medal counter once {"gone":true,"feeds":1,"points":5,"y":0,"outdoor":false}
+PASS visible Kattmatare progress from three real meals {"count":3,"text":"🐟KattmatareLåst3 / 25 fiskar till katter"}
+PASS no page errors []

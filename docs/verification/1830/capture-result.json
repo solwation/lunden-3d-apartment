@@ -1,0 +1,17 @@
+[
+  {
+    "ok": true,
+    "name": "capture-only promoted cat eating held raw fish",
+    "data": {
+      "name": "Sotis",
+      "phase": "eat",
+      "held": true,
+      "scale": 0.6666666666666665,
+      "camera": [
+        5.009601908667896,
+        0.8,
+        21.740971828043868
+      ]
+    }
+  }
+]

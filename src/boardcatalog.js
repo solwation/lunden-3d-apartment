@@ -15,6 +15,7 @@ export const COUNTERS = {
   duckFeeds: { perMin: 100, start: 3000 }, // four ducks,2.4s cooldown: up to100 bites/minute before bread/approach time
   squirrelFeeds: { perMin: 12, start: 3000 },
   petted: { perMin: 30, start: 5000 },
+  catFishFeeds: { perMin: 30, start: 3000 }, // #1830: shared indoor/outdoor raw-fish feeds, generous multi-cat maximum (*guess*)
   catButts: { perMin: 30, start: 5000 },
   ponyPets: { perMin: 20, start: 3000 },
   flushes: { perMin: 30, start: 5000 },
