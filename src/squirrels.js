@@ -7,6 +7,7 @@ import { sfx } from './audio.js';
 import { registerSeasonal } from './seasons.js';
 import { SquirrelBrain, NutField, linkTrees, riverFrame, winterMonth, inBox, groveFences, groveTreeOk, startTree } from './squirrelbrain.js';
 import { SquirrelSync } from './squirrelsync.js';
+import { nutPathSpots } from './nutpaths.js';
 
 // Squirrels and the nuts they look for (#1672). The brains live in squirrelbrain.js (no three.js); this file draws them and ties them to
 // the game: the crowns and ground come from the trees built in surroundings.js (river park patches and the paddock's shade trees, read
@@ -193,8 +194,9 @@ class Nut extends Holdable {
 export class Squirrels {
   /** `feet`: surroundings.js treeFeet, `crowns`: its aoTrees, `ground(x, z)`: the walkable surface, `walkable(x, z)` / `nutOk(x, z)`: where it may run / a nut may lie,
    * `onFeed(brain)`: scoring. `rnd`: injectable for tests. #1780: `southFeet` (surroundings.js southTreeFeet, with their crowns) and `road(x, z, m)`
-   * (roads.js onVehicle) for the home areas' own groves (SQUIRRELS.areas with a `box`). */
-  constructor({ scene, camera, player, feet, crowns, ground, walkable, nutOk, onFeed, southFeet = [], road = null, rnd = Math.random }) {
+   * (roads.js onVehicle) for the home areas' own groves (SQUIRRELS.areas with a `box`). `nutWalls` supplies actual
+   * collision segments for #1831's short path-to-nut approach checks. */
+  constructor({ scene, camera, player, feet, crowns, ground, walkable, nutOk, onFeed, southFeet = [], road = null, nutWalls = () => [], rnd = Math.random }) {
     Object.assign(this, { sfx, scene, camera, player, ground, onFeed, rnd, winter: true, time: 0, speed: 0, acc: [], lastX: NaN, lastZ: NaN, lure: false, net: null, cand: [], track: new Map(), markT: 0, daylight: 1, hour: 12, wasFollow: false });
     const parkPatches = new Set([...(SITE.riverPark.patches ?? []).map((q) => q.name), 'bridge-west']), // (the other `patch` names in treeFeet belong to the street/backdrop areas)
       paddock = PADDOCK.trees ?? [], same = (a, b) => Math.abs(a.x - b[0]) < 0.01 && Math.abs(a.z - b[1]) < 0.01, river = riverFrame(SITE.river.path), q = {};
@@ -219,6 +221,7 @@ export class Squirrels {
     };
     this.player_ = { x: 0, z: 0, lure: false, hx: 0, hz: 0, id: '' };
     this.nuts = new NutField(this.trees, ground, nutHere, rnd);
+    this.nuts.preferred = nutPathSpots(SITE.riverPark.paths, this.trees, ground, nutHere, nutWalls);
     this.nuts.anchors = () => [{ x: camera.position.x, z: camera.position.z }, ...(this.net?.remotes?.() ?? []).map((r) => ({ x: r.x, z: r.z }))];
     // #1716: the home ranges drift with the wall clock (the same for every player), the day comes from the game's clock (update's `hour`)
     const env = { trees: this.trees, ground, walkable, fences, nuts: this.nuts, player: this.player_, scares: this.cand, rnd, onTake: (b) => this.take(b), now: () => Date.now() / 1000, hour: () => this.hour, others: [] };

@@ -229,6 +229,8 @@ Vägbron och den separata gång- och cykelbron vid Sankt Lars väg syns över en
 Vid ån finns fyra ankor som simmar och vaggar på stranden. Håll fram en brödskiva och använd E eller touch för att mata dem; varje tugga förbrukar en fjärdedel av skivan. Kvackandet följer ljudinställningen. Brödet hämtas i kökets skafferi, och lyckad matning ger poäng samt framsteg mot medaljen Ankmamma; matningspoängen har ett dagstak.
 
 
+Små nötgrupper återkommer på gräskanterna vid fyra gångstråk kring ån. Plocka en nöt med E och huka stilla för att låta en ekorre ta den. [Bilder och kontroll](docs/verification/1831/).
+
 Höje å omges av varierande slänter, kartans huvudstigar, öppna gräsytor, större lövträdsdungar och strandvegetation som följer årstiderna. [Underlag och jämförelsevyer](docs/validation/issue-533/README.md).
 Jordrampernas öppna sidor vid den lilla träbron är tätade mot den ritade marken, så slänterna hänger inte längre som tunna skivor ovanför åstranden.
 

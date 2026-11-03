@@ -570,6 +570,7 @@ const holdables = [saber, ...toys.items, remote, book, beer, ...things, ...sillP
 // #1672: squirrels in the trees by the river and the paddock; the nuts they look for are holdables (E takes one; crouch still with it to feed)
 const squirrelWalk = (x, z) => { const r = riverAt(x, z); if (r.distance > r.width / 2 + SQUIRRELS.dry) return true; const w = waterYAt(x, z, r) + 0.3; return parkGround(x, z) > w && renderedTerrainY(x, z) > w; }; // (#1764: far from the river it is land, without the costly terrain lookup; #1780: near it the terrain itself is above the water too, so the road bridge's deck over Höje å is no place to forage nor a way across)
 const squirrels = params0.has('nosquirrels') ? null : new Squirrels({ scene, camera, player, feet: treeFeet, southFeet: southTreeFeet, road: onVehicle, crowns: aoTrees, ground: parkGround, walkable: squirrelWalk, // (#1780: southFeet / road: the home areas' own groves)
+  nutWalls: farWalls, // #1831: pathside nuts have a clear short approach, including trunks/fences
   nutOk: (x, z) => squirrelWalk(x, z) && !onRoad(x, z, 0.5) && !onWalk(x, z, 0.5) && !onParkPath(x, z, 0.4), onFeed: () => bump('squirrelFeeds') });
 if (squirrels) holdables.push(...squirrels.nutItems);
 // #1752: fish in Höje å and the rings they leave on the water, the same for every player (src/riverfish.js, src/riverfishsync.js, cloudflare/riverfish.js)

@@ -58,6 +58,16 @@ without bread/during cooldown/after depletion, four finite bites, and actual Ank
 The fixture uses controlled spawns between kitchen and river; it does not certify a continuous walk.
 [Images, raw results and source hashes](../verification/1827/).
 
+## Easier river-path nuts (#1831)
+
+`node --test tools/nutpathtest.mjs cloudflare/squirrels.test.mjs` covers deterministic source-derived pairs,
+unsafe/steep/blocked rejection, reserved slots within the original cap, held/put positions, respawn birth,
+winter and fallback, plus unchanged room protocol/claims. Existing squirrel brain checks retain feeding.
+`tools/browsertest.sh node tools/nutpathbrowser.cjs GAME docs/verification/1831` verifies actual mapped
+path pairs, same20-slot cap and8m glints, then native E pickup and ordinary crouch/still feeding (+6)
+from one of those exact spawned nuts. Controlled player/squirrel preparation is recorded explicitly.
+[Images, raw results and source hashes](../verification/1831/).
+
 ## River ducks (#1815)
 
 Scoped checks: `node tools/ducktest.mjs` covers pure swim/shore transitions, surface continuity,

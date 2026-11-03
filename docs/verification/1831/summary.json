@@ -1,0 +1,186 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "eight existing slots form four actual safe river-path pairs within original20-slot cap",
+      "data": {
+        "preferred": [
+          {
+            "x": -141.42596059934365,
+            "z": 182.93285657822904,
+            "pathX": -139.4492360892766,
+            "pathZ": 181.96716500671138,
+            "source": "51890086"
+          },
+          {
+            "x": -141.62348842079044,
+            "z": 182.52852656480624,
+            "pathX": -139.6467639107234,
+            "pathZ": 181.5628349932886,
+            "source": "51890086"
+          },
+          {
+            "x": -73.01545166321755,
+            "z": 144.3056243648709,
+            "pathX": -73.92094494095082,
+            "pathZ": 142.63527053290002,
+            "source": "44447963"
+          },
+          {
+            "x": -73.41106178131592,
+            "z": 144.52008329907088,
+            "pathX": -74.3165550590492,
+            "pathZ": 142.8497294671,
+            "source": "44447963"
+          },
+          {
+            "x": -21.53791119204046,
+            "z": 119.41025400281217,
+            "pathX": -22.23441302179132,
+            "pathZ": 117.64251952016107,
+            "source": "44447963"
+          },
+          {
+            "x": -21.956585148457826,
+            "z": 119.57521496249001,
+            "pathX": -22.653086978208684,
+            "pathZ": 117.80748047983892,
+            "source": "44447963"
+          },
+          {
+            "x": -109.38782417045256,
+            "z": 164.54213567609733,
+            "pathX": -110.13127305594834,
+            "pathZ": 162.79362666706848,
+            "source": "44447963"
+          },
+          {
+            "x": -109.80194472522255,
+            "z": 164.7182156752937,
+            "pathX": -110.54539361071834,
+            "pathZ": 162.96970666626484,
+            "source": "44447963"
+          }
+        ],
+        "alive": 20,
+        "max": 20,
+        "markDist": 8,
+        "near": 16,
+        "positions": [
+          {
+            "x": -141.42596059934365,
+            "z": 182.93285657822904,
+            "born": 1
+          },
+          {
+            "x": -141.62348842079044,
+            "z": 182.52852656480624,
+            "born": 1
+          },
+          {
+            "x": -73.01545166321755,
+            "z": 144.3056243648709,
+            "born": 1
+          },
+          {
+            "x": -73.41106178131592,
+            "z": 144.52008329907088,
+            "born": 1
+          },
+          {
+            "x": -21.53791119204046,
+            "z": 119.41025400281217,
+            "born": 1
+          },
+          {
+            "x": -21.956585148457826,
+            "z": 119.57521496249001,
+            "born": 1
+          },
+          {
+            "x": -109.38782417045256,
+            "z": 164.54213567609733,
+            "born": 1
+          },
+          {
+            "x": -109.80194472522255,
+            "z": 164.7182156752937,
+            "born": 1
+          }
+        ],
+        "visible": true,
+        "marks": 3
+      }
+    },
+    {
+      "ok": true,
+      "label": "actual nut slots spawned at validated source-derived grass points"
+    },
+    {
+      "ok": true,
+      "label": "pair is visibly marked from path; close-only8m marker policy retained",
+      "data": 3
+    },
+    {
+      "ok": true,
+      "label": "normal nut can be focused from accessible path edge",
+      "data": {
+        "kind": "holdable",
+        "name": "en nöt",
+        "nut": true,
+        "camera": [
+          -140.23992589330342,
+          -2.1813685713085955,
+          182.35344163531843
+        ],
+        "slot": {
+          "alive": true,
+          "x": -141.42596059934365,
+          "y": -3.138343852296075,
+          "z": 182.93285657822904,
+          "kind": 0,
+          "age": 0.8100000000000002,
+          "life": 816.6726486741903,
+          "wait": -11,
+          "held": false,
+          "born": 1,
+          "by": null
+        }
+      }
+    },
+    {
+      "ok": true,
+      "label": "native E takes the spawned nut into the ordinary hand"
+    },
+    {
+      "ok": true,
+      "label": "ordinary crouch/still squirrel approach consumes pathside nut and awards one feed",
+      "data": {
+        "hasNut": true,
+        "feeds": 1,
+        "score": 6,
+        "held": false,
+        "states": [
+          "search",
+          "approach",
+          "take",
+          "flee"
+        ],
+        "hearts": true,
+        "born": 1,
+        "alive": false,
+        "crouched": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "fed reserved nut is removed through existing slot lifecycle"
+    },
+    {
+      "ok": true,
+      "label": "zero page errors",
+      "data": []
+    }
+  ],
+  "errors": []
+}

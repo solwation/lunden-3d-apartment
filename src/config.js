@@ -7495,6 +7495,10 @@ export const SQUIRRELS = {
   dry: 6, // #1764: farther than the river's half width + `dry` m from its centre line the park ground is always above the water (measured: the wet strip reaches at most 5.6 m from the centre line), so main.js squirrelWalk answers there without the terrain lookup
   run: 3.4, flee: 6.5, climb: 2.6, leap: 5.5, perch: [3.5, 8], forage: [16, 36], search: [1.2, 3.5], eat: 2.2, // #1787: quicker perch decisions, longer ground foraging
   maxNuts: 20, spread: 11, life: [360, 900], respawn: [4, 12], sense: 4.5, nutSize: 2.6, // #1686: 18 at once; #1787: 20 nuts, quicker respawn [4, 12] s, spread 11 m, nutSize 2.6 for visibility
+  // #1831: reserve8 existing slots as pairs on safe grass beside sourced river paths. All distances/anchors are gameplay guesses.
+  pathNuts: { slots: 8, perHub: 2, anchors: [[-145,198],[-65,150],[-25,115],[-100,183]], anchorRadius: 40,
+    sampleStep: 6, offset: 1, pairSpacing: .45, hubSpacing: 12, treeRange: 14, trunkClear: 1.2,
+    approachStep: .3, clearance: .8, maxRelief: .18 },
   nutNearPlayer: 65, nutBias: 0.75, heap: 0.45, heapRadius: [0.15, 0.6], // #1686: 70 % near visitor; #1787: 75 % within 65 m, 45 % in heaps beside existing nuts
   markDist: 8, markFade: 4.5, markRing: 0.22, markBeam: 1.15, markDay: [0.35, 0.85], markNight: 0, nutNear: 16, // #1697: daylight opacity; #1742: close-only; #1787: markDist 8 m with fade from 4.5 m, nutNear 16 m
   sync: { every: 0.5, nutEvery: 0.4, enter: 120, leave: 160, reach: 6, follow: 3, bytes: 480 }, // #1686: the shared leader's snapshot every 0.5 s (#1780: only the animals within drawDist of a visitor, nearest first, the message at most `bytes` long: the room drops one over PLAYERS.maxBytes 512); nuts at most every 0.4 s; a visitor within 120 m of a squirrel joins (leaves beyond 160); a put-down within 6 m; followers simulate on their own again after 3 s without a snapshot

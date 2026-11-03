@@ -157,7 +157,7 @@ export function pickNutSpot(trees, rnd, ok, tries = 16, anchors = null) {
 /** The nuts lying out: `n` slots, each { alive, x, y, z, kind (0 acorn / 1 hazelnut), age, life, wait, held }. Pure bookkeeping; squirrels.js draws them. */
 export class NutField {
   constructor(trees, ground, ok, rnd, n = C.maxNuts) {
-    Object.assign(this, { trees, ground, ok, rnd, active: false, spawned: 0, anchors: () => [] }); // anchors(): [{ x, z }] the visitors (#1686)
+    Object.assign(this, { trees, ground, ok, rnd, active: false, spawned: 0, anchors: () => [], preferred: [] }); // anchors(): [{ x, z }] the visitors (#1686)
     this.slots = Array.from({ length: n }, (_, i) => ({ alive: false, x: 0, y: 0, z: 0, kind: 0, age: 0, life: 0, wait: 1 + i * 0.5, held: false, born: 0, by: null }));
   }
   get count() { return this.slots.reduce((n, s) => n + (s.alive ? 1 : 0), 0); }
@@ -169,17 +169,22 @@ export class NutField {
   }
   update(dt) {
     if (!this.active) return;
-    for (const s of this.slots) {
+    for (let index=0;index<this.slots.length;index++) {
+      const s=this.slots[index];
       if (s.alive) { if (!s.held && (s.age += dt) > s.life) this.remove(s); continue; }
       if ((s.wait -= dt) > 0) continue;
-      const at = this.spot();
+      const at = this.spot(index);
       if (!at) { s.wait = 5; continue; }
       Object.assign(s, { alive: true, x: at.x, z: at.z, y: this.ground(at.x, at.z), kind: this.rnd() < 0.55 ? 0 : 1, age: 0, life: between(C.life, this.rnd), held: false });
       s.born++; this.spawned++;
     }
   }
   /** #1686: a place for a new nut: a heap beside one already lying out (`heap`), else under a tree (near the visitors first). */
-  spot() {
+  spot(index = -1) {
+    // #1831: these bounded slots return to inspected pathside grass after consumption/expiry.
+    // A held/put-down nut retains ordinary ownership and is never teleported back while alive.
+    const p = this.preferred[index];
+    if (p && this.ok(p.x,p.z)) return {x:p.x,z:p.z};
     if (this.rnd() < C.heap) {
       const out = this.slots.filter((q) => q.alive && !q.held);
       if (out.length) {

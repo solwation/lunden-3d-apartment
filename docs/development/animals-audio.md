@@ -757,8 +757,9 @@ This gameplay-only room has no A/B/C/L house variant or public downstream equiva
 
 Nine squirrels: three (the big one, the white-tail-tip one, the slim darker one) live in the crowns along Höje å, the river park and the pony
 paddock, and roam the whole valley over time (#1716 below); six more each keep to a home area (#1780 below). `src/squirrelbrain.js` (no three.js, node-testable) holds the per-animal state machine (perch, leap, down, forage, search,
-fetch, eat, toTree, flee, up, approach, take) and the `NutField` (at most `SQUIRRELS.maxNuts` acorns/hazelnuts on the ground 1.5-9 m
-from a squirrel tree, expiring and respawning). `src/squirrels.js` draws them (one merged vertex-coloured mesh per squirrel, shared
+fetch, eat, toTree, flee, up, approach, take) and the `NutField` (at most `SQUIRRELS.maxNuts` acorns/hazelnuts,
+expiring and respawning). #1831 reserves eight existing slots for safe pathside pairs near river trees; remaining slots use the
+ordinary tree/visitor/heap placement. `src/squirrels.js` draws them (one merged vertex-coloured mesh per squirrel, shared
 material, no light or shadow caster; the nut in the mouth is a child shown only while carried) and wires them to the game: trees come
 from `treeFeet`/`aoTrees` (patches of `SITE.riverPark` plus `PADDOCK.trees`, so trees added there are used automatically), the nuts are
 ordinary `Holdable`s pushed onto main.js `holdables` (flag `isSquirrelNut`, excluded from keep.js), and a crouched (`player.crouched`),
@@ -835,6 +836,22 @@ the rest; the room accepts nulls (at least one pose). The chirp's `ref` (3 m) ma
 (the real site with the groves and real roads: every squirrel starts in its area and stays there over two hours, zero water / fence samples
 over four hours with all nine), `cloudflare/squirrels.test.mjs` (the widest snapshot fits; nulls), `tools/squirrelstest.cjs` (areas in the
 real scene). Pictures: `docs/verification/1780/`.
+
+### Predictable river-path nuts (#1831)
+
+The 20-slot field and existing nut size/short8m glints remain unchanged. `src/nutpaths.js` derives four
+small pairs from the existing sourced `SITE.riverPark.paths` and squirrel trees. It samples grass1m beyond
+the path edge, within14m of a squirrel tree and clear of trunks, then checks a short sampled approach
+against actual `farWalls` and ground relief. `main.js` supplies that collision callback. Only valid candidates
+near the guessed river-area anchors are selected, deterministically. All tuning is in `SQUIRRELS.pathNuts`.
+The first eight ordinary `NutField` slots return to these points when they need a new life; ordinary
+respawn waits, birth counters, expiry, winter, take/put and remote ownership stay unchanged. Held and
+put-down live nuts are never repositioned. Invalid/absent preferred spots fall back to the original
+validated placement. Other slots still use heaps/tree/visitor bias and may add to a pathside group.
+No AI/wire changes, new nut slots, geometry, light, texture or distant markers are introduced. The
+source-based candidate search runs once at scene construction, not each frame.
+[Actual path views, native pickup/feeding, tests and limits](../verification/1831/).
+Public#237 excludes nuts/feeding, so this original-only interaction is not transferred.
 
 ### More nuts, better visibility and valley squirrel (#1787)
 

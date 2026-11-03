@@ -1,0 +1,11 @@
+{
+  "src/nutpaths.js": "8190b4406703da0ca33ffc2502ab4014cd63c4f913d40ea96057baa1bbd7b379",
+  "src/squirrelbrain.js": "37f4f703db2fdc32a3521f93768bc00fb5d612ee608591cb31dd38c5acd8907b",
+  "src/squirrels.js": "1e9c555c5a15ae1b9878b38d95b2feff9e3dff5dd4d77b262f9a03c209d57db5",
+  "src/main.js": "addb0cc9fba93773b5318efcd6b98167911d96d3cc7aba855d2611284f428a42",
+  "src/config.js": "dd9b4665d5778ad49743718083d618815cb6b003a10897640b6de53ebd383fee",
+  "src/squirrelsync.js": "ec59185900c330a3d8a540586b2844d5f9f467ecb34751ad344f549d72d3f4c1",
+  "cloudflare/squirrels.js": "0d252b6da803b799ab365f710b361f87c15de7bed07ad65c98dc71ac3ea6e9f4",
+  "tools/nutpathbrowser.cjs": "4702ebd680d12711cebd82a0b4cf9acdfcd87ba2fdf51f18f347c5a11b219ad4",
+  "tools/nutpathtest.mjs": "708d14f650d70bf830833fab7734e942af791ddee04758b0fb1ba3e541418b51"
+}

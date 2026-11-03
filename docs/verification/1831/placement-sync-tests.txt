@@ -1,0 +1,88 @@
+TAP version 13
+# Subtest: cleanSquirrels validates every message kind
+ok 1 - cleanSquirrels validates every message kind
+  ---
+  duration_ms: 2.643393
+  type: 'test'
+  ...
+# Subtest: the first player near the squirrels leads; a newcomer follows and gets the scene at once
+ok 2 - the first player near the squirrels leads; a newcomer follows and gets the scene at once
+  ---
+  duration_ms: 5.087386
+  type: 'test'
+  ...
+# Subtest: a nut taken by a follower is gone for everybody; a second taker is refused (no double pick)
+ok 3 - a nut taken by a follower is gone for everybody; a second taker is refused (no double pick)
+  ---
+  duration_ms: 3.276491
+  type: 'test'
+  ...
+# Subtest: the leader and a follower race for one nut: still exactly one winner
+ok 4 - the leader and a follower race for one nut: still exactly one winner
+  ---
+  duration_ms: 0.964897
+  type: 'test'
+  ...
+# Subtest: putting a nut down shares where it lies; a put-down too far from the player is ignored
+ok 5 - putting a nut down shares where it lies; a put-down too far from the player is ignored
+  ---
+  duration_ms: 1.545796
+  type: 'test'
+  ...
+# Subtest: a squirrel feeding a follower: F reaches the others and the feeder only, the claim is spent
+ok 6 - a squirrel feeding a follower: F reaches the others and the feeder only, the claim is spent
+  ---
+  duration_ms: 3.053991
+  type: 'test'
+  ...
+# Subtest: the leader leaves: the next player leads from the shared scene, claims follow; the last one out clears the room
+ok 7 - the leader leaves: the next player leads from the shared scene, claims follow; the last one out clears the room
+  ---
+  duration_ms: 1.221797
+  type: 'test'
+  ...
+# Subtest: a follower who leaves with a nut in the hand: the leader drops that nut
+ok 8 - a follower who leaves with a nut in the hand: the leader drops that nut
+  ---
+  duration_ms: 1.042497
+  type: 'test'
+  ...
+# Subtest: encodeAnimal / adopt round trip: state names survive
+ok 9 - encodeAnimal / adopt round trip: state names survive
+  ---
+  duration_ms: 0.378099
+  type: 'test'
+  ...
+# Subtest: through the Worker: leader, snapshots, a take and a feed between two sockets
+ok 10 - through the Worker: leader, snapshots, a take and a feed between two sockets
+  ---
+  duration_ms: 77.039189
+  type: 'test'
+  ...
+# Subtest: deterministic path pairs use safe dry grass near source footpaths and existing trees
+ok 11 - deterministic path pairs use safe dry grass near source footpaths and existing trees
+  ---
+  duration_ms: 3.017492
+  type: 'test'
+  ...
+# Subtest: reserved slots spawn within existing cap, remain where carried/put and respawn with new birth; winter clears them
+ok 12 - reserved slots spawn within existing cap, remain where carried/put and respawn with new birth; winter clears them
+  ---
+  duration_ms: 1.157297
+  type: 'test'
+  ...
+# Subtest: an unavailable preferred point falls back to ordinary validated placement, without extra slots
+ok 13 - an unavailable preferred point falls back to ordinary validated placement, without extra slots
+  ---
+  duration_ms: 0.2771
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 218.315901

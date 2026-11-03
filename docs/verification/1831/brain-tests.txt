@@ -1,0 +1,190 @@
+TAP version 13
+# Subtest: the three animals differ as the issue asks: big, white tail tip, slim and darker
+ok 1 - the three animals differ as the issue asks: big, white tail tip, slim and darker
+  ---
+  duration_ms: 1.075693
+  type: 'test'
+  ...
+# Subtest: \#1780: 8-10 squirrels, the newer ones each with its own home area, spread over at least 4 areas
+ok 2 - \#1780: 8-10 squirrels, the newer ones each with its own home area, spread over at least 4 areas
+  ---
+  duration_ms: 0.295598
+  type: 'test'
+  ...
+# Subtest: a squirrel left alone cycles crown, hop, trunk, ground and back, and stays finite
+ok 3 - a squirrel left alone cycles crown, hop, trunk, ground and back, and stays finite
+  ---
+  duration_ms: 15.966797
+  type: 'test'
+  ...
+# Subtest: personality: the bold big one goes to the ground more than the shy slim one
+ok 4 - personality: the bold big one goes to the ground more than the shy slim one
+  ---
+  duration_ms: 148.80544
+  type: 'test'
+  ...
+# Subtest: nuts: at most maxNuts at once, new ones after a while, all on valid ground, expiring and respawning
+ok 5 - nuts: at most maxNuts at once, new ones after a while, all on valid ground, expiring and respawning
+  ---
+  duration_ms: 7.68845
+  type: 'test'
+  ...
+# Subtest: winter: no nuts at all and nothing counts down; spring brings them back
+ok 6 - winter: no nuts at all and nothing counts down; spring brings them back
+  ---
+  duration_ms: 0.620796
+  type: 'test'
+  ...
+# Subtest: a foraging squirrel finds a nut on the ground and eats it
+ok 7 - a foraging squirrel finds a nut on the ground and eats it
+  ---
+  duration_ms: 0.887194
+  type: 'test'
+  ...
+# Subtest: \#1698: a ground squirrel flees from a visitor moving fast nearby, but not from a still one (standing or crouching)
+ok 8 - \#1698: a ground squirrel flees from a visitor moving fast nearby, but not from a still one (standing or crouching)
+  ---
+  duration_ms: 0.921994
+  type: 'test'
+  ...
+# Subtest: \#1698: a fast visitor beyond the reach range does not frighten; rising near it does
+ok 9 - \#1698: a fast visitor beyond the reach range does not frighten; rising near it does
+  ---
+  duration_ms: 0.438097
+  type: 'test'
+  ...
+# Subtest: \#1698: a frightened squirrel stays up for a while per personality, then comes down again
+ok 10 - \#1698: a frightened squirrel stays up for a while per personality, then comes down again
+  ---
+  duration_ms: 21.492061
+  type: 'test'
+  ...
+# Subtest: \#1698: a lure is ignored while the squirrel is still frightened
+ok 11 - \#1698: a lure is ignored while the squirrel is still frightened
+  ---
+  duration_ms: 0.436097
+  type: 'test'
+  ...
+# Subtest: \#1698: another player running past frightens a squirrel that is creeping up to a still, crouching feeder
+ok 12 - \#1698: another player running past frightens a squirrel that is creeping up to a still, crouching feeder
+  ---
+  duration_ms: 1.088193
+  type: 'test'
+  ...
+# Subtest: feeding: the lure brings it down, it takes the nut, and flees up a tree with it in its mouth
+ok 13 - feeding: the lure brings it down, it takes the nut, and flees up a tree with it in its mouth
+  ---
+  duration_ms: 1.164692
+  type: 'test'
+  ...
+# Subtest: standing up or moving cancels the approach
+ok 14 - standing up or moving cancels the approach
+  ---
+  duration_ms: 1.195492
+  type: 'test'
+  ...
+# Subtest: \#1686: 18 nuts, bigger than before, new ones appear near the visitors and in heaps
+ok 15 - \#1686: 18 nuts, bigger than before, new ones appear near the visitors and in heaps
+  ---
+  duration_ms: 0.400698
+  type: 'test'
+  ...
+# Subtest: \#1686: a nut another player holds (held + by) is not found by a squirrel and does not expire
+ok 16 - \#1686: a nut another player holds (held + by) is not found by a squirrel and does not expire
+  ---
+  duration_ms: 0.563196
+  type: 'test'
+  ...
+# Subtest: nut glint strength by daylight
+ok 17 - nut glint strength by daylight # SKIP three.js is not resolvable here: Cannot find package 'three' imported from /home/devcontainers/orkester-olw-win10-gpt6-20261103/nuts/src/squirrels.js
+  ---
+  duration_ms: 10.933429
+  type: 'test'
+  ...
+# Subtest: \#1716: the valley graph: every tree reachable, routes follow the trees, no ground run through the river
+ok 18 - \#1716: the valley graph: every tree reachable, routes follow the trees, no ground run through the river
+  ---
+  duration_ms: 8.375846
+  type: 'test'
+  ...
+# Subtest: \#1716: over a few simulated hours a squirrel roams along most of the river, not just round its start trees
+ok 19 - \#1716: over a few simulated hours a squirrel roams along most of the river, not just round its start trees
+  ---
+  duration_ms: 158.918977
+  type: 'test'
+  ...
+# Subtest: \#1716: the coarse off-screen brain roams the same way (tree to tree only) and catches up after a long gap
+ok 20 - \#1716: the coarse off-screen brain roams the same way (tree to tree only) and catches up after a long gap
+  ---
+  duration_ms: 9.617639
+  type: 'test'
+  ...
+# Subtest: \#1716: the day: busiest in the morning and afternoon, asleep in the drey at night, awake again in the morning
+ok 21 - \#1716: the day: busiest in the morning and afternoon, asleep in the drey at night, awake again in the morning
+  ---
+  duration_ms: 4.326473
+  type: 'test'
+  ...
+# Subtest: \#1716: a found nut is sometimes buried and dug up again later
+ok 22 - \#1716: a found nut is sometimes buried and dug up again later
+  ---
+  duration_ms: 1.493791
+  type: 'test'
+  ...
+# Subtest: \#1716: two squirrels on the ground: one now and then chases the other up a tree
+ok 23 - \#1716: two squirrels on the ground: one now and then chases the other up a tree
+  ---
+  duration_ms: 1.997287
+  type: 'test'
+  ...
+# Subtest: \#1716: the shared pose keeps the old wire states, so older clients and the room understand it
+ok 24 - \#1716: the shared pose keeps the old wire states, so older clients and the room understand it
+  ---
+  duration_ms: 0.315398
+  type: 'test'
+  ...
+# Subtest: \#1764: in the synthetic valley no squirrel runs through the water over three hours; banks change only over the bridges
+ok 25 - \#1764: in the synthetic valley no squirrel runs through the water over three hours; banks change only over the bridges
+  ---
+  duration_ms: 2747.086601
+  type: 'test'
+  ...
+# Subtest: \#1764: the real Höje å (terrain, park trees, bridges): zero ground samples in the water over four hours
+ok 26 - \#1764: the real Höje å (terrain, park trees, bridges): zero ground samples in the water over four hours # SKIP three.js is not resolvable here: Cannot find package 'three' imported from /home/devcontainers/orkester-olw-win10-gpt6-20261103/nuts/src/surroundings.js
+  ---
+  duration_ms: 45.281764
+  type: 'test'
+  ...
+# Subtest: \#1780: on the real site every squirrel starts in its own area and stays there; no grove run crosses a road or leaves its box
+ok 27 - \#1780: on the real site every squirrel starts in its own area and stays there; no grove run crosses a road or leaves its box # SKIP three.js is not resolvable here: Cannot find package 'three' imported from /home/devcontainers/orkester-olw-win10-gpt6-20261103/nuts/src/surroundings.js
+  ---
+  duration_ms: 0.438798
+  type: 'test'
+  ...
+# Subtest: \#1764: a crouching visitor with a nut across the river does not lure a squirrel into the water
+ok 28 - \#1764: a crouching visitor with a nut across the river does not lure a squirrel into the water
+  ---
+  duration_ms: 4.790086
+  type: 'test'
+  ...
+# Subtest: \#1764: a ground run that would step into the water is refused and the squirrel picks something on land
+ok 29 - \#1764: a ground run that would step into the water is refused and the squirrel picks something on land
+  ---
+  duration_ms: 0.447198
+  type: 'test'
+  ...
+# Subtest: \#1764: a follower's dead reckoning does not carry a squirrel past the bank
+ok 30 - \#1764: a follower's dead reckoning does not carry a squirrel past the bank
+  ---
+  duration_ms: 0.830798
+  type: 'test'
+  ...
+1..30
+# tests 30
+# suites 0
+# pass 27
+# fail 0
+# cancelled 0
+# skipped 3
+# todo 0
+# duration_ms 3220.997787
