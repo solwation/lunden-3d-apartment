@@ -1,0 +1,144 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "one FrontSide quad, two triangles, two native LOD levels"
+    },
+    {
+      "ok": true,
+      "label": "lettering lies above upper windows and below roof, visible outside brick facade"
+    },
+    {
+      "ok": true,
+      "label": "self-painted canvas contains turquoise title and smaller white subtitle"
+    },
+    {
+      "ok": true,
+      "label": "road: exactly one extra draw/two triangles against identical hidden-sign frame"
+    },
+    {
+      "ok": true,
+      "label": "footway: exactly one extra draw/two triangles against identical hidden-sign frame"
+    },
+    {
+      "ok": true,
+      "label": "sign-close: exactly one extra draw/two triangles against identical hidden-sign frame"
+    },
+    {
+      "ok": true,
+      "label": "native LOD hides beyond180m and restores on approach"
+    },
+    {
+      "ok": true,
+      "label": "zero page errors"
+    }
+  ],
+  "geometry": {
+    "bounds": {
+      "min": [
+        -183.7773138077235,
+        16.09249200953674,
+        -295.94922699474046
+      ],
+      "max": [
+        -177.0552694033488,
+        16.612491990463255,
+        -294.92252274345424
+      ]
+    },
+    "windowTop": 16.012491999999998,
+    "eave": 16.712492,
+    "triangles": 87714,
+    "signTriangles": 2,
+    "quads": true,
+    "side": 0,
+    "pixels": {
+      "color": 28452,
+      "white": 2601
+    },
+    "canvas": [
+      1024,
+      128
+    ],
+    "frontRayVisible": true,
+    "worldPosition": [
+      -180.41629160553614,
+      16.352491999999998,
+      -295.43587486909735
+    ],
+    "normal": [
+      -0.1509859150717512,
+      0,
+      0.9885359140921214
+    ],
+    "far": 180,
+    "lights": 9
+  },
+  "views": [
+    {
+      "name": "road",
+      "on": {
+        "calls": 24,
+        "triangles": 259150
+      },
+      "off": {
+        "calls": 23,
+        "triangles": 259148
+      },
+      "camera": [
+        -188,
+        8,
+        -265
+      ]
+    },
+    {
+      "name": "footway",
+      "on": {
+        "calls": 22,
+        "triangles": 258950
+      },
+      "off": {
+        "calls": 21,
+        "triangles": 258948
+      },
+      "camera": [
+        -181,
+        7.1,
+        -278
+      ]
+    },
+    {
+      "name": "sign-close",
+      "on": {
+        "calls": 22,
+        "triangles": 258950
+      },
+      "off": {
+        "calls": 21,
+        "triangles": 258948
+      },
+      "camera": [
+        -179,
+        11.2,
+        -280
+      ]
+    }
+  ],
+  "lod": [
+    {
+      "distance": 179,
+      "visible": true
+    },
+    {
+      "distance": 181,
+      "visible": false
+    },
+    {
+      "distance": 179,
+      "visible": true
+    }
+  ],
+  "errors": [],
+  "mode": "actual app Chromium/SwiftShader; full-quality screenshots, no FPS/hardware claim",
+  "combinedOverride": "/home/devcontainers/orkester-olw-win10-gpt6-20261103/state/1825-combined"
+}

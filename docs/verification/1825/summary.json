@@ -1,0 +1,37 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "one FrontSide quad, two triangles, two native LOD levels"
+    },
+    {
+      "ok": true,
+      "label": "lettering lies above upper windows and below roof, visible outside brick facade"
+    },
+    {
+      "ok": true,
+      "label": "self-painted canvas contains turquoise title and smaller white subtitle"
+    },
+    {
+      "ok": true,
+      "label": "road: exactly one extra draw/two triangles against identical hidden-sign frame"
+    },
+    {
+      "ok": true,
+      "label": "footway: exactly one extra draw/two triangles against identical hidden-sign frame"
+    },
+    {
+      "ok": true,
+      "label": "sign-close: exactly one extra draw/two triangles against identical hidden-sign frame"
+    },
+    {
+      "ok": true,
+      "label": "native LOD hides beyond180m and restores on approach"
+    },
+    {
+      "ok": true,
+      "label": "zero page errors"
+    }
+  ],
+  "errors": []
+}

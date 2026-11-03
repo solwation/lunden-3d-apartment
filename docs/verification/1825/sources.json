@@ -1,0 +1,10 @@
+{
+  "sign/src/nordicgymsign.js": "26f6b6ca78c647ff53e2ae19554cc0256f8bb7af72637a1d72c086b408ef5f15",
+  "sign/src/sitebackdrop.js": "0c54029e92ec4a0fc318e6a5bb672a7fccb5cf2f314bcb4265810488feadf794",
+  "sign/src/config.js": "dc35899701d35bdc0dd627dee2a8365db95d8e81a7ea929bec4401f2eaca0f48",
+  "state/1824-final-combined/nordicgym.js": "1a5dfdcb863b2c34b4bb55ab5316523e0cf84e97fa5797724e0c2698a4f24fe4",
+  "state/1824-final-combined/config.js": "e27418495a18c39033fc033a604e2ab6041b10f6d9e644f0a70fe1468151f365",
+  "state/1825-combined/nordicgym.js": "1a5dfdcb863b2c34b4bb55ab5316523e0cf84e97fa5797724e0c2698a4f24fe4",
+  "state/1825-combined/config.js": "da1ccbf2f5a4a617b560825d564275dd99e9d7a388956ced2adea548d3e6671d",
+  "sign/tools/nordicgymsigntest.cjs": "c74f9c7c6ae01f49c4173bd4deb21bb71d22568ef0d87cc6e79eb6424d81c7d5"
+}

@@ -1,0 +1,6 @@
+PASS seven road-facing panes on each of three floors
+PASS tall ground panes and square upper panes
+PASS all 21 actual panes visible outside frames (21/21)
+PASS finite geometry only in existing facade/roof/glass batches
+PASS seven unoccluded road-facing lamp washes with radial colour falloff (7/7)
+geometry triangles 2440

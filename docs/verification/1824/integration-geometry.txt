@@ -1,0 +1,12 @@
+PASS seven road panes on every floor
+PASS all front and hall panes visible outside frames/panels (26/26)
+PASS five hall panes and aligned 12 × 6 m circulation corner
+PASS seven unoccluded road-facing radial wall washes
+PASS all four entrance flights have exposed treads (10/10/9/14)
+PASS both warm globes visible through road profiles
+PASS decorative road entrance door is exposed
+PASS finite native geometry in existing facade/roof/glass lists only
+PASS existing eave and representative flat roofY/outside samples retained
+PASS all seven parking stripes visible above the rendered deck on curved terrain (7/7)
+PASS combined campus contribution 2853, recursive campus 87712 < 87800
+geometry SHA256 b34f6327b91af0c46b28a9f90a7e44a6a59eb93bd4b450d4810e73e6e31f66a8

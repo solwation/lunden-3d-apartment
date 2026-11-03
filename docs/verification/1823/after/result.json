@@ -1,0 +1,46 @@
+{
+  "road": {
+    "calls": 23,
+    "triangles": 259139,
+    "camera": [
+      -188,
+      8,
+      -265
+    ]
+  },
+  "side": {
+    "calls": 23,
+    "triangles": 259539,
+    "camera": [
+      -143,
+      8,
+      -287
+    ]
+  },
+  "entrance": {
+    "calls": 21,
+    "triangles": 258939,
+    "camera": [
+      -174,
+      7,
+      -275
+    ]
+  },
+  "geometry": {
+    "triangles": 87703,
+    "meshes": [
+      "east-facade",
+      "east-roof",
+      "east-glass",
+      "east-access",
+      "east-modern",
+      "east-modern-2",
+      "east-modern-3",
+      "east-schoolGlass",
+      "east-schoolBrick",
+      "east-schoolRoof",
+      "east-lawn"
+    ],
+    "lights": 9
+  }
+}

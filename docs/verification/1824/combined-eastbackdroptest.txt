@@ -1,0 +1,53 @@
+PASS fifteen sourced campus footprints plus the guessed low house (#1703), the four guessed volumes behind Realgymnasiet (#1732) and the Nordic Wellness gym (#1762)
+PASS OSM 88457600 replaced by its three photo-read volumes (#1732)
+PASS Sankt Thomas skola / byggnad 1 (Klockhuset): actual source polygon
+PASS Höjebroskolan / byggnad 9: actual source polygon
+PASS Förskolan Freinet / byggnad 7: actual source polygon
+PASS Komplementbyggnad 88457558: actual source polygon
+PASS Förskolan Kastanjen: actual source polygon
+PASS Kunskapsskolan / byggnad 19: actual source polygon
+PASS Östra paviljongen vid Kunskapsskolan / byggnad 19: actual source polygon
+PASS Förskolan Framtiden / byggnad 8: actual source polygon
+PASS NTI / skolan över gatan: actual source polygon
+PASS Komplementbyggnad 130578352: actual source polygon
+PASS Östra borggården, byggnad 2: actual source polygon
+PASS Realgymnasiet, Sankt Lars väg 20 (långa tegelbyggnaden): actual source polygon
+PASS Komplementbyggnad 145221568: actual source polygon
+PASS Montessorigrundskolan / byggnad 4: actual source polygon
+PASS Realgymnasiet / byggnad 88: actual source polygon
+PASS HepCat detailed bodies retained, replaced school placeholders removed
+PASS #1822: seven tall ground windows and seven square windows on each upper floor towards Sankt Lars väg
+PASS #1762 Nordic Wellness: ~69x37 m on OSM 1136415461 (fitted within 1.5 m), three storeys, flat roof, turned outline
+PASS #1762: the gym is on the east side of Sankt Lars väg (the old 1177 spot is on the west), 10+ m from the road centreline, north of WALK.z0 -200
+PASS #1756: the NTI school (88457612) is back as the classic school
+PASS the gym is one record merged into the existing batches
+FAIL original batches plus three desktop modern source groups (phone master) and one working four-face tower clock
+PASS plinths cover terrain
+PASS actual outward windows 1019/1019
+PASS school outer fronts have two windows per floor
+PASS school shallow lower arches and straight upper windows
+PASS school roof stays low above continuous cornice
+PASS 4 and 9: one-storey ward bodies with their own window rows
+PASS 4: one bounded two-storey block, 9: one storey throughout
+PASS 4 and 9: segmental ground-floor windows
+PASS 8: pavilions and centre stand above the two-storey wings
+PASS 8: six windows along the west pavilion side, two on its courtyard front (6)
+PASS 8: pediment on the courtyard centre
+PASS 88: two storeys of broad straight windows
+PASS 88: sawtooth rises inward from the outer eave (11.73 → 12.78)
+PASS 88: no glazed wall round the open court (#1744)
+PASS 88: roof falls back to the eave at the open court (10.26 vs 14.09, #1744)
+PASS 19: annex, front and three-storey block (1,2,3), two-storey east part
+PASS 19: segmental windows, paired on the top floor, also over the front roof
+PASS 2: raised pavilions and centre, segmental lower and straight upper windows
+PASS 7: raised pavilions and centre, segmental lower and straight upper windows
+PASS 1: great round-arched window on the park front
+PASS 1: clock tower with spire 14.1 m above the eave
+PASS Realgym courtyard remains actually open through roof/body
+PASS brick texture reused from existing surrounding masonry
+PASS park rows/groves clear of houses and access: 98
+PASS five actual mapped trees distinguished from aerial-interpreted rows
+PASS walking boundary unchanged
+PASS campus geometry budget: 87703 triangles
+PASS phone campus detail: same windows, eaves, ridges and tower, 22979 of 56558 triangles
+SOME FAILED

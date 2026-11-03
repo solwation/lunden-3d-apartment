@@ -1,0 +1,12 @@
+PASS seven road panes on every floor
+PASS all front and hall panes visible outside frames/panels (26/26)
+PASS five hall panes and aligned 12 × 6 m circulation corner
+PASS seven unoccluded road-facing radial wall washes
+PASS all four entrance flights have exposed treads (10/10/9/14)
+PASS both warm globes visible through road profiles
+PASS decorative road entrance door is exposed
+PASS finite native geometry in existing facade/roof/glass lists only
+PASS existing eave and representative flat roofY/outside samples retained
+PASS combined campus contribution 2844, recursive campus 87703 < 87800
+geometry SHA256 b8036d92fd31cce02630397c8651bfcf1cd552d61871e3f2f808c73be8c52d61
+PASS configuration-only offset centralisation preserves all emitted position/normal/colour bytes

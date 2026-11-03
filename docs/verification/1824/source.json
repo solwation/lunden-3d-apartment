@@ -1,0 +1,41 @@
+{
+  "baseline": "042cf8f4c52447a70be4e4b5f8fb200aaf83c807",
+  "sourceSha256": {
+    "src/nordicgym.js": "2fec6179e4da87b3dbcef4e19b1b9d4d6bc4caa014250a60e53026d48fd32f64",
+    "src/config.js": "5e8fb30608970f2519d7059e2bb6d762047651b75f61c3a0044614f73c61ec4c",
+    "src/sitebackdrop.js": "d14851b1fd69596ac3b88a1a85f2d69070cc92166449b9aad864c0309096addb",
+    "tools/nordicgymtest.mjs": "ffe7a791014e2c6b5497618069c2aa6a9c4e9f58399373944c67e82e5dcd38c6",
+    "/home/devcontainers/orkester-olw-win10-gpt6-20261103/state/1823-combined/nordicgym.js": "32a8d4e36fe28263f25c71fb0eed8239c38e9321cad75380f7cffc4bd9e05bb8",
+    "/home/devcontainers/orkester-olw-win10-gpt6-20261103/state/1823-combined/config.js": "50a76b09c751c422b70d7d5e73b7d1eefc7f71e38d7fc2a8118ad4cb36524336",
+    "/home/devcontainers/orkester-olw-win10-gpt6-20261103/state/1824-final-combined/nordicgym.js": "1a5dfdcb863b2c34b4bb55ab5316523e0cf84e97fa5797724e0c2698a4f24fe4",
+    "/home/devcontainers/orkester-olw-win10-gpt6-20261103/state/1824-final-combined/config.js": "e27418495a18c39033fc033a604e2ab6041b10f6d9e644f0a70fe1468151f365",
+    "/home/devcontainers/orkester-olw-win10-gpt6-20261103/nordicgym-hall-before.js": "d38d769cb380b2dec6889dfd928401defd25615856ed15cfc8bf1adcf5f9e831",
+    "/home/devcontainers/orkester-olw-win10-gpt6-20261103/config-hall-before.js": "289ee0259fe7e19128f8a247f60c794979052d56a25ff647865923e19898864b"
+  },
+  "composition": "Hall body/loops/model.hall from this issue plus supplied #1823 glass block/model.glass. src/sitebackdrop.js passes actual rendered ground. Final own source differs from capture module only in an explanatory cars comment.",
+  "combinedGeometrySha256": "b34f6327b91af0c46b28a9f90a7e44a6a59eb93bd4b450d4810e73e6e31f66a8",
+  "checks": {
+    "component": "PASS all 11 checks, including curved-terrain paint exposure",
+    "fullCampus": "51 PASS / one retained baseline batch-count FAIL #1833; before final nine paint triangles",
+    "syntax": "PASS",
+    "diffWhitespace": "PASS"
+  },
+  "captureScopes": {
+    "side": "Combined source before final rear paint correction. Front/hall/entrance unaffected by correction.",
+    "rear": "Final split paint source",
+    "parking": "Final split paint source close view",
+    "glass": "Reused #1823 source-bound evidence; glass geometry unchanged by final rear paint correction."
+  },
+  "budget": {
+    "gymContribution": 2853,
+    "recursiveCampus": 87712,
+    "ceiling": 87800,
+    "remaining": 88
+  },
+  "limitations": [
+    "Headless Chromium/SwiftShader only",
+    "No physical device or hardware-performance claim",
+    "Car models omitted",
+    "Single full campus harness known baseline count failure tracked separately"
+  ]
+}
