@@ -1,0 +1,41 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "all 51 configured grass spots clear actual farWalls/trees/roads/paths with flat stand/approach"
+    },
+    {
+      "ok": true,
+      "label": "first actual bullseye credits 40 unchanged board points"
+    },
+    {
+      "ok": true,
+      "label": "second bullseye crosses the 50-point relocation threshold"
+    },
+    {
+      "ok": true,
+      "label": "board sinks at original location before changing position"
+    },
+    {
+      "ok": true,
+      "label": "both actual Target/Ghosts clients show identical authoritative position and rotation"
+    },
+    {
+      "ok": true,
+      "label": "new stand follows groundY, moves 45–55m, local scoreboard retains all 50 points"
+    },
+    {
+      "ok": true,
+      "label": "late join applies current state quietly without flashing original position"
+    },
+    {
+      "ok": true,
+      "label": "disconnected target uses the same local relocation rule"
+    },
+    {
+      "ok": true,
+      "label": "zero page errors"
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: the Worker deploy workflow triggers on every src/ file the Worker imports
+ok 1 - the Worker deploy workflow triggers on every src/ file the Worker imports
+  ---
+  duration_ms: 18.015566
+  type: 'test'
+  ...
+# Subtest: every candidate is a configured valid spot at 45–55 m, faces shooter; no choices falls back
+ok 2 - every candidate is a configured valid spot at 45–55 m, faces shooter; no choices falls back
+  ---
+  duration_ms: 8.524131
+  type: 'test'
+  ...
+# Subtest: 50 points trigger once, excess does not trigger a second move; offline and network replica
+ok 3 - 50 points trigger once, excess does not trigger a second move; offline and network replica
+  ---
+  duration_ms: 0.669102
+  type: 'test'
+  ...
+# Subtest: hit validator rejects spoofed positions, points, revisions and sequence; room deduplicates and limits
+ok 4 - hit validator rejects spoofed positions, points, revisions and sequence; room deduplicates and limits
+  ---
+  duration_ms: 0.703003
+  type: 'test'
+  ...
+# Subtest: real Worker room broadcasts identical state, welcomes a late joiner and resets an empty room
+ok 5 - real Worker room broadcasts identical state, welcomes a late joiner and resets an empty room
+  ---
+  duration_ms: 379.269373
+  type: 'test'
+  ...
+# Subtest: a single perfect shot (10 x 4 = 40 target points) gives a few game points
+ok 6 - a single perfect shot (10 x 4 = 40 target points) gives a few game points
+  ---
+  duration_ms: 3.345012
+  type: 'test'
+  ...
+# Subtest: a minute of rifle fire (a hit every 0.25 s, best rings) gives at most the daily cap
+ok 7 - a minute of rifle fire (a hit every 0.25 s, best rings) gives at most the daily cap
+  ---
+  duration_ms: 0.580802
+  type: 'test'
+  ...
+# Subtest: the cap resets on a new local day and an old save converts once, capped
+ok 8 - the cap resets on a new local day and an old save converts once, capped
+  ---
+  duration_ms: 0.471602
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 582.443408

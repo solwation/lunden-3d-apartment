@@ -1,0 +1,142 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "all 51 configured grass spots clear actual farWalls/trees/roads/paths with flat stand/approach"
+    },
+    {
+      "ok": true,
+      "label": "first actual bullseye credits 40 unchanged board points"
+    },
+    {
+      "ok": true,
+      "label": "second bullseye crosses the 50-point relocation threshold"
+    },
+    {
+      "ok": true,
+      "label": "board sinks at original location before changing position"
+    },
+    {
+      "ok": true,
+      "label": "both actual Target/Ghosts clients show identical authoritative position and rotation"
+    },
+    {
+      "ok": true,
+      "label": "new stand follows groundY, moves 45\u201355m, local scoreboard retains all 50 points"
+    },
+    {
+      "ok": true,
+      "label": "late join applies current state quietly without flashing original position"
+    },
+    {
+      "ok": true,
+      "label": "disconnected target uses the same local relocation rule"
+    }
+  ],
+  "scan": {
+    "spots": 51,
+    "minClear": 4.456520649158815,
+    "maxRelief": 0.062290037714911595,
+    "trees": 507
+  },
+  "before": {
+    "state": {
+      "x": 12.45,
+      "z": 25.7,
+      "rot": 1.5707963267948966,
+      "points": 0,
+      "v": 0
+    },
+    "actual": [
+      12.45,
+      0,
+      25.7
+    ],
+    "calls": 77,
+    "triangles": 457862,
+    "camera": [
+      7.449999999999999,
+      2.1,
+      25.7
+    ]
+  },
+  "sinking": {
+    "pending": true,
+    "y": -0.9498948006116453,
+    "k": 0.5,
+    "x": 12.45,
+    "z": 25.7
+  },
+  "moved": {
+    "state": {
+      "x": -4,
+      "z": 70,
+      "rot": -0.3355683469720042,
+      "points": 0,
+      "v": 1
+    },
+    "pos": [
+      -4,
+      -3,
+      70
+    ],
+    "ground": -3,
+    "score": 50
+  },
+  "peer": {
+    "state": {
+      "x": -4,
+      "z": 70,
+      "rot": -0.3355683469720042,
+      "points": 0,
+      "v": 1
+    },
+    "pos": [
+      -4,
+      -3,
+      70
+    ]
+  },
+  "late": {
+    "state": {
+      "x": -4,
+      "z": 70,
+      "rot": -0.3355683469720042,
+      "points": 0,
+      "v": 1
+    },
+    "pos": [
+      -4,
+      -3,
+      70
+    ],
+    "pending": false
+  },
+  "close": {
+    "state": {
+      "x": -4,
+      "z": 70,
+      "rot": -0.3355683469720042,
+      "points": 0,
+      "v": 1
+    },
+    "actual": [
+      -4,
+      -3,
+      70
+    ],
+    "calls": 82,
+    "triangles": 548707,
+    "camera": [
+      -2.353470652572045,
+      -0.8999999999999999,
+      65.27888348925188
+    ]
+  },
+  "errors": [],
+  "mode": "Chromium/SwiftShader component, actual surroundings and Ghosts/local PlayerRoom; apartment bootstrap suppressed",
+  "limitations": [
+    "No apartment bootstrap or physical device performance test.",
+    "Initial attempted overview camera [5,2,25.7] was behind House A; that image was removed after review. Stand/approach clearance does not prove uninterrupted line of sight from the old shooter."
+  ]
+}

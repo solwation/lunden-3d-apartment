@@ -1,0 +1,11 @@
+{
+  "src/target.js": "b4d3bb8b757473ef3e242010a36112de157e4ac28a467dade187bbd639f77ec6",
+  "src/targetmove.js": "22ff815e40cd5583068a0a93642ac5f9208b7255d18f0593c15112709ca3865c",
+  "src/config.js": "45c2f459461f5086516fe1e4adcb6504d67291d580759350e44c9e68969ca891",
+  "src/ghosts.js": "357eab2a86573d37cca782e5b94e690ce87fdea6d5676c9f26752e0d4a794148",
+  "src/main.js": "c96f14b5d5b0cadf8086b2ce941ce06fb665e35e54d9d794f5838d6f38bd6ee3",
+  "cloudflare/target.js": "e613a5907e6aeda5158042b7d1dde25d3877a4ffef667a01bae4575e5613779c",
+  "cloudflare/players.js": "c80c8fbf06277878f915d19eec731bcb20a3944d28ec8dc4910694bb344d54e9",
+  "tools/targetmovebrowser.cjs": "8974b7bef1de3f5a5426ae0b4ee473d7c01fd71bb0cb0fd44fc8c9aac603c4fe",
+  "tools/targetmovetest.mjs": "15b12fdf82a2a17c29daa9b99018b166498359a4894b2d57597727d729f378be"
+}
