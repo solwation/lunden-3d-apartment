@@ -1,0 +1,1 @@
+{"result":{"type":"object","value":{"pass":true,"checks":["native recovered E after real focus frame: both clients accepted jack","native touch first boule on A","native touch opposing team in real Room client B","same final seven objects, turn, score and real other Ghost"]}}}

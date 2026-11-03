@@ -2168,7 +2168,7 @@ code transfer or gameplay import.
 
 ## Courtyard pétanque (#1370)
 
-`src/boule.js` adds a local pétanque game to the courtyard's boule court (`COURTYARD.boule`, *guess*). It is built in
+`src/boule.js` adds a pétanque game to the courtyard's boule court (`COURTYARD.boule`, *guess*). It is built in
 `world.js` beside the courtyard (`world.boule`; the lectern's foot joins the outdoor collision) and wired in `main.js`
 like the playroom billiards: standing in the throwing circle at the court's north end, the gravel is focusable across
 the court (`BOULE.reach`, an extra raycast only when near the court) as kind `boule`; E / the touch action button throws
@@ -2177,7 +2177,7 @@ distance-scaled scatter) and rolls on; E after a scored mène collects the boule
 carries one canvas scoreboard (sides, points, mène, whose turn, boules left, message, winner) with two real pickable
 buttons, `bouleMene` ("Ny omgång": restart the mène, points kept) and `bouleGame` ("Nytt parti": 0–0). Three visible
 draws (lectern + circle, seven instanced spheres, the board), no lights; hidden and frozen beyond `BOULE.near`.
-Landings and impacts reuse `sfx.billiard`. Local only: no shared/multiplayer state.
+Offline landings and impacts reuse `sfx.billiard`. When connected, `BouleClient` waits for the shared room’s accepted revision before replaying the throw; both sides see the same jack, boules, turn and result. A live opponent owns their side; alone, one player can still play both sides. The physical lectern and E/touch controls are unchanged. During a throw/reply, wait for the objects to rest. Loss of the shared connection freezes the shared game until reconnect; cloud-disabled visits retain local play. Protocol and rollout: [storage](storage.md#shared-courtyard-boule-1854).
 
 `src/boulephysics.js` is renderer-free: constant gravel deceleration, mass-weighted boule/jack collisions, a weak timber
 edge rebound and landing clamped into the court. `src/boulerules.js` is renderer-free pétanque for two sides of three

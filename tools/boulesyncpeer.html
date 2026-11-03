@@ -1,0 +1,14 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Lokal bouleklient B</title>
+<style>body{margin:0;background:#233b32;color:white;font:14px system-ui}header{padding:7px}canvas{display:block;width:100%;height:240px}button{padding:9px;margin:5px}#status{padding:6px}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<header>Klient B · riktig lokal PlayerRoom · samma bana</header><canvas></canvas><button id="throw">Kasta på banan</button><span id="status"></span>
+<script type="module">
+import * as T from 'three';import{Boule}from'../src/boule.js';import{BouleClient}from'../src/bouleclient.js';
+const renderer=new T.WebGLRenderer({canvas:document.querySelector('canvas'),antialias:true});renderer.setSize(420,240,false);renderer.setPixelRatio(1);const scene=new T.Scene();scene.background=new T.Color('#a9bec1');scene.add(new T.HemisphereLight(0xffffff,0x665544,3));const camera=new T.PerspectiveCamera(55,420/240,.1,100);camera.position.set(-39,4,19);camera.lookAt(-34.6,0,24.6);const b=new Boule();scene.add(b.object);const floor=new T.Mesh(new T.PlaneGeometry(3.2,8.8).rotateX(-Math.PI/2),new T.MeshStandardMaterial({color:0xbdaa7c}));floor.position.set(-34.8,.025,24.4);scene.add(floor);
+const got=[],socket=new WebSocket((new URLSearchParams(location.search).get('worker')||'ws://localhost:8935')+'/players?n=Boule%20lokalt%20B');let queue=[];const net={connected:false,camera,boule:m=>{if(!net.connected)return false;queue.push(m);return true;}},client=new BouleClient(b,net);
+socket.onmessage=e=>{if(e.data==='q')return;const m=JSON.parse(e.data);got.push(m);if(m.t==='w'){net.connected=true;net.me=m.i;net.onWelcome(m);}else if(m.t==='bl')net.onBoule(m);};socket.onclose=()=>net.connected=false;
+let last=0;setInterval(()=>{if(!net.connected)return;socket.send(JSON.stringify(queue.shift()??{p:window.peer?.position??[b.circle.x+.15,0,b.circle.z+.1],r:0,score:0}));},200);
+document.querySelector('#throw').onclick=()=>{const eye={position:new T.Vector3(b.circle.x+.15,1.62,b.circle.z+.1)};document.querySelector('#status').textContent=b.throw(eye,new T.Vector3(b.circle.x+.1,.03,26.3));};
+function frame(t){b.update(Math.min(.05,(t-last)/1000));last=t;renderer.render(scene,camera);document.querySelector('#status').textContent=`rev ${client.q} · ${b.rules.message}`;requestAnimationFrame(frame);}requestAnimationFrame(frame);
+window.peer={b,client,net,socket,got,renderer,scene,camera};
+</script></html>

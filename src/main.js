@@ -1,3 +1,4 @@
+import { BouleClient } from './bouleclient.js';
 import { OUTDOOR } from './config.js';
 import { finishStartupCaches } from './startupcache.js';
 import { DanceTime } from './dancescore.js';
@@ -3111,6 +3112,7 @@ ghosts.onNotice = (text) => badge(text, false);
 const timeSync = new TimeSync({ day, net: { ready: () => ghosts.connected, send: (m) => ghosts.time(m) }, notice: (text) => badge(text, false), disabled: ['time', 'month', 'day', 'year', 'freeze', 'notimesync'].some((k) => params0.has(k)), onApply: () => { clockPanel.render(); wallClock.update(day.hour); } });
 ghosts.onTime = (m, who) => timeSync.receive(m, who);
 clockPanel.onChange = calPanel.onChange = () => timeSync.local();
+const bouleSync = new BouleClient(world.boule, ghosts); // #1854: capability/ACK before shared actions
 playroom.billiards.net = { ready: () => ghosts.connected, send: (m) => ghosts.pool(m), id: () => ghosts.me, name: id => id===ghosts.me?ghosts.name():ghosts.others.get(id)?.name }; // #1355/#1495: shared table, wall-screen names
 ghosts.onPool = (m) => playroom.billiards.onNet(m);
 const graffitiSync = new GraffitiSync(graffiti, { ready: () => ghosts.connected, send: (m) => ghosts.graffiti(m), me: () => ghosts.me }); // #1724: the spray paint shared by gossip
@@ -3148,7 +3150,7 @@ tvMedia.connect(cinema.net);
 computerHub.connect({...cinema.net,snake:m=>ghosts.snake(m)});
 ghosts.onSnake=m=>computerHub.receiveSnake(m);
 ghosts.onCinema = m => m.screen?(computerHub.receive(m)||tvMedia.receive(m)):cinema.receive(m);
-ghosts.keepConnected = () => (player.inPlayroom && !!cinema.state?.video)||tvMedia.watching||computerHub.watching||fishing.state !== 'idle'; // (#1753: an angler waiting for a bite stands still for minutes; the others keep seeing the float)
+ghosts.keepConnected = () => (player.inPlayroom && !!cinema.state?.video)||tvMedia.watching||computerHub.watching||fishing.state !== 'idle'||bouleSync.interest; // (#1753: an angler waiting for a bite stands still for minutes; the others keep seeing the float)
 // toasting (#1222): "Skåla" with a glass in the hand (right click / 🥂): a clink, the glass raised (things.js), a line and one small
 // message; a player near us who holds a glass hears it and toasts back once (flagged, so no ping-pong); Olof answers from his car.
 toastHandler.fn = (glass, back = false) => {

@@ -1,0 +1,242 @@
+{
+  "error": "page.waitForFunction: Timeout 10000ms exceeded.\n    at /home/devcontainers/orkester-olw-win10-gpt6-20261103/boule-sync/tools/boulesyncbrowser.cjs:6:613",
+  "data": {
+    "focused": "boule",
+    "pos": [
+      -34.8,
+      0,
+      20.7
+    ],
+    "q": 0,
+    "pending": 0,
+    "message": "Nytt parti: Lag 1 kastar lillen",
+    "action": "",
+    "peer": [
+      {
+        "t": "w",
+        "boule": {
+          "v": 1,
+          "e": {
+            "q": 0,
+            "rules": {
+              "balls": 3,
+              "target": 13,
+              "scores": [
+                0,
+                0
+              ],
+              "mene": 1,
+              "jackTeam": 0,
+              "over": false,
+              "winner": null,
+              "last": null,
+              "phase": "jack",
+              "turn": 0,
+              "left": [
+                3,
+                3
+              ],
+              "lastTeam": null,
+              "message": "Nytt parti: Lag 1 kastar lillen"
+            },
+            "objects": [
+              {
+                "id": 0,
+                "team": -1,
+                "r": 0.015,
+                "m": 0.015,
+                "x": 0,
+                "z": 0,
+                "vx": 0,
+                "vz": 0,
+                "active": false
+              },
+              {
+                "id": 1,
+                "team": 0,
+                "r": 0.0375,
+                "m": 0.7,
+                "x": 0,
+                "z": 0,
+                "vx": 0,
+                "vz": 0,
+                "active": false
+              },
+              {
+                "id": 2,
+                "team": 1,
+                "r": 0.0375,
+                "m": 0.7,
+                "x": 0,
+                "z": 0,
+                "vx": 0,
+                "vz": 0,
+                "active": false
+              },
+              {
+                "id": 3,
+                "team": 0,
+                "r": 0.0375,
+                "m": 0.7,
+                "x": 0,
+                "z": 0,
+                "vx": 0,
+                "vz": 0,
+                "active": false
+              },
+              {
+                "id": 4,
+                "team": 1,
+                "r": 0.0375,
+                "m": 0.7,
+                "x": 0,
+                "z": 0,
+                "vx": 0,
+                "vz": 0,
+                "active": false
+              },
+              {
+                "id": 5,
+                "team": 0,
+                "r": 0.0375,
+                "m": 0.7,
+                "x": 0,
+                "z": 0,
+                "vx": 0,
+                "vz": 0,
+                "active": false
+              },
+              {
+                "id": 6,
+                "team": 1,
+                "r": 0.0375,
+                "m": 0.7,
+                "x": 0,
+                "z": 0,
+                "vx": 0,
+                "vz": 0,
+                "active": false
+              }
+            ]
+          },
+          "seats": [
+            null,
+            null
+          ]
+        },
+        "target": {
+          "t": "tg",
+          "x": 12.45,
+          "z": 25.7,
+          "rot": 1.5707963267948966,
+          "points": 0,
+          "v": 0
+        },
+        "i": "80e3792e",
+        "l": 10,
+        "ps": [],
+        "c": {
+          "lives": 10,
+          "portionLife": 1,
+          "weapons": {
+            "saber": {
+              "range": 2.5,
+              "every": 0.5
+            },
+            "nerf": {
+              "range": 25,
+              "every": 0.4
+            },
+            "wand": {
+              "range": 12,
+              "every": 0.6
+            },
+            "rifle": {
+              "range": 40,
+              "every": 0.25
+            },
+            "ball": {
+              "range": 10,
+              "every": 1
+            },
+            "bow": {
+              "range": 60,
+              "every": 0.6
+            },
+            "web": {
+              "range": 30,
+              "every": 0.6
+            }
+          }
+        },
+        "trails": {
+          "k": [
+            [
+              1,
+              -34.8,
+              0,
+              20.7,
+              100
+            ],
+            [
+              2,
+              -34.6,
+              0,
+              20.8,
+              100
+            ]
+          ]
+        }
+      },
+      {
+        "t": "gf",
+        "w": 1,
+        "s": []
+      },
+      {
+        "t": "j",
+        "i": "1b9287dd",
+        "n": "Boule lokalt A",
+        "l": 10
+      },
+      {
+        "t": "s",
+        "i": "1b9287dd",
+        "look": [
+          0,
+          -0.28
+        ],
+        "p": [
+          -34.8,
+          0,
+          20.7
+        ],
+        "r": -3.14,
+        "score": 0,
+        "h": "",
+        "av": "374320110",
+        "ax": "d1s4",
+        "l": 10
+      },
+      {
+        "t": "s",
+        "i": "1b9287dd",
+        "look": [
+          0,
+          -0.28
+        ],
+        "p": [
+          -34.8,
+          0,
+          20.7
+        ],
+        "r": -3.14,
+        "score": 0,
+        "h": "",
+        "av": "374320110",
+        "ax": "d1s4",
+        "l": 10
+      }
+    ]
+  }
+}

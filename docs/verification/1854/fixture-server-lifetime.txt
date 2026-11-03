@@ -1,0 +1,6 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+page.goto: Timeout 30000ms exceeded.
+Call log:
+[2m  - navigating to "http://localhost:8925/?test=lazy&cloud=http://localhost:8935&at=-34.8,0,20.7,3.14159&time=12&month=6&freeze&weather=clear", waiting until "commit"[22m
+
+    at /home/devcontainers/orkester-olw-win10-gpt6-20261103/boule-sync/tools/boulesyncbrowser.cjs:3:12

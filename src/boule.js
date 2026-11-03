@@ -10,7 +10,7 @@ import { sfx } from './audio.js';
 // jack or the next boule flies to just short of the aimed spot and rolls on (BoulePhysics); BouleRules keeps turns and
 // points to 13. A lectern (pulpet) east of the court carries one canvas scoreboard with two real buttons ("Ny omgång",
 // "Nytt parti"). Three visible draws (lectern + circle, instanced boules + jack, the board); no lights or textures
-// beyond the board's canvas; the group is hidden and frozen beyond BOULE.near. Local only, no network.
+// beyond the board's canvas; the group is hidden and frozen beyond BOULE.near. Shared through the room when connected; offline stays local.
 const STEEL = 0xc4c9cf, BRONZE = 0xa8703f, JACK = 0xf0ad2c, TEAM_CSS = ['#c4c9cf', '#c98a4f'];
 function paint(g, hex) {
   g = g.index ? g.toNonIndexed() : g;
@@ -75,11 +75,12 @@ export class Boule {
   /** Collect everything from the court (boules back in the hand). */
   clear() { this.physics.reset(); this.flight = null; this.settling = null; this.rotations.forEach((q) => q.identity()); this.dirty = true; }
   /** "Ny omgång" on the board. */
-  newMene() { this.clear(); return this.rules.restartMene(); }
+  newMene() { if (this.net?.managed) return this.net.command('m'); this.clear(); return this.rules.restartMene(); }
   /** "Nytt parti" on the board. */
-  newGame() { this.clear(); this.rules.reset(); this.dirty = true; return this.rules.message; }
+  newGame() { if (this.net?.managed) return this.net.command('r'); this.clear(); this.rules.reset(); this.dirty = true; return this.rules.message; }
   /** E on the court: throw the jack or the next boule at `point` (the aimed spot on the gravel). Returns text to show. */
   throw(camera, point) {
+    if (this.net?.managed) return this.net.command('t', camera, point);
     const r = this.rules, next = r.next;
     if (next === null) return 'Partiet är slut – välj Nytt parti på pulpeten';
     if (this.busy) return 'Vänta tills klotet ligger still';
@@ -116,10 +117,20 @@ export class Boule {
   }
   /** Per frame: `playerPos` decides whether the court is drawn and simulated at all. */
   update(dt, playerPos) {
+    this.net?.update();
     const k = this.court, cx = (k.x0 + k.x1) / 2, cz = (k.z0 + k.z1) / 2;
     this.active = !playerPos || Math.hypot(playerPos.x - cx, playerPos.z - cz) < B.near;
     this.object.visible = this.active;
     if (!this.active) return;
+    if (this.net?.managed) {
+      (this.sharedFrame ?? []).forEach((o, i) => {
+        this.pos.set(o.x, o.y, o.z); this.scale.setScalar(o.active ? o.r : 0);
+        this.mesh.setMatrixAt(i, this.matrix.compose(this.pos, this.rotations[i], this.scale));
+      });
+      this.mesh.instanceMatrix.needsUpdate = true;
+      if (this.dirty) this.drawBoard();
+      return;
+    }
     const f = this.flight;
     if (f) {
       f.t += dt;

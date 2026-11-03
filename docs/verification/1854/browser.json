@@ -1,0 +1,471 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "native recovered E after real focus frame: both clients accepted jack",
+      "data": {
+        "q": 1,
+        "peer": 1
+      }
+    },
+    {
+      "ok": true,
+      "label": "native touch first boule on A",
+      "data": {
+        "q": 2,
+        "turn": 1
+      }
+    },
+    {
+      "ok": true,
+      "label": "native touch opposing team in real Room client B",
+      "data": {
+        "q": 3,
+        "peer": 3
+      }
+    },
+    {
+      "ok": true,
+      "label": "same final seven objects, turn, score and real other Ghost",
+      "data": {
+        "a": {
+          "q": 7,
+          "rules": {
+            "balls": 3,
+            "target": 13,
+            "scores": [
+              1,
+              0
+            ],
+            "mene": 1,
+            "jackTeam": 0,
+            "over": false,
+            "winner": null,
+            "last": {
+              "team": 0,
+              "points": 1,
+              "mene": 1
+            },
+            "phase": "done",
+            "turn": 0,
+            "left": [
+              0,
+              0
+            ],
+            "lastTeam": 0,
+            "message": "Omgång 1: Lag 1 får 1 poäng"
+          },
+          "objects": [
+            {
+              "id": 0,
+              "team": -1,
+              "r": 0.015,
+              "m": 0.015,
+              "x": -35.06211322719626,
+              "z": 26.21605364815608,
+              "vx": 0,
+              "vz": 0,
+              "active": true
+            },
+            {
+              "id": 1,
+              "team": 0,
+              "r": 0.0375,
+              "m": 0.7,
+              "x": -34.918000845197454,
+              "z": 26.213490886095826,
+              "vx": 0,
+              "vz": 0,
+              "active": true
+            },
+            {
+              "id": 2,
+              "team": 1,
+              "r": 0.0375,
+              "m": 0.7,
+              "x": -34.78308658505771,
+              "z": 26.372782233434997,
+              "vx": 0,
+              "vz": 0,
+              "active": true
+            },
+            {
+              "id": 3,
+              "team": 0,
+              "r": 0.0375,
+              "m": 0.7,
+              "x": -34.578728999041516,
+              "z": 25.964920393922473,
+              "vx": 0,
+              "vz": 0,
+              "active": true
+            },
+            {
+              "id": 4,
+              "team": 1,
+              "r": 0.0375,
+              "m": 0.7,
+              "x": -34.90429317308214,
+              "z": 25.894345389785258,
+              "vx": 0,
+              "vz": 0,
+              "active": true
+            },
+            {
+              "id": 5,
+              "team": 0,
+              "r": 0.0375,
+              "m": 0.7,
+              "x": -34.73290682508711,
+              "z": 25.885114681848098,
+              "vx": 0,
+              "vz": 0,
+              "active": true
+            },
+            {
+              "id": 6,
+              "team": 1,
+              "r": 0.0375,
+              "m": 0.7,
+              "x": -34.676112345407304,
+              "z": 26.10290825047552,
+              "vx": 0,
+              "vz": 0,
+              "active": true
+            }
+          ]
+        },
+        "b": {
+          "q": 7,
+          "rules": {
+            "balls": 3,
+            "target": 13,
+            "scores": [
+              1,
+              0
+            ],
+            "mene": 1,
+            "jackTeam": 0,
+            "over": false,
+            "winner": null,
+            "last": {
+              "team": 0,
+              "points": 1,
+              "mene": 1
+            },
+            "phase": "done",
+            "turn": 0,
+            "left": [
+              0,
+              0
+            ],
+            "lastTeam": 0,
+            "message": "Omgång 1: Lag 1 får 1 poäng"
+          },
+          "objects": [
+            {
+              "id": 0,
+              "team": -1,
+              "r": 0.015,
+              "m": 0.015,
+              "x": -35.06211322719626,
+              "z": 26.21605364815608,
+              "vx": 0,
+              "vz": 0,
+              "active": true
+            },
+            {
+              "id": 1,
+              "team": 0,
+              "r": 0.0375,
+              "m": 0.7,
+              "x": -34.918000845197454,
+              "z": 26.213490886095826,
+              "vx": 0,
+              "vz": 0,
+              "active": true
+            },
+            {
+              "id": 2,
+              "team": 1,
+              "r": 0.0375,
+              "m": 0.7,
+              "x": -34.78308658505771,
+              "z": 26.372782233434997,
+              "vx": 0,
+              "vz": 0,
+              "active": true
+            },
+            {
+              "id": 3,
+              "team": 0,
+              "r": 0.0375,
+              "m": 0.7,
+              "x": -34.578728999041516,
+              "z": 25.964920393922473,
+              "vx": 0,
+              "vz": 0,
+              "active": true
+            },
+            {
+              "id": 4,
+              "team": 1,
+              "r": 0.0375,
+              "m": 0.7,
+              "x": -34.90429317308214,
+              "z": 25.894345389785258,
+              "vx": 0,
+              "vz": 0,
+              "active": true
+            },
+            {
+              "id": 5,
+              "team": 0,
+              "r": 0.0375,
+              "m": 0.7,
+              "x": -34.73290682508711,
+              "z": 25.885114681848098,
+              "vx": 0,
+              "vz": 0,
+              "active": true
+            },
+            {
+              "id": 6,
+              "team": 1,
+              "r": 0.0375,
+              "m": 0.7,
+              "x": -34.676112345407304,
+              "z": 26.10290825047552,
+              "vx": 0,
+              "vz": 0,
+              "active": true
+            }
+          ]
+        },
+        "peers": 1,
+        "draws": 3,
+        "lights": 0
+      }
+    }
+  ],
+  "result": {
+    "a": {
+      "q": 7,
+      "rules": {
+        "balls": 3,
+        "target": 13,
+        "scores": [
+          1,
+          0
+        ],
+        "mene": 1,
+        "jackTeam": 0,
+        "over": false,
+        "winner": null,
+        "last": {
+          "team": 0,
+          "points": 1,
+          "mene": 1
+        },
+        "phase": "done",
+        "turn": 0,
+        "left": [
+          0,
+          0
+        ],
+        "lastTeam": 0,
+        "message": "Omgång 1: Lag 1 får 1 poäng"
+      },
+      "objects": [
+        {
+          "id": 0,
+          "team": -1,
+          "r": 0.015,
+          "m": 0.015,
+          "x": -35.06211322719626,
+          "z": 26.21605364815608,
+          "vx": 0,
+          "vz": 0,
+          "active": true
+        },
+        {
+          "id": 1,
+          "team": 0,
+          "r": 0.0375,
+          "m": 0.7,
+          "x": -34.918000845197454,
+          "z": 26.213490886095826,
+          "vx": 0,
+          "vz": 0,
+          "active": true
+        },
+        {
+          "id": 2,
+          "team": 1,
+          "r": 0.0375,
+          "m": 0.7,
+          "x": -34.78308658505771,
+          "z": 26.372782233434997,
+          "vx": 0,
+          "vz": 0,
+          "active": true
+        },
+        {
+          "id": 3,
+          "team": 0,
+          "r": 0.0375,
+          "m": 0.7,
+          "x": -34.578728999041516,
+          "z": 25.964920393922473,
+          "vx": 0,
+          "vz": 0,
+          "active": true
+        },
+        {
+          "id": 4,
+          "team": 1,
+          "r": 0.0375,
+          "m": 0.7,
+          "x": -34.90429317308214,
+          "z": 25.894345389785258,
+          "vx": 0,
+          "vz": 0,
+          "active": true
+        },
+        {
+          "id": 5,
+          "team": 0,
+          "r": 0.0375,
+          "m": 0.7,
+          "x": -34.73290682508711,
+          "z": 25.885114681848098,
+          "vx": 0,
+          "vz": 0,
+          "active": true
+        },
+        {
+          "id": 6,
+          "team": 1,
+          "r": 0.0375,
+          "m": 0.7,
+          "x": -34.676112345407304,
+          "z": 26.10290825047552,
+          "vx": 0,
+          "vz": 0,
+          "active": true
+        }
+      ]
+    },
+    "b": {
+      "q": 7,
+      "rules": {
+        "balls": 3,
+        "target": 13,
+        "scores": [
+          1,
+          0
+        ],
+        "mene": 1,
+        "jackTeam": 0,
+        "over": false,
+        "winner": null,
+        "last": {
+          "team": 0,
+          "points": 1,
+          "mene": 1
+        },
+        "phase": "done",
+        "turn": 0,
+        "left": [
+          0,
+          0
+        ],
+        "lastTeam": 0,
+        "message": "Omgång 1: Lag 1 får 1 poäng"
+      },
+      "objects": [
+        {
+          "id": 0,
+          "team": -1,
+          "r": 0.015,
+          "m": 0.015,
+          "x": -35.06211322719626,
+          "z": 26.21605364815608,
+          "vx": 0,
+          "vz": 0,
+          "active": true
+        },
+        {
+          "id": 1,
+          "team": 0,
+          "r": 0.0375,
+          "m": 0.7,
+          "x": -34.918000845197454,
+          "z": 26.213490886095826,
+          "vx": 0,
+          "vz": 0,
+          "active": true
+        },
+        {
+          "id": 2,
+          "team": 1,
+          "r": 0.0375,
+          "m": 0.7,
+          "x": -34.78308658505771,
+          "z": 26.372782233434997,
+          "vx": 0,
+          "vz": 0,
+          "active": true
+        },
+        {
+          "id": 3,
+          "team": 0,
+          "r": 0.0375,
+          "m": 0.7,
+          "x": -34.578728999041516,
+          "z": 25.964920393922473,
+          "vx": 0,
+          "vz": 0,
+          "active": true
+        },
+        {
+          "id": 4,
+          "team": 1,
+          "r": 0.0375,
+          "m": 0.7,
+          "x": -34.90429317308214,
+          "z": 25.894345389785258,
+          "vx": 0,
+          "vz": 0,
+          "active": true
+        },
+        {
+          "id": 5,
+          "team": 0,
+          "r": 0.0375,
+          "m": 0.7,
+          "x": -34.73290682508711,
+          "z": 25.885114681848098,
+          "vx": 0,
+          "vz": 0,
+          "active": true
+        },
+        {
+          "id": 6,
+          "team": 1,
+          "r": 0.0375,
+          "m": 0.7,
+          "x": -34.676112345407304,
+          "z": 26.10290825047552,
+          "vx": 0,
+          "vz": 0,
+          "active": true
+        }
+      ]
+    },
+    "peers": 1,
+    "draws": 3,
+    "lights": 0
+  },
+  "recovery": "same held app; Node inspector exposes existing Playwright Page; native keys/taps; no new bootstrap"
+}

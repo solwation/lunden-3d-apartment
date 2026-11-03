@@ -531,6 +531,7 @@ export class Ghosts {
     else if (m.t === 'tg') this.onTarget?.(m, false);
     else if (m.t === 'dr') this.onDoors?.(m); // a door opened / shut by somebody (#1775, src/doorsync.js)
     else if (m.t === 'gf') this.onGraffiti?.(m); // the shared spray paint (#1724, src/graffitisync.js)
+    else if (m.t === 'bl') this.onBoule?.(m); // #1854 shared courtyard boule
     else if (m.t === 'pool') this.onPool?.(m); // the shared billiard table (#1355, src/billiards.js): only sent to players inside the children's room
     else if (m.t === 'm' || m.t === 'mx' || m.t === 'k') this.onTalk?.(m, this.others.get(m.i)); // chat (#675) and "skriver…" (#676), src/chat.js
   }
@@ -663,6 +664,13 @@ export class Ghosts {
     this.outbox.push(msg); this.trimOutbox();
     this.lastMove = performance.now(); this.sendShot();
     return true;
+  }
+
+  /** #1854: discrete courtyard actions share the existing 5 Hz action outbox. */
+  boule(msg) {
+    if (!this.connected) return false;
+    this.outbox.push(msg); this.trimOutbox();
+    this.lastMove = performance.now(); this.sendShot(); return true;
   }
 
   /** A room-music command (#1624) { t: 'mus', k, ix? }; the room answers everybody inside the children's room. False when not connected. */

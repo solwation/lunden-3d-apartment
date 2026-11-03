@@ -1,0 +1,3 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+page.waitForFunction: Timeout 10000ms exceeded.
+    at /home/devcontainers/orkester-olw-win10-gpt6-20261103/boule-sync/tools/boulesyncbrowser.cjs:6:258

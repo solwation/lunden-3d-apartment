@@ -1,0 +1,21 @@
+{
+  "base": "16d826544197454d79ece261a664680cf0945f22",
+  "checkpoint": "ae5e1e18",
+  "finalRuntime": {
+    "src/boule.js": "820a06f368b8240f0a1773fc8eec08e8a14d8aaf4d8c18dd886e264999595dc0",
+    "src/bouleclient.js": "b42238ac6ef97d6b3051c7184cd3c3f1e4bbb49f2a21c873c48ef07ec440f9c4",
+    "src/boulesync.js": "b66961b002dde5a40192e92c58401c39c6340f91cba675e81030d7edb2aca0db",
+    "src/boulephysics.js": "0e5e7d68f6315dbcf33847c3221aff5c65d1688e5dc948e0adaa645ecde6f6f1",
+    "src/boulerules.js": "bdb528c50847460548aaa142887a0be6c91b942ff74b5d6a85746c0a73a4c732",
+    "src/main.js": "780986eed57303c5dca8127154915217b0409d3ff108188a35a8211b0a0a5b13",
+    "src/ghosts.js": "3d29ae9898e6630978b143c8a263105361b10d73ce2a682a01829c58dc8b825c",
+    "src/config.js": "9bedb9397c1550ee4eba638fbf40214ef79c40f91f796db257badc52fed5b6b6",
+    "cloudflare/players.js": "06b613df76d63c951c5a1ea6138a826292ac2bf23de5b3dec73c3293f1aaa378",
+    "cloudflare/roomboule.js": "b6c9e67b8748a46060d5693a600ab9b35454c071164e40d33b01d965be938fe8",
+    ".github/workflows/cloud.yml": "972d7aa5a25ab776cb491b0ec01f0a69e8bbebcb7d0feb906b1b0f2a96c4816e"
+  },
+  "appPhaseOverride": {
+    "src/bouleclient.js": "84e0e1d30d5ffe9208aefe35b07ff10f265b711c8a766ffd060340b0b43302f5"
+  },
+  "phaseNote": "Only final pending-cloud managed guard and finished-game message differ after app capture; targeted Node checks cover them; active app states unaffected."
+}

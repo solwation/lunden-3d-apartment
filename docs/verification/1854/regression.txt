@@ -1,0 +1,250 @@
+TAP version 13
+# Subtest: cleanPool / inPlayroom / cleanDirection validate bounded input
+ok 1 - cleanPool / inPlayroom / cleanDirection validate bounded input
+  ---
+  duration_ms: 2.67829
+  type: 'test'
+  ...
+# Subtest: only players in the room get the table and strokes; a stroke from outside is refused
+ok 2 - only players in the room get the table and strokes; a stroke from outside is refused
+  ---
+  duration_ms: 173.691149
+  type: 'test'
+  ...
+# Subtest: server reach follows the centred table rather than the old doorway position
+ok 3 - server reach follows the centred table rather than the old doorway position
+  ---
+  duration_ms: 69.815638
+  type: 'test'
+  ...
+# Subtest: stale, simultaneous, early and malformed requests are refused; the table never forks
+ok 4 - stale, simultaneous, early and malformed requests are refused; the table never forks
+  ---
+  duration_ms: 178.950229
+  type: 'test'
+  ...
+# Subtest: 8-ball turns: seats, foreign strokes refused, an absent holder is replaced, solo play works
+ok 5 - 8-ball turns: seats, foreign strokes refused, an absent holder is replaced, solo play works
+  ---
+  duration_ms: 188.063495
+  type: 'test'
+  ...
+# Subtest: a late visitor and a reconnecting player get the existing table; hibernation keeps it; an empty room resets it
+ok 6 - a late visitor and a reconnecting player get the existing table; hibernation keeps it; an empty room resets it
+  ---
+  duration_ms: 121.673845
+  type: 'test'
+  ...
+# Subtest: table messages are counted like any other message and stay small; no ball stream
+ok 7 - table messages are counted like any other message and stay small; no ball stream
+  ---
+  duration_ms: 44.259034
+  type: 'test'
+  ...
+# Subtest: stroke power: missing = full, clamped to minPower..1, non-numbers refused; cue state is bounded
+ok 8 - stroke power: missing = full, clamped to minPower..1, non-numbers refused; cue state is bounded
+  ---
+  duration_ms: 0.982196
+  type: 'test'
+  ...
+# Subtest: a weak and a hard stroke from the same table: the cue ball runs slower / shorter, deterministically
+ok 9 - a weak and a hard stroke from the same table: the cue ball runs slower / shorter, deterministically
+  ---
+  duration_ms: 80.0268
+  type: 'test'
+  ...
+# Subtest: the room runs the stroke with the clamped power and tells everybody that power
+ok 10 - the room runs the stroke with the clamped power and tells everybody that power
+  ---
+  duration_ms: 102.682816
+  type: 'test'
+  ...
+# Subtest: bounded commands and deterministic existing physics/flight replay
+ok 11 - bounded commands and deterministic existing physics/flight replay
+  ---
+  duration_ms: 9.392165
+  type: 'test'
+  ...
+# Subtest: real Room capability, two peers, simultaneous/stale/early requests and no duplication
+ok 12 - real Room capability, two peers, simultaneous/stale/early requests and no duplication
+  ---
+  duration_ms: 52.404104
+  type: 'test'
+  ...
+# Subtest: turn ownership, late/rejoin animation, hibernation, outside and old clients
+ok 13 - turn ownership, late/rejoin animation, hibernation, outside and old clients
+  ---
+  duration_ms: 131.829406
+  type: 'test'
+  ...
+# Subtest: full round scores once, resets race, persistent bounded record and no global score credit
+ok 14 - full round scores once, resets race, persistent bounded record and no global score credit
+  ---
+  duration_ms: 111.637681
+  type: 'test'
+  ...
+# Subtest: the Worker deploy workflow triggers on every src/ file the Worker imports
+ok 15 - the Worker deploy workflow triggers on every src/ file the Worker imports
+  ---
+  duration_ms: 19.061929
+  type: 'test'
+  ...
+# Subtest: cleanMusic validates keys and track index
+ok 16 - cleanMusic validates keys and track index
+  ---
+  duration_ms: 1.978192
+  type: 'test'
+  ...
+# Subtest: play/pause/next/mix/off are room-owned and reach only players inside
+ok 17 - play/pause/next/mix/off are room-owned and reach only players inside
+  ---
+  duration_ms: 124.957231
+  type: 'test'
+  ...
+# Subtest: pausing during a mix freezes the fade; resuming continues it
+ok 18 - pausing during a mix freezes the fade; resuming continues it
+  ---
+  duration_ms: 35.414467
+  type: 'test'
+  ...
+# Subtest: too-fast commands only resync the sender; late and reconnecting players get the current track and position
+ok 19 - too-fast commands only resync the sender; late and reconnecting players get the current track and position
+  ---
+  duration_ms: 70.849634
+  type: 'test'
+  ...
+# Subtest: an empty room forgets the music; a paused track is not announced as playing to late joiners
+ok 20 - an empty room forgets the music; a paused track is not announced as playing to late joiners
+  ---
+  duration_ms: 69.118141
+  type: 'test'
+  ...
+# Subtest: messages are tiny and one command is one message
+ok 21 - messages are tiny and one command is one message
+  ---
+  duration_ms: 30.634685
+  type: 'test'
+  ...
+# Subtest: \#1664: bounded physical controls share both decks, faders and positions with observers and late/hibernated joins
+ok 22 - \#1664: bounded physical controls share both decks, faders and positions with observers and late/hibernated joins
+  ---
+  duration_ms: 106.208101
+  type: 'test'
+  ...
+# Subtest: a catch request added to a full queue of squirrel / paddock snapshots stays and is sent; the snapshots go first
+ok 23 - a catch request added to a full queue of squirrel / paddock snapshots stays and is sent; the snapshots go first
+  ---
+  duration_ms: 2.088093
+  type: 'test'
+  ...
+# Subtest: the shark catch, river fish on / off, doors and squirrel takes are kept; an incoming snapshot is dropped instead
+ok 24 - the shark catch, river fish on / off, doors and squirrel takes are kept; an incoming snapshot is dropped instead
+  ---
+  duration_ms: 0.244199
+  type: 'test'
+  ...
+# Subtest: cosmetic events go before actions: a miss before a hit (\#667), a greeting before a catch
+ok 25 - cosmetic events go before actions: a miss before a hit (\#667), a greeting before a catch
+  ---
+  duration_ms: 0.316199
+  type: 'test'
+  ...
+# Subtest: the hard cap: the oldest action goes, a catch request only when nothing else is left; fall / consume never
+ok 26 - the hard cap: the oldest action goes, a catch request only when nothing else is left; fall / consume never
+  ---
+  duration_ms: 1.560994
+  type: 'test'
+  ...
+# Subtest: old Worker is explicitly refused, offline has local mode, no optimistic shared mutation
+ok 27 - old Worker is explicitly refused, offline has local mode, no optimistic shared mutation
+  ---
+  duration_ms: 5.973277
+  type: 'test'
+  ...
+# Subtest: authoritative replay, duplicate ACK, disconnect freeze, late welcome and reject resync
+ok 28 - authoritative replay, duplicate ACK, disconnect freeze, late welcome and reject resync
+  ---
+  duration_ms: 7.82297
+  type: 'test'
+  ...
+# Subtest: six boules (three per side) and a jack, all in the hand at the start
+ok 29 - six boules (three per side) and a jack, all in the hand at the start
+  ---
+  duration_ms: 5.064381
+  type: 'test'
+  ...
+# Subtest: gravel friction brings a rolling boule to rest at v²/2a
+ok 30 - gravel friction brings a rolling boule to rest at v²/2a
+  ---
+  duration_ms: 2.315892
+  type: 'test'
+  ...
+# Subtest: a boule hitting a resting boule passes on its motion without gaining energy
+ok 31 - a boule hitting a resting boule passes on its motion without gaining energy
+  ---
+  duration_ms: 4.379084
+  type: 'test'
+  ...
+# Subtest: a boule knocks the light jack much further than itself (mass-weighted)
+ok 32 - a boule knocks the light jack much further than itself (mass-weighted)
+  ---
+  duration_ms: 2.016292
+  type: 'test'
+  ...
+# Subtest: the timber edge reflects and keeps every object inside the court
+ok 33 - the timber edge reflects and keeps every object inside the court
+  ---
+  duration_ms: 4.284484
+  type: 'test'
+  ...
+# Subtest: invalid input cannot poison state; landing is clamped into the court
+ok 34 - invalid input cannot poison state; landing is clamped into the court
+  ---
+  duration_ms: 0.393899
+  type: 'test'
+  ...
+# Subtest: jack first: an invalid jack is thrown again by the same side, a valid one lets that side play first
+ok 35 - jack first: an invalid jack is thrown again by the same side, a valid one lets that side play first
+  ---
+  duration_ms: 0.411098
+  type: 'test'
+  ...
+# Subtest: turn order: the side not holding the point plays; a side out of boules hands over
+ok 36 - turn order: the side not holding the point plays; a side out of boules hands over
+  ---
+  duration_ms: 0.441898
+  type: 'test'
+  ...
+# Subtest: scoring: one point per boule nearer than the opponent's nearest; the winner throws the next jack
+ok 37 - scoring: one point per boule nearer than the opponent's nearest; the winner throws the next jack
+  ---
+  duration_ms: 0.617698
+  type: 'test'
+  ...
+# Subtest: a full mène through ballThrown scores automatically; a tie scores nothing
+ok 38 - a full mène through ballThrown scores automatically; a tie scores nothing
+  ---
+  duration_ms: 0.495998
+  type: 'test'
+  ...
+# Subtest: the game is to 13: it ends, blocks throws and a new game resets
+ok 39 - the game is to 13: it ends, blocks throws and a new game resets
+  ---
+  duration_ms: 0.414998
+  type: 'test'
+  ...
+# Subtest: "Ny omgång" restarts the mène in progress without points
+ok 40 - "Ny omgång" restarts the mène in progress without points
+  ---
+  duration_ms: 0.268099
+  type: 'test'
+  ...
+1..40
+# tests 40
+# suites 0
+# pass 40
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1142.586415
