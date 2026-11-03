@@ -9,3 +9,6 @@ Verifierat i faktisk app med befintlig station/browser-fixture:
 - `git diff --check` godkänd. Ingen ny testsvit behövs för denna reversibla textändring.
 
 Chromium/SwiftShader via `tools/browsertest.sh`, lokal port 8911, `?test=lazy&cloud=&at=-143,33,0,0,5&time=12&month=6&freeze&weather=clear`. Ingen fysisk telefon eller bred spel-/geometriregression testad. A/B/C/L är inte tillämpligt på en gemensam övningsstatus. Ingen publik port: publikgymmet saknar träningsstatus och spelprogression. Ingen ny sakuppgift kräver ändring av utvecklardokumentationen.
+
+
+Publicerat `f9734197009e8f4956c936f8552747d056b27bac`. Pages 41616458231 lyckades och live version.json bekräftade `f973419`. Ingen Worker-workflow triggades av dessa filer. Bildens publicerade bytes kontrollerade före stängning.
