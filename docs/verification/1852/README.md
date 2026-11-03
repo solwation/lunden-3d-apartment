@@ -39,3 +39,7 @@ The next step is a precise GitHub question asking the reporter to mark the fault
 No runtime patch, player-visible changelog, after-state picture, CI success or render-performance improvement is claimed. A local budget delta is therefore zero by unchanged source; archived counts are observations, not a new budget gate. A public port is not yet actionable without an identified applicable fix; if one is established it needs its own low-priority issue and no original photos/personal content.
 
 The diagnostic browser was released to high-priority #1851 before offline analysis; its server and browser are stopped. [Exact source hashes](sources.json) bind the archive. The additional roof-picnic report image suggested by the conductor was inspected only as a location clue; its different roof details were not used as evidence of a shared target or brought into this issue's scope.
+
+## Published clarification checkpoint
+
+The diagnostic archive was published in `09f554508f51b5b7eef7f1cd2b54f6018ad8818a`. The conductor directly inspected the landmark-match image, checked its permanent public bytes and posted [the precise clarification question](https://github.com/solwation/lunden-3d-apartment/issues/1852#issuecomment-6612476292). Issue #1852 remains open with `user-question`; active work and ownership labels were removed. Other startable original work continues. No runtime change, deployment success or verified fix is claimed by this checkpoint.
