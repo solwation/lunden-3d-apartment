@@ -1,0 +1,15 @@
+{
+  "worker": "0d2e58aff3d43fc0fc6bbc2fe4a82829792b80ba",
+  "byteIdenticalRuntime": {
+    "src/boardcatalog.js": "29fbf47ba5f9494a83c90acd8e20fc9ecb73ba0821f6c292c8c7095dc0c9f3e7",
+    "src/boards.js": "a0b89cd12e760fd1150cb1b02bc279c4768db9050d982e75afd035c80ce48880",
+    "src/leaderboard.js": "f6ef87db0a2f1b4581d87c4fc85f044a647516a2af54296eed9026dfda7deefb",
+    "src/stats.js": "de41001c283d556ab37e80c3792fbe507abddfce37760d5f9721b53aed66ff09",
+    "src/outdoorgym.js": "0f0f4822b0d48f2f49314c0aa4a94eb1a489b54d62dba935eb7db78225ef7ec6",
+    "src/gymeffort.js": "d44478724037104b0dc286f2c5f2a1cf0790c06051f57253d1b94665b0fdfbb7",
+    "src/gympump.js": "e669e741c7d584b0692b00aeb48ba544deac761ff94f47ca9d09a14e8ead54e5",
+    "cloudflare/worker.js": "81812780595db8edc547a62ac33c7295b4575d1f5f652fcaeace00d0ba5d8aea",
+    "cloudflare/boards.js": "cb1524c874f4398aa4ea99112aac56c7688224eefec10db2e7b7cf170935d61b"
+  },
+  "checks": "Source-bound local Worker/catalog/deploypaths and actual mouse/touch dialog evidence reused. Only BOARD_LISTS entry changes product code; gym cycles/counters/network cadence untouched."
+}

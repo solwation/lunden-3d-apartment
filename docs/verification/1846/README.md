@@ -26,3 +26,8 @@ Närbilden använder halverat kamerafov som vittnesutsnitt. Samma faktiska kropp
 ## Gränser
 
 Detta är lokal ambient AI, ingen fysisk telefon-, nät-/Room- eller bred scenprofil. Ordinarie avståndsgrindar utökas inte. L/A/B/C:s husvarianter berörs inte: modellen och det gemensamma åhabitatet är kontrollgränsen. Den visuella pussen är lekfull, inget zoologiskt faktapåstående. Offentlig miljöanpassning bedöms av dirigenten efter källpublicering inom den ostartade konsoliderade #244; matning/poäng/personligt innehåll/tjänster ska inte följa med. Katter och Styrkelyft ändras inte.
+
+
+## Conductor integration
+
+The combined source retains the roof-contact initialization/pose hook and social-pose hook, plus both elevated-surface feeding and social interruption. Final combined cat tests pass18/18 in [integration-cat-node.txt](../1845/integration-cat-node.txt). [Exact source/config preservation](../1844/integration-sources.json) confirms399 other config exports unchanged, the expected cat/duck blocks and10 worker-module byte identities. The final graph supplies the same natural park meeting at Unix1793577422;42 approach samples pass its12cm source-edge rule. Prior inspected app images remain the scoped visual evidence; no routine browser repeat after integration. Cat.js only names an existing nose mesh relative to1844, without geometry change.

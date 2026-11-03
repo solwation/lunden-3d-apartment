@@ -1,0 +1,67 @@
+{
+  "base": "a698f659",
+  "integratedRuntimeCommit": "36c27289a306a9fb684d88e9236eb5ac3049dbc3",
+  "workers": {
+    "1844": "2dd7d308378be7c917899f1e0cfd37cefe232b1c",
+    "1845": "5e6f1e348b35f928ee2f59315d4226f02726b7cf",
+    "1846": "7ab017a84fe432f1c36ea7a6dd5945092e0b3e4d"
+  },
+  "unchangedConfigurationExports": 399,
+  "configCheck": "OUTDOOR_CATS=1844+nuzzle1845; DUCKS=1846; all other exported values unchanged (function source compared for function exports).",
+  "moduleHashes": {
+    "src/catexploration.js": "729c6c0fc19a1433ab5718b3e5f0f503cc6f305227c95c9ed434fdfbd8fde49d",
+    "src/cataffordances.js": "b17e9dc7ce0d157a382361f0e16b6d82c27553d6d68917ac6f002dd57b4a4a8f",
+    "src/cathabitat.js": "0f5233073131f6cb2bc66a24db41e88f6610db7af94d5fb1c6db7d2f3c315f11",
+    "src/catclimb.js": "cf3af0433578dc913302568498d311b9662634c1d7fed740329f96b46c6c30d5",
+    "src/outdoorcatbrain.js": "d641065fa0024c77f0e7ae829ae3507e42ae1ae2ebe2102a35524fd8fa9960d5",
+    "src/cat.js": "2370c688bc25cfdcb3b7bcb29fc8df0e607da28dd8562c4160b22e6fb258309d",
+    "src/catnuzzle.js": "63970453126222cf9fb0ee50e3d406e0a0846f70b7feb1414f0962fa9a359d08",
+    "src/catnuzzlepose.js": "267f3dbee2c5f793c7f0e4da86722fb03d618f83bf391a1adf8e56a8f6aa9948",
+    "src/ducks.js": "0f39bc82663401f1c6e3da19434cf41312e3a958786184f6a17a8a3875925f42",
+    "src/duckkiss.js": "435c3904020374dd2906b1c3dbd55adc19f98922119d4f5500001bec1a75a6f5",
+    "src/outdoorcats.js": "cfc9c04809f1342e8ceecb52e20d44ba492053db6bf0d0bfd958f557bcec6aba",
+    "src/config.js": "6de6999f43017d5020842d3b2474f6ba6eac53680184cb417bd550faeda1728a",
+    "src/main.js": "0a12d200ca75ba0330447430c65d6394e7801fd0c74d8140c285bcb563039391"
+  },
+  "mergeCheck": "Climb initialization/align hook, nuzzle pose hook, roof-surface feed guard and social feeding interruption all preserved. Cat.js only names existing nose mesh relative to1844; no geometry change. Main retains1842 gym hooks.",
+  "combinedCatNodePassed": 18,
+  "finalParkMeeting": {
+    "time": 1793577422,
+    "cats": [
+      {
+        "id": 2,
+        "x": -72.91401934680574,
+        "z": 39.747669284550284,
+        "walking": true,
+        "activity": "walk",
+        "goal": 2,
+        "segment": 387
+      },
+      {
+        "id": 3,
+        "x": -73.31440141398147,
+        "z": 43.25101237233781,
+        "walking": true,
+        "activity": "walk",
+        "goal": 0,
+        "segment": 2
+      }
+    ],
+    "distance": 3.526147840131573,
+    "centre": {
+      "x": -73.11421038039362,
+      "z": 41.49934082844405
+    },
+    "sourceEdgeSamples": 42,
+    "sourceHashes": {
+      "outdoorcatbrain.js": "d641065fa0024c77f0e7ae829ae3507e42ae1ae2ebe2102a35524fd8fa9960d5",
+      "catexploration.js": "729c6c0fc19a1433ab5718b3e5f0f503cc6f305227c95c9ed434fdfbd8fde49d",
+      "cataffordances.js": "b17e9dc7ce0d157a382361f0e16b6d82c27553d6d68917ac6f002dd57b4a4a8f",
+      "cathabitat.js": "0f5233073131f6cb2bc66a24db41e88f6610db7af94d5fb1c6db7d2f3c315f11",
+      "config.js": "85de82a39581d2fcab0c24fea746b4eeb1ee67b7d97fa51f43078f196b9e3b35"
+    },
+    "note": "Final1844 graph still provides naturally nearby eligible walking cats at the accepted1845 fixture time; source radius predicate accepts both approaches. Separate actual model/social brain tests5/5 passed against these final sources. No new browser."
+  },
+  "changelog": "Exactly3new entries1425/1424/1423; all prior rows retained.",
+  "auditDiagnostic": "An initial comparison rejected distinct avatarBody function identities from separately imported modules; corrected to compare exact function source. No product change."
+}

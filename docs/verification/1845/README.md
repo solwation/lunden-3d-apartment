@@ -37,3 +37,8 @@ Target har därefter lagt till klätterkontakt, två Nordic-böjpunkter och en 1
 ## Avgränsning
 
 Ingen bred profil, Roommatris eller fysisk telefonkörning behövs för denna lokala miljö-AI. L/A/B/C:s layoutvarianter är inte berörda; kattmodellen och den gemensamma ute-AI:n är ändringsgränsen. Publik tillämpning bedöms separat av dirigenten efter källpublicering inom miljödjursundantaget; inga personliga namn, spelarinteraktioner eller tjänster ska överföras. #1846 ankpussar och #1847 Styrkelyft ingår inte.
+
+
+## Conductor integration
+
+The combined source retains the roof-contact initialization/pose hook and social-pose hook, plus both elevated-surface feeding and social interruption. Final combined cat tests pass18/18 in [integration-cat-node.txt](../1845/integration-cat-node.txt). [Exact source/config preservation](../1844/integration-sources.json) confirms399 other config exports unchanged, the expected cat/duck blocks and10 worker-module byte identities. The final graph supplies the same natural park meeting at Unix1793577422;42 approach samples pass its12cm source-edge rule. Prior inspected app images remain the scoped visual evidence; no routine browser repeat after integration. Cat.js only names an existing nose mesh relative to1844, without geometry change.

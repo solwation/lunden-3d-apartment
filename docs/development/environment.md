@@ -1035,7 +1035,7 @@ School-yard play corners (#1807, Google 3D `05_norra_skolor_*`, `06_kunskapsskol
 
 Ducks use the existing `renderedTerrainY` callback directly rather than the analytic-max `parkGround` callback. Their curve-following habitat samples local `waterYAt`, rejects roads/bridge decks, bounds the shore distance/height and validates every step. No terrain, river, road, tree or other animal geometry changes. [Actual emitted terrain-ray verification](../verification/1839/README.md).
 
-## Outdoor-cat route ground (#1840)
+## Earlier outdoor-cat route ground (#1840, superseded by #1844)
 
 Only the outdoor cats use `renderedTerrainY` south of the existing `OUTDOOR.z1` boundary, so newly reached park slopes do not float above drawn triangles. The garage/courtyard keeps `parkGround` and its real deck level. No other animal, terrain or collision mechanics change. Their explicit loops were planned offline against actual static walls, building/obstacle polygons, road/water and sampled heights; no runtime pathfinder or world edits. [Actual site snapshot, segment checks and overview](../verification/1840/README.md).
 

@@ -20,3 +20,8 @@ Alla befintliga accepterade repetitioner används. Inga ändringar i COUNTERS (3
 Båda visar de lokala fixture-spelarna Gymprov B (150 rep) och Gymprov A (120 rep), med B markerad som egen rad. Båda bilderna är direkt inspekterade och accepterade före browserrelease. Ingen 3D-route eller verklig gameplay-session påstås av dessa komponentbilder.
 
 Gameplay/topplista/Cloudflare är original-only. Ingen offentlig port ska göras.
+
+
+## Dirigentens integration
+
+Katalogen och8berörda kärnmoduler är byteidentiska med arbetarens gröna underlag; se [integration-sources.json](integration-sources.json). Alla4nya changelogposter har egna unika stigande tilldelade id, visas nyast först; alla gamla poster bevaras. De två bilderna är direkt granskade. Inga nya UI-/gymrundor behövs efter de orelaterade katt-/ankändringarna. Faktisk Pages-/Worker-verifiering följer före stängning.
