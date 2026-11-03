@@ -58,3 +58,6 @@ an increase to distant visibility.
 One worker, about12 minutes implementation/preparation and3 minutes active browser verification.
 The conductor owns review, evidence publication and closure. No public transfer applies:
 kvarteret-lunden#237 explicitly excludes collectible nuts and feeding.
+
+
+Levererat i `16cd96b05e8572b6f87827d3df16fddfeca44157`. [Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/41610236543) och [Worker](https://github.com/solwation/lunden-3d-apartment/actions/runs/41610236579) lyckades; Worker-loggen bekräftar faktisk Wrangler-deploy och den publika sidans version.json visar `16cd96b`. Dirigentens kombinerade diff-/bildgranskning är klar. Bild-URL:erna ovan är åtkomliga och bytekontrollerade. Ingen rutinmässig omkörning av gröna kontroller efter orelaterad integration. Ärendet stängs genom efterföljande verifieringscommit och aktiva etiketter tas bort.
