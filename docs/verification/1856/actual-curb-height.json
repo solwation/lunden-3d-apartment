@@ -1,0 +1,8 @@
+{
+  "x": -78.8,
+  "z": 0,
+  "terrain": -0.19928825622775798,
+  "curb": -0.0991364712159668,
+  "aboveTerrain": 0.10015178501179117,
+  "source": "existing street curb generator and actual terrain, no renderer or model changes"
+}

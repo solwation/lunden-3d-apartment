@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: gradual downhill growth, flat/uphill controls and bounded dt parity
+ok 1 - gradual downhill growth, flat/uphill controls and bounded dt parity
+  ---
+  duration_ms: 6.679997
+  type: 'test'
+  ...
+# Subtest: a real positive crest derivative is required; slow, flat, descending, shallow curvature and Space cannot boost
+ok 2 - a real positive crest derivative is required; slow, flat, descending, shallow curvature and Space cannot boost
+  ---
+  duration_ms: 0.3268
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 83.952353

@@ -1,0 +1,14 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+READY {"bike":{"position":[-58.28,0,3.1],"yaw":3.141592653589793}}
+COMMAND OK
+COMMAND OK
+COMMAND OK
+COMMAND OK
+cdpSession.send: Protocol error (Input.dispatchTouchEvent): Must send a TouchStart first to start a new touch.
+    at eval (<anonymous>:1:548)
+    at async /home/devcontainers/orkester-olw-win10-gpt6-20261103/bike-descent/tools/bike1856browser.cjs:3:2259
+COMMAND OK
+COMMAND OK
+COMMAND OK
+COMMAND OK
+COMMAND OK

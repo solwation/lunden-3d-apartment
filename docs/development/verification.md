@@ -9050,3 +9050,9 @@ native keyboard/touch / real local PlayerRoom peer / Rest / Life proof from the 
 and local4draw/1328triangle delta. Run the listed Node tests and tools/footballplacement.mjs;
 no campus/phone benchmark is implied. Sparse storage and attachment reanchoring survive wake
 without replayed/fictitious goal credit. Exact source phases and three inspected images are saved.
+
+### Bicycle momentum/crest flight (#1856)
+
+`tools/bikemotion1856test.mjs` checks scalar acceleration/brake/coast/caps, dt and exact launch-gate negatives; `tools/bike1856finaltest.mjs` runs actual Player wheel support and hulls with explicitly analytic ground/collision collaborators, final5.5m/s calibration across four dt values and valid-lastStanding airborne/fall/grounded exit. These renderer-free Node tests need the existing Three dependency resolvable; no World or canvas is constructed. The earlier `bike1856component.cjs` preserves actual rendered curb-ray parity and old stair/ramp/wall/door/headroom cases, with established-speed seeds/longer routes replacing intentional constant-speed timing assumptions. That32/32 record belongs to the documented7m/s launch phase, not silently final calibration.
+
+`tools/bike1856browser.cjs` holds one real app and source-pinned c8a04159 before bikeStep; control scripts can use native Playwright keys/CDP touch and pause at actual physics states. [Exact phases, raw ledgers and directly inspected baseline/air/landed-exit images](../verification/1856/README.md). Old unmodified `bicycleterraintest.cjs` main-input injection stops on missing ducks (separate#1859); this is not a claimed app failure or a green input test.

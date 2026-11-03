@@ -1,0 +1,68 @@
+TAP version 13
+# {"dt":0.008333333333333333,"maxGap":0.6932945382596216,"lands":[{"drop":1.6410960094021476,"gap":0.7053425485096483}]}
+# {"dt":0.016666666666666666,"maxGap":0.6849919815868049,"lands":[{"drop":1.6343644928383867,"gap":0.7017023920299437}]}
+# {"dt":0.05,"maxGap":0.6967038371218166,"lands":[{"drop":1.6470805527372079,"gap":0.7195388901530038}]}
+# {"dt":0.1,"maxGap":0.7233144079604159,"lands":[{"drop":1.6641661870539792,"gap":0.7425634269208388}]}
+# Subtest: final threshold actual wheel-supported rise/flight/one landing dt 0.008333333333333333
+ok 1 - final threshold actual wheel-supported rise/flight/one landing dt 0.008333333333333333
+  ---
+  duration_ms: 110.704783
+  type: 'test'
+  ...
+# Subtest: final threshold actual wheel-supported rise/flight/one landing dt 0.016666666666666666
+ok 2 - final threshold actual wheel-supported rise/flight/one landing dt 0.016666666666666666
+  ---
+  duration_ms: 67.459929
+  type: 'test'
+  ...
+# Subtest: final threshold actual wheel-supported rise/flight/one landing dt 0.05
+ok 3 - final threshold actual wheel-supported rise/flight/one landing dt 0.05
+  ---
+  duration_ms: 34.810664
+  type: 'test'
+  ...
+# Subtest: final threshold actual wheel-supported rise/flight/one landing dt 0.1
+ok 4 - final threshold actual wheel-supported rise/flight/one landing dt 0.1
+  ---
+  duration_ms: 29.109369
+  type: 'test'
+  ...
+# Subtest: final threshold slow negative control
+ok 5 - final threshold slow negative control
+  ---
+  duration_ms: 29.895069
+  type: 'test'
+  ...
+# Subtest: final threshold flat negative control
+ok 6 - final threshold flat negative control
+  ---
+  duration_ms: 12.233187
+  type: 'test'
+  ...
+# Subtest: airborne/falling exit refuses even a valid lastStanding; grounded exit remains legal
+ok 7 - airborne/falling exit refuses even a valid lastStanding; grounded exit remains legal
+  ---
+  duration_ms: 0.593399
+  type: 'test'
+  ...
+# Subtest: gradual downhill growth, flat/uphill controls and bounded dt parity
+ok 8 - gradual downhill growth, flat/uphill controls and bounded dt parity
+  ---
+  duration_ms: 6.880693
+  type: 'test'
+  ...
+# Subtest: a real positive crest derivative is required; slow, flat, descending, shallow curvature and Space cannot boost
+ok 9 - a real positive crest derivative is required; slow, flat, descending, shallow curvature and Space cannot boost
+  ---
+  duration_ms: 0.393999
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 607.16136

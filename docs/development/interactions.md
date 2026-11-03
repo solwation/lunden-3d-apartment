@@ -2222,3 +2222,9 @@ use normal Rest targets; the fountain registers one ordinary cancellable timed L
 `footballlife.js`. The field's small rendered-terrain support is owned by `world.football`, not
 by an initialized gameplay controller. Fixed posts/fittings enter the existing far-walk buckets;
 ball mesh roots/surfaces are moving ray targets. See [scoped proof](../verification/1853/README.md).
+
+### Bicycle downhill momentum and crest flight (#1856)
+
+`src/bikemotion.js` supplies bike-only scalar speed: pedalling builds toward the existing6m/s level pace, actual wheel-derived pitch adds gravity downhill/removes speed uphill, neutral coasts, S/back brakes before reverse, and the guessed upper limit is11m/s. `BICYCLE.motion` contains explicitly guessed feel values. Player retains existing wheel contacts, swept tilted hulls, rise/headroom/closed-door restrictions, finite support and distance substeps. A positive support-height velocity can persist when the real crest unloads the tyres faster than gravity; it is not a Space jump or cosmetic lift. The launch gate was calibrated to5.5m/s (~20km/h), with vertical takeoff capped at3m/s and ordinary gravity/one meaningful landing event. Flat/slow riding gets no lift. Air pitch follows the trajectory within the existing model tilt range.
+
+An explicit bike-only dismount guard rejects airborne/falling exit even when lastStanding is valid; new gupp flight would otherwise expose the old save-place fallback as a teleport. Grounded E/Space/touch exit and safe save fallback retain their previous owners. No walk/run, item-stow/profile, terrain/model, wire-field or5Hz changes. Existing player feet p and bicycle heading bk carry the elevated position to other clients; no new protocol is needed. [Scoped component/native inputs, phases and inspected images](../verification/1856/README.md).

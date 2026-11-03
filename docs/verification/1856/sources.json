@@ -1,0 +1,60 @@
+{
+  "base": "c8a0415984862f9703150aa0b19a22b63e90d11c",
+  "checkpoints": [
+    "f2ff78e8",
+    "962df0c3"
+  ],
+  "finalSha256": {
+    "src/player.js": "6bc89f2c64242f3358db8b53cc17e30643a62d1c4132f4fca7623f4cc526659a",
+    "src/bikemotion.js": "d5850f94ed594680991c1394dba4d1e5360a1f57f966ff63907d0cda0e2a34b4",
+    "src/config.js": "03b12e3b46ffb7341481c97600b85ca7ccc444a0078ad043b11be50f0b13dc47",
+    "tools/bikemotion1856test.mjs": "3ca47f4e4b2c75f0dbdf83110c0bda17079781c7a9863bad0d3ac159e4e48287",
+    "tools/bike1856finaltest.mjs": "314decf866f257e38bd93947e56bb5f9bb9dd6173504f757ee3d2cc999ec1a76",
+    "tools/bike1856component.cjs": "02777d00eb0c2bda302f061c1f001644fdb5cf23b7a35803f0e67d671040d0bf",
+    "tools/bike1856browser.cjs": "8246ce104dc24e4c2ce0c076fa1c05a5071a865e5e6e7fe32e8c37fe21ffa00a"
+  },
+  "unchangedFromBase": {
+    "src/main.js": "281b52f8c437949d2813fb1d63df3ea9b6a4ad5b55f4868a96e54fab217c6ad4",
+    "src/ghosts.js": "19116c274ac609c730276b893638b84d3d61cec9b403a9752bb15107ee254a05",
+    "cloudflare/players.js": "649eb398dd3ea4bef342c0d57d14f78ee04b8b4c66a1a2a8e52f2c085d3c8065",
+    "src/street.js": "d685ab7c148e2a301a49e6b6f3d19de0c6d96f7c484d509ff536abfa04ffeb40",
+    "src/streetlife.js": "77111b71eb3c923acf73a817c9429217aa8ebfc583a6a81b6697619061f7267e",
+    "src/courtyard.js": "1fccc20edc288208eb7bfba3e457e4ebf7a8604b213b37224fc6c5e6129db5c9",
+    "src/surroundings.js": "fc2f9e35c828e67abf2815534d51be3056ac8f2f7540fb853a08b03ba2010e90",
+    "src/riverpark.js": "cf92686aabc3b1aad5a92443e4c6dec7b99ced05391a9fe4fa72c2510627e160",
+    "src/riverbridge.js": "7c5959f5835a760f6d86cce2d4711103d73fdf491cf9f85a94e5adf4823f4faa",
+    "src/hand.js": "c0692c9ef716704a177e791f9b9dbaa34a70ee3130b54424c713f119a4765cd4",
+    "src/holdable.js": "d718c798c1c148c4bacc6087272afc5d237ec5db5d18980a3b594f1a3c311ca1",
+    "src/keep.js": "ea6eabd805ebe1e525a1e69f1e693065577659616fd0d9ef960c79c4da498460",
+    "src/marks.js": "2994f2317e437a053064104f1944380e888003ba5b6d2c3b8a79c11116eeb211",
+    "src/trigrid.js": "26e73d1837245dc7481cd1edc48e658c443b97af3167271dbda47919c42510f3"
+  },
+  "ordinaryPlayerUpdateIdentical": true,
+  "PLAYERConfigIdentical": true,
+  "sourcePhases": {
+    "component32": {
+      "source": "962df0c3",
+      "launchSpeed": 7
+    },
+    "appBefore": {
+      "bikeStepSource": "c8a0415984862f9703150aa0b19a22b63e90d11c",
+      "sha256": "981a80e08e42793a01dd91c076e9a5875403c27118e80681d8d2ec08aabf2ae2"
+    },
+    "appAfter": {
+      "bikeStepIdenticalTo": "962df0c3",
+      "sha256": "2581dceeff3832d7e40e14126127fd6a207d9ee8527f25baf7e8b8ac4fdeef44",
+      "bridgeLaunchSpeed": 7,
+      "positiveRoadLaunchSpeed": 5.5,
+      "dismountGuard": "final method hot-imported before both air/ground native exit tests"
+    },
+    "finalNode9": {
+      "launchSpeed": 5.5,
+      "files": [
+        "tools/bikemotion1856test.mjs",
+        "tools/bike1856finaltest.mjs"
+      ]
+    }
+  },
+  "newModelMaterialsLights": 0,
+  "workerDeployment": "config change triggers existing Worker paths; no new import/protocol/binding"
+}

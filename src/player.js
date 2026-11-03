@@ -647,7 +647,7 @@ export class Player {
   }
 
   dismountBicycle() {
-    if (!this.riding) return false;
+    if (!this.riding || this.riding.airborne || this.fall) return false; // #1856: no lastStanding teleport during a crest flight
     const q = this.bikeStanding() ?? this.bicycleSavePlace(); if (!q) return false;
     const bike = this.riding.bike; bike.ridden = false; bike.pick.visible = true; this.riding = null;
     this.pos.copy(q); this.vy = 0; this.fall = null; this.keys.clear(); this.analog.x = this.analog.y = 0;

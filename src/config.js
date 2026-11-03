@@ -6908,7 +6908,7 @@ export const BICYCLE_GRIP = { x: .31, y: .95, z: .25, radius: .018, length: .09 
 export const BICYCLE = {
   // #1856: game-feel guesses, not measured bicycle dynamics; existing geometry/support stays authoritative.
   motion: { pedal: 4.5, brake: 9, rolling: .2, coast: 2, drag: .012, airDrag: .08, maxSpeed: 11,
-    gravity: 9.8, still: .03, launchSpeed: 7, minLift: .35, maxLift: 3, contactGap: .00001, airPitch: 5 },
+    gravity: 9.8, still: .03, launchSpeed: 5.5, minLift: .35, maxLift: 3, contactGap: .00001, airPitch: 5 },
   maxDt: .1, extractStep: .1, height: 1.1, speed: 6, reverse: 2, turn: 1.6, step: .05, radius: .31, samples: 12,
   rear: -.54, front: .46, eye: 1.25, cameraBack: .14, pitch: -.25, maxRise: .12,
   maxDrop: .35, standDrop: .15, wheelRear: -.50, wheelFront: .42, wheelRadius: .35, contactSamples: 8, maxTilt: .65, frameClearance: .25, extract: 3, mountReach: 2.6, stand: [.9, 1.2, 1.5] };

@@ -1,0 +1,34 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS eastDown: actual terrain route is supported and passable
+PASS eastUp: actual stair riser stops ascent
+PASS NWDown: actual terrain route is supported and passable
+PASS NWUp: actual stair riser stops ascent
+PASS southDown: actual terrain route is supported and passable
+PASS southUp: actual stair riser stops ascent
+PASS rampUp: actual terrain route is supported and passable
+PASS rampDown: actual terrain route is supported and passable
+PASS bicycle support matches every actual rendered curb box ray
+PASS actual 10 cm granite curb is ridden up over (#1300)
+PASS actual granite curb permits downward departure
+PASS actual 5 cm StreetLife concrete edge permits small upward step
+PASS full tilted model overhang is stopped by wall beyond old ground capsule
+PASS actual high courtyard edge blocks upward passage
+PASS actual three metre edge uses gravity and one ordinary fall-damage landing request
+PASS reverse climb follows actual ramp support
+PASS full forward bicycle capsule stops before wall on descent
+PASS full bicycle capsule cannot tunnel through closed door on descent
+PASS headroom preserved on tilted ramp
+PASS zero-dt pause preserves position
+PASS airborne dismount refused
+PASS native probe creates no WebGL context
+PASS no browser page errors
+PASS actual Player rises from crest momentum and lands once dt 0.008333333333333333
+PASS actual Player rises from crest momentum and lands once dt 0.016666666666666666
+PASS actual Player rises from crest momentum and lands once dt 0.05
+PASS actual Player rises from crest momentum and lands once dt 0.1
+PASS negative low-speed/flat control stays on actual wheel support
+PASS negative low-speed/flat control stays on actual wheel support
+PASS actual Player rises from crest momentum and lands once dt 0.05
+PASS airborne/full moving hull stops at controlled wall
+PASS no component page errors
+TOTAL 32 / failures 0
