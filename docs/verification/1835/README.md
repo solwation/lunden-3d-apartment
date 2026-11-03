@@ -62,3 +62,6 @@ Both final combined images were visually inspected. They use the supplied local 
 converted through gym.point(), ground + eye height, June/noon/clear, desktop Chromium/SwiftShader at
 1100×700. They are controlled views, not a continuous walk, physical-phone or FPS benchmark. No extra
 appearance bootstrap followed the approved combined result.
+
+
+Levererat i `e21ca752b49a129f3909019707898f2d7479ddf4`. [Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/41630419839) och [Worker](https://github.com/solwation/lunden-3d-apartment/actions/runs/41630419760) lyckades; Worker-loggen bekräftar faktisk Wrangler-deploy och den publika sidans version.json visar `e21ca75`. Dirigentens kombinerade diff-/bildgranskning är klar. Verifieringslänkarna ovan är permanenta; eventuella resultatbilder är granskade och bytekontrollerade. Ingen rutinmässig omkörning av gröna kontroller efter orelaterad integration. Ärendet stängs genom efterföljande verifieringscommit och aktiva etiketter tas bort.
