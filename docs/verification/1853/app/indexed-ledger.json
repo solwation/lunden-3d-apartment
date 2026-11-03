@@ -1,0 +1,3098 @@
+{
+  "id": "indexed-ledger",
+  "result": {
+    "meshes": [
+      {
+        "name": "",
+        "visible": false,
+        "triangles": 12
+      },
+      {
+        "name": "",
+        "visible": false,
+        "triangles": 12
+      },
+      {
+        "name": "football-drinking-water",
+        "visible": false,
+        "triangles": 100
+      },
+      {
+        "name": "",
+        "visible": false,
+        "triangles": 12
+      },
+      {
+        "name": "football-static",
+        "visible": true,
+        "triangles": 968
+      },
+      {
+        "name": "football-surface-0",
+        "visible": true,
+        "triangles": 180
+      },
+      {
+        "name": "football-surface-1",
+        "visible": true,
+        "triangles": 180
+      }
+    ],
+    "memo": "The final-budget raw models array used position.count/3; indexed geometries require this corrected ledger. Actual renderer.info deltas are unchanged."
+  },
+  "errors": [],
+  "requests": [
+    {
+      "url": "http://localhost:8924/?test=lazy&cloud=http://localhost:8934&at=-267,2.8,-6,0,0&time=12&month=6&freeze&weather=clear",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/boards",
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/boards",
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/boards",
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:8934/boards",
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/boards",
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/boards",
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/scores",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/presence/59b4a200-c9cb-4a22-b37b-08f55a67aea9",
+      "method": "PUT"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/drawings",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/paper",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:8934/furniture",
+      "method": "GET"
+    }
+  ]
+}

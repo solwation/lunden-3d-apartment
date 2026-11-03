@@ -1,4 +1,8 @@
 import { BouleClient } from './bouleclient.js';
+
+import {Football} from './football.js';
+import {FOOTBALL} from './config.js';
+import {recordFootball} from './stats.js';
 import { OUTDOOR } from './config.js';
 import { finishStartupCaches } from './startupcache.js';
 import { DanceTime } from './dancescore.js';
@@ -371,6 +375,7 @@ if (!changelog.fresh) retryChangelog((list) => { note.refresh(list); renderChang
 const todo = buildTodoNotes(await loadTodo(), world.lids.find((l) => l.kind === 'fridge' && !l.freezer));
 const binderEl = document.getElementById('binder-view');
 let reading = false;
+let football = null; // #1853 gameplay attaches to the independently built static world feature
 let onEditPointerUnlock = null;
 let binderPanel = null, binderFreed = false; // the animal binder's panel (#1848, previously the cat binder) frees the mouse to click its buttons
 function showBinder(show, byKey = 'E') {
@@ -1921,6 +1926,7 @@ function leavePlayroom() {
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
   if (slideRide.active) { slideRide.cancel(); return; }
+  if (thing.kind === 'football') { thing.toggle(); return; }
   if (thing.kind === 'outdoorGym') {if(!thing.blocked){sitOrLie(thing);}return;}
   if (thing.kind === 'courtyardSlide') { if (slideRide.begin(thing)) life.interrupt('åker rutschkana'); else badge('Gå till stegen med tomma händer och utan annan utrustning',false); return; }
   if (player.riding && thing.kind !== 'bicycle') return; // both hands are reserved for the actual handlebars
@@ -2054,7 +2060,7 @@ function use(thing) {
   else if (typeof thing.opening === 'function') useDoor(thing); // a real door: sound at its opening, the cat (#1194)
   else thing.toggle?.(); // anything else with a plain toggle (e.g. the free-throw line) never reaches the door path (#1194)
 }
-actionBtn.addEventListener('click', () => { if (slideRide.active) { slideRide.cancel(); return; } if (measure.active) return; if (reading) showNote(false); else if (focused?.kind === 'fusebox' && !power.on) return; /* held, not clicked (#604) */ else if (focused) use(focused); else if (heldItem()?.useLabel) heldItem().use(); else if (rest.active || player.riding) standUp(); });
+actionBtn.addEventListener('click', () => { if (slideRide.active) { slideRide.cancel(); return; } if (measure.active) return; if (reading) showNote(false); else if (focused?.kind === 'fusebox' && !power.on) return; /* held, not clicked (#604) */ else if (focused) use(focused); else if (heldItem()?.useLabel) heldItem().use(); else if (football?.controlled) football.kick(1); else if (rest.active || player.riding) standUp(); });
 const standBtn = document.getElementById('stand-btn'); // touch, sitting with something in reach or in the hand: get up (#184)
 standBtn.addEventListener('click', () => { if (rest.active || player.riding) standUp(); });
 const muteBtn = document.getElementById('mute');
@@ -2095,6 +2101,7 @@ function click(button) {
   if (measure.active) { if (button === 0) measure.press(); return 'measure'; }
   if (player.riding) return 'none';
   const held = heldItem(), focused = clickTarget();
+  if(!held&&!reading&&!book.reading&&football?.controlled&&(!focused||focused.kind==='football')){football.kick(button===2?0:1);return 'use';}
   if (button === 2) {
     if (reading) return 'none';
     if (held?.useAlt) { held.useAlt(); return 'alt'; }
@@ -2115,7 +2122,7 @@ function click(button) {
 /** What a left click may do E on: the focus, but not the jetpack's "stand it down" (E's fallback with nothing in focus). */
 const clickTarget = () => (focused === jetpack.dropTarget || focused === suit.dropTarget || (focused?.kind === 'ghost' && weaponKey()) ? null : focused);
 /** Does a left click do E on what is in focus now (the prompt says "Klicka")? */
-const clickIsE = () => !!clickTarget() && !focused.blocked && !heldItem()?.clickIsUse;
+const clickIsE = () => !!clickTarget() && !focused.blocked && !heldItem()?.clickIsUse && !(football?.controlled&&focused.kind==='football');
 document.addEventListener('mousedown', (e) => { if (locked && !statsOpen && (e.button === 0 || e.button === 2)) click(e.button); });
 document.addEventListener('contextmenu', (e) => { if (locked) e.preventDefault(); });
 document.addEventListener('mouseup', (e) => { if (e.button === 0) { heldItem()?.trigger?.(false); power.release(); } });
@@ -2129,7 +2136,7 @@ const remoteSeekControls=document.getElementById('remote-seek');
 for(const b of remoteSeekControls.querySelectorAll('[data-remote-seek]'))b.addEventListener('click',()=>remote.seek(Number(b.dataset.remoteSeek)));
 remoteSeekControls.addEventListener('pointerdown',e=>e.stopPropagation());
 turnBtn.addEventListener('click', () => turnPlacement());
-powerBtn.addEventListener('click', () => heldItem()?.useAlt?.());
+powerBtn.addEventListener('click', () => {if(heldItem()?.useAlt)heldItem().useAlt();else football?.kick(0);});
 // #1707: the spray can's touch button sprays while it is held down
 powerBtn.addEventListener('pointerdown', () => { if (heldItem()?.isSprayCan) heldItem().trigger(true); });
 for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) powerBtn.addEventListener(ev, () => { if (heldItem()?.isSprayCan) heldItem().trigger(false); });
@@ -2168,6 +2175,7 @@ document.addEventListener('keydown', (e) => {
   if (e.code === 'KeyE' && slideRide.active) { if (!e.repeat) slideRide.cancel(); }
   else if (e.code === 'KeyE' && (player.riding || focused?.kind === 'bicycle')) { if (!e.repeat) { if (player.riding) standUp(); else use(focused); } }
   else if (e.code === 'KeyE' && focused) { if (focused.kind === 'playroomDevice') e.preventDefault(); if (!(e.repeat && (focused.kind === 'fusebox' || focused.kind === 'playroomBilliards'))) use(focused); } // (#1637: a held E must not strike the stroke it just started charging) // also while sitting: what is within reach (#184); the fuse box: a fresh press (#604)
+  else if (e.code === 'KeyE' && football?.controlled && football.canPlay()) {if(!e.repeat)football.release();}
   else if (e.code === 'KeyE' && heldItem()?.useLabel) heldItem().use();
   else if (e.code === 'KeyE' && rest.active) standUp();
   else if ((e.code === 'Space' || e.code === 'KeyC') && (rest.active || player.riding || slideRide.active)) { e.preventDefault(); player.keys.delete(e.code); standUp(); } // seated, C gets you up (the Space that does it is no jump, #636)
@@ -2309,6 +2317,7 @@ function updateFocus() {
   // the car key only while its cabinet is open
   const extra = [...(santa.visible ? [santa.pickable] : []), ...(cat.visible && !cat.held ? [cat.object] : []), ...(olofDriver.greetable(rest.active && rest.target?.car === car) ? [olofDriver.fig.pick] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []), ...car.targets(rest.target).map((t) => t.pickable), // our car's doors and front seats (#250)
     ...ducks.targets(),
+    ...(football?.targets ?? []).map(t=>t.pickable), // exactly two moving ball targets, never cached as static Marks geometry
     ...(paddock?.targets() ?? []), // the paddock's ponies: Klappa (#1293)
     ...jetpack.targets(), // the jetpack on its hook / where it was stood down (#359)
     ...(!weaponKey() ? ghosts.targets() : []), // only unarmed visitors greet other players (#872)
@@ -2518,7 +2527,7 @@ function updateFocus() {
     promptEl.textContent = clickIsE() ? `Klicka för att ${verb}${named}${own}` : `Tryck E för att ${verb}${named}`;
   }
   const seated = (rest.active || player.riding) && !reading; // sitting / lying: E with nothing in reach gets you up; Space / C always do
-  const holding = !focused && heldItem()?.useLabel ? heldItem() : null; // touch: the button uses what you hold (fire, wave, light); a cup or the jug has no use of its own
+  const holding = !focused ? (heldItem()?.useLabel ? heldItem() : football?.controlled&&football.canPlay() ? football.control : null) : null; // touch: the button uses what you hold (fire, wave, light); a cup or the jug has no use of its own
   if (holding && touch.enabled) actionBtn.textContent = holding.useLabel;
   if (holding && !touch.enabled && !reading && !focused && !seated) {
     promptEl.textContent = clickIsE() ? `Klicka för att ${holding.useLabel.toLowerCase()}` : `Tryck E för att ${holding.useLabel.toLowerCase()}`;
@@ -2544,12 +2553,14 @@ function updateFocus() {
   } else if (promptEl.style.backgroundImage) promptEl.style.backgroundImage = '';
   if (heldItem() === binoculars && !focused && !touch.enabled && !reading) { promptEl.textContent = binoculars.zoomed ? 'Högerklick: sänk kikaren' : 'Högerklick: kika'; promptEl.hidden = false; } // #1706
   if (heldItem() === fishing.rod && !focused && !touch.enabled && !reading) { promptEl.textContent = { idle: fishing.aim() ? 'Klicka för att kasta' : 'Sikta mot vattnet i ån för att kasta', flight: 'Kastar …', wait: 'Väntar på napp · klicka för att veva in', bite: 'Napp! Klicka nu!', reel: 'Vevar in …' }[fishing.state]; promptEl.hidden = false; } // #1753
+  if(!focused&&football?.controlled&&!touch.enabled&&!reading){promptEl.textContent='Klicka: sparka · högerklick: passa · E: släpp bollen';promptEl.hidden=false;}
   if (heldItem() === ball && !focused && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att skjuta · högerklick: studsa bollen'; promptEl.hidden = false; }
   actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || (!!choices.rows && !reading) || clockPanel.open || calPanel.open || blindPanel.open || sonos.open || !!viewing || isAvatarCustomizerOpen(); // the strips have their own ×
   remoteSeekControls.hidden=!touch.enabled||reading||!remoteAim||!tvMedia.seekable(remote.findTv());
-  powerBtn.hidden = !touch.enabled || !heldItem()?.useAlt || reading;
+  powerBtn.hidden = !touch.enabled || !(heldItem()?.useAlt || (football?.controlled&&football.canPlay())) || reading;
   turnBtn.hidden = !touch.enabled || reading || focused?.kind !== 'place' || !!focused.blocked || !itemGhost.visible; // ⟳ (#368)
-  if (!powerBtn.hidden) setIcon(powerBtn,heldItem().altIcon==='🏀'?'basketball':heldItem().altIcon==='🥂'?'cheers':heldItem().altIcon==='🔭'?'binoculars':heldItem().altIcon==='🎨'?'spray':'power',heldItem().altLabel??'Stäng av / slå på TV:n');
+  if(!powerBtn.hidden&&!heldItem()&&football?.controlled)setIcon(powerBtn,'football','Passa fotbollen');
+  else if (!powerBtn.hidden) setIcon(powerBtn,heldItem().altIcon==='🏀'?'basketball':heldItem().altIcon==='🥂'?'cheers':heldItem().altIcon==='🔭'?'binoculars':heldItem().altIcon==='🎨'?'spray':'power',heldItem().altLabel??'Stäng av / slå på TV:n');
 }
 
 // --- furniture on/off (F / 🛋) ---------------------------------------------
@@ -3023,6 +3034,9 @@ const weaponKey = () => { if (player.riding) return ''; const h = heldItem(); re
 const gymPumpState = pumpSampler(() => stats.gymPump);
 const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey, mirrored: () => !rest.active || !!rest.spot?.gymPose || !!rest.spot?.gymWirePose,
   state: () => ({ bp: gymPumpState(), p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, look: [0, camera.rotation.x], c: player.crouched, dn: playroom.music.danceCode ?? 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 && player.outdoors ? 2 : 1) : 0, am: player.climb ? 3 : player.swing ? 2 : player.flying || player.fling ? 1 : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, fb: fishing.wire, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
+football=new Football({site:world.football,camera,ghosts,life,
+  canPlay:()=>overlay.hidden&&!reading&&!heldItem()&&!rest.active&&!player.riding&&!player.flying&&!player.climb&&!player.swing&&Math.abs(player.pos.y-world.football.ground(player.pos.x,player.pos.z))<FOOTBALL.playHeightSlack,
+  spectating:()=>rest.active&&rest.target?.id?.startsWith('football-bench-'),onRecord:recordFootball,say:t=>badge(t,false)});
 const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, basket: ball, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows, life, fruit, fish, chicken, fries, beer, beerCans,
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
   onDie: () => { binoculars.setZoom(false); goToStart(() => respawnOutdoors(player)); badge('💀 Slut på liv – du lever igen', false); } }); // only the place changes (#665)
@@ -3150,7 +3164,7 @@ tvMedia.connect(cinema.net);
 computerHub.connect({...cinema.net,snake:m=>ghosts.snake(m)});
 ghosts.onSnake=m=>computerHub.receiveSnake(m);
 ghosts.onCinema = m => m.screen?(computerHub.receive(m)||tvMedia.receive(m)):cinema.receive(m);
-ghosts.keepConnected = () => (player.inPlayroom && !!cinema.state?.video)||tvMedia.watching||computerHub.watching||fishing.state !== 'idle'||bouleSync.interest; // (#1753: an angler waiting for a bite stands still for minutes; the others keep seeing the float)
+ghosts.keepConnected = () => (player.inPlayroom && !!cinema.state?.video)||tvMedia.watching||computerHub.watching||fishing.state !== 'idle'||bouleSync.interest||!!football?.interest; // (#1753: an angler waiting for a bite stands still for minutes; the others keep seeing the float)
 // toasting (#1222): "Skåla" with a glass in the hand (right click / 🥂): a clink, the glass raised (things.js), a line and one small
 // message; a player near us who holds a glass hears it and toasts back once (flagged, so no ping-pong); Olof answers from his car.
 toastHandler.fn = (glass, back = false) => {
@@ -3626,6 +3640,7 @@ function frame(raw) {
   hitch.phase('adapt');
   step(dt);
   ghosts.update(dt);
+  football?.update(active()&&overlay.hidden&&!reading&&!document.hidden);
   outdoorGym.observe(ghosts.others);
   combat.update(dt);
   chat.update(dt); // the chat column fades (#675)
@@ -3963,4 +3978,4 @@ const openPanel = () => !overlay.hidden ? 'menu' : !reading ? (lowMemory && port
   : viewing ? 'poster' : isAvatarCustomizerOpen() ? 'avatar' : cinema.open || computerHub.open || tvMedia.open ? 'video' : 'other';
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding, panel: openPanel }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { ghosts, outdoorGym, ducks, medals, squirrels, outdoorCats, footprints, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, bestiary, bestiaryPhotos, bestiaryImages, bestiaryRegistry:registry, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
+window.__app = { football, ghosts, outdoorGym, ducks, medals, squirrels, outdoorCats, footprints, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, bestiary, bestiaryPhotos, bestiaryImages, bestiaryRegistry:registry, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };

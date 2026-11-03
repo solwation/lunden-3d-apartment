@@ -2211,3 +2211,14 @@ Shared doors (#1775): a door you open or shut is seen by the other players with 
 ### Current animal binder (#1848)
 
 Djurpärmen replaces the old fixed CatCards pockets/photo rotation UI, retaining historical data untouched. The prop is on the coffee table's top; E opens it using the existing binder target/pointer-lock route. Family grids distinguish seen/found, stable entry numbers, unknown model silhouettes, rarity and all-seen completion. Details show metadata, arbitrary ID chains, local encounter actions/best catch and latest photos. Keyboard/mouse/touch and back/focus follow `BinderPanel({registry,collection,images},el)` with `open/show/back/key/render`. See [current source inventory and native evidence](../verification/1848/README.md); older binder-menu descriptions are historical.
+
+## Shared grass-field football (#1853)
+
+`football.js` provides two feet-level ball targets, independent of Holdable hands. E / touch claims
+or drops a ball; movement dribbles from the existing shared body pose; click / touch kicks and
+right-click / the pass button gives the lower impulse. An empty hand, actual ground contact and
+no active Rest/riding/climbing/flying mode are required. The static `footballmodel.js` benches
+use normal Rest targets; the fountain registers one ordinary cancellable timed Life action in
+`footballlife.js`. The field's small rendered-terrain support is owned by `world.football`, not
+by an initialized gameplay controller. Fixed posts/fittings enter the existing far-walk buckets;
+ball mesh roots/surfaces are moving ray targets. See [scoped proof](../verification/1853/README.md).

@@ -1050,3 +1050,11 @@ Only the local `SITE.street.trafficLight` and two `warnings` stands are retired.
 ### Nordic rear contact (#1850)
 
 Nordic's parking lies beyond the north terrain rectangle. `nordicground.js` follows the actual `edgebackdrop.skirtParts` triangles, clips asphalt/paint at their creases and shares the same local parking surface with the outdoor-cat ground adapter. Only the existing grey foundation extends downward to the source-triangle minimum; floor/eave/front/entrance geometry and stair dimensions stay fixed. This is a model contact assumption, not a verified cellar depth. Planters and steel stair feet now meet the drawn slope. No shared terrain/Player/bridge/A/B/C/L geometry changes. Actual campus 87,721 triangles < 87,800, 14 meshes unchanged; [source mesh checks and before/after](../verification/1850/README.md).
+
+The northern open grass field has a guessed 16×24 m football layout at (-262,-21), two goals,
+two level spectator benches and a small direct-drinking fountain (#1853). `FOOTBALL` keeps all
+placement/play guesses; `footballmodel.js` cuts paint against the same emitted terrain grid and
+fits each footing to `renderedTerrainY`. No existing terrain/tree/building/path geometry changes.
+The local Player support is bounded to this field/runoff and its narrow east spectator apron;
+outside it, the previous ground-support priority remains unchanged. See
+[local contacts, access, budget and app evidence](../verification/1853/README.md).

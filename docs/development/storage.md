@@ -1622,3 +1622,18 @@ The current animal collection supersedes the rotating CatCards album; older albu
 Welcome adds `boule.v=1`; `bl` actions (`t` throw, `c` collect, `m` mène, `r` reset, `g` resync) use Ghosts' existing 5 Hz outbox. Each mutating request carries the expected revision and bounded aim; last clean feet enforce circle/lectern reach. The authoritative ACK carries final state and, while moving, start state/seed/flight age. Late join and hibernation replay from the same age or take the final state. Only the latest record is kept, not a growing score/event ledger. Existing game-to-13 board points are the only points; stats, medals and daily award caps are unchanged.
 
 Rollout: deploy Worker (including config, boulesync/rules/physics) **before** Pages. New clients never commit optimistically. An older Worker lacking the capability gives a plain update/retry message; an enabled cloud connection still starting is also gated. Cloud disabled (`cloud=` / `mp=0`) keeps existing local solo play. Losing a shared connection freezes that game until reconnect instead of silently forking it. Existing legacy clients still join/move normally and ignore the new field, but cannot operate shared boule until updated. See [source manifest, local Room/native input evidence and limitations](../verification/1854/README.md).
+
+## Football match and receipts (#1853)
+
+The existing PlayerRoom DO stores one `football` snapshot. Read before welcome/messages on wake;
+write accepted ownership/kick/drop and discrete goal/reset/stop/departure transitions, not ordinary
+body/ball motion. It survives the last socket leaving. Owned balls also keep one tiny server-owned ftBall anchor in the already serialized socket attachment, preventing a false historical chord/goal after wake; ordinary dribbling still causes no DO writes. The existing 5 Hz Ghosts outbox carries
+`ft` take/drop/kick/query commands with a monotonic nonce; no client ball coordinates or goal
+claims are accepted. Welcome advertises football protocol 1 and the complete bounded match.
+Older servers/disconnected online visits cannot create a conflicting local simulation. Explicit
+offline visits have a local match. New Worker imports are listed in cloud.yml deployment paths.
+
+Local per-profile stats save `footballGoals` together with `footballRecord` (match epoch, bounded
+own former socket IDs and cumulative credited counts). Matching server credits add one existing
+score point each, exactly once across reload/reconnect/late goal receipt. Other activity ledgers
+and caps are unchanged. [Protocol/receipt tests and exact scope](../verification/1853/README.md).

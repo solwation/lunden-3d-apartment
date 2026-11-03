@@ -1,3 +1,4 @@
+import {creditFootball} from './footballcredit.js';
 import { creditPump } from './gympump.js';
 import { danceScoreOf, creditDance } from './dancescore.js';
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
@@ -11,7 +12,7 @@ import { creditDuckFeeds, duckScoreOf } from './duckscore.js';
 import { gymScoreOf, creditGym } from './gymscore.js';
 const KEY = 'lunden.stats';
 
-const fresh = () => ({ love: 0, loveReceipts: [], pvpKills: 0, killReceipts: {}, cats: 0, rare: 0, byVariant: {}, petted: 0, ponyPets: 0, squirrelFeeds: 0, duckFeeds: 0, duckScore: 0, duckFeedDay: null, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, danceSeconds: 0, danceScore: 0, danceRewardDay: null, gymPump: null, gymReps: 0, gymScore: 0, gymRewardDay: null, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, carMusic: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0, freeThrows: 0, twoPointers: 0, basketPoints: 0,
+const fresh = () => ({ love: 0, loveReceipts: [], pvpKills: 0, killReceipts: {}, cats: 0, rare: 0, byVariant: {}, petted: 0, ponyPets: 0, squirrelFeeds: 0, duckFeeds: 0, duckScore: 0, duckFeedDay: null, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, danceSeconds: 0, danceScore: 0, danceRewardDay: null, gymPump: null, gymReps: 0, gymScore: 0, gymRewardDay: null, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, carMusic: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0, freeThrows: 0, twoPointers: 0, basketPoints: 0, footballGoals: 0, footballRecord: null,
   byBreed: {}, seen: {}, secretRare: {}, tv: 0, pc: 0, parasol: 0, clock: 0, calendar: 0, cooked: 0, brews: 0, drawn: 0, splashes: 0, cuts: 0, dribbles: 0, catButts: 0, shattered: 0, shatterRange: 0, pingpingHugs: 0, blinds: 0, curtains: 0, airfried: 0, clips: 0, penalties: {}, penaltyPoints: 0, kittens: 0, kittenPets: 0, petsByBreed: {}, hugsByBreed: {}, vacuumed: 0, tasks: 0, taskCounts: {}, taskRewardDays: {}, taskBonusDays: {}, taskBonusPoints: 0, taskDay: null, mieleDay: null, legacyTaskPoints: 0, pvpRangePoints: 0, medals: {}, medalsSeeded: false, medalPoints: 0, fishCaught: 0, fishBySpecies: {}, fishEaten: 0 });
 
 
@@ -43,6 +44,7 @@ let dirty = false;
 
 // Badge text per counter; counters missing here (metres, seconds) never get a badge
 const BADGES = {
+  footballGoals: '⚽ Mål +1',
   petted: '✋ Klappat katt', ponyPets: '🐴 Klappat en häst', squirrelFeeds: '🐿️ Matat en ekorre', duckFeeds: '🦆 Matat en anka', doors: '🚪 Dörr öppnad', lids: '🚽 Toalettlock', flushes: '🌊 Spolat', toiletPaper: '🧻 Toapapper slängt', handwash: '🧼 Tvättat händerna', handdry: '🧺 Torkat händerna', taps: '💧 Kran påslagen',
   fridge: '🍗 Kylskåpet öppnat', appliances: '🍳 Ugn/mikro öppnad', cabinets: '🗄 Skåp öppnat', beer: '🍺 Klunk öl', coffee: '☕ Klunk kaffe', turbo: '⚡ Kaffeturbo!', fish: '🐟 Fiskpinne uppäten', fruit: '🍎 Frukt uppäten', fried: '🍳 Fiskpinne stekt', airfried: '🍟 Airfryern klar', toaster: '🍞 Brödrosten rostar', fries: '🍟 Pommes uppäten', sandwiches: '🥪 Du gjorde en macka!', hotdogs: '🌭 Korv med bröd!', friesCooked: '🍟 Pommes frites klara', friesBurnt: '🔥 Pommes brända', burnt: '🔥 Fiskpinne bränd', catFish: '🐈 Katten åt en fiskpinne', catFishFeeds: '🐈 Katten åt en rå fisk', catButts: '🍑 Kattens rumpa', chicken: '🍗 Kycklingbit uppäten', fishEaten: '🐟 Fisken är uppäten', fishCooked: '🔥 Fisken är klar', sharkFin: '🦈 En haj i Höje å! Hajfenan är din.', wine: '🍷 Klunk vin', champagne: '🥂 Klunk champagne', whisky: '🥃 Klunk whisky', milk: '🥛 Klunk mjölk', kask: '☕ Klunk kaffekask', lights: '💡 Lampa tänd', stairs: '🔼 Trapptur', gymReps: '💪 Träningsrepetition',
   love: '💕 Kärlek +100', pvpHits: '🎯 Träffade en spelare', greets: '👋 Hälsade på en spelare', olof: '👋 Vinkat till Olof', sat: '💺 Satt ner', lay: '🛏 Lagt sig', posted: '📌 Teckning uppsatt', thrown: '🗑 Teckning slängd',
@@ -438,6 +440,7 @@ export function statRows() {
     ['🚗 Bilen kallad', `${stats.car}`],
     ['✨ Trollstavsträffar', `${stats.magic}`],
     ['🎯 Måltavlepoäng', `${stats.target}`],
+    ['⚽ Fotbollsmål', `${stats.footballGoals ?? 0}`],
     ['🏀 Korgar', `${stats.baskets}${stats.basketPoints ? ` (${stats.basketPoints} p)` : ''}`,
       [stats.freeThrows ? `${stats.freeThrows} straffkast` : '',
        stats.twoPointers ? `${stats.twoPointers} tvåpoängare` : '',
@@ -477,3 +480,6 @@ export function renderStats(el) {
 /** #1837: persist only on completed reps; elapsed decay is evaluated from the stored wall-clock anchor. */
 export function growGymPump(n, now = Date.now()) { stats.gymPump = creditPump(stats.gymPump, n, now); dirty = true; }
 export { save as saveStats };
+
+/** #1853 server cumulative credits include former own sockets for exact reconnect recovery. */
+export function recordFootball(snapshot,self,welcome=false){const before=JSON.stringify(stats.footballRecord),n=creditFootball(stats,snapshot,self,welcome);if(n)bump('footballGoals',n);if(n||before!==JSON.stringify(stats.footballRecord)){dirty=true;save();}return n;}

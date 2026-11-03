@@ -1,0 +1,142 @@
+{
+  "issue": 1853,
+  "base": "09f554508f51b5b7eef7f1cd2b54f6018ad8818a",
+  "checkpoint": "eff27c932981e6413e3578d5d5e629835fff69e5",
+  "finalSourceSHA256": {
+    ".github/workflows/cloud.yml": "9d3d27e03b617dadae94f3069d480005773203efae487d6c5a0d029f05a391a2",
+    "README.md": "adcde7f742cfcc53ee536f5cea47727204ba499e12b501c4a56238e2658f0834",
+    "cloudflare/football.js": "a2e11934166706bb1308c48008ca7d90e6d41e5e0cda44aa39a6921b1fb33d1c",
+    "cloudflare/football.test.mjs": "b9fb1ea4b74d65cc4b7dd4bd353f91dddafbadc620641779c575a1df8dfc7e9a",
+    "cloudflare/footballroom.test.mjs": "29201dbb19dbe588f57b7d8a5647f4b604accbe0989b389204c42791cc4504ff",
+    "cloudflare/players.js": "a0fa2d551c941f5968a727ae37858ddc87499eb3fb8592779d37e45e64d78e15",
+    "cloudflare/players.test.mjs": "19211381e97be74b61f73e4fe13bd1f5681b63e998c8e942ee2e7986afbde1d4",
+    "data/changelog.json": "320d3f0c3a76763c9bb54ef961f65b66de4d2ea5fe99a28961825ae2d83fa15d",
+    "docs/development/environment.md": "26f71b26fc9a4fd892e3180ede3269ad6abdc1a7b123750e7e39c5422949558e",
+    "docs/development/interactions.md": "ebf79391482c234ec341f54509f2558bb24d8f09d0bdd91e76a279a0b88c8105",
+    "docs/development/storage.md": "eca08c436242d5e9d6b1fc645aa0cf6ce4c4838175519da702f07c96950209f6",
+    "docs/development/verification.md": "41549bfb23f508772accddc07e9dd5a1803ae98d8c0ea8356663be1b3b34db24",
+    "index.html": "232bd2a52a4bc45dd2381f3863ca0741ec7315f0d14f7f54c9795efaa25f92c4",
+    "src/config.js": "86eb4a78a63f04f7fe5cd00ad71c381ec364e01571271d8ce49329fceb6f3b6a",
+    "src/farwalk.js": "0cd4469bef103d8a4646aaf191e047e1075c9ca633a893738d131099bf0ff3c1",
+    "src/football.css": "55ca62193001f8bf97c016aee5712b71103e045cc16a4a1273b43fa03ea0e1e7",
+    "src/football.js": "151be934bde78154c7b3b7de8c16d9bad2b35effd51caecb757b83d3a913c260",
+    "src/footballcredit.js": "73abfe0487a53b8fc63e9ed5b8d34027c5fa6ef3faf86fcd02dfba01c812c316",
+    "src/footballgeo.js": "d5e566bae085252b925d75d548c5d091cba85cd079e16a4605cf7de6a8d1b9d8",
+    "src/footballlife.js": "3fb2e5e4aef97180269c4367142d1c28b2ad544d6d74d1b6db42036f8031f308",
+    "src/footballmodel.js": "737f18fd27dc16d7c63feb863a93d04104784151a279bcb3f2a1bf34455e8f6a",
+    "src/footballphysics.js": "2b3b894ede19793224fede18fa9c65719ae85ab30eb1322d6f1f6e5f96925d43",
+    "src/footballwire.js": "6a331c8202cb2d118a09de3453065e30d2a5651a186ac4be050acd130d6174fc",
+    "src/ghosts.js": "953164e6602b1f3012f1b1d93db823437fd419c82f6b590e6ea383d30e74d20e",
+    "src/hudicons.js": "81a4296d685d00f9a5a1e4241c9daf7be9a52c4572d532832c43ba79153aa6be",
+    "src/main.js": "25688e546d3dbf0b257a20ad248a074c0903cdd54f4a9982abbe8a8ab1499f44",
+    "src/player.js": "92bd8f011df643c941d331f64805709a0d99be968128de86bc771499255095eb",
+    "src/stats.js": "3750cf48fbf47d26aed03877af0fce1a24715e4a4d0a03aa8b68f6f650dc0d6f",
+    "src/world.js": "9be8e1cc886ee6800ced8d7790b1619d1df25319ee81e939fa73a170b94a048a",
+    "tools/footballplacement.mjs": "1edb16618fad8cced6ddd88c2b68bdfd587388e222bf3e43ba0af07a0947ef1a",
+    "tools/footballsite.test.mjs": "2f579c1b912d94e53ad304055f76bb4a06cfa81852e5a3ea711b0eb132818d90",
+    "tools/footballstats.test.mjs": "a6c2a3bbdedffd62553377619b3ffcc4c3ec87a2ff53b5b13155d4d17cc7cc3d",
+    "tools/footballtest.mjs": "dde754d5dbd927443cd5ea8b021484ae2959439020fe1ae6b02a1cd691896321"
+  },
+  "imagesSHA256": {
+    "docs/verification/1853/app/spectator.png": "974bd684363da526ffb26228cf6568fafb9cb3d44400ea6b43f85675d893148f",
+    "docs/verification/1853/app/fountain.png": "7e01c98fb236110da2807a7a5a17f8dd2c631873a306ab30db30cb142ec008d3",
+    "docs/verification/1853/app/field-final.png": "7b996d54fa47a0e18ee95dedd80e8baafe507d72cee1f80d606af00f35f2b373"
+  },
+  "phases": [
+    {
+      "name": "functional actual app",
+      "worldBootstraps": 1,
+      "localWorker": 8934,
+      "staticServer": 8924,
+      "main": "actual full game page, real pointer lock keyboard/mouse and emulated native touch",
+      "peer": "production Ghosts + Football modules in small iframe, not second full world",
+      "layout": {
+        "at": [
+          -267,
+          -9
+        ],
+        "width": 20,
+        "length": 32,
+        "runoff": 3,
+        "apron": 5,
+        "benchSide": 14,
+        "benchOffsets": [
+          -7,
+          7
+        ],
+        "fountainAt": [
+          14,
+          13
+        ]
+      },
+      "proof": [
+        "native-dribble",
+        "native-goal-clean",
+        "native-touch-pass",
+        "native-bench",
+        "native-drink",
+        "access-boundary"
+      ],
+      "differencesFromFinal": [
+        "FOOTBALL layout dimensions/positions and narrow apronSpan",
+        "footballmodel.groundAt changed from full east strip to field plus narrow apron union",
+        "advanceFootball gained goal-crossing detection after two-ball separation; isolated new final Node test",
+        "RoomFootball gained tiny ftBall socket anchor restore for sparse-pose hibernation; isolated final5/5 Node proof"
+      ],
+      "limits": "Functional source phase was not separately archived byte-for-byte. Final hashes identify delivery; the exact limited changes above delimit reuse. No claim of byte-identical final-layout native gameplay."
+    },
+    {
+      "name": "final static model in same held world",
+      "layout": {
+        "at": [
+          -262,
+          -21
+        ],
+        "width": 16,
+        "length": 24,
+        "runoff": 2,
+        "apronSpan": [
+          -8,
+          12
+        ]
+      },
+      "geometryModule": "src/footballmodel.js?finalLayout=1",
+      "existingWorldGeometry": "unchanged",
+      "fixtureChanges": [
+        "render loop frozen",
+        "shared mutable FOOTBALL values updated to final file values",
+        "new static feature rebuilt, old feature detached, existing ball roots retained",
+        "new feature Rest/Life targets replaced",
+        "only corresponding local already-memoized collision arrays refreshed as a fresh initialization would"
+      ],
+      "proof": [
+        "final-layout-capture",
+        "final-mesh-contact",
+        "final-budget",
+        "indexed-ledger"
+      ],
+      "limits": [
+        "HUD is frozen and not a performance/live-peer claim",
+        "oldParameters.apronSpan in final-layout-capture comes from a preceding failed in-place update; it was absent in functional source phase",
+        "first direct ray diagnostic respected intentional no-op ground raycast and was invalid; final probes explicitly call Mesh.prototype.raycast for actual opaque emitted terrain",
+        "initial final-budget models[].triangles position-based estimate is corrected for indexed meshes in indexed-ledger; renderer.info deltas were correct"
+      ]
+    },
+    {
+      "name": "final offline source",
+      "checks": [
+        "final-scoped.txt14/14",
+        "wake-anchor.txt5/5 after attachment fix",
+        "placement.txt continuous source distances"
+      ],
+      "reuse": [
+        "scoped.txt86/86 includes unchanged legacy PlayerRoom suite",
+        "site-stats.txt3/3 initial-layout contracts"
+      ],
+      "geometry": "No existing terrain/building/path/tree vertices or materials changed; new local field/fittings only."
+    }
+  ],
+  "deployment": "Worker-compatible physics/wire/config/Room/deploypaths first, then client/world/stats/UI; independent football/boule welcome branches and union keepConnected terms during conductor integration",
+  "publicFollowup": "static field/goals/benches/fountain only; no original photos, balls/gameplay, Life, score, storage or Cloudflare",
+  "processes": "own browser, static server8924 and local Worker8934 stopped"
+}

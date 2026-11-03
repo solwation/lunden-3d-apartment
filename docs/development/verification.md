@@ -9043,3 +9043,10 @@ Two scoped risk groups: 9 source/contact/isolation checks plus 11 retained Nordi
 ### Shared boule (#1854)
 
 `node --experimental-default-type=module --test cloudflare/boule.test.mjs tools/bouleclienttest.mjs tools/bouletest.mjs cloudflare/billiards.test.mjs cloudflare/roommusic.test.mjs src/outbox.test.mjs cloudflare/deploypaths.test.mjs` covers deterministic replay, true local Worker/Room revision/ownership/races/persistence/latejoin/hibernation, legacy capability and offline/disconnect, existing rules/physics, pool/music and outbox. `tools/boulesyncbrowser.cjs` uses one actual app and one small true Room receiver with production Boule/BouleClient, native keyboard/touch, same seven final objects and result, plus a three-draw/no-light component boundary. It holds via CONTROL.release; its explicit focus marker precedes native E. `boulesyncrecover.cjs` can reuse the existing held Playwright Page exposed on the driver's globalThis through a local Node inspector, without bootstrapping another world. [Saved images, fixture diagnostics, exact source phases and rollout](../verification/1854/README.md).
+
+#1853 shared football: [scoped evidence](../verification/1853/README.md) separates initial-layout
+native keyboard/touch / real local PlayerRoom peer / Rest / Life proof from the corrected final
+16×24m layout's continuous access/tree/footprint clearances, actual17fitting+5field mesh probes
+and local4draw/1328triangle delta. Run the listed Node tests and tools/footballplacement.mjs;
+no campus/phone benchmark is implied. Sparse storage and attachment reanchoring survive wake
+without replayed/fictitious goal credit. Exact source phases and three inspected images are saved.

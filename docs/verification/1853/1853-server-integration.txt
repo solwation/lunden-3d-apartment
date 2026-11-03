@@ -1,0 +1,517 @@
+TAP version 13
+# Subtest: bounded commands and deterministic existing physics/flight replay
+ok 1 - bounded commands and deterministic existing physics/flight replay
+  ---
+  duration_ms: 7.045434
+  type: 'test'
+  ...
+# Subtest: real Room capability, two peers, simultaneous/stale/early requests and no duplication
+ok 2 - real Room capability, two peers, simultaneous/stale/early requests and no duplication
+  ---
+  duration_ms: 46.494124
+  type: 'test'
+  ...
+# Subtest: turn ownership, late/rejoin animation, hibernation, outside and old clients
+ok 3 - turn ownership, late/rejoin animation, hibernation, outside and old clients
+  ---
+  duration_ms: 115.296654
+  type: 'test'
+  ...
+# Subtest: full round scores once, resets race, persistent bounded record and no global score credit
+ok 4 - full round scores once, resets race, persistent bounded record and no global score credit
+  ---
+  duration_ms: 84.905009
+  type: 'test'
+  ...
+# Subtest: the Worker deploy workflow triggers on every src/ file the Worker imports
+ok 5 - the Worker deploy workflow triggers on every src/ file the Worker imports
+  ---
+  duration_ms: 10.896153
+  type: 'test'
+  ...
+# node:internal/modules/esm/resolve:274
+#     throw new ERR_MODULE_NOT_FOUND(
+#           ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/devcontainers/orkester-olw-win10-gpt6-20261103/integration/src/footballcredit.js' imported from /home/devcontainers/orkester-olw-win10-gpt6-20261103/integration/cloudflare/football.test.mjs
+#     at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+#     at moduleResolve (node:internal/modules/esm/resolve:859:10)
+#     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:731:20)
+#     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:310:38)
+#     at ModuleJob._link (node:internal/modules/esm/module_job:183:49) {
+#   code: 'ERR_MODULE_NOT_FOUND',
+#   url: 'file:///home/devcontainers/orkester-olw-win10-gpt6-20261103/integration/src/footballcredit.js'
+# }
+# Node.js v22.20.0
+# Subtest: cloudflare/football.test.mjs
+not ok 3 - cloudflare/football.test.mjs
+  ---
+  duration_ms: 35.45127
+  type: 'test'
+  location: '/home/devcontainers/orkester-olw-win10-gpt6-20261103/integration/cloudflare/football.test.mjs:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: production Worker: two independent owners, shared goal, late join, replay and hibernated rejoin retain one authoritative match
+ok 7 - production Worker: two independent owners, shared goal, late join, replay and hibernated rejoin retain one authoritative match
+  ---
+  duration_ms: 139.649472
+  type: 'test'
+  ...
+# Subtest: two players see each other: welcome, join, forwarded and cleaned states, leave
+ok 8 - two players see each other: welcome, join, forwarded and cleaned states, leave
+  ---
+  duration_ms: 52.582853
+  type: 'test'
+  ...
+# Subtest: requests and messages are counted (1 + 1/20); heartbeats are auto-answered and not counted; counter survives hibernation
+ok 9 - requests and messages are counted (1 + 1/20); heartbeats are auto-answered and not counted; counter survives hibernation
+  ---
+  duration_ms: 51.247647
+  type: 'test'
+  ...
+# Subtest: rate limit: over perSecond dropped, repeated seconds close (4008); oversized closes (1009)
+ok 10 - rate limit: over perSecond dropped, repeated seconds close (4008); oversized closes (1009)
+  ---
+  duration_ms: 174.849042
+  type: 'test'
+  ...
+# Subtest: \#1759: a burst (a stalled link catching up) drops the final state; the same state sent again later reaches the others
+ok 11 - \#1759: a burst (a stalled link catching up) drops the final state; the same state sent again later reaches the others
+  ---
+  duration_ms: 25.611824
+  type: 'test'
+  ...
+# Subtest: max players; idle sockets closed; bad origin and plain requests refused
+ok 12 - max players; idle sockets closed; bad origin and plain requests refused
+  ---
+  duration_ms: 285.657875
+  type: 'test'
+  ...
+# Subtest: monthly cap: crossing it closes everybody (4001), new sockets refused without reaching the room, back next month
+ok 13 - monthly cap: crossing it closes everybody (4001), new sockets refused without reaching the room, back next month
+  ---
+  duration_ms: 46.427916
+  type: 'test'
+  ...
+# Subtest: admin brake: DELETE /admin/players and /admin/all close and switch off, PUT switches on, token required
+ok 14 - admin brake: DELETE /admin/players and /admin/all close and switch off, PUT switches on, token required
+  ---
+  duration_ms: 37.262151
+  type: 'test'
+  ...
+# Subtest: combat (\#667): only armed vs armed, range, rate, points per minute; lives count down, death refills
+ok 15 - combat (\#667): only armed vs armed, range, rate, points per minute; lives count down, death refills
+  ---
+  duration_ms: 204.228532
+  type: 'test'
+  ...
+# Subtest: shots (\#667): every shot goes to the armed others only, from near the shooter, checked; `to` scores as a hit
+ok 16 - shots (\#667): every shot goes to the armed others only, from near the shooter, checked; `to` scores as a hit
+  ---
+  duration_ms: 54.839428
+  type: 'test'
+  ...
+# Subtest: greetings (\#673): to someone here, a phrase index only, not too often; everybody else sees it
+ok 17 - greetings (\#673): to someone here, a phrase index only, not too often; everybody else sees it
+  ---
+  duration_ms: 41.699745
+  type: 'test'
+  ...
+# Subtest: toasts (\#1222): an index only, to the players within range, not too often, never echoed
+ok 18 - toasts (\#1222): an index only, to the players within range, not too often, never echoed
+  ---
+  duration_ms: 48.671236
+  type: 'test'
+  ...
+# Subtest: ghost score is forwarded, included on welcome and bounded like leaderboard
+ok 19 - ghost score is forwarded, included on welcome and bounded like leaderboard
+  ---
+  duration_ms: 48.593537
+  type: 'test'
+  ...
+# Subtest: jetpack is no weapon (\#1705): h: jetpack counts as unarmed, a jetpack shot is never accepted
+ok 20 - jetpack is no weapon (\#1705): h: jetpack counts as unarmed, a jetpack shot is never accepted
+  ---
+  duration_ms: 40.756747
+  type: 'test'
+  ...
+# Subtest: Nerf (\#714): shared longer range accepts 22 m, rejects range/rate/unarmed and relays misses without hits
+ok 21 - Nerf (\#714): shared longer range accepts 22 m, rejects range/rate/unarmed and relays misses without hits
+  ---
+  duration_ms: 56.758325
+  type: 'test'
+  ...
+# Subtest: chat (\#675): forwarded to the others with the name, cleaned, limited, refused with mx, counted in the cap
+ok 22 - chat (\#675): forwarded to the others with the name, cleaned, limited, refused with mx, counted in the cap
+  ---
+  duration_ms: 176.597268
+  type: 'test'
+  ...
+# Subtest: typing (\#676): on / off forwarded, repeats limited, off by a line, never echoed, no text
+ok 23 - typing (\#676): on / off forwarded, repeats limited, off by a line, never echoed, no text
+  ---
+  duration_ms: 59.598022
+  type: 'test'
+  ...
+# Subtest: public lives: observers, late join, forged state, hibernation and death reset
+ok 24 - public lives: observers, late join, forged state, hibernation and death reset
+  ---
+  duration_ms: 79.500696
+  type: 'test'
+  ...
+# Subtest: shared life: own welcome, unarmed half/fatal falls and weapon-state/forgery invariants
+ok 25 - shared life: own welcome, unarmed half/fatal falls and weapon-state/forgery invariants
+  ---
+  duration_ms: 81.575292
+  type: 'test'
+  ...
+# Subtest: consumption: portion restores +1 up to max, dedup/idempotence, clock cleanup, full health clamp and hibernation
+ok 26 - consumption: portion restores +1 up to max, dedup/idempotence, clock cleanup, full health clamp and hibernation
+  ---
+  duration_ms: 112.806752
+  type: 'test'
+  ...
+# Subtest: crouch pose uses literal actual true in states/late welcome and survives hibernation without changing health
+ok 27 - crouch pose uses literal actual true in states/late welcome and survives hibernation without changing health
+  ---
+  duration_ms: 77.911998
+  type: 'test'
+  ...
+# Subtest: \#1622: dance flag dn is forwarded only as literal 1 (or 2, \#1757), also in the late welcome
+ok 28 - \#1622: dance flag dn is forwarded only as literal 1 (or 2, \#1757), also in the late welcome
+  ---
+  duration_ms: 92.375478
+  type: 'test'
+  ...
+# Subtest: \#1799: air mode am is forwarded only as literal 1, 2 or 3, also in the late welcome
+ok 29 - \#1799: air mode am is forwarded only as literal 1, 2 or 3, also in the late welcome
+  ---
+  duration_ms: 96.871173
+  type: 'test'
+  ...
+# Subtest: \#1757: dn 2 (Gangnam Style) is forwarded as 2, also in the late welcome; switching back to 1 works
+ok 30 - \#1757: dn 2 (Gangnam Style) is forwarded as 2, also in the late welcome; switching back to 1 works
+  ---
+  duration_ms: 37.063051
+  type: 'test'
+  ...
+# Subtest: distance reward shared rule: near, first bonus, middle, cap, invalid and monotonic geometry
+ok 31 - distance reward shared rule: near, first bonus, middle, cap, invalid and monotonic geometry
+  ---
+  duration_ms: 0.4228
+  type: 'test'
+  ...
+# Subtest: authoritative distance awards: actual geometry, forged client points, unchanged rejects and exact minute budget
+ok 32 - authoritative distance awards: actual geometry, forged client points, unchanged rejects and exact minute budget
+  ---
+  duration_ms: 154.484697
+  type: 'test'
+  ...
+# Subtest: standing rifle contact: seeded front surface, bounded wire, body fallback, shared low-health death and receipt
+ok 33 - standing rifle contact: seeded front surface, bounded wire, body fallback, shared low-health death and receipt
+  ---
+  duration_ms: 153.686098
+  type: 'test'
+  ...
+# Subtest: restricted rifle profile: forged model cannot widen core, other weapons, ray/version/256-byte bounds
+ok 34 - restricted rifle profile: forged model cannot widen core, other weapons, ray/version/256-byte bounds
+  ---
+  duration_ms: 34.921054
+  type: 'test'
+  ...
+# Subtest: central cores: all actual server seed styles confirm 2 HP, style0 core unchanged and beanie old-core fallback
+ok 35 - central cores: all actual server seed styles confirm 2 HP, style0 core unchanged and beanie old-core fallback
+  ---
+  duration_ms: 434.707029
+  type: 'test'
+  ...
+# Subtest: lower-front jaw: actual room validates damage/legacy/forgery/replay/one lethal receipt and bounded high coordinates
+ok 36 - lower-front jaw: actual room validates damage/legacy/forgery/replay/one lethal receipt and bounded high coordinates
+  ---
+  duration_ms: 97.976472
+  type: 'test'
+  ...
+# Subtest: lateral skull: both-side approach, whole-cell boundaries and missing ray fail closed for canonical variants
+ok 37 - lateral skull: both-side approach, whole-cell boundaries and missing ray fail closed for canonical variants
+  ---
+  duration_ms: 22.77087
+  type: 'test'
+  ...
+# Subtest: lateral skull room: canonical actual socket, alternating sides, shared lethal receipt and old-client fallback
+ok 38 - lateral skull room: canonical actual socket, alternating sides, shared lethal receipt and old-client fallback
+  ---
+  duration_ms: 92.196679
+  type: 'test'
+  ...
+# Subtest: lateral skull greeting exclusion is attachment-authoritative, persists after time/hibernate, and leaves other profiles independent
+ok 39 - lateral skull greeting exclusion is attachment-authoritative, persists after time/hibernate, and leaves other profiles independent
+  ---
+  duration_ms: 104.105163
+  type: 'test'
+  ...
+# Subtest: extra frontal nose cell: authoritative damage, legacy fallback, one fatal award and retained recovery contract
+ok 40 - extra frontal nose cell: authoritative damage, legacy fallback, one fatal award and retained recovery contract
+  ---
+  duration_ms: 78.752396
+  type: 'test'
+  ...
+# Subtest: rear arm safety: accepted greeting is private, permanent across pause/hibernate/latejoin, and fresh attachment restores eligibility
+ok 41 - rear arm safety: accepted greeting is private, permanent across pause/hibernate/latejoin, and fresh attachment restores eligibility
+  ---
+  duration_ms: 199.199439
+  type: 'test'
+  ...
+# Subtest: \#938 immutable standing history: first real state, normalized changes, legacy and private hibernation
+ok 42 - \#938 immutable standing history: first real state, normalized changes, legacy and private hibernation
+  ---
+  duration_ms: 291.627317
+  type: 'test'
+  ...
+# Subtest: \#938 named optional regions preserve legacy front/rear/default/undefined/null guard semantics
+ok 43 - \#938 named optional regions preserve legacy front/rear/default/undefined/null guard semantics
+  ---
+  duration_ms: 4.593994
+  type: 'test'
+  ...
+# Subtest: lower central nose band: authoritative damage, legacy fallback, one fatal award and retained recovery contract
+ok 44 - lower central nose band: authoritative damage, legacy fallback, one fatal award and retained recovery contract
+  ---
+  duration_ms: 97.281672
+  type: 'test'
+  ...
+# Subtest: \#947 tiny LEFT turn anchor stays private, normalized, permanent and independent through hibernation
+ok 45 - \#947 tiny LEFT turn anchor stays private, normalized, permanent and independent through hibernation
+  ---
+  duration_ms: 416.685153
+  type: 'test'
+  ...
+# Subtest: \#947 accepted normalized tiny turn after greeting gives authoritative LEFT2, legacy/invalid returns remain body1
+ok 46 - \#947 accepted normalized tiny turn after greeting gives authoritative LEFT2, legacy/invalid returns remain body1
+  ---
+  duration_ms: 95.248075
+  type: 'test'
+  ...
+# Subtest: post-turn frontal corridor: private first-standing anchor, permanent escape, legacy failure and independent regions
+ok 47 - post-turn frontal corridor: private first-standing anchor, permanent escape, legacy failure and independent regions
+  ---
+  duration_ms: 183.133159
+  type: 'test'
+  ...
+# Subtest: \#955 greeted post-turn Front: normalized authority, history, lethal/replay and legacy independence
+ok 48 - \#955 greeted post-turn Front: normalized authority, history, lethal/replay and legacy independence
+  ---
+  duration_ms: 390.089788
+  type: 'test'
+  ...
+# Subtest: \#953 larger LEFT standing turn anchor stays private, normalized, permanent and independent through hibernation
+ok 49 - \#953 larger LEFT standing turn anchor stays private, normalized, permanent and independent through hibernation
+  ---
+  duration_ms: 6620.084896
+  type: 'test'
+  ...
+# Subtest: \#953 accepted larger standing turn after greeting gives authoritative LEFT2, legacy/invalid returns remain body1
+ok 50 - \#953 accepted larger standing turn after greeting gives authoritative LEFT2, legacy/invalid returns remain body1
+  ---
+  duration_ms: 100.706371
+  type: 'test'
+  ...
+# Subtest: \#951 immutable Rear greeting uses existing private history; changed/legacy return, healing and death never reopen it
+ok 51 - \#951 immutable Rear greeting uses existing private history; changed/legacy return, healing and death never reopen it
+  ---
+  duration_ms: 590.48793
+  type: 'test'
+  ...
+# Subtest: \#952 greeted post-turn Rear: normalized authority, history, lethal/replay and legacy independence
+ok 52 - \#952 greeted post-turn Rear: normalized authority, history, lethal/replay and legacy independence
+  ---
+  duration_ms: 500.927557
+  type: 'test'
+  ...
+# Subtest: \#950 immutable Nose depth uses existing private history; changed/legacy return, healing and death never reopen it
+ok 53 - \#950 immutable Nose depth uses existing private history; changed/legacy return, healing and death never reopen it
+  ---
+  duration_ms: 550.916737
+  type: 'test'
+  ...
+# Subtest: \#959 Jaw strip strict named permission defaults closed and never changes original Jaw/legacy guards
+ok 54 - \#959 Jaw strip strict named permission defaults closed and never changes original Jaw/legacy guards
+  ---
+  duration_ms: 2.953296
+  type: 'test'
+  ...
+# Subtest: \#959 immutable Jaw strip retains real room HP/hibernate/private history/death/replay and legacy fallback
+ok 55 - \#959 immutable Jaw strip retains real room HP/hibernate/private history/death/replay and legacy fallback
+  ---
+  duration_ms: 263.282883
+  type: 'test'
+  ...
+# Subtest: \#962 first ordinary-turn Rear: normalized authority, history, lethal/replay and legacy independence
+ok 56 - \#962 first ordinary-turn Rear: normalized authority, history, lethal/replay and legacy independence
+  ---
+  duration_ms: 1147.661862
+  type: 'test'
+  ...
+# Subtest: \#967 first RIGHT turn is private, accepted-only, single-use and permanent through hibernation
+ok 57 - \#967 first RIGHT turn is private, accepted-only, single-use and permanent through hibernation
+  ---
+  duration_ms: 514.916755
+  type: 'test'
+  ...
+# Subtest: \#967 source-derived style0 whole-cell admission preserves old regions and defaults closed
+ok 58 - \#967 source-derived style0 whole-cell admission preserves old regions and defaults closed
+  ---
+  duration_ms: 1.528298
+  type: 'test'
+  ...
+# Subtest: \#971 immutable Nose prism uses existing private history; changed/legacy return, healing and death never reopen it
+ok 59 - \#971 immutable Nose prism uses existing private history; changed/legacy return, healing and death never reopen it
+  ---
+  duration_ms: 492.52418
+  type: 'test'
+  ...
+# Subtest: \#968 style2 reuses the certified RIGHT cell while long hair stays denied
+ok 60 - \#968 style2 reuses the certified RIGHT cell while long hair stays denied
+  ---
+  duration_ms: 0.624199
+  type: 'test'
+  ...
+# Subtest: \#890 avatar appearance sync in state, welcome and validation
+ok 61 - \#890 avatar appearance sync in state, welcome and validation
+  ---
+  duration_ms: 162.707028
+  type: 'test'
+  ...
+# Subtest: \#1147 carried cat appearance is bounded, forwarded, welcomed and cleared
+ok 62 - \#1147 carried cat appearance is bounded, forwarded, welcomed and cleared
+  ---
+  duration_ms: 37.094461
+  type: 'test'
+  ...
+# Subtest: rest posture forwards to observers and late joins, omission and malformed pose clear it
+ok 63 - rest posture forwards to observers and late joins, omission and malformed pose clear it
+  ---
+  duration_ms: 86.283308
+  type: 'test'
+  ...
+# Subtest: \#1150 authoritative head contact follows seated and lying torso frames
+ok 64 - \#1150 authoritative head contact follows seated and lying torso frames
+  ---
+  duration_ms: 52.242245
+  type: 'test'
+  ...
+# Subtest: \#1175 actual wire build is forwarded and controls ordinary authoritative head width
+ok 65 - \#1175 actual wire build is forwarded and controls ordinary authoritative head width
+  ---
+  duration_ms: 67.500329
+  type: 'test'
+  ...
+# Subtest: \#1156 Olof's top colour (TOPS 10) passes the room as the digit fallback plus the u extension
+ok 66 - \#1156 Olof's top colour (TOPS 10) passes the room as the digit fallback plus the u extension
+  ---
+  duration_ms: 0.8263
+  type: 'test'
+  ...
+# Subtest: \#1286 jp (jetpack worn / thrusting) is validated and forwarded; anything else is dropped
+ok 67 - \#1286 jp (jetpack worn / thrusting) is validated and forwarded; anything else is dropped
+  ---
+  duration_ms: 0.287399
+  type: 'test'
+  ...
+# Subtest: \#1286 bk (bicycle heading) is a bounded finite number, rounded, else dropped
+ok 68 - \#1286 bk (bicycle heading) is a bounded finite number, rounded, else dropped
+  ---
+  duration_ms: 0.2104
+  type: 'test'
+  ...
+# Subtest: \#1297 hi (held-item category) is whitelisted, forwarded in states, late welcomes and hibernation; anything else is dropped
+ok 69 - \#1297 hi (held-item category) is whitelisted, forwarded in states, late welcomes and hibernation; anything else is dropped
+  ---
+  duration_ms: 0.579899
+  type: 'test'
+  ...
+# Subtest: \#1297 hi travels through the room: forwarded to others, in the late welcome, cleared when dropped; an invalid one never arrives
+ok 70 - \#1297 hi travels through the room: forwarded to others, in the late welcome, cleared when dropped; an invalid one never arrives
+  ---
+  duration_ms: 39.093659
+  type: 'test'
+  ...
+# Subtest: \#1755 the new held categories (nut, binoculars, spray, gift, bag) reach the other client unchanged
+ok 71 - \#1755 the new held categories (nut, binoculars, spray, gift, bag) reach the other client unchanged
+  ---
+  duration_ms: 42.756355
+  type: 'test'
+  ...
+# Subtest: \#1753 the fishing rod, a caught fish and the float on the water reach the other client; a bad float is dropped
+ok 72 - \#1753 the fishing rod, a caught fish and the float on the water reach the other client; a bad float is dropped
+  ---
+  duration_ms: 59.314637
+  type: 'test'
+  ...
+# Subtest: sound events (\#1302): a whitelisted key only, to the players within range, rate-limited, never echoed; the client list matches
+ok 73 - sound events (\#1302): a whitelisted key only, to the players within range, rate-limited, never echoed; the client list matches
+  ---
+  duration_ms: 58.456038
+  type: 'test'
+  ...
+# Subtest: reactions (\#1639): cry / laugh / scream only from the BIO, an index only, to players in range, rate-limited, never echoed
+ok 74 - reactions (\#1639): cry / laugh / scream only from the BIO, an index only, to players in range, rate-limited, never echoed
+  ---
+  duration_ms: 72.494323
+  type: 'test'
+  ...
+# Subtest: kiss (\#1343): same greeting budget, server validates target name, proximity, weapon and state
+ok 75 - kiss (\#1343): same greeting budget, server validates target name, proximity, weapon and state
+  ---
+  duration_ms: 118.828675
+  type: 'test'
+  ...
+# Subtest: kiss \#1398: server pair matrix, ambiguous names and replayed request IDs
+ok 76 - kiss \#1398: server pair matrix, ambiguous names and replayed request IDs
+  ---
+  duration_ms: 323.455758
+  type: 'test'
+  ...
+# Subtest: hug \#1405: any nearby unarmed pair, echoed receipt, busy window shared with kisses, replay
+ok 77 - hug \#1405: any nearby unarmed pair, echoed receipt, busy window shared with kisses, replay
+  ---
+  duration_ms: 985.741158
+  type: 'test'
+  ...
+# Subtest: seated look forwards, survives late join and clears with invalid or standing state
+ok 78 - seated look forwards, survives late join and clears with invalid or standing state
+  ---
+  duration_ms: 138.459453
+  type: 'test'
+  ...
+# Subtest: standing head pitch forwards while walking crouched or cycling and clears for legacy states
+ok 79 - standing head pitch forwards while walking crouched or cycling and clears for legacy states
+  ---
+  duration_ms: 119.434974
+  type: 'test'
+  ...
+# Subtest: doors: validation, broadcast to all (sender too), welcome for a late joiner, last writer wins, empty room forgets
+ok 80 - doors: validation, broadcast to all (sender too), welcome for a late joiner, last writer wins, empty room forgets
+  ---
+  duration_ms: 150.152341
+  type: 'test'
+  ...
+# Subtest: \#1774: the game time is shared: validated, relayed, in the welcome of a latecomer, rate-limited, gone when the room is empty
+ok 81 - \#1774: the game time is shared: validated, relayed, in the welcome of a latecomer, rate-limited, gone when the room is empty
+  ---
+  duration_ms: 105.876188
+  type: 'test'
+  ...
+1..81
+# tests 81
+# suites 0
+# pass 80
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 18401.953984

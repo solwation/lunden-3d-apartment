@@ -1,3 +1,4 @@
+import {buildFootballSite} from './footballmodel.js';
 import { detailOccluders } from './occlusion.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -1317,6 +1318,8 @@ function* worldParts(plan) {
   for (const d of [...l0.doors, ...l1.doors,portikDoor]) mergeStatic(d.object, d.keep ?? [], () => '', { tagged: true }); // leaf + handles (not the letter flap)
   for (const u of units) scene.add(u.object); // (merged on their own, #574)
 
+  const football=buildFootballSite(renderedTerrainY);scene.add(football.object); // #1853: static support exists independently of gameplay
+
   // furniture can be switched off (F): keep its collision separate from the fixed segments
   const fixed = [l0.segments, l1.segments];
   const levels = [l0, l1];
@@ -1362,7 +1365,8 @@ function* worldParts(plan) {
     sillPlants, // the window boards' pots (main.js makes each one a Holdable, #185)
     courtyardTargets: courtyard.targets, // the courtyard's benches to sit on (#438): kept with F
     courtyardSwings: courtyard.swings,
-    outdoorSeats, outdoorTargets: outdoorSeats.targets,
+    outdoorSeats, outdoorTargets: [...outdoorSeats.targets,...football.targets],
+    football, // static field, seats, fountain and local rendered-terrain support (#1853)
     boule, // #1370: the local pétanque game (main.js: focus, E, update)
     updateSwings: (dt, target) => { courtyard.updateSwings(dt, target); outdoorSeats.update(dt, target); },
     furnitureTargets: furniture.interactives, // E targets among the furniture (the TV), hidden with F

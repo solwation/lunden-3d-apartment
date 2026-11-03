@@ -22,6 +22,7 @@ const paths={
  pin:'<path d="m9 3 10 3-4 5v5l-8-3 3-4Zm2 12-5 7"/>',
  trash:'<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/>',
  cheers:'<path d="M6 3h5l-.5 6a2.5 2.5 0 0 1-4 0zM8.5 11.5V19M6 19h5M13 3h5l-.5 6a2.5 2.5 0 0 1-4 0zM15.5 11.5V19M13 19h5"/>',
+ football:'<circle cx="12" cy="12" r="9"/><path d="m12 7 4 3-1.5 5h-5L8 10Zm0 0V3m4 7 4-2m-5.5 7 3 4m-8-4-3 4M8 10 4 8"/>',
  basketball:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3v18M5.6 5.6c6 1 6 11.8 0 12.8m12.8-12.8c-6 1-6 11.8 0 12.8"/>',
  spray:'<path d="M8 9h7v12H8zM9 9V6h5v3M11 6V4h2M17 5l2-1m-2 4h3m-3 3 2 1"/>',
  binoculars:'<circle cx="7" cy="15" r="4"/><circle cx="17" cy="15" r="4"/><path d="M10 14h4M4 12l2-8h3l1 4m10 4-2-8h-3l-1 4"/>',

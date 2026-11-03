@@ -501,6 +501,7 @@ export class Ghosts {
     if (m.t === 'w') {
       this.me = m.i; this.rules = m.c ?? null; this.onWelcome?.(m);
       if (m.target) this.onTarget?.(m.target, true);
+      this.onFootball?.(m.football ?? null,true); // capability guard for an older Worker
       if (Array.isArray(m.doors)) this.onDoors?.({ t: 'dr', list: m.doors }); // the doors standing open (#1775, src/doorsync.js)
       if (m.tm) this.onTime?.(m.tm, null); // the room's shared game time (#1774, src/timesync.js)
       for (const p of m.ps ?? []) { const g = this.add(p.i, p.n, p.av && typeof p.ax === 'string' ? p.av + p.ax : p.av); if (g && p.p) g.push(p, t); }
@@ -528,6 +529,7 @@ export class Ghosts {
     else if (m.t === 'tm') this.onTime?.(m, this.others.get(m.i) ?? { name: '' }); // (a player we have no pose from yet: no name) // somebody set the game time (#1774, src/timesync.js)
     else if (m.t === 'rf') this.onRiverFish?.(m); // the shared fish in Höje å (#1752, src/riverfishsync.js): the room's clock, seed and caught fish
     else if (m.t === 'pk' || m.t === 'pkg') this.onPaddock?.(m); // the shared pony paddock (#1644, src/paddock.js): only sent to players near it
+    else if (m.t === 'ft') this.onFootball?.(m,false);
     else if (m.t === 'tg') this.onTarget?.(m, false);
     else if (m.t === 'dr') this.onDoors?.(m); // a door opened / shut by somebody (#1775, src/doorsync.js)
     else if (m.t === 'gf') this.onGraffiti?.(m); // the shared spray paint (#1724, src/graffitisync.js)
@@ -707,6 +709,9 @@ export class Ghosts {
     if (!this.connected) return false;
     this.outbox.push(msg); this.trimOutbox(); this.sendShot(); return true;
   }
+
+  /** #1853 actions share the existing state/shot budget; no ball position stream. */
+  football(msg){if(!this.connected)return false;this.outbox.push(msg);this.trimOutbox();this.lastMove=performance.now();this.sendShot();return true;}
 
   /** A door message (#1775, src/doorsync.js) { t: 'dr', i, o }: only the newest for a door waits in the outbox. False when not connected. */
   doors(msg) {

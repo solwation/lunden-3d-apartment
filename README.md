@@ -575,3 +575,9 @@ Analys och motiv finns i [utvecklingsanteckningen](docs/development/orchestra.md
 DJ-bordet i klubbhuset har egna PLAY-knappar, låtval på skivorna, kanalvolym, crossfader och mastervolym. Sikta och tryck E/klicka, eller tryck direkt på kontrollen på touch; ←/→ finjusterar den kontroll du siktar på. Aktiva knappar är nedsänkta och lyser; dansknappen visar om någon i rummet dansar.
 
 Boulebanan delar lillen, kloten, turen och poängtavlan mellan uppdaterade spelare i samma rum; ensamspel utan moln behåller det lokala spelet. [Synk och verifiering](docs/verification/1854/README.md).
+
+På det norra gräsfältet finns en liten fotbollsplan med två gemensamma spelbara bollar,
+två mål, sittbara åskådarbänkar och en drickfontän. E/touch tar eller släpper bollen,
+förflyttning dribblar och klick/touch sparkar; högerklick eller passknappen passar.
+Varje mål ger målgöraren en poäng. Delat spel använder det befintliga rummet;
+[avgränsad verifiering och antaganden](docs/verification/1853/README.md).

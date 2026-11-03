@@ -1,0 +1,29 @@
+TAP version 13
+# {"staticTriangles":866,"ballTriangles":180,"netsSegments":76,"footContacts":17,"paintVertices":438}
+# Subtest: static fittings, terrain-cut paint, seat poses and local walking support share the real sampler contract
+ok 1 - static fittings, terrain-cut paint, seat poses and local walking support share the real sampler contract
+  ---
+  duration_ms: 24.705623
+  type: 'test'
+  ...
+# Subtest: direct drinking uses the timed Life runner: cancel/reach/hands/cooldown give no water, completed sip gives one existing event
+ok 2 - direct drinking uses the timed Life runner: cancel/reach/hands/cooldown give no water, completed sip gives one existing event
+  ---
+  duration_ms: 8.515774
+  type: 'test'
+  ...
+# Subtest: actual per-profile stats save/reload grants exactly one point per cumulative own goal, preserving all older capped ledgers
+ok 3 - actual per-profile stats save/reload grants exactly one point per cumulative own goal, preserving all older capped ledgers
+  ---
+  duration_ms: 7.408977
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 147.72234

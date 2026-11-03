@@ -1,0 +1,95 @@
+TAP version 13
+# Subtest: the Worker deploy workflow triggers on every src/ file the Worker imports
+ok 1 - the Worker deploy workflow triggers on every src/ file the Worker imports
+  ---
+  duration_ms: 10.579287
+  type: 'test'
+  ...
+# Subtest: strict commands/snapshots reject coordinates, invalid ids/vectors and duplicate ownership
+ok 2 - strict commands/snapshots reject coordinates, invalid ids/vectors and duplicate ownership
+  ---
+  duration_ms: 2.634197
+  type: 'test'
+  ...
+# Subtest: real dribble poses do not write; authority survives hibernation, goal is credited once and empty-room rejoin restores it
+ok 3 - real dribble poses do not write; authority survives hibernation, goal is credited once and empty-room rejoin restores it
+  ---
+  duration_ms: 6.396492
+  type: 'test'
+  ...
+# Subtest: two sockets race for one ball; departed dribbler leaves the ball at its real last feet, not the spawn
+ok 4 - two sockets race for one ball; departed dribbler leaves the ball at its real last feet, not the spawn
+  ---
+  duration_ms: 0.794199
+  type: 'test'
+  ...
+# Subtest: production Worker: two independent owners, shared goal, late join, replay and hibernated rejoin retain one authoritative match
+ok 5 - production Worker: two independent owners, shared goal, late join, replay and hibernated rejoin retain one authoritative match
+  ---
+  duration_ms: 135.127834
+  type: 'test'
+  ...
+# {"staticTriangles":898,"ballTriangles":180,"netsSegments":76,"footContacts":17,"paintVertices":534}
+# Subtest: static fittings, terrain-cut paint, seat poses and local walking support share the real sampler contract
+ok 6 - static fittings, terrain-cut paint, seat poses and local walking support share the real sampler contract
+  ---
+  duration_ms: 24.996369
+  type: 'test'
+  ...
+# Subtest: direct drinking uses the timed Life runner: cancel/reach/hands/cooldown give no water, completed sip gives one existing event
+ok 7 - direct drinking uses the timed Life runner: cancel/reach/hands/cooldown give no water, completed sip gives one existing event
+  ---
+  duration_ms: 8.991389
+  type: 'test'
+  ...
+# Subtest: actual per-profile stats save/reload grants exactly one point per cumulative own goal, preserving all older capped ledgers
+ok 8 - actual per-profile stats save/reload grants exactly one point per cumulative own goal, preserving all older capped ledgers
+  ---
+  duration_ms: 7.375191
+  type: 'test'
+  ...
+# Subtest: two balls have distinct ownership; unauthorized/replayed-like actions cannot move another owner
+ok 9 - two balls have distinct ownership; unauthorized/replayed-like actions cannot move another owner
+  ---
+  duration_ms: 2.768497
+  type: 'test'
+  ...
+# Subtest: each ball scores once per genuine inside-to-outside passage, then resets independently
+ok 10 - each ball scores once per genuine inside-to-outside passage, then resets independently
+  ---
+  duration_ms: 9.176889
+  type: 'test'
+  ...
+# Subtest: fixed ticks agree across partitioned catch-up; post strike cannot tunnel into a goal
+ok 11 - fixed ticks agree across partitioned catch-up; post strike cannot tunnel into a goal
+  ---
+  duration_ms: 7.67039
+  type: 'test'
+  ...
+# Subtest: real actor motion dribbles, teleport/outside/air releases and local/world transforms round-trip
+ok 12 - real actor motion dribbles, teleport/outside/air releases and local/world transforms round-trip
+  ---
+  duration_ms: 0.649999
+  type: 'test'
+  ...
+# Subtest: both balls collide and arbitrarily old idle time is bounded, not a per-frame catch-up loop
+ok 13 - both balls collide and arbitrarily old idle time is bounded, not a per-frame catch-up loop
+  ---
+  duration_ms: 7.271191
+  type: 'test'
+  ...
+# Subtest: two-ball contact pushing the whole ball across the mouth is also one genuine goal passage
+ok 14 - two-ball contact pushing the whole ball across the mouth is also one genuine goal passage
+  ---
+  duration_ms: 0.4042
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 270.428067

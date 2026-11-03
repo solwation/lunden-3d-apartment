@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: strict commands/snapshots reject coordinates, invalid ids/vectors and duplicate ownership
+ok 1 - strict commands/snapshots reject coordinates, invalid ids/vectors and duplicate ownership
+  ---
+  duration_ms: 2.721597
+  type: 'test'
+  ...
+# Subtest: real dribble poses do not write; authority survives hibernation, goal is credited once and empty-room rejoin restores it
+ok 2 - real dribble poses do not write; authority survives hibernation, goal is credited once and empty-room rejoin restores it
+  ---
+  duration_ms: 6.034091
+  type: 'test'
+  ...
+# Subtest: two sockets race for one ball; departed dribbler leaves the ball at its real last feet, not the spawn
+ok 3 - two sockets race for one ball; departed dribbler leaves the ball at its real last feet, not the spawn
+  ---
+  duration_ms: 0.738899
+  type: 'test'
+  ...
+# Subtest: hibernation reanchors from the existing socket attachment, never scores a false chord after walking around a post
+ok 4 - hibernation reanchors from the existing socket attachment, never scores a false chord after walking around a post
+  ---
+  duration_ms: 3.816095
+  type: 'test'
+  ...
+# Subtest: production Worker: two independent owners, shared goal, late join, replay and hibernated rejoin retain one authoritative match
+ok 5 - production Worker: two independent owners, shared goal, late join, replay and hibernated rejoin retain one authoritative match
+  ---
+  duration_ms: 174.85575
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 301.746068

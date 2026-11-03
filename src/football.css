@@ -1,0 +1,2 @@
+.football-score {position:fixed;top:5rem;left:50%;transform:translateX(-50%);padding:.35rem .7rem;border-radius:.5rem;background:rgba(20,38,30,.85);color:#fff;font:600 .95rem system-ui,sans-serif;pointer-events:none;z-index:12;white-space:nowrap;max-width:94vw;overflow:hidden;text-overflow:ellipsis}
+.football-score[hidden] {display:none}

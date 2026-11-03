@@ -1,3 +1,4 @@
+import {footballSegments} from './footballgeo.js';
 // #1236: walking beyond the home block (OUTDOOR): collision for the mapped background buildings, the two river bridges' and
 // the timber footbridge's rails, and the river itself as an obstacle. Everything is derived from the data the backdrops are
 // built from (SITE.west/east/north/south polygons, SITE.bridges, SITE.river), so what is drawn is what blocks. Segments are
@@ -60,6 +61,7 @@ export function farSegments() {
     out.push(...railSegs((ax + bx) / 2, (az + bz) / 2, (bx - ax) / len, (bz - az) / len, len, P.woodBridge.width / 2 - 0.03));
   }
   out.push(...fenceSegments(), ...stileWalls()); // #1280: the pony paddock's fence, closed gate included (nothing is walkable through it); #1295: the stile's opening has side walls
+  out.push(...footballSegments()); // #1853: fixed fittings reuse the existing far collision buckets
   out.push(...busStopSegments()); // #1301: the bus shelter's glass back and ends
   out.push(...parkedCarSegments()); // the east campus car parks' parked cars (#1278, eastlot.js draws the same footprints)
   for (const t of [...treeFeet, ...southTreeFeet]) { // trunks outside the home block (the park woods, the campus avenues): a small diamond each (*guess* radii)

@@ -1,0 +1,13 @@
+{
+  "workerSource": "a2d8f125839968b14bf334c1369e1200d7d2bda1",
+  "serverStage": "b5171549f55a70628f9ebfbf5ea6e712677a5417",
+  "unionSHA256": {
+    ".github/workflows/cloud.yml": "c1e5eb2c39bdba4b9290f290405ebde5096254f4888d3590e113778c20aba2e4",
+    "cloudflare/players.js": "649eb398dd3ea4bef342c0d57d14f78ee04b8b4c66a1a2a8e52f2c085d3c8065",
+    "src/config.js": "3b367345c745bb32f7facb88c54be587ae6802b6e01deea9e8f5c1ba0fe68c50",
+    "src/ghosts.js": "19116c274ac609c730276b893638b84d3d61cec9b403a9752bb15107ee254a05",
+    "src/main.js": "281b52f8c437949d2813fb1d63df3ea9b6a4ad5b55f4868a96e54fab217c6ad4"
+  },
+  "retained": "All independent football runtime/test files byte-identical to accepted source; union keeps existing Boule hooks and imports, all prior config, source-bound1851 runtime preserved.",
+  "verification": "Initial integrated server batch80pass1module-loadfailure because clientcredit dependency absent in staged checkout; exactcreditmoduleadded; only affected football test rerun4/4green. Total84green distinct integrated tests. JS syntax checks five merged client/world/stats entry modules passed. No repeat app bootstrap."
+}

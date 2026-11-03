@@ -174,7 +174,7 @@ export class Player {
     const inHole = x > h.x0 && x < h.x1 && z > h.z0 && z < h.z1;
     const core = this.world.core, inCore = !inside && !!core?.covers(x, z);
     const unit = !inside && !inCore ? this.world.unitAt?.(x, z, feet) : null; // a visited flat: its floors and stair (#574)
-    const cands = unit ? unit.floors(x, z) : [inside ? LEVELS[0].floor : inCore ? -Infinity : groundY(x, z)]; // outdoors: the terrain (the ramp by Hus L's east gable, #256)
+    const cands = unit ? unit.floors(x, z) : [inside ? LEVELS[0].floor : inCore ? -Infinity : (this.world.football?.groundAt(x,z) ?? groundY(x, z))]; // outdoors: the terrain (the ramp by Hus L's east gable, #256)
     if (inCore) cands.push(...core.heights(x, z)); // the stairwell's floors and flights, the lift's car (#415)
     if (inside && !inHole) cands.push(LEVELS[1].floor);
     if (!inside && !inCore && !unit && z > 60 && deckAt(x, z) !== null) cands.push(groundBelowDeckY(x, z)); // under a road / GC deck (#1271): the cut the river footpath runs in
