@@ -1,0 +1,722 @@
+{
+  "ok": true,
+  "functionalChecks": 49,
+  "desktopReused": true,
+  "profiles": [
+    {
+      "phone": false,
+      "rows": [
+        {
+          "id": "pullup",
+          "before": {
+            "reps": 0,
+            "points": 0,
+            "furniture": true,
+            "rot": [
+              0.7396784120011594,
+              -0.7853981633974452
+            ]
+          },
+          "passive": {
+            "n": 0,
+            "level": 0,
+            "points": 0
+          },
+          "top": {
+            "level": 0.958,
+            "peaked": true,
+            "reps": 0,
+            "eye": [
+              -145.4395183950936,
+              2.8493507845935024,
+              28.085607870753496
+            ],
+            "rot": [
+              0.7396784120011594,
+              -0.7853981633974452
+            ],
+            "furniture": true,
+            "hint": "Toppen n\u00e5dd! Sl\u00e4pp ner helt f\u00f6r en repetition."
+          },
+          "completed": {
+            "reps": 1,
+            "points": 1,
+            "local": 1,
+            "status": "R\u00e4ckh\u00e4v \u00b7 1 repetition",
+            "level": 0
+          }
+        },
+        {
+          "id": "press",
+          "before": {
+            "reps": 1,
+            "points": 1,
+            "furniture": true,
+            "rot": [
+              1.45,
+              -0.7853981633974483
+            ]
+          },
+          "passive": {
+            "n": 1,
+            "level": 0,
+            "points": 1
+          },
+          "top": {
+            "level": 0.958,
+            "peaked": true,
+            "reps": 1,
+            "eye": [
+              -144.49906637611548,
+              1.2061939246791191,
+              34.49906637611548
+            ],
+            "stock": 2.1377139246791192,
+            "rot": [
+              1.45,
+              -0.7853981633974483
+            ],
+            "furniture": true,
+            "hint": "Toppen n\u00e5dd! Sl\u00e4pp ner helt f\u00f6r en repetition."
+          },
+          "completed": {
+            "reps": 2,
+            "points": 2,
+            "local": 1,
+            "status": "B\u00e4nkpress \u00b7 1 repetition",
+            "level": 0
+          }
+        },
+        {
+          "id": "step",
+          "before": {
+            "reps": 2,
+            "points": 2,
+            "furniture": true,
+            "rot": [
+              0,
+              -0.7853981633974483
+            ]
+          },
+          "passive": {
+            "n": 2,
+            "level": 0,
+            "points": 2
+          },
+          "top": {
+            "level": 0.958,
+            "peaked": true,
+            "reps": 2,
+            "eye": [
+              -138.4322033306199,
+              2.447374908535941,
+              35.64469249872268
+            ],
+            "rot": [
+              0,
+              -0.7853981633974483
+            ],
+            "furniture": true,
+            "hint": "Toppen n\u00e5dd! Sl\u00e4pp ner helt f\u00f6r en repetition."
+          },
+          "completed": {
+            "reps": 3,
+            "points": 3,
+            "local": 1,
+            "status": "Step-up \u00b7 1 repetition",
+            "level": 0
+          }
+        }
+      ]
+    },
+    {
+      "phone": true,
+      "rows": [
+        {
+          "id": "pullup",
+          "before": {
+            "reps": 0,
+            "points": 0,
+            "furniture": true,
+            "rot": [
+              0.7396784120011594,
+              -0.7853981633974452
+            ]
+          },
+          "passive": {
+            "n": 0,
+            "level": 0,
+            "points": 0
+          },
+          "top": {
+            "level": 1,
+            "peaked": true,
+            "reps": 0,
+            "eye": [
+              -145.4395183950936,
+              2.8493507845935024,
+              28.085607870753496
+            ],
+            "rot": [
+              0.7396784120011594,
+              -0.7853981633974452
+            ],
+            "furniture": true,
+            "hint": "Toppen n\u00e5dd! Sl\u00e4pp ner helt f\u00f6r en repetition."
+          },
+          "completed": {
+            "reps": 1,
+            "points": 1,
+            "local": 1,
+            "status": "R\u00e4ckh\u00e4v \u00b7 1 repetition",
+            "level": 0
+          }
+        },
+        {
+          "id": "press",
+          "before": {
+            "reps": 1,
+            "points": 1,
+            "furniture": true,
+            "rot": [
+              1.45,
+              -0.7853981633974483
+            ]
+          },
+          "passive": {
+            "n": 1,
+            "level": 0,
+            "points": 1
+          },
+          "top": {
+            "level": 1,
+            "peaked": true,
+            "reps": 1,
+            "eye": [
+              -144.49906637611548,
+              1.2061939246791191,
+              34.49906637611548
+            ],
+            "stock": 2.1377139246791192,
+            "rot": [
+              1.45,
+              -0.7853981633974483
+            ],
+            "furniture": true,
+            "hint": "Toppen n\u00e5dd! Sl\u00e4pp ner helt f\u00f6r en repetition."
+          },
+          "completed": {
+            "reps": 2,
+            "points": 2,
+            "local": 1,
+            "status": "B\u00e4nkpress \u00b7 1 repetition",
+            "level": 0
+          }
+        },
+        {
+          "id": "step",
+          "before": {
+            "reps": 2,
+            "points": 2,
+            "furniture": true,
+            "rot": [
+              0,
+              -0.7853981633974483
+            ]
+          },
+          "passive": {
+            "n": 2,
+            "level": 0,
+            "points": 2
+          },
+          "top": {
+            "level": 1,
+            "peaked": true,
+            "reps": 2,
+            "eye": [
+              -138.4355974431696,
+              2.443174908535941,
+              35.64808661127237
+            ],
+            "rot": [
+              0,
+              -0.7853981633974483
+            ],
+            "furniture": true,
+            "hint": "Dra upp och ner i rutan. Varje v\u00e4ndning ger kraft."
+          },
+          "completed": {
+            "reps": 3,
+            "points": 3,
+            "local": 1,
+            "status": "Step-up \u00b7 1 repetition",
+            "level": 0
+          }
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "ok": true,
+      "name": "keys pullup: passive gives no effort/reward",
+      "data": {
+        "n": 0,
+        "level": 0,
+        "points": 0
+      }
+    },
+    {
+      "ok": true,
+      "name": "pullup: held F autorepeat adds no force",
+      "data": {
+        "once": 0.15800000000000003,
+        "held": 0.11600000000000003
+      }
+    },
+    {
+      "ok": true,
+      "name": "keys pullup: real effort reaches top, no early rep",
+      "data": {
+        "level": 0.958,
+        "peaked": true,
+        "reps": 0,
+        "eye": [
+          -145.4395183950936,
+          2.8493507845935024,
+          28.085607870753496
+        ],
+        "rot": [
+          0.7396784120011594,
+          -0.7853981633974452
+        ],
+        "furniture": true,
+        "hint": "Toppen n\u00e5dd! Sl\u00e4pp ner helt f\u00f6r en repetition."
+      }
+    },
+    {
+      "ok": true,
+      "name": "pullup: F does not toggle furniture"
+    },
+    {
+      "ok": true,
+      "name": "pullup: meter drives actual station movement"
+    },
+    {
+      "ok": true,
+      "name": "keys pullup: full top-to-bottom grants one counted/scored rep",
+      "data": {
+        "reps": 1,
+        "points": 1,
+        "local": 1,
+        "status": "R\u00e4ckh\u00e4v \u00b7 1 repetition",
+        "level": 0
+      }
+    },
+    {
+      "ok": true,
+      "name": "E pullup: exit clears effort/HUD and never rewards",
+      "data": {
+        "reps": 1,
+        "hud": false,
+        "active": null
+      }
+    },
+    {
+      "ok": true,
+      "name": "keys press: passive gives no effort/reward",
+      "data": {
+        "n": 1,
+        "level": 0,
+        "points": 1
+      }
+    },
+    {
+      "ok": true,
+      "name": "press: held F autorepeat adds no force",
+      "data": {
+        "once": 0.15800000000000003,
+        "held": 0.11600000000000003
+      }
+    },
+    {
+      "ok": true,
+      "name": "keys press: real effort reaches top, no early rep",
+      "data": {
+        "level": 0.958,
+        "peaked": true,
+        "reps": 1,
+        "eye": [
+          -144.49906637611548,
+          1.2061939246791191,
+          34.49906637611548
+        ],
+        "stock": 2.1377139246791192,
+        "rot": [
+          1.45,
+          -0.7853981633974483
+        ],
+        "furniture": true,
+        "hint": "Toppen n\u00e5dd! Sl\u00e4pp ner helt f\u00f6r en repetition."
+      }
+    },
+    {
+      "ok": true,
+      "name": "press: F does not toggle furniture"
+    },
+    {
+      "ok": true,
+      "name": "press: meter drives actual station movement"
+    },
+    {
+      "ok": true,
+      "name": "actual pause freezes effort/reward and hides exercise HUD",
+      "data": {
+        "level": 0.958,
+        "reps": 1,
+        "hud": true
+      }
+    },
+    {
+      "ok": true,
+      "name": "keys press: full top-to-bottom grants one counted/scored rep",
+      "data": {
+        "reps": 2,
+        "points": 2,
+        "local": 1,
+        "status": "B\u00e4nkpress \u00b7 1 repetition",
+        "level": 0
+      }
+    },
+    {
+      "ok": true,
+      "name": "Space press: exit clears effort/HUD and never rewards",
+      "data": {
+        "reps": 2,
+        "hud": false,
+        "active": null
+      }
+    },
+    {
+      "ok": true,
+      "name": "keys step: passive gives no effort/reward",
+      "data": {
+        "n": 2,
+        "level": 0,
+        "points": 2
+      }
+    },
+    {
+      "ok": true,
+      "name": "step: held F autorepeat adds no force",
+      "data": {
+        "once": 0.15800000000000003,
+        "held": 0.11600000000000003
+      }
+    },
+    {
+      "ok": true,
+      "name": "keys step: real effort reaches top, no early rep",
+      "data": {
+        "level": 0.958,
+        "peaked": true,
+        "reps": 2,
+        "eye": [
+          -138.4322033306199,
+          2.447374908535941,
+          35.64469249872268
+        ],
+        "rot": [
+          0,
+          -0.7853981633974483
+        ],
+        "furniture": true,
+        "hint": "Toppen n\u00e5dd! Sl\u00e4pp ner helt f\u00f6r en repetition."
+      }
+    },
+    {
+      "ok": true,
+      "name": "step: F does not toggle furniture"
+    },
+    {
+      "ok": true,
+      "name": "step: meter drives actual station movement"
+    },
+    {
+      "ok": true,
+      "name": "keys step: full top-to-bottom grants one counted/scored rep",
+      "data": {
+        "reps": 3,
+        "points": 3,
+        "local": 1,
+        "status": "Step-up \u00b7 1 repetition",
+        "level": 0
+      }
+    },
+    {
+      "ok": true,
+      "name": "C step: exit clears effort/HUD and never rewards",
+      "data": {
+        "reps": 3,
+        "hud": false,
+        "active": null
+      }
+    },
+    {
+      "ok": true,
+      "name": "keys: no page errors",
+      "data": []
+    },
+    {
+      "ok": true,
+      "name": "touch pullup: passive gives no effort/reward",
+      "data": {
+        "n": 0,
+        "level": 0,
+        "points": 0
+      }
+    },
+    {
+      "ok": true,
+      "name": "gym touch outside effort surface never looks, walks or pumps",
+      "data": {
+        "rot": [
+          0.7396784120011594,
+          -0.7853981633974452
+        ],
+        "analog": {
+          "x": 0,
+          "y": 0
+        },
+        "level": 0
+      }
+    },
+    {
+      "ok": true,
+      "name": "pullup: one-way touch stroke gives no force"
+    },
+    {
+      "ok": true,
+      "name": "touch pullup: real effort reaches top, no early rep",
+      "data": {
+        "level": 1,
+        "peaked": true,
+        "reps": 0,
+        "eye": [
+          -145.4395183950936,
+          2.8493507845935024,
+          28.085607870753496
+        ],
+        "rot": [
+          0.7396784120011594,
+          -0.7853981633974452
+        ],
+        "furniture": true,
+        "hint": "Toppen n\u00e5dd! Sl\u00e4pp ner helt f\u00f6r en repetition."
+      }
+    },
+    {
+      "ok": true,
+      "name": "pullup: F does not toggle furniture"
+    },
+    {
+      "ok": true,
+      "name": "pullup: meter drives actual station movement"
+    },
+    {
+      "ok": true,
+      "name": "pullup: gesture never moves camera look"
+    },
+    {
+      "ok": true,
+      "name": "touch pullup: full top-to-bottom grants one counted/scored rep",
+      "data": {
+        "reps": 1,
+        "points": 1,
+        "local": 1,
+        "status": "R\u00e4ckh\u00e4v \u00b7 1 repetition",
+        "level": 0
+      }
+    },
+    {
+      "ok": true,
+      "name": "touch action pullup: exit clears effort/HUD and never rewards",
+      "data": {
+        "reps": 1,
+        "hud": false,
+        "active": null
+      }
+    },
+    {
+      "ok": true,
+      "name": "touch press: passive gives no effort/reward",
+      "data": {
+        "n": 1,
+        "level": 0,
+        "points": 1
+      }
+    },
+    {
+      "ok": true,
+      "name": "press: one-way touch stroke gives no force"
+    },
+    {
+      "ok": true,
+      "name": "touch press: real effort reaches top, no early rep",
+      "data": {
+        "level": 1,
+        "peaked": true,
+        "reps": 1,
+        "eye": [
+          -144.49906637611548,
+          1.2061939246791191,
+          34.49906637611548
+        ],
+        "stock": 2.1377139246791192,
+        "rot": [
+          1.45,
+          -0.7853981633974483
+        ],
+        "furniture": true,
+        "hint": "Toppen n\u00e5dd! Sl\u00e4pp ner helt f\u00f6r en repetition."
+      }
+    },
+    {
+      "ok": true,
+      "name": "press: F does not toggle furniture"
+    },
+    {
+      "ok": true,
+      "name": "press: meter drives actual station movement"
+    },
+    {
+      "ok": true,
+      "name": "press: gesture never moves camera look"
+    },
+    {
+      "ok": true,
+      "name": "touch press: full top-to-bottom grants one counted/scored rep",
+      "data": {
+        "reps": 2,
+        "points": 2,
+        "local": 1,
+        "status": "B\u00e4nkpress \u00b7 1 repetition",
+        "level": 0
+      }
+    },
+    {
+      "ok": true,
+      "name": "touch action press: exit clears effort/HUD and never rewards",
+      "data": {
+        "reps": 2,
+        "hud": false,
+        "active": null
+      }
+    },
+    {
+      "ok": true,
+      "name": "touch step: passive gives no effort/reward",
+      "data": {
+        "n": 2,
+        "level": 0,
+        "points": 2
+      }
+    },
+    {
+      "ok": true,
+      "name": "step: one-way touch stroke gives no force"
+    },
+    {
+      "ok": true,
+      "name": "touch step: real effort reaches top, no early rep",
+      "data": {
+        "level": 1,
+        "peaked": true,
+        "reps": 2,
+        "eye": [
+          -138.4355974431696,
+          2.443174908535941,
+          35.64808661127237
+        ],
+        "rot": [
+          0,
+          -0.7853981633974483
+        ],
+        "furniture": true,
+        "hint": "Dra upp och ner i rutan. Varje v\u00e4ndning ger kraft."
+      }
+    },
+    {
+      "ok": true,
+      "name": "step: F does not toggle furniture"
+    },
+    {
+      "ok": true,
+      "name": "step: meter drives actual station movement"
+    },
+    {
+      "ok": true,
+      "name": "step: gesture never moves camera look"
+    },
+    {
+      "ok": true,
+      "name": "touch step: full top-to-bottom grants one counted/scored rep",
+      "data": {
+        "reps": 3,
+        "points": 3,
+        "local": 1,
+        "status": "Step-up \u00b7 1 repetition",
+        "level": 0
+      }
+    },
+    {
+      "ok": true,
+      "name": "touch action step: exit clears effort/HUD and never rewards",
+      "data": {
+        "reps": 3,
+        "hud": false,
+        "active": null
+      }
+    },
+    {
+      "ok": true,
+      "name": "touch: no page errors",
+      "data": []
+    }
+  ],
+  "desktopHudStyle": {
+    "ok": true,
+    "checks": [
+      {
+        "ok": true,
+        "name": "desktop computed style hides touch pad",
+        "data": {
+          "padHidden": true,
+          "padDisplay": "none",
+          "title": "R\u00e4ckh\u00e4v \u00b7 0 repetitioner",
+          "footer": "E / mellanslag / C: avsluta tr\u00e4ningen",
+          "level": 0.958
+        }
+      }
+    ],
+    "profiles": [
+      {
+        "phone": false,
+        "captureOnly": true,
+        "hud": {
+          "padHidden": true,
+          "padDisplay": "none",
+          "title": "R\u00e4ckh\u00e4v \u00b7 0 repetitioner",
+          "footer": "E / mellanslag / C: avsluta tr\u00e4ningen",
+          "level": 0.958
+        }
+      }
+    ]
+  },
+  "fixtureHistory": [
+    "Initial combined run completed all desktop checks; portrait phone was blocked by the existing rotate screen before any touch exercise.",
+    "First landscape focus wait froze the app loop without advancing ordinary frames; touch-only fixture now steps while waiting, no product fix.",
+    "One retry could not connect after own devserve received SIGTERM; server was restarted, no feature run claimed.",
+    "Desktop touch-pad hidden CSS cascade corrected; native functional evidence reused, computed-style and representative desktop image refreshed."
+  ]
+}

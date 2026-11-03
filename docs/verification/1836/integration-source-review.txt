@@ -1,0 +1,1 @@
+PASS exact runtime constructor/control/decor/config composition; only independent import ordering differs in outdoorgym.js

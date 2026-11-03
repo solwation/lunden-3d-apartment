@@ -1,0 +1,220 @@
+TAP version 13
+# Subtest: every list has a known counter with limits; ids are unique
+ok 1 - every list has a known counter with limits; ids are unique
+  ---
+  duration_ms: 1.618098
+  type: 'test'
+  ...
+# Subtest: a new row is capped at its start, later growth at perMin per minute (+1), and counters never fall
+ok 2 - a new row is capped at its start, later growth at perMin per minute (+1), and counters never fall
+  ---
+  duration_ms: 1.540099
+  type: 'test'
+  ...
+# Subtest: writes are collected: a post inside the gap or an unchanged post costs no write; one row per id
+ok 3 - writes are collected: a post inside the gap or an unchanged post costs no write; one row per id
+  ---
+  duration_ms: 0.7994
+  type: 'test'
+  ...
+# Subtest: the oldest row makes room at the row cap
+ok 4 - the oldest row makes room at the row cap
+  ---
+  duration_ms: 1.527399
+  type: 'test'
+  ...
+# Subtest: GET /boards: most lists rank by count, first lists by the server time; ids never leak; names are cleaned
+ok 5 - GET /boards: most lists rank by count, first lists by the server time; ids never leak; names are cleaned
+  ---
+  duration_ms: 28.110781
+  type: 'test'
+  ...
+# Subtest: POST /boards validates, answers ok and stores via the board storage
+ok 6 - POST /boards validates, answers ok and stores via the board storage
+  ---
+  duration_ms: 2.063398
+  type: 'test'
+  ...
+# Subtest: the Worker forwards /boards to the DrawingRoom storage when it has the binding
+ok 7 - the Worker forwards /boards to the DrawingRoom storage when it has the binding
+  ---
+  duration_ms: 0.7009
+  type: 'test'
+  ...
+# Subtest: medal lists: sum of levels, highest single level, ties by time, migrated rows, client claims ignored
+ok 8 - medal lists: sum of levels, highest single level, ties by time, migrated rows, client claims ignored
+  ---
+  duration_ms: 3.160998
+  type: 'test'
+  ...
+# Subtest: medalStanding: equal sums go to the one whose last level came first; equal top level to the earliest time
+ok 9 - medalStanding: equal sums go to the one whose last level came first; equal top level to the earliest time
+  ---
+  duration_ms: 0.509999
+  type: 'test'
+  ...
+# Subtest: GET /boards carries both medal lists from a recorded row, with no extra write
+ok 10 - GET /boards carries both medal lists from a recorded row, with no extra write
+  ---
+  duration_ms: 2.346099
+  type: 'test'
+  ...
+# Subtest: catalogue: unique ids, every counter is one the Worker accepts, task medals read taskCounts
+ok 11 - catalogue: unique ids, every counter is one the Worker accepts, task medals read taskCounts
+  ---
+  duration_ms: 2.667298
+  type: 'test'
+  ...
+# Subtest: levels: exponential curve, strictly growing steps, a cap, levelOf and thresholdOf are inverse (\#1748)
+ok 12 - levels: exponential curve, strictly growing steps, a cap, levelOf and thresholdOf are inverse (\#1748)
+  ---
+  duration_ms: 1.717499
+  type: 'test'
+  ...
+# Subtest: the bonus follows the difficulty: growing with every level
+ok 13 - the bonus follows the difficulty: growing with every level
+  ---
+  duration_ms: 0.1533
+  type: 'test'
+  ...
+# Subtest: migration: old linear levels are rebuilt for a row without mt and never lost (\#1748)
+ok 14 - migration: old linear levels are rebuilt for a row without mt and never lost (\#1748)
+  ---
+  duration_ms: 0.554399
+  type: 'test'
+  ...
+# Subtest: a client with a legacy saved level keeps it, is paid nothing for it, and the next level is the new curve's
+ok 15 - a client with a legacy saved level keeps it, is paid nothing for it, and the next level is the new curve's
+  ---
+  duration_ms: 0.5712
+  type: 'test'
+  ...
+# Subtest: a live level pays its bonus once; repeated checks and a restart pay nothing more
+ok 16 - a live level pays its bonus once; repeated checks and a restart pay nothing more
+  ---
+  duration_ms: 0.4804
+  type: 'test'
+  ...
+# Subtest: starting levels are silent: no bonus, no animation, counted once for the summary
+ok 17 - starting levels are silent: no bonus, no animation, counted once for the summary
+  ---
+  duration_ms: 0.171399
+  type: 'test'
+  ...
+# Subtest: server levels restore silently on another device and the bonus is not paid again
+ok 18 - server levels restore silently on another device and the bonus is not paid again
+  ---
+  duration_ms: 0.3283
+  type: 'test'
+  ...
+# Subtest: the grid view: locked medals show progress, secrets stay hidden until unlocked
+ok 19 - the grid view: locked medals show progress, secrets stay hidden until unlocked
+  ---
+  duration_ms: 0.3189
+  type: 'test'
+  ...
+# Subtest: server: levels come from validated counters only, times are the server's, a client cannot invent a level
+ok 20 - server: levels come from validated counters only, times are the server's, a client cannot invent a level
+  ---
+  duration_ms: 1.116299
+  type: 'test'
+  ...
+# Subtest: POST /boards answers the medals, restore is read-only and creates no row
+ok 21 - POST /boards answers the medals, restore is read-only and creates no row
+  ---
+  duration_ms: 21.674785
+  type: 'test'
+  ...
+# Subtest: a row from before medals gets its levels with the row's time
+ok 22 - a row from before medals gets its levels with the row's time
+  ---
+  duration_ms: 0.168
+  type: 'test'
+  ...
+# Subtest: no effort or a partial lift never counts a repetition
+ok 23 - no effort or a partial lift never counts a repetition
+  ---
+  duration_ms: 1.918698
+  type: 'test'
+  ...
+# Subtest: real pulses reach top, returning fully down counts once; more passive time gives nothing
+ok 24 - real pulses reach top, returning fully down counts once; more passive time gives nothing
+  ---
+  duration_ms: 0.860699
+  type: 'test'
+  ...
+# Subtest: reset cancels an armed lift and invalid/background time never advances it
+ok 25 - reset cancels an armed lift and invalid/background time never advances it
+  ---
+  duration_ms: 0.2218
+  type: 'test'
+  ...
+# Subtest: pulse cooldown bounds simultaneous or repeated events
+ok 26 - pulse cooldown bounds simultaneous or repeated events
+  ---
+  duration_ms: 0.1926
+  type: 'test'
+  ...
+# Subtest: touch needs a real reversal; long one-way drag, small jitter and fresh pointer grant nothing
+ok 27 - touch needs a real reversal; long one-way drag, small jitter and fresh pointer grant nothing
+  ---
+  duration_ms: 0.2477
+  type: 'test'
+  ...
+# Subtest: pullup: no passive cycles; a full effort lift and descent count once
+ok 28 - pullup: no passive cycles; a full effort lift and descent count once
+  ---
+  duration_ms: 2.070898
+  type: 'test'
+  ...
+# Subtest: press: no passive cycles; a full effort lift and descent count once
+ok 29 - press: no passive cycles; a full effort lift and descent count once
+  ---
+  duration_ms: 0.3712
+  type: 'test'
+  ...
+# Subtest: step: no passive cycles; a full effort lift and descent count once
+ok 30 - step: no passive cycles; a full effort lift and descent count once
+  ---
+  duration_ms: 0.4585
+  type: 'test'
+  ...
+# Subtest: entry, pause, abort, ordinary seats and station switch never invent a repetition
+ok 31 - entry, pause, abort, ordinary seats and station switch never invent a repetition
+  ---
+  duration_ms: 0.2293
+  type: 'test'
+  ...
+# Subtest: daily award ceiling, saved ledger and next local day leave all repetitions available to the medal
+ok 32 - daily award ceiling, saved ledger and next local day leave all repetitions available to the medal
+  ---
+  duration_ms: 0.3848
+  type: 'test'
+  ...
+# Subtest: invalid repetitions never credit points, older saves start without retrospective gym rewards
+ok 33 - invalid repetitions never credit points, older saves start without retrospective gym rewards
+  ---
+  duration_ms: 0.1706
+  type: 'test'
+  ...
+# Subtest: Worker accepts gym repetitions and derives Utegymmare at the same 100-repetition boundary
+ok 34 - Worker accepts gym repetitions and derives Utegymmare at the same 100-repetition boundary
+  ---
+  duration_ms: 0.602099
+  type: 'test'
+  ...
+# Subtest: actual stats.bump/rawScore never add the uncapped per-repetition path as well
+ok 35 - actual stats.bump/rawScore never add the uncapped per-repetition path as well
+  ---
+  duration_ms: 13.522491
+  type: 'test'
+  ...
+1..35
+# tests 35
+# suites 0
+# pass 35
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 176.002777

@@ -15,6 +15,7 @@ const DEFAULTS = {
   santa: '{visible:false,pickable:{}}',  // #1544: updateFocus offers santa.pickable only while visible
   santaDelivery: 'null',
   santaTV: '{tv:null,active:false,activate:()=>false}',
+  outdoorGym: '{isActive:()=>false}',   // #1836: exercise key gate in the shared keyboard excerpt
   djInput: '{key:()=>false}',            // #1713: DJ booth input (#1664); the key handler asks it first
   binoculars: '{zoomed:false,stepZoom(){},lookScale:()=>1,fov:f=>f,setZoom(){}}', // #1706: updateFocus/look read the binoculars from the mailbox
   tvMedia: '{seekable:()=>false,show(){},power(){}}',

@@ -1,0 +1,2 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS desktop computed style hides touch pad {"padHidden":true,"padDisplay":"none","title":"Räckhäv · 0 repetitioner","footer":"E / mellanslag / C: avsluta träningen","level":0.958}

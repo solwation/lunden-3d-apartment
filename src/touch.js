@@ -19,7 +19,7 @@ export function stickResponse(r) {
   return Math.min(1, (r - deadZone) / (full - deadZone)) ** curve;
 }
 
-export function setupTouch({ onLook }) {
+export function setupTouch({ onLook, blocked = () => false }) {
   const stick = document.getElementById('stick');
   const knob = stick.querySelector('.knob');
   const hint = document.getElementById('stick-hint'); // the faint resting stick at the lower left (#1087)
@@ -62,7 +62,7 @@ export function setupTouch({ onLook }) {
   }
 
   document.addEventListener('pointerdown', (e) => {
-    if (!enabled || !isTouch(e) || e.target.closest?.('button, input, textarea, select, dialog, #hud-top, #stats, #task-note, #terminal, #rearrange-help')) return; // buttons/inputs/dialogs; the stats panel scrolls (#245, #1214)
+    if (!enabled || blocked() || !isTouch(e) || e.target.closest?.('button, input, textarea, select, dialog, #hud-top, #stats, #task-note, #terminal, #rearrange-help')) return; // buttons/inputs/dialogs; the stats panel scrolls (#245, #1214)
     const vw = gameView.w || window.innerWidth; // the stick side: left, or right when mirrored for left-handers (#1090)
     if (stickId === null && (stickLayout().mirror ? e.clientX > vw * 0.55 : e.clientX < vw * 0.45)) {
       stickId = e.pointerId;
@@ -80,7 +80,7 @@ export function setupTouch({ onLook }) {
   }, { passive: false });
 
   document.addEventListener('pointermove', (e) => {
-    if (!enabled) return;
+    if (!enabled || blocked()) return;
     if (e.pointerId === stickId) {
       let dx = e.clientX - origin.x, dy = e.clientY - origin.y;
       const d = Math.hypot(dx, dy);
@@ -117,6 +117,8 @@ export function setupTouch({ onLook }) {
   /** Per frame (main.js step): ease the pending look movement (CSS px) into the view over TOUCH.look.smooth s (#1088).
    *  Nothing is lost: the deltas handed to onLook add up to the finger's travel. */
   function update(dt) {
+    if(blocked()){resetStick();lookId=null;pendingLook.x=pendingLook.y=0;if(hint)hint.hidden=true;return;}
+    showHint();
     if (!pendingLook.x && !pendingLook.y) return;
     const tau = TOUCH.look.smooth;
     const f = tau > 0 ? 1 - Math.exp(-dt / tau) : 1;

@@ -1,0 +1,29 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "ok": true,
+      "name": "desktop computed style hides touch pad",
+      "data": {
+        "padHidden": true,
+        "padDisplay": "none",
+        "title": "Räckhäv · 0 repetitioner",
+        "footer": "E / mellanslag / C: avsluta träningen",
+        "level": 0.958
+      }
+    }
+  ],
+  "profiles": [
+    {
+      "phone": false,
+      "captureOnly": true,
+      "hud": {
+        "padHidden": true,
+        "padDisplay": "none",
+        "title": "Räckhäv · 0 repetitioner",
+        "footer": "E / mellanslag / C: avsluta träningen",
+        "level": 0.958
+      }
+    }
+  ]
+}

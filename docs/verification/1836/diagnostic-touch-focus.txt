@@ -1,0 +1,5 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+page.waitForFunction: Timeout 30000ms exceeded.
+    at /home/devcontainers/orkester-olw-win10-gpt6-20261103/gym-effort/tools/gymeffortbrowser.cjs:13:201 {
+  name: 'TimeoutError'
+}

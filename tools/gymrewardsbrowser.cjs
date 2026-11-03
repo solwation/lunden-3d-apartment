@@ -1,4 +1,4 @@
-// #1828: one real native-E gym route, points, pause, and the actual medal-progress card.
+// #1828/#1836: native-E entry, explicit effort pulses, points/pause/medal card. Native effort input: gymeffortbrowser.cjs.
 const fs=require('fs'),path=require('path'),kit=require('./testkit.cjs');
 const game=process.argv[2]||'http://localhost:8911',out=process.argv[3]||'/tmp/gymrewards1828';
 fs.mkdirSync(out,{recursive:true});const checks=[];let completed=false,driverError=null;
@@ -15,7 +15,7 @@ const check=(ok,message)=>{checks.push({ok:!!ok,message});console.log(`${ok?'PAS
  // Warm the actual view while still standing; subsequent captures reuse its compiled programs.
  if(!process.env.GYM_REWARDS_LOGIC_ONLY)await kit.shot(page,path.join(out,'station-before-exercise.png'),{frames:1});
  await page.keyboard.press('KeyE');await page.waitForFunction(()=>__app.rest.active&&__app.rest.target.exercise==='pullup',null,{polling:100,timeout:10000});
- const first=await page.evaluate(()=>{const a=__app,g=a.outdoorGym;for(let i=0;i<20;i++)a.step(.05);const reps=a.stats.gymReps;for(let i=0;i<80&&a.stats.gymReps===reps;i++)a.step(.05);
+ const first=await page.evaluate(()=>{const a=__app,g=a.outdoorGym;for(let i=0;i<20;i++)a.step(.05);const reps=a.stats.gymReps;for(let i=0;i<20&&!g.effort.peaked;i++){g.exert(a.rest);a.step(.1);}for(let i=0;i<80&&a.stats.gymReps===reps;i++)a.step(.05);
   // Freeze only exercise time for readable static result pictures, after the production callback has awarded a full cycle.
   const update=g.update;g.update=function(dt,rest){return update.call(this,0,rest)};window.restoreGymTime=()=>{g.update=update};
   return {reps:a.stats.gymReps,points:a.stats.gymScore,sat:a.stats.sat,lay:a.stats.lay,station:g.repetitions,total:a.totalScore(),score:document.querySelector('#score').textContent,badges:document.querySelector('#badges')?.textContent};});

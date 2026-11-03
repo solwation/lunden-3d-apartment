@@ -1,0 +1,30 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PLACE true pullup {"focused":"pullup","mode":"touch","touch":true,"fall":false,"overlayHidden":true,"pos":[-146.81837661840737,0.6186289669227771,29.464466094067262],"camera":[-146.81837661840737,2.2386289669227772,29.464466094067262],"rotation":[-0.10252541869755483,-0.7853981633974507],"target":[-145.1920310216783,2.0019907845935023,27.838120497338203],"blocked":false}
+PASS touch pullup: passive gives no effort/reward {"n":0,"level":0,"points":0}
+PASS gym touch outside effort surface never looks, walks or pumps {"rot":[0.7396784120011594,-0.7853981633974452],"analog":{"x":0,"y":0},"level":0}
+PASS pullup: one-way touch stroke gives no force {}
+PASS touch pullup: real effort reaches top, no early rep {"level":1,"peaked":true,"reps":0,"eye":[-145.4395183950936,2.8493507845935024,28.085607870753496],"rot":[0.7396784120011594,-0.7853981633974452],"furniture":true,"hint":"Toppen nådd! Släpp ner helt för en repetition."}
+PASS pullup: F does not toggle furniture {}
+PASS pullup: meter drives actual station movement {}
+PASS pullup: gesture never moves camera look {}
+PASS touch pullup: full top-to-bottom grants one counted/scored rep {"reps":1,"points":1,"local":1,"status":"Räckhäv · 1 repetition","level":0}
+PASS touch action pullup: exit clears effort/HUD and never rewards {"reps":1,"hud":false,"active":null}
+PLACE true press {"focused":"press","mode":"touch","touch":true,"fall":false,"overlayHidden":true,"pos":[-145.68700576850887,0.3818432186860061,35.68700576850888],"camera":[-145.68700576850887,2.0018432186860062,35.68700576850888],"rotation":[-0.34849666513342487,-0.7853981633974416],"target":[-144.06066017177983,1.166193924679119,34.06066017177982],"blocked":false}
+PASS touch press: passive gives no effort/reward {"n":1,"level":0,"points":1}
+PASS press: one-way touch stroke gives no force {}
+PASS touch press: real effort reaches top, no early rep {"level":1,"peaked":true,"reps":1,"eye":[-144.49906637611548,1.2061939246791191,34.49906637611548],"stock":2.1377139246791192,"rot":[1.45,-0.7853981633974483],"furniture":true,"hint":"Toppen nådd! Släpp ner helt för en repetition."}
+PASS press: F does not toggle furniture {}
+PASS press: meter drives actual station movement {}
+PASS press: gesture never moves camera look {}
+PASS touch press: full top-to-bottom grants one counted/scored rep {"reps":2,"points":2,"local":1,"status":"Bänkpress · 1 repetition","level":0}
+PASS touch action press: exit clears effort/HUD and never rewards {"reps":2,"hud":false,"active":null}
+PLACE true step {"focused":"step","mode":"touch","touch":true,"fall":false,"overlayHidden":true,"pos":[-139.53517677218593,0.2837508541381246,36.7476659402887],"camera":[-139.53517677218593,1.9037508541381247,36.7476659402887],"rotation":[-0.4385543147329121,-0.7853981633974506],"target":[-137.90883117545687,0.8250149085359412,35.12132034355964],"blocked":false}
+PASS touch step: passive gives no effort/reward {"n":2,"level":0,"points":2}
+PASS step: one-way touch stroke gives no force {}
+PASS touch step: real effort reaches top, no early rep {"level":1,"peaked":true,"reps":2,"eye":[-138.4355974431696,2.443174908535941,35.64808661127237],"rot":[0,-0.7853981633974483],"furniture":true,"hint":"Dra upp och ner i rutan. Varje vändning ger kraft."}
+PASS step: F does not toggle furniture {}
+PASS step: meter drives actual station movement {}
+PASS step: gesture never moves camera look {}
+PASS touch step: full top-to-bottom grants one counted/scored rep {"reps":3,"points":3,"local":1,"status":"Step-up · 1 repetition","level":0}
+PASS touch action step: exit clears effort/HUD and never rewards {"reps":3,"hud":false,"active":null}
+PASS touch: no page errors []

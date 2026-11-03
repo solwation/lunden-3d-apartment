@@ -24,29 +24,26 @@ function rig() {
   return { g, events, rest };
 }
 
-for (const spec of C.stations) test(`${spec.id}: only full cycles count, exactly once, including multiple cycles in one update`, () => {
-  const { g, events, rest } = rig(); rest.target = g.stations.find(s => s.spec.id === spec.id).target;
-  g.update(0, rest); assert.deepEqual(events, []);
-  g.update(spec.period / 4, rest); g.update(spec.period / 4, rest); g.update(spec.period / 4, rest);
-  assert.deepEqual(events, []); // reaching the raised/pressed position alone is not a full repetition
-  g.update(spec.period / 4, rest);
-  assert.deepEqual(events, [{ n: 1, id: spec.id }]);
-  g.update(0, rest); assert.equal(events.length, 1);
-  g.update(spec.period * 2.5, rest);
-  assert.deepEqual(events, [{ n: 1, id: spec.id }, { n: 2, id: spec.id }]);
-  assert.equal(g.repetitions, 3);
+function pump(g,rest){
+  for(let i=0;i<20&&!g.effort.peaked;i++){assert(g.exert(rest));g.update(.1,rest);}
+  assert(g.effort.peaked);
+}
+for (const spec of C.stations) test(`${spec.id}: no passive cycles; a full effort lift and descent count once`, () => {
+  const {g,events,rest}=rig();rest.target=g.stations.find(s=>s.spec.id===spec.id).target;g.update(0,rest);
+  for(let i=0;i<100;i++)g.update(.1,rest);assert.equal(g.repetitions,0);assert.deepEqual(events,[]);
+  pump(g,rest);assert.deepEqual(events,[]);assert(g.effort.level>.9);
+  const raised=spec.id==='press'?g.active.stock.position.y:g.active.spot.pos.y;assert(raised>0);
+  for(let i=0;i<40;i++)g.update(.1,rest);assert.equal(g.repetitions,1);assert.deepEqual(events,[{n:1,id:spec.id}]);
+  for(let i=0;i<100;i++)g.update(.1,rest);assert.equal(events.length,1);
+  pump(g,rest);for(let i=0;i<40;i++)g.update(.1,rest);assert.equal(g.repetitions,2);assert.equal(events.length,2);
 });
 
-test('entry glide, pause, ordinary seats, leaving mid-cycle and switching stations grant no extra cycle', () => {
-  const { g, events, rest } = rig();
-  rest.t = .9; g.update(100, rest); assert.equal(g.elapsed, 0);
-  rest.t = 1; g.update(C.stations[0].period * .6, rest);
-  g.update(0, rest); g.update(-1, rest); g.update(NaN, rest); assert.equal(events.length, 0);
-  rest.active = false; g.update(0, rest); assert.equal(g.elapsed, 0);
-  rest.active = true; g.update(C.stations[0].period * .6, rest); assert.equal(events.length, 0);
-  rest.target = g.stations[1].target; g.update(C.stations[1].period * .6, rest); assert.equal(events.length, 0);
-  rest.target = { kind: 'chair' }; g.update(100, rest); assert.equal(events.length, 0);
-  assert.equal(g.active, null);
+test('entry, pause, abort, ordinary seats and station switch never invent a repetition',()=>{
+  const {g,events,rest}=rig();rest.t=.9;g.update(.1,rest);assert(!g.exert(rest));assert.equal(g.effort.level,0);
+  rest.t=1;pump(g,rest);const level=g.effort.level;g.update(0,rest);assert.equal(g.effort.level,level);
+  rest.active=false;g.update(0,rest);assert.equal(g.effort.level,0);assert.deepEqual(events,[]);
+  rest.active=true;g.update(0,rest);pump(g,rest);rest.target=g.stations[1].target;g.update(.1,rest);assert.equal(g.effort.level,0);assert.deepEqual(events,[]);
+  rest.target={kind:'chair'};g.update(.1,rest);assert.equal(g.active,null);assert(!g.exert(rest));assert.deepEqual(events,[]);
 });
 
 test('daily award ceiling, saved ledger and next local day leave all repetitions available to the medal', () => {
@@ -70,7 +67,7 @@ test('invalid repetitions never credit points, older saves start without retrosp
 
 test('Worker accepts gym repetitions and derives Utegymmare at the same 100-repetition boundary', () => {
   assert.equal(MEDALS.find(m => m.id === 'gym').counter, 'gymReps');
-  assert.ok(COUNTERS.gymReps.perMin >= 60 / Math.min(...C.stations.map(s => s.period)));
+  assert.ok(COUNTERS.gymReps.perMin >= 60 * C.effort.decay);
   assert.deepEqual(boardCounters({ gymReps: 100, unknown: 100 }), { gymReps: 100 });
   const c = clampCounters({ gymReps: 100 }, null, 1e12); assert.equal(c.gymReps, 100);
   assert.equal(medalsOf({ id: 'gym-tester', c, mt: {}, t: 123 }).gym.length, 1);

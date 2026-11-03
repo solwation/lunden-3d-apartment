@@ -1,0 +1,55 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS keys pullup: passive gives no effort/reward {"n":0,"level":0,"points":0}
+PASS pullup: held F autorepeat adds no force {"once":0.15800000000000003,"held":0.11600000000000003}
+PASS keys pullup: real effort reaches top, no early rep {"level":0.958,"peaked":true,"reps":0,"eye":[-145.4395183950936,2.8493507845935024,28.085607870753496],"rot":[0.7396784120011594,-0.7853981633974452],"furniture":true,"hint":"Toppen nådd! Släpp ner helt för en repetition."}
+PASS pullup: F does not toggle furniture {}
+PASS pullup: meter drives actual station movement {}
+PASS keys pullup: full top-to-bottom grants one counted/scored rep {"reps":1,"points":1,"local":1,"status":"Räckhäv · 1 repetition","level":0}
+PASS E pullup: exit clears effort/HUD and never rewards {"reps":1,"hud":false,"active":null}
+PASS keys press: passive gives no effort/reward {"n":1,"level":0,"points":1}
+PASS press: held F autorepeat adds no force {"once":0.15800000000000003,"held":0.11600000000000003}
+PASS keys press: real effort reaches top, no early rep {"level":0.958,"peaked":true,"reps":1,"eye":[-144.49906637611548,1.2061939246791191,34.49906637611548],"stock":2.1377139246791192,"rot":[1.45,-0.7853981633974483],"furniture":true,"hint":"Toppen nådd! Släpp ner helt för en repetition."}
+PASS press: F does not toggle furniture {}
+PASS press: meter drives actual station movement {}
+PASS actual pause freezes effort/reward and hides exercise HUD {"level":0.958,"reps":1,"hud":true}
+PASS keys press: full top-to-bottom grants one counted/scored rep {"reps":2,"points":2,"local":1,"status":"Bänkpress · 1 repetition","level":0}
+PASS Space press: exit clears effort/HUD and never rewards {"reps":2,"hud":false,"active":null}
+PASS keys step: passive gives no effort/reward {"n":2,"level":0,"points":2}
+PASS step: held F autorepeat adds no force {"once":0.15800000000000003,"held":0.11600000000000003}
+PASS keys step: real effort reaches top, no early rep {"level":0.958,"peaked":true,"reps":2,"eye":[-138.4322033306199,2.447374908535941,35.64469249872268],"rot":[0,-0.7853981633974483],"furniture":true,"hint":"Toppen nådd! Släpp ner helt för en repetition."}
+PASS step: F does not toggle furniture {}
+PASS step: meter drives actual station movement {}
+PASS keys step: full top-to-bottom grants one counted/scored rep {"reps":3,"points":3,"local":1,"status":"Step-up · 1 repetition","level":0}
+PASS C step: exit clears effort/HUD and never rewards {"reps":3,"hud":false,"active":null}
+PASS keys: no page errors []
+locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#player-skip')[22m
+[2m    - locator resolved to <button type="button" class="go alt" id="player-skip">Hoppa över</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <div id="rotate" role="alert">…</div> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <div id="rotate" role="alert">…</div> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    56 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div id="rotate" role="alert">…</div> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+    at Object.skipNameDialog (/home/devcontainers/orkester-olw-win10-gpt6-20261103/gym-effort/tools/testkit.cjs:36:44)
+    at async /home/devcontainers/orkester-olw-win10-gpt6-20261103/gym-effort/tools/gymeffortbrowser.cjs:8:289 {
+  name: 'TimeoutError'
+}

@@ -1,0 +1,14 @@
+/* #1836: exercise HUD only; dimensions are visual guesses for phone and keyboard use. */
+#gym-effort { position:fixed; z-index:12; left:50%; bottom:calc(90px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); width:min(350px,calc(100vw - 32px)); box-sizing:border-box; padding:12px 14px; border-radius:14px; background:rgba(20,35,45,.94); color:white; border:1px solid #8aa0aa; box-shadow:0 4px 18px #0005; text-align:center; pointer-events:none; font:14px/1.3 system-ui,sans-serif; }
+#gym-effort[hidden],#gym-effort [hidden] { display:none; }
+#gym-effort strong { display:block; margin-bottom:8px; font-size:16px; }
+#gym-effort [role=progressbar] { height:18px; border-radius:9px; overflow:hidden; background:#071720; border:1px solid #b6cbd5; }
+#gym-effort [role=progressbar]>span { display:block; width:100%; height:100%; background:#efc350; transform:scaleX(0); transform-origin:left; }
+#gym-effort[data-top=true] [role=progressbar]>span { background:#71d68b; }
+#gym-effort p { margin:8px 0; }
+#gym-effort small { display:block; color:#d4e1e5; font-size:12px; }
+#gym-effort [data-gym-pad] { pointer-events:auto; touch-action:none; user-select:none; height:90px; display:flex; flex-direction:column; align-items:center; justify-content:center; border:2px dashed #e3edf1; border-radius:10px; margin:8px 0; background:#263f4d; }
+#gym-effort [data-gym-pad] span { font-size:30px; line-height:1; }
+@media (max-height:450px) { #gym-effort { bottom:14px; width:310px; padding:8px 12px; } #gym-effort [data-gym-pad] { height:60px; } #gym-effort p { margin:5px 0; } }
+/* Keep the desktop-only state stronger than the touch pad's flex layout. */
+#gym-effort [data-gym-pad][hidden] { display:none; }

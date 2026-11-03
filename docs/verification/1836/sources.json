@@ -1,0 +1,25 @@
+{
+  "base": "786d75c102f89246f778953acbe8bed0adb7a2a4",
+  "ownSourceSha256": {
+    "src/main.js": "c237d61bddd5a6643c34e753ae4ac384cae01bcb296c9a86fbbae30d58546a53",
+    "src/outdoorgym.js": "81155d93d26bc3b7d5dbe486adf68e7ec633f07efd37cdfc9b4a321ba8d5c361",
+    "src/gymeffort.js": "d44478724037104b0dc286f2c5f2a1cf0790c06051f57253d1b94665b0fdfbb7",
+    "src/gymefforthud.js": "7af1df2232fb185be6c068479dbf5618329e040d30fa725e43688cd5232066c1",
+    "src/gymeffort.css": "534902e3a7a754f98f0cfa6ba99f1234b2e6661e01237ae618f789a72f8c249e",
+    "src/touch.js": "dd50e6cbaa7de942e1bafa5dcd72f435c9d9bc98a9a7dfe8c7a964f12cc4dcf0",
+    "src/config.js": "ddc4db8ad45addcf51343e3863690b85bdd51e7c5ac589417de7119f37481d74",
+    "index.html": "5990080361c56cba27847cb6f59167e23adef5666fd396e6999e1817569de2e3",
+    "tools/gymrepstest.mjs": "d74eeaf674908d08b8988fc1946af961310983ec4c9e5799eaefa537c4e4e96e",
+    "tools/gymefforttest.mjs": "5c91045b6233d73a81ec62b678a4b0e83942dd14dcb2915313d4256fd918ecd2",
+    "tools/gymeffortbrowser.cjs": "ef576271b11d1e6d7eb891c0fd8e12f823bde97311bfe24aca08b1dd617871f6"
+  },
+  "combinedRuntimeSha256": {
+    "outdoorgymdecor.js": "2bc29bb4d13b898f40643c2a3436a13b238696eb05e9b1034e09d21c76952b62",
+    "outdoorgym.js": "631b41e7b6a7d0b4ddd630bf29d916ad9452d2a70beedbf0fb0bea32ca0b7175",
+    "config.js": "44635fc7360fb57c56227e8fa390b4c31077e3f19916ed0ae307c544ec672f86"
+  },
+  "combinedScope": "#1835 frozen constructor/decor/appearance config plus #1836 effort init/methods/config, own main/HUD/input; all three station interfaces retained.",
+  "node": "35/35",
+  "browserFunctionalChecks": 49,
+  "desktopHudStyle": "padHidden=true, computed display=none; fresh representative image"
+}

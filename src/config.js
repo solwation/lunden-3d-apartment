@@ -4044,6 +4044,7 @@ export const OUTDOOR_SEATS = {
 // #1811: image-interpreted outdoor gym on the grass SW of Östra längan by Karpvägen.
 // Location, dimensions, timber/steel colours, clearance and exercise motions are visual/gameplay guesses from the report photo.
 export const OUTDOOR_GYM = {
+  effort: { gain: .2, decay: .42, pulseGap: .07, stroke: 28, maxStep: .25 }, // #1836: gameplay guesses; fresh F presses / CSS-pixel touch reversals
   scorePerDay: 30, // #1828: exercise-point ceiling per local day (*guess*); all repetitions still count for medals
   at: [-143, 33], yaw: -45, pad: [18, 12], padStep: 1, padLift: .035,
   wood: 0xc78446, steel: 0x989d99, chips: 0x82725c, post: .085, bar: .03, board: .045,

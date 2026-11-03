@@ -900,6 +900,7 @@
     .cinema-player [role=status] { margin: 8px 0; font-size: 14px; }
   </style>
   <link rel="stylesheet" href="src/hudicons.css">
+  <link rel="stylesheet" href="src/gymeffort.css">
   <link rel="stylesheet" href="src/dialogclose.css">
   <script type="importmap">
     { "imports": {
@@ -1617,6 +1618,13 @@
     </div>
   </div>
   <div id="hud" hidden>
+    <section id="gym-effort" hidden aria-label="Träning på utegymmet">
+      <strong data-gym-title aria-live="polite"></strong>
+      <div role="progressbar" aria-label="Kraft" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+      <p data-gym-hint></p>
+      <div data-gym-pad hidden aria-label="Dra upp och ner för att ta i"><span aria-hidden="true">↕</span>Upp och ner</div>
+      <small data-gym-exit></small>
+    </section>
     <button id="terminal-btn" aria-label="Öppna konsolen">&gt;_</button>
     <div id="rearrange-help" hidden role="region" aria-label="Möblera om"><strong id="rearrange-step">1. Välj ett föremål</strong><span id="rearrange-status" aria-live="polite"></span>
       <div class="rearrange-actions"><button id="rearrange-rotate" data-key="R" title="Vrid" hidden>Vrid</button><button id="rearrange-raise" data-key="PgUp" type="button" title="Höj" hidden>Höj</button><button id="rearrange-lower" data-key="PgDn" type="button" title="Sänk" hidden>Sänk</button><button id="rearrange-variant" data-key="V" type="button" hidden>Gör till hörnskrivbord</button><button id="rearrange-material-confirm" data-key="E" type="button" hidden>Bekräfta material</button>

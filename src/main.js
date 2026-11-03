@@ -1,6 +1,7 @@
 import { DanceTime } from './dancescore.js';
 import { stepSurface } from './stepsurface.js';
 import { OutdoorGym } from './outdoorgym.js';
+import { GymEffortHUD } from './gymefforthud.js';
 import { MenuSettings } from './menusettings.js';
 import { renderPlayingNow } from './playerportraits.js';
 import { saveStats } from './stats.js';
@@ -1404,8 +1405,10 @@ window.addEventListener('pointerdown', (e) => {
     if (armEl) armEl.hidden = true;
   }
 }, { capture: true, passive: true });
-const touch = setupTouch({ onLook: (dx, dy) => look(dx * TOUCH.look.sens, dy * TOUCH.look.sens) }); // eased per frame by touch.update (#1088)
+const touch = setupTouch({ onLook: (dx, dy) => look(dx * TOUCH.look.sens, dy * TOUCH.look.sens), blocked: () => outdoorGym.isActive(rest) }); // eased per frame by touch.update (#1088)
 if (params0.has('spidersuit')) suit.putOn(); // &spidersuit (#597): the suit on from the start; after `touch`, which its badge reads (#601)
+function gymInputAllowed(){return outdoorGym.isActive(rest)&&rest.t>=1&&active()&&overlay.hidden&&!otherOverlay()&&!document.hidden&&!reading&&!drawing.active&&!fall.active;}
+const gymHUD=new GymEffortHUD({gym:outdoorGym,rest,allowed:gymInputAllowed,touch:()=>touch.enabled});
 const touchLayout = setupTouchLayout(); // own button layout (#1090): opened from the pause menu, applied in play
 const active = () => !statsOpen && (locked || touch.enabled);
 
@@ -2140,6 +2143,7 @@ document.addEventListener('keydown', (e) => {
     return;
   }
   if(heldItem()===remote&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&['KeyJ','KeyL','BracketLeft','BracketRight'].includes(e.code)){e.preventDefault();if(!e.repeat)remote.seek(['KeyJ','BracketLeft'].includes(e.code)?-1:1);return;}
+  if(outdoorGym.isActive(rest)&&e.code==='KeyF'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();if(!e.repeat&&gymInputAllowed())outdoorGym.exert(rest);return;}
   if (djInput.key(e,focused)) return;
   player.keys.add(e.code);
   if (e.code === 'Space') e.preventDefault(); // jump (#636), thrust (#359), let go of a wall (#597): never scrolls or presses a focused button
@@ -2258,7 +2262,7 @@ function updateFocus() {
   if(outdoorGym.isActive(rest)){
     focused=null;focusPoint=null;showChoices(null,null);placeGhost.visible=itemGhost.visible=false;
     powerBtn.hidden=turnBtn.hidden=standBtn.hidden=true;actionBtn.hidden=!touch.enabled;actionBtn.textContent='Avsluta träningen';
-    promptEl.hidden=false;promptEl.textContent=outdoorGym.status+(touch.enabled?'':' · E / mellanslag: avsluta');interactionOutline.update(null);return;
+    promptEl.hidden=true;interactionOutline.update(null);return;
   }
   setPressed(document.getElementById('furniture-btn'),world.furnitureOn);
   setPressed(document.getElementById('measure-btn'),measure.active);
@@ -3447,7 +3451,8 @@ function step(dt) {
   showFireworks.update(dt); // the midnight show (#1200): after day.update, it adds its flash to the lights
   measure.update(dt, gameView.w, gameView.h);
   if (touch.enabled) touch.update(dt); // the eased drag-to-look (#1088)
-  outdoorGym.update(active()&&!reading&&!drawing.active&&!fall.active?dt:0,rest);
+  outdoorGym.update(active()&&overlay.hidden&&!otherOverlay()&&!document.hidden&&!reading&&!drawing.active&&!fall.active?dt:0,rest);
+  gymHUD.update(outdoorGym.isActive(rest)&&active()&&overlay.hidden&&!otherOverlay()&&!reading&&!drawing.active&&!fall.active);
   world.updateSwings(active() && !reading && !drawing.active && !fall.active ? dt : 0, rest.target); // #1413: move before the seated camera/pose, freeze with its other paused paths
   if (active() && reading) updateFocus();
   else if (drawing.active) drawing.update(dt); // drawing: the camera over the paper, nothing else moves you

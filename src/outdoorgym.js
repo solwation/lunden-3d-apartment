@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GymEffort } from './gymeffort.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { OUTDOOR_GYM as C, REST } from './config.js';
 import { woodMaterial } from './woodgrain.js';
@@ -12,6 +13,7 @@ export class OutdoorGym {
     this.group=new THREE.Group();this.group.name='outdoor-gym';scene.add(this.group);
     this.ground=ground;this.allowed=allowed;this.targets=[];this.polys=[];this.segments=[];
     this.active=null;this.elapsed=0;this.repetitions=0;this.onRep=null;
+    this.effort=new GymEffort(); // #1836: independent transient exercise state
     const yaw=C.yaw*Math.PI/180,c=Math.cos(yaw),s=Math.sin(yaw);
     this.point=(x,z)=>[C.at[0]+c*x+s*z,C.at[1]-s*x+c*z];
     const materials={wood:woodMaterial(0xffffff,.85),steel:new THREE.MeshStandardMaterial({vertexColors:true,roughness:.75,metalness:.25}),gravel:gymGroundMaterial(),padded:new THREE.MeshStandardMaterial({color:C.landscape.padded,roughness:1})};
@@ -69,15 +71,18 @@ export class OutdoorGym {
   standAt(rest,player){const p=this.isActive(rest)?rest.standing:null;return p&&player.isFree(p.x,p.z,0)?p:null;}
   get status(){return this.active?`${this.active.spec.label} · ${this.repetitions} ${this.repetitions===1?'repetition':'repetitioner'}`:'';}
 
+  exert(rest){return this.isActive(rest)&&rest.t>=1&&this.active?.target===rest.target?this.effort.push():false;}
+
   update(dt,rest){
     const station=this.isActive(rest)?this.stations.find(s=>s.target===rest.target):null;
     if(station!==this.active){
       if(this.active){this.active.spot.pos.copy(this.active.origin);if(this.active.stock)this.active.stock.position.copy(this.active.stockOrigin);}
       this.active=station;this.elapsed=0;this.repetitions=0;
+      (this.effort??=new GymEffort()).reset();
     }
-    if(!station||rest.t<1||!Number.isFinite(dt)||dt<=0)return;
-    this.elapsed+=dt;const phase=this.elapsed/station.spec.period,cycle=(1-Math.cos(phase*Math.PI*2))/2;
-    const repetitions=Math.floor(phase),completed=repetitions-this.repetitions;this.repetitions=repetitions;
+    if(!station||rest.t<1||!Number.isFinite(dt)||dt<=0||dt>C.effort.maxStep)return;
+    this.elapsed+=dt;const completed=this.effort.update(dt),cycle=this.effort.level;
+    this.repetitions+=completed;
     if(completed>0)this.onRep?.(completed,station.spec.id);
     station.spot.pos.copy(station.origin);
     if(station.spec.id==='pullup')station.spot.pos.y+=cycle*C.pullRise*rest.scale;
