@@ -1,0 +1,20 @@
+{
+  "base": "c761457db7f350387a84e5cdd02f0236075e3bbb",
+  "sha256": {
+    "index.html": "cb5fe2b343845c9bc71db8a785022e22c15ef303b5abfa080022247eba736abf",
+    "src/adminreports.js": "abc8b1ffe2f6ce8f68ac5b663c7ba0aef5f96e33a00fbc9aff063510a7a26480",
+    "src/reportattachments.js": "196abf8336a3a66e83f5d9157221ff78eeccbf6d1e8a1bd049007eb9709b7250",
+    "src/reportphoto.js": "4b5ae54540180cd3c79a7c6500ecd42fbea1e53510ab53ddc8ae6e6300ab266b",
+    "src/config.js": "cc1412214cc20f32cc5971f03717ed1e74d0ab006d82fe2966ce77f8693ab228",
+    "cloudflare/worker.js": "81812780595db8edc547a62ac33c7295b4575d1f5f652fcaeace00d0ba5d8aea",
+    "cloudflare/reports.js": "6b76390f5a7303d51b1c9856b1ebb9362257bd8f44848a97d7b5571fff32d342",
+    "cloudflare/reportimage.js": "f096064e051b44ce4332201a671d3dd85d5e065d0e3a80709875a0d4bddc6d65",
+    "cloudflare/reportphotos.test.mjs": "2c1e484ed2a4be407ac65b16fa211b0e78e99a6fe4a35e610598b819f66afdb7",
+    "cloudflare/reports.test.mjs": "b47561a4ad89ee6f8377daf248e1a40584193cd031eef968dad72da9499f845b",
+    "tools/ingame_reports.py": "d41e77d8de3b1fcdfbebce34aaed8aa8cc22c9cb8c04ab0f96c25a5ab2694c21",
+    "tools/ingame_reports_test.py": "0fe2f8e12862ca39d6fea9f4731e9cca1d31f91bb5dd85de04d229833dfa8f86",
+    "tools/reportmultibrowser.cjs": "7a74b64993506dd562912bc65fa0555ea822c635fd010f8a8ffb42be9ac17d5a",
+    "tools/reportlegacycheck.mjs": "a51a0bbfb26c86cdd1495f9b75fa9ce95f2f22d6553975c79009f81d905d1a44"
+  },
+  "images": "Accepted UI captures precede only the nonvisual URI/error rollout guard; image-source.json pins capture phase. Final 25-check sequence reused these unchanged views."
+}

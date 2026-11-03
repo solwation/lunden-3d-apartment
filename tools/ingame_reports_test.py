@@ -745,10 +745,10 @@ class PhotoImportTests(unittest.TestCase):
             with self.assertRaises(m.GitHubNotFound):
                 m.GitHub().request('GET', m.CONTENTS + m.image_path(ID, '-2') + '?ref=main', allow_not_found=True)
             with self.assertRaises(m.ImportErrorSafe) as caught:
-                m.GitHub().request('GET', m.CONTENTS + 'docs/ingame-reports/' + ID + '-3.jpg?ref=main', allow_not_found=True)
+                m.GitHub().request('GET', m.CONTENTS + 'docs/ingame-reports/' + ID + '-6.jpg?ref=main', allow_not_found=True)
             self.assertNotIsInstance(caught.exception, m.GitHubNotFound)
         with self.assertRaises(m.ImportErrorSafe):
-            m.image_path(ID, '-3')
+            m.image_path(ID, '-6')
 
 
 class HttpTests(unittest.TestCase):
@@ -1089,6 +1089,118 @@ class ReporterTests(unittest.TestCase):
         self.assertEqual(github.uploads, 2)
         self.assertEqual(list(github.labels), ['rapportör: lin'])
         self.assertTrue(all(issue['title'].startswith('[Lin] ') for issue in github.issues.values()))
+
+
+class MultiPhotoImportTests(unittest.TestCase):
+    run_import = PhotoImportTests.run_import
+    puts = PhotoImportTests.puts
+
+    def setUp(self):
+        PhotoImportTests.setUp(self)
+        self.extra = [JPEG[:2] + b'\xff\xfe\x00\x04' + bytes([97 + i, 98]) + JPEG[2:] for i in range(3)]
+        self.worker.report['photos'] = [m.IMAGE_PREFIX + m.base64.b64encode(b).decode() for b in self.extra]
+        for i, data in enumerate(self.extra, 2):
+            self.entry[f'photo{i}Relevance'] = m.RELEVANCE[(i - 2) % 3]
+            self.entry[f'photo{i}Sha256'] = m.hashlib.sha256(data).hexdigest()
+
+    def test_all_five_images_export_review_publish_verify_ack_and_resume(self):
+        directory = Path(self.temp.name) / 'images'
+        exported = m.export_report(self.worker.report, directory)
+        self.assertNotIn('base64', json.dumps(exported))
+        self.assertNotIn('photos', exported)
+        self.assertEqual([Path(exported[f]['path']).name for f, _, _ in m.IMAGES],
+                         [ID + suffix + '.jpg' for _, suffix, _ in m.IMAGES])
+        self.run_import()
+        self.assertTrue(self.worker.acked)
+        self.assertEqual(len(self.puts()), 5)
+        for field, suffix, prefix in m.IMAGES:
+            state = m.read_json(self.path)['entries'][ID][field]
+            self.assertIn(state['sha256'], self.github.issue['body'])
+            self.assertIn(m.image_url(ID, suffix), self.github.issue['body'])
+            self.assertEqual(Path(exported[field]['path']).read_bytes(), (JPEG if field == 'image' else PHOTO_JPEG if field == 'photo' else self.extra[int(field[-1]) - 2]))
+        calls = len(self.github.calls)
+        self.run_import()
+        self.assertEqual(len(self.github.calls), calls)
+
+    def test_missing_or_wrong_last_review_stops_before_github(self):
+        report = copy.deepcopy(self.worker.report)
+        for mode in ('missing', 'wrong'):
+            self.path = Path(self.temp.name) / (mode + '.json')
+            self.worker = FakeWorker()
+            self.worker.report = copy.deepcopy(report)
+            saved = self.entry['photo4Sha256']
+            if mode == 'missing': del self.entry['photo4Sha256']
+            else: self.entry['photo4Sha256'] = '0' * 64
+            with self.assertRaisesRegex(m.ImportErrorSafe, 'View original photo4'): self.run_import()
+            self.assertFalse(self.worker.acked)
+            self.assertEqual(self.github.uploads, 0)
+            self.entry['photo4Sha256'] = saved
+
+    def test_failed_extra_upload_resumes_without_losing_or_overwriting_other_images(self):
+        request = self.github.request
+        def fail_last(method, endpoint, payload=None, **kwargs):
+            if method == 'PUT' and endpoint.endswith('-5.jpg'): m.fail('Fixture upload failure.')
+            return request(method, endpoint, payload, **kwargs)
+        self.github.request = fail_last
+        with self.assertRaises(m.ImportErrorSafe): self.run_import()
+        self.assertFalse(self.worker.acked)
+        self.assertEqual(len(self.puts()), 4)
+        self.github.request = request
+        self.run_import()
+        self.assertTrue(self.worker.acked)
+        self.assertEqual(len(self.puts()), 5)
+
+    def test_bad_extra_shape_count_missing_first_and_total_fail_closed(self):
+        for photos in (None, {}, 'jpeg', [IMAGE] * 4, ['data:image/png;base64,AAAA']):
+            report = {**self.worker.report, 'photos': photos}
+            with self.assertRaises(m.ImportErrorSafe): m.validate_report(report)
+        report = {**self.worker.report}
+        del report['photo']
+        with self.assertRaises(m.ImportErrorSafe): m.validate_report(report)
+        report = {**self.worker.report, 'photo2': IMAGE}
+        with self.assertRaises(m.ImportErrorSafe): m.validate_report(report)
+        with patch.object(m, 'MAX_IMAGE_TOTAL', len(JPEG) - 1):
+            with self.assertRaises(m.ImportErrorSafe): m.validate_report(self.worker.report)
+
+    def test_aggregate_limit_uses_all_decoded_images_and_accepts_exact_boundary(self):
+        def padded(size):
+            parts, count = [JPEG[:2]], len(JPEG)
+            while count + 4 <= size:
+                length = min(65533, size - count - 4)
+                parts.append(b'\xff\xfe' + (length + 2).to_bytes(2, 'big') + b'x' * length)
+                count += length + 4
+            return m.IMAGE_PREFIX + m.base64.b64encode(b''.join(parts) + JPEG[2:]).decode()
+        large = padded(170 * 1024)
+        report = {**self.worker.report, 'image': large, 'photo': large, 'photos': [large] * 3}
+        with self.assertRaisesRegex(m.ImportErrorSafe, 'total'): m.validate_report(report)
+        maximum = padded(m.MAX_IMAGE)
+        m.validate_report({**self.worker.report, 'image': maximum, 'photo': maximum, 'photos': [maximum] * 2})
+        self.assertEqual(m.MAX_IMAGE_TOTAL, 800 * 1024)
+
+    def test_extra_image_changed_before_ack_never_acknowledges(self):
+        verify = self.github.verify_image
+        seen = 0
+        def changing(ident, expected, suffix=''):
+            nonlocal seen
+            if suffix == '-5':
+                seen += 1
+                if seen == 3: self.github.store(JPEG, ID, '-5')
+            return verify(ident, expected, suffix)
+        self.github.verify_image = changing
+        with self.assertRaises(m.ImportErrorSafe): self.run_import()
+        self.assertFalse(self.worker.acked)
+
+    def test_all_new_fixed_suffixes_allow_404_but_other_paths_remain_closed(self):
+        def execute(args, **kwargs):
+            kwargs['stdout'].write(b'HTTP/2.0 404 fixture\n\n{}')
+            return type('Result', (), {'returncode': 1})()
+        with patch.object(m.subprocess, 'run', side_effect=execute):
+            for suffix in ('-3', '-4', '-5'):
+                with self.assertRaises(m.GitHubNotFound):
+                    m.GitHub().request('GET', m.CONTENTS + m.image_path(ID, suffix) + '?ref=main', allow_not_found=True)
+            for endpoint in (m.CONTENTS + 'docs/ingame-reports/' + ID + '-6.jpg?ref=main', m.CONTENTS + '../escape?ref=main'):
+                with self.assertRaises(m.ImportErrorSafe) as caught: m.GitHub().request('GET', endpoint, allow_not_found=True)
+                self.assertNotIsInstance(caught.exception, m.GitHubNotFound)
 
 
 if __name__ == '__main__':

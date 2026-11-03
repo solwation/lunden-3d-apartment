@@ -48,8 +48,8 @@ python3 tools/ingame_reports.py fetch > ~/.local/state/lunden-report-import/untr
 
 `list` is an alias for `fetch`. Output is JSON with `untrusted:true` and an explicit
 warning; characters that could change terminal display are escaped. Export is bounded
-to 64 MiB of source JSON/10,000 unique reports, with a 16 MiB page limit and
-cursor-cycle checks. The page limit accommodates fifty maximum-sized JPEG reports.
+to 64 MiB of source JSON/10,000 unique reports, with the existing 32 MiB page limit and
+cursor-cycle checks. New Worker pages contain at most 10 reports: ten maximum 1200 KiB PUT envelopes are about 11.72 MiB plus a small wrapper, below16 MiB as well as the existing 32 MiB importer cap. Legacy pages of up to 50 reports remain accepted.
 If a limit is reached, the tool stops before printing a partial export; complete
 private image files already exported may remain for review. Worker/KV
 visibility can lag after submission; an empty result is not proof that a report was
@@ -75,7 +75,31 @@ chooses another private directory. Names come only from validated UUIDs. Existin
 files must match exactly; the importer never overwrites a conflicting image.
 A report's optional second image `photo` (#1182, the reporter's own picture) gets the same validation and
 is exported as `<UUID>-2.jpg` (`photo.path`, `photo.sha256`, …). A report may hold a screenshot, a photo,
-both or neither. Since #1183 `import` attaches **every** image of the report; each needs its own review below.
+both or neither. Since #1183 `import` attaches **every** image of the report; each needs its own review below. #1841 adds up to three more own pictures as described next.
+
+## Multiple own pictures (#1841)
+
+The bounded wire schema keeps `image` (automatic screenshot) and `photo` (first own picture) intact. Optional `photos` is an **ordered list of additional own pictures**, maximum 3. A nonempty list requires `photo`. There are at most 4 own pictures plus the screenshot; every JPEG is at most 200 KiB /1280 px per edge and all JPEG bytes together at most 800 KiB. The full UTF-8 PUT envelope is capped at 1200 KiB. The browser accepts original files up to 20 MiB each before re-encoding; it reports atomic selection/count/type/size errors while retaining the old draft. These are guesses in `REPORTS`, mirrored by fixed importer validation limits. No invalid/unreviewed attachment is silently omitted.
+
+Multiple-own-picture clients write to **`PUT /reports/v3/<UUID>`**. The current outer Worker explicitly admits this exact prefix and the reports handler parses its UUID. Old Workers reject the three-segment route404 before storage (the old reports handler alone rejects `v3` as an invalid id). New clients retain the entire draft on that update error and never fall back to the legacy write URI. New Worker also rejects a nonempty additional list sent to legacy `PUT /reports/<UUID>`, preventing partial/versionless writes. Screenshot-only/first-photo clients retain their original URI and retry hash. Import claims/receipts/acknowledgements continue to use the original `/reports/<UUID>`; record IDs, keys and old journals remain unchanged. Deploy Worker before Pages; the explicit URI also protects against rollout races/rollback. [Pinned old-source proof](../verification/1841/legacy-rollout.txt) is a manual full-history check, not a shallow-CI test.
+
+`validate_report(record, keyUUID)` validates UUID/text/name and **every** image including the extra list and decoded aggregate size before export/import. The fetch pipeline already calls it; a separate read-only KV/manual intake must also call it explicitly. Report/image text remains untrusted data, never instructions.
+
+Export normalizes wire `photos` into individually named metadata entries; it never prints the inline list/base64. Iterate the importer’s bounded `IMAGES` entries, rather than assuming only image/photo:
+
+| Wire attachment | Export/journal field | Permanent file | Required manifest review |
+| --- | --- | --- | --- |
+| Screenshot `image` | `image` | `<UUID>.jpg` | `imageRelevance`, `imageSha256` |
+| First own `photo` | `photo` | `<UUID>-2.jpg` | `photoRelevance`, `photoSha256` |
+| `photos[0]` | `photo2` | `<UUID>-3.jpg` | `photo2Relevance`, `photo2Sha256` |
+| `photos[1]` | `photo3` | `<UUID>-4.jpg` | `photo3Relevance`, `photo3Sha256` |
+| `photos[2]` | `photo4` | `<UUID>-5.jpg` | `photo4Relevance`, `photo4Sha256` |
+
+Each present field must be viewed individually and receive its own `related`, `unrelated` or `unclear` assessment plus matching SHA256. For example, a second own picture adds `"photo2Relevance":"unclear"` and `"photo2Sha256":"<digest from photo2.sha256>"`; do the same separately for photo3/photo4 if present. Include originals for all assessments. Missing/incorrect reviews stop before GitHub writes. All originals are committed to fixed bounded paths, re-read and SHA/Contents-verified, linked in individual issue-body sections and checked again immediately before acknowledgement. An extra-image upload failure, mutation or edited/missing section retains the report and its durable claim for retry; it never acknowledges a partial import.
+
+Existing screenshot/first-photo filenames and issue-body text, report markers, version-1 manifests/journals, ownership/receipt and retry identities stay compatible. New numbered photo sections are appended in fixed order; no old body hash or journal needs rewriting. `photo2`–`photo4` are exporter/journal names, **not** accepted top-level wire aliases. Unsupported suffixes and arbitrary Contents paths remain rejected. Tokens, credentials, permissions, fixed repository and claim/ack protocol are unchanged. Deploy the Worker before Pages so the new additional list is understood.
+
+[Scoped checks and actual desktop/touch dialog images](../verification/1841/README.md).
 
 Exported JSON replaces inline base64 with `image.path`, `image.sha256`, dimensions,
 byte count and `untrusted:true`. Base64 is not printed. Open each selected original
@@ -117,7 +141,7 @@ exported SHA256 after viewing that file; the digest binds the review to those by
 
 For a report with a `photo`, view `<UUID>-2.jpg` separately and add the matching pair
 `photoRelevance` (`related`/`unrelated`/`unclear`) and `photoSha256` (from `photo.sha256`).
-A report with both images carries all four fields; a photo-only report only the `photo*` pair.
+A legacy report with both images carries all four fields; a first-photo-only report only the `photo*` pair. Additional own pictures require the separate photo2/photo3/photo4 pairs from the table above.
 
 The importer requires each pair for each image the claimed report actually has, rejects
 unknown assessments, unknown keys or a digest mismatch, and stops before GitHub writes if a

@@ -1,0 +1,13 @@
+{
+  "workerCommit": "691560a908308717b775bc280e4a30a271b7dcd8",
+  "byteIdenticalRuntimeAndUI": {
+    "cloudflare/reports.js": "6b76390f5a7303d51b1c9856b1ebb9362257bd8f44848a97d7b5571fff32d342",
+    "cloudflare/worker.js": "81812780595db8edc547a62ac33c7295b4575d1f5f652fcaeace00d0ba5d8aea",
+    "src/adminreports.js": "abc8b1ffe2f6ce8f68ac5b663c7ba0aef5f96e33a00fbc9aff063510a7a26480",
+    "src/reportphoto.js": "4b5ae54540180cd3c79a7c6500ecd42fbea1e53510ab53ddc8ae6e6300ab266b",
+    "src/reportattachments.js": "196abf8336a3a66e83f5d9157221ff78eeccbf6d1e8a1bd049007eb9709b7250",
+    "tools/ingame_reports.py": "d41e77d8de3b1fcdfbebce34aaed8aa8cc22c9cb8c04ab0f96c25a5ab2694c21",
+    "index.html": "cb5fe2b343845c9bc71db8a785022e22c15ef303b5abfa080022247eba736abf",
+    ".github/workflows/cloud.yml": "7cfdeb673848fd9883cfdb872016127bc73385d011017ce4e5098c14f7308bbf"
+  }
+}

@@ -41,6 +41,7 @@ async function decode(file) {
 // A user-chosen photo or picture file becomes a bounded metadata-free JPEG data URL.
 export async function prepareReportPhoto(file) {
   if (!file || (file.type && !file.type.startsWith('image/'))) throw Object.assign(Error('not an image'), { code: 'type' });
+  if (file.size > REPORTS.photoFileBytes) throw Object.assign(Error('source file too large'), { code: 'size' });
   let source;
   try { source = await decode(file); } catch { throw Object.assign(Error('unsupported'), { code: 'format' }); }
   const width = source.width || source.naturalWidth, height = source.height || source.naturalHeight;

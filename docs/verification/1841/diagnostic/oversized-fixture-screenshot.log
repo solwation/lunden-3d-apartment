@@ -1,0 +1,15 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS desktop: native multi-file chooser preserves two previews
+PASS desktop: adding third keeps both prior images
+PASS desktop: remove one specific image leaves B/C ordered
+PASS desktop: excess count rejects whole new batch without draft/image loss
+PASS desktop: invalid type keeps entered report
+PASS desktop: oversized original file rejected before decode
+PASS desktop: decoded total error preserves all images/text before any PUT
+PASS desktop: intercepted413 keeps both images and draft
+PASS desktop: unchanged retry keeps same UUID and exact attachment snapshot
+PASS desktop: screenshot plus exactly B/C reach PUT without silent replacement
+FAIL desktop: valid resized JPEGs strip source metadata; successful send clears only submitted draft
+Error: desktop: valid resized JPEGs strip source metadata; successful send clears only submitted draft
+    at check (/home/devcontainers/orkester-olw-win10-gpt6-20261103/report-multi/tools/reportmultibrowser.cjs:4:404)
+    at /home/devcontainers/orkester-olw-win10-gpt6-20261103/report-multi/tools/reportmultibrowser.cjs:30:3

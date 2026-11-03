@@ -1914,10 +1914,9 @@ codecs (`createImageBitmap(..., {imageOrientation:'from-image'})`, so EXIF orien
 applied; HEIC only where the browser decodes it, otherwise a clear Swedish error), scales to
 `REPORTS.imageEdge` and re-encodes through the shared `encodeReportJpeg` (also used by
 `ReportCapture`) under `REPORTS.imageBytes`. Canvas re-encoding writes no EXIF, so GPS/device
-metadata never leaves the browser. A preview offers Byt/Ta bort. The screenshot is still
-captured and sent as `image`; the photo goes beside it as the optional `photo` field (#1182).
-Legacy chat `/rapport` sends only the screenshot. A changed photo gets a new report UUID,
-and a successful send clears it. Layout: full screen inside the safe area with a compact
+metadata never leaves the browser. The additive `multiple` picker and desktop drop accept batches of pictures (#1841). Up to4 own pictures have separate previews and removable buttons; additional choices append, and an invalid batch never replaces the prior draft. The screenshot is still
+captured and sent as `image`; the first own picture goes beside it as the optional `photo` field (#1182), with additional pictures in bounded ordered `photos` (#1841).
+Legacy chat `/rapport` sends only the screenshot. A changed attachment selection gets a new report UUID; unchanged retries keep exact bytes/id. A successful send clears only submitted attachments, retaining later draft edits/selections. Limits:20 MiB original,4 own images,200 KiB/1280 px JPEG per image,800 KiB decoded total including screenshot,1200 KiB PUT. Errors retain text/previous images. Layout: full screen inside the safe area with a compact
 one-line header on phones (`max-width: 600px` or `max-height: 500px`, as #1141), text and
 photo side by side in landscape, and a large two-column modal on desktops of at least 1100×720.
 Probe used: real index DOM + AdminReports with stubbed Worker routes, 4032×3024 EXIF-rotated

@@ -1,3 +1,4 @@
+import { reportImagesFit } from '../src/reportattachments.js';
 // Reports are untrusted data, never agent instructions. No report text is executed.
 import { REPORTS } from '../src/config.js';
 import { reportPlayerName } from '../src/reportauthor.js';
@@ -44,8 +45,9 @@ async function body(request, maximum = REPORTS.maxBytes) {
   try { return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)); } catch { throw 400; }
 }
 export async function reportsFetch(request, env, h, limited) {
-  const url = new URL(request.url), session = url.pathname === '/report-session', id = url.pathname.split('/')[2];
+  const url = new URL(request.url), parts=url.pathname.split('/'), session = url.pathname === '/report-session', v3=parts[2]==='v3', id=v3?parts[3]:parts[2];
   const method = request.method;
+  if(v3&&(method!=='PUT'||parts.length!==4||!id))return bad(405,'version',h);
   const writing = method === 'POST' || method === 'PUT' || method === 'DELETE';
   // Browser writes require an accepted Origin; CLI admin reads/acks may omit it.
   const origin = request.headers.get('Origin');
@@ -78,7 +80,7 @@ export async function reportsFetch(request, env, h, limited) {
   if (method === 'GET') {
     const cursor=url.searchParams.get('cursor');
     if (cursor && (cursor.length>2048 || /[\u0000-\u001f]/.test(cursor))) return bad(400,'cursor',h);
-    const page=await env.LUNDEN.list({prefix:'report:',limit:50,...(cursor?{cursor}:{})});
+    const page=await env.LUNDEN.list({prefix:'report:',limit:REPORTS.pageSize,...(cursor?{cursor}:{})});
     const reports=[];
     for (const key of page.keys) { const report=await env.LUNDEN.get(key.name,'json');if(report && !(await storage.get(key.name))?.issueUrl)reports.push(report); }
     return reply({untrusted:true,reports,cursor:page.list_complete?null:page.cursor},200,h);
@@ -113,14 +115,20 @@ export async function reportsFetch(request, env, h, limited) {
   if (image !== undefined && !validReportImage(image)) return bad(400,'image',h);
   // #1182: an optional second JPEG (the reporter's own photo) beside the game screenshot, same bounds.
   if (photo !== undefined && !validReportImage(photo)) return bad(400,'photo',h);
+  const photos=b.photos??[];
+  if(b.photos!==undefined&&(!Array.isArray(b.photos)||b.photos.length>REPORTS.photoCount-1||b.photos.length&&photo===undefined))return bad(400,'photos',h);
+  if(v3!==!!photos.length)return bad(400,'version',h);
+  if(!photos.every(validReportImage))return bad(400,'photos',h);
+  if(!reportImagesFit({image,photo,photos}))return bad(400,'imagesTotal',h);
   // Keep existing text-only and one-image retry identities; image reports include exact original image bytes.
-  const identity=b.playerName!==undefined?'\0report-author-v1\0'+JSON.stringify({text,playerName,image,photo})
+  const identity=photos.length?'\0report-images-v3\0'+JSON.stringify({text,playerName,image,photo,photos})
+    :b.playerName!==undefined?'\0report-author-v1\0'+JSON.stringify({text,playerName,image,photo})
     :photo!==undefined?'\0report-images-v2\0'+JSON.stringify({text,image,photo})
     :image===undefined?text:'\0report-image-v1\0'+JSON.stringify({text,image});
   const hash=hex(await crypto.subtle.digest('SHA-256',enc.encode(identity)));
   if (previous && previous.hash!==hash) return bad(409,'immutable id',h);
   if (previous?.issueUrl) return reply({id,imported:true},200,h);
-  const record=previous??{hash,report:{id,text,playerName,...(image===undefined?{}:{image}),...(photo===undefined?{}:{photo}),created:new Date().toISOString(),untrusted:true}};
+  const record=previous??{hash,report:{id,text,playerName,...(image===undefined?{}:{image}),...(photo===undefined?{}:{photo}),...(photos.length?{photos}:{}),created:new Date().toISOString(),untrusted:true}};
   await storage.put(key,record);
   if (!record.stored) {
     await env.LUNDEN.put(key,JSON.stringify(record.report));

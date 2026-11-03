@@ -1,0 +1,6 @@
+SOURCE reports.js c761457db7f350387a84e5cdd02f0236075e3bbb a198d85f519df9d60abc0d00794ba097e080e97bfda4eddec827fc8c51760681
+SOURCE worker.js c761457db7f350387a84e5cdd02f0236075e3bbb f8e786b223d1b039c2364e2697db9d7de842e21093435e7fc763506ba5f14e8f
+PASS actual old outer routing rejects v3 prefix404 before any storage
+PASS old reportsFetch rejects version component as invalid UUID before any storage
+PASS counterfactual old URI accepts while dropping extras; new client must never use it
+PASS current Worker separates legacy and versioned writes without silent fallback

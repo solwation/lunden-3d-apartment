@@ -1,0 +1,8 @@
+{
+  "index.html": "cb5fe2b343845c9bc71db8a785022e22c15ef303b5abfa080022247eba736abf",
+  "src/adminreports.js": "9ec14ebd313aefc4880c140645a1807370111a6c049241c82a5f086d10bbb081",
+  "src/reportphoto.js": "4b5ae54540180cd3c79a7c6500ecd42fbea1e53510ab53ddc8ae6e6300ab266b",
+  "src/reportattachments.js": "196abf8336a3a66e83f5d9157221ff78eeccbf6d1e8a1bd049007eb9709b7250",
+  "src/config.js": "cc1412214cc20f32cc5971f03717ed1e74d0ab006d82fe2966ce77f8693ab228",
+  "tools/reportmultibrowser.cjs": "9f42039be637931d02e0e1e667db8d4de577662cd03d0ca44b74175b5422dc27"
+}

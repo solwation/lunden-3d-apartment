@@ -71,9 +71,9 @@ test('immutable concurrent IDs, exact untrusted text, retry without KV rewrite, 
  assert.equal((await f.call('/reports/'+id,'PUT',{text:'bad\u202e'},token)).status,400);
  assert.equal((await f.call('/reports','GET')).status,403);
  for(let i=0;i<51;i++)f.kv.set('report:'+String(i),JSON.stringify({id:String(i),text:'fixture'}));
- const page=await (await f.call('/reports','GET',undefined,adminToken)).json();assert.equal(page.reports.length,50);assert.ok(page.cursor);assert.equal(page.untrusted,true);
+ const page=await (await f.call('/reports','GET',undefined,adminToken)).json();assert.equal(page.reports.length,REPORTS.pageSize);assert.ok(page.cursor);assert.equal(page.untrusted,true);
  assert.equal(page.reports.find(r=>r.id===id).text,text);
- const next=await(await f.call('/reports?cursor='+page.cursor,'GET',undefined,adminToken)).json();assert.equal(next.reports.length,2);assert.equal(next.cursor,null);
+ let count=page.reports.length,cursor=page.cursor;while(cursor){const next=await(await f.call('/reports?cursor='+cursor,'GET',undefined,adminToken)).json();assert.ok(next.reports.length<=REPORTS.pageSize);count+=next.reports.length;cursor=next.cursor;}assert.equal(count,52);
  assert.equal((await f.call('/reports/'+id,'DELETE',{issueUrl},token)).status,403);
  assert.equal((await f.call('/reports/'+id,'DELETE',{issueUrl:'https://evil.test/1'},adminToken)).status,400);
  assert.equal((await f.call('/reports/'+id,'DELETE',{issueUrl},adminToken)).status,409);

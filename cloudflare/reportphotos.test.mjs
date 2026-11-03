@@ -17,7 +17,7 @@ function fixture(){
  const env={REPORT_SESSION_SECRET:secret,ADMIN_TOKEN:adminToken,LUNDEN:{
   get:async(k,t)=>kv.has(k)?t==='json'?JSON.parse(kv.get(k)):kv.get(k):null,
   put:async(k,v)=>{kv.set(k,v);},delete:async k=>kv.delete(k),
-  list:async({prefix})=>({keys:[...kv.keys()].filter(k=>k.startsWith(prefix)).map(name=>({name})),list_complete:true}),
+  list:async({prefix,limit,cursor})=>{const keys=[...kv.keys()].filter(k=>k.startsWith(prefix)),start=Number(cursor??0);return{keys:keys.slice(start,start+limit).map(name=>({name})),list_complete:start+limit>=keys.length,cursor:String(start+limit)};},
  }};
  const room=new DrawingRoom({storage,blockConcurrencyWhile(fn){const p=gate.then(fn);gate=p.catch(()=>{});return p;}},env);
  env.DRAWINGS={idFromName:()=>'reports',get:()=>room};
@@ -73,4 +73,32 @@ test('the photo field gets the same type, size and dimension checks as the scree
  }
  assert.equal((await f.call('/reports/'+id,'PUT',' '.repeat(REPORTS.putBytes+1),token)).status,413);
  assert.equal(f.kv.size,0);
+});
+
+// #1841: no private credentials; minted local fixture sessions only.
+test('all own attachments remain ordered, immutable, listed and claimed; bounded page continues',async()=>{
+ const f=fixture(),token=await session(),data={text:'multiple local fixture pictures',playerName:'Test',image,photo:image,photos:[paddedJpeg(jpeg.length+4000),paddedJpeg(jpeg.length+5000),paddedJpeg(jpeg.length+6000)]};
+ assert.equal((await f.call('/reports/v3/'+id,'PUT',data,token)).status,201);
+ assert.equal((await f.call('/reports/v3/'+id,'PUT',data,token)).status,200);
+ for(const changed of [{...data,photos:data.photos.slice(0,2)},{...data,photos:data.photos.toReversed()},{...data,photo:data.photos[0]}])assert.equal((await f.call('/reports/v3/'+id,'PUT',changed,token)).status,409);
+ const claim=await(await f.call('/reports/'+id,'POST',{claimId},adminToken)).json();assert.deepEqual(claim.report.photos,data.photos);assert.equal(claim.report.photo,image);
+ for(let i=0;i<12;i++)f.kv.set('report:'+crypto.randomUUID(),JSON.stringify({...data,id:crypto.randomUUID()}));
+ const first=await(await f.call('/reports','GET',undefined,adminToken)).json();assert.equal(first.reports.length,10);assert.ok(first.cursor);const next=await(await f.call('/reports?cursor='+first.cursor,'GET',undefined,adminToken)).json();assert.equal(next.reports.length,3);assert.equal(next.cursor,null);
+});
+test('invalid count/shape/image and decoded total reject whole request before storage',async()=>{
+ const f=fixture(),token=await session();
+ for(const photos of [null,{},'image',[image,image,image,image],['data:image/png;base64,AAAA'],[paddedJpeg(REPORTS.imageBytes+1)]]){const r=await f.call('/reports/v3/'+id,'PUT',{text:'x',photo:image,photos},token);assert.equal(r.status,400);assert.equal((await r.json()).error,'photos');}
+ assert.equal((await f.call('/reports/v3/'+id,'PUT',{text:'x',photos:[image]},token)).status,400);
+ const max=paddedJpeg(REPORTS.imageBytes),large=paddedJpeg(170*1024);const r=await f.call('/reports/v3/'+id,'PUT',{text:'x',image:large,photo:large,photos:[large,large,large]},token);assert.equal(r.status,400);assert.equal((await r.json()).error,'imagesTotal');assert.equal(f.kv.size,0);
+ // Exactly800 KiB decoded (four max-sized images) plus maximum Unicode text fits the JSON envelope.
+ const valid={text:'😀'.repeat(REPORTS.maxChars/2),image:max,photo:max,photos:[max,max]};assert.ok(Buffer.byteLength(JSON.stringify(valid))<REPORTS.putBytes);assert.equal((await f.call('/reports/v3/'+id,'PUT',valid,token)).status,201);
+});
+
+test('versioned writes reject additional pictures on legacy URI and use normal claim receipts',async()=>{
+ const f=fixture(),token=await session(),payload={text:'versioned extra pictures',photo:image,photos:[image]};
+ assert.equal((await f.call('/reports/'+id,'PUT',payload,token)).status,400);assert.equal(f.kv.size,0);
+ assert.equal((await f.call('/reports/v3/'+id,'PUT',payload,token)).status,201);
+ const claim=await(await f.call('/reports/'+id,'POST',{claimId},adminToken)).json();assert.deepEqual(claim.report.photos,[image]);
+ assert.equal((await f.call('/reports/'+id,'DELETE',{claimId,token:claim.token,issueUrl:'https://github.com/solwation/lunden-3d-apartment/issues/1841'},adminToken)).status,200);assert.equal(f.kv.size,0);
+ assert.equal((await f.call('/reports/v3/'+id+'/suffix','PUT',payload,token)).status,404);
 });

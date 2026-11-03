@@ -1,3 +1,4 @@
+import { reportOwnImages, reportImagesFit, reportImageBytes } from './reportattachments.js';
 import { reportPlayerName } from './reportauthor.js';
 import { REPORTS, CLOUD_URL } from './config.js';
 import { cloudUrl } from './cloud.js';
@@ -17,7 +18,7 @@ export class AdminReports {
       const endpoint=new URL(url);
       if (url !== CLOUD_URL.replace(/\/+$/,'') && !(loopback(location.hostname) && loopback(endpoint.hostname) && endpoint.protocol==='http:' && endpoint.pathname==='/')) this.url='';
     } catch { this.url=''; }
-    this.token='';this.expires=0;this.pending=null;this.busy=false;this.epoch=0;this.photo=null;this.photoJob=0;
+    this.token='';this.expires=0;this.pending=null;this.busy=false;this.epoch=0;this.photos=[];this.photoJob=0;this.photoJobs=0;this.photoQueue=Promise.resolve();
     form.addEventListener('submit',e=>{
       const code=normalizeCode(input.value);
       if(isPrivateCode(code)){
@@ -59,32 +60,51 @@ export class AdminReports {
     });
     addEventListener('pagehide',()=>{this.logout();this.closeLogin();});
   }
-  // #1181: camera/file input and desktop drag and drop; the chosen photo goes beside the screenshot (#1182).
+  // #1841: additive atomic batches, with one removable preview per own picture.
   photoSetup(panel){
     const file=panel.querySelector('#admin-report-file');if(!file)return;
-    this.photoEls={file,preview:panel.querySelector('#admin-report-preview'),img:panel.querySelector('#admin-report-preview-img')};
-    const pick=()=>{file.value='';file.click();};
-    panel.querySelector('#admin-report-camera').addEventListener('click',pick);
-    panel.querySelector('#admin-report-photo-change').addEventListener('click',pick);
-    panel.querySelector('#admin-report-photo-remove').addEventListener('click',()=>{this.setPhoto(null);this.reportStatus.textContent='Fotot är borttaget. Bara bilden av spelvyn följer med.';panel.querySelector('#admin-report-camera').focus();});
-    file.addEventListener('change',()=>{const f=file.files?.[0];file.value='';if(f)this.choosePhoto(f);else this.restoreFocus();});
+    this.photoEls={file,preview:panel.querySelector('#admin-report-preview')};
+    panel.querySelector('#admin-report-camera').addEventListener('click',()=>{file.value='';file.click();});
+    file.addEventListener('change',()=>{const files=[...(file.files??[])];file.value='';if(files.length)this.choosePhotos(files);else this.restoreFocus();});
     const files=e=>[...(e.dataTransfer?.types??[])].includes('Files');
     panel.addEventListener('dragover',e=>{if(!files(e))return;e.preventDefault();e.dataTransfer.dropEffect='copy';panel.classList.add('dragging');});
     panel.addEventListener('dragleave',e=>{if(!panel.contains(e.relatedTarget))panel.classList.remove('dragging');});
-    panel.addEventListener('drop',e=>{if(!files(e))return;e.preventDefault();panel.classList.remove('dragging');const f=e.dataTransfer.files?.[0];if(f)this.choosePhoto(f);});
+    panel.addEventListener('drop',e=>{if(!files(e))return;e.preventDefault();panel.classList.remove('dragging');this.choosePhotos([...(e.dataTransfer.files??[])]);});
   }
-  async choosePhoto(file){
-    const job=++this.photoJob;this.photoBusy=true;this.reportStatus.textContent='Förbereder fotot…';
-    try{
-      const image=await prepareReportPhoto(file);
+  get photo(){return this.photos[0]?.image??null;}
+  get photoBusy(){return this.photoJobs>0;}
+  choosePhoto(file){return this.choosePhotos([file]);}
+  choosePhotos(files){
+    const job=this.photoJob;this.photoJobs++;
+    const run=async()=>{
       if(job!==this.photoJob)return;
-      this.setPhoto(image);this.reportStatus.textContent='Fotot skickas med rapporten tillsammans med bilden av spelvyn.';
-      this.restoreFocus();
-    }catch(error){
-      if(job!==this.photoJob)return;
-      this.reportStatus.textContent=error?.code==='type'?'Filen är ingen bild. Välj en bild eller ta ett foto.':error?.code==='format'?'Bildformatet stöds inte av webbläsaren. Välj en JPEG- eller PNG-bild.':'Fotot kunde inte förberedas. Försök med en annan bild.';
-      this.restoreFocus();
-    }finally{if(job===this.photoJob)this.photoBusy=false;}
+      this.reportStatus.textContent='Förbereder bilderna…';
+      try{
+        if(this.photos.length+files.length>REPORTS.photoCount)throw Object.assign(Error(),{code:'count'});
+        const prepared=[];
+        for(const file of files)prepared.push({id:crypto.randomUUID(),name:file.name||'Egen bild',image:await prepareReportPhoto(file)});
+        if(job!==this.photoJob)return;
+        if(!reportImagesFit(reportOwnImages(this.photos.concat(prepared).map(p=>p.image))))throw Object.assign(Error(),{code:'total'});
+        this.photos=this.photos.concat(prepared);this.renderPhotos();
+        this.reportStatus.textContent=`${prepared.length} bild${prepared.length===1?'':'er'} tillagd${prepared.length===1?'':'a'}. ${this.photos.length} av ${REPORTS.photoCount} egna bilder; spelbilden tillkommer.`;
+      }catch(error){
+        if(job!==this.photoJob)return;
+        const messages={count:`Högst ${REPORTS.photoCount} egna bilder. Inga bilder i detta val lades till.`,size:'En originalfil är större än 20 MiB. Välj en mindre fil.',type:'En fil är ingen bild. Välj bara bildfiler.',format:'Ett bildformat stöds inte. Välj JPEG eller PNG.',total:'Bilderna överskrider 800 KiB totalt. Välj färre eller mindre bilder.'};
+        this.reportStatus.textContent=(messages[error?.code]||'Bilderna kunde inte förberedas.')+' Tidigare bilder och rapporttexten finns kvar.';
+      }finally{this.restoreFocus();}
+    };
+    this.photoQueue=this.photoQueue.then(run).finally(()=>this.photoJobs--);return this.photoQueue;
+  }
+  renderPhotos(){
+    const els=this.photoEls;if(!els)return;els.preview.replaceChildren();els.preview.hidden=!this.photos.length;
+    this.photos.forEach((photo,i)=>{
+      const figure=document.createElement('figure'),img=document.createElement('img'),caption=document.createElement('figcaption'),name=document.createElement('span'),remove=document.createElement('button');
+      figure.setAttribute('role','listitem');img.src=photo.image;img.alt=`Bild ${i+1}: ${photo.name}`;if(i===0)img.id='admin-report-preview-img';
+      name.textContent=`${i+1}. ${photo.name}`;remove.type='button';remove.textContent='Ta bort';remove.setAttribute('aria-label',`Ta bort bild ${i+1}`);if(i===0)remove.id='admin-report-photo-remove';
+      remove.addEventListener('click',()=>{this.photos=this.photos.filter(p=>p.id!==photo.id);this.renderPhotos();this.reportStatus.textContent=`Bilden är borttagen. ${this.photos.length} egna bilder kvar; spelbilden följer med.`;this.reportPanel.querySelector('#admin-report-camera').focus();});
+      caption.append(name,remove);figure.append(img,caption);els.preview.append(figure);
+    });
+    const count=this.reportPanel.querySelector('#admin-report-photo-count');if(count)count.textContent=`${this.photos.length}/${REPORTS.photoCount} egna bilder · ${Math.ceil(reportImageBytes(reportOwnImages(this.photos.map(p=>p.image)))/1024)} KiB före spelbilden`;
   }
   // #1226: back from the camera. A script focus() outside a tap never raises the iOS keyboard and leaves the field
   // "already focused", so the next real tap does nothing. On touch screens the field is therefore left unfocused (a tap
@@ -93,10 +113,7 @@ export class AdminReports {
     const t=this.reportInput;if(!t||!this.reportPanel?.open)return;
     if(matchMedia('(pointer: coarse)').matches){if(document.activeElement===t)t.blur();}else t.focus();
   }
-  setPhoto(image){
-    this.photo=image;const els=this.photoEls;if(!els)return;
-    els.preview.hidden=!image;if(image)els.img.src=image;else els.img.removeAttribute('src');
-  }
+  setPhoto(image){this.photoJob++;this.photos=image?[{id:crypto.randomUUID(),name:'Egen bild',image}]:[];this.renderPhotos();}
   get active(){return !!this.token&&Date.now()<this.expires;}
   say(text){this.message.textContent=text;if(this.reportPanel?.open&&this.reportStatus)this.reportStatus.textContent=text;}
   closeLogin(){this.password.value='';this.panel.hidden=true;this.input.focus();}
@@ -142,10 +159,10 @@ export class AdminReports {
     if(!this.active){this.logout();this.say('Skriv din adminkod i chatten innan du rapporterar.');return;}
     if(this.busy){this.say('Vänta tills den pågående begäran är klar.');return;}
     if(!text.trim()||text.length>REPORTS.maxChars){this.say(`Skriv 1–${REPORTS.maxChars} tecken i rapporten.`);return;}
-    if(this.photoBusy&&source===this.reportInput){this.say('Vänta tills fotot är klart.');return;}
-    // A chosen photo belongs to the report popup; legacy chat /rapport keeps the screenshot.
-    const photo=source===this.reportInput?this.photo:null;
-    if(!this.pending||this.pending.text!==text||this.pending.photo!==photo)this.pending={id:crypto.randomUUID(),text,photo,playerName:reportPlayerName(this.playerName())};
+    if(this.photoBusy&&source===this.reportInput){this.say('Vänta tills bilderna är klara.');return;}
+    // Freeze one submission snapshot; edits/new selections in flight remain a separate draft.
+    const selected=source===this.reportInput?this.photos:[],key=selected.map(p=>p.id).join(',');
+    if(!this.pending||this.pending.text!==text||this.pending.photoKey!==key)this.pending={id:crypto.randomUUID(),text,photoKey:key,selected:selected.slice(),...reportOwnImages(selected.map(p=>p.image)),playerName:reportPlayerName(this.playerName())};
     const pending=this.pending, draft=source.value, epoch=this.epoch;this.busy=true;
     try{
       if(!pending.image){
@@ -154,15 +171,17 @@ export class AdminReports {
         catch{if(epoch===this.epoch)this.say('Kunde inte ta bilden. Försök igen; texten finns kvar.');return;}
       }
       if(epoch!==this.epoch||!this.active)return;
-      const r=await fetch(this.url+'/reports/'+pending.id,{redirect:'error',method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+this.token},body:JSON.stringify({text,playerName:pending.playerName,image:pending.image,...(pending.photo?{photo:pending.photo}:{})})});
+      const payload={text,playerName:pending.playerName,image:pending.image,...(pending.photo?{photo:pending.photo}:{}),...(pending.photos?.length?{photos:pending.photos}:{})};
+      if(!reportImagesFit(payload)||new TextEncoder().encode(JSON.stringify(payload)).length>REPORTS.putBytes){this.say('Rapportens bilder överskrider 800 KiB totalt inklusive spelbilden. Ta bort en bild och försök igen; text och bilder finns kvar.');return;}
+      const r=await fetch(this.url+(pending.photos?.length?'/reports/v3/':'/reports/')+pending.id,{redirect:'error',method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+this.token},body:JSON.stringify(payload)});
       if(epoch!==this.epoch)return;
       if(r.status===403){this.logout();this.say('Adminsessionen har gått ut. Skriv din adminkod i chatten igen.');return;}
-      if(!r.ok){this.say(r.status===429?'Vänta en minut och skicka rapporten igen.':'Rapporten kunde inte sparas. Texten finns kvar.');return;}
+      if(!r.ok){const issue=await r.json().catch(()=>null);const outdated=pending.photos?.length&&([404,405].includes(r.status)||(r.status===400&&issue?.error==='id'));this.say(outdated?'Servern behöver uppdateras för flera bilder. Text och bilder finns kvar.':r.status===429?'Vänta en minut och skicka rapporten igen.':r.status===413?'Rapporten är för stor. Ta bort en bild; text och bilder finns kvar.':'Rapporten kunde inte sparas. Text och bilder finns kvar.');return;}
       if(this.pending===pending)this.pending=null;
       // Preserve any new draft typed while the request was in flight.
       if(source.value===draft)source.value='';
-      if(photo&&this.photo===photo)this.setPhoto(null);
-      this.say(photo?'Rapporten med foto och bild är sparad och väntar på granskning.':'Rapporten med bild är sparad och väntar på granskning.');
+      const sent=new Set(pending.selected.map(p=>p.id));this.photos=this.photos.filter(p=>!sent.has(p.id));this.renderPhotos();
+      this.say(`Rapporten med ${1+pending.selected.length} bild${pending.selected.length?'er':''} är sparad och väntar på granskning.`);
     }catch{if(epoch===this.epoch)this.say('Rapporten kunde inte skickas. Försök igen; texten finns kvar.');}
     finally{if(epoch===this.epoch)this.busy=false;}
   }

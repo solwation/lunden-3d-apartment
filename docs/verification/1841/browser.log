@@ -1,0 +1,26 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS desktop: native multi-file chooser preserves two previews
+PASS desktop: adding third keeps both prior images
+PASS desktop: remove one specific image leaves B/C ordered
+PASS desktop: excess count rejects whole new batch without draft/image loss
+PASS desktop: invalid type keeps entered report
+PASS desktop: oversized original file rejected before decode
+PASS desktop: decoded total error preserves all images/text before any PUT
+PASS desktop: intercepted413 keeps both images and draft
+PASS desktop: old Worker version-prefix rejection retains all attachments and draft
+PASS desktop: unchanged retry keeps same UUID and exact attachment snapshot
+PASS desktop: screenshot plus exactly B/C reach PUT without silent replacement
+PASS desktop: valid resized JPEGs strip source metadata; successful send clears only submitted draft
+PASS touch: native multi-file chooser preserves two previews
+PASS touch: adding third keeps both prior images
+PASS touch: remove one specific image leaves B/C ordered
+PASS touch: excess count rejects whole new batch without draft/image loss
+PASS touch: invalid type keeps entered report
+PASS touch: oversized original file rejected before decode
+PASS touch: decoded total error preserves all images/text before any PUT
+PASS touch: intercepted413 keeps both images and draft
+PASS touch: old Worker version-prefix rejection retains all attachments and draft
+PASS touch: unchanged retry keeps same UUID and exact attachment snapshot
+PASS touch: screenshot plus exactly B/C reach PUT without silent replacement
+PASS touch: valid resized JPEGs strip source metadata; successful send clears only submitted draft
+PASS zero browser page errors

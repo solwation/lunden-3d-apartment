@@ -123,7 +123,8 @@ const worker = {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: h });
     const url = new URL(request.url), parts = url.pathname.split('/').filter(Boolean), [what, id] = parts;
     const m = request.method;
-    if (parts.length > 2 || (id !== undefined && !ID.test(id) && what !== 'admin')) return fail(404, 'not found', h);
+    const reportV3=what==='reports'&&id==='v3'&&parts.length===3; // #1841: explicit new-write route; older Workers reject before storing any image
+    if (!reportV3 && (parts.length > 2 || (id !== undefined && !ID.test(id) && what !== 'admin'))) return fail(404, 'not found', h);
     if (what === 'report-session' || what === 'reports') return reportsFetch(request, env, h, limited);
     if (what === 'beer-shelf' && !id) return beerShelfFetch(request, env, h);
     if (what === 'youtube-search' && !id) {

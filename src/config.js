@@ -7270,8 +7270,9 @@ export const REPORTS = {
   playerNameChars:32, unknownPlayer:'Okänd spelare',
   maxChars: 4000, maxBytes: 16384, sessionSeconds: 3600,
   // #1049: bounded private JPEG report attachment and total PUT body; capture waits for a real screen frame.
-  // #1182: putBytes fits two base64 images (screenshot + photo, ~273 kB each) plus text; 640 kB is a *guess*.
-  imageBytes: 200 * 1024, imageEdge: 1280, putBytes: 640 * 1024, captureMs: 5000 };
+  // #1841: four own photos + screenshot; bounded decoded total, base64/UTF-8 request envelope and10-report pages. Guesses.
+  photoCount: 4, photoFileBytes: 20 * 1024 * 1024, imageTotalBytes: 800 * 1024, pageSize: 10,
+  imageBytes: 200 * 1024, imageEdge: 1280, putBytes: 1200 * 1024, captureMs: 5000 };
 
 // Shower detail assumptions (#1042), chosen visually; existing outlet/interaction dimensions remain unchanged.
 export const SHOWER_FITTINGS = {

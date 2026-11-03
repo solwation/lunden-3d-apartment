@@ -1,0 +1,77 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "desktop: native multi-file chooser preserves two previews"
+    },
+    {
+      "ok": true,
+      "label": "desktop: adding third keeps both prior images"
+    },
+    {
+      "ok": true,
+      "label": "desktop: remove one specific image leaves B/C ordered"
+    },
+    {
+      "ok": true,
+      "label": "desktop: excess count rejects whole new batch without draft/image loss"
+    },
+    {
+      "ok": true,
+      "label": "desktop: invalid type keeps entered report"
+    },
+    {
+      "ok": true,
+      "label": "desktop: oversized original file rejected before decode"
+    },
+    {
+      "ok": true,
+      "label": "desktop: decoded total error preserves all images/text before any PUT",
+      "data": {
+        "message": "Rapportens bilder överskrider800 KiB totalt inklusive spelbilden. Ta bort en bild och försök igen; text och bilder finns kvar.",
+        "count": 4,
+        "text": "Flera egna referensbilder. Texten ska finnas kvar vid fel. Mer text efter bildvalet."
+      }
+    },
+    {
+      "ok": true,
+      "label": "desktop: intercepted413 keeps both images and draft"
+    },
+    {
+      "ok": true,
+      "label": "desktop: unchanged retry keeps same UUID and exact attachment snapshot"
+    },
+    {
+      "ok": true,
+      "label": "desktop: screenshot plus exactly B/C reach PUT without silent replacement"
+    },
+    {
+      "ok": false,
+      "label": "desktop: valid resized JPEGs strip source metadata; successful send clears only submitted draft",
+      "data": {
+        "valid": false,
+        "dims": [
+          [
+            1920,
+            1080
+          ],
+          [
+            1280,
+            720
+          ],
+          [
+            1280,
+            720
+          ]
+        ],
+        "metadata": false,
+        "count": 0,
+        "text": ""
+      }
+    }
+  ],
+  "errors": [],
+  "modes": [],
+  "fixture": "Actual index/AdminReports, native file chooser/input/buttons, intercepted local PUT. No apartment bootstrap or production reports.",
+  "error": "Error: desktop: valid resized JPEGs strip source metadata; successful send clears only submitted draft\n    at check (/home/devcontainers/orkester-olw-win10-gpt6-20261103/report-multi/tools/reportmultibrowser.cjs:4:404)\n    at /home/devcontainers/orkester-olw-win10-gpt6-20261103/report-multi/tools/reportmultibrowser.cjs:30:3"
+}

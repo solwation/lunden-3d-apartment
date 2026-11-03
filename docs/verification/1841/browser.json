@@ -1,0 +1,204 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "desktop: native multi-file chooser preserves two previews"
+    },
+    {
+      "ok": true,
+      "label": "desktop: adding third keeps both prior images"
+    },
+    {
+      "ok": true,
+      "label": "desktop: remove one specific image leaves B/C ordered"
+    },
+    {
+      "ok": true,
+      "label": "desktop: excess count rejects whole new batch without draft/image loss"
+    },
+    {
+      "ok": true,
+      "label": "desktop: invalid type keeps entered report"
+    },
+    {
+      "ok": true,
+      "label": "desktop: oversized original file rejected before decode"
+    },
+    {
+      "ok": true,
+      "label": "desktop: decoded total error preserves all images/text before any PUT",
+      "data": {
+        "message": "Rapportens bilder överskrider 800 KiB totalt inklusive spelbilden. Ta bort en bild och försök igen; text och bilder finns kvar.",
+        "count": 4,
+        "text": "Flera egna referensbilder. Texten ska finnas kvar vid fel. Mer text efter bildvalet."
+      }
+    },
+    {
+      "ok": true,
+      "label": "desktop: intercepted413 keeps both images and draft"
+    },
+    {
+      "ok": true,
+      "label": "desktop: old Worker version-prefix rejection retains all attachments and draft"
+    },
+    {
+      "ok": true,
+      "label": "desktop: unchanged retry keeps same UUID and exact attachment snapshot"
+    },
+    {
+      "ok": true,
+      "label": "desktop: screenshot plus exactly B/C reach PUT without silent replacement"
+    },
+    {
+      "ok": true,
+      "label": "desktop: valid resized JPEGs strip source metadata; successful send clears only submitted draft",
+      "data": {
+        "valid": true,
+        "dims": [
+          [
+            1280,
+            720
+          ],
+          [
+            1280,
+            720
+          ],
+          [
+            1280,
+            720
+          ]
+        ],
+        "metadata": false,
+        "count": 0,
+        "text": ""
+      }
+    },
+    {
+      "ok": true,
+      "label": "touch: native multi-file chooser preserves two previews"
+    },
+    {
+      "ok": true,
+      "label": "touch: adding third keeps both prior images"
+    },
+    {
+      "ok": true,
+      "label": "touch: remove one specific image leaves B/C ordered"
+    },
+    {
+      "ok": true,
+      "label": "touch: excess count rejects whole new batch without draft/image loss"
+    },
+    {
+      "ok": true,
+      "label": "touch: invalid type keeps entered report"
+    },
+    {
+      "ok": true,
+      "label": "touch: oversized original file rejected before decode"
+    },
+    {
+      "ok": true,
+      "label": "touch: decoded total error preserves all images/text before any PUT",
+      "data": {
+        "message": "Rapportens bilder överskrider 800 KiB totalt inklusive spelbilden. Ta bort en bild och försök igen; text och bilder finns kvar.",
+        "count": 4,
+        "text": "Flera egna referensbilder. Texten ska finnas kvar vid fel. Mer text efter bildvalet."
+      }
+    },
+    {
+      "ok": true,
+      "label": "touch: intercepted413 keeps both images and draft"
+    },
+    {
+      "ok": true,
+      "label": "touch: old Worker version-prefix rejection retains all attachments and draft"
+    },
+    {
+      "ok": true,
+      "label": "touch: unchanged retry keeps same UUID and exact attachment snapshot"
+    },
+    {
+      "ok": true,
+      "label": "touch: screenshot plus exactly B/C reach PUT without silent replacement"
+    },
+    {
+      "ok": true,
+      "label": "touch: valid resized JPEGs strip source metadata; successful send clears only submitted draft",
+      "data": {
+        "valid": true,
+        "dims": [
+          [
+            1280,
+            720
+          ],
+          [
+            1280,
+            720
+          ],
+          [
+            1280,
+            720
+          ]
+        ],
+        "metadata": false,
+        "count": 0,
+        "text": ""
+      }
+    },
+    {
+      "ok": true,
+      "label": "zero browser page errors",
+      "data": []
+    }
+  ],
+  "errors": [],
+  "modes": [
+    {
+      "mode": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "sentImages": [
+        {
+          "sha256": "0fd93b7e8bd579ab3f6ba85a46cc0b60c7d5d83865547d514b484d234251a049",
+          "bytes": 17001
+        },
+        {
+          "sha256": "8a12f3e6eacee793e1b5dc7967bbfcabf875c664231e567cfcbc4209bc2463d5",
+          "bytes": 17099
+        },
+        {
+          "sha256": "e2700ad833364752ec8642ea086a00c59908a91ed6bc2cf2ff71d546ca9b1dd3",
+          "bytes": 17653
+        }
+      ],
+      "requestBytes": 69233
+    },
+    {
+      "mode": "touch",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "sentImages": [
+        {
+          "sha256": "7857a3700d85ecc49b615c5e49dff2d8102b92840b8dd19e27d4a3e7a78e2763",
+          "bytes": 16999
+        },
+        {
+          "sha256": "8a12f3e6eacee793e1b5dc7967bbfcabf875c664231e567cfcbc4209bc2463d5",
+          "bytes": 17099
+        },
+        {
+          "sha256": "e2700ad833364752ec8642ea086a00c59908a91ed6bc2cf2ff71d546ca9b1dd3",
+          "bytes": 17653
+        }
+      ],
+      "requestBytes": 69233
+    }
+  ],
+  "fixture": "Actual index/AdminReports, native file chooser/input/buttons, intercepted local PUT. No apartment bootstrap or production reports.",
+  "ok": true
+}

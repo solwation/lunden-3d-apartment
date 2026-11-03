@@ -1,0 +1,106 @@
+TAP version 13
+# Subtest: the Worker deploy workflow triggers on every src/ file the Worker imports
+ok 1 - the Worker deploy workflow triggers on every src/ file the Worker imports
+  ---
+  duration_ms: 14.86862
+  type: 'test'
+  ...
+# Subtest: screenshot and photo are stored together, bounded and immutable; one-image clients keep working
+ok 2 - screenshot and photo are stored together, bounded and immutable; one-image clients keep working
+  ---
+  duration_ms: 111.967799
+  type: 'test'
+  ...
+# Subtest: the photo field gets the same type, size and dimension checks as the screenshot
+ok 3 - the photo field gets the same type, size and dimension checks as the screenshot
+  ---
+  duration_ms: 24.348369
+  type: 'test'
+  ...
+# Subtest: all own attachments remain ordered, immutable, listed and claimed; bounded page continues
+ok 4 - all own attachments remain ordered, immutable, listed and claimed; bounded page continues
+  ---
+  duration_ms: 81.026366
+  type: 'test'
+  ...
+# Subtest: invalid count/shape/image and decoded total reject whole request before storage
+ok 5 - invalid count/shape/image and decoded total reject whole request before storage
+  ---
+  duration_ms: 68.063435
+  type: 'test'
+  ...
+# Subtest: versioned writes reject additional pictures on legacy URI and use normal claim receipts
+ok 6 - versioned writes reject additional pictures on legacy URI and use normal claim receipts
+  ---
+  duration_ms: 9.164651
+  type: 'test'
+  ...
+# Subtest: fail closed, method/origin/body limits, login rate before password check, and no replayed furniture digest
+ok 7 - fail closed, method/origin/body limits, login rate before password check, and no replayed furniture digest
+  ---
+  duration_ms: 24.180571
+  type: 'test'
+  ...
+# Subtest: signed scope, tampering, expiry, password rotation and admin/session separation
+ok 8 - signed scope, tampering, expiry, password rotation and admin/session separation
+  ---
+  duration_ms: 12.849231
+  type: 'test'
+  ...
+# Subtest: reports-only import credential can read and claim but grants neither browser login nor global admin access
+ok 9 - reports-only import credential can read and claim but grants neither browser login nor global admin access
+  ---
+  duration_ms: 4.781775
+  type: 'test'
+  ...
+# Subtest: immutable concurrent IDs, exact untrusted text, retry without KV rewrite, paginated private reads, receipt-first removal and replay
+ok 10 - immutable concurrent IDs, exact untrusted text, retry without KV rewrite, paginated private reads, receipt-first removal and replay
+  ---
+  duration_ms: 14.355323
+  type: 'test'
+  ...
+# Subtest: global import claim serializes competing machines, resumes after a lost response, and gates acknowledgement
+ok 11 - global import claim serializes competing machines, resumes after a lost response, and gates acknowledgement
+  ---
+  duration_ms: 9.089452
+  type: 'test'
+  ...
+# Subtest: stream cap without Content-Length cancels the oversized request
+ok 12 - stream cap without Content-Length cancels the oversized request
+  ---
+  duration_ms: 1.130794
+  type: 'test'
+  ...
+# Subtest: Durable Object forwarding limits each PUT once, and failed KV creation can retry without losing its ID
+ok 13 - Durable Object forwarding limits each PUT once, and failed KV creation can retry without losing its ID
+  ---
+  duration_ms: 4.395877
+  type: 'test'
+  ...
+# Subtest: private original JPEG survives immutable retries, reads, claims and lost KV writes
+ok 14 - private original JPEG survives immutable retries, reads, claims and lost KV writes
+  ---
+  duration_ms: 22.923477
+  type: 'test'
+  ...
+# Subtest: JPEG bytes, canonical encoding, frame dimensions and both body limits are enforced
+ok 15 - JPEG bytes, canonical encoding, frame dimensions and both body limits are enforced
+  ---
+  duration_ms: 28.544246
+  type: 'test'
+  ...
+# Subtest: player name is stored/claimed, immutable across retries, bounded and compatible with old clients
+ok 16 - player name is stored/claimed, immutable across retries, bounded and compatible with old clients
+  ---
+  duration_ms: 8.521954
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 412.564985
