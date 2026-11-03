@@ -1,0 +1,9 @@
+PASS asphalt follows real skirt triangles over the whole parking footprint {"samples":651,"maxError":0.000002086981394880394}
+PASS all painted vertices follow the same source surface {"maxError":0.0000016418226800873903}
+PASS cat contact agrees with actual asphalt mesh {"samples":651,"maxError":0.0000019554833778911984}
+FAIL rear plinth reaches all sampled northern ground {"bottom":2.6230762004852295,"maxGap":0.3351079109290822}
+PASS stair ground datum agrees with real skirt mesh {"point":[-166.45815625727673,-363.64169446902054],"height":2.6583925419810677}
+PASS all front/brick/roof geometry bytes unchanged
+PASS all other hall/entrance/glass/solar geometry bytes unchanged {"unchanged":453,"bad":[]}
+PASS no budget raise; added parking triangles fit existing headroom {"before":2853,"after":2860,"delta":7}
+{"base":5.9876637232,"bottom":5.191596800000001,"results":{"asphalt follows real skirt triangles over the whole parking footprint":{"samples":651,"maxError":0.000002086981394880394},"all painted vertices follow the same source surface":{"maxError":0.0000016418226800873903},"cat contact agrees with actual asphalt mesh":{"samples":651,"maxError":0.0000019554833778911984},"rear plinth reaches all sampled northern ground":{"bottom":2.6230762004852295,"maxGap":0.3351079109290822},"stair ground datum agrees with real skirt mesh":{"point":[-166.45815625727673,-363.64169446902054],"height":2.6583925419810677},"all front/brick/roof geometry bytes unchanged":true,"all other hall/entrance/glass/solar geometry bytes unchanged":{"unchanged":453,"bad":[]},"no budget raise; added parking triangles fit existing headroom":{"before":2853,"after":2860,"delta":7}}}

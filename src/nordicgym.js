@@ -1,3 +1,5 @@
+import { nordicFrame, nordicParking } from './nordicground.js';
+import { skirtTop } from './edgebackdrop.js';
 import * as THREE from 'three';
 
 // #1745: Nordic Wellness S:t Lars Sportcenter; placed by #1756, moved and enlarged by #1762, turned and completed by #1788.
@@ -98,21 +100,19 @@ function buildGrenhuset(parts, brickHex, roofHex, windowHex) {
 /** Build the photo-read brick front/green hall from OSM outline `p`, with the glazed road corner at (x0, z1).
  * Returns `eave`, actual `windows` and uniform flat `roofY(x, z)`. Also builds Grenhuset across Sankt Lars väg. */
 export function buildNordicGym(b, p, base, bottom, parts, ground = () => base) {
-  const M = b.model, ex = p[1][0] - p[0][0], ez = p[1][1] - p[0][1], el = Math.hypot(ex, ez), ux = ex / el, uz = ez / el;
-  const ox = p.reduce((s, q) => s + q[0], 0) / p.length, oz = p.reduce((s, q) => s + q[1], 0) / p.length; // pivot: the outline's centre
-  const toLocal = (x, z) => [(x - ox) * ux + (z - oz) * uz, -(x - ox) * uz + (z - oz) * ux];
-  const toWorld = (x, z) => [ox + x * ux - z * uz, oz + x * uz + z * ux];
-  const L = p.map(q => toLocal(q[0], q[1])), xs = L.map(q => q[0]), zs = L.map(q => q[1]);
-  const x0 = Math.min(...xs), x1 = Math.max(...xs), z0 = Math.min(...zs), z1 = Math.max(...zs);
+  const M=b.model,frame=nordicFrame(p),{ux,uz,ox,oz,toLocal,toWorld,x0,x1,z0,z1}=frame;
+  const H=M.hall,parking=nordicParking(frame,H,ground,skirtTop),terrain=parking.terrain;
   const local = { facade: [], roof: [], glass: [] }; // built in the local frame, then turned and moved into `parts`
-  const eave = base + b.levels * M.storey, H = M.hall, hallStart = x0 + H.frontDepth;
+  const eave = base + b.levels * M.storey, hallStart = x0 + H.frontDepth;
   const lowX0 = x1 - M.low.w, lowZ0 = z1 - M.low.d; // historical outline metadata; the photo has no low rear corner
   const entranceDepth = M.glass.east;
 
   // #1824: a short brick front and a full-height metal hall. The circulation corner stays
   // clear for #1823's glazed entrance/stair: x0..hallStart, z1-6..z1 (photo-read guesses).
   box(H.frontDepth, eave - bottom, z1 - z0 - entranceDepth, (x0 + hallStart) / 2, bottom, (z0 + z1 - entranceDepth) / 2, M.brick, local.facade);
-  box(x1 - hallStart, H.plinthH + base - bottom, z1 - z0, (hallStart + x1) / 2, bottom, (z0 + z1) / 2, H.concrete, local.glass);
+  // Contact repair/model assumption, not a measured cellar depth: extend only the existing grey plinth down to the drawn ground.
+  const foundationBottom=Math.min(bottom,parking.minimum(hallStart,x1,z0,z1));
+  box(x1 - hallStart, H.plinthH + base - foundationBottom, z1 - z0, (hallStart + x1) / 2, foundationBottom, (z0 + z1) / 2, H.concrete, local.glass);
   box(x1 - hallStart, eave - base - H.plinthH, z1 - z0, (hallStart + x1) / 2, base + H.plinthH, (z0 + z1) / 2, H.baseColor, local.glass);
   box(x1 - x0, M.roofThick, z1 - z0, (x0 + x1) / 2, eave, (z0 + z1) / 2, M.roof, local.roof);
   local.roof.at(-1).deleteAttribute('color');
@@ -254,20 +254,8 @@ export function buildNordicGym(b, p, base, bottom, parts, ground = () => base) {
 
   // Rear parking: sampled at the actual rendered ground, in the existing untextured batch.
   // Cars are omitted to keep this delivery in the existing backdrop batches, without additional vehicle setup.
-  const surface = (xa, xb, za, zb, hex, lift = H.parkingLift, heightAt = (x, z) => ground(...toWorld(x, z)), cut = null) => {
-    const vertices = [], corners = [[xa, za], [xb, za], [xb, zb], [xa, zb]];
-    const clip = sign => {
-      const out = [];
-      for (let i = 0; i < corners.length; i++) {
-        const a = corners[i], b = corners[(i + 1) % corners.length], da = cut(...a) * sign, db = cut(...b) * sign;
-        if (da >= 0) out.push(a);
-        if (da * db < 0) { const t = da / (da - db); out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); }
-      }
-      return out;
-    };
-    for (const poly of cut ? [clip(-1), clip(1)] : [corners]) for (let i = 1; i + 1 < poly.length; i++) {
-      for (const q of [poly[0], poly[i + 1], poly[i]]) vertices.push(q[0], heightAt(...q) + lift, q[1]);
-    }
+  const surface = (xa,xb,za,zb,hex,lift=H.parkingLift) => {
+    const vertices=parking.triangles(xa,xb,za,zb,lift);
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); g.computeVertexNormals();
     const c = rgb(hex), colors = new Float32Array(vertices.length);
     for (let i = 0; i < colors.length; i += 3) { colors[i] = c.r; colors[i + 1] = c.g; colors[i + 2] = c.b; }
@@ -275,27 +263,20 @@ export function buildNordicGym(b, p, base, bottom, parts, ground = () => base) {
   };
   const parkX0 = x1 + H.parkingInset, parkX1 = parkX0 + H.parkingDepth, parkZ0 = z0 + H.parkingInset, parkZ1 = z1 - H.parkingInset;
   surface(parkX0, parkX1, parkZ0, parkZ1, H.asphalt);
-  // Stall paint follows the rendered asphalt triangles, not independent terrain samples below that deck.
-  const heights = [[parkX0, parkZ0], [parkX1, parkZ0], [parkX1, parkZ1], [parkX0, parkZ1]].map(q => ground(...toWorld(...q)));
-  const parkingHeight = (x, z) => {
-    const u = (x - parkX0) / (parkX1 - parkX0), v = (z - parkZ0) / (parkZ1 - parkZ0);
-    return v <= u ? heights[0] * (1 - u) + heights[1] * (u - v) + heights[2] * v
-      : heights[0] * (1 - v) + heights[3] * (v - u) + heights[2] * u;
-  };
-  for (let k = 0; k <= H.stalls; k++) {
-    const z = parkZ0 + k * H.stallW; surface(parkX0, parkX0 + H.stallD, z, z + H.lineW, H.line, H.lineLift, parkingHeight, (x, z) => (z - parkZ0) / (parkZ1 - parkZ0) - (x - parkX0) / (parkX1 - parkX0));
-  }
+  // Asphalt and paint share the actual north-skirt triangles, including every crease.
+  for(let k=0;k<=H.stalls;k++){const z=parkZ0+k*H.stallW;surface(parkX0,parkX0+H.stallD,z,z+H.lineW,H.line,H.lineLift);}
   // Low planted islands at the row ends, simple leaves in the same batch, with no extra tree draws.
   for (const z of [parkZ0 - H.plantR, parkZ1 + H.plantR]) {
-    const x = parkX0 + H.stallD / 2, y = ground(...toWorld(x, z));
-    box(H.stallD, H.planterH, H.plantR * 2, x, y, z, H.concrete, local.glass);
+    const x = parkX0 + H.stallD / 2, y = terrain(...toWorld(x, z));
+    const planter=box(H.stallD,H.planterH,H.plantR*2,x,y,z,H.concrete,local.glass),position=planter.attributes.position;
+    for(let i=0;i<position.count;i++){const py=position.getY(i)>y+H.planterH/2?H.planterH:0;position.setY(i,terrain(...toWorld(position.getX(i),position.getZ(i)))+py);}planter.computeVertexNormals();
     const crown = new THREE.IcosahedronGeometry(H.plantR, 0).scale(...H.plantScale).translate(x, y + H.plantR * H.plantScale[1], z);
     crown.deleteAttribute('uv'); const c = rgb(H.plantColor), colors = new Float32Array(crown.attributes.position.count * 3);
     for (let i = 0; i < colors.length; i += 3) { colors[i] = c.r; colors[i + 1] = c.g; colors[i + 2] = c.b; }
     crown.setAttribute('color', new THREE.BufferAttribute(colors, 3)); local.glass.push(crown);
   }
   // Narrow steel escape stair at the rear gable. Open treads and three long rail segments keep its cost bounded.
-  const stairX = x1 + H.stairXOffset, stairZ = z1 - H.parkingInset - H.stairRun, stairBase = ground(...toWorld(stairX, stairZ));
+  const stairX = x1 + H.stairXOffset, stairZ = z1 - H.parkingInset - H.stairRun, stairBase = terrain(...toWorld(stairX, stairZ));
   for (let k = 1; k <= H.stairSteps; k++) {
     box(H.stairW, H.treadThick, H.stairRun / H.stairSteps, stairX, stairBase + k / H.stairSteps * H.stairH,
       stairZ + k / H.stairSteps * H.stairRun, H.steel, local.glass);
@@ -303,7 +284,7 @@ export function buildNordicGym(b, p, base, bottom, parts, ground = () => base) {
   box(H.stairW, H.landingThick, H.landingD, stairX, stairBase + H.stairH, stairZ + H.stairRun + H.landingD / 2, H.steel, local.glass);
   for (const sign of [-1, 1]) {
     const x = stairX + sign * H.stairW / 2;
-    for (const t of [0, .5, 1]) box(H.railSize, H.railH, H.railSize, x, stairBase + t * H.stairH, stairZ + t * H.stairRun, H.steel, local.glass);
+    for(const t of [0,.5,1]){const baseY=t?stairBase+t*H.stairH:terrain(...toWorld(x,stairZ));box(H.railSize,H.railH+stairBase+t*H.stairH-baseY,H.railSize,x,baseY,stairZ+t*H.stairRun,H.steel,local.glass);}
     const g = box(H.railSize, H.railSize, Math.hypot(H.stairRun, H.stairH), 0, -H.railSize / 2, 0, H.steel, []);
     g.rotateX(-Math.atan2(H.stairH, H.stairRun)).translate(x, stairBase + H.stairH / 2 + H.railH, stairZ + H.stairRun / 2); local.glass.push(g);
   }

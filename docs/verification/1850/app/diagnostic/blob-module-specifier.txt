@@ -1,0 +1,2 @@
+page.evaluate: TypeError: Failed to resolve module specifier "/src/config.js". Invalid relative url or base scheme isn't hierarchical.
+    at /home/devcontainers/orkester-olw-win10-gpt6-20261103/nordic-ground/tools/nordicgroundbrowser.cjs:8:189

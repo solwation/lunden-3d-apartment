@@ -1,3 +1,4 @@
+import { nordicFrame, nordicParking } from './nordicground.js';
 // #1844: local outings must respect mapped buildings even beyond Player's WALK buckets.
 import {SITE,OUTDOOR_CATS} from './config.js';
 const inside=(p,x,z)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])yes=!yes;return yes;};
@@ -11,19 +12,15 @@ export function catHabitatFree(x,z,r=OUTDOOR_CATS.exploration.footRadius){
  });
 }
 
-// Cat-only contact follows the existing northern feathered ground and the Nordic parking quad too.
-// These are samplers of existing surfaces (edgebackdrop.skirtTop and nordicgym.surface/parkingHeight), not new geometry.
+// Cat-only contact follows the existing northern feathered ground and the Nordic parking triangles too.
+// These are samplers of existing surfaces (edgebackdrop.skirtTop and nordicground.nordicParking), not new geometry.
 export function createCatGround(courtyardGround,renderedGround,skirtTop,outdoor,farLevel){
   const B=SITE.backgroundGround,b=SITE.east.buildings.find(b=>b.template==='nordicgym'),p=b.polygon.slice(0,-1),H=b.model.hall;
-  const dx=p[1][0]-p[0][0],dz=p[1][1]-p[0][1],len=Math.hypot(dx,dz),ux=dx/len,uz=dz/len,ox=p.reduce((a,q)=>a+q[0],0)/p.length,oz=p.reduce((a,q)=>a+q[1],0)/p.length;
-  const local=(x,z)=>[(x-ox)*ux+(z-oz)*uz,-(x-ox)*uz+(z-oz)*ux],world=(x,z)=>[ox+x*ux-z*uz,oz+x*uz+z*ux],L=p.map(q=>local(...q));
-  const x0=Math.max(...L.map(q=>q[0]))+H.parkingInset,x1=x0+H.parkingDepth,z0=Math.min(...L.map(q=>q[1]))+H.parkingInset,z1=Math.max(...L.map(q=>q[1]))-H.parkingInset;
-  const heights=[[x0,z0],[x1,z0],[x1,z1],[x0,z1]].map(q=>renderedGround(...world(...q)));
+  const parking=nordicParking(nordicFrame(p),H,renderedGround,skirtTop);
   return(x,z)=>{
     let y=x>outdoor.x0&&x<outdoor.x1&&z>outdoor.z0&&z<outdoor.z1?courtyardGround(x,z):renderedGround(x,z);
     if(x<B.x0||x>B.x1||z<B.z0||z>B.z1){const edge=skirtTop(x,z,renderedGround);y=Number.isFinite(edge)?edge:farLevel;}
-    const [a,b]=local(x,z);
-    if(a>=x0&&a<=x1&&b>=z0&&b<=z1){const u=(a-x0)/(x1-x0),v=(b-z0)/(z1-z0),deck=(v<=u?heights[0]*(1-u)+heights[1]*(u-v)+heights[2]*v:heights[0]*(1-v)+heights[3]*(v-u)+heights[2]*u)+H.parkingLift;y=Math.max(y,deck);}
+    const deck=parking.sample(x,z);if(deck!==null)y=Math.max(y,deck);
     return y;
   };
 }

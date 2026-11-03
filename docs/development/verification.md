@@ -9036,3 +9036,6 @@ The complete 65-form personal creature collection is verified in three risk grou
 ## #1849 — Solid timber-bridge fill
 
 `node --experimental-default-type=module --test tools/bridgefall1849test.mjs` checks the timber fill edge with a negative control, 20/30fps collision and reversal, both ramps/deck at walk/sprint in both directions (20/60fps), and retained road/GC traversal. The scoped real-world browser fixture uses native keys/CDP touch with a controlled Player frame pump; see [method and limits](../verification/1849/README.md). No house-variant sweep applies to this bridge-local support fix.
+## #1850 — Nordic rear ground contact
+
+Two scoped risk groups: 9 source/contact/isolation checks plus 11 retained Nordic architecture checks; one actual local before/after app turn with 12 mesh/cat/budget checks and 3 directly inspected result images. Actual parking/skirt and cat/parking errors are below 3 µm, foot post corner error below 3.1 mm, same 14 campus meshes and +7 triangles to 87,721 under 87,800. Foundation extension is a contact-model assumption, not surveyed basement evidence. Shared terrain, Player, bridges and A/B/C/L remain unchanged. [Sources, raw results, fixture scope and images](../verification/1850/README.md).

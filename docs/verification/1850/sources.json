@@ -1,0 +1,35 @@
+{
+  "base": "43dd4e4cbf0b7a68a21fe58f25f26d56400e362d",
+  "files": {
+    "src/nordicground.js": "24f60f47fb9702546e3562157c68563e1a7d5212e4d824c4098324a5017f57bf",
+    "src/nordicgym.js": "51834f7e17a5ca9355b12af98760d715d0e931a68178a407a0d65b1e6eb9c6ef",
+    "src/cathabitat.js": "300485daf1bd69f97a9f38ab10fc6bbb9ffa1305cd05f33c37b0e17aa7aa4301"
+  },
+  "preserved": {
+    "src/surroundings.js": "fc2f9e35c828e67abf2815534d51be3056ac8f2f7540fb853a08b03ba2010e90",
+    "src/edgebackdrop.js": "9cb9dc1f6a8bda75e4eba02aa9983057645ce77cbe576a51ad6203260953fe66",
+    "src/sitebackdrop.js": "dd32d8dbe1d690f14889877fcc6f0eae5e0278506489400606ce0cc2754a9f67",
+    "src/roads.js": "fdf667ec499503f29760da2fa03a4fb25eb73c3a9914889936f82901847e2543",
+    "src/player.js": "87c34ec6f7b7dbf839b3cf797954327f7f02e7151619946203e181c19b094821",
+    "src/corehouse.js": "a1b4b020cddf0c0b7d5bf586596d38846ca64311ded87c0c3047dc54ac3f7a8d",
+    "src/core.js": "c88bfe9f531a6ee32b26f4d5b4d5a8f3070ab765364ff6aaa8f6f40dcd278bac",
+    "src/exterior.js": "e6347ad9558aed1e3deaecfd77cd889136868431f7ceeb58ba0000f6ebaf8143",
+    "src/outdoorcatbrain.js": "d641065fa0024c77f0e7ae829ae3507e42ae1ae2ebe2102a35524fd8fa9960d5",
+    "src/outdoorcats.js": "cfc9c04809f1342e8ceecb52e20d44ba492053db6bf0d0bfd958f557bcec6aba"
+  },
+  "frozenBefore": {
+    "file": "src/nordicgym.js",
+    "base": "43dd4e4cbf0b7a68a21fe58f25f26d56400e362d",
+    "sha256": "720bfe4d61048ea071068d12a7b712d2465034221fabe0df67ccb757021045f7"
+  },
+  "data": {
+    "nordicRecordSHA256": "75326e925469c0e0a49f99cad9692ef8eeeff8e2dd34e4375b5cb20912986b7f",
+    "terrainBoundsSHA256": "a2628da70c7441e763a07806eb73a71536ad16c554af178f6f978b4a44b4f894",
+    "edgeBackdropSHA256": "f044b41c55df7739b388df0fc1ed26e9755a7d768547f31632ea6d71fcd85839"
+  },
+  "phases": {
+    "before": "One real app with frozen before Nordic builder; route removed after startup.",
+    "after": "Same actual built terrain; production east-backdrop factory loaded final Nordic builder via absolute module-specifier rewrite; no scene/terrain bootstrap repeated.",
+    "lastChanges": "Only explanatory source comments and test-loader portability after captures; no runtime behaviour/geometry changes."
+  }
+}

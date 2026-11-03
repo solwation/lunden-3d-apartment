@@ -1,0 +1,10 @@
+{
+  "workerSource": "0a3435c7dd3761edf76231e8391267903915cbbf",
+  "integrationBase": "7c4431aed33ae00c0e7c374fe97f8b50d86176ec",
+  "runtimeByteParity": {
+    "src/nordicground.js": "24f60f47fb9702546e3562157c68563e1a7d5212e4d824c4098324a5017f57bf",
+    "src/nordicgym.js": "51834f7e17a5ca9355b12af98760d715d0e931a68178a407a0d65b1e6eb9c6ef",
+    "src/cathabitat.js": "300485daf1bd69f97a9f38ab10fc6bbb9ffa1305cd05f33c37b0e17aa7aa4301"
+  },
+  "preservedNewerChanges": "Djurp\u00e4rmen remains; Player retains published #1849 bridge guard. No runtime conflict in this merge. Changelog retains all prior entries."
+}

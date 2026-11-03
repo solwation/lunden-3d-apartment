@@ -1,0 +1,10 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+READY
+COMMAND OK
+SHOT before-low
+COMMAND OK
+COMMAND ERROR page.evaluate: TypeError: Failed to resolve module specifier "/src/config.js". Invalid relative url or base scheme isn't hierarchical.
+COMMAND OK
+SHOT after-low
+COMMAND OK
+SHOT after-rear

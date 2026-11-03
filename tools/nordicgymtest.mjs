@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 if (process.env.THREE_DIR) register('data:text/javascript,' + encodeURIComponent(`
 const root=${JSON.stringify(pathToFileURL(process.env.THREE_DIR + '/').href)};
-export async function resolve(s,c,n){if(s==='three')return{url:root+'build/three.module.js',shortCircuit:true};return n(s,c);}`));
+export async function resolve(s,c,n){if(s==='three')return{url:root+'build/three.module.js',shortCircuit:true};if(s.startsWith('three/addons/'))return{url:root+'examples/jsm/'+s.slice(13),shortCircuit:true};return n(s,c);}`));
 const T = await import('three');
 const load = async (name, fallback) => import(process.env[name] ? pathToFileURL(process.env[name]).href : fallback);
 const { SITE } = await load('NORDIC_GYM_CONFIG', '../src/config.js');

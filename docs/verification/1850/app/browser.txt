@@ -1,0 +1,13 @@
+PASS original_low_view_reproduces_large_gap
+PASS actual_asphalt_source_mesh_contact
+PASS four_actual_corners_keep_original_xy
+PASS four_actual_corners_have_45mm_lift
+PASS actual_cat_sampler_contact
+PASS actual_foundation_reaches_ground
+PASS both_actual_stair_feet_reach_ground
+PASS ground_mesh_buffer_unchanged
+PASS same_campus_mesh_batches
+PASS bounded_seven_triangle_increase
+PASS actual_same_view_draw_calls
+PASS actual_same_view_triangle_delta
+12/12 scoped actual-app checks
