@@ -41,6 +41,7 @@ export const MEDALS = [
   { id: 'steps', counter: 'steps', icon: '👣', name: 'Vandrare', unit: 'steg', base: 10000, oldBase: 20000 },
   { id: 'stairs', counter: 'stairs', icon: '🔼', name: 'Trappspringare', unit: 'trappturer', base: 100 },
   { id: 'jetpack', counter: 'flights', icon: '🚀', name: 'Jetpackpilot', unit: 'flygningar', base: 25 },
+  { id: 'astronaut', counter: 'jetpackMetres', icon: '🧑‍🚀', name: 'Astronaut', unit: 'höjdmeter uppåt med jetpack', base: 100 }, // #1857: first level100 m is a gameplay guess
   { id: 'dribbles', counter: 'dribbles', icon: '🏀', name: 'Basketstudsare', unit: 'studsar', base: 500 },
   { id: 'fish', counter: 'fishCaught', icon: '🎣', name: 'Fiskelycka', unit: 'fiskar fångade i Höje å', base: 5 }, // #1754 (*guess*: a catch takes minutes)
   { id: 'tasks', counter: 'tasks', icon: '📋', name: 'Städhjälte', unit: 'vardagsuppdrag klara', base: 20 },

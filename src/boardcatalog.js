@@ -34,6 +34,7 @@ export const COUNTERS = {
   // for the medals (#1711, src/medalcatalog.js); task_<id> is stats.taskCounts[id]
   stairs: { perMin: 60, start: 20000 },
   flights: { perMin: 10, start: 1000 },
+  jetpackMetres: { perMin: 1200, start: 100000 }, // #1857: 18 m/s thin-air cap = 1080 m/min; bounded allowance
   hotdogs: { perMin: 6, start: 2000 },
   falls: { perMin: 20, start: 2000 },
   burnt: { perMin: 10, start: 1000 },
