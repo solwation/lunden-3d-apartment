@@ -1,0 +1,17 @@
+{
+  "baseline": "f74e13d295a2837fb9ba460d165c81bd08904d8b",
+  "sourceSha256": {
+    "src/nordicgym.js": "d38d769cb380b2dec6889dfd928401defd25615856ed15cfc8bf1adcf5f9e831",
+    "src/config.js": "9213b5067399a6e4d7d3b379245a690ed2ae31834969528825b897f79a6fea50",
+    "src/sitebackdrop.js": "f72501584016b321429097d0ebd62f21f4ecb4ef0dfeb697a24a842975446b43",
+    "src/surroundings.js": "5129b9aec4d83ebfdbd4e0ebcd9f2ec4cf9968869cd6ef5636974cf6270fcab5",
+    "tools/eastbackdroptest.html": "fb328bb0d507788808e307a8e47673592293061931c3c08a677a1c52afb092e1"
+  },
+  "environment": "Chromium 1248 / SwiftShader, 1280x800, June 3 13:00 clear freeze; dusk20.8h",
+  "checks": {
+    "geometry": "PASS (geometry.txt)",
+    "syntax": "PASS",
+    "diffWhitespace": "PASS",
+    "eastbackdroptest": "51 PASS / 1 pre-existing batch-count FAIL #1833; last64 tree triangles measured separately"
+  }
+}
