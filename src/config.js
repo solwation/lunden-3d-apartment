@@ -4045,6 +4045,8 @@ export const OUTDOOR_SEATS = {
 // #1811: image-interpreted outdoor gym on the grass SW of Östra längan by Karpvägen.
 // Location, dimensions, timber/steel colours, clearance and exercise motions are visual/gameplay guesses from the report photo.
 export const OUTDOOR_GYM = {
+  use: { entryGap: .85, endInset: .35, stride: .2, speed: 1, turn: 3, grip: 1.8, hangBody: .3, netBodyOffset: .2, netEye: 1.15, dipGrip: 1.05, dip: .22, dipBody: .36, ankle: .05, hip: .9, torso: .69, legReach: .72, stepFootZ: .75, observerReach: 2.5, pressLean: .3, crunch: .65 }, // #1842: visual/contact and input-distance guesses
+
   effort: { gain: .2, decay: .42, pulseGap: .07, stroke: 28, maxStep: .25 }, // #1836: gameplay guesses; fresh F presses / CSS-pixel touch reversals
   scorePerDay: 30, // #1828: exercise-point ceiling per local day (*guess*); all repetitions still count for medals
   at: [-143, 33], yaw: -45, pad: [18, 12], padStep: 1, padLift: .035,
@@ -4054,7 +4056,7 @@ export const OUTDOOR_GYM = {
   geometry: {
     postSides: 8, logSides: 10, slatGap: .012, footPlate: [.23,.12,.035], plateOffset: .02,
     pull: { postX: .85, topExtra: .12, braceDrop: .2, braceBack: .55, eyeZ: .35, lookZ: -.45 },
-    press: { postX: .65, logY: 1.25, logZ: .4, logLength: 1.75, benchW: .7, benchD: 1.85,
+    press: { postX: .65, logY: .95, logZ: .4, logLength: 1.75, benchW: .7, benchD: 1.85,
       footZ: .7, footX: .24, slatX: .22, slatW: .2, crossD: .18, halfW: .38, halfD: .95, eyeZ: .62 },
     step: { footX: .85, footZ: .65, boardW: 2.2, boardD: .25, depth: 1.8, slats: 6, halfW: 1.15, halfD: .95, eyeZ: 1.2 },
   },
@@ -4076,7 +4078,7 @@ export const OUTDOOR_GYM = {
   },
   stations: [
     { id: 'pullup', label: 'Räckhäv', name: 'räcket', x: -5.2, z: -2.1, period: 2.8, box: [1.95, 2.35, .7] },
-    { id: 'press', label: 'Bänkpress', name: 'bänkpressen', x: 0, z: 1.5, period: 2.6, box: [1.8, 1.4, 2.1], lift: .44 },
+    { id: 'press', label: 'Bänkpress', name: 'bänkpressen', x: 0, z: 1.5, period: 2.6, box: [1.8, 1.4, 2.1], lift: .34 },
     { id: 'step', label: 'Step-up', name: 'stepbrädan', x: 5.1, z: -2.1, period: 2.4, box: [2.3, .8, 1.9] },
   ],
 };

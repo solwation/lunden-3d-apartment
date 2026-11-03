@@ -272,3 +272,5 @@ command rate limit, hibernation storage and empty-room cleanup. There is no fram
 traffic or new polling. `src/djstate.js` is shared with the client and included in the
 Worker deploy paths. See [audio development notes](../docs/development/animals-audio.md#dj-bench-physical-two-deck-controls-1664)
 and `node --test cloudflare/roommusic.test.mjs`.
+
+Gym spectator pose (#1842): optional `gx:[kind,phase]` carries the validated transient exercise hint (kinds 1…8, phase 0…1; `src/gymposewire.js`). It follows the existing PlayerRoom cleaned state/snapshot/forwarding lifecycle, with existing rate/size caps and no new storage or service. Existing `pose`/avatar fields remain compatible; older peers ignore gx. Deploy Worker before the client. The client receiver reuses the ordinary Ghost skeleton and moves its existing press-stock mesh; no remote repetition credit is generated. `tools/gymroomwire.mjs` uses real Worker/PlayerRoom with the existing devws two-socket stand-ins.

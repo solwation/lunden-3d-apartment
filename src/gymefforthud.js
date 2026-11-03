@@ -23,7 +23,8 @@ export class GymEffortHUD {
     const percent=Math.round((this.gym.effort?.level??0)*100),ready=this.rest.t>=1,top=this.gym.effort?.peaked;
     if(this.title.textContent!==this.gym.status)this.title.textContent=this.gym.status;this.meter.setAttribute('aria-valuenow',percent);this.fill.style.transform=`scaleX(${percent/100})`;
     this.root.dataset.top=top?'true':'false';this.pad.hidden=!this.touch();
-    const hint=!ready?'Gör dig redo…':top?'Toppen nådd! Släpp ner helt för en repetition.':this.touch()?'Dra upp och ner i rutan. Varje vändning ger kraft.':'Tryck F snabbt flera gånger för att ta i. Släpp för att sänka.';
+    const course=this.gym.active?.route;
+    const hint=course?(course.distance>=course.length*2-1e-8?'Rundan klar! Fyll kraften och släpp helt för en repetition.':this.touch()?'Dra upp och ner för aktiva steg ut och tillbaka.':'Tryck F för aktiva steg ut och tillbaka; E avslutar.') : !ready?'Gör dig redo…':top?'Toppen nådd! Släpp ner helt för en repetition.':this.touch()?'Dra upp och ner i rutan. Varje vändning ger kraft.':'Tryck F snabbt flera gånger för att ta i. Släpp för att sänka.';
     if(this.hint.textContent!==hint)this.hint.textContent=hint;
     this.root.querySelector('[data-gym-exit]').textContent=this.touch()?'Avsluta med knappen till höger.':'E / mellanslag / C: avsluta träningen';
   }

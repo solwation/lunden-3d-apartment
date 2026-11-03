@@ -1,0 +1,37 @@
+PASS pullup actual Room→Ghost motion {}
+PASS press actual Room→Ghost motion {}
+PASS step actual Room→Ghost motion {}
+PASS incline-1 actual Room→Ghost motion {}
+PASS incline-2 actual Room→Ghost motion {}
+PASS dips actual Room→Ghost motion {}
+PASS monkey actual Room→Ghost motion {}
+PASS net actual Room→Ghost motion {}
+PASS balance actual Room→Ghost motion {}
+PASS stumps actual Room→Ghost motion {}
+PASS all gx head/name anchors follow actual skeleton {}
+PASS receiver press stock follows received phase [{"id":"press","phase":0,"gx":[7,0],"p":[-144.06,0.17,34.06],"hand":[-144.57218719123838,1.26,34.111383665997586],"head":[-144.5290665685857,1.2591329322632574,34.524769178727766],"foot":[-143.58364458945852,1.0625000000000002,33.43597172912772],"stock":1.416193924679119,"visible":true,"headError":0,"tagError":0},{"id":"press","phase":0.5,"gx":[7,0.5],"p":[-144.06,0.17,34.06],"hand":[-144.57218719123836,1.4300000000000002,34.11138366599759],"head":[-144.5290665685857,1.2591329322632574,34.524769178727766],"foot":[-143.58364458945852,1.0625000000000002,33.43597172912772],"stock":1.586193924679119,"visible":true,"headError":0,"tagError":0},{"id":"press","phase":1,"gx":[7,1],"p":[-144.06,0.17,34.06],"hand":[-144.57218719123838,1.6000000000000003,34.111383665997586],"head":[-144.5290665685857,1.2591329322632574,34.524769178727766],"foot":[-143.58364458945852,1.0625000000000002,33.43597172912772],"stock":1.7561939246791192,"visible":true,"headError":0,"tagError":0}]
+PASS actual observer image monkey {"gx":[1,0.5],"root":[-154.88,1.14,41.34],"visible":true,"head":[-154.88,2.7800000000000002,41.34],"tag":[0,1.84,0],"render":{"frame":21,"calls":49,"triangles":384768,"points":80,"lines":0},"assetMeshes":8}
+PASS actual observer image press {"gx":[7,0.5],"root":[-144.06,0.17,34.06],"visible":true,"head":[-144.5290665685857,1.3591329322632575,34.524769178727766],"tag":[0,1.3891329322632575,0.6603285812836219],"render":{"frame":23,"calls":52,"triangles":386286,"points":80,"lines":0},"assetMeshes":8}
+PASS no page errors []
+CAPTURES READY; inspect while browser held
+PROBE ERROR page.evaluate: ReferenceError: testMode is not defined
+    at eval (eval at evaluate (:290:30), <anonymous>:1:426)
+    at UtilityScript.evaluate (<anonymous>:292:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+    at eval (<anonymous>:3:30)
+    at eval (<anonymous>:3:741)
+    at /home/devcontainers/orkester-olw-win10-gpt6-20261103/gym-all-equipment/tools/gymreceiverbrowser.cjs:12:407
+PROBE ERROR Error: Cannot find module './tools/testkit.cjs'
+Require stack:
+- /home/devcontainers/orkester-olw-win10-gpt6-20261103/gym-all-equipment/tools/gymreceiverbrowser.cjs
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Module.require (node:internal/modules/cjs/loader:1463:12)
+    at require (node:internal/modules/helpers:147:16)
+    at eval (eval at <anonymous> (/home/devcontainers/orkester-olw-win10-gpt6-20261103/gym-all-equipment/tools/gymreceiverbrowser.cjs:12:317), <anonymous>:3:516)
+    at async /home/devcontainers/orkester-olw-win10-gpt6-20261103/gym-all-equipment/tools/gymreceiverbrowser.cjs:12:311
+PROBE {"pitch":0,"rest":"monkey","pos":[-154.87939392393397,2.7645317301749266,41.34386001800126]}

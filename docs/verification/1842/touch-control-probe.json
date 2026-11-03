@@ -1,0 +1,46 @@
+{
+  "events": [
+    {
+      "id": "gym-control",
+      "type": "pointerdown",
+      "primary": true,
+      "default": false,
+      "trusted": true,
+      "rest": "step"
+    },
+    {
+      "id": "gym-control",
+      "type": "pointerup",
+      "primary": true,
+      "default": false,
+      "trusted": true,
+      "rest": "step"
+    },
+    {
+      "id": "action",
+      "type": "pointerdown",
+      "primary": true,
+      "default": false,
+      "trusted": true,
+      "rest": "step"
+    },
+    {
+      "id": "action",
+      "type": "pointerup",
+      "primary": true,
+      "default": false,
+      "trusted": true,
+      "rest": "step"
+    },
+    {
+      "id": "action",
+      "type": "click",
+      "primary": false,
+      "default": false,
+      "trusted": true,
+      "rest": null
+    }
+  ],
+  "rest": null,
+  "cancel": "cdpSession.send: Protocol error (Input.dispatchTouchEvent): Must send a TouchStart first to start a new touch."
+}

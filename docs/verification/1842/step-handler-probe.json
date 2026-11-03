@@ -1,0 +1,13 @@
+{
+  "before": "step",
+  "after": null,
+  "events": [
+    {
+      "type": "click",
+      "trust": false,
+      "prevent": false,
+      "rest": "step"
+    }
+  ],
+  "errors": []
+}

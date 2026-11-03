@@ -1,0 +1,69 @@
+[
+  {
+    "ok": true,
+    "name": "complete actual action inventory",
+    "data": [
+      "pullup",
+      "press",
+      "step",
+      "incline-1",
+      "incline-2",
+      "dips",
+      "monkey",
+      "net",
+      "balance",
+      "stumps"
+    ]
+  },
+  {
+    "ok": true,
+    "name": "touch step reachable/free entry",
+    "data": {
+      "focused": "step",
+      "free": true,
+      "target": [
+        -137.90883117545687,
+        0.8250149085359412,
+        35.12132034355964
+      ],
+      "entry": [
+        -139.53517677218593,
+        36.7476659402887
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "step native mounted"
+  },
+  {
+    "ok": true,
+    "name": "step no passive movement/reward"
+  },
+  {
+    "ok": true,
+    "name": "step expected full-cycle reward boundary",
+    "data": {
+      "reps": 1,
+      "eye": [
+        -138.75735931288074,
+        2.0450149085359413,
+        35.969848480983494
+      ]
+    }
+  },
+  {
+    "ok": false,
+    "name": "step safe original exit",
+    "data": {
+      "active": true,
+      "gym": "step",
+      "pos": [
+        -139.53517677218593,
+        0.2837508541381246,
+        36.7476659402887
+      ],
+      "free": true
+    }
+  }
+]

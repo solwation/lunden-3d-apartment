@@ -1,0 +1,10 @@
+PASS complete actual action inventory ["pullup","press","step","incline-1","incline-2","dips","monkey","net","balance","stumps"]
+PASS touch step reachable/free entry {"focused":"step","free":true,"target":[-137.90883117545687,0.8250149085359412,35.12132034355964],"entry":[-139.53517677218593,36.7476659402887]}
+PASS step native mounted {}
+PASS step no passive movement/reward {}
+PASS step expected full-cycle reward boundary {"reps":1,"eye":[-138.75735931288074,2.0450149085359413,35.969848480983494]}
+EXITPOINT step {"label":"Avsluta träningen","box":[634.75,309,193.25,65],"hit":"action","rest":"step","measure":false,"camera":[0,-0.7853981633974483]}
+FAIL step safe original exit {"active":true,"gym":"step","pos":[-139.53517677218593,0.2837508541381246,36.7476659402887],"free":true}
+HELD browser; waiting for /home/devcontainers/orkester-olw-win10-gpt6-20261103/state/1842-release
+PROBE {"rest":"step","focused":null,"held":null,"mode":"touch","viewport":{"w":844,"h":390,"scale":1},"notes":[{"id":"note","hidden":true,"display":"none"},{"id":"binder-view","hidden":true,"display":"none"},{"id":"task-note","hidden":true,"display":"none"},{"id":"cheat-note","hidden":true,"display":"none"},{"id":"player-dialog","hidden":true,"display":"none"},{"id":"terminal","hidden":true,"display":"none"},{"id":"overlay","hidden":true,"display":"none"}],"bbox":[634.75,309,193.25,65],"events":[]}
+PROBE {"before":"step","after":null,"events":[{"type":"click","trust":false,"prevent":false,"rest":"step"}],"errors":[]}

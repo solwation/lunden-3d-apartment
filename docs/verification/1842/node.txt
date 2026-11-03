@@ -1,0 +1,88 @@
+TAP version 13
+# Subtest: complete inventory, every old decor exercise has an action; no added visible geometry
+ok 1 - complete inventory, every old decor exercise has an action; no added visible geometry
+  ---
+  duration_ms: 3.605092
+  type: 'test'
+  ...
+# Subtest: incline-1: idle, full active cycle/round, pause and abort
+ok 2 - incline-1: idle, full active cycle/round, pause and abort
+  ---
+  duration_ms: 2.261395
+  type: 'test'
+  ...
+# Subtest: incline-2: idle, full active cycle/round, pause and abort
+ok 3 - incline-2: idle, full active cycle/round, pause and abort
+  ---
+  duration_ms: 1.184597
+  type: 'test'
+  ...
+# Subtest: dips: idle, full active cycle/round, pause and abort
+ok 4 - dips: idle, full active cycle/round, pause and abort
+  ---
+  duration_ms: 0.978798
+  type: 'test'
+  ...
+# Subtest: monkey: idle, full active cycle/round, pause and abort
+ok 5 - monkey: idle, full active cycle/round, pause and abort
+  ---
+  duration_ms: 1.033497
+  type: 'test'
+  ...
+# Subtest: net: idle, full active cycle/round, pause and abort
+ok 6 - net: idle, full active cycle/round, pause and abort
+  ---
+  duration_ms: 0.910798
+  type: 'test'
+  ...
+# Subtest: balance: idle, full active cycle/round, pause and abort
+ok 7 - balance: idle, full active cycle/round, pause and abort
+  ---
+  duration_ms: 2.358994
+  type: 'test'
+  ...
+# Subtest: stumps: idle, full active cycle/round, pause and abort
+ok 8 - stumps: idle, full active cycle/round, pause and abort
+  ---
+  duration_ms: 1.297997
+  type: 'test'
+  ...
+# Subtest: actual skeleton: overhead grip and balancing support at short/adult/tall scales
+ok 9 - actual skeleton: overhead grip and balancing support at short/adult/tall scales
+  ---
+  duration_ms: 6.897084
+  type: 'test'
+  ...
+# Subtest: optional transient pose survives actual Worker cleaner, rejects malformed hints and clears for legacy state
+ok 10 - optional transient pose survives actual Worker cleaner, rejects malformed hints and clears for legacy state
+  ---
+  duration_ms: 1.076497
+  type: 'test'
+  ...
+# Subtest: non-uniform avatar proportions keep net hands on rungs and dip hands on the padded crossbar
+ok 11 - non-uniform avatar proportions keep net hands on rungs and dip hands on the padded crossbar
+  ---
+  duration_ms: 5.336788
+  type: 'test'
+  ...
+# Subtest: old three spectator skeletons keep real grip/support through the full effort cycle and unequal proportions
+ok 12 - old three spectator skeletons keep real grip/support through the full effort cycle and unequal proportions
+  ---
+  duration_ms: 32.018925
+  type: 'test'
+  ...
+# Subtest: spectator moving log follows the lowest remote id; local active press wins and absence resets the existing mesh
+ok 13 - spectator moving log follows the lowest remote id; local active press wins and absence resets the existing mesh
+  ---
+  duration_ms: 0.641299
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 65.713147

@@ -1,0 +1,78 @@
+PASS complete actual action inventory ["pullup","press","step","incline-1","incline-2","dips","monkey","net","balance","stumps"]
+PASS touch press reachable/free entry {"focused":"press","free":true,"target":[-144.06066017177983,1.166193924679119,34.06066017177982],"entry":[-145.68700576850887,35.68700576850888]}
+PASS press native mounted {}
+PASS press no passive movement/reward {}
+PASS press expected full-cycle reward boundary {"reps":1,"eye":[-144.49906637611548,1.2061939246791191,34.49906637611548]}
+EXITPOINT press {"label":"Avsluta träningen","box":[634.75,309,193.25,65],"hit":"action","rest":"press","measure":false,"camera":[1.45,-0.7853981633974483]}
+EXITEVENTS press [{"type":"pointerdown","trusted":true,"rest":"press"},{"type":"pointerup","trusted":true,"rest":"press"},{"type":"click","trusted":true,"rest":null}]
+PASS press safe original exit {"active":false,"gym":null,"pos":[-145.68700576850887,0.3818432186860061,35.68700576850888],"free":true}
+PASS touch step reachable/free entry {"focused":"step","free":true,"target":[-137.90883117545687,0.8250149085359412,35.12132034355964],"entry":[-139.53517677218593,36.7476659402887]}
+PASS step native mounted {}
+PASS step no passive movement/reward {}
+PASS step expected full-cycle reward boundary {"reps":2,"eye":[-138.75735931288074,2.0450149085359413,35.969848480983494]}
+EXITPOINT step {"label":"Avsluta träningen","box":[634.75,309,193.25,65],"hit":"action","rest":"step","measure":false,"camera":[0,-0.7853981633974483]}
+EXITEVENTS step [{"type":"pointerdown","trusted":true,"rest":"step"},{"type":"pointerup","trusted":true,"rest":"step"}]
+FAIL step safe original exit {"active":true,"gym":"step","pos":[-139.53517677218593,0.2837508541381246,36.7476659402887],"free":true}
+HELD browser; waiting for /home/devcontainers/orkester-olw-win10-gpt6-20261103/state/1842-release
+NODEPROBE {"rest":null,"trace":[{"type":"pointerdown","at":367218.19999999925,"target":"action","path":["action","touch-controls","hud"],"default":false,"rest":"step"},{"type":"touchstart","at":367218.30000000075,"target":"action","path":["action","touch-controls","hud"],"default":false,"rest":"step"},{"type":"mutation","at":367226.8999999985,"text":"Avsluta träningen","n":1},{"type":"pointerup","at":367309.30000000075,"target":"action","path":["action","touch-controls","hud"],"default":false,"rest":"step"},{"type":"touchend","at":367309.3999999985,"target":"action","path":["action","touch-controls","hud"],"default":false,"rest":"step"},{"type":"click","at":367311,"target":"action","path":["action","touch-controls","hud"],"default":false,"rest":"step"}]}
+NODEPROBE {"events":[{"id":"gym-control","type":"pointerdown","primary":true,"default":false,"trusted":true,"rest":"step"},{"id":"gym-control","type":"pointerup","primary":true,"default":false,"trusted":true,"rest":"step"},{"id":"action","type":"pointerdown","primary":true,"default":false,"trusted":true,"rest":"step"},{"id":"action","type":"pointerup","primary":true,"default":false,"trusted":true,"rest":"step"},{"id":"action","type":"click","primary":false,"default":false,"trusted":true,"rest":null}],"rest":null,"cancel":"cdpSession.send: Protocol error (Input.dispatchTouchEvent): Must send a TouchStart first to start a new touch."}
+NODEPROBE ERROR SyntaxError: Unexpected token ')'
+    at Function (<anonymous>)
+    at /home/devcontainers/orkester-olw-win10-gpt6-20261103/gym-all-equipment/tools/gymapparatusbrowser.cjs:47:409
+PASS touch incline-1 reachable/free entry {"focused":"incline-1","free":true,"target":[-148.23259018078045,1.2390490482782919,31.161522368914977],"entry":[-149.75286976033152,32.68180194846605]}
+PASS incline-1 native mounted {}
+PASS incline-1 no passive movement/reward {}
+PASS incline-1 expected full-cycle reward boundary {"reps":3,"eye":[-147.76884001473715,1.4784588591304133,30.697772202871686]}
+EXITPOINT incline-1 {"label":"Avsluta träningen","box":[634.75,309,193.25,65],"hit":"action","rest":"incline-1","measure":false,"camera":[0,2.356194490192345]}
+EXITEVENTS incline-1 [{"type":"pointerdown","trusted":true,"rest":"incline-1"},{"type":"pointerup","trusted":true,"rest":"incline-1"},{"type":"click","trusted":true,"rest":null}]
+PASS incline-1 safe original exit {"active":false,"gym":null,"pos":[-149.75286976033152,0.4960064437106282,32.68180194846605],"free":true}
+PASS touch incline-2 reachable/free entry {"focused":"incline-2","free":true,"target":[-141.37365440327093,0.9480076243188928,38.444722215136416],"entry":[-142.893933982822,39.965001794687495]}
+PASS incline-2 native mounted {}
+PASS incline-2 no passive movement/reward {}
+PASS incline-2 expected full-cycle reward boundary {"reps":4,"eye":[-140.90990423722764,1.1874174351710143,37.980972049093126]}
+EXITPOINT incline-2 {"label":"Avsluta träningen","box":[634.75,309,193.25,65],"hit":"action","rest":"incline-2","measure":false,"camera":[0,2.356194490192345]}
+EXITEVENTS incline-2 [{"type":"pointerdown","trusted":true,"rest":"incline-2"},{"type":"pointerup","trusted":true,"rest":"incline-2"},{"type":"click","trusted":true,"rest":null}]
+PASS incline-2 safe original exit {"active":false,"gym":null,"pos":[-142.893933982822,0.24670808142797762,39.965001794687495],"free":true}
+PASS touch dips reachable/free entry {"focused":"dips","free":true,"target":[-141.23223304703365,1.0579545418078191,31.23223304703363],"entry":[-142.6110912703474,32.6110912703474]}
+PASS dips native mounted {}
+PASS dips no passive movement/reward {}
+PASS dips expected full-cycle reward boundary {"reps":5,"eye":[-141.4867914882608,2.2996358593234056,31.48679148826079]}
+EXITPOINT dips {"label":"Avsluta träningen","box":[634.75,309,193.25,65],"hit":"action","rest":"dips","measure":false,"camera":[0,-0.7853981633974483]}
+EXITEVENTS dips [{"type":"pointerdown","trusted":true,"rest":"dips"},{"type":"pointerup","trusted":true,"rest":"dips"},{"type":"click","trusted":true,"rest":null}]
+PASS dips safe original exit {"active":false,"gym":null,"pos":[-142.6110912703474,0.4655182604221699,32.6110912703474],"free":true}
+PASS touch monkey reachable/free entry {"focused":"monkey","free":true,"target":[-154.66726188957804,1.6943308288373826,41.1317279836453],"entry":[-155.7986327394765,41.20243866176395]}
+PASS monkey native mounted {}
+PASS monkey no passive movement/reward {}
+PASS monkey first-person camera/HUD {"before":[0,-0.7853981633974483],"after":[0,-0.7853981633974483],"to":{"yaw":-0.7853981633974483,"pitch":0},"gx":[1,0.94]}
+PASS monkey expected full-cycle reward boundary {"reps":6,"eye":[-155.4097240098239,2.7764142576691206,40.81352993211135],"phase":0}
+EXITPOINT monkey {"label":"Avsluta träningen","box":[634.75,309,193.25,65],"hit":"action","rest":"monkey","measure":false,"camera":[0,-0.7853981633974483]}
+EXITEVENTS monkey [{"type":"pointerdown","trusted":true,"rest":"monkey"},{"type":"pointerup","trusted":true,"rest":"monkey"},{"type":"click","trusted":true,"rest":null}]
+PASS monkey safe original exit {"active":false,"gym":null,"pos":[-155.7986327394765,0.45295241028191624,41.20243866176395],"free":true}
+PASS touch net reachable/free entry {"focused":"net","free":true,"target":[-154.66726188957804,1.227954634852746,38.30330085889911],"entry":[-155.7632774004172,38.40936687607709]}
+PASS net native mounted {}
+PASS net no passive movement/reward {}
+PASS net expected full-cycle reward boundary {"reps":6,"eye":[-154.52593604174118,1.8717681760541165,38.7274694192106],"phase":1.1000000000000003}
+EXITPOINT net {"label":"Avsluta träningen","box":[634.75,309,193.25,65],"hit":"action","rest":"net","measure":false,"camera":[0,-0.7853981633974483]}
+EXITEVENTS net [{"type":"pointerdown","trusted":true,"rest":"net"},{"type":"pointerup","trusted":true,"rest":"net"},{"type":"click","trusted":true,"rest":null}]
+PASS net safe original exit {"active":false,"gym":null,"pos":[-155.7632774004172,0.4892966316884646,38.40936687607709],"free":true}
+PASS touch balance reachable/free entry {"focused":"balance","free":true,"target":[-150.28319984622144,0.8898543249987423,41.697413408594535],"entry":[-148.48007755419573,39.89429111656884]}
+PASS balance native mounted {}
+PASS balance no passive movement/reward {}
+PASS balance first-person camera/HUD {"before":[0,3.3389882134396682],"after":[0,3.3389882134396687],"to":{"yaw":2.356194490192345,"pitch":0},"gx":[2,0.94]}
+PASS balance expected full-cycle reward boundary {"reps":7,"eye":[-149.0811183182043,2.429974880735643,40.4953318805774],"phase":0}
+EXITPOINT balance {"label":"Avsluta träningen","box":[634.75,309,193.25,65],"hit":"action","rest":"balance","measure":false,"camera":[0,3.697787143782135]}
+EXITEVENTS balance [{"type":"pointerdown","trusted":true,"rest":"balance"},{"type":"pointerup","trusted":true,"rest":"balance"},{"type":"click","trusted":true,"rest":null}]
+PASS balance safe original exit {"active":false,"gym":null,"pos":[-148.48007755419573,0.37418131008541744,39.89429111656884],"free":true}
+PASS touch stumps reachable/free entry {"focused":"stumps","free":true,"target":[-152.75807358037434,0.877820128233299,35.68700576850888],"entry":[-153.3591143443829,35.085965004500316]}
+PASS stumps native mounted {}
+PASS stumps no passive movement/reward {}
+PASS stumps expected full-cycle reward boundary {"reps":7,"eye":[-152.75807358037434,2.5305553564691516,36.77635050276693],"phase":1.1000000000000003}
+EXITPOINT stumps {"label":"Avsluta träningen","box":[634.75,309,193.25,65],"hit":"action","rest":"stumps","measure":false,"camera":[0,-3.141592653589793]}
+EXITEVENTS stumps [{"type":"pointerdown","trusted":true,"rest":"stumps"},{"type":"pointerup","trusted":true,"rest":"stumps"},{"type":"click","trusted":true,"rest":null}]
+PASS stumps safe original exit {"active":false,"gym":null,"pos":[-153.3591143443829,0.49391865827565296,35.085965004500316],"free":true}
+PASS actual Worker/PlayerRoom forwarded 30 snapshots to observer, gx/phase preserved; normal two-socket lifecycle
+NODEPROBE ERROR page.evaluate: TypeError: g.update is not a function
+    at eval (eval at evaluate (:290:30), <anonymous>:1:278)
+    at async <anonymous>:316:30
+    at eval (<anonymous>:26:28)
+    at async /home/devcontainers/orkester-olw-win10-gpt6-20261103/gym-all-equipment/tools/gymapparatusbrowser.cjs:47:403

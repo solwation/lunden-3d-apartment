@@ -56,6 +56,7 @@ export class Rest {
    * keeps the head on the mattress. */
   eyeAt(spot) {
     const p = spot.pos.clone();
+    if (spot.gymPose) return p; // the apparatus solves the scaled support/grip frame
     if (spot.kind !== 'lie') p.y -= REST.sitEye * (1 - this.scale);
     return p;
   }
@@ -68,6 +69,7 @@ export class Rest {
     const cam = this.camera;
     this.target = target;
     this.spot = spot;
+    this.followYaw=spot.yaw;
     this.standing = stand;
     this.t = 0;
     this.from = { pos: cam.position.clone(), yaw: cam.rotation.y, pitch: cam.rotation.x };
@@ -87,7 +89,7 @@ export class Rest {
   update(dt) {
     if (!this.active) return;
     // Only explicitly moving seats follow the spot after the usual entry glide.
-    if (this.t >= 1) { if (this.spot.follow) this.camera.position.copy(this.eyeAt(this.spot)); return; }
+    if (this.t >= 1) { if(this.spot.followHeading){const d=this.spot.yaw-this.followYaw;this.camera.rotation.y+=Math.atan2(Math.sin(d),Math.cos(d));this.followYaw=this.spot.yaw;} if (this.spot.follow) this.camera.position.copy(this.eyeAt(this.spot)); return; }
     this.t = Math.min(1, this.t + dt / REST.move);
     const e = this.t * this.t * (3 - 2 * this.t), cam = this.camera;
     cam.position.lerpVectors(this.from.pos, this.eyeAt(this.spot), e);

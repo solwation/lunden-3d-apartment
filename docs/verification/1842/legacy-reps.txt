@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: pullup: no passive cycles; a full effort lift and descent count once
+ok 1 - pullup: no passive cycles; a full effort lift and descent count once
+  ---
+  duration_ms: 2.258093
+  type: 'test'
+  ...
+# Subtest: press: no passive cycles; a full effort lift and descent count once
+ok 2 - press: no passive cycles; a full effort lift and descent count once
+  ---
+  duration_ms: 0.455299
+  type: 'test'
+  ...
+# Subtest: step: no passive cycles; a full effort lift and descent count once
+ok 3 - step: no passive cycles; a full effort lift and descent count once
+  ---
+  duration_ms: 0.542598
+  type: 'test'
+  ...
+# Subtest: entry, pause, abort, ordinary seats and station switch never invent a repetition
+ok 4 - entry, pause, abort, ordinary seats and station switch never invent a repetition
+  ---
+  duration_ms: 0.227099
+  type: 'test'
+  ...
+# Subtest: daily award ceiling, saved ledger and next local day leave all repetitions available to the medal
+ok 5 - daily award ceiling, saved ledger and next local day leave all repetitions available to the medal
+  ---
+  duration_ms: 0.443498
+  type: 'test'
+  ...
+# Subtest: invalid repetitions never credit points, older saves start without retrospective gym rewards
+ok 6 - invalid repetitions never credit points, older saves start without retrospective gym rewards
+  ---
+  duration_ms: 0.179799
+  type: 'test'
+  ...
+# Subtest: Worker accepts gym repetitions and derives Utegymmare at the same 100-repetition boundary
+ok 7 - Worker accepts gym repetitions and derives Utegymmare at the same 100-repetition boundary
+  ---
+  duration_ms: 0.652798
+  type: 'test'
+  ...
+# Subtest: actual stats.bump/rawScore never add the uncapped per-repetition path as well
+ok 8 - actual stats.bump/rawScore never add the uncapped per-repetition path as well
+  ---
+  duration_ms: 13.870754
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 23.476622

@@ -8,6 +8,7 @@ export function restState(rest, code, seed) {
   // Legacy default wire codes omit height; peers derive that scale from the accepted player id.
   // #1137: a chosen height scales the figure by its body scale (Avatar, rifleBoxPose), not the seed's tall.
   const lk = decodeAvatarLook(code, seed), tall = Number.isInteger(lk.height) ? avatarProportions(lk.height).body : lk.tall;
+  if(rest.spot.gymPose||rest.spot.gymWirePose){const sp=rest.spot;return {p:sp.gymRoot.toArray(),r:sp.yaw,c:false,pose:sp.gymPose===5||sp.gymWirePose===7?2:0,gx:[sp.gymPose||sp.gymWirePose,sp.gymPhase],look:[Math.atan2(Math.sin(rest.camera.rotation.y-sp.yaw),Math.cos(rest.camera.rotation.y-sp.yaw)),rest.camera.rotation.x]};}
   const lie = rest.kind === 'lie', spot = rest.spot;
   const y = spot.pos.y - (lie ? REST.lieEye : REST.sitEye);
   // lying: the centre line sits at the spot's `bodyY` (under the duvet, #1234), else a little over the surface

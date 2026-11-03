@@ -1,6 +1,4 @@
-// #1842: server-first compatibility; the client slice shares this exact validator from src.
-function gymPoseWire(value){return Array.isArray(value)&&value.length===2&&Number.isInteger(value[0])&&value[0]>=1&&value[0]<=8&&Number.isFinite(value[1])&&value[1]>=0&&value[1]<=1?[value[0],Math.round(value[1]*100)/100]:null;}
-
+import {gymPoseWire} from '../src/gymposewire.js';
 import { pumpWire } from '../src/gympump.js';
 import { REST, TV_MEDIA, tvViewer, COMPUTER_MEDIA, computerViewer } from '../src/config.js';
 import { freshDJ, cleanDJ, applyDJ, snapshotDJ } from '../src/djstate.js';

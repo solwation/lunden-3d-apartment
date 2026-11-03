@@ -1,0 +1,804 @@
+[
+  {
+    "ok": true,
+    "name": "complete actual action inventory",
+    "data": [
+      "pullup",
+      "press",
+      "step",
+      "incline-1",
+      "incline-2",
+      "dips",
+      "monkey",
+      "net",
+      "balance",
+      "stumps"
+    ]
+  },
+  {
+    "ok": true,
+    "name": "keys pullup reachable/free entry",
+    "data": {
+      "focused": "pullup",
+      "free": true,
+      "target": [
+        -145.1920310216783,
+        2.0019907845935023,
+        27.838120497338203
+      ],
+      "entry": [
+        -146.81837661840737,
+        29.464466094067262
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "pullup native mounted"
+  },
+  {
+    "ok": true,
+    "name": "pullup no passive movement/reward"
+  },
+  {
+    "ok": true,
+    "name": "pullup expected full-cycle reward boundary",
+    "data": {
+      "reps": 1,
+      "eye": [
+        -145.4395183950936,
+        2.4469907845935026,
+        28.085607870753496
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "pullup safe original exit",
+    "data": {
+      "active": false,
+      "gym": null,
+      "pos": [
+        -146.81837661840737,
+        0.6186289669227771,
+        29.464466094067262
+      ],
+      "free": true
+    }
+  },
+  {
+    "ok": true,
+    "name": "keys press reachable/free entry",
+    "data": {
+      "focused": "press",
+      "free": true,
+      "target": [
+        -144.06066017177983,
+        1.166193924679119,
+        34.06066017177982
+      ],
+      "entry": [
+        -145.68700576850887,
+        35.68700576850888
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "press native mounted"
+  },
+  {
+    "ok": true,
+    "name": "press no passive movement/reward"
+  },
+  {
+    "ok": true,
+    "name": "press expected full-cycle reward boundary",
+    "data": {
+      "reps": 2,
+      "eye": [
+        -144.49906637611548,
+        1.2061939246791191,
+        34.49906637611548
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "press safe original exit",
+    "data": {
+      "active": false,
+      "gym": null,
+      "pos": [
+        -145.68700576850887,
+        0.3818432186860061,
+        35.68700576850888
+      ],
+      "free": true
+    }
+  },
+  {
+    "ok": true,
+    "name": "keys step reachable/free entry",
+    "data": {
+      "focused": "step",
+      "free": true,
+      "target": [
+        -137.90883117545687,
+        0.8250149085359412,
+        35.12132034355964
+      ],
+      "entry": [
+        -139.53517677218593,
+        36.7476659402887
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "step native mounted"
+  },
+  {
+    "ok": true,
+    "name": "step no passive movement/reward"
+  },
+  {
+    "ok": true,
+    "name": "step expected full-cycle reward boundary",
+    "data": {
+      "reps": 3,
+      "eye": [
+        -138.75735931288074,
+        2.0450149085359413,
+        35.969848480983494
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "step safe original exit",
+    "data": {
+      "active": false,
+      "gym": null,
+      "pos": [
+        -139.53517677218593,
+        0.2837508541381246,
+        36.7476659402887
+      ],
+      "free": true
+    }
+  },
+  {
+    "ok": true,
+    "name": "keys incline-1 reachable/free entry",
+    "data": {
+      "focused": "incline-1",
+      "free": true,
+      "target": [
+        -148.23259018078045,
+        1.2390490482782919,
+        31.161522368914977
+      ],
+      "entry": [
+        -149.75286976033152,
+        32.68180194846605
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "incline-1 native mounted"
+  },
+  {
+    "ok": true,
+    "name": "incline-1 no passive movement/reward"
+  },
+  {
+    "ok": true,
+    "name": "incline-1 expected full-cycle reward boundary",
+    "data": {
+      "reps": 4,
+      "eye": [
+        -147.76884001473715,
+        1.4784588591304133,
+        30.697772202871686
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "incline-1 safe original exit",
+    "data": {
+      "active": false,
+      "gym": null,
+      "pos": [
+        -149.75286976033152,
+        0.4960064437106282,
+        32.68180194846605
+      ],
+      "free": true
+    }
+  },
+  {
+    "ok": true,
+    "name": "keys incline-2 reachable/free entry",
+    "data": {
+      "focused": "incline-2",
+      "free": true,
+      "target": [
+        -141.37365440327093,
+        0.9480076243188928,
+        38.444722215136416
+      ],
+      "entry": [
+        -142.893933982822,
+        39.965001794687495
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "incline-2 native mounted"
+  },
+  {
+    "ok": true,
+    "name": "incline-2 no passive movement/reward"
+  },
+  {
+    "ok": true,
+    "name": "incline-2 expected full-cycle reward boundary",
+    "data": {
+      "reps": 5,
+      "eye": [
+        -140.90990423722764,
+        1.1874174351710143,
+        37.980972049093126
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "incline-2 safe original exit",
+    "data": {
+      "active": false,
+      "gym": null,
+      "pos": [
+        -142.893933982822,
+        0.24670808142797762,
+        39.965001794687495
+      ],
+      "free": true
+    }
+  },
+  {
+    "ok": true,
+    "name": "keys dips reachable/free entry",
+    "data": {
+      "focused": "dips",
+      "free": true,
+      "target": [
+        -141.23223304703365,
+        1.0579545418078191,
+        31.23223304703363
+      ],
+      "entry": [
+        -142.6110912703474,
+        32.6110912703474
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "dips native mounted"
+  },
+  {
+    "ok": true,
+    "name": "dips no passive movement/reward"
+  },
+  {
+    "ok": true,
+    "name": "dips expected full-cycle reward boundary",
+    "data": {
+      "reps": 6,
+      "eye": [
+        -141.4867914882608,
+        2.2996358593234056,
+        31.48679148826079
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "dips safe original exit",
+    "data": {
+      "active": false,
+      "gym": null,
+      "pos": [
+        -142.6110912703474,
+        0.4655182604221699,
+        32.6110912703474
+      ],
+      "free": true
+    }
+  },
+  {
+    "ok": true,
+    "name": "keys monkey reachable/free entry",
+    "data": {
+      "focused": "monkey",
+      "free": true,
+      "target": [
+        -154.66726188957804,
+        1.6943308288373826,
+        41.1317279836453
+      ],
+      "entry": [
+        -155.7986327394765,
+        41.20243866176395
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "monkey native mounted"
+  },
+  {
+    "ok": true,
+    "name": "monkey no passive movement/reward"
+  },
+  {
+    "ok": true,
+    "name": "monkey actual self-figure pose hint",
+    "data": {
+      "id": "monkey",
+      "gx": [
+        1,
+        0.94
+      ],
+      "root": [
+        -154.66732843675675,
+        0.9645332212249387,
+        41.13166143646657
+      ],
+      "hands": [
+        [
+          -154.82006350149305,
+          2.944533221224938,
+          40.97892637173028
+        ],
+        [
+          -154.51459337202044,
+          2.944533221224938,
+          41.28439650120286
+        ]
+      ],
+      "feet": [
+        [
+          -154.80478999501943,
+          1.0845332212249386,
+          41.116387929992946
+        ],
+        [
+          -154.65205493028313,
+          1.0845332212249386,
+          41.26912299472924
+        ]
+      ],
+      "scale": 1.08,
+      "render": {
+        "frame": 21,
+        "calls": 44,
+        "triangles": 306096,
+        "points": 80,
+        "lines": 0
+      },
+      "assetMeshes": 8
+    }
+  },
+  {
+    "ok": true,
+    "name": "monkey expected full-cycle reward boundary",
+    "data": {
+      "reps": 7,
+      "eye": [
+        -155.19759197546793,
+        2.596414257669121,
+        40.60139789775538
+      ],
+      "phase": 0
+    }
+  },
+  {
+    "ok": true,
+    "name": "monkey safe original exit",
+    "data": {
+      "active": false,
+      "gym": null,
+      "pos": [
+        -155.7986327394765,
+        0.45295241028191624,
+        41.20243866176395
+      ],
+      "free": true
+    }
+  },
+  {
+    "ok": true,
+    "name": "keys net reachable/free entry",
+    "data": {
+      "focused": "net",
+      "free": true,
+      "target": [
+        -154.66726188957804,
+        1.227954634852746,
+        38.30330085889911
+      ],
+      "entry": [
+        -155.7632774004172,
+        38.40936687607709
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "net native mounted"
+  },
+  {
+    "ok": true,
+    "name": "net no passive movement/reward"
+  },
+  {
+    "ok": true,
+    "name": "net expected full-cycle reward boundary",
+    "data": {
+      "reps": 7,
+      "eye": [
+        -154.73779891605955,
+        1.8764639458281938,
+        38.51560654489222
+      ],
+      "phase": 1.9999999999999998
+    }
+  },
+  {
+    "ok": true,
+    "name": "net safe original exit",
+    "data": {
+      "active": false,
+      "gym": null,
+      "pos": [
+        -155.7632774004172,
+        0.4892966316884646,
+        38.40936687607709
+      ],
+      "free": true
+    }
+  },
+  {
+    "ok": true,
+    "name": "keys balance reachable/free entry",
+    "data": {
+      "focused": "balance",
+      "free": true,
+      "target": [
+        -150.28319984622144,
+        0.8898543249987423,
+        41.697413408594535
+      ],
+      "entry": [
+        -148.48007755419573,
+        39.89429111656884
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "balance native mounted"
+  },
+  {
+    "ok": true,
+    "name": "balance no passive movement/reward"
+  },
+  {
+    "ok": true,
+    "name": "balance actual self-figure pose hint",
+    "data": {
+      "id": "balance",
+      "gx": [
+        2,
+        0.94
+      ],
+      "root": [
+        -151.31859153969975,
+        0.9227812626697444,
+        43.73294410930574
+      ],
+      "hands": [
+        [
+          -150.63022390536472,
+          2.1727812626697443,
+          43.595270582438744
+        ],
+        [
+          -152.0069591740348,
+          2.1727812626697443,
+          43.870617636172746
+        ]
+      ],
+      "feet": [
+        [
+          -151.31813426321835,
+          0.9770991547102746,
+          43.732852654009456
+        ],
+        [
+          -151.2169249352441,
+          1.1227812626697444,
+          43.58044420262229
+        ]
+      ],
+      "scale": 1.08,
+      "render": {
+        "frame": 24,
+        "calls": 47,
+        "triangles": 334315,
+        "points": 80,
+        "lines": 0
+      },
+      "assetMeshes": 8
+    }
+  },
+  {
+    "ok": true,
+    "name": "balance expected full-cycle reward boundary",
+    "data": {
+      "reps": 8,
+      "eye": [
+        -149.0811183182043,
+        2.429974880735643,
+        40.4953318805774
+      ],
+      "phase": 0
+    }
+  },
+  {
+    "ok": true,
+    "name": "balance safe original exit",
+    "data": {
+      "active": false,
+      "gym": null,
+      "pos": [
+        -148.48007755419573,
+        0.37418131008541744,
+        39.89429111656884
+      ],
+      "free": true
+    }
+  },
+  {
+    "ok": true,
+    "name": "keys stumps reachable/free entry",
+    "data": {
+      "focused": "stumps",
+      "free": true,
+      "target": [
+        -152.75807358037434,
+        0.877820128233299,
+        35.68700576850888
+      ],
+      "entry": [
+        -153.3591143443829,
+        35.085965004500316
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "stumps native mounted"
+  },
+  {
+    "ok": true,
+    "name": "stumps no passive movement/reward"
+  },
+  {
+    "ok": true,
+    "name": "stumps expected full-cycle reward boundary",
+    "data": {
+      "reps": 8,
+      "eye": [
+        -152.29000645373716,
+        2.6893587323771024,
+        37.52047730836314
+      ],
+      "phase": 1.9999999999999998
+    }
+  },
+  {
+    "ok": true,
+    "name": "stumps safe original exit",
+    "data": {
+      "active": false,
+      "gym": null,
+      "pos": [
+        -153.3591143443829,
+        0.49391865827565296,
+        35.085965004500316
+      ],
+      "free": true
+    }
+  },
+  {
+    "ok": true,
+    "name": "no page errors",
+    "data": []
+  },
+  {
+    "ok": true,
+    "name": "complete actual action inventory",
+    "data": [
+      "pullup",
+      "press",
+      "step",
+      "incline-1",
+      "incline-2",
+      "dips",
+      "monkey",
+      "net",
+      "balance",
+      "stumps"
+    ]
+  },
+  {
+    "ok": true,
+    "name": "touch pullup reachable/free entry",
+    "data": {
+      "focused": "pullup",
+      "free": true,
+      "target": [
+        -145.1920310216783,
+        2.0019907845935023,
+        27.838120497338203
+      ],
+      "entry": [
+        -146.81837661840737,
+        29.464466094067262
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "pullup native mounted"
+  },
+  {
+    "ok": true,
+    "name": "pullup no passive movement/reward"
+  },
+  {
+    "ok": true,
+    "name": "pullup expected full-cycle reward boundary",
+    "data": {
+      "reps": 1,
+      "eye": [
+        -145.4395183950936,
+        2.4469907845935026,
+        28.085607870753496
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "pullup safe original exit",
+    "data": {
+      "active": false,
+      "gym": null,
+      "pos": [
+        -146.81837661840737,
+        0.6186289669227771,
+        29.464466094067262
+      ],
+      "free": true
+    }
+  },
+  {
+    "ok": true,
+    "name": "touch press reachable/free entry",
+    "data": {
+      "focused": "press",
+      "free": true,
+      "target": [
+        -144.06066017177983,
+        1.166193924679119,
+        34.06066017177982
+      ],
+      "entry": [
+        -145.68700576850887,
+        35.68700576850888
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "press native mounted"
+  },
+  {
+    "ok": true,
+    "name": "press no passive movement/reward"
+  },
+  {
+    "ok": true,
+    "name": "press expected full-cycle reward boundary",
+    "data": {
+      "reps": 2,
+      "eye": [
+        -144.49906637611548,
+        1.2061939246791191,
+        34.49906637611548
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "press safe original exit",
+    "data": {
+      "active": false,
+      "gym": null,
+      "pos": [
+        -145.68700576850887,
+        0.3818432186860061,
+        35.68700576850888
+      ],
+      "free": true
+    }
+  },
+  {
+    "ok": true,
+    "name": "touch step reachable/free entry",
+    "data": {
+      "focused": "step",
+      "free": true,
+      "target": [
+        -137.90883117545687,
+        0.8250149085359412,
+        35.12132034355964
+      ],
+      "entry": [
+        -139.53517677218593,
+        36.7476659402887
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "step native mounted"
+  },
+  {
+    "ok": true,
+    "name": "step no passive movement/reward"
+  },
+  {
+    "ok": true,
+    "name": "step expected full-cycle reward boundary",
+    "data": {
+      "reps": 3,
+      "eye": [
+        -138.75735931288074,
+        2.0450149085359413,
+        35.969848480983494
+      ]
+    }
+  },
+  {
+    "ok": false,
+    "name": "step safe original exit",
+    "data": {
+      "active": true,
+      "gym": "step",
+      "pos": [
+        -139.53517677218593,
+        0.2837508541381246,
+        36.7476659402887
+      ],
+      "free": true
+    }
+  }
+]

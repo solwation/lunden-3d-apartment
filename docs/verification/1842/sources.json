@@ -1,0 +1,18 @@
+{
+  "base": "f0a29d61",
+  "files": {
+    "src/gymposewire.js": "54fc7e8d33eceb6ff0c5aafe2241b9faafefd252f406ecbb993ac030326d3f6c",
+    "src/gymbodypose.js": "870193dbfb0e78595b42e4b8630e8a42af758e57e478710fc812d8018d073c47",
+    "src/gymapparatus.js": "dbb12a5d23e622375d7ba290037711175bd212372fd9b2455bb2ed332ffb52e4",
+    "src/outdoorgym.js": "0f0f4822b0d48f2f49314c0aa4a94eb1a489b54d62dba935eb7db78225ef7ec6",
+    "src/gymefforthud.js": "bdc7054e3baf5437241358997d460190818ffa7b851450992e0c4d4a13f949bd",
+    "src/rest.js": "34622ed84b783b6969ac9c84cd5db3ae0a0d7b8298d3611d56ec93ecd771f10a",
+    "src/remote-pose.js": "4fa52f3924f40997aab40da35019ae70af1a81cf153b35b78354a44e1b3d5fa7",
+    "src/ghosts.js": "435c09f4fc2f3f08c0433ed1219d9666e07abd10b034b2407d714dcc9011bc2c",
+    "src/main.js": "f958d0491446a79ddbc838ead365bfe9df0252e63350a4e6d54ecf759a2a8508",
+    "src/config.js": "3b20dfb1075ae199abc30055bab0a8978fe88137252e35efadfcd38171d49a2a",
+    "cloudflare/players.js": "7c186bfa95eac7cf4c2f5e6c7400d369e2cec6c2b16ac77acfff2b74ea4dc072",
+    ".github/workflows/cloud.yml": "9f222c18dbce8e5aae37728c144769f447310904b7f08f94cebb1ffcb88c9dee"
+  },
+  "note": "Final runtime hashes. Initial native routes preceded final head/tag anchor guard and net upper-rung clamp; those changes are covered by the final component and Room\u2192Ghost replay checks."
+}

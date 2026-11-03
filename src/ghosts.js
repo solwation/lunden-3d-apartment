@@ -1,3 +1,5 @@
+import {gymPoseWire} from './gymposewire.js';
+import {applyGymBodyPose} from './gymbodypose.js';
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { applyRestPose } from './remote-pose.js';
 import { poseOlof } from './olof.js';
@@ -155,7 +157,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
   }
 
   /** A state from the room at time t (ms). After a pause the last one is repeated just before it, so it walks off smoothly. */
-  push({ p, r, h = '', hi = '', score = 0, l, c = false, sp = false, jp = 0, bk, pose = 0, look = [0, 0], av, ax, cat, dn, am, cq, fb, bp }, t) {
+  push({ p, r, h = '', hi = '', score = 0, l, c = false, sp = false, jp = 0, bk, pose = 0, look = [0, 0], av, ax, cat, dn, am, cq, fb, bp, gx }, t) {
     this.bob = Array.isArray(fb) && fb.length === 4 && fb.every(Number.isFinite) ? fb : null; // #1753: their fishing float [x, y, z, bite] (src/fishing.js draws it)
     this.cue = Array.isArray(cq) && cq.length === 3 && cq.every(Number.isFinite) ? cq : null; // #1637: [dx, dz, power] while aiming at the billiard table (src/billiards.js draws it)
     if (av && typeof ax === 'string') av += ax; // #1138: the face extension beside the digits
@@ -176,8 +178,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const prev = this.snaps.at(-1);
     if (prev && Math.hypot(p[0] - prev.p.x, p[1] - prev.p.y, p[2] - prev.p.z) > G.jump) this.snaps.length = 0; // a teleport (#1319: into / out of the children's room): appear there, no streak across the map
     const last = this.snaps.at(-1);
-    if (last && t - last.t > 1000 / G.hz * 1.5) this.snaps.push({ t: t - 1000 / G.hz, p: last.p, r: last.r, c: last.c, pose: last.pose, look: last.look, bk: last.bk, dn: last.dn, am: last.am });
-    this.snaps.push({ t, look, dn: dn === 1 || dn === 2 ? dn : 0, am: airMode(am), bk: this.bikeWire, p: new THREE.Vector3(...p), r, c: c === true ? 1 : 0, pose: pose >= 1 && pose <= 3 && Number.isInteger(pose) ? pose : 0 });
+    if (last && t - last.t > 1000 / G.hz * 1.5) this.snaps.push({ t: t - 1000 / G.hz, p: last.p, r: last.r, c: last.c, pose: last.pose, look: last.look, bk: last.bk, dn: last.dn, am: last.am, gx:last.gx });
+    this.snaps.push({ t, look, gx:gymPoseWire(gx), dn: dn === 1 || dn === 2 ? dn : 0, am: airMode(am), bk: this.bikeWire, p: new THREE.Vector3(...p), r, c: c === true ? 1 : 0, pose: pose >= 1 && pose <= 3 && Number.isInteger(pose) ? pose : 0 });
     if (this.snaps.length > 8) this.snaps.splice(0, this.snaps.length - 8);
   }
 
@@ -269,7 +271,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
   startReact(k, t = performance.now()) { if (REACT.kinds[k]) this.react = { kind: k, start: t }; }
 
   /** Over its head (the speech bubble's anchor, greet.js). */
-  get head() { return this.pose ? this.avatar.bones.head.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 0.1, 0)) : this.root.position.clone().setY(this.root.position.y + 1.78 * this.avatar.look.tall); }
+  get head() { return this.pose || this.gx ? this.avatar.bones.head.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 0.1, 0)) : this.root.position.clone().setY(this.root.position.y + 1.78 * this.avatar.look.tall); }
 
   /** A swing of what it holds (#667: the saber's cut, seen by the others). */
   swing() { this.swingT = SWING; }
@@ -296,7 +298,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.root.position.lerpVectors(a.p, b.p, k);
     this.root.rotation.y = lerpAngle(a.r, b.r, k);
     this.crouch = THREE.MathUtils.lerp(a.c, b.c, k);
-    this.pose = (k < 1 ? a : b).pose;
+    this.pose = (k < 1 ? a : b).pose;this.gx=gymPoseWire((k<1?a:b).gx);
     this.dance = (k < 1 ? a : b).dn ?? 0; // #1622 / #1757: 0, 1 floss or 2 Gangnam Style (validated in push)
     this.air = (k < 1 ? a : b).am ?? 0; // #1799: 0 on the ground (or an older client), 1 flying, 2 swinging, 3 climbing
     this.look = [THREE.MathUtils.lerp(a.look[0], b.look[0], k), THREE.MathUtils.lerp(a.look[1], b.look[1], k)];
@@ -322,9 +324,9 @@ export class Ghost { // (exported for tools/ghostprops.html)
     if (hug && hugAge >= HUG.duration) this.hug = null;
     if (!hugged) this.avatar.object.position.set(0, 0, 0); // back where the body stands after a hug, also when not posed
     if (d > AVATAR.poseFar) { if (this.itemProp) this.itemProp.visible = false; return; } // (#1297: the hand prop only near, with the posed avatar)
-    const gaze = this.root.rotation.y, sp = this.pose ? 0 : Math.hypot(vx, vz);
+    const gaze = this.root.rotation.y, sp = this.pose || this.gx ? 0 : Math.hypot(vx, vz);
     this.speed += ((sp > 8 ? 0 : sp) - this.speed) * Math.min(1, dt * 10);
-    if (this.pose) { this.body = gaze; this.speed = 0; }
+    if (this.pose || this.gx) { this.body = gaze; this.speed = 0; }
     if (!this.have) { this.body = gaze; this.have = true; }
     if (this.speed > AVATAR.walkSpeed && this.air !== 3) { // the body faces where it goes, unless that is backwards / sideways to the look (#1799: on a wall it faces the wall)
       const going = Math.atan2(-vx, -vz);
@@ -367,10 +369,11 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const airV = air ? [vx * Math.cos(by) - vz * Math.sin(by), this.vy ?? 0, vx * Math.sin(by) + vz * Math.cos(by)] : null;
     this.avatar.update(dt, { speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV });
     applyRestPose(this.avatar, this.pose, this.look, react);
+    applyGymBodyPose(this.avatar,this.gx,this.look);
     if (this.bikeMesh) this.poseBike(dt, Math.hypot(vx, vz), turn);
     this.heldCat.update(this.avatar, this.root);
     if (this.tag) {
-      if (this.pose) { this.tag.position.copy(this.root.worldToLocal(this.head)); this.tag.position.y += (G.tagY - 1.78) * this.avatar.look.tall; }
+      if (this.pose || this.gx) { this.tag.position.copy(this.root.worldToLocal(this.head)); this.tag.position.y += (G.tagY - 1.78) * this.avatar.look.tall; }
       else this.tag.position.set(0, this.tagY, 0);
     }
     if (this.pick) {
@@ -567,7 +570,7 @@ export class Ghosts {
     s.sp = s.sp === true;
     s.jp = s.jp === 1 || s.jp === 2 ? s.jp : 0;
     s.dn = s.dn === 1 || s.dn === 2 ? s.dn : 0; // #1622 floss / #1757 Gangnam Style, offered while the playroom music plays
-    s.bp = pumpWire(s.bp);
+    s.bp = pumpWire(s.bp);s.gx=gymPoseWire(s.gx);s.gxKey=JSON.stringify(s.gx);
     s.am = airMode(s.am); // #1799
     s.hi = cleanHeldCategory(s.hi);
     s.bk = Number.isFinite(s.bk) ? s.bk : null;
@@ -581,7 +584,7 @@ export class Ghosts {
     if (!this.on) return;
     s.score = badgeScore(this.score());
     const prev = this.prev;
-    if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h || s.hi !== prev.hi || s.c !== prev.c || s.pose !== prev.pose || Math.abs(s.look[0] - prev.look[0]) > G.turn || Math.abs(s.look[1] - prev.look[1]) > G.turn || s.sp !== prev.sp || s.jp !== prev.jp || s.dn !== prev.dn || s.am !== prev.am || (s.bk === null) !== (prev.bk === null) || Math.abs((s.bk ?? 0) - (prev.bk ?? 0)) > G.turn || s.catKey !== prev.catKey || s.cqKey !== prev.cqKey || s.fbKey !== prev.fbKey || this.sentAv !== this.avatarCode) { this.lastMove = t; this.prev = s; }
+    if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h || s.hi !== prev.hi || s.c !== prev.c || s.pose !== prev.pose || s.gxKey !== prev.gxKey || Math.abs(s.look[0] - prev.look[0]) > G.turn || Math.abs(s.look[1] - prev.look[1]) > G.turn || s.sp !== prev.sp || s.jp !== prev.jp || s.dn !== prev.dn || s.am !== prev.am || (s.bk === null) !== (prev.bk === null) || Math.abs((s.bk ?? 0) - (prev.bk ?? 0)) > G.turn || s.catKey !== prev.catKey || s.cqKey !== prev.cqKey || s.fbKey !== prev.fbKey || this.sentAv !== this.avatarCode) { this.lastMove = t; this.prev = s; }
     if (this.prev?.score !== s.score || this.prev?.bp !== s.bp) this.prev = s; // score changes use the same 5 Hz slot; do not reset movement idle time
     const playing = this.active() && !document.hidden && (this.keepConnected?.() || t - this.lastMove < G.idleMs);
     if (!playing) { if (this.ws) this.disconnect(); }
@@ -593,7 +596,7 @@ export class Ghosts {
       const again = !fresh && this.resent !== sent && t - this.stateAt >= G.resendMs;
       if (t - this.lastSent >= 1000 / G.hz && (fresh || again)) {
         const p = this.prev ?? s;
-        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.bp ? { bp: p.bp } : {}), ...(p.h ? { h: p.h } : {}), ...(p.hi ? { hi: p.hi } : {}), ...(p.c ? { c: true } : {}), ...(p.pose ? { pose: p.pose } : {}), ...(p.pose !== 2 ? { look: p.look.map(v => Math.round(v * 100) / 100) } : {}), ...(p.sp ? { sp: true } : {}), ...(p.jp ? { jp: p.jp } : {}), ...(p.dn ? { dn: p.dn } : {}), ...(p.am ? { am: p.am } : {}), ...(p.bk !== null && p.bk !== undefined ? { bk: Math.round(p.bk * 100) / 100 } : {}), ...(p.cat ? { cat: p.cat } : {}), ...(p.cq ? { cq: p.cq } : {}), ...(p.fb ? { fb: p.fb } : {}), ...(this.avatarCode ? avatarWire(this.avatarCode) : {}) }));
+        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.bp ? { bp: p.bp } : {}), ...(p.gx?{gx:p.gx}:{}), ...(p.h ? { h: p.h } : {}), ...(p.hi ? { hi: p.hi } : {}), ...(p.c ? { c: true } : {}), ...(p.pose ? { pose: p.pose } : {}), ...(p.pose !== 2 ? { look: p.look.map(v => Math.round(v * 100) / 100) } : {}), ...(p.sp ? { sp: true } : {}), ...(p.jp ? { jp: p.jp } : {}), ...(p.dn ? { dn: p.dn } : {}), ...(p.am ? { am: p.am } : {}), ...(p.bk !== null && p.bk !== undefined ? { bk: Math.round(p.bk * 100) / 100 } : {}), ...(p.cat ? { cat: p.cat } : {}), ...(p.cq ? { cq: p.cq } : {}), ...(p.fb ? { fb: p.fb } : {}), ...(this.avatarCode ? avatarWire(this.avatarCode) : {}) }));
         if (fresh) this.stateAt = t;
         this.resent = fresh ? null : p; this.sent = p; this.sentAv = this.avatarCode; this.lastSent = this.lastBeat = t; this.messages++; if (!fresh) this.resends++;
       }
@@ -761,7 +764,7 @@ export class Ghosts {
       m.vx += ((far ? 0 : vx) - m.vx) * k; m.vz += ((far ? 0 : vz) - m.vz) * k;
       const vy = (s.p[1] - m.p.y) / dt; m.vy += ((far || Math.abs(vy) > 12 ? 0 : vy) - m.vy) * k; // (#1799: the climbing steps follow it)
     }
-    m.bp = s.bp; m.p.set(...s.p); m.r = s.r; m.h = s.h; m.hi = s.hi; m.c = s.c; m.pose = s.pose; m.look = s.look; m.sp = s.sp; m.jp = s.jp; m.dn = s.dn; m.am = s.am; m.bk = s.bk; m.cat = s.cat; m.t = t;
+    m.gx=s.gx; m.bp = s.bp; m.p.set(...s.p); m.r = s.r; m.h = s.h; m.hi = s.hi; m.c = s.c; m.pose = s.pose; m.look = s.look; m.sp = s.sp; m.jp = s.jp; m.dn = s.dn; m.am = s.am; m.bk = s.bk; m.cat = s.cat; m.t = t;
   }
 
   /** Our avatar for the mirrors: one per name (the look comes from it); hidden but for the mirror's pass. */
@@ -784,7 +787,7 @@ export class Ghosts {
     g.setHeld(m.h);
     g.setItem(m.hi);
     g.heldCat.set(m.cat, g.root);
-    g.pose = m.pose;
+    g.pose = m.pose;g.gx=m.gx;
     g.look = m.look;
     g.avatar.setSuit(m.sp);
     g.setJetpack(m.jp);

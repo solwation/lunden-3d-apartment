@@ -1,3 +1,4 @@
+import {addGymApparatus,resetApparatus,advanceApparatus,moveApparatus,legacyGymBody} from './gymapparatus.js';
 import * as THREE from 'three';
 import { GymEffort } from './gymeffort.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -7,7 +8,7 @@ import {buildGymLandscape,gymColour,gymGroundMaterial} from './outdoorgymdecor.j
 
 const Y = new THREE.Vector3(0,1,0);
 
-/** Three timber exercise stations. Their state is transient; ordinary Rest owns entry, pause and safe exit. */
+/** Exercise stations and supported obstacle routes. Their state is transient; ordinary Rest owns entry, pause and safe exit. */
 export class OutdoorGym {
   constructor({scene,ground,allowed=()=>true}) {
     this.group=new THREE.Group();this.group.name='outdoor-gym';scene.add(this.group);
@@ -51,6 +52,7 @@ export class OutdoorGym {
       const eyeZ=spec.id==='press'?B.eyeZ:spec.id==='step'?T.eyeZ:P.eyeZ;
       const spot={kind:spec.id==='press'?'lie':'sit',pos:world(0,eye,eyeZ),yaw,follow:true};
       if(spec.id==='pullup')spot.lookPos=world(0,C.pullHeight,P.lookZ);
+      spot.gymWirePose={pullup:6,press:7,step:8}[spec.id];spot.gymRoot=new THREE.Vector3();spot.gymPhase=0;
       const origin=spot.pos.clone(),entry=at(0,C.entry),gym=this;
       const target={kind:'outdoorGym',name:spec.name,verb:'träna vid',rest:spot.kind,level:0,pickable,outlineRoot:body,spots:[spot],exercise:spec.id,label:spec.label,
         get blocked(){return !gym.allowed();},blockedText:'Ställ dig på marken med tomma händer först'};
@@ -63,30 +65,42 @@ export class OutdoorGym {
       this.targets.push(target);(this.stations??=[]).push(station);
     }
     mesh(metal,materials.steel,'gym-steel');
+    addGymApparatus(this);
     this.group.updateMatrixWorld(true);
+  }
+
+  /** Shared moving log: local active press wins, otherwise the lowest visible remote id wins; no new stock mesh/occupancy service. */
+  observe(others){
+    const s=this.stations.find(s=>s.spec.id==='press');if(!s||this.active===s)return;
+    let winner=null;for(const g of others.values())if(g.gx?.[0]===7&&g.root.visible&&Math.hypot(g.root.position.x-s.stockOrigin.x,g.root.position.z-s.stockOrigin.z)<C.use.observerReach&&(!winner||String(g.id)<String(winner.id)))winner=g;
+    s.stock.position.copy(s.stockOrigin);if(winner)s.stock.position.y+=winner.gx[1]*s.spec.lift*winner.avatar.object.scale.y;
   }
 
   isActive(rest){return rest.active&&rest.target?.kind==='outdoorGym';}
   /** Prefer the known clear entry location after exercise, so a moving eye never teleports the player onto a machine. */
   standAt(rest,player){const p=this.isActive(rest)?rest.standing:null;return p&&player.isFree(p.x,p.z,0)?p:null;}
-  get status(){return this.active?`${this.active.spec.label} · ${this.repetitions} ${this.repetitions===1?'repetition':'repetitioner'}`:'';}
+  get status(){const r=this.active?.route;return this.active?`${this.active.spec.label}${r?` · ${Math.round(r.distance/(2*r.length)*100)} % av rundan`:""} · ${this.repetitions} ${this.repetitions===1?'repetition':'repetitioner'}`:'';}
 
-  exert(rest){return this.isActive(rest)&&rest.t>=1&&this.active?.target===rest.target?this.effort.push():false;}
+  exert(rest){if(!this.isActive(rest)||rest.t<1||this.active?.target!==rest.target||!this.effort.push())return false;advanceApparatus(this.active);return true;}
 
   update(dt,rest){
     const station=this.isActive(rest)?this.stations.find(s=>s.target===rest.target):null;
     if(station!==this.active){
       if(this.active){this.active.spot.pos.copy(this.active.origin);if(this.active.stock)this.active.stock.position.copy(this.active.stockOrigin);}
-      this.active=station;this.elapsed=0;this.repetitions=0;
+      resetApparatus(this.active);resetApparatus(station);this.active=station;this.elapsed=0;this.repetitions=0;
       (this.effort??=new GymEffort()).reset();
     }
+    if(station)legacyGymBody(station,this.effort.level,rest.scale);
+    if(station?.pose)moveApparatus(station,this.effort.level,0,rest.scale);
     if(!station||rest.t<1||!Number.isFinite(dt)||dt<=0||dt>C.effort.maxStep)return;
     this.elapsed+=dt;const completed=this.effort.update(dt),cycle=this.effort.level;
+    if(station.pose){moveApparatus(station,cycle,dt,rest.scale);if(station.route&&station.route.distance<station.route.length*2-1e-8)return;if(completed>0){this.repetitions+=completed;this.onRep?.(completed,station.spec.id);if(station.route)station.route.distance=station.route.intent=0;}return;}
     this.repetitions+=completed;
     if(completed>0)this.onRep?.(completed,station.spec.id);
+    legacyGymBody(station,cycle,rest.scale);
     station.spot.pos.copy(station.origin);
     if(station.spec.id==='pullup')station.spot.pos.y+=cycle*C.pullRise*rest.scale;
-    else if(station.spec.id==='press')station.stock.position.y=station.stockOrigin.y+cycle*station.spec.lift;
+    else if(station.spec.id==='press')station.stock.position.y=station.stockOrigin.y+cycle*station.spec.lift*rest.scale;
     else {station.spot.pos.y+=cycle*C.stepHeight*rest.scale;const p=station.world(0,0,C.geometry.step.eyeZ-cycle*C.stepTravel);station.spot.pos.x=p.x;station.spot.pos.z=p.z;}
   }
 }

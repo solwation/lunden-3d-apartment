@@ -1,0 +1,227 @@
+[
+  {
+    "ok": true,
+    "name": "pullup actual Room→Ghost motion"
+  },
+  {
+    "ok": true,
+    "name": "press actual Room→Ghost motion"
+  },
+  {
+    "ok": true,
+    "name": "step actual Room→Ghost motion"
+  },
+  {
+    "ok": true,
+    "name": "incline-1 actual Room→Ghost motion"
+  },
+  {
+    "ok": true,
+    "name": "incline-2 actual Room→Ghost motion"
+  },
+  {
+    "ok": true,
+    "name": "dips actual Room→Ghost motion"
+  },
+  {
+    "ok": true,
+    "name": "monkey actual Room→Ghost motion"
+  },
+  {
+    "ok": true,
+    "name": "net actual Room→Ghost motion"
+  },
+  {
+    "ok": true,
+    "name": "balance actual Room→Ghost motion"
+  },
+  {
+    "ok": true,
+    "name": "stumps actual Room→Ghost motion"
+  },
+  {
+    "ok": true,
+    "name": "all gx head/name anchors follow actual skeleton"
+  },
+  {
+    "ok": true,
+    "name": "receiver press stock follows received phase",
+    "data": [
+      {
+        "id": "press",
+        "phase": 0,
+        "gx": [
+          7,
+          0
+        ],
+        "p": [
+          -144.06,
+          0.17,
+          34.06
+        ],
+        "hand": [
+          -144.57218719123838,
+          1.26,
+          34.111383665997586
+        ],
+        "head": [
+          -144.5290665685857,
+          1.2591329322632574,
+          34.524769178727766
+        ],
+        "foot": [
+          -143.58364458945852,
+          1.0625000000000002,
+          33.43597172912772
+        ],
+        "stock": 1.416193924679119,
+        "visible": true,
+        "headError": 0,
+        "tagError": 0
+      },
+      {
+        "id": "press",
+        "phase": 0.5,
+        "gx": [
+          7,
+          0.5
+        ],
+        "p": [
+          -144.06,
+          0.17,
+          34.06
+        ],
+        "hand": [
+          -144.57218719123836,
+          1.4300000000000002,
+          34.11138366599759
+        ],
+        "head": [
+          -144.5290665685857,
+          1.2591329322632574,
+          34.524769178727766
+        ],
+        "foot": [
+          -143.58364458945852,
+          1.0625000000000002,
+          33.43597172912772
+        ],
+        "stock": 1.586193924679119,
+        "visible": true,
+        "headError": 0,
+        "tagError": 0
+      },
+      {
+        "id": "press",
+        "phase": 1,
+        "gx": [
+          7,
+          1
+        ],
+        "p": [
+          -144.06,
+          0.17,
+          34.06
+        ],
+        "hand": [
+          -144.57218719123838,
+          1.6000000000000003,
+          34.111383665997586
+        ],
+        "head": [
+          -144.5290665685857,
+          1.2591329322632574,
+          34.524769178727766
+        ],
+        "foot": [
+          -143.58364458945852,
+          1.0625000000000002,
+          33.43597172912772
+        ],
+        "stock": 1.7561939246791192,
+        "visible": true,
+        "headError": 0,
+        "tagError": 0
+      }
+    ]
+  },
+  {
+    "ok": [
+      1,
+      0.5
+    ],
+    "name": "actual observer image monkey",
+    "data": {
+      "gx": [
+        1,
+        0.5
+      ],
+      "root": [
+        -154.88,
+        1.14,
+        41.34
+      ],
+      "visible": true,
+      "head": [
+        -154.88,
+        2.7800000000000002,
+        41.34
+      ],
+      "tag": [
+        0,
+        1.84,
+        0
+      ],
+      "render": {
+        "frame": 21,
+        "calls": 49,
+        "triangles": 384768,
+        "points": 80,
+        "lines": 0
+      },
+      "assetMeshes": 8
+    }
+  },
+  {
+    "ok": [
+      7,
+      0.5
+    ],
+    "name": "actual observer image press",
+    "data": {
+      "gx": [
+        7,
+        0.5
+      ],
+      "root": [
+        -144.06,
+        0.17,
+        34.06
+      ],
+      "visible": true,
+      "head": [
+        -144.5290665685857,
+        1.3591329322632575,
+        34.524769178727766
+      ],
+      "tag": [
+        0,
+        1.3891329322632575,
+        0.6603285812836219
+      ],
+      "render": {
+        "frame": 23,
+        "calls": 52,
+        "triangles": 386286,
+        "points": 80,
+        "lines": 0
+      },
+      "assetMeshes": 8
+    }
+  },
+  {
+    "ok": true,
+    "name": "no page errors",
+    "data": []
+  }
+]

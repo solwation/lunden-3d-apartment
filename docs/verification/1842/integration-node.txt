@@ -1,0 +1,142 @@
+TAP version 13
+# Subtest: the Worker deploy workflow triggers on every src/ file the Worker imports
+ok 1 - the Worker deploy workflow triggers on every src/ file the Worker imports
+  ---
+  duration_ms: 13.894677
+  type: 'test'
+  ...
+# Subtest: complete inventory, every old decor exercise has an action; no added visible geometry
+ok 2 - complete inventory, every old decor exercise has an action; no added visible geometry
+  ---
+  duration_ms: 3.568394
+  type: 'test'
+  ...
+# Subtest: incline-1: idle, full active cycle/round, pause and abort
+ok 3 - incline-1: idle, full active cycle/round, pause and abort
+  ---
+  duration_ms: 2.221196
+  type: 'test'
+  ...
+# Subtest: incline-2: idle, full active cycle/round, pause and abort
+ok 4 - incline-2: idle, full active cycle/round, pause and abort
+  ---
+  duration_ms: 1.208998
+  type: 'test'
+  ...
+# Subtest: dips: idle, full active cycle/round, pause and abort
+ok 5 - dips: idle, full active cycle/round, pause and abort
+  ---
+  duration_ms: 0.945098
+  type: 'test'
+  ...
+# Subtest: monkey: idle, full active cycle/round, pause and abort
+ok 6 - monkey: idle, full active cycle/round, pause and abort
+  ---
+  duration_ms: 1.026898
+  type: 'test'
+  ...
+# Subtest: net: idle, full active cycle/round, pause and abort
+ok 7 - net: idle, full active cycle/round, pause and abort
+  ---
+  duration_ms: 0.909599
+  type: 'test'
+  ...
+# Subtest: balance: idle, full active cycle/round, pause and abort
+ok 8 - balance: idle, full active cycle/round, pause and abort
+  ---
+  duration_ms: 1.551597
+  type: 'test'
+  ...
+# Subtest: stumps: idle, full active cycle/round, pause and abort
+ok 9 - stumps: idle, full active cycle/round, pause and abort
+  ---
+  duration_ms: 1.252898
+  type: 'test'
+  ...
+# Subtest: actual skeleton: overhead grip and balancing support at short/adult/tall scales
+ok 10 - actual skeleton: overhead grip and balancing support at short/adult/tall scales
+  ---
+  duration_ms: 7.095688
+  type: 'test'
+  ...
+# Subtest: optional transient pose survives actual Worker cleaner, rejects malformed hints and clears for legacy state
+ok 11 - optional transient pose survives actual Worker cleaner, rejects malformed hints and clears for legacy state
+  ---
+  duration_ms: 0.900998
+  type: 'test'
+  ...
+# Subtest: non-uniform avatar proportions keep net hands on rungs and dip hands on the padded crossbar
+ok 12 - non-uniform avatar proportions keep net hands on rungs and dip hands on the padded crossbar
+  ---
+  duration_ms: 5.291091
+  type: 'test'
+  ...
+# Subtest: old three spectator skeletons keep real grip/support through the full effort cycle and unequal proportions
+ok 13 - old three spectator skeletons keep real grip/support through the full effort cycle and unequal proportions
+  ---
+  duration_ms: 22.642763
+  type: 'test'
+  ...
+# Subtest: spectator moving log follows the lowest remote id; local active press wins and absence resets the existing mesh
+ok 14 - spectator moving log follows the lowest remote id; local active press wins and absence resets the existing mesh
+  ---
+  duration_ms: 0.618099
+  type: 'test'
+  ...
+# Subtest: pullup: no passive cycles; a full effort lift and descent count once
+ok 15 - pullup: no passive cycles; a full effort lift and descent count once
+  ---
+  duration_ms: 3.656094
+  type: 'test'
+  ...
+# Subtest: press: no passive cycles; a full effort lift and descent count once
+ok 16 - press: no passive cycles; a full effort lift and descent count once
+  ---
+  duration_ms: 0.858798
+  type: 'test'
+  ...
+# Subtest: step: no passive cycles; a full effort lift and descent count once
+ok 17 - step: no passive cycles; a full effort lift and descent count once
+  ---
+  duration_ms: 0.866699
+  type: 'test'
+  ...
+# Subtest: entry, pause, abort, ordinary seats and station switch never invent a repetition
+ok 18 - entry, pause, abort, ordinary seats and station switch never invent a repetition
+  ---
+  duration_ms: 0.3687
+  type: 'test'
+  ...
+# Subtest: daily award ceiling, saved ledger and next local day leave all repetitions available to the medal
+ok 19 - daily award ceiling, saved ledger and next local day leave all repetitions available to the medal
+  ---
+  duration_ms: 0.494999
+  type: 'test'
+  ...
+# Subtest: invalid repetitions never credit points, older saves start without retrospective gym rewards
+ok 20 - invalid repetitions never credit points, older saves start without retrospective gym rewards
+  ---
+  duration_ms: 0.2095
+  type: 'test'
+  ...
+# Subtest: Worker accepts gym repetitions and derives Utegymmare at the same 100-repetition boundary
+ok 21 - Worker accepts gym repetitions and derives Utegymmare at the same 100-repetition boundary
+  ---
+  duration_ms: 0.847199
+  type: 'test'
+  ...
+# Subtest: actual stats.bump/rawScore never add the uncapped per-repetition path as well
+ok 22 - actual stats.bump/rawScore never add the uncapped per-repetition path as well
+  ---
+  duration_ms: 7.721987
+  type: 'test'
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 479.669002
