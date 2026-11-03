@@ -2996,6 +2996,17 @@ export const TARGET_SCORE = { perPoint: 0.1, perDay: 30 };
 
 export const TARGET = {
   x: 12.45, z: 25.7, rot: 90, y: 1.4, r: 0.4, // #1017: east landing, back toward the fence (source-based placement, not surveyed)
+  // #1820 gameplay guesses: move after ~50 board points, ~50 m onto inspected free park grass.
+  moveEvery: 50, moveDist: 50, moveSlack: 5, hitEvery: .1,
+  moveSpots: [
+    [-40,64],[-34,64],[-22,64],[-16,64],[-10,64],[-4,64],[2,64],[8,64],
+    [14,64],[-40,70],[-34,70],[-22,70],[-4,70],[2,70],[8,70],[14,70],
+    [-40,76],[-34,76],[-28,76],[2,76],[8,76],[14,76],[-40,82],[-28,82],
+    [2,82],[8,82],[14,82],[-34,88],[-28,88],[2,88],[8,88],[14,88],
+    [-34,94],[-28,94],[-22,94],[-4,94],[2,94],[8,94],[14,94],[-34,100],
+    [-28,100],[-22,100],[-16,100],[-10,100],[-4,100],[2,100],[8,100],[14,100],
+    [-34,106],[-28,106],[-16,106],
+  ], // inspected with real ground/trees/roads; docs/verification/1820
   rings: [10, 8, 6, 4, 2, 1],
   range: [[2, 1], [4, 2], [6, 3], [Infinity, 4]],
 };

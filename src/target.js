@@ -4,6 +4,7 @@ import { TARGET as T } from './config.js';
 import { sfx } from './audio.js';
 import { badge } from './stats.js';
 import { groundY } from './surroundings.js';
+import { TargetSync } from './targetmove.js';
 
 // The Nerf target on the east landing (#1017): a ring board facing the courtyard, its back to the fence. A dart that hits the
 // face scores by its ring (10 in the middle … 1 at the edge) times a bonus for the distance it was shot from
@@ -32,6 +33,7 @@ function faceTexture() {
 export class Target {
   constructor() {
     this.score = load();
+    this.sync = new TargetSync((s,quiet) => this.move(s,quiet));
     const wood = new THREE.MeshStandardMaterial({ color: 0x9a7448, roughness: 0.8 });
     const g = new THREE.Group();
     g.position.set(T.x, 0, T.z);
@@ -78,12 +80,27 @@ export class Target {
 
   /** Rise (`show`) or sink over ~0.6 s; hidden when all the way down. `onSink` runs as it starts going down. */
   update(dt, show) {
+    if (this.pending) show = false;
     const k = Math.max(0, Math.min(1, this.k + (show ? dt : -dt) / 0.6));
     if (k < this.k && this.k === 1) this.onSink?.();
     this.k = k;
     const e = k * k * (3 - 2 * k);
     this.object.visible = k > 0.001;
     this.object.position.y = this.ground - (1 - e) * this.depth;
+    if (this.pending && k === 0) { this.onSink?.(); this.place(this.pending); this.pending = null; }
+  }
+
+  /** Sink at the old position first; the rise uses the new real terrain height. */
+  move(s, quiet = false) {
+    this.pending = s;
+    if (quiet) { this.onSink?.(); this.place(s); this.pending = null; }
+  }
+
+  place(s) {
+    this.object.position.x = s.x; this.object.position.z = s.z; this.object.rotation.y = s.rot;
+    this.ground = groundY(s.x,s.z);
+    this.object.position.y = this.ground - (1-this.k*this.k*(3-2*this.k))*this.depth;
+    this.object.updateMatrixWorld(true);
   }
 
   draw() {
@@ -100,6 +117,7 @@ export class Target {
 
   /** Points for a dart at world point `p` shot from `from` (0 = missed the face). */
   points(p, from) {
+    if (this.pending || this.k < .999) return 0; // no scoring on a travelling/hidden board
     const local = this.face.worldToLocal(p.clone());
     const ring = Math.floor((Math.hypot(local.x, local.y) / T.r) * T.rings.length);
     if (ring >= T.rings.length) return 0;
@@ -118,6 +136,7 @@ export class Target {
     badge(`🎯 +${pts}`, false);
     this.onHit?.(pts); // statistics and points (#197)
     sfx.pling(p, this.points(this.face.getWorldPosition(new THREE.Vector3()), from) === pts ? 2 : 1.2); // higher for a bullseye
+    this.sync.hit(pts, from);
     return pts;
   }
 

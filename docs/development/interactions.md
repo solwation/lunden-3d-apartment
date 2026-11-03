@@ -524,11 +524,13 @@ src/rifle.js           the AK-47 (#196, RIFLE): a folding-stock AKMS lying in NO
                        rides with the drawer), explicit RIFLE.grip at wooden pistol grip (#913); click = a shot, held (`trigger`: mouse button / the touch button) = automatic;
                        hitscan from the eye → a 'hole' mark (marks.js), the lawn target scores, the cat meows; after RIFLE.mag
                        the empty magazine drops to the floor and a full one clicks in; F clears the dropped magazines
-src/target.js          the existing Nerf target on the east landing between ramp and stairs (TARGET, #1017): rings × distance bonus, "+N" badge,
-                       back toward the east fence, face toward the courtyard; TARGET.rot rotates model and hit face together.
-                       A score board beside it (localStorage 'lunden.target'), E clears it; it rises out of the ground
-                       only while a holdable with `hitsTarget` (blasters, lightsaber, wands) is in the hand and sinks
-                       under it otherwise (#144, #179); saber cuts and wand magic on it score too
+src/target.js          the Nerf target starts on the east landing (TARGET, #1017), visible with furniture (#1018).
+                       Rings × distance, local board total/best and reset remain; #1708 keeps game score low with a daily cap.
+                       #1820: after 50 shared board points it sinks, clears marks and rises on a random inspected park grass spot
+                       45–55 m away, facing the triggering shooter. targetmove.js shares selection/offline state with the Worker.
+                       PlayerRoom owns position/rotation/progress; Ghosts welcome includes current state and socket attachments
+                       preserve it across hibernation without KV writes. Empty room resets it. Hit points remain client-reported,
+                       bounded to actual ring×range values; this is shared movement, not server-side trajectory validation.
 src/bow.js             the bow (#690, BOW): our own recurve bow (one vertex-coloured mesh, a Line string, a nocked arrow while
                        drawing), with explicit BOW.grip at the modeled leather grip centre (#910), + a quiver in the cushion box at the NW stair (patio.js `dynbox` inside 'bow'); seen / takeable only
                        while the lid is open, E on the box puts it back. `trigger(true/false)` (mouse button / touch action button,

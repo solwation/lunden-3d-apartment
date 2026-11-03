@@ -464,7 +464,7 @@ När du cyklar håller båda förstapersonshänderna i de befintliga handtagen. 
 Även påbörjad frukt, fiskpinne, pommesportion och kyckling som stuvats under cykling återkommer efter omladdning, med kvarvarande mat och samma portion. Återkomsten är stående; källmängder dras inte av en gång till. Vanliga ostuvade saker behåller sin tidigare sparning.
 När du cyklar håller båda förstapersonshänderna i de befintliga handtagen. Det du höll stuvas tillfälligt och samma föremål återkommer när du kliver av; nekad på-/avstigning lämnar det orört. Kopp, vanliga sparade föremål och Life-mat följer med via befintlig sparning till säker stående återkomst. Omladdning med äldre tillfälliga mat-/pappersmodeller eller katten återstår i #1034/#1035 inom #984; samma-besöks-stuvningen är gemensam.
 
-Måltavlan står mellan rampen och trappan på södra baksidan, med ryggen mot staketet och ringarna mot gården.
+Måltavlan börjar mellan rampen och trappan på södra baksidan. Efter ungefär 50 poäng sjunker den ner och dyker upp cirka 50 meter bort på en fri gräsyta, vänd mot skytten; alla spelare ser samma plats.
 
 Öl från kylhyllan kan hällas i vanliga glas. En hel ursprunglig ölportion återställer ett liv även när den dricks delvis direkt och delvis ur flera glas; hällning, spill och bortkastad dryck ger inga liv.
 

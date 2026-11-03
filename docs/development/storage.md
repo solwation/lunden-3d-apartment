@@ -1575,3 +1575,14 @@ Doors opened and closed by one player are seen by the others in the players' roo
 - **Houses.** Groups L, A, B, C cover each house's entrance and stair doors; the shared implementation is `makeDoor` (`core.js`, `corehouse.js`), so one wrapper covers all four. Checked in `tools/doorsynctest.cjs`: the same id list at both clients, and L0 / A0 / B0 / C0 / g0 sync.
 - **Tests.** `node --test cloudflare/players.test.mjs src/doorsync.test.mjs`; `tools/doorsynctest.cjs` (three real pages against `cloudflare/dev.mjs`, a screenshot of the second player's view).
 
+
+## Shared moving Nerf target (#1820)
+
+`cloudflare/target.js` keeps the room's target snapshot (position, yaw, points since moving and revision) and copies
+it to each WebSocket attachment on accepted hits; the join attachment receives the current snapshot too.
+This survives hibernation and the previous shooter leaving, without KV/DO-storage writes or an alarm.
+An empty room resets to `TARGET`'s east landing. Hits carry monotonic per-socket sequence and current revision,
+are rate-limited and bounded to ring×range point values. The room chooses an inspected grass location and faces
+it toward its last accepted shooter position; clients never supply a destination. Personal board scores stay local
+and daily game-score limits are unchanged. `src/targetmove.js` supplies the same local fallback when disconnected;
+a new room welcome replaces local movement progress.

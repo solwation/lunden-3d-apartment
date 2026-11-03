@@ -15,6 +15,19 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Moving Nerf target (#1820)
+
+`node --test tools/targetmovetest.mjs tools/targetscoretest.mjs cloudflare/deploypaths.test.mjs` checks
+all eligible 45–55 m hops, facing, fallback, offline/server state, protocol bounds/rate/replay and a real
+PlayerRoom's two clients, late join, hibernation, continued scoring and shooter departure.
+`tools/browsertest.sh node tools/targetmovebrowser.cjs GAME LOCAL_WORKER docs/verification/1820` uses actual
+Target/Ghosts and three local PlayerRoom sockets, with apartment bootstrap suppressed. It builds real surroundings
+and verifies every configured spot against real ground relief, road/path exclusion and obstacle/tree clearance,
+then checks sink-at-old-position, rise at groundY, two replicas/late welcome and offline fallback.
+Screenshots show the initial landing and the new front face from nearby clear park ground.
+The relocation does not promise uninterrupted sight from the previous shooter through intervening houses.
+This is component/network evidence on Chromium/SwiftShader, not full-apartment or physical-device performance.
+
 ## River ducks (#1815)
 
 Scoped checks: `node tools/ducktest.mjs` covers pure swim/shore transitions, surface continuity,

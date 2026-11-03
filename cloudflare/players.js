@@ -21,6 +21,7 @@ import { RoomRiverFish, cleanRiverFish } from './riverfish.js';
 import { RoomTime, cleanTime } from './roomtime.js'; // #1774
 import { RoomGraffiti, cleanGraffiti, GRAFFITI_SYNC } from './graffiti.js';
 import { RoomDoors, cleanDoor } from './doors.js';
+import { RoomTarget, cleanTarget } from './target.js';
 import { RoomTrails } from './trails.js';
 export { GRAFFITI_SYNC };
 
@@ -356,6 +357,7 @@ export class PlayerRoom {
     this.gameWrites=Promise.resolve();
     this.squirrels = new RoomSquirrels(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1686: the shared squirrels and nuts (relay only, memory only, no KV)
     this.riverFish = new RoomRiverFish(() => this.open().map((ws) => ({ ws, a: att(ws) })), send, Math.random, { storage: ctx.storage, test: !!env?.SHARK_TEST }); // #1752: the shared fish in Höje å (clock + caught fish, memory only, no KV); #1769: the shark's one catch record in storage 'shark'
+    this.target = new RoomTarget(send, () => this.open().map(ws => ({ws,a:att(ws)})));
     this.doors = new RoomDoors(send, () => this.open().map((ws) => ({ ws }))); // #1775: the doors' state (memory only, no KV)
     this.roomTime = new RoomTime(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1774: the shared game time (one offset, memory only, no KV)
     this.graffiti = new RoomGraffiti(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1724: the shared spray paint (memory only, no KV)
@@ -554,8 +556,10 @@ export class PlayerRoom {
     this.ctx.acceptWebSocket(server);
     const i = crypto.randomUUID().slice(0, 8), n = cleanName(url.searchParams.get('n'));
     const attachment = { i, n, s: null, turned: false, rightFirstTurn: null, leftTinyTurn: null, leftStandingTurn: null, frontTurn: null, rearFirstTurn: null, l: COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false, consumed: [] };
+    if (!others.length) this.target.reset();
+    attachment.tgs = {...this.target.state};
     server.serializeAttachment(attachment);
-    send(server, JSON.stringify({ t: 'w', i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons }, ...(others.length ? this.doorsWelcome() : (this.doors.reset(), {})), ...(this.roomTime.welcome(now) ? { tm: this.roomTime.welcome(now) } : {}), trails: this.trails.snapshot(now) })); // (#1773: trails)
+    send(server, JSON.stringify({ t: 'w', target: this.target.snapshot(), i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons }, ...(others.length ? this.doorsWelcome() : (this.doors.reset(), {})), ...(this.roomTime.welcome(now) ? { tm: this.roomTime.welcome(now) } : {}), trails: this.trails.snapshot(now) })); // (#1773: trails)
     this.broadcast({ t: 'j', i, n, l: COMBAT.lives }, server);
     this.graffiti.join(server, others.map((ws) => ({ ws, a: att(ws) })), now); // #1724
     return new Response(null, { status: 101, webSocket: client });
@@ -588,6 +592,7 @@ export class PlayerRoom {
     } catch {}
     let lifeChanged = false;
     const gf = message.startsWith(GRAFFITI_SYNC.prefix) ? cleanGraffiti(message) ?? false : null, plain = gf === null ? message : ''; // #1724: a graffiti block is never parsed as anything else
+    const tg = plain.startsWith('{"t":"tg"') ? cleanTarget(plain) : null;
     const dr = plain.startsWith('{"t":"dr"') ? cleanDoor(plain) : null; // #1775
     const tm = plain.startsWith('{"t":"tm"') ? cleanTime(plain) : null; // #1774 (a malformed one is an ordinary, ignored state)
     const talk = cleanTalk(plain), hello = !talk && cleanGreet(plain), toast = !talk && !hello && cleanToast(plain), sound = !talk && !hello && !toast && cleanSound(plain), react = !talk && !hello && !toast && !sound && cleanReact(plain), pool = !talk && !hello && !toast && !sound && !react && cleanPool(plain), mus = !talk && !hello && !toast && !sound && !react && !pool && cleanMusic(plain), cinema = !talk && !hello && !toast && !sound && !react && !pool && !mus && cleanCinema(plain), snake = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && cleanSnake(plain), paddock = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && cleanPaddock(plain), sq = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && cleanSquirrels(plain), rf = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && !sq && cleanRiverFish(plain), shot = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && !sq && !rf && cleanShot(plain);
@@ -679,6 +684,7 @@ export class PlayerRoom {
     else if (paddock) this.paddock.handle(ws, a, paddock, now); // #1644
     else if (sq) this.squirrels.handle(ws, a, sq, now); // #1686
     else if (rf) this.riverFish.handle(ws, a, rf, now); // #1752
+    else if (tg) this.target.handle(ws, a, tg, now);
     else if (dr) this.doors.handle(ws, a, dr, now); // #1775
     else if (tm) this.roomTime.handle(ws, a, tm, now); // #1774
     else if (gf !== null) { if (gf) this.graffiti.handle(ws, a, gf, now); } // #1724 (a malformed block is dropped)

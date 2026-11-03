@@ -3112,6 +3112,8 @@ playroom.music.peers = () => ghosts.others.values(); // #1667: existing dn poses
   if (garage.door) doorSync.register('q0', garage.door, { isOpen: () => garage.door.target > 0 });
   ghosts.onDoors = (m) => doorSync.receive(m);
 }
+target.sync.net = { ready: () => ghosts.connected, send: m => ghosts.target(m) };
+ghosts.onTarget = (m, welcome) => target.sync.receive(m, welcome);
 if (riverFish) { // #1752
   riverFish.net = { ready: () => ghosts.connected, send: (m) => ghosts.riverFish(m) };
   ghosts.onRiverFish = (m) => riverFish.sync.receive(m);
