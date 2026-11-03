@@ -544,12 +544,13 @@ export const SITE = {
       signs: [[29.4, 78.4, 0], [20.4, 83.6, 0]], signY: 2.3, // [x, z, yaw°], on the pavements either side of the road, sign face centre height
       flag: { at: [76.5, 62], pole: 6.4, w: 0.9, h: 2.8, yaw: 0 }, // a banner hanging from the top of the pole
     },
-    trafficLight: { x: 8.6, z: -23.5 }, warnings: [[13.2, -23.0], [10.6, -23.2]],
+    trafficLight: null, warnings: [], // #1843: this local work is complete; bridgehead bollards/other signs remain.
     cobbles: { x0: 17.2, x1: 19.5, z0: -17.5, z1: -12.5 }, // inside the corner, by the end of our car park
     leaves: { n: 1400, months: [9, 10, 11], areas: [[-60, 12, -24, -18], [-30, 10, -32.1, -30.05], [19, 21, -12, 12]] },
-    // signs (#129, the user's photos): the bus stop on the far pavement (#1534: by the shelter's open end, 1.7 m off the curb), the red "Flyttad" sign on ours by the curb,
+    // signs (#129/#1843): ordinary stops on both existing pole sites; the temporary red cover on ours has been removed.
     // a no-parking sign at the car park, HepCat's A-board on its pavement. [x, z, facing yaw°]
-    busStop: [20.6, -28.7, 0], moved: [6.5, -23.75, 0], noParking: [-13.6, -16.9, 0], aBoard: [28.4, -12.2, -60], // by HepCat's north corner (#261, photo)
+    busStop: [20.6, -28.7, 0], restoredBusStop: [6.5, -23.75, 0], busStopName: 'Lund S:t Lars Karpvägen', busStopFaceOffset: .04, // guess: clear the existing 3 cm-radius pole
+    noParking: [-13.6, -16.9, 0], aBoard: [28.4, -12.2, -60], // by HepCat's north corner (#261, photo)
   },
   // Street name signs (#583, src/streetsigns.js; sources and selection: docs/validation/issue-583/README.md). One post at every
   // junction of two differently named streets in the model plus the two clear bends by the block (Sankt Lars väg round the

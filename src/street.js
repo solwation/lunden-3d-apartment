@@ -11,7 +11,7 @@ import { cabinetBodyParts } from './elcabinetbody.js';
 
 // Sankt Lars väg's details (#128, SITE.street; the user's photos in docs/foton/): granite curbs, darker patches
 // in the asphalt, slender street lamps with a curved arm (their heads glow at night, and a soft pool of light lies on
-// the ground under each, #434: additive decals, no lights), a zebra crossing, a temporary yellow traffic light and warning signs for the building site, a
+// the ground under each, #434: additive decals, no lights), a zebra crossing, optional local work signals/warnings, a
 // cobbled corner, and fallen leaves on the pavements in the autumn months. A handful of draw calls.
 
 const S = SITE.street;
@@ -171,7 +171,7 @@ function shelterPaving(groundY) {
 }
 
 export function buildStreet(groundY, pathGround = groundY, trees = []) {
-  const group = new THREE.Group();
+  const group = new THREE.Group(); group.name='street-details';
   const grey = new THREE.MeshStandardMaterial({ color: 0xa9a7a2, roughness: 0.85 });
   const curbs = curbGeometries(groundY);
   const island = bridgeheadIsland(pathGround); // #1554: the road's own surface follows the rendered terrain (pathGround), not the analytic groundY
@@ -239,22 +239,25 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
   let lit = false, glow = 0;
   // the building site's temporary traffic light (yellow case on a trolley) and warning triangles on stands
   const tl = S.trafficLight, yellow = [], black = [], lamps = [];
+  if(tl){
   yellow.push(new THREE.BoxGeometry(0.5, 0.35, 0.4).translate(tl.x, 0.25, tl.z), new THREE.CylinderGeometry(0.04, 0.04, 1.9, 8).translate(tl.x, 1.3, tl.z));
   black.push(new THREE.BoxGeometry(0.22, 0.75, 0.28).translate(tl.x, 2.5, tl.z)); // a head facing each way along the road
   for (const [dy, col] of [[0.22, 0xff2a1a], [0, 0xffb21a], [-0.22, 0x2aff6a]]) {
     lamps.push([mergeGeometries([-1, 1].map((sx) => keepPN(new THREE.CircleGeometry(0.075, 14).rotateY(sx * Math.PI / 2).translate(tl.x + sx * 0.142, 2.5 + dy, tl.z)))), col]);
+  }
   }
   for (const [x, z] of S.warnings) {
     black.push(new THREE.CylinderGeometry(0.025, 0.025, 1.0, 6).translate(x, 0.5, z), new THREE.BoxGeometry(0.5, 0.05, 0.35).translate(x, 0.03, z));
     yellow.push(new THREE.CylinderGeometry(0.0001, 0.4, 0.05, 3).rotateX(Math.PI / 2).rotateZ(Math.PI).translate(x, 1.2, z - 0.03)); // the triangle
   }
   yellow.push(...island.bollards); // #1554: the island's bollards share the yellow batch
-  group.add(merged(yellow, new THREE.MeshStandardMaterial({ color: 0xf2c014, roughness: 0.5 })), merged(black, new THREE.MeshStandardMaterial({ color: 0x1b1c1e, roughness: 0.6 })));
+  group.add(merged(yellow, new THREE.MeshStandardMaterial({ color: 0xf2c014, roughness: 0.5 })));
+  if(black.length)group.add(merged(black, new THREE.MeshStandardMaterial({ color: 0x1b1c1e, roughness: 0.6 })));
   const signalMats = lamps.map(([geo, col], i) => { const mat = new THREE.MeshStandardMaterial({ color: 0x222222, emissive: col, emissiveIntensity: i === 0 ? 1.2 : 0.05 }); group.add(new THREE.Mesh(geo, mat)); return mat; });
   // signs (#129): canvas faces on both sides, poles merged
   const poles = [], faces = [];
   const texCache = new Map(); // #1554: signs of one kind (the two crossing signs) share one texture
-  const sign = (draw, w, h, [x, z, yaw], y, { pole = true, tex = 256 } = {}) => {
+  const sign = (draw, w, h, [x, z, yaw], y, { pole = true, tex = 256, label = '', faceOffset = .012 } = {}) => {
     let t = texCache.get(draw);
     if (!t) {
       const c = document.createElement('canvas'); c.width = tex; c.height = Math.round((tex * h) / w);
@@ -264,20 +267,22 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
     const r = THREE.MathUtils.degToRad(yaw);
     for (const back of [0, Math.PI]) {
       const pl = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: t, roughness: 0.6 }));
-      pl.position.set(x + Math.sin(r + back) * 0.012, y + groundY(x, z), z + Math.cos(r + back) * 0.012);
+      pl.position.set(x + Math.sin(r + back) * faceOffset, y + groundY(x, z), z + Math.cos(r + back) * faceOffset);
       pl.rotation.y = r + back;
+      if(label){pl.name='street-bus-stop-sign';pl.userData.label=label;}
       faces.push(pl);
     }
     if (pole) poles.push(new THREE.CylinderGeometry(0.03, 0.03, y + h / 2, 8).translate(x, groundY(x, z) + (y + h / 2) / 2, z));
   };
-  sign((g, w, h) => { // the bus stop: a yellow-bordered blue sign with a bus, the stop's name below
+  const stopSign = (g, w, h) => { // Generic Swedish bus-stop board, no operator logo; one shared canvas for both poles.
     g.fillStyle = '#f6c21a'; g.fillRect(0, 0, w, h); g.fillStyle = '#1d4f91'; g.fillRect(10, 10, w - 20, h * 0.62);
     g.fillStyle = '#fff'; g.fillRect(w * 0.25, h * 0.14, w * 0.5, h * 0.3); g.fillStyle = '#1d4f91'; g.fillRect(w * 0.3, h * 0.18, w * 0.4, h * 0.12);
     g.beginPath(); g.arc(w * 0.35, h * 0.47, 12, 0, 7); g.arc(w * 0.65, h * 0.47, 12, 0, 7); g.fillStyle = '#fff'; g.fill();
-    g.fillStyle = '#111'; g.font = 'bold 34px sans-serif'; g.textAlign = 'center'; g.fillText('S:t Lars', w / 2, h * 0.88);
-  }, 0.42, 0.62, S.busStop, 2.3);
-  sign((g, w, h) => { g.fillStyle = '#d61f26'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.font = 'bold 44px sans-serif'; g.textAlign = 'center'; g.fillText('Flyttad', w / 2, h / 2 + 15); },
-    0.75, 0.62, S.moved, 2.05);
+    const split=S.busStopName.lastIndexOf(' '),lines=[S.busStopName.slice(0,split),S.busStopName.slice(split+1)];
+    g.fillStyle='#111';g.textAlign='center';
+    lines.forEach((line,i)=>{let size=32;g.font=`bold ${size}px sans-serif`;while(size>16&&g.measureText(line).width>w-24)g.font=`bold ${--size}px sans-serif`;g.fillText(line,w/2,h*(i?.91:.77),w-24);});
+  };
+  for(const at of[S.busStop,S.restoredBusStop])sign(stopSign,.42,.62,at,2.3,{label:S.busStopName,faceOffset:S.busStopFaceOffset});
   sign((g, w, h) => { // "parkering förbjuden": a red ring, a blue disc, one red bar
     g.beginPath(); g.arc(w / 2, h / 2, w / 2 - 4, 0, 7); g.fillStyle = '#d61f26'; g.fill();
     g.beginPath(); g.arc(w / 2, h / 2, w / 2 - 30, 0, 7); g.fillStyle = '#1d5fb4'; g.fill();

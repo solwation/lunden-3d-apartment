@@ -1,0 +1,21 @@
+{
+  "base": "0864f5ac210d9f30d24e74db9936a3bd56c6444f",
+  "sha256": {
+    "src/config.js": "88518e9e87fc44a4e91f45bfc7f10d33e18ec6c8ee24b5b127ea22b483723fd9",
+    "src/street.js": "d685ab7c148e2a301a49e6b6f3d19de0c6d96f7c484d509ff536abfa04ffeb40",
+    "src/farwalk.js": "7970b955dd337c8318331d5b0fddfbac6599a93bce0411b0a99726f4b7ed03b8",
+    "src/busstopgeo.js": "955bc2fb683f2553c8f8e21eff0fb35c426431fc3ef47d5e9f749772d4557cb2",
+    "tools/busstoprestoretest.mjs": "bf8d072f27ce758be0e2033c83ffb2a66d2aa5ae98553c35a7eb40b2bf177a0f",
+    "tools/busstoprestorebrowser.cjs": "1bba3bef328cdd65d65c7fce2682aececd984738ea01fe7387258ea5947ee450"
+  },
+  "images": {
+    "restored-crossing.png": {
+      "variant": "restoration already applied; bus faces12mm from pole before readability fix",
+      "runtimeMetadataSHA256": "9c25fba3a7a09bedda9d34a7b16a88a9e801e8cd63075f8e9469b9bc32718166"
+    },
+    "restored-stop-name.png": {
+      "variant": "final source; bus faces40mm from pole",
+      "runtimeMetadataSHA256": "20f247f7792b73a2d8b75c3b46081d5ba73fdc2debd0d023ee8cfec1f39c6234"
+    }
+  }
+}

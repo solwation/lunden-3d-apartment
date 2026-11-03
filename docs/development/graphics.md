@@ -666,3 +666,7 @@ occlusion, edge clearance and observer state; see [result images](../verificatio
 ## Cosmetic upper arms (#1837)
 
 `Avatar` shares immutable per-variant bind-pose geometry, including one `armPump` attribute. Shoulder skin and sleeve vertices receive a smooth radial X/Z bulge; the material's own `uPump` controls it before skinning with matching normal correction. Other bone regions stay unchanged. No bone scaling, shared-buffer edits, new draws or per-frame rebuild. New self/remote looks reapply their current pump. [Checks, before/after and remote comparison](../verification/1837/README.md).
+
+## Restored northern bus-stop boards (#1843)
+
+`street.js` procedurally paints the two ordinary yellow/blue bus-stop boards into one shared canvas (no operator logo, photo or new font). `SITE.street.busStopName` is split into two fitted lines: “Lund S:t Lars” / “Karpvägen”. Both front/back faces keep existing pole x/z sites. Only these boards use the40 mm face offset, clearing their30 mm-radius post so the name/icon remains visible; all other street signs retain12 mm. No added lights/draws; the removed signal/warning geometry reduces the same-input street component by4 meshes/236 triangles. [Final near view and diagnostic for the corrected post intersection](../verification/1843/README.md).

@@ -1,0 +1,8 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS actual ordinary boards on both original pole sites share exact stop name/canvas
+PASS completed local signal/warnings/Flyttad board absent
+PASS both poles remain off asphalt and local approach/crossing-adjacent ground remains free
+PASS actual pedestrian camera is free: restored-crossing
+PASS actual pedestrian camera is free: restored-stop-name
+PASS zero page errors
+READY for image inspection

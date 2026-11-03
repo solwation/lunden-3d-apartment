@@ -1,0 +1,205 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "actual ordinary boards on both original pole sites share exact stop name/canvas",
+      "data": {
+        "labels": [
+          "Lund S:t Lars Karpvägen",
+          "Lund S:t Lars Karpvägen",
+          "Lund S:t Lars Karpvägen",
+          "Lund S:t Lars Karpvägen"
+        ],
+        "positions": [
+          [
+            20.6,
+            2.3,
+            -28.688
+          ],
+          [
+            20.6,
+            2.3,
+            -28.712
+          ],
+          [
+            6.5,
+            2.3,
+            -23.738
+          ],
+          [
+            6.5,
+            2.3,
+            -23.762
+          ]
+        ],
+        "sharedMaps": 1,
+        "canvas": {
+          "width": 256,
+          "height": 378
+        },
+        "temporaries": {
+          "light": null,
+          "warnings": [],
+          "moved": null
+        },
+        "poleOffRoad": [
+          true,
+          true
+        ],
+        "free": [
+          {
+            "x": 6.5,
+            "z": -22.8,
+            "free": true,
+            "y": 0
+          },
+          {
+            "x": 8.6,
+            "z": -23.5,
+            "free": true,
+            "y": 0
+          },
+          {
+            "x": 13.2,
+            "z": -23,
+            "free": true,
+            "y": 0
+          }
+        ],
+        "meshes": 24,
+        "sourceTriangles": 81828
+      }
+    },
+    {
+      "ok": true,
+      "label": "completed local signal/warnings/Flyttad board absent"
+    },
+    {
+      "ok": true,
+      "label": "both poles remain off asphalt and local approach/crossing-adjacent ground remains free",
+      "data": [
+        {
+          "x": 6.5,
+          "z": -22.8,
+          "free": true,
+          "y": 0
+        },
+        {
+          "x": 8.6,
+          "z": -23.5,
+          "free": true,
+          "y": 0
+        },
+        {
+          "x": 13.2,
+          "z": -23,
+          "free": true,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "ok": true,
+      "label": "actual pedestrian camera is free: restored-crossing",
+      "data": {
+        "eye": [
+          0,
+          1.65,
+          -18.5
+        ],
+        "target": [
+          9,
+          1.1,
+          -25
+        ],
+        "free": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "actual pedestrian camera is free: restored-stop-name",
+      "data": {
+        "eye": [
+          6.5,
+          1.65,
+          -20.5
+        ],
+        "target": [
+          6.5,
+          2.3,
+          -23.75
+        ],
+        "free": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "zero page errors",
+      "data": []
+    }
+  ],
+  "views": [
+    {
+      "name": "restored-crossing",
+      "eye": [
+        0,
+        1.65,
+        -18.5
+      ],
+      "target": [
+        9,
+        1.1,
+        -25
+      ],
+      "free": true,
+      "shown": {
+        "frame": 21,
+        "calls": 58,
+        "triangles": 397976,
+        "points": 80,
+        "lines": 0
+      },
+      "hidden": {
+        "frame": 22,
+        "calls": 46,
+        "triangles": 369924,
+        "points": 80,
+        "lines": 0
+      },
+      "deltaCalls": 12,
+      "deltaTriangles": 28052
+    },
+    {
+      "name": "restored-stop-name",
+      "eye": [
+        6.5,
+        1.65,
+        -20.5
+      ],
+      "target": [
+        6.5,
+        2.3,
+        -23.75
+      ],
+      "free": true,
+      "shown": {
+        "frame": 24,
+        "calls": 54,
+        "triangles": 366352,
+        "points": 80,
+        "lines": 0
+      },
+      "hidden": {
+        "frame": 25,
+        "calls": 45,
+        "triangles": 339906,
+        "points": 80,
+        "lines": 0
+      },
+      "deltaCalls": 9,
+      "deltaTriangles": 26446
+    }
+  ],
+  "errors": [],
+  "ok": true
+}

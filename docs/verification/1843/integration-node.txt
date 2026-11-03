@@ -1,0 +1,23 @@
+TAP version 13
+# {"before":{"meshes":28,"triangles":82064},"after":{"meshes":24,"triangles":81828},"delta":{"meshes":-4,"triangles":-236},"collision":"16d9aa46bf493a36b5e2cff6eeccbaa7ed93a17c6c0fe633cf38bba746cbd4f0"}
+# Subtest: only completed local work is removed; both existing stop sites show exact ordinary stop name
+ok 1 - only completed local work is removed; both existing stop sites show exact ordinary stop name
+  ---
+  duration_ms: 1.695394
+  type: 'test'
+  ...
+# Subtest: street/curb/crossing geometry, other signs, yellow island bollards and static collision data stay exact
+ok 2 - street/curb/crossing geometry, other signs, yellow island bollards and static collision data stay exact
+  ---
+  duration_ms: 42.965658
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 760.66097

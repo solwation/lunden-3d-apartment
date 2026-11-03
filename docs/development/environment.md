@@ -81,8 +81,8 @@ src/roads.js           the roads' shapes (SITE.roads, #257): rectangles, centre 
                        west into the park and meets Sankt Lars väg with rounded corners
 src/street.js          Sankt Lars väg's details (SITE.street, #128): curbs (along every `path` road and fillet, not across
                        another road), asphalt patches, street lamps in rows along a road (emissive at night; #434: a warm pool on
-                       the ground under each head, `lamps.pool`, one merged additive mesh from groundglow.js, fading with dusk), zebra crossing, the site's temporary traffic light + warning signs, cobbles, autumn leaves; the bus stop,
-                       the red "Flyttad" sign, a no-parking sign and HepCat's A-board (#129); #1534: the bus shelter's concrete
+                       the ground under each head, `lamps.pool`, one merged additive mesh from groundglow.js, fading with dusk), zebra crossing, cobbles, autumn leaves; ordinary bus-stop boards on the two existing pole sites (#1843),
+                       a no-parking sign and HepCat's A-board (#129); #1534: the bus shelter's concrete
                        slabs (`shelterPaving`, clipped at the curb along the bend), timetable pillar and the boulder at the wall's end (#1702) in the curbs' batch
 src/schoolwall.js      the school wall's plan (#126, #1534): wall, shelter gable + back wall boxes (the back wall continues east, #1702), roof, post, bench, bin, downpipe, plate, cabinet, boulder from
                        SITE.school.wall; shared by surroundings.js `schoolGrounds` (drawing + roof walk), street.js and farwalk.js
@@ -1038,3 +1038,7 @@ Ducks use the existing `renderedTerrainY` callback directly rather than the anal
 ## Outdoor-cat route ground (#1840)
 
 Only the outdoor cats use `renderedTerrainY` south of the existing `OUTDOOR.z1` boundary, so newly reached park slopes do not float above drawn triangles. The garage/courtyard keeps `parkGround` and its real deck level. No other animal, terrain or collision mechanics change. Their explicit loops were planned offline against actual static walls, building/obstacle polygons, road/water and sampled heights; no runtime pathfinder or world edits. [Actual site snapshot, segment checks and overview](../verification/1840/README.md).
+
+## Completed northern stop works (#1843)
+
+Only the local `SITE.street.trafficLight` and two `warnings` stands are retired. The former red `moved` board's pole site becomes `restoredBusStop`; the opposite `busStop` by the school shelter remains in place. Both ordinary boards show exactly `Lund S:t Lars Karpvägen`. This is the northern street crossing, separate from the river's `SITE.busStop` platform. `street.js` keeps optional work-signal/warning support without creating empty batches. Refuges/yellow bollards, other signs, road/curbs/crossing, school shelter/paving, buses and collision/navigation data are unchanged. [Source-bound geometry, collision hash and inspected views](../verification/1843/README.md).

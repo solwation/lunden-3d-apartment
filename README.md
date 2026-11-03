@@ -26,7 +26,7 @@ Bilen stannar för spelare i sin körväg även i svängar och vid backning.
 
 Återplacering på höjder i området använder markens verkliga modellhöjd, så att kameran stannar över marken.
 
-Du kan sitta på hållplats- och skolbänkar samt grannarnas utemöbler och gunga även vid skolorna.
+Du kan sitta på hållplats- och skolbänkar samt grannarnas utemöbler och gunga även vid skolorna. Vid norra övergångsstället står vanliga hållplatstavlor med namnet ”Lund S:t Lars Karpvägen”; det avslutade lokala vägarbetets signal och varningsstativ är borttagna.
 
 Vägar och gångstråk i utkanten fortsätter bort i dimman i stället för att sluta tvärt. Hela hästhagen går också att nå till fots via den befintliga stättan.
 
