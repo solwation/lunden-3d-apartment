@@ -13,12 +13,19 @@ export function snapshot(renderer, scene, camera, target, w = 320, h = 240) {
   cam.lookAt(target);
   const rt = new THREE.WebGLRenderTarget(w, h);
   rt.texture.colorSpace = THREE.SRGBColorSpace;
-  renderer.setRenderTarget(rt);
-  renderer.render(scene, cam);
-  renderer.setRenderTarget(null);
+  const previous = renderer.getRenderTarget(), face = renderer.getActiveCubeFace(), mip = renderer.getActiveMipmapLevel();
+  const viewport = renderer.getViewport(new THREE.Vector4()), scissor = renderer.getScissor(new THREE.Vector4()), scissorTest = renderer.getScissorTest();
+  const counters = { ...renderer.info.render }, auto = renderer.autoClear, xr = renderer.xr.enabled;
   const buf = new Uint8Array(w * h * 4);
-  renderer.readRenderTargetPixels(rt, 0, 0, w, h, buf);
-  rt.dispose();
+  try {
+    renderer.xr.enabled = false; renderer.autoClear = true;
+    renderer.setRenderTarget(rt); renderer.setViewport(0, 0, w, h); renderer.setScissorTest(false);
+    renderer.render(scene, cam); renderer.readRenderTargetPixels(rt, 0, 0, w, h, buf);
+  } finally {
+    renderer.setRenderTarget(previous, face, mip); renderer.setViewport(viewport); renderer.setScissor(scissor);
+    renderer.setScissorTest(scissorTest); renderer.autoClear = auto; renderer.xr.enabled = xr;
+    Object.assign(renderer.info.render, counters); rt.dispose();
+  }
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
   const g = c.getContext('2d'), img = g.createImageData(w, h);

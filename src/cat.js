@@ -1,3 +1,4 @@
+import { registerCats } from './bestiarymetadata.js';
 import * as THREE from 'three';
 import { LEVELS, CAT_FLOOR_HEADROOM, CAT_FISH, CAT_LEAVE, CAT_IGNORED, CAT_OUTDOOR, CAT_FURNITURE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, REST, MIELE, KITTEN } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
@@ -1427,3 +1428,26 @@ export class CatSpawner {
     pos.needsUpdate = col.needsUpdate = true;
   }
 }
+
+// Stable numbers are append-only, independent of spawn weights, import order and UI grouping.
+registerCats(BREEDS, {
+  'huskatt/svartvit': [1, 2],
+  'huskatt/rödrandig': [3, 4],
+  'huskatt/grå': [5, 6],
+  'huskatt/svart': [7, 8],
+  'huskatt/vit': [9, 10],
+  'huskatt/röd och vit': [11, 12],
+  'siames/siames': [13, 14],
+  'brittiskt korthår/blå': [15, 16],
+  'maine coon/rödrandig': [17, 18],
+  'maine coon/grå': [19, 20],
+  'maine coon/brunrandig': [21, 22],
+  'norsk skogkatt/svartvit': [23, 24],
+  'norsk skogkatt/grå': [25, 26],
+  'norsk skogkatt/vit': [27, 28],
+  'perser/vit': [29, 30],
+  'perser/gräddvit': [31, 32],
+  'perser/grå': [33, 34],
+  'sphynx/naken': [35, 36],
+  'Miele/Miele': [37],
+});

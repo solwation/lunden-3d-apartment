@@ -1,3 +1,5 @@
+import { discoverCreature } from './bestiaryevents.js';
+import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SQUIRRELS as C, PADDOCK, SITE, WALK } from './config.js';
@@ -224,7 +226,7 @@ export class Squirrels {
     this.nuts.preferred = nutPathSpots(SITE.riverPark.paths, this.trees, ground, nutHere, nutWalls);
     this.nuts.anchors = () => [{ x: camera.position.x, z: camera.position.z }, ...(this.net?.remotes?.() ?? []).map((r) => ({ x: r.x, z: r.z }))];
     // #1716: the home ranges drift with the wall clock (the same for every player), the day comes from the game's clock (update's `hour`)
-    const env = { trees: this.trees, ground, walkable, fences, nuts: this.nuts, player: this.player_, scares: this.cand, rnd, onTake: (b) => this.take(b), now: () => Date.now() / 1000, hour: () => this.hour, others: [] };
+    const env = { trees: this.trees, ground, walkable, fences, nuts: this.nuts, player: this.player_, scares: this.cand, rnd, onTake: (b) => this.take(b), now: () => Date.now() / 1000, hour: () => this.hour, others: [], onScare: b => { const p=this.cand[0], d=p?Math.hypot(p.x-b.x,p.z-b.z):Infinity; if(p&&((d<C.touch&&!p.lure)||(d<b.p.shy*C.scareReach&&(p.v>C.scareSpeed||p.rose)))) discoverCreature(`squirrel:${b.spec.name}`,'scare'); } };
     this.material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92 });
     this.nutMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6 });
     this.hearts = new Hearts(scene, C.hearts, C.heartScale);
@@ -289,7 +291,7 @@ export class Squirrels {
       if (!it?.isSquirrelNut) return false;
       this.sync.feed(it.slot, me, an);
       this.nuts.remove(it.slot); it.sync(); // gone from the hand
-      this.onFeed?.(brain, a);
+      discoverCreature(`squirrel:${brain.spec.name}`, 'feed'); this.onFeed?.(brain, a);
     } else { // another player's hand (we lead): their nut is claimed in the room
       const i = this.sync.remoteHeld.get(who), slot = this.nuts.slots[i];
       if (!slot || !slot.held) return false;
@@ -309,7 +311,7 @@ export class Squirrels {
     V.set(a.brain.x, a.brain.y + 0.2 * a.brain.spec.scale, a.brain.z); this.hearts.burst(V); this.chirp(a.brain);
     if (who !== (this.net?.me?.() ?? '')) return;
     const it = heldItem(); if (!it?.isSquirrelNut) return;
-    it.slot.alive = false; it.slot.held = false; it.sync(); this.onFeed?.(a.brain, a);
+    it.slot.alive = false; it.slot.held = false; it.sync(); discoverCreature(`squirrel:${a.spec.name}`, 'feed'); this.onFeed?.(a.brain, a);
   }
   /** The room refused our take (somebody was first): the nut leaves the hand again. */
   dropHeld(slot) { const it = this.nutItems[this.nuts.slots.indexOf(slot)]; if (!it?.held) return; slot.alive = false; slot.held = false; it.sync(); }
@@ -384,3 +386,8 @@ export class Squirrels {
   /** For tests: where each squirrel is and what it does. */
   state() { return this.animals.map((a) => ({ name: a.spec.name, state: a.brain.state, x: a.brain.x, y: a.brain.y, z: a.brain.z, hasNut: a.brain.hasNut, visible: a.group.visible })); }
 }
+
+// Every configured coat/shape has its own stable collection number.
+const SQUIRREL_NUMBERS = { 'Den stora':38, Vitsvansen:39, 'Den smala':40, Parkekorren:41, Gårdsekorren:42, Tofsen:43, Klockan:44, Rödpälsen:45, Svartsvansen:46, Ljusbuken:47 };
+for (const s of C.animals) creature({ id:`squirrel:${s.name}`, no:SQUIRREL_NUMBERS[s.name], name:s.name, family:'squirrels', variant:s.tip?'Ljus svanstipp':'Rödbrun päls', level:s.tip?1:0, model:{kind:'squirrel',name:s.name}, info:{size:`${Math.round(s.scale*100)} % av grundmodellens storlek`,weight:'0,2–0,5 kg (uppskattning)',where:s.home?'Egen träddunge vid huset':'Träden vid Höje å',when:'Vaken vår–höst; vintervila',likes:'Nötter och en stilla, hukande besökare'},facts:['Varje ekorre har eget hemområde och temperament.','Kan klättra mellan träden och gömma nötter.'] });
+export { squirrelGeometry };

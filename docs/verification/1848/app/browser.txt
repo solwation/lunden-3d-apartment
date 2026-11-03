@@ -1,0 +1,15 @@
+PASS normal_native_action_opens_65_entry_grid
+PASS visibility_alone_is_seen_not_found
+PASS native_pet_records_actual_find_and_stats
+PASS native_pet_preserves_existing_score
+PASS one_bounded_real_world_photo
+PASS desktop_two_card_detail_with_photo_chain
+PASS native_photo_and_escape_layer
+PASS native_keyboard_next
+PASS updated_show_resets_scroll_on_real_reopen
+PASS portrait_touch_single_card_and_real_stats
+PASS native_touch_photo_and_back
+PASS unchanged_world_calls_triangles_resources
+PASS bounded_idle_image_photo_queues
+PASS actual_profile_idb_collection_reload
+14/14 actual-app acceptance checks; see browser.json and diagnostic log.

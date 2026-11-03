@@ -1,3 +1,4 @@
+import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SHARK as S } from './config.js';
@@ -184,3 +185,5 @@ export class Shark {
       tris: this.built ? { fin: this.fin.geometry.attributes.position.count / 3, body: this.body.children[0].geometry.index.count / 3, bones: this.bones.geometry.attributes.position.count / 3 } : null };
   }
 }
+
+creature({id:'fish:shark',no:57,name:'Haj',family:'fish',level:4,model:{kind:'shark'},info:{size:'Ovanligt stor åbesökare',weight:'Mäts när den fångas',where:'Höje å',when:'Sällsynt besök',likes:'Att visa ryggfenan'},facts:['En särskilt sällsynt varelse i spelets å.','Fena och fångad kropp är samma varelse, inte egna arter.']});

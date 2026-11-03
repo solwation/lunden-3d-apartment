@@ -1,0 +1,94 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+READY
+COMMAND OK
+NATIVE OK {"key":"KeyE"}
+SHOT tabletop-prop
+COMMAND OK
+COMMAND OK
+NATIVE OK {"click":"#game-canvas"}
+COMMAND OK
+NATIVE ERROR locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#start-mouse').first()[22m
+[2m    - locator resolved to <button class="go" id="start-mouse">Fortsätt (Mus & tangentbord)</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not visible[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not visible[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    58 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is not visible[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+SHOT tabletop-prop-final
+COMMAND OK
+NATIVE OK {"click":"#start-go"}
+COMMAND OK
+NATIVE OK {"click":"#action"}
+COMMAND OK
+SHOT empty-grid
+COMMAND OK
+NATIVE OK {"key":"Escape"}
+COMMAND OK
+NATIVE ERROR locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#action').first()[22m
+[2m    - locator resolved to <button hidden="" id="action" class="touch-only hud-button">Bläddra i djurpärmen</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not visible[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not visible[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    58 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is not visible[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+COMMAND OK
+COMMAND OK
+NATIVE OK {"click":"#choices button:first-child"}
+COMMAND OK
+COMMAND OK
+NATIVE OK {"click":"#action"}
+COMMAND OK
+SHOT desktop-grid
+NATIVE OK {"click":"#binder-view [data-act=\"entry\"][data-id=\"cat:huskatt:svartvit:adult\"]"}
+COMMAND OK
+SHOT desktop-detail
+COMMAND OK
+SHOT desktop-statistics-chain
+COMMAND OK
+SHOT desktop-statistics-chain
+NATIVE OK {"click":"#binder-view [data-act=\"photo\"]"}
+COMMAND OK
+NATIVE OK {"key":"Escape"}
+COMMAND OK
+NATIVE OK {"key":"ArrowRight"}
+COMMAND OK
+NATIVE OK {"click":"#binder-close","tag":"1793724166711580115"}
+COMMAND OK
+NATIVE OK {"click":"#action","tag":"1793724167115976641"}
+COMMAND OK
+NATIVE OK {"viewport":{"width":390,"height":844},"tag":"1793724167418142034"}
+NATIVE OK {"tap":"#binder-view [data-act=\"entry\"][data-id=\"cat:huskatt:svartvit:adult\"]","tag":"1793724167619596830"}
+COMMAND OK
+COMMAND OK
+SHOT touch-detail
+COMMAND OK
+COMMAND OK
+SHOT touch-statistics-chain
+NATIVE OK {"tap":"#binder-view [data-act=\"photo\"]","tag":"1793724169985391612"}
+COMMAND OK
+NATIVE OK {"tap":"#binder-view [data-act=\"photo-back\"]","tag":"1793724170288686512"}
+COMMAND OK
+COMMAND OK
+COMMAND OK

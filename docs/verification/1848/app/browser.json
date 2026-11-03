@@ -1,0 +1,264 @@
+{
+  "nativeBinderOpen": false,
+  "nativeBinderAction": true,
+  "initialSummary": {
+    "seen": 0,
+    "found": 0,
+    "total": 65,
+    "families": [
+      {
+        "id": "cats",
+        "label": "Katter",
+        "order": 1,
+        "seen": 0,
+        "found": 0,
+        "total": 37
+      },
+      {
+        "id": "squirrels",
+        "label": "Ekorrar",
+        "order": 2,
+        "seen": 0,
+        "found": 0,
+        "total": 10
+      },
+      {
+        "id": "ducks",
+        "label": "\u00c4nder",
+        "order": 3,
+        "seen": 0,
+        "found": 0,
+        "total": 2
+      },
+      {
+        "id": "birds",
+        "label": "F\u00e5glar",
+        "order": 4,
+        "seen": 0,
+        "found": 0,
+        "total": 1
+      },
+      {
+        "id": "fish",
+        "label": "Fiskar",
+        "order": 5,
+        "seen": 0,
+        "found": 0,
+        "total": 7
+      },
+      {
+        "id": "ponies",
+        "label": "Ponnyer",
+        "order": 6,
+        "seen": 0,
+        "found": 0,
+        "total": 2
+      },
+      {
+        "id": "insects",
+        "label": "Fj\u00e4rilar",
+        "order": 7,
+        "seen": 0,
+        "found": 0,
+        "total": 3
+      },
+      {
+        "id": "figures",
+        "label": "Figurer & bes\u00f6kare",
+        "order": 8,
+        "seen": 0,
+        "found": 0,
+        "total": 3
+      }
+    ]
+  },
+  "initialImageJobs": 24,
+  "beforePet": {
+    "id": "cat:huskatt:svartvit:adult",
+    "record": {
+      "seen": true,
+      "found": false,
+      "firstSeen": 1793723702388,
+      "lastSeen": 1793723702388,
+      "seenCount": 1,
+      "foundCount": 0,
+      "actions": {},
+      "best": {},
+      "photos": []
+    },
+    "score": 5,
+    "petted": 0,
+    "draw": {
+      "frame": 39,
+      "calls": 208,
+      "triangles": 658847,
+      "points": 80,
+      "lines": 4737
+    }
+  },
+  "afterPet": {
+    "record": {
+      "seen": true,
+      "found": true,
+      "firstSeen": 1793723702388,
+      "lastSeen": 1793723791228,
+      "seenCount": 1,
+      "foundCount": 1,
+      "actions": {
+        "pet": 1
+      },
+      "best": {},
+      "photos": [
+        {
+          "id": "cat:huskatt:svartvit:adult:1793723815954:v8ph2m",
+          "time": 1793723815954,
+          "bytes": 10131
+        }
+      ],
+      "lastName": "Misse"
+    },
+    "score": 15,
+    "petted": 1,
+    "photoJobs": 1,
+    "photoQueue": 0
+  },
+  "worldBeforeUI": {
+    "draw": {
+      "frame": 40,
+      "calls": 210,
+      "triangles": 663871,
+      "points": 80,
+      "lines": 4737
+    },
+    "geometry": 1271,
+    "textures": 51
+  },
+  "grid": {
+    "open": true,
+    "tiles": 65,
+    "found": 1,
+    "seen": 0,
+    "summary": {
+      "seen": 1,
+      "found": 1,
+      "total": 65,
+      "families": [
+        {
+          "id": "cats",
+          "label": "Katter",
+          "order": 1,
+          "seen": 1,
+          "found": 1,
+          "total": 37
+        },
+        {
+          "id": "squirrels",
+          "label": "Ekorrar",
+          "order": 2,
+          "seen": 0,
+          "found": 0,
+          "total": 10
+        },
+        {
+          "id": "ducks",
+          "label": "\u00c4nder",
+          "order": 3,
+          "seen": 0,
+          "found": 0,
+          "total": 2
+        },
+        {
+          "id": "birds",
+          "label": "F\u00e5glar",
+          "order": 4,
+          "seen": 0,
+          "found": 0,
+          "total": 1
+        },
+        {
+          "id": "fish",
+          "label": "Fiskar",
+          "order": 5,
+          "seen": 0,
+          "found": 0,
+          "total": 7
+        },
+        {
+          "id": "ponies",
+          "label": "Ponnyer",
+          "order": 6,
+          "seen": 0,
+          "found": 0,
+          "total": 2
+        },
+        {
+          "id": "insects",
+          "label": "Fj\u00e4rilar",
+          "order": 7,
+          "seen": 0,
+          "found": 0,
+          "total": 3
+        },
+        {
+          "id": "figures",
+          "label": "Figurer & bes\u00f6kare",
+          "order": 8,
+          "seen": 0,
+          "found": 0,
+          "total": 3
+        }
+      ]
+    },
+    "modelRenders": 24,
+    "cacheHits": 24,
+    "memory": 24
+  },
+  "detail": {
+    "cards": 2,
+    "stats": "Dina m\u00f6tenF\u00f6rsta m\u00f6tet3 nov. 2026Sedd1Hittad1Klappningar1",
+    "photos": 1,
+    "chain": 4
+  },
+  "worldAfterUI": {
+    "draw": {
+      "frame": 42,
+      "calls": 210,
+      "triangles": 663871,
+      "points": 80,
+      "lines": 4737
+    },
+    "geometry": 1271,
+    "textures": 51
+  },
+  "photoOpened": true,
+  "photoEscapeClosed": true,
+  "keyboardNext": true,
+  "uiReopenGuardApplied": true,
+  "reopenScroll": 0,
+  "touch": {
+    "cards": 1,
+    "stats": "Dina m\u00f6tenF\u00f6rsta m\u00f6tet3 nov. 2026Sedd1Hittad1Klappningar1",
+    "photos": 1,
+    "width": 390
+  },
+  "touchPhoto": true,
+  "touchPhotoBack": true,
+  "final": {
+    "imageJobs": 27,
+    "cacheHits": 48,
+    "memory": 24,
+    "pending": 0,
+    "worldPhotos": 1,
+    "photoQueue": 0,
+    "error": ""
+  },
+  "idbCollectionReload": {
+    "seen": true,
+    "found": true,
+    "seenCount": 1,
+    "pet": 1,
+    "photos": 1,
+    "photoMatches": true,
+    "error": ""
+  }
+}

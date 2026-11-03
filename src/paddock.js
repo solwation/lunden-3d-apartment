@@ -1,3 +1,5 @@
+import { discoverCreature } from './bestiaryevents.js';
+import { creature } from './bestiarymetadata.js';
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import * as THREE from 'three';
 import { PADDOCK as P, SEASON } from './config.js';
@@ -510,7 +512,7 @@ export class Paddock {
     if (this.following()) { // #1644: the leader's pony stops; here the pat shows at once and is scored
       if (fresh) this.petShow(p, i);
       p.state = 'pet'; p.petT = P.pony.pet; p.petAt = performance.now(); p.earP = 0; p.earT = 0.5;
-      if (fresh) this.onPet?.(p.name);
+      if (fresh) { discoverCreature(`pony:${p.name}`, 'pet'); this.onPet?.(p.name); }
       this.net?.send({ t: 'pk', k: 'pet', i });
       return true;
     }
@@ -518,7 +520,7 @@ export class Paddock {
     p.face = from; // #1644: a follower's pat (from = its feet [x, z]): the pony turns to that player instead of this camera
     if (fresh) {
       this.petShow(p, i);
-      if (!from) this.onPet?.(p.name);
+      if (!from) { discoverCreature(`pony:${p.name}`, 'pet'); this.onPet?.(p.name); }
     }
     return true;
   }
@@ -728,3 +730,8 @@ export class Paddock {
     this.write();
   }
 }
+
+const PONY_NUMBERS={Zoey:58,Princess:59};
+for(const p of P.pony.animals) creature({id:`pony:${p.name}`,no:PONY_NUMBERS[p.name],name:p.name,family:'ponies',variant:p.star?'Brun med stjärna':'Gråvit',model:{kind:'pony',name:p.name},info:{size:`${P.pony.withers??1.32} m mankhöjd (modell)`,weight:'250–400 kg (uppskattning)',where:'Hagen vid ån',when:'Betar och vilar under dagen',likes:'Morötter och klappar'},facts:['Kan bli klappad genom staketets öppningar. Höet finns under taket.','Päls och teckning hör till samma individuella ponny.']});
+
+export { ponyMaterial };

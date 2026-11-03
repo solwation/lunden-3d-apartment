@@ -1,3 +1,6 @@
+import { discoverCreature } from './bestiaryevents.js';
+import { catEntryId } from './bestiary.js';
+import { creature } from './bestiarymetadata.js';
 import {CatNuzzle} from './catnuzzle.js';
 import {catNoseShape,poseCatNuzzle} from './catnuzzlepose.js';
 import {Hearts} from './pingping.js';
@@ -233,7 +236,7 @@ export class OutdoorCats {
     if (c.eatT < CAT_FISH.eat) return;
     f.model.scale.setScalar(1);
     c.fish = null; f.outdoorCat = null; c.food = null;
-    this.onFed?.(f);
+    discoverCreature(catEntryId(c.breed,c.coat,false),'feed'); this.onFed?.(f);
     if (c.group.visible) sfx.purr(at, 3, (c.coat.pitch ?? 1) * (c.breed.pitch ?? 1), c.breed.voice);
     c.set('home');
   }
@@ -385,3 +388,6 @@ function butterflyGeometry() {
   g.computeVertexNormals();
   return g;
 }
+
+for(const [color,no,label] of [[0xf2dc3c,60,'Gul fjäril'],[0xe8762a,61,'Orange fjäril']]) creature({id:`butterfly:${no===60?'yellow':'orange'}`,no,interactive:false,name:label,family:'insects',model:{kind:'butterfly',color},info:{size:'Liten lågpolymodell',weight:'Mycket lätt',where:no===60?'Gården':'Parken',when:'När en katt spanar och jagar',likes:'Att fladdra framför katten'},facts:['Katten kan följa fjärilen med blicken och jaga den.','Bara sedd: denna fjäril har ingen egen spelarinteraktion.']});
+export { butterflyGeometry };

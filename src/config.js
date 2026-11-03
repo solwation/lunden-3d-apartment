@@ -3288,7 +3288,7 @@ export const AUTO_RELOAD = { still: 2.5, countdown: 5, cancelled: 1.5, fade: 0.4
 // touched at all: taped-up drawings (synced or, with the cloud off, the visitor's own) and the cat photos stay.
 export const RESET_KEEP = [
   'lunden.cloud.queue', 'lunden.cloud.seenCats', 'lunden.drawing', 'lunden.drawing.updated', // the shared world
-  'lunden.catCards.migrated', // the old board photos were copied into the cat binder (#1249): a reset must not copy thrown-away ones back
+  'lunden.bestiary', 'lunden.catCards.migrated', // the old board photos were copied into the cat binder (#1249): a reset must not copy thrown-away ones back
   'lunden.stats', 'lunden.name', 'lunden.playerId', // the score and the leaderboard
   'lunden.avatar', // the character's chosen look incl. its height (#1148); "Ny spelare" still drops it (main.js onNewPlayer)
   'lunden.scoreQueue', // completed players awaiting upload, including offline player changes
@@ -8264,3 +8264,6 @@ export const DUCKS = Object.freeze({
 
 // #1837 — guesses: 100 completed reps, 72 h linear wall-clock decay, +60% upper-arm circumference.
 export const GYM_PUMP = { repsToFull: 100, decayHours: 72, circumference: 0.6, sampleMs: 15000 };
+
+// Djurpärmen (#1848): local collection and disposable model-image budgets; distances/timings are guesses.
+export const BESTIARY = { observeEvery: 0.75, seenDistance: 45, birdSeenDistance: 150, occlusionChecks: 2, seenRepeatMs: 60000, maxPhotos: 3, photoGlobalEvery: 5, photoQueue: 8, photoEveryMs: 30000, imageMemory: 24 };

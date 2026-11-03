@@ -2223,3 +2223,7 @@ Larger loops use a constructor-time table per direction and a wall-clock hash; `
 
 
 #1844 outdoor-cat goal planning uses18 nodes,21 source-validated connections, one small all-pairs preparation, at most56 goal decisions /1008 candidate evaluations per cat/day, a12-plan cache and binary pose lookup. No global/per-frame pathfinding. `catclimb.js` reuses existing paw/body bounds only on the selected visible climb, without rebuilding vertices/materials or adding draws. Measured puppet/LOD/far render deltas remain24/1/0 calls (10008/10008/0 triangles); desktop32m, phone18m and puppet7m gates are preserved. [Scope, timing and evidence](../verification/1844/README.md).
+
+### Djurpärmen (#1848)
+
+No continuous animal/world draw addition. Lazy 96/320 px production-model PNGs use one queue, existing renderer and one temporary render target, then IndexedDB; memory retains at most 24 URLs. Offscreen lights stay out of the world. Grid requests only intersecting cells; closing discards pending UI requests, while an inflight cache/render job may finish. Renderer target/viewport/scissor/clear/XR/counters restore. Actual encounter photographs are a separate bounded world-render cost: max one per 5 s globally, 30 s per form, 8 pending IDs, three retained photos. The 0.75 s observer has at most two occlusion checks; it never scans/renders thumbnail models as animals. Source ownership/state/cache and actual UI/world budgets: [#1848 evidence](../verification/1848/README.md).

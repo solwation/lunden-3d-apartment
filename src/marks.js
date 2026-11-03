@@ -1,3 +1,5 @@
+import { discoverCreature } from './bestiaryevents.js';
+import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
 import { MARKS as K } from './config.js';
 import { TriGrid } from './trigrid.js';
@@ -170,6 +172,21 @@ export class Marks {
     return null;
   }
 
+  /** Visual-only sight: transparent/hidden overlays never terminate the later solid-surface search.
+   * Moving opaque doors and opaque instances still occlude. Weapon/mark behaviour remains in hit(). */
+  sightBlocked(from, to, { ignore = null } = {}) {
+    const meshes = this.cat?.visible && !this.cat.held ? [...this.meshes(), ...catMeshes(this.cat)] : this.meshes();
+    const distance = from.distanceTo(to);
+    for (const h of this.segment(from, to, meshes)) {
+      const o = h.object;
+      if (!shown(o) || (this.camera && !o.layers.test(this.camera.layers)) || (ignore && isUnder(o, ignore)) || h.distance >= distance - 0.15) continue;
+      const m = Array.isArray(o.material) ? o.material[h.materialIndex ?? 0] : o.material;
+      if (!m || m.visible === false || m.transparent || m.blending === THREE.CustomBlending || m.blending === THREE.AdditiveBlending) continue;
+      return true;
+    }
+    return false;
+  }
+
   /** The meshes under the surface roots (collected once; visibility is checked per hit). */
   meshes() {
     if (!this.list) {
@@ -317,6 +334,7 @@ export class Marks {
       if (h && !h.cat && h.normal.dot(hit.normal) > 0.95 && this.add('star', h, { color: pick(), force: true })) n++;
     }
     for (let i = 0, k = 2 + Math.floor(Math.random() * 2); i < k; i++) this.flutter.spawn(hit, pick());
+    discoverCreature('butterfly:magic', 'find');
     return n;
   }
 }
@@ -423,3 +441,6 @@ class Smoke {
     this.pts.visible = any;
   }
 }
+
+creature({id:'butterfly:magic',no:62,name:'Magisk fjäril',family:'insects',level:2,model:{kind:'magicButterfly'},info:{size:'Liten magisk vinge',weight:'Ingen verklig vikt',where:'Vid trollstavens träff',when:'En kort stund efter magi',likes:'Stjärnstoft'},facts:['En magisk fjärilsform som trollstaven skapar.','Stjärnor, hjärtan och rök är effekter och får inga djurposter.']});
+export { TEXTURES };

@@ -1,3 +1,5 @@
+import { discoverCreature } from './bestiaryevents.js';
+import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SANTA as S, santaState } from './santaconfig.js';
@@ -182,7 +184,7 @@ export class Santa {
   greet() {
     if (!this.greetable()) return false;
     this.greeting = S.greetingSeconds;
-    this.onGreet?.();
+    discoverCreature('figure:santa', 'greet'); this.onGreet?.();
     this.onInteract?.();
     return true;
   }
@@ -240,3 +242,6 @@ export class Santa {
     this.fig.text.material.opacity = Math.sin(Math.PI * rise);
   }
 }
+
+creature({id:'figure:santa',no:63,name:'Tomten',family:'figures',level:3,model:{kind:'santa'},info:{size:'Sittande besökare',weight:'Ej uppmätt',where:'Soffan hemma',when:'Julafton',likes:'Julmys och hälsningar'},facts:['Kommer på besök på julafton.','Hälsa på honom för att hitta posten.']});
+export { figure as santaFigure };

@@ -1,3 +1,5 @@
+import { discoverCreature } from './bestiaryevents.js';
+import { creature } from './bestiarymetadata.js';
 import {DuckKiss,duckBill} from './duckkiss.js';
 import {Hearts} from './pingping.js';
 import * as THREE from 'three';
@@ -28,7 +30,7 @@ export class Ducks {
  targets(){return this.animals.filter(a=>a.mesh.visible).map(a=>a.pick);}
  feed(brain){
   if(brain.cooldown>0 || Math.hypot(this.camera.position.x-brain.x,this.camera.position.z-brain.z)>DUCKS.feedReach || Math.abs(this.camera.position.y-brain.y)>DUCKS.maxFeedHeight || !feedBread(this.life,heldItem()))return false;
-  this.kiss.interrupt(brain);brain.feed();this.feeds++;this.onFeed?.();this.say('Ankan åt en bit bröd');this.quack(brain);return true;
+  this.kiss.interrupt(brain);brain.feed();this.feeds++;discoverCreature(`duck:${brain.female?'female':'male'}`,'feed');this.onFeed?.();this.say('Ankan åt en bit bröd');this.quack(brain);return true;
  }
  quack(b){if(this.quackCooldown>0)return;this.quackCooldown=DUCKS.quackCooldown;this.quacks++;sfx.quack({x:b.x,y:b.y+.5,z:b.z});}
  update(dt,hidden){
@@ -45,3 +47,5 @@ export class Ducks {
   }
  }
 }
+
+for (const [female,no] of [[false,48],[true,49]]) creature({id:`duck:${female?'female':'male'}`,no,name:female?'Gräsand · hona':'Gräsand · hane',family:'ducks',variant:female?'Brunspräcklig dräkt':'Grönt huvud',model:{kind:'duck',female},info:{size:'Cirka 50–65 cm (uppskattning)',weight:'0,7–1,5 kg (uppskattning)',where:'Stränder och vatten i Höje å',when:'Dag och kväll',likes:'Lugnt vatten och sällskap'},facts:['Honans bruna dräkt ger kamouflage.','Paret håller ofta ihop med honan framför.']});

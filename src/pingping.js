@@ -1,3 +1,5 @@
+import { discoverCreature } from './bestiaryevents.js';
+import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PINGPING as P } from './config.js';
@@ -183,7 +185,7 @@ export class Pingping extends Thing {
     this.hugs++;
     sfx.squeak(this.where());
     this.hearts.burst(this.where().add(new THREE.Vector3(0, P.h * 0.75, 0)));
-    this.onHug?.();
+    discoverCreature('figure:pingping', 'hug'); this.onHug?.();
   }
 
   tick() {
@@ -201,3 +203,5 @@ export class Pingping extends Thing {
 }
 
 KINDS.pingping = Pingping; // furniture.js lists him in the bed's userData.things with kind 'pingping'
+
+creature({id:'figure:pingping',no:65,name:'Pingping',family:'figures',level:1,model:{kind:'pingping'},info:{size:`${Math.round(P.h*100)} cm modellhöjd`,weight:'En mjuk kudde',where:'Sängen hemma',when:'Alltid redo för en kram',likes:'Kramar'},facts:['En pingvinkudde som piper och visar hjärtan.','En mötbar, rörlig figur; vanliga stilla leksaker är inte djurposter.']});

@@ -419,7 +419,7 @@ export class SquirrelBrain {
     return false;
   }
   /** Up the nearest tree, and stay there a while (`calm`: the personality). */
-  frighten() { this.rise = 0; this.slot = null; this.prey = null; this.route = []; this.target = null; this.calmT = between(C.scareTime, this.env.rnd) * this.p.calm; this.startToTree(true); }
+  frighten() { this.env.onScare?.(this); this.rise = 0; this.slot = null; this.prey = null; this.route = []; this.target = null; this.calmT = between(C.scareTime, this.env.rnd) * this.p.calm; this.startToTree(true); }
   startApproach() { this.route = []; this.target = null; this.prey = null; this.set('approach', 60); this.react = 0; }
 
   /** Ground movement towards `goal`; true on arrival. */

@@ -1,3 +1,4 @@
+import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RIVER_FISH as C, COLORS } from './config.js';
@@ -108,3 +109,6 @@ export class RiverFish {
   }
   state() { return { t: this.sync.t, near: this.sync.near, synced: this.sync.synced, fish: this.shown.slice(), rings: this.ringList.slice(), drawn: this.fish.count, ringsDrawn: this.rings.count, shark: this.shark.state() }; }
 }
+
+const FISH_NUMBERS={mört:51,abborre:52,braxen:53,gädda:54,öring:55,ål:56};
+for (const f of C.species) creature({id:`fish:${f.name}`,no:FISH_NUMBERS[f.name],name:f.name[0].toUpperCase()+f.name.slice(1),family:'fish',level:f.weight<1?2:f.weight<2?1:0,model:{kind:'fish',name:f.name},info:{size:`${Math.round(f.len*100)} cm grundmodell`,weight:'Varierar med fångstens storlek',where:'Höje å',when:'Under ytan; ibland vid vattenytan',likes:'Eget revir i åfåran'},facts:['Levande och fångad fisk räknas som samma art.','Din största uppmätta fångst sparas på kortet.']});

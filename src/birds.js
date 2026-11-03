@@ -1,3 +1,4 @@
+import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
 import { BIRDS, SKYLAYER } from './config.js';
 
@@ -98,3 +99,6 @@ export class Birds {
     u.uCol.value.setRGB(0.97, 0.97, 0.95).multiplyScalar(0.35 + 0.65 * d.daylight);
   }
 }
+
+creature({id:'bird:gull',interactive:false,no:50,name:'Mås',family:'birds',model:{kind:'gull'},info:{size:`${BIRDS.span??1} m modellvingbredd`,weight:'0,3–0,5 kg (uppskattning)',where:'Himlen över kvarteret',when:'Ljust och uppehåll',likes:'Att glidflyga'},facts:['Flockens vingar och rörelser räknas i samma shader.','De höga fåglarna är samma fågelform, inte en ny art.','Bara sedd: måsen har ingen egen spelarinteraktion.']});
+export { birdGeometry };

@@ -1,7 +1,7 @@
 // Each loaded page pins its player: another tab changing player cannot redirect its writes.
 export const PROFILE_KEY = 'lunden.players.v1';
 const PERSONAL = new Set(['name', 'playerId', 'stats', 'avatar', 'life', 'blinds', 'paddockGrass',
-  'furniture', 'furniture.layout', 'furniture.unlocked', 'catCards.migrated', 'taskHints',
+  'furniture', 'furniture.layout', 'furniture.unlocked', 'catCards.migrated', 'bestiary', 'taskHints',
   'target', 'resume', 'session', 'nameSkipped', 'resetDone', 'resetHideMenu', 'playerWorld']);
 const personal = key => PERSONAL.has(String(key).replace(/^lunden\./, '')) && String(key).startsWith('lunden.');
 export function createProfiles(local, session, uuid = () => globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`) {

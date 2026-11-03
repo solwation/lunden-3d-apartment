@@ -1,0 +1,118 @@
+TAP version 13
+# Subtest: exact production spawn/look catalogue, append-only numbers and valid arbitrary-length chains
+ok 1 - exact production spawn/look catalogue, append-only numbers and valid arbitrary-length chains
+  ---
+  duration_ms: 1.769199
+  type: 'test'
+  ...
+# Subtest: observer obeys real shader high-bird visibility, frustum/range/occlusion and bounded sparse work
+ok 2 - observer obeys real shader high-bird visibility, frustum/range/occlusion and bounded sparse work
+  ---
+  duration_ms: 1.976099
+  type: 'test'
+  ...
+# Subtest: visual sight continues past transparent/hidden hits and retains opaque moving doors/instances
+ok 3 - visual sight continues past transparent/hidden hits and retains opaque moving doors/instances
+  ---
+  duration_ms: 1.088799
+  type: 'test'
+  ...
+# Subtest: registration is numbered, duplicate-safe and independent of insertion/group ordering
+ok 4 - registration is numbered, duplicate-safe and independent of insertion/group ordering
+  ---
+  duration_ms: 1.540099
+  type: 'test'
+  ...
+# Subtest: visible observation never finds; real events deduplicate and reload without losing progress
+ok 5 - visible observation never finds; real events deduplicate and reload without losing progress
+  ---
+  duration_ms: 0.855
+  type: 'test'
+  ...
+# Subtest: latest-three photos are transactional, separate from metadata, and survive reload
+ok 6 - latest-three photos are transactional, separate from metadata, and survive reload
+  ---
+  duration_ms: 1.369798
+  type: 'test'
+  ...
+# Subtest: blocked storage preserves visit progress and reports failure without changing scores
+ok 7 - blocked storage preserves visit progress and reports failure without changing scores
+  ---
+  duration_ms: 0.2268
+  type: 'test'
+  ...
+# Subtest: collection metadata and photo/cache databases follow the pinned player and reject deleted-player writes
+ok 8 - collection metadata and photo/cache databases follow the pinned player and reject deleted-player writes
+  ---
+  duration_ms: 0.915399
+  type: 'test'
+  ...
+# Subtest: concurrent photos serialize per entry and keep the same three persisted and visible records
+ok 9 - concurrent photos serialize per entry and keep the same three persisted and visible records
+  ---
+  duration_ms: 0.804199
+  type: 'test'
+  ...
+# Subtest: event photographs use one global job, recheck visibility and bound/de-duplicate the queue
+ok 10 - event photographs use one global job, recheck visibility and bound/de-duplicate the queue
+  ---
+  duration_ms: 0.4008
+  type: 'test'
+  ...
+# Subtest: actual bump counts every feeding once but game score stops at daily ceiling; no uncapped generic path
+ok 11 - actual bump counts every feeding once but game score stops at daily ceiling; no uncapped generic path
+  ---
+  duration_ms: 1.729998
+  type: 'test'
+  ...
+# Subtest: finite kitchen bread, no bread/package/stale or consumed slice grants no successful feed event
+ok 12 - finite kitchen bread, no bread/package/stale or consumed slice grants no successful feed event
+  ---
+  duration_ms: 0.836199
+  type: 'test'
+  ...
+# Subtest: duck medal advances beyond daily score cap, pays once, Worker accepts counter and derives medal
+ok 13 - duck medal advances beyond daily score cap, pays once, Worker accepts counter and derives medal
+  ---
+  duration_ms: 1.939998
+  type: 'test'
+  ...
+# Subtest: legacy data remains intact; each UUID isolates state, avatar and session
+ok 14 - legacy data remains intact; each UUID isolates state, avatar and session
+  ---
+  duration_ms: 1.378499
+  type: 'test'
+  ...
+# Subtest: reset enumeration excludes registry and other profiles
+ok 15 - reset enumeration excludes registry and other profiles
+  ---
+  duration_ms: 1.163899
+  type: 'test'
+  ...
+# Subtest: confirmed deletion removes personal data, preserves shared data and fences old tabs
+ok 16 - confirmed deletion removes personal data, preserves shared data and fences old tabs
+  ---
+  duration_ms: 0.886099
+  type: 'test'
+  ...
+# Subtest: failed writes/deletions preserve selection and allow retry
+ok 17 - failed writes/deletions preserve selection and allow retry
+  ---
+  duration_ms: 0.575899
+  type: 'test'
+  ...
+# Subtest: early reload cover reads only the selected profile resume record
+ok 18 - early reload cover reads only the selected profile resume record
+  ---
+  duration_ms: 9.393692
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 409.645253

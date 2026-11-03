@@ -1,11 +1,12 @@
 import { profiles } from './playerprofiles.js';
 // Shared drawings stay in 'lunden'; personal photo stores use each profile's database (legacy: 'lunden').
+// Version 4 adds the local Djurpärmen photos and disposable model thumbnail cache (#1848).
 // Every database opens at the same version. The stores contain the cat photos
 // on the old kitchen board ('catPhotos', since version 1, no longer written since #1255; read once by catcards.js) and the drawings taped up on walls and the
 // fridge (posters.js, 'drawings', #176, version 2) and the cat binder's cards (catcards.js, 'catCards', #1249, version 3). A new store = a new version here, created in onupgradeneeded.
 
-const DB = 'lunden', VERSION = 3;
-const STORES = { catPhotos: { keyPath: 'id', autoIncrement: true }, drawings: { keyPath: 'id' }, catCards: { keyPath: 'id' } };
+const DB = 'lunden', VERSION = 4;
+const STORES = { catPhotos: { keyPath: 'id', autoIncrement: true }, drawings: { keyPath: 'id' }, catCards: { keyPath: 'id' }, bestiaryPhotos: { keyPath: 'id' }, bestiaryThumbs: { keyPath: 'id' } };
 
 const openings = new Map();
 export function openDB(name = DB) {
@@ -39,8 +40,8 @@ export async function deletePlayerPhotos(player) {
   if (player.legacy) {
     const db = await openDB(DB);
     await new Promise((resolve, reject) => {
-      const tx = db.transaction(['catPhotos', 'catCards'], 'readwrite');
-      tx.objectStore('catPhotos').clear(); tx.objectStore('catCards').clear();
+      const tx = db.transaction(['catPhotos', 'catCards', 'bestiaryPhotos', 'bestiaryThumbs'], 'readwrite');
+      tx.objectStore('catPhotos').clear(); tx.objectStore('catCards').clear(); tx.objectStore('bestiaryPhotos').clear(); tx.objectStore('bestiaryThumbs').clear();
       tx.oncomplete = resolve; tx.onerror = () => reject(tx.error);
     });
     return;

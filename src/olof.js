@@ -1,3 +1,5 @@
+import { discoverCreature } from './bestiaryevents.js';
+import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
 import { OLOF as O, defaultFaceLook } from './config.js';
 import { Avatar } from './avatar.js';
@@ -214,7 +216,7 @@ export class OlofDriver {
    * tells main.js whether the greeting counts for points (#658, *guess*: no farming). */
   greet() {
     if (this.state !== 'drive') return false;
-    this.state = 'joke'; this.t = 0; this.said = false;
+    discoverCreature('figure:olof', 'greet'); this.state = 'joke'; this.t = 0; this.said = false;
     return true;
   }
 
@@ -246,3 +248,5 @@ export class OlofDriver {
     this.pose();
   }
 }
+
+creature({id:'figure:olof',no:64,name:'Olof',family:'figures',model:{kind:'olof'},info:{size:'Vuxen förare',weight:'Ej uppmätt',where:'Vid familjens bil',when:'När bilen kommer',likes:'En vänlig hälsning'},facts:['Kör familjens bil.','Andra spelares avatarer är inte nya arter i samlingen.']});

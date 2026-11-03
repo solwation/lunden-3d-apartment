@@ -410,10 +410,14 @@ stängs väljaren direkt och en Loading...-animation visas på själva skärmen 
 filmen spelar. Spola tio sekunder framåt/bakåt med fjärrkontrollens pekknappar,
 J/L när du håller den eller spolknapparna i filmvalet; alla följer samma position.
 
-Kattpärmen har fyra fasta samlarkortsplatser på varje sida: varje kattvariant
-har sin egen plats och de oupptäckta visas som silhuetter. Tryck på ett funnet
-kort för kattens mötesbilder, fakta och vanliga Spara/Kasta-knappar; befintliga
-bilder och äldre foton finns kvar. Pärmen kan även läsas på en stående telefon (#1379).
+Djurpärmen ligger ovanpå soffbordet och samlar alla spelets djur och mötbara figurer
+med stabila nummer, modellbilder, familjer och sällsynthet. Rutnätet skiljer på sedda
+former och hittade former: titta på ett djur för att se det och klappa, krama, mata,
+fånga, skräm eller hälsa där den handlingen finns för att hitta det. Måsar och parkens
+fjärilar har bara sedd-poster. Detaljkorten visar formernas kedjor, fakta, mötesstatistik
+och högst tre senaste egna foton. Samlingen och modellbildscachen sparas lokalt för
+vald spelare; äldre kattfoton lämnas orörda men den gamla plats-/rotationsmodellen används
+inte längre. Pärmen fungerar med mus, tangentbord och touch, även stående telefon (#1848).
 Basketball PvP follows the real release and falling throw, including the existing
 ball radius and glass/solid/floor obstruction before the first contact (#980).
 The server confirms head2/body1; the original basket physics and scoring remain.
