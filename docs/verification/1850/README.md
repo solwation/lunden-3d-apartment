@@ -40,3 +40,6 @@ Start the normal dev server, then `PLAYWRIGHT_MODULE=… NORDIC_GYM_BEFORE=… t
 ![After: complete rear contact and retained building](app/after-rear.png)
 
 Applicable public follow-up: a separate **low-priority** environment port owned by the conductor after exact source publication. Port the generic Nordic/terrain helper and builder adaptation; do not transfer personal cat gameplay or these original-app result images. No push or closure is performed by this worker.
+
+
+Levererat i `edeff125c3645ee3ac0a0feee911713f140d08a5`. [Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/41687215178) lyckades. Ingen Worker-körning utlöstes av ändringens filer; körlistan är kontrollerad och ingen utebliven körning räknas som passerad. Den publika sidans version.json visar `edeff12`. Dirigentens kombinerade diff-/bildgranskning är klar. Verifieringslänkarna ovan är permanenta; eventuella resultatbilder är granskade och bytekontrollerade. Ingen rutinmässig omkörning av gröna kontroller efter orelaterad integration. Ärendet stängs genom efterföljande verifieringscommit och aktiva etiketter tas bort.
