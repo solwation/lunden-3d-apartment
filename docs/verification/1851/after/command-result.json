@@ -1,0 +1,85 @@
+{
+  "peers": 1,
+  "me": "9ed0cd30",
+  "connected": true,
+  "peerPackets": 11,
+  "elapsed": 1740,
+  "cost": {
+    "BestiaryObserver.update": {
+      "n": 60,
+      "total": 230.99999999254942,
+      "max": 143.29999999701977,
+      "over20": 2
+    },
+    "BestiaryPhotoQueue.update": {
+      "n": 60,
+      "total": 0.20000000298023224,
+      "max": 0.10000000149011612,
+      "over20": 0
+    },
+    "Ghost.draw": {
+      "n": 60,
+      "total": 7.399999976158142,
+      "max": 1.6000000014901161,
+      "over20": 0
+    },
+    "Ghosts.update": {
+      "n": 60,
+      "total": 13.299999989569187,
+      "max": 1.7999999970197678,
+      "over20": 0
+    },
+    "Ghosts.message": {
+      "n": 8,
+      "total": 0.8999999985098839,
+      "max": 0.20000000298023224,
+      "over20": 0
+    },
+    "BestiaryObserver.candidates": {
+      "n": 2,
+      "total": 0.29999999701976776,
+      "max": 0.20000000298023224,
+      "over20": 0
+    },
+    "Marks.sightBlocked": {
+      "n": 4,
+      "total": 227.5,
+      "max": 138.10000000149012,
+      "over20": 2
+    }
+  },
+  "photoJobs": 0,
+  "images": 0,
+  "positions": [
+    [
+      2.5,
+      0,
+      22
+    ],
+    [
+      2.5,
+      0,
+      25
+    ]
+  ],
+  "ghosts": [
+    {
+      "id": "31bb6af3",
+      "name": "Perf lokalt B",
+      "position": [
+        2.7,
+        0,
+        25
+      ],
+      "pump": 1,
+      "gx": null
+    }
+  ],
+  "render": {
+    "frame": 140,
+    "calls": 188,
+    "triangles": 699374,
+    "points": 80,
+    "lines": 0
+  }
+}

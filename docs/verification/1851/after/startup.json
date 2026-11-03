@@ -1,0 +1,151 @@
+{
+  "t": 64387.70000000298,
+  "cost": {
+    "WarmUp.tick": {
+      "n": 220,
+      "total": 18126.000000052154,
+      "max": 2090.7999999970198,
+      "over20": 58
+    },
+    "BestiaryObserver.update": {
+      "n": 223,
+      "total": 0.4000000059604645,
+      "max": 0.10000000149011612,
+      "over20": 0
+    },
+    "Ghosts.update": {
+      "n": 223,
+      "total": 19.100000001490116,
+      "max": 1.0999999940395355,
+      "over20": 0
+    },
+    "WarmUp.compileObjects": {
+      "n": 1349,
+      "total": 3599.0000000223517,
+      "max": 1769.7000000029802,
+      "over20": 2
+    },
+    "WarmUp.drawRange": {
+      "n": 98,
+      "total": 14480.400000043213,
+      "max": 2076.6999999955297,
+      "over20": 25
+    }
+  },
+  "loading": {
+    "name": "Värmer upp vyn",
+    "fraction": 0.9,
+    "last": 24829,
+    "beat": 58782.1,
+    "steps": [
+      {
+        "name": "Startar",
+        "at": 74
+      },
+      {
+        "name": "Hämtar programfilerna",
+        "at": 139
+      },
+      {
+        "name": "Startar 3D-grafiken",
+        "at": 1718
+      },
+      {
+        "name": "Hämtar planritningen",
+        "at": 1743
+      },
+      {
+        "name": "Bygger huset",
+        "at": 2104
+      },
+      {
+        "name": "Möblerar",
+        "at": 23197
+      },
+      {
+        "name": "Förbereder grafiken",
+        "at": 24504
+      },
+      {
+        "name": "Värmer upp vyn",
+        "at": 24829
+      }
+    ],
+    "stallMs": 40000,
+    "long": {
+      "top": [
+        [
+          3948,
+          "Bygger huset"
+        ],
+        [
+          2097,
+          "Värmer upp vyn"
+        ],
+        [
+          1779,
+          "Värmer upp vyn"
+        ],
+        [
+          1492,
+          "Bygger huset"
+        ],
+        [
+          1379,
+          "Bygger huset"
+        ]
+      ],
+      "n": 69,
+      "sum": 37708
+    },
+    "buildCache": [
+      {
+        "name": "river",
+        "active": false,
+        "hits": 63140,
+        "misses": 564937,
+        "evictions": 532197,
+        "peak": 32740,
+        "entries": 0,
+        "max": 32768
+      },
+      {
+        "name": "plateau",
+        "active": false,
+        "hits": 1138636,
+        "misses": 910055,
+        "evictions": 877288,
+        "peak": 32767,
+        "entries": 0,
+        "max": 32768
+      },
+      {
+        "name": "drawn terrain",
+        "active": false,
+        "hits": 8206473,
+        "misses": 6810388,
+        "evictions": 6777620,
+        "peak": 32768,
+        "entries": 0,
+        "max": 32768
+      }
+    ]
+  },
+  "warm": "done",
+  "render": {
+    "frame": 137,
+    "calls": 365,
+    "triangles": 906469,
+    "points": 80,
+    "lines": 0
+  },
+  "memory": {
+    "geometries": 2301,
+    "textures": 217
+  },
+  "images": {
+    "renders": 0,
+    "pending": 0
+  },
+  "errors": []
+}

@@ -1,0 +1,177 @@
+{
+  "kind": "same saved rays; current production segment body with fresh private caches; fixture omits only duplicate metadata registration",
+  "cold": {
+    "answers": [
+      {
+        "q": {
+          "from": [
+            2.875,
+            1.62,
+            -12
+          ],
+          "to": [
+            5.21,
+            4.087104280265546,
+            2.55
+          ]
+        },
+        "blocked": true
+      },
+      {
+        "q": {
+          "from": [
+            2.875,
+            1.62,
+            -12
+          ],
+          "to": [
+            9.425465965910682,
+            36.75564471664491,
+            77.81053747708349
+          ]
+        },
+        "blocked": true
+      }
+    ],
+    "ms": 46.899999998509884
+  },
+  "warm": {
+    "answers": [
+      {
+        "q": {
+          "from": [
+            2.875,
+            1.62,
+            -12
+          ],
+          "to": [
+            5.21,
+            4.087104280265546,
+            2.55
+          ]
+        },
+        "blocked": true
+      },
+      {
+        "q": {
+          "from": [
+            2.875,
+            1.62,
+            -12
+          ],
+          "to": [
+            9.425465965910682,
+            36.75564471664491,
+            77.81053747708349
+          ]
+        },
+        "blocked": true
+      }
+    ],
+    "ms": 8.100000001490116
+  },
+  "top": [
+    {
+      "ms": 6.299999997019768,
+      "items": [
+        {
+          "name": "",
+          "triangles": 57120,
+          "instances": 0
+        }
+      ]
+    },
+    {
+      "ms": 5.399999998509884,
+      "items": [
+        {
+          "name": "",
+          "triangles": 1426,
+          "instances": 0
+        }
+      ]
+    },
+    {
+      "ms": 4.5,
+      "items": [
+        {
+          "name": "",
+          "triangles": 1426,
+          "instances": 0
+        }
+      ]
+    },
+    {
+      "ms": 2,
+      "items": [
+        {
+          "name": "",
+          "triangles": 11592,
+          "instances": 0
+        }
+      ]
+    },
+    {
+      "ms": 1.8999999985098839,
+      "items": [
+        {
+          "name": "",
+          "triangles": 1568,
+          "instances": 0
+        }
+      ]
+    },
+    {
+      "ms": 1.3000000044703484,
+      "items": [
+        {
+          "name": "",
+          "triangles": 1176,
+          "instances": 0
+        }
+      ]
+    },
+    {
+      "ms": 0.9000000059604645,
+      "items": [
+        {
+          "name": "",
+          "triangles": 2762,
+          "instances": 0
+        }
+      ]
+    },
+    {
+      "ms": 0.9000000059604645,
+      "items": [
+        {
+          "name": "",
+          "triangles": 4208,
+          "instances": 0
+        }
+      ]
+    },
+    {
+      "ms": 0.8999999985098839,
+      "items": [
+        {
+          "name": "",
+          "triangles": 5552,
+          "instances": 0
+        }
+      ]
+    },
+    {
+      "ms": 0.8999999985098839,
+      "items": [
+        {
+          "name": "",
+          "triangles": 15288,
+          "instances": 0
+        }
+      ]
+    }
+  ],
+  "calls": 4058,
+  "totalSegmentMs": 51.19999999552965
+}

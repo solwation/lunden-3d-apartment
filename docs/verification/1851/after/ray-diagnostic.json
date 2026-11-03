@@ -1,0 +1,70 @@
+{
+  "rays": [
+    {
+      "from": [
+        2.875,
+        1.62,
+        -12
+      ],
+      "to": [
+        5.21,
+        4.087104280265546,
+        2.55
+      ]
+    },
+    {
+      "from": [
+        2.875,
+        1.62,
+        -12
+      ],
+      "to": [
+        9.425465965910682,
+        36.75564471664491,
+        77.81053747708349
+      ]
+    }
+  ],
+  "cost": {
+    "BestiaryObserver.candidates": {
+      "n": 1,
+      "total": 0.10000000149011612,
+      "max": 0.10000000149011612,
+      "over20": 0
+    },
+    "Marks.sightBlocked": {
+      "n": 2,
+      "total": 209.39999999850988,
+      "max": 204.70000000298023,
+      "over20": 1
+    },
+    "BestiaryObserver.update": {
+      "n": 1,
+      "total": 210.70000000298023,
+      "max": 210.70000000298023,
+      "over20": 1
+    }
+  },
+  "large": [
+    {
+      "name": "",
+      "positions": 171360,
+      "visible": true,
+      "material": "MeshStandardMaterial",
+      "transparent": false,
+      "layer": 128,
+      "instanced": false,
+      "skinned": false
+    },
+    {
+      "name": "south-land",
+      "positions": 204057,
+      "visible": true,
+      "material": "MeshStandardMaterial",
+      "transparent": false,
+      "layer": 1,
+      "instanced": false,
+      "skinned": false
+    }
+  ]
+}

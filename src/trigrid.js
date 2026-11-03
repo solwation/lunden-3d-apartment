@@ -99,8 +99,11 @@ export class TriGrid {
       out.push({ distance: d, point: p.clone(), normal, object: this.mesh, materialIndex: this.mat[t] });
     };
     for (const t of this.big) test(t);
-    const x0 = f(box.min.x / CELL), y0 = f(box.min.y / CELL), z0 = f(box.min.z / CELL);
-    const x1 = f(box.max.x / CELL), y1 = f(box.max.y / CELL), z1 = f(box.max.z / CELL);
+    // #1851: cells outside this mesh cannot hold its triangles. Keep a conservative
+    // world-space Float32 margin: this.box was accumulated before tri was rounded.
+    const margin = 8 * 2 ** -23 * Math.max(1, Math.abs(this.box.min.x), Math.abs(this.box.min.y), Math.abs(this.box.min.z), Math.abs(this.box.max.x), Math.abs(this.box.max.y), Math.abs(this.box.max.z));
+    const x0 = f(Math.max(box.min.x, this.box.min.x - margin) / CELL), y0 = f(Math.max(box.min.y, this.box.min.y - margin) / CELL), z0 = f(Math.max(box.min.z, this.box.min.z - margin) / CELL);
+    const x1 = f(Math.min(box.max.x, this.box.max.x + margin) / CELL), y1 = f(Math.min(box.max.y, this.box.max.y + margin) / CELL), z1 = f(Math.min(box.max.z, this.box.max.z + margin) / CELL);
     for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) for (let z = z0; z <= z1; z++) {
       const l = this.cell(x, y, z);
       if (l) for (const t of l) test(t);

@@ -177,12 +177,17 @@ export class Marks {
   sightBlocked(from, to, { ignore = null } = {}) {
     const meshes = this.cat?.visible && !this.cat.held ? [...this.meshes(), ...catMeshes(this.cat)] : this.meshes();
     const distance = from.distanceTo(to);
-    for (const h of this.segment(from, to, meshes)) {
-      const o = h.object;
-      if (!shown(o) || (this.camera && !o.layers.test(this.camera.layers)) || (ignore && isUnder(o, ignore)) || h.distance >= distance - 0.15) continue;
-      const m = Array.isArray(o.material) ? o.material[h.materialIndex ?? 0] : o.material;
-      if (!m || m.visible === false || m.transparent || m.blending === THREE.CustomBlending || m.blending === THREE.AdditiveBlending) continue;
-      return true;
+    const opaque = m => m && m.visible !== false && !m.transparent && m.blending !== THREE.CustomBlending && m.blending !== THREE.AdditiveBlending;
+    // A visual query needs any opaque blocker, not every physical hit in the world. Filter
+    // before lazy spatial work, then stop at the first blocker; marks/weapons keep segment().
+    for (const o of meshes) {
+      if (!shown(o) || (this.camera && !o.layers.test(this.camera.layers)) || (ignore && isUnder(o, ignore))) continue;
+      if (!(Array.isArray(o.material) ? o.material : [o.material]).some(opaque)) continue;
+      for (const h of this.segment(from, to, [o])) {
+        if (h.distance >= distance - 0.15) continue;
+        const m = Array.isArray(o.material) ? o.material[h.materialIndex ?? 0] : o.material;
+        if (opaque(m)) return true;
+      }
     }
     return false;
   }
@@ -219,7 +224,7 @@ export class Marks {
           bounds.expandByScalar(padding);
           gridBoxes.set(o, bounds);
         }
-        if (!bounds.intersectsBox(segBox)) continue;
+        if (!bounds.intersectsBox(segBox) || !this.ray.ray.intersectsBox(bounds)) continue; // #1851: a diagonal sight ray must actually enter the padded box
         let g = grids.get(o);
         if (!g) grids.set(o, (g = new TriGrid(o)));
         g.hits(this.ray.ray, far, segBox, o.material.side, out);

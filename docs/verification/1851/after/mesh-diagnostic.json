@@ -1,0 +1,242 @@
+{
+  "rays": [
+    {
+      "q": {
+        "from": [
+          2.875,
+          1.62,
+          -12
+        ],
+        "to": [
+          5.21,
+          4.087104280265546,
+          2.55
+        ]
+      },
+      "blocked": true
+    },
+    {
+      "q": {
+        "from": [
+          2.875,
+          1.62,
+          -12
+        ],
+        "to": [
+          9.425465965910682,
+          36.75564471664491,
+          77.81053747708349
+        ]
+      },
+      "blocked": true
+    }
+  ],
+  "top": [
+    {
+      "ms": 11.600000001490116,
+      "items": [
+        {
+          "name": "",
+          "uuid": "b944eb9c-3254-4ae0-b3a4-40a6ebdae7df",
+          "triangles": 288,
+          "positions": 576,
+          "instances": 0,
+          "layer": 1,
+          "parents": [
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 8.200000002980232,
+      "items": [
+        {
+          "name": "",
+          "uuid": "402a675a-6114-4b13-8198-99d8b6058874",
+          "triangles": 1008,
+          "positions": 2016,
+          "instances": 0,
+          "layer": 1,
+          "parents": [
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 7.899999998509884,
+      "items": [
+        {
+          "name": "",
+          "uuid": "61afe2c2-a0a3-4002-9d30-7b8e9f30ca9b",
+          "triangles": 948,
+          "positions": 1896,
+          "instances": 0,
+          "layer": 1,
+          "parents": [
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 5.899999998509884,
+      "items": [
+        {
+          "name": "",
+          "uuid": "9c973c1d-a392-4ca0-b8a7-8e3014efb6e1",
+          "triangles": 812,
+          "positions": 1500,
+          "instances": 0,
+          "layer": 1,
+          "parents": [
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 4.700000002980232,
+      "items": [
+        {
+          "name": "",
+          "uuid": "3081cd9a-4e54-434c-bebf-021ad8c44ab2",
+          "triangles": 15288,
+          "positions": 45864,
+          "instances": 0,
+          "layer": 128,
+          "parents": [
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 4,
+      "items": [
+        {
+          "name": "",
+          "uuid": "b5f02a5d-a492-4d7b-9b02-e1c834752079",
+          "triangles": 1176,
+          "positions": 3528,
+          "instances": 0,
+          "layer": 128,
+          "parents": [
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 3.899999998509884,
+      "items": [
+        {
+          "name": "",
+          "uuid": "fcdb2060-b70a-4cee-822c-6594ad5b1242",
+          "triangles": 784,
+          "positions": 394,
+          "instances": 0,
+          "layer": 128,
+          "parents": [
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 3.7999999970197678,
+      "items": [
+        {
+          "name": "",
+          "uuid": "494be1e1-2202-4534-be1a-0fb5e1e1a551",
+          "triangles": 2880,
+          "positions": 8640,
+          "instances": 0,
+          "layer": 128,
+          "parents": [
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 3.7000000029802322,
+      "items": [
+        {
+          "name": "",
+          "uuid": "131f6125-3acd-4ada-956f-4c3fa8540cc7",
+          "triangles": 2880,
+          "positions": 8640,
+          "instances": 0,
+          "layer": 128,
+          "parents": [
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 3.6999999955296516,
+      "items": [
+        {
+          "name": "",
+          "uuid": "fb12ec94-1696-418e-a32f-e3768c9b43fb",
+          "triangles": 10320,
+          "positions": 30960,
+          "instances": 0,
+          "layer": 1,
+          "parents": [
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 3.600000001490116,
+      "items": [
+        {
+          "name": "",
+          "uuid": "7550a4da-c37c-47c7-873a-3f29fd23d9d1",
+          "triangles": 588,
+          "positions": 1764,
+          "instances": 0,
+          "layer": 128,
+          "parents": [
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 3.600000001490116,
+      "items": [
+        {
+          "name": "",
+          "uuid": "d479b3cf-09ed-4971-9dee-399caa9b65af",
+          "triangles": 1426,
+          "positions": 4278,
+          "instances": 0,
+          "layer": 1,
+          "parents": [
+            "",
+            ""
+          ]
+        }
+      ]
+    }
+  ],
+  "total": 246.00000002235174,
+  "calls": 2029
+}

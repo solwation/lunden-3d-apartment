@@ -1,0 +1,6 @@
+page.evaluate: Error: Duplicate bestiary entry: butterfly:magic/62
+    at BestiaryRegistry.register (http://localhost:8922/src/bestiary.js:6:73)
+    at registerCreature (http://localhost:8922/src/bestiary.js:17:51)
+    at creature (http://localhost:8922/src/bestiarymetadata.js:5:9)
+    at http://localhost:8922/src/marks.js?1851-exact-box:450:1
+    at /home/devcontainers/orkester-olw-win10-gpt6-20261103/multiplayer-performance/tools/multiplayer1851-profile.cjs:9:590
