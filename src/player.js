@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { bicycleSpeed, bicycleTakeoff } from './bikemotion.js';
 import { basketFloor, basketCollide } from './balloongeo.js';
 import { parkFillAt } from './riverpark.js';
 import { SITE, WALK, LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, jetThin, SPIDER, SOFFITS, BICYCLE } from './config.js';
@@ -614,7 +615,7 @@ export class Player {
       }
     }
     if (!chosen) { bike.ridden = false; return false; }
-    this.riding = { bike, lastStanding: standing, yaw: bike.yaw, pitch: this.bikeSupport(chosen,bike.yaw).pitch };
+    this.riding = { bike, speed: 0, groundVy: 0, lastStanding: standing, yaw: bike.yaw, pitch: this.bikeSupport(chosen,bike.yaw).pitch };
     bike.atSource = false; bike.pick.visible = false;
     this.pos.copy(chosen); this.vy = 0; this.crouch = this.crouched = this.kneel = false;
     this.camera.rotation.set(BICYCLE.pitch, bike.yaw - Math.PI / 2, 0, 'YXZ');
@@ -678,7 +679,7 @@ export class Player {
     const y0 = Math.atan2(-(this.pos.z - from.z), this.pos.x - from.x);
     for (const o of [0, 0.6, -0.6, 1.2, -1.2, Math.PI / 2, -Math.PI / 2, Math.PI]) {
       const yaw = y0 + o, s = this.bikeSupport(this.pos, yaw);
-      if (s && this.bikeHull(new THREE.Vector3(this.pos.x, s.y, this.pos.z), yaw, [], s)) { this.pos.y = s.y; r.yaw = yaw; r.pitch = s.pitch; r.airborne = false; return true; }
+      if (s && this.bikeHull(new THREE.Vector3(this.pos.x, s.y, this.pos.z), yaw, [], s)) { this.pos.y = s.y; r.yaw = yaw; r.pitch = s.pitch; r.airborne = false; r.speed=0; r.groundVy=0; return true; }
     }
     this.dismountBicycle(); // (no room for the bike on that spot: the rider stands, the bike beside)
     return true;
@@ -699,7 +700,9 @@ export class Player {
     const fwd = (k.has('KeyW') || k.has('ArrowUp') ? 1 : 0) - (k.has('KeyS') || k.has('ArrowDown') ? 1 : 0) || this.analog.y;
     const desired = this.camera.rotation.y + Math.PI / 2 + side * C.turn * dt;
     const rawAngle = Math.atan2(Math.sin(desired - r.yaw), Math.cos(desired - r.yaw)), angle = Math.abs(rawAngle) < 1e-9 ? 0 : rawAngle;
-    const travel = (fwd >= 0 ? C.speed : C.reverse) * fwd * dt;
+    const oldSpeed = r.speed ?? 0;
+    r.speed = bicycleSpeed(oldSpeed, fwd, r.pitch ?? 0, !!r.airborne, dt);
+    const travel = (oldSpeed + r.speed) * .5 * dt;
     const n = Math.max(1, Math.ceil((Math.abs(travel) + Math.abs(angle) * (Math.max(-C.rear, C.front) + C.radius+C.height*Math.abs(Math.sin(r.pitch??0)))) / C.step));
     let previous=this.bikeSupport(this.pos,r.yaw);
     for (let i = 0; i < n; i++) {
@@ -711,22 +714,28 @@ export class Player {
       if(!fits(p,yaw,support)) {
         // A blocked forward move must not swallow the steering (#1178): try the turn on the spot,
         // and keep the old heading only when the turn itself would hit something.
-        p=this.pos.clone();
+        p=this.pos.clone(); r.speed=0; r.groundVy=0;
         const turned=yaw!==r.yaw&&travel!==0?this.bikeSupport(p,yaw):null;
         if(turned&&fits(p,yaw,turned))support=turned;else {yaw=r.yaw;support=previous;}
       }
       if(!support)continue;
-      const falling = !!this.fall || this.pos.y-support.y>C.maxDrop;
-      let vy=this.vy, y=support.y;
-      if(falling) { vy-=GRAVITY*h;y=Math.max(support.y,this.pos.y+vy*h); }
+      const groundVy = (support.y - this.pos.y) / h;
+      const launch = !r.airborne && !this.fall && !p.equals(this.pos)
+        ? bicycleTakeoff(r.speed, r.groundVy ?? 0, groundVy, h, this.pos.y + (r.groundVy ?? 0) * h - .5 * C.motion.gravity * h * h - support.y) : 0;
+      const falling = !!this.fall || !!r.airborne || launch > 0 || this.pos.y-support.y>C.maxDrop;
+      let vy=launch || this.vy, y=support.y;
+      if(falling) { vy-=C.motion.gravity*h;y=Math.max(support.y,this.pos.y+vy*h); }
+      const airborne = y > support.y + 1e-6;
+      const targetPitch = airborne ? Math.atan2(vy, Math.max(.1, Math.abs(r.speed))) : support.pitch;
+      const nextPitch = airborne ? THREE.MathUtils.lerp(r.pitch ?? support.pitch, THREE.MathUtils.clamp(targetPitch,-C.maxTilt,C.maxTilt),Math.min(1,C.motion.airPitch*h)) : support.pitch;
       // Sweep vertical motion too: a large fall never skips a thin leaf or a low ceiling.
-      const steps=Math.max(1,Math.ceil((Math.abs(y-this.pos.y)+Math.abs(support.pitch-(r.pitch??previous.pitch))*C.height)/C.step));let clear=true;
-      for(let j=1;j<=steps;j++) { const q=this.pos.clone().lerp(new THREE.Vector3(p.x,y,p.z),j/steps);if(!this.bikeHull(q,r.yaw+(yaw-r.yaw)*j/steps,[],{...support,pitch:THREE.MathUtils.lerp(r.pitch??previous.pitch,support.pitch,j/steps)})){clear=false;break;} }
-      if(!clear) { this.vy=0;continue; }
+      const steps=Math.max(1,Math.ceil((Math.abs(y-this.pos.y)+Math.abs(nextPitch-(r.pitch??previous.pitch))*C.height)/C.step));let clear=true;
+      for(let j=1;j<=steps;j++) { const q=this.pos.clone().lerp(new THREE.Vector3(p.x,y,p.z),j/steps);if(!this.bikeHull(q,r.yaw+(yaw-r.yaw)*j/steps,[],{...support,pitch:THREE.MathUtils.lerp(r.pitch??previous.pitch,nextPitch,j/steps)})){clear=false;break;} }
+      if(!clear) { this.vy=0;r.speed=0;continue; }
       if(falling) {
         const f=(this.fall??={top:this.pos.y,gap:0});f.top=Math.max(f.top,this.pos.y);f.gap=Math.max(f.gap,this.pos.y-support.y);
       }
-      this.pos.set(p.x,y,p.z);previous=support;r.yaw=yaw;r.pitch=support.pitch;this.vy=falling?vy:0;r.airborne=y>support.y+1e-6;
+      this.pos.set(p.x,y,p.z);previous=support;r.yaw=yaw;r.pitch=nextPitch;this.vy=falling?vy:0;r.airborne=airborne;r.groundVy=airborne?0:groundVy;
       if(this.fall&&!r.airborne) {const f=this.fall;this.fall=null;this.vy=0;this.onLand?.(f.top-this.pos.y,f.gap);if(this.riding!==r)return;}
     }
     this.bikeSplash(); // #1304: into the river
