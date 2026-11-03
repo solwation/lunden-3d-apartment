@@ -1,0 +1,31 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+READY
+COMMAND OK
+{
+  sun: [ -0.27284569619042603, -0.011874030802689648, 0.9619845287024417 ],
+  b: {
+    id: 'roof-Hus B',
+    name: 'Hus Bs tak',
+    x0: -41.92,
+    x1: -22.42,
+    z0: 33.12,
+    z1: 57.53,
+    y: undefined
+  },
+  c: {
+    id: 'roof-Hus C',
+    name: 'Hus Cs tak',
+    x0: -70.78,
+    x1: -51.22,
+    z0: 12.42,
+    z1: 36.86,
+    y: undefined
+  }
+}
+COMMAND OK
+COMMAND OK
+COMMAND OK
+COMMAND OK
+COMMAND OK
+COMMAND OK
+COMMAND OK
