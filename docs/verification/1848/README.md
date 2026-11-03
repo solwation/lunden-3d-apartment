@@ -68,3 +68,6 @@ The recorded preparation used player.spawn(3.64,9.4,0), looked at the real binde
 ## Conductor integration
 
 Core38634346 and UIcb46cf24 are integrated together. All30 runtime files match the reviewed final combined manifest byte for byte; [integration-sources.json](integration-sources.json) records the source commits and hashes. The single new changelog entry is1427 and every previous row is preserved. All six actual-app result images were directly inspected. The source-bound18 Node,65 real model/IDB and14 app-acceptance results are reused without a routine browser repeat. Gameplay/collection/personal photos have no applicable public port.
+
+
+Levererat i `d928a564e4fd5290a74796c993c43132c20a322c`. [Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/41679645589) och [Worker](https://github.com/solwation/lunden-3d-apartment/actions/runs/41679645575) lyckades; Worker-loggen bekräftar faktisk Wrangler-deploy och den publika sidans version.json visar `d928a56`. Dirigentens kombinerade diff-/bildgranskning är klar. Verifieringslänkarna ovan är permanenta; eventuella resultatbilder är granskade och bytekontrollerade. Ingen rutinmässig omkörning av gröna kontroller efter orelaterad integration. Ärendet stängs genom efterföljande verifieringscommit och aktiva etiketter tas bort.

@@ -50,4 +50,4 @@ Samma världsbild före/efter UI: **210 calls / 663 871 trianglar / 1 271 geomet
 ![Riktig egen klappstatistik, mötesfoto och färdig modellkedja](../1848/app/desktop-statistics-chain.png)
 ![Faktisk touchdetalj med vuxen modell och information](../1848/app/touch-detail.png)
 
-Använd `tabletop-prop.png` som propbevis. Filen `tabletop-prop-final.png` har pausmenyn ovanpå och är diagnostisk; den tydliga första bilden är redan fullgod och ingen omtagning behövs. Dessa appbilder hör till core-ägarens commit; UI- och core-commits måste integreras som en sammanhängande feature före publicering. Gemensam changelog/README/topic-text ägs av core-ägaren, ingen duplicerad featurepost görs här.
+Använd `tabletop-prop.png` som propbevis. Filen `../1848/app/diagnostic/tabletop-prop-pause-menu.png` har pausmenyn ovanpå och är diagnostisk; den tydliga första bilden är redan fullgod och ingen omtagning behövs. Dessa appbilder hör till core-ägarens commit; UI- och core-commits måste integreras som en sammanhängande feature före publicering. Gemensam changelog/README/topic-text ägs av core-ägaren, ingen duplicerad featurepost görs här.
