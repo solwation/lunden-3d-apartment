@@ -33,3 +33,6 @@ Chromium 1248/SwiftShader, desktop 1000×700 och emulerad iPhone/touch 844×390,
 
 
 Dirigentens sammanslagning med #1835 klarade 37/37 riktade Node-kontrakt (integration-contracts.txt). Konstruktorn/kontrollen/decor/config motsvarar den gemensamma browserkällan; endast oberoende importordning skiljer i outdoorgym.js (integration-source-review.txt). Första lokala geometry-teststarten saknade Three-paketet och körde därför inte detta prov; befintlig beroendecache länkades och den sammanslagna sviten är grön. Ingen ny browserrunda behövdes efter källgranskningen.
+
+
+Levererat i `e21ca752b49a129f3909019707898f2d7479ddf4`. [Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/41630419839) och [Worker](https://github.com/solwation/lunden-3d-apartment/actions/runs/41630419760) lyckades; Worker-loggen bekräftar faktisk Wrangler-deploy och den publika sidans version.json visar `e21ca75`. Dirigentens kombinerade diff-/bildgranskning är klar. Verifieringslänkarna ovan är permanenta; eventuella resultatbilder är granskade och bytekontrollerade. Ingen rutinmässig omkörning av gröna kontroller efter orelaterad integration. Ärendet stängs genom efterföljande verifieringscommit och aktiva etiketter tas bort.
