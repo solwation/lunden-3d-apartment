@@ -18,5 +18,11 @@
   "changelog": "All old entries retained, new1431",
   "serverChecks": "79/79 real Room/player/deploypaths passed before server-stage publication",
   "clientChecks": "Accepted40/40 source-bound checks reused after exact runtime byte audit",
-  "integrationDiagnostic": "First diff omitted binary/full-index flags and atomically failed; corrected with binary/full-index. Only earlier unpushed changelog commit remains as part of final client range; no incomplete client published."
+  "integrationDiagnostic": "First diff omitted binary/full-index flags and atomically failed; corrected with binary/full-index. Only earlier unpushed changelog commit remains as part of final client range; no incomplete client published.",
+  "actualServerDeployment": {
+    "sha": "5775b6086f04ca5081b2c4c418ce3d4088da706f",
+    "workerRun": 41707161579,
+    "status": "success",
+    "logEvidence": "Deployed lunden-l1007 triggers"
+  }
 }
