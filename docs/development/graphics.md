@@ -662,3 +662,7 @@ groove/paired-highlight texture, a painted ceiling-reflection approximation rath
 a live reflection. All gloss/press/emission values are centralized visual guesses.
 The scoped native-input/room render in `tools/playroomdjcontroltest.cjs` checks label
 occlusion, edge clearance and observer state; see [result images](../verification/1667/).
+
+## Cosmetic upper arms (#1837)
+
+`Avatar` shares immutable per-variant bind-pose geometry, including one `armPump` attribute. Shoulder skin and sleeve vertices receive a smooth radial X/Z bulge; the material's own `uPump` controls it before skinning with matching normal correction. Other bone regions stay unchanged. No bone scaling, shared-buffer edits, new draws or per-frame rebuild. New self/remote looks reapply their current pump. [Checks, before/after and remote comparison](../verification/1837/README.md).

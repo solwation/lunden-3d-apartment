@@ -1,3 +1,5 @@
+import { armPumpShape, pumpWire } from './gympump.js';
+import { GYM_PUMP } from './config.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, DANCE, AVATAR_AIR as AIR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
@@ -880,10 +882,12 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
     const n = g.attributes.position.count, k = NAMES.indexOf(part.bone), c = new THREE.Color(fixed), vs = g.attributes.shade?.array; // per-vertex shade (hair strands, #1102)
     const col = new Float32Array(n * 3), bare = new Float32Array(n), reg = new Float32Array(n), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), contact = new Uint8Array(n), nose = new Uint8Array(n), jaw = new Uint8Array(n), mouth = new Float32Array(n), pucker = new Uint8Array(n);
     const hb = part.bone === 'head' ? bindAt('head') : null, gp = g.attributes.position;
+    const pump = new Float32Array(n * 4), shoulder = /^shoulder[LR]$/.test(part.bone) && (region === REGION.skin || region === REGION.top) ? bindAt(part.bone) : null;
     const facePt = new Float32Array(n).fill(part.face ?? 0), anchor = new Float32Array(n * 3); // (#1138, see faceShape)
     const anc = part.anchor?.isBufferGeometry ? (part.anchor.index ? part.anchor.toNonIndexed() : part.anchor).attributes.position.array : null;
     if (anc) anchor.set(anc.subarray(0, n * 3)); else if (part.anchor) for (let i = 0; i < n; i++) anchor.set(part.anchor, i * 3);
     for (let i = 0; i < n; i++) {
+      if (shoulder) { const [w, d] = armPumpShape(gp.getY(i) - shoulder.y, UPPER); pump.set([shoulder.x, shoulder.z, w, d], i * 4); }
       if (region === REGION.fixed && !part.shoe) { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; } else col.fill((vs ? shade * vs[i] : shade) * clothShade(part.bone, region, g.attributes.position, i), i * 3, i * 3 + 3);
       bare[i] = region === REGION.skin ? 1 : 0;
       // Pull the adjacent muzzle skin with the lips, so a pout never leaves floating lip islands.
@@ -907,7 +911,8 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
     g.setAttribute('rifleSkull', new THREE.Uint8BufferAttribute(contact, 1));
     g.setAttribute('facePart', new THREE.BufferAttribute(facePt, 1));
     g.setAttribute('faceAnchor', new THREE.BufferAttribute(anchor, 3));
-    for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'color', 'region', 'bare', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw', 'mouth', 'pucker', 'facePart', 'faceAnchor'].includes(a)) g.deleteAttribute(a);
+    g.setAttribute('armPump', new THREE.BufferAttribute(pump, 4));
+    for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'color', 'region', 'bare', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw', 'mouth', 'pucker', 'facePart', 'faceAnchor', 'armPump'].includes(a)) g.deleteAttribute(a);
     geos.push(g);
   }
   b = mergeGeometries(geos);
@@ -932,7 +937,7 @@ function geometryFor(lk) {
     col[i * 3] = c.r * s; col[i * 3 + 1] = c.g * s; col[i * 3 + 2] = c.b * s;
   }
   const g = new THREE.BufferGeometry();
-  for (const name of ['position', 'normal', 'bare', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw', 'mouth', 'pucker', 'facePart', 'faceAnchor']) g.setAttribute(name, b.attributes[name]);
+  for (const name of ['position', 'normal', 'bare', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw', 'mouth', 'pucker', 'facePart', 'faceAnchor', 'armPump']) g.setAttribute(name, b.attributes[name]);
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   g.userData.headProjection = b.userData.headProjection;
   g.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0.95, 0), 1.3); // limbs and a raised arm stay inside (culling by the root)
@@ -951,7 +956,7 @@ function releaseSuitTexture() { if (--suitUsers === 0) { suitTexture.dispose(); 
 
 function makeMaterial(rim, headProjection) {
   const headMin = headProjection.min, headSize = headProjection.getSize(new THREE.Vector3()), headFront = headProjection.getCenter(new THREE.Vector3()).z;
-  const u = { uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 }, uKiss: { value: 0 },
+  const u = { uPump: { value: 0 }, uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 }, uKiss: { value: 0 },
     uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uEarrings: { value: 0 }, uHat: { value: 0 }, uPhones: { value: 0 }, uNecklace: { value: 0 }, uRingFinger: { value: 0 }, uBracelet: { value: 0 }, uWatch: { value: 0 }, uRingColor: { value: new THREE.Color(RING.colours[0]) }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) } };
   const m = new THREE.MeshLambertMaterial({ vertexColors: true, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
@@ -960,8 +965,12 @@ function makeMaterial(rim, headProjection) {
     Object.assign(sh.uniforms, u);
     // Bind-pose coordinates follow the original skin: colours/own canvas only, no new
     // geometry, skeleton, head envelope or per-avatar colour-buffer replacement (#891).
-    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSuitAt; varying float vSuitBone; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + FACE_SHAPE_DECL)
-      .replace('#include <begin_vertex>', `#include <begin_vertex>\nvSuitAt = position; vSuitBone = skinIndex.x; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart) * step(facePart, ${FACE_PART.watchStrap}.0 - 0.5); // (#1334: the rings, bracelets and watch cases are metal)\n${faceShape()}\ntransformed.x *= 1.0 - uKiss * pucker * ${KISS.narrow.toFixed(5)};\ntransformed.z += uKiss * pucker * ${KISS.pucker.toFixed(5)};\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; varying float vSuitBone; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + FACE_SHAPE_DECL)
+      .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
+float pumpF = 1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z;
+float pumpD = uPump * ${GYM_PUMP.circumference} * armPump.w;
+objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / pumpF * dot(position.xz - armPump.xy, objectNormal.xz), objectNormal.z / pumpF));`)
+      .replace('#include <begin_vertex>', `#include <begin_vertex>\ntransformed.xz = armPump.xy + (transformed.xz - armPump.xy) * (1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z);\nvSuitAt = position; vSuitBone = skinIndex.x; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart) * step(facePart, ${FACE_PART.watchStrap}.0 - 0.5); // (#1334: the rings, bracelets and watch cases are metal)\n${faceShape()}\ntransformed.x *= 1.0 - uKiss * pucker * ${KISS.narrow.toFixed(5)};\ntransformed.z += uKiss * pucker * ${KISS.pucker.toFixed(5)};\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitBone; varying float vBare; varying float vRing; uniform vec3 uRingColor;')
       .replace('#include <color_fragment>', `#include <color_fragment>
@@ -991,7 +1000,7 @@ function makeMaterial(rim, headProjection) {
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
       #include <opaque_fragment>`);
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-v11';
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-v12';
   return m;
 }
 
@@ -1210,6 +1219,9 @@ export class Avatar {
     this.pos = new THREE.Vector3(); this.known = false;
     this.mouth = 0; this.speech = null; // (#1122: the talking mouth, see talk)
   }
+
+  /** #1837: own material uniform; shared bind-pose buffers remain immutable. */
+  setPump(value) { const next = pumpWire(value); if (next === this.pump) return; this.pump = next; this.material.userData.u.uPump.value = next; }
 
   /** Talk (#1122): the mouth follows `text`'s letters for its length at MOUTH.rate, at most `secs` and MOUTH.maxSecs (then
    * faster), closed at the end. Local only (from a chat line that has already arrived, or a spoken line). */

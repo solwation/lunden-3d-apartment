@@ -1,0 +1,13 @@
+{
+  "base": "786d75c102f89246f778953acbe8bed0adb7a2a4",
+  "files": {
+    "src/gympump.js": "e669e741c7d584b0692b00aeb48ba544deac761ff94f47ca9d09a14e8ead54e5",
+    "src/config.js": "f43df459102db4f7a62a633448894008c0bf835cfaf057633881a3846abea789",
+    "src/avatar.js": "a447d67affa116212ba6e63fd357cd7a98e58b5a4c1ae285c5f12e49e37b22bf",
+    "src/ghosts.js": "4b7571bf796e451abadadbe3491d468f8674680730ed9b9231fd0dc4602e57c4",
+    "src/stats.js": "de41001c283d556ab37e80c3792fbe507abddfce37760d5f9721b53aed66ff09",
+    "src/main.js": "d09601841baa1e7e61a4073eaf3df8392f4ecf8b9f037a4390f320fbdf0b77c4",
+    "cloudflare/players.js": "34330b15e5211c3f00be078ac190b66c490b91fdb553d0fd2942548a7099fd1f",
+    "tools/gympumpbrowser.cjs": "02254e2eb5eecb2715847e74ededfa1808173055553833271a2d4d619029ffd6"
+  }
+}

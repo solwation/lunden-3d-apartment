@@ -1,0 +1,182 @@
+{
+  "fixture": "production modules, 100 debug onRep callbacks; no full world/native exercise claim",
+  "checks": [
+    {
+      "ok": true,
+      "label": "initial self and sampled pump are zero",
+      "data": {
+        "pump": 0,
+        "calls": 3,
+        "triangles": 32574,
+        "geometries": 3,
+        "mesh": [
+          "7f87bbdf-a9eb-4ab9-bf20-519aedb555bc",
+          "763b62b3-d38b-44cb-85ca-4bd3e19ca881",
+          "ed2c499a-9060-4f3d-8364-c319e1980725"
+        ],
+        "uniform": 0
+      }
+    },
+    {
+      "ok": true,
+      "label": "100 debug completed-rep callbacks preserve score/count and persist pump",
+      "data": {
+        "record": {
+          "value": 1,
+          "at": 1793706462935
+        },
+        "reps": 100,
+        "score": 30,
+        "stored": {
+          "value": 1,
+          "at": 1793706462935
+        }
+      }
+    },
+    {
+      "ok": true,
+      "label": "real GPU before/after: same draws, triangles, geometry allocations and self pump",
+      "data": {
+        "pump": 1,
+        "calls": 3,
+        "triangles": 32574,
+        "geometries": 3,
+        "mesh": [
+          "7f87bbdf-a9eb-4ab9-bf20-519aedb555bc",
+          "763b62b3-d38b-44cb-85ca-4bd3e19ca881",
+          "ed2c499a-9060-4f3d-8364-c319e1980725"
+        ],
+        "uniform": 1
+      }
+    },
+    {
+      "ok": true,
+      "label": "look replacement retains self and remote pump"
+    },
+    {
+      "ok": true,
+      "label": "actual remote avatar and same-look unpumped control share immutable positions",
+      "data": {
+        "remote": 1,
+        "uniform": 1,
+        "control": 0,
+        "shared": true,
+        "calls": 2,
+        "triangles": 21980
+      }
+    },
+    {
+      "ok": true,
+      "label": "late joining Ghosts receives Worker snapshot pump without another rep"
+    },
+    {
+      "ok": true,
+      "label": "profile save/reload restores pump, count and own avatar"
+    },
+    {
+      "ok": true,
+      "label": "actual WebSocket state includes bounded bp within existing message size",
+      "data": [
+        {
+          "name": "Pump Player",
+          "bp": 0,
+          "bytes": 71
+        },
+        {
+          "name": "Observer",
+          "bp": 0,
+          "bytes": 71
+        },
+        {
+          "name": "Pump Player",
+          "bp": 0,
+          "bytes": 72
+        },
+        {
+          "name": "Observer",
+          "bp": 0,
+          "bytes": 71
+        },
+        {
+          "name": "Pump Player",
+          "bp": 0,
+          "bytes": 72
+        },
+        {
+          "name": "Pump Player",
+          "bp": 1,
+          "bytes": 79
+        },
+        {
+          "name": "Pump Player",
+          "bp": 1,
+          "bytes": 81
+        },
+        {
+          "name": "Late observer",
+          "bp": 0,
+          "bytes": 71
+        },
+        {
+          "name": "Pump Player",
+          "bp": 1,
+          "bytes": 79
+        }
+      ]
+    },
+    {
+      "ok": true,
+      "label": "no browser or shader errors",
+      "data": []
+    }
+  ],
+  "errors": [],
+  "wire": [
+    {
+      "name": "Pump Player",
+      "bp": 0,
+      "bytes": 71
+    },
+    {
+      "name": "Observer",
+      "bp": 0,
+      "bytes": 71
+    },
+    {
+      "name": "Pump Player",
+      "bp": 0,
+      "bytes": 72
+    },
+    {
+      "name": "Observer",
+      "bp": 0,
+      "bytes": 71
+    },
+    {
+      "name": "Pump Player",
+      "bp": 0,
+      "bytes": 72
+    },
+    {
+      "name": "Pump Player",
+      "bp": 1,
+      "bytes": 79
+    },
+    {
+      "name": "Pump Player",
+      "bp": 1,
+      "bytes": 81
+    },
+    {
+      "name": "Late observer",
+      "bp": 0,
+      "bytes": 71
+    },
+    {
+      "name": "Pump Player",
+      "bp": 1,
+      "bytes": 79
+    }
+  ],
+  "ok": true
+}

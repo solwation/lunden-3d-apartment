@@ -1,0 +1,112 @@
+TAP version 13
+# Subtest: the Worker deploy workflow triggers on every src/ file the Worker imports
+ok 1 - the Worker deploy workflow triggers on every src/ file the Worker imports
+  ---
+  duration_ms: 19.823216
+  type: 'test'
+  ...
+# Subtest: no effort or a partial lift never counts a repetition
+ok 2 - no effort or a partial lift never counts a repetition
+  ---
+  duration_ms: 5.286404
+  type: 'test'
+  ...
+# Subtest: real pulses reach top, returning fully down counts once; more passive time gives nothing
+ok 3 - real pulses reach top, returning fully down counts once; more passive time gives nothing
+  ---
+  duration_ms: 3.696203
+  type: 'test'
+  ...
+# Subtest: reset cancels an armed lift and invalid/background time never advances it
+ok 4 - reset cancels an armed lift and invalid/background time never advances it
+  ---
+  duration_ms: 0.503
+  type: 'test'
+  ...
+# Subtest: pulse cooldown bounds simultaneous or repeated events
+ok 5 - pulse cooldown bounds simultaneous or repeated events
+  ---
+  duration_ms: 0.557801
+  type: 'test'
+  ...
+# Subtest: touch needs a real reversal; long one-way drag, small jitter and fresh pointer grant nothing
+ok 6 - touch needs a real reversal; long one-way drag, small jitter and fresh pointer grant nothing
+  ---
+  duration_ms: 0.7127
+  type: 'test'
+  ...
+# Subtest: pump: completed reps, saturation, linear offline decay, save roundtrip and invalid anchors
+ok 7 - pump: completed reps, saturation, linear offline decay, save roundtrip and invalid anchors
+  ---
+  duration_ms: 1.135901
+  type: 'test'
+  ...
+# Subtest: avatar: all sleeve/cut variants share immutable buffers but own their pump; only shoulder skin/cloth marked
+ok 8 - avatar: all sleeve/cut variants share immutable buffers but own their pump; only shoulder skin/cloth marked
+  ---
+  duration_ms: 794.882297
+  type: 'test'
+  ...
+# Subtest: wire: bounded hundredths, old peers clear, Worker retains progress for room snapshots; main keeps score callback
+ok 9 - wire: bounded hundredths, old peers clear, Worker retains progress for room snapshots; main keeps score callback
+  ---
+  duration_ms: 9.688974
+  type: 'test'
+  ...
+# Subtest: pullup: no passive cycles; a full effort lift and descent count once
+ok 10 - pullup: no passive cycles; a full effort lift and descent count once
+  ---
+  duration_ms: 2.683202
+  type: 'test'
+  ...
+# Subtest: press: no passive cycles; a full effort lift and descent count once
+ok 11 - press: no passive cycles; a full effort lift and descent count once
+  ---
+  duration_ms: 1.066801
+  type: 'test'
+  ...
+# Subtest: step: no passive cycles; a full effort lift and descent count once
+ok 12 - step: no passive cycles; a full effort lift and descent count once
+  ---
+  duration_ms: 1.135001
+  type: 'test'
+  ...
+# Subtest: entry, pause, abort, ordinary seats and station switch never invent a repetition
+ok 13 - entry, pause, abort, ordinary seats and station switch never invent a repetition
+  ---
+  duration_ms: 0.59
+  type: 'test'
+  ...
+# Subtest: daily award ceiling, saved ledger and next local day leave all repetitions available to the medal
+ok 14 - daily award ceiling, saved ledger and next local day leave all repetitions available to the medal
+  ---
+  duration_ms: 0.893901
+  type: 'test'
+  ...
+# Subtest: invalid repetitions never credit points, older saves start without retrospective gym rewards
+ok 15 - invalid repetitions never credit points, older saves start without retrospective gym rewards
+  ---
+  duration_ms: 0.400701
+  type: 'test'
+  ...
+# Subtest: Worker accepts gym repetitions and derives Utegymmare at the same 100-repetition boundary
+ok 16 - Worker accepts gym repetitions and derives Utegymmare at the same 100-repetition boundary
+  ---
+  duration_ms: 1.211501
+  type: 'test'
+  ...
+# Subtest: actual stats.bump/rawScore never add the uncapped per-repetition path as well
+ok 17 - actual stats.bump/rawScore never add the uncapped per-repetition path as well
+  ---
+  duration_ms: 29.247523
+  type: 'test'
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1442.285719

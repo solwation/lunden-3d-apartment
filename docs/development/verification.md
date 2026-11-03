@@ -9006,3 +9006,7 @@ ledgers and the shared Worker counter/medal catalogue. `tools/browsertest.sh nod
 loads the actual World, enters with a child avatar, operates the focused physical DJ play button through
 the native touch action button and uses the native dance button. Six seconds of controlled production
 steps earn six points; stopped music earns none. [Evidence and limits](../verification/1829/).
+
+## Upper-arm pump (#1837)
+
+`node --test tools/gympumptest.mjs cloudflare/deploypaths.test.mjs` covers wall-clock progress, sampling, twelve real Avatar variants, buffer/uniform isolation and the bounded wire/main hook. `tools/browsertest.sh node tools/gympumpbrowser.cjs GAME LOCAL_WORKER docs/verification/1837` uses real Avatar/Ghosts shaders, saved profile stats and Worker sockets for debug credit, before/after, own/remote look replacement, late joining and reload. No apartment bootstrap/native exercise-performance claim. [Evidence and inspected images](../verification/1837/README.md).

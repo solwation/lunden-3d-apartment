@@ -8241,3 +8241,6 @@ export const DUCKS = Object.freeze({
     [[0,.58,.44],[.10,.035,.12],0xe2ad39], [[0,.33,-.36],[.1,.07,.17],0x3f3932]],
     paired: [[[.12,.65,.35],[.023,.025,.025],0x16130e],[[.12,.035,.04],[.075,.03,.13],0xd88c24]] },
 });
+
+// #1837 — guesses: 100 completed reps, 72 h linear wall-clock decay, +60% upper-arm circumference.
+export const GYM_PUMP = { repsToFull: 100, decayHours: 72, circumference: 0.6, sampleMs: 15000 };

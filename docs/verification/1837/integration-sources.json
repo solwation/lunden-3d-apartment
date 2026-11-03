@@ -1,0 +1,9 @@
+{
+  "src/avatar.js": "903f1ac7bb3b0d38ddbc5c0b19c5806bbffe9f0ab9f0c5ce57d3c9892fc755f2",
+  "src/gympump.js": "e669e741c7d584b0692b00aeb48ba544deac761ff94f47ca9d09a14e8ead54e5",
+  "src/ghosts.js": "4b7571bf796e451abadadbe3491d468f8674680730ed9b9231fd0dc4602e57c4",
+  "src/stats.js": "de41001c283d556ab37e80c3792fbe507abddfce37760d5f9721b53aed66ff09",
+  "src/main.js": "58b06d6e794f48b2b75190494fc7be0291751b84de67ffbbe9dc13771b8c2afc",
+  "src/config.js": "d92e600ffe972f25a5ce5dab8e20d1dc0218ac44041ab65ed783365aae2be9a6",
+  "cloudflare/players.js": "34330b15e5211c3f00be078ac190b66c490b91fdb553d0fd2942548a7099fd1f"
+}

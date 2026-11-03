@@ -4,6 +4,8 @@ import { OutdoorGym } from './outdoorgym.js';
 import { GymEffortHUD } from './gymefforthud.js';
 import { MenuSettings } from './menusettings.js';
 import { renderPlayingNow } from './playerportraits.js';
+import { growGymPump } from './stats.js';
+import { pumpSampler } from './gympump.js';
 import { saveStats } from './stats.js';
 import { playerLocalStorage as localStorage, playerSessionStorage as sessionStorage } from './playerprofiles.js';
 import { KISS, HUG, REACT, SCORE, SQUIRRELS } from './config.js';
@@ -938,7 +940,7 @@ holdables.push(...elCabinet.cans);
 world.movingPolys = (lvl) => lvl === 0 ? [car.segments(), hoop.segments()].filter((sg) => sg.length).map((sg) => sg.map(([x, z]) => [x, z])).concat([dropoff.poly]) : []; // + the rubbish containers (#387)
 // #1811: fixed outdoor exercise fittings, independent of household furnishings and their visibility switch.
 const outdoorGym = new OutdoorGym({scene,ground:parkGround,allowed:()=>!heldItem()&&!rest.active&&!player.riding&&!player.flying&&!fall.active&&!player.climb&&!player.swing&&!player.glide&&!jetpack.worn&&!suit.worn&&!roomMoving});
-outdoorGym.onRep = n => bump('gymReps', n); // #1828: completed cycles only; ordinary Rest entry still grants nothing
+outdoorGym.onRep = n => { bump('gymReps', n); growGymPump(n); }; // #1828: completed cycles only; ordinary Rest entry still grants nothing
 {const segments=world.movingSegments,polys=world.movingPolys;
  world.movingSegments=lvl=>[...segments(lvl),...(lvl===0?outdoorGym.segments:[])];
  world.movingPolys=lvl=>[...polys(lvl),...(lvl===0?outdoorGym.polys:[])];}
@@ -3008,8 +3010,9 @@ function showFrameRate(now, drawn, active, activeDetail) {
 const weaponIs = { saber: (h) => h === saber, nerf: (h) => toys.blasters.includes(h), wand: (h) => toys.wands.includes(h),
   rifle: (h) => !!h?.isRifle, ball: (h) => h === ball, bow: (h) => !!bow && h === bow, web: (h) => !h && suit.worn }; // (the jetpack is no weapon, #1705)
 const weaponKey = () => { if (player.riding) return ''; const h = heldItem(); return COMBAT.weapons.find((k) => weaponIs[k]?.(h)) ?? ''; };
+const gymPumpState = pumpSampler(() => stats.gymPump);
 const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey, mirrored: () => !rest.active,
-  state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, look: [0, camera.rotation.x], c: player.crouched, dn: playroom.music.danceCode ?? 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 && player.outdoors ? 2 : 1) : 0, am: player.climb ? 3 : player.swing ? 2 : player.flying || player.fling ? 1 : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, fb: fishing.wire, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
+  state: () => ({ bp: gymPumpState(), p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, look: [0, camera.rotation.x], c: player.crouched, dn: playroom.music.danceCode ?? 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 && player.outdoors ? 2 : 1) : 0, am: player.climb ? 3 : player.swing ? 2 : player.flying || player.fling ? 1 : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, fb: fishing.wire, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
 const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, basket: ball, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows, life, fruit, fish, chicken, fries, beer, beerCans,
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
   onDie: () => { binoculars.setZoom(false); goToStart(() => respawnOutdoors(player)); badge('💀 Slut på liv – du lever igen', false); } }); // only the place changes (#665)

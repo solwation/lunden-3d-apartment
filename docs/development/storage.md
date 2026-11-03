@@ -1589,3 +1589,7 @@ a new room welcome replaces local movement progress.
 
 
 Outdoor exercise rewards (#1828): the existing per-player `lunden.stats` record stores cumulative `gymReps`, awarded `gymScore` and only the current local-day `gymRewardDay` (`day`, awarded `pts`). No new storage key or service is added. Old saves default to zero exercise rewards; existing awarded points survive later tuning, and the ordinary stats reset/save/pagehide path applies. All completed repetitions count for medals even after the 30-point daily exercise cap. This is original-only gameplay.
+
+## Upper-arm pump (#1837)
+
+`stats.gymPump = {value, at}` is cosmetic, per-player stats progress: 100 completed outdoor-gym reps to full and 72 h linear wall-clock decay (guesses in `GYM_PUMP`). Only completed-rep credit dirties stats; reading decay makes no storage writes. `gympump.js` rejects invalid/future anchors. Main samples every15 s; Ghosts sends optional bounded hundredth `bp` using existing change/resend slots without resetting idle. Worker cleans it and includes it in room/late-join snapshots. Missing legacy fields clear to zero. Worker first, then Pages; deploy paths cover the helper. [Source-bound checks and images](../verification/1837/README.md).

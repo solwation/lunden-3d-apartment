@@ -1,0 +1,10 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS initial self and sampled pump are zero
+PASS 100 debug completed-rep callbacks preserve score/count and persist pump
+PASS real GPU before/after: same draws, triangles, geometry allocations and self pump
+PASS look replacement retains self and remote pump
+PASS actual remote avatar and same-look unpumped control share immutable positions
+PASS late joining Ghosts receives Worker snapshot pump without another rep
+PASS profile save/reload restores pump, count and own avatar
+PASS actual WebSocket state includes bounded bp within existing message size
+PASS no browser or shader errors
