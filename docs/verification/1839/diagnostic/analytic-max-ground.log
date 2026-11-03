@@ -1,0 +1,8 @@
+browsertest: waiting for /home/devcontainers/.local/state/orkester/browser.lock (another browser test is running)
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS actual park-ground AI forms a bounded group and stable pairs without leaving habitat
+PASS actual emitted terrain rays: all sampled bodies remain above drawn ground and below valley-side height
+FAIL walking feet stay within12cm of actual drawn terrain
+Error: walking feet stay within12cm of actual drawn terrain
+    at check (/home/devcontainers/orkester-olw-win10-gpt6-20261103/ducks-range/tools/duckrangebrowser.cjs:6:136)
+    at /home/devcontainers/orkester-olw-win10-gpt6-20261103/ducks-range/tools/duckrangebrowser.cjs:34:45

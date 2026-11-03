@@ -9010,3 +9010,7 @@ steps earn six points; stopped music earns none. [Evidence and limits](../verifi
 ## Upper-arm pump (#1837)
 
 `node --test tools/gympumptest.mjs cloudflare/deploypaths.test.mjs` covers wall-clock progress, sampling, twelve real Avatar variants, buffer/uniform isolation and the bounded wire/main hook. `tools/browsertest.sh node tools/gympumpbrowser.cjs GAME LOCAL_WORKER docs/verification/1837` uses real Avatar/Ghosts shaders, saved profile stats and Worker sockets for debug credit, before/after, own/remote look replacement, late joining and reload. No apartment bootstrap/native exercise-performance claim. [Evidence and inspected images](../verification/1837/README.md).
+
+## River duck pairs (#1839)
+
+`node --test tools/duckrangetest.mjs tools/duckrewardtest.mjs` covers seed-selected stable pairs, female leadership, group formation/dissolution, river bounds, distance gating, identical male/female topology and unchanged feeding limits/rewards. `node tools/ducktest.mjs` preserves the existing finite-food/autonomous behavior contracts. `tools/browsertest.sh node tools/duckrangebrowser.cjs GAME docs/verification/1839` checks actual rendered-terrain rays, two river locations, a naturally simulated group, native pantry-to-duck feeding and component draw/triangle deltas in one actual app route. [Evidence](../verification/1839/README.md).

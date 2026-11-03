@@ -8232,10 +8232,15 @@ export const DUCKS = Object.freeze({
   eat: 1.3, quackFirst: [3, 2], quackInterval: [14, 20], quackCooldown: 3,
   lureReach: 9, goalReach: .25, stopReach: .2, maxStep: .1, phaseSwim: 5, phaseWalk: 15,
   bob: .015, waddle: .13, eatNod: .10, eatPhase: 15, maxFeedHeight: 3,
-  habitat: { at: [-160, 207], span: 18, waterSpan: .65, shore: [2, 2], along: 11, extraBank: 5,
-    sink: .12, waterMargin: .08, spacing: 2, startAlong: 1.5, startShore: 3 },
+  // #1839 guesses: two stable pairs, one anchored at the familiar reach, one ranging downstream.
+  social: { seed: 1839, femaleFraction: .5, follow: 1.05, pairWait: 2.7, catchup: 1.35,
+    groupPeriod: 320, groupSeconds: 95, groupReach: 6, groupSide: 1.6 },
+  habitat: { at: [-160, 207], restOffsets: [0, 24, 48, 72], territories: [[0, 1], [1, 2, 3]],
+    range: [-8, 80], extraBank: 4, maxShoreHeight: 1.65, routeStep: 2, shoreStep: .25,
+    sink: .12, waterMargin: .08, startShore: 3 },
   pick: { size: [.65, .75, .9], height: .36 },
-  model: { segments: [8, 5], blobs: [
+  model: { segments: [8, 5], female: [0x827052,0x69583e,0x8c7755,0x8f7956,0xb58135,0x594a36],
+    speckle: [0.64, 1.18], eyeStripe: 0x392d21, wingBlue: 0x365578, blobs: [
     [[0,.29,0],[.22,.21,.38],0x8c7761], [[0,.37,-.12],[.19,.1,.25],0x5e5143],
     [[0,.47,.23],[.115,.18,.12],0x354d34], [[0,.61,.28],[.135,.13,.14],0x256746],
     [[0,.58,.44],[.10,.035,.12],0xe2ad39], [[0,.33,-.36],[.1,.07,.17],0x3f3932]],

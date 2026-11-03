@@ -1,0 +1,15 @@
+{
+  "base": "59bb057e2e982e3ae2e9b3f9531b57a80a39e126",
+  "sha256": {
+    "src/config.js": "0acdc3e8c523cd698bc66af11d9275ca4b29c051156c418e3b7ff5fa27c924d6",
+    "src/duckbrain.js": "300749d4895567dd5649b29579c77b3a88f93f6b6db1177db52beb138fa4767e",
+    "src/duckhabitat.js": "2edf26ba97d4807d1f00086da41455e1d801bad1a6f78ff1797beceff8a59497",
+    "src/duckmodel.js": "644e0e26534ea641a8265b203999b5b0dc30195cdd28384299ebfea05846ed6e",
+    "src/ducks.js": "7f44442341a9daf1f60da4cd42b17c2b3117e220d3808835a3e3a9d25f6c4235",
+    "src/main.js": "a40155bddac7e6de9bc5e4d31a3ffd77720e5f7010e02c0cbb2de1c8e44e68ab",
+    "tools/duckrangetest.mjs": "e0d0d32010c9c285c5a98dafcb05dcc693f547ca8074816c5727ffbb8f2a3311",
+    "tools/duckrangebrowser.cjs": "0a31a0be48299d822dff6abc3e93a0ea49666b5037efbefd8478be9e967b6698",
+    "tools/duckrangecapture.cjs": "3ae1fc26dfd86104baa64c9c16edc7ae8c5f725cd46004aa7d7248f41bf879f8"
+  },
+  "scope": "frozen final production source for successful functional browser and capture-only recovery; documentation changes are not runtime changes"
+}

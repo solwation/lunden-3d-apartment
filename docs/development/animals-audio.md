@@ -1022,6 +1022,8 @@ clients). Images: [docs/verification/1769](../verification/1769/).
 
 ## Ducks by the river (#1815)
 
+The original fixed-reach description below is historical; #1839 expands the habitat and adds mixed pairs as documented in the following section.
+
 `duckbrain.js` owns a four-duck local flock's pure walking/swimming, food approach, eating pause,
 distance-driven waddle phase and seeded occasional quacks. `ducks.js` draws one shared 640-triangle,
 vertex-coloured model per duck, with no lights, shadow casters or material textures. The guessed home
@@ -1054,3 +1056,13 @@ per local day and medal base50 are gameplay guesses; the existing independent me
 the daily cap through generic `SCORE.each` multiplication. Counters and medal progress continue after the cap.
 The Worker's board counter ceiling is100/minute (four ducks with2.4s cooldown, before bread/approach time).
 [Actual kitchen bread, native feeding and medal-progress evidence](../verification/1827/). Gameplay remains original-only.
+
+## Duck pairs and river range (#1839)
+
+The count remains four with the same2.4 s per-duck feeding cooldown (at most100 feeds/min, so Worker counter limits stay unchanged). Two females have seeded mottled brown vertex colours, dark eye stripes and brown/orange bills; both sexes have blue wing patches. Male and female geometry have identical640-triangle topology, one shared material and one mesh per bird. No added draw, light, texture or shadow caster.
+
+`DuckFlock` seed-selects stable mixed pairs. The female leads and waits if her mate falls behind; the male follows at about1 m. Every320 s a95 s loose grouping interval lets the second pair approach the first; groups dissolve back into pair territories. These timings/distances are `DUCKS.social` guesses. Brains sleep as a pair whenever either partner is outside65 m; all bodies hide outside100 m or underground. Quacks retain bounded seeded delays and the shared audio cooldown.
+
+`duckHabitat` follows actual `riverPath` chainage rather than a straight home tangent. Four resting offsets0/24/48/72 m downstream of the familiar(-160,207) place are guesses. Pair0 retains the0/24 m territory; pair1 starts at48 m and ranges over24/48/72 m. Short curve waypoints and per-step validity enforce the bounded water/low northern shore corridor, road/bridge exclusion and a1.65 m height ceiling above local `waterYAt`; no valley-side or road crossing. Only the Ducks callback in main uses `renderedTerrainY` directly: the shared analytic-max park callback can float above drawn bank triangles and remains unchanged for other animals.
+
+Bread lure, real finite Life portions, native E, `onFeed`, daily score cap and Ankmamma remain unchanged. Food temporarily overrides following only within the bounded habitat/reach/height. Local-only behavior, no wildlife synchronization. [Source-bound tests, actual terrain rays, two river reaches, feeding and images](../verification/1839/README.md).

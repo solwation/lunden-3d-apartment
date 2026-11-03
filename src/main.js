@@ -1143,7 +1143,7 @@ cat.mieleDaily = new MieleDaily({ load: () => stats.mieleDay, keep: keepMieleDay
 if (params0.has('miele')) cat.forceMiele = true; // &miele: the next cat to turn up is her (tests, screenshots)
 // #1767: outdoor cats roaming the courtyard and the river park; near, one becomes the ordinary cat (pet, carry); &nooutdoorcats disables them
 // #1815: local ducks use the existing held Life bread portions.
-const ducks = new Ducks({scene,camera,life,ground:parkGround,say:t=>badge(t,false)});
+const ducks = new Ducks({scene,camera,life,ground:renderedTerrainY,say:t=>badge(t,false)});
 ducks.onFeed = () => bump('duckFeeds'); // #1827: successful finite bread consumption only
 // #1772: each has a brain (outdoorcatbrain.js): outings round its rest stops (trees from treeFeet/aoTrees like the squirrels', no wall
 // in the way while the visitor is out on the street level), butterflies by the game's day, squirrels on the ground to stalk

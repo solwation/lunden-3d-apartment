@@ -1,0 +1,41 @@
+TAP version 13
+# {"maxPair":2.718259062669744,"femaleLeads":0.985513608428446,"formed":3,"dissolved":3,"range":[-1.5764575979891333,72.1942640264009],"surfaceTypes":[false,true]}
+# Subtest: seeded stable mixed pairs, female leadership, occasional groups, sourced river range and idle gate
+ok 1 - seeded stable mixed pairs, female leadership, occasional groups, sourced river range and idle gate
+  ---
+  duration_ms: 16269.015027
+  type: 'test'
+  ...
+# Subtest: female/male identical topology and four-mesh budget; only vertex colours differ; feeding cap unchanged
+ok 2 - female/male identical topology and four-mesh budget; only vertex colours differ; feeding cap unchanged
+  ---
+  duration_ms: 13.515286
+  type: 'test'
+  ...
+# Subtest: actual bump counts every feeding once but game score stops at daily ceiling; no uncapped generic path
+ok 3 - actual bump counts every feeding once but game score stops at daily ceiling; no uncapped generic path
+  ---
+  duration_ms: 3.735099
+  type: 'test'
+  ...
+# Subtest: finite kitchen bread, no bread/package/stale or consumed slice grants no successful feed event
+ok 4 - finite kitchen bread, no bread/package/stale or consumed slice grants no successful feed event
+  ---
+  duration_ms: 2.474899
+  type: 'test'
+  ...
+# Subtest: duck medal advances beyond daily score cap, pays once, Worker accepts counter and derives medal
+ok 5 - duck medal advances beyond daily score cap, pays once, Worker accepts counter and derives medal
+  ---
+  duration_ms: 3.445199
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 16544.699394
