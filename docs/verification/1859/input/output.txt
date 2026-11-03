@@ -1,0 +1,92 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS bike0: actual original main ray selection reaches existing model
+PASS bike0: registry contains five bikes in original two material batches
+PASS bike0: ordinary E mounts with actual courtyard collision/support
+PASS bike0: ordinary mounted controls and four remaining pick targets
+PASS bike0: actual courtyard has supported swept turning and three-metre route
+PASS bike0: native input accelerates from rest past walking speed, supported whole wheelbase
+PASS bike0: every unowned vertex/normal, all colours/UVs, toys, other four bikes, rack and bench targets unchanged
+PASS bike0: refreshed batch bounds contain every moved and fixed vertex
+PASS bike0: selected normals rotate rigidly from original source without drift
+PASS bike0: actual DetailCuller preserves both visible batches while camera is stationary
+PASS bike0: production active predicate freezes paused rider
+PASS bike0: existing session stores supported standing place without a new key
+PASS bike0: actual keepWorld saves versioned world clock/open/things data while riding
+PASS bike0: ordinary exit chooses free supported standing place
+PASS bike0: actual reload reconstructs source bicycle and resumes standing safely
+PASS bike0: standing session uses actual restored-hand predicate and retains ordinary place-only schema
+PASS bike1: actual original main ray selection reaches existing model
+PASS bike1: registry contains five bikes in original two material batches
+PASS bike1: ordinary touch action mounts with actual courtyard collision/support
+PASS bike1: ordinary mounted controls and four remaining pick targets
+PASS bike1: actual courtyard has supported swept turning and three-metre route
+PASS bike1: actual touch joystick produces forward input
+PASS bike1: native input accelerates from rest past walking speed, supported whole wheelbase
+PASS bike1: every unowned vertex/normal, all colours/UVs, toys, other four bikes, rack and bench targets unchanged
+PASS bike1: refreshed batch bounds contain every moved and fixed vertex
+PASS bike1: selected normals rotate rigidly from original source without drift
+PASS bike1: actual DetailCuller preserves both visible batches while camera is stationary
+PASS bike1: production active predicate freezes paused rider
+PASS bike1: existing session stores supported standing place without a new key
+PASS bike1: actual keepWorld saves versioned world clock/open/things data while riding
+PASS bike1: ordinary exit chooses free supported standing place
+PASS bike1: actual reload reconstructs source bicycle and resumes standing safely
+PASS bike1: standing session uses actual restored-hand predicate and retains ordinary place-only schema
+PASS bike2: actual original main ray selection reaches existing model
+PASS bike2: registry contains five bikes in original two material batches
+PASS bike2: ordinary E mounts with actual courtyard collision/support
+PASS bike2: ordinary mounted controls and four remaining pick targets
+PASS bike2: actual courtyard has supported swept turning and three-metre route
+PASS bike2: native input accelerates from rest past walking speed, supported whole wheelbase
+PASS bike2: every unowned vertex/normal, all colours/UVs, toys, other four bikes, rack and bench targets unchanged
+PASS bike2: refreshed batch bounds contain every moved and fixed vertex
+PASS bike2: selected normals rotate rigidly from original source without drift
+PASS bike2: actual DetailCuller preserves both visible batches while camera is stationary
+PASS bike2: production active predicate freezes paused rider
+PASS bike2: existing session stores supported standing place without a new key
+PASS bike2: actual keepWorld saves versioned world clock/open/things data while riding
+PASS bike2: ordinary exit chooses free supported standing place
+PASS bike2: actual reload reconstructs source bicycle and resumes standing safely
+PASS bike2: standing session uses actual restored-hand predicate and retains ordinary place-only schema
+PASS bike3: actual original main ray selection reaches existing model
+PASS bike3: registry contains five bikes in original two material batches
+PASS bike3: ordinary touch action mounts with actual courtyard collision/support
+PASS bike3: ordinary mounted controls and four remaining pick targets
+PASS bike3: actual courtyard has supported swept turning and three-metre route
+PASS bike3: actual touch joystick produces forward input
+PASS bike3: native input accelerates from rest past walking speed, supported whole wheelbase
+PASS bike3: every unowned vertex/normal, all colours/UVs, toys, other four bikes, rack and bench targets unchanged
+PASS bike3: refreshed batch bounds contain every moved and fixed vertex
+PASS bike3: selected normals rotate rigidly from original source without drift
+PASS bike3: actual DetailCuller preserves both visible batches while camera is stationary
+PASS bike3: production active predicate freezes paused rider
+PASS bike3: existing session stores supported standing place without a new key
+PASS bike3: actual keepWorld saves versioned world clock/open/things data while riding
+PASS bike3: ordinary exit chooses free supported standing place
+PASS bike3: actual reload reconstructs source bicycle and resumes standing safely
+PASS bike3: standing session uses actual restored-hand predicate and retains ordinary place-only schema
+PASS bike4: actual original main ray selection reaches existing model
+PASS bike4: registry contains five bikes in original two material batches
+PASS bike4: ordinary E mounts with actual courtyard collision/support
+PASS bike4: ordinary mounted controls and four remaining pick targets
+PASS bike4: actual courtyard has supported swept turning and three-metre route
+PASS bike4: native input accelerates from rest past walking speed, supported whole wheelbase
+PASS bike4: every unowned vertex/normal, all colours/UVs, toys, other four bikes, rack and bench targets unchanged
+PASS bike4: refreshed batch bounds contain every moved and fixed vertex
+PASS bike4: selected normals rotate rigidly from original source without drift
+PASS bike4: actual DetailCuller preserves both visible batches while camera is stationary
+PASS bike4: production active predicate freezes paused rider
+PASS bike4: existing session stores supported standing place without a new key
+PASS bike4: actual keepWorld saves versioned world clock/open/things data while riding
+PASS bike4: ordinary exit chooses free supported standing place
+PASS bike4: actual reload reconstructs source bicycle and resumes standing safely
+PASS bike4: standing session uses actual restored-hand predicate and retains ordinary place-only schema
+PASS full bicycle stops before thin wall under repeated fast substeps
+PASS actual roof headroom refuses low ceiling
+PASS actual dynamic door blocks complete bicycle hull
+PASS no-headroom exit refuses rather than inventing a standing place
+PASS actual ground query distinguishes raised courtyard from controlled garage floor below
+PASS bounded render mode or zero-WebGL native mode, no page errors
+PASS complete keepApp saves without swallowed missing-collaborator warnings
+PASS all executed source paths remained frozen
+ALL PASS

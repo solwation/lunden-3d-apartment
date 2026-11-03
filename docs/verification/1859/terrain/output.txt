@@ -1,0 +1,35 @@
+browsertest: waiting for /home/devcontainers/.local/state/orkester/browser.lock (another browser test is running)
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS eastDown: actual terrain route is supported and passable
+PASS eastUp: actual stair riser stops ascent
+PASS NWDown: actual terrain route is supported and passable
+PASS NWUp: actual stair riser stops ascent
+PASS southDown: actual terrain route is supported and passable
+PASS southUp: actual stair riser stops ascent
+PASS rampUp: actual terrain route is supported and passable
+PASS rampDown: actual terrain route is supported and passable
+PASS bicycle support matches every actual rendered curb box ray
+PASS actual 10 cm granite curb is ridden up over (#1300)
+PASS actual granite curb permits downward departure
+PASS actual 5 cm StreetLife concrete edge permits small upward step
+PASS full tilted model overhang is stopped by wall beyond old ground capsule
+PASS actual high courtyard edge blocks upward passage
+PASS actual three metre edge uses gravity and one ordinary fall-damage landing request
+PASS reverse climb follows actual ramp support
+PASS full forward bicycle capsule stops before wall on descent
+PASS full bicycle capsule cannot tunnel through closed door on descent
+PASS headroom preserved on tilted ramp
+PASS zero-dt pause preserves position
+PASS airborne dismount refused
+PASS native probe creates no WebGL context
+PASS no browser page errors
+PASS ordinary original main E mounts actual courtyard bicycle
+PASS original main keyboard drives actual stair descent
+PASS actual touch joystick supplies forward input
+PASS original main touch drives actual ramp with model tilt
+PASS ordinary original main stand button safely dismounts on ramp
+PASS yard: actual canonical tilt matrix, untouched other models, rotated normals and valid bounds
+PASS courtyard: actual canonical tilt matrix, untouched other models, rotated normals and valid bounds
+PASS bounded representative native CPU timing recorded (not FPS/device acceptance)
+PASS no page errors after original main touch/keyboard checks
+TOTAL 32 / failures 0

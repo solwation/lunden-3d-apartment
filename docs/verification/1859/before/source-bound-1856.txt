@@ -1,0 +1,31 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+FAIL eastDown: actual terrain route is supported and passable
+PASS eastUp: actual stair riser stops ascent
+FAIL NWDown: actual terrain route is supported and passable
+PASS NWUp: actual stair riser stops ascent
+PASS southDown: actual terrain route is supported and passable
+PASS southUp: actual stair riser stops ascent
+FAIL rampUp: actual terrain route is supported and passable
+PASS rampDown: actual terrain route is supported and passable
+PASS bicycle support matches every actual rendered curb box ray
+FAIL actual 10 cm granite curb is ridden up over (#1300)
+FAIL actual granite curb permits downward departure
+FAIL actual 5 cm StreetLife concrete edge permits small upward step
+PASS full tilted model overhang is stopped by wall beyond old ground capsule
+PASS actual high courtyard edge blocks upward passage
+FAIL actual three metre edge uses gravity and one ordinary fall-damage landing request
+FAIL reverse climb follows actual ramp support
+PASS full forward bicycle capsule stops before wall on descent
+PASS full bicycle capsule cannot tunnel through closed door on descent
+PASS headroom preserved on tilted ramp
+PASS zero-dt pause preserves position
+PASS airborne dismount refused
+PASS native probe creates no WebGL context
+PASS no browser page errors
+page.evaluate: ReferenceError: ducks is not defined
+    at eval (eval at window.focusBike (eval at evaluate (:290:30)), <anonymous>:10:8)
+    at eval (<anonymous>)
+    at window.focusBike (eval at evaluate (:290:30), <anonymous>:17:369)
+    at eval (eval at evaluate (:290:30), <anonymous>:17:385)
+    at async <anonymous>:316:30
+    at /home/devcontainers/orkester-olw-win10-gpt6-20261103/bike-descent/tools/bicycleterraintest.cjs:71:144

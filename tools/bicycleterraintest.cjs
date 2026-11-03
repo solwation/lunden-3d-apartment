@@ -22,7 +22,8 @@ const data=await page.evaluate(async()=>{
  let gl=0;const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(kind,...args){if(/webgl/i.test(kind)){gl++;throw Error('native fixture forbids GPU');}return get.call(this,kind,...args);};
  const world=()=>({size:{x:5.75,z:12.1},levels:[{segments:[],footprints:[]},{segments:[],footprints:[]}],doors:[],roofs:{above:()=>Infinity,under:()=>null}});window.worldFactory=world;
  const bike=courtyard.bicycles[0];
- window.start=(x,z,yaw,y)=>{const camera=new T.PerspectiveCamera(),p=new Player(world(),camera);p.spawn(x,z,0);if(y!==undefined)p.pos.y=y;p.riding={bike,yaw,lastStanding:p.pos.clone()};p.riding.pitch=p.bikeSupport(p.pos,yaw)?.pitch??0;camera.rotation.y=yaw-Math.PI/2;window.player=p;return p;};
+ // Geometry probes start at established speed; native input below separately tests acceleration from rest.
+ window.start=(x,z,yaw,y,speed=C.BICYCLE.speed)=>{const camera=new T.PerspectiveCamera(),p=new Player(world(),camera);p.spawn(x,z,0);if(y!==undefined)p.pos.y=y;p.riding={bike,yaw,speed,lastStanding:p.pos.clone()};p.riding.pitch=p.bikeSupport(p.pos,yaw)?.pitch??0;camera.rotation.y=yaw-Math.PI/2;window.player=p;return p;};
  window.drive=(p,seconds,fwd=1)=>{const samples=[];p.analog.y=fwd;for(let i=0;i<Math.round(seconds/.025);i++){p.update(.025);samples.push({p:p.pos.toArray(),pitch:p.riding?.pitch,fall:!!p.fall,vy:p.vy});}p.analog.y=0;return samples;};
  const routes=[];
  for(const [name,x,z,yaw,seconds] of [['eastDown',12.55,26.3,-Math.PI/2,1],['eastUp',12.55,31,Math.PI/2,1],['NWDown',-68.1,8,Math.PI,1],['NWUp',-71.4,8,0,1],['southDown',-46.65,51.5,-Math.PI/2,1.5],['southUp',-46.65,59,Math.PI/2,1.5],['rampUp',12.55,12.5,-Math.PI/2,1.5],['rampDown',12.55,23.3,Math.PI/2,1.5]]) {const p=start(x,z,yaw),from=p.pos.toArray(),samples=drive(p,seconds);routes.push({name,from,to:p.pos.toArray(),samples});}
@@ -39,7 +40,7 @@ const data=await page.evaluate(async()=>{
  // A three-metre actual garage-box edge creates an airborne interval and the ordinary onLand request.
  const falling=start(-44,51.6,-Math.PI/2,0),lands=[];falling.onLand=(drop,gap)=>lands.push({drop,gap});const fallSamples=drive(falling,1.5);
  // Reverse on the actual ramp; yaw remains fixed while negative movement climbs.
- const reverse=start(12.55,14,Math.PI/2),reverseFrom=reverse.pos.toArray(),reverseSamples=drive(reverse,1,-1);
+ const reverse=start(12.55,14,Math.PI/2,undefined,-C.BICYCLE.reverse),reverseFrom=reverse.pos.toArray(),reverseSamples=drive(reverse,1,-1);
  const tilted=start(-60,-8,0,.4),tilt=-.55,wallX=tilted.pos.x+.85;
  tilted.riding.bike.place(tilted.pos,0,tilt);tilted.world.levels[0].segments.push([wallX,-10,wallX,-6]);
  const range=tilted.riding.bike.ranges[0],attr=tilted.riding.bike.components[0].geometry.attributes.position;let maxX=-Infinity;
@@ -71,13 +72,13 @@ check(errors.length===0,'no browser page errors',errors);
 await page.evaluate(()=>sessionStorage.clear());await installMainGlobals(page);await page.goto(base);await installMainImports(page);await page.evaluate(originalSetup,{parts,index:0,render:false});
 await page.keyboard.press('e');check(await page.evaluate(()=>!!player.riding),'ordinary original main E mounts actual courtyard bicycle');
 await page.evaluate(()=>{const yaw=-Math.PI/2;player.pos.set(12.55,0,26.3);player.riding.yaw=yaw;camera.rotation.y=yaw-Math.PI/2;locked=true;touch.enabled=false;});
-await page.keyboard.down('w');await page.evaluate(()=>{for(let i=0;i<30;i++)tick(.025);});await page.keyboard.up('w');
+await page.keyboard.down('w');await page.evaluate(()=>{for(let i=0;i<60;i++)tick(.025);});await page.keyboard.up('w');
 check(await page.evaluate(()=>player.pos.z>30&&player.pos.y<-.9),'original main keyboard drives actual stair descent');
-await page.evaluate(()=>{const yaw=-Math.PI/2;player.pos.set(12.55,player.groundAt(12.55,12.5,0),12.5);player.riding.yaw=yaw;player.riding.pitch=0;player.fall=null;player.vy=0;camera.rotation.y=yaw-Math.PI/2;locked=false;touch.enabled=true;document.body.classList.add('touch');});
+await page.evaluate(()=>{const yaw=-Math.PI/2;player.pos.set(12.55,player.groundAt(12.55,12.5,0),12.5);player.riding.yaw=yaw;player.riding.pitch=0;player.riding.speed=0;player.riding.airborne=false;player.riding.groundVy=0;player.fall=null;player.vy=0;camera.rotation.y=yaw-Math.PI/2;locked=false;touch.enabled=true;document.body.classList.add('touch');});
 // Drag well past the stick's travel (TOUCH.stickTravel scales with the view, up to 84 px; full output from 0.9 of it, #1087/#1088).
 const cdp=await context.newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:150,y:400}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:150,y:250}]});
 check(await page.evaluate(()=>touch.analog.y>.99),'actual touch joystick supplies forward input');
-await page.evaluate(()=>{for(let i=0;i<40;i++)tick(.025);});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+await page.evaluate(()=>{for(let i=0;i<80;i++)tick(.025);});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
 check(await page.evaluate(()=>player.pos.z>18&&player.pos.y>-.5&&player.riding.pitch>0),'original main touch drives actual ramp with model tilt');
 const standing=await page.evaluate(()=>{fns.updateBicycleControls();document.getElementById('stand-btn').hidden=false;const q=player.bikeStanding();return{q:q?.toArray(),before:player.pos.toArray()};});
 await page.locator('#stand-btn').dispatchEvent('click');check(await page.evaluate(()=>!player.riding),'ordinary original main stand button safely dismounts on ramp',standing);

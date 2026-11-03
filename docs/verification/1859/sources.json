@@ -1,0 +1,49 @@
+{
+  "issue": 1859,
+  "base": "fadb26260acdf829f5950c7b559c1b8eef850e37",
+  "files": {
+    "tools/mainfixture.cjs": "2e30f77f811f1d5a428eab36bcd2c8b7de7e961317bd3721dc9710ca80d640c3",
+    "tools/courtyardbicycletest.cjs": "141d5022731eaf76811b03d10f47189579d65393da87ac7d499f969ed1282362",
+    "tools/bicycleterraintest.cjs": "f85ca4bc71b7e84d083167f9d06ed524e38264131db9faa17a878bee66f6c87a",
+    "src/main.js": "281b52f8c437949d2813fb1d63df3ea9b6a4ad5b55f4868a96e54fab217c6ad4",
+    "src/player.js": "6bc89f2c64242f3358db8b53cc17e30643a62d1c4132f4fca7623f4cc526659a",
+    "src/bikemotion.js": "d5850f94ed594680991c1394dba4d1e5360a1f57f966ff63907d0cda0e2a34b4",
+    "src/config.js": "03b12e3b46ffb7341481c97600b85ca7ccc444a0078ad043b11be50f0b13dc47",
+    "src/courtyard.js": "1fccc20edc288208eb7bfba3e457e4ebf7a8604b213b37224fc6c5e6129db5c9",
+    "src/world.js": "9be8e1cc886ee6800ced8d7790b1619d1df25319ee81e939fa73a170b94a048a",
+    "src/touch.js": "dd50e6cbaa7de942e1bafa5dcd72f435c9d9bc98a9a7dfe8c7a964f12cc4dcf0",
+    "src/resume.js": "78715ebf01c56d84a13dea9d89751be7a06bc22f045fad366f149eb09d515331",
+    "src/keep.js": "ea6eabd805ebe1e525a1e69f1e693065577659616fd0d9ef960c79c4da498460",
+    "src/holdable.js": "d718c798c1c148c4bacc6087272afc5d237ec5db5d18980a3b594f1a3c311ca1"
+  },
+  "runtimeUnchanged": [
+    "src/main.js",
+    "src/player.js",
+    "src/bikemotion.js",
+    "src/config.js",
+    "src/courtyard.js",
+    "src/world.js",
+    "src/touch.js",
+    "src/resume.js",
+    "src/keep.js",
+    "src/holdable.js"
+  ],
+  "checks": {
+    "terrain": {
+      "passed": 32,
+      "failed": 0,
+      "pageErrors": [],
+      "webgl": 0
+    },
+    "courtyard": {
+      "passed": 90,
+      "failed": 0,
+      "pageErrors": [],
+      "keepWarnings": [],
+      "webgl": 0
+    }
+  },
+  "negativeReproduction": "Reused1856legacy-driver: allthreefixturesandmainSHA256exactlyequalbefore-edits; duplicatebeforebrowsercancelledwhilequeued.",
+  "imagePolicy": "Nonvisualtestfixturefix: noproductvisualchange/changelog; concreteassertionledgersinstead.",
+  "deploy": "Tools/docsmaytriggerPages; noWorkerimports/runtime/configchanges."
+}
