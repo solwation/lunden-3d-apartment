@@ -1,0 +1,13 @@
+{
+  "base": "a698f659dff5b2f2c5574c98c7183519ae995951",
+  "composition": "No external source composition; own current base plus only DUCKS.kiss and Ducks hooks/new module.",
+  "files": {
+    "src/duckkiss.js": "435c3904020374dd2906b1c3dbd55adc19f98922119d4f5500001bec1a75a6f5",
+    "src/ducks.js": "0f39bc82663401f1c6e3da19434cf41312e3a958786184f6a17a8a3875925f42",
+    "src/duckbrain.js": "300749d4895567dd5649b29579c77b3a88f93f6b6db1177db52beb138fa4767e",
+    "src/duckmodel.js": "644e0e26534ea641a8265b203999b5b0dc30195cdd28384299ebfea05846ed6e",
+    "src/duckhabitat.js": "2edf26ba97d4807d1f00086da41455e1d801bad1a6f78ff1797beceff8a59497",
+    "src/config.js": "62fae9e24961adc597943e769e4d1dd4d83c6da7906eb1b18f0783097f3cb24e",
+    "src/pingping.js": "9f614d0e6f67adb27d5f90f645b89e70591ea96133db7b96392854ba5cf67e50"
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "name": "natural seeded pair starts visible kiss",
+      "data": {
+        "id": [
+          0,
+          3
+        ],
+        "time": 110.39999999999587,
+        "roots": [
+          [
+            -167.27080328599803,
+            -7.320468545889677,
+            205.4121593901302
+          ],
+          [
+            -166.05099885489437,
+            -7.3193494148008735,
+            205.37759626836234
+          ]
+        ],
+        "goals": [
+          {
+            "x": -185.89336879022963,
+            "z": 203.79646191537296
+          },
+          null
+        ],
+        "stage": "space",
+        "seed": [
+          678490687,
+          1705565202
+        ],
+        "bill": {
+          "z": 0.5541267991065979,
+          "y": 0.5800000131130219,
+          "halfY": 0.010815590620040894
+        },
+        "flockTime": 110.39999999999587,
+        "steps": 2208,
+        "grouping": false
+      }
+    },
+    {
+      "ok": true,
+      "name": "actual bill fronts touch with readable five hearts",
+      "data": {
+        "birds": [
+          {
+            "id": 0,
+            "mate": 3,
+            "female": true,
+            "x": -167.26876369744605,
+            "y": -7.320466674633189,
+            "z": 205.4121015984501,
+            "yaw": -4.6840615899962765
+          },
+          {
+            "id": 3,
+            "mate": 0,
+            "female": false,
+            "x": -166.16095472358802,
+            "y": -7.31945029575188,
+            "z": 205.38071186458566,
+            "yaw": -1.5424689364064834
+          }
+        ],
+        "point": {
+          "x": -166.71485921051703,
+          "y": -6.739958472079513,
+          "z": 205.39640673151789
+        },
+        "contact": 0.7500000000000001,
+        "tips": [
+          {
+            "x": -166.71485921051703,
+            "y": -6.740466661520167,
+            "z": 205.39640673151789
+          },
+          {
+            "x": -166.71485921051703,
+            "y": -6.739450282638858,
+            "z": 205.39640673151789
+          }
+        ],
+        "horizontalGap": 0,
+        "verticalGap": 0.0010163788813093433,
+        "maxVertical": 0.021631181240081787,
+        "hearts": true,
+        "count": 5,
+        "scale": 2.5
+      }
+    },
+    {
+      "ok": true,
+      "name": "one pooled effect draw, unchanged duck meshes/triangles/lights",
+      "data": {
+        "off": {
+          "frame": 10,
+          "calls": 35,
+          "triangles": 335015,
+          "points": 80,
+          "lines": 0
+        },
+        "on": {
+          "frame": 11,
+          "calls": 36,
+          "triangles": 335015,
+          "points": 85,
+          "lines": 0
+        },
+        "calls": 1,
+        "triangles": 0,
+        "points": 5,
+        "meshes": 4,
+        "lights": 0
+      }
+    },
+    {
+      "ok": true,
+      "name": "both resume usual flock and effect expires",
+      "data": {
+        "rows": [
+          {
+            "id": 0,
+            "mate": 3,
+            "kissing": false,
+            "x": -170.09762831929118,
+            "z": 205.4922573921958
+          },
+          {
+            "id": 3,
+            "mate": 0,
+            "kissing": false,
+            "x": -168.8612459489726,
+            "z": 205.4572245350203
+          },
+          {
+            "id": 2,
+            "mate": 1,
+            "x": -181.6566423891088,
+            "z": 201.6421861474553
+          },
+          {
+            "id": 1,
+            "mate": 2,
+            "x": -180.4617864754988,
+            "z": 201.29045850575983
+          }
+        ],
+        "resumed": true,
+        "pair": false,
+        "hearts": false
+      }
+    },
+    {
+      "ok": true,
+      "name": "no page errors",
+      "data": []
+    }
+  ],
+  "errors": []
+}

@@ -8247,6 +8247,10 @@ export const DUCKS = Object.freeze({
   // #1839 guesses: two stable pairs, one anchored at the familiar reach, one ranging downstream.
   social: { seed: 1839, femaleFraction: .5, follow: 1.05, pairWait: 2.7, catchup: 1.35,
     groupPeriod: 320, groupSeconds: 95, groupReach: 6, groupSide: 1.6 },
+  // #1846 guesses: one short visible mate greeting; same model/territories and finite bread path.
+  kiss: { first:20,scan:10,chance:.12,cooldown:180,near:12,reach:2.3,minDistance:.75,aligned:.8,
+    speed:.28,turn:1.6,turnGap:.22,face:.04,arrive:.002,settle:.4,duration:2.2,timeout:15,sample:.2,rise:.01,
+    maxStep:.1,foodReach:9,foodHeight:3,phaseSwim:5,phaseWalk:15,hearts:5,heartScale:2.5,heartLift:.12 },
   habitat: { at: [-160, 207], restOffsets: [0, 24, 48, 72], territories: [[0, 1], [1, 2, 3]],
     range: [-8, 80], extraBank: 4, maxShoreHeight: 1.65, routeStep: 2, shoreStep: .25,
     sink: .12, waterMargin: .08, startShore: 3 },
