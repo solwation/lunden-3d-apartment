@@ -26,3 +26,6 @@ Final measured comparison (same cameras, final source):
 The +976 triangles include +64 for the two small trees. The campus remains below its existing 87,800 ceiling. Geometry-only validation after the final tree change remains green; the final colour correction changes no vertices/batches.
 
 Road camera XYZ `[-194,9,-261]`, footway `[-180,8,-277]`, both looking at `[-188,12,-297]`. `before-road.png`/`after-road.png` frame the full short front; `before-footway.png`/`after-footway.png` show its oblique approach; `after-dusk.png` uses the existing June day cycle at 20.8h. Source SHA256 values are saved in source.json.
+
+
+Levererat i `042cf8f4c52447a70be4e4b5f8fb200aaf83c807`. [Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/41601719499) och [Worker](https://github.com/solwation/lunden-3d-apartment/actions/runs/41601719469) lyckades; Worker-loggen bekräftar faktisk Wrangler-deploy och den publika sidans version.json visar `042cf8f`. Dirigentens kombinerade diff-/bildgranskning är klar. Bild-URL:erna ovan är åtkomliga och bytekontrollerade. Ingen rutinmässig omkörning av gröna kontroller efter orelaterad integration. Ärendet stängs genom efterföljande verifieringscommit och aktiva etiketter tas bort.
