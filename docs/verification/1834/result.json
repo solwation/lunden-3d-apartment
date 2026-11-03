@@ -1,0 +1,67 @@
+{
+  "getter": [
+    {
+      "id": "pullup",
+      "count": 0,
+      "text": "Räckhäv · 0 repetitioner",
+      "ok": true
+    },
+    {
+      "id": "pullup",
+      "count": 1,
+      "text": "Räckhäv · 1 repetition",
+      "ok": true
+    },
+    {
+      "id": "pullup",
+      "count": 2,
+      "text": "Räckhäv · 2 repetitioner",
+      "ok": true
+    },
+    {
+      "id": "press",
+      "count": 0,
+      "text": "Bänkpress · 0 repetitioner",
+      "ok": true
+    },
+    {
+      "id": "press",
+      "count": 1,
+      "text": "Bänkpress · 1 repetition",
+      "ok": true
+    },
+    {
+      "id": "press",
+      "count": 2,
+      "text": "Bänkpress · 2 repetitioner",
+      "ok": true
+    },
+    {
+      "id": "step",
+      "count": 0,
+      "text": "Step-up · 0 repetitioner",
+      "ok": true
+    },
+    {
+      "id": "step",
+      "count": 1,
+      "text": "Step-up · 1 repetition",
+      "ok": true
+    },
+    {
+      "id": "step",
+      "count": 2,
+      "text": "Step-up · 2 repetitioner",
+      "ok": true
+    },
+    {
+      "inactive": "",
+      "ok": true
+    }
+  ],
+  "state": {
+    "status": "Räckhäv · 1 repetition",
+    "repetitions": 1
+  },
+  "nativeEntry": "KeyE; real full cycle; only exercise time frozen after first completed rep for screenshot"
+}

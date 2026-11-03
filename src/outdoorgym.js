@@ -70,7 +70,7 @@ export class OutdoorGym {
   isActive(rest){return rest.active&&rest.target?.kind==='outdoorGym';}
   /** Prefer the known clear entry location after exercise, so a moving eye never teleports the player onto a machine. */
   standAt(rest,player){const p=this.isActive(rest)?rest.standing:null;return p&&player.isFree(p.x,p.z,0)?p:null;}
-  get status(){return this.active?`${this.active.spec.label} · ${this.repetitions} repetitioner`:'';}
+  get status(){return this.active?`${this.active.spec.label} · ${this.repetitions} ${this.repetitions===1?'repetition':'repetitioner'}`:'';}
 
   update(dt,rest){
     const station=this.isActive(rest)?this.stations.find(s=>s.target===rest.target):null;

@@ -1,0 +1,3 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS actual getter, all three labels 0/1/2 and inactive
+PASS native station screenshot: Räckhäv · 1 repetition
