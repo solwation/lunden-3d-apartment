@@ -1,0 +1,36 @@
+{
+  "points": 6188,
+  "sha256": "36fd19a19c476b6ad428e4703c89d7aa3dd417919ad00264f4979d0e53076dbb",
+  "released": [
+    {
+      "name": "river",
+      "active": false,
+      "hits": 0,
+      "misses": 0,
+      "evictions": 0,
+      "peak": 0,
+      "entries": 0,
+      "max": 32768
+    },
+    {
+      "name": "plateau",
+      "active": false,
+      "hits": 0,
+      "misses": 0,
+      "evictions": 0,
+      "peak": 0,
+      "entries": 0,
+      "max": 32768
+    },
+    {
+      "name": "drawn terrain",
+      "active": false,
+      "hits": 0,
+      "misses": 0,
+      "evictions": 0,
+      "peak": 0,
+      "entries": 0,
+      "max": 32768
+    }
+  ]
+}

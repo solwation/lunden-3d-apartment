@@ -1,0 +1,2054 @@
+{
+  "times": {
+    "constructed": 33691.79999999888,
+    "playable": 39460.29999999888
+  },
+  "steps": [
+    {
+      "name": "Startar",
+      "at": 60
+    },
+    {
+      "name": "Hämtar programfilerna",
+      "at": 112
+    },
+    {
+      "name": "Startar 3D-grafiken",
+      "at": 1347
+    },
+    {
+      "name": "Hämtar planritningen",
+      "at": 1409
+    },
+    {
+      "name": "Bygger huset",
+      "at": 1640
+    },
+    {
+      "name": "Möblerar",
+      "at": 31463
+    },
+    {
+      "name": "Förbereder grafiken",
+      "at": 33031
+    },
+    {
+      "name": "Värmer upp vyn",
+      "at": 33400
+    }
+  ],
+  "long": {
+    "top": [
+      [
+        8015,
+        "Bygger huset"
+      ],
+      [
+        1679,
+        "Bygger huset"
+      ],
+      [
+        1589,
+        "Bygger huset"
+      ],
+      [
+        1459,
+        "Bygger huset"
+      ],
+      [
+        1202,
+        "Bygger huset"
+      ]
+    ],
+    "n": 45,
+    "sum": 29094
+  },
+  "warm": "compiling",
+  "resources": [
+    {
+      "name": "/src/hudicons.css",
+      "start": 26,
+      "end": 42.19999999925494,
+      "transfer": 25686,
+      "bytes": 25386
+    },
+    {
+      "name": "/src/gymeffort.css",
+      "start": 26.59999999962747,
+      "end": 42.90000000037253,
+      "transfer": 2007,
+      "bytes": 1707
+    },
+    {
+      "name": "/src/dialogclose.css",
+      "start": 26.699999999254942,
+      "end": 43.5,
+      "transfer": 1949,
+      "bytes": 1649
+    },
+    {
+      "name": "/icons/icon-192.png",
+      "start": 26.90000000037253,
+      "end": 46.59999999962747,
+      "transfer": 5438,
+      "bytes": 5138
+    },
+    {
+      "name": "/icons/qr-site.svg",
+      "start": 27,
+      "end": 44.19999999925494,
+      "transfer": 4369,
+      "bytes": 4069
+    },
+    {
+      "name": "/icons/apple-touch-icon.png",
+      "start": 27.09999999962747,
+      "end": 44.79999999888241,
+      "transfer": 5479,
+      "bytes": 5179
+    },
+    {
+      "name": "/src/bootstrap.js",
+      "start": 27.299999998882413,
+      "end": 45.19999999925494,
+      "transfer": 1263,
+      "bytes": 963
+    },
+    {
+      "name": "/src/startup.js",
+      "start": 64.09999999962747,
+      "end": 66.90000000037253,
+      "transfer": 3266,
+      "bytes": 2966
+    },
+    {
+      "name": "/src/version.js",
+      "start": 64.19999999925494,
+      "end": 68.29999999888241,
+      "transfer": 2018,
+      "bytes": 1718
+    },
+    {
+      "name": "/src/startuprecovery.js",
+      "start": 64.19999999925494,
+      "end": 69,
+      "transfer": 11885,
+      "bytes": 11585
+    },
+    {
+      "name": "/src/config.js",
+      "start": 70,
+      "end": 77.29999999888241,
+      "transfer": 867771,
+      "bytes": 867471
+    },
+    {
+      "name": "/src/santaconfig.js",
+      "start": 94.79999999888241,
+      "end": 98.09999999962747,
+      "transfer": 1712,
+      "bytes": 1412
+    },
+    {
+      "name": "/src/santagiftconfig.js",
+      "start": 94.90000000037253,
+      "end": 99,
+      "transfer": 756,
+      "bytes": 456
+    },
+    {
+      "name": "/src/santatvconfig.js",
+      "start": 95,
+      "end": 99.5,
+      "transfer": 449,
+      "bytes": 149
+    },
+    {
+      "name": "/src/main.js",
+      "start": 112.09999999962747,
+      "end": 116.59999999962747,
+      "transfer": 292869,
+      "bytes": 292569
+    },
+    {
+      "name": "/src/dancescore.js",
+      "start": 144.2999999988824,
+      "end": 190.59999999962747,
+      "transfer": 1711,
+      "bytes": 1411
+    },
+    {
+      "name": "/src/stepsurface.js",
+      "start": 144.5,
+      "end": 190.90000000037253,
+      "transfer": 3207,
+      "bytes": 2907
+    },
+    {
+      "name": "/src/outdoorgym.js",
+      "start": 144.5,
+      "end": 192.59999999962747,
+      "transfer": 7949,
+      "bytes": 7649
+    },
+    {
+      "name": "/src/gymefforthud.js",
+      "start": 144.59999999962747,
+      "end": 194.09999999962747,
+      "transfer": 2639,
+      "bytes": 2339
+    },
+    {
+      "name": "/src/playerportraits.js",
+      "start": 144.69999999925494,
+      "end": 193.5,
+      "transfer": 3998,
+      "bytes": 3698
+    },
+    {
+      "name": "/src/menusettings.js",
+      "start": 144.69999999925494,
+      "end": 195.40000000037253,
+      "transfer": 2403,
+      "bytes": 2103
+    },
+    {
+      "name": "/src/stats.js",
+      "start": 144.7999999988824,
+      "end": 196.90000000037253,
+      "transfer": 29417,
+      "bytes": 29117
+    },
+    {
+      "name": "/src/gympump.js",
+      "start": 144.90000000037253,
+      "end": 196.59999999962747,
+      "transfer": 1809,
+      "bytes": 1509
+    },
+    {
+      "name": "/src/playerprofiles.js",
+      "start": 145.09999999962747,
+      "end": 199.59999999962747,
+      "transfer": 5956,
+      "bytes": 5656
+    },
+    {
+      "name": "/src/materialcatalog.js",
+      "start": 145.19999999925494,
+      "end": 205.5,
+      "transfer": 14551,
+      "bytes": 14251
+    },
+    {
+      "name": "/src/crashlog.js",
+      "start": 145.40000000037253,
+      "end": 204.59999999962747,
+      "transfer": 29640,
+      "bytes": 29340
+    },
+    {
+      "name": "/src/cinemaplayer.js",
+      "start": 145.40000000037253,
+      "end": 206.09999999962747,
+      "transfer": 18185,
+      "bytes": 17885
+    },
+    {
+      "name": "/src/cinemasurface.js",
+      "start": 145.5,
+      "end": 202.09999999962747,
+      "transfer": 5234,
+      "bytes": 4934
+    },
+    {
+      "name": "/src/computerhub.js",
+      "start": 145.5,
+      "end": 208.2999999988824,
+      "transfer": 24851,
+      "bytes": 24551
+    },
+    {
+      "name": "/src/gameboards.js",
+      "start": 145.69999999925494,
+      "end": 209.09999999962747,
+      "transfer": 4141,
+      "bytes": 3841
+    },
+    {
+      "name": "/src/tvmedia.js",
+      "start": 145.69999999925494,
+      "end": 211.09999999962747,
+      "transfer": 3853,
+      "bytes": 3553
+    },
+    {
+      "name": "/src/santa.js",
+      "start": 145.7999999988824,
+      "end": 213.7999999988824,
+      "transfer": 14026,
+      "bytes": 13726
+    },
+    {
+      "name": "/src/santagifts.js",
+      "start": 146,
+      "end": 213.2999999988824,
+      "transfer": 10176,
+      "bytes": 9876
+    },
+    {
+      "name": "/src/santatv.js",
+      "start": 146.09999999962747,
+      "end": 218,
+      "transfer": 5077,
+      "bytes": 4777
+    },
+    {
+      "name": "/src/cloud.js",
+      "start": 146.19999999925494,
+      "end": 219.40000000037253,
+      "transfer": 9109,
+      "bytes": 8809
+    },
+    {
+      "name": "/src/adminreports.js",
+      "start": 146.2999999988824,
+      "end": 220.69999999925494,
+      "transfer": 12565,
+      "bytes": 12265
+    },
+    {
+      "name": "/src/reportcapture.js",
+      "start": 146.40000000037253,
+      "end": 220.40000000037253,
+      "transfer": 2211,
+      "bytes": 1911
+    },
+    {
+      "name": "/src/viewport.js",
+      "start": 146.40000000037253,
+      "end": 222.2999999988824,
+      "transfer": 3910,
+      "bytes": 3610
+    },
+    {
+      "name": "/src/plantwind.js",
+      "start": 146.59999999962747,
+      "end": 223.2999999988824,
+      "transfer": 4776,
+      "bytes": 4476
+    },
+    {
+      "name": "/src/tightfrustum.js",
+      "start": 146.7999999988824,
+      "end": 224.90000000037253,
+      "transfer": 6577,
+      "bytes": 6277
+    },
+    {
+      "name": "/src/siteinstancebatch.js",
+      "start": 146.90000000037253,
+      "end": 226.19999999925494,
+      "transfer": 8978,
+      "bytes": 8678
+    },
+    {
+      "name": "/src/entranceplantbatch.js",
+      "start": 147,
+      "end": 228.40000000037253,
+      "transfer": 5053,
+      "bytes": 4753
+    },
+    {
+      "name": "/src/cheatclean.js",
+      "start": 147.09999999962747,
+      "end": 232.59999999962747,
+      "transfer": 4437,
+      "bytes": 4137
+    },
+    {
+      "name": "/src/cheats.js",
+      "start": 147.09999999962747,
+      "end": 233.5,
+      "transfer": 2509,
+      "bytes": 2209
+    },
+    {
+      "name": "/src/cheatnote.js",
+      "start": 147.40000000037253,
+      "end": 231.5,
+      "transfer": 2694,
+      "bytes": 2394
+    },
+    {
+      "name": "/src/lowmemory.js",
+      "start": 147.5,
+      "end": 234.2999999988824,
+      "transfer": 10544,
+      "bytes": 10244
+    },
+    {
+      "name": "/src/resourceprofile.js",
+      "start": 147.59999999962747,
+      "end": 240.7999999988824,
+      "transfer": 4824,
+      "bytes": 4524
+    },
+    {
+      "name": "/src/shadowtiles.js",
+      "start": 147.69999999925494,
+      "end": 237.09999999962747,
+      "transfer": 5794,
+      "bytes": 5494
+    },
+    {
+      "name": "/src/viewlod.js",
+      "start": 147.69999999925494,
+      "end": 240.19999999925494,
+      "transfer": 5644,
+      "bytes": 5344
+    },
+    {
+      "name": "/src/beershelfdata.js",
+      "start": 147.7999999988824,
+      "end": 238,
+      "transfer": 4691,
+      "bytes": 4391
+    },
+    {
+      "name": "/src/beershelf.js",
+      "start": 147.90000000037253,
+      "end": 246.09999999962747,
+      "transfer": 4783,
+      "bytes": 4483
+    },
+    {
+      "name": "/src/hudicons.js",
+      "start": 148.09999999962747,
+      "end": 246.5,
+      "transfer": 9696,
+      "bytes": 9396
+    },
+    {
+      "name": "/src/customizer.js",
+      "start": 148.19999999925494,
+      "end": 247.40000000037253,
+      "transfer": 41254,
+      "bytes": 40954
+    },
+    {
+      "name": "/__three/build/three.module.js",
+      "start": 148.19999999925494,
+      "end": 256.59999999962747,
+      "transfer": 1314981,
+      "bytes": 1314681
+    },
+    {
+      "name": "/src/miele.js",
+      "start": 148.40000000037253,
+      "end": 250.5,
+      "transfer": 10264,
+      "bytes": 9964
+    },
+    {
+      "name": "/src/fireworks.js",
+      "start": 148.59999999962747,
+      "end": 249.2999999988824,
+      "transfer": 7703,
+      "bytes": 7403
+    },
+    {
+      "name": "/src/world.js",
+      "start": 148.69999999925494,
+      "end": 257.59999999962747,
+      "transfer": 89864,
+      "bytes": 89564
+    },
+    {
+      "name": "/src/furniture.js",
+      "start": 148.69999999925494,
+      "end": 269.19999999925494,
+      "transfer": 292313,
+      "bytes": 292013
+    },
+    {
+      "name": "/src/interactionoutline.js",
+      "start": 148.7999999988824,
+      "end": 255.09999999962747,
+      "transfer": 9049,
+      "bytes": 8749
+    },
+    {
+      "name": "/src/laundry.js",
+      "start": 148.7999999988824,
+      "end": 258.5,
+      "transfer": 6892,
+      "bytes": 6592
+    },
+    {
+      "name": "/src/tablesetting.js",
+      "start": 149,
+      "end": 267.19999999925494,
+      "transfer": 2614,
+      "bytes": 2314
+    },
+    {
+      "name": "/src/watering.js",
+      "start": 149,
+      "end": 268.7999999988824,
+      "transfer": 8270,
+      "bytes": 7970
+    },
+    {
+      "name": "/src/bedcare.js",
+      "start": 149.09999999962747,
+      "end": 272.09999999962747,
+      "transfer": 4277,
+      "bytes": 3977
+    },
+    {
+      "name": "/src/rearrange.js",
+      "start": 149.19999999925494,
+      "end": 271.19999999925494,
+      "transfer": 39695,
+      "bytes": 39395
+    },
+    {
+      "name": "/src/hallcare.js",
+      "start": 149.19999999925494,
+      "end": 273.69999999925494,
+      "transfer": 5076,
+      "bytes": 4776
+    },
+    {
+      "name": "/src/riverbridge.js",
+      "start": 149.2999999988824,
+      "end": 274.09999999962747,
+      "transfer": 16546,
+      "bytes": 16246
+    },
+    {
+      "name": "/src/player.js",
+      "start": 149.2999999988824,
+      "end": 275.90000000037253,
+      "transfer": 58273,
+      "bytes": 57973
+    },
+    {
+      "name": "/src/fall.js",
+      "start": 149.40000000037253,
+      "end": 283.40000000037253,
+      "transfer": 4260,
+      "bytes": 3960
+    },
+    {
+      "name": "/src/statspanel.js",
+      "start": 149.5,
+      "end": 282.40000000037253,
+      "transfer": 3083,
+      "bytes": 2783
+    },
+    {
+      "name": "/src/respawn.js",
+      "start": 149.59999999962747,
+      "end": 283.7999999988824,
+      "transfer": 5805,
+      "bytes": 5505
+    },
+    {
+      "name": "/src/touch.js",
+      "start": 149.69999999925494,
+      "end": 284.5,
+      "transfer": 6924,
+      "bytes": 6624
+    },
+    {
+      "name": "/src/touchlayout.js",
+      "start": 149.7999999988824,
+      "end": 284.90000000037253,
+      "transfer": 15543,
+      "bytes": 15243
+    },
+    {
+      "name": "/src/cat.js",
+      "start": 149.90000000037253,
+      "end": 286.2999999988824,
+      "transfer": 75637,
+      "bytes": 75337
+    },
+    {
+      "name": "/src/audio.js",
+      "start": 150,
+      "end": 289.2999999988824,
+      "transfer": 71382,
+      "bytes": 71082
+    },
+    {
+      "name": "/src/stairs.js",
+      "start": 150,
+      "end": 292.7999999988824,
+      "transfer": 14909,
+      "bytes": 14609
+    },
+    {
+      "name": "/src/rugs.js",
+      "start": 150.19999999925494,
+      "end": 291.90000000037253,
+      "transfer": 3179,
+      "bytes": 2879
+    },
+    {
+      "name": "/src/changelog.js",
+      "start": 150.2999999988824,
+      "end": 294.90000000037253,
+      "transfer": 9900,
+      "bytes": 9600
+    },
+    {
+      "name": "/src/todo.js",
+      "start": 150.40000000037253,
+      "end": 294.09999999962747,
+      "transfer": 10189,
+      "bytes": 9889
+    },
+    {
+      "name": "/src/fishquest.js",
+      "start": 150.40000000037253,
+      "end": 296,
+      "transfer": 3515,
+      "bytes": 3215
+    },
+    {
+      "name": "/src/minimap.js",
+      "start": 150.59999999962747,
+      "end": 297.09999999962747,
+      "transfer": 2066,
+      "bytes": 1766
+    },
+    {
+      "name": "/src/compass.js",
+      "start": 150.69999999925494,
+      "end": 299.59999999962747,
+      "transfer": 2618,
+      "bytes": 2318
+    },
+    {
+      "name": "/src/measure.js",
+      "start": 150.7999999988824,
+      "end": 300.09999999962747,
+      "transfer": 4103,
+      "bytes": 3803
+    },
+    {
+      "name": "/src/squirrels.js",
+      "start": 150.90000000037253,
+      "end": 303.7999999988824,
+      "transfer": 32978,
+      "bytes": 32678
+    },
+    {
+      "name": "/src/surroundings.js",
+      "start": 150.90000000037253,
+      "end": 306.5,
+      "transfer": 154940,
+      "bytes": 154640
+    },
+    {
+      "name": "/src/ducks.js",
+      "start": 151,
+      "end": 304.19999999925494,
+      "transfer": 4510,
+      "bytes": 4210
+    },
+    {
+      "name": "/src/outdoorcats.js",
+      "start": 151,
+      "end": 306.09999999962747,
+      "transfer": 22548,
+      "bytes": 22248
+    },
+    {
+      "name": "/src/footprints.js",
+      "start": 151.09999999962747,
+      "end": 310.7999999988824,
+      "transfer": 10865,
+      "bytes": 10565
+    },
+    {
+      "name": "/src/footprinttrail.js",
+      "start": 151.19999999925494,
+      "end": 309.69999999925494,
+      "transfer": 6946,
+      "bytes": 6646
+    },
+    {
+      "name": "/src/riverfish.js",
+      "start": 151.2999999988824,
+      "end": 313.09999999962747,
+      "transfer": 9117,
+      "bytes": 8817
+    },
+    {
+      "name": "/src/fishing.js",
+      "start": 151.2999999988824,
+      "end": 322,
+      "transfer": 38863,
+      "bytes": 38563
+    },
+    {
+      "name": "/src/riverpark.js",
+      "start": 151.40000000037253,
+      "end": 322.5,
+      "transfer": 19667,
+      "bytes": 19367
+    },
+    {
+      "name": "/src/roads.js",
+      "start": 151.40000000037253,
+      "end": 323.19999999925494,
+      "transfer": 21889,
+      "bytes": 21589
+    },
+    {
+      "name": "/src/jetpack.js",
+      "start": 151.5,
+      "end": 323.59999999962747,
+      "transfer": 18837,
+      "bytes": 18537
+    },
+    {
+      "name": "/src/groundao.js",
+      "start": 151.5,
+      "end": 324,
+      "transfer": 9679,
+      "bytes": 9379
+    },
+    {
+      "name": "/src/spidersuit.js",
+      "start": 151.69999999925494,
+      "end": 324.69999999925494,
+      "transfer": 17980,
+      "bytes": 17680
+    },
+    {
+      "name": "/src/daycycle.js",
+      "start": 151.7999999988824,
+      "end": 334.09999999962747,
+      "transfer": 18879,
+      "bytes": 18579
+    },
+    {
+      "name": "/src/architectureedges.js",
+      "start": 151.7999999988824,
+      "end": 334.69999999925494,
+      "transfer": 19591,
+      "bytes": 19291
+    },
+    {
+      "name": "/src/birds.js",
+      "start": 151.90000000037253,
+      "end": 331.5,
+      "transfer": 6530,
+      "bytes": 6230
+    },
+    {
+      "name": "/src/flare.js",
+      "start": 151.90000000037253,
+      "end": 333.40000000037253,
+      "transfer": 12654,
+      "bytes": 12354
+    },
+    {
+      "name": "/src/balloon.js",
+      "start": 152.09999999962747,
+      "end": 330,
+      "transfer": 7157,
+      "bytes": 6857
+    },
+    {
+      "name": "/src/balloonbeer.js",
+      "start": 152.09999999962747,
+      "end": 332.7999999988824,
+      "transfer": 5201,
+      "bytes": 4901
+    },
+    {
+      "name": "/src/paddock.js",
+      "start": 152.19999999925494,
+      "end": 336,
+      "transfer": 58084,
+      "bytes": 57784
+    },
+    {
+      "name": "/src/wallclock.js",
+      "start": 152.2999999988824,
+      "end": 344.19999999925494,
+      "transfer": 12274,
+      "bytes": 11974
+    },
+    {
+      "name": "/src/timesync.js",
+      "start": 152.40000000037253,
+      "end": 343.19999999925494,
+      "transfer": 2951,
+      "bytes": 2651
+    },
+    {
+      "name": "/src/reflections.js",
+      "start": 152.5,
+      "end": 343.59999999962747,
+      "transfer": 7178,
+      "bytes": 6878
+    },
+    {
+      "name": "/src/warmup.js",
+      "start": 152.5,
+      "end": 346.7999999988824,
+      "transfer": 17969,
+      "bytes": 17669
+    },
+    {
+      "name": "/src/patio.js",
+      "start": 152.5,
+      "end": 346.2999999988824,
+      "transfer": 42614,
+      "bytes": 42314
+    },
+    {
+      "name": "/src/loadingstep.js",
+      "start": 152.69999999925494,
+      "end": 349,
+      "transfer": 1924,
+      "bytes": 1624
+    },
+    {
+      "name": "/src/quality.js",
+      "start": 152.90000000037253,
+      "end": 349.7999999988824,
+      "transfer": 17701,
+      "bytes": 17401
+    },
+    {
+      "name": "/src/hitchlog.js",
+      "start": 152.90000000037253,
+      "end": 354,
+      "transfer": 5744,
+      "bytes": 5444
+    },
+    {
+      "name": "/src/qualitysetting.js",
+      "start": 152.90000000037253,
+      "end": 356.90000000037253,
+      "transfer": 2312,
+      "bytes": 2012
+    },
+    {
+      "name": "/src/seasons.js",
+      "start": 153.09999999962747,
+      "end": 353.40000000037253,
+      "transfer": 3356,
+      "bytes": 3056
+    },
+    {
+      "name": "/src/christmas.js",
+      "start": 153.19999999925494,
+      "end": 359,
+      "transfer": 8134,
+      "bytes": 7834
+    },
+    {
+      "name": "/src/newyear.js",
+      "start": 153.2999999988824,
+      "end": 358.19999999925494,
+      "transfer": 9925,
+      "bytes": 9625
+    },
+    {
+      "name": "/src/resume.js",
+      "start": 153.40000000037253,
+      "end": 360.2999999988824,
+      "transfer": 2779,
+      "bytes": 2479
+    },
+    {
+      "name": "/src/keep.js",
+      "start": 153.40000000037253,
+      "end": 364.69999999925494,
+      "transfer": 23667,
+      "bytes": 23367
+    },
+    {
+      "name": "/src/life.js",
+      "start": 153.5,
+      "end": 365.19999999925494,
+      "transfer": 27259,
+      "bytes": 26959
+    },
+    {
+      "name": "/src/dishwasher.js",
+      "start": 153.59999999962747,
+      "end": 366.09999999962747,
+      "transfer": 15604,
+      "bytes": 15304
+    },
+    {
+      "name": "/src/waste.js",
+      "start": 153.59999999962747,
+      "end": 366.7999999988824,
+      "transfer": 14849,
+      "bytes": 14549
+    },
+    {
+      "name": "/src/actions.js",
+      "start": 153.69999999925494,
+      "end": 367.59999999962747,
+      "transfer": 8122,
+      "bytes": 7822
+    },
+    {
+      "name": "/src/stores.js",
+      "start": 153.7999999988824,
+      "end": 368.90000000037253,
+      "transfer": 20476,
+      "bytes": 20176
+    },
+    {
+      "name": "/src/reset.js",
+      "start": 153.7999999988824,
+      "end": 374.40000000037253,
+      "transfer": 2809,
+      "bytes": 2509
+    },
+    {
+      "name": "/src/rest.js",
+      "start": 153.7999999988824,
+      "end": 379.09999999962747,
+      "transfer": 5977,
+      "bytes": 5677
+    },
+    {
+      "name": "/src/slidemovement.js",
+      "start": 153.90000000037253,
+      "end": 378,
+      "transfer": 5365,
+      "bytes": 5065
+    },
+    {
+      "name": "/src/remote-pose.js",
+      "start": 154,
+      "end": 377.5,
+      "transfer": 3585,
+      "bytes": 3285
+    },
+    {
+      "name": "/src/saber.js",
+      "start": 154.09999999962747,
+      "end": 376.90000000037253,
+      "transfer": 6513,
+      "bytes": 6213
+    },
+    {
+      "name": "/src/toys.js",
+      "start": 154.2999999988824,
+      "end": 378.5,
+      "transfer": 27535,
+      "bytes": 27235
+    },
+    {
+      "name": "/src/remote.js",
+      "start": 154.5,
+      "end": 387.69999999925494,
+      "transfer": 4459,
+      "bytes": 4159
+    },
+    {
+      "name": "/src/book.js",
+      "start": 154.59999999962747,
+      "end": 391.7999999988824,
+      "transfer": 9304,
+      "bytes": 9004
+    },
+    {
+      "name": "/src/eggs.js",
+      "start": 154.69999999925494,
+      "end": 384,
+      "transfer": 4137,
+      "bytes": 3837
+    },
+    {
+      "name": "/src/pan.js",
+      "start": 154.7999999988824,
+      "end": 385.59999999962747,
+      "transfer": 6285,
+      "bytes": 5985
+    },
+    {
+      "name": "/src/toaster.js",
+      "start": 154.90000000037253,
+      "end": 388.90000000037253,
+      "transfer": 22561,
+      "bytes": 22261
+    },
+    {
+      "name": "/src/plants.js",
+      "start": 155,
+      "end": 385.2999999988824,
+      "transfer": 2708,
+      "bytes": 2408
+    },
+    {
+      "name": "/src/chicken.js",
+      "start": 155.09999999962747,
+      "end": 394.69999999925494,
+      "transfer": 22081,
+      "bytes": 21781
+    },
+    {
+      "name": "/src/hood.js",
+      "start": 155.19999999925494,
+      "end": 395.19999999925494,
+      "transfer": 8302,
+      "bytes": 8002
+    },
+    {
+      "name": "/src/grill.js",
+      "start": 155.2999999988824,
+      "end": 395.90000000037253,
+      "transfer": 20811,
+      "bytes": 20511
+    },
+    {
+      "name": "/src/sausages.js",
+      "start": 155.40000000037253,
+      "end": 397.90000000037253,
+      "transfer": 4267,
+      "bytes": 3967
+    },
+    {
+      "name": "/src/microwave.js",
+      "start": 155.5,
+      "end": 396.2999999988824,
+      "transfer": 9324,
+      "bytes": 9024
+    },
+    {
+      "name": "/src/power.js",
+      "start": 155.5,
+      "end": 404.5,
+      "transfer": 6491,
+      "bytes": 6191
+    },
+    {
+      "name": "/src/detail.js",
+      "start": 155.59999999962747,
+      "end": 402.5,
+      "transfer": 47489,
+      "bytes": 47189
+    },
+    {
+      "name": "/src/sonos.js",
+      "start": 155.59999999962747,
+      "end": 403.2999999988824,
+      "transfer": 12539,
+      "bytes": 12239
+    },
+    {
+      "name": "/src/blinds.js",
+      "start": 155.69999999925494,
+      "end": 406.69999999925494,
+      "transfer": 13239,
+      "bytes": 12939
+    },
+    {
+      "name": "/src/turbo.js",
+      "start": 155.7999999988824,
+      "end": 406.40000000037253,
+      "transfer": 3535,
+      "bytes": 3235
+    },
+    {
+      "name": "/src/beer.js",
+      "start": 155.90000000037253,
+      "end": 404.90000000037253,
+      "transfer": 9392,
+      "bytes": 9092
+    },
+    {
+      "name": "/src/things.js",
+      "start": 156,
+      "end": 408,
+      "transfer": 14362,
+      "bytes": 14062
+    },
+    {
+      "name": "/src/secret.js",
+      "start": 156.09999999962747,
+      "end": 408.90000000037253,
+      "transfer": 3453,
+      "bytes": 3153
+    },
+    {
+      "name": "/src/hand.js",
+      "start": 156.09999999962747,
+      "end": 414.2999999988824,
+      "transfer": 34773,
+      "bytes": 34473
+    },
+    {
+      "name": "/src/handwash.js",
+      "start": 156.19999999925494,
+      "end": 411.59999999962747,
+      "transfer": 5047,
+      "bytes": 4747
+    },
+    {
+      "name": "/src/milk.js",
+      "start": 156.40000000037253,
+      "end": 412.59999999962747,
+      "transfer": 6578,
+      "bytes": 6278
+    },
+    {
+      "name": "/src/beercan.js",
+      "start": 156.5,
+      "end": 419.19999999925494,
+      "transfer": 10217,
+      "bytes": 9917
+    },
+    {
+      "name": "/src/cups.js",
+      "start": 156.59999999962747,
+      "end": 416.90000000037253,
+      "transfer": 33637,
+      "bytes": 33337
+    },
+    {
+      "name": "/src/fishfingers.js",
+      "start": 156.7999999988824,
+      "end": 417.40000000037253,
+      "transfer": 18854,
+      "bytes": 18554
+    },
+    {
+      "name": "/src/toiletpaper.js",
+      "start": 156.7999999988824,
+      "end": 419.5,
+      "transfer": 18168,
+      "bytes": 17868
+    },
+    {
+      "name": "/src/airfryer.js",
+      "start": 156.90000000037253,
+      "end": 422.19999999925494,
+      "transfer": 14006,
+      "bytes": 13706
+    },
+    {
+      "name": "/src/fries.js",
+      "start": 157.09999999962747,
+      "end": 421.19999999925494,
+      "transfer": 23954,
+      "bytes": 23654
+    },
+    {
+      "name": "/src/vacuum.js",
+      "start": 157.19999999925494,
+      "end": 427.90000000037253,
+      "transfer": 16160,
+      "bytes": 15860
+    },
+    {
+      "name": "/src/cloth.js",
+      "start": 157.2999999988824,
+      "end": 426.59999999962747,
+      "transfer": 5947,
+      "bytes": 5647
+    },
+    {
+      "name": "/src/tasks.js",
+      "start": 157.40000000037253,
+      "end": 431.5,
+      "transfer": 24946,
+      "bytes": 24646
+    },
+    {
+      "name": "/src/coffeejar.js",
+      "start": 157.5,
+      "end": 432,
+      "transfer": 11058,
+      "bytes": 10758
+    },
+    {
+      "name": "/src/fruit.js",
+      "start": 157.69999999925494,
+      "end": 433.19999999925494,
+      "transfer": 26911,
+      "bytes": 26611
+    },
+    {
+      "name": "/src/drawing.js",
+      "start": 157.7999999988824,
+      "end": 435.69999999925494,
+      "transfer": 7096,
+      "bytes": 6796
+    },
+    {
+      "name": "/src/calendar.js",
+      "start": 157.90000000037253,
+      "end": 436.59999999962747,
+      "transfer": 12875,
+      "bytes": 12575
+    },
+    {
+      "name": "/src/holdable.js",
+      "start": 158,
+      "end": 434.90000000037253,
+      "transfer": 10289,
+      "bytes": 9989
+    },
+    {
+      "name": "/src/heldcategory.js",
+      "start": 158,
+      "end": 441,
+      "transfer": 4287,
+      "bytes": 3987
+    },
+    {
+      "name": "/src/water.js",
+      "start": 158.09999999962747,
+      "end": 437.7999999988824,
+      "transfer": 9563,
+      "bytes": 9263
+    },
+    {
+      "name": "/src/catphoto.js",
+      "start": 158.19999999925494,
+      "end": 439.7999999988824,
+      "transfer": 1613,
+      "bytes": 1313
+    },
+    {
+      "name": "/src/catbinder.js",
+      "start": 158.2999999988824,
+      "end": 441.59999999962747,
+      "transfer": 19907,
+      "bytes": 19607
+    },
+    {
+      "name": "/src/catcards.js",
+      "start": 158.59999999962747,
+      "end": 442.59999999962747,
+      "transfer": 8547,
+      "bytes": 8247
+    },
+    {
+      "name": "/src/idb.js",
+      "start": 158.69999999925494,
+      "end": 445.09999999962747,
+      "transfer": 3148,
+      "bytes": 2848
+    },
+    {
+      "name": "/src/visitlights.js",
+      "start": 158.7999999988824,
+      "end": 447.5,
+      "transfer": 11615,
+      "bytes": 11315
+    },
+    {
+      "name": "/src/lights.js",
+      "start": 158.7999999988824,
+      "end": 449.40000000037253,
+      "transfer": 43852,
+      "bytes": 43552
+    },
+    {
+      "name": "/src/install.js",
+      "start": 158.90000000037253,
+      "end": 449,
+      "transfer": 2807,
+      "bytes": 2507
+    },
+    {
+      "name": "/src/marks.js",
+      "start": 159.09999999962747,
+      "end": 450.40000000037253,
+      "transfer": 23127,
+      "bytes": 22827
+    },
+    {
+      "name": "/src/breaking.js",
+      "start": 159.09999999962747,
+      "end": 451.90000000037253,
+      "transfer": 10289,
+      "bytes": 9989
+    },
+    {
+      "name": "/src/target.js",
+      "start": 159.19999999925494,
+      "end": 453.5,
+      "transfer": 7518,
+      "bytes": 7218
+    },
+    {
+      "name": "/src/car.js",
+      "start": 159.2999999988824,
+      "end": 454.2999999988824,
+      "transfer": 23864,
+      "bytes": 23564
+    },
+    {
+      "name": "/src/djinput.js",
+      "start": 159.40000000037253,
+      "end": 458.2999999988824,
+      "transfer": 2109,
+      "bytes": 1809
+    },
+    {
+      "name": "/src/garage.js",
+      "start": 159.40000000037253,
+      "end": 457.40000000037253,
+      "transfer": 96583,
+      "bytes": 96283
+    },
+    {
+      "name": "/src/playroom.js",
+      "start": 159.5,
+      "end": 460.19999999925494,
+      "transfer": 31271,
+      "bytes": 30971
+    },
+    {
+      "name": "/src/core.js",
+      "start": 159.59999999962747,
+      "end": 462,
+      "transfer": 46044,
+      "bytes": 45744
+    },
+    {
+      "name": "/src/olof.js",
+      "start": 159.59999999962747,
+      "end": 465.59999999962747,
+      "transfer": 16630,
+      "bytes": 16330
+    },
+    {
+      "name": "/src/corehouse.js",
+      "start": 159.59999999962747,
+      "end": 466.7999999988824,
+      "transfer": 33738,
+      "bytes": 33438
+    },
+    {
+      "name": "/src/greet.js",
+      "start": 159.69999999925494,
+      "end": 468.5,
+      "transfer": 5714,
+      "bytes": 5414
+    },
+    {
+      "name": "/src/lightmodes.js",
+      "start": 159.90000000037253,
+      "end": 469.59999999962747,
+      "transfer": 5385,
+      "bytes": 5085
+    },
+    {
+      "name": "/src/nest.js",
+      "start": 159.90000000037253,
+      "end": 469.2999999988824,
+      "transfer": 25060,
+      "bytes": 24760
+    },
+    {
+      "name": "/src/weather.js",
+      "start": 160,
+      "end": 470.09999999962747,
+      "transfer": 20511,
+      "bytes": 20211
+    },
+    {
+      "name": "/src/realweather.js",
+      "start": 160.09999999962747,
+      "end": 481.19999999925494,
+      "transfer": 11934,
+      "bytes": 11634
+    },
+    {
+      "name": "/src/posters.js",
+      "start": 160.19999999925494,
+      "end": 482.7999999988824,
+      "transfer": 20668,
+      "bytes": 20368
+    },
+    {
+      "name": "/src/boards.js",
+      "start": 160.40000000037253,
+      "end": 481.59999999962747,
+      "transfer": 6156,
+      "bytes": 5856
+    },
+    {
+      "name": "/src/paperball.js",
+      "start": 160.40000000037253,
+      "end": 482.09999999962747,
+      "transfer": 6015,
+      "bytes": 5715
+    },
+    {
+      "name": "/src/medals.js",
+      "start": 160.5,
+      "end": 480.59999999962747,
+      "transfer": 9781,
+      "bytes": 9481
+    },
+    {
+      "name": "/src/leaderboard.js",
+      "start": 160.59999999962747,
+      "end": 483.09999999962747,
+      "transfer": 14817,
+      "bytes": 14517
+    },
+    {
+      "name": "/src/presence.js",
+      "start": 160.69999999925494,
+      "end": 489.69999999925494,
+      "transfer": 3296,
+      "bytes": 2996
+    },
+    {
+      "name": "/src/ghostcat.js",
+      "start": 160.7999999988824,
+      "end": 492.40000000037253,
+      "transfer": 3935,
+      "bytes": 3635
+    },
+    {
+      "name": "/src/ghosts.js",
+      "start": 160.90000000037253,
+      "end": 490.59999999962747,
+      "transfer": 61581,
+      "bytes": 61281
+    },
+    {
+      "name": "/src/fps.js",
+      "start": 160.90000000037253,
+      "end": 491.90000000037253,
+      "transfer": 1225,
+      "bytes": 925
+    },
+    {
+      "name": "/src/combat.js",
+      "start": 160.90000000037253,
+      "end": 494.09999999962747,
+      "transfer": 32510,
+      "bytes": 32210
+    },
+    {
+      "name": "/src/bow.js",
+      "start": 161,
+      "end": 491.5,
+      "transfer": 12362,
+      "bytes": 12062
+    },
+    {
+      "name": "/src/mailbox.js",
+      "start": 161.09999999962747,
+      "end": 502.7999999988824,
+      "transfer": 3576,
+      "bytes": 3276
+    },
+    {
+      "name": "/src/elcabinet.js",
+      "start": 161.19999999925494,
+      "end": 505.19999999925494,
+      "transfer": 4445,
+      "bytes": 4145
+    },
+    {
+      "name": "/src/graffiti.js",
+      "start": 161.40000000037253,
+      "end": 504.09999999962747,
+      "transfer": 10698,
+      "bytes": 10398
+    },
+    {
+      "name": "/src/doorsync.js",
+      "start": 161.5,
+      "end": 502,
+      "transfer": 2726,
+      "bytes": 2426
+    },
+    {
+      "name": "/src/farwalk.js",
+      "start": 161.59999999962747,
+      "end": 499.7999999988824,
+      "transfer": 13944,
+      "bytes": 13644
+    },
+    {
+      "name": "/src/graffitisync.js",
+      "start": 161.59999999962747,
+      "end": 505.59999999962747,
+      "transfer": 2911,
+      "bytes": 2611
+    },
+    {
+      "name": "/src/chat.js",
+      "start": 161.69999999925494,
+      "end": 511.7999999988824,
+      "transfer": 15437,
+      "bytes": 15137
+    },
+    {
+      "name": "/src/basket.js",
+      "start": 161.7999999988824,
+      "end": 515.7999999988824,
+      "transfer": 32451,
+      "bytes": 32151
+    },
+    {
+      "name": "/src/testmode.js",
+      "start": 161.90000000037253,
+      "end": 512.1999999992549,
+      "transfer": 2146,
+      "bytes": 1846
+    },
+    {
+      "name": "/src/mess.js",
+      "start": 161.90000000037253,
+      "end": 514.4000000003725,
+      "transfer": 14562,
+      "bytes": 14262
+    },
+    {
+      "name": "/icons/icon-192.png",
+      "start": 165.09999999962747,
+      "end": 194.69999999925494,
+      "transfer": 0,
+      "bytes": 5138
+    },
+    {
+      "name": "/src/targetscore.js",
+      "start": 191.5,
+      "end": 511.09999999962747,
+      "transfer": 1475,
+      "bytes": 1175
+    },
+    {
+      "name": "/src/parkinglayout.js",
+      "start": 192.2999999988824,
+      "end": 510.2999999988824,
+      "transfer": 6520,
+      "bytes": 6220
+    },
+    {
+      "name": "/src/gymeffort.js",
+      "start": 193.69999999925494,
+      "end": 516.7999999988824,
+      "transfer": 1819,
+      "bytes": 1519
+    },
+    {
+      "name": "/__three/examples/jsm/utils/BufferGeometryUtils.js",
+      "start": 193.90000000037253,
+      "end": 516.4000000003725,
+      "transfer": 32068,
+      "bytes": 31768
+    },
+    {
+      "name": "/src/woodgrain.js",
+      "start": 194,
+      "end": 517.7999999988824,
+      "transfer": 1856,
+      "bytes": 1556
+    },
+    {
+      "name": "/src/outdoorgymdecor.js",
+      "start": 194.09999999962747,
+      "end": 519,
+      "transfer": 7871,
+      "bytes": 7571
+    },
+    {
+      "name": "/src/statcount.js",
+      "start": 197.90000000037253,
+      "end": 522.2999999988824,
+      "transfer": 895,
+      "bytes": 595
+    },
+    {
+      "name": "/src/duckscore.js",
+      "start": 198,
+      "end": 521.4000000003725,
+      "transfer": 1037,
+      "bytes": 737
+    },
+    {
+      "name": "/src/gymscore.js",
+      "start": 198,
+      "end": 525.5,
+      "transfer": 1262,
+      "bytes": 962
+    },
+    {
+      "name": "/__three/examples/jsm/renderers/CSS3DRenderer.js",
+      "start": 203.19999999925494,
+      "end": 525,
+      "transfer": 8392,
+      "bytes": 8092
+    },
+    {
+      "name": "/src/longtasks.js",
+      "start": 206.69999999925494,
+      "end": 529.6999999992549,
+      "transfer": 1782,
+      "bytes": 1482
+    },
+    {
+      "name": "/src/tvsound.js",
+      "start": 208,
+      "end": 527.9000000003725,
+      "transfer": 2311,
+      "bytes": 2011
+    },
+    {
+      "name": "/src/snakeview.js",
+      "start": 211,
+      "end": 528.5999999996275,
+      "transfer": 3238,
+      "bytes": 2938
+    },
+    {
+      "name": "/src/blocks.js",
+      "start": 211.09999999962747,
+      "end": 531.6999999992549,
+      "transfer": 4109,
+      "bytes": 3809
+    },
+    {
+      "name": "/src/meteors.js",
+      "start": 211.19999999925494,
+      "end": 532.7999999988824,
+      "transfer": 4399,
+      "bytes": 4099
+    },
+    {
+      "name": "/src/arcadeview.js",
+      "start": 211.2999999988824,
+      "end": 533.7999999988824,
+      "transfer": 6442,
+      "bytes": 6142
+    },
+    {
+      "name": "/src/rowkey.js",
+      "start": 211.59999999962747,
+      "end": 536.5,
+      "transfer": 1123,
+      "bytes": 823
+    },
+    {
+      "name": "/src/reportphoto.js",
+      "start": 221.5,
+      "end": 535.6999999992549,
+      "transfer": 3353,
+      "bytes": 3053
+    },
+    {
+      "name": "/src/reportauthor.js",
+      "start": 222.09999999962747,
+      "end": 537.5999999996275,
+      "transfer": 780,
+      "bytes": 480
+    },
+    {
+      "name": "/src/privatecodes.js",
+      "start": 222.2999999988824,
+      "end": 538.7999999988824,
+      "transfer": 4144,
+      "bytes": 3844
+    },
+    {
+      "name": "/src/occlusion.js",
+      "start": 226.40000000037253,
+      "end": 540.5999999996275,
+      "transfer": 2975,
+      "bytes": 2675
+    },
+    {
+      "name": "/src/vertexcompile.js",
+      "start": 226.5,
+      "end": 541.2999999988824,
+      "transfer": 959,
+      "bytes": 659
+    },
+    {
+      "name": "/src/beershelfschema.js",
+      "start": 238.90000000037253,
+      "end": 546.7999999988824,
+      "transfer": 2055,
+      "bytes": 1755
+    },
+    {
+      "name": "/src/streetlife.js",
+      "start": 242.69999999925494,
+      "end": 547.2999999988824,
+      "transfer": 21119,
+      "bytes": 20819
+    },
+    {
+      "name": "/src/pingping.js",
+      "start": 252.5,
+      "end": 546,
+      "transfer": 10367,
+      "bytes": 10067
+    },
+    {
+      "name": "/src/laundrymodels.js",
+      "start": 259.7999999988824,
+      "end": 548.2999999988824,
+      "transfer": 4171,
+      "bytes": 3871
+    },
+    {
+      "name": "/src/laundryprogramme.js",
+      "start": 260.19999999925494,
+      "end": 550,
+      "transfer": 6856,
+      "bytes": 6556
+    },
+    {
+      "name": "/src/closet.js",
+      "start": 261.69999999925494,
+      "end": 550.9000000003725,
+      "transfer": 12135,
+      "bytes": 11835
+    },
+    {
+      "name": "/src/cleaning.js",
+      "start": 261.7999999988824,
+      "end": 554.5999999996275,
+      "transfer": 15233,
+      "bytes": 14933
+    },
+    {
+      "name": "/src/doors.js",
+      "start": 261.90000000037253,
+      "end": 555.0999999996275,
+      "transfer": 9288,
+      "bytes": 8988
+    },
+    {
+      "name": "/src/openables.js",
+      "start": 261.90000000037253,
+      "end": 556,
+      "transfer": 3191,
+      "bytes": 2891
+    },
+    {
+      "name": "/src/doorfittings.js",
+      "start": 261.90000000037253,
+      "end": 558.6999999992549,
+      "transfer": 4655,
+      "bytes": 4355
+    },
+    {
+      "name": "/src/exterior.js",
+      "start": 262.40000000037253,
+      "end": 560.5,
+      "transfer": 65074,
+      "bytes": 64774
+    },
+    {
+      "name": "/src/keycabinet.js",
+      "start": 262.5,
+      "end": 563.4000000003725,
+      "transfer": 16625,
+      "bytes": 16325
+    },
+    {
+      "name": "/src/merge.js",
+      "start": 262.69999999925494,
+      "end": 562,
+      "transfer": 3716,
+      "bytes": 3416
+    },
+    {
+      "name": "/src/contents.js",
+      "start": 262.69999999925494,
+      "end": 564.5999999996275,
+      "transfer": 31829,
+      "bytes": 31529
+    },
+    {
+      "name": "/src/sillplants.js",
+      "start": 262.7999999988824,
+      "end": 567.2999999988824,
+      "transfer": 28576,
+      "bytes": 28276
+    },
+    {
+      "name": "/src/courtyard.js",
+      "start": 262.90000000037253,
+      "end": 568.0999999996275,
+      "transfer": 48734,
+      "bytes": 48434
+    },
+    {
+      "name": "/src/outdoorseats.js",
+      "start": 263,
+      "end": 566.1999999992549,
+      "transfer": 9636,
+      "bytes": 9336
+    },
+    {
+      "name": "/src/boule.js",
+      "start": 263.19999999925494,
+      "end": 570.0999999996275,
+      "transfer": 13682,
+      "bytes": 13382
+    },
+    {
+      "name": "/src/grass.js",
+      "start": 263.40000000037253,
+      "end": 571.0999999996275,
+      "transfer": 5277,
+      "bytes": 4977
+    }
+  ],
+  "nav": [
+    {
+      "request": 17.5,
+      "response": 19.799999998882413,
+      "dom": 112.5
+    }
+  ],
+  "render": {
+    "frame": 39,
+    "calls": 465,
+    "triangles": 918214,
+    "points": 80,
+    "lines": 6655
+  },
+  "cpuSelfMs": [
+    [
+      "__three/build/three.module.js:onFirstUse",
+      11109.997999999956
+    ],
+    [
+      "src/riverbridge.js:riverAt",
+      3409.858000000015
+    ],
+    [
+      "native:(idle)",
+      2682.9749999999954
+    ],
+    [
+      "src/surroundings.js:groundY",
+      1620.232000000001
+    ],
+    [
+      "native:(garbage collector)",
+      959.0919999999995
+    ],
+    [
+      "src/furniture.js:pileTextures",
+      914.1009999999995
+    ],
+    [
+      "src/surroundings.js:terrainSurface",
+      842.5770000000005
+    ],
+    [
+      "src/roads.js:onRoad",
+      692.2120000000009
+    ],
+    [
+      "src/roads.js:terrainCuts",
+      686.4929999999997
+    ],
+    [
+      "src/surroundings.js:find",
+      604.6040000000003
+    ],
+    [
+      "native:(program)",
+      536.2069999999998
+    ],
+    [
+      "src/architectureedges.js:probe",
+      486.6969999999999
+    ],
+    [
+      "src/surroundings.js:",
+      482.92300000000023
+    ],
+    [
+      "src/parkinglot1442.js:d",
+      471.03800000000047
+    ],
+    [
+      "__three/build/three.module.js:subVectors",
+      452.76200000000057
+    ],
+    [
+      "src/elevation.js:at",
+      440.1890000000004
+    ],
+    [
+      "__three/build/three.module.js:convertBufferAttribute",
+      408.55800000000005
+    ],
+    [
+      "src/architectureedges.js:",
+      390.3770000000002
+    ],
+    [
+      "src/surroundings.js:paddedTerrainY",
+      387.75800000000044
+    ],
+    [
+      "__three/build/three.module.js:EdgesGeometry",
+      383.05100000000033
+    ],
+    [
+      "__three/build/three.module.js:Float32BufferAttribute",
+      361.7370000000005
+    ],
+    [
+      "src/roads.js:cutAtTerrain",
+      359.88300000000004
+    ],
+    [
+      "__three/build/three.module.js:intersectBox",
+      320.0540000000001
+    ],
+    [
+      "src/roads.js:lerp",
+      302.704
+    ],
+    [
+      "src/surroundings.js:dist",
+      288.3480000000002
+    ],
+    [
+      "__three/build/three.module.js:getX",
+      281.41099999999994
+    ],
+    [
+      "src/main.js:hitch.intervals.metadata",
+      269.9329999999999
+    ],
+    [
+      "src/surroundings.js:elevationWeight",
+      228.09600000000003
+    ],
+    [
+      "__three/build/three.module.js:dot",
+      224.04700000000003
+    ],
+    [
+      "__three/build/three.module.js:angleTo",
+      222.21500000000006
+    ],
+    [
+      "__three/build/three.module.js:intersectTriangle",
+      215.68100000000013
+    ],
+    [
+      "src/surroundings.js:y",
+      206.4270000000001
+    ],
+    [
+      "src/riverpark.js:parkDeckAt",
+      204.3230000000001
+    ],
+    [
+      "src/garage.js:inRect",
+      203.99000000000007
+    ],
+    [
+      "src/architectureedges.js:build",
+      187.27100000000004
+    ],
+    [
+      "src/parkinglot1442.js:",
+      183.133
+    ],
+    [
+      "__three/build/three.module.js:copy",
+      182.9800000000001
+    ],
+    [
+      "__three/examples/jsm/geometries/RoundedBoxGeometry.js:getUv",
+      179.82399999999998
+    ],
+    [
+      "src/roads.js:emit",
+      174.20600000000007
+    ],
+    [
+      "__three/build/three.module.js:intersectsBox",
+      170.32400000000007
+    ],
+    [
+      "__three/build/three.module.js:getY",
+      169.3179999999999
+    ],
+    [
+      "src/roads.js:onWalk",
+      165.40799999999987
+    ],
+    [
+      "__three/build/three.module.js:fromBufferAttribute",
+      165.28099999999995
+    ],
+    [
+      "src/mirror.js:mirrorTexture",
+      162.42799999999997
+    ],
+    [
+      "__three/build/three.module.js:crossVectors",
+      159.538
+    ]
+  ],
+  "metrics": {
+    "Timestamp": 15407.08076,
+    "AudioHandlers": 0,
+    "AudioWorkletProcessors": 0,
+    "Documents": 2,
+    "Frames": 2,
+    "JSEventListeners": 780,
+    "LayoutObjects": 116,
+    "MediaKeySessions": 0,
+    "MediaKeys": 0,
+    "Nodes": 5195,
+    "Resources": 382,
+    "ContextLifecycleStateObservers": 19,
+    "V8PerContextDatas": 2,
+    "WorkerGlobalScopes": 0,
+    "UACSSResources": 0,
+    "RTCPeerConnections": 0,
+    "ResourceFetchers": 2,
+    "AdSubframes": 0,
+    "DetachedScriptStates": 0,
+    "ArrayBufferContents": 108590,
+    "LayoutCount": 83,
+    "RecalcStyleCount": 87,
+    "LayoutDuration": 0.037571,
+    "RecalcStyleDuration": 0.038935,
+    "DevToolsCommandDuration": 0.132658,
+    "ScriptDuration": 12.7307,
+    "V8CompileDuration": 0.000584,
+    "TaskDuration": 43.314552,
+    "TaskOtherDuration": 30.374104,
+    "ThreadTime": 30.627185,
+    "ProcessTime": 44.61,
+    "JSHeapUsedSize": 132159552,
+    "JSHeapTotalSize": 232456192,
+    "FirstMeaningfulPaint": 15362.179875,
+    "DomContentLoaded": 15361.213819,
+    "NavigationStart": 15361.101401
+  },
+  "errors": []
+}

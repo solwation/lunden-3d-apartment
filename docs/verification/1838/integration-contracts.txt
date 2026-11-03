@@ -1,0 +1,1 @@
+PASS exact coordinates and colliding slots/signed zero, bounded eviction, isolated object returns, null/undefined/non-numeric fallback, disabled fallback, release before runtime/late imports

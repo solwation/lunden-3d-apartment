@@ -1,3 +1,4 @@
+import { createStartupPointCache } from './startupcache.js';
 import { cutSegmentOpenings } from './segmentopenings.js';
 import { terrainCellGroups } from './terraincells.js';
 import { lowMemory } from './lowmemory.js';
@@ -117,7 +118,9 @@ export function groundY(x, z) {
 export const groundBelowDeckY = (x, z) => terrainY(x, z);
 /** The terrain itself (the grass / asphalt surface; groundY without the stairs' treads and the recesses' floors). */
 function terrainY(x,z) { const grade=parkingGradeAt(x,z);return grade?grade(x,z):plateauTerrainY(x,z); }
-function plateauTerrainY(x,z) {
+const plateauBuildCache = createStartupPointCache('plateau');
+function plateauTerrainY(x,z) { return plateauBuildCache.read(x,z,rawPlateauTerrainY); }
+function rawPlateauTerrainY(x,z) {
   if(!legacyBuildingPads)legacyBuildingPads=makeBuildingPads(terrainRawLegacyY,260,false,[]);
   if(z<=SOUTH_PLATEAU.fade[0])return paddedTerrainY(x,z,bankLegacyY,legacyBuildingPads);
   if(!buildingPads)buildingPads=makeBuildingPads();
@@ -250,7 +253,9 @@ export const terrainNorth = Math.min(E.profile[0][0], Wst.profile[0][0]);
  * is vertical. */
 let terrainSurface = (x,z) => terrainY(x,z)-.01;
 /** Rendered triangle surface for background planting/paths; no change to the player's ground queries. */
-export const renderedTerrainY = (x,z) => terrainSurface(x,z);
+const surfaceBuildCache = createStartupPointCache('drawn terrain');
+const sampleTerrainSurface = (x,z) => terrainSurface(x,z);
+export const renderedTerrainY = (x,z) => surfaceBuildCache.read(x,z,sampleTerrainSurface);
 /** #1378: the visible highest grass triangle, including the timber bridge earth fill. Only new lamp fittings use this. */
 export const lampGroundY = (x,z) => Math.max(renderedTerrainY(x,z),renderedParkFillY(x,z)??-Infinity);
 /** #1309: the terrain mesh's grid lines ({X, Z}, sorted; set by terrainGeometry) so a surface laid on it can be cut along the same
@@ -353,6 +358,7 @@ function terrainGeometry(southeastCells = null) {
   // #1444: mapped ways (145221573, 145221583) cross the sub-plane lot 145221628. Cut only along the grid, their strips would float over
   // or sink into its non-planar band, so its cells hand cutAtTerrain their drawn pieces (null elsewhere: other strips stay as they were).
   terrainGrid.lotPieces=terrainDetailGrid.lotPieces=(i,j)=>i>=0&&j>=0&&i<nx-1&&j<Z.length-1?lotCells.get(j*nx+i)?.cut??null:null;
+  surfaceBuildCache.clear(); // sampler now changes from the authored function to the emitted triangle surface
   terrainSurface=(x,z)=>{
     const i=find(X,x),j=find(Z,z),lot=lotCells.get(j*nx+i);
     if(lot){const core=lot.grades.find(g=>g.inCore(x,z));if(core)return core.planeY(x,z)-.01;let best=null,bm=-Infinity;for(const{tri:[p,q,r]}of lot.tris){const det=(q[0]-p[0])*(r[1]-p[1])-(r[0]-p[0])*(q[1]-p[1]),l1=((x-p[0])*(r[1]-p[1])-(r[0]-p[0])*(z-p[1]))/det,l2=((q[0]-p[0])*(z-p[1])-(x-p[0])*(q[1]-p[1]))/det,m=Math.min(1-l1-l2,l1,l2);if(m>bm){bm=m;best=p[2]+(q[2]-p[2])*l1+(r[2]-p[2])*l2;}}return best;}

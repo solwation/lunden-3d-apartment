@@ -1,4 +1,5 @@
 import { OUTDOOR } from './config.js';
+import { finishStartupCaches } from './startupcache.js';
 import { DanceTime } from './dancescore.js';
 import { stepSurface } from './stepsurface.js';
 import { OutdoorGym } from './outdoorgym.js';
@@ -3560,6 +3561,9 @@ function showPerf() {
   perfEl.textContent = `${(perfFrames * 1000 / (now - perfT)).toFixed(0)} fps · quality ${quality.level}\n${quality.describe()}\ncalls ${i.render.calls}\ntris  ${i.render.triangles}\ngeoms ${i.memory.geometries}\ntex   ${i.memory.textures}`;
   perfFrames = 0; perfT = now;
 }
+// #1838: static construction is complete; no memo table survives into warm-up or ordinary play.
+const startupBuildCache = finishStartupCaches();
+if (globalThis.__lundenLoading) globalThis.__lundenLoading.buildCache = startupBuildCache;
 await loadingStep('Förbereder grafiken', 0.75);
 const frontDoor = world.doors.find((d) => d.name === 'ytterdörren' && Math.abs(d.object.getWorldPosition(new THREE.Vector3()).z) < 0.5);
 detail = new DetailCuller(scene, { W: world.size.x, D: world.size.z, roof: world.openings.roof, floor1: LEVELS[1].floor, doorHeight: DOOR_HEIGHT }, world.openings, () => frontDoor.t > 0.02, garage); // everything is built by now (the holdables too); the open front door shows the hall (#210)

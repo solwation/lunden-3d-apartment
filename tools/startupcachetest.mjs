@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import { createStartupPointCache, finishStartupCaches } from '../src/startupcache.js';
+let calls=0;const f=(x,z)=>{calls++;return Math.sin(x)+z;};
+const c=createStartupPointCache('scalar',{max:3});
+for(const [x,z] of [[1,2],[1,2],[1+Number.EPSILON,2],[1,2.1],[-1,2],[1,2]])assert.equal(c.read(x,z,f),Math.sin(x)+z);
+assert.equal(c.info().hits,1);assert(c.info().peak<=3);assert(c.info().evictions>0);
+const o=createStartupPointCache('record',{clone:r=>({...r})});let n=0;
+const record=()=>({height:++n});o.read(1,2,record).height=99;const hit=o.read(1,2,record);assert.equal(hit.height,1);hit.height=88;assert.equal(o.read(1,2,record).height,1);
+const collision=createStartupPointCache('collision',{max:1});
+for(const x of [0,Number.EPSILON,1,0,-0])assert(Object.is(collision.read(x,0,x=>x),x),'a colliding slot must compare the exact original x/z');
+assert(collision.info().evictions>=4);
+const fallback=createStartupPointCache('non-numeric');
+for(const value of [null,undefined,'2',{height:3}])for(let i=0;i<2;i++)assert.strictEqual(fallback.read(1,2,()=>value),value);
+assert.equal(fallback.info().entries,0);
+const off=createStartupPointCache('off',{active:false});assert.equal(off.read(0,0,f),0);assert.equal(off.info().entries,0);
+const before=calls;finishStartupCaches();assert.equal(c.info().entries,0);assert.equal(c.info().active,false);c.read(1,2,f);c.read(1,2,f);assert.equal(calls,before+2);
+const late=createStartupPointCache('late');assert.equal(late.info().active,false);assert.equal(late.info().entries,0);
+console.log('PASS exact coordinates and colliding slots/signed zero, bounded eviction, isolated object returns, null/undefined/non-numeric fallback, disabled fallback, release before runtime/late imports');

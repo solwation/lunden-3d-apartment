@@ -1,0 +1,4795 @@
+{
+  "times": {
+    "constructed": 33802.5,
+    "warm": 66200.90000000224,
+    "viewReady": 66200.90000000224,
+    "entryRequested": 82912.20000000298,
+    "entryFrame": 139,
+    "entryKind": "native Touch start",
+    "playable": 89908.40000000224
+  },
+  "steps": [
+    {
+      "name": "Startar",
+      "at": 50
+    },
+    {
+      "name": "Hämtar programfilerna",
+      "at": 105
+    },
+    {
+      "name": "Startar 3D-grafiken",
+      "at": 1147
+    },
+    {
+      "name": "Hämtar planritningen",
+      "at": 1170
+    },
+    {
+      "name": "Bygger huset",
+      "at": 1398
+    },
+    {
+      "name": "Möblerar",
+      "at": 31372
+    },
+    {
+      "name": "Förbereder grafiken",
+      "at": 32886
+    },
+    {
+      "name": "Värmer upp vyn",
+      "at": 33374
+    }
+  ],
+  "long": {
+    "top": [
+      [
+        5498,
+        "Bygger huset"
+      ],
+      [
+        5355,
+        "Bygger huset"
+      ],
+      [
+        2089,
+        "Värmer upp vyn"
+      ],
+      [
+        1808,
+        "Värmer upp vyn"
+      ],
+      [
+        1736,
+        "Bygger huset"
+      ]
+    ],
+    "n": 75,
+    "sum": 51309
+  },
+  "warm": "done",
+  "resources": [
+    {
+      "name": "/src/hudicons.css",
+      "start": 13.200000002980232,
+      "end": 31.800000000745058,
+      "transfer": 25686,
+      "bytes": 25386
+    },
+    {
+      "name": "/src/gymeffort.css",
+      "start": 13.700000002980232,
+      "end": 29.800000000745058,
+      "transfer": 2007,
+      "bytes": 1707
+    },
+    {
+      "name": "/src/dialogclose.css",
+      "start": 13.800000000745058,
+      "end": 29.600000001490116,
+      "transfer": 1949,
+      "bytes": 1649
+    },
+    {
+      "name": "/icons/icon-192.png",
+      "start": 14,
+      "end": 35,
+      "transfer": 5438,
+      "bytes": 5138
+    },
+    {
+      "name": "/icons/qr-site.svg",
+      "start": 14.100000001490116,
+      "end": 33,
+      "transfer": 4369,
+      "bytes": 4069
+    },
+    {
+      "name": "/icons/apple-touch-icon.png",
+      "start": 14.200000002980232,
+      "end": 32.20000000298023,
+      "transfer": 5479,
+      "bytes": 5179
+    },
+    {
+      "name": "/src/bootstrap.js",
+      "start": 14.400000002235174,
+      "end": 32.600000001490116,
+      "transfer": 1263,
+      "bytes": 963
+    },
+    {
+      "name": "/src/startup.js",
+      "start": 55.30000000074506,
+      "end": 59.600000001490116,
+      "transfer": 3266,
+      "bytes": 2966
+    },
+    {
+      "name": "/src/version.js",
+      "start": 55.5,
+      "end": 58.70000000298023,
+      "transfer": 2018,
+      "bytes": 1718
+    },
+    {
+      "name": "/src/startuprecovery.js",
+      "start": 55.600000001490116,
+      "end": 60.100000001490116,
+      "transfer": 11885,
+      "bytes": 11585
+    },
+    {
+      "name": "/src/config.js",
+      "start": 61,
+      "end": 69.30000000074506,
+      "transfer": 867771,
+      "bytes": 867471
+    },
+    {
+      "name": "/src/santaconfig.js",
+      "start": 87.30000000074506,
+      "end": 90.40000000223517,
+      "transfer": 1712,
+      "bytes": 1412
+    },
+    {
+      "name": "/src/santagiftconfig.js",
+      "start": 87.40000000223517,
+      "end": 91.40000000223517,
+      "transfer": 756,
+      "bytes": 456
+    },
+    {
+      "name": "/src/santatvconfig.js",
+      "start": 87.5,
+      "end": 92.40000000223517,
+      "transfer": 449,
+      "bytes": 149
+    },
+    {
+      "name": "/src/main.js",
+      "start": 105.80000000074506,
+      "end": 127,
+      "transfer": 292869,
+      "bytes": 292569
+    },
+    {
+      "name": "/icons/icon-192.png",
+      "start": 119.80000000074506,
+      "end": 125.30000000074506,
+      "transfer": 0,
+      "bytes": 5138
+    },
+    {
+      "name": "/src/dancescore.js",
+      "start": 138.90000000223517,
+      "end": 186.60000000149012,
+      "transfer": 1711,
+      "bytes": 1411
+    },
+    {
+      "name": "/src/stepsurface.js",
+      "start": 139,
+      "end": 187.20000000298023,
+      "transfer": 3207,
+      "bytes": 2907
+    },
+    {
+      "name": "/src/outdoorgym.js",
+      "start": 139,
+      "end": 190.70000000298023,
+      "transfer": 7949,
+      "bytes": 7649
+    },
+    {
+      "name": "/src/gymefforthud.js",
+      "start": 139.10000000149012,
+      "end": 188,
+      "transfer": 2639,
+      "bytes": 2339
+    },
+    {
+      "name": "/src/menusettings.js",
+      "start": 139.20000000298023,
+      "end": 189.10000000149012,
+      "transfer": 2403,
+      "bytes": 2103
+    },
+    {
+      "name": "/src/playerportraits.js",
+      "start": 139.30000000074506,
+      "end": 190.30000000074506,
+      "transfer": 3998,
+      "bytes": 3698
+    },
+    {
+      "name": "/src/stats.js",
+      "start": 139.30000000074506,
+      "end": 196.90000000223517,
+      "transfer": 29417,
+      "bytes": 29117
+    },
+    {
+      "name": "/src/gympump.js",
+      "start": 139.40000000223517,
+      "end": 202.40000000223517,
+      "transfer": 1809,
+      "bytes": 1509
+    },
+    {
+      "name": "/src/playerprofiles.js",
+      "start": 139.5,
+      "end": 203.90000000223517,
+      "transfer": 5956,
+      "bytes": 5656
+    },
+    {
+      "name": "/src/crashlog.js",
+      "start": 139.70000000298023,
+      "end": 201.10000000149012,
+      "transfer": 29640,
+      "bytes": 29340
+    },
+    {
+      "name": "/src/materialcatalog.js",
+      "start": 139.70000000298023,
+      "end": 203,
+      "transfer": 14551,
+      "bytes": 14251
+    },
+    {
+      "name": "/src/cinemaplayer.js",
+      "start": 139.80000000074506,
+      "end": 198.60000000149012,
+      "transfer": 18185,
+      "bytes": 17885
+    },
+    {
+      "name": "/src/cinemasurface.js",
+      "start": 139.80000000074506,
+      "end": 210.10000000149012,
+      "transfer": 5234,
+      "bytes": 4934
+    },
+    {
+      "name": "/src/computerhub.js",
+      "start": 140,
+      "end": 214.10000000149012,
+      "transfer": 24851,
+      "bytes": 24551
+    },
+    {
+      "name": "/src/gameboards.js",
+      "start": 140.10000000149012,
+      "end": 213.20000000298023,
+      "transfer": 4141,
+      "bytes": 3841
+    },
+    {
+      "name": "/src/tvmedia.js",
+      "start": 140.20000000298023,
+      "end": 212.5,
+      "transfer": 3853,
+      "bytes": 3553
+    },
+    {
+      "name": "/src/santa.js",
+      "start": 140.40000000223517,
+      "end": 217.40000000223517,
+      "transfer": 14026,
+      "bytes": 13726
+    },
+    {
+      "name": "/src/santagifts.js",
+      "start": 140.70000000298023,
+      "end": 211.60000000149012,
+      "transfer": 10176,
+      "bytes": 9876
+    },
+    {
+      "name": "/src/santatv.js",
+      "start": 140.70000000298023,
+      "end": 220.40000000223517,
+      "transfer": 5077,
+      "bytes": 4777
+    },
+    {
+      "name": "/src/cloud.js",
+      "start": 140.80000000074506,
+      "end": 222.60000000149012,
+      "transfer": 9109,
+      "bytes": 8809
+    },
+    {
+      "name": "/src/adminreports.js",
+      "start": 140.90000000223517,
+      "end": 221.40000000223517,
+      "transfer": 12565,
+      "bytes": 12265
+    },
+    {
+      "name": "/src/reportcapture.js",
+      "start": 141.10000000149012,
+      "end": 224.30000000074506,
+      "transfer": 2211,
+      "bytes": 1911
+    },
+    {
+      "name": "/src/viewport.js",
+      "start": 141.20000000298023,
+      "end": 225.40000000223517,
+      "transfer": 3910,
+      "bytes": 3610
+    },
+    {
+      "name": "/src/plantwind.js",
+      "start": 141.20000000298023,
+      "end": 225.80000000074506,
+      "transfer": 4776,
+      "bytes": 4476
+    },
+    {
+      "name": "/src/tightfrustum.js",
+      "start": 141.20000000298023,
+      "end": 226.60000000149012,
+      "transfer": 6577,
+      "bytes": 6277
+    },
+    {
+      "name": "/src/siteinstancebatch.js",
+      "start": 141.40000000223517,
+      "end": 226.90000000223517,
+      "transfer": 8978,
+      "bytes": 8678
+    },
+    {
+      "name": "/src/entranceplantbatch.js",
+      "start": 141.40000000223517,
+      "end": 228.60000000149012,
+      "transfer": 5053,
+      "bytes": 4753
+    },
+    {
+      "name": "/src/cheats.js",
+      "start": 141.5,
+      "end": 228.20000000298023,
+      "transfer": 2509,
+      "bytes": 2209
+    },
+    {
+      "name": "/src/cheatclean.js",
+      "start": 141.60000000149012,
+      "end": 230.10000000149012,
+      "transfer": 4437,
+      "bytes": 4137
+    },
+    {
+      "name": "/src/cheatnote.js",
+      "start": 141.70000000298023,
+      "end": 231,
+      "transfer": 2694,
+      "bytes": 2394
+    },
+    {
+      "name": "/src/lowmemory.js",
+      "start": 141.90000000223517,
+      "end": 237,
+      "transfer": 10544,
+      "bytes": 10244
+    },
+    {
+      "name": "/src/resourceprofile.js",
+      "start": 142,
+      "end": 238,
+      "transfer": 4824,
+      "bytes": 4524
+    },
+    {
+      "name": "/src/shadowtiles.js",
+      "start": 142.10000000149012,
+      "end": 235,
+      "transfer": 5794,
+      "bytes": 5494
+    },
+    {
+      "name": "/src/viewlod.js",
+      "start": 142.30000000074506,
+      "end": 240.30000000074506,
+      "transfer": 5644,
+      "bytes": 5344
+    },
+    {
+      "name": "/src/beershelf.js",
+      "start": 142.40000000223517,
+      "end": 243.20000000298023,
+      "transfer": 4783,
+      "bytes": 4483
+    },
+    {
+      "name": "/src/beershelfdata.js",
+      "start": 142.40000000223517,
+      "end": 243.70000000298023,
+      "transfer": 4691,
+      "bytes": 4391
+    },
+    {
+      "name": "/src/hudicons.js",
+      "start": 142.5,
+      "end": 241.20000000298023,
+      "transfer": 9696,
+      "bytes": 9396
+    },
+    {
+      "name": "/src/customizer.js",
+      "start": 142.60000000149012,
+      "end": 248.30000000074506,
+      "transfer": 41254,
+      "bytes": 40954
+    },
+    {
+      "name": "/__three/build/three.module.js",
+      "start": 142.60000000149012,
+      "end": 290.4000000022352,
+      "transfer": 1314981,
+      "bytes": 1314681
+    },
+    {
+      "name": "/src/miele.js",
+      "start": 142.70000000298023,
+      "end": 248.60000000149012,
+      "transfer": 10264,
+      "bytes": 9964
+    },
+    {
+      "name": "/src/fireworks.js",
+      "start": 142.70000000298023,
+      "end": 251,
+      "transfer": 7703,
+      "bytes": 7403
+    },
+    {
+      "name": "/src/world.js",
+      "start": 142.70000000298023,
+      "end": 254.5,
+      "transfer": 89864,
+      "bytes": 89564
+    },
+    {
+      "name": "/src/furniture.js",
+      "start": 143,
+      "end": 265.1000000014901,
+      "transfer": 292313,
+      "bytes": 292013
+    },
+    {
+      "name": "/src/laundry.js",
+      "start": 143.30000000074506,
+      "end": 256.6000000014901,
+      "transfer": 6892,
+      "bytes": 6592
+    },
+    {
+      "name": "/src/interactionoutline.js",
+      "start": 143.30000000074506,
+      "end": 257.9000000022352,
+      "transfer": 9049,
+      "bytes": 8749
+    },
+    {
+      "name": "/src/watering.js",
+      "start": 143.40000000223517,
+      "end": 264,
+      "transfer": 8270,
+      "bytes": 7970
+    },
+    {
+      "name": "/src/tablesetting.js",
+      "start": 143.60000000149012,
+      "end": 267.70000000298023,
+      "transfer": 2614,
+      "bytes": 2314
+    },
+    {
+      "name": "/src/bedcare.js",
+      "start": 143.70000000298023,
+      "end": 270,
+      "transfer": 4277,
+      "bytes": 3977
+    },
+    {
+      "name": "/src/hallcare.js",
+      "start": 143.80000000074506,
+      "end": 279,
+      "transfer": 5076,
+      "bytes": 4776
+    },
+    {
+      "name": "/src/rearrange.js",
+      "start": 144,
+      "end": 282.80000000074506,
+      "transfer": 39695,
+      "bytes": 39395
+    },
+    {
+      "name": "/src/player.js",
+      "start": 144.10000000149012,
+      "end": 282.30000000074506,
+      "transfer": 58273,
+      "bytes": 57973
+    },
+    {
+      "name": "/src/riverbridge.js",
+      "start": 144.20000000298023,
+      "end": 283.5,
+      "transfer": 16546,
+      "bytes": 16246
+    },
+    {
+      "name": "/src/fall.js",
+      "start": 144.30000000074506,
+      "end": 284.1000000014901,
+      "transfer": 4260,
+      "bytes": 3960
+    },
+    {
+      "name": "/src/statspanel.js",
+      "start": 144.40000000223517,
+      "end": 288,
+      "transfer": 3083,
+      "bytes": 2783
+    },
+    {
+      "name": "/src/respawn.js",
+      "start": 144.5,
+      "end": 289.20000000298023,
+      "transfer": 5805,
+      "bytes": 5505
+    },
+    {
+      "name": "/src/touch.js",
+      "start": 144.60000000149012,
+      "end": 295.5,
+      "transfer": 6924,
+      "bytes": 6624
+    },
+    {
+      "name": "/src/touchlayout.js",
+      "start": 144.70000000298023,
+      "end": 291.5,
+      "transfer": 15543,
+      "bytes": 15243
+    },
+    {
+      "name": "/src/cat.js",
+      "start": 144.80000000074506,
+      "end": 294.70000000298023,
+      "transfer": 75637,
+      "bytes": 75337
+    },
+    {
+      "name": "/src/audio.js",
+      "start": 144.90000000223517,
+      "end": 297.1000000014901,
+      "transfer": 71382,
+      "bytes": 71082
+    },
+    {
+      "name": "/src/stairs.js",
+      "start": 144.90000000223517,
+      "end": 298.20000000298023,
+      "transfer": 14909,
+      "bytes": 14609
+    },
+    {
+      "name": "/src/rugs.js",
+      "start": 145,
+      "end": 299.5,
+      "transfer": 3179,
+      "bytes": 2879
+    },
+    {
+      "name": "/src/changelog.js",
+      "start": 145.10000000149012,
+      "end": 300.30000000074506,
+      "transfer": 9900,
+      "bytes": 9600
+    },
+    {
+      "name": "/src/todo.js",
+      "start": 145.20000000298023,
+      "end": 302.20000000298023,
+      "transfer": 10189,
+      "bytes": 9889
+    },
+    {
+      "name": "/src/fishquest.js",
+      "start": 145.40000000223517,
+      "end": 304.30000000074506,
+      "transfer": 3515,
+      "bytes": 3215
+    },
+    {
+      "name": "/src/minimap.js",
+      "start": 145.40000000223517,
+      "end": 310.4000000022352,
+      "transfer": 2066,
+      "bytes": 1766
+    },
+    {
+      "name": "/src/compass.js",
+      "start": 145.5,
+      "end": 309.70000000298023,
+      "transfer": 2618,
+      "bytes": 2318
+    },
+    {
+      "name": "/src/measure.js",
+      "start": 145.60000000149012,
+      "end": 306.1000000014901,
+      "transfer": 4103,
+      "bytes": 3803
+    },
+    {
+      "name": "/src/squirrels.js",
+      "start": 145.70000000298023,
+      "end": 314.70000000298023,
+      "transfer": 32978,
+      "bytes": 32678
+    },
+    {
+      "name": "/src/surroundings.js",
+      "start": 145.70000000298023,
+      "end": 316.30000000074506,
+      "transfer": 154940,
+      "bytes": 154640
+    },
+    {
+      "name": "/src/ducks.js",
+      "start": 145.90000000223517,
+      "end": 317.20000000298023,
+      "transfer": 4510,
+      "bytes": 4210
+    },
+    {
+      "name": "/src/outdoorcats.js",
+      "start": 145.90000000223517,
+      "end": 324.4000000022352,
+      "transfer": 22548,
+      "bytes": 22248
+    },
+    {
+      "name": "/src/footprints.js",
+      "start": 146,
+      "end": 324.80000000074506,
+      "transfer": 10865,
+      "bytes": 10565
+    },
+    {
+      "name": "/src/footprinttrail.js",
+      "start": 146,
+      "end": 325.6000000014901,
+      "transfer": 6946,
+      "bytes": 6646
+    },
+    {
+      "name": "/src/riverfish.js",
+      "start": 146,
+      "end": 326.70000000298023,
+      "transfer": 9117,
+      "bytes": 8817
+    },
+    {
+      "name": "/src/fishing.js",
+      "start": 146.10000000149012,
+      "end": 327.20000000298023,
+      "transfer": 38863,
+      "bytes": 38563
+    },
+    {
+      "name": "/src/roads.js",
+      "start": 146.10000000149012,
+      "end": 328,
+      "transfer": 21889,
+      "bytes": 21589
+    },
+    {
+      "name": "/src/groundao.js",
+      "start": 146.30000000074506,
+      "end": 334.30000000074506,
+      "transfer": 9679,
+      "bytes": 9379
+    },
+    {
+      "name": "/src/riverpark.js",
+      "start": 146.30000000074506,
+      "end": 333.5,
+      "transfer": 19667,
+      "bytes": 19367
+    },
+    {
+      "name": "/src/jetpack.js",
+      "start": 146.30000000074506,
+      "end": 336,
+      "transfer": 18837,
+      "bytes": 18537
+    },
+    {
+      "name": "/src/spidersuit.js",
+      "start": 146.40000000223517,
+      "end": 335.30000000074506,
+      "transfer": 17980,
+      "bytes": 17680
+    },
+    {
+      "name": "/src/daycycle.js",
+      "start": 146.60000000149012,
+      "end": 336.4000000022352,
+      "transfer": 18879,
+      "bytes": 18579
+    },
+    {
+      "name": "/src/architectureedges.js",
+      "start": 146.70000000298023,
+      "end": 337.30000000074506,
+      "transfer": 19591,
+      "bytes": 19291
+    },
+    {
+      "name": "/src/flare.js",
+      "start": 146.80000000074506,
+      "end": 338.70000000298023,
+      "transfer": 12654,
+      "bytes": 12354
+    },
+    {
+      "name": "/src/birds.js",
+      "start": 147.5,
+      "end": 343.9000000022352,
+      "transfer": 6530,
+      "bytes": 6230
+    },
+    {
+      "name": "/src/balloon.js",
+      "start": 147.70000000298023,
+      "end": 342.9000000022352,
+      "transfer": 7157,
+      "bytes": 6857
+    },
+    {
+      "name": "/src/balloonbeer.js",
+      "start": 147.90000000223517,
+      "end": 341.20000000298023,
+      "transfer": 5201,
+      "bytes": 4901
+    },
+    {
+      "name": "/src/paddock.js",
+      "start": 148,
+      "end": 349.5,
+      "transfer": 58084,
+      "bytes": 57784
+    },
+    {
+      "name": "/src/wallclock.js",
+      "start": 148.20000000298023,
+      "end": 347,
+      "transfer": 12274,
+      "bytes": 11974
+    },
+    {
+      "name": "/src/timesync.js",
+      "start": 148.30000000074506,
+      "end": 350.70000000298023,
+      "transfer": 2951,
+      "bytes": 2651
+    },
+    {
+      "name": "/src/patio.js",
+      "start": 148.5,
+      "end": 351.6000000014901,
+      "transfer": 42614,
+      "bytes": 42314
+    },
+    {
+      "name": "/src/reflections.js",
+      "start": 148.60000000149012,
+      "end": 355.6000000014901,
+      "transfer": 7178,
+      "bytes": 6878
+    },
+    {
+      "name": "/src/warmup.js",
+      "start": 148.60000000149012,
+      "end": 356.20000000298023,
+      "transfer": 17969,
+      "bytes": 17669
+    },
+    {
+      "name": "/src/loadingstep.js",
+      "start": 148.70000000298023,
+      "end": 355.9000000022352,
+      "transfer": 1924,
+      "bytes": 1624
+    },
+    {
+      "name": "/src/qualitysetting.js",
+      "start": 148.80000000074506,
+      "end": 357.6000000014901,
+      "transfer": 2312,
+      "bytes": 2012
+    },
+    {
+      "name": "/src/quality.js",
+      "start": 148.80000000074506,
+      "end": 358.30000000074506,
+      "transfer": 17701,
+      "bytes": 17401
+    },
+    {
+      "name": "/src/hitchlog.js",
+      "start": 148.90000000223517,
+      "end": 359.5,
+      "transfer": 5744,
+      "bytes": 5444
+    },
+    {
+      "name": "/src/christmas.js",
+      "start": 149,
+      "end": 361,
+      "transfer": 8134,
+      "bytes": 7834
+    },
+    {
+      "name": "/src/seasons.js",
+      "start": 149,
+      "end": 361.4000000022352,
+      "transfer": 3356,
+      "bytes": 3056
+    },
+    {
+      "name": "/src/resume.js",
+      "start": 149.10000000149012,
+      "end": 363.5,
+      "transfer": 2779,
+      "bytes": 2479
+    },
+    {
+      "name": "/src/newyear.js",
+      "start": 149.10000000149012,
+      "end": 362.80000000074506,
+      "transfer": 9925,
+      "bytes": 9625
+    },
+    {
+      "name": "/src/keep.js",
+      "start": 149.30000000074506,
+      "end": 364.6000000014901,
+      "transfer": 23667,
+      "bytes": 23367
+    },
+    {
+      "name": "/src/dishwasher.js",
+      "start": 149.5,
+      "end": 366.20000000298023,
+      "transfer": 15604,
+      "bytes": 15304
+    },
+    {
+      "name": "/src/life.js",
+      "start": 149.5,
+      "end": 365.20000000298023,
+      "transfer": 27259,
+      "bytes": 26959
+    },
+    {
+      "name": "/src/waste.js",
+      "start": 149.60000000149012,
+      "end": 371.5,
+      "transfer": 14849,
+      "bytes": 14549
+    },
+    {
+      "name": "/src/actions.js",
+      "start": 149.70000000298023,
+      "end": 372.1000000014901,
+      "transfer": 8122,
+      "bytes": 7822
+    },
+    {
+      "name": "/src/stores.js",
+      "start": 149.80000000074506,
+      "end": 376,
+      "transfer": 20476,
+      "bytes": 20176
+    },
+    {
+      "name": "/src/reset.js",
+      "start": 150,
+      "end": 374.6000000014901,
+      "transfer": 2809,
+      "bytes": 2509
+    },
+    {
+      "name": "/src/rest.js",
+      "start": 150.10000000149012,
+      "end": 381.30000000074506,
+      "transfer": 5977,
+      "bytes": 5677
+    },
+    {
+      "name": "/src/slidemovement.js",
+      "start": 150.10000000149012,
+      "end": 382.5,
+      "transfer": 5365,
+      "bytes": 5065
+    },
+    {
+      "name": "/src/remote-pose.js",
+      "start": 150.30000000074506,
+      "end": 380.1000000014901,
+      "transfer": 3585,
+      "bytes": 3285
+    },
+    {
+      "name": "/src/saber.js",
+      "start": 150.40000000223517,
+      "end": 384.6000000014901,
+      "transfer": 6513,
+      "bytes": 6213
+    },
+    {
+      "name": "/src/toys.js",
+      "start": 150.40000000223517,
+      "end": 384.1000000014901,
+      "transfer": 27535,
+      "bytes": 27235
+    },
+    {
+      "name": "/src/remote.js",
+      "start": 150.5,
+      "end": 386.5,
+      "transfer": 4459,
+      "bytes": 4159
+    },
+    {
+      "name": "/src/book.js",
+      "start": 150.70000000298023,
+      "end": 390.80000000074506,
+      "transfer": 9304,
+      "bytes": 9004
+    },
+    {
+      "name": "/src/eggs.js",
+      "start": 150.80000000074506,
+      "end": 392.20000000298023,
+      "transfer": 4137,
+      "bytes": 3837
+    },
+    {
+      "name": "/src/pan.js",
+      "start": 150.90000000223517,
+      "end": 391.70000000298023,
+      "transfer": 6285,
+      "bytes": 5985
+    },
+    {
+      "name": "/src/toaster.js",
+      "start": 151.10000000149012,
+      "end": 393.9000000022352,
+      "transfer": 22561,
+      "bytes": 22261
+    },
+    {
+      "name": "/src/plants.js",
+      "start": 151.20000000298023,
+      "end": 393.4000000022352,
+      "transfer": 2708,
+      "bytes": 2408
+    },
+    {
+      "name": "/src/chicken.js",
+      "start": 151.5,
+      "end": 395.6000000014901,
+      "transfer": 22081,
+      "bytes": 21781
+    },
+    {
+      "name": "/src/hood.js",
+      "start": 151.70000000298023,
+      "end": 405.30000000074506,
+      "transfer": 8302,
+      "bytes": 8002
+    },
+    {
+      "name": "/src/grill.js",
+      "start": 151.80000000074506,
+      "end": 404.5,
+      "transfer": 20811,
+      "bytes": 20511
+    },
+    {
+      "name": "/src/sausages.js",
+      "start": 151.90000000223517,
+      "end": 400.30000000074506,
+      "transfer": 4267,
+      "bytes": 3967
+    },
+    {
+      "name": "/src/microwave.js",
+      "start": 152.10000000149012,
+      "end": 403.6000000014901,
+      "transfer": 9324,
+      "bytes": 9024
+    },
+    {
+      "name": "/src/power.js",
+      "start": 152.20000000298023,
+      "end": 402.9000000022352,
+      "transfer": 6491,
+      "bytes": 6191
+    },
+    {
+      "name": "/src/sonos.js",
+      "start": 152.20000000298023,
+      "end": 406.20000000298023,
+      "transfer": 12539,
+      "bytes": 12239
+    },
+    {
+      "name": "/src/detail.js",
+      "start": 152.40000000223517,
+      "end": 412.6000000014901,
+      "transfer": 47489,
+      "bytes": 47189
+    },
+    {
+      "name": "/src/blinds.js",
+      "start": 152.5,
+      "end": 410.30000000074506,
+      "transfer": 13239,
+      "bytes": 12939
+    },
+    {
+      "name": "/src/turbo.js",
+      "start": 152.60000000149012,
+      "end": 413.4000000022352,
+      "transfer": 3535,
+      "bytes": 3235
+    },
+    {
+      "name": "/src/beer.js",
+      "start": 152.80000000074506,
+      "end": 424.6000000014901,
+      "transfer": 9392,
+      "bytes": 9092
+    },
+    {
+      "name": "/src/things.js",
+      "start": 152.90000000223517,
+      "end": 425.4000000022352,
+      "transfer": 14362,
+      "bytes": 14062
+    },
+    {
+      "name": "/src/secret.js",
+      "start": 153,
+      "end": 422.4000000022352,
+      "transfer": 3453,
+      "bytes": 3153
+    },
+    {
+      "name": "/src/hand.js",
+      "start": 153.10000000149012,
+      "end": 425.80000000074506,
+      "transfer": 34773,
+      "bytes": 34473
+    },
+    {
+      "name": "/src/handwash.js",
+      "start": 153.30000000074506,
+      "end": 426.4000000022352,
+      "transfer": 5047,
+      "bytes": 4747
+    },
+    {
+      "name": "/src/milk.js",
+      "start": 153.40000000223517,
+      "end": 427.4000000022352,
+      "transfer": 6578,
+      "bytes": 6278
+    },
+    {
+      "name": "/src/beercan.js",
+      "start": 153.5,
+      "end": 434.9000000022352,
+      "transfer": 10217,
+      "bytes": 9917
+    },
+    {
+      "name": "/src/cups.js",
+      "start": 153.60000000149012,
+      "end": 436.5,
+      "transfer": 33637,
+      "bytes": 33337
+    },
+    {
+      "name": "/src/fishfingers.js",
+      "start": 153.70000000298023,
+      "end": 436,
+      "transfer": 18854,
+      "bytes": 18554
+    },
+    {
+      "name": "/src/toiletpaper.js",
+      "start": 153.90000000223517,
+      "end": 433,
+      "transfer": 18168,
+      "bytes": 17868
+    },
+    {
+      "name": "/src/airfryer.js",
+      "start": 153.90000000223517,
+      "end": 437.4000000022352,
+      "transfer": 14006,
+      "bytes": 13706
+    },
+    {
+      "name": "/src/fries.js",
+      "start": 154.10000000149012,
+      "end": 437.9000000022352,
+      "transfer": 23954,
+      "bytes": 23654
+    },
+    {
+      "name": "/src/vacuum.js",
+      "start": 154.10000000149012,
+      "end": 443.5,
+      "transfer": 16160,
+      "bytes": 15860
+    },
+    {
+      "name": "/src/cloth.js",
+      "start": 154.20000000298023,
+      "end": 447.4000000022352,
+      "transfer": 5947,
+      "bytes": 5647
+    },
+    {
+      "name": "/src/tasks.js",
+      "start": 154.40000000223517,
+      "end": 442.9000000022352,
+      "transfer": 24946,
+      "bytes": 24646
+    },
+    {
+      "name": "/src/coffeejar.js",
+      "start": 154.5,
+      "end": 445.20000000298023,
+      "transfer": 11058,
+      "bytes": 10758
+    },
+    {
+      "name": "/src/fruit.js",
+      "start": 154.5,
+      "end": 448.4000000022352,
+      "transfer": 26911,
+      "bytes": 26611
+    },
+    {
+      "name": "/src/drawing.js",
+      "start": 154.70000000298023,
+      "end": 446.4000000022352,
+      "transfer": 7096,
+      "bytes": 6796
+    },
+    {
+      "name": "/src/calendar.js",
+      "start": 154.80000000074506,
+      "end": 455.4000000022352,
+      "transfer": 12875,
+      "bytes": 12575
+    },
+    {
+      "name": "/src/holdable.js",
+      "start": 154.80000000074506,
+      "end": 456.4000000022352,
+      "transfer": 10289,
+      "bytes": 9989
+    },
+    {
+      "name": "/src/heldcategory.js",
+      "start": 155,
+      "end": 451.9000000022352,
+      "transfer": 4287,
+      "bytes": 3987
+    },
+    {
+      "name": "/src/water.js",
+      "start": 155.10000000149012,
+      "end": 460.20000000298023,
+      "transfer": 9563,
+      "bytes": 9263
+    },
+    {
+      "name": "/src/catphoto.js",
+      "start": 155.20000000298023,
+      "end": 452.80000000074506,
+      "transfer": 1613,
+      "bytes": 1313
+    },
+    {
+      "name": "/src/catbinder.js",
+      "start": 155.30000000074506,
+      "end": 458.6000000014901,
+      "transfer": 19907,
+      "bytes": 19607
+    },
+    {
+      "name": "/src/catcards.js",
+      "start": 155.5,
+      "end": 461.6000000014901,
+      "transfer": 8547,
+      "bytes": 8247
+    },
+    {
+      "name": "/src/idb.js",
+      "start": 155.5,
+      "end": 461.9000000022352,
+      "transfer": 3148,
+      "bytes": 2848
+    },
+    {
+      "name": "/src/lights.js",
+      "start": 155.70000000298023,
+      "end": 468.80000000074506,
+      "transfer": 43852,
+      "bytes": 43552
+    },
+    {
+      "name": "/src/visitlights.js",
+      "start": 155.80000000074506,
+      "end": 470.30000000074506,
+      "transfer": 11615,
+      "bytes": 11315
+    },
+    {
+      "name": "/src/install.js",
+      "start": 155.80000000074506,
+      "end": 473.20000000298023,
+      "transfer": 2807,
+      "bytes": 2507
+    },
+    {
+      "name": "/src/marks.js",
+      "start": 155.90000000223517,
+      "end": 473.80000000074506,
+      "transfer": 23127,
+      "bytes": 22827
+    },
+    {
+      "name": "/src/breaking.js",
+      "start": 156,
+      "end": 470.70000000298023,
+      "transfer": 10289,
+      "bytes": 9989
+    },
+    {
+      "name": "/src/target.js",
+      "start": 156.10000000149012,
+      "end": 477,
+      "transfer": 7518,
+      "bytes": 7218
+    },
+    {
+      "name": "/src/car.js",
+      "start": 156.10000000149012,
+      "end": 478.6000000014901,
+      "transfer": 23864,
+      "bytes": 23564
+    },
+    {
+      "name": "/src/garage.js",
+      "start": 156.20000000298023,
+      "end": 481.5,
+      "transfer": 96583,
+      "bytes": 96283
+    },
+    {
+      "name": "/src/djinput.js",
+      "start": 156.40000000223517,
+      "end": 480.4000000022352,
+      "transfer": 2109,
+      "bytes": 1809
+    },
+    {
+      "name": "/src/playroom.js",
+      "start": 156.60000000149012,
+      "end": 487.4000000022352,
+      "transfer": 31271,
+      "bytes": 30971
+    },
+    {
+      "name": "/src/core.js",
+      "start": 156.60000000149012,
+      "end": 488.30000000074506,
+      "transfer": 46044,
+      "bytes": 45744
+    },
+    {
+      "name": "/src/corehouse.js",
+      "start": 156.70000000298023,
+      "end": 487.80000000074506,
+      "transfer": 33738,
+      "bytes": 33438
+    },
+    {
+      "name": "/src/greet.js",
+      "start": 156.70000000298023,
+      "end": 489.9000000022352,
+      "transfer": 5714,
+      "bytes": 5414
+    },
+    {
+      "name": "/src/olof.js",
+      "start": 156.70000000298023,
+      "end": 492.9000000022352,
+      "transfer": 16630,
+      "bytes": 16330
+    },
+    {
+      "name": "/src/nest.js",
+      "start": 156.80000000074506,
+      "end": 498,
+      "transfer": 25060,
+      "bytes": 24760
+    },
+    {
+      "name": "/src/lightmodes.js",
+      "start": 157,
+      "end": 497.4000000022352,
+      "transfer": 5385,
+      "bytes": 5085
+    },
+    {
+      "name": "/src/weather.js",
+      "start": 157.10000000149012,
+      "end": 499.1000000014901,
+      "transfer": 20511,
+      "bytes": 20211
+    },
+    {
+      "name": "/src/realweather.js",
+      "start": 157.20000000298023,
+      "end": 498.70000000298023,
+      "transfer": 11934,
+      "bytes": 11634
+    },
+    {
+      "name": "/src/posters.js",
+      "start": 157.30000000074506,
+      "end": 500.80000000074506,
+      "transfer": 20668,
+      "bytes": 20368
+    },
+    {
+      "name": "/src/paperball.js",
+      "start": 157.5,
+      "end": 510.20000000298023,
+      "transfer": 6015,
+      "bytes": 5715
+    },
+    {
+      "name": "/src/boards.js",
+      "start": 157.60000000149012,
+      "end": 501.9000000022352,
+      "transfer": 6156,
+      "bytes": 5856
+    },
+    {
+      "name": "/src/medals.js",
+      "start": 157.80000000074506,
+      "end": 503.20000000298023,
+      "transfer": 9781,
+      "bytes": 9481
+    },
+    {
+      "name": "/src/leaderboard.js",
+      "start": 158,
+      "end": 504.4000000022352,
+      "transfer": 14817,
+      "bytes": 14517
+    },
+    {
+      "name": "/src/ghostcat.js",
+      "start": 158.10000000149012,
+      "end": 509.5,
+      "transfer": 3935,
+      "bytes": 3635
+    },
+    {
+      "name": "/src/presence.js",
+      "start": 158.10000000149012,
+      "end": 512.4000000022352,
+      "transfer": 3296,
+      "bytes": 2996
+    },
+    {
+      "name": "/src/fps.js",
+      "start": 158.20000000298023,
+      "end": 517,
+      "transfer": 1225,
+      "bytes": 925
+    },
+    {
+      "name": "/src/combat.js",
+      "start": 158.30000000074506,
+      "end": 515.7000000029802,
+      "transfer": 32510,
+      "bytes": 32210
+    },
+    {
+      "name": "/src/ghosts.js",
+      "start": 158.30000000074506,
+      "end": 516.7000000029802,
+      "transfer": 61581,
+      "bytes": 61281
+    },
+    {
+      "name": "/src/bow.js",
+      "start": 158.60000000149012,
+      "end": 517.5,
+      "transfer": 12362,
+      "bytes": 12062
+    },
+    {
+      "name": "/src/mailbox.js",
+      "start": 158.80000000074506,
+      "end": 523.3000000007451,
+      "transfer": 3576,
+      "bytes": 3276
+    },
+    {
+      "name": "/src/elcabinet.js",
+      "start": 159,
+      "end": 532.2000000029802,
+      "transfer": 4445,
+      "bytes": 4145
+    },
+    {
+      "name": "/src/graffiti.js",
+      "start": 159.20000000298023,
+      "end": 531.1000000014901,
+      "transfer": 10698,
+      "bytes": 10398
+    },
+    {
+      "name": "/src/doorsync.js",
+      "start": 159.30000000074506,
+      "end": 530.6000000014901,
+      "transfer": 2726,
+      "bytes": 2426
+    },
+    {
+      "name": "/src/graffitisync.js",
+      "start": 159.40000000223517,
+      "end": 532.6000000014901,
+      "transfer": 2911,
+      "bytes": 2611
+    },
+    {
+      "name": "/src/farwalk.js",
+      "start": 159.5,
+      "end": 534.7000000029802,
+      "transfer": 13944,
+      "bytes": 13644
+    },
+    {
+      "name": "/src/chat.js",
+      "start": 159.60000000149012,
+      "end": 536.5,
+      "transfer": 15437,
+      "bytes": 15137
+    },
+    {
+      "name": "/src/basket.js",
+      "start": 159.80000000074506,
+      "end": 540.7000000029802,
+      "transfer": 32451,
+      "bytes": 32151
+    },
+    {
+      "name": "/src/mess.js",
+      "start": 160,
+      "end": 538.1000000014901,
+      "transfer": 14562,
+      "bytes": 14262
+    },
+    {
+      "name": "/src/testmode.js",
+      "start": 160.10000000149012,
+      "end": 540,
+      "transfer": 2146,
+      "bytes": 1846
+    },
+    {
+      "name": "/src/targetscore.js",
+      "start": 188,
+      "end": 541.9000000022352,
+      "transfer": 1475,
+      "bytes": 1175
+    },
+    {
+      "name": "/src/parkinglayout.js",
+      "start": 188.80000000074506,
+      "end": 543.9000000022352,
+      "transfer": 6520,
+      "bytes": 6220
+    },
+    {
+      "name": "/src/gymeffort.js",
+      "start": 189.40000000223517,
+      "end": 545.4000000022352,
+      "transfer": 1819,
+      "bytes": 1519
+    },
+    {
+      "name": "/__three/examples/jsm/utils/BufferGeometryUtils.js",
+      "start": 193.20000000298023,
+      "end": 555.7000000029802,
+      "transfer": 32068,
+      "bytes": 31768
+    },
+    {
+      "name": "/src/woodgrain.js",
+      "start": 193.30000000074506,
+      "end": 553.2000000029802,
+      "transfer": 1856,
+      "bytes": 1556
+    },
+    {
+      "name": "/src/outdoorgymdecor.js",
+      "start": 193.40000000223517,
+      "end": 559.1000000014901,
+      "transfer": 7871,
+      "bytes": 7571
+    },
+    {
+      "name": "/src/statcount.js",
+      "start": 204.60000000149012,
+      "end": 557.4000000022352,
+      "transfer": 895,
+      "bytes": 595
+    },
+    {
+      "name": "/src/duckscore.js",
+      "start": 204.80000000074506,
+      "end": 556.2000000029802,
+      "transfer": 1037,
+      "bytes": 737
+    },
+    {
+      "name": "/src/gymscore.js",
+      "start": 204.90000000223517,
+      "end": 558.5,
+      "transfer": 1262,
+      "bytes": 962
+    },
+    {
+      "name": "/src/tvsound.js",
+      "start": 205.30000000074506,
+      "end": 560.5,
+      "transfer": 2311,
+      "bytes": 2011
+    },
+    {
+      "name": "/src/longtasks.js",
+      "start": 206.60000000149012,
+      "end": 564.9000000022352,
+      "transfer": 1782,
+      "bytes": 1482
+    },
+    {
+      "name": "/__three/examples/jsm/renderers/CSS3DRenderer.js",
+      "start": 212.20000000298023,
+      "end": 568.1000000014901,
+      "transfer": 8392,
+      "bytes": 8092
+    },
+    {
+      "name": "/src/rowkey.js",
+      "start": 214.5,
+      "end": 569.1000000014901,
+      "transfer": 1123,
+      "bytes": 823
+    },
+    {
+      "name": "/src/snakeview.js",
+      "start": 216.30000000074506,
+      "end": 567.6000000014901,
+      "transfer": 3238,
+      "bytes": 2938
+    },
+    {
+      "name": "/src/blocks.js",
+      "start": 216.60000000149012,
+      "end": 569.4000000022352,
+      "transfer": 4109,
+      "bytes": 3809
+    },
+    {
+      "name": "/src/meteors.js",
+      "start": 216.60000000149012,
+      "end": 570.1000000014901,
+      "transfer": 4399,
+      "bytes": 4099
+    },
+    {
+      "name": "/src/arcadeview.js",
+      "start": 216.70000000298023,
+      "end": 572,
+      "transfer": 6442,
+      "bytes": 6142
+    },
+    {
+      "name": "/src/privatecodes.js",
+      "start": 222.40000000223517,
+      "end": 573.9000000022352,
+      "transfer": 4144,
+      "bytes": 3844
+    },
+    {
+      "name": "/src/reportauthor.js",
+      "start": 222.40000000223517,
+      "end": 574.8000000007451,
+      "transfer": 780,
+      "bytes": 480
+    },
+    {
+      "name": "/src/reportphoto.js",
+      "start": 222.60000000149012,
+      "end": 577.5,
+      "transfer": 3353,
+      "bytes": 3053
+    },
+    {
+      "name": "/src/occlusion.js",
+      "start": 228.90000000223517,
+      "end": 583.7000000029802,
+      "transfer": 2975,
+      "bytes": 2675
+    },
+    {
+      "name": "/src/vertexcompile.js",
+      "start": 229,
+      "end": 582.7000000029802,
+      "transfer": 959,
+      "bytes": 659
+    },
+    {
+      "name": "/src/streetlife.js",
+      "start": 243.20000000298023,
+      "end": 587.2000000029802,
+      "transfer": 21119,
+      "bytes": 20819
+    },
+    {
+      "name": "/src/beershelfschema.js",
+      "start": 244.5,
+      "end": 588.7000000029802,
+      "transfer": 2055,
+      "bytes": 1755
+    },
+    {
+      "name": "/src/pingping.js",
+      "start": 253.5,
+      "end": 588.3000000007451,
+      "transfer": 10367,
+      "bytes": 10067
+    },
+    {
+      "name": "/src/closet.js",
+      "start": 258.20000000298023,
+      "end": 586.4000000022352,
+      "transfer": 12135,
+      "bytes": 11835
+    },
+    {
+      "name": "/src/openables.js",
+      "start": 258.30000000074506,
+      "end": 590,
+      "transfer": 3191,
+      "bytes": 2891
+    },
+    {
+      "name": "/src/cleaning.js",
+      "start": 258.30000000074506,
+      "end": 600.3000000007451,
+      "transfer": 15233,
+      "bytes": 14933
+    },
+    {
+      "name": "/src/doors.js",
+      "start": 258.4000000022352,
+      "end": 594.6000000014901,
+      "transfer": 9288,
+      "bytes": 8988
+    },
+    {
+      "name": "/src/doorfittings.js",
+      "start": 258.5,
+      "end": 593,
+      "transfer": 4655,
+      "bytes": 4355
+    },
+    {
+      "name": "/src/exterior.js",
+      "start": 258.70000000298023,
+      "end": 596.3000000007451,
+      "transfer": 65074,
+      "bytes": 64774
+    },
+    {
+      "name": "/src/keycabinet.js",
+      "start": 258.70000000298023,
+      "end": 600.9000000022352,
+      "transfer": 16625,
+      "bytes": 16325
+    },
+    {
+      "name": "/src/merge.js",
+      "start": 258.80000000074506,
+      "end": 599.9000000022352,
+      "transfer": 3716,
+      "bytes": 3416
+    },
+    {
+      "name": "/src/contents.js",
+      "start": 259,
+      "end": 608.2000000029802,
+      "transfer": 31829,
+      "bytes": 31529
+    },
+    {
+      "name": "/src/sillplants.js",
+      "start": 259.1000000014901,
+      "end": 609,
+      "transfer": 28576,
+      "bytes": 28276
+    },
+    {
+      "name": "/src/courtyard.js",
+      "start": 259.4000000022352,
+      "end": 607.5,
+      "transfer": 48734,
+      "bytes": 48434
+    },
+    {
+      "name": "/src/outdoorseats.js",
+      "start": 259.5,
+      "end": 611.5,
+      "transfer": 9636,
+      "bytes": 9336
+    },
+    {
+      "name": "/src/boule.js",
+      "start": 259.70000000298023,
+      "end": 612.3000000007451,
+      "transfer": 13682,
+      "bytes": 13382
+    },
+    {
+      "name": "/src/grass.js",
+      "start": 259.9000000022352,
+      "end": 613.4000000022352,
+      "transfer": 5277,
+      "bytes": 4977
+    },
+    {
+      "name": "/src/eastlot.js",
+      "start": 260,
+      "end": 616.4000000022352,
+      "transfer": 2937,
+      "bytes": 2637
+    },
+    {
+      "name": "/src/screenwall.js",
+      "start": 260.70000000298023,
+      "end": 618.4000000022352,
+      "transfer": 3709,
+      "bytes": 3409
+    }
+  ],
+  "nav": [
+    {
+      "request": 1.9000000022351742,
+      "response": 4.300000000745058,
+      "dom": 106.20000000298023
+    }
+  ],
+  "render": {
+    "frame": 142,
+    "calls": 374,
+    "triangles": 931183,
+    "points": 80,
+    "lines": 1094
+  },
+  "ready": {
+    "controls": true,
+    "levelCount": 2,
+    "segments": [
+      1284,
+      256
+    ]
+  },
+  "cpuSelfMs": [
+    [
+      "native:(idle)",
+      32416.56800000031
+    ],
+    [
+      "__three/build/three.module.js:onFirstUse",
+      19365.127999999975
+    ],
+    [
+      "src/furniture.js:pileTextures",
+      5279.414999999998
+    ],
+    [
+      "src/riverbridge.js:riverAt",
+      2205.121000000002
+    ],
+    [
+      "src/lowmemory.js:freeCanvasAfterUpload",
+      1353.0329999999988
+    ],
+    [
+      "src/surroundings.js:groundY",
+      1302.0460000000023
+    ],
+    [
+      "native:(program)",
+      1275.5650000000016
+    ],
+    [
+      "native:(garbage collector)",
+      1143.1119999999999
+    ],
+    [
+      "src/surroundings.js:terrainSurface",
+      544.9870000000005
+    ],
+    [
+      "__three/build/three.module.js:traverseVisible",
+      543.5540000000002
+    ],
+    [
+      "src/parkinglot1442.js:d",
+      527.4269999999998
+    ],
+    [
+      "src/architectureedges.js:probe",
+      481.10700000000014
+    ],
+    [
+      "src/roads.js:onRoad",
+      463.69299999999936
+    ],
+    [
+      "__three/build/three.module.js:getX",
+      443.1330000000007
+    ],
+    [
+      "src/roads.js:terrainCuts",
+      425.7360000000002
+    ],
+    [
+      "__three/build/three.module.js:EdgesGeometry",
+      419.0320000000001
+    ],
+    [
+      "__three/build/three.module.js:convertBufferAttribute",
+      406.5280000000003
+    ],
+    [
+      "src/surroundings.js:",
+      394.38200000000023
+    ],
+    [
+      "src/architectureedges.js:",
+      386.516
+    ],
+    [
+      "__three/build/three.module.js:Float32BufferAttribute",
+      357.1549999999999
+    ],
+    [
+      "__three/build/three.module.js:subVectors",
+      354.7850000000003
+    ],
+    [
+      "__three/build/three.module.js:intersectBox",
+      333.518
+    ],
+    [
+      "src/surroundings.js:find",
+      318.52399999999994
+    ],
+    [
+      "src/elevation.js:at",
+      312.2439999999998
+    ],
+    [
+      "src/combatworld.js:run",
+      297.32500000000016
+    ],
+    [
+      "src/surroundings.js:paddedTerrainY",
+      261.4540000000001
+    ],
+    [
+      "__three/build/three.module.js:dot",
+      255.68200000000016
+    ],
+    [
+      "__three/build/three.module.js:intersectTriangle",
+      233.14299999999992
+    ],
+    [
+      "src/roads.js:cutAtTerrain",
+      231.8669999999999
+    ],
+    [
+      "__three/examples/jsm/geometries/RoundedBoxGeometry.js:getUv",
+      230.405
+    ],
+    [
+      "__three/build/three.module.js:updateMatrixWorld",
+      221.2119999999999
+    ],
+    [
+      "src/roads.js:lerp",
+      216.05200000000005
+    ],
+    [
+      "__three/build/three.module.js:getY",
+      209.743
+    ],
+    [
+      "src/warmup.js:",
+      208.51799999999994
+    ],
+    [
+      "__three/build/three.module.js:copy",
+      206.25400000000008
+    ],
+    [
+      "src/furniture.js:zigzagRugTextures",
+      199.701
+    ],
+    [
+      "__three/build/three.module.js:fromBufferAttribute",
+      197.14800000000005
+    ],
+    [
+      "__three/build/three.module.js:getZ",
+      196.70500000000013
+    ],
+    [
+      "__three/build/three.module.js:intersectsBox",
+      194.584
+    ],
+    [
+      "src/combatworld.js:advanceSpatial",
+      191.59100000000007
+    ],
+    [
+      "src/architectureedges.js:build",
+      190.82399999999998
+    ],
+    [
+      "__three/build/three.module.js:angleTo",
+      185.79799999999983
+    ],
+    [
+      "__three/build/three.module.js:crossVectors",
+      182.27700000000013
+    ],
+    [
+      "__three/build/three.module.js:applyMatrix4",
+      179.344
+    ],
+    [
+      "__three/build/three.module.js:compose",
+      179.11999999999998
+    ]
+  ],
+  "metrics": {
+    "Timestamp": 16994.704136,
+    "AudioHandlers": 6,
+    "AudioWorkletProcessors": 0,
+    "Documents": 4,
+    "Frames": 3,
+    "JSEventListeners": 787,
+    "LayoutObjects": 420,
+    "MediaKeySessions": 0,
+    "MediaKeys": 0,
+    "Nodes": 5267,
+    "Resources": 373,
+    "ContextLifecycleStateObservers": 22,
+    "V8PerContextDatas": 2,
+    "WorkerGlobalScopes": 0,
+    "UACSSResources": 0,
+    "RTCPeerConnections": 0,
+    "ResourceFetchers": 4,
+    "AdSubframes": 0,
+    "DetachedScriptStates": 0,
+    "ArrayBufferContents": 83233,
+    "LayoutCount": 403,
+    "RecalcStyleCount": 415,
+    "LayoutDuration": 0.097955,
+    "RecalcStyleDuration": 0.310071,
+    "DevToolsCommandDuration": 0.214264,
+    "ScriptDuration": 24.715857,
+    "V8CompileDuration": 0.000656,
+    "TaskDuration": 57.773343,
+    "TaskOtherDuration": 32.43454,
+    "ThreadTime": 32.219067,
+    "ProcessTime": 49.85,
+    "JSHeapUsedSize": 134196404,
+    "JSHeapTotalSize": 153468928,
+    "FirstMeaningfulPaint": 16904.539873,
+    "DomContentLoaded": 16904.450938,
+    "NavigationStart": 16904.344966
+  },
+  "errors": [],
+  "staticTerrain": {
+    "attributes": {
+      "position": "56dc32bf2ba3587655dac9cc2438b5f3fdd4914a7f1a1aa8289f728ac6e8789a",
+      "uv": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "normal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "index": "1a531635056859be0042f890e19581b0885a8a50d54533892a07849580266cc9",
+    "samples": [
+      [
+        -180,
+        -120,
+        4.847524723043071,
+        4.95243575420445,
+        {
+          "distance": 299.39442563280966,
+          "x": -15.099999999999998,
+          "z": 129.89,
+          "nx": -0.28040801264113796,
+          "nz": -0.9598809022199825,
+          "width": 5.5,
+          "valley": 7,
+          "bank": 6.6000000000000005,
+          "segment": 16,
+          "t": 1,
+          "along": 389.9530030674514
+        }
+      ],
+      [
+        -140,
+        -120,
+        5.6,
+        5.5636,
+        {
+          "distance": 279.3653917363423,
+          "x": -15.099999999999998,
+          "z": 129.89,
+          "nx": -0.28040801264113796,
+          "nz": -0.9598809022199825,
+          "width": 5.5,
+          "valley": 7,
+          "bank": 6.6000000000000005,
+          "segment": 16,
+          "t": 1,
+          "along": 389.9530030674514
+        }
+      ],
+      [
+        -100,
+        -120,
+        6.3,
+        6.28,
+        {
+          "distance": 263.9185899098432,
+          "x": -15.099999999999998,
+          "z": 129.89,
+          "nx": -0.28040801264113796,
+          "nz": -0.9598809022199825,
+          "width": 5.5,
+          "valley": 7,
+          "bank": 6.6000000000000005,
+          "segment": 16,
+          "t": 1,
+          "along": 389.9530030674514
+        }
+      ],
+      [
+        -60,
+        -120,
+        5.490797796328686,
+        5.4807977963286865,
+        {
+          "distance": 252.65424041563205,
+          "x": 1.16,
+          "z": 125.14,
+          "nx": -0.28040801264113796,
+          "nz": -0.9598809022199825,
+          "width": 4,
+          "valley": 8,
+          "bank": 5.5,
+          "segment": 16,
+          "t": 0,
+          "along": 373.01340153730905
+        }
+      ],
+      [
+        -20,
+        -120,
+        5.917214759573739,
+        5.8751139037108615,
+        {
+          "distance": 245.88293084499057,
+          "x": 10.198711100881852,
+          "z": 124.02142022529064,
+          "nx": -0.12281743591188822,
+          "nz": -0.9924292808235907,
+          "width": 3.895264066038449,
+          "valley": 8,
+          "bank": 5.5,
+          "segment": 15,
+          "t": 0.7905281320768979,
+          "along": 363.90573888009595
+        }
+      ],
+      [
+        20,
+        -120,
+        6.049179613932521,
+        6.1226903245373885,
+        {
+          "distance": 224.2288039035128,
+          "x": 131.38,
+          "z": 74.61,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 7,
+          "valley": 7,
+          "bank": 8.25,
+          "segment": 8,
+          "t": 1,
+          "along": 213.40024754408378
+        }
+      ],
+      [
+        60,
+        -120,
+        6.934768019564847,
+        6.924768019564847,
+        {
+          "distance": 207.28761781640506,
+          "x": 131.38,
+          "z": 74.61,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 7,
+          "valley": 7,
+          "bank": 8.25,
+          "segment": 8,
+          "t": 1,
+          "along": 213.40024754408378
+        }
+      ],
+      [
+        100,
+        -120,
+        6.612810049949821,
+        6.602810049949821,
+        {
+          "distance": 197.12370861973957,
+          "x": 131.38,
+          "z": 74.61,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 7,
+          "valley": 7,
+          "bank": 8.25,
+          "segment": 8,
+          "t": 1,
+          "along": 213.40024754408378
+        }
+      ],
+      [
+        140,
+        -120,
+        5.689624104953597,
+        5.679624104953597,
+        {
+          "distance": 194.80081236996938,
+          "x": 131.38,
+          "z": 74.61,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 7,
+          "valley": 7,
+          "bank": 8.25,
+          "segment": 8,
+          "t": 1,
+          "along": 213.40024754408378
+        }
+      ],
+      [
+        180,
+        -120,
+        5,
+        4.994400000000001,
+        {
+          "distance": 185.72554179380597,
+          "x": 237.78996904763295,
+          "z": 56.5057969361811,
+          "nx": -0.31115789723629844,
+          "nz": -0.9503582287682288,
+          "width": 6,
+          "valley": 6,
+          "bank": 7.15,
+          "segment": 4,
+          "t": 0.7011431139710362,
+          "along": 100.99524646778035
+        }
+      ],
+      [
+        220,
+        -120,
+        3.3,
+        3.354400000000002,
+        {
+          "distance": 169.74970544893444,
+          "x": 280.48,
+          "z": 38.61,
+          "nx": -0.25754028606380347,
+          "nz": -0.9662675618348028,
+          "width": 6,
+          "valley": 6,
+          "bank": 7.15,
+          "segment": 2,
+          "t": 1,
+          "along": 54.55497354758039
+        }
+      ],
+      [
+        -180,
+        -80,
+        4.9,
+        4.898666666666666,
+        {
+          "distance": 266.42799253778503,
+          "x": -28.40964812082599,
+          "z": 139.09870018980547,
+          "nx": -0.568973066363045,
+          "nz": -0.8223561574849637,
+          "width": 5.881365275668367,
+          "valley": 7,
+          "bank": 6.87966786882347,
+          "segment": 17,
+          "t": 0.25424351711224435,
+          "along": 406.13777653778243
+        }
+      ],
+      [
+        -140,
+        -80,
+        5.2,
+        5.1988,
+        {
+          "distance": 244.24131939538813,
+          "x": -15.099999999999998,
+          "z": 129.89,
+          "nx": -0.28040801264113796,
+          "nz": -0.9598809022199825,
+          "width": 5.5,
+          "valley": 7,
+          "bank": 6.6000000000000005,
+          "segment": 16,
+          "t": 1,
+          "along": 389.9530030674514
+        }
+      ],
+      [
+        -100,
+        -80,
+        5.5,
+        5.484,
+        {
+          "distance": 226.41073759872788,
+          "x": -15.099999999999998,
+          "z": 129.89,
+          "nx": -0.28040801264113796,
+          "nz": -0.9598809022199825,
+          "width": 5.5,
+          "valley": 7,
+          "bank": 6.6000000000000005,
+          "segment": 16,
+          "t": 1,
+          "along": 389.9530030674514
+        }
+      ],
+      [
+        -60,
+        -80,
+        5.490797796328686,
+        5.4807977963286865,
+        {
+          "distance": 214.05972233453917,
+          "x": 0.024061326341943357,
+          "z": 125.47183940343639,
+          "nx": -0.28040801264113796,
+          "nz": -0.9598809022199825,
+          "width": 4.104791390558861,
+          "valley": 7.930139072960759,
+          "bank": 5.576847019743166,
+          "segment": 16,
+          "t": 0.06986092703924088,
+          "along": 374.19681780388015
+        }
+      ],
+      [
+        -20,
+        -80,
+        4.5,
+        4.587241276505603,
+        {
+          "distance": 206.18575961204695,
+          "x": 5.323206317096549,
+          "z": 124.62478512784946,
+          "nx": -0.12281743591188822,
+          "nz": -0.9924292808235907,
+          "width": 3.95175890710201,
+          "valley": 8,
+          "bank": 5.5,
+          "segment": 15,
+          "t": 0.9035178142040197,
+          "along": 368.8184363165715
+        }
+      ],
+      [
+        20,
+        -80,
+        3.9596455315307564,
+        3.9803340027015346,
+        {
+          "distance": 190.55119128465194,
+          "x": 131.38,
+          "z": 74.61,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 7,
+          "valley": 7,
+          "bank": 8.25,
+          "segment": 8,
+          "t": 1,
+          "along": 213.40024754408378
+        }
+      ],
+      [
+        60,
+        -80,
+        3.1230166631664074,
+        3.1269423213068452,
+        {
+          "distance": 170.29197426772643,
+          "x": 131.38,
+          "z": 74.61,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 7,
+          "valley": 7,
+          "bank": 8.25,
+          "segment": 8,
+          "t": 1,
+          "along": 213.40024754408378
+        }
+      ],
+      [
+        100,
+        -80,
+        5.3,
+        5.318800000000001,
+        {
+          "distance": 157.76234183099592,
+          "x": 131.38,
+          "z": 74.61,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 7,
+          "valley": 7,
+          "bank": 8.25,
+          "segment": 8,
+          "t": 1,
+          "along": 213.40024754408378
+        }
+      ],
+      [
+        140,
+        -80,
+        5.689624104953597,
+        5.679624104953597,
+        {
+          "distance": 154.8501097836227,
+          "x": 131.38,
+          "z": 74.61,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 7,
+          "valley": 7,
+          "bank": 8.25,
+          "segment": 8,
+          "t": 1,
+          "along": 213.40024754408378
+        }
+      ],
+      [
+        180,
+        -80,
+        5.5,
+        5.564000000000002,
+        {
+          "distance": 147.73295163909776,
+          "x": 228.37,
+          "z": 59.59,
+          "nx": -0.31115789723629844,
+          "nz": -0.9503582287682288,
+          "width": 6,
+          "valley": 6,
+          "bank": 7.15,
+          "segment": 4,
+          "t": 1,
+          "along": 110.90726570692796
+        }
+      ],
+      [
+        220,
+        -80,
+        3.9,
+        3.9028000000000005,
+        {
+          "distance": 133.1396353457527,
+          "x": 280.48,
+          "z": 38.61,
+          "nx": -0.25754028606380347,
+          "nz": -0.9662675618348028,
+          "width": 6,
+          "valley": 6,
+          "bank": 7.15,
+          "segment": 2,
+          "t": 1,
+          "along": 54.55497354758039
+        }
+      ],
+      [
+        -180,
+        -40,
+        4.4322204042102635,
+        4.415694833641712,
+        {
+          "distance": 233.53374623838653,
+          "x": -47.12558830349603,
+          "z": 152.04791419966813,
+          "nx": -0.568973066363045,
+          "nz": -0.8223561574849637,
+          "width": 6.417638633337996,
+          "valley": 7,
+          "bank": 7.2729349977811975,
+          "segment": 17,
+          "t": 0.6117590888919967,
+          "along": 428.8966991923042
+        }
+      ],
+      [
+        -140,
+        -40,
+        3.5,
+        3.4460000000000006,
+        {
+          "distance": 210.77482358386473,
+          "x": -20.074802313358646,
+          "z": 133.3319740169981,
+          "nx": -0.568973066363045,
+          "nz": -0.8223561574849637,
+          "width": 5.642544478892797,
+          "valley": 7,
+          "bank": 6.704532617854719,
+          "segment": 17,
+          "t": 0.09502965259519856,
+          "along": 396.00245289290564
+        }
+      ],
+      [
+        -100,
+        -40,
+        1.338448410329346,
+        1.3579471001812964,
+        {
+          "distance": 189.92267400181578,
+          "x": -15.099999999999998,
+          "z": 129.89,
+          "nx": -0.28040801264113796,
+          "nz": -0.9598809022199825,
+          "width": 5.5,
+          "valley": 7,
+          "bank": 6.6000000000000005,
+          "segment": 16,
+          "t": 1,
+          "along": 389.9530030674514
+        }
+      ],
+      [
+        -60,
+        -40,
+        0.14577777777777778,
+        0.13566859019035823,
+        {
+          "distance": 175.66448624573988,
+          "x": -10.742270520205567,
+          "z": 128.6169855455705,
+          "nx": -0.28040801264113796,
+          "nz": -0.9598809022199825,
+          "width": 5.097995435443318,
+          "valley": 7.268003043037788,
+          "bank": 6.3051966526584335,
+          "segment": 16,
+          "t": 0.7319969569622121,
+          "along": 385.41313830952566
+        }
+      ],
+      [
+        -20,
+        -40,
+        0.1312,
+        0.12226903703703705,
+        {
+          "distance": 166.4901354435151,
+          "x": 1.16,
+          "z": 125.14,
+          "nx": -0.28040801264113796,
+          "nz": -0.9598809022199825,
+          "width": 4,
+          "valley": 8,
+          "bank": 5.5,
+          "segment": 16,
+          "t": 0,
+          "along": 373.01340153730905
+        }
+      ],
+      [
+        20,
+        -40,
+        0.9898731388209527,
+        0.948414147648666,
+        {
+          "distance": 159.81538255124252,
+          "x": 131.38,
+          "z": 74.61,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 7,
+          "valley": 7,
+          "bank": 8.25,
+          "segment": 8,
+          "t": 1,
+          "along": 213.40024754408378
+        }
+      ],
+      [
+        60,
+        -40,
+        2.7931189628157322,
+        2.766064988326114,
+        {
+          "distance": 135.02057806127183,
+          "x": 131.38,
+          "z": 74.61,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 7,
+          "valley": 7,
+          "bank": 8.25,
+          "segment": 8,
+          "t": 1,
+          "along": 213.40024754408378
+        }
+      ],
+      [
+        100,
+        -40,
+        2.8,
+        2.8084000000000007,
+        {
+          "distance": 118.82826473528932,
+          "x": 131.38,
+          "z": 74.61,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 7,
+          "valley": 7,
+          "bank": 8.25,
+          "segment": 8,
+          "t": 1,
+          "along": 213.40024754408378
+        }
+      ],
+      [
+        140,
+        -40,
+        5,
+        4.9808,
+        {
+          "distance": 114.93370480411741,
+          "x": 131.38,
+          "z": 74.61,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 7,
+          "valley": 7,
+          "bank": 8.25,
+          "segment": 8,
+          "t": 1,
+          "along": 213.40024754408378
+        }
+      ],
+      [
+        180,
+        -40,
+        2.4,
+        2.3892,
+        {
+          "distance": 110.54268635915908,
+          "x": 222.67298982278965,
+          "z": 61.974023393624634,
+          "nx": -0.3860317785669043,
+          "nz": -0.9224854827781694,
+          "width": 6,
+          "valley": 6,
+          "bank": 7.15,
+          "segment": 5,
+          "t": 0.4739609132454531,
+          "along": 117.08298368143002
+        }
+      ],
+      [
+        220,
+        -40,
+        1,
+        0.9872,
+        {
+          "distance": 97.25056760289573,
+          "x": 250.26028212035354,
+          "z": 52.422877173792884,
+          "nx": -0.31115789723629844,
+          "nz": -0.9503582287682288,
+          "width": 6,
+          "valley": 6,
+          "bank": 7.15,
+          "segment": 4,
+          "t": 0.3055113540496975,
+          "along": 87.87354909595507
+        }
+      ],
+      [
+        -180,
+        0,
+        1.8999999999999997,
+        1.952,
+        {
+          "distance": 200.639499938988,
+          "x": -65.84152848616606,
+          "z": 164.99712820953076,
+          "nx": -0.568973066363045,
+          "nz": -0.8223561574849637,
+          "width": 6.953911991007624,
+          "valley": 7,
+          "bank": 7.666202126738924,
+          "segment": 17,
+          "t": 0.969274660671749,
+          "along": 451.655621846826
+        }
+      ],
+      [
+        -140,
+        0,
+        1.0430623504188317,
+        1.0413944401861257,
+        {
+          "distance": 177.8805772844662,
+          "x": -38.790742496028685,
+          "z": 146.28118802686072,
+          "nx": -0.568973066363045,
+          "nz": -0.8223561574849637,
+          "width": 6.178817836562427,
+          "valley": 7,
+          "bank": 7.097799746812447,
+          "segment": 17,
+          "t": 0.4525452243749509,
+          "along": 418.76137554742746
+        }
+      ],
+      [
+        -100,
+        0,
+        1.105606221167787,
+        1.0993770848029525,
+        {
+          "distance": 155.1754558556217,
+          "x": -15.099999999999998,
+          "z": 129.89,
+          "nx": -0.28040801264113796,
+          "nz": -0.9598809022199825,
+          "width": 5.5,
+          "valley": 7,
+          "bank": 6.6000000000000005,
+          "segment": 16,
+          "t": 1,
+          "along": 389.9530030674514
+        }
+      ],
+      [
+        -60,
+        0,
+        0,
+        -0.01,
+        {
+          "distance": 137.43151785525762,
+          "x": -15.099999999999998,
+          "z": 129.89,
+          "nx": -0.28040801264113796,
+          "nz": -0.9598809022199825,
+          "width": 5.5,
+          "valley": 7,
+          "bank": 6.6000000000000005,
+          "segment": 16,
+          "t": 1,
+          "along": 389.9530030674514
+        }
+      ],
+      [
+        -20,
+        0,
+        0,
+        -0.01,
+        {
+          "distance": 126.91637089044107,
+          "x": 1.1599999999999966,
+          "z": 125.14,
+          "nx": -0.12281743591188822,
+          "nz": -0.9924292808235907,
+          "width": 4,
+          "valley": 8,
+          "bank": 5.5,
+          "segment": 15,
+          "t": 1,
+          "along": 373.01340153730905
+        }
+      ],
+      [
+        20,
+        0,
+        -0.41666666666666663,
+        -0.42666666666666664,
+        {
+          "distance": 121.87871970968415,
+          "x": 34.96883184696712,
+          "z": 120.95601014918182,
+          "nx": -0.12281743591188822,
+          "nz": -0.9924292808235907,
+          "width": 3.6082406506724554,
+          "valley": 8,
+          "bank": 5.5,
+          "segment": 15,
+          "t": 0.21648130134491037,
+          "along": 338.9466599565789
+        }
+      ],
+      [
+        60,
+        0,
+        -0.22913580246913579,
+        -0.20594575802469067,
+        {
+          "distance": 103.25578192043291,
+          "x": 131.38,
+          "z": 74.61,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 7,
+          "valley": 7,
+          "bank": 8.25,
+          "segment": 8,
+          "t": 1,
+          "along": 213.40024754408378
+        }
+      ],
+      [
+        100,
+        0,
+        -0.6845394771483155,
+        -0.6945394771483155,
+        {
+          "distance": 80.94045033232764,
+          "x": 131.38,
+          "z": 74.61,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 7,
+          "valley": 7,
+          "bank": 8.25,
+          "segment": 8,
+          "t": 1,
+          "along": 213.40024754408378
+        }
+      ],
+      [
+        140,
+        0,
+        -2.351976685838574,
+        -2.361976685838574,
+        {
+          "distance": 75.04904155176345,
+          "x": 134.30375291012209,
+          "z": 74.83255579578565,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 6.950761992082821,
+          "valley": 6.950761992082821,
+          "bank": 8.222919095645553,
+          "segment": 8,
+          "t": 0.9507619920828209,
+          "along": 210.46803640542322
+        }
+      ],
+      [
+        180,
+        0,
+        -1.9,
+        -1.908,
+        {
+          "distance": 74.1422072776364,
+          "x": 216.35,
+          "z": 64.62,
+          "nx": -0.3860317785669043,
+          "nz": -0.9224854827781694,
+          "width": 6,
+          "valley": 6,
+          "bank": 7.15,
+          "segment": 5,
+          "t": 1,
+          "along": 123.9372810561131
+        }
+      ],
+      [
+        220,
+        0,
+        -1.9,
+        -1.9108,
+        {
+          "distance": 59.23623845216658,
+          "x": 238.43182339696412,
+          "z": 56.29564665429348,
+          "nx": -0.31115789723629844,
+          "nz": -0.9503582287682288,
+          "width": 6,
+          "valley": 6,
+          "bank": 7.15,
+          "segment": 4,
+          "t": 0.680779714563321,
+          "along": 100.31986498540701
+        }
+      ],
+      [
+        -180,
+        40,
+        0.6000000000000001,
+        0.6470669066666669,
+        {
+          "distance": 167.24470609989146,
+          "x": -175.2630275027576,
+          "z": 207.17760857842012,
+          "nx": -0.028323602030267608,
+          "nz": -0.9995988063058254,
+          "width": 6.909707217039664,
+          "valley": 6.909707217039664,
+          "bank": 1.6500000000000001,
+          "segment": 21,
+          "t": 0.9097072170396637,
+          "along": 577.0969311206311
+        }
+      ],
+      [
+        -140,
+        40,
+        0.20000000000000018,
+        0.20153969999999974,
+        {
+          "distance": 144.98633098506767,
+          "x": -57.506682678698716,
+          "z": 159.23040203672338,
+          "nx": -0.568973066363045,
+          "nz": -0.8223561574849637,
+          "width": 6.7150911942320555,
+          "valley": 7,
+          "bank": 7.491066875770174,
+          "segment": 17,
+          "t": 0.8100607961547033,
+          "along": 441.52029820194923
+        }
+      ],
+      [
+        -100,
+        40,
+        1.0430623504188317,
+        1.0330623504188314,
+        {
+          "distance": 122.22740833054586,
+          "x": -30.455896688561346,
+          "z": 140.51446185405334,
+          "nx": -0.568973066363045,
+          "nz": -0.8223561574849637,
+          "width": 5.939997039786858,
+          "valley": 7,
+          "bank": 6.922664495843697,
+          "segment": 17,
+          "t": 0.2933313598579053,
+          "along": 408.62605190255067
+        }
+      ],
+      [
+        -60,
+        40,
+        0,
+        -0.01,
+        {
+          "distance": 100.4799586982399,
+          "x": -15.099999999999998,
+          "z": 129.89,
+          "nx": -0.28040801264113796,
+          "nz": -0.9598809022199825,
+          "width": 5.5,
+          "valley": 7,
+          "bank": 6.6000000000000005,
+          "segment": 16,
+          "t": 1,
+          "along": 389.9530030674514
+        }
+      ],
+      [
+        -20,
+        40,
+        -3,
+        -3.01,
+        {
+          "distance": 87.73007010141961,
+          "x": 1.1599999999999966,
+          "z": 125.14,
+          "nx": -0.12281743591188822,
+          "nz": -0.9924292808235907,
+          "width": 4,
+          "valley": 8,
+          "bank": 5.5,
+          "segment": 15,
+          "t": 1,
+          "along": 373.01340153730905
+        }
+      ],
+      [
+        20,
+        40,
+        -2.5428571428571427,
+        -2.5528571428571425,
+        {
+          "distance": 82.18154847674052,
+          "x": 30.09332706318181,
+          "z": 121.55937505174064,
+          "nx": -0.12281743591188822,
+          "nz": -0.9924292808235907,
+          "width": 3.664735491736016,
+          "valley": 8,
+          "bank": 5.5,
+          "segment": 15,
+          "t": 0.3294709834720322,
+          "along": 343.85935739305444
+        }
+      ],
+      [
+        60,
+        40,
+        -1.8298074074074073,
+        -1.8648008621748156,
+        {
+          "distance": 79.32815704401558,
+          "x": 131.38,
+          "z": 74.61,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 7,
+          "valley": 7,
+          "bank": 8.25,
+          "segment": 8,
+          "t": 1,
+          "along": 213.40024754408378
+        }
+      ],
+      [
+        100,
+        40,
+        -2.7084638254382263,
+        -2.7248678865410474,
+        {
+          "distance": 46.71783920516872,
+          "x": 131.38,
+          "z": 74.61,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 7,
+          "valley": 7,
+          "bank": 8.25,
+          "segment": 8,
+          "t": 1,
+          "along": 213.40024754408378
+        }
+      ],
+      [
+        140,
+        40,
+        -2.9906905743369925,
+        -3.000510160140961,
+        {
+          "distance": 35.16442517372668,
+          "x": 137.3310084922948,
+          "z": 75.06299020520667,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 6.899780928051619,
+          "valley": 6.899780928051619,
+          "bank": 8.194879510428391,
+          "segment": 8,
+          "t": 0.8997809280516197,
+          "along": 207.4320231681594
+        }
+      ],
+      [
+        180,
+        40,
+        -3.022098756753354,
+        -3.0349490467112963,
+        {
+          "distance": 38.2004384109905,
+          "x": 177.10057408287378,
+          "z": 78.09024578737942,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 6.230034117836413,
+          "valley": 6.230034117836413,
+          "bank": 7.826518764810028,
+          "segment": 8,
+          "t": 0.23003411783641306,
+          "along": 167.5474067901226
+        }
+      ],
+      [
+        220,
+        40,
+        -2.784427770928499,
+        -2.7982638082968854,
+        {
+          "distance": 21.30257659422934,
+          "x": 228.22347153072806,
+          "z": 59.651317653946585,
+          "nx": -0.3860317785669043,
+          "nz": -0.9224854827781694,
+          "width": 6,
+          "valley": 6,
+          "bank": 7.15,
+          "segment": 5,
+          "t": 0.012190388458564596,
+          "along": 111.06610665565559
+        }
+      ],
+      [
+        -180,
+        80,
+        0.6621782125571576,
+        0.6518165662565237,
+        {
+          "distance": 127.26075384765846,
+          "x": -176.3955170539471,
+          "z": 207.2096976356989,
+          "nx": -0.028323602030267608,
+          "nz": -0.9995988063058254,
+          "width": 6.925592888959842,
+          "valley": 6.925592888959842,
+          "bank": 1.6500000000000001,
+          "segment": 21,
+          "t": 0.9255928889598415,
+          "along": 578.2298752018418
+        }
+      ],
+      [
+        -140,
+        80,
+        0.2999999999999998,
+        0.29145920000000003,
+        {
+          "distance": 112.53173895702807,
+          "x": -70.50036566166644,
+          "z": 168.50532808554883,
+          "nx": -0.6176002875497466,
+          "nz": -0.7864921390697243,
+          "width": 6.861220852517451,
+          "valley": 6.861220852517451,
+          "bank": 7.623671468884598,
+          "segment": 18,
+          "t": 0.13877914748254955,
+          "along": 457.4899963040585
+        }
+      ],
+      [
+        -100,
+        80,
+        -1.3316386731367214,
+        -1.374748122124795,
+        {
+          "distance": 89.33316203114732,
+          "x": -49.171836871231385,
+          "z": 153.46367586391597,
+          "nx": -0.568973066363045,
+          "nz": -0.8223561574849637,
+          "width": 6.476270397456487,
+          "valley": 7,
+          "bank": 7.315931624801424,
+          "segment": 17,
+          "t": 0.6508469316376577,
+          "along": 431.3849745570725
+        }
+      ],
+      [
+        -60,
+        80,
+        -2.614103703703704,
+        -2.6245702547353473,
+        {
+          "distance": 66.57423937662553,
+          "x": -22.121050881094003,
+          "z": 134.74773568124593,
+          "nx": -0.568973066363045,
+          "nz": -0.8223561574849637,
+          "width": 5.70117624301129,
+          "valley": 7,
+          "bank": 6.747529244874946,
+          "segment": 17,
+          "t": 0.13411749534085968,
+          "along": 398.49072825767394
+        }
+      ],
+      [
+        -20,
+        80,
+        -2.967781253464594,
+        -2.9669916838954893,
+        {
+          "distance": 49.262457473696486,
+          "x": -6.186412201982195,
+          "z": 127.2860921254253,
+          "nx": -0.28040801264113796,
+          "nz": -0.9598809022199825,
+          "width": 4.677713302765885,
+          "valley": 7.54819113148941,
+          "bank": 5.99698975536165,
+          "segment": 16,
+          "t": 0.45180886851059016,
+          "along": 380.66686373766294
+        }
+      ],
+      [
+        20,
+        80,
+        -2.9802814423590087,
+        -2.990362425050194,
+        {
+          "distance": 42.48437724379691,
+          "x": 25.217822279396504,
+          "z": 122.16273995429948,
+          "nx": -0.12281743591188822,
+          "nz": -0.9924292808235907,
+          "width": 3.721230332799577,
+          "valley": 8,
+          "bank": 5.5,
+          "segment": 15,
+          "t": 0.442460665599154,
+          "along": 348.77205482952996
+        }
+      ],
+      [
+        60,
+        80,
+        -2.9819475555795747,
+        -2.989166770094023,
+        {
+          "distance": 39.660384015118524,
+          "x": 60.34901854737626,
+          "z": 119.65884827223626,
+          "nx": -0.008800180735597856,
+          "nz": -0.9999612776598006,
+          "width": 3.761392088451373,
+          "valley": 8,
+          "bank": 5.787531297296511,
+          "segment": 14,
+          "t": 0.4772158230972536,
+          "along": 313.49459332224257
+        }
+      ],
+      [
+        100,
+        80,
+        -2.944485301832472,
+        -2.9544668146424033,
+        {
+          "distance": 27.388288960799947,
+          "x": 127.0738968807066,
+          "z": 84.13793183766259,
+          "nx": -0.9885209302215507,
+          "nz": -0.15108398496835995,
+          "width": 8,
+          "valley": 8,
+          "bank": 6.585051172995938,
+          "segment": 10,
+          "t": 0.027179685461932203,
+          "along": 223.87561136331414
+        }
+      ],
+      [
+        140,
+        80,
+        -6.358366086528189,
+        -6.386990354475353,
+        {
+          "distance": 4.7201912043101,
+          "x": 140.35826407446757,
+          "z": 75.29342461462771,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 6.848799864020418,
+          "valley": 6.848799864020418,
+          "bank": 8.16683992521123,
+          "segment": 8,
+          "t": 0.8487998640204183,
+          "along": 204.39600993089556
+        }
+      ],
+      [
+        180,
+        80,
+        -7.4294591163406904,
+        -7.439459116340689,
+        {
+          "distance": 1.684177967046273,
+          "x": 180.1278296650465,
+          "z": 78.32068019680044,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 6.1790530538052115,
+          "valley": 6.1790530538052115,
+          "bank": 7.798479179592867,
+          "segment": 8,
+          "t": 0.1790530538052118,
+          "along": 164.51139355285878
+        }
+      ],
+      [
+        220,
+        80,
+        -5.17279214213831,
+        -5.182236231054226,
+        {
+          "distance": 14.15487367657368,
+          "x": 210.94284004761687,
+          "z": 69.12211866231729,
+          "nx": -0.6398615882650176,
+          "nz": -0.768490174213678,
+          "width": 6,
+          "valley": 6,
+          "bank": 7.15,
+          "segment": 6,
+          "t": 0.46175576023767,
+          "along": 130.97336314774913
+        }
+      ],
+      [
+        -180,
+        120,
+        1.5,
+        1.4563259497932537,
+        {
+          "distance": 87.27680159542545,
+          "x": -177.52800660513657,
+          "z": 207.24178669297766,
+          "nx": -0.028323602030267608,
+          "nz": -0.9995988063058254,
+          "width": 6.941478560880019,
+          "valley": 6.941478560880019,
+          "bank": 1.6500000000000001,
+          "segment": 21,
+          "t": 0.9414785608800191,
+          "along": 579.3628192830524
+        }
+      ],
+      [
+        -140,
+        120,
+        -0.32519463689044287,
+        -0.38282976100728394,
+        {
+          "distance": 81.07454471040833,
+          "x": -89.43,
+          "z": 183.37,
+          "nx": -0.6176002875497466,
+          "nz": -0.7864921390697243,
+          "width": 6,
+          "valley": 6,
+          "bank": 7.15,
+          "segment": 18,
+          "t": 1,
+          "along": 481.5584305553199
+        }
+      ],
+      [
+        -100,
+        120,
+        -3.090972955501261,
+        -3.062586818232643,
+        {
+          "distance": 56.441426275387485,
+          "x": -67.45,
+          "z": 166.11,
+          "nx": -0.568973066363045,
+          "nz": -0.8223561574849637,
+          "width": 7,
+          "valley": 7,
+          "bank": 7.700000000000001,
+          "segment": 17,
+          "t": 1,
+          "along": 453.6115523754587
+        }
+      ],
+      [
+        -60,
+        120,
+        -3.007245355845638,
+        -3.02115432011966,
+        {
+          "distance": 33.679993077226996,
+          "x": -40.83699106376404,
+          "z": 147.69694969110856,
+          "nx": -0.568973066363045,
+          "nz": -0.8223561574849637,
+          "width": 6.237449600680918,
+          "valley": 7,
+          "bank": 7.140796373832674,
+          "segment": 17,
+          "t": 0.491633067120612,
+          "along": 421.24965091219576
+        }
+      ],
+      [
+        -20,
+        120,
+        -5.536211516015622,
+        -5.546211516015622,
+        {
+          "distance": 11.037304924663436,
+          "x": -15.099999999999998,
+          "z": 129.89,
+          "nx": -0.28040801264113796,
+          "nz": -0.9598809022199825,
+          "width": 5.5,
+          "valley": 7,
+          "bank": 6.6000000000000005,
+          "segment": 16,
+          "t": 1,
+          "along": 389.9530030674514
+        }
+      ],
+      [
+        20,
+        120,
+        -3,
+        -6.7592394899842425,
+        {
+          "distance": 2.7872060108532817,
+          "x": 20.342317495611198,
+          "z": 122.7661048568583,
+          "nx": -0.12281743591188822,
+          "nz": -0.9924292808235907,
+          "width": 3.777725173863138,
+          "valley": 8,
+          "bank": 5.5,
+          "segment": 15,
+          "t": 0.5554503477262758,
+          "along": 353.6847522660055
+        }
+      ],
+      [
+        60,
+        120,
+        -7.56641436816592,
+        -7.576414368165919,
+        {
+          "distance": 0.3380670912734933,
+          "x": 59.99702494849603,
+          "z": 119.66194599947542,
+          "nx": -0.008800180735597856,
+          "nz": -0.9999612776598006,
+          "width": 3.755655556526989,
+          "valley": 8,
+          "bank": 5.781221112179688,
+          "segment": 14,
+          "t": 0.4886888869460223,
+          "along": 313.8466005516665
+        }
+      ],
+      [
+        100,
+        120,
+        -7.52973124904386,
+        -7.539731249043859,
+        {
+          "distance": 0.667686647933344,
+          "x": 99.9947220095918,
+          "z": 119.33233421336291,
+          "nx": -0.007904891350658083,
+          "nz": -0.9999687558582688,
+          "width": 6.470822332963618,
+          "valley": 8.823607444321206,
+          "bank": 6.955968188753327,
+          "segment": 13,
+          "t": 0.17639255567879417,
+          "along": 273.8475416295198
+        }
+      ],
+      [
+        140,
+        120,
+        -2.906485964196749,
+        -2.9166185824863553,
+        {
+          "distance": 23.098992474388275,
+          "x": 120.9277039971651,
+          "z": 106.96884584880932,
+          "nx": -0.8256765321683145,
+          "nz": -0.5641438329242874,
+          "width": 8.41532718481006,
+          "valley": 8.41532718481006,
+          "bank": 6.278429951645534,
+          "segment": 11,
+          "t": 0.4153271848100608,
+          "along": 247.97098961205114
+        }
+      ],
+      [
+        180,
+        120,
+        -2.879846449649778,
+        -2.8729599870210594,
+        {
+          "distance": 41.56879434508305,
+          "x": 183.15508524721923,
+          "z": 78.55111460622147,
+          "nx": 0.07590033093159568,
+          "nz": -0.9971154094509191,
+          "width": 6.128071989774011,
+          "valley": 6.128071989774011,
+          "bank": 7.7704395943757065,
+          "segment": 8,
+          "t": 0.12807198977401052,
+          "along": 161.47538031559498
+        }
+      ],
+      [
+        220,
+        120,
+        -4.058574608308208,
+        -4.0665880921709885,
+        {
+          "distance": 48.14511517177028,
+          "x": 204.38201270714129,
+          "z": 74.4584740283867,
+          "nx": -0.3243940166543888,
+          "nz": -0.9459220485636394,
+          "width": 6,
+          "valley": 6,
+          "bank": 7.16022283941443,
+          "segment": 7,
+          "t": 0.018586980753508606,
+          "along": 139.44768779574144
+        }
+      ],
+      [
+        -180,
+        160,
+        -3.1543921820373146,
+        -3.0354185153279816,
+        {
+          "distance": 47.292849343192444,
+          "x": -178.66049615632602,
+          "z": 207.27387575025642,
+          "nx": -0.028323602030267608,
+          "nz": -0.9995988063058254,
+          "width": 6.957364232800197,
+          "valley": 6.957364232800197,
+          "bank": 1.6500000000000001,
+          "segment": 21,
+          "t": 0.957364232800197,
+          "along": 580.4957633642632
+        }
+      ],
+      [
+        -140,
+        160,
+        -2.908392163608863,
+        -2.907309345896633,
+        {
+          "distance": 46.15990526198174,
+          "x": -138.6925852136048,
+          "z": 206.14138619906694,
+          "nx": -0.028323602030267608,
+          "nz": -0.9995988063058254,
+          "width": 6.396725841122244,
+          "valley": 6.396725841122244,
+          "bank": 1.6500000000000001,
+          "segment": 21,
+          "t": 0.3967258411222441,
+          "along": 540.5118111120302
+        }
+      ],
+      [
+        -100,
+        160,
+        -3.0872880358389256,
+        -3.097284666657393,
+        {
+          "distance": 24.908356329460275,
+          "x": -84.61659196853378,
+          "z": 179.59022645026812,
+          "nx": -0.6176002875497466,
+          "nz": -0.7864921390697243,
+          "width": 6.218990356299646,
+          "valley": 6.218990356299646,
+          "bank": 7.270444695964805,
+          "segment": 18,
+          "t": 0.781009643700354,
+          "along": 475.4383337452493
+        }
+      ],
+      [
+        -60,
+        160,
+        -7.685785855644338,
+        -7.6957858556443375,
+        {
+          "distance": 0.7857467778284527,
+          "x": -59.55293124643408,
+          "z": 160.64616370097121,
+          "nx": -0.568973066363045,
+          "nz": -0.8223561574849637,
+          "width": 6.773722958350547,
+          "valley": 7,
+          "bank": 7.534063502790401,
+          "segment": 17,
+          "t": 0.8491486389003644,
+          "along": 444.00857356671753
+        }
+      ],
+      [
+        -20,
+        160,
+        -3.078249027635519,
+        -3.0964929423017775,
+        {
+          "distance": 21.973175876693343,
+          "x": -32.50214525629671,
+          "z": 141.93022351830118,
+          "nx": -0.568973066363045,
+          "nz": -0.8223561574849637,
+          "width": 5.9986288039053495,
+          "valley": 7,
+          "bank": 6.965661122863924,
+          "segment": 17,
+          "t": 0.3324192026035665,
+          "along": 411.114327267319
+        }
+      ],
+      [
+        20,
+        160,
+        -0.2999999999999998,
+        -0.30707716049382716,
+        {
+          "distance": 36.90996522209034,
+          "x": 15.466812711825888,
+          "z": 123.36946975941714,
+          "nx": -0.12281743591188822,
+          "nz": -0.9924292808235907,
+          "width": 3.8342200149266987,
+          "valley": 8,
+          "bank": 5.5,
+          "segment": 15,
+          "t": 0.6684400298533977,
+          "along": 358.597449702481
+        }
+      ],
+      [
+        60,
+        160,
+        -3.2212163787656625,
+        -3.2214866251110927,
+        {
+          "distance": 40.33651819766551,
+          "x": 59.64503134961581,
+          "z": 119.66504372671459,
+          "nx": -0.008800180735597856,
+          "nz": -0.9999612776598006,
+          "width": 3.7499190246026046,
+          "valley": 8,
+          "bank": 5.774910927062866,
+          "segment": 14,
+          "t": 0.500161950794791,
+          "along": 314.1986077810904
+        }
+      ],
+      [
+        100,
+        160,
+        -2.8585009845182108,
+        -2.844337759596983,
+        {
+          "distance": 40.66643688226411,
+          "x": 99.6785362348273,
+          "z": 119.33483370565355,
+          "nx": -0.007904891350658083,
+          "nz": -0.9999687558582688,
+          "width": 6.439578679330762,
+          "valley": 8.813192893110255,
+          "bank": 6.94451218242128,
+          "segment": 13,
+          "t": 0.1868071068897459,
+          "along": 274.16373728354614
+        }
+      ],
+      [
+        140,
+        160,
+        -2.1942241622480583,
+        -2.170365481588216,
+        {
+          "distance": 51.81594831709635,
+          "x": 116.11,
+          "z": 114.02,
+          "nx": -0.8256765321683145,
+          "nz": -0.5641438329242874,
+          "width": 9,
+          "valley": 9,
+          "bank": 6.6000000000000005,
+          "segment": 11,
+          "t": 1,
+          "along": 256.5108401182458
+        }
+      ],
+      [
+        180,
+        160,
+        0.20000000000000018,
+        0.07824959999999703,
+        {
+          "distance": 78.7152621795799,
+          "x": 116.11,
+          "z": 114.02,
+          "nx": -0.8256765321683145,
+          "nz": -0.5641438329242874,
+          "width": 9,
+          "valley": 9,
+          "bank": 6.6000000000000005,
+          "segment": 11,
+          "t": 1,
+          "along": 256.5108401182458
+        }
+      ],
+      [
+        220,
+        160,
+        -0.6520497063795361,
+        -0.7527287050546247,
+        {
+          "distance": 85.98199711431586,
+          "x": 192.107954596121,
+          "z": 78.66773315003341,
+          "nx": -0.3243940166543888,
+          "nz": -0.9459220485636394,
+          "width": 6,
+          "valley": 6,
+          "bank": 7.646586813554282,
+          "segment": 7,
+          "t": 0.9028851155532402,
+          "along": 152.423448461917
+        }
+      ],
+      [
+        -180,
+        200,
+        -5.711997219129021,
+        -5.721946640936207,
+        {
+          "distance": 7.308897090959434,
+          "x": -179.7929857075155,
+          "z": 207.30596480753516,
+          "nx": -0.028323602030267608,
+          "nz": -0.9995988063058254,
+          "width": 6.973249904720374,
+          "valley": 6.973249904720374,
+          "bank": 1.6500000000000001,
+          "segment": 21,
+          "t": 0.9732499047203746,
+          "along": 581.6287074454739
+        }
+      ],
+      [
+        -140,
+        200,
+        -5.67532795432721,
+        -5.68532795432721,
+        {
+          "distance": 6.17595300974873,
+          "x": -139.82507476479424,
+          "z": 206.1734752563457,
+          "nx": -0.028323602030267608,
+          "nz": -0.9995988063058254,
+          "width": 6.412611513042422,
+          "valley": 6.412611513042422,
+          "bank": 1.6500000000000001,
+          "segment": 21,
+          "t": 0.41261151304242194,
+          "along": 541.6447551932408
+        }
+      ],
+      [
+        -100,
+        200,
+        -7.73802228814737,
+        -7.747976789498043,
+        {
+          "distance": 1.8456706098326323,
+          "x": -101.32,
+          "z": 198.71,
+          "nx": -0.7903776299367736,
+          "nz": -0.6126199491491673,
+          "width": 6,
+          "valley": 6,
+          "bank": 3.8500000000000005,
+          "segment": 19,
+          "t": 1,
+          "along": 500.9668745939336
+        }
+      ],
+      [
+        -60,
+        200,
+        -3.0016274021689062,
+        -3.0166984074193355,
+        {
+          "distance": 31.255340735318555,
+          "x": -79.30330742559805,
+          "z": 175.41792020772624,
+          "nx": -0.6176002875497466,
+          "nz": -0.7864921390697243,
+          "width": 6.4607230470610535,
+          "valley": 6.4607230470610535,
+          "bank": 7.40339767588358,
+          "segment": 18,
+          "t": 0.5392769529389465,
+          "along": 468.6826596844502
+        }
+      ],
+      [
+        -20,
+        200,
+        -3.7715696930834257,
+        -3.7935959856576194,
+        {
+          "distance": 54.867422176091885,
+          "x": -51.21808543896674,
+          "z": 154.8794375281638,
+          "nx": -0.568973066363045,
+          "nz": -0.8223561574849637,
+          "width": 6.534902161574978,
+          "valley": 7,
+          "bank": 7.358928251821651,
+          "segment": 17,
+          "t": 0.6899347743833187,
+          "along": 433.8732499218408
+        }
+      ],
+      [
+        20,
+        200,
+        0.5577916666666671,
+        0.4464067663817666,
+        {
+          "distance": 76.60713645503395,
+          "x": 10.591307928040585,
+          "z": 123.97283466197598,
+          "nx": -0.12281743591188822,
+          "nz": -0.9924292808235907,
+          "width": 3.8907148559902596,
+          "valley": 8,
+          "bank": 5.5,
+          "segment": 15,
+          "t": 0.7814297119805195,
+          "along": 363.51014713895654
+        }
+      ],
+      [
+        60,
+        200,
+        0.007593616601080155,
+        0.01696977373767966,
+        {
+          "distance": 80.33496930405754,
+          "x": 59.29303775073559,
+          "z": 119.66814145395377,
+          "nx": -0.008800180735597856,
+          "nz": -0.9999612776598006,
+          "width": 3.7441824926782203,
+          "valley": 8,
+          "bank": 5.7686007419460426,
+          "segment": 14,
+          "t": 0.5116350146435596,
+          "along": 314.5506150105143
+        }
+      ],
+      [
+        100,
+        200,
+        1,
+        1.0049632000000008,
+        {
+          "distance": 80.66518711659486,
+          "x": 99.36235046006281,
+          "z": 119.33733319794418,
+          "nx": -0.007904891350658083,
+          "nz": -0.9999687558582688,
+          "width": 6.408335025697907,
+          "valley": 8.802778341899302,
+          "bank": 6.9330561760892335,
+          "segment": 13,
+          "t": 0.1972216581006976,
+          "along": 274.47993293757247
+        }
+      ],
+      [
+        140,
+        200,
+        0.3999999999999999,
+        0.40555200000000036,
+        {
+          "distance": 87.83351638184594,
+          "x": 105.35,
+          "z": 119.29,
+          "nx": -0.43985371103131743,
+          "nz": -0.8980694365648896,
+          "width": 7,
+          "valley": 9,
+          "bank": 7.15,
+          "segment": 12,
+          "t": 1,
+          "along": 268.4920963128191
+        }
+      ],
+      [
+        180,
+        200,
+        0.5,
+        0.4752927999999994,
+        {
+          "distance": 107.11905759480896,
+          "x": 116.11,
+          "z": 114.02,
+          "nx": -0.8256765321683145,
+          "nz": -0.5641438329242874,
+          "width": 9,
+          "valley": 9,
+          "bank": 6.6000000000000005,
+          "segment": 11,
+          "t": 1,
+          "along": 256.5108401182458
+        }
+      ],
+      [
+        220,
+        200,
+        0.6957456625857618,
+        0.6456066274397866,
+        {
+          "distance": 124.35648153594569,
+          "x": 190.76,
+          "z": 79.13,
+          "nx": -0.3243940166543888,
+          "nz": -0.9459220485636394,
+          "width": 6,
+          "valley": 6,
+          "bank": 7.700000000000001,
+          "segment": 7,
+          "t": 1,
+          "along": 153.8484650350774
+        }
+      ],
+      [
+        -180,
+        240,
+        -3.015079565398408,
+        -3.040381123999053,
+        {
+          "distance": 30.310233409244365,
+          "x": -192.7874461415501,
+          "z": 212.51925273032356,
+          "nx": -0.42188543944534707,
+          "nz": -0.9066491471258362,
+          "width": 7,
+          "valley": 7,
+          "bank": 3.2048432885906584,
+          "segment": 22,
+          "t": 0.282698779743756,
+          "along": 595.7655243205187
+        }
+      ],
+      [
+        -140,
+        240,
+        -3.3899388437918634,
+        -3.364281586204659,
+        {
+          "distance": 33.807999242484286,
+          "x": -140.95756431598372,
+          "z": 206.20556431362445,
+          "nx": -0.028323602030267608,
+          "nz": -0.9995988063058254,
+          "width": 6.4284971849626,
+          "valley": 6.4284971849626,
+          "bank": 1.6500000000000001,
+          "segment": 21,
+          "t": 0.4284971849625996,
+          "along": 542.7776992744516
+        }
+      ],
+      [
+        -100,
+        240,
+        -3.0184325393521845,
+        -3.0319465300877733,
+        {
+          "distance": 36.189552359762615,
+          "x": -110.41,
+          "z": 205.34,
+          "nx": -0.5892809551318045,
+          "nz": -0.8079281873526559,
+          "width": 6,
+          "valley": 6,
+          "bank": 1.6500000000000001,
+          "segment": 20,
+          "t": 1,
+          "along": 512.2178745494931
+        }
+      ],
+      [
+        -60,
+        240,
+        -3,
+        -3.0102576283714875,
+        {
+          "distance": 58.41409504563089,
+          "x": -101.32,
+          "z": 198.71,
+          "nx": -0.7903776299367736,
+          "nz": -0.6126199491491673,
+          "width": 6,
+          "valley": 6,
+          "bank": 3.8500000000000005,
+          "segment": 19,
+          "t": 1,
+          "along": 500.9668745939336
+        }
+      ],
+      [
+        -20,
+        240,
+        -2.741889573793907,
+        -2.7047180131377333,
+        {
+          "distance": 87.41903780009739,
+          "x": -73.99002288266232,
+          "z": 171.24561396518433,
+          "nx": -0.6176002875497466,
+          "nz": -0.7864921390697243,
+          "width": 6.702455737822461,
+          "valley": 6.702455737822461,
+          "bank": 7.536350655802354,
+          "segment": 18,
+          "t": 0.297544262177539,
+          "along": 461.92698562365103
+        }
+      ],
+      [
+        20,
+        240,
+        0.9433588671665869,
+        0.9333588671665869,
+        {
+          "distance": 110.5205911300122,
+          "x": -42.8832396314994,
+          "z": 149.11271135535642,
+          "nx": -0.568973066363045,
+          "nz": -0.8223561574849637,
+          "width": 6.296081364799409,
+          "valley": 7,
+          "bank": 7.183793000852901,
+          "segment": 17,
+          "t": 0.5307209098662732,
+          "along": 423.73792627696406
+        }
+      ],
+      [
+        60,
+        240,
+        2.9000000000000004,
+        2.867988597335513,
+        {
+          "distance": 120.33342041044956,
+          "x": 58.941044151855365,
+          "z": 119.67123918119293,
+          "nx": -0.008800180735597856,
+          "nz": -0.9999612776598006,
+          "width": 3.7384459607538356,
+          "valley": 8,
+          "bank": 5.76229055682922,
+          "segment": 14,
+          "t": 0.5231080784923284,
+          "along": 314.90262223993824
+        }
+      ],
+      [
+        100,
+        240,
+        1.0999999999999996,
+        1.13316038872206,
+        {
+          "distance": 120.66393735092564,
+          "x": 99.04616468529832,
+          "z": 119.3398326902348,
+          "nx": -0.007904891350658083,
+          "nz": -0.9999687558582688,
+          "width": 6.377091372065052,
+          "valley": 8.79236379068835,
+          "bank": 6.921600169757186,
+          "segment": 13,
+          "t": 0.20763620931164933,
+          "along": 274.7961285915988
+        }
+      ],
+      [
+        140,
+        240,
+        0.600026163321884,
+        0.6042193775096224,
+        {
+          "distance": 125.58473872250562,
+          "x": 105.35,
+          "z": 119.29,
+          "nx": -0.43985371103131743,
+          "nz": -0.8980694365648896,
+          "width": 7,
+          "valley": 9,
+          "bank": 7.15,
+          "segment": 12,
+          "t": 1,
+          "along": 268.4920963128191
+        }
+      ],
+      [
+        180,
+        240,
+        0.7921912071556354,
+        0.7902008356437199,
+        {
+          "distance": 141.25470788614447,
+          "x": 116.11,
+          "z": 114.02,
+          "nx": -0.8256765321683145,
+          "nz": -0.5641438329242874,
+          "width": 9,
+          "valley": 9,
+          "bank": 6.6000000000000005,
+          "segment": 11,
+          "t": 1,
+          "along": 256.5108401182458
+        }
+      ],
+      [
+        220,
+        240,
+        0.8137360618603489,
+        0.8392505327337123,
+        {
+          "distance": 163.2914342517696,
+          "x": 116.11,
+          "z": 114.02,
+          "nx": -0.43985371103131743,
+          "nz": -0.8980694365648896,
+          "width": 9,
+          "valley": 9,
+          "bank": 6.6000000000000005,
+          "segment": 12,
+          "t": 0,
+          "along": 256.5108401182458
+        }
+      ],
+      [
+        -180,
+        280,
+        -3.942888355390086,
+        -3.7993803428762223,
+        {
+          "distance": 66.57619929427781,
+          "x": -208.0875290958674,
+          "z": 219.6387456909633,
+          "nx": -0.42188543944534707,
+          "nz": -0.9066491471258362,
+          "width": 7,
+          "valley": 7,
+          "bank": 5.35044390686565,
+          "segment": 22,
+          "t": 0.6728079830664817,
+          "along": 612.6409418983326
+        }
+      ],
+      [
+        -140,
+        280,
+        -2.429851362451379,
+        -2.5988248617530143,
+        {
+          "distance": 73.7919514947173,
+          "x": -142.0900538671732,
+          "z": 206.23765337090322,
+          "nx": -0.028323602030267608,
+          "nz": -0.9995988063058254,
+          "width": 6.444382856882777,
+          "valley": 6.444382856882777,
+          "bank": 1.6500000000000001,
+          "segment": 21,
+          "t": 0.4443828568827774,
+          "along": 543.9106433556623
+        }
+      ],
+      [
+        -100,
+        280,
+        -1.3683370764797933,
+        -1.4024821755995194,
+        {
+          "distance": 75.38225056337865,
+          "x": -110.41,
+          "z": 205.34,
+          "nx": -0.5892809551318045,
+          "nz": -0.8079281873526559,
+          "width": 6,
+          "valley": 6,
+          "bank": 1.6500000000000001,
+          "segment": 20,
+          "t": 1,
+          "along": 512.2178745494931
+        }
+      ],
+      [
+        -60,
+        280,
+        1.8376525634480332,
+        1.8369738325555125,
+        {
+          "distance": 90.08486942877809,
+          "x": -110.41,
+          "z": 205.34,
+          "nx": -0.5892809551318045,
+          "nz": -0.8079281873526559,
+          "width": 6,
+          "valley": 6,
+          "bank": 1.6500000000000001,
+          "segment": 20,
+          "t": 1,
+          "along": 512.2178745494931
+        }
+      ],
+      [
+        -20,
+        280,
+        1.9208895475024765,
+        2.292211482291793,
+        {
+          "distance": 114.98263564556171,
+          "x": -101.32,
+          "z": 198.71,
+          "nx": -0.7903776299367736,
+          "nz": -0.6126199491491673,
+          "width": 6,
+          "valley": 6,
+          "bank": 3.8500000000000005,
+          "segment": 19,
+          "t": 1,
+          "along": 500.9668745939336
+        }
+      ],
+      [
+        20,
+        280,
+        1.94,
+        1.92962634288613,
+        {
+          "distance": 143.41483742941077,
+          "x": -61.59917981416944,
+          "z": 162.06192536521905,
+          "nx": -0.568973066363045,
+          "nz": -0.8223561574849637,
+          "width": 6.832354722469038,
+          "valley": 7,
+          "bank": 7.577060129810628,
+          "segment": 17,
+          "t": 0.8882364816460255,
+          "along": 446.49684893148583
+        }
+      ],
+      [
+        60,
+        280,
+        2.427712203882497,
+        2.331010264287283,
+        {
+          "distance": 160.3318715168416,
+          "x": 58.58905055297514,
+          "z": 119.6743369084321,
+          "nx": -0.008800180735597856,
+          "nz": -0.9999612776598006,
+          "width": 3.7327094288294513,
+          "valley": 8,
+          "bank": 5.755980371712398,
+          "segment": 14,
+          "t": 0.5345811423410971,
+          "along": 315.2546294693621
+        }
+      ],
+      [
+        100,
+        280,
+        4.2331135517153005,
+        4.345496779070054,
+        {
+          "distance": 160.66268758525638,
+          "x": 98.72997891053383,
+          "z": 119.34233218252542,
+          "nx": -0.007904891350658083,
+          "nz": -0.9999687558582688,
+          "width": 6.345847718432196,
+          "valley": 8.781949239477399,
+          "bank": 6.910144163425139,
+          "segment": 13,
+          "t": 0.21805076052260106,
+          "along": 275.11232424562513
+        }
+      ],
+      [
+        140,
+        280,
+        3.5999999999999996,
+        3.4954912000000014,
+        {
+          "distance": 164.40293975473793,
+          "x": 105.35,
+          "z": 119.29,
+          "nx": -0.007904891350658083,
+          "nz": -0.9999687558582688,
+          "width": 7,
+          "valley": 9,
+          "bank": 7.15,
+          "segment": 13,
+          "t": 0,
+          "along": 268.4920963128191
+        }
+      ],
+      [
+        180,
+        280,
+        3.5263172889467707,
+        3.733987313840336,
+        {
+          "distance": 177.2013730195113,
+          "x": 105.35,
+          "z": 119.29,
+          "nx": -0.007904891350658083,
+          "nz": -0.9999687558582688,
+          "width": 7,
+          "valley": 9,
+          "bank": 7.15,
+          "segment": 13,
+          "t": 0,
+          "along": 268.4920963128191
+        }
+      ],
+      [
+        220,
+        280,
+        3.9960835384783757,
+        3.986083538478376,
+        {
+          "distance": 195.8123910788079,
+          "x": 116.11,
+          "z": 114.02,
+          "nx": -0.8256765321683145,
+          "nz": -0.5641438329242874,
+          "width": 9,
+          "valley": 9,
+          "bank": 6.6000000000000005,
+          "segment": 11,
+          "t": 1,
+          "along": 256.5108401182458
+        }
+      ],
+      [
+        -180,
+        320,
+        -2.7,
+        -2.7202410666666665,
+        {
+          "distance": 94.54720520287857,
+          "x": -259.22519981709036,
+          "z": 268.40017707765526,
+          "nx": -0.8379433283838439,
+          "nz": -0.5457572522807236,
+          "width": 6,
+          "valley": 6,
+          "bank": 5.5,
+          "segment": 26,
+          "t": 0.23861633782156916,
+          "along": 685.0441903156603
+        }
+      ],
+      [
+        -140,
+        320,
+        -2.2,
+        -2.1638336000000002,
+        {
+          "distance": 113.7759037469503,
+          "x": -143.22254341836265,
+          "z": 206.26974242818198,
+          "nx": -0.028323602030267608,
+          "nz": -0.9995988063058254,
+          "width": 6.460268528802955,
+          "valley": 6.460268528802955,
+          "bank": 1.6500000000000001,
+          "segment": 21,
+          "t": 0.46026852880295505,
+          "along": 545.0435874368729
+        }
+      ],
+      [
+        -100,
+        320,
+        2.044305743035581,
+        2.0343057430355813,
+        {
+          "distance": 115.13159297082622,
+          "x": -110.41,
+          "z": 205.34,
+          "nx": -0.5892809551318045,
+          "nz": -0.8079281873526559,
+          "width": 6,
+          "valley": 6,
+          "bank": 1.6500000000000001,
+          "segment": 20,
+          "t": 1,
+          "along": 512.2178745494931
+        }
+      ],
+      [
+        -60,
+        320,
+        3.855001454871591,
+        3.8341748261025326,
+        {
+          "distance": 125.25208062144118,
+          "x": -110.41,
+          "z": 205.34,
+          "nx": -0.5892809551318045,
+          "nz": -0.8079281873526559,
+          "width": 6,
+          "valley": 6,
+          "bank": 1.6500000000000001,
+          "segment": 20,
+          "t": 1,
+          "along": 512.2178745494931
+        }
+      ],
+      [
+        -20,
+        320,
+        2.8,
+        2.8779392,
+        {
+          "distance": 145.91393711532197,
+          "x": -105.98430423035899,
+          "z": 202.1120172769285,
+          "nx": -0.5892809551318045,
+          "nz": -0.8079281873526559,
+          "width": 6,
+          "valley": 6,
+          "bank": 2.721125488802005,
+          "segment": 20,
+          "t": 0.5131247778172705,
+          "along": 506.74004144635217
+        }
+      ],
+      [
+        20,
+        320,
+        3.3,
+        3.1972086527999988,
+        {
+          "distance": 171.55117749523026,
+          "x": -101.32,
+          "z": 198.71,
+          "nx": -0.7903776299367736,
+          "nz": -0.6126199491491673,
+          "width": 6,
+          "valley": 6,
+          "bank": 3.8500000000000005,
+          "segment": 19,
+          "t": 1,
+          "along": 500.9668745939336
+        }
+      ],
+      [
+        60,
+        320,
+        4.3,
+        4.2020128,
+        {
+          "distance": 199.06800638333107,
+          "x": -53.26433400670211,
+          "z": 156.29519919241167,
+          "nx": -0.568973066363045,
+          "nz": -0.8223561574849637,
+          "width": 6.59353392569347,
+          "valley": 7,
+          "bank": 7.401924878841878,
+          "segment": 17,
+          "t": 0.72902261712898,
+          "along": 436.3615252866091
+        }
+      ],
+      [
+        100,
+        320,
+        4.609101137334928,
+        4.42306692441965,
+        {
+          "distance": 200.66143781958712,
+          "x": 98.41379313576934,
+          "z": 119.34483167481606,
+          "nx": -0.007904891350658083,
+          "nz": -0.9999687558582688,
+          "width": 6.314604064799342,
+          "valley": 8.771534688266447,
+          "bank": 6.898688157093092,
+          "segment": 13,
+          "t": 0.22846531173355275,
+          "along": 275.4285198996514
+        }
+      ],
+      [
+        140,
+        320,
+        3.9000000000000004,
+        4.029184000000001,
+        {
+          "distance": 203.6789792786678,
+          "x": 105.35,
+          "z": 119.29,
+          "nx": -0.007904891350658083,
+          "nz": -0.9999687558582688,
+          "width": 7,
+          "valley": 9,
+          "bank": 7.15,
+          "segment": 13,
+          "t": 0,
+          "along": 268.4920963128191
+        }
+      ],
+      [
+        180,
+        320,
+        4.4,
+        4.284895298377654,
+        {
+          "distance": 214.1427715333861,
+          "x": 105.35,
+          "z": 119.29,
+          "nx": -0.007904891350658083,
+          "nz": -0.9999687558582688,
+          "width": 7,
+          "valley": 9,
+          "bank": 7.15,
+          "segment": 13,
+          "t": 0,
+          "along": 268.4920963128191
+        }
+      ],
+      [
+        220,
+        320,
+        5.800000000000001,
+        5.775342444425091,
+        {
+          "distance": 230.69653768533246,
+          "x": 116.11,
+          "z": 114.02,
+          "nx": -0.8256765321683145,
+          "nz": -0.5641438329242874,
+          "width": 9,
+          "valley": 9,
+          "bank": 6.6000000000000005,
+          "segment": 11,
+          "t": 1,
+          "along": 256.5108401182458
+        }
+      ],
+      [
+        -180,
+        360,
+        1.9000000000000004,
+        1.8819893333333335,
+        {
+          "distance": 117.42354852731314,
+          "x": -270.22034677027284,
+          "z": 284.8429725348455,
+          "nx": -0.7683326547509952,
+          "nz": -0.6400507258360763,
+          "width": 6,
+          "valley": 6,
+          "bank": 5.5,
+          "segment": 27,
+          "t": 0.055641051816254616,
+          "along": 704.8370637293592
+        }
+      ],
+      [
+        -140,
+        360,
+        2.0999999999999996,
+        1.9741216000000015,
+        {
+          "distance": 149.8952284294613,
+          "x": -265.6037066190394,
+          "z": 278.1935920023458,
+          "nx": -0.8379433283838439,
+          "nz": -0.5457572522807236,
+          "width": 6,
+          "valley": 6,
+          "bank": 5.5,
+          "segment": 26,
+          "t": 0.7400712750817107,
+          "along": 696.7316333597852
+        }
+      ],
+      [
+        -100,
+        360,
+        3.744054413705283,
+        3.7095194360435686,
+        {
+          "distance": 155.00994710017807,
+          "x": -110.41,
+          "z": 205.34,
+          "nx": -0.5892809551318045,
+          "nz": -0.8079281873526559,
+          "width": 6,
+          "valley": 6,
+          "bank": 1.6500000000000001,
+          "segment": 20,
+          "t": 1,
+          "along": 512.2178745494931
+        }
+      ],
+      [
+        -60,
+        360,
+        3.10452182346032,
+        3.4205083920578883,
+        {
+          "distance": 162.66801683182837,
+          "x": -110.41,
+          "z": 205.34,
+          "nx": -0.5892809551318045,
+          "nz": -0.8079281873526559,
+          "width": 6,
+          "valley": 6,
+          "bank": 1.6500000000000001,
+          "segment": 20,
+          "t": 1,
+          "along": 512.2178745494931
+        }
+      ],
+      [
+        -20,
+        360,
+        2.9000000000000004,
+        3.0298847999999996,
+        {
+          "distance": 179.14710073009832,
+          "x": -110.41,
+          "z": 205.34,
+          "nx": -0.5892809551318045,
+          "nz": -0.8079281873526559,
+          "width": 6,
+          "valley": 6,
+          "bank": 1.6500000000000001,
+          "segment": 20,
+          "t": 1,
+          "along": 512.2178745494931
+        }
+      ],
+      [
+        20,
+        360,
+        3.4266231843248396,
+        3.4166080231018667,
+        {
+          "distance": 201.8241970131431,
+          "x": -101.32,
+          "z": 198.71,
+          "nx": -0.7903776299367736,
+          "nz": -0.6126199491491673,
+          "width": 6,
+          "valley": 6,
+          "bank": 3.8500000000000005,
+          "segment": 19,
+          "t": 1,
+          "along": 500.9668745939336
+        }
+      ],
+      [
+        60,
+        360,
+        4.182859869376991,
+        4.170101620275654,
+        {
+          "distance": 228.1197196649163,
+          "x": -101.32,
+          "z": 198.71,
+          "nx": -0.7903776299367736,
+          "nz": -0.6126199491491673,
+          "width": 6,
+          "valley": 6,
+          "bank": 3.8500000000000005,
+          "segment": 19,
+          "t": 1,
+          "along": 500.9668745939336
+        }
+      ],
+      [
+        100,
+        360,
+        4.284901368466095,
+        4.274901368466095,
+        {
+          "distance": 240.66018805391792,
+          "x": 98.09760736100483,
+          "z": 119.34733116710669,
+          "nx": -0.007904891350658083,
+          "nz": -0.9999687558582688,
+          "width": 6.283360411166487,
+          "valley": 8.761120137055496,
+          "bank": 6.887232150761046,
+          "segment": 13,
+          "t": 0.23887986294450447,
+          "along": 275.74471555367774
+        }
+      ],
+      [
+        140,
+        360,
+        4.2,
+        4.1856224000000015,
+        {
+          "distance": 243.19113182844472,
+          "x": 105.35,
+          "z": 119.29,
+          "nx": -0.007904891350658083,
+          "nz": -0.9999687558582688,
+          "width": 7,
+          "valley": 9,
+          "bank": 7.15,
+          "segment": 13,
+          "t": 0,
+          "along": 268.4920963128191
+        }
+      ],
+      [
+        180,
+        360,
+        4.5,
+        4.4261568,
+        {
+          "distance": 252.01969486530209,
+          "x": 105.35,
+          "z": 119.29,
+          "nx": -0.007904891350658083,
+          "nz": -0.9999687558582688,
+          "width": 7,
+          "valley": 9,
+          "bank": 7.15,
+          "segment": 13,
+          "t": 0,
+          "along": 268.4920963128191
+        }
+      ],
+      [
+        220,
+        360,
+        4.669677048913251,
+        4.761528144740345,
+        {
+          "distance": 266.61944152668235,
+          "x": 105.35,
+          "z": 119.29,
+          "nx": -0.007904891350658083,
+          "nz": -0.9999687558582688,
+          "width": 7,
+          "valley": 9,
+          "bank": 7.15,
+          "segment": 13,
+          "t": 0,
+          "along": 268.4920963128191
+        }
+      ]
+    ],
+    "cache": null
+  }
+}

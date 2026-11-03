@@ -1,0 +1,13 @@
+{
+  "times": {
+    "constructed": 28175.599999999627,
+    "viewReady": 33434.699999999255,
+    "entryRequested": 41378,
+    "entryFrame": 38
+  },
+  "overlay": false,
+  "touch": false,
+  "lock": false,
+  "frame": 63,
+  "warm": "uploading"
+}

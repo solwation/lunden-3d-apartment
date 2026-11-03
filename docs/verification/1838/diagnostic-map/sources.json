@@ -1,0 +1,13 @@
+{
+  "baseline": "8647ab37047404aa9abe622248f831381153afa2",
+  "profile": "same tooling; warm=required; no test/lazy/shot; desktop1000x700 touch-capable full rendering, phone844x390 Android lowmem, DPR1 quality3; cold/fresh context then about:blank + same context/document reload with native initial Touch entry and normal warm resume",
+  "sources": {
+    "src/startupcache.js": "674afd32744dc108a641dcd108d4d127af04892e3c2fc61077a1a181e6e31d13",
+    "src/riverbridge.js": "7c5959f5835a760f6d86cce2d4711103d73fdf491cf9f85a94e5adf4823f4faa",
+    "src/surroundings.js": "fc2f9e35c828e67abf2815534d51be3056ac8f2f7540fb853a08b03ba2010e90",
+    "src/main.js": "bbac1c0d7c3139215dc02b7917c848c36b7ceeb2178f07029a2545d7f73592a9",
+    "src/config.js": "d3b482e8b2bd2213eba8476820e8ceaf35bd596768f7cf403af3a769cd257b9d",
+    "tools/startupprofile.cjs": "717d65f02c0eeb5832c93a385b50848618711928e096dcd3e8ef050fbb7ef9c3",
+    "tools/startupserve.py": "2c92f842081fe8b535fe322e91254a6d8209c3cecf21a2712d91963ce38e288e"
+  }
+}

@@ -1,0 +1,6 @@
+HTTP/1.0 200 OK
+Server: SimpleHTTP/0.6 Python/3.12.3
+Date: Tue, 03 Nov 2026 12:36:00 GMT
+Content-Type: text/javascript
+Content-Length: 16557
+Cache-Control: public, max-age=600

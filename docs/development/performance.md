@@ -2,6 +2,23 @@
 
 Raw callback interval diagnostics (#1507): [capture protocol, state classification, statistics and measurement limits](frame-intervals.md).
 
+## Exact terrain reuse during construction (#1838)
+
+`src/startupcache.js` keeps bounded, exact `(x,z)` results while the world is built: the river record,
+the authored plateau height and the emitted triangle-surface height. `STARTUP.pointCacheEntries` is a
+32,768-entry limit per table (*guess*); hash collisions/eviction change cost only, never the sampled value. Original Float64 coordinates must match before a hit; non-number scalar fallback values bypass the table.
+River records have an owned copy in the table and copies on hits. The existing single-last-point river
+fast path remains. The drawn-surface table is cleared when `terrainGeometry` installs its final sampler.
+
+`main.js` calls `finishStartupCaches()` before graphics preparation/warm-up. All tables are cleared and
+disabled; normal play computes through the original samplers. Only numeric diagnostics remain in
+`__lundenLoading.buildCache`. There is no new local/session storage, IndexedDB, Cache Storage, service
+worker or generated-image cache. Each document builds from its current source/config/profile, so
+new versions cannot read old build results. Personal images, names and gameplay state are not inputs.
+`?buildcache=off` is a temporary developer comparison, not a saved setting.
+
+[Scoped measurements, native startup protocol, exact-output checks and limitations](../verification/1838/README.md).
+
 ## Startup resource profile: light wall pictures (#1511, part of #1506)
 
 `src/resourceprofile.js` chooses `light` or `full` once in `main.js`, right after the renderer's texture cap is set

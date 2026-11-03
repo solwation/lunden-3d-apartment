@@ -6172,7 +6172,8 @@ export const TOWER_CLOCK = {
 // Startup recovery (#864): generous wall-clock allowance for sliced phone warm-up;
 // optional JSON requests get a shorter budget. Safeguards, not measured device limits.
 // stepYield (#1130, *guess*): longest wait for a frame after a loading step, so a throttled tab is not held up.
-export const STARTUP = { dataTimeout: 5000, planTimeout: 15000, dataAttempts: 2, retryDelay: 250, recoveryTimeout: 120000, stepYield: 50,
+// #1838 guess: at most 32k exact points per transient build cache; released before warm-up, no saved state.
+export const STARTUP = { pointCacheEntries: 32768, dataTimeout: 5000, planTimeout: 15000, dataAttempts: 2, retryDelay: 250, recoveryTimeout: 120000, stepYield: 50,
   // #1131: one step lasting this long shows "Det här tar ovanligt lång tid" + retry (literal in index.html). *guess*: well
   // above a normal phone "Bygger huset", below the 120 s hard limit; SwiftShader/headless can exceed it harmlessly.
   stallSeconds: 40,

@@ -1,3 +1,4 @@
+import { createStartupPointCache } from './startupcache.js';
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {SITE, COLORS, ELEVATION} from './config.js';
@@ -22,8 +23,13 @@ export function roadBridgeSpan(x,z){const r=bridgeRecords[0];return Math.abs(loc
 /** Nearest sourced river segment, with interpolated visual width/bank estimates. */
 // #1358: riverAt runs several times per groundY/water query (thousands per walking frame), so the scan allocates nothing, only builds
 // the result for the winning segment, and the last answer is reused (the same point is asked repeatedly within a step). Same values as before.
+const riverBuildCache = createStartupPointCache('river', { clone: r => ({ ...r }) });
 let lastX=NaN,lastZ=NaN,lastR=null;
 export function riverAt(x,z){
+ if(x===lastX&&z===lastZ)return lastR;
+ const result=riverBuildCache.read(x,z,rawRiverAt);
+ lastX=x;lastZ=z;lastR=result;return result; }
+function rawRiverAt(x,z){
  if(x===lastX&&z===lastZ)return lastR;
  const P=riverPath;let bi=-1,bd=Infinity;
  // The short eastern join has negative chainage, so every historical station keeps its exact along value.

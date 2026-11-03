@@ -14,6 +14,8 @@ Chatten visar de senaste meddelandena även när utrymmet är trångt. Varje rad
 
 På telefonen ligger laddningsskärmen kvar medan grafiken förbereds i små steg, tills hela den första 3D-bilden är klar. Tillfälliga nätfel när planritningen hämtas får ett automatiskt återförsök. Om starten ändå misslyckas eller fastnar visas ”Försök igen”, utan att din sparade plats eller ditt hem raderas. Grafiken arbetar mindre när du läser en lapp eller pausar, och vilar bakom uppmaningen att vrida telefonen.
 
+Världsbygget återanvänder upprepade markberäkningar under starten och släpper den tillfälliga cachen före spel. [Före-/eftermätning och begränsningar](docs/verification/1838/README.md).
+
 Telefoner behåller mindre bildminne för färdigritade statiska ytor, inklusive färdig väggtext, och avstängda speglar. [Mätningen](docs/validation/issue-1359/README.md) visar en minskning i telefonprofil. Användaren bekräftade den 20 oktober 2026 att senaste testet på fysisk iPhone gick utan krasch; #1359 är stängd.
 
 I rutan uppe till vänster visas antalet besökare över bildfrekvensen (FPS). FPS räknar visade 3D-bilder, uppdateras lugnt och visar ett streck när spelet är pausat eller dolt. Träfftexten håller sig fri från livsrutan även på små skärmar.
