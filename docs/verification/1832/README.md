@@ -34,3 +34,6 @@ The before comparison uses the same final scene and changes only `PLAYER.runOutd
 ## Public follow-up
 
 Read-only review of public AGENTS.md, docs/upstream.md and Navigation found this improvement applicable to neutral navigation. Its controller uses BODY.run3.2 with Shift and a separate core/garage classification; it needs an adapted low-priority port after the source commit. Public full-stick sprint differs from the original, so that is not silently imported here. The conductor owns the separate public issue, final main/image publication and changelog numbering.
+
+
+Levererat i `04dcf10f34f5a2b133c419ad0c0ef4bb06c5f712`. [Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/41611942936) och [Worker](https://github.com/solwation/lunden-3d-apartment/actions/runs/41611942933) lyckades; Worker-loggen bekräftar faktisk Wrangler-deploy och den publika sidans version.json visar `04dcf10`. Dirigentens kombinerade diff-/bildgranskning är klar. Verifieringslänkarna ovan är permanenta; eventuella resultatbilder är granskade och bytekontrollerade. Ingen rutinmässig omkörning av gröna kontroller efter orelaterad integration. Ärendet stängs genom efterföljande verifieringscommit och aktiva etiketter tas bort.
