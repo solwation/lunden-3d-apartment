@@ -1,0 +1,9 @@
+{
+  "workerCommit": "3412dd0d8567b7553896b09fb0a7ec2c2ce6d42e",
+  "byteIdenticalRuntime": {
+    "src/outdoorcatroute.js": "62f504d2f7275791a67507e176321df306708e04a78f75b90e64c12041a6f23d",
+    "src/outdoorcatbrain.js": "62615ddc4cf228f7edc27c3ce68a065852ec7143127a70dc06caa2475c820ee0",
+    "src/outdoorcats.js": "16a3b793108c2e6f394aededb872a6bad2e82b6591a84209117d8cf8565f94a1"
+  },
+  "retainedDuckRenderedTerrainCallback": true
+}

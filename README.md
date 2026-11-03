@@ -228,6 +228,8 @@ Uteplatsens stora solfjäderspalm har en öppen rundad kruka med jord, fiberrik 
 
 Vägbron och den separata gång- och cykelbron vid Sankt Lars väg syns över en nedsänkt Höje å, även bortom gångområdets gräns. Vattnet, stranden och dalbotten följer nu ett svagt fall nedströms; ån fortsätter i båda riktningarna bort i dimman. Vattenstånd och djup är fortfarande uppskattningar. [Kartjämförelse, vyer och antaganden](docs/validation/issue-532/README.md).
 
+Utekatterna patrullerar större, slutna rundor på gården och i parken. De väljer riktning per varv och behåller sina personligheter; du kan fortfarande mata och klappa dem.
+
 Vid ån finns fyra ankor, bruna honor och grönhövdade hanar, som följer varandra i par mellan strandplatser och ibland samlas i en lös flock. Håll fram en brödskiva och använd E eller touch för att mata dem; varje tugga förbrukar en fjärdedel av skivan. Kvackandet följer ljudinställningen. Brödet hämtas i kökets skafferi, och lyckad matning ger poäng samt framsteg mot medaljen Ankmamma; matningspoängen har ett dagstak.
 
 

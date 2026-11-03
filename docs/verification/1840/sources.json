@@ -1,0 +1,17 @@
+{
+  "base": "47ac6269d7b86a1380509da1bafdf0ba14126c40",
+  "sha256": {
+    "src/config.js": "89908d0b37d373b98aa61e7470a7da349bd370ff10a54c2d538f213aa919b351",
+    "src/main.js": "ead3f0dbfec62bbb4697385b031e7c869e3d0a5c597d780ac791c49a02a1d7a0",
+    "src/outdoorcatroute.js": "62f504d2f7275791a67507e176321df306708e04a78f75b90e64c12041a6f23d",
+    "src/outdoorcatbrain.js": "62615ddc4cf228f7edc27c3ce68a065852ec7143127a70dc06caa2475c820ee0",
+    "src/outdoorcats.js": "16a3b793108c2e6f394aededb872a6bad2e82b6591a84209117d8cf8565f94a1",
+    "tools/catrangebrowser.cjs": "0989e68d8ac5d8bb34977eef2e5cd5c313e22b22bb8b20734d42c406f6ac255c",
+    "tools/catrangeverify.js": "1328572aa5c0f591a41939c7d2dead75ec0280718574b4cf69d8e0092fe2e997",
+    "tools/catrangeactions.js": "cfc641c69110a1d0d089ef5e1b10f759cae37754b7d80d6627c461779df3f186",
+    "tools/catrangesite.mjs": "3fa993471a8e681c5797934189784e2cbedb03d018527e9dce02e76d0a9efca9",
+    "src/outdoorcatroute.test.mjs": "09b4acf093e2f43c81bc839108941584c2b35b380c88e44ff20e46e4de82c1aa"
+  },
+  "composedDataSHA256": "a57387bc527932691f6d3a561a02f214071c40cbe2a1fd2f3fdbfb350bce77db",
+  "composition": "Final route/brain modules at bootstrap; exact final config route/rest/vary subset and main park-ground/walkability callback composed into the same built app. Existing model/render/interaction module unchanged."
+}

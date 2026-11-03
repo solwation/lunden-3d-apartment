@@ -1,3 +1,4 @@
+import { OUTDOOR } from './config.js';
 import { DanceTime } from './dancescore.js';
 import { stepSurface } from './stepsurface.js';
 import { OutdoorGym } from './outdoorgym.js';
@@ -1147,8 +1148,9 @@ const ducks = new Ducks({scene,camera,life,ground:renderedTerrainY,say:t=>badge(
 ducks.onFeed = () => bump('duckFeeds'); // #1827: successful finite bread consumption only
 // #1772: each has a brain (outdoorcatbrain.js): outings round its rest stops (trees from treeFeet/aoTrees like the squirrels', no wall
 // in the way while the visitor is out on the street level), butterflies by the game's day, squirrels on the ground to stalk
-const outdoorCats = params0.has('nooutdoorcats') ? null : new OutdoorCats({ scene, camera, cat, ground: parkGround, lowMemory,
-  walkable: (x, z) => parkGround(x, z) > waterYAt(x, z) + 0.3 && !onRoad(x, z, 0.8), feet: treeFeet, crowns: aoTrees,
+const outdoorCatGround = (x,z) => z > OUTDOOR.z1 ? renderedTerrainY(x,z) : parkGround(x,z); // #1840: park triangles; preserve the garage courtyard deck
+const outdoorCats = params0.has('nooutdoorcats') ? null : new OutdoorCats({ scene, camera, cat, ground: outdoorCatGround, lowMemory,
+  walkable: (x, z) => outdoorCatGround(x, z) > waterYAt(x, z) + 0.3 && !onRoad(x, z, 0.8), feet: treeFeet, crowns: aoTrees,
   free: (x, z) => player.below || player.inCore || player.inPlayroom || player.unit || player.isFree(x, z, 0, 0.12 - PLAYER.radius),
   hour: () => day.hour, month: () => day.month,
   food: () => fishing.feedable, onFed: (f) => fishing.eatenByCat(f), // #1782: a raw caught fish nearby, eaten as the ordinary cat's (#1766)

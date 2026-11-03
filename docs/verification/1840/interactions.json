@@ -1,0 +1,78 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "unchanged full puppet / single merged mesh / no body beyond drawDist",
+      "data": {
+        "near": {
+          "calls": 24,
+          "triangles": 10008
+        },
+        "far": {
+          "calls": 1,
+          "triangles": 10008
+        },
+        "none": {
+          "calls": 0,
+          "triangles": 0
+        }
+      }
+    },
+    {
+      "ok": true,
+      "label": "interaction is at a genuinely expanded base position",
+      "data": {
+        "location": {
+          "x": -28,
+          "z": 110
+        },
+        "oldBounds": {
+          "x0": -85,
+          "x1": -52,
+          "z0": 92,
+          "z1": 115
+        }
+      }
+    },
+    {
+      "ok": true,
+      "label": "real raw caught-fish instance is eaten and counted once from new base",
+      "data": {
+        "before": 0,
+        "after": 1,
+        "fishPresent": false,
+        "owner": null,
+        "st": "notice",
+        "location": {
+          "x": -28,
+          "z": 110
+        }
+      }
+    },
+    {
+      "ok": true,
+      "label": "approach at enlarged route promotes ordinary cat and real pet action still purrs",
+      "data": {
+        "st": "bound",
+        "name": "Sotis",
+        "outdoorCat": "Sotis",
+        "visible": true,
+        "petting": true,
+        "options": [
+          "pet",
+          "take"
+        ],
+        "counterBefore": 0,
+        "counterAfter": 1,
+        "position": [
+          -46,
+          0,
+          23
+        ],
+        "dy": 0
+      }
+    }
+  ],
+  "composition": "Exact new route/rest/vary JSON and final main park-ground callback composed onto the already-built same-base app; route/brain modules loaded from final source before bootstrap.",
+  "limits": "Real production modules and fish/pet lifecycle with controlled wall clock/spawn and one fixture-created raw caught fish. No native fishing achievement, continuous walking route or physical-device performance claim."
+}

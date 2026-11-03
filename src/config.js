@@ -8200,19 +8200,21 @@ export const OUTDOOR_CATS = {
       stalk: { energy: -0.12, hunger: -0.45, play: -0.2 }, butterfly: { energy: -0.22, play: -0.6 }, climb: { energy: -0.2, play: -0.55 },
     },
   },
+  // #1840: guessed larger patrol loops; offline-prevalidated against the actual site. No runtime pathfinder.
+  // Zero rests mark navigation bends; other stops retain personality-specific rests. Each lap hashes its direction.
   cats: [
-    { name: 'Sotis', breed: 'huskatt', coat: 'svart', zone: 'innergården', phase: 0, rest: [50, 25, 80, 30, 70, 20], kind: 'social',
+    { name: 'Sotis', breed: 'huskatt', coat: 'svart', zone: 'innergården', phase: 0, rest: [0,50,0,0,0,25,0,0,0,0,80,0,0,0,30,0,0,0,70,0,20,50,0,25], vary: true, kind: 'social',
       traits: { social: 0.95, play: 0.35, lazy: 0.3, shy: 0, curious: 0.45 },
-      route: [[-10, 21], [-4, 20.6], [2, 21.4], [7, 23.4], [1, 24.2], [-6, 24]] },
-    { name: 'Kanel', breed: 'maine coon', coat: 'rödrandig', zone: 'innergården', phase: 140, rest: [70, 30, 50, 90, 25], kind: 'lazy',
+      route: [[-16,18],[4,19],[5,18],[12,27],[13,31],[14,30],[14,22],[14,30],[13,31],[12,26],[6,26],[5,27],[-6,26],[-12,26],[-14,27],[-15,26],[-15,28],[-16,29],[-35,27],[-36,27],[-45,24],[-46,23],[-36,18],[-17,19]] },
+    { name: 'Kanel', breed: 'maine coon', coat: 'rödrandig', zone: 'innergården', phase: 140, rest: [0,70,0,0,30,50,90,25,70,30], vary: true, kind: 'lazy',
       traits: { social: 0.45, play: 0.2, lazy: 0.95, shy: 0.1, curious: 0.25 },
-      route: [[-43, 20.6], [-39.5, 21.2], [-39.5, 28.4], [-43, 28.6], [-44, 24.5]] },
-    { name: 'Findus', breed: 'norsk skogkatt', coat: 'grå', zone: 'parken vid Höje å', phase: 60, rest: [75, 35, 90, 30, 60, 45], kind: 'playful',
+      route: [[-40,21],[-29,20],[-28,20],[-23,20],[-20,22],[-18,22],[-19,30],[-34,31],[-48,28],[-48,24]] },
+    { name: 'Findus', breed: 'norsk skogkatt', coat: 'grå', zone: 'parken vid Höje å', phase: 60, rest: [75,35,0,90,0,30,60,45,75,0,35], vary: true, kind: 'playful',
       traits: { social: 0.3, play: 0.95, lazy: 0.15, shy: 0.2, curious: 0.6 },
-      route: [[-80, 95], [-62, 92], [-52, 100], [-58, 112], [-75, 115], [-85, 106]] },
-    { name: 'Smulan', breed: 'huskatt', coat: 'röd och vit', zone: 'parken vid Höje å', phase: 300, rest: [45, 80, 35, 70], kind: 'shy',
+      route: [[-80,95],[-45,95],[-28,110],[-31,116],[-40,142],[-73,162],[-75,163],[-115,151],[-138,125],[-124,99],[-111,109]] },
+    { name: 'Smulan', breed: 'huskatt', coat: 'röd och vit', zone: 'parken vid Höje å', phase: 300, rest: [45,80,0,35,0,70,45,80,35,70], vary: true, kind: 'shy',
       traits: { social: 0.1, play: 0.4, lazy: 0.35, shy: 0.9, curious: 0.85 },
-      route: [[-70, 100], [-56, 98], [-60, 106], [-72, 108]] },
+      route: [[-70,96],[-49,96],[-38,110],[-50,127],[-53,133],[-56,133],[-82,136],[-101,121],[-98,104],[-87,96]] },
   ],
 };
 

@@ -1,0 +1,8 @@
+page.evaluate: Error: park route positions match actual rendered terrain within15cm: {"maxContact":0.19403645350449583}
+    at check (eval at evaluate (:370:30), <anonymous>:2:129)
+    at eval (eval at evaluate (:370:30), <anonymous>:6:2)
+    at eval (eval at evaluate (:370:30), <anonymous>:32:3)
+    at eval (<anonymous>)
+    at UtilityScript.evaluate (<anonymous>:370:30)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+    at /home/devcontainers/orkester-olw-win10-gpt6-20261103/cat-ranges/tools/catrangebrowser.cjs:47:149

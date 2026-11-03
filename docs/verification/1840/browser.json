@@ -1,0 +1,138 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "every actual route segment is clear of sampled walls/solid buildings/roads/water and drops",
+      "data": {
+        "samples": 2759,
+        "bad": []
+      }
+    },
+    {
+      "ok": true,
+      "label": "park route positions match actual rendered terrain within15cm",
+      "data": {
+        "maxContact": 0
+      }
+    },
+    {
+      "ok": true,
+      "label": "unchanged desktop/phone/puppet distance gates"
+    },
+    {
+      "ok": true,
+      "label": "two wall-clock rest positions exceed60m separation",
+      "data": {
+        "times": [
+          1793750350,
+          1793750906
+        ],
+        "dist": 111.0180165558726,
+        "positions": [
+          {
+            "x": -138,
+            "z": 125,
+            "yaw": -2.417342652841646,
+            "walking": false,
+            "activity": "wash",
+            "direction": 1,
+            "lap": 228,
+            "leg": 7,
+            "restLeft": 43.12783567368368
+          },
+          {
+            "x": -28,
+            "z": 110,
+            "yaw": 0.8478169733934057,
+            "walking": false,
+            "activity": "wash",
+            "direction": 1,
+            "lap": 229,
+            "leg": 1,
+            "restLeft": 34.787684217083864
+          }
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "label": "unchanged full puppet / single merged mesh / no body beyond drawDist",
+      "data": {
+        "near": {
+          "calls": 24,
+          "triangles": 10008
+        },
+        "far": {
+          "calls": 1,
+          "triangles": 10008
+        },
+        "none": {
+          "calls": 0,
+          "triangles": 0
+        }
+      }
+    },
+    {
+      "ok": true,
+      "label": "interaction is at a genuinely expanded base position",
+      "data": {
+        "location": {
+          "x": -28,
+          "z": 110
+        },
+        "oldBounds": {
+          "x0": -85,
+          "x1": -52,
+          "z0": 92,
+          "z1": 115
+        }
+      }
+    },
+    {
+      "ok": true,
+      "label": "real raw caught-fish instance is eaten and counted once from new base",
+      "data": {
+        "before": 0,
+        "after": 1,
+        "fishPresent": false,
+        "owner": null,
+        "st": "notice",
+        "location": {
+          "x": -28,
+          "z": 110
+        }
+      }
+    },
+    {
+      "ok": true,
+      "label": "approach at enlarged route promotes ordinary cat and real pet action still purrs",
+      "data": {
+        "st": "bound",
+        "name": "Sotis",
+        "outdoorCat": "Sotis",
+        "visible": true,
+        "petting": true,
+        "options": [
+          "pet",
+          "take"
+        ],
+        "counterBefore": 0,
+        "counterAfter": 1,
+        "position": [
+          -46,
+          0,
+          23
+        ],
+        "dy": 0
+      }
+    }
+  ],
+  "errors": [],
+  "ok": true,
+  "composition": "Exact new route/rest/vary JSON and final main park-ground callback composed onto the already-built same-base app; route/brain modules loaded from final source before bootstrap.",
+  "limits": "Real production modules and fish/pet lifecycle with controlled wall clock/spawn and one fixture-created raw caught fish. No native fishing achievement, continuous walking route or physical-device performance claim.",
+  "times": [
+    1793750350,
+    1793750906
+  ]
+}

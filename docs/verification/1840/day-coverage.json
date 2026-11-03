@@ -1,0 +1,78 @@
+[
+  {
+    "name": "Sotis",
+    "before": {
+      "hullArea": 38.70000000000001,
+      "boxArea": 61.19999999999996,
+      "width": 17,
+      "depth": 3.599999999999998
+    },
+    "after": {
+      "hullArea": 590.469296579768,
+      "boxArea": 779.8970423339414,
+      "width": 60,
+      "depth": 12.998284038899023
+    },
+    "hullRatio": 15.257604562784698,
+    "boxRatio": 12.743415724410815,
+    "minutes": 11.985811306006417,
+    "legs": 24
+  },
+  {
+    "name": "Kanel",
+    "before": {
+      "hullArea": 30.599999999999625,
+      "boxArea": 36,
+      "width": 4.5,
+      "depth": 8
+    },
+    "after": {
+      "hullArea": 265.9974927990752,
+      "boxArea": 330,
+      "width": 30,
+      "depth": 11
+    },
+    "hullRatio": 8.692728522845702,
+    "boxRatio": 9.166666666666666,
+    "minutes": 8.964614731266531,
+    "legs": 10
+  },
+  {
+    "name": "Findus",
+    "before": {
+      "hullArea": 525.0000000000018,
+      "boxArea": 759,
+      "width": 33,
+      "depth": 23
+    },
+    "after": {
+      "hullArea": 5403.4999996007955,
+      "boxArea": 7480,
+      "width": 110,
+      "depth": 68
+    },
+    "hullRatio": 10.292380951620528,
+    "boxRatio": 9.855072463768115,
+    "minutes": 18.890354761778898,
+    "legs": 11
+  },
+  {
+    "name": "Smulan",
+    "before": {
+      "hullArea": 98.00000000000136,
+      "boxArea": 160,
+      "width": 16,
+      "depth": 10
+    },
+    "after": {
+      "hullArea": 1946.0000000000018,
+      "boxArea": 2520,
+      "width": 63,
+      "depth": 40
+    },
+    "hullRatio": 19.8571428571426,
+    "boxRatio": 15.75,
+    "minutes": 14.316088822807215,
+    "legs": 10
+  }
+]

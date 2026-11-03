@@ -9014,3 +9014,7 @@ steps earn six points; stopped music earns none. [Evidence and limits](../verifi
 ## River duck pairs (#1839)
 
 `node --test tools/duckrangetest.mjs tools/duckrewardtest.mjs` covers seed-selected stable pairs, female leadership, group formation/dissolution, river bounds, distance gating, identical male/female topology and unchanged feeding limits/rewards. `node tools/ducktest.mjs` preserves the existing finite-food/autonomous behavior contracts. `tools/browsertest.sh node tools/duckrangebrowser.cjs GAME docs/verification/1839` checks actual rendered-terrain rays, two river locations, a naturally simulated group, native pantry-to-duck feeding and component draw/triangle deltas in one actual app route. [Evidence](../verification/1839/README.md).
+
+## Larger outdoor-cat patrols (#1840)
+
+`node --test src/outdoorcatroute.test.mjs tools/outdoorcatbraintest.mjs` checks source-baseline24 h coverage, deterministic closed direction variants, captured local solids/walls/roads/water/height, O(1) lookup and brain/outing contracts. The held actual-app fixture `tools/catrangebrowser.cjs` uses `catrangeverify.js` and `catrangeactions.js` for final source composition, all route samples, two wall-clock positions, existing fish/promotion/pet lifecycle and body draw delta; no whole-scene/phone performance sweep. [Exact staged reproduction, source hashes and inspected images](../verification/1840/README.md).

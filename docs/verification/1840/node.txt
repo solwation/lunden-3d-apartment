@@ -1,0 +1,137 @@
+TAP version 13
+# DAY_COVERAGE [{"name":"Sotis","before":{"hullArea":38.70000000000001,"boxArea":61.19999999999996,"width":17,"depth":3.599999999999998},"after":{"hullArea":590.469296579768,"boxArea":779.8970423339414,"width":60,"depth":12.998284038899023},"hullRatio":15.257604562784698,"boxRatio":12.743415724410815,"minutes":11.985811306006417,"legs":24},{"name":"Kanel","before":{"hullArea":30.599999999999625,"boxArea":36,"width":4.5,"depth":8},"after":{"hullArea":265.9974927990752,"boxArea":330,"width":30,"depth":11},"hullRatio":8.692728522845702,"boxRatio":9.166666666666666,"minutes":8.964614731266531,"legs":10},{"name":"Findus","before":{"hullArea":525.0000000000018,"boxArea":759,"width":33,"depth":23},"after":{"hullArea":5403.4999996007955,"boxArea":7480,"width":110,"depth":68},"hullRatio":10.292380951620528,"boxRatio":9.855072463768115,"minutes":18.890354761778898,"legs":11},{"name":"Smulan","before":{"hullArea":98.00000000000136,"boxArea":160,"width":16,"depth":10},"after":{"hullArea":1946.0000000000018,"boxArea":2520,"width":63,"depth":40},"hullRatio":19.8571428571426,"boxRatio":15.75,"minutes":14.316088822807215,"legs":10}]
+# Subtest: a lap is the walking time plus the rests
+ok 1 - a lap is the walking time plus the rests
+  ---
+  duration_ms: 1.887781
+  type: 'test'
+  ...
+# Subtest: the same clock gives the same place and activity (every client agrees)
+ok 2 - the same clock gives the same place and activity (every client agrees)
+  ---
+  duration_ms: 2.269877
+  type: 'test'
+  ...
+# Subtest: walking along a leg, resting at its end
+ok 3 - walking along a leg, resting at its end
+  ---
+  duration_ms: 0.469396
+  type: 'test'
+  ...
+# Subtest: it never leaves the loop
+ok 4 - it never leaves the loop
+  ---
+  duration_ms: 10.077201
+  type: 'test'
+  ...
+# Subtest: all four cats cover at least4x original hull and box area over24h; constant lookup and minutes per lap
+ok 5 - all four cats cover at least4x original hull and box area over24h; constant lookup and minutes per lap
+  ---
+  duration_ms: 621.90198
+  type: 'test'
+  ...
+# Subtest: every0.25m route sample is dry/off-road, outside captured actual closed buildings/solids/walls, with no drops
+ok 6 - every0.25m route sample is dry/off-road, outside captured actual closed buildings/solids/walls, with no drops
+  ---
+  duration_ms: 301.403335
+  type: 'test'
+  ...
+# Subtest: brain stop/outing anchors follow the selected direction and caches stay bounded across laps
+ok 7 - brain stop/outing anchors follow the selected direction and caches stay bounded across laps
+  ---
+  duration_ms: 5.191249
+  type: 'test'
+  ...
+# social {"rest":0.34,"sleep":0.11,"seek":0.32,"explore":0.03,"stalk":0.09,"butterfly":0.05,"climb":0.05}
+# lazy {"rest":0.4,"sleep":0.22,"seek":0.18,"explore":0.05,"stalk":0.11,"butterfly":0.04,"climb":0}
+# playful {"rest":0.42,"sleep":0.11,"seek":0.09,"explore":0,"stalk":0.09,"butterfly":0.1,"climb":0.2}
+# shy {"rest":0.43,"sleep":0.12,"seek":0,"explore":0.25,"stalk":0.13,"butterfly":0.04,"climb":0.02}
+# social {
+#   nearShare: 0.215,
+#   top: 0,
+#   climbs: 0,
+#   chase: 907,
+#   states: 'route,seek,notice,home',
+#   bad: 0
+# }
+# lazy {
+#   nearShare: 0,
+#   top: 0,
+#   climbs: 0,
+#   chase: 2702,
+#   states: 'route,notice,home',
+#   bad: 0
+# }
+# playful {
+#   nearShare: 0,
+#   top: 2.6,
+#   climbs: 15,
+#   chase: 5403,
+#   states: 'route,notice,home',
+#   bad: 0
+# }
+# shy {
+#   nearShare: 0,
+#   top: 0,
+#   climbs: 0,
+#   chase: 2830,
+#   states: 'route,notice,home',
+#   bad: 0
+# }
+# Subtest: every cat has a personality with all five traits, and they differ
+ok 8 - every cat has a personality with all five traits, and they differ
+  ---
+  duration_ms: 1.880281
+  type: 'test'
+  ...
+# Subtest: the utility AI: needs steer the choice, spending a behaviour lowers its need
+ok 9 - the utility AI: needs steer the choice, spending a behaviour lowers its need
+  ---
+  duration_ms: 0.808292
+  type: 'test'
+  ...
+# Subtest: fixed seed: the same clock gives the same choice and the same pose on every client
+ok 10 - fixed seed: the same clock gives the same choice and the same pose on every client
+  ---
+  duration_ms: 56.536844
+  type: 'test'
+  ...
+# Subtest: each personality has a noticeably different mix of behaviours
+ok 11 - each personality has a noticeably different mix of behaviours
+  ---
+  duration_ms: 57.740531
+  type: 'test'
+  ...
+# Subtest: no butterflies at night or in winter months; no climbing without a tree
+ok 12 - no butterflies at night or in winter months; no climbing without a tree
+  ---
+  duration_ms: 9.13111
+  type: 'test'
+  ...
+# Subtest: in three hours: the social cat comes up to the visitor, the playful one climbs and chases, none goes into the water or onto the road
+ok 13 - in three hours: the social cat comes up to the visitor, the playful one climbs and chases, none goes into the water or onto the road
+  ---
+  duration_ms: 348.924966
+  type: 'test'
+  ...
+# Subtest: a shy cat keeps away from a moving visitor, and calms when the visitor stands still
+ok 14 - a shy cat keeps away from a moving visitor, and calms when the visitor stands still
+  ---
+  duration_ms: 0.839691
+  type: 'test'
+  ...
+# Subtest: \#1782 food: a social cat comes for a fish at once, a shy one hesitates until the visitor stands still; the road blocks the way
+ok 15 - \#1782 food: a social cat comes for a fish at once, a shy one hesitates until the visitor stands still; the road blocks the way
+  ---
+  duration_ms: 1.901181
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 15
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1208.398309

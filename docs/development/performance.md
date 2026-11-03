@@ -2199,3 +2199,7 @@ combined-input captures reuse the same 8/4,404 asset contract after a slat-orien
 are not claimed to have the same full-scene/shadow-pass totals. Native frusta, existing shadows and
 quality remain; these figures are Chromium/SwiftShader observations, not physical-device FPS.
 [Source scopes, raw counts, final combined images and limits](../verification/1835/).
+
+## Outdoor-cat patrol scheduling (#1840)
+
+Larger loops use a constructor-time table per direction and a wall-clock hash; `catAt` makes O(1) lookups with one possible boundary correction. Brain caches are bounded to two sets of legs. Existing models/materials and32 m desktop /18 m phone /7 m puppet rules stay unchanged. Actual per-body delta remains24 calls/10,008 triangles near,1/10,008 merged far,0/0 outside drawDist. The trace overview is an explicitly labelled test overlay absent during measurement and from product UI. [Scoped evidence and limits](../verification/1840/README.md).

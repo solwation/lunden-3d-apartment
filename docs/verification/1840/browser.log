@@ -1,0 +1,24 @@
+browsertest: waiting for /home/devcontainers/.local/state/orkester/browser.lock (another browser test is running)
+browsertest: no systemd user scope here, running without a memory ceiling
+PLANNED [
+  [ 'Sotis', 24 ],
+  [ 'Kanel', 10 ],
+  [ 'Findus', 11 ],
+  [ 'Smulan', 10 ]
+]
+APPLIED exact proposed routes
+page.evaluate: Error: park route positions match actual rendered terrain within15cm: {"maxContact":0.19403645350449583}
+    at check (eval at evaluate (:370:30), <anonymous>:2:129)
+    at eval (eval at evaluate (:370:30), <anonymous>:6:2)
+    at eval (eval at evaluate (:370:30), <anonymous>:32:3)
+    at eval (<anonymous>)
+    at UtilityScript.evaluate (<anonymous>:370:30)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+COMMAND COMPLETE
+COMMAND COMPLETE
+SHOT findus-first-clock
+COMMAND COMPLETE
+SHOT findus-second-clock
+COMMAND COMPLETE
+SHOT territory-overview
+COMMAND COMPLETE
