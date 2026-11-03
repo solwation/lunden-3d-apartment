@@ -1033,7 +1033,7 @@ School-yard play corners (#1807, Google 3D `05_norra_skolor_*`, `06_kunskapsskol
 
 ## Duck habitat contact (#1839)
 
-Ducks use the existing `renderedTerrainY` callback directly rather than the analytic-max `parkGround` shared by other animals. Their curve-following habitat samples local `waterYAt`, rejects roads/bridge decks, bounds the shore distance/height and validates every step. No terrain, river, road, tree or other animal geometry changes. [Actual emitted terrain-ray verification](../verification/1839/README.md).
+Ducks use the existing `renderedTerrainY` callback directly rather than the analytic-max `parkGround` callback. Their curve-following habitat samples local `waterYAt`, rejects roads/bridge decks, bounds the shore distance/height and validates every step. No terrain, river, road, tree or other animal geometry changes. [Actual emitted terrain-ray verification](../verification/1839/README.md).
 
 ## Outdoor-cat route ground (#1840)
 
