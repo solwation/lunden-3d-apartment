@@ -1,0 +1,62 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+GEOMETRY {
+  meshNames: [
+    'gym-gravel',
+    'gym-passive-timber',
+    'gym-padded',
+    'gym-pullup-wood',
+    'gym-press-wood',
+    'gym-press-log',
+    'gym-step-wood',
+    'gym-steel'
+  ],
+  triangles: 4404,
+  finite: true,
+  lights: 0,
+  treeConflicts: [],
+  surface: {
+    minClear: 0.03499981135172403,
+    maxClear: 0.03500029569046592,
+    road: 0
+  },
+  entries: [
+    {
+      id: 'pullup',
+      entry: [Array],
+      free: true,
+      stock: false,
+      target: 'pullup',
+      origin: [Array]
+    },
+    {
+      id: 'press',
+      entry: [Array],
+      free: true,
+      stock: true,
+      target: 'press',
+      origin: [Array]
+    },
+    {
+      id: 'step',
+      entry: [Array],
+      free: true,
+      stock: false,
+      target: 'step',
+      origin: [Array]
+    }
+  ],
+  fixtures: [
+    'incline',
+    'incline',
+    'padded-parallel',
+    'tier-bench',
+    'tier-bench',
+    'bin'
+  ],
+  stumps: 6,
+  polys: 66,
+  methods: 'function'
+}
+PASS overview 8 4404
+PASS obstacle-course 8 4404
+PASS geometry/material/clearance and both actual views

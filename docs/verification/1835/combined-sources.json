@@ -1,0 +1,18 @@
+{
+  "geometryBase": "786d75c102f89246f778953acbe8bed0adb7a2a4",
+  "ownFrozen": {
+    "outdoorgym.js": "62e0118a8e6d656851b2621ace475589ddfd59e467967b85508719452d71bb51",
+    "outdoorgymdecor.js": "2bc29bb4d13b898f40643c2a3436a13b238696eb05e9b1034e09d21c76952b62",
+    "config.js": "0302cb170a0cbe4531a349ee43047b315a30876420e2806a408656e2dfc49173"
+  },
+  "combined": {
+    "outdoorgymdecor.js": "2bc29bb4d13b898f40643c2a3436a13b238696eb05e9b1034e09d21c76952b62",
+    "outdoorgym.js": "631b41e7b6a7d0b4ddd630bf29d916ad9452d2a70beedbf0fb0bea32ca0b7175",
+    "config.js": "44635fc7360fb57c56227e8fa390b4c31077e3f19916ed0ae307c544ec672f86"
+  },
+  "composition": "HTTP overrides supply the #1835 frozen constructor/decor and OUTDOOR_GYM appearance/config. Combined outdoorgym.js adds #1836 GymEffort import/transient init and its method tail; combined config adds only OUTDOOR_GYM.effort to the geometry input. Main/effort/HUD/input are #1836-owned. Final images captured in that native-input turn before exercise, without another appearance bootstrap.",
+  "finalImages": {
+    "overview.png": "0dd419ee90501516528046e61f7f3f766418efee1a344964f2e175d377547d55",
+    "obstacle-course.png": "ec23b98f6df27258ddf3892f8de104b87d157528995a3f33bedc5be2ce827c59"
+  }
+}

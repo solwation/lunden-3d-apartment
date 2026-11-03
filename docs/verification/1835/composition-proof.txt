@@ -1,0 +1,2 @@
+PASS combined constructor exactly preserves #1835 geometry, excluding the single #1836 transient effort init
+PASS combined decor byte-identical; OUTDOOR_GYM differs only by #1836 effort block

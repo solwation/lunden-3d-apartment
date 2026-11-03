@@ -168,11 +168,13 @@ tools/nonpctest.html   headless test (#670): no People / PEOPLE, nothing to gree
 ```
 
 
-## Timber outdoor gym (#1811)
+## Photo-read outdoor gym (#1811, #1835)
 
-`src/outdoorgym.js` builds three fixed timber exercise stations on a small terrain-following woodchip patch beside Östra längan at Karpvägen. `OUTDOOR_GYM` centralizes the interpreted location (-143,33), -45° heading, dimensions, colours and exercise timing: all are visual/gameplay assumptions from the report screenshot and reference photo, not surveyed installation details. The nearest retained tree is 10 m from the chosen centre; paths, existing trees and buildings stay in place. Three wood meshes, one shared steel batch, the chip patch and one moving bench-press log = six visible meshes; ordinary shared wood grain, no new lights or render passes. The pick helpers are invisible. Local footprints/segments join existing player collision; the patch is visual ground cover and does not change ground heights.
+`src/outdoorgym.js` retains the three exercise station interfaces; `outdoorgymdecor.js` adds the passive landscape. The six November reference photos are interpreted as an 18×12 m gravel rectangle with corten edging and a short access spur, orange-brown laminated timber and grey brackets, inclined boards, padded parallel bars, two tiered benches, a bin and passive black lamp poles. The adjacent grass has six dark stumps, a tall portal, rope-net frame and balance beams, with a small woodchip patch under some stumps. These are visual guesses in `OUTDOOR_GYM.landscape`, not surveyed dimensions. The existing centre (-143,33) and −45° axis remain; existing trees/paths/buildings and ground heights are not edited.
 
-Räckhäv raises the eye, bench press raises its timber log above the lying visitor, and step-up raises/moves the eye toward the platform. These transient original-game interactions are detailed in interactions.md. The exercise/score/first-person logic must not be copied into the public viewer; passive generic park fittings may be assessed separately by its own issue. [Result views](../verification/1811/).
+Static timber/dark wood share a vertex-coloured wood-grain batch; steel/corten/bin/poles/net hardware share a vertex-coloured metal batch. Gravel/woodchips share a small locally generated 64×64 grain texture and ground batch. The three interactive wood bodies remain separate for ordinary outlines, and the existing moving log shares a brown padded material with passive padding. Total 8 visible meshes/4,404 asset triangles, no new lights; geometry-only lamp poles emit no light. Optional new seats and walkable obstacle surfaces are deliberately omitted. Constructor/interface and actual site probes cover finite geometry, 3 clear exercise entries, retained trees outside the gravel and sampled road/ground clearance. Public transfer is tracked separately in kvarteret-lunden #243: generic passive geometry only, no gameplay, reference photographs or photographer identity.
+
+[Own final overview/course images and exact combined #1835/#1836 source contract](../verification/1835/). Exercise/input behaviour is documented in interactions.md; #1835 changes no update/status/effort methods.
 
 ## Google 3D review 2026-11-02 (#1791)
 

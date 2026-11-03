@@ -1,0 +1,6 @@
+{
+  "desktopChecksPassed": 23,
+  "scope": "All three stations, native F effort and E/Space/C exit, scored rep, pause, no page errors",
+  "wholeInitialDriverOK": false,
+  "remaining": "Initial driver stopped at touch portrait rotation screen; touch-landscape continuation belongs to #1836 and is not claimed green here"
+}

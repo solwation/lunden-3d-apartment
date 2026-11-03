@@ -1,0 +1,79 @@
+{
+  "meshNames": [
+    "gym-gravel",
+    "gym-passive-timber",
+    "gym-padded",
+    "gym-pullup-wood",
+    "gym-press-wood",
+    "gym-press-log",
+    "gym-step-wood",
+    "gym-steel"
+  ],
+  "triangles": 4404,
+  "finite": true,
+  "lights": 0,
+  "treeConflicts": [],
+  "surface": {
+    "minClear": 0.03499981135172403,
+    "maxClear": 0.03500029569046592,
+    "road": 0
+  },
+  "entries": [
+    {
+      "id": "pullup",
+      "entry": [
+        -146.81837661840737,
+        29.464466094067262
+      ],
+      "free": true,
+      "stock": false,
+      "target": "pullup",
+      "origin": [
+        -145.4395183950936,
+        2.4469907845935026,
+        28.085607870753496
+      ]
+    },
+    {
+      "id": "press",
+      "entry": [
+        -145.68700576850887,
+        35.68700576850888
+      ],
+      "free": true,
+      "stock": true,
+      "target": "press",
+      "origin": [
+        -144.49906637611548,
+        1.2061939246791191,
+        34.49906637611548
+      ]
+    },
+    {
+      "id": "step",
+      "entry": [
+        -139.53517677218593,
+        36.7476659402887
+      ],
+      "free": true,
+      "stock": false,
+      "target": "step",
+      "origin": [
+        -138.75735931288074,
+        2.0450149085359413,
+        35.969848480983494
+      ]
+    }
+  ],
+  "fixtures": [
+    "incline",
+    "incline",
+    "padded-parallel",
+    "tier-bench",
+    "tier-bench",
+    "bin"
+  ],
+  "stumps": 6,
+  "polys": 66,
+  "methods": "function"
+}

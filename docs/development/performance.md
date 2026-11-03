@@ -2184,3 +2184,18 @@ start view has 1 call of headroom: the next addition visible from the street wil
 Southern backdrop ceiling raised (#1805): `tools/southbackdroptest.html` "bounded far detail" 59 000 -> 60 600. Clipped hedges along four hospital car parks (`SITE.south.yard`) add 396 triangles (58 933 -> 59 329 measured, desktop, headless Chromium/SwiftShader), more than the ~67 left after #1794; the ceiling is the measured count + ~2 %. Same `land` batch, draw calls unchanged, and `lowMemory` phones skip the hedges, so the phone budget (<= 370 calls, <= 950 000 triangles) is untouched. For the Surface Pro (Iris 640) 396 triangles are about 0.04 % of the ~920 000-triangle desktop frame.
 
 #1806: clipped garden hedges round the villas' and white houses' plots (`src/southgardens.js`, `SITE.south.gardens`) add 544 triangles to `south-backdrop` (136 four-triangle pieces in the facade batch; 59 329 -> 59 873 in `tools/southbackdroptest.html`, headless Chromium/SwiftShader, measured on top of #1805). The ceiling stays 60 600 (no raise needed). Draw calls unchanged (25 -> 25 desktop, 21 -> 21 `&lowmem`), `lowMemory` phones skip the hedges (south-backdrop triangles identical). 544 triangles are ~0.06 % of the ~920 000-triangle desktop frame, negligible for the Surface Pro.
+
+## Outdoor gym appearance (#1835)
+
+The photographed gravel/timber/black-course scene is 8 visible meshes and 4,404 asset triangles, compared
+with the previous 6 visible meshes. Three interactive timber bodies remain separate for outlines; all
+passive timber/dark wood is merged, all metal/corten/net fittings merged, ground merged, passive padding
+merged, with the existing moving log separate. Shared wood grain is reused; the only added texture is
+one deterministic 64×64 RGBA gravel grain (16 KiB CPU pixels, not total GPU allocation). No new lights.
+
+Actual full-quality original-app inspection views initially measured +8 main-render calls/+4,404
+triangles against the same hidden-gym frame; total overview 412/1,075,407, course 383/953,331. The final
+combined-input captures reuse the same 8/4,404 asset contract after a slat-orientation correction; they
+are not claimed to have the same full-scene/shadow-pass totals. Native frusta, existing shadows and
+quality remain; these figures are Chromium/SwiftShader observations, not physical-device FPS.
+[Source scopes, raw counts, final combined images and limits](../verification/1835/).

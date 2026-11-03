@@ -4045,21 +4045,37 @@ export const OUTDOOR_SEATS = {
 // Location, dimensions, timber/steel colours, clearance and exercise motions are visual/gameplay guesses from the report photo.
 export const OUTDOOR_GYM = {
   scorePerDay: 30, // #1828: exercise-point ceiling per local day (*guess*); all repetitions still count for medals
-  at: [-143, 33], yaw: -45, pad: [14, 7.5], padStep: 1, padLift: .035,
-  wood: 0x9d714e, steel: 0x363d3e, chips: 0xb59c73, post: .085, bar: .03, board: .045,
-  entry: 2.3, eye: 1.62, bench: .52, logRadius: .11,
+  at: [-143, 33], yaw: -45, pad: [18, 12], padStep: 1, padLift: .035,
+  wood: 0xc78446, steel: 0x989d99, chips: 0x82725c, post: .085, bar: .03, board: .045,
+  entry: 2.3, eye: 1.62, bench: .52, logRadius: .16,
   pullHeight: 2.35, pullRise: .42, stepHeight: .42, stepTravel: .48,
   geometry: {
-    postSides: 8, logSides: 10,
+    postSides: 8, logSides: 10, slatGap: .012, footPlate: [.23,.12,.035], plateOffset: .02,
     pull: { postX: .85, topExtra: .12, braceDrop: .2, braceBack: .55, eyeZ: .35, lookZ: -.45 },
     press: { postX: .65, logY: 1.25, logZ: .4, logLength: 1.75, benchW: .7, benchD: 1.85,
       footZ: .7, footX: .24, slatX: .22, slatW: .2, crossD: .18, halfW: .38, halfD: .95, eyeZ: .62 },
-    step: { footX: .5, footZ: .28, boardW: 1.3, boardD: .25, halfW: .68, halfD: .44, eyeZ: .85 },
+    step: { footX: .85, footZ: .65, boardW: 2.2, boardD: .25, depth: 1.8, slats: 6, halfW: 1.15, halfD: .95, eyeZ: 1.2 },
+  },
+  // #1835: photo-read appearance, population and layout; all dimensions/colours are guesses, not a survey.
+  landscape: {
+    gravel: 0xa9a08e, corten: 0x7e482f, black: 0x252725, padded: 0x684832, rope: 0x777b72,
+    edgeHeight: .10, edgeWidth: .025, grainSize: 64, grainRepeat: 1.6,
+    approach: { from: [-9,0], to: [-15,0], width: 2 },
+    frame: .14, boltR: .025, bracket: [.20,.22,.035],
+    inclines: [[-5,2.4],[5,2.7]], incline: { width: .75, run: 2.6, low: .3, high: 1.15, rails: .55, slats: 4 },
+    parallel: { at: [0,-2.5], halfW: .9, halfD: 1.1, height: 1.05, padR: .16 },
+    benches: [[-5,-5],[4.5,-5]], bench: { width: 3.2, rows: 2, rowDepth: .45, height: .38, rise: .22, slatW: .24, slatOffset: .13, legInset: .4 },
+    bin: { at: [-8,3.8], width: .5, depth: .5, height: .95, overhang: .04, lid: .05 },
+    lamps: { at: [[-8.7,-5.5],[8.7,5.5]], height: 3.2, radius: .045, arm: .55, head: [.25,.10,.14] },
+    course: { postR: .11, beamW: .16, patch: [-3,9.5,6,2.4],
+      stumps: [[-5,8.8,.28],[-4.2,9.6,.45],[-3.2,9.8,.65],[-2.2,9.6,.4],[-1,9.9,.55],[.2,10.2,.32]],
+      portal: [-2.5,14,2.2,2.5], net: [-4.5,12,2.1,1.5], netRows: 4, netCols: 6, ropeR: .012, netBottom: .25, netInset: .15, netSag: .08, collisionStep: .4,
+      balance: [[1,9.6,1,13,.35],[1,13,4,15,.45],[4,15,5.8,12.2,.28]] },
   },
   stations: [
-    { id: 'pullup', label: 'Räckhäv', name: 'räcket', x: -4.3, z: 0, period: 2.8, box: [1.95, 2.35, .7] },
-    { id: 'press', label: 'Bänkpress', name: 'bänkpressen', x: 0, z: 0, period: 2.6, box: [1.8, 1.4, 2.1], lift: .44 },
-    { id: 'step', label: 'Step-up', name: 'stepbrädan', x: 4.3, z: 0, period: 2.4, box: [1.5, .8, 1] },
+    { id: 'pullup', label: 'Räckhäv', name: 'räcket', x: -5.2, z: -2.1, period: 2.8, box: [1.95, 2.35, .7] },
+    { id: 'press', label: 'Bänkpress', name: 'bänkpressen', x: 0, z: 1.5, period: 2.6, box: [1.8, 1.4, 2.1], lift: .44 },
+    { id: 'step', label: 'Step-up', name: 'stepbrädan', x: 5.1, z: -2.1, period: 2.4, box: [2.3, .8, 1.9] },
   ],
 };
 
