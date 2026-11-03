@@ -1,3 +1,6 @@
+// #1842: server-first compatibility; the client slice shares this exact validator from src.
+function gymPoseWire(value){return Array.isArray(value)&&value.length===2&&Number.isInteger(value[0])&&value[0]>=1&&value[0]<=8&&Number.isFinite(value[1])&&value[1]>=0&&value[1]<=1?[value[0],Math.round(value[1]*100)/100]:null;}
+
 import { pumpWire } from '../src/gympump.js';
 import { REST, TV_MEDIA, tvViewer, COMPUTER_MEDIA, computerViewer } from '../src/config.js';
 import { freshDJ, cleanDJ, applyDJ, snapshotDJ } from '../src/djstate.js';
@@ -272,10 +275,10 @@ export function cleanState(text) {
   // #878: c reports actual Player.crouched; anything except literal true is standing, including legacy clients.
   // #1504/#1505: optional head yaw/pitch; standing keeps its existing body/gaze yaw.
   // Camera elevation is bounded by a half-turn; seated limits stay unchanged.
-  const seated = m.pose === 1 || m.pose === 3;
+  const seated = m.pose === 1 || m.pose === 3 || !!gymPoseWire(m.gx);
   const pitch = seated ? REST.sit.pitch : [-Math.PI / 2, Math.PI / 2];
   const look = m.pose !== 2 && Array.isArray(m.look) && m.look.length === 2 && fin(m.look[0], seated ? REST.sit.yaw + 0.01 : 0) && Number.isFinite(m.look[1]) && m.look[1] >= pitch[0] - 0.01 && m.look[1] <= pitch[1] + 0.01 ? { look: m.look.map(r2) } : {};
-  return { ...(pumpWire(m.bp) ? { bp: pumpWire(m.bp) } : {}), ...cat, ...look, p: m.p.map(r2), r: r2(m.r), score, h: typeof m.h === 'string' && Object.hasOwn(COMBAT.weapons, m.h) ? m.h : '', ...(m.c === true ? { c: true } : {}), ...(m.pose === 1 || m.pose === 2 || m.pose === 3 ? { pose: m.pose } : {}), ...(m.sp === true ? { sp: true } : {}), ...(m.jp === 1 || m.jp === 2 ? { jp: m.jp } : {}), ...(m.dn === 1 || m.dn === 2 ? { dn: m.dn } : {}), ...(m.am === 1 || m.am === 2 || m.am === 3 ? { am: m.am } : {}), ...(fin(m.bk, 100) ? { bk: r2(m.bk) } : {}), ...(cleanCue(m.cq) ? { cq: m.cq.map((v) => Math.round(v * 100) / 100) } : {}), ...(cleanHeldCategory(m.hi) ? { hi: m.hi } : {}), ...(cleanFloat(m.fb) ? { fb: [r2(m.fb[0]), r2(m.fb[1]), r2(m.fb[2]), m.fb[3]] } : {}), ...(av ? { av } : {}), ...(ax ? { ax } : {}) };
+  return { ...(gymPoseWire(m.gx)?{gx:gymPoseWire(m.gx)}:{}), ...(pumpWire(m.bp) ? { bp: pumpWire(m.bp) } : {}), ...cat, ...look, p: m.p.map(r2), r: r2(m.r), score, h: typeof m.h === 'string' && Object.hasOwn(COMBAT.weapons, m.h) ? m.h : '', ...(m.c === true ? { c: true } : {}), ...(m.pose === 1 || m.pose === 2 || m.pose === 3 ? { pose: m.pose } : {}), ...(m.sp === true ? { sp: true } : {}), ...(m.jp === 1 || m.jp === 2 ? { jp: m.jp } : {}), ...(m.dn === 1 || m.dn === 2 ? { dn: m.dn } : {}), ...(m.am === 1 || m.am === 2 || m.am === 3 ? { am: m.am } : {}), ...(fin(m.bk, 100) ? { bk: r2(m.bk) } : {}), ...(cleanCue(m.cq) ? { cq: m.cq.map((v) => Math.round(v * 100) / 100) } : {}), ...(cleanHeldCategory(m.hi) ? { hi: m.hi } : {}), ...(cleanFloat(m.fb) ? { fb: [r2(m.fb[0]), r2(m.fb[1]), r2(m.fb[2]), m.fb[3]] } : {}), ...(av ? { av } : {}), ...(ax ? { ax } : {}) };
 }
 
 /** A shot from a client, or null: { t: 'a', w, o: [x, y, z] start, d: [dx, dy, dz] unit direction, s?: speed m/s, to?: id hit }
