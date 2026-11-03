@@ -19,3 +19,5 @@ Hittat och rättat: `OutdoorCats.promote()` satte `on:'sit'`, vilket betyder mö
 - `medal-progress.png`: Kattmatare 3/25 och Kattklappare 1/100 efter verkliga callbacks.
 
 Fångstobjekten skapades med befintliga `Fishing.addFish`/`take`/`placeAt`, precis som tidigare råfisktester. Själva fiskeminispelet och fysisk telefon har inte spelats. Kattklappen körs genom verkliga åtgärdsmenyns callback i webbläsaren, inte en fysisk musgest. Headless-fonten saknar vissa emoji; namn och räknare syns. Inga geometri-/layoutändringar: A/B/C/L-varianter och draw-budgetkontroll är inte tillämpliga. Detta är spelprogression och porteras inte till publikprojektet; ambienta katter hanteras separat i publik #236.
+
+Integration: the catfish and dance catalogue rows were merged together. The scoped dance/cat/gym/duck suites pass 16/16 on the combined source (integration-statistics.txt in #1829 evidence); existing counters and daily ledgers are preserved. Individual browser captures preceded the sibling catalogue merge, which only adds another independent medal card; the tested feeding/dancing progress is unchanged. No duplicate browser run was needed.

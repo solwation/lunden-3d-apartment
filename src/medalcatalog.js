@@ -32,6 +32,7 @@ export const MEDALS = [
   { id: 'doors', counter: 'doors', icon: '🚪', name: 'Dörrvakt', unit: 'dörrar öppnade', base: 500 },
   { id: 'taps', counter: 'taps', icon: '💧', name: 'Kranvän', unit: 'kranar påslagna', base: 200 },
   { id: 'sat', counter: 'sat', icon: '💺', name: 'Soffpotatis', unit: 'gånger satt ner', base: 100 },
+  { id: 'dance', counter: 'danceSeconds', icon: '🕺', name: 'Dansdrake', unit: 'danssekunder', base: 180 }, // #1829: three minutes (*guess*)
   { id: 'gym', counter: 'gymReps', icon: '💪', name: 'Utegymmare', unit: 'repetitioner', base: 100 }, // #1828 (*guess*)
   { id: 'washed', counter: 'washed', icon: '🧼', name: 'Diskhjälte', unit: 'saker diskade', base: 25 },
   { id: 'sandwiches', counter: 'sandwiches', icon: '🥪', name: 'Mackmästare', unit: 'mackor', base: 25 },

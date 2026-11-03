@@ -29,6 +29,7 @@ export const COUNTERS = {
   vacuumed: { perMin: 60, start: 20000 }, // m², rounded
   steps: { perMin: 500, start: 2_000_000 },
   dribbles: { perMin: 150, start: 50000 },
+  danceSeconds: { perMin: 60, start: 100000 }, // #1829: real whole seconds
   gymReps: { perMin: 30, start: 10000 }, // #1828: fastest full cycle 2.4s = 25/min, plus headroom (*guess*)
   // for the medals (#1711, src/medalcatalog.js); task_<id> is stats.taskCounts[id]
   stairs: { perMin: 60, start: 20000 },

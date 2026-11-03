@@ -1,3 +1,4 @@
+import { DanceTime } from './dancescore.js';
 import { stepSurface } from './stepsurface.js';
 import { OutdoorGym } from './outdoorgym.js';
 import { MenuSettings } from './menusettings.js';
@@ -3305,6 +3306,7 @@ function updateCameraNear() {
   } else if (!player.inFootprint() && !player.unit && !player.inCore && !player.riding && !car.occupied && !world.garage?.inside(player.pos.x, player.pos.z)) near = VIEW_NEAR.outdoor;
   if (Math.abs(camera.near - near) > near * 0.02) { camera.near = near; camera.updateProjectionMatrix(); }
 }
+const danceTime = new DanceTime(seconds => bump('danceSeconds', seconds));
 function step(dt) {
   autoReload.update(dt);
   // Kaffeturbo (#217): faster feet, a wider view, the speakers turned down under the tune
@@ -3343,6 +3345,8 @@ function step(dt) {
   if (playroom.inside && !playroom.contains(player.pos.x, player.pos.z)) playroom.setInside(false); // (respawned / resumed elsewhere: the room is undrawn again)
   playroom.setFilm(!!cinema.state?.video, cinema.surface?.aspect); // #1570: the BIO's sconces dim while a film runs; #1619: the curtains follow its picture ratio
   playroom.update(dt, camera, focused?.kind === 'playroomBilliards');
+  danceTime.update(dt, { active: active() && overlay.hidden && !otherOverlay() && !document.hidden && !reading && !measure.active && !isAvatarCustomizerOpen(),
+    inside: playroom.inside && player.inPlayroom, dancing: playroom.music.dancing, music: playroom.music.state, pos: player.pos });
   day.under = player.inPlayroom ? 1 : garage.under; // down there no daylight (nor in the children's room, #1319)
   day.lit = player.inPlayroom ? playroom.lit : garage.lit; // … but the tubes' light on the cars (#440), the room's own lamp
   { // the sun's shadow box (±14 m round its target) follows the visitor to a visited flat (#574): centred on it within

@@ -8997,3 +8997,12 @@ already show these distances under the old policy, so it is not the regression c
 ## Outdoor sprint pace (#1832)
 
 `THREE_DIR=/path/to/three node --test tools/outdoorsprinttest.mjs` runs actual Player movement in supported simple lanes: unchanged walking/indoor pace, faster Shift/full-stick sprint, half-stick/crouch/diagonal, garage/core/unit/hidden-room classification, actual composed Core/CoreHouse contains samples for L/A/B/C and thin-wall stopping at15/30/60FPS plus a1second frame with coffee boost. `tools/walktest.html?sprint` retains only the eight affected real-World sprint/door/barrier contracts; default still runs its full original route set. `tools/browsertest.sh node tools/outdoorsprintbrowser.cjs GAME OUT` runs those contracts and one actual app with native Shift and CDP touch input. Its before comparison changes only `PLAYER.runOutdoor` to the retained3.2m/s value; identical manual time on a clear mapped park path records actual reached endpoints. No physical-phone or hardware-performance claim. [Evidence](../verification/1832/).
+
+## Disco dance rewards (#1829)
+
+`node --test tools/dancerewardtest.mjs` checks whole-second accumulation and interrupted fractions,
+menu/music/room gates, toggle spam, daily boundaries/persistence, actual stats with independent duck/gym
+ledgers and the shared Worker counter/medal catalogue. `tools/browsertest.sh node tools/dancerewardbrowser.cjs`
+loads the actual World, enters with a child avatar, operates the focused physical DJ play button through
+the native touch action button and uses the native dance button. Six seconds of controlled production
+steps earn six points; stopped music earns none. [Evidence and limits](../verification/1829/).

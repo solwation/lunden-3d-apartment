@@ -1,0 +1,21 @@
+{
+  "before": {
+    "score": 0,
+    "seconds": 0
+  },
+  "after": {
+    "score": 6,
+    "seconds": 6,
+    "ledger": {
+      "day": "2026-11-03",
+      "pts": 6
+    },
+    "dance": 1
+  },
+  "entry": "production playhouse use with child avatar",
+  "input": "native touch-action button on focused physical play0; native dance button",
+  "time": "360 controlled production steps at 1/60s; test lazy rendering",
+  "stopped": "120 steps without music award nothing",
+  "errors": [],
+  "limits": "Chromium SwiftShader, local music; no Worker/two-client or physical phone claim"
+}

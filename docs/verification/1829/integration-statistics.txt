@@ -1,0 +1,106 @@
+TAP version 13
+# Subtest: Kattmatare: boundary 24/25, existing history, once-only level bonus and server agreement
+ok 1 - Kattmatare: boundary 24/25, existing history, once-only level bonus and server agreement
+  ---
+  duration_ms: 2.019997
+  type: 'test'
+  ...
+# Subtest: Worker accepts catfish counter, clamps growth and never rolls it back
+ok 2 - Worker accepts catfish counter, clamps growth and never rolls it back
+  ---
+  duration_ms: 0.378399
+  type: 'test'
+  ...
+# Subtest: whole elapsed seconds, no toggle rewards; interruptions discard fractions and long background gaps
+ok 3 - whole elapsed seconds, no toggle rewards; interruptions discard fractions and long background gaps
+  ---
+  duration_ms: 1.217898
+  type: 'test'
+  ...
+# Subtest: actual stats route is daily capped, persists ledger, keeps seconds after cap and other ledgers independent
+ok 4 - actual stats route is daily capped, persists ledger, keeps seconds after cap and other ledgers independent
+  ---
+  duration_ms: 1.364998
+  type: 'test'
+  ...
+# Subtest: three-minute medal and Worker counter catalogue accept and derive real seconds
+ok 5 - three-minute medal and Worker counter catalogue accept and derive real seconds
+  ---
+  duration_ms: 1.511997
+  type: 'test'
+  ...
+# Subtest: actual bump counts every feeding once but game score stops at daily ceiling; no uncapped generic path
+ok 6 - actual bump counts every feeding once but game score stops at daily ceiling; no uncapped generic path
+  ---
+  duration_ms: 1.993696
+  type: 'test'
+  ...
+# Subtest: finite kitchen bread, no bread/package/stale or consumed slice grants no successful feed event
+ok 7 - finite kitchen bread, no bread/package/stale or consumed slice grants no successful feed event
+  ---
+  duration_ms: 0.904698
+  type: 'test'
+  ...
+# Subtest: duck medal advances beyond daily score cap, pays once, Worker accepts counter and derives medal
+ok 8 - duck medal advances beyond daily score cap, pays once, Worker accepts counter and derives medal
+  ---
+  duration_ms: 1.721197
+  type: 'test'
+  ...
+# Subtest: pullup: only full cycles count, exactly once, including multiple cycles in one update
+ok 9 - pullup: only full cycles count, exactly once, including multiple cycles in one update
+  ---
+  duration_ms: 1.552398
+  type: 'test'
+  ...
+# Subtest: press: only full cycles count, exactly once, including multiple cycles in one update
+ok 10 - press: only full cycles count, exactly once, including multiple cycles in one update
+  ---
+  duration_ms: 0.2745
+  type: 'test'
+  ...
+# Subtest: step: only full cycles count, exactly once, including multiple cycles in one update
+ok 11 - step: only full cycles count, exactly once, including multiple cycles in one update
+  ---
+  duration_ms: 0.1665
+  type: 'test'
+  ...
+# Subtest: entry glide, pause, ordinary seats, leaving mid-cycle and switching stations grant no extra cycle
+ok 12 - entry glide, pause, ordinary seats, leaving mid-cycle and switching stations grant no extra cycle
+  ---
+  duration_ms: 0.2266
+  type: 'test'
+  ...
+# Subtest: daily award ceiling, saved ledger and next local day leave all repetitions available to the medal
+ok 13 - daily award ceiling, saved ledger and next local day leave all repetitions available to the medal
+  ---
+  duration_ms: 0.372199
+  type: 'test'
+  ...
+# Subtest: invalid repetitions never credit points, older saves start without retrospective gym rewards
+ok 14 - invalid repetitions never credit points, older saves start without retrospective gym rewards
+  ---
+  duration_ms: 0.169
+  type: 'test'
+  ...
+# Subtest: Worker accepts gym repetitions and derives Utegymmare at the same 100-repetition boundary
+ok 15 - Worker accepts gym repetitions and derives Utegymmare at the same 100-repetition boundary
+  ---
+  duration_ms: 0.653799
+  type: 'test'
+  ...
+# Subtest: actual stats.bump/rawScore never add the uncapped per-repetition path as well
+ok 16 - actual stats.bump/rawScore never add the uncapped per-repetition path as well
+  ---
+  duration_ms: 13.671677
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 176.545604

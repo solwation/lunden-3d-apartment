@@ -3768,6 +3768,7 @@ export const SCORE = {
     cucumberSlices: 0.2,                                  // a slice of cucumber cut (#376)
     posted: 3, thrown: 0.5, drawn: 2,
     secrets: 1, stairs: 0.3, steps: 0.01,
+    danceSeconds: 1, // #1829 (*guess*), capped via DANCE.scorePerDay
     gymReps: 1, // #1828: per completed outdoor exercise cycle (*guess*), daily-capped by OUTDOOR_GYM.scorePerDay
     shatterRange: 1,                                      // something shot to pieces from afar: per range point (#263)
     pvpHits: 5,                                           // another player hit (#667); the room allows COMBAT.perMinute points a minute
@@ -7094,6 +7095,7 @@ export const REACT = {
 // Floss: the hips swing one way while both straight arms swing across the body the other way, one arm forward while the
 // other goes back. *guess*: by eye against the well-known move, not measured.
 export const DANCE = {
+  scorePerDay: 30, // #1829 (*guess*): direct dance points per local day; all real seconds still count for medals
   floss: { hz: 1.9, hipSway: .07, bob: .025, armSide: .4, armDepth: .17, armFwd: .03, reach: .54, lean: .08 }, // hz: whole left-right cycles per second; metres / rad; reach: the straight arm's shoulder-to-hand distance (arm is .57 long)
   // #1757 Gangnam Style, the horse-riding dance: `dn: 2`. A bouncy gallop on bent knees (one foot lifted per beat), wrists crossed
   // in front holding the reins, and every other section one hand swinging a lasso overhead (left, then right). *guess*: by eye

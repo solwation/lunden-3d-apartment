@@ -1,3 +1,4 @@
+import { danceScoreOf, creditDance } from './dancescore.js';
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
 // Visitor statistics (cats found and petted, doors, steps …), kept in localStorage so they
 // survive a reload. The panel is hidden (Tab held / T / the 📊 button shows it); instead a
@@ -9,7 +10,7 @@ import { creditDuckFeeds, duckScoreOf } from './duckscore.js';
 import { gymScoreOf, creditGym } from './gymscore.js';
 const KEY = 'lunden.stats';
 
-const fresh = () => ({ love: 0, loveReceipts: [], pvpKills: 0, killReceipts: {}, cats: 0, rare: 0, byVariant: {}, petted: 0, ponyPets: 0, squirrelFeeds: 0, duckFeeds: 0, duckScore: 0, duckFeedDay: null, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, gymReps: 0, gymScore: 0, gymRewardDay: null, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, carMusic: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0, freeThrows: 0, twoPointers: 0, basketPoints: 0,
+const fresh = () => ({ love: 0, loveReceipts: [], pvpKills: 0, killReceipts: {}, cats: 0, rare: 0, byVariant: {}, petted: 0, ponyPets: 0, squirrelFeeds: 0, duckFeeds: 0, duckScore: 0, duckFeedDay: null, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, danceSeconds: 0, danceScore: 0, danceRewardDay: null, gymReps: 0, gymScore: 0, gymRewardDay: null, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, carMusic: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0, freeThrows: 0, twoPointers: 0, basketPoints: 0,
   byBreed: {}, seen: {}, secretRare: {}, tv: 0, pc: 0, parasol: 0, clock: 0, calendar: 0, cooked: 0, brews: 0, drawn: 0, splashes: 0, cuts: 0, dribbles: 0, catButts: 0, shattered: 0, shatterRange: 0, pingpingHugs: 0, blinds: 0, curtains: 0, airfried: 0, clips: 0, penalties: {}, penaltyPoints: 0, kittens: 0, kittenPets: 0, petsByBreed: {}, hugsByBreed: {}, vacuumed: 0, tasks: 0, taskCounts: {}, taskRewardDays: {}, taskBonusDays: {}, taskBonusPoints: 0, taskDay: null, mieleDay: null, legacyTaskPoints: 0, pvpRangePoints: 0, medals: {}, medalsSeeded: false, medalPoints: 0, fishCaught: 0, fishBySpecies: {}, fishEaten: 0 });
 
 
@@ -118,8 +119,9 @@ export function totalScore() { return Math.floor(Math.max(0, rawScore() - (stats
 export function rawScore() {
   const S = SCORE, n = (o) => Object.keys(o ?? {}).length;
   let t = 0;
-  for (const [k, pts] of Object.entries(S.each)) if (k !== 'duckFeeds' && k !== 'gymReps') t += (stats[k] ?? 0) * pts;
+  for (const [k, pts] of Object.entries(S.each)) if (k !== 'duckFeeds' && k !== 'gymReps' && k !== 'danceSeconds') t += (stats[k] ?? 0) * pts;
   t += duckScoreOf(stats); // #1827: bounded daily duck reward, not counter × uncapped points
+  t += danceScoreOf(stats);
   t += gymScoreOf(stats); // #1828: all repetitions count, only awarded daily-capped points score
   t += targetScoreOf(stats); // #1708: low conversion, daily cap
   t += stats.pvpRangePoints ?? 0; // #873: extra distance reward; legacy pvpHits still supply the unchanged base
@@ -152,8 +154,10 @@ export function awardTarget(pts) {
 /** Count `n` of `key`; `id` names the thing (a door, a lamp …) for the bigger points the first time (SCORE.first).
  * The badge for those only shows the first time. */
 export function bump(key, n = 1, id = key) {
+  if (key === 'danceSeconds' && (!Number.isSafeInteger(n) || n <= 0)) return;
   if (key === 'gymReps' && (!Number.isSafeInteger(n) || n <= 0)) return;
   if (!addCount(stats, key, n)) return; // #1761: never turn a stored object into "[object Object]1"
+  if (key === 'danceSeconds') creditDance(stats, n);
   if (key === 'gymReps') creditGym(stats, n);
   if (key === 'duckFeeds') creditDuckFeeds(stats, n); // counter keeps advancing after the daily score cap
   let fresh = true;
@@ -398,6 +402,7 @@ export function statRows() {
     ['🚀 Jetpackturer', `${stats.flights ?? 0}`], // take-offs (#359)
     ['💺 Satt ner', `${stats.sat}`],
     ['🛏 Lagt sig', `${stats.lay}`],
+    ...(stats.danceSeconds ? [['🕺 Danstid', `${stats.danceSeconds} sekunder`]] : []), // #1829
     ...(stats.gymReps ? [['💪 Repetitioner på utegymmet', `${stats.gymReps}`]] : []), // #1828
     ['💧 Kranar påslagna', `${stats.taps}`],
     ['🍗 Kylskåpet öppnat', `${stats.fridge}`],
