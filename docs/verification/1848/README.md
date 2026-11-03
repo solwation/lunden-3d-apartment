@@ -63,3 +63,8 @@ The recorded preparation used player.spawn(3.64,9.4,0), looked at the real binde
 ![Actual encounter statistics, photo and chain](app/desktop-statistics-chain.png)
 ![Portrait detail](app/touch-detail.png)
 ![Portrait actual statistics and chain](app/touch-statistics-chain.png)
+
+
+## Conductor integration
+
+Core38634346 and UIcb46cf24 are integrated together. All30 runtime files match the reviewed final combined manifest byte for byte; [integration-sources.json](integration-sources.json) records the source commits and hashes. The single new changelog entry is1427 and every previous row is preserved. All six actual-app result images were directly inspected. The source-bound18 Node,65 real model/IDB and14 app-acceptance results are reused without a routine browser repeat. Gameplay/collection/personal photos have no applicable public port.
