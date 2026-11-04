@@ -2976,6 +2976,8 @@ export const FOOTBALL = {
   drawDist: 140, ballDrawDist: 60, ballR: .11, ballDetail: 2,
   reserveSpacing: 1.5, footAhead: .65, reach: 1.8, maxDribbleSpeed: 10, moveSlack: .5,
   groundRange: [2.2, 3.4], heightSlack: .6, playHeightSlack: .35, kick: [7, 13], maxBallSpeed: 19,
+  gravity: 9.81, airDrag: .25, headerReach: .55, headerHeight: [.85, 1.95], headerSpeed: 8, headerLift: 3.5,
+  maxHeight: 15, maxVerticalSpeed: 18,
   friction: 2, tickMs: 10, maxTicks: 1400, stopSpeed: .025, postBounce: .55, ballBounce: .6,
   goalResetMs: 2200, outResetMs: 1500, commandMs: 150, confirmMs: 350,
   maxGoals: 1000000, creditPlayers: 48,

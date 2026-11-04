@@ -12,3 +12,30 @@ test('two-ball contact pushing the whole ball across the mouth is also one genui
  const a={id:'bob',p:[0,2.8,-C.length/2+.05+C.footAhead],r:0,at:10};s.balls[1].p=[0,-C.length/2+.05];s.balls[1].owner='bob';
  advanceFootball(C,s,10,()=>a);assert.equal(s.score[0],1);assert.deepEqual(s.credits,[['alice',1]]);advanceFootball(C,s,20,()=>a);assert.equal(s.score[0],1);
 });
+
+test('lofted kick arcs into the air, bounces and scores under the crossbar while a sky-high shot over the crossbar does not score',()=>{
+ const s=initialFootball(C,'loft',0),a=actor('one',[0,1,0]);
+ s.balls[0].p=[0,0];
+ assert.ok(footballCommand(C,s,a,0,'take'));
+ assert.ok(footballCommand(C,s,a,0,'kick',{direction:[0,-1],power:1,l:0.4}));
+ assert.ok(s.balls[0].vy>0);
+ advanceFootball(C,s,300);
+ assert.ok(s.balls[0].h>0.5,'ball rises into the air');
+ advanceFootball(C,s,2500);
+ assert.equal(s.score[0],1,'scores under crossbar');
+
+ const s2=initialFootball(C,'over',0);
+ Object.assign(s2.balls[0],{p:[0,-15],vel:[0,-10],h:2.5,vy:1,last:'one'});
+ advanceFootball(C,s2,500);
+ assert.equal(s2.score[0],0,'over crossbar does not score');
+});
+
+test('heading: player standing in the path of a high ball redirects it with forehead forward',()=>{
+ const s=initialFootball(C,'header',0);
+ Object.assign(s.balls[0],{p:[0,-2],vel:[0,-6],h:1.4,vy:1,last:'one'});
+ const bob=actor('bob',[0,1,-3.2],Math.PI,0);
+ advanceFootball(C,s,300,()=>bob);
+ assert.equal(s.balls[0].last,'bob','header credited to bob');
+ assert.ok(s.balls[0].vel[1]>0,'ball headed back in facing direction');
+ assert.ok(s.balls[0].vy>0,'ball arcs upward from header');
+});
