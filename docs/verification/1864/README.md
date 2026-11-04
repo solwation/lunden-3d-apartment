@@ -23,3 +23,9 @@ No generic inventory, private dish authority, new score/farm, public downstream 
 Conductor next: integrate/publish server stage first and await actual Worker deployment; then client commit and actual Pages+Worker deployments (heldcategory also triggers Worker). Review and embed the image using a permanent commit-pinned public URL before closing. Changelog ID is provisional until final integration.
 
 ![Shared serving, refill bottle, peer and moved glass](shared-serving.png)
+
+## Published integration
+
+Root integrated server `d07d8e0a` as `e3c07d170ca177054adb8ffddfcb652168672137` on the current original main. Its actual [Worker deploy41842643608](https://github.com/solwation/lunden-3d-apartment/actions/runs/41842643608), including the Wrangler action, succeeded before the client push. Client `aaabd461` became `43fc31b49ba33e13a82311d682a38dcf16228f94`; all manifest source/image SHA256 inputs match exactly. The only merge conflict was the provisional changelog ID: picnic1440 preserves concurrent boule1439. No changed input justified rerunning the green scoped checks.
+
+Client [Pages41843016749](https://github.com/solwation/lunden-3d-apartment/actions/runs/41843016749) and actual [Worker41843018427](https://github.com/solwation/lunden-3d-apartment/actions/runs/41843018427) succeeded. Published version43fc31b/contentc1227191da3b was checked, with11 live modules byte-matched after removing only stamp import queries, including unchanged placement and boule modules. Root directly inspected the result image and verified its permanent raw URL/SHA256 before embedding it in [issue comment6632553932](https://github.com/solwation/lunden-3d-apartment/issues/1864#issuecomment-6632553932), before closure. Original-only gameplay/Cloudflare state has no public port. No production shared stock was consumed for verification.
