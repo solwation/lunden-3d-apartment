@@ -8317,3 +8317,7 @@ export const ROOF_PICNIC = {
     wood: 0x956747, rind: 0xdba643, cheese: 0xf1d080, salami: 0xa74648, fat: 0xf0d0ba,
     metal: 0x38342e, wax: 0xf6dfae, glow: 0xffb65c },
 };
+
+// #1867: fixed friendly player conversations, bounded local/room defaults (*guess*).
+export const CONVERSATION = { version: 1, range: 3, serverRange: 3.3, hearRange: 12,
+  everyMs: 3000, replyMs: 20000, receipts: 64 };

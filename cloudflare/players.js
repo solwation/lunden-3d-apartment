@@ -1,3 +1,5 @@
+import { RoomConversation } from './roomconversation.js';
+import { cleanConversation } from '../src/conversationwire.js';
 import {RoomPicnic} from './picnic.js';
 import {cleanPicnic} from '../src/picnicwire.js';
 import {RoomSharedFish} from './sharedfish.js';
@@ -373,6 +375,7 @@ export class PlayerRoom {
     this.boule = new RoomBoule(ctx, () => this.open().map(ws => ({ ws, a: att(ws) })), send);
     this.football=new RoomFootball(ctx,FOOTBALL,send,()=>this.open().map(ws=>({ws,a:att(ws)})));
     this.doors = new RoomDoors(send, () => this.open().map((ws) => ({ ws }))); // #1775: the doors' state (memory only, no KV)
+    this.conversation = new RoomConversation(() => this.open().map(ws => ({ ws, a: att(ws) })), send);
     this.roomTime = new RoomTime(ctx, () => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1865: persisted server-reference world calendar
     this.graffiti = new RoomGraffiti(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1724: the shared spray paint (memory only, no KV)
     this.trails = new RoomTrails(); // #1773: the recent paths for a late joiner's footprints (memory only, no KV)
@@ -578,7 +581,7 @@ export class PlayerRoom {
     if (!others.length) this.target.reset();
     attachment.tgs = {...this.target.state};
     server.serializeAttachment(attachment);
-    send(server, JSON.stringify({ t: 'w', picnic:await this.picnic.welcome(), sharedFish:await this.sharedFish.welcome(),nutDrops:await this.squirrels.welcome(now),boule: this.boule.snapshot(), target: this.target.snapshot(), football:this.football.join(server,attachment,now), i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons }, ...(others.length ? this.doorsWelcome() : (this.doors.reset(), {})), ...(this.roomTime.welcome(now) ? { tm: this.roomTime.welcome(now) } : {}), trails: this.trails.snapshot(now) })); // (#1773: trails)
+    send(server, JSON.stringify({ t: 'w', conversation: { v: 1 }, picnic:await this.picnic.welcome(), sharedFish:await this.sharedFish.welcome(),nutDrops:await this.squirrels.welcome(now),boule: this.boule.snapshot(), target: this.target.snapshot(), football:this.football.join(server,attachment,now), i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons }, ...(others.length ? this.doorsWelcome() : (this.doors.reset(), {})), ...(this.roomTime.welcome(now) ? { tm: this.roomTime.welcome(now) } : {}), trails: this.trails.snapshot(now) })); // (#1773: trails)
     this.broadcast({ t: 'j', i, n, l: COMBAT.lives }, server);
     this.graffiti.join(server, others.map((ws) => ({ ws, a: att(ws) })), now); // #1724
     return new Response(null, { status: 101, webSocket: client });
@@ -619,6 +622,7 @@ export class PlayerRoom {
     let ft=null;try{ft=cleanFootballCommand(JSON.parse(plain));}catch{}
     const tg = plain.startsWith('{"t":"tg"') ? cleanTarget(plain) : null;
     const dr = plain.startsWith('{"t":"dr"') ? cleanDoor(plain) : null; // #1775
+    const cv = plain.startsWith('{"t":"cv"') ? cleanConversation(plain) : null;
     const tm = plain.startsWith('{"t":"tm"') ? cleanTime(plain) : null; // #1774 (a malformed one is an ordinary, ignored state)
     const talk = cleanTalk(plain), hello = !talk && cleanGreet(plain), toast = !talk && !hello && cleanToast(plain), sound = !talk && !hello && !toast && cleanSound(plain), react = !talk && !hello && !toast && !sound && cleanReact(plain), pool = !talk && !hello && !toast && !sound && !react && cleanPool(plain), mus = !talk && !hello && !toast && !sound && !react && !pool && cleanMusic(plain), cinema = !talk && !hello && !toast && !sound && !react && !pool && !mus && cleanCinema(plain), snake = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && cleanSnake(plain), paddock = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && cleanPaddock(plain), sq = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && cleanSquirrels(plain), rf = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && !sq && cleanRiverFish(plain), shot = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && !sq && !rf && cleanShot(plain);
     if (falling) {
@@ -655,6 +659,7 @@ export class PlayerRoom {
       }
       send(ws, JSON.stringify({ t: 'consume', id: consuming.id, portion: consuming.portion, l: a.l ?? COMBAT.lives, ok: true }));
     }
+    else if (cv) this.conversation.handle(ws, a, cv, now);
     else if (talk) this.talk(ws, a, talk, now);
     else if (hello) { // #673: to someone here, not too often; everybody else sees the greeter wave
       const target = this.open().find((x) => x !== ws && att(x).i === hello.to), recipient = target && att(target);
