@@ -1,0 +1,76 @@
+TAP version 13
+# Subtest: the Worker deploy workflow triggers on every src/ file the Worker imports
+ok 1 - the Worker deploy workflow triggers on every src/ file the Worker imports
+  ---
+  duration_ms: 18.282176
+  type: 'test'
+  ...
+# Subtest: bounded schema rejects free IDs, bad poses, amounts/commands and nonfinite coordinates
+ok 2 - bounded schema rejects free IDs, bad poses, amounts/commands and nonfinite coordinates
+  ---
+  duration_ms: 2.991096
+  type: 'test'
+  ...
+# Subtest: one pickup/seat winner, atomic sip/pour and finite total, duplicate ACK never consumes twice
+ok 3 - one pickup/seat winner, atomic sip/pour and finite total, duplicate ACK never consumes twice
+  ---
+  duration_ms: 4.526294
+  type: 'test'
+  ...
+# Subtest: latejoin, hibernation, reconnect and double-active key cannot duplicate canonical stock or claims
+ok 4 - latejoin, hibernation, reconnect and double-active key cannot duplicate canonical stock or claims
+  ---
+  duration_ms: 1.625498
+  type: 'test'
+  ...
+# Subtest: storage failure never broadcasts success or spends stock; stale/out-of-range/foreign mutations rejected
+ok 5 - storage failure never broadcasts success or spends stock; stale/out-of-range/foreign mutations rejected
+  ---
+  duration_ms: 1.221798
+  type: 'test'
+  ...
+# Subtest: rate gate, monotonically consumed requests and leases remain bounded
+ok 6 - rate gate, monotonically consumed requests and leases remain bounded
+  ---
+  duration_ms: 0.858399
+  type: 'test'
+  ...
+# Subtest: actual PlayerRoom capability, dispatch and hibernated snapshot coexist with older state clients
+ok 7 - actual PlayerRoom capability, dispatch and hibernated snapshot coexist with older state clients
+  ---
+  duration_ms: 329.509675
+  type: 'test'
+  ...
+# Subtest: persistent server reference advances through empty room, restore, pause and spool
+ok 8 - persistent server reference advances through empty room, restore, pause and spool
+  ---
+  duration_ms: 3.890995
+  type: 'test'
+  ...
+# Subtest: validated revisions, rate, range and serialized persistence protect canonical state
+ok 9 - validated revisions, rate, range and serialized persistence protect canonical state
+  ---
+  duration_ms: 0.718299
+  type: 'test'
+  ...
+# Subtest: explicit Nu uses server Lund time and calendar serialization ignores client timezone
+ok 10 - explicit Nu uses server Lund time and calendar serialization ignores client timezone
+  ---
+  duration_ms: 257.153369
+  type: 'test'
+  ...
+# Subtest: failed persistence publishes no new clock, then the same revision can recover
+ok 11 - failed persistence publishes no new clock, then the same revision can recover
+  ---
+  duration_ms: 1.242898
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 434.664837
