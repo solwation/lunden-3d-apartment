@@ -114,4 +114,4 @@ with no additional expensive profiles. Approximate phases: source/claim5min, one
 app/material/depth investigation and focused checks12min, docs/review5min. Physical
 hardware flicker and the exact reporter pixel remain unverified; this is the best
 supported local fix, with that limitation to be stated in the completion comment.
-No push, deployment success or issue closure is claimed by this worker checkpoint.
+Publication verified by conductor: source/image commit `7acb84d948cbb9f41b3fa8e9d60c929213074b02`, successful [Pages41811021274](https://github.com/solwation/lunden-3d-apartment/actions/runs/41811021274), live `version.json` version `7acb84d` / content `5961851095c9`. Permanent image bytes verified and embedded in [completion comment6627926126](https://github.com/solwation/lunden-3d-apartment/issues/1852#issuecomment-6627926126) before resolving push. Applicable low-priority public transfer is [kvarteret-lunden#253](https://github.com/solwation/kvarteret-lunden/issues/253).
