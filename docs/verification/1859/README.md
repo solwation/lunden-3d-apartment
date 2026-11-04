@@ -33,3 +33,6 @@ This original gameplay test fixture has no equivalent bicycle gameplay in the pu
 
 
 Conductor integration2026-11-04: all10 verbatim main fragments consumed by the green native fixture are byte-identical from its original server-stage base to current09007781 after1855/1857. [Exact comparison](integration-excerpts.json). Player only gained the unrelated positive jetpack-ascent hook; Bicycle config/physics, Courtyard, terrain, hold/save dependencies are preserved. Fixture scripts pass syntax and combined diff review. The original source-bound32/90 component results are reused; no new browser/component run is claimed.
+
+
+Levererat i `4bd26363296d65dcc7c033bc973a4b46c43cf154`. [Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/41795994429) lyckades. Ingen Worker-körning utlöstes av ändringens filer; körlistan är kontrollerad och ingen utebliven körning räknas som passerad. Den publika sidans version.json visar `4bd2636`. Dirigentens kombinerade diff-/bildgranskning är klar. Verifieringslänkarna ovan är permanenta; eventuella resultatbilder är granskade och bytekontrollerade. Ingen rutinmässig omkörning av gröna kontroller efter orelaterad integration. Ärendet stängs genom efterföljande verifieringscommit och aktiva etiketter tas bort.
