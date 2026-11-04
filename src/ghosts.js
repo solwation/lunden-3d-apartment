@@ -525,7 +525,7 @@ export class Ghosts {
     }
     else if (m.t === 'cv') this.onConversation?.(m);
     else if (m.t === 'c') { const g = this.others.get(m.i); if (g) this.onToast?.(m, g); } // a toast (#1222): the room sends it only from within PLAYERS.toastRange
-    else if (m.t === 'rx') { const g = this.others.get(m.i); if (g && Number.isInteger(m.k)) g.startReact(m.k, t); } // a BIO reaction (#1639): the room sends it only from within PLAYERS.soundRange
+    else if (m.t === 'rx') { const g = this.others.get(m.i); if (g && Number.isInteger(m.k)) { g.startReact(m.k, t); this.onReact?.(m, g); } } // a BIO reaction (#1639): the room sends it only from within PLAYERS.soundRange
     else if (m.t === 'snd') { const g = this.others.get(m.i); if (g && SOUNDS.kinds.includes(m.k)) this.onPlayerSound?.(m, g); } // a sound event (#1302): the room sends it only from within PLAYERS.soundRange
     else if (m.t === 'cinema') this.onCinema?.(m);
     else if (m.t === 'snake') this.onSnake?.(m);
@@ -830,6 +830,33 @@ export class Ghosts {
   }
 
   afterMirror() { if (this.myGhost) { this.myGhost.root.visible = false; if (this.myGhost.typingSprite) this.myGhost.typingSprite.visible = false; } }
+
+  /** Show our solid avatar directly (third-person view during BIO reactions, #1869). */
+  showSelf(show = true) {
+    if (!show) { if (this.myGhost) this.myGhost.root.visible = false; return; }
+    const m = this.mine;
+    if (!m) return;
+    const g = this.selfGhost();
+    g.setHeld(m.h);
+    g.setItem(m.hi);
+    g.heldCat.set(m.cat, g.root);
+    g.pose = m.pose; g.gx = m.gx;
+    g.look = m.look;
+    g.avatar.setSuit(m.sp);
+    g.setJetpack(m.jp);
+    g.dance = m.dn === 1 || m.dn === 2 ? m.dn : 0;
+    g.air = m.am; g.vy = m.vy;
+    g.react = this.myReact ?? null;
+    g.root.position.copy(m.p);
+    g.root.rotation.y = m.r;
+    g.bikeAt({ bk: m.bk }, { bk: m.bk }, 1);
+    const now = performance.now(), goal = m.c ? 1 : 0, last = g.mirrorAt ?? -Infinity;
+    g.mirrorAt = now;
+    g.crouch = now - last < 250 ? THREE.MathUtils.clamp(goal, (g.crouch ?? goal) - (now - last) / 1000 / AVATAR_CROUCH.time, (g.crouch ?? goal) + (now - last) / 1000 / AVATAR_CROUCH.time) : goal;
+    g.root.visible = true;
+    g.mirrorTyping(!!this.mirrorTyping?.(now), now);
+    g.animate(now, 0, m.vx, m.vz);
+  }
 
   /** One bounded self-damage request; never send client HP or replay it after a disconnect. */
   fall(drop, gap) {

@@ -1497,6 +1497,7 @@ const djInput = new DJInput({canvas,room:playroom,camera,touch:()=>touch.enabled
   blocked:p=>behindWall(p),use:t=>use(t)});
 
 function look(dyaw, dpitch) {
+  if (reactionCam.active && Math.hypot(dyaw, dpitch) > 0.05) stopReactionCam(true);
   const k = binoculars.lookScale(); dyaw *= k; dpitch *= k; // #1706: slower while the binoculars are raised
   camera.rotation.y -= dyaw;
   camera.rotation.x = THREE.MathUtils.clamp(camera.rotation.x - dpitch, -1.45, 1.45);
@@ -1793,6 +1794,7 @@ function standFree(seat, x, z, path) {
   return true;
 }
 function standUp() {
+  if (reactionCam.active) stopReactionCam(false);
   if (slideRide.active) { slideRide.cancel(); return; }
   if (player.riding) { if (!player.dismountBicycle()) greet.sayMine('Här finns ingen säker plats att kliva av.'); return; }
   const film = rest.spot?.pc === 'film';
@@ -2161,6 +2163,7 @@ document.getElementById('jump-btn').addEventListener('pointerdown', (e) => { e.p
 const stripKeys = new Set(); // keys pressed while a strip / the note is open
 const isCtrl = (code) => code === 'ControlLeft' || code === 'ControlRight';
 document.addEventListener('keydown', (e) => {
+  if (reactionCam.active && (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space'].includes(e.code) || e.code.startsWith('Arrow'))) stopReactionCam(true);
   if (!locked || statsOpen) return;
   if (reading) {
     // WASD drive the strips (#120): auto-repeat of a key already held while walking up to them is ignored
@@ -3051,8 +3054,10 @@ const weaponIs = { saber: (h) => h === saber, nerf: (h) => toys.blasters.include
   rifle: (h) => !!h?.isRifle, ball: (h) => h === ball, bow: (h) => !!bow && h === bow, web: (h) => !h && suit.worn }; // (the jetpack is no weapon, #1705)
 const weaponKey = () => { if (player.riding) return ''; const h = heldItem(); return COMBAT.weapons.find((k) => weaponIs[k]?.(h)) ?? ''; };
 const gymPumpState = pumpSampler(() => stats.gymPump);
+const smoothStep = (t) => { const c = Math.min(1, Math.max(0, t)); return c * c * (3 - 2 * c); };
+let reactionCam = { active: false, start: 0, camFrom: null, camTo: null, kind: -1 };
 const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey, mirrored: () => !rest.active || !!rest.spot?.gymPose || !!rest.spot?.gymWirePose,
-  state: () => ({ bp: gymPumpState(), p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y, look: [0, camera.rotation.x], c: player.crouched, dn: playroom.music.danceCode ?? 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 && player.outdoors ? 2 : 1) : 0, am: player.climb ? 3 : player.swing ? 2 : player.flying || player.fling ? 1 : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, fb: fishing.wire, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
+  state: () => ({ bp: gymPumpState(), p: [player.pos.x, player.pos.y, player.pos.z], r: reactionCam.active && reactionCam.camFrom ? reactionCam.camFrom.yaw : camera.rotation.y, look: [0, reactionCam.active && reactionCam.camFrom ? reactionCam.camFrom.pitch : camera.rotation.x], c: player.crouched, dn: playroom.music.danceCode ?? 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 && player.outdoors ? 2 : 1) : 0, am: player.climb ? 3 : player.swing ? 2 : player.flying || player.fling ? 1 : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, fb: fishing.wire, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
 football=new Football({site:world.football,camera,ghosts,life,
   canPlay:()=>overlay.hidden&&!reading&&!heldItem()&&!rest.active&&!player.riding&&!player.flying&&!player.climb&&!player.swing&&Math.abs(player.pos.y-world.football.ground(player.pos.x,player.pos.z))<FOOTBALL.playHeightSlack,
   spectating:()=>rest.active&&rest.target?.id?.startsWith('football-bench-'),onRecord:recordFootball,say:t=>badge(t,false)});
@@ -3268,7 +3273,7 @@ function updateReactBar() {
   if (show !== reactShown) { reactShown = show; reactOpen = false; applyReactButtons(); }
 }
 reactToggle.addEventListener('click', () => { reactOpen = !reactOpen; applyReactButtons(); });
-const doReact = (k) => { updateReactBar(); return reactShown && ghosts.react(k); };
+const doReact = (k) => { updateReactBar(); const ok = reactShown && ghosts.react(k); if (ok && typeof onSelfReact === 'function') onSelfReact(k); return ok; };
 for (const b of reactBtns) b.addEventListener('click', () => { doReact(Number(b.dataset.react)); if (reactOpen) { reactOpen = false; applyReactButtons(); } });
 /** Ring the bicycle bell (#1302, B / the 🔔 button while riding): we hear it right away, the players nearby hear it from us. */
 function ringBell() {
@@ -3281,6 +3286,91 @@ function ringBell() {
 let bellAt = -1e9;
 bellBtn.addEventListener('click', ringBell);
 greet.mineAvatar = () => ghosts.selfGhost().avatar; // (#1122: your spoken lines move your mirror image's mouth)
+
+function startReactionCam(k) {
+  const seated = rest.active;
+  const yaw = seated ? (rest.spot?.yaw ?? camera.rotation.y) : camera.rotation.y;
+  const basePos = seated && rest.spot ? rest.spot.pos.clone().setY(rest.spot.pos.y - REST.sitEye) : player.pos.clone();
+  const targetY = basePos.y + (seated ? 0.95 : 1.35);
+  const target = new THREE.Vector3(basePos.x, targetY, basePos.z);
+  const fwdX = -Math.sin(yaw), fwdZ = -Math.cos(yaw);
+  const rightX = Math.cos(yaw), rightZ = -Math.sin(yaw);
+  const dist = 1.3, side = 0.25;
+  const camPos = new THREE.Vector3(target.x + fwdX * dist + rightX * side, target.y + 0.06, target.z + fwdZ * dist + rightZ * side);
+  const dx = target.x - camPos.x, dy = target.y - camPos.y, dz = target.z - camPos.z;
+  const distXZ = Math.hypot(dx, dz);
+  const toYaw = Math.atan2(-dx, -dz);
+  const toPitch = Math.atan2(dy, distXZ);
+
+  reactionCam = {
+    active: true,
+    start: performance.now(),
+    kind: k,
+    camFrom: { pos: camera.position.clone(), yaw: camera.rotation.y, pitch: camera.rotation.x },
+    camTo: { pos: camPos, yaw: toYaw, pitch: toPitch },
+  };
+  armEl.hidden = true;
+  const dotEl = document.getElementById('dot');
+  if (dotEl) dotEl.hidden = true;
+}
+
+function stopReactionCam(restore = true) {
+  if (!reactionCam.active) return;
+  const from = reactionCam.camFrom;
+  reactionCam.active = false;
+  ghosts.showSelf(false);
+  armEl.hidden = locked || !statsFreed || statsOpen;
+  const dotEl = document.getElementById('dot');
+  if (dotEl) dotEl.hidden = false;
+  if (restore && from) {
+    camera.position.copy(from.pos);
+    camera.rotation.y = from.yaw;
+    camera.rotation.x = from.pitch;
+  }
+}
+
+function updateReactionCam(now) {
+  if (!reactionCam.active) return;
+  const age = (now - reactionCam.start) / 1000;
+  if (age >= REACT.duration || !bioHere() || drawing.active || rearrange.enabled) {
+    stopReactionCam(true);
+    return;
+  }
+  const ease = 0.35;
+  let pos = reactionCam.camTo.pos, yaw = reactionCam.camTo.yaw, pitch = reactionCam.camTo.pitch;
+  if (age < ease) {
+    const k = smoothStep(age / ease);
+    pos = new THREE.Vector3().lerpVectors(reactionCam.camFrom.pos, reactionCam.camTo.pos, k);
+    const dy = Math.atan2(Math.sin(reactionCam.camTo.yaw - reactionCam.camFrom.yaw), Math.cos(reactionCam.camTo.yaw - reactionCam.camFrom.yaw));
+    yaw = reactionCam.camFrom.yaw + dy * k;
+    pitch = THREE.MathUtils.lerp(reactionCam.camFrom.pitch, reactionCam.camTo.pitch, k);
+  } else if (age > REACT.duration - ease) {
+    const k = smoothStep((REACT.duration - age) / ease);
+    pos = new THREE.Vector3().lerpVectors(reactionCam.camFrom.pos, reactionCam.camTo.pos, k);
+    const dy = Math.atan2(Math.sin(reactionCam.camTo.yaw - reactionCam.camFrom.yaw), Math.cos(reactionCam.camTo.yaw - reactionCam.camFrom.yaw));
+    yaw = reactionCam.camFrom.yaw + dy * k;
+    pitch = THREE.MathUtils.lerp(reactionCam.camFrom.pitch, reactionCam.camTo.pitch, k);
+  }
+  camera.position.copy(pos);
+  camera.rotation.y = yaw;
+  camera.rotation.x = pitch;
+  ghosts.showSelf(true);
+}
+
+function onSelfReact(k) {
+  const K = REACT.kinds[k];
+  if (K) {
+    greet.say({ get head() { return ghosts.selfGhost().head; }, s: 1 }, K.line, { pitch: K.id === 'scream' ? 1.4 : K.id === 'laugh' ? 1.2 : 0.9, rate: 1.05, voice: 0 }, REACT.duration, ghosts.selfGhost().avatar);
+    startReactionCam(k);
+  }
+}
+
+ghosts.onReact = (m, g) => {
+  const K = REACT.kinds[m.k];
+  if (K && !behindWall(g.head)) {
+    greet.say({ head: g.head, s: 1 }, K.line, { pitch: K.id === 'scream' ? 1.4 : K.id === 'laugh' ? 1.2 : 0.9, rate: 1.05, voice: 1 }, REACT.duration, g.avatar);
+  }
+};
 window.__binoculars = binoculars; window.__mailbox = mailbox; window.__graffiti = graffiti; window.__graffitiSync = graffitiSync; window.__elCabinet = elCabinet; window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows; window.__presence = presence;
 chat = new Chat({ ghosts, log: document.getElementById('chat-log'), setting: document.getElementById('menu-chat-setting'), name: () => leaderboard.name, // #675
   camera, layer: document.getElementById('speech'), hidden: (p) => behindWall(p) }); // bubbles over the ghosts (#676)
@@ -3537,6 +3627,7 @@ function step(dt) {
   }
   updateDanceButton();
   updateReactBar();
+  updateReactionCam(performance.now());
   updateCuePower();
   power.update(dt, focused === power.target); // the power cut (#604): flicker, bang, mending (after the focus: mending needs it)
   lights.setSupply(power.supply);
@@ -3703,7 +3794,9 @@ function frame(raw) {
   if (!warm.blocksView) {
     if (viewDue && (testMode?.wantsFrame() ?? true)) {
       frameDiag.lastShadow = renderer.shadowMap.needsUpdate ? 1 : 0; // #1628: this frame's renderer.info totals include the shadow pass (crash heartbeat `gl3.sf`)
+      if (reactionCam.active) ghosts.showSelf(true);
       renderer.render(scene, camera);
+      if (!reactionCam.active && !ghosts.mirrored()) ghosts.showSelf(false);
       reportCapture.afterRender();
       drewView = true;
       lastViewDraw = f0;

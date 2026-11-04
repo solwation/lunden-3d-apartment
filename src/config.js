@@ -7131,9 +7131,9 @@ export const AVATAR_CROUCH = {
 // PLAYERS.reactEvery * .8 is shorter). Keys and labels are the player-facing controls. Pose numbers are by eye (*guess*): m / rad / Hz.
 export const REACT = {
   kinds: [
-    { id: 'cry', label: 'Gråta', key: 'KeyY', keyLabel: 'Y', hz: 7, head: -.45, lean: -.12, shake: .012, mouth: .25 },
-    { id: 'laugh', label: 'Skratta', key: 'KeyU', keyLabel: 'U', hz: 4.5, head: .38, lean: .2, shake: .03, mouth: .85 },
-    { id: 'scream', label: 'Skrika', key: 'KeyI', keyLabel: 'I', hz: 18, head: .35, lean: .1, shake: .008, mouth: 1 },
+    { id: 'cry', label: 'Gråta', key: 'KeyY', keyLabel: 'Y', hz: 7, head: -.45, lean: -.12, shake: .012, mouth: .25, line: 'Buhu…' },
+    { id: 'laugh', label: 'Skratta', key: 'KeyU', keyLabel: 'U', hz: 4.5, head: .38, lean: .2, shake: .03, mouth: .85, line: 'Hahaha!' },
+    { id: 'scream', label: 'Skrika', key: 'KeyI', keyLabel: 'I', hz: 18, head: .35, lean: .1, shake: .008, mouth: 1, line: 'Aaaaaah!' },
   ],
   duration: 3.5, ease: .3, every: 4,
 };
