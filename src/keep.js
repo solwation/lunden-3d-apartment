@@ -53,7 +53,7 @@ function holdKey(h) {
   const p = h.keepPos ?? h.local?.pos ?? h.home?.pos; // (keepPos: a fixed key position for a thing whose home moved, #1573)
   return `${h.keepName ?? h.name}|${p ? vec(p).join(',') : ''}`; // (keepName: a name that changes, the daily beers #587)
 }
-const keepable = (a, h) => h !== a.chicken && !h.isChristmasGift && !h.isSquirrelNut && !h.isCaughtFish && !h.isBalloonBeer && !h.broken && !h.flying && !h.isMiele; // chicken has its own Life extra; the balloon's beers are restocked per appearance, never saved (#1770) (and a ball in the air); Miele in your arms is the cat's (#328)
+const keepable = (a, h) => !h.isSharedPicnic && h !== a.chicken && !h.isChristmasGift && !h.isSquirrelNut && !h.isCaughtFish && !h.isBalloonBeer && !h.broken && !h.flying && !h.isMiele; // chicken has its own Life extra; the balloon's beers are restocked per appearance, never saved (#1770) (and a ball in the air); Miele in your arms is the cat's (#328)
 
 const PARTS = {
   bicycleHand: {
@@ -328,7 +328,7 @@ const PARTS = {
 
   rest: { // sitting / lying (rest.js): which seat or bed, which spot on it, where you stood before
     save({ rest, world, car }) {
-      if (!rest.active) return null;
+      if (!rest.active || rest.target?.sharedPicnic) return null;
       const st = rest.standing;
       const stand = st && [st.x, st.y, st.z, st.yaw].every(Number.isFinite) ? [r3(st.x), r3(st.y), r3(st.z), r3(st.yaw)] : null;
       const seat = car.seats.indexOf(rest.target);
@@ -344,7 +344,7 @@ const PARTS = {
       if (Number.isInteger(s.car)) { target = a.car.seats[s.car]; if (!target || !a.car.parked) return; }
       else target = byKey([...a.world.furnitureTargets, ...(a.world.courtyardTargets ?? [])].filter((t) => t.kind === 'rest'), restKey).get(s.t);
       const spot = target?.spots[Number.isInteger(s.car) ? 0 : s.spot];
-      if (!spot) return;
+      if (!spot || target.sharedPicnic) return;
       const [x, y, z, yaw] = s.stand;
       a.sitAt(target, spot, { x, y, z, yaw });
     },

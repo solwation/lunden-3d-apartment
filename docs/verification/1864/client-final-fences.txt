@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: real Glass/Runner adapters mutate only on canonical ACK; finite pour, old Keep and unsupported server remain isolated
+ok 1 - real Glass/Runner adapters mutate only on canonical ACK; finite pour, old Keep and unsupported server remain isolated
+  ---
+  duration_ms: 33.679229
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 164.672552

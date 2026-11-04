@@ -125,7 +125,7 @@ export class Glass extends Thing {
     return { at: this.where(), color: D[src.drink]?.color ?? 0xffffff };
   }
   /** The held thing that pours, if it can pour into this glass now (the glass standing out, #167). */
-  get source() { const h = heldItem(); return h?.drink && D.pour.glass[h.drink] && this.placed && !this.held && !this.rackStore ? h : null; }
+  get source() { const h = heldItem(); if(!!h?.isSharedPicnic!==!!this.isSharedPicnic)return null; return h?.drink && D.pour.glass[h.drink] && this.placed && !this.held && !this.rackStore ? h : null; }
   get pourable() { return !!this.source; }
   get blocked() { if (this.rackStore?.isOpen && !this.rackStore.isOpen()) return true; return this.pourable ? pourAmount('glass', this.source.drink, this.fill) <= 0 || (!!this.source.portion && !this.contents.canAddBeer(this.source.portion)) : handBusy(this); }
   get pourVerb() { return this.pourable ? `hälla ${drinkName(this.source.drink)} i` : 'ta'; }

@@ -12,7 +12,7 @@ export const cleanHeldCategory = (v) => (typeof v === 'string' && SET.has(v) ? v
 // By class name of the held object (the project has no bundler, so the names are stable). Weapons, the ball and cats are not
 // here: weapons travel as `h`, a carried cat as `cat`. Anything else held falls back to a generic 'box'.
 const BY_CLASS = {
-  Cup: 'cup', Glass: 'cup', PicnicGlass: 'cup', Jug: 'bottle', Bottle: 'bottle', Milk: 'bottle', Beer: 'bottle', BeerCan: 'bottle',
+  Cup: 'cup', Glass: 'cup', PicnicGlass: 'cup', PicnicBottle: 'bottle', Jug: 'bottle', Bottle: 'bottle', Milk: 'bottle', Beer: 'bottle', BeerCan: 'bottle',
   Book: 'book', HeldDrawing: 'paper', ToiletPaper: 'paper', Photo: 'paper',
   Pan: 'tool', Cloth: 'tool', Vacuum: 'tool', Flashlight: 'tool', Remote: 'tool', Scoop: 'tool', Toaster: 'box',
   SillPot: 'plant', Nut: 'nut', Binoculars: 'binoculars', SprayCan: 'spray', ChristmasGift: 'gift', FishingRod: 'rod', CaughtFish: 'fish', SharkFin: 'sharkfin', BilliardCue: 'cue', Fruit: 'food', FishFinger: 'food', FishPack: 'box', FriesBag: 'food', FriesBunch: 'food', PopcornTub: 'food', Chicken: 'food', ChickenPiece: 'food',

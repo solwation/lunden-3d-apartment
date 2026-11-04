@@ -1,21 +1,26 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {ROOF_PICNIC as C,HOLD,DRINKS} from './config.js';
-import {Glass} from './things.js';
+import {Glass,Bottle} from './things.js';
 import {heldItem} from './holdable.js';
 import {restTarget} from './rest.js';
 import {sfx} from './audio.js';
 
 // #1858 extends actual Glass so ordinary held-category, toast and Keep paths apply.
 export class PicnicGlass extends Glass {
+ // Shared site glasses never enter a private dish-rack/inventory authority.
+ get isDishThing(){return false;}
  constructor(scene,camera,model,inner,index){
   super(scene,camera,{model,kind:'glass',name:'vinglaset på taket',back:'picknickfilten',inner});
-  this.keepName=`roof-picnic-glass-${index}`;this.keepPos=new T.Vector3(index,0,0);this.outdoorPlace=true;
+  this.keepName=`roof-picnic-glass-${index}`;this.keepPos=new T.Vector3(index,0,0);this.outdoorPlace=true;this.isSharedPicnic=true;
   this.contents.set('wine',C.wine);this.show();
  }
  goHome(){const a=this.contents&&{...this.contents.a},used=this.used;super.goHome();if(a){this.contents.a=a;this.used=used;this.show();}}
  keepState(){return{...super.keepState(),picnic:true,drinks:{...this.contents.a}};}
  loadKeep(s,shared){super.loadKeep(s,shared);if(s?.picnic&&s.drinks&&Object.entries(s.drinks).every(([k,v])=>DRINKS[k]&&Number.isFinite(v)&&v>=0)&&Object.values(s.drinks).reduce((a,b)=>a+b,0)<=1.00001){this.contents.a={...s.drinks};this.show();}}
+}
+export class PicnicBottle extends Bottle {
+ constructor(scene,camera,model){super(scene,camera,{model,kind:'wine',name:'picknickens vinflaska',back:'picknickfilten'});this.ml=C.shared.bottleMl;this.isSharedPicnic=true;this.outdoorPlace=true;this.keepName='roof-picnic-bottle';this.keepPos=new T.Vector3(2,0,0);}
 }
 const profile=[[.0001,.001],[.032,0],[.034,.003],[.004,.009],[.003,.078],[.012,.089],[.033,.118],[.035,.138],[.032,.165],[.028,.194],[.026,.194],[.030,.165],[.033,.138],[.031,.118],[.009,.091],[.0001,.088]];
 const inner=[[.0001,.089],[.008,.092],[.019,.099],[.0305,.118],[.033,.138],[.0305,.165],[.0262,.190]];
@@ -40,6 +45,12 @@ export class RoofPicnic {
   pick.userData.rest={kind:'sit',name:'picknickfilten',verb:'sätta dig på',spots:C.seats.map(([x,z])=>({x,y:C.lift+C.cushion[1],z,legsUp:true,dir:[0,-1],look:[look.x,look.z,look.y]}))};
   this.seat=restTarget(pick,{x:C.at[0],z:C.at[1],level:0},this.y);this.seat.id='roof-picnic-seat';pick.userData.door=this.seat;world.furnitureTargets.push(this.seat);
   this.glasses=C.glasses.map(([x,z],i)=>{const m=new T.Mesh(new T.LatheGeometry(profile.map(([r,y])=>new T.Vector2(r,y)),18),new T.MeshStandardMaterial({color:0xf1f8f8,roughness:.08,transparent:true,opacity:.3,depthWrite:false,side:T.DoubleSide}));m.position.copy(point(x,C.lift+.005,z));scene.add(m);return new PicnicGlass(scene,camera,m,inner,i);});
+  const bottleModel=new T.Group(),br=C.shared.bottleR,bh=C.shared.bottleH;
+  const shape=[[0,0],[br,0],[br,bh*.65],[br*.4,bh*.78],[br*.4,bh],[0,bh]];
+  bottleModel.add(new T.Mesh(new T.LatheGeometry(shape.map(([x,y])=>new T.Vector2(x,y)),16),new T.MeshStandardMaterial({color:0x244b32,roughness:.25})));
+  const label=new T.Mesh(new T.CylinderGeometry(br*1.01,br*1.01,bh*.26,16,1,true),new T.MeshStandardMaterial({color:0xe6d7b7,roughness:.9}));label.position.y=bh*.4;bottleModel.add(label);
+  const seal=new T.Mesh(new T.CylinderGeometry(br*.43,br*.43,bh*.13,12),new T.MeshStandardMaterial({color:0x69233c}));seal.position.y=bh*.94;bottleModel.add(seal);bottleModel.position.copy(point(...[C.shared.bottle[0],C.lift+.005,C.shared.bottle[1]]));scene.add(bottleModel);
+  this.bottle=new PicnicBottle(scene,camera,bottleModel);this.seat.sharedPicnic=true;
   this.food=[];this.foodTargets=[];
   for(let k=0;k<2;k++){
    const portions=new T.Group();portions.name=k?'picnic-charcuterie':'picnic-cheese';this.object.add(portions);const cells=[];
@@ -54,12 +65,12 @@ export class RoofPicnic {
    const at=point(bx+(k?.16:-.16),C.lift+by+.06,bz),p=new T.Mesh(new T.BoxGeometry(.3,.12,.38),new T.MeshBasicMaterial());p.position.copy(at);p.rotation.y=C.yaw;p.visible=false;scene.add(p);
    const target={kind:'life',name:k?'charken på brickan':'osten på brickan',id:`roof-picnic-food-${k}`,pickable:p,position:at};p.userData.door=target;this.foodTargets.push(target);
    life.actions.define({id:`picnicBite${k}`,order:0,duration:C.biteSeconds,label:k?'äta en skiva chark':'äta en bit ost',applies:c=>c.raw===target,
-    check:c=>c.heldView?'Lägg ifrån dig glaset först':this.remaining[k]<=0?'Det finns inget kvar':camera.position.distanceTo(at)>HOLD.reach?'För långt bort':null,
-    commit:()=>{this.remaining[k]--;this.refresh();life.dirty=true;sfx.chew(at,.7);life.emit('bite',{type:k?'picnicCharcuterie':'picnicCheese',amount:1});return 1;},
+    check:c=>!this.sync?.ready||this.sync.pending?'Picknicken väntar på rummet':c.heldView?'Lägg ifrån dig glaset först':this.remaining[k]<=0?'Det finns inget kvar':camera.position.distanceTo(at)>HOLD.reach?'För långt bort':null,
+    commit:()=>this.sync?.request('bite',k,{},()=>{sfx.chew(at,.7);life.emit('bite',{type:k?'picnicCharcuterie':'picnicCheese',amount:1});})?1:0,
     consumes:'one finite picnic portion',result:'one existing bite event; no new score/stat reward'});
    target.options=()=>life.options(target);Object.defineProperties(target,{blocked:{get:()=>!target.options().some(a=>!a.reason)},blockedText:{get:()=>target.options().find(a=>a.reason)?.reason??''}});
   }
-  life.keepPart('roofPicnic',{save:()=>({v:1,remaining:[...this.remaining]}),load:s=>{if(s?.v===1&&Array.isArray(s.remaining)&&s.remaining.length===2&&s.remaining.every(n=>Number.isInteger(n)&&n>=0&&n<=C.portions)){this.remaining=[...s.remaining];this.refresh();}}});
+  life.keepPart('roofPicnic',{save:()=>null,load:()=>{}}); // #1864 ignore legacy local quantities: server owns the finite stock
   this.night=new T.Group();this.night.name='picnic-night-lanterns';this.object.add(this.night);const metal=[],wax=[];
   for(const[x,z]of C.lanterns){const r=C.lanternRadius,h=C.lanternHeight;box(r*2,.025,r*2,x,0,z,C.colors.metal,metal);box(r*2,.025,r*2,x,h,z,C.colors.metal,metal);for(const a of[-1,1])for(const b of[-1,1])box(.012,h,.012,x+a*r,0,z+b*r,C.colors.metal,metal);add(new T.TorusGeometry(r*.5,.008,4,12).translate(x,h+r*.5,z),C.colors.metal,metal);add(new T.CylinderGeometry(r*.5,r*.5,h*.45,10).translate(x,h*.27,z),C.colors.wax,wax);add(new T.IcosahedronGeometry(.025,1).scale(.5,1,.5).translate(x,h*.55,z),C.colors.glow,wax);}
   batch(metal,'picnic-lantern-cages',this.night);batch(wax,'picnic-candles',this.night,new T.MeshStandardMaterial({vertexColors:true,emissive:C.colors.glow,emissiveIntensity:.85}));
@@ -68,6 +79,6 @@ export class RoofPicnic {
   this.update(1,camera.position);
  }
  refresh(){for(let k=0;k<2;k++)this.food[k].mesh.geometry.setDrawRange(0,this.remaining[k]*this.food[k].perPortion);}
- targets(){return[this.seat,...this.foodTargets,...this.glasses.filter(g=>!g.held).map(g=>g.target)];}
+ targets(){return[this.seat,...this.foodTargets,...[...this.glasses,this.bottle].filter(g=>!g.held||g.backTarget).map(g=>g.target)];}
  update(daylight,position){this.object.visible=position.distanceTo(this.object.position)<C.drawDist;this.night.visible=daylight<C.nightAt;}
 }

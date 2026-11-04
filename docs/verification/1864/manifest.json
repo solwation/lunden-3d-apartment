@@ -1,0 +1,36 @@
+{
+  "issue": 1864,
+  "base": "ca5fc7035548b94175b7a0a6de7dc7b82d60db0b",
+  "serverStage": "d07d8e0aeeae8b01fdd53ecff370b690c6dadd42",
+  "order": "server stage -> actual Worker deploy -> client -> actual Pages+Worker deploy -> embedded image -> closure",
+  "app": "http://localhost:8953",
+  "worker": "ws://localhost:8954/players",
+  "checks": {
+    "serverStage": "8/8",
+    "combinedScoped": "12/12",
+    "finalClientOwnershipFence": "1/1",
+    "syntax": "pass",
+    "diff": "pass"
+  },
+  "sourcePhase": "Single held full app, final sequence/orphan methods loaded in place; peer later reloads final source; last private-hand reconciliation component-tested only. See README.",
+  "sha256": {
+    "src/config.js": "e539552f643727a9e0c2dc08b95b50ffafd9a03da18c4a60a86e76e6002b2df0",
+    "src/picnicwire.js": "59c156a0b7803e2bf639f4e1d22e4668dc39abbc0661b80bbe3224291a461a20",
+    "cloudflare/picnic.js": "ba95cdda6e34679e4f5dadc4db2fb5496e44cf90c05b389db81b4c83519c0ac2",
+    "cloudflare/players.js": "0fcb29595feff376ec5aef02c1827a0a474d7b138fcd47d3b25fb0b3ced021d8",
+    "src/picnicclient.js": "fbb2e7642d8b2ce4545dda1a7d1f04fecc0b24e2b6b0b4974394a23812928ef5",
+    "src/roofpicnic.js": "64ea8abea03db9128ab469b12cc12d3695bf5ce563140b6ce5f2fc9d28dcbb11",
+    "src/main.js": "aa08f7a0ab4eab1725ac4db1d46f8b843a130ff857cf7fcd366dec3cd29154d8",
+    "src/ghosts.js": "feff398bcffad4ee27ce6a1120ad9c7c1768dd3dabc627e819ef0c169f0bfd9c",
+    "src/heldcategory.js": "5b14cfe785cd062b3d0c6d7d432cb73d8bf286d24d194bc3e64469ed716bb23b",
+    "src/keep.js": "3212d4e9c5bfcb3c79a6d0e9ddec31e5654a26b73c25ecda80956eb315f6943a",
+    "src/things.js": "01ab3e7b7bca6efcc70bfae8129776caf182196f885f0c8a49ea18ac54b5e4c5",
+    "cloudflare/picnic.test.mjs": "c0707b8d26884067248009f98593675a53d2d34c3671dc1b317696f577ef5fe6",
+    "tools/picnicclienttest.mjs": "12c369c9f280b6a5277041344a35b4d5c1afe41e5999dc13b8c44815a9026291",
+    "tools/roofpicnic1858test.mjs": "aed2cd9132f724729de659e475c334a581cfa1c1e2ab7b95464ea95aee94fc1e",
+    "tools/sharedpicnic1864browser.cjs": "caddcdbc6cb4ea179fc3f567391e682be4fa5adf2f8749fac1ae4d2d0840b3fd",
+    "tools/sharedpicnic1864peer.html": "2003c9f84d9ad1a7f55e9375b3f83fc45e9af27669e1dda6dec3d4f387a24958",
+    "docs/verification/1864/browser-proof.json": "eecfa7856bacf640d9f1dc3eb16ff21f131865b08932dcde78d93fb1d92cde9e",
+    "docs/verification/1864/shared-serving.png": "8cf3447fc27fad06dfa4db767e51b470a403f7d09ea78fc488adf568e2785f03"
+  }
+}
