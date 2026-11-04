@@ -1,4 +1,6 @@
-# #1852 — roof-fold diagnosis, unresolved target
+# #1852 — initial foreground diagnosis (historical checkpoint)
+
+The user subsequently confirmed Hus L farther away on 2026-11-04; see the [resumed Hus L surface investigation](resumed/README.md). The foreground target below is historical.
 
 **Investigation only. No geometry or behavior is changed and this is not a verified fix.**
 The report's original JPEG is [already committed](../../ingame-reports/380ac6df-6252-4e09-95d3-0f26f134a98e.jpg), SHA256 `31a68733cd53cebef1b609c9fecdfb9a59fe0a41ad5e0a120d6bf25f8ab90d17`.
@@ -42,4 +44,4 @@ The diagnostic browser was released to high-priority #1851 before offline analys
 
 ## Published clarification checkpoint
 
-The diagnostic archive was published in `09f554508f51b5b7eef7f1cd2b54f6018ad8818a`. The conductor directly inspected the landmark-match image, checked its permanent public bytes and posted [the precise clarification question](https://github.com/solwation/lunden-3d-apartment/issues/1852#issuecomment-6612476292). Issue #1852 remains open with `user-question`; active work and ownership labels were removed. Other startable original work continues. No runtime change, deployment success or verified fix is claimed by this checkpoint.
+The diagnostic archive was published in `09f554508f51b5b7eef7f1cd2b54f6018ad8818a`. The conductor directly inspected the landmark-match image, checked its permanent public bytes and posted [the precise clarification question](https://github.com/solwation/lunden-3d-apartment/issues/1852#issuecomment-6612476292). At that checkpoint issue #1852 remained open with `user-question`; active work and ownership labels were removed. Other startable original work continues. No runtime change, deployment success or verified fix is claimed by this checkpoint.

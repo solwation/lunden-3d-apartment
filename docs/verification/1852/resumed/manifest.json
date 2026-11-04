@@ -1,0 +1,29 @@
+{
+  "source": "0931b84de82b48e1e435843676e4c7908aa551c6",
+  "runtimeChanges": false,
+  "actualBootstrapCount": 1,
+  "pageErrors": [],
+  "sha256": {
+    "docs/ingame-reports/380ac6df-6252-4e09-95d3-0f26f134a98e.jpg": "31a68733cd53cebef1b609c9fecdfb9a59fe0a41ad5e0a120d6bf25f8ab90d17",
+    "docs/verification/1852/resumed/README.md": "eec5c8c2c7b159978eb34c379877bc28dfa5eccafb16fc6d7ac8e2a9afbbfc9b",
+    "docs/verification/1852/resumed/analyze-roof.mjs": "d8927d09461b4c6ad6cd8d010a75d7fe7a84e49ea30f88e7827807e36901c76c",
+    "docs/verification/1852/resumed/l-gable-close-final.png": "e5f956dc47d3a0b96f7bba49ab54e8c3b43bc93769f5aececa9b7964d1ddfee8",
+    "docs/verification/1852/resumed/l-metadata.json": "cf2897c069ca8fce958b63988d0ad686daf212a0657a2c328ce2e2834003a394",
+    "docs/verification/1852/resumed/l-numbered-surfaces.png": "75ff6e2bd17d65491a0e31631daa092395948cc487dc9ac0f3d43c37647bcba3",
+    "docs/verification/1852/resumed/l-roof-candidate.png": "ecda642fb64ef7851a95380dca7d576d244cffea569f4dd63017a3239e9910e2",
+    "docs/verification/1852/resumed/l-roof-final-export.json": "81b320f29412951a5e971a21350a257246e2a6f2c17cb321b21779053c391880",
+    "docs/verification/1852/resumed/l-surface-audit.json": "8c83c8de72e633260ff529b1985d116916819f4ac08f64deff1950bf6bb83b03",
+    "docs/verification/1852/resumed/numbered-surface-labels.json": "e54f7995841a89dfdeb0f1f874f7928ee2c13f3d47cf5322f0d65e5f7f1c6331",
+    "docs/verification/1852/resumed/page-errors.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "docs/verification/1852/resumed/question-draft.md": "fab59b7da1d68ff59b44178e8d826c0fbb53b27f4cadeed86d82a4750eebbd23",
+    "docs/verification/1852/resumed/report-view.png": "cfc9ed96e775b46098ad38e0cf739487b7642c0ecfe3bb2e6687438df9de8e33",
+    "docs/verification/1852/resumed/roof-analysis.json": "063745313c0ac8bfd1b5f9e424bc3cfd0e090c3d6f68b3f9d3e714bbeedd43ba",
+    "src/config.js": "5240043d406483a4c55c4fd97729771002955b81bda50c7b75ba02acfefdbb84",
+    "src/corehouse.js": "a1b4b020cddf0c0b7d5bf586596d38846ca64311ded87c0c3047dc54ac3f7a8d",
+    "src/exterior.js": "e6347ad9558aed1e3deaecfd77cd889136868431f7ceeb58ba0000f6ebaf8143",
+    "src/neighborglass.js": "e7c0acfb2c9889419ed80880a2f943726072adb72e688bb4445951dfefea6c26",
+    "src/surroundings.js": "fc2f9e35c828e67abf2815534d51be3056ac8f2f7540fb853a08b03ba2010e90",
+    "src/tightfrustum.js": "b086e8c7b7aea7c09f0fe756cb284c3cfe987361205d101380589d79638c371a",
+    "src/world.js": "9be8e1cc886ee6800ced8d7790b1619d1df25319ee81e939fa73a170b94a048a"
+  }
+}

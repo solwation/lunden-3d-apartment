@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "triangles": 24,
+  "minArea": 0.08300030899044941,
+  "minDot": 1,
+  "edgeCount": 36,
+  "unpaired": 0,
+  "authoredYLevels": [
+    12.399999618530273,
+    12.699999809265137,
+    13.300000190734863,
+    13.350000381469727
+  ],
+  "note": "Two existing closed axis-aligned roof boxes, not proof that the reported surface was identified or that all architecture is correct."
+}
