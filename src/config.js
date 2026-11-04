@@ -8306,6 +8306,8 @@ export const BESTIARY = { observeEvery: 0.75, seenDistance: 45, birdSeenDistance
 // #1858 user-approved preliminary placement (2026-11-04): Karpvägen 8 roof toward Höje å.
 // Move this one anchor/yaw if the intended roof differs; dimensions/colours/portions are guesses.
 export const ROOF_PICNIC = {
+  // #1864: fixed shared spawn height matches the existing measured cap;750ml bottle/model dimensions and lease/reach are guesses.
+  shared: { roofY:13.1039017774, bottle:[.78,-.48], bottleMl:750, bottleH:.30, bottleR:.038, leaseMs:120000, reach:4, everyMs:150 },
   at: [-155.49, 114.60], yaw: -3.113, look: [-185, 206.543], roofSource: '342815182',
   blanket: [2.5, 2.8], lift: .035, cushion: [.65,.10,.65], seats: [[-.62,.65],[.62,.65]],
   board: [0,.05,-.25], boardSize: [.72,.035,.42], glasses: [[-.44,-.28],[.44,-.28]],
