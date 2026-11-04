@@ -1,0 +1,8 @@
+page.waitForFunction: Timeout 30000ms exceeded.
+    at /home/devcontainers/orkester-lunden-olw-win10-gpt6-20261104/boule-notices/tools/boulenoticebrowser.cjs:6:463
+Debugger listening on ws://127.0.0.1:9229/81a98c4b-5149-440a-82d0-d2d7c1f41f7b
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+Debugger attached.
+Debugger attached.
+Debugger attached.

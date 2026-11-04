@@ -1,0 +1,57 @@
+{
+  "checks": [
+    {
+      "check": "old production receive creates real HUD badge far from court on remote reset",
+      "events": [
+        {
+          "text": "Nytt parti: Lag 1 kastar lillen",
+          "phase": "before"
+        }
+      ]
+    },
+    {
+      "check": "fixed real app remains silent and synchronized for two remote resets",
+      "events": [],
+      "q": 18,
+      "badges": [
+        "Boule HUD peer kom in i spelet"
+      ],
+      "interested": false
+    },
+    {
+      "check": "nearby participant retains actual command ACK HUD verdict",
+      "events": [
+        {
+          "text": "Nytt parti: Lag 1 kastar lillen",
+          "phase": "participant"
+        }
+      ],
+      "q": 19,
+      "interested": true,
+      "rules": {
+        "balls": 3,
+        "target": 13,
+        "scores": [
+          0,
+          0
+        ],
+        "mene": 1,
+        "jackTeam": 0,
+        "over": false,
+        "winner": null,
+        "last": null,
+        "phase": "jack",
+        "turn": 0,
+        "left": [
+          3,
+          3
+        ],
+        "lastTeam": null,
+        "message": "Nytt parti: Lag 1 kastar lillen"
+      }
+    }
+  ],
+  "errors": [],
+  "baseline": "6d584a3d:src/bouleclient.js",
+  "mode": "one actual app, lazy logic/render stopped for bounded HUD captures, real local Worker peer"
+}

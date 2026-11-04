@@ -1,0 +1,35 @@
+{
+  "base": "6d584a3d1e9769e2742ddcc9bcda54ac4631111c",
+  "runtimeCheckpoint": "74343eba65f99015b106ae9d67979e32a9d0bce6",
+  "runtimeChanged": [
+    "src/bouleclient.js"
+  ],
+  "sha256": {
+    "cloudflare/dev.mjs": "4d2f952a8978d699cde080cf47474182f24d0a555a7189534459ae17e528f45a",
+    "cloudflare/players.js": "407193aa4cf06e22a3d2dac79de637d7dfd0327b3fc0f4ac488952b8b05c8cbf",
+    "cloudflare/roomboule.js": "b6c9e67b8748a46060d5693a600ab9b35454c071164e40d33b01d965be938fe8",
+    "docs/verification/1863/after-participant.png": "fb7f565150898b9e3014590c1a3fff9a507b1b3ffdc94f0f407c0e343c84eca4",
+    "docs/verification/1863/after-uninvolved.png": "6689c930a37e27ee186724f0f25e3cb5e86efa588b0c3275c046b5587c4cc3d1",
+    "docs/verification/1863/before-uninvolved.png": "d3d89e365140a20a90a170cac88ec963f59ff976d2639179f8cd94599afeaa97",
+    "docs/verification/1863/browser-driver.txt": "ca4c10d0f9e9c1ef3bf655689a1694ab8a85028f55f361abf4cf4c88b888ef25",
+    "docs/verification/1863/browser-error.txt": "9976b0de1a96d65818572d0f6fd6ea1e3a57d0e24f0bca12dd6960f6c26bd97a",
+    "docs/verification/1863/browser.json": "3014876a0318d53902d71b8051f49a66361316cf4a066d199e24fe393fe5fe32",
+    "docs/verification/1863/command.json": "33de1588df6f2369470f6d3263836ef38574f7e4b0ff5a23a12a75b4b91fa4f6",
+    "docs/verification/1863/fixture-error.png": "207f37a38663231a56062721a9aee84646a0b40c3eaa7f8dc98f8b7ab6c45051",
+    "docs/verification/1863/recovery.json": "4f8fc1349bcff41f3c7d26dee3292b239952aefe596a94b888e8dc6f30933ef0",
+    "docs/verification/1863/regression-before.txt": "99266bfeb285ae7ec1c31cb63ae3ee97dba2b15af0cc4b0d5ca99f7a5527abf5",
+    "docs/verification/1863/regression.txt": "0a554dc73ff7425cc0a03e02b9bc09c2a81377375b16071671e470a97ddc6076",
+    "docs/verification/1863/worker.json": "2bd08962e60fd7e33dd9bf25eb256886dbf702b79bcabe4ef6db5b117bf9ea19",
+    "src/boule.js": "820a06f368b8240f0a1773fc8eec08e8a14d8aaf4d8c18dd886e264999595dc0",
+    "src/bouleclient.js": "e27afc8e48314af4c21b92f57c6f8489788d63a1d2d3156111346d12eda5e941",
+    "src/boulephysics.js": "0e5e7d68f6315dbcf33847c3221aff5c65d1688e5dc948e0adaa645ecde6f6f1",
+    "src/boulerules.js": "bdb528c50847460548aaa142887a0be6c91b942ff74b5d6a85746c0a73a4c732",
+    "src/boulesync.js": "b66961b002dde5a40192e92c58401c39c6340f91cba675e81030d7edb2aca0db",
+    "src/config.js": "3ffdf157f40e4d08b22ad06cd8a705d0bf0938d18486e2d1d73c34a36943fb57",
+    "src/main.js": "cd2ce95cf0a9a360592842500be223e9e146910aeba84a26cb8aebf222fbcc41",
+    "tools/bouleclienttest.mjs": "192adfc5cd735ac8edf50d5c77e22f8a5abc943c6c7735b272610614d214f162",
+    "tools/boulenoticebrowser.cjs": "fbf81502b6ae4a32dcfdfc7a2217cbfbdd496e11f2bb2a94d5bce5c1cba79d36",
+    "tools/boulenoticerecover.cjs": "1edb029ac96c0517cb982fd9e3eebd73b6e9b30627c550e8ce46efaea471ed6e",
+    "tools/boulenoticeworker.mjs": "b8d1473fdb2ffa8c146f868c4f2b3d1c1886e4d1dd296a31dd2776baa061c095"
+  }
+}

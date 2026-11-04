@@ -9063,3 +9063,14 @@ without replayed/fictitious goal credit. Exact source phases and three inspected
 ### Shared caught fish/nut drops (#1855)
 
 Three scoped groups: durable fish/nut transactions and real Worker wake/latejoin plus actual production adapters/save/feeding; one full app plus a small production-module Room peer with native E/touch and real table p/q; final source guard/model contact/draw contribution. [Exact phase hashes, raw results, fixture recovery, accepted images, rollout and exclusions](../verification/1855/README.md). Final15 focused tests and earlier87 relevant Room/compatibility/import-path checks are distinguished; no broad performance, new native fishing/cooking, or second full-world claim.
+
+### Boule HUD interest (#1863)
+
+`node --experimental-default-type=module --test tools/bouleclienttest.mjs cloudflare/boule.test.mjs tools/bouletest.mjs`
+covers quiet uninvolved welcome/background revisions, nearby nonparticipants, interested participants,
+walking away, duplicate ACK/reconnect, explicit rejection/timeout, and the existing authoritative
+turn/result/score/replay contracts. With `node --experimental-default-type=module cloudflare/dev.mjs 8952`,
+`node --experimental-default-type=module tools/boulenoticeworker.mjs ws://localhost:8952` exercises production
+BouleClient against the true local HTTP/WebSocket Worker. `tools/boulenoticebrowser.cjs` holds one real app
+and local Worker peer for the old-receive/new-handler HUD comparison; it does not launch another world.
+[Revision-bound evidence and limitations](../verification/1863/README.md).
