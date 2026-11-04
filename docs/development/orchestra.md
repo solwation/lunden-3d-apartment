@@ -35,9 +35,9 @@ obligatorisk Claude-attribution gjorde dessutom instruktionerna verktygsbundna.
   hämtas samtidigt, men kraven på färsk fullständig kö och efterföljande claimkontroll kvarstår.
 - Återanvänd giltiga bevis efter orelaterad rebase. Fel eller ändrade relevanta indata
   utlöser riktat omprov. 10 minuter verifiering är en omprövningspunkt, inte dispens.
-- github-dashboard/public/ISSUEFLOW.md styr labels/status. Prioritet bedöms efter
-  påverkan/brådska; barn- och porttak bevaras. Samtliga igenkända arbetslabels tas bort
-  vid paus/integrationsväntan. Guiden gäller GitHub; ingen GitLab-kompatibilitet påstås.
+- github-dashboard/public/ISSUEFLOW.md styr labels/status. Originalets prioritet bedöms efter
+  påverkan/brådska; barntak och den nu bredare publikregeln nedan bevaras. Samtliga
+  igenkända arbetslabels tas bort vid paus/integrationsväntan. Guiden gäller GitHub; ingen GitLab-kompatibilitet påstås.
 - Projektpolicy behåller två repo-köer, prioritet, ägarskap, 300 s polling, 60 min bevakning,
   30 min livstecken, högst två arbetare, intake, bildkrav och publicgränser.
 - Arbetsagenten får ett kompakt uppdrag och relevanta filer, inte hela samordningshistoriken.
@@ -70,3 +70,19 @@ misslyckad köhämtning. Slutresultat och revisionslänkar dokumenteras i respek
 Framöver noteras grova tider för plan/setup, implementation, verifiering/granskning och
 publiceringsväntan i befintlig slutkommentar, med omprovsorsaker och återöppningar.
 Ingen tidsvinst påstås innan sådant jämförbart underlag finns.
+
+## Aktuell köordning — användarbeslut 2026-11-04
+
+Alla ärenden i `solwation/kvarteret-lunden` har `priority: low`, inte enbart portningar.
+Regeln omfattar även självständiga ändringar, buggar, underhåll, föräldrar/barn och
+samordning; bara ett senare uttryckligt användarundantag ändrar detta. Högre eller
+saknade publika prioriteter korrigeras vid skapande och inför köval/tomgångskontroll,
+med bevarat ägarskap, arbetsstatus och beroenden samt efterföljande föräldratak.
+Alla startbara originalärenden väljs först. Originalet använder normal prioritet internt;
+publika lågprioriterade ärenden väljs äldst först. Ett senare uttryckligt undantag
+påverkar bara publikens interna ordning. Redan aktivt arbete får slutföras.
+
+Detta är lokal värdpolicy, ingen ändring i `.orchestra/shared`. Originalets leverans
+spåras i [#1860](https://github.com/solwation/lunden-3d-apartment/issues/1860), publikens
+motsvarighet i [#252](https://github.com/solwation/kvarteret-lunden/issues/252).
+Portuppföljning, innehållsgränser, barnprioritetstak och övriga arbetsregler behålls.

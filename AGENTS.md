@@ -6,6 +6,14 @@ and the requirement to carry relevant improvements over to the public
 [downstream project](https://github.com/solwation/kvarteret-lunden) without personal content,
 gameplay or Cloudflare integrations.
 
+## Queue priority
+
+All `solwation/kvarteret-lunden` issues have `priority: low` unless the user gives a later
+explicit exception (user, 2026-11-04). Startable original issues always come first;
+original priorities order original work normally, while public low-priority work is
+oldest first. Already active work may finish. See [CLAUDE.md](CLAUDE.md) and
+[the local orchestra policy](.orchestra/project.md) for correction and selection rules.
+
 ## Shared orchestra and issue workflow
 
 For issue labels/state, follow [.orchestra/shared/ISSUE-WORKFLOW.md](.orchestra/shared/ISSUE-WORKFLOW.md),

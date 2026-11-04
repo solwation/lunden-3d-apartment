@@ -22,20 +22,20 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   Downstream instructions and its adapted `/orkester` live in its `CLAUDE.md` and `.claude/commands/orkester.md`;
   downstream orchestration is coordinated in its #4. Initial import history remains in this repo's #1064.
   This is an agent responsibility, not an automatic synchronization service.
-- **Ports have the lowest priority (user, 2026-10-20).** Work that transfers improvements from
-  `lunden-3d-apartment` to `kvarteret-lunden` always has `priority: low`, unless the user explicitly
-  specifies otherwise. This includes bug-fix ports and their implementation, test and support children;
-  the original issue's priority does not raise the port's priority. Apply this rule when creating work
-  and before every queue selection: lower existing higher-priority ports unless an explicit user exception
-  applies, then enforce the full ancestor ceiling. Preserve ownership, dependencies and the original
-  issue's own priority. Continue to review both queues and transfer applicable improvements; independent
-  public-project work that is not a port keeps its ordinary triage.
-- **The original always ranks above the public project (user, 2026-11-02).** When one orchestra sees both queues,
-  every open `solwation/lunden-3d-apartment` issue is selected before every `solwation/kvarteret-lunden` issue,
-  whatever their priority labels: a `priority: high` public issue still ranks below a `priority: low` original
-  issue. Priority labels order work only within each repository; keep them assigned by the ordinary rules (do not
-  relabel public issues to express this). Active work is not interrupted when the ordering changes; the rule
-  applies at the next selection.
+- **All public issues have low priority (user, 2026-11-04).** Every issue in
+  `solwation/kvarteret-lunden` has exactly `priority: low`, unless the user gives a later explicit
+  exception. This covers ports, independent public work, bugs, maintenance, parents, children, tests,
+  support and coordination issues. The original issue's priority never raises a public issue's priority.
+  Apply this rule at creation and before every queue selection or idle check: lower higher-priority public
+  issues and assign low when missing, preserving ownership, work labels and dependencies; then enforce
+  the full ancestor ceiling. Continue reviewing both queues and transferring applicable improvements.
+- **Startable original issues always come first (user, 2026-11-02; clarified 2026-11-04).**
+  Select every startable `solwation/lunden-3d-apartment` issue before any
+  `solwation/kvarteret-lunden` issue, even if a later explicit exception gives a public issue higher priority.
+  Within the original, use ordinary high → medium → low priority, oldest first within each priority.
+  Public issues normally all have low priority and are selected oldest first; an explicit later exception
+  changes only their internal public ordering. Already active work may finish; apply this ordering at
+  the next selection without interrupting it.
 - **Material-library scope (user, 2026-10-14):** #991 covers furniture upholstery/visible furnishing textiles,
   rugs and curtains; hanging towels are also approved. Do not add material editing for garments, wardrobe/cupboard/drawer
   contents, stored textiles/towels or cleaning cloths. #1028/#1030/#1031/#1032/#1033 are cancelled, not prerequisites.
@@ -56,8 +56,8 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   [.orchestra/shared/ISSUE-WORKFLOW.md](.orchestra/shared/ISSUE-WORKFLOW.md), sourced from
   github-dashboard's public Issue workflow instructions, for labels/status/closure.
   Remove all recognized work labels when inactive, including while awaiting integration.
-  Ownership labels are separate from status and priority. Existing child/port constraints
-  below remain in force. Do not copy github-dashboard's own deployment-specific workflow.
+  Ownership labels are separate from status and priority. Existing child/public-priority constraints
+  above and below remain in force. Do not copy github-dashboard's own deployment-specific workflow.
 - **No branches, no PRs.** Commit and push directly to `main`.
 - **Basic function first.** Work that isn't needed right now goes into a GitHub issue
   (`gh issue create`) instead of being done on the side. Keep issues small and concrete;
@@ -95,8 +95,9 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
 - **Priorities follow Issueflow.** Every new issue has exactly one canonical priority,
   assessed by impact and urgency with a short rationale; do not assign high automatically
   because it is a bug. Preserve explicit user priorities and existing labels unless
-  directed otherwise, except the automatic child/port corrections below. Missing priority
-  counts as medium. Choose highest-priority startable work, oldest first, original repository before public (see above); the complete
+  directed otherwise, except the automatic child/public-priority corrections above and below.
+  Missing original priority counts as medium; missing public priority is corrected to low.
+  Choose highest-priority startable work, oldest first, original repository before public (see above); the complete
   cross-repository selection/claim rules are in [.orchestra/project.md](.orchestra/project.md).
   Architecture issues whose
   exact measurements are missing from Peab's material keep their geometry preliminary: centralise and mark the values as

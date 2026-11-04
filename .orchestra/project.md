@@ -12,14 +12,16 @@ for labels, work intervals, priority assessment and closure. Resolve the current
 once per session; record the guide file's change commit (or "identical to snapshot"),
 or disclose the reviewed offline fallback. It takes
 precedence over older local label/status descriptions. These host rules add scope,
-ancestor/port constraints, claims and release requirements. Do not import the dashboard
+ancestor/public-priority constraints, claims and release requirements. Do not import the dashboard
 project's internal deployment gates. This integration uses GitHub, not a GitLab API.
 
 Create/reuse an issue in the repository where work lands; cross-link work affecting
 both. New issues include `Lapp: <2–6 everyday Swedish words>`, acceptance and a short
-priority rationale. Apply exactly one canonical priority based on impact/urgency.
-Existing priority changes need user direction, except automatic lowering for ports
-and ancestor ceilings. Missing priority counts as medium for selection.
+priority rationale. Assess original priorities by impact/urgency; assign exactly one canonical
+priority. Every public issue has `priority: low` under the explicit host rule below.
+Existing priority changes need user direction, except automatic public-priority corrections
+and ancestor ceilings. Missing original priority counts as medium; correct missing public
+priority to low before selection.
 
 Before creation, linking/reparenting, and every selection/idle check, enforce the lowest
 priority in the full ancestor chain, including closed and cross-repository parents.
@@ -28,15 +30,21 @@ ordinary references, discoveries and transfer links alone are not parentage. Fet
 missing parents, never guess. Lower excessive open descendants recursively; preserve
 already lower priorities, ownership and dependencies. Never raise a parent or reclassify
 a child to avoid the ceiling. Raising a parent does not raise children. Record corrections.
-Original-to-public ports and their children always have `priority: low` unless the user
-explicitly overrides it; original priority does not transfer. Independent public work
-uses ordinary triage. Refresh the queue after label corrections before selecting.
+All `solwation/kvarteret-lunden` issues have exactly `priority: low` (user, 2026-11-04),
+unless the user gives a later explicit exception. This includes ports and independent work,
+bugs, maintenance, parents, children, tests, support and coordination issues. Original
+priority never transfers. At creation and before every selection or idle check, lower
+higher public priorities and fill missing priority with low; preserve ownership, active
+labels and dependencies, then enforce ancestor ceilings. Refresh the queue after corrections.
 
-Repository rank overrides priority labels (user, 2026-11-02): the original queue is
-exhausted (nothing startable) before any public issue is selected, so even a public
-`priority: high` ranks below an original `priority: low`. Labels still follow ordinary
-triage within each repository; never relabel to express the rank. Running work is not
-interrupted; the rank applies at the next selection.
+Repository rank overrides priority labels (user, 2026-11-02; clarified 2026-11-04):
+select any startable original issue before any public issue, including a public issue
+with a later explicit higher-priority exception. Within the original use high → medium →
+low, then creation time and issue number. All public issues normally have low priority
+and use oldest first; a later explicit exception affects only ordering within the public
+queue. Active work may finish without interruption; the rule applies at the next selection.
+The public instruction counterpart is tracked in
+[public #252](https://github.com/solwation/kvarteret-lunden/issues/252).
 
 ## Scope, queue and ownership
 
@@ -46,7 +54,7 @@ interrupted; the rank applies at the next selection.
 | Repositories | `solwation/lunden-3d-apartment`, `solwation/kvarteret-lunden` |
 | Coordination | Original #420 and public #4; cross-link the same editable session comments |
 | Exclusions | PRs, those two coordination issues and exact `orkester` coordination label |
-| Ordering | Repository first: every open `lunden-3d-apartment` issue before every `kvarteret-lunden` issue (user, 2026-11-02); within a repository high → medium → low, then `created_at`, numeric issue |
+| Ordering | Startable original issues first; original high → medium → low, then `created_at`, numeric issue. Public issues all low and oldest first, unless a later explicit exception changes internal public order (user, 2026-11-04). Active work may finish |
 | Active ownership | `in-progress` and `orkester: <stable-session-id>` during actual work only |
 | Capacity | At most 2 workers including helpers per conductor, at least 1 while startable work exists |
 | Phase hooks | [Project phase hooks](#project-phase-hooks); report intake under [queue intake hooks](#queue-intake-hooks) |
