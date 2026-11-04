@@ -373,7 +373,7 @@ export class PlayerRoom {
     this.boule = new RoomBoule(ctx, () => this.open().map(ws => ({ ws, a: att(ws) })), send);
     this.football=new RoomFootball(ctx,FOOTBALL,send,()=>this.open().map(ws=>({ws,a:att(ws)})));
     this.doors = new RoomDoors(send, () => this.open().map((ws) => ({ ws }))); // #1775: the doors' state (memory only, no KV)
-    this.roomTime = new RoomTime(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1774: the shared game time (one offset, memory only, no KV)
+    this.roomTime = new RoomTime(ctx, () => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1865: persisted server-reference world calendar
     this.graffiti = new RoomGraffiti(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1724: the shared spray paint (memory only, no KV)
     this.trails = new RoomTrails(); // #1773: the recent paths for a late joiner's footprints (memory only, no KV)
     this.paddock = new RoomPaddock(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1644: the shared pony paddock (relay only)
@@ -554,6 +554,7 @@ export class PlayerRoom {
   async fetch(request) {
     await this.picnic.ready;await this.sharedFish.ready;await this.squirrels.ready;
     await this.boule.ready;
+    await this.roomTime.ready;
     await this.football.ready;
     const url = new URL(request.url), storage = this.ctx.storage;
     const b = await this.usage();
@@ -714,7 +715,7 @@ export class PlayerRoom {
     else if (ft) this.football.handle(ws,a,ft,now);
     else if (tg) this.target.handle(ws, a, tg, now);
     else if (dr) this.doors.handle(ws, a, dr, now); // #1775
-    else if (tm) this.roomTime.handle(ws, a, tm, now); // #1774
+    else if (tm) await this.roomTime.handle(ws, a, tm, now); // #1774
     else if (gf !== null) { if (gf) this.graffiti.handle(ws, a, gf, now); } // #1724 (a malformed block is dropped)
     else if (shot) {
       // a shot is drawn by the others only from someone armed with that weapon, starting near where the room has them,

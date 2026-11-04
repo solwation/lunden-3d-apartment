@@ -413,7 +413,7 @@ test('chat (#675): forwarded to the others with the name, cleaned, limited, refu
   await later(61_000); a.send({ t: 'm', m: 'over the cap' }); await settle(env);
   assert.equal(a.closed, CLOSE.cap); assert.equal(b.closed, CLOSE.cap);
   assert.notEqual(chats(b).at(-1).m, 'over the cap', 'nothing passes over the cap');
-  assert.deepEqual([...env.PLAYERS.ctx('world').data.keys()].filter((k) => !k.startsWith('bill:')), ['football'], 'only the month counter and shared football snapshot are stored; no chat history');
+  assert.deepEqual([...env.PLAYERS.ctx('world').data.keys()].filter((k) => !k.startsWith('bill:')).sort(), ['football', 'world-time-v2'], 'only billing, shared football and authoritative time snapshots are stored; no chat history');
 });
 
 // "skriver…" (#676): only the flag, to the others, rate-limited; off with the line, the close and a refresh
@@ -1891,26 +1891,19 @@ test('doors: validation, broadcast to all (sender too), welcome for a late joine
   d.ws.close(); await settle(env);
 });
 
-test('#1774: the game time is shared: validated, relayed, in the welcome of a latecomer, rate-limited, gone when the room is empty', async () => {
-  const env = setup(), a = await connect(env, 'Olof'), b = await connect(env, 'Sara');
-  const tm = (c) => c.got.filter((m) => m.t === 'tm');
-  const H = 3600e3;
-  assert.equal(a.got[0].tm, undefined, 'an empty room is on real time: no tm in the welcome');
-  for (const bad of [{ t: 'tm' }, { t: 'tm', o: 'x' }, { t: 'tm', o: 1.5 }, { t: 'tm', o: 1e18 }, { t: 'tm', o: 5, p: 2 }, '{"t":"tm","o":']) { now += 400; a.send(bad); await settle(env); }
-  assert.equal(tm(b).length, 0, 'malformed / out of bounds messages are not relayed');
-  now += 400; a.send({ t: 'tm', o: 9 * H }); await settle(env);
-  assert.deepEqual(tm(b), [{ t: 'tm', i: a.got[0].i, o: 9 * H }]);
-  assert.equal(tm(a).length, 0, 'not echoed to the sender');
-  now += 10; a.send({ t: 'tm', o: 1 * H }); await settle(env);
-  assert.equal(tm(b).length, 1, 'a second one within 250 ms is dropped');
-  const c = await connect(env, 'Late');
-  assert.deepEqual(c.got[0].tm, { o: 9 * H }, 'the latecomer is told the room time in the welcome');
-  now += 400; b.send({ t: 'tm', o: -2 * H, p: 1 }); await settle(env);
-  assert.deepEqual(tm(a).at(-1), { t: 'tm', i: b.got[0].i, o: -2 * H, p: 1 });
-  now += 5000; const d = await connect(env, 'Paused');
-  assert.deepEqual(d.got[0].tm, { o: -2 * H - 5000, p: 1 }, 'a paused time reads the same stamp to the newcomer');
-  for (const x of [a, b, c, d]) x.ws.close(); await settle(env);
-  const e = await connect(env, 'After');
-  assert.equal(e.got[0].tm, undefined, 'the room is back on real time once it was empty');
-  e.ws.close(); await settle(env);
+test('#1865: persisted authoritative world clock, bounded edits and late/rejoin state', async () => {
+  const env = setup(), a = await connect(env, 'A'), b = await connect(env, 'B');
+  const tm = c => c.got.filter(m => m.t === 'tm');
+  assert.equal(a.got[0].tm.v, 2);
+  for (const bad of [{ t: 'tm', o: 9 * 3600e3 }, { t: 'tm', v: 2, k: 'set', q: 0, stamp: 1, p: 2, s: 0 }]) { now += 400; a.send(bad); await settle(env); }
+  assert.equal(tm(b).length, 0, 'legacy offsets and malformed edits cannot mutate the new clock');
+  const stamp = Date.UTC(2027, 5, 21, 22, 30);
+  now += 400; a.send({t:'tm',v:2,k:'set',q:0,stamp,p:1,s:0}); await settle(env);
+  assert.equal(tm(b).at(-1).stamp, stamp); assert.equal(tm(a).at(-1).q, 1, 'authoritative persisted ACK reaches sender');
+  now += 10; a.send({t:'tm',v:2,k:'now',q:1}); await settle(env); assert.equal(tm(a).at(-1).why, 'fast');
+  now += 5000; const late = await connect(env, 'Late'); assert.equal(late.got[0].tm.stamp, stamp); assert.equal(late.got[0].tm.p, 1);
+  for (const c of [a,b,late]) c.ws.close(); await settle(env); env.PLAYERS.hibernate('world'); now += 864e5;
+  const re = await connect(env, 'Restore'); assert.equal(re.got[0].tm.stamp, stamp); assert.equal(re.got[0].tm.q, 1);
+  now += 400; re.send({t:'tm',v:2,k:'set',q:1,stamp,p:0,s:0}); await settle(env); re.ws.close(); await settle(env); env.PLAYERS.hibernate('world'); now += 864e5;
+  const run = await connect(env, 'Running'); assert.equal(run.got[0].tm.stamp, stamp + 864e5); run.ws.close(); await settle(env);
 });
