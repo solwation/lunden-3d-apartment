@@ -313,3 +313,9 @@ bird's false alarm and checks the original kitchen sources. Alarm start/stop
 requests use counted audio-output stubs; model/controller/LED/alarm state is
 real. WebGL is forbidden. The DOM evidence is a test report, not a rendered
 apartment, audible hardware or physical-device test.
+
+## Roof picnic (#1858)
+
+`roofpicnic.js` uses actual `Glass` subclasses (existing drink/toast and cup category) and finite Life ActionSet/Runner portions. Two glasses start with .45 wine; six cheese and six charcuterie portions emit ordinary bite events, with no new rewards. Stock remains per-player under existing Life persistence; this is not a shared food inventory. Glass Keep extras preserve even empty contents through home/reload, with anchor-independent `keepName`/`keepPos`. The blanket is a normal two-spot Rest target registered for Keep, also explicitly picked outside indoor furniture culling. Ghosts/Room use existing pose3/cup/toast messages. No protocol change.
+
+`ROOF_PICNIC` is the central movable assumption approved in issue comment6629838666: record342815182, Karpvägen6–8, provisionally the8 end. It samples existing roof support, keeps house/roof/access geometry unchanged and looks diagonally toward the river park around the retained roof box. Lanterns are emissive meshes and additive floor pools gated by daylight, with no lights or shadows added. [Source-bound checks, pictures and limits](../verification/1858/picnic/README.md).

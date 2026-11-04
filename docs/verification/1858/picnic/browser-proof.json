@@ -1,0 +1,315 @@
+{
+  "ok": true,
+  "result": {
+    "nativeSit": {
+      "active": true,
+      "target": "roof-picnic-seat",
+      "spot": 0,
+      "eye": [
+        -154.88883611266098,
+        13.95890177737951,
+        113.93254065250424
+      ],
+      "standing": {
+        "x": -155.52716538515318,
+        "z": 113.30053136469309,
+        "y": 13.103901777379509,
+        "yaw": -2.35121949160749
+      }
+    },
+    "peers": {
+      "A": [
+        {
+          "id": "c40b9754",
+          "pose": 3,
+          "hi": "",
+          "p": [
+            -156.13,
+            12.78,
+            113.97
+          ]
+        }
+      ],
+      "B": [
+        {
+          "id": "beeed0cf",
+          "pose": 3,
+          "hi": "",
+          "p": [
+            -154.89,
+            12.81,
+            113.93
+          ]
+        }
+      ]
+    },
+    "take": {
+      "name": "vinglaset p\u00e5 taket",
+      "klass": "PicnicGlass",
+      "fill": 0.45
+    },
+    "drink": {
+      "fill": 0.30000000000000004,
+      "wine": 1,
+      "rest": true
+    },
+    "peerHeld": {
+      "A": [
+        {
+          "pose": 3,
+          "hi": "cup"
+        }
+      ],
+      "B": [
+        {
+          "pose": 3,
+          "hi": "cup"
+        }
+      ]
+    },
+    "toast": {
+      "seenB": [
+        {
+          "m": {
+            "t": "c",
+            "i": "beeed0cf",
+            "k": 0
+          },
+          "from": "beeed0cf"
+        },
+        {
+          "m": {
+            "t": "c",
+            "i": "beeed0cf",
+            "k": 0,
+            "b": true
+          },
+          "from": "beeed0cf"
+        }
+      ],
+      "raisedA": 0,
+      "raisedB": 0
+    },
+    "food": {
+      "remaining": [
+        5,
+        6
+      ],
+      "runner": [
+        "start picnicBite0",
+        "commit picnicBite0",
+        "done picnicBite0"
+      ],
+      "focus": "osten p\u00e5 brickan"
+    },
+    "foodAfter": {
+      "remaining": [
+        5,
+        5
+      ],
+      "runner": [
+        "start picnicBite0",
+        "commit picnicBite0",
+        "done picnicBite0",
+        "start picnicBite1",
+        "commit picnicBite1",
+        "done picnicBite1"
+      ],
+      "saved": {
+        "v": 1,
+        "remaining": [
+          5,
+          5
+        ]
+      }
+    },
+    "support": {
+      "points": [
+        {
+          "p": [
+            -154.2004866666553,
+            13.103901777379509,
+            115.96369181383707
+          ],
+          "same": true,
+          "y": 13.103901777379509,
+          "margin": 5.778114708692377
+        },
+        {
+          "p": [
+            -154.28053518852371,
+            13.103901777379509,
+            113.16483629163757
+          ],
+          "same": true,
+          "y": 13.103901777379509,
+          "margin": 5.020905033510671
+        },
+        {
+          "p": [
+            -156.6994648114763,
+            13.103901777379509,
+            116.03516370836242
+          ],
+          "same": true,
+          "y": 13.103901777379509,
+          "margin": 4.013258339685484
+        },
+        {
+          "p": [
+            -156.7795133333447,
+            13.103901777379509,
+            113.23630818616292
+          ],
+          "same": true,
+          "y": 13.103901777379509,
+          "margin": 5.9964118225898
+        }
+      ],
+      "roof": "bld-342815182",
+      "height": 13.103901777379509,
+      "standing": {
+        "x": -155.52716538515318,
+        "z": 113.30053136469309,
+        "y": 13.103901777379509,
+        "yaw": -2.35121949160749
+      }
+    },
+    "keep": {
+      "items": [
+        [
+          "roof-picnic-glass-0|0,0,0",
+          {
+            "a": {
+              "wine": 0.30000000000000004
+            },
+            "x": {
+              "used": true,
+              "beer": {
+                "lots": []
+              },
+              "picnic": true,
+              "drinks": {
+                "wine": 0.30000000000000004
+              }
+            }
+          }
+        ],
+        [
+          "roof-picnic-glass-1|1,0,0",
+          {
+            "a": {
+              "wine": 0.45
+            },
+            "x": {
+              "picnic": true,
+              "drinks": {
+                "wine": 0.45
+              }
+            }
+          }
+        ]
+      ],
+      "life": {
+        "v": 1,
+        "remaining": [
+          5,
+          5
+        ]
+      }
+    },
+    "received": [
+      {
+        "t": "c",
+        "i": "c40b9754",
+        "k": 0
+      }
+    ],
+    "peerToast": {
+      "receivedA": [
+        {
+          "t": "c",
+          "i": "c40b9754",
+          "k": 0
+        }
+      ],
+      "receivedB": [
+        {
+          "m": {
+            "t": "c",
+            "i": "beeed0cf",
+            "k": 0
+          },
+          "from": "beeed0cf"
+        },
+        {
+          "m": {
+            "t": "c",
+            "i": "beeed0cf",
+            "k": 0,
+            "b": true
+          },
+          "from": "beeed0cf"
+        }
+      ],
+      "poseA": [
+        {
+          "pose": 3,
+          "hi": "cup"
+        }
+      ],
+      "poseB": [
+        {
+          "pose": 3,
+          "hi": "cup"
+        }
+      ]
+    },
+    "stand": {
+      "active": false,
+      "pos": [
+        -155.52716538515318,
+        13.103901777379509,
+        113.30053136469309
+      ],
+      "roof": "bld-342815182",
+      "y": 13.103901777379509
+    },
+    "nativeE": {
+      "locked": true,
+      "active": true,
+      "target": "roof-picnic-seat"
+    },
+    "final": {
+      "remaining": [
+        5,
+        5
+      ],
+      "wine": [
+        0.30000000000000004,
+        0.45
+      ]
+    },
+    "cap": [
+      {
+        "pos": [
+          -154.88883611266098,
+          13.95890177737951,
+          113.93254065250424
+        ],
+        "height": 13.11390209197998,
+        "mesh": "west-karpRoof"
+      },
+      {
+        "pos": [
+          -156.1283292724922,
+          13.95890177737951,
+          113.96799071218882
+        ],
+        "height": 13.11390209197998,
+        "mesh": "west-karpRoof"
+      }
+    ]
+  },
+  "errors": []
+}

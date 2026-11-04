@@ -585,3 +585,5 @@ Varje mål ger målgöraren en poäng. Delat spel använder det befintliga rumme
 [avgränsad verifiering och antaganden](docs/verification/1853/README.md).
 
 Fångade fiskar och nedlagda nötter kan lämnas på bord och plockas upp av andra uppdaterade spelare i samma rum. Överlämningen bekräftas innan handen släpper; delad mat har begränsad livslängd och gamla sparningar skapar inte nya kopior. [Synk, gränser och verifiering](docs/verification/1855/README.md).
+
+Roof picnic (#1858): two long-sitting places on the existing Karpvägen 6–8 roof, finite wine glasses and cheese/charcuterie, and night-only lantern glow. The user-approved tentative Karpvägen 8 placement and river-park view are movable through `ROOF_PICNIC`; no roof geometry changes. [Evidence and limitations](docs/verification/1858/picnic/README.md).

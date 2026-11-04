@@ -8301,3 +8301,16 @@ export const GYM_PUMP = { repsToFull: 100, decayHours: 72, circumference: 0.6, s
 
 // Djurpärmen (#1848): local collection and disposable model-image budgets; distances/timings are guesses.
 export const BESTIARY = { observeEvery: 0.75, seenDistance: 45, birdSeenDistance: 150, occlusionChecks: 2, seenRepeatMs: 60000, maxPhotos: 3, photoGlobalEvery: 5, photoQueue: 8, photoEveryMs: 30000, imageMemory: 24 };
+
+// #1858 user-approved preliminary placement (2026-11-04): Karpvägen 8 roof toward Höje å.
+// Move this one anchor/yaw if the intended roof differs; dimensions/colours/portions are guesses.
+export const ROOF_PICNIC = {
+  at: [-155.49, 114.60], yaw: -3.113, look: [-185, 206.543], roofSource: '342815182',
+  blanket: [2.5, 2.8], lift: .035, cushion: [.65,.10,.65], seats: [[-.62,.65],[.62,.65]],
+  board: [0,.05,-.25], boardSize: [.72,.035,.42], glasses: [[-.44,-.28],[.44,-.28]],
+  lanterns: [[-1.3,-1.0],[1.3,-1.0],[0,1.55]], lanternHeight: .30, lanternRadius: .09,
+  nightAt: .30, glowRadius: .85, wine: .45, portions: 6, biteSeconds: .8, drawDist: 130,
+  colors: { cloth: '#e6ddc5', stripe: '#596d65', accent: '#a15c49', pillow: 0xc7aa7d,
+    wood: 0x956747, rind: 0xdba643, cheese: 0xf1d080, salami: 0xa74648, fat: 0xf0d0ba,
+    metal: 0x38342e, wax: 0xf6dfae, glow: 0xffb65c },
+};

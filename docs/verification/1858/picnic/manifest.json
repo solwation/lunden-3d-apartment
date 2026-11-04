@@ -1,0 +1,25 @@
+{
+  "issue": 1858,
+  "base": "a500ab760f4f1aaa3f055b0d091a5853ab4c5968",
+  "sourcePhase": "Final production source; final diagonal config look reproduced in held app. Documentary files added afterward.",
+  "app": "http://localhost:8945",
+  "worker": "ws://localhost:8946/players",
+  "checks": {
+    "component": "3/3",
+    "deploypaths": "1/1",
+    "syntax": "pass",
+    "diff": "pass"
+  },
+  "sha256": {
+    "src/config.js": "3ffdf157f40e4d08b22ad06cd8a705d0bf0938d18486e2d1d73c34a36943fb57",
+    "src/main.js": "cd2ce95cf0a9a360592842500be223e9e146910aeba84a26cb8aebf222fbcc41",
+    "src/heldcategory.js": "eddc02b621906c07221c09cbd9df9f78e374f8c5644b748ed6019047291448ce",
+    "src/roofpicnic.js": "953861281cbc9b6fa4dd2681114d24b2f98f6ef54cf39e180b4dbe747e876356",
+    "tools/roofpicnic1858test.mjs": "38d86b50fbb1127fe003aec4ad6cb9fb03a37a669028305aaecb99215301402c",
+    "tools/roofpicnic1858browser.cjs": "009d7c8da4f87a028d88803ef7b6b5a73772a0185baa167c44340be35ff49c6b",
+    "tools/roofpicnicpeer.html": "33a2b76ceed9ab4bdbbfdbfadfd2aaec12c63a0fc6ed4411293177badaf1e906",
+    "docs/verification/1858/picnic/day.png": "750e4aa629c26a77a08008234dda390a8344c5d045a8ebeccf9472f0e4a99dc5",
+    "docs/verification/1858/picnic/seated-river-diagonal.png": "48f819103960643904c50eeed82c9d60ee6ba25c9416f6f9a3d7d7eed87cabb5",
+    "docs/verification/1858/picnic/night-serving.png": "b33e2fdca21eebef1b1ce5cdf4a24b8bce987f09f22672af0a5a0b2a785028c0"
+  }
+}
