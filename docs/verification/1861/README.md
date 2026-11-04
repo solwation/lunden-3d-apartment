@@ -47,3 +47,5 @@ host reconciliation and provenance checks completed 12:34; link/lifecycle checks
 this bounded handoff completed about 12:35. No extra verification matrix was needed.
 
 Conductor review retained a thin slash adapter with a link to host handoffs (per shared INSTALL), and made integration-queue reconciliation explicit in loop step1. Both existing link targets and the affected instruction flow were inspected; these prose corrections require no runtime rerun.
+
+Published source: `6378fa67265a157f801d192310ae61563c83ec44`. [Pages41830727948](https://github.com/solwation/lunden-3d-apartment/actions/runs/41830727948) succeeded; live version is `6378fa6` with unchanged application content `379be411ec69`. No Worker path changed, so no new Worker deployment was required. [Completion evidence](https://github.com/solwation/lunden-3d-apartment/issues/1861#issuecomment-6630772180) preceded closure. The conductor repaired this finished handoff's ready label from the exact recorded revision, then resumed active integration under its retained owner; no bulk issue migration ran.
