@@ -17,7 +17,10 @@ oldest first. Already active work may finish. See [CLAUDE.md](CLAUDE.md) and
 ## Shared orchestra and issue workflow
 
 For issue labels/state, follow [.orchestra/shared/ISSUE-WORKFLOW.md](.orchestra/shared/ISSUE-WORKFLOW.md),
-the canonical guide from github-dashboard. For `/orkester` or an explicit request to
+the canonical guide from github-dashboard. Finished handoffs use `integration-ready`,
+retain their documented integration owner and consume no active slot; only that owner
+or integrator resumes them. See the [handoff policy](.orchestra/project.md#integration-handoffs).
+For `/orkester` or an explicit request to
 run orchestration, read [.orchestra/project.md](.orchestra/project.md) and its shared
 core/coordination files. Merely reading or editing these files does not start a queue
 session. The core is maintained in [dirigenten-och-orkestern](https://github.com/solwation/dirigenten-och-orkestern).

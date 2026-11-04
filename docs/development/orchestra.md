@@ -37,7 +37,10 @@ obligatorisk Claude-attribution gjorde dessutom instruktionerna verktygsbundna.
   utlöser riktat omprov. 10 minuter verifiering är en omprövningspunkt, inte dispens.
 - github-dashboard/public/ISSUEFLOW.md styr labels/status. Originalets prioritet bedöms efter
   påverkan/brådska; barntak och den nu bredare publikregeln nedan bevaras. Samtliga
-  igenkända arbetslabels tas bort vid paus/integrationsväntan. Guiden gäller GitHub; ingen GitLab-kompatibilitet påstås.
+  igenkända arbetslabels tas bort vid paus tillbaka till backlog. En färdig överlämning
+  använder `integration-ready` med bevarad integrationsägare, revision och bevis utan aktiv
+  slot; aktiv integration byter till `in-progress`. Föräldrar behåller sin sammanfattande
+  status medan barn är aktiva eller integrationsklara. Guiden gäller GitHub; ingen GitLab-kompatibilitet påstås.
 - Projektpolicy behåller två repo-köer, prioritet, ägarskap, 300 s polling, 60 min bevakning,
   30 min livstecken, högst två arbetare, intake, bildkrav och publicgränser.
 - Arbetsagenten får ett kompakt uppdrag och relevanta filer, inte hela samordningshistoriken.

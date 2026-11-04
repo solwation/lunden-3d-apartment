@@ -10,4 +10,8 @@ Läs därefter den versionslåsta [kärnan](../../.orchestra/shared/ORCHESTRA.md
 [Issueflow-instruktionerna](../../.orchestra/shared/ISSUE-WORKFLOW.md) och
 [kösamordningen](../../.orchestra/shared/COORDINATION.md).
 Använd [arbetsagentens korta uppdrag](../../.orchestra/shared/WORKER.md) vid delegering.
+Färdiga, kontrollerade överlämningar följer projektets integrationskö: `integration-ready`,
+bevarad ägare/revision/bevis/nästa steg, ingen aktiv slot. Återuppta med `in-progress`
+för integration; ta inte väntande överlämningar som ny implementation.
+
 Svara på svenska. Projektpolicyn anger båda köerna, behörigheter, ansvar och tidsgränser.

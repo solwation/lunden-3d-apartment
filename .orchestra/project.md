@@ -55,7 +55,7 @@ The public instruction counterpart is tracked in
 | Coordination | Original #420 and public #4; cross-link the same editable session comments |
 | Exclusions | PRs, those two coordination issues and exact `orkester` coordination label |
 | Ordering | Startable original issues first; original high → medium → low, then `created_at`, numeric issue. Public issues all low and oldest first, unless a later explicit exception changes internal public order (user, 2026-11-04). Active work may finish |
-| Active ownership | `in-progress` and `orkester: <stable-session-id>` during actual work only |
+| Active ownership | `in-progress` and `orkester: <stable-session-id>` during actual work; finished handoff uses `integration-ready` with the same documented owner |
 | Capacity | At most 2 workers including helpers per conductor, at least 1 while startable work exists |
 | Phase hooks | [Project phase hooks](#project-phase-hooks); report intake under [queue intake hooks](#queue-intake-hooks) |
 | Resource policy | [Smallest sufficient capability/effort](shared/ORCHESTRA.md#spend-resources-deliberately); explicit supported selection, compact context, justified escalation |
@@ -89,15 +89,22 @@ Reserve only the current issue, with a comment identifying session, responsibili
 coordination links; re-read comments/labels immediately afterwards. Earlier valid claim
 wins. Create the session label if missing and set both labels together at active start;
 reconcile own claims on resume/status updates. Remove recognized work labels and own
-owner label when paused, awaiting integration, released, closed or reopened. Reclaim
-when actual integration starts; one integration owner publishes. Do not alter another
-active session's labels. Parents follow the guide's sub-issue rules: the worker or
+owner label when paused back to backlog, released, closed or reopened. A finished handoff
+retains its owner and uses `integration-ready`; active integration switches to `in-progress`
+under that ownership. One integration owner publishes. Do not alter another session's
+active labels or documented handoff ownership. Parents follow the guide's sub-issue rules: the worker or
 conductor starting a parent's first active sub-issue adds `in-progress` (not the owner
-label) to the parent; the conductor removes it once no sub-issue is active and the parent
-itself is idle, and closes the parent only after its own acceptance. A parent's label takes
+label) to the parent; keep the parent `in-progress` while any child is active or
+`integration-ready`, unless the parent's own implementation is handed off. The conductor
+removes it only once neither condition nor parent work remains, and closes the parent
+only after its own acceptance and all children are closed or deliberately split out.
+A waiting child must be integrated and closed, or its work labels removed, before parent closure. A parent's label takes
 no capacity slot. Same-file work needs distinct block/module ownership; actual
 coupled dependencies may require serial work, not bypassing priority for convenience.
 
+Documented `integration-ready` handoffs never expire under active/future-claim timers.
+Investigate an unavailable owner and announce an explicit handover preserving checkout,
+commits and evidence; a missing owner label or heartbeat does not permit new implementation.
 Existing future claims expire after 30 minutes without start. Announce taking
 an unstarted claim when its owner has no capacity; release your own unused ones.
 An active issue may be taken over only after 90 minutes without commit/comment/status
@@ -115,19 +122,44 @@ the active parent untouched. Never duplicate its ongoing work. Keep helper effor
 the two-worker cap; do not create test/docs children when a helper under the same owner
 is sufficient. The current owner should offer helpable parts proactively.
 
+## Integration handoffs
+
+Follow [the shared handoff procedure](shared/ORCHESTRA.md#handoff-for-integration).
+Only complete implementation with passing scoped checks can replace `in-progress` with
+`integration-ready`. Record issue, integration owner/session, branch/checkout, exact
+revision, evidence, remaining acceptance and next action in the issue and checkpoint.
+Stop worker processes and release locks; preserve the checkout until integrated or
+otherwise preserved. Helpers report their part without marking a still-active issue ready.
+
+Track waiting handoffs separately from dispatch and active capacity. Before dispatch,
+drain and each idle poll, reconcile them from the complete queues; order integrations
+by original-first, priority/creation order and ancestor ceilings, just like dispatch.
+Resume ready review/integration under the same ownership when a slot is available;
+independent work may use other free slots. A wait uses no slot or active time. A parent
+summary label also uses no slot. Missing ownership metadata is repaired from evidence.
+Corrections remove ready and name an active correction owner (`in-progress`), or remove
+both work labels and release the claim for backlog. Rejected/unfinished work is never
+ready. Ordinary pause, user question, closure and reopening remove both labels and the
+own claim; genuine integration waiting retains its documented owner even on session stop.
+Publication, acceptance, result-image and closure gates below remain unchanged.
+
 ## Checkpoint, questions and stop
 
 Save private state outside checkouts and update the same #420/#4 comments on every
 poll (also failures), worker start and completion. Include stable ID/label, scope,
 issue/repo/priority/creation time, worker/files/worktree, active workers/capacity and why a
-free slot is unused, results and blockers.
+free slot is unused, results and blockers. Record the separate integration queue
+(owner, checkout/branch, revision, evidence, next action) on handoff and resume too.
 Keep UTC `lastResolvedAt`, `lastQueueAttemptAt`, `lastQueueCheckAt`, `watchUntil`, and
 last successful fetch per repo. Failed/partial checks update attempt/outcome only;
 `lastQueueCheckAt` requires both complete successful queues. If no issue was resolved
 by this session, start the hour on first idle entry. Resolution by this session in either repo restarts the full hour.
 Preserve intake-hook timestamps too. Use interruptible waits ≤60 seconds and stop on
-user pause/stop. No active labels while idle. Final exit requires elapsed watch plus
-successful complete queues and required intake, with no startable in-scope work.
+user pause/stop. Idle implementation carries no active-work label; valid waiting
+handoffs and parent summaries retain their guide-defined labels. Reconcile owned
+handoffs before idle; integrable owned work ends idle. Final exit requires elapsed watch
+plus successful complete queues and required intake, with no startable in-scope work
+or owned handoff that can be integrated now. Report blocked handoffs and next action.
 Chat updates only for state changes, blockers and completion; no repeated empty polls.
 
 Product questions go on the affected issue with `user-question`, concrete options and
@@ -178,12 +210,13 @@ evidence (for example "docs-only: no result images"). Listed order is execution 
 | Inspect results | `review`: every change, before delivery | Read the combined diff; inspect images against acceptance and reference images; check house equivalents were covered | Defects corrected and affected checks/images refreshed |
 | Share result images | `delivery`: visual implementation issues, before the closing `Fixes #N` push | Push images, comment on the issue with embedded images pinned to the image commit, verify the URLs load | Accessible images in the issue before it can close |
 | Publish main | `delivery`: every completed change | Fetch/rebase (`--rebase-merges` for subtree imports), renumber the changelog entry to max id + 1 last, push `main` without force; wait for the Pages/Worker runs the changed files trigger | Delivered commit on `origin/main`; actual run result linked, a skipped run is not reported as passed |
-| Complete issue | `follow-up`: every tracked change, before closure | Completion comment with outcome, revision, checks, limits and evidence; remove all active and own owner labels | Closed only when acceptance is met; unmet acceptance stays open with next action and owner |
+| Complete issue | `follow-up`: every tracked change, before closure | Completion comment with outcome, revision, checks, limits and evidence; remove all recognized work labels (including `integration-ready`) and own owner labels | Closed only when acceptance is met; unmet acceptance stays open with next action and owner |
 | Public transfer | `follow-up`: changes in the areas listed under CLAUDE.md "Update the public downstream" | Read the public checkout's AGENTS.md and docs/upstream.md; create/reuse its own `priority: low` port issue, cross-linked; exclude personal content, gameplay and services | Port issue or recorded "not applicable" reason in the original issue |
 
 `tools/orkester_queue.py` remains an original-only helper (hard-coded #420). It
 recognizes only canonical priorities/literal `in-progress`, so raw labels and
-Issueflow take precedence when legacy aliases exist. It is not the generic engine
+Issueflow take precedence for aliases and `integration-ready`; the helper does not
+understand the integration queue or waiting capacity. It is not the generic engine
 or a complete two-repository check; supplement the public queue and parent/claim
 analysis. It does not change labels or provide live polling.
 
@@ -214,10 +247,12 @@ The conductor runs this loop in every `/orkester` queue session:
 
 1. Dispatch workers (≤ capacity) to the highest-ranked startable issues (original repository first, then priority).
 2. While they work, run due report intake: create issues and remove the reports from KV.
-3. When a worker finishes, check its result lightly (diff, evidence, acceptance; no
-   routine reruns) before delivery.
+3. When a worker finishes, record its ready handoff/owner and free its slot. Reconcile
+   the integration queue before dispatch; review/integrate ready work under the same
+   ownership (diff, evidence, acceptance; no routine reruns), using a slot while active.
 4. Give the freed slot the next priority issue after a fresh selection.
-5. When nothing is startable and no worker is active, review all work delivered in the
+5. When nothing is startable, no worker is active and no owned handoff can be integrated
+   now, review all work delivered in the
    session since the last review, across both repositories (the core's
    [session review](shared/COORDINATION.md#review-the-session)). Workers may
    take read-only review parts within the two-worker cap. Also check changelog ids,
@@ -229,13 +264,18 @@ The conductor runs this loop in every `/orkester` queue session:
 
 ## Shared version and maintenance
 
-Shared release: **v0.7.1**, commit **94c81f236bf892e979ecf1b20ede9d12885cc3d2**. Imported as a squashed subtree
-at `.orchestra/shared`; upgraded from v0.7.0 in [original #1816](https://github.com/solwation/lunden-3d-apartment/issues/1816),
-with the matching public import tracked in [public #229](https://github.com/solwation/kvarteret-lunden/issues/229).
+Shared release: **v0.8.0**, commit **6ee6dd23ed85e5a91641d1939d553e4f789027d4**. Imported with
+`git subtree pull --prefix=.orchestra/shared orchestra-upstream 6ee6dd23ed85e5a91641d1939d553e4f789027d4 --squash`
+in [original #1861](https://github.com/solwation/lunden-3d-apartment/issues/1861). The earlier v0.7.1 import
+remains recorded in original #1816 and public #229. Public adoption is tracked separately in public #251.
+The Issueflow snapshot is byte-identical to canonical guide revision
+`0e712c346c7689dd3e00db04fbe00d86090d5908`. Preserve subtree merge ancestry and trailers.
 The earlier v0.7.0 import from v0.6.1 remains recorded in original #1740 and public #208.
 Existing session IDs remain valid; new sessions follow the shared host/model format, and startup resumes unfinished work before new selection.
 
-v0.7.1 clarifies visual follow-up. This host's required Capture/Share result image hooks still take precedence over
+v0.8.0 adds the integration-ready lifecycle and moves the shared icon to `shared/icon.svg`.
+No automatic issue migration runs: reconcile actual handoffs from evidence; never bulk-mark paused issues ready.
+The earlier v0.7.1 visual follow-up remains applicable. This host's required Capture/Share result image hooks still take precedence over
 its generic unsupported-capture exception: representative images must be published and embedded before closing a visual
 implementation issue. Repository ordering, priority ceilings, ownership labels, queue/heartbeat timers and idle watch are unchanged.
 See [installation](shared/INSTALL.md) and [contribution](shared/CONTRIBUTING.md) instructions.

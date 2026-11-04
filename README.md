@@ -570,6 +570,9 @@ resurshushållning gäller när modellvalet är låst; verifieringskraven behål
 [Projektpolicy](.orchestra/project.md) anger Lundens köer och publiceringskrav samt
 projektets hooks per fas (planering till uppföljning) och rapportintaget;
 [Issueflow](.orchestra/shared/ISSUE-WORKFLOW.md) styr gemensamma etiketter och status.
+Färdigkontrollerade överlämningar väntar med `integration-ready` och bevarad ägare,
+revision och bevis i en separat integrationskö utan aktiv arbetarslot. Aktiv integration
+byter tillbaka till `in-progress`; publicering och verifiering krävs fortfarande före stängning.
 Andra agentverktyg kan läsa samma filer direkt. Gemensamma förbättringar görs i
 kärnans repo och införs här genom en granskad versionsuppdatering.
 Analys och motiv finns i [utvecklingsanteckningen](docs/development/orchestra.md).

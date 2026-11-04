@@ -55,7 +55,9 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
 - **Issueflow authority (user, 2026-10-23).** Follow
   [.orchestra/shared/ISSUE-WORKFLOW.md](.orchestra/shared/ISSUE-WORKFLOW.md), sourced from
   github-dashboard's public Issue workflow instructions, for labels/status/closure.
-  Remove all recognized work labels when inactive, including while awaiting integration.
+  Use `integration-ready` for a finished handoff awaiting integration, retain its documented owner,
+  and free the active slot. Active integration switches back to `in-progress`; never carry both.
+  Pause, backlog return, user question, closure and reopening remove all recognized work labels.
   Ownership labels are separate from status and priority. Existing child/public-priority constraints
   above and below remain in force. Do not copy github-dashboard's own deployment-specific workflow.
 - **No branches, no PRs.** Commit and push directly to `main`.
@@ -77,7 +79,9 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   Preserve each house's actual dimensions, openings, intentional glass/passages and render budget. A fix or test in
   one house is not evidence that its siblings work; use representative checks rather than new chains of micro-stories.
 - **Several agents work in parallel (other computers push to `main` too).** Never take an issue that
-  is labelled `in-progress` (`gh issue list --state open --json number,title,labels`). Before starting
+  has an active-work label or a documented `integration-ready` handoff
+  (`gh issue list --state open --json number,title,labels`). A waiting handoff is reserved for its
+  owner/integrator even if its owner label is missing; inspect its evidence instead of duplicating implementation. Before starting
   **each** new issue: `git pull --rebase origin main` (use `--rebase=merges` for unpublished subtree imports), then inspect `git status`. Preserve any uncommitted changes; use an isolated checkout when another agent
   shares the directory, and never discard their work.
   Re-check the issue's label right before labelling it. Work on one issue at a time until done.
@@ -85,12 +89,16 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   in-progress`). The label must never outlive the work: **remove it** (`--remove-label
   in-progress`) when you stop without finishing, when you close the issue after implementing it
   (`Fixes #N` closes it, but does not remove work labels — remove all recognized ones too), and when you **reopen** an
-  issue. A reopened issue starts without the label until someone picks it up again.
+  issue. A reopened issue starts without any work label until someone picks it up again.
+  A checked, finished handoff replaces `in-progress` with `integration-ready` and records exact revision,
+  checkout, checks, integration owner and next action; only accepted integration and delivery permit closure.
 - **Orchestrated work also gets `orkester: <id>`.** Use the orchestrator's stable session id, matching its #420
-  status/claims. Add it together with `in-progress` on each actively worked issue; remove both when finished,
-  closed, reopened, paused without active work, or released. Do not label future queued issues or idle parents.
+  status/claims. Add it together with `in-progress` on each actively worked issue; retain it for a documented
+  `integration-ready` handoff, including on a user stop. Remove work and own owner labels when closed,
+  reopened, paused back to backlog, or released. Do not label future queued issues or idle parents.
   The orchestrator creates the label if missing, reconciles its own active issues on resume/status updates, and
-  records the exact label in #420. Never remove another active orchestrator's label. The `orkester:` prefix is
+  records the exact label in #420. Never remove another active orchestrator's label or documented
+  handoff ownership without an explicit handover. The `orkester:` prefix is
   ownership metadata, distinct from the `orkester` coordination label, and does not change priority or replace claims.
 - **Priorities follow Issueflow.** Every new issue has exactly one canonical priority,
   assessed by impact and urgency with a short rationale; do not assign high automatically
