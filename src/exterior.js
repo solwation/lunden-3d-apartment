@@ -1,7 +1,7 @@
 import { neighborGlass } from './neighborglass.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { HUS_L as H, HUS_L_REVEAL as RV, HUS_L_DOWNPIPES as DP, ENTRANCE_PLANTS as EP, NEIGHBOR_OPENINGS as O, COLORS, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE, DOOR_HEIGHT, DOOR_TRIM } from './config.js';
+import { DECAL_OFFSET, HUS_L as H, HUS_L_REVEAL as RV, HUS_L_DOWNPIPES as DP, ENTRANCE_PLANTS as EP, NEIGHBOR_OPENINGS as O, COLORS, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE, DOOR_HEIGHT, DOOR_TRIM } from './config.js';
 import { registerSnow } from './seasons.js';
 import { entryParts, entryMaterials, entryHandleParts } from './entrancedoor.js';
 import { wallLine, wallRect } from './roofs.js';
@@ -46,6 +46,19 @@ function brickTexture() {
 }
 
 const brickMat = () => new THREE.MeshStandardMaterial({ map: brickTexture(), roughness: 0.95, side: THREE.DoubleSide });
+
+/** Keep the simplified opaque backing behind the facade's 6 mm skin at distant depth precision.
+ * Clone: the incoming wall material also belongs to real interior walls. Geometry/openings stay exact. */
+export function exteriorBackingMaterial(wall) {
+  const material = wall.clone();
+  // Retain existing fragment lighting hooks when a composed material is supplied.
+  material.onBeforeCompile = wall.onBeforeCompile;
+  material.customProgramCacheKey = wall.customProgramCacheKey;
+  material.polygonOffset = true;
+  material.polygonOffsetFactor = -DECAL_OFFSET.factor;
+  material.polygonOffsetUnits = -DECAL_OFFSET.units;
+  return material;
+}
 
 /** Rectangles covering [x0,x1]×[y0,y1] minus the holes (all axis-aligned). */
 function complement(x0, x1, y0, y1, holes) {
@@ -648,7 +661,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   add(bricks, brickMat());
   add(renders, new THREE.MeshStandardMaterial({ color: H.render, roughness: 0.95 }));
   add(pilasters, new THREE.MeshStandardMaterial({ color: COLORS.brick, roughness: 0.95 }));
-  add(solids, wall);
+  add(solids, exteriorBackingMaterial(wall));
   add(frames, frame).name='neighborFrames';
   add(seals,new THREE.MeshStandardMaterial({color:O.gasketColor,roughness:O.gasketRoughness})).name='neighborSeals';
   add(openingHardware,entryMaterials().handle).name='neighborHardware';

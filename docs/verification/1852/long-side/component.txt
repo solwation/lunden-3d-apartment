@@ -1,0 +1,12 @@
+PASS independent backing material retains original wall and lighting hooks
+{
+  "ok": true,
+  "samples": 450,
+  "near": 0.05,
+  "far": 1000,
+  "bits": 24,
+  "equalBefore": 89,
+  "minBefore": 0,
+  "minAfter": 2,
+  "scope": "Analytical 24-bit projection of actual app mesh pairs; no claim of native hardware flicker reproduction."
+}

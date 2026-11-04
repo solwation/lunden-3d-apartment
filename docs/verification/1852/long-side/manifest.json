@@ -1,0 +1,29 @@
+{
+  "sourceBaseline": "c318ec8fde08e15cffb99cae0a692c4776287378",
+  "runtimeChanges": [
+    "src/exterior.js"
+  ],
+  "actualAppBootstraps": 1,
+  "productionFactoryAppliedInHeldActualApp": true,
+  "hardwareFlickerReproduced": false,
+  "note": "Analytical 24-bit projection and actual shader/geometry/view retention evidence; no native GPU flicker claim. Changelog ID is provisional until conductor final pull.",
+  "sha256": {
+    "README.md": "9a339ec7c8ab6fa509b7902f9b8592d148be62bf2cc42ca2e4ce14446a6b4969",
+    "data/changelog.json": "9d81b84c44d7bb0af2cbc1de3de56abc52b6290c681742a9e74f7e0257b5aa4e",
+    "docs/development/graphics.md": "c1b8d1c6547a6b9b26d101b2e664aab4cc9b06e9dc2900aedd2c09c6e4cb0aaa",
+    "docs/verification/1852/long-side/README.md": "e27171a198965d6be6f7abdf5d8578771b380da66d7c78deaf6db0c330b3259e",
+    "docs/verification/1852/long-side/before-layer-pairs.json": "d7a1a115d9c88d9e9986baf8539518f9d18172cc7d02c40b10290befbf3fa729",
+    "docs/verification/1852/long-side/close-view.json": "0f64fa13be034d4df69c6d0007f182607d48f883a5fb03000473e0b95e988bd3",
+    "docs/verification/1852/long-side/component.txt": "aa3a89720c4b27c7ae960a8aa54ce020bd50c68013246d4206208daf0f784d5c",
+    "docs/verification/1852/long-side/facade-after-close.png": "8da33a88281ff125eb4d8162fd774f0ef04155af8612d540397116a1b7bdd57d",
+    "docs/verification/1852/long-side/facade-after.png": "2e54b0773fbb1e818db222ee86ea13a8bcd939cb6a6b36fe6ae4e081219f4929",
+    "docs/verification/1852/long-side/facade-before.png": "e603a7b43208f6126f207513f9ee8fcb684cf9a41ddb6c4753a4c89b66dcc547",
+    "docs/verification/1852/long-side/material-and-geometry-final.json": "57f1e6eb381212fe2cb3a2b9a629c63913d7865a65374646a02ef8c17bc0f0e7",
+    "docs/verification/1852/long-side/openings-check.json": "3276a255d9c636d745cd8924a54be7d3b3f4dc5b590ddea4e171935a35b080b9",
+    "docs/verification/1852/long-side/page-errors.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "docs/verification/1852/long-side/roof-near-state.json": "81e78b31f00b2860b72f24998c9e58c1d366a15dec4eb7229a4c2df04d1ad743",
+    "docs/verification/1852/long-side/source-isolation.json": "d318696cfd8df3f8942855a20e4d390de6582622c683576f782ee9bc24879310",
+    "src/exterior.js": "692d2eaa5dd7265f947cf98653ef863974f68c15b9c9c5f87ede8c93ab0184cc",
+    "tools/facadebacking1852test.mjs": "121e56a91e5287e492c577fefd83a648f38c532dd462bc170cdb0943aa8ced0a"
+  }
+}

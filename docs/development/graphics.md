@@ -547,6 +547,18 @@ At altitudes above 120 m (up to jetpack ceiling 320 m), the distant ground ends 
 
 Depth precision at distance (#1276): the camera far is 1000 m and a 24-bit buffer resolves ~d²/(near·2²⁴·0.5) m, i.e. ~10.7 cm at 300 m with the old 0.05 m near plane, so window glass 1–7 cm in front of a façade (backdrops, neighbours, campus decals) z-fought and far houses shimmered. Window-glass materials (`neighborGlass()`, sitebackdrop/southbackdrop `glass`) carry `DECAL_OFFSET` (polygonOffset counted in depth steps, so it holds at any distance), and `updateCameraNear()` in main.js uses `VIEW_NEAR`: 0.05 m indoors/stairwell/flats/garage/vehicles/roofs, 0.12 m on open ground (PLAYER.radius is 0.22 m), growing 2 cm per metre above 3 m altitude to 1.5 m when flying. `&near=m` pins it. SwiftShader depth is float-like and cannot draw the flicker, so `tools/depthprecisiontest.cjs` checks the offsets, near planes and the analytic step. Frames in the western façade batch (`facade`) still sit 1.5 cm in front of their wall without an offset.
 
+Hus L long-facade backing (#1852): the actual brick/render skins stand only 6 mm in front
+of `buildExterior`'s simplified opaque masses. At the valid roof near plane 0.05 m,
+450 emitted long-facade layer samples include 89 equal codes in an analytical 24-bit
+projection at the report-context camera. `exteriorBackingMaterial(wall)` clones only
+that backing material and applies the positive counterpart of `DECAL_OFFSET`, moving
+its depth away from the viewer. Skins, frames, panes, geometry and real wall material
+stay unchanged. The clone retains existing fragment lighting compile/cache hooks;
+plain `Material.clone()` would drop lamp-wash callbacks when called on a composed
+material. A/B/C use separate `aHouseParts`/CoreHouse builders; no common 6 mm backing
+cause was found there. [Exact mesh/depth evidence, own images and limits](../verification/1852/long-side/README.md).
+
+
 ## Lens flare towards the sun (#1283)
 
 `src/flare.js` (`FLARE` in config.js; `?noflare` disables it): one ShaderMaterial mesh, one draw call, no texture and no light, parented to the camera and hidden unless the flare is active. Seven additive procedural quads (glow, corona, discs, halos) sit along the line from the sun's screen position through the screen centre. Visibility = sun above the horizon x sun inside the view x not occluded x weather: `day.overcast` damped by `day.above` (above the deck the sky is clear, #1251), rain and the cloud whiteout (`uWhite`) extinguish it. Occlusion is a cheap CPU ray test from the camera along `sunDir` against building AABBs (greet.js `occluders()` plus the `SITE` neighbour footprints), tree crowns (`aoTrees` from surroundings.js) and, indoors, the ceiling and the window openings of L1007; underground / garage / stairwell is always occluded. Intensity follows the target with an exponential smoothing (`FLARE.smoothTime`), so it never pops. Test: `tools/flaretest.html` (run through Playwright like the other tools pages); perfcount covers the budget (the flare only costs a draw call while visible).

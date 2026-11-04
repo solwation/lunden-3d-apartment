@@ -1,0 +1,17 @@
+{
+  "phase": "after-close",
+  "eye": [
+    -19,
+    13,
+    -24
+  ],
+  "near": 0.05,
+  "draw": {
+    "frame": 30,
+    "calls": 272,
+    "triangles": 812362,
+    "points": 80,
+    "lines": 5729
+  },
+  "programs": 61
+}

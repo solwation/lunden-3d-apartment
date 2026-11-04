@@ -28,6 +28,8 @@ Bilen stannar för spelare i sin körväg även i svängar och vid backning.
 
 Du kan sitta på hållplats- och skolbänkar samt grannarnas utemöbler och gunga även vid skolorna. Vid norra övergångsstället står vanliga hållplatstavlor med namnet ”Lund S:t Lars Karpvägen”; det avslutade lokala vägarbetets signal och varningsstativ är borttagna.
 
+Hus L:s långfasad har ett skydd mot att den bakomliggande huskroppen slår igenom som flimmer på avstånd. [Kontroll och begränsningar](docs/verification/1852/long-side/README.md).
+
 Vägar och gångstråk i utkanten fortsätter bort i dimman i stället för att sluta tvärt. Hela hästhagen går också att nå till fots via den befintliga stättan.
 
 Promenadstråken i parken och längs Höje å samt vägarna i resten av området har lampor med varma ljusfläckar på marken efter skymningen. Lamporna följer även jordramperna vid den lilla träbron.

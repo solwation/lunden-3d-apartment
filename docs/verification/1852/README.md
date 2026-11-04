@@ -1,5 +1,7 @@
 # #1852 — initial foreground diagnosis (historical checkpoint)
 
+Latest: after the further clarification **“det är på långgaveln”**, the [scoped long-facade depth correction](long-side/README.md) supersedes the unresolved surface question.
+
 The user subsequently confirmed Hus L farther away on 2026-11-04; see the [resumed Hus L surface investigation](resumed/README.md). The foreground target below is historical.
 
 **Investigation only. No geometry or behavior is changed and this is not a verified fix.**

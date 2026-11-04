@@ -1,0 +1,36 @@
+{
+  "baseline": "c318ec8fde08e15cffb99cae0a692c4776287378",
+  "geometryBuilderByteIdenticalAfterRemovingOnlyMaterialPatch": true,
+  "retained": [
+    {
+      "file": "src/surroundings.js",
+      "sha256": "fc2f9e35c828e67abf2815534d51be3056ac8f2f7540fb853a08b03ba2010e90",
+      "unchanged": true
+    },
+    {
+      "file": "src/corehouse.js",
+      "sha256": "a1b4b020cddf0c0b7d5bf586596d38846ca64311ded87c0c3047dc54ac3f7a8d",
+      "unchanged": true
+    },
+    {
+      "file": "src/config.js",
+      "sha256": "5240043d406483a4c55c4fd97729771002955b81bda50c7b75ba02acfefdbb84",
+      "unchanged": true
+    },
+    {
+      "file": "src/world.js",
+      "sha256": "9be8e1cc886ee6800ced8d7790b1619d1df25319ee81e939fa73a170b94a048a",
+      "unchanged": true
+    },
+    {
+      "file": "src/neighborglass.js",
+      "sha256": "e7c0acfb2c9889419ed80880a2f943726072adb72e688bb4445951dfefea6c26",
+      "unchanged": true
+    },
+    {
+      "file": "src/tightfrustum.js",
+      "sha256": "b086e8c7b7aea7c09f0fe756cb284c3cfe987361205d101380589d79638c371a",
+      "unchanged": true
+    }
+  ]
+}

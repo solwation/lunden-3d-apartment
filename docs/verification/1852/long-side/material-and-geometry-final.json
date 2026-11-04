@@ -1,0 +1,345 @@
+{
+  "before": {
+    "frame": 27,
+    "calls": 291,
+    "triangles": 785636,
+    "points": 80,
+    "lines": 5037
+  },
+  "after": {
+    "frame": 28,
+    "calls": 291,
+    "triangles": 785636,
+    "points": 80,
+    "lines": 5037
+  },
+  "beforePrograms": 62,
+  "afterPrograms": 62,
+  "sourceFactory": "exteriorBackingMaterial from final source query",
+  "oldMaterialUntouched": true,
+  "otherSharedWallUsers": 6,
+  "lightingHooksEqual": true,
+  "oldKey": "onBeforeCompile( /* shaderobject, renderer */ ) {}|lampwashV|lampwash",
+  "newKey": "onBeforeCompile( /* shaderobject, renderer */ ) {}|lampwashV|lampwash",
+  "backing": {
+    "isolated": true,
+    "polygonOffset": true,
+    "factor": 1,
+    "units": 2,
+    "color": 15856110,
+    "oldColor": 15856110,
+    "sameMap": true,
+    "shadowCaster": true
+  },
+  "geometryUnchanged": true,
+  "ledger": [
+    {
+      "i": 0,
+      "uuid": "e4248cc5-8e9b-42c7-a16c-1a7f625041df",
+      "position": "97a1469be111e2f4b64bf1268d90a6cb8fe733a2471af9f52988cefb1fabc1bb",
+      "normal": "325c8892c000c39dbb369e75955ebaf169fd9dc13a730ada802e2efde8b8e190",
+      "triangles": 1426
+    },
+    {
+      "i": 1,
+      "uuid": "bcadd247-33c4-4629-992d-73b0461f2a8d",
+      "position": "3b312c6229548d7350583815f88d9282d9116ba18dac88119f31952d0c140e5a",
+      "normal": "3e848fcb0f5f4dee8165ba268eb447ff5388e4ede00d57de7949f01a4b2cc8af",
+      "triangles": 918
+    },
+    {
+      "i": 2,
+      "uuid": "460ab2bc-90a6-417d-aa61-be9c49d86596",
+      "position": "41ef933edcc5730cc4abf115719ee17ffe3c6c9d73041a287936ac32a58a2883",
+      "normal": "a5ba908d6de8d5881187d5bbf6f9b0a4c4fe21d6a891763536dc71e27488cb00",
+      "triangles": 120
+    },
+    {
+      "i": 3,
+      "uuid": "fee7f25a-d567-4480-8b77-65254741b397",
+      "position": "5cde7d0e0a7d5cee0b986a0fa14c6950374bac62f3a756bee422026679a0aa2b",
+      "normal": "e360fb4a24906645edff5343eca9343152b4bd084fd8a379cfd4ec3a9c6e40f4",
+      "triangles": 5780
+    },
+    {
+      "i": 4,
+      "uuid": "bb57146d-6491-46eb-93e4-b260fba921c0",
+      "position": "ff3d8efdbf6830fb571ff998f6a27e174698d5aaad77081ff913834f5c95a3c2",
+      "normal": "49d8183c48a0afd768b1769c8c50ce3daf999d440973d342d7d7e92b24623ffc",
+      "triangles": 11868
+    },
+    {
+      "i": 5,
+      "uuid": "efddf55f-abb1-4f43-9378-a7db99f76279",
+      "position": "1927f09b371f58473337566d9ba3c737270557e283c7a73988e4b3bc3e7cf193",
+      "normal": "5c820363b42139c6b85f204ad102cf2e910abfe92f0694750e46ab1621660437",
+      "triangles": 7008
+    },
+    {
+      "i": 6,
+      "uuid": "8389dc4c-c2f5-4cef-94e7-51e15102dbce",
+      "position": "ca56f30e18f4a6ee1068a7337184f02cb3629eac1046f1a301ca617dfe071bea",
+      "normal": "3fda1c24bb89d2f58c95175e13a628cefed48a7eac847b3f7dda9f26842806a9",
+      "triangles": 972
+    },
+    {
+      "i": 7,
+      "uuid": "3eede3e6-477a-451b-abdb-79d41e969e5c",
+      "position": "3a2f43a164d0bab2a459454d625116ce9ae0d2b56067d9a9f86e113783c07a99",
+      "normal": "6a0bb7ad3239c65532e61b8a2567cb29b068c3e79f1b40166a3fb7a5ef57ff05",
+      "triangles": 272
+    },
+    {
+      "i": 8,
+      "uuid": "de171af6-acfa-46db-8506-ac3ecfb1338e",
+      "position": "8fca4d9b29b2f60a97411d5e90b2f51c85de4a3507610011fae7df90a7fe930f",
+      "normal": "98ef98b4fea62071fff5510d1b2824bbb3e67d5a41fa0f16a2b146e22481e32e",
+      "triangles": 10276
+    },
+    {
+      "i": 9,
+      "uuid": "7429f1af-2bc6-4106-8c19-b990cefe89b6",
+      "position": "f52b1a46568c1e6b556ec49c5f92c274916eabbaff2b9e4a5220393151b61248",
+      "normal": "c6d7c030d2d7e964ee6085c43280d1b084c14f36198bdfa8a1747fba34ed6f65",
+      "triangles": 1440
+    },
+    {
+      "i": 10,
+      "uuid": "9434db58-bc59-49cc-8b8e-52ba114423cb",
+      "position": "74be9345acc764d691e8e7c3b48f681e25f6df46db483d78850115496c32ec04",
+      "normal": "671bbe649e174b6bc3bef6d93e27864dc9211e336dfbd990d1b89515f99a8771",
+      "triangles": 660
+    },
+    {
+      "i": 11,
+      "uuid": "07a83524-fa4c-45f5-a410-bed535e39962",
+      "position": "edf2615f14ed6765a5611e0ed91f52ea4f667eb86ea2e4a5a947f05b082569d9",
+      "normal": "bfc65a3e3a53618b432313ae12235e81f90a97550736b10d8f80d1822bcbefb7",
+      "triangles": 624
+    },
+    {
+      "i": 12,
+      "uuid": "1c0a171b-d927-4270-b676-2f67f0a199ea",
+      "position": "2749586e629313cb323f0ca023aa83e90785f4c53fa72a405cc3fbed02ab2d12",
+      "normal": "bfc65a3e3a53618b432313ae12235e81f90a97550736b10d8f80d1822bcbefb7",
+      "triangles": 624
+    },
+    {
+      "i": 13,
+      "uuid": "2bb397d4-9800-439e-9d52-e6726459f121",
+      "position": "f5dc28269151676a8d46f7d551f54e89e567b18503eb1ef3697c1678b2b371b2",
+      "normal": "ac3866df8649a04fd5a9dcba06708d206910ab5f28067ea71ff91896c2ccb145",
+      "triangles": 588
+    },
+    {
+      "i": 14,
+      "uuid": "fa8d806a-08a2-4cc0-ad6d-295516118199",
+      "position": "761e81b47996d70d25a7c896e9f20daab9219ee17926f8dcae0d8e1283cc398e",
+      "normal": "ac3866df8649a04fd5a9dcba06708d206910ab5f28067ea71ff91896c2ccb145",
+      "triangles": 588
+    },
+    {
+      "i": 15,
+      "uuid": "76374493-97fa-4c5a-9f16-4efbeff41345",
+      "position": "63111d4fbe8baa81df51e4b1d7a1950bb0abf9e801c3de8ca97bf4239b8628eb",
+      "normal": "bfc65a3e3a53618b432313ae12235e81f90a97550736b10d8f80d1822bcbefb7",
+      "triangles": 624
+    },
+    {
+      "i": 16,
+      "uuid": "9c23cf93-d4ef-4538-8507-b553767f4f27",
+      "position": "eafb91bbff06463d07915504c0b8f6f2d9d931321fe9fcb55c5cf84ea713aa5a",
+      "normal": "bfc65a3e3a53618b432313ae12235e81f90a97550736b10d8f80d1822bcbefb7",
+      "triangles": 624
+    },
+    {
+      "i": 17,
+      "uuid": "6c01d2dc-3ba5-4518-85af-dc14508ae256",
+      "position": "36e379d60843d11d3168e5439b597b5b7ff96b125716cbd451bd53df3f2a1d6e",
+      "normal": "bfc65a3e3a53618b432313ae12235e81f90a97550736b10d8f80d1822bcbefb7",
+      "triangles": 624
+    },
+    {
+      "i": 18,
+      "uuid": "9cbc041a-614c-4f66-9562-72f96dbd1363",
+      "position": "4b87a9dcdf8437258a5527dfe5dda1a223b97b491cfb4dc88623d29b3a1ccac4",
+      "normal": "671bbe649e174b6bc3bef6d93e27864dc9211e336dfbd990d1b89515f99a8771",
+      "triangles": 660
+    },
+    {
+      "i": 19,
+      "uuid": "40a331c9-0f2a-4522-a929-4274214d555a",
+      "position": "54af6767c09bdd78c9e2b423df035c44c49e9691ea3b7f7d10642e335eeff7fd",
+      "normal": "50b66e1566fd1d5ac44c913fe7f958218a97c41ecb455924e31269016422e5ae",
+      "triangles": 204
+    },
+    {
+      "i": 20,
+      "uuid": "c1cf4086-37ea-4b3a-bef6-499332be6740",
+      "position": "d03cf857987f2c1d1128203245bc0d47659fcb2c34490c3d3d27c76d39c9535f",
+      "normal": "50b66e1566fd1d5ac44c913fe7f958218a97c41ecb455924e31269016422e5ae",
+      "triangles": 204
+    },
+    {
+      "i": 21,
+      "uuid": "27407cf4-d071-4d9b-a180-acdae8d3b048",
+      "position": "90db06d2a78cca792f0119d4d815f84d4c27e71d1dfc5bd61039590aaf29df63",
+      "normal": "bfc65a3e3a53618b432313ae12235e81f90a97550736b10d8f80d1822bcbefb7",
+      "triangles": 624
+    },
+    {
+      "i": 22,
+      "uuid": "75f6092f-8d5e-4913-91e6-129213a52c37",
+      "position": "61d2f2fa6fec41e015cb26656d3058c38232772794b880faa1f6ddd1bb48afaa",
+      "normal": "bfc65a3e3a53618b432313ae12235e81f90a97550736b10d8f80d1822bcbefb7",
+      "triangles": 624
+    },
+    {
+      "i": 23,
+      "uuid": "5f7df46e-32c9-46d4-86de-7015006d52da",
+      "position": "7d5f7ceec71d68ec27f870f0179228cc67fd8366d5d78f9ba38302273783f659",
+      "normal": "47801c66c0b0bf91730d061e69e11068f556f71cb20adb074cdbbde1453ab34c",
+      "triangles": 156
+    },
+    {
+      "i": 24,
+      "uuid": "35a55159-0178-4f48-95bb-e1d396955c8a",
+      "position": "7e2c51f08488f476901895454080be2238dad3496d53ed82e2255cacffa7cc90",
+      "normal": "e40522fa3259077d11bf5e46709d62e3931ced9dde4ff15601858ee08ea1d1f7",
+      "triangles": 936
+    },
+    {
+      "i": 25,
+      "uuid": "05e7a8eb-c0a5-4fb9-893f-6f503d2fdc36",
+      "position": "c517921d6c73bf431982df2b5773de1510c1fa5fa4eca40bd6b75a441142b4f6",
+      "normal": "bdc681139ca14e78801a49f8211051c729082aef654dcbbd064f6fd92915dae2",
+      "triangles": 68
+    },
+    {
+      "i": 26,
+      "uuid": "396c3e90-987d-4659-911b-cf68c2fb3052",
+      "position": "8ef08dd0f6995c4760a9e67584e6ac864354546687e5086bf355ba423a85bc75",
+      "normal": "4409149f300b8043bd10bcc49568c4df9635154e96489186d703a15313e4b9e7",
+      "triangles": 288
+    },
+    {
+      "i": 27,
+      "uuid": "9dad4718-7ba6-4258-b017-677fcdf4afe8",
+      "position": "7ae073bf53adfefb6f197c24343381a653d4f34fe541abda13a6688587c03f3f",
+      "normal": null,
+      "triangles": 126
+    },
+    {
+      "i": 28,
+      "uuid": "d91956a1-f8b7-4167-81d8-e79276fb3c2f",
+      "position": "82ab849a168b7514440cdd996f8057ee77a42b1fdf0086ed9ef0009ac24305c6",
+      "normal": null,
+      "triangles": 5460
+    },
+    {
+      "i": 29,
+      "uuid": "8877d070-1231-4fbb-b084-8d4e506fd52c",
+      "position": "14ac130855d1ebbb2682cec035767a4ab70e0b32844e49e5bd2d15942aae4ffb",
+      "normal": "5fc9808330790b11f772c86fdf76a71cf55b23762d3a6190037deee322ce4d9c",
+      "triangles": 2204
+    },
+    {
+      "i": 30,
+      "uuid": "b8c5ba7d-12e3-43fa-af2d-e89987757631",
+      "position": "6707cc570379da4f43fb2a8f29d074ea825af317131b4c279b23831d9b7ec133",
+      "normal": "3ac62fc1b9896240e8a32ae35cd33c5b3ee989f5df32067be46586d9efdf7fb4",
+      "triangles": 396
+    },
+    {
+      "i": 31,
+      "uuid": "1618627f-e006-4594-9054-da20518ef71b",
+      "position": "4409423feeea66765223536976e6a517be09ce5c1bdb3d50edd93d61a6c4d217",
+      "normal": "d174ba6135d4f8094c51af6f15717d7e057345364fa143f156756a68670c3aa2",
+      "triangles": 32
+    },
+    {
+      "i": 32,
+      "uuid": "f91ae31b-1933-4354-b449-29c3dba8baeb",
+      "position": "d8eac09d54fd15a930ed4ea888e2635786c119501d63f03574fca90d9ee6a689",
+      "normal": "e929c11416153a80c919f292752535694d810c974d1e86244397bc59a1668410",
+      "triangles": 24
+    },
+    {
+      "i": 33,
+      "uuid": "dbdcb987-aa84-4c81-ac5c-e887eba5d7a0",
+      "position": "67f4b8c68a6ebdf470be0fe1fef5c9f2b41d37bfad7a39e47c0f57823f6bfd2d",
+      "normal": "80aed46eaaf0a494ce42570b7ba36a07d2458c2ca7fb9fea154ab829aec54faf",
+      "triangles": 144
+    },
+    {
+      "i": 34,
+      "uuid": "9eb8d4d9-ef68-4595-b8db-9a4a1d9a4432",
+      "position": "a94a05f2831b34cc5fc8ee32bff65009b2db991643efc29276030cb7f45e033b",
+      "normal": "5d7f95db6bd1eb89fb27437eb01965b1861ba6bc878266b479cb40145ca070f1",
+      "triangles": 192
+    },
+    {
+      "i": 35,
+      "uuid": "67734845-d5b3-45b9-96dc-4330e083ca71",
+      "position": "48d6683bb19227b03d5f31344b206617d19b52077b25a1f911a6a024d2f963d1",
+      "normal": "e59c44b3e4836c7f74532bdfb0e4144913f2ca51925cdedc62f0402e06ccfdc6",
+      "triangles": 376
+    },
+    {
+      "i": 36,
+      "uuid": "0c49c717-4421-4b0e-8d62-8a718d2fa0fb",
+      "position": "6c1a1bbd2ac68eecaf725e7bcadefeacb962c76e5455be85a79914220948f7e5",
+      "normal": "a2dec7587df9e7eef76cd8b822091efc618c4646cc12bee9f2106d6d1cf73a70",
+      "triangles": 376
+    },
+    {
+      "i": 37,
+      "uuid": "1d6e4e50-b858-4fe1-a588-a48261ce463e",
+      "position": "866e70dd619ca7a7e71b5faadb8f4f3ea686f0564db02062da7a01a43f619e59",
+      "normal": "5269e5996bc99692d31a1c887131d8c3e19af951d28441cd4667aac6f03df521",
+      "triangles": 376
+    },
+    {
+      "i": 38,
+      "uuid": "172d196b-0189-407e-a7f3-8f87e0f2ec89",
+      "position": "9778bfd61d7b3b3a7e54fd64e79abeb65f7e4444fff75860f8d0cf3a9e6777dd",
+      "normal": "730a5b49b7e72e76fbc1ff9e5be8344ecb42c6904af8f457932be8112f4d4e6e",
+      "triangles": 376
+    },
+    {
+      "i": 39,
+      "uuid": "c766d506-1cd8-4006-b70b-d76a7b303536",
+      "position": "eaf8f7291f8d01c2f4b968b5a520f0414cf14605911b1f2e232bfa48d6cefa1a",
+      "normal": "983b55666cf1b1ee6947bbea92335f99d572061643210dc7b361937d8ec2de81",
+      "triangles": 376
+    },
+    {
+      "i": 40,
+      "uuid": "384517dc-1668-4930-9c43-94f8d83b1ecb",
+      "position": "6a97ee8b710d5db6cd17b6474c751900c0a406f8cf87803e99959f5997748da8",
+      "normal": "e8cad13e658ad59a03dbcccbfff7e71c48612afe9cee950a665008010ac9b4f4",
+      "triangles": 376
+    },
+    {
+      "i": 41,
+      "uuid": "6e22f057-d392-4c55-bb86-c6b300965666",
+      "position": "c29941c3982cff12fe23f71b96fcbbd6ad04f1a268e21320be87f669cf770cfb",
+      "normal": "4989452fcd473d5720e4c51efe777e78e52000dfc15d9acb8a06654af938b33b",
+      "triangles": 376
+    },
+    {
+      "i": 42,
+      "uuid": "8369c0b7-f01d-485f-867e-0e663054eafd",
+      "position": "7720af19e42b09a30ede7891870df20dd738e974f75db052c6570493e9ee1432",
+      "normal": "3245e7df9ae21e3d3413a3c9db0010bd89a3cfbea7457eb0e6e6c9515bfe96b4",
+      "triangles": 376
+    },
+    {
+      "i": 43,
+      "uuid": "b346f123-0045-4208-8d52-553ef57a29b2",
+      "position": "23c8e16498facfd3cba47f291f4da7dd7fc1a4ea0f93e908017083eddeca9dd3",
+      "normal": "28d1bfa3c4e6f1480317416f0fd89e95a8876ef4ab731969788a6df65cabd803",
+      "triangles": 684
+    }
+  ]
+}

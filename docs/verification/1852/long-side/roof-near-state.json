@@ -1,0 +1,23 @@
+{
+  "nearAtRoof": 0.05,
+  "roofFeet": [
+    -170,
+    16.88,
+    -39
+  ],
+  "roofFloor": 15.663371306929132,
+  "eye": [
+    -15,
+    17,
+    -95
+  ],
+  "near": 0.05,
+  "far": 1000,
+  "materialUsers": 7,
+  "longSide": {
+    "skinZ": -0.006,
+    "backZ": 0,
+    "upperSkinZ": 1.564,
+    "upperBackZ": 1.57
+  }
+}
