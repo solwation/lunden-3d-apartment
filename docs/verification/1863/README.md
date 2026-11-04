@@ -76,3 +76,7 @@ single-app recovered HUD evidence completed about 13:13. Verification was reasse
 at the ten-minute point: reused green checks and finished only the missing HUD proof.
 
 Conductor integration retained the prior placement change (#1862) in main/config: only its GroundPlacement wiring/outdoor Life support constants differ from this fixture baseline; BOULE config, event-to-HUD callback and all tested boule/Worker inputs remain exact. Every other recorded source/image hash matches. Source-bound green checks are reused across this unrelated rebase; no routine functional rerun. All three result images were directly reviewed by the conductor.
+
+## Conductor publication
+
+Source/images `a40a5504f1abde2a5479b75cb2ad3513e349916f`; [Pages41837263967](https://github.com/solwation/lunden-3d-apartment/actions/runs/41837263967) succeeded. Live version `a40a550`, content `f1a0cc0ff437`; bouleclient/main/config/groundplacement byte-match the integrated source after only declared cachequery normalization, preserving #1862. No new Worker path changed, so its prior actual deployment remains applicable. All three final images were directly inspected and pinned image bytes verified before [embedded completion6631775761](https://github.com/solwation/lunden-3d-apartment/issues/1863#issuecomment-6631775761), before resolving push. Tests and actual Worker/HUD evidence were reused across unrelated placement integration under the source scope above.
