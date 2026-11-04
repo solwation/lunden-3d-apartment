@@ -18,7 +18,7 @@ export class AdminReports {
       const endpoint=new URL(url);
       if (url !== CLOUD_URL.replace(/\/+$/,'') && !(loopback(location.hostname) && loopback(endpoint.hostname) && endpoint.protocol==='http:' && endpoint.pathname==='/')) this.url='';
     } catch { this.url=''; }
-    this.token='';this.expires=0;this.pending=null;this.busy=false;this.epoch=0;this.photos=[];this.photoJob=0;this.photoJobs=0;this.photoQueue=Promise.resolve();
+    this.token='';this.expires=0;this.pending=null;this.busy=false;this.epoch=0;this.photos=[];this.photoJob=0;this.photoJobs=0;this.photoQueue=Promise.resolve();this.screenshot=null;this.screenBusy=false;this.screenJob=0;
     form.addEventListener('submit',e=>{
       const code=normalizeCode(input.value);
       if(isPrivateCode(code)){
@@ -48,7 +48,7 @@ export class AdminReports {
       reportPanel.addEventListener('keydown',e=>e.stopPropagation());
       reportPanel.addEventListener('keyup',e=>e.stopPropagation());
       reportPanel.querySelector('#admin-report-cancel').addEventListener('click',()=>this.closeReport());
-      this.photoSetup(reportPanel);
+      this.photoSetup(reportPanel);this.screenSetup(reportPanel);
       // #1226: a tap on a field that already has focus but no keyboard (iOS after the camera sheet) re-focuses it inside the tap.
       reportInput.addEventListener('pointerup',e=>{if(e.pointerType==='mouse'||document.activeElement!==reportInput)return;reportInput.blur();reportInput.focus();});
     }
@@ -59,6 +59,29 @@ export class AdminReports {
       if(e.key==='Escape'){e.preventDefault();e.stopPropagation();this.logout();this.closeLogin();}
     });
     addEventListener('pagehide',()=>{this.logout();this.closeLogin();});
+  }
+  screenSetup(panel){
+    const button=panel.querySelector('#admin-report-screen');if(!button)return;
+    this.screenEls={button,preview:panel.querySelector('#admin-report-screen-preview'),image:panel.querySelector('#admin-report-screen-img'),remove:panel.querySelector('#admin-report-screen-remove'),label:panel.querySelector('#admin-report-screen-label')};
+    button.addEventListener('click',()=>this.chooseScreenshot());
+    this.screenEls.remove.addEventListener('click',()=>{this.screenshot=null;this.renderScreenshot();this.reportStatus.textContent='Skärmbilden är borttagen. Rapporten kan skickas utan spelbild.';button.focus();});
+    this.renderScreenshot();
+  }
+  renderScreenshot(){
+    const e=this.screenEls;if(!e)return;
+    e.button.disabled=this.screenBusy;e.remove.disabled=this.screenBusy;e.button.textContent=this.screenshot?'Ta ny skärmbild':'Ta skärmbild';
+    e.preview.hidden=!this.screenshot;e.label.textContent=this.screenshot?'Skärmbild vald':'Ingen skärmbild vald';
+    if(this.screenshot)e.image.src=this.screenshot.image;else e.image.removeAttribute('src');
+  }
+  async chooseScreenshot(){
+    if(this.screenBusy)return;
+    const job=++this.screenJob,epoch=this.epoch;this.screenBusy=true;this.renderScreenshot();this.reportStatus.textContent='Tar en skärmbild av spelvyn…';
+    try{
+      const image=await this.capture();if(job!==this.screenJob||epoch!==this.epoch)return;
+      if(!reportImagesFit({image,...reportOwnImages(this.photos.map(p=>p.image))}))throw Object.assign(Error(),{code:'total'});
+      this.screenshot={id:crypto.randomUUID(),image};this.renderScreenshot();this.reportStatus.textContent='Skärmbilden är vald. Du kan ersätta eller ta bort den före sändning.';
+    }catch(error){if(job===this.screenJob&&epoch===this.epoch)this.reportStatus.textContent=error?.code==='total'?'Bilderna överskrider 800 KiB totalt. Tidigare bildval finns kvar.':'Kunde inte ta skärmbilden. Text och tidigare bildval finns kvar; du kan skicka utan spelbild.';}
+    finally{if(job===this.screenJob){this.screenBusy=false;this.renderScreenshot();}}
   }
   // #1841: additive atomic batches, with one removable preview per own picture.
   photoSetup(panel){
@@ -84,9 +107,9 @@ export class AdminReports {
         const prepared=[];
         for(const file of files)prepared.push({id:crypto.randomUUID(),name:file.name||'Egen bild',image:await prepareReportPhoto(file)});
         if(job!==this.photoJob)return;
-        if(!reportImagesFit(reportOwnImages(this.photos.concat(prepared).map(p=>p.image))))throw Object.assign(Error(),{code:'total'});
+        if(!reportImagesFit({...reportOwnImages(this.photos.concat(prepared).map(p=>p.image)),...(this.screenshot?{image:this.screenshot.image}:{})}))throw Object.assign(Error(),{code:'total'});
         this.photos=this.photos.concat(prepared);this.renderPhotos();
-        this.reportStatus.textContent=`${prepared.length} bild${prepared.length===1?'':'er'} tillagd${prepared.length===1?'':'a'}. ${this.photos.length} av ${REPORTS.photoCount} egna bilder; spelbilden tillkommer.`;
+        this.reportStatus.textContent=`${prepared.length} bild${prepared.length===1?'':'er'} tillagd${prepared.length===1?'':'a'}. ${this.photos.length} av ${REPORTS.photoCount} egna bilder. Skärmbild väljs separat.`;
       }catch(error){
         if(job!==this.photoJob)return;
         const messages={count:`Högst ${REPORTS.photoCount} egna bilder. Inga bilder i detta val lades till.`,size:'En originalfil är större än 20 MiB. Välj en mindre fil.',type:'En fil är ingen bild. Välj bara bildfiler.',format:'Ett bildformat stöds inte. Välj JPEG eller PNG.',total:'Bilderna överskrider 800 KiB totalt. Välj färre eller mindre bilder.'};
@@ -101,10 +124,10 @@ export class AdminReports {
       const figure=document.createElement('figure'),img=document.createElement('img'),caption=document.createElement('figcaption'),name=document.createElement('span'),remove=document.createElement('button');
       figure.setAttribute('role','listitem');img.src=photo.image;img.alt=`Bild ${i+1}: ${photo.name}`;if(i===0)img.id='admin-report-preview-img';
       name.textContent=`${i+1}. ${photo.name}`;remove.type='button';remove.textContent='Ta bort';remove.setAttribute('aria-label',`Ta bort bild ${i+1}`);if(i===0)remove.id='admin-report-photo-remove';
-      remove.addEventListener('click',()=>{this.photos=this.photos.filter(p=>p.id!==photo.id);this.renderPhotos();this.reportStatus.textContent=`Bilden är borttagen. ${this.photos.length} egna bilder kvar; spelbilden följer med.`;this.reportPanel.querySelector('#admin-report-camera').focus();});
+      remove.addEventListener('click',()=>{this.photos=this.photos.filter(p=>p.id!==photo.id);this.renderPhotos();this.reportStatus.textContent=`Bilden är borttagen. ${this.photos.length} egna bilder kvar. Skärmbild väljs separat.`;this.reportPanel.querySelector('#admin-report-camera').focus();});
       caption.append(name,remove);figure.append(img,caption);els.preview.append(figure);
     });
-    const count=this.reportPanel.querySelector('#admin-report-photo-count');if(count)count.textContent=`${this.photos.length}/${REPORTS.photoCount} egna bilder · ${Math.ceil(reportImageBytes(reportOwnImages(this.photos.map(p=>p.image)))/1024)} KiB före spelbilden`;
+    const count=this.reportPanel.querySelector('#admin-report-photo-count');if(count)count.textContent=`${this.photos.length}/${REPORTS.photoCount} egna bilder · ${Math.ceil(reportImageBytes(reportOwnImages(this.photos.map(p=>p.image)))/1024)} KiB egna bilder`;
   }
   // #1226: back from the camera. A script focus() outside a tap never raises the iOS keyboard and leaves the field
   // "already focused", so the next real tap does nothing. On touch screens the field is therefore left unfocused (a tap
@@ -129,7 +152,7 @@ export class AdminReports {
     this.reportPanel.showModal();this.reportInput.focus();
   }
   menuState(){if(this.menu)this.menu.hidden=!this.active;}
-  logout(){this.epoch++;this.loginRequest?.abort();this.busy=false;this.login.disabled=false;clearTimeout(this.expiryTimer);this.token='';this.expires=0;this.closeReport();this.menuState();this.changed(false);}
+  logout(){this.epoch++;this.screenJob++;this.screenBusy=false;this.renderScreenshot();this.loginRequest?.abort();this.busy=false;this.login.disabled=false;clearTimeout(this.expiryTimer);this.token='';this.expires=0;this.closeReport();this.menuState();this.changed(false);}
   async signIn(suppliedCode){
     const code=normalizeCode(typeof suppliedCode==='string'?suppliedCode:this.password.value);this.password.value='';
     if(this.busy)return;
@@ -160,19 +183,16 @@ export class AdminReports {
     if(this.busy){this.say('Vänta tills den pågående begäran är klar.');return;}
     if(!text.trim()||text.length>REPORTS.maxChars){this.say(`Skriv 1–${REPORTS.maxChars} tecken i rapporten.`);return;}
     if(this.photoBusy&&source===this.reportInput){this.say('Vänta tills bilderna är klara.');return;}
+    if(this.screenBusy&&source===this.reportInput){this.say('Vänta tills skärmbilden är klar.');return;}
     // Freeze one submission snapshot; edits/new selections in flight remain a separate draft.
-    const selected=source===this.reportInput?this.photos:[],key=selected.map(p=>p.id).join(',');
-    if(!this.pending||this.pending.text!==text||this.pending.photoKey!==key)this.pending={id:crypto.randomUUID(),text,photoKey:key,selected:selected.slice(),...reportOwnImages(selected.map(p=>p.image)),playerName:reportPlayerName(this.playerName())};
+    const selected=source===this.reportInput?this.photos:[],screen=source===this.reportInput?this.screenshot:null,key=selected.map(p=>p.id).join(',');
+    if(!this.pending||this.pending.text!==text||this.pending.photoKey!==key||this.pending.screenId!==(screen?.id??null)||this.pending.image!==screen?.image||selected.some((p,i)=>p.image!==this.pending.selected[i]?.image))
+      this.pending={id:crypto.randomUUID(),text,photoKey:key,screenId:screen?.id??null,selected:selected.map(p=>({...p})),...(screen?{image:screen.image}:{}),...reportOwnImages(selected.map(p=>p.image)),playerName:reportPlayerName(this.playerName())};
     const pending=this.pending, draft=source.value, epoch=this.epoch;this.busy=true;
     try{
-      if(!pending.image){
-        this.say('Tar en bild av spelvyn…');
-        try{pending.image=await this.capture();}
-        catch{if(epoch===this.epoch)this.say('Kunde inte ta bilden. Försök igen; texten finns kvar.');return;}
-      }
       if(epoch!==this.epoch||!this.active)return;
-      const payload={text,playerName:pending.playerName,image:pending.image,...(pending.photo?{photo:pending.photo}:{}),...(pending.photos?.length?{photos:pending.photos}:{})};
-      if(!reportImagesFit(payload)||new TextEncoder().encode(JSON.stringify(payload)).length>REPORTS.putBytes){this.say('Rapportens bilder överskrider 800 KiB totalt inklusive spelbilden. Ta bort en bild och försök igen; text och bilder finns kvar.');return;}
+      const payload={text:pending.text,playerName:pending.playerName,...(pending.image?{image:pending.image}:{}),...(pending.photo?{photo:pending.photo}:{}),...(pending.photos?.length?{photos:pending.photos}:{})};
+      if(!reportImagesFit(payload)||new TextEncoder().encode(JSON.stringify(payload)).length>REPORTS.putBytes){this.say('Rapportens bilder överskrider 800 KiB totalt inklusive vald skärmbild. Ta bort en bild och försök igen; text och bilder finns kvar.');return;}
       const r=await fetch(this.url+(pending.photos?.length?'/reports/v3/':'/reports/')+pending.id,{redirect:'error',method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+this.token},body:JSON.stringify(payload)});
       if(epoch!==this.epoch)return;
       if(r.status===403){this.logout();this.say('Adminsessionen har gått ut. Skriv din adminkod i chatten igen.');return;}
@@ -180,8 +200,10 @@ export class AdminReports {
       if(this.pending===pending)this.pending=null;
       // Preserve any new draft typed while the request was in flight.
       if(source.value===draft)source.value='';
-      const sent=new Set(pending.selected.map(p=>p.id));this.photos=this.photos.filter(p=>!sent.has(p.id));this.renderPhotos();
-      this.say(`Rapporten med ${1+pending.selected.length} bild${pending.selected.length?'er':''} är sparad och väntar på granskning.`);
+      const sent=new Map(pending.selected.map(p=>[p.id,p.image]));this.photos=this.photos.filter(p=>sent.get(p.id)!==p.image);this.renderPhotos();
+      if(this.screenshot?.id===pending.screenId&&this.screenshot.image===pending.image){this.screenshot=null;this.renderScreenshot();}
+      const images=(pending.image?1:0)+pending.selected.length;
+      this.say(images?`Rapporten med ${images} bild${images===1?'':'er'} är sparad och väntar på granskning.`:'Rapporten utan bilder är sparad och väntar på granskning.');
     }catch{if(epoch===this.epoch)this.say('Rapporten kunde inte skickas. Försök igen; texten finns kvar.');}
     finally{if(epoch===this.epoch)this.busy=false;}
   }

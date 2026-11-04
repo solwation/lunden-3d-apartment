@@ -1,0 +1,282 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "desktop: default text-only sends zero captures or image data"
+    },
+    {
+      "ok": true,
+      "label": "desktop: unchanged text-only retry freezes UUID/payload/author"
+    },
+    {
+      "ok": true,
+      "label": "desktop: explicit keyboard/touch capture displays a real rendered preview"
+    },
+    {
+      "ok": true,
+      "label": "desktop: separate own-photo picker retains its preview"
+    },
+    {
+      "ok": true,
+      "label": "desktop: sends/retries never recapture the changed scene"
+    },
+    {
+      "ok": true,
+      "label": "desktop: replacement creates a new immutable report and retains own photo"
+    },
+    {
+      "ok": true,
+      "label": "desktop: removing screenshot sends no screenshot bytes and keeps own photo"
+    },
+    {
+      "ok": true,
+      "label": "desktop: failed explicit capture gives a recoverable status"
+    },
+    {
+      "ok": true,
+      "label": "desktop: capture failure cannot block selected-photo/text retry"
+    },
+    {
+      "ok": true,
+      "label": "desktop: valid text-only still sends after capture failure"
+    },
+    {
+      "ok": true,
+      "label": "desktop: legacy chat command is text-only and preserves separate dialog selection"
+    },
+    {
+      "ok": true,
+      "label": "desktop: encoded replacement is the actual blue render and valid bounded JPEG"
+    },
+    {
+      "ok": true,
+      "label": "touch: default text-only sends zero captures or image data"
+    },
+    {
+      "ok": true,
+      "label": "touch: unchanged text-only retry freezes UUID/payload/author"
+    },
+    {
+      "ok": true,
+      "label": "touch: explicit keyboard/touch capture displays a real rendered preview"
+    },
+    {
+      "ok": true,
+      "label": "touch: separate own-photo picker retains its preview"
+    },
+    {
+      "ok": true,
+      "label": "touch: sends/retries never recapture the changed scene"
+    },
+    {
+      "ok": true,
+      "label": "touch: replacement creates a new immutable report and retains own photo"
+    },
+    {
+      "ok": true,
+      "label": "touch: removing screenshot sends no screenshot bytes and keeps own photo"
+    },
+    {
+      "ok": true,
+      "label": "touch: failed explicit capture gives a recoverable status"
+    },
+    {
+      "ok": true,
+      "label": "touch: capture failure cannot block selected-photo/text retry"
+    },
+    {
+      "ok": true,
+      "label": "touch: valid text-only still sends after capture failure"
+    },
+    {
+      "ok": true,
+      "label": "touch: legacy chat command is text-only and preserves separate dialog selection"
+    },
+    {
+      "ok": true,
+      "label": "touch: encoded replacement is the actual blue render and valid bounded JPEG"
+    },
+    {
+      "ok": true,
+      "label": "no product page errors"
+    }
+  ],
+  "errors": [],
+  "fixture": "Real index/AdminReports production binding and ReportCapture/main render hook, tiny Three component. Native keyboard/touch. Auth session fixture; local intercepted PUT only, no full apartment, private credentials, external service or physical device.",
+  "desktop": {
+    "requests": [
+      {
+        "id": "c02ca613-e6d5-497f-bb39-5325d2be8136",
+        "payloadSha256": "f3b1f6761715d5e1acac029e64efa4e8ecf83a9f3ee843343731e808eb17011a",
+        "image": false,
+        "photo": false,
+        "photos": 0,
+        "bytes": 72
+      },
+      {
+        "id": "c02ca613-e6d5-497f-bb39-5325d2be8136",
+        "payloadSha256": "f3b1f6761715d5e1acac029e64efa4e8ecf83a9f3ee843343731e808eb17011a",
+        "image": false,
+        "photo": false,
+        "photos": 0,
+        "bytes": 72
+      },
+      {
+        "id": "ccac05c5-af08-417f-b398-6547056971a5",
+        "payloadSha256": "c19b7f61a9257fe75ed85e8e19a40e7a9187ce95d46aec76e4f9fb75a2b4fcb2",
+        "image": true,
+        "photo": true,
+        "photos": 0,
+        "bytes": 23795
+      },
+      {
+        "id": "ccac05c5-af08-417f-b398-6547056971a5",
+        "payloadSha256": "c19b7f61a9257fe75ed85e8e19a40e7a9187ce95d46aec76e4f9fb75a2b4fcb2",
+        "image": true,
+        "photo": true,
+        "photos": 0,
+        "bytes": 23795
+      },
+      {
+        "id": "a3380f53-2e90-4bc2-be15-aba979cc0bbb",
+        "payloadSha256": "d965206af196bea8960930e776e949160caefd0bc4ded6628c606d38e876af3a",
+        "image": true,
+        "photo": true,
+        "photos": 0,
+        "bytes": 23923
+      },
+      {
+        "id": "60874524-1083-4f36-9e36-a41d1fec330e",
+        "payloadSha256": "cb737092a9cc91d5200357b332bd4cfe7efc5f2c7907273b4d7e053700f0cb57",
+        "image": false,
+        "photo": true,
+        "photos": 0,
+        "bytes": 21761
+      },
+      {
+        "id": "60874524-1083-4f36-9e36-a41d1fec330e",
+        "payloadSha256": "cb737092a9cc91d5200357b332bd4cfe7efc5f2c7907273b4d7e053700f0cb57",
+        "image": false,
+        "photo": true,
+        "photos": 0,
+        "bytes": 21761
+      },
+      {
+        "id": "758604b3-7e15-499e-9a11-b9c6d9f880a7",
+        "payloadSha256": "497bbd96bdfc3be58f28c9bc28c9178980387b2a4f1062ea3bc0f9ba7160f113",
+        "image": false,
+        "photo": false,
+        "photos": 0,
+        "bytes": 62
+      },
+      {
+        "id": "eae0ad7c-803c-4dc6-89df-7650ba795599",
+        "payloadSha256": "af66c695c0dd0933e337342e70d8dba8b69f37f316343f6ad4853c5b31de0509",
+        "image": false,
+        "photo": false,
+        "photos": 0,
+        "bytes": 46
+      }
+    ],
+    "decoded": {
+      "valid": true,
+      "width": 320,
+      "height": 180,
+      "pixel": [
+        38,
+        61,
+        216,
+        255
+      ],
+      "preserved": false
+    }
+  },
+  "touch": {
+    "requests": [
+      {
+        "id": "68fd294b-256b-40f8-afca-83e62f36e3aa",
+        "payloadSha256": "f3b1f6761715d5e1acac029e64efa4e8ecf83a9f3ee843343731e808eb17011a",
+        "image": false,
+        "photo": false,
+        "photos": 0,
+        "bytes": 72
+      },
+      {
+        "id": "68fd294b-256b-40f8-afca-83e62f36e3aa",
+        "payloadSha256": "f3b1f6761715d5e1acac029e64efa4e8ecf83a9f3ee843343731e808eb17011a",
+        "image": false,
+        "photo": false,
+        "photos": 0,
+        "bytes": 72
+      },
+      {
+        "id": "a9f3d458-f124-4ee8-864f-93092dcff32c",
+        "payloadSha256": "c19b7f61a9257fe75ed85e8e19a40e7a9187ce95d46aec76e4f9fb75a2b4fcb2",
+        "image": true,
+        "photo": true,
+        "photos": 0,
+        "bytes": 23795
+      },
+      {
+        "id": "a9f3d458-f124-4ee8-864f-93092dcff32c",
+        "payloadSha256": "c19b7f61a9257fe75ed85e8e19a40e7a9187ce95d46aec76e4f9fb75a2b4fcb2",
+        "image": true,
+        "photo": true,
+        "photos": 0,
+        "bytes": 23795
+      },
+      {
+        "id": "f82f1064-8cec-40d1-b400-277491255346",
+        "payloadSha256": "d965206af196bea8960930e776e949160caefd0bc4ded6628c606d38e876af3a",
+        "image": true,
+        "photo": true,
+        "photos": 0,
+        "bytes": 23923
+      },
+      {
+        "id": "965e28b7-4627-41e6-9502-167641c1db8c",
+        "payloadSha256": "cb737092a9cc91d5200357b332bd4cfe7efc5f2c7907273b4d7e053700f0cb57",
+        "image": false,
+        "photo": true,
+        "photos": 0,
+        "bytes": 21761
+      },
+      {
+        "id": "965e28b7-4627-41e6-9502-167641c1db8c",
+        "payloadSha256": "cb737092a9cc91d5200357b332bd4cfe7efc5f2c7907273b4d7e053700f0cb57",
+        "image": false,
+        "photo": true,
+        "photos": 0,
+        "bytes": 21761
+      },
+      {
+        "id": "aab790e2-ffad-4015-9ced-e721e3ac50f2",
+        "payloadSha256": "497bbd96bdfc3be58f28c9bc28c9178980387b2a4f1062ea3bc0f9ba7160f113",
+        "image": false,
+        "photo": false,
+        "photos": 0,
+        "bytes": 62
+      },
+      {
+        "id": "f0fb6c4f-1e88-4e09-9383-dff92867c08c",
+        "payloadSha256": "af66c695c0dd0933e337342e70d8dba8b69f37f316343f6ad4853c5b31de0509",
+        "image": false,
+        "photo": false,
+        "photos": 0,
+        "bytes": 46
+      }
+    ],
+    "decoded": {
+      "valid": true,
+      "width": 320,
+      "height": 180,
+      "pixel": [
+        38,
+        61,
+        216,
+        255
+      ],
+      "preserved": false
+    }
+  }
+}

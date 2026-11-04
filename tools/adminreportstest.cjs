@@ -162,9 +162,10 @@ const sourceHashes=Object.fromEntries(['index.html','src/adminreports.js','src/m
  check(await page.locator('#terminal-admin-menu').evaluate(e=>e.getBoundingClientRect().top>document.getElementById('terminal-code').getBoundingClientRect().bottom),'admin menu is below ordinary console input');
  await page.locator('#admin-report-text').fill('Report panel retry');
  await page.evaluate(()=>{fixture.reports.capture=async()=>{throw Error('fixture capture failed');};});
- await page.locator('#admin-report-send').click();await ready();
- check(await page.locator('#admin-report-text').inputValue()==='Report panel retry'&&(await message()).includes('bilden'),'capture failure preserves separate report draft');
+ await page.locator('#admin-report-screen').click();await page.waitForFunction(()=>!fixture.reports.screenBusy);
+ check(await page.locator('#admin-report-text').inputValue()==='Report panel retry'&&(await page.locator('#admin-report-status').textContent()).includes('skärmbilden'),'optional capture failure preserves separate report draft');
  await page.evaluate(image=>{fixture.reports.capture=async()=>image;},captureFixture);
+ await page.locator('#admin-report-screen').click();await page.waitForFunction(()=>!fixture.reports.screenBusy);
  const panelRequests=[];let panelLose=true;
  await page.route(worker+'/reports/*',async route=>{
   panelRequests.push({url:route.request().url(),body:route.request().postDataJSON()});

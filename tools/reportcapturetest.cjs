@@ -1,4 +1,4 @@
-// Actual Three screen render + report capture + native terminal binding + fresh owned Worker.
+// Actual Three screen render + optional report capture + production dialog binding + fresh owned Worker.
 // A tiny component scene, not apartment/phone performance acceptance. No production writes.
 const fs = require('node:fs'), path = require('node:path'), assert = require('node:assert/strict');
 const { launch } = require('./testkit.cjs');
@@ -44,9 +44,9 @@ const checks = [], check = (ok, name) => { assert.ok(ok, name); checks.push(name
       };
       const terminal = document.getElementById('terminal'), terminalInput = document.getElementById('terminal-code');
       terminal.hidden = false;
-      const rearrange = { unlocked: false, enable() {} }, editUI = () => {}, chat = { help: '' };
-      const reports = new Function('AdminReports', 'terminal', 'terminalInput', 'rearrange', 'editUI', 'chat', 'reportCapture', binding + '\nreturn adminReports;')(
-        AdminReports, terminal, terminalInput, rearrange, editUI, chat, reportCapture);
+      const rearrange = { unlocked: false, enable() {} }, editUI = () => {}, chat = { help: '' }, leaderboard={name:'Capture-fixtur'};
+      const reports = new Function('AdminReports', 'terminal', 'terminalInput', 'rearrange', 'editUI', 'chat', 'reportCapture', 'leaderboard', binding + '\nreturn adminReports;')(
+        AdminReports, terminal, terminalInput, rearrange, editUI, chat, reportCapture, leaderboard);
       window.fixture = { renderer, scene, camera, material, reportCapture, reports, frame };
       window.inspectImage = async image => {
         const blob = await (await fetch(image)).blob(), bitmap = await createImageBitmap(blob), canvas = document.createElement('canvas');
@@ -78,28 +78,32 @@ const checks = [], check = (ok, name) => { assert.ok(ok, name); checks.push(name
       const response = await route.fetch();
       if (loseReply) { loseReply = false; await route.abort('failed'); } else await route.fulfill({ response });
     });
-    const send = async text => page.evaluate(text => { const input = document.getElementById('terminal-code'); input.value = '/rapport ' + text; input.form.requestSubmit(); }, text);
+    const send = async text => page.evaluate(text => { fixture.reports.openReport();const input = document.getElementById('admin-report-text'); input.value = text; input.form.requestSubmit(); }, text);
     const idle = () => page.waitForFunction(() => !fixture.reports.busy);
     const count = await page.evaluate(() => captureCount);
+    await page.evaluate(()=>fixture.reports.chooseScreenshot());
     await send('First current view'); await idle();
-    check(await page.evaluate(() => document.getElementById('terminal-code').value === '/rapport First current view'), 'lost reply preserves draft');
+    check(await page.evaluate(() => document.getElementById('admin-report-text').value === 'First current view'), 'lost reply preserves draft');
     await page.evaluate(() => fixture.material.color.setHex(0x0000ff));
     await send('First current view'); await idle();
     check(captured.length === 2 && captured[0].url === captured[1].url && captured[0].body.image === captured[1].body.image
       && await page.evaluate(() => captureCount) === count + 1, 'retry preserves exact original JPEG and UUID despite changed current view');
+    await page.evaluate(()=>fixture.reports.chooseScreenshot());
     await send('Second current view'); await idle();
     const second = await page.evaluate(image => inspectImage(image), captured[2].body.image);
     check(captured[2].url !== captured[1].url && blue(second.center), 'changed report text gets a new UUID and actual current blue view');
-    check(await page.evaluate(() => document.getElementById('terminal-message').textContent.includes('med bild')), 'saved message explains that the image is included');
+    check(await page.evaluate(() => document.getElementById('terminal-message').textContent.includes('1 bild')), 'saved message explains that the image is included');
     const stored = await fetch(worker + '/reports', { headers: { Authorization: 'Bearer testtoken' } }).then(r => r.json());
     check(stored.reports.length === 2 && stored.reports.every(r => r.image && r.untrusted), 'actual private KV queue retains one original image per report');
-    await page.evaluate(() => { captureFails = true; }); await send('Keep failed capture draft'); await idle();
-    check(captured.length === 3 && await page.evaluate(() => document.getElementById('terminal-code').value.includes('Keep failed capture draft')
-      && document.getElementById('terminal-message').textContent.includes('Kunde inte ta bilden')), 'capture failure sends no text-only report and preserves useful draft/error');
-    await page.evaluate(() => { captureFails = false; holdCapture = true; }); await send('Auth race draft');
+    await page.evaluate(async () => { captureFails = true; await fixture.reports.chooseScreenshot(); });
+    check(await page.evaluate(()=>!fixture.reports.screenshot&&document.getElementById('admin-report-status').textContent.includes('skärmbilden')), 'failed optional capture leaves no selected image');
+    await send('Text after failed capture'); await idle();
+    check(captured.length === 4 && !captured[3].body.image, 'failed optional capture permits a valid text-only report');
+    await page.evaluate(() => { captureFails = false; holdCapture = true; fixture.reports.chooseScreenshot(); });
     await page.waitForFunction(() => !!window.releaseCapture);
     await page.evaluate(() => { fixture.reports.logout(); releaseCapture(); }); await idle();
-    check(captured.length === 3 && await page.evaluate(() => !fixture.reports.active), 'logout during actual capture wins before any report upload');
+    await page.waitForFunction(()=>!fixture.reportCapture.pending);
+    check(captured.length === 4 && await page.evaluate(() => !fixture.reports.active), 'logout during actual capture wins before any report upload');
     check(await page.evaluate(() => ![...Array(localStorage.length)].map((_, i) => localStorage.getItem(localStorage.key(i))).some(v => v.includes('data:image/jpeg') || v.includes('lunden-reports-v1'))), 'JPEG and session are absent from persistent browser storage');
     const failed = await page.evaluate(async () => {
       holdCapture = false; fixture.renderer.setSize(0, 0);

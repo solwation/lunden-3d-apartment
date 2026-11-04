@@ -1,0 +1,124 @@
+TAP version 13
+# Subtest: screenshot and photo are stored together, bounded and immutable; one-image clients keep working
+ok 1 - screenshot and photo are stored together, bounded and immutable; one-image clients keep working
+  ---
+  duration_ms: 114.509986
+  type: 'test'
+  ...
+# Subtest: the photo field gets the same type, size and dimension checks as the screenshot
+ok 2 - the photo field gets the same type, size and dimension checks as the screenshot
+  ---
+  duration_ms: 32.71061
+  type: 'test'
+  ...
+# Subtest: all own attachments remain ordered, immutable, listed and claimed; bounded page continues
+ok 3 - all own attachments remain ordered, immutable, listed and claimed; bounded page continues
+  ---
+  duration_ms: 97.453133
+  type: 'test'
+  ...
+# Subtest: invalid count/shape/image and decoded total reject whole request before storage
+ok 4 - invalid count/shape/image and decoded total reject whole request before storage
+  ---
+  duration_ms: 73.7554
+  type: 'test'
+  ...
+# Subtest: versioned writes reject additional pictures on legacy URI and use normal claim receipts
+ok 5 - versioned writes reject additional pictures on legacy URI and use normal claim receipts
+  ---
+  duration_ms: 13.884063
+  type: 'test'
+  ...
+# Subtest: fail closed, method/origin/body limits, login rate before password check, and no replayed furniture digest
+ok 6 - fail closed, method/origin/body limits, login rate before password check, and no replayed furniture digest
+  ---
+  duration_ms: 25.278131
+  type: 'test'
+  ...
+# Subtest: signed scope, tampering, expiry, password rotation and admin/session separation
+ok 7 - signed scope, tampering, expiry, password rotation and admin/session separation
+  ---
+  duration_ms: 15.891056
+  type: 'test'
+  ...
+# Subtest: reports-only import credential can read and claim but grants neither browser login nor global admin access
+ok 8 - reports-only import credential can read and claim but grants neither browser login nor global admin access
+  ---
+  duration_ms: 10.408071
+  type: 'test'
+  ...
+# Subtest: immutable concurrent IDs, exact untrusted text, retry without KV rewrite, paginated private reads, receipt-first removal and replay
+ok 9 - immutable concurrent IDs, exact untrusted text, retry without KV rewrite, paginated private reads, receipt-first removal and replay
+  ---
+  duration_ms: 15.139258
+  type: 'test'
+  ...
+# Subtest: global import claim serializes competing machines, resumes after a lost response, and gates acknowledgement
+ok 10 - global import claim serializes competing machines, resumes after a lost response, and gates acknowledgement
+  ---
+  duration_ms: 6.081384
+  type: 'test'
+  ...
+# Subtest: stream cap without Content-Length cancels the oversized request
+ok 11 - stream cap without Content-Length cancels the oversized request
+  ---
+  duration_ms: 1.525196
+  type: 'test'
+  ...
+# Subtest: Durable Object forwarding limits each PUT once, and failed KV creation can retry without losing its ID
+ok 12 - Durable Object forwarding limits each PUT once, and failed KV creation can retry without losing its ID
+  ---
+  duration_ms: 8.354677
+  type: 'test'
+  ...
+# Subtest: private original JPEG survives immutable retries, reads, claims and lost KV writes
+ok 13 - private original JPEG survives immutable retries, reads, claims and lost KV writes
+  ---
+  duration_ms: 20.575743
+  type: 'test'
+  ...
+# Subtest: JPEG bytes, canonical encoding, frame dimensions and both body limits are enforced
+ok 14 - JPEG bytes, canonical encoding, frame dimensions and both body limits are enforced
+  ---
+  duration_ms: 30.852315
+  type: 'test'
+  ...
+# Subtest: player name is stored/claimed, immutable across retries, bounded and compatible with old clients
+ok 15 - player name is stored/claimed, immutable across retries, bounded and compatible with old clients
+  ---
+  duration_ms: 19.905345
+  type: 'test'
+  ...
+# Subtest: default and legacy reports are text-only with zero captures; selected dialog image is opt-in only
+ok 16 - default and legacy reports are text-only with zero captures; selected dialog image is opt-in only
+  ---
+  duration_ms: 3.62399
+  type: 'test'
+  ...
+# Subtest: frozen UUID/payload/author retries, replacement/removal and changed cached bytes create distinct identities
+ok 17 - frozen UUID/payload/author retries, replacement/removal and changed cached bytes create distinct identities
+  ---
+  duration_ms: 1.239297
+  type: 'test'
+  ...
+# Subtest: capture failure leaves a valid text-only send, and in-flight success preserves newer image/text/own-photo draft
+ok 18 - capture failure leaves a valid text-only send, and in-flight success preserves newer image/text/own-photo draft
+  ---
+  duration_ms: 1.410197
+  type: 'test'
+  ...
+# Subtest: optional screenshot plus own images keeps existing total-byte gate without PUT or attachment loss
+ok 19 - optional screenshot plus own images keeps existing total-byte gate without PUT or attachment loss
+  ---
+  duration_ms: 0.803798
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 19
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 467.184023

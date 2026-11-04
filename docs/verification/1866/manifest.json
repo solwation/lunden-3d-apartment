@@ -1,0 +1,32 @@
+{
+  "issue": 1866,
+  "base": "7d763777aa94a29b8658d531145480da57fafa5f",
+  "app": "http://localhost:8957",
+  "put": "intercepted localhost8958 only; no Worker started",
+  "checks": {
+    "contracts": "19/19",
+    "browser": "25/25; no page errors",
+    "finalPayloadFence": "4/4",
+    "syntax": "pass",
+    "diff": "pass"
+  },
+  "sourcePhase": "One desktop and one touch dialog fixture; final same-ID changed-byte completion guard Node-tested afterward; ordinary observed ID/byte paths unchanged.",
+  "sha256": {
+    "src/adminreports.js": "d20cd781a8fa7b71e45f3ac6db4daa906517766b7f38740b090752b3e6bad815",
+    "src/reportcapture.js": "f0656ef8932fe9e48e6ad483a22268df59513060204a8ee28789e00cc9b23da4",
+    "src/reportattachments.js": "196abf8336a3a66e83f5d9157221ff78eeccbf6d1e8a1bd049007eb9709b7250",
+    "src/reportauthor.js": "848ba62d4e69a890c63e89efad3c962f635db901ecd79124634cf80101ae6184",
+    "index.html": "09f566ed23fa51425b0558515f09a43890567c2e85ab983393eb0aa5f9125240",
+    "tools/optionalreporttest.mjs": "c67e2a35f10d336b9a9066827168bc9fa132c7380608d08b206c4d14d9a30174",
+    "tools/optionalreportbrowser.cjs": "4cd89b8d86ba6a143f05dcdc76dd35c75217e10799267f7a26951a4673d474fb",
+    "tools/reportmultibrowser.cjs": "f3ed846f6b8b2c4ffd1b96e81c3593b8bcb64a82129d3906119c515f0d43faab",
+    "tools/adminreportstest.cjs": "9ec1d565d615de6412fe05d39316528f07d6ea5b5fe954bb1f118873b08c615f",
+    "tools/reportcapturetest.cjs": "58550b1c02509805f39f8353ed3521d2112ee2dc83c01fca5d2acefebaaf2408",
+    "docs/verification/1866/browser.json": "e67e6a57204d1437a1add92a12422870a42af41b1aa2282461be1043fee8333f",
+    "docs/verification/1866/desktop-text-only.png": "b4b5ab857139687ed3625180c0003460578b2a31c308c16db0659ad51d444655",
+    "docs/verification/1866/touch-selected.png": "1162cd28cf6432cb4f538beaee58faefe632f9c7b149e89517fe5202f5f8a19b",
+    "src/main.js": "aa08f7a0ab4eab1725ac4db1d46f8b843a130ff857cf7fcd366dec3cd29154d8"
+  },
+  "productionBindingSha256": "a59eba86b1046ab65436fb57a16815b948e689b74cff6bdcbfbcbbc83b0cef4b",
+  "renderCompleteHookSha256": "72b2aa66df1e0ae7f18e5e25a4096db56fb59f82159e8ebda90b721e4b2b9895"
+}

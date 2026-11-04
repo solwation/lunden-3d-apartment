@@ -1455,7 +1455,7 @@ created, and no physical-phone or apartment-render acceptance is claimed.
 `tools/reportcapturetest.cjs` additionally renders a tiny actual Three component through
 the production screen-render/capture hook, decodes known JPEG pixels and checks a new
 view, edge/byte limits, no preserved WebGL drawing buffer, exact retry image/UUID,
-failed capture and logout during capture. It binds the real production terminal to a
+optional capture failure/text-only and logout during capture. Since#1866 captures are selected explicitly before dialog submission. It binds the real production dialog to a
 fresh owned local Worker. Run with `PLAYWRIGHT_MODULE`, `CHROME_PATH`,
 `LUNDEN_SECRET_TEST_INPUTS` and a local `LUNDEN_REPORT_SESSION_SECRET`, against a local
 static server: `node tools/reportcapturetest.cjs http://localhost:8896 /tmp/report-capture`.
@@ -1674,3 +1674,7 @@ The existing per-profile `lunden.stats` record gains `jetpackMetres` (finite non
 The existing PlayerRoom stores one bounded `picnic` record: three fixed drink objects with world pose/ml/used and temporary owner, two food counts, two seats,64 replay receipts. Serialized transactions persist before ACK/broadcast. Private32hex tab ownership keys never enter snapshots; incoming commands whitelist known operations/indices and bounded pose/actor reach, with revisions, monotonic requests and a rate gate. A live second connection with the same key cannot rebind claims. Leave retains a two-minute recovery lease; late welcome/next commands and sparse orphan refresh expire abandoned claims back to their last safe world pose. Normal live actors keep claims across DO hibernation.
 
 `keep.js` excludes isSharedPicnic objects and shared picnic rest from both save and restore, including old saves; the old Life roofPicnic extra becomes a no-op. Client ready requires capability plus get ACK. Missing/old/disconnected server blocks only shared picnic mutation. Existing Ghosts onPicnic is separate from onTime/onWelcome and composes a prior onPicnic observer. No new KV, endpoint, timer/pose stream, identity service or inventory schema. [Evidence and server-first rollout](../verification/1864/README.md).
+
+## Optional report image snapshot (#1866)
+
+AdminReports stores the explicit screenshot selection in memory separately from own photos. Submit never calls capture. The pending UUID/author/text/image/photo snapshot is reused only when selected IDs and actual image strings still match; replacement, removal or changed cached bytes creates a new pending report. Successful PUT clears only still-matching submitted selections, preserving later text/image edits, including same-ID bytes changed in flight. Legacy chat reports omit all dialog image fields. Capture failure leaves text-only available. Existing report endpoints, limits, reportauthor, server hashing/ACK/import and ReportCapture remain unchanged. [Scoped checks and images](../verification/1866/README.md).

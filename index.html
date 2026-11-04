@@ -710,6 +710,10 @@
     #admin-report-preview figure { margin:0; min-width:0; }
     #admin-report-preview figcaption span { overflow-wrap:anywhere; font-size:12px; }
     #admin-report-photo-count { color:#b7d4bf; font-size:13px; }
+    #admin-report-screen-choice { flex: 1 1 100%; min-width: 0; }
+    #admin-report-screen-label { color: #b7d4bf; font-size: 13px; }
+    #admin-report-screen-preview { margin: 8px 0; }
+    #admin-report-screen-preview img { display: block; max-width: 100%; max-height: 20dvh; object-fit: contain; border: 1px solid #648571; border-radius: 6px; }
     #admin-report-preview[hidden] { display: none; }
     #admin-report-preview img { display: block; max-width: 100%; max-height: 20dvh; object-fit: contain; align-self: flex-start; border: 1px solid #648571; border-radius: 6px; background: #07110d; }
     #admin-report-preview figcaption { display: flex; gap: 4px; }
@@ -1420,13 +1424,18 @@
       <label for="admin-report-text">Beskriv felet eller ditt önskemål</label>
       <textarea id="admin-report-text" rows="4" placeholder="Vad vill du rapportera?" autofocus></textarea>
       <div id="admin-report-photo">
+        <section id="admin-report-screen-choice" aria-label="Valfri skärmbild av spelvyn">
+          <button id="admin-report-screen" type="button" aria-describedby="admin-report-screen-label">Ta skärmbild</button>
+          <span id="admin-report-screen-label">Ingen skärmbild vald</span>
+          <figure id="admin-report-screen-preview" hidden><img id="admin-report-screen-img" alt="Vald skärmbild av spelvyn"><figcaption><button id="admin-report-screen-remove" type="button">Ta bort skärmbild</button></figcaption></figure>
+        </section>
         <input id="admin-report-file" type="file" accept="image/*" multiple hidden>
         <button id="admin-report-camera" type="button"><span aria-hidden="true">📷</span> Ta foto eller lägg till bilder</button>
         <span class="report-drop-hint">eller dra flera bilder hit</span>
         <span id="admin-report-photo-count">0/4 egna bilder</span>
         <div id="admin-report-preview" hidden role="list" aria-label="Valda egna bilder"></div>
       </div>
-      <p id="admin-report-help">En spelbild följer med automatiskt. Upp till 4 egna bilder, högst 20 MiB per originalfil. Bilder skalas till 1280 px/200 KiB JPEG. Högst 800 KiB bilddata totalt, inklusive spelbilden.</p>
+      <p id="admin-report-help">Rapporten kan skickas utan bilder. Välj skärmbild separat, eller lägg till upp till 4 egna bilder, högst 20 MiB per originalfil. Bilder skalas till 1280 px/200 KiB JPEG. Högst 800 KiB bilddata totalt, inklusive vald skärmbild.</p>
       <p id="admin-report-status" role="status" aria-live="polite"></p>
       <button id="admin-report-send" type="submit">Skicka rapport</button>
 
