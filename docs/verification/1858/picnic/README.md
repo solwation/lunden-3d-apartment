@@ -15,3 +15,10 @@ Original-only gameplay/food, so no public downstream port. No new meal/reward/st
 ![Day placement](day.png)
 ![Seated river-park view](seated-river-diagonal.png)
 ![Evening serving](night-serving.png)
+
+
+## Conductor delivery
+
+Source/image commit `a59138164d7ca740799faeee08b1dc47c4478521` is published. [Pages41828102329](https://github.com/solwation/lunden-3d-apartment/actions/runs/41828102329) and [Worker41828102201](https://github.com/solwation/lunden-3d-apartment/actions/runs/41828102201) both completed successfully; the Worker actually ran its Wrangler deployment step (not skipped). Live `version.json` reports version `a591381`, content `379be411ec69`. Live roofpicnic/main/config/heldcategory modules byte-match the reviewed source after removing only the declared `?v=a591381` build cache suffix.
+
+All manifest hashes were checked at integration; no functional rerun was needed across the unchanged source cherry-pick. The three final images were directly inspected by the conductor and their permanent pinned public bytes verified before [embedded completion comment6630397949](https://github.com/solwation/lunden-3d-apartment/issues/1858#issuecomment-6630397949), before resolving push. Planned native/component checks passed with the limitations above. Approximate overlapping phases: implementation/fixture10min, focused checks/images15min (reassessed near10), documentation/review/publication5min. One implementation worker and one bounded read-only placement helper; no broad matrix. All own processes stopped.
