@@ -34,7 +34,7 @@ export class Conversation {
     if (m.why === 'context') { if (this.incoming?.id === m.r) this.incoming = null; if (this.pending?.ref === m.r) { this.pending = null; this.notice('Den repliken går inte längre att svara på'); } return; }
     if (!Object.hasOwn(lines, m.k) || typeof m.i !== 'string' || !m.i.length || m.i.length > 16 || typeof m.to !== 'string' || !m.to.length || m.to.length > 16 || typeof m.id !== 'string' || !m.id.length || m.id.length > 80 || this.seen.has(m.id)) return;
     this.seen.add(m.id); if (this.seen.size > C.receipts) this.seen.delete(this.seen.values().next().value);
-    if (m.i === this.net.id() && m.id === `${m.i}:${this.pending?.q}`) this.pending = null;
+    if (m.i === this.net.id() && m.id === `${m.i}:${this.pending?.q}`) { this.pending = null; this.last = this.now(); }
     if (m.r && this.incoming?.id === m.r && m.i === this.net.id()) this.incoming = null;
     if (m.to === this.net.id() && kinds.includes(m.k) && Number.isFinite(m.ttl) && m.ttl > 0 && m.ttl <= C.replyMs) this.incoming = { from: m.i, id: m.id, kind: m.k, until: this.now() + m.ttl };
     this.onLine(m, lines[m.k]);
