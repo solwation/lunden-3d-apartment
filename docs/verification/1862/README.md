@@ -20,3 +20,7 @@ Checks: [component tests](node-tests.txt)6/6; [deployment paths](deploypaths.txt
 
 ![Glass on Karpvägen8 roof](roof-placed.png)
 ![Mug and Life plate on distant valley ground](valley-placed.png)
+
+## Published result
+
+Source/image commit `58c182c645f5699ae804d8c8b24b3f0b6f088daa` is on main. [Pages41835879004](https://github.com/solwation/lunden-3d-apartment/actions/runs/41835879004) and [Worker41835878968](https://github.com/solwation/lunden-3d-apartment/actions/runs/41835878968) succeeded, including the actual Wrangler deploy step. Live version `58c182c`, content `711ec3c33d91`; published groundplacement/main/config files match the tested source after only the declared cachequery normalization. Source/image manifest matched at integration. Both final images were directly inspected and their permanent bytes verified before [embedded completion6631551226](https://github.com/solwation/lunden-3d-apartment/issues/1862#issuecomment-6631551226), before closure. No functional reruns across the unchanged cherry-pick. Approximate phases: source/implementation8min, held-app focused checks and corrections12min (reviewed near10), docs/review/publication4min. No public port: held-object gameplay only, no building/navigation fix.
