@@ -4,7 +4,7 @@ const reasons = { away: 'Ställ dig vid banan eller i kastringen', turn: 'Det an
 // Explicit welcome capability + authoritative ACK. Never commit a shared throw optimistically.
 export class BouleClient {
   constructor(boule, ghosts) {
-    this.boule = boule; this.ghosts = ghosts; this.sharedSession = false; this.participated = false; this.capable = false; this.q = -1; this.pending = 0; this.trace = null;
+    this.boule = boule; this.ghosts = ghosts; this.sharedSession = false; this.participated = false; this.capable = false; this.q = -1; this.pending = 0; this.trace = null; this.noticeQ = -1;
     const welcome = ghosts.onWelcome; ghosts.onWelcome = m => { welcome?.(m); this.q = -1; this.capable = m.boule?.v === BOULE_SYNC.version; if (this.capable) this.receive({ t: 'bl', ...m.boule }); };
     ghosts.onBoule = m => this.receive(m); boule.net = this;
   }
@@ -13,15 +13,19 @@ export class BouleClient {
   get interest() { return this.participated && this.boule.near(this.ghosts.camera.position); }
   receive(m) {
     if (m.v !== BOULE_SYNC.version || !m.e || !Number.isSafeInteger(m.e.q) || m.e.q < this.q) return;
+    const interested = this.interest, requested = !!this.pending;
     this.sharedSession = true; this.capable = true; this.pending = 0;
     if (m.e.q !== this.q) {
       this.q = m.e.q; this.trace = null;
       if (m.action) { const a = m.action, replay = playBoule(a.start, a.cmd, a.seed, a.from, true); if (!replay.error) this.trace = { frames: replay.frames, since: performance.now() - a.elapsed, ms: a.ms }; }
       Object.assign(this.boule.rules, structuredClone(m.e.rules));
       this.boule.physics.objects = structuredClone(m.e.objects); this.boule.flight = this.boule.settling = null; this.boule.acc = 0;
-      this.boule.dirty = true; this.boule.onEvent?.(this.boule.rules.message);
+      this.boule.dirty = true;
+      // Shared state reaches the whole room; HUD verdicts belong to nearby participants only.
+      // Keep the shown revision across reconnects so a repeated welcome is not a new verdict.
+      if (interested && this.noticeQ !== m.e.q) { this.noticeQ = m.e.q; this.boule.onEvent?.(this.boule.rules.message); }
     }
-    if (m.why) this.boule.onEvent?.(reasons[m.why] ?? 'Kastet kunde inte godkännas');
+    if (m.why && (interested || requested)) this.boule.onEvent?.(reasons[m.why] ?? 'Kastet kunde inte godkännas');
     this.update();
   }
   command(k, camera, point) {

@@ -1,0 +1,86 @@
+TAP version 13
+# Subtest: old Worker is explicitly refused, offline has local mode, no optimistic shared mutation
+ok 1 - old Worker is explicitly refused, offline has local mode, no optimistic shared mutation
+  ---
+  duration_ms: 4.075299
+  type: 'test'
+  ...
+# Subtest: authoritative replay, duplicate ACK, disconnect freeze, late welcome and reject resync
+ok 2 - authoritative replay, duplicate ACK, disconnect freeze, late welcome and reject resync
+  ---
+  duration_ms: 7.805597
+  type: 'test'
+  ...
+# Subtest: background welcome/revisions stay silent while state updates; only a nearby participant gets notices
+not ok 3 - background welcome/revisions stay silent while state updates; only a nearby participant gets notices
+  ---
+  duration_ms: 1.507899
+  type: 'test'
+  location: '/home/devcontainers/orkester-lunden-olw-win10-gpt6-20261104/boule-notices/tools/bouleclienttest.mjs:6:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    ordinary connection is not joining boule
+    + actual - expected
+    
+    + [
+    +   'Nytt parti: Lag 1 kastar lillen'
+    + ]
+    - []
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+    0: 'Nytt parti: Lag 1 kastar lillen'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/devcontainers/orkester-lunden-olw-win10-gpt6-20261104/boule-notices/tools/bouleclienttest.mjs:8:51)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: an explicit pending request retains its rejection after leaving; unsolicited rejections stay silent
+not ok 4 - an explicit pending request retains its rejection after leaving; unsolicited rejections stay silent
+  ---
+  duration_ms: 0.6021
+  type: 'test'
+  location: '/home/devcontainers/orkester-lunden-olw-win10-gpt6-20261104/boule-notices/tools/bouleclienttest.mjs:19:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+    + [
+    +   'Nytt parti: Lag 1 kastar lillen',
+    +   'Ställ dig vid banan eller i kastringen'
+    + ]
+    - []
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+    0: 'Nytt parti: Lag 1 kastar lillen'
+    1: 'Ställ dig vid banan eller i kastringen'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/devcontainers/orkester-lunden-olw-win10-gpt6-20261104/boule-notices/tools/bouleclienttest.mjs:21:94)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 2
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 137.316836

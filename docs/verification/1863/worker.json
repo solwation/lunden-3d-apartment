@@ -1,0 +1,24 @@
+{
+  "checks": [
+    "welcome quiet for clients without participation",
+    "actual reset ACK notifies participant, background observer remains synchronized and silent",
+    "same revision after actual reconnect remains silent",
+    "nearby nonparticipant still receives no unsolicited verdict",
+    "participant leaving the court receives new state without notices"
+  ],
+  "revisions": [
+    7,
+    7
+  ],
+  "events": [
+    [
+      "Nytt parti: Lag 1 kastar lillen",
+      "Nytt parti: Lag 1 kastar lillen",
+      "Nytt parti: Lag 1 kastar lillen"
+    ],
+    [
+      "Nytt parti: Lag 1 kastar lillen",
+      "Nytt parti: Lag 1 kastar lillen"
+    ]
+  ]
+}

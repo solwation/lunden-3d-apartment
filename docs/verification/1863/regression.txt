@@ -1,0 +1,136 @@
+TAP version 13
+# Subtest: bounded commands and deterministic existing physics/flight replay
+ok 1 - bounded commands and deterministic existing physics/flight replay
+  ---
+  duration_ms: 7.181482
+  type: 'test'
+  ...
+# Subtest: real Room capability, two peers, simultaneous/stale/early requests and no duplication
+ok 2 - real Room capability, two peers, simultaneous/stale/early requests and no duplication
+  ---
+  duration_ms: 50.366374
+  type: 'test'
+  ...
+# Subtest: turn ownership, late/rejoin animation, hibernation, outside and old clients
+ok 3 - turn ownership, late/rejoin animation, hibernation, outside and old clients
+  ---
+  duration_ms: 113.960915
+  type: 'test'
+  ...
+# Subtest: full round scores once, resets race, persistent bounded record and no global score credit
+ok 4 - full round scores once, resets race, persistent bounded record and no global score credit
+  ---
+  duration_ms: 87.046682
+  type: 'test'
+  ...
+# Subtest: old Worker is explicitly refused, offline has local mode, no optimistic shared mutation
+ok 5 - old Worker is explicitly refused, offline has local mode, no optimistic shared mutation
+  ---
+  duration_ms: 3.80549
+  type: 'test'
+  ...
+# Subtest: authoritative replay, duplicate ACK, disconnect freeze, late welcome and reject resync
+ok 6 - authoritative replay, duplicate ACK, disconnect freeze, late welcome and reject resync
+  ---
+  duration_ms: 6.009385
+  type: 'test'
+  ...
+# Subtest: background welcome/revisions stay silent while state updates; only a nearby participant gets notices
+ok 7 - background welcome/revisions stay silent while state updates; only a nearby participant gets notices
+  ---
+  duration_ms: 0.747598
+  type: 'test'
+  ...
+# Subtest: an explicit pending request retains its rejection after leaving; unsolicited rejections stay silent
+ok 8 - an explicit pending request retains its rejection after leaving; unsolicited rejections stay silent
+  ---
+  duration_ms: 0.241099
+  type: 'test'
+  ...
+# Subtest: an own pending timeout still reports resync after walking away
+ok 9 - an own pending timeout still reports resync after walking away
+  ---
+  duration_ms: 0.361099
+  type: 'test'
+  ...
+# Subtest: six boules (three per side) and a jack, all in the hand at the start
+ok 10 - six boules (three per side) and a jack, all in the hand at the start
+  ---
+  duration_ms: 1.592097
+  type: 'test'
+  ...
+# Subtest: gravel friction brings a rolling boule to rest at v²/2a
+ok 11 - gravel friction brings a rolling boule to rest at v²/2a
+  ---
+  duration_ms: 1.724795
+  type: 'test'
+  ...
+# Subtest: a boule hitting a resting boule passes on its motion without gaining energy
+ok 12 - a boule hitting a resting boule passes on its motion without gaining energy
+  ---
+  duration_ms: 2.422894
+  type: 'test'
+  ...
+# Subtest: a boule knocks the light jack much further than itself (mass-weighted)
+ok 13 - a boule knocks the light jack much further than itself (mass-weighted)
+  ---
+  duration_ms: 1.372897
+  type: 'test'
+  ...
+# Subtest: the timber edge reflects and keeps every object inside the court
+ok 14 - the timber edge reflects and keeps every object inside the court
+  ---
+  duration_ms: 3.006792
+  type: 'test'
+  ...
+# Subtest: invalid input cannot poison state; landing is clamped into the court
+ok 15 - invalid input cannot poison state; landing is clamped into the court
+  ---
+  duration_ms: 0.288099
+  type: 'test'
+  ...
+# Subtest: jack first: an invalid jack is thrown again by the same side, a valid one lets that side play first
+ok 16 - jack first: an invalid jack is thrown again by the same side, a valid one lets that side play first
+  ---
+  duration_ms: 0.259599
+  type: 'test'
+  ...
+# Subtest: turn order: the side not holding the point plays; a side out of boules hands over
+ok 17 - turn order: the side not holding the point plays; a side out of boules hands over
+  ---
+  duration_ms: 0.367299
+  type: 'test'
+  ...
+# Subtest: scoring: one point per boule nearer than the opponent's nearest; the winner throws the next jack
+ok 18 - scoring: one point per boule nearer than the opponent's nearest; the winner throws the next jack
+  ---
+  duration_ms: 0.461999
+  type: 'test'
+  ...
+# Subtest: a full mène through ballThrown scores automatically; a tie scores nothing
+ok 19 - a full mène through ballThrown scores automatically; a tie scores nothing
+  ---
+  duration_ms: 0.392499
+  type: 'test'
+  ...
+# Subtest: the game is to 13: it ends, blocks throws and a new game resets
+ok 20 - the game is to 13: it ends, blocks throws and a new game resets
+  ---
+  duration_ms: 0.309399
+  type: 'test'
+  ...
+# Subtest: "Ny omgång" restarts the mène in progress without points
+ok 21 - "Ny omgång" restarts the mène in progress without points
+  ---
+  duration_ms: 0.189599
+  type: 'test'
+  ...
+1..21
+# tests 21
+# suites 0
+# pass 21
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 382.512643
