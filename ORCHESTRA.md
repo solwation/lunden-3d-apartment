@@ -28,7 +28,7 @@ session instead.
 | `planning` | [Short plan](#start-with-a-short-delivery-plan); issue claimed under Issueflow; [resources](#spend-resources-deliberately) and [team](#choose-the-smallest-useful-team) chosen; [hooks](#apply-project-hooks-at-each-phase) resolved |
 | `implementation` | Own checkout under the [isolation rules](#isolate-concurrent-agents); assigned scope only |
 | `verification` | [Agreed risk-based checks](#verification) pass on the delivered revision |
-| `review` | [Conductor reads the combined diff](#review) against acceptance |
+| `review` | [Handoff](#handoff-for-integration) retains owner/evidence while waiting; [conductor reads the combined diff](#review) against acceptance |
 | `delivery` | [Published under host rules](#delivery); delivered revision verified |
 | `follow-up` | [Completion comment](#follow-up) with evidence before closure; active labels removed |
 
@@ -189,6 +189,33 @@ threshold alone does not justify optimization. Stop once agreed checks pass; whe
 verification passes its [time limit](#default-time-limits), reassess and pick the
 smallest check for the missing proof, without skipping required verification or hiding failures.
 
+## Handoff for integration
+
+When the assigned implementation and checks are complete, hand the result to the
+integration owner under [Issueflow](ISSUE-WORKFLOW.md). A finished worker or PR waiting
+for integration uses `integration-ready`; active integration/review uses the active
+work label. Follow the guide for correction, pause, closure and reopening; do not
+carry both labels at once. A failed check or unfinished implementation is not a
+finished handoff. A helper reports its part to the integration owner without
+changing the whole issue to ready while other implementation is still active.
+
+Record the issue, integration owner, owner/session label, branch and checkout, exact
+commit, checks/evidence, remaining acceptance and next action in the handoff comment
+and private checkpoint. Keep the ownership label for this documented handoff; it
+protects the result from another worker claiming it. The worker stops its processes
+and releases locks, then frees its slot. Keep its checkout and commits until the
+integration owner has integrated or preserved them. Waiting is neither active time
+nor implementation capacity; a label on a parent is no extra worker either.
+
+The conductor tracks these results in its integration queue, including open PRs,
+and resumes review/integration under the same ownership. Only accepted integration,
+required checks and the host's publication/closure steps finish the issue. If review
+or integration needs corrections, name the correction owner and next action and
+follow the guide's active-correction or backlog transition; never leave rejected
+work marked ready. A genuine integration wait retains its handoff and owner; an
+ordinary pause, blocker requiring return to backlog or user question releases work
+labels and claim under the guide. Preserve the branch and evidence in either case.
+
 ## Review
 
 The conductor reads the combined diff and results (and required images) for missed
@@ -206,9 +233,11 @@ Attribution names the actual tool when required.
 
 *PR mode* (the host's delivery mode is a PR the user merges, see
 [PROJECT.example.md](PROJECT.example.md)): the result note says "PR open, not on main";
-the issue closes only after the merge, or by the host's rule, and until then its active
-labels are removed (paused under [Issueflow](ISSUE-WORKFLOW.md)); whichever session's
-queue fetch first sees the merge posts the completion comment and closes. Merge order and
+the issue closes only after the merge, or by the host's rule. Until then a finished
+PR uses the [integration handoff](#handoff-for-integration), retaining ownership and
+`integration-ready` without a worker slot; an unfinished or paused PR follows the
+guide's pause/correction rules. Whichever session's queue fetch first sees the merge
+posts the completion comment and closes after checking the delivery evidence. Merge order and
 refreshing branches after each merge: [Select and claim](COORDINATION.md#select-and-claim).
 
 ## Follow-up

@@ -54,8 +54,9 @@ means the shared rules apply unchanged.
 | --- | --- |
 | Repository and coordination | `solwation/dirigenten-och-orkestern` only; its open issues are the queue, there is no separate status issue. Cross-project boundaries: none; the core stays free of project details |
 | Excluded and session labels | Issues labelled `user question` are skipped until answered; no other exclusions. Session ID `<host>-<model>-<YYYYMMDD>[<suffix>]` (project short name omitted: one repository), label prefix `orkester: ` |
-| Claims, races, expiry, handover | Core default: the `orkester:` label claims an issue, never take over a visibly active one |
-| Capacity | At most two agents including the conductor; the conductor's own implementation counts as a slot and is allowed for small cohesive changes. No expensive shared verification (no browser/e2e/device runs) |
+| Claims, races, expiry, handover | Core default: `orkester:` claims active work and retains documented integration ownership for finished handoffs; never take over active work or a waiting handoff |
+| Integration queue and recovery | Handoff comment on the issue plus private session checkpoint: integration owner, branch/checkout, revision, evidence and next action; conductor reconciles at every queue check |
+| Capacity | At most two active agents including the conductor; its implementation or active integration counts as a slot and is allowed for small cohesive changes. Integration-ready waits and parent summaries use no slot. No expensive shared verification (no browser/e2e/device runs) |
 | Isolation | No servers or ports. In Claude Code, give a worker its own checkout with the Agent tool's `isolation: "worktree"` |
 | Runtime/model selection | Claude Code's Agent tool chooses a model per worker (`sonnet`, `opus`, `haiku`, `fable` aliases). Reasoning effort follows the agent definition and is not set per call unless the maintainer asks. Choose per the resource rules in [ORCHESTRA.md](ORCHESTRA.md) and disclose when a control is unavailable; no price assumptions |
 | Heartbeat, stale work | Core default |

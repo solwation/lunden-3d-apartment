@@ -12,8 +12,12 @@ not executable code. Keep project details here, never in the shared instructions
   for other trackers. Local ancestor/port constraints: <policy>.
 - Excluded coordination labels; active/session labels: <names>. Session ID project
   short name and label prefix: <name, default repository name; `orkester: `>.
-- Claims, race handling, expiry and handover: <rules>.
-- Capacity: <concurrent issue workers, includes helpers>; whether the conductor's own
+- Claims, race handling, expiry and handover: <rules; retain documented integration
+  ownership for finished handoffs, distinct from an active implementation claim>.
+- Integration queue and recovery: <where owner, branch/checkout, commit, evidence and
+  next action are recorded; how the owner resumes a waiting handoff or PR>.
+- Capacity: <concurrent active issue workers, includes helpers; integration-ready
+  waits and parent summary labels use no slot>; whether the conductor's own
   implementation counts as a slot; direct conductor implementation: <allowed?>.
   Expensive shared verification: <browser/e2e/device runs and how they are queued>.
 - Per-worktree isolation: <port range or allocation, server/config overrides, no

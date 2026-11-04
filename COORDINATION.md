@@ -13,15 +13,17 @@ work](ORCHESTRA.md#resume-unfinished-work-first), then dispatches.
 | Scoped task | One requested change, delivered without a queue or timers |
 | Bounded pass | One unattended sweep of the queue until nothing is startable; no timers |
 | Queue session | An unattended run that also polls and may keep an idle watch on the host's schedule |
-| Eligible | An open issue in scope, not a pull request or coordination issue, not explicitly paused or excluded, not awaiting a user answer, and without another valid claim |
+| Eligible | An open issue in scope, not a pull request or coordination issue, not explicitly paused or excluded, not awaiting a user answer or integration, and without another valid claim |
 | Startable | Eligible and without an unresolved concrete blocker, so work can begin now |
 | Blocker | A recorded dependency or technical obstacle; never size, difficulty, overlapping files, or a missing device or user test |
-| Claim | The ownership comment and session label for work about to start; the earlier valid claim wins |
-| Active label | A work label such as `in-progress`, present only while work is actually happening |
-| Slot | One concurrent worker within the host's capacity; helpers, reviewers and the implementing conductor each take one |
+| Claim | Ownership comment and session label for work about to start, retained as documented integration ownership at handoff; the earlier valid claim wins |
+| Active label | An active-work label such as `in-progress`; distinct from the waiting work label `integration-ready` |
+| Integration-ready | Finished implementation handed to its integration owner; retains ownership, takes no worker slot and is not dispatchable to another worker |
+| Integration queue | Documented handoffs/PRs awaiting their named integration owner; separate from the backlog for new workers |
+| Slot | One active worker within host capacity; helpers, reviewers and a conductor implementing or integrating each take one; waiting handoffs take none |
 | Integration owner | The one agent that combines, publishes and closes an issue's delivery |
 | Resolved | Closed by this session after its change reached main (or merged, in PR mode); the idle watch counts from the latest such closure |
-| Drain | The moment nothing is startable and no worker is active |
+| Drain | Nothing is startable, no worker is active and no owned handoff can be integrated now |
 
 ## Run a bounded pass
 
@@ -29,8 +31,11 @@ A bounded pass is the default for an empty scope ([read map](ORCHESTRA.md#read-m
 Select, claim and deliver eligible issues under the rules below without asking the
 user to choose; work within capacity until no eligible work remains, run the
 [session review](#review-the-session), then perform a final complete fetch and stop.
-A pass enables no polling, idle watch or timer and leaves no claims or active labels
-behind; those need a queue session. A given scope (issue, area) still bounds the work.
+A pass enables no polling, idle watch or timer and leaves no active implementation
+claims or active-work labels behind. A finished PR or a genuine integration wait may
+retain documented handoff ownership and `integration-ready` under the
+[handoff procedure](ORCHESTRA.md#handoff-for-integration); report its next action and
+owner. A given scope (issue, area) still bounds the work.
 
 ### Ask through the issue
 
@@ -51,8 +56,10 @@ conductor records the answer on the issue with the date, so the decision stays f
    each selection, claim, takeover and idle check. A failed or partial fetch is
    neither an empty queue nor a global ordering.
 2. Exclude pull requests and configured coordination issues, keeping identity and
-   ownership labels. Apply scope, priority corrections and the complete ancestor
-   ceiling, fetching missing (also closed or cross-repository) parents; a link or
+   ownership labels. Separate `integration-ready` handoffs from new-worker dispatch,
+   even if an ownership label is accidentally missing: investigate the handoff record,
+   do not assign a second implementation. Apply scope, priority corrections and the
+   complete ancestor ceiling, fetching missing (also closed or cross-repository) parents; a link or
    dependency alone does not establish parentage.
 3. Order globally by priority, creation time, full repository name, issue number. Read
    the selected issue's body, comments and coordination history, reusing data fetched
@@ -65,14 +72,25 @@ conductor records the answer on the issue with the date, so the decision stays f
 5. Claim only work about to start. Use one stable [session ID](#name-the-session) and
    the host's claim comment/labels. Immediately reread all claim comments and labels
    after claiming; the earlier valid claim wins. Release only your own claim if you
-   lose the race. Active labels apply only while work is active, never to future queues
-   or idle parents.
+   lose the race. Active-work labels apply only while work is active, with the guide's
+   parent-summary exception. Retain the documented owner/session label during a finished
+   integration handoff; this is not an abandoned claim or a new worker slot.
 6. Assign one issue per worker and run independent startable issues concurrently until
    the host's capacity or the independent work runs out, each in its own checkout under
    the [isolation rules](ORCHESTRA.md#isolate-concurrent-agents). Disjoint files are not
    required; serialise only a recorded dependency or overlapping integration. A
    suggested chain never bypasses fresh selection after each issue; do not interrupt
    active work simply because priorities change.
+
+Before each new dispatch and before declaring drain, reconcile owned handoffs and
+merged PRs from the complete fetch. Order the integration queue by the same priority,
+creation time, full repository name and issue number as dispatch; keep ancestor
+constraints. Resume ready integration/review when capacity is available, using a slot
+only while actually working. Independent dispatch can continue in free slots; a
+waiting result must neither occupy one nor be reassigned as new implementation.
+Record concrete integration blockers and the next owner/action. A missing ownership
+label does not make a recorded handoff unowned; repair metadata from evidence. Follow
+[recovery](#coordinate-and-recover) for an unavailable owner, never automatic takeover.
 
 Intake hooks (for example importing external reports into issues) never delay
 startable work: at start and whenever a slot frees, dispatch first and run due intake
@@ -132,40 +150,47 @@ coordination, priority or work label; labels in older formats stay valid.
 ## Coordinate and recover
 
 Keep one editable status comment per configured coordination thread (cross-linked) and
-a private checkpoint, updated on worker start/finish and every queue check, including
-failures: session/scope, issues, priority, owners/files, active workers versus capacity
-and why a slot is free, blockers, latest results, UTC time; per repository the last
-successful and last complete fetch, last attempt/outcome, the session's last resolution
+a private checkpoint, updated on worker start/finish, handoff/resume and every queue
+check, including failures: session/scope, issues, priority, owners/files, integration
+queue (owner, branch/checkout, revision, evidence, next action), active workers versus
+capacity and why a slot is free, blockers, latest results, UTC time; per repository
+the last successful and last complete fetch, last attempt/outcome, the session's last resolution
 and idle deadline. Failures never overwrite success timestamps. After an interruption
 resume the same ID, comments, worktrees and commits.
 
-Never seize a visibly active issue. Follow host expiry/takeover rules, announce a
-handover in the tracker and preserve the previous work; a missing heartbeat prompts
+Never seize a visibly active issue or a documented `integration-ready` handoff. Follow
+host expiry/takeover rules, announce a handover in the tracker and preserve the previous work; a missing heartbeat prompts
 investigation, not expiry. If all work is owned, offer the owner an independent helper
 task. Silence is approval only where the host policy says so.
 
 For sub-issues on different workers, follow the [Issueflow](ISSUE-WORKFLOW.md) parent
 rules: the worker starting the first active sub-issue adds a missing parent work label;
-only the conductor removes it (no sub-issue or parent work active) and closes the
-parent after its own acceptance. A parent's label shows progress, not ownership, takes
-no slot and does not block its other sub-issues.
+only the conductor removes it when no sub-issue is active or integration-ready and
+no work continues on the parent, and closes the parent after its own acceptance.
+Follow the guide if the parent's own implementation is handed off. A parent's summary
+label shows progress, not ownership or an occupied slot, and does not block its other
+sub-issues; an integration-ready child cannot be silently skipped at parent closure.
 
-Release active labels under Issueflow on pause, blocking wait, completion, closure or
-reopening. Blocked work stays open; a missing device or user test is not a blocker
+Apply [Issueflow](ISSUE-WORKFLOW.md) transitions on handoff, resume, correction, pause,
+closure and reopening. A genuine integration wait keeps `integration-ready` and its
+documented ownership; a pause, return to backlog or user question removes work labels
+and releases the claim. Blocked work stays open; a missing device or user test is not
+a blocker
 ([best-guess closure](ORCHESTRA.md#close-after-a-best-guess-fix)). An actual user answer
 through the question channel removes a question blocker, not merely a new comment.
 
 ## Review the session
 
-When the queue drains (no eligible startable work and no active worker) and work was
-delivered since the last session review, the conductor reviews that work as a whole
+When the queue drains (no eligible startable work, active worker or owned handoff
+that can be integrated now) and work was delivered since the last session review, the conductor reviews that work as a whole
 before stopping or entering the idle watch. Individual deliveries were already
 reviewed; this pass looks for what only shows up across them:
 
 - conflicting or duplicated changes between deliveries, and integration regressions;
 - acceptance that a closed issue claimed but the delivered revision does not show;
 - documentation, configuration or instructions left inconsistent with the changes;
-- leftover claims, active labels, worktrees, servers or unpublished commits.
+- leftover claims, work labels, worktrees, servers or unpublished commits, separating
+  valid waiting handoffs from abandoned work.
 
 In PR mode, also rehearse the merge: merge the open PRs in merge order in a scratch
 branch or worktree and run the checks, to catch conflicts and invariants that break
@@ -196,11 +221,16 @@ latest implementation issue resolved **by this session** in scope, or from the f
 idle entry if none; each new resolution restarts the full interval. Other sessions'
 resolutions never shorten it: with one hour, a session starting at 13:30 on an empty
 queue waits until 14:30 even if another session closed an issue at 13:25. Older and
-newly created issues stay eligible unless excluded. Keep no active labels while idle.
+newly created issues stay eligible unless excluded. Keep no active-work labels on
+idle implementation issues; valid waiting handoffs and their parent summary labels
+follow the guide. Reconcile the integration queue before idle entry and at each poll;
+owned ready work that can be integrated ends idle, and only actual issue closure
+restarts its deadline.
 Wait with the host's wait mechanism, interruptibly within the
 [time limit](ORCHESTRA.md#default-time-limits); stop promptly on user pause/stop, save a
-checkpoint and release inactive claims. A runtime that cannot wait (a one-shot or
-non-interactive run) finishes as a [bounded pass](#run-a-bounded-pass) instead and says
+checkpoint and release inactive implementation claims; retain and report documented
+handoff ownership, preserved commits and the next integration action. A runtime that
+cannot wait (a one-shot or non-interactive run) finishes as a [bounded pass](#run-a-bounded-pass) instead and says
 in its result that no poll or idle watch ran.
 
 Intake keeps its schedule while idle, so new reports can end the wait. At the deadline,
