@@ -11,7 +11,7 @@ status comment) and referenced from each assignment as "session block: <path/lin
 Resolved Issueflow revision/content (the conductor's session snapshot):
 Applicable project hooks: names/phases, triggers/timing, procedure links, owner, required/optional evidence:
 Heartbeat and question channel:
-Integration/publishing owner and publishing rules:
+Integration/publishing owner, handoff record/queue and publishing rules:
 Owner/session label:
 Resource rules and limits (capability/effort selection limit):
 Follow-up owner, evidence format, destination and timing (default):
@@ -49,11 +49,20 @@ Rules for the worker:
   or access is denied. To escalate, send a concise diagnosis and the preserved
   patch/evidence rather than retrying blindly or raising effort for an ordinary command
   failure. Never bypass a denial.
+- Handoff: when the whole issue implementation and assigned checks pass, follow the conductor's
+  [handoff procedure](ORCHESTRA.md#handoff-for-integration) and the session's resolved
+  Issueflow guide. Record the integration owner, owner/session label, branch/checkout,
+  exact commit, evidence and next action. Use `integration-ready`, retain handoff
+  ownership and free your slot; do not remove the claim as if returning to backlog.
+  A helper returns its part without changing the issue to ready while another worker
+  is still implementing. Do not mark a failed check or unfinished result ready. For corrections or pause,
+  follow the guide and the conductor's next assignment; do not close the issue.
 - Reporting: commit (and push when the host allows) at each meaningful milestone, so
   progress survives the loss of the worker. A helper returns revision/patch, checks and
   limitations to the integration owner; it does not publish or close the issue. Before
   returning, stop every background process you started and release shared locks; the
   conductor stops a reported worker that still has background work instead of waiting.
   Return outcome, commit, checks/evidence, remaining acceptance and rough phase times.
-  Then wait for a new assignment; never continue a queue chain yourself. Resume an
-  interrupted checkout rather than duplicate finished work.
+  A waiting handoff is not an active worker; retain its checkout until integration or
+  preservation is confirmed. Then wait for a new assignment; never continue a queue
+  chain yourself. Resume an interrupted checkout rather than duplicate finished work.

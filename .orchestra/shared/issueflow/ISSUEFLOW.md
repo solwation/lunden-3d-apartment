@@ -11,9 +11,12 @@ Read and follow this guide when working with GitHub issues in a project displaye
 ## Show actual work status
 
 - Add `in-progress` immediately before actively working on an issue. An open issue with a recognized work label appears in **In progress**; another open issue appears in **Backlog**.
-- Remove the work label when work pauses, waits in an integration queue, is handed back, or finishes. Do not leave a claim active while nobody is working. For a handoff, make ownership and the next step clear.
-- Close the GitHub issue only when its acceptance criteria are satisfied and the project's required verification is complete. Remove all recognized work labels when closing. GitHub's issue `state` is authoritative: a closed issue appears in **Closed** even if a work label was accidentally left behind. A `closed`, `done`, or similar label alone does not close an issue.
-- When reopening, remove stale work labels. Add a work label again only when active work resumes, so a new work interval can be recorded.
+- `integration-ready` is a second work label for finished implementation that is handed off and waits for integration. An open issue with it also appears in **In progress**, so the work does not fall back to Backlog before it is integrated, but it means "handed off, waiting", not active work. Only the issue's owner or integrator acts on it; it is not a queue for other workers to pick up.
+- Use these transitions. Active implementation: `in-progress`. Finished handoff: remove `in-progress` and add `integration-ready`. Active integration: the integrator removes `integration-ready` and adds `in-progress`. Closure: only after accepted integration and required verification, remove both (see below). Correction needed: set `in-progress` again for whoever fixes it (remove `integration-ready`), or remove both so it returns to Backlog if nobody works on it. Pause: remove both. An issue never carries both labels at once.
+- Remove the work label when work pauses, is handed back to the backlog, or finishes. Do not leave a claim active while nobody is working; waiting for integration uses `integration-ready` instead of `in-progress`. For a handoff, make ownership and the next step clear.
+- Waiting is not work: `integration-ready` consumes no active worker slot and does not count as active working time or capacity. It is never a closure signal; an integrated or accepted result still needs the closing steps below.
+- Close the GitHub issue only when its acceptance criteria are satisfied and the project's required verification is complete. Remove all recognized work labels (including `integration-ready`) when closing. GitHub's issue `state` is authoritative: a closed issue appears in **Closed** even if a work label was accidentally left behind. A `closed`, `done`, or similar label alone does not close an issue.
+- When reopening, remove stale work labels, including `integration-ready`. Add a work label again only when active work resumes, so a new work interval can be recorded.
 - Assignees and owner labels (for example `orkester: session-id`) describe ownership. They do not make an issue in progress and do not establish its priority.
 
 ## Parent issues and sub-issues
@@ -21,9 +24,9 @@ Read and follow this guide when working with GitHub issues in a project displaye
 Issueflow places each issue by its own state and labels: a sub-issue in progress does not move its parent. Keep the parent's work label in step with its sub-issues so the parent shows real progress and timing.
 
 - When work starts on the first sub-issue, also add the work label (`in-progress`) to the parent if it does not already have it. The parent's **In progress** start time is then recorded from that moment.
-- Keep the parent's work label while any sub-issue is in progress or work continues on the parent itself. Pausing or finishing one sub-issue does not remove the parent's label while others are active.
-- When no sub-issue is in progress and the parent is not being worked on, remove the parent's work label, even if sub-issues remain open; the parent returns to **Backlog** until work resumes.
-- Close the parent only when all its sub-issues are closed or deliberately split out and the parent's own acceptance criteria are satisfied; remove its work labels when closing. Closing every sub-issue does not close the parent automatically.
+- Keep the parent's work label while any sub-issue is in progress or integration-ready, or work continues on the parent itself. A sub-issue waiting for integration keeps the parent in **In progress** because the parent's work is not yet integrated; the parent keeps `in-progress`, not `integration-ready`, unless the parent's own implementation is handed off. Pausing or finishing one sub-issue does not remove the parent's label while others are active.
+- When no sub-issue is in progress or integration-ready and the parent is not being worked on, remove the parent's work label, even if sub-issues remain open; the parent returns to **Backlog** until work resumes.
+- Close the parent only when all its sub-issues are closed or deliberately split out and the parent's own acceptance criteria are satisfied; remove its work labels when closing. An `integration-ready` sub-issue must be integrated and closed, or have its labels removed, before the parent can close. Closing every sub-issue does not close the parent automatically.
 - A parent's priority stays its own. Sub-issues normally follow the same priority rules as any other issue.
 
 ## User questions
@@ -31,7 +34,7 @@ Issueflow places each issue by its own state and labels: a sub-issue in progress
 Use the `user question` label when unattended work needs a decision that only the user can make.
 
 - Questions never pause unattended work. Make routine decisions yourself from sensible defaults and record the reasoning on the issue.
-- When a decision genuinely needs the user, post one issue comment with concrete options and a recommendation, add `user question`, remove your work labels and claim, and continue with other work.
+- When a decision genuinely needs the user, post one issue comment with concrete options and a recommendation, add `user question`, remove your work labels (`in-progress` and `integration-ready`) and claim, and continue with other work.
 - Skip `user question` issues when selecting work until the user has answered. Whoever resumes the work removes the label. A new comment alone is not an answer.
 - `user question` is not a work label: the issue stays in **Backlog**, and the dashboard does not display the label specially. It is not `blocked` either; reserve `blocked` for real technical blockers.
 
@@ -42,6 +45,7 @@ Matching is case-insensitive. Except for a custom work label described below, le
 | Meaning | Recognized normalized labels |
 | --- | --- |
 | Active work | `in progress`, `status in progress`, `wip`, `working`, `doing`, `pågår` |
+| Waiting for integration | `integration ready` |
 | High priority | `high`, `critical`, `urgent`; any of those with a `priority ` prefix or ` priority` suffix (or both); `p0`, `p1`, `priority p0`, `priority p1` |
 | Medium priority | `medium`, `priority medium`, `medium priority`, `priority medium priority`, `p2`, `priority p2` |
 | Low priority | `low`, `priority low`, `low priority`, `priority low priority`, `p3`, `p4`, `priority p3`, `priority p4`, `reviewer filed` |
@@ -49,7 +53,7 @@ Matching is case-insensitive. Except for a custom work label described below, le
 
 Coordination labels identify coordination issues that the dashboard can hide using its coordination filter. They do not set priority or work status. A label such as `orkester: session-id` is ownership metadata and does not match the coordination label `orkester`.
 
-Repositories can override the work label and labels for high, medium and low in the dashboard's label settings. A custom work label **replaces** the default work labels and uses case-insensitive exact matching (the configured value is trimmed; the issue label itself is not normalized). A matching custom priority label is checked before built-in priorities, in high/medium/low order. Built-in priority detection still applies if no custom priority matches. Settings are local dashboard configuration, not GitHub-wide workflow rules; share them separately if others need the same view. Prefer the canonical labels above for a portable workflow.
+Repositories can override the work label and labels for high, medium and low in the dashboard's label settings. A custom work label **replaces** the default active-work labels and uses case-insensitive exact matching (the configured value is trimmed; the issue label itself is not normalized). `integration ready` is a separate status and stays recognized with a custom work label. An open issue with both an active work label and `integration ready` counts as active work. A matching custom priority label is checked before built-in priorities, in high/medium/low order. Built-in priority detection still applies if no custom priority matches. Settings are local dashboard configuration, not GitHub-wide workflow rules; share them separately if others need the same view. Prefer the canonical labels above for a portable workflow.
 
 ### Optional story points
 
@@ -58,7 +62,8 @@ Agents may optionally add one `sp-N` label after estimating an issue’s size, w
 ## Timing, order and limitations
 
 - Backlog sorts by priority and then creation time, oldest first within a priority. In progress sorts by the current start time, oldest first (falling back to creation time for ordering when no start time is known). Closed sorts by GitHub's closure timestamp, newest first.
-- The active start time comes from GitHub's issue event history: the earliest still-active recognized work-label addition since the latest closure or reopening. Removing that label ends its interval; closing or reopening resets tracked intervals. This is the current interval, not accumulated working time or a timesheet. If several work labels are active, remove all of them on pause or completion.
+- The In progress start time comes from GitHub's issue event history: the earliest still-active recognized work-label addition since the latest closure or reopening. Switching between an active work label and `integration-ready` keeps that start, also when the two label edits are up to five minutes apart, so a handoff does not move the card. Removing every work label ends the period; closing or reopening resets tracked periods. This is the current period, not a timesheet. If several work labels are active, remove all of them on pause or completion.
+- Active working time, timeout warnings and remaining-time estimates count only time with an active work label. While an issue waits for integration its active time stops, it never times out and it takes no capacity; when active work resumes, the time continues without the wait. Measured work time of closed issues also excludes these waits.
 - Closure time comes from GitHub's `closed_at` timestamp, not commit messages, label names, local clock estimates or the time the dashboard noticed a change. Closing commit or pull-request details are optional context and can be unavailable; they do not control the column or closure time.
 - Issueflow reads GitHub issue state, labels and events; editing this file or attaching it to a repository does not change issues, create labels or grant a tool permission to write. Apply changes through an authorized GitHub interface.
 - The dashboard excludes pull requests from issue columns and displays only issues closed in the last 30 days. Search and coordination filters can hide otherwise valid issues.

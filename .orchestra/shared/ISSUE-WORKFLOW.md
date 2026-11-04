@@ -25,7 +25,7 @@ create (or reuse) an issue in `solwation/dirigenten-och-orkestern` (a consumer m
 its upstream proposal channel) to refresh the snapshot, instead of reinterpreting rules.
 
 The reviewed [bundled snapshot](issueflow/ISSUEFLOW.md) is byte-for-byte from the file's
-change commit `e22d6dc8ca542a5e76bcecff12532542558ebbb1`, with its
+change commit `0e712c346c7689dd3e00db04fbe00d86090d5908`, with its
 [license](issueflow/LICENSE.md).
 Use it if the source is temporarily unreachable, disclose the fallback and retry on
 resume; do not interpret failure as a policy change. Keep one resolved guide per
@@ -33,10 +33,12 @@ session instead of fetching it per label operation. Re-read after an explicit us
 policy update. Refresh the snapshot/provenance in a shared release when upstream
 changes; consumers then receive the same reviewed offline fallback.
 
-The guide is the home of label, priority and state rules. Orchestra additions: a worker
-waiting for integration is paused (work labels removed until integration/review starts);
-host/user constraints such as a child-priority ceiling still apply; and local dashboard
-settings are not remotely discoverable workflow permissions.
+The guide is the home of label, priority, state and timing rules, including the
+`integration-ready` handoff and its exact transitions. Follow the orchestra's
+[handoff procedure](ORCHESTRA.md#handoff-for-integration) to retain integration ownership
+and evidence without holding a worker slot. Host/user constraints such as a
+child-priority ceiling still apply; local dashboard settings are not remotely
+discoverable workflow permissions.
 
 The cited guide currently documents **GitHub**, not GitLab. Other issue trackers need
 an explicit host adapter for their API, states and label mapping; do not claim that

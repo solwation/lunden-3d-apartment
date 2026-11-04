@@ -11,7 +11,7 @@ Install into a clean working tree (requires Git's `subtree` command):
 
 ```sh
 git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.7.1 --squash
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.8.0 --squash
 ```
 
 Copy the project example to `.orchestra/project.md`, fill it in, then link the host's
@@ -90,6 +90,31 @@ use `git rebase --rebase-merges origin/main`, or reapply the import on a fresh b
 An ordinary flattening rebase may lose the history used for later subtree updates.
 To roll back, restore the last reviewed shared tree and host pin in a normal commit;
 record why. Do not rewrite published history or move release tags.
+
+## Adopt the integration-ready handoff
+
+When updating from a release before this handoff was added, review the imported
+[handoff procedure](ORCHESTRA.md#handoff-for-integration) and the resolved
+[Issueflow guide](ISSUE-WORKFLOW.md) together. Existing active-work labels and custom
+active-work overrides remain supported; `integration-ready` is a separate waiting
+status. A custom active-work label does not replace it. Use a dashboard version that
+recognizes the status before adopting it; the public Issueflow guide defines the
+supported transitions and timing.
+
+Remove host/adapter rules that send finished handoffs back to Backlog or discard their
+integration owner. Configure the integration queue in the host policy: preserve owner,
+branch/checkout, exact revision, evidence and next action; waiting uses no active slot.
+Keep host permissions, priority constraints and publication/closure gates unchanged.
+A shared update does not authorize changing another repository or adopting its rules.
+
+Reconcile existing work from evidence, not its age: a genuinely finished, checked
+handoff gets `integration-ready` with its documented owner; active implementation or
+integration uses the active-work label; paused, rejected or unfinished work follows
+the guide's correction/pause rules. Do not bulk-mark every old paused issue ready.
+Check parent summaries and open PRs, then walk through handoff, integration,
+correction, pause and reopening before recording the new pin. Preserve old worktrees
+until their work is integrated or otherwise preserved. Follow the normal reviewed
+subtree update/rollback procedure above; no automatic issue migration runs.
 
 ## Check for upstream updates
 
