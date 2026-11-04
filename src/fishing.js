@@ -1,7 +1,8 @@
+import {dropId} from './shareddropwire.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FISHING as F, RIVER_FISH, SHARK } from './config.js';
-import { Holdable, heldItem, setHeld, stowedItem, restPose } from './holdable.js';
+import { FISHING as F, RIVER_FISH, SHARK, SHARED_FISH } from './config.js';
+import { Holdable, heldItem, setHeld, stowedItem, restPose, handBusy } from './holdable.js';
 import { forgetBicycleHand } from './keep.js';
 import { caughtFishGeometry } from './caughtfish.js';
 import { riverProject, riverPoint, waterAt, catchCm } from './riverfishswim.js';
@@ -132,9 +133,11 @@ export class CaughtFish extends Holdable {
       pick: { pos: at.clone(), size: [0.01, 0.01, 0.01] }, cooldown: F.cook.cooldown });
     const cook = Number.isFinite(info.cook) ? Math.max(0, Math.min(F.cook.burn, info.cook)) : info.raw === false ? F.cook.done : 0;
     Object.assign(this, { host, isCaughtFish: true, outdoorPlace: true, species: spec.name, cm: info.cm, caughtAt: info.t ?? Date.now(), mesh, mat, spec, L,
+      dropId: dropId(info.id) ? info.id : crypto.randomUUID().replaceAll('-',''), dropState: info.sd ? {...info.sd} : null,
       cook, by: COOKED_WORD[info.by] ? info.by : 'grill', heat: null, bites: 0, sizzleT: 0, burntCounted: cook >= F.cook.burn });
     this.setBites(Number.isInteger(info.bites) ? Math.max(0, Math.min(F.cook.bites - 1, info.bites)) : 0);
     this.paint();
+    Object.defineProperty(this.takeTarget,'blocked',{get:()=>handBusy(this)||!!this.host.shared?.blocked(this)});
   }
   /** #1754: what it is (species, length in cm) and whether it is still raw. */
   get info() { return { species: this.species, cm: this.cm, raw: this.raw }; }
@@ -142,7 +145,7 @@ export class CaughtFish extends Holdable {
   get cooked() { return !this.raw; }
   get burnt() { return this.cook >= F.cook.burn; }
   /** #1766: what a cat sees: 'placed' for a raw fish lying loose on the ground or held out (cooked, burnt, on the heat, gone: not for the cats). */
-  get state() { return (this.placed || this.held) && this.raw && !this.heat && !this.broken ? 'placed' : 'other'; }
+  get state() { if(this.host.shared&&!this.host.shared.feedable(this))return 'other';return (this.placed || this.held) && this.raw && !this.heat && !this.broken ? 'placed' : 'other'; }
   /** #1766: where a cat goes to eat it (world): on the ground where it lies (y = the floor), or right where the hand holds it. */
   middle(out = new THREE.Vector3()) {
     this.model.getWorldPosition(out);
@@ -171,14 +174,18 @@ export class CaughtFish extends Holdable {
   /** In the hand: cooked = "Ät"; raw = nothing (a right click says why). */
   get useLabel() { return this.held && this.cooked ? 'Ät' : null; }
   onUse() {
+    if(this.host.shared&&!this.host.shared.canAct(this))return;
+    if(!this.raw&&this.bites>=F.cook.bites-1&&this.host.shared?.consume(this,()=>this.onUse())===false)return;
     if (this.raw) { this.host.onMessage('Fisken är rå – grilla eller stek den först'); return; }
     sfx.chew?.(this.where(), 1);
-    this.setBites(this.bites + 1);
+    this.setBites(this.bites + 1);if(this.dropState&&this.bites<F.cook.bites)this.host.shared?.keep();
     if (this.bites >= F.cook.bites) { const was = this.cookState; this.remove(); this.host.eaten(this, was); }
   }
   /** Something else taken into the hand: the fish is laid on the ground at your feet (it has no home). */
   putBack() { if (!this.held) return; this.placeAt(this.host.dropSpot(0.5), Math.random() * 6.28); }
+  placeAt(p,yaw=0){if(!this._restoring&&this.host.shared?.place(this,p,yaw)===false)return;super.placeAt(p,yaw);}
   take() {
+    if(!this._restoring&&this.host.shared?.take(this)===false)return;
     const from = this.heat;
     super.take();
     if (!this.held) return;
@@ -188,6 +195,7 @@ export class CaughtFish extends Holdable {
   onTake() { sfx.splash?.(this.where()); }
   /** Off the hand and into a cooking spot: `parent` (the grill's group / the pan's model) at its local `pos`. */
   settle(parent, pos, yaw) {
+    if(!this._restoring&&this.host.shared&&!this.host.shared.canAct(this))return false;
     if (!this.held) return false;
     forgetBicycleHand(this);
     this.held = false; if (heldItem() === this) setHeld(null);
@@ -217,6 +225,7 @@ export class CaughtFish extends Holdable {
   }
   /** Cooking while on a lit grill / a pan on a lit hob (Fishing.update). */
   cookTick(dt) {
+    if(this.host.shared&&!this.host.shared.canAct(this))return;
     const h = this.heat;
     if (!h) return;
     const parent = h.kind === 'grill' ? h.grill.object : h.pan.model;
@@ -226,12 +235,13 @@ export class CaughtFish extends Holdable {
     const was = this.cookState;
     this.cook = Math.min(F.cook.burn, this.cook + dt * (F.cook.rate[h.kind] ?? 1));
     this.paint();
-    if (was === 'raw' && this.cooked) this.host.onCooked(this, h.kind);
-    if (!this.burntCounted && this.burnt) { this.burntCounted = true; this.host.onBurnt(this, h.kind); }
+    if (was === 'raw' && this.cooked){this.host.onCooked(this,h.kind);if(this.dropState)this.host.shared?.keep();}
+    if (!this.burntCounted && this.burnt) { this.burntCounted = true; this.host.onBurnt(this, h.kind);if(this.dropState)this.host.shared?.keep(); }
     if (this.cook > 1 && (this.sizzleT -= dt) <= 0) { sfx.sizzle?.(this.where()); this.sizzleT = 0.7 + Math.random() * 0.4; }
   }
   /** Out of the world (the oldest lying fish when there are too many; eaten). */
   remove() {
+    if(this.host.shared?.remove(this)===false)return;
     if (this.held) { this.held = false; if (heldItem() === this) setHeld(null); }
     forgetBicycleHand(this);
     this.broken = true; this.placed = false; this.heat = null; this.model.removeFromParent(); this.model.visible = false;
@@ -385,7 +395,7 @@ export class Fishing {
   /** #1766: the raw fish lying loose or held out: what the cats may eat (`cat.fishSource`). */
   get feedable() { return this.fish.filter((f) => f.state === 'placed'); }
   /** #1766: a cat ate a raw fish: gone, counted by `onCatFed` (not eaten by you: the quest and `onEaten` stay out of it). */
-  eatenByCat(fish) { fish.remove(); this.fish = this.fish.filter((f) => f !== fish); this.onCatFed(fish); }
+  eatenByCat(fish) { if(this.shared?.consume(fish,()=>this.eatenByCat(fish))===false)return;fish.remove(); this.fish = this.fish.filter((f) => f !== fish); this.onCatFed(fish); }
   /** #1754: the caught fish cooking in the pan / on grill `g` now (or null). */
   inPan(pan = this.cookers.pan) { return this.fish.find((f) => !f.broken && f.heat?.kind === 'pan' && f.heat.pan === pan) ?? null; }
   onGrill(g) { return this.fish.find((f) => !f.broken && f.heat?.kind === 'grill' && f.heat.grill === g) ?? null; }
@@ -393,7 +403,7 @@ export class Fishing {
     const fish = new CaughtFish(this.scene, this.camera, this, info, at);
     this.fish.push(fish);
     this.onItem(fish);
-    const alive = this.fish.filter((f) => !f.broken);
+    const alive = this.fish.filter((f) => !f.broken&&!f.dropState);
     if (alive.length > F.keep) alive.find((f) => !f.held && f !== heldItem() && f !== stowedItem())?.remove();
     this.fish = this.fish.filter((f) => !f.broken);
     return fish;
@@ -493,12 +503,12 @@ export class Fishing {
   saveState() {
     const out = [];
     for (const f of this.fish) {
-      if (f.broken) continue;
-      const e = { sp: f.species, cm: f.cm, raw: f.raw ? 1 : 0 };
-      if (f.cook > 0) { e.ck = Math.round(f.cook * 10) / 10; e.by = f.by; }
+      if (f.broken||f.dropState?.foreign&&!f.dropState.intent) continue;
+      const e = { id:f.dropId,...(f.dropState?{sd:{...f.dropState}}:{}),sp: f.species, cm: f.cm, raw: f.raw ? 1 : 0 };
+      if (f.cook > 0) {const precision=f.dropState?100:10; e.ck = Math.round(f.cook * precision) / precision; e.by = f.by; }
       if (f.bites) e.b = f.bites;
       const gi = f.heat?.kind === 'grill' ? this.cookers.grills.indexOf(f.heat.grill) : -1;
-      if (f.held || f === stowedItem()) e.h = 1;
+      if (f.held || f === stowedItem() || f.dropState?.intent==='take') e.h = 1;
       else if (gi >= 0) e.on = `grill${gi}`;
       else if (f.heat?.kind === 'pan' && f.heat.pan === this.cookers.pan) e.on = 'pan';
       else {
@@ -513,24 +523,29 @@ export class Fishing {
       return { p: [p.x, p.y, p.z].map((v) => Math.round(v * 1000) / 1000), q: [q.x, q.y, q.z, q.w].map((v) => Math.round(v * 1000) / 1000) };
     });
     const ra = Number.isFinite(this.awaySince) ? Math.round(this.awaySince) : 0; // #1781: when the rod was left away from home
-    return out.length || fins.length || ra ? { v: 1, fish: out, ...(fins.length ? { fins } : {}), ...(ra ? { ra } : {}) } : null;
+    return out.length || fins.length || ra ||this.dropReceipts?.length ? { v: 1, fish: out,...(this.dropReceipts?.length?{dr:this.dropReceipts.slice(-SHARED_FISH.journalMax)}:{}), ...(fins.length ? { fins } : {}), ...(ra ? { ra } : {}) } : null;
   }
   loadState(s) {
     if (s?.v !== 1 || !Array.isArray(s.fish)) return;
+    this.dropReceipts=(Array.isArray(s.dr)?s.dr:[]).filter(dropId).slice(-SHARED_FISH.journalMax);
     if (Number.isFinite(s.ra) && s.ra > 0 && this.rod.placed && !this.rod.held) { // #1781 (`things` came first: the rod lies where it was left)
       if (this.now() - s.ra >= F.respawn * 1000) { this.rod.goHome(); this.rod.model.visible = false; this.awaySince = null; } else this.awaySince = s.ra;
     }
-    for (const e of s.fish.slice(0, F.keep)) {
+    let personal=0;
+    for (const e of s.fish.slice(0, F.keep+SHARED_FISH.max)) {
+      if(this.dropReceipts.includes(e?.id)||(!e?.sd&&personal++>=F.keep))continue;
       const spec = RIVER_FISH.species.find((x) => x.name === e?.sp), range = F.species[e?.sp]?.cm;
       if (!spec || !range || !Number.isInteger(e.cm) || e.cm < range[0] || e.cm > range[1]) continue;
       const placed = Array.isArray(e.p) && e.p.length === 3 && e.p.every(Number.isFinite) && Array.isArray(e.q) && e.q.length === 4 && e.q.every(Number.isFinite);
       const grill = /^grill\d$/.test(e.on ?? '') ? this.cookers.grills[Number(e.on.slice(5))] : null, pan = e.on === 'pan' ? this.cookers.pan : null;
       if (!e.h && !placed && !grill && !pan) continue;
-      const fish = this.addFish({ species: e.sp, cm: e.cm, raw: e.raw !== 0, cook: Number.isFinite(e.ck) ? e.ck : undefined, by: e.by, bites: e.b }, placed ? new THREE.Vector3(...e.p) : this.dropSpot(0.5));
+      const fish = this.addFish({ id:e.id,sd:e.sd,species: e.sp, cm: e.cm, raw: e.raw !== 0, cook: Number.isFinite(e.ck) ? e.ck : undefined, by: e.by, bites: e.b }, placed ? new THREE.Vector3(...e.p) : this.dropSpot(0.5));
+      fish._restoring=true;
       if (grill || pan) { fish.held = true; if (grill) fish.intoGrill(grill, { silent: true }); else { fish.settle(pan.model, new THREE.Vector3(0, 0.004, 0), Math.PI / 2 - 0.2); fish.heat = { kind: 'pan', pan }; } }
       else if (e.h && !heldItem()) fish.take();
       else if (placed) { fish.model.position.set(...e.p); fish.model.quaternion.set(...e.q); fish.placed = true; }
       else { fish.held = true; fish.putBack(); }
+      fish._restoring=false;
     }
     for (const e of (Array.isArray(s.fins) ? s.fins : []).slice(0, SHARK.keepFins)) { // #1769
       const placed = Array.isArray(e?.p) && e.p.length === 3 && e.p.every(Number.isFinite) && Array.isArray(e.q) && e.q.length === 4 && e.q.every(Number.isFinite);

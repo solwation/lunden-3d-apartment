@@ -581,3 +581,5 @@ två mål, sittbara åskådarbänkar och en drickfontän. E/touch tar eller slä
 förflyttning dribblar och klick/touch sparkar; högerklick eller passknappen passar.
 Varje mål ger målgöraren en poäng. Delat spel använder det befintliga rummet;
 [avgränsad verifiering och antaganden](docs/verification/1853/README.md).
+
+Fångade fiskar och nedlagda nötter kan lämnas på bord och plockas upp av andra uppdaterade spelare i samma rum. Överlämningen bekräftas innan handen släpper; delad mat har begränsad livslängd och gamla sparningar skapar inte nya kopior. [Synk, gränser och verifiering](docs/verification/1855/README.md).

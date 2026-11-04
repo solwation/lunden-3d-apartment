@@ -1,0 +1,46 @@
+{
+  "issue": 1855,
+  "base": "25adbf1d",
+  "originalFullTip": "93e0dd0040937fb7d865f7a1ba67c43e0c1cb44d",
+  "serverStage": "42db70e10ab9327dfc1a0264f35e29413fbc770f",
+  "sha256": {
+    "src/config.js": "5240043d406483a4c55c4fd97729771002955b81bda50c7b75ba02acfefdbb84",
+    "src/shareddropwire.js": "32be8c04dc64d3b8906c07ef79ce4fc6a307e6671140742f7b996c8975eef788",
+    "src/sharedfishclient.js": "c72413e8a372ca50142c482873eef74beb7de39616c1415f35c6f01159f787ad",
+    "src/fishing.js": "b56613e5e8850893767ebc3564156252a53583275cbf078c8fd10ac4c32c6732",
+    "src/ghosts.js": "0ee516cdf3e5a3d1b1846e58e017da127f805f79689cdc27135f51d328a0c901",
+    "src/main.js": "6176d790c01c70beaa42957ef753a108d852ce9692af6272ed1d317cca0fbae3",
+    "src/squirrelbrain.js": "219579fe5278461b662f052b84b392462f33868c923160929eca201b0e18c6be",
+    "src/squirrels.js": "433f7a880d82236874dd7f840bf7ad1bea79b90c7037538557858c9110623e07",
+    "src/squirrelsync.js": "4c8898947884aeaed39159ef06928ce280b5a7d1ecc50ade126a80be9f48bc6e",
+    "cloudflare/players.js": "407193aa4cf06e22a3d2dac79de637d7dfd0327b3fc0f4ac488952b8b05c8cbf",
+    "cloudflare/sharedfish.js": "9adf9a93462127087397254536d5d5243ace720e5d3f5384f41a69aeaacc37b5",
+    "cloudflare/squirrels.js": "d877a801eb1f0c694e92bb2dd73cdf15454f0df90244cc9e76a5a18497ac988c",
+    "tools/shareddropsbrowser.cjs": "ea66d91bd095b48f4f0bf9cb02af39bcf4ac6a2141b7c03e9b6d4dd0e8b9e26d",
+    "tools/shareddropspeer.html": "b3b29cd44d92c463e2c30ec557b4597bf984f5aeae5a4836b530b32e62175506"
+  },
+  "unchangedFromOriginal": [
+    "src/shareddropwire.js",
+    "src/sharedfishclient.js",
+    "src/fishing.js",
+    "src/squirrelbrain.js",
+    "src/squirrels.js",
+    "src/squirrelsync.js",
+    "cloudflare/sharedfish.js",
+    "cloudflare/squirrels.js",
+    "tools/shareddropsbrowser.cjs",
+    "tools/shareddropspeer.html"
+  ],
+  "unionReviewed": [
+    "src/config.js keeps Football/Bike/Astronaut exports; adds SHARED_FISH/NUT_DROPS only",
+    "cloudflare/players.js keeps Football constructor/welcome/ready/dispatch/onState/trim/flush with food union",
+    "src/ghosts.js keeps Football welcome/dispatch/send with food union",
+    "src/main.js keeps Football creation/interest/frame/debug plus all Bike/Astronaut hooks; adds food adapters and canonical-save intent"
+  ],
+  "checks": [
+    "main/Ghosts/PlayerRoom syntax pass",
+    "diff --check pass",
+    "3/3 real food Room + real football Room + Worker deploy paths integration tests pass"
+  ],
+  "note": "Original browser phases/images kept unchanged; no repeated browser or full suite. Config/PlayerRoom/Ghosts/main hashes differ only due reviewed additive integration with newer source."
+}

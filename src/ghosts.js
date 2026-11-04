@@ -502,6 +502,9 @@ export class Ghosts {
       this.me = m.i; this.rules = m.c ?? null; this.onWelcome?.(m);
       if (m.target) this.onTarget?.(m.target, true);
       this.onFootball?.(m.football ?? null,true); // capability guard for an older Worker
+
+      this.onSharedFish?.(m.sharedFish??null,true);
+      this.onSquirrels?.(m.nutDrops??{k:'D',v:0},true);
       if (Array.isArray(m.doors)) this.onDoors?.({ t: 'dr', list: m.doors }); // the doors standing open (#1775, src/doorsync.js)
       if (m.tm) this.onTime?.(m.tm, null); // the room's shared game time (#1774, src/timesync.js)
       for (const p of m.ps ?? []) { const g = this.add(p.i, p.n, p.av && typeof p.ax === 'string' ? p.av + p.ax : p.av); if (g && p.p) g.push(p, t); }
@@ -525,6 +528,7 @@ export class Ghosts {
     else if (m.t === 'cinema') this.onCinema?.(m);
     else if (m.t === 'snake') this.onSnake?.(m);
     else if (m.t === 'mus') this.onMusic?.(m); // the shared children's-room music (#1624, src/playroommusic.js): only sent to players inside the room
+    else if (m.t === 'df') this.onSharedFish?.(m,false);
     else if (m.t === 'sq') this.onSquirrels?.(m); // the shared squirrels and nuts (#1686, src/squirrelsync.js): only sent to players near them
     else if (m.t === 'tm') this.onTime?.(m, this.others.get(m.i) ?? { name: '' }); // (a player we have no pose from yet: no name) // somebody set the game time (#1774, src/timesync.js)
     else if (m.t === 'rf') this.onRiverFish?.(m); // the shared fish in Höje å (#1752, src/riverfishsync.js): the room's clock, seed and caught fish
@@ -695,6 +699,8 @@ export class Ghosts {
   }
 
   /** A squirrel message (#1686): the leader's pose / nut snapshots ('s' / 'n': only the newest waits) and the one-off take / put / feed events. */
+  sharedFish(msg){if(!this.connected)return false;this.outbox.push(msg);this.trimOutbox();this.lastMove=performance.now();this.sendShot();return true;}
+
   squirrels(msg) {
     if (!this.connected) return false;
     if (msg.k === 's' || msg.k === 'n') this.outbox = this.outbox.filter((m) => m.t !== 'sq' || m.k !== msg.k);

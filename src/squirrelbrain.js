@@ -165,12 +165,13 @@ export class NutField {
   setActive(on) {
     if (on === this.active) return;
     this.active = on;
-    this.slots.forEach((s, i) => { s.alive = false; s.held = false; s.by = null; s.wait = 1 + i * 0.5; });
+    this.slots.forEach((s, i) => {if(s.sharedDrop)return; s.alive = false; s.held = false; s.by = null; s.wait = 1 + i * 0.5; });
   }
   update(dt) {
     if (!this.active) return;
     for (let index=0;index<this.slots.length;index++) {
       const s=this.slots[index];
+      if(s.sharedDrop)continue;
       if (s.alive) { if (!s.held && (s.age += dt) > s.life) this.remove(s); continue; }
       if ((s.wait -= dt) > 0) continue;
       const at = this.spot(index);
@@ -199,7 +200,7 @@ export class NutField {
   /** The nearest nut lying on the ground within `r` m of (x, z), or null. */
   near(x, z, r) {
     let best = null, bd = r;
-    for (const s of this.slots) { if (!s.alive || s.held) continue; const d = Math.hypot(s.x - x, s.z - z); if (d < bd) { bd = d; best = s; } }
+    for (const s of this.slots) { if (!s.alive || s.held || s.sharedDrop) continue; const d = Math.hypot(s.x - x, s.z - z); if (d < bd) { bd = d; best = s; } }
     return best;
   }
 }
@@ -531,7 +532,7 @@ export class SquirrelBrain {
     }
     switch (this.state) {
       case 'forage': case 'fetch': {
-        if (this.state === 'fetch' && !(this.slot?.alive && !this.slot.held)) { this.slot = null; this.pickGoal(); return; }
+        if (this.state === 'fetch' && !(this.slot?.alive && !this.slot.held && !this.slot.sharedDrop)) { this.slot = null; this.pickGoal(); return; }
         if (this.state === 'forage' && ((this.sense -= dt) <= 0)) {
           this.sense = 0.5; const s = e.nuts.near(this.x, this.z, C_.sense);
           if (s && this.clear(s.x, s.z)) { this.slot = s; this.goal.x = s.x; this.goal.z = s.z; this.set('fetch', 30); return; }
@@ -551,7 +552,7 @@ export class SquirrelBrain {
         return;
       case 'eat': this.rise = 1;
         if (this.t >= this.dur) {
-          if (this.slot?.alive && !this.slot.held) e.nuts.remove(this.slot);
+          if (this.slot?.alive && !this.slot.held && !this.slot.sharedDrop) e.nuts.remove(this.slot);
           this.slot = null; this.rise = 0; this.hasNut = false; this.pickGoal();
         }
         return;

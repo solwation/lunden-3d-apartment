@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: actual Nut holds only after ACK, retains table height/rest quaternion globally and feeds the true recipient once after durable consume
+ok 1 - actual Nut holds only after ACK, retains table height/rest quaternion globally and feeds the true recipient once after durable consume
+  ---
+  duration_ms: 16.693173
+  type: 'test'
+  ...
+# Subtest: explicit world drops are excluded from autonomous ground foraging; natural nuts remain available
+ok 2 - explicit world drops are excluded from autonomous ground foraging; natural nuts remain available
+  ---
+  duration_ms: 0.4439
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 256.600592

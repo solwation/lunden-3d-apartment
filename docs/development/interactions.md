@@ -2232,3 +2232,7 @@ An explicit bike-only dismount guard rejects airborne/falling exit even when las
 ## Jetpack ascent medal (#1857)
 
 Astronaut is a new medal, distinct from the unchanged Jetpackpilot take-off counter. `Player.update` emits `onJetRise(metres)` only inside the jetpack vertical-physics branch after the existing ceiling clamp and before lift snaps/rescues. Only positive actual displacement with positive vertical velocity counts, including coasting upward while wearing the active outdoor pack. Walking, ground steps, falls, indoor movement, spawn and repositioning never emit altitude. Main forwards the fractional delta to the existing stats path. No new input, flight-time feature, per-frame network message or render resource is added. First level 100 m is a gameplay **guess**, followed by the existing 1.5× cumulative medal curve (100/250/475…). [Verification](../verification/1857/README.md).
+
+### Shared loose food (#1855)
+
+Normal E/touch takes and places caught fish/nuts; online transfer waits for durable Room ACK and retains the hand on failure/full cap. The existing rest pose and full quaternion preserve tables. A missing upgraded server capability gives an update/wait message instead of an optimistic private copy. Shared food freezes on disconnect; explicitly offline personal play stays local. Shared nuts are pickup/hand-feeding objects, not targets of independent autonomous ground foragers. [Source-bound two-client/table evidence and limits](../verification/1855/README.md).

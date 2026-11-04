@@ -47,6 +47,7 @@ import { addSceneCarLods, updateCarLods, carLodState } from './viewlod.js';
 import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
 import { initHudIcons, fitChoiceLabels, setIcon, setPressed, setWeatherIcon, formatTemp } from './hudicons.js';
+import {SharedFish} from './sharedfishclient.js';
 import * as THREE from 'three';
 import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, PLAYROOM, BOULE, encodeAvatarWireLook, decodeAvatarLook, avatarLook, avatarBody, avatarHeightCm } from './config.js';
 import { setupAvatarCustomizer, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen } from './customizer.js';
@@ -376,6 +377,8 @@ const todo = buildTodoNotes(await loadTodo(), world.lids.find((l) => l.kind === 
 const binderEl = document.getElementById('binder-view');
 let reading = false;
 let football = null; // #1853 gameplay attaches to the independently built static world feature
+
+let sharedFish = null; // #1855 discrete caught-fish handovers, attached after Ghosts exists
 let onEditPointerUnlock = null;
 let binderPanel = null, binderFreed = false; // the animal binder's panel (#1848, previously the cat binder) frees the mouse to click its buttons
 function showBinder(show, byKey = 'E') {
@@ -599,7 +602,7 @@ if (squirrels) holdables.push(...squirrels.nutItems);
 const riverFish = params0.has('nofish') ? null : new RiverFish({ scene, camera });
 // #1753: the fishing rod under the road bridge (a holdable, saved like any loose thing) and the fish caught with it (keep.js `fishing`)
 const fishing = new Fishing({ scene, camera, riverFish, player, groundY: (x, z) => player.groundAt(x, z, -4), onMessage: (t) => badge(t, false), touch: () => touch.enabled,
-  onItem: (f) => { holdables.push(f); f.model.userData.keepHidden = () => f.broken; } });
+  onItem: (f) => { holdables.push(f);sharedFish?.attach(f); f.model.userData.keepHidden = () => f.broken; } });
 holdables.push(fishing.rod);
 // #1686: the squirrels and nuts shared with the players near them (src/squirrelsync.js, cloudflare/squirrels.js); the ghosts give the leader the others' lures
 // (set after the ghosts exist, below)
@@ -3038,6 +3041,9 @@ const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboa
 football=new Football({site:world.football,camera,ghosts,life,
   canPlay:()=>overlay.hidden&&!reading&&!heldItem()&&!rest.active&&!player.riding&&!player.flying&&!player.climb&&!player.swing&&Math.abs(player.pos.y-world.football.ground(player.pos.x,player.pos.z))<FOOTBALL.playHeightSlack,
   spectating:()=>rest.active&&rest.target?.id?.startsWith('football-bench-'),onRecord:recordFootball,say:t=>badge(t,false)});
+
+sharedFish=new SharedFish({fishing,ghosts,persist:()=>{saveStats();if(!savePlayerWorld())return false;try{saveCurrentResume({world:keepWorld()});}catch{/* canonical playerWorld already contains the ownership intent */}return true;},removeItem:f=>{const i=holdables.indexOf(f);if(i>=0)holdables.splice(i,1);},say:t=>badge(t,false)});
+for(const f of fishing.fish)sharedFish.attach(f);
 const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, basket: ball, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows, life, fruit, fish, chicken, fries, beer, beerCans,
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
   onDie: () => { binoculars.setZoom(false); goToStart(() => respawnOutdoors(player)); badge('💀 Slut på liv – du lever igen', false); } }); // only the place changes (#665)
@@ -3156,7 +3162,7 @@ if (riverFish) { // #1752
   ghosts.onRiverFish = (m) => riverFish.sync.receive(m);
 }
 if (squirrels) { // #1686
-  squirrels.net = { ready: () => ghosts.connected, send: (m) => ghosts.squirrels(m), me: () => ghosts.me ?? '', remotes: () => [...ghosts.others.values()].map((g) => ({ id: g.id, x: g.root.position.x, z: g.root.position.z, yaw: g.root.rotation.y, crouch: g.crouch ?? 0, hi: g.hi, vh: g.vh ?? 0 })) };
+  squirrels.net = { on:ghosts.on,notice:t=>badge(t,false),ready: () => ghosts.connected, send: (m) => ghosts.squirrels(m), me: () => ghosts.me ?? '', remotes: () => [...ghosts.others.values()].map((g) => ({ id: g.id, x: g.root.position.x, z: g.root.position.z, yaw: g.root.rotation.y, crouch: g.crouch ?? 0, hi: g.hi, vh: g.vh ?? 0 })) };
   ghosts.onSquirrels = (m) => squirrels.sync.receive(m);
 }
 if (paddock) { paddock.net = { ready: () => ghosts.connected, send: (m) => ghosts.paddock(m) }; ghosts.onPaddock = (m) => paddock.onNet(m); } // #1644: the ponies and the grass shared with the players near the paddock
@@ -3165,7 +3171,7 @@ tvMedia.connect(cinema.net);
 computerHub.connect({...cinema.net,snake:m=>ghosts.snake(m)});
 ghosts.onSnake=m=>computerHub.receiveSnake(m);
 ghosts.onCinema = m => m.screen?(computerHub.receive(m)||tvMedia.receive(m)):cinema.receive(m);
-ghosts.keepConnected = () => (player.inPlayroom && !!cinema.state?.video)||tvMedia.watching||computerHub.watching||fishing.state !== 'idle'||bouleSync.interest||!!football?.interest; // (#1753: an angler waiting for a bite stands still for minutes; the others keep seeing the float)
+ghosts.keepConnected = () => (player.inPlayroom && !!cinema.state?.video)||tvMedia.watching||computerHub.watching||fishing.state !== 'idle'||bouleSync.interest||!!football?.interest||!!sharedFish?.interest||!!(heldItem()?.isSquirrelNut&&squirrels?.sync.dropVersion===2); // (#1753: an angler waiting for a bite stands still for minutes; the others keep seeing the float)
 // toasting (#1222): "Skåla" with a glass in the hand (right click / 🥂): a clink, the glass raised (things.js), a line and one small
 // message; a player near us who holds a glass hears it and toasts back once (flagged, so no ping-pong); Olof answers from his car.
 toastHandler.fn = (glass, back = false) => {
@@ -3641,6 +3647,7 @@ function frame(raw) {
   hitch.phase('adapt');
   step(dt);
   ghosts.update(dt);
+  sharedFish?.update();
   football?.update(active()&&overlay.hidden&&!reading&&!document.hidden);
   outdoorGym.observe(ghosts.others);
   combat.update(dt);
@@ -3753,9 +3760,9 @@ const keepSession = () => { const p = played && !resetHome.going && placeNow(); 
 setInterval(keepSession, 2000);
 window.addEventListener('pagehide', keepSession);
 function savePlayerWorld() {
-  if (resetHome.going || lifeDev()) return;
+  if (resetHome.going || lifeDev()) return false;
   const p = placeNow(false); // a later new visit starts outside the playhouse door, never inside the room (#1572)
-  if (p) localStorage.setItem('lunden.playerWorld', JSON.stringify({ ...p, mode: undefined, playerSnapshot: true, world: keepWorld() }));
+  if(!p)return false;localStorage.setItem('lunden.playerWorld', JSON.stringify({ ...p, mode: undefined, playerSnapshot: true, world: keepWorld() }));return true;
 }
 const persistPlayerWorld = () => { try { savePlayerWorld(); } catch { /* keep earlier record if storage is full */ } };
 window.addEventListener('pagehide', persistPlayerWorld);
@@ -3979,4 +3986,4 @@ const openPanel = () => !overlay.hidden ? 'menu' : !reading ? (lowMemory && port
   : viewing ? 'poster' : isAvatarCustomizerOpen() ? 'avatar' : cinema.open || computerHub.open || tvMedia.open ? 'video' : 'other';
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding, panel: openPanel }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { football, ghosts, outdoorGym, ducks, medals, squirrels, outdoorCats, footprints, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, bestiary, bestiaryPhotos, bestiaryImages, bestiaryRegistry:registry, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
+window.__app = { football, sharedFish, ghosts, outdoorGym, ducks, medals, squirrels, outdoorCats, footprints, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, bestiary, bestiaryPhotos, bestiaryImages, bestiaryRegistry:registry, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
