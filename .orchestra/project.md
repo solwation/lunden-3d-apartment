@@ -245,7 +245,7 @@ valid outcome rather than running the same intake twice.
 
 The conductor runs this loop in every `/orkester` queue session:
 
-1. Dispatch workers (≤ capacity) to the highest-ranked startable issues (original repository first, then priority).
+1. Reconcile owned handoffs and resume ready integration/review before new dispatch; then dispatch workers (≤ capacity) to the highest-ranked startable issues (original repository first, then priority).
 2. While they work, run due report intake: create issues and remove the reports from KV.
 3. When a worker finishes, record its ready handoff/owner and free its slot. Reconcile
    the integration queue before dispatch; review/integrate ready work under the same
