@@ -1,0 +1,73 @@
+{
+  "phase": "clock",
+  "checks": [
+    {
+      "ok": true,
+      "label": "welcome/ordinary entry receives canonical date with no time writes (Tokyo context; peer clock +3 days)",
+      "data": {
+        "a": {
+          "q": 8,
+          "h": 14.799782777777772,
+          "date": 4,
+          "month": 11,
+          "year": 2026,
+          "p": false,
+          "s": 0
+        },
+        "b": {
+          "q": 8,
+          "h": 14.799758055555555,
+          "date": 4,
+          "month": 11,
+          "year": 2026,
+          "p": false,
+          "s": 0
+        },
+        "sentA": 0,
+        "sentB": 0
+      }
+    },
+    {
+      "ok": true,
+      "label": "native clock form sets both clients",
+      "data": {
+        "a": {
+          "q": 9,
+          "h": 22.500015000000005,
+          "date": 4,
+          "month": 11,
+          "year": 2026,
+          "p": false,
+          "s": 0
+        },
+        "b": {
+          "q": 9,
+          "h": 22.5000225,
+          "date": 4,
+          "month": 11,
+          "year": 2026,
+          "p": false,
+          "s": 0
+        },
+        "sentA": 1,
+        "sentB": 0
+      }
+    }
+  ],
+  "errors": [],
+  "snap": {
+    "phase": {
+      "connected": true,
+      "q": 9,
+      "day": [
+        22.502008055555336,
+        4,
+        11,
+        2026
+      ],
+      "p": false,
+      "s": 0
+    },
+    "body": "22:30\nNu\nSkriv tid\n4 november · sol upp 07:25, ner 16:16\nHåll A D för att spola · Mellanslag pausar · N går till riktiga tiden · skriv siffror (t.ex. 1430) + Enter för exakt tid · E stänger · datumet väljer du på almanackan\n5°\n22:30\nPoäng\n0\n1\n—\nFPS\nN\nÖ\nS\nV"
+  }
+}

@@ -188,14 +188,14 @@ export class ClockPanel {
     if (dir) this.held.set(key, dir); else this.held.delete(key);
     const was = this.day.spool;
     this.day.spool = this.held.size ? [...this.held.values()].at(-1) : 0;
-    if (was && !this.day.spool) this.onChange(); // (spooling let go: the new time is set)
+    if (was !== this.day.spool) this.onChange(); // #1865: share spool start/reversal/stop, not per-frame changes
     this.render();
   }
 
   togglePause() { this.day.paused = !this.day.paused; this.onChange(); this.render(); }
 
   /** The visitor's own time and date again, running (#1145). */
-  toNow() { this.held.clear(); this.day.toNow(); this.onChange(); this.render(); }
+  toNow() { this.held.clear(); this.day.toNow(); this.onChange('now'); this.render(); }
 
   /** Keyboard while the strip is open; returns true when the key was used. */
   key(code, down, repeat) {

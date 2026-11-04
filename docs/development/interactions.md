@@ -2244,3 +2244,12 @@ Normal E/touch takes and places caught fish/nuts; online transfer waits for dura
 `main.js` stops floorSpot from using an indoor plane outside, and allows ordinary placeAt items outside without requiring outdoorPlace. Authored tops/stacks/containers keep priority, noPlace and vacuum/floorOnly handling remain, cats retain outdoorSpot. Life.floorY outdoors follows existing support with LIFE.place.supportTolerance; this allows a real LifeItem below0 while retaining indoor floor protection. Keep/Life formats are unchanged. `tools/groundplacementtest.mjs` and the held real-app `tools/placeanywhere1862browser.cjs` cover the bounded risks. [Evidence, exact source phases and limits](../verification/1862/README.md).
 
 Shared roof picnic (#1864): PicnicClient attaches only to the three site drink items, the two Runner food actions and two Rest spots. E/touch uses existing targets; take/drop/sip/pour/bite/sit wait for canonical ACK. Standing leaves locally immediately and queues seat release after pending work. Ghosts retains existing pose3/cup/bottle/toast contracts. Private dish/stock/Keep and shatter paths cannot mutate these shared objects. [Scope and evidence](../verification/1864/README.md).
+
+## Server-owned clock/calendar controls (#1865)
+
+The existing clock strip (typed time, pause/play, Nu, held spool), calendar and day/night
+cheats call one TimeSync change path. Server persistence and projection are documented
+in [storage](storage.md#shared-world-calendar-1865-supersedes-1774-time-storage). Spool
+start/reversal/stop are shared discrete changes; running time does not create frame messages.
+Nu is explicit and uses server Lund time; ordinary restart never calls it. Local test-time
+URLs opt out. Shared receive applies fields/render hooks without publishing another edit.

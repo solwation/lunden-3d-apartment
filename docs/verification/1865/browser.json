@@ -1,0 +1,328 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "welcome/ordinary entry receives canonical date with no time writes (Tokyo context; peer clock +3 days)",
+      "data": {
+        "a": {
+          "q": 8,
+          "h": 14.799782777777772,
+          "date": 4,
+          "month": 11,
+          "year": 2026,
+          "p": false,
+          "s": 0
+        },
+        "b": {
+          "q": 8,
+          "h": 14.799758055555555,
+          "date": 4,
+          "month": 11,
+          "year": 2026,
+          "p": false,
+          "s": 0
+        },
+        "sentA": 0,
+        "sentB": 0
+      }
+    },
+    {
+      "ok": true,
+      "label": "native clock form sets both clients",
+      "data": {
+        "a": {
+          "q": 9,
+          "h": 22.500015000000005,
+          "date": 4,
+          "month": 11,
+          "year": 2026,
+          "p": false,
+          "s": 0
+        },
+        "b": {
+          "q": 9,
+          "h": 22.5000225,
+          "date": 4,
+          "month": 11,
+          "year": 2026,
+          "p": false,
+          "s": 0
+        },
+        "sentA": 1,
+        "sentB": 0
+      }
+    },
+    {
+      "ok": true,
+      "label": "final ACK/idle-fix native pause accepted; late peer resumes canonical paused state",
+      "data": {
+        "a": {
+          "q": 10,
+          "p": true
+        },
+        "b": {
+          "q": 10,
+          "p": true
+        }
+      }
+    },
+    {
+      "ok": true,
+      "label": "peer production calendar month/day reach full app",
+      "data": {
+        "a": {
+          "q": 12,
+          "h": 22.64203277777778,
+          "date": 21,
+          "month": 12,
+          "year": 2026,
+          "p": true,
+          "s": 0
+        },
+        "b": {
+          "q": 12,
+          "h": 22.64203277777778,
+          "date": 21,
+          "month": 12,
+          "year": 2026,
+          "p": true,
+          "s": 0
+        },
+        "sentA": 3,
+        "sentB": 2
+      }
+    },
+    {
+      "ok": true,
+      "label": "native existing day cheat shares time (same production hook)",
+      "data": {
+        "a": {
+          "q": 13,
+          "h": 12,
+          "date": 21,
+          "month": 12,
+          "year": 2026,
+          "p": true,
+          "s": 0
+        },
+        "b": {
+          "q": 13,
+          "h": 12,
+          "date": 21,
+          "month": 12,
+          "year": 2026,
+          "p": true,
+          "s": 0
+        },
+        "sentA": 4,
+        "sentB": 2
+      }
+    },
+    {
+      "ok": true,
+      "label": "native existing night cheat shares time (same production hook)",
+      "data": {
+        "a": {
+          "q": 14,
+          "h": 0,
+          "date": 21,
+          "month": 12,
+          "year": 2026,
+          "p": true,
+          "s": 0
+        },
+        "b": {
+          "q": 14,
+          "h": 0,
+          "date": 21,
+          "month": 12,
+          "year": 2026,
+          "p": true,
+          "s": 0
+        },
+        "sentA": 5,
+        "sentB": 2
+      }
+    },
+    {
+      "ok": true,
+      "label": "held native spool start/rate reaches peer",
+      "data": {
+        "a": {
+          "q": 15,
+          "h": 13.839000000000013,
+          "date": 2,
+          "month": 1,
+          "year": 2027,
+          "p": true,
+          "s": 1
+        },
+        "b": {
+          "q": 15,
+          "h": 13.6695,
+          "date": 2,
+          "month": 1,
+          "year": 2027,
+          "p": true,
+          "s": 1
+        },
+        "sentA": 6,
+        "sentB": 0
+      }
+    },
+    {
+      "ok": true,
+      "label": "release preserves pause and shares final spooled time",
+      "data": {
+        "a": {
+          "q": 16,
+          "h": 13.838999999999999,
+          "date": 2,
+          "month": 1,
+          "year": 2027,
+          "p": true,
+          "s": 0
+        },
+        "b": {
+          "q": 16,
+          "h": 13.839,
+          "date": 2,
+          "month": 1,
+          "year": 2027,
+          "p": true,
+          "s": 0
+        },
+        "sentA": 7,
+        "sentB": 0
+      }
+    },
+    {
+      "ok": true,
+      "label": "explicit Nu returns both to server Lund now despite client TZ/skew",
+      "data": {
+        "a": {
+          "q": 17,
+          "h": 15.063372222222227,
+          "date": 4,
+          "month": 11,
+          "year": 2026,
+          "p": false,
+          "s": 0
+        },
+        "b": {
+          "q": 17,
+          "h": 15.063367222222222,
+          "date": 4,
+          "month": 11,
+          "year": 2026,
+          "p": false,
+          "s": 0
+        },
+        "sentA": 7,
+        "sentB": 1
+      }
+    },
+    {
+      "ok": true,
+      "label": "peer reconnect restores paused timeline without write/echo",
+      "data": {
+        "a": {
+          "q": 21,
+          "h": 8.25000111111111,
+          "date": 21,
+          "month": 12,
+          "year": 2026,
+          "p": true,
+          "s": 0
+        },
+        "b": {
+          "q": 21,
+          "h": 8.25000111111111,
+          "date": 21,
+          "month": 12,
+          "year": 2026,
+          "p": true,
+          "s": 0
+        },
+        "sentA": 7,
+        "sentB": 5
+      }
+    },
+    {
+      "ok": true,
+      "label": "ordinary restart changes place without Nu/write",
+      "data": {
+        "a": {
+          "q": 21,
+          "h": 8.25000111111111,
+          "date": 21,
+          "month": 12,
+          "year": 2026,
+          "p": true,
+          "s": 0
+        },
+        "b": {
+          "q": 21,
+          "h": 8.25000111111111,
+          "date": 21,
+          "month": 12,
+          "year": 2026,
+          "p": true,
+          "s": 0
+        },
+        "sentA": 7,
+        "sentB": 5
+      }
+    },
+    {
+      "ok": true,
+      "label": "bounded discrete control sends, no receive/per-frame time stream",
+      "data": {
+        "a": {
+          "q": 21,
+          "h": 8.25000111111111,
+          "date": 21,
+          "month": 12,
+          "year": 2026,
+          "p": true,
+          "s": 0
+        },
+        "b": {
+          "q": 21,
+          "h": 8.25000111111111,
+          "date": 21,
+          "month": 12,
+          "year": 2026,
+          "p": true,
+          "s": 0
+        },
+        "sentA": 7,
+        "sentB": 5
+      }
+    },
+    {
+      "ok": true,
+      "label": "no observed page errors",
+      "data": []
+    }
+  ],
+  "errors": [],
+  "phase": "pictures",
+  "limits": "One full app + renderer-free production TimeSync/ClockPanel/CalendarPanel peer; peer Day/physical calendar drawing are stand-ins. Tokyo context, peer Date.now skew +3 days.",
+  "networkAccounting": {
+    "firstObservedQ": 8,
+    "finalQ": 21,
+    "acceptedControlRevisions": 13,
+    "fullAppCommandsIncludingEarlyRejected": 7,
+    "retiredPeerCommands": 2,
+    "finalPeerCommands": 5,
+    "totalControlCommands": 14,
+    "note": "Peer counter resets on lightweight frame reload; no additional full world. Heartbeats and canonical replies are not control writes."
+  },
+  "sourcePhases": {
+    "validUiTimeline": "8e94224b",
+    "serverSaveFailure": "118236be",
+    "clientSaveFailure": "389f9deb",
+    "note": "Final save-failure-only branches verified separately with narrow tests; normal UI path unchanged."
+  }
+}

@@ -150,3 +150,13 @@ Freezer summaries (#958): historical id/date/text and `changelog_stamp.py` publi
 Compatible Worker6a917ecd384223e2dd8f94f132ffd43b3a5a4b68 was published first: actual run38567577189/job115864086763 checked out that SHA and executed Wrangler, Deployed2026-10-14T12:55:59.2261633Z/version492630bb-1208-45b9-828c-bfce4363d645. It only preserves strict optional layout.editing0/1 in public reports; old clients/reports remain supported. Client focus/inset classification follows this deployment. No production crash POST is used for tests, no heartbeat TTL/quotas/quality/startup reload policy changes, and the internal diagnostic correction needs no player changelog entry.
 
 Shared picnic (#1864) rollout: publish the tested server-stage commit (PlayerRoom+picnic+pure wire/config and cloud.yml path) and await actual Worker deployment before its client commit. Older clients ignore the added welcome field. New clients require capability and acknowledged get before shared mutations, so an older/unreachable Worker cannot create a private replacement stock. The client commit also touches heldcategory.js and triggers Worker deployment; await both real Pages and Worker deployments. [Exact ordered commits and tests](../verification/1864/README.md).
+
+## Persistent shared clock rollout (#1865)
+
+Deploy the server checkpoint first: `cloudflare/roomtime.js`, narrow PlayerRoom time wiring,
+`src/worldtime.js` and its existing config dependency; the new module is listed in cloud.yml
+trigger paths and deploypaths.test.mjs passes. No new binding/service. Then deploy the v2
+TimeSync, chained welcome/own-ACK path and clock/calendar/cheat hooks. Legacy offsets cannot
+write the persistent clock; a new client requires a v2 welcome before writes. Preserve
+sibling welcome fields/listeners (notably picnic) at integration. Docs/local tests do not
+prove deployment: root verifies the actual Worker then Pages before closure.

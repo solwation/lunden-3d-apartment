@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: explicit clock/calendar command uses world fields, not client epoch or timezone; receive never echoes
+ok 1 - explicit clock/calendar command uses world fields, not client epoch or timezone; receive never echoes
+  ---
+  duration_ms: 2.914082
+  type: 'test'
+  ...
+# Subtest: paused/spooled snapshot, same-revision reconnect, explicit Nu and stale correction keep one authority
+ok 2 - paused/spooled snapshot, same-revision reconnect, explicit Nu and stale correction keep one authority
+  ---
+  duration_ms: 0.991394
+  type: 'test'
+  ...
+# Subtest: legacy Worker cannot receive new writes; explicit local fixtures neither send nor take
+ok 3 - legacy Worker cannot receive new writes; explicit local fixtures neither send nor take
+  ---
+  duration_ms: 0.170799
+  type: 'test'
+  ...
+# Subtest: rapid user edits coalesce last intent without network receive triggering a send
+ok 4 - rapid user edits coalesce last intent without network receive triggering a send
+  ---
+  duration_ms: 0.348898
+  type: 'test'
+  ...
+# Subtest: transport queue jitter cannot send a second edit before its ACK plus minimum interval
+ok 5 - transport queue jitter cannot send a second edit before its ACK plus minimum interval
+  ---
+  duration_ms: 0.287898
+  type: 'test'
+  ...
+# Subtest: storage refusal releases the same UI client and permits retry at unchanged revision
+ok 6 - storage refusal releases the same UI client and permits retry at unchanged revision
+  ---
+  duration_ms: 0.273098
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 111.716299

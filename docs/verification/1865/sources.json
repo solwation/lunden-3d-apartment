@@ -1,0 +1,123 @@
+{
+  "base": "c3ad66733d71aaef7b02d4eb7b4eec8d4797f5e3",
+  "sourceTip": "389f9deb89070d0f249bfd8cdaf98e1f25b7f362",
+  "sourcePhases": {
+    "serverCore": "8cac7daf",
+    "network": "114c7961",
+    "validUi": "8e94224b",
+    "serverStorageRefusal": "118236be",
+    "clientStorageRefusal": "389f9deb"
+  },
+  "DAY": {
+    "minutes": 1440,
+    "spool": 1.5
+  },
+  "picnicIntegrationMayChange": [
+    "cloudflare/players.js",
+    "src/main.js",
+    "cloudflare/players.test.mjs",
+    ".github/workflows/cloud.yml",
+    "src/config.js"
+  ],
+  "serverFirstPaths": [
+    ".github/workflows/cloud.yml",
+    "src/worldtime.js",
+    "cloudflare/roomtime.js",
+    "cloudflare/players.js",
+    "cloudflare/worldtime.test.mjs",
+    "cloudflare/players.test.mjs"
+  ],
+  "source": {
+    ".github/workflows/cloud.yml": {
+      "sha256": "5051f16159b314a584d196168a07985614c39a8154832dc92dbb0c01d3a70871",
+      "gitBlob": "901aa62290c90afe21737f3c8b48cac9f5b1cdac"
+    },
+    "src/worldtime.js": {
+      "sha256": "24e271eb30d48d5345719b14386fbf3073f06885a6a4d90d53cab080ae34d9ff",
+      "gitBlob": "51c984a76c94276cee5929d23aa8494e36d5363e"
+    },
+    "cloudflare/roomtime.js": {
+      "sha256": "52a0e89c15df83682ada6108607994dfe27bf2914cd589474d5270ce708a1914",
+      "gitBlob": "a0155652ab60a8827e35d669b8cc295b7a8aa1fb"
+    },
+    "cloudflare/players.js": {
+      "sha256": "6aba372b7da707d14f52c07132514d56c6fa3391e538dbeeb96e76576107b66b",
+      "gitBlob": "06c8af53c18843824dd6e68d8b35b2ee06236923"
+    },
+    "cloudflare/worldtime.test.mjs": {
+      "sha256": "893543c03e9f8eed776c7ca122456be79a726d0c252752b95d318701630ae4c7",
+      "gitBlob": "e568bbc51e34a42e5d323e73dee187ebf3f35a6b"
+    },
+    "cloudflare/players.test.mjs": {
+      "sha256": "f3ab2caf9cde7f1be9439d19b7d53be085da939693ddd4e02157ff7bba85d1ad",
+      "gitBlob": "c0d586bfc94b83bef34f244b045b9c4748c8f63e"
+    },
+    "src/timesync.js": {
+      "sha256": "7eeb3c25589e731b1b88b5ccbd50ca324f394562c6e78dc13780b6f7a0fdf19c",
+      "gitBlob": "07973caafe7e4fe54aa9bb6f261863bcd6fedaf1"
+    },
+    "src/daycycle.js": {
+      "sha256": "dd711d815eedd22fde6ca7c45bd20261e0f29eb517385fcca44b7d4c045d80a3",
+      "gitBlob": "65eb043c4c3c09140c23bd42b57721a419f9b09e"
+    },
+    "src/wallclock.js": {
+      "sha256": "235ab9bd60022c74fb2a109c98e75a4833a4d2e74785493a279c663d7da1fb1e",
+      "gitBlob": "82e424d85d5b8e36e6f9d4d51bea1d79587d1b00"
+    },
+    "src/main.js": {
+      "sha256": "30cf1b9ec4c99e4cb94c772ec3fb9e33199a1666fda92247099fe239f197463d",
+      "gitBlob": "dcb7c959845ec3474b66b0640d7f2a66ea9350eb"
+    },
+    "src/ghosts.js": {
+      "sha256": "f8bd79919b2850737e7cad166eb47374251dc6e3415b6047616978c5012effb0",
+      "gitBlob": "4779a64d076548c98d9a28b06aecdc97b6c54213"
+    },
+    "src/config.js": {
+      "sha256": "b898d2e6824ad2d7020f1a1c891227bfe31add9d76ee4279f551a664e221e38d",
+      "gitBlob": "ad26636430381e5ed76cd5f344fff06300afa0c9"
+    },
+    "src/calendar.js": {
+      "sha256": "0508062ac04d06c8de19f929d4b0596de19ba1fe82120383171d4a11606b615e",
+      "gitBlob": "5eb240fc68ebb3bd23f609799771b8e538b07f6a"
+    },
+    "cloudflare/timesync.test.mjs": {
+      "sha256": "b496bf395cac552f83e59e0e16035803f4f3f6fd680bb2f41155b99c3e8d5eb3",
+      "gitBlob": "8243d988619eaf8de669d3f9b908ffacf5e6af5f"
+    },
+    "tools/worldtimebrowser.cjs": {
+      "sha256": "ae7687fa1b0644f5508350d2c849634ab06931ffc1ad28537acd20b5c52ba3c9",
+      "gitBlob": "fb6ad0375ab2589dc858f13bbb9a1efaf422b0bd"
+    },
+    "tools/worldtimepeer.html": {
+      "sha256": "bf42048698cddea17e7d70f2f610bc5dea1bfe3c3df101a08943957873724686",
+      "gitBlob": "984439bc4e843c4b7cd62778c0db588484cd52fb"
+    },
+    "tools/worldtimeworker.mjs": {
+      "sha256": "634f3c22d8d594528c46d5f3ae8caf00fef184502c1af306828f2d395fdf3b77",
+      "gitBlob": "7585edc26ee283f399eb6aa5371b2d6d110c872e"
+    },
+    "tools/worldtimerecover.cjs": {
+      "sha256": "f38e0cfd4a551b6cc94fcc55b41515bb36e5b4d30e6166e526305006974d2ca7",
+      "gitBlob": "ab13b9ab56bfb27fbbcf775006db0f217c3ca4ce"
+    }
+  },
+  "evidenceSha256": {
+    "docs/verification/1865/browser.json": "352770d3b2cde06e4922c419a25262e742cf7c4d5121ca58960989dc88c98aef",
+    "docs/verification/1865/model-client.txt": "1e0e50bbf3baa6442cff19dc9af0612ecbda761cd3f56b1815d487033f10c372",
+    "docs/verification/1865/players-initial.txt": "326d994ed9d2c2c56fa0ca27084e4a32806ec0e2f4d9afa921f3940ded18b32d",
+    "docs/verification/1865/browser-error.txt": "8bb1905c2a88534197ebd02c36550e4b9833cc05352eed0ed18edcc2a7408069",
+    "docs/verification/1865/shared-clock.png": "fc1b6e0ea9deea17e5b23d5769fb55a57cc9f92e42fe6dc06d02f0666791c4a7",
+    "docs/verification/1865/shared-calendar.png": "1ad555fadc3ebb48721ca42148ff96191763bb0bf15f054376f45dcbb5b09e72",
+    "docs/verification/1865/client-final.txt": "ce6030fc0ccf54ff77461fc26b350dbd879b082340ded98056a5a98e4e91a448",
+    "docs/verification/1865/README.md": "d248b408f1e852d930ee1ecac78268a399e8340e77ed0f24017f42e2e54e10a6",
+    "docs/verification/1865/browser-driver.txt": "22356f756ff91ef7b944ce8467eafd55d9cba3fc3f8b992dceabb35985f63783",
+    "docs/verification/1865/server-initial.txt": "9dc64f7f17d57c96c299cc9c89bf9c399d41d0c07513fa79c94899722f21f234",
+    "docs/verification/1865/players-corrected.txt": "15b31489bc5400217baeae447226707ab340e01fbca9ac0d8efd642985eca19a",
+    "docs/verification/1865/checkpoint.json": "a9592e4f99eb57113bac13d8d8b342b8db5ca5ff495ca89a6ea631a2fb0080e9",
+    "docs/verification/1865/command-error.txt": "e4ae68de8fe5b70b8f1eff4962c5fcf242cc86f23ccd5d875fd0f7a1d8d414b9",
+    "docs/verification/1865/command.json": "ccc787d9c64dbc5febdc592314ddaf6fba031c15f31291eeb3bc6d199bc0368d",
+    "docs/verification/1865/network.json": "883da6be9778e4e6ffe43632a6ea0386c525112ad79bbe3bffededaec80d441a",
+    "docs/verification/1865/storage-final.txt": "2fa583e16d45709c580dbddb596703f35011ca18adbef8dbdb6231ddbc2aa976",
+    "docs/verification/1865/fixture-error.png": "cda21e9908343f3e44684c8423e242c34842924c33a4298dbf65397d01910e36"
+  }
+}

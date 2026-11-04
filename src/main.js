@@ -1307,16 +1307,11 @@ const resumeOk = !!resumed && !at && resumeAt(resumed); // the place; the clock 
 if (resumeOk && !resumed.mode) resumeEl.hidden = false;
 if (!(resumeOk && resumed.mode)) document.documentElement.classList.remove('resuming'); // no (good) record after all: the start screen (#222)
 /** Back to the real time and date (#143): the wall clock and the cat calendar show now, not what was spooled or picked. */
-function realNow() {
-  const n = new Date();
-  Object.assign(day, { hour: n.getHours() + n.getMinutes() / 60 + n.getSeconds() / 3600, year: n.getFullYear(), month: n.getMonth() + 1, date: n.getDate(), paused: false, spool: 0 });
-  timeSync.local(); // #1774: the room goes back to now too
-}
+function realNow() { clockPanel.toNow(); } // explicit Nu only; server chooses Lund now
 const toStartDone = document.getElementById('to-start-done');
 document.getElementById('restart')?.addEventListener('click', () => {
   spawnAtStart();
-  realNow();
-  resumeEl.hidden = true;
+  resumeEl.hidden = true; // #1865: restarting the place never overwrites the shared clock
 });
 /** "Gå till startplatsen" in the menu (#665): only the place changes — out of a seat / bed / the car the usual way, off a
  * wall or strand, out of the lift or the air, to START. The clock, the weather, what you hold, the suit / jetpack and
@@ -2906,8 +2901,8 @@ const cheats = {
     if (suit.worn) return 'Spindelmannendräkten är redan på.';
     suit.putOn(); return 'Spindelmannendräkten på. Gå in i en yttervägg utomhus för att klättra; klick eller 🕸 skjuter nät.';
   },
-  day: () => {day.hour=CHEAT_NOTE.dayHour;day.update(0);wallClock.update(day.hour);return 'Dagsljus.';},
-  night: () => {day.hour=CHEAT_NOTE.nightHour;day.update(0);wallClock.update(day.hour);return 'Natt.';},
+  day: () => {day.hour=CHEAT_NOTE.dayHour;day.update(0);wallClock.update(day.hour);timeSync.local();return 'Dagsljus.';},
+  night: () => {day.hour=CHEAT_NOTE.nightHour;day.update(0);wallClock.update(day.hour);timeSync.local();return 'Natt.';},
   'lights on': () => {lights.setAll(true);return 'Hemmets lampor tända.';},
   'lights off': () => {lights.setAll(false);return 'Hemmets lampor släckta.';},
   handsfree: () => {
@@ -3149,9 +3144,11 @@ ghosts.onGreet = (m, g, other) => greet.say({ head: g.head, s: 1 }, (m.k === KIS
 // someone else comes into / leaves the players' room (#1333, src/joinnotice.js): a short notice at the top, no sound
 ghosts.onNotice = (text) => badge(text, false);
 // #1774: the game time / date shared with the room (src/timesync.js, cloudflare/roomtime.js); a test URL that sets the date or time keeps its own
-const timeSync = new TimeSync({ day, net: { ready: () => ghosts.connected, send: (m) => ghosts.time(m) }, notice: (text) => badge(text, false), disabled: ['time', 'month', 'day', 'year', 'freeze', 'notimesync'].some((k) => params0.has(k)), onApply: () => { clockPanel.render(); wallClock.update(day.hour); } });
+const timeSync = new TimeSync({ day, net: { ready: () => ghosts.connected, send: (m) => ghosts.time(m), id: () => ghosts.me }, notice: (text) => badge(text, false), disabled: ['time', 'month', 'day', 'year', 'freeze', 'newyear', 'notimesync'].some((k) => params0.has(k)), onApply: () => { clockPanel.render(); wallClock.update(day.hour); } });
+{ const welcome = ghosts.onWelcome; ghosts.onWelcome = m => { welcome?.(m); timeSync.welcome(); }; } // capability resets on each server connection; preserve sibling welcome hooks
 ghosts.onTime = (m, who) => timeSync.receive(m, who);
-clockPanel.onChange = calPanel.onChange = () => timeSync.local();
+clockPanel.onChange = (kind) => timeSync.local(kind);
+calPanel.onChange = () => timeSync.local();
 const bouleSync = new BouleClient(world.boule, ghosts); // #1854: capability/ACK before shared actions
 playroom.billiards.net = { ready: () => ghosts.connected, send: (m) => ghosts.pool(m), id: () => ghosts.me, name: id => id===ghosts.me?ghosts.name():ghosts.others.get(id)?.name }; // #1355/#1495: shared table, wall-screen names
 ghosts.onPool = (m) => playroom.billiards.onNet(m);
@@ -3190,7 +3187,7 @@ tvMedia.connect(cinema.net);
 computerHub.connect({...cinema.net,snake:m=>ghosts.snake(m)});
 ghosts.onSnake=m=>computerHub.receiveSnake(m);
 ghosts.onCinema = m => m.screen?(computerHub.receive(m)||tvMedia.receive(m)):cinema.receive(m);
-ghosts.keepConnected = () => (player.inPlayroom && !!cinema.state?.video)||tvMedia.watching||computerHub.watching||fishing.state !== 'idle'||bouleSync.interest||!!football?.interest||!!sharedFish?.interest||!!picnicSync.interest||!!(heldItem()?.isSquirrelNut&&squirrels?.sync.dropVersion===2); // (#1753: an angler waiting for a bite stands still for minutes; the others keep seeing the float)
+ghosts.keepConnected = () => (player.inPlayroom && !!cinema.state?.video)||tvMedia.watching||computerHub.watching||fishing.state !== 'idle'||clockPanel.open||calPanel.open||bouleSync.interest||!!football?.interest||!!sharedFish?.interest||!!picnicSync.interest||!!(heldItem()?.isSquirrelNut&&squirrels?.sync.dropVersion===2); // (#1753: an angler waiting for a bite stands still for minutes; the others keep seeing the float)
 // toasting (#1222): "Skåla" with a glass in the hand (right click / 🥂): a clink, the glass raised (things.js), a line and one small
 // message; a player near us who holds a glass hears it and toasts back once (flagged, so no ping-pong); Olof answers from his car.
 toastHandler.fn = (glass, back = false) => {

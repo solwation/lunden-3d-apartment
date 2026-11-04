@@ -226,16 +226,39 @@ bowl; an actual bicycle-hand receipt restores the same terminal portion to the
 hand afterward, using canonical empty scoops. See [food](food.md#fruit-remains-1056)
 and `tools/fruitremainstest.cjs` for the native reload checks and visual limits.
 
-## Shared game time (#1774)
+## Shared world calendar (#1865; supersedes #1774 time storage)
 
-"Logged in" means connected to the shared players' room: the room is the only account model (anybody connected, named or Anonym, is in it), so
-solo/offline play sends and receives nothing. Setting the clock (typed time, spooling let go, play/pause, "Nu"/`realNow()`) or the date (calendar)
-sends `{ t: 'tm', o, p? }` (`src/timesync.js`, hooks `ClockPanel.onChange` / `CalendarPanel.onChange`): `o` = game time minus the sender's real clock in ms,
-`p: 1` = paused. `cloudflare/roomtime.js` validates (`|o|` <= 10 years, 0/1 for `p`), drops a second message from one socket within 250 ms (the client
-sends the last value 300 ms later), keeps that single value in memory (no storage, no KV, #1689), sends `{ t: 'tm', i, o, p? }` to the others and
-`tm: { o, p? }` in the welcome, and forgets it when the last player leaves (real time again). The client applies it with `DayCycle.setStamp` and shows
-"<namn> ställde klockan till HH:MM" (welcome: silent). A URL with `time`, `month`, `day`, `year`, `freeze` or `notimesync` neither sends nor receives, so
-test tools keep their own time. Tests: `cloudflare/players.test.mjs`, `cloudflare/timesync.test.mjs`, `tools/timesynctest.cjs` (two/four real clients).
+Connected visitors share one authoritative `PlayerRoom` DO.storage record, `world-time-v2`:
+`{v:2,q,stamp,at,p,s}`. `stamp` serializes the world's civil year/month/date/hour as UTC
+fields; it is not a visitor-local epoch. The first timeline and explicit Nu use the server's
+`Europe/Stockholm` civil time. Thereafter this game calendar advances continuously at the
+configured Day rate, without local timezone/DST reinterpretation. `at` is the server epoch
+reference: running, intentionally paused (`p:1`) and held spool (`s:-1/0/1`) survive an empty
+room and hibernation/restart. No clock tick write, KV binding, alarm or per-frame network
+stream is needed; the current value is projected from reference + elapsed time.
+
+Explicit edits send `{t:'tm',v:2,k:'set',q,stamp,p,s}`; Nu sends `k:'now'` without a
+client clock value. `k:'get'` only reads. The room validates safe fields, ±10-year calendar
+range, revision/replay and 250ms per-socket rate, serializes changes, persists **before**
+ACK/broadcast, and returns canonical snapshots including `q` to sender and others. The
+client coalesces controls at 300ms; receive/welcome never call local(). Legacy client-derived
+offsets cannot mutate this timeline. No extra role or rights were added: the same connected
+room visitors may use the existing controls. Failed saves publish no new canonical state.
+
+Clock typed time, pause/play, held spool start/reversal/stop, calendar and existing day/night
+cheats share TimeSync's explicit change path. Nu chooses server time, ordinary restart only
+moves the player. On each welcome, a chained wrapper clears stale capability/queued edits,
+then the server snapshot reanchors the client, including silent same-revision reconnect.
+A v2 snapshot is required before new writes; deploy server first, then clients. An older
+client/Worker pair needs the matching update for authoritative clock control; other room
+features remain compatible. URLs with `time`, `month`, `day`, `year`, `freeze`, `newyear` or
+`notimesync` keep time local and neither send nor receive shared edits. Offline local play
+and existing Day consumers remain available. This supersedes only the old memory-only
+clock reset from #1774/#1689, not the lifecycle of other shared systems.
+
+Tests/evidence: [#1865](../verification/1865/README.md), `cloudflare/worldtime.test.mjs`,
+`cloudflare/timesync.test.mjs`, the updated PlayerRoom time/storage expectations,
+`tools/worldtimeworker.mjs` and one app plus bounded production UI peer.
 
 ## Module and test map
 

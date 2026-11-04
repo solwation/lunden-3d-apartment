@@ -532,7 +532,7 @@ export class Ghosts {
     else if (m.t === 'pc') this.onPicnic?.(m,false);
     else if (m.t === 'df') this.onSharedFish?.(m,false);
     else if (m.t === 'sq') this.onSquirrels?.(m); // the shared squirrels and nuts (#1686, src/squirrelsync.js): only sent to players near them
-    else if (m.t === 'tm') this.onTime?.(m, this.others.get(m.i) ?? { name: '' }); // (a player we have no pose from yet: no name) // somebody set the game time (#1774, src/timesync.js)
+    else if (m.t === 'tm') this.onTime?.(m, m.i === this.me ? null : this.others.get(m.i) ?? { name: '' }); // (a player we have no pose from yet: no name) // somebody set the game time (#1774, src/timesync.js)
     else if (m.t === 'rf') this.onRiverFish?.(m); // the shared fish in Höje å (#1752, src/riverfishsync.js): the room's clock, seed and caught fish
     else if (m.t === 'pk' || m.t === 'pkg') this.onPaddock?.(m); // the shared pony paddock (#1644, src/paddock.js): only sent to players near it
     else if (m.t === 'ft') this.onFootball?.(m,false);
@@ -735,6 +735,7 @@ export class Ghosts {
   /** The game time we just set (#1774, src/timesync.js) { t: 'tm', o, p? }: a one-off event; the room rate-limits it. */
   time(msg) {
     if (!this.connected) return false;
+    this.lastMove = performance.now(); // an explicit time edit is activity, like chat/other own actions
     this.outbox.push(msg);
     this.trimOutbox();
     this.sendShot();

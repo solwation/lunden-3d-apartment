@@ -1,20 +1,13 @@
-// #1774: the client side of the shared game time (src/timesync.js): sends an offset, takes one, notice text, test URL opt-out.
-//   node --test cloudflare/timesync.test.mjs
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import { TimeSync } from '../src/timesync.js';
+// #1865: timezone-neutral client commands and authoritative apply without echo.
+import test from 'node:test';import assert from 'node:assert/strict';import {TimeSync} from '../src/timesync.js';import {worldStamp} from '../src/worldtime.js';
+const stamp=Date.UTC(2027,5,21,22,30),snapshot=(q=0,extra={})=>({v:2,q,stamp,p:0,s:0,...extra});
+const fakeDay=()=>({year:2026,month:11,date:4,hour:12,paused:false,spool:0,update(){}});
+function make(extra={}) { const day=fakeDay(),sent=[],notes=[],t=new TimeSync({day,net:{ready:()=>true,send:m=>{sent.push(m);return true;},id:()=> 'own'},notice:x=>notes.push(x),...extra});return {day,sent,notes,t}; }
+test('explicit clock/calendar command uses world fields, not client epoch or timezone; receive never echoes',()=>{const a=make({now:()=>-7*864e5}),b=make({now:()=>9*864e5});a.t.receive(snapshot());b.t.receive(snapshot());assert.equal(a.day.hour,22.5);assert.equal(a.day.sharedTime,true);assert.equal(b.day.hour,22.5);a.day.hour=8;a.day.date=22;assert(a.t.local());assert.deepEqual(a.sent[0],{t:'tm',v:2,q:0,k:'set',stamp:Date.UTC(2027,5,22,8),p:0,s:0});b.t.receive({...a.sent[0],q:1,i:'other'},{name:'Alma'});assert.equal(worldStamp(b.day),a.sent[0].stamp);assert.equal(b.notes.at(-1),'Alma ställde klockan till 08:00 den 22/6');assert.deepEqual(b.sent,[]);});
+test('paused/spooled snapshot, same-revision reconnect, explicit Nu and stale correction keep one authority',()=>{const a=make();a.t.receive(snapshot(2,{p:1,s:-1}));assert(a.day.paused);assert.equal(a.day.spool,-1);a.t.receive(snapshot(2,{stamp:stamp-5400000,p:1,s:-1}));assert.equal(worldStamp(a.day),stamp-5400000,'silent welcome reanchors same revision');assert(a.t.local('now'));assert.deepEqual(a.sent[0],{t:'tm',v:2,q:2,k:'now'});a.t.receive(snapshot(3,{why:'stale'}));assert.equal(a.t.q,3);assert.equal(a.sent.length,1,'refusal is not echoed');assert.match(a.notes.at(-1),/försök igen/);a.t.receive(snapshot(3,{i:'own'}),{name:'own'});assert.equal(a.sent.length,1);});
+test('legacy Worker cannot receive new writes; explicit local fixtures neither send nor take',()=>{const a=make();a.t.receive(snapshot());a.t.welcome();a.t.receive({o:123});assert.equal(a.t.local(),false);assert.equal(a.sent.length,0);const b=make({disabled:true});b.t.receive(snapshot());assert.equal(b.day.hour,12);assert.equal(b.t.local(),false);assert.equal(b.sent.length,0);});
+test('rapid user edits coalesce last intent without network receive triggering a send',()=>{let now=0;const a=make({now:()=>now});a.t.receive(snapshot());a.t.local();a.day.hour=9;assert.equal(a.t.local(),false);assert.equal(a.sent.length,1);a.t.receive(snapshot(1,{i:'own'}));assert.equal(a.sent.length,1);clearTimeout(a.t.timer);a.t.timer=0;now=300;a.t.flush();assert.equal(a.sent.length,2);assert.equal(a.sent[1].stamp,Date.UTC(2027,5,21,9));assert.equal(a.sent[1].q,1);});
 
-const fakeDay = (stamp) => { const d = { paused: false, spool: 0, realAt: 0, date: 0, month: 0, hour: 0, update() {}, get stamp() { return this.s; }, setStamp(ms) { this.s = ms; const t = new Date(ms); Object.assign(this, { date: t.getDate(), month: t.getMonth() + 1, hour: t.getHours() + t.getMinutes() / 60 }); } }; d.setStamp(stamp); return d; };
-test('local sends the offset, receive applies it, notice names the setter and the time', () => {
-  const now = new Date(2026, 10, 1, 12).getTime(), sent = [], notes = [];
-  const mk = (day, extra = {}) => new TimeSync({ day, net: { ready: () => true, send: (m) => sent.push(m) }, notice: (t) => notes.push(t), now: () => now, ...extra });
-  const a = fakeDay(new Date(2026, 10, 1, 22).getTime()), ta = mk(a);
-  assert.ok(ta.local()); assert.deepEqual(sent.at(-1), { t: 'tm', o: 10 * 3600e3 });
-  const b = fakeDay(now), tb = mk(b);
-  tb.receive(sent.at(-1), { name: 'Olof' });
-  assert.equal(b.hour, 22); assert.deepEqual(notes, ['Olof ställde klockan till 22:00']);
-  tb.receive({ t: 'tm', o: 36 * 3600e3, p: 1 }, { name: 'Sara' });
-  assert.ok(b.paused); assert.match(notes.at(-1), /^Sara ställde klockan till 00:00 den 3\/11$/);
-  tb.receive({ t: 'tm', o: 0 }); assert.equal(notes.length, 2, 'the welcome gives no notice'); assert.equal(b.hour, 12);
-  const off = mk(fakeDay(now), { disabled: true }); assert.equal(off.local(), false); const c = fakeDay(now); mk(c, { disabled: true }).receive({ o: 5 * 3600e3 }, { name: 'X' }); assert.equal(c.hour, 12);
-});
+test('transport queue jitter cannot send a second edit before its ACK plus minimum interval',()=>{let now=0;const a=make({now:()=>now});a.t.receive(snapshot());a.t.local();now=500;a.day.paused=true;a.t.local();assert.equal(a.sent.length,1,'prior command still in transport');now=1000;a.t.receive(snapshot(1,{i:'own'}));assert.equal(a.sent.length,1);clearTimeout(a.t.timer);a.t.timer=0;now=1299;a.t.flush();assert.equal(a.sent.length,1);clearTimeout(a.t.timer);a.t.timer=0;now=1300;a.t.flush();assert.equal(a.sent.length,2);assert.equal(a.sent[1].p,1);assert.equal(a.sent[1].q,1);});
+
+test('storage refusal releases the same UI client and permits retry at unchanged revision',()=>{let now=0;const a=make({now:()=>now});a.t.receive(snapshot());a.t.local();assert(a.t.pending);a.t.receive(snapshot(0,{why:'storage'}));assert.equal(a.t.pending,false);assert.match(a.notes.at(-1),/inte spara tiden/);assert.equal(a.sent.length,1,'error receive does not echo');now=400;a.day.hour=10;assert(a.t.local());assert.equal(a.sent.length,2);assert.equal(a.sent[1].q,0);});

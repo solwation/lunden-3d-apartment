@@ -1,0 +1,2 @@
+page.waitForFunction: Timeout 7000ms exceeded.
+    at /home/devcontainers/orkester-lunden-olw-win10-gpt6-20261104/server-clock/tools/worldtimebrowser.cjs:15:71

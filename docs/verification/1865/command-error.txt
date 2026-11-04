@@ -1,0 +1,5 @@
+page.waitForFunction: Timeout 7000ms exceeded.
+    at equal (<anonymous>:3:34)
+    at eval (<anonymous>:5:393)
+    at async hold (/home/devcontainers/orkester-lunden-olw-win10-gpt6-20261104/server-clock/tools/worldtimebrowser.cjs:7:260)
+    at async /home/devcontainers/orkester-lunden-olw-win10-gpt6-20261104/server-clock/tools/worldtimebrowser.cjs:23:601

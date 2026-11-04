@@ -1,0 +1,82 @@
+TAP version 13
+# Subtest: the Worker deploy workflow triggers on every src/ file the Worker imports
+ok 1 - the Worker deploy workflow triggers on every src/ file the Worker imports
+  ---
+  duration_ms: 22.616666
+  type: 'test'
+  ...
+# Subtest: explicit clock/calendar command uses world fields, not client epoch or timezone; receive never echoes
+ok 2 - explicit clock/calendar command uses world fields, not client epoch or timezone; receive never echoes
+  ---
+  duration_ms: 3.260195
+  type: 'test'
+  ...
+# Subtest: paused/spooled snapshot, same-revision reconnect, explicit Nu and stale correction keep one authority
+ok 3 - paused/spooled snapshot, same-revision reconnect, explicit Nu and stale correction keep one authority
+  ---
+  duration_ms: 4.804793
+  type: 'test'
+  ...
+# Subtest: legacy Worker cannot receive new writes; explicit local fixtures neither send nor take
+ok 4 - legacy Worker cannot receive new writes; explicit local fixtures neither send nor take
+  ---
+  duration_ms: 0.431799
+  type: 'test'
+  ...
+# Subtest: rapid user edits coalesce last intent without network receive triggering a send
+ok 5 - rapid user edits coalesce last intent without network receive triggering a send
+  ---
+  duration_ms: 0.962698
+  type: 'test'
+  ...
+# Subtest: persistent server reference advances through empty room, restore, pause and spool
+ok 6 - persistent server reference advances through empty room, restore, pause and spool
+  ---
+  duration_ms: 6.57569
+  type: 'test'
+  ...
+# Subtest: validated revisions, rate, range and serialized persistence protect canonical state
+ok 7 - validated revisions, rate, range and serialized persistence protect canonical state
+  ---
+  duration_ms: 1.674998
+  type: 'test'
+  ...
+# Subtest: explicit Nu uses server Lund time and calendar serialization ignores client timezone
+ok 8 - explicit Nu uses server Lund time and calendar serialization ignores client timezone
+  ---
+  duration_ms: 410.541589
+  type: 'test'
+  ...
+# Subtest: failed persistence publishes no new clock, then the same revision can recover
+ok 9 - failed persistence publishes no new clock, then the same revision can recover
+  ---
+  duration_ms: 3.494795
+  type: 'test'
+  ...
+# Subtest: valid forms
+ok 10 - valid forms
+  ---
+  duration_ms: 1.914197
+  type: 'test'
+  ...
+# Subtest: invalid forms
+ok 11 - invalid forms
+  ---
+  duration_ms: 0.423399
+  type: 'test'
+  ...
+# Subtest: preview
+ok 12 - preview
+  ---
+  duration_ms: 1.461297
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 640.245348

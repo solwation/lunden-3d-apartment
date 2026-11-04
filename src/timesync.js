@@ -1,41 +1,36 @@
-// The game time and date shared with the other players in the room (#1774). "Logged in" = connected to the shared players' room (the
-// room is the only account model there is: anybody connected, named or Anonym, is in it; offline / solo play sends and receives nothing).
-// Whoever sets the clock (typed time, spool let go, play/pause, "Nu"), picks a date on the calendar, sets the game time for everybody:
-// { t: 'tm', o, p? } (cloudflare/roomtime.js has the protocol): o = game time minus our real clock in ms, p = 1 when paused. The room
-// keeps it in memory, tells late joiners in the welcome and is back on real time when empty.
-// (no imports: tested with node --test without three.js)
-const formatHour = (hour) => { const t = Math.floor((((hour % 24) + 24) % 24) * 60); return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`; }; // = daycycle.js formatHour
-
-const SYNC_EVERY = 300; // ms between two messages (the room drops a second one within 250 ms, cloudflare/roomtime.js)
-
+// #1865: explicit clock/calendar/cheat edits share a server-owned persistent world calendar.
+import { WORLD_TIME, worldStamp, setWorldStamp } from './worldtime.js';
+const formatHour = hour => { const t = Math.floor((((hour % 24) + 24) % 24) * 60); return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`; };
 export class TimeSync {
-  /** day: DayCycle; net: { ready(), send(msg) }; notice(text); disabled: a test URL (?time ?month ?day ?year ?freeze ?notimesync) neither sends nor takes. */
-  constructor({ day, net, notice = () => {}, disabled = false, now = () => Date.now(), onApply = () => {} }) { Object.assign(this, { day, net, notice, disabled, now, onApply, sentAt: -Infinity, timer: 0 }); }
-
-  /** Our game time was just changed by us: tell the room. */
-  local() {
+  constructor({ day, net, notice = () => {}, disabled = false, now = () => performance.now(), onApply = () => {} }) { Object.assign(this, { day, net, notice, disabled, now, onApply, sentAt: -Infinity, timer: 0, queued: null, q: -1, capable: false, pending: false }); }
+  welcome() { clearTimeout(this.timer); this.timer = 0; this.queued = null; this.capable = false; this.q = -1; this.pending = false; }
+  /** Called only by an explicit user time edit; never by welcome, receive or ordinary entry. */
+  local(kind = 'set') {
     if (this.disabled || !this.net?.ready()) return false;
-    const wait = this.sentAt + SYNC_EVERY - this.now();
-    if (wait > 0) { // held keys / paging change it faster than the room takes it: the last value goes out when the pause is over
-      if (!this.timer) this.timer = setTimeout(() => { this.timer = 0; this.local(); }, wait);
-      return false;
-    }
-    this.sentAt = this.now();
-    const d = this.day;
-    return this.net.send({ t: 'tm', o: Math.round(d.stamp - this.now()), ...(d.paused ? { p: 1 } : {}) });
+    if (!this.capable) { this.notice('Gemensam klocka väntar på serveruppdatering – försök igen efter återanslutning'); return false; }
+    this.queued = kind === 'now' ? { k: 'now' } : { k: 'set', stamp: worldStamp(this.day), p: this.day.paused ? 1 : 0, s: Math.sign(this.day.spool) };
+    return this.flush();
   }
-
-  /** The room's time (a message, or the welcome's { o, p? }); `who`: the ghost that set it (null = the welcome, no notice). */
+  flush() {
+    if (!this.queued || this.disabled || !this.net?.ready()) { this.queued = null; return false; }
+    if (this.pending) return false; // wait for the prior server ACK before the next control enters Ghosts' outbox
+    const wait = this.sentAt + WORLD_TIME.clientEvery - this.now();
+    if (wait > 0) { if (!this.timer) this.timer = setTimeout(() => { this.timer = 0; this.flush(); }, wait); return false; }
+    const cmd = this.queued; this.queued = null; this.sentAt = this.now();
+    this.pending = true;
+    const sent = this.net.send({ t: 'tm', v: WORLD_TIME.version, q: this.q, ...cmd });
+    if (!sent) this.pending = false; return sent;
+  }
   receive(m, who = null) {
-    if (this.disabled || !Number.isSafeInteger(m?.o)) return;
+    if (this.disabled || m?.v !== WORLD_TIME.version || !Number.isSafeInteger(m.q) || m.q < this.q || !Number.isSafeInteger(m.stamp) || ![0, 1].includes(m.p) || ![-1, 0, 1].includes(m.s)) return;
+    this.capable = true;
+    if (m.why || (m.i && m.i === this.net.id?.())) { this.pending = false; this.sentAt = this.now(); } // server ACK anchors rate despite transport batching
+    if (m.q === this.q && who && !m.why) return; // duplicate event; a silent reconnect welcome still reanchors elapsed time
+    this.q = m.q;
     const d = this.day, was = d.date + '/' + d.month;
-    d.setStamp(this.now() + m.o);
-    Object.assign(d, { paused: m.p === 1, spool: 0, realAt: this.now() });
-    d.update(0);
-    this.onApply();
-    if (who) {
-      const name = who.name || 'Någon';
-      this.notice(`${name} ställde klockan till ${formatHour(d.hour)}${was === d.date + '/' + d.month ? '' : ` den ${d.date}/${d.month}`}`);
-    }
+    setWorldStamp(d, m.stamp); Object.assign(d, { paused: m.p === 1, spool: m.s, sharedTime: true, realAt: Date.now() }); d.update(0); this.onApply();
+    if (m.why) this.notice(m.why === 'storage' ? 'Servern kunde inte spara tiden – försök igen' : m.why === 'range' ? 'Datumet ligger utanför den gemensamma klockans intervall' : 'Tiden hann uppdateras – försök igen');
+    else if (who && m.i !== this.net.id?.()) this.notice(`${who.name || 'Någon'} ställde klockan till ${formatHour(d.hour)}${was === d.date + '/' + d.month ? '' : ` den ${d.date}/${d.month}`}`);
+    if (this.queued) this.flush();
   }
 }

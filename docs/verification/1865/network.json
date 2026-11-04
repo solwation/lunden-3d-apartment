@@ -1,0 +1,47 @@
+{
+  "checks": [
+    "welcomes never emit local time",
+    "explicit date/time/pause ACK reaches both clients",
+    "reconnect restores canonical paused date without echo",
+    "late client receives elapsed shared spool state",
+    "running timeline advances through empty room",
+    "Nu is selected by server, not zero/client timestamp"
+  ],
+  "sends": 4,
+  "maxBytes": 66,
+  "sent": [
+    {
+      "t": "tm",
+      "v": 2,
+      "q": 4,
+      "k": "set",
+      "stamp": 1813617000000,
+      "p": 1,
+      "s": 0
+    },
+    {
+      "t": "tm",
+      "v": 2,
+      "q": 5,
+      "k": "set",
+      "stamp": 1813617000000,
+      "p": 0,
+      "s": 1
+    },
+    {
+      "t": "tm",
+      "v": 2,
+      "q": 6,
+      "k": "set",
+      "stamp": 1813617000000,
+      "p": 0,
+      "s": 0
+    },
+    {
+      "t": "tm",
+      "v": 2,
+      "q": 7,
+      "k": "now"
+    }
+  ]
+}

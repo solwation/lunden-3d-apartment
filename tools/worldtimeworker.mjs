@@ -1,0 +1,14 @@
+// #1865: real local Worker sockets and production TimeSync; no browser/world bootstrap.
+import assert from 'node:assert/strict';import {TimeSync} from '../src/timesync.js';import {setWorldStamp,worldStamp} from '../src/worldtime.js';
+const base=process.argv[2]||'ws://localhost:8956',clients=[],checks=[],sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function wait(fn){const end=Date.now()+5000;while(!fn()){if(Date.now()>end)throw Error('time state timeout');await sleep(20);}}
+async function connect(c){if(!c){c={day:{year:2026,month:1,date:1,hour:0,paused:false,spool:0,update(){}},sent:[],notes:[],mono:0,connected:false,id:null};c.sync=new TimeSync({day:c.day,now:()=>c.mono,net:{ready:()=>c.connected,id:()=>c.id,send:m=>{c.sent.push(m);c.ws.send(JSON.stringify(m));return true;}},notice:t=>c.notes.push(t)});clients.push(c);}c.ws=new WebSocket(base+'/players?n=Timeline%20peer');c.ws.onmessage=e=>{if(e.data==='q')return;const m=JSON.parse(e.data);if(m.t==='w'){c.id=m.i;c.connected=true;c.sync.welcome();c.sync.receive(m.tm);}else if(m.t==='tm')c.sync.receive(m,m.i===c.id?null:{name:'Peer'});};await wait(()=>c.connected&&c.sync.capable);return c;}
+async function edit(c,stamp,p=0,s=0,kind='set'){await sleep(350);c.mono+=1000;setWorldStamp(c.day,stamp);c.day.paused=!!p;c.day.spool=s;const q=c.sync.q;assert(c.sync.local(kind));await wait(()=>c.sync.q>q);return c.sync.q;}
+try{const a=await connect(),b=await connect();assert.equal(a.sent.length+b.sent.length,0);checks.push('welcomes never emit local time');
+ const stamp=Date.UTC(2027,5,21,22,30);await edit(a,stamp,1);await wait(()=>b.sync.q===a.sync.q);assert.equal(worldStamp(b.day),stamp);assert(b.day.paused);checks.push('explicit date/time/pause ACK reaches both clients');
+ a.ws.close();a.connected=false;await connect(a);assert.equal(worldStamp(a.day),stamp);assert(a.day.paused);assert.equal(a.sent.length,1);checks.push('reconnect restores canonical paused date without echo');
+ await edit(b,stamp,0,1);await sleep(400);const late=await connect();assert.equal(late.day.spool,1);assert(worldStamp(late.day)>stamp+1000000);checks.push('late client receives elapsed shared spool state');
+ await edit(b,stamp,0,0);for(const c of clients){c.ws.close();c.connected=false;}await sleep(650);const empty=await connect();assert(worldStamp(empty.day)>=stamp+500);checks.push('running timeline advances through empty room');
+ await edit(empty,0,0,0,'now');const target=worldStamp(empty.day);assert(Math.abs(target-Date.now())<3*3600e3);checks.push('Nu is selected by server, not zero/client timestamp');
+ const sent=clients.flatMap(c=>c.sent);assert.equal(sent.length,4);assert(sent.every(m=>JSON.stringify(m).length<160));console.log(JSON.stringify({checks,sends:sent.length,maxBytes:Math.max(...sent.map(m=>JSON.stringify(m).length)),sent},null,2));
+}finally{for(const c of clients)c.ws.close();}

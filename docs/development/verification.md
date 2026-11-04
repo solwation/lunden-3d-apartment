@@ -9074,3 +9074,12 @@ turn/result/score/replay contracts. With `node --experimental-default-type=modul
 BouleClient against the true local HTTP/WebSocket Worker. `tools/boulenoticebrowser.cjs` holds one real app
 and local Worker peer for the old-receive/new-handler HUD comparison; it does not launch another world.
 [Revision-bound evidence and limitations](../verification/1863/README.md).
+
+### Persistent authoritative clock (#1865)
+
+Model/range/persistence/TZ: `node --experimental-default-type=module --test cloudflare/worldtime.test.mjs cloudflare/timesync.test.mjs tools/clockinputtest.mjs cloudflare/deploypaths.test.mjs`.
+Use the updated PlayerRoom time/chat-storage cases for real Room/welcome/hibernation.
+`tools/worldtimeworker.mjs ws://localhost:8956` tests real local HTTP/WebSockets.
+`tools/worldtimebrowser.cjs` uses one full app and the renderer-free production UI peer
+`worldtimepeer.html`; `worldtimerecover.cjs` resumes the held Page after scoped corrections.
+[Exact source phases, two inspected panel images, send counts and limits](../verification/1865/README.md).

@@ -220,7 +220,7 @@ export class DayCycle {
     const now = Date.now(), real = Math.max(0, (now - this.realAt) / 1000);
     this.realAt = now;
     const rate = this.spool ? this.spool * DAY.spool : this.paused ? 0 : 24 / (DAY.minutes * 60);
-    const h = this.hour + (this.spool || this.paused ? dt : Math.max(dt, real)) * rate;
+    const h = this.hour + (this.sharedTime ? real : this.spool || this.paused ? dt : Math.max(dt, real)) * rate;
     if (h >= 24 || h < 0) this.addDays(Math.floor(h / 24)); // midnight: the next / previous day (or more after a long sleep)
     this.hour = ((h % 24) + 24) % 24;
     sunDirection(this.hour, this.doy, this.sunDir);

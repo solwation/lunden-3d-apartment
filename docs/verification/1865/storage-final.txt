@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: failed persistence publishes no new clock, then the same revision can recover
+ok 1 - failed persistence publishes no new clock, then the same revision can recover
+  ---
+  duration_ms: 3.106501
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 105.036943
