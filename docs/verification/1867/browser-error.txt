@@ -1,0 +1,20 @@
+locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#start-mouse')[22m
+[2m    - locator resolved to <button class="go" id="start-mouse">Mus & tangentbord</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not visible[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not visible[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    55 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is not visible[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+
+    at /home/devcontainers/orkester-lunden-olw-win10-gpt6-20261104/player-talk/tools/conversationbrowser.cjs:6:1055

@@ -1,0 +1,607 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "main Prata preserves ordinary hug and eligible kiss",
+      "data": [
+        {
+          "id": "talk",
+          "label": "prata med Olof test"
+        },
+        {
+          "id": "hug",
+          "label": "krama Olof test"
+        },
+        {
+          "id": "kiss",
+          "label": "pussa Olof test"
+        }
+      ]
+    },
+    {
+      "ok": true,
+      "label": "main Prata preserves ordinary hug and eligible kiss",
+      "data": [
+        {
+          "id": "talk",
+          "label": "prata med Olof test"
+        },
+        {
+          "id": "hug",
+          "label": "krama Olof test"
+        },
+        {
+          "id": "kiss",
+          "label": "pussa Olof test"
+        }
+      ]
+    },
+    {
+      "ok": true,
+      "label": "native E → Prata → existing Hälsa, no embrace/upgrade",
+      "data": {
+        "menu": [
+          {
+            "id": "greet",
+            "label": "hälsa på Olof test"
+          },
+          {
+            "id": "conversation",
+            "label": "konversera"
+          },
+          {
+            "id": "talk-back",
+            "label": "tillbaka"
+          }
+        ],
+        "page": "talk",
+        "pending": false,
+        "incoming": null,
+        "lines": [],
+        "events": [],
+        "greets": 1,
+        "speechA": [
+          {
+            "text": "Hej Olof test!",
+            "lang": "sv-SE",
+            "pitch": 1,
+            "rate": 1.0499999523162842
+          }
+        ],
+        "speechB": [
+          {
+            "text": "Hej Olof test!",
+            "lang": "sv-SE",
+            "pitch": 1.100000023841858,
+            "rate": 1.0499999523162842
+          }
+        ],
+        "wireA": [
+          {
+            "t": "g",
+            "to": "f225619b",
+            "k": 0
+          }
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "label": "native conversation submenu exposes all four fixed choices",
+      "data": [
+        {
+          "id": "flirt",
+          "label": "flörta"
+        },
+        {
+          "id": "smalltalk",
+          "label": "kallprata"
+        },
+        {
+          "id": "joke",
+          "label": "skämta"
+        },
+        {
+          "id": "bye",
+          "label": "säg hejdå"
+        },
+        {
+          "id": "talk-back",
+          "label": "tillbaka"
+        }
+      ]
+    },
+    {
+      "ok": true,
+      "label": "native Backspace returns through both submenu levels"
+    },
+    {
+      "ok": true,
+      "label": "accepted conversation uses the same actual Web Speech properties as existing greeting",
+      "data": {
+        "menu": [
+          {
+            "id": "flirt",
+            "label": "flörta"
+          },
+          {
+            "id": "smalltalk",
+            "label": "kallprata"
+          },
+          {
+            "id": "joke",
+            "label": "skämta"
+          },
+          {
+            "id": "bye",
+            "label": "säg hejdå"
+          },
+          {
+            "id": "talk-back",
+            "label": "tillbaka"
+          }
+        ],
+        "page": "conversation",
+        "pending": false,
+        "incoming": null,
+        "lines": [
+          "Vad glad jag blir av att se dig!"
+        ],
+        "events": [
+          {
+            "t": "cv",
+            "v": 1,
+            "i": "7070506a",
+            "to": "f225619b",
+            "id": "7070506a:1",
+            "k": "flirt",
+            "ttl": 20000
+          }
+        ],
+        "greets": 1,
+        "speechA": [
+          {
+            "text": "Hej Olof test!",
+            "lang": "sv-SE",
+            "pitch": 1,
+            "rate": 1.0499999523162842
+          },
+          {
+            "text": "Vad glad jag blir av att se dig!",
+            "lang": "sv-SE",
+            "pitch": 1,
+            "rate": 1.0499999523162842
+          }
+        ],
+        "speechB": [
+          {
+            "text": "Hej Olof test!",
+            "lang": "sv-SE",
+            "pitch": 1.100000023841858,
+            "rate": 1.0499999523162842
+          },
+          {
+            "text": "Vad glad jag blir av att se dig!",
+            "lang": "sv-SE",
+            "pitch": 1.100000023841858,
+            "rate": 1.0499999523162842
+          }
+        ],
+        "wireA": [
+          {
+            "t": "g",
+            "to": "f225619b",
+            "k": 0
+          },
+          {
+            "t": "cv",
+            "v": 1,
+            "to": "f225619b",
+            "q": 1,
+            "k": "flirt"
+          }
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "label": "real peer answers the directed prompt with server-selected context",
+      "data": {
+        "menu": [
+          {
+            "id": "flirt",
+            "label": "flörta",
+            "reason": "vänta ett ögonblick"
+          },
+          {
+            "id": "smalltalk",
+            "label": "kallprata",
+            "reason": "vänta ett ögonblick"
+          },
+          {
+            "id": "joke",
+            "label": "skämta",
+            "reason": "vänta ett ögonblick"
+          },
+          {
+            "id": "bye",
+            "label": "säg hejdå",
+            "reason": "vänta ett ögonblick"
+          },
+          {
+            "id": "talk-back",
+            "label": "tillbaka"
+          }
+        ],
+        "page": "conversation",
+        "pending": false,
+        "incoming": null,
+        "lines": [
+          "Vad glad jag blir av att se dig!",
+          "Vad glad jag blir av att se dig!",
+          "Vad glad jag blir av att se dig!",
+          "Tack, vad fint sagt! Jag blir glad av att se dig också."
+        ],
+        "events": [
+          {
+            "t": "cv",
+            "v": 1,
+            "i": "7070506a",
+            "to": "f225619b",
+            "id": "7070506a:1",
+            "k": "flirt",
+            "ttl": 20000
+          },
+          {
+            "t": "cv",
+            "v": 1,
+            "i": "7070506a",
+            "to": "f225619b",
+            "id": "7070506a:2",
+            "k": "flirt",
+            "ttl": 20000
+          },
+          {
+            "t": "cv",
+            "v": 1,
+            "i": "05714493",
+            "to": "f225619b",
+            "id": "05714493:1",
+            "k": "flirt",
+            "ttl": 20000
+          },
+          {
+            "t": "cv",
+            "v": 1,
+            "i": "f225619b",
+            "to": "05714493",
+            "id": "f225619b:1",
+            "k": "reply-flirt",
+            "r": "05714493:1"
+          }
+        ],
+        "greets": 1,
+        "speechA": [
+          {
+            "text": "Hej Olof test!",
+            "lang": "sv-SE",
+            "pitch": 1,
+            "rate": 1.0499999523162842
+          },
+          {
+            "text": "Vad glad jag blir av att se dig!",
+            "lang": "sv-SE",
+            "pitch": 1,
+            "rate": 1.0499999523162842
+          },
+          {
+            "text": "Vad glad jag blir av att se dig!",
+            "lang": "sv-SE",
+            "pitch": 1,
+            "rate": 1.0499999523162842
+          },
+          {
+            "text": "Vad glad jag blir av att se dig!",
+            "lang": "sv-SE",
+            "pitch": 1,
+            "rate": 1.0499999523162842
+          },
+          {
+            "text": "Tack, vad fint sagt! Jag blir glad av att se dig också.",
+            "lang": "sv-SE",
+            "pitch": 1.100000023841858,
+            "rate": 1.0499999523162842
+          }
+        ],
+        "speechB": [
+          {
+            "text": "Hej Olof test!",
+            "lang": "sv-SE",
+            "pitch": 1.100000023841858,
+            "rate": 1.0499999523162842
+          },
+          {
+            "text": "Vad glad jag blir av att se dig!",
+            "lang": "sv-SE",
+            "pitch": 1.100000023841858,
+            "rate": 1.0499999523162842
+          },
+          {
+            "text": "Vad glad jag blir av att se dig!",
+            "lang": "sv-SE",
+            "pitch": 1.100000023841858,
+            "rate": 1.0499999523162842
+          },
+          {
+            "text": "Vad glad jag blir av att se dig!",
+            "lang": "sv-SE",
+            "pitch": 1.100000023841858,
+            "rate": 1.0499999523162842
+          },
+          {
+            "text": "Tack, vad fint sagt! Jag blir glad av att se dig också.",
+            "lang": "sv-SE",
+            "pitch": 1,
+            "rate": 1.0499999523162842
+          }
+        ],
+        "wireA": [
+          {
+            "t": "g",
+            "to": "f225619b",
+            "k": 0
+          },
+          {
+            "t": "cv",
+            "v": 1,
+            "to": "f225619b",
+            "q": 1,
+            "k": "flirt"
+          },
+          {
+            "t": "cv",
+            "v": 1,
+            "to": "f225619b",
+            "q": 2,
+            "k": "flirt"
+          },
+          {
+            "t": "cv",
+            "v": 1,
+            "to": "f225619b",
+            "q": 1,
+            "k": "flirt"
+          }
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "label": "native touch nested Tillbaka returns to Prata"
+    },
+    {
+      "ok": true,
+      "label": "mute suppresses speech, retains actual sender-avatar bubble and relevant Svara",
+      "data": {
+        "before": 5,
+        "after": 5,
+        "bubbles": [
+          "Visst är det fint här i Lunden?"
+        ],
+        "rows": [
+          "greet",
+          "conversation",
+          "reply",
+          "talk-back"
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "label": "accepted native touch Svara consumes current reply context"
+    },
+    {
+      "ok": true,
+      "label": "no page errors",
+      "data": []
+    }
+  ],
+  "errors": [],
+  "final": {
+    "menu": [
+      {
+        "id": "greet",
+        "label": "hälsa på Olof test"
+      },
+      {
+        "id": "conversation",
+        "label": "konversera"
+      },
+      {
+        "id": "talk-back",
+        "label": "tillbaka"
+      }
+    ],
+    "page": "talk",
+    "pending": false,
+    "incoming": null,
+    "lines": [
+      "Vad glad jag blir av att se dig!",
+      "Vad glad jag blir av att se dig!",
+      "Vad glad jag blir av att se dig!",
+      "Tack, vad fint sagt! Jag blir glad av att se dig också.",
+      "Visst är det fint här i Lunden?",
+      "Ja, verkligen! Det är skönt med en liten promenad."
+    ],
+    "events": [
+      {
+        "t": "cv",
+        "v": 1,
+        "i": "7070506a",
+        "to": "f225619b",
+        "id": "7070506a:1",
+        "k": "flirt",
+        "ttl": 20000
+      },
+      {
+        "t": "cv",
+        "v": 1,
+        "i": "7070506a",
+        "to": "f225619b",
+        "id": "7070506a:2",
+        "k": "flirt",
+        "ttl": 20000
+      },
+      {
+        "t": "cv",
+        "v": 1,
+        "i": "05714493",
+        "to": "f225619b",
+        "id": "05714493:1",
+        "k": "flirt",
+        "ttl": 20000
+      },
+      {
+        "t": "cv",
+        "v": 1,
+        "i": "f225619b",
+        "to": "05714493",
+        "id": "f225619b:1",
+        "k": "reply-flirt",
+        "r": "05714493:1"
+      },
+      {
+        "t": "cv",
+        "v": 1,
+        "i": "f225619b",
+        "to": "05714493",
+        "id": "f225619b:2",
+        "k": "smalltalk",
+        "ttl": 20000
+      },
+      {
+        "t": "cv",
+        "v": 1,
+        "i": "05714493",
+        "to": "f225619b",
+        "id": "05714493:2",
+        "k": "reply-smalltalk",
+        "r": "f225619b:2"
+      }
+    ],
+    "greets": 1,
+    "speechA": [
+      {
+        "text": "Hej Olof test!",
+        "lang": "sv-SE",
+        "pitch": 1,
+        "rate": 1.0499999523162842
+      },
+      {
+        "text": "Vad glad jag blir av att se dig!",
+        "lang": "sv-SE",
+        "pitch": 1,
+        "rate": 1.0499999523162842
+      },
+      {
+        "text": "Vad glad jag blir av att se dig!",
+        "lang": "sv-SE",
+        "pitch": 1,
+        "rate": 1.0499999523162842
+      },
+      {
+        "text": "Vad glad jag blir av att se dig!",
+        "lang": "sv-SE",
+        "pitch": 1,
+        "rate": 1.0499999523162842
+      },
+      {
+        "text": "Tack, vad fint sagt! Jag blir glad av att se dig också.",
+        "lang": "sv-SE",
+        "pitch": 1.100000023841858,
+        "rate": 1.0499999523162842
+      }
+    ],
+    "speechB": [
+      {
+        "text": "Hej Olof test!",
+        "lang": "sv-SE",
+        "pitch": 1.100000023841858,
+        "rate": 1.0499999523162842
+      },
+      {
+        "text": "Vad glad jag blir av att se dig!",
+        "lang": "sv-SE",
+        "pitch": 1.100000023841858,
+        "rate": 1.0499999523162842
+      },
+      {
+        "text": "Vad glad jag blir av att se dig!",
+        "lang": "sv-SE",
+        "pitch": 1.100000023841858,
+        "rate": 1.0499999523162842
+      },
+      {
+        "text": "Vad glad jag blir av att se dig!",
+        "lang": "sv-SE",
+        "pitch": 1.100000023841858,
+        "rate": 1.0499999523162842
+      },
+      {
+        "text": "Tack, vad fint sagt! Jag blir glad av att se dig också.",
+        "lang": "sv-SE",
+        "pitch": 1,
+        "rate": 1.0499999523162842
+      },
+      {
+        "text": "Visst är det fint här i Lunden?",
+        "lang": "sv-SE",
+        "pitch": 1,
+        "rate": 1.0499999523162842
+      },
+      {
+        "text": "Ja, verkligen! Det är skönt med en liten promenad.",
+        "lang": "sv-SE",
+        "pitch": 1.100000023841858,
+        "rate": 1.0499999523162842
+      }
+    ],
+    "wireA": [
+      {
+        "t": "g",
+        "to": "f225619b",
+        "k": 0
+      },
+      {
+        "t": "cv",
+        "v": 1,
+        "to": "f225619b",
+        "q": 1,
+        "k": "flirt"
+      },
+      {
+        "t": "cv",
+        "v": 1,
+        "to": "f225619b",
+        "q": 2,
+        "k": "flirt"
+      },
+      {
+        "t": "cv",
+        "v": 1,
+        "to": "f225619b",
+        "q": 1,
+        "k": "flirt"
+      },
+      {
+        "t": "cv",
+        "v": 1,
+        "to": "f225619b",
+        "q": 2,
+        "k": "reply",
+        "r": "f225619b:2"
+      }
+    ]
+  },
+  "limits": "One full main/world; second real Ghosts/Greetings/Conversation client has a renderer-free Three scene, no physical second world. Speech synthesis calls captured, not human audibility; native keyboard and touch in a touch-capable emulated browser, not a physical phone or desktop resource benchmark."
+}

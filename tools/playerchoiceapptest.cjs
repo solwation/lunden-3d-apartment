@@ -24,9 +24,12 @@ const setup=await page.evaluate(async([worker,peer])=>{const a=window.__app,G=wi
  return{kind:a.focus().focused?.kind,buttons,menuHidden:document.getElementById('choices').hidden,actionHidden:document.getElementById('action').hidden,sel:a.choices.sel};},[worker,peer]);
 await page.screenshot({path:`${out}/menu-${tag}.png`});
 const press=async label=>{if(mobile)await page.locator('#choices button',{hasText:label}).first().tap();else if(label==='E')await page.keyboard.press('e');else await page.keyboard.press(String(setup.buttons.findIndex(t=>t.includes(label))+1));};
-// E (desktop) / the Hälsa button (touch): an ordinary greeting, never a hug or kiss
-await press(mobile?'Hälsa':'E');
+// #1867: Prata contains the unchanged greeting; explicit submenu selection never hugs/kisses.
+await press(mobile?'Prata':'E');
+await page.evaluate(()=>window.C.run(2));
+if(mobile)await page.locator('#choices button',{hasText:'Hälsa'}).first().tap();else await page.keyboard.press('e');
 const greetPhase=await page.evaluate(async()=>{const {got,run,G}=window.C,{HUG,KISS}=await import('/src/config.js');await run(10);const gs=got.filter(m=>m.t==='g'&&m.i!==undefined&&m.i===G.me);return{greets:gs.filter(m=>m.k<HUG.phrase).length,embraces:gs.filter(m=>m.k===HUG.phrase||m.k===KISS.phrase).length,line:document.querySelector('.say.mine')?.textContent};});
+if(mobile)await page.locator('#choices button',{hasText:'Tillbaka'}).first().tap();else await page.keyboard.press('Backspace');
 await page.evaluate(async()=>{const {aim,run,sleep}=window.C;await sleep(3200);aim();await run(1);aim();});
 await press('Krama');
 const hugPhase=await page.evaluate(async()=>{const {got,run,G,g,frame,a}=window.C,{HUG}=await import('/src/config.js');await run(6);const hugs=got.filter(m=>m.t==='g'&&m.k===HUG.phrase&&m.id);const posed=!!g.hug&&!!G.myGhost?.hug;
@@ -42,7 +45,7 @@ if(setup.buttons.length===3){await page.evaluate(async()=>{const {aim,run,sleep}
 await page.evaluate(()=>window.C.ws.close());
 const res={me,peer,mobile,setup,greetPhase,hugPhase,restPhase,kissPhase,errors};fs.writeFileSync(`${out}/result-${tag}.json`,JSON.stringify(res,null,2));console.log(JSON.stringify(res));
 const pair=/sarah/i.test(me)!==/sarah/i.test(peer)&&/olof/i.test(me+peer)&&!/sarah.*olof|olof.*sarah/i.test(me)&&!/sarah.*olof|olof.*sarah/i.test(peer);
-const want=mobile?(pair?['Hälsa','Krama','Pussa']:['Hälsa','Krama']):(pair?['Hälsa','Krama','Pussa']:['Hälsa','Krama']);
+const want=mobile?(pair?['Prata','Krama','Pussa']:['Prata','Krama']):(pair?['Prata','Krama','Pussa']:['Prata','Krama']);
 const ok=setup.kind==='ghost'&&!setup.menuHidden&&(mobile?setup.actionHidden:true)&&setup.sel===0&&setup.buttons.length===want.length&&setup.buttons.every((t,i)=>t.includes(want[i]))&&greetPhase.greets===1&&greetPhase.embraces===0&&hugPhase.hugs===1&&hugPhase.posed&&/Kram på dig/.test(hugPhase.line??'')&&restPhase.restored&&(!pair||(kissPhase&&kissPhase.kisses===1&&kissPhase.love===1&&kissPhase.hearts))&&!errors.length;
 console.log(ok?'ALL PASSED':'FAILED');process.exitCode=ok?0:1;
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

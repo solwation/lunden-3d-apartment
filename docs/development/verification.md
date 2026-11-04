@@ -9083,3 +9083,13 @@ Use the updated PlayerRoom time/chat-storage cases for real Room/welcome/hiberna
 `tools/worldtimebrowser.cjs` uses one full app and the renderer-free production UI peer
 `worldtimepeer.html`; `worldtimerecover.cjs` resumes the held Page after scoped corrections.
 [Exact source phases, two inspected panel images, send counts and limits](../verification/1865/README.md).
+
+### Player Prata / Konversera / Svara (#1867)
+
+`node --experimental-default-type=module --test tools/conversationtest.mjs cloudflare/conversation.test.mjs tools/hugtest.mjs tools/kisstest.mjs cloudflare/deploypaths.test.mjs`
+covers fixed IDs, menu/back/target reset, latest directed one-use/expired/wrong-person
+reply, server replay/range/weapon/restore, reviewed rate guard, no optimistic line, bounded pending and
+ACK cooldown. `tools/conversationbrowser.cjs` uses one real app and the renderer-free
+Ghosts/Greetings/Conversation peer `conversationpeer.html`; recovery uses the same held
+Page. Existing playerchoiceapptest.cjs enters Prata before Hälsa and backs out for hugs.
+[Exact source phases, two reviewed images and fixture limits](../verification/1867/README.md).

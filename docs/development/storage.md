@@ -1678,3 +1678,17 @@ The existing PlayerRoom stores one bounded `picnic` record: three fixed drink ob
 ## Optional report image snapshot (#1866)
 
 AdminReports stores the explicit screenshot selection in memory separately from own photos. Submit never calls capture. The pending UUID/author/text/image/photo snapshot is reused only when selected IDs and actual image strings still match; replacement, removal or changed cached bytes creates a new pending report. Successful PUT clears only still-matching submitted selections, preserving later text/image edits, including same-ID bytes changed in flight. Legacy chat reports omit all dialog image fields. Capture failure leaves text-only available. Existing report endpoints, limits, reportauthor, server hashing/ACK/import and ReportCapture remain unchanged. [Scoped checks and images](../verification/1866/README.md).
+
+## Fixed player conversations (#1867)
+
+`cv` version1 commands contain only known category/reply IDs, target socket ID and a
+positive sequence (`conversationwire.js`). RoomConversation validates current unarmed
+3D-near peers, 3s rate and replay; fixed text never comes from a peer. One latest directed
+20s reply context and accepted sequence live in the existing socket attachments, so
+hibernation retains the bounded context; disconnect/new identity does not carry it to
+another player. Accepted reply consumes it; unknown/expired/wrong-person/replayed replies
+produce no speech. Nearby observers see/hear accepted fixed lines, but get no Svara for
+someone else's prompt. No new persistent store, history, rights or score. The new client
+requires welcome.conversation.v1 and chains existing welcome/listener hooks. Server first
+checkpoint c9101c6b was deployed as dfc293e7 before the client: Worker41848572870, actual
+Wrangler success2026-11-04T14:33:31UTC. Root verifies the final client publication separately.

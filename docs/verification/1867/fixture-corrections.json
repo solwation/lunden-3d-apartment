@@ -1,0 +1,97 @@
+{
+  "replacedAssertions": [
+    {
+      "ok": false,
+      "label": "accepted line uses actual Greetings own/remote voice and bubble route",
+      "data": {
+        "menu": [
+          {
+            "id": "flirt",
+            "label": "flörta",
+            "reason": "vänta ett ögonblick"
+          },
+          {
+            "id": "smalltalk",
+            "label": "kallprata",
+            "reason": "vänta ett ögonblick"
+          },
+          {
+            "id": "joke",
+            "label": "skämta",
+            "reason": "vänta ett ögonblick"
+          },
+          {
+            "id": "bye",
+            "label": "säg hejdå",
+            "reason": "vänta ett ögonblick"
+          },
+          {
+            "id": "talk-back",
+            "label": "tillbaka"
+          }
+        ],
+        "page": "conversation",
+        "pending": false,
+        "incoming": null,
+        "lines": [
+          "Vad glad jag blir av att se dig!"
+        ],
+        "events": [
+          {
+            "t": "cv",
+            "v": 1,
+            "i": "7070506a",
+            "to": "f225619b",
+            "id": "7070506a:1",
+            "k": "flirt",
+            "ttl": 20000
+          }
+        ],
+        "greets": 1,
+        "speechA": [
+          {
+            "text": "Hej Olof test!",
+            "lang": "sv-SE",
+            "pitch": 1,
+            "rate": 1.0499999523162842
+          },
+          {
+            "text": "Vad glad jag blir av att se dig!",
+            "lang": "sv-SE",
+            "pitch": 1,
+            "rate": 1.0499999523162842
+          }
+        ],
+        "speechB": [
+          {
+            "text": "Hej Olof test!",
+            "lang": "sv-SE",
+            "pitch": 1.100000023841858,
+            "rate": 1.0499999523162842
+          },
+          {
+            "text": "Vad glad jag blir av att se dig!",
+            "lang": "sv-SE",
+            "pitch": 1.100000023841858,
+            "rate": 1.0499999523162842
+          }
+        ],
+        "wireA": [
+          {
+            "t": "g",
+            "to": "f225619b",
+            "k": 0
+          },
+          {
+            "t": "cv",
+            "v": 1,
+            "to": "f225619b",
+            "q": 1,
+            "k": "flirt"
+          }
+        ]
+      }
+    }
+  ],
+  "reason": "Web Speech properties are float32; compare with the existing greeting baseline, not decimal-literal equality"
+}

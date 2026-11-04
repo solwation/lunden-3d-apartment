@@ -1,0 +1,7 @@
+locator.tap: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#conversation-peer').contentFrame().locator('button[data-id=smalltalk]')[22m
+
+    at eval (<anonymous>:1:1055)
+    at async hold (/home/devcontainers/orkester-lunden-olw-win10-gpt6-20261104/player-talk/tools/conversationbrowser.cjs:5:260)
+    at async /home/devcontainers/orkester-lunden-olw-win10-gpt6-20261104/player-talk/tools/conversationbrowser.cjs:19:760

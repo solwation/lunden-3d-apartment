@@ -1,0 +1,50 @@
+{
+  "base": "9b1a19291dedafa02ca9ccc9038a0b8c181009af",
+  "serverCheckpoint": "c9101c6bfd939606144b09a286f9552b73402a4a",
+  "serverPublished": "dfc293e71114766b43f206b8ca28a09d6f2fcefc",
+  "clientUiPhase": "65170499",
+  "finalClientCooldown": "3ae91b37",
+  "source": {
+    "src/config.js": "c6aff46da1efa7d5bd48e8ca74cb324fcd182f54baa30770b04f4093ab912744",
+    "src/conversationwire.js": "06c0dc2885581360271ba1ae92664ab3756191dac81da6c41c8019962de805f3",
+    "src/conversation.js": "ff233c007cd2d5c65239348dd1bc71495892064bc527becd0987f83515028fed",
+    "src/ghosts.js": "34e8ba538274831a2cabe820bbc68c308a74635ae805daa256ac15cadcd79291",
+    "src/main.js": "86783d2010ca8efe8b00e5cdf2c16185f402b8aed96d4b9a57c8db5a9f28291c",
+    "src/greet.js": "e41e534349ef779f9bba221ad110026f92e968d7f47490389098073427349b55",
+    "src/audio.js": "23839c4bcad85a867aaf516a14daa62d8a34dfef27c6423c78849ba0039a1726",
+    "cloudflare/roomconversation.js": "1e203782abaa00d061b55e21e0abb96446b289e8cc82d8a8dd5eeee9087d673d",
+    "cloudflare/players.js": "42d5ceb1a2fc7b5c6bbf9804300d7beb2246470e385d76ace0ed929e558e16fa",
+    ".github/workflows/cloud.yml": "8b831a61890f060d1220cae682bc38c303f1f2b52ea15483ce887ae1200ab5a2",
+    "cloudflare/conversation.test.mjs": "54217e84cb01050819daed7828a6679486960823456189a7c98bf17369b80b99",
+    "tools/conversationtest.mjs": "610c575792e8100edd638ce672da7e1b02d053e939d068886da6b6cf2be86ec5",
+    "tools/conversationbrowser.cjs": "e4294dda029f05de641707e8b1b67c9c67ff384b6150ff0870e0cb7fea5d5030",
+    "tools/conversationpeer.html": "89ed81ade3b2c62a1a4eec03f3e249942a746cbf00ed93700ba5d6ce7fb6dec4",
+    "tools/conversationrecover.cjs": "06bac9a2736cc28e25597c7757431802333c1effbaec56463a7bc471aa41b83a",
+    "tools/playerchoiceapptest.cjs": "90bf1009adea05b381c9d67e7986478ca524b910a60ce10954bc443c66eeba90"
+  },
+  "serverStagedSource": {
+    "src/config.js": "230b7a10e00daabd03be5a727b1232623762ee0602499b6edaf96402c80ae5c3",
+    "src/conversationwire.js": "06c0dc2885581360271ba1ae92664ab3756191dac81da6c41c8019962de805f3",
+    "cloudflare/roomconversation.js": "1e203782abaa00d061b55e21e0abb96446b289e8cc82d8a8dd5eeee9087d673d",
+    "cloudflare/players.js": "42d5ceb1a2fc7b5c6bbf9804300d7beb2246470e385d76ace0ed929e558e16fa",
+    ".github/workflows/cloud.yml": "8b831a61890f060d1220cae682bc38c303f1f2b52ea15483ce887ae1200ab5a2"
+  },
+  "evidenceSha256": {
+    "docs/verification/1867/browser.json": "02148f4a2dbbf70208a23d13b940c48448307d359f3585fd497853e20f82f807",
+    "docs/verification/1867/conversation-menu.png": "f2c72eabbc9d1b50e2ae2df20b145b70377fb8627389e6617ec9e5460bc58cc1",
+    "docs/verification/1867/reply-and-line.png": "c628b9c35ce49e9ee36aed5bcf10589a74b05a22aabde0297d40a653c65eac82",
+    "docs/verification/1867/browser-error.txt": "faa1a008b6780a001670d8b54263a4d8c015ac68f99939b1f03aa05b758e7dc6",
+    "docs/verification/1867/server.txt": "d7ad077e5358fc5e5558037b79c788a38e4f8d35f67fd6027e3f0c0cb0b1a15d",
+    "docs/verification/1867/client-final.txt": "88c727f3d9acb0067671a3c4f8f1641e9f1e6ab2da81f717909d100f1e718363",
+    "docs/verification/1867/README.md": "0aba86dfeed7d79cb9645121d389689a659685f026f8ac6d5c62728c333f0563",
+    "docs/verification/1867/fixture-corrections.json": "8058f4bb40a719c4c76e85d437aded90dc7af5d0e4fec60d2c67e401647ee836",
+    "docs/verification/1867/browser-driver.txt": "bda3a9233d0c97b93eb3a5575e0795b0b4fe46432a44dbd790948bb3ea3e3a69",
+    "docs/verification/1867/regression.txt": "ddd598aa1ea81a10d002f08acb4f77b1782be3ba7618d615e9e6bab8ce7e8903",
+    "docs/verification/1867/image-state.json": "6ea41c470fad1c51240c5635e36823953c7984af6c20d6396b60fbc07a0546f1",
+    "docs/verification/1867/checkpoint.json": "ae631d846453c39b62b7dc4c31d284595de0856d665ba51c3e37a0a49418337e",
+    "docs/verification/1867/command-error.txt": "d5bfcd32f68a8dcdf1fc71aa18138e748987d6bd177fec1f0a272d84d5d24961",
+    "docs/verification/1867/command.json": "6ea41c470fad1c51240c5635e36823953c7984af6c20d6396b60fbc07a0546f1",
+    "docs/verification/1867/fixture-error.png": "e0d4971e0f05ecb6e1b4746ecc592148b5cba7afc3211e3bcfe59c0bff4cd3e8"
+  },
+  "limits": "Valid UI/menu/voice path reused after a client-only cooldown ACK-anchor correction; final client group separately passed. No protocol change after server staging."
+}

@@ -1,0 +1,15 @@
+{
+  "phase": "bootstrap",
+  "checks": [],
+  "errors": [],
+  "snap": {
+    "conversation": {
+      "page": "main",
+      "cap": false,
+      "pending": null,
+      "incoming": null
+    },
+    "wire": [],
+    "body": "KV. LUNDEN / L1007\nGå runt i lägenheten\n\nByggd direkt från den måttsatta planritningen: entréplan och övre plan, förbundna med trappan.\n\nSPELARE\nSarah test\nByt spelare\n\nAndra spelare ser att du är online och ser din avatar, ditt namn (eller ”Anonym”) och din poäng.\n\nBörja\n\nOm musiken\n\nVäderdata: Open-Meteo.com (CC BY 4.0)\n\n👥\nSPELAR JUST NU\nSarah test (0p)\nNAVIGERING\nGå till startplatsen\nFlytta till entrén utanför dörren\n🚪\nTopplistan\nSe de bästa resultaten och topplistan\n🏆\nMedaljer\nAchievements med nivåer och bonuspoäng\n🏅\nInställningar\nChatt, kontroller, återställning och data\n⚙\nAPP & FÖNSTER\nAvsluta\nStäng webbläsarfliken eller fönstret\n✕"
+  }
+}

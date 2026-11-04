@@ -1,0 +1,85 @@
+{
+  "incoming": {
+    "from": "f225619b",
+    "id": "f225619b:4",
+    "kind": "smalltalk",
+    "until": 1348411.3000000007
+  },
+  "focus": "ghost",
+  "rows": [
+    "greet",
+    "conversation",
+    "reply",
+    "talk-back"
+  ],
+  "bubbles": [
+    {
+      "text": "Visst är det fint här i Lunden?",
+      "visibility": "visible",
+      "transform": "translate(500px, 176.276px) translate(-50%, -100%)"
+    },
+    {
+      "text": "Visst är det fint här i Lunden?",
+      "visibility": "visible",
+      "transform": "translate(500px, 176.276px) translate(-50%, -100%)"
+    }
+  ],
+  "camera": [
+    -28.71,
+    1.62,
+    22.7
+  ],
+  "rotation": [
+    0.10378552843167603,
+    0.12659212727997282,
+    0,
+    "YXZ"
+  ],
+  "peer": [
+    -28.85,
+    0,
+    21.6
+  ],
+  "peerHead": [
+    -28.85,
+    1.7355,
+    21.6
+  ],
+  "peerVisible": true,
+  "wire": [
+    {
+      "t": "g",
+      "to": "f225619b",
+      "k": 0
+    },
+    {
+      "t": "cv",
+      "v": 1,
+      "to": "f225619b",
+      "q": 1,
+      "k": "flirt"
+    },
+    {
+      "t": "cv",
+      "v": 1,
+      "to": "f225619b",
+      "q": 2,
+      "k": "flirt"
+    },
+    {
+      "t": "cv",
+      "v": 1,
+      "to": "f225619b",
+      "q": 1,
+      "k": "flirt"
+    },
+    {
+      "t": "cv",
+      "v": 1,
+      "to": "f225619b",
+      "q": 2,
+      "k": "reply",
+      "r": "f225619b:2"
+    }
+  ]
+}

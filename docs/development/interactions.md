@@ -1973,7 +1973,19 @@ This is personal gameplay, excluded from the public downstream. Tests: `tools/ki
 
 ## Greet, hug or kiss another player (#1405)
 
-Aiming at another player opens the existing choice menu (`showChoices`, the same rows as life-sim things and lamps): `Ghost.door.options()` asks `Ghosts.choices(g)`, which lists `playerChoices(me, them)` from `src/hug.js`: **Hälsa** and **Krama** for every pair, plus **Pussa** for a complementary Sarah/Olof pair (the unchanged `kissPair` rule from #1398: Sarah/Sarah, Olof/Olof and names containing both words get no kiss row). The menu always starts on Hälsa, so E / a click without moving the mark greets; 1–3, the wheel and the touch buttons (short labels Hälsa/Krama/Pussa, `shortButtonLabel`) pick the others. A row that is out of range stays listed with the reason “gå närmare”, so rows never shift under the mark. `Ghosts.greet(g, kind)` sends only the chosen kind; nothing upgrades a greeting automatically. Kiss/hug rows set `noReach` (the hand does not reach out; the embrace waits for the room).
+Aiming at another player opens the existing choice menu. #1867 places the unchanged **Hälsa**
+inside **Prata**, beside **Konversera** (Flörta, Kallprata, Skämta, Säg hejdå). A relevant
+recent directed prompt also offers **Svara** in Prata; fixed replies use that exact sender
+and context once. Tillbaka rows and Backspace return through the submenu levels; touch
+uses the ordinary bounded scroll band (four choices plus a scrollable back row). Changing
+or losing the target resets the page. Krama and eligible Sarah/Olof Pussa stay in the
+main menu; the existing name pair/range/embrace behavior and greeting points are unchanged.
+New fixed lines have no points and use the same Greetings.say/sayMine voice, mute, mouth
+and over-avatar text paths. Main's current focus/reach/wall/weapon checks gate new sends;
+stale rows cannot target a different player. Known IDs, sequence/rate/range and one-use
+reply context are independently checked by the server. Accepted receipts alone produce
+conversation speech; the client bounds pending waits and ACK-anchors its cooldown.
+[Scoped evidence and limits](../verification/1867/README.md).
 
 A hug uses the reserved greeting index `HUG.phrase` (14; never chosen at random, below the Worker's `greetPhrases`). The Worker (`cloudflare/players.js`) accepts it for any two connected unarmed players whose last known feet are within `HUG.serverRange` (3D, so another floor is refused), under the ordinary greeting budget, the kiss's monotonic `q` replay check and one busy window per partner that kisses and hugs share (no overlapping embraces). Accepted hugs are echoed to everybody, initiator included, with a stable `id`/`at`; old servers' unconfirmed packets are ignored. `Ghosts.startHug` checks participants and range, shares the kiss receipt set and gives both avatars (remote ghosts and the own mirror image) `hug = { start, toward }`. `Ghost.poseHug` turns the drawn figure to the partner, moves it half the remaining distance in (to `HUG.gap` between body centres; the feet's network positions and the camera stay) and blends both arms from rest to `HUG.hands` round the partner (one over the shoulder, one round the waist) with the `hugAmount` envelope; the head tips down a little. `updateHugs` ends the event after `HUG.duration` or at once when a partner leaves, draws a weapon or the pair is out of range, and `reset()` (disconnect) clears it; `animate` puts the figure back at its feet whenever no hug is running. The hugger's line “Kram på dig, {n}!” shows as their bubble (ours at the bottom). No score, sound or hearts for hugs; greetings and kisses keep their points, love, audio and hearts. No mesh, light or draw call is added.
 

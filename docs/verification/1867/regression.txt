@@ -1,0 +1,94 @@
+TAP version 13
+# Subtest: wire is a bounded whitelist; arbitrary text and unknown reply IDs never become lines
+ok 1 - wire is a bounded whitelist; arbitrary text and unknown reply IDs never become lines
+  ---
+  duration_ms: 1.791597
+  type: 'test'
+  ...
+# Subtest: real Room: known lines, directed one-use reply, bystanders, legacy greeting and no score
+ok 2 - real Room: known lines, directed one-use reply, bystanders, legacy greeting and no score
+  ---
+  duration_ms: 120.125955
+  type: 'test'
+  ...
+# Subtest: latest sender, expiry, range/weapon and attachment restore prevent invalid replies
+ok 3 - latest sender, expiry, range/weapon and attachment restore prevent invalid replies
+  ---
+  duration_ms: 138.335218
+  type: 'test'
+  ...
+# Subtest: the Worker deploy workflow triggers on every src/ file the Worker imports
+ok 4 - the Worker deploy workflow triggers on every src/ file the Worker imports
+  ---
+  duration_ms: 11.866776
+  type: 'test'
+  ...
+# Subtest: main Prata retains embraces; fixed submenu order/back/target-reset and only relevant Svara
+ok 5 - main Prata retains embraces; fixed submenu order/back/target-reset and only relevant Svara
+  ---
+  duration_ms: 3.427993
+  type: 'test'
+  ...
+# Subtest: wrong-person/replaced/expired closures cannot answer; accepted reply is consumed and duplicate ACK silent
+ok 6 - wrong-person/replaced/expired closures cannot answer; accepted reply is consumed and duplicate ACK silent
+  ---
+  duration_ms: 0.500399
+  type: 'test'
+  ...
+# Subtest: capability, focus/wall callback, range/weapon and bounded silent-rejection timeout protect sends
+ok 7 - capability, focus/wall callback, range/weapon and bounded silent-rejection timeout protect sends
+  ---
+  duration_ms: 0.222699
+  type: 'test'
+  ...
+# Subtest: fixed known IDs only, bounded receipts and context rejection never speak arbitrary text
+ok 8 - fixed known IDs only, bounded receipts and context rejection never speak arbitrary text
+  ---
+  duration_ms: 0.515199
+  type: 'test'
+  ...
+# Subtest: ordinary pairs get greet + hug; only a complementary Sarah/Olof pair also gets kiss, both directions
+ok 9 - ordinary pairs get greet + hug; only a complementary Sarah/Olof pair also gets kiss, both directions
+  ---
+  duration_ms: 1.426997
+  type: 'test'
+  ...
+# Subtest: hug range is inclusive 3D and rejects malformed feet; the reserved phrase never collides
+ok 10 - hug range is inclusive 3D and rejects malformed feet; the reserved phrase never collides
+  ---
+  duration_ms: 0.418
+  type: 'test'
+  ...
+# Subtest: hug envelope approaches, holds and returns to 0
+ok 11 - hug envelope approaches, holds and returns to 0
+  ---
+  duration_ms: 0.2322
+  type: 'test'
+  ...
+# Subtest: only complementary Sarah/Olof names, both directions, normalized substring matching
+ok 12 - only complementary Sarah/Olof names, both directions, normalized substring matching
+  ---
+  duration_ms: 0.990098
+  type: 'test'
+  ...
+# Subtest: finite feet in three dimensions, inclusive range and malformed states
+ok 13 - finite feet in three dimensions, inclusive range and malformed states
+  ---
+  duration_ms: 0.269099
+  type: 'test'
+  ...
+# Subtest: pose approaches and returns continuously, held through the smack
+ok 14 - pose approaches and returns continuously, held through the smack
+  ---
+  duration_ms: 1.203097
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 408.337265

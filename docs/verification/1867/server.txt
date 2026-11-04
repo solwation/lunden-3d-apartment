@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: wire is a bounded whitelist; arbitrary text and unknown reply IDs never become lines
+ok 1 - wire is a bounded whitelist; arbitrary text and unknown reply IDs never become lines
+  ---
+  duration_ms: 1.660697
+  type: 'test'
+  ...
+# Subtest: real Room: known lines, directed one-use reply, bystanders, legacy greeting and no score
+ok 2 - real Room: known lines, directed one-use reply, bystanders, legacy greeting and no score
+  ---
+  duration_ms: 114.363389
+  type: 'test'
+  ...
+# Subtest: latest sender, expiry, range/weapon and attachment restore prevent invalid replies
+ok 3 - latest sender, expiry, range/weapon and attachment restore prevent invalid replies
+  ---
+  duration_ms: 138.671044
+  type: 'test'
+  ...
+# Subtest: the Worker deploy workflow triggers on every src/ file the Worker imports
+ok 4 - the Worker deploy workflow triggers on every src/ file the Worker imports
+  ---
+  duration_ms: 12.084578
+  type: 'test'
+  ...
+# Subtest: ordinary pairs get greet + hug; only a complementary Sarah/Olof pair also gets kiss, both directions
+ok 5 - ordinary pairs get greet + hug; only a complementary Sarah/Olof pair also gets kiss, both directions
+  ---
+  duration_ms: 1.822897
+  type: 'test'
+  ...
+# Subtest: hug range is inclusive 3D and rejects malformed feet; the reserved phrase never collides
+ok 6 - hug range is inclusive 3D and rejects malformed feet; the reserved phrase never collides
+  ---
+  duration_ms: 1.444498
+  type: 'test'
+  ...
+# Subtest: hug envelope approaches, holds and returns to 0
+ok 7 - hug envelope approaches, holds and returns to 0
+  ---
+  duration_ms: 0.199499
+  type: 'test'
+  ...
+# Subtest: only complementary Sarah/Olof names, both directions, normalized substring matching
+ok 8 - only complementary Sarah/Olof names, both directions, normalized substring matching
+  ---
+  duration_ms: 1.031898
+  type: 'test'
+  ...
+# Subtest: finite feet in three dimensions, inclusive range and malformed states
+ok 9 - finite feet in three dimensions, inclusive range and malformed states
+  ---
+  duration_ms: 0.266299
+  type: 'test'
+  ...
+# Subtest: pose approaches and returns continuously, held through the smack
+ok 10 - pose approaches and returns continuously, held through the smack
+  ---
+  duration_ms: 0.2238
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 403.712656

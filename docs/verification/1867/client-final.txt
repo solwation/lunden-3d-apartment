@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: main Prata retains embraces; fixed submenu order/back/target-reset and only relevant Svara
+ok 1 - main Prata retains embraces; fixed submenu order/back/target-reset and only relevant Svara
+  ---
+  duration_ms: 3.946295
+  type: 'test'
+  ...
+# Subtest: wrong-person/replaced/expired closures cannot answer; accepted reply is consumed and duplicate ACK silent
+ok 2 - wrong-person/replaced/expired closures cannot answer; accepted reply is consumed and duplicate ACK silent
+  ---
+  duration_ms: 0.603099
+  type: 'test'
+  ...
+# Subtest: capability, focus/wall callback, range/weapon and bounded silent-rejection timeout protect sends
+ok 3 - capability, focus/wall callback, range/weapon and bounded silent-rejection timeout protect sends
+  ---
+  duration_ms: 0.2761
+  type: 'test'
+  ...
+# Subtest: fixed known IDs only, bounded receipts and context rejection never speak arbitrary text
+ok 4 - fixed known IDs only, bounded receipts and context rejection never speak arbitrary text
+  ---
+  duration_ms: 0.564699
+  type: 'test'
+  ...
+# Subtest: accepted own ACK anchors the next interval after transport jitter
+ok 5 - accepted own ACK anchors the next interval after transport jitter
+  ---
+  duration_ms: 0.2936
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 119.741632
