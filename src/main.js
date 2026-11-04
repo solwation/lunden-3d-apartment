@@ -1,3 +1,4 @@
+import { Conversation } from './conversation.js';
 import {PicnicClient} from './picnicclient.js';
 import {RoofPicnic} from './roofpicnic.js';
 import { BouleClient } from './bouleclient.js';
@@ -1851,7 +1852,7 @@ function shortButtonLabel(target, label) {
     : target?.kind === 'wipe' ? { torka: 'Torka' }
     : target?.kind === 'tap' ? { 'sätta på': 'Sätt på', 'stänga av': 'Stäng av' }
     : target?.kind === 'speaker' ? { 'spela musik på': 'Spela musik', 'styra musiken på': 'Styr musiken' }
-    : target?.kind === 'ghost' ? { 'hälsa på': 'Hälsa', krama: 'Krama', pussa: 'Pussa' } // another player (#1405)
+    : target?.kind === 'ghost' ? { 'prata med': 'Prata', 'hälsa på': 'Hälsa', krama: 'Krama', pussa: 'Pussa' } // another player (#1405)
     : null;
   if (target?.kind === 'playroomBilliards') {
     if (!playroom.billiards.hasCue()) return 'Hämta en kö i stället först';
@@ -2178,6 +2179,7 @@ document.addEventListener('keydown', (e) => {
   }
   if(heldItem()===remote&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&['KeyJ','KeyL','BracketLeft','BracketRight'].includes(e.code)){e.preventDefault();if(!e.repeat)remote.seek(['KeyJ','BracketLeft'].includes(e.code)?-1:1);return;}
   if(outdoorGym.isActive(rest)&&e.code==='KeyF'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();if(!e.repeat&&gymInputAllowed())outdoorGym.exert(rest);return;}
+  if (e.code === 'Backspace' && focused?.kind === 'ghost' && conversation.back()) { e.preventDefault(); choices.key = ''; return; }
   if (djInput.key(e,focused)) return;
   player.keys.add(e.code);
   if (e.code === 'Space') e.preventDefault(); // jump (#636), thrust (#359), let go of a wall (#597): never scrolls or presses a focused button
@@ -2524,6 +2526,7 @@ function updateFocus() {
   // a life-sim thing (#367): its actions; one = the usual prompt, several = the choice menu
   const rows = focused?.options ? shownRows(focused.options()) : null;
   showChoices(rows && rows.length > 1 && !reading ? rows : null, focused);
+  if (focused?.kind !== 'ghost') conversation.closeMenu();
   if (focused?.kind !== 'nest' && lightModes.page !== 'top') lightModes.page = 'top'; // a speaker's menu starts at its first page (#1176)
   const outlineRow=choices.rows?.[choices.sel] ?? (rows?.length===1?rows[0]:null);
   interactionOutline.update(!reading && !life.runner.job && !outlineRow?.reason ? focused : null);
@@ -3123,6 +3126,16 @@ if (rifle) { const shot = rifle.onShot; rifle.onShot = () => { shot?.(); combat.
 { const web = suit.onShot; suit.onShot = () => { web?.(); combat.fire('web'); }; }
 // greeting other players (#673): our line at the bottom (greet.js), one small message; the greeted and everyone else see
 // our avatar wave, with the line in a bubble over it. Points: SCORE.first.greets per player, once a session.
+const conversation = new Conversation({
+  net: { ready: () => ghosts.connected, id: () => ghosts.me, send: m => { if (!ghosts.connected) return false; ghosts.lastMove = performance.now(); ghosts.outbox.push(m); ghosts.trimOutbox(); ghosts.sendShot(); return true; } },
+  peer: id => { const g = ghosts.others.get(id); return g && { position: g.root.position.toArray(), armed: !!g.h }; }, position: () => ghosts.state().p,
+  allowed: id => { const g = ghosts.others.get(id), reach = rest.active ? REST.reach[rest.spot.kind === 'lie' ? 'lie' : 'sit'] : HOLD.reach; return !weaponKey() && focused?.ghost === g && !!focusPoint && camera.position.distanceTo(focusPoint) <= reach + .01 && !behindWall(focusPoint); },
+  notice: text => badge(text, false),
+  onLine: (m, line) => { if (m.i === ghosts.me) greet.sayMine(line); else { const g = ghosts.others.get(m.i); if (g && !behindWall(g.head)) greet.say({ head: g.head, s: 1 }, line, { pitch: 1.1, rate: 1.05, voice: 1 }, undefined, g.avatar); } }
+});
+ghosts.conversation = conversation;
+{ const welcome = ghosts.onWelcome; ghosts.onWelcome = m => { welcome?.(m); conversation.welcome(m.conversation); }; }
+ghosts.onConversation = m => conversation.receive(m);
 const greetedPlayers = new Set();
 // #1405: the player picks greet / hug / (Sarah↔Olof) kiss from the choice menu (Ghosts.choices); nothing is upgraded automatically.
 function greetPlayer(g, kind = 'greet') {
@@ -3491,7 +3504,7 @@ function step(dt) {
   birds?.update(dt, day.above > 0.5 ? 0 : weather.rain, player.below); // #1252: after the weather's rain; none at night, in rain or in the whiteout
   flare?.update(dt); // #1283: lens flare towards the sun
   plantWind.update(dt);
-  greet.update(dt); // speech bubbles (#247)
+  greet.update(dt); conversation.update(); // speech bubbles (#247)
   if (cat.visible && !cat.held && !cat.released) cat.followRug(); // #1009: idle floor support also follows material previews.
   outdoorCats?.update(dt, player.below || player.inCore || player.inPlayroom, weather.kind === 'snow' ? 0 : weather.rain); // #1767: before the cat, which one of them may have just become
   footprints?.update(dt, footprints.sources, camera.position); // #1773: after the cats and the player have moved

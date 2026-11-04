@@ -8320,4 +8320,4 @@ export const ROOF_PICNIC = {
 
 // #1867: fixed friendly player conversations, bounded local/room defaults (*guess*).
 export const CONVERSATION = { version: 1, range: 3, serverRange: 3.3, hearRange: 12,
-  everyMs: 3000, replyMs: 20000, receipts: 64 };
+  everyMs: 3000, replyMs: 20000, pendingMs: 5000, receipts: 64 };

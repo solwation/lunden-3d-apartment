@@ -523,6 +523,7 @@ export class Ghosts {
       else if (m.k === HUG.phrase) this.startHug(m, t);
       else { const g = this.others.get(m.i); if (g) { g.wave(); this.greetsSeen++; this.onGreet?.(m, g, this.others.get(m.to) ?? null); } }
     }
+    else if (m.t === 'cv') this.onConversation?.(m);
     else if (m.t === 'c') { const g = this.others.get(m.i); if (g) this.onToast?.(m, g); } // a toast (#1222): the room sends it only from within PLAYERS.toastRange
     else if (m.t === 'rx') { const g = this.others.get(m.i); if (g && Number.isInteger(m.k)) g.startReact(m.k, t); } // a BIO reaction (#1639): the room sends it only from within PLAYERS.soundRange
     else if (m.t === 'snd') { const g = this.others.get(m.i); if (g && SOUNDS.kinds.includes(m.k)) this.onPlayerSound?.(m, g); } // a sound event (#1302): the room sends it only from within PLAYERS.soundRange
@@ -879,10 +880,11 @@ export class Ghosts {
    * goes to `onChoose(ghost, kind)` (main.js). Kiss/hug rows don't reach out the hand: the embrace waits for the room. */
   choices(g) {
     const labels = { greet: 'hälsa på', hug: 'krama', kiss: 'pussa' };
-    return playerChoices(this.name(), g.name).map(id => {
+    const rows = playerChoices(this.name(), g.name).map(id => {
       const ok = id === 'greet' || (id === 'hug' ? this.canHug(g) : this.canKiss(g));
       return { id, label: `${labels[id]} ${g.name}`, ...(ok ? {} : { reason: 'gå närmare' }), ...(id === 'greet' ? {} : { noReach: true }), run: () => this.onChoose?.(g, id) };
     });
+    return this.conversation?.rows(g, rows) ?? rows;
   }
 
   canHug(g) { return !this.weapon() && !g.h && canHug(this.state().p, g.root.position.toArray()); }
