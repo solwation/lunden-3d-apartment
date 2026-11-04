@@ -1,0 +1,104 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "player is outdoors in the park",
+      "data": {
+        "held": true,
+        "isSquirrelNut": true,
+        "outdoorPlace": true,
+        "playerOutdoors": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "nut is held in hand with outdoorPlace flag",
+      "data": {
+        "held": true,
+        "isSquirrelNut": true,
+        "outdoorPlace": true,
+        "playerOutdoors": true
+      }
+    },
+    {
+      "ok": true,
+      "label": "walking with nut in hand has fast step time (< 8ms under SwiftShader)",
+      "data": {
+        "avgMs": 7.9216666666790845,
+        "maxMs": 19.700000000186265,
+        "focusedKind": "place",
+        "focusedVerb": "lägga ner",
+        "focusedName": "en nöt här",
+        "point": [
+          20,
+          -3,
+          51.6
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "label": "place target is available on ground while holding nut",
+      "data": {
+        "avgMs": 7.9216666666790845,
+        "maxMs": 19.700000000186265,
+        "focusedKind": "place",
+        "focusedVerb": "lägga ner",
+        "focusedName": "en nöt här",
+        "point": [
+          20,
+          -3,
+          51.6
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "label": "nut is placed down on the ground and no longer held",
+      "data": {
+        "held": false,
+        "slotHeld": false,
+        "slotAlive": true,
+        "slotPos": [
+          20,
+          -2.967314842693508,
+          51.6
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "label": "zero page errors",
+      "data": []
+    }
+  ],
+  "setup": {
+    "held": true,
+    "isSquirrelNut": true,
+    "outdoorPlace": true,
+    "playerOutdoors": true
+  },
+  "walkPerf": {
+    "avgMs": 7.9216666666790845,
+    "maxMs": 19.700000000186265,
+    "focusedKind": "place",
+    "focusedVerb": "lägga ner",
+    "focusedName": "en nöt här",
+    "point": [
+      20,
+      -3,
+      51.6
+    ]
+  },
+  "putDown": {
+    "held": false,
+    "slotHeld": false,
+    "slotAlive": true,
+    "slotPos": [
+      20,
+      -2.967314842693508,
+      51.6
+    ]
+  },
+  "errors": []
+}
