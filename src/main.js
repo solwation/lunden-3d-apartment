@@ -4,7 +4,8 @@ import { BouleClient } from './bouleclient.js';
 import {Football} from './football.js';
 import {FOOTBALL} from './config.js';
 import {recordFootball} from './stats.js';
-import { OUTDOOR } from './config.js';
+import { OUTDOOR, WALK } from './config.js';
+import { GroundPlacement } from './groundplacement.js';
 import { finishStartupCaches } from './startupcache.js';
 import { DanceTime } from './dancescore.js';
 import { stepSurface } from './stepsurface.js';
@@ -645,7 +646,7 @@ const fruit = new FruitBowl(scene, camera); // the copper fruit bowl on the coff
 // the life simulator's things (#364, #366): item instances (items.js) shown as Holdables (life.js); a refusal pops up as a badge
 await loadingYield(0.6); // Möblerar in two parts (#1160); nothing above registers listeners or timers yet
 const life = new Life({ scene, camera, say: (t) => badge(t, false), feet: () => ({ at: 'world', pos: [player.pos.x, player.pos.y, player.pos.z], yaw: camera.rotation.y }),
-  floorY: () => (player.level >= 0 ? LEVELS[player.level].floor : -Infinity), // (nothing goes down under the floor, #368)
+  floorY: p => player.outdoors ? player.groundAt(p.x,p.z,Math.max(player.pos.y,p.y))-LIFE.place.supportTolerance : (player.level >= 0 ? LEVELS[player.level].floor : -Infinity), // (nothing goes down under the floor, #368)
   persist: lifeDev() ? null : { key: LIFE.save.key, canSave: () => { try { return !resetHome.going; } catch { return false; } } }, debug: params0.has('debug') }); // the home's stock kept between visits (#371; never with &life)
 const roofPicnic=new RoofPicnic({scene,camera,world,life});
 for(const glass of roofPicnic.glasses){glass.onSip=drink=>{if(drink)bump(drink);};things.push(glass);holdables.push(glass);}
@@ -776,8 +777,17 @@ function outdoorSpot() {
   if ([...stat, ...dyn].some((s) => crosses(player.pos.x, player.pos.z, x, z, s))) return null;
   return { point: new THREE.Vector3(x, gy, z), distance: Math.max(0.3, h), outdoor: true }; // (the wall check is done above: the flat's roof slab must not count)
 }
+let groundPlacement;
+function groundPlaceSpot() {
+  groundPlacement ??= new GroundPlacement({roots:[world.object,roofPicnic.object],camera,player,reach:HOLD.reach,grid:LIFE.place.floorGrid,tolerance:LIFE.place.supportTolerance,maxSlope:WALK.maxSlope,
+    allowed:p=>p.x>WALK.x0&&p.x<WALK.x1&&p.z>WALK.z0&&p.z<WALK.z1,
+    blocked:p=>player.segments().some(list=>list.some(s=>crosses(player.pos.x,player.pos.z,p.x,p.z,s))),
+    dry:p=>{const r=riverAt(p.x,p.z);return r.distance>r.width/2||p.y>waterYAt(p.x,p.z,r)+LIFE.place.waterClearance;}});
+  return groundPlacement.spot(raycaster.ray);
+}
 /** Where the look ray meets the floor the visitor stands on, within reach — or null (stairs, the stair opening). */
 function floorSpot() {
+  if (player.outdoors) return null; // #1862: no invisible apartment plane outdoors
   if (player.unit) return null; // nothing of ours is left in a visited flat: it stays empty (#574)
   const lv = player.level, y = LEVELS[Math.max(0, lv)]?.floor ?? 0;
   if (lv < 0 || Math.abs(player.pos.y - y) > 0.05) return null;
@@ -2397,7 +2407,7 @@ function updateFocus() {
     if (spot && item.softOnly && !top.object.userData.soft) { // Cats: not on a table or a worktop (#1061)
       if (!hit || spot.distance <= hit.distance + 0.05) focused = { name: '', kind: 'place', blocked: true, blockedText: `${item.name === 'Miele' ? 'Miele' : item.name === 'kattungen' ? 'Kattungen' : 'Katten'} får inte vara på bordet` };
       spot = null;
-    } else if (!spot) { const f = floorSpot() ?? (item.softOnly || (item.outdoorPlace && !item.noPlace) ? outdoorSpot() : null); if (f && f.distance < reach && (f.outdoor || !behindWall(f.point))) spot = f; } // a table top is always above (before) the floor
+    } else if (!spot) { const f = floorSpot() ?? (item.softOnly ? outdoorSpot() : !item.noPlace ? groundPlaceSpot() : null); if (f && f.distance < reach && (f.outdoor || !behindWall(f.point))) spot = f; } // a table top is always above (before) the floor
     if (spot && item.isVacuum && stairUnderside(spot.point.x, spot.point.z) !== null && stairUnderside(spot.point.x, spot.point.z) < spot.point.y + 0.3) {
       spot = null; // low headroom under the stair winders / soffit (#389)
     }
@@ -2418,7 +2428,7 @@ function updateFocus() {
       };
       placeGhost.visible = false;
     } else if (spot && !lifeAim && !atBack && (!hit || spot.distance <= hit.distance + 0.05)) {
-      if (!top?.stackSupport) snapSpot(spot, top && spot.point.y > LEVELS[Math.max(0, player.level)].floor + 0.05 ? top.object : null); // on a grid (#368)
+      if (!spot.snapped && !top?.stackSupport) snapSpot(spot, top && spot.point.y > LEVELS[Math.max(0, player.level)].floor + 0.05 ? top.object : null); // on a grid (#368)
       placeTarget = { name: `${item.name} här`, kind: 'place', verb: item.placeVerb ?? 'lägga ner', item, point: spot.point, yaw: top?.stackYaw ?? placeYaw() };
       focused = placeTarget;
       placeGhost.position.copy(spot.point).y += 0.003;

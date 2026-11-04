@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: visible raised ground and sloped roofs keep actual support after snapping, no zero plane
+ok 1 - visible raised ground and sloped roofs keep actual support after snapping, no zero plane
+  ---
+  duration_ms: 5.67278
+  type: 'test'
+  ...
+# Subtest: air, unseen/unsupported, water, walls, long reach and steep surfaces cannot place
+ok 2 - air, unseen/unsupported, water, walls, long reach and steep surfaces cannot place
+  ---
+  duration_ms: 3.03399
+  type: 'test'
+  ...
+# Subtest: snapped edge gaps rejected, first opaque obstruction retained, hidden geometry excluded
+ok 3 - snapped edge gaps rejected, first opaque obstruction retained, hidden geometry excluded
+  ---
+  duration_ms: 1.526894
+  type: 'test'
+  ...
+# Subtest: desktop terrain query master remains valid only with its visible render split
+ok 4 - desktop terrain query master remains valid only with its visible render split
+  ---
+  duration_ms: 1.696795
+  type: 'test'
+  ...
+# Subtest: unchanged aim reuses support but revalidates walls, visibility and moved surfaces
+ok 5 - unchanged aim reuses support but revalidates walls, visibility and moved surfaces
+  ---
+  duration_ms: 0.602898
+  type: 'test'
+  ...
+# Subtest: existing registered walkable roofs retain their own slopes instead of the terrain slope ceiling
+ok 6 - existing registered walkable roofs retain their own slopes instead of the terrain slope ceiling
+  ---
+  duration_ms: 0.703498
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 93.893082

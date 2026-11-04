@@ -1,0 +1,657 @@
+{
+  "ok": true,
+  "result": {
+    "roof": {
+      "target": [
+        -154.4,
+        13.138901777454015,
+        114.5
+      ],
+      "kind": "place",
+      "ms": 168.69999999925494,
+      "ground": 13.103901777379509,
+      "placed": {
+        "held": false,
+        "pos": [
+          -154.4,
+          13.139901777454014,
+          114.5
+        ],
+        "fill": 0.45,
+        "keep": [
+          [
+            "roof-picnic-glass-0|0,0,0",
+            {
+              "p": [
+                -154.4,
+                13.14,
+                114.5
+              ],
+              "q": [
+                0,
+                -0.707,
+                0,
+                0.707
+              ],
+              "a": {
+                "wine": 0.45
+              },
+              "x": {
+                "picnic": true,
+                "drinks": {
+                  "wine": 0.45
+                }
+              }
+            }
+          ],
+          [
+            "roof-picnic-glass-1|1,0,0",
+            {
+              "a": {
+                "wine": 0.45
+              },
+              "x": {
+                "picnic": true,
+                "drinks": {
+                  "wine": 0.45
+                }
+              }
+            }
+          ]
+        ]
+      }
+    },
+    "nativeRoofTake": {
+      "held": true
+    },
+    "bareRoof": {
+      "point": [
+        -155.5,
+        13.11390209197998,
+        112.9
+      ],
+      "times": [
+        22.900000002235174,
+        18.699999999254942,
+        19.399999998509884,
+        18.100000001490116
+      ],
+      "placed": {
+        "held": false,
+        "pos": [
+          -155.5,
+          13.11490209197998,
+          112.9
+        ]
+      }
+    },
+    "roofBaseline": [
+      18.899999998509884,
+      8.699999999254942,
+      10.5,
+      5.600000001490116
+    ],
+    "far": {
+      "player": [
+        -180,
+        -3.0082514119796926,
+        170
+      ],
+      "camera": [
+        -180,
+        -1.3882514119796925,
+        170
+      ],
+      "point": [
+        -180,
+        -3.0305415074030555,
+        169.20000000000002
+      ],
+      "ordinaryCup": true,
+      "dry": {
+        "r": {
+          "distance": 38.096540325178864,
+          "x": -178.9209687530996,
+          "z": 207.28125623343053,
+          "nx": -0.028323602030267608,
+          "nz": -0.9995988063058254,
+          "width": 6.961017937341838,
+          "valley": 6.961017937341838,
+          "bank": 1.6500000000000001,
+          "segment": 21,
+          "t": 0.9610179373418378,
+          "along": 580.7563405029416
+        },
+        "y": -7.211197171794574
+      },
+      "locked": true,
+      "placed": {
+        "held": false,
+        "state": "placed",
+        "p": [
+          -180,
+          -3.0305415074030555,
+          169.20000000000002
+        ],
+        "keep": {
+          "s": "placed",
+          "d": "letter-W",
+          "p": [
+            -180,
+            -3.031,
+            169.2
+          ],
+          "ry": 0
+        }
+      }
+    },
+    "life": {
+      "id": "plate#1",
+      "type": "plate",
+      "held": true,
+      "point": [
+        -179.60000000000002,
+        -3.0290911376476286,
+        169.3
+      ],
+      "floor": -3.16211887133471,
+      "why": null,
+      "placed": {
+        "held": false,
+        "place": {
+          "at": "world",
+          "pos": [
+            -179.60000000000002,
+            -3.0280911376476287,
+            169.3
+          ],
+          "yaw": -0.7853981633974483
+        },
+        "saved": {
+          "v": 3,
+          "counters": {
+            "cheese": 1,
+            "cucumber": 1,
+            "butter": 1,
+            "eggCarton": 1,
+            "peas": 1,
+            "breadBag": 1,
+            "sausagePack": 1,
+            "bunBag": 1,
+            "billysBox": 1,
+            "gorbysBox": 1,
+            "iceCreamBox": 1,
+            "knife": 1,
+            "butterKnife": 1,
+            "cheeseSlicer": 1,
+            "board": 1,
+            "plate": 3,
+            "bin": 1,
+            "binFood": 1,
+            "binPack": 1,
+            "glass": 3,
+            "laundryClothes": 3,
+            "wateringCan": 1,
+            "toiletRoll": 7
+          },
+          "items": [
+            {
+              "id": "cheese#1",
+              "type": "cheese",
+              "place": {
+                "at": "slot",
+                "store": "fridge",
+                "slot": 0
+              }
+            },
+            {
+              "id": "cucumber#1",
+              "type": "cucumber",
+              "place": {
+                "at": "slot",
+                "store": "fridge",
+                "slot": 1
+              }
+            },
+            {
+              "id": "butter#1",
+              "type": "butter",
+              "place": {
+                "at": "slot",
+                "store": "fridge",
+                "slot": 6
+              }
+            },
+            {
+              "id": "eggCarton#1",
+              "type": "eggCarton",
+              "place": {
+                "at": "slot",
+                "store": "fridge",
+                "slot": 2
+              }
+            },
+            {
+              "id": "peas#1",
+              "type": "peas",
+              "place": {
+                "at": "slot",
+                "store": "freezer",
+                "slot": 3
+              }
+            },
+            {
+              "id": "breadBag#1",
+              "type": "breadBag",
+              "place": {
+                "at": "slot",
+                "store": "pantry",
+                "slot": 0
+              }
+            },
+            {
+              "id": "sausagePack#1",
+              "type": "sausagePack",
+              "place": {
+                "at": "slot",
+                "store": "fridge",
+                "slot": 11
+              }
+            },
+            {
+              "id": "bunBag#1",
+              "type": "bunBag",
+              "place": {
+                "at": "slot",
+                "store": "pantry",
+                "slot": 1
+              }
+            },
+            {
+              "id": "billysBox#1",
+              "type": "billysBox",
+              "place": {
+                "at": "slot",
+                "store": "freezerDrawer4",
+                "slot": 0
+              }
+            },
+            {
+              "id": "gorbysBox#1",
+              "type": "gorbysBox",
+              "place": {
+                "at": "slot",
+                "store": "freezerDrawer4",
+                "slot": 1
+              }
+            },
+            {
+              "id": "iceCreamBox#1",
+              "type": "iceCreamBox",
+              "place": {
+                "at": "slot",
+                "store": "freezerDrawer3",
+                "slot": 0
+              }
+            },
+            {
+              "id": "knife#1",
+              "type": "knife",
+              "place": {
+                "at": "slot",
+                "store": "utensils",
+                "slot": 0
+              }
+            },
+            {
+              "id": "butterKnife#1",
+              "type": "butterKnife",
+              "place": {
+                "at": "slot",
+                "store": "utensils",
+                "slot": 1
+              }
+            },
+            {
+              "id": "cheeseSlicer#1",
+              "type": "cheeseSlicer",
+              "place": {
+                "at": "slot",
+                "store": "utensils",
+                "slot": 2
+              }
+            },
+            {
+              "id": "board#1",
+              "type": "board",
+              "place": {
+                "at": "slot",
+                "store": "boardRack",
+                "slot": 0
+              }
+            },
+            {
+              "id": "plate#1",
+              "type": "plate",
+              "place": {
+                "at": "world",
+                "pos": [
+                  -179.60000000000002,
+                  -3.0280911376476287,
+                  169.3
+                ],
+                "yaw": -0.7853981633974483
+              },
+              "home": {
+                "at": "slot",
+                "store": "plates",
+                "slot": 0
+              }
+            },
+            {
+              "id": "plate#2",
+              "type": "plate",
+              "place": {
+                "at": "slot",
+                "store": "plates",
+                "slot": 1
+              }
+            },
+            {
+              "id": "plate#3",
+              "type": "plate",
+              "place": {
+                "at": "slot",
+                "store": "plates",
+                "slot": 2
+              }
+            },
+            {
+              "id": "bin#1",
+              "type": "bin",
+              "place": {
+                "at": "slot",
+                "store": "sinkBins",
+                "slot": 0
+              }
+            },
+            {
+              "id": "binFood#1",
+              "type": "binFood",
+              "place": {
+                "at": "slot",
+                "store": "binsFood",
+                "slot": 0
+              }
+            },
+            {
+              "id": "binPack#1",
+              "type": "binPack",
+              "place": {
+                "at": "slot",
+                "store": "binsPack",
+                "slot": 0
+              }
+            },
+            {
+              "id": "glass#1",
+              "type": "glass",
+              "place": {
+                "at": "slot",
+                "store": "glasses",
+                "slot": 0
+              }
+            },
+            {
+              "id": "glass#2",
+              "type": "glass",
+              "place": {
+                "at": "slot",
+                "store": "glasses",
+                "slot": 1
+              }
+            },
+            {
+              "id": "glass#3",
+              "type": "glass",
+              "place": {
+                "at": "slot",
+                "store": "glasses",
+                "slot": 2
+              }
+            },
+            {
+              "id": "laundryClothes#1",
+              "type": "laundryClothes",
+              "place": {
+                "at": "slot",
+                "store": "laundryBasket",
+                "slot": 0
+              }
+            },
+            {
+              "id": "laundryClothes#2",
+              "type": "laundryClothes",
+              "place": {
+                "at": "slot",
+                "store": "laundryBasket",
+                "slot": 1
+              }
+            },
+            {
+              "id": "laundryClothes#3",
+              "type": "laundryClothes",
+              "place": {
+                "at": "slot",
+                "store": "laundryBasket",
+                "slot": 2
+              }
+            },
+            {
+              "id": "wateringCan#1",
+              "type": "wateringCan",
+              "place": {
+                "at": "slot",
+                "store": "wateringCanRack",
+                "slot": 0
+              }
+            },
+            {
+              "id": "toiletRoll#1",
+              "type": "toiletRoll",
+              "place": {
+                "at": "slot",
+                "store": "toiletRollSpare",
+                "slot": 0
+              }
+            },
+            {
+              "id": "toiletRoll#2",
+              "type": "toiletRoll",
+              "place": {
+                "at": "slot",
+                "store": "toiletRollSpare",
+                "slot": 1
+              }
+            },
+            {
+              "id": "toiletRoll#3",
+              "type": "toiletRoll",
+              "place": {
+                "at": "slot",
+                "store": "toiletRollSpare",
+                "slot": 2
+              }
+            },
+            {
+              "id": "toiletRoll#4",
+              "type": "toiletRoll",
+              "place": {
+                "at": "slot",
+                "store": "toiletRollSpare",
+                "slot": 3
+              }
+            },
+            {
+              "id": "toiletRoll#5",
+              "type": "toiletRoll",
+              "place": {
+                "at": "slot",
+                "store": "toiletRollSpare",
+                "slot": 4
+              }
+            },
+            {
+              "id": "toiletRoll#6",
+              "type": "toiletRoll",
+              "place": {
+                "at": "slot",
+                "store": "toiletHolder0",
+                "slot": 0
+              }
+            },
+            {
+              "id": "toiletRoll#7",
+              "type": "toiletRoll",
+              "place": {
+                "at": "slot",
+                "store": "toiletHolder1",
+                "slot": 0
+              }
+            }
+          ],
+          "x": {
+            "roofPicnic": {
+              "v": 1,
+              "remaining": [
+                6,
+                6
+              ]
+            },
+            "fruitRemains": {
+              "v": 1,
+              "pieces": []
+            },
+            "laundry": {
+              "washer": {
+                "s": "idle"
+              },
+              "dryer": {
+                "s": "idle"
+              }
+            },
+            "watering": [],
+            "beds": [],
+            "pan": {
+              "clean": "clean",
+              "place": null
+            },
+            "tasks": {
+              "v": 3,
+              "day": "2026-11-04",
+              "bonusPoints": null,
+              "selected": [
+                "washDish",
+                "makeBed",
+                "snackClean"
+              ],
+              "shown": [
+                "makeSandwich",
+                "resetKitchen",
+                "snackClean",
+                "washDish",
+                "makeBed"
+              ],
+              "renewChicken": false,
+              "tasks": {}
+            },
+            "chicken": {
+              "v": 1,
+              "generation": 0,
+              "cooked": 0,
+              "brown": 0,
+              "done": false,
+              "burnt": false,
+              "rewarded": false,
+              "burntCounted": false,
+              "gone": [
+                false,
+                false,
+                false,
+                false
+              ],
+              "bodyLeft": 3,
+              "place": null
+            },
+            "popcorn": {
+              "p": 0,
+              "s": 8
+            }
+          }
+        }
+      }
+    },
+    "nativeCupTake": {
+      "held": true
+    },
+    "restore": {
+      "cup": [
+        -180,
+        -3.031,
+        169.2
+      ],
+      "glass": [
+        -155.5,
+        13.115,
+        112.9
+      ],
+      "life": {
+        "at": "world",
+        "pos": [
+          -179.60000000000002,
+          -3.0280911376476287,
+          169.3
+        ],
+        "yaw": -0.7853981633974483
+      }
+    },
+    "home": {
+      "floor": [
+        4.3,
+        0,
+        3.6
+      ],
+      "outdoors": false,
+      "table": [
+        5.25,
+        0.93,
+        2.6
+      ],
+      "placed": "placed"
+    },
+    "bounded": {
+      "repeatStepMs": 8.100000001490116,
+      "point": [
+        -179.9,
+        -3.0316638886928553,
+        169.10000000000002
+      ]
+    },
+    "air": {
+      "target": null
+    },
+    "water": {
+      "point": {
+        "x": -180,
+        "y": -9,
+        "z": 207
+      },
+      "distance": 0.3117054468186562,
+      "width": 6.976029897306406,
+      "water": -7.212179048068668,
+      "dry": false,
+      "scope": "production dry predicate at mapped river; no in-water player session"
+    }
+  },
+  "errors": []
+}

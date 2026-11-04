@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: the Worker deploy workflow triggers on every src/ file the Worker imports
+ok 1 - the Worker deploy workflow triggers on every src/ file the Worker imports
+  ---
+  duration_ms: 12.251877
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 66.64833

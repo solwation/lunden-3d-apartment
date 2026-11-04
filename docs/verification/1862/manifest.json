@@ -1,0 +1,23 @@
+{
+  "issue": 1862,
+  "base": "6d584a3d1e9769e2742ddcc9bcda54ac4631111c",
+  "app": "http://localhost:8950",
+  "cloud": "disabled",
+  "checks": {
+    "component": "6/6",
+    "deploypaths": "1/1",
+    "syntax": "pass",
+    "diff": "pass"
+  },
+  "sourcePhase": "Held app updated to final visibility/cache prototypes and exact config-based Life.floorY; final roof-slope/cache draw-range guards component-tested; see README.",
+  "sha256": {
+    "src/main.js": "ab5212ac8f4a46631847aef1b3f18b1a88674106cd7e9363dfd3626d47b21b70",
+    "src/config.js": "b898d2e6824ad2d7020f1a1c891227bfe31add9d76ee4279f551a664e221e38d",
+    "src/groundplacement.js": "de639a633b124e082f736ae7d43e912f88ec302bd33e753e1c300b15f6d5596c",
+    "tools/groundplacementtest.mjs": "2008de214fc9b16980af5742a00c0b48554da09241c06cb2f532f831c46fbae1",
+    "tools/placeanywhere1862browser.cjs": "1640fcca881f080a306499cb2c6571ba6f08d3582c21b2df2bb5f903a59a5b57",
+    "docs/verification/1862/browser-proof.json": "374a213c24485c746962c65ae33141a467e44b7be4d85683365ec0653cc7af26",
+    "docs/verification/1862/roof-placed.png": "5c965be5108f38e489b0658561183bbbd3707debddf40c5961c2c79105842d8d",
+    "docs/verification/1862/valley-placed.png": "11adcdff341046f4814b9b968769081d975d44e1f2587631b6b81db2d9b2b612"
+  }
+}
