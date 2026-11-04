@@ -1,0 +1,42 @@
+{
+  "bicycleControls": {
+    "identical": true,
+    "sha256": "e2dc595203c1f08a4ceaaca4b786b954a6e65041db67dc385cf7b13bf549f221"
+  },
+  "active": {
+    "identical": true,
+    "sha256": "58d2e96ab0da54233199c1db439df4776e98a18a10820821dcdebf99e650b137"
+  },
+  "stand": {
+    "identical": true,
+    "sha256": "41b9ebe55b31eafe8509866d051e0814dd6682d79afadad782ba06f5a735f725"
+  },
+  "use": {
+    "identical": true,
+    "sha256": "eef32958f8bdc7bae557ba6b554b6720aa42a6ee45cc244e995cad9d7c11c102"
+  },
+  "buttons": {
+    "identical": true,
+    "sha256": "3de7535e754c8088e81936ca4a6fbab423fa7424ae70a2a99152a5339ccdb4e6"
+  },
+  "mouse": {
+    "identical": true,
+    "sha256": "6025ebbe03ce18940fa1eed0ee14607c794ec5235f3154e81755f50a3918d5cb"
+  },
+  "keys": {
+    "identical": true,
+    "sha256": "65a50152aa214245c12d7a69f10597dff9e20a15943cf545ac184913f3588509"
+  },
+  "save": {
+    "identical": true,
+    "sha256": "ca8ae0f3c64bfc53f45be4ce2382e3983d2ab884848af0a8cfb01b045257630e"
+  },
+  "focus": {
+    "identical": true,
+    "sha256": "9b97baff843e0fdedfdc89e81165ad98abb3537e23f335d17be2ce303d136632"
+  },
+  "keepWorld": {
+    "identical": true,
+    "sha256": "8f47b6b6c77b5e9959d786ab706bec41cbc7a790090ecaa938a33259b7257cf5"
+  }
+}
