@@ -22,8 +22,11 @@ export class GroundPlacement {
  hit(ray,far){
   const r=this.raycaster;r.ray.copy(ray);r.near=0;r.far=far;const hits=[];this.lastCost={candidates:0,triangles:0};
   for(const entry of this.entries){
-   const {mesh,box,matrix}=entry;mesh.updateWorldMatrix(true,false);if(!matrix.equals(mesh.matrixWorld)){box.copy(mesh.geometry.boundingBox).applyMatrix4(mesh.matrixWorld);matrix.copy(mesh.matrixWorld);}
-   if(!this.visible(mesh)||box.distanceToPoint(ray.origin)>far||!ray.intersectsBox(box))continue;
+   const {mesh,box,matrix}=entry;
+   if(box.distanceToPoint(ray.origin)>far||!ray.intersectsBox(box))continue;
+   mesh.updateWorldMatrix(true,false);
+   if(!matrix.equals(mesh.matrixWorld)){box.copy(mesh.geometry.boundingBox).applyMatrix4(mesh.matrixWorld);matrix.copy(mesh.matrixWorld);if(box.distanceToPoint(ray.origin)>far||!ray.intersectsBox(box))continue;}
+   if(!this.visible(mesh))continue;
    this.lastCost.candidates++;this.lastCost.triangles+=(mesh.geometry.index?.count??mesh.geometry.attributes.position.count)/3;
    r.intersectObject(mesh,false,hits);
   }

@@ -2407,7 +2407,7 @@ function updateFocus() {
     if (spot && item.softOnly && !top.object.userData.soft) { // Cats: not on a table or a worktop (#1061)
       if (!hit || spot.distance <= hit.distance + 0.05) focused = { name: '', kind: 'place', blocked: true, blockedText: `${item.name === 'Miele' ? 'Miele' : item.name === 'kattungen' ? 'Kattungen' : 'Katten'} får inte vara på bordet` };
       spot = null;
-    } else if (!spot) { const f = floorSpot() ?? (item.softOnly ? outdoorSpot() : !item.noPlace ? groundPlaceSpot() : null); if (f && f.distance < reach && (f.outdoor || !behindWall(f.point))) spot = f; } // a table top is always above (before) the floor
+    } else if (!spot) { const f = floorSpot() ?? (item.softOnly || (item.outdoorPlace && !item.noPlace) ? outdoorSpot() : !item.noPlace ? groundPlaceSpot() : null); if (f && f.distance < reach && (f.outdoor || !behindWall(f.point))) spot = f; } // a table top is always above (before) the floor
     if (spot && item.isVacuum && stairUnderside(spot.point.x, spot.point.z) !== null && stairUnderside(spot.point.x, spot.point.z) < spot.point.y + 0.3) {
       spot = null; // low headroom under the stair winders / soffit (#389)
     }
