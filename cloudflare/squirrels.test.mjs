@@ -22,7 +22,7 @@ function world() {
     const trees = mkTrees(), rnd = rng(seed), field = new NutField(trees, () => 0, () => true, rnd), p = { ws: { id, serializeAttachment() {} }, a: { i: id, s: { p: [0, 0, 0] } }, inbox: [] };
     const brains = C.animals.map((spec, i) => new SquirrelBrain(spec, { trees, ground: () => 0, walkable: () => true, nuts: field, player: { x: 1e5, z: 1e5, lure: false, hx: 0, hz: 0 }, rnd, onTake: () => true }, i % trees.length));
     const fed = [], dropped = [];
-    const sync = new SquirrelSync({ field, brains, send: (m) => { room.handle(p.ws, p.a, cleanSquirrels(JSON.stringify(m)), clock.now); return true; }, hooks: { fed: (an, who) => fed.push([an, who]), dropHeld: (s) => { dropped.push(s); s.alive = false; s.held = false; } } });
+    const sync = new SquirrelSync({ field, brains, send: (m) => { if(m.k==='t'){const s=field.slots[m.s];p.a.s.p=[s.x,s.y,s.z];} room.handle(p.ws, p.a, cleanSquirrels(JSON.stringify(m)), clock.now); return true; }, hooks: { fed: (an, who) => fed.push([an, who]), dropHeld: (s) => { dropped.push(s); s.alive = false; s.held = false; } } });
     Object.assign(p, { id, field, brains, sync, fed, dropped });
     peers.push(p); return p;
   };
@@ -98,7 +98,7 @@ test('putting a nut down shares where it lies; a put-down too far from the playe
   const i = a.field.slots.findIndex((s) => s.alive), sa = a.field.slots[i], sb = b.field.slots[i];
   sb.held = true; b.sync.take(sb); w.all(); step(w, 1);
   b.peer = w.peers[1]; b.peer.a.s.p = [5, 0, 5];
-  b.sync.put(sb, 5.5, 5.5); sb.held = false; w.all();
+  Object.assign(sb,{x:5.5,z:5.5});b.sync.put(sb, 5.5, 5.5); sb.held = false; w.all();
   assert.ok(sa.alive && !sa.held && sa.by === null && Math.abs(sa.x - 5.5) < 0.01 && Math.abs(sa.z - 5.5) < 0.01, 'the leader has it on the ground again');
   sb.held = true; b.sync.take(sb); w.all();
   b.sync.put(sb, 400, 400); w.all(); assert.ok(sa.held, 'far away put-down refused: stays claimed');
@@ -111,7 +111,7 @@ test('a squirrel feeding a follower: F reaches the others and the feeder only, t
   sb.held = true; b.sync.take(sb); w.all();
   assert.equal(a.sync.remoteHeld.get('B'), i);
   a.sync.feed(sa, 'B', 2); a.field.remove(sa); w.all();
-  assert.deepEqual(b.fed, [[2, 'B']]); assert.deepEqual(c.fed, [[2, 'B']]); assert.deepEqual(a.fed, []);
+  assert.deepEqual(b.fed, [[2, 'B']]); assert.deepEqual(c.fed, [[2, 'B']]); assert.deepEqual(a.fed, [[2,'B']], 'the leader also receives the committed feed acknowledgement');
   b.sync.feed; // a second feed of the same claim does nothing
   a.sync.feed(sa, 'B', 1); w.all(); assert.equal(b.fed.length, 1, 'no double score');
 });
@@ -125,7 +125,7 @@ test('the leader leaves: the next player leads from the shared scene, claims fol
   assert.ok(b.sync.lead && b.sync.n === 0, 'B leads now');
   assert.ok(b.field.count > 0, 'the nuts are still there');
   assert.ok(sb.held, 'B still holds its nut');
-  b.sync.setNear(false); assert.equal(w.room.nuts.size, 0); assert.equal(w.room.claims.size, 0); assert.equal(w.room.snap, null);
+  b.sync.setNear(false);w.room.trim(b.ws,b.a); assert.equal(w.room.nuts.size, 0); assert.equal(w.room.claims.size, 0); assert.equal(w.room.snap, null);
 });
 
 test('a follower who leaves with a nut in the hand: the leader drops that nut', () => {
@@ -133,7 +133,7 @@ test('a follower who leaves with a nut in the hand: the leader drops that nut', 
   w.near(a); step(w, 3); w.near(b); step(w, 2);
   const i = a.field.slots.findIndex((s) => s.alive), sa = a.field.slots[i], sb = b.field.slots[i];
   sb.held = true; b.sync.take(sb); w.all(); assert.ok(sa.held);
-  b.sync.setNear(false); w.all();
+  w.room.trim(b.ws,b.a); w.all();
   assert.ok(!sa.alive && !sa.held, 'removed (a new one comes later)');
 });
 
@@ -155,7 +155,7 @@ async function connect(env) {
   c.ws.addEventListener('message', (e) => c.got.push(e.data === 'q' ? 'q' : JSON.parse(e.data)));
   c.send = (m) => c.ws.send(JSON.stringify(m));
   c.sq = () => c.got.filter((m) => m.t === 'sq');
-  await settle(env); return c;
+  await settle(env);now+=1000;c.send({p:[1.5,0,2.5],r:0});await settle(env);return c;
 }
 const say = async (env, c, m, wait = 1000) => { now += wait; c.send({ t: 'sq', ...m }); await settle(env); };
 

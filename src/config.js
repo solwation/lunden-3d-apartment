@@ -7540,6 +7540,8 @@ export const FOOTSTEPS = {
 //  Feeding: crouched (player.crouched), still (< `still` m/s) with a nut in the hand and a squirrel within its `lure`: it creeps up, stops
 //  `reach` m from the hand, rises `take` s and takes the nut; the visitor gets SCORE.each.squirrelFeeds points and `hearts` hearts,
 //  the squirrel carries the nut `carry` s (visible in its mouth) up a tree.
+// #1855 only explicitly placed nuts are global drops; the20natural slots/animal cadence remain unchanged (*guess* limits).
+export const NUT_DROPS = { max:18, worldMs:20*60*1000, answerMs:6000, retryMs:1500 };
 export const SQUIRRELS = {
   simDist: 70, farDist: 130, drawDist: 150, farStep: 0.25, leapRange: 11, groundHop: 22,
   dry: 6, // #1764: farther than the river's half width + `dry` m from its centre line the park ground is always above the water (measured: the wet strip reaches at most 5.6 m from the centre line), so main.js squirrelWalk answers there without the terrain lookup
@@ -7648,6 +7650,12 @@ export const RIVER_FISH = {
  * #1753 (part 2 of #1751): the fishing rod under the road bridge, casting, bites and caught fish (src/fishing.js). Every number is a
  * *guess* (a plain 2 m spinning rod with a red-and-white float; species sizes typical for Skåne's streams, not measured in Höje å).
  */
+// #1855: bounded explicit shared caught-fish drops in the existing PlayerRoom (*guess* limits).
+// No inventory/pose stream; live owners keep their hand, abandoned leases expire without duplicating food.
+export const SHARED_FISH = { max: 24, records: 128, worldMs: 2 * 60 * 60 * 1000,
+  heldMs: 15 * 60 * 1000, tombstoneMs: 24 * 60 * 60 * 1000, reach: 3.5, everyMs: 250,
+  drawDist: 50, answerMs: 6000, retryMs: 1500, journalMax: 128 };
+
 export const FISHING = {
   // where the rod lies: on the north shore flat under the road bridge (SITE.bridges.road, deck z 100…145.8), just south of the
   // north pier pair (riverbridge.js pierBoxes: x 21.7 / 25.9, z 107.6), beside the walk under the deck; along x, so it reads as tucked away by the piers

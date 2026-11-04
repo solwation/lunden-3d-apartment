@@ -1,7 +1,7 @@
-import { SQUIRRELS as C } from './config.js';
+import { SQUIRRELS as C,NUT_DROPS as D } from './config.js';
 
 // #1686: the squirrels and their nuts shared between the players near them. No three.js, so a node test can drive it.
-// The Worker room (cloudflare/squirrels.js) owns no simulation and writes nothing to storage or KV: it picks ONE leader among the
+// The Worker room owns no simulation. Animal poses remain memory-only; #1855 persists bounded explicit drops/claims in the existing DO. It picks ONE leader among the
 // players near the squirrels (the earliest to arrive; the next one when it leaves) and relays, like the pony paddock (#1644). The leader's
 // client keeps simulating the brains and the NutField as before and sends two things: the animals' poses ('s', every `sync.every` s)
 // and the nuts lying out ('n', only when they changed, at most every `sync.nutEvery` s). The others (followers) do not simulate: they
@@ -46,7 +46,7 @@ export function encodeNuts(slots) {
 export class SquirrelSync {
   /** field: NutField; brains: the SquirrelBrain list; send(m): false when not connected; hooks: { fed(an, who), dropHeld(slot) }. */
   constructor({ field, brains, send, hooks = {}, me = () => '' }) {
-    Object.assign(this, { field, brains, send, hooks, me, near: false, lead: true, n: 0, t: 0, lastSnap: -1e9, sT: 0, nT: 0, nutKey: '', force: true, tg: [], remoteHeld: new Map(), sent: 0 });
+    Object.assign(this, { field, brains, send, hooks, me, near: false, lead: true, n: 0, t: 0, lastSnap: -1e9, sT: 0, nT: 0, nutKey: '', force: true, dropVersion:0,pending:new Map(),sequence:0,feedReceipts:new Set(), tg: [], remoteHeld: new Map(), sent: 0 });
   }
   /** Talking to the room: only near the squirrels and with somebody else involved (or following). */
   get sharing() { return this.near && (this.n > 0 || !this.lead); }
@@ -61,6 +61,13 @@ export class SquirrelSync {
   receive(m) {
     const f = this.field;
     switch (m.k) {
+      case 'D': {this.dropVersion=m.v===2?2:0;if(this.dropVersion!==2)break;const rows=new Map((m.d??[]).map(d=>[d.s,d]));
+        for(const[i,s]of f.slots.entries())if(s.sharedDrop&&!rows.has(i)){s.sharedDrop=false;s.dropP=s.dropQ=null;s.alive=false;s.held=false;s.by=null;}
+        for(const[i,b]of m.g??[]){const s=f.slots[i];if(!s||rows.has(i))continue;if(s.born<=b){s.born=b;s.alive=false;s.held=false;s.by=null;s.sharedDrop=false;}}
+        for(const[i,d]of rows){const s=f.slots[i];if(!s)continue;Object.assign(s,{sharedDrop:true,alive:true,born:d.b,kind:d.kd,held:!!d.held,by:d.held&&d.held!==this.me()?d.held:null,x:d.p[0],y:d.p[1],z:d.p[2],dropP:[...d.p],dropQ:[...d.q],poseDirty:!d.held,netOwned:d.held===this.me()});for(const[n,p]of this.pending)if(p.s===i&&p.b===d.b&&((p.k==='t'&&d.held===this.me())||(p.k==='p'&&!d.held&&d.last?.i===this.me()&&d.last.n===n))){this.pending.delete(n);s.awaiting=false;p.done(true,{put:p.k==='p'});}}
+        break;}
+      case 'ok': {const p=this.pending.get(m.n);if(p&&p.s===m.s&&p.b===m.b){this.pending.delete(m.n);p.slot.awaiting=false;if(p.k==='t')p.slot.netOwned=true;p.done(true,m);}break;}
+
       case 'L': {
         if (m.off || m.lead === false) { this.lead = false; this.n = 0; break; }
         const was = this.lead; this.lead = true; this.n = m.n | 0; this.force = true; this.remoteHeld.clear();
@@ -73,7 +80,7 @@ export class SquirrelSync {
       case 'g': { const s = f.slots[m.s]; if (!this.lead && s && s.born === m.b && !s.held) s.alive = false; break; }
       case 'p': {
         const s = f.slots[m.s]; if (!s) break;
-        Object.assign(s, { alive: true, held: false, by: null, x: m.x, z: m.z, y: f.ground(m.x, m.z), kind: m.kd, born: m.b, age: 0, life: s.life > 0 ? s.life : between(C.life, f.rnd) });
+        Object.assign(s, { alive: true, held: false, by: null, x: m.p?.[0]??m.x, z: m.p?.[2]??m.z, y: m.p?.[1]??f.ground(m.x, m.z),...(m.p?{sharedDrop:true,dropP:[...m.p],dropQ:[...m.q],poseDirty:true}:{}), kind: m.kd, born: m.b, age: 0, life: s.life > 0 ? s.life : between(C.life, f.rnd) });
         if (this.remoteHeld.get(m.i) === m.s) this.remoteHeld.delete(m.i);
         this.force = true; break;
       }
@@ -82,8 +89,10 @@ export class SquirrelSync {
         s.held = true; s.by = m.i; this.remoteHeld.set(m.i, m.s); this.force = true; break;
       }
       case 'x': { const s = f.slots[m.s]; if (this.lead && s && s.born === m.b && s.by) { this.remoteHeld.delete(s.by); f.remove(s); this.force = true; } break; }
-      case 'no': { const s = f.slots[m.s]; if (s && s.born === m.b) this.hooks.dropHeld?.(s); break; }
-      case 'F': this.hooks.fed?.(m.an, m.i); break;
+      case 'no': {const pending=this.pending.get(m.n);if(pending){this.pending.delete(m.n);pending.slot.awaiting=false;pending.done(false,m);this.hooks.notice?.(m.why??'Någon annan hann före');break;} const s = f.slots[m.s]; if (s && s.born === m.b) this.hooks.dropHeld?.(s); break; }
+      case 'F': {const id=Number.isInteger(m.s)&&Number.isInteger(m.b)?`${m.s}:${m.b}`:null;if(id&&this.feedReceipts.has(id))break;if(id){this.feedReceipts.add(id);if(this.feedReceipts.size>128)this.feedReceipts.delete(this.feedReceipts.values().next().value);}for(const[n,p]of this.pending)if(p.k==='f'&&p.s===m.s&&p.b===m.b){this.pending.delete(n);p.slot.awaiting=false;}
+        this.hooks.fed?.(m.an,m.i);const s=f.slots[m.s];if(s&&s.born===m.b){s.netOwned=false;s.awaiting=false;s.sharedDrop=false;f.remove(s);}break;}
+
     }
   }
   /** The follower adopts a leader snapshot of the animals. */
@@ -106,10 +115,10 @@ export class SquirrelSync {
     const f = this.field, listed = new Set();
     for (let i = 0; i + 3 < v.length; i += 4) {
       const i0 = v[i] & 63, s = f.slots[i0]; if (!s) continue;
-      listed.add(i0); if (s.held) continue;
+      listed.add(i0); if (s.held||s.sharedDrop) continue;
       Object.assign(s, { alive: true, kind: v[i] >> 6, x: v[i + 1] / 100, z: v[i + 2] / 100, born: v[i + 3], age: 0 }); s.y = f.ground(s.x, s.z);
     }
-    f.slots.forEach((s, i) => { if (!listed.has(i) && s.alive && !s.held) s.alive = false; });
+    f.slots.forEach((s, i) => { if (!listed.has(i) && s.alive && !s.held&&!s.sharedDrop) s.alive = false; });
   }
   /** Per frame: the leader sends, a follower glides. */
   tick(dt) {
@@ -134,10 +143,15 @@ export class SquirrelSync {
     }
   }
   // --- the local visitor's own nut actions (optimistic: the nut moves at once, the room arbitrates) ---
+  request(k,slot,extra,done=()=>{}){if(slot.awaiting)return false;const n=++this.sequence,s=this.field.slots.indexOf(slot);slot.awaiting=true;this.pending.set(n,{k,s,b:slot.born,slot,done,at:Date.now()});if(!this.say({k,s,b:slot.born,n,...extra})){this.pending.delete(n);slot.awaiting=false;return false;}return true;}
+  requestTake(slot,done){if(!this.near&&!slot.sharedDrop)this.setNear(true);return this.request('t',slot,{h:[slot.kind,slot.x,slot.y,slot.z]},done);}
+  requestPut(slot,p,q,done){return this.request('p',slot,{x:p[0],z:p[2],p,q},done);}
+  poll(){for(const[n,p]of this.pending)if(Date.now()-p.at>D.answerMs){this.pending.delete(n);p.slot.awaiting=false;p.done(false,{why:'Väntar på svar från rummet'});this.hooks.notice?.('Inget kvitto från rummet. Försök igen');}}
   take(slot) { if (this.sharing) this.say({ k: 't', s: this.field.slots.indexOf(slot), b: slot.born }); }
   put(slot, x, z) { if (this.sharing) this.say({ k: 'p', s: this.field.slots.indexOf(slot), b: slot.born, x: r2(x), z: r2(z) }); }
   /** The leader's squirrel took the nut `slot` from player `who` (a remote id or our own). */
   feed(slot, who, an) {
+    if(this.dropVersion===2){return this.request('f',slot,{to:who,an},()=>{});}
     if (this.sharing) this.say({ k: 'f', s: this.field.slots.indexOf(slot), b: slot.born, to: who, an });
     if (this.remoteHeld.get(who) === this.field.slots.indexOf(slot)) this.remoteHeld.delete(who);
   }
