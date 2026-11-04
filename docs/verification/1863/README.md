@@ -64,7 +64,7 @@ covered by the existing targeted tests and #1854 evidence, not reasserted by the
 No mesh/material/light/network message type or persistent participation model was added.
 No architecture changes, so A/B/C/L equivalents do not apply. Public transfer is **not
 applicable**: this is original-only gameplay/network-notice behavior, excluded publicly.
-Provisional changelog id 1438 is for the conductor to renumber at integration.
+Changelog id 1439 was selected at conductor integration, preserving #1862’s existing1438.
 `sources.json` binds the runtime, fixture inputs, raw results and final image bytes.
 All owned browser/inspector/Worker8952/HTTP8951 processes were stopped before handoff.
 The conductor owns integration, pinned embedded images, actual triggered Pages/Worker
@@ -74,3 +74,5 @@ status and closure; this worker neither pushes nor closes.
 passed before the shared browser wait; browser resource acquired about 13:07 and the
 single-app recovered HUD evidence completed about 13:13. Verification was reassessed
 at the ten-minute point: reused green checks and finished only the missing HUD proof.
+
+Conductor integration retained the prior placement change (#1862) in main/config: only its GroundPlacement wiring/outdoor Life support constants differ from this fixture baseline; BOULE config, event-to-HUD callback and all tested boule/Worker inputs remain exact. Every other recorded source/image hash matches. Source-bound green checks are reused across this unrelated rebase; no routine functional rerun. All three result images were directly reviewed by the conductor.
