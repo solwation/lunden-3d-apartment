@@ -185,7 +185,7 @@ import { BestiaryObserver, observable } from './bestiaryworld.js';
 import { withStore as idbWithStore } from './idb.js';
 import { Lights } from './lights.js';
 import { VisitLights } from './visitlights.js';
-import { setupInstall, standalone } from './install.js';
+import { setupInstall } from './install.js';
 import { Marks } from './marks.js';
 import { Breaker } from './breaking.js';
 import { Target } from './target.js';
@@ -1505,7 +1505,14 @@ function look(dyaw, dpitch) {
 }
 
 let played = false; // left the start screen at least once this visit (an F5 then carries on, #203)
+function updateAppMenu() {
+  const quit = document.getElementById('quit');
+  quit.hidden = isPhoneDevice() || activeMode === 'touch';
+  if (quit.hidden) document.getElementById('quit-help').hidden = true;
+  document.getElementById('app-section-title').hidden = quit.hidden && document.getElementById('install-btn').hidden;
+}
 function showOverlay(show) {
+  updateAppMenu();
   if (overlay.hidden === !show) return;
   if (!show) menuSettings.close(false);
   resetFrameRate('overlay-' + (show ? 'show' : 'hide'));
@@ -1548,6 +1555,7 @@ function showOverlay(show) {
 let startClickAt = -1e9, lockRetried = false;
 function startMouse() {
   activeMode = 'mouse';
+  updateAppMenu();
   initAudio();
   startClickAt = performance.now(); lockRetried = false;
   canvas.requestPointerLock()?.catch?.(() => {}); // a refusal also fires pointerlockerror (handled below)
@@ -3935,11 +3943,10 @@ const resetHome = {
 };
 // Call close directly in the user gesture. Ordinary browser tabs may refuse it;
 // keep the menu usable and explain how to close manually in that case.
-// An installed app (iOS home-screen, Android standalone/fullscreen) cannot close itself, so the button would be dead there (#1721).
-if (standalone()) { // the install button never shows there either, so the section heading would be left over
-  document.getElementById('quit').hidden = true;
-  document.getElementById('app-section-title').hidden = true;
-}
+// Desktop, including an installed app, keeps Quit; mobile and the chosen touch
+// mode hide it. Touch capability alone must not hide a hybrid computer's mouse menu.
+updateAppMenu();
+new MutationObserver(updateAppMenu).observe(document.getElementById('install-btn'), { attributes: true, attributeFilter: ['hidden'] });
 onTap(document.getElementById('quit'), () => {
   keepSession();
   if (life.dirty) life.flush();

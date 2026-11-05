@@ -157,7 +157,7 @@ Utekatter som möts kan ibland närma sig och mysa nos mot nos med några små h
 <kbd>E</kbd> eller välj **Klappa** för att klappa katten eller kattungen. Välj **Ta upp** (2 på tangentbordet) för att bära den i famnen medan den spinner. Miele har fortfarande Ta upp som första val. Klicka eller tryck Krama för en kram, och använd E mot golvet för att sätta ner den: den jamar och går därifrån. Håller du redan något kan du klappa katten med E. 🐈 Statistiken (katter, dörrar, steg …) sparas i webbläsaren; varje
 sak du gör visas som en liten bricka ("✋ Klappat katt +1").
 
-*Avsluta* på Escape-menyn försöker stänga fönstret. Om webbläsaren blockerar det visas hjälp för att stänga manuellt.
+*Avsluta* i datorns musmeny försöker stänga fönstret, även i installerad app. Touchläget döljer knappen. Om webbläsaren blockerar stängningen visas hjälp för att stänga manuellt.
 
 *Återställ* på startskärmen ställer tillbaka hela hemmet som vid första besöket (dörrar, lampor, saker,
 gardiner, möblerna, klockan) — uppsatta teckningar, poängen, namnet på topplistan och kattfotona finns kvar.

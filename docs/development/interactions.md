@@ -62,6 +62,17 @@ floss → Gangnam Style → stop since #1757 and names the next step; `tools/dan
 clicks/taps and the pill's place at 844×390 and 390×844 ([audio](animals-audio.md#playroom-dances-floss-1622-and-gangnam-style-1757)).
 
 Cats (#1061): free-hand E / touch action takes adults and kittens into both arms; click / Krama cuddles, E on floor/bed/sofa puts them down. Occupied-hand E still pets. The shared `MieleHeld` preserves cat scale and adjusts hug grips; carry purrs cancel on release/hide/bicycle stow. See [animal behavior and verification](animals-audio.md#cat-and-sound).
+## Quit in the menu (#1873)
+
+`main.js` updates Avsluta from the actual selected input mode whenever the menu
+opens or mouse play starts. Phones and touch mode hide it; desktop mouse mode
+keeps it, including installed apps and computers with touch capability. The App &
+fönster heading remains while either Quit or Install is visible; install-button
+visibility changes refresh it too. Quit still saves the current session and dirty
+life state, calls `window.close()` directly in the user gesture, and shows manual
+close instructions if the browser refuses. `tools/quitmenutest.cjs` covers the
+browser/PWA/mobile/hybrid matrix and actual mode changes.
+
 ## Outdoor exercise (#1811)
 
 `src/outdoorgym.js` owns `outdoorGym` targets and transient station/effort/repetition state. `main.js` registers its targets and collision, starts the ordinary Rest entry glide with a moving `follow` spot, updates effort before Rest, and gives active exercise a short status plus “Avsluta träningen”. The Rest API is unchanged; setupTouch has an optional blocked predicate to suspend look/stick input during exercise. E/click or the native touch action begins; E, Space/C or the touch action ends via ordinary stand-up, preferring the still-free original entry location. Menu teleport/death's usual stand path clears gym state and resets the moving press log. Pausing freezes the exercise; station/animation state remains transient and no ordinary sitting/lying point is awarded. Since #1828, completed cycles alone call `onRep(n)` → `bump('gymReps', n)`; the cumulative counter and awarded exercise points share the existing statistics save. Entry requires empty hands and standing without flight/riding/climbing/equipment. The original delivery used existing multiplayer Rest poses; #1842 extends the optional spectator pose hint below. The scoring protocol remains unchanged.
