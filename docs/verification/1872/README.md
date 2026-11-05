@@ -161,3 +161,8 @@ runtime performance improvement to transfer, so no public renderer change or
 prototype dependency is introduced. The separate positive EdgesGeometry result
 is already transferred and verified in public #254. Original timing is not claimed
 as evidence of downstream performance.
+
+Evidence and prototype published in `ca05fda16ff073ddd9edf1ccbc190231b29d2dd1`.
+[SHA-pinned result images were posted before issue closure](https://github.com/solwation/lunden-3d-apartment/issues/1872#issuecomment-6655093424).
+[The Pages workflow passed](https://github.com/solwation/lunden-3d-apartment/actions/runs/42006821516);
+the experiment stays excluded from the deployed app.
