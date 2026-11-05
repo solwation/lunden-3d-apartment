@@ -1,0 +1,43 @@
+{
+  "checks": [
+    "desktop: initial Quit follows device, including installed desktop",
+    "desktop: no empty app heading",
+    "desktop: native Touch choice hides Quit",
+    "desktop: touch hides empty heading",
+    "desktop: install offer keeps app heading in touch mode",
+    "desktop: native mouse choice restores Quit after touch",
+    "desktop-pwa: initial Quit follows device, including installed desktop",
+    "desktop-pwa: no empty app heading",
+    "desktop PWA: direct close attempted and session saved, refusal explained",
+    "desktop-pwa: native Touch choice hides Quit",
+    "desktop-pwa: touch hides empty heading",
+    "desktop-pwa: install offer keeps app heading in touch mode",
+    "desktop-pwa: native mouse choice restores Quit after touch",
+    "hybrid-pwa: initial Quit follows device, including installed desktop",
+    "hybrid-pwa: no empty app heading",
+    "hybrid-pwa: native Touch choice hides Quit",
+    "hybrid-pwa: touch hides empty heading",
+    "hybrid-pwa: install offer keeps app heading in touch mode",
+    "hybrid-pwa: native mouse choice restores Quit after touch",
+    "phone-pwa: initial Quit follows device, including installed desktop",
+    "phone-pwa: no empty app heading",
+    "zero page errors"
+  ],
+  "errors": [],
+  "sourceRevision": "e5c6c3f0aa0e93b03fa01fbdd067f5373853e255",
+  "environment": {
+    "browser": "Chromium 1248 full, headless SwiftShader",
+    "device": "WSL Intel i7-10700",
+    "pwa": "navigator.standalone simulated at boot",
+    "phone": "hasTouch + production ?phone detection, desktop viewport",
+    "physicalDevicesTested": false,
+    "windowClose": "stubbed refusal, direct call and session persistence checked",
+    "draw": "test=lazy functional checks; testkit.shot full-quality rendered screenshots"
+  },
+  "sourceHashes": {
+    "src/main.js": "31c75ebe5deb3c8e216040bb3d667434bed7ef0acf677bf1153d6d904133545f",
+    "src/install.js": "03248bb1fcb943d2eb687d992bde220df4a251247b064a7b4f36dd17fd20144e",
+    "src/menusettings.js": "abfa621de240b92b571e6fe341e27d4eb2ff504c2d36f5319a77572dc1e30d0e",
+    "tools/quitmenutest.cjs": "f82b44bdcc21043a85166aded504d7c0e389e3cd88f68072065c4bdddfc21580"
+  }
+}
