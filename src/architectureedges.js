@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { EdgesGeometry } from './vendor/three/EdgesGeometry.js';
 
 // A small construction-only triangle tree keeps union probes cheap even for
 // fitted geometry baked into one large mesh. It is never used during frames.
@@ -259,7 +260,7 @@ export function architectureEdges(root, { moving = [], exclude = [], floor = 3, 
       if (mats.every(m => m && !m.transparent && !m.userData.skin)) {
         for (const geometry of o.userData.edgeSources ?? [o.geometry]) {
           let edges = cache.get(geometry);
-          if (!edges) { edges = new THREE.EdgesGeometry(geometry, 30); cache.set(geometry, edges); }
+          if (!edges) { edges = new EdgesGeometry(geometry, 30); cache.set(geometry, edges); }
           const transform = anchor.matrixWorld.clone().invert().multiply(o.matrixWorld);
           let bodies = solids.get(anchor); if (!bodies) solids.set(anchor, bodies = []);
           let index = creases.get(anchor); if (!index) creases.set(anchor, index = creaseIndex());

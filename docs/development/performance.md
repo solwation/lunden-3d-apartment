@@ -1,5 +1,14 @@
 # Rendering performance
 
+## Three.js r187 assessment and edge construction (#1871)
+
+Production remains pinned to r170/WebGL. The r187 meshlet pipeline needs a WebGPU
+renderer/material migration; [findings, measured scope and follow-up](../verification/1871/README.md).
+`architectureedges.js` selectively uses the MIT-licensed r187 `vendor/three/EdgesGeometry.js`
+Map lookup optimization with unchanged output. Remove the local helper after a verified
+r187+ library upgrade. Tests: `tools/edgesbackporttest.mjs` and `tools/edgesbackportbrowser.cjs`.
+
+
 Raw callback interval diagnostics (#1507): [capture protocol, state classification, statistics and measurement limits](frame-intervals.md).
 
 ## Exact terrain reuse during construction (#1838)
