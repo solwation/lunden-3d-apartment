@@ -117,6 +117,20 @@ Run `THREE_DIR=/path/to/three node tools/roadendstest.mjs` (three 0.170.0) and t
 
 `tools/browsertest.sh node tools/outdoorgymtest.cjs SITE OUT` runs six-mesh/finite-equipment checks and native keyboard/touch use of all three gym stations. It checks repeated equipment-specific movement, safe return to the actual clear entry and menu interruption. `GYM_TEST_MODE=touch` runs only the touch remainder when unchanged keyboard evidence already passed. `THREE_DIR` optionally routes the pinned CDN dependency to a local package. The result records driver completion/errors, so a partial run cannot be green. Initial fixture failures (wrong mouse entry and shot-mode hidden HUD) are not product failures. Images and source limits: [docs/verification/1811](../verification/1811/). No physical-phone or hardware-performance certification.
 
+## Desktop Quit in browser and installed app (#1873)
+
+`tools/browsertest.sh node tools/quitmenutest.cjs SITE OUT` checks the real app's
+ordinary desktop, simulated installed desktop, hybrid with touch points and fine
+primary pointer, and phone mode. All 22 checks passed, including native Touch →
+Mouse selections, install-offer heading changes, saved session and help after a
+stubbed close refusal; zero page errors. Screenshots use actual full-quality draws.
+[Source, images and limitations](../verification/1873/README.md). The earlier driver
+mistakenly tried Quit behind Settings; correcting that fixture was the only rerun.
+No physical-device or native-PWA closing result is claimed. Published code/images
+`31bf11efb57dca68d33b9c30b202019d1efd05d7`; [actual Pages build and deployment
+passed](https://github.com/solwation/lunden-3d-apartment/actions/runs/42039542002).
+Public has no equivalent Quit/install section, so this fix has no applicable port.
+
 ## Browser memory
 
 Run every browser test through `tools/browsertest.sh` (#1599), e.g.
