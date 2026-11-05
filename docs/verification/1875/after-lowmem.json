@@ -1,0 +1,1226 @@
+{
+  "phase": "after",
+  "low": true,
+  "harnessSha256": "a45a1529bb51b673284371b86bf675d1f339eac7c792bebb0f1c75adfc33b446",
+  "sourceSha256": "7c9c9ccacd99abb8b011bbe77b6f1cd00ea5e580fe29f68975bdb02c94707b38",
+  "browser": "156.0.8078.4",
+  "errors": [],
+  "sceneAudit": {
+    "geometries": 3925,
+    "vertices": 5260497,
+    "nonUnit": 2647,
+    "zero": 25169,
+    "rows": [
+      {
+        "name": "Mesh",
+        "vertices": 246,
+        "nonUnit": 41,
+        "zero": 0,
+        "min": 0.004000000189989805,
+        "max": 0.004000000189989805
+      },
+      {
+        "name": "contents>Mesh",
+        "vertices": 493,
+        "nonUnit": 29,
+        "zero": 0,
+        "min": 0.027699999511241913,
+        "max": 0.027699999511241913
+      },
+      {
+        "name": "contents>Mesh",
+        "vertices": 175,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.011022250162909324,
+        "max": 0.011022250650960788
+      },
+      {
+        "name": "contents>Mesh",
+        "vertices": 493,
+        "nonUnit": 29,
+        "zero": 0,
+        "min": 0.027699999511241913,
+        "max": 0.027699999511241913
+      },
+      {
+        "name": "contents>Mesh",
+        "vertices": 175,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.011022250162909324,
+        "max": 0.011022250650960788
+      },
+      {
+        "name": "contents>Mesh",
+        "vertices": 493,
+        "nonUnit": 29,
+        "zero": 0,
+        "min": 0.027699999511241913,
+        "max": 0.027699999511241913
+      },
+      {
+        "name": "contents>Mesh",
+        "vertices": 175,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.011022250162909324,
+        "max": 0.011022250650960788
+      },
+      {
+        "name": "contents>Mesh",
+        "vertices": 328,
+        "nonUnit": 41,
+        "zero": 0,
+        "min": 0.09792043007119462,
+        "max": 0.09792043007423723
+      },
+      {
+        "name": "contents>Mesh",
+        "vertices": 328,
+        "nonUnit": 41,
+        "zero": 0,
+        "min": 0.09792043007119462,
+        "max": 0.09792043007423723
+      },
+      {
+        "name": "contents>Mesh",
+        "vertices": 328,
+        "nonUnit": 41,
+        "zero": 0,
+        "min": 0.09792043007119462,
+        "max": 0.09792043007423723
+      },
+      {
+        "name": "Mesh",
+        "vertices": 14808,
+        "nonUnit": 0,
+        "zero": 1,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 14808,
+        "nonUnit": 0,
+        "zero": 1,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 494,
+        "nonUnit": 0,
+        "zero": 156,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 494,
+        "nonUnit": 0,
+        "zero": 156,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 494,
+        "nonUnit": 0,
+        "zero": 156,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 494,
+        "nonUnit": 0,
+        "zero": 156,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 494,
+        "nonUnit": 0,
+        "zero": 156,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 494,
+        "nonUnit": 0,
+        "zero": 156,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 12624,
+        "nonUnit": 0,
+        "zero": 2,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 3420,
+        "nonUnit": 0,
+        "zero": 180,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 5184,
+        "nonUnit": 0,
+        "zero": 96,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 275,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.011045360956333556,
+        "max": 0.011045360962127618
+      },
+      {
+        "name": "Mesh",
+        "vertices": 200,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.02690724708641811,
+        "max": 0.026907248099141613
+      },
+      {
+        "name": "Mesh",
+        "vertices": 222,
+        "nonUnit": 37,
+        "zero": 0,
+        "min": 0.07039999961853027,
+        "max": 0.07039999961853027
+      },
+      {
+        "name": "Mesh",
+        "vertices": 165,
+        "nonUnit": 33,
+        "zero": 0,
+        "min": 0.035813405094742116,
+        "max": 0.03581340516643773
+      },
+      {
+        "name": "Mesh",
+        "vertices": 369,
+        "nonUnit": 41,
+        "zero": 0,
+        "min": 0.004800000227987766,
+        "max": 0.004800000227987766
+      },
+      {
+        "name": "Mesh",
+        "vertices": 1976,
+        "nonUnit": 0,
+        "zero": 624,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 1976,
+        "nonUnit": 0,
+        "zero": 624,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "patio-fibre-clay-pot",
+        "vertices": 735,
+        "nonUnit": 0,
+        "zero": 1,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 23040,
+        "nonUnit": 0,
+        "zero": 1632,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 11196,
+        "nonUnit": 60,
+        "zero": 72,
+        "min": 0.15401298563110144,
+        "max": 0.1540129856322666
+      },
+      {
+        "name": "Mesh",
+        "vertices": 1419,
+        "nonUnit": 129,
+        "zero": 0,
+        "min": 0.3499999940395355,
+        "max": 0.3499999940395355
+      },
+      {
+        "name": "Mesh",
+        "vertices": 1419,
+        "nonUnit": 129,
+        "zero": 0,
+        "min": 0.7910000085830688,
+        "max": 0.7910000085830688
+      },
+      {
+        "name": "Mesh",
+        "vertices": 396,
+        "nonUnit": 33,
+        "zero": 0,
+        "min": 0.1550000011920929,
+        "max": 0.1550000011920929
+      },
+      {
+        "name": "Mesh",
+        "vertices": 45252,
+        "nonUnit": 0,
+        "zero": 5766,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 7788,
+        "nonUnit": 0,
+        "zero": 1248,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "site-terrain",
+        "vertices": 81486,
+        "nonUnit": 0,
+        "zero": 4051,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "west-facade",
+        "vertices": 9204,
+        "nonUnit": 0,
+        "zero": 78,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "east-facade",
+        "vertices": 2832,
+        "nonUnit": 0,
+        "zero": 192,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "north-facade",
+        "vertices": 288,
+        "nonUnit": 0,
+        "zero": 12,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "north-modern",
+        "vertices": 600,
+        "nonUnit": 0,
+        "zero": 120,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "south-facade",
+        "vertices": 28170,
+        "nonUnit": 0,
+        "zero": 1056,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "south-roof",
+        "vertices": 5256,
+        "nonUnit": 0,
+        "zero": 6,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "south-land",
+        "vertices": 204057,
+        "nonUnit": 0,
+        "zero": 5085,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "lägenhet L1004>Mesh",
+        "vertices": 14808,
+        "nonUnit": 0,
+        "zero": 1,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "lägenhet L1004>Mesh",
+        "vertices": 14808,
+        "nonUnit": 0,
+        "zero": 1,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "lägenhet L1201>Mesh",
+        "vertices": 14808,
+        "nonUnit": 0,
+        "zero": 1,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "lägenhet L1201>Mesh",
+        "vertices": 14808,
+        "nonUnit": 0,
+        "zero": 1,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "billiard-table",
+        "vertices": 26124,
+        "nonUnit": 216,
+        "zero": 0,
+        "min": 2.299999952316284,
+        "max": 2.299999952316284
+      },
+      {
+        "name": "silvialampan",
+        "vertices": 2310,
+        "nonUnit": 0,
+        "zero": 77,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 754,
+        "nonUnit": 29,
+        "zero": 0,
+        "min": 0.009392017647020552,
+        "max": 0.009392017689716542
+      },
+      {
+        "name": "Mesh",
+        "vertices": 696,
+        "nonUnit": 29,
+        "zero": 0,
+        "min": 0.007984985872720113,
+        "max": 0.00798498592293955
+      },
+      {
+        "name": "Mesh",
+        "vertices": 348,
+        "nonUnit": 29,
+        "zero": 0,
+        "min": 0.03341496584826702,
+        "max": 0.03341496585005132
+      },
+      {
+        "name": "lagavulin>Mesh",
+        "vertices": 400,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.004000000189989805,
+        "max": 0.004000000189989805
+      },
+      {
+        "name": "lagavulin>Mesh",
+        "vertices": 126,
+        "nonUnit": 21,
+        "zero": 0,
+        "min": 0.019999999552965164,
+        "max": 0.019999999552965164
+      },
+      {
+        "name": "macallan>Mesh",
+        "vertices": 375,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.004000000189989805,
+        "max": 0.004000000189989805
+      },
+      {
+        "name": "macallan>Mesh",
+        "vertices": 126,
+        "nonUnit": 21,
+        "zero": 0,
+        "min": 0.02500000037252903,
+        "max": 0.02500000037252903
+      },
+      {
+        "name": "glenfiddich>Mesh",
+        "vertices": 350,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.0035000001080334187,
+        "max": 0.0035000001080334187
+      },
+      {
+        "name": "glenfiddich>Mesh",
+        "vertices": 147,
+        "nonUnit": 21,
+        "zero": 0,
+        "min": 0.02199999988079071,
+        "max": 0.02199999988079071
+      },
+      {
+        "name": "ardbeg>Mesh",
+        "vertices": 375,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.004000000189989805,
+        "max": 0.004000000189989805
+      },
+      {
+        "name": "ardbeg>Mesh",
+        "vertices": 126,
+        "nonUnit": 21,
+        "zero": 0,
+        "min": 0.017999999225139618,
+        "max": 0.017999999225139618
+      },
+      {
+        "name": "balvenie>Mesh",
+        "vertices": 350,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.003700000001117587,
+        "max": 0.003700000001117587
+      },
+      {
+        "name": "balvenie>Mesh",
+        "vertices": 126,
+        "nonUnit": 21,
+        "zero": 0,
+        "min": 0.01899999938905239,
+        "max": 0.01899999938905239
+      },
+      {
+        "name": "Mesh",
+        "vertices": 1281,
+        "nonUnit": 0,
+        "zero": 61,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "tignanello>Mesh",
+        "vertices": 450,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.004031128951575924,
+        "max": 0.00403112901507922
+      },
+      {
+        "name": "tignanello>Mesh",
+        "vertices": 126,
+        "nonUnit": 21,
+        "zero": 0,
+        "min": 0.019999999552965164,
+        "max": 0.019999999552965164
+      },
+      {
+        "name": "domperignon>Mesh",
+        "vertices": 400,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.003000000026077032,
+        "max": 0.003000000026077032
+      },
+      {
+        "name": "domperignon>Mesh",
+        "vertices": 126,
+        "nonUnit": 21,
+        "zero": 0,
+        "min": 0.024000000208616257,
+        "max": 0.024000000208616257
+      },
+      {
+        "name": "sassicaia>Mesh",
+        "vertices": 450,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.004031128951575924,
+        "max": 0.00403112901507922
+      },
+      {
+        "name": "sassicaia>Mesh",
+        "vertices": 126,
+        "nonUnit": 21,
+        "zero": 0,
+        "min": 0.019999999552965164,
+        "max": 0.019999999552965164
+      },
+      {
+        "name": "barolo>Mesh",
+        "vertices": 400,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.003000000026077032,
+        "max": 0.003000000026077032
+      },
+      {
+        "name": "barolo>Mesh",
+        "vertices": 126,
+        "nonUnit": 21,
+        "zero": 0,
+        "min": 0.01899999938905239,
+        "max": 0.01899999938905239
+      },
+      {
+        "name": "penfolds>Mesh",
+        "vertices": 450,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.004031128951575924,
+        "max": 0.00403112901507922
+      },
+      {
+        "name": "penfolds>Mesh",
+        "vertices": 126,
+        "nonUnit": 21,
+        "zero": 0,
+        "min": 0.019999999552965164,
+        "max": 0.019999999552965164
+      },
+      {
+        "name": "krug>Mesh",
+        "vertices": 375,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.0024999999441206455,
+        "max": 0.0024999999441206455
+      },
+      {
+        "name": "krug>Mesh",
+        "vertices": 126,
+        "nonUnit": 21,
+        "zero": 0,
+        "min": 0.019999999552965164,
+        "max": 0.019999999552965164
+      },
+      {
+        "name": "amarone>Mesh",
+        "vertices": 450,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.004031128951575924,
+        "max": 0.00403112901507922
+      },
+      {
+        "name": "amarone>Mesh",
+        "vertices": 126,
+        "nonUnit": 21,
+        "zero": 0,
+        "min": 0.019999999552965164,
+        "max": 0.019999999552965164
+      },
+      {
+        "name": "chateauneuf>Mesh",
+        "vertices": 400,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.003000000026077032,
+        "max": 0.003000000026077032
+      },
+      {
+        "name": "chateauneuf>Mesh",
+        "vertices": 126,
+        "nonUnit": 21,
+        "zero": 0,
+        "min": 0.01899999938905239,
+        "max": 0.01899999938905239
+      },
+      {
+        "name": "Mesh",
+        "vertices": 2655,
+        "nonUnit": 120,
+        "zero": 0,
+        "min": 0.052925001829862595,
+        "max": 0.052925001829862595
+      },
+      {
+        "name": "Mesh",
+        "vertices": 29016,
+        "nonUnit": 0,
+        "zero": 2952,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 2112,
+        "nonUnit": 96,
+        "zero": 0,
+        "min": 0.04600000008940697,
+        "max": 0.04600000008940697
+      },
+      {
+        "name": "Mesh",
+        "vertices": 1617,
+        "nonUnit": 0,
+        "zero": 2,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 1189,
+        "nonUnit": 0,
+        "zero": 2,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 1440,
+        "nonUnit": 0,
+        "zero": 72,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 720,
+        "nonUnit": 0,
+        "zero": 120,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 304,
+        "nonUnit": 19,
+        "zero": 0,
+        "min": 0.009392017660264963,
+        "max": 0.009392017689716542
+      },
+      {
+        "name": "Mesh",
+        "vertices": 200,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.03252369537949562,
+        "max": 0.03252369537949562
+      },
+      {
+        "name": "Mesh",
+        "vertices": 304,
+        "nonUnit": 19,
+        "zero": 0,
+        "min": 0.009392017660264963,
+        "max": 0.009392017689716542
+      },
+      {
+        "name": "Mesh",
+        "vertices": 200,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.03252369537949562,
+        "max": 0.03252369537949562
+      },
+      {
+        "name": "Mesh",
+        "vertices": 102,
+        "nonUnit": 17,
+        "zero": 0,
+        "min": 0.015200000256299973,
+        "max": 0.015200000256299973
+      },
+      {
+        "name": "laundryBasket>Mesh",
+        "vertices": 816,
+        "nonUnit": 0,
+        "zero": 8,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "laundryBasket>Mesh",
+        "vertices": 816,
+        "nonUnit": 0,
+        "zero": 8,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "laundryBasket>Mesh",
+        "vertices": 816,
+        "nonUnit": 0,
+        "zero": 8,
+        "min": null,
+        "max": 0
+      },
+      {
+        "name": "Mesh",
+        "vertices": 467,
+        "nonUnit": 25,
+        "zero": 0,
+        "min": 0.05900000035762787,
+        "max": 0.05900000035762787
+      },
+      {
+        "name": "Mesh",
+        "vertices": 10956,
+        "nonUnit": 60,
+        "zero": 72,
+        "min": 0.13401492787957467,
+        "max": 0.1340149278809137
+      },
+      {
+        "name": "Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.015020818844568396,
+        "max": 0.015020818865674409
+      },
+      {
+        "name": "Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.015020818844568396,
+        "max": 0.015020818865674409
+      },
+      {
+        "name": "Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.016601957933821434,
+        "max": 0.016601957974169898
+      },
+      {
+        "name": "Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.016601957933821434,
+        "max": 0.016601957974169898
+      },
+      {
+        "name": "Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0017643085310704225,
+        "max": 0.0017643085312163858
+      },
+      {
+        "name": "outdoor-cat-Sotis>Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.015020818844568396,
+        "max": 0.015020818865674409
+      },
+      {
+        "name": "outdoor-cat-Sotis>Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.015020818844568396,
+        "max": 0.015020818865674409
+      },
+      {
+        "name": "outdoor-cat-Sotis>Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.016601957933821434,
+        "max": 0.016601957974169898
+      },
+      {
+        "name": "outdoor-cat-Sotis>Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.016601957933821434,
+        "max": 0.016601957974169898
+      },
+      {
+        "name": "outdoor-cat-Sotis>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "outdoor-cat-Sotis>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "outdoor-cat-Sotis>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "outdoor-cat-Sotis>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "outdoor-cat-Sotis>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0017643085310704225,
+        "max": 0.0017643085312163858
+      },
+      {
+        "name": "outdoor-cat-Kanel>Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.015020818844568396,
+        "max": 0.015020818865674409
+      },
+      {
+        "name": "outdoor-cat-Kanel>Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.015020818844568396,
+        "max": 0.015020818865674409
+      },
+      {
+        "name": "outdoor-cat-Kanel>Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.016601957933821434,
+        "max": 0.016601957974169898
+      },
+      {
+        "name": "outdoor-cat-Kanel>Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.016601957933821434,
+        "max": 0.016601957974169898
+      },
+      {
+        "name": "outdoor-cat-Kanel>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "outdoor-cat-Kanel>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "outdoor-cat-Kanel>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "outdoor-cat-Kanel>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "outdoor-cat-Kanel>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0017643085310704225,
+        "max": 0.0017643085312163858
+      },
+      {
+        "name": "outdoor-cat-Findus>Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.015020818844568396,
+        "max": 0.015020818865674409
+      },
+      {
+        "name": "outdoor-cat-Findus>Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.015020818844568396,
+        "max": 0.015020818865674409
+      },
+      {
+        "name": "outdoor-cat-Findus>Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.016601957933821434,
+        "max": 0.016601957974169898
+      },
+      {
+        "name": "outdoor-cat-Findus>Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.016601957933821434,
+        "max": 0.016601957974169898
+      },
+      {
+        "name": "outdoor-cat-Findus>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "outdoor-cat-Findus>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "outdoor-cat-Findus>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "outdoor-cat-Findus>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "outdoor-cat-Findus>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0017643085310704225,
+        "max": 0.0017643085312163858
+      },
+      {
+        "name": "outdoor-cat-Smulan>Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.015020818844568396,
+        "max": 0.015020818865674409
+      },
+      {
+        "name": "outdoor-cat-Smulan>Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.015020818844568396,
+        "max": 0.015020818865674409
+      },
+      {
+        "name": "outdoor-cat-Smulan>Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.016601957933821434,
+        "max": 0.016601957974169898
+      },
+      {
+        "name": "outdoor-cat-Smulan>Mesh",
+        "vertices": 117,
+        "nonUnit": 13,
+        "zero": 0,
+        "min": 0.016601957933821434,
+        "max": 0.016601957974169898
+      },
+      {
+        "name": "outdoor-cat-Smulan>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "outdoor-cat-Smulan>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "outdoor-cat-Smulan>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "outdoor-cat-Smulan>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0016662913397488442,
+        "max": 0.0016662913401323854
+      },
+      {
+        "name": "outdoor-cat-Smulan>Mesh",
+        "vertices": 162,
+        "nonUnit": 9,
+        "zero": 0,
+        "min": 0.0017643085310704225,
+        "max": 0.0017643085312163858
+      },
+      {
+        "name": "newyear-flute-0",
+        "vertices": 170,
+        "nonUnit": 17,
+        "zero": 0,
+        "min": 0.038296379525291475,
+        "max": 0.038296380078866064
+      }
+    ],
+    "payloadUntouched": true
+  },
+  "component": {
+    "maxAngle": 0.32592439276456203,
+    "minLength": 0.02398820544831776,
+    "vertices": 528,
+    "bytes": 2112,
+    "payloadUntouched": true
+  },
+  "timing": {
+    "pairs": [
+      {
+        "before": 110.5,
+        "after": 156.79999999993015
+      },
+      {
+        "before": 154.90000000002328,
+        "after": 193
+      },
+      {
+        "before": 134.40000000002328,
+        "after": 161.19999999995343
+      },
+      {
+        "before": 126.59999999997672,
+        "after": 142.80000000004657
+      },
+      {
+        "before": 109.29999999993015,
+        "after": 166.40000000002328
+      },
+      {
+        "before": 126.5,
+        "after": 145.70000000006985
+      },
+      {
+        "before": 135.59999999997672,
+        "after": 157.80000000004657
+      },
+      {
+        "before": 171.29999999993015,
+        "after": 191.59999999997672
+      },
+      {
+        "before": 140.20000000006985,
+        "after": 213
+      }
+    ],
+    "vertices": 5260497,
+    "note": "Exact before/after production packNormals functions over actual eligible scene arrays; fresh attributes/byte output each pass; alternate order, 2 warmups; one-time CPU packing stage only, not FPS or physical phone."
+  },
+  "render": {
+    "calls": 140,
+    "triangles": 787679,
+    "camera": [
+      1.05,
+      0.62,
+      10.87
+    ]
+  },
+  "quality": 3,
+  "cat": {
+    "name": "Kanel",
+    "view": "Actual production near puppet, after scene packing; fixed inspection lighting and standing pose, reparented without cloning; not natural gameplay camera",
+    "calls": 25,
+    "triangles": 10010
+  }
+}

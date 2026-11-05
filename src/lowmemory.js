@@ -152,7 +152,8 @@ export function freeSceneGeometryCopies(root, renderer) {
 const packed = new WeakMap();
 /**
  * Phone only: the normals as normalized signed bytes (4 per vertex, 4-byte aligned) instead of 3 floats: 12 → 4 bytes on the
- * GPU. The axis-aligned normals of boxes and planes are exact (±127/127); a smooth one is off by < 0.4 %. MUST run before the
+ * GPU. Normalize each direction first (#1875): e.g. r170 LatheGeometry can emit nonunit end normals. Zero normals stay zero.
+ * The axis-aligned normals of boxes and planes are exact (±127/127); each unit component is off by < 0.4 %. MUST run before the
  * geometry's first upload (the old GL buffer of an uploaded attribute would leak) — `freeSceneGeometryCopies` runs before the
  * first draw. Skipped for dynamic attributes (their normals are rewritten as floats) and `keepCpu`. Shared attributes stay shared.
  */
@@ -164,7 +165,9 @@ function packNormals(geo) {
   if (!q) {
     const out = new Int8Array(a.count * 4);
     for (let i = 0, n = a.count; i < n; i++) {
-      out[i * 4] = Math.round(a.array[i * 3] * 127); out[i * 4 + 1] = Math.round(a.array[i * 3 + 1] * 127); out[i * 4 + 2] = Math.round(a.array[i * 3 + 2] * 127);
+      const x = a.array[i * 3], y = a.array[i * 3 + 1], z = a.array[i * 3 + 2];
+      const lengthSq = x * x + y * y + z * z, scale = lengthSq > 0 ? 127 / Math.sqrt(lengthSq) : 0;
+      out[i * 4] = Math.round(x * scale); out[i * 4 + 1] = Math.round(y * scale); out[i * 4 + 2] = Math.round(z * scale);
     }
     q = new THREE.BufferAttribute(out, 4, true);
     packed.set(a, q);

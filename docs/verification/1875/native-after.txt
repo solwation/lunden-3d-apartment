@@ -1,0 +1,47 @@
+TAP version 13
+# Subtest: freed attribute marked for update: no version bump, one console.error with names
+ok 1 - freed attribute marked for update: no version bump, one console.error with names
+  ---
+  duration_ms: 2.901003
+  type: 'test'
+  ...
+# Subtest: label falls back to the mesh name
+ok 2 - label falls back to the mesh name
+  ---
+  duration_ms: 0.614546
+  type: 'test'
+  ...
+# Subtest: three WebGLAttributes does not throw on a freed attribute marked for update
+ok 3 - three WebGLAttributes does not throw on a freed attribute marked for update
+  ---
+  duration_ms: 1.700515
+  type: 'test'
+  ...
+# {"profile":"ZZ copperPot","shortest":0.02398820544831776,"worst":0.32592439276456203,"vertices":528,"packedBytes":2112}
+# Subtest: scaled and zero normals, sharing and untouched geometry payloads
+ok 4 - scaled and zero normals, sharing and untouched geometry payloads
+  ---
+  duration_ms: 3.065154
+  type: 'test'
+  ...
+# Subtest: dynamic, keepCpu, skinned, morph and already-uploaded geometry retain floats
+ok 5 - dynamic, keepCpu, skinned, morph and already-uploaded geometry retain floats
+  ---
+  duration_ms: 1.72304
+  type: 'test'
+  ...
+# Subtest: actual ZZ copper pot end normals retain unit-vector quantization precision
+ok 6 - actual ZZ copper pot end normals retain unit-vector quantization precision
+  ---
+  duration_ms: 14.422093
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 193.784756

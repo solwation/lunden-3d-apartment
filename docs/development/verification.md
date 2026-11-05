@@ -9120,3 +9120,14 @@ and records 31 paired warm/cold/construction samples on the available Intel CPU.
 `TRIANGLE_IMAGES_ONLY=1` recaptures only component evidence without repeating timings.
 Production remains unchanged; [decision, exact measured runner, raw samples, source
 hashes and inspected images](../verification/1876/README.md) retain the limitations.
+
+
+## Normal directions before byte packing (#1875)
+
+`tools/normalpackingtest.mjs` and `tools/lowmemcanarytest.mjs` cover the real copper-pot
+producer, scaled/zero normals, unchanged payloads/sharing and existing exclusions.
+`tools/normalpackingbrowser.cjs` records the actual pre-upload scene inventory, paired
+packing cost and normal/lowmem controls; `tools/normalpackingpot.cjs` illustrates the
+real producer before later scene transforms normalize it. Use the pinned bare-three
+resolver and shared browser wrapper. [Source-bound evidence and limitations](../verification/1875/README.md)
+distinguish improved precision from unproven visible changes in current scene views.

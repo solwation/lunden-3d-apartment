@@ -1,0 +1,8 @@
+{
+  "phase": "before",
+  "sourceSha256": "ea045724d8aa5ae6ed1f3c66679ea66165239a6b8a8fbaba3574784c94a4376d",
+  "browser": "156.0.8078.4",
+  "calls": 4,
+  "triangles": 1752,
+  "normalBytes": 2112
+}

@@ -1,0 +1,20 @@
+{
+  "beforeAfter": {
+    "changedPixels": 0,
+    "moreThan3": 0,
+    "maxChannel": 0,
+    "meanChannel": 0
+  },
+  "beforeNormal": {
+    "changedPixels": 19999,
+    "moreThan3": 0,
+    "maxChannel": 3,
+    "meanChannel": 0.011561053240740742
+  },
+  "afterNormal": {
+    "changedPixels": 19999,
+    "moreThan3": 0,
+    "maxChannel": 3,
+    "meanChannel": 0.011561053240740742
+  }
+}

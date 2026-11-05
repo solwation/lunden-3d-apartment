@@ -1,0 +1,34 @@
+{
+  "phase": "after",
+  "low": false,
+  "harnessSha256": "a45a1529bb51b673284371b86bf675d1f339eac7c792bebb0f1c75adfc33b446",
+  "sourceSha256": "7c9c9ccacd99abb8b011bbe77b6f1cd00ea5e580fe29f68975bdb02c94707b38",
+  "browser": "156.0.8078.4",
+  "errors": [],
+  "sceneAudit": {
+    "geometries": 0,
+    "vertices": 0,
+    "nonUnit": 0,
+    "zero": 0,
+    "rows": [],
+    "payloadUntouched": true
+  },
+  "component": null,
+  "timing": null,
+  "render": {
+    "calls": 154,
+    "triangles": 658010,
+    "camera": [
+      1.05,
+      0.62,
+      10.87
+    ]
+  },
+  "quality": 3,
+  "cat": {
+    "name": "Kanel",
+    "view": "Actual production near puppet, after scene packing; fixed inspection lighting and standing pose, reparented without cloning; not natural gameplay camera",
+    "calls": 25,
+    "triangles": 10010
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "phase": "before",
+  "low": false,
+  "sourceSha256": "ea045724d8aa5ae6ed1f3c66679ea66165239a6b8a8fbaba3574784c94a4376d",
+  "browser": "156.0.8078.4",
+  "errors": [],
+  "sceneAudit": {
+    "geometries": 0,
+    "vertices": 0,
+    "nonUnit": 0,
+    "zero": 0,
+    "rows": [],
+    "payloadUntouched": true
+  },
+  "component": null,
+  "timing": null,
+  "render": {
+    "calls": 153,
+    "triangles": 656614,
+    "camera": [
+      1.05,
+      0.62,
+      10.87
+    ]
+  },
+  "quality": 3
+}

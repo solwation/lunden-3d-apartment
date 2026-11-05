@@ -204,6 +204,8 @@ Ett separat [WebGPU-/meshletprov på områdets byggnader](docs/verification/1872
 gav ingen stabil tidsvinst på testdatorn och ökade minnesbehovet; det aktiveras därför inte i visningen.
 Ett [separat prov av robustare triangelträffar](docs/verification/1876/README.md) rättar ett isolerat kantfall,
 men gav inte tillräckligt stöd för regressionsfri kall prestanda; produktionsmetoden behålls.
+Mobilens normalpackning bevarar även längdskalade ytors riktning före bytekvantisering
+([precision, uppstartskostnad och begränsningar](docs/verification/1875/README.md)).
 Mått som inte finns i ritningen (bröstningshöjd, bjälklag, nedsänkt tak i sovrummen
 m.m.) ligger samlade i `src/config.js`.
 

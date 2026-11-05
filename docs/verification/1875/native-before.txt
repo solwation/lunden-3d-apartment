@@ -1,0 +1,55 @@
+TAP version 13
+# Subtest: scaled and zero normals, sharing and untouched geometry payloads
+not ok 1 - scaled and zero normals, sharing and untouched geometry payloads
+  ---
+  duration_ms: 2.781752
+  type: 'test'
+  location: '/home/devcontainers/orkester-lunden-20261105b/normal-packing/tools/normalpackingtest.mjs:8:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+      [
+        0,
+    +   12,
+    -   -127,
+        0,
+        0
+      ]
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 0
+    1: -127
+    2: 0
+    3: 0
+  actual:
+    0: 0
+    1: 12
+    2: 0
+    3: 0
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/devcontainers/orkester-lunden-20261105b/normal-packing/tools/normalpackingtest.mjs:14:70)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: dynamic, keepCpu, skinned, morph and already-uploaded geometry retain floats
+ok 2 - dynamic, keepCpu, skinned, morph and already-uploaded geometry retain floats
+  ---
+  duration_ms: 1.369057
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 1
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 118.204465

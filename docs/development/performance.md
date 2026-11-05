@@ -1218,7 +1218,13 @@ same kind once the GL buffer exists (`position` and `index` stay: raycasts, TriG
 basket bounces read them). A raycast's interpolated uv/normal then reads NaN instead of throwing; `marks`/`basket` use the face
 normal from `position`. `mergeStatic` hooks its outputs, and `freeSceneGeometryCopies(scene, renderer)` (main.js, right after the
 `WarmUp` is built, before the first draw) hooks every other mesh geometry. `packNormals` also turns Float32 normals into
-normalized Int8 ×4 (12 → 4 bytes on the GPU; axis-aligned normals exact, smooth ones within 0.4 %) while nothing is uploaded yet.
+normalized Int8 ×4 (12 → 4 bytes on the GPU; axis-aligned normals exact, each unit component within 0.4 %) while nothing is uploaded yet.
+Before quantization, each nonzero direction is normalized (#1875); r170 LatheGeometry can emit nonunit
+end normals, which otherwise lose precision or overflow signed bytes. Zero normals remain zero. The existing
+sharing and opt-outs remain unchanged. `tools/normalpackingtest.mjs` covers the real ZZ copper-pot profile,
+scaled/zero vectors and payload/eligibility contracts; `tools/normalpackingbrowser.cjs` inventories actual
+pre-upload scene arrays and captures the same close view in both profiles.
+[Measured scope, paired packing cost and result images](../verification/1875/README.md).
 Opt-outs: skinned meshes, morph targets, geometries with any dynamic attribute or a `bedCare` attribute, and
 `geometry.userData.keepCpu` (set by watering, fruit and the drawing sheet, which rewrite their arrays or read `hit.uv`). A
 console canary reports through `console.error` (so `src/crashlog.js` keeps it; `attribute=… geometry=…` names, once per
