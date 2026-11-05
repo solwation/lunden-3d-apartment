@@ -563,6 +563,11 @@ First-focus graphics (#1508): door/item highlight programs join the existing sta
 `/orkester` använder den modelloberoende kärnan i
 [dirigenten-och-orkestern](https://github.com/solwation/dirigenten-och-orkestern),
 versionslåst som Git subtree i `.orchestra/shared`. Vanlig kloning räcker.
+En ändringsönskan i chatten skapar eller uppdaterar motsvarande ärende och startar
+eller återupptar avgränsat arbete, även utan aktiv orkester eller efter avslutad
+tomgångsvakt. Uttryckliga uppskjutningar respekteras; en aktiv dirigent återanvänds.
+Avgränsat chattarbete öppnar inte hela kön eller nya timers. Se
+[chattintaget](.orchestra/shared/ORCHESTRA.md#turn-chat-requests-into-work).
 Vid start eller återupptagning kontrollerar dirigenten nya stabila releaser och
 versionstaggar, med högst ett dygns återanvändning av en lyckad kontroll. Nya stabila
 releaser importeras automatiskt som lågprioriterat underhåll vid nästa köval, utan

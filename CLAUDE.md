@@ -46,6 +46,11 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   (lower, middle, smaller top), preserving implemented gameplay. Old per-polygon acceptance demands are superseded;
   use ordinary functional head/body/wall/damage tests. Preserve unfinished work at a safe checkpoint and close
   superseded detail stories once the replacement works. Do not turn this refinement into a dependency for unrelated work.
+- **Chat change requests.** Create or reuse one issue per independently reviewable requested change, then
+  start or resume scoped orchestra work without waiting for `/orkester`, even when no run is active or
+  its idle watch has ended. Reuse the active conductor, claims and preserved work; respect explicit
+  deferral or discussion-only requests. A scoped request does not expand to the backlog or enable timers.
+  Read [chat intake](.orchestra/shared/ORCHESTRA.md#turn-chat-requests-into-work) and the local policy.
 - **Shared orchestra (user, 2026-10-23).** `/orkester` follows the versioned
   [.orchestra/project.md](.orchestra/project.md) and its model-independent shared core.
   That policy retains both repositories, global priority, ownership, 300-second polling,

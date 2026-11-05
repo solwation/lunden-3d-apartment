@@ -89,3 +89,21 @@ Detta är lokal värdpolicy, ingen ändring i `.orchestra/shared`. Originalets l
 spåras i [#1860](https://github.com/solwation/lunden-3d-apartment/issues/1860), publikens
 motsvarighet i [#252](https://github.com/solwation/kvarteret-lunden/issues/252).
 Portuppföljning, innehållsgränser, barnprioritetstak och övriga arbetsregler behålls.
+
+
+## Chattintag i v0.8.1 — #1874
+
+Installerad kärna: `264e867d17b4f938b09cdb01794025e7b0113c5d`
+([release v0.8.1](https://github.com/solwation/dirigenten-och-orkestern/releases/tag/v0.8.1)).
+Hela diffen från v0.8.0 granskades före squashsubtree-importen: en ny chattintagsregel
+och samordnad dokumentation, ingen appkod eller ändring av prioritet, ägarskap,
+publicering och bevakningstider. Subtree-ancestry och trailers behålls.
+
+En ändringsönskan skapar/återanvänder ärenden och startar/återupptar avgränsat arbete
+utan separat `/orkester`, också efter avslutad tomgångsvakt. En aktiv dirigent
+återanvänds och explicita uppskjutningar gäller fortfarande. En sådan önskan
+startar inga nya kötimers och utökar inte omfattningen till hela backloggen; det
+uttryckliga `/orkester`-kommandot behåller projektets kösession. Enbart läsning
+startar inget arbete. Verifiering: full dokumentdiff, relativa länkar/ankare och
+motsägelser mot lokala regler. Ingen visuell runtimeändring eller changelogpost.
+Publicuppföljning: [#255](https://github.com/solwation/kvarteret-lunden/issues/255).

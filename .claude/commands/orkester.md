@@ -13,3 +13,7 @@ Använd [arbetsagentens korta uppdrag](../../.orchestra/shared/WORKER.md) vid de
 För färdiga överlämningar, följ [projektets integrationskö](../../.orchestra/project.md#integration-handoffs).
 
 Svara på svenska. Projektpolicyn anger båda köerna, behörigheter, ansvar och tidsgränser.
+Ändringsönskemål i chatten följer även [chattintaget](../../.orchestra/shared/ORCHESTRA.md#turn-chat-requests-into-work):
+skapa/återanvänd ärenden och starta/återuppta avgränsat arbete, även efter avslutad
+tomgångsvakt. Respektera uttrycklig uppskjutning och återanvänd en aktiv dirigent;
+endast ett uttryckligt köuppdrag som detta kommando aktiverar nya kötimers.

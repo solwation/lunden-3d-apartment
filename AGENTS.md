@@ -20,7 +20,10 @@ For issue labels/state, follow [.orchestra/shared/ISSUE-WORKFLOW.md](.orchestra/
 the canonical guide from github-dashboard. Finished handoffs use `integration-ready`,
 retain their documented integration owner and consume no active slot; only that owner
 or integrator resumes them. See the [handoff policy](.orchestra/project.md#integration-handoffs).
-For `/orkester` or an explicit request to
-run orchestration, read [.orchestra/project.md](.orchestra/project.md) and its shared
-core/coordination files. Merely reading or editing these files does not start a queue
-session. The core is maintained in [dirigenten-och-orkestern](https://github.com/solwation/dirigenten-och-orkestern).
+For chat change requests, create/reuse the matching issue and start or resume scoped
+work under [chat intake](.orchestra/shared/ORCHESTRA.md#turn-chat-requests-into-work),
+including after an idle watch ends. Respect explicit deferral and reuse an active conductor.
+Read [.orchestra/project.md](.orchestra/project.md) and its shared core/coordination
+files. `/orkester` starts a queue session; a scoped chat request does not expand to the
+whole backlog or enable timers. Reading these files alone starts no work.
+The core is maintained in [dirigenten-och-orkestern](https://github.com/solwation/dirigenten-och-orkestern).
