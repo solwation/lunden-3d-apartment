@@ -1,0 +1,8 @@
+{
+  "src/architectureedges.js": "6941b089bbde29b466fbda4c3620fc07c6a2e75c79d0ac21106aaac317b4faf4",
+  "src/vendor/three/EdgesGeometry.js": "5ceb412068a13801d782e9b66f06a978a4930c479060375314d0f96b30704d93",
+  "src/vendor/three/LICENSE": "8b378ebe60e2fe500158cb0ac71cb5e8b7d92953c2abcc63a0eb90499653b5bc",
+  "tools/edgesbackporttest.mjs": "21f512d4a4ae178e0a3003ee5cb8ba0a6151663f78a950b27c977a91e911f2b6",
+  "tools/edgesbackportbrowser.cjs": "dad57a1de430163e4e737c2db8d5abe7ed5d2f9681051bad394047e70bc441f8",
+  "index.html": "09f566ed23fa51425b0558515f09a43890567c2e85ab983393eb0aa5f9125240"
+}

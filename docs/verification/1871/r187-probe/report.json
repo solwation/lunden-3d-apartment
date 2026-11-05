@@ -1,0 +1,57 @@
+{
+  "three": "0.187.0",
+  "errors": [
+    "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "warnings": [
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+    "THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead."
+  ],
+  "requests": [
+    "build/three.module.js",
+    "examples/jsm/utils/BufferGeometryUtils.js",
+    "build/three.core.js",
+    "examples/jsm/renderers/CSS3DRenderer.js",
+    "examples/jsm/geometries/RoundedBoxGeometry.js",
+    "examples/jsm/objects/Reflector.js"
+  ],
+  "runtime": {
+    "ready": true,
+    "revision": "187",
+    "renderer": "WebGLRenderer",
+    "webgpu": true,
+    "render": {
+      "frame": 0,
+      "calls": 0,
+      "triangles": 0,
+      "points": 0,
+      "lines": 0
+    }
+  },
+  "draw": {
+    "frame": 85,
+    "calls": 100,
+    "triangles": 69232,
+    "points": 80,
+    "lines": 5555,
+    "programs": 65
+  }
+}
