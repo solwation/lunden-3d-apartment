@@ -1,0 +1,5 @@
+PASS upstream shared seam: r170 0, candidate 2 hits
+PASS shared vertices, seam and both ray sides / front-face culling
+PASS degenerate triangles, zero direction and coplanar ray reject
+PASS actual TriGrid finite segment includes seam and rejects too-short / backwards ray
+PASS 3000 seeded actual TriGrid queries retain object/material/order/normals and points/distances within 1e-10 m

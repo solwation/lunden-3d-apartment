@@ -1,0 +1,20 @@
+{
+  "source": {
+    "src/trigrid.js": "26e73d1837245dc7481cd1edc48e658c443b97af3167271dbda47919c42510f3",
+    "src/corehouse.js": "a1b4b020cddf0c0b7d5bf586596d38846ca64311ded87c0c3047dc54ac3f7a8d",
+    "src/core.js": "c88bfe9f531a6ee32b26f4d5b4d5a8f3070ab765364ff6aaa8f6f40dcd278bac",
+    "src/config.js": "fdd74e4cfcc08299a6b60baf22a0391e87a0fdd09030e83107cf083131bd4159",
+    "src/architectureedges.js": "6941b089bbde29b466fbda4c3620fc07c6a2e75c79d0ac21106aaac317b4faf4",
+    "tools/fixtures/watertight-raytriangle.mjs": "fb214c4d93bf4a9e9bf8a4f51d279b731679f656c1c91c1a7106c7873c06e138",
+    "tools/watertightbrowser.cjs": "5d095c8e7465bdc7b64cb9635cde8c82ac3b613365adefbbcbac027a31e8626e"
+  },
+  "cpu": "Intel(R) Core(TM) i7-10700 CPU @ 2.90GHz",
+  "platform": "linux",
+  "browser": "156.0.8078.4",
+  "errors": [],
+  "geometry": {
+    "captureOnly": true,
+    "revision": "170"
+  },
+  "pass": true
+}

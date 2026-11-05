@@ -2246,3 +2246,15 @@ No continuous animal/world draw addition. Lazy 96/320 px production-model PNGs u
 ### Djurpärmens 3D-sikt (#1851)
 
 Visuell sikt filtrerar dolda och helt icke-opaka objekt före lazy spatialt arbete och avslutar vid första opaka hinder. Blandade material kontrolleras per träff; transparent förträff får inte dölja en senare opak vägg. Statiska meshkandidater måste träffas av själva strålen i befintlig Float32-paddad positionsbox. TriGrid begränsar cellvarven till sin befintliga box med konservativ Float32-marginal; all-hit-/material-/side-semantik bevaras. Inga extra globala index eller triangelkopior läggs till. Detta minskar belagda CPU-siktspikar, men GPU-warmup och kallt lokalt indexbygge kan fortfarande pausa. Mätmetod, slutkällans paritet och ärliga telefon-/Room-begränsningar finns i [verifiering #1851](../verification/1851/README.md).
+
+
+## Watertight triangle experiment (#1876)
+
+The production TriGrid/Ray path remains r170. An isolated MIT-marked upstream candidate
+fixes a synthetic shared-edge miss and preserves 4,536 ordinary seeded/real-core queries
+within 1e-10 m, with unchanged object/material/visit order/normals. Actual A/B/C/L
+components were compared separately on Intel/Chromium: 31 balanced paired samples,
+construction separated from cold refinement and warm query sweeps. Warm medians improved,
+but cold C tail samples did not establish the no-regression gate; the candidate is only
+a test fixture. No global Ray patch or architectureedges winding change is authorized.
+See [raw timings, scope, decision and images](../verification/1876/README.md).

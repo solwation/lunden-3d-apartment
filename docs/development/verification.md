@@ -9107,3 +9107,16 @@ ACK cooldown. `tools/conversationbrowser.cjs` uses one real app and the renderer
 Ghosts/Greetings/Conversation peer `conversationpeer.html`; recovery uses the same held
 Page. Existing playerchoiceapptest.cjs enters Prata before Hälsa and backs out for hugs.
 [Exact source phases, two reviewed images and fixture limits](../verification/1867/README.md).
+
+
+## Watertight TriGrid investigation (#1876)
+
+`THREE_DIR=/path/to/three-0.170.0 node tools/watertighttest.mjs` exercises the actual
+production TriGrid with an independently imported isolated candidate: shared seam/vertex,
+side/material groups, degeneracy, zero/coplanar/reverse rays, finite/zero-length segments
+and 3,000 seeded interior query comparisons. `tools/browsertest.sh node
+tools/watertightbrowser.cjs GAME OUT` compares 1,536 source-derived A/B/C/L core queries
+and records 31 paired warm/cold/construction samples on the available Intel CPU.
+`TRIANGLE_IMAGES_ONLY=1` recaptures only component evidence without repeating timings.
+Production remains unchanged; [decision, exact measured runner, raw samples, source
+hashes and inspected images](../verification/1876/README.md) retain the limitations.
