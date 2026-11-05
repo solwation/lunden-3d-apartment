@@ -15,7 +15,8 @@ platform restrictions take precedence.
 | Bounded pass or queue session | The above plus [COORDINATION.md](COORDINATION.md) and the host's queue/timer settings |
 | Worker assignment | Host policy, [WORKER.md](WORKER.md), the brief and the phase sections it names |
 
-Reading or maintaining these files never starts an unattended run. An empty scope,
+Reading these files alone never starts an unattended run. A chat request for changes
+starts the workflow under [chat intake](#turn-chat-requests-into-work). An empty scope,
 such as a bare `/orkester`, lets the conductor choose the work: by default one
 [bounded pass](COORDINATION.md#run-a-bounded-pass); a host policy may configure a queue
 session instead.
@@ -33,6 +34,30 @@ session instead.
 | `follow-up` | [Completion comment](#follow-up) with evidence before closure; active labels removed |
 
 ## Start and resume
+
+### Turn chat requests into work
+
+Treat a user's chat request for changes as a request to get them resolved. Before
+implementation, create one issue per independently reviewable change, or update an
+existing matching issue, in the host's tracker; capture the requested outcome and
+acceptance under [Issueflow](ISSUE-WORKFLOW.md) for GitHub. Then start or resume the
+orchestra within that scope without asking for a separate `/orkester` command or
+confirmation. This also applies when no orchestra is running, none has run yet, or
+the previous idle watch has ended. Follow startup/recovery below and the host's run
+mode; a scoped request does not silently expand to the whole backlog or enable timers.
+
+If a run is already active, add the request to that conductor's work and apply the
+normal selection and ownership rules; do not start a competing run or reset its idle
+deadline just because a message arrived. Reuse issues and preserved work on resume.
+
+Respect explicit limits such as "do not start the orchestra", "only create issues"
+or "discuss only". Record requested changes as issues when allowed, keeping any
+explicitly deferred work paused and unclaimed until the user authorizes execution;
+do not let queue selection bypass that limit. A prior explicit stop still applies
+unless the user authorizes resumption. Answer questions, status requests and discussion
+without inventing change tasks; a request for changes to these instructions is itself
+work under this rule. Chat intake does not grant publication permissions beyond the
+host/user rules or install a background listener.
 
 ### Check the installed workflow
 

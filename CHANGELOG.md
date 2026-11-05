@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.8.1 — 2026-11-05
+
+- Clarify chat intake: a request for changes creates or reuses issues and starts or
+  resumes the orchestra to resolve them, including before its first run or after an
+  idle watch ends. Respect explicit deferral, reuse an active conductor, and preserve
+  scope, ownership, timer and publication rules; align host policy and entry guidance
+  (#45).
+
 ## 0.8.0 — 2026-11-04
 
 - Add the integration-ready handoff and integration queue: finished work retains its

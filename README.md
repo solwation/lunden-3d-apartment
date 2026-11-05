@@ -59,7 +59,11 @@ flowchart TD
 
 ## What a run looks like
 
-1. You type `/orkester` (or just describe a change).
+1. You type `/orkester` or just describe a change. A change request becomes an issue
+   (or updates an existing one) and starts the orchestra within your scope, even if
+   no run is active or the previous idle watch ended. Asking for changes also asks
+   for them to be resolved, unless you explicitly say not to start or to only record
+   or discuss them ([chat intake](ORCHESTRA.md#turn-chat-requests-into-work)).
 2. The conductor fetches the issue queue, chooses the highest-priority startable work,
    claims it and starts up to your configured number of workers in parallel.
 3. While they work, the conductor runs your intake hooks, for example turning incoming
@@ -107,7 +111,7 @@ flowchart TD
 
 ```sh
 git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.8.0 --squash
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.8.1 --squash
 cp .orchestra/shared/PROJECT.example.md .orchestra/project.md
 ```
 
