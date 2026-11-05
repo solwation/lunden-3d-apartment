@@ -17,7 +17,11 @@ of two agents including the conductor. Use [WORKER.md](WORKER.md) for assignment
 Respect platform limits on delegation and model selection; disclose unavailable
 controls once rather than pretending they were used.
 
-An ordinary maintainer request starts a single scoped task. Overriding the core's
+An ordinary maintainer change request follows
+[chat intake](ORCHESTRA.md#turn-chat-requests-into-work): create or reuse issues, then
+start a single scoped orchestra task, including after an idle watch has ended or
+when no run is active. A request for changes also requests their resolution unless
+the maintainer explicitly defers execution. Overriding the core's
 empty-scope default, `/orkester`, with or without a scope, starts a queue session over
 this repository's open issues under [COORDINATION.md](COORDINATION.md#poll-idle-and-stop);
 a given scope still bounds the work. Run a single

@@ -11,7 +11,7 @@ Install into a clean working tree (requires Git's `subtree` command):
 
 ```sh
 git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.8.0 --squash
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.8.1 --squash
 ```
 
 Copy the project example to `.orchestra/project.md`, fill it in, then link the host's
@@ -40,6 +40,8 @@ its current documentation. Copyable entry snippet:
 This repository uses the orchestra workflow.
 Project policy: read `.orchestra/project.md` first.
 Workflow core: follow `.orchestra/shared/ORCHESTRA.md`, starting from its read map.
+Apply its chat intake rule to change requests, including when no run is active or
+the previous idle watch has ended.
 ```
 
 The shared tree's own `.claude/commands/` is not read by any client once installed

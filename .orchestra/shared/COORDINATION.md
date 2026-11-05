@@ -211,6 +211,12 @@ skips it. The review never restarts the idle deadline. A host may extend or disa
 
 ## Poll, idle and stop
 
+User chat requests enter through [chat intake](ORCHESTRA.md#turn-chat-requests-into-work).
+An expired watch does not require the user to restart the orchestra explicitly:
+record the requested changes as issues and start/resume within the host's mode and
+the user's scope, unless the user explicitly deferred execution. An active run keeps
+its existing conductor and deadline rules below.
+
 In a queue session, poll all configured queues on the host schedule, working or idle;
 run intake hooks on their own deadlines without interrupting workers. Save each
 outcome, retry failed reads on schedule and keep work progressing between checks
