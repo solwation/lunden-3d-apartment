@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="sv"><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>WebGPU-prov · Lunden</title>
+<style>body{margin:0;background:#dde8ed;font:15px system-ui;color:#183331}header{padding:16px}button{padding:8px;margin-right:8px}canvas{display:block;max-width:100%}pre{white-space:pre-wrap;padding:16px}p{max-width:70em}</style>
+<header><h1>WebGPU-prov på områdesbyggnader</h1><p>Separat prov av den verkliga östra områdesgeometrin. Speglar, spel och lägenhetsinteriörer ingår inte. Produktionsvisningen ändras inte. Mätningar på en mjukvaruadapter är funktionstester.</p><button data-mode="original">Vanlig WebGPU</button><button data-mode="adapted">Anpassad geometri</button><button data-mode="meshlet">Meshlets</button><span id="status">Laddar…</span></header>
+<div id="view"></div><pre id="result"></pre>
+<script type="importmap">{"imports":{
+"three":"https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js",
+"three/webgpu":"https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.webgpu.js",
+"three/tsl":"https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.tsl.js",
+"three/addons/":"https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/"
+}}</script><script type="module" src="./preview.js"></script></html>

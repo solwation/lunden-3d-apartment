@@ -1,0 +1,12 @@
+{
+  "tools/meshlet1872/adapt.js": "36f06745e2f56bc0dbe43fb6ce1ea9592d20b625ffff5fb1dbab2fb99a5d18c1",
+  "tools/meshlet1872/checks.js": "77026d86ce5f9ee6b63e2319e014f792a290e0acccb6cfe23a5a63c268052a4a",
+  "tools/meshlet1872/index.html": "2d08cf325995e49b00e7365a5ccbc3c4344bf3915e03b2e437ce3bb8e5990110",
+  "tools/meshlet1872/preview.js": "1bc73aa021fe8cfb2f6f2a3f4e40115671ee9ed78845577a9c8d87771aa148e8",
+  "tools/meshlet1872/verify.cjs": "e7d34c2e6173c341468b45d13fc37756894f67d185b071c5733ea8bf715e89b2",
+  "src/surroundings.js": "fc2f9e35c828e67abf2815534d51be3056ac8f2f7540fb853a08b03ba2010e90",
+  "src/sitebackdrop.js": "dd32d8dbe1d690f14889877fcc6f0eae5e0278506489400606ce0cc2754a9f67",
+  "src/grass.js": "fa80ce024ac6784c1faeb8fc624cb94640956f2a969665b4dd41a372c48996dc",
+  "src/seasons.js": "b54bdfd11ec1e0ff27833710f424ecb0f154d9a26c3a357b183164b272e3ad9a",
+  "src/config.js": "fdd74e4cfcc08299a6b60baf22a0391e87a0fdd09030e83107cf083131bd4159"
+}

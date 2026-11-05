@@ -14,7 +14,8 @@ The render loop, geometry, colours, culling, collision and pick targets do not c
 The avatar outline's separate EdgesGeometry call remains on the pinned library.
 Remove the helper when a verified library upgrade includes the optimization.
 
-[Meshlet implementation follow-up #1872](https://github.com/solwation/lunden-3d-apartment/issues/1872).
+[Completed meshlet prototype #1872](../1872/README.md): real hardware testing did
+not establish sufficient benefit for production activation.
 [Public transfer #254](https://github.com/solwation/kvarteret-lunden/issues/254).
 
 ## Primary-source findings

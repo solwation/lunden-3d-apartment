@@ -8,6 +8,12 @@ renderer/material migration; [findings, measured scope and follow-up](../verific
 Map lookup optimization with unchanged output. Remove the local helper after a verified
 r187+ library upgrade. Tests: `tools/edgesbackporttest.mjs` and `tools/edgesbackportbrowser.cjs`.
 
+The separate `tools/meshlet1872/` prototype now renders real east-backdrop geometry
+with r187 WebGPU/TSL and meshlets. On native Intel gen-9 it reduces submitted
+triangles but shows no consistent time benefit and requests 3.11× the GPU buffers.
+Production activation is rejected for this measured scope; the full renderer migration
+has not been performed. [Reproduction, images, timings and limits](../verification/1872/README.md).
+
 
 Raw callback interval diagnostics (#1507): [capture protocol, state classification, statistics and measurement limits](frame-intervals.md).
 

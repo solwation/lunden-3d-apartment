@@ -199,7 +199,10 @@ python3 -m http.server 8137
 `tools/extract_plan.py` läser väggar, fönster, dörrar, trappa och fast inredning direkt ur
 PDF:ens vektordata och skriver `data/plan.json`. Sidan (`index.html` + `src/`) bygger 3D-modellen
 med three.js. En selektiv förbättring från r187 gör beräkningen av byggnadernas kantlinjer billigare vid start;
-renderingen använder fortfarande r170/WebGL ([undersökning och verifiering](docs/verification/1871/README.md)). Mått som inte finns i ritningen (bröstningshöjd, bjälklag, nedsänkt tak i sovrummen
+renderingen använder fortfarande r170/WebGL ([undersökning och verifiering](docs/verification/1871/README.md)).
+Ett separat [WebGPU-/meshletprov på områdets byggnader](docs/verification/1872/README.md)
+gav ingen stabil tidsvinst på testdatorn och ökade minnesbehovet; det aktiveras därför inte i visningen.
+Mått som inte finns i ritningen (bröstningshöjd, bjälklag, nedsänkt tak i sovrummen
 m.m.) ligger samlade i `src/config.js`.
 
 Huset (Hus L, Parklängan), Å-husen A, B och C, vägarna och nivåskillnaden ner mot S:t Lars park
