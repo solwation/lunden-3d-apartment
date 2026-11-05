@@ -3,7 +3,11 @@
 Read the repository's AGENTS.md and CLAUDE.md, then [the shared core](shared/ORCHESTRA.md).
 For `/orkester` also read [queue coordination](shared/COORDINATION.md). The same files
 can be invoked in any file-reading agent; the slash command is only an adapter.
-Reading or improving the instructions does not start an unattended orchestra.
+Reading the instructions alone starts no work. A chat request for changes, including
+a request to improve these instructions, creates/reuses issues and starts/resumes
+scoped work under [chat intake](shared/ORCHESTRA.md#turn-chat-requests-into-work), even
+after an idle watch ends or before the first run. Respect explicit deferral and reuse
+an active conductor; a scoped request does not expand to the backlog or enable timers.
 
 ## Shared issue workflow
 
@@ -68,7 +72,11 @@ The public instruction counterpart is tracked in
 `/orkester` in this project, with or without an argument, starts an explicit queue
 session with the polling, idle watch and heartbeat above; the core's bounded pass
 (no polling or watch) applies only when the user explicitly asks for a single pass.
-Both stay unattended: user-only questions go on the issue (`user-question`), never chat.
+An ordinary chat change request starts/resumes a scoped task without queue polling or
+an idle watch unless those were requested. An already active queue session retains
+its conductor, scope/selection rules and idle-deadline rules; a new request alone does
+not reset the deadline. Both modes stay unattended: user-only questions go on the issue
+(`user-question`), never chat.
 
 Default scope is both repositories. Explicit scope limits implementation, never visibility
 of the other queue. Fetch all open pages in both before each selection, claim,
@@ -264,10 +272,14 @@ The conductor runs this loop in every `/orkester` queue session:
 
 ## Shared version and maintenance
 
-Shared release: **v0.8.0**, commit **6ee6dd23ed85e5a91641d1939d553e4f789027d4**. Imported with
-`git subtree pull --prefix=.orchestra/shared orchestra-upstream 6ee6dd23ed85e5a91641d1939d553e4f789027d4 --squash`
-in [original #1861](https://github.com/solwation/lunden-3d-apartment/issues/1861). The earlier v0.7.1 import
-remains recorded in original #1816 and public #229. Public adoption is tracked separately in public #251.
+Shared release: **v0.8.1**, commit **264e867d17b4f938b09cdb01794025e7b0113c5d**. Imported with
+`git subtree pull --prefix=.orchestra/shared orchestra-upstream 264e867d17b4f938b09cdb01794025e7b0113c5d --squash`
+in [original #1874](https://github.com/solwation/lunden-3d-apartment/issues/1874). The complete
+v0.8.0..v0.8.1 diff adds chat intake and aligned documentation, with no priority, timer,
+ownership or publication-rule migration. Public adoption is tracked in
+[public #255](https://github.com/solwation/kvarteret-lunden/issues/255).
+The earlier v0.8.0 import remains recorded in original #1861 and public #251; the v0.7.1
+import remains recorded in original #1816 and public #229.
 The Issueflow snapshot is byte-identical to canonical guide revision
 `0e712c346c7689dd3e00db04fbe00d86090d5908`. Preserve subtree merge ancestry and trailers.
 The earlier v0.7.0 import from v0.6.1 remains recorded in original #1740 and public #208.
