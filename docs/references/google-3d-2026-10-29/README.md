@@ -2,16 +2,16 @@
 
 The user's screenshots of Google Maps 3D (imagery ©2026 Google, Airbus, Maxar Technologies) of Sankt Lars, taken on
 2026-10-29 as reference for making the surroundings more realistic. Kvarteret Lunden itself is still a building site in
-the imagery and is not a reference. Each `google-*.png` has a `spel-*.png` rendered from the game at roughly the same
-camera, for comparison.
+the imagery and is not a reference. Each `google-*.png` had a `spel-*.png` rendered from the game at roughly the same
+camera, for comparison; those game renders were pruned in #1879 (image retention) and remain in history up to
+7ae586f5 (`git show 7ae586f5:docs/references/google-3d-2026-10-29/spel-<view>.png`). Retake them with the `at` values below when needed.
 
 Google URL camera: `@lat,lon,<alt>a,35y,<heading>h,<tilt>t`; lat/lon is the camera position and the view centre lies
 about `alt · tan(tilt)` ahead along the heading. Game camera: `?at=x,z,yaw,pitch,feetY&shot&time=13&month=9&day=20&freeze&weather=clear`
 with `x,z = geoToPlan(lon,lat)` (`src/sitegeo.js`), `yaw = 58 − heading` (`DAY.planNorth`), `pitch = −(90 − tilt)`,
 `feetY ≈ alt`. The renders hid the cloud deck/fog and set a 35° field of view in the page only (no code change), and ran
 in headless Chromium with CPU rendering. Matches are approximate: the altitude Google uses is not verified, so the game
-views are often higher/wider. `spel-karpvagen-fran-oster.png` looks north-east over the campus instead of west and
-should be retaken before it is used.
+views are often higher/wider. The old `spel-karpvagen-fran-oster.png` looked north-east over the campus instead of west; a retake needs a corrected camera.
 
 | View | Google camera | Game `at` |
 |---|---|---|

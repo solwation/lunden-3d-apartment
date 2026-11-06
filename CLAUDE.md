@@ -183,8 +183,9 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   - *Removed when the issue is resolved:* before-images, bug screenshots, user screenshots that only illustrate
     the bug, and reference photos of rejected alternatives. Delete them in the resolving commit (`Fixes #N`),
     after the completion comment has been posted with URLs pinned to the image commit.
-  Game screenshots never belong to the long-term class, except reference comparison sets documented in
-  `docs/references/`. Details and the review procedure: `docs/development/verification.md` ("Image retention").
+  Game screenshots never belong to the long-term class: the game-render halves of the Google comparison sets in
+  `docs/references/` were pruned too (their camera parameters stay in the READMEs, so they can be retaken).
+  Details and the review procedure: `docs/development/verification.md` ("Image retention").
 - **Every user-visible change gets an entry in `data/changelog.json`** (Swedish, newest first,
   next `id`), in the same commit — **one short sentence**, no digressions. It is shown only on the
   note on the freezer (the start screen says nothing about news; visitors find the note themselves);

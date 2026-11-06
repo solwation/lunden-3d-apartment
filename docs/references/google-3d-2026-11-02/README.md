@@ -15,7 +15,7 @@ our own houses, only for the plot's surroundings.
   (0 = looking north, 90 = east, 180 = south, 270 = west). The Google UI (search box, side menu, controls) and the
   attribution strip are still in the frame: mask or crop them before any image analysis.
 - `shots.csv` / `shots.json`: camera data per image (same content); `url` reopens the exact view in Google Maps.
-- `bilder/spel-<area>_h<heading>.png`: the game rendered from the same camera (1456x831; added in #1792, see below).
+- `bilder/spel-<area>_h<heading>.png` (game renders from the same cameras, #1792) were pruned in #1879 (image retention); see below for how to retake them, or `git show 7ae586f5:docs/references/google-3d-2026-11-02/bilder/spel-<area>_h<heading>.png` for the 2026-11-02 state.
 - `oversikt_kontaktark.jpg`: all 36 images as thumbnails.
 
 ## Areas (target = image centre, WGS84) and model coordinates
@@ -84,7 +84,7 @@ level, so expect the game camera to need a small manual adjustment.
 
 ### Game renders (#1792)
 
-`bilder/spel-<image>.png` are rendered with the *used* `at` values above: the computed values with `feetY` lowered by 50 m for
+The pruned `bilder/spel-<image>.png` renders (in history up to 7ae586f5) were made with the *used* `at` values above: the computed values with `feetY` lowered by 50 m for
 the ground level (about 50 m above sea level at Sankt Lars; game y = 0 is local ground). Headless Chromium with CPU
 rendering at 1456x831, `&test` mode with full quality and shadows for the capture, and in the page only (no code change):
 camera fov locked to 35°, far plane 6000, fog pushed out of range, cloud deck and hot-air balloon hidden, HUD hidden.

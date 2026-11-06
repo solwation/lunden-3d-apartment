@@ -40,7 +40,8 @@ unreferenced loose `docs/` images for manual review; `--prune` runs `git rm` for
 `--grace` days ago, default 30). Run it at the orchestra idle check and commit the removal with a
 housekeeping issue reference. `tools/image_retention_test.py` covers the classification. The 2026-11-06
 cleanup was a one-off full prune (grace 0) of every closed issue's unreferenced images, 1 570 files / 537 MB,
-plus 38 loose bug/before screenshots and the `docs/realism/` inventory screenshots.
+plus 38 loose bug/before screenshots, the `docs/realism/` inventory screenshots and, in the follow-up commit, the 45 game
+renders (45 MB) paired with the Google 3D reference sets (the user chose to keep only the Google images; cameras stay in the READMEs).
 
 ## Moving Nerf target (#1820)
 
