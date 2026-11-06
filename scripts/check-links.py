@@ -14,7 +14,7 @@ import subprocess
 import sys
 from urllib.parse import unquote
 
-FENCE = re.compile(r"^\s{0,3}(`{3,}|~{3,})")
+FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 HEADING = re.compile(r"^\s{0,3}#{1,6}[ \t]+(.*?)[ \t#]*$")
 INLINE_CODE = re.compile(r"(`+)(.+?)\1")
 LINK = re.compile(r"!?\[(?:[^\]\\]|\\.)*\]\(\s*<?([^)\s>]+)>?(?:\s+(?:\"[^\"]*\"|'[^']*'))?\s*\)")
@@ -42,21 +42,25 @@ def scan(path):
     with open(path, encoding="utf-8") as fh:
         for no, line in enumerate(fh, 1):
             m = FENCE.match(line)
-            if m:
-                ch = m.group(1)[0]
-                if fence is None:
-                    fence = ch
-                elif ch == fence:
+            if fence:
+                if (m and m.group(1)[0] == fence[0]
+                        and len(m.group(1)) >= fence[1]
+                        and not m.group(2).strip(" \t\r")):
                     fence = None
                 continue
-            if fence:
+            if m and (m.group(1)[0] == "~" or "`" not in m.group(2)):
+                fence = (m.group(1)[0], len(m.group(1)))
                 continue
             h = HEADING.match(line)
             if h:
                 base = slug(h.group(1))
                 n = seen.get(base, 0)
+                anchor = base if n == 0 else "%s-%d" % (base, n)
+                while anchor in anchors:
+                    n += 1
+                    anchor = "%s-%d" % (base, n)
                 seen[base] = n + 1
-                anchors.add(base if n == 0 else "%s-%d" % (base, n))
+                anchors.add(anchor)
             clean = INLINE_CODE.sub("", line)
             for m in LINK.finditer(clean):
                 links.append((no, m.group(1)))

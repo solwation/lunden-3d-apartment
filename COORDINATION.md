@@ -28,27 +28,21 @@ work](ORCHESTRA.md#resume-unfinished-work-first), then dispatches.
 ## Run a bounded pass
 
 A bounded pass is the default for an empty scope ([read map](ORCHESTRA.md#read-map)).
-Select, claim and deliver eligible issues under the rules below without asking the
-user to choose; work within capacity until no eligible work remains, run the
-[session review](#review-the-session), then perform a final complete fetch and stop.
-A pass enables no polling, idle watch or timer and leaves no active implementation
-claims or active-work labels behind. A finished PR or a genuine integration wait may
-retain documented handoff ownership and `integration-ready` under the
-[handoff procedure](ORCHESTRA.md#handoff-for-integration); report its next action and
-owner. A given scope (issue, area) still bounds the work.
+Select, claim and deliver within scope and capacity until nothing is startable;
+do not ask the user to choose. Run [session review](#review-the-session), then a final
+complete fetch before stopping. No polling, idle watch or timers. Release inactive
+claims and active labels; retain genuine waiting handoffs under the
+[handoff procedure](ORCHESTRA.md#handoff-for-integration), reporting owner and next action.
 
 ### Ask through the issue
 
-Bounded passes and queue sessions are unattended: never ask in the chat. Decide what
-the host policy authorizes (including releases under its rule) and what judgement can
-settle. Post a question only the user can answer on the affected issue through the
-host's channel (on GitHub, the `user question` label) with options and a
-recommendation. A request to test on the user's device is not such a question
-([best-guess closure](ORCHESTRA.md#close-after-a-best-guess-fix)). Release the claim and
-active labels, keep that acceptance open and continue with other eligible work. Skip
-the issue until the user answers there; a new comment alone is not an answer, and
-whoever resumes it removes the label. When the user answers in the chat instead, the
-conductor records the answer on the issue with the date, so the decision stays findable.
+Bounded passes and queue sessions are unattended: never ask in chat. Decide routine
+matters under host policy, including authorized releases. For user-only decisions,
+follow [Issueflow](ISSUE-WORKFLOW.md): post options and a recommendation on the affected
+issue through the host's question channel, release claim/work labels, keep acceptance
+open and continue elsewhere. Skip until an actual answer; the resumer removes the
+question label. The conductor records chat answers on the issue with the date. Device
+testing follows [best-guess closure](ORCHESTRA.md#close-after-a-best-guess-fix), not this channel.
 
 ## Select and claim
 
@@ -158,26 +152,20 @@ the last successful and last complete fetch, last attempt/outcome, the session's
 and idle deadline. Failures never overwrite success timestamps. After an interruption
 resume the same ID, comments, worktrees and commits.
 
-Never seize a visibly active issue or a documented `integration-ready` handoff. Follow
-host expiry/takeover rules, announce a handover in the tracker and preserve the previous work; a missing heartbeat prompts
-investigation, not expiry. If all work is owned, offer the owner an independent helper
-task. Silence is approval only where the host policy says so.
+Never seize active work or a [documented handoff](ORCHESTRA.md#handoff-for-integration).
+Follow host expiry/takeover rules, announce a handover in the tracker and preserve
+previous work; a missing heartbeat prompts investigation, not expiry. If all work
+is owned, offer the owner an independent helper task. Silence is approval only where
+host policy says so.
 
-For sub-issues on different workers, follow the [Issueflow](ISSUE-WORKFLOW.md) parent
-rules: the worker starting the first active sub-issue adds a missing parent work label;
-only the conductor removes it when no sub-issue is active or integration-ready and
-no work continues on the parent, and closes the parent after its own acceptance.
-Follow the guide if the parent's own implementation is handed off. A parent's summary
-label shows progress, not ownership or an occupied slot, and does not block its other
-sub-issues; an integration-ready child cannot be silently skipped at parent closure.
+For sub-issues, follow [Issueflow](ISSUE-WORKFLOW.md) parent rules: the first active
+child's worker adds the missing parent work label; only the conductor removes it or
+closes the parent, after the guide's child-state and acceptance checks. The parent's
+summary shows progress, not ownership or capacity, and does not block other children.
 
-Apply [Issueflow](ISSUE-WORKFLOW.md) transitions on handoff, resume, correction, pause,
-closure and reopening. A genuine integration wait keeps `integration-ready` and its
-documented ownership; a pause, return to backlog or user question removes work labels
-and releases the claim. Blocked work stays open; a missing device or user test is not
-a blocker
-([best-guess closure](ORCHESTRA.md#close-after-a-best-guess-fix)). An actual user answer
-through the question channel removes a question blocker, not merely a new comment.
+Use the [handoff procedure](ORCHESTRA.md#handoff-for-integration) for ownership and
+Issueflow transitions. Blocked work stays open; device/user testing follows
+[best-guess closure](ORCHESTRA.md#close-after-a-best-guess-fix).
 
 ## Review the session
 
@@ -211,11 +199,9 @@ skips it. The review never restarts the idle deadline. A host may extend or disa
 
 ## Poll, idle and stop
 
-User chat requests enter through [chat intake](ORCHESTRA.md#turn-chat-requests-into-work).
-An expired watch does not require the user to restart the orchestra explicitly:
-record the requested changes as issues and start/resume within the host's mode and
-the user's scope, unless the user explicitly deferred execution. An active run keeps
-its existing conductor and deadline rules below.
+User requests, including after an expired watch, follow
+[chat intake](ORCHESTRA.md#turn-chat-requests-into-work); an active run keeps its
+conductor and the deadline rules below.
 
 In a queue session, poll all configured queues on the host schedule, working or idle;
 run intake hooks on their own deadlines without interrupting workers. Save each
@@ -228,8 +214,9 @@ idle entry if none; each new resolution restarts the full interval. Other sessio
 resolutions never shorten it: with one hour, a session starting at 13:30 on an empty
 queue waits until 14:30 even if another session closed an issue at 13:25. Older and
 newly created issues stay eligible unless excluded. Keep no active-work labels on
-idle implementation issues; valid waiting handoffs and their parent summary labels
-follow the guide. Reconcile the integration queue before idle entry and at each poll;
+idle implementation issues; waiting handoffs and parent summaries follow the
+[handoff procedure](ORCHESTRA.md#handoff-for-integration) and Issueflow. Reconcile the
+integration queue before idle entry and at each poll;
 owned ready work that can be integrated ends idle, and only actual issue closure
 restarts its deadline.
 Wait with the host's wait mechanism, interruptibly within the

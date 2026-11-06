@@ -9,11 +9,17 @@ platform restrictions take precedence.
 
 ## Read map
 
-| Run | Read, in order |
+| Role/run | Read at startup/resume, in order |
 | --- | --- |
-| Scoped task (an ordinary request) | Host policy, this file, [ISSUE-WORKFLOW.md](ISSUE-WORKFLOW.md) for GitHub issues |
-| Bounded pass or queue session | The above plus [COORDINATION.md](COORDINATION.md) and the host's queue/timer settings |
-| Worker assignment | Host policy, [WORKER.md](WORKER.md), the brief and the phase sections it names |
+| Conductor, scoped task | Host policy; this read map, checklist, *Start and resume*, *Keep progress observable* and *Default time limits*; [ISSUE-WORKFLOW.md](ISSUE-WORKFLOW.md) for GitHub issues |
+| Conductor, bounded pass or queue session | The above plus [COORDINATION.md](COORDINATION.md) and the host's queue/timer settings |
+| Worker | Host policy, [WORKER.md](WORKER.md), the brief and the phase sections it names |
+
+Read each applicable policy once per session; on resume reuse it unless changed, and
+resolve Issueflow as its guide specifies. Before each phase, read its section below
+and any linked procedure needed for that work; reuse unchanged sections already read.
+The checklist routes phase reading, not extra documents. This reuse never replaces
+fresh queue fetches, claim checks or recovery required below and in COORDINATION.md.
 
 Reading these files alone never starts an unattended run. A chat request for changes
 starts the workflow under [chat intake](#turn-chat-requests-into-work). An empty scope,
@@ -216,30 +222,25 @@ smallest check for the missing proof, without skipping required verification or 
 
 ## Handoff for integration
 
-When the assigned implementation and checks are complete, hand the result to the
-integration owner under [Issueflow](ISSUE-WORKFLOW.md). A finished worker or PR waiting
-for integration uses `integration-ready`; active integration/review uses the active
-work label. Follow the guide for correction, pause, closure and reopening; do not
-carry both labels at once. A failed check or unfinished implementation is not a
-finished handoff. A helper reports its part to the integration owner without
-changing the whole issue to ready while other implementation is still active.
+Only completed implementation with passing assigned checks can be handed off. Follow
+[Issueflow](ISSUE-WORKFLOW.md) for all work-label transitions: waiting uses
+`integration-ready`, active integration/review uses the active label. A helper reports
+its part without marking the whole issue ready while other implementation continues.
 
-Record the issue, integration owner, owner/session label, branch and checkout, exact
-commit, checks/evidence, remaining acceptance and next action in the handoff comment
-and private checkpoint. Keep the ownership label for this documented handoff; it
-protects the result from another worker claiming it. The worker stops its processes
-and releases locks, then frees its slot. Keep its checkout and commits until the
-integration owner has integrated or preserved them. Waiting is neither active time
-nor implementation capacity; a label on a parent is no extra worker either.
+The handoff comment and private checkpoint record issue, integration owner,
+owner/session label, branch/checkout, exact commit, checks/evidence, remaining
+acceptance and next action. Retain the ownership label against competing claims.
+The worker stops its processes, releases locks and frees its slot; retain checkout
+and commits until integrated or preserved. Waiting uses neither active time nor
+capacity; a parent summary label uses no slot either.
 
-The conductor tracks these results in its integration queue, including open PRs,
-and resumes review/integration under the same ownership. Only accepted integration,
-required checks and the host's publication/closure steps finish the issue. If review
-or integration needs corrections, name the correction owner and next action and
-follow the guide's active-correction or backlog transition; never leave rejected
-work marked ready. A genuine integration wait retains its handoff and owner; an
-ordinary pause, blocker requiring return to backlog or user question releases work
-labels and claim under the guide. Preserve the branch and evidence in either case.
+The conductor tracks handoffs, including open PRs, in its integration queue and
+resumes review/integration under the same ownership. Corrections need a named owner
+and next action, with Issueflow's active-correction or backlog transition; rejected
+work cannot stay ready. A genuine integration wait retains handoff ownership; a
+pause, return to backlog or user question releases work labels and claim. Preserve
+branch and evidence in either case. Only accepted integration, required checks and
+the host's publication/closure steps finish the issue.
 
 ## Review
 
@@ -258,33 +259,31 @@ Attribution names the actual tool when required.
 
 *PR mode* (the host's delivery mode is a PR the user merges, see
 [PROJECT.example.md](PROJECT.example.md)): the result note says "PR open, not on main";
-the issue closes only after the merge, or by the host's rule. Until then a finished
-PR uses the [integration handoff](#handoff-for-integration), retaining ownership and
-`integration-ready` without a worker slot; an unfinished or paused PR follows the
-guide's pause/correction rules. Whichever session's queue fetch first sees the merge
-posts the completion comment and closes after checking the delivery evidence. Merge order and
-refreshing branches after each merge: [Select and claim](COORDINATION.md#select-and-claim).
+the issue closes only after the merge, or by the host's rule. Use the
+[handoff procedure](#handoff-for-integration) while waiting. Whichever session's queue
+fetch first sees the merge verifies delivery evidence and performs [follow-up](#follow-up).
+Merge order and branch refresh: [Select and claim](COORDINATION.md#select-and-claim).
 
 ## Follow-up
 
-The conductor owns follow-up unless the plan names another owner, and picks the smallest
-useful evidence in an authorized, accessible destination: a screenshot with revision
-and environment for visible changes such as UI/UX, styling or 2D/3D graphics and rendering
-(supporting, not replacing, functional checks; before/after when comparison helps), a
-test or reproduction result for behavior, a link to the published text and what was
-checked for documentation, and the deployed revision and post-deployment check for
-deployments.
+The conductor owns follow-up unless the plan names another owner. Choose the smallest
+useful evidence. Before closure, post a completion comment with outcome, delivered
+revision, checks, evidence links/attachments, limitations and remaining acceptance
+in an authorized, accessible destination:
 
-Before closing an issue, post a completion comment: outcome, delivered revision,
-checks, evidence links or attachments, limitations and remaining acceptance; then
-release labels under [Issueflow](ISSUE-WORKFLOW.md) and leave unmet acceptance open with
-next action and owner. For UI/UX, styling or 2D/3D graphics and rendering changes, include
-screenshots or rendered comparisons in the completion comment (as embedded images or
-accessible artifact links); if the environment or available tools cannot capture or host
-images, state that limitation and reason explicitly. Inspect images before posting and
-expose no private data; never claim an upload that did not happen. Run required
-post-publication checks before claiming them, and schedule later monitoring only when
-authorized. Reuse the result note; follow-up is no separate reporting phase.
+- UI/UX, styling, 2D/3D graphics or rendering: screenshots or rendered comparisons,
+  with revision and environment, embedded or linked as accessible artifacts. Include
+  before/after when useful; images supplement functional checks. If capture or hosting
+  is unavailable, state the limitation and reason. Inspect images, expose no private
+  data and never claim an upload that did not happen.
+- Behavior: test or reproduction result.
+- Documentation: published text link and recorded checks.
+- Deployment: deployed revision and post-deployment check.
+
+Run required post-publication checks before claiming them. Then release labels under
+[Issueflow](ISSUE-WORKFLOW.md); leave unmet acceptance open with next action and owner.
+Schedule later monitoring only when authorized. Reuse the result note; follow-up is
+no separate reporting phase.
 
 ### Close after a best-guess fix
 
