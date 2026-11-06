@@ -273,14 +273,14 @@ The conductor runs this loop in every `/orkester` queue session:
 
 ## Shared version and maintenance
 
-Shared release: **v0.8.2**, commit **5a67f022cea5ec2a81fcadb99b727d9f3482e26a**. Imported with
-`git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git 5a67f022cea5ec2a81fcadb99b727d9f3482e26a --squash`
-in [original #1877](https://github.com/solwation/lunden-3d-apartment/issues/1877). The complete
-[v0.8.1..v0.8.2 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/264e867d17b4f938b09cdb01794025e7b0113c5d...5a67f022cea5ec2a81fcadb99b727d9f3482e26a)
-shortens repeated instructions, distinguishes session reading from phase reading and fixes
-Markdown link checking with ten regression tests. No priority, timer, ownership or
-publication-rule migration is required. Public adoption is tracked in
-[public #257](https://github.com/solwation/kvarteret-lunden/issues/257).
+Shared release: **v0.9.0**, commit **070ebf43e25c2bc7885e387712edd18a2e97da1c**. Imported with
+`git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git 070ebf43e25c2bc7885e387712edd18a2e97da1c --squash`
+in [original #1880](https://github.com/solwation/lunden-3d-apartment/issues/1880). The complete
+[v0.8.2..v0.9.0 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/5a67f022cea5ec2a81fcadb99b727d9f3482e26a...070ebf43e25c2bc7885e387712edd18a2e97da1c)
+keeps checkouts stable during verification, feeds material review findings back into instructions before starting similar tasks, clarifies worker test setup with dedicated checkout verification, adds optional host context maps and provides upstream field report links.
+No priority, timer, ownership or publication-rule migration is required. Public adoption is tracked in
+[public #259](https://github.com/solwation/kvarteret-lunden/issues/259).
+The earlier v0.8.2 import remains recorded in original #1877 and public #257.
 The earlier v0.8.1 chat-intake import remains recorded in original #1874 and public #255.
 The earlier v0.8.0 import remains recorded in original #1861 and public #251; the v0.7.1
 import remains recorded in original #1816 and public #229.
