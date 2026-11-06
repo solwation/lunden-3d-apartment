@@ -84,8 +84,7 @@ no music, nothing time-bound: coffee brewing, frying, the airfryer, the dishwash
 5 … 1" counts down at the top (#277, `#countdown`; any input or movement cancels it: "Uppdatering avbruten"), then the
 picture fades out, the place and the world are saved (resume record) and `?v=<new SHA>` loads, fading back in with "Ny version laddad";
 only if they are never still for 5 min does the old "new version" notice (top centre) appear. Its buttons react to a lifted touch as well as a click (`onTap`,
-#41), and "Ladda om" navigates to `?v=<new SHA>` so no cache serves the old page
-(`tools/updatetest.html`). That button stores a one-time record (`src/resume.js`: position, level, view,
+#41), and "Ladda om" (as well as the automatic reload) verifies that the new HTML is published and ready before reloading and navigates with a unique `_update` parameter alongside `?v=<new SHA>` so browser/CDN HTTP document caches cannot serve a stale shell (#1878; `tools/updateflowtest.mjs`, `tools/updatetest.html`). That button stores a one-time record (`src/resume.js`: position, level, view,
 clock, input mode, mute, fullscreen; sessionStorage + localStorage, < 2 min) which the next load reads, deletes and resumes from (not with `?at=`; a spot
 inside a wall falls back to START); F5 uses the running record below (a new tab starts at START). The automatic update and "Ladda om" also put
 a `world` part in it (#277, `src/keep.js` `saveWorld` / `loadWorld`, versioned plain JSON, every part optional and read tolerantly): the

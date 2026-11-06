@@ -3863,6 +3863,28 @@ function showUpdate(version = latestVersion) {
     : 'Ladda om sidan för att se den.';
   updateEl.hidden = false;
 }
+/** Verify whether the target HTML is published before reloading, avoiding stale shells (#1878). */
+async function checkPublishedHtml(targetVersion, url = location.href, fetcher = globalThis.fetch) {
+  if (BUILD === 'dev' || !targetVersion) return true;
+  try {
+    const next = new URL(url);
+    next.searchParams.set('v', targetVersion);
+    const r = await fetcher(next.href, { cache: 'no-store' });
+    if (!r.ok) return false;
+    const html = await r.text();
+    const stamp = html.match(/src="src\/(?:bootstrap|main)\.js\?v=([^"&]+)"/)?.[1];
+    return stamp === targetVersion;
+  } catch {
+    return false;
+  }
+}
+/** Construct cache-busted update URL that preserves existing parameters (#1878). */
+function prepareUpdateUrl(targetVersion, url = location.href) {
+  const next = new URL(url);
+  next.searchParams.set('v', targetVersion ?? Date.now());
+  next.searchParams.set('_update', Date.now());
+  return next.href;
+}
 /** Button that also reacts to the touch being lifted (some phones never send the click to these
  * fixed buttons over the canvas, #41); runs once per press. */
 function onTap(el, fn) {
@@ -3980,14 +4002,23 @@ if (resetDone) {
     }
   }
 }
-onTap(document.getElementById('update-reload'), () => {
+let updateBusy = false;
+onTap(document.getElementById('update-reload'), async () => {
+  if (updateBusy) return;
+  const target = latestVersion ?? BUILD;
+  updateBusy = true;
+  updateHint.textContent = 'Hämtar uppdateringen…';
+  const ready = await checkPublishedHtml(target);
+  if (!ready) {
+    updateBusy = false;
+    updateHint.textContent = 'Uppdateringen förbereds fortfarande på servern. Försöker igen om en stund…';
+    return;
+  }
   reloading = true;
   saveCurrentResume({ build: null, world: keepWorld() }); // a new version for sure; the world as it is (#277)
-  const url = new URL(location.href);
-  url.searchParams.set('v', latestVersion ?? Date.now());
-  location.replace(url.href);
+  location.replace(prepareUpdateUrl(target));
 });
-onTap(document.getElementById('update-close'), () => { updateEl.hidden = true; });
+onTap(document.getElementById('update-close'), () => { updateEl.hidden = true; updateBusy = false; });
 document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) showUpdate(); });
 // A new version (#192): no button to press — once the visitor has been still for a moment (no keys, stick, mouse
 // or touch, not walking, no panel open, no music playing, nothing time-bound going on) "Uppdateras om 5 … 1" counts
@@ -4036,12 +4067,18 @@ const autoReload = {
     fadeEl.hidden = false;
     void fadeEl.offsetWidth; // (a reflow, so the change of opacity is animated)
     fadeEl.style.opacity = '1';
-    setTimeout(() => {
+    setTimeout(async () => {
+      const ready = await checkPublishedHtml(this.version);
+      if (!ready) {
+        this.going = false;
+        fadeEl.style.opacity = '0';
+        setTimeout(() => { fadeEl.hidden = true; }, AUTO_RELOAD.fade * 1000);
+        this.cancel();
+        return;
+      }
       saveCurrentResume({ build: null, world: keepWorld() }); // a new version for sure; the world as it is (#277)
       reloading = true;
-      const url = new URL(location.href);
-      url.searchParams.set('v', this.version);
-      this.go(url.href);
+      this.go(prepareUpdateUrl(this.version));
     }, AUTO_RELOAD.fade * 1000 + 50);
   },
 };
@@ -4116,4 +4153,4 @@ const openPanel = () => !overlay.hidden ? 'menu' : !reading ? (lowMemory && port
   : viewing ? 'poster' : isAvatarCustomizerOpen() ? 'avatar' : cinema.open || computerHub.open || tvMedia.open ? 'video' : 'other';
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding, panel: openPanel }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { picnicSync, roofPicnic, football, sharedFish, ghosts, outdoorGym, ducks, medals, squirrels, outdoorCats, footprints, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, bestiary, bestiaryPhotos, bestiaryImages, bestiaryRegistry:registry, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen };
+window.__app = { picnicSync, roofPicnic, football, sharedFish, ghosts, outdoorGym, ducks, medals, squirrels, outdoorCats, footprints, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, bestiary, bestiaryPhotos, bestiaryImages, bestiaryRegistry:registry, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen, checkPublishedHtml, prepareUpdateUrl };

@@ -44,6 +44,7 @@ export async function prepareStartup({
       if(controller.signal.aborted) return true;
       try{storage?.setItem(KEY,JSON.stringify({version:remote.version,at:Date.now()}))}catch{/* URL guard remains */}
       status('Startar den nya versionen');
+      next.searchParams.set('_update', Date.now());
       navigate(next.href);
       return false; // Do not fetch/import the expensive scene on the outgoing page.
     }catch{return true}
