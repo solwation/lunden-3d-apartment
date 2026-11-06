@@ -4,6 +4,7 @@ Replace every placeholder before use. This is configuration for a human/LLM read
 not executable code. Keep project details here, never in the shared instructions.
 
 - Entry rules and relevant topic documents: <paths>.
+  Optional context map: <document sections per label, path or topic; omit if unused>.
 - User language: <language>. Explicit user scope: <argument or request>.
 - Mode: <single task or unattended queue>; empty scope: <bounded pass (default) or
   queue session>.

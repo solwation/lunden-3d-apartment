@@ -26,6 +26,11 @@ suggestions per rule with file and section; give a revision or commit for each
 observation, and keep private project content, data and credentials out. Consumers do
 not need to read the template in normal operation.
 
+If the runtime cannot open the upstream issue, give the user ready-to-paste report
+text under the template's headings and the
+[report submission link](https://github.com/solwation/dirigenten-och-orkestern/issues/new?template=field-report.md).
+State that the report has not been published; never bypass denied access.
+
 ## Maintainer checks
 
 Agents maintaining this repository start with [AI.md](AI.md), its own host policy

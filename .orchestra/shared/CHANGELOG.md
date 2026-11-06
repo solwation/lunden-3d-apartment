@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+## 0.9.0 — 2026-11-06
+
+- Keep verification checkouts and relevant inputs stable during a run; invalidate
+  and repeat only checks affected by an overlapping edit (#49, from field report #48).
+
+- Feed material review findings back into briefs, topic instructions or checks before
+  more assignments with the same risk start; notify affected active owners and let
+  independent work continue throughout the run (#50, from field report #48).
+
+- Make worker test setup explicit: verify the assigned server serves the right
+  checkout before server-backed checks, and take the shared verification turn and
+  any host-required lock before expensive runs (#52, from field report #48).
+
+- Offer an optional host context map from labels, paths or topics to document
+  sections; briefs name all matching entries without replacing required core
+  reading or adding a new brief block (#51, from field report #48).
+
+- Give the user a ready-to-paste field report and submission link when the runtime
+  cannot publish upstream; state that it remains unpublished and respect denied
+  access (#53, from field report #48).
+
 ## 0.8.2 — 2026-11-05
 
 - Shorten repeated handoff, ownership, worker and follow-up instructions with links

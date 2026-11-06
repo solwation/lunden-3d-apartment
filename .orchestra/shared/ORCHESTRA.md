@@ -21,6 +21,11 @@ and any linked procedure needed for that work; reuse unchanged sections already 
 The checklist routes phase reading, not extra documents. This reuse never replaces
 fresh queue fetches, claim checks or recovery required below and in COORDINATION.md.
 
+A host may optionally map labels, paths or topics to relevant document sections.
+Apply all matching entries and name them in the brief; search long references for
+relevant sections rather than reading them in full by default. This context map
+supplements the required core reading and never waives applicable rules.
+
 Reading these files alone never starts an unattended run. A chat request for changes
 starts the workflow under [chat intake](#turn-chat-requests-into-work). An empty scope,
 such as a bare `/orkester`, lets the conductor choose the work: by default one
@@ -213,8 +218,11 @@ one measured ([examples](#examples)). Hard contracts and explicit user gates are
 device or the user can supply is no closing gate by default
 ([best-guess closure](#close-after-a-best-guess-fix)).
 
-Bind results to revision, inputs, environment and quality mode; after an unrelated
-rebase rerun only checks touched by changed code, inputs, conflicts or a concrete risk.
+Bind results to revision, inputs, environment and quality mode. Keep the checkout and
+relevant inputs stable while verification runs against them; continue editing in a
+separate checkout if needed. If an edit overlaps a run, invalidate affected results
+and rerun the affected checks against a stable revision. After an unrelated rebase,
+rerun only checks touched by changed code, inputs, conflicts or a concrete risk.
 Correct a faulty evidence setup and repeat only that check. A guessed historical
 threshold alone does not justify optimization. Stop once agreed checks pass; when
 verification passes its [time limit](#default-time-limits), reassess and pick the
@@ -248,6 +256,11 @@ The conductor reads the combined diff and results (and required images) for miss
 acceptance, integration errors and scope creep. No routine reruns of green checks and
 no second review agent; request one bounded correction per concrete defect, not for
 wording preferences.
+
+If a material review finding exposes a cause that could recur in similar assignments,
+update the brief, applicable topic instructions or required checks before starting
+more assignments with that risk. Notify owners of affected work already in progress;
+independent work continues. Apply this throughout the run, not only to early deliveries.
 
 ## Delivery
 
