@@ -111,7 +111,7 @@ flowchart TD
 
 ```sh
 git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.8.2 --squash
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.9.0 --squash
 cp .orchestra/shared/PROJECT.example.md .orchestra/project.md
 ```
 

@@ -22,7 +22,7 @@ Assignment block, at most about eight lines per worker:
 ```text
 Session block: <path/link>; batch brief: <path> (if any)
 Issue/repository and acceptance:
-Scope, likely files, boundaries, short plan/helper output (if any):
+Scope, likely files, boundaries, applicable context-map entries, short plan/helper output (if any):
 Checkout/base revision, isolated ports/server config, evidence directory:
 Other workers' file responsibilities and insertion anchors:
 Capability/effort choice, reason, stop/reassessment condition:
@@ -38,6 +38,10 @@ block reference. Each assignment then carries only its assignment block plus
 Rules for the worker:
 
 - Isolation: follow the [isolation rules](ORCHESTRA.md#isolate-concurrent-agents).
+  Before server-backed checks, start or confirm your own server on the assigned port
+  and verify it serves your checkout's revision. For
+  [expensive shared verification](COORDINATION.md#select-and-claim), wait for your turn
+  and acquire any host-required lock before starting.
   Start background servers as `cmd & pid=$!` and stop them with `kill "$pid"`.
 - Scope: work only the assigned scope and preserve others' changes. Use existing
   helpers/harnesses; verify the agreed risks, then stop expanding. When you start the
