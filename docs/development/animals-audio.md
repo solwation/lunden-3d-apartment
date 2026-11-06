@@ -258,7 +258,7 @@ Hidden (faded) underground, in the snow months and in rain over `rain`. On snow 
 for lazy personalities when it has `traits`; `footprinttrail.js catOut`, a pure function of the clock) and leaves paw prints
 ([graphics.md](graphics.md#footprints-in-the-snow-1773)). `&nooutdoorcats` disables the module. Feeding a roaming cat: see
 [Feeding the outdoor cats raw fish (#1782)](#feeding-the-outdoor-cats-raw-fish-1782). Tests: `node --test src/outdoorcatroute.test.mjs`; browser `tools/outdoorcatstest.cjs` (routes on
-dry walkable ground off the roads, movement, pet/carry, walking home, rain/snow, draw calls). Images: [docs/verification/1767](../verification/1767/).
+dry walkable ground off the roads, movement, pet/carry, walking home, rain/snow, draw calls). Images: [docs/verification/1767](https://github.com/solwation/lunden-3d-apartment/issues/1767).
 
 ### Personalities and brains (#1772)
 
@@ -288,7 +288,7 @@ sits on a limb, then climbs down head-first. Butterflies (1 draw call each, only
 Far away (beyond `drawDist` + `brain.margin`) the brain does not plan and the cat stays on its loop. The snow/rain rule is the single
 `OutdoorCats.isOut()`. Tests: `node --test tools/outdoorcatbraintest.mjs` (fixed seed: personality mixes, the social cat by the visitor,
 climbing and chasing, never in water or on a road, the shy one); browser `tools/outdoorcatstest.cjs` (7)–(9). Images:
-[docs/verification/1772](../verification/1772/).
+[docs/verification/1772](https://github.com/solwation/lunden-3d-apartment/issues/1772).
 
 ### Feeding the outdoor cats raw fish (#1782)
 

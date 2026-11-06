@@ -406,3 +406,25 @@ mapped onto the sheet's outline (*guess*); the bathtub is dashed on the sheet (a
 #729 park-entry inventory: calibrated p46 visibly shows the common A west and B east doors opening towards the green, and the already-modeled west INFART GARAGE. C's south/east basement doors face the interior garage halls; the coloured A0901–3/B0901–3 patio openings belong to dwellings. No extra common outside door is inferred from the old omitted-doors comment. A's outer corridor wing and B's missing east corridor are read graphically (about ±0.15 m). Relative park/garage −3 m is an existing assumption tied to the documented ca3 m courtyard drop; absolute elevations, setbacks, door finish/head, clearance and exact paving routes remain guesses. [Detailed inventory](../validation/issue-729/README.md).
 
 Kitchen wall (x 2.152, between the hall and the Badrum door), #1272/#1291/#1298: wall clock centred at z 4.16 (y 2.0, bottom 1.80 m) with the cat calendar under it (z 4.16, 1.5 m up), and the "Till mamma" drawing towards the hall (z 3.18–3.62); the Badrum door's architrave starts at z 5.174. The String shelf (81 × 32.5, sides 75.5; user's measurements, board heights/thickness *guess*) hangs on the hall/kitchen partition's kitchen face (x 2.15) where the two oak wall boards were, centred on z 1.06 with its lowest point 1.84 m up (the user's "ca 1,84 m", *guess*) so the top is 2.595 m under the 3.0 m ceiling (#1298); it carries what stood on those boards.
+
+## Reference photos not linked elsewhere
+
+Long-term reference photos in `docs/` that no topic section cites directly (CLAUDE.md "Image retention",
+#1879). Each line names the implemented thing the photos document; remove a photo here when its thing
+leaves the scene. Product and bug photos that belonged only to a resolved issue were pruned in #1879.
+
+- `docs/cafeset-jysk-aborg-matt.jpg`, `docs/cafeset-jysk-aborg-mork-sand.jpg`: JYSK ABORG café set (patio), photo and dimensions.
+- `docs/dynbox-var.jpg`: the family's own cushion box on the patio.
+- `docs/havback-hogskap.jpg`, `docs/havback-hogskap-oppet.jpg`, `docs/havback-hogskap-badrum.jpg`: IKEA HAVBÄCK tall cabinet, dark grey, in the bathrooms.
+- `docs/kaffeburk-sked-1.jpg`, `docs/kaffeburk-sked-2.jpg`, `docs/kaffeburk-sked-3.jpg`: the glass coffee jar with bamboo lid and wooden scoop (#334).
+- `docs/kattpärm-referens-pokedex-rutnät.png`, `docs/kattpärm-referens-detaljkort-par.png`, `docs/kattpärm-referens-detaljkort-utveckling.png`, `docs/kattpärm-referens-samlingsvy-räknare.png`: Pokédex-style layouts (grid, detail card, collection counter) that the cat binder's UI follows.
+- `docs/klk-sovrum1-inredning-1.png`, `docs/klk-sovrum1-inredning-2.png`: Peab's material on the Sovrum 1 walk-in closet fittings.
+- `docs/kruka-ansikte-glasogon-eukalyptus-fram.jpg`, `docs/kruka-ansikte-glasogon-eukalyptus-sida.jpg`: the face pot with wire glasses and faux eucalyptus in the kitchen.
+- `docs/nordic-wellness-st-lars-baksida-parkering.jpg`, `docs/nordic-wellness-st-lars-sida-glasparti.jpg`, `docs/nordic-wellness-st-lars-maps-mot-soder.jpg`: Nordic Wellness S:t Lars rear parking, glazed side and Google 3D view (#1822–#1824).
+- `docs/peab-flygbild-soder.png`, `docs/peab-hus-hornet-norr.png`, `docs/peab-innergard-ost.png`: Peab's 3D renders of the exteriors.
+- `docs/plan-vaning1-entre-hus-a-utsnitt.png`, `docs/plan-vaning1-entre-hus-b-utsnitt.png`, `docs/plan-vaning1-entre-hus-c-utsnitt.png`: Peab plan crops of the Hus A/B/C ground-floor entrances.
+- `docs/sidobord-jysk-randers-matt.jpg`, `docs/sidobord-jysk-randers-svart.jpg`: JYSK RANDERS side table, photo and specifications.
+- `docs/spegel-nissedal-svart-40x150.png`: IKEA NISSEDAL mirror 40 × 150 (the 65 × 150 is cited in the furniture topic).
+- `docs/spegel-staffan-rusta.png`: Rusta mirror Staffan 34 × 110, black, in the hall.
+- `docs/tavla-trappa-akvarell-kvinna.jpg`, `docs/tavla-trappa-fikus.jpg`, `docs/tavla-trappa-peace.jpg`, `docs/tavla-trappa-solros.jpg`: the four framed pictures on the stair wall (`textures/stair-pictures.jpg`).
+- `docs/utegym-karpvagen-oversikt-fran-gangvagen.jpg`, `docs/utegym-karpvagen-balansbana-mot-gymmet.jpg`, `docs/utegym-karpvagen-balansbana-och-klatternat.jpg`, `docs/utegym-karpvagen-rackhav-och-situp-banker.jpg`, `docs/utegym-karpvagen-stationer-mot-skolan.jpg`, `docs/utegym-karpvagen-traram-och-ribbor.jpg`: six views of the outdoor gym at Karpvägen (#1811).

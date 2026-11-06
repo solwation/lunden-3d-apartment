@@ -15,6 +15,33 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Image retention
+
+Images are the bulk of the checkout (2 121 files, 755 MB before #1879, 2026-11-06). The rules in
+CLAUDE.md ("Image retention") keep only long-term reference material and evidence for active work:
+
+| Class | Where | Kept until |
+|---|---|---|
+| Source and site material | `docs/peab/`, `docs/foton/`, `docs/references/` (Google 3D, maps, satellite, municipal documents), `docs/ingame-reports/` (the importer checks these paths on `main`, [report import](report-import.md)) | Always |
+| Product/site reference photos for implemented things | loose `docs/<name>.<ext>`; link each from the owning topic doc, otherwise from the [reference photo list](plan-material.md#reference-photos-not-linked-elsewhere) | Always while the thing exists in the scene; an unlinked loose image is a removal candidate |
+| Result images and measurements | `docs/verification/<issue>/`, `docs/validation/issue-N/` (`after/` when before/after) | Issue open or `integration-ready`, plus 30 days after closing; images a topic doc or code cites are kept with the citation |
+| Before-images, bug and user screenshots | `docs/verification/<issue>/before/` (older ones loose in `docs/`) | The resolving commit (`Fixes #N`) removes them, after the completion comment with pinned URLs is posted |
+| README, manifests, logs, source hashes | the same issue directories | Always; they are linked from `README.md` and the topic docs |
+
+Issue comments must embed images with URLs pinned to the image commit (`blob/<sha>/docs/...`), so pruning
+never breaks the evidence on GitHub. History is never rewritten: the pruned images remain reachable through
+those URLs and `git show <sha>:<path>`. Image links inside pre-#1879 issue READMEs therefore show as missing
+in the tree; read them from the issue comment or history.
+A citation keeps only the files it names: a directory link cites the directory's README, and where a
+directory held only images, #1879 redirected the link to the issue itself.
+
+`python3 tools/image_retention.py` reports the classes and the prunable images (`--loose` also lists
+unreferenced loose `docs/` images for manual review; `--prune` runs `git rm` for issues closed more than
+`--grace` days ago, default 30). Run it at the orchestra idle check and commit the removal with a
+housekeeping issue reference. `tools/image_retention_test.py` covers the classification. The 2026-11-06
+cleanup was a one-off full prune (grace 0) of every closed issue's unreferenced images, 1 570 files / 537 MB,
+plus 38 loose bug/before screenshots and the `docs/realism/` inventory screenshots.
+
 ## Moving Nerf target (#1820)
 
 `node --test tools/targetmovetest.mjs tools/targetscoretest.mjs cloudflare/deploypaths.test.mjs` checks
@@ -8439,7 +8466,7 @@ to `src/brickstyle.js`. `tools/southbackdroptest.html` "bounded far detail" grow
 desktop and 844×390 phone perfcount keep identical calls and maxima (the south is not in the maximum views).
 #1614: `brickstyletest` also checks every pavilion (both ring directions) and nr 41 triangle winds the way its normal
 points; before the fix 816/1632 (nr 42) and 926/1946 (nr 41) facade triangles were reversed. Noon sun before/after:
-[images](../verification/1614/).
+[images](https://github.com/solwation/lunden-3d-apartment/issues/1614).
 
 ## Southern low-rise glazing (#1418)
 
@@ -8987,7 +9014,7 @@ both revisions and is unrelated to texture painting. No startup-time or total-he
 `tools/architecturetest.html` ALL PASS: a synthetic single vertex-coloured mesh gets 2 edge tints (darkest r 0.063), the
 stair cores L/A/B/C get 166/29/24/24 distinct edge tints (10/7/7/7 before) and the playhouse shell 6 (1 before); with the old
 `src/architectureedges.js` the synthetic and playhouse checks fail. Houses A, B, C and L checked through the shared
-`CoreHouse`/`Core` edges, plus the playhouse. [Before/after](../verification/1615/).
+`CoreHouse`/`Core` edges, plus the playhouse. [Before/after](https://github.com/solwation/lunden-3d-apartment/issues/1615).
 
 ## Basketball flight visibility (#1655)
 

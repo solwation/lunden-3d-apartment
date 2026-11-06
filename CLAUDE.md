@@ -132,9 +132,13 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   ("Laga glitchiga kuddar", "Kaffeburk vid bryggaren") — the open issues are post-its on the fridge door; without
   the line the title is cleaned up automatically (src/todo.js `cleanTitle`).
 - **Reference images** (screenshots, product photos, Peab renders) that the user sends in with a
-  request are always committed to `docs/` (descriptive file names, e.g. `docs/sekretar-bang-oppen.png`)
-  and linked from the issue as `https://github.com/solwation/lunden-3d-apartment/blob/main/docs/<file>`,
-  so the agent working on the issue sees them. Push the images before creating the issue.
+  request are always committed and linked from the issue so the agent working on the issue sees them.
+  Push the images before creating the issue. Product photos, Peab material and site photos are long-term
+  reference material: commit them as `docs/<descriptive-name>` (e.g. `docs/sekretar-bang-oppen.png`) and link
+  them as `https://github.com/solwation/lunden-3d-apartment/blob/main/docs/<file>`. Screenshots that only show
+  a bug or the state before a change are issue evidence: commit them under `docs/verification/<issue>/before/`
+  and link them pinned to the image commit (`blob/<sha>/...`), because they are removed again when the issue is
+  resolved (see "Image retention" below).
   Images pasted into the chat are not saved as files: extract them from the session transcript with
   `python3 tools/pasted_images.py` (run from the checkout the session started in; #1746), view each one,
   then commit it under a descriptive name. Never claim a pasted image cannot be committed.
@@ -163,6 +167,24 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   Do this before the closing push too: `Fixes #N` closes an issue automatically, so publish the images and
   comment first, then push the resolving commit. For work with no meaningful visual result (such as docs-only
   changes), explain this in the completion comment and provide the relevant concrete verification instead.
+- **Image retention (user, 2026-11-06; #1879).** The repository keeps only images that are long-term
+  reference material or evidence for active work; everything else is pruned, and history is never rewritten
+  (issue comments pinned to the image commit keep working). Three classes:
+  - *Long term:* `docs/peab/`, `docs/foton/`, `docs/references/` (maps, Google 3D, satellite, municipal
+    documents), `docs/ingame-reports/` (the report importer checks those paths on `main`), product/site photos
+    for implemented furniture, fittings and surroundings, and any image linked from `README.md`,
+    `docs/development/` or code. Every long-term loose `docs/<name>` image must be linked from the topic doc that
+    owns it (`docs/development/plan-material.md` lists the otherwise unlinked ones); an unlinked loose image is
+    a candidate for removal.
+  - *Pruned after a while:* result images under `docs/verification/<issue>/` and `docs/validation/issue-N/`
+    stay while the issue is open or integration-ready and for 30 days after it closes, then
+    `python3 tools/image_retention.py --prune` removes them. The README/manifest/log text files stay (they are
+    linked from the docs), and so does any image a topic doc or code still cites.
+  - *Removed when the issue is resolved:* before-images, bug screenshots, user screenshots that only illustrate
+    the bug, and reference photos of rejected alternatives. Delete them in the resolving commit (`Fixes #N`),
+    after the completion comment has been posted with URLs pinned to the image commit.
+  Game screenshots never belong to the long-term class, except reference comparison sets documented in
+  `docs/references/`. Details and the review procedure: `docs/development/verification.md` ("Image retention").
 - **Every user-visible change gets an entry in `data/changelog.json`** (Swedish, newest first,
   next `id`), in the same commit — **one short sentence**, no digressions. It is shown only on the
   note on the freezer (the start screen says nothing about news; visitors find the note themselves);
