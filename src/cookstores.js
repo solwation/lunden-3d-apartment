@@ -1,16 +1,18 @@
 import * as THREE from 'three';
-import { EGG, SAUSAGE } from './config.js';
+import { SAUSAGE } from './config.js';
 import { sfx } from './audio.js';
 import { cookRefusal, cookRate, lifeFood } from './cookrules.js';
 
-// #1881: the life sim's cooking food (a raw sausage, an egg cracked from the carton) in the air fryer's basket and on the oven's
-// upper rack, as in the pan (eggs.js, #484/#1640) and on the grills (sausages.js, #1124). Each is a life store like the pan's:
-// put in with E (the egg is cracked in, `crackEggCook`), cooked while that appliance heats (the air fryer running with the basket
-// in; the oven shut and powered, #1219), at its COOKING rate (src/cookrules.js) on the food's own seconds (SAUSAGE, EGG), taken
-// out with E like any life item. Which food may go in is the shared rule, not a list per appliance; `busy(appliance, kind)`
-// (main.js) keeps one kind of food per vessel (fish fingers, fries, a caught fish, the chicken).
+// #1881 / #1887: the life sim's cooking food (a raw sausage) in the air fryer's basket and on the oven tray (oventray.js), as in
+// the pan (eggs.js, #1640) and on the grills (sausages.js, #1124). Each is a life store like the pan's: put in with E, cooked
+// while that appliance heats (the air fryer running with the basket in; the tray in the shut, powered oven, #1219), at its
+// COOKING rate (src/cookrules.js) on the food's own seconds (SAUSAGE), taken out with E like any life item. Which food may go in
+// is the shared rule, not a list per appliance: an egg (raw or cracked) is refused with "Ägg steker man i stekpannan" (#1887,
+// eggs.js keeps the pan's egg); `busy(appliance, kind)` (main.js)
+// keeps one kind of food per vessel (fish fingers, fries, a caught fish, the chicken). The tray's slots are children of the
+// tray, so what lies on it rides along when it is taken out and slid back in.
 
-const TIMES = { sausage: SAUSAGE, egg: EGG };
+const TIMES = { sausage: SAUSAGE }; // (#1887: an egg cooks only in the pan, eggs.js)
 
 /** One step of cooking for a life item on appliance `appliance` (shared by the stores here). */
 export function cookLifeItem(life, it, dt, appliance, surface) {
@@ -23,10 +25,9 @@ export function cookLifeItem(life, it, dt, appliance, surface) {
 }
 
 export class CookStores {
-  /** fryer: the AirFryer; oven: the oven door (ovens.js: parts, rack); busy(appliance, kind) → a reason or null. */
-  constructor(life, { fryer, oven, busy = () => null }) {
+  /** fryer: the AirFryer; tray: the OvenTray (oventray.js); busy(appliance, kind) → a reason or null. */
+  constructor(life, { fryer, tray, busy = () => null }) {
     Object.assign(this, { life, busy, vessels: [], sizzle: 0 });
-    const I = life.items;
     if (fryer) {
       const B = fryer.basket, inD = 0.21;
       this.add({ id: 'fryerBasket', appliance: 'airfryer', name: 'korgen i airfryern', parent: B,
@@ -34,25 +35,13 @@ export class CookStores {
         pick: [new THREE.Vector3(0, fryer.plateY + 0.05, fryer.frontZ + 0.02 + inD / 2), [0.24, 0.1, inD]],
         isOpen: () => fryer.open, shutText: 'Dra ut korgen först', heats: () => fryer.cooking });
     }
-    if (oven?.rack) {
-      const r = oven.rack;
-      this.add({ id: 'ovenRack', appliance: 'oven', name: 'ugnen', parent: oven.parts,
+    if (tray) { // (the store keeps its #1881 id 'ovenRack', so saved homes find what lay in the oven: now on the tray)
+      const r = tray.spot;
+      this.add({ id: 'ovenRack', appliance: 'oven', name: 'ugnsplåten', parent: tray.model,
         spots: [-0.09, 0.09].map((dz) => [new THREE.Vector3(r.x, r.y + 0.003, r.z + dz), 0]),
-        pick: [new THREE.Vector3(r.x, r.y + 0.06, r.z), [0.4, 0.14, 0.45]],
-        isOpen: () => oven.isOpen && oven.t > 0.9, shutText: 'Öppna ugnen först', heats: () => !oven.isOpen && oven.t < 0.05 && oven.powered !== false });
+        pick: [new THREE.Vector3(r.x, r.y + 0.06, r.z), [0.36, 0.12, 0.4]],
+        isOpen: () => tray.open, shutText: 'Öppna ugnen först', heats: () => tray.cooking });
     }
-    // an egg from the carton is cracked straight into the basket / onto the rack (the pan's crackEgg, eggs.js)
-    life.actions.define({ id: 'crackEggCook', order: 0, duration: EGG.crack,
-      label: (c) => `knäcka ägget i ${this.byId(c.raw.store).name}`,
-      applies: (c) => c.held?.type === 'rawEgg' && !!this.byId(c.raw?.store),
-      check: (c) => { const v = this.byId(c.raw.store); return !v.isOpen() ? v.shutText : this.why(v, c.held) ?? (this.freeIdx(v) < 0 ? `Det får inte plats mer i ${v.name}` : null); },
-      reserve: (c) => ({ inputs: [c.held], outputs: [{ at: 'slot', store: c.raw.store, slot: this.freeIdx(this.byId(c.raw.store)) }] }),
-      animate: (c, k, job) => { if (!c.heldView?.held) return; job.base ??= c.heldView.model.position.clone(); c.heldView.model.position.y = job.base.y + 0.035 * Math.sin(k * Math.PI * 4); },
-      commit: (c, job) => { const egg = life.create('friedEgg', job.outputs[0]); if (!egg) return false; I.remove(c.held); sfx.click(life.view(egg)?.where()); return egg; },
-      done: (c, job) => { if (job.base && c.heldView?.held) c.heldView.model.position.copy(job.base); },
-      cancel: (c, job) => { if (job.base && c.heldView?.held) c.heldView.model.position.copy(job.base); },
-      consumes: 'one raw egg', result: 'one cracked egg in the air fryer basket / on the oven rack',
-    });
   }
 
   /** The first empty slot of vessel `v`, or -1. */
@@ -73,10 +62,10 @@ export class CookStores {
   add(v) {
     const life = this.life, I = life.items;
     const anchors = v.spots.map(([p, yaw]) => { const a = new THREE.Object3D(); a.position.copy(p); a.rotation.y = yaw; v.parent.add(a); return a; });
-    I.addStore({ id: v.id, name: v.name, slots: anchors.map(() => ({ size: 's' })), accepts: ['sausage', 'friedEgg'], isOpen: v.isOpen, shutText: v.shutText,
+    I.addStore({ id: v.id, name: v.name, slots: anchors.map(() => ({ size: 's' })), accepts: ['sausage', 'friedEgg'], // (friedEgg: one saved here under #1881 still loads and can be taken out) isOpen: v.isOpen, shutText: v.shutText,
       fullText: `Det får inte plats mer i ${v.name}`, putLabel: (held) => `lägga ${I.name(held)} i ${v.name}` });
     life.anchors.set(v.id, (slot) => anchors[slot] ?? null);
-    I.store(v.id).refuse = (held) => (held?.type === 'rawEgg' ? null : this.why(v, held)); // (a raw egg is cracked in: crackEggCook)
+    I.store(v.id).refuse = (held) => this.why(v, held);
     const [at, size] = v.pick, pick = new THREE.Mesh(new THREE.BoxGeometry(...size), new THREE.MeshBasicMaterial());
     pick.visible = false; pick.position.copy(at);
     const ray = pick.raycast.bind(pick);

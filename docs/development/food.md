@@ -6,7 +6,7 @@ Related: [life](life.md), [furniture](furniture.md).
 ## Module and test map
 
 ```text
-src/ovens.js           oven (drop-down door) + microwave (side door) in the tall unit, E opens (world.lids)
+src/ovens.js           oven (drop-down door, two racks; the tray is src/oventray.js) + microwave (side door) in the tall unit, E opens (world.lids)
 src/microwave.js       #1210: warming food in the microwave. ovens.js gives the door `mikron` a `cav` (turntable, panel, time button, display).
                        Life store 'microwave' (one slot, a plate with its food, door open); the panel is the E target (kind 'microwave', in
                        world.lids; "Stäng luckan först" / "Ställ in en tallrik först" / "Strömmen är borta"), the time button cycles
@@ -61,12 +61,12 @@ src/chicken.js         #708: whole fridge chicken cooks only on the existing cou
                        the list (courtyard first); `chicken.grill` is the one it lies on, saved as place {grill:true, kind:'kettle'}
                        for the patio kettle (the old {grill:true} still means the courtyard). Main offers 'grillChicken' on whichever
                        kettle is aimed at (or a spot within 0.4 m of its `grateWorld()`); both emit grillLit/surface 'grill' for the task.
-                       #1219: the kitchen oven roasts it too. ovens.js gives the oven door `parts`, `rack` (upper rack) and `cavity`;
-                       main offers 'ovenChicken' ("lägga kycklingen i ugnen") while the open oven's door or cavity is aimed at, and
-                       `intoOven` lays it on the rack (a shut oven is refused). It roasts only while the door is shut and powered
-                       (`roasting`; the oven lamp glows via `heating`), with the grill's cook/burn times; events chickenPlaced/
-                       roasted/chickenBurnt carry surface 'oven' (the grillChicken task still wants the grill), no smoke escapes the
-                       shut oven, and x.chicken saves place {oven:true}. tools/ovenchickentest.html (real game) covers it.
+                       #1219: the kitchen oven roasts it too, on the oven tray (#1887, src/oventray.js) on the upper rack;
+                       main offers 'ovenChicken' ("lägga kycklingen på ugnsplåten") while the tray in the open oven (or put down)
+                       is aimed at, and `intoOven` lays it there (a shut oven is refused). It roasts only while the tray is in the
+                       shut, powered oven (`roasting`; the oven lamp glows via the door's `heating`), with the grill's cook/burn
+                       times; events chickenPlaced/roasted/chickenBurnt carry surface 'oven' (the grillChicken task still wants the
+                       grill), no smoke escapes the shut oven, and x.chicken saves place {oven:true} (on the tray). tools/ovenchickentest.html (real game) covers it.
                        tools/patiochickentest.cjs: real game, kettle refusal unlit, placement, golden +35 once, burn, save/load, courtyard.
 src/sausages.js        #1124: grill sausages. Each kettle grill's grate is a life store (courtyard 'grillGrate', L1007's patio kettle
                        'kettleGrate', #1121; SAUSAGE.slots spots across the bars, clear of the chicken in the middle): a raw sausage
@@ -128,23 +128,36 @@ src/fries.js           Aviko frozen fries (#301, FRIES): a stand-up bag (canvas 
                        (cups.js `Steam`) for FRIES.steam s; E with a free hand takes a bunch (FriesBunch: click / "Ät" eats one fry,
                        put down / taken again); stats fries / friesCooked / friesBurnt; F: emptied, the bag full; `&fries` = a done
                        basket out (screenshots)
-src/cookrules.js       #1881 (the user, 2026-11-07: "Allt som går i ugn eller stekpanna ska också gå i airfryer, och vice versa. Grillen
-                       … där går bara kött."): the one cooking rule, pure and node-tested (src/cookrules.test.mjs). COOKING in config
-                       declares each food once (fishFinger, fries, sausage, egg, caughtFish, chicken: noun/name, tags, size, a rate per
-                       appliance on the food's own seconds; life items point at theirs with ITEMS `cook`). The pan, the oven and the
-                       air fryer (COOKING.group) take the same foods; the grill only foods tagged `meat` (or `catch`, the caught fish's
-                       #1754 spot): `cookRefusal` → "Det går inte att grilla pommes"; a food bigger than an appliance's room (the whole
-                       chicken in the pan or the basket) → "Kycklingen är för stor för airfryern – använd ugnen eller grillen".
-                       Matrix: fish fingers/fries/egg pan+oven+air fryer; sausage/caught fish all four; chicken oven+grill. The oven
-                       cooks while shut and powered (no smoke escapes it, as #1219); the smoke alarm still hears only the air fryer's
-                       vents (and the chicken's pan path), as before. One kind of food per vessel: main.js `vesselContents`/`vesselBusy`
-                       ("Korgen har …", "Det ligger redan … i ugnen", "Stekpannan är upptagen"). Wiring: fishfingers.js `intoOven`/
-                       `ovenHeld` (state 'oven', FISH.fry.slots across the upper rack); fries.js `vessels`/`where`/`load` (the heap and
-                       steam move to the pan or the oven rack, `pourTargetFor(where)`); cookstores.js (life stores 'fryerBasket' and
-                       'ovenRack' for sausages and eggs, `crackEggCook`); fishing.js `intoOven`/`intoFryer` (heat kinds 'oven'/'airfryer',
-                       saved as `on`); chicken.js `intoFryer` refusal; sausages.js grill refusal from the rule. Rates for the new pairs
-                       are *guess*. tools/cook1881browser.cjs (real game, main focus/use) covers the new pairs, the refusals and the old
-                       chicken-oven / air-fryer flows.
+src/cookrules.js       #1881 / #1887 (the user, 2026-11-07: "pommes gör man inte i stekpanna, och när man kör saker i ugnen behöver
+                       man en plåt; vi siktade på realism"): the one cooking rule, pure and node-tested (src/cookrules.test.mjs). COOKING
+                       in config declares each food once (fishFinger, fries, sausage, egg, caughtFish, chicken: noun/name, `how`, size,
+                       and `rate` = the appliances it sensibly cooks in, each with its speed on the food's own seconds; life items point
+                       at theirs with ITEMS `cook`). Anything not listed is refused with where the food goes (`cookRefusal`: "Pommes gör
+                       man i ugnen eller airfryern", "Ägg steker man i stekpannan", "Fiskpinnar gör man i stekpannan, ugnen eller
+                       airfryern"); a food bigger than an appliance's room → "Kycklingen är för stor för airfryern – använd ugnen eller
+                       grillen". Matrix: fish fingers pan+oven+air fryer; fries oven+air fryer; sausage and caught fish all four; egg pan
+                       only; chicken oven+grill. Rates for the pairs added in #1881 are *guess*. The smoke alarm still hears only the air
+                       fryer's vents (and the chicken's pan path), as before. One kind of food per vessel: main.js `vesselContents`/
+                       `vesselBusy` ("Korgen har …", "Det ligger redan … på ugnsplåten", "Stekpannan är upptagen"). main.js's food rule
+                       routes the held food by where it is aimed (grill / tray or oven / air fryer / pan) and shows the refusal as a
+                       blocked 'cookRefused' target (the whole chicken keeps its own pan/air-fryer attempts, #708).
+src/oventray.js        #1887: the oven tray (ugnsplåt, OVEN_TRAY *guess* size), a Holdable whose home is the oven's upper rack (ovens.js
+                       `rack` in its static `parts`; the old static tray box is gone). Oven food lies on it, never on the rack: E in the
+                       open oven takes it out ("ta ut ugnsplåten"), it goes down on a worktop/table like any held thing (flat,
+                       `poseAt`), E into the open oven with it in the hand slides it back ("skjuta in ugnsplåten i ugnen"). Food on it
+                       is a child of its model (`spot` = its floor), so it rides in the hand and back in. The food code reads the tray as
+                       its `oven`: `open` (put down, or in the open oven: food goes on / comes off), `cooking` (in the shut, powered
+                       oven: what lies on it cooks; a power cut stops it), `shut` (in the closed oven: no smoke or steam escapes),
+                       `holds(obj)` (aim on the tray or its food). Aimed into the open oven without the tray: "Lägg maten på
+                       ugnsplåten". Wiring: fishfingers.js `intoOven(tray, i)`/`ovenHeld` (state 'oven'); fries.js `vessels.oven`
+                       (`pourTargetFor('oven')`: "lägga pommes frites på ugnsplåten"; no pan vessel any more); cookstores.js life store
+                       'ovenRack' (id kept for saved homes; its slots are children of the tray) for sausages — `crackEggCook` and the
+                       egg in the basket/oven were removed; fishing.js `intoOven(tray)` (heat kind 'oven', saved as `on: 'oven'`);
+                       chicken.js `intoOven` puts the bird on the tray (#1219 otherwise unchanged: the oven lamp via the door's
+                       `heating`, place {oven:true}). Saving: the tray's place (in the oven, put down, in the hand) is keep.js
+                       `things` like any holdable; the food on it keeps its own record and lands on the tray wherever it was restored
+                       (fish fingers and fries in the oven are not kept, as before). tools/cook1887browser.cjs (real game, main
+                       focus/use) covers the refusals, the tray out/put down/back in with fries, fish fingers, the chicken and a sausage.
 src/beershelf.js       #511: four correctly typed packages (two global DIPA/two global TIPA) on the fridge's upper glass shelf.
                        Real product photos/Untappd labels plus readable names/breweries; each package is a BeerCan (#587).
                        BEER_SHELF centralises placement, can/bottle proportions and product-photo crop. Volume/type come from

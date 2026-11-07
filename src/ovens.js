@@ -104,7 +104,7 @@ export function buildOvens({ f, z0, z1, yOven, yMicro, yGrille, microW }) {
   display.position.set(f - 0.0046, yGrille - 0.05, pz); display.rotation.y = -Math.PI / 2; display.raycast = () => {};
   parts.add(display);
 
-  // hollow insides: enamel oven with a rack and a tray, light grey microwave with a turntable
+  // hollow insides: enamel oven with two racks (the tray is its own holdable, #1887 oventray.js), light grey microwave with a turntable
   const enamel = new THREE.MeshStandardMaterial({ color: 0x2b2d30, roughness: 0.4 });
   const liner = new THREE.MeshStandardMaterial({ color: 0xd8dbde, roughness: 0.5 });
   const cavity = (x0, x1, ya, yb, za, zb, m, lamp) => {
@@ -120,11 +120,11 @@ export function buildOvens({ f, z0, z1, yOven, yMicro, yGrille, microW }) {
   };
   const ox0 = f + t + 0.002, ox1 = f + 0.53;
   cavity(ox0, ox1, yOven + 0.03, yMicro - 0.03, z0 + 0.03, z1 - 0.03, enamel, ovenLamp);
-  for (const y of [yOven + 0.2, yOven + 0.34]) { // rack (grid of rods) and a tray below it
+  for (const y of [yOven + 0.2, yOven + 0.34]) { // racks (grids of rods)
     for (let k = 0; k < 9; k++) parts.add(box(ox1 - ox0 - 0.04, 0.005, 0.005, (ox0 + ox1) / 2, y, z0 + 0.06 + k * ((z1 - z0 - 0.12) / 8), steel));
   }
-  parts.add(box(ox1 - ox0 - 0.04, 0.012, z1 - z0 - 0.1, (ox0 + ox1) / 2, yOven + 0.12, zc, enamel));
-  // #1219: the whole chicken roasts on the upper rack (chicken.js intoOven; the lower one would put the bird through it): its spot and the cavity, in `parts`' frame
+  // the upper rack's top: where the oven tray (#1887, oventray.js) slides in and the food on it roasts (#1219: the lower one
+  // would put the chicken through it); its spot and the cavity, in `parts`' frame
   oven.parts = parts;
   oven.rack = new THREE.Vector3((ox0 + ox1) / 2, yOven + 0.34 + 0.003, zc);
   oven.cavity = new THREE.Box3(new THREE.Vector3(f - 0.05, yOven + 0.03, z0 + 0.03), new THREE.Vector3(ox1, yMicro - 0.03, z1 - 0.03));

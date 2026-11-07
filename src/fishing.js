@@ -224,12 +224,12 @@ export class CaughtFish extends Holdable {
     if (!pan.hob?.on) this.host.onMessage('Slå på plattan så steks fisken');
     return true;
   }
-  /** #1881: onto the open oven's upper rack (ovens.js `rack` in its `parts`); it bakes while the door is shut and powered. */
-  intoOven(oven) {
-    if (!oven?.rack || !oven.isOpen || !this.settle(oven.parts, oven.rack, 0.15)) return false;
-    this.heat = { kind: 'oven', oven }; this.by = 'oven';
+  /** #1881 / #1887: onto the oven tray (oventray.js: put down, or in the open oven); it bakes while the tray is in the shut, powered oven. */
+  intoOven(tray) {
+    if (!tray?.open || !this.settle(tray.model, tray.spot, 0.15)) return false;
+    this.heat = { kind: 'oven', oven: tray }; this.by = 'oven';
     sfx.click?.(this.where());
-    this.host.onMessage('Stäng ugnsluckan så bakas fisken');
+    this.host.onMessage(tray.inOven ? 'Stäng ugnsluckan så bakas fisken' : 'Sätt in plåten i ugnen så bakas fisken');
     return true;
   }
   /** #1881: into the open air fryer's basket (on its crisper plate); it cooks while the fryer runs with the basket in. */
@@ -245,9 +245,9 @@ export class CaughtFish extends Holdable {
     if(this.host.shared&&!this.host.shared.canAct(this))return;
     const h = this.heat;
     if (!h) return;
-    const parent = h.kind === 'grill' ? h.grill.object : h.kind === 'oven' ? h.oven.parts : h.kind === 'airfryer' ? h.fryer.basket : h.pan.model;
+    const parent = h.kind === 'grill' ? h.grill.object : h.kind === 'oven' ? h.oven.model : h.kind === 'airfryer' ? h.fryer.basket : h.pan.model;
     if (this.model.parent !== parent || this.held || this.broken) { this.heat = null; return; }
-    const hot = h.kind === 'grill' ? h.grill.on : h.kind === 'oven' ? !h.oven.isOpen && h.oven.t < 0.05 && h.oven.powered !== false
+    const hot = h.kind === 'grill' ? h.grill.on : h.kind === 'oven' ? h.oven.cooking
       : h.kind === 'airfryer' ? h.fryer.cooking : h.pan.onHob && !!h.pan.hob?.on;
     if (!hot) return;
     const was = this.cookState;
@@ -564,7 +564,7 @@ export class Fishing {
       if (!e.h && !placed && !grill && !pan && !oven && !fryer) continue;
       const fish = this.addFish({ id:e.id,sd:e.sd,species: e.sp, cm: e.cm, raw: e.raw !== 0, cook: Number.isFinite(e.ck) ? e.ck : undefined, by: e.by, bites: e.b }, placed ? new THREE.Vector3(...e.p) : this.dropSpot(0.5));
       fish._restoring=true;
-      if (oven || fryer) { fish.held = true; if (oven) { fish.settle(oven.parts, oven.rack, 0.15); fish.heat = { kind: 'oven', oven }; } else { fish.settle(fryer.basket, new THREE.Vector3(0, fryer.plateY, fryer.frontZ + 0.125), 0); fish.heat = { kind: 'airfryer', fryer }; } }
+      if (oven || fryer) { fish.held = true; if (oven) { fish.settle(oven.model, oven.spot, 0.15); fish.heat = { kind: 'oven', oven }; } else { fish.settle(fryer.basket, new THREE.Vector3(0, fryer.plateY, fryer.frontZ + 0.125), 0); fish.heat = { kind: 'airfryer', fryer }; } }
       else if (grill || pan) { fish.held = true; if (grill) fish.intoGrill(grill, { silent: true }); else { fish.settle(pan.model, new THREE.Vector3(0, 0.004, 0), Math.PI / 2 - 0.2); fish.heat = { kind: 'pan', pan }; } }
       else if (e.h && !heldItem()) fish.take();
       else if (placed) { fish.model.position.set(...e.p); fish.model.quaternion.set(...e.q); fish.placed = true; }

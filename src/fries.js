@@ -16,10 +16,10 @@ import { COOKING } from './config.js';
 // (→ the smoke alarm, a deduction). Done and pulled out, they steam (cups.js Steam) as they cool over FRIES.steam s.
 // E on the basket with a free hand takes FRIES.bunch of them into the hand (FriesBunch, like a fish finger): a click /
 // "Ät" eats one; a bunch can be put down and taken again. F: the basket emptied, the bunches cleared, a full bag at home.
-// #1881: the same portion also goes in the pan on the hob or on the open oven's rack (COOKING, src/cookrules.js: the pan, the oven
-// and the air fryer take the same food). The heap and its steam ride in one group (`load`) that moves to whichever vessel the
-// fries were poured into (`where`: 'airfryer' | 'pan' | 'oven'; main.js gives `vessels`); they cook there at that appliance's
-// rate. One vessel at a time: poured into one, the bag does not pour into another until they are eaten.
+// #1881 / #1887: the same portion also goes on the oven tray (oventray.js; COOKING, src/cookrules.js: fries cook in the oven
+// and the air fryer, never in the pan). The heap and its steam ride in one group (`load`) that moves to whichever vessel the
+// fries were poured into (`where`: 'airfryer' | 'oven'; main.js gives `vessels`); they cook there at that appliance's rate
+// (on the tray: while it is in the shut oven). One vessel at a time: poured into one, the bag does not pour into another until they are eaten.
 
 const RAW = new THREE.Color(FR.raw), GOLDEN = new THREE.Color(FR.goldenColor), DARK = new THREE.Color(FR.dark), PALE = new THREE.Color(0xffffff);
 
@@ -300,14 +300,14 @@ export class Fries {
       return { m: o.matrix.clone(), y: o.position.y, o, start: 0 };
     });
     this.spots.forEach((s, i) => this.heap.setMatrixAt(i, s.m));
-    this.load = new THREE.Group(); // #1881: the heap and its steam, in the basket's frame; moved to the pan / the oven's rack
+    this.load = new THREE.Group(); // #1881: the heap and its steam, in the basket's frame; moved onto the oven tray (#1887)
     this.load.add(this.heap);
     fryer.basket.add(this.load);
     this.where = 'airfryer';
     // #1881: where the fries can lie. `parent` + `at` = the load group's spot (basket-local frame: the heap's middle is at
     // (0, plateY, cz)); open() = they can be seen / taken / poured into; cooking() = the appliance heats; vent() = where
     // burning ones smoke (null: inside the shut oven, nothing escapes, as with the chicken #1219); alarm = that smoke reaches
-    // the smoke alarm (the air fryer's vents, #287; the pan's smoke rises under the hood, like the fish fingers' #214).
+    // the smoke alarm (the air fryer's vents, #287).
     this.vessels = { airfryer: { parent: fryer.basket, at: new THREE.Vector3(), open: () => fryer.open, cooking: () => fryer.cooking,
       vent: () => fryer.vent, alarm: true, shut: 'Dra ut korgen först', start: 'starta airfryern' } };
     this.cz = cz;
@@ -360,7 +360,7 @@ export class Fries {
   get burnt() { return this.cook >= FR.burnAt; }
   /** #1881: the vessel the fries lie in (or will be poured into). */
   get vessel() { return this.vessels[this.where] ?? this.vessels.airfryer; }
-  /** Burning fries on the heat with somewhere for the smoke to go (the air fryer's vents, the pan). */
+  /** Burning fries on the heat with somewhere for the smoke to go (the air fryer's vents). */
   get smoking() { return this.count > 0 && this.burnt && this.vessel.cooking() && !!this.vessel.vent?.(); }
   /** Smoke for the smoke alarm: burning fries in the running air fryer (#287). */
   get smoke() { return this.smoking && !!this.vessel.alarm; }
@@ -368,7 +368,7 @@ export class Fries {
   /** #1881: the "pour a portion in" E target for vessel `where` (one object per vessel). */
   pourTargetFor(where) {
     const self = this, name = COOKING.appliances[where].name;
-    return (this.pourTargets[where] ??= { name: `pommes frites i ${where === 'airfryer' ? 'airfryern' : name}`, kind: 'pourfries', verb: 'hälla', where,
+    return (this.pourTargets[where] ??= { name: `pommes frites ${where === 'oven' ? 'på ugnsplåten' : `i ${name}`}`, kind: 'pourfries', verb: where === 'oven' ? 'lägga' : 'hälla', where,
       get blocked() { return !!this.blockedText; },
       get blockedText() {
         const v = self.vessels[where];
@@ -377,8 +377,8 @@ export class Fries {
         if (!v.open()) return v.shut;
         const busy = self.busy?.(where, 'fries') ?? (where === 'airfryer' && self.fishIn?.() ? 'Korgen har fiskpinnar' : null);
         if (busy) return busy;
-        if (self.count > 0 && self.where !== where) return `Pommesen ligger redan i ${COOKING.appliances[self.where].name}`;
-        if (self.count + FR.portion > FR.portion * FR.max) return where === 'airfryer' ? 'Korgen är full' : `Det får inte plats mer i ${name}`;
+        if (self.count > 0 && self.where !== where) return `Pommesen ligger redan ${self.where === 'oven' ? 'på ugnsplåten' : `i ${COOKING.appliances[self.where].name}`}`;
+        if (self.count + FR.portion > FR.portion * FR.max) return where === 'airfryer' ? 'Korgen är full' : 'Det får inte plats mer på ugnsplåten';
         if (self.cook > 0) return 'Ät upp pommesen först';
         return undefined;
       },
@@ -401,7 +401,7 @@ export class Fries {
 
   paint() { cookColour(this.mat.color, this.cook); }
 
-  /** E with the bag on the open basket (#1881: the pan on the hob, the open oven): a portion in. */
+  /** E with the bag on the open basket (#1881 / #1887: or the reachable oven tray): a portion in. */
   pour(where = 'airfryer') {
     if (this.pourTargetFor(where).blocked) return;
     if (!this.count) this.moveTo(where);

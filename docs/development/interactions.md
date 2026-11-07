@@ -517,6 +517,9 @@ src/holdable.js        things you take and hold (one at a time): home + pick box
                        Blocked/closed targets and non-placement menu rows show no return ghost. Home targets take
                        precedence over the generic surface beneath them. tools/returnmarkerstest.html covers the
                        cloth, leaning board, fridge access, cups and a moved support; holdtest covers other placement.
+                       #1887: the oven tray (src/oventray.js) is a Holdable whose home is a child of the oven's static parts;
+                       the food on it is a child of its model and rides along (held, it sits below the view's centre ray and its
+                       target is the back target), and it overrides `poseAt` to lie flat (its own rest pose would count that food).
 src/hand.js            the visitor's arm + hand (HAND, #195, #238): three meshes in the camera (sleeve, cuff, the hand: palm,
                        thumb, four three-joint fingers of capsules + the bare wrist, with morph targets relaxed | grip |
                        spread), hidden when empty; holding a thing the fingers close round its `grip` (or the right edge of

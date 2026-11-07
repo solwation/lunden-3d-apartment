@@ -507,6 +507,8 @@ without running individual awards again. Day rollover clears daily bonus display
 
 #708: `Life.x.chicken` keeps raw/golden/burnt progress, off-grill pose or courtyard grate placement, missing/eaten parts and completion/penalty flags. The generic holdable snapshot still excludes chicken to avoid a second restore. `keep.js` restores grill heat before Life; saved grill relighting and chicken loading emit no task progress. F returns the existing bird rather than creating a fresh rewardable one.
 
+#1887: the oven tray is an ordinary holdable in `keep.js` `things` (in the oven = home, put down = its world pose, or in the hand). Food on it keeps its own record (`x.chicken` place {oven:true}, `fishing` `on: 'oven'`, life store `ovenRack`) and is re-attached to the tray's model, so it lands on the tray wherever `things` put it, whatever the load order.
+
 
 ## Versioned layout credentials (#853)
 

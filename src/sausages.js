@@ -22,7 +22,7 @@ export class Sausages {
       I.addStore({ id, name: grill.name, slots: anchors.map(() => ({ size: 's' })), accepts: ['sausage'], isOpen: () => true,
         fullText: `Det får inte plats fler korvar på ${grill.name}`, putLabel: (held) => `lägga ${I.name(held)} på ${grill.name}` });
       life.anchors.set(id, (slot) => anchors[slot] ?? null);
-      const food = (held) => lifeFood(I.defs, held?.type); // #1881: the shared rule (only meat on a grill: "Det går inte att grilla ägg")
+      const food = (held) => lifeFood(I.defs, held?.type); // #1881 / #1887: the shared rule (an egg: "Ägg steker man i stekpannan")
       I.store(id).refuse = (held) => (food(held) && cookRefusal(food(held), 'grill')) || (held?.type !== 'sausage' ? 'Bara korv på grillgallret' : chickenOn(grill) ? 'Kycklingen tar upp grillen' : null);
       // a pick box on the grate, live only with food in the hand (the sausages themselves are their own E targets)
       const R = (GRILL.kettle.r - 0.03) * q, pick = new THREE.Mesh(new THREE.BoxGeometry(2 * R, 0.07, 2 * R), new THREE.MeshBasicMaterial());

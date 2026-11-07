@@ -7,7 +7,7 @@ import { CHICKEN as C } from './config.js';
 import { cookRefusal, cookRate } from './cookrules.js';
 
 // The fridge's whole chicken (#160, #708): a kettle grill (courtyard or L1007's patio kettle, #1157) or the kitchen oven
-// (#1219: on the upper rack, it roasts while the oven door is shut); raw → golden → burnt.
+// (#1219: on the oven tray, #1887, it roasts while the tray is in the shut oven); raw → golden → burnt.
 // Existing model, pieces and smoke are reused. Life's saved extra keeps cooking/placement/parts/reward flags;
 // F returns it home without refilling or undoing cooking. Grill placement keeps E as whole-bird pickup.
 
@@ -126,24 +126,24 @@ export class Chicken extends Holdable {
     return true;
   }
 
-  /** #1219: onto the open oven's upper rack (`this.oven`, ovens.js); it roasts once the door is shut. */
+  /** #1219 / #1887: onto the oven tray (`this.oven`, oventray.js: in the open oven, or put down); it roasts once the tray is in the shut oven. */
   intoOven(o = this.oven) {
-    if (!this.held || !o?.rack) return false;
-    if (!o.isOpen || o.t < 0.9) { this.life?.say('Öppna ugnen först.'); return false; }
+    if (!this.held || !o) return false;
+    if (!o.open) { this.life?.say(o.inOven || o.held ? 'Öppna ugnen först.' : 'Lägg kycklingen på ugnsplåten.'); return false; }
     forgetBicycleHand(this);
     this.held = false; setHeld(null);
-    o.parts.add(this.model);
-    this.model.position.copy(o.rack);
+    o.model.add(this.model);
+    this.model.position.copy(o.spot);
     this.model.rotation.set(0, Math.PI / 2, 0); this.model.scale.setScalar(1);
     this.plate.visible = false; this.inOven = this.placed = true;
     this.retarget(); this.life && (this.life.dirty = true);
     this.event('chickenPlaced', { surface: 'oven' });
-    this.life?.say('Stäng ugnsluckan så steks kycklingen.');
+    this.life?.say(o.inOven ? 'Stäng ugnsluckan så steks kycklingen.' : 'Sätt in plåten i ugnen så steks kycklingen.');
     return true;
   }
 
-  /** The oven roasts while its door is shut on the bird, not in a power cut (#1219). */
-  get roasting() { return this.inOven && !!this.oven && !this.oven.isOpen && this.oven.t < 0.05 && this.oven.powered !== false; }
+  /** The oven roasts while its door is shut on the tray with the bird, not in a power cut (#1219, #1887). */
+  get roasting() { return this.inOven && !!this.oven?.cooking; }
 
   placementState() {
     if (this.inOven) return { oven: true };
@@ -199,8 +199,8 @@ export class Chicken extends Holdable {
     this.bodyLeft = Number.isInteger(s.bodyLeft) ? Math.max(0, Math.min(C.bodyBites, s.bodyLeft)) : C.bodyBites;
     for (const m of this.body) { m.userData.s0 ??= m.scale.clone(); m.scale.copy(m.userData.s0).multiplyScalar(0.45 + 0.55 * this.bodyLeft / C.bodyBites); m.visible = this.bodyLeft > 0; }
     if (s.place?.grill) this.grill = this.grills?.find((g) => g.kind === (s.place.kind ?? this.grills[0].kind)) ?? null;
-    if (s.place?.oven && this.oven?.rack) { // #1219: back on the oven's rack
-      this.oven.parts.add(this.model); this.model.position.copy(this.oven.rack); this.model.rotation.set(0, Math.PI / 2, 0);
+    if (s.place?.oven && this.oven) { // #1219 / #1887: back on the oven tray (wherever the tray is)
+      this.oven.model.add(this.model); this.model.position.copy(this.oven.spot); this.model.rotation.set(0, Math.PI / 2, 0);
       this.inOven = this.placed = true; this.plate.visible = false;
     } else if (s.place?.grill && this.grill) {
       this.grill.object.add(this.model); this.model.position.copy(this.grill.grateTop); this.model.rotation.set(0, Math.PI / 2, 0);
@@ -277,9 +277,9 @@ export class Chicken extends Holdable {
     super.update(dt);
     this.piece?.update(dt); // a piece in the hand being eaten
     if (this.inGrill && this.model.parent !== this.grill?.object) this.inGrill = false;
-    if (this.inOven && this.model.parent !== this.oven?.parts) this.inOven = false;
+    if (this.inOven && this.model.parent !== this.oven?.model) this.inOven = false;
     const grilling = this.inGrill && this.grill?.on, roasting = this.roasting;
-    if (this.oven) this.oven.heating = roasting; // the oven lamp glows through its window while it roasts
+    if (this.oven?.door) this.oven.door.heating = roasting; // the oven lamp glows through its window while it roasts
     if (grilling || roasting) {
       const surface = grilling ? 'grill' : 'oven';
       this.cooked = Math.min(C.burnSeconds, this.cooked + dt * cookRate('chicken', surface)); // (#1881: the shared rate, 1 on both)

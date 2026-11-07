@@ -4494,34 +4494,38 @@ export const TOASTER = { w: 0.28, d: 0.17, h: 0.18, slot: { l: 0.13, w: 0.032 },
 export const CHICKEN = { cookSeconds: 10, burnSeconds: 30, smokeSeconds: 60, darken: 0.8,
   held: { x: 0.18, y: -0.3, z: -0.55 },
   raw: [0xe9c7a6, 0xddb48f], bodyBites: 3, bites: 2, piece: { x: 0.15, y: -0.17, z: -0.36 } };
-// #1881 (the user, 2026-11-07): "Allt som går i ugn eller stekpanna ska också gå i airfryer, och vice versa. Grillen är lite
-// speciell förstås, där går bara kött." One rule for every food, read by src/cookrules.js: the pan, the oven and the air fryer
-// are one group (`group`): a food that cooks in one of them cooks in all three. The grill takes only foods carrying one of
-// `grillTags` (meat; the caught fish keeps its #1754 grill spot as 'catch'); anything else is refused ("Det går inte att grilla
-// pommes"). A food bigger than an appliance's `room` (`sizes`: the whole chicken in the pan or the air fryer's basket) is
-// refused with a message naming where it does fit. `rate` per food and appliance = how fast that appliance cooks it, as a
-// factor on the food's own seconds (FISH.fry, FRIES, SAUSAGE, EGG, FISHING.cook, CHICKEN), so cooked/burnt follow the same
-// thresholds everywhere. The pairs that existed before keep their old rates; the new pairs (#1881) are *guess*. The oven
-// cooks while its door is shut and powered (as the chicken did, #1219: no smoke escapes it), the air fryer while it runs with
-// the basket in, the pan on a lit zone, the grill while lit. `noun` = the food in a refusal, `name` = its definite form.
+// #1881 / #1887 (the user, 2026-11-07): one cooking rule for every food, read by src/cookrules.js, but realism before symmetry
+// ("pommes gör man inte i stekpanna, och när man kör saker i ugnen behöver man en plåt"). Each food lists the appliances it
+// sensibly cooks in as `rate` (appliance → how fast it cooks there, a factor on the food's own seconds: FISH.fry, FRIES,
+// SAUSAGE, EGG, FISHING.cook, CHICKEN), so cooked/burnt follow the same thresholds everywhere. Anything not listed is refused
+// with where the food does go ("Pommes gör man i ugnen eller airfryern", `how` = the verb phrase); a food bigger than an
+// appliance's `room` (`sizes`: the whole chicken in the pan or the air fryer's basket) is refused as too big instead. The pairs
+// that existed before #1881 keep their old rates; the later ones are *guess*. Oven food lies on the oven tray (OVEN_TRAY,
+// src/oventray.js) and cooks while the tray is in the shut, powered oven (#1219: no smoke escapes it); the air fryer cooks while
+// it runs with the basket in, the pan on a lit zone, the grill while lit. `noun` = the food in a refusal, `name` = its definite form.
 export const COOKING = {
-  group: ['pan', 'oven', 'airfryer'], grillTags: ['meat', 'catch'], sizes: { s: 1, m: 2, l: 3 },
-  appliances: {
-    pan: { name: 'stekpannan', verb: 'steka', room: 'm' },
-    oven: { name: 'ugnen', verb: 'laga', room: 'l' },
-    airfryer: { name: 'airfryern', verb: 'fritera', room: 'm' },
-    grill: { name: 'grillen', verb: 'grilla', room: 'l' },
+  sizes: { s: 1, m: 2, l: 3 },
+  appliances: { // `in` = the appliance as the place food goes ("i ugnen", "på grillen")
+    pan: { name: 'stekpannan', in: 'i stekpannan', room: 'm' },
+    oven: { name: 'ugnen', in: 'i ugnen', room: 'l' },
+    airfryer: { name: 'airfryern', in: 'i airfryern', room: 'm' },
+    grill: { name: 'grillen', in: 'på grillen', room: 'l' },
   },
   foods: {
-    fishFinger: { name: 'fiskpinnen', noun: 'fiskpinnar', tags: ['breaded'], size: 's', // #214 pan, #287 air fryer
+    fishFinger: { name: 'fiskpinnen', noun: 'fiskpinnar', how: 'gör man', size: 's', // #214 pan, #287 air fryer
       rate: { pan: 1, oven: 0.4, airfryer: 1.2 * FISH.fry.seconds / AIRFRYER.seconds } },
-    fries: { name: 'pommesen', noun: 'pommes', tags: ['potato'], size: 's', rate: { pan: 1.4, oven: 0.8, airfryer: 1 } }, // #301 air fryer
-    sausage: { name: 'korven', noun: 'korv', tags: ['meat'], size: 's', rate: { grill: 1, pan: 1, oven: 0.8, airfryer: 1 } }, // #1124 grill, #1640 pan
-    egg: { name: 'ägget', noun: 'ägg', tags: ['egg'], size: 's', rate: { pan: 1, oven: 0.5, airfryer: 0.6 } }, // #484 pan
-    caughtFish: { name: 'fisken', noun: 'fisk', tags: ['fish', 'catch'], size: 'm', rate: { grill: 1, pan: 1.25, oven: 0.8, airfryer: 1 } }, // #1754 grill + pan
-    chicken: { name: 'kycklingen', noun: 'kyckling', tags: ['meat'], size: 'l', rate: { grill: 1, oven: 1, pan: 1, airfryer: 1 } }, // #708 grill, #1219 oven
+    fries: { name: 'pommesen', noun: 'pommes', how: 'gör man', size: 's', rate: { oven: 0.8, airfryer: 1 } }, // #301 air fryer
+    sausage: { name: 'korven', noun: 'korv', how: 'steker man', size: 's', rate: { grill: 1, pan: 1, oven: 0.8, airfryer: 1 } }, // #1124 grill, #1640 pan
+    egg: { name: 'ägget', noun: 'ägg', how: 'steker man', size: 's', rate: { pan: 1 } }, // #484 pan
+    caughtFish: { name: 'fisken', noun: 'fisk', how: 'lagar man', size: 'm', rate: { grill: 1, pan: 1.25, oven: 0.8, airfryer: 1 } }, // #1754 grill + pan
+    chicken: { name: 'kycklingen', noun: 'kyckling', how: 'steker man', size: 'l', rate: { grill: 1, oven: 1 } }, // #708 grill, #1219 oven
   },
 };
+// #1887: the oven tray (ugnsplåt). Food for the oven lies on it, never straight on the rack: taken out of the open oven, it
+// goes down on a worktop like any held thing, takes food there, and slides back onto the oven's upper rack (where the chicken
+// roasted in #1219). Size: an ordinary enamel tray inside the 60 cm oven's cavity (*guess*); `held` = its pose in the view.
+export const OVEN_TRAY = { w: 0.44, d: 0.38, h: 0.018, rim: 0.012, color: 0x26282b,
+  held: { x: 0.02, y: -0.36, z: -0.62 } };
 // The smoke alarm in the kitchen ceiling (#194, src/hood.js): it goes off after `delay` s of smoke that the cooker hood
 // does not draw away (the hood draws what is within `hoodReach` m of its middle, below it). Position: mid-kitchen (ours).
 export const SMOKE_ALARM = { x: 4.2, y: 3.0, z: 2.6, delay: 5, hoodReach: 0.6 };

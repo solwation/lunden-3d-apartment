@@ -1260,6 +1260,10 @@ tools/firstframetest.cjs (#697) phone startup, program/buffer/texture counts and
                        `PLAYWRIGHT_MODULE=… node tools/firstframetest.cjs http://localhost:8697`, STARTUP_OUTPUT outside repo
 tools/turntest.html    turn-around hitches (#592): after the warm-up, 360° turns at nine spots; 0 new programs / textures (Playwright)
 tools/oventest.html    headless test: oven + microwave open/close (lamp inside), Moccamaster brews and clicks off
+tools/cook1887browser.cjs (#1887) realistic cooking + the oven tray in the real game (main focus/use): fries refused in the pan,
+                       an egg refused in the oven and the air fryer, the tray out → worktop → fries on it → back in → golden → out,
+                       fish fingers, the chicken (#1219) and a sausage on the tray, the tray's place in the reload record; 5 PNGs.
+                       `python3 tools/devserve.py 8187` then `node tools/cook1887browser.cjs http://localhost:8187 <png dir>`
 tools/thingtest.html   headless test: a wine bottle to the coffee table and back to the rack, a glass, F sends them home;
                        pour wine into a glass and drink it empty, whisky splashes into a tumbler, back in the BESTÅ = empty
 tools/cuptest.html     headless test: an empty cup out without brewing, onto the worktop, brew, take the jug, pour, jug back,
