@@ -1,0 +1,76 @@
+[
+  {
+    "ok": true,
+    "name": "seeing a new cat up close shows \"5 av 12 utekatter hittade\"",
+    "data": {
+      "setup": {
+        "cat": "Sotis",
+        "at": [
+          -16,
+          18
+        ],
+        "t": 0
+      },
+      "badges": [
+        "🐈 5 av 12 utekatter hittade"
+      ],
+      "found": [
+        "Kanel",
+        "Findus",
+        "Smulan",
+        "Greta",
+        "Sotis"
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "staying near the found cat shows no more badges",
+    "data": {
+      "badges": [
+        "🐈 5 av 12 utekatter hittade"
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "the last cat: level 1, +500 once, \"Nivå 2 börjar\", round 2 at 0",
+    "data": {
+      "level": {
+        "before": 0,
+        "after": 500,
+        "g": {
+          "id": "outdoorcats",
+          "level": 1,
+          "bonus": 500
+        },
+        "rounds": 1,
+        "found": [],
+        "level": 1
+      },
+      "badges": [
+        "🎉 Alla 12 utekatter hittade! Nivå 2 börjar"
+      ]
+    }
+  },
+  {
+    "ok": true,
+    "name": "the bonus is not paid again",
+    "data": {
+      "gained": 0,
+      "delta": 0
+    }
+  },
+  {
+    "ok": true,
+    "name": "the medal card shows level and the round in progress",
+    "data": {
+      "card": "🐾\nKattspårare\nNivå 1 · 7 nov. 2026\n3 / 12 utekatter hittade\nSotis, Misan, Pelle"
+    }
+  },
+  {
+    "ok": true,
+    "name": "no page errors",
+    "data": []
+  }
+]

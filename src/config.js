@@ -8327,6 +8327,13 @@ export const OUTDOOR_CATS = {
       traits: { social: 0.85, play: 0.4, lazy: 0.35, shy: 0, curious: 0.55 },
       route: [[-35,170],[0,175],[5,215],[-20,235],[-55,225],[-60,190]] },
   ],
+  // #1885: the award "Hitta alla utekatter" (src/outdoorcathunt.js, medal `outdoorcats` in src/medalcatalog.js). A cat counts as found
+  // when it is drawn within `near` m and in view (or becomes the ordinary cat). A round = every name in `cats` found once; each finished
+  // round is one medal level (linear, capped at MAX_LEVEL). `bonus`: points for level L = bonus × L (500, 1000 … 5000), level with the
+  // biggest single rewards in the game (Miele 1000, the shark fin 400) because the cats roam the whole block (*guess*). `everyMin`: the
+  // Worker accepts at most one more finished round per this many minutes (a round means walking the whole block; *guess*); `start`: what
+  // a row may bring on the counter's first sync (*guess*).
+  hunt: { bonus: 500, everyMin: 5, start: 1 },
 };
 
 // #1775: doors opened and closed by one player are seen by everybody (src/doorsync.js, cloudflare/doors.js). A door id is a group letter

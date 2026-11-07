@@ -13,6 +13,7 @@ import { levelsFrom, legacyLevelsFrom } from '../src/medalcatalog.js';
 // Plausibility: a counter never goes down, never grows faster than COUNTERS[k].perMin per minute since the row's last write
 // (+ one minute's slack), a new row starts at most at COUNTERS[k].start; unknown counters are dropped. 'first' lists use
 // the server's own time of the first write that had the counter above 0, so a client cannot claim an earlier first.
+// A slow counter (`everyMin`, #1885) grows by one per that many minutes since the server time of its own last raise (`r`).
 //
 // Medals (#1711, src/medalcatalog.js): the levels are never taken from the client. They are derived from the counters
 // the clamp above accepted, and the row keeps the server's time of each reached level in `mt` ({ medalId: [time of level 1,
@@ -30,7 +31,9 @@ export function clampCounters(input, old, now) {
   for (const [k, spec] of Object.entries(COUNTERS)) {
     const v = input[k];
     if (typeof v !== 'number' || !Number.isFinite(v) || v < 0) continue;
-    const before = old?.c?.[k] ?? 0, cap = old ? before + spec.perMin * minutes : spec.start;
+    const before = old?.c?.[k] ?? 0, raised = old?.r?.[k];
+    const cap = spec.everyMin ? before + (old && raised ? Math.max(0, now - raised) / (spec.everyMin * 60000) : spec.start) // #1885: slow counter
+      : old ? before + spec.perMin * minutes : spec.start;
     const next = Math.max(before, Math.min(Math.floor(v), Math.floor(cap)));
     if (next > 0) out[k] = next;
   }
@@ -110,14 +113,15 @@ export async function record(storage, body, now = Date.now()) {
     const rows = await rowsOf(storage);
     if (rows.length >= MAX_ROWS) await storage.delete(`b:${rows.sort((a, b) => a.t - b.t)[0].id}`); // the longest silent row makes room
   }
-  const f = { ...(old?.f ?? {}) };
+  const f = { ...(old?.f ?? {}) }, r = { ...(old?.r ?? {}) };
   for (const k of Object.keys(c)) if (!f[k]) f[k] = now;
+  for (const k of Object.keys(c)) if (COUNTERS[k]?.everyMin && c[k] > (old?.c?.[k] ?? 0)) r[k] = now; // #1885: a slow counter's last raise
   const mt = {}, before = medalsOf(old), cur = levelsFrom(c);
   for (const id of new Set([...Object.keys(before), ...Object.keys(cur)])) {
     const had = before[id] ?? [], level = Math.max(had.length, cur[id] ?? 0); // a level once unlocked stays (#1748)
     mt[id] = Array.from({ length: level }, (_, i) => had[i] ?? now);
   }
-  await storage.put(key, { id: body.id, name, c, f, mt, t: now, ...(avatar ? { avatar } : {}) });
+  await storage.put(key, { id: body.id, name, c, f, mt, t: now, ...(Object.keys(r).length ? { r } : {}), ...(avatar ? { avatar } : {}) });
   cache.delete(storage);
   return true;
 }

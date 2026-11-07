@@ -1,3 +1,4 @@
+import { huntProgress } from './outdoorcathunt.js';
 import { MEDALS, bonusFor, levelsOfStats, counterValue, thresholdOf, levelOf, MAX_LEVEL, LEGACY_MAX_LEVEL } from './medalcatalog.js';
 // Medals with levels (#1711, part of #1709): the grid in Meny → Medaljer, the spinning medal in the middle of the screen on a
 // new level, and the bonus points. State lives in stats.medals ({ id: { l: level, t: [time of level 1, 2 …] } }, localStorage
@@ -42,8 +43,8 @@ export function evaluate(stats, { seeded, pay, now = Date.now() }) {
     for (let l = have + 1; l <= level; l++) t[l - 1] = now;
     medals[id] = { l: level, t };
     if (!seeded) { silent += level - have; continue; }
-    let bonus = 0;
-    for (let l = have + 1; l <= level; l++) bonus += bonusFor(l);
+    let bonus = 0; const medal = MEDALS.find((m) => m.id === id);
+    for (let l = have + 1; l <= level; l++) bonus += bonusFor(l, medal);
     pay?.(bonus);
     gained.push({ id, level, bonus });
   }
@@ -71,7 +72,12 @@ export function mergeServer(stats, server) {
 export function medalView(stats, medal) {
   const value = counterValue(stats, medal.counter), saved = stats.medals?.[medal.id];
   const level = Math.max(saved?.l ?? 0, levelOf(medal, value));
-  return { medal, level, time: saved?.t?.[level - 1] ?? null, have: value, next: thresholdOf(medal, Math.min(MAX_LEVEL, level + 1)), shown: !(medal.secret && level === 0), maxed: level >= MAX_LEVEL };
+  const view = { medal, level, time: saved?.t?.[level - 1] ?? null, have: value, from: thresholdOf(medal, level), next: thresholdOf(medal, Math.min(MAX_LEVEL, level + 1)), shown: !(medal.secret && level === 0), maxed: level >= MAX_LEVEL };
+  if (medal.hunt) { // #1885: the bar is the round in progress (found / all outdoor cats), also after the top level; `cats` names the found ones
+    const p = huntProgress(stats);
+    Object.assign(view, { have: p.count, from: 0, next: p.total, cats: p.found, unit: 'utekatter hittade', bar: true });
+  }
+  return view;
 }
 
 export class Medals {
@@ -149,13 +155,14 @@ export class Medals {
       const sub = document.createElement('span'); sub.className = 'mc-sub';
       sub.textContent = !v.shown ? 'Hemlig medalj' : v.level > 0 ? `Nivå ${v.level}${v.time ? ` · ${day(v.time)}` : ''}` : 'Låst';
       li.append(icon, name, sub);
-      if (v.shown && !v.maxed) {
+      if (v.shown && (!v.maxed || v.bar)) {
         const bar = document.createElement('span'); bar.className = 'mc-bar';
-        const from = thresholdOf(v.medal, v.level), fill = document.createElement('i');
-        fill.style.width = `${Math.min(100, Math.max(0, ((v.have - from) / (v.next - from)) * 100)).toFixed(0)}%`;
+        const from = v.from, fill = document.createElement('i');
+        fill.style.width = `${Math.min(100, Math.max(0, ((v.have - from) / ((v.next - from) || 1)) * 100)).toFixed(0)}%`;
         bar.append(fill);
-        const txt = document.createElement('span'); txt.className = 'mc-prog'; txt.textContent = `${fmt(v.have)} / ${fmt(v.next)} ${v.medal.unit}`;
+        const txt = document.createElement('span'); txt.className = 'mc-prog'; txt.textContent = `${fmt(v.have)} / ${fmt(v.next)} ${v.unit ?? v.medal.unit}`;
         li.append(bar, txt);
+        if (v.cats?.length) { const cats = document.createElement('span'); cats.className = 'mc-cats'; cats.textContent = v.cats.join(', '); li.append(cats); }
       }
       return li;
     }));

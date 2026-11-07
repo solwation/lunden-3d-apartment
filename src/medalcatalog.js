@@ -1,3 +1,4 @@
+import { OUTDOOR_CATS } from './config.js';
 // The medals (achievements) with levels (#1711, part of #1709). One source for the page (src/medals.js: the menu grid, the
 // spinning medal, the bonus) and the Worker (cloudflare/boards.js derives each player's levels from the counters it has
 // already validated, so a client cannot invent a level). The counters are src/stats.js's own (stats[counter]); a task
@@ -14,11 +15,14 @@
 // taken back and their bonus is never refunded: a stored level counts up to LEGACY_MAX_LEVEL, the next level is then the
 // next one on the new curve (stored level + 1; a player above MAX_LEVEL is simply done), and `legacyLevelOf` rebuilds the
 // old levels of a Worker row written before `mt` existed. `oldBase` marks a medal whose base changed with #1748.
+//
+// #1885: a `linear` medal reaches level L at base × L (one finished round of "Hitta alla utekatter" per level, src/outdoorcathunt.js)
+// and a row with `bonus` pays bonus × L for level L instead of bonusFor's curve (the largest rewards; OUTDOOR_CATS.hunt in config.js).
 export const STEP_FACTOR = 1.5;
 export const MAX_LEVEL = 10;
 export const LEGACY_MAX_LEVEL = 50;
 /** Bonus points for reaching `level` (via the ordinary score, stats.medalPoints): 10 × the level's step factor, so it follows the difficulty (*guess*): 10, 15, 23, 34 … Paid once per level and device. */
-export const bonusFor = (level) => Math.round(10 * STEP_FACTOR ** (Math.max(1, level) - 1));
+export const bonusFor = (level, medal = null) => (medal?.bonus ? medal.bonus * Math.max(1, level) : Math.round(10 * STEP_FACTOR ** (Math.max(1, level) - 1)));
 export const TASK_PREFIX = 'task_';
 
 export const MEDALS = [
@@ -44,6 +48,7 @@ export const MEDALS = [
   { id: 'astronaut', counter: 'jetpackMetres', icon: '🧑‍🚀', name: 'Astronaut', unit: 'höjdmeter uppåt med jetpack', base: 100 }, // #1857: first level100 m is a gameplay guess
   { id: 'dribbles', counter: 'dribbles', icon: '🏀', name: 'Basketstudsare', unit: 'studsar', base: 500 },
   { id: 'fish', counter: 'fishCaught', icon: '🎣', name: 'Fiskelycka', unit: 'fiskar fångade i Höje å', base: 5 }, // #1754 (*guess*: a catch takes minutes)
+  { id: 'outdoorcats', counter: 'outdoorCatRounds', icon: '🐾', name: 'Kattspårare', unit: 'omgångar', base: 1, linear: true, bonus: OUTDOOR_CATS.hunt.bonus, hunt: true }, // #1885: one level per round of all outdoor cats found
   { id: 'tasks', counter: 'tasks', icon: '📋', name: 'Städhjälte', unit: 'vardagsuppdrag klara', base: 20 },
   // one medal per everyday task (stats.taskCounts)
   { id: 't-makeSandwich', counter: `${TASK_PREFIX}makeSandwich`, icon: '🥪', name: 'Macksnickare', unit: 'gånger "Gör en macka"', base: 10 },
@@ -67,7 +72,7 @@ export function counterValue(stats, counter) {
 }
 
 /** The counter value where `level` is reached on the new curve (a whole number; level 0 = 0). */
-export const thresholdOf = (medal, level) => (level <= 0 ? 0 : Math.round(medal.base * (STEP_FACTOR ** level - 1) / (STEP_FACTOR - 1)));
+export const thresholdOf = (medal, level) => (level <= 0 ? 0 : medal.linear ? medal.base * level : Math.round(medal.base * (STEP_FACTOR ** level - 1) / (STEP_FACTOR - 1)));
 /** The level a counter value gives this medal on the new curve (0 = none yet, at most MAX_LEVEL). */
 export function levelOf(medal, value) {
   const v = Math.max(0, Number(value) || 0);

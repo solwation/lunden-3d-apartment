@@ -1,4 +1,5 @@
 import { counterValue } from './medalcatalog.js';
+import { OUTDOOR_CATS } from './config.js';
 // The catalogue of alternative top lists (#1710, part of #1709). One source for the page (the picker in the leaderboard
 // dialog, src/boards.js, which also decides which counters are synced) and the Worker (cloudflare/boards.js: which
 // counters it accepts and how fast each may grow). The counters are src/stats.js's own (stats[counter]), so lists and
@@ -11,6 +12,8 @@ import { counterValue } from './medalcatalog.js';
 //   Ties: whoever reached the value first (server times of the levels).
 // counters: counter → { perMin: the most it can physically grow per minute (*guess*, a generous human maximum),
 //   start: what a brand new row may bring on its first sync (an old save has history; *guess*) }.
+//   everyMin (#1885): a slow counter instead grows by at most one per `everyMin` minutes since its own last raise (the row's `r`),
+//   and by at most `start` on its first raise; `perMin` is then unused (per-write slack would let it climb once per write).
 export const COUNTERS = {
   duckFeeds: { perMin: 100, start: 3000 }, // four ducks,2.4s cooldown: up to100 bites/minute before bread/approach time
   squirrelFeeds: { perMin: 12, start: 3000 },
@@ -47,6 +50,8 @@ export const COUNTERS = {
   task_grillChicken: { perMin: 3, start: 500 },
   task_washDish: { perMin: 3, start: 500 },
   task_makeBed: { perMin: 3, start: 500 },
+  // #1885: finished rounds of "Hitta alla utekatter" (src/outdoorcathunt.js): a round means walking the whole block (OUTDOOR_CATS.hunt)
+  outdoorCatRounds: { perMin: 0, start: OUTDOOR_CATS.hunt.start, everyMin: OUTDOOR_CATS.hunt.everyMin },
 };
 
 export const BOARD_LISTS = [

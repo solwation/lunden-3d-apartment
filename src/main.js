@@ -82,7 +82,9 @@ import { stairHeight, stairUnderside } from './stairs.js';
 import { rugLift } from './rugs.js';
 import { loadChangelog, retryChangelog, renderChangelog, buildNote, scrollNote } from './changelog.js';
 import { loadTodo, buildTodoNotes } from './todo.js';
-import { setScoreElement, totalScore, stats, keepMieleDay, awardTarget, bump, awardLove, badge, catFound, keepCatCounts, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement, penalize, recordFishCaught, keepStatsNow } from './stats.js';
+import { setScoreElement, totalScore, stats, keepMieleDay, awardTarget, bump, awardLove, badge, catFound, keepCatCounts, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement, penalize, recordFishCaught, keepStatsNow, foundOutdoorCat } from './stats.js';
+import { huntText } from './outdoorcathunt.js';
+import { MAX_LEVEL as MEDAL_MAX_LEVEL } from './medalcatalog.js';
 import { FishQuest } from './fishquest.js'; // #1754: the hidden fishing quest
 import { Minimap } from './minimap.js';
 import { Compass } from './compass.js';
@@ -1214,6 +1216,7 @@ const outdoorCats = params0.has('nooutdoorcats') ? null : new OutdoorCats({ scen
   free: (x, z) => catHabitatFree(x,z) && (player.below || player.inCore || player.inPlayroom || player.unit || player.isFree(x, z, 0, OUTDOOR_CATS.exploration.footRadius - PLAYER.radius)),
   hour: () => day.hour, month: () => day.month,
   food: () => fishing.feedable, onFed: (f) => fishing.eatenByCat(f), // #1782: a raw caught fish nearby, eaten as the ordinary cat's (#1766)
+  onSeen: (name) => { const r = foundOutdoorCat(name); if (r) badge(huntText(r, MEDAL_MAX_LEVEL), false); }, // #1885: "Hitta alla utekatter"
   prey: () => (squirrels?.animals ?? []).filter((a) => a.group.visible && Math.abs(a.brain.y - parkGround(a.brain.x, a.brain.z)) < 0.15).map((a) => a.brain) });
 const mieleFrustum = new THREE.Frustum(), mieleAt = new THREE.Vector3();
 function checkMiele() {

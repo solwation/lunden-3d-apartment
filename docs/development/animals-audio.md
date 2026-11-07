@@ -65,6 +65,7 @@ src/outdoorcatroute.js the outdoor cats' loops as a pure function of the clock (
 tools/catrange1882browser.cjs  development planner/site capture for the #1882 loops (docs/verification/1882/site.json, proposed.json)
 tools/outdoorcats1882browser.cjs  #1882 real scene: added routes walkable, pictures of new cats, binder pages, meet/pet, draw-call delta
 src/outdoorcats.js     the outdoor cats (#1767): puppets / merged far meshes, notice, become the ordinary cat, walk home; isOut (#1772); eating a raw fish (#1782)
+src/outdoorcathunt.js  "Hitta alla utekatter" (#1885): rounds of found cats, the N av X text (node test src/outdoorcathunt.test.mjs; browser tools/outdoorcathuntbrowser.cjs)
 src/outdoorcatbrain.js the outdoor cats' brains (#1772): personality, utility AI per rest stop, outings, meeting the visitor (node test tools/outdoorcatbraintest.mjs)
 tools/catmedaltest.cjs  #1830 real indoor / promoted / roaming raw-fish callbacks, held feeding, outdoor pet counter and medal progress
 tools/catmedaltest.mjs  #1830 shared client/Worker Kattmatare boundary, history and counter limits
@@ -1119,6 +1120,19 @@ and its zone in the adult form's `where` and first fact; ids, numbers, chains an
 keep their numbers and progress. Meeting, petting, carrying, raw-fish feeding, snow-day outings and medal counters are the existing
 per-cat paths. The new cats are alone in their zones, so #1845 nose greetings stay between Sotis/Kanel and Findus/Smulan.
 Budget: `drawDist`/`drawDistPhone`/`near` unchanged; an animated near cat adds about 24 draw calls as before, a far one one merged call (measured +1), none beyond the draw distance. [Evidence](../verification/1882/README.md).
+
+### Award: find all outdoor cats (#1885)
+
+The medal **Kattspårare** (`outdoorcats`) rewards finding every named outdoor cat. `OutdoorCats` calls `onSeen(name)` once per approach when a
+cat is drawn as the full puppet (within `near`), faded in (`alpha > 0.5`) and inside the camera frustum (`socialVisible`), or when it
+becomes the ordinary cat (`promote`); `c.huntSeen` re-arms only once the cat is beyond `near` (or not drawn) again, so the cat that ends a
+round is not at once the first of the next, and looking away and back does not count it again. `main.js` forwards it to `stats.js foundOutdoorCat`, which uses the pure
+`src/outdoorcathunt.js`: a name already found this round (or not in `OUTDOOR_CATS.cats`) shows nothing; a
+new one is saved at once and shows the badge "🐈 N av X utekatter hittade". The last one finishes the round (`outdoorCatRounds` + 1,
+found list emptied) and shows "🎉 Alla X utekatter hittade! Nivå N+1 börjar" (after `MAX_LEVEL`: "Omgång N+1"). X is always the current
+`OUTDOOR_CATS.cats`, so a cat added later joins the round in progress while counted rounds, and so levels, stay. Levels and the bonus are
+the medal system's ([interactions.md](interactions.md#find-all-outdoor-cats-1885)). Test: `node --test src/outdoorcathunt.test.mjs`;
+browser `tools/outdoorcathuntbrowser.cjs` ([evidence](../verification/1885/)).
 
 ## Duck mate greetings (#1846)
 

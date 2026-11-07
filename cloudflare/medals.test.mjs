@@ -33,7 +33,7 @@ test('levels: exponential curve, strictly growing steps, a cap, levelOf and thre
   assert.deepEqual(levelsOfStats({ squirrelFeeds: 100, taskCounts: { washDish: 10 }, tasks: 19 }), { squirrels: 1, 't-washDish': 1 });
   assert.deepEqual(levelsFrom({ steps: 40000, falls: 3 }), { steps: 2 });
   assert.equal(thresholdOf(medal('butts'), 1), 100); // the user's example: ~100 cat butts for the first level
-  for (const m of MEDALS) {
+  for (const m of MEDALS.filter((x) => !x.linear)) { // (#1885: a linear medal has one level per round; src/outdoorcathunt.test.mjs)
     let prevStep = 0, prev = 0;
     for (let l = 1; l <= MAX_LEVEL; l++) {
       const t = thresholdOf(m, l), step = t - prev;

@@ -1665,6 +1665,16 @@ and caps are unchanged. [Protocol/receipt tests and exact scope](../verification
 
 The existing per-profile `lunden.stats` record gains `jetpackMetres` (finite nonnegative float, legacy default 0). Every actual upward jetpack physics step adds its unrounded displacement. Only the displayed/exported counter is floored, so no fractional credit is discarded each frame. The existing two-second/pagehide save cadence, profile ownership and reset path apply; interrupted/blocked storage has the same existing durability limit. No extra key, inventory or network cadence is introduced. `astronaut` uses the ordinary medal receipts/bonus-once/restore rules; Jetpackpilot (`jetpack`/`flights`) remains unchanged. Metres themselves give no points. Worker `COUNTERS.jetpackMetres` accepts 1200/min (physical thin-air cap 18 m/s = 1080/min), initial allowance 100000 m is a bounded **guess**. Publish shared board/medal catalogues to the Worker before Pages so ordinary sync accepts the new counter immediately; older Worker ignores it while local progression still works. This gameplay/medal feature is not applicable to the public project.
 
+## Outdoor-cat rounds (#1885)
+
+The per-profile `lunden.stats` record gains `outdoorCatRounds` (finished rounds, whole number, default 0) and `outdoorCatsFound`
+(names found in the round in progress, strings; repaired on load by `outdoorcathunt.js huntState`). A newly found cat saves the record at
+once (`foundOutdoorCat`); the ordinary reset path clears both. `outdoorCatRounds` syncs as a `/boards` counter (`COUNTERS`), so the
+Worker derives the medal's levels from it like any other. It is the first slow counter: `everyMin` (`OUTDOOR_CATS.hunt.everyMin`, 5,
+*guess*) lets it grow by at most one per that many minutes since the server time of its own last raise (row field `r`), and by at most
+`start` (1) on its first raise, so neither a cheat nor frequent writes of other counters can unlock levels at once. The found list
+stays on the device. Gameplay only; not applicable to the public project.
+
 ### Shared caught fish and explicit nut drops (#1855)
 
 `RoomSharedFish` serializes cloned next-state transactions and awaits one existing-DO `sharedFish` put before ACK/broadcast. `RoomSquirrels` buffers output and restores committed state while awaiting its separate `nutDrops` put; failed writes roll back and NACK. Wake/welcome waits for their readiness/transaction chain. No per-pose storage, new binding or service. Fish keys/ownership intents use the existing profile fishing save, before IO, and bounded consume receipts precede reward callbacks; public rows omit keys. Explicit nut generations/floors prevent old animal snapshots reviving consumed drops. See [bounds, lease/save semantics, server-first rollout and evidence](../verification/1855/README.md).

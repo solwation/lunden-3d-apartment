@@ -2257,6 +2257,15 @@ An explicit bike-only dismount guard rejects airborne/falling exit even when las
 
 Astronaut is a new medal, distinct from the unchanged Jetpackpilot take-off counter. `Player.update` emits `onJetRise(metres)` only inside the jetpack vertical-physics branch after the existing ceiling clamp and before lift snaps/rescues. Only positive actual displacement with positive vertical velocity counts, including coasting upward while wearing the active outdoor pack. Walking, ground steps, falls, indoor movement, spawn and repositioning never emit altitude. Main forwards the fractional delta to the existing stats path. No new input, flight-time feature, per-frame network message or render resource is added. First level 100 m is a gameplay **guess**, followed by the existing 1.5× cumulative medal curve (100/250/475…). [Verification](../verification/1857/README.md).
 
+## Find all outdoor cats (#1885)
+
+Kattspårare (`outdoorcats`, counter `stats.outdoorCatRounds`) is the first `linear` medal: level L at L finished rounds
+(`thresholdOf` = base × L, capped at `MAX_LEVEL`), so each round of all outdoor cats found is the next level. Its row's `bonus`
+(`OUTDOOR_CATS.hunt.bonus`, 500, *guess*) makes `bonusFor(L, medal)` = 500 × L (500, 1000 … 5000), level with the biggest rewards in
+the game (Miele 1000, the shark fin 400); it is paid through the ordinary `evaluate` path, once per level and device, and server
+restores pay nothing. The medal card's bar shows the round in progress (found / all cats, also after the top level) and lists the
+found names (`.mc-cats`). The finding and the badges: [animals-audio.md](animals-audio.md#award-find-all-outdoor-cats-1885).
+
 ### Shared loose food (#1855)
 
 Normal E/touch takes and places caught fish/nuts; online transfer waits for durable Room ACK and retains the hand on failure/full cap. The existing rest pose and full quaternion preserve tables. A missing upgraded server capability gives an update/wait message instead of an optimistic private copy. Shared food freezes on disconnect; explicitly offline personal play stays local. Shared nuts are pickup/hand-feeding objects, not targets of independent autonomous ground foragers. [Source-bound two-client/table evidence and limits](../verification/1855/README.md).

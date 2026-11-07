@@ -64,9 +64,11 @@ export class OutdoorCats {
    * not road, not water (the way home is checked with it); `lowMemory`: phones draw nearer. #1772: `free(x, z)`: no wall or fence there
    * (outings); `feet` / `crowns`: surroundings.js treeFeet / aoTrees (the trees a cat may climb); `hour()` / `month()`: the game's day;
    * `prey()`: squirrels on the ground [{ x, z }]. #1782: `food()`: the raw caught fish a cat may eat (fishing.feedable); `onFed(fish)`: one ate it.
+   * #1885: `onSeen(name)`: the visitor has seen this cat up close (drawn within `near` and in view, or it became the ordinary cat);
+   * called once per approach, the receiver (stats.js foundOutdoorCat, "Hitta alla utekatter") ignores cats already found this round.
    */
-  constructor({ scene, camera, cat, ground, walkable = () => true, free = null, feet = [], crowns = [], hour = () => 12, month = () => 7, prey = null, food = null, onFed = null, lowMemory = false }) {
-    Object.assign(this, { scene, camera, cat, ground, walkable, food, onFed, foodScan: 0 });
+  constructor({ scene, camera, cat, ground, walkable = () => true, free = null, feet = [], crowns = [], hour = () => 12, month = () => 7, prey = null, food = null, onFed = null, onSeen = null, lowMemory = false }) {
+    Object.assign(this, { scene, camera, cat, ground, walkable, food, onFed, onSeen, foodScan: 0 });
     this.drawDist = lowMemory ? C.drawDistPhone : C.drawDist;
     this.now = () => Date.now() / 1000; // tests replace it
     this.winter = false;
@@ -184,6 +186,7 @@ export class OutdoorCats {
     this.bound = c;
     c.group.visible = false; c.bfMesh.visible = false;
     if (!c.found) { c.found = true; k.onFound?.(catLabel(c.breed, c.coat), !!c.breed.rare, c.breed.name, false); } // found once per visit
+    if (!c.huntSeen) { c.huntSeen = true; this.onSeen?.(c.name); } // #1885
   }
 
   /** The ordinary cat that was `c` is left alone outdoors: `c` takes over again there and walks home (#1772: a social one follows a little first). */
@@ -298,7 +301,7 @@ export class OutdoorCats {
     c.alpha = THREE.MathUtils.clamp(c.alpha + (show ? dt : -dt) / C.fade, 0, 1);
     const drawn = c.alpha > 0 && d < this.drawDist;
     c.group.visible = drawn;
-    if (!drawn) { if (c.st !== 'route' && c.st !== 'home' && c.st !== 'away') c.set('home'); c.bfMesh.visible = false; return; }
+    if (!drawn) { c.huntSeen = false; if (c.st !== 'route' && c.st !== 'home' && c.st !== 'away') c.set('home'); c.bfMesh.visible = false; return; }
     const y = this.ground(c.x, c.z);
     c.group.position.set(c.x, (Number.isFinite(y) ? y : 0) + c.h, c.z);
     c.group.rotation.set(c.pitchShown = turnTo(c.pitchShown ?? 0, c.pitch, dt * 5), c.yaw, 0);
@@ -309,6 +312,10 @@ export class OutdoorCats {
     c.lodMat.opacity = c.alpha;
     for (const m of P.materials) m.opacity = c.alpha;
     if (full) this.animate(c, dt, walking && !c.faceEye, c.moved, c.faceEye ? 'look' : c.activity);
+    // #1885: seen up close, once per approach (re-armed only once it is out of `near` again: the cat that ends a round is not at once
+    // the first of the next one, and looking away and back does not count it again)
+    if (!full) c.huntSeen = false;
+    else if (!c.huntSeen && this.onSeen && c.alpha > 0.5 && this.socialVisible(c)) { c.huntSeen = true; this.onSeen(c.name); }
     else P.stand = walking ? 1 : 0;
     alignClimbContact(c,full);
     // the butterfly, near only
