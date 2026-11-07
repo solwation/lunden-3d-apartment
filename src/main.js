@@ -162,6 +162,8 @@ import { buildCups } from './cups.js';
 import { buildFish } from './fishfingers.js';
 import { ToiletPaper } from './toiletpaper.js';
 import { AirFryer } from './airfryer.js';
+import { CookStores } from './cookstores.js'; // #1881: sausages and eggs in the air fryer and the oven
+import { cookRefusal } from './cookrules.js'; // #1881: one cooking rule for pan, oven, air fryer (and the grill: meat only)
 import { buildFries } from './fries.js';
 import { Vacuum } from './vacuum.js';
 import { Cloth } from './cloth.js';
@@ -631,7 +633,7 @@ const pan = world.panDrawer ? new Pan(scene, camera, world.panDrawer, world.hob)
 if (pan) holdables.push(pan);
 const toaster = world.toasterDrawer ? new Toaster(scene, camera, world.toasterDrawer) : null; // the toaster in the drawer by the corner (#401)
 if (toaster) { holdables.push(toaster); toaster.onToast = () => bump('toaster', 1, 'toaster'); }
-if (fish) Object.assign(fish, { pan, hob: world.hob, onFried: () => bump('fried'), onBurnt: () => { bump('burnt'); penalize('burnt'); } }); // fish fingers fry in the pan too (#214); burnt: a deduction (#288)
+if (fish) Object.assign(fish, { pan, hob: world.hob, busy: (a, k) => vesselBusy(a, k), onFried: () => bump('fried'), onBurnt: () => { bump('burnt'); penalize('burnt'); } }); // fish fingers fry in the pan too (#214); burnt: a deduction (#288)
 // the air fryer on the worktop in the corner left of the freezer (#287): a loose thing (F hides it)
 const airFryer = new AirFryer(KITCHEN.baseTop + KITCHEN.worktop);
 scene.add(airFryer.object);
@@ -639,8 +641,16 @@ world.looseItems.push(airFryer.object);
 if (fish) fish.fryer = airFryer;
 // Aviko fries in the freezer, poured into the air fryer (#301): golden → points the first time, burnt → a deduction
 const fries = buildFries(scene, camera, world, airFryer);
-if (fries) Object.assign(fries, { fishIn: () => !!fish?.inFryer.length, onGolden: () => bump('friesCooked', 1, 'fries'),
+if (fries) Object.assign(fries, { fishIn: () => !!fish?.inFryer.length, busy: (a, k) => vesselBusy(a, k), onGolden: () => bump('friesCooked', 1, 'fries'),
   onBurnt: () => { bump('friesBurnt'); penalize('burnt'); }, onEaten: () => bump('fries') });
+// #1881: the pan on the hob and the open oven take the same food as the air fryer (src/cookrules.js)
+if (fish) fish.oven = ovenDoor?.rack ? ovenDoor : null;
+if (fries && pan) fries.vessels.pan = { parent: pan.model, at: new THREE.Vector3(0, 0.006 - airFryer.plateY, -fries.cz), open: () => pan.onHob,
+  cooking: () => pan.onHob && !!world.hob?.on, vent: () => pan.model.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 0.05, 0)),
+  shut: 'Ställ stekpannan på hällen först', start: 'slå på plattan' };
+if (fries && ovenDoor?.rack) fries.vessels.oven = { parent: ovenDoor.parts, at: ovenDoor.rack.clone().add(new THREE.Vector3(0, 0.003 - airFryer.plateY, -fries.cz)),
+  open: () => ovenDoor.isOpen && ovenDoor.t > 0.9, cooking: () => !ovenDoor.isOpen && ovenDoor.t < 0.05 && ovenDoor.powered !== false, vent: () => null,
+  shut: 'Öppna ugnen först', start: 'stäng ugnsluckan' };
 const vacuum = new Vacuum(scene, camera, world, world.klkDoor); // the stick vacuum in its dock under the stair (#389)
 holdables.push(vacuum);
 world.looseItems.push(vacuum.led);
@@ -663,6 +673,7 @@ toiletPaper.initLife(life,world,door=>{door.toggle();if(door.isOpen)bump('cabine
 const bedCare = new BedCare(life,world,rest,target=>use(target));
 if (toaster) toaster.initLife(life);
 const eggs = pan ? new Eggs(life, pan) : null;
+const cookStores = new CookStores(life, { fryer: airFryer, oven: ovenDoor?.rack ? ovenDoor : null, busy: (a, k) => vesselBusy(a, k) }); // #1881 (before restore())
 const grill = new Grill(); // the courtyard's kettle grill: E lights it (#204)
 scene.add(grill.object);
 // #1124: sausages grill on the courtyard grill and L1007's patio kettle (#1121); their grates are life stores, so before restore()
@@ -711,11 +722,28 @@ life.keepPart('mess', { save: () => mess.save(), load: (v) => mess.load(v) });
 life.restore(); // a new visit: the stock as it was left, empty-handed (#371; a page-made reload's `life` part replaces it below)
 life.restock(); // whatever the kitchen always has and is missing (#373): a fresh home, or something used up and thrown away
 fruit.onEaten = (f) => bump('fruit', 1, f.kind);
-airFryer.onDone = () => { if (fish?.inFryer.length || fries?.count) bump('airfried', 1, 'airfryer'); }; // a batch done (#287)
+airFryer.onDone = () => { if (vesselContents('airfryer').length) bump('airfried', 1, 'airfryer'); }; // a batch done (#287; #1881: whatever food is in it)
+/** #1881: what lies in the pan / the oven / the air fryer now: [[kind, name]] (one kind of food per vessel). */
+function vesselContents(a) {
+  const out = [], n = !fish ? 0 : a === 'pan' ? fish.inPan.length : a === 'oven' ? fish.inOven.length : a === 'airfryer' ? fish.inFryer.length : 0;
+  if (n) out.push(['fishFinger', 'fiskpinnar']);
+  if (fries?.count && fries.where === a) out.push(['fries', 'pommes frites']);
+  const lifeIn = a === 'pan' ? (pan?.egg ? [pan.egg] : []) : cookStores.items(a);
+  if (lifeIn.length) out.push(['life', life.items.name(lifeIn[0])]);
+  if (a === 'pan' ? fishing.inPan(pan) : fishing.cookingIn(a)) out.push(['caughtFish', 'en fisk']);
+  if (chicken && (a === 'pan' ? chicken.inPan : a === 'oven' && chicken.inOven)) out.push(['chicken', 'kycklingen']);
+  return out;
+}
+/** #1881: why food of `kind` cannot go into vessel `a` because something else lies there, or null. */
+function vesselBusy(a, kind) {
+  const other = vesselContents(a).find(([k]) => k !== kind);
+  if (!other) return null;
+  return a === 'pan' ? 'Stekpannan är upptagen' : a === 'airfryer' ? `Korgen har ${other[1]}` : `Det ligger redan ${other[1]} i ugnen`;
+}
 const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
 const beerShelf = fridge ? new BeerShelf(fridge, await beerShelfData) : null;
 const chicken = fridge ? new Chicken(scene, camera, fridge, pan, world.hob) : null; // the whole chicken: cook it on the courtyard grill (#708)
-if (pan) pan.occupied = () => !!chicken?.inPan || !!fish?.inPan.length;
+if (pan) pan.occupied = () => !!chicken?.inPan || !!fish?.inPan.length || (!!fries?.count && fries.where === 'pan');
 if (chicken) holdables.push(chicken);
 // Kitchen alarm sources require active cooking; finished grill food keeps visual smoke only (#1179).
 const smokeAlarm = new SmokeAlarm();
@@ -735,7 +763,7 @@ if (chicken) {
   chicken.onCooked = () => bump('grilledChicken'); chicken.onBurnt = () => penalize('burnt');
 }
 // #1754: the caught fish cooks on either kettle grill or in the pan on the hob; the hidden quest (src/fishquest.js) and its one-time reward
-fishing.cookers = { grills: chickenGrills, pan };
+fishing.cookers = { grills: chickenGrills, pan, oven: ovenDoor?.rack ? ovenDoor : null, fryer: airFryer }; // (#1881: the oven and the air fryer too)
 for (const g of chickenGrills) { const food = g.occupied; g.occupied = () => !!fishing.onGrill(g) || !!food?.(); } // the lid stays open over the fish
 if (pan) { const food = pan.occupied; pan.occupied = () => !!fishing.inPan(pan) || !!food?.(); }
 const fishQuest = new FishQuest({ stats, save: keepStatsNow, pay: () => bump('fishQuest'),
@@ -2043,6 +2071,10 @@ function use(thing) {
   else if (thing.kind === 'fryCatch') thing.item.intoPan(pan); // #1754: … or into the pan
   else if (thing.kind === 'ovenChicken') thing.item.intoOven(); // #1219: onto the open oven's rack
   else if (thing.kind === 'fryfish') thing.item.fryHeld(); // a fish finger into the pan (#214)
+  else if (thing.kind === 'ovenfish') thing.item.ovenHeld(); // #1881: a fish finger onto the oven's rack
+  else if (thing.kind === 'fryChicken') thing.item.intoFryer(); // #1881: clear refusal (too big), keep the bird in hand
+  else if (thing.kind === 'ovenCatch') thing.item.intoOven(ovenDoor); // #1881: the caught fish into the oven
+  else if (thing.kind === 'fryerCatch') thing.item.intoFryer(airFryer); // #1881: … or the air fryer's basket
   else if (thing.kind === 'paper') { if (heldItem() === heldDrawing) heldDrawing.putBack(); else beginDraw(); } // holding the drawing: back on the desk (#176)
   else if (thing.kind === 'tape') { posters.tape(heldDrawing.image, thing.spot, heldDrawing.meta ?? {}); heldDrawing.release(); drawing.save(); bump('posted'); } // tape the drawing up (#176)
   else if (thing.kind === 'pc') { if(computerHub.show(thing))return;const on = thing.toggle(); if (on) bump('pc', 1, idOf(thing)); sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on); }
@@ -2364,6 +2396,8 @@ function updateFocus() {
   if (fish && world.furnitureOn) cupTargets.push(fish.target.pickable, ...fish.placed.map((f) => f.target.pickable), ...fish.inPan.map((f) => f.target.pickable)); // the carton + fish fingers lying out (#162) or in the pan (#214)
   if (fish && world.furnitureOn && airFryer.open) cupTargets.push(...fish.inFryer.map((f) => f.target.pickable)); // in the open air fryer basket (#287)
   if (fries && world.furnitureOn) cupTargets.push(...fries.placed.map((b) => b.target.pickable)); // bunches of fries put down (#301)
+  if (fries?.count && fries.where !== 'airfryer' && world.furnitureOn) cupTargets.push(fries.heap); // #1881: fries in the pan / the oven
+  if (fish && world.furnitureOn && fish.oven?.isOpen) cupTargets.push(...fish.inOven.map((f) => f.target.pickable)); // #1881: on the open oven's rack
   if (world.furnitureOn) cupTargets.push(...fruit.targets()); // the fruit in the bowl / lying out, the bowl with something in the hand (#326)
   cupTargets.push(...life.targets().map((t) => t.pickable));
   cupTargets.push(...toiletPaper.targets()); // the toilet-paper rolls and the strips hanging (#426) // the life sim's things (#366; F hides the ones lying out: `shown`)
@@ -2470,18 +2504,19 @@ function updateFocus() {
       focused = { name: 'fisken på grillen', kind: 'grillCatch', verb: 'lägga', item, grill: g, blocked: !!busy, blockedText: busy };
       placeGhost.visible = false;
     } else if (pan?.onHob && (focused === pan.takeTarget || focused?.kind === 'hob' || (focused?.kind === 'place' && focused.point.distanceTo(world.hob.zone) < 0.35))) {
-      const busy = chicken?.inPan || fish?.inPan.length || pan.egg || fishing.inPan(pan) ? 'Stekpannan är upptagen' : null;
+      const busy = chicken?.inPan || fish?.inPan.length || pan.egg || fishing.inPan(pan) || vesselBusy('pan', 'caughtFish') ? 'Stekpannan är upptagen' : null;
       focused = { name: 'fisken i stekpannan', kind: 'fryCatch', verb: 'lägga', item, blocked: !!busy, blockedText: busy };
       placeGhost.visible = false;
     }
   }
   // #1219: the open oven takes the bird onto its upper rack: aimed at its open door or into its cavity (the ray meets the
   // cavity's box within reach; its insides are no pick targets)
-  const oven = item === chicken && chicken.oven?.isOpen && chicken.oven.t > 0.9 ? chicken.oven : null;
-  const intoOven = oven && (focused === oven || (() => {
-    const ray = raycaster.ray.clone().applyMatrix4(oven.parts.matrixWorld.clone().invert()), at = ray.intersectBox(oven.cavity, new THREE.Vector3());
-    return !!at && oven.parts.localToWorld(at).distanceTo(camera.position) < HOLD.reach + 0.3;
+  const aimsIntoOven = (o) => !!o && (focused === o || (() => {
+    const ray = raycaster.ray.clone().applyMatrix4(o.parts.matrixWorld.clone().invert()), at = ray.intersectBox(o.cavity, new THREE.Vector3());
+    return !!at && o.parts.localToWorld(at).distanceTo(camera.position) < HOLD.reach + 0.3;
   })());
+  const oven = item === chicken && chicken.oven?.isOpen && chicken.oven.t > 0.9 ? chicken.oven : null;
+  const intoOven = aimsIntoOven(oven);
   if (intoOven) {
     focused = { name: 'kycklingen i ugnen', kind: 'ovenChicken', verb: 'lägga', item: chicken };
     placeGhost.visible = false;
@@ -2514,6 +2549,33 @@ function updateFocus() {
   if (item?.isFish && !fries?.count && fish?.canAirfry() && (focused === airFryer.basketTarget || focused === airFryer.trayTarget || focused === airFryer.panelTarget || fish.inFryer.some((f) => f.target === focused))) {
     focused = { name: 'fiskpinnen i airfryern', kind: 'airfry', verb: 'lägga', item: fish };
     placeGhost.visible = false;
+  }
+  // #1881: one cooking rule for the pan, the oven and the air fryer, and the grill only for meat (src/cookrules.js): the food in
+  // the hand aimed at an appliance that takes it goes in; one that does not says why ("Det går inte att grilla pommes")
+  {
+    const lifeHeld = life.items.held(), lifeCook = lifeHeld ? life.items.def(lifeHeld)?.cook ?? null : null;
+    const food = item?.isFish ? 'fishFinger' : fries && item === fries.bag ? 'fries' : item && item === chicken ? 'chicken' : item?.isCaughtFish && !item.bites ? 'caughtFish' : lifeCook;
+    if (food) {
+      const ovenOpen = ovenDoor?.rack && ovenDoor.isOpen && ovenDoor.t > 0.9 ? ovenDoor : null;
+      const atOven = !!ovenOpen && aimsIntoOven(ovenOpen) && focused?.kind !== 'ovenChicken' && focused?.kind !== 'ovenfish';
+      const atFryer = airFryer.open && (focused === airFryer.basketTarget || focused === airFryer.trayTarget || focused === airFryer.panelTarget);
+      const atPan = !!pan?.onHob && (focused === pan.takeTarget || focused?.kind === 'hob' || (focused?.kind === 'place' && focused.point.distanceTo(world.hob.zone) < 0.35));
+      const atGrill = chickenGrills.find((g) => focused === g || focused?.store === (g === grill ? 'grillGrate' : 'kettleGrate'))
+        ?? (focused?.kind === 'place' ? chickenGrills.find((g) => g.object.parent?.parent?.visible !== false && focused.point.distanceTo(g.grateWorld()) < 0.4) : null);
+      const refuse = (a) => ({ name: '', kind: 'cookRefused', blocked: true, blockedText: cookRefusal(food, a) });
+      let to = null;
+      if (atGrill && cookRefusal(food, 'grill')) to = refuse('grill');
+      else if (food === 'fries' && (atPan || atOven)) to = fries.pourTargetFor(atPan ? 'pan' : 'oven');
+      else if (food === 'fishFinger' && atOven) to = fish.canOven() ? { name: 'fiskpinnen i ugnen', kind: 'ovenfish', verb: 'lägga', item: fish }
+        : { name: '', kind: 'ovenfish', blocked: true, blockedText: vesselBusy('oven', 'fishFinger') ?? 'Det får inte plats fler fiskpinnar i ugnen' };
+      else if (food === 'fishFinger' && atFryer) to = { name: '', kind: 'airfry', blocked: true, blockedText: vesselBusy('airfryer', 'fishFinger') ?? 'Korgen är full' };
+      else if (food === 'chicken' && atFryer) to = { name: 'kycklingen i airfryern', kind: 'fryChicken', verb: 'lägga', item: chicken };
+      else if (food === 'caughtFish' && (atOven || atFryer)) {
+        const a = atOven ? 'oven' : 'airfryer', why = cookRefusal(food, a) ?? vesselBusy(a, 'caughtFish');
+        to = { name: atOven ? 'fisken i ugnen' : 'fisken i airfryern', kind: atOven ? 'ovenCatch' : 'fryerCatch', verb: 'lägga', item, blocked: !!why, blockedText: why };
+      } else if (lifeCook && (atOven || atFryer)) to = cookStores.of(atOven ? 'oven' : 'airfryer')?.target ?? null;
+      if (to) { focused = to; placeGhost.visible = false; }
+    }
   }
   // the torn-off paper in the hand, aimed at a toilet: in it goes, flushed (#426)
   const paperAim = toiletPaper.aim(focused);
@@ -3558,6 +3620,7 @@ function step(dt) {
   grill.update(dt);
   world.boule.update(dt, player.pos); // #1370: drawn and simulated only near the court
   sausages.update(dt); // #1124
+  cookStores.update(dt); // #1881: sausages and eggs in the air fryer and the oven
   microwave?.update(dt); // #1210
   airFryer.update(dt);
   if (fish) fish.freezer.paused = !noteEl.hidden; // reading the note on the freezer door counts as using it (#288)
@@ -4153,4 +4216,4 @@ const openPanel = () => !overlay.hidden ? 'menu' : !reading ? (lowMemory && port
   : viewing ? 'poster' : isAvatarCustomizerOpen() ? 'avatar' : cinema.open || computerHub.open || tvMedia.open ? 'video' : 'other';
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding, panel: openPanel }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { picnicSync, roofPicnic, football, sharedFish, ghosts, outdoorGym, ducks, medals, squirrels, outdoorCats, footprints, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, bestiary, bestiaryPhotos, bestiaryImages, bestiaryRegistry:registry, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen, checkPublishedHtml, prepareUpdateUrl };
+window.__app = { picnicSync, roofPicnic, football, sharedFish, ghosts, outdoorGym, ducks, medals, squirrels, outdoorCats, footprints, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, cookStores, vesselBusy, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, bestiary, bestiaryPhotos, bestiaryImages, bestiaryRegistry:registry, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen, checkPublishedHtml, prepareUpdateUrl };

@@ -128,6 +128,23 @@ src/fries.js           Aviko frozen fries (#301, FRIES): a stand-up bag (canvas 
                        (cups.js `Steam`) for FRIES.steam s; E with a free hand takes a bunch (FriesBunch: click / "Ät" eats one fry,
                        put down / taken again); stats fries / friesCooked / friesBurnt; F: emptied, the bag full; `&fries` = a done
                        basket out (screenshots)
+src/cookrules.js       #1881 (the user, 2026-11-07: "Allt som går i ugn eller stekpanna ska också gå i airfryer, och vice versa. Grillen
+                       … där går bara kött."): the one cooking rule, pure and node-tested (src/cookrules.test.mjs). COOKING in config
+                       declares each food once (fishFinger, fries, sausage, egg, caughtFish, chicken: noun/name, tags, size, a rate per
+                       appliance on the food's own seconds; life items point at theirs with ITEMS `cook`). The pan, the oven and the
+                       air fryer (COOKING.group) take the same foods; the grill only foods tagged `meat` (or `catch`, the caught fish's
+                       #1754 spot): `cookRefusal` → "Det går inte att grilla pommes"; a food bigger than an appliance's room (the whole
+                       chicken in the pan or the basket) → "Kycklingen är för stor för airfryern – använd ugnen eller grillen".
+                       Matrix: fish fingers/fries/egg pan+oven+air fryer; sausage/caught fish all four; chicken oven+grill. The oven
+                       cooks while shut and powered (no smoke escapes it, as #1219); the smoke alarm still hears only the air fryer's
+                       vents (and the chicken's pan path), as before. One kind of food per vessel: main.js `vesselContents`/`vesselBusy`
+                       ("Korgen har …", "Det ligger redan … i ugnen", "Stekpannan är upptagen"). Wiring: fishfingers.js `intoOven`/
+                       `ovenHeld` (state 'oven', FISH.fry.slots across the upper rack); fries.js `vessels`/`where`/`load` (the heap and
+                       steam move to the pan or the oven rack, `pourTargetFor(where)`); cookstores.js (life stores 'fryerBasket' and
+                       'ovenRack' for sausages and eggs, `crackEggCook`); fishing.js `intoOven`/`intoFryer` (heat kinds 'oven'/'airfryer',
+                       saved as `on`); chicken.js `intoFryer` refusal; sausages.js grill refusal from the rule. Rates for the new pairs
+                       are *guess*. tools/cook1881browser.cjs (real game, main focus/use) covers the new pairs, the refusals and the old
+                       chicken-oven / air-fryer flows.
 src/beershelf.js       #511: four correctly typed packages (two global DIPA/two global TIPA) on the fridge's upper glass shelf.
                        Real product photos/Untappd labels plus readable names/breweries; each package is a BeerCan (#587).
                        BEER_SHELF centralises placement, can/bottle proportions and product-photo crop. Volume/type come from

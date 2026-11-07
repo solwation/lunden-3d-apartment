@@ -3,6 +3,7 @@ import { forgetBicycleHand } from './keep.js';
 import { FISH as C, AIRFRYER } from './config.js';
 import { sfx } from './audio.js';
 import { heldItem, setHeld, handBusy } from './holdable.js';
+import { cookRate } from './cookrules.js';
 
 // Fish fingers (#162): a carton on the lower open shelf in the freezer. E on it (the freezer open) takes one
 // fish finger straight into the hand; the carton counts down and is empty after FISH.n. In the hand a click /
@@ -17,6 +18,9 @@ import { heldItem, setHeld, handBusy } from './holdable.js';
 // The air fryer (#287): E on its open basket with one in the hand lays it in (AIRFRYER.slots, a child of the basket); while
 // the fryer runs with the basket in it cooks AIRFRYER.rate × as fast as in the pan (golden after one run), burning ones
 // smoke out of the fryer's vents; E on one in the open basket takes it out (steaming, like one from the pan).
+// #1881: the oven too (one rule for pan, oven and air fryer, src/cookrules.js): E on the open oven with one in the hand lays
+// it on the upper rack (FISH.fry.slots across it, a child of the oven's parts); it bakes while the door is shut and powered
+// (`pack.oven`, like the chicken #1219; no smoke escapes the shut oven). Each appliance cooks at its COOKING rate.
 
 function crumbTexture() { // frozen breadcrumbs: pale yellow with lighter and darker speckles (frying tints it, #214)
   const c = document.createElement('canvas');
@@ -141,6 +145,21 @@ export class FishFinger {
     sfx.click(this.model.getWorldPosition(new THREE.Vector3()));
   }
 
+  /** #1881: onto the open oven's upper rack at slot i (a child of the oven's parts group: deep into the oven, side by side). */
+  intoOven(oven, i) {
+    forgetBicycleHand(this);
+    this.held = false;
+    if (heldItem() === this) setHeld(null);
+    this.state = 'oven';
+    this.slot = i;
+    oven.parts.add(this.model);
+    this.model.visible = true;
+    const n = F.slots, gap = 0.04;
+    this.model.rotation.set(0, 0, 0);
+    this.model.position.set(oven.rack.x - C.len / 2, oven.rack.y + 0.002, oven.rack.z + (i - (n - 1) / 2) * gap);
+    sfx.click(this.model.getWorldPosition(new THREE.Vector3()));
+  }
+
   /** Into the air fryer's basket at slot i (#287): a child of the basket, lying along it. */
   intoFryer(fryer, i) {
     forgetBicycleHand(this);
@@ -165,7 +184,7 @@ export class FishFinger {
   /** Into the hand (from the carton, or picked up from where it lies). */
   take() {
     if (handBusy(this)) return; // one thing at a time (#102)
-    if ((this.state === 'pan' || this.state === 'fryer') && this.fried) this.hot = F.steam; // straight out of the pan / fryer: it steams a while
+    if ((this.state === 'pan' || this.state === 'fryer' || this.state === 'oven') && this.fried) this.hot = F.steam; // straight out of the pan / fryer: it steams a while
     setHeld(this);
     this.held = true;
     this.state = 'held';
@@ -233,21 +252,23 @@ export class FishFinger {
   fry(dt) {
     const pan = this.pack.pan, hob = this.pack.hob;
     if (this.state === 'pan' && this.model.parent !== pan?.model) this.state = 'placed'; // (not expected: the pan keeps it)
-    const fryer = this.state === 'fryer' ? this.pack.fryer : null;
-    const frying = (this.state === 'pan' && pan?.onHob && hob?.on) || !!fryer?.cooking;
+    if (this.state === 'oven' && this.model.parent !== this.pack.oven?.parts) this.state = 'placed';
+    const fryer = this.state === 'fryer' ? this.pack.fryer : null, oven = this.state === 'oven' ? this.pack.oven : null;
+    const baking = !!oven && !oven.isOpen && oven.t < 0.05 && oven.powered !== false; // (#1881: shut and powered, like the chicken #1219)
+    const frying = (this.state === 'pan' && pan?.onHob && hob?.on) || !!fryer?.cooking || baking;
     if (frying) {
       const was = this.fried, wasBurnt = this.burnt;
-      this.cook += fryer ? dt * AIRFRYER.rate : dt;
+      this.cook += dt * cookRate('fishFinger', fryer ? 'airfryer' : oven ? 'oven' : 'pan');
       this.hot = F.steam;
       this.paint();
       if (!was && this.fried) this.pack.onFried?.(this);
       if (!wasBurnt && this.burnt) this.pack.onBurnt?.(this);
-      if (!fryer && this.cook > 1 && (this.sizzleT -= dt) <= 0) { sfx.sizzle(this.model.getWorldPosition(new THREE.Vector3())); this.sizzleT = 0.7 + Math.random() * 0.4; }
+      if (!fryer && !oven && this.cook > 1 && (this.sizzleT -= dt) <= 0) { sfx.sizzle(this.model.getWorldPosition(new THREE.Vector3())); this.sizzleT = 0.7 + Math.random() * 0.4; }
     } else if (this.hot > 0) this.hot = Math.max(0, this.hot - dt);
     // steam (hot and fried) or smoke (burnt and still on the heat)
     this.clock += dt;
     const smoke = frying && this.burnt, steam = !smoke && this.hot > 0 && this.cook > 0;
-    const on = (smoke || steam) && this.model.visible && this.state !== 'box';
+    const on = (smoke || steam) && this.model.visible && this.state !== 'box' && !(oven && (baking || !oven.isOpen)); // (nothing escapes the shut oven)
     const from = !on ? null : smoke && fryer ? fryer.vent.clone() : this.middle(new THREE.Vector3()); // the fryer smokes out of its vents
     for (const sp of this.puffs) {
       sp.visible = !!on;
@@ -358,11 +379,28 @@ export class FishPack {
   /** The ones in the air fryer's basket (#287). */
   get inFryer() { return this.fingers.filter((f) => f.state === 'fryer'); }
 
+  /** The ones on the oven's rack (#1881). */
+  get inOven() { return this.fingers.filter((f) => f.state === 'oven'); }
+
+  /** Is the oven open with room for the one in the hand (#1881)? `busy` (main.js) = something else is in it. */
+  canOven() { return !!this.holding && !!this.oven?.isOpen && this.oven.t > 0.9 && this.inOven.length < F.slots && !this.busy?.('oven', 'fishFinger'); }
+
+  /** The held one onto the oven's rack, in the first free slot (#1881). */
+  ovenHeld() {
+    const f = this.holding;
+    if (!f || !this.oven) return;
+    const used = new Set(this.inOven.map((x) => x.slot));
+    let i = 0;
+    while (used.has(i)) i++;
+    if (i >= F.slots) return;
+    f.intoOven(this.oven, i);
+  }
+
   /** Smoke out of the air fryer: a burnt one in it while it runs (#287, the smoke alarm). */
   get fryerSmoke() { return !!this.fryer?.cooking && this.inFryer.some((f) => f.burnt); }
 
   /** Is the basket open with room for the one in the hand? */
-  canAirfry() { return !!this.holding && !!this.fryer?.open && this.inFryer.length < AIRFRYER.slots; }
+  canAirfry() { return !!this.holding && !!this.fryer?.open && this.inFryer.length < AIRFRYER.slots && !this.busy?.('airfryer', 'fishFinger'); }
 
   /** The held one into the air fryer's basket, in the first free slot. */
   airfryHeld() {
@@ -376,7 +414,7 @@ export class FishPack {
   }
 
   /** Is there room in the pan for the one in the hand (not with the chicken in it)? */
-  canFry(chickenInPan) { return !!this.holding && !!this.pan?.onHob && !chickenInPan && !this.pan.egg && this.inPan.length < F.slots; }
+  canFry(chickenInPan) { return !!this.holding && !!this.pan?.onHob && !chickenInPan && !this.pan.egg && this.inPan.length < F.slots && !this.busy?.('pan', 'fishFinger'); }
 
   /** The held one into the pan, in the first free slot. */
   fryHeld() {

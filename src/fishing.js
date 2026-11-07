@@ -1,5 +1,6 @@
 import {dropId} from './shareddropwire.js';
 import * as THREE from 'three';
+import { cookRate } from './cookrules.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { FISHING as F, RIVER_FISH, SHARK, SHARED_FISH } from './config.js';
 import { Holdable, heldItem, setHeld, stowedItem, restPose, handBusy } from './holdable.js';
@@ -112,7 +113,7 @@ export class FishingRod extends Holdable {
 }
 
 const GOLDEN = new THREE.Color(F.cook.golden), CHAR = new THREE.Color(F.cook.char), TMP = new THREE.Color(), TMP2 = new THREE.Color();
-const COOKED_WORD = { grill: 'grillad', pan: 'stekt' };
+const COOKED_WORD = { grill: 'grillad', pan: 'stekt', oven: 'ugnsbakad', airfryer: 'friterad' }; // (#1881: the oven and the air fryer too)
 
 export class CaughtFish extends Holdable {
   /** host: the Fishing; info: { species, cm, raw, cook?, by?, bites? }; at: where it starts (a Vector3, the catcher's feet). */
@@ -223,21 +224,38 @@ export class CaughtFish extends Holdable {
     if (!pan.hob?.on) this.host.onMessage('Slå på plattan så steks fisken');
     return true;
   }
-  /** Cooking while on a lit grill / a pan on a lit hob (Fishing.update). */
+  /** #1881: onto the open oven's upper rack (ovens.js `rack` in its `parts`); it bakes while the door is shut and powered. */
+  intoOven(oven) {
+    if (!oven?.rack || !oven.isOpen || !this.settle(oven.parts, oven.rack, 0.15)) return false;
+    this.heat = { kind: 'oven', oven }; this.by = 'oven';
+    sfx.click?.(this.where());
+    this.host.onMessage('Stäng ugnsluckan så bakas fisken');
+    return true;
+  }
+  /** #1881: into the open air fryer's basket (on its crisper plate); it cooks while the fryer runs with the basket in. */
+  intoFryer(fryer) {
+    if (!fryer?.open || !this.settle(fryer.basket, new THREE.Vector3(0, fryer.plateY, fryer.frontZ + 0.125), 0)) return false;
+    this.heat = { kind: 'airfryer', fryer }; this.by = 'airfryer';
+    sfx.click?.(this.where());
+    this.host.onMessage('Skjut in korgen och starta airfryern');
+    return true;
+  }
+  /** Cooking while on a lit grill / a pan on a lit hob / in the shut oven / the running air fryer (Fishing.update). */
   cookTick(dt) {
     if(this.host.shared&&!this.host.shared.canAct(this))return;
     const h = this.heat;
     if (!h) return;
-    const parent = h.kind === 'grill' ? h.grill.object : h.pan.model;
+    const parent = h.kind === 'grill' ? h.grill.object : h.kind === 'oven' ? h.oven.parts : h.kind === 'airfryer' ? h.fryer.basket : h.pan.model;
     if (this.model.parent !== parent || this.held || this.broken) { this.heat = null; return; }
-    const hot = h.kind === 'grill' ? h.grill.on : h.pan.onHob && !!h.pan.hob?.on;
+    const hot = h.kind === 'grill' ? h.grill.on : h.kind === 'oven' ? !h.oven.isOpen && h.oven.t < 0.05 && h.oven.powered !== false
+      : h.kind === 'airfryer' ? h.fryer.cooking : h.pan.onHob && !!h.pan.hob?.on;
     if (!hot) return;
     const was = this.cookState;
-    this.cook = Math.min(F.cook.burn, this.cook + dt * (F.cook.rate[h.kind] ?? 1));
+    this.cook = Math.min(F.cook.burn, this.cook + dt * cookRate('caughtFish', h.kind)); // (#1881: the shared rule's rate per appliance)
     this.paint();
     if (was === 'raw' && this.cooked){this.host.onCooked(this,h.kind);if(this.dropState)this.host.shared?.keep();}
     if (!this.burntCounted && this.burnt) { this.burntCounted = true; this.host.onBurnt(this, h.kind);if(this.dropState)this.host.shared?.keep(); }
-    if (this.cook > 1 && (this.sizzleT -= dt) <= 0) { sfx.sizzle?.(this.where()); this.sizzleT = 0.7 + Math.random() * 0.4; }
+    if (this.cook > 1 && h.kind !== 'oven' && (this.sizzleT -= dt) <= 0) { sfx.sizzle?.(this.where()); this.sizzleT = 0.7 + Math.random() * 0.4; }
   }
   /** Out of the world (the oldest lying fish when there are too many; eaten). */
   remove() {
@@ -399,6 +417,8 @@ export class Fishing {
   /** #1754: the caught fish cooking in the pan / on grill `g` now (or null). */
   inPan(pan = this.cookers.pan) { return this.fish.find((f) => !f.broken && f.heat?.kind === 'pan' && f.heat.pan === pan) ?? null; }
   onGrill(g) { return this.fish.find((f) => !f.broken && f.heat?.kind === 'grill' && f.heat.grill === g) ?? null; }
+  /** #1881: the caught fish in the oven / the air fryer's basket now (or null). */
+  cookingIn(kind) { return this.fish.find((f) => !f.broken && f.heat?.kind === kind) ?? null; }
   addFish(info, at) {
     const fish = new CaughtFish(this.scene, this.camera, this, info, at);
     this.fish.push(fish);
@@ -511,6 +531,8 @@ export class Fishing {
       if (f.held || f === stowedItem() || f.dropState?.intent==='take') e.h = 1;
       else if (gi >= 0) e.on = `grill${gi}`;
       else if (f.heat?.kind === 'pan' && f.heat.pan === this.cookers.pan) e.on = 'pan';
+      else if (f.heat?.kind === 'oven' && f.heat.oven === this.cookers.oven) e.on = 'oven'; // (#1881)
+      else if (f.heat?.kind === 'airfryer' && f.heat.fryer === this.cookers.fryer) e.on = 'airfryer';
       else {
         const p = f.model.getWorldPosition(new THREE.Vector3()), q = f.model.getWorldQuaternion(new THREE.Quaternion());
         e.p = [p.x, p.y, p.z].map((v) => Math.round(v * 1000) / 1000); e.q = [q.x, q.y, q.z, q.w].map((v) => Math.round(v * 1000) / 1000);
@@ -538,10 +560,12 @@ export class Fishing {
       if (!spec || !range || !Number.isInteger(e.cm) || e.cm < range[0] || e.cm > range[1]) continue;
       const placed = Array.isArray(e.p) && e.p.length === 3 && e.p.every(Number.isFinite) && Array.isArray(e.q) && e.q.length === 4 && e.q.every(Number.isFinite);
       const grill = /^grill\d$/.test(e.on ?? '') ? this.cookers.grills[Number(e.on.slice(5))] : null, pan = e.on === 'pan' ? this.cookers.pan : null;
-      if (!e.h && !placed && !grill && !pan) continue;
+      const oven = e.on === 'oven' ? this.cookers.oven : null, fryer = e.on === 'airfryer' ? this.cookers.fryer : null; // (#1881)
+      if (!e.h && !placed && !grill && !pan && !oven && !fryer) continue;
       const fish = this.addFish({ id:e.id,sd:e.sd,species: e.sp, cm: e.cm, raw: e.raw !== 0, cook: Number.isFinite(e.ck) ? e.ck : undefined, by: e.by, bites: e.b }, placed ? new THREE.Vector3(...e.p) : this.dropSpot(0.5));
       fish._restoring=true;
-      if (grill || pan) { fish.held = true; if (grill) fish.intoGrill(grill, { silent: true }); else { fish.settle(pan.model, new THREE.Vector3(0, 0.004, 0), Math.PI / 2 - 0.2); fish.heat = { kind: 'pan', pan }; } }
+      if (oven || fryer) { fish.held = true; if (oven) { fish.settle(oven.parts, oven.rack, 0.15); fish.heat = { kind: 'oven', oven }; } else { fish.settle(fryer.basket, new THREE.Vector3(0, fryer.plateY, fryer.frontZ + 0.125), 0); fish.heat = { kind: 'airfryer', fryer }; } }
+      else if (grill || pan) { fish.held = true; if (grill) fish.intoGrill(grill, { silent: true }); else { fish.settle(pan.model, new THREE.Vector3(0, 0.004, 0), Math.PI / 2 - 0.2); fish.heat = { kind: 'pan', pan }; } }
       else if (e.h && !heldItem()) fish.take();
       else if (placed) { fish.model.position.set(...e.p); fish.model.quaternion.set(...e.q); fish.placed = true; }
       else { fish.held = true; fish.putBack(); }

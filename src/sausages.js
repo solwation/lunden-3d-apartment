@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { SAUSAGE as S, GRILL } from './config.js';
 import { sfx } from './audio.js';
+import { cookRefusal, lifeFood } from './cookrules.js';
 
 // #1124: grill sausages on the kettle grills (the courtyard's and L1007's patio kettle, #1121). Each grate is a life store
 // (like the egg's frying pan, eggs.js): a raw sausage in the hand goes on a free spot, it grills only while that grill is lit
@@ -21,11 +22,12 @@ export class Sausages {
       I.addStore({ id, name: grill.name, slots: anchors.map(() => ({ size: 's' })), accepts: ['sausage'], isOpen: () => true,
         fullText: `Det får inte plats fler korvar på ${grill.name}`, putLabel: (held) => `lägga ${I.name(held)} på ${grill.name}` });
       life.anchors.set(id, (slot) => anchors[slot] ?? null);
-      I.store(id).refuse = (held) => held?.type !== 'sausage' ? 'Bara korv på grillgallret' : chickenOn(grill) ? 'Kycklingen tar upp grillen' : null;
-      // a pick box on the grate, live only with a sausage in the hand (the sausages themselves are their own E targets)
+      const food = (held) => lifeFood(I.defs, held?.type); // #1881: the shared rule (only meat on a grill: "Det går inte att grilla ägg")
+      I.store(id).refuse = (held) => (food(held) && cookRefusal(food(held), 'grill')) || (held?.type !== 'sausage' ? 'Bara korv på grillgallret' : chickenOn(grill) ? 'Kycklingen tar upp grillen' : null);
+      // a pick box on the grate, live only with food in the hand (the sausages themselves are their own E targets)
       const R = (GRILL.kettle.r - 0.03) * q, pick = new THREE.Mesh(new THREE.BoxGeometry(2 * R, 0.07, 2 * R), new THREE.MeshBasicMaterial());
       pick.visible = false; pick.position.set(top.x, top.y + 0.035, top.z);
-      const ray = pick.raycast.bind(pick); pick.raycast = (r, hits) => { if (I.held()?.type === 'sausage') ray(r, hits); };
+      const ray = pick.raycast.bind(pick); pick.raycast = (r, hits) => { if (food(I.held())) ray(r, hits); }; // (any food that cooks: a refusal says why, #1881)
       grill.object.add(pick);
       const target = { kind: 'life', name: grill.name, store: id, pickable: pick };
       target.options = () => life.options(target); target.toggle = () => life.run(target); pick.userData.door = target;

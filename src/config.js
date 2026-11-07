@@ -3236,11 +3236,11 @@ export const ITEMS = {
   wateringCan: { name: 'vattenkannan', noun: 'vattenkanna', tags: ['wateringCan','fillable'], unit: 'ml', amount: 0, capacity: WATERING.capacity, fullText: 'Vattenkannan är full', size: 'm', model: 'wateringCan', held: {pos:[.16,-.30,-.48],rot:[.1,-.25,0]} },
   laundryClothes: { name: 'plagget', noun: 'plagg', tags: ['laundry'], unit: 'count', amount: 1, size: 's', clean: 'dirty', moisture: 'dry', model: 'laundryClothes' },
   eggCarton: { name: 'äggkartongen', tags: ['food', 'package'], unit: 'count', amount: EGG.count, size: 'm', pkg: 'closed', model: 'eggCarton', dispense: 'rawEgg', dispenseLabel: 'ta ett ägg' },
-  rawEgg: { name: 'ägget', tags: ['food'], unit: 'count', amount: 1, size: 'xs', model: 'rawEgg' },
-  friedEgg: { name: 'det stekta ägget', tags: ['food', 'topping'], unit: 'count', amount: 1, size: 's', model: 'friedEgg', bites: 4, needsCooking: true, heat: { ...MICROWAVE.heat, cookBurn: EGG.burnAt } },
+  rawEgg: { name: 'ägget', tags: ['food'], cook: 'egg', unit: 'count', amount: 1, size: 'xs', model: 'rawEgg' },
+  friedEgg: { name: 'det stekta ägget', tags: ['food', 'topping'], cook: 'egg', unit: 'count', amount: 1, size: 's', model: 'friedEgg', bites: 4, needsCooking: true, heat: { ...MICROWAVE.heat, cookBurn: EGG.burnAt } },
   // #1124: grill sausages (raw → grilled on a lit kettle grill → burnt) and hot-dog buns; the grilled sausage goes in a bun
   sausagePack: { name: 'korvpaketet', noun: 'korv', tags: ['food', 'package'], unit: 'count', amount: SAUSAGE.pack, size: 'm', pkg: 'closed', model: 'sausagePack', dispense: 'sausage', dispenseLabel: 'ta en grillkorv' },
-  sausage: { name: 'korven', noun: 'korv', tags: ['food', 'topping', 'sausage'], unit: 'count', amount: 1, size: 's', model: 'sausage', bites: 3, needsCooking: true, cookText: 'Grilla korven först', heat: { ...MICROWAVE.heat, cookBurn: SAUSAGE.burnAt } },
+  sausage: { name: 'korven', noun: 'korv', tags: ['food', 'topping', 'sausage'], cook: 'sausage', unit: 'count', amount: 1, size: 's', model: 'sausage', bites: 3, needsCooking: true, cookText: 'Grilla korven först', heat: { ...MICROWAVE.heat, cookBurn: SAUSAGE.burnAt } },
   bunBag: { name: 'korvbrödspåsen', noun: 'korvbröd', tags: ['food', 'package'], unit: 'count', amount: SAUSAGE.buns, size: 's', pkg: 'closed', model: 'bunBag', dispense: 'hotdogBun', dispenseLabel: 'ta ett korvbröd' },
   // #1209: frozen meals from the freezer; the piece is wrapped (pkg closed) until unwrapped (`unwrap` = that action's label)
   billysBox: { name: 'Billys-kartongen', noun: 'pizza', tags: ['food', 'frozen', 'package'], unit: 'count', amount: FROZEN_MEALS.billys.count, size: 'm', pkg: 'closed', model: 'billysBox', dispense: 'billys', dispenseLabel: 'ta en Billys pan pizza' },
@@ -4494,6 +4494,34 @@ export const TOASTER = { w: 0.28, d: 0.17, h: 0.18, slot: { l: 0.13, w: 0.032 },
 export const CHICKEN = { cookSeconds: 10, burnSeconds: 30, smokeSeconds: 60, darken: 0.8,
   held: { x: 0.18, y: -0.3, z: -0.55 },
   raw: [0xe9c7a6, 0xddb48f], bodyBites: 3, bites: 2, piece: { x: 0.15, y: -0.17, z: -0.36 } };
+// #1881 (the user, 2026-11-07): "Allt som går i ugn eller stekpanna ska också gå i airfryer, och vice versa. Grillen är lite
+// speciell förstås, där går bara kött." One rule for every food, read by src/cookrules.js: the pan, the oven and the air fryer
+// are one group (`group`): a food that cooks in one of them cooks in all three. The grill takes only foods carrying one of
+// `grillTags` (meat; the caught fish keeps its #1754 grill spot as 'catch'); anything else is refused ("Det går inte att grilla
+// pommes"). A food bigger than an appliance's `room` (`sizes`: the whole chicken in the pan or the air fryer's basket) is
+// refused with a message naming where it does fit. `rate` per food and appliance = how fast that appliance cooks it, as a
+// factor on the food's own seconds (FISH.fry, FRIES, SAUSAGE, EGG, FISHING.cook, CHICKEN), so cooked/burnt follow the same
+// thresholds everywhere. The pairs that existed before keep their old rates; the new pairs (#1881) are *guess*. The oven
+// cooks while its door is shut and powered (as the chicken did, #1219: no smoke escapes it), the air fryer while it runs with
+// the basket in, the pan on a lit zone, the grill while lit. `noun` = the food in a refusal, `name` = its definite form.
+export const COOKING = {
+  group: ['pan', 'oven', 'airfryer'], grillTags: ['meat', 'catch'], sizes: { s: 1, m: 2, l: 3 },
+  appliances: {
+    pan: { name: 'stekpannan', verb: 'steka', room: 'm' },
+    oven: { name: 'ugnen', verb: 'laga', room: 'l' },
+    airfryer: { name: 'airfryern', verb: 'fritera', room: 'm' },
+    grill: { name: 'grillen', verb: 'grilla', room: 'l' },
+  },
+  foods: {
+    fishFinger: { name: 'fiskpinnen', noun: 'fiskpinnar', tags: ['breaded'], size: 's', // #214 pan, #287 air fryer
+      rate: { pan: 1, oven: 0.4, airfryer: 1.2 * FISH.fry.seconds / AIRFRYER.seconds } },
+    fries: { name: 'pommesen', noun: 'pommes', tags: ['potato'], size: 's', rate: { pan: 1.4, oven: 0.8, airfryer: 1 } }, // #301 air fryer
+    sausage: { name: 'korven', noun: 'korv', tags: ['meat'], size: 's', rate: { grill: 1, pan: 1, oven: 0.8, airfryer: 1 } }, // #1124 grill, #1640 pan
+    egg: { name: 'ägget', noun: 'ägg', tags: ['egg'], size: 's', rate: { pan: 1, oven: 0.5, airfryer: 0.6 } }, // #484 pan
+    caughtFish: { name: 'fisken', noun: 'fisk', tags: ['fish', 'catch'], size: 'm', rate: { grill: 1, pan: 1.25, oven: 0.8, airfryer: 1 } }, // #1754 grill + pan
+    chicken: { name: 'kycklingen', noun: 'kyckling', tags: ['meat'], size: 'l', rate: { grill: 1, oven: 1, pan: 1, airfryer: 1 } }, // #708 grill, #1219 oven
+  },
+};
 // The smoke alarm in the kitchen ceiling (#194, src/hood.js): it goes off after `delay` s of smoke that the cooker hood
 // does not draw away (the hood draws what is within `hoodReach` m of its middle, below it). Position: mid-kitchen (ours).
 export const SMOKE_ALARM = { x: 4.2, y: 3.0, z: 2.6, delay: 5, hoodReach: 0.6 };

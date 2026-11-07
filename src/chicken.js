@@ -4,6 +4,7 @@ import { Holdable, setHeld, heldItem, isStowed } from './holdable.js';
 import { sfx } from './audio.js';
 import { chicken } from './fridge.js';
 import { CHICKEN as C } from './config.js';
+import { cookRefusal, cookRate } from './cookrules.js';
 
 // The fridge's whole chicken (#160, #708): a kettle grill (courtyard or L1007's patio kettle, #1157) or the kitchen oven
 // (#1219: on the upper rack, it roasts while the oven door is shut); raw → golden → burnt.
@@ -99,13 +100,15 @@ export class Chicken extends Holdable {
       state: this.cookState, ...extra });
   }
 
-  /** A pan attempt is refused without releasing the hand or changing the chicken. */
-  intoPan() {
+  /** A pan (#708) or air fryer (#1881) attempt is refused without releasing the hand or changing the chicken: the whole bird
+   *  does not fit (COOKING, src/cookrules.js: "Kycklingen är för stor för stekpannan – använd ugnen eller grillen"). */
+  intoPan(surface = 'pan') {
     if (!this.held) return false;
-    this.life?.say('Den här är för stor för pannan – den vill ha riktig grill.');
-    this.event('chickenPanRefused', { surface: 'pan' });
+    this.life?.say(cookRefusal('chicken', surface) ?? 'Kycklingen får inte plats här');
+    this.event(surface === 'pan' ? 'chickenPanRefused' : 'chickenRefused', { surface });
     return false;
   }
+  intoFryer() { return this.intoPan('airfryer'); }
 
   /** g: which grill (#1157: the courtyard's or L1007's patio kettle); the bird stays with it until taken. */
   intoGrill(g = this.grill) {
@@ -279,7 +282,7 @@ export class Chicken extends Holdable {
     if (this.oven) this.oven.heating = roasting; // the oven lamp glows through its window while it roasts
     if (grilling || roasting) {
       const surface = grilling ? 'grill' : 'oven';
-      this.cooked = Math.min(C.burnSeconds, this.cooked + dt);
+      this.cooked = Math.min(C.burnSeconds, this.cooked + dt * cookRate('chicken', surface)); // (#1881: the shared rate, 1 on both)
       if (!this.done && this.cooked >= C.cookSeconds) {
         this.done = true; this.retarget();
         if (!this.rewarded) { this.rewarded = true; this.onCooked?.(); }
