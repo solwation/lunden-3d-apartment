@@ -170,7 +170,8 @@ f.onload = async () => {
   pass &= check(/starta airfryern/i.test(label), `the panel: "${label}"`);
   const af0 = stats.airfried ?? 0;
   btn.click(); run(0.5);
-  pass &= check(airFryer.running && airFryer.shown === '200|7:48' && airFryer.glowMat.opacity > 0, `running: "${airFryer.shown}" on the display, the vents glow`);
+  // the display counts game time; the real-time day (#1145, 4e035040) makes the clock 1, so 19.5 s left shows 0:20 (it was 7:48 at 24×)
+  pass &= check(airFryer.running && airFryer.shown === '200|0:20' && airFryer.glowMat.opacity > 0, `running: "${airFryer.shown}" on the display, the vents glow`);
   run(AF.seconds / 2);
   pass &= check(!inF[0].fried && !white(inF[0]), `half way: browning (#${inF[0].bread.color.getHex().toString(16)})`);
   // pulled out mid-run: paused
