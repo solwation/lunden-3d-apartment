@@ -3522,11 +3522,41 @@ function paintedPicture(P) {
   tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
   return tex;
 }
+/** A one-cell picture behind glass with a passe-partout (#1883, "Till mamma"): the `atlas` image drawn inside an
+ * off-white mat `item.mat` m wide (the cell is the frame's inside, w − 2·frame), with a faint shadow where the mat's
+ * cut edge meets the paper and, with `glass`, the same faint diagonal glare as the painted print (#333). The image
+ * arrives later; the mat shows meanwhile. */
+function mattedPicture(item) {
+  const iw = item.w - 2 * item.frame, ih = item.h - 2 * item.frame, W = 960, H = Math.round(W * ih / iw);
+  const cv = profileCanvas(W, H), c = cv.getContext('2d'), mx = W * item.mat / iw, my = H * item.mat / ih;
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+  const paint = (img) => {
+    c.fillStyle = '#f3f0e8'; c.fillRect(0, 0, W, H); // the mat (*guess*: warm off-white)
+    c.fillStyle = '#fbfaf5'; c.fillRect(mx, my, W - 2 * mx, H - 2 * my); // the paper (posters.js)
+    if (img) c.drawImage(img, mx, my, W - 2 * mx, H - 2 * my);
+    c.strokeStyle = 'rgba(0,0,0,0.22)'; c.lineWidth = 3; c.strokeRect(mx - 1.5, my - 1.5, W - 2 * mx + 3, H - 2 * my + 3); // the mat's bevel
+    if (item.glass) {
+      const glare = c.createLinearGradient(0, 0, W, H);
+      glare.addColorStop(0.12, 'rgba(255,255,255,0)'); glare.addColorStop(0.24, 'rgba(255,255,255,0.09)');
+      glare.addColorStop(0.32, 'rgba(255,255,255,0)'); glare.addColorStop(0.72, 'rgba(255,255,255,0)');
+      glare.addColorStop(0.8, 'rgba(255,255,255,0.05)'); glare.addColorStop(0.88, 'rgba(255,255,255,0)');
+      c.fillStyle = glare; c.fillRect(0, 0, W, H);
+    }
+    tex.needsUpdate = true;
+  };
+  paint(null);
+  const img = new Image();
+  img.onload = () => paint(img);
+  img.src = new URL(`../${profilePath(item.atlas)}`, import.meta.url).href;
+  return tex;
+}
 function pictures(item) {
   const g = new THREE.Group();
   const { w, h, gap, frame: f, depth: d, cols, rows, order } = item;
   const [gc, gr] = item.grid;
   if (item.paint && !pictureAtlases.has(item.paint)) pictureAtlases.set(item.paint, paintedPicture(item.print));
+  if (item.mat && !pictureAtlases.has(item.atlas)) pictureAtlases.set(item.atlas, mattedPicture(item));
   if (!item.paint && !pictureAtlases.has(item.atlas)) {
     const tex = new THREE.TextureLoader().load(new URL(`../${profilePath(item.atlas)}`, import.meta.url).href); // light copy on light profiles (#1511)
     tex.colorSpace = THREE.SRGBColorSpace;
@@ -3534,7 +3564,8 @@ function pictures(item) {
     pictureAtlases.set(item.atlas, tex);
   }
   const black = new THREE.MeshStandardMaterial({ color: 0x111113, roughness: 0.45 });
-  const picMat = new THREE.MeshStandardMaterial({ map: pictureAtlases.get(item.paint || item.atlas), roughness: item.rough ?? 0.32 });
+  const picMat = new THREE.MeshStandardMaterial({ map: pictureAtlases.get(item.paint || item.atlas), roughness: item.rough ?? 0.32,
+    ...(item.glass ? { metalness: 0.05, envMapIntensity: 0.6 } : {}) }); // #1883: glass in front — a little sheen, no light of its own
   const iw = w - 2 * f, ih = h - 2 * f;
   const root = g;
   for (let i = 0; i < cols * rows; i++) {

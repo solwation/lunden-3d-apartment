@@ -63,6 +63,12 @@ src/stuff.js           what is inside wardrobes and drawers (#228, STUFF): `Pack
                        hat shelf, shoes — by the room's person, `personFor`), `drawerFill` (addDrawer `fill`: tees, socks,
                        underwear, pyjamas, jeans, toys, crafts, nightstand). Sovrum 1: NORDLI, NORDKISA, IDANAS drawers;
                        Sovrum 2: wardrobe L, the `pictures` posters "EAT SLEEP GAME REPEAT" (#430, east wall) and "THE GULAG" (#694, west wall over the gaming desk; *guess* 42 × 59 cm); Sovrum 3: wardrobe G + ALEX drawers (#230)
+furniture.js `pictures` `mat`/`glass` (#1883, `mattedPicture`): a one-cell picture whose `atlas` image is drawn on a canvas inside an
+                       off-white passe-partout `mat` m wide (bevel shadow), with `glass` a faint painted glare and a little sheen
+                       (still two merged meshes, no transparent pane, no light). Used by the framed "Till mamma" drawing on the
+                       kitchen wall (x 2.152, z 3.45, centre 1.50 m, 52 × 39.7 cm; frame/mat/height *guesses*), formerly a home
+                       drawing (#618/#1099); a `picture` piece, so it moves only in rearrange mode and its pose is saved in the
+                       ordinary layout under `f-pictures-0-2.152-3.45-0-0` (tools/framedmammatest.html)
 src/shelves.js         what stands on the kitchen's String shelf (`buildShelfDressing`, `SHELF_DRESSING`; #291, moved from the two oak wall boards in #1298,
                        called by furniture.js `stringshelf`): cookbooks, glass jars, lathe-turned stoneware (speckle map),
                        brass candlesticks, a mortar, a cutting board, framed prints (one canvas atlas); merged per material;

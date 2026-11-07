@@ -1,0 +1,58 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Framed "Till mamma" (#1883)</title><pre id="out">running…</pre><script src="./rearrangesetup.js"></script><script type="module">
+// "Till mamma" is a framed picture (#1883), no longer a home drawing (#618, #1099). An old save with the drawing moved
+// (an IndexedDB 'drawings' record under its fixed id) gets exactly one framed picture and no drawing, and the record is
+// deleted; a server copy or a stowed sheet with that id is refused; the picture is no drawing target (no Ta ner); it
+// moves in rearrange mode only, and the move survives a reload.
+//   headless Chromium: open http://localhost:PORT/tools/framedmammatest.html, wait for ALL PASS / SOME FAILED in #out
+const lines = []; let pass = true;
+const out = document.getElementById('out');
+const check = (ok, s) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${s}`); pass &&= !!ok; out.textContent = lines.join('\n') + '\nrunning…'; return ok; };
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const ID = 'fixed-till-mamma', PIECE = 'f-pictures-0-2.152-3.45-0-0';
+const idb = (mode, fn) => new Promise((res) => { const q = indexedDB.open('lunden', 4); q.onupgradeneeded = () => { for (const n of ['catPhotos', 'drawings', 'catCards', 'bestiaryPhotos', 'bestiaryThumbs']) if (!q.result.objectStoreNames.contains(n)) q.result.createObjectStore(n, n === 'catPhotos' ? { keyPath: 'id', autoIncrement: true } : { keyPath: 'id' }); };
+  q.onsuccess = () => { const t = q.result.transaction('drawings', mode), r = fn(t.objectStore('drawings')); t.oncomplete = () => { q.result.close(); res(r?.result); }; }; q.onerror = () => res('err'); });
+const f = document.createElement('iframe'); f.width = 480; f.height = 300; document.body.append(f);
+async function load() { f.src = '../index.html?shot&r=' + Math.random(); await new Promise((r) => f.onload = r); while (!f.contentWindow.__app) await wait(100); return f.contentWindow.__app; }
+try {
+  localStorage.removeItem('lunden.furniture.layout');
+  await new Promise((res) => { const r = indexedDB.deleteDatabase('lunden'); r.onsuccess = r.onerror = r.onblocked = res; });
+  // an old save: the home drawing taped up in the hall (#1099 stored it under its fixed id), plus a visitor's drawing
+  const old = { id: ID, image: 'textures/teckning-till-mamma.jpg', surface: 'wall', level: 0, pos: [1.0, 1.5, 1.6], normal: [0, 0, 1], rot: 0.02, time: new Date(2026, 9, 2, 18, 50).getTime(), updated: 5 };
+  const visitor = { id: 'old-visitor-1', image: 'textures/teckning-till-mamma.jpg', surface: 'wall', level: 0, pos: [30, 1.5, 30], normal: [1, 0, 0], rot: 0, time: 1, updated: 1, synced: true };
+  await idb('readwrite', (s) => { s.put(old); s.put(visitor); });
+  let A = await load();
+  for (let i = 0; i < 600 && !A.posters.byId('old-visitor-1'); i++) await wait(100); // the saved drawings are up
+  await wait(300);
+  check(A.posters.byId('old-visitor-1') && !A.posters.byId(ID) && A.posters.list.length === 1, `old save: no "Till mamma" drawing, the visitor's stays (${A.posters.list.map((p) => p.rec.id)})`);
+  check((await idb('readonly', (s) => s.get(ID))) === undefined, 'the old drawings record is deleted');
+  const framed = A.rearrange.pieces.filter((p) => p.item.atlas === 'textures/teckning-till-mamma.jpg');
+  check(framed.length === 1 && framed[0].id === PIECE && framed[0].picture, `exactly one framed picture, a wall piece (${framed.map((p) => p.id)})`);
+  const piece = framed[0], T = await f.contentWindow.eval("import('three')");
+  A.scene.updateMatrixWorld(true);
+  const box = new T.Box3().setFromObject(piece.object), size = box.getSize(new T.Vector3()), mid = box.getCenter(new T.Vector3());
+  check(Math.abs(mid.y - 1.5) < 0.005 && Math.abs(size.y - 0.397) < 0.005 && Math.abs(size.z - 0.52) < 0.005 && size.x <= 0.026, `52 × 39.7 cm, centre ${mid.y.toFixed(3)} m up, ${size.x.toFixed(3)} deep`);
+  check(box.min.z > 3.18 && box.max.z < 4.01, `between the hall opening and the calendar (z ${box.min.z.toFixed(3)}–${box.max.z.toFixed(3)})`);
+  const meshes = []; piece.object.traverse((o) => { if (o.isMesh && o.visible) meshes.push(o); });
+  check(meshes.length === 2 && meshes.some((m) => m.material.color?.getHex() === 0x111113), `two meshes: black frame + picture (${meshes.length})`);
+  check(!A.posters.targets.some((t) => t.pickable === piece.object || meshes.includes(t.pickable)), 'not a drawing target (no Ta ner / Släng)');
+  check((await A.posters.addRemote({ ...old, updated: Date.now() })) === null && !A.posters.byId(ID), 'a server copy is refused');
+  const h = new A.heldDrawing.constructor(A.scene, A.camera, A.drawing); h.posters = A.posters;
+  check(h.loadStowed({ image: 'data:image/png;base64,iVBORw0KGgo=', meta: { id: ID, time: old.time, rec: old } }) === null && !h.held, 'a stowed "Till mamma" sheet is refused');
+  // rearrange: aim, pick, move along the wall, confirm, reload
+  const d = f.contentDocument; d.documentElement.requestFullscreen = undefined; d.getElementById('start-touch').click();
+  const R = A.rearrange; setupRearrangeForFixture(R, f.contentWindow);
+  const original = piece.object.matrixWorld.clone(), at = new T.Vector3().setFromMatrixPosition(original);
+  A.camera.position.set(at.x + 1.3, 1.6, at.z); A.camera.lookAt(at.x, 1.5, at.z); R.update();
+  check(R.target?.piece === piece, `rearrange aims at the framed picture (${R.target?.piece?.id})`);
+  check(R.begin(piece) && R.selected.group.length === 1, 'picked on its own');
+  A.camera.lookAt(at.x, 1.45, at.z + 0.3); R.update();
+  check(R.valid, 'a valid new spot on the wall');
+  const moved = R.candidate.clone();
+  check(await R.confirm(), `move confirmed (${R.message})`);
+  A = await load();
+  const again = A.rearrange.byId.get(PIECE);
+  check(again && again.object.matrixWorld.elements.every((v, i) => Math.abs(v - moved.elements[i]) < 1e-4), 'the moved position survives a reload');
+  check(!A.posters.byId(ID), 'still no drawing after the reload');
+} catch (e) { check(false, 'error: ' + (e?.stack ?? e)); }
+out.textContent = lines.join('\n') + '\n' + (pass ? 'ALL PASS' : 'SOME FAILED');
+</script></html>

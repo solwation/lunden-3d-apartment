@@ -739,13 +739,15 @@ src/posters.js         drawings taped up (#176): HeldDrawing (the sheet in the h
                        'lunden'/'drawings'
                        E on a poster (kind 'poster') opens #poster-panel (#177, reading mode): Släng (S) / Ta ner (T) /
                        Stäng (E, Esc, ×); Ta ner keeps its id, put back without taping = back up where it was
-                       HOME_DRAWINGS (#618, #1099, config): the home's own drawings ("Till mamma" under the kitchen clock,
-                       textures/teckning-till-mamma.jpg) are ordinary drawings (`p.home`): Släng / Ta ner / tape elsewhere,
-                       count towards maxPosted; local only (never onPut/onDelete, addRemote refuses them, cloud.js sync
-                       skips them, so the 24 h expiry cannot touch them); a moved one is stored in IndexedDB under its fixed
-                       id with its config picture/date; one not stored (never moved, thrown, or pre-#1099 saves) goes up at
-                       its default spot on `load()`; put back from the hand it is rehung, never the desk sheet;
-                       `posters.own` = the visitors' ones (tests); tools/homedrawingtest.html
+                       HOME_DRAWINGS (#618, #1099, config): the home's own drawings are ordinary drawings (`p.home`): Släng /
+                       Ta ner / tape elsewhere, count towards maxPosted; local only (never onPut/onDelete, addRemote refuses
+                       them, cloud.js sync skips them, so the 24 h expiry cannot touch them); a moved one is stored in
+                       IndexedDB under its fixed id with its config picture/date; one not stored goes up at its default spot
+                       on `load()`; put back from the hand it is rehung, never the desk sheet; `posters.own` = the visitors'
+                       ones (tests). Empty since #1883: "Till mamma" is a framed FURNITURE `pictures` piece (furniture.md).
+                       RETIRED_HOME_DRAWINGS (#1883): `load()` deletes a stored record with such an id instead of hanging
+                       it, `addRemote` and `HeldDrawing.loadStowed` refuse it, so an old save never shows it as a drawing
+                       next to its frame; tools/framedmammatest.html
 src/paperball.js       a drawing thrown away (#177): crumpled in front of the camera, thrown, bounces on the floor (walls:
                        the level's collision segments), shrinks away after DRAWING.ballSeconds; not saved
 src/calendar.js        the cat calendar (CALENDAR): a cat per month, the days, the chosen date; #cal-panel picks it

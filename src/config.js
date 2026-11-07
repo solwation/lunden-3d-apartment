@@ -4048,13 +4048,13 @@ export const DRAWING = { level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.31 + 0.08
 // Drawings that are part of the home (#618, #1099): ordinary taped-up drawings (looked at, taken down, moved, thrown)
 // that start at `pos` and are kept only in this browser — never sent to the cloud (which deletes taped-up drawings
 // after 24 h) nor removed by its sync. Moved, the new spot is saved locally; thrown away, it is back here on the
-// next load. "Till mamma" (drawn 2 Oct 2026 18:50, lost from the cloud) is restored from a screenshot onto the
-// kitchen wall (x 2.152, facing east), north of the calendar below the wall clock (WALL_CLOCK, CALENDAR); the spot
-// passed Posters.spot. `rot` in radians.
-export const HOME_DRAWINGS = [
-  { id: 'fixed-till-mamma', image: 'textures/teckning-till-mamma.jpg', level: 0, pos: [2.152 + 0.003, 1.6, 3.40], normal: [1, 0, 0], rot: -0.035,
-    time: new Date(2026, 9, 2, 18, 50).getTime() },
-];
+// next load. `rot` in radians. Empty since #1883: "Till mamma" (the only one) is now a framed picture (FURNITURE,
+// `pictures` on the kitchen wall), moved only in rearrange mode.
+export const HOME_DRAWINGS = [];
+// Ids of former home drawings (#1883): an IndexedDB 'drawings' record, a server copy or a drawing in the hand
+// (bicycle stow) with one of these ids is dropped on load instead of going up as a drawing, so an old save never
+// shows it twice next to its framed picture.
+export const RETIRED_HOME_DRAWINGS = ['fixed-till-mamma'];
 
 // Sitting and lying down (#71/#72, src/rest.js): eye height above the seat / mattress, how far you can
 // turn your head (yaw ± from the way the seat faces) and the pitch range, and the move time.
@@ -5837,6 +5837,16 @@ export const FURNITURE = [
     print: { paper: '#c9d3cb', lines: ['THIS', 'KITCHEN', 'IS FOR', 'DANCING'], block: 0.68, width: 0.6, top: 0.17,
       font: "'Bebas Neue', 'Oswald', 'Arial Narrow', 'Liberation Sans Narrow', 'DejaVu Sans Condensed', Impact, sans-serif",
       stem: 0.2, gold: [[0, '#d9b45a'], [0.5, '#a87a2a'], [1, '#6b4a18']] } },
+  // "Till mamma" framed (#1883, the user 2026-11-07: "Rama in den i en svart ram med glas framför bilden och häng upp den
+  // på normal tavelhöjd"; a taped home drawing since #618/#1099, textures/teckning-till-mamma.jpg drawn 2 Oct 2026).
+  // The A3 sheet (42 × 29.7 cm, DRAWING.w/h) behind glass with a 3 cm off-white passe-partout (`mat`, *guess*) in a
+  // 2 cm thin black frame (*guess*) → 52 × 39.7 cm outside, 2.5 cm deep (*guess*). Same kitchen wall face (x 2.152,
+  // facing east) as the drawing, hung straight; centre 1.50 m up (*guess*, the usual 1.45–1.55 m) and z 3.45, so
+  // its south edge (3.19) stays where the drawing's was, clear of the hall opening's architrave, and the calendar
+  // below the clock (CALENDAR, z 4.01–4.31) keeps a 30 cm gap. `glass`: a glossier picture surface with a faint
+  // painted glare instead of a separate transparent pane (two merged meshes, like the other pictures).
+  { type: 'pictures', level: 0, x: 2.152, z: 3.45, y: 1.5, rot: -90, w: 0.52, h: 0.397, gap: 0, frame: 0.02, depth: 0.025,
+    rough: 0.2, glass: true, mat: 0.03, cols: 1, rows: 1, atlas: 'textures/teckning-till-mamma.jpg', grid: [1, 1], order: [0] },
   { type: 'pictures', level: 1, x: 5.551, z: 6.654, y: 1.57, rot: 90, w: 0.4, h: 0.5, gap: 0.07, frame: 0.02, depth: 0.03,
     cols: 2, rows: 2, atlas: 'textures/stair-pictures.jpg', grid: [2, 2], order: [0, 1, 2, 3] },
   // Areca / golden cane palm (#106, the user's Amazon pick: "Gold Palm 130 cm", nursery pot Ø 24).

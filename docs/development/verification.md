@@ -1273,9 +1273,9 @@ tools/postertest.html  headless test: take the drawing (blank sheet stays), back
                        the fridge door (swings with it), none on the kitchen window, reload → both back; look at one (panel, no walking,
                        ×/E close), Släng → ball lands and vanishes, out of storage; Ta ner → taped up elsewhere; lying in each lower bunk:
                        taped under the top bunk, facing down, can be looked at from there (`?shots`, `?panel`)
-tools/homedrawingtest.html headless test (#1099): "Till mamma" — an old saved state gets exactly one, Ta ner + tape in the
-                       hall survives a reload with its date, put back = rehung, thrown = back at the default spot, never synced
-                       (#1113: `STEP <name>` lines show progress; each await is bounded → `FAIL <step> timeout`, never a silent hang)
+tools/framedmammatest.html headless test (#1883, replaced homedrawingtest.html #1099): an old save with "Till mamma" moved as a
+                       drawing → no drawing, the record deleted, exactly one framed picture (size, 1.50 m centre, two meshes, clear of
+                       the calendar); not a drawing target; server copy / stowed sheet refused; rearrange moves it, the pose survives a reload
 tools/bindertest.cjs   Playwright (#1255): the cat binder under the coffee table (target, merged, part of the table piece, no pick through the top), E opens the
                        browse UI; #1379 uses four fixed variant pockets per page, silhouettes, uncropped photo portraits and a per-variant album; Miele stays last and legacy photos retain their extra page. Desktop and phone portrait/landscape, counters, real IndexedDB reload and byte-preserved photographs are covered. #1256: every tier's card gets its fx level (common 0 … legendary 4), Miele the top one with the most ★,
                        pointer tilt moves the sheen, reduced motion removes animation and tilt. #1257: photo menu — Spara / Kasta buttons, saved flag across a reload (IndexedDB), the enlarged photo (click / keys / Esc through confirmation, photo, album, collection), throw-away asks first (Behåll / Esc keep, Kasta deletes), rotation of the oldest unsaved card + "Byts ut först", all-saved refusal + the `#cat-notice` toasts, legacy page, phone tap targets ≥ 44 px and fit at 844x390 / 390x844, reduced motion; with a shot dir it saves a card of each tier + Miele (desktop, phone).
@@ -8974,7 +8974,7 @@ See [performance](performance.md#first-focus-program-warm-up-1508).
 desktop screen programs compile, between phone compile slices and after `warm.done`,
 including the lamp-wash key, the per-frame phone budget, removal before compilation and
 skipped warm-up. On base `b1711188` four of them fail. The matched native-GPU kitchen lap,
-`postertest`/`homedrawingtest` and the IndexedDB-failure check are in
+`postertest`/`homedrawingtest` (replaced by `framedmammatest`, #1883) and the IndexedDB-failure check are in
 [the verification record](../verification/1514/README.md).
 
 #1536: `tools/focuswarmtest.html` has a 19th check: a transparent single-sided and an equal transparent `DoubleSide` target (two passes) warmed together must both add zero programs at first focus (2 before the `|2pass` dedup-key fix).

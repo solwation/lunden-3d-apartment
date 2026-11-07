@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { DRAWING as D, HOLD, HOME_DRAWINGS } from './config.js';
+import { DRAWING as D, HOLD, HOME_DRAWINGS, RETIRED_HOME_DRAWINGS } from './config.js';
 import { withStore } from './idb.js';
 import { setHeld, heldItem } from './holdable.js';
 import { forgetBicycleHand } from './keep.js';
@@ -26,6 +26,8 @@ const UP = new THREE.Vector3(0, 1, 0), Z = new THREE.Vector3(0, 0, 1);
 
 /** The home's own drawings (#618, #1099) by id: local only, never synced; their default spot comes back on load. */
 const HOME = new Map(HOME_DRAWINGS.map((f) => [f.id, f]));
+/** Former home drawings (#1883: "Till mamma" is a framed picture now): never up as a drawing again. */
+const RETIRED = new Set(RETIRED_HOME_DRAWINGS);
 
 const uid = () => (crypto.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
 
@@ -124,6 +126,10 @@ export class Posters {
     let recs = [];
     try { recs = (await withStore(STORE, 'readonly', (s) => s.getAll())) ?? []; } catch { recs = []; }
     for (const r of recs.sort((a, b) => a.time - b.time)) {
+      if (RETIRED.has(r.id)) { // an old save's moved home drawing (#1883): its framed picture hangs instead
+        try { await withStore(STORE, 'readwrite', (st) => st.delete(r.id)); } catch { /* ignore */ }
+        continue;
+      }
       const f = HOME.get(r.id);
       if (f && this.byId(r.id)) continue; // never twice
       await this.build(f ? { ...r, image: f.image, time: f.time } : r); // a moved home drawing keeps its picture and date
@@ -296,7 +302,7 @@ export class Posters {
 
   /** A drawing from the server (someone else's, or moved elsewhere): up it goes, saved, not sent back. */
   async addRemote(rec) {
-    if (this.byId(rec.id) || HOME.has(rec.id)) return null; // the home's own never come from the server (#1099)
+    if (this.byId(rec.id) || HOME.has(rec.id) || RETIRED.has(rec.id)) return null; // the home's own never come from the server (#1099, #1883)
     const p = await this.build(rec);
     if (p) await this.save(rec);
     this.cache = null;
@@ -365,7 +371,7 @@ export class HeldDrawing {
   loadStowed(s) {
     if (!s || typeof s !== 'object' || typeof s.image !== 'string' || !s.image.startsWith('data:image/')) return null;
     if (s.meta !== null && (typeof s.meta !== 'object' || typeof s.meta.id !== 'string')) return null;
-    if (s.meta?.id && this.posters?.byId?.(s.meta.id)) return null;
+    if (s.meta?.id && (this.posters?.byId?.(s.meta.id) || RETIRED.has(s.meta.id))) return null; // #1883: a retired home drawing stays framed
     this.take(s.image, s.meta ?? null, { silent: true });
     return this;
   }
