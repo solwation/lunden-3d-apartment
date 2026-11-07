@@ -1,11 +1,11 @@
 // Exact output contract against the pinned renderer, including boundary/duplicate/degenerate edges.
-// THREE_DIR points at an unpacked three@0.170.0 package.
+// Optional THREE_DIR points at an unpacked three@0.170.0 package; otherwise normal node_modules resolution is used.
 import { register } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import assert from 'node:assert/strict';
 
-const root = pathToFileURL(`${process.env.THREE_DIR || '/home/devcontainers/.cache/three-0.170.0'}/`).href;
-register('data:text/javascript,' + encodeURIComponent(`export async function resolve(s,c,n) {
+const root = pathToFileURL(`${process.env.THREE_DIR}/`).href;
+if (process.env.THREE_DIR) register('data:text/javascript,' + encodeURIComponent(`export async function resolve(s,c,n) {
   if(s==='three') return {url:${JSON.stringify(root)}+'build/three.module.js',shortCircuit:true};
   return n(s,c);
 }`));
