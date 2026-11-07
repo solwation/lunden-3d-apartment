@@ -6,8 +6,8 @@ test('busy/feed, lost view, blocked way and chance never strand or steal a cat',
 test('contact destinations face each other and keep standing bodies apart',()=>{const r=rig();r.step();const p=r.n.pair,[a,b]=p.goals;assert(Math.hypot(a.x-b.x,a.z-b.z)>.55);assert(Math.abs(Math.sin(a.yaw)-1)<1e-8);assert(Math.abs(Math.sin(b.yaw)+1)<1e-8);});
 
 test('actual breed models touch nose surfaces while torso bounds remain separated',async()=>{
- const{register}=await import('node:module'),{pathToFileURL}=await import('node:url'),root=pathToFileURL((process.env.THREE_DIR||'/home/devcontainers/.cache/three-0.170.0')+'/').href;
- register('data:text/javascript,'+encodeURIComponent(`const root=${JSON.stringify(root)};export async function resolve(s,c,n){if(s==='three')return{url:root+'build/three.module.js',shortCircuit:true};if(s.startsWith('three/addons/'))return{url:root+'examples/jsm/'+s.slice(13),shortCircuit:true};return n(s,c);}`));
+ const{register}=await import('node:module'),{pathToFileURL}=await import('node:url'),root=pathToFileURL(process.env.THREE_DIR+'/').href;
+ if(process.env.THREE_DIR)register('data:text/javascript,'+encodeURIComponent(`const root=${JSON.stringify(root)};export async function resolve(s,c,n){if(s==='three')return{url:root+'build/three.module.js',shortCircuit:true};if(s.startsWith('three/addons/'))return{url:root+'examples/jsm/'+s.slice(13),shortCircuit:true};return n(s,c);}`));
  const T=await import('three'),{BREEDS,createCatPuppet}=await import('../src/cat.js'),{catNoseShape,poseCatNuzzle}=await import('../src/catnuzzlepose.js');
  for(const pair of [[0,1],[2,3]]){const cats=pair.map(id=>{const b=BREEDS.find(b=>b.name===O.cats[id].breed),puppet=createCatPuppet(b,b.coats[0]),group=new T.Group();group.add(puppet.object);return{puppet,group,nuzzleShape:catNoseShape(puppet)};});
  const radius=cats.map(c=>c.nuzzleShape.radius),p={cats,contact:O.nuzzle.settle+1,point:{x:0,y:(cats[0].nuzzleShape.y+cats[1].nuzzleShape.y)/2,z:0},unit:{x:0,z:1}};
