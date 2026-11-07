@@ -1,0 +1,218 @@
+{
+ "checks": [
+  {
+   "ok": true,
+   "label": "added loops: walkable, dry, off roads and free in the actual scene",
+   "data": {
+    "n": 2902,
+    "bad": [],
+    "nbad": 0
+   }
+  },
+  {
+   "ok": true,
+   "label": "picture: Misan in its area",
+   "data": {
+    "st": "seek",
+    "activity": "walk",
+    "x": 110.2,
+    "z": -191.5,
+    "visible": true,
+    "animated": true,
+    "d": 4.7,
+    "draw": {
+     "with": {
+      "calls": 53,
+      "triangles": 286791
+     },
+     "without": {
+      "calls": 29,
+      "triangles": 276783
+     },
+     "shown": [
+      "Misan"
+     ],
+     "animated": [
+      "Misan"
+     ],
+     "added": 24
+    }
+   }
+  },
+  {
+   "ok": true,
+   "label": "picture: Tiger in its area",
+   "data": {
+    "st": "route",
+    "activity": "look",
+    "x": -80,
+    "z": 262,
+    "visible": true,
+    "animated": true,
+    "d": 5.3,
+    "draw": {
+     "with": {
+      "calls": 474,
+      "triangles": 1152763
+     },
+     "without": {
+      "calls": 450,
+      "triangles": 1142755
+     },
+     "shown": [
+      "Tiger"
+     ],
+     "animated": [
+      "Tiger"
+     ],
+     "added": 24
+    }
+   }
+  },
+  {
+   "ok": true,
+   "label": "picture: Molly in its area",
+   "data": {
+    "st": "route",
+    "activity": "wash",
+    "x": -5,
+    "z": 336,
+    "visible": true,
+    "animated": true,
+    "d": 5.3,
+    "draw": {
+     "with": {
+      "calls": 457,
+      "triangles": 1122885
+     },
+     "without": {
+      "calls": 433,
+      "triangles": 1112877
+     },
+     "shown": [
+      "Molly"
+     ],
+     "animated": [
+      "Molly"
+     ],
+     "added": 24
+    }
+   }
+  },
+  {
+   "ok": true,
+   "label": "added cats: one merged call each beyond the animated distance (an animated near cat ~22)",
+   "data": [
+    {
+     "label": "innergården mot gräsmattan",
+     "with": {
+      "calls": 104,
+      "triangles": 621092
+     },
+     "without": {
+      "calls": 104,
+      "triangles": 621092
+     },
+     "shown": [],
+     "animated": [],
+     "added": 0
+    },
+    {
+     "label": "parken vid Höje å",
+     "with": {
+      "calls": 44,
+      "triangles": 426985
+     },
+     "without": {
+      "calls": 44,
+      "triangles": 426985
+     },
+     "shown": [],
+     "animated": [],
+     "added": 0
+    },
+    {
+     "label": "södra åstranden",
+     "with": {
+      "calls": 34,
+      "triangles": 378871
+     },
+     "without": {
+      "calls": 34,
+      "triangles": 378871
+     },
+     "shown": [],
+     "animated": [],
+     "added": 0
+    },
+    {
+     "label": "klocktornsparken",
+     "with": {
+      "calls": 34,
+      "triangles": 344567
+     },
+     "without": {
+      "calls": 34,
+      "triangles": 344567
+     },
+     "shown": [],
+     "animated": [],
+     "added": 0
+    }
+   ]
+  },
+  {
+   "ok": true,
+   "label": "Misan: meets, becomes the ordinary cat, purrs, can be carried; binder records the find",
+   "data": {
+    "st": "bound",
+    "outdoorCat": "Misan",
+    "breed": "siames",
+    "coat": "siames",
+    "options": [
+     "pet",
+     "take"
+    ],
+    "petting": true,
+    "record": {
+     "seen": true,
+     "found": true,
+     "firstSeen": 1794054858822,
+     "lastSeen": 1794054858899,
+     "seenCount": 1,
+     "foundCount": 1,
+     "actions": {
+      "pet": 1
+     },
+     "best": {},
+     "photos": [],
+     "lastName": "Misan"
+    }
+   }
+  },
+  {
+   "ok": true,
+   "label": "binder page: Misan",
+   "data": {
+    "id": "cat:siames:siames:adult",
+    "no": 14,
+    "text": "#014\nSiames\n★ Ovanlig\n…\n\nKatter · siames\n\nInformation\nStorlek\nVuxen katt\nVikt\n3–5 kg (uppskattning)\nPlats\nUte: Misan (klocktornsparken); ibland hemma\nNär\nOlika tider på dygnet\nTycker om\nLugn närhet och klappar\n\nUtekatten Misan brukar ströva i parken norr om Klockhuset.\n\nPratar gärna och högt.\n\nDina möten\nFörsta mötet\n7 nov. 2026\nSedd\n2\nHittad\n1\nKlappningar\n1\nMötesfoton\n\nInga mötesfoton ännu.\n\nFormer och utveckling\n…\n#013 ???\n→\n…\n#014 Siames"
+   }
+  },
+  {
+   "ok": true,
+   "label": "binder page: Tiger",
+   "data": {
+    "id": "cat:maine coon:brunrandig:adult",
+    "no": 22,
+    "text": "#022\nMaine coon\n★ Ovanlig\n…\n\nKatter · brunrandig\n\nInformation\nStorlek\nVuxen katt\nVikt\n5–9 kg (uppskattning)\nPlats\nUte: Tiger (hästhagen); ibland hemma\nNär\nOlika tider på dygnet\nTycker om\nLugn närhet och klappar\n\nUtekatten Tiger brukar ströva vid hästhagen söder om ån.\n\nEn av de största huskattraserna.\n\nDina möten\nFörsta mötet\n7 nov. 2026\nSedd\n2\nHittad\n0\nMötesfoton\n\nInga mötesfoton ännu.\n\nFormer och utveckling\n…\n#021 ???\n→\n…\n#022 Maine coon"
+   }
+  },
+  {
+   "ok": true,
+   "label": "no page errors",
+   "data": []
+  }
+ ],
+ "errors": []
+}

@@ -19,3 +19,15 @@ import {Marks} from '../src/marks.js';
 test('visual sight continues past transparent/hidden hits and retains opaque moving doors/instances',()=>{const from=new THREE.Vector3(),to=new THREE.Vector3(0,0,-10),glass=new THREE.Mesh(new THREE.PlaneGeometry(),new THREE.MeshBasicMaterial({transparent:true,opacity:.3})),door=new THREE.Mesh(new THREE.PlaneGeometry(),new THREE.MeshBasicMaterial()),instance=new THREE.InstancedMesh(new THREE.BoxGeometry(),new THREE.MeshBasicMaterial(),1);door.userData.door={kind:'door'};const hit=(object,distance)=>({object,distance}),blocked=hits=>Marks.prototype.sightBlocked.call({meshes:()=>[],segment:()=>hits},from,to);
  assert.equal(blocked([hit(glass,2),hit(door,4)]),true);assert.equal(blocked([hit(glass,2)]),false);assert.equal(blocked([hit(instance,3)]),true);instance.material.transparent=true;assert.equal(blocked([hit(instance,2),hit(door,4)]),true);door.visible=false;assert.equal(blocked([hit(instance,2),hit(door,4)]),false);for(const o of [glass,door,instance]){o.geometry.dispose();o.material.dispose();}
 });
+// #1882: every outdoor cat's form has its binder page with the cat's name and roaming area; an old saved collection keeps its rows and numbers.
+import {OUTDOOR_CATS} from '../src/config.js';
+test('#1882 outdoor cats: binder pages name the cat and where it roams; saved collection progression unchanged',()=>{
+ const before={'cat:huskatt:svart:adult':8,'cat:maine coon:rödrandig:adult':18,'cat:norsk skogkatt:grå:adult':26,'cat:huskatt:röd och vit:adult':12,'cat:siames:siames:adult':14,'cat:perser:gräddvit:adult':32};
+ for(const[id,no]of Object.entries(before))assert.equal(registry.get(id).no,no);
+ for(const c of OUTDOOR_CATS.cats){const e=registry.get(catEntryId(c.breed,c.coat,false));assert.ok(e,`${c.name} entry`);assert.ok(e.info.where.includes(c.name)&&e.info.where.includes(c.zone),`${c.name} where`);assert.ok(e.facts[0].includes(c.name)&&e.facts[0].includes(c.roams),`${c.name} fact`);
+  const kit=registry.get(catEntryId(c.breed,c.coat,true));if(kit)assert.ok(!kit.info.where.includes(c.name));}
+ const saved={v:1,rows:{'cat:huskatt:svart:adult':{seen:true,found:true,seenCount:4,foundCount:2,actions:{pet:2},firstSeen:1,lastSeen:2},'cat:siames:siames:adult':{seen:true,seenCount:1,firstSeen:3,lastSeen:3}}};
+ const storage={value:JSON.stringify(saved),getItem(){return this.value;},setItem(k,v){this.value=v;}},col=new BestiaryCollection({registry,storage,now:()=>1e12});
+ assert.equal(col.get('cat:huskatt:svart:adult').foundCount,2);assert.equal(col.get('cat:siames:siames:adult').found,false);const s=col.summary();assert.equal(s.total,65);assert.equal(s.seen,2);assert.equal(s.found,1);
+ assert.ok(col.record('cat:siames:siames:adult','pet',{name:'Misan'}));assert.equal(col.get('cat:siames:siames:adult').found,true);assert.equal(col.get('cat:huskatt:svart:adult').seenCount,4);assert.equal(JSON.parse(storage.value).rows['cat:huskatt:svart:adult'].actions.pet,2);
+});

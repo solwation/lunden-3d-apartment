@@ -11,12 +11,15 @@ const trees = [[0, -7.5], [-9.5, 0], [8, 6.5], [9.5, -6]].map(([x, z]) => ({ x, 
 const T0 = C.epoch + 86400 * 3; // the fixed seed: the same clock, the same cats
 const spec = (traits, name = 'test') => ({ name, phase: 0, rest: [70, 40, 90, 55, 35, 80], traits, route: [[-6, -4], [0, -4.5], [6, -4], [7, 4], [0, 5], [-7, 4]] });
 const world = (clock = { t: T0 }) => ({ clock, env: { now: () => clock.t, hour: () => 12, month: () => 7, ground: () => 0, clear, trees } });
-const PERS = Object.fromEntries(C.cats.map((c) => [c.kind, c.traits]));
+// #1882: the first four cats are the four personality archetypes; later cats reuse those kinds with their own trait mixes.
+const PERS = Object.fromEntries(C.cats.slice(0, 4).map((c) => [c.kind, c.traits]));
 const tally = (b, n = 3000) => { const k = Object.fromEntries(BEHAVIOURS.map((q) => [q, 0])); for (let m = 0; m < n; m++) k[b.behaviourAt(m)]++; for (const q in k) k[q] /= n; return k; };
 
 test('every cat has a personality with all five traits, and they differ', () => {
   for (const c of C.cats) for (const t of ['social', 'play', 'lazy', 'shy', 'curious']) assert.ok(c.traits[t] >= 0 && c.traits[t] <= 1, `${c.name} ${t}`);
-  assert.deepEqual(new Set(C.cats.map((c) => c.kind)).size, C.cats.length);
+  assert.deepEqual(new Set(C.cats.slice(0, 4).map((c) => c.kind)).size, 4);
+  for (const c of C.cats) assert.ok(c.kind in PERS, `${c.name} kind`);
+  assert.equal(new Set(C.cats.map((c) => JSON.stringify(c.traits))).size, C.cats.length);
 });
 
 test('the utility AI: needs steer the choice, spending a behaviour lowers its need', () => {

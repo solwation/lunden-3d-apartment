@@ -1,0 +1,41 @@
+ok 1 - shoe prints: one every step m along the way walked, alternately right and left of the line, facing the way, dated
+ok 2 - the stride does not depend on how often the walker is sampled; a jump starts a new line; standing still makes nothing
+ok 3 - fading: full when made, half way at life/2, gone at life (30 minutes); compacted away; the store is bounded
+ok 4 - snow-day outings: some windows, short, a pure function of the clock; personalities change how often
+ok 5 - the room history becomes paths on our clock, ordered, bad rows and old points dropped
+ok 6 - a lap is the walking time plus the rests
+ok 7 - the same clock gives the same place and activity (every client agrees)
+ok 8 - walking along a leg, resting at its end
+ok 9 - it never leaves the loop
+ok 10 - the four \#1840 cats cover at least4x original hull and box area over24h; constant lookup and minutes per lap
+ok 11 - every0.25m route sample is dry/off-road, outside captured actual closed buildings/solids/walls, with no drops
+ok 12 - brain stop/outing anchors follow the selected direction and caches stay bounded across laps
+ok 13 - \#1882: twelve cats, unique names; the added ones use existing forms not already outdoors, each in its own zone with its own loop
+ok 14 - \#1882: added loops are closed and deterministic, both directions meet at home, minutes per lap
+ok 15 - \#1882: every0.25m added route sample is dry/off-road, outside its captured buildings/solids/walls and the pony paddock, with no drops
+ok 16 - \#1882: at most usual outdoor places some cat is usually within ~60 m
+ok 17 - exact production spawn/look catalogue, append-only numbers and valid arbitrary-length chains
+ok 18 - observer obeys real shader high-bird visibility, frustum/range/occlusion and bounded sparse work
+not ok 19 - visual sight continues past transparent/hidden hits and retains opaque moving doors/instances
+ok 20 - \#1882 outdoor cats: binder pages name the cat and where it roams; saved collection progression unchanged
+ok 21 - shipped graph equals inspected scene export and every ground segment avoids source walls/buildings/vehicle ways
+ok 22 - local outings reject the same grazing Nordic corner while the corrected passage stays free
+ok 23 - seeded goal selection grows, visits hundreds of metres and varies by cat/day
+ok 24 - 3D edges are reversible, daily boundary continuous, reload identical and cache bounded
+ok 25 - production brain preserves roof support and pauses/resumes the current goal through local food/visitor states
+ok 26 - bounded pair selection, active approach/contact once, cooldown and return
+ok 27 - busy/feed, lost view, blocked way and chance never strand or steal a cat
+ok 28 - contact destinations face each other and keep standing bodies apart
+not ok 29 - actual breed models touch nose surfaces while torso bounds remain separated
+ok 30 - every cat has a personality with all five traits, and they differ
+ok 31 - the utility AI: needs steer the choice, spending a behaviour lowers its need
+ok 32 - fixed seed: the same clock gives the same choice and the same pose on every client
+ok 33 - each personality has a noticeably different mix of behaviours
+ok 34 - no butterflies at night or in winter months; no climbing without a tree
+ok 35 - in three hours: the social cat comes up to the visitor, the playful one climbs and chases, none goes into the water or onto the road
+ok 36 - a shy cat keeps away from a moving visitor, and calms when the visitor stands still
+ok 37 - \#1782 food: a social cat comes for a fish at once, a shy one hesitates until the visitor stands still; the road blocks the way
+# tests 37
+# pass 35
+# fail 2
+COVERAGE60 {"before":{"innergården":0.619,"gräsmattan mellan husen":0.502,"parken vid Höje å":0.481,"stråket västerut":0.13,"hästhagen":0,"södra åstranden":0,"Sankt Lars väg":0,"ån österut":0,"klocktornsparken":0,"Montessorigården":0,"Freinets gård":0,"Karpvägens bro":0},"after":{"innergården":1,"gräsmattan mellan husen":1,"parken vid Höje å":0.481,"stråket västerut":1,"hästhagen":1,"södra åstranden":1,"Sankt Lars väg":1,"ån österut":1,"klocktornsparken":1,"Montessorigården":1,"Freinets gård":0.19,"Karpvägens bro":0.381}}

@@ -61,7 +61,9 @@ change introduces no applicable geometry/navigation port or new public subsystem
 
 ```text
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
-src/outdoorcatroute.js the outdoor cats' loops as a pure function of the clock (#1767; node test src/outdoorcatroute.test.mjs)
+src/outdoorcatroute.js the outdoor cats' loops as a pure function of the clock (#1767; node test src/outdoorcatroute.test.mjs, #1882 coverage/site checks)
+tools/catrange1882browser.cjs  development planner/site capture for the #1882 loops (docs/verification/1882/site.json, proposed.json)
+tools/outdoorcats1882browser.cjs  #1882 real scene: added routes walkable, pictures of new cats, binder pages, meet/pet, draw-call delta
 src/outdoorcats.js     the outdoor cats (#1767): puppets / merged far meshes, notice, become the ordinary cat, walk home; isOut (#1772); eating a raw fish (#1782)
 src/outdoorcatbrain.js the outdoor cats' brains (#1772): personality, utility AI per rest stop, outings, meeting the visitor (node test tools/outdoorcatbraintest.mjs)
 tools/catmedaltest.cjs  #1830 real indoor / promoted / roaming raw-fish callbacks, held feeding, outdoor pet counter and medal progress
@@ -242,7 +244,7 @@ the surface below (`miele.dropSpot`). Kept across a reload (keep.js `out: 1`, sa
 ## Outdoor cats (#1767)
 
 Four cats of their own (`OUTDOOR_CATS.cats` in config.js: names, breeds, coats, loops and rests all *guess*) roam two zones: Sotis and Kanel
-the courtyard lawns, Findus and Smulan the river park's central lawn. `src/outdoorcatroute.js` (no three.js) makes each a **pure function of
+the courtyard lawns, Findus and Smulan the river park's central lawn; #1882 added eight more in further areas ([More outdoor cats (#1882)](#more-outdoor-cats-1882)). `src/outdoorcatroute.js` (no three.js) makes each a **pure function of
 the wall clock**: a closed loop of route points walked at `speed`, a rest at each point, the rest's activity (wash / look / sleep) hashed per
 lap, so every client sees roughly the same cat in the same place without any sync. `src/outdoorcats.js` draws them: within `near` m (3D
 distance from the eye) the real animated cat (`cat.js createCatPuppet`, its own cloned transparent materials, ~22 draw calls), out to
@@ -1089,6 +1091,34 @@ The old `route`/`rest` entries remain for legacy fallback, small outing tests an
 The agreed #1844 brain boundary is `set('social')` to freeze its exploration clock and `set('home')` to return to its frozen anchor before resuming; no social code edits the brain's exploration/affordance state. `OutdoorCats` applies the small pose override after the normal brain tick and before drawing. `src/catnuzzlepose.js` measures the actual standing nose from `cat.js`'s named existing nose mesh, including breed/head/leg scale, and aligns the two nose surfaces while the torsos stay on opposite sides. Only the head moves for the rub; feet remain supported.
 
 One lazily-created reusable `Hearts` from pingping.js emits five short particles at contact, with no new lights and one visible Points draw (zero extra triangles). The ordinary desktop/phone draw and puppet distances remain unchanged. Tests: `node --test tools/catnuzzletest.mjs`; optional `CAT_BRAIN_SOURCE` checks the exact composed #1844 brain. `tools/catnuzzlebrowser.cjs` records the actual scheduled meeting, model contact, return and draw delta. [Saved evidence and source composition](../verification/1845/README.md).
+
+### More outdoor cats (#1882)
+
+Eight more cats (12 in all) make cats easy to find outdoors. Each has its own area, an existing `cat.js` breed/coat form not used
+outdoors before, a personality reusing the four `kind`s with its own trait mix, and a direction-varied #1840 loop (`route`/`rest`/`vary`,
+no `explore`) that is a pure function of the wall clock:
+
+| Cat | Form | Zone (`zone`) | Kind |
+|---|---|---|---|
+| Greta | brittiskt korthår, blå | gräsmattan mellan husen (Hus A/B) | lazy |
+| Misan | siames | klocktornsparken (grove north of the campus road) | social |
+| Musse | huskatt, grå | skolgårdarna (Montessori yard) | shy |
+| Tiger | maine coon, brunrandig | hästhagen (east of the paddock fence, south bank) | playful |
+| Snöboll | norsk skogkatt, vit | ån västerut (north bank) | shy |
+| Ludde | norsk skogkatt, svartvit | ån österut (north bank before the bend) | playful |
+| Molly | perser, gräddvit (rare) | söder om ån (old trees between the hospital roads) | lazy |
+| Pelle | huskatt, svartvit | södra åstranden (meadows south of the river) | social |
+
+Anchors, names, rests and phases are *guess*. `tools/catrange1882browser.cjs` planned the loops on the actual scene with #1840's rules
+(drawn cat ground, dry, off roads and vehicle ways, outside solids/walls/player obstacles/mapped buildings, ≤0.31 m height step per 0.25 m) and keeps
+them outside the pony paddock (its OSM field plus 3 m); it captured a 1 m local site per cat (`docs/verification/1882/site.json`).
+`src/outdoorcatroute.test.mjs` checks every 0.25 m of the new loops against that site, closed/deterministic laps in both directions
+and coverage: over a sampled day, a cat is within 60 m at least half the time at ten of twelve usual outdoor places (test floor: nine,
+*guess*), against two before. Every cat now has `roams`, a short Swedish phrase. `registerCats` (bestiarymetadata.js) names each outdoor cat
+and its zone in the adult form's `where` and first fact; ids, numbers, chains and `modelVersion` are unchanged, so saved collections
+keep their numbers and progress. Meeting, petting, carrying, raw-fish feeding, snow-day outings and medal counters are the existing
+per-cat paths. The new cats are alone in their zones, so #1845 nose greetings stay between Sotis/Kanel and Findus/Smulan.
+Budget: `drawDist`/`drawDistPhone`/`near` unchanged; an animated near cat adds about 24 draw calls as before, a far one one merged call (measured +1), none beyond the draw distance. [Evidence](../verification/1882/README.md).
 
 ## Duck mate greetings (#1846)
 
