@@ -184,7 +184,18 @@ port/evidence directory. In WSL, explicitly choose the ext4 worktree path rather
 assuming a tool's default isolation path. Use installed Chromium/Playwright and the
 repository's local server guide. Cloud egress may require REST `gh api` instead of
 GraphQL; do not assume a failed CLI means GitHub is unavailable. Clean only own stopped
-processes and completed clean worktrees; preserve uncommitted or unpublished work.
+processes; preserve uncommitted or unpublished work.
+
+Worktree root and cleanup: worker checkouts live under the ext4 roots `~/wt` and
+`~/lunden-wt` (original and public alike); `/mnt/c` is never a worktree root. The
+integration owner removes an issue's checkout at follow-up
+([clean up checkouts](shared/ORCHESTRA.md#clean-up-checkouts)); the session review and
+startup prune both roots with `.orchestra/shared/scripts/prune-worktrees.sh`, dry run
+first, `--apply` only while no worker is active, and
+`--archive ~/.local/state/orkester-archive` for unproven work (outside all checkouts).
+The primary clones `~/lunden-3d-apartment` and `~/kvarteret-lunden` and the `/mnt/c`
+copy stay outside the roots and are never pruned; pass `--protect` for any other clone
+that must stay.
 
 Fetch/rebase before each issue and before publishing. Push directly to `main`, no PRs
 or feature branches, no force push. For unpublished subtree merges preserve ancestry
@@ -273,13 +284,18 @@ The conductor runs this loop in every `/orkester` queue session:
 
 ## Shared version and maintenance
 
-Shared release: **v0.9.0**, commit **070ebf43e25c2bc7885e387712edd18a2e97da1c**. Imported with
-`git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git 070ebf43e25c2bc7885e387712edd18a2e97da1c --squash`
-in [original #1880](https://github.com/solwation/lunden-3d-apartment/issues/1880). The complete
-[v0.8.2..v0.9.0 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/5a67f022cea5ec2a81fcadb99b727d9f3482e26a...070ebf43e25c2bc7885e387712edd18a2e97da1c)
-keeps checkouts stable during verification, feeds material review findings back into instructions before starting similar tasks, clarifies worker test setup with dedicated checkout verification, adds optional host context maps and provides upstream field report links.
+Shared release: **v0.10.0**, commit **358c01f2d3a187c17e1b1c180bff7ecb06cb51a8**. Imported with
+`git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git 358c01f2d3a187c17e1b1c180bff7ecb06cb51a8 --squash`
+in [original #1890](https://github.com/solwation/lunden-3d-apartment/issues/1890). The complete
+[v0.9.0..v0.10.0 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/070ebf43e25c2bc7885e387712edd18a2e97da1c...358c01f2d3a187c17e1b1c180bff7ecb06cb51a8)
+removes worker checkouts once their work is proven on main (`shared/scripts/prune-worktrees.sh`
+and a host worktree-root/archive setting, see [workspace and delivery](#workspace-and-delivery)),
+fast-forwards a clean integration checkout to `origin/main` before planning and confirms a
+`git cherry` `+` with a content comparison, and turns messages arriving during a run into
+issues while operational actions (reload, restart, status, snapshot) need none.
 No priority, timer, ownership or publication-rule migration is required. Public adoption is tracked in
-[public #259](https://github.com/solwation/kvarteret-lunden/issues/259).
+[public #262](https://github.com/solwation/kvarteret-lunden/issues/262).
+The earlier v0.9.0 import remains recorded in original #1880 and public #259.
 The earlier v0.8.2 import remains recorded in original #1877 and public #257.
 The earlier v0.8.1 chat-intake import remains recorded in original #1874 and public #255.
 The earlier v0.8.0 import remains recorded in original #1861 and public #251; the v0.7.1
