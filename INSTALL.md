@@ -11,7 +11,7 @@ Install into a clean working tree (requires Git's `subtree` command):
 
 ```sh
 git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.9.0 --squash
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.10.0 --squash
 ```
 
 Copy the project example to `.orchestra/project.md`, fill it in, then link the host's
