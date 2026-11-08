@@ -60,5 +60,7 @@ Rules for the worker:
   the handoff's process/lock cleanup; the conductor stops a reported worker that still
   has background work instead of waiting. Return outcome, commit, checks/evidence,
   remaining acceptance and rough phase times. Retain the checkout under the handoff
-  rules and wait for a new assignment; never continue a queue chain yourself. Resume
+  rules and wait for a new assignment; never continue a queue chain yourself. The
+  integration owner removes the checkout after closure
+  ([clean up checkouts](ORCHESTRA.md#clean-up-checkouts)). Resume
   an interrupted checkout rather than duplicate finished work.

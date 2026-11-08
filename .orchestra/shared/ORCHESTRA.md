@@ -36,13 +36,13 @@ session instead.
 
 | Phase | Gate |
 | --- | --- |
-| Start | [Update check](#check-the-installed-workflow) per host settings; [resume or discard unfinished work](#resume-unfinished-work-first) |
+| Start | [Update check](#check-the-installed-workflow) per host settings; integration checkout [on current remote main](#resume-unfinished-work-first); [resume or discard unfinished work](#resume-unfinished-work-first) |
 | `planning` | [Short plan](#start-with-a-short-delivery-plan); issue claimed under Issueflow; [resources](#spend-resources-deliberately) and [team](#choose-the-smallest-useful-team) chosen; [hooks](#apply-project-hooks-at-each-phase) resolved |
 | `implementation` | Own checkout under the [isolation rules](#isolate-concurrent-agents); assigned scope only |
 | `verification` | [Agreed risk-based checks](#verification) pass on the delivered revision |
 | `review` | [Handoff](#handoff-for-integration) retains owner/evidence while waiting; [conductor reads the combined diff](#review) against acceptance |
 | `delivery` | [Published under host rules](#delivery); delivered revision verified |
-| `follow-up` | [Completion comment](#follow-up) with evidence before closure; active labels removed |
+| `follow-up` | [Completion comment](#follow-up) with evidence before closure; active labels removed; [checkout removed](#clean-up-checkouts) |
 
 ## Start and resume
 
@@ -60,6 +60,16 @@ mode; a scoped request does not silently expand to the whole backlog or enable t
 If a run is already active, add the request to that conductor's work and apply the
 normal selection and ownership rules; do not start a competing run or reset its idle
 deadline just because a message arrived. Reuse issues and preserved work on resume.
+Assess each message that arrives during the run at once. A change request or bug
+report gets its issue (created or reused) before the current task continues; it then
+joins selection or goes to a free slot under capacity. A clarification of work in
+progress updates that work's issue instead.
+
+An *operational action* changes no code or configuration: reloading, restarting an
+existing service, a status check or a snapshot. It needs no issue of its own, but
+relieving a reported bug with one does not resolve it: the report still gets an issue
+recording the diagnosis and the relief applied. The hand-back says which messages
+became which issues and which only led to operational actions.
 
 Respect explicit limits such as "do not start the orchestra", "only create issues"
 or "discuss only". Record requested changes as issues when allowed, keeping any
@@ -79,10 +89,18 @@ upgrades are optional. Discovery never imports updates or enables unattended wor
 
 ### Resume unfinished work first
 
-At startup/resume of any run, before selecting new work, look in the checkouts this run
-will use for uncommitted changes, commits not on the remote main branch, leftover
-worktrees and branches, and claims or active labels left by an earlier session. Fetch,
-then decide each item from evidence, not age:
+At startup/resume of any run, before reading code or selecting new work, fetch and
+fast-forward the integration checkout to the remote main branch when it is clean. A
+dirty or diverged integration checkout is never overwritten: treat its changes and
+commits as leftover work below. Read, plan and create new worktrees from the remote
+main branch, never from a stale local main.
+
+Then look in the checkouts this run will use, and in the host's worktree root for
+checkouts earlier sessions left behind (`git worktree list`, local branches, branches
+without a remote), for uncommitted changes, commits not on the remote main branch,
+and claims or active labels left by an earlier session. Compare only against the
+remote main branch (`origin/main`), never against local main, and decide each item
+from evidence, not age:
 
 - **Already on main** (another session may have delivered it): `git diff origin/main --
   <paths>` is empty, `git cherry origin/main <branch>` marks every commit `-`, or the
@@ -90,12 +108,17 @@ then decide each item from evidence, not age:
   worktree, branch and stale claim; if only part landed, resume the missing part.
 - **Not on main**: identify its issue (branch, commit message, claim, matching issue),
   claim it and finish it as a normal delivery before new selection; useful work without
-  an issue goes under a matching or new one.
+  an issue goes under a matching or new one. A `+` from `git cherry` alone does not
+  prove this: the same patch in a different context, or a later reimplementation, also
+  shows `+`. Confirm with a content comparison against `origin/main` and a search of
+  its history for the commit message or issue reference first.
 - **Owned by a visibly active agent**: not leftover; never touch it
   ([takeover](COORDINATION.md#coordinate-and-recover)).
 
 Discard only on proof; when in doubt, preserve it as a commit on a private branch.
-Note what was resumed or discarded. This brief check does not replace the queue fetch.
+Note briefly what was fast-forwarded, resumed or discarded. This brief check does not
+replace the queue fetch.
+Leftover checkouts from earlier sessions follow [clean up checkouts](#clean-up-checkouts).
 
 ## Planning
 
@@ -197,7 +220,9 @@ Make the scoped change; unrelated defects become separate issues.
   before reporting.
 - Never send personal data from the user's environment (name, e-mail, account IDs) to
   external services; use the project's public identity.
-- Remove a worktree only after its work is integrated or preserved.
+- Remove a worktree only after its work is integrated or preserved: the integration
+  owner removes it during [follow-up](#follow-up), and the session review and the next
+  startup prune what that missed ([clean up checkouts](#clean-up-checkouts)).
 
 ## Verification
 
@@ -296,7 +321,31 @@ in an authorized, accessible destination:
 Run required post-publication checks before claiming them. Then release labels under
 [Issueflow](ISSUE-WORKFLOW.md); leave unmet acceptance open with next action and owner.
 Schedule later monitoring only when authorized. Reuse the result note; follow-up is
-no separate reporting phase.
+no separate reporting phase. Last, remove the issue's checkout
+([clean up checkouts](#clean-up-checkouts)).
+
+### Clean up checkouts
+
+Checkouts are per issue and per worker, so they accumulate unless each phase that ends
+one also removes it. Once the issue's change is verified on the remote main branch and
+the issue is closed, the integration owner removes the issue's worktree or clone and
+its work branch as the last follow-up step; a waiting handoff keeps its checkout
+until integrated. Collect evidence before removal.
+
+Proof that nothing is lost is the same as when [resuming](#resume-unfinished-work-first):
+the working tree is clean and every local commit is on the remote main branch, or its
+patch is (`git cherry`), or the closed issue records a delivered revision that contains
+the change. Anything else is preserved first, as a bundle or a private branch, and the
+note says where. A checkout whose issue is still open is never removed by someone else.
+
+The [session review](COORDINATION.md#review-the-session) and the next startup prune
+what individual follow-ups missed across the host's whole worktree root, not only the
+current session's directories. [`scripts/prune-worktrees.sh`](scripts/prune-worktrees.sh)
+classifies every checkout under given roots as integrated, active, unproven or protected
+and removes only the integrated ones; it is a dry run unless `--apply` is given,
+`--archive <dir>` preserves unproven work as bundle and patch before removal, and
+`--protect` keeps named clones. The host policy names the worktree root and the archive
+location.
 
 ### Close after a best-guess fix
 

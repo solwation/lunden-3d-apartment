@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+## 0.10.0 — 2026-11-08
+
+- Remove worker checkouts once their work is proven on main: the integration owner
+  at follow-up, and the session review and startup across the host's whole worktree
+  root. Add `scripts/prune-worktrees.sh` (dry run by default, archives unproven work,
+  never removes a checkout whose issue is open) and a host setting for the worktree
+  root and archive (#54).
+
+- Start from current main: fast-forward a clean integration checkout to the remote
+  main branch before reading or planning, treat a dirty or diverged one as leftover
+  work, compare leftovers only against remote main and confirm a `git cherry` `+`
+  with a content comparison before resuming it as unique (#55, from
+  solwation-on-twitch).
+
+- Turn messages that arrive during a run into issues before the current task
+  continues, update the existing issue for a clarification, and separate operational
+  actions (reload, restart, status check, snapshot) from changes: they need no issue
+  of their own, but a bug report they relieve still gets one; the hand-back maps
+  messages to issues (#56, from solwation-on-twitch).
+
 ## 0.9.0 — 2026-11-06
 
 - Keep verification checkouts and relevant inputs stable during a run; invalidate

@@ -178,7 +178,9 @@ reviewed; this pass looks for what only shows up across them:
 - acceptance that a closed issue claimed but the delivered revision does not show;
 - documentation, configuration or instructions left inconsistent with the changes;
 - leftover claims, work labels, worktrees, servers or unpublished commits, separating
-  valid waiting handoffs from abandoned work.
+  valid waiting handoffs from abandoned work. Remove the checkouts whose work is proven
+  integrated and preserve the rest, across the host's whole worktree root
+  ([clean up checkouts](ORCHESTRA.md#clean-up-checkouts)).
 
 In PR mode, also rehearse the merge: merge the open PRs in merge order in a scratch
 branch or worktree and run the checks, to catch conflicts and invariants that break
