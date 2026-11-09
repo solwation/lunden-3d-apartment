@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## 0.11.1 — 2026-11-08
+
+- `scripts/prune-worktrees.sh` no longer reports the current directory as a checkout
+  when a root holds none: an empty candidate list stays empty, and no path runs
+  `git -C ""`, `du ""` or `rm -rf ""`. Add `scripts/test_prune_worktrees.py`, run by
+  CI, covering an empty root and the claim, fresh and integrated classes (#58).
+
+## 0.11.0 — 2026-11-08
+
+- Keep a worker's fresh checkout from being pruned before its first commit: whoever
+  creates a writing checkout writes an `orchestra-claim` marker (issue and session) in
+  its git directory, and `scripts/prune-worktrees.sh` classifies a marked checkout as
+  active unless its issue is shown closed, and a checkout without commits of its own as
+  active while its HEAD changed within `--min-age` (default 120 minutes). Both work
+  without a GitHub remote or `gh` (#57, from field report solwation/lunden-3d-apartment#1890).
+
 ## 0.10.0 — 2026-11-08
 
 - Remove worker checkouts once their work is proven on main: the integration owner

@@ -37,7 +37,8 @@ block reference. Each assignment then carries only its assignment block plus
 
 Rules for the worker:
 
-- Isolation: follow the [isolation rules](ORCHESTRA.md#isolate-concurrent-agents).
+- Isolation: follow the [isolation rules](ORCHESTRA.md#isolate-concurrent-agents);
+  if your checkout has no claim marker yet, write it before anything else.
   Before server-backed checks, start or confirm your own server on the assigned port
   and verify it serves your checkout's revision. For
   [expensive shared verification](COORDINATION.md#select-and-claim), wait for your turn
