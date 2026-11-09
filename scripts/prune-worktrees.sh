@@ -8,8 +8,11 @@
 #
 #   integrated  clean tree and every local commit (or its patch) is on the remote
 #               main branch: removed with --apply
-#   active      references an open issue (branch name or unmerged commit subjects,
-#               looked up with gh): never removed
+#   active      in use: carries a claim marker (see below) whose issue is not known
+#               to be closed; has no commits of its own and its HEAD changed within
+#               --min-age (a fresh worker checkout); or references an open issue
+#               (branch name or unmerged commit subjects, looked up with gh): never
+#               removed
 #   unproven    uncommitted changes, or commits whose patch is not on main, with no
 #               open issue: removed with --apply only together with --archive DIR,
 #               which first writes DIR/<name>.bundle (all local refs beyond main)
@@ -18,17 +21,28 @@
 #               listed with --protect, or could not be checked (no remote main, failed
 #               fetch): never removed
 #
+# Claim marker: whoever creates a worker checkout writes <git-dir>/orchestra-claim
+# (`git rev-parse --git-dir`; per worktree, outside the working tree, so it neither
+# dirties the tree nor gets committed), for example
+#     issue=owner/repo#57
+#     session=host-model-20261108
+# A marker counts without a GitHub remote or gh. It goes stale only when gh shows its
+# issue closed; the checkout is then classified normally. Removing the checkout
+# removes the marker.
+#
 # Options:
 #   --apply          remove what the classes above allow
 #   --archive DIR    preserve unproven checkouts in DIR before removal
 #   --protect PATH   never remove this checkout (repeatable)
 #   --no-fetch       use the remote-tracking refs as they are
 #   --no-issues      do not consult gh; open issues cannot be detected
+#   --min-age MIN    a checkout with no commits of its own whose HEAD changed less
+#                    than MIN minutes ago is active (default 120; 0 disables)
 #
 # Requires bash, git and optionally gh. Exit status 0; failures are reported per line.
 set -u
 
-apply=0; archive=""; nofetch=0; noissues=0; roots=(); protect=()
+apply=0; archive=""; nofetch=0; noissues=0; minage=120; roots=(); protect=()
 while [ $# -gt 0 ]; do
   case "$1" in
     --apply) apply=1 ;;
@@ -36,12 +50,13 @@ while [ $# -gt 0 ]; do
     --protect) protect+=("$(realpath -m "$2")"); shift ;;
     --no-fetch) nofetch=1 ;;
     --no-issues) noissues=1 ;;
-    -h|--help) sed -n '2,30p' "$0"; exit 0 ;;
+    --min-age) minage="$2"; shift ;;
+    -h|--help) sed -n '2,42p' "$0"; exit 0 ;;
     *) roots+=("$1") ;;
   esac
   shift
 done
-[ ${#roots[@]} -eq 0 ] && { echo "usage: $0 [--apply] [--archive DIR] [--protect PATH] [--no-fetch] [--no-issues] ROOT..." >&2; exit 2; }
+[ ${#roots[@]} -eq 0 ] && { echo "usage: $0 [--apply] [--archive DIR] [--protect PATH] [--no-fetch] [--no-issues] [--min-age MIN] ROOT..." >&2; exit 2; }
 command -v gh >/dev/null 2>&1 || noissues=1
 
 declare -A issue_state   # "owner/repo#n" -> open|closed|unknown
@@ -71,12 +86,15 @@ for r in "${roots[@]}"; do
   r=$(realpath -m "$r"); [ -d "$r" ] || continue
   while IFS= read -r g; do candidates+=("$(dirname "$g")"); done < <(find "$r" -mindepth 1 -maxdepth 3 -name .git \( -type d -o -type f \) 2>/dev/null; [ -e "$r/.git" ] && echo "$r/.git")
 done
-# unique, sorted
-mapfile -t candidates < <(printf '%s\n' "${candidates[@]}" | awk '!seen[$0]++' | sort)
+# unique, sorted, never an empty path: `git -C ""` would act on the current directory
+if [ ${#candidates[@]} -gt 0 ]; then
+  mapfile -t candidates < <(printf '%s\n' "${candidates[@]}" | awk 'NF && !seen[$0]++' | sort)
+fi
 
 # main repositories that back worktrees, and clones whose object store another clone
 # borrows (git clone --reference/--shared), are protected: removing them breaks the rest
 for d in "${candidates[@]}"; do
+  [ -n "$d" ] || continue
   common=$(git -C "$d" rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || continue
   [ -f "$d/.git" ] && { main=$(dirname "$common"); checked_protect[$main]=1; }
   alt="$common/objects/info/alternates"
@@ -88,6 +106,7 @@ printf '%-10s %6s  %-60s %-30s %5s %5s %4s  %s\n' CLASS MB DIR BRANCH DIRTY AHEA
 total_mb=0; freed_mb=0; n_int=0; n_act=0; n_unp=0; n_prot=0; n_removed=0
 
 for d in "${candidates[@]}"; do
+  [ -n "$d" ] || continue
   name=$(basename "$d"); parent=$(basename "$(dirname "$d")")
   short=$(printf '%s' "$d" | sed "s#^$HOME#~#")
   mb=$(du -xsm "$d" 2>/dev/null | cut -f1); total_mb=$((total_mb + mb))
@@ -128,6 +147,25 @@ for d in "${candidates[@]}"; do
     if [ $open -eq 1 ]; then class=active
     elif [ "$dirty" -eq 0 ] && [ "$new" -eq 0 ]; then class=integrated
     else class=unproven; fi
+
+    # in use without evidence in git yet: a claim marker, or a fresh checkout
+    gitdir=$(git -C "$d" rev-parse --absolute-git-dir 2>/dev/null)
+    claim="$gitdir/orchestra-claim"
+    if [ "$class" != active ] && [ -n "$gitdir" ] && [ -f "$claim" ]; then
+      ci=$(sed -n 's/^issue=//p' "$claim" | head -1 | tr -d '[:space:]')
+      cs=$(sed -n 's/^session=//p' "$claim" | head -1 | tr -d '[:space:]')
+      cslug=${ci%#*}; cnum=${ci##*#}; [ "$cslug" = "$ci" ] && cslug=""; [ -z "$cslug" ] && cslug=$slug
+      st=unknown
+      if [ $noissues -eq 0 ] && [ -n "$cslug" ] && [[ "$cnum" =~ ^[0-9]+$ ]]; then st=$(lookup_issue "$cslug" "$cnum"); fi
+      if [ "$st" = closed ]; then note="${note:+$note; }stale claim ${ci:-?}, issue closed"
+      else class=active; note="${note:+$note; }claim ${ci:-?}${cs:+ $cs}"; fi
+    fi
+    if [ "$class" != active ] && [ "$ahead" -eq 0 ] && [ "$minage" -gt 0 ] && [ -n "$gitdir" ]; then
+      changed=$(stat -c %Y "$gitdir/HEAD" "$gitdir/logs/HEAD" 2>/dev/null | sort -n | tail -1)
+      if [ -n "$changed" ] && [ $(( $(date +%s) - changed )) -lt $((minage * 60)) ]; then
+        class=active; note="${note:+$note; }fresh, no commits, HEAD changed $(( ($(date +%s) - changed) / 60 )) min ago"
+      fi
+    fi
   fi
 
   printf '%-10s %6s  %-60s %-30s %5s %5s %4s  %s %s\n' "$class" "$mb" "$short" "$branch" "$dirty" "$ahead" "$new" "$issues" "${note:+($note)}"

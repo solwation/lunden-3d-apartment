@@ -211,6 +211,11 @@ Make the scoped change; unrelated defects become separate issues.
   (for example a `git worktree` on its own branch). Never edit or run state-changing git
   commands (checkout, switch, stash, reset, clean, rebase, commit) in a checkout you do
   not own; reading is fine. Only the integration owner changes the integration checkout.
+- Whoever creates a writing checkout marks it as in use before work starts: write
+  `issue=<owner/repo#N>` and `session=<session ID>` to `orchestra-claim` in its git
+  directory (`git rev-parse --git-dir`, outside the working tree). A checkout that has
+  no commits yet otherwise looks integrated to [clean-up](#clean-up-checkouts). If the
+  platform creates the checkout, the worker writes the marker first.
 - Worktrees share stash and refs: never `git stash` beside other agents; park work in a
   commit on your own uniquely named branch.
 - Give each checkout its own ports, server configuration, temporary/evidence and build
@@ -342,7 +347,9 @@ The [session review](COORDINATION.md#review-the-session) and the next startup pr
 what individual follow-ups missed across the host's whole worktree root, not only the
 current session's directories. [`scripts/prune-worktrees.sh`](scripts/prune-worktrees.sh)
 classifies every checkout under given roots as integrated, active, unproven or protected
-and removes only the integrated ones; it is a dry run unless `--apply` is given,
+and removes only the integrated ones. A claim marker whose issue is not shown closed, or
+a checkout without commits of its own whose HEAD changed recently (`--min-age`), counts
+as active, so another session's fresh checkout survives a whole-root prune; it is a dry run unless `--apply` is given,
 `--archive <dir>` preserves unproven work as bundle and patch before removal, and
 `--protect` keeps named clones. The host policy names the worktree root and the archive
 location.
