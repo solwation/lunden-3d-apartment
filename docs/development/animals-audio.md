@@ -60,6 +60,9 @@ change introduces no applicable geometry/navigation port or new public subsystem
 ## Module and test map
 
 ```text
+docs/development/rigged-cat-evaluation.md #1892 architecture & mobile performance evaluation for rigged GLB cats
+tools/riggedcattest.html  #1892 interactive & headless prototype for rigged vs procedural cat evaluation
+tools/riggedcattest.mjs   #1892 automated model validation for rigged GLB cat evaluation
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
 src/outdoorcatroute.js the outdoor cats' loops as a pure function of the clock (#1767; node test src/outdoorcatroute.test.mjs, #1882 coverage/site checks)
 tools/catrange1882browser.cjs  development planner/site capture for the #1882 loops (docs/verification/1882/site.json, proposed.json)
