@@ -1,5 +1,7 @@
 import { registerCats } from './bestiarymetadata.js';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { LEVELS, CAT_FLOOR_HEADROOM, CAT_FISH, CAT_LEAVE, CAT_IGNORED, CAT_OUTDOOR, CAT_FURNITURE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, REST, MIELE, KITTEN } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { rugLift } from './rugs.js';
@@ -246,6 +248,143 @@ export function applyVariant(v) {
   eyeMat.emissive.setHex(v.eye);
 }
 
+// Rigged GLB Cat PBR Coat Generator (#1892, #1894)
+const coatTextureCache = new Map();
+
+export function createCatCoatTexture(coat, breed) {
+  if (typeof document === 'undefined') return null;
+  const key = `${coat?.name || 'default'}-${breed?.name || 'huskatt'}`;
+  if (coatTextureCache.has(key)) return coatTextureCache.get(key);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  const hexStr = (hex, def = 0x17181a) => `#${new THREE.Color(hex ?? def).getHexString()}`;
+  const coatColor = hexStr(coat?.coat, 0xc06a2b);
+  const bibColor = hexStr(coat?.bib, 0xf4f2ee);
+  const pawColor = hexStr(coat?.paw, 0xf4f2ee);
+  const faceColor = hexStr(coat?.face, 0xf4f2ee);
+  const earColor = hexStr(coat?.ear, 0xc06a2b);
+
+  if (coat?.name === 'Miele') {
+    ctx.fillStyle = MC.base;
+    ctx.fillRect(0, 0, 512, 512);
+
+    let seed = 42;
+    const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    for (let i = 0; i < 900; i++) {
+      ctx.fillStyle = rnd() < 0.5 ? MC.light : '#6a5a4a';
+      ctx.globalAlpha = 0.35;
+      ctx.fillRect(rnd() * 512, rnd() * 512, 2 + rnd() * 3, 1 + rnd() * 6);
+    }
+    ctx.globalAlpha = 1;
+
+    ctx.fillStyle = MC.stripe;
+    for (let k = 0; k < 16; k++) {
+      const u0 = (k + 0.5) / 16;
+      ctx.fillRect(u0 * 512 - 4, 80, 8, 280);
+    }
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.ellipse(256, 260, 95, 135, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.ellipse(256, 115, 32, 48, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillRect(0, 400, 512, 112);
+  } else if (coat?.name === 'siames') {
+    ctx.fillStyle = '#e6d9c2';
+    ctx.fillRect(0, 0, 512, 512);
+
+    ctx.fillStyle = '#4a3428';
+    ctx.beginPath();
+    ctx.arc(256, 115, 75, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillRect(0, 380, 512, 132);
+    ctx.fillRect(0, 0, 110, 90);
+    ctx.fillRect(402, 0, 110, 90);
+  } else if (coat?.name === 'svartvit' || coat?.name === 'röd och vit') {
+    ctx.fillStyle = coatColor;
+    ctx.fillRect(0, 0, 512, 512);
+
+    ctx.fillStyle = bibColor;
+    ctx.beginPath();
+    ctx.ellipse(256, 260, 105, 140, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.ellipse(256, 115, 34, 48, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillRect(0, 420, 512, 92);
+  } else if (coat?.name === 'rödrandig' || coat?.name === 'brunrandig') {
+    ctx.fillStyle = coatColor;
+    ctx.fillRect(0, 0, 512, 512);
+
+    ctx.fillStyle = coat?.name === 'rödrandig' ? '#9a3412' : '#3e2e1e';
+    for (let i = 0; i < 16; i++) {
+      ctx.fillRect(i * 32, 0, 12, 512);
+    }
+    ctx.fillStyle = bibColor;
+    ctx.beginPath();
+    ctx.ellipse(256, 256, 85, 130, 0, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    ctx.fillStyle = coatColor;
+    ctx.fillRect(0, 0, 512, 512);
+
+    if (bibColor !== coatColor && bibColor !== '#ffffff00') {
+      ctx.fillStyle = bibColor;
+      ctx.beginPath();
+      ctx.ellipse(256, 260, 80, 120, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  coatTextureCache.set(key, texture);
+  return texture;
+}
+
+// Rigged GLB loader and model management
+let riggedCatData = null;
+let riggedCatLoading = null;
+
+export function loadRiggedCatModel() {
+  if (riggedCatData) return Promise.resolve(riggedCatData);
+  if (riggedCatLoading) return riggedCatLoading;
+
+  riggedCatLoading = new Promise((resolve, reject) => {
+    try {
+      const loader = new GLTFLoader();
+      const isTool = typeof window !== 'undefined' && window.location.pathname.includes('/tools/');
+      const url = isTool ? '../models/cat-rigged.glb' : 'models/cat-rigged.glb';
+      loader.load(url, (gltf) => {
+        riggedCatData = gltf;
+        resolve(gltf);
+      }, undefined, (err) => {
+        reject(err);
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+  return riggedCatLoading;
+}
+
+if (typeof window !== 'undefined') {
+  loadRiggedCatModel().catch(() => {});
+}
+
 function blob(material, sx, sy, sz, x, y, z) {
   const m = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), material);
   m.scale.set(sx, sy, sz);
@@ -441,6 +580,11 @@ export function createCatPuppet(breed, coat, kitten = false, { held = false } = 
       tailGroup: parts.tailGroup, eyes: parts.eyes, headOff: new THREE.Vector3(), stand: 0, wantStand: 0,
       gaitAmp: 0, gaitPhase: 0, tailU: 0, tailUK: -1, tailK: -1, t: 0,
     });
+    if (riggedCatData) {
+      cat.setupRigged(riggedCatData);
+    } else {
+      loadRiggedCatModel().then(g => cat.setupRigged(g)).catch(() => {});
+    }
     cat.setCat(breed, coat, kitten);
     if (held) cat.heldBehave(0);
     const materials = new Map();
@@ -512,6 +656,13 @@ export class CatSpawner {
     this.onFound = null;      // (variant) => {} when a new cat turns up
     this.onPet = null;        // () => {} when a pat starts
     cat.visible = false;
+    if (riggedCatData) {
+      this.setupRigged(riggedCatData);
+    } else {
+      loadRiggedCatModel().then((gltf) => {
+        this.setupRigged(gltf);
+      }).catch(() => {});
+    }
     this.setCat(BREEDS[0], VARIANTS[0]);
     this.catName = CAT_NAMES[0];
     this.nextMeow = 0;
@@ -519,6 +670,79 @@ export class CatSpawner {
     this.door = null;          // door the cat was found behind
     this.closedSince = false;  // that door has been closed since the cat appeared
     this.t = 0;
+  }
+
+  setupRigged(gltf) {
+    if (!gltf || this.isRigged) return;
+    this.isRigged = true;
+    this.riggedScene = SkeletonUtils.clone(gltf.scene);
+    const sizeScale = 0.042 * (this.shape?.size ?? 1) * (this.kitten ? 0.65 : 1.0);
+    this.riggedScene.scale.setScalar(sizeScale);
+    this.riggedScene.position.set(0, 0, 0);
+    this.object.add(this.riggedScene);
+
+    this.bones = {};
+    this.riggedScene.traverse((obj) => {
+      if (obj.isSkinnedMesh) {
+        this.skinnedMesh = obj;
+        this.skinnedMesh.material = this.skinnedMesh.material.clone();
+        this.skinnedMesh.material.roughness = 0.75;
+        this.skinnedMesh.material.metalness = 0.05;
+        this.skinnedMesh.castShadow = true;
+      }
+      if (obj.isBone || obj.type === 'Bone' || (obj.name && obj.name.startsWith('Joint'))) {
+        this.bones[obj.name] = obj;
+      }
+    });
+
+    if (gltf.animations && gltf.animations.length > 0) {
+      this.mixer = new THREE.AnimationMixer(this.riggedScene);
+      this.actions = {};
+      for (const clip of gltf.animations) {
+        this.actions[clip.name] = this.mixer.clipAction(clip);
+      }
+      if (this.actions['idle']) {
+        this.activeAction = this.actions['idle'];
+        this.activeAction.play();
+      }
+    }
+
+    if (this.bones['Joint15'] && this.bones['Joint18'] && this.bones['Joint22'] && this.bones['Joint26']) {
+      const pawGeo = new THREE.BoxGeometry(0.025, 0.015, 0.03);
+      const pawMat = new THREE.MeshBasicMaterial({ visible: false });
+      const p15 = new THREE.Mesh(pawGeo, pawMat); this.bones['Joint15'].add(p15);
+      const p18 = new THREE.Mesh(pawGeo, pawMat); this.bones['Joint18'].add(p18);
+      const p22 = new THREE.Mesh(pawGeo, pawMat); this.bones['Joint22'].add(p22);
+      const p26 = new THREE.Mesh(pawGeo, pawMat); this.bones['Joint26'].add(p26);
+      this.pawMeshes = [p15, p18, p22, p26];
+    }
+
+    this.hideProceduralParts();
+
+    if (this.variant) {
+      this.applyRiggedCoat(this.variant, this.breed);
+    }
+  }
+
+  applyRiggedCoat(coat, breed) {
+    if (!this.skinnedMesh) return;
+    const tex = createCatCoatTexture(coat, breed);
+    if (tex) {
+      this.skinnedMesh.material.map = tex;
+      this.skinnedMesh.material.needsUpdate = true;
+    }
+  }
+
+  hideProceduralParts() {
+    if (!this.parts) return;
+    const p = this.parts;
+    if (p.torso) p.torso.visible = false;
+    if (p.head) p.head.visible = false;
+    if (p.tailGroup) p.tailGroup.visible = false;
+    if (p.shoulder) p.shoulder.visible = false;
+    if (p.leftShoulder) p.leftShoulder.visible = false;
+    if (p.hips) for (const h of p.hips) if (h.hip) h.hip.visible = false;
+    if (p.butt) p.butt.visible = false;
   }
 
   get visible() { return this.object.visible; }
@@ -588,6 +812,11 @@ export class CatSpawner {
     this.parts.blaze.scale.set(bl[0], bl[1], bl[2]);
     this.parts.blaze.position.y = bl[3];
     this.tailK = -1; // new tail thickness
+    if (this.isRigged && this.riggedScene) {
+      const sizeScale = 0.042 * (this.shape?.size ?? 1) * (this.kitten ? 0.65 : 1.0);
+      this.riggedScene.scale.setScalar(sizeScale);
+      this.applyRiggedCoat(coat, breed);
+    }
     this.pose(0);
   }
 
@@ -623,7 +852,13 @@ export class CatSpawner {
     this.tailUp = false; this.tailU = 0; this.tailWait = this.nextTailWait(); // the next cat starts with its tail down
   }
 
-  setOpacity(a) { for (const m of catMats()) m.opacity = a; }
+  setOpacity(a) {
+    for (const m of catMats()) m.opacity = a;
+    if (this.skinnedMesh?.material) {
+      this.skinnedMesh.material.transparent = a < 1;
+      this.skinnedMesh.material.opacity = a;
+    }
+  }
 
   /** One local photo attempt per physical cat, shared by pet and hug. Full/failing storage never retries. */
   photoOnce() {
@@ -899,6 +1134,53 @@ export class CatSpawner {
    * forward, the body bobs twice per cycle and the head nods with it.
    */
   pose(dt) {
+    if (this.isRigged && this.mixer) {
+      this.mixer.update(dt);
+
+      const d = this.wantStand - this.stand;
+      this.stand += Math.sign(d) * Math.min(Math.abs(d), dt / CAT_WALK.rise);
+      const da = (this.walked ? 1 : 0) - this.gaitAmp;
+      this.gaitAmp += Math.sign(da) * Math.min(Math.abs(da), dt / 0.2);
+
+      const isWalking = (this.walked || this.gaitAmp > 0.05 || (this.wantStand > 0.5 && this.stand > 0.5));
+      const targetAction = isWalking ? this.actions['walk'] : this.actions['idle'];
+
+      if (targetAction && this.activeAction !== targetAction) {
+        if (this.activeAction) {
+          this.activeAction.crossFadeTo(targetAction, 0.25, true);
+        }
+        this.activeAction = targetAction;
+        this.activeAction.play();
+      }
+
+      if (isWalking && this.activeAction === this.actions['walk']) {
+        const speedK = Math.max(0.5, Math.min(2.5, (this.gaitAmp || 1.0) * (this.kitten ? 1.4 : 1.0)));
+        this.mixer.timeScale = speedK;
+      } else {
+        this.mixer.timeScale = 1.0;
+      }
+
+      // Procedural tail raise on Joint7
+      if (this.bones?.['Joint7']) {
+        const u = smooth(0, 1, this.tailU);
+        this.bones['Joint7'].rotation.x = -1.2 * u;
+      }
+
+      // Gaze towards watchPoint if provided
+      if (this.bones?.['Joint4'] && this.watchPoint) {
+        const wp = this.watchPoint();
+        if (wp) {
+          const catPos = this.object.position;
+          const dx = wp.x - catPos.x;
+          const dz = wp.z - catPos.z;
+          const targetYaw = Math.atan2(dx, dz) - this.object.rotation.y;
+          this.bones['Joint4'].rotation.y = Math.max(-0.6, Math.min(0.6, targetYaw * 0.4));
+        }
+      }
+
+      return;
+    }
+
     const W = CAT_WALK, p = this.parts, sh = this.shape, fluff = sh.fluff;
     const d = this.wantStand - this.stand;
     this.stand += Math.sign(d) * Math.min(Math.abs(d), dt / W.rise);

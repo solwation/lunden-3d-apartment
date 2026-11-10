@@ -5,7 +5,7 @@ const point=new THREE.Vector3(),bodyBox=new THREE.Box3();
 const corners=(b,visit)=>{for(const x of[b.min.x,b.max.x])for(const y of[b.min.y,b.max.y])for(const z of[b.min.z,b.max.z])visit(x,y,z);};
 // Called after the standing bake, before the puppet is attached to the world.
 export function prepareClimbContact(puppet){
- const paws=[puppet.shoulder.children.at(-1),puppet.leftShoulder.children.at(-1),...puppet.parts.hips.map(h=>h.foot)],standing=[];
+ const paws=puppet.pawMeshes??[puppet.shoulder.children.at(-1),puppet.leftShoulder.children.at(-1),...puppet.parts.hips.map(h=>h.foot)],standing=[];
  puppet.object.updateMatrixWorld(true);
  for(const p of paws){p.geometry.computeBoundingBox();corners(p.geometry.boundingBox,(x,y,z)=>{point.set(x,y,z).applyMatrix4(p.matrixWorld);standing.push(point.clone());});}
  return{paws,standing};
