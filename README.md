@@ -6,30 +6,23 @@
 
 **You talk to the conductor. The conductor runs the orchestra.**
 
-Give your AI coding agent a baton. Instead of one agent juggling everything in a single
-thread, the agent you talk to becomes **dirigenten**, the conductor. It reads the
-score (your issues and project rules), hands each part to a musician in
-**orkestern**, the orchestra of worker agents, listens to every section and only
-lets verified work reach your main branch.
+A model-independent workflow for delivering scoped, verified changes with autonomous AI coding agents in plain Markdown. No runtime, no background daemon, no lock-in. Works with any AI coding agent that can read and edit files (Claude Code, Codex, Antigravity, Aider, and others).
 
-Plain Markdown files. No runtime, no service, no lock-in. Works with any agent that
-can read files.
+👉 **[Explore the Website & Visual Guide](https://solwation.github.io/dirigenten-och-orkestern/)** for interactive workflows, architecture diagrams, and value comparisons.
+
+---
 
 ## Why a conductor?
 
-Agents left to themselves over-plan, spawn helpers they don't need, rerun the same
-test suite again and again, wait for you to answer questions they could have settled,
-and close issues nobody checked. A conductor fixes that by keeping one job in one
-place: **decide, delegate, listen, deliver.**
+Agents left to themselves over-plan, spawn unneeded helpers, rerun test suites in loops, wait for unnecessary confirmations, and close issues nobody checked. A conductor keeps one job in one place: **decide, delegate, listen, deliver.**
 
-| Without a conductor | With dirigenten och orkestern |
-| --- | --- |
-| One long chat that you have to babysit | You give one instruction; the queue runs unattended |
-| "Should I…?" prompts mid-task | The conductor decides with ordinary judgement; real product questions land on the issue with options and a recommendation |
-| Agents editing the same files and stepping on each other | Each worker plays its own part in its own checkout and ports |
-| Test suites rerun "just in case" | 2–3 checks chosen for the actual risk, then stop |
-| "Should work" | Evidence before closing: test results, screenshots, the delivered revision |
-| Issues parked waiting for "please test on your phone" | Best-guess fix, honest note of what could not be tested, closed; you report again if it persists |
+- **Autonomous queue execution:** One instruction or `/orkester` runs the queue unattended.
+- **Isolated worktrees:** Each worker plays its part in its own checkout and ports; no colliding git stashes.
+- **Risk-based verification:** 2–3 checks chosen for the actual risk, then stop.
+- **Evidence before delivery:** Test results, links, and diffs verified on `main` before closing.
+- **Best-guess closure:** Routine issues settled autonomously; questions only for real user decisions.
+
+See the full [side-by-side comparison on the website](https://solwation.github.io/dirigenten-och-orkestern/#why).
 
 ## Who plays what
 
@@ -48,60 +41,14 @@ flowchart TD
     review --> main["Verified delivery<br/>Pushed, evidenced, issue closed"]
 ```
 
-- **Dirigenten (the conductor)** is the agent thread you talk to. It picks the work,
-  writes a short plan, spawns the workers and gives each one a compact brief, keeps an
-  eye on their progress, integrates their results and reviews them once before
-  delivery. Where delegation isn't available it plays the parts itself in sequence,
-  without pretending to have workers.
-- **Orkestern (the orchestra)** is the worker agents. Each one gets a single issue, its
-  own checkout and ports, and returns a commit with evidence. None of them goes off to
-  play a solo nobody asked for.
+- **Dirigenten (the conductor)** is the agent thread you talk to. It selects work, writes a short plan, spawns workers with compact briefs, integrates results, and reviews diffs against acceptance criteria.
+- **Orkestern (the orchestra)** is the worker agents. Each handles a single issue in an isolated checkout and returns a commit with verification evidence.
 
-## What a run looks like
-
-1. You type `/orkester` or just describe a change. A change request becomes an issue
-   (or updates an existing one) and starts the orchestra within your scope, even if
-   no run is active or the previous idle watch ended. Asking for changes also asks
-   for them to be resolved, unless you explicitly say not to start or to only record
-   or discuss them ([chat intake](ORCHESTRA.md#turn-chat-requests-into-work)).
-2. The conductor fetches the issue queue, chooses the highest-priority startable work,
-   claims it and starts up to your configured number of workers in parallel.
-3. While they work, the conductor runs your intake hooks, for example turning incoming
-   reports into new issues.
-4. Each worker plans briefly, implements and runs the checks that matter. A finished
-   handoff uses `integration-ready`: the issue stays in In progress with its integration
-   owner while waiting, and the worker slot is freed.
-5. The conductor reviews the combined diff and evidence, delivers it (a push to main,
-   or a pull request if your project merges through PRs), posts the result on the
-   issue and closes it once the change is on main. Available workers can take the next
-   independent issue while a finished handoff waits.
-6. When the queue is empty, the conductor reviews everything delivered in the session
-   (with workers for parts if that helps); findings become new issues and the loop
-   continues. With nothing left, an optional idle watch waits for new issues; a runtime
-   that cannot wait runs one bounded pass and says so.
-7. Anything only you can decide waits on its issue, not in your chat. Everything else
-   keeps moving.
-
-## What you get
-
-- **Verified delivery.** Plan → implement → verify → review → deliver → follow up. A
-  failed check loops back; nothing ships on "should work".
-- **Right-sized teams.** A small fix stays with one agent. Independent issues run in
-  parallel up to your capacity, and nobody tramples anybody's files.
-- **Autonomy by default.** The conductor decides what reasonable judgement can settle
-  and closes device-dependent bugs after its best fix. You are interrupted only for
-  decisions that are really yours.
-- **Your rules, your instruments.** Project policy and phase hooks (screenshots, deploy
-  checks, release rules) live in your repository; the shared workflow decides when
-  they apply.
-- **Spend where it matters.** The cheapest capable worker for routine edits, stronger
-  reasoning only where the risk is.
-- **No lock-in.** Independent of LLM provider, agent API, editor, language and package
-  manager.
+Detailed 5-phase delivery gates (Planning → Isolation → Verification → Review → Delivery) are explained in the [documentation guide](https://solwation.github.io/dirigenten-och-orkestern/#workflow).
 
 ## Get started in two minutes
 
-**Easiest:** ask your agent to do it.
+**Easiest:** Ask your agent to install it:
 
 > Install the orchestra in this repository by following
 > https://github.com/solwation/dirigenten-och-orkestern/blob/main/INSTALL.md
@@ -111,17 +58,13 @@ flowchart TD
 
 ```sh
 git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.11.1 --squash
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.11.2 --squash
 cp .orchestra/shared/PROJECT.example.md .orchestra/project.md
 ```
 
-Fill in `.orchestra/project.md`, point your agent's entry file (`AGENTS.md`,
-`CLAUDE.md`, …) at it and at `.orchestra/shared/ORCHESTRA.md`, and ask for a change.
-Optionally add a thin `/orkester` command that does the same (entry files and a
-copyable adapter are in [INSTALL.md](INSTALL.md#connect-agent-entry-points)). Pinning,
-updates and the upstream release check are in [INSTALL.md](INSTALL.md).
+Fill in `.orchestra/project.md`, point your agent's entry file (`AGENTS.md`, `CLAUDE.md`, …) at it and at `.orchestra/shared/ORCHESTRA.md`, and start a run with `/orkester`. See [INSTALL.md](INSTALL.md) for full instructions, updates, and adapters.
 
-## What's inside
+## Core files
 
 | File | Purpose |
 | --- | --- |
@@ -133,5 +76,5 @@ updates and the upstream release check are in [INSTALL.md](INSTALL.md).
 | [INSTALL.md](INSTALL.md) | Install, agent entry points, updates and release discovery |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Improving the package, field reports, maintainer checks and releases |
 
-Changes are listed in [CHANGELOG.md](CHANGELOG.md). MIT licensed; see
-[LICENSE.md](LICENSE.md).
+Changes are listed in [CHANGELOG.md](CHANGELOG.md). MIT licensed; see [LICENSE.md](LICENSE.md).
+Pair with [BoosterAI](https://solwation.github.io/booster-ai/) for multi-tab agent workspaces on Windows & Linux.

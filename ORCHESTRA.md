@@ -77,8 +77,12 @@ explicitly deferred work paused and unclaimed until the user authorizes executio
 do not let queue selection bypass that limit. A prior explicit stop still applies
 unless the user authorizes resumption. Answer questions, status requests and discussion
 without inventing change tasks; a request for changes to these instructions is itself
-work under this rule. Chat intake does not grant publication permissions beyond the
-host/user rules or install a background listener.
+work under this rule. Answering the user or performing an operational action does not
+pause, drain or exit an active orchestra run: handle the user's interjection and then
+immediately resume the run's work in the same turn (monitoring active workers,
+dispatching startable issues, integrating handoffs, or continuing the idle watch)
+without waiting for another command. Chat intake does not grant publication permissions
+beyond the host/user rules or install a background listener.
 
 ### Check the installed workflow
 
@@ -315,10 +319,13 @@ revision, checks, evidence links/attachments, limitations and remaining acceptan
 in an authorized, accessible destination:
 
 - UI/UX, styling, 2D/3D graphics or rendering: screenshots or rendered comparisons,
-  with revision and environment, embedded or linked as accessible artifacts. Include
-  before/after when useful; images supplement functional checks. If capture or hosting
-  is unavailable, state the limitation and reason. Inspect images, expose no private
-  data and never claim an upload that did not happen.
+  with revision and environment, embedded directly in the completion comment. Directly
+  visible images are preferred (attached to the issue/comment or embedded via a
+  fully-qualified public URL, `![alt](url)`) so maintainers and project dashboards can
+  confirm visual acceptance directly from the comment. Include before/after when
+  useful; images supplement functional checks. If capture or hosting is unavailable,
+  state the limitation and reason. Inspect images, expose no private data and never
+  claim an upload that did not happen.
 - Behavior: test or reproduction result.
 - Documentation: published text link and recorded checks.
 - Deployment: deployed revision and post-deployment check.

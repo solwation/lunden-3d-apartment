@@ -81,7 +81,7 @@ in its own guide.
 | --- | --- | --- | --- | --- |
 | Capture UI | `verification`: UI/UX or graphics changes, after preview/rendering is ready | Follow the project's screenshot guide for affected states/scenes | Implementation worker, or conductor if working alone | Required when triggered: images plus revision/environment in the assigned artifact destination |
 | Inspect UI | `review`: UI/UX or graphics changes, before approving delivery | Inspect captured images against acceptance and any reference images | Conductor | Required when triggered: review outcome recorded; defects corrected and affected images refreshed |
-| Share UI result | `follow-up`: UI/UX or graphics changes, before issue closure | Follow the project's upload guide; link or attach reviewed images in the completion comment | Conductor | Required when triggered: accessible evidence for the delivered revision, or report the capture limitation |
+| Share UI result | `follow-up`: UI/UX or graphics changes, before issue closure | Follow the project's upload guide; attach or embed reviewed images with fully-qualified URLs in the completion comment | Conductor | Required when triggered: directly visible image evidence for the delivered revision, or report the capture limitation |
 
 For optional activities, mark them optional explicitly and report a failure or skip.
 An unavailable required tool does not silently make an activity optional. Existing
