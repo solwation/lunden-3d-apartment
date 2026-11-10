@@ -1,3 +1,4 @@
 # 3D Model Attributions
 
 - `cat-rigged.glb` (#1892): Rigged and animated 3D low-poly cat model based on open-source mesh and armature by Peiffer Innovations, LLC (MIT License), customized with project-made ginger tabby texture and skeletal animations (idle, walk, attack, dead, die, dance). Used for architectural evaluation and prototype of skeletal cat models in Kv. Lunden.
+- `squirrel-rigged.glb` (#1895): Optimized low-poly rigged squirrel model with 25-bone armature (spine, head, snout, ears, limbs, 7-joint curved bushy tail) and 5 skeletal animations (`idle`, `run`, `flick`, `climb`, `eat`). Replaces procedural sphere/tuft geometries with a single SkinnedMesh (3 → 1 draw calls per squirrel) and dynamic canvas fur texturing.

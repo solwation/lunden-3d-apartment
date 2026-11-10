@@ -2,6 +2,8 @@ import { discoverCreature } from './bestiaryevents.js';
 import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { SQUIRRELS as C, PADDOCK, SITE, WALK } from './config.js';
 import { Holdable, heldItem, setHeld, handBusy } from './holdable.js';
 import { Hearts } from './pingping.js';
@@ -128,6 +130,144 @@ function buildSquirrelGeometry(s, far) {
   return g;
 }
 
+// Rigged GLB Squirrel Loader & Coat Texture Generator (#1895)
+let riggedSquirrelModelPromise = null;
+let riggedSquirrelData = null;
+
+export function loadRiggedSquirrelModel() {
+  if (riggedSquirrelData) return Promise.resolve(riggedSquirrelData);
+  if (riggedSquirrelModelPromise) return riggedSquirrelModelPromise;
+  const loader = new GLTFLoader();
+  const modelUrl = new URL('../models/squirrel-rigged.glb', import.meta.url).href;
+  riggedSquirrelModelPromise = new Promise((resolve, reject) => {
+    loader.load(
+      modelUrl,
+      (gltf) => {
+        riggedSquirrelData = gltf;
+        resolve(gltf);
+      },
+      undefined,
+      (err) => {
+        console.warn('Failed to load rigged squirrel model, fallback to procedural squirrel:', err);
+        reject(err);
+      }
+    );
+  });
+  return riggedSquirrelModelPromise;
+}
+
+const squirrelTextureCache = new Map();
+
+export function createSquirrelCoatTexture(spec) {
+  if (typeof document === 'undefined') return null;
+  const key = [spec.name, spec.color, spec.belly, spec.tail, spec.tip, spec.width].join();
+  if (squirrelTextureCache.has(key)) return squirrelTextureCache.get(key);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  const hexStr = (hex, def = 0x8a5632) => `#${new THREE.Color(hex ?? def).getHexString()}`;
+  const color = hexStr(spec.color, 0x8a5632);
+  const belly = hexStr(spec.belly, 0xd9c3a0);
+  const tail = hexStr(spec.tail, 0x9a6338);
+  const tip = spec.tip ? hexStr(spec.tip, 0xf4f1e8) : tail;
+  const paw = hexStr(shade(spec.color, 0.72), 0x5e3a22);
+
+  // Background base
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, 512, 512);
+
+  // 1. Body & Haunch area: [25, 25, 205, 205]
+  ctx.fillStyle = color;
+  ctx.fillRect(25, 25, 205, 205);
+  let seed = 1716;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < 300; i++) {
+    ctx.fillStyle = rnd() < 0.5 ? '#ffffff' : '#2a1a10';
+    ctx.globalAlpha = 0.08 + rnd() * 0.08;
+    ctx.fillRect(25 + rnd() * 200, 25 + rnd() * 200, 2 + rnd() * 4, 1 + rnd() * 3);
+  }
+  ctx.globalAlpha = 1;
+
+  // 2. Belly & Chest area: [280, 25, 206, 205]
+  ctx.fillStyle = belly;
+  ctx.fillRect(280, 25, 206, 205);
+  for (let i = 0; i < 150; i++) {
+    ctx.fillStyle = rnd() < 0.5 ? '#ffffff' : color;
+    ctx.globalAlpha = 0.06;
+    ctx.fillRect(280 + rnd() * 200, 25 + rnd() * 200, 2 + rnd() * 4, 2);
+  }
+  ctx.globalAlpha = 1;
+
+  // 3. Head & Snout area: [25, 280, 205, 78]
+  ctx.fillStyle = color;
+  ctx.fillRect(25, 280, 205, 78);
+  // Cheek patches
+  ctx.fillStyle = belly;
+  ctx.beginPath();
+  ctx.ellipse(80, 320, 25, 18, 0, 0, Math.PI * 2);
+  ctx.ellipse(175, 320, 25, 18, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Eyes
+  ctx.fillStyle = '#120e0c';
+  ctx.beginPath();
+  ctx.arc(65, 305, 7, 0, Math.PI * 2);
+  ctx.arc(190, 305, 7, 0, Math.PI * 2);
+  ctx.fill();
+  // Eye glints
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(67, 303, 2.2, 0, Math.PI * 2);
+  ctx.arc(192, 303, 2.2, 0, Math.PI * 2);
+  ctx.fill();
+  // Nose
+  ctx.fillStyle = '#2a1d18';
+  ctx.beginPath();
+  ctx.arc(128, 335, 6, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 4. Ears & Tufts area: [25, 384, 103, 102]
+  ctx.fillStyle = color;
+  ctx.fillRect(25, 384, 103, 102);
+  // Dark tuft tips
+  ctx.fillStyle = hexStr(shade(spec.color, 0.55), 0x3e2416);
+  ctx.fillRect(25, 450, 103, 36);
+
+  // 5. Paws area: [153, 384, 77, 102]
+  ctx.fillStyle = paw;
+  ctx.fillRect(153, 384, 77, 102);
+
+  // 6. Tail Plume area: [280, 280, 206, 104]
+  ctx.fillStyle = tail;
+  ctx.fillRect(280, 280, 206, 104);
+  for (let i = 0; i < 200; i++) {
+    ctx.fillStyle = rnd() < 0.4 ? '#e6c8a0' : hexStr(shade(spec.color, 0.8), 0x4a2a16);
+    ctx.globalAlpha = 0.12;
+    ctx.fillRect(280 + rnd() * 200, 280 + rnd() * 100, 3 + rnd() * 8, 1 + rnd() * 2);
+  }
+  ctx.globalAlpha = 1;
+
+  // 7. Tail Tip area: [280, 410, 206, 76]
+  ctx.fillStyle = tip;
+  ctx.fillRect(280, 410, 206, 76);
+  if (spec.tip) {
+    ctx.fillStyle = '#ffffff';
+    ctx.globalAlpha = 0.25;
+    for (let i = 0; i < 80; i++) {
+      ctx.fillRect(280 + rnd() * 200, 410 + rnd() * 70, 2 + rnd() * 5, 2);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.encoding = THREE.sRGBEncoding ?? 3001;
+  squirrelTextureCache.set(key, tex);
+  return tex;
+}
+
 /** An acorn (0) or a hazelnut (1) of real size 3 cm; the mesh is scaled by SQUIRRELS.nutSize. */
 const nutGeos = [
   mergeGeometries([blob(0.011, 0.016, 0.011, 0, 0.012, 0, 0xb98a4a), blob(0.0125, 0.008, 0.0125, 0, 0.024, 0, 0x6b5030), blob(0.002, 0.004, 0.002, 0, 0.033, 0, 0x4a3820)]),
@@ -248,12 +388,62 @@ export class Squirrels {
       mouth.rotation.x = Math.PI / 2; mouth.visible = false; mouth.raycast = () => {}; mouth.userData.noDetail = true;
       group.rotation.order = 'YXZ'; group.add(body, mouth); group.visible = false; scene.add(group);
       this.acc.push(0);
-      return { brain, group, mouth, body, spec, geos, flickT: 9, flickAt: 2 + rnd() * 4, head: 0, headTo: 0, headT: 0 };
+      const an = { brain, group, mouth, body, spec, geos, flickT: 9, flickAt: 2 + rnd() * 4, head: 0, headTo: 0, headT: 0, isRigged: false };
+      if (riggedSquirrelData) {
+        this.setupRigged(an, riggedSquirrelData);
+      } else {
+        loadRiggedSquirrelModel().then((g) => this.setupRigged(an, g)).catch(() => {});
+      }
+      return an;
     }) : [];
     this.sync.brains.push(...this.animals.map((a) => a.brain)); env.others.push(...this.sync.brains);
     registerSeasonal((month) => { this.winter = winterMonth(month); });
     this.hide();
   }
+  setupRigged(a, gltf) {
+    if (!gltf || a.isRigged) return;
+    a.isRigged = true;
+    a.riggedScene = SkeletonUtils.clone(gltf.scene);
+    a.riggedScene.scale.setScalar(a.spec.scale);
+    a.riggedScene.position.z = HAUNCH * a.spec.scale;
+    a.group.add(a.riggedScene);
+
+    a.bones = {};
+    a.riggedScene.traverse((obj) => {
+      if (obj.isSkinnedMesh) {
+        a.skinnedMesh = obj;
+        a.skinnedMesh.material = a.skinnedMesh.material.clone();
+        a.skinnedMesh.material.roughness = 0.85;
+        a.skinnedMesh.material.metalness = 0.05;
+        a.skinnedMesh.castShadow = true;
+      }
+      if (obj.isBone || obj.type === 'Bone' || (obj.name && obj.name.startsWith('Joint'))) {
+        a.bones[obj.name] = obj;
+      }
+    });
+
+    const tex = createSquirrelCoatTexture(a.spec);
+    if (tex && a.skinnedMesh) {
+      a.skinnedMesh.material.map = tex;
+      a.skinnedMesh.material.needsUpdate = true;
+    }
+
+    if (gltf.animations && gltf.animations.length > 0) {
+      a.mixer = new THREE.AnimationMixer(a.riggedScene);
+      a.actions = {};
+      for (const clip of gltf.animations) {
+        a.actions[clip.name] = a.mixer.clipAction(clip);
+      }
+      if (a.actions['idle']) {
+        a.activeAction = a.actions['idle'];
+        a.activeAction.play();
+      }
+    }
+
+    // Hide procedural body mesh so only the single rigged SkinnedMesh renders
+    a.body.visible = false;
+  }
+
   hide() { for (const a of this.animals) a.group.visible = false; }
   /** #1698: what a visitor (this one, or a ghost the leader sees) does: speed, how long still, and whether they just rose from a crouch. `crouch`: 0 … 1. */
   trackVisitor(id, dt, speed, crouch) {
@@ -374,14 +564,56 @@ export class Squirrels {
   pose(a, d, dt = 0) {
     const b = a.brain, g = a.group, run = b.run, hop = run > 0.05 && !['down', 'up', 'leap'].includes(b.state) ? Math.abs(Math.sin(this.time * 14 + b.spec.scale * 9)) * 0.035 * run : 0;
     g.visible = d < C.drawDist && b.state !== 'nest'; // (#1716: asleep in the drey, inside the crown)
-    const geo = a.geos[d < C.look.near ? 0 : 1]; if (a.body.geometry !== geo) a.body.geometry = geo;
-    // #1716: sitting still it flicks its tail now and then and turns its head in quick jerks (the morph targets; the leader's brain adds a flick at each wary stop)
-    const still = run < 0.05 && !['down', 'up', 'leap', 'eat', 'take', 'bury', 'dig', 'nest'].includes(b.state), inf = a.body.morphTargetInfluences;
+
+    // Sitting still it flicks its tail now and then and turns its head in quick jerks
+    const still = run < 0.05 && !['down', 'up', 'leap', 'eat', 'take', 'bury', 'dig', 'nest'].includes(b.state);
     if (still && (a.flickAt -= dt) <= 0) { a.flickAt = 2 + this.rnd() * 5; a.flickT = 0; }
     if (b.flick > 0.95 && a.flickT > 0.6) a.flickT = 0;
-    a.flickT += dt; inf[0] = a.flickT < 0.6 ? Math.sin(Math.PI * a.flickT / 0.3) ** 2 : 0;
+    a.flickT += dt;
+
     if ((a.headT -= dt) <= 0) { a.headT = 0.25 + this.rnd() * 0.7; a.headTo = still ? (this.rnd() - 0.5) * 2 : 0; }
-    a.head += (a.headTo - a.head) * Math.min(1, dt * 18); const hk = 1 - 0.75 * Math.min(1, b.rise); inf[1] = Math.max(0, a.head) * hk; inf[2] = Math.max(0, -a.head) * hk; // (sitting up: small turns only)
+    a.head += (a.headTo - a.head) * Math.min(1, dt * 18);
+    const hk = 1 - 0.75 * Math.min(1, b.rise);
+
+    if (a.isRigged && a.mixer) {
+      a.mixer.update(dt);
+
+      let targetName = 'idle';
+      if (b.state === 'eat' || b.state === 'take') {
+        targetName = 'eat';
+      } else if (b.state === 'up' || b.state === 'down') {
+        targetName = 'climb';
+      } else if (run > 0.05) {
+        targetName = 'run';
+      } else if (a.flickT < 0.6) {
+        targetName = 'flick';
+      }
+
+      if (a.actions && a.actions[targetName]) {
+        const nextAction = a.actions[targetName];
+        if (a.activeAction !== nextAction) {
+          if (a.activeAction) a.activeAction.crossFadeTo(nextAction, 0.15, true);
+          nextAction.play();
+          a.activeAction = nextAction;
+        }
+        if (targetName === 'run') {
+          nextAction.timeScale = Math.max(0.6, run * (a.spec.speed ?? 1));
+        } else {
+          nextAction.timeScale = 1.0;
+        }
+      }
+
+      if (a.bones && a.bones['Joint_Head']) {
+        a.bones['Joint_Head'].rotation.y = a.head * hk * 0.65;
+      }
+    } else if (a.body && a.body.morphTargetInfluences) {
+      const geo = a.geos[d < C.look.near ? 0 : 1]; if (a.body.geometry !== geo) a.body.geometry = geo;
+      const inf = a.body.morphTargetInfluences;
+      inf[0] = a.flickT < 0.6 ? Math.sin(Math.PI * a.flickT / 0.3) ** 2 : 0;
+      inf[1] = Math.max(0, a.head) * hk;
+      inf[2] = Math.max(0, -a.head) * hk;
+    }
+
     const sway = b.state === 'perch' ? Math.sin(this.time * 0.9 + b.spec.scale * 7) * 0.5 : 0, yaw = b.yaw + sway, back = HAUNCH * b.spec.scale;
     g.position.set(b.x - Math.sin(yaw) * back, b.y + hop * b.spec.scale, b.z - Math.cos(yaw) * back); // (the body centre stays at the brain's point)
     g.rotation.y = yaw;
