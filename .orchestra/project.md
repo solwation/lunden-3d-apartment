@@ -288,18 +288,18 @@ The conductor runs this loop in every `/orkester` queue session:
 
 ## Shared version and maintenance
 
-Shared release: **v0.11.1**, commit **e1842f5b41cc92272eb870bca1070e46f511505c**. Imported with
-`git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git e1842f5b41cc92272eb870bca1070e46f511505c --squash`
-in [original #1891](https://github.com/solwation/lunden-3d-apartment/issues/1891). The complete
-[v0.10.0..v0.11.1 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/358c01f2d3a187c17e1b1c180bff7ecb06cb51a8...e1842f5b41cc92272eb870bca1070e46f511505c)
-adds the `orchestra-claim` marker that whoever creates a writing checkout writes to its git
-directory (see [workspace and delivery](#workspace-and-delivery)), makes
-`shared/scripts/prune-worktrees.sh` treat a marked checkout whose issue is not shown closed, and a
-commit-less checkout whose HEAD changed within `--min-age` (default 120 minutes), as active, stops the
-script from reporting the current directory as a checkout when a root holds none (v0.11.1; reproduced
-here against the empty roots before the import), and adds `scripts/test_prune_worktrees.py`.
-No priority, timer, ownership or publication-rule migration is required. Public adoption is tracked in
-[public #263](https://github.com/solwation/kvarteret-lunden/issues/263).
+Shared release: **v0.11.2**, commit **6151b2e887ce4587285271708affc07af09fddb6**. Imported with
+`git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git 6151b2e887ce4587285271708affc07af09fddb6 --squash`
+in [original #1893](https://github.com/solwation/lunden-3d-apartment/issues/1893). The complete
+[v0.11.1..v0.11.2 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/e1842f5b41cc92272eb870bca1070e46f511505c...6151b2e887ce4587285271708affc07af09fddb6)
+prefers directly visible images (attached or embedded via fully-qualified URLs) in completion
+comments for visual acceptance (#61), explicitly requires the conductor to resume active orchestration
+in the same turn after answering user questions, providing status, or executing operational actions
+mid-run rather than pausing (#60), and adds a GitHub Pages landing site in `docs/index.html` while
+streamlining `README.md` (#59). No priority, timer, ownership or publication-rule migration is required.
+Public adoption is tracked in [public #264](https://github.com/solwation/kvarteret-lunden/issues/264).
+The earlier v0.11.1 import remains recorded in original #1891 and public #263.
+The earlier v0.11.0 import remains recorded in original #1891 and public #263.
 The earlier v0.10.0 import remains recorded in original #1890 and public #262.
 The earlier v0.9.0 import remains recorded in original #1880 and public #259.
 The earlier v0.8.2 import remains recorded in original #1877 and public #257.
