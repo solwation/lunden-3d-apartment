@@ -203,7 +203,10 @@ skips it. The review never restarts the idle deadline. A host may extend or disa
 
 User requests, including after an expired watch, follow
 [chat intake](ORCHESTRA.md#turn-chat-requests-into-work); an active run keeps its
-conductor and the deadline rules below.
+conductor and the deadline rules below. Answering a user question, providing status,
+or executing an operational action mid-run does not pause or terminate the session:
+the conductor responds to the user and immediately resumes active work, dispatch,
+or the idle poll within the same turn.
 
 In a queue session, poll all configured queues on the host schedule, working or idle;
 run intake hooks on their own deadlines without interrupting workers. Save each

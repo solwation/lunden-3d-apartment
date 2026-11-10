@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dirigenten och orkestern — Model-Independent AI Agent Workflow</title>
+  <meta name="description" content="You talk to the conductor. The conductor runs the orchestra. A model-independent workflow for delivering verified changes with autonomous AI coding agents in plain Markdown.">
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="Dirigenten och orkestern — Model-Independent AI Agent Workflow">
+  <meta property="og:description" content="You talk to the conductor. The conductor runs the orchestra. Deliver scoped, verified changes with autonomous multi-agent coding workflows.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://solwation.github.io/dirigenten-och-orkestern/">
+  <meta property="og:image" content="https://solwation.github.io/dirigenten-och-orkestern/icon.svg">
+
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+
+  <style>
+    :root {
+      --bg: #0a0f1d;
+      --bg-surface: rgba(19, 27, 46, 0.75);
+      --bg-surface-hover: rgba(26, 38, 64, 0.85);
+      --bg-code: #080c16;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(242, 193, 78, 0.3);
+      --gold: #f2c14e;
+      --gold-glow: rgba(242, 193, 78, 0.15);
+      --teal: #5cc8b8;
+      --blue: #7aa7ff;
+      --red: #f87171;
+      --text: #f5efe0;
+      --text-muted: #9fb0cc;
+      --text-dim: #627597;
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      overflow-x: hidden;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(ellipse 90% 60% at 50% -20%, rgba(122, 167, 255, 0.12), transparent),
+        radial-gradient(ellipse 70% 50% at 85% 25%, rgba(242, 193, 78, 0.08), transparent),
+        radial-gradient(ellipse 70% 50% at 15% 65%, rgba(92, 200, 184, 0.08), transparent);
+      background-attachment: fixed;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header & Navigation */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+      background: rgba(10, 15, 29, 0.82);
+    }
+
+    .nav-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand img {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      filter: drop-shadow(0 0 12px rgba(242, 193, 78, 0.25));
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .nav-links a:hover {
+      color: var(--gold);
+      transition: color 0.15s ease;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.92rem;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #f2c14e 0%, #e5b138 100%);
+      color: #0d1527;
+      box-shadow: 0 4px 18px rgba(242, 193, 78, 0.25);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(242, 193, 78, 0.38);
+    }
+
+    .btn-secondary {
+      background: var(--bg-surface);
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-surface-hover);
+      border-color: rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 96px 0 72px;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: rgba(242, 193, 78, 0.08);
+      border: 1px solid rgba(242, 193, 78, 0.28);
+      color: var(--gold);
+      margin-bottom: 24px;
+    }
+
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: var(--gold);
+      box-shadow: 0 0 8px var(--gold);
+    }
+
+    h1.hero-title {
+      font-size: clamp(2.4rem, 5.2vw, 4.2rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.035em;
+      margin-bottom: 24px;
+      max-width: 980px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #f5efe0 15%, #f2c14e 65%, #5cc8b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: clamp(1.1rem, 2vw, 1.35rem);
+      color: var(--text-muted);
+      max-width: 820px;
+      margin: 0 auto 36px;
+      font-weight: 400;
+      line-height: 1.6;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .pill-partner {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    .pill-partner a {
+      color: var(--teal);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    /* Section Styling */
+    section {
+      padding: 72px 0;
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto 52px;
+    }
+
+    .section-tag {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: clamp(1.8rem, 3.2vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin-bottom: 16px;
+    }
+
+    .section-desc {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+    }
+
+    /* Comparison Table / Cards */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin-top: 32px;
+    }
+
+    .comp-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    .comp-card.bad {
+      border-color: rgba(248, 113, 113, 0.22);
+    }
+
+    .comp-card.bad::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--red);
+    }
+
+    .comp-card.good {
+      border-color: rgba(92, 200, 184, 0.35);
+      box-shadow: 0 8px 32px rgba(92, 200, 184, 0.08);
+    }
+
+    .comp-card.good::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--teal));
+    }
+
+    .comp-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .comp-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .comp-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 0.96rem;
+      line-height: 1.5;
+    }
+
+    .comp-icon {
+      flex-shrink: 0;
+      font-size: 1.1rem;
+      margin-top: 1px;
+    }
+
+    /* Architecture / Flowchart Section */
+    .arch-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .diagram-svg {
+      width: 100%;
+      height: auto;
+      max-height: 480px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* 5-Phase Workflow Cards */
+    .phases-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .phase-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .phase-card:hover {
+      background: var(--bg-surface-hover);
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+    }
+
+    .phase-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(242, 193, 78, 0.12);
+      color: var(--gold);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .phase-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .phase-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* Quickstart Block */
+    .quickstart-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px;
+      margin-top: 24px;
+    }
+
+    .code-tabs {
+      display: flex;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+    }
+
+    .code-tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .code-tab-btn.active, .code-tab-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .code-block {
+      background: var(--bg-code);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-sm);
+      padding: 20px 24px;
+      position: relative;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.92rem;
+      line-height: 1.6;
+      color: #e2e8f0;
+      overflow-x: auto;
+    }
+
+    .code-block pre {
+      margin: 0;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: var(--text);
+    }
+
+    /* Core Files Table */
+    .files-table-container {
+      overflow-x: auto;
+      margin-top: 24px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-surface);
+    }
+
+    table.files-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    table.files-table th, table.files-table td {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    table.files-table th {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    table.files-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .file-tag {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    /* BoosterAI Integration Callout */
+    .partner-banner {
+      background: linear-gradient(135deg, rgba(22, 33, 58, 0.8) 0%, rgba(56, 189, 248, 0.12) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      border-radius: var(--radius);
+      padding: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 24px;
+      margin: 40px 0;
+    }
+
+    .partner-info {
+      max-width: 680px;
+    }
+
+    .partner-badge {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #38bdf8;
+      margin-bottom: 8px;
+    }
+
+    .partner-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .partner-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 48px 0;
+      background: rgba(8, 12, 22, 0.95);
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    .footer-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-links a:hover {
+      color: var(--text);
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      .hero {
+        padding: 56px 0 40px;
+      }
+      .phases-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header>
+    <div class="container nav-wrapper">
+      <a href="#" class="brand">
+        <img src="icon.svg" alt="Dirigenten och orkestern icon">
+        <span>Dirigenten och orkestern</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#why">Why a Conductor</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#workflow">5 Phases</a>
+        <a href="#quickstart">Quickstart</a>
+        <a href="#files">Core Files</a>
+      </nav>
+      <div class="nav-actions">
+        <a href="https://github.com/solwation/dirigenten-och-orkestern" class="btn btn-secondary" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="badge">
+          <span class="badge-dot"></span>
+          Model-Independent AI Agent Workflow &bull; Plain Markdown &bull; Zero Lock-in
+        </div>
+        <h1 class="hero-title">
+          You talk to the conductor.<br>
+          <span class="gradient-text">The conductor runs the orchestra.</span>
+        </h1>
+        <p class="hero-desc">
+          Give your AI coding assistant a baton. Instead of one agent juggling everything in a single fragile thread, the agent you talk to plans, delegates each issue to worker agents in isolated worktrees, listens to their sections, and delivers verified code directly to main.
+        </p>
+        <div class="hero-actions">
+          <a href="#quickstart" class="btn btn-primary">
+            Get Started in 2 Minutes &rarr;
+          </a>
+          <a href="https://github.com/solwation/dirigenten-och-orkestern" class="btn btn-secondary" target="_blank" rel="noopener">
+            Browse Repository
+          </a>
+        </div>
+        <div class="pill-partner">
+          <span>Seamlessly automated with</span>
+          <a href="https://solwation.github.io/booster-ai/" target="_blank" rel="noopener">BoosterAI</a>
+          <span>for multi-agent workspaces</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why a Conductor? (Comparison Grid) -->
+    <section id="why">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Value Proposition</div>
+          <h2 class="section-title">Why a Conductor?</h2>
+          <p class="section-desc">
+            Agents left on their own over-plan, spawn helpers they don't need, rerun huge test suites repeatedly, and freeze waiting for manual confirmation. A conductor keeps one job in one place: <strong>decide, delegate, listen, deliver.</strong>
+          </p>
+        </div>
+
+        <div class="comparison-grid">
+          <!-- Unattended Chaos -->
+          <div class="comp-card bad">
+            <h3 class="comp-title" style="color: var(--red);">
+              <span class="comp-icon">❌</span> Without a Conductor
+            </h3>
+            <ul class="comp-list">
+              <li class="comp-item">
+                <span class="comp-icon">⚠️</span>
+                <span><strong>Fragile babysitting:</strong> One endless chat session that wanders off, loses context, or gets stuck in repetitive loops.</span>
+              </li>
+              <li class="comp-item">
+                <span class="comp-icon">⚠️</span>
+                <span><strong>Constant mid-task prompts:</strong> Agents pester you with "Should I do X or Y?" questions they could have decided with routine judgement.</span>
+              </li>
+              <li class="comp-item">
+                <span class="comp-icon">⚠️</span>
+                <span><strong>Colliding checkouts:</strong> Multiple agents edit the same working tree, clobber shared git stashes, and overwrite each other's work.</span>
+              </li>
+              <li class="comp-item">
+                <span class="comp-icon">⚠️</span>
+                <span><strong>Blind test reruns:</strong> Full test suites executed over and over "just in case", wasting tokens, context, and time.</span>
+              </li>
+              <li class="comp-item">
+                <span class="comp-icon">⚠️</span>
+                <span><strong>"Should work" closures:</strong> Work marked as done without real verification, screenshots, or proof on the target branch.</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- With the Orchestra -->
+          <div class="comp-card good">
+            <h3 class="comp-title" style="color: var(--teal);">
+              <span class="comp-icon">🎼</span> With Dirigenten och orkestern
+            </h3>
+            <ul class="comp-list">
+              <li class="comp-item">
+                <span class="comp-icon">✅</span>
+                <span><strong>Unattended execution:</strong> You give one instruction or type <code>/orkester</code>; the queue runs completely autonomously.</span>
+              </li>
+              <li class="comp-item">
+                <span class="comp-icon">✅</span>
+                <span><strong>Autonomous judgement:</strong> The conductor decides routine details. Genuine product questions land on the issue with clear options and recommendations.</span>
+              </li>
+              <li class="comp-item">
+                <span class="comp-icon">✅</span>
+                <span><strong>Isolated worktrees:</strong> Each worker plays its part in its own dedicated worktree, on its own branch and ports, with automatic cleanup.</span>
+              </li>
+              <li class="comp-item">
+                <span class="comp-icon">✅</span>
+                <span><strong>Risk-based verification:</strong> 2–3 checks tied specifically to the change's actual failure risks, then stop.</span>
+              </li>
+              <li class="comp-item">
+                <span class="comp-icon">✅</span>
+                <span><strong>Evidence before delivery:</strong> Verified test results, links, diffs, and confirmation that the commit landed on remote main.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture: Who Plays What -->
+    <section id="architecture">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Orchestration Architecture</div>
+          <h2 class="section-title">Who Plays What</h2>
+          <p class="section-desc">
+            A clean division of responsibilities prevents context bloat and ensures parallel efficiency.
+          </p>
+        </div>
+
+        <div class="arch-container">
+          <svg class="diagram-svg" viewBox="0 0 960 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Background Glows -->
+            <circle cx="480" cy="90" r="120" fill="url(#blue-glow)" opacity="0.12"/>
+            <circle cx="280" cy="240" r="100" fill="url(#gold-glow)" opacity="0.1"/>
+            <circle cx="680" cy="240" r="100" fill="url(#teal-glow)" opacity="0.1"/>
+
+            <!-- Defs -->
+            <defs>
+              <radialGradient id="blue-glow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#7aa7ff"/>
+                <stop offset="100%" stop-color="#7aa7ff" stop-opacity="0"/>
+              </radialGradient>
+              <radialGradient id="gold-glow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#f2c14e"/>
+                <stop offset="100%" stop-color="#f2c14e" stop-opacity="0"/>
+              </radialGradient>
+              <radialGradient id="teal-glow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#5cc8b8"/>
+                <stop offset="100%" stop-color="#5cc8b8" stop-opacity="0"/>
+              </radialGradient>
+              <linearGradient id="line-grad-1" x1="480" y1="130" x2="280" y2="210" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#f2c14e"/>
+                <stop offset="1" stop-color="#7aa7ff"/>
+              </linearGradient>
+              <linearGradient id="line-grad-2" x1="480" y1="130" x2="680" y2="210" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#f2c14e"/>
+                <stop offset="1" stop-color="#5cc8b8"/>
+              </linearGradient>
+              <linearGradient id="line-grad-3" x1="280" y1="270" x2="480" y2="350" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#7aa7ff"/>
+                <stop offset="1" stop-color="#f2c14e"/>
+              </linearGradient>
+              <linearGradient id="line-grad-4" x1="680" y1="270" x2="480" y2="350" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#5cc8b8"/>
+                <stop offset="1" stop-color="#f2c14e"/>
+              </linearGradient>
+            </defs>
+
+            <!-- Connector Lines -->
+            <!-- Conductor to Workers -->
+            <path d="M480 130 C480 170 280 170 280 210" stroke="url(#line-grad-1)" stroke-width="2.5" stroke-dasharray="4 4"/>
+            <path d="M480 130 C480 170 680 170 680 210" stroke="url(#line-grad-2)" stroke-width="2.5" stroke-dasharray="4 4"/>
+            
+            <!-- Workers to Integration -->
+            <path d="M280 270 C280 310 480 310 480 350" stroke="url(#line-grad-3)" stroke-width="2.5"/>
+            <path d="M680 270 C680 310 480 310 480 350" stroke="url(#line-grad-4)" stroke-width="2.5"/>
+
+            <!-- Integration to Main -->
+            <path d="M480 400 L480 430" stroke="#f2c14e" stroke-width="3" stroke-linecap="round"/>
+
+            <!-- Node 1: Conductor (Top) -->
+            <rect x="340" y="50" width="280" height="80" rx="12" fill="#16213a" stroke="#f2c14e" stroke-width="2"/>
+            <text x="480" y="82" fill="#f5efe0" font-size="16" font-weight="700" text-anchor="middle">Dirigenten (The Conductor)</text>
+            <text x="480" y="105" fill="#9fb0cc" font-size="12" text-anchor="middle">Plans &bull; Dispatches &bull; Monitored Queue</text>
+
+            <!-- Node 2: Worker 1 (Left) -->
+            <rect x="150" y="210" width="260" height="70" rx="10" fill="#131b2e" stroke="#7aa7ff" stroke-width="1.5"/>
+            <text x="280" y="238" fill="#f5efe0" font-size="14" font-weight="600" text-anchor="middle">Musician 1 (Worker)</text>
+            <text x="280" y="258" fill="#9fb0cc" font-size="12" text-anchor="middle">Issue #A &bull; Isolated Worktree &bull; Tests</text>
+
+            <!-- Node 3: Worker 2 (Right) -->
+            <rect x="550" y="210" width="260" height="70" rx="10" fill="#131b2e" stroke="#5cc8b8" stroke-width="1.5"/>
+            <text x="680" y="238" fill="#f5efe0" font-size="14" font-weight="600" text-anchor="middle">Musician 2 (Worker)</text>
+            <text x="680" y="258" fill="#9fb0cc" font-size="12" text-anchor="middle">Issue #B &bull; Isolated Worktree &bull; Tests</text>
+
+            <!-- Node 4: Conductor Integration & Review -->
+            <rect x="350" y="340" width="260" height="60" rx="10" fill="#16213a" stroke="#f2c14e" stroke-width="1.5"/>
+            <text x="480" y="366" fill="#f5efe0" font-size="14" font-weight="600" text-anchor="middle">Integration & Single Review</text>
+            <text x="480" y="385" fill="#9fb0cc" font-size="11" text-anchor="middle">Combined Diff &bull; Evidence Verification</text>
+
+            <!-- Node 5: Target Main Delivery -->
+            <rect x="390" y="430" width="180" height="40" rx="8" fill="#10b981" fill-opacity="0.2" stroke="#10b981" stroke-width="1.5"/>
+            <text x="480" y="455" fill="#5cc8b8" font-size="13" font-weight="700" text-anchor="middle">✓ Delivered to main</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- The 5-Phase Workflow -->
+    <section id="workflow">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Structured Delivery</div>
+          <h2 class="section-title">The 5 Delivery Gates</h2>
+          <p class="section-desc">
+            Every change follows five rigorous, repeatable gates. No skipped verification, no mysterious branches left behind.
+          </p>
+        </div>
+
+        <div class="phases-grid">
+          <!-- Phase 1 -->
+          <div class="phase-card">
+            <div class="phase-num">1</div>
+            <h3 class="phase-title">Planning</h3>
+            <p class="phase-desc">
+              Write a sharp 5-line plan: outcome, boundary, 2–3 checks, smallest useful team, and integration owner. Claim work under Issueflow metadata.
+            </p>
+          </div>
+
+          <!-- Phase 2 -->
+          <div class="phase-card">
+            <div class="phase-num">2</div>
+            <h3 class="phase-title">Isolation</h3>
+            <p class="phase-desc">
+              Each writing agent works in its own git worktree with dedicated ports. An <code>orchestra-claim</code> marker protects active work from early pruning.
+            </p>
+          </div>
+
+          <!-- Phase 3 -->
+          <div class="phase-card">
+            <div class="phase-num">3</div>
+            <h3 class="phase-title">Verification</h3>
+            <p class="phase-desc">
+              Run agreed risk-based checks against a stable revision. No endless rerun loops; stop once evidence passes. Hard gates are never waived.
+            </p>
+          </div>
+
+          <!-- Phase 4 -->
+          <div class="phase-card">
+            <div class="phase-num">4</div>
+            <h3 class="phase-title">Review</h3>
+            <p class="phase-desc">
+              The conductor reviews the combined diff once against acceptance criteria. Finished workers hand off via <code>integration-ready</code> to free slots.
+            </p>
+          </div>
+
+          <!-- Phase 5 -->
+          <div class="phase-card">
+            <div class="phase-num">5</div>
+            <h3 class="phase-title">Delivery</h3>
+            <p class="phase-desc">
+              Deliver directly to <code>main</code> (or PR). Post completion evidence with revision, checks, and limitations. Automatic worktree prune at drain.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Partner Banner: BoosterAI -->
+    <section>
+      <div class="container">
+        <div class="partner-banner">
+          <div class="partner-info">
+            <div class="partner-badge">Ecosystem Synergy</div>
+            <h3 class="partner-title">Automate with BoosterAI</h3>
+            <p class="partner-desc">
+              BoosterAI provides full native integration with Dirigenten och orkestern on Windows & Linux. Open every repository as a tab with an AI CLI running, trigger <code>/orkester</code> automatically, and monitor live status without switching windows.
+            </p>
+          </div>
+          <a href="https://solwation.github.io/booster-ai/" class="btn btn-primary" target="_blank" rel="noopener">
+            Explore BoosterAI &rarr;
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quickstart Guide -->
+    <section id="quickstart">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Get Started</div>
+          <h2 class="section-title">Install in 2 Minutes</h2>
+          <p class="section-desc">
+            No runtime dependencies, npm packages, or background daemons. Plain Markdown files in your repository.
+          </p>
+        </div>
+
+        <div class="quickstart-box">
+          <h3 style="margin-bottom: 12px; font-size: 1.25rem;">Option 1: Ask your AI agent to install it (Easiest)</h3>
+          <p style="color: var(--text-muted); margin-bottom: 16px;">
+            Copy and paste this prompt into Claude Code, Codex, Antigravity, or your preferred agent:
+          </p>
+          <div class="code-block">
+            <button class="copy-btn" onclick="navigator.clipboard.writeText(this.nextElementSibling.innerText); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 2000);">Copy</button>
+            <pre>Install the orchestra in this repository by following
+https://github.com/solwation/dirigenten-och-orkestern/blob/main/INSTALL.md
+and fill in the project policy from what you know about this repository.</pre>
+          </div>
+
+          <h3 style="margin-top: 36px; margin-bottom: 12px; font-size: 1.25rem;">Option 2: Install by hand via Git subtree</h3>
+          <p style="color: var(--text-muted); margin-bottom: 16px;">
+            Vendors the core workflow into <code>.orchestra/shared</code>:
+          </p>
+          <div class="code-block">
+            <button class="copy-btn" onclick="navigator.clipboard.writeText(this.nextElementSibling.innerText); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 2000);">Copy</button>
+            <pre>git subtree add --prefix=.orchestra/shared \
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.11.2 --squash
+cp .orchestra/shared/PROJECT.example.md .orchestra/project.md</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Core Files Reference Map -->
+    <section id="files">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Architecture Reference</div>
+          <h2 class="section-title">Core Workflow Files</h2>
+          <p class="section-desc">
+            Everything is transparent, versioned, and inspectable Markdown in your project.
+          </p>
+        </div>
+
+        <div class="files-table-container">
+          <table class="files-table">
+            <thead>
+              <tr>
+                <th>File</th>
+                <th>Role & Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><a href="https://github.com/solwation/dirigenten-och-orkestern/blob/main/ORCHESTRA.md" class="file-tag" target="_blank">ORCHESTRA.md</a></td>
+                <td>The conductor's score: read maps, delivery gates, isolation rules, and verification standards.</td>
+              </tr>
+              <tr>
+                <td><a href="https://github.com/solwation/dirigenten-och-orkestern/blob/main/WORKER.md" class="file-tag" target="_blank">WORKER.md</a></td>
+                <td>The compact brief given to worker agents: role boundaries, evidence collection, and handoff.</td>
+              </tr>
+              <tr>
+                <td><a href="https://github.com/solwation/dirigenten-och-orkestern/blob/main/COORDINATION.md" class="file-tag" target="_blank">COORDINATION.md</a></td>
+                <td>Queue coordination: bounded passes, session naming, priority ordering, and idle watches.</td>
+              </tr>
+              <tr>
+                <td><a href="https://github.com/solwation/dirigenten-och-orkestern/blob/main/ISSUE-WORKFLOW.md" class="file-tag" target="_blank">ISSUE-WORKFLOW.md</a></td>
+                <td>Authority for GitHub labels, state transitions, and integration-ready handoffs via Issueflow.</td>
+              </tr>
+              <tr>
+                <td><a href="https://github.com/solwation/dirigenten-och-orkestern/blob/main/PROJECT.example.md" class="file-tag" target="_blank">PROJECT.example.md</a></td>
+                <td>Template for project-specific settings, required checks, and custom phase hooks.</td>
+              </tr>
+              <tr>
+                <td><a href="https://github.com/solwation/dirigenten-och-orkestern/blob/main/INSTALL.md" class="file-tag" target="_blank">INSTALL.md</a></td>
+                <td>Complete installation guide, slash command adapters, updates, and release discovery.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container footer-wrapper">
+      <div>
+        <strong>Dirigenten och orkestern</strong> &mdash; Maintained by <a href="https://github.com/solwation" style="color:var(--text); text-decoration: underline;" target="_blank">solwation</a>. MIT Licensed.
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/solwation/dirigenten-och-orkestern" target="_blank">GitHub</a>
+        <a href="https://github.com/solwation/dirigenten-och-orkestern/issues" target="_blank">Issues</a>
+        <a href="https://github.com/solwation/dirigenten-och-orkestern/releases" target="_blank">Releases</a>
+        <a href="https://solwation.github.io/booster-ai/" target="_blank">BoosterAI</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

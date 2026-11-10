@@ -100,8 +100,9 @@ names its integration owner in the plan, and closes only after its change has re
 
 The core [follow-up](ORCHESTRA.md#follow-up) applies. For instructions the evidence is
 a link to the published text plus the recorded consistency checks; any change touching
-UI/UX or rendered graphics with visual acceptance includes screenshots or captures in the
-completion comment, or records why visual capture was unavailable.
+UI/UX or rendered graphics with visual acceptance includes screenshots or captures
+directly embedded in the completion comment (attached or via a fully-qualified URL),
+or records why visual capture was unavailable.
 
 ## Commit and push requested changes
 
