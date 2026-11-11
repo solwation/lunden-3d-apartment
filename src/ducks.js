@@ -7,11 +7,11 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { DuckFlock, DUCKS, heldBread, feedBread } from './duckbrain.js';
 import { duckHabitat } from './duckhabitat.js';
-import { duckModel } from './duckmodel.js';
+import { duckModel, duckRigGeometry } from './duckmodel.js';
 import { heldItem } from './holdable.js';
 import { sfx } from './audio.js';
 
-// Rigged GLB Duck Loader & Feather Texture Generator (#1896)
+// Rigged GLB loader; rounded anatomical forms and original colours restored in #1909.
 let riggedDuckModelPromise = null;
 let riggedDuckData = null;
 
@@ -35,218 +35,6 @@ export function loadRiggedDuckModel() {
     );
   });
   return riggedDuckModelPromise;
-}
-
-const duckTextureCache = new Map();
-
-export function createDuckTexture(female = false) {
-  if (typeof document === 'undefined') return null;
-  const key = female ? 'duck:female' : 'duck:male';
-  if (duckTextureCache.has(key)) return duckTextureCache.get(key);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 512;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return null;
-
-  let seed = female ? 4919 : 4819;
-  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-
-  if (!female) {
-    // === DRAKE (Hane) ===
-    ctx.fillStyle = '#8c7761';
-    ctx.fillRect(0, 0, 512, 512);
-
-    // 1. UV_BODY: (25, 25, 205, 205)
-    ctx.fillStyle = '#968a7c';
-    ctx.fillRect(25, 25, 205, 205);
-    ctx.fillStyle = '#b0a698';
-    ctx.fillRect(25, 120, 205, 110);
-    for (let i = 0; i < 400; i++) {
-      ctx.fillStyle = rnd() < 0.5 ? '#7d7063' : '#a89d8e';
-      ctx.globalAlpha = 0.15;
-      ctx.fillRect(25 + rnd() * 200, 25 + rnd() * 200, 3 + rnd() * 6, 1 + rnd() * 2);
-    }
-    ctx.globalAlpha = 1.0;
-
-    // 2. UV_BREAST: (280, 25, 206, 205)
-    const bGrad = ctx.createLinearGradient(280, 25, 280, 230);
-    bGrad.addColorStop(0, '#53281e');
-    bGrad.addColorStop(1, '#663226');
-    ctx.fillStyle = bGrad;
-    ctx.fillRect(280, 25, 206, 205);
-    for (let i = 0; i < 200; i++) {
-      ctx.fillStyle = rnd() < 0.5 ? '#3b1b14' : '#733b2c';
-      ctx.globalAlpha = 0.12;
-      ctx.fillRect(280 + rnd() * 200, 25 + rnd() * 200, 3 + rnd() * 5, 2 + rnd() * 2);
-    }
-    ctx.globalAlpha = 1.0;
-
-    // 3. UV_HEAD: (25, 280, 205, 105)
-    const hGrad = ctx.createLinearGradient(25, 280, 25, 385);
-    hGrad.addColorStop(0, '#1a5032');
-    hGrad.addColorStop(0.85, '#226942');
-    hGrad.addColorStop(0.88, '#ffffff'); // vit halsring
-    hGrad.addColorStop(0.96, '#ffffff');
-    hGrad.addColorStop(1, '#1a5032');
-    ctx.fillStyle = hGrad;
-    ctx.fillRect(25, 280, 205, 105);
-    for (let i = 0; i < 150; i++) {
-      ctx.fillStyle = '#2db069';
-      ctx.globalAlpha = 0.08 + rnd() * 0.08;
-      ctx.fillRect(25 + rnd() * 200, 280 + rnd() * 85, 4 + rnd() * 6, 2 + rnd() * 3);
-    }
-    ctx.globalAlpha = 1.0;
-    // Ögon
-    ctx.fillStyle = '#100d08';
-    ctx.beginPath();
-    ctx.arc(65, 320, 6, 0, Math.PI * 2);
-    ctx.arc(190, 320, 6, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(67, 318, 2, 0, Math.PI * 2);
-    ctx.arc(192, 318, 2, 0, Math.PI * 2);
-    ctx.fill();
-
-    // 4. UV_BILL: (25, 408, 130, 80)
-    ctx.fillStyle = '#d8b628';
-    ctx.fillRect(25, 408, 130, 80);
-    ctx.fillStyle = '#1a1816';
-    ctx.fillRect(135, 408, 20, 80);
-    ctx.fillStyle = '#c0a01e';
-    ctx.fillRect(25, 470, 110, 18);
-
-    // 5. UV_FEET: (178, 408, 80, 80)
-    ctx.fillStyle = '#df751c';
-    ctx.fillRect(178, 408, 80, 80);
-    ctx.fillStyle = '#b75b0f';
-    for (let i = 0; i < 4; i++) {
-      ctx.fillRect(185 + i * 18, 408, 4, 80);
-    }
-
-    // 6. UV_WING: (280, 280, 206, 105)
-    ctx.fillStyle = '#6e6457';
-    ctx.fillRect(280, 280, 206, 105);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(320, 310, 120, 50);
-    ctx.fillStyle = '#181716';
-    ctx.fillRect(324, 313, 112, 44);
-    ctx.fillStyle = '#26498f';
-    ctx.fillRect(328, 316, 104, 38);
-    for (let i = 0; i < 40; i++) {
-      ctx.fillStyle = '#4270c9';
-      ctx.globalAlpha = 0.15;
-      ctx.fillRect(330 + rnd() * 100, 318 + rnd() * 34, 4 + rnd() * 6, 2 + rnd() * 4);
-    }
-    ctx.globalAlpha = 1.0;
-
-    // 7. UV_TAIL: (280, 408, 206, 80)
-    ctx.fillStyle = '#22201e';
-    ctx.fillRect(280, 408, 206, 80);
-    ctx.fillStyle = '#e5e2db';
-    ctx.fillRect(280, 408, 45, 80);
-    ctx.fillRect(441, 408, 45, 80);
-  } else {
-    // === HEN (Hona) ===
-    ctx.fillStyle = '#827052';
-    ctx.fillRect(0, 0, 512, 512);
-
-    // 1. UV_BODY: (25, 25, 205, 205)
-    ctx.fillStyle = '#8b7758';
-    ctx.fillRect(25, 25, 205, 205);
-    for (let i = 0; i < 500; i++) {
-      ctx.fillStyle = rnd() < 0.35 ? '#453523' : rnd() < 0.7 ? '#6b583e' : '#c8b594';
-      ctx.globalAlpha = 0.22;
-      ctx.fillRect(25 + rnd() * 200, 25 + rnd() * 200, 4 + rnd() * 6, 2 + rnd() * 3);
-    }
-    ctx.globalAlpha = 1.0;
-
-    // 2. UV_BREAST: (280, 25, 206, 205)
-    ctx.fillStyle = '#8f7957';
-    ctx.fillRect(280, 25, 206, 205);
-    for (let i = 0; i < 450; i++) {
-      ctx.fillStyle = rnd() < 0.4 ? '#4a3824' : rnd() < 0.75 ? '#6a563b' : '#ccb898';
-      ctx.globalAlpha = 0.2;
-      ctx.fillRect(280 + rnd() * 200, 25 + rnd() * 200, 4 + rnd() * 6, 2 + rnd() * 3);
-    }
-    ctx.globalAlpha = 1.0;
-
-    // 3. UV_HEAD: (25, 280, 205, 105)
-    ctx.fillStyle = '#8f7956';
-    ctx.fillRect(25, 280, 205, 105);
-    for (let i = 0; i < 200; i++) {
-      ctx.fillStyle = rnd() < 0.5 ? '#56442f' : '#bfa987';
-      ctx.globalAlpha = 0.2;
-      ctx.fillRect(25 + rnd() * 200, 280 + rnd() * 100, 3 + rnd() * 4, 2 + rnd() * 2);
-    }
-    ctx.globalAlpha = 1.0;
-    // Mörkt ögonstreck
-    ctx.fillStyle = '#392d21';
-    ctx.fillRect(25, 316, 205, 10);
-    // Ljust ögonbrynsstreck
-    ctx.fillStyle = '#d0bea0';
-    ctx.fillRect(25, 308, 205, 7);
-    // Ögon
-    ctx.fillStyle = '#100d08';
-    ctx.beginPath();
-    ctx.arc(65, 321, 5.5, 0, Math.PI * 2);
-    ctx.arc(190, 321, 5.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(67, 319, 1.8, 0, Math.PI * 2);
-    ctx.arc(192, 319, 1.8, 0, Math.PI * 2);
-    ctx.fill();
-
-    // 4. UV_BILL: (25, 408, 130, 80)
-    ctx.fillStyle = '#b57b30';
-    ctx.fillRect(25, 408, 130, 80);
-    ctx.fillStyle = '#3a3228';
-    ctx.fillRect(25, 408, 130, 35);
-
-    // 5. UV_FEET: (178, 408, 80, 80)
-    ctx.fillStyle = '#d4731c';
-    ctx.fillRect(178, 408, 80, 80);
-    ctx.fillStyle = '#a65311';
-    for (let i = 0; i < 4; i++) {
-      ctx.fillRect(185 + i * 18, 408, 4, 80);
-    }
-
-    // 6. UV_WING: (280, 280, 206, 105)
-    ctx.fillStyle = '#7a6850';
-    ctx.fillRect(280, 280, 206, 105);
-    for (let i = 0; i < 150; i++) {
-      ctx.fillStyle = rnd() < 0.5 ? '#4b3c29' : '#b29e7f';
-      ctx.globalAlpha = 0.2;
-      ctx.fillRect(280 + rnd() * 200, 280 + rnd() * 100, 4 + rnd() * 5, 2 + rnd() * 3);
-    }
-    ctx.globalAlpha = 1.0;
-    // Vingspegel
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(320, 310, 120, 50);
-    ctx.fillStyle = '#181716';
-    ctx.fillRect(324, 313, 112, 44);
-    ctx.fillStyle = '#26498f';
-    ctx.fillRect(328, 316, 104, 38);
-
-    // 7. UV_TAIL: (280, 408, 206, 80)
-    ctx.fillStyle = '#78644c';
-    ctx.fillRect(280, 408, 206, 80);
-    for (let i = 0; i < 100; i++) {
-      ctx.fillStyle = rnd() < 0.5 ? '#443522' : '#bca888';
-      ctx.globalAlpha = 0.25;
-      ctx.fillRect(280 + rnd() * 200, 408 + rnd() * 75, 4 + rnd() * 5, 2 + rnd() * 3);
-    }
-    ctx.globalAlpha = 1.0;
-  }
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.generateMipmaps = true;
-  duckTextureCache.set(key, texture);
-  return texture;
 }
 
 export class Ducks {
@@ -300,14 +88,8 @@ export class Ducks {
     a.riggedScene.traverse(obj => {
       if (obj.isSkinnedMesh) {
         a.skinnedMesh = obj;
-        const tex = createDuckTexture(a.brain.female);
-        if (tex) {
-          obj.material = new THREE.MeshStandardMaterial({
-            map: tex,
-            roughness: 0.8,
-            metalness: 0.1,
-          });
-        }
+        obj.geometry=duckRigGeometry(a.brain.female);
+        obj.material = new THREE.MeshStandardMaterial({vertexColors:true,roughness:1});
       }
       if (obj.isBone || obj.type === 'Bone' || (obj.name && obj.name.startsWith('Joint'))) {
         a.bones[obj.name] = obj;

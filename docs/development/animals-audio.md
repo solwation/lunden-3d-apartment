@@ -1186,3 +1186,13 @@ A 0.75 s observer considers actual visible near instances, including shader-driv
 ### Shared food objects (#1855)
 
 CaughtFish uses `SharedFish` for authoritative stable-ID pickup/drop/consume; foreign world views cannot independently feed cats, and transfer never calls onCatch. Existing cooking/eating/cat callbacks run for the confirmed custodian, final consumption after durable ACK. Natural nut spawning/animal snapshots remain near-gated; explicit three-dimensional nut drops use the room's bounded persistent list. They are excluded from autonomous ground foraging (including a pending fetch/eat), but ordinary hand-feeding uses the original actual feeder callback after committed F. [Implementation, limits and checked table contacts](../verification/1855/README.md).
+
+### Rounded rigged mallards (#1909)
+
+The GLB export now uses the established `duckModel` form and anatomical vertex colours,
+with folded wings, a white drake collar, smaller eyes, short legs and a tapered low tail.
+`duckRigGeometry` preserves the original bill coordinates; idle leaves them still for
+DuckKiss. Runtime selects the correct male/female geometry rather than a generic atlas.
+The correctly world-bound14-joint rig has idle/swim/waddle/flap/eat clips. One draw/bird,
+960/896 male/female triangles; this restores visual quality without claiming a saving.
+[Checks, whole-model and actual consumer views](../verification/1909/README.md).
