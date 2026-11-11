@@ -1,0 +1,200 @@
+{
+  "revision": "f124511c18d707db9a087e721dfca01c502e70f8",
+  "run": "https://github.com/solwation/lunden-3d-apartment/actions/runs/43033851235",
+  "version": {
+    "version": "f124511",
+    "content": "2d013f8cd9ae",
+    "built": "2026-11-11T13:58:04Z"
+  },
+  "models": [
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/avatar-rigged.glb?v=f124511",
+      "status": 200,
+      "file": "avatar-rigged.glb",
+      "bytes": 1813152,
+      "sha256": "b55ff07a0c72d5028d3ca386d2d0a0b39fcbf28510b384b21dd3d8c74875b7f6"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/bicycle.glb?v=f124511",
+      "status": 200,
+      "file": "bicycle.glb",
+      "bytes": 119132,
+      "sha256": "fcc1310e19dfda860bbf2ad5e246f37ec3a14972f882c9b935b697f0c8986b49"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/car-megane.glb?v=f124511",
+      "status": 200,
+      "file": "car-megane.glb",
+      "bytes": 620772,
+      "sha256": "ebdc78de4d1003a818e2839cae2371ebd0797367db5d2877e1e8207fcb0d60c7"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/car-parked.glb?v=f124511",
+      "status": 200,
+      "file": "car-parked.glb",
+      "bytes": 119484,
+      "sha256": "8044f007d0c8841ada9fdcdf86b86af7560107702f3fedbcb82f6a07d81bc17f"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/cat-rigged.glb?v=f124511",
+      "status": 200,
+      "file": "cat-rigged.glb",
+      "bytes": 45880,
+      "sha256": "99bb9d6462c7ea4922d7250b164e00809b02f30724ca17a3eff9ac36c7d666b8"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/duck-rigged.glb?v=f124511",
+      "status": 200,
+      "file": "duck-rigged.glb",
+      "bytes": 62808,
+      "sha256": "c80a0cb907643da495d16c72ddb9d89ee876bdaf5322fa8ee60f892d532cc81c"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/fish-generic.glb?v=f124511",
+      "status": 200,
+      "file": "fish-generic.glb",
+      "bytes": 41944,
+      "sha256": "6c6d3b760c8144786c4465d06a6e8d87ccf5575fc4096570d3fb5e6882243e32"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/pingping.glb?v=f124511",
+      "status": 200,
+      "file": "pingping.glb",
+      "bytes": 152308,
+      "sha256": "bc1ca62955e7ef5dd5e919b71ac26a8003e11eb030723d1652b8178a620f79f6"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/pony-rigged.glb?v=f124511",
+      "status": 200,
+      "file": "pony-rigged.glb",
+      "bytes": 72300,
+      "sha256": "182a3fd777ab58fc60fe96a09ee56210be61ed29ccaba898846d294ce8852596"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/santa.glb?v=f124511",
+      "status": 200,
+      "file": "santa.glb",
+      "bytes": 572944,
+      "sha256": "f55925202f507a31a00763744b744bf1ede82a9518946fd4accd887f368f8894"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/shark.glb?v=f124511",
+      "status": 200,
+      "file": "shark.glb",
+      "bytes": 101960,
+      "sha256": "d97b2a65039adc1f639e13a78e58c2a77189e54d07278fa004de1730b9acc470"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/squirrel-rigged.glb?v=f124511",
+      "status": 200,
+      "file": "squirrel-rigged.glb",
+      "bytes": 229824,
+      "sha256": "c23a684ba74a544055e4331697ed319da00c4b1561b87a03940c8faea10d67ae"
+    }
+  ],
+  "publishedLoaderModules": [
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/src/avatar.js?v=f124511",
+      "status": 200,
+      "module": "avatar.js",
+      "models": [
+        "avatar-rigged.glb"
+      ],
+      "versionedHelperImport": "./modelurl.js?v=f124511"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/src/carmodel.js?v=f124511",
+      "status": 200,
+      "module": "carmodel.js",
+      "models": [
+        "car-megane.glb",
+        "car-parked.glb"
+      ],
+      "versionedHelperImport": "./modelurl.js?v=f124511"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/src/cat.js?v=f124511",
+      "status": 200,
+      "module": "cat.js",
+      "models": [
+        "cat-rigged.glb"
+      ],
+      "versionedHelperImport": "./modelurl.js?v=f124511"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/src/ducks.js?v=f124511",
+      "status": 200,
+      "module": "ducks.js",
+      "models": [
+        "duck-rigged.glb"
+      ],
+      "versionedHelperImport": "./modelurl.js?v=f124511"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/src/paddock.js?v=f124511",
+      "status": 200,
+      "module": "paddock.js",
+      "models": [
+        "pony-rigged.glb"
+      ],
+      "versionedHelperImport": "./modelurl.js?v=f124511"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/src/pingping.js?v=f124511",
+      "status": 200,
+      "module": "pingping.js",
+      "models": [
+        "pingping.glb"
+      ],
+      "versionedHelperImport": "./modelurl.js?v=f124511"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/src/riverfish.js?v=f124511",
+      "status": 200,
+      "module": "riverfish.js",
+      "models": [
+        "fish-generic.glb"
+      ],
+      "versionedHelperImport": "./modelurl.js?v=f124511"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/src/santa.js?v=f124511",
+      "status": 200,
+      "module": "santa.js",
+      "models": [
+        "santa.glb"
+      ],
+      "versionedHelperImport": "./modelurl.js?v=f124511"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/src/shark.js?v=f124511",
+      "status": 200,
+      "module": "shark.js",
+      "models": [
+        "shark.glb"
+      ],
+      "versionedHelperImport": "./modelurl.js?v=f124511"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/src/squirrels.js?v=f124511",
+      "status": 200,
+      "module": "squirrels.js",
+      "models": [
+        "squirrel-rigged.glb"
+      ],
+      "versionedHelperImport": "./modelurl.js?v=f124511"
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/src/streetlife.js?v=f124511",
+      "status": 200,
+      "module": "streetlife.js",
+      "models": [
+        "bicycle.glb"
+      ],
+      "versionedHelperImport": "./modelurl.js?v=f124511"
+    }
+  ],
+  "helperQueryPropagation": true,
+  "scope": "Actual HTTPS resources and stamped JS; full Pages World acceptance remains with conductor #1914",
+  "verifiedAt": "2026-11-11T13:59:35.872435+00:00"
+}

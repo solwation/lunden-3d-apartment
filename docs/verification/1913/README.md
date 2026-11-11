@@ -63,8 +63,19 @@ green component/package evidence above is reused. Worker checkout:
 `/home/devcontainers/wt/lunden-1913-codex`, retained clean on main. The issue handoff
 records the exact revision. The conductor authorized the integration Refs push;
 this worker does not close the issue. Changelog1474 was checked against max1473
-after the final rebase. After integration/Pages succeeds, verify actual published
-`version.json`, all twelve versioned HTTPS model HTTP200 responses and SHA-256 bytes
-against this manifest, then check the real published loader request URLs. Record the
-actual build/run/revision and conductor's combined startup result before closing #1913
-and the related ready siblings. Local HTTP evidence does not claim Pages deployment.
+after the final rebase.
+
+Production revision: **`f124511c18d707db9a087e721dfca01c502e70f8`**.
+[Actual Pages run43033851235](https://github.com/solwation/lunden-3d-apartment/actions/runs/43033851235)
+completed **success** for that exact head SHA; [run record](pages-run.json).
+Live `version.json`: BUILD **`f124511`**, CONTENT **`2d013f8cd9ae`**, matching the
+local content-contract result. All twelve `models/*.glb?v=f124511` resources returned
+HTTPS **200**, with exact source byte counts and SHA-256. All twelve published loader
+sites in eleven modules import `modelurl.js?v=f124511`; the published helper propagates
+that query and `version.js` has matching BUILD/CONTENT. [Full live resource and JS evidence](pages.json).
+
+These checks use actual Pages responses, not CI artifacts or a source-server substitute.
+No new form/browser sweep was performed. The conductor owns final combined full-app
+Pages startup acceptance in #1914 before closure of #1913 and the ready model siblings.
+The finished delivery remains integration-ready with the same documented integration
+owner until that acceptance; this worker does not close it.
