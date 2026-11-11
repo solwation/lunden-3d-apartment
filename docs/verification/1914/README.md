@@ -23,3 +23,12 @@ Verification:
 
 Personal character/gameplay: no public transfer applies. The public project has
 no Santa consumer or GLB fallback. Source and test changes are original-only.
+
+Combined source startup at `5afd028c80ba60c657d8bf1857460a4f3ea774ac`:
+Chromium/SwiftShader, `/ ?test=lazy&cloud=&month=12&day=24&time=15&freeze`
+(without the display space), 480×300. Actual `__app.renderer` becomes ready and
+actual Santa is sitting; [captured console/result](full-startup.json). One unrelated
+HTTP 404 is recorded, no JavaScript exception/startup rejection. Before #1910,
+`OutdoorCats.bakePose` failed to merge mismatched attributes from the old imported
+cat, then constructed Mesh(null); after #1910 integration that startup failure is
+gone. Actual published GLB delivery and startup against it remain #1913 acceptance.
