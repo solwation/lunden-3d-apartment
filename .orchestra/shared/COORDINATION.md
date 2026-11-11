@@ -191,6 +191,11 @@ Base it on the combined diff since the session's starting revision per repositor
 closed issues and their evidence; rerun a check only on concrete suspicion. Keep it to
 roughly one ordinary review per few deliveries. Read-only parts (by repository, area or
 issue group) may go to workers within capacity; they fix nothing, the conductor merges.
+When configured by the host policy (see
+[PROJECT.example.md](PROJECT.example.md#expert-panel-review-hook)), this review can use
+an expert panel: identify 2–3 expert roles, let them evaluate the delivered changes
+independently, synthesize their perspectives, and formulate findings as new issues
+rather than direct edits.
 
 Each finding becomes a separately scoped, triaged issue linking the delivering issue
 and revision; reopen an issue instead when its own acceptance is plainly unmet. Clean
