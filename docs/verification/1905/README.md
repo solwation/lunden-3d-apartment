@@ -52,7 +52,14 @@ kramform, inte en genomförd full Thing/input-interaktion. Poser/mått finns i
 
 Generella ankdetaljer överfördes selektivt i public #266 (`6e557479`), verklig
 Pages43033915814 och publicerad scen verifierade. Den neutrala fiskformens relevanta
-förbättring spåras i public #267 och måste vara levererad före förälderns slutavslut.
+förbättring är levererad i public #267 (`74647c132e145dccc36bd4110487b93a7be48eec`),
+lyckad Pages43035998233/version22479ab72209111eede30c4b. Riktig publik åvy och
+faktisk uppstigning rise0.9944006 är verifierade utan sidfel/externanrop eller
+ändring av originalets lagringsmarkörer; egna hela bilder är publicerade/granskade.
 Public behöll redan procedurala häst-/ekorr-/kattformer och har ingen motsvarande
 GLB-migration eller cykelfabrik; dessa återställningar/leveransfixar gäller inte där.
 Avatar, personlig kattpäls, Pingping, tomte, haj-/fångstspel och tjänster överförs inte.
+
+Hästarnas igenkännbarhet bedömdes uttryckligen i hela riktiga Paddock-vyer: sammanhängande
+hästkropp/hals/huvud, tydlig mule/öron/man samt fyra ben/hovar i båda individernas utseenden.
+Före-PNG har rensats i avslutande commit; historiska pinnade bildkommentarer fungerar fortsatt.
