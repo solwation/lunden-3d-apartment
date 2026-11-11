@@ -1,0 +1,239 @@
+[
+  {
+    "ready": true,
+    "name": "pony-rigged",
+    "clip": "idle",
+    "time": 0.32,
+    "size": [
+      0.9600000238418579,
+      3.4075130453705786,
+      3.980056476756803
+    ],
+    "triangles": 698,
+    "calls": 1,
+    "clips": [
+      "idle",
+      "walk",
+      "graze",
+      "watch",
+      "pet"
+    ]
+  },
+  {
+    "ready": true,
+    "name": "pony-rigged",
+    "clip": "graze",
+    "time": 0.32,
+    "size": [
+      0.9600000238418579,
+      3.412658396166475,
+      4.0588237940302445
+    ],
+    "triangles": 698,
+    "calls": 1,
+    "clips": [
+      "idle",
+      "walk",
+      "graze",
+      "watch",
+      "pet"
+    ]
+  },
+  {
+    "ready": true,
+    "name": "cat-rigged",
+    "clip": "idle",
+    "time": 0.32,
+    "size": [
+      4.149052425025783,
+      12.968975036642952,
+      15.043192357142297
+    ],
+    "triangles": 538,
+    "calls": 1,
+    "clips": [
+      "dance",
+      "attack",
+      "dead",
+      "die",
+      "idle",
+      "walk"
+    ]
+  },
+  {
+    "ready": true,
+    "name": "duck-rigged",
+    "clip": "idle",
+    "time": 0.32,
+    "size": [
+      0.4399999985694881,
+      0.7000000387597088,
+      1.0212177452137627
+    ],
+    "triangles": 180,
+    "calls": 1,
+    "clips": [
+      "idle",
+      "swim",
+      "waddle",
+      "flap",
+      "eat"
+    ]
+  },
+  {
+    "ready": true,
+    "name": "squirrel-rigged",
+    "clip": "idle",
+    "time": 0.32,
+    "size": [
+      0.11800000575184828,
+      0.3609516360705936,
+      0.40989398267908117
+    ],
+    "triangles": 312,
+    "calls": 1,
+    "clips": [
+      "idle",
+      "run",
+      "flick",
+      "climb",
+      "eat"
+    ]
+  },
+  {
+    "ready": true,
+    "name": "fish-generic",
+    "clip": "swim",
+    "time": 0.32,
+    "size": [
+      0.5600000051578333,
+      0.899999978095293,
+      1.0017044539232232
+    ],
+    "triangles": 175,
+    "calls": 1,
+    "clips": [
+      "swim",
+      "idle"
+    ]
+  },
+  {
+    "ready": true,
+    "name": "shark",
+    "clip": "",
+    "time": 0,
+    "size": [
+      1.220669448375702,
+      1.5998284220695496,
+      5.2458155155181885
+    ],
+    "triangles": 276,
+    "calls": 1,
+    "clips": []
+  },
+  {
+    "ready": true,
+    "name": "shark",
+    "clip": "",
+    "time": 0,
+    "size": [
+      1.220669448375702,
+      1.5998284220695496,
+      5.2458155155181885
+    ],
+    "triangles": 216,
+    "calls": 1,
+    "clips": []
+  },
+  {
+    "ready": true,
+    "name": "bicycle",
+    "clip": "",
+    "time": 0,
+    "size": [
+      1.6367433667182922,
+      0.9911765195429325,
+      0.5900000333786011
+    ],
+    "triangles": 3184,
+    "calls": 8,
+    "clips": []
+  },
+  {
+    "ready": true,
+    "name": "car-megane",
+    "clip": "",
+    "time": 0,
+    "size": [
+      4.325000047683716,
+      1.5248438012599945,
+      2.2559999892711637
+    ],
+    "triangles": 23126,
+    "calls": 38,
+    "clips": []
+  },
+  {
+    "ready": true,
+    "name": "car-parked",
+    "clip": "",
+    "time": 0,
+    "size": [
+      4.325000047683716,
+      1.5219728839397426,
+      1.8306218385696411
+    ],
+    "triangles": 5136,
+    "calls": 11,
+    "clips": []
+  },
+  {
+    "ready": true,
+    "name": "avatar-rigged",
+    "clip": "idle",
+    "time": 0.32,
+    "size": [
+      0.892000013589859,
+      3.252908007321915,
+      0.2945428759086721
+    ],
+    "triangles": 916,
+    "calls": 1,
+    "clips": [
+      "idle",
+      "walk",
+      "run",
+      "crouch",
+      "wave",
+      "sit"
+    ]
+  },
+  {
+    "ready": true,
+    "name": "santa",
+    "clip": "",
+    "time": 0,
+    "size": [
+      0.6600000262260437,
+      1.6599999368190765,
+      1.134659394621849
+    ],
+    "triangles": 5276,
+    "calls": 7,
+    "clips": []
+  },
+  {
+    "ready": true,
+    "name": "pingping",
+    "clip": "",
+    "time": 0,
+    "size": [
+      0.5027844309806824,
+      0.38352000317536294,
+      0.23000000417232513
+    ],
+    "triangles": 4168,
+    "calls": 4,
+    "clips": []
+  }
+]

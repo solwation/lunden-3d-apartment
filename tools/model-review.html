@@ -1,0 +1,17 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Modellgranskning</title>
+<style>body{margin:0;background:#edf0f3;font:16px system-ui;color:#14212e}h1{font-size:23px;margin:18px 24px 6px}p{margin:6px 24px}#views{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 24px}figure{margin:0;background:white;border:1px solid #bbc7d1;border-radius:8px;overflow:hidden}figcaption{padding:8px 12px;font-weight:600}canvas{display:block;width:100%;height:340px}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<h1 id="title">Laddar modell</h1><p id="description">Fyra hela vyer av samma GLB och samma animationsögonblick. Teknisk laddning är inget visuellt godkännande.</p><main id="views"></main>
+<script type="module">
+import * as T from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+const params=new URLSearchParams(location.search),name=params.get('model')||'pony-rigged',clip=params.get('clip')||'',time=+(params.get('t')||0);
+const gltf=await new GLTFLoader().loadAsync('../models/'+name+'.glb');const scene=new T.Scene();scene.background=new T.Color('#edf0f3');scene.add(new T.HemisphereLight(0xcce5ff,0x5f654d,2.2));const light=new T.DirectionalLight(0xfff5e8,2.6);light.position.set(4,6,5);scene.add(light);scene.add(gltf.scene);
+const node=params.get('node');if(node)gltf.scene.traverse(o=>{if(o.isMesh)o.visible=o.name===node});else if(name==='fish-generic')gltf.scene.getObjectByName('Fish_Static').visible=false;
+if(clip){const c=gltf.animations.find(a=>a.name===clip);if(!c)throw Error('Missing clip '+clip);const m=new T.AnimationMixer(gltf.scene);m.clipAction(c).play();m.setTime(time)}
+scene.updateMatrixWorld(true);gltf.scene.traverse(o=>{if(o.isSkinnedMesh){o.skeleton.update();o.computeBoundingBox();o.computeBoundingSphere()}});
+const box=new T.Box3().setFromObject(gltf.scene,true),size=box.getSize(new T.Vector3()),center=box.getCenter(new T.Vector3()),radius=size.length()/2;let triangles=0,calls=0;gltf.scene.traverse(o=>{if(o.isMesh&&o.visible){triangles+=(o.geometry.index?.count||o.geometry.attributes.position.count)/3;calls++}});
+document.querySelector('#title').textContent=`${name} · ${clip||'vilopos'}${clip?' · t='+time+' s':''}`;
+const views=[['Vy från +X',[1,0,0]],['Vy från +Z',[0,0,1]],['Sned vy +X/+Z',[1,.25,1]],['Sned vy −X/−Z',[-.65,.2,-1]]];
+for(const [label,dir]of views){const f=document.createElement('figure'),caption=document.createElement('figcaption');caption.textContent=label;f.append(caption);document.querySelector('#views').append(f);const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(1);renderer.setSize(730,340);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;f.append(renderer.domElement);const camera=new T.PerspectiveCamera(34,730/340,Math.max(radius/1000,.0001),radius*20);camera.position.copy(center).add(new T.Vector3(...dir).normalize().multiplyScalar(radius/Math.sin(17*Math.PI/180)*1.12));camera.lookAt(center);renderer.render(scene,camera)}
+window.review={ready:true,name,clip,time,size:size.toArray(),triangles,calls,clips:gltf.animations.map(c=>c.name)};document.querySelector('#description').textContent+=` ${triangles} trianglar, ${calls} synliga meshar. Mått ${size.toArray().map(n=>n.toFixed(3)).join(' × ')} i modellens enheter.`;
+</script></html>

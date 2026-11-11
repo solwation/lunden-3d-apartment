@@ -15,6 +15,19 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## GLB model acceptance (#1905)
+
+A valid GLB file, named bones/clips or a green fixture panel does not establish
+visual acceptance. Inspect the complete deformed model from the side, front and
+an oblique angle at representative animation times, with unobscured silhouettes.
+Check bind-pose joint continuity and posed vertex bounds, rather than only the raw
+geometry bounds. Compare the actual production consumer, materials, variant identity,
+ground/seat/water contact and relevant interactions against the previous implementation
+and retained references. Raw assets may contain alternative poses or unassigned
+materials; do not report those as consumer defects without checking the consumer.
+Record concrete visual findings and use the relevant model regression, avoiding a
+repeated global sweep. See [the model audit](../verification/1905/README.md).
+
 ## Image retention
 
 Images are the bulk of the checkout (2 121 files, 755 MB before #1879, 2026-11-06). The rules in
