@@ -5,7 +5,7 @@ export async function createBestiaryModel(recipe) {
  let object, sharedGeometry = false, ownTextures = false;
  const mesh = (g, material = new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,side:THREE.DoubleSide})) => new THREE.Mesh(g, material);
  switch(recipe.kind) {
-  case 'cat': { const m=await import('./cat.js'),b=m.BREEDS.find(b=>b.name===recipe.breed),c=b.coats.find(c=>c.name===recipe.coat); object=m.createCatPuppet(b,c,recipe.kitten).object; break; }
+  case 'cat': { const m=await import('./cat.js'); await m.loadRiggedCatModel(); const b=m.BREEDS.find(b=>b.name===recipe.breed),c=b.coats.find(c=>c.name===recipe.coat); object=m.createCatPuppet(b,c,recipe.kitten).object; sharedGeometry=true; break; }
   case 'squirrel': { const [{squirrelGeometry},{SQUIRRELS}]=await Promise.all([import('./squirrels.js'),import('./config.js')]); const s=SQUIRRELS.animals.find(s=>s.name===recipe.name); object=mesh(squirrelGeometry(s).clone()); object.scale.setScalar(s.scale); break; }
   case 'duck': object=mesh((await import('./duckmodel.js')).duckModel(recipe.female)); break;
   case 'fish': case 'shark': { const {caughtFishGeometry}=await import('./caughtfish.js'); object=mesh(caughtFishGeometry(recipe.kind==='shark'?'haj':recipe.name,recipe.kind==='shark'?SHARK.look:null)); sharedGeometry=true; break; }

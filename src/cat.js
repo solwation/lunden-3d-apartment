@@ -173,6 +173,7 @@ function buildStars() {
  */
 let tabbyMaps = null;
 function tabbyTextures() {
+  if (typeof document === 'undefined') return {};
   if (tabbyMaps) return tabbyMaps;
   const make = (w, h, draw) => {
     const c = document.createElement('canvas');
@@ -241,7 +242,7 @@ function tabbyTextures() {
 export function applyVariant(v) {
   for (const [role, m] of Object.entries(ROLE)) {
     m.color.setHex(v[role]);
-    const map = v.maps?.[role] ? tabbyTextures()[v.maps[role]] : null;
+    const map = v.maps?.[role] ? tabbyTextures()?.[v.maps[role]] ?? null : null;
     if (m.map !== map) { if (!m.map !== !map) m.needsUpdate = true; m.map = map; } // (a map on or off: a new shader once)
   }
   eyeMat.color.setHex(v.eye);
@@ -366,14 +367,30 @@ export function loadRiggedCatModel() {
   riggedCatLoading = new Promise((resolve, reject) => {
     try {
       const loader = new GLTFLoader();
-      const isTool = typeof window !== 'undefined' && window.location.pathname.includes('/tools/');
-      const url = isTool ? '../models/cat-rigged.glb' : 'models/cat-rigged.glb';
-      loader.load(url, (gltf) => {
-        riggedCatData = gltf;
-        resolve(gltf);
-      }, undefined, (err) => {
-        reject(err);
-      });
+      const modelUrl = new URL('../models/cat-rigged.glb', import.meta.url);
+      if (typeof window === 'undefined' && modelUrl.protocol === 'file:') {
+        if (typeof self === 'undefined') globalThis.self = globalThis;
+        Promise.all([import('node:fs'), import('node:url')]).then(([fs, urlMod]) => {
+          try {
+            const filePath = urlMod.fileURLToPath(modelUrl);
+            const buf = fs.readFileSync(filePath);
+            const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+            loader.parse(ab, '', gltf => {
+              riggedCatData = gltf;
+              resolve(gltf);
+            }, reject);
+          } catch (err) {
+            reject(err);
+          }
+        }).catch(reject);
+      } else {
+        loader.load(modelUrl.href, (gltf) => {
+          riggedCatData = gltf;
+          resolve(gltf);
+        }, undefined, (err) => {
+          reject(err);
+        });
+      }
     } catch (e) {
       reject(e);
     }
@@ -736,13 +753,20 @@ export class CatSpawner {
   hideProceduralParts() {
     if (!this.parts) return;
     const p = this.parts;
-    if (p.torso) p.torso.visible = false;
-    if (p.head) p.head.visible = false;
-    if (p.tailGroup) p.tailGroup.visible = false;
-    if (p.shoulder) p.shoulder.visible = false;
-    if (p.leftShoulder) p.leftShoulder.visible = false;
-    if (p.hips) for (const h of p.hips) if (h.hip) h.hip.visible = false;
-    if (p.butt) p.butt.visible = false;
+    for (const key of ['torso', 'head', 'tailGroup', 'shoulder', 'leftShoulder', 'butt']) {
+      if (p[key]) {
+        p[key].visible = false;
+        this.object.remove(p[key]);
+      }
+    }
+    if (p.hips) {
+      for (const h of p.hips) {
+        if (h.hip) {
+          h.hip.visible = false;
+          this.object.remove(h.hip);
+        }
+      }
+    }
   }
 
   get visible() { return this.object.visible; }

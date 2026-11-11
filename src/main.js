@@ -1109,7 +1109,7 @@ const bestiaryObserver = new BestiaryObserver({collection:bestiary,camera,enable
 const bestiaryPhotos = new BestiaryPhotoQueue({ every:BESTIARY.photoGlobalEvery,maxPending:BESTIARY.photoQueue,perEntry:BESTIARY.photoEveryMs/1000,
  candidate:id=>bestiaryObserver.candidates().find(c=>c.id===id&&observable(c.point,camera,c.maxDistance??BESTIARY.seenDistance)&&!bestiaryObserver.blocked(c.point,c.id))?.point,
  capture:point=>snapshot(renderer,scene,camera,point),save:(id,data)=>bestiary.addPhoto(id,data) });
-bestiary.onRecord = (id, action, first) => { if(!id.startsWith('cat:')&&(first||action!=='seen'))bestiaryPhotos.request(id); };
+bestiary.onRecord = (id, action, first) => { if (first || action !== 'seen') bestiaryPhotos.request(id); };
 // the shared world (#178, #119): inert unless CLOUD_URL (or &cloud=) is set — then drawings, the desk sheet and
 // shared drawings sync silently with the Cloudflare Worker; the animal collection stays personal and local
 const cloud = new Cloud({ posters, drawing, holding: () => heldItem() === heldDrawing,
