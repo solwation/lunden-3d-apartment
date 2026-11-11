@@ -146,12 +146,227 @@ function screenTexture() {
   return screenTex;
 }
 
+// --- Low-poly GLB car model loader and factory ----------------------------------
+let meganeModelData = null;
+let meganeModelLoading = null;
+let parkedModelData = null;
+let parkedModelLoading = null;
+
+export function loadMeganeModel() {
+  if (meganeModelData) return Promise.resolve(meganeModelData);
+  if (meganeModelLoading) return meganeModelLoading;
+
+  meganeModelLoading = new Promise((resolve, reject) => {
+    try {
+      const isNode = typeof process !== 'undefined' && process?.versions?.node;
+      if (isNode) {
+        if (typeof self === 'undefined') globalThis.self = globalThis;
+        Promise.all([
+          import('node:fs'),
+          import('node:path'),
+          import('three/examples/jsm/loaders/GLTFLoader.js')
+        ]).then(([fs, path, { GLTFLoader }]) => {
+          const modelPath = path.resolve(process.cwd(), 'models/car-megane.glb');
+          if (!fs.existsSync(modelPath)) {
+            resolve(null);
+            return;
+          }
+          const buf = fs.readFileSync(modelPath);
+          const arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+          new GLTFLoader().parse(arrayBuffer, '', (gltf) => {
+            meganeModelData = gltf;
+            resolve(gltf);
+          }, reject);
+        }).catch((err) => {
+          console.warn('Node GLTF megane load fallback:', err);
+          resolve(null);
+        });
+      } else {
+        import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
+          const url = new URL('../models/car-megane.glb', import.meta.url).href;
+          new GLTFLoader().load(url, (gltf) => {
+            meganeModelData = gltf;
+            resolve(gltf);
+          }, undefined, (err) => {
+            console.warn('Could not load car-megane.glb:', err);
+            resolve(null);
+          });
+        }).catch(reject);
+      }
+    } catch {
+      resolve(null);
+    }
+  });
+
+  return meganeModelLoading;
+}
+
+export function loadParkedCarModel() {
+  if (parkedModelData) return Promise.resolve(parkedModelData);
+  if (parkedModelLoading) return parkedModelLoading;
+
+  parkedModelLoading = new Promise((resolve, reject) => {
+    try {
+      const isNode = typeof process !== 'undefined' && process?.versions?.node;
+      if (isNode) {
+        if (typeof self === 'undefined') globalThis.self = globalThis;
+        Promise.all([
+          import('node:fs'),
+          import('node:path'),
+          import('three/examples/jsm/loaders/GLTFLoader.js')
+        ]).then(([fs, path, { GLTFLoader }]) => {
+          const modelPath = path.resolve(process.cwd(), 'models/car-parked.glb');
+          if (!fs.existsSync(modelPath)) {
+            resolve(null);
+            return;
+          }
+          const buf = fs.readFileSync(modelPath);
+          const arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+          new GLTFLoader().parse(arrayBuffer, '', (gltf) => {
+            parkedModelData = gltf;
+            resolve(gltf);
+          }, reject);
+        }).catch((err) => {
+          console.warn('Node GLTF parked car load fallback:', err);
+          resolve(null);
+        });
+      } else {
+        import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
+          const url = new URL('../models/car-parked.glb', import.meta.url).href;
+          new GLTFLoader().load(url, (gltf) => {
+            parkedModelData = gltf;
+            resolve(gltf);
+          }, undefined, (err) => {
+            console.warn('Could not load car-parked.glb:', err);
+            resolve(null);
+          });
+        }).catch(reject);
+      }
+    } catch {
+      resolve(null);
+    }
+  });
+
+  return parkedModelLoading;
+}
+
+if (typeof window !== 'undefined') {
+  loadMeganeModel().catch(() => {});
+  loadParkedCarModel().catch(() => {});
+}
+
+function buildMeganeFromGLB(gltf, paint) {
+  const group = gltf.scene.clone(true);
+
+  const mats = {
+    paint: new THREE.MeshStandardMaterial({ color: paint, roughness: 0.22, metalness: 0.35 }),
+    black: new THREE.MeshStandardMaterial({ color: 0x0c0d0f, roughness: 0.25, metalness: 0.2 }),
+    roof: new THREE.MeshStandardMaterial({ color: 0x0b0c0e, roughness: 0.15, metalness: 0.4 }),
+    glass: new THREE.MeshStandardMaterial({ color: 0x1a2430, roughness: 0.05, metalness: 0.6, transparent: true, opacity: 0.55, depthWrite: false }),
+    chrome: new THREE.MeshStandardMaterial({ color: 0xd9dde0, roughness: 0.18, metalness: 0.9 }),
+    lens: new THREE.MeshStandardMaterial({ color: 0x111418, roughness: 0.1, metalness: 0.6 }),
+    led: new THREE.MeshStandardMaterial({ color: 0xf4f6ff, emissive: 0xeaf0ff, emissiveIntensity: 0.3 }),
+    tail: new THREE.MeshStandardMaterial({ color: 0x8a0f12, emissive: 0xff2020, emissiveIntensity: 0.2 }),
+    blink: new THREE.MeshStandardMaterial({ color: 0xc87a10, emissive: 0xffa020, emissiveIntensity: 0 }),
+    tyre: new THREE.MeshStandardMaterial({ color: 0x141517, roughness: 0.85 }),
+    rim: new THREE.MeshStandardMaterial({ color: 0x9aa0a6, roughness: 0.3, metalness: 0.8 }),
+    fabric: new THREE.MeshStandardMaterial({ color: 0x2b2e33, roughness: 0.95 }),
+    plastic: new THREE.MeshStandardMaterial({ color: 0x17181b, roughness: 0.6 }),
+    screen: new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffffff, emissiveMap: screenTexture(), emissiveIntensity: 0.9, roughness: 0.2 }),
+    logo: new THREE.MeshStandardMaterial({ map: renaultLogo(), transparent: true, roughness: 0.2, metalness: 0.8, depthWrite: false }),
+  };
+
+  group.traverse((obj) => {
+    if (obj.isMesh) {
+      const name = obj.name.toLowerCase();
+      let m = mats.black;
+      if (name.includes('paint')) m = mats.paint;
+      else if (name.includes('roof')) m = mats.roof;
+      else if (name.includes('glass')) m = mats.glass;
+      else if (name.includes('chrome')) m = mats.chrome;
+      else if (name.includes('lens')) m = mats.lens;
+      else if (name.includes('led')) m = mats.led;
+      else if (name.includes('blink')) m = mats.blink;
+      else if (name.includes('tail')) m = mats.tail;
+      else if (name.includes('tyre')) m = mats.tyre;
+      else if (name.includes('rim')) m = mats.rim;
+      else if (name.includes('fabric')) m = mats.fabric;
+      else if (name.includes('plastic')) m = mats.plastic;
+      else if (name.includes('screen')) m = mats.screen;
+      else if (name.includes('logo')) m = mats.logo;
+
+      obj.material = m;
+      obj.castShadow = (m !== mats.glass);
+      obj.receiveShadow = true;
+    }
+  });
+
+  const doors = [
+    { pivot: group.getObjectByName('Door_FL'), side: -1, front: true, angle: 0, target: 0 },
+    { pivot: group.getObjectByName('Door_FR'), side: 1, front: true, angle: 0, target: 0 },
+    { pivot: group.getObjectByName('Door_RL'), side: -1, front: false, angle: 0, target: 0 },
+    { pivot: group.getObjectByName('Door_RR'), side: 1, front: false, angle: 0, target: 0 }
+  ];
+
+  const wheels = [
+    group.getObjectByName('Wheel_FL'),
+    group.getObjectByName('Wheel_FR'),
+    group.getObjectByName('Wheel_RL'),
+    group.getObjectByName('Wheel_RR')
+  ];
+
+  const screen = group.getObjectByName('Screen_OpenR');
+  const seats = [
+    { x: -0.02, y: 0.54, z: -0.37, name: 'förarsätet' },
+    { x: -0.02, y: 0.54, z: 0.37, name: 'passagerarsätet' }
+  ];
+
+  return { group, parts: {}, doors, seats, screen, materials: mats, wheels };
+}
+
+function buildParkedFromGLB(gltf, paint) {
+  const parts = {};
+  gltf.scene.traverse((obj) => {
+    if (obj.isMesh && obj.name.startsWith('Parked_')) {
+      const key = obj.name.replace('Parked_', '');
+      parts[key] = obj.geometry;
+    }
+  });
+
+  const mats = {
+    paint: new THREE.MeshStandardMaterial({ color: paint, roughness: 0.25 }),
+    black: new THREE.MeshStandardMaterial({ color: 0x0c0d0f, roughness: 0.25 }),
+    roof: new THREE.MeshStandardMaterial({ color: 0x0b0c0e, roughness: 0.15 }),
+    glass: new THREE.MeshStandardMaterial({ color: 0x1a2430, roughness: 0.05, transparent: true, opacity: 0.88, depthWrite: false }),
+    chrome: new THREE.MeshStandardMaterial({ color: 0xd9dde0, roughness: 0.18 }),
+    lens: new THREE.MeshStandardMaterial({ color: 0x111418, roughness: 0.1 }),
+    led: new THREE.MeshStandardMaterial({ color: 0xf4f6ff, emissive: 0xeaf0ff, emissiveIntensity: 0.3 }),
+    tail: new THREE.MeshStandardMaterial({ color: 0x8a0f12, emissive: 0xff2020, emissiveIntensity: 0.2 }),
+    blink: new THREE.MeshStandardMaterial({ color: 0xc87a10, emissive: 0xffa020, emissiveIntensity: 0 }),
+    tyre: new THREE.MeshStandardMaterial({ color: 0x141517, roughness: 0.85 }),
+    rim: new THREE.MeshStandardMaterial({ color: 0x9aa0a6, roughness: 0.3, metalness: 0.8 })
+  };
+
+  const group = gltf.scene.clone(true);
+  return { group, parts, doors: [], seats: [], screen: null, materials: mats, wheels: [] };
+}
+
 /**
  * Build a car. Returns { group, parts (closed body: per-material geometries, no group), doors: [{ pivot, side, front }],
  * seats: [{ x, y, z, name }], screen (the OpenR sheet, our car), materials }.
  * opts: { doors: true → hinged doors + interior (our car), paint: hex }.
  */
 export function buildCar(S = MEGANE, { doors: withDoors = false, paint = 0xf2f2ee, lite = false } = {}) {
+  if (withDoors && meganeModelData) {
+    return buildMeganeFromGLB(meganeModelData, paint);
+  }
+  if (!withDoors && parkedModelData) {
+    return buildParkedFromGLB(parkedModelData, paint);
+  }
+  return buildProceduralCar(S, { doors: withDoors, paint, lite });
+}
+
+export function buildProceduralCar(S = MEGANE, { doors: withDoors = false, paint = 0xf2f2ee, lite = false } = {}) {
   Q = lite ? LOW : HIGH;
   const P = new Parts(), { top, belt, bot, lowerTop, wx } = lines(S), W = S.W, hw = W / 2, [xA, xB, xC] = S.doors;
   const shoulder = (y) => 0.055 * smooth(0.78, 1.06, y) + 0.035 * smooth(0.45, 0.22, y); // the sides round in to the belt and tuck in below

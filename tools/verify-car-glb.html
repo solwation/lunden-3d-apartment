@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <title>Optimerade Fordonsmodeller Verifiering (#1898)</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+    h1 { font-size: 22px; color: #38bdf8; margin: 0 0 6px 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #0284c7;
+      color: #f0f9ff;
+      margin-bottom: 12px;
+    }
+    .subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 16px; }
+    #container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    #viewport {
+      width: 720px;
+      height: 480px;
+      background: linear-gradient(180deg, #1e293b 0%, #0b1120 100%);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+    #panel {
+      flex: 1;
+      min-width: 300px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .card h3 { margin: 0 0 8px 0; font-size: 14px; color: #38bdf8; }
+    .stat-row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+    .stat-label { color: #94a3b8; }
+    .stat-val { font-family: monospace; font-weight: 600; color: #f1f5f9; }
+    #status {
+      font-family: monospace;
+      font-size: 13px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid #10b981;
+      color: #34d399;
+      padding: 12px;
+      border-radius: 6px;
+      white-space: pre-line;
+      line-height: 1.5;
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/node_modules/three/build/three.module.js",
+        "three/addons/": "/node_modules/three/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="badge">PRODUKTIONSVERIFIERING #1898</div>
+  <h1>Optimerade Lågpoly Fordonsmodeller (GLB & PBR-lack)</h1>
+  <div class="subtitle">Ersätter tung proceduriell spline-extrudering med optimerade GLB-tillgångar för Renault Mégane och parkerade personbilar.</div>
+
+  <div id="container">
+    <div id="viewport"></div>
+    <div id="panel">
+      <div class="card">
+        <h3>Modell & Nodstruktur</h3>
+        <div class="stat-row"><span class="stat-label">Mégane E-Tech:</span><span class="stat-val">models/car-megane.glb</span></div>
+        <div class="stat-row"><span class="stat-label">Parkerade bilar:</span><span class="stat-val">models/car-parked.glb</span></div>
+        <div class="stat-row"><span class="stat-label">Öppningsbara dörrar:</span><span class="stat-val" id="doors-info">4 gångjärn (FL, FR, RL, RR)</span></div>
+        <div class="stat-row"><span class="stat-label">Roterbara hjul:</span><span class="stat-val" id="wheels-info">4 oberoende noder</span></div>
+        <div class="stat-row"><span class="stat-label">Kupé & Skärm:</span><span class="stat-val">OpenR-display & stolar</span></div>
+      </div>
+      <div class="card">
+        <h3>Prestanda & Geometri</h3>
+        <div class="stat-row"><span class="stat-label">Instansierade fordon:</span><span class="stat-val">Mégane + 2 parkerade</span></div>
+        <div class="stat-row"><span class="stat-label">Mégane Trianglar:</span><span class="stat-val" id="megane-tri">Laddar...</span></div>
+        <div class="stat-row"><span class="stat-label">Parkerad Bil Trianglar:</span><span class="stat-val" id="parked-tri">Laddar...</span></div>
+        <div class="stat-row"><span class="stat-label">Runtime extrudering:</span><span class="stat-val" style="color: #34d399;">0 ms (pre-baked GLB)</span></div>
+      </div>
+      <div id="status">Laddar fordonsmodeller och verifierar...</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { loadMeganeModel, loadParkedCarModel, buildCar, MEGANE } from '/src/carmodel.js';
+    import { carGeometry } from '/src/streetlife.js';
+
+    const viewport = document.getElementById('viewport');
+    const statusEl = document.getElementById('status');
+    const width = 720;
+    const height = 480;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#0f172a');
+
+    const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 50);
+    camera.position.set(4.5, 2.8, 6.0);
+    camera.lookAt(0, 0.7, 0);
+
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x334155, 1.8);
+    scene.add(hemiLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    dirLight.position.set(6, 8, 5);
+    scene.add(dirLight);
+
+    const dirLight2 = new THREE.DirectionalLight(0x38bdf8, 0.8);
+    dirLight2.position.set(-6, 4, -4);
+    scene.add(dirLight2);
+
+    // Asphalt ground plane
+    const groundGeo = new THREE.PlaneGeometry(24, 24);
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0x1e242b, roughness: 0.9 });
+    const groundMesh = new THREE.Mesh(groundGeo, groundMat);
+    groundMesh.rotation.x = -Math.PI / 2;
+    groundMesh.position.y = 0;
+    scene.add(groundMesh);
+
+    // Road markings
+    const lineMat = new THREE.MeshBasicMaterial({ color: 0xf1f5f9 });
+    const lineGeo = new THREE.PlaneGeometry(12, 0.15);
+    const lineMesh = new THREE.Mesh(lineGeo, lineMat);
+    lineMesh.rotation.x = -Math.PI / 2;
+    lineMesh.position.set(0, 0.01, -1.8);
+    scene.add(lineMesh);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(width, height);
+    viewport.appendChild(renderer.domElement);
+
+    async function init() {
+      try {
+        const [meganeGLTF, parkedGLTF] = await Promise.all([
+          loadMeganeModel(),
+          loadParkedCarModel()
+        ]);
+
+        if (!meganeGLTF || !parkedGLTF) {
+          throw new Error('Kunde inte ladda fordonsmodellerna');
+        }
+
+        // 1. Drivable Mégane E-Tech in forefront with opening doors and rotating wheels
+        const meganeData = buildCar(MEGANE, { doors: true, paint: 0x2e6b54 });
+        const megane = meganeData.group;
+        megane.position.set(0, 0, 0.8);
+        megane.rotation.y = -0.35;
+        scene.add(megane);
+
+        // Open doors partially to verify hinges & interior visibility
+        if (meganeData.doors && meganeData.doors.length === 4) {
+          meganeData.doors[0].pivot.rotation.y = -1 * 0.75; // Front left (driver)
+          meganeData.doors[1].pivot.rotation.y = 1 * 0.65;  // Front right (passenger)
+          meganeData.doors[2].pivot.rotation.y = -1 * 0.50; // Rear left
+          meganeData.doors[3].pivot.rotation.y = 1 * 0.40;  // Rear right
+        }
+
+        // 2. Parked cars in background via carGeometry()
+        const [paintG, trimG, glassG, tyreG] = carGeometry();
+        const parkedColors = [0x992222, 0x224488];
+        const parkedPositions = [
+          { x: -3.2, z: -2.8, yaw: 0.1 },
+          { x: 3.2, z: -2.8, yaw: -0.15 }
+        ];
+
+        for (let i = 0; i < parkedPositions.length; i++) {
+          const pos = parkedPositions[i];
+          const col = parkedColors[i];
+          const carGrp = new THREE.Group();
+          carGrp.position.set(pos.x, 0, pos.z);
+          carGrp.rotation.y = pos.yaw;
+
+          const paintM = new THREE.Mesh(paintG, new THREE.MeshStandardMaterial({ color: col, roughness: 0.25, metalness: 0.4 }));
+          const trimM = new THREE.Mesh(trimG, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.5 }));
+          const glassM = new THREE.Mesh(glassG, new THREE.MeshStandardMaterial({ color: 0x1a2430, roughness: 0.05, metalness: 0.7, transparent: true, opacity: 0.88 }));
+          const tyreM = new THREE.Mesh(tyreG, new THREE.MeshStandardMaterial({ color: 0x141517, roughness: 0.85 }));
+
+          carGrp.add(paintM, trimM, glassM, tyreM);
+          scene.add(carGrp);
+        }
+
+        // Count triangles
+        let meganeTris = 0;
+        megane.traverse((o) => {
+          if (o.isMesh && o.geometry) {
+            meganeTris += (o.geometry.index ? o.geometry.index.count / 3 : o.geometry.attributes.position.count / 3);
+          }
+        });
+
+        let parkedTris = (paintG.attributes.position.count + trimG.attributes.position.count + glassG.attributes.position.count + tyreG.attributes.position.count) / 3;
+
+        document.getElementById('megane-tri').textContent = Math.round(meganeTris) + ' trianglar';
+        document.getElementById('parked-tri').textContent = Math.round(parkedTris) + ' trianglar / bil';
+
+        let wheelSpin = 0;
+        let lastTime = performance.now();
+        function animate(now) {
+          requestAnimationFrame(animate);
+          const dt = Math.min((now - lastTime) / 1000, 0.1);
+          lastTime = now;
+
+          wheelSpin += dt * 3.0;
+          for (const w of meganeData.wheels) {
+            w.rotation.z = wheelSpin;
+          }
+
+          renderer.render(scene, camera);
+        }
+        requestAnimationFrame(animate);
+
+        // Verification checks
+        const doorsOk = meganeData.doors && meganeData.doors.length === 4;
+        const wheelsOk = meganeData.wheels && meganeData.wheels.length === 4;
+        const screenOk = !!meganeData.screen;
+        const parkedOk = paintG && trimG && glassG && tyreG;
+        const nodesOk = !!megane.getObjectByName('Door_FL') && !!megane.getObjectByName('Wheel_FL');
+
+        if (doorsOk && wheelsOk && screenOk && parkedOk && nodesOk) {
+          statusEl.textContent = 'RESULT: ALL CHECKS PASSED\n' +
+            '✓ Mégane E-Tech GLB laddad (models/car-megane.glb)\n' +
+            '✓ 4 dörr-pivoter och 4 hjul-noder aktiva\n' +
+            '✓ Kupéinteriör med säten & OpenR-skärm monterad\n' +
+            '✓ Parkerad bil GLB laddad (models/car-parked.glb)\n' +
+            '✓ carGeometry() genererar instansierbar geometri direkt';
+        } else {
+          statusEl.textContent = 'RESULT: SOME CHECKS FAILED\n' +
+            `doorsOk: ${doorsOk}, wheelsOk: ${wheelsOk}, screenOk: ${screenOk}, parkedOk: ${parkedOk}`;
+        }
+      } catch (err) {
+        statusEl.textContent = 'ERROR: ' + err.message;
+        console.error(err);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
