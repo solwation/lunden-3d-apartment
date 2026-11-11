@@ -18,8 +18,84 @@ import { Shark } from './shark.js';
 const M = new THREE.Matrix4(), Q = new THREE.Quaternion(), P = new THREE.Vector3(), S = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
 const tint = new THREE.Color(), white = new THREE.Color(1, 1, 1), deepTone = new THREE.Color(COLORS.water).multiplyScalar(C.look.deepTone);
 
+let fishModelData = null;
+let fishModelLoading = null;
+
+export function loadFishModel() {
+  if (fishModelData) return Promise.resolve(fishModelData);
+  if (fishModelLoading) return fishModelLoading;
+
+  fishModelLoading = new Promise((resolve, reject) => {
+    try {
+      const isNode = typeof process !== 'undefined' && process?.versions?.node;
+      if (isNode) {
+        if (typeof self === 'undefined') globalThis.self = globalThis;
+        Promise.all([
+          import('node:fs'),
+          import('node:path'),
+          import('three/examples/jsm/loaders/GLTFLoader.js')
+        ]).then(([fs, path, { GLTFLoader }]) => {
+          const modelPath = path.resolve(process.cwd(), 'models/fish-generic.glb');
+          if (!fs.existsSync(modelPath)) {
+            resolve(null);
+            return;
+          }
+          const buf = fs.readFileSync(modelPath);
+          const arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+          new GLTFLoader().parse(arrayBuffer, '', (gltf) => {
+            fishModelData = gltf;
+            resolve(gltf);
+          }, reject);
+        }).catch((err) => {
+          console.warn('Node GLTF fish load fallback:', err);
+          resolve(null);
+        });
+      } else {
+        import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
+          const url = new URL('../models/fish-generic.glb', import.meta.url).href;
+          new GLTFLoader().load(url, (gltf) => {
+            fishModelData = gltf;
+            resolve(gltf);
+          }, undefined, (err) => {
+            console.warn('Could not load fish-generic.glb:', err);
+            resolve(null);
+          });
+        }).catch(reject);
+      }
+    } catch {
+      resolve(null);
+    }
+  });
+
+  return fishModelLoading;
+}
+
+if (typeof window !== 'undefined') {
+  loadFishModel().catch(() => {});
+}
+
 /** A fish 1 m long, 1 m wide and 1 m high along +z (scaled per species): body, tail and a dorsal fin, darker back over a lighter belly. */
 export function fishGeometry() {
+  if (fishModelData?.scene) {
+    let geo = null;
+    fishModelData.scene.traverse((obj) => {
+      if (obj.isMesh && (obj.name === 'Fish_Static' || obj.name === 'Fish_Rigged') && !geo) {
+        geo = obj.geometry;
+      }
+    });
+    if (geo) {
+      const cloned = geo.clone();
+      if (!cloned.attributes.color) {
+        const pos = cloned.attributes.position, col = new Float32Array(pos.count * 3);
+        for (let i = 0; i < pos.count; i++) {
+          const y = pos.getY(i), k = y > 0.05 ? 0.62 : y < -0.15 ? 1.25 : 0.95;
+          col.set([k, k, k], i * 3);
+        }
+        cloned.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      }
+      return cloned;
+    }
+  }
   const body = new THREE.SphereGeometry(0.5, 10, 6).scale(1, 1, 0.82).translate(0, 0, 0.09);
   const tail = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute([0, 0, -0.26, 0, 0.36, -0.5, 0, 0.05, -0.42, 0, 0, -0.26, 0, -0.05, -0.42, 0, -0.36, -0.5], 3));
   const fin = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute([0, 0.42, 0.18, 0, 0.42, -0.12, 0, 0.66, -0.06], 3));

@@ -22,8 +22,91 @@ import { sfx } from './audio.js';
 const NONE = { name: '', kind: 'none', pickable: new THREE.Object3D(), blocked: true };
 const V = new THREE.Vector3();
 
+let sharkModelData = null;
+let sharkModelLoading = null;
+
+export function loadSharkModel() {
+  if (sharkModelData) return Promise.resolve(sharkModelData);
+  if (sharkModelLoading) return sharkModelLoading;
+
+  sharkModelLoading = new Promise((resolve, reject) => {
+    try {
+      const isNode = typeof process !== 'undefined' && process?.versions?.node;
+      if (isNode) {
+        if (typeof self === 'undefined') globalThis.self = globalThis;
+        Promise.all([
+          import('node:fs'),
+          import('node:path'),
+          import('three/examples/jsm/loaders/GLTFLoader.js')
+        ]).then(([fs, path, { GLTFLoader }]) => {
+          const modelPath = path.resolve(process.cwd(), 'models/shark.glb');
+          if (!fs.existsSync(modelPath)) {
+            resolve(null);
+            return;
+          }
+          const buf = fs.readFileSync(modelPath);
+          const arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+          new GLTFLoader().parse(arrayBuffer, '', (gltf) => {
+            sharkModelData = gltf;
+            resolve(gltf);
+          }, reject);
+        }).catch((err) => {
+          console.warn('Node GLTF shark load fallback:', err);
+          resolve(null);
+        });
+      } else {
+        import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
+          const url = new URL('../models/shark.glb', import.meta.url).href;
+          new GLTFLoader().load(url, (gltf) => {
+            sharkModelData = gltf;
+            resolve(gltf);
+          }, undefined, (err) => {
+            console.warn('Could not load shark.glb:', err);
+            resolve(null);
+          });
+        }).catch(reject);
+      }
+    } catch {
+      resolve(null);
+    }
+  });
+
+  return sharkModelLoading;
+}
+
+if (typeof window !== 'undefined') {
+  loadSharkModel().catch(() => {});
+}
+
 /** The dorsal fin, `h` m high, base at y = 0, leading edge towards +z: thin, its thickness swelling mid-chord. `cut`: the base cap is the red wound. */
 export function finGeometry(h = S.fin, cut = false) {
+  if (sharkModelData?.scene) {
+    let geo = null;
+    sharkModelData.scene.traverse((obj) => {
+      if (obj.isMesh && obj.name === 'Shark_fin' && !geo) {
+        geo = obj.geometry;
+      }
+    });
+    if (geo) {
+      const cloned = geo.clone();
+      const scale = h / (S.fin || 0.58);
+      cloned.scale(scale, scale, scale);
+      if (!cut && cloned.attributes.color) {
+        const col = cloned.attributes.color;
+        const dark = new THREE.Color(S.finColor).multiplyScalar(0.8);
+        const pos = cloned.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+          if (pos.getY(i) <= 0.001) {
+            col.setXYZ(i, dark.r, dark.g, dark.b);
+          }
+        }
+        col.needsUpdate = true;
+      }
+      cloned.computeVertexNormals();
+      cloned.computeBoundingSphere();
+      return cloned;
+    }
+  }
   const H = [0, 0.3, 0.6, 0.85, 1], L = [0.34, 0.22, 0.08, -0.05, -0.26], T = [-0.2, -0.12, -0.1, -0.15, -0.26], W = [0.07, 0.055, 0.035, 0.016, 0];
   const pos = [], cols = [], skin = new THREE.Color(S.finColor), dark = skin.clone().multiplyScalar(0.8), red = new THREE.Color(S.cut);
   const lead = (i) => [0, H[i] * h, L[i] * h], trail = (i) => [0, H[i] * h, T[i] * h], mid = (i, sd) => [sd * W[i] * h, H[i] * h, ((L[i] + T[i]) / 2) * h];
@@ -52,6 +135,26 @@ const paint = (g, hex, k = 1) => {
 };
 /** The skeleton lying on the ground (y = 0 the ground), nose towards +z, SHARK.len long: skull, jaws with teeth, spine, ribs, fin rays. */
 export function skeletonGeometry() {
+  if (sharkModelData?.scene) {
+    let geo = null;
+    sharkModelData.scene.traverse((obj) => {
+      if (obj.isMesh && obj.name === 'Shark_skeleton' && !geo) {
+        geo = obj.geometry;
+      }
+    });
+    if (geo) {
+      const cloned = geo.clone();
+      if (!cloned.attributes.color) {
+        const bone = new THREE.Color(S.bone || 0xd6cbb5);
+        const pos = cloned.attributes.position;
+        const col = new Float32Array(pos.count * 3);
+        for (let i = 0; i < pos.count; i++) col.set([bone.r, bone.g, bone.b], i * 3);
+        cloned.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      }
+      cloned.computeBoundingSphere();
+      return cloned;
+    }
+  }
   const k = S.len / 3.2, bone = S.bone, parts = [];
   parts.push(paint(new THREE.SphereGeometry(0.5, 8, 5).scale(0.32, 0.16, 0.5).translate(0, 0.09, 1.25), bone));            // the skull
   for (const [y, z, r] of [[0.07, 1.5, 0.17], [0.025, 1.46, 0.15]]) {                                                         // the jaws, and their teeth
