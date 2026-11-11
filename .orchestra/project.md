@@ -288,16 +288,21 @@ The conductor runs this loop in every `/orkester` queue session:
 
 ## Shared version and maintenance
 
-Shared release: **v0.11.2**, commit **6151b2e887ce4587285271708affc07af09fddb6**. Imported with
-`git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git 6151b2e887ce4587285271708affc07af09fddb6 --squash`
-in [original #1893](https://github.com/solwation/lunden-3d-apartment/issues/1893). The complete
-[v0.11.1..v0.11.2 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/e1842f5b41cc92272eb870bca1070e46f511505c...6151b2e887ce4587285271708affc07af09fddb6)
-prefers directly visible images (attached or embedded via fully-qualified URLs) in completion
-comments for visual acceptance (#61), explicitly requires the conductor to resume active orchestration
-in the same turn after answering user questions, providing status, or executing operational actions
-mid-run rather than pausing (#60), and adds a GitHub Pages landing site in `docs/index.html` while
-streamlining `README.md` (#59). No priority, timer, ownership or publication-rule migration is required.
-Public adoption is tracked in [public #264](https://github.com/solwation/kvarteret-lunden/issues/264).
+Shared release: **v0.12.0**, commit **9e7c6e388df0ebdd25c0ba76d3debc73de3c41fa**. Imported with
+`git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git 9e7c6e388df0ebdd25c0ba76d3debc73de3c41fa --squash`
+in [original #1904](https://github.com/solwation/lunden-3d-apartment/issues/1904). The complete
+[v0.11.2..v0.12.0 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/6151b2e887ce4587285271708affc07af09fddb6...9e7c6e388df0ebdd25c0ba76d3debc73de3c41fa)
+adds image-hosting examples (v0.11.3), dashboard-compatible HTTPS Markdown images in
+standalone paragraphs (v0.11.4), and an optional expert-panel review hook (v0.12.0).
+The panel remains optional and is not enabled as a new host requirement. The generic
+hosting examples do not override this project's required images on `main`, pinned
+repository URLs, image retention or no-branches rule. Use standalone Markdown image
+paragraphs with HTTPS URLs; HTML image tags are not dashboard-compatible.
+No priority, timer, ownership or publication-rule migration is required.
+Public adoption is tracked in [public #265](https://github.com/solwation/kvarteret-lunden/issues/265).
+[Verification and host-rule review](../docs/verification/1904/README.md).
+The previous v0.11.2 import (`6151b2e887ce4587285271708affc07af09fddb6`) remains recorded
+in original #1893 and public #264.
 The earlier v0.11.1 import remains recorded in original #1891 and public #263.
 The earlier v0.11.0 import remains recorded in original #1891 and public #263.
 The earlier v0.10.0 import remains recorded in original #1890 and public #262.
