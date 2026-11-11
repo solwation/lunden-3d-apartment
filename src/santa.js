@@ -88,6 +88,18 @@ function joined(parts, mat) {
   mesh.castShadow = mesh.receiveShadow = true;
   return mesh;
 }
+function hatGeometry() {
+  const H = S.hat, geo = new THREE.ConeGeometry(H.radius, H.height, 16, 8), p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const t = (p.getY(i) / H.height + 0.5) ** 3;
+    p.setXYZ(i, p.getX(i) + H.bend * t, p.getY(i) - H.drop * t, p.getZ(i));
+  }
+  geo.computeVertexNormals(); return geo;
+}
+function cheek(side) {
+  const g = ball(S.blush.base, [side * 0.092, 0.785, 0.132], [0.043, 0.033, 0.024]);
+  g.userData.blush = true; return g;
+}
 function figure() {
   const object = new THREE.Group(), mat = material();
   object.name = 'jultomten';

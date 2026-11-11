@@ -1,0 +1,28 @@
+TAP version 13
+# Subtest: Santa follows Christmas Eve boundaries, including backwards clock changes
+ok 1 - Santa follows Christmas Eve boundaries, including backwards clock changes
+  ---
+  duration_ms: 2.279696
+  type: 'test'
+  ...
+# Subtest: actual Santa starts without a GLB and keeps complete sitting/sleeping anatomy
+ok 2 - actual Santa starts without a GLB and keeps complete sitting/sleeping anatomy
+  ---
+  duration_ms: 161.123059
+  type: 'test'
+  ...
+# Subtest: loaded GLB keeps the same actual Santa sitting/sleeping behaviour
+ok 3 - loaded GLB keeps the same actual Santa sitting/sleeping behaviour
+  ---
+  duration_ms: 41.260838
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 618.293078

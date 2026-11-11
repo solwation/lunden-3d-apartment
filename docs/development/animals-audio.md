@@ -1207,3 +1207,5 @@ Shark export uses the existing anatomical body, correctly sized fin and detailed
 skeleton. `Shark_whole` is a separate intact inspection variant; the actual carcass
 retains its intentionally detached first dorsal. No anatomy is reduced to an ellipsoid
 and cones. [Whole views, measurements and actual consumers](../verification/1911/README.md).
+
+Santa fallback startup and whole actual-sofa sitting/sleeping evidence: [#1914](../verification/1914/README.md).

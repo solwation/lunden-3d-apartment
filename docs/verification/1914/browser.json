@@ -1,0 +1,41 @@
+{
+  "results": [
+    {
+      "glb": false,
+      "sleeping": false,
+      "state": "sitting",
+      "visible": true,
+      "glass": true,
+      "bodyVertices": 24240,
+      "hatTop": 1.1799999475479126
+    },
+    {
+      "glb": false,
+      "sleeping": true,
+      "state": "sleeping",
+      "visible": true,
+      "glass": false,
+      "bodyVertices": 24240,
+      "hatTop": 1.1799999475479126
+    },
+    {
+      "glb": true,
+      "sleeping": false,
+      "state": "sitting",
+      "visible": true,
+      "glass": true,
+      "bodyVertices": 7644,
+      "hatTop": 1.1799999475479126
+    },
+    {
+      "glb": true,
+      "sleeping": true,
+      "state": "sleeping",
+      "visible": true,
+      "glass": false,
+      "bodyVertices": 7644,
+      "hatTop": 1.1799999475479126
+    }
+  ],
+  "pageErrors": []
+}
