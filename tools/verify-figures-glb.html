@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <title>Optimerade Figurer (Tomten & Pingping) Verifiering (#1903)</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0d1520;
+      color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+    h1 { font-size: 22px; color: #38bdf8; margin: 0 0 6px 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #0284c7;
+      color: #f0f9ff;
+      margin-bottom: 12px;
+    }
+    .subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 16px; }
+    #container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    #viewport {
+      width: 720px;
+      height: 480px;
+      background: radial-gradient(circle at 50% 40%, #1e2e42 0%, #0a111a 100%);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+    #panel {
+      flex: 1;
+      min-width: 300px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card {
+      background: #131f2e;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .card h3 { margin: 0 0 8px 0; font-size: 14px; color: #38bdf8; }
+    .stat-row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+    .stat-label { color: #94a3b8; }
+    .stat-val { font-family: monospace; font-weight: 600; color: #f1f5f9; }
+    #status {
+      font-family: monospace;
+      font-size: 13px;
+      color: #38bdf8;
+      font-weight: 600;
+    }
+    .btn-group { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    button {
+      background: #1e293b;
+      border: 1px solid #38bdf8;
+      color: #f8fafc;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    button:hover { background: #0284c7; }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/node_modules/three/build/three.module.js",
+        "three/addons/": "/node_modules/three/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <h1>Lägenhetsfigurer: Tomten & Pingping som GLB (#1903)</h1>
+  <div class="badge">Kv. Lunden • 3D GLB & Low-Poly Character Integration</div>
+  <p class="subtitle">Verifiering av <code>models/santa.glb</code> (sittande, sovande, rörliga armar, kinder och glögg) samt <code>models/pingping.glb</code> (superellipsoidkudde, UV-mask, flippers och kram-squash).</p>
+
+  <div id="container">
+    <div id="viewport"></div>
+    <div id="panel">
+      <div class="card">
+        <h3>Modellstatus</h3>
+        <div id="status">Laddar modeller...</div>
+      </div>
+      <div class="card">
+        <h3>Modellstatistik</h3>
+        <div class="stat-row"><span class="stat-label">Santa GLB</span><span class="stat-val" id="stat-santa-size">~570 KB</span></div>
+        <div class="stat-row"><span class="stat-label">Santa delar</span><span class="stat-val">Kropp, Armar, Sitt/Sov-ben, Glögg</span></div>
+        <div class="stat-row"><span class="stat-label">Pingping GLB</span><span class="stat-val" id="stat-pingping-size">~150 KB</span></div>
+        <div class="stat-row"><span class="stat-label">Pingping delar</span><span class="stat-val">Kropp, Ansikte-UV, Fenor, Fötter</span></div>
+      </div>
+      <div class="card">
+        <h3>Kameravyer & Poser</h3>
+        <div class="btn-group">
+          <button id="btn-santa-sit">Tomten (Sittande)</button>
+          <button id="btn-santa-sleep">Tomten (Sovande)</button>
+          <button id="btn-pingping">Pingping Kudde</button>
+          <button id="btn-pingping-hug">Pingping (Kram/Squash)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { loadSantaModel, Santa, santaFigure } from '../src/santa.js';
+    import { loadPingpingModel, pingpingModel } from '../src/pingping.js';
+
+    const container = document.getElementById('viewport');
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(45, 720 / 480, 0.1, 100);
+    camera.position.set(0, 0.8, 2.0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+    renderer.setSize(720, 480);
+    renderer.setPixelRatio(window.devicePixelRatio || 1);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    renderer.shadowMap.enabled = true;
+    container.appendChild(renderer.domElement);
+
+    const amb = new THREE.AmbientLight(0xfff1e8, 1.2);
+    scene.add(amb);
+
+    const keyLight = new THREE.DirectionalLight(0xfffaed, 2.0);
+    keyLight.position.set(3, 4, 3);
+    keyLight.castShadow = true;
+    scene.add(keyLight);
+
+    const fillLight = new THREE.DirectionalLight(0x7fb8d8, 0.8);
+    fillLight.position.set(-3, 2, -2);
+    scene.add(fillLight);
+
+    const floor = new THREE.GridHelper(10, 10, 0x334155, 0x1e293b);
+    floor.position.y = -0.5;
+    scene.add(floor);
+
+    let santaSit = null;
+    let santaSleep = null;
+    let pingping = null;
+    let pingpingHug = null;
+
+    async function init() {
+      try {
+        await Promise.all([loadSantaModel(), loadPingpingModel()]);
+
+        // Mock sofa spot for Santa
+        const fakeSofa = {
+          spots: [{ taken: () => false }],
+          pickable: new THREE.Object3D()
+        };
+        fakeSofa.pickable.userData.rest = { spots: [{ x: 0, y: 0.0, z: 0.0 }] };
+
+        // 1. Santa sitting
+        santaSit = new Santa({ scene, day: { month: 12, date: 24, hour: 15 }, sofa: fakeSofa });
+        santaSit.sips = 4;
+        santaSit.updateBlush();
+        santaSit.object.position.set(0, -0.4, 0);
+        santaSit.object.visible = true;
+        scene.add(santaSit.object);
+
+        // 2. Santa sleeping
+        santaSleep = new Santa({ scene, day: { month: 12, date: 24, hour: 18 }, sofa: fakeSofa });
+        santaSleep.object.position.set(0, -0.2, 0);
+        santaSleep.object.visible = false;
+        scene.add(santaSleep.object);
+
+        // 3. Pingping sitting
+        pingping = pingpingModel();
+        pingping.position.set(0, -0.25, 0);
+        pingping.visible = false;
+        scene.add(pingping);
+
+        // 4. Pingping hugged/squashed
+        pingpingHug = pingpingModel();
+        pingpingHug.position.set(0, -0.25, 0);
+        pingpingHug.scale.set(1.15, 0.78, 1.15); // squashed
+        pingpingHug.visible = false;
+        scene.add(pingpingHug);
+
+        document.getElementById('status').textContent = 'Färdigladdad (GLB integrerat)';
+        window.figuresReady = true;
+      } catch (err) {
+        console.error(err);
+        document.getElementById('status').textContent = 'Fel: ' + err.message;
+      }
+    }
+
+    function setView(view) {
+      if (santaSit) santaSit.object.visible = (view === 'santa-sit');
+      if (santaSleep) santaSleep.object.visible = (view === 'santa-sleep');
+      if (pingping) pingping.visible = (view === 'pingping');
+      if (pingpingHug) pingpingHug.visible = (view === 'pingping-hug');
+
+      if (view === 'santa-sit') {
+        camera.position.set(0, 0.45, 1.7);
+        camera.lookAt(0, 0.15, 0);
+      } else if (view === 'santa-sleep') {
+        camera.position.set(0.65, 0.5, 1.6);
+        camera.lookAt(0.65, 0.1, 0);
+      } else if (view === 'pingping') {
+        camera.position.set(0, 0.2, 1.1);
+        camera.lookAt(0, 0.05, 0);
+      } else if (view === 'pingping-hug') {
+        camera.position.set(0, 0.15, 1.1);
+        camera.lookAt(0, 0.0, 0);
+      }
+    }
+
+    window.setView = setView;
+
+    document.getElementById('btn-santa-sit').addEventListener('click', () => setView('santa-sit'));
+    document.getElementById('btn-santa-sleep').addEventListener('click', () => setView('santa-sleep'));
+    document.getElementById('btn-pingping').addEventListener('click', () => setView('pingping'));
+    document.getElementById('btn-pingping-hug').addEventListener('click', () => setView('pingping-hug'));
+
+    init().then(() => setView('santa-sit'));
+
+    let clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const dt = clock.getDelta();
+      if (santaSit && santaSit.object.visible) santaSit.update(dt);
+      if (santaSleep && santaSleep.object.visible) santaSleep.update(dt);
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+</html>

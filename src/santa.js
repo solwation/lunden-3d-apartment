@@ -9,6 +9,63 @@ import { LANDSKRONA } from './config.js';
 // Static coloured parts are merged; the pose-specific legs, two arms, glass and sleep text stay separate.
 const C = { red: 0xa51d28, white: 0xf4efe5, skin: 0xe6af89, black: 0x26201c, gold: 0xd7ad45 };
 const material = () => new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.88 });
+
+let santaModelData = null;
+let santaModelLoading = null;
+
+export function loadSantaModel() {
+  if (santaModelData) return Promise.resolve(santaModelData);
+  if (santaModelLoading) return santaModelLoading;
+
+  santaModelLoading = new Promise((resolve, reject) => {
+    try {
+      const isNode = typeof process !== 'undefined' && process?.versions?.node;
+      if (isNode) {
+        if (typeof self === 'undefined') globalThis.self = globalThis;
+        Promise.all([
+          import('node:fs'),
+          import('node:path'),
+          import('three/examples/jsm/loaders/GLTFLoader.js')
+        ]).then(([fs, path, { GLTFLoader }]) => {
+          const modelPath = path.resolve(process.cwd(), 'models/santa.glb');
+          if (!fs.existsSync(modelPath)) {
+            resolve(null);
+            return;
+          }
+          const buf = fs.readFileSync(modelPath);
+          const arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+          new GLTFLoader().parse(arrayBuffer, '', (gltf) => {
+            santaModelData = gltf;
+            resolve(gltf);
+          }, reject);
+        }).catch((err) => {
+          console.warn('Node GLTF santa load fallback:', err);
+          resolve(null);
+        });
+      } else {
+        import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
+          const url = new URL('../models/santa.glb', import.meta.url).href;
+          new GLTFLoader().load(url, (gltf) => {
+            santaModelData = gltf;
+            resolve(gltf);
+          }, undefined, (err) => {
+            console.warn('Could not load santa.glb:', err);
+            resolve(null);
+          });
+        }).catch(reject);
+      }
+    } catch {
+      resolve(null);
+    }
+  });
+
+  return santaModelLoading;
+}
+
+if (typeof window !== 'undefined') {
+  loadSantaModel().catch(() => {});
+}
+
 function part(geometry, color, at, scale = [1, 1, 1], rot = [0, 0, 0]) {
   const g = geometry.toNonIndexed(); geometry.dispose();
   g.applyMatrix4(new THREE.Matrix4().compose(new THREE.Vector3(...at), new THREE.Quaternion().setFromEuler(new THREE.Euler(...rot)), new THREE.Vector3(...scale)));
@@ -31,84 +88,115 @@ function joined(parts, mat) {
   mesh.castShadow = mesh.receiveShadow = true;
   return mesh;
 }
-function arm(mat, right) {
-  const pivot = new THREE.Group();
-  pivot.position.set(right ? -0.28 : 0.28, 0.51, 0.02);
-  pivot.add(joined([
-    ball(C.red, [0, -0.15, 0.03], [0.105, 0.21, 0.105]),
-    ball(C.white, [0, -0.31, 0.06], [0.11, 0.045, 0.11]),
-    ball(C.skin, [0, -0.37, 0.07], [0.075, 0.085, 0.075]),
-  ], mat));
-  pivot.rotation.x = -0.6;
-  return pivot;
-}
-function hatGeometry() {
-  const H = S.hat, geo = new THREE.ConeGeometry(H.radius, H.height, 16, 8), p = geo.attributes.position;
-  for (let i = 0; i < p.count; i++) {
-    const t = (p.getY(i) / H.height + 0.5) ** 3;
-    p.setXYZ(i, p.getX(i) + H.bend * t, p.getY(i) - H.drop * t, p.getZ(i));
-  }
-  geo.computeVertexNormals(); return geo;
-}
-function cheek(side) {
-  const g = ball(S.blush.base, [side * 0.092, 0.785, 0.132], [0.043, 0.033, 0.024]);
-  g.userData.blush = true; return g;
-}
 function figure() {
   const object = new THREE.Group(), mat = material();
   object.name = 'jultomten';
-  const parts = [
-    ball(C.red, [0, 0.3, 0.03], S.size.belly),
-    ball(C.white, [0, 0.025, 0.035], [0.29, 0.045, 0.25]), // fur coat hem
-    box(C.black, [0, 0.17, 0.06], [0.61, 0.065, 0.49]),
-    box(C.gold, [0, 0.17, 0.313], [0.105, 0.09, 0.025]),
-    box(C.black, [0, 0.17, 0.328], [0.065, 0.055, 0.01]),
-    box(C.white, [0, 0.35, 0.3], [0.048, 0.28, 0.03]),
-    ball(C.skin, [0, 0.79, 0.02], [S.size.head, 0.18, 0.15]),
-    ball(C.white, [0, 0.57, 0.14], S.size.beard),
-    ball(C.skin, [0, 0.8, 0.18], [0.047, 0.04, 0.045]),
-    ball(C.white, [-0.055, 0.747, 0.176], [0.065, 0.025, 0.04]),
-    ball(C.white, [0.055, 0.747, 0.176], [0.065, 0.025, 0.04]),
-    part(hatGeometry(), C.red, [0, 1.04, 0.01]),
-    ball(C.white, [0, 0.91, 0.02], [0.17, 0.045, 0.16]),
-  ];
-  for (const side of [-1, 1]) {
-    parts.push(ball(C.white, [side * 0.06, 0.865, 0.18], [0.045, 0.013, 0.018]));
-    parts.push(ball(C.skin, [side * 0.147, 0.785, 0.02], [0.035, 0.06, 0.035])); // ears
-    parts.push(cheek(side));
-    parts.push(ball(C.white, [side * 0.055, 0.83, 0.178], [0.023, 0.019, 0.009]));
-    parts.push(ball(0x547687, [side * 0.055, 0.83, 0.187], [0.011, 0.013, 0.006]));
-    parts.push(ball(C.black, [side * 0.055, 0.83, 0.193], [0.005, 0.008, 0.004]));
-    // Tapered locks break up the beard's old single-oval outline.
-    for (let j = 0; j < 3; j++) parts.push(ball(j % 2 ? 0xe5e1d8 : C.white,
-      [side * (0.04 + j * 0.042), 0.51 + j * 0.035, 0.245 - j * 0.012], [0.046, 0.125 - j * 0.02, 0.035]));
 
+  let body = null;
+  let leftArmMesh = null, rightArmMesh = null;
+  let sitLegsGeo = null, sleepLegsGeo = null;
+  let glbGlass = null;
+
+  if (santaModelData?.scene) {
+    santaModelData.scene.traverse((obj) => {
+      if (obj.name === 'Santa_body' && !body) {
+        body = new THREE.Mesh(obj.geometry.clone(), mat);
+        body.userData.cheeks = obj.userData?.cheeks ? JSON.parse(JSON.stringify(obj.userData.cheeks)) : [];
+      }
+      if (obj.name === 'Santa_arm_left' && !leftArmMesh) leftArmMesh = obj.clone();
+      if (obj.name === 'Santa_arm_right' && !rightArmMesh) rightArmMesh = obj.clone();
+      if (obj.name === 'Santa_legs_sitting' && !sitLegsGeo) sitLegsGeo = obj.geometry.clone();
+      if (obj.name === 'Santa_legs_sleeping' && !sleepLegsGeo) sleepLegsGeo = obj.geometry.clone();
+      if (obj.name === 'Santa_glass' && !glbGlass) glbGlass = obj.clone();
+    });
   }
-  parts.push(ball(C.white, [S.hat.bend, 1.04 + S.hat.height / 2 - S.hat.drop, 0.01], [0.06, 0.06, 0.06]));
-  const body = joined(parts, mat);
+
+  function arm(mat, right) {
+    const pivot = new THREE.Group();
+    pivot.position.set(right ? -0.28 : 0.28, 0.51, 0.02);
+    const armMesh = right ? rightArmMesh : leftArmMesh;
+    if (armMesh) {
+      pivot.add(armMesh);
+    } else {
+      pivot.add(joined([
+        ball(C.red, [0, -0.15, 0.03], [0.105, 0.21, 0.105]),
+        ball(C.white, [0, -0.31, 0.06], [0.11, 0.045, 0.11]),
+        ball(C.skin, [0, -0.37, 0.07], [0.075, 0.085, 0.075]),
+      ], mat));
+    }
+    pivot.rotation.x = -0.6;
+    return pivot;
+  }
+
+  if (!body) {
+    const parts = [
+      ball(C.red, [0, 0.3, 0.03], S.size.belly),
+      ball(C.white, [0, 0.025, 0.035], [0.29, 0.045, 0.25]), // fur coat hem
+      box(C.black, [0, 0.17, 0.06], [0.61, 0.065, 0.49]),
+      box(C.gold, [0, 0.17, 0.313], [0.105, 0.09, 0.025]),
+      box(C.black, [0, 0.17, 0.328], [0.065, 0.055, 0.01]),
+      box(C.white, [0, 0.35, 0.3], [0.048, 0.28, 0.03]),
+      ball(C.skin, [0, 0.79, 0.02], [S.size.head, 0.18, 0.15]),
+      ball(C.white, [0, 0.57, 0.14], S.size.beard),
+      ball(C.skin, [0, 0.8, 0.18], [0.047, 0.04, 0.045]),
+      ball(C.white, [-0.055, 0.747, 0.176], [0.065, 0.025, 0.04]),
+      ball(C.white, [0.055, 0.747, 0.176], [0.065, 0.025, 0.04]),
+      part(hatGeometry(), C.red, [0, 1.04, 0.01]),
+      ball(C.white, [0, 0.91, 0.02], [0.17, 0.045, 0.16]),
+    ];
+    for (const side of [-1, 1]) {
+      parts.push(ball(C.white, [side * 0.06, 0.865, 0.18], [0.045, 0.013, 0.018]));
+      parts.push(ball(C.skin, [side * 0.147, 0.785, 0.02], [0.035, 0.06, 0.035])); // ears
+      parts.push(cheek(side));
+      parts.push(ball(C.white, [side * 0.055, 0.83, 0.178], [0.023, 0.019, 0.009]));
+      parts.push(ball(0x547687, [side * 0.055, 0.83, 0.187], [0.011, 0.013, 0.006]));
+      parts.push(ball(C.black, [side * 0.055, 0.83, 0.193], [0.005, 0.008, 0.004]));
+      // Tapered locks break up the beard's old single-oval outline.
+      for (let j = 0; j < 3; j++) parts.push(ball(j % 2 ? 0xe5e1d8 : C.white,
+        [side * (0.04 + j * 0.042), 0.51 + j * 0.035, 0.245 - j * 0.012], [0.046, 0.125 - j * 0.02, 0.035]));
+    }
+    parts.push(ball(C.white, [S.hat.bend, 1.04 + S.hat.height / 2 - S.hat.drop, 0.01], [0.06, 0.06, 0.06]));
+    body = joined(parts, mat);
+  }
+
   body.geometry.getAttribute('color').setUsage(THREE.DynamicDrawUsage); // cheek colours change after upload, including on phones
+  body.castShadow = body.receiveShadow = true;
   object.add(body);
+
   const legs = new THREE.Mesh(new THREE.BufferGeometry(), mat); // actual seat dimensions below
   legs.castShadow = legs.receiveShadow = true;
   object.add(legs);
+
   const left = arm(mat, false), right = arm(mat, true);
   object.add(left, right);
-  const glass = new THREE.Group();
+
+  const glass = glbGlass || new THREE.Group();
   glass.position.fromArray(S.sip.glassRest);
-  // A small, low whisky tumbler containing dark red glögg. No bottle or loose pickable is spawned.
-  const glassMat = new THREE.MeshStandardMaterial({ color: 0xe3e8e5, transparent: true, opacity: 0.32, roughness: 0.18, side: THREE.DoubleSide });
-  const shell = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.043, 0.095, 12, 1, true), glassMat);
-  glass.add(shell);
-  const glogg = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.038, 0.058, 12), new THREE.MeshStandardMaterial({ color: 0x631d27, roughness: 0.28 }));
-  glogg.position.y = -0.013; glass.add(glogg); object.add(glass);
+  if (!glbGlass) {
+    // A small, low whisky tumbler containing dark red glögg. No bottle or loose pickable is spawned.
+    const glassMat = new THREE.MeshStandardMaterial({ color: 0xe3e8e5, transparent: true, opacity: 0.32, roughness: 0.18, side: THREE.DoubleSide });
+    const shell = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.043, 0.095, 12, 1, true), glassMat);
+    glass.add(shell);
+    const glogg = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.038, 0.058, 12), new THREE.MeshStandardMaterial({ color: 0x631d27, roughness: 0.28 }));
+    glogg.position.y = -0.013; glass.add(glogg);
+  }
+  object.add(glass);
+
   const pick = new THREE.Mesh(new THREE.BoxGeometry(0.85, 1.5, 0.9), new THREE.MeshBasicMaterial());
   pick.position.set(0, 0.35, 0.15); pick.visible = false; object.add(pick);
-  const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 80;
-  const ctx = canvas.getContext('2d'); ctx.font = 'bold 56px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.lineWidth = 5; ctx.strokeStyle = '#35251b'; ctx.strokeText('Zzzzz', 128, 40); ctx.fillStyle = '#fff8df'; ctx.fillText('Zzzzz', 128, 40);
-  const text = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), depthTest: true, transparent: true }));
+
+  let text;
+  if (typeof document !== 'undefined') {
+    const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 80;
+    const ctx = canvas.getContext('2d'); ctx.font = 'bold 56px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = 5; ctx.strokeStyle = '#35251b'; ctx.strokeText('Zzzzz', 128, 40); ctx.fillStyle = '#fff8df'; ctx.fillText('Zzzzz', 128, 40);
+    text = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), depthTest: true, transparent: true }));
+  } else {
+    text = new THREE.Sprite(new THREE.SpriteMaterial({ depthTest: true, transparent: true }));
+  }
   text.scale.set(...S.sleep.text, 1); text.visible = false;
-  return { object, body, legs, left, right, glass, pick, text, head: new THREE.Vector3() };
+
+  return { object, body, legs, left, right, glass, pick, text, head: new THREE.Vector3(), sitLegsGeo, sleepLegsGeo };
 }
 
 /** One continuous trouser segment between two joints, merged with the other leg parts. */
@@ -145,7 +233,10 @@ export class Santa {
     this.object = this.fig.object;
     if (sofa) {
       const local = sofa.pickable.userData.rest.spots[Math.min(S.seatIndex, sofa.spots.length - 1)];
-      this.legPoses = { sitting: legGeometry(local, false), sleeping: legGeometry(local, true) };
+      this.legPoses = {
+        sitting: this.fig.sitLegsGeo || legGeometry(local, false),
+        sleeping: this.fig.sleepLegsGeo || legGeometry(local, true)
+      };
       this.fig.legs.geometry.dispose(); this.fig.legs.geometry = this.legPoses.sitting;
     }
     this.object.visible = false;
@@ -162,7 +253,18 @@ export class Santa {
   updateBlush() {
     const color = new THREE.Color(S.blush.base).lerp(new THREE.Color(S.blush.red), Math.min(1, this.sips / S.blush.fullAfterSips));
     const colors = this.fig.body.geometry.getAttribute('color');
-    for (const { start, count } of this.fig.body.userData.cheeks) for (let i = start; i < start + count; i++) colors.setXYZ(i, color.r, color.g, color.b);
+    if (!colors) return;
+    if (this.fig.body.userData.cheeks?.length) {
+      for (const { start, count } of this.fig.body.userData.cheeks) for (let i = start; i < start + count; i++) colors.setXYZ(i, color.r, color.g, color.b);
+    } else {
+      const pos = this.fig.body.geometry.getAttribute('position');
+      for (let i = 0; i < pos.count; i++) {
+        const x = Math.abs(pos.getX(i)), y = pos.getY(i), z = pos.getZ(i);
+        if (Math.hypot(x - 0.092, y - 0.785, z - 0.132) < 0.045) {
+          colors.setXYZ(i, color.r, color.g, color.b);
+        }
+      }
+    }
     colors.needsUpdate = true;
   }
   keepState() { return { date: this.visitKey, sips: this.sips }; }

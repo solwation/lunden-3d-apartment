@@ -15,6 +15,62 @@ import { Thing, KINDS } from './things.js';
 
 const SEG = [48, 32];
 
+let pingpingModelData = null;
+let pingpingModelLoading = null;
+
+export function loadPingpingModel() {
+  if (pingpingModelData) return Promise.resolve(pingpingModelData);
+  if (pingpingModelLoading) return pingpingModelLoading;
+
+  pingpingModelLoading = new Promise((resolve, reject) => {
+    try {
+      const isNode = typeof process !== 'undefined' && process?.versions?.node;
+      if (isNode) {
+        if (typeof self === 'undefined') globalThis.self = globalThis;
+        Promise.all([
+          import('node:fs'),
+          import('node:path'),
+          import('three/examples/jsm/loaders/GLTFLoader.js')
+        ]).then(([fs, path, { GLTFLoader }]) => {
+          const modelPath = path.resolve(process.cwd(), 'models/pingping.glb');
+          if (!fs.existsSync(modelPath)) {
+            resolve(null);
+            return;
+          }
+          const buf = fs.readFileSync(modelPath);
+          const arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+          new GLTFLoader().parse(arrayBuffer, '', (gltf) => {
+            pingpingModelData = gltf;
+            resolve(gltf);
+          }, reject);
+        }).catch((err) => {
+          console.warn('Node GLTF pingping load fallback:', err);
+          resolve(null);
+        });
+      } else {
+        import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
+          const url = new URL('../models/pingping.glb', import.meta.url).href;
+          new GLTFLoader().load(url, (gltf) => {
+            pingpingModelData = gltf;
+            resolve(gltf);
+          }, undefined, (err) => {
+            console.warn('Could not load pingping.glb:', err);
+            resolve(null);
+          });
+        }).catch(reject);
+      }
+    } catch {
+      resolve(null);
+    }
+  });
+
+  return pingpingModelLoading;
+}
+
+if (typeof window !== 'undefined') {
+  loadPingpingModel().catch(() => {});
+}
+
 /** A unit-sphere direction pushed out towards a rounded box (superellipsoid), then scaled to his size. */
 function shape(geo, grow = 1) {
   const a = geo.attributes.position, v = new THREE.Vector3(), n = 2.6;
@@ -73,19 +129,42 @@ function faceTexture() {
 export function pingpingModel() {
   const g = new THREE.Group();
   const navy = new THREE.MeshStandardMaterial({ color: P.navy, roughness: 1 });
+  const faceMat = (typeof document !== 'undefined')
+    ? new THREE.MeshStandardMaterial({ map: faceTexture(), roughness: 1, alphaTest: 0.5, polygonOffset: true, polygonOffsetFactor: -1 })
+    : new THREE.MeshStandardMaterial({ roughness: 1, alphaTest: 0.5 });
+  const feetMat = new THREE.MeshStandardMaterial({ color: P.feet, roughness: 0.95 });
+
+  if (pingpingModelData?.scene) {
+    let bodyGeo = null, faceGeo = null, flippersGeo = null, feetGeo = null;
+    pingpingModelData.scene.traverse((obj) => {
+      if (obj.name === 'Pingping_body' && !bodyGeo) bodyGeo = obj.geometry.clone();
+      if (obj.name === 'Pingping_face' && !faceGeo) faceGeo = obj.geometry.clone();
+      if (obj.name === 'Pingping_flippers' && !flippersGeo) flippersGeo = obj.geometry.clone();
+      if (obj.name === 'Pingping_feet' && !feetGeo) feetGeo = obj.geometry.clone();
+    });
+    if (bodyGeo && faceGeo && flippersGeo && feetGeo) {
+      const body = new THREE.Mesh(bodyGeo, navy);
+      const face = new THREE.Mesh(faceGeo, faceMat);
+      const flippers = new THREE.Mesh(flippersGeo, navy);
+      const feet = new THREE.Mesh(feetGeo, feetMat);
+      for (const m of [body, face, flippers, feet]) { m.castShadow = true; m.receiveShadow = true; g.add(m); }
+      return g;
+    }
+  }
+
   const body = new THREE.Mesh(shape(new THREE.SphereGeometry(1, ...SEG)), navy);
   // the painted front: the front ±72° of the same shape, a hair outside it; planar UVs seen from the front
   const front = shape(new THREE.SphereGeometry(1, 40, 28, Math.PI / 2 - 1.25, 2.5), 1.008);
   const a = front.attributes.position, uv = front.attributes.uv;
   for (let i = 0; i < a.count; i++) uv.setXY(i, a.getX(i) / P.w + 0.5, a.getY(i) / P.h);
-  const face = new THREE.Mesh(front, new THREE.MeshStandardMaterial({ map: faceTexture(), roughness: 1, alphaTest: 0.5, polygonOffset: true, polygonOffsetFactor: -1 }));
+  const face = new THREE.Mesh(front, faceMat);
   // flippers: short, flat, angled down at the sides
   const flip = [-1, 1].map((s) => new THREE.SphereGeometry(1, 14, 10).scale(0.035, 0.08, 0.028).rotateZ(s * 0.65)
     .translate(s * (P.w / 2 - 0.004), P.h * 0.47, 0.01));
   const flippers = new THREE.Mesh(mergeGeometries(flip), navy);
   // feet peeking out at the bottom front
   const ft = [-1, 1].map((s) => new THREE.SphereGeometry(1, 14, 8).scale(0.045, 0.024, 0.045).translate(s * 0.075, 0.022, P.d / 2 - 0.035));
-  const feet = new THREE.Mesh(mergeGeometries(ft), new THREE.MeshStandardMaterial({ color: P.feet, roughness: 0.95 }));
+  const feet = new THREE.Mesh(mergeGeometries(ft), feetMat);
   for (const m of [body, face, flippers, feet]) { m.castShadow = true; m.receiveShadow = true; g.add(m); }
   return g;
 }
