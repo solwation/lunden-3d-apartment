@@ -1,39 +1,24 @@
-const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const fs = require('node:fs');
-const path = require('node:path');
-
-const url = process.argv[2] || 'http://localhost:8919/tools/verify-avatar-rigged.html';
-const outPath = process.argv[3] || 'docs/verification/1899/avatar-rigged-production.png';
-
-(async () => {
-  fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  const browser = await chromium.launch({
-    executablePath: process.env.CHROME_PATH,
-    args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader']
-  });
-
-  const page = await browser.newPage({ viewport: { width: 1200, height: 750 } });
-  page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
-  page.on('pageerror', (err) => console.error('PAGE ERROR:', err));
-
-  console.log('Navigating to', url);
-  await page.goto(url, { waitUntil: 'networkidle' });
-
-  console.log('Waiting for RESULT: ALL CHECKS PASSED...');
-  await page.waitForFunction(() => {
-    const el = document.getElementById('status');
-    return el && el.textContent.includes('RESULT: ALL CHECKS PASSED');
-  }, { timeout: 20000 });
-
-  // Wait a few frames for animations to settle and render nicely
-  await page.waitForTimeout(1500);
-
-  await page.screenshot({ path: outPath });
-  console.log('Saved verification screenshot to', outPath);
-
-  await browser.close();
-  process.exit(0);
-})().catch((err) => {
-  console.error('Capture failed:', err);
-  process.exit(1);
-});
+// #1907: production Avatar/IK, whole figures from three unobscured directions.
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const fs=require('node:fs'),path=require('node:path');
+const url=process.argv[2]||'http://localhost:8191/tools/verify-avatar-rigged.html';
+const out=process.argv[3]||'docs/verification/1907';
+(async()=>{
+ fs.mkdirSync(out,{recursive:true});
+ const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+ const errors=[];
+ try {
+  const page=await browser.newPage({viewport:{width:1500,height:1040}});
+  page.on('pageerror',error=>errors.push(error.message));
+  await page.goto(url,{waitUntil:'networkidle'});
+  await page.waitForFunction(()=>window.__ready,null,{timeout:30000});
+  for(const view of ['front','side','quarter']){
+   await page.evaluate(view=>window.avatarView(view),view);
+   await page.screenshot({path:path.join(out,'avatar-'+view+'.png'),fullPage:true});
+  }
+  const results=await page.evaluate(()=>window.__avatar1907.measured);
+  fs.writeFileSync(path.join(out,'poses.json'),JSON.stringify({url,environment:'Chromium / SwiftShader; production Avatar and IK component, not full World',results,errors},null,2)+'\n');
+  if(errors.length)throw Error(errors.join('\n'));
+  console.log('PASS: six production poses, three complete views, deformed vertex bounds; images require visual review.');
+ }finally{await browser.close()}
+})().catch(error=>{console.error(error);process.exitCode=1});

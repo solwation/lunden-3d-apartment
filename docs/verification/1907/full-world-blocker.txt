@@ -1,0 +1,32 @@
+browsertest: waiting for /home/devcontainers/.local/state/orkester/browser.lock (another browser test is running)
+browsertest: no systemd user scope here, running without a memory ceiling
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (File not found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Startup failed ReferenceError: hatGeometry is not defined
+    at figure (http://127.0.0.1:8191/src/santa.js:144:7)
+    at new Santa (http://127.0.0.1:8191/src/santa.js:232:16)
+    at http://127.0.0.1:8191/src/main.js:2771:15
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+STARTUP unavailable
+ERRORS []
+page.waitForFunction: Target page, context or browser has been closed
+    at /home/devcontainers/wt/lunden-1907-codex/tools/avatarqualityapptest.cjs:21:15

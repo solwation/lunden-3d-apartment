@@ -1,0 +1,298 @@
+TAP version 13
+# Subtest: no chosen height keeps PLAYER's own body exactly
+ok 1 - no chosen height keeps PLAYER's own body exactly
+  ---
+  duration_ms: 3.459894
+  type: 'test'
+  ...
+# Subtest: 120 cm: crouch below standing, head room over the head, radius in range
+ok 2 - 120 cm: crouch below standing, head room over the head, radius in range
+  ---
+  duration_ms: 1.218597
+  type: 'test'
+  ...
+# Subtest: 165 cm: crouch below standing, head room over the head, radius in range
+ok 3 - 165 cm: crouch below standing, head room over the head, radius in range
+  ---
+  duration_ms: 0.485999
+  type: 'test'
+  ...
+# Subtest: 195 cm: crouch below standing, head room over the head, radius in range
+ok 4 - 195 cm: crouch below standing, head room over the head, radius in range
+  ---
+  duration_ms: 0.499899
+  type: 'test'
+  ...
+# Subtest: 100 cm: crouch eye under the standing eye (\#1136 gap)
+ok 5 - 100 cm: crouch eye under the standing eye (\#1136 gap)
+  ---
+  duration_ms: 0.404399
+  type: 'test'
+  ...
+# Subtest: 120 cm: head boxes reach the head top and start at the neck
+ok 6 - 120 cm: head boxes reach the head top and start at the neck
+  ---
+  duration_ms: 164.6325
+  type: 'test'
+  ...
+# Subtest: 165 cm: head boxes reach the head top and start at the neck
+ok 7 - 165 cm: head boxes reach the head top and start at the neck
+  ---
+  duration_ms: 74.985564
+  type: 'test'
+  ...
+# Subtest: 195 cm: head boxes reach the head top and start at the neck
+ok 8 - 195 cm: head boxes reach the head top and start at the neck
+  ---
+  duration_ms: 75.079163
+  type: 'test'
+  ...
+# Subtest: a child has a relatively larger head: the head boxes take a larger share of the height
+ok 9 - a child has a relatively larger head: the head boxes take a larger share of the height
+  ---
+  duration_ms: 238.460967
+  type: 'test'
+  ...
+# Subtest: 120 cm: seated / lying head and body follow the scaled figure
+ok 10 - 120 cm: seated / lying head and body follow the scaled figure
+  ---
+  duration_ms: 2.429696
+  type: 'test'
+  ...
+# Subtest: 165 cm: seated / lying head and body follow the scaled figure
+ok 11 - 165 cm: seated / lying head and body follow the scaled figure
+  ---
+  duration_ms: 0.973498
+  type: 'test'
+  ...
+# Subtest: 195 cm: seated / lying head and body follow the scaled figure
+ok 12 - 195 cm: seated / lying head and body follow the scaled figure
+  ---
+  duration_ms: 0.861098
+  type: 'test'
+  ...
+# Subtest: \#1156: Olof's hoodie colour is top 10; old top digits and seeded looks keep their colours
+ok 13 - \#1156: Olof's hoodie colour is top 10; old top digits and seeded looks keep their colours
+  ---
+  duration_ms: 13.702775
+  type: 'test'
+  ...
+# Subtest: avatar customization: palettes and encoding roundtrip
+ok 14 - avatar customization: palettes and encoding roundtrip
+  ---
+  duration_ms: 1.941597
+  type: 'test'
+  ...
+# Subtest: \#1244: curly hair (style 4) roundtrips; styles above 4 are rejected; old codes decode unchanged
+ok 15 - \#1244: curly hair (style 4) roundtrips; styles above 4 are rejected; old codes decode unchanged
+  ---
+  duration_ms: 0.986898
+  type: 'test'
+  ...
+# Subtest: \#1244: trouser / top models roundtrip as tags; defaults add nothing; bad values ignored
+ok 16 - \#1244: trouser / top models roundtrip as tags; defaults add nothing; bad values ignored
+  ---
+  duration_ms: 1.944996
+  type: 'test'
+  ...
+# Subtest: \#1136 avatar height: backward-compatible code, proportions and eye height
+ok 17 - \#1136 avatar height: backward-compatible code, proportions and eye height
+  ---
+  duration_ms: 3.141294
+  type: 'test'
+  ...
+# Subtest: avatar customization: avatarLook seed vs look object independence
+ok 18 - avatar customization: avatarLook seed vs look object independence
+  ---
+  duration_ms: 0.3326
+  type: 'test'
+  ...
+# Subtest: avatar customization: customizer UI and callbacks
+ok 19 - avatar customization: customizer UI and callbacks
+  ---
+  duration_ms: 11.24678
+  type: 'test'
+  ...
+# Subtest: avatar customization: clearLocalHome preserves the chosen avatar and resets home keys
+ok 20 - avatar customization: clearLocalHome preserves the chosen avatar and resets home keys
+  ---
+  duration_ms: 2.409695
+  type: 'test'
+  ...
+# Subtest: \#1138 face fields: extension encoding, old codes unchanged, unknown tags skipped
+ok 21 - \#1138 face fields: extension encoding, old codes unchanged, unknown tags skipped
+  ---
+  duration_ms: 4.373492
+  type: 'test'
+  ...
+# Subtest: \#1165 hair length and glasses: tags h / g, old codes unchanged, bad values skipped, combined with face and height
+ok 22 - \#1165 hair length and glasses: tags h / g, old codes unchanged, bad values skipped, combined with face and height
+  ---
+  duration_ms: 2.413795
+  type: 'test'
+  ...
+# Subtest: \#1191 neck length slider: tag a, mid default omitted, roundtrips, shifts head hitbox base Y
+ok 23 - \#1191 neck length slider: tag a, mid default omitted, roundtrips, shifts head hitbox base Y
+  ---
+  duration_ms: 6.022489
+  type: 'test'
+  ...
+# Subtest: \#1173 wire-only seeded height preserves exact local proportions and saved codes
+ok 24 - \#1173 wire-only seeded height preserves exact local proportions and saved codes
+  ---
+  duration_ms: 5.137091
+  type: 'test'
+  ...
+# Subtest: \#1175 wire-only build preserves own width and saved codes across receiver seeds
+ok 25 - \#1175 wire-only build preserves own width and saved codes across receiver seeds
+  ---
+  duration_ms: 5.59849
+  type: 'test'
+  ...
+# Subtest: \#1175 all current face fields plus body/scale fit existing Worker extension bounds
+ok 26 - \#1175 all current face fields plus body/scale fit existing Worker extension bounds
+  ---
+  duration_ms: 65.94678
+  type: 'test'
+  ...
+# Subtest: \#1139: body build slim … heavy round-trips; old codes keep the seed's build
+ok 27 - \#1139: body build slim … heavy round-trips; old codes keep the seed's build
+  ---
+  duration_ms: 4.871191
+  type: 'test'
+  ...
+# Subtest: \#1140: Slumpa gives a valid look (palettes, ranges, wire code valid); Återställ is the default look
+ok 28 - \#1140: Slumpa gives a valid look (palettes, ranges, wire code valid); Återställ is the default look
+  ---
+  duration_ms: 29.835145
+  type: 'test'
+  ...
+# Subtest: \#1220 brow colour: tag v (HAIR index), absent = like the hair, old codes unchanged, wire + every tag still decodes
+ok 29 - \#1220 brow colour: tag v (HAIR index), absent = like the hair, old codes unchanged, wire + every tag still decodes
+  ---
+  duration_ms: 1.080398
+  type: 'test'
+  ...
+# Subtest: \#1220 Slumpa: brows are null or a hair colour, and survive the code
+ok 30 - \#1220 Slumpa: brows are null or a hair colour, and survive the code
+  ---
+  duration_ms: 14.711973
+  type: 'test'
+  ...
+# Subtest: \#1268 curly hair length: style 4 hair vertices span down to shoulder level for hairLength uniform scaling
+ok 31 - \#1268 curly hair length: style 4 hair vertices span down to shoulder level for hairLength uniform scaling
+  ---
+  duration_ms: 869.172622
+  type: 'test'
+  ...
+# Subtest: \#1321 headwear: tag q, old codes unchanged, bad values skipped, combined with glasses, height and the face
+ok 32 - \#1321 headwear: tag q, old codes unchanged, bad values skipped, combined with glasses, height and the face
+  ---
+  duration_ms: 24.338955
+  type: 'test'
+  ...
+# Subtest: \#1322 headphones: tag f, old codes unchanged, bad values skipped, combined with headwear, glasses and the face
+ok 33 - \#1322 headphones: tag f, old codes unchanged, bad values skipped, combined with headwear, glasses and the face
+  ---
+  duration_ms: 9.915282
+  type: 'test'
+  ...
+# Subtest: \#1323 necklaces: tag x, old codes unchanged, bad values skipped, combined with headwear, glasses and the face
+ok 34 - \#1323 necklaces: tag x, old codes unchanged, bad values skipped, combined with headwear, glasses and the face
+  ---
+  duration_ms: 1.922697
+  type: 'test'
+  ...
+# Subtest: \#1324 rings: tags i (finger 1-10) and z (metal), old codes unchanged, bad values skipped, combined with the necklace
+ok 35 - \#1324 rings: tags i (finger 1-10) and z (metal), old codes unchanged, bad values skipped, combined with the necklace
+  ---
+  duration_ms: 1.186197
+  type: 'test'
+  ...
+# Subtest: \#1334 bracelets and watches: share the z tag (metal + 4 * (bracelet + 7 * watch)), old codes unchanged, bad values skipped, within the extension limit
+ok 36 - \#1334 bracelets and watches: share the z tag (metal + 4 * (bracelet + 7 * watch)), old codes unchanged, bad values skipped, within the extension limit
+  ---
+  duration_ms: 1.850897
+  type: 'test'
+  ...
+# Subtest: \#1325 earrings and sunglasses: earrings share the g tag (glasses + 10 * earrings), old codes unchanged, bad values skipped
+ok 37 - \#1325 earrings and sunglasses: earrings share the g tag (glasses + 10 * earrings), old codes unchanged, bad values skipped
+  ---
+  duration_ms: 1.559297
+  type: 'test'
+  ...
+# Subtest: pump: completed reps, saturation, linear offline decay, save roundtrip and invalid anchors
+ok 38 - pump: completed reps, saturation, linear offline decay, save roundtrip and invalid anchors
+  ---
+  duration_ms: 2.643396
+  type: 'test'
+  ...
+# Subtest: avatar: all sleeve/cut variants share immutable buffers but own their pump; only shoulder skin/cloth marked
+ok 39 - avatar: all sleeve/cut variants share immutable buffers but own their pump; only shoulder skin/cloth marked
+  ---
+  duration_ms: 800.096447
+  type: 'test'
+  ...
+# Subtest: wire: bounded hundredths, old peers clear, Worker retains progress for room snapshots; main keeps score callback
+ok 40 - wire: bounded hundredths, old peers clear, Worker retains progress for room snapshots; main keeps score callback
+  ---
+  duration_ms: 2.728295
+  type: 'test'
+  ...
+# Subtest: models/avatar-rigged.glb exists and has valid glTF 2.0 binary header
+ok 41 - models/avatar-rigged.glb exists and has valid glTF 2.0 binary header
+  ---
+  duration_ms: 5.812889
+  type: 'test'
+  ...
+# Subtest: avatar-rigged.glb parses with SkinnedMesh, 15 humanoid bones and animations
+ok 42 - avatar-rigged.glb parses with SkinnedMesh, 15 humanoid bones and animations
+  ---
+  duration_ms: 52.101105
+  type: 'test'
+  ...
+# Subtest: avatar-rigged.glb proportions match Olof bind pose heights
+ok 43 - avatar-rigged.glb proportions match Olof bind pose heights
+  ---
+  duration_ms: 15.354472
+  type: 'test'
+  ...
+# Subtest: actual inverse bind matrices preserve every rest vertex and production bone order
+ok 44 - actual inverse bind matrices preserve every rest vertex and production bone order
+  ---
+  duration_ms: 49.35081
+  type: 'test'
+  ...
+# Subtest: all six exported clips keep real deformed vertices inside one connected human envelope
+ok 45 - all six exported clips keep real deformed vertices inside one connected human envelope
+  ---
+  duration_ms: 109.462501
+  type: 'test'
+  ...
+# Subtest: production loaded avatars retain detailed source variants and private palettes
+ok 46 - production loaded avatars retain detailed source variants and private palettes
+  ---
+  duration_ms: 448.388086
+  type: 'test'
+  ...
+# Subtest: loaded runtime poses match the same established procedural IK through movement, tools and air
+ok 47 - loaded runtime poses match the same established procedural IK through movement, tools and air
+  ---
+  duration_ms: 143.801539
+  type: 'test'
+  ...
+# Subtest: late rig availability preserves Olof/mirror retained mesh and bone references
+ok 48 - late rig availability preserves Olof/mirror retained mesh and bone references
+  ---
+  duration_ms: 44.04852
+  type: 'test'
+  ...
+1..48
+# tests 48
+# suites 0
+# pass 48
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1536.05851

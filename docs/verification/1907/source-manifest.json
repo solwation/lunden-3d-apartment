@@ -1,0 +1,20 @@
+{
+  "base": "ebbf466b8b8dbfd463691ed9ad14805d6a853c31",
+  "assetBytes": 1813152,
+  "assetTriangles": 5150,
+  "sha256": {
+    "models/avatar-rigged.glb": "b55ff07a0c72d5028d3ca386d2d0a0b39fcbf28510b384b21dd3d8c74875b7f6",
+    "src/avatar.js": "125430169e37a96017a7b1477d442fd02e45169847df496eae34aa0759f355bd",
+    "src/olof.js": "f3b47f1300d74dc9dddc79291291f301aa502a7b192d6a3dbcd25d550d65f050",
+    "src/config.js": "6bbefd02116dfb3bafa27bcc0b21ce7039718174b90c07bb275ea92d339f2ed6",
+    "src/customizer.js": "0bd14763fc5545575f77b800bf01de487765bf55553c973c1195b5bbfd5c8ff1",
+    "src/ghosts.js": "9c59d6fbdc17b39fe2a503bea45cad9038887a15b57623f8750b5a0ee109366f",
+    "src/reflections.js": "b8a63b3ec6c3ba4d01083c3e91de2b77065b40645842a643a45787571331e502",
+    "tools/buildavatarglb.mjs": "33f4d5e548a3f2f343c4513da2f5829ea01bb4870cfbae51f54a019f768dac54",
+    "tools/riggedavatartest.mjs": "48d9148f151aa597a4dccac36acf41d7506925f583b086f9a774747d422e7401",
+    "tools/verify-avatar-rigged.html": "33a69b1d8789900bbf5d7616e6ccc4ef807443b709452b5a99651274519c216f",
+    "tools/capture-avatar-production.cjs": "c90a6ba9876f044a49d7cd9958d3cd4635207afb18c290c2b1a64bd4bd071388",
+    "tools/avatar-consumers.html": "73c6734528013ff0252bec7b60ea3fa6963b46036d6be99db4bef5d304894c46",
+    "tools/avatarqualityapptest.cjs": "49833b2658cb694558ce684288ca9f21e7b9b30e63a526925cac717eee393dd4"
+  }
+}

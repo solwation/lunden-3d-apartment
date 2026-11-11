@@ -1,0 +1,5 @@
+PASS git diff --check
+PASS changed/new Markdown links: 7
+PASS changelog JSON, provisional id1466; conductor renumbers last
+Source recipe: geometryFor body unchanged except exported name; no original pose/customizer/Ghosts/reflections changes
+Full World blocked by separate1914; publication acceptance belongs to1913

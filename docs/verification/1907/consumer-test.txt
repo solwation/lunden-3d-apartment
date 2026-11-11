@@ -1,0 +1,10 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+CONSOLE Failed to load resource: the server responded with a status of 404 (Not Found)
+PASS creator buttons update actual look and mirror material
+PASS Worker-delivered remote keeps distinct hair/appearance, private palette and whole-body bounds
+PASS no app/peer page errors

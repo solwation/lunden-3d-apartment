@@ -1,0 +1,41 @@
+{
+  "environment": "production customizer DOM/CSS, Ghosts, local Worker and reflection modules; controlled player/ground/mirror, no full World",
+  "screenshots": [
+    "app-creator.png",
+    "app-mirror.png",
+    "app-peer.png"
+  ],
+  "creator": {
+    "look": {
+      "hat": 1,
+      "glasses": 2,
+      "style": 3
+    },
+    "code": "474273110g2q1d1s3",
+    "mirrorHat": 1
+  },
+  "peer": {
+    "at": [
+      2.875,
+      0,
+      -13.5
+    ],
+    "code": "001124100g1p2m1d2s2",
+    "style": 4,
+    "palettePrivate": true,
+    "bounds": {
+      "min": [
+        2.60209111205505,
+        -0.040876103233412064,
+        -13.718631759392627
+      ],
+      "max": [
+        3.1579088879449504,
+        1.7833339850907899,
+        -13.28962129532138
+      ],
+      "height": 1.824210088324202
+    }
+  },
+  "errors": []
+}

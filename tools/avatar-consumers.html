@@ -1,0 +1,45 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Avatar consumers #1907</title>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+// Actual customizer DOM/CSS, Ghosts/Worker and reflection path; controlled ground,
+// camera/player state and mirror plane. No main.js/World acceptance is implied.
+import * as T from 'three';
+import { Ghosts } from '../src/ghosts.js';
+import { loadRiggedAvatarModel } from '../src/avatar.js';
+import { avatarLook } from '../src/config.js';
+import { setupAvatarCustomizer, openAvatarCustomizer, closeAvatarCustomizer } from '../src/customizer.js';
+import { addReflector, reflectors, updateReflections } from '../src/reflections.js';
+const doc = new DOMParser().parseFromString(await (await fetch('../index.html')).text(), 'text/html');
+for (const style of doc.querySelectorAll('style')) document.head.append(style.cloneNode(true));
+document.body.append(doc.getElementById('avatar-customizer').cloneNode(true));
+const ownStyle = document.createElement('style');
+ownStyle.textContent = 'body{margin:0;background:#edf0f3}#fixture-label{position:fixed;left:14px;top:10px;z-index:2;color:#173044;background:#ffffffe0;padding:10px;font:15px system-ui}canvas{display:block}';
+document.head.append(ownStyle);
+const label = document.createElement('div'); label.id = 'fixture-label';
+label.textContent = 'Avatar #1907 · faktisk skapare, Ghosts och spegelrendering · kontrollerad omgivning'; document.body.append(label);
+await loadRiggedAvatarModel();
+const renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(1); document.body.append(renderer.domElement);
+const scene = new T.Scene(); scene.background = new T.Color('#edf0f3');
+scene.add(new T.HemisphereLight(0xffffff, 0x777777, 2));
+const light = new T.DirectionalLight(0xffffff, 2); light.position.set(2, 5, 4); scene.add(light);
+const ground = new T.Mesh(new T.PlaneGeometry(1000, 1000), new T.MeshLambertMaterial({ color: 0xd8dfd2 }));
+ground.rotation.x = -Math.PI / 2; ground.position.y = -.04; scene.add(ground);
+scene.add(new T.GridHelper(30, 30, 0x9da892, 0xb4bfaa));
+const mirror = new T.Group(); mirror.position.set(0, 1.1, 0); scene.add(mirror);
+const frame = new T.Mesh(new T.BoxGeometry(1.65, 2.3, .06), new T.MeshLambertMaterial({ color: 0x363b43 })); mirror.add(frame);
+addReflector(mirror, new T.PlaneGeometry(1.5, 2.2), { offset: .035, name: 'nissedal' });
+const camera = new T.PerspectiveCamera(60, innerWidth / innerHeight, .05, 1000);
+camera.position.set(0, 1.62, 1.35); camera.lookAt(0, 1, 0);
+const player = { pos: new T.Vector3(0, 0, 1.35), eyeY: 1.62, groundAt: () => 0,
+  spawn(x, z) { this.pos.set(x, 0, z); } };
+const ghosts = new Ghosts({ scene, camera, url: new URLSearchParams(location.search).get('cloud') || 'http://localhost:8192',
+  name: () => 'Avatarprov', score: () => 0, state: () => ({ p: player.pos.toArray(), r: 0 }) });
+ghosts.keepConnected = () => true;
+setupAvatarCustomizer({ getLook: () => ghosts.myLook, setLook: look => ghosts.setMyLook(look), getDefaultLook: () => avatarLook('Avatarprov') });
+window.__ghosts = ghosts;
+window.__app = { renderer, scene, camera, player, reflectors, updateReflections, openAvatarCustomizer, closeAvatarCustomizer,
+  rest: { active: false }, showOverlay() {}, standUp() {}, step() { ghosts.update(); } };
+window.__avatarConsumerEnvironment = 'production customizer DOM/CSS, Ghosts, local Worker and reflection modules; controlled player/ground/mirror, no full World';
+scene.updateMatrixWorld(true); ghosts.update(); updateReflections(camera, 0, true); renderer.render(scene, camera);
+</script>
