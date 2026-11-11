@@ -1229,3 +1229,6 @@ phone cleanup/clone and preservation checks: [#1910](../verification/1910/README
 Public cd79c14 retains its generic procedural catpuppet without the faulty migration,
 so no restoration applies there; no Miele/gameplay/service transfer. Final model
 publication/full-app acceptance is tracked by #1913/#1914.
+
+Final whole-model/actual-consumer audit of all12 new GLBs, independent visual
+acceptance and published full-app delivery: [#1905](../verification/1905/README.md).
