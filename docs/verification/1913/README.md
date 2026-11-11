@@ -79,3 +79,16 @@ No new form/browser sweep was performed. The conductor owns final combined full-
 Pages startup acceptance in #1914 before closure of #1913 and the ready model siblings.
 The finished delivery remains integration-ready with the same documented integration
 owner until that acceptance; this worker does not close it.
+
+## Final production acceptance
+
+The corrected assets are published by original commit
+`f124511c18d707db9a087e721dfca01c502e70f8`, successful Pages run
+[43033851235](https://github.com/solwation/lunden-3d-apartment/actions/runs/43033851235).
+BUILD f124511 / CONTENT2d013f8cd9ae: all12 live versioned model responses are
+HTTP200 with exact source byte/SHA-256 parity (see #1913 pages.json).
+Actual Pages full World startup also passes: all12 requested versioned resources200,
+zero page/console errors, two loaded rigged ponies, restored cat geometry and
+the loaded sitting Santa. [Combined result](../1914/pages-startup.json).
+Whole-model and consumer images above remain source-bound form evidence; no new
+form, hardware-phone, global frame-rate or network-gameplay claim is added.

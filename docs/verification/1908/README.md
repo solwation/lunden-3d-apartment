@@ -38,3 +38,16 @@ all corrected model resources together and verify their actual Pages availabilit
 The public app already uses `src/squirrelmodel.js` with the same detailed procedural
 anatomy and near/far selection. It has no GLB/atlas/box regression to port; no personal
 animal names, gameplay, photos or Cloudflare integrations are transferred.
+
+## Final production acceptance
+
+The corrected assets are published by original commit
+`f124511c18d707db9a087e721dfca01c502e70f8`, successful Pages run
+[43033851235](https://github.com/solwation/lunden-3d-apartment/actions/runs/43033851235).
+BUILD f124511 / CONTENT2d013f8cd9ae: all12 live versioned model responses are
+HTTP200 with exact source byte/SHA-256 parity (see #1913 pages.json).
+Actual Pages full World startup also passes: all12 requested versioned resources200,
+zero page/console errors, two loaded rigged ponies, restored cat geometry and
+the loaded sitting Santa. [Combined result](../1914/pages-startup.json).
+Whole-model and consumer images above remain source-bound form evidence; no new
+form, hardware-phone, global frame-rate or network-gameplay claim is added.

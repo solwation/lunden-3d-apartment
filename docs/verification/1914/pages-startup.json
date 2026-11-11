@@ -1,0 +1,63 @@
+{
+  "models": [
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/cat-rigged.glb?v=f124511",
+      "status": 200
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/shark.glb?v=f124511",
+      "status": 200
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/pingping.glb?v=f124511",
+      "status": 200
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/car-parked.glb?v=f124511",
+      "status": 200
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/santa.glb?v=f124511",
+      "status": 200
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/pony-rigged.glb?v=f124511",
+      "status": 200
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/avatar-rigged.glb?v=f124511",
+      "status": 200
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/fish-generic.glb?v=f124511",
+      "status": 200
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/bicycle.glb?v=f124511",
+      "status": 200
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/car-megane.glb?v=f124511",
+      "status": 200
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/squirrel-rigged.glb?v=f124511",
+      "status": 200
+    },
+    {
+      "url": "https://solwation.github.io/lunden-3d-apartment/models/duck-rigged.glb?v=f124511",
+      "status": 200
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [],
+  "actual": {
+    "santaState": "sitting",
+    "santaBodyVertices": 7644,
+    "catModelLoaded": true,
+    "ponies": 2,
+    "sceneObjects": 534,
+    "renderer": true
+  },
+  "ok": true
+}
