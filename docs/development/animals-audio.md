@@ -1196,3 +1196,14 @@ DuckKiss. Runtime selects the correct male/female geometry rather than a generic
 The correctly world-bound14-joint rig has idle/swim/waddle/flap/eat clips. One draw/bird,
 960/896 male/female triangles; this restores visual quality without claiming a saving.
 [Checks, whole-model and actual consumer views](../verification/1909/README.md).
+
+### Fish export quality correction (#1911)
+
+`riverfishmodel.js` supplies the same finned, eyed neutral geometry to the unit-sized
+static/skinned GLB and the fallback; instance species dimensions are applied once.
+River fish remain one generic underwater batch. The detailed per-species caught and
+bestiary models remain the existing `caughtFishGeometry`, not a claimed full migration.
+Shark export uses the existing anatomical body, correctly sized fin and detailed
+skeleton. `Shark_whole` is a separate intact inspection variant; the actual carcass
+retains its intentionally detached first dorsal. No anatomy is reduced to an ellipsoid
+and cones. [Whole views, measurements and actual consumers](../verification/1911/README.md).

@@ -107,3 +107,17 @@ test('riverfish.js and shark.js load and extract GLB geometries correctly', asyn
   assert.ok(skel, 'skeletonGeometry should return geometry');
   assert.ok(skel.attributes.position.count > 0);
 });
+
+test('normalized instanced fish dimensions and every neutral skinned vertex stay correct',async()=>{
+ const gltf=await loadFishModel(),mesh=gltf.scene.getObjectByName('Fish_Rigged');gltf.scene.updateMatrixWorld(true);mesh.skeleton.update();
+ const geo=fishGeometry();geo.computeBoundingBox();const size=geo.boundingBox.getSize(new THREE.Vector3());for(const v of size.toArray())assert.ok(Math.abs(v-1)<1e-6,'unit envelope prevents a second aspect scale');
+ const p=mesh.geometry.attributes.position;
+ for(let i=0;i<p.count;i++){const v=new THREE.Vector3().fromBufferAttribute(p,i);assert.ok(v.distanceTo(mesh.applyBoneTransform(i,v.clone()))<1e-6,'every inverse bind');}
+ for(const clip of gltf.animations){const mixer=new THREE.AnimationMixer(gltf.scene);mixer.clipAction(clip).play();for(let t=0;t<=8;t++){mixer.setTime(clip.duration*t/8);gltf.scene.updateMatrixWorld(true);mesh.skeleton.update();mesh.computeBoundingBox();const b=mesh.boundingBox.getSize(new THREE.Vector3());assert.ok(b.toArray().every(Number.isFinite));assert.ok(b.x<1.8&&b.y<1.1&&b.z<1.3,'deformed swim bounds');}mixer.stopAllAction();}
+});
+test('shark fin height and detailed skeleton match the established production source',async()=>{
+ const{SHARK}=await import('../src/config.js');await loadSharkModel();const fin=finGeometry(SHARK.fin,true);fin.computeBoundingBox();assert.ok(Math.abs(fin.boundingBox.max.y-SHARK.fin)<1e-6);
+ const bone=skeletonGeometry(),reference=skeletonGeometry(false);assert.equal(bone.attributes.position.count,reference.attributes.position.count,'retain teeth/ribs/vertebrae/fin rays');
+ for(let i=0;i<reference.attributes.position.array.length;i++)assert.ok(Math.abs(bone.attributes.position.array[i]-reference.attributes.position.array[i])<1e-6);
+ const g=await loadSharkModel(),body=g.scene.getObjectByName('Shark_body');body.geometry.computeBoundingBox();const size=body.geometry.boundingBox.getSize(new THREE.Vector3());assert.ok(Math.abs(size.z-SHARK.len)<.02,'true carcass length');assert.ok(g.scene.getObjectByName('Shark_whole'),'separate intact inspection variant');
+});

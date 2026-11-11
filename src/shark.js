@@ -79,8 +79,8 @@ if (typeof window !== 'undefined') {
 }
 
 /** The dorsal fin, `h` m high, base at y = 0, leading edge towards +z: thin, its thickness swelling mid-chord. `cut`: the base cap is the red wound. */
-export function finGeometry(h = S.fin, cut = false) {
-  if (sharkModelData?.scene) {
+export function finGeometry(h = S.fin, cut = false, useModel = true) {
+  if (useModel && sharkModelData?.scene) {
     let geo = null;
     sharkModelData.scene.traverse((obj) => {
       if (obj.isMesh && obj.name === 'Shark_fin' && !geo) {
@@ -134,8 +134,8 @@ const paint = (g, hex, k = 1) => {
   return g;
 };
 /** The skeleton lying on the ground (y = 0 the ground), nose towards +z, SHARK.len long: skull, jaws with teeth, spine, ribs, fin rays. */
-export function skeletonGeometry() {
-  if (sharkModelData?.scene) {
+export function skeletonGeometry(useModel = true) {
+  if (useModel && sharkModelData?.scene) {
     let geo = null;
     sharkModelData.scene.traverse((obj) => {
       if (obj.isMesh && obj.name === 'Shark_skeleton' && !geo) {
