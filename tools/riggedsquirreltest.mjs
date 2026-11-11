@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import * as THREE from '/home/devcontainers/kvarteret-lunden/node_modules/three/build/three.module.js';
-import { GLTFLoader } from '/home/devcontainers/kvarteret-lunden/node_modules/three/examples/jsm/loaders/GLTFLoader.js';
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { SQUIRRELS } from '../src/config.js';
 
 test('models/squirrel-rigged.glb binary file exists and is valid glTF 2.0 binary', () => {
@@ -60,24 +60,34 @@ test('squirrel-rigged.glb parses with SkinnedMesh, 25 bones and required animati
   }
 });
 
-test('draw call reduction and all 10 configured squirrel variants supported', () => {
-  assert.equal(SQUIRRELS.animals.length, 10, 'Expected 10 squirrels in Kv. Lunden');
-  // Procedural squirrel used 3 draw calls per animal (body, head, tail before merge or parts)
-  // Rigged model is exactly 1 SkinnedMesh per animal
-  const procDrawCallsPerSquirrel = 3;
-  const riggedDrawCallsPerSquirrel = 1;
-  const totalProcDrawCalls = procDrawCallsPerSquirrel * SQUIRRELS.animals.length;
-  const totalRiggedDrawCalls = riggedDrawCallsPerSquirrel * SQUIRRELS.animals.length;
-
-  const reduction = ((totalProcDrawCalls - totalRiggedDrawCalls) / totalProcDrawCalls) * 100;
-  assert.equal(totalRiggedDrawCalls, 10, '10 squirrels take 10 draw calls');
-  assert.ok(reduction >= 66, `Draw call reduction is ${reduction.toFixed(1)}%`);
-
-  // Verify all 10 variants have distinct color properties
-  for (const a of SQUIRRELS.animals) {
-    assert.ok(Number.isFinite(a.color), `${a.name} must have a valid coat color`);
-    assert.ok(Number.isFinite(a.belly), `${a.name} must have a valid belly color`);
-    assert.ok(Number.isFinite(a.tail), `${a.name} must have a valid tail color`);
-    assert.ok(a.scale >= 0.8 && a.scale <= 1.4, `${a.name} scale should be between 0.8 and 1.4`);
+test('all looks retain original colours/proportions, near/far budget and neutral binding', async () => {
+  const {squirrelGeometry,squirrelRigGeometry}=await import('../src/squirrels.js');
+  const buf=fs.readFileSync('models/squirrel-rigged.glb');
+  const gltf=await new GLTFLoader().parseAsync(buf.buffer.slice(buf.byteOffset,buf.byteOffset+buf.byteLength),'');
+  let mesh;gltf.scene.traverse(o=>{if(o.isSkinnedMesh)mesh=o});gltf.scene.updateMatrixWorld(true);mesh.skeleton.update();
+  assert.ok(!Array.isArray(mesh.material),'one material/draw per animal, also before the migration');
+  for(const spec of SQUIRRELS.animals) for(const far of [false,true]) {
+    const g=squirrelRigGeometry(spec,far), original=squirrelGeometry(spec,far);
+    assert.deepEqual(Array.from(g.attributes.color.array),Array.from(original.attributes.color.array),spec.name+' anatomical colours');
+    assert.deepEqual(Array.from(g.attributes.position.array),Array.from(original.attributes.position.array),spec.name+' original shape');
+    assert.equal(g.index.count,original.index.count,'no extra triangles versus detailed original');
+    mesh.geometry=g;
+    for(let i=0;i<g.attributes.position.count;i++) {
+      const p=new THREE.Vector3().fromBufferAttribute(g.attributes.position,i),q=mesh.applyBoneTransform(i,p.clone());
+      assert.ok(p.distanceTo(q)<1e-6,'every vertex stays in bind position');
+    }
+  }
+});
+test('all five animated silhouettes remain finite and inside the squirrel envelope',async()=>{
+  const buf=fs.readFileSync('models/squirrel-rigged.glb');
+  for(const clipName of ['idle','run','flick','climb','eat']) {
+    const gltf=await new GLTFLoader().parseAsync(buf.buffer.slice(buf.byteOffset,buf.byteOffset+buf.byteLength),'');
+    const clip=gltf.animations.find(c=>c.name===clipName),mixer=new THREE.AnimationMixer(gltf.scene);mixer.clipAction(clip).play();
+    let mesh;gltf.scene.traverse(o=>{if(o.isSkinnedMesh)mesh=o});
+    for(let j=0;j<=12;j++) {
+      mixer.setTime(clip.duration*j/12);gltf.scene.updateMatrixWorld(true);mesh.skeleton.update();mesh.computeBoundingBox();
+      const size=mesh.boundingBox.getSize(new THREE.Vector3());
+      assert.ok(size.toArray().every(Number.isFinite));assert.ok(size.x<.35&&size.y<.55&&size.z<.6,clipName+' whole deformed bounds');
+    }
   }
 });

@@ -792,6 +792,23 @@ In the snow months (`registerSeasonal`, `SEASON.snowMonths`) nothing is visible,
 within `simDist`, every `farStep` s up to `farDist`, beyond only the coarse tree-graph step (#1716); `&nosquirrels` disables the module. Config: the `SQUIRRELS` block at the end
 of `src/config.js` (all *guess*). Test: `node --test tools/squirrelbraintest.mjs`; browser check `tools/squirrelstest.cjs`. #1686 below.
 
+### Anatomical rig correction (#1908)
+
+The GLB now bakes the established rounded `squirrelParts` recipe instead of boxes:
+cheeks, muzzle, separate eyes/nose, tufted ears, articulated paws and a continuous
+bushy curved tail. `squirrelRigGeometry(spec, far)` keeps the exact vertex colours
+and proportions of all ten configured looks, including the pale tail tip and slim
+dark animal. It supplies the same skin weights to the offline export and runtime
+near/far geometries. The skeleton's complete world matrices precede binding.
+All five clips use normalized local rotations; the consumer owns the whole-body
+sit/climb pivot and the carried nut remains a separately visible game object.
+Near/far stay at the original 3382/1396 triangles and one material/draw per squirrel;
+there was no three-to-one draw-call saving. The GLB is 229824 bytes (old box file
+52648 bytes). This restores visual detail rather than claiming a performance gain.
+`tools/riggedsquirreltest.mjs` checks every rest vertex, all looks against the original
+recipe, triangle parity and deformed bounds for all five clips. Actual consumer
+views and limits: [#1908 verification](../verification/1908/README.md).
+
 ### Roaming the valley and a fluffier look (#1716)
 
 Trees: besides the park patches and the paddock, every `treeFeet` trunk within `SQUIRRELS.roam.valley` m of the river centre line and inside

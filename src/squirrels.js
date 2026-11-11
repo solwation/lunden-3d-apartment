@@ -17,7 +17,7 @@ import { nutPathSpots } from './nutpaths.js';
 // the game: the crowns and ground come from the trees built in surroundings.js (river park patches and the paddock's shade trees, read
 // from `treeFeet`/`aoTrees` so new trees there are used without a change here), the nuts are ordinary holdables (E takes one, E on a surface
 // puts it down), crouching still with a nut in the hand lures a squirrel, and the feeding scores through `onFeed`.
-// Cost: one merged mesh per squirrel (3 draw calls, shared material, no extra light or shadow caster), a nut mesh only while it lies out,
+// Cost: one merged mesh per squirrel (one draw call, shared material, no extra light or shadow caster), a nut mesh only while it lies out,
 // a hidden squirrel/nut in winter costs nothing; the AI thinks every frame only within `simDist` m of the eye, every `farStep` s up to
 // `farDist`, and beyond it only the coarse tree-graph step (#1716: the squirrels roam the whole Höje å valley).
 // #1686: 18 nuts (not 6), bigger, each lying under an additive glint (a flat ring + a thin beam: ONE instanced mesh for all of them, so no draw
@@ -112,6 +112,11 @@ function squirrelParts(s, far, pose = {}) {
     const at = c.clone().addScaledVector(radial, rad(u) * (0.45 + 0.55 * lateral)), dir = radial.multiplyScalar(0.32).addScaledVector(tan, 0.95); // (the hair lies flat towards the tip)
     const col = tipCol(u); tail.push(lock(at, dir, len, (0.011 + 0.008 * lateral) * (far ? 1.3 : 1) * (0.85 + 0.3 * rnd()), shade(col, 0.9), s.tip && u > 0.8 ? s.tip : mixHex(col, 0xf2e6cf, 0.15), [4, 3]));
   }
+  // Part identity survives offline skinning; colours stay on the actual anatomy.
+  body.forEach((g,i) => { g.userData.joint = i < 3 ? 'Joint_Haunch' :
+    'Joint_' + ['Arm','Forearm','Paw','Thigh','Foot'][(i-3)%5] + '_' + (i < 8 ? 'L' : 'R'); });
+  head.forEach(g => { g.userData.joint = 'Joint_Head'; });
+  tail.forEach(g => { g.userData.tail = true; });
   return [...body, ...head, ...tail];
 }
 /** #1716: the merged squirrel (one draw call) with three morph targets: 0 the tail flicked, 1 / 2 the head turned left / right.
@@ -130,7 +135,38 @@ function buildSquirrelGeometry(s, far) {
   return g;
 }
 
-// Rigged GLB Squirrel Loader & Coat Texture Generator (#1895)
+// The baked GLB and all runtime looks use the same topology, part weights and
+// original vertex-colour recipe. No generic atlas can overwrite eyes/belly/tail.
+export const SQUIRREL_JOINTS = ['Root','Haunch','Spine','Chest','Head','Snout','Ear_L','Ear_R',
+  'Arm_L','Forearm_L','Paw_L','Arm_R','Forearm_R','Paw_R','Thigh_L','Foot_L','Thigh_R','Foot_R',
+  'Tail_0','Tail_1','Tail_2','Tail_3','Tail_4','Tail_5','Tail_Tip'].map(n=>'Joint_'+n);
+const rigGeoCache = new Map();
+export function squirrelRigGeometry(spec, far=false) {
+  const key=[spec.color,spec.belly,spec.tail,spec.tip,spec.width,far].join();
+  if(rigGeoCache.has(key)) return rigGeoCache.get(key);
+  const parts=squirrelParts(spec,far);
+  for(const g of parts) {
+    const p=g.attributes.position, ids=new Uint16Array(p.count*4), weights=new Float32Array(p.count*4);
+    for(let i=0;i<p.count;i++) {
+      if(g.userData.tail) {
+        // Project onto the continuous centreline, then blend neighbouring joints.
+        let best=Infinity, segment=0, blend=0;
+        for(let j=0;j<TAIL.rest.length-1;j++) {
+          const a=TAIL.rest[j], b=TAIL.rest[j+1], dy=b[0]-a[0], dz=b[1]-a[1];
+          const t=THREE.MathUtils.clamp(((p.getY(i)-a[0])*dy+(p.getZ(i)-a[1])*dz)/(dy*dy+dz*dz),0,1);
+          const d=(p.getY(i)-a[0]-t*dy)**2+(p.getZ(i)-a[1]-t*dz)**2;
+          if(d<best){best=d;segment=j;blend=t;}
+        }
+        ids[i*4]=18+segment;ids[i*4+1]=19+segment;weights[i*4]=1-blend;weights[i*4+1]=blend;
+      } else { ids[i*4]=SQUIRREL_JOINTS.indexOf(g.userData.joint);weights[i*4]=1; }
+    }
+    g.setAttribute('skinIndex',new THREE.BufferAttribute(ids,4));g.setAttribute('skinWeight',new THREE.BufferAttribute(weights,4));
+  }
+  const geometry=mergeGeometries(parts,false);parts.forEach(g=>g.dispose());
+  geometry.computeBoundingBox();geometry.computeBoundingSphere();rigGeoCache.set(key,geometry);return geometry;
+}
+
+// Rigged GLB loader; anatomical look correction #1908.
 let riggedSquirrelModelPromise = null;
 let riggedSquirrelData = null;
 
@@ -154,118 +190,6 @@ export function loadRiggedSquirrelModel() {
     );
   });
   return riggedSquirrelModelPromise;
-}
-
-const squirrelTextureCache = new Map();
-
-export function createSquirrelCoatTexture(spec) {
-  if (typeof document === 'undefined') return null;
-  const key = [spec.name, spec.color, spec.belly, spec.tail, spec.tip, spec.width].join();
-  if (squirrelTextureCache.has(key)) return squirrelTextureCache.get(key);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 512;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return null;
-
-  const hexStr = (hex, def = 0x8a5632) => `#${new THREE.Color(hex ?? def).getHexString()}`;
-  const color = hexStr(spec.color, 0x8a5632);
-  const belly = hexStr(spec.belly, 0xd9c3a0);
-  const tail = hexStr(spec.tail, 0x9a6338);
-  const tip = spec.tip ? hexStr(spec.tip, 0xf4f1e8) : tail;
-  const paw = hexStr(shade(spec.color, 0.72), 0x5e3a22);
-
-  // Background base
-  ctx.fillStyle = color;
-  ctx.fillRect(0, 0, 512, 512);
-
-  // 1. Body & Haunch area: [25, 25, 205, 205]
-  ctx.fillStyle = color;
-  ctx.fillRect(25, 25, 205, 205);
-  let seed = 1716;
-  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  for (let i = 0; i < 300; i++) {
-    ctx.fillStyle = rnd() < 0.5 ? '#ffffff' : '#2a1a10';
-    ctx.globalAlpha = 0.08 + rnd() * 0.08;
-    ctx.fillRect(25 + rnd() * 200, 25 + rnd() * 200, 2 + rnd() * 4, 1 + rnd() * 3);
-  }
-  ctx.globalAlpha = 1;
-
-  // 2. Belly & Chest area: [280, 25, 206, 205]
-  ctx.fillStyle = belly;
-  ctx.fillRect(280, 25, 206, 205);
-  for (let i = 0; i < 150; i++) {
-    ctx.fillStyle = rnd() < 0.5 ? '#ffffff' : color;
-    ctx.globalAlpha = 0.06;
-    ctx.fillRect(280 + rnd() * 200, 25 + rnd() * 200, 2 + rnd() * 4, 2);
-  }
-  ctx.globalAlpha = 1;
-
-  // 3. Head & Snout area: [25, 280, 205, 78]
-  ctx.fillStyle = color;
-  ctx.fillRect(25, 280, 205, 78);
-  // Cheek patches
-  ctx.fillStyle = belly;
-  ctx.beginPath();
-  ctx.ellipse(80, 320, 25, 18, 0, 0, Math.PI * 2);
-  ctx.ellipse(175, 320, 25, 18, 0, 0, Math.PI * 2);
-  ctx.fill();
-  // Eyes
-  ctx.fillStyle = '#120e0c';
-  ctx.beginPath();
-  ctx.arc(65, 305, 7, 0, Math.PI * 2);
-  ctx.arc(190, 305, 7, 0, Math.PI * 2);
-  ctx.fill();
-  // Eye glints
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.arc(67, 303, 2.2, 0, Math.PI * 2);
-  ctx.arc(192, 303, 2.2, 0, Math.PI * 2);
-  ctx.fill();
-  // Nose
-  ctx.fillStyle = '#2a1d18';
-  ctx.beginPath();
-  ctx.arc(128, 335, 6, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 4. Ears & Tufts area: [25, 384, 103, 102]
-  ctx.fillStyle = color;
-  ctx.fillRect(25, 384, 103, 102);
-  // Dark tuft tips
-  ctx.fillStyle = hexStr(shade(spec.color, 0.55), 0x3e2416);
-  ctx.fillRect(25, 450, 103, 36);
-
-  // 5. Paws area: [153, 384, 77, 102]
-  ctx.fillStyle = paw;
-  ctx.fillRect(153, 384, 77, 102);
-
-  // 6. Tail Plume area: [280, 280, 206, 104]
-  ctx.fillStyle = tail;
-  ctx.fillRect(280, 280, 206, 104);
-  for (let i = 0; i < 200; i++) {
-    ctx.fillStyle = rnd() < 0.4 ? '#e6c8a0' : hexStr(shade(spec.color, 0.8), 0x4a2a16);
-    ctx.globalAlpha = 0.12;
-    ctx.fillRect(280 + rnd() * 200, 280 + rnd() * 100, 3 + rnd() * 8, 1 + rnd() * 2);
-  }
-  ctx.globalAlpha = 1;
-
-  // 7. Tail Tip area: [280, 410, 206, 76]
-  ctx.fillStyle = tip;
-  ctx.fillRect(280, 410, 206, 76);
-  if (spec.tip) {
-    ctx.fillStyle = '#ffffff';
-    ctx.globalAlpha = 0.25;
-    for (let i = 0; i < 80; i++) {
-      ctx.fillRect(280 + rnd() * 200, 410 + rnd() * 70, 2 + rnd() * 5, 2);
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.encoding = THREE.sRGBEncoding ?? 3001;
-  squirrelTextureCache.set(key, tex);
-  return tex;
 }
 
 /** An acorn (0) or a hazelnut (1) of real size 3 cm; the mesh is scaled by SQUIRRELS.nutSize. */
@@ -415,18 +339,16 @@ export class Squirrels {
         a.skinnedMesh.material = a.skinnedMesh.material.clone();
         a.skinnedMesh.material.roughness = 0.85;
         a.skinnedMesh.material.metalness = 0.05;
-        a.skinnedMesh.castShadow = true;
+        a.skinnedMesh.castShadow = false; // preserve the existing no-shadow budget
+        a.rigGeos = [squirrelRigGeometry(a.spec), squirrelRigGeometry(a.spec,true)];
+        a.skinnedMesh.geometry = a.rigGeos[0];
+        a.skinnedMesh.material.vertexColors = true;
+        a.skinnedMesh.material.map = null;
       }
       if (obj.isBone || obj.type === 'Bone' || (obj.name && obj.name.startsWith('Joint'))) {
         a.bones[obj.name] = obj;
       }
     });
-
-    const tex = createSquirrelCoatTexture(a.spec);
-    if (tex && a.skinnedMesh) {
-      a.skinnedMesh.material.map = tex;
-      a.skinnedMesh.material.needsUpdate = true;
-    }
 
     if (gltf.animations && gltf.animations.length > 0) {
       a.mixer = new THREE.AnimationMixer(a.riggedScene);
@@ -576,6 +498,8 @@ export class Squirrels {
     const hk = 1 - 0.75 * Math.min(1, b.rise);
 
     if (a.isRigged && a.mixer) {
+      const geo=a.rigGeos[d < C.look.near ? 0 : 1];
+      if(a.skinnedMesh.geometry !== geo) a.skinnedMesh.geometry=geo;
       a.mixer.update(dt);
 
       let targetName = 'idle';
