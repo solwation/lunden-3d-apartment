@@ -11,7 +11,7 @@ scaling is applied once. This remains **one generic underwater instanced batch**
 its colours/aspect differ per species, not its anatomical topology. No per-species
 underwater texture or new GPU skin animation is claimed. The six detailed caught
 and bestiary species geometries, cooking luminance, length scaling and gameplay
-are retained unchanged (433/499/293/537/517/417 triangles respectively).
+are retained unchanged (433/499/409/537/547/417 triangles respectively).
 
 The shark export reuses the established3.2m body with eyes/gills, pectoral/pelvic/
 secondary dorsal/anal/tail fins, the accurate0.42m detachable fin, and the full
