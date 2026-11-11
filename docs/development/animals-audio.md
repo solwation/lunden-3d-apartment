@@ -1209,3 +1209,23 @@ retains its intentionally detached first dorsal. No anatomy is reduced to an ell
 and cones. [Whole views, measurements and actual consumers](../verification/1911/README.md).
 
 Santa fallback startup and whole actual-sofa sitting/sleeping evidence: [#1914](../verification/1914/README.md).
+
+## Restored cat geometry and breed/coat parity (#1910)
+
+The foreign generic GLB/atlas path from #1894 is replaced by the established articulated
+cat recipe. The neutral legacy-named `cat-rigged.glb` now supplies matching immutable
+primitive geometry only; original part references, breed/kitten transformations,
+eye/coat materials, Miele's existing photo-bound maps and walking/washing/petting/
+eating/held/play/climbing pose code remain authoritative. No SkinnedMesh/second mixer
+or generic colour overlay replaces them. Missing/invalid assets preserve the source
+recipe; shared primitive buffers retain CPU attributes for later snapshot/LOD clones.
+Cat-only modelVersion2 refreshes generated binder thumbnails without changing saved photos.
+
+Measured component budget returns to the existing Pages fallback:24 mesh calls/10008tri
+with open eyes,22/8968 with closed eyes, existing one-mesh far LOD. Neutral GLB45880bytes;
+no frame-rate/startup/memory improvement is claimed. Whole five-form views, actual
+CatSpawner/OutdoorCats setup and actual96/320px BestiaryImages,37-form vertex parity,
+phone cleanup/clone and preservation checks: [#1910](../verification/1910/README.md).
+Public cd79c14 retains its generic procedural catpuppet without the faulty migration,
+so no restoration applies there; no Miele/gameplay/service transfer. Final model
+publication/full-app acceptance is tracked by #1913/#1914.

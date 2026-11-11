@@ -1,0 +1,2 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS whole5breeds×2poses×3views,10actualCatSpawner poses,actualOutdoorCats paw/LODsetup,10actualBestiaryImages96/320; zero pageerrors. Visual review required.

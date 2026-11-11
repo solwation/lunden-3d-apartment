@@ -9,7 +9,7 @@ export function registerCats(breeds, numbers) {
   const key = `${b.name}/${c.name}`, pair = numbers[key]; if (!pair) throw new Error(`Unnumbered cat form ${key}`);
   const meta = CAT_CARD.breeds.find(v => v.key === b.name), outdoor = OUTDOOR_CATS.cats.filter(o => o.breed === b.name && o.coat === c.name), chain = pair.length === 2 ? [catEntryId(b,c,true),catEntryId(b,c,false)] : [catEntryId(b,c,false)];
   for (const [i,no] of pair.entries()) { const kitten = pair.length === 2 && i === 0;
-   creature({ id:catEntryId(b,c,kitten), no, family:'cats', name:`${meta?.label ?? b.name}${kitten?' · kattunge':''}`, variant:c.name,
+   creature({ id:catEntryId(b,c,kitten), no, family:'cats', modelVersion:2, name:`${meta?.label ?? b.name}${kitten?' · kattunge':''}`, variant:c.name,
     level:b.superRare?4:b.name==='sphynx'?3:b.rare?2:b.name==='huskatt'?0:1, chain,
     info:{size:kitten?'Liten kattunge (modellens proportioner)':'Vuxen katt',weight:kitten?'Växer fortfarande':`${meta.weightKg.join('–')} kg (uppskattning)`,where:!kitten&&outdoor.length?`Ute: ${outdoor.map(o=>`${o.name} (${o.zone})`).join(', ')}; ibland hemma`:'Hemmet, gården och parkens stråk',when:'Olika tider på dygnet',likes:'Lugn närhet och klappar'},
     facts:[...(!kitten?outdoor.map(o=>`Utekatten ${o.name} brukar ströva ${o.roams??'kring '+o.zone}.`):[]),...(meta?.facts??[]),kitten?'Kattungen och den vuxna formen har var sin post.':'Utekatter och burna fjärrkatter använder samma ras- och pälsform.'], model:{kind:'cat',breed:b.name,coat:c.name,kitten} });

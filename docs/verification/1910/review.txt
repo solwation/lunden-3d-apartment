@@ -1,0 +1,7 @@
+git diff --check: pass
+Source manifest: 16 SHA-256 hashes match final source/asset.
+README relative links: 6 checked, all exist.
+Changelog JSON: valid.
+Source review: original buildCat/applyBreed/shapeOf/POSE/tabbyTextures and behaviour remain authoritative; loaded geometry only, no material or part replacement.
+Public cd79c14: regression never ported, no applicable generic restoration.
+Combined full-World merge-attribute mismatch remains unlocated (#1914); no new source attribution inferred from component checks.

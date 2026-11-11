@@ -1,0 +1,22 @@
+{
+  "base": "e7148fe6a33acba703022897daad0f9285e09034",
+  "assetBytes": 45880,
+  "sha256": {
+    "src/cat.js": "6d31c09923896abd2dce3f7ef0aa8a2e89b097c00fc25f3dea7288334bda339c",
+    "src/catmodel.js": "89e1acc188e9d821d9e05d1f109d32a2ec32897422a45f5d9b39adc6ebce3ba4",
+    "src/bestiarymetadata.js": "9a45b3ee174bf1250801472621b0e158460afd54a4254cd96500bda2d255ede4",
+    "src/outdoorcats.js": "1019163fd53e69e7e5cf5f823cb7230c9a78bbc4e5acb14c1da7cc1e94cbf86f",
+    "src/catclimb.js": "24dfbac7ad23fdc3a091dcb1aabe257d1c3903cc1c2c41367dde18cbab72b8aa",
+    "src/ghostcat.js": "886b5976812e6dbd40bebbbba7f69031778faf575b00298121be87b6774decc1",
+    "src/bestiarymodels.js": "d15db90bc8b79eb234309b1e5c96ad3037557625db69dcc162f151af2231e141",
+    "src/bestiaryimages.js": "43c6a479b1e1b9d88afa9afe70da28ff918bba632805be92987a7753e0d617ba",
+    "src/config.js": "6bbefd02116dfb3bafa27bcc0b21ce7039718174b90c07bb275ea92d339f2ed6",
+    "src/lowmemory.js": "7c9c9ccacd99abb8b011bbe77b6f1cd00ea5e580fe29f68975bdb02c94707b38",
+    "tools/buildcatglb.mjs": "5001b7b431df52adb9f87ed670fb7eb22d19dbc0d7c3caf9b60de55580526485",
+    "tools/riggedcattest.mjs": "1d52279814ffced52a3b5359c56da63bc578e82edd28cb04f3c34f0ad8e35029",
+    "tools/riggedcatmigration.test.mjs": "18b1b44b51e8cd36db06798f87ff6ba4ad26ac456904e6cabcf3067f8a887690",
+    "tools/riggedcatproduction.html": "79dd177fc227dd6f0a31c674c24dcaddb5d44d0b6b35abebc2465e0d5328c67d",
+    "tools/capture-cat-quality.cjs": "f97c79f3998c490bd6093a735b9136dcd1db03668e792e4db42cb912ddb5f7a3",
+    "models/cat-rigged.glb": "99bb9d6462c7ea4922d7250b164e00809b02f30724ca17a3eff9ac36c7d666b8"
+  }
+}

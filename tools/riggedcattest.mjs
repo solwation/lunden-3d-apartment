@@ -1,74 +1,75 @@
-// Automated verification test for rigged GLB cat evaluation (#1892)
+// #1910: actual geometry and transformed vertices, not file-size/draw promises.
+import test from 'node:test';
+import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import assert from 'node:assert';
+import * as T from 'three';
+import { BREEDS, VARIANTS, createCatPuppet, loadRiggedCatModel } from '../src/cat.js';
+import { installCatModel } from '../src/catmodel.js';
+import { prepareClimbContact } from '../src/catclimb.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const modelPath = path.resolve(__dirname, '../models/cat-rigged.glb');
-assert(fs.existsSync(modelPath), `Model file not found at ${modelPath}`);
-
-const buffer = fs.readFileSync(modelPath);
-assert(buffer.length > 100000 && buffer.length < 500000, `Model size out of expected bounds: ${buffer.length} bytes`);
-
-// Parse GLB Header
-const magic = buffer.toString('utf8', 0, 4);
-assert.strictEqual(magic, 'glTF', 'GLB magic must be glTF');
-
-const version = buffer.readUInt32LE(4);
-assert.strictEqual(version, 2, 'GLB version must be 2');
-
-const totalLength = buffer.readUInt32LE(8);
-assert.strictEqual(totalLength, buffer.length, 'GLB length matches buffer length');
-
-// Read JSON chunk
-const chunk0Length = buffer.readUInt32LE(12);
-const chunk0Type = buffer.toString('utf8', 16, 20);
-assert.strictEqual(chunk0Type, 'JSON', 'First chunk must be JSON');
-
-const jsonStr = buffer.toString('utf8', 20, 20 + chunk0Length);
-const gltf = JSON.parse(jsonStr);
-
-// Verify Meshes & Draw Call Optimization
-assert.strictEqual(gltf.meshes.length, 1, 'Model must contain exactly 1 unified mesh (1 draw call)');
-
-// Verify Armature & Skins
-assert(gltf.skins && gltf.skins.length >= 1, 'Model must have a skeletal skin');
-const skin = gltf.skins[0];
-assert.strictEqual(skin.joints.length, 26, `Armature must have 26 bones, found ${skin.joints.length}`);
-
-// Verify Key Functional Bones
-const nodes = gltf.nodes;
-const jointNames = skin.joints.map(idx => nodes[idx].name);
-
-const requiredJoints = {
-  head: 'Joint4',           // Head bone for watchPoint / gaze tracking
-  leftFrontPaw: 'Joint15',  // Left front paw for catclimb.js contact
-  rightFrontPaw: 'Joint18', // Right front paw for catclimb.js contact
-  leftHindPaw: 'Joint22',   // Left hind paw
-  rightHindPaw: 'Joint26',  // Right hind paw
-  tailRoot: 'Joint7',       // Tail base for CAT_TAIL_UP posing
-  tailTip: 'Joint12',       // Tail tip
+const vertices = object => {
+  object.updateMatrixWorld(true);
+  const data=[],v=new T.Vector3();
+  object.traverseVisible(o=>{if(o.isMesh)for(let i=0;i<o.geometry.attributes.position.count;i++){
+    v.fromBufferAttribute(o.geometry.attributes.position,i).applyMatrix4(o.matrixWorld);
+    assert.ok(v.toArray().every(Number.isFinite));data.push(...v.toArray());
+  }});
+  return data;
+};
+const bounds = object => {
+  const data=vertices(object),b=new T.Box3();for(let i=0;i<data.length;i+=3)b.expandByPoint(new T.Vector3(...data.slice(i,i+3)));return b;
 };
 
-for (const [role, name] of Object.entries(requiredJoints)) {
-  assert(jointNames.includes(name), `Missing required bone ${name} for ${role}`);
-}
+test('neutral GLB contains original articulated cat, no personal image/foreign skeleton', async()=>{
+  const data=fs.readFileSync('models/cat-rigged.glb');assert.equal(data.toString('ascii',0,4),'glTF');assert.equal(data.readUInt32LE(8),data.length);
+  const json=JSON.parse(data.subarray(20,20+data.readUInt32LE(12)).toString());
+  assert.equal(json.images,undefined);assert.equal(json.skins,undefined);
+  const model=await loadRiggedCatModel();assert.ok(installCatModel(model));assert.equal(model.scene.userData.catRecipe,1);
+  assert.ok(model.scene.getObjectByName('cat-nose'));
+  model.scene.traverse(o=>{if(o.userData.catPrimitive)assert.equal(o.geometry.userData.keepCpu,true,'later snapshots require retained CPU attributes');});
+});
 
-// Verify Animations
-assert(gltf.animations && gltf.animations.length >= 2, 'Must have at least idle and walk animations');
-const animNames = gltf.animations.map(a => a.name);
-assert(animNames.includes('idle'), 'Must include idle animation');
-assert(animNames.includes('walk'), 'Must include walk animation');
+test('every breed/coat/kitten keeps exact visible vertices through late GLB and six gait phases',async()=>{
+  const model=await loadRiggedCatModel();let forms=0;
+  for(const b of BREEDS)for(const coat of b.coats)for(const kitten of b.superRare?[false]:[false,true]){
+    const c=createCatPuppet(b,coat,kitten,{loadModel:false});
+    const refs=[c.object,c.head,c.shoulder,c.leftShoulder,c.eyes,...c.parts.hips.map(h=>h.foot)];
+    for(const stand of [0,1])for(const phase of [0,.5,1,2,3,4]){
+      Object.assign(c,{stand,wantStand:stand,gaitPhase:phase,gaitAmp:stand,walked:!!stand});c.pose(0);
+      const before=vertices(c.object);c.setupRigged(model);assert.deepEqual(vertices(c.object),before);
+      const box=bounds(c.object),size=box.getSize(new T.Vector3());
+      assert.ok(box.min.y>-.05&&box.max.y<.8,`${b.name}/${coat.name}/${kitten} ${box.min.y}..${box.max.y}`);
+      assert.ok(size.x<.7&&size.z<1.1,`${b.name} finite cat envelope`);
+    }
+    assert.deepEqual([c.object,c.head,c.shoulder,c.leftShoulder,c.eyes,...c.parts.hips.map(h=>h.foot)],refs);
+    assert.ok(c.modelLoaded);forms++;
+  }
+  assert.ok(forms>=30,`${forms} real forms`);
+});
 
-// Verify Draw Call Comparison
-const proceduralDrawCalls = 27; // Average BoxGeometry parts in src/cat.js
-const riggedDrawCalls = gltf.meshes.length; // 1 SkinnedMesh
-const drawCallReduction = ((proceduralDrawCalls - riggedDrawCalls) / proceduralDrawCalls) * 100;
+test('Siamese, Maine Coon and kitten retain different ears/body/head/tail proportions',()=>{
+  const make=(name,kitten=false)=>{const b=BREEDS.find(b=>b.name===name);return createCatPuppet(b,b.coats[0],kitten,{loadModel:false});};
+  const ordinary=make('huskatt'),siamese=make('siames'),maine=make('maine coon'),kitten=make('huskatt',true);
+  assert.ok(siamese.parts.ears[0].scale.y>ordinary.parts.ears[0].scale.y);
+  assert.ok(bounds(maine.object).getSize(new T.Vector3()).y>bounds(ordinary.object).getSize(new T.Vector3()).y*1.2);
+  assert.ok(maine.shape.tail>ordinary.shape.tail);
+  assert.ok(bounds(kitten.object).getSize(new T.Vector3()).y<bounds(ordinary.object).getSize(new T.Vector3()).y*.85);
+  assert.ok(kitten.shape.head>ordinary.shape.head&&kitten.shape.legs<ordinary.shape.legs);
+});
 
-console.log('✓ Model structure verified: glTF 2.0 binary');
-console.log(`✓ Mesh count: ${gltf.meshes.length} (SkinnedMesh = 1 draw call vs ~${proceduralDrawCalls} procedural parts)`);
-console.log(`✓ Draw call reduction: ${drawCallReduction.toFixed(1)}%`);
-console.log(`✓ Skeleton: 26 bones mapped (head, tail chain, all 4 paws)`);
-console.log(`✓ Animations: ${animNames.join(', ')}`);
-console.log('✓ PASS: All architectural compatibility criteria satisfied.');
+test('clone materials and real eye colours stay independent across a model swap',async()=>{
+  const a=createCatPuppet(BREEDS[0],VARIANTS[0]),b=createCatPuppet(BREEDS[1],BREEDS[1].coats[0]);
+  const before=a.parts.body.material.color.getHex();b.parts.body.material.color.setHex(0xff0000);
+  assert.equal(a.parts.body.material.color.getHex(),before);assert.equal(a.parts.eyes[0].eye.children[0].material.color.getHex(),VARIANTS[0].eye);
+  assert.equal(b.parts.eyes[0].eye.children[0].material.color.getHex(),BREEDS[1].coats[0].eye);
+  a.setupRigged(await loadRiggedCatModel());assert.equal(a.parts.body.material.color.getHex(),before);
+});
+
+test('climbing uses real paws and invalid old import cannot hide or reparent a cat',async()=>{
+  const c=createCatPuppet(BREEDS[0],VARIANTS[0]);Object.assign(c,{stand:1,wantStand:1});c.pose(0);
+  const contact=prepareClimbContact(c);assert.equal(contact.paws.length,4);
+  assert.deepEqual(contact.paws,[c.shoulder.children.at(-1),c.leftShoulder.children.at(-1),...c.parts.hips.map(h=>h.foot)]);
+  const refs=c.object.children.slice(),before=vertices(c.object);
+  c.setupRigged({scene:new T.Group()});assert.deepEqual(c.object.children,refs);assert.deepEqual(vertices(c.object),before);
+  c.object.removeFromParent();c.setupRigged(await loadRiggedCatModel());assert.equal(c.object.parent,null);
+});

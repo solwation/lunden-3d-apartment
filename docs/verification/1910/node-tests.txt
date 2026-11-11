@@ -1,0 +1,106 @@
+TAP version 13
+# Subtest: exact production spawn/look catalogue, append-only numbers and valid arbitrary-length chains
+ok 1 - exact production spawn/look catalogue, append-only numbers and valid arbitrary-length chains
+  ---
+  duration_ms: 4.110994
+  type: 'test'
+  ...
+# Subtest: observer obeys real shader high-bird visibility, frustum/range/occlusion and bounded sparse work
+ok 2 - observer obeys real shader high-bird visibility, frustum/range/occlusion and bounded sparse work
+  ---
+  duration_ms: 3.642095
+  type: 'test'
+  ...
+# Subtest: visual sight continues past transparent/hidden hits and retains opaque moving doors/instances
+ok 3 - visual sight continues past transparent/hidden hits and retains opaque moving doors/instances
+  ---
+  duration_ms: 2.042097
+  type: 'test'
+  ...
+# Subtest: \#1882 outdoor cats: binder pages name the cat and where it roams; saved collection progression unchanged
+ok 4 - \#1882 outdoor cats: binder pages name the cat and where it roams; saved collection progression unchanged
+  ---
+  duration_ms: 1.261398
+  type: 'test'
+  ...
+# Subtest: bounded pair selection, active approach/contact once, cooldown and return
+ok 5 - bounded pair selection, active approach/contact once, cooldown and return
+  ---
+  duration_ms: 5.586793
+  type: 'test'
+  ...
+# Subtest: busy/feed, lost view, blocked way and chance never strand or steal a cat
+ok 6 - busy/feed, lost view, blocked way and chance never strand or steal a cat
+  ---
+  duration_ms: 2.087797
+  type: 'test'
+  ...
+# Subtest: contact destinations face each other and keep standing bodies apart
+ok 7 - contact destinations face each other and keep standing bodies apart
+  ---
+  duration_ms: 0.453799
+  type: 'test'
+  ...
+# Subtest: actual breed models touch nose surfaces while torso bounds remain separated
+ok 8 - actual breed models touch nose surfaces while torso bounds remain separated
+  ---
+  duration_ms: 185.56854
+  type: 'test'
+  ...
+# Subtest: corrected cat thumbnails invalidate old generated cat model cache
+ok 9 - corrected cat thumbnails invalidate old generated cat model cache
+  ---
+  duration_ms: 1.870998
+  type: 'test'
+  ...
+# Subtest: held/hugging eyes and paws still use the production pose recipe
+ok 10 - held/hugging eyes and paws still use the production pose recipe
+  ---
+  duration_ms: 109.453947
+  type: 'test'
+  ...
+# Subtest: phone CPU cleanup keeps shared primitive buffers readable for later snapshots
+ok 11 - phone CPU cleanup keeps shared primitive buffers readable for later snapshots
+  ---
+  duration_ms: 231.242275
+  type: 'test'
+  ...
+# Subtest: neutral GLB contains original articulated cat, no personal image/foreign skeleton
+ok 12 - neutral GLB contains original articulated cat, no personal image/foreign skeleton
+  ---
+  duration_ms: 49.470531
+  type: 'test'
+  ...
+# Subtest: every breed/coat/kitten keeps exact visible vertices through late GLB and six gait phases
+ok 13 - every breed/coat/kitten keeps exact visible vertices through late GLB and six gait phases
+  ---
+  duration_ms: 4466.370216
+  type: 'test'
+  ...
+# Subtest: Siamese, Maine Coon and kitten retain different ears/body/head/tail proportions
+ok 14 - Siamese, Maine Coon and kitten retain different ears/body/head/tail proportions
+  ---
+  duration_ms: 20.157262
+  type: 'test'
+  ...
+# Subtest: clone materials and real eye colours stay independent across a model swap
+ok 15 - clone materials and real eye colours stay independent across a model swap
+  ---
+  duration_ms: 5.741889
+  type: 'test'
+  ...
+# Subtest: climbing uses real paws and invalid old import cannot hide or reparent a cat
+ok 16 - climbing uses real paws and invalid old import cannot hide or reparent a cat
+  ---
+  duration_ms: 6.158788
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4868.568014

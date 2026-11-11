@@ -1,176 +1,36 @@
-<!doctype html>
-<html lang="sv">
-<head>
-  <meta charset="utf-8">
-  <title>Production Rigged Cat Verification (#1894)</title>
-  <style>
-    body {
-      margin: 0;
-      background: #111827;
-      color: #f3f4f6;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      overflow: hidden;
-    }
-    #ui {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      z-index: 10;
-      background: rgba(17, 24, 39, 0.88);
-      backdrop-filter: blur(8px);
-      padding: 16px 20px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      max-width: 440px;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-    h2 { margin: 0 0 8px 0; font-size: 16px; color: #38bdf8; }
-    .badge { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; background: #065f46; color: #6ee7b7; margin-bottom: 8px; }
-    .metric { display: flex; justify-content: space-between; margin: 4px 0; }
-    .val { font-family: monospace; font-weight: bold; }
-    .good { color: #34d399; }
-    #checks { margin-top: 12px; font-family: monospace; font-size: 12px; white-space: pre-line; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px; }
-  </style>
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
-      }
-    }
-  </script>
-</head>
-<body>
-  <div id="ui">
-    <div class="badge">PRODUKTIONSVERIFIERING #1894</div>
-    <h2>Riggad SkinnedMesh-katt i produktion</h2>
-    <div class="metric">
-      <span>Modelltyp:</span>
-      <span class="val good">SkinnedMesh (.glb)</span>
-    </div>
-    <div class="metric">
-      <span>Draw calls per katt:</span>
-      <span class="val good">1 (96,3 % minskning)</span>
-    </div>
-    <div class="metric">
-      <span>9 katter i Lunden:</span>
-      <span class="val good">9 draw calls (tidigare 243)</span>
-    </div>
-    <div class="metric">
-      <span>Per-frame GC churn:</span>
-      <span class="val good">0 bytes (inga BufferGeometry-omallokeringar)</span>
-    </div>
-    <div class="metric">
-      <span>Klätterkontakter:</span>
-      <span class="val good">4 tassar mappade till ben</span>
-    </div>
-    <div id="checks">Initierar verifiering...</div>
-  </div>
-
-  <script type="module">
-    import * as THREE from 'three';
-    import { CatSpawner, createCatPuppet, BREEDS, VARIANTS, MIELE_COAT, loadRiggedCatModel } from '../src/cat.js';
-
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x111827);
-
-    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 50);
-    camera.position.set(0, 0.45, 1.4);
-    camera.lookAt(0, 0.18, 0);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    document.body.appendChild(renderer.domElement);
-
-    const floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(10, 10),
-      new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.85 })
-    );
-    floor.rotation.x = -Math.PI / 2;
-    scene.add(floor);
-
-    const ambient = new THREE.AmbientLight(0xffffff, 1.2);
-    scene.add(ambient);
-    const sun = new THREE.DirectionalLight(0xfff7ed, 2.0);
-    sun.position.set(2, 4, 3);
-    scene.add(sun);
-    const rim = new THREE.DirectionalLight(0x38bdf8, 1.2);
-    rim.position.set(-3, 2, -2);
-    scene.add(rim);
-
-    const checkLog = [];
-    const logCheck = (msg) => {
-      checkLog.push(msg);
-      document.getElementById('checks').innerText = checkLog.join('\n');
-    };
-
-    async function runVerification() {
-      logCheck('1. Laddar riggad kattmodell...');
-      const gltf = await loadRiggedCatModel();
-      logCheck('✓ GLB laddad: 26 ben, 6 animationer');
-
-      // Create a spawner cat (like in apartment)
-      const mockWorld = {};
-      const cat = new CatSpawner(mockWorld);
-      scene.add(cat.object);
-      cat.object.position.set(-0.35, 0, 0);
-      cat.object.visible = true;
-      logCheck('✓ CatSpawner skapad och initierad');
-
-      // Create a puppet cat (like outdoor cats)
-      const puppet = createCatPuppet(BREEDS[0], VARIANTS[1]);
-      scene.add(puppet.object);
-      puppet.object.position.set(0.35, 0, 0);
-      puppet.object.visible = true;
-      logCheck('✓ createCatPuppet skapad för utekatt');
-
-      // Wait a frame for setupRigged
-      await new Promise(r => setTimeout(r, 50));
-
-      if (cat.isRigged && cat.skinnedMesh) {
-        logCheck('✓ CatSpawner använder SkinnedMesh (1 draw call)');
-      } else {
-        logCheck('FAIL: CatSpawner är inte riggad');
-      }
-
-      if (puppet.isRigged && puppet.skinnedMesh) {
-        logCheck('✓ Utekatt-docka använder SkinnedMesh (1 draw call)');
-      } else {
-        logCheck('FAIL: puppet är inte riggad');
-      }
-
-      // Check paw contacts for catclimb.js
-      if (puppet.pawMeshes && puppet.pawMeshes.length === 4) {
-        logCheck('✓ 4 tasskontakter kopplade till skelettben för catclimb.js');
-      } else {
-        logCheck('FAIL: pawMeshes saknas');
-      }
-
-      // Test Miele coat
-      cat.setCat(BREEDS.find(b => b.name === 'Miele') || BREEDS[0], MIELE_COAT);
-      logCheck('✓ Miele mackerel-päls applicerad på SkinnedMesh PBR');
-
-      // Animate
-      let t = 0;
-      function animate() {
-        requestAnimationFrame(animate);
-        t += 0.016;
-        cat.pose(0.016);
-        puppet.walked = true;
-        puppet.pose(0.016);
-        renderer.render(scene, camera);
-      }
-      animate();
-
-      logCheck('\nRESULT: ALL CHECKS PASSED');
-    }
-
-    runVerification().catch(e => {
-      logCheck('ERROR: ' + e.message);
-    });
-  </script>
-</body>
-</html>
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Katter #1910 · originalets former och konsumenter</title>
+<style>body{margin:0;font:16px system-ui;color:#173044;background:#edf0f3}header{height:105px;box-sizing:border-box;padding:14px 24px}h1{font-size:23px;margin:0 0 5px}p{margin:4px 0}.labels{position:absolute;top:492px;left:0;width:1800px;display:grid;grid-template-columns:repeat(5,360px);pointer-events:none}.labels div{text-align:center;background:#ffffffe0;margin:5px 16px;padding:6px;font-weight:600}.labels div:nth-child(n+6){margin-top:440px}canvas{display:block}#binder{display:none;padding:18px;width:1764px}#binder .row{display:flex;gap:14px}figure{margin:6px;background:white;padding:10px;width:316px;box-sizing:border-box}figcaption{font-weight:600}#binder img{display:block;margin:10px auto}#binder small{display:block}button{padding:4px 12px;margin-right:8px}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<header><h1>Katter #1910 · produktionsgeometri, rasformer och poser</h1><p id="status">Laddar neutral artikulerad modell …</p><button onclick="catView('front')">Framifrån</button><button onclick="catView('side')">Sida</button><button onclick="catView('quarter')">Snett framifrån</button><button onclick="catConsumers()">CatSpawner</button><button onclick="catBinder()">Pärmens bilder</button></header>
+<div class="labels" id="labels"></div><section id="binder"><h2>Pärmens faktiska BestiaryImages · 96 px och 320 px</h2><p>Produktionsmodell och material; hela figurer. Befintliga mötesfoton ändras inte.</p><div id="thumbs" class="row"></div><div id="details" class="row"></div></section>
+<script type="module">
+import * as T from 'three';
+import {CatSpawner,createCatPuppet,loadRiggedCatModel,BREEDS} from '../src/cat.js';
+import {OutdoorCats} from '../src/outdoorcats.js';
+import {registry} from '../src/bestiary.js';
+import {BestiaryImages} from '../src/bestiaryimages.js';
+await loadRiggedCatModel();
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(1800,880);renderer.setPixelRatio(1);document.body.append(renderer.domElement);
+const scene=new T.Scene();scene.background=new T.Color('#edf0f3');scene.add(new T.HemisphereLight(0xffffff,0x747a71,2.5));const light=new T.DirectionalLight(0xfff3df,2);light.position.set(2,4,3);scene.add(light);
+const ground=new T.Mesh(new T.PlaneGeometry(10,10),new T.MeshLambertMaterial({color:0xcbd3c1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.002;scene.add(ground);scene.add(new T.GridHelper(2,20,0xadb99d,0xb8c3ad));
+const camera=new T.PerspectiveCamera(35,360/440,.01,20);
+const cases=[['Huskatt','huskatt',false],['Siames','siames',false],['Maine Coon','maine coon',false],['Kattunge','huskatt',true],['Miele','Miele',false]];
+const cats=cases.map(([label,name,kitten])=>{const breed=BREEDS.find(b=>b.name===name),cat=createCatPuppet(breed,breed.coats[0],kitten);cat.hand=cat.parts.hand;scene.add(cat.object);return{label,cat};});
+const main=new CatSpawner({levels:[{segments:[]},{segments:[]}],doors:[]},()=>.5);scene.add(main.object);main.nextMeow=Infinity;
+const all=[...cats.map(c=>c.cat.object),main.object];
+const boxOf=object=>{object.updateMatrixWorld(true);const box=new T.Box3(),v=new T.Vector3();object.traverseVisible(o=>{if(o.isMesh)for(let i=0;i<o.geometry.attributes.position.count;i++){v.fromBufferAttribute(o.geometry.attributes.position,i).applyMatrix4(o.matrixWorld);if(!v.toArray().every(Number.isFinite))throw Error('non-finite posed vertex');box.expandByPoint(v);}});return box;};
+const metrics=[];
+function reset(c){c.head.rotation.set(0,0,0);c.shoulder.rotation.set(0,0,0);c.leftShoulder.rotation.set(0,0,0);c.headOff.set(0,0,0);c.tailGroup.rotation.set(0,0,0);Object.assign(c,{stand:0,wantStand:0,gaitAmp:0,walked:false,t:1,nextMeow:Infinity,play:null,fish:null,petT:0,tailU:0,hopY:0});for(const e of c.eyes){e.eye.visible=true;e.shut.visible=false;}c.parts.hand.visible=false;}
+function pose(c,kind){reset(c);if(kind==='walk'){Object.assign(c,{stand:1,wantStand:1,gaitAmp:1,gaitPhase:1,walked:true});}if(kind==='wash'){c.t=1.7;c.behave(0);}if(kind==='pet'){Object.assign(c,{petT:4,petPhase:.8,photoTaken:true,ownHand:false,petFrom:{x:0,z:1}});c.updatePetting(0);}if(kind==='play'){c.play={kind:'pounce',t:.45,from:0};c.updatePlay(0);}if(kind==='held'){c.heldBehave(0);}if(kind==='eat'){c.fish={phase:'eat',t:.5,chew:1,at:new T.Vector3(0,0,.2),f:{state:'placed',model:new T.Group()}};c.updateFish(0);}c.pose(0);}
+function cell(c,i,label,view){all.forEach(o=>o.visible=false);c.object.visible=true;const col=i%5,row=Math.floor(i/5);renderer.setViewport(col*360,(1-row)*440,360,440);renderer.setScissor(col*360,(1-row)*440,360,440);renderer.setScissorTest(true);const look=new T.Vector3(0,.245,.045);camera.position.copy(look).add(view==='front'?new T.Vector3(0,.07,1.25):view==='side'?new T.Vector3(1.25,.07,0):new T.Vector3(.95,.12,1));camera.lookAt(look);scene.updateMatrixWorld(true);renderer.render(scene,camera);const b=boxOf(c.object);metrics.push({label,min:b.min.toArray(),max:b.max.toArray(),calls:renderer.info.render.calls-2,triangles:renderer.info.render.triangles});}
+function show(){document.getElementById('binder').style.display='none';renderer.domElement.style.display='block';document.getElementById('labels').style.display='grid';metrics.length=0;}
+window.catView=(view='quarter')=>{show();const labels=[];for(let row=0;row<2;row++)for(let i=0;i<5;i++){const {label,cat}=cats[i],kind=row?['walk','wash','pet','play','held'][i]:'sit';pose(cat,kind);labels.push(`${label} · ${kind}`);cell(cat,row*5+i,labels.at(-1),view);}document.getElementById('labels').innerHTML=labels.map(x=>`<div>${x}</div>`).join('');renderer.setScissorTest(false);window.catMetrics=metrics.slice();};
+window.catConsumers=()=>{show();const labels=[];for(let row=0;row<2;row++)for(let i=0;i<5;i++){const b=BREEDS.find(b=>b.name===cases[i][1]);main.setCat(b,b.coats[0],cases[i][2]);const kind=row?['walk','wash','pet','play','eat'][i]:'sit';pose(main,kind);labels.push(`CatSpawner · ${cases[i][0]} · ${kind}`);cell(main,row*5+i,labels.at(-1),'quarter');}document.getElementById('labels').innerHTML=labels.map(x=>`<div>${x}</div>`).join('');renderer.setScissorTest(false);window.catConsumerMetrics=metrics.slice();};
+window.catBinder=async()=>{all.forEach(o=>o.visible=false);renderer.domElement.style.display='none';document.getElementById('labels').style.display='none';document.getElementById('binder').style.display='block';const images=new BestiaryImages({registry,renderer});for(const kind of ['thumbs','details']){const root=document.getElementById(kind);root.replaceChildren();for(const [label,name,kitten]of cases){const b=BREEDS.find(b=>b.name===name),entry=registry.list().find(e=>e.model?.kind==='cat'&&e.model.breed===name&&e.model.coat===b.coats[0].name&&e.model.kitten===kitten),size=kind==='thumbs'?96:320;const img=new Image();img.src=await images.get(entry.id,size);await img.decode();const card=document.createElement('figure');card.innerHTML=`<figcaption>${label} · ${size}px</figcaption><small>modellversion ${entry.modelVersion}</small>`;card.append(img);root.append(card);}}window.catBinderRenders=images.renders;};
+// Construct the actual outdoor consumer with controlled terrain/obstacles; retain
+// its own near puppet, baked LODs and real paw contact setup.
+const outdoorScene=new T.Scene(),outdoorCamera=new T.PerspectiveCamera();outdoorCamera.position.set(0,1,0);
+const outdoor=new OutdoorCats({scene:outdoorScene,camera:outdoorCamera,cat:main,ground:()=>0,walkable:()=>true,free:()=>true});
+window.catOutdoor={count:outdoor.cats.length,all:outdoor.cats.every(c=>c.climbContact.paws.length===4&&c.lods.every(l=>l.geometry.attributes.position.count>0)),nearPaws:outdoor.cats[0].climbContact.paws.map(p=>p.isMesh)};
+window.catEvidence={renderer,main,cats,scene,boxOf,outdoor};catView('quarter');document.getElementById('status').textContent='Faktiska ras-/pälsrecept och CatSpawner-poser · GLB byter endast geometri · visuell granskning krävs';window.__ready=true;
+</script>
