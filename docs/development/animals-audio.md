@@ -495,8 +495,21 @@ for rendered arms, size, purr audio, release and bicycle stow regression.
 
 This is personal animal gameplay, excluded from the public downstream scope.
 
-Ponies (#1280, #1293): Zoey (grey/white) and Princess (bay, black points, white star) live in the fenced paddock on the kidney-shaped meadow (environment.md, "Pony paddock"): one instanced mesh,
-shader-animated legs/neck/head/ears/tail, grazing, standing and wandering, walking to the fence when the visitor is within 40 m. Not targets for rays and darts (like the gulls). **Klappa (#1293):** `Paddock.targets()` gives
+Ponies (#1280, #1293, corrected rig #1906): Zoey (grey/white) and Princess (bay,
+black points, white star) live in the fenced paddock on the kidney-shaped meadow
+(environment.md, "Pony paddock"). `tools/buildponyglb.mjs` bakes the retained
+photo-based `ponyGeometry()` loft into `models/pony-rigged.glb`: 1,080 triangles,
+one skinned mesh/material per pony, 22 bones and idle/walk/graze/watch/pet clips.
+The complete bone hierarchy is attached and updated before inverse bind matrices
+are calculated. Five padded UV palette regions preserve the two animals' coats,
+points, muzzle, eyes/hooves and optional star without overlapping atlas paint.
+The rigid torso retains the existing rug frame; look offsets are removed before
+mixer updates so idle heads cannot accumulate yaw. The previous instanced shader
+mesh remains the asynchronous fallback and the rug/interaction anchor.
+`tools/riggedponytest.mjs` tests actual neutral/posed skinning and grazing reach;
+`tools/ponyvisualtest.html` exercises actual Paddock consumers on controlled flat
+ground. [Scoped evidence and limits](../verification/1906/README.md).
+Not targets for rays and darts (like the gulls). **Klappa (#1293):** `Paddock.targets()` gives
 one invisible pick box per pony (kept out of the scene, tested only by main.js's focus ray, `HOLD.reach`) with `userData.door` = {kind 'pony', verb 'klappa', pet()}; E / click runs `use()` → `pet()`: the arm reaches out (generic
 `hand.reach`), the pony stops (`state 'pet'`, `PADDOCK.pony.pet` s), turns its head and body to the visitor, lowers its muzzle, flicks its ears, swishes its tail and (**#1320**) whinnies happily (`sfx.whinny`, synthesised; `sfx.nicker` stays for other uses), pink hearts rise from its head (`Hearts` from pingping.js, one per pony, `PADDOCK.pony.hearts/heartScale`) and `Paddock.onPet` → `bump('ponyPets')` scores 1 point (`SCORE.each.ponyPets`). Only a fresh pat counts: re-patting while it is still in `state 'pet'` renews the pose without a new whinny, hearts or point. Stats panel shows "Klappade hästar" once non-zero. **Weather (#1316):** in rain they go under the shelter's roof or a shade tree and stand there until it has been dry for a while; in the snow months both stand visibly inside the field shelter (#1352). See environment.md, "Pony paddock".
 **Grazing and grass length (#1315):** the paddock's long grass is ONE instanced mesh (`paddock-grass`, `Paddock.grass`, ~8 500 tufts of two crossed quads (4 triangles; #1342: three overlapping rows of fine blades are cut out in the fragment shader, a low shaggy carpet instead of big tufts; nothing collides, the grass never hindered walking: held-W walks in paddocktest/farwalktest) on a jittered `PADDOCK.grass.spacing` grid inside the fence, no raycast, no shadows, +1 draw call, hidden with the ponies beyond `viewDist` and in `SEASON.snowMonths`). The vertex shader takes each tuft's height from a coarse grass-length mask (`Paddock.gm`, a `cell` m grid over the fence bbox, 0 grazed .. 1 long; a `DataTexture` R8, uploaded at most every `period` s) so a grazed area is flat and the rest `long` m tall. The mask starts per session with random grazed patches plus the places round the trough and shelter (`initGrass`), a pony with its head down (`state 'graze'`, neck over 1.1) crops `bite` m round its muzzle (`eatAt`), and the grass regrows `regrow` per REAL second (#1342: 1/72 h, the game day is real time; `growGrass` uses the larger of simulated and wall-clock time, also while far away). The mask is saved in localStorage (`lunden.paddockGrass`, every `save` s and on pagehide, with its time stamp) and caught up on the next load (`loadGrass`); the random starting patches only apply without a saved mask. `decide` makes a pony walk on to a longer place (`longPlace`: best of a few random waypoints) when the grass under its muzzle is below `hungry`, and wandering also prefers long grass; it grazes on arrival. All numbers *guess*, in `PADDOCK.grass`. Checked by `tools/grazetest.cjs` (verification.md).

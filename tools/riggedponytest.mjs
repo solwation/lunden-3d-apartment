@@ -81,7 +81,7 @@ test('pony-rigged.glb withers height matches C-pony proportion (~1.32m)', async 
   const geom = skinnedMesh.geometry;
   geom.computeBoundingBox();
   const box = geom.boundingBox;
-  assert.ok(box.max.y >= 1.65 && box.max.y <= 1.85, `Total head height should be ~1.7m, got ${box.max.y}`);
+  assert.ok(box.max.y >= 1.80 && box.max.y <= 1.95, `Erect ears retain the photo-based loft height (~1.91m), got ${box.max.y}`);
   assert.ok(box.min.y >= -0.05 && box.min.y <= 0.05, `Ground level should be ~0, got ${box.min.y}`);
 });
 
@@ -150,3 +150,37 @@ test('loadRiggedPonyModel and Paddock integration', async () => {
   assert.equal(paddock.mesh.visible, true, 'Procedural mesh container must remain visible for blankets and picks');
 });
 
+
+async function posedPony() {
+  globalThis.self ??= globalThis;
+  const bytes=fs.readFileSync('models/pony-rigged.glb');
+  const gltf=await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');
+  let mesh;gltf.scene.traverse(o=>{if(o.isSkinnedMesh)mesh=o});
+  const update=()=>{gltf.scene.updateMatrixWorld(true);mesh.skeleton.update()};
+  const vertex=i=>mesh.applyBoneTransform(i,new THREE.Vector3().fromBufferAttribute(mesh.geometry.attributes.position,i));
+  return {gltf,mesh,update,vertex};
+}
+
+test('actual neutral skinning preserves the loft rather than adding bone translations twice',async()=>{
+  const {mesh,update,vertex}=await posedPony();update();
+  const pos=mesh.geometry.attributes.position;let maximum=0;
+  for(let i=0;i<pos.count;i++) maximum=Math.max(maximum,vertex(i).distanceTo(new THREE.Vector3().fromBufferAttribute(pos,i)));
+  assert.ok(maximum<1e-5,`inverse bind pose must reproduce source vertices; max displacement ${maximum}`);
+  assert.ok((mesh.geometry.index?.count??pos.count)/3<=1600,'bounded detailed pony mesh, one material');
+  assert.ok(!Array.isArray(mesh.material));
+});
+
+test('all animation clips keep deformed vertices within a pony-sized envelope and grazing reaches the grass',async()=>{
+  const {gltf,mesh,update,vertex}=await posedPony(),pos=mesh.geometry.attributes.position;
+  for(const clip of gltf.animations){
+    const mixer=new THREE.AnimationMixer(gltf.scene);mixer.clipAction(clip).play();
+    for(let sample=0;sample<=12;sample++){
+      mixer.setTime(clip.duration*sample/13);update();const bounds=new THREE.Box3();let muzzle=Infinity;
+      for(let i=0;i<pos.count;i++){const v=vertex(i);assert.ok(v.toArray().every(Number.isFinite));bounds.expandByPoint(v);if(pos.getZ(i)>1.25)muzzle=Math.min(muzzle,v.y)}
+      assert.ok(bounds.min.y>-.055&&bounds.max.y<2.12,`${clip.name} keeps hooves/head near their actual frame: ${bounds.min.y}..${bounds.max.y}`);
+      assert.ok(bounds.getSize(new THREE.Vector3()).z<2.7,`${clip.name} remains connected-sized, not exploded`);
+      if(clip.name==='graze')assert.ok(muzzle>.0&&muzzle<.20,`muzzle reaches grass without sinking, got ${muzzle}`);
+    }
+    mixer.stopAllAction();mixer.uncacheRoot(gltf.scene);
+  }
+});

@@ -297,93 +297,18 @@ if (typeof window !== 'undefined') {
   loadRiggedPonyModel().catch(() => {});
 }
 
+/** Five padded palette regions baked into the offline GLB UVs: coat, mane/points,
+ * eyes/hooves, optional forehead star and muzzle. No overlapping UV painting. */
 export function createPonyTexture({ coat, accent, star }) {
   if (typeof document === 'undefined') return null;
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = 512;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return null;
-
-  const hexColor = (val, fallback = '#7a4426') => {
-    if (typeof val === 'number') return '#' + val.toString(16).padStart(6, '0');
-    if (typeof val === 'string' && val.length > 0) return val.startsWith('#') ? val : '#' + val;
-    return fallback;
-  };
-
-  const coatCol = hexColor(coat, '#7a4426');
-  const accCol = hexColor(accent, '#1b1410');
-
-  // Background coat color
-  ctx.fillStyle = coatCol;
-  ctx.fillRect(0, 0, 512, 512);
-
-  // Soft coat fur gradation / highlights
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-  for (let i = 0; i < 40; i++) {
-    const y = i * 12 + 10;
-    ctx.fillRect(20, y, 260, 4);
-  }
-
-  // 1. Mane & Tail areas (accent color): uv [0.65, 0.10, 0.30, 0.65] -> x: 330..485, y: 50..380
-  ctx.fillStyle = accCol;
-  ctx.fillRect(330, 50, 160, 330);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
-  for (let y = 60; y < 370; y += 8) {
-    ctx.fillRect(330, y, 160, 2);
-  }
-
-  // 2. Muzzle / Snout: uv [0.70, 0.40, 0.25, 0.15] -> x: 358..486, y: 204..280
-  const muzGrad = ctx.createLinearGradient(360, 204, 480, 280);
-  muzGrad.addColorStop(0, '#5a463b');
-  muzGrad.addColorStop(1, '#3b2f28');
-  ctx.fillStyle = muzGrad;
-  ctx.fillRect(358, 204, 128, 76);
-
-  // Nostrils
-  ctx.fillStyle = '#110d0b';
-  ctx.beginPath();
-  ctx.ellipse(390, 240, 10, 14, -0.2, 0, Math.PI * 2);
-  ctx.ellipse(450, 240, 10, 14, 0.2, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 3. Eyes: uv [0.85, 0.80, 0.10, 0.10] -> x: 435..486, y: 410..461
-  ctx.fillStyle = '#0a0807';
-  ctx.beginPath();
-  ctx.arc(460, 435, 16, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.arc(466, 430, 4, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 4. White Star on Forehead (Princess): uv [0.90, 0.90, 0.08, 0.08] -> x: 460..500, y: 460..500
-  if (star) {
-    ctx.fillStyle = '#f8fafc';
-    ctx.beginPath();
-    ctx.moveTo(480, 462);
-    ctx.lineTo(486, 476);
-    ctx.lineTo(500, 480);
-    ctx.lineTo(486, 484);
-    ctx.lineTo(480, 498);
-    ctx.lineTo(474, 484);
-    ctx.lineTo(460, 480);
-    ctx.lineTo(474, 476);
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  // 5. Lower legs & Hooves: uv [0.38, 0.82, 0.12, 0.12] -> x: 194..256, y: 420..481
-  ctx.fillStyle = accCol;
-  ctx.fillRect(194, 420, 62, 35);
-  ctx.fillStyle = '#1c1b18';
-  ctx.fillRect(194, 455, 62, 26);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-  ctx.fillRect(194, 457, 62, 3);
-
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.needsUpdate = true;
-  return tex;
+  const canvas=document.createElement('canvas');canvas.width=160;canvas.height=16;
+  const ctx=canvas.getContext('2d');if(!ctx)return null;
+  const muzzle=new THREE.Color(coat).lerp(new THREE.Color(0x292421),0.65);
+  const palette=[coat,accent,0x151413,star?0xf3eee5:coat,muzzle];
+  palette.forEach((value,i)=>{ctx.fillStyle='#'+new THREE.Color(value).getHexString();ctx.fillRect(i*32,0,32,16);});
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
+  texture.generateMipmaps=false;texture.minFilter=THREE.LinearFilter;
+  return texture;
 }
 
 /** The worn track just inside the fence (soil colour) as land-mesh geometry for southbackdrop.js: `ground(x, z)` → y. Empty when too short. */
@@ -582,7 +507,9 @@ export class Paddock {
         mixer,
         actions,
         activeAction,
-        currentClip: 'idle'
+        currentClip: 'idle',
+        baseHeadQ: headBone?.quaternion.clone(),
+        baseNeckQ: neckBone?.quaternion.clone()
       });
     }
 
@@ -886,6 +813,10 @@ export class Paddock {
         else if (p.state === 'watch') targetClip = 'watch';
         else if (p.state === 'pet') targetClip = 'pet';
 
+        // Remove last frame's look offset before the mixer; idle clips need not
+        // key these bones, so adding Euler yaw repeatedly would spin the head.
+        if (rp.baseHeadQ) rp.headBone.quaternion.copy(rp.baseHeadQ);
+        if (rp.baseNeckQ) rp.neckBone.quaternion.copy(rp.baseNeckQ);
         if (rp.mixer && rp.actions) {
           if (rp.currentClip !== targetClip) {
             const nextAction = rp.actions[targetClip] || rp.actions['idle'];
@@ -898,6 +829,8 @@ export class Paddock {
           }
           if (dt > 0) rp.mixer.update(dt);
         }
+        rp.baseHeadQ?.copy(rp.headBone.quaternion);
+        rp.baseNeckQ?.copy(rp.neckBone.quaternion);
         if (p.headYaw) {
           if (rp.neckBone) rp.neckBone.rotation.y += p.headYaw * 0.5;
           if (rp.headBone) rp.headBone.rotation.y += p.headYaw * 0.5;
