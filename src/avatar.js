@@ -2,6 +2,7 @@ import { armPumpShape, pumpWire } from './gympump.js';
 import { GYM_PUMP } from './config.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, DANCE, AVATAR_AIR as AIR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { reactionPose, mixHand } from './reactpose.js';
@@ -985,8 +986,8 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
           diffuseColor.rgb = texture2D(uSuitTexture, clamp(uv, 0.0, 1.0)).rgb;
         } else if (suitBone == ${NAMES.indexOf('head')}.0) {
           diffuseColor.rgb = red;
-          if (vSuitAt.z > ${headFront}) {
-            vec2 uv = vec2((vSuitAt.x - ${headMin.x}) / ${headSize.x}, 1.0 - uSuitMaskBand + (vSuitAt.y - ${headMin.y}) / ${headSize.y} * uSuitMaskBand);
+          if (vSuitAt.z > ${(Number(headFront) || 0).toFixed(4)}) {
+            vec2 uv = vec2((vSuitAt.x - ${(Number(headMin.x) || 0).toFixed(4)}) / ${(Number(headSize.x) || 1).toFixed(4)}, 1.0 - uSuitMaskBand + (vSuitAt.y - ${(Number(headMin.y) || 0).toFixed(4)}) / ${(Number(headSize.y) || 1).toFixed(4)} * uSuitMaskBand);
             diffuseColor.rgb = texture2D(uSuitTexture, clamp(uv, 0.0, 1.0)).rgb;
           }
         } else if (suitBone == ${NAMES.indexOf('handL')}.0 || suitBone == ${NAMES.indexOf('handR')}.0 || suitBone == ${NAMES.indexOf('kneeL')}.0 || suitBone == ${NAMES.indexOf('kneeR')}.0 || suitBone == ${NAMES.indexOf('footL')}.0 || suitBone == ${NAMES.indexOf('footR')}.0) diffuseColor.rgb = red;
@@ -1192,11 +1193,257 @@ function airFeet(fig, feet, aa, v, hy, hz) {
   });
 }
 
+// --- Rigged GLB avatar loader and dynamic canvas texture atlas -----------------------------------
+let riggedAvatarData = null;
+let riggedAvatarLoading = null;
+
+export function loadRiggedAvatarModel() {
+  if (riggedAvatarData) return Promise.resolve(riggedAvatarData);
+  if (riggedAvatarLoading) return riggedAvatarLoading;
+
+  riggedAvatarLoading = new Promise((resolve, reject) => {
+    try {
+      const isNode = typeof process !== 'undefined' && process?.versions?.node;
+      if (isNode) {
+        if (typeof self === 'undefined') globalThis.self = globalThis;
+        Promise.all([
+          import('node:fs'),
+          import('node:path'),
+          import('three/examples/jsm/loaders/GLTFLoader.js')
+        ]).then(([fs, path, { GLTFLoader }]) => {
+          const modelPath = path.resolve(process.cwd(), 'models/avatar-rigged.glb');
+          if (!fs.existsSync(modelPath)) {
+            resolve(null);
+            return;
+          }
+          const buf = fs.readFileSync(modelPath);
+          const arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+          new GLTFLoader().parse(arrayBuffer, '', (gltf) => {
+            riggedAvatarData = gltf;
+            resolve(gltf);
+          }, reject);
+        }).catch((err) => {
+          console.warn('Node GLTF avatar load fallback:', err);
+          resolve(null);
+        });
+      } else {
+        import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
+          const url = new URL('../models/avatar-rigged.glb', import.meta.url).href;
+          new GLTFLoader().load(url, (gltf) => {
+            riggedAvatarData = gltf;
+            resolve(gltf);
+          }, undefined, (err) => {
+            console.warn('Could not load avatar-rigged.glb:', err);
+            resolve(null);
+          });
+        }).catch(reject);
+      }
+    } catch {
+      resolve(null);
+    }
+  });
+
+  return riggedAvatarLoading;
+}
+
+if (typeof window !== 'undefined') {
+  loadRiggedAvatarModel().catch(() => {});
+}
+
+export function createAvatarTexture(lk) {
+  if (typeof document === 'undefined') return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  ctx.fillStyle = '#222';
+  ctx.fillRect(0, 0, 512, 512);
+
+  const hexColor = (val, fallback = '#e0c0a0') => {
+    if (typeof val === 'number') return '#' + val.toString(16).padStart(6, '0');
+    if (typeof val === 'string' && val.length > 0) return val.startsWith('#') ? val : '#' + val;
+    return fallback;
+  };
+
+  const skinCol = hexColor(lk.skin, '#e5c8a8');
+  const topCol = hexColor(lk.top, '#336699');
+  const pantsCol = hexColor(lk.pants, '#2b3345');
+  const hairCol = hexColor(lk.hair, '#3b281c');
+  const shoesCol = hexColor(lk.shoes, '#1e2024');
+  const eyeCol = hexColor(lk.eyes, '#4b75a0');
+  const browCol = hexColor(lk.brows ?? lk.hair, hairCol);
+  const beardCol = hexColor(lk.beard ?? lk.hair, hairCol);
+
+  // 1. Head / Face (uv: 0.05..0.45, 0.55..0.95 -> pixels 26..231, 26..231)
+  ctx.fillStyle = skinCol;
+  ctx.fillRect(26, 26, 205, 205);
+
+  const cheekGrad = ctx.createRadialGradient(70, 140, 2, 70, 140, 25);
+  cheekGrad.addColorStop(0, 'rgba(235, 110, 100, 0.35)');
+  cheekGrad.addColorStop(1, 'rgba(235, 110, 100, 0)');
+  ctx.fillStyle = cheekGrad;
+  ctx.fillRect(40, 115, 60, 50);
+
+  const cheekGradR = ctx.createRadialGradient(185, 140, 2, 185, 140, 25);
+  cheekGradR.addColorStop(0, 'rgba(235, 110, 100, 0.35)');
+  cheekGradR.addColorStop(1, 'rgba(235, 110, 100, 0)');
+  ctx.fillStyle = cheekGradR;
+  ctx.fillRect(155, 115, 60, 50);
+
+  for (const ex of [80, 175]) {
+    ctx.fillStyle = '#f0f3f6';
+    ctx.beginPath();
+    ctx.ellipse(ex, 115, 14, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = eyeCol;
+    ctx.beginPath();
+    ctx.arc(ex, 115, 6.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#0f1114';
+    ctx.beginPath();
+    ctx.arc(ex, 115, 3.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(ex + 2, 113, 1.8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.fillStyle = browCol;
+  ctx.beginPath();
+  if (ctx.roundRect) {
+    ctx.roundRect(64, 95, 32, 5, 2);
+    ctx.roundRect(160, 95, 32, 5, 2);
+  } else {
+    ctx.rect(64, 95, 32, 5);
+    ctx.rect(160, 95, 32, 5);
+  }
+  ctx.fill();
+
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+  ctx.beginPath();
+  ctx.ellipse(128, 140, 7, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#c56b6a';
+  ctx.beginPath();
+  ctx.ellipse(128, 175, 16, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#823737';
+  ctx.fillRect(116, 175, 24, 1.5);
+
+  const facial = Number(lk.facial ?? lk.facialHair ?? 0);
+  if (facial === 2 || facial === 3) {
+    ctx.fillStyle = beardCol;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(108, 162, 40, 7, 3);
+    else ctx.rect(108, 162, 40, 7);
+    ctx.fill();
+  }
+  if (facial === 1 || facial === 3) {
+    ctx.fillStyle = beardCol;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(100, 185, 56, 35, 6);
+    else ctx.rect(100, 185, 56, 35);
+    ctx.fill();
+  }
+
+  // 2. Hair texture
+  ctx.fillStyle = hairCol;
+  ctx.fillRect(26, 384, 205, 112);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+  for (let y = 390; y < 490; y += 8) {
+    ctx.fillRect(26, y, 205, 2);
+  }
+
+  // 3. Top / Shirt
+  ctx.fillStyle = topCol;
+  ctx.fillRect(266, 266, 230, 230);
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+  ctx.fillRect(266, 266, 230, 14);
+  ctx.fillRect(266, 482, 230, 14);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+  ctx.fillRect(266, 280, 230, 4);
+
+  // 4. Pants / Legs
+  ctx.fillStyle = lk.legs === 1 ? skinCol : pantsCol;
+  ctx.fillRect(26, 10, 205, 140);
+  ctx.fillRect(26, 145, 205, 100);
+  ctx.fillStyle = '#1c1b1a';
+  ctx.fillRect(26, 10, 205, 16);
+  ctx.fillStyle = '#d4af37';
+  ctx.fillRect(120, 10, 16, 16);
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+  ctx.fillRect(45, 30, 2, 45);
+  ctx.fillRect(210, 30, 2, 45);
+  ctx.fillRect(127, 26, 2, 50);
+
+  // 5. Skin: Forearms & Hands & Neck
+  ctx.fillStyle = skinCol;
+  ctx.fillRect(280, 10, 95, 230);
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+  for (let k = 0; k < 4; k++) {
+    ctx.fillRect(285 + k * 18, 10, 2, 40);
+  }
+
+  // 6. Shoes & Sole
+  ctx.fillStyle = shoesCol;
+  ctx.fillRect(384, 10, 112, 112);
+  ctx.fillStyle = '#ffffff';
+  for (let l = 0; l < 4; l++) {
+    ctx.fillRect(410, 25 + l * 12, 40, 2.5);
+  }
+  ctx.fillStyle = '#eceae6';
+  ctx.fillRect(384, 128, 112, 50);
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+  ctx.fillRect(384, 172, 112, 6);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.needsUpdate = true;
+  return texture;
+}
+
 export class Avatar {
   /** `seed`: what the look comes from (name or id); `rim`: the outline's colour. */
   constructor(seed, rim = 0xcfe6ff) {
     const lk = look(seed);
     this.look = lk;
+    this.seed = seed;
+    this.rim = rim;
+
+    this.head = new THREE.Vector3();
+    this.phase = 0; this.solid = true; this.time = 0;
+    this.pos = new THREE.Vector3(); this.known = false;
+    this.mouth = 0; this.speech = null;
+
+    this.object = new THREE.Group();
+    this.object.name = 'avatar';
+    this.object.rotation.y = Math.PI; // the figure faces +z, a ghost's heading −z
+
+    const w = avatarBuildWidth(lk);
+    if (Number.isInteger(lk.height)) {
+      const { body } = avatarProportions(lk.height);
+      this.object.scale.set(w * body, body, w * body);
+    } else {
+      this.object.scale.set(w, lk.tall ?? 1, w);
+    }
+
+    if (riggedAvatarData) {
+      this.setupRigged(riggedAvatarData);
+    } else {
+      this.setupProcedural(lk, rim);
+      loadRiggedAvatarModel().then((gltf) => {
+        if (gltf) this.setupRigged(gltf);
+      }).catch(() => {});
+    }
+  }
+
+  setupProcedural(lk, rim) {
     const geometry = geometryFor(lk);
     this.material = makeMaterial(new THREE.Color(rim), geometry.userData.headProjection);
     applyFaceShape(this.material.userData.u, lk);
@@ -1204,20 +1451,110 @@ export class Avatar {
     this.bones = attachSkeleton(this.mesh);
     this.mesh.castShadow = this.mesh.receiveShadow = false;
     this.mesh.name = 'avatar';
-    this.object = new THREE.Group();
-    this.object.name = 'avatar';
     this.object.add(this.mesh);
-    this.object.rotation.y = Math.PI; // the figure faces +z, a ghost's heading −z
-    const w = avatarBuildWidth(lk); // (#1139: the chosen body build, else the seed's)
-    if (Number.isInteger(lk.height)) { // #1136: a chosen height scales the whole figure, a child's head a little more
-      const { body, head } = avatarProportions(lk.height);
-      this.object.scale.set(w * body, body, w * body);
+
+    if (Number.isInteger(lk.height)) {
+      const { head } = avatarProportions(lk.height);
       this.bones.head.scale.setScalar(head);
-    } else this.object.scale.set(w, lk.tall ?? 1, w);
-    this.head = new THREE.Vector3();
-    this.phase = 0; this.solid = true; this.time = 0;
-    this.pos = new THREE.Vector3(); this.known = false;
-    this.mouth = 0; this.speech = null; // (#1122: the talking mouth, see talk)
+    }
+  }
+
+  setupRigged(gltf) {
+    if (!gltf) return;
+    const lk = this.look;
+    const clonedScene = SkeletonUtils.clone(gltf.scene);
+    let clonedMesh = null;
+    const bones = {};
+
+    clonedScene.traverse((obj) => {
+      if (obj.isSkinnedMesh) clonedMesh = obj;
+      if (obj.isBone) bones[obj.name] = obj;
+    });
+
+    if (!clonedMesh) return;
+
+    const geom = clonedMesh.geometry;
+    for (const attr of ['region', 'bare', 'mouth', 'pucker', 'rifleSkull', 'rifleNose', 'rifleJaw', 'facePart', 'faceAnchor', 'armPump']) {
+      const lower = attr.toLowerCase();
+      if (!geom.attributes[attr] && (geom.attributes['_' + attr] || geom.attributes['_' + lower])) {
+        geom.setAttribute(attr, geom.attributes['_' + attr] || geom.attributes['_' + lower]);
+      }
+    }
+
+    if (!geom.userData.headProjection) {
+      geom.userData.headProjection = new THREE.Box3(
+        new THREE.Vector3(-0.11, 1.54, -0.11),
+        new THREE.Vector3(0.11, 1.76, 0.11)
+      );
+    }
+
+    let mat = this.material;
+    if (!mat) {
+      mat = makeMaterial(new THREE.Color(this.rim), geom.userData.headProjection);
+      applyFaceShape(mat.userData.u, lk);
+      this.material = mat;
+    }
+
+    const tex = createAvatarTexture(lk);
+    if (tex) {
+      mat.map = tex;
+      mat.needsUpdate = true;
+    }
+
+    const pal = [lk.skin, lk.top, lk.pants, lk.hair, 0, lk.shoes].map((c) => new THREE.Color(c));
+    pal[6] = pal[0].clone().lerp(new THREE.Color(FACE.lipTint), 0.35).multiplyScalar(0.92);
+    pal[7] = new THREE.Color(EYES.includes(lk.eyes) ? lk.eyes : EYES[0]);
+    pal[8] = new THREE.Color(lk.beard ?? lk.hair);
+    pal[9] = new THREE.Color(lk.brows ?? lk.hair);
+
+    const posCount = geom.attributes.position.count;
+    const regArr = geom.attributes.region?.array;
+    const colAttr = geom.attributes.color;
+    if (regArr && colAttr) {
+      for (let i = 0; i < posCount; i++) {
+        const r = regArr[i];
+        if (r === REGION.fixed) continue;
+        const c = pal[r] || pal[0];
+        colAttr.setXYZ(i, c.r, c.g, c.b);
+      }
+      colAttr.needsUpdate = true;
+    }
+
+    clonedMesh.material = mat;
+    clonedMesh.castShadow = clonedMesh.receiveShadow = false;
+    clonedMesh.name = 'avatar';
+
+    if (this.mesh && this.mesh.parent) {
+      this.mesh.parent.remove(this.mesh);
+      if (this.mesh.geometry && this.mesh.geometry !== geom) {
+        this.mesh.geometry.dispose();
+      }
+    }
+
+    this.mesh = clonedMesh;
+    this.bones = bones;
+    this.riggedScene = clonedScene;
+    this.object.add(this.riggedScene);
+
+    if (Number.isInteger(lk.height) && this.bones.head) {
+      const { head } = avatarProportions(lk.height);
+      this.bones.head.scale.setScalar(head);
+    }
+
+    if (gltf.animations && gltf.animations.length > 0) {
+      this.mixer = new THREE.AnimationMixer(this.riggedScene);
+      this.actions = {};
+      for (const clip of gltf.animations) {
+        this.actions[clip.name] = this.mixer.clipAction(clip);
+      }
+      if (this.actions['idle']) {
+        this.activeAction = this.actions['idle'];
+        this.activeAction.play();
+        this.currentClip = 'idle';
+      }
+    }
+
+    this.isRigged = true;
   }
 
   /** #1837: own material uniform; shared bind-pose buffers remain immutable. */
@@ -1299,6 +1636,23 @@ export class Avatar {
    * frame (+x its left, +y up, +z forward) — what the hanging legs trail against and the climbing steps follow. */
   update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null, air = 0, airV = null } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
     this.time += dt;
+
+    if (this.mixer) {
+      let desired = 'idle';
+      if (crouch > 0.4) desired = 'crouch';
+      else if (speed > 2.0) desired = 'run';
+      else if (speed > A.walkSpeed) desired = 'walk';
+
+      if (this.actions && this.actions[desired] && this.currentClip !== desired) {
+        const next = this.actions[desired];
+        if (this.activeAction) this.activeAction.fadeOut(0.2);
+        next.reset().fadeIn(0.2).play();
+        this.activeAction = next;
+        this.currentClip = desired;
+      }
+      this.mixer.update(dt);
+    }
+
     // #1799: each air pose blends in and out on its own (their sum ≤ 1, the rest is the ground pose)
     const am = air === 1 || air === 2 || air === 3 ? air : 0, ae = Math.min(1, dt * AIR.ease), av = airV ?? [0, 0, 0];
     const aa = this.airAmt ??= [0, 0, 0];
@@ -1373,5 +1727,12 @@ export class Avatar {
   /** The world position of a hand's centre (side 'L' / 'R' as in the figure's own frame: R = the figure's right, the ghost's +x). */
   hand(side, out = new THREE.Vector3()) { return this.bones['hand' + side].getWorldPosition(out); }
 
-  dispose() { if (this.suit) releaseSuitTexture(); this.material.dispose(); this.mesh.skeleton?.dispose(); this.mesh.geometry.dispose?.(); }
+  dispose() {
+    if (this.suit) releaseSuitTexture();
+    if (this.material?.map) this.material.map.dispose();
+    this.material?.dispose();
+    this.mesh?.skeleton?.dispose();
+    this.mesh?.geometry?.dispose?.();
+    if (this.mixer) this.mixer.stopAllAction();
+  }
 }
