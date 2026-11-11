@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+## 0.12.0 — 2026-11-11
+
+- Recommend an optional multi-perspective expert panel review hook when work is
+  complete (identifying expert roles, independent analysis, discussion/synthesis,
+  and formulating findings as new backlog issues) in `PROJECT.example.md`,
+  `COORDINATION.md`, and `ORCHESTRA.md` (#64).
+
+## 0.11.4 — 2026-11-11
+
+- Clarify image embedding compatibility for `github-dashboard` (HTTPS only, Markdown
+  syntax instead of HTML `<img>` tags, standalone paragraph for responsive block
+  styling) in `PROJECT.example.md` and `ORCHESTRA.md` (#63).
+
+## 0.11.3 — 2026-11-11
+
+- Recommend practical patterns for hosting and embedding images in completion
+  comments (dedicated asset branches, release assets, GitHub Pages, or upload
+  scripts) in `PROJECT.example.md` and `ORCHESTRA.md` to prevent git subtree bloat
+  while keeping visual evidence directly visible (#62).
+
 ## 0.11.2 — 2026-11-10
 
 - Prefer directly visible images (attached or embedded via fully-qualified URLs)

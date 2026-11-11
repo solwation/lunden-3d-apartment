@@ -48,7 +48,9 @@ proposal/deferral. No browser or application benchmark is required for prose cha
 Do not claim measured speedups from the rules alone: use coarse real delivery timings
 and regression/reopen outcomes for comparable work. Verification evidence (screenshots,
 logs) goes in the issue or the release, not in the repository, because `git subtree`
-copies every file to each consumer.
+copies every file to each consumer (see
+[PROJECT.example.md](PROJECT.example.md#image-hosting-and-embedding-patterns) for
+clean hosting patterns).
 
 ## Release checklist
 
