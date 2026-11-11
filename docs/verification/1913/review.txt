@@ -1,0 +1,7 @@
+Diff whitespace, JS syntax and shell syntax: pass.
+All 12 loader URL sites use modelURL; no geometry/material/pose/fs branch changes.
+7 added evidence relative links exist; source manifest hashes match 17 inputs.
+All 12 packaged model hashes match current source; documentation/attribution excluded from CONTENT.
+Public cd79c14 uses independent esbuild pipeline without GLB consumers: not applicable.
+No visual-result image for this nonvisual byte/version delivery; prior model evidence retained.
+Actual Pages HTTP/status/hash and combined full World acceptance remain with integration owner after publish.

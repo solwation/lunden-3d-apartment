@@ -1,3 +1,4 @@
+import { modelURL } from './modelurl.js';
 import { armPumpShape, pumpWire } from './gympump.js';
 import { GYM_PUMP } from './config.js';
 import * as THREE from 'three';
@@ -1230,7 +1231,7 @@ export function loadRiggedAvatarModel() {
         });
       } else {
         import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
-          const url = new URL('../models/avatar-rigged.glb', import.meta.url).href;
+          const url = modelURL('../models/avatar-rigged.glb', import.meta.url).href;
           new GLTFLoader().load(url, (gltf) => {
             riggedAvatarData = gltf;
             resolve(gltf);

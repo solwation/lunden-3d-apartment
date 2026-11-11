@@ -1,3 +1,4 @@
+import { modelURL } from './modelurl.js';
 import { discoverCreature } from './bestiaryevents.js';
 import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
@@ -44,7 +45,7 @@ export function loadSantaModel() {
         });
       } else {
         import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
-          const url = new URL('../models/santa.glb', import.meta.url).href;
+          const url = modelURL('../models/santa.glb', import.meta.url).href;
           new GLTFLoader().load(url, (gltf) => {
             santaModelData = gltf;
             resolve(gltf);

@@ -52,7 +52,15 @@ https://solwation.github.io/lunden-3d-apartment/ (public repo) via
 writes the commit SHA into `src/version.js` (`BUILD`) and `version.json`, and appends
 `?v=SHA` to module imports / `data/plan.json` so a reload never mixes cached old modules.
 It also writes a **content hash** (`CONTENT` in version.js, `content` in version.json, #304) of what the page loads:
-index.html, the manifest, icons/, src/, data/, textures/, music/ and stamp.sh — not tools/, docs/, the PDF or the .md files.
+index.html, the manifest, icons/, src/, data/, textures/, music/, models/*.glb and stamp.sh — not tools/, docs/, the PDF or the .md files.
+All twelve production GLBs are copied in `models/` and participate in CONTENT (#1913).
+Model attribution Markdown stays outside CONTENT. `src/modelurl.js` explicitly carries
+`?v=BUILD` from the stamped importing module to HTTP(S) model URLs: `new URL` alone
+does not inherit a module's query. Node `file:` URLs remain unversioned, and existing
+filesystem loader branches keep their paths. Missing-model fallback policies are unchanged.
+The model corrections #1906–#1912 were published before enabling this delivery path.
+Scoped packaging/loader checks: [#1913 evidence](../verification/1913/README.md).
+
 The published package contains no `tools/` at all (#745): the test pages are not part of the site and several embed the unlock phrases; `tools/stamp.sh`, `changelog_stamp.py` and `todo.py` run from the checkout. `tools/todo.py` skips issues whose title or `Lapp:` line matches the hidden-feature word filter (`HIDDEN`), so no post-it can hint at them; `tools/nocheathints.cjs` guards changelog.json and data/*.json.
 It also writes `data/todo.json` from the repo's open issues (`tools/todo.py`, REST API with the workflow's
 GITHUB_TOKEN, `[]` on any error) AFTER the hash and outside it (#340): a changed TODO list reloads nobody; the Pages

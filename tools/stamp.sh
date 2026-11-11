@@ -7,12 +7,13 @@ V=${2:?version}
 # a hash of what the page loads (#304): open pages reload only when this changes, not on every commit (reference
 # images, docs, tests, CLAUDE.md …). tools/ (test pages, #745: not published at all), the PDF and README are not loaded by visitors; stamp.sh is
 # in it because it shapes what they load.
-C=$(find index.html manifest.webmanifest icons src data textures music tools/stamp.sh tools/changelog_stamp.py -type f ! -path data/todo.json | LC_ALL=C sort \
+C=$({ find index.html manifest.webmanifest icons src data textures music tools/stamp.sh tools/changelog_stamp.py -type f ! -path data/todo.json;
+  find models -type f -name '*.glb'; } | LC_ALL=C sort \
   | xargs sha256sum | sha256sum | cut -c1-12)
 rm -rf "$OUT"
 mkdir -p "$OUT"
 # tools/ is NOT copied (#745): the test pages are not part of the site and some embed the unlock phrases
-cp -r index.html manifest.webmanifest icons src data textures music L1007_mattsatt_planritning.pdf README.md "$OUT"/
+cp -r index.html manifest.webmanifest icons src data textures music models L1007_mattsatt_planritning.pdf README.md "$OUT"/
 # the changelog's entries get `t` = when their line reached main (git history) and go newest first (#341)
 python3 tools/changelog_stamp.py "$OUT/data/changelog.json"
 # fail loudly rather than publish an empty fridge note (#655): the stamped file must be a non-empty list of entries

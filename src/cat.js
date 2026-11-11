@@ -1,3 +1,4 @@
+import { modelURL } from './modelurl.js';
 import { registerCats } from './bestiarymetadata.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -261,7 +262,7 @@ export function loadRiggedCatModel() {
   riggedCatLoading = new Promise((resolve) => {
     try {
       const loader = new GLTFLoader();
-      const modelUrl = new URL('../models/cat-rigged.glb', import.meta.url);
+      const modelUrl = modelURL('../models/cat-rigged.glb', import.meta.url);
       if (typeof window === 'undefined' && modelUrl.protocol === 'file:') {
         if (typeof self === 'undefined') globalThis.self = globalThis;
         Promise.all([import('node:fs'), import('node:url')]).then(([fs, urlMod]) => {

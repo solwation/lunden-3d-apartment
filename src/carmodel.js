@@ -1,3 +1,4 @@
+import { modelURL } from './modelurl.js';
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -183,7 +184,7 @@ export function loadMeganeModel() {
         });
       } else {
         import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
-          const url = new URL('../models/car-megane.glb', import.meta.url).href;
+          const url = modelURL('../models/car-megane.glb', import.meta.url).href;
           new GLTFLoader().load(url, (gltf) => {
             meganeModelData = gltf;
             resolve(gltf);
@@ -232,7 +233,7 @@ export function loadParkedCarModel() {
         });
       } else {
         import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
-          const url = new URL('../models/car-parked.glb', import.meta.url).href;
+          const url = modelURL('../models/car-parked.glb', import.meta.url).href;
           new GLTFLoader().load(url, (gltf) => {
             parkedModelData = gltf;
             resolve(gltf);

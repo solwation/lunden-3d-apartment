@@ -1,3 +1,4 @@
+import { modelURL } from './modelurl.js';
 import { discoverCreature } from './bestiaryevents.js';
 import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
@@ -49,7 +50,7 @@ export function loadPingpingModel() {
         });
       } else {
         import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
-          const url = new URL('../models/pingping.glb', import.meta.url).href;
+          const url = modelURL('../models/pingping.glb', import.meta.url).href;
           new GLTFLoader().load(url, (gltf) => {
             pingpingModelData = gltf;
             resolve(gltf);

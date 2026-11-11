@@ -1,3 +1,4 @@
+import { modelURL } from './modelurl.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE, SEASON, BICYCLE, BICYCLE_GRIP } from './config.js';
@@ -110,7 +111,7 @@ export function loadBicycleModel() {
         });
       } else {
         import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
-          const url = new URL('../models/bicycle.glb', import.meta.url).href;
+          const url = modelURL('../models/bicycle.glb', import.meta.url).href;
           new GLTFLoader().load(url, (gltf) => {
             bicycleModelData = gltf;
             resolve(gltf);

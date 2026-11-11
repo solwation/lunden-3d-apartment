@@ -1,3 +1,4 @@
+import { modelURL } from './modelurl.js';
 import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
 import {riverFishGeometry} from './riverfishmodel.js';
@@ -52,7 +53,7 @@ export function loadFishModel() {
         });
       } else {
         import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
-          const url = new URL('../models/fish-generic.glb', import.meta.url).href;
+          const url = modelURL('../models/fish-generic.glb', import.meta.url).href;
           new GLTFLoader().load(url, (gltf) => {
             fishModelData = gltf;
             resolve(gltf);

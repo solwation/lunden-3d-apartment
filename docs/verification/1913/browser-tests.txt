@@ -1,0 +1,2 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS: 12/12 actual production loaders parsed scenes; versioned HTTP200 resources match all packaged SHA-256 bytes; zero page errors.

@@ -1,0 +1,22 @@
+{
+  "base": "5afd028c80ba60c657d8bf1857460a4f3ea774ac",
+  "sha256": {
+    "tools/stamp.sh": "4f396b9516824fef6461f402ef8b04d13f07cce77702a18530a9555435a72c23",
+    "src/modelurl.js": "7782cb377402b140465aeb627c65492630028c4506029f22ce026e0b905bae36",
+    "data/changelog.json": "5d39594f8277ae87b9611a2607ed52c3d6709741af21f3ed9bcfa45339b90228",
+    "src/cat.js": "ea5031c1d6ee99da0143d0537627bbe5e27ee31179c743f60cd099428fa9ff9b",
+    "src/ducks.js": "5228d6641756cfa57789776d9ae0668a6e142d5bf5aeba1eb9d00c669d9ff201",
+    "src/santa.js": "1f4a9d64a99ae928b633826bb2b1c0bb9446b994787b5c9be76717c8710d84a1",
+    "src/avatar.js": "4ed532afb4f960f4da011213d83e96cf9d681c149b090f42ec12d2783f769753",
+    "src/riverfish.js": "74ca7d055a7e27db046c91080c1ac5480ef965c77c54e68d2ce30bcb05135397",
+    "src/carmodel.js": "d67613ef70b08cc5b7b97bdde5bf54f71da818f98802d9e60c3ddc439619cd77",
+    "src/squirrels.js": "acc2cd2cb14f8c1081d7e3ed6a808fc3858b2235358b170f17b6233329ba7292",
+    "src/pingping.js": "4b982c8b8e3d258193ebaf3190e439425c388922b61b6ed5acbb5d0edcd57dda",
+    "src/paddock.js": "dc4e214c474d90b0222326727b1754d3674068e8dfae1fd60d01c05145fb98e1",
+    "src/shark.js": "69c87fd773eafbc3bdec5d4137ef86e52b20dfc2081d2fa6fc80c838d4c1684c",
+    "src/streetlife.js": "98e2b190395eedf205ca455d3673692b3711bbc73d1faea379c49ea2e1fcebb8",
+    "tools/modelpackagingtest.py": "234ccd6387a8140289876e313f703e25132fb083f6c721e68aa7465087822862",
+    "tools/modelpackagingbrowser.cjs": "58675a7a945117b950ff2f56d4ad44a1135d37b945d1fe5424c1e78d23722f0a",
+    "tools/modelurltest.mjs": "640beb434f60a2de9495bc9c9f4990e957e1ca135e2822bb9381bd712c22b317"
+  }
+}

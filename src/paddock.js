@@ -1,3 +1,4 @@
+import { modelURL } from './modelurl.js';
 import { discoverCreature } from './bestiaryevents.js';
 import { creature } from './bestiarymetadata.js';
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
@@ -275,7 +276,7 @@ export function loadRiggedPonyModel() {
         });
       } else {
         import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
-          const url = new URL('../models/pony-rigged.glb', import.meta.url).href;
+          const url = modelURL('../models/pony-rigged.glb', import.meta.url).href;
           new GLTFLoader().load(url, (gltf) => {
             riggedPonyData = gltf;
             resolve(gltf);

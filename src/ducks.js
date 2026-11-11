@@ -1,3 +1,4 @@
+import { modelURL } from './modelurl.js';
 import { discoverCreature } from './bestiaryevents.js';
 import { creature } from './bestiarymetadata.js';
 import { DuckKiss, duckBill } from './duckkiss.js';
@@ -19,7 +20,7 @@ export function loadRiggedDuckModel() {
   if (riggedDuckData) return Promise.resolve(riggedDuckData);
   if (riggedDuckModelPromise) return riggedDuckModelPromise;
   const loader = new GLTFLoader();
-  const modelUrl = new URL('../models/duck-rigged.glb', import.meta.url).href;
+  const modelUrl = modelURL('../models/duck-rigged.glb', import.meta.url).href;
   riggedDuckModelPromise = new Promise((resolve, reject) => {
     loader.load(
       modelUrl,

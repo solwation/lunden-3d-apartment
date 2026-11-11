@@ -1,0 +1,4 @@
+changelog ok: 1473 entries
+changelog ok: 1473 entries
+changelog ok: 1473 entries
+PASS: all 12 exact model bytes; model mutation changes CONTENT; docs/build-only changes keep CONTENT; tools excluded.

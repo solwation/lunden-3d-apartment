@@ -1,3 +1,4 @@
+import { modelURL } from './modelurl.js';
 import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -56,7 +57,7 @@ export function loadSharkModel() {
         });
       } else {
         import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
-          const url = new URL('../models/shark.glb', import.meta.url).href;
+          const url = modelURL('../models/shark.glb', import.meta.url).href;
           new GLTFLoader().load(url, (gltf) => {
             sharkModelData = gltf;
             resolve(gltf);

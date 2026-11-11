@@ -1,3 +1,4 @@
+import { modelURL } from './modelurl.js';
 import { discoverCreature } from './bestiaryevents.js';
 import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
@@ -174,7 +175,7 @@ export function loadRiggedSquirrelModel() {
   if (riggedSquirrelData) return Promise.resolve(riggedSquirrelData);
   if (riggedSquirrelModelPromise) return riggedSquirrelModelPromise;
   const loader = new GLTFLoader();
-  const modelUrl = new URL('../models/squirrel-rigged.glb', import.meta.url).href;
+  const modelUrl = modelURL('../models/squirrel-rigged.glb', import.meta.url).href;
   riggedSquirrelModelPromise = new Promise((resolve, reject) => {
     loader.load(
       modelUrl,
