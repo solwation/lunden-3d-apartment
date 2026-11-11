@@ -2,6 +2,7 @@ import { discoverCreature } from './bestiaryevents.js';
 import { creature } from './bestiarymetadata.js';
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import * as THREE from 'three';
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { PADDOCK as P, SEASON } from './config.js';
 import { outline, fenceLine, posts, gateSpan, stile, insideFence, insetRing, ringDist, centre } from './paddockgeo.js';
 import { stileBase } from './farwalk.js';
@@ -239,6 +240,152 @@ function ponyMaterial() {
   return m;
 }
 
+// --- Rigged GLB pony loader and dynamic canvas texture atlas -----------------------------------
+let riggedPonyData = null;
+let riggedPonyLoading = null;
+
+export function loadRiggedPonyModel() {
+  if (riggedPonyData) return Promise.resolve(riggedPonyData);
+  if (riggedPonyLoading) return riggedPonyLoading;
+
+  riggedPonyLoading = new Promise((resolve, reject) => {
+    try {
+      const isNode = typeof process !== 'undefined' && process?.versions?.node;
+      if (isNode) {
+        if (typeof self === 'undefined') globalThis.self = globalThis;
+        Promise.all([
+          import('node:fs'),
+          import('node:path'),
+          import('three/examples/jsm/loaders/GLTFLoader.js')
+        ]).then(([fs, path, { GLTFLoader }]) => {
+          const modelPath = path.resolve(process.cwd(), 'models/pony-rigged.glb');
+          if (!fs.existsSync(modelPath)) {
+            resolve(null);
+            return;
+          }
+          const buf = fs.readFileSync(modelPath);
+          const arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+          new GLTFLoader().parse(arrayBuffer, '', (gltf) => {
+            riggedPonyData = gltf;
+            resolve(gltf);
+          }, reject);
+        }).catch((err) => {
+          console.warn('Node GLTF pony load fallback:', err);
+          resolve(null);
+        });
+      } else {
+        import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
+          const url = new URL('../models/pony-rigged.glb', import.meta.url).href;
+          new GLTFLoader().load(url, (gltf) => {
+            riggedPonyData = gltf;
+            resolve(gltf);
+          }, undefined, (err) => {
+            console.warn('Could not load pony-rigged.glb:', err);
+            resolve(null);
+          });
+        }).catch(reject);
+      }
+    } catch {
+      resolve(null);
+    }
+  });
+
+  return riggedPonyLoading;
+}
+
+if (typeof window !== 'undefined') {
+  loadRiggedPonyModel().catch(() => {});
+}
+
+export function createPonyTexture({ coat, accent, star }) {
+  if (typeof document === 'undefined') return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  const hexColor = (val, fallback = '#7a4426') => {
+    if (typeof val === 'number') return '#' + val.toString(16).padStart(6, '0');
+    if (typeof val === 'string' && val.length > 0) return val.startsWith('#') ? val : '#' + val;
+    return fallback;
+  };
+
+  const coatCol = hexColor(coat, '#7a4426');
+  const accCol = hexColor(accent, '#1b1410');
+
+  // Background coat color
+  ctx.fillStyle = coatCol;
+  ctx.fillRect(0, 0, 512, 512);
+
+  // Soft coat fur gradation / highlights
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+  for (let i = 0; i < 40; i++) {
+    const y = i * 12 + 10;
+    ctx.fillRect(20, y, 260, 4);
+  }
+
+  // 1. Mane & Tail areas (accent color): uv [0.65, 0.10, 0.30, 0.65] -> x: 330..485, y: 50..380
+  ctx.fillStyle = accCol;
+  ctx.fillRect(330, 50, 160, 330);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+  for (let y = 60; y < 370; y += 8) {
+    ctx.fillRect(330, y, 160, 2);
+  }
+
+  // 2. Muzzle / Snout: uv [0.70, 0.40, 0.25, 0.15] -> x: 358..486, y: 204..280
+  const muzGrad = ctx.createLinearGradient(360, 204, 480, 280);
+  muzGrad.addColorStop(0, '#5a463b');
+  muzGrad.addColorStop(1, '#3b2f28');
+  ctx.fillStyle = muzGrad;
+  ctx.fillRect(358, 204, 128, 76);
+
+  // Nostrils
+  ctx.fillStyle = '#110d0b';
+  ctx.beginPath();
+  ctx.ellipse(390, 240, 10, 14, -0.2, 0, Math.PI * 2);
+  ctx.ellipse(450, 240, 10, 14, 0.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 3. Eyes: uv [0.85, 0.80, 0.10, 0.10] -> x: 435..486, y: 410..461
+  ctx.fillStyle = '#0a0807';
+  ctx.beginPath();
+  ctx.arc(460, 435, 16, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(466, 430, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 4. White Star on Forehead (Princess): uv [0.90, 0.90, 0.08, 0.08] -> x: 460..500, y: 460..500
+  if (star) {
+    ctx.fillStyle = '#f8fafc';
+    ctx.beginPath();
+    ctx.moveTo(480, 462);
+    ctx.lineTo(486, 476);
+    ctx.lineTo(500, 480);
+    ctx.lineTo(486, 484);
+    ctx.lineTo(480, 498);
+    ctx.lineTo(474, 484);
+    ctx.lineTo(460, 480);
+    ctx.lineTo(474, 476);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // 5. Lower legs & Hooves: uv [0.38, 0.82, 0.12, 0.12] -> x: 194..256, y: 420..481
+  ctx.fillStyle = accCol;
+  ctx.fillRect(194, 420, 62, 35);
+  ctx.fillStyle = '#1c1b18';
+  ctx.fillRect(194, 455, 62, 26);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+  ctx.fillRect(194, 457, 62, 3);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.needsUpdate = true;
+  return tex;
+}
+
 /** The worn track just inside the fence (soil colour) as land-mesh geometry for southbackdrop.js: `ground(x, z)` → y. Empty when too short. */
 export function paddockLandParts(ground) {
   const ring = insetRing(outline, P.inset + P.track.inset), pos = [], col = [], c = new THREE.Color(P.track.color), w = P.track.w / 2;
@@ -370,7 +517,78 @@ export class Paddock {
     this.feed = new PaddockFeed(scene, ground, this.spots.shelter, this.sheds);
     this.winterDecor = shelterWinter(ground, this.spots.shelter); scene.add(this.winterDecor);
     this.net = null; this.lead = false; this.followers = 0; this.followUntil = 0; this.netT = 0; this.grassT = 0; // #1644: set by main.js: { ready(), send(m) }
+
+    this.riggedPonies = null;
+    if (riggedPonyData) {
+      this.setupRiggedPonies(riggedPonyData, scene);
+    } else {
+      loadRiggedPonyModel().then((gltf) => {
+        if (gltf) this.setupRiggedPonies(gltf, scene);
+      }).catch(() => {});
+    }
+
     this.write();
+  }
+
+  setupRiggedPonies(gltf, scene) {
+    if (!gltf || this.riggedPonies) return;
+    this.riggedPonies = [];
+    const animals = P.pony.animals;
+
+    for (let i = 0; i < animals.length; i++) {
+      const a = animals[i];
+      const clonedScene = SkeletonUtils.clone(gltf.scene);
+      let skinnedMesh = null;
+      clonedScene.traverse((obj) => {
+        if (obj.isSkinnedMesh) {
+          skinnedMesh = obj;
+          skinnedMesh.castShadow = true;
+          skinnedMesh.receiveShadow = false;
+        }
+      });
+
+      const tex = createPonyTexture(a);
+      if (tex && skinnedMesh) {
+        skinnedMesh.material = skinnedMesh.material.clone();
+        skinnedMesh.material.map = tex;
+        skinnedMesh.material.roughness = 0.85;
+        skinnedMesh.material.needsUpdate = true;
+      }
+
+      let mixer = null;
+      const actions = {};
+      let activeAction = null;
+      if (gltf.animations && gltf.animations.length > 0) {
+        mixer = new THREE.AnimationMixer(clonedScene);
+        for (const clip of gltf.animations) {
+          actions[clip.name] = mixer.clipAction(clip);
+        }
+        if (actions['idle']) {
+          activeAction = actions['idle'];
+          activeAction.play();
+        }
+      }
+
+      const headBone = clonedScene.getObjectByName('Joint_Head');
+      const neckBone = clonedScene.getObjectByName('Joint_Neck');
+
+      clonedScene.name = 'paddock-pony-' + a.name;
+      scene.add(clonedScene);
+      this.riggedPonies.push({
+        object: clonedScene,
+        skinnedMesh,
+        headBone,
+        neckBone,
+        mixer,
+        actions,
+        activeAction,
+        currentClip: 'idle'
+      });
+    }
+
+    if (this.mesh && this.mesh.material) {
+      this.mesh.material.visible = false;
+    }
   }
 
   /** The grass-length mask (#1315) and its tufts: random grazed patches per session, the places the ponies stand most grazed short. */
@@ -644,7 +862,7 @@ export class Paddock {
     if (grazing && !feeding && p.neck > 1.1) { const G = P.grass, e = G.reach * p.scale; this.eatAt(p.x + Math.sin(p.yaw) * e, p.z + Math.cos(p.yaw) * e, G.bite, G.rate * dt); } // hay never consumes the grass mask (#1396)
     p.tail = Math.sin(p.tailT * (p.state === 'pet' ? 5 : 2.3)) * (p.state === 'pet' ? 0.4 : Math.max(0, Math.sin(p.tailT * 0.45)) * 0.35);
   }
-  write() {
+  write(dt = 0) {
     const a = this.anim.array, b = this.anim2.array, e = this.mesh.instanceMatrix;
     this.ponies.forEach((p, i) => {
       this.quat.setFromAxisAngle(this.up, p.yaw); this.pos.set(p.x, p.y, p.z); this.scl.setScalar(p.gone ? 0 : p.scale); // Winter occupants retain their normal scale (#1352).
@@ -653,6 +871,38 @@ export class Paddock {
       b[i * 4] = p.ear; b[i * 4 + 1] = p.headYaw;
       const pk = this.picks[i], s = Math.sin(p.yaw), c = Math.cos(p.yaw);
       pk.position.set(p.x + s * 0.15, p.y + 0.8, p.z + c * 0.15); pk.rotation.y = p.yaw; pk.updateMatrixWorld(true);
+
+      if (this.riggedPonies && this.riggedPonies[i]) {
+        const rp = this.riggedPonies[i];
+        rp.object.position.set(p.x, p.y, p.z);
+        rp.object.rotation.y = p.yaw;
+        const sc = p.gone ? 0 : p.scale;
+        rp.object.scale.set(sc, sc, sc);
+        rp.object.visible = !p.gone && this.mesh.visible;
+
+        let targetClip = 'idle';
+        if (p.state === 'walk') targetClip = 'walk';
+        else if (p.state === 'graze' || p.state === 'feed') targetClip = 'graze';
+        else if (p.state === 'watch') targetClip = 'watch';
+        else if (p.state === 'pet') targetClip = 'pet';
+
+        if (rp.mixer && rp.actions) {
+          if (rp.currentClip !== targetClip) {
+            const nextAction = rp.actions[targetClip] || rp.actions['idle'];
+            if (nextAction && nextAction !== rp.activeAction) {
+              if (rp.activeAction) rp.activeAction.fadeOut(0.2);
+              nextAction.reset().fadeIn(0.2).play();
+              rp.activeAction = nextAction;
+              rp.currentClip = targetClip;
+            }
+          }
+          if (dt > 0) rp.mixer.update(dt);
+        }
+        if (p.headYaw) {
+          if (rp.neckBone) rp.neckBone.rotation.y += p.headYaw * 0.5;
+          if (rp.headBone) rp.headBone.rotation.y += p.headYaw * 0.5;
+        }
+      }
     });
     e.needsUpdate = true; this.anim.needsUpdate = true; this.anim2.needsUpdate = true;
   }
@@ -716,7 +966,16 @@ export class Paddock {
     const c = this.camera.position, show = !hidden && Math.hypot(c.x - centre.x, c.z - centre.z) < P.viewDist;
     this.shelterTick(dt, rain, show); // #1316
     this.winterDecor.visible = show && this.winter; // #1345: same snow months and distance/underground culling as the occupants
-    this.mesh.visible = show && this.ponies.some((q) => !q.gone); this.grass.visible = show && !this.snowy;
+    this.mesh.visible = show && this.ponies.some((q) => !q.gone);
+    this.grass.visible = show && !this.snowy;
+    if (this.riggedPonies) {
+      if (this.mesh.material) this.mesh.material.visible = false;
+      this.riggedPonies.forEach((rp, i) => {
+        rp.object.visible = show && !this.ponies[i].gone;
+      });
+    } else if (this.mesh.material) {
+      this.mesh.material.visible = true;
+    }
     this.feed.update(Math.min(dt, 0.1), show); // #1396: same distance/underground gate as the ponies
     this.growGrass(Math.min(dt, 0.1)); // #1342: 72 h regrowth in real time, also while far away
     if (!show) return;
@@ -727,7 +986,7 @@ export class Paddock {
     this.netTick(dt);
     const g = this.gm; g.t += dt;
     if (g.dirty && g.t >= P.grass.period) { g.t = 0; this.uploadGrass(); }
-    this.write();
+    this.write(dt);
   }
 }
 
