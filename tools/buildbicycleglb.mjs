@@ -104,6 +104,8 @@ export function buildBicycleParts(lod = 1) {
   const frameParts = [
     // Down tube (diagonalrör)
     tube(-0.05, 0.36, 0.33, 0.40, 0.018),
+    // Restore the missing lower connection to the steering head (#1912).
+    tube(0.33, 0.40, 0.34, 0.76, 0.018),
     // Seat tube (sadelrör)
     tube(-0.05, 0.36, -0.12, 0.72, 0.016),
     // Top tube (överrör)

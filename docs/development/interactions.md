@@ -2309,3 +2309,8 @@ Nu is explicit and uses server Lund time; ordinary restart never calls it. Local
 URLs opt out. Shared receive applies fields/render hooks without publishing another edit.
 
 Optional report screenshot (#1866): `tools/optionalreporttest.mjs` covers frozen payload/author/image-byte identity, failed capture and in-flight newer draft protection. `tools/optionalreportbrowser.cjs` uses the actual index dialog, main AdminReports binding and main render-complete capture hook on a tiny Three component with native keyboard/touch and local PUT interception. [Source hashes, result images and limits](../verification/1866/README.md).
+
+The bicycle GLB frame connection omitted by its exporter is restored in both LODs
+(#1912): the low frame tube now joins the steering head. Grip points, four instance
+batches, ride/exit code and the garage/courtyard's shared geometry factory remain.
+[Whole models and actual yard/moved proxy verification](../verification/1912/README.md).
