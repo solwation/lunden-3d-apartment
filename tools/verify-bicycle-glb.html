@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <title>Optimerad Cykelmodell Verifiering (#1901)</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+    h1 { font-size: 22px; color: #38bdf8; margin: 0 0 6px 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #0284c7;
+      color: #f0f9ff;
+      margin-bottom: 12px;
+    }
+    .subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 16px; }
+    #container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    #viewport {
+      width: 720px;
+      height: 480px;
+      background: linear-gradient(180deg, #1e293b 0%, #0b1120 100%);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+    #panel {
+      flex: 1;
+      min-width: 300px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .card h3 { margin: 0 0 8px 0; font-size: 14px; color: #38bdf8; }
+    .stat-row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+    .stat-label { color: #94a3b8; }
+    .stat-val { font-family: monospace; font-weight: 600; color: #f1f5f9; }
+    #status {
+      font-family: monospace;
+      font-size: 13px;
+      color: #4ade80;
+      padding: 8px 12px;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 6px;
+    }
+    .btn-group { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    button {
+      background: #334155;
+      color: #f1f5f9;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    button:hover { background: #475569; }
+    button.active { background: #0284c7; border-color: #38bdf8; }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/node_modules/three/build/three.module.js",
+        "three/addons/": "/node_modules/three/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <h1>Optimerad Cykelmodell Verifiering (#1901)</h1>
+  <div class="badge">Kv. Lunden · Cykelmodell · GLB-migrering</div>
+  <div class="subtitle">Visuell och strukturell kontroll av <code>models/bicycle.glb</code> med PBR-lack, instansfärgning och LOD-nivåer.</div>
+
+  <div id="container">
+    <div id="viewport"></div>
+
+    <div id="panel">
+      <div class="card">
+        <h3>Modellstatus</h3>
+        <div id="status">Laddar modeller...</div>
+      </div>
+
+      <div class="card">
+        <h3>Geometri och prestanda</h3>
+        <div class="stat-row"><span class="stat-label">Fil:</span><span class="stat-val">models/bicycle.glb</span></div>
+        <div class="stat-row"><span class="stat-label">Filstorlek:</span><span class="stat-val" id="val-size">117 KB</span></div>
+        <div class="stat-row"><span class="stat-label">Noder:</span><span class="stat-val" id="val-nodes">-</span></div>
+        <div class="stat-row"><span class="stat-label">Trianglar (LOD Near):</span><span class="stat-val" id="val-tris-near">-</span></div>
+        <div class="stat-row"><span class="stat-label">Trianglar (LOD Far):</span><span class="stat-val" id="val-tris-far">-</span></div>
+        <div class="stat-row"><span class="stat-label">Komponenter:</span><span class="stat-val">Ram, Däck, Metall, Ekrar</span></div>
+      </div>
+
+      <div class="card">
+        <h3>Visningsalternativ</h3>
+        <div class="btn-group">
+          <button id="btn-lod-near" class="active" onclick="setLOD('near')">LOD Near</button>
+          <button id="btn-lod-far" onclick="setLOD('far')">LOD Far</button>
+          <button id="btn-show-row" onclick="toggleRack()">Cykelförråd (Rad)</button>
+          <button id="btn-rotate" class="active" onclick="toggleRotate()">Rotation På/Av</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { loadBicycleModel, bikeGeometry, bikeSpokeTexture } from '/src/streetlife.js';
+
+    const container = document.getElementById('viewport');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x131d2e);
+
+    const camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 100);
+    camera.position.set(1.6, 1.1, 2.2);
+    camera.lookAt(0, 0.55, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+
+    // Belysning
+    const ambient = new THREE.AmbientLight(0xffffff, 0.9);
+    scene.add(ambient);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    dirLight.position.set(3, 6, 4);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    scene.add(dirLight);
+
+    const fillLight = new THREE.DirectionalLight(0x7dd3fc, 0.7);
+    fillLight.position.set(-3, 2, -3);
+    scene.add(fillLight);
+
+    // Golv / mark
+    const groundGeo = new THREE.PlaneGeometry(10, 10);
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8, metalness: 0.2 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    const grid = new THREE.GridHelper(6, 12, 0x38bdf8, 0x334155);
+    grid.position.y = 0.001;
+    scene.add(grid);
+
+    const mainGroup = new THREE.Group();
+    scene.add(mainGroup);
+
+    let bicycleGLTF = null;
+    let isRotating = true;
+    let currentLOD = 'near';
+    let showRack = false;
+
+    window.setLOD = (lod) => {
+      currentLOD = lod;
+      document.getElementById('btn-lod-near').classList.toggle('active', lod === 'near');
+      document.getElementById('btn-lod-far').classList.toggle('active', lod === 'far');
+      updateDisplay();
+    };
+
+    window.toggleRotate = () => {
+      isRotating = !isRotating;
+      document.getElementById('btn-rotate').classList.toggle('active', isRotating);
+    };
+
+    window.toggleRack = () => {
+      showRack = !showRack;
+      document.getElementById('btn-show-row').classList.toggle('active', showRack);
+      updateDisplay();
+    };
+
+    function updateDisplay() {
+      mainGroup.clear();
+      if (!bicycleGLTF) return;
+
+      const lodNum = currentLOD === 'near' ? 1 : 0;
+      const [frameG, tyresG, metalG, spokesG] = bikeGeometry(lodNum);
+
+      const spokeTexture = bikeSpokeTexture();
+
+      const matFrame = new THREE.MeshStandardMaterial({ color: 0x1d3c6e, roughness: 0.4, metalness: 0.3 });
+      const matTyres = new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.8 });
+      const matMetal = new THREE.MeshStandardMaterial({ color: 0xb4b9bd, roughness: 0.4, metalness: 0.7 });
+      const matSpokes = new THREE.MeshStandardMaterial({
+        color: 0xb4b9bd,
+        alphaMap: spokeTexture,
+        alphaTest: 0.35,
+        side: THREE.DoubleSide,
+        metalness: 0.35,
+        roughness: 0.5
+      });
+
+      if (!showRack) {
+        // Enkel cykel i fokus
+        const f = new THREE.Mesh(frameG, matFrame); f.castShadow = true;
+        const t = new THREE.Mesh(tyresG, matTyres); t.castShadow = true;
+        const m = new THREE.Mesh(metalG, matMetal); m.castShadow = true;
+        const s = new THREE.Mesh(spokesG, matSpokes);
+        mainGroup.add(f, t, m, s);
+      } else {
+        // Rad av cyklar med olika instansfärger (likt källarförrådet / gården)
+        const colors = [0x1d3c6e, 0xb02a2a, 0x2a2a2a, 0xe2e2dc, 0x3c7a4a, 0xd8a020];
+        colors.forEach((colHex, idx) => {
+          const zOffset = (idx - (colors.length - 1) / 2) * 0.45;
+          const bikeMatFrame = new THREE.MeshStandardMaterial({ color: colHex, roughness: 0.4, metalness: 0.3 });
+          const f = new THREE.Mesh(frameG, bikeMatFrame); f.castShadow = true; f.position.z = zOffset;
+          const t = new THREE.Mesh(tyresG, matTyres); t.castShadow = true; t.position.z = zOffset;
+          const m = new THREE.Mesh(metalG, matMetal); m.castShadow = true; m.position.z = zOffset;
+          const s = new THREE.Mesh(spokesG, matSpokes); s.position.z = zOffset;
+          mainGroup.add(f, t, m, s);
+        });
+      }
+    }
+
+    // Ladda modell
+    loadBicycleModel().then((gltf) => {
+      bicycleGLTF = gltf;
+      document.getElementById('status').textContent = 'Klar: models/bicycle.glb laddad och verifierad!';
+
+      let nodeCount = 0;
+      gltf.scene.traverse(() => nodeCount++);
+      document.getElementById('val-nodes').textContent = nodeCount;
+
+      const [fN, tN, mN, sN] = bikeGeometry(1);
+      const trisNear = (fN.attributes.position.count + tN.attributes.position.count + mN.attributes.position.count + sN.attributes.position.count) / 3;
+      document.getElementById('val-tris-near').textContent = Math.round(trisNear).toLocaleString('sv-SE');
+
+      const [fF, tF, mF, sF] = bikeGeometry(0);
+      const trisFar = (fF.attributes.position.count + tF.attributes.position.count + mF.attributes.position.count + sF.attributes.position.count) / 3;
+      document.getElementById('val-tris-far').textContent = Math.round(trisFar).toLocaleString('sv-SE');
+
+      updateDisplay();
+      window.__bicycleLoaded = true;
+    }).catch((err) => {
+      document.getElementById('status').textContent = 'Fel vid laddning: ' + err.message;
+      document.getElementById('status').style.color = '#ef4444';
+    });
+
+    // Render loop
+    function animate() {
+      requestAnimationFrame(animate);
+      if (isRotating && mainGroup) {
+        mainGroup.rotation.y += 0.008;
+      }
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+</html>

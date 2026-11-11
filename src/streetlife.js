@@ -76,11 +76,81 @@ export function bikeSpokeTexture() {
   return spokeMap;
 }
 
+let bicycleModelData = null;
+let bicycleModelLoading = null;
+
+export function loadBicycleModel() {
+  if (bicycleModelData) return Promise.resolve(bicycleModelData);
+  if (bicycleModelLoading) return bicycleModelLoading;
+
+  bicycleModelLoading = new Promise((resolve, reject) => {
+    try {
+      const isNode = typeof process !== 'undefined' && process?.versions?.node;
+      if (isNode) {
+        if (typeof self === 'undefined') globalThis.self = globalThis;
+        Promise.all([
+          import('node:fs'),
+          import('node:path'),
+          import('three/examples/jsm/loaders/GLTFLoader.js')
+        ]).then(([fs, path, { GLTFLoader }]) => {
+          const modelPath = path.resolve(process.cwd(), 'models/bicycle.glb');
+          if (!fs.existsSync(modelPath)) {
+            resolve(null);
+            return;
+          }
+          const buf = fs.readFileSync(modelPath);
+          const arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+          new GLTFLoader().parse(arrayBuffer, '', (gltf) => {
+            bicycleModelData = gltf;
+            resolve(gltf);
+          }, reject);
+        }).catch((err) => {
+          console.warn('Node GLTF bicycle load fallback:', err);
+          resolve(null);
+        });
+      } else {
+        import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
+          const url = new URL('../models/bicycle.glb', import.meta.url).href;
+          new GLTFLoader().load(url, (gltf) => {
+            bicycleModelData = gltf;
+            resolve(gltf);
+          }, undefined, (err) => {
+            console.warn('Could not load bicycle.glb:', err);
+            resolve(null);
+          });
+        }).catch(reject);
+      }
+    } catch {
+      resolve(null);
+    }
+  });
+
+  return bicycleModelLoading;
+}
+
+if (typeof window !== 'undefined') {
+  loadBicycleModel().catch(() => {});
+}
+
 /** One bike along +x (#683): [frame (painted per instance), tyres (rubber), metal (rims, hubs, cranks, chain, pedals), spokes (alpha cards)].
  * A Swedish city bike: ~4 cm tyres, mudguards, rear carrier, shaped saddle, swept handlebar, chainring and pedals (visual guesses).
  * `lod` 1 (near, ~1 400 triangles) or 0 (far, ~480; #704): the same parts and proportions with fewer sides on the tubes and wheels
  * (a bike a few metres away looks the same; the basement's racks swap between the two by distance, `BIKE_LOD` in config). */
 export function bikeGeometry(lod = 1) {
+  if (bicycleModelData?.scene) {
+    const suffix = lod > 0 ? '' : '_Lo';
+    const meshes = {};
+    bicycleModelData.scene.traverse((obj) => {
+      if (obj.isMesh) meshes[obj.name] = obj.geometry;
+    });
+    const frameG = meshes[`Bicycle_frame${suffix}`] || meshes['Bicycle_frame'];
+    const tyresG = meshes[`Bicycle_tyres${suffix}`] || meshes['Bicycle_tyres'];
+    const metalG = meshes[`Bicycle_metal${suffix}`] || meshes['Bicycle_metal'];
+    const spokesG = meshes[`Bicycle_spokes${suffix}`] || meshes['Bicycle_spokes'];
+    if (frameG && tyresG && metalG && spokesG) {
+      return [frameG.clone(), tyresG.clone(), metalG.clone(), spokesG.clone()];
+    }
+  }
   const G = BICYCLE_GRIP;
   const near = lod > 0, T = near ? 6 : 4, TW = near ? 20 : 16; // sides of a tube / segments round a wheel
   const cyl = (r, l, seg = T) => new THREE.CylinderGeometry(r, r, l, seg, 1, !near);
