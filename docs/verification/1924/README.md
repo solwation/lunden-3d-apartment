@@ -69,9 +69,9 @@ images are transient issue evidence; the integration owner publishes pinned URLs
 before deleting `before/` in the resolving commit. Result images follow 30-day
 retention.
 
-- Whole quarter [before](before/baseline-quarter-1.png) / [after](current-quarter-1.png).
+- Whole quarter [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/5630a904488639205512dce655b67ecc7e9d9ba2/docs/verification/1924/before/baseline-quarter-1.png) / [after](current-quarter-1.png).
 - Whole [front](current-front-1.png), [side](current-side-1.png).
-- Normal ground [before](before/baseline-ground-1.png) / [after](current-ground-1.png),
+- Normal ground [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/5630a904488639205512dce655b67ecc7e9d9ba2/docs/verification/1924/before/baseline-ground-1.png) / [after](current-ground-1.png),
   [five-bird ground profile](current-ground-1-lowmem.png).
 - [Glide](current-glide.png), [upstroke](current-up.png),
   [downstroke](current-down.png), [opposite bank direction](current-bank-opposite.png).
@@ -155,3 +155,6 @@ accessible revision-pinned before/result images before closing #1924.
 
 
 Root reviewed the combined production/fixture/consumer diff and opened final whole, normal ground, collection and actual low-memory images. Rebase preserves all measured bird model/consumer/fixture files and exact BIRDS/GULL_SURFACE sections; [integration mapping](integration.json) binds delivery. Changelog1483 assigned after the latest main fetch.
+
+
+Published source `5630a904488639205512dce655b67ecc7e9d9ba2`: actual Pages43201268973 and Worker43201268927 succeeded. [Ten pinned reviewed before/result images](https://github.com/solwation/lunden-3d-apartment/issues/1924#issuecomment-6821222265) returned HTTP200 image types before closure. This resolving docs commit prunes all seven own before PNGs; raw measurements and result images remain.
