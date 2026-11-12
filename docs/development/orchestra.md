@@ -135,3 +135,5 @@ releaseimport och dess exakta proveniens levererades separat i
 spåras i [#1935](https://github.com/solwation/lunden-3d-apartment/issues/1935), publikens
 separata lågprioriterade motsvarighet i
 [#273](https://github.com/solwation/kvarteret-lunden/issues/273).
+
+[Leverans och scenariokontroll](https://github.com/solwation/lunden-3d-apartment/issues/1935#issuecomment-6820614205) dokumenterar kapacitetsregeln och dess tillämpning.
