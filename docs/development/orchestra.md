@@ -130,7 +130,8 @@ De generiska riktlinjerna är redan släppta i kanoniska
 [core #66 / v0.13.0](https://github.com/solwation/dirigenten-och-orkestern/releases/tag/v0.13.0)
 (`1c3a22994d5725f3bbf14accd247fe1b6689925d`).
 Denna lokala instruktion ändrar inte den versionslåsta subtree-kärnan; en granskad
-releaseimport och dess exakta proveniens hanteras separat. Originalets värdanpassning
+releaseimport och dess exakta proveniens levererades separat i
+[#1934 / v0.13.1](https://github.com/solwation/lunden-3d-apartment/issues/1934). Originalets värdanpassning
 spåras i [#1935](https://github.com/solwation/lunden-3d-apartment/issues/1935), publikens
 separata lågprioriterade motsvarighet i
 [#273](https://github.com/solwation/kvarteret-lunden/issues/273).
