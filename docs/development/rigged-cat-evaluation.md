@@ -104,3 +104,5 @@ anpassning från #1918 spåras separat i
 [public #268](https://github.com/solwation/kvarteret-lunden/issues/268).
 Den innebär ingen överföring av personliga pälsbilder, namn, spel eller tjänster.
 Denna faktarättelse ändrar inga modeller eller produktionsinställningar.
+
+Faktarättelsens [leverans och verifiering](https://github.com/solwation/lunden-3d-apartment/issues/1929#issuecomment-6820412152) beskriver källgranskningen; inga nya produktmätningar gjordes i dokumentationsärendet.
