@@ -128,8 +128,12 @@ issue images, final changelog id and closure; this worker only supplies a local 
 
 Root opened final side/front/normal/whole, sipping/waving/sleeping, moved sofa,
 fallback and matched apartment before/after images and reviewed the combined diff.
-The remaining two hat-trim scale literals were moved unchanged into SANTA.surface.
+The remaining hat-trim scale and hat segment literals were moved unchanged into SANTA.surface.
 All body/left-right arm/sitting-sleeping-leg attributes, indices, blush ranges and
 the published GLB are exactly identical ([proof and delivered hashes](config-identity.json)).
 The capture hashes in component.json remain the measured worker source, explicitly
 mapped to this identity-preserving delivery; no new art or broad rerun is needed.
+
+After rebase the LANDSKRONA definition is exactly unchanged from the measured baseline;
+all delivered Santa source hashes still match config-identity.json. Changelog id1481
+was assigned after the final main fetch. Original-only: no public character/gameplay port.

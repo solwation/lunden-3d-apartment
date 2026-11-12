@@ -1,5 +1,5 @@
 {
-  "scope": "Only identical hat brim/tuft scale literals moved into SANTA.surface.hatTrim after capture; geometry unchanged.",
+  "scope": "Only identical hat brim/tuft scales and hat height-segment count moved into SANTA.surface.hatTrim after capture; all geometry unchanged.",
   "beforeWorkerCommit": "9bc0ee631cb99ae933d3abe54ceb59cfd96c343b",
   "exact": true,
   "geometry": [
@@ -121,8 +121,8 @@
   "glb": "e4ee917e1880086042928412ccf6807e69f3437e739f0eecf040249fdd64c130",
   "deliveredHashes": {
     "src/santa.js": "df29250befcb063f7a0ac41ffab167ae219958808d083dc67063cd582c1571b3",
-    "src/santasurface.js": "aabc83a73310a2506d49160e301df21efd7357755fd8368b0069130c627e6b68",
-    "src/santaconfig.js": "40bfc5b01edf35f7168ab7afa9ca2b7e781e28b2337b7d07e31e71bf38523289",
+    "src/santasurface.js": "07aabc901be87ab0a598deff86f34fef27e1d4db144b07de0490423d1c6437d7",
+    "src/santaconfig.js": "335d5c075ea93f6be04cab0f8cf2c6c86fbf9f7cd86908df2662c6c12a30d674",
     "tools/buildfiguresglb.mjs": "532fdb05f067bcc415508c0a00c15b9fc85c24a7b7bbbd3f7e8669482a52af55",
     "models/santa.glb": "e4ee917e1880086042928412ccf6807e69f3437e739f0eecf040249fdd64c130"
   }

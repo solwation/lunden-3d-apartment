@@ -28,7 +28,7 @@ export const SANTA = {
     cloth: { shade: .045, wrinkle: .004, folds: 7, shadeY: 70, shadeX: 13, coatY: 24, sleeveY: 55, sleeveWave: 3 },
     beardRadial: 24, beardGroove: .012, beardShade: .10, beardShadeX: 160, beardWave: 10,
     trouser: { radial: 12, fold: .004, thighFraction: .68, kneeDrop: .075, calfFraction: .56, foldLength: 2, foldAround: 3, radii: [.083,.093,.09,.083,.076,.068] },
-    hatTrim: { brim: [.155,.033,.146], tuft: [.048,.052,.048] },
+    hatTrim: { heightSegments: 6, brim: [.155,.033,.146], tuft: [.048,.052,.048] },
     boot: { scale: [.095,.075,.163], cuff: [.074,.024,.077] },
   },
   month: 12, date: 24, arrives: 15, sleeps: 16, leaves: 21,
