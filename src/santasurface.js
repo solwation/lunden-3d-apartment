@@ -66,7 +66,7 @@ export function santaBody(mat){
   }
   const H=S.hat,hat=new T.ConeGeometry(H.radius,H.height,A.radial,6),p=hat.attributes.position;
   for(let i=0;i<p.count;i++){const t=(p.getY(i)/H.height+.5)**3;p.setXYZ(i,p.getX(i)+H.bend*t,p.getY(i)-H.drop*t,p.getZ(i))}hat.computeVertexNormals();
-  parts.push(part(hat,C.red,[0,1.04,.01],undefined,undefined,'cloth'),ball(C.white,[0,.91,.02],[.155,.033,.146]),ball(C.white,[H.bend,1.04+H.height/2-H.drop,.01],[.048,.052,.048]));
+  parts.push(part(hat,C.red,[0,1.04,.01],undefined,undefined,'cloth'),ball(C.white,[0,.91,.02],A.hatTrim.brim),ball(C.white,[H.bend,1.04+H.height/2-H.drop,.01],A.hatTrim.tuft));
   return merge(parts,mat);
 }
 export function santaArm(mat,right){

@@ -123,3 +123,13 @@ Before-images remain only until the integration owner publishes their pinned iss
 comment, then removes them in the resolving commit. Result images have the ordinary
 30-day retention. Root owns publication, Pages/Worker evidence, pinned accessible
 issue images, final changelog id and closure; this worker only supplies a local Refs commit.
+
+## Root integration
+
+Root opened final side/front/normal/whole, sipping/waving/sleeping, moved sofa,
+fallback and matched apartment before/after images and reviewed the combined diff.
+The remaining two hat-trim scale literals were moved unchanged into SANTA.surface.
+All body/left-right arm/sitting-sleeping-leg attributes, indices, blush ranges and
+the published GLB are exactly identical ([proof and delivered hashes](config-identity.json)).
+The capture hashes in component.json remain the measured worker source, explicitly
+mapped to this identity-preserving delivery; no new art or broad rerun is needed.

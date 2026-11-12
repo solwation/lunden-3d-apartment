@@ -1,0 +1,129 @@
+{
+  "scope": "Only identical hat brim/tuft scale literals moved into SANTA.surface.hatTrim after capture; geometry unchanged.",
+  "beforeWorkerCommit": "9bc0ee631cb99ae933d3abe54ceb59cfd96c343b",
+  "exact": true,
+  "geometry": [
+    {
+      "index": null,
+      "attributes": {
+        "position": {
+          "itemSize": 3,
+          "count": 8460,
+          "hash": "cb40817ca020cad7f4ac2b914470c3d57f5e9cde7738324e780e674fced79605"
+        },
+        "normal": {
+          "itemSize": 3,
+          "count": 8460,
+          "hash": "46ff90423c083ae583b778cd6ce5f9467c6b915e5920976645aa34254bf6eba2"
+        },
+        "color": {
+          "itemSize": 3,
+          "count": 8460,
+          "hash": "8e1b57b75df6edfea89e91f2f083dbde862a578acfb20f19e4c3beed39f5f384"
+        }
+      }
+    },
+    {
+      "index": null,
+      "attributes": {
+        "position": {
+          "itemSize": 3,
+          "count": 1992,
+          "hash": "51877703bbbe26b76de7990b7433b15f3a14e3c36e9cf28cd38245b35e1ce6a8"
+        },
+        "normal": {
+          "itemSize": 3,
+          "count": 1992,
+          "hash": "065ea58fa7c5e984e3b5290e0c8be04b89e2b91db93931dd9421e89001733e48"
+        },
+        "color": {
+          "itemSize": 3,
+          "count": 1992,
+          "hash": "84c1cf4c0ef391d262cb22f99beeca399923296ffd19c1a61daeb9d1569da2ad"
+        }
+      }
+    },
+    {
+      "index": null,
+      "attributes": {
+        "position": {
+          "itemSize": 3,
+          "count": 1992,
+          "hash": "4696b1eb3acd989fbd61c0fd9864605565461729925a5f7eea336bc078a9c5c7"
+        },
+        "normal": {
+          "itemSize": 3,
+          "count": 1992,
+          "hash": "5f09e70fbb019bdefd2d613aaac0643a29362ee8f74ae327e8cfc5f93db9b855"
+        },
+        "color": {
+          "itemSize": 3,
+          "count": 1992,
+          "hash": "84c1cf4c0ef391d262cb22f99beeca399923296ffd19c1a61daeb9d1569da2ad"
+        }
+      }
+    },
+    {
+      "index": null,
+      "attributes": {
+        "position": {
+          "itemSize": 3,
+          "count": 2136,
+          "hash": "e8a42d46e645897b3bdb4cc854823e069b97c75485d3163c6cfda9d2a962e114"
+        },
+        "normal": {
+          "itemSize": 3,
+          "count": 2136,
+          "hash": "c8126353f53df1516f0632418bade7efc38050e31d99936c7a139b8e06c017c3"
+        },
+        "color": {
+          "itemSize": 3,
+          "count": 2136,
+          "hash": "0d99e55bf67fe9afef2e24dcbf84ef8ceadb004028bfd860af32e997417c7bbe"
+        }
+      }
+    },
+    {
+      "index": null,
+      "attributes": {
+        "position": {
+          "itemSize": 3,
+          "count": 2136,
+          "hash": "639a74f52ea6e5ba1fad0c1c528e135841cccda95f38d6df6e4525af0ae6b53d"
+        },
+        "normal": {
+          "itemSize": 3,
+          "count": 2136,
+          "hash": "2c10ff9f9e49217f89ba5642b5939bd56bd926cb98864828b4b833654e8707f2"
+        },
+        "color": {
+          "itemSize": 3,
+          "count": 2136,
+          "hash": "9f6882b8116ce389f382c22be48841f202c905d6ed74083ee418c78a75fb0fec"
+        }
+      }
+    }
+  ],
+  "cheeks": [
+    [
+      {
+        "start": 4812,
+        "count": 300
+      },
+      {
+        "start": 6252,
+        "count": 300
+      }
+    ],
+    [],
+    []
+  ],
+  "glb": "e4ee917e1880086042928412ccf6807e69f3437e739f0eecf040249fdd64c130",
+  "deliveredHashes": {
+    "src/santa.js": "df29250befcb063f7a0ac41ffab167ae219958808d083dc67063cd582c1571b3",
+    "src/santasurface.js": "aabc83a73310a2506d49160e301df21efd7357755fd8368b0069130c627e6b68",
+    "src/santaconfig.js": "40bfc5b01edf35f7168ab7afa9ca2b7e781e28b2337b7d07e31e71bf38523289",
+    "tools/buildfiguresglb.mjs": "532fdb05f067bcc415508c0a00c15b9fc85c24a7b7bbbd3f7e8669482a52af55",
+    "models/santa.glb": "e4ee917e1880086042928412ccf6807e69f3437e739f0eecf040249fdd64c130"
+  }
+}
