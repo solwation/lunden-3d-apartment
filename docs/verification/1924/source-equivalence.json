@@ -1,0 +1,28 @@
+{
+  "capturedBirds": "9f5f3dd9c67aae7ca63971437567872507d3876811c09ad9735010516554e45a",
+  "finalBirds": "0d4b1626b02e1ca93b92c63a755ee27159fa829a7f137941fa2c45a4a2206fc1",
+  "onlyExecutableChangeAfterCapture": "constructor clamps debug count; default10/lowMemory5 and supported integer0..10 remain identical; no pose/geometry/material/LOD/update code changed",
+  "supportedInputCounts": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "configOnlyCommentAfterConsumerCapture": true,
+  "geometryMaterialPoseSourcesUnchanged": true,
+  "finalSource": {
+    "src/birds.js": "0d4b1626b02e1ca93b92c63a755ee27159fa829a7f137941fa2c45a4a2206fc1",
+    "src/gullmodel.js": "c77d7ab0530bfe8176dc1d923f782c9ae21a9b633a7a3c67bdc6f838e7b8c4ce",
+    "src/config.js": "97dac1a188088af3d64494db623f6ed5848c395ee222cfd3184f15b4f37866f4",
+    "src/bestiarymodels.js": "65229dba806ba544989d117247616ffd670b2b1cb24ce245ea87e8271872946b",
+    "src/bestiaryworld.js": "fb474d497fd22db97be8bc33c2417fbd7a3e40ba44f585e93510ae55d1253c86"
+  },
+  "nativeChecks": "node-tests.txt:9/9, including supported counts/source seed identity/finite debug inputs"
+}

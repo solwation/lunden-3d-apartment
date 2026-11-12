@@ -4306,13 +4306,36 @@ export function jetThin(h) {
 // No textures: the density is procedural noise in the shader.
 export const SKYLAYER = { base: 150, top: 190, fade: 30, approach: 70, radius: 900, near: 1, far: 28, cloudy: 0.12, full: 0.6, scale: 0.006 };
 
-// Birds (#1252, src/birds.js): a few gull-like silhouettes circling over the area, one instanced draw call, no lights, no textures,
+// Birds (#1252/#1924, src/birds.js): a few gulls circling the area, exclusive near/far instanced batches, no lights, no textures,
 // no sound. All numbers *guess*. `count` birds (`lowMemoryCount` on phones), the last `high` of them at flight altitude (`highAlt`
 // m, above the cloud deck of SKYLAYER; only drawn in clear weather or from above the deck), the rest between `alt` m round the
 // area's `center` (plan x/z, round the courtyard) at `radius` m (ranges [min, max]) at `speed` m/s along the circle. `span` m wingspan, `flap` Hz. Shown by day
 // (daylight ≥ `day`), not in rain / snow (rain ≥ `rain`) nor inside the cloud whiteout; faded over `fade` (1/s); not drawn when the
 // eye is further than `far` m from the centre.
-export const BIRDS = { center: { x: -30, z: 30 }, count: 10, lowMemoryCount: 5, high: 3, radius: [30, 100], alt: [30, 90], highAlt: [215, 290], speed: [6, 10], span: 3.2, flap: 2.6, bank: 0.35, day: 0.3, rain: 0.1, fade: 1.5, far: 500 };
+export const BIRDS = { center: { x: -30, z: 30 }, count: 10, lowMemoryCount: 5, high: 3, radius: [30, 100], alt: [30, 90], highAlt: [215, 290], speed: [6, 10], span: 1.6, flap: 2.6, bank: 0.35, day: 0.3, rain: 0.1, fade: 1.5, far: 500 };
+
+
+// Gull art/LOD (#1924): artistic guesses, not surveyed wildlife dimensions. Near span1.6m;
+// distant birds retain2x visibility scaling, without the former additional1.8x high-flock enlargement.
+// Motion seeds/circle paths and weather gates remain BIRDS's established values.
+export const GULL_SURFACE = {
+  lodNear: 45, farScale: 2, scaleFrom: 25, scaleTo: 75,
+  highScale: 1, bobHz: .31, bobAmplitude: 2.5, seedPhase: 3,
+  flapAngle: .65, glideRate: .43, glideGate: [.25,.7], bankSway: .07, bankRate: .4,
+  light: [.25,.8,.4], shade: [.58,.42],
+  colors: { body: 0xe9e9df, wing: 0xb9c1c7, tip: 0x303941, bill: 0xd5ac45, eye: 0x202629 },
+  sides: 8, rings: 5, eyeSides: 4, eyeRings: 3, billSides: 4,
+  body: { scale: [.053,.053,.18], at: [0,0,-.02] },
+  head: { scale: [.039,.044,.051], at: [0,.039,.153] },
+  eye: { radius: .006, at: [.035,.051,.168] },
+  bill: { radius: .014, length: .075, at: [0,.028,.226] },
+  wingRoot: .025, wingThickness: .006, wingCamber: .012,
+  wing: [[.025,.095],[.20,.075],[.35,.015],[.50,-.09],[.43,-.115],[.33,-.075],[.17,-.045],[.025,-.085]],
+  tail: [[-.04,-.16],[-.07,-.29],[0,-.28],[.07,-.29],[.04,-.16]],
+  farBody: [[-.04,.13],[0,.29],[.04,.13],[.055,-.15],[0,-.29],[-.055,-.15]],
+  farWing: [[.025,.095],[.25,.035],[.50,-.09],[.32,-.105],[.025,-.085]],
+  farTail: [[-.03,-.16],[-.07,-.29],[.07,-.29],[.03,-.16]],
+};
 
 // Hot-air balloon (#1646, src/balloon.js, src/balloongeo.js): now and then one drifts round the area above the cloud deck (SKYLAYER) and a
 // visitor who flies up (jetpack) can land in its basket and be carried along. All numbers *guess*. Visible `window` s of every `period` s of

@@ -15,7 +15,7 @@ export async function createBestiaryModel(recipe) {
    object=new THREE.InstancedMesh(g,ponyMaterial(),1);object.setMatrixAt(0,new THREE.Matrix4()); break; }
   case 'butterfly': object=mesh((await import('./outdoorcats.js')).butterflyGeometry(),new THREE.MeshLambertMaterial({color:recipe.color,side:THREE.DoubleSide}));break;
   case 'magicButterfly': { const {TEXTURES}=await import('./marks.js'); object=mesh(new THREE.PlaneGeometry(1,.7),new THREE.MeshBasicMaterial({map:TEXTURES.butterfly(),transparent:true,side:THREE.DoubleSide}));ownTextures=true;break; }
-  case 'gull': { const {birdGeometry}=await import('./birds.js'); const g=birdGeometry(1,{a:new Float32Array(4),b:new Float32Array(2)});g.deleteAttribute('aSeed');g.deleteAttribute('aSeed2');g.instanceCount=1;object=mesh(g,new THREE.MeshBasicMaterial({color:0xe6e6e0,side:THREE.DoubleSide}));break; }
+  case 'gull': { const {gullGeometry}=await import('./gullmodel.js');object=mesh(gullGeometry(true),new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,side:THREE.DoubleSide}));sharedGeometry=true;break; }
   case 'santa': {const f=(await import('./santa.js')).santaFigure();object=f.object;f.text.material.map.dispose();f.text.material.dispose();ownTextures=true;break;}
   case 'olof': { const {buildOlof}=await import('./olof.js'); object=buildOlof().object;break; }
   case 'pingping': object=(await import('./pingping.js')).pingpingModel();ownTextures=true;break;

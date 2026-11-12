@@ -43,7 +43,7 @@
         "near": 0
       },
       "pixels": 47,
-      "image": "baseline-ground-1.png",
+      "image": "before/baseline-ground-1.png",
       "timing": {
         "update": {
           "samples": [
@@ -144,7 +144,7 @@
         "near": 0
       },
       "pixels": 4673,
-      "image": "baseline-quarter-1.png",
+      "image": "before/baseline-quarter-1.png",
       "timing": {
         "update": {
           "samples": [
@@ -245,7 +245,7 @@
         "near": 0
       },
       "pixels": 804,
-      "image": "baseline-front-1.png"
+      "image": "before/baseline-front-1.png"
     },
     {
       "target": [
@@ -272,7 +272,7 @@
         "near": 0
       },
       "pixels": 3792,
-      "image": "baseline-side-1.png"
+      "image": "before/baseline-side-1.png"
     },
     {
       "target": [
@@ -299,7 +299,7 @@
         "near": 0
       },
       "pixels": 4764,
-      "image": "baseline-quarter-1_15.png"
+      "image": "before/baseline-quarter-1_15.png"
     },
     {
       "target": [
@@ -326,7 +326,7 @@
         "near": 0
       },
       "pixels": 4743,
-      "image": "baseline-quarter-3_5.png"
+      "image": "before/baseline-quarter-3_5.png"
     },
     {
       "target": [
@@ -353,7 +353,7 @@
         "near": 0
       },
       "pixels": 23,
-      "image": "baseline-ground-1-lowmem.png",
+      "image": "before/baseline-ground-1-lowmem.png",
       "timing": {
         "update": {
           "samples": [

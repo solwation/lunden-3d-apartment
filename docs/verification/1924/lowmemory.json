@@ -1,0 +1,44 @@
+{
+  "lowMemory": true,
+  "count": 5,
+  "before": [
+    432,
+    432,
+    432,
+    144,
+    80,
+    40,
+    8640,
+    8640,
+    8640,
+    2880,
+    80,
+    40
+  ],
+  "retained": [
+    432,
+    432,
+    432,
+    144,
+    80,
+    40,
+    8640,
+    8640,
+    8640,
+    2880,
+    80,
+    40
+  ],
+  "unchanged": true,
+  "actual": {
+    "frame": 1,
+    "calls": 2,
+    "triangles": 288,
+    "points": 0,
+    "lines": 0
+  },
+  "pixels": 1320,
+  "targetPixels": 1075,
+  "finite": true,
+  "errors": []
+}

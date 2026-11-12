@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { BREEDS } from './cat.js';
 import { catEntryId } from './bestiary.js';
-import { BESTIARY as C } from './config.js';
+import { BESTIARY as C, GULL_SURFACE } from './config.js';
 const visible = o => { if(!o)return false;for(let p=o;p;p=p.parent)if(!p.visible||p.userData.seasonHidden)return false;return true; };
 export function observable(point,camera,maxDistance=C.seenDistance) {
  if(point.distanceTo(camera.position)>maxDistance)return false;
@@ -23,7 +23,16 @@ export class BestiaryObserver {
   for(const f of a.riverFish?.shown??[])if(visible(a.riverFish.fish))out.push({id:`fish:${f.species}`,point:new THREE.Vector3(f.x,f.drawnY,f.z)});
   const shark=a.riverFish?.shark;add('fish:shark',shark?.fin);add('fish:shark',shark?.body,.3);
   add('figure:pingping',a.pingping?.model,.12);add('figure:santa',a.santa?.object,.6);add('figure:olof',a.olofDriver?.fig?.object,.8);
-  const birds=a.birds;if(visible(birds?.mesh)&&birds.fade>.5){const g=birds.mesh.geometry,u=birds.uniforms,t=u.uTime.value,seed=g.getAttribute('aSeed');for(let i=0;i<seed.count;i++){if(g.getAttribute('aSeed2').getY(i)>.5&&u.uHigh.value<.05)continue;const angle=seed.getX(i)+t*seed.getW(i),r=seed.getY(i),p=u.uCenter.value.clone().add(new THREE.Vector3(Math.cos(angle)*r,seed.getZ(i)+Math.sin(t*.31+seed.getX(i)*3)*2.5,Math.sin(angle)*r));out.push({id:'bird:gull',point:p,maxDistance:C.birdSeenDistance});}}
+  const birds=a.birds;
+  if((visible(birds?.mesh)||visible(birds?.nearMesh))&&birds.fade>.5){
+   // The immutable source seeds cover both exclusive LOD batches; packed far slots may be empty/stale.
+   const g=birds.mesh.geometry,u=birds.uniforms,t=u.uTime.value,seed=birds.seeds?.a??g.getAttribute('aSeed').array,flags=birds.seeds?.b??g.getAttribute('aSeed2').array;
+   for(let i=0;i<(birds.count??seed.length/4);i++){
+    if(flags[i*2+1]>.5&&u.uHigh.value<.05)continue;
+    const j=i*4,angle=seed[j]+t*seed[j+3],r=seed[j+1],p=u.uCenter.value.clone().add(new THREE.Vector3(Math.cos(angle)*r,seed[j+2]+Math.sin(t*GULL_SURFACE.bobHz+seed[j]*GULL_SURFACE.seedPhase)*GULL_SURFACE.bobAmplitude,Math.sin(angle)*r));
+    out.push({id:'bird:gull',point:p,maxDistance:C.birdSeenDistance});
+   }
+  }
   const flutter=a.marks?.flutter;if(visible(flutter?.mesh))for(const b of flutter.b)if(b.age<b.life&&b.at)out.push({id:'butterfly:magic',point:b.at.clone()});
   return out;
  }

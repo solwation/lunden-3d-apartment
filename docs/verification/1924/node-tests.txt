@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: exact production spawn/look catalogue, append-only numbers and valid arbitrary-length chains
+ok 1 - exact production spawn/look catalogue, append-only numbers and valid arbitrary-length chains
+  ---
+  duration_ms: 1.729294
+  type: 'test'
+  ...
+# Subtest: observer obeys real shader high-bird visibility, frustum/range/occlusion and bounded sparse work
+ok 2 - observer obeys real shader high-bird visibility, frustum/range/occlusion and bounded sparse work
+  ---
+  duration_ms: 1.738995
+  type: 'test'
+  ...
+# Subtest: visual sight continues past transparent/hidden hits and retains opaque moving doors/instances
+ok 3 - visual sight continues past transparent/hidden hits and retains opaque moving doors/instances
+  ---
+  duration_ms: 1.238896
+  type: 'test'
+  ...
+# Subtest: \#1882 outdoor cats: binder pages name the cat and where it roams; saved collection progression unchanged
+ok 4 - \#1882 outdoor cats: binder pages name the cat and where it roams; saved collection progression unchanged
+  ---
+  duration_ms: 0.601598
+  type: 'test'
+  ...
+# Subtest: both real LOD recipes are finite, volumetric near, within locked budgets and shared with collection
+ok 5 - both real LOD recipes are finite, volumetric near, within locked budgets and shared with collection
+  ---
+  duration_ms: 10.325068
+  type: 'test'
+  ...
+# Subtest: LOD partition is exclusive through repeated boundary crossings for desktop and low-memory seeds
+ok 6 - LOD partition is exclusive through repeated boundary crossings for desktop and low-memory seeds
+  ---
+  duration_ms: 2.943791
+  type: 'test'
+  ...
+# Subtest: night/rain-snow/whiteout/underground/far gates hide both batches and skip animation/classification
+ok 7 - night/rain-snow/whiteout/underground/far gates hide both batches and skip animation/classification
+  ---
+  duration_ms: 1.107596
+  type: 'test'
+  ...
+# Subtest: actual collection observation uses immutable seeds across near-only, mixed and stale packed slots
+ok 8 - actual collection observation uses immutable seeds across near-only, mixed and stale packed slots
+  ---
+  duration_ms: 1.010197
+  type: 'test'
+  ...
+# Subtest: debug count is finite and bounded while all supported default counts retain exact seed/attribute bytes
+ok 9 - debug count is finite and bounded while all supported default counts retain exact seed/attribute bytes
+  ---
+  duration_ms: 1.128796
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 395.18647

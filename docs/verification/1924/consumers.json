@@ -1,0 +1,190 @@
+{
+  "rows": [
+    {
+      "name": "exact baseline instance seeds",
+      "pass": true,
+      "low": false,
+      "count": 10
+    },
+    {
+      "name": "exact baseline instance seeds",
+      "pass": true,
+      "low": true,
+      "count": 5
+    },
+    {
+      "name": "night zero actual draws/pixels",
+      "pass": true,
+      "calls": 0,
+      "triangles": 0,
+      "rawBytes": 31040,
+      "textures": 0,
+      "count": 10,
+      "finite": true,
+      "lod": {
+        "near": 1,
+        "far": 9
+      },
+      "pixels": 0
+    },
+    {
+      "name": "rain-snow zero actual draws/pixels",
+      "pass": true,
+      "calls": 0,
+      "triangles": 0,
+      "rawBytes": 31040,
+      "textures": 0,
+      "count": 10,
+      "finite": true,
+      "lod": {
+        "near": 1,
+        "far": 9
+      },
+      "pixels": 0
+    },
+    {
+      "name": "whiteout zero actual draws/pixels",
+      "pass": true,
+      "calls": 0,
+      "triangles": 0,
+      "rawBytes": 31040,
+      "textures": 0,
+      "count": 10,
+      "finite": true,
+      "lod": {
+        "near": 1,
+        "far": 9
+      },
+      "pixels": 0
+    },
+    {
+      "name": "underground zero actual draws/pixels",
+      "pass": true,
+      "calls": 0,
+      "triangles": 0,
+      "rawBytes": 31040,
+      "textures": 0,
+      "count": 10,
+      "finite": true,
+      "lod": {
+        "near": 1,
+        "far": 9
+      },
+      "pixels": 0
+    },
+    {
+      "name": "far zero actual draws/pixels",
+      "pass": true,
+      "calls": 0,
+      "triangles": 0,
+      "rawBytes": 31040,
+      "textures": 0,
+      "count": 10,
+      "finite": true,
+      "lod": {
+        "near": 1,
+        "far": 9
+      },
+      "pixels": 0
+    },
+    {
+      "name": "high gull actually hidden behind cloud deck",
+      "pass": true,
+      "targetPixels": 0
+    },
+    {
+      "name": "same high gull visible above deck",
+      "pass": true,
+      "targetPixels": 556
+    },
+    {
+      "name": "exclusive LOD transition without missing intended bird",
+      "pass": true,
+      "distance": 44.99,
+      "calls": 2,
+      "triangles": 576,
+      "rawBytes": 31040,
+      "textures": 0,
+      "count": 10,
+      "finite": true,
+      "lod": {
+        "near": 2,
+        "far": 8
+      },
+      "targetPixels": 48
+    },
+    {
+      "name": "exclusive LOD transition without missing intended bird",
+      "pass": true,
+      "distance": 45.01,
+      "calls": 2,
+      "triangles": 348,
+      "rawBytes": 31040,
+      "textures": 0,
+      "count": 10,
+      "finite": true,
+      "lod": {
+        "near": 1,
+        "far": 9
+      },
+      "targetPixels": 45
+    },
+    {
+      "name": "exclusive LOD transition without missing intended bird",
+      "pass": true,
+      "distance": 44.99,
+      "calls": 2,
+      "triangles": 576,
+      "rawBytes": 31040,
+      "textures": 0,
+      "count": 10,
+      "finite": true,
+      "lod": {
+        "near": 2,
+        "far": 8
+      },
+      "targetPixels": 48
+    },
+    {
+      "name": "near-only actual submission",
+      "pass": true,
+      "calls": 1,
+      "triangles": 2400,
+      "rawBytes": 31040,
+      "textures": 0,
+      "count": 10,
+      "finite": true,
+      "lod": {
+        "near": 10,
+        "far": 0
+      }
+    },
+    {
+      "name": "near-only real observer uses source seeds once",
+      "pass": true
+    },
+    {
+      "name": "finite glide/flap-up/flap-down samples",
+      "pass": true,
+      "modes": {
+        "glide": 0.025,
+        "down": 5.375000000000009,
+        "up": 5.575000000000012
+      }
+    }
+  ],
+  "modes": {
+    "glide": 0.025,
+    "down": 5.375000000000009,
+    "up": 5.575000000000012
+  },
+  "opposite": 3,
+  "errors": [],
+  "source": {
+    "src/birds.js": "9f5f3dd9c67aae7ca63971437567872507d3876811c09ad9735010516554e45a",
+    "src/gullmodel.js": "c77d7ab0530bfe8176dc1d923f782c9ae21a9b633a7a3c67bdc6f838e7b8c4ce",
+    "src/config.js": "6209787d87553b98e268b61d2b82228e97fc3123b8172f1b7d06a2f1e2fb39c2",
+    "src/bestiarymodels.js": "65229dba806ba544989d117247616ffd670b2b1cb24ce245ea87e8271872946b",
+    "src/bestiaryworld.js": "fb474d497fd22db97be8bc33c2417fbd7a3e40ba44f585e93510ae55d1253c86"
+  }
+}

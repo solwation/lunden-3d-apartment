@@ -17,7 +17,7 @@ async function open(browser, q) {
 const calls = (page) => page.evaluate(() => {
   const { birds, renderer, scene, camera } = window.__app;
   let n = 0; const r = renderer.renderBufferDirect;
-  renderer.renderBufferDirect = function (c, s, g, m, o) { if (o === birds.mesh) n++; return r.apply(this, arguments); };
+  renderer.renderBufferDirect = function (c, s, g, m, o) { if (birds.meshes?.includes(o) || o === birds.mesh) n++; return r.apply(this, arguments); };
   renderer.render(scene, camera); renderer.renderBufferDirect = r; return n;
 });
 // run a few frames with the weather / clock forced, then report whether the birds are visible
@@ -30,9 +30,9 @@ const state = (page, { hour = 12, weather = null, y = null, steps = 90 }) => pag
 (async () => {
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   let page = await open(browser, '&weather=clear');
-  const info = await page.evaluate(() => { const b = window.__app.birds; return { n: b.count, inst: b.mesh.geometry.instanceCount, tris: b.mesh.geometry.attributes.position.count / 3, lights: 0 }; });
-  check(info.n >= 5 && info.inst === info.n, 'one instanced mesh with all birds', JSON.stringify(info));
-  check(info.tris <= 4, 'few triangles per bird', String(info.tris));
+  const info = await page.evaluate(() => { const b = window.__app.birds; return { n: b.count, inst: b.meshes.reduce((n,m)=>n+m.geometry.instanceCount,0), tris: b.mesh.geometry.attributes.position.count / 3, nearTris:b.nearMesh.geometry.attributes.position.count/3, lights: 0 }; });
+  check(info.n >= 5 && info.inst === info.n, 'exclusive LOD batches contain all birds', JSON.stringify(info));
+  check(info.tris <= 12 && info.nearTris <= 400, 'bounded far and near triangles per bird', JSON.stringify(info));
   let s = await state(page, {});
   check(s.visible && s.fade > 0.99, 'visible by day in clear weather', JSON.stringify(s));
   check(await calls(page) === 1, 'exactly one draw call');
