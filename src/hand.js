@@ -132,7 +132,7 @@ function chain(parts, start, q0, lens, radii, bends) {
   parts.push(finger);
   // A shallow dorsal nail shares the hand's draw/material/morphs; no extra texture or per-frame update.
   const n = SURFACE.nail;
-  const nail = surface(4, 8, (v, angle) => {
+  const nail = surface(n.steps, n.radial, (v, angle) => {
     const t = THREE.MathUtils.lerp(n.from, n.to, v), u = angle / (Math.PI * 2), phi = (1 - 2 * u) * n.arc;
     const at = curve.getPoint(t), tangent = curve.getTangent(t), axisX = axisY.clone().cross(tangent).normalize();
     const r = radii[0] * profile(SURFACE.fingerShape, t);
@@ -164,11 +164,11 @@ function handGeometry(pose) {
       return sum + amount * k.depth * Math.exp(-(((y - f.y) / k.width) ** 2) - ((z - f.z + k.offset) / k.length) ** 2);
     }, 0);
     const x = front * profile(table, z, 3) - back * profile(table, z, 2) + front ** 3 * thumb - back ** 3 * ridges - back * knuckles;
-    return [x, y, z + t ** 8 * (profile(SURFACE.knuckles, y) - max)];
+    return [x, y, z + t ** SURFACE.knuckleEdgePower * (profile(SURFACE.knuckles, y) - max)];
   };
-  const palm = surface(table.length * 2, SURFACE.radial * 2, (t, angle) => palmPoint(THREE.MathUtils.lerp(min, max, t), angle));
+  const palm = surface(SURFACE.palmSteps, SURFACE.palmRadial, (t, angle) => palmPoint(THREE.MathUtils.lerp(min, max, t), angle));
   parts.push(palm);
-  parts.push(surface(1, SURFACE.radial * 2, (t, angle) => {
+  parts.push(surface(1, SURFACE.palmRadial, (t, angle) => {
     const edge = palmPoint(max, angle);
     return [edge[0] * (1 - t), edge[1] * (1 - t), THREE.MathUtils.lerp(edge[2], max, t)];
   }));
@@ -177,7 +177,7 @@ function handGeometry(pose) {
     ray.ray.direction.set(-1, 0, 0);
     palmCreases = SURFACE.creases.paths.map(path => {
       const curve = new THREE.CatmullRomCurve3(path.map(([y, z]) => new THREE.Vector3(0, y, z)));
-      const crease = surface(20, 1, (t, angle) => {
+      const crease = surface(SURFACE.creases.steps, 1, (t, angle) => {
         const at = curve.getPoint(t), tangent = curve.getTangent(t), offset = (angle / Math.PI - 1) * SURFACE.creases.width;
         const y = at.y + tangent.z * offset, z = at.z - tangent.y * offset;
         ray.ray.origin.set(1, y, z);hits.length = 0;ray.intersectObject(palmMesh, false, hits);

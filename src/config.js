@@ -3692,7 +3692,7 @@ export const HAND = { skin: 0xe2b292, skinGlow: 0x2a0e06, sleeve: 0x4a5a6e, shou
 // These are anatomy/art guesses, not measured personal dimensions. The four finger anchors and grip controls stay fixed;
 // the thumb metacarpal starts inside the palm, and the same fitted anchor is used by its ring.
 export const HAND_SURFACE = {
-  radial: 16, fingerSteps: 18,
+  radial: 16, fingerSteps: 18, palmSteps: 18, palmRadial: 32, knuckleEdgePower: 8,
   // z, half palm width (Y), back depth (-X), palm depth (+X).
   palm: [[-.098,.031,.0223,.0223],[-.065,.029,.021,.021],[-.028,.0255,.017,.018],
     [-.004,.027,.014,.019],[.019,.035,.013,.022],[.042,.040,.014,.022],
@@ -3703,8 +3703,8 @@ export const HAND_SURFACE = {
   tendons: { from:.018,to:.088,depth:.0013,width:.0045 },
   knuckle: { depth:.0035,width:.011,length:.013,offset:.008,relaxed:.4 },
   fingerShape: [[0,1],[.15,1.04],[.35,.94],[.48,1.01],[.64,.90],[.75,.91],[.88,.80],[.97,.46],[1,0]],
-  fingerDepth:.88, nail: { from:.77,to:.94,arc:.64,depth:.00055,shade:1.08 },
-  creases: { width:.00035,lift:.0001,shade:.94,paths:[
+  fingerDepth:.88, nail: { steps:4,radial:8,from:.77,to:.94,arc:.64,depth:.00055,shade:1.08 },
+  creases: { steps:20,width:.00035,lift:.0001,shade:.94,paths:[
     [[-.026,.065],[-.008,.059],[.014,.061],[.028,.069]],
     [[-.027,.041],[-.011,.042],[.008,.047],[.023,.049]],
     [[.011,.008],[-.002,.023],[-.002,.044],[.014,.059]],

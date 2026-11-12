@@ -1,12 +1,16 @@
 # More natural first-person hands (#1917)
 
-Baseline: `2f03ba02187419796185822e411901002cdb552f`. Measured Hand source:
-`6c445258cb0ad6bb72832caae7cbdfd9e0ee9145`, SHA-256
-`04d313f87b0087183ec7a30738c0b54025d82772773084da1f06316bdbcdd5cd`.
-Integration changes only an explanatory sleeve comment and adds unrelated Avatar
-configuration; `checks.json` proves the measured executable Hand/pose/art inputs
-are preserved. The paired [before](baseline.json) and [after](after/results.json) records
-identify the actually served Hand source, browser, poses and camera positions.
+Baseline: `2f03ba02187419796185822e411901002cdb552f`. The final served Hand
+SHA-256 is `a4ab8914a060f7fb0f76184e18674fe1ad4f4876133830897722c359c271ab75`.
+The paired [before](baseline.json) and [after](after/results.json) records identify
+the actually served source, browser, poses and camera positions. Their `head`
+field is the checkout base before committing the candidate; the served source
+hash is authoritative. Final density constants are centralized without changing
+any geometry: [eight actual states](geometry-equivalence.json) have byte-identical
+hand/morph/arm/cuff/accessory buffers and matching poses/counts against the earlier
+published `fef5ad53`. Its Hand differs from the prior contact/World checks' source
+only by a corrected explanatory sleeve comment; `checks.json` records the chain.
+Unrelated Avatar configuration does not change the Hand inputs.
 
 Each finger now has a continuous indexed surface along its original phalanx
 centreline, with rounded tips and fitted dorsal nails. A shaped palm/wrist,
@@ -28,7 +32,8 @@ The three shallow crease surfaces are projected once and cached across poses.
 1. Matched actual Hand consumer: eight states (reach, grip, palm, two-hand hug,
    web glove, wet skin, bare forearm, accessories), each at normal FOV 72 plus
    palm/back inspection cameras. All 24 paired records pass finite geometry,
-   matching morph counts, shared left/right geometry, identical transforms,
+   matching morph counts, shared left/right geometry, finite hand/camera transforms,
+   identical transforms,
    morph channels and inspection cameras. Normal views and whole palm/back
    views were opened and reviewed against the baseline. All states retain their
    draw count and submit fewer triangles. Three warm 100-frame intervals follow
@@ -52,6 +57,13 @@ The three shallow crease surfaces are projected once and cached across poses.
    FOV 72, browser 1000×700/DPR 1, game pixel ratio .75 (750×525 buffer).
    [Result and source hashes](world/result.json), zero page errors. No World
    timing or before/after World-wide performance conclusion is claimed.
+
+The first version of this new component fixture used an empty palm prop without
+an explicit grip. Its bounding-box fallback produced NaN transforms and a blank
+palm image; geometry-only finiteness was inadequate. The fixture now provides a
+valid explicit grip and rejects non-finite hand/camera poses. Both complete paired
+captures were repeated, and the corrected normal/whole palm images were opened.
+The earlier faulty component result is not counted as passing evidence.
 
 The extra existing `webhandstest.cjs` run **fails** with exit 1 after 20 preceding
 checks because its roof stub lacks `overhead`, which the unchanged real Player
@@ -91,16 +103,16 @@ total process, heap or GPU memory; there is no new hand asset download.
 | Warm actual Hand interval, three rounds | Before | After |
 | --- | ---: | ---: |
 | Update/render/finish median | .2–.3 ms | .2–.3 ms |
-| Update/render/finish p95 | .4–.5 ms | .4–.5 ms |
+| Update/render/finish p95 | .3–.4 ms | .3–.5 ms |
 | Animation-frame median | 16.7 ms | 16.7 ms |
-| Animation-frame p95 | 16.7–16.8 ms | 16.7–16.8 ms |
+| Animation-frame p95 | 16.7 ms | 16.8 ms |
 
 Controlled 1000×700/DPR 1 component, Chromium 156.0.8078.4, SwiftShader software
 renderer. The approximately 60 Hz interval is synchronized and is not a native
 GPU/phone FPS measurement. No general speedup or full-scene memory saving is claimed.
 
 Synchronous Hand construction is measured separately: first constructor
-39.7→47.4 ms; five warmed constructors median 11.5→16.8 ms, maximum 22→31.7 ms.
+36.4→49.7 ms; five warmed constructors median 10.5→13.8 ms, maximum 19.6→22.1 ms.
 Main constructs one Hand, not one per remote player or frame. This bounded extra
 one-time CPU work is disclosed; it excludes renderer upload and complete startup.
 The projected crease cache avoids repeating ray projection for every morph/new
@@ -114,6 +126,7 @@ Hand. Cold startup and network transfer were not benchmarked.
 
 ![Actual main/World Cup grip](world/cup.png)
 
+[Valid palm pose](after/palm-normal.png), [whole palm](after/palm-detail.png),
 [Back](after/reach-back.png), [two-hand hug](after/hug-normal.png),
 [wet](after/wet-normal.png), [bare arm](after/bare-detail.png),
 [suit](after/web-normal.png), [accessories](after/accessories-normal.png),

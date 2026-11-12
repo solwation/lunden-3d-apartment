@@ -1,0 +1,87 @@
+{
+  "status": "passed",
+  "reference": "fef5ad5377b2aac68605607d71abeef2bb8ee55b",
+  "errors": [],
+  "referenceHashes": {
+    "src/hand.js": "fa794b3195a43fa6ddb4e553f01b83f189238d3adae0ea57a44be03595059e82",
+    "src/config.js": "558d02deba693c4511c237766a4bb9ab13dff874950c3325190647443a62fe76"
+  },
+  "candidateHashes": {
+    "src/hand.js": "a4ab8914a060f7fb0f76184e18674fe1ad4f4876133830897722c359c271ab75",
+    "src/config.js": "bcb395a633f1daa645024a81ce7297d8d958882a853ab3841ce12883f239ed38"
+  },
+  "cases": [
+    {
+      "mode": "reach",
+      "calls": 3,
+      "triangles": 4980,
+      "geometries": 5,
+      "geometrySHA256": "531e8f93cc7c55f3dd1b11dceda0d75a570327e5e5719b0d82771b46ac48f7fe",
+      "poseSHA256": "b9b2840f33e7864eb7daddf1368fa7bc8abc08a3244ac1d01c31970e2f797fd0",
+      "byteIdentical": true
+    },
+    {
+      "mode": "grip",
+      "calls": 3,
+      "triangles": 4980,
+      "geometries": 5,
+      "geometrySHA256": "531e8f93cc7c55f3dd1b11dceda0d75a570327e5e5719b0d82771b46ac48f7fe",
+      "poseSHA256": "e6a9a5d1af8003af380b94d981abc33f891cdced6fefdae445e2a3d350e6854c",
+      "byteIdentical": true
+    },
+    {
+      "mode": "palm",
+      "calls": 3,
+      "triangles": 4980,
+      "geometries": 5,
+      "geometrySHA256": "531e8f93cc7c55f3dd1b11dceda0d75a570327e5e5719b0d82771b46ac48f7fe",
+      "poseSHA256": "0aa279d944c8edbbe01d362713a4fd443e9b54993379c0695399e12b0cad5e0f",
+      "byteIdentical": true
+    },
+    {
+      "mode": "hug",
+      "calls": 6,
+      "triangles": 9960,
+      "geometries": 5,
+      "geometrySHA256": "531e8f93cc7c55f3dd1b11dceda0d75a570327e5e5719b0d82771b46ac48f7fe",
+      "poseSHA256": "887eac9f31c04f6cca3b835b9e3955d6acbc0185d6ba98574d6f0f136115f49c",
+      "byteIdentical": true
+    },
+    {
+      "mode": "web",
+      "calls": 3,
+      "triangles": 4980,
+      "geometries": 5,
+      "geometrySHA256": "531e8f93cc7c55f3dd1b11dceda0d75a570327e5e5719b0d82771b46ac48f7fe",
+      "poseSHA256": "802416a52025d84b5a8270bd696fe69e22a1d6c7000a03de1c59bafd4c9f6667",
+      "byteIdentical": true
+    },
+    {
+      "mode": "wet",
+      "calls": 4,
+      "triangles": 6772,
+      "geometries": 5,
+      "geometrySHA256": "531e8f93cc7c55f3dd1b11dceda0d75a570327e5e5719b0d82771b46ac48f7fe",
+      "poseSHA256": "217397139ec059386bdb8427663608fede8d4a6108e62406f861e73b65523742",
+      "byteIdentical": true
+    },
+    {
+      "mode": "bare",
+      "calls": 2,
+      "triangles": 4728,
+      "geometries": 5,
+      "geometrySHA256": "531e8f93cc7c55f3dd1b11dceda0d75a570327e5e5719b0d82771b46ac48f7fe",
+      "poseSHA256": "db529e9fbdfbe6f33ecdd257e1f40152455ef490fd4fac1c3d16acd1f161f34e",
+      "byteIdentical": true
+    },
+    {
+      "mode": "accessories",
+      "calls": 8,
+      "triangles": 5320,
+      "geometries": 10,
+      "geometrySHA256": "c4b53bf22cf35356cafcf67fd57dda039bbf38ae454a3d5f8050aeadcc64ceda",
+      "poseSHA256": "e4be09f72b304d5b43038231d161511dab8fca543ab09e28f1dcebaecc6000a9",
+      "byteIdentical": true
+    }
+  ]
+}

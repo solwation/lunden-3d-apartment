@@ -1,21 +1,22 @@
 {
-  "measuredHandSHA256": "04d313f87b0087183ec7a30738c0b54025d82772773084da1f06316bdbcdd5cd",
-  "integratedHandSHA256": "fa794b3195a43fa6ddb4e553f01b83f189238d3adae0ea57a44be03595059e82",
+  "measuredHandSHA256": "a4ab8914a060f7fb0f76184e18674fe1ad4f4876133830897722c359c271ab75",
+  "integratedHandSHA256": "a4ab8914a060f7fb0f76184e18674fe1ad4f4876133830897722c359c271ab75",
+  "priorContactWorldHandSHA256": "04d313f87b0087183ec7a30738c0b54025d82772773084da1f06316bdbcdd5cd",
   "handPoseConfigSHA256": "601b6da6edb1d41982ae310ac64e84d7ee999a57d874344b9eef7433384aa84c",
-  "handSurfaceConfigSHA256": "52c774af39c0cefb6036cc83bfb9a43e648d92d622bd1a226f351d3c4123002a",
-  "integratedConfigSHA256": "558d02deba693c4511c237766a4bb9ab13dff874950c3325190647443a62fe76",
-  "sourceMapping": "Rebase includes unrelated #1916 AVATAR_SURFACE only; Full HAND pose block and HAND_SURFACE art block byte-identical to measured candidate. Hand differs only in the corrected explanatory applySleeves comment, verified by restoring that exact comment before hash comparison. Green scoped checks reused.",
+  "integratedConfigSHA256": "bcb395a633f1daa645024a81ce7297d8d958882a853ab3841ce12883f239ed38",
+  "sourceMapping": "Candidate actual buffers/poses/counts byte-identical in eight cases to published fef5ad53; exact source normalization proves only density constants moved to config. That revision differs from prior Contact/World source only by a corrected comment. Full HAND pose block unchanged; irrelevant Avatar additions do not affect these consumers.",
   "status": "passed scoped acceptance with independently filed fixture limitations",
   "checks": {
-    "pairedConsumer": "24 matching cameras/poses, finite shared geometry, equal calls/lower triangles; zero page errors",
+    "pairedConsumer": "24 matching finite cameras/poses, shared geometry, equal calls/lower triangles; zero page errors; corrected palm explicit grip and full pose finite guard",
+    "geometryEquivalence": "8 actual states, all index/attribute/morph buffers byte-identical, matching finite pose/counts",
     "contacts": "33 numeric contract checks +15 rendered product item states; passed",
     "providers": "actual wall/swing/held priority and complete transforms/morphs identical; passed",
-    "mainWorld": "passed",
-    "ringWrist": "script success, 36 cases; blank palm NOT counted as visual pass, #1933",
+    "mainWorld": "passed with actual hand/Cup render callbacks",
+    "ringWrist": "script success, 36 cases; blank palm NOT visual pass, #1933",
     "extraWebPlayer": "FAILED exit1: R.overhead missing in old roof stub; #1932"
   },
-  "review": "Root opened before/after whole palm/back, normal reach/hug, bare arm, wet/suit/accessories, native Cup, ring/wrist hug and actual World reach/Cup. Continuous finger joints and palm/wrist shape improve; still stylized. Initial artificial teleport fixture used stale detail matrices, so visible=true was inadequate; only final successful refreshed World images with actual draw callbacks retained.",
+  "review": "Root opened whole palm/back before/after, normal reach/hug, bare arm, wet/suit/accessories, native Cup, ring/wrist hug and actual World reach/Cup. Corrected normal/whole palm images opened after new full paired capture. Initial new fixture empty palm Object3D yielded NaN and blank image; that result was rejected, corrected with valid explicit grip and finite pose/camera assertion. Continuous finger joints and palm/wrist shape improve; still stylized.",
   "public": "not applicable, original-only gameplay hands",
   "retainedGeometryExtraCacheBytes": 5256,
-  "limits": "Controlled SwiftShader is not phone/native GPU/total heap/World FPS; construction +7.7ms cold/+5.3ms warm median separately disclosed."
+  "limits": "Controlled SwiftShader is not phone/native GPU/total heap/World FPS; construction extra +13.3ms cold/+3.3ms warm median separately disclosed."
 }

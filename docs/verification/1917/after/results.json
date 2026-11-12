@@ -1,7 +1,7 @@
 {
   "phase": "after",
-  "head": "6c445258cb0ad6bb72832caae7cbdfd9e0ee9145",
-  "handSHA256": "04d313f87b0087183ec7a30738c0b54025d82772773084da1f06316bdbcdd5cd",
+  "head": "fef5ad5377b2aac68605607d71abeef2bb8ee55b",
+  "handSHA256": "a4ab8914a060f7fb0f76184e18674fe1ad4f4876133830897722c359c271ab75",
   "environment": {
     "browser": "156.0.8078.4",
     "renderer": "SwiftShader",
@@ -278,9 +278,9 @@
         0
       ],
       "rightPosition": [
-        null,
-        null,
-        null
+        0.02370291674791708,
+        -0.15433382749601982,
+        -0.3749644581789575
       ],
       "leftPosition": [
         0,
@@ -289,14 +289,14 @@
       ],
       "geometryShared": true,
       "inspectionPosition": [
-        null,
-        null,
-        null
+        0.02224451902774028,
+        0.32117143597131603,
+        -0.5065608771687967
       ],
       "inspectionTarget": [
-        null,
-        null,
-        null
+        0.007770156709777883,
+        -0.14693528734378614,
+        -0.405236702251422
       ]
     },
     {
@@ -319,9 +319,9 @@
         0
       ],
       "rightPosition": [
-        null,
-        null,
-        null
+        0.02370291674791708,
+        -0.15433382749601982,
+        -0.3749644581789575
       ],
       "leftPosition": [
         0,
@@ -330,14 +330,14 @@
       ],
       "geometryShared": true,
       "inspectionPosition": [
-        null,
-        null,
-        null
+        0.02224451902774028,
+        0.32117143597131603,
+        -0.5065608771687967
       ],
       "inspectionTarget": [
-        null,
-        null,
-        null
+        0.007770156709777883,
+        -0.14693528734378614,
+        -0.405236702251422
       ]
     },
     {
@@ -360,9 +360,9 @@
         0
       ],
       "rightPosition": [
-        null,
-        null,
-        null
+        0.02370291674791708,
+        -0.15433382749601982,
+        -0.3749644581789575
       ],
       "leftPosition": [
         0,
@@ -371,14 +371,14 @@
       ],
       "geometryShared": true,
       "inspectionPosition": [
-        null,
-        null,
-        null
+        -0.06439383645749269,
+        -0.5389427405216275,
+        -0.6711737525907395
       ],
       "inspectionTarget": [
-        null,
-        null,
-        null
+        0.007770156709777883,
+        -0.14693528734378614,
+        -0.405236702251422
       ]
     },
     {
@@ -1002,10 +1002,10 @@
       "frames": 100,
       "intervalMs": {
         "median": 16.699999999999818,
-        "p95": 16.700000000000273
+        "p95": 16.800000000000182
       },
       "updateRenderFinishMs": {
-        "median": 0.2999999998137355,
+        "median": 0.30000000074505806,
         "p95": 0.5
       },
       "scope": "Actual Hand.update/render; fixed1000×700 DPR1, SwiftShader, controlled scene, synchronous finish. Not World, native GPU or phone FPS."
@@ -1017,8 +1017,8 @@
         "p95": 16.799999999999272
       },
       "updateRenderFinishMs": {
-        "median": 0.20000000018626451,
-        "p95": 0.40000000037252903
+        "median": 0.2999999998137355,
+        "p95": 0.39999999944120646
       },
       "scope": "Actual Hand.update/render; fixed1000×700 DPR1, SwiftShader, controlled scene, synchronous finish. Not World, native GPU or phone FPS."
     },
@@ -1026,25 +1026,25 @@
       "frames": 100,
       "intervalMs": {
         "median": 16.699999999999818,
-        "p95": 16.700000000000728
+        "p95": 16.800000000000182
       },
       "updateRenderFinishMs": {
-        "median": 0.2999999998137355,
-        "p95": 0.40000000037252903
+        "median": 0.20000000018626451,
+        "p95": 0.30000000074505806
       },
       "scope": "Actual Hand.update/render; fixed1000×700 DPR1, SwiftShader, controlled scene, synchronous finish. Not World, native GPU or phone FPS."
     }
   ],
   "construction": {
-    "coldMs": 47.39999999944121,
-    "warmMedianMs": 16.800000000745058,
-    "warmMaxMs": 31.699999999254942,
+    "coldMs": 49.700000000186265,
+    "warmMedianMs": 13.799999999813735,
+    "warmMaxMs": 22.100000000558794,
     "samples": [
-      14.200000000186265,
-      15,
-      16.800000000745058,
-      22.399999999441206,
-      31.699999999254942
+      12.900000000372529,
+      13.699999999254942,
+      13.799999999813735,
+      16.59999999962747,
+      22.100000000558794
     ],
     "scope": "Synchronous Hand constructor only, no renderer upload/World startup or hardware extrapolation."
   },
