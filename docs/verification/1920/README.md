@@ -103,9 +103,11 @@ Representative result images: [quarter](quarter.png), [side](side.png),
 [head left](headleft.png), [head right](headright.png), [far LOD](far.png),
 [all ten binder models](binder.png), [missing GLB](fallback-quarter.png),
 [fallback eat](fallback-eat.png), [fallback far](fallback-far.png).
-Before images under `before/` are temporary issue evidence; remove at closure
-after their revision-pinned images have been posted. Result images follow the
-30-day policy. JSON/this text remain.
+Before images were removed at closure after their revision-pinned publication:
+[whole before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/c6ac53418862497c131efba43097d806b3af95e1/docs/verification/1920/before/quarter.png),
+[normal before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/c6ac53418862497c131efba43097d806b3af95e1/docs/verification/1920/before/normal.png).
+[Completion with eight embedded images and green deployment](https://github.com/solwation/lunden-3d-apartment/issues/1920#issuecomment-6820354842).
+Result images follow the 30-day policy. JSON/this text remain.
 
 From a server serving the checkout on 8201 with Three.js import maps available:
 
