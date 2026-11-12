@@ -1,0 +1,30 @@
+<!doctype html><meta charset="utf-8"><title>Production gull component #1924</title>
+<style>body{margin:0;background:#b8d5e5}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/__three/build/three.module.js","three/addons/":"/__three/examples/jsm/"}}</script>
+<script type="module">
+import * as T from 'three';
+import {Birds} from '../src/birds.js';
+import {BIRDS} from '../src/config.js';
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(800,600);renderer.setPixelRatio(1);renderer.outputColorSpace=T.SRGBColorSpace;document.body.append(renderer.domElement);
+const scene=new T.Scene();scene.background=new T.Color('#b8d5e5');const camera=new T.PerspectiveCamera(70,4/3,.05,1500);
+const day={daylight:1,above:0,overcast:0,uniforms:{uWhite:{value:0}}};
+let birds;
+function objects(){return [birds.mesh,birds.nearMesh].filter(Boolean)}
+function set(view='ground',time=1,lowMemory=false){
+ if(birds)for(const m of objects()){scene.remove(m);m.geometry.dispose();m.material.dispose()}
+ birds=new Birds({scene,camera,day,center:BIRDS.center,lowMemory});birds.time=time;birds.fade=1;
+ const seeds=birds.seeds?.a??birds.mesh.geometry.attributes.aSeed.array;
+ const a=seeds[0]+time*seeds[3],r=seeds[1],target=new T.Vector3(BIRDS.center.x+Math.cos(a)*r,seeds[2]+Math.sin(time*.31+seeds[0]*3)*2.5,BIRDS.center.z+Math.sin(a)*r);
+ const fwd=new T.Vector3(-Math.sin(a)*Math.sign(seeds[3]),0,Math.cos(a)*Math.sign(seeds[3])),right=new T.Vector3(-fwd.z,0,fwd.x);
+ if(view==='ground')camera.position.set(-30,1.62,25);
+ else if(view==='front')camera.position.copy(target).addScaledVector(fwd,5).addScaledVector(new T.Vector3(0,1,0),.3);
+ else if(view==='side')camera.position.copy(target).addScaledVector(right,5).addScaledVector(new T.Vector3(0,1,0),.3);
+ else camera.position.copy(target).addScaledVector(right,3).addScaledVector(fwd,4).addScaledVector(new T.Vector3(0,1,0),1.7);
+ camera.lookAt(target);camera.updateMatrixWorld(true);birds.update(0,0,false);scene.updateMatrixWorld(true);renderer.render(scene,camera);
+ return {target:target.toArray(),camera:camera.position.toArray(),time,view,lowMemory};
+}
+function stats(){const arrays=new Set(),textures=new Set();for(const o of objects()){for(const at of [...Object.values(o.geometry.attributes),o.geometry.index].filter(Boolean))arrays.add(at.array);for(const v of Object.values(o.material))if(v?.isTexture)textures.add(v)}if(birds.seeds){arrays.add(birds.seeds.a);arrays.add(birds.seeds.b)}return{calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,rawBytes:[...arrays].reduce((s,a)=>s+a.byteLength,0),textures:textures.size,count:birds.count,finite:[...camera.matrixWorld.elements,...camera.projectionMatrix.elements,...camera.matrixWorldInverse.elements].every(Number.isFinite)&&objects().every(m=>m.matrixWorld.elements.every(Number.isFinite)&&Object.values(m.geometry.attributes).every(a=>Array.from(a.array).every(Number.isFinite))),lod:birds.lodCounts??{far:birds.count,near:0}}}
+function pixels(){const gl=renderer.getContext(),arr=new Uint8Array(800*600*4);renderer.render(scene,camera);gl.readPixels(0,0,800,600,gl.RGBA,gl.UNSIGNED_BYTE,arr);const visible=objects().map(o=>o.visible);objects().forEach(o=>o.visible=false);renderer.render(scene,camera);const blank=new Uint8Array(arr.length);gl.readPixels(0,0,800,600,gl.RGBA,gl.UNSIGNED_BYTE,blank);objects().forEach((o,i)=>o.visible=visible[i]);renderer.render(scene,camera);let changed=0;for(let i=0;i<arr.length;i+=4)if(Math.abs(arr[i]-blank[i])+Math.abs(arr[i+1]-blank[i+1])+Math.abs(arr[i+2]-blank[i+2])>3)changed++;return changed}
+window.gullEvidence={renderer,scene,camera,day,set,stats,pixels,get birds(){return birds}};
+set();window.__ready=true;
+</script>
