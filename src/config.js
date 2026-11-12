@@ -7679,6 +7679,7 @@ export const NUT_DROPS = { max:18, worldMs:20*60*1000, answerMs:6000, retryMs:15
 // #1920: authored red-squirrel surface estimates (guess), retaining the original
 // nose/feet/haunch and seven-tail-joint frames. Static shared per-look geometry.
 export const SQUIRREL_SURFACE = {
+  bellyBlend: [-.45,.25],
   radial: { near: 16, far: 12 },
   // z, centre y, half-width, half-height; continuous trunk and tapered face.
   body: [[-.12,.07,.015,.028],[-.085,.075,.044,.049],[-.04,.085,.043,.048],[.025,.094,.036,.043],[.065,.105,.028,.035],[.085,.12,.019,.023]],

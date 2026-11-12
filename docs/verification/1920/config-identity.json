@@ -1,0 +1,494 @@
+{
+  "scope": "All10 looks x near/far x rig/fallback, every attribute/index/morph byte plus neutral GLB before/after central belly colour thresholds and comment-only refresh",
+  "before": [
+    {
+      "name": "Den stora",
+      "far": false,
+      "rigged": false,
+      "hash": "84d26ffc01d08c48f793bbdb57943516bacc50d07e61804a7b00ce21bde49ad4"
+    },
+    {
+      "name": "Den stora",
+      "far": false,
+      "rigged": true,
+      "hash": "f286e24caab08ada469f926007ecf42e94de229e6f5ebc09c18a202318764c1c"
+    },
+    {
+      "name": "Den stora",
+      "far": true,
+      "rigged": false,
+      "hash": "15b1c3ad55d429231dc1a3ced0489d6b16f8cf8ca544c5831dc9d5a5db3a340c"
+    },
+    {
+      "name": "Den stora",
+      "far": true,
+      "rigged": true,
+      "hash": "0517bdebc684d5655f6cd8edc35808a4a2fb21157ab978eaf3a94dee998fc6a6"
+    },
+    {
+      "name": "Vitsvansen",
+      "far": false,
+      "rigged": false,
+      "hash": "aaeaee5730550f3479ae58b22a0ac30b4b7acf7f0e83ef50482a5427151153b4"
+    },
+    {
+      "name": "Vitsvansen",
+      "far": false,
+      "rigged": true,
+      "hash": "a04eac151e3f2b5a007902c0a61d99b861bccb28035d715cdd5062036a884b14"
+    },
+    {
+      "name": "Vitsvansen",
+      "far": true,
+      "rigged": false,
+      "hash": "6e90776efdebfe5fcdab7d522a62c5eb56556562ade0a81a4e2a32aee3b388e8"
+    },
+    {
+      "name": "Vitsvansen",
+      "far": true,
+      "rigged": true,
+      "hash": "7916485f291120b2da80d769e0d651126b5e20a1622f304d21d736db50145080"
+    },
+    {
+      "name": "Den smala",
+      "far": false,
+      "rigged": false,
+      "hash": "f5f465a8a77dd4e2b43fdf81e67e531d3e55a571298f4253463b27b10cecc909"
+    },
+    {
+      "name": "Den smala",
+      "far": false,
+      "rigged": true,
+      "hash": "c293f63354d79bdc6fa6788720b91d9053245e76433906a21f2e8e87d26d0e26"
+    },
+    {
+      "name": "Den smala",
+      "far": true,
+      "rigged": false,
+      "hash": "fd7a323c023ebd4e06b180f4b9b2f061a72f207d689ae849fa887c1d45c041b8"
+    },
+    {
+      "name": "Den smala",
+      "far": true,
+      "rigged": true,
+      "hash": "b5417495352e34320f92d66b07f199ea48f73f742f8ae8fc4c4e26df7757ef25"
+    },
+    {
+      "name": "Parkekorren",
+      "far": false,
+      "rigged": false,
+      "hash": "4a4ad85315622425a043a69b92cac4ceb604c871b7f27b057131a9a24047f3fb"
+    },
+    {
+      "name": "Parkekorren",
+      "far": false,
+      "rigged": true,
+      "hash": "f442bf79bb556d439ce2e150ab1a08ff350b8c48e7d586e5d100664a4d659491"
+    },
+    {
+      "name": "Parkekorren",
+      "far": true,
+      "rigged": false,
+      "hash": "9f9fde6b3fa57b4d4e2742dcd6be8cc00319590a854b8df8cc955fbb04127703"
+    },
+    {
+      "name": "Parkekorren",
+      "far": true,
+      "rigged": true,
+      "hash": "d6e0a0bb6735213dbde790a7e1b36f4adebceb3b13fbb78abb69a55b1b5a2f33"
+    },
+    {
+      "name": "G\u00e5rdsekorren",
+      "far": false,
+      "rigged": false,
+      "hash": "a7488a9c5171a45c878c2ed59dfed584d0c2c9e2d8262449d4de27863a2b2829"
+    },
+    {
+      "name": "G\u00e5rdsekorren",
+      "far": false,
+      "rigged": true,
+      "hash": "267ef773d9035ee3aa892c133177c2197df23fb691ddb33deb4fa0b773407fcc"
+    },
+    {
+      "name": "G\u00e5rdsekorren",
+      "far": true,
+      "rigged": false,
+      "hash": "0c0c6731c19875b9980adb0adf4d20258dcac04d147d1d08d4c930fb248d8a0e"
+    },
+    {
+      "name": "G\u00e5rdsekorren",
+      "far": true,
+      "rigged": true,
+      "hash": "a8c4f2bb146e989048630adbc8f7f566e9e357f3f7b290e6187ed8560850d25d"
+    },
+    {
+      "name": "Tofsen",
+      "far": false,
+      "rigged": false,
+      "hash": "89defb0668ef8c43cf2a26ce55afe04e4acfd5d797163a9f73954065c82426dc"
+    },
+    {
+      "name": "Tofsen",
+      "far": false,
+      "rigged": true,
+      "hash": "ce7d447465a6a89c599aa70d993bbb97139c78c39e091d1f6a55d7f2b63c26df"
+    },
+    {
+      "name": "Tofsen",
+      "far": true,
+      "rigged": false,
+      "hash": "0d74ffdb4dc6ba511063575dc14ebd4dca50ae5687b168cdf15c710cf9f3b7b5"
+    },
+    {
+      "name": "Tofsen",
+      "far": true,
+      "rigged": true,
+      "hash": "3065386bc72c8ac9b69f2ccd0ae372df9e434fe54ee74e2d3f149a82bb6165ff"
+    },
+    {
+      "name": "Klockan",
+      "far": false,
+      "rigged": false,
+      "hash": "1c2e5fbbf6df5ba92a8917d1047ab0a054419bee524a58195436c139d48577d8"
+    },
+    {
+      "name": "Klockan",
+      "far": false,
+      "rigged": true,
+      "hash": "1ad594b99315d052b2615489419ebf4e1c545510e34024d789589f6def84c84d"
+    },
+    {
+      "name": "Klockan",
+      "far": true,
+      "rigged": false,
+      "hash": "cb3f2366e4e00b55a51c8c622f30ce4ea954aef4f8f09b208d59d2f49693476a"
+    },
+    {
+      "name": "Klockan",
+      "far": true,
+      "rigged": true,
+      "hash": "035813a8ca3d20e64ddce25ecc41f9593296ec06194d7bde21a47a5fc66e33cc"
+    },
+    {
+      "name": "R\u00f6dp\u00e4lsen",
+      "far": false,
+      "rigged": false,
+      "hash": "62fb60e023967a3108fc3364e2f87b638053f04611c564bd7cf0a79658376a9c"
+    },
+    {
+      "name": "R\u00f6dp\u00e4lsen",
+      "far": false,
+      "rigged": true,
+      "hash": "e86ba2ee4c80f817709851498800bac9c62c3d612b8e54b5fd79c4be5f993e96"
+    },
+    {
+      "name": "R\u00f6dp\u00e4lsen",
+      "far": true,
+      "rigged": false,
+      "hash": "e135ffa0ae29d4d3c5ea02e3601cd7edb6fa78951ab8c148809b755d27179523"
+    },
+    {
+      "name": "R\u00f6dp\u00e4lsen",
+      "far": true,
+      "rigged": true,
+      "hash": "a143375ea3896fbcc2202626376436e26de68789d832ff5585374180063e6c3c"
+    },
+    {
+      "name": "Svartsvansen",
+      "far": false,
+      "rigged": false,
+      "hash": "a137553e84c10314e5eb86f2f697bc71f8244efd6bae0a8a3b27d0fabcd89422"
+    },
+    {
+      "name": "Svartsvansen",
+      "far": false,
+      "rigged": true,
+      "hash": "7898dbf6ee91da4fd022f94d28d879a4131a362971ef83045a1c9757312b5811"
+    },
+    {
+      "name": "Svartsvansen",
+      "far": true,
+      "rigged": false,
+      "hash": "86d3530c398048d5ce9fb10e21615ef7c65bb1068226195f2c38d0f47b3bd342"
+    },
+    {
+      "name": "Svartsvansen",
+      "far": true,
+      "rigged": true,
+      "hash": "7a2aca70414c695c8b33c6c0d8b2f610dbc8f9842f87b40a15dc67bded7b6239"
+    },
+    {
+      "name": "Ljusbuken",
+      "far": false,
+      "rigged": false,
+      "hash": "ae0eb643d80f217038d84679482c8497b6f3952c494d39f6ca0b66efd2fc4ca6"
+    },
+    {
+      "name": "Ljusbuken",
+      "far": false,
+      "rigged": true,
+      "hash": "0bafc6da4ccb2c165657b8f75ae4900ad94cf1c4ce813229c568f44ca3f2eaac"
+    },
+    {
+      "name": "Ljusbuken",
+      "far": true,
+      "rigged": false,
+      "hash": "56483b2f665d6e3240920e28e1a5ecac8b709ca88d5f09d97be46fcc9f93d0b8"
+    },
+    {
+      "name": "Ljusbuken",
+      "far": true,
+      "rigged": true,
+      "hash": "b1f2e3e0a557f94621d5142c1059eec957e9bb1847b5adef9b46f9867e8f6437"
+    },
+    {
+      "glb": "ad864c66c7e11405033c2a7d1a74e26c78f26f7b27f707d8a25aeb29c1524b2b"
+    }
+  ],
+  "after": [
+    {
+      "name": "Den stora",
+      "far": false,
+      "rigged": false,
+      "hash": "84d26ffc01d08c48f793bbdb57943516bacc50d07e61804a7b00ce21bde49ad4"
+    },
+    {
+      "name": "Den stora",
+      "far": false,
+      "rigged": true,
+      "hash": "f286e24caab08ada469f926007ecf42e94de229e6f5ebc09c18a202318764c1c"
+    },
+    {
+      "name": "Den stora",
+      "far": true,
+      "rigged": false,
+      "hash": "15b1c3ad55d429231dc1a3ced0489d6b16f8cf8ca544c5831dc9d5a5db3a340c"
+    },
+    {
+      "name": "Den stora",
+      "far": true,
+      "rigged": true,
+      "hash": "0517bdebc684d5655f6cd8edc35808a4a2fb21157ab978eaf3a94dee998fc6a6"
+    },
+    {
+      "name": "Vitsvansen",
+      "far": false,
+      "rigged": false,
+      "hash": "aaeaee5730550f3479ae58b22a0ac30b4b7acf7f0e83ef50482a5427151153b4"
+    },
+    {
+      "name": "Vitsvansen",
+      "far": false,
+      "rigged": true,
+      "hash": "a04eac151e3f2b5a007902c0a61d99b861bccb28035d715cdd5062036a884b14"
+    },
+    {
+      "name": "Vitsvansen",
+      "far": true,
+      "rigged": false,
+      "hash": "6e90776efdebfe5fcdab7d522a62c5eb56556562ade0a81a4e2a32aee3b388e8"
+    },
+    {
+      "name": "Vitsvansen",
+      "far": true,
+      "rigged": true,
+      "hash": "7916485f291120b2da80d769e0d651126b5e20a1622f304d21d736db50145080"
+    },
+    {
+      "name": "Den smala",
+      "far": false,
+      "rigged": false,
+      "hash": "f5f465a8a77dd4e2b43fdf81e67e531d3e55a571298f4253463b27b10cecc909"
+    },
+    {
+      "name": "Den smala",
+      "far": false,
+      "rigged": true,
+      "hash": "c293f63354d79bdc6fa6788720b91d9053245e76433906a21f2e8e87d26d0e26"
+    },
+    {
+      "name": "Den smala",
+      "far": true,
+      "rigged": false,
+      "hash": "fd7a323c023ebd4e06b180f4b9b2f061a72f207d689ae849fa887c1d45c041b8"
+    },
+    {
+      "name": "Den smala",
+      "far": true,
+      "rigged": true,
+      "hash": "b5417495352e34320f92d66b07f199ea48f73f742f8ae8fc4c4e26df7757ef25"
+    },
+    {
+      "name": "Parkekorren",
+      "far": false,
+      "rigged": false,
+      "hash": "4a4ad85315622425a043a69b92cac4ceb604c871b7f27b057131a9a24047f3fb"
+    },
+    {
+      "name": "Parkekorren",
+      "far": false,
+      "rigged": true,
+      "hash": "f442bf79bb556d439ce2e150ab1a08ff350b8c48e7d586e5d100664a4d659491"
+    },
+    {
+      "name": "Parkekorren",
+      "far": true,
+      "rigged": false,
+      "hash": "9f9fde6b3fa57b4d4e2742dcd6be8cc00319590a854b8df8cc955fbb04127703"
+    },
+    {
+      "name": "Parkekorren",
+      "far": true,
+      "rigged": true,
+      "hash": "d6e0a0bb6735213dbde790a7e1b36f4adebceb3b13fbb78abb69a55b1b5a2f33"
+    },
+    {
+      "name": "G\u00e5rdsekorren",
+      "far": false,
+      "rigged": false,
+      "hash": "a7488a9c5171a45c878c2ed59dfed584d0c2c9e2d8262449d4de27863a2b2829"
+    },
+    {
+      "name": "G\u00e5rdsekorren",
+      "far": false,
+      "rigged": true,
+      "hash": "267ef773d9035ee3aa892c133177c2197df23fb691ddb33deb4fa0b773407fcc"
+    },
+    {
+      "name": "G\u00e5rdsekorren",
+      "far": true,
+      "rigged": false,
+      "hash": "0c0c6731c19875b9980adb0adf4d20258dcac04d147d1d08d4c930fb248d8a0e"
+    },
+    {
+      "name": "G\u00e5rdsekorren",
+      "far": true,
+      "rigged": true,
+      "hash": "a8c4f2bb146e989048630adbc8f7f566e9e357f3f7b290e6187ed8560850d25d"
+    },
+    {
+      "name": "Tofsen",
+      "far": false,
+      "rigged": false,
+      "hash": "89defb0668ef8c43cf2a26ce55afe04e4acfd5d797163a9f73954065c82426dc"
+    },
+    {
+      "name": "Tofsen",
+      "far": false,
+      "rigged": true,
+      "hash": "ce7d447465a6a89c599aa70d993bbb97139c78c39e091d1f6a55d7f2b63c26df"
+    },
+    {
+      "name": "Tofsen",
+      "far": true,
+      "rigged": false,
+      "hash": "0d74ffdb4dc6ba511063575dc14ebd4dca50ae5687b168cdf15c710cf9f3b7b5"
+    },
+    {
+      "name": "Tofsen",
+      "far": true,
+      "rigged": true,
+      "hash": "3065386bc72c8ac9b69f2ccd0ae372df9e434fe54ee74e2d3f149a82bb6165ff"
+    },
+    {
+      "name": "Klockan",
+      "far": false,
+      "rigged": false,
+      "hash": "1c2e5fbbf6df5ba92a8917d1047ab0a054419bee524a58195436c139d48577d8"
+    },
+    {
+      "name": "Klockan",
+      "far": false,
+      "rigged": true,
+      "hash": "1ad594b99315d052b2615489419ebf4e1c545510e34024d789589f6def84c84d"
+    },
+    {
+      "name": "Klockan",
+      "far": true,
+      "rigged": false,
+      "hash": "cb3f2366e4e00b55a51c8c622f30ce4ea954aef4f8f09b208d59d2f49693476a"
+    },
+    {
+      "name": "Klockan",
+      "far": true,
+      "rigged": true,
+      "hash": "035813a8ca3d20e64ddce25ecc41f9593296ec06194d7bde21a47a5fc66e33cc"
+    },
+    {
+      "name": "R\u00f6dp\u00e4lsen",
+      "far": false,
+      "rigged": false,
+      "hash": "62fb60e023967a3108fc3364e2f87b638053f04611c564bd7cf0a79658376a9c"
+    },
+    {
+      "name": "R\u00f6dp\u00e4lsen",
+      "far": false,
+      "rigged": true,
+      "hash": "e86ba2ee4c80f817709851498800bac9c62c3d612b8e54b5fd79c4be5f993e96"
+    },
+    {
+      "name": "R\u00f6dp\u00e4lsen",
+      "far": true,
+      "rigged": false,
+      "hash": "e135ffa0ae29d4d3c5ea02e3601cd7edb6fa78951ab8c148809b755d27179523"
+    },
+    {
+      "name": "R\u00f6dp\u00e4lsen",
+      "far": true,
+      "rigged": true,
+      "hash": "a143375ea3896fbcc2202626376436e26de68789d832ff5585374180063e6c3c"
+    },
+    {
+      "name": "Svartsvansen",
+      "far": false,
+      "rigged": false,
+      "hash": "a137553e84c10314e5eb86f2f697bc71f8244efd6bae0a8a3b27d0fabcd89422"
+    },
+    {
+      "name": "Svartsvansen",
+      "far": false,
+      "rigged": true,
+      "hash": "7898dbf6ee91da4fd022f94d28d879a4131a362971ef83045a1c9757312b5811"
+    },
+    {
+      "name": "Svartsvansen",
+      "far": true,
+      "rigged": false,
+      "hash": "86d3530c398048d5ce9fb10e21615ef7c65bb1068226195f2c38d0f47b3bd342"
+    },
+    {
+      "name": "Svartsvansen",
+      "far": true,
+      "rigged": true,
+      "hash": "7a2aca70414c695c8b33c6c0d8b2f610dbc8f9842f87b40a15dc67bded7b6239"
+    },
+    {
+      "name": "Ljusbuken",
+      "far": false,
+      "rigged": false,
+      "hash": "ae0eb643d80f217038d84679482c8497b6f3952c494d39f6ca0b66efd2fc4ca6"
+    },
+    {
+      "name": "Ljusbuken",
+      "far": false,
+      "rigged": true,
+      "hash": "0bafc6da4ccb2c165657b8f75ae4900ad94cf1c4ce813229c568f44ca3f2eaac"
+    },
+    {
+      "name": "Ljusbuken",
+      "far": true,
+      "rigged": false,
+      "hash": "56483b2f665d6e3240920e28e1a5ecac8b709ca88d5f09d97be46fcc9f93d0b8"
+    },
+    {
+      "name": "Ljusbuken",
+      "far": true,
+      "rigged": true,
+      "hash": "b1f2e3e0a557f94621d5142c1059eec957e9bb1847b5adef9b46f9867e8f6437"
+    },
+    {
+      "glb": "ad864c66c7e11405033c2a7d1a74e26c78f26f7b27f707d8a25aeb29c1524b2b"
+    }
+  ],
+  "identical": true
+}

@@ -125,3 +125,15 @@ change and share its proven identical geometry. Generic surface/LOD/export
 improvements are applicable to a separately scoped public low-priority port;
 exclude original names/personalities and all nut/feeding/scoring/sync gameplay
 and services. Root owns that port issue and original publication/integration.
+
+## Root integration review
+
+Root opened the final whole/side/normal/eat/climb/binder/head-turn/far/fallback
+views and compared the original eat/normal images. All nine numeric mouth/paw
+anchors match exactly. Main rebase preserves the relevant SQUIRRELS/PADDOCK/SITE/
+WALK values; independent pony/duck art blocks do not affect these consumers.
+The remaining belly colour thresholds were moved to central config after capture:
+all 40 look/LOD/rig/fallback geometries including morphs and the neutral GLB
+remain byte identical ([proof](config-identity.json)). A stale comment alone was
+updated. [Source mapping](integration.json). Changelog renumbered to 1480 after
+final main fetch; no product change requires a repeat broad test run.

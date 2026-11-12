@@ -62,7 +62,7 @@ function surfaceLoft(rows, radial, spec, rnd, fur) {
   const positions=[],colors=[],indices=[],coat=new THREE.Color(spec.color),belly=new THREE.Color(spec.belly),color=new THREE.Color();
   for(const [z,y,w,h] of rows)for(let j=0;j<radial;j++) {
     const a=j*Math.PI*2/radial,ny=Math.cos(a);positions.push(Math.sin(a)*w*spec.width,y+ny*h,z);
-    color.copy(belly).lerp(coat,THREE.MathUtils.smoothstep(ny,-.45,.25));if(fur)color.multiplyScalar(1+(rnd()-.5)*2*fur);color.toArray(colors,colors.length);
+    color.copy(belly).lerp(coat,THREE.MathUtils.smoothstep(ny,...SS.bellyBlend));if(fur)color.multiplyScalar(1+(rnd()-.5)*2*fur);color.toArray(colors,colors.length);
   }
   for(let i=0;i<rows.length-1;i++)for(let j=0;j<radial;j++) {
     const a=i*radial+j,b=i*radial+(j+1)%radial,c=a+radial,d=b+radial;indices.push(a,c,b,b,c,d);
@@ -89,8 +89,8 @@ function tailSurface(curve,s,far) {
 }
 
 /** One squirrel's parts, metres, feet at y 0, nose +z, body about 22 cm and a 20 cm bushy tail curled over the back. #1716: a head with cheeks,
- * muzzle, nose, shining eyes and tufted ears, fore legs with paws, hind legs with long feet, a mottled coat and a fluffy tail (a core of soft
- * blobs and many hair tufts frosted at the tips; the tail tip coloured per animal). `far`: the cheaper distant version. `pose`: { flick } the tail
+ * tapered face, nose, inset eyes and tufted ears, fore legs with paws, hind legs with long feet, a mottled coat and a closed curved plume
+ * with shallow fur flow and an individually coloured tail tip. `far`: the cheaper distant version. `pose`: { flick } the tail
  * flicked, { head: ±1 } the head turned left / right (the morph targets; every pose has the same vertices). */
 function squirrelParts(s, far, pose = {}) {
   const rnd = seeded(1716 + (far ? 7 : 0)), w = s.width, small = far ? [6, 4] : [7, 5], fur = far ? 0 : 0.07, head = [], body = [];
