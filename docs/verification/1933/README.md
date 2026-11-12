@@ -21,7 +21,7 @@ The baseline wrapper added only a read-only exposure of fixture state to its HTM
 module, and routed the pinned CDN imports to identical installed Three0.170 bytes;
 the CLI/Hand/geometry logic was unchanged. The baseline wrapper and full original
 image set were kept in the session's private scratch area. Three representative
-before images are committed under `before/`, including the truly blank palm.
+before images, including the truly blank palm, are [pinned at the published source](https://github.com/solwation/lunden-3d-apartment/tree/e43f6dd4a25b936051e27df22e27ca8626c78fc9/docs/verification/1933/before).
 
 ## Fixture correction and explicit diagnostic scope
 
@@ -105,3 +105,5 @@ resolving commit after that comment; result PNGs follow the ordinary30-day polic
 This worker supplies a local Refs handoff and stops its own server/browser processes.
 
 Root read the complete fixture/CLI and documentary delta and opened the blank baseline palm plus all six listed complete representative result images. [Integration identity](integration.json) proves all four executed sources and56evidence files exact after rebase; product Hand/config remain exact. The two green focused groups, including true subprocess exits0/1/1/1, are reused without a broad rerun. Current model/cache/history-link integrations are retained.
+
+[Published comparison/result evidence](https://github.com/solwation/lunden-3d-apartment/issues/1933#issuecomment-6822199378) embeds seven pinned HTTP200/image-type images after actual Pages success for `e43f6dd4a25b936051e27df22e27ca8626c78fc9`. No Worker is triggered. This resolving commit prunes all six own before/negative PNGs;36results retain30-day policy.
