@@ -296,6 +296,17 @@ Far away (beyond `drawDist` + `brain.margin`) the brain does not plan and the ca
 climbing and chasing, never in water or on a road, the shy one); browser `tools/outdoorcatstest.cjs` (7)–(9). Images:
 [docs/verification/1772](https://github.com/solwation/lunden-3d-apartment/issues/1772).
 
+### Butterfly surfaces (#1925)
+
+The existing yellow/orange chase companions use `src/butterflymodel.js` and the
+visual guesses in `BUTTERFLY_SURFACE`: one shared 82-triangle surface with a small
+body/antennae, wing contours and restrained vertex markings. `OutdoorCats.step`
+updates a single fold uniform while each wing pair turns around the body; the
+whole insect no longer narrows along X. Near/season/time/chase/visibility rules
+remain in the existing cat controller and brain. The collection uses the same
+surface/material recipe. Original-only ambient chase/gameplay: no public port.
+[Matched views, consumer checks, geometry/texture costs and limits](../verification/1925/README.md).
+
 ### Feeding the outdoor cats raw fish (#1782)
 
 A roaming cat eats a raw caught fish on its own, without becoming the ordinary cat, so it works while that cat is busy. main.js passes

@@ -6,13 +6,14 @@ import {catNoseShape,poseCatNuzzle} from './catnuzzlepose.js';
 import {Hearts} from './pingping.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { OUTDOOR_CATS, SEASON, CAT_FISH } from './config.js';
+import { OUTDOOR_CATS, SEASON, CAT_FISH, BUTTERFLY_SURFACE } from './config.js';
 import { BREEDS, createCatPuppet, catLabel } from './cat.js';
 import {prepareClimbContact,alignClimbContact} from './catclimb.js';
 import { OutdoorCatBrain, turnTo } from './outdoorcatbrain.js';
 import { registerSeasonal } from './seasons.js';
 import { catOut } from './footprinttrail.js';
 import { sfx } from './audio.js';
+import { butterflyGeometry, hingeButterfly, butterflyFold } from './butterflymodel.js';
 
 // #1767: outdoor cats. A few cats of their own roam the courtyard and the river park (OUTDOOR_CATS in config.js): each walks its loop
 // (outdoorcatroute.js, a pure function of the wall clock, so every visitor sees roughly the same cat), rests, washes, looks about or
@@ -134,7 +135,7 @@ export class OutdoorCats {
     group.traverse((o) => { if (o.isMesh) o.userData.noDetail = true; });
     this.scene.add(group);
     // #1772: the butterfly it chases (one mesh, drawn only near, only while it is about)
-    const bf = new THREE.Mesh(this.bfGeo, new THREE.MeshLambertMaterial({ color: spec.zone === 'innergården' ? 0xf2dc3c : 0xe8762a, side: THREE.DoubleSide })); // (a brimstone, a small tortoiseshell)
+    const bf = new THREE.Mesh(this.bfGeo, hingeButterfly(new THREE.MeshLambertMaterial({ color: spec.zone === 'innergården' ? BUTTERFLY_SURFACE.colors.yellow : BUTTERFLY_SURFACE.colors.orange, side: THREE.DoubleSide }))); // (a brimstone, a small tortoiseshell)
     Object.assign(bf, { visible: false, name: `butterfly-${spec.name}` }); bf.raycast = () => {}; bf.userData.noDetail = true;
     this.scene.add(bf);
     const c = new OutdoorCatBrain(spec, id, this.env);
@@ -327,7 +328,7 @@ export class OutdoorCats {
       bm.position.set(b.x, (Number.isFinite(by) ? by : 0) + b.y, b.z);
       bm.rotation.y = Math.atan2(b.x - (bm.userData.px ?? b.x), b.z - (bm.userData.pz ?? b.z)) || bm.rotation.y;
       bm.userData.px = b.x; bm.userData.pz = b.z;
-      bm.scale.set(0.25 + 0.75 * Math.abs(Math.sin(c.t * 16)), 1, 1); // its wings beat
+      bm.material.userData.butterflyFold.value = butterflyFold(c.t); // wings hinge; the body keeps its width
     }
   }
 
@@ -385,17 +386,6 @@ export class OutdoorCats {
   }
 }
 
-/** #1772: a small butterfly: two wings in a shallow V (its x scale beats them), 1 draw call. */
-function butterflyGeometry() {
-  const w = 0.085, h = 0.03, l = 0.055, p = [
-    0, 0, l, -w, h, 0.008, 0, 0, -0.01, 0, 0, l, w, h, 0.008, 0, 0, -0.01, // the fore wings
-    0, 0, 0, -w * 0.75, h, -l, 0, 0, -l, 0, 0, 0, w * 0.75, h, -l, 0, 0, -l, // the hind wings
-  ];
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3));
-  g.computeVertexNormals();
-  return g;
-}
 
-for(const [color,no,label] of [[0xf2dc3c,60,'Gul fjäril'],[0xe8762a,61,'Orange fjäril']]) creature({id:`butterfly:${no===60?'yellow':'orange'}`,no,interactive:false,name:label,family:'insects',model:{kind:'butterfly',color},info:{size:'Liten lågpolymodell',weight:'Mycket lätt',where:no===60?'Gården':'Parken',when:'När en katt spanar och jagar',likes:'Att fladdra framför katten'},facts:['Katten kan följa fjärilen med blicken och jaga den.','Bara sedd: denna fjäril har ingen egen spelarinteraktion.']});
+for(const [color,no,label] of [[BUTTERFLY_SURFACE.colors.yellow,60,'Gul fjäril'],[BUTTERFLY_SURFACE.colors.orange,61,'Orange fjäril']]) creature({id:`butterfly:${no===60?'yellow':'orange'}`,no,interactive:false,name:label,family:'insects',model:{kind:'butterfly',color},info:{size:'Liten lågpolymodell',weight:'Mycket lätt',where:no===60?'Gården':'Parken',when:'När en katt spanar och jagar',likes:'Att fladdra framför katten'},facts:['Katten kan följa fjärilen med blicken och jaga den.','Bara sedd: denna fjäril har ingen egen spelarinteraktion.']});
 export { butterflyGeometry };

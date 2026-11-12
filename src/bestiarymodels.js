@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { PADDOCK, SHARK } from './config.js';
+import { butterflyGeometry, hingeButterfly } from './butterflymodel.js';
 // Recipes use the production geometry and material factories; no gameplay constructors/timers/audio.
 export async function createBestiaryModel(recipe) {
  let object, sharedGeometry = false, ownTextures = false;
@@ -13,8 +14,8 @@ export async function createBestiaryModel(recipe) {
    const attr=(name,v,n)=>g.setAttribute(name,new THREE.InstancedBufferAttribute(new Float32Array(v),n));
    attr('aCoat',new THREE.Color(p.coat).toArray(),3);attr('aAccent',new THREE.Color(p.accent).toArray(),3);attr('aMark',[p.star?1:0],1);attr('aAnim',[0,0,0,0],4);attr('aAnim2',[0,0,0,0],4);
    object=new THREE.InstancedMesh(g,ponyMaterial(),1);object.setMatrixAt(0,new THREE.Matrix4()); break; }
-  case 'butterfly': object=mesh((await import('./outdoorcats.js')).butterflyGeometry(),new THREE.MeshLambertMaterial({color:recipe.color,side:THREE.DoubleSide}));break;
-  case 'magicButterfly': { const {TEXTURES}=await import('./marks.js'); object=mesh(new THREE.PlaneGeometry(1,.7),new THREE.MeshBasicMaterial({map:TEXTURES.butterfly(),transparent:true,side:THREE.DoubleSide}));ownTextures=true;break; }
+  case 'butterfly': object=mesh(butterflyGeometry(),hingeButterfly(new THREE.MeshLambertMaterial({color:recipe.color,side:THREE.DoubleSide})));break;
+  case 'magicButterfly': { const {TEXTURES}=await import('./marks.js'); object=mesh(butterflyGeometry({magic:true}),hingeButterfly(new THREE.MeshBasicMaterial({map:TEXTURES.butterfly(),transparent:true,side:THREE.DoubleSide}),{magic:true}));ownTextures=true;break; }
   case 'gull': { const {gullGeometry}=await import('./gullmodel.js');object=mesh(gullGeometry(true),new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,side:THREE.DoubleSide}));sharedGeometry=true;break; }
   case 'santa': {const f=(await import('./santa.js')).santaFigure();object=f.object;f.text.material.map.dispose();f.text.material.dispose();ownTextures=true;break;}
   case 'olof': { const {buildOlof}=await import('./olof.js'); object=buildOlof().object;break; }

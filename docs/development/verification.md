@@ -308,6 +308,18 @@ legs-up yaw/pitch, fixed torso/feet, mirror agreement and standing reset. #1505 
 standing/walking/crouching/cycling pitch and mirror agreement. Inspect the paired
 head views. [Seated results](../validation/issue-1504/README.md), [pitch results](../validation/issue-1505/README.md). No broad scene or combat sweep.
 
+## Butterfly realism (#1925)
+
+`node --test tools/outdoorcatbraintest.mjs` retains time/season/chasing behaviour.
+Through `tools/browsertest.sh`, run `node tools/butterflyrealismtest.cjs BASE OUT`
+for frozen-source matched whole/front/side/normal/wing-phase images, actual
+OutdoorCats.step and Marks.Flutter costs/pixels, near/hidden gates, pool/fade and
+both collection recipes. `tools/butterflymagicboundstest.cjs BASE OUT` checks full
+shader-deformed magic vertex bounds through actual instance/model matrices at four
+phases; this catches an unused flat-plane Z scale enlarging a newly folded wing.
+Both full camera/projection matrices and intended pixels are checked. No broad World,
+cat-art or magic-network suite is required. [Source hashes, reviewed images and limits](../verification/1925/README.md).
+
 ## Santa realism (#1923)
 
 Run `node --test tools/santatest.mjs` and the focused browser checks through

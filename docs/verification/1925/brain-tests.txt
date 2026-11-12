@@ -1,0 +1,94 @@
+TAP version 13
+# social {"rest":0.34,"sleep":0.11,"seek":0.32,"explore":0.03,"stalk":0.09,"butterfly":0.05,"climb":0.05}
+# lazy {"rest":0.4,"sleep":0.22,"seek":0.18,"explore":0.05,"stalk":0.11,"butterfly":0.04,"climb":0}
+# playful {"rest":0.42,"sleep":0.11,"seek":0.09,"explore":0,"stalk":0.09,"butterfly":0.1,"climb":0.2}
+# shy {"rest":0.43,"sleep":0.12,"seek":0,"explore":0.25,"stalk":0.13,"butterfly":0.04,"climb":0.02}
+# social {
+#   nearShare: 0.215,
+#   top: 0,
+#   climbs: 0,
+#   chase: 907,
+#   states: 'route,seek,notice,home',
+#   bad: 0
+# }
+# lazy {
+#   nearShare: 0,
+#   top: 0,
+#   climbs: 0,
+#   chase: 2702,
+#   states: 'route,notice,home',
+#   bad: 0
+# }
+# playful {
+#   nearShare: 0,
+#   top: 2.6,
+#   climbs: 15,
+#   chase: 5403,
+#   states: 'route,notice,home',
+#   bad: 0
+# }
+# shy {
+#   nearShare: 0,
+#   top: 0,
+#   climbs: 0,
+#   chase: 2830,
+#   states: 'route,notice,home',
+#   bad: 0
+# }
+# Subtest: every cat has a personality with all five traits, and they differ
+ok 1 - every cat has a personality with all five traits, and they differ
+  ---
+  duration_ms: 2.176294
+  type: 'test'
+  ...
+# Subtest: the utility AI: needs steer the choice, spending a behaviour lowers its need
+ok 2 - the utility AI: needs steer the choice, spending a behaviour lowers its need
+  ---
+  duration_ms: 0.736898
+  type: 'test'
+  ...
+# Subtest: fixed seed: the same clock gives the same choice and the same pose on every client
+ok 3 - fixed seed: the same clock gives the same choice and the same pose on every client
+  ---
+  duration_ms: 53.121646
+  type: 'test'
+  ...
+# Subtest: each personality has a noticeably different mix of behaviours
+ok 4 - each personality has a noticeably different mix of behaviours
+  ---
+  duration_ms: 126.277733
+  type: 'test'
+  ...
+# Subtest: no butterflies at night or in winter months; no climbing without a tree
+ok 5 - no butterflies at night or in winter months; no climbing without a tree
+  ---
+  duration_ms: 9.000274
+  type: 'test'
+  ...
+# Subtest: in three hours: the social cat comes up to the visitor, the playful one climbs and chases, none goes into the water or onto the road
+ok 6 - in three hours: the social cat comes up to the visitor, the playful one climbs and chases, none goes into the water or onto the road
+  ---
+  duration_ms: 674.811637
+  type: 'test'
+  ...
+# Subtest: a shy cat keeps away from a moving visitor, and calms when the visitor stands still
+ok 7 - a shy cat keeps away from a moving visitor, and calms when the visitor stands still
+  ---
+  duration_ms: 1.880195
+  type: 'test'
+  ...
+# Subtest: \#1782 food: a social cat comes for a fish at once, a shy one hesitates until the visitor stands still; the road blocks the way
+ok 8 - \#1782 food: a social cat comes for a fish at once, a shy one hesitates until the visitor stands still; the road blocks the way
+  ---
+  duration_ms: 3.965088
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1230.25822

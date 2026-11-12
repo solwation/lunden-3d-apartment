@@ -1,8 +1,9 @@
 import { discoverCreature } from './bestiaryevents.js';
 import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
-import { MARKS as K } from './config.js';
+import { MARKS as K, BUTTERFLY_SURFACE } from './config.js';
 import { TriGrid } from './trigrid.js';
+import { butterflyGeometry, hingeButterfly, butterflyFold, paintButterfly } from './butterflymodel.js';
 import { DETAIL_HIDDEN_LAYER } from './detail.js';
 
 // Marks on surfaces (#96): burn marks from the lightsaber, and the shared decal system the wands (stars,
@@ -49,14 +50,7 @@ const TEXTURES = {
     for (let i = 0; i < 10; i++) { const r = (i % 2 ? 0.17 : 0.42) * n, a = (i / 10) * Math.PI * 2 - Math.PI / 2; g.lineTo(n / 2 + Math.cos(a) * r, n / 2 + Math.sin(a) * r); }
     g.fill();
   }),
-  butterfly: () => canvas(64, (g, n) => {
-    g.fillStyle = '#fff';
-    for (const s of [-1, 1]) {
-      g.beginPath(); g.ellipse(n / 2 + s * n * 0.2, n * 0.36, n * 0.19, n * 0.15, s * 0.5, 0, Math.PI * 2); g.fill();
-      g.beginPath(); g.ellipse(n / 2 + s * n * 0.15, n * 0.66, n * 0.13, n * 0.11, -s * 0.4, 0, Math.PI * 2); g.fill();
-    }
-    g.fillStyle = '#333'; g.fillRect(n * 0.48, n * 0.25, n * 0.04, n * 0.55);
-  }),
+  butterfly: () => canvas(BUTTERFLY_SURFACE.atlas.size, paintButterfly),
   // a bullet hole (#196): a dark centre, a ring of chipped grey dust
   hole: () => canvas(64, (g, n) => {
     blob(g, n / 2, n / 2, n / 2, 'rgba(90,86,80,0.55)', 'rgba(120,115,108,0)');
@@ -346,12 +340,14 @@ export class Marks {
 
 const X = new THREE.Vector3(1, 0, 0), Y = new THREE.Vector3(0, 1, 0);
 
-/** Butterflies that flutter round a spot for a while (#97): one instanced mesh, wings beat by scaling x. */
+/** Butterflies that flutter round a spot for a while (#97): one instanced mesh, wing pairs hinge around a stable body. */
 class Flutter {
   constructor(scene, map) {
     const F = K.magic.flutter;
-    this.mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), fadeMaterial(THREE.MeshBasicMaterial, { map, side: THREE.DoubleSide, polygonOffset: false }), F.n);
+    this.mesh = new THREE.InstancedMesh(butterflyGeometry({ magic: true }), hingeButterfly(fadeMaterial(THREE.MeshBasicMaterial, { map, side: THREE.DoubleSide, polygonOffset: false }), { magic: true, instanced: true }), F.n);
     this.fade = new THREE.InstancedBufferAttribute(new Float32Array(F.n), 1);
+    this.wingFold = new THREE.InstancedBufferAttribute(new Float32Array(F.n), 1);
+    this.mesh.geometry.setAttribute('wingFold', this.wingFold);
     this.mesh.geometry.setAttribute('fade', this.fade);
     for (let i = 0; i < F.n; i++) { this.mesh.setMatrixAt(i, zero); this.mesh.setColorAt(i, new THREE.Color(1, 1, 1)); }
     Object.assign(this.mesh, { frustumCulled: false, visible: false, raycast: () => {} });
@@ -385,11 +381,12 @@ class Flutter {
       p.copy(b.at).addScaledVector(b.t1, Math.cos(a) * b.r).addScaledVector(b.t2, Math.sin(a) * b.r * 0.7)
         .addScaledVector(b.n, 0.06 + 0.04 * Math.sin(b.age * 2.3 + b.ph));
       q.setFromUnitVectors(Z, b.n).multiply(qs.setFromAxisAngle(Z, a + (b.w > 0 ? Math.PI : 0)));
-      sc.set(s * (0.25 + 0.75 * Math.abs(Math.cos(b.age * 16 + b.ph))), s, 1); // wing beats
+      sc.set(s, s, s); // wing depth uses the same small scale; body scale stays fixed; each wing folds in the vertex shader
+      this.wingFold.setX(i, butterflyFold(b.age + (b.ph + Math.PI / 2) / BUTTERFLY_SURFACE.fold.hz));
       this.mesh.setMatrixAt(i, m4.compose(p, q, sc));
       this.fade.setX(i, shown(b.object) ? Math.min(1, b.age * 3, (b.life - b.age) / K.fade) : 0);
     });
-    this.mesh.instanceMatrix.needsUpdate = this.fade.needsUpdate = true;
+    this.mesh.instanceMatrix.needsUpdate = this.fade.needsUpdate = this.wingFold.needsUpdate = true;
     this.mesh.visible = any;
   }
 }

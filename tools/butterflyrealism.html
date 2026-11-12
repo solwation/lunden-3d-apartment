@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8"><title>Butterfly production component</title><style>body{margin:0;background:#cedee5}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as T from 'three';import {OutdoorCats} from '../src/outdoorcats.js';import {Marks} from '../src/marks.js';import {OUTDOOR_CATS as C} from '../src/config.js';import {createBestiaryModel} from '../src/bestiarymodels.js';
+const scene=new T.Scene();scene.background=new T.Color(0xcedee5);scene.add(new T.HemisphereLight(0xe7f5ff,0x657d47,2.1));const sun=new T.DirectionalLight(0xfff2d4,2.6);sun.position.set(3,5,4);scene.add(sun);
+const camera=new T.PerspectiveCamera(45,1200/760,.005,1500),renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(1200,760);renderer.setPixelRatio(1);renderer.toneMapping=T.ACESFilmicToneMapping;document.body.append(renderer.domElement);
+const ground=new T.Mesh(new T.PlaneGeometry(400,400),new T.MeshStandardMaterial({color:0x637b42,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.005;scene.add(ground);
+let clock=C.epoch+86400*3,hour=12,month=7;
+const cats=new OutdoorCats({scene,camera,cat:{visible:true},ground:()=>0,walkable:()=>true,free:()=>true,hour:()=>hour,month:()=>month});cats.now=()=>clock;
+// A real deterministic rest/chase slot for one existing cat of each ambient colour.
+const selected=[cats.cats.find(c=>c.spec.zone==='innergården'),cats.cats.find(c=>c.spec.zone!=='innergården')];
+const slots=selected.map(c=>{for(let m=0;m<300;m++){const o=c.outingAt(m),sg=o.segs.find(s=>s.kind==='chase'||s.k==='chase'||s.activity==='chase');if(o.bf){const elapsed=(o.bf.t0+o.bf.t1)/2;return{clock:c.stop(m).start+elapsed,elapsed,m}}}throw Error('No deterministic chase slot for '+c.name)});
+function ambient(which=0,phase=0){const c=selected[which];clock=slots[which].clock;cats.cats.forEach(q=>{q.group.visible=false;q.bfMesh.visible=false});c.st='route';c.alpha=1;const sp=c.schedulePose(true);c.x=sp.x;c.z=sp.z;c.h=sp.h;c.t=phase;camera.position.set(c.x+3,1.4,c.z+3);cats.step(c,0,camera.position,false);if(!c.bfMesh.visible)throw Error('Production chase did not produce a butterfly');return c;}
+const marks=new Marks(scene,camera,[]),hit={point:new T.Vector3(0,.9,0),normal:new T.Vector3(0,0,1),object:ground};
+function magic(phase=1){cats.cats.forEach(q=>{q.group.visible=false;q.bfMesh.visible=false});marks.flutter.b.forEach(b=>{b.age=1e9;b.life=0});marks.flutter.mesh.visible=false;marks.flutter.next=0;for(let i=0;i<3;i++){marks.flutter.spawn(hit,[0xff7ad0,0xb07bff,0xffd34a][i]);Object.assign(marks.flutter.b[i],{life:15,age:phase,ph:i*.9,r:.12,w:.8})}marks.flutter.update(0);return marks.flutter;}
+window.butterfly1925={T,scene,camera,renderer,cats,selected,slots,marks,ground,ambient,magic,hit,setCalendar:(m,h)=>{month=m;hour=h},getClock:()=>clock,createBestiaryModel};ambient();renderer.render(scene,camera);window.butterfly1925.ready=true;
+</script>

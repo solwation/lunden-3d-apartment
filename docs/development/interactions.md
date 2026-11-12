@@ -723,6 +723,9 @@ src/marks.js           marks on surfaces (MARKS, #96): `hit(from, to)` = first s
                        → none; the cat → meow), `add(kind, hit)` / `burn(hit)`; one ring buffer, an InstancedMesh per
                        kind (burn, glow, star, butterfly, splash) with a per-instance fade, a Points puff of smoke;
                        `magic(hit, eye)` = the wands' stars + fluttering butterflies (#97); darts splash paint (#98)
+                       #1925: Flutter uses a stable body strip and two wing hinges in the same finite instanced mesh;
+                       BUTTERFLY_SURFACE / butterflymodel.js supplies the shared 64px silhouette and collection recipe.
+                       Pool/fade/orbit/colours remain unchanged; the folded depth uses the same small scale as X/Y.
                        Before a cold TriGrid is built, private conservative position bounds reject distant static meshes (#715);
                        furniture invalidation clears both that bound and the triangle grid. Authored geometry boxes stay intact.
                        Physical rays include DetailCuller's shared hidden-render layer (#805); semantic ancestor visibility,

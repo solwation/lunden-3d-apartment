@@ -14,6 +14,16 @@ and compare real scoped render/update/memory costs at fixed inputs and quality.
 A format change or a higher polygon count does not establish quality or speed.
 [Full coverage, measured baseline, limits and concrete follow-ups](../verification/1915/README.md).
 
+### Butterfly wing hinges (#1925)
+
+`butterflymodel.js` supplies shared authored contours and a bounded vertex hinge.
+Ambient body vertices retain their width while the wings rotate, with matching
+normal rotation and no geometry rebuild. Magic keeps the two transparent passes
+of its one 12-slot instanced mesh, one extra 12-float wing attribute and the existing
+64px atlas size. Its body strip stays fixed; each wing strip folds in three dimensions
+at the existing small effect scale on every axis. The same contours paint ordinary
+butterfly marks and collection previews. [Reviewed actual views and costs](../verification/1925/README.md).
+
 ### Santa surfaces (#1923)
 
 `SANTA.surface` contains the authored coat/head/hand/beard profiles and tessellation

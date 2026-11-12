@@ -1,0 +1,437 @@
+{
+  "revision": "ad9eab1160e095847280a52c585d221a51b75cf1",
+  "environment": "Actual OutdoorCats.step / deterministic chase slots; actual Marks.Flutter /3live in12pool; collection factories; flat controlled lawn, fixed camera/light1200x760 DPR1, Chromium/SwiftShader, not physical-device FPS",
+  "errors": [],
+  "chromium": "156.0.8078.4",
+  "before": {
+    "rows": [
+      {
+        "name": "Sotis",
+        "color": 15916092,
+        "calls": 1,
+        "triangles": 4,
+        "rawBytes": 288,
+        "intendedPixels": 340,
+        "phases": [
+          {
+            "t": 0,
+            "finite": [],
+            "scale": [
+              0.25,
+              1,
+              1
+            ],
+            "fold": null,
+            "pixels": 80
+          },
+          {
+            "t": 0.04908738521234052,
+            "finite": [],
+            "scale": [
+              0.7803300858899106,
+              1,
+              1
+            ],
+            "fold": null,
+            "pixels": 93
+          },
+          {
+            "t": 0.09817477042468103,
+            "finite": [],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "fold": null,
+            "pixels": 100
+          }
+        ],
+        "farHidden": true,
+        "hidden": true,
+        "warmMs": {
+          "median": 0.599999999627471,
+          "p95": 1
+        }
+      },
+      {
+        "name": "Findus",
+        "color": 15234602,
+        "calls": 1,
+        "triangles": 4,
+        "rawBytes": 288,
+        "intendedPixels": 340,
+        "phases": [
+          {
+            "t": 0,
+            "finite": [],
+            "scale": [
+              0.25,
+              1,
+              1
+            ],
+            "fold": null,
+            "pixels": 89
+          },
+          {
+            "t": 0.04908738521234052,
+            "finite": [],
+            "scale": [
+              0.7803300858899106,
+              1,
+              1
+            ],
+            "fold": null,
+            "pixels": 110
+          },
+          {
+            "t": 0.09817477042468103,
+            "finite": [],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "fold": null,
+            "pixels": 118
+          }
+        ],
+        "farHidden": true,
+        "hidden": true,
+        "warmMs": {
+          "median": 0.599999999627471,
+          "p95": 1.400000000372529
+        }
+      }
+    ],
+    "magic": {
+      "calls": 2,
+      "triangles": 48,
+      "rawBytes": 188,
+      "instanceBytes": 912,
+      "textureSize": [
+        64,
+        64
+      ],
+      "textureBytes": 32768,
+      "pool": 12,
+      "liveBefore": 3,
+      "intendedPixels": 2521,
+      "finite": [],
+      "matrixFinite": true,
+      "fade": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "fold": null,
+      "scales": [
+        [
+          0.08714201429232198,
+          0.08999999647351895,
+          1
+        ],
+        [
+          0.04745935808485458,
+          0.09000000146423268,
+          1
+        ],
+        [
+          0.056112042985054005,
+          0.09000000265972423,
+          1
+        ]
+      ],
+      "poolFinite": true,
+      "hiddenFade": true,
+      "expired": true,
+      "warmMs": {
+        "median": 0.30000000074505806,
+        "p95": 0.6999999992549419
+      }
+    },
+    "collections": [
+      {
+        "recipe": {
+          "kind": "butterfly",
+          "color": 15916092
+        },
+        "triangles": 4,
+        "finite": [],
+        "intendedPixels": 26017,
+        "hasHinge": false
+      },
+      {
+        "recipe": {
+          "kind": "butterfly",
+          "color": 15234602
+        },
+        "triangles": 4,
+        "finite": [],
+        "intendedPixels": 26017,
+        "hasHinge": false
+      },
+      {
+        "recipe": {
+          "kind": "magicButterfly"
+        },
+        "triangles": 2,
+        "finite": [],
+        "intendedPixels": 57761,
+        "hasHinge": false,
+        "counterNote": "Indexed plane: six indices give two native triangles; corrected from an initial position.count/3 diagnostic."
+      }
+    ],
+    "commonGeometryBytes": 476,
+    "slots": [
+      {
+        "clock": 1793491580.2080014,
+        "elapsed": 13.299999999999999,
+        "m": 14
+      },
+      {
+        "clock": 1793491259.1333332,
+        "elapsed": 35.8,
+        "m": 0
+      }
+    ],
+    "hashes": {
+      "src/outdoorcats.js": "d7db098615db198b796b14ddbf2239e6b088dd1550c3cda17644d16f35757dc9",
+      "src/marks.js": "2994f2317e437a053064104f1944380e888003ba5b6d2c3b8a79c11116eeb211",
+      "src/bestiarymodels.js": "d15db90bc8b79eb234309b1e5c96ad3037557625db69dcc162f151af2231e141",
+      "src/config.js": "fb72cd0c9481e2c33655a0087246e67f348c0492bc8be34b5e769390fa95c1fe"
+    }
+  },
+  "after": {
+    "rows": [
+      {
+        "name": "Sotis",
+        "color": 15916092,
+        "calls": 1,
+        "triangles": 82,
+        "rawBytes": 9840,
+        "intendedPixels": 433,
+        "phases": [
+          {
+            "t": 0,
+            "finite": [],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "fold": 1.25,
+            "pixels": 206
+          },
+          {
+            "t": 0.04908738521234052,
+            "finite": [],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "fold": 0.4368272016354705,
+            "pixels": 133
+          },
+          {
+            "t": 0.09817477042468103,
+            "finite": [],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "fold": 0.10000000000000009,
+            "pixels": 92
+          }
+        ],
+        "farHidden": true,
+        "hidden": true,
+        "warmMs": {
+          "median": 0.40000000037252903,
+          "p95": 0.599999999627471
+        }
+      },
+      {
+        "name": "Findus",
+        "color": 15234602,
+        "calls": 1,
+        "triangles": 82,
+        "rawBytes": 9840,
+        "intendedPixels": 433,
+        "phases": [
+          {
+            "t": 0,
+            "finite": [],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "fold": 1.25,
+            "pixels": 237
+          },
+          {
+            "t": 0.04908738521234052,
+            "finite": [],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "fold": 0.4368272016354705,
+            "pixels": 154
+          },
+          {
+            "t": 0.09817477042468103,
+            "finite": [],
+            "scale": [
+              1,
+              1,
+              1
+            ],
+            "fold": 0.10000000000000009,
+            "pixels": 133
+          }
+        ],
+        "farHidden": true,
+        "hidden": true,
+        "warmMs": {
+          "median": 0.5,
+          "p95": 1.099999999627471
+        }
+      }
+    ],
+    "magic": {
+      "calls": 2,
+      "triangles": 144,
+      "rawBytes": 960,
+      "instanceBytes": 912,
+      "textureSize": [
+        64,
+        64
+      ],
+      "textureBytes": 32768,
+      "pool": 12,
+      "liveBefore": 3,
+      "intendedPixels": 4791,
+      "finite": [],
+      "matrixFinite": true,
+      "fade": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "fold": [
+        0.1486915946006775,
+        0.8247665166854858,
+        0.6773503422737122,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "scales": [
+        [
+          0.08999999647351895,
+          0.08999999647351895,
+          0.09000000357627869
+        ],
+        [
+          0.09000000146423268,
+          0.09000000146423268,
+          0.09000000357627869
+        ],
+        [
+          0.09000000265972423,
+          0.09000000265972423,
+          0.09000000357627869
+        ]
+      ],
+      "poolFinite": true,
+      "hiddenFade": true,
+      "expired": true,
+      "warmMs": {
+        "median": 0.30000000074505806,
+        "p95": 0.5
+      }
+    },
+    "collections": [
+      {
+        "recipe": {
+          "kind": "butterfly",
+          "color": 15916092
+        },
+        "triangles": 82,
+        "finite": [],
+        "intendedPixels": 33390,
+        "hasHinge": true
+      },
+      {
+        "recipe": {
+          "kind": "butterfly",
+          "color": 15234602
+        },
+        "triangles": 82,
+        "finite": [],
+        "intendedPixels": 33390,
+        "hasHinge": true
+      },
+      {
+        "recipe": {
+          "kind": "magicButterfly"
+        },
+        "triangles": 6,
+        "finite": [],
+        "intendedPixels": 146053,
+        "hasHinge": true
+      }
+    ],
+    "commonGeometryBytes": 10800,
+    "slots": [
+      {
+        "clock": 1793491580.2080014,
+        "elapsed": 13.299999999999999,
+        "m": 14
+      },
+      {
+        "clock": 1793491259.1333332,
+        "elapsed": 35.8,
+        "m": 0
+      }
+    ],
+    "hashes": {
+      "src/outdoorcats.js": "b49e31e1360e815eb5479228035b82545bbb3e78f55a91a1767485acf6c85ed6",
+      "src/marks.js": "2fa3d2a211c61a088fc6e370a2da85fe25c57f2f311c0122b3d3127abc3353bd",
+      "src/bestiarymodels.js": "f53598da3a04c0c9259b1d1eb1f3f0096bdf6afc6c0ad0200959204a8496cb89",
+      "src/config.js": "5244214839cbcc302fff8386b082d8c989aab6af4fa55f39bc295ff28e6b8e54",
+      "src/butterflymodel.js": "61b3066bb21837d86ee704df2dcd5ee79a9bfdd5fa12fc64a2e44bb4d9b41734"
+    }
+  },
+  "pass": true,
+  "notes": "Final after row includes corrected isotropic wing depth. Ambient/art/collection source hashes match the approved first form; before captures and 8 brain checks reused."
+}

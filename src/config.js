@@ -8422,6 +8422,26 @@ export const SPRAY = {
 // on ground the cat may walk (the `walkable` / drop check of the way home, sampled every 0.5 m) and back the same way. Butterflies only
 // by day (`brain.butterflyHours`) in `brain.butterflyMonths`; a tree only within `brain.climbReach` m (surroundings.js treeFeet /
 // aoTrees, like the squirrels), up to `brain.branch` m. All numbers are our picks (*guess*).
+// #1925 authored butterfly silhouettes/materials, metres and radians; visual guesses, not new species.
+export const BUTTERFLY_SURFACE = {
+  span: .085, length: .055, wingY: .002, hinge: .0035,
+  colors: { yellow: 0xf2dc3c, orange: 0xe8762a },
+  wingTint: 1, edgeTint: .54, veinTint: .38, markTint: .26, bodyTint: .10,
+  fore: { contour: [[.06,.20],[.32,.82],[.72,1],[.96,.83],[1,.47],[.86,.15],[.48,-.04],[.06,-.12]], hub: [.34,.34], mark: [.72,.57,.065], vein: [[.08,.17],[.64,.75],[.12,.19]] },
+  hind: { contour: [[.06,.03],[.47,-.06],[.76,-.35],[.69,-.69],[.43,-.91],[.15,-.85],[.05,-.50]], hub: [.29,-.38], mark: [.48,-.55,.075], vein: [[.08,-.06],[.55,-.65],[.11,-.07]] },
+  markSegments: 5, markLift: .0005,
+  body: [
+    { at: [0,.003,-.012], scale: [.004,.004,.027] },
+    { at: [0,.004,.014], scale: [.006,.005,.012] },
+    { at: [0,.004,.032], scale: [.004,.004,.006] },
+  ],
+  antenna: { root: [0,.004,.035], end: [.011,.006,.052], width: .0012 },
+  fold: { min: .10, max: 1.25, hz: 16, rest: .28 },
+  magic: { hinge: .025 }, // in the unit quad; the existing .09m effect keeps an approximately .08m painted span
+  atlas: { size: 64, extent: .44, edge: '#a2a2a2', vein: '#a0a0a0', mark: '#777', body: '#454545', line: .013,
+    abdomen: [.5,.54,.022,.25], thorax: [.5,.39,.029,.08], head: [.5,.26,.024], antenna: [[.49,.25,.42,.12],[.51,.25,.58,.12]] },
+};
+
 export const OUTDOOR_CATS = {
   // #1844 guesses: one shared wall-clock day, bounded goal choices and progressive exploration.
   exploration: { daySeconds:86400,maxGoals:56,minGoals:8,speed:.55,initialRadius:100,growth:70,distanceCost:600,minRest:90,rest:1200,
