@@ -36,7 +36,7 @@ Saved and opened views:
 - `collection.png`: the actual collection recipe in the controlled scene.
 - `thumbnail-loaded.png`, `thumbnail-missing.png`, `thumbnail-late.png`: actual
   BestiaryImages 320px output through its persisted cache, not substituted screenshots.
-- Matching source-frozen views are in `before/`.
+- Matching source-frozen views are [pinned at the published source](https://github.com/solwation/lunden-3d-apartment/tree/7c598c2739527ba3d513f242a8b5e098c8135235/docs/verification/1927/before).
 
 ## Three scoped checks
 
@@ -143,3 +143,5 @@ are removed only in that resolving commit after publication; result images follo
 the usual30-day retention. This worker supplies a local Refs handoff only.
 
 Root reviewed the combined production/exporter/fixture/evidence diff and opened matched whole/normal bed views, free front/side diagnostics, hug contacts and late-load thumbnail. [Integration mapping](integration.json) proves every executed model/tool/asset and image exact, plus full PINGPING configuration and collection case. Current Santa portrait, butterfly and shark/fish sources are preserved. Changelog is1487 after latest main fetch; scoped green checks are reused without broad repetition. Initial integration probes stopped before publication on an indentation assumption and two incorrect file names; corrected source mapping passes without a product change.
+
+[Published image evidence](https://github.com/solwation/lunden-3d-apartment/issues/1927#issuecomment-6821810883) embeds ten pinned HTTP200/image-type images after actual Pages and Worker success for `7c598c2739527ba3d513f242a8b5e098c8135235`. Nine own baseline PNGs are pruned in this resolving commit.
