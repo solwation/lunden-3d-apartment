@@ -318,6 +318,7 @@ Public adoption and trigger adaptation are tracked in
 adaptation is [public #273](https://github.com/solwation/kvarteret-lunden/issues/273).
 The image examples do not override required images on main, revision-pinned URLs,
 retention or the no-branches rule. Optional expert-panel review remains optional.
+[Scenario, source and link verification](https://github.com/solwation/lunden-3d-apartment/issues/1934#issuecomment-6820495335) records this import.
 The previous v0.12.0 import is recorded in
 [original #1904](https://github.com/solwation/lunden-3d-apartment/issues/1904) and
 [public #265](https://github.com/solwation/kvarteret-lunden/issues/265).
