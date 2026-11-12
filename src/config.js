@@ -3701,6 +3701,7 @@ export const HAND_SURFACE = {
   knuckles:[[-.040,.081],[-.028,.087],[-.0095,.095],[.0095,.098],[.029,.095],[.040,.089]],
   thumbStart:[.002,.018,.012],
   tendons: { from:.018,to:.088,depth:.0013,width:.0045 },
+  knuckle: { depth:.0035,width:.011,length:.013,offset:.008,relaxed:.4 },
   fingerShape: [[0,1],[.15,1.04],[.35,.94],[.48,1.01],[.64,.90],[.75,.91],[.88,.80],[.97,.46],[1,0]],
   fingerDepth:.88, nail: { from:.77,to:.94,arc:.64,depth:.00055,shade:1.08 },
   creases: { width:.00035,lift:.0001,shade:.94,paths:[
@@ -3710,6 +3711,7 @@ export const HAND_SURFACE = {
   ] },
   // shoulder-to-cuff normalized Z; width/depth remain in metres, as the original sleeve.
   arm: [[0,.050,.0425],[.20,.048,.041],[.45,.045,.038],[.68,.042,.035],[.86,.0375,.032],[1,.036,.0306],[1.025,.033,.028]],
+  bareArm: [[0,.045,.037],[.20,.041,.032],[.45,.037,.026],[.70,.033,.023],[.90,.029,.020],[1,.027,.019],[1.05,.022,.015]],
 };
 
 // What is in the wardrobes and drawers (#228, src/stuff.js): shared colours, and per person (by room) the clothes:

@@ -153,7 +153,13 @@ function handGeometry(pose) {
     const thumb = mound.depth * Math.exp(-(((y - mound.y) / mound.width) ** 2) - ((z - mound.z) / mound.length) ** 2);
     const fade = Math.max(0, Math.sin(Math.PI * THREE.MathUtils.clamp((z - tendons.from) / (tendons.to - tendons.from), 0, 1)));
     const ridges = FINGERS.reduce((sum, f) => sum + Math.exp(-(((y - f.y * t) / tendons.width) ** 2)), 0) * fade * tendons.depth;
-    const x = front * profile(table, z, 3) - back * profile(table, z, 2) + front ** 3 * thumb - back ** 3 * ridges;
+    const k = SURFACE.knuckle;
+    const knuckles = FINGERS.reduce((sum, f, i) => {
+      const flex = Array.isArray(pose.fingers[0]) ? pose.fingers[i][0] : pose.fingers[0];
+      const amount = THREE.MathUtils.lerp(k.relaxed, 1, THREE.MathUtils.clamp(flex, 0, 1));
+      return sum + amount * k.depth * Math.exp(-(((y - f.y) / k.width) ** 2) - ((z - f.z + k.offset) / k.length) ** 2);
+    }, 0);
+    const x = front * profile(table, z, 3) - back * profile(table, z, 2) + front ** 3 * thumb - back ** 3 * ridges - back * knuckles;
     return [x, y, z + t ** 8 * (profile(SURFACE.knuckles, y) - max)];
   };
   const palm = surface(table.length * 2, SURFACE.radial * 2, (t, angle) => palmPoint(THREE.MathUtils.lerp(min, max, t), angle));
@@ -252,10 +258,11 @@ function buildHand() {
 }
 
 /** The sleeve, length 1 along +z (scaled to the shoulder–cuff distance), wider at the shoulder. */
-function sleeveGeometry() {
-  const g = surface(SURFACE.arm.length - 1, SURFACE.radial, (t, angle) => {
-    const z = t * SURFACE.arm.at(-1)[0];
-    return [Math.cos(angle) * profile(SURFACE.arm, z, 2), Math.sin(angle) * profile(SURFACE.arm, z), z];
+function sleeveGeometry(bare = false) {
+  const table = bare ? SURFACE.bareArm : SURFACE.arm;
+  const g = surface(table.length - 1, SURFACE.radial, (t, angle) => {
+    const z = t * table.at(-1)[0];
+    return [Math.cos(angle) * profile(table, z, 2), Math.sin(angle) * profile(table, z), z];
   });
   // The bare arm shares the vertex-coloured skin material; white preserves its chosen skin tone.
   g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3).fill(1), 3));
@@ -282,6 +289,7 @@ export class Hand {
     this.hand.morphTargetInfluences = [0, 0, 0];
     this.cuff = new THREE.Mesh(cuffGeometry(), sleeve);
     this.arm = new THREE.Mesh(sleeveGeometry(), sleeve); // length 1 along +z
+    this.armGeometries = { sleeve: this.arm.geometry, bare: sleeveGeometry(true) };
     for (const m of [this.hand, this.arm, this.cuff]) { m.visible = false; m.castShadow = false; m.renderOrder = 1; m.raycast = () => {}; m.frustumCulled = false; camera.add(m); }
     this.right = { hand: this.hand, arm: this.arm, cuff: this.cuff };
     armsChanged = () => this.applySleeves();
@@ -323,7 +331,10 @@ export class Hand {
   /** Short sleeves (#1215): the arm is bare skin and the cuff goes; the same meshes, only the material and visibility change. */
   applySleeves() {
     this.sleeved = OWN.long || OWN.suit;
-    for (const side of [this.right, this.left]) side.arm.material = this.sleeved ? sleeve : skin;
+    for (const side of [this.right, this.left]) {
+      side.arm.material = this.sleeved ? sleeve : skin;
+      side.arm.geometry = this.sleeved ? this.armGeometries.sleeve : this.armGeometries.bare;
+    }
     this.cuff.visible = this.cuff.visible && this.sleeved;
     this.left.cuff.visible = this.left.cuff.visible && this.sleeved;
     this.applyRing();

@@ -13,7 +13,8 @@ const scene=new T.Scene();scene.background=new T.Color(0xd7e0e6);
 scene.add(new T.HemisphereLight(0xe6f1ff,0x746b61,1.6));
 const sun=new T.DirectionalLight(0xfff0dd,2);sun.position.set(2,4,3);scene.add(sun);
 const camera=new T.PerspectiveCamera(72,1000/700,.01,50),inspection=new T.PerspectiveCamera(32,1000/700,.001,50);
-const hand=new Hand(camera,scene),prop=new T.Object3D();camera.add(prop);prop.position.set(0,-.12,-.42);
+const coldStart=performance.now(),hand=new Hand(camera,scene),constructionColdMs=performance.now()-coldStart;
+const prop=new T.Object3D();camera.add(prop);prop.position.set(0,-.12,-.42);
 const state={mode:'reach',detail:false,item:null};
 function pose(mode,detail=false){
  suitHands(false);handLook({skin:0xe0ae8a,top:0x3d6b8f,sleeves:1,ring:0,watch:0,bracelet:0});
@@ -27,7 +28,7 @@ function pose(mode,detail=false){
  for(let i=0;i<30;i++){hand.update(.016,state.item);if(['reach','wet','bare','accessories'].includes(mode))hand.reachT=.5;}
  if(mode==='wet')hand.setWet(.8);
  scene.updateMatrixWorld(true);
- const box=new T.Box3().setFromObject(hand.hand,true),c=box.getCenter(new T.Vector3());
+ const c=hand.hand.localToWorld(new T.Vector3(0,0,.035)); // same frame anchor before/after, independent of changed bounds
  // Inspect the same actual morphed hand/transform, not a replacement factory or resized mesh.
  const offset=new T.Vector3(detail==='back'?-.44:.44,.06,.18).applyQuaternion(hand.hand.quaternion);
  inspection.position.copy(c).add(offset);inspection.up.copy(new T.Vector3(0,1,0).applyQuaternion(hand.hand.quaternion));inspection.lookAt(c);
@@ -37,7 +38,10 @@ function pose(mode,detail=false){
 }
 function measure(){
  const g=hand.hand.geometry;let bytes=g.index?.array.byteLength??0;for(const a of Object.values(g.attributes))bytes+=a.array.byteLength;for(const rows of Object.values(g.morphAttributes))for(const a of rows)bytes+=a.array.byteLength;
- return{calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,vertices:g.attributes.position.count,handBufferBytes:bytes,morphCounts:g.morphAttributes.position.map(a=>a.count),finite:[...g.attributes.position.array,...g.morphAttributes.position.flatMap(a=>Array.from(a.array))].every(Number.isFinite),morphs:hand.hand.morphTargetInfluences.slice(),rightPosition:hand.hand.position.toArray(),leftPosition:hand.left.hand.position.toArray(),geometryShared:hand.hand.geometry===hand.left.hand.geometry};
+ const geos=new Set(Object.values(hand.armGeometries??{}));camera.traverse(o=>{if(o.geometry)geos.add(o.geometry);});const arrays=new Set();
+ for(const geo of geos){if(geo.index)arrays.add(geo.index.array);for(const a of Object.values(geo.attributes))arrays.add(a.array);for(const list of Object.values(geo.morphAttributes))for(const a of list)arrays.add(a.array);}
+ const retainedRawGeometryBytes=[...arrays].reduce((sum,a)=>sum+a.byteLength,0);
+ return{calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,vertices:g.attributes.position.count,handBufferBytes:bytes,retainedRawGeometryBytes,morphCounts:g.morphAttributes.position.map(a=>a.count),finite:[...g.attributes.position.array,...g.morphAttributes.position.flatMap(a=>Array.from(a.array))].every(Number.isFinite),morphs:hand.hand.morphTargetInfluences.slice(),rightPosition:hand.hand.position.toArray(),leftPosition:hand.left.hand.position.toArray(),geometryShared:hand.hand.geometry===hand.left.hand.geometry,inspectionPosition:inspection.position.toArray(),inspectionTarget:hand.hand.localToWorld(new T.Vector3(0,0,.035)).toArray()};
 }
 async function timing(frames=140){
  const gaps=[],cpu=[];let prior;for(let i=0;i<frames+25;i++){
@@ -48,5 +52,12 @@ async function timing(frames=140){
  }
  const stats=a=>{a.sort((x,y)=>x-y);return{median:a[Math.floor(a.length*.5)],p95:a[Math.floor(a.length*.95)]};};return{frames,intervalMs:stats(gaps),updateRenderFinishMs:stats(cpu),scope:'Actual Hand.update/render; fixed1000×700 DPR1, SwiftShader, controlled scene, synchronous finish. Not World, native GPU or phone FPS.'};
 }
-window.handAudit={pose,measure,timing,hand,renderer,scene,camera};pose('reach');window.__ready=true;
+function construction(){
+ const times=[];for(let i=0;i<5;i++){
+  const s=new T.Scene(),c=new T.PerspectiveCamera(),start=performance.now(),h=new Hand(c,s);times.push(performance.now()-start);
+  const geos=new Set(Object.values(h.armGeometries??{}));c.traverse(o=>{if(o.geometry)geos.add(o.geometry);});for(const g of geos)g.dispose();
+ }
+ times.sort((a,b)=>a-b);return{coldMs:constructionColdMs,warmMedianMs:times[2],warmMaxMs:times.at(-1),samples:times,scope:'Synchronous Hand constructor only, no renderer upload/World startup or hardware extrapolation.'};
+}
+window.handAudit={pose,measure,timing,construction,hand,renderer,scene,camera};pose('reach');window.__ready=true;
 </script></html>
