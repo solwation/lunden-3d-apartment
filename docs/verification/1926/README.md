@@ -28,16 +28,16 @@ supports independent `--fish-only` and `--shark-only` boundaries.
 
 | Matched view | Before | Result |
 | --- | --- | --- |
-| Actual landed body, oblique | [Before](before/body-quarter.png) | [After](body-quarter.png) |
-| Landed side, rolled as in production | [Before](before/body-side.png) | [After](body-side.png) |
-| Landed front | [Before](before/body-front.png) | [After](body-front.png) |
-| Normal eye-height bank framing, 70° | [Before](before/body-normal.png) | [After](body-normal.png) |
-| Actual normal river/fin phase, 70° | [Before](before/river-normal.png) | [After](river-normal.png) |
-| Actual fin/wake close view | [Before](before/fin-close.png) | [After](fin-close.png) |
-| Actual held fin | [Before](before/held.png) | [After](held.png) |
-| Unchanged skeleton phase | [Before](before/bones.png) | [After](bones.png) |
-| Actual binder at 96/320 px | [Before](before/binder.png) | [After](binder.png) |
-| Separate intact inspection, lifted above plane | [Before](before/whole.png) | [After](whole.png) |
+| Actual landed body, oblique | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/6e84ea6a554cb7dd794aa39222e5df6fc5da5b15/docs/verification/1926/before/body-quarter.png) | [After](body-quarter.png) |
+| Landed side, rolled as in production | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/6e84ea6a554cb7dd794aa39222e5df6fc5da5b15/docs/verification/1926/before/body-side.png) | [After](body-side.png) |
+| Landed front | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/6e84ea6a554cb7dd794aa39222e5df6fc5da5b15/docs/verification/1926/before/body-front.png) | [After](body-front.png) |
+| Normal eye-height bank framing, 70° | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/6e84ea6a554cb7dd794aa39222e5df6fc5da5b15/docs/verification/1926/before/body-normal.png) | [After](body-normal.png) |
+| Actual normal river/fin phase, 70° | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/6e84ea6a554cb7dd794aa39222e5df6fc5da5b15/docs/verification/1926/before/river-normal.png) | [After](river-normal.png) |
+| Actual fin/wake close view | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/6e84ea6a554cb7dd794aa39222e5df6fc5da5b15/docs/verification/1926/before/fin-close.png) | [After](fin-close.png) |
+| Actual held fin | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/6e84ea6a554cb7dd794aa39222e5df6fc5da5b15/docs/verification/1926/before/held.png) | [After](held.png) |
+| Unchanged skeleton phase | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/6e84ea6a554cb7dd794aa39222e5df6fc5da5b15/docs/verification/1926/before/bones.png) | [After](bones.png) |
+| Actual binder at 96/320 px | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/6e84ea6a554cb7dd794aa39222e5df6fc5da5b15/docs/verification/1926/before/binder.png) | [After](binder.png) |
+| Separate intact inspection, lifted above plane | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/6e84ea6a554cb7dd794aa39222e5df6fc5da5b15/docs/verification/1926/before/whole.png) | [After](whole.png) |
 
 The implementer opened these result forms, both remote proxy sides and the
 missing-asset fin. The integrator reviewed the initial proposals and final
@@ -74,7 +74,7 @@ that distance; the close view makes the curved fin and coherent dark shape clear
    are measured from the actual renderer, not inferred from object count. Thirty
    matched warm samples distinguish steady rendering from one-time construction.
 
-[Final browser result](browser.json), [matched baseline](before/browser.json),
+[Final browser result](browser.json), [matched baseline](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/6e84ea6a554cb7dd794aa39222e5df6fc5da5b15/docs/verification/1926/before/browser.json),
 [surface checks](surface-tests.txt), [GLB checks](glb-tests.txt),
 [schedule checks](schedule-tests.txt). Both full browser commands exited 0 with
 no captured page/shader errors; the proxy command below also exited 0.
@@ -159,9 +159,9 @@ category-list/index bug is independently tracked as #1937 and is not fixed here.
 
 | Remote diagnostic | Before | Result |
 | --- | --- | --- |
-| Representative whole Ghost, normal distance | [Before](before/ghost-shark-normal.png) | [After](ghost-shark-normal.png) |
-| Close diagnostic, cropped at edges | [Before](before/ghost-shark-close.png) | [After](ghost-shark-close.png) |
-| Reverse close diagnostic | [Before](before/ghost-shark-reverse.png) | [After](ghost-shark-reverse.png) |
+| Representative whole Ghost, normal distance | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/6e84ea6a554cb7dd794aa39222e5df6fc5da5b15/docs/verification/1926/before/ghost-shark-normal.png) | [After](ghost-shark-normal.png) |
+| Close diagnostic, cropped at edges | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/6e84ea6a554cb7dd794aa39222e5df6fc5da5b15/docs/verification/1926/before/ghost-shark-close.png) | [After](ghost-shark-close.png) |
+| Reverse close diagnostic | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/6e84ea6a554cb7dd794aa39222e5df6fc5da5b15/docs/verification/1926/before/ghost-shark-reverse.png) | [After](ghost-shark-reverse.png) |
 
 [Proxy data and source binding](ghost-shark.json). Close pictures are diagnostics;
 the complete normal Ghost view is the representative result. The source check
@@ -197,3 +197,6 @@ included.
 
 
 Root reviewed the combined product/fixture/export diff and opened final body, whole, river, held, bones, binder and normal Ghost before/after. Rebase keeps the measured SHARK recipe and shark/fixture/GLB files exactly; current six-species, packed and neutral buffers and fish GLB remain [byte-identical](integrated-fish-hashes.json). [Integration mapping](integration.json) binds the selective shark branches, preserved current fish exporter/proxy and changelog1485. Scoped native shark/proxy and generic-fish checks pass on this combined source; existing actual browser evidence is reused through these identities.
+
+
+Published source `6e84ea6a554cb7dd794aa39222e5df6fc5da5b15`: actual Pages43202903011 and Worker43202902896 succeeded. [Ten reviewed pinned before/result images](https://github.com/solwation/lunden-3d-apartment/issues/1926#issuecomment-6821456086) returned HTTP200 image types before closure. [Post-merge native surface hashes and both selective CLI exports](integrated-export-identity.json) prove every shark form/GLB remains exact and current fish GLB is preserved. This resolving docs commit prunes all sixteen own before PNGs; raw measurements and result images remain.
