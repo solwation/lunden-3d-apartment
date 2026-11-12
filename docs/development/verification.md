@@ -320,6 +320,19 @@ phases; this catches an unused flat-plane Z scale enlarging a newly folded wing.
 Both full camera/projection matrices and intended pixels are checked. No broad World,
 cat-art or magic-network suite is required. [Source hashes, reviewed images and limits](../verification/1925/README.md).
 
+## Sewn Pingping cushion (#1927)
+
+`node --test tools/figuresglbtest.mjs` verifies native export/fallback parity,
+including exporter normalisation and genuinely unused sphere-pole normals.
+Under `tools/browsertest.sh`, `tools/pingpingrealismtest.cjs BASE OUT before|after`
+uses source-frozen matched actual bed()/Pingping/Hand and collection views,
+full model/camera matrices, intended pixels and raw/submitted costs. Front/side
+views hide the occluding bed only; whole/normal show the actual support.
+`tools/pingpingconsumerstest.cjs BASE OUT` covers loaded/404/late GLB, unchanged live
+fallback, finite held/hug contacts, map sharing/disposal, hidden cost and the actual
+persisted thumbnail-version boundary with retained discovery/photos. [Results,
+budgets and limits](../verification/1927/README.md). No full World profile is required.
+
 ## Santa realism (#1923)
 
 Run `node --test tools/santatest.mjs` and the focused browser checks through

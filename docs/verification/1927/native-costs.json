@@ -1,0 +1,54 @@
+{
+  "revision": "ac2fd0ea484bf7e905fb92d6bb9bb6ae40f005f3",
+  "sourceHashes": {
+    "src/pingping.js": "34d188168dc1d7be7c49f0c43c7439b08c07c00ee51acb7eb25f371fee0979ed",
+    "src/pingpingsurface.js": "95f55c0cf74ccc20c46d1f3fd4b6703bd91fb92b6a51e328b0ad36209ded2419",
+    "src/config.js": "36b7521136fc14e22a169db2abfd4a29a320aea36fe4d8e503ae6990b24f8073",
+    "models/pingping.glb": "efd4aad1b5192241876affe722a1af99f232773848a4c3915f3eec92d2de1446"
+  },
+  "before": {
+    "loaded": {
+      "meshes": 4,
+      "triangles": 4168,
+      "geometryBytes": 147888
+    },
+    "fallback": {
+      "meshes": 4,
+      "triangles": 6032,
+      "geometryBytes": 145184
+    },
+    "glbBytes": 152308
+  },
+  "after": {
+    "loaded": {
+      "meshes": 4,
+      "triangles": 4168,
+      "geometryBytes": 147888
+    },
+    "fallback": {
+      "meshes": 4,
+      "triangles": 4168,
+      "geometryBytes": 147888
+    },
+    "sourceCache": {
+      "meshes": 4,
+      "triangles": 4168,
+      "geometryBytes": 147888
+    },
+    "glbBytes": 519856,
+    "embeddedImageBytes": [
+      {
+        "mime": "image/png",
+        "compressedBytes": 204160
+      },
+      {
+        "mime": "image/png",
+        "compressedBytes": 162740
+      }
+    ]
+  },
+  "controllerAndHeartsExact": true,
+  "santaGLBExact": true,
+  "parity": "Positions/UVs/indices exact; exporter normalisation rounds nonzero Float32 normals by <1e-7. Four zero-normal sphere pole vertices are not indexed, exporter writes (1,0,0). See seven figure tests.",
+  "pass": true
+}

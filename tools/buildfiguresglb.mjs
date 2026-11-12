@@ -3,7 +3,8 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 import fs from 'node:fs';
 import path from 'node:path';
-import { PINGPING as P, LANDSKRONA } from '../src/config.js';
+import { LANDSKRONA } from '../src/config.js';
+import {buildPingpingSurface} from '../src/pingpingsurface.js';
 import { santaBody, santaArm, santaLegGeometry } from '../src/santasurface.js';
 
 // Polyfill FileReader for GLTFExporter in Node.js
@@ -40,90 +41,13 @@ export function buildSantaModel() {
 // ---------------------------------------------------------------------
 // 2. Pingping Model (Pingvinkudden i sängen)
 // ---------------------------------------------------------------------
-function shapeSuperellipsoid(geo, grow = 1) {
-  const a = geo.attributes.position, v = new THREE.Vector3(), n = 2.6;
-  for (let i = 0; i < a.count; i++) {
-    v.fromBufferAttribute(a, i);
-    const k = (Math.abs(v.x) ** n + Math.abs(v.y) ** n + Math.abs(v.z) ** n) ** (1 / n);
-    v.divideScalar(k || 1);
-    a.setXYZ(i, v.x * P.w / 2 * grow, P.h / 2 + v.y * P.h / 2 * grow, v.z * P.d / 2 * grow);
-  }
-  geo.computeVertexNormals();
-  return geo;
-}
+export const buildPingpingModel=buildPingpingSurface;
 
-export function buildPingpingModel() {
-  const group = new THREE.Group();
-  group.name = 'Pingping_Scene';
-
-  const matNavy = new THREE.MeshStandardMaterial({
-    name: 'Mat_PingpingNavy',
-    color: P.navy,
-    roughness: 0.95
-  });
-
-  const matFeet = new THREE.MeshStandardMaterial({
-    name: 'Mat_PingpingFeet',
-    color: P.feet,
-    roughness: 0.95
-  });
-
-  // Body
-  const bodyGeo = shapeSuperellipsoid(new THREE.SphereGeometry(1, 40, 24));
-  const meshBody = new THREE.Mesh(bodyGeo, matNavy);
-  meshBody.name = 'Pingping_body';
-  meshBody.castShadow = true;
-  meshBody.receiveShadow = true;
-
-  // Face shell with UVs
-  const frontGeo = shapeSuperellipsoid(new THREE.SphereGeometry(1, 36, 24, Math.PI / 2 - 1.25, 2.5), 1.008);
-  const a = frontGeo.attributes.position;
-  const uv = new Float32Array(a.count * 2);
-  for (let i = 0; i < a.count; i++) {
-    uv[i * 2] = a.getX(i) / P.w + 0.5;
-    uv[i * 2 + 1] = a.getY(i) / P.h;
-  }
-  frontGeo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
-
-  const matFacePlaceholder = new THREE.MeshStandardMaterial({
-    name: 'Mat_PingpingFace',
-    color: 0xffffff,
-    roughness: 1.0,
-    alphaTest: 0.5
-  });
-  const meshFace = new THREE.Mesh(frontGeo, matFacePlaceholder);
-  meshFace.name = 'Pingping_face';
-  meshFace.castShadow = true;
-  meshFace.receiveShadow = true;
-
-  // Flippers
-  const flip = [-1, 1].map((s) => {
-    const g = new THREE.SphereGeometry(1, 12, 8).scale(0.035, 0.08, 0.028).rotateZ(s * 0.65)
-      .translate(s * (P.w / 2 - 0.004), P.h * 0.47, 0.01);
-    return g.toNonIndexed();
-  });
-  const meshFlippers = new THREE.Mesh(mergeGeometries(flip), matNavy);
-  meshFlippers.name = 'Pingping_flippers';
-  meshFlippers.castShadow = true;
-
-  // Feet
-  const ft = [-1, 1].map((s) => {
-    const g = new THREE.SphereGeometry(1, 12, 8).scale(0.045, 0.024, 0.045)
-      .translate(s * 0.075, 0.022, P.d / 2 - 0.035);
-    return g.toNonIndexed();
-  });
-  const meshFeet = new THREE.Mesh(mergeGeometries(ft), matFeet);
-  meshFeet.name = 'Pingping_feet';
-  meshFeet.castShadow = true;
-
-  group.add(meshBody, meshFace, meshFlippers, meshFeet);
-  return group;
-}
-
-export function exportFiguresGLBs() {
+export function exportFiguresGLBs({santaOnly=false}={}) {
+  if(!santaOnly&&typeof document==='undefined')throw new Error('Textured Pingping requires browser canvas: run tools/browsertest.sh node tools/buildpingpingglb.cjs BASE; use --santa-only here for Santa.');
   const exporter = new GLTFExporter();
   const santaScene = buildSantaModel();
-  const pingpingScene = buildPingpingModel();
+  const pingpingScene = santaOnly ? null : buildPingpingModel();
 
   const exp = (scene) => new Promise((resolve, reject) => {
     exporter.parse(
@@ -134,12 +58,12 @@ export function exportFiguresGLBs() {
     );
   });
 
-  return Promise.all([exp(santaScene), exp(pingpingScene)]);
+  return Promise.all([exp(santaScene), pingpingScene ? exp(pingpingScene) : Promise.resolve(null)]);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   console.log('Building figure GLBs...');
-  exportFiguresGLBs().then(([santaGlb, pingpingGlb]) => {
+  exportFiguresGLBs({santaOnly:process.argv.includes('--santa-only')}).then(([santaGlb, pingpingGlb]) => {
     const outSanta = path.resolve(process.cwd(), 'models/santa.glb');
     const outPingping = path.resolve(process.cwd(), 'models/pingping.glb');
     fs.mkdirSync(path.dirname(outSanta), { recursive: true });

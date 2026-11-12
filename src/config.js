@@ -2888,6 +2888,11 @@ export const BOOK = { w: 0.15, l: 0.22, h: 0.03, x: 1.57, y: 0.483, z: 8.17, tur
 // off the photo. `held` = where he sits in your arms (camera space, his bottom centre), `tilt` = leaning back (rad).
 // A hug (click / "Krama"): pulled in `pull` m and squashed by `squash` over `hugTime` s, `hearts` rise.
 export const PINGPING = { w: 0.4, h: 0.38, d: 0.22, navy: 0x34437a, white: '#ece6da', cheek: '#f0a3ad', beak: '#e8cf6a', feet: 0xe2cf7a,
+  // #1927 visual guesses from the retained product photo; fixed dimensions/grips and hug mechanics stay authoritative.
+  surface: { bodySegments:[40,24],frontSegments:[36,24],limbSegments:[12,8],exponent:2.6,
+    faceSize:512,normalSize:256,roughness:1,normalStrength:.32,pileSlope:.65,faceGrain:14,
+    seamColor:'#b7aea1',threadColor:'#e1d8c9',seamWidth:.004,threadWidth:.0018,threadDash:[.004,.003],
+    seamInset:.010,seamBand:.10,gatherDepth:.012,gatherY:-.52,gatherBand:.18,gatherWaves:5 },
   home: { z: 0.14, tilt: -0.16 }, held: { x: 0.0, y: -0.57, z: -0.45, tilt: -0.45 }, pull: 0.1, squash: 0.22, hugTime: 0.7, hearts: 14,
   grips: [[0.188, 0.182, 0.03], [-0.188, 0.182, 0.03]] }; // *guess* #914: sides around flippers (P.h * 0.48)
 

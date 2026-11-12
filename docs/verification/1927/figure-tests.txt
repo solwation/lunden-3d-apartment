@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: models/santa.glb exists and contains valid glTF binary header
+ok 1 - models/santa.glb exists and contains valid glTF binary header
+  ---
+  duration_ms: 1.147999
+  type: 'test'
+  ...
+# Subtest: models/pingping.glb exists and contains valid glTF binary header
+ok 2 - models/pingping.glb exists and contains valid glTF binary header
+  ---
+  duration_ms: 0.3524
+  type: 'test'
+  ...
+# Subtest: santa.glb contains required meshes (body, arms, legs sitting/sleeping, glass)
+ok 3 - santa.glb contains required meshes (body, arms, legs sitting/sleeping, glass)
+  ---
+  duration_ms: 9.791187
+  type: 'test'
+  ...
+# Subtest: pingping.glb contains body, face, flippers, and feet
+ok 4 - pingping.glb contains body, face, flippers, and feet
+  ---
+  duration_ms: 4.996994
+  type: 'test'
+  ...
+# Subtest: src/santa.js loads GLB model and builds figure with blush support
+ok 5 - src/santa.js loads GLB model and builds figure with blush support
+  ---
+  duration_ms: 7.204091
+  type: 'test'
+  ...
+# Subtest: src/pingping.js loads GLB model and constructs complete Pingping model
+ok 6 - src/pingping.js loads GLB model and constructs complete Pingping model
+  ---
+  duration_ms: 3.411196
+  type: 'test'
+  ...
+# Subtest: Pingping exported native attributes match the complete fallback recipe
+ok 7 - Pingping exported native attributes match the complete fallback recipe
+  ---
+  duration_ms: 22.557171
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 179.48937

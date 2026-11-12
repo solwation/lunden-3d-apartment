@@ -1,0 +1,46 @@
+<!doctype html><html><meta charset="utf-8"><link rel="icon" href="data:, "><title>Pingping production consumers — #1927</title>
+<style>body{margin:0}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as T from 'three';
+import {bed} from '../src/furniture.js';
+import {PINGPING as P,FURNITURE} from '../src/config.js';
+import {Pingping,loadPingpingModel} from '../src/pingping.js';
+import {Hand} from '../src/hand.js';
+import {createBestiaryModel} from '../src/bestiarymodels.js';
+const params=new URLSearchParams(location.search);
+if(!params.has('early'))await loadPingpingModel();
+const scene=new T.Scene();scene.background=new T.Color('#d1cbc0');
+scene.add(new T.HemisphereLight(0xf5f1e9,0x797b80,2));
+const light=new T.DirectionalLight(0xffffff,2.5);light.position.set(-2,4,3);scene.add(light);
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(1200,760);renderer.setPixelRatio(1);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;document.body.append(renderer.domElement);
+const camera=new T.PerspectiveCamera(70,1200/760,.02,40);scene.add(camera);
+const furniture=bed(FURNITURE.find(i=>i.pingping));scene.add(furniture);
+const pp=new Pingping(scene,camera,furniture.userData.things.find(t=>t.kind==='pingping'));
+const home=pp.home.pos.clone(),hand=new Hand(camera,scene);
+const floor=new T.Mesh(new T.PlaneGeometry(20,20),new T.MeshStandardMaterial({color:0xb8a494,roughness:1}));floor.rotation.x=-Math.PI/2;scene.add(floor);
+const collection=await createBestiaryModel({kind:'pingping'});collection.object.visible=false;scene.add(collection.object);
+const observer=new T.PerspectiveCamera(50,1200/760,.02,40);let renderCamera=camera;
+function view(mode){
+ renderCamera=camera;
+ pp.putBack();pp.goHome();pp.model.visible=true;collection.object.visible=false;furniture.visible=true;hand.update(0,null);pp.hearts.points.visible=false;
+ if(mode.startsWith('held')||mode.startsWith('hug')){
+  camera.position.set(0,1.62,2);camera.rotation.set(0,0,0);pp.take();pp.update(0);
+  if(mode.startsWith('hug')){pp.cool=0;pp.use();pp.update(P.hugTime/2)}
+  hand.update(0,pp);
+ }else{
+  let d=[.75,.55,1.25],target=home.clone().add(new T.Vector3(0,.18,0));
+  if(mode==='normal')d=[1.05,.95,2.4];
+  if(mode==='front'){d=[0,.22,1.0];furniture.visible=false;}
+  if(mode==='side'){d=[.95,.26,.03];furniture.visible=false;}
+  if(mode==='whole')d=[.62,.30,.85];
+  if(mode==='collection'){pp.model.visible=false;furniture.visible=false;collection.object.visible=true;collection.object.position.copy(home);d=[.62,.30,.85]}
+  camera.position.copy(home).add(new T.Vector3(...d));camera.lookAt(target);
+ }
+ camera.updateMatrixWorld(true);scene.updateMatrixWorld(true);
+ if(mode.endsWith('contact')){const at=pp.model.localToWorld(new T.Vector3(0,.18,0));observer.position.copy(camera.position).add(new T.Vector3(.72,-.28,.35));observer.lookAt(at);observer.updateMatrixWorld(true);renderCamera=observer;}
+ renderer.render(scene,renderCamera);
+}
+view('normal');
+window.pingping1927={T,P,scene,camera,renderer,furniture,pp,hand,collection,home,view,get renderCamera(){return renderCamera},loaded:!params.has('early'),loadPingpingModel};
+</script></html>

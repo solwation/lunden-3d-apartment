@@ -24,6 +24,20 @@ of its one 12-slot instanced mesh, one extra 12-float wing attribute and the exi
 at the existing small effect scale on every axis. The same contours paint ordinary
 butterfly marks and collection previews. [Reviewed actual views and costs](../verification/1925/README.md).
 
+### Sewn Pingping cushion (#1927)
+
+`src/pingpingsurface.js` / `PINGPING.surface` share the authored cushion recipe
+between GLB and the missing/late-load fallback. The product photo retains its
+original panel outlines, expression, flippers, feet and contact dimensions. A
+single shared 256px normal map suggests short pile; the existing 512px face atlas
+adds restrained panel stitching and colour grain. Shallow static joins/gathers
+suggest stuffing, while the original hug scale still performs the compression.
+No fur mesh, cloth simulation, new light, extra pass or per-frame geometry is added.
+The same immutable maps serve live and collection models; thumbnail disposal owns
+geometry/materials only. The embedded GLB maps are adopted into that shared cache,
+and a late asset reuses already-live fallback maps. [Reviewed images, native
+parity and increased asset transfer](../verification/1927/README.md).
+
 ### Santa surfaces (#1923)
 
 `SANTA.surface` contains the authored coat/head/hand/beard profiles and tessellation

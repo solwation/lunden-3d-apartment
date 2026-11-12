@@ -1,0 +1,34 @@
+{
+  "worker": "f95cbbd15be2598387b66a2f3fc2ab0ec0be30c0",
+  "integratedBase": "29218e24130739eab3d599ab5b4d7734b966313e",
+  "changelogId": 1487,
+  "exactFiles": {
+    "src/pingping.js": "34d188168dc1d7be7c49f0c43c7439b08c07c00ee51acb7eb25f371fee0979ed",
+    "src/pingpingsurface.js": "95f55c0cf74ccc20c46d1f3fd4b6703bd91fb92b6a51e328b0ad36209ded2419",
+    "src/furniture.js": "d11d316b42a626d9c6931da25bb42dc33b9504704cb56b9837545819c7382535",
+    "src/hand.js": "a4ab8914a060f7fb0f76184e18674fe1ad4f4876133830897722c359c271ab75",
+    "src/holdable.js": "d718c798c1c148c4bacc6087272afc5d237ec5db5d18980a3b594f1a3c311ca1",
+    "models/pingping.glb": "efd4aad1b5192241876affe722a1af99f232773848a4c3915f3eec92d2de1446",
+    "tools/pingpingrealism.html": "1046f0eee6f38cc63f713aaa35ccc41dc04aa4c0fde9978e73290549c749a316",
+    "tools/pingpingrealismtest.cjs": "f9a2543c707994cbad011d34f6afd5790e68685a23dbd797f200b9abc16a6dbc",
+    "tools/pingpingconsumerstest.cjs": "1555a54c018017a9711a4fc6062cf5e41925369a6f72f06d3809e1eb6d57a776",
+    "tools/buildpingpingglb.cjs": "748027102501f955ed19395f186f2ac9629176c67ac2cd736b2ad03a4e9f57e1",
+    "tools/buildfiguresglb.mjs": "f103c7cf882ee159d17e8d7b3e3643780e2c3fa3aa3f4c8f1bf68c881b9f447a",
+    "tools/figuresglbtest.mjs": "0ecb40460aa3f7383e13ee12b14d1cdd9890f9763dcfa111909da3419bd0fef9"
+  },
+  "scopedSources": {
+    "PINGPING": "a24b1f7fc1e80678aebda31e5d87ece028a7a0f6c1c26808d8d95f202701706d",
+    "bestiary pingping case": "25eb1c1b04ca24d733326afe1dbec631289eb4c6fadd3213c1fd16fea83ff01f"
+  },
+  "preservedCurrentFiles": {
+    "src/santa.js": "5a8eb7663eed5155651fa8daa303d51ce055e8215240b8e3adbfd1c4c4517556",
+    "models/santa.glb": "e4ee917e1880086042928412ccf6807e69f3437e739f0eecf040249fdd64c130",
+    "src/butterflymodel.js": "61b3066bb21837d86ee704df2dcd5ee79a9bfdd5fa12fc64a2e44bb4d9b41734",
+    "src/marks.js": "2fa3d2a211c61a088fc6e370a2da85fe25c57f2f311c0122b3d3127abc3353bd",
+    "src/outdoorcats.js": "b49e31e1360e815eb5479228035b82545bbb3e78f55a91a1767485acf6c85ed6",
+    "src/shark.js": "137f852b851f0080bffb878b8e234545785de9a77c68fdcac9c5589f8bafe345",
+    "src/ghostprops.js": "bf1742332389a8097ebd05b75b927fd6dd6d8dda944288c422fc47bcc7269d4e",
+    "src/riverfishmodel.js": "5bdd5c46c16508fc9901b20f3a4e2eae42eed372b0b95526bf43c5412adc38da"
+  },
+  "imagesExact": true
+}

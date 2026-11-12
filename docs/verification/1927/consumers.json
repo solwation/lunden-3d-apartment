@@ -1,0 +1,733 @@
+{
+  "environment": "Actual component consumers, Chromium/SwiftShader. Loaded/404/delayed GLB, production Hand, BestiaryImages, IndexedDB and collection metadata. No full World/device performance claim.",
+  "hashes": {
+    "src/pingping.js": "34d188168dc1d7be7c49f0c43c7439b08c07c00ee51acb7eb25f371fee0979ed",
+    "src/pingpingsurface.js": "95f55c0cf74ccc20c46d1f3fd4b6703bd91fb92b6a51e328b0ad36209ded2419",
+    "src/config.js": "36b7521136fc14e22a169db2abfd4a29a320aea36fe4d8e503ae6990b24f8073",
+    "src/bestiarymodels.js": "4199a0c1f5b4e406ac0026ebf3353a775c2fbb539d4174101cf9a830491def4b",
+    "models/pingping.glb": "efd4aad1b5192241876affe722a1af99f232773848a4c3915f3eec92d2de1446"
+  },
+  "rows": [
+    {
+      "mode": "loaded",
+      "rawGeometry": 591552,
+      "rawTexture": 1310720,
+      "geometryCount": 16,
+      "textureObjects": 2,
+      "images": 2,
+      "finite": [],
+      "poses": [
+        {
+          "mode": "normal",
+          "intended": 5260,
+          "calls": 4,
+          "triangles": 4168,
+          "matrix": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0.9872272833756269,
+            -0.159318206614246,
+            0,
+            0,
+            0.159318206614246,
+            0.9872272833756269,
+            0,
+            0,
+            0.6871042802655459,
+            -0.86,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "grips": [
+            [
+              0.188,
+              0.182,
+              0.03
+            ],
+            [
+              -0.188,
+              0.182,
+              0.03
+            ]
+          ],
+          "hearts": false
+        },
+        {
+          "mode": "held",
+          "intended": 52898,
+          "calls": 3,
+          "triangles": 3832,
+          "matrix": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0.9004471023526769,
+            -0.43496553411123023,
+            0,
+            0,
+            0.43496553411123023,
+            0.9004471023526769,
+            0,
+            0,
+            1.0500000000000003,
+            1.55,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "grips": [
+            [
+              0.188,
+              0.182,
+              0.03
+            ],
+            [
+              -0.188,
+              0.182,
+              0.03
+            ]
+          ],
+          "hearts": false
+        },
+        {
+          "mode": "hug",
+          "intended": 40235,
+          "calls": 3,
+          "triangles": 3832,
+          "matrix": [
+            1.077,
+            0,
+            0,
+            0,
+            0,
+            0.860827429849159,
+            -0.4158270506103361,
+            0,
+            0,
+            0.3392731166067596,
+            0.7023487398350879,
+            0,
+            0,
+            1.0700000000000003,
+            1.65,
+            1
+          ],
+          "scale": [
+            1.077,
+            0.956,
+            0.78
+          ],
+          "grips": [
+            [
+              0.188,
+              0.182,
+              0.03
+            ],
+            [
+              -0.188,
+              0.182,
+              0.03
+            ]
+          ],
+          "hearts": true
+        },
+        {
+          "mode": "held-contact",
+          "intended": 44141,
+          "calls": 4,
+          "triangles": 4168,
+          "matrix": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0.9004471023526769,
+            -0.43496553411123023,
+            0,
+            0,
+            0.43496553411123023,
+            0.9004471023526769,
+            0,
+            0,
+            1.0500000000000003,
+            1.55,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "grips": [
+            [
+              0.188,
+              0.182,
+              0.03
+            ],
+            [
+              -0.188,
+              0.182,
+              0.03
+            ]
+          ],
+          "hearts": false
+        },
+        {
+          "mode": "hug-contact",
+          "intended": 48756,
+          "calls": 4,
+          "triangles": 4168,
+          "matrix": [
+            1.077,
+            0,
+            0,
+            0,
+            0,
+            0.860827429849159,
+            -0.4158270506103361,
+            0,
+            0,
+            0.3392731166067596,
+            0.7023487398350879,
+            0,
+            0,
+            1.0700000000000003,
+            1.65,
+            1
+          ],
+          "scale": [
+            1.077,
+            0.956,
+            0.78
+          ],
+          "grips": [
+            [
+              0.188,
+              0.182,
+              0.03
+            ],
+            [
+              -0.188,
+              0.182,
+              0.03
+            ]
+          ],
+          "hearts": true
+        }
+      ],
+      "stableGeometry": true,
+      "placed": true,
+      "homeRestored": true,
+      "sameGeometry": true,
+      "sameMaps": true,
+      "disposedShared": 0,
+      "cache": {
+        "version": 2,
+        "newKey": "figure:pingping:2:320",
+        "old": "obsolete old render",
+        "stored": true,
+        "rendered": 1,
+        "hits": 1,
+        "reused": true,
+        "opaque": 21377,
+        "discoveryUnchanged": true,
+        "photo": "retained personal photo"
+      },
+      "awayCalls": 0
+    },
+    {
+      "mode": "missing",
+      "rawGeometry": 443664,
+      "rawTexture": 1310720,
+      "geometryCount": 12,
+      "textureObjects": 2,
+      "images": 2,
+      "finite": [],
+      "poses": [
+        {
+          "mode": "normal",
+          "intended": 5259,
+          "calls": 4,
+          "triangles": 4168,
+          "matrix": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0.9872272833756269,
+            -0.159318206614246,
+            0,
+            0,
+            0.159318206614246,
+            0.9872272833756269,
+            0,
+            0,
+            0.6871042802655459,
+            -0.86,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "grips": [
+            [
+              0.188,
+              0.182,
+              0.03
+            ],
+            [
+              -0.188,
+              0.182,
+              0.03
+            ]
+          ],
+          "hearts": false
+        },
+        {
+          "mode": "held",
+          "intended": 52942,
+          "calls": 3,
+          "triangles": 3832,
+          "matrix": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0.9004471023526769,
+            -0.43496553411123023,
+            0,
+            0,
+            0.43496553411123023,
+            0.9004471023526769,
+            0,
+            0,
+            1.0500000000000003,
+            1.55,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "grips": [
+            [
+              0.188,
+              0.182,
+              0.03
+            ],
+            [
+              -0.188,
+              0.182,
+              0.03
+            ]
+          ],
+          "hearts": false
+        },
+        {
+          "mode": "hug",
+          "intended": 41332,
+          "calls": 3,
+          "triangles": 3832,
+          "matrix": [
+            1.077,
+            0,
+            0,
+            0,
+            0,
+            0.860827429849159,
+            -0.4158270506103361,
+            0,
+            0,
+            0.3392731166067596,
+            0.7023487398350879,
+            0,
+            0,
+            1.0700000000000003,
+            1.65,
+            1
+          ],
+          "scale": [
+            1.077,
+            0.956,
+            0.78
+          ],
+          "grips": [
+            [
+              0.188,
+              0.182,
+              0.03
+            ],
+            [
+              -0.188,
+              0.182,
+              0.03
+            ]
+          ],
+          "hearts": true
+        },
+        {
+          "mode": "held-contact",
+          "intended": 44147,
+          "calls": 4,
+          "triangles": 4168,
+          "matrix": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0.9004471023526769,
+            -0.43496553411123023,
+            0,
+            0,
+            0.43496553411123023,
+            0.9004471023526769,
+            0,
+            0,
+            1.0500000000000003,
+            1.55,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "grips": [
+            [
+              0.188,
+              0.182,
+              0.03
+            ],
+            [
+              -0.188,
+              0.182,
+              0.03
+            ]
+          ],
+          "hearts": false
+        },
+        {
+          "mode": "hug-contact",
+          "intended": 48782,
+          "calls": 4,
+          "triangles": 4168,
+          "matrix": [
+            1.077,
+            0,
+            0,
+            0,
+            0,
+            0.860827429849159,
+            -0.4158270506103361,
+            0,
+            0,
+            0.3392731166067596,
+            0.7023487398350879,
+            0,
+            0,
+            1.0700000000000003,
+            1.65,
+            1
+          ],
+          "scale": [
+            1.077,
+            0.956,
+            0.78
+          ],
+          "grips": [
+            [
+              0.188,
+              0.182,
+              0.03
+            ],
+            [
+              -0.188,
+              0.182,
+              0.03
+            ]
+          ],
+          "hearts": true
+        }
+      ],
+      "stableGeometry": true,
+      "placed": true,
+      "homeRestored": true,
+      "sameGeometry": true,
+      "sameMaps": true,
+      "disposedShared": 0,
+      "cache": {
+        "version": 2,
+        "newKey": "figure:pingping:2:320",
+        "old": "obsolete old render",
+        "stored": true,
+        "rendered": 1,
+        "hits": 1,
+        "reused": true,
+        "opaque": 21377,
+        "discoveryUnchanged": true,
+        "photo": "retained personal photo"
+      },
+      "awayCalls": 0
+    },
+    {
+      "mode": "late",
+      "rawGeometry": 591552,
+      "rawTexture": 1310720,
+      "geometryCount": 16,
+      "textureObjects": 2,
+      "images": 2,
+      "finite": [],
+      "poses": [
+        {
+          "mode": "normal",
+          "intended": 5259,
+          "calls": 4,
+          "triangles": 4168,
+          "matrix": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0.9872272833756269,
+            -0.159318206614246,
+            0,
+            0,
+            0.159318206614246,
+            0.9872272833756269,
+            0,
+            0,
+            0.6871042802655459,
+            -0.86,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "grips": [
+            [
+              0.188,
+              0.182,
+              0.03
+            ],
+            [
+              -0.188,
+              0.182,
+              0.03
+            ]
+          ],
+          "hearts": false
+        },
+        {
+          "mode": "held",
+          "intended": 52942,
+          "calls": 3,
+          "triangles": 3832,
+          "matrix": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0.9004471023526769,
+            -0.43496553411123023,
+            0,
+            0,
+            0.43496553411123023,
+            0.9004471023526769,
+            0,
+            0,
+            1.0500000000000003,
+            1.55,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "grips": [
+            [
+              0.188,
+              0.182,
+              0.03
+            ],
+            [
+              -0.188,
+              0.182,
+              0.03
+            ]
+          ],
+          "hearts": false
+        },
+        {
+          "mode": "hug",
+          "intended": 40789,
+          "calls": 3,
+          "triangles": 3832,
+          "matrix": [
+            1.077,
+            0,
+            0,
+            0,
+            0,
+            0.860827429849159,
+            -0.4158270506103361,
+            0,
+            0,
+            0.3392731166067596,
+            0.7023487398350879,
+            0,
+            0,
+            1.0700000000000003,
+            1.65,
+            1
+          ],
+          "scale": [
+            1.077,
+            0.956,
+            0.78
+          ],
+          "grips": [
+            [
+              0.188,
+              0.182,
+              0.03
+            ],
+            [
+              -0.188,
+              0.182,
+              0.03
+            ]
+          ],
+          "hearts": true
+        },
+        {
+          "mode": "held-contact",
+          "intended": 44147,
+          "calls": 4,
+          "triangles": 4168,
+          "matrix": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0.9004471023526769,
+            -0.43496553411123023,
+            0,
+            0,
+            0.43496553411123023,
+            0.9004471023526769,
+            0,
+            0,
+            1.0500000000000003,
+            1.55,
+            1
+          ],
+          "scale": [
+            1,
+            1,
+            1
+          ],
+          "grips": [
+            [
+              0.188,
+              0.182,
+              0.03
+            ],
+            [
+              -0.188,
+              0.182,
+              0.03
+            ]
+          ],
+          "hearts": false
+        },
+        {
+          "mode": "hug-contact",
+          "intended": 48782,
+          "calls": 4,
+          "triangles": 4168,
+          "matrix": [
+            1.077,
+            0,
+            0,
+            0,
+            0,
+            0.860827429849159,
+            -0.4158270506103361,
+            0,
+            0,
+            0.3392731166067596,
+            0.7023487398350879,
+            0,
+            0,
+            1.0700000000000003,
+            1.65,
+            1
+          ],
+          "scale": [
+            1.077,
+            0.956,
+            0.78
+          ],
+          "grips": [
+            [
+              0.188,
+              0.182,
+              0.03
+            ],
+            [
+              -0.188,
+              0.182,
+              0.03
+            ]
+          ],
+          "hearts": true
+        }
+      ],
+      "stableGeometry": true,
+      "placed": true,
+      "homeRestored": true,
+      "sameGeometry": true,
+      "sameMaps": true,
+      "disposedShared": 0,
+      "cache": {
+        "version": 2,
+        "newKey": "figure:pingping:2:320",
+        "old": "obsolete old render",
+        "stored": true,
+        "rendered": 1,
+        "hits": 1,
+        "reused": true,
+        "opaque": 21377,
+        "discoveryUnchanged": true,
+        "photo": "retained personal photo"
+      },
+      "awayCalls": 0
+    }
+  ],
+  "pass": true
+}

@@ -2,7 +2,7 @@ import { modelURL } from './modelurl.js';
 import { discoverCreature } from './bestiaryevents.js';
 import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import {buildPingpingSurface,pingpingMaterials,adoptPingpingTextures} from './pingpingsurface.js';
 import { PINGPING as P } from './config.js';
 import { sfx } from './audio.js';
 import { Thing, KINDS } from './things.js';
@@ -13,8 +13,6 @@ import { Thing, KINDS } from './things.js';
 // (things.js): E takes him into your arms — both hands round his sides (hand.js 'hug') — E puts him down on a bed,
 // a sofa, a table or the floor (he sits up, facing you) or back between the pillows; F sends him home.
 // A hug (click / "Krama"): he is pulled in and squashed, a happy squeak, hearts rise (one additive Points).
-
-const SEG = [48, 32];
 
 let pingpingModelData = null;
 let pingpingModelLoading = null;
@@ -40,7 +38,11 @@ export function loadPingpingModel() {
           }
           const buf = fs.readFileSync(modelPath);
           const arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
-          new GLTFLoader().parse(arrayBuffer, '', (gltf) => {
+          // Node tools inspect geometry; browser canvas/ImageBitmap owns the embedded cloth maps.
+          const loader=new GLTFLoader();
+          loader.register(parser=>{parser.loadTexture=()=>Promise.resolve(null);return {name:'PingpingNodeGeometryOnly'};});
+          loader.parse(arrayBuffer, '', (gltf) => {
+            adoptPingpingTextures(gltf);
             pingpingModelData = gltf;
             resolve(gltf);
           }, reject);
@@ -52,6 +54,7 @@ export function loadPingpingModel() {
         import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
           const url = modelURL('../models/pingping.glb', import.meta.url).href;
           new GLTFLoader().load(url, (gltf) => {
+            adoptPingpingTextures(gltf);
             pingpingModelData = gltf;
             resolve(gltf);
           }, undefined, (err) => {
@@ -72,68 +75,10 @@ if (typeof window !== 'undefined') {
   loadPingpingModel().catch(() => {});
 }
 
-/** A unit-sphere direction pushed out towards a rounded box (superellipsoid), then scaled to his size. */
-function shape(geo, grow = 1) {
-  const a = geo.attributes.position, v = new THREE.Vector3(), n = 2.6;
-  for (let i = 0; i < a.count; i++) {
-    v.fromBufferAttribute(a, i);
-    const k = (Math.abs(v.x) ** n + Math.abs(v.y) ** n + Math.abs(v.z) ** n) ** (1 / n);
-    v.divideScalar(k || 1);
-    a.setXYZ(i, v.x * P.w / 2 * grow, P.h / 2 + v.y * P.h / 2 * grow, v.z * P.d / 2 * grow);
-  }
-  geo.computeVertexNormals();
-  return geo;
-}
-
-/** The front: face mask, eyes, cheeks, beak and belly on a transparent canvas, u = x across, v = y up the front. */
-function faceTexture() {
-  const S = 512, c = document.createElement('canvas');
-  c.width = c.height = S;
-  const g = c.getContext('2d');
-  const X = (u) => u * S, Y = (v) => (1 - v) * S;
-  g.fillStyle = P.white;
-  // the mask: a wide band over the upper third, two lobes over the eyes with a dip between them, rounded below
-  g.beginPath();
-  g.moveTo(X(0.5), Y(0.885));
-  g.bezierCurveTo(X(0.42), Y(0.95), X(0.2), Y(0.95), X(0.19), Y(0.8));
-  g.bezierCurveTo(X(0.18), Y(0.69), X(0.32), Y(0.655), X(0.5), Y(0.655));
-  g.bezierCurveTo(X(0.68), Y(0.655), X(0.82), Y(0.69), X(0.81), Y(0.8));
-  g.bezierCurveTo(X(0.8), Y(0.95), X(0.58), Y(0.95), X(0.5), Y(0.885));
-  g.fill();
-  // the belly: a big oval
-  g.beginPath(); g.ellipse(X(0.5), Y(0.315), 0.31 * S, 0.27 * S, 0, 0, Math.PI * 2); g.fill();
-  // cheeks
-  g.fillStyle = P.cheek;
-  for (const u of [0.26, 0.74]) { g.beginPath(); g.ellipse(X(u), Y(0.79), 0.028 * S, 0.02 * S, 0, 0, Math.PI * 2); g.fill(); }
-  // eyes
-  g.fillStyle = '#111114';
-  for (const u of [0.355, 0.645]) { g.beginPath(); g.ellipse(X(u), Y(0.815), 0.018 * S, 0.02 * S, 0, 0, Math.PI * 2); g.fill(); }
-  // the beak: flat on top, round below, a stitched outline
-  g.fillStyle = P.beak;
-  g.beginPath();
-  g.moveTo(X(0.445), Y(0.82));
-  g.lineTo(X(0.555), Y(0.82));
-  g.bezierCurveTo(X(0.565), Y(0.755), X(0.435), Y(0.755), X(0.445), Y(0.82));
-  g.fill();
-  g.strokeStyle = '#b89a3c'; g.lineWidth = S * 0.004; g.setLineDash([S * 0.008, S * 0.005]);
-  g.beginPath();
-  g.moveTo(X(0.453), Y(0.813)); g.lineTo(X(0.547), Y(0.813));
-  g.bezierCurveTo(X(0.555), Y(0.765), X(0.445), Y(0.765), X(0.453), Y(0.813));
-  g.stroke();
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 4;
-  return t;
-}
-
 /** Pingping, his bottom centre at the origin, facing +z. */
 export function pingpingModel() {
   const g = new THREE.Group();
-  const navy = new THREE.MeshStandardMaterial({ color: P.navy, roughness: 1 });
-  const faceMat = (typeof document !== 'undefined')
-    ? new THREE.MeshStandardMaterial({ map: faceTexture(), roughness: 1, alphaTest: 0.5, polygonOffset: true, polygonOffsetFactor: -1 })
-    : new THREE.MeshStandardMaterial({ roughness: 1, alphaTest: 0.5 });
-  const feetMat = new THREE.MeshStandardMaterial({ color: P.feet, roughness: 0.95 });
+  const {navy,face:faceMat,feet:feetMat}=pingpingMaterials();
 
   if (pingpingModelData?.scene) {
     let bodyGeo = null, faceGeo = null, flippersGeo = null, feetGeo = null;
@@ -153,21 +98,9 @@ export function pingpingModel() {
     }
   }
 
-  const body = new THREE.Mesh(shape(new THREE.SphereGeometry(1, ...SEG)), navy);
-  // the painted front: the front ±72° of the same shape, a hair outside it; planar UVs seen from the front
-  const front = shape(new THREE.SphereGeometry(1, 40, 28, Math.PI / 2 - 1.25, 2.5), 1.008);
-  const a = front.attributes.position, uv = front.attributes.uv;
-  for (let i = 0; i < a.count; i++) uv.setXY(i, a.getX(i) / P.w + 0.5, a.getY(i) / P.h);
-  const face = new THREE.Mesh(front, faceMat);
-  // flippers: short, flat, angled down at the sides
-  const flip = [-1, 1].map((s) => new THREE.SphereGeometry(1, 14, 10).scale(0.035, 0.08, 0.028).rotateZ(s * 0.65)
-    .translate(s * (P.w / 2 - 0.004), P.h * 0.47, 0.01));
-  const flippers = new THREE.Mesh(mergeGeometries(flip), navy);
-  // feet peeking out at the bottom front
-  const ft = [-1, 1].map((s) => new THREE.SphereGeometry(1, 14, 8).scale(0.045, 0.024, 0.045).translate(s * 0.075, 0.022, P.d / 2 - 0.035));
-  const feet = new THREE.Mesh(mergeGeometries(ft), feetMat);
-  for (const m of [body, face, flippers, feet]) { m.castShadow = true; m.receiveShadow = true; g.add(m); }
-  return g;
+  // Missing or not-yet-loaded asset uses exactly the same static authored surface.
+  navy.dispose();faceMat.dispose();feetMat.dispose();
+  return buildPingpingSurface();
 }
 
 /** A soft pink heart with a glow (the hearts that rise when he is hugged). */
@@ -284,4 +217,4 @@ export class Pingping extends Thing {
 
 KINDS.pingping = Pingping; // furniture.js lists him in the bed's userData.things with kind 'pingping'
 
-creature({id:'figure:pingping',no:65,name:'Pingping',family:'figures',level:1,model:{kind:'pingping'},info:{size:`${Math.round(P.h*100)} cm modellhöjd`,weight:'En mjuk kudde',where:'Sängen hemma',when:'Alltid redo för en kram',likes:'Kramar'},facts:['En pingvinkudde som piper och visar hjärtan.','En mötbar, rörlig figur; vanliga stilla leksaker är inte djurposter.']});
+creature({id:'figure:pingping',modelVersion:2,no:65,name:'Pingping',family:'figures',level:1,model:{kind:'pingping'},info:{size:`${Math.round(P.h*100)} cm modellhöjd`,weight:'En mjuk kudde',where:'Sängen hemma',when:'Alltid redo för en kram',likes:'Kramar'},facts:['En pingvinkudde som piper och visar hjärtan.','En mötbar, rörlig figur; vanliga stilla leksaker är inte djurposter.']});

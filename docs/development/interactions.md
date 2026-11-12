@@ -1780,6 +1780,16 @@ phases; projectile/hit origins (Rifle hitscan eye ray, Nerf origin `where() + di
 Wand star world position and eye ray, Saber tip segment `localToWorld(0, hilt+blade, 0)`)
 Native audit: 54/54 PASS / CLI 0. WebGL `--render`: 66/66 PASS / CLI 0 at 480×300/FOV72/DPR1.
 
+## Pingping surface and collection cache (#1927)
+
+The cushion's shared sewn surface changes no `Pingping`/`Hearts` controller,
+`PINGPING.grips`, `held`, home, squash, pull or hug timing. Matched model/camera/grip
+matrices remain exact in bed, held and compressed views. Pingping alone uses
+`modelVersion:2`; actual `BestiaryImages`/IndexedDB checks reject a persisted v1
+thumbnail, render/store v2 once and retain discovery metadata and personal photos.
+Collection disposal releases its geometry/materials while preserving the shared
+cushion maps. [Loaded/missing/late consumers and cache evidence](../verification/1927/README.md).
+
 ## Representative palm and two-hand grip audit (#914)
 
 `tools/palmhuggriptest.cjs GAME OUT` exercises actual Hand with three production representatives:

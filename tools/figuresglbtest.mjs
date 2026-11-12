@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { loadSantaModel, santaFigure, Santa } from '../src/santa.js';
 import { loadPingpingModel, pingpingModel } from '../src/pingping.js';
+import { buildPingpingSurface } from '../src/pingpingsurface.js';
 
 test('models/santa.glb exists and contains valid glTF binary header', () => {
   const file = path.resolve(process.cwd(), 'models/santa.glb');
@@ -66,6 +67,8 @@ test('santa.glb contains required meshes (body, arms, legs sitting/sleeping, gla
 
 test('pingping.glb contains body, face, flippers, and feet', async () => {
   const loader = new GLTFLoader();
+  // Node verifies native geometry; #1927 browser checks decode/render the embedded maps.
+  loader.register(parser=>{parser.loadTexture=()=>Promise.resolve(null);return {name:'PingpingNodeGeometryOnly'};});
   const file = path.resolve(process.cwd(), 'models/pingping.glb');
   const buf = fs.readFileSync(file);
   const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
@@ -134,4 +137,27 @@ test('src/pingping.js loads GLB model and constructs complete Pingping model', a
   assert.ok(face.isMesh && face.geometry.attributes.position.count > 0);
   assert.ok(flippers.isMesh && flippers.geometry.attributes.position.count > 0);
   assert.ok(feet.isMesh && feet.geometry.attributes.position.count > 0);
+});
+
+test('Pingping exported native attributes match the complete fallback recipe', async () => {
+  const gltf=await loadPingpingModel(),fallback=buildPingpingSurface();
+  for(const mesh of fallback.children){
+    const exported=gltf.scene.getObjectByName(mesh.name).geometry;
+    assert.deepEqual(Object.keys(exported.attributes).sort(),Object.keys(mesh.geometry.attributes).sort());
+    for(const [name,attribute]of Object.entries(mesh.geometry.attributes)){
+      if(name!=='normal'){assert.deepEqual(exported.attributes[name].array,attribute.array,mesh.name+'/'+name);continue;}
+      // GLTFExporter normalises Float32 normals. Its (1,0,0) for unused sphere-pole vertices
+      // is also allowed, provided those zero-normal vertices cannot be submitted by the index.
+      for(let i=0;i<attribute.count;i++){
+        const a=new THREE.Vector3().fromBufferAttribute(attribute,i),b=new THREE.Vector3().fromBufferAttribute(exported.attributes.normal,i);
+        if(a.lengthSq()===0){assert(!mesh.geometry.index.array.includes(i),mesh.name+' unused zero-normal pole');assert.deepEqual(b.toArray(),[1,0,0]);}
+        else assert(a.normalize().distanceTo(b)<1e-7,mesh.name+' normal export rounding');
+      }
+    }
+    assert.deepEqual(exported.index?.array,mesh.geometry.index?.array,mesh.name+'/index');
+  }
+  const bytes=fs.readFileSync('models/pingping.glb'),json=JSON.parse(bytes.toString('utf8',20,20+bytes.readUInt32LE(12)));
+  assert.equal(json.images.length,2,'one face atlas and one shared short-pile normal map');
+  assert(json.materials.every(m=>m.normalTexture),'the exported recipe includes cloth normals on every material');
+  assert(json.materials.find(m=>m.name==='Mat_PingpingFace').pbrMetallicRoughness.baseColorTexture,'exported face is textured');
 });

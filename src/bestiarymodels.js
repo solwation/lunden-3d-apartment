@@ -19,7 +19,7 @@ export async function createBestiaryModel(recipe) {
   case 'gull': { const {gullGeometry}=await import('./gullmodel.js');object=mesh(gullGeometry(true),new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,side:THREE.DoubleSide}));sharedGeometry=true;break; }
   case 'santa': object=(await import('./santa.js')).santaPortrait();ownTextures=true;break;
   case 'olof': { const {buildOlof}=await import('./olof.js'); object=buildOlof().object;break; }
-  case 'pingping': object=(await import('./pingping.js')).pingpingModel();ownTextures=true;break;
+  case 'pingping': object=(await import('./pingping.js')).pingpingModel();break; // immutable cushion maps are shared, not owned by a thumbnail
   default:throw new Error(`Unknown creature model ${recipe.kind}`);
  }
  object.traverse(o=>{o.castShadow=false;o.receiveShadow=false;});
