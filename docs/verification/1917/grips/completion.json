@@ -1,0 +1,207 @@
+{
+  "rows": [
+    {
+      "ok": true,
+      "label": "cup/rest: Hand preserves whole item world matrix, parent and contents/action state"
+    },
+    {
+      "ok": true,
+      "label": "cup/rest: actual modeled contact follows existing grip without drift"
+    },
+    {
+      "ok": true,
+      "label": "cup/use: Hand preserves whole item world matrix, parent and contents/action state"
+    },
+    {
+      "ok": true,
+      "label": "cup/use: actual modeled contact follows existing grip without drift"
+    },
+    {
+      "ok": true,
+      "label": "cup/moved: Hand preserves whole item world matrix, parent and contents/action state"
+    },
+    {
+      "ok": true,
+      "label": "cup/moved: actual modeled contact follows existing grip without drift"
+    },
+    {
+      "ok": true,
+      "label": "fish/rest: Hand preserves whole item world matrix, parent and contents/action state"
+    },
+    {
+      "ok": true,
+      "label": "fish/rest: actual modeled contact follows existing grip without drift"
+    },
+    {
+      "ok": true,
+      "label": "fish/use: Hand preserves whole item world matrix, parent and contents/action state"
+    },
+    {
+      "ok": true,
+      "label": "fish/use: actual modeled contact follows existing grip without drift"
+    },
+    {
+      "ok": true,
+      "label": "fish/moved: Hand preserves whole item world matrix, parent and contents/action state"
+    },
+    {
+      "ok": true,
+      "label": "fish/moved: actual modeled contact follows existing grip without drift"
+    },
+    {
+      "ok": true,
+      "label": "bottle/rest: Hand preserves whole item world matrix, parent and contents/action state"
+    },
+    {
+      "ok": true,
+      "label": "bottle/rest: actual modeled contact follows existing grip without drift"
+    },
+    {
+      "ok": true,
+      "label": "bottle/use: Hand preserves whole item world matrix, parent and contents/action state"
+    },
+    {
+      "ok": true,
+      "label": "bottle/use: actual modeled contact follows existing grip without drift"
+    },
+    {
+      "ok": true,
+      "label": "bottle/moved: Hand preserves whole item world matrix, parent and contents/action state"
+    },
+    {
+      "ok": true,
+      "label": "bottle/moved: actual modeled contact follows existing grip without drift"
+    },
+    {
+      "ok": true,
+      "label": "glass/rest: Hand preserves whole item world matrix, parent and contents/action state"
+    },
+    {
+      "ok": true,
+      "label": "glass/rest: actual modeled contact follows existing grip without drift"
+    },
+    {
+      "ok": true,
+      "label": "glass/use: Hand preserves whole item world matrix, parent and contents/action state"
+    },
+    {
+      "ok": true,
+      "label": "glass/use: actual modeled contact follows existing grip without drift"
+    },
+    {
+      "ok": true,
+      "label": "glass/moved: Hand preserves whole item world matrix, parent and contents/action state"
+    },
+    {
+      "ok": true,
+      "label": "glass/moved: actual modeled contact follows existing grip without drift"
+    },
+    {
+      "ok": true,
+      "label": "scoop/rest: Hand preserves whole item world matrix, parent and contents/action state"
+    },
+    {
+      "ok": true,
+      "label": "scoop/rest: actual modeled contact follows existing grip without drift"
+    },
+    {
+      "ok": true,
+      "label": "scoop/use: Hand preserves whole item world matrix, parent and contents/action state"
+    },
+    {
+      "ok": true,
+      "label": "scoop/use: actual modeled contact follows existing grip without drift"
+    },
+    {
+      "ok": true,
+      "label": "scoop/moved: Hand preserves whole item world matrix, parent and contents/action state"
+    },
+    {
+      "ok": true,
+      "label": "scoop/moved: actual modeled contact follows existing grip without drift"
+    },
+    {
+      "ok": true,
+      "label": "actual bottle/glass fallback models use unit root scale; double-scale hypothesis not established for these items"
+    },
+    {
+      "ok": true,
+      "label": "actual fish-finger pinch keeps existing0.62 curl"
+    },
+    {
+      "ok": true,
+      "label": "cup keeps its explicit modeled handle grip"
+    },
+    {
+      "ok": true,
+      "label": "cup/rest: native hand/contact visible within original72deg camera"
+    },
+    {
+      "ok": true,
+      "label": "cup/use: native hand/contact visible within original72deg camera"
+    },
+    {
+      "ok": true,
+      "label": "cup/moved: native hand/contact visible within original72deg camera"
+    },
+    {
+      "ok": true,
+      "label": "fish/rest: native hand/contact visible within original72deg camera"
+    },
+    {
+      "ok": true,
+      "label": "fish/use: native hand/contact visible within original72deg camera"
+    },
+    {
+      "ok": true,
+      "label": "fish/moved: native hand/contact visible within original72deg camera"
+    },
+    {
+      "ok": true,
+      "label": "bottle/rest: native hand/contact visible within original72deg camera"
+    },
+    {
+      "ok": true,
+      "label": "bottle/use: native hand/contact visible within original72deg camera"
+    },
+    {
+      "ok": true,
+      "label": "bottle/moved: native hand/contact visible within original72deg camera"
+    },
+    {
+      "ok": true,
+      "label": "glass/rest: native hand/contact visible within original72deg camera"
+    },
+    {
+      "ok": true,
+      "label": "glass/use: native hand/contact visible within original72deg camera"
+    },
+    {
+      "ok": true,
+      "label": "glass/moved: native hand/contact visible within original72deg camera"
+    },
+    {
+      "ok": true,
+      "label": "scoop/rest: native hand/contact visible within original72deg camera"
+    },
+    {
+      "ok": true,
+      "label": "scoop/use: native hand/contact visible within original72deg camera"
+    },
+    {
+      "ok": true,
+      "label": "scoop/moved: native hand/contact visible within original72deg camera"
+    },
+    {
+      "ok": true,
+      "label": "zero browser errors"
+    },
+    {
+      "ok": true,
+      "label": "all executed sources unchanged"
+    }
+  ],
+  "errors": [],
+  "changed": [],
+  "failed": 0
+}

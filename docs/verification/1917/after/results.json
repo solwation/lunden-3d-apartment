@@ -1,0 +1,1052 @@
+{
+  "phase": "after",
+  "head": "6c445258cb0ad6bb72832caae7cbdfd9e0ee9145",
+  "handSHA256": "04d313f87b0087183ec7a30738c0b54025d82772773084da1f06316bdbcdd5cd",
+  "environment": {
+    "browser": "156.0.8078.4",
+    "renderer": "SwiftShader",
+    "viewport": [
+      1000,
+      700
+    ],
+    "dpr": 1
+  },
+  "rows": [
+    {
+      "mode": "reach",
+      "detail": false,
+      "calls": 3,
+      "triangles": 4980,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        0,
+        1,
+        0
+      ],
+      "rightPosition": [
+        0.12497282101790336,
+        -0.16014703897940386,
+        -0.45251093325892905
+      ],
+      "leftPosition": [
+        0,
+        0,
+        0
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        -0.3427443859173196,
+        -0.00498068453479103,
+        -0.47678060126412597
+      ],
+      "inspectionTarget": [
+        0.11594138761299402,
+        -0.14347560228183037,
+        -0.48193025359593694
+      ]
+    },
+    {
+      "mode": "reach",
+      "detail": true,
+      "calls": 3,
+      "triangles": 4980,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        0,
+        1,
+        0
+      ],
+      "rightPosition": [
+        0.12497282101790336,
+        -0.16014703897940386,
+        -0.45251093325892905
+      ],
+      "leftPosition": [
+        0,
+        0,
+        0
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        -0.3427443859173196,
+        -0.00498068453479103,
+        -0.47678060126412597
+      ],
+      "inspectionTarget": [
+        0.11594138761299402,
+        -0.14347560228183037,
+        -0.48193025359593694
+      ]
+    },
+    {
+      "mode": "reach",
+      "detail": "back",
+      "calls": 3,
+      "triangles": 4980,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        0,
+        1,
+        0
+      ],
+      "rightPosition": [
+        0.12497282101790336,
+        -0.16014703897940386,
+        -0.45251093325892905
+      ],
+      "leftPosition": [
+        0,
+        0,
+        0
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        0.4985070662151876,
+        -0.004980684534791002,
+        -0.7350362774552751
+      ],
+      "inspectionTarget": [
+        0.11594138761299402,
+        -0.14347560228183037,
+        -0.48193025359593694
+      ]
+    },
+    {
+      "mode": "grip",
+      "detail": false,
+      "calls": 3,
+      "triangles": 4980,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        0.999503577293814,
+        0,
+        0
+      ],
+      "rightPosition": [
+        0.05144651655930261,
+        -0.15542603364270585,
+        -0.3834437136150391
+      ],
+      "leftPosition": [
+        0,
+        0,
+        0
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        -0.4099640343828159,
+        0.005495871294696808,
+        -0.315403696047373
+      ],
+      "inspectionTarget": [
+        0.03740652361941157,
+        -0.13764204258551052,
+        -0.4101197002008321
+      ]
+    },
+    {
+      "mode": "grip",
+      "detail": true,
+      "calls": 3,
+      "triangles": 4980,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        0.9999997535644967,
+        0,
+        0
+      ],
+      "rightPosition": [
+        0.05144651655930261,
+        -0.15542603364270585,
+        -0.3834437136150391
+      ],
+      "leftPosition": [
+        0,
+        0,
+        0
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        -0.4099640343828159,
+        0.005495871294696808,
+        -0.315403696047373
+      ],
+      "inspectionTarget": [
+        0.03740652361941157,
+        -0.13764204258551052,
+        -0.4101197002008321
+      ]
+    },
+    {
+      "mode": "grip",
+      "detail": "back",
+      "calls": 3,
+      "triangles": 4980,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        0.9999999998776639,
+        0,
+        0
+      ],
+      "rightPosition": [
+        0.05144651655930261,
+        -0.15542603364270585,
+        -0.3834437136150391
+      ],
+      "leftPosition": [
+        0,
+        0,
+        0
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        0.3687640013133287,
+        0.005495871294696808,
+        -0.7252605569400806
+      ],
+      "inspectionTarget": [
+        0.03740652361941157,
+        -0.13764204258551052,
+        -0.4101197002008321
+      ]
+    },
+    {
+      "mode": "palm",
+      "detail": false,
+      "calls": 3,
+      "triangles": 4980,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        0.14042692352725927,
+        0,
+        0
+      ],
+      "rightPosition": [
+        null,
+        null,
+        null
+      ],
+      "leftPosition": [
+        0,
+        0,
+        0
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        null,
+        null,
+        null
+      ],
+      "inspectionTarget": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mode": "palm",
+      "detail": true,
+      "calls": 3,
+      "triangles": 4980,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        0.14000021193453274,
+        0,
+        0
+      ],
+      "rightPosition": [
+        null,
+        null,
+        null
+      ],
+      "leftPosition": [
+        0,
+        0,
+        0
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        null,
+        null,
+        null
+      ],
+      "inspectionTarget": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mode": "palm",
+      "detail": "back",
+      "calls": 3,
+      "triangles": 4980,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        0.14000000010520913,
+        0,
+        0
+      ],
+      "rightPosition": [
+        null,
+        null,
+        null
+      ],
+      "leftPosition": [
+        0,
+        0,
+        0
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        null,
+        null,
+        null
+      ],
+      "inspectionTarget": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "mode": "hug",
+      "detail": false,
+      "calls": 6,
+      "triangles": 9960,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        0.4498461089611345,
+        0,
+        0
+      ],
+      "rightPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "leftPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        -0.22748833044774333,
+        0.03919479603900833,
+        -0.442324338437227
+      ],
+      "inspectionTarget": [
+        0.2255842799025959,
+        -0.11250903896263983,
+        -0.4061144475768234
+      ]
+    },
+    {
+      "mode": "hug",
+      "detail": true,
+      "calls": 6,
+      "triangles": 9960,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        0.449999923604994,
+        0,
+        0
+      ],
+      "rightPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "leftPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        -0.22748833044774333,
+        0.03919479603900833,
+        -0.442324338437227
+      ],
+      "inspectionTarget": [
+        0.2255842799025959,
+        -0.11250903896263983,
+        -0.4061144475768234
+      ]
+    },
+    {
+      "mode": "hug",
+      "detail": "back",
+      "calls": 6,
+      "triangles": 9960,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        0.4499999999620758,
+        0,
+        0
+      ],
+      "rightPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "leftPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        0.6392738512410129,
+        0.03919479603900833,
+        -0.5943878790843772
+      ],
+      "inspectionTarget": [
+        0.2255842799025959,
+        -0.11250903896263983,
+        -0.4061144475768234
+      ]
+    },
+    {
+      "mode": "web",
+      "detail": false,
+      "calls": 3,
+      "triangles": 4980,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        0.00022339021776488792,
+        0,
+        0.999503577293814
+      ],
+      "rightPosition": [
+        0.18055343563615708,
+        -0.13692429456311464,
+        -0.3921036382666717
+      ],
+      "leftPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        0.2192785325067958,
+        0.3440106328102893,
+        -0.49519079801364685
+      ],
+      "inspectionTarget": [
+        0.17328477037879875,
+        -0.12776342310766864,
+        -0.42509219597314424
+      ]
+    },
+    {
+      "mode": "web",
+      "detail": true,
+      "calls": 3,
+      "triangles": 4980,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        1.1089597643833261e-7,
+        0,
+        0.9999997535644967
+      ],
+      "rightPosition": [
+        0.18055343563615708,
+        -0.13692429456311464,
+        -0.3921036382666717
+      ],
+      "leftPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        0.2192785325067958,
+        0.3440106328102893,
+        -0.49519079801364685
+      ],
+      "inspectionTarget": [
+        0.17328477037879875,
+        -0.12776342310766864,
+        -0.42509219597314424
+      ]
+    },
+    {
+      "mode": "web",
+      "detail": "back",
+      "calls": 3,
+      "triangles": 4980,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        5.50512807286595e-11,
+        0,
+        0.9999999998776639
+      ],
+      "rightPosition": [
+        0.18055343563615708,
+        -0.13692429456311464,
+        -0.3921036382666717
+      ],
+      "leftPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        0.16971658800121125,
+        -0.5053113726267535,
+        -0.72012577692361
+      ],
+      "inspectionTarget": [
+        0.17328477037879875,
+        -0.12776342310766864,
+        -0.42509219597314424
+      ]
+    },
+    {
+      "mode": "wet",
+      "detail": false,
+      "calls": 4,
+      "triangles": 6772,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        2.7328705758328086e-14,
+        1,
+        0.0004964227061253012
+      ],
+      "rightPosition": [
+        0.12497282101790336,
+        -0.16014703897940386,
+        -0.45251093325892905
+      ],
+      "leftPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        -0.3427443859173196,
+        -0.00498068453479103,
+        -0.47678060126412597
+      ],
+      "inspectionTarget": [
+        0.11594138761299402,
+        -0.14347560228183037,
+        -0.48193025359593694
+      ]
+    },
+    {
+      "mode": "wet",
+      "detail": true,
+      "calls": 4,
+      "triangles": 6772,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        1.3566590069111022e-17,
+        1,
+        2.4643550318691526e-7
+      ],
+      "rightPosition": [
+        0.12497282101790336,
+        -0.16014703897940386,
+        -0.45251093325892905
+      ],
+      "leftPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        -0.3427443859173196,
+        -0.00498068453479103,
+        -0.47678060126412597
+      ],
+      "inspectionTarget": [
+        0.11594138761299402,
+        -0.14347560228183037,
+        -0.48193025359593694
+      ]
+    },
+    {
+      "mode": "wet",
+      "detail": "back",
+      "calls": 4,
+      "triangles": 6772,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        6.734763355824638e-21,
+        1,
+        1.2233617939236492e-10
+      ],
+      "rightPosition": [
+        0.12497282101790336,
+        -0.16014703897940386,
+        -0.45251093325892905
+      ],
+      "leftPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        0.4985070662151876,
+        -0.004980684534791002,
+        -0.7350362774552751
+      ],
+      "inspectionTarget": [
+        0.11594138761299402,
+        -0.14347560228183037,
+        -0.48193025359593694
+      ]
+    },
+    {
+      "mode": "bare",
+      "detail": false,
+      "calls": 2,
+      "triangles": 4728,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        3.3432894506209885e-24,
+        1,
+        6.073045723841767e-14
+      ],
+      "rightPosition": [
+        0.12497282101790336,
+        -0.16014703897940386,
+        -0.45251093325892905
+      ],
+      "leftPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        -0.3427443859173196,
+        -0.00498068453479103,
+        -0.47678060126412597
+      ],
+      "inspectionTarget": [
+        0.11594138761299402,
+        -0.14347560228183037,
+        -0.48193025359593694
+      ]
+    },
+    {
+      "mode": "bare",
+      "detail": true,
+      "calls": 2,
+      "triangles": 4728,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        1.659684796640483e-27,
+        1,
+        3.0147977930210386e-17
+      ],
+      "rightPosition": [
+        0.12497282101790336,
+        -0.16014703897940386,
+        -0.45251093325892905
+      ],
+      "leftPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        -0.3427443859173196,
+        -0.00498068453479103,
+        -0.47678060126412597
+      ],
+      "inspectionTarget": [
+        0.11594138761299402,
+        -0.14347560228183037,
+        -0.48193025359593694
+      ]
+    },
+    {
+      "mode": "bare",
+      "detail": "back",
+      "calls": 2,
+      "triangles": 4728,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 377412,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        8.239052181640827e-31,
+        1,
+        1.4966140790151804e-20
+      ],
+      "rightPosition": [
+        0.12497282101790336,
+        -0.16014703897940386,
+        -0.45251093325892905
+      ],
+      "leftPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        0.4985070662151876,
+        -0.004980684534791002,
+        -0.7350362774552751
+      ],
+      "inspectionTarget": [
+        0.11594138761299402,
+        -0.14347560228183037,
+        -0.48193025359593694
+      ]
+    },
+    {
+      "mode": "accessories",
+      "detail": false,
+      "calls": 8,
+      "triangles": 5320,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 422628,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        4.090052580418067e-34,
+        1,
+        7.429532112208311e-24
+      ],
+      "rightPosition": [
+        0.12497282101790336,
+        -0.16014703897940386,
+        -0.45251093325892905
+      ],
+      "leftPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        -0.3427443859173196,
+        -0.00498068453479103,
+        -0.47678060126412597
+      ],
+      "inspectionTarget": [
+        0.11594138761299402,
+        -0.14347560228183037,
+        -0.48193025359593694
+      ]
+    },
+    {
+      "mode": "accessories",
+      "detail": true,
+      "calls": 8,
+      "triangles": 5320,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 422628,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        2.0303949704143e-37,
+        1,
+        3.688188436838475e-27
+      ],
+      "rightPosition": [
+        0.12497282101790336,
+        -0.16014703897940386,
+        -0.45251093325892905
+      ],
+      "leftPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        -0.3427443859173196,
+        -0.00498068453479103,
+        -0.47678060126412597
+      ],
+      "inspectionTarget": [
+        0.11594138761299402,
+        -0.14347560228183037,
+        -0.48193025359593694
+      ]
+    },
+    {
+      "mode": "accessories",
+      "detail": "back",
+      "calls": 8,
+      "triangles": 5320,
+      "vertices": 2543,
+      "handBufferBytes": 301860,
+      "retainedRawGeometryBytes": 422628,
+      "morphCounts": [
+        2543,
+        2543,
+        2543
+      ],
+      "finite": true,
+      "morphs": [
+        1.0079341658395753e-40,
+        1,
+        1.8309004847393866e-30
+      ],
+      "rightPosition": [
+        0.12497282101790336,
+        -0.16014703897940386,
+        -0.45251093325892905
+      ],
+      "leftPosition": [
+        0.23055946585364587,
+        -0.13240978276683962,
+        -0.37775588765583873
+      ],
+      "geometryShared": true,
+      "inspectionPosition": [
+        0.4985070662151876,
+        -0.004980684534791002,
+        -0.7350362774552751
+      ],
+      "inspectionTarget": [
+        0.11594138761299402,
+        -0.14347560228183037,
+        -0.48193025359593694
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "frames": 100,
+      "intervalMs": {
+        "median": 16.699999999999818,
+        "p95": 16.700000000000273
+      },
+      "updateRenderFinishMs": {
+        "median": 0.2999999998137355,
+        "p95": 0.5
+      },
+      "scope": "Actual Hand.update/render; fixed1000×700 DPR1, SwiftShader, controlled scene, synchronous finish. Not World, native GPU or phone FPS."
+    },
+    {
+      "frames": 100,
+      "intervalMs": {
+        "median": 16.699999999999818,
+        "p95": 16.799999999999272
+      },
+      "updateRenderFinishMs": {
+        "median": 0.20000000018626451,
+        "p95": 0.40000000037252903
+      },
+      "scope": "Actual Hand.update/render; fixed1000×700 DPR1, SwiftShader, controlled scene, synchronous finish. Not World, native GPU or phone FPS."
+    },
+    {
+      "frames": 100,
+      "intervalMs": {
+        "median": 16.699999999999818,
+        "p95": 16.700000000000728
+      },
+      "updateRenderFinishMs": {
+        "median": 0.2999999998137355,
+        "p95": 0.40000000037252903
+      },
+      "scope": "Actual Hand.update/render; fixed1000×700 DPR1, SwiftShader, controlled scene, synchronous finish. Not World, native GPU or phone FPS."
+    }
+  ],
+  "construction": {
+    "coldMs": 47.39999999944121,
+    "warmMedianMs": 16.800000000745058,
+    "warmMaxMs": 31.699999999254942,
+    "samples": [
+      14.200000000186265,
+      15,
+      16.800000000745058,
+      22.399999999441206,
+      31.699999999254942
+    ],
+    "scope": "Synchronous Hand constructor only, no renderer upload/World startup or hardware extrapolation."
+  },
+  "errors": []
+}

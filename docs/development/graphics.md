@@ -24,6 +24,9 @@ four morph poses. `HAND_SURFACE` contains the visual assumptions. The thumb ring
 uses the same fitted thumb root. The bare arm has a white colour attribute for
 the shared skin material; suit gloves retain their uniform finish. No texture,
 light, animation mixer or per-frame geometry work is added.
+The bare forearm has its own cached taper; the shallow crease projection is also
+cached across morphs. [Reviewed views, scoped costs and test limitations](../verification/1917/README.md)
+separate warm rendering from the modest extra one-time construction cost.
 
 
 Kitchen appliance details (#1043): `hob.js` keeps zone markings and touch controls

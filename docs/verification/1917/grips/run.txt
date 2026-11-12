@@ -1,0 +1,52 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS cup/rest: Hand preserves whole item world matrix, parent and contents/action state
+PASS cup/rest: actual modeled contact follows existing grip without drift
+PASS cup/use: Hand preserves whole item world matrix, parent and contents/action state
+PASS cup/use: actual modeled contact follows existing grip without drift
+PASS cup/moved: Hand preserves whole item world matrix, parent and contents/action state
+PASS cup/moved: actual modeled contact follows existing grip without drift
+PASS fish/rest: Hand preserves whole item world matrix, parent and contents/action state
+PASS fish/rest: actual modeled contact follows existing grip without drift
+PASS fish/use: Hand preserves whole item world matrix, parent and contents/action state
+PASS fish/use: actual modeled contact follows existing grip without drift
+PASS fish/moved: Hand preserves whole item world matrix, parent and contents/action state
+PASS fish/moved: actual modeled contact follows existing grip without drift
+PASS bottle/rest: Hand preserves whole item world matrix, parent and contents/action state
+PASS bottle/rest: actual modeled contact follows existing grip without drift
+PASS bottle/use: Hand preserves whole item world matrix, parent and contents/action state
+PASS bottle/use: actual modeled contact follows existing grip without drift
+PASS bottle/moved: Hand preserves whole item world matrix, parent and contents/action state
+PASS bottle/moved: actual modeled contact follows existing grip without drift
+PASS glass/rest: Hand preserves whole item world matrix, parent and contents/action state
+PASS glass/rest: actual modeled contact follows existing grip without drift
+PASS glass/use: Hand preserves whole item world matrix, parent and contents/action state
+PASS glass/use: actual modeled contact follows existing grip without drift
+PASS glass/moved: Hand preserves whole item world matrix, parent and contents/action state
+PASS glass/moved: actual modeled contact follows existing grip without drift
+PASS scoop/rest: Hand preserves whole item world matrix, parent and contents/action state
+PASS scoop/rest: actual modeled contact follows existing grip without drift
+PASS scoop/use: Hand preserves whole item world matrix, parent and contents/action state
+PASS scoop/use: actual modeled contact follows existing grip without drift
+PASS scoop/moved: Hand preserves whole item world matrix, parent and contents/action state
+PASS scoop/moved: actual modeled contact follows existing grip without drift
+PASS actual bottle/glass fallback models use unit root scale; double-scale hypothesis not established for these items
+PASS actual fish-finger pinch keeps existing0.62 curl
+PASS cup keeps its explicit modeled handle grip
+PASS cup/rest: native hand/contact visible within original72deg camera
+PASS cup/use: native hand/contact visible within original72deg camera
+PASS cup/moved: native hand/contact visible within original72deg camera
+PASS fish/rest: native hand/contact visible within original72deg camera
+PASS fish/use: native hand/contact visible within original72deg camera
+PASS fish/moved: native hand/contact visible within original72deg camera
+PASS bottle/rest: native hand/contact visible within original72deg camera
+PASS bottle/use: native hand/contact visible within original72deg camera
+PASS bottle/moved: native hand/contact visible within original72deg camera
+PASS glass/rest: native hand/contact visible within original72deg camera
+PASS glass/use: native hand/contact visible within original72deg camera
+PASS glass/moved: native hand/contact visible within original72deg camera
+PASS scoop/rest: native hand/contact visible within original72deg camera
+PASS scoop/use: native hand/contact visible within original72deg camera
+PASS scoop/moved: native hand/contact visible within original72deg camera
+PASS zero browser errors
+PASS all executed sources unchanged
+ALL PASS

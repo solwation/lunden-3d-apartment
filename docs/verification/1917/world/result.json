@@ -1,0 +1,44 @@
+{
+  "status": "passed",
+  "errors": [],
+  "scope": "Actual main/World, local Worker, fixed FOV72, quality1, res=light, noon/June. Fixture teleports before posing; refreshes matrices/detail before the real game frame. No native GPU/phone/FPS timing.",
+  "reach": {
+    "handVisible": true,
+    "handDraws": 1,
+    "layers": 1,
+    "quality": 1,
+    "morphs": [
+      0,
+      1,
+      0
+    ],
+    "buffer": [
+      750,
+      525
+    ],
+    "pixelRatio": 0.75,
+    "fov": 72,
+    "calls": 357,
+    "triangles": 615288
+  },
+  "cup": {
+    "held": true,
+    "handVisible": true,
+    "handDraws": 1,
+    "cupDraws": 4,
+    "attached": true,
+    "morphs": [
+      0.999503577293814,
+      0,
+      0
+    ],
+    "calls": 361,
+    "triangles": 615660
+  },
+  "sourceHashes": {
+    "src/hand.js": "04d313f87b0087183ec7a30738c0b54025d82772773084da1f06316bdbcdd5cd",
+    "src/config.js": "07a6808985570fb43863ee9d942905339049ae7d3bfd9c903900a9c997a20dd0",
+    "src/main.js": "85253e4e1c4946553323a3e764ed56e3aba9d6df9a92c25d21df942450a5f4e9",
+    "src/cups.js": "2d9ef8e786fd662257e4f51efeed68ea2292aa66791b68219400658772b94429"
+  }
+}
