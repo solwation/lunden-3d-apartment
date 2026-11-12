@@ -2152,7 +2152,20 @@ Strokes still aim at the actual table. See [furniture](furniture.md#billiard-wal
 
 Original-only characters, gifts and seasonal gameplay: no downstream transfer. Verification is limited to `tools/santatest.mjs`, the real-browser component `tools/santagiftstest.cjs` and the integrated `tools/santaapptest.cjs` route.
 
-Santa seating correction (#1499): the seated legs are built from the actual LANDSKRONA front edge and the selected rest spot, with lower legs entirely in front of the cushion and boot soles on the sofa-local floor. A separate cached folded-leg geometry is selected during sleep; no per-frame geometry rebuild. The face has eyes with irises, cheeks and ears, the beard has tapered locks, the hat bends and the coat/boots have fur and soles. These are visual anatomy guesses, not changes to furniture. `tools/santaseatingtest.cjs` checks every leg vertex below seat height against the actual sofa front, sole contact, the existing gift callback and the sleeping pose; only the affected sitting/sleeping images are reviewed. No public downstream transfer applies to this character.
+Santa seating correction (#1499): the seated legs are built from the actual LANDSKRONA front edge and the selected rest spot, with lower legs entirely in front of the cushion and boot soles on the sofa-local floor. A separate cached folded-leg geometry is selected during sleep; no per-frame geometry rebuild. The original seating correction added irises, cheeks/ears, a bent hat and fur/soles; #1923 later replaced the separate beard locks and capsule trousers with shared authored surfaces. These are visual anatomy guesses, not changes to furniture. `tools/santaseatingtest.cjs` checks every leg vertex below seat height against the actual sofa front, sole contact, the existing gift callback and the sleeping pose; only the affected sitting/sleeping images are reviewed. No public downstream transfer applies to this character.
+
+## Santa surface recipe (#1923)
+
+`src/santasurface.js` builds the coat, jaw/nose, beard, articulated arm/hand groups
+and continuous bent trouser surfaces from the visual guesses in `SANTA.surface`.
+The GLB exporter and failed/late-load fallback share that recipe, including blush
+ranges; existing schedule, arm pivots, glass path, sofa-local seat/feet and visit
+callbacks remain authoritative. No per-frame geometry or new texture/light is added.
+`node tools/buildfiguresglb.mjs --santa-only` updates Santa without rewriting Pingping.
+The separate collection missing-legs bug #1930 remains open: `santaFigure()` itself
+still leaves leg selection to the real `Santa` controller; this art change does not
+alter that consumer contract. This personal Christmas figure has no public port.
+[Reviewed whole/normal/pose images, scoped cost and limitations](../verification/1923/README.md).
 
 ## Santa visit follow-ups (#1500–#1502)
 

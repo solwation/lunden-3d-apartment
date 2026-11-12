@@ -1,0 +1,58 @@
+{
+  "revision": "c1aa5154",
+  "environment": "Chromium / SwiftShader; actual main/World, quality1, light resources, 1100x700 CSS, device DPR1 / renderer ratio0.75; fixed calendar and camera; no world/device timing claim",
+  "errors": [],
+  "before": {
+    "visible": true,
+    "state": "sitting",
+    "quality": 1,
+    "pixelRatio": 0.75,
+    "camera": [
+      2.9200000000000004,
+      1.63,
+      9.495000000000001
+    ],
+    "target": [
+      3.77,
+      1.1099999999999999,
+      11.615
+    ],
+    "finite": [],
+    "meshTriangles": 2548,
+    "hashes": {
+      "src/santa.js": "1f4a9d64a99ae928b633826bb2b1c0bb9446b994787b5c9be76717c8710d84a1",
+      "src/santaconfig.js": "237abb527843c221e136faa11e98f913154b999435b75b7ea506f8ef76ff0164",
+      "models/santa.glb": "f55925202f507a31a00763744b744bf1ede82a9518946fd4accd887f368f8894"
+    },
+    "served": [
+      "src/santaconfig.js",
+      "src/santa.js",
+      "models/santa.glb"
+    ]
+  },
+  "after": {
+    "visible": true,
+    "state": "sitting",
+    "quality": 1,
+    "pixelRatio": 0.75,
+    "camera": [
+      2.9200000000000004,
+      1.63,
+      9.495000000000001
+    ],
+    "target": [
+      3.77,
+      1.1099999999999999,
+      11.615
+    ],
+    "finite": [],
+    "meshTriangles": 2820,
+    "hashes": {
+      "src/santa.js": "df29250befcb063f7a0ac41ffab167ae219958808d083dc67063cd582c1571b3",
+      "src/santaconfig.js": "ba9054c5587f698879383bb1a6250e2fef19d740083164ad1c145b67fd480feb",
+      "models/santa.glb": "e4ee917e1880086042928412ccf6807e69f3437e739f0eecf040249fdd64c130"
+    },
+    "served": []
+  },
+  "pass": true
+}

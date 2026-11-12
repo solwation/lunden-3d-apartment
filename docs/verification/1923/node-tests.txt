@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: models/santa.glb exists and contains valid glTF binary header
+ok 1 - models/santa.glb exists and contains valid glTF binary header
+  ---
+  duration_ms: 1.565199
+  type: 'test'
+  ...
+# Subtest: models/pingping.glb exists and contains valid glTF binary header
+ok 2 - models/pingping.glb exists and contains valid glTF binary header
+  ---
+  duration_ms: 0.449099
+  type: 'test'
+  ...
+# Subtest: santa.glb contains required meshes (body, arms, legs sitting/sleeping, glass)
+ok 3 - santa.glb contains required meshes (body, arms, legs sitting/sleeping, glass)
+  ---
+  duration_ms: 9.843995
+  type: 'test'
+  ...
+# Subtest: pingping.glb contains body, face, flippers, and feet
+ok 4 - pingping.glb contains body, face, flippers, and feet
+  ---
+  duration_ms: 4.398797
+  type: 'test'
+  ...
+# Subtest: src/santa.js loads GLB model and builds figure with blush support
+ok 5 - src/santa.js loads GLB model and builds figure with blush support
+  ---
+  duration_ms: 9.332395
+  type: 'test'
+  ...
+# Subtest: src/pingping.js loads GLB model and constructs complete Pingping model
+ok 6 - src/pingping.js loads GLB model and constructs complete Pingping model
+  ---
+  duration_ms: 3.066598
+  type: 'test'
+  ...
+# Subtest: Santa follows Christmas Eve boundaries, including backwards clock changes
+ok 7 - Santa follows Christmas Eve boundaries, including backwards clock changes
+  ---
+  duration_ms: 0.9095
+  type: 'test'
+  ...
+# Subtest: actual Santa starts without a GLB and keeps complete sitting/sleeping anatomy
+ok 8 - actual Santa starts without a GLB and keeps complete sitting/sleeping anatomy
+  ---
+  duration_ms: 41.393477
+  type: 'test'
+  ...
+# Subtest: loaded GLB keeps the same actual Santa sitting/sleeping behaviour
+ok 9 - loaded GLB keeps the same actual Santa sitting/sleeping behaviour
+  ---
+  duration_ms: 17.00019
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 198.885787

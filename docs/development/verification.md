@@ -308,6 +308,20 @@ legs-up yaw/pitch, fixed torso/feet, mirror agreement and standing reset. #1505 
 standing/walking/crouching/cycling pitch and mirror agreement. Inspect the paired
 head views. [Seated results](../validation/issue-1504/README.md), [pitch results](../validation/issue-1505/README.md). No broad scene or combat sweep.
 
+## Santa realism (#1923)
+
+Run `node --test tools/santatest.mjs` and the focused browser checks through
+`tools/browsertest.sh`: `node tools/santarealismtest.cjs BASE OUT` exercises actual
+Santa/furniture/restTarget with loaded, missing and late GLB, finite full model/camera
+transforms, actual intended pixels, seat/floor clearance, pose/glass bounds, blush,
+absence and submitted/retained budgets. `tools/santarealismapp.cjs BASE OUT` supplies
+a matched normal main/World view using frozen baseline sources; `--after-only` reuses
+the valid baseline after a correction. `tools/santarealismbaseline.cjs BASE OUT`
+measures frozen baseline costs at the final component's exact camera and viewport.
+No TV/network/gift suite is needed for this surface-only change. The separate #1930
+collection missing-leg contract is unchanged, not claimed fixed. [Images, hashes,
+costs and limits](../verification/1923/README.md).
+
 ## Santa visit, TV volume, gift piles and billiards (#1500–#1503)
 
 Run the focused volume/sound unit checks, gift component and `tools/santavisittest.cjs`

@@ -1,0 +1,361 @@
+{
+  "environment": "Actual Santa/furniture.sofa/restTarget, Chromium / SwiftShader, DPR1, 1200x680 canvas, same fixed component lights/cameras as baseline; no hardware FPS or total GPU-memory claim",
+  "hashes": {
+    "src/santa.js": "df29250befcb063f7a0ac41ffab167ae219958808d083dc67063cd582c1571b3",
+    "src/santasurface.js": "a0d7364800e066017639482a74cef18d6c25dc8d251f21c188a0ca36be9f7112",
+    "src/santaconfig.js": "ba9054c5587f698879383bb1a6250e2fef19d740083164ad1c145b67fd480feb",
+    "tools/buildfiguresglb.mjs": "532fdb05f067bcc415508c0a00c15b9fc85c24a7b7bbbd3f7e8669482a52af55",
+    "models/santa.glb": "e4ee917e1880086042928412ccf6807e69f3437e739f0eecf040249fdd64c130"
+  },
+  "errors": [],
+  "chromium": "156.0.8078.4",
+  "glb": {
+    "initiallyLoaded": true,
+    "instanceRawBytes": 606312,
+    "rawBytes": 1064664,
+    "rawFinite": true,
+    "geometries": 11,
+    "canvasBytes": 81920,
+    "poses": {
+      "sitting": {
+        "calls": 48,
+        "triangles": 20726,
+        "contribution": {
+          "calls": 6,
+          "triangles": 4932
+        },
+        "intendedPixels": 80727,
+        "finite": [],
+        "handGlassGap": 0.09242886726691149
+      },
+      "sipping": {
+        "calls": 48,
+        "triangles": 20726,
+        "contribution": {
+          "calls": 6,
+          "triangles": 4932
+        },
+        "intendedPixels": 79414,
+        "finite": [],
+        "handGlassGap": 0.07052438849060383
+      },
+      "waving": {
+        "calls": 48,
+        "triangles": 20726,
+        "contribution": {
+          "calls": 6,
+          "triangles": 4932
+        },
+        "intendedPixels": 84423,
+        "finite": [],
+        "handGlassGap": 0.09242886726691149
+      },
+      "sleeping": {
+        "calls": 47,
+        "triangles": 20656,
+        "contribution": {
+          "calls": 4,
+          "triangles": 4860
+        },
+        "intendedPixels": 57640,
+        "finite": [],
+        "handGlassGap": null
+      },
+      "moved-sitting": {
+        "calls": 48,
+        "triangles": 20726,
+        "contribution": {
+          "calls": 6,
+          "triangles": 4932
+        },
+        "intendedPixels": 80702,
+        "finite": [],
+        "handGlassGap": 0.09242886726691155
+      },
+      "moved-sleeping": {
+        "calls": 47,
+        "triangles": 20656,
+        "contribution": {
+          "calls": 4,
+          "triangles": 4860
+        },
+        "intendedPixels": 57647,
+        "finite": [],
+        "handGlassGap": null
+      },
+      "away": {
+        "calls": 42,
+        "triangles": 15794,
+        "contribution": {
+          "calls": 0,
+          "triangles": 0
+        },
+        "intendedPixels": 0,
+        "finite": [],
+        "handGlassGap": null
+      }
+    },
+    "seat": {
+      "minY": 1.0728836041806744e-8,
+      "clearance": 0.04841802120208738,
+      "below": 1560
+    },
+    "hand": {
+      "min": [
+        -0.052000001072883606,
+        -0.4440000057220459,
+        0.033713020384311676
+      ],
+      "max": [
+        0.075989730656147,
+        -0.3149999976158142,
+        0.1235736533999443
+      ],
+      "skinVertices": 1116
+    },
+    "greeting": true,
+    "blushChanged": true,
+    "warmMs": {
+      "median": 0.40000000037252903,
+      "p95": 1.800000000745058
+    },
+    "updateMs": {
+      "median": 0,
+      "p95": 0.10000000149011612
+    },
+    "webglRenderer": "WebKit WebGL"
+  },
+  "fallback": {
+    "initiallyLoaded": false,
+    "instanceRawBytes": 606312,
+    "rawBytes": 606312,
+    "rawFinite": true,
+    "geometries": 8,
+    "canvasBytes": 81920,
+    "poses": {
+      "sitting": {
+        "calls": 49,
+        "triangles": 20750,
+        "contribution": {
+          "calls": 7,
+          "triangles": 4956
+        },
+        "intendedPixels": 80828,
+        "finite": [],
+        "handGlassGap": 0.09242886726691149
+      },
+      "sipping": {
+        "calls": 49,
+        "triangles": 20750,
+        "contribution": {
+          "calls": 7,
+          "triangles": 4956
+        },
+        "intendedPixels": 79414,
+        "finite": [],
+        "handGlassGap": 0.07052438849060383
+      },
+      "waving": {
+        "calls": 49,
+        "triangles": 20750,
+        "contribution": {
+          "calls": 7,
+          "triangles": 4956
+        },
+        "intendedPixels": 84524,
+        "finite": [],
+        "handGlassGap": 0.09242886726691149
+      },
+      "sleeping": {
+        "calls": 47,
+        "triangles": 20656,
+        "contribution": {
+          "calls": 4,
+          "triangles": 4860
+        },
+        "intendedPixels": 57640,
+        "finite": [],
+        "handGlassGap": null
+      },
+      "moved-sitting": {
+        "calls": 49,
+        "triangles": 20750,
+        "contribution": {
+          "calls": 7,
+          "triangles": 4956
+        },
+        "intendedPixels": 80827,
+        "finite": [],
+        "handGlassGap": 0.09242886726691155
+      },
+      "moved-sleeping": {
+        "calls": 47,
+        "triangles": 20656,
+        "contribution": {
+          "calls": 4,
+          "triangles": 4860
+        },
+        "intendedPixels": 57647,
+        "finite": [],
+        "handGlassGap": null
+      },
+      "away": {
+        "calls": 42,
+        "triangles": 15794,
+        "contribution": {
+          "calls": 0,
+          "triangles": 0
+        },
+        "intendedPixels": 0,
+        "finite": [],
+        "handGlassGap": null
+      }
+    },
+    "seat": {
+      "minY": 1.0728836041806744e-8,
+      "clearance": 0.04841802120208738,
+      "below": 1560
+    },
+    "hand": {
+      "min": [
+        -0.052000001072883606,
+        -0.4440000057220459,
+        0.033713020384311676
+      ],
+      "max": [
+        0.075989730656147,
+        -0.3149999976158142,
+        0.1235736533999443
+      ],
+      "skinVertices": 1116
+    },
+    "greeting": true,
+    "blushChanged": true,
+    "warmMs": {
+      "median": 0.599999999627471,
+      "p95": 2.099999999627471
+    },
+    "updateMs": {
+      "median": 0,
+      "p95": 0.2999999988824129
+    },
+    "webglRenderer": "WebKit WebGL"
+  },
+  "late": {
+    "initiallyLoaded": false,
+    "instanceRawBytes": 606312,
+    "rawBytes": 1211784,
+    "rawFinite": true,
+    "geometries": 15,
+    "canvasBytes": 81920,
+    "poses": {
+      "sitting": {
+        "calls": 49,
+        "triangles": 20750,
+        "contribution": {
+          "calls": 7,
+          "triangles": 4956
+        },
+        "intendedPixels": 80828,
+        "finite": [],
+        "handGlassGap": 0.09242886726691149
+      },
+      "sipping": {
+        "calls": 49,
+        "triangles": 20750,
+        "contribution": {
+          "calls": 7,
+          "triangles": 4956
+        },
+        "intendedPixels": 79414,
+        "finite": [],
+        "handGlassGap": 0.07052438849060383
+      },
+      "waving": {
+        "calls": 49,
+        "triangles": 20750,
+        "contribution": {
+          "calls": 7,
+          "triangles": 4956
+        },
+        "intendedPixels": 84524,
+        "finite": [],
+        "handGlassGap": 0.09242886726691149
+      },
+      "sleeping": {
+        "calls": 47,
+        "triangles": 20656,
+        "contribution": {
+          "calls": 4,
+          "triangles": 4860
+        },
+        "intendedPixels": 57640,
+        "finite": [],
+        "handGlassGap": null
+      },
+      "moved-sitting": {
+        "calls": 49,
+        "triangles": 20750,
+        "contribution": {
+          "calls": 7,
+          "triangles": 4956
+        },
+        "intendedPixels": 80827,
+        "finite": [],
+        "handGlassGap": 0.09242886726691155
+      },
+      "moved-sleeping": {
+        "calls": 47,
+        "triangles": 20656,
+        "contribution": {
+          "calls": 4,
+          "triangles": 4860
+        },
+        "intendedPixels": 57647,
+        "finite": [],
+        "handGlassGap": null
+      },
+      "away": {
+        "calls": 42,
+        "triangles": 15794,
+        "contribution": {
+          "calls": 0,
+          "triangles": 0
+        },
+        "intendedPixels": 0,
+        "finite": [],
+        "handGlassGap": null
+      }
+    },
+    "seat": {
+      "minY": 1.0728836041806744e-8,
+      "clearance": 0.04841802120208738,
+      "below": 1560
+    },
+    "hand": {
+      "min": [
+        -0.052000001072883606,
+        -0.4440000057220459,
+        0.033713020384311676
+      ],
+      "max": [
+        0.075989730656147,
+        -0.3149999976158142,
+        0.1235736533999443
+      ],
+      "skinVertices": 1116
+    },
+    "greeting": true,
+    "blushChanged": true,
+    "warmMs": {
+      "median": 0.599999999627471,
+      "p95": 4.199999999254942
+    },
+    "updateMs": {
+      "median": 0,
+      "p95": 0.2000000011175871
+    },
+    "webglRenderer": "WebKit WebGL"
+  },
+  "pass": true
+}

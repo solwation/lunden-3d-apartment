@@ -1,0 +1,34 @@
+{
+  "phase": "baseline",
+  "instanceRawBytes": 566568,
+  "poses": {
+    "sitting": {
+      "calls": 48,
+      "triangles": 20022
+    },
+    "sipping": {
+      "calls": 48,
+      "triangles": 20022
+    },
+    "waving": {
+      "calls": 48,
+      "triangles": 20022
+    },
+    "sleeping": {
+      "calls": 47,
+      "triangles": 19952
+    },
+    "away": {
+      "calls": 42,
+      "triangles": 15794
+    }
+  },
+  "rawBytes": 1068120,
+  "geometries": 11,
+  "warmMs": {
+    "median": 0.40000000037252903,
+    "p95": 0.8000000007450581
+  },
+  "renderer": "WebKit WebGL",
+  "errors": []
+}

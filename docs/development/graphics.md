@@ -14,6 +14,16 @@ and compare real scoped render/update/memory costs at fixed inputs and quality.
 A format change or a higher polygon count does not establish quality or speed.
 [Full coverage, measured baseline, limits and concrete follow-ups](../verification/1915/README.md).
 
+### Santa surfaces (#1923)
+
+`SANTA.surface` contains the authored coat/head/hand/beard profiles and tessellation
+for `src/santasurface.js`, shared by the GLB and missing/late-load paths. The coat
+has shoulders and a curved belt, the head has a jaw and nose bridge, and separate
+short fingers/thumbs replace the fists. A continuous trouser sweep joins the knee.
+Subtle static vertex tint and shallow grooves suggest cloth and beard without
+adding texture, shader animation or lights. Existing arm/glass animation and the
+movable sofa frame remain unchanged. [Matched result views and bounded costs](../verification/1923/README.md).
+
 ### First-person hand surfaces (#1917)
 
 `Hand` keeps the existing relaxed/grip/spread/web controls, camera-space contacts,

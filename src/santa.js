@@ -2,13 +2,11 @@ import { modelURL } from './modelurl.js';
 import { discoverCreature } from './bestiaryevents.js';
 import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { santaBody, santaArm, santaLegGeometry } from './santasurface.js';
 import { SANTA as S, santaState } from './santaconfig.js';
-import { LANDSKRONA } from './config.js';
 
 // An original-only Christmas Eve guest. All poses are in the movable sofa's frame.
 // Static coloured parts are merged; the pose-specific legs, two arms, glass and sleep text stay separate.
-const C = { red: 0xa51d28, white: 0xf4efe5, skin: 0xe6af89, black: 0x26201c, gold: 0xd7ad45 };
 const material = () => new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.88 });
 
 let santaModelData = null;
@@ -67,40 +65,6 @@ if (typeof window !== 'undefined') {
   loadSantaModel().catch(() => {});
 }
 
-function part(geometry, color, at, scale = [1, 1, 1], rot = [0, 0, 0]) {
-  const g = geometry.toNonIndexed(); geometry.dispose();
-  g.applyMatrix4(new THREE.Matrix4().compose(new THREE.Vector3(...at), new THREE.Quaternion().setFromEuler(new THREE.Euler(...rot)), new THREE.Vector3(...scale)));
-  const rgb = new THREE.Color(color), n = g.getAttribute('position').count, colors = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) rgb.toArray(colors, i * 3);
-  g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  g.deleteAttribute('uv');
-  return g;
-}
-const ball = (color, at, scale) => part(new THREE.SphereGeometry(1, 16, 10), color, at, scale);
-const box = (color, at, scale) => part(new THREE.BoxGeometry(1, 1, 1), color, at, scale);
-function joined(parts, mat) {
-  const geometry = mergeGeometries(parts), mesh = new THREE.Mesh(geometry, mat);
-  let offset = 0; mesh.userData.cheeks = [];
-  for (const g of parts) {
-    const count = g.getAttribute('position').count;
-    if (g.userData.blush) mesh.userData.cheeks.push({ start: offset, count });
-    offset += count; g.dispose();
-  }
-  mesh.castShadow = mesh.receiveShadow = true;
-  return mesh;
-}
-function hatGeometry() {
-  const H = S.hat, geo = new THREE.ConeGeometry(H.radius, H.height, 16, 8), p = geo.attributes.position;
-  for (let i = 0; i < p.count; i++) {
-    const t = (p.getY(i) / H.height + 0.5) ** 3;
-    p.setXYZ(i, p.getX(i) + H.bend * t, p.getY(i) - H.drop * t, p.getZ(i));
-  }
-  geo.computeVertexNormals(); return geo;
-}
-function cheek(side) {
-  const g = ball(S.blush.base, [side * 0.092, 0.785, 0.132], [0.043, 0.033, 0.024]);
-  g.userData.blush = true; return g;
-}
 function figure() {
   const object = new THREE.Group(), mat = material();
   object.name = 'jultomten';
@@ -131,46 +95,13 @@ function figure() {
     if (armMesh) {
       pivot.add(armMesh);
     } else {
-      pivot.add(joined([
-        ball(C.red, [0, -0.15, 0.03], [0.105, 0.21, 0.105]),
-        ball(C.white, [0, -0.31, 0.06], [0.11, 0.045, 0.11]),
-        ball(C.skin, [0, -0.37, 0.07], [0.075, 0.085, 0.075]),
-      ], mat));
+      pivot.add(santaArm(mat, right));
     }
     pivot.rotation.x = -0.6;
     return pivot;
   }
 
-  if (!body) {
-    const parts = [
-      ball(C.red, [0, 0.3, 0.03], S.size.belly),
-      ball(C.white, [0, 0.025, 0.035], [0.29, 0.045, 0.25]), // fur coat hem
-      box(C.black, [0, 0.17, 0.06], [0.61, 0.065, 0.49]),
-      box(C.gold, [0, 0.17, 0.313], [0.105, 0.09, 0.025]),
-      box(C.black, [0, 0.17, 0.328], [0.065, 0.055, 0.01]),
-      box(C.white, [0, 0.35, 0.3], [0.048, 0.28, 0.03]),
-      ball(C.skin, [0, 0.79, 0.02], [S.size.head, 0.18, 0.15]),
-      ball(C.white, [0, 0.57, 0.14], S.size.beard),
-      ball(C.skin, [0, 0.8, 0.18], [0.047, 0.04, 0.045]),
-      ball(C.white, [-0.055, 0.747, 0.176], [0.065, 0.025, 0.04]),
-      ball(C.white, [0.055, 0.747, 0.176], [0.065, 0.025, 0.04]),
-      part(hatGeometry(), C.red, [0, 1.04, 0.01]),
-      ball(C.white, [0, 0.91, 0.02], [0.17, 0.045, 0.16]),
-    ];
-    for (const side of [-1, 1]) {
-      parts.push(ball(C.white, [side * 0.06, 0.865, 0.18], [0.045, 0.013, 0.018]));
-      parts.push(ball(C.skin, [side * 0.147, 0.785, 0.02], [0.035, 0.06, 0.035])); // ears
-      parts.push(cheek(side));
-      parts.push(ball(C.white, [side * 0.055, 0.83, 0.178], [0.023, 0.019, 0.009]));
-      parts.push(ball(0x547687, [side * 0.055, 0.83, 0.187], [0.011, 0.013, 0.006]));
-      parts.push(ball(C.black, [side * 0.055, 0.83, 0.193], [0.005, 0.008, 0.004]));
-      // Tapered locks break up the beard's old single-oval outline.
-      for (let j = 0; j < 3; j++) parts.push(ball(j % 2 ? 0xe5e1d8 : C.white,
-        [side * (0.04 + j * 0.042), 0.51 + j * 0.035, 0.245 - j * 0.012], [0.046, 0.125 - j * 0.02, 0.035]));
-    }
-    parts.push(ball(C.white, [S.hat.bend, 1.04 + S.hat.height / 2 - S.hat.drop, 0.01], [0.06, 0.06, 0.06]));
-    body = joined(parts, mat);
-  }
+  if (!body) body = santaBody(mat);
 
   body.geometry.getAttribute('color').setUsage(THREE.DynamicDrawUsage); // cheek colours change after upload, including on phones
   body.castShadow = body.receiveShadow = true;
@@ -212,31 +143,6 @@ function figure() {
   return { object, body, legs, left, right, glass, pick, text, head: new THREE.Vector3(), sitLegsGeo, sleepLegsGeo };
 }
 
-/** One continuous trouser segment between two joints, merged with the other leg parts. */
-function limb(a, b, radius, color) {
-  const from = new THREE.Vector3(...a), to = new THREE.Vector3(...b), delta = to.clone().sub(from);
-  const geo = new THREE.CapsuleGeometry(radius, Math.max(0.001, delta.length() - radius * 2), 4, 10);
-  const rot = new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), delta.normalize()));
-  return part(geo, color, from.add(to).multiplyScalar(0.5).toArray(), [1, 1, 1], rot.toArray().slice(0, 3));
-}
-
-function legGeometry(local, sleeping) {
-  const L = S.legs, rootY = local.y + 0.04;
-  const kneeZ = sleeping ? 0.22 : LANDSKRONA.depth / 2 - local.z + L.radius + L.clearance;
-  const ankleY = sleeping ? -0.18 : L.bootY + L.bootH - rootY;
-  const parts = [];
-  for (const side of [-1, 1]) {
-    const x = side * L.spread, knee = [x, L.kneeY, kneeZ];
-    parts.push(limb([x, L.thighY, 0.04], knee, L.radius, C.red));
-    parts.push(limb(knee, [x, ankleY, kneeZ], L.radius * 0.88, C.red));
-    parts.push(ball(C.black, [x, sleeping ? -0.25 : L.bootY - rootY, kneeZ + 0.08], [0.105, L.bootH, 0.17]));
-    parts.push(box(0x171615, [x, sleeping ? -0.31 : 0.015 - rootY, kneeZ + 0.08], [0.19, 0.03, 0.29]));
-    parts.push(ball(C.white, [x, ankleY, kneeZ], [0.085, 0.027, 0.085]));
-  }
-  const geometry = mergeGeometries(parts); parts.forEach(g => g.dispose());
-  return geometry;
-}
-
 export class Santa {
   /** `sofa`: existing rest target. Santa waits offscreen when the player already occupies a required spot.
    * `onStateChange(next, previous)` is also the hook for the living-room TV programme. */
@@ -247,8 +153,8 @@ export class Santa {
     if (sofa) {
       const local = sofa.pickable.userData.rest.spots[Math.min(S.seatIndex, sofa.spots.length - 1)];
       this.legPoses = {
-        sitting: this.fig.sitLegsGeo || legGeometry(local, false),
-        sleeping: this.fig.sleepLegsGeo || legGeometry(local, true)
+        sitting: this.fig.sitLegsGeo || santaLegGeometry(local, false),
+        sleeping: this.fig.sleepLegsGeo || santaLegGeometry(local, true)
       };
       this.fig.legs.geometry.dispose(); this.fig.legs.geometry = this.legPoses.sitting;
     }
