@@ -14,6 +14,9 @@ För färdiga överlämningar, följ [projektets integrationskö](../../.orchest
 
 Svara på svenska. Projektpolicyn anger båda köerna, behörigheter, ansvar och tidsgränser.
 Ändringsönskemål i chatten följer även [chattintaget](../../.orchestra/shared/ORCHESTRA.md#turn-chat-requests-into-work):
-skapa/återanvänd ärenden och starta/återuppta avgränsat arbete, även efter avslutad
-tomgångsvakt. Respektera uttrycklig uppskjutning och återanvänd en aktiv dirigent;
-endast ett uttryckligt köuppdrag som detta kommando aktiverar nya kötimers.
+skapa/återanvänd ärenden. När agenten skapar/lägger till ett arbetsärende och ingen
+orkester är aktiv startas samma kösession som detta kommando, även efter avslutad
+tomgångsvakt. Återanvänd annars den aktiva dirigenten. Uttryckligt scope, enbart ett
+avgränsat uppdrag/pass, uppskov eller stopp går före; ”skapa issue” ensam betyder
+inte ”registrera bara, börja inte arbeta”. Följ projektpolicyns körläge och timers.
+Regeln hanteras inom en aktiv agentsession och installerar ingen extern daemon.

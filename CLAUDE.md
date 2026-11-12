@@ -46,11 +46,16 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   (lower, middle, smaller top), preserving implemented gameplay. Old per-polygon acceptance demands are superseded;
   use ordinary functional head/body/wall/damage tests. Preserve unfinished work at a safe checkpoint and close
   superseded detail stories once the replacement works. Do not turn this refinement into a dependency for unrelated work.
-- **Chat change requests.** Create or reuse one issue per independently reviewable requested change, then
-  start or resume scoped orchestra work without waiting for `/orkester`, even when no run is active or
-  its idle watch has ended. Reuse the active conductor, claims and preserved work; respect explicit
-  deferral or discussion-only requests. A scoped request does not expand to the backlog or enable timers.
-  Read [chat intake](.orchestra/shared/ORCHESTRA.md#turn-chat-requests-into-work) and the local policy.
+- **Chat requests and agent-added issues (user, 2026-11-12).** Create or reuse one issue per independently
+  reviewable requested change. When the agent creates/adds a work issue, start the same queue session
+  as `/orkester` if no orchestra is active, including after its idle watch has ended; otherwise reuse
+  the active conductor, claims and preserved work. Issue registration alone is not completion and
+  "create an issue" alone is not deferral. Explicit scope, a single scoped task/bounded pass,
+  registration-only with no execution, discussion or a stop takes precedence. Retain the local
+  original/public ordering, polling, idle watch, heartbeat and ownership rules. This is action within
+  an active agent session, not an external daemon that starts an agent from GitHub events.
+  Read [chat intake](.orchestra/shared/ORCHESTRA.md#turn-chat-requests-into-work) and the
+  [local intake mode](.orchestra/project.md#scope-queue-and-ownership).
 - **Shared orchestra (user, 2026-10-23).** `/orkester` follows the versioned
   [.orchestra/project.md](.orchestra/project.md) and its model-independent shared core.
   That policy retains both repositories, global priority, ownership, 300-second polling,

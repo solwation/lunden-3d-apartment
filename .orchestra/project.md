@@ -1,13 +1,17 @@
 # Lunden orchestra policy
 
 Read the repository's AGENTS.md and CLAUDE.md, then [the shared core](shared/ORCHESTRA.md).
-For `/orkester` also read [queue coordination](shared/COORDINATION.md). The same files
+For queue sessions, including automatic issue intake, also read
+[queue coordination](shared/COORDINATION.md). The same files
 can be invoked in any file-reading agent; the slash command is only an adapter.
-Reading the instructions alone starts no work. A chat request for changes, including
-a request to improve these instructions, creates/reuses issues and starts/resumes
-scoped work under [chat intake](shared/ORCHESTRA.md#turn-chat-requests-into-work), even
-after an idle watch ends or before the first run. Respect explicit deferral and reuse
-an active conductor; a scoped request does not expand to the backlog or enable timers.
+Reading the instructions alone starts no work. Chat change requests, including
+changes to these instructions, and agent-created/added work issues follow
+[chat intake](shared/ORCHESTRA.md#turn-chat-requests-into-work) and the
+[local intake mode](#scope-queue-and-ownership). Registering an issue alone is not
+completion: start the queue session when none is active, including after an idle
+watch ends, or reuse the active conductor. Explicit scope, mode, deferral and stop
+instructions take precedence. This operates within an active agent session, not
+through an external daemon that starts a new agent from GitHub issue events.
 
 ## Shared issue workflow
 
@@ -72,11 +76,21 @@ The public instruction counterpart is tracked in
 `/orkester` in this project, with or without an argument, starts an explicit queue
 session with the polling, idle watch and heartbeat above; the core's bounded pass
 (no polling or watch) applies only when the user explicitly asks for a single pass.
-An ordinary chat change request starts/resumes a scoped task without queue polling or
-an idle watch unless those were requested. An already active queue session retains
-its conductor, scope/selection rules and idle-deadline rules; a new request alone does
-not reset the deadline. Both modes stay unattended: user-only questions go on the issue
-(`user-question`), never chat.
+The same queue-session mode applies when the agent creates/adds a work issue and
+no orchestra is active (user, 2026-11-12), including before the first run or after a
+completed idle watch. No separate `/orkester` is needed. "Create an issue" alone
+does not mean "register only; do not start work". Reuse an active conductor rather
+than starting a competing run; the issue joins ordinary selection, not an immediate
+priority bypass. An existing queue session keeps its scope/selection and
+idle-deadline rules; adding an issue alone does not reset its deadline.
+
+Explicit scope bounds the queue; an explicit single scoped task, bounded pass,
+registration-only/no-execution instruction, deferral, discussion-only request or
+prior stop overrides automatic queue startup. A single scoped task enables no new
+queue timers. Preserve paused/unclaimed work when execution is deferred. Both modes
+stay unattended: user-only questions go on the issue (`user-question`), never chat.
+The trigger is handled by the current agent session; no GitHub webhook or background
+service is installed to launch an agent when no agent session is running.
 
 Default scope is both repositories. Explicit scope limits implementation, never visibility
 of the other queue. Fetch all open pages in both before each selection, claim,

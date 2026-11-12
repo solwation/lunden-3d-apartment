@@ -20,10 +20,14 @@ For issue labels/state, follow [.orchestra/shared/ISSUE-WORKFLOW.md](.orchestra/
 the canonical guide from github-dashboard. Finished handoffs use `integration-ready`,
 retain their documented integration owner and consume no active slot; only that owner
 or integrator resumes them. See the [handoff policy](.orchestra/project.md#integration-handoffs).
-For chat change requests, create/reuse the matching issue and start or resume scoped
-work under [chat intake](.orchestra/shared/ORCHESTRA.md#turn-chat-requests-into-work),
-including after an idle watch ends. Respect explicit deferral and reuse an active conductor.
-Read [.orchestra/project.md](.orchestra/project.md) and its shared core/coordination
-files. `/orkester` starts a queue session; a scoped chat request does not expand to the
-whole backlog or enable timers. Reading these files alone starts no work.
+For chat change requests, create/reuse the matching issue and follow
+[chat intake](.orchestra/shared/ORCHESTRA.md#turn-chat-requests-into-work) and the
+[local intake mode](.orchestra/project.md#scope-queue-and-ownership). When the agent
+creates/adds a work issue and no orchestra is active, start the same queue session
+as `/orkester`, including after an idle watch ends; otherwise reuse the active
+conductor. Explicit scope, a single-task/pass request, deferral or stop takes
+precedence. "Create an issue" alone is not deferral. Read
+[.orchestra/project.md](.orchestra/project.md) and its shared core/coordination files.
+Reading these files alone starts no work; this rule acts within an active agent
+session and installs no external issue listener that starts a new agent.
 The core is maintained in [dirigenten-och-orkestern](https://github.com/solwation/dirigenten-och-orkestern).
