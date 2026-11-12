@@ -33,9 +33,9 @@ Representative images:
 - `normal.png`, `front.png`, `side.png`, `whole.png`: actual Santa, furniture.sofa and restTarget.
 - `sipping.png`, `waving.png`, `sleeping.png`, `moved-sleeping.png`: production pose function.
 - `fallback.png`, `late.png`: failed-request and late-success retained fallback.
-- `apartment.png` / `before/apartment.png`: matched main/World normal standing view,
+- `apartment.png` / revision-pinned before image below: matched main/World normal standing view,
   Christmas Eve 15:00, quality1/light resources, CSS1100×700, deviceDPR1, renderer ratio0.75.
-- `before/{whole,front,side,normal}.png`: same component camera/light/scale before the change.
+- Revision-pinned before images below: same component camera/light/scale before the change.
 
 ## Three scoped risk groups
 
@@ -119,8 +119,10 @@ Use the existing Playwright/Three0.170 cache via the documented environment path
 The actual browser reported Chromium156.0.8078.4 / ANGLE SwiftShader, not a hardware
 or mobile device. Every browser run used `tools/browsertest.sh` and its shared lock;
 this host had no enforceable systemd memory scope, so no memory-ceiling claim is made.
-Before-images remain only until the integration owner publishes their pinned issue
-comment, then removes them in the resolving commit. Result images have the ordinary
+Before-images were removed at closure after publication in the
+[completion with nine embedded images](https://github.com/solwation/lunden-3d-apartment/issues/1923#issuecomment-6820568686).
+[Whole before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/744d81310bfb9d54e9e8a65fad0a2b282ee0f065/docs/verification/1923/before/whole.png),
+[apartment before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/744d81310bfb9d54e9e8a65fad0a2b282ee0f065/docs/verification/1923/before/apartment.png). Result images have the ordinary
 30-day retention. Root owns publication, Pages/Worker evidence, pinned accessible
 issue images, final changelog id and closure; this worker only supplies a local Refs commit.
 
