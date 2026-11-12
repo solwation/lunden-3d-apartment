@@ -1,0 +1,32 @@
+{
+  "worker": "572aa1b17cb7da8e26171d89f839c34b75eff56b",
+  "integratedBase": "6cf9ab67e258ca44737c4ba64bd69928d8c09f6c",
+  "changelogId": 1488,
+  "exactFiles": {
+    "src/furniture.js": "aa1d068ca4996f2f07e1d8a90abbf5a4dddc372f99f792ed1feb964b6e185a96",
+    "src/tillydesk.js": "55eebd41f0664c52b736e3960783657a9d38708ca06a2e16db9e396242e47283",
+    "src/smallfigures.js": "d9c1330b7b090d6ffcf92a6e9ddcd4db0f8a104d072e49d27c1fbd5af0c34e1c",
+    "tools/props1928-check.cjs": "1e6ff963d294f5b4e0416076b8471342234fd769645e1ca47b4e08c085c637da",
+    "tools/props1928.cjs": "73e31800eba6d23e476a3e2bc3f3517f3e9a5d2622bc2193ceb932e199e9d7aa",
+    "tools/props1928.html": "81739d41e3614f26fffb856e7f5063739d6a5e046fd534f866f2136c97960d34"
+  },
+  "preservedCurrentFiles": {
+    "src/santa.js": "5a8eb7663eed5155651fa8daa303d51ce055e8215240b8e3adbfd1c4c4517556",
+    "src/pingping.js": "34d188168dc1d7be7c49f0c43c7439b08c07c00ee51acb7eb25f371fee0979ed",
+    "src/pingpingsurface.js": "95f55c0cf74ccc20c46d1f3fd4b6703bd91fb92b6a51e328b0ad36209ded2419",
+    "src/bestiarymodels.js": "e187f71bdbfdd5cbd5965018b401e567f7ae0218ac421b4efcd5b8343cab2464",
+    "src/butterflymodel.js": "61b3066bb21837d86ee704df2dcd5ee79a9bfdd5fa12fc64a2e44bb4d9b41734",
+    "src/shark.js": "137f852b851f0080bffb878b8e234545785de9a77c68fdcac9c5589f8bafe345",
+    "src/ghostprops.js": "bf1742332389a8097ebd05b75b927fd6dd6d8dda944288c422fc47bcc7269d4e",
+    "src/riverfishmodel.js": "5bdd5c46c16508fc9901b20f3a4e2eae42eed372b0b95526bf43c5412adc38da",
+    "models/pingping.glb": "efd4aad1b5192241876affe722a1af99f232773848a4c3915f3eec92d2de1446",
+    "models/santa.glb": "e4ee917e1880086042928412ccf6807e69f3437e739f0eecf040249fdd64c130"
+  },
+  "configProof": {
+    "PINGPING": "exact current main; unrelated to selected props fixtures",
+    "SHARK": "exact current main; unrelated to selected props fixtures",
+    "allOtherConfigExact": "58739ffd5eb567579187774a3406ca047cd89571b66fd81bd52272313c0b615b"
+  },
+  "checksReused": 255,
+  "allCapturedEvidenceExact": 103
+}

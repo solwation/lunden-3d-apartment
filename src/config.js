@@ -8623,3 +8623,43 @@ export const ROOF_PICNIC = {
 // #1867: fixed friendly player conversations, bounded local/room defaults (*guess*).
 export const CONVERSATION = { version: 1, range: 3, serverRange: 3.3, hearRange: 12,
   everyMs: 3000, replyMs: 20000, pendingMs: 5000, receipts: 64 };
+
+// #1928: manufactured figurine guesses, not biological anatomy or exact product dimensions.
+// The retained owl/setup photographs guide ceramic/crochet identity; unicorns retain their existing identity.
+export const SMALL_FIGURES = {
+  white: 0xffffff,
+  atlas: { size: 256, split: .5, ceramic: '#be9e66', ink: '#5a432d', flower: '#ddc497', cloth: '#e8ddba', yarn: '#a79b7f', tile: 32, petals: 6, petal: 5, centre: 2, stitchX: 8, stitchY: 7, stroke: .7 },
+  owl: { body: [.043,.079,.0335], at: [0,.079,0], segments: [12,10], boxPower: .27, dip: .006,
+    rough: .32, color: 0xffffff, eyeColor: 0xd6bc86, pupilColor: 0x231a12, eye: [.021,12], pupil: [.0075,8], eyeAt: [.021,.124,.0345], pupilZ: .0352,
+    beak: [.006,.017,4], beakAt: [0,.105,.037], backLean: -.25 },
+  desk: { segments: [16,12], taper: .22, ripple: .013, rows: 12, rough: 1, rings: 3, ringRadius: .022, ringStep: .008, ringTube: .0008, ringSegments: [4,16], ringY: -.013,
+    handScale: [.009,.006,.009], handAt: [.023,-.008,.004], handSegments: [8,6], mouth: [.005,.0007,.001], mouthAt: [0,.005,.022], smile: .4 },
+  lamp: { segments: [16,12], eye: [.003,.004,.0015], eyeAt: [.019,.145,.091], eyeColor: 0x38303b,
+    body: [.047,.037,.064], bodyAt: [0,.060,-.009], neck: [.026,.049,.025], neckAt: [0,.103,.038], head: [.025,.026,.035], headAt: [0,.145,.067], muzzle: [.020,.014,.021], muzzleAt: [0,.133,.092], eyeSegments: [8,6] },
+  unicorn: { segments: [12,8], white: 0xfffcf8, pink: 0xee86bd, gold: 0xffd23f, eye: 0x29212e, rough: .48, goldMetal: .5, goldRough: .3, baseLift: -.0005,
+    // type, dimensions, position, material index, rotation (optional). Body faces +x.
+    parts: [
+      ['sphere',[.032,.022,.017],[0,.039,0],0], ['sphere',[.012,.025,.012],[.023,.061,0],0,[0,0,-.30]],
+      ['sphere',[.020,.014,.012],[.035,.077,0],0], ['sphere',[.013,.009,.010],[.050,.071,0],0],
+      ['sphere',[.007,.015,.007],[-.022,.015,-.010],0], ['sphere',[.007,.015,.007],[.022,.015,-.010],0],
+      ['sphere',[.007,.015,.007],[-.022,.015,.010],0], ['sphere',[.007,.015,.007],[.022,.015,.010],0],
+      ['cone',[.005,.016,6],[.029,.093,-.007],0,[0,0,.20]], ['cone',[.005,.016,6],[.029,.093,.007],0,[0,0,-.20]],
+      ['cone',[.004,.025,8],[.043,.102,0],2,[0,0,-.25]],
+      ['sphere',[.009,.025,.006],[.016,.066,0],1,[0,0,-.35]], ['sphere',[.020,.006,.007],[-.036,.034,0],1,[0,0,.65]],
+      ['sphere',[.0025,.003,.001],[.039,.080,.0115],0], ['sphere',[.0025,.003,.001],[.039,.080,-.0115],0]
+    ] },
+  dino: { rough: .7, green: 0x57a350, eye: 0x253722, segments: [8,4],
+    parts: [ ['sphere',[.020,.011,.010],[0,.015,0]], ['sphere',[.007,.015,.006],[.019,.025,0],[0,0,-.55]], ['sphere',[.010,.006,.006],[.030,.035,0]],
+      ['cone',[.006,.032,8],[-.029,.014,0],[0,0,1.87]],
+      ['sphere',[.004,.006,.004],[-.009,.006,-.006]],['sphere',[.004,.006,.004],[.009,.006,-.006]],['sphere',[.004,.006,.004],[-.009,.006,.006]],['sphere',[.004,.006,.004],[.009,.006,.006]] ],
+    eyeAt: [.033,.037,.0056], eyeScale: [.0017,.0017,.0005], eyeSegments: [6,4] },
+  lego: { blue: 0x1e5bc6, red: 0xd62f2f, yellow: 0xf6d23a, rough: .3, segments: 6, eye: 0x29221b,
+    legs: [.005,.012,.006], legX: .0035, legY: .006, torso: [.014,.012,.007], torsoY: .018,
+    arm: [.004,.011,.005], armX: .009, armY: .017, armAngle: .12, hand: [.004,.003,.004], handY: .010,
+    head: [.0045,.0045,.008], headY: .028, stud: [.0025,.0025,.0015], studY: .03275,
+    face: { x: .0018, y: .029, z: .0042, eye: .00065, mouthY: .0265, mouth: [.0025,.00065] } },
+  duck: { yellow: 0xffd21f, orange: 0xff8a1f, eyeColor: 0x282017, wingColor: 0xf3bf19, rough: .4, segments: [10,6],
+    body: [.0143,.00935,.011], bodyAt: [0,.009,0], head: [.007,.007,.007], headAt: [.009,.021,0],
+    beak: [.006,.002,.004], beakAt: [.0175,.020,0], tail: [.006,.004,.007], tailAt: [-.013,.014,0],
+    eye: [.0013,.0014,.0006], eyeAt: [.012,.023,.006], wing: [.008,.0045,.001], wingAt: [-.002,.012,.0098], smallSegments: [6,4] }
+};

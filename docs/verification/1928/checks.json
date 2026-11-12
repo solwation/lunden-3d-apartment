@@ -1,0 +1,5 @@
+{
+  "checks": 255,
+  "pass": true,
+  "scope": "factory, full furniture, real secret drawer/held/put-down, finite complete matrices, pixels, source hashes and budgets"
+}

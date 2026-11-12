@@ -636,3 +636,14 @@ when available, and uses `rules.winner` for the final headline. Free play counts
 sunk balls out of15 and explicitly has no turns/winner. Reset clears points/groups
 through the same authoritative snapshot. See `billiardscoretest.mjs`,
 `billiardwalltest.cjs` and existing billiard/peer tests.
+
+### Manufactured small figures (#1928)
+
+`smallfigures.js`, configured by `SMALL_FIGURES`, builds the secretary's patterned
+ceramic owl, the desk's crocheted mascot in both variants, the ALEX unicorn and
+three secret-drawer toys; the existing unicorn lamp keeps its shade/light target.
+One shared 256px ceramic/yarn atlas and vertex-painted faces preserve the bounded
+material batches. The brick toy has arms and split legs in three indexed colour
+batches. Existing Trinket/SecretDrawer/Hand/home/save semantics and generic remote
+`box` proxy remain; ALEX support contact and desk variant anchors are unchanged.
+[Source-bound images, isolated figure/full furniture costs and consumer checks](../verification/1928/README.md).

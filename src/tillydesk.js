@@ -1,3 +1,4 @@
+import { deskMascot } from './smallfigures.js';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { TILLY_DESK as C } from './config.js';
@@ -139,9 +140,7 @@ function deskShape(g, P, wood, cream) {
     const cone=cylinder(g,S.r*.7,D.thin,[x,S.at[0],z+S.size[2]/2]);cone.rotation.x=Math.PI/2;}
   cylinder(g,C.puck.r,C.puck.h,P.puck);cylinder(g,C.charger.r,C.charger.h,P.charger);
   box(g,C.dac.size,P.dac);ring(g,C.dac.knob,C.dac.knob/4,[P.dac[0]+C.dac.size[0]/4,P.dac[1],P.dac[2]+C.dac.size[2]/2],steel);
-  const F=C.figure;sphere(g,F.scale,P.figure,cream);
-  for(let i=0;i<F.rings;i++) {const m=ring(g,F.scale[0]*(1-i/(F.rings+1)),F.stitch,[P.figure[0],P.figure[1]+i*F.scale[1]/F.rings,P.figure[2]],cream);m.rotation.x=Math.PI/2;}
-  for(const s of [-1,1])sphere(g,F.eye,[P.figure[0]+s*F.eyeAt[0],P.figure[1]+F.eyeAt[1],P.figure[2]+F.eyeAt[2]],black);
+  const F=C.figure;deskMascot(g,F,P.figure,cream,black);
   const Pc=C.pc,[px,py,pz]=P.pc,[pw,ph,pd]=Pc.size,t=Pc.shell;
   // Hollow case: fans/GPU remain visibly behind the tinted glass.
   for(const s of [-1,1]){box(g,[t,ph,pd],[px+s*(pw-t)/2,py,pz]);box(g,[pw,t,pd],[px,py+s*(ph-t)/2,pz]);}
