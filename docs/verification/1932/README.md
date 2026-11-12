@@ -32,3 +32,5 @@ The before-run `result.json` and `completion.json` misleadingly contain zero ass
 This does not claim rendered pixel quality, full World behavior, physical-phone behavior, performance or a new slab/canopy collision regression test. No broad or historical test chain was run for the one-method fixture repair.
 
 Root reviewed the exact one-method fixture delta, full before/after CLI evidence and native contract. [Rebase mapping](integration.json) proves the test and all actual native consumers exact, with only unrelated Pingping/SMALL_FIGURES configuration additions (trailing blank normalized). Both green scoped groups are reused; no broad rerun. This test-only commit has no new product image or changelog.
+
+[Publication record](https://github.com/solwation/lunden-3d-apartment/issues/1932#issuecomment-6821946883) for `f3f5ae145854bd40ecfe5e3ecd8cdb814142e5a0`: [Deploy to GitHub Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/43206486559): success
