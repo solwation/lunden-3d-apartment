@@ -3688,6 +3688,30 @@ export const HAND = { skin: 0xe2b292, skinGlow: 0x2a0e06, sleeve: 0x4a5a6e, shou
     swingLeftAt: [0.2, -0.12, -0.45], swingLeftFollow: 0.04, swingLeftCurl: 0.15, swingLeftSpread: 0.25, // guess: free relaxed hand
     climbAt: [0.23, 0.03, -0.34], wallTilt: 0.35, climbReach: 0.16, climbStride: 1.1, climbFade: 0.25 } };
 
+// #1917: authored visual hand/forearm profiles, in the existing Hand frame (metres before HAND.size).
+// These are anatomy/art guesses, not measured personal dimensions. The four finger anchors and grip controls stay fixed;
+// the thumb metacarpal starts inside the palm, and the same fitted anchor is used by its ring.
+export const HAND_SURFACE = {
+  radial: 16, fingerSteps: 18,
+  // z, half palm width (Y), back depth (-X), palm depth (+X).
+  palm: [[-.098,.031,.0223,.0223],[-.065,.029,.021,.021],[-.028,.0255,.017,.018],
+    [-.004,.027,.014,.019],[.019,.035,.013,.022],[.042,.040,.014,.022],
+    [.064,.040,.014,.021],[.082,.039,.013,.018],[.096,.034,.010,.014]],
+  thenar: { y:.020,z:.032,width:.022,length:.035,depth:.004 },
+  knuckles:[[-.040,.081],[-.028,.087],[-.0095,.095],[.0095,.098],[.029,.095],[.040,.089]],
+  thumbStart:[.002,.018,.012],
+  tendons: { from:.018,to:.088,depth:.0013,width:.0045 },
+  fingerShape: [[0,1],[.15,1.04],[.35,.94],[.48,1.01],[.64,.90],[.75,.91],[.88,.80],[.97,.46],[1,0]],
+  fingerDepth:.88, nail: { from:.77,to:.94,arc:.64,depth:.00055,shade:1.08 },
+  creases: { width:.00035,lift:.0001,shade:.94,paths:[
+    [[-.026,.065],[-.008,.059],[.014,.061],[.028,.069]],
+    [[-.027,.041],[-.011,.042],[.008,.047],[.023,.049]],
+    [[.011,.008],[-.002,.023],[-.002,.044],[.014,.059]],
+  ] },
+  // shoulder-to-cuff normalized Z; width/depth remain in metres, as the original sleeve.
+  arm: [[0,.050,.0425],[.20,.048,.041],[.45,.045,.038],[.68,.042,.035],[.86,.0375,.032],[1,.036,.0306],[1.025,.033,.028]],
+};
+
 // What is in the wardrobes and drawers (#228, src/stuff.js): shared colours, and per person (by room) the clothes:
 // `size` (1 adult, ~0.65 a child), garment colours, what hangs on the rod, folded colours, shoes, socks, underwear.
 // Who sleeps where: CLAUDE.md. Our picks.

@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { HAND as H, BICYCLE_GRIP as BIKE_GRIP, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue } from './config.js';
+import { HAND as H, HAND_SURFACE as SURFACE, BICYCLE_GRIP as BIKE_GRIP, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue } from './config.js';
 
 // The visitor's right arm and hand (#195, #238), children of the camera, in the lower right of the view. Hidden
 // while the hand is empty. Holding something (holdable.js, a cup), the hand closes round the held thing's grip
@@ -15,11 +14,11 @@ import { HAND as H, BICYCLE_GRIP as BIKE_GRIP, AVATAR_RING as RING, AVATAR_WRIST
 // right hand in the classic pose: palm up, index and little finger out, middle and ring finger folded in, kept up for
 // `HAND.suit.webHold` s after the shot) and swinging (that hand points at the anchor, the other open beside it). The left
 // arm is the mirrored frame of the hug (#269). No new meshes: one more morph target (`web`).
-// The hand is one mesh: a palm, a thumb and four fingers of three joints each (capsules, soft normals) and the bare
+// The hand is one mesh: a shaped palm/wrist surface and five continuous fingers with soft knuckles and nails, and the bare
 // wrist, built in four poses that are its morph targets (relaxed | closed round a handle | spread for a reach | the web pose).
 // The sleeve is a tapering tube from the shoulder with a cuff at the wrist. Three meshes, no shadows.
 
-const skin = new THREE.MeshStandardMaterial({ color: H.skin, roughness: 0.62, emissive: H.skinGlow, emissiveIntensity: 1 });
+const skin = new THREE.MeshStandardMaterial({ color: H.skin, roughness: 0.62, emissive: H.skinGlow, emissiveIntensity: 1, vertexColors: true });
 const SKIN = { color: new THREE.Color(H.skin), wet: new THREE.Color(H.skin).multiplyScalar(0.88), rough: 0.62, wetRough: 0.24 };
 // #1215: the arm follows the player's avatar (look.skin, look.top, look.sleeves); HAND.skin / HAND.sleeve are the defaults
 const OWN = { skin: H.skin, sleeve: H.sleeve, long: true, suit: false, ring: 0, metal: 0, bracelet: 0, watch: 0, glow: new THREE.Color(H.skinGlow) };
@@ -47,6 +46,7 @@ function dropsGeometry() {
 const sleeve = new THREE.MeshStandardMaterial({ color: H.sleeve, roughness: 0.85 });
 /** The Spider-Man suit on (#597): red gloves and a blue sleeve; off: skin and the usual sleeve again. */
 export function suitHands(on, red = 0xc8202a, blue = 0x1d3f9a) {
+  if (OWN.suit !== on) { skin.vertexColors = !on; skin.needsUpdate = true; } // gloves retain their uniform red finish
   OWN.suit = on;
   SKIN.color.set(on ? red : OWN.skin); SKIN.wet.copy(SKIN.color).multiplyScalar(0.88);
   skin.color.copy(SKIN.color); skin.emissive.copy(on ? new THREE.Color(0) : OWN.glow);
@@ -90,32 +90,90 @@ const POSES = {
 
 const Y = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
 
-/** A capsule of radius r from the origin `len` along +z, then placed by matrix `m`. */
-function bone(r0, len, m) {
-  const g = new THREE.CapsuleGeometry(r0, Math.max(0.001, len - r0), 3, 10).rotateX(Math.PI / 2).translate(0, 0, (len - r0) / 2 + r0 * 0.5);
-  return g.applyMatrix4(m);
+function profile(table, t, column = 1) {
+  for (let i = 1; i < table.length; i++) if (t <= table[i][0]) {
+    const [a, b] = [table[i - 1], table[i]], k = (t - a[0]) / (b[0] - a[0]);
+    return THREE.MathUtils.lerp(a[column], b[column], k);
+  }
+  return table.at(-1)[column];
 }
 
-/** A chain of joints from `start` (position, quaternion), bending by `bends` about the local y axis (towards +x). */
+/** Indexed grids keep shared normals at rings; all poses use exactly the same topology. */
+function surface(rows, columns, point, closed = true) {
+  const positions = [], indices = [];
+  const count = closed ? columns : columns + 1;
+  for (let j = 0; j <= rows; j++) for (let i = 0; i < count; i++) positions.push(...point(j / rows, i * Math.PI * 2 / columns));
+  for (let j = 0; j < rows; j++) for (let i = 0; i < columns; i++) {
+    const a = j * count + i, b = j * count + (i + 1) % count;
+    indices.push(a, b, a + count, b, b + count, a + count);
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setIndex(indices);geometry.computeVertexNormals();
+  return geometry;
+}
+
+/** Skin follows the existing phalanx frames through each knuckle, instead of overlapping capsules. */
 function chain(parts, start, q0, lens, radii, bends) {
-  const p = start.clone(), q = q0.clone(), m = new THREE.Matrix4();
+  const p = start.clone(), q = q0.clone(), points = [p.clone()];
   lens.forEach((len, k) => {
     q.multiply(new THREE.Quaternion().setFromAxisAngle(Y, bends[k]));
-    parts.push(bone(radii[k], len, m.compose(p, q, new THREE.Vector3(1, 1, 1))));
+    const direction = Z.clone().applyQuaternion(q);
+    points.push(p.clone().addScaledVector(direction, len / 2));
     p.add(Z.clone().applyQuaternion(q).multiplyScalar(len - radii[k] * 0.35)); // the next joint overlaps a little
+    points.push(p.clone());
   });
+  const curve = new THREE.CatmullRomCurve3(points), axisY = Y.clone().applyQuaternion(q0);
+  const finger = surface(SURFACE.fingerSteps, SURFACE.radial, (t, angle) => {
+    const at = curve.getPoint(t), tangent = curve.getTangent(t), axisX = axisY.clone().cross(tangent).normalize();
+    const r = radii[0] * profile(SURFACE.fingerShape, t);
+    return at.addScaledVector(axisX, Math.cos(angle) * r * SURFACE.fingerDepth).addScaledVector(axisY, Math.sin(angle) * r).toArray();
+  });
+  parts.push(finger);
+  // A shallow dorsal nail shares the hand's draw/material/morphs; no extra texture or per-frame update.
+  const n = SURFACE.nail;
+  const nail = surface(4, 8, (v, angle) => {
+    const t = THREE.MathUtils.lerp(n.from, n.to, v), u = angle / (Math.PI * 2), phi = (1 - 2 * u) * n.arc;
+    const at = curve.getPoint(t), tangent = curve.getTangent(t), axisX = axisY.clone().cross(tangent).normalize();
+    const r = radii[0] * profile(SURFACE.fingerShape, t);
+    return at.addScaledVector(axisX, -Math.cos(phi) * r * SURFACE.fingerDepth - n.depth * Math.sin(Math.PI * u) * Math.sin(Math.PI * v))
+      .addScaledVector(axisY, Math.sin(phi) * r).toArray();
+  }, false);
+  nail.userData.shade = n.shade;parts.push(nail);
 }
 
 /** The hand in one pose: every pose has the same vertices in the same order (they are morph targets). */
 function handGeometry(pose) {
   const parts = [];
-  const palm = new RoundedBoxGeometry(0.03, 0.08, 0.098, 3, 0.013).translate(0.001, 0, 0.05);
+  const table = SURFACE.palm, min = table[0][0], max = table.at(-1)[0];
+  const palmPoint = (z, angle) => {
+    const t = (z - min) / (max - min), y = Math.sin(angle) * profile(table, z);
+    const front = Math.max(0, Math.cos(angle)), back = Math.max(0, -Math.cos(angle));
+    const mound = SURFACE.thenar, tendons = SURFACE.tendons;
+    const thumb = mound.depth * Math.exp(-(((y - mound.y) / mound.width) ** 2) - ((z - mound.z) / mound.length) ** 2);
+    const fade = Math.max(0, Math.sin(Math.PI * THREE.MathUtils.clamp((z - tendons.from) / (tendons.to - tendons.from), 0, 1)));
+    const ridges = FINGERS.reduce((sum, f) => sum + Math.exp(-(((y - f.y * t) / tendons.width) ** 2)), 0) * fade * tendons.depth;
+    const x = front * profile(table, z, 3) - back * profile(table, z, 2) + front ** 3 * thumb - back ** 3 * ridges;
+    return [x, y, z + t ** 8 * (profile(SURFACE.knuckles, y) - max)];
+  };
+  const palm = surface(table.length * 2, SURFACE.radial * 2, (t, angle) => palmPoint(THREE.MathUtils.lerp(min, max, t), angle));
   parts.push(palm);
-  // the ball of the thumb and the heel of the hand on the palm side
-  parts.push(new THREE.SphereGeometry(0.02, 12, 8).scale(0.62, 1.05, 1.45).translate(0.008, 0.019, 0.034));
-  parts.push(new THREE.SphereGeometry(0.018, 10, 8).scale(0.6, 1.1, 1.2).translate(0.008, -0.02, 0.03));
-  // the wrist and the bare forearm back to the cuff, a little flatter than wide
-  parts.push(new THREE.CylinderGeometry(0.026, 0.031, 0.1, 16, 1, true).rotateX(Math.PI / 2).scale(0.72, 1, 1).translate(0, -0.002, -0.045));
+  parts.push(surface(1, SURFACE.radial * 2, (t, angle) => {
+    const edge = palmPoint(max, angle);
+    return [edge[0] * (1 - t), edge[1] * (1 - t), THREE.MathUtils.lerp(edge[2], max, t)];
+  }));
+  const palmMesh = new THREE.Mesh(palm, skin), ray = new THREE.Raycaster(), hits = [];
+  ray.ray.direction.set(-1, 0, 0);
+  for (const path of SURFACE.creases.paths) {
+    const curve = new THREE.CatmullRomCurve3(path.map(([y, z]) => new THREE.Vector3(0, y, z)));
+    const crease = surface(20, 1, (t, angle) => {
+      const at = curve.getPoint(t), tangent = curve.getTangent(t), offset = (angle / Math.PI - 1) * SURFACE.creases.width;
+      const y = at.y + tangent.z * offset, z = at.z - tangent.y * offset;
+      ray.ray.origin.set(1, y, z);hits.length = 0;ray.intersectObject(palmMesh, false, hits);
+      return [hits[0].point.x + SURFACE.creases.lift, y, z]; // fitted once to the actual polygon surface
+    }, false);
+    crease.userData.shade = SURFACE.creases.shade;parts.push(crease);
+  }
   FINGERS.forEach((f, i) => {
     const q = new THREE.Quaternion().setFromAxisAngle(X, pose.spread[i]);
     chain(parts, new THREE.Vector3(0.002, f.y, f.z - 0.006), q, PHALANX.map((s) => s * f.l), [f.r, f.r * 0.93, f.r * 0.86], Array.isArray(pose.fingers[0]) ? pose.fingers[i] : pose.fingers);
@@ -123,8 +181,13 @@ function handGeometry(pose) {
   // the thumb: from the wrist end of the palm, turned up (+y) and in towards the palm (+x), its metacarpal included
   const t = pose.thumb;
   const q = new THREE.Quaternion().setFromAxisAngle(X, -t.up).multiply(new THREE.Quaternion().setFromAxisAngle(Y, t.in));
-  chain(parts, new THREE.Vector3(0.006, 0.026, 0.02), q, [0.045, 0.034, 0.028], [0.0125, 0.0108, 0.0098], [0, ...t.bend]);
-  const geo = mergeGeometries(parts.map((g) => { g.deleteAttribute('uv'); return g.index ? g.toNonIndexed() : g; }));
+  chain(parts, new THREE.Vector3(...SURFACE.thumbStart), q, [0.045, 0.034, 0.028], [0.0125, 0.0108, 0.0098], [0, ...t.bend]);
+  const geo = mergeGeometries(parts.map((g) => {
+    g.deleteAttribute('uv');const shade = g.userData.shade ?? 1;
+    const colors = new Float32Array(g.attributes.position.count * 3).fill(shade);
+    g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    return g; // every authored surface is indexed; retain sharing through all four morphs
+  }));
   return geo.scale(H.size, H.size, H.size);
 }
 
@@ -134,7 +197,7 @@ function ringGeometry(pose, k) {
   let start, q, len, r;
   if (k === 0) { // the thumb: the metacarpal (no bend) first, the ring on the second joint
     const t = pose.thumb, q0 = new THREE.Quaternion().setFromAxisAngle(X, -t.up).multiply(new THREE.Quaternion().setFromAxisAngle(Y, t.in));
-    start = new THREE.Vector3(0.006, 0.026, 0.02).add(Z.clone().applyQuaternion(q0).multiplyScalar(0.045 - 0.0125 * 0.35));
+    start = new THREE.Vector3(...SURFACE.thumbStart).add(Z.clone().applyQuaternion(q0).multiplyScalar(0.045 - 0.0125 * 0.35));
     q = q0.multiply(new THREE.Quaternion().setFromAxisAngle(Y, t.bend[0])); len = 0.034; r = 0.0108;
   } else {
     const f = FINGERS[k - 1], b = Array.isArray(pose.fingers[0]) ? pose.fingers[k - 1] : pose.fingers;
@@ -190,7 +253,13 @@ function buildHand() {
 
 /** The sleeve, length 1 along +z (scaled to the shoulder–cuff distance), wider at the shoulder. */
 function sleeveGeometry() {
-  return new THREE.CylinderGeometry(0.036, 0.05, 1, 14, 1, true).translate(0, 0.5, 0).rotateX(Math.PI / 2);
+  const g = surface(SURFACE.arm.length - 1, SURFACE.radial, (t, angle) => {
+    const z = t * SURFACE.arm.at(-1)[0];
+    return [Math.cos(angle) * profile(SURFACE.arm, z, 2), Math.sin(angle) * profile(SURFACE.arm, z), z];
+  });
+  // The bare arm shares the vertex-coloured skin material; white preserves its chosen skin tone.
+  g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3).fill(1), 3));
+  return g;
 }
 /** The cuff: a rolled edge round the end of the sleeve (at z 0, the sleeve goes on towards −z). */
 function cuffGeometry() {

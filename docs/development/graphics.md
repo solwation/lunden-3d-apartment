@@ -14,6 +14,17 @@ and compare real scoped render/update/memory costs at fixed inputs and quality.
 A format change or a higher polygon count does not establish quality or speed.
 [Full coverage, measured baseline, limits and concrete follow-ups](../verification/1915/README.md).
 
+### First-person hand surfaces (#1917)
+
+`Hand` keeps the existing relaxed/grip/spread/web controls, camera-space contacts,
+left-hand mirroring and three ordinary hand/arm/cuff draws. Indexed continuous
+finger skins replace separate phalanx capsules; shaped palm/wrist and thumb-base
+profiles, fitted dorsal nails and shallow palm creases are authored once for all
+four morph poses. `HAND_SURFACE` contains the visual assumptions. The thumb ring
+uses the same fitted thumb root. The bare arm has a white colour attribute for
+the shared skin material; suit gloves retain their uniform finish. No texture,
+light, animation mixer or per-frame geometry work is added.
+
 
 Kitchen appliance details (#1043): `hob.js` keeps zone markings and touch controls
 in one canvas texture; its thin bevel adds16 triangles. `hood.js` caches steel,
