@@ -1252,7 +1252,11 @@ and cones. [Whole views, measurements and actual consumers](../verification/1911
 
 Santa fallback startup and whole actual-sofa sitting/sleeping evidence: [#1914](../verification/1914/README.md).
 
-## Restored cat geometry and breed/coat parity (#1910)
+## Restored cat geometry and breed/coat parity (#1910; historical baseline)
+
+This 2026-11-11 restoration precedes #1918. Its budgets and asset size below are
+historical; [current cat surfaces/costs](../verification/1918/README.md) and the
+[corrected GLB evaluation](rigged-cat-evaluation.md) supersede them.
 
 The foreign generic GLB/atlas path from #1894 is replaced by the established articulated
 cat recipe. The neutral legacy-named `cat-rigged.glb` now supplies matching immutable
