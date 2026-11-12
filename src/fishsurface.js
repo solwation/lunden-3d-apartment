@@ -4,8 +4,8 @@ import { CAUGHT_FISH as C, FISH_SURFACE as F } from './config.js';
 // Same anatomical recipe at two fixed densities. Absent fins collapse into the
 // skin, retaining identical live topology for the six packed species targets.
 // Sources built for live packing are temporary, not six retained caught caches.
-export function buildFishSurface(name, live = false) {
-  const s=C.species[name],D=live?F.live:F.caught,positions=[],colors=[],indices=[];
+export function buildFishSurface(name, live = false, densityOverride = null) {
+  const s=C.species[name],D=densityOverride??(live?F.live:F.caught),positions=[],colors=[],indices=[];
   const color=new THREE.Color(),back=new THREE.Color(s.back),side=new THREE.Color(s.side),belly=new THREE.Color(s.belly);
   const tailZ=-.5+s.tail,bodyLength=.5-tailZ;
   const shape=(u,k,ped)=>u<=s.peak?ped+(1-ped)*Math.sin(u/s.peak*Math.PI/2):Math.pow(Math.max(0,1-Math.pow((u-s.peak)/(1-s.peak),k)),1/k);

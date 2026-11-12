@@ -15,7 +15,8 @@ serve its original config, riverfish, riverfishmodel, caughtfish and fish GLB fr
 Git. Other unchanged production dependencies are shared. This is a controlled
 consumer fixture, not a claim that the whole World was benchmarked.
 
-[Source manifest](source-manifest.json) records delivered app/fixture SHA-256s.
+[Source manifest](source-manifest.json) records delivered app/fixture SHA-256s
+and the earlier capture-source set.
 [Measured hashes](measured-hashes.json) map the captured art sources to
 [delivered hashes](delivered-hashes.json). After the captures, remaining art
 constants were moved into `FISH_SURFACE` (inherited #1765 values are labelled),
@@ -57,9 +58,9 @@ the implementer and the independent integrator before handoff.
    held; the binder produces twelve nonempty images (96 and 320 px for all six).
    Only the six fish thumbnail model versions become 2; IDs 51–56, discoveries
    and saved photos remain stable. Shared world drops already carry the species
-   and use the same caught factory. The remote held proxy remains the existing
-   generic category shape: protocol `hi=fish` carries no species. That limitation
-   is preserved rather than introducing a protocol change.
+   and use the same caught factory. The remote held proxy remains a generic category because protocol `hi=fish`
+   carries no species; its geometry is improved by the bounded addendum below.
+   No protocol change is introduced.
 2. **Rendering, anchors and behaviour boundaries.** All object/camera matrices
    and populated instance data are finite. Twelve valid natural states cover
    each species near the top and bottom of the existing rise cycle using the
@@ -188,3 +189,62 @@ pruned after their pinned publication. JSON/hash records remain.
 A separate public low-priority port should adapt these generic live species
 surfaces to that project's own factory, batching and LOD. Do not copy original
 caught/hand/binder/cooking/gameplay, personal content, or service integrations.
+
+
+## Remote hand fish addendum
+
+The initial scope judgement left the visible remote held-category fish unchanged.
+The integrator corrected that judgement under #1922: it now uses one low-density
+neutral fish from the shared recipe, replacing the sphere/cone silhouette. It
+still represents only the generic category `hi=fish`; it does not pretend that
+species data exists. No protocol, pose or other item recipe changes are included.
+
+Baseline for this addendum is `4708328d6f86934f35f9457618ca2dc5d194804b`.
+`FISH_SURFACE.ghost` holds the guessed density and exact old Float32 envelope;
+the default six-species paths are byte-identical before/after the optional density
+parameter, including all live/caught/packed/neutral buffers and the GLB. Compare
+[the prior delivered hashes](delivered-hashes.json) with
+[the addendum hashes](proxy-default-hashes.json). The source manifest retains the
+original captured SHA set separately and identifies the final app/test sources.
+[Proxy browser data](ghost-fish.json) also binds the actual addendum sources.
+
+| Proxy quantity | Before | After | Locked ceiling |
+| --- | ---: | ---: | ---: |
+| Submitted calls | 1 | 1 | 1 |
+| Triangles | 42 | 161 | 180 |
+| Cached position/normal/colour/index views | 4,536 B | 5,754 B | 16,384 B |
+
+This one additional lazy cache is separate from the full live/caught/neutral
+cost table above. Mesh transforms and exact local bounds remain:
+min `[-0.030000001192092896, -0.27000001072883606, -0.12763139605522156]`,
+max `[0.030000001192092896, -0.014999999664723873, -0.032368600368499756]`.
+The nose points down (-Y); the existing Ghost right-hand origin and pose are
+unchanged. Repeated instances share the same indexed geometry and material.
+
+| Reviewed proxy view | Before | After |
+| --- | --- | --- |
+| Representative actual Ghost, 2.5 m / 70° FOV | [Before](before/ghost-fish-normal.png) | [After](ghost-fish-normal.png) |
+| Isolated diagnostic close view | [Before](before/ghost-fish-close.png) | [After](ghost-fish-close.png) |
+| Reverse diagnostic close view, cropped at top | [Before](before/ghost-fish-reverse.png) | [After](ghost-fish-reverse.png) |
+
+The matched actual-Ghost path verifies exact hand/world transforms and bounds,
+finite full scene/camera matrices, one proxy draw, shared cache/material, and
+weapon priority, far hiding, empty and unknown-category contracts. The normal
+view has 669 intended fish pixels (828 before) against a fish-hidden frame.
+The diagnostic close pictures illustrate the low-detail shape; the complete
+normal view is the representative remote-hand result. The implementer and
+integrator opened and accepted these images. No further art pass was made.
+
+The proxy-only capture exited 0. [Geometry checks](ghost-fish-geometry-tests.txt)
+add finite attributes, exact envelope/nose direction, triangle/index counting,
+100-instance cache sharing and the bounded raw budget. Reproduce with:
+
+```sh
+node tools/ghostfishgeometrytest.mjs
+PLAYWRIGHT_MODULE=/path/to/node_modules/playwright BROWSERTEST_TIMEOUT=2m tools/browsertest.sh node tools/capture-ghost-fish-quality.cjs /tmp/ghost-fish
+```
+
+The capture emits before images with a `ghost-fish-before-` prefix; the saved
+copies here live under `before/` so the integrator can prune them after pinned
+publication. The six-species matrix is reused through the exact default-buffer
+identity proof rather than rerun for this independent bounded proxy.

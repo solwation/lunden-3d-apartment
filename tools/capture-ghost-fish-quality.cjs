@@ -1,0 +1,14 @@
+// #1922 bounded addendum: actual Ghost category-fish only, no wire/pose change.
+const{chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright'),fs=require('node:fs'),{execFileSync}=require('node:child_process'),{createHash}=require('node:crypto');
+const out=process.argv[2]||'docs/verification/1922',origin=process.env.FISH_ORIGIN||'http://127.0.0.1:8201',baseline='4708328d6f86934f35f9457618ca2dc5d194804b',check=(ok,msg)=>{if(!ok)throw Error(msg)};
+(async()=>{fs.mkdirSync(out,{recursive:true});const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']}),result={baseline,phases:[]};try{
+ for(const before of [true,false]){const page=await browser.newPage({viewport:{width:1200,height:900}}),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&/Shader|WebGL|GL_INVALID/.test(m.text()))errors.push(m.text())});
+  if(before)await page.route('**/src/ghostprops.js',r=>r.fulfill({contentType:'text/javascript',body:execFileSync('git',['show',baseline+':src/ghostprops.js'])}));
+  await page.goto(origin+'/tools/ghostfishquality.html');await page.waitForFunction(()=>window.ghostFish?.ready);const rows=[];
+  for(const[mode,close,reverse]of[['normal',false,false],['close',true,false],['reverse',true,true]]){const row=await page.evaluate(({close,reverse})=>{const q=ghostFish,state=q.view(close,reverse);return{...state,pixels:q.pixels()}},{close,reverse});check(row.finite&&row.cameraFinite&&row.shared&&row.pixels>12,'invalid or invisible proxy '+mode);if(close)check(row.render.calls===1,'proxy must submit one draw');rows.push({mode,...row});await page.locator('canvas').screenshot({path:out+`/ghost-fish-${before?'before-':''}${mode}.png`})}
+  const contracts=await page.evaluate(()=>ghostFish.contracts());check(Object.values(contracts).every(Boolean),'ghost item contracts');check(!errors.length,errors.join('\n'));result.phases.push({phase:before?'before':'after',rows,contracts,errors});await page.close();
+ }
+ const[b,a]=result.phases;for(let i=0;i<a.rows.length;i++){const x=a.rows[i],y=b.rows[i];for(const k of['bounds','worldMatrix','hand','position','quaternion','scale'])check(JSON.stringify(x[k])===JSON.stringify(y[k]),'changed handframe/bounds '+k);check(x.triangles<=180&&x.rawBytes<=16384,'proxy budget')}
+ result.sha256=Object.fromEntries(['src/config.js','src/fishsurface.js','src/ghostprops.js','tools/ghostfishquality.html','tools/capture-ghost-fish-quality.cjs'].map(p=>[p,createHash('sha256').update(fs.readFileSync(p)).digest('hex')]));
+ fs.writeFileSync(out+'/ghost-fish.json',JSON.stringify(result,null,2)+'\n');console.log('PASS one shared generic proxy, exact bounds/handframe, actual remote pixels, finite matrices, weapon/far/empty/unknown contracts and one draw budget');
+ }finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});

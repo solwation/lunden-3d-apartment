@@ -7886,6 +7886,10 @@ export const SHARK = {
 // #1922: authored fish surface/density estimates (guess). Existing species length,
 // mouth/hand/surface frames and CAUGHT_FISH anatomy dimensions remain authoritative.
 export const FISH_SURFACE = {
+  // Generic held-category proxy: guessed low density; exact #1753 Float32 envelope.
+  ghost: { species: 'mört', density: { rings: 6, around: 8, finSegments: 1, eyeSegments: 3 },
+    min: [-0.030000001192092896,-0.27000001072883606,-0.12763139605522156],
+    max: [0.030000001192092896,-0.014999999664723873,-0.032368600368499756] },
   live: { rings: 14, around: 10, finSegments: 3, eyeSegments: 6 },
   caught: { rings: 18, around: 16, finSegments: 4, eyeSegments: 8 },
   fin: { rows: 3, camber: .0025, root: .9, sweep: .32, shade: .82, ray: .12, spineNotch: .72, colorRoot: .55 },

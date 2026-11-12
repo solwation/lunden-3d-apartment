@@ -1066,9 +1066,10 @@ per-fish animation or eighteen skinning/mixer systems.
 Caught/binder species cache one geometry each, 743/743/743/847/879/743 triangles
 and one draw. Their six thumbnail versions are now 2; stable IDs, discoveries and
 photographs are preserved. Shared world drops already carry species metadata and
-use these same CaughtFish forms. The remote **held category proxy remains generic**:
-the existing player protocol says only `hi=fish`, with no species field. No
-protocol or proxy expansion is included here. Shark uses its unchanged legacy
+use these same CaughtFish forms. The remote **held category proxy remains generic** because the existing player
+protocol says only `hi=fish`, with no species field. Its old sphere/cone is now
+a 161-triangle neutral shared-recipe fish (5,754 B cached geometry, one draw),
+using the exact old hanging envelope/hand frame. No protocol expansion is included. Shark uses its unchanged legacy
 custom-spec recipe and asset.
 
 The conservative live raw budget was 25860 B; final geometry+18 instance data is

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SABER, TOYS } from './config.js';
+import { SABER, TOYS, FISH_SURFACE } from './config.js';
+import { buildFishSurface } from './fishsurface.js';
 import { rifleModel } from './rifle.js';
 import { buildSaber } from './saber.js';
 import { bowGeometry } from './bow.js';
@@ -154,14 +155,25 @@ const ITEM_PARTS = {
   rod: () => { const up = (g) => g.rotateX(-(Math.PI / 2 - ROD_UP));
     return [[up(new THREE.CylinderGeometry(0.004, 0.009, ROD_LEN - 0.3, 5, 1, true).translate(0, 0.15 + (ROD_LEN - 0.3) / 2, 0)), 0x1f3d2c, [0, 0, 0]],
       [up(new THREE.CylinderGeometry(0.016, 0.016, 0.3, 6).translate(0, 0, 0)), 0xb98a55, [0, 0, 0]], [new THREE.BoxGeometry(0.03, 0.05, 0.05), 0x3a3f44, [0, -0.045, -0.02]]]; },
-  fish: () => [[new THREE.SphereGeometry(0.1, 6, 4).scale(0.3, 1, 0.55), 0x8f9a74, [0, -0.17, -0.08]], [new THREE.ConeGeometry(0.045, 0.07, 3).scale(0.35, 1, 1), 0x5f6a4c, [0, -0.05, -0.08]]],
   // #1769: a shark fin held up by its base: a grey swept-back blade (a flattened, sheared three-sided cone) over a dark-red cut
   sharkfin: () => [[new THREE.ConeGeometry(0.12, 0.42, 3).scale(0.25, 1, 1).applyMatrix4(new THREE.Matrix4().makeShear(0, 0, 0, -0.5, 0, 0)), 0x59626b, [0, 0.24, -0.14]], [new THREE.BoxGeometry(0.04, 0.025, 0.2), 0x8a2a24, [0, 0.02, -0.14]]],
 };
+// #1922: one generic fish because hi=fish carries no species. Preserve the old
+// hanging envelope and hand frame; retain indices/colours in the shared cache.
+function ghostFishGeometry() {
+  const c=FISH_SURFACE.ghost,g=buildFishSurface(c.species,false,c.density);
+  g.rotateX(Math.PI/2); // recipe +z nose points down (-y) in the hanging proxy
+  g.computeBoundingBox();const size=g.boundingBox.getSize(new THREE.Vector3()),min=g.boundingBox.min;
+  const scale=c.max.map((v,i)=>(v-c.min[i])/size.getComponent(i)),p=g.attributes.position;
+  for(let i=0;i<p.count;i++)for(let axis=0;axis<3;axis++)p.array[i*3+axis]=c.min[axis]+(p.array[i*3+axis]-min.getComponent(axis))*scale[axis];
+  g.attributes.normal.applyNormalMatrix(new THREE.Matrix3().getNormalMatrix(new THREE.Matrix4().makeScale(...scale)));
+  g.computeBoundingBox();g.computeBoundingSphere();return g;
+}
 const itemCache = new Map();
 /** A new proxy mesh for held-item category `key`, or null for an unknown one; geometry and material shared by every ghost. */
 export function ghostItem(key) {
-  if (!ITEM_PARTS[key]) return null;
+  if (key !== 'fish' && !ITEM_PARTS[key]) return null;
+  if (key === 'fish' && !itemCache.has(key)) itemCache.set(key,ghostFishGeometry());
   if (!itemCache.has(key)) {
     const parts = ITEM_PARTS[key]().map(([geo, hex, at]) => {
       const g = geo.index ? geo.toNonIndexed() : geo.clone(), c = new THREE.Color(hex), n = g.attributes.position.count, a = new Float32Array(n * 3);
@@ -179,4 +191,4 @@ export function ghostItem(key) {
 }
 
 /** Triangle count of a category's proxy (for tests / budgets). */
-export const ghostItemTriangles = (key) => { const m = ghostItem(key); return m ? m.geometry.attributes.position.count / 3 : 0; };
+export const ghostItemTriangles = (key) => { const m = ghostItem(key); return m ? (m.geometry.index?.count ?? m.geometry.attributes.position.count) / 3 : 0; };

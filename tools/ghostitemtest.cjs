@@ -21,7 +21,7 @@ const CATS = ['cup', 'plate', 'food', 'bottle', 'book', 'paper', 'tool', 'plant'
     CATS.forEach((k, i) => { if (r.items[i] !== `ghost-item:${k}`) errors.push(`category ${k}: ${r.items[i]}`); });
     if (r.items[CATS.length] !== null) errors.push('no category must show no proxy: ' + r.items[CATS.length]);
     if (r.items[CATS.length + 1] !== null) errors.push('a weapon must win over a category: ' + r.items[CATS.length + 1]);
-    for (const k of CATS) if (!(r.itemTris[k] > 0 && r.itemTris[k] <= 80)) errors.push(`${k} proxy ${r.itemTris[k]} triangles`);
+    for (const k of CATS) if (!(r.itemTris[k] > 0 && r.itemTris[k] <= (k === 'fish' ? 180 : 80))) errors.push(`${k} proxy ${r.itemTris[k]} triangles`);
     const bare = await page.evaluate(() => window.__shot(null, true)); // beyond poseFar: avatars without any proxy
     if (r.calls - bare.calls !== CATS.length) errors.push(`proxies must cost one draw call each: ${r.calls} vs ${bare.calls}`); // one per category (the saber prop is drawn in both)
     console.log('draw calls', r.calls, 'without proxies', bare.calls);
