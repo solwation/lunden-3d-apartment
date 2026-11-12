@@ -15,6 +15,19 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+## Hand accessory fixture visibility (#1933)
+
+`tools/handringtest.cjs BASE OUT` retains all36 ring/metal/wrist/palm/grip/hug cases
+and requires finite full matrices/native morph data, complete posed hand projection,
+effective ancestor visibility and intended hand/accessory pixels. Its palm fixture has
+an explicit finite grip and each camera resets. Left non-hug accessory views are
+explicit mirrored diagnostic poses; hug uses the production two-hand controller.
+Product Hand's one-hand priority is unchanged. The real CLI must return0 normally
+and1 with `--negative=empty-palm`, `--negative=hidden-ancestor` or
+`--negative=nan-camera`. Use separate negative output directories. [Frozen false-green
+baseline, full images, actual subprocess exits and cleanup](../verification/1933/README.md).
+Run through the shared browser wrapper; no World/performance suite is required.
+
 ## GLB model acceptance (#1905)
 
 A valid GLB file, named bones/clips or a green fixture panel does not establish

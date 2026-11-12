@@ -1,0 +1,52 @@
+{
+  "runs": [
+    {
+      "name": "cli",
+      "argv": [
+        "node",
+        "tools/handringtest.cjs",
+        "http://localhost:8203",
+        "docs/verification/1933"
+      ],
+      "exitCode": 0,
+      "expectedExit": 0
+    },
+    {
+      "name": "negative-empty-palm",
+      "argv": [
+        "node",
+        "tools/handringtest.cjs",
+        "http://localhost:8203",
+        "/home/devcontainers/.local/state/lunden-session-20261112/ring-1933-negative/empty-palm",
+        "--negative=empty-palm"
+      ],
+      "exitCode": 1,
+      "expectedExit": 1
+    },
+    {
+      "name": "negative-hidden-ancestor",
+      "argv": [
+        "node",
+        "tools/handringtest.cjs",
+        "http://localhost:8203",
+        "/home/devcontainers/.local/state/lunden-session-20261112/ring-1933-negative/hidden-ancestor",
+        "--negative=hidden-ancestor"
+      ],
+      "exitCode": 1,
+      "expectedExit": 1
+    },
+    {
+      "name": "negative-nan-camera",
+      "argv": [
+        "node",
+        "tools/handringtest.cjs",
+        "http://localhost:8203",
+        "/home/devcontainers/.local/state/lunden-session-20261112/ring-1933-negative/nan-camera",
+        "--negative=nan-camera"
+      ],
+      "exitCode": 1,
+      "expectedExit": 1
+    }
+  ],
+  "pass": true
+}

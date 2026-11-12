@@ -1,0 +1,776 @@
+{
+  "note": "Unchanged legacy CLI and product sources; HTML only adds a read-only state exposure for this diagnostic. CDN bytes routed to the installed identical Three0.170 modules.",
+  "hashes": {
+    "tools/handringtest.cjs": "c5b6aee510d043defa00536bbdfcdb025a895324fb918b6923896606d341a48c",
+    "tools/handring.html": "f0cc7a340bbdfc80b00658e8d853a359ba0157554c9a40f99dc8ba5ae8007b10",
+    "src/hand.js": "a4ab8914a060f7fb0f76184e18674fe1ad4f4876133830897722c359c271ab75",
+    "src/config.js": "cdf82c3262063f082d10de315eacde9e99922534c72a0137213e4aa29e806ed6"
+  },
+  "rows": [
+    {
+      "input": [
+        0,
+        0,
+        "reach"
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 0,
+        "calls": 3
+      },
+      "finite": [],
+      "changedPixels": 55765,
+      "ringEffective": []
+    },
+    {
+      "input": [
+        1,
+        0,
+        "reach"
+      ],
+      "legacyResult": {
+        "ring": 1,
+        "visible": [
+          null,
+          true
+        ],
+        "wrist": 0,
+        "calls": 3
+      },
+      "finite": [],
+      "changedPixels": 55765,
+      "ringEffective": [
+        false
+      ]
+    },
+    {
+      "input": [
+        2,
+        0,
+        "reach"
+      ],
+      "legacyResult": {
+        "ring": 2,
+        "visible": [
+          null,
+          true
+        ],
+        "wrist": 0,
+        "calls": 3
+      },
+      "finite": [],
+      "changedPixels": 55765,
+      "ringEffective": [
+        false
+      ]
+    },
+    {
+      "input": [
+        3,
+        1,
+        "reach"
+      ],
+      "legacyResult": {
+        "ring": 3,
+        "visible": [
+          null,
+          true
+        ],
+        "wrist": 0,
+        "calls": 3
+      },
+      "finite": [],
+      "changedPixels": 55765,
+      "ringEffective": [
+        false
+      ]
+    },
+    {
+      "input": [
+        4,
+        2,
+        "reach"
+      ],
+      "legacyResult": {
+        "ring": 4,
+        "visible": [
+          null,
+          true
+        ],
+        "wrist": 0,
+        "calls": 3
+      },
+      "finite": [],
+      "changedPixels": 55765,
+      "ringEffective": [
+        false
+      ]
+    },
+    {
+      "input": [
+        5,
+        3,
+        "reach"
+      ],
+      "legacyResult": {
+        "ring": 5,
+        "visible": [
+          null,
+          true
+        ],
+        "wrist": 0,
+        "calls": 3
+      },
+      "finite": [],
+      "changedPixels": 55765,
+      "ringEffective": [
+        false
+      ]
+    },
+    {
+      "input": [
+        6,
+        0,
+        "reach"
+      ],
+      "legacyResult": {
+        "ring": 6,
+        "visible": [
+          true,
+          null
+        ],
+        "wrist": 0,
+        "calls": 4
+      },
+      "finite": [],
+      "changedPixels": 55797,
+      "ringEffective": [
+        true
+      ]
+    },
+    {
+      "input": [
+        7,
+        0,
+        "reach"
+      ],
+      "legacyResult": {
+        "ring": 7,
+        "visible": [
+          true,
+          null
+        ],
+        "wrist": 0,
+        "calls": 4
+      },
+      "finite": [],
+      "changedPixels": 55841,
+      "ringEffective": [
+        true
+      ]
+    },
+    {
+      "input": [
+        8,
+        1,
+        "reach"
+      ],
+      "legacyResult": {
+        "ring": 8,
+        "visible": [
+          true,
+          null
+        ],
+        "wrist": 0,
+        "calls": 4
+      },
+      "finite": [],
+      "changedPixels": 55765,
+      "ringEffective": [
+        true
+      ]
+    },
+    {
+      "input": [
+        9,
+        2,
+        "reach"
+      ],
+      "legacyResult": {
+        "ring": 9,
+        "visible": [
+          true,
+          null
+        ],
+        "wrist": 0,
+        "calls": 4
+      },
+      "finite": [],
+      "changedPixels": 55786,
+      "ringEffective": [
+        true
+      ]
+    },
+    {
+      "input": [
+        10,
+        3,
+        "reach"
+      ],
+      "legacyResult": {
+        "ring": 10,
+        "visible": [
+          true,
+          null
+        ],
+        "wrist": 0,
+        "calls": 4
+      },
+      "finite": [],
+      "changedPixels": 55860,
+      "ringEffective": [
+        true
+      ]
+    },
+    {
+      "input": [
+        3,
+        0,
+        "palm"
+      ],
+      "legacyResult": {
+        "ring": 3,
+        "visible": [
+          null,
+          true
+        ],
+        "wrist": 0,
+        "calls": 3
+      },
+      "finite": [
+        "right.matrix",
+        "right.matrixWorld"
+      ],
+      "changedPixels": 0,
+      "ringEffective": [
+        false
+      ]
+    },
+    {
+      "input": [
+        9,
+        1,
+        "palm"
+      ],
+      "legacyResult": {
+        "ring": 9,
+        "visible": [
+          true,
+          null
+        ],
+        "wrist": 0,
+        "calls": 4
+      },
+      "finite": [
+        "right.matrix",
+        "right.matrixWorld"
+      ],
+      "changedPixels": 0,
+      "ringEffective": [
+        true
+      ]
+    },
+    {
+      "input": [
+        4,
+        2,
+        "grip"
+      ],
+      "legacyResult": {
+        "ring": 4,
+        "visible": [
+          null,
+          true
+        ],
+        "wrist": 0,
+        "calls": 3
+      },
+      "finite": [],
+      "changedPixels": 70321,
+      "ringEffective": [
+        false
+      ]
+    },
+    {
+      "input": [
+        9,
+        3,
+        "grip"
+      ],
+      "legacyResult": {
+        "ring": 9,
+        "visible": [
+          true,
+          null
+        ],
+        "wrist": 0,
+        "calls": 4
+      },
+      "finite": [],
+      "changedPixels": 70357,
+      "ringEffective": [
+        true
+      ]
+    },
+    {
+      "input": [
+        2,
+        0,
+        "hug"
+      ],
+      "legacyResult": {
+        "ring": 2,
+        "visible": [
+          null,
+          true
+        ],
+        "wrist": 0,
+        "calls": 7
+      },
+      "finite": [],
+      "changedPixels": 539888,
+      "ringEffective": [
+        true
+      ]
+    },
+    {
+      "input": [
+        4,
+        2,
+        "hug"
+      ],
+      "legacyResult": {
+        "ring": 4,
+        "visible": [
+          null,
+          true
+        ],
+        "wrist": 0,
+        "calls": 7
+      },
+      "finite": [],
+      "changedPixels": 539888,
+      "ringEffective": [
+        true
+      ]
+    },
+    {
+      "input": [
+        7,
+        1,
+        "hug"
+      ],
+      "legacyResult": {
+        "ring": 7,
+        "visible": [
+          true,
+          null
+        ],
+        "wrist": 0,
+        "calls": 7
+      },
+      "finite": [],
+      "changedPixels": 539888,
+      "ringEffective": [
+        true
+      ]
+    },
+    {
+      "input": [
+        1,
+        0,
+        0,
+        "reach",
+        0
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 1,
+        "calls": 3
+      },
+      "finite": [],
+      "changedPixels": 16375,
+      "ringEffective": []
+    },
+    {
+      "input": [
+        2,
+        0,
+        1,
+        "reach",
+        0
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 2,
+        "calls": 3
+      },
+      "finite": [],
+      "changedPixels": 16375,
+      "ringEffective": []
+    },
+    {
+      "input": [
+        3,
+        0,
+        2,
+        "reach",
+        0
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 1,
+        "calls": 3
+      },
+      "finite": [],
+      "changedPixels": 16375,
+      "ringEffective": []
+    },
+    {
+      "input": [
+        0,
+        1,
+        0,
+        "reach",
+        0
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 3,
+        "calls": 3
+      },
+      "finite": [],
+      "changedPixels": 16375,
+      "ringEffective": []
+    },
+    {
+      "input": [
+        0,
+        2,
+        1,
+        "reach",
+        0
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 3,
+        "calls": 3
+      },
+      "finite": [],
+      "changedPixels": 16375,
+      "ringEffective": []
+    },
+    {
+      "input": [
+        0,
+        3,
+        3,
+        "reach",
+        0
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 3,
+        "calls": 3
+      },
+      "finite": [],
+      "changedPixels": 16375,
+      "ringEffective": []
+    },
+    {
+      "input": [
+        4,
+        0,
+        0,
+        "reach",
+        0
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 1,
+        "calls": 4
+      },
+      "finite": [],
+      "changedPixels": 16453,
+      "ringEffective": []
+    },
+    {
+      "input": [
+        5,
+        0,
+        1,
+        "reach",
+        0
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 2,
+        "calls": 5
+      },
+      "finite": [],
+      "changedPixels": 16531,
+      "ringEffective": []
+    },
+    {
+      "input": [
+        6,
+        0,
+        2,
+        "reach",
+        0
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 1,
+        "calls": 4
+      },
+      "finite": [],
+      "changedPixels": 16435,
+      "ringEffective": []
+    },
+    {
+      "input": [
+        0,
+        4,
+        0,
+        "reach",
+        0
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 3,
+        "calls": 6
+      },
+      "finite": [],
+      "changedPixels": 16906,
+      "ringEffective": []
+    },
+    {
+      "input": [
+        0,
+        5,
+        1,
+        "reach",
+        0
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 3,
+        "calls": 6
+      },
+      "finite": [],
+      "changedPixels": 16786,
+      "ringEffective": []
+    },
+    {
+      "input": [
+        0,
+        6,
+        2,
+        "reach",
+        0
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 3,
+        "calls": 6
+      },
+      "finite": [],
+      "changedPixels": 17164,
+      "ringEffective": []
+    },
+    {
+      "input": [
+        1,
+        5,
+        0,
+        "reach",
+        3
+      ],
+      "legacyResult": {
+        "ring": 3,
+        "visible": [
+          null,
+          true
+        ],
+        "wrist": 4,
+        "calls": 6
+      },
+      "finite": [],
+      "changedPixels": 16786,
+      "ringEffective": [
+        false
+      ]
+    },
+    {
+      "input": [
+        0,
+        4,
+        1,
+        "palm",
+        0
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 3,
+        "calls": 6
+      },
+      "finite": [
+        "right.matrix",
+        "right.matrixWorld"
+      ],
+      "changedPixels": 0,
+      "ringEffective": []
+    },
+    {
+      "input": [
+        6,
+        0,
+        0,
+        "grip",
+        0
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 1,
+        "calls": 4
+      },
+      "finite": [],
+      "changedPixels": 20540,
+      "ringEffective": []
+    },
+    {
+      "input": [
+        0,
+        6,
+        2,
+        "grip",
+        0
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 3,
+        "calls": 6
+      },
+      "finite": [],
+      "changedPixels": 21687,
+      "ringEffective": []
+    },
+    {
+      "input": [
+        2,
+        6,
+        1,
+        "hug",
+        0
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 5,
+        "calls": 11
+      },
+      "finite": [],
+      "changedPixels": 539888,
+      "ringEffective": []
+    },
+    {
+      "input": [
+        3,
+        1,
+        0,
+        "hug",
+        0
+      ],
+      "legacyResult": {
+        "ring": 0,
+        "visible": [
+          null,
+          null
+        ],
+        "wrist": 4,
+        "calls": 10
+      },
+      "finite": [],
+      "changedPixels": 539897,
+      "ringEffective": []
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "baseline": "c6ee8b692a048699ed5e45383360ffb7595055df",
+  "sources": {
+    "tools/handring.html": "a961235a9653e2e4f669e13c0d16d1237969b7052de923879170475ebd446ec7",
+    "tools/handringtest.cjs": "ed382078213fa899299c4dd5713bf70e9fe838b047fffb2373664c470ce4fe62",
+    "src/hand.js": "a4ab8914a060f7fb0f76184e18674fe1ad4f4876133830897722c359c271ab75",
+    "src/config.js": "cdf82c3262063f082d10de315eacde9e99922534c72a0137213e4aa29e806ed6"
+  },
+  "evidence": {
+    "docs/verification/1933/README.md": "e85b5155ec7dcc1491f13d11e0337c452bc4b8780f871e084c548430e3ab9151",
+    "docs/verification/1933/before/fp-ring3-m0-palm.png": "5947e2b35b3216d45791808c95841ea50756b111bb5ba9130657d3ec29ea7630",
+    "docs/verification/1933/before/fp-ring8-m1-reach.png": "a7946d1ea32dbb91a380b78e05a073b8c43f4480eb2d1225bc1216859379865f",
+    "docs/verification/1933/before/fp-wrist-b1-w0-m0-reach.png": "d536fb7c55469d4ec7b6b2d6cc760828c5dc6a2dd4a190c2699991dda9e36459",
+    "docs/verification/1933/before/negative-empty-palm.png": "5947e2b35b3216d45791808c95841ea50756b111bb5ba9130657d3ec29ea7630",
+    "docs/verification/1933/before/negative-hidden-ancestor.png": "5947e2b35b3216d45791808c95841ea50756b111bb5ba9130657d3ec29ea7630",
+    "docs/verification/1933/before/negative-nan-camera.png": "5947e2b35b3216d45791808c95841ea50756b111bb5ba9130657d3ec29ea7630",
+    "docs/verification/1933/before-cli.txt": "c26de83abdc9496cd1301470918ec39ecca1cf389ef0ae1c6504da1800d1c431",
+    "docs/verification/1933/before-exit.json": "1d1e3cccbe6393d9cc2e9b98e1ec4af2aaa0056c9092c617f126bc2e2617d018",
+    "docs/verification/1933/before.json": "d93b1924ff733df2b27ebe55110c3886f07ada54d4a6548d46c9cebb10107f57",
+    "docs/verification/1933/cli-contract.json": "829a2eb5e651fefd774ac6d2a3e545b5f228b3e4e3a0a49e09c6e46718c44ebf",
+    "docs/verification/1933/cli-exit.json": "33493bcca3689d810f6365875a55ce3f12d882a3266b7ac44f98a1f1e3646539",
+    "docs/verification/1933/cli.txt": "c26de83abdc9496cd1301470918ec39ecca1cf389ef0ae1c6504da1800d1c431",
+    "docs/verification/1933/fp-ring0-m0-reach.png": "05ce0853e704b41918d0210fe186559573fcdcd8a10f55cf6da010145ee2b787",
+    "docs/verification/1933/fp-ring1-m0-reach.png": "3f9cb7e75224cc042da56bb3575f009f8fec00a3fc4d897ea6e092d1aca4d06b",
+    "docs/verification/1933/fp-ring10-m3-reach.png": "78dd2c26fac7ba12cf2c6efcb81cee2fdb4c819239db50caa5ae9125b71576be",
+    "docs/verification/1933/fp-ring2-m0-hug.png": "0c95a9819b1235306aca5bfbcf5155b1807d8f1fdc93827159ab4256d5fa08d4",
+    "docs/verification/1933/fp-ring2-m0-reach.png": "8b0846c53e0b59bed4f58be8fc1481a257a2607f81fce09a498e1a323c5c0bb8",
+    "docs/verification/1933/fp-ring3-m0-palm.png": "a4ea8800a00ea5f4fd8d03c8412ec456871acd9018f752de809c89d271850006",
+    "docs/verification/1933/fp-ring3-m1-reach.png": "9dde10b90919059e23e02a67c33bebfaea8bc50d68741aa229565d36dc5a57e1",
+    "docs/verification/1933/fp-ring4-m2-grip.png": "a4333804ed1e0e7011a373d67844161ef63af333b6f06fb5e81b2c759b18ca1c",
+    "docs/verification/1933/fp-ring4-m2-hug.png": "8ef8366b1a35dc3713334b924ac7c65fa12378c9d0d978386a94c20ab77c9cd3",
+    "docs/verification/1933/fp-ring4-m2-reach.png": "40a54109c27f5e69412a05c268bdcf7d9e3579640191a1d4c994cc96a50b77e9",
+    "docs/verification/1933/fp-ring5-m3-reach.png": "f389da854c30b6b4157941ee48614949d9cce4435babeeca3a6dec97dd82e0a3",
+    "docs/verification/1933/fp-ring6-m0-reach.png": "d898115ce8e7d43edf97e256b773f0d3f830763573f0929e2839139171518fde",
+    "docs/verification/1933/fp-ring7-m0-reach.png": "38bbcfb1ee099245d4b6e2ac8ab065db30cd1150241f78216169fd3c63159503",
+    "docs/verification/1933/fp-ring7-m1-hug.png": "991ecd5f461a3b2626757bbf7407fd4dfee396232ec9ba99cbba1d2b26ec9d5c",
+    "docs/verification/1933/fp-ring8-m1-reach.png": "5bd31055dac0746da391b5b4cb526320df025b32f6faa21448eddbf895d75c85",
+    "docs/verification/1933/fp-ring9-m1-palm.png": "e725642f1d372b5da156ac40fe4abf5fd81fbe58cdec53718ee771a43c573d21",
+    "docs/verification/1933/fp-ring9-m2-reach.png": "a517b01dde1bcd7ea9e31c29254ef59d44b69c323631ff0c93569b4bf1f601ff",
+    "docs/verification/1933/fp-ring9-m3-grip.png": "485dd5b01db1faa0dc0f55539601741a4ba9ee57502c432e5c18dbdf3ddb21a6",
+    "docs/verification/1933/fp-wrist-b0-w1-m0-reach.png": "a0a0462583652d5de87eeb1d4d550983c52ec1c2cff9b13c57c82f6233d2933b",
+    "docs/verification/1933/fp-wrist-b0-w2-m1-reach.png": "427e526ff27a53cff408f64b24519f279ec1b3b47705189ab259e3ad2825103e",
+    "docs/verification/1933/fp-wrist-b0-w3-m3-reach.png": "04c22e4a422b0a4dc5feea05ac742528d51392af5fd438e4b382fe2ff27248c8",
+    "docs/verification/1933/fp-wrist-b0-w4-m0-reach.png": "31396653df957fb0bb7e7ad9360b5cf1dc38ab37c51bec4e80d85c9fb9814119",
+    "docs/verification/1933/fp-wrist-b0-w4-m1-palm.png": "46a3e306a56232ed5a282accc0795c96ab6725a13e1a756392dc1b69221114b2",
+    "docs/verification/1933/fp-wrist-b0-w5-m1-reach.png": "794e0181faa632be5270a81340240b284d4bbc203d0a0b20b238d478685fa84a",
+    "docs/verification/1933/fp-wrist-b0-w6-m2-grip.png": "e324236301e6b9350d0bd42550ca6b4512d1b37ed5a39147afb38bf6b695e593",
+    "docs/verification/1933/fp-wrist-b0-w6-m2-reach.png": "64aad809cba87f8a0e02f43cfc74ed0e1453e4703b85c40bcc2a4efc58ba7188",
+    "docs/verification/1933/fp-wrist-b1-w0-m0-reach.png": "9908830d1aca17fcd5d3680e71ba2bd9d7accdc75362b012adf7b882eb0dda11",
+    "docs/verification/1933/fp-wrist-b1-w5-m0-reach.png": "337809af851b307c37043b96812ecd0c3ee1dc6883fc7de5139703b6e00020b4",
+    "docs/verification/1933/fp-wrist-b2-w0-m1-reach.png": "b2b990cfa93cd2138bea90d9ca8d16befeda1eb24ed1a0a2baaf39e06d4b2e78",
+    "docs/verification/1933/fp-wrist-b2-w6-m1-hug.png": "0bcc1c0102208e1338d9910150358c69ad925daa502f546b518cfd9ba08728e0",
+    "docs/verification/1933/fp-wrist-b3-w0-m2-reach.png": "46e4f17b6d976e530a3043b207a5ccdc03fb793d60b5ab18fce256014892db59",
+    "docs/verification/1933/fp-wrist-b3-w1-m0-hug.png": "65319b5771e16ce22c0b4542d49d98bef39b39c5c63bb822863247ef99abc93b",
+    "docs/verification/1933/fp-wrist-b4-w0-m0-reach.png": "4bf7730f8ff826cec9729c92517bfbb2e532bd4e97b5f04571e74ecfa9c10b4f",
+    "docs/verification/1933/fp-wrist-b5-w0-m1-reach.png": "80e7ab6f6d995f411f5203fd4b109d993c0f98ed45425bdfdf9c7a849f94c249",
+    "docs/verification/1933/fp-wrist-b6-w0-m0-grip.png": "676a879237cfad6673dc20555ceed13fdd81f4089b2e507e32e640d7df504e0b",
+    "docs/verification/1933/fp-wrist-b6-w0-m2-reach.png": "1d2babe852db3bab9c3964112ffc2afdb5678a1f8d402296ab366426c91e16df",
+    "docs/verification/1933/negative-empty-palm.json": "c9e91766b75964cf8134a9199a0da3fc3bcd8565be1522f7688fe183ea0946b9",
+    "docs/verification/1933/negative-empty-palm.txt": "bb4549a6a63edb2679ae5025b6d95445718d0a789491ad0f6f745b9c2fb7c8a7",
+    "docs/verification/1933/negative-hidden-ancestor.json": "83376b98fe9a0a10832b3dfa5b003bc7c94a589fad23d6788b2f75fb2c0b32b3",
+    "docs/verification/1933/negative-hidden-ancestor.txt": "9c0dffdb5a3aed485904f3eee2860bf2c7cfafcd663ad0002cc9fc0e5aba0975",
+    "docs/verification/1933/negative-nan-camera.json": "8942e6c4e3e506a103b8e3155a56bca453024eb4fc24ba89ad38182806e2649f",
+    "docs/verification/1933/negative-nan-camera.txt": "93c8fc6f9bf8091856c90159305aa5b1bab13f3a9d6b30858bc7fbada25cdf23",
+    "docs/verification/1933/result.json": "cd82ccf6810e12914419d783c01be29e4227cbf3d56ea357a532320f18dd6785"
+  },
+  "originalCasesRetained": 36,
+  "unchangedProductionHandAndConfig": true,
+  "productDiffEmpty": true,
+  "actualCliExits": [
+    {
+      "name": "cli",
+      "argv": [
+        "node",
+        "tools/handringtest.cjs",
+        "http://localhost:8203",
+        "docs/verification/1933"
+      ],
+      "exitCode": 0,
+      "expectedExit": 0
+    },
+    {
+      "name": "negative-empty-palm",
+      "argv": [
+        "node",
+        "tools/handringtest.cjs",
+        "http://localhost:8203",
+        "/home/devcontainers/.local/state/lunden-session-20261112/ring-1933-negative/empty-palm",
+        "--negative=empty-palm"
+      ],
+      "exitCode": 1,
+      "expectedExit": 1
+    },
+    {
+      "name": "negative-hidden-ancestor",
+      "argv": [
+        "node",
+        "tools/handringtest.cjs",
+        "http://localhost:8203",
+        "/home/devcontainers/.local/state/lunden-session-20261112/ring-1933-negative/hidden-ancestor",
+        "--negative=hidden-ancestor"
+      ],
+      "exitCode": 1,
+      "expectedExit": 1
+    },
+    {
+      "name": "negative-nan-camera",
+      "argv": [
+        "node",
+        "tools/handringtest.cjs",
+        "http://localhost:8203",
+        "/home/devcontainers/.local/state/lunden-session-20261112/ring-1933-negative/nan-camera",
+        "--negative=nan-camera"
+      ],
+      "exitCode": 1,
+      "expectedExit": 1
+    }
+  ],
+  "pass": true
+}

@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "node",
+    "legacy handringtest.cjs",
+    "http://localhost:8203",
+    "private baseline images"
+  ],
+  "exitCode": 0,
+  "stdout": "PASS\n",
+  "stderr": ""
+}

@@ -1,0 +1,13 @@
+{
+  "worker": "0803f7b229ce290af96425bf6539b0b11d75eea4",
+  "integratedBase": "43b0bbe06201d78a526e8f7244f1f5ca6c42c8b0",
+  "exactSources": {
+    "tools/handring.html": "a961235a9653e2e4f669e13c0d16d1237969b7052de923879170475ebd446ec7",
+    "tools/handringtest.cjs": "ed382078213fa899299c4dd5713bf70e9fe838b047fffb2373664c470ce4fe62",
+    "src/hand.js": "a4ab8914a060f7fb0f76184e18674fe1ad4f4876133830897722c359c271ab75",
+    "src/config.js": "cdf82c3262063f082d10de315eacde9e99922534c72a0137213e4aa29e806ed6"
+  },
+  "exactEvidenceFiles": 56,
+  "geometryAndConfigExact": true,
+  "scopedGreenGroupsReused": true
+}

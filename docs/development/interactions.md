@@ -1713,6 +1713,14 @@ Raw provenance, exits and native images are retained in `/tmp/lunden-priority-98
 
 ## Representative one-hand grip audit (#912)
 
+The accessory-only `tools/handring.html` / `tools/handringtest.cjs` fixture (#1933)
+uses a finite explicit palm grip and resets its off-axis camera per case. Non-hug
+left accessory views deliberately mirror the production right-hand diagnostic pose;
+the actual one-hand controller still prioritises the right hand. Hug uses the actual
+two-hand controller. Full matrices, ancestor visibility, projection and intended
+hand/ring/wrist pixels are required, including negative CLI failures. [Fixture evidence
+and all36 retained cases](../verification/1933/README.md). No product hand form changed.
+
 `tools/onehandgriptest.cjs GAME OUT` runs the actual Hand with five production
 representatives: Cup with its explicit handle grip, FishPack/FishFinger with its
 existing0.62 pinch, the first wine bottle with Bottle's generic fallback, the

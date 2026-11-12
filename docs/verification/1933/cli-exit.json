@@ -1,0 +1,11 @@
+{
+  "name": "cli",
+  "argv": [
+    "node",
+    "tools/handringtest.cjs",
+    "http://localhost:8203",
+    "docs/verification/1933"
+  ],
+  "exitCode": 0,
+  "expectedExit": 0
+}

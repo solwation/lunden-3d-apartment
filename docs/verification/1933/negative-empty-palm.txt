@@ -1,0 +1,3 @@
+FAIL [
+  '3/palm: ["nonfinite accessory.0.matrixWorld","nonfinite right.hand.matrix","nonfinite right.hand.matrixWorld","nonfinite right.arm.matrix","nonfinite right.arm.matrixWorld","nonfinite right.cuff.matrix","nonfinite right.cuff.matrixWorld","nonfinite left.hand.matrix","nonfinite left.hand.matrixWorld","nonfinite left.arm.matrix","nonfinite left.arm.matrixWorld","nonfinite left.cuff.matrix","nonfinite left.cuff.matrixWorld","invalid/clipped hand projection left"]'
+]

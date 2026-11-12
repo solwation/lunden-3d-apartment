@@ -17,17 +17,76 @@ renderer.setSize(W, Hh); document.body.appendChild(renderer.domElement);
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
 scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
 const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
-const camera = new THREE.PerspectiveCamera(Number(new URLSearchParams(location.search).get('fov') ?? 24), W / Hh, 0.02, 20), hand = new Hand(camera, scene);
-camera.setViewOffset(W, Hh, 240, 250, W, Hh); camera.updateProjectionMatrix();
-const model = new THREE.Object3D(); camera.add(model); model.position.set(0, -0.12, -0.42); model.updateMatrix();
-window.__go = (ring, metal, pose, extra = {}) => {
-  if (pose === 'hug') { camera.clearViewOffset(); camera.fov = 45; camera.updateProjectionMatrix(); }
-  handLook({ skin: 0xe0ae8a, top: 0x3d6b8f, sleeves: 1, ring, metal, ...extra });
-  const item = pose === 'hug' ? { held: true, model, handPose: 'hug', hugGrips: [[0.2, 0.02, 0], [-0.2, 0.02, 0]] } : pose === 'palm' ? { held: true, model, handPose: 'palm', grip: null } : pose === 'grip' ? { held: true, model, grip: [0, 0, 0] } : null;
-  if (pose === 'reach') { camera.updateMatrixWorld(); hand.reach(new THREE.Vector3(0.1, -0.13, -0.5)); hand.reachT = 0.5; }
-  for (let i = 0; i < 30; i++) { hand.update(0.05, item); if (pose === 'reach') hand.reachT = 0.5; }
-  renderer.render(scene, camera);
-  return { ring: hand.rings.k, visible: [hand.rings.r?.visible, hand.rings.l?.visible], wrist: hand.wrist.meshes.length, calls: renderer.info.render.calls };
+const query=new URLSearchParams(location.search),negative=query.get('negative');
+const camera = new THREE.PerspectiveCamera(Number(query.get('fov')??38),W/Hh,.02,20),hand=new Hand(camera,scene);
+// The accessory fixture needs a grip frame, not a pretend empty-box prop.
+const model=new THREE.Object3D();camera.add(model);
+const effective=o=>{for(;o;o=o.parent)if(!o.visible)return false;return true};
+const readPixels=()=>{const gl=renderer.getContext(),pixels=new Uint8Array(W*Hh*4);gl.readPixels(0,0,W,Hh,gl.RGBA,gl.UNSIGNED_BYTE,pixels);return pixels};
+function intendedPixels(objects){
+ renderer.render(scene,camera);const shown=readPixels(),saved=objects.map(o=>o.visible);
+ objects.forEach(o=>o.visible=false);renderer.render(scene,camera);const hidden=readPixels();objects.forEach((o,i)=>o.visible=saved[i]);
+ let count=0;for(let i=0;i<shown.length;i+=4)if(Math.abs(shown[i]-hidden[i])+Math.abs(shown[i+1]-hidden[i+1])+Math.abs(shown[i+2]-hidden[i+2])>8)count++;
+ renderer.render(scene,camera);return count;
+}
+function vertices(mesh,visit){
+ const p=mesh.geometry.attributes.position,v=new THREE.Vector3();
+ for(let i=0;i<p.count;i++){mesh.getVertexPosition(i,v);visit(v.applyMatrix4(mesh.matrixWorld),i)}
+}
+function fitCamera(meshes){
+ // Moving the camera cannot frame its own children. Reset then use an explicit off-axis view.
+ camera.clearViewOffset();camera.fov=Number(query.get('fov')??38);camera.updateProjectionMatrix();
+ for(let pass=0;pass<2;pass++){
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  for(const mesh of meshes)vertices(mesh,v=>{v.project(camera);minX=Math.min(minX,v.x);maxX=Math.max(maxX,v.x);minY=Math.min(minY,v.y);maxY=Math.max(maxY,v.y)});
+  if(![minX,minY,maxX,maxY].every(Number.isFinite))return;
+  const extent=Math.max(maxX-minX,maxY-minY);
+  if(pass===0&&extent>1.5){camera.fov=THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*extent/1.5));camera.updateProjectionMatrix();continue;}
+  camera.setViewOffset(W,Hh,(minX+maxX)*W/4,-(minY+maxY)*Hh/4,W,Hh);camera.updateProjectionMatrix();break;
+ }
+}
+window.__go = (ring,metal,pose,extra={}) => {
+ camera.position.set(0,0,0);camera.rotation.set(0,0,0);camera.scale.set(1,1,1);camera.clearViewOffset();camera.updateProjectionMatrix();
+ hand.mirror.visible=true;scene.visible=true;model.position.set(0,-.12,-.42);model.rotation.set(0,0,0);model.scale.set(1,1,1);model.updateMatrix();
+ handLook({skin:0xe0ae8a,top:0x3d6b8f,sleeves:1,ring,metal,...extra});
+ const item=pose==='hug'?{held:true,model,handPose:'hug',hugGrips:[[.2,.02,0],[-.2,.02,0]]}:pose==='palm'?{held:true,model,handPose:'palm',grip:negative==='empty-palm'?null:[0,0,0]}:pose==='grip'?{held:true,model,grip:[0,0,0]}:null;
+ if(pose==='reach'){camera.updateMatrixWorld();hand.reach(new THREE.Vector3(.1,-.13,-.5));hand.reachT=.5}
+ for(let i=0;i<30;i++){hand.update(.05,item);if(pose==='reach')hand.reachT=.5}
+ const left=pose==='hug'||(ring>0&&ring<=5)||(extra.bracelet>0&&extra.bracelet<=3)||(extra.watch>0&&extra.watch<=3);
+ const right=pose==='hug'||ring>5||extra.bracelet>3||extra.watch>3||!left;
+ if(left&&pose!=='hug'){
+  // Valid mirrored diagnostic pose. Production legitimately prioritises the right hand
+  // for one-handed actions; do not change that controller to exhibit left accessories.
+  for(const key of ['hand','arm','cuff']){const dst=hand.left[key],src=hand.right[key];dst.position.copy(src.position);dst.quaternion.copy(src.quaternion);dst.scale.copy(src.scale);dst.visible=src.visible}
+ }
+ if(!right)for(const m of Object.values(hand.right))m.visible=false;
+ const sides=[...(right?[['right',hand.right]]:[]),...(left?[['left',hand.left]]:[])],accessories=[hand.rings.r,hand.rings.l,...hand.wrist.meshes].filter(Boolean);
+ camera.updateMatrixWorld(true);scene.updateMatrixWorld(true);fitCamera([...sides.map(([,s])=>s.hand),...accessories]);
+ if(negative==='hidden-ancestor')hand.mirror.visible=false;
+ if(negative==='nan-camera')camera.projectionMatrix.elements[0]=NaN;
+ scene.updateMatrixWorld(true);const issues=[],matrices={};
+ for(const [name,o]of [['model',model],['camera',camera],['scene',scene],['mirror',hand.mirror],...accessories.map((o,i)=>['accessory.'+i,o]),...Object.entries(hand.right).map(([k,o])=>['right.'+k,o]),...Object.entries(hand.left).map(([k,o])=>['left.'+k,o])]){
+  for(const key of ['matrix','matrixWorld','matrixWorldInverse','projectionMatrix','projectionMatrixInverse'])if(o[key]){matrices[name+'.'+key]=o[key].toArray();if(!o[key].elements.every(Number.isFinite))issues.push('nonfinite '+name+'.'+key)}
+ }
+ const projection=[];
+ for(const [name,side]of sides){
+  if(!effective(side.hand))issues.push('hidden hand ancestor '+name);
+  let inside=0,count=0,min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];
+  vertices(side.hand,v=>{v.project(camera);count++;for(let k=0;k<3;k++){min[k]=Math.min(min[k],v.getComponent(k));max[k]=Math.max(max[k],v.getComponent(k))}if(v.toArray().every(Number.isFinite)&&Math.abs(v.x)<=1&&Math.abs(v.y)<=1&&Math.abs(v.z)<=1)inside++;});
+  projection.push({name,inside,count,min,max});if(inside!==count)issues.push('invalid/clipped hand projection '+name);
+  for(const at of [...Object.values(side.hand.geometry.attributes),...Object.values(side.hand.geometry.morphAttributes).flat()])if(!at.array.every(Number.isFinite))issues.push('nonfinite native hand '+name);
+ }
+ for(const mesh of accessories)for(const at of [...Object.values(mesh.geometry.attributes),...Object.values(mesh.geometry.morphAttributes).flat()])if(!at.array.every(Number.isFinite))issues.push('nonfinite native accessory');
+ const accessoryVisibility=accessories.map(m=>({name:m===hand.rings.r||m===hand.rings.l?'ring':'wrist',effective:effective(m),side:m.parent===hand.hand?'right':m.parent===hand.left.hand?'left':'wrong'}));
+ for(const a of accessoryVisibility)if(!a.effective||a.side==='wrong')issues.push('hidden/wrong accessory parent '+a.name);
+ const pixels={};
+ if(!issues.some(s=>s.startsWith('nonfinite'))){
+  for(const [name,side]of sides){pixels[name+'Hand']=intendedPixels([side.hand]);if(pixels[name+'Hand']<200)issues.push('no intended hand pixels '+name)}
+  if(ring){const target=ring>5?hand.rings.r:hand.rings.l;if(!target||target.parent!==(ring>5?hand.hand:hand.left.hand))issues.push('wrong ring side');pixels.ring=target?intendedPixels([target]):0;if(pixels.ring<2)issues.push('no intended ring pixels')}
+  for(const [name,side]of sides){const wrist=hand.wrist.meshes.filter(m=>m.parent===side.hand);if(wrist.length){pixels[name+'Wrist']=intendedPixels(wrist);if(pixels[name+'Wrist']<2)issues.push('no intended wrist pixels '+name)}}
+ }
+ renderer.render(scene,camera);
+ return{ring:hand.rings.k,visible:[hand.rings.r?.visible,hand.rings.l?.visible],wrist:hand.wrist.meshes.length,calls:renderer.info.render.calls,issues,pixels,projection,matrices,accessoryVisibility,diagnosticMirroredLeft:left&&pose!=='hug',pose};
 };
-window.__ready = true;
+window.__ready=true;
 </script></body></html>

@@ -1,0 +1,3 @@
+FAIL [
+  '3/palm: ["hidden hand ancestor left","hidden/wrong accessory parent ring","no intended hand pixels left","no intended ring pixels"]'
+]
