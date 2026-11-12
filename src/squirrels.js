@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { SQUIRRELS as C, PADDOCK, SITE, WALK } from './config.js';
+import { SQUIRRELS as C, SQUIRREL_SURFACE as SS, PADDOCK, SITE, WALK } from './config.js';
 import { Holdable, heldItem, setHeld, handBusy } from './holdable.js';
 import { Hearts } from './pingping.js';
 import { sfx } from './audio.js';
@@ -42,7 +42,6 @@ const blob = (rx, ry, rz, x, y, z, hex, belly = null, seg = [9, 7], fur = 0, rnd
 };
 const seeded = (seed) => () => ((seed = seed * 16807 % 2147483647) / 2147483647);
 const shade = (hex, k) => new THREE.Color(hex).multiplyScalar(k).getHex();
-const mixHex = (a, b, k) => new THREE.Color(a).lerp(new THREE.Color(b), k).getHex();
 const UP = new THREE.Vector3(0, 1, 0), QT = new THREE.Quaternion(), HAUNCH = 0.065; // m behind the body centre: where it sits (#1716)
 /** #1716: a hair tuft: an open cone `len` long from `at` along `dir`, `root` colour at the base fading to `tip` at the point. */
 function tuft(at, dir, len, r, root, tip, segs) {
@@ -52,40 +51,58 @@ function tuft(at, dir, len, r, root, tip, segs) {
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   g.translate(0, len / 2, 0); g.applyQuaternion(QT.setFromUnitVectors(UP, dir.clone().normalize())); g.translate(at.x, at.y, at.z); return g;
 }
-/** #1716: a soft hair lock: a small ellipsoid `len` long from `at` along `dir` (rounded, not a spike), `root` colour fading to `tip`. */
-function lock(at, dir, len, r, root, tip, seg) {
-  const g = new THREE.SphereGeometry(1, seg[0], seg[1]); g.deleteAttribute('uv');
-  const pos = g.attributes.position, col = new Float32Array(pos.count * 3), c0 = new THREE.Color(root), c1 = new THREE.Color(tip), m = new THREE.Color();
-  for (let i = 0; i < pos.count; i++) m.copy(c0).lerp(c1, pos.getY(i) * 0.5 + 0.5).toArray(col, i * 3);
-  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  g.scale(r, len / 2, r * 0.75); g.translate(0, len * 0.35, 0); g.applyQuaternion(QT.setFromUnitVectors(UP, dir.clone().normalize())); g.translate(at.x, at.y, at.z); return g;
-}
 /** #1716: the tail's centre line (y, z) at rest (curled up over the back, as before) and flicked (raised, the tip snapped forward). */
 const TAIL = {
   rest: [[0.075, -0.1], [0.14, -0.15], [0.2, -0.18], [0.26, -0.175], [0.31, -0.135], [0.34, -0.075], [0.35, -0.015]],
   flick: [[0.075, -0.1], [0.15, -0.13], [0.22, -0.13], [0.28, -0.1], [0.32, -0.05], [0.33, 0.01], [0.31, 0.055]],
 };
 
+// One closed elliptical loft, shared by the existing skinning and fallback morphs.
+function surfaceLoft(rows, radial, spec, rnd, fur) {
+  const positions=[],colors=[],indices=[],coat=new THREE.Color(spec.color),belly=new THREE.Color(spec.belly),color=new THREE.Color();
+  for(const [z,y,w,h] of rows)for(let j=0;j<radial;j++) {
+    const a=j*Math.PI*2/radial,ny=Math.cos(a);positions.push(Math.sin(a)*w*spec.width,y+ny*h,z);
+    color.copy(belly).lerp(coat,THREE.MathUtils.smoothstep(ny,-.45,.25));if(fur)color.multiplyScalar(1+(rnd()-.5)*2*fur);color.toArray(colors,colors.length);
+  }
+  for(let i=0;i<rows.length-1;i++)for(let j=0;j<radial;j++) {
+    const a=i*radial+j,b=i*radial+(j+1)%radial,c=a+radial,d=b+radial;indices.push(a,c,b,b,c,d);
+  }
+  for(const [i,end]of[[0,false],[rows.length-1,true]]) {
+    const [z,y]=rows[i],centre=positions.length/3;positions.push(0,y,z);coat.toArray(colors,colors.length);
+    for(let j=0;j<radial;j++){const a=i*radial+j,b=i*radial+(j+1)%radial;indices.push(...(end?[centre,b,a]:[centre,a,b]));}
+  }
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.setIndex(indices);g.computeVertexNormals();return g;
+}
+function tailSurface(curve,s,far) {
+  const S=SS.tail,rows=far?S.rows.far:S.rows.near,radial=far?S.radial.far:S.radial.near,positions=[],colors=[],indices=[],side=new THREE.Vector3(1,0,0),color=new THREE.Color(),coat=new THREE.Color(s.tail),tip=s.tip?new THREE.Color(s.tip):null;
+  const radius=(u,column)=>{let i=1;while(i<S.profile.length-1&&S.profile[i][0]<u)i++;const a=S.profile[i-1],b=S.profile[i];return THREE.MathUtils.lerp(a[column],b[column],THREE.MathUtils.smoothstep(u,a[0],b[0]));};
+  for(let i=0;i<=rows;i++) {
+    const u=i/rows,c=curve.getPointAt(u),t=curve.getTangentAt(u),normal=new THREE.Vector3().crossVectors(t,side).normalize();
+    for(let j=0;j<radial;j++) {
+      const a=j*Math.PI*2/radial,flow=S.flow.reduce((v,[around,along,gain])=>v+gain*Math.sin(a*around+u*along),0),ridge=1+S.ridge*flow,p=c.clone().addScaledVector(side,Math.cos(a)*radius(u,1)*s.width*ridge).addScaledVector(normal,Math.sin(a)*radius(u,2)*ridge);
+      positions.push(...p.toArray());color.copy(coat);if(tip)color.lerp(tip,THREE.MathUtils.smoothstep(u,S.tipStart,S.tipEnd));color.multiplyScalar(1+S.frost*flow);color.toArray(colors,colors.length);
+    }
+  }
+  for(let i=0;i<rows;i++)for(let j=0;j<radial;j++){const a=i*radial+j,b=i*radial+(j+1)%radial,c=a+radial,d=b+radial;indices.push(a,b,c,b,d,c)}
+  for(const[i,end]of[[0,false],[rows,true]]){const c=curve.getPointAt(i/rows),centre=positions.length/3;positions.push(...c.toArray());color.toArray(colors,colors.length);for(let j=0;j<radial;j++){const a=i*radial+j,b=i*radial+(j+1)%radial;indices.push(...(end?[centre,a,b]:[centre,b,a]))}}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.setIndex(indices);g.computeVertexNormals();return g;
+}
+
 /** One squirrel's parts, metres, feet at y 0, nose +z, body about 22 cm and a 20 cm bushy tail curled over the back. #1716: a head with cheeks,
  * muzzle, nose, shining eyes and tufted ears, fore legs with paws, hind legs with long feet, a mottled coat and a fluffy tail (a core of soft
  * blobs and many hair tufts frosted at the tips; the tail tip coloured per animal). `far`: the cheaper distant version. `pose`: { flick } the tail
  * flicked, { head: ±1 } the head turned left / right (the morph targets; every pose has the same vertices). */
 function squirrelParts(s, far, pose = {}) {
-  const rnd = seeded(1716 + (far ? 7 : 0)), w = s.width, big = far ? [7, 5] : [12, 9], small = far ? [6, 4] : [7, 5], fur = far ? 0 : 0.07, head = [], body = [];
+  const rnd = seeded(1716 + (far ? 7 : 0)), w = s.width, small = far ? [6, 4] : [7, 5], fur = far ? 0 : 0.07, head = [], body = [];
   const B = (rx, ry, rz, x, y, z, hex, belly = null, seg = small, list = body) => list.push(blob(rx, ry, rz, x, y, z, hex, belly, seg, fur, rnd));
   const paw = shade(s.color, 0.72), dark = shade(s.color, 0.55);
-  // body: chest, torso, haunch
-  B(0.044 * w, 0.05, 0.1, 0, 0.085, -0.005, s.color, s.belly, big);
-  B(0.038 * w, 0.045, 0.048, 0, 0.097, 0.055, s.color, s.belly, small);
-  B(0.05 * w, 0.055, 0.058, 0, 0.075, -0.065, s.color, s.belly, big);
-  // head: skull, cheeks, muzzle, nose, eyes (+ a glint), ears with tufts
-  B(0.035 * w, 0.034, 0.042, 0, 0.128, 0.093, s.color, s.belly, big, head);
-  for (const k of [1, -1]) B(0.018 * w, 0.017, 0.02, k * 0.018 * w, 0.117, 0.11, s.color, s.belly, small, head);
-  B(0.016 * w, 0.014, 0.021, 0, 0.118, 0.13, s.color, s.belly, small, head);
+  body.push(surfaceLoft(SS.body,far?SS.radial.far:SS.radial.near,s,rnd,fur));
+  const torsoCount=body.length;
+  head.push(surfaceLoft(SS.head,far?SS.radial.far:SS.radial.near,s,rnd,fur));
   B(0.006, 0.005, 0.005, 0, 0.122, 0.149, 0x2a1d18, null, small, head);
   for (const k of [1, -1]) {
-    B(0.0075, 0.0078, 0.0068, k * 0.026 * w, 0.137, 0.117, 0x120e0c, null, small, head);
-    if (!far) B(0.0022, 0.0022, 0.0018, k * 0.0285 * w, 0.141, 0.1225, 0xffffff, null, [5, 3], head);
+    B(...SS.eyes.scale, k * SS.eyes.at[0] * w, SS.eyes.at[1], SS.eyes.at[2], 0x120e0c, null, small, head);
+    if (!far) B(...SS.eyes.glint, k * SS.eyes.glintAt[0] * w, SS.eyes.glintAt[1], SS.eyes.glintAt[2], 0xffffff, null, [5, 3], head);
     const ear = new THREE.Vector3(k * 0.021 * w, 0.155, 0.084), up = new THREE.Vector3(k * 0.28, 1, -0.22).normalize();
     head.push(tuft(ear, up, 0.03, 0.011, s.color, s.color, far ? 5 : 7));
     const top = ear.clone().addScaledVector(up, 0.026);
@@ -100,22 +117,11 @@ function squirrelParts(s, far, pose = {}) {
     B(0.013, 0.009, 0.046, k * 0.036 * w, 0.009, -0.045, paw);
   }
   if (pose.head) { const m = new THREE.Matrix4().makeTranslation(0, 0.115, 0.065).multiply(new THREE.Matrix4().makeRotationY(pose.head * 0.65)).multiply(new THREE.Matrix4().makeTranslation(0, -0.115, -0.065)); for (const g of head) g.applyMatrix4(m); }
-  // tail: soft core blobs along the centre line, then the hair tufts round it (mostly to the sides: a red squirrel's tail is flat and bushy)
-  const curve = new THREE.CatmullRomCurve3((pose.flick ? TAIL.flick : TAIL.rest).map(([y, z]) => new THREE.Vector3(0, y, z))), side = new THREE.Vector3(1, 0, 0);
-  const rad = (u) => 0.013 + 0.027 * Math.sin(Math.PI * (0.15 + 0.8 * u)), tipCol = (u) => (s.tip && u > 0.8 ? s.tip : s.tail), tail = [];
-  const cores = far ? 6 : 9;
-  for (let i = 0; i < cores; i++) { const u = 0.06 + 0.9 * i / (cores - 1), c = curve.getPointAt(u); tail.push(blob(rad(u) * 1.45 * w, rad(u) * 0.95, rad(u) * 1.15, c.x, c.y, c.z, shade(tipCol(u), 0.92), null, far ? [6, 4] : [8, 6], fur, rnd)); } // (wider than deep: flat and bushy)
-  const n = far ? 24 : 66;
-  for (let i = 0; i < n; i++) {
-    const u = 0.05 + 0.93 * (i + rnd() * 0.8) / n, c = curve.getPointAt(Math.min(1, u)), tan = curve.getTangentAt(Math.min(1, u)), nrm = new THREE.Vector3().crossVectors(tan, side).normalize();
-    const phi = rnd() * Math.PI * 2, lateral = Math.abs(Math.cos(phi)), radial = side.clone().multiplyScalar(Math.cos(phi)).addScaledVector(nrm, Math.sin(phi));
-    const len = (0.03 + 0.024 * Math.sin(Math.PI * (0.12 + 0.82 * u))) * (0.8 + 0.4 * rnd()) * (0.7 + 0.45 * lateral);
-    const at = c.clone().addScaledVector(radial, rad(u) * (0.45 + 0.55 * lateral)), dir = radial.multiplyScalar(0.32).addScaledVector(tan, 0.95); // (the hair lies flat towards the tip)
-    const col = tipCol(u); tail.push(lock(at, dir, len, (0.011 + 0.008 * lateral) * (far ? 1.3 : 1) * (0.85 + 0.3 * rnd()), shade(col, 0.9), s.tip && u > 0.8 ? s.tip : mixHex(col, 0xf2e6cf, 0.15), [4, 3]));
-  }
+  // One continuous plume follows the retained rest/flick centreline and joints.
+  const curve=new THREE.CatmullRomCurve3((pose.flick?TAIL.flick:TAIL.rest).map(([y,z])=>new THREE.Vector3(0,y,z))),tail=[tailSurface(curve,s,far)];
   // Part identity survives offline skinning; colours stay on the actual anatomy.
-  body.forEach((g,i) => { g.userData.joint = i < 3 ? 'Joint_Haunch' :
-    'Joint_' + ['Arm','Forearm','Paw','Thigh','Foot'][(i-3)%5] + '_' + (i < 8 ? 'L' : 'R'); });
+  body.forEach((g,i) => { g.userData.joint = i < torsoCount ? 'Joint_Haunch' :
+    'Joint_' + ['Arm','Forearm','Paw','Thigh','Foot'][(i-torsoCount)%5] + '_' + (i < torsoCount+5 ? 'L' : 'R'); });
   head.forEach(g => { g.userData.joint = 'Joint_Head'; });
   tail.forEach(g => { g.userData.tail = true; });
   return [...body, ...head, ...tail];
@@ -551,5 +557,5 @@ export class Squirrels {
 
 // Every configured coat/shape has its own stable collection number.
 const SQUIRREL_NUMBERS = { 'Den stora':38, Vitsvansen:39, 'Den smala':40, Parkekorren:41, Gårdsekorren:42, Tofsen:43, Klockan:44, Rödpälsen:45, Svartsvansen:46, Ljusbuken:47 };
-for (const s of C.animals) creature({ id:`squirrel:${s.name}`, no:SQUIRREL_NUMBERS[s.name], name:s.name, family:'squirrels', variant:s.tip?'Ljus svanstipp':'Rödbrun päls', level:s.tip?1:0, model:{kind:'squirrel',name:s.name}, info:{size:`${Math.round(s.scale*100)} % av grundmodellens storlek`,weight:'0,2–0,5 kg (uppskattning)',where:s.home?'Egen träddunge vid huset':'Träden vid Höje å',when:'Vaken vår–höst; vintervila',likes:'Nötter och en stilla, hukande besökare'},facts:['Varje ekorre har eget hemområde och temperament.','Kan klättra mellan träden och gömma nötter.'] });
+for (const s of C.animals) creature({ id:`squirrel:${s.name}`, no:SQUIRREL_NUMBERS[s.name], modelVersion:2, name:s.name, family:'squirrels', variant:s.tip?'Ljus svanstipp':'Rödbrun päls', level:s.tip?1:0, model:{kind:'squirrel',name:s.name}, info:{size:`${Math.round(s.scale*100)} % av grundmodellens storlek`,weight:'0,2–0,5 kg (uppskattning)',where:s.home?'Egen träddunge vid huset':'Träden vid Höje å',when:'Vaken vår–höst; vintervila',likes:'Nötter och en stilla, hukande besökare'},facts:['Varje ekorre har eget hemområde och temperament.','Kan klättra mellan träden och gömma nötter.'] });
 export { squirrelGeometry };

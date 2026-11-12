@@ -782,8 +782,8 @@ This gameplay-only room has no A/B/C/L house variant or public downstream equiva
 
 ## Squirrels and nuts (#1672)
 
-Nine squirrels: three (the big one, the white-tail-tip one, the slim darker one) live in the crowns along Höje å, the river park and the pony
-paddock, and roam the whole valley over time (#1716 below); six more each keep to a home area (#1780 below). `src/squirrelbrain.js` (no three.js, node-testable) holds the per-animal state machine (perch, leap, down, forage, search,
+Ten squirrels: three (the big one, the white-tail-tip one, the slim darker one) live in the crowns along Höje å, the river park and the pony
+paddock, and roam the whole valley over time (#1716 below); seven more each keep to a home area (#1780 below). `src/squirrelbrain.js` (no three.js, node-testable) holds the per-animal state machine (perch, leap, down, forage, search,
 fetch, eat, toTree, flee, up, approach, take) and the `NutField` (at most `SQUIRRELS.maxNuts` acorns/hazelnuts,
 expiring and respawning). #1831 reserves eight existing slots for safe pathside pairs near river trees; remaining slots use the
 ordinary tree/visitor/heap placement. `src/squirrels.js` draws them (one merged vertex-coloured mesh per squirrel, shared
@@ -796,9 +796,33 @@ In the snow months (`registerSeasonal`, `SEASON.snowMonths`) nothing is visible,
 within `simDist`, every `farStep` s up to `farDist`, beyond only the coarse tree-graph step (#1716); `&nosquirrels` disables the module. Config: the `SQUIRRELS` block at the end
 of `src/config.js` (all *guess*). Test: `node --test tools/squirrelbraintest.mjs`; browser check `tools/squirrelstest.cjs`. #1686 below.
 
-### Anatomical rig correction (#1908)
+### Continuous squirrel surfaces (#1920)
 
-The GLB now bakes the established rounded `squirrelParts` recipe instead of boxes:
+The shared `squirrelParts` recipe now uses a closed, tapered trunk and face, inset
+smaller eyes and one curved, filled tail plume with shallow fur flow, rather than
+stacked core/lock volumes. `SQUIRREL_SURFACE` contains the authored shape/density
+estimates. All ten palettes, scales and widths, including pale tail tips and the
+slim dark animal, use the same near/far topology. The existing 25-bone binding,
+five clips, three fallback morphs and sole `Squirrels.pose()` authority remain;
+nose, feet, haunch, carried-nut and paw frames are unchanged. The ten squirrel
+thumbnail versions are now 2, invalidating disposable images without changing IDs,
+discoveries or saved photographs.
+
+Submitted near/far cost is one draw and 3062/1228 triangles per squirrel (historical
+#1908: 3382/1396). All ten rig+retained fallback/morph geometry views total 3562800 B
+near and 1614000 B far, versus 5844000/2635440 B before. The separately retained
+neutral loaded GLB geometry is 132492 B; the binary asset is 147840 B. These are
+scoped geometry/resource figures, not total heap or GPU memory. No new texture,
+light, material cache, per-frame surface builder or AI/sync change was introduced.
+`tools/riggedsquirreltest.mjs` checks all looks, neutral binding and all five clips;
+`tools/capture-squirrel-quality.cjs` exercises actual production poses, missing-GLB
+fallbacks and all ten actual `BestiaryImages` recipes. Matched images, source
+hashes, warm software-renderer timings and limitations are recorded in
+[#1920 verification](../verification/1920/README.md).
+
+### Historical anatomical rig correction (#1908)
+
+At #1908 the GLB baked the established rounded `squirrelParts` recipe instead of boxes:
 cheeks, muzzle, separate eyes/nose, tufted ears, articulated paws and a continuous
 bushy curved tail. `squirrelRigGeometry(spec, far)` keeps the exact vertex colours
 and proportions of all ten configured looks, including the pale tail tip and slim
@@ -806,11 +830,11 @@ dark animal. It supplies the same skin weights to the offline export and runtime
 near/far geometries. The skeleton's complete world matrices precede binding.
 All five clips use normalized local rotations; the consumer owns the whole-body
 sit/climb pivot and the carried nut remains a separately visible game object.
-Near/far stay at the original 3382/1396 triangles and one material/draw per squirrel;
-there was no three-to-one draw-call saving. The GLB is 229824 bytes (old box file
-52648 bytes). This restores visual detail rather than claiming a performance gain.
-`tools/riggedsquirreltest.mjs` checks every rest vertex, all looks against the original
-recipe, triangle parity and deformed bounds for all five clips. Actual consumer
+At that revision near/far stayed at the original 3382/1396 triangles and one material/draw per squirrel;
+there was no three-to-one draw-call saving. The GLB was 229824 bytes (old box file
+52648 bytes). That restored visual detail rather than establishing a performance gain.
+At #1908, `tools/riggedsquirreltest.mjs` checked every rest vertex, all looks against
+the then-current recipe, triangle parity and deformed bounds for all five clips. Actual consumer
 views and limits: [#1908 verification](../verification/1908/README.md).
 
 ### Roaming the valley and a fluffier look (#1716)
@@ -834,7 +858,7 @@ perch to perch through the graph with the travel time as delay, no animation; a 
 follower starts simulating again, `resync()` settles each brain on its nearest tree. On the wire the new states map to old ones (`WIRE` in
 squirrelsync.js: travel/stash/seek → toTree, bury/dig → eat, chase → flee, nest → perch), so the room's validation is unchanged.
 
-Look: `squirrelParts` builds a head with cheeks, muzzle, nose, eyes with a glint, cone ears with dark hair tufts, fore legs with paws, hind legs with
+Historical #1716 look (superseded by #1920 above): `squirrelParts` built a head with cheeks, muzzle, nose, eyes with a glint, cone ears with dark hair tufts, fore legs with paws, hind legs with
 long feet, a mottled coat (vertex colour noise) and a flat bushy tail (wide core blobs plus 66 soft rounded hair locks lying flat towards the tip, frosted; the tip
 colour per animal). Still one merged mesh and draw call per squirrel, with three morph targets (tail flick, head left, head right) driven in
 `pose()`; the group's origin sits at the haunch (`HAUNCH`), so sitting up (`rise`) pivots there and the head turns less while sitting. Two geometries: the detailed one (~3.3 k triangles) within `SQUIRRELS.look.near` m, a cheaper one (~1.4 k, before: ~1.9 k for every

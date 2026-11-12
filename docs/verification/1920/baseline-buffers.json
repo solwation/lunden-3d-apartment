@@ -1,0 +1,46 @@
+{
+  "sourceHashes": {
+    "src/config.js": "36e62bab4fdb1c0f1f121141d34497b783e0aad00b17be73cb1a50680ab7f99b",
+    "src/squirrels.js": "acc2cd2cb14f8c1081d7e3ed6a808fc3858b2235358b170f17b6233329ba7292",
+    "models/squirrel-rigged.glb": "c23a684ba74a544055e4331697ed319da00c4b1561b87a03940c8faea10d67ae"
+  },
+  "lod": [
+    {
+      "far": false,
+      "triangles": 3382,
+      "fallback": {
+        "geometries": 10,
+        "bytes": 3698880
+      },
+      "rigged": {
+        "geometries": 10,
+        "bytes": 2145120
+      },
+      "combined": {
+        "geometries": 20,
+        "bytes": 5844000
+      }
+    },
+    {
+      "far": true,
+      "triangles": 1396,
+      "fallback": {
+        "geometries": 10,
+        "bytes": 1670280
+      },
+      "rigged": {
+        "geometries": 10,
+        "bytes": 965160
+      },
+      "combined": {
+        "geometries": 20,
+        "bytes": 2635440
+      }
+    }
+  ],
+  "neutralLoadedGeometry": {
+    "geometries": 1,
+    "bytes": 214512
+  },
+  "glbBytes": 229824
+}

@@ -1,0 +1,13 @@
+{
+  "baselineRevision": "84c6317de7aaf126f22365a5f2aa0d059dde6822",
+  "sha256": {
+    "src/config.js": "7c1141818dd3d1786e2bd6477148ace029bdf59d6a87aec760220a2fee1141ca",
+    "src/squirrels.js": "f7840d7e4dfdcd671ce27361edc3ac625275ec5bc6763f23d611a9e8b1348d5b",
+    "models/squirrel-rigged.glb": "ad864c66c7e11405033c2a7d1a74e26c78f26f7b27f707d8a25aeb29c1524b2b",
+    "tools/buildsquirrelglb.mjs": "ca0b29816ec0ca0f10c72def4a99352f8e7801b02cd5d7e0f48c1acd5b54d870",
+    "tools/squirrelvisualtest.html": "5c6ca4e7e75fb351811f6adf32f166be95a6d5d54efb62d38b62b8cdf8673c44",
+    "tools/capture-squirrel-quality.cjs": "8211fab9015e14230bd34ea3978e07510dfb0d5a705fbac65764f4fe3e20af76",
+    "tools/measure-squirrel-geometry.mjs": "d2f312cf49ab2ec80aba596b37f4c91a207b365505290cd4ba4576ce5dd8dcd6",
+    "tools/riggedsquirreltest.mjs": "8f10479db8614393277a497c9ec8d970fdfcc7da77e4e4b0ab2c0549acc69e3b"
+  }
+}

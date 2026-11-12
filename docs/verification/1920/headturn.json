@@ -1,0 +1,173 @@
+{
+  "baseline": null,
+  "environment": "actual Squirrels and BestiaryImages, controlled terrain; Chromium SwiftShader, DPR1",
+  "views": [
+    {
+      "name": "headleft",
+      "fallback": false,
+      "whole": {
+        "frame": 3,
+        "calls": 4,
+        "triangles": 9188,
+        "points": 0,
+        "lines": 0
+      },
+      "figures": {
+        "frame": 4,
+        "calls": 3,
+        "triangles": 9186,
+        "points": 0,
+        "lines": 0
+      },
+      "finite": true,
+      "cameraFinite": true,
+      "intended": true,
+      "contacts": [
+        {
+          "name": "Den stora",
+          "mouth": [
+            -0.48,
+            0.14,
+            0.1875
+          ],
+          "paws": [
+            [
+              -0.4475,
+              0.018749999999999996,
+              0.11875000000000001
+            ],
+            [
+              -0.5125,
+              0.018749999999999996,
+              0.11875000000000001
+            ]
+          ]
+        },
+        {
+          "name": "Vitsvansen",
+          "mouth": [
+            0,
+            0.112,
+            0.15
+          ],
+          "paws": [
+            [
+              0.026,
+              0.015000000000000006,
+              0.095
+            ],
+            [
+              -0.026,
+              0.015000000000000006,
+              0.095
+            ]
+          ]
+        },
+        {
+          "name": "Den smala",
+          "mouth": [
+            0.48,
+            0.10304,
+            0.138
+          ],
+          "paws": [
+            [
+              0.50392,
+              0.01380000000000001,
+              0.08739999999999999
+            ],
+            [
+              0.45608,
+              0.01380000000000001,
+              0.08739999999999999
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "headright",
+      "fallback": false,
+      "whole": {
+        "frame": 7,
+        "calls": 4,
+        "triangles": 9188,
+        "points": 0,
+        "lines": 0
+      },
+      "figures": {
+        "frame": 8,
+        "calls": 3,
+        "triangles": 9186,
+        "points": 0,
+        "lines": 0
+      },
+      "finite": true,
+      "cameraFinite": true,
+      "intended": true,
+      "contacts": [
+        {
+          "name": "Den stora",
+          "mouth": [
+            -0.48,
+            0.14,
+            0.1875
+          ],
+          "paws": [
+            [
+              -0.4475,
+              0.018749999999999996,
+              0.11875000000000001
+            ],
+            [
+              -0.5125,
+              0.018749999999999996,
+              0.11875000000000001
+            ]
+          ]
+        },
+        {
+          "name": "Vitsvansen",
+          "mouth": [
+            0,
+            0.112,
+            0.15
+          ],
+          "paws": [
+            [
+              0.026,
+              0.015000000000000006,
+              0.095
+            ],
+            [
+              -0.026,
+              0.015000000000000006,
+              0.095
+            ]
+          ]
+        },
+        {
+          "name": "Den smala",
+          "mouth": [
+            0.48,
+            0.10304,
+            0.138
+          ],
+          "paws": [
+            [
+              0.50392,
+              0.01380000000000001,
+              0.08739999999999999
+            ],
+            [
+              0.45608,
+              0.01380000000000001,
+              0.08739999999999999
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

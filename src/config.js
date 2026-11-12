@@ -7676,6 +7676,18 @@ export const FOOTSTEPS = {
 //  the squirrel carries the nut `carry` s (visible in its mouth) up a tree.
 // #1855 only explicitly placed nuts are global drops; the20natural slots/animal cadence remain unchanged (*guess* limits).
 export const NUT_DROPS = { max:18, worldMs:20*60*1000, answerMs:6000, retryMs:1500 };
+// #1920: authored red-squirrel surface estimates (guess), retaining the original
+// nose/feet/haunch and seven-tail-joint frames. Static shared per-look geometry.
+export const SQUIRREL_SURFACE = {
+  radial: { near: 16, far: 12 },
+  // z, centre y, half-width, half-height; continuous trunk and tapered face.
+  body: [[-.12,.07,.015,.028],[-.085,.075,.044,.049],[-.04,.085,.043,.048],[.025,.094,.036,.043],[.065,.105,.028,.035],[.085,.12,.019,.023]],
+  head: [[.058,.122,.012,.020],[.082,.128,.032,.031],[.105,.125,.032,.029],[.126,.12,.021,.017],[.142,.118,.011,.009],[.148,.12,.006,.005]],
+  eyes: { scale: [.0045,.005,.0035], at: [.024,.134,.116], glint: [.001,.001,.0008], glintAt: [.0265,.1365,.118] },
+  tail: { rows: { near: 38, far: 18 }, radial: { near: 24, far: 12 }, profile: [[0,.013,.012],[.15,.025,.023],[.35,.044,.035],[.58,.052,.037],[.78,.05,.035],[.94,.025,.022],[1,.002,.002]],
+    flow: [[9,4,.65],[5,62,.35]], ridge: .065, frost: .06, tipStart: .72, tipEnd: .90 },
+};
+
 export const SQUIRRELS = {
   simDist: 70, farDist: 130, drawDist: 150, farStep: 0.25, leapRange: 11, groundHop: 22,
   dry: 6, // #1764: farther than the river's half width + `dry` m from its centre line the park ground is always above the water (measured: the wet strip reaches at most 5.6 m from the centre line), so main.js squirrelWalk answers there without the terrain lookup

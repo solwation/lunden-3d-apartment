@@ -60,17 +60,20 @@ test('squirrel-rigged.glb parses with SkinnedMesh, 25 bones and required animati
   }
 });
 
-test('all looks retain original colours/proportions, near/far budget and neutral binding', async () => {
+test('all ten looks share rig/fallback surfaces within the near/far budget and bind neutrally', async () => {
   const {squirrelGeometry,squirrelRigGeometry}=await import('../src/squirrels.js');
   const buf=fs.readFileSync('models/squirrel-rigged.glb');
   const gltf=await new GLTFLoader().parseAsync(buf.buffer.slice(buf.byteOffset,buf.byteOffset+buf.byteLength),'');
   let mesh;gltf.scene.traverse(o=>{if(o.isSkinnedMesh)mesh=o});gltf.scene.updateMatrixWorld(true);mesh.skeleton.update();
   assert.ok(!Array.isArray(mesh.material),'one material/draw per animal, also before the migration');
   for(const spec of SQUIRRELS.animals) for(const far of [false,true]) {
-    const g=squirrelRigGeometry(spec,far), original=squirrelGeometry(spec,far);
-    assert.deepEqual(Array.from(g.attributes.color.array),Array.from(original.attributes.color.array),spec.name+' anatomical colours');
-    assert.deepEqual(Array.from(g.attributes.position.array),Array.from(original.attributes.position.array),spec.name+' original shape');
-    assert.equal(g.index.count,original.index.count,'no extra triangles versus detailed original');
+    const g=squirrelRigGeometry(spec,far), fallback=squirrelGeometry(spec,far);
+    assert.deepEqual(Array.from(g.attributes.color.array),Array.from(fallback.attributes.color.array),spec.name+' anatomical colours');
+    assert.deepEqual(Array.from(g.attributes.position.array),Array.from(fallback.attributes.position.array),spec.name+' shared shape');
+    assert.equal(g.index.count,fallback.index.count,'rig/fallback topology parity');
+    assert.ok(g.index.count/3 <= (far?1600:4000), spec.name+' LOD triangle budget');
+    for(const a of [...Object.values(g.attributes),...Object.values(fallback.morphAttributes).flat()])
+      assert.ok(a.array.every(Number.isFinite), spec.name+' finite geometry/morphs');
     mesh.geometry=g;
     for(let i=0;i<g.attributes.position.count;i++) {
       const p=new THREE.Vector3().fromBufferAttribute(g.attributes.position,i),q=mesh.applyBoneTransform(i,p.clone());
@@ -84,10 +87,15 @@ test('all five animated silhouettes remain finite and inside the squirrel envelo
     const gltf=await new GLTFLoader().parseAsync(buf.buffer.slice(buf.byteOffset,buf.byteOffset+buf.byteLength),'');
     const clip=gltf.animations.find(c=>c.name===clipName),mixer=new THREE.AnimationMixer(gltf.scene);mixer.clipAction(clip).play();
     let mesh;gltf.scene.traverse(o=>{if(o.isSkinnedMesh)mesh=o});
-    for(let j=0;j<=12;j++) {
-      mixer.setTime(clip.duration*j/12);gltf.scene.updateMatrixWorld(true);mesh.skeleton.update();mesh.computeBoundingBox();
-      const size=mesh.boundingBox.getSize(new THREE.Vector3());
-      assert.ok(size.toArray().every(Number.isFinite));assert.ok(size.x<.35&&size.y<.55&&size.z<.6,clipName+' whole deformed bounds');
+    const {squirrelRigGeometry}=await import('../src/squirrels.js');
+    for(const spec of SQUIRRELS.animals)for(const far of [false,true]) {
+      mesh.geometry=squirrelRigGeometry(spec,far);
+      for(let j=0;j<=12;j++) {
+        mixer.setTime(clip.duration*j/12);gltf.scene.updateMatrixWorld(true);mesh.skeleton.update();mesh.computeBoundingBox();
+        const size=mesh.boundingBox.getSize(new THREE.Vector3());
+        gltf.scene.traverse(o=>assert.ok(o.matrixWorld.elements.every(Number.isFinite),'finite full world transforms'));
+        assert.ok(size.toArray().every(Number.isFinite));assert.ok(size.x<.35&&size.y<.55&&size.z<.6,clipName+' whole deformed bounds');
+      }
     }
   }
 });
