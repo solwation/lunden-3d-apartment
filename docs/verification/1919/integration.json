@@ -1,0 +1,58 @@
+{
+  "workerCommit": "2023e8519d0550938248601114526c60b54a654c",
+  "rebasedCommit": "3d9d7f289fab3f0f434566175af6508951410b23",
+  "integratedBase": "84c6317de7aaf126f22365a5f2aa0d059dde6822",
+  "checks": {
+    "src/paddock.js": {
+      "measured": "839a948b5b6f461a750d4a2c7e86715a6a422dafe084be843d37bec2bb41a82e",
+      "integrated": "839a948b5b6f461a750d4a2c7e86715a6a422dafe084be843d37bec2bb41a82e",
+      "same": true
+    },
+    "src/config.js": {
+      "measured": "119bb18411b85ff7a821be9cb2a3b3aff18ad014aab24f2e51a32db0b6db52c0",
+      "integrated": "9078261630872d3ba65e6e5701f6d7a2255937e77eac3570bffb30fb06b95f8b",
+      "same": false
+    },
+    "tools/buildponyglb.mjs": {
+      "measured": "00b02d534e4c3ca3d168d35e591f99c0e11012ecdb935072ad7b16dfc2a59ac7",
+      "integrated": "00b02d534e4c3ca3d168d35e591f99c0e11012ecdb935072ad7b16dfc2a59ac7",
+      "same": true
+    },
+    "models/pony-rigged.glb": {
+      "measured": "fe78b087845573e95592292fe06dff2f935e78e6a807d7dd8422f8ba2f4a123d",
+      "integrated": "fe78b087845573e95592292fe06dff2f935e78e6a807d7dd8422f8ba2f4a123d",
+      "same": true
+    },
+    "src/ponyblanket.js": {
+      "measured": "29434b5a8fd080b03a4c0d375accc4e415f2dda2b7ce8a0a2bcc30564a2330de",
+      "integrated": "29434b5a8fd080b03a4c0d375accc4e415f2dda2b7ce8a0a2bcc30564a2330de",
+      "same": true
+    },
+    "tools/capture-pony-surfaces.cjs": {
+      "measured": "8fb652df11f5e7e1e608f7c549122ea286335c5626602a61a2d703dcf958d9df",
+      "integrated": "8fb652df11f5e7e1e608f7c549122ea286335c5626602a61a2d703dcf958d9df",
+      "same": true
+    }
+  },
+  "configSections": {
+    "PONY_SURFACE": "byte identical",
+    "PADDOCK": "byte identical"
+  },
+  "onlyFullConfigChange": "independent CAT_SURFACE block",
+  "rootImageReview": [
+    "baseline-quarter",
+    "baseline-pet-close",
+    "current-quarter",
+    "current-front",
+    "current-side",
+    "current-normal",
+    "current-pet-close",
+    "current-walk",
+    "current-graze",
+    "current-winter",
+    "current-binder",
+    "current-fallback"
+  ],
+  "changelog": 1478,
+  "remainingLimit": "Stylized contours and part transitions; controlled Paddock/SwiftShader, not full World/hardware FPS"
+}

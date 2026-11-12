@@ -108,4 +108,14 @@ PLAYWRIGHT_MODULE=/path/to/playwright tools/browsertest.sh node tools/capture-po
 
 Public transfer should use a separate low-priority issue and generic geometry,
 profiles, normals/export and corresponding neutral-art evidence. Personal
-photos/names, coat identity, pet/feeding/rug gameplay and services stay original.
+photos/names, coat identity, pet/feeding gameplay and services stay original.
+The public project already has passive winter rugs; its own existing rugs remain allowed.
+
+## Integration review
+
+Root reviewed the complete patch and opened the comparable whole/front/side,
+normal/pet, walking/grazing, winter, binder and missing-asset images. Main rebase
+preserved the exact measured pony sources, generated GLB and PONY_SURFACE/PADDOCK
+configuration sections. The full config hash changed only through the independent
+cat integration. Changelog was renumbered to 1478 after the final main fetch.
+[Source mapping](integration.json). No repeat broad test run was needed.
