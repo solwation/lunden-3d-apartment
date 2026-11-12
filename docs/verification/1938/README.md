@@ -38,7 +38,7 @@ stale and renewed six-image grids at their actual96/320sizes.
 | New geometry +version1, bug | 0 /6 | 6 | 6 /6 |
 | New geometry +version2, fixed | 6 /0 | 12, old six retained | 6 /6 |
 
-[Old actual cache](before-old-cache.png), [stale despite new geometry](before-bug-cache.png),
+[Old actual cache](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/c78c8b5d2df18f8e0a866e277aa77b37ce32f0f0/docs/verification/1938/before-old-cache.png), [stale despite new geometry](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/c78c8b5d2df18f8e0a866e277aa77b37ce32f0f0/docs/verification/1938/before-bug-cache.png),
 [renewed actual images](cache-renewed.png). The last grid shows precisely the existing
 #1925 form, rather than another model redesign. Two own before-PNGs are transient;
 root pins them in the issue before pruning in the resolving commit. Result images
@@ -62,3 +62,5 @@ and the buggy registrations at990e8914b036b608c104e5b014b7553a4595569d. It never
 player storage and uses a new temporary browser context. Saved source hashes bind
 all executed files. The owned8204server was identified by exact command/cwd before
 SIGTERM; browser and shared lock completed normally. No other worker process was touched.
+
+[Published comparison/result evidence](https://github.com/solwation/lunden-3d-apartment/issues/1938#issuecomment-6822096266) embeds three pinned HTTP200/image-type images after actual Pages success for `c78c8b5d2df18f8e0a866e277aa77b37ce32f0f0`. Worker is not triggered by this revision (reviewed cloud.yml paths, no shared code/config changes). This resolving commit prunes both own before-PNGs.
