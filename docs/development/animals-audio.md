@@ -495,14 +495,18 @@ for rendered arms, size, purr audio, release and bicycle stow regression.
 
 This is personal animal gameplay, excluded from the public downstream scope.
 
-Ponies (#1280, #1293, corrected rig #1906): Zoey (grey/white) and Princess (bay,
+Ponies (#1280, #1293, corrected rig #1906, surfaces #1919): Zoey (grey/white) and Princess (bay,
 black points, white star) live in the fenced paddock on the kidney-shaped meadow
 (environment.md, "Pony paddock"). `tools/buildponyglb.mjs` bakes the retained
-photo-based `ponyGeometry()` loft into `models/pony-rigged.glb`: 1,080 triangles,
+photo-based `ponyGeometry()` loft into `models/pony-rigged.glb`: 2,652 triangles,
 one skinned mesh/material per pony, 22 bones and idle/walk/graze/watch/pet clips.
 The complete bone hierarchy is attached and updated before inverse bind matrices
 are calculated. Five padded UV palette regions preserve the two animals' coats,
 points, muzzle, eyes/hooves and optional star without overlapping atlas paint.
+`PONY_SURFACE` centralizes authored smooth loft profiles/density, shallow eye/nostril
+lenses and tapered hair. The export preserves the shared surface normals across
+palette regions. Pony thumbnail modelVersion 2 invalidates the earlier generated
+factory images. [Comparable forms, costs and limits](../verification/1919/README.md).
 The rigid torso retains the existing rug frame; look offsets are removed before
 mixer updates so idle heads cannot accumulate yaw. The previous instanced shader
 mesh remains the asynchronous fallback and the rug/interaction anchor.
@@ -1219,7 +1223,7 @@ eye/coat materials, Miele's existing photo-bound maps and walking/washing/pettin
 eating/held/play/climbing pose code remain authoritative. No SkinnedMesh/second mixer
 or generic colour overlay replaces them. Missing/invalid assets preserve the source
 recipe; shared primitive buffers retain CPU attributes for later snapshot/LOD clones.
-Cat-only modelVersion2 refreshes generated binder thumbnails without changing saved photos.
+Cat-only modelVersion 2 refreshes generated binder thumbnails without changing saved photos.
 
 Measured component budget returns to the existing Pages fallback:24 mesh calls/10008tri
 with open eyes,22/8968 with closed eyes, existing one-mesh far LOD. Neutral GLB45880bytes;

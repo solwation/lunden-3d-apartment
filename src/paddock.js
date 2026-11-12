@@ -4,7 +4,7 @@ import { creature } from './bestiarymetadata.js';
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import * as THREE from 'three';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { PADDOCK as P, SEASON } from './config.js';
+import { PADDOCK as P, PONY_SURFACE as PS, SEASON } from './config.js';
 import { outline, fenceLine, posts, gateSpan, stile, insideFence, insetRing, ringDist, centre } from './paddockgeo.js';
 import { stileBase } from './farwalk.js';
 import { riverAt } from './riverbridge.js';
@@ -19,7 +19,7 @@ import { shelterSpots, snowCovered, RainWatch, footprintGround, shelterSite, rel
 
 // #1280: the pony paddock on the kidney-shaped meadow south of the timber footbridge: a merged post-and-rail fence with a closed gate, a
 // water trough and a three-sided shelter (ONE mesh, vertex colours, no textures), two C ponies (Zoey, white; Princess, brown) as ONE
-// instanced mesh whose legs, neck, head and tail are moved in the vertex shader (two instances, ~200 triangles each, one draw call), and
+// instanced fallback whose legs, neck, head and tail move in the original shader. The current GLB surface is2652 triangles/one draw per pony, and
 // the worn track along the fence (merged into the south backdrop's land mesh, `paddockLandParts`). The plan geometry (fence line, posts,
 // collision) lives in paddockgeo.js; sizes, speeds and colours in config.js PADDOCK (all *guess*).
 // Behaviour: each pony grazes, stands or walks between waypoints (a 5 m grid of flat places clear of trees, the river and the fence);
@@ -143,23 +143,38 @@ export function fenceGeometry(ground, spots = {}) {
   return s.geometry();
 }
 
-/** A lofted tube through `secs` = [{p: [x, y, z], w: half-width (x), d: half-depth}] (an octagonal ring per section, square ends): one colour per segment
+/** A lofted tube through `secs` = [{p: [x, y, z], w: half-width (x), d: half-depth}] (rounded interpolated rings per section, capped ends): one colour per segment
  *  (`cols[i]` for secs i → i+1, else `cols[0]`). The ring's depth axis is perpendicular to the path and to x (necks, legs, tails, a barrel all use it). */
-Soup.prototype.tube = function (secs, cols) {
-  const RING = [[0.6, 1], [1, 0.6], [1, -0.6], [0.6, -1], [-0.6, -1], [-1, -0.6], [-1, 0.6], [-0.6, 1]], X = V(1, 0, 0);
+Soup.prototype.tube = function (secs, cols, radial=PS.radialSegments, steps=(this.partId>=3&&this.partId<=6?PS.legSteps:PS.longitudinalSteps)) {
+  const RING=Array.from({length:radial},(_,i)=>[Math.sin(i*Math.PI*2/radial),Math.cos(i*Math.PI*2/radial)]),X=V(1,0,0);
+  // Interpolate in the original section frame; clamp dimensions to their neighbours
+  // so the standing body/rug envelope and ground-level hoof endpoints remain bounded.
+  const original=secs,tones=[];
+  const sample=(values,i,t)=>{
+    const p0=values[Math.max(0,i-1)],p1=values[i],p2=values[i+1],p3=values[Math.min(values.length-1,i+2)];
+    const m1=(p2-p0)*PS.splineTension,m2=(p3-p1)*PS.splineTension;
+    const v=(2*t*t*t-3*t*t+1)*p1+(t*t*t-2*t*t+t)*m1+(-2*t*t*t+3*t*t)*p2+(t*t*t-t*t)*m2;
+    return THREE.MathUtils.clamp(v,Math.min(p1,p2),Math.max(p1,p2));
+  };
+  const channels=[0,1,2].map(k=>original.map(s=>s.p[k])),widths=original.map(s=>s.w),depths=original.map(s=>s.d);
+  secs=[];
+  for(let i=0;i<original.length-1;i++)for(let j=0;j<steps;j++){
+    const t=j/steps;secs.push({p:channels.map(a=>sample(a,i,t)),w:sample(widths,i,t),d:sample(depths,i,t)});tones.push(cols[i]??cols[0]);
+  }
+  secs.push(original.at(-1));
   const pts = (s, i) => {
     const a = V(...secs[Math.max(0, i - 1)].p), b = V(...secs[Math.min(secs.length - 1, i + 1)].p), t = b.sub(a).normalize(), v = X.clone().cross(t).normalize().multiplyScalar(s.d), c = V(...s.p);
     return RING.map(([k, l]) => c.clone().addScaledVector(X, k * s.w).addScaledVector(v, l));
   };
   const rings = secs.map(pts);
   for (let i = 0; i + 1 < secs.length; i++) {
-    const mid = V(...secs[i].p).add(V(...secs[i + 1].p)).multiplyScalar(0.5), col = cols[i] ?? cols[0];
-    for (let k = 0; k < 8; k++) this.quad(rings[i][k], rings[i][(k + 1) % 8], rings[i + 1][(k + 1) % 8], rings[i + 1][k], mid, col);
+    const mid = V(...secs[i].p).add(V(...secs[i + 1].p)).multiplyScalar(0.5), col = tones[i];
+    for (let k = 0; k < radial; k++) this.quad(rings[i][k], rings[i][(k + 1) % radial], rings[i + 1][(k + 1) % radial], rings[i + 1][k], mid, col);
   }
   for (const [ri, s, out] of [[0, secs[0], V(...secs[0].p).sub(V(...secs[1].p))], [secs.length - 1, secs[secs.length - 1], V(...secs[secs.length - 1].p).sub(V(...secs[secs.length - 2].p))]]) {
     const c = V(...s.p);
-    for (let k = 0; k < 8; k++) {
-      const a = rings[ri][k], b = rings[ri][(k + 1) % 8], n = b.clone().sub(a).cross(c.clone().sub(a));
+    for (let k = 0; k < radial; k++) {
+      const a = rings[ri][k], b = rings[ri][(k + 1) % radial], n = b.clone().sub(a).cross(c.clone().sub(a));
       if (n.dot(out) >= 0) this.tri(a, b, c, cols[0]); else this.tri(b, a, c, cols[0]);
     }
   }
@@ -176,22 +191,25 @@ export function ponyGeometry() {
   s.tube([[-0.78, 0.78, 1.18, 0.14], [-0.64, 0.68, 1.30, 0.22], [-0.3, 0.62, 1.27, 0.26], [0.05, 0.6, 1.29, 0.26], [0.35, 0.66, 1.34, 0.24], [0.58, 0.76, 1.26, 0.2], [0.72, 0.9, 1.15, 0.12]]
     .map(([z, y0, y1, w]) => ({ p: [0, (y0 + y1) / 2, z], w, d: (y1 - y0) / 2 })), [COAT]);
   s.partId = 1; s.pv = neck; // the neck: thick at the shoulder, slim under the ears (about its base)
-  s.tube([[-0.06, 0.17, 0.25], [0.3, 0.13, 0.17], [0.55, 0.105, 0.13], [0.74, 0.09, 0.115]].map(([t, w, d]) => ({ p: at(t).toArray(), w, d })), [COAT]);
-  s.tube([[0.0, 0.2], [0.25, 0.2], [0.5, 0.19], [0.78, 0.14]].map(([t, o], i) => ({ p: at(t, o + 0.02).toArray(), w: i === 3 ? 0.012 : 0.025, d: 0.07 })), [ACC]); // the mane along the crest
+  s.tube(PS.neck.map(([t,o,w,d])=>({p:at(t,o).toArray(),w,d})),[COAT]);
+  for(const x of PS.hair.offsets) s.tube(PS.hair.mane.map(([t,o],i)=>({p:at(t,o).add(V(x,0,0)).toArray(),w:i===PS.hair.mane.length-1?PS.hair.width/2:PS.hair.width,d:PS.hair.depth})),[ACC],PS.hair.radial,PS.hair.steps);
   const tip = at(0.72), pitch = 0.91, hd = V(0, -Math.sin(pitch), Math.cos(pitch)), hu = V(0, Math.cos(pitch), Math.sin(pitch));
   const hp = (k, o = 0, x = 0) => tip.clone().addScaledVector(hd, k).addScaledVector(hu, o).add(V(x, 0, 0)).toArray();
   s.partId = 2; s.pv = tip.toArray(); // the head, hanging about 50° below level (about the neck's top)
-  s.tube([{ p: hp(-0.04), w: 0.085, d: 0.1 }, { p: hp(0.14, -0.015), w: 0.1, d: 0.125 }, { p: hp(0.38), w: 0.065, d: 0.085 }, { p: hp(0.5), w: 0.068, d: 0.075 }, { p: hp(0.58), w: 0.06, d: 0.062 }], [COAT, COAT, MUZ, MUZ]);
-  s.tube([{ p: hp(0.1, 0.118), w: 0.02, d: 0.04 }, { p: hp(0.3, 0.092), w: 0.022, d: 0.04 }], [STAR]); // the star on the forehead (shown on Princess)
-  s.tube([{ p: hp(-0.02, 0.1), w: 0.07, d: 0.03 }, { p: hp(0.06, 0.13), w: 0.045, d: 0.055 }], [ACC]); // the forelock
-  for (const k of [-1, 1]) { // eyes
-    const c = V(...hp(0.12, 0.03, k * 0.1)), e = V(k * 0.012, 0, 0);
-    s.box(c, e, hu.clone().multiplyScalar(0.03), hd.clone().multiplyScalar(0.03), BLACK);
-  }
+  s.tube(PS.head.map(([t,o,w,d])=>({p:hp(t,o),w,d})),[COAT,COAT,COAT,COAT,MUZ,MUZ]);
+  s.tube(PS.star.map(([t,o,w,d])=>({p:hp(t,o),w,d})),[STAR]);
+  for(const x of PS.hair.offsets) s.tube(PS.hair.forelock.map(([t,o],i)=>({p:hp(t,o,x),w:i===PS.hair.forelock.length-1?PS.hair.width/2:PS.hair.width,d:PS.hair.depth/2})),[ACC],PS.hair.radial,PS.hair.steps);
+  // Shallow lenses sit on the side of the head; eyes/nostrils share the same draw.
+  const lens=(spec,side)=>{
+    const c=V(...hp(spec.at[0],spec.at[1],side*spec.at[2])),g=new THREE.SphereGeometry(1,...PS.faceSegments),p=g.attributes.position,index=g.index;
+    const point=i=>c.clone().add(V(side*p.getX(i)*spec.scale[0],0,0)).addScaledVector(hu,p.getY(i)*spec.scale[1]).addScaledVector(hd,p.getZ(i)*spec.scale[2]);
+    for(let i=0;i<index.count;i+=3){const a=point(index.getX(i)),b=point(index.getX(i+1)),d=point(index.getX(i+2));if(side>0)s.tri(a,b,d,BLACK);else s.tri(a,d,b,BLACK)}g.dispose();
+  };
+  for(const side of [-1,1]){lens(PS.eyes,side);lens(PS.nostrils,side);}
   s.partId = 8; // the ears (about their roots)
   for (const k of [-1, 1]) {
-    const r = hp(-0.01, 0.1, k * 0.055), up = V(k * 0.12, 0.98, 0.1).normalize(), r1 = V(...r).addScaledVector(up, 0.07).toArray(), r2 = V(...r).addScaledVector(up, 0.15).toArray();
-    s.pv = r; s.tube([{ p: r, w: 0.03, d: 0.02 }, { p: r1, w: 0.03, d: 0.02 }, { p: r2, w: 0.008, d: 0.008 }], [COAT, COAT]);
+    const r=hp(-0.01,0.1,k*0.055),up=V(k*0.12,0.98,0.1).normalize();
+    s.pv=r;s.tube(PS.ears.map(([t,w,d])=>({p:V(...r).addScaledVector(up,t).toArray(),w,d})),[COAT]);
   }
   // legs, swinging about the hip (pivot y 0.68): y, z range, half-width; the lower leg takes the accent, the hoof black
   const leg = (id, x, rows) => {
@@ -202,8 +220,17 @@ export function ponyGeometry() {
   const hind = [[1.0, -0.78, -0.36, 0.12], [0.72, -0.74, -0.42, 0.095], [0.5, -0.8, -0.58, 0.07], [0.42, -0.74, -0.6, 0.05], [0.13, -0.68, -0.56, 0.045], [0.07, -0.7, -0.54, 0.058], [0.06, -0.7, -0.54, 0.065], [0, -0.72, -0.52, 0.08]];
   leg(3, -0.15, fore); leg(4, 0.15, fore); leg(5, -0.16, hind); leg(6, 0.16, hind);
   s.partId = 7; s.pv = [0, 1.2, -0.72]; // the tail, a dock and a hanging switch, swishing about its root
-  s.tube([{ p: [0, 1.2, -0.72], w: 0.045, d: 0.05 }, { p: [0, 1.12, -0.85], w: 0.06, d: 0.06 }, { p: [0, 0.8, -0.92], w: 0.07, d: 0.05 }, { p: [0, 0.4, -0.9], w: 0.045, d: 0.035 }], [ACC]);
-  return s.geometry(true);
+  for(const x of PS.hair.offsets) s.tube(PS.hair.tail.map(([y,z,w,d],i)=>({p:[x*(1+i/PS.hair.tail.length),y,z],w,d})),[ACC],PS.hair.radial,PS.hair.steps);
+  const geometry=s.geometry(true),position=geometry.attributes.position,normal=geometry.attributes.normal,part=geometry.attributes.aPart;
+  // Average coincident surface normals within each moving part, preserving colour
+  // boundaries without a hard lighting seam or extra material/draw.
+  const sums=new Map(),keys=[];
+  for(let i=0;i<position.count;i++){
+    const key=`${part.getX(i)}:${Math.round(position.getX(i)*1e5)},${Math.round(position.getY(i)*1e5)},${Math.round(position.getZ(i)*1e5)}`;
+    keys.push(key);let n=sums.get(key);if(!n){n=new THREE.Vector3();sums.set(key,n)}n.add(new THREE.Vector3().fromBufferAttribute(normal,i));
+  }
+  for(let i=0;i<normal.count;i++){const n=sums.get(keys[i]).normalize();normal.setXYZ(i,n.x,n.y,n.z)}
+  return geometry;
 }
 
 /** The ponies' material: lit, vertex tones mixed per instance between a coat and an accent colour; `aAnim` = (leg phase, leg swing, neck pitch, tail sway),
@@ -925,6 +952,6 @@ export class Paddock {
 }
 
 const PONY_NUMBERS={Zoey:58,Princess:59};
-for(const p of P.pony.animals) creature({id:`pony:${p.name}`,no:PONY_NUMBERS[p.name],name:p.name,family:'ponies',variant:p.star?'Brun med stjärna':'Gråvit',model:{kind:'pony',name:p.name},info:{size:`${P.pony.withers??1.32} m mankhöjd (modell)`,weight:'250–400 kg (uppskattning)',where:'Hagen vid ån',when:'Betar och vilar under dagen',likes:'Morötter och klappar'},facts:['Kan bli klappad genom staketets öppningar. Höet finns under taket.','Päls och teckning hör till samma individuella ponny.']});
+for(const p of P.pony.animals) creature({id:`pony:${p.name}`,no:PONY_NUMBERS[p.name],name:p.name,family:'ponies',modelVersion:2,variant:p.star?'Brun med stjärna':'Gråvit',model:{kind:'pony',name:p.name},info:{size:`${P.pony.withers??1.32} m mankhöjd (modell)`,weight:'250–400 kg (uppskattning)',where:'Hagen vid ån',when:'Betar och vilar under dagen',likes:'Morötter och klappar'},facts:['Kan bli klappad genom staketets öppningar. Höet finns under taket.','Päls och teckning hör till samma individuella ponny.']});
 
 export { ponyMaterial };

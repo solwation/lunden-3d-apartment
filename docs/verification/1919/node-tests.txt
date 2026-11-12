@@ -1,0 +1,154 @@
+TAP version 13
+# Subtest: the paddock is the mapped kidney-shaped field, fenced inside its outline
+ok 1 - the paddock is the mapped kidney-shaped field, fenced inside its outline
+  ---
+  duration_ms: 1.782595
+  type: 'test'
+  ...
+# Subtest: the whole paddock fits inside WALK with body margin, before the rendered terrain edge (\#1817)
+ok 2 - the whole paddock fits inside WALK with body margin, before the rendered terrain edge (\#1817)
+  ---
+  duration_ms: 0.799098
+  type: 'test'
+  ...
+# Subtest: posts are at most postStep apart and the fence never crosses itself
+ok 3 - posts are at most postStep apart and the fence never crosses itself
+  ---
+  duration_ms: 6.517584
+  type: 'test'
+  ...
+# Subtest: the closed gate is on the footpath side and the fence leaves every path clear
+ok 4 - the closed gate is on the footpath side and the fence leaves every path clear
+  ---
+  duration_ms: 10.026074
+  type: 'test'
+  ...
+# Subtest: inside / nearest helpers
+ok 5 - inside / nearest helpers
+  ---
+  duration_ms: 0.255599
+  type: 'test'
+  ...
+# Subtest: the stile (\#1295) sits in the span beside the gate, opens the fence by its width and has two side walls
+ok 6 - the stile (\#1295) sits in the span beside the gate, opens the fence by its width and has two side walls
+  ---
+  duration_ms: 0.614098
+  type: 'test'
+  ...
+# Subtest: the shade trees (\#1316) stand well inside the fence, far from the gate and from each other
+ok 7 - the shade trees (\#1316) stand well inside the fence, far from the gate and from each other
+  ---
+  duration_ms: 0.295599
+  type: 'test'
+  ...
+# Subtest: shelter places and the rain watch (\#1316)
+ok 8 - shelter places and the rain watch (\#1316)
+  ---
+  duration_ms: 1.775096
+  type: 'test'
+  ...
+# Subtest: the field shelter (\#1335/\#1336) stands on flat ground inside the fence, in view of the gate, not over the slope
+ok 9 - the field shelter (\#1335/\#1336) stands on flat ground inside the fence, in view of the gate, not over the slope
+  ---
+  duration_ms: 420.68802
+  type: 'test'
+  ...
+# Subtest: the shelter and trough move rigidly nearer the fence without relaxing terrain or passage limits (\#1395)
+ok 10 - the shelter and trough move rigidly nearer the fence without relaxing terrain or passage limits (\#1395)
+  ---
+  duration_ms: 1.274997
+  type: 'test'
+  ...
+# Subtest: unsafe relocation preserves the existing site, including obstacles and missing fittings (\#1395)
+ok 11 - unsafe relocation preserves the existing site, including obstacles and missing fittings (\#1395)
+  ---
+  duration_ms: 0.306599
+  type: 'test'
+  ...
+# Subtest: detailed projection conserves the original track quad footprint
+ok 12 - detailed projection conserves the original track quad footprint
+  ---
+  duration_ms: 1.378596
+  type: 'test'
+  ...
+# Subtest: each projected triangle stays linear on an emitted detailed terrain triangle
+ok 13 - each projected triangle stays linear on an emitted detailed terrain triangle
+  ---
+  duration_ms: 0.565499
+  type: 'test'
+  ...
+# Subtest: legacy consumers keep their original grid partition when refinement is absent
+ok 14 - legacy consumers keep their original grid partition when refinement is absent
+  ---
+  duration_ms: 0.825398
+  type: 'test'
+  ...
+# Subtest: the rug covers the torso with an open neck/underside, finite normals and a bounded cost
+ok 15 - the rug covers the torso with an open neck/underside, finite normals and a bounded cost
+  ---
+  duration_ms: 2.495694
+  type: 'test'
+  ...
+# Subtest: both rugs reuse the real moving/scaled torso buffer and share its parent culling
+ok 16 - both rugs reuse the real moving/scaled torso buffer and share its parent culling
+  ---
+  duration_ms: 2.398394
+  type: 'test'
+  ...
+# Subtest: winter/summer changes reuse the same buffers and restore the two rugs
+ok 17 - winter/summer changes reuse the same buffers and restore the two rugs
+  ---
+  duration_ms: 0.883597
+  type: 'test'
+  ...
+# Subtest: rounded pony upper flanks and back retain positive clearance to the actual rug
+ok 18 - rounded pony upper flanks and back retain positive clearance to the actual rug
+  ---
+  duration_ms: 272.065302
+  type: 'test'
+  ...
+# Subtest: models/pony-rigged.glb exists and has valid glTF 2.0 binary header
+ok 19 - models/pony-rigged.glb exists and has valid glTF 2.0 binary header
+  ---
+  duration_ms: 1.021098
+  type: 'test'
+  ...
+# Subtest: pony-rigged.glb parses with SkinnedMesh, 22 pony bones and animations
+ok 20 - pony-rigged.glb parses with SkinnedMesh, 22 pony bones and animations
+  ---
+  duration_ms: 11.846569
+  type: 'test'
+  ...
+# Subtest: pony-rigged.glb withers height matches C-pony proportion (~1.32m)
+ok 21 - pony-rigged.glb withers height matches C-pony proportion (~1.32m)
+  ---
+  duration_ms: 6.136084
+  type: 'test'
+  ...
+# Subtest: loadRiggedPonyModel and Paddock integration
+ok 22 - loadRiggedPonyModel and Paddock integration
+  ---
+  duration_ms: 434.488885
+  type: 'test'
+  ...
+# Subtest: actual neutral skinning preserves the loft rather than adding bone translations twice
+ok 23 - actual neutral skinning preserves the loft rather than adding bone translations twice
+  ---
+  duration_ms: 5.835285
+  type: 'test'
+  ...
+# Subtest: all animation clips keep deformed vertices within a pony-sized envelope and grazing reaches the grass
+ok 24 - all animation clips keep deformed vertices within a pony-sized envelope and grazing reaches the grass
+  ---
+  duration_ms: 34.96291
+  type: 'test'
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 24
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 588.06159

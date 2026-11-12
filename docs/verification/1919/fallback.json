@@ -1,0 +1,21 @@
+{
+  "missingKeepsFallback": true,
+  "instances": 2,
+  "whole": {
+    "frame": 3,
+    "calls": 4,
+    "triangles": 47616,
+    "points": 0,
+    "lines": 0
+  },
+  "fallback": {
+    "frame": 4,
+    "calls": 1,
+    "triangles": 5304,
+    "points": 0,
+    "lines": 0
+  },
+  "attributeBytes": 413832,
+  "finite": true,
+  "errors": []
+}

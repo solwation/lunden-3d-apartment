@@ -1,0 +1,590 @@
+{
+  "baseline": "9254ea2e3026015d0e71454e70433db22737b679",
+  "environment": "Actual Paddock on controlled flat terrain; seeded grass; Chromium1248 SwiftShader; not full World or hardware-phone FPS",
+  "phases": [
+    {
+      "phase": "baseline",
+      "views": [
+        {
+          "view": "quarter",
+          "whole": {
+            "frame": 3,
+            "calls": 5,
+            "triangles": 44524,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 4,
+            "calls": 2,
+            "triangles": 2160,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 52856,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        },
+        {
+          "view": "front",
+          "whole": {
+            "frame": 7,
+            "calls": 5,
+            "triangles": 44524,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 8,
+            "calls": 2,
+            "triangles": 2160,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 52856,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        },
+        {
+          "view": "side",
+          "whole": {
+            "frame": 11,
+            "calls": 5,
+            "triangles": 44524,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 12,
+            "calls": 2,
+            "triangles": 2160,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 52856,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        },
+        {
+          "view": "normal",
+          "whole": {
+            "frame": 15,
+            "calls": 5,
+            "triangles": 44524,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 16,
+            "calls": 2,
+            "triangles": 2160,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 52856,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        },
+        {
+          "view": "pet-close",
+          "whole": {
+            "frame": 19,
+            "calls": 5,
+            "triangles": 44524,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 20,
+            "calls": 2,
+            "triangles": 2160,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 52856,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        },
+        {
+          "view": "graze",
+          "whole": {
+            "frame": 23,
+            "calls": 5,
+            "triangles": 44524,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 24,
+            "calls": 2,
+            "triangles": 2160,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 52856,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        },
+        {
+          "view": "walk",
+          "whole": {
+            "frame": 27,
+            "calls": 5,
+            "triangles": 44524,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 28,
+            "calls": 2,
+            "triangles": 2160,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 52856,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        },
+        {
+          "view": "pet",
+          "whole": {
+            "frame": 31,
+            "calls": 5,
+            "triangles": 44524,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 32,
+            "calls": 2,
+            "triangles": 2160,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 52856,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        },
+        {
+          "view": "winter",
+          "whole": {
+            "frame": 35,
+            "calls": 6,
+            "triangles": 44664,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 36,
+            "calls": 2,
+            "triangles": 2160,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 52856,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        }
+      ],
+      "errors": [],
+      "grassCount": 8508,
+      "timing": {
+        "scope": "10warm+30measured Paddock.write(1/60)+actual field render+gl.finish,640x480/DPR1,70deg; update CPU also recorded",
+        "update": {
+          "samples": [
+            0,
+            0.09999999962747097,
+            0.10000000055879354,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.10000000055879354,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.09999999962747097,
+            0.10000000055879354,
+            0.10000000055879354,
+            0.09999999962747097,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "median": 0,
+          "p95": 0.10000000055879354
+        },
+        "frame": {
+          "samples": [
+            0.09999999962747097,
+            0.2999999998137355,
+            0.10000000055879354,
+            0.2999999998137355,
+            0.20000000018626451,
+            0.2999999998137355,
+            0.20000000018626451,
+            0.19999999925494194,
+            0.20000000018626451,
+            0.10000000055879354,
+            0.2999999998137355,
+            0.09999999962747097,
+            0.20000000018626451,
+            0.20000000018626451,
+            0.20000000018626451,
+            0.19999999925494194,
+            0.10000000055879354,
+            0.20000000018626451,
+            0.19999999925494194,
+            0.20000000018626451,
+            0.20000000018626451,
+            0.20000000018626451,
+            0.20000000018626451,
+            0.09999999962747097,
+            0.2999999998137355,
+            0.20000000018626451,
+            0.09999999962747097,
+            0.10000000055879354,
+            0.2999999998137355,
+            0.2999999998137355
+          ],
+          "median": 0.20000000018626451,
+          "p95": 0.2999999998137355
+        }
+      },
+      "binder": {
+        "renders": 4
+      }
+    },
+    {
+      "phase": "current",
+      "views": [
+        {
+          "view": "quarter",
+          "whole": {
+            "frame": 3,
+            "calls": 5,
+            "triangles": 47668,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 4,
+            "calls": 2,
+            "triangles": 5304,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 120632,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        },
+        {
+          "view": "front",
+          "whole": {
+            "frame": 7,
+            "calls": 5,
+            "triangles": 47668,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 8,
+            "calls": 2,
+            "triangles": 5304,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 120632,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        },
+        {
+          "view": "side",
+          "whole": {
+            "frame": 11,
+            "calls": 5,
+            "triangles": 47668,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 12,
+            "calls": 2,
+            "triangles": 5304,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 120632,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        },
+        {
+          "view": "normal",
+          "whole": {
+            "frame": 15,
+            "calls": 5,
+            "triangles": 47668,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 16,
+            "calls": 2,
+            "triangles": 5304,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 120632,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        },
+        {
+          "view": "pet-close",
+          "whole": {
+            "frame": 19,
+            "calls": 5,
+            "triangles": 47668,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 20,
+            "calls": 2,
+            "triangles": 5304,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 120632,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        },
+        {
+          "view": "graze",
+          "whole": {
+            "frame": 23,
+            "calls": 5,
+            "triangles": 47668,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 24,
+            "calls": 2,
+            "triangles": 5304,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 120632,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        },
+        {
+          "view": "walk",
+          "whole": {
+            "frame": 27,
+            "calls": 5,
+            "triangles": 47668,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 28,
+            "calls": 2,
+            "triangles": 5304,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 120632,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        },
+        {
+          "view": "pet",
+          "whole": {
+            "frame": 31,
+            "calls": 5,
+            "triangles": 47668,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 32,
+            "calls": 2,
+            "triangles": 5304,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 120632,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        },
+        {
+          "view": "winter",
+          "whole": {
+            "frame": 35,
+            "calls": 6,
+            "triangles": 47808,
+            "points": 0,
+            "lines": 0
+          },
+          "ponies": {
+            "frame": 36,
+            "calls": 2,
+            "triangles": 5304,
+            "points": 0,
+            "lines": 0
+          },
+          "riggedBytes": 120632,
+          "shared": true,
+          "finite": true,
+          "cameraFinite": true,
+          "intended": true,
+          "loaded": true
+        }
+      ],
+      "errors": [],
+      "grassCount": 8508,
+      "timing": {
+        "scope": "10warm+30measured Paddock.write(1/60)+actual field render+gl.finish,640x480/DPR1,70deg; update CPU also recorded",
+        "update": {
+          "samples": [
+            0.09999999962747097,
+            0,
+            0,
+            0,
+            0.10000000055879354,
+            0,
+            0,
+            0,
+            0.09999999962747097,
+            0,
+            0,
+            0.10000000055879354,
+            0,
+            0,
+            0.09999999962747097,
+            0,
+            0.10000000055879354,
+            0,
+            0,
+            0,
+            0,
+            0.09999999962747097,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "median": 0,
+          "p95": 0.10000000055879354
+        },
+        "frame": {
+          "samples": [
+            0.39999999944120646,
+            0.30000000074505806,
+            0.09999999962747097,
+            0.2999999998137355,
+            0.20000000018626451,
+            0.20000000018626451,
+            0.20000000018626451,
+            0.09999999962747097,
+            0.2999999998137355,
+            0.10000000055879354,
+            0.19999999925494194,
+            0.10000000055879354,
+            0.20000000018626451,
+            0.20000000018626451,
+            0.39999999944120646,
+            0,
+            0.20000000018626451,
+            0.19999999925494194,
+            0.20000000018626451,
+            0.10000000055879354,
+            0.09999999962747097,
+            0.2999999998137355,
+            0.10000000055879354,
+            0.09999999962747097,
+            0.2999999998137355,
+            0.10000000055879354,
+            0.19999999925494194,
+            0.10000000055879354,
+            0.2999999998137355,
+            0.09999999962747097
+          ],
+          "median": 0.20000000018626451,
+          "p95": 0.39999999944120646
+        }
+      },
+      "binder": {
+        "renders": 4
+      }
+    }
+  ]
+}

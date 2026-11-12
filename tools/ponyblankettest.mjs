@@ -31,3 +31,17 @@ test('winter/summer changes reuse the same buffers and restore the two rugs', ()
   applySeason(1);assert.ok(r.visible);applySeason(7);assert.ok(!r.visible);applySeason(12);assert.ok(r.visible);
   assert.equal(r.geometry, g);assert.equal(r.material, m);assert.equal(r.count, 2);
 });
+
+// #1919: actual new torso surfaces must remain inside the unchanged winter rug.
+test('rounded pony upper flanks and back retain positive clearance to the actual rug',async()=>{
+  const {ponyGeometry}=await import('../src/paddock.js');
+  const g=ponyGeometry(),p=g.attributes.position,part=g.attributes.aPart;
+  const rug=new T.Mesh(blanketGeometry(),new T.MeshBasicMaterial({side:T.DoubleSide}));rug.updateMatrixWorld(true);let checked=0;
+  for(let i=0;i<p.count;i++){
+    const v=new T.Vector3().fromBufferAttribute(p,i);
+    if(part.getX(i)!==0||v.z<-.63||v.z>.34||v.y<1)continue;
+    const direction=new T.Vector3(v.x,v.y-.96,0).normalize(),hit=new T.Raycaster(v,direction,0,.1).intersectObject(rug)[0];
+    assert.ok(hit&&hit.distance>.005,'upper torso stays inside the cover, not pierced through it');checked++;
+  }
+  assert.ok(checked>=100);
+});

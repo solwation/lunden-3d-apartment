@@ -166,7 +166,7 @@ test('actual neutral skinning preserves the loft rather than adding bone transla
   const pos=mesh.geometry.attributes.position;let maximum=0;
   for(let i=0;i<pos.count;i++) maximum=Math.max(maximum,vertex(i).distanceTo(new THREE.Vector3().fromBufferAttribute(pos,i)));
   assert.ok(maximum<1e-5,`inverse bind pose must reproduce source vertices; max displacement ${maximum}`);
-  assert.ok((mesh.geometry.index?.count??pos.count)/3<=1600,'bounded detailed pony mesh, one material');
+  assert.ok((mesh.geometry.index?.count??pos.count)/3<=3000,'bounded detailed pony mesh, one material');
   assert.ok(!Array.isArray(mesh.material));
 });
 

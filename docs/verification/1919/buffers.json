@@ -1,0 +1,53 @@
+{
+  "baseline": {
+    "fallback": {
+      "triangles": 1080,
+      "bytes": 168480
+    },
+    "riggedSharedByBoth": {
+      "triangles": 1080,
+      "vertices": 682,
+      "bytes": 52856
+    },
+    "glbBytes": 72300,
+    "uniqueGeometryBytesForBothPlusRetainedFallback": 221336
+  },
+  "current": {
+    "fallback": {
+      "vertices": 7956,
+      "triangles": 2652,
+      "bytes": 413712,
+      "attributes": {
+        "position": 95472,
+        "normal": 95472,
+        "color": 95472,
+        "aPart": 31824,
+        "aPivot": 95472
+      },
+      "index": 0
+    },
+    "riggedSharedByBoth": {
+      "vertices": 1540,
+      "triangles": 2652,
+      "bytes": 120632,
+      "attributes": {
+        "position": 18480,
+        "normal": 18480,
+        "color": 18480,
+        "uv": 12320,
+        "skinIndex": 12320,
+        "skinWeight": 24640
+      },
+      "index": 15912
+    },
+    "glbBytes": 140088,
+    "uniqueGeometryBytesForBothPlusRetainedFallback": 534344
+  },
+  "limits": {
+    "drawsPerPony": 1,
+    "trianglesPerPony": 3000,
+    "riggedBytes": 158568,
+    "fallbackBytes": 505440
+  },
+  "scope": "Attribute/index views only; two rigged ponies share one native geometry, retained fallback also shared. Excludes bones/matrices/textures/object heap/GPU totals; fallback instance attributes120B and instance matrices128B are unchanged and separate; browser fallback includes those attributes."
+}

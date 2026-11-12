@@ -58,10 +58,10 @@ export function buildPonyModel() {
       else { const w=clamp((y-0.06)/0.1);weights(i,[['Joint_Knee_'+label,w],['Joint_Hoof_'+label,1-w]]); }
     }
   }
-  for(const key of ['aPart','aPivot','normal'])geometry.deleteAttribute(key);
+  for(const key of ['aPart','aPivot'])geometry.deleteAttribute(key);
   geometry.setAttribute('color',new THREE.BufferAttribute(colors,3));geometry.setAttribute('uv',new THREE.BufferAttribute(uvs,2));
   geometry.setAttribute('skinIndex',new THREE.BufferAttribute(skinIndices,4));geometry.setAttribute('skinWeight',new THREE.BufferAttribute(skinWeights,4));
-  const welded=mergeVertices(geometry);welded.computeVertexNormals();welded.computeBoundingBox();welded.computeBoundingSphere();
+  const welded=mergeVertices(geometry);welded.computeBoundingBox();welded.computeBoundingSphere();
   const material=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:0.92,metalness:0});
   const skinnedMesh=new THREE.SkinnedMesh(welded,material);skinnedMesh.name='PonyMesh';
   // The complete bone hierarchy must have world matrices BEFORE inverse bind matrices.

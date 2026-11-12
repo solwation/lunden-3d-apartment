@@ -1,0 +1,11 @@
+{
+  "baseline": "9254ea2e3026015d0e71454e70433db22737b679",
+  "sha256": {
+    "src/paddock.js": "839a948b5b6f461a750d4a2c7e86715a6a422dafe084be843d37bec2bb41a82e",
+    "src/config.js": "119bb18411b85ff7a821be9cb2a3b3aff18ad014aab24f2e51a32db0b6db52c0",
+    "tools/buildponyglb.mjs": "00b02d534e4c3ca3d168d35e591f99c0e11012ecdb935072ad7b16dfc2a59ac7",
+    "models/pony-rigged.glb": "fe78b087845573e95592292fe06dff2f935e78e6a807d7dd8422f8ba2f4a123d",
+    "src/ponyblanket.js": "29434b5a8fd080b03a4c0d375accc4e415f2dda2b7ce8a0a2bcc30564a2330de",
+    "tools/capture-pony-surfaces.cjs": "8fb652df11f5e7e1e608f7c549122ea286335c5626602a61a2d703dcf958d9df"
+  }
+}
