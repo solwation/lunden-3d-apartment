@@ -31,14 +31,14 @@ Reviewed comparisons:
 
 | View | Baseline | Result |
 | --- | --- | --- |
-| Live species, same nominal dimensions | [Before](before/live.png) | [After](live.png) |
-| Ordinary live framing | [Before](before/live-normal.png) | [After](live-normal.png) |
-| Caught, equal 40 cm comparison length | [Before](before/caught.png) | [After](caught.png) |
-| Actual held pike | [Before](before/held-3.png) | [After](held-3.png) |
-| Cooked colours | [Before](before/cooked.png) | [After](cooked.png) |
-| Actual binder renderer | [Before](before/binder.png) | [After](binder.png) |
-| Natural pike through opaque river water | [Before](before/natural-gädda-up.png) | [After](natural-gädda-up.png) |
-| Natural eel through opaque river water | [Before](before/natural-ål-up.png) | [After](natural-ål-up.png) |
+| Live species, same nominal dimensions | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8743e7d07e6a2e6b743710f27bd06d6027bd287d/docs/verification/1922/before/live.png) | [After](live.png) |
+| Ordinary live framing | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8743e7d07e6a2e6b743710f27bd06d6027bd287d/docs/verification/1922/before/live-normal.png) | [After](live-normal.png) |
+| Caught, equal 40 cm comparison length | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8743e7d07e6a2e6b743710f27bd06d6027bd287d/docs/verification/1922/before/caught.png) | [After](caught.png) |
+| Actual held pike | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8743e7d07e6a2e6b743710f27bd06d6027bd287d/docs/verification/1922/before/held-3.png) | [After](held-3.png) |
+| Cooked colours | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8743e7d07e6a2e6b743710f27bd06d6027bd287d/docs/verification/1922/before/cooked.png) | [After](cooked.png) |
+| Actual binder renderer | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8743e7d07e6a2e6b743710f27bd06d6027bd287d/docs/verification/1922/before/binder.png) | [After](binder.png) |
+| Natural pike through opaque river water | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8743e7d07e6a2e6b743710f27bd06d6027bd287d/docs/verification/1922/before/natural-g%C3%A4dda-up.png) | [After](natural-gädda-up.png) |
+| Natural eel through opaque river water | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8743e7d07e6a2e6b743710f27bd06d6027bd287d/docs/verification/1922/before/natural-%C3%A5l-up.png) | [After](natural-ål-up.png) |
 
 Caught/cooked galleries: upper row pike, trout, eel; lower row roach, perch, bream.
 The equal length makes shape comparison readable; actual live lengths, heights
@@ -81,7 +81,7 @@ the implementer and the independent integrator before handoff.
    Three focused GLB tests cover header, neutral/static and five-bone binding,
    clips and animated bounds. Shark tests/assets are unaffected.
 
-[Browser result](browser.json), [baseline browser result](before/browser.json),
+[Browser result](browser.json), [baseline browser result](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8743e7d07e6a2e6b743710f27bd06d6027bd287d/docs/verification/1922/before/browser.json),
 [geometry checks](geometry-tests.txt), [focused GLB checks](glb-tests.txt).
 The final full browser command exited 0 with no page/shader errors. The baseline
 full matrix wrote its complete passing JSON and printed PASS, but its wrapper
@@ -223,9 +223,9 @@ unchanged. Repeated instances share the same indexed geometry and material.
 
 | Reviewed proxy view | Before | After |
 | --- | --- | --- |
-| Representative actual Ghost, 2.5 m / 70° FOV | [Before](before/ghost-fish-normal.png) | [After](ghost-fish-normal.png) |
-| Isolated diagnostic close view | [Before](before/ghost-fish-close.png) | [After](ghost-fish-close.png) |
-| Reverse diagnostic close view, cropped at top | [Before](before/ghost-fish-reverse.png) | [After](ghost-fish-reverse.png) |
+| Representative actual Ghost, 2.5 m / 70° FOV | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8743e7d07e6a2e6b743710f27bd06d6027bd287d/docs/verification/1922/before/ghost-fish-normal.png) | [After](ghost-fish-normal.png) |
+| Isolated diagnostic close view | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8743e7d07e6a2e6b743710f27bd06d6027bd287d/docs/verification/1922/before/ghost-fish-close.png) | [After](ghost-fish-close.png) |
+| Reverse diagnostic close view, cropped at top | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8743e7d07e6a2e6b743710f27bd06d6027bd287d/docs/verification/1922/before/ghost-fish-reverse.png) | [After](ghost-fish-reverse.png) |
 
 The matched actual-Ghost path verifies exact hand/world transforms and bounds,
 finite full scene/camera matrices, one proxy draw, shared cache/material, and
@@ -262,3 +262,6 @@ The old ghostitemtest category-index failure is separately tracked in
 [#1937](https://github.com/solwation/lunden-3d-apartment/issues/1937); only its intentional
 fish triangle ceiling changed here, and the new actual-Ghost checks provide scoped
 passing evidence. Changelog id1482 assigned after final main fetch.
+
+
+Published integration revision `8743e7d07e6a2e6b743710f27bd06d6027bd287d`: actual Pages43200676123 and Worker43200676494 succeeded. [Pinned reviewed result/before images](https://github.com/solwation/lunden-3d-apartment/issues/1922#issuecomment-6821141502) all returned HTTP200 image types before closure. This resolving docs commit prunes eleven own before PNGs; metrics and final result images remain. Generic public live port is separately queued low in [#274](https://github.com/solwation/kvarteret-lunden/issues/274).
