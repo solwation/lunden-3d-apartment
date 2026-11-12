@@ -64,7 +64,7 @@ The public instruction counterpart is tracked in
 | Exclusions | PRs, those two coordination issues and exact `orkester` coordination label |
 | Ordering | Startable original issues first; original high → medium → low, then `created_at`, numeric issue. Public issues all low and oldest first, unless a later explicit exception changes internal public order (user, 2026-11-04). Active work may finish |
 | Active ownership | `in-progress` and `orkester: <stable-session-id>` during actual work; finished handoff uses `integration-ready` with the same documented owner |
-| Capacity | At most 2 workers including helpers per conductor, at least 1 while startable work exists |
+| Capacity | [Dynamically chosen active roles](#dynamic-active-capacity) within the actual runtime limit, including active conductor/helpers/reviewers; integration-ready waits and parent summaries take no slot |
 | Phase hooks | [Project phase hooks](#project-phase-hooks); report intake under [queue intake hooks](#queue-intake-hooks) |
 | Resource policy | [Smallest sufficient capability/effort](shared/ORCHESTRA.md#spend-resources-deliberately); explicit supported selection, compact context, justified escalation |
 | Queue poll | Every 300 seconds during active work and idle; also before every new selection |
@@ -141,8 +141,51 @@ If all work is owned, offer a disjoint useful part of work running over 45 minut
 both status and affected issue. Owner responds on the next poll; explicit agreement
 or no objection for 15 minutes permits a bounded child with inherited priority. Leave
 the active parent untouched. Never duplicate its ongoing work. Keep helper effort inside
-the two-worker cap; do not create test/docs children when a helper under the same owner
+the currently evaluated active capacity; do not create test/docs children when a helper under the same owner
 is sufficient. The current owner should offer helpable parts proactively.
+
+## Dynamic active capacity
+
+The conductor chooses and revises active capacity autonomously (user, 2026-11-12),
+instead of applying a fixed two-worker limit or asking the user how many agents to
+run. The actual runtime/tool limit is a hard ceiling, not a target. Count the
+conductor while actively coordinating, implementing, reviewing or integrating, plus
+all active workers, helpers and reviewers. Finished owned `integration-ready` waits and parent-summary
+labels use no active slot, but their pending review still consumes future integration
+capacity. For example, a runtime ceiling of four permits active root plus at most
+three other active roles; a ceiling of one requires serial work. Reuse available
+roles rather than assuming a new spawn is possible.
+
+At startup/resume, when a slot frees, before dispatch and after a noticeable load or
+queue change, inspect the actual runtime slots, logical CPUs and CPU quota where
+available, load/utilization trend, available memory, swap pressure/activity and
+readable memory/cgroup limits. Also inspect recent throttling/spawn failures, the
+browser queue, issue coupling and the owned integration queue. Record unavailable
+measurements as unknown; never claim an unreadable limit was checked. Judge load
+against usable CPUs and recent work, not an absolute load number or total RAM.
+Keep these checks brief; no new background monitoring service is required.
+
+- Scale up when independent startable work exists in ordinary queue order, measured
+  headroom is sufficient, recent work is stable and the integration owner can review
+  incoming results promptly. Increase cautiously within the runtime ceiling and
+  reassess after completions; do not retain an arbitrary two-role limit.
+- Scale down or withhold new dispatch for CPU saturation, low available memory,
+  swap pressure, API/tool throttling, slow verification or an accumulating review
+  queue. Drain ready integrations before adding more work that would deepen the
+  backlog. Preserve active work: reduce new dispatch first, let bounded work finish,
+  or checkpoint/release it under the existing ownership rules when necessary.
+- Use fewer roles when only coupled work remains or delegation adds coordination
+  cost. A free role may do independent cheap work while a browser job waits only
+  when priority, headroom and review throughput permit it. Do not duplicate an
+  active issue or create future claims merely to fill capacity.
+
+Keep one publishing/integration owner. Expensive browser jobs remain serial under
+[the existing browser wrapper](../tools/browsertest.sh) and its shared lock; they do
+not set the total agent count. Maintain isolated checkouts and the agreed 2–3 scoped
+checks per change. In session status/checkpoints, report measured headroom and time,
+active roles / chosen capacity / runtime ceiling, pending browser/integration work,
+the scale-up/down decision and a concrete reason for unused suitable capacity.
+Reassess when that constraint changes without waiting for a new user command.
 
 ## Integration handoffs
 
@@ -170,7 +213,9 @@ Publication, acceptance, result-image and closure gates below remain unchanged.
 Save private state outside checkouts and update the same #420/#4 comments on every
 poll (also failures), worker start and completion. Include stable ID/label, scope,
 issue/repo/priority/creation time, worker/files/worktree, active workers/capacity and why a
-free slot is unused, results and blockers. Record the separate integration queue
+free slot is unused, results and blockers. Include the latest capacity measurements,
+chosen active capacity/runtime ceiling and scaling reason under
+[dynamic capacity](#dynamic-active-capacity). Record the separate integration queue
 (owner, checkout/branch, revision, evidence, next action) on handoff and resume too.
 Keep UTC `lastResolvedAt`, `lastQueueAttemptAt`, `lastQueueCheckAt`, `watchUntil`, and
 last successful fetch per repo. Failed/partial checks update attempt/outcome only;
@@ -293,7 +338,7 @@ The conductor runs this loop in every `/orkester` queue session:
    now, review all work delivered in the
    session since the last review, across both repositories (the core's
    [session review](shared/COORDINATION.md#review-the-session)). Workers may
-   take read-only review parts within the two-worker cap. Also check changelog ids,
+   take read-only review parts within the currently evaluated active capacity. Also check changelog ids,
    result images on closed issues, public transfer issues and leftover labels/worktrees.
 6. Findings become issues under the normal priority/ancestor rules (`Bugg: …` for defects).
 7. If eligible issues exist or were created, continue at 1.

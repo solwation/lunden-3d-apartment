@@ -1,6 +1,8 @@
 # Orkesterns effektivitet och gemensamma instruktioner — 2026-10-23
 
-Uppdrag: original #1520 och public #141. Ingen appändring.
+Uppdrag: original #1520 och public #141. Ingen appändring. De daterade besluten nedan
+är historik; aktuell körning följer [den lokala projektpolicyn](../../.orchestra/project.md).
+Kapacitetsändringen 2026-11-12 beskrivs [nedan](#aktuell-kapacitet--användarbeslut-2026-11-12).
 
 ## Vad underlaget visar
 
@@ -42,7 +44,8 @@ obligatorisk Claude-attribution gjorde dessutom instruktionerna verktygsbundna.
   slot; aktiv integration byter till `in-progress`. Föräldrar behåller sin sammanfattande
   status medan barn är aktiva eller integrationsklara. Guiden gäller GitHub; ingen GitLab-kompatibilitet påstås.
 - Projektpolicy behåller två repo-köer, prioritet, ägarskap, 300 s polling, 60 min bevakning,
-  30 min livstecken, högst två arbetare, intake, bildkrav och publicgränser.
+  30 min livstecken, då högst två arbetare, intake, bildkrav och publicgränser.
+  Tvåtaket ersätts av det senare kapacitetsbeslutet nedan.
 - Arbetsagenten får ett kompakt uppdrag och relevanta filer, inte hela samordningshistoriken.
 
 ## Distribution
@@ -107,3 +110,27 @@ uttryckliga `/orkester`-kommandot behåller projektets kösession. Enbart läsni
 startar inget arbete. Verifiering: full dokumentdiff, relativa länkar/ankare och
 motsägelser mot lokala regler. Ingen visuell runtimeändring eller changelogpost.
 Publicuppföljning: [#255](https://github.com/solwation/kvarteret-lunden/issues/255).
+
+## Aktuell kapacitet — användarbeslut 2026-11-12
+
+Dirigenten väljer själv aktiv kapacitet efter faktisk runtimegräns, CPU/minne/swap,
+kopplade uppgifter samt browser- och integrationskö. Root under aktivt arbete,
+hjälpare och granskare räknas; färdiga ägda `integration-ready` väntar utan aktiv
+slot. Fyra tillgängliga runtimeplatser kan alltså rymma root plus tre andra aktiva
+roller, men är inget krav att fylla eller ett permanent tak för andra runtimer.
+
+Bedöm vid start/återupptagning, ledig slot, inför dispatch och märkbar laständring;
+skala upp eller ned utan rutinfråga. Redovisa mätunderlag, vald kapacitet och varför
+lämplig kapacitet lämnas ledig. Resurstryck eller växande granskningskö ger avlastning,
+med bevarat arbete/ägarskap. En publicerare och serialiserad dyr browserverifiering
+med gemensamt lås består, liksom isolering och original/public-prioriteringen.
+Se [full lokal regel](../../.orchestra/project.md#dynamic-active-capacity).
+
+De generiska riktlinjerna är redan släppta i kanoniska
+[core #66 / v0.13.0](https://github.com/solwation/dirigenten-och-orkestern/releases/tag/v0.13.0)
+(`1c3a22994d5725f3bbf14accd247fe1b6689925d`).
+Denna lokala instruktion ändrar inte den versionslåsta subtree-kärnan; en granskad
+releaseimport och dess exakta proveniens hanteras separat. Originalets värdanpassning
+spåras i [#1935](https://github.com/solwation/lunden-3d-apartment/issues/1935), publikens
+separata lågprioriterade motsvarighet i
+[#273](https://github.com/solwation/kvarteret-lunden/issues/273).

@@ -59,7 +59,10 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
 - **Shared orchestra (user, 2026-10-23).** `/orkester` follows the versioned
   [.orchestra/project.md](.orchestra/project.md) and its model-independent shared core.
   That policy retains both repositories, global priority, ownership, 300-second polling,
-  60-minute idle watch, two-worker capacity, heartbeats and original report intake.
+  60-minute idle watch, [autonomous load-based capacity](.orchestra/project.md#dynamic-active-capacity),
+  heartbeats and original report intake. The conductor counts its active work and all helpers/reviewers,
+  evaluates actual runtime slots, CPU/memory/swap and review/browser queues, and scales up or down
+  without a routine user question; finished integration-ready handoffs take no active slot.
   Use a short scope/risk plan, parallel helpers only when useful, one complete delivery
   for small changes, and scoped verification without routine duplicate runs.
 - **Issueflow authority (user, 2026-10-23).** Follow
