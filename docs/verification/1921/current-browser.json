@@ -1,0 +1,291 @@
+{
+  "phase": "current",
+  "constructionMs": 34.69999999925494,
+  "environment": "actual Ducks on controlled terrain, SwiftShader; not full World/hardware FPS",
+  "views": [
+    {
+      "view": "quarter",
+      "whole": {
+        "frame": 3,
+        "calls": 3,
+        "triangles": 2626,
+        "points": 0,
+        "lines": 0
+      },
+      "birds": {
+        "frame": 4,
+        "calls": 2,
+        "triangles": 2624,
+        "points": 0,
+        "lines": 0
+      },
+      "intended": true,
+      "finite": true,
+      "visible": 2,
+      "allRetainedGeometryBytesIncludingDecodedTemplate": 224328,
+      "geometryCount": 5
+    },
+    {
+      "view": "front",
+      "whole": {
+        "frame": 7,
+        "calls": 3,
+        "triangles": 2626,
+        "points": 0,
+        "lines": 0
+      },
+      "birds": {
+        "frame": 8,
+        "calls": 2,
+        "triangles": 2624,
+        "points": 0,
+        "lines": 0
+      },
+      "intended": true,
+      "finite": true,
+      "visible": 2,
+      "allRetainedGeometryBytesIncludingDecodedTemplate": 224328,
+      "geometryCount": 5
+    },
+    {
+      "view": "side",
+      "whole": {
+        "frame": 11,
+        "calls": 3,
+        "triangles": 2626,
+        "points": 0,
+        "lines": 0
+      },
+      "birds": {
+        "frame": 12,
+        "calls": 2,
+        "triangles": 2624,
+        "points": 0,
+        "lines": 0
+      },
+      "intended": true,
+      "finite": true,
+      "visible": 2,
+      "allRetainedGeometryBytesIncludingDecodedTemplate": 224328,
+      "geometryCount": 5
+    },
+    {
+      "view": "normal",
+      "whole": {
+        "frame": 15,
+        "calls": 5,
+        "triangles": 5250,
+        "points": 0,
+        "lines": 0
+      },
+      "birds": {
+        "frame": 16,
+        "calls": 4,
+        "triangles": 5248,
+        "points": 0,
+        "lines": 0
+      },
+      "intended": true,
+      "finite": true,
+      "visible": 4,
+      "allRetainedGeometryBytesIncludingDecodedTemplate": 224328,
+      "geometryCount": 5
+    },
+    {
+      "view": "near",
+      "whole": {
+        "frame": 19,
+        "calls": 3,
+        "triangles": 2626,
+        "points": 0,
+        "lines": 0
+      },
+      "birds": {
+        "frame": 20,
+        "calls": 2,
+        "triangles": 2624,
+        "points": 0,
+        "lines": 0
+      },
+      "intended": true,
+      "finite": true,
+      "visible": 2,
+      "allRetainedGeometryBytesIncludingDecodedTemplate": 224328,
+      "geometryCount": 5
+    },
+    {
+      "view": "swim",
+      "whole": {
+        "frame": 23,
+        "calls": 5,
+        "triangles": 5250,
+        "points": 0,
+        "lines": 0
+      },
+      "birds": {
+        "frame": 24,
+        "calls": 4,
+        "triangles": 5248,
+        "points": 0,
+        "lines": 0
+      },
+      "intended": true,
+      "finite": true,
+      "visible": 4,
+      "allRetainedGeometryBytesIncludingDecodedTemplate": 224328,
+      "geometryCount": 5
+    },
+    {
+      "view": "waddle",
+      "whole": {
+        "frame": 27,
+        "calls": 3,
+        "triangles": 2626,
+        "points": 0,
+        "lines": 0
+      },
+      "birds": {
+        "frame": 28,
+        "calls": 2,
+        "triangles": 2624,
+        "points": 0,
+        "lines": 0
+      },
+      "intended": true,
+      "finite": true,
+      "visible": 2,
+      "allRetainedGeometryBytesIncludingDecodedTemplate": 224328,
+      "geometryCount": 5
+    },
+    {
+      "view": "flap",
+      "whole": {
+        "frame": 31,
+        "calls": 3,
+        "triangles": 2626,
+        "points": 0,
+        "lines": 0
+      },
+      "birds": {
+        "frame": 32,
+        "calls": 2,
+        "triangles": 2624,
+        "points": 0,
+        "lines": 0
+      },
+      "intended": true,
+      "finite": true,
+      "visible": 2,
+      "allRetainedGeometryBytesIncludingDecodedTemplate": 224328,
+      "geometryCount": 5
+    },
+    {
+      "view": "eat",
+      "whole": {
+        "frame": 35,
+        "calls": 3,
+        "triangles": 2626,
+        "points": 0,
+        "lines": 0
+      },
+      "birds": {
+        "frame": 36,
+        "calls": 2,
+        "triangles": 2624,
+        "points": 0,
+        "lines": 0
+      },
+      "intended": true,
+      "finite": true,
+      "visible": 2,
+      "allRetainedGeometryBytesIncludingDecodedTemplate": 224328,
+      "geometryCount": 5
+    }
+  ],
+  "errors": [],
+  "timing": {
+    "scope": "10 warm +30 measured actual four-duck Ducks.update plus controlled field rendering/gl.finish,640x480/DPR1",
+    "update": {
+      "samples": [
+        0.09999999962747097,
+        0,
+        0.09999999962747097,
+        0.09999999962747097,
+        0.09999999962747097,
+        0.09999999962747097,
+        0.09999999962747097,
+        0.09999999962747097,
+        0.10000000149011612,
+        2.699999999254942,
+        0.09999999962747097,
+        0.09999999962747097,
+        0.19999999925494194,
+        0.2999999988824129,
+        0.19999999925494194,
+        0.09999999962747097,
+        0,
+        0,
+        0.09999999962747097,
+        0.30000000074505806,
+        0.09999999962747097,
+        0.09999999962747097,
+        0.2000000011175871,
+        0.09999999962747097,
+        0.2000000011175871,
+        0.10000000149011612,
+        0.10000000149011612,
+        0.09999999962747097,
+        0,
+        0.30000000074505806
+      ],
+      "median": 0.09999999962747097,
+      "p95": 0.30000000074505806
+    },
+    "frame": {
+      "samples": [
+        0.30000000074505806,
+        0.19999999925494194,
+        0.30000000074505806,
+        0.19999999925494194,
+        0.30000000074505806,
+        0.2999999988824129,
+        0.2000000011175871,
+        0.3999999985098839,
+        0.2000000011175871,
+        3.099999999627471,
+        0.40000000037252903,
+        0.40000000037252903,
+        3.799999998882413,
+        2.5,
+        1,
+        0.599999999627471,
+        0.40000000037252903,
+        0.2999999988824129,
+        0.40000000037252903,
+        0.599999999627471,
+        0.40000000037252903,
+        0.6999999992549419,
+        0.900000000372529,
+        0.5,
+        0.599999999627471,
+        0.5,
+        0.30000000074505806,
+        0.40000000037252903,
+        0.19999999925494194,
+        0.5
+      ],
+      "median": 0.40000000037252903,
+      "p95": 3.099999999627471
+    },
+    "submitted": {
+      "frame": 78,
+      "calls": 5,
+      "triangles": 5250,
+      "points": 0,
+      "lines": 0
+    }
+  },
+  "binder": {
+    "renders": 4
+  }
+}

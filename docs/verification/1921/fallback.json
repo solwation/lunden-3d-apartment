@@ -1,0 +1,41 @@
+{
+  "views": [
+    {
+      "view": "land",
+      "submitted": {
+        "frame": 3,
+        "calls": 5,
+        "triangles": 5250,
+        "points": 0,
+        "lines": 0
+      },
+      "finite": true,
+      "intended": true
+    },
+    {
+      "view": "swim",
+      "submitted": {
+        "frame": 5,
+        "calls": 5,
+        "triangles": 5250,
+        "points": 0,
+        "lines": 0
+      },
+      "finite": true,
+      "intended": true
+    },
+    {
+      "view": "normal",
+      "submitted": {
+        "frame": 7,
+        "calls": 5,
+        "triangles": 5250,
+        "points": 0,
+        "lines": 0
+      },
+      "finite": true,
+      "intended": true
+    }
+  ],
+  "errors": []
+}

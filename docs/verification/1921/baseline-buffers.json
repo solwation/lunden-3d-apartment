@@ -1,0 +1,62 @@
+{
+  "source": "8354644a54a99b10584469bd2b27eea94f07e25d",
+  "geometries": [
+    {
+      "rigged": false,
+      "female": false,
+      "triangles": 640,
+      "vertices": 540,
+      "bytes": 23280,
+      "attributes": {
+        "position": 6480,
+        "normal": 6480,
+        "color": 6480,
+        "index": 3840
+      }
+    },
+    {
+      "rigged": false,
+      "female": true,
+      "triangles": 640,
+      "vertices": 540,
+      "bytes": 23280,
+      "attributes": {
+        "position": 6480,
+        "normal": 6480,
+        "color": 6480,
+        "index": 3840
+      }
+    },
+    {
+      "rigged": true,
+      "female": false,
+      "triangles": 960,
+      "vertices": 810,
+      "bytes": 54360,
+      "attributes": {
+        "position": 9720,
+        "normal": 9720,
+        "color": 9720,
+        "skinIndex": 6480,
+        "skinWeight": 12960,
+        "index": 5760
+      }
+    },
+    {
+      "rigged": true,
+      "female": true,
+      "triangles": 896,
+      "vertices": 756,
+      "bytes": 50736,
+      "attributes": {
+        "position": 9072,
+        "normal": 9072,
+        "color": 9072,
+        "skinIndex": 6048,
+        "skinWeight": 12096,
+        "index": 5376
+      }
+    }
+  ],
+  "glb": 62808
+}

@@ -1201,6 +1201,20 @@ The correctly world-bound14-joint rig has idle/swim/waddle/flap/eat clips. One d
 960/896 male/female triangles; this restores visual quality without claiming a saving.
 [Checks, whole-model and actual consumer views](../verification/1909/README.md).
 
+### Mallard surface refinement (#1921)
+
+`duckModel` now lofts central `DUCK_SURFACE` profiles for an elongated body,
+tapered head/bill, neck seated in the breast, low folded wings/tail and webbed feet.
+Male/female plumage remains vertex colour, with a collar, eye stripe, subdued
+feather variation and blue wing patch. The same indexed surface recipe serves
+live rigged geometry, fallback and collection thumbnails (modelVersion 2).
+Bill z/y/half-height remain exactly unchanged. Existing rig/clips/brain/rewards
+are retained. One draw/bird, 1,312 triangles; four actual loaded birds submit
+5,248 triangles. Full retained raw geometry, including the decoded unused GLB
+template, increases 206,016→224,328 bytes; download falls 62,808→60,324 bytes.
+These remain stylised mallards, with visible part joins and broad colour patches.
+[Matched views, costs and limitations](../verification/1921/README.md).
+
 ### Fish export quality correction (#1911)
 
 `riverfishmodel.js` supplies the same finned, eyed neutral geometry to the unit-sized

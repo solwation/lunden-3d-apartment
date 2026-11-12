@@ -1,0 +1,71 @@
+TAP version 13
+# Subtest: existing stable mates only; bounded approach/contact, graceful return, goals preserved and cooldown
+ok 1 - existing stable mates only; bounded approach/contact, graceful return, goals preserved and cooldown
+  ---
+  duration_ms: 6.815588
+  type: 'test'
+  ...
+# Subtest: feeding/lure, hidden/far, incompatible surfaces and zero probability cancel without rewards or pair mutation
+ok 2 - feeding/lure, hidden/far, incompatible surfaces and zero probability cancel without rewards or pair mutation
+  ---
+  duration_ms: 1.813497
+  type: 'test'
+  ...
+# Subtest: real merged male/female model bill fronts touch and body extents stay apart
+ok 3 - real merged male/female model bill fronts touch and body extents stay apart
+  ---
+  duration_ms: 68.27508
+  type: 'test'
+  ...
+# {"maxPair":2.718259062669744,"femaleLeads":0.985513608428446,"formed":3,"dissolved":3,"range":[-1.5764575979891333,72.1942640264009],"surfaceTypes":[false,true]}
+# Subtest: seeded stable mixed pairs, female leadership, occasional groups, sourced river range and idle gate
+ok 4 - seeded stable mixed pairs, female leadership, occasional groups, sourced river range and idle gate
+  ---
+  duration_ms: 14001.542618
+  type: 'test'
+  ...
+# Subtest: female/male identical topology and four-mesh budget; only vertex colours differ; feeding cap unchanged
+ok 5 - female/male identical topology and four-mesh budget; only vertex colours differ; feeding cap unchanged
+  ---
+  duration_ms: 18.042369
+  type: 'test'
+  ...
+# Subtest: models/duck-rigged.glb binary file exists and is valid glTF 2.0 binary
+ok 6 - models/duck-rigged.glb binary file exists and is valid glTF 2.0 binary
+  ---
+  duration_ms: 2.118096
+  type: 'test'
+  ...
+# Subtest: duck-rigged.glb parses with SkinnedMesh, 14 bones and required animations
+ok 7 - duck-rigged.glb parses with SkinnedMesh, 14 bones and required animations
+  ---
+  duration_ms: 17.490369
+  type: 'test'
+  ...
+# Subtest: procedural duckModel remains compatible with duckBill kissing contact point
+ok 8 - procedural duckModel remains compatible with duckBill kissing contact point
+  ---
+  duration_ms: 21.345262
+  type: 'test'
+  ...
+# Subtest: both duck looks bind every vertex and retain exact idle bill contact
+ok 9 - both duck looks bind every vertex and retain exact idle bill contact
+  ---
+  duration_ms: 55.789802
+  type: 'test'
+  ...
+# Subtest: all clips preserve finite coherent whole-duck bounds
+ok 10 - all clips preserve finite coherent whole-duck bounds
+  ---
+  duration_ms: 42.656325
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14213.819444

@@ -202,6 +202,7 @@ for (const [female, no] of [[false, 48], [true, 49]]) {
     no,
     name: female ? 'Gräsand · hona' : 'Gräsand · hane',
     family: 'ducks',
+    modelVersion: 2,
     variant: female ? 'Brunspräcklig dräkt' : 'Grönt huvud',
     model: { kind: 'duck', female },
     info: {

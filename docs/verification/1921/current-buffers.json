@@ -1,0 +1,94 @@
+{
+  "geometries": [
+    {
+      "female": false,
+      "rigged": false,
+      "triangles": 1312,
+      "vertices": 734,
+      "attrs": {
+        "position": 8808,
+        "color": 8808,
+        "normal": 8808,
+        "index": 7872
+      },
+      "bytes": 34296,
+      "finite": true,
+      "normalMin": 0.9999999624039035,
+      "normalMax": 1.0000000375991431,
+      "bill": {
+        "z": 0.5541267991065979,
+        "y": 0.5800000131130219,
+        "halfY": 0.010815590620040894
+      }
+    },
+    {
+      "female": false,
+      "rigged": true,
+      "triangles": 1312,
+      "vertices": 734,
+      "attrs": {
+        "position": 8808,
+        "color": 8808,
+        "normal": 8808,
+        "skinIndex": 5872,
+        "skinWeight": 11744,
+        "index": 7872
+      },
+      "bytes": 51912,
+      "finite": true,
+      "normalMin": 0.9999999624039035,
+      "normalMax": 1.0000000375991431,
+      "bill": {
+        "z": 0.5541267991065979,
+        "y": 0.5800000131130219,
+        "halfY": 0.010815590620040894
+      }
+    },
+    {
+      "female": true,
+      "rigged": false,
+      "triangles": 1312,
+      "vertices": 734,
+      "attrs": {
+        "position": 8808,
+        "color": 8808,
+        "normal": 8808,
+        "index": 7872
+      },
+      "bytes": 34296,
+      "finite": true,
+      "normalMin": 0.9999999624039035,
+      "normalMax": 1.0000000375991431,
+      "bill": {
+        "z": 0.5541267991065979,
+        "y": 0.5800000131130219,
+        "halfY": 0.010815590620040894
+      }
+    },
+    {
+      "female": true,
+      "rigged": true,
+      "triangles": 1312,
+      "vertices": 734,
+      "attrs": {
+        "position": 8808,
+        "color": 8808,
+        "normal": 8808,
+        "skinIndex": 5872,
+        "skinWeight": 11744,
+        "index": 7872
+      },
+      "bytes": 51912,
+      "finite": true,
+      "normalMin": 0.9999999624039035,
+      "normalMax": 1.0000000375991431,
+      "bill": {
+        "z": 0.5541267991065979,
+        "y": 0.5800000131130219,
+        "halfY": 0.010815590620040894
+      }
+    }
+  ],
+  "scope": "Unique raw attribute/index views, excludes renderer/bones/textures/JS heap/GPU totals",
+  "glb": 60324
+}

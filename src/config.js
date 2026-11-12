@@ -8438,6 +8438,23 @@ export const DOOR_SYNC = {
   every: 0.12, // s: a door message at most this often per connection (the room drops faster ones)
 };
 
+// #1921: authored mallard surface estimates (guess), in the existing bill/rig frame.
+// Profiles are [z, centreY, halfWidth, halfHeight], neck uses [y, centreZ, width, depth].
+export const DUCK_SURFACE = {
+  radial: 16, smallRadial: 8, eyeSegments: [6,4],
+  body: [[-.39,.30,.025,.035],[-.345,.295,.073,.08],[-.30,.29,.12,.12],[-.23,.29,.17,.16],[-.16,.29,.195,.18],[-.07,.29,.21,.195],[.02,.29,.215,.20],[.10,.30,.20,.195],[.18,.31,.18,.18],[.235,.335,.15,.155],[.29,.36,.11,.12],[.32,.40,.055,.065]],
+  neck: [[.27,.18,.10,.09],[.40,.22,.098,.10],[.465,.25,.081,.086],[.48,.255,.08,.087],[.495,.26,.079,.088],[.55,.27,.081,.093],[.615,.275,.065,.065]],
+  head: [[.17,.625,.03,.035],[.20,.64,.064,.075],[.24,.646,.084,.087],[.29,.635,.095,.088],[.35,.607,.08,.065],[.405,.585,.055,.035]],
+  bill: [[.355,.582,.05,.023],[.42,.58,.087,.026],[.51,.58,.077,.018],[.5541267991,.5800000131,.05,.0108155906]],
+  tail: [[-.52,.35,.045,.007],[-.45,.35,.095,.02],[-.32,.34,.105,.04]],
+  wing: [[-.37,.34,.125,.008,.012],[-.25,.35,.17,.038,.045],[-.18,.355,.185,.037,.065],[-.08,.36,.19,.035,.085],[.08,.37,.17,.025,.078],[.16,.36,.145,.006,.025]],
+  eye: { at: [.095,.65,.33], scale: [.005,.009,.009] },
+  leg: { x: .12, at: [.085,.025], scale: [.014,.07,.015] },
+  foot: { x: .12, y: .018, thickness: .012, outline: [[-.025,-.04],[-.065,.07],[-.07,.14],[-.025,.125],[0,.16],[.025,.125],[.07,.14],[.065,.07],[.025,-.04]] },
+  colors: { breast: 0x684337, flank: 0xa39b89, back: 0x665b48, female: 0x8b7655, dark: 0x493d2d, green: 0x245b3a, black: 0x1b1b13, collar: 0xe7dfcc, bill: 0xd5a33b, foot: 0xc98b35 },
+  plumage: { rows: 24, columns: 36, contrast: .4, rowOffset: .5, maleContrast: .35, breastZ: .17, backY: .4, stripeZ: .22, stripeY: [.625,.657], collar: [.465,.48], speculumZ: [-.25,-.10], speculumY: [.34,.40] },
+};
+
 // #1815: four local ducks; model dimensions, habitat, motion and timing are visual/gameplay guesses.
 export const DUCKS = Object.freeze({
   scorePerDay: 120, // #1827 gameplay guess:20 rewarded bread bites/day, medals keep counting afterwards

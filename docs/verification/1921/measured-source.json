@@ -1,0 +1,13 @@
+{
+  "baseline": "8354644a54a99b10584469bd2b27eea94f07e25d",
+  "sha256": {
+    "src/duckmodel.js": "4e7b2c0ef1f44fa0ce65aa200e44cf022ccba62ce56bb4c20f7259194d1e0e78",
+    "src/config.js": "df6ffeeec05ffd521fdbf9ba8f4e093ee447057a1cf6bdfdf9f632a17b3bb3bc",
+    "src/ducks.js": "0054f4aca04c7aac8f3cdb2c3caadac14ece5850282b171792fec89a29671ea2",
+    "models/duck-rigged.glb": "4601e326ac23319d148c6181c5b10ed1bdfad2c3c036bdcfaaa84dd109ec1bd4",
+    "tools/buildduckglb.mjs": "82a7d41792db862bd7507701095d52536fa5065acc167bc686fef9b1b18ce5c2",
+    "tools/duckvisualtest.html": "dfe00dc9d1ae7b26840fe6f0b84b6bcf87d2ff072669bb57f88d39c9d996e442",
+    "tools/capture-duck-surfaces.cjs": "c29eb6d4252d597440be93ed43a638e70c5698d9edc040baf57fc6d14277792f",
+    "tools/capture-duck-fallback.cjs": "28727b033b9ed3565bd3aa4d0c4d24079c39116c1cacd587b10b1b3fc766df87"
+  }
+}

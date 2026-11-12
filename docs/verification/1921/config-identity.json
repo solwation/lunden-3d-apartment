@@ -1,0 +1,54 @@
+{
+  "scope": "Four sex/rigged combinations, exact attribute/index values plus neutral GLB bytes before/after moving colour thresholds into central config",
+  "before": [
+    {
+      "female": false,
+      "rigged": false,
+      "hash": "794bc21c16c45a4af62abab56be4a249d18619d7b412e12c99c2d33de74547ee"
+    },
+    {
+      "female": false,
+      "rigged": true,
+      "hash": "7d042c21c3ad2e86cb3674cf5193e75dfae86abf14a363da01ab43d804e9b2ca"
+    },
+    {
+      "female": true,
+      "rigged": false,
+      "hash": "3686b5f239f06375673f78a6fecd69405d58e05921bbe1f871479f8c848d0a04"
+    },
+    {
+      "female": true,
+      "rigged": true,
+      "hash": "77936cd5a2ebc5c20581d3ad6a86c416fad28247ad7ac8842c4362a4f25b7dc2"
+    },
+    {
+      "glb": "4601e326ac23319d148c6181c5b10ed1bdfad2c3c036bdcfaaa84dd109ec1bd4"
+    }
+  ],
+  "after": [
+    {
+      "female": false,
+      "rigged": false,
+      "hash": "794bc21c16c45a4af62abab56be4a249d18619d7b412e12c99c2d33de74547ee"
+    },
+    {
+      "female": false,
+      "rigged": true,
+      "hash": "7d042c21c3ad2e86cb3674cf5193e75dfae86abf14a363da01ab43d804e9b2ca"
+    },
+    {
+      "female": true,
+      "rigged": false,
+      "hash": "3686b5f239f06375673f78a6fecd69405d58e05921bbe1f871479f8c848d0a04"
+    },
+    {
+      "female": true,
+      "rigged": true,
+      "hash": "77936cd5a2ebc5c20581d3ad6a86c416fad28247ad7ac8842c4362a4f25b7dc2"
+    },
+    {
+      "glb": "4601e326ac23319d148c6181c5b10ed1bdfad2c3c036bdcfaaa84dd109ec1bd4"
+    }
+  ],
+  "identical": true
+}

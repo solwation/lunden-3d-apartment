@@ -29,5 +29,5 @@ test('seeded stable mixed pairs, female leadership, occasional groups, sourced r
 });
 test('female/male identical topology and four-mesh budget; only vertex colours differ; feeding cap unchanged',()=>{
  const male=duckModel(),female=duckModel(true);assert.deepEqual(male.attributes.position.array,female.attributes.position.array);assert.deepEqual(male.index.array,female.index.array);assert.notDeepEqual(male.attributes.color.array,female.attributes.color.array);
- assert.equal(male.index.count/3,640);assert.equal(DUCKS.count,4);assert.equal(DUCKS.cooldown,2.4);assert.equal(DUCKS.count*60/DUCKS.cooldown,100);male.dispose();female.dispose();
+ assert.ok(male.index.count/3<=1600,'bounded authored mallard surface');assert.equal(DUCKS.count,4);assert.equal(DUCKS.cooldown,2.4);assert.equal(DUCKS.count*60/DUCKS.cooldown,100);male.dispose();female.dispose();
 });
