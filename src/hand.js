@@ -335,7 +335,7 @@ export class Hand {
     this.applyWrist();
   }
 
-  /** Short sleeves (#1215): the arm is bare skin and the cuff goes; the same meshes, only the material and visibility change. */
+  /** Short sleeves (#1215): reuse the arm meshes with cached bare/sleeved geometry and material; hide the bare cuff. */
   applySleeves() {
     this.sleeved = OWN.long || OWN.suit;
     for (const side of [this.right, this.left]) {

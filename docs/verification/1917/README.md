@@ -1,9 +1,11 @@
 # More natural first-person hands (#1917)
 
-Baseline: `2f03ba02187419796185822e411901002cdb552f`. Final Hand source:
+Baseline: `2f03ba02187419796185822e411901002cdb552f`. Measured Hand source:
 `6c445258cb0ad6bb72832caae7cbdfd9e0ee9145`, SHA-256
 `04d313f87b0087183ec7a30738c0b54025d82772773084da1f06316bdbcdd5cd`.
-The paired [before](baseline.json) and [after](after/results.json) records
+Integration changes only an explanatory sleeve comment and adds unrelated Avatar
+configuration; `checks.json` proves the measured executable Hand/pose/art inputs
+are preserved. The paired [before](baseline.json) and [after](after/results.json) records
 identify the actually served Hand source, browser, poses and camera positions.
 
 Each finger now has a continuous indexed surface along its original phalanx
