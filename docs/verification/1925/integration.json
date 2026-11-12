@@ -1,0 +1,27 @@
+{
+  "worker": "9ac827172041a3129c1952c7e6dd9712483bdc06",
+  "integratedBase": "ac2fd0ea484bf7e905fb92d6bb9bb6ae40f005f3",
+  "exactConfigSections": [
+    "BUTTERFLY_SURFACE",
+    "OUTDOOR_CATS",
+    "MARKS"
+  ],
+  "unchangedMeasuredFiles": {
+    "src/butterflymodel.js": "61b3066bb21837d86ee704df2dcd5ee79a9bfdd5fa12fc64a2e44bb4d9b41734",
+    "src/marks.js": "2fa3d2a211c61a088fc6e370a2da85fe25c57f2f311c0122b3d3127abc3353bd",
+    "src/outdoorcats.js": "b49e31e1360e815eb5479228035b82545bbb3e78f55a91a1767485acf6c85ed6",
+    "tools/butterflyrealismtest.cjs": "ee62cd7a5595c470e0839c37e2aa02b72f7e7acc6bd9040113bd54c0a88fb272",
+    "tools/butterflyrealism.html": "a80a143a1aca8c49bd9b18f1ec1a754e4e14fa9bca33bbe35f5f6fdf0122dd99",
+    "tools/butterflymagicboundstest.cjs": "cd983e1ddaf4f8f7c25b0556809b6bae6f2bd72211c90805d0c5be2af1046745"
+  },
+  "bestiaryMerge": "Exact worker butterfly/magicButterfly cases and import; exact current main gull case preserved.",
+  "rootViewed": [
+    "whole0/1",
+    "normal0/1",
+    "folded0/1",
+    "correctedmagicnormal/close",
+    "collection2"
+  ],
+  "changelog": 1484,
+  "reuse": "Captured geometry/pose/shader/actualconsumer unchanged; prior fish/gull config/source retained separately."
+}

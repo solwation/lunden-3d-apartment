@@ -125,3 +125,6 @@ Root owns final publication, provisional changelog renumbering, actual Pages/Wor
 results, pinned HTTP200 issue images and closure. Before-images are removed only in
 that resolving commit after their pinned issue comment; result images retain the
 ordinary thirty-day policy. This worker supplies only a local Refs handoff.
+
+
+Root read the combined production/fixture/source-bound evidence and opened whole, normal, folded and corrected magic images. Rebase keeps every measured butterfly/Marks/OutdoorCats/fixture file, all three relevant config sections and the exact two butterfly collection cases. The separately integrated gull case is preserved exactly. [Integration mapping](integration.json) binds this delivery, changelog1484 after latest main fetch.
