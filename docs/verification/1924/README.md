@@ -152,3 +152,6 @@ Public transfer is not applicable: gulls are outside the public project's explic
 generic-animal exception. No gull feature/port issue is created there. Root remains
 the sole integration/publishing owner and must verify actual workflows and embed
 accessible revision-pinned before/result images before closing #1924.
+
+
+Root reviewed the combined production/fixture/consumer diff and opened final whole, normal ground, collection and actual low-memory images. Rebase preserves all measured bird model/consumer/fixture files and exact BIRDS/GULL_SURFACE sections; [integration mapping](integration.json) binds delivery. Changelog1483 assigned after the latest main fetch.
