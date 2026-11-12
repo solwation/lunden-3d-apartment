@@ -1,0 +1,152 @@
+[
+  {
+    "id": "squirrel:Den stora",
+    "no": 38,
+    "name": "Den stora",
+    "model": {
+      "kind": "squirrel",
+      "name": "Den stora"
+    },
+    "meshes": 1,
+    "triangles": 3382,
+    "geometryAttributeBytes": 136824,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 3382
+  },
+  {
+    "id": "squirrel:Vitsvansen",
+    "no": 39,
+    "name": "Vitsvansen",
+    "model": {
+      "kind": "squirrel",
+      "name": "Vitsvansen"
+    },
+    "meshes": 1,
+    "triangles": 3382,
+    "geometryAttributeBytes": 136824,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 3382
+  },
+  {
+    "id": "squirrel:Den smala",
+    "no": 40,
+    "name": "Den smala",
+    "model": {
+      "kind": "squirrel",
+      "name": "Den smala"
+    },
+    "meshes": 1,
+    "triangles": 3382,
+    "geometryAttributeBytes": 136824,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 3382
+  },
+  {
+    "id": "squirrel:Parkekorren",
+    "no": 41,
+    "name": "Parkekorren",
+    "model": {
+      "kind": "squirrel",
+      "name": "Parkekorren"
+    },
+    "meshes": 1,
+    "triangles": 3382,
+    "geometryAttributeBytes": 136824,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 3382
+  },
+  {
+    "id": "squirrel:Gårdsekorren",
+    "no": 42,
+    "name": "Gårdsekorren",
+    "model": {
+      "kind": "squirrel",
+      "name": "Gårdsekorren"
+    },
+    "meshes": 1,
+    "triangles": 3382,
+    "geometryAttributeBytes": 136824,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 3382
+  },
+  {
+    "id": "squirrel:Tofsen",
+    "no": 43,
+    "name": "Tofsen",
+    "model": {
+      "kind": "squirrel",
+      "name": "Tofsen"
+    },
+    "meshes": 1,
+    "triangles": 3382,
+    "geometryAttributeBytes": 136824,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 3382
+  },
+  {
+    "id": "squirrel:Klockan",
+    "no": 44,
+    "name": "Klockan",
+    "model": {
+      "kind": "squirrel",
+      "name": "Klockan"
+    },
+    "meshes": 1,
+    "triangles": 3382,
+    "geometryAttributeBytes": 136824,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 3382
+  },
+  {
+    "id": "squirrel:Rödpälsen",
+    "no": 45,
+    "name": "Rödpälsen",
+    "model": {
+      "kind": "squirrel",
+      "name": "Rödpälsen"
+    },
+    "meshes": 1,
+    "triangles": 3382,
+    "geometryAttributeBytes": 136824,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 3382
+  },
+  {
+    "id": "squirrel:Svartsvansen",
+    "no": 46,
+    "name": "Svartsvansen",
+    "model": {
+      "kind": "squirrel",
+      "name": "Svartsvansen"
+    },
+    "meshes": 1,
+    "triangles": 3382,
+    "geometryAttributeBytes": 136824,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 3382
+  },
+  {
+    "id": "squirrel:Ljusbuken",
+    "no": 47,
+    "name": "Ljusbuken",
+    "model": {
+      "kind": "squirrel",
+      "name": "Ljusbuken"
+    },
+    "meshes": 1,
+    "triangles": 3382,
+    "geometryAttributeBytes": 136824,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 3382
+  }
+]

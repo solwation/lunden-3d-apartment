@@ -1,0 +1,44 @@
+[
+  {
+    "id": "figure:santa",
+    "no": 63,
+    "name": "Tomten",
+    "model": {
+      "kind": "santa"
+    },
+    "meshes": 7,
+    "triangles": 3192,
+    "geometryAttributeBytes": 340200,
+    "textures": 0,
+    "submittedCalls": 5,
+    "submittedTriangles": 3180
+  },
+  {
+    "id": "figure:olof",
+    "no": 64,
+    "name": "Olof",
+    "model": {
+      "kind": "olof"
+    },
+    "meshes": 2,
+    "triangles": 11186,
+    "geometryAttributeBytes": 3487128,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 11174
+  },
+  {
+    "id": "figure:pingping",
+    "no": 65,
+    "name": "Pingping",
+    "model": {
+      "kind": "pingping"
+    },
+    "meshes": 4,
+    "triangles": 4168,
+    "geometryAttributeBytes": 147888,
+    "textures": 1,
+    "submittedCalls": 4,
+    "submittedTriangles": 4168
+  }
+]

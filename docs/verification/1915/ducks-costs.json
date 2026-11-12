@@ -1,0 +1,32 @@
+[
+  {
+    "id": "duck:male",
+    "no": 48,
+    "name": "Gräsand · hane",
+    "model": {
+      "kind": "duck",
+      "female": false
+    },
+    "meshes": 1,
+    "triangles": 640,
+    "geometryAttributeBytes": 23280,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 640
+  },
+  {
+    "id": "duck:female",
+    "no": 49,
+    "name": "Gräsand · hona",
+    "model": {
+      "kind": "duck",
+      "female": true
+    },
+    "meshes": 1,
+    "triangles": 640,
+    "geometryAttributeBytes": 23280,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 640
+  }
+]

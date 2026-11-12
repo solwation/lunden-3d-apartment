@@ -1,0 +1,3 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+figures 3
+figures inspected []

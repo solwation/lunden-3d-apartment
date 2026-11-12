@@ -1,0 +1,14 @@
+{
+  type: 'desk',
+  meshes: 34,
+  tris: 24144,
+  info: { frame: 1, calls: 11, triangles: 9534, points: 0, lines: 0 }
+}
+{
+  type: 'toys',
+  meshes: 6,
+  tris: 884,
+  info: { frame: 2, calls: 6, triangles: 884, points: 0, lines: 0 }
+}
+hand { ring: 0, visible: [ undefined, undefined ], wrist: 0, calls: 3 }
+errors []

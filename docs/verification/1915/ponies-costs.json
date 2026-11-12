@@ -1,0 +1,32 @@
+[
+  {
+    "id": "pony:Zoey",
+    "no": 58,
+    "name": "Zoey",
+    "model": {
+      "kind": "pony",
+      "name": "Zoey"
+    },
+    "meshes": 1,
+    "triangles": 1080,
+    "geometryAttributeBytes": 168540,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 1080
+  },
+  {
+    "id": "pony:Princess",
+    "no": 59,
+    "name": "Princess",
+    "model": {
+      "kind": "pony",
+      "name": "Princess"
+    },
+    "meshes": 1,
+    "triangles": 1080,
+    "geometryAttributeBytes": 168540,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 1080
+  }
+]

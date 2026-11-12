@@ -4,6 +4,17 @@ Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code
 
 Related: [performance](performance.md), [plan-material](plan-material.md).
 
+## Character realism goal (#1915)
+
+The user requests higher realism with acceptable performance (2026-11-12), across
+characters, animals and related figures, including non-GLB consumers. Restoring
+a pre-migration shape is not the requested general visual upgrade. Use comparable
+whole-model and actual-view before/after evidence, preserve identity/pose/gameplay,
+and compare real scoped render/update/memory costs at fixed inputs and quality.
+A format change or a higher polygon count does not establish quality or speed.
+[Full coverage, measured baseline, limits and concrete follow-ups](../verification/1915/README.md).
+
+
 Kitchen appliance details (#1043): `hob.js` keeps zone markings and touch controls
 in one canvas texture; its thin bevel adds16 triangles. `hood.js` caches steel,
 glass and woven-filter materials, with merged shell/filter/diffuser geometry.

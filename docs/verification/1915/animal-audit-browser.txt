@@ -1,0 +1,9 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+cats 37
+squirrels 10
+ducks 2
+fish 7
+ponies 2
+insects 3
+birds 1
+{"count":65,"bird":{"count":10,"triangles":30,"calls":1,"span":3.2,"highSpan":5.760000000000001,"trianglesEach":3},"errors":[]}

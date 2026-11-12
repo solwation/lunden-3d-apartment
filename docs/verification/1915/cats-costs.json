@@ -1,0 +1,631 @@
+[
+  {
+    "id": "cat:huskatt:svartvit:kitten",
+    "no": 1,
+    "name": "Huskatt · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "huskatt",
+      "coat": "svartvit",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:huskatt:svartvit:adult",
+    "no": 2,
+    "name": "Huskatt",
+    "model": {
+      "kind": "cat",
+      "breed": "huskatt",
+      "coat": "svartvit",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:huskatt:rödrandig:kitten",
+    "no": 3,
+    "name": "Huskatt · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "huskatt",
+      "coat": "rödrandig",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:huskatt:rödrandig:adult",
+    "no": 4,
+    "name": "Huskatt",
+    "model": {
+      "kind": "cat",
+      "breed": "huskatt",
+      "coat": "rödrandig",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:huskatt:grå:kitten",
+    "no": 5,
+    "name": "Huskatt · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "huskatt",
+      "coat": "grå",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:huskatt:grå:adult",
+    "no": 6,
+    "name": "Huskatt",
+    "model": {
+      "kind": "cat",
+      "breed": "huskatt",
+      "coat": "grå",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:huskatt:svart:kitten",
+    "no": 7,
+    "name": "Huskatt · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "huskatt",
+      "coat": "svart",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:huskatt:svart:adult",
+    "no": 8,
+    "name": "Huskatt",
+    "model": {
+      "kind": "cat",
+      "breed": "huskatt",
+      "coat": "svart",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:huskatt:vit:kitten",
+    "no": 9,
+    "name": "Huskatt · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "huskatt",
+      "coat": "vit",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:huskatt:vit:adult",
+    "no": 10,
+    "name": "Huskatt",
+    "model": {
+      "kind": "cat",
+      "breed": "huskatt",
+      "coat": "vit",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:huskatt:röd och vit:kitten",
+    "no": 11,
+    "name": "Huskatt · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "huskatt",
+      "coat": "röd och vit",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:huskatt:röd och vit:adult",
+    "no": 12,
+    "name": "Huskatt",
+    "model": {
+      "kind": "cat",
+      "breed": "huskatt",
+      "coat": "röd och vit",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:siames:siames:kitten",
+    "no": 13,
+    "name": "Siames · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "siames",
+      "coat": "siames",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:siames:siames:adult",
+    "no": 14,
+    "name": "Siames",
+    "model": {
+      "kind": "cat",
+      "breed": "siames",
+      "coat": "siames",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:brittiskt korthår:blå:kitten",
+    "no": 15,
+    "name": "Brittiskt korthår · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "brittiskt korthår",
+      "coat": "blå",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:brittiskt korthår:blå:adult",
+    "no": 16,
+    "name": "Brittiskt korthår",
+    "model": {
+      "kind": "cat",
+      "breed": "brittiskt korthår",
+      "coat": "blå",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:maine coon:rödrandig:kitten",
+    "no": 17,
+    "name": "Maine coon · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "maine coon",
+      "coat": "rödrandig",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:maine coon:rödrandig:adult",
+    "no": 18,
+    "name": "Maine coon",
+    "model": {
+      "kind": "cat",
+      "breed": "maine coon",
+      "coat": "rödrandig",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:maine coon:grå:kitten",
+    "no": 19,
+    "name": "Maine coon · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "maine coon",
+      "coat": "grå",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:maine coon:grå:adult",
+    "no": 20,
+    "name": "Maine coon",
+    "model": {
+      "kind": "cat",
+      "breed": "maine coon",
+      "coat": "grå",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:maine coon:brunrandig:kitten",
+    "no": 21,
+    "name": "Maine coon · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "maine coon",
+      "coat": "brunrandig",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:maine coon:brunrandig:adult",
+    "no": 22,
+    "name": "Maine coon",
+    "model": {
+      "kind": "cat",
+      "breed": "maine coon",
+      "coat": "brunrandig",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:norsk skogkatt:svartvit:kitten",
+    "no": 23,
+    "name": "Norsk skogkatt · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "norsk skogkatt",
+      "coat": "svartvit",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:norsk skogkatt:svartvit:adult",
+    "no": 24,
+    "name": "Norsk skogkatt",
+    "model": {
+      "kind": "cat",
+      "breed": "norsk skogkatt",
+      "coat": "svartvit",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:norsk skogkatt:grå:kitten",
+    "no": 25,
+    "name": "Norsk skogkatt · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "norsk skogkatt",
+      "coat": "grå",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:norsk skogkatt:grå:adult",
+    "no": 26,
+    "name": "Norsk skogkatt",
+    "model": {
+      "kind": "cat",
+      "breed": "norsk skogkatt",
+      "coat": "grå",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:norsk skogkatt:vit:kitten",
+    "no": 27,
+    "name": "Norsk skogkatt · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "norsk skogkatt",
+      "coat": "vit",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:norsk skogkatt:vit:adult",
+    "no": 28,
+    "name": "Norsk skogkatt",
+    "model": {
+      "kind": "cat",
+      "breed": "norsk skogkatt",
+      "coat": "vit",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:perser:vit:kitten",
+    "no": 29,
+    "name": "Perser · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "perser",
+      "coat": "vit",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:perser:vit:adult",
+    "no": 30,
+    "name": "Perser",
+    "model": {
+      "kind": "cat",
+      "breed": "perser",
+      "coat": "vit",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:perser:gräddvit:kitten",
+    "no": 31,
+    "name": "Perser · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "perser",
+      "coat": "gräddvit",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:perser:gräddvit:adult",
+    "no": 32,
+    "name": "Perser",
+    "model": {
+      "kind": "cat",
+      "breed": "perser",
+      "coat": "gräddvit",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:perser:grå:kitten",
+    "no": 33,
+    "name": "Perser · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "perser",
+      "coat": "grå",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:perser:grå:adult",
+    "no": 34,
+    "name": "Perser",
+    "model": {
+      "kind": "cat",
+      "breed": "perser",
+      "coat": "grå",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:sphynx:naken:kitten",
+    "no": 35,
+    "name": "Sphynx · kattunge",
+    "model": {
+      "kind": "cat",
+      "breed": "sphynx",
+      "coat": "naken",
+      "kitten": true
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:sphynx:naken:adult",
+    "no": 36,
+    "name": "Sphynx",
+    "model": {
+      "kind": "cat",
+      "breed": "sphynx",
+      "coat": "naken",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 0,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  },
+  {
+    "id": "cat:Miele:Miele:adult",
+    "no": 37,
+    "name": "Miele",
+    "model": {
+      "kind": "cat",
+      "breed": "Miele",
+      "coat": "Miele",
+      "kitten": false
+    },
+    "meshes": 34,
+    "triangles": 12952,
+    "geometryAttributeBytes": 68912,
+    "textures": 2,
+    "submittedCalls": 24,
+    "submittedTriangles": 10008
+  }
+]

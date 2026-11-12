@@ -1,0 +1,803 @@
+{
+  "registry": [
+    {
+      "id": "cat:huskatt:svartvit:kitten",
+      "no": 1,
+      "family": "cats",
+      "name": "Huskatt · kattunge",
+      "variant": "svartvit",
+      "model": {
+        "kind": "cat",
+        "breed": "huskatt",
+        "coat": "svartvit",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:huskatt:svartvit:adult",
+      "no": 2,
+      "family": "cats",
+      "name": "Huskatt",
+      "variant": "svartvit",
+      "model": {
+        "kind": "cat",
+        "breed": "huskatt",
+        "coat": "svartvit",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:huskatt:rödrandig:kitten",
+      "no": 3,
+      "family": "cats",
+      "name": "Huskatt · kattunge",
+      "variant": "rödrandig",
+      "model": {
+        "kind": "cat",
+        "breed": "huskatt",
+        "coat": "rödrandig",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:huskatt:rödrandig:adult",
+      "no": 4,
+      "family": "cats",
+      "name": "Huskatt",
+      "variant": "rödrandig",
+      "model": {
+        "kind": "cat",
+        "breed": "huskatt",
+        "coat": "rödrandig",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:huskatt:grå:kitten",
+      "no": 5,
+      "family": "cats",
+      "name": "Huskatt · kattunge",
+      "variant": "grå",
+      "model": {
+        "kind": "cat",
+        "breed": "huskatt",
+        "coat": "grå",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:huskatt:grå:adult",
+      "no": 6,
+      "family": "cats",
+      "name": "Huskatt",
+      "variant": "grå",
+      "model": {
+        "kind": "cat",
+        "breed": "huskatt",
+        "coat": "grå",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:huskatt:svart:kitten",
+      "no": 7,
+      "family": "cats",
+      "name": "Huskatt · kattunge",
+      "variant": "svart",
+      "model": {
+        "kind": "cat",
+        "breed": "huskatt",
+        "coat": "svart",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:huskatt:svart:adult",
+      "no": 8,
+      "family": "cats",
+      "name": "Huskatt",
+      "variant": "svart",
+      "model": {
+        "kind": "cat",
+        "breed": "huskatt",
+        "coat": "svart",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:huskatt:vit:kitten",
+      "no": 9,
+      "family": "cats",
+      "name": "Huskatt · kattunge",
+      "variant": "vit",
+      "model": {
+        "kind": "cat",
+        "breed": "huskatt",
+        "coat": "vit",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:huskatt:vit:adult",
+      "no": 10,
+      "family": "cats",
+      "name": "Huskatt",
+      "variant": "vit",
+      "model": {
+        "kind": "cat",
+        "breed": "huskatt",
+        "coat": "vit",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:huskatt:röd och vit:kitten",
+      "no": 11,
+      "family": "cats",
+      "name": "Huskatt · kattunge",
+      "variant": "röd och vit",
+      "model": {
+        "kind": "cat",
+        "breed": "huskatt",
+        "coat": "röd och vit",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:huskatt:röd och vit:adult",
+      "no": 12,
+      "family": "cats",
+      "name": "Huskatt",
+      "variant": "röd och vit",
+      "model": {
+        "kind": "cat",
+        "breed": "huskatt",
+        "coat": "röd och vit",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:siames:siames:kitten",
+      "no": 13,
+      "family": "cats",
+      "name": "Siames · kattunge",
+      "variant": "siames",
+      "model": {
+        "kind": "cat",
+        "breed": "siames",
+        "coat": "siames",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:siames:siames:adult",
+      "no": 14,
+      "family": "cats",
+      "name": "Siames",
+      "variant": "siames",
+      "model": {
+        "kind": "cat",
+        "breed": "siames",
+        "coat": "siames",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:brittiskt korthår:blå:kitten",
+      "no": 15,
+      "family": "cats",
+      "name": "Brittiskt korthår · kattunge",
+      "variant": "blå",
+      "model": {
+        "kind": "cat",
+        "breed": "brittiskt korthår",
+        "coat": "blå",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:brittiskt korthår:blå:adult",
+      "no": 16,
+      "family": "cats",
+      "name": "Brittiskt korthår",
+      "variant": "blå",
+      "model": {
+        "kind": "cat",
+        "breed": "brittiskt korthår",
+        "coat": "blå",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:maine coon:rödrandig:kitten",
+      "no": 17,
+      "family": "cats",
+      "name": "Maine coon · kattunge",
+      "variant": "rödrandig",
+      "model": {
+        "kind": "cat",
+        "breed": "maine coon",
+        "coat": "rödrandig",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:maine coon:rödrandig:adult",
+      "no": 18,
+      "family": "cats",
+      "name": "Maine coon",
+      "variant": "rödrandig",
+      "model": {
+        "kind": "cat",
+        "breed": "maine coon",
+        "coat": "rödrandig",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:maine coon:grå:kitten",
+      "no": 19,
+      "family": "cats",
+      "name": "Maine coon · kattunge",
+      "variant": "grå",
+      "model": {
+        "kind": "cat",
+        "breed": "maine coon",
+        "coat": "grå",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:maine coon:grå:adult",
+      "no": 20,
+      "family": "cats",
+      "name": "Maine coon",
+      "variant": "grå",
+      "model": {
+        "kind": "cat",
+        "breed": "maine coon",
+        "coat": "grå",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:maine coon:brunrandig:kitten",
+      "no": 21,
+      "family": "cats",
+      "name": "Maine coon · kattunge",
+      "variant": "brunrandig",
+      "model": {
+        "kind": "cat",
+        "breed": "maine coon",
+        "coat": "brunrandig",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:maine coon:brunrandig:adult",
+      "no": 22,
+      "family": "cats",
+      "name": "Maine coon",
+      "variant": "brunrandig",
+      "model": {
+        "kind": "cat",
+        "breed": "maine coon",
+        "coat": "brunrandig",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:norsk skogkatt:svartvit:kitten",
+      "no": 23,
+      "family": "cats",
+      "name": "Norsk skogkatt · kattunge",
+      "variant": "svartvit",
+      "model": {
+        "kind": "cat",
+        "breed": "norsk skogkatt",
+        "coat": "svartvit",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:norsk skogkatt:svartvit:adult",
+      "no": 24,
+      "family": "cats",
+      "name": "Norsk skogkatt",
+      "variant": "svartvit",
+      "model": {
+        "kind": "cat",
+        "breed": "norsk skogkatt",
+        "coat": "svartvit",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:norsk skogkatt:grå:kitten",
+      "no": 25,
+      "family": "cats",
+      "name": "Norsk skogkatt · kattunge",
+      "variant": "grå",
+      "model": {
+        "kind": "cat",
+        "breed": "norsk skogkatt",
+        "coat": "grå",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:norsk skogkatt:grå:adult",
+      "no": 26,
+      "family": "cats",
+      "name": "Norsk skogkatt",
+      "variant": "grå",
+      "model": {
+        "kind": "cat",
+        "breed": "norsk skogkatt",
+        "coat": "grå",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:norsk skogkatt:vit:kitten",
+      "no": 27,
+      "family": "cats",
+      "name": "Norsk skogkatt · kattunge",
+      "variant": "vit",
+      "model": {
+        "kind": "cat",
+        "breed": "norsk skogkatt",
+        "coat": "vit",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:norsk skogkatt:vit:adult",
+      "no": 28,
+      "family": "cats",
+      "name": "Norsk skogkatt",
+      "variant": "vit",
+      "model": {
+        "kind": "cat",
+        "breed": "norsk skogkatt",
+        "coat": "vit",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:perser:vit:kitten",
+      "no": 29,
+      "family": "cats",
+      "name": "Perser · kattunge",
+      "variant": "vit",
+      "model": {
+        "kind": "cat",
+        "breed": "perser",
+        "coat": "vit",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:perser:vit:adult",
+      "no": 30,
+      "family": "cats",
+      "name": "Perser",
+      "variant": "vit",
+      "model": {
+        "kind": "cat",
+        "breed": "perser",
+        "coat": "vit",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:perser:gräddvit:kitten",
+      "no": 31,
+      "family": "cats",
+      "name": "Perser · kattunge",
+      "variant": "gräddvit",
+      "model": {
+        "kind": "cat",
+        "breed": "perser",
+        "coat": "gräddvit",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:perser:gräddvit:adult",
+      "no": 32,
+      "family": "cats",
+      "name": "Perser",
+      "variant": "gräddvit",
+      "model": {
+        "kind": "cat",
+        "breed": "perser",
+        "coat": "gräddvit",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:perser:grå:kitten",
+      "no": 33,
+      "family": "cats",
+      "name": "Perser · kattunge",
+      "variant": "grå",
+      "model": {
+        "kind": "cat",
+        "breed": "perser",
+        "coat": "grå",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:perser:grå:adult",
+      "no": 34,
+      "family": "cats",
+      "name": "Perser",
+      "variant": "grå",
+      "model": {
+        "kind": "cat",
+        "breed": "perser",
+        "coat": "grå",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:sphynx:naken:kitten",
+      "no": 35,
+      "family": "cats",
+      "name": "Sphynx · kattunge",
+      "variant": "naken",
+      "model": {
+        "kind": "cat",
+        "breed": "sphynx",
+        "coat": "naken",
+        "kitten": true
+      }
+    },
+    {
+      "id": "cat:sphynx:naken:adult",
+      "no": 36,
+      "family": "cats",
+      "name": "Sphynx",
+      "variant": "naken",
+      "model": {
+        "kind": "cat",
+        "breed": "sphynx",
+        "coat": "naken",
+        "kitten": false
+      }
+    },
+    {
+      "id": "cat:Miele:Miele:adult",
+      "no": 37,
+      "family": "cats",
+      "name": "Miele",
+      "variant": "Miele",
+      "model": {
+        "kind": "cat",
+        "breed": "Miele",
+        "coat": "Miele",
+        "kitten": false
+      }
+    },
+    {
+      "id": "squirrel:Den stora",
+      "no": 38,
+      "family": "squirrels",
+      "name": "Den stora",
+      "variant": "Rödbrun päls",
+      "model": {
+        "kind": "squirrel",
+        "name": "Den stora"
+      }
+    },
+    {
+      "id": "squirrel:Vitsvansen",
+      "no": 39,
+      "family": "squirrels",
+      "name": "Vitsvansen",
+      "variant": "Ljus svanstipp",
+      "model": {
+        "kind": "squirrel",
+        "name": "Vitsvansen"
+      }
+    },
+    {
+      "id": "squirrel:Den smala",
+      "no": 40,
+      "family": "squirrels",
+      "name": "Den smala",
+      "variant": "Rödbrun päls",
+      "model": {
+        "kind": "squirrel",
+        "name": "Den smala"
+      }
+    },
+    {
+      "id": "squirrel:Parkekorren",
+      "no": 41,
+      "family": "squirrels",
+      "name": "Parkekorren",
+      "variant": "Ljus svanstipp",
+      "model": {
+        "kind": "squirrel",
+        "name": "Parkekorren"
+      }
+    },
+    {
+      "id": "squirrel:Gårdsekorren",
+      "no": 42,
+      "family": "squirrels",
+      "name": "Gårdsekorren",
+      "variant": "Rödbrun päls",
+      "model": {
+        "kind": "squirrel",
+        "name": "Gårdsekorren"
+      }
+    },
+    {
+      "id": "squirrel:Tofsen",
+      "no": 43,
+      "family": "squirrels",
+      "name": "Tofsen",
+      "variant": "Rödbrun päls",
+      "model": {
+        "kind": "squirrel",
+        "name": "Tofsen"
+      }
+    },
+    {
+      "id": "squirrel:Klockan",
+      "no": 44,
+      "family": "squirrels",
+      "name": "Klockan",
+      "variant": "Ljus svanstipp",
+      "model": {
+        "kind": "squirrel",
+        "name": "Klockan"
+      }
+    },
+    {
+      "id": "squirrel:Rödpälsen",
+      "no": 45,
+      "family": "squirrels",
+      "name": "Rödpälsen",
+      "variant": "Rödbrun päls",
+      "model": {
+        "kind": "squirrel",
+        "name": "Rödpälsen"
+      }
+    },
+    {
+      "id": "squirrel:Svartsvansen",
+      "no": 46,
+      "family": "squirrels",
+      "name": "Svartsvansen",
+      "variant": "Rödbrun päls",
+      "model": {
+        "kind": "squirrel",
+        "name": "Svartsvansen"
+      }
+    },
+    {
+      "id": "squirrel:Ljusbuken",
+      "no": 47,
+      "family": "squirrels",
+      "name": "Ljusbuken",
+      "variant": "Rödbrun päls",
+      "model": {
+        "kind": "squirrel",
+        "name": "Ljusbuken"
+      }
+    },
+    {
+      "id": "duck:male",
+      "no": 48,
+      "family": "ducks",
+      "name": "Gräsand · hane",
+      "variant": "Grönt huvud",
+      "model": {
+        "kind": "duck",
+        "female": false
+      }
+    },
+    {
+      "id": "duck:female",
+      "no": 49,
+      "family": "ducks",
+      "name": "Gräsand · hona",
+      "variant": "Brunspräcklig dräkt",
+      "model": {
+        "kind": "duck",
+        "female": true
+      }
+    },
+    {
+      "id": "bird:gull",
+      "no": 50,
+      "family": "birds",
+      "name": "Mås",
+      "variant": "",
+      "model": {
+        "kind": "gull"
+      }
+    },
+    {
+      "id": "fish:mört",
+      "no": 51,
+      "family": "fish",
+      "name": "Mört",
+      "variant": "",
+      "model": {
+        "kind": "fish",
+        "name": "mört"
+      }
+    },
+    {
+      "id": "fish:abborre",
+      "no": 52,
+      "family": "fish",
+      "name": "Abborre",
+      "variant": "",
+      "model": {
+        "kind": "fish",
+        "name": "abborre"
+      }
+    },
+    {
+      "id": "fish:braxen",
+      "no": 53,
+      "family": "fish",
+      "name": "Braxen",
+      "variant": "",
+      "model": {
+        "kind": "fish",
+        "name": "braxen"
+      }
+    },
+    {
+      "id": "fish:gädda",
+      "no": 54,
+      "family": "fish",
+      "name": "Gädda",
+      "variant": "",
+      "model": {
+        "kind": "fish",
+        "name": "gädda"
+      }
+    },
+    {
+      "id": "fish:öring",
+      "no": 55,
+      "family": "fish",
+      "name": "Öring",
+      "variant": "",
+      "model": {
+        "kind": "fish",
+        "name": "öring"
+      }
+    },
+    {
+      "id": "fish:ål",
+      "no": 56,
+      "family": "fish",
+      "name": "Ål",
+      "variant": "",
+      "model": {
+        "kind": "fish",
+        "name": "ål"
+      }
+    },
+    {
+      "id": "fish:shark",
+      "no": 57,
+      "family": "fish",
+      "name": "Haj",
+      "variant": "",
+      "model": {
+        "kind": "shark"
+      }
+    },
+    {
+      "id": "pony:Zoey",
+      "no": 58,
+      "family": "ponies",
+      "name": "Zoey",
+      "variant": "Gråvit",
+      "model": {
+        "kind": "pony",
+        "name": "Zoey"
+      }
+    },
+    {
+      "id": "pony:Princess",
+      "no": 59,
+      "family": "ponies",
+      "name": "Princess",
+      "variant": "Brun med stjärna",
+      "model": {
+        "kind": "pony",
+        "name": "Princess"
+      }
+    },
+    {
+      "id": "butterfly:yellow",
+      "no": 60,
+      "family": "insects",
+      "name": "Gul fjäril",
+      "variant": "",
+      "model": {
+        "kind": "butterfly",
+        "color": 15916092
+      }
+    },
+    {
+      "id": "butterfly:orange",
+      "no": 61,
+      "family": "insects",
+      "name": "Orange fjäril",
+      "variant": "",
+      "model": {
+        "kind": "butterfly",
+        "color": 15234602
+      }
+    },
+    {
+      "id": "butterfly:magic",
+      "no": 62,
+      "family": "insects",
+      "name": "Magisk fjäril",
+      "variant": "",
+      "model": {
+        "kind": "magicButterfly"
+      }
+    },
+    {
+      "id": "figure:santa",
+      "no": 63,
+      "family": "figures",
+      "name": "Tomten",
+      "variant": "",
+      "model": {
+        "kind": "santa"
+      }
+    },
+    {
+      "id": "figure:olof",
+      "no": 64,
+      "family": "figures",
+      "name": "Olof",
+      "variant": "",
+      "model": {
+        "kind": "olof"
+      }
+    },
+    {
+      "id": "figure:pingping",
+      "no": 65,
+      "family": "figures",
+      "name": "Pingping",
+      "variant": "",
+      "model": {
+        "kind": "pingping"
+      }
+    }
+  ],
+  "three": "170",
+  "bird": {
+    "count": 10,
+    "triangles": 30,
+    "calls": 1,
+    "span": 3.2,
+    "highSpan": 5.760000000000001,
+    "trianglesEach": 3
+  },
+  "errors": [],
+  "environment": {
+    "renderer": "Chromium SwiftShader component only",
+    "dpr": 1,
+    "baseline": "4d017980e20777ae1ea194e32d5d2ae81e636f15",
+    "scope": "production bestiary recipes plus actual Birds shader; no full World or hardware FPS"
+  }
+}

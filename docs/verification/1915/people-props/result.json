@@ -1,0 +1,41 @@
+{
+  "rows": [
+    {
+      "type": "desk",
+      "meshes": 34,
+      "tris": 24144,
+      "info": {
+        "frame": 1,
+        "calls": 11,
+        "triangles": 9534,
+        "points": 0,
+        "lines": 0
+      }
+    },
+    {
+      "type": "lamp",
+      "meshes": 59,
+      "tris": 30596,
+      "info": {
+        "frame": 2,
+        "calls": 40,
+        "triangles": 19424,
+        "points": 0,
+        "lines": 0
+      }
+    },
+    {
+      "type": "unicorn",
+      "meshes": 41,
+      "tris": 23708,
+      "info": {
+        "frame": 3,
+        "calls": 27,
+        "triangles": 20692,
+        "points": 0,
+        "lines": 0
+      }
+    }
+  ],
+  "errors": []
+}

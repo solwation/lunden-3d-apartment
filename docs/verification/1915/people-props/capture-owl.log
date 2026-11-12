@@ -1,0 +1,6 @@
+{
+  type: 'owl',
+  meshes: 4,
+  tris: 234,
+  info: { frame: 1, calls: 4, triangles: 234, points: 0, lines: 0 }
+}

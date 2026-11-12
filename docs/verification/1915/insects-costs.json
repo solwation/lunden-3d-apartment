@@ -1,0 +1,46 @@
+[
+  {
+    "id": "butterfly:yellow",
+    "no": 60,
+    "name": "Gul fjäril",
+    "model": {
+      "kind": "butterfly",
+      "color": 15916092
+    },
+    "meshes": 1,
+    "triangles": 4,
+    "geometryAttributeBytes": 288,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 4
+  },
+  {
+    "id": "butterfly:orange",
+    "no": 61,
+    "name": "Orange fjäril",
+    "model": {
+      "kind": "butterfly",
+      "color": 15234602
+    },
+    "meshes": 1,
+    "triangles": 4,
+    "geometryAttributeBytes": 288,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 4
+  },
+  {
+    "id": "butterfly:magic",
+    "no": 62,
+    "name": "Magisk fjäril",
+    "model": {
+      "kind": "magicButterfly"
+    },
+    "meshes": 1,
+    "triangles": 2,
+    "geometryAttributeBytes": 140,
+    "textures": 1,
+    "submittedCalls": 2,
+    "submittedTriangles": 4
+  }
+]

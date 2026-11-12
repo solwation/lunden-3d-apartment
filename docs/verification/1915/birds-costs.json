@@ -1,0 +1,16 @@
+[
+  {
+    "id": "bird:gull",
+    "no": 50,
+    "name": "Mås",
+    "model": {
+      "kind": "gull"
+    },
+    "meshes": 1,
+    "triangles": 3,
+    "geometryAttributeBytes": 252,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 3
+  }
+]

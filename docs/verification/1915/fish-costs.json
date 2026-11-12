@@ -1,0 +1,106 @@
+[
+  {
+    "id": "fish:mört",
+    "no": 51,
+    "name": "Mört",
+    "model": {
+      "kind": "fish",
+      "name": "mört"
+    },
+    "meshes": 1,
+    "triangles": 433,
+    "geometryAttributeBytes": 11562,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 433
+  },
+  {
+    "id": "fish:abborre",
+    "no": 52,
+    "name": "Abborre",
+    "model": {
+      "kind": "fish",
+      "name": "abborre"
+    },
+    "meshes": 1,
+    "triangles": 499,
+    "geometryAttributeBytes": 13542,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 499
+  },
+  {
+    "id": "fish:braxen",
+    "no": 53,
+    "name": "Braxen",
+    "model": {
+      "kind": "fish",
+      "name": "braxen"
+    },
+    "meshes": 1,
+    "triangles": 409,
+    "geometryAttributeBytes": 10986,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 409
+  },
+  {
+    "id": "fish:gädda",
+    "no": 54,
+    "name": "Gädda",
+    "model": {
+      "kind": "fish",
+      "name": "gädda"
+    },
+    "meshes": 1,
+    "triangles": 537,
+    "geometryAttributeBytes": 16866,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 537
+  },
+  {
+    "id": "fish:öring",
+    "no": 55,
+    "name": "Öring",
+    "model": {
+      "kind": "fish",
+      "name": "öring"
+    },
+    "meshes": 1,
+    "triangles": 547,
+    "geometryAttributeBytes": 18078,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 547
+  },
+  {
+    "id": "fish:ål",
+    "no": 56,
+    "name": "Ål",
+    "model": {
+      "kind": "fish",
+      "name": "ål"
+    },
+    "meshes": 1,
+    "triangles": 417,
+    "geometryAttributeBytes": 11178,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 417
+  },
+  {
+    "id": "fish:shark",
+    "no": 57,
+    "name": "Haj",
+    "model": {
+      "kind": "shark"
+    },
+    "meshes": 1,
+    "triangles": 417,
+    "geometryAttributeBytes": 11394,
+    "textures": 0,
+    "submittedCalls": 1,
+    "submittedTriangles": 417
+  }
+]

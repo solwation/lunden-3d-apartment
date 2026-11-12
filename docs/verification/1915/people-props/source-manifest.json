@@ -1,0 +1,19 @@
+{
+  "revision": "4d017980e20777ae1ea194e32d5d2ae81e636f15",
+  "files": {
+    "src/avatar.js": "4ed532afb4f960f4da011213d83e96cf9d681c149b090f42ec12d2783f769753",
+    "src/olof.js": "f3b47f1300d74dc9dddc79291291f301aa502a7b192d6a3dbcd25d550d65f050",
+    "src/hand.js": "c0692c9ef716704a177e791f9b9dbaa34a70ee3130b54424c713f119a4765cd4",
+    "src/santa.js": "1f4a9d64a99ae928b633826bb2b1c0bb9446b994787b5c9be76717c8710d84a1",
+    "src/pingping.js": "4b982c8b8e3d258193ebaf3190e439425c388922b61b6ed5acbb5d0edcd57dda",
+    "src/furniture.js": "d11d316b42a626d9c6931da25bb42dc33b9504704cb56b9837545819c7382535",
+    "src/tillydesk.js": "194dc94644abb5223e11c05ad40b7ba9282a1892e1d9974773afb5033dc41c7f",
+    "src/ghosts.js": "9c59d6fbdc17b39fe2a503bea45cad9038887a15b57623f8750b5a0ee109366f",
+    "src/ghostprops.js": "2964a12cfc4f63509b5fd66aee1daa6818519819ee448fb2aebebdd9d51339ec",
+    "src/bestiarymodels.js": "d15db90bc8b79eb234309b1e5c96ad3037557625db69dcc162f151af2231e141",
+    "src/config.js": "6bbefd02116dfb3bafa27bcc0b21ce7039718174b90c07bb275ea92d339f2ed6",
+    "docs/pingping-pingvinkudde.jpg": "5302bc1caca471a77954aad2e834ee251e23459273da331ef927d6d594d37a42",
+    "docs/datorsetup-secretlab-batman.jpg": "31f4e4993f033f8f2cce2d400ea164e6e2f2310c7ee2f493fdcfe21d4e9eb65d",
+    "docs/miele-foto-ram.jpg": "7b976fadfec222f71006084d074bc47a869d874c7780b91e3c4d6da628503a00"
+  }
+}
