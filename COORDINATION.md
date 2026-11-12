@@ -21,6 +21,7 @@ work](ORCHESTRA.md#resume-unfinished-work-first), then dispatches.
 | Integration-ready | Finished implementation handed to its integration owner; retains ownership, takes no worker slot and is not dispatchable to another worker |
 | Integration queue | Documented handoffs/PRs awaiting their named integration owner; separate from the backlog for new workers |
 | Slot | One active worker within host capacity; helpers, reviewers and a conductor implementing or integrating each take one; waiting handoffs take none |
+| Dynamic capacity | Active capacity evaluated continuously between dispatches, scaling down on integration backlog, rate limits, or resource pressure, and scaling up towards host ceiling when conditions are clear |
 | Integration owner | The one agent that combines, publishes and closes an issue's delivery |
 | Resolved | Closed by this session after its change reached main (or merged, in PR mode); the idle watch counts from the latest such closure |
 | Drain | Nothing is startable, no worker is active and no owned handoff can be integrated now |
@@ -74,13 +75,18 @@ testing follows [best-guess closure](ORCHESTRA.md#close-after-a-best-guess-fix),
    the [isolation rules](ORCHESTRA.md#isolate-concurrent-agents). Disjoint files are not
    required; serialise only a recorded dependency or overlapping integration. A
    suggested chain never bypasses fresh selection after each issue; do not interrupt
-   active work simply because priorities change.
+   active work simply because priorities change. Evaluate capacity dynamically before
+   each dispatch: throttle down or withhold new worker slots if the integration queue has
+   waiting handoffs, if API rate limits (HTTP 429) or tool quota errors were observed,
+   or if host system resources are constrained.
 
 Before each new dispatch and before declaring drain, reconcile owned handoffs and
 merged PRs from the complete fetch. Order the integration queue by the same priority,
 creation time, full repository name and issue number as dispatch; keep ancestor
 constraints. Resume ready integration/review when capacity is available, using a slot
-only while actually working. Independent dispatch can continue in free slots; a
+only while actually working. Prioritize integrating waiting handoffs before dispatching
+additional workers to keep the pipeline flowing and prevent stale branch drift.
+Independent dispatch can continue in free slots within currently evaluated capacity; a
 waiting result must neither occupy one nor be reassigned as new implementation.
 Record concrete integration blockers and the next owner/action. A missing ownership
 label does not make a recorded handoff unowned; repair metadata from evidence. Follow

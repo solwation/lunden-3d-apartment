@@ -2,6 +2,31 @@
 
 ## Unreleased
 
+## 0.13.1 — 2026-11-12
+
+- Clarify that agent-created or added work issues start/resume the orchestra under
+  the host's documented intake run mode, including after an idle watch; reuse the
+  active conductor, respect explicit deferral and do not interpret "create an issue"
+  alone as a request to stop after registration (#67).
+
+## 0.13.0 — 2026-11-12
+
+- Add guidelines for continuous capacity evaluation and dynamic worker scaling
+  in `ORCHESTRA.md`, `COORDINATION.md`, and `PROJECT.example.md`: treat host
+  capacity as an upper bound rather than a static quota, scale down on rate
+  limits (HTTP 429), resource pressure, or integration backlogs, prioritize
+  integrating waiting handoffs before dispatching new workers, and scale up
+  cautiously towards host ceiling when the integration pipeline is clear (#66).
+
+## 0.12.1 — 2026-11-12
+
+- Clarify image rules and dashboard compatibility for private repositories in
+  `PROJECT.example.md`: revision-pinned blob or raw URLs are the correct format
+  but require the reader's dashboard token to have `Contents: Read-only` permission
+  (a *View on GitHub* placeholder indicates missing permissions rather than an
+  incorrect link format), and note that public hosting alternatives apply only
+  when host policy permits publication (#65).
+
 ## 0.12.0 — 2026-11-11
 
 - Recommend an optional multi-perspective expert panel review hook when work is
