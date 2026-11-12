@@ -1,0 +1,6423 @@
+{
+  "baseline": null,
+  "environment": "actual RiverFish/CaughtFish/BestiaryImages; controlled lighting; production opaque river water; Chromium SwiftShader DPR1",
+  "views": [
+    {
+      "name": "caught",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 2,
+        "calls": 6,
+        "triangles": 4698,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 0,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cooked",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 3,
+        "calls": 6,
+        "triangles": 4698,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 0,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "live",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 4,
+        "calls": 3,
+        "triangles": 4934,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 6,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "live-down",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 5,
+        "calls": 3,
+        "triangles": 4934,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 6,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "live-normal",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 6,
+        "calls": 3,
+        "triangles": 4934,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 6,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "held-0",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 8,
+        "calls": 1,
+        "triangles": 743,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 0,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "held-1",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 10,
+        "calls": 1,
+        "triangles": 743,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 0,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "held-2",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 12,
+        "calls": 1,
+        "triangles": 743,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 0,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "held-3",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 14,
+        "calls": 1,
+        "triangles": 847,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 0,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "held-4",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 16,
+        "calls": 1,
+        "triangles": 879,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 0,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "held-5",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 18,
+        "calls": 1,
+        "triangles": 743,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 0,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "surface",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 20,
+        "calls": 7,
+        "triangles": 4700,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 0,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "natural-mört-up",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 25,
+        "calls": 3,
+        "triangles": 3588,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 3,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "natural-mört-down",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 30,
+        "calls": 3,
+        "triangles": 3588,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 3,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "natural-abborre-up",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 35,
+        "calls": 4,
+        "triangles": 5488,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 5,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 6,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "natural-abborre-down",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 40,
+        "calls": 3,
+        "triangles": 5232,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 5,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 6,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "natural-braxen-up",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 45,
+        "calls": 3,
+        "triangles": 5232,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 5,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 6,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "natural-braxen-down",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 50,
+        "calls": 3,
+        "triangles": 5232,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 5,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 6,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "natural-gädda-up",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 55,
+        "calls": 4,
+        "triangles": 5488,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 5,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 6,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "natural-gädda-down",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 60,
+        "calls": 4,
+        "triangles": 4538,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 4,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 6,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "natural-öring-up",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 65,
+        "calls": 3,
+        "triangles": 3588,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 3,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 6,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "natural-öring-down",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 70,
+        "calls": 3,
+        "triangles": 1944,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 1,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 6,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "natural-ål-up",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 75,
+        "calls": 3,
+        "triangles": 1944,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 1,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 6,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "natural-ål-down",
+      "finite": true,
+      "cameraFinite": true,
+      "instanceFinite": true,
+      "render": {
+        "frame": 80,
+        "calls": 3,
+        "triangles": 1944,
+        "points": 0,
+        "lines": 0
+      },
+      "fishCount": 1,
+      "material": {
+        "opacity": 0.85,
+        "transparent": true,
+        "depthWrite": false,
+        "side": 2,
+        "forceSinglePass": false
+      },
+      "waterOpaque": true,
+      "programs": [
+        {
+          "maxSlots": 16,
+          "activeSlots": 3,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 3
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 2,
+          "attributes": [
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "normal",
+              "type": 35665,
+              "size": 1,
+              "location": 1
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 14,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            },
+            {
+              "name": "color",
+              "type": 35665,
+              "size": 1,
+              "location": 8
+            },
+            {
+              "name": "aFish",
+              "type": 35664,
+              "size": 1,
+              "location": 9
+            },
+            {
+              "name": "aFishNormal0",
+              "type": 35664,
+              "size": 1,
+              "location": 10
+            },
+            {
+              "name": "aFishTarget1",
+              "type": 35666,
+              "size": 1,
+              "location": 11
+            },
+            {
+              "name": "aFishTarget2",
+              "type": 35666,
+              "size": 1,
+              "location": 12
+            },
+            {
+              "name": "aFishTarget3",
+              "type": 35666,
+              "size": 1,
+              "location": 13
+            },
+            {
+              "name": "aFishTarget4",
+              "type": 35666,
+              "size": 1,
+              "location": 14
+            },
+            {
+              "name": "aFishTarget5",
+              "type": 35666,
+              "size": 1,
+              "location": 15
+            }
+          ]
+        },
+        {
+          "maxSlots": 16,
+          "activeSlots": 6,
+          "attributes": [
+            {
+              "name": "instanceMatrix",
+              "type": 35676,
+              "size": 1,
+              "location": 0
+            },
+            {
+              "name": "instanceColor",
+              "type": 35665,
+              "size": 1,
+              "location": 4
+            },
+            {
+              "name": "position",
+              "type": 35665,
+              "size": 1,
+              "location": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "constructionMs": 21.699999999254942,
+  "held": [
+    {
+      "species": "mört",
+      "cm": 40,
+      "parentIsCamera": true,
+      "held": true,
+      "position": [
+        0.06,
+        -0.2,
+        -0.48
+      ],
+      "quaternion": [
+        0.0945161995798118,
+        0.6470474917666659,
+        0.08130484094853634,
+        0.7521873132762801
+      ],
+      "lengthScale": 0.4
+    },
+    {
+      "species": "abborre",
+      "cm": 40,
+      "parentIsCamera": true,
+      "held": true,
+      "position": [
+        0.06,
+        -0.2,
+        -0.48
+      ],
+      "quaternion": [
+        0.0945161995798118,
+        0.6470474917666659,
+        0.08130484094853634,
+        0.7521873132762801
+      ],
+      "lengthScale": 0.4
+    },
+    {
+      "species": "braxen",
+      "cm": 40,
+      "parentIsCamera": true,
+      "held": true,
+      "position": [
+        0.06,
+        -0.2,
+        -0.48
+      ],
+      "quaternion": [
+        0.0945161995798118,
+        0.6470474917666659,
+        0.08130484094853634,
+        0.7521873132762801
+      ],
+      "lengthScale": 0.4
+    },
+    {
+      "species": "gädda",
+      "cm": 40,
+      "parentIsCamera": true,
+      "held": true,
+      "position": [
+        0.06,
+        -0.2,
+        -0.48
+      ],
+      "quaternion": [
+        0.0945161995798118,
+        0.6470474917666659,
+        0.08130484094853634,
+        0.7521873132762801
+      ],
+      "lengthScale": 0.4
+    },
+    {
+      "species": "öring",
+      "cm": 40,
+      "parentIsCamera": true,
+      "held": true,
+      "position": [
+        0.06,
+        -0.2,
+        -0.48
+      ],
+      "quaternion": [
+        0.0945161995798118,
+        0.6470474917666659,
+        0.08130484094853634,
+        0.7521873132762801
+      ],
+      "lengthScale": 0.4
+    },
+    {
+      "species": "ål",
+      "cm": 40,
+      "parentIsCamera": true,
+      "held": true,
+      "position": [
+        0.06,
+        -0.2,
+        -0.48
+      ],
+      "quaternion": [
+        0.0945161995798118,
+        0.6470474917666659,
+        0.08130484094853634,
+        0.7521873132762801
+      ],
+      "lengthScale": 0.4
+    }
+  ],
+  "surface": [
+    {
+      "species": "mört",
+      "minY": 0.0010000000000000009,
+      "placed": true,
+      "lengthScale": 0.4,
+      "info": {
+        "species": "mört",
+        "cm": 40,
+        "raw": true
+      }
+    },
+    {
+      "species": "abborre",
+      "minY": 0.0010000000000000009,
+      "placed": true,
+      "lengthScale": 0.4,
+      "info": {
+        "species": "abborre",
+        "cm": 40,
+        "raw": true
+      }
+    },
+    {
+      "species": "braxen",
+      "minY": 0.0010000000000000009,
+      "placed": true,
+      "lengthScale": 0.4,
+      "info": {
+        "species": "braxen",
+        "cm": 40,
+        "raw": true
+      }
+    },
+    {
+      "species": "gädda",
+      "minY": 0.0010000000000000009,
+      "placed": true,
+      "lengthScale": 0.4,
+      "info": {
+        "species": "gädda",
+        "cm": 40,
+        "raw": true
+      }
+    },
+    {
+      "species": "öring",
+      "minY": 0.0010000000000000009,
+      "placed": true,
+      "lengthScale": 0.4,
+      "info": {
+        "species": "öring",
+        "cm": 40,
+        "raw": true
+      }
+    },
+    {
+      "species": "ål",
+      "minY": 0.0010000000000000009,
+      "placed": true,
+      "lengthScale": 0.4,
+      "info": {
+        "species": "ål",
+        "cm": 40,
+        "raw": true
+      }
+    }
+  ],
+  "natural": [
+    {
+      "id": 0,
+      "born": 5,
+      "name": "mört",
+      "time": 13.575000000000125,
+      "point": {
+        "x": -87.98991662566475,
+        "z": 180.56005814684838,
+        "nx": -0.697654625742461,
+        "nz": -0.7164342420488754,
+        "hw": 3.053836438750676,
+        "s": 478.5493097645145,
+        "lat": 1.3281162898595653,
+        "free": 2.6038364387506756,
+        "deep": 0.42269177875857905,
+        "yaw": 2.181098287392672,
+        "speed": 0.6027188717495108,
+        "rise": 0.9985739295896525,
+        "y": -7.126905769059704,
+        "water": -7.1174631494270155,
+        "bed": -7.717463149427015
+      },
+      "rising": true,
+      "slot": 0,
+      "shown": [
+        {
+          "id": 0,
+          "born": 5,
+          "species": "mört",
+          "x": -87.98991660210083,
+          "y": -7.126905767296356,
+          "z": 180.56005813038942,
+          "rise": 0.9985739351768612,
+          "drawnY": -7.12683244034397
+        },
+        {
+          "id": 5,
+          "born": 0,
+          "species": "braxen",
+          "x": -61.572782317119795,
+          "y": -7.562853962612371,
+          "z": 164.59896741005576,
+          "rise": 0,
+          "drawnY": -7.043647454781804
+        },
+        {
+          "id": 6,
+          "born": 0,
+          "species": "gädda",
+          "x": -75.82192327553018,
+          "y": -7.5847865217080095,
+          "z": 173.4246436254776,
+          "rise": 0,
+          "drawnY": -7.070290746843575
+        }
+      ],
+      "changedPixels": 136,
+      "inView": true,
+      "water": {
+        "name": "bridges-water",
+        "opaque": true,
+        "depthWrite": true
+      }
+    },
+    {
+      "id": 0,
+      "born": 5,
+      "name": "mört",
+      "time": 0,
+      "point": {
+        "x": -92.82554826939578,
+        "z": 188.63185203751345,
+        "nx": -0.7053461960519044,
+        "nz": -0.7088629936137931,
+        "hw": 3,
+        "s": 487.72771157213185,
+        "lat": -0.5442382131770184,
+        "free": 2.55,
+        "deep": 0.7185767120577734,
+        "yaw": 2.440310156772635,
+        "speed": 0.7060777273714538,
+        "rise": 0,
+        "y": -7.332821507054799,
+        "water": -7.1258806576367535,
+        "bed": -7.725880657636753
+      },
+      "rising": false,
+      "slot": 0,
+      "shown": [
+        {
+          "id": 0,
+          "born": 5,
+          "species": "mört",
+          "x": -92.82554826939578,
+          "y": -7.332821507054799,
+          "z": 188.63185203751345,
+          "rise": 0,
+          "drawnY": -7.100380657636754
+        },
+        {
+          "id": 5,
+          "born": 0,
+          "species": "braxen",
+          "x": -63.196815304853104,
+          "y": -7.528728141842391,
+          "z": 162.9835225989595,
+          "rise": 0,
+          "drawnY": -7.044001648431517
+        },
+        {
+          "id": 6,
+          "born": 0,
+          "species": "gädda",
+          "x": -74.67834940585526,
+          "y": -7.250806478680199,
+          "z": 174.04096470056254,
+          "rise": 0,
+          "drawnY": -7.069844138130529
+        }
+      ],
+      "changedPixels": 377,
+      "inView": true,
+      "water": {
+        "name": "bridges-water",
+        "opaque": true,
+        "depthWrite": true
+      }
+    },
+    {
+      "id": 0,
+      "born": 0,
+      "name": "abborre",
+      "time": 26.974999999999536,
+      "point": {
+        "x": -172.73479628294467,
+        "z": 206.6511116885031,
+        "nx": -0.2418825729678407,
+        "nz": -0.9703055296629289,
+        "hw": 3.436331897538929,
+        "s": 574.4550456611869,
+        "lat": 0.4654917072471769,
+        "free": 2.961331897538929,
+        "deep": 0.6000689454840359,
+        "yaw": 0.5633778455659368,
+        "speed": 0.4781394556034202,
+        "rise": 0.998924110961369,
+        "y": -7.216927249200304,
+        "water": -7.205418257101775,
+        "bed": -7.805418257101775
+      },
+      "rising": true,
+      "slot": 0,
+      "shown": [
+        {
+          "id": 0,
+          "born": 0,
+          "species": "abborre",
+          "x": -172.73479630730498,
+          "y": -7.216927251561451,
+          "z": 206.65111164991856,
+          "rise": 0.9989241012361304,
+          "drawnY": -7.216861635934378
+        },
+        {
+          "id": 2,
+          "born": 0,
+          "species": "gädda",
+          "x": -139.03385362607403,
+          "y": -7.313438305577401,
+          "z": 206.64321515342883,
+          "rise": 0,
+          "drawnY": -7.140235640478625
+        },
+        {
+          "id": 3,
+          "born": 0,
+          "species": "abborre",
+          "x": -163.42917373237256,
+          "y": -7.343210127142079,
+          "z": 205.73163522636048,
+          "rise": 0,
+          "drawnY": -7.167842858250841
+        },
+        {
+          "id": 10,
+          "born": 0,
+          "species": "abborre",
+          "x": -146.49664900842814,
+          "y": -7.418002106934297,
+          "z": 204.31666144753098,
+          "rise": 0,
+          "drawnY": -7.152036963544236
+        },
+        {
+          "id": 11,
+          "born": 0,
+          "species": "öring",
+          "x": -148.6860244603396,
+          "y": -7.663396923137556,
+          "z": 206.22109786648954,
+          "rise": 0,
+          "drawnY": -7.148904929645598
+        }
+      ],
+      "changedPixels": 300,
+      "inView": true,
+      "water": {
+        "name": "bridges-water",
+        "opaque": true,
+        "depthWrite": true
+      }
+    },
+    {
+      "id": 0,
+      "born": 0,
+      "name": "abborre",
+      "time": 0,
+      "point": {
+        "x": -173.06240035547623,
+        "z": 208.29827580021447,
+        "nx": -0.24091363559399284,
+        "nz": -0.9705465574535231,
+        "hw": 3.4414644736013384,
+        "s": 575.1871420686274,
+        "lat": -1.2104100703291703,
+        "free": 2.9664644736013384,
+        "deep": 0.3578123925362166,
+        "yaw": -0.9570838855989411,
+        "speed": 0.17045531089293053,
+        "rise": 0,
+        "y": -7.550120953227203,
+        "water": -7.206089662390966,
+        "bed": -7.806089662390965
+      },
+      "rising": false,
+      "slot": 0,
+      "shown": [
+        {
+          "id": 0,
+          "born": 0,
+          "species": "abborre",
+          "x": -173.06240035547623,
+          "y": -7.550120953227203,
+          "z": 208.29827580021447,
+          "rise": 0,
+          "drawnY": -7.177214662390966
+        },
+        {
+          "id": 2,
+          "born": 0,
+          "species": "gädda",
+          "x": -136.56337542468495,
+          "y": -7.542283564825729,
+          "z": 204.65554143967663,
+          "rise": 0,
+          "drawnY": -7.137442637188435
+        },
+        {
+          "id": 3,
+          "born": 0,
+          "species": "abborre",
+          "x": -145.86510614194026,
+          "y": -7.6599035912464055,
+          "z": 205.45760283985464,
+          "rise": 0,
+          "drawnY": -7.151761329715519
+        },
+        {
+          "id": 10,
+          "born": 0,
+          "species": "abborre",
+          "x": -142.79836767931312,
+          "y": -7.288854168856221,
+          "z": 204.66295685533294,
+          "rise": 0,
+          "drawnY": -7.148754668954465
+        },
+        {
+          "id": 11,
+          "born": 0,
+          "species": "öring",
+          "x": -167.2199051209437,
+          "y": -7.311458425447694,
+          "z": 209.13515765321344,
+          "rise": 0,
+          "drawnY": -7.16647206389771
+        }
+      ],
+      "changedPixels": 582,
+      "inView": true,
+      "water": {
+        "name": "bridges-water",
+        "opaque": true,
+        "depthWrite": true
+      }
+    },
+    {
+      "id": 0,
+      "born": 15,
+      "name": "braxen",
+      "time": 44.92499999999852,
+      "point": {
+        "x": -161.05206115659044,
+        "z": 204.92141191109704,
+        "nx": -0.25782508274837435,
+        "nz": -0.9661916097264527,
+        "hw": 3.3517405288296858,
+        "s": 562.3891675564126,
+        "lat": 1.903990685549155,
+        "free": 2.7917405288296857,
+        "deep": 0.9416257764158263,
+        "yaw": 1.2601591668618737,
+        "speed": 0.9766549485172673,
+        "rise": 0.9956369161975898,
+        "y": -7.217287567479845,
+        "water": -7.194352645665987,
+        "bed": -7.794352645665986
+      },
+      "rising": true,
+      "slot": 0,
+      "shown": [
+        {
+          "id": 0,
+          "born": 15,
+          "species": "braxen",
+          "x": -161.05206120094635,
+          "y": -7.217287568483504,
+          "z": 204.92141189681237,
+          "rise": 0.9956369065369575,
+          "drawnY": -7.2168086973996735
+        },
+        {
+          "id": 2,
+          "born": 0,
+          "species": "gädda",
+          "x": -132.0084068258129,
+          "y": -7.277847190305161,
+          "z": 207.05658231954627,
+          "rise": 0,
+          "drawnY": -7.133966432014583
+        },
+        {
+          "id": 3,
+          "born": 0,
+          "species": "abborre",
+          "x": -171.10714722253653,
+          "y": -7.415318672075716,
+          "z": 207.23421627448468,
+          "rise": 0,
+          "drawnY": -7.175193179316719
+        },
+        {
+          "id": 10,
+          "born": 0,
+          "species": "abborre",
+          "x": -155.82671542295898,
+          "y": -7.524481965530076,
+          "z": 208.08634146119482,
+          "rise": 0,
+          "drawnY": -7.161496955086954
+        },
+        {
+          "id": 11,
+          "born": 0,
+          "species": "öring",
+          "x": -155.50160015478852,
+          "y": -7.665426950061646,
+          "z": 207.55009429415253,
+          "rise": 0,
+          "drawnY": -7.15544316030177
+        }
+      ],
+      "changedPixels": 404,
+      "inView": true,
+      "water": {
+        "name": "bridges-water",
+        "opaque": true,
+        "depthWrite": true
+      }
+    },
+    {
+      "id": 0,
+      "born": 15,
+      "name": "braxen",
+      "time": 0,
+      "point": {
+        "x": -165.64079733864676,
+        "z": 205.72413029673783,
+        "nx": -0.2515197789987938,
+        "nz": -0.967852158530629,
+        "hw": 3.3852305550266384,
+        "s": 567.1660919635239,
+        "lat": 1.2111365720869987,
+        "free": 2.8252305550266383,
+        "deep": 0.002272556276003479,
+        "yaw": -1.0916945743827056,
+        "speed": 0.6915528381461629,
+        "rise": 0,
+        "y": -7.677869989527241,
+        "water": -7.198733560912123,
+        "bed": -7.798733560912122
+      },
+      "rising": false,
+      "slot": 0,
+      "shown": [
+        {
+          "id": 0,
+          "born": 15,
+          "species": "braxen",
+          "x": -165.64079733864676,
+          "y": -7.677869989527241,
+          "z": 205.72413029673783,
+          "rise": 0,
+          "drawnY": -7.152983560912123
+        },
+        {
+          "id": 2,
+          "born": 0,
+          "species": "gädda",
+          "x": -136.56337542468495,
+          "y": -7.542283564825729,
+          "z": 204.65554143967663,
+          "rise": 0,
+          "drawnY": -7.137442637188435
+        },
+        {
+          "id": 3,
+          "born": 0,
+          "species": "abborre",
+          "x": -145.86510614194026,
+          "y": -7.6599035912464055,
+          "z": 205.45760283985464,
+          "rise": 0,
+          "drawnY": -7.151761329715519
+        },
+        {
+          "id": 10,
+          "born": 0,
+          "species": "abborre",
+          "x": -142.79836767931312,
+          "y": -7.288854168856221,
+          "z": 204.66295685533294,
+          "rise": 0,
+          "drawnY": -7.148754668954465
+        },
+        {
+          "id": 11,
+          "born": 0,
+          "species": "öring",
+          "x": -167.2199051209437,
+          "y": -7.311458425447694,
+          "z": 209.13515765321344,
+          "rise": 0,
+          "drawnY": -7.16647206389771
+        }
+      ],
+      "changedPixels": 1127,
+      "inView": true,
+      "water": {
+        "name": "bridges-water",
+        "opaque": true,
+        "depthWrite": true
+      }
+    },
+    {
+      "id": 0,
+      "born": 12,
+      "name": "gädda",
+      "time": 12.175000000000106,
+      "point": {
+        "x": 185.46159882393562,
+        "z": 77.40162873780343,
+        "nx": -0.160134545971343,
+        "nz": -0.9870951966181133,
+        "hw": 3.0427816770055904,
+        "s": 158.94391528389235,
+        "lat": 1.3591646546985245,
+        "free": 2.3177816770055903,
+        "deep": 0.9721823097129934,
+        "yaw": 1.7400693061416868,
+        "speed": 0.67653407643873,
+        "rise": 0.9958602195469592,
+        "y": -6.839748826308055,
+        "water": -6.824353184499957,
+        "bed": -7.424353184499957
+      },
+      "rising": true,
+      "slot": 0,
+      "shown": [
+        {
+          "id": 0,
+          "born": 12,
+          "species": "gädda",
+          "x": 185.46159879214463,
+          "y": -6.839748827235372,
+          "z": 77.40162874329778,
+          "rise": 0.9958602101298127,
+          "drawnY": -6.839428896828859
+        },
+        {
+          "id": 4,
+          "born": 0,
+          "species": "mört",
+          "x": 217.68029368455328,
+          "y": -7.001112602244213,
+          "z": 63.912342226384844,
+          "rise": 0,
+          "drawnY": -6.765356323312527
+        },
+        {
+          "id": 7,
+          "born": 0,
+          "species": "mört",
+          "x": 189.44619340050403,
+          "y": -6.934774882018001,
+          "z": 79.7329522158324,
+          "rise": 0,
+          "drawnY": -6.795478269321342
+        },
+        {
+          "id": 15,
+          "born": 0,
+          "species": "abborre",
+          "x": 218.69869888123367,
+          "y": -6.950917743805524,
+          "z": 64.38491547430327,
+          "rise": 0,
+          "drawnY": -6.761378070918092
+        },
+        {
+          "id": 17,
+          "born": 0,
+          "species": "mört",
+          "x": 176.36846097297905,
+          "y": -7.265381426318106,
+          "z": 77.4899024564956,
+          "rise": 0,
+          "drawnY": -6.807301463014718
+        }
+      ],
+      "changedPixels": 1297,
+      "inView": true,
+      "water": {
+        "name": "bridges-water",
+        "opaque": true,
+        "depthWrite": true
+      }
+    },
+    {
+      "id": 0,
+      "born": 12,
+      "name": "gädda",
+      "time": 0,
+      "point": {
+        "x": 174.48196546152494,
+        "z": 77.6898556037321,
+        "nx": -0.2336802568160643,
+        "nz": -0.9723134975790362,
+        "hw": 3.136652172232799,
+        "s": 170.12422591545925,
+        "lat": 0.2106406624955336,
+        "free": 2.411652172232799,
+        "deep": 0.10868586214741616,
+        "yaw": 1.6468155550955181,
+        "speed": 0.9973847136155016,
+        "rise": 0,
+        "y": -7.273306014784477,
+        "water": -6.834606642400495,
+        "bed": -7.434606642400495
+      },
+      "rising": false,
+      "slot": 0,
+      "shown": [
+        {
+          "id": 0,
+          "born": 12,
+          "species": "gädda",
+          "x": 174.48196546152494,
+          "y": -7.273306014784477,
+          "z": 77.6898556037321,
+          "rise": 0,
+          "drawnY": -6.800106642400496
+        },
+        {
+          "id": 7,
+          "born": 0,
+          "species": "mört",
+          "x": 190.5489156952659,
+          "y": -7.242467681527657,
+          "z": 77.14381259160379,
+          "rise": 0,
+          "drawnY": -6.794138092469781
+        },
+        {
+          "id": 14,
+          "born": 0,
+          "species": "abborre",
+          "x": 131.75251497880998,
+          "y": -7.145021117929735,
+          "z": 76.372625232285,
+          "rise": 0,
+          "drawnY": -6.846127991690464
+        },
+        {
+          "id": 17,
+          "born": 0,
+          "species": "mört",
+          "x": 184.653172389793,
+          "y": -6.929390831243952,
+          "z": 80.37315973063525,
+          "rise": 0,
+          "drawnY": -6.800069567330612
+        }
+      ],
+      "changedPixels": 3490,
+      "inView": true,
+      "water": {
+        "name": "bridges-water",
+        "opaque": true,
+        "depthWrite": true
+      }
+    },
+    {
+      "id": 0,
+      "born": 39,
+      "name": "öring",
+      "time": 220.42500000003298,
+      "point": {
+        "x": -201.9045558326213,
+        "z": 217.41626396420267,
+        "nx": -0.3698381038228191,
+        "nz": -0.9290962151256142,
+        "hw": 3.5,
+        "s": 606.063840971824,
+        "lat": -0.594450153713274,
+        "free": 2.925,
+        "deep": 0.9752588750328398,
+        "yaw": 2.2647750172679326,
+        "speed": 0.4214676018213625,
+        "rise": 0.9953342462021844,
+        "y": -7.249847123954684,
+        "water": -7.2344066692027145,
+        "bed": -7.834406669202714
+      },
+      "rising": true,
+      "slot": 0,
+      "shown": [
+        {
+          "id": 0,
+          "born": 39,
+          "species": "öring",
+          "x": -201.90455584808512,
+          "y": -7.249847124917535,
+          "z": 217.41626397705724,
+          "rise": 0.995334236214194,
+          "drawnY": -7.249486404700958
+        },
+        {
+          "id": 3,
+          "born": 0,
+          "species": "abborre",
+          "x": -163.56363106703128,
+          "y": -7.316305973827636,
+          "z": 207.19451339068954,
+          "rise": 0,
+          "drawnY": -7.1683155461582375
+        },
+        {
+          "id": 11,
+          "born": 0,
+          "species": "öring",
+          "x": -180.58486012947213,
+          "y": -7.3573655342160285,
+          "z": 205.57763761250075,
+          "rise": 0,
+          "drawnY": -7.17784340763022
+        }
+      ],
+      "changedPixels": 459,
+      "inView": true,
+      "water": {
+        "name": "bridges-water",
+        "opaque": true,
+        "depthWrite": true
+      }
+    },
+    {
+      "id": 0,
+      "born": 39,
+      "name": "öring",
+      "time": 0,
+      "point": {
+        "x": -215.75164946461916,
+        "z": 221.74486859576487,
+        "nx": -0.45536467330284125,
+        "nz": -0.8903050119525312,
+        "hw": 3.5,
+        "s": 620.4288053810706,
+        "lat": 1.3247856488721972,
+        "free": 2.925,
+        "deep": 0.3921347416036498,
+        "yaw": 2.040136063653618,
+        "speed": 0.23668661547886105,
+        "rise": 0,
+        "y": -7.578569569854943,
+        "water": -7.24758077166433,
+        "bed": -7.8475807716643295
+      },
+      "rising": false,
+      "slot": 0,
+      "shown": [
+        {
+          "id": 0,
+          "born": 39,
+          "species": "öring",
+          "x": -215.75164946461916,
+          "y": -7.578569569854943,
+          "z": 221.74486859576487,
+          "rise": 0,
+          "drawnY": -7.21308077166433
+        }
+      ],
+      "changedPixels": 1503,
+      "inView": true,
+      "water": {
+        "name": "bridges-water",
+        "opaque": true,
+        "depthWrite": true
+      }
+    },
+    {
+      "id": 0,
+      "born": 1,
+      "name": "ål",
+      "time": 220.27500000003295,
+      "point": {
+        "x": 45.37595806102931,
+        "z": 120.32970908567862,
+        "nx": -0.06398471749423684,
+        "nz": -0.9979508785141595,
+        "hw": 1.758404605611077,
+        "s": 328.50277982113084,
+        "lat": -0.5398923647833006,
+        "free": 1.0834046056110769,
+        "deep": 0.9966572865811629,
+        "yaw": 1.7332739498820713,
+        "speed": 0.1909919965594842,
+        "rise": 0.9972986986574618,
+        "y": -6.985364923225315,
+        "water": -6.979855543646136,
+        "bed": -7.5798555436461355
+      },
+      "rising": true,
+      "slot": 0,
+      "shown": [
+        {
+          "id": 0,
+          "born": 1,
+          "species": "ål",
+          "x": 45.375958078998245,
+          "y": -6.985364921742659,
+          "z": 120.32970908271342,
+          "rise": 0.9972987139436084,
+          "drawnY": -6.985270421630827
+        }
+      ],
+      "changedPixels": 1131,
+      "inView": true,
+      "water": {
+        "name": "bridges-water",
+        "opaque": true,
+        "depthWrite": true
+      }
+    },
+    {
+      "id": 0,
+      "born": 1,
+      "name": "ål",
+      "time": 0,
+      "point": {
+        "x": 69.87246880848453,
+        "z": 119.93972053891856,
+        "nx": -0.017970848238311667,
+        "nz": -0.9998385112674923,
+        "hw": 1.9582457228900827,
+        "s": 303.97732822577103,
+        "lat": -0.3646848121279204,
+        "free": 1.2832457228900827,
+        "deep": 0.9640869928243303,
+        "yaw": 1.6169576530491634,
+        "speed": 0.4919384358990486,
+        "rise": 0,
+        "y": -7.071010205638336,
+        "water": -6.957363262911581,
+        "bed": -7.557363262911581
+      },
+      "rising": false,
+      "slot": 0,
+      "shown": [
+        {
+          "id": 0,
+          "born": 1,
+          "species": "ål",
+          "x": 69.87246880848453,
+          "y": -7.071010205638336,
+          "z": 119.93972053891856,
+          "rise": 0,
+          "drawnY": -6.9374882629115815
+        }
+      ],
+      "changedPixels": 1571,
+      "inView": true,
+      "water": {
+        "name": "bridges-water",
+        "opaque": true,
+        "depthWrite": true
+      }
+    }
+  ],
+  "gating": {
+    "gone": true,
+    "hidden": true,
+    "far": true
+  },
+  "timing": {
+    "viewport": [
+      640,
+      480
+    ],
+    "dpr": 1,
+    "warmup": 8,
+    "samples": 30,
+    "natural": {
+      "updateMs": {
+        "median": 0.09999999962747097,
+        "p95": 0.2000000011175871,
+        "samples": [
+          0,
+          0.09999999962747097,
+          0,
+          0.10000000149011612,
+          0.09999999962747097,
+          0.09999999962747097,
+          0.09999999962747097,
+          0.09999999962747097,
+          0.09999999962747097,
+          0,
+          0.10000000149011612,
+          0.09999999962747097,
+          0.19999999925494194,
+          0,
+          0.09999999962747097,
+          0.2000000011175871,
+          0.09999999962747097,
+          0.19999999925494194,
+          0.09999999962747097,
+          0.10000000149011612,
+          0.19999999925494194,
+          0.19999999925494194,
+          0.09999999962747097,
+          0,
+          0.2000000011175871,
+          0.09999999962747097,
+          0.09999999962747097,
+          0.09999999962747097,
+          0,
+          0.6999999992549419
+        ]
+      },
+      "renderFinishMs": {
+        "median": 0.2999999988824129,
+        "p95": 0.40000000037252903,
+        "samples": [
+          0.2000000011175871,
+          0.40000000037252903,
+          0.2999999988824129,
+          0.2999999988824129,
+          0.30000000074505806,
+          0.30000000074505806,
+          0.40000000037252903,
+          0.599999999627471,
+          0.30000000074505806,
+          0.19999999925494194,
+          0.19999999925494194,
+          0.09999999962747097,
+          0.19999999925494194,
+          0.2000000011175871,
+          0.09999999962747097,
+          0.09999999962747097,
+          0.30000000074505806,
+          0.2000000011175871,
+          0.2999999988824129,
+          0.19999999925494194,
+          0.2000000011175871,
+          0.30000000074505806,
+          0.40000000037252903,
+          0.19999999925494194,
+          0.2999999988824129,
+          0.30000000074505806,
+          0.2000000011175871,
+          0.19999999925494194,
+          0.30000000074505806,
+          0.2000000011175871
+        ]
+      },
+      "filledCounts": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "submitted": {
+        "frame": 122,
+        "calls": 4,
+        "triangles": 5616,
+        "points": 0,
+        "lines": 0
+      }
+    },
+    "capacity": {
+      "configured": 18,
+      "filled": 18,
+      "renderFinishMs": {
+        "median": 0.19999999925494194,
+        "p95": 0.2999999988824129,
+        "samples": [
+          0.19999999925494194,
+          0.2000000011175871,
+          0.09999999962747097,
+          0.19999999925494194,
+          0.09999999962747097,
+          0.2000000011175871,
+          0.09999999962747097,
+          0.19999999925494194,
+          0.10000000149011612,
+          0.19999999925494194,
+          0.09999999962747097,
+          0.09999999962747097,
+          0.10000000149011612,
+          0.19999999925494194,
+          0.09999999962747097,
+          0.09999999962747097,
+          0.10000000149011612,
+          0.19999999925494194,
+          0.09999999962747097,
+          0.30000000074505806,
+          0.09999999962747097,
+          0.19999999925494194,
+          0.2000000011175871,
+          0.19999999925494194,
+          0.09999999962747097,
+          0.2000000011175871,
+          0.19999999925494194,
+          0.2000000011175871,
+          0.09999999962747097,
+          0.2999999988824129
+        ]
+      },
+      "submitted": {
+        "frame": 161,
+        "calls": 3,
+        "triangles": 14798,
+        "points": 0,
+        "lines": 0
+      }
+    }
+  },
+  "binder": {
+    "rows": [
+      {
+        "id": "fish:mört",
+        "size": 96,
+        "version": 2,
+        "opaque": 716
+      },
+      {
+        "id": "fish:mört",
+        "size": 320,
+        "version": 2,
+        "opaque": 7951
+      },
+      {
+        "id": "fish:abborre",
+        "size": 96,
+        "version": 2,
+        "opaque": 787
+      },
+      {
+        "id": "fish:abborre",
+        "size": 320,
+        "version": 2,
+        "opaque": 8729
+      },
+      {
+        "id": "fish:braxen",
+        "size": 96,
+        "version": 2,
+        "opaque": 902
+      },
+      {
+        "id": "fish:braxen",
+        "size": 320,
+        "version": 2,
+        "opaque": 9971
+      },
+      {
+        "id": "fish:gädda",
+        "size": 96,
+        "version": 2,
+        "opaque": 380
+      },
+      {
+        "id": "fish:gädda",
+        "size": 320,
+        "version": 2,
+        "opaque": 4188
+      },
+      {
+        "id": "fish:öring",
+        "size": 96,
+        "version": 2,
+        "opaque": 615
+      },
+      {
+        "id": "fish:öring",
+        "size": 320,
+        "version": 2,
+        "opaque": 6847
+      },
+      {
+        "id": "fish:ål",
+        "size": 96,
+        "version": 2,
+        "opaque": 223
+      },
+      {
+        "id": "fish:ål",
+        "size": 320,
+        "version": 2,
+        "opaque": 2481
+      }
+    ],
+    "renders": 12
+  },
+  "fallback": {
+    "name": "fallback-live",
+    "finite": true,
+    "cameraFinite": true,
+    "instanceFinite": true,
+    "render": {
+      "frame": 2,
+      "calls": 3,
+      "triangles": 4934,
+      "points": 0,
+      "lines": 0
+    },
+    "fishCount": 6,
+    "material": {
+      "opacity": 0.85,
+      "transparent": true,
+      "depthWrite": false,
+      "side": 2,
+      "forceSinglePass": false
+    },
+    "waterOpaque": true,
+    "programs": [
+      {
+        "maxSlots": 16,
+        "activeSlots": 3,
+        "attributes": [
+          {
+            "name": "position",
+            "type": 35665,
+            "size": 1,
+            "location": 0
+          },
+          {
+            "name": "normal",
+            "type": 35665,
+            "size": 1,
+            "location": 1
+          },
+          {
+            "name": "color",
+            "type": 35665,
+            "size": 1,
+            "location": 3
+          }
+        ]
+      },
+      {
+        "maxSlots": 16,
+        "activeSlots": 2,
+        "attributes": [
+          {
+            "name": "position",
+            "type": 35665,
+            "size": 1,
+            "location": 0
+          },
+          {
+            "name": "normal",
+            "type": 35665,
+            "size": 1,
+            "location": 1
+          }
+        ]
+      },
+      {
+        "maxSlots": 16,
+        "activeSlots": 14,
+        "attributes": [
+          {
+            "name": "instanceMatrix",
+            "type": 35676,
+            "size": 1,
+            "location": 0
+          },
+          {
+            "name": "instanceColor",
+            "type": 35665,
+            "size": 1,
+            "location": 4
+          },
+          {
+            "name": "position",
+            "type": 35665,
+            "size": 1,
+            "location": 5
+          },
+          {
+            "name": "color",
+            "type": 35665,
+            "size": 1,
+            "location": 8
+          },
+          {
+            "name": "aFish",
+            "type": 35664,
+            "size": 1,
+            "location": 9
+          },
+          {
+            "name": "aFishNormal0",
+            "type": 35664,
+            "size": 1,
+            "location": 10
+          },
+          {
+            "name": "aFishTarget1",
+            "type": 35666,
+            "size": 1,
+            "location": 11
+          },
+          {
+            "name": "aFishTarget2",
+            "type": 35666,
+            "size": 1,
+            "location": 12
+          },
+          {
+            "name": "aFishTarget3",
+            "type": 35666,
+            "size": 1,
+            "location": 13
+          },
+          {
+            "name": "aFishTarget4",
+            "type": 35666,
+            "size": 1,
+            "location": 14
+          },
+          {
+            "name": "aFishTarget5",
+            "type": 35666,
+            "size": 1,
+            "location": 15
+          }
+        ]
+      },
+      {
+        "maxSlots": 16,
+        "activeSlots": 14,
+        "attributes": [
+          {
+            "name": "instanceMatrix",
+            "type": 35676,
+            "size": 1,
+            "location": 0
+          },
+          {
+            "name": "instanceColor",
+            "type": 35665,
+            "size": 1,
+            "location": 4
+          },
+          {
+            "name": "position",
+            "type": 35665,
+            "size": 1,
+            "location": 5
+          },
+          {
+            "name": "color",
+            "type": 35665,
+            "size": 1,
+            "location": 8
+          },
+          {
+            "name": "aFish",
+            "type": 35664,
+            "size": 1,
+            "location": 9
+          },
+          {
+            "name": "aFishNormal0",
+            "type": 35664,
+            "size": 1,
+            "location": 10
+          },
+          {
+            "name": "aFishTarget1",
+            "type": 35666,
+            "size": 1,
+            "location": 11
+          },
+          {
+            "name": "aFishTarget2",
+            "type": 35666,
+            "size": 1,
+            "location": 12
+          },
+          {
+            "name": "aFishTarget3",
+            "type": 35666,
+            "size": 1,
+            "location": 13
+          },
+          {
+            "name": "aFishTarget4",
+            "type": 35666,
+            "size": 1,
+            "location": 14
+          },
+          {
+            "name": "aFishTarget5",
+            "type": 35666,
+            "size": 1,
+            "location": 15
+          }
+        ]
+      }
+    ]
+  }
+}

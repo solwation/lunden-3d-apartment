@@ -1039,7 +1039,46 @@ the heat), optional `eat`; steps only count in order and are saved at once. Comp
 the task list (tasks.js `secretQuests`, set by main.js) shows it on top with its steps. Tests: `node --test src/fishquest.test.mjs
 cloudflare/medals.test.mjs cloudflare/boards.test.mjs`; browser `tools/fishcooktest.cjs` (solo). Images: [docs/verification/1754](../verification/1754/).
 
-## The caught fish's look (#1765)
+## Shared six-species fish surfaces (#1922)
+
+`fishsurface.js` now supplies authored mört/abborre/braxen/gädda/öring/ål forms at
+separate fixed live/caught densities, using `FISH_SURFACE` art estimates and the
+existing `CAUGHT_FISH` dimensions/palettes. Pike have a broad flat beak and rear
+fins, bream a deep compressed profile, and eel a continuous slender tail/fin and
+blunt head. Caught surfaces have smoother sections, skin-bound smaller eyes,
+cambered fins and the established species markings. Original length data, nose
+plane, hand pose, surface anchors, raw/cooked species IDs and all cooking rules
+remain; contact lift continues through the ordinary `restPose` path.
+
+The live object remains one `InstancedMesh` and one material; **it submits two
+transparent DoubleSide passes**, as before. It contains 411 triangles per filled
+fish (822 submitted), versus the historical 433 (866 submitted). Rings are the
+unchanged separate batch. Five quantized target attributes pack position XYZ and
+two oct-normal bytes; base position/normal plus colour and instancing use 14
+active attribute slots (measured MAX_VERTEX_ATTRIBS 16, highest location 15).
+Temporary source surfaces are dropped after packing. `RiverFish.update()` keeps
+all fishAt/rise/murk/opacity/distance rules and drives one bounded visual phase
+from its existing clock; there is no new mixer or per-frame surface build.
+Matching neutral GLB position/index views are shared; missing/older GLB uses all
+six source forms. The asset's five bones/two clips are inspection data, not live
+per-fish animation or eighteen skinning/mixer systems.
+
+Caught/binder species cache one geometry each, 743/743/743/847/879/743 triangles
+and one draw. Their six thumbnail versions are now 2; stable IDs, discoveries and
+photographs are preserved. Shared world drops already carry species metadata and
+use these same CaughtFish forms. The remote **held category proxy remains generic**:
+the existing player protocol says only `hi=fish`, with no species field. No
+protocol or proxy expansion is included here. Shark uses its unchanged legacy
+custom-spec recipe and asset.
+
+The conservative live raw budget was 25860 B; final geometry+18 instance data is
+19539 B. All six caught caches total 135540 B within 164424 B. The GLB is 44576 B,
+with loaded neutral views counted separately and shared attributes deduplicated.
+Actual production-water pixels, twelve natural up/down states, six held species,
+raw/cooked/contact views and both binder sizes were checked; source hashes and
+bounded software timings: [#1922 verification](../verification/1922/README.md).
+
+## Historical caught-fish look (#1765)
 
 `src/caughtfish.js` builds a caught fish's model per RIVER_FISH species from `CAUGHT_FISH` (config.js, all *guess* after general pictures):
 `caughtFishGeometry(name)` is cached and shared by every fish of that species (never dispose it), in units of the fish's length (nose at
@@ -1239,11 +1278,11 @@ template, increases 206,016→224,328 bytes; download falls 62,808→60,324 byte
 These remain stylised mallards, with visible part joins and broad colour patches.
 [Matched views, costs and limitations](../verification/1921/README.md).
 
-### Fish export quality correction (#1911)
+### Historical fish export quality correction (#1911)
 
 `riverfishmodel.js` supplies the same finned, eyed neutral geometry to the unit-sized
 static/skinned GLB and the fallback; instance species dimensions are applied once.
-River fish remain one generic underwater batch. The detailed per-species caught and
+At #1911 river fish still used one generic underwater batch; #1922 above supersedes it. The detailed per-species caught and
 bestiary models remain the existing `caughtFishGeometry`, not a claimed full migration.
 Shark export uses the existing anatomical body, correctly sized fin and detailed
 skeleton. `Shark_whole` is a separate intact inspection variant; the actual carcass

@@ -1,0 +1,54 @@
+PASS mört: has its own CAUGHT_FISH entry
+PASS mört: 743 triangles (≤ 900, one draw call: no groups = true)
+PASS mört: one shared cached geometry, no material groups
+PASS mört: finite positions / normals, colours within 0…1
+PASS mört: one length long, nose at +z (z -0.500…0.500)
+PASS mört: laterally compressed and finned (w 0.152 < h 0.435)
+PASS mört: skin luminance 0.495 for the cooking tint
+PASS abborre: has its own CAUGHT_FISH entry
+PASS abborre: 743 triangles (≤ 900, one draw call: no groups = true)
+PASS abborre: one shared cached geometry, no material groups
+PASS abborre: finite positions / normals, colours within 0…1
+PASS abborre: one length long, nose at +z (z -0.500…0.500)
+PASS abborre: laterally compressed and finned (w 0.164 < h 0.403)
+PASS abborre: skin luminance 0.349 for the cooking tint
+PASS braxen: has its own CAUGHT_FISH entry
+PASS braxen: 743 triangles (≤ 900, one draw call: no groups = true)
+PASS braxen: one shared cached geometry, no material groups
+PASS braxen: finite positions / normals, colours within 0…1
+PASS braxen: one length long, nose at +z (z -0.500…0.500)
+PASS braxen: laterally compressed and finned (w 0.118 < h 0.551)
+PASS braxen: skin luminance 0.288 for the cooking tint
+PASS gädda: has its own CAUGHT_FISH entry
+PASS gädda: 847 triangles (≤ 900, one draw call: no groups = true)
+PASS gädda: one shared cached geometry, no material groups
+PASS gädda: finite positions / normals, colours within 0…1
+PASS gädda: one length long, nose at +z (z -0.500…0.500)
+PASS gädda: laterally compressed and finned (w 0.136 < h 0.253)
+PASS gädda: skin luminance 0.298 for the cooking tint
+PASS öring: has its own CAUGHT_FISH entry
+PASS öring: 879 triangles (≤ 900, one draw call: no groups = true)
+PASS öring: one shared cached geometry, no material groups
+PASS öring: finite positions / normals, colours within 0…1
+PASS öring: one length long, nose at +z (z -0.500…0.500)
+PASS öring: laterally compressed and finned (w 0.144 < h 0.360)
+PASS öring: skin luminance 0.425 for the cooking tint
+PASS ål: has its own CAUGHT_FISH entry
+PASS ål: 743 triangles (≤ 900, one draw call: no groups = true)
+PASS ål: one shared cached geometry, no material groups
+PASS ål: finite positions / normals, colours within 0…1
+PASS ål: one length long, nose at +z (z -0.500…0.500)
+PASS ål: laterally compressed and finned (w 0.064 < h 0.079)
+PASS ål: skin luminance 0.228 for the cooking tint
+PASS shapes differ: bream deepest, eel slimmest, pike slimmer than trout
+PASS mört: common live target topology
+PASS abborre: common live target topology
+PASS braxen: common live target topology
+PASS gädda: common live target topology
+PASS öring: common live target topology
+PASS ål: common live target topology
+PASS all six packed positions within 0.000012784401976345453 normalized units
+PASS all six oct normals accurate (minimum dot 0.9998813603457489)
+PASS live full-capacity raw geometry/instance budget
+PASS six caught cache raw budget
+ALL PASS

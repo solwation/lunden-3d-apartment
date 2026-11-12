@@ -7883,6 +7883,36 @@ export const SHARK = {
  *  bands [n, u from, u to, colour], spots = [[colour, count per side, u from, u to, lowest sin of the angle round, highest, radius]]: small
  *  flat discs on the skin (4 triangles each).
  */
+// #1922: authored fish surface/density estimates (guess). Existing species length,
+// mouth/hand/surface frames and CAUGHT_FISH anatomy dimensions remain authoritative.
+export const FISH_SURFACE = {
+  live: { rings: 14, around: 10, finSegments: 3, eyeSegments: 6 },
+  caught: { rings: 18, around: 16, finSegments: 4, eyeSegments: 8 },
+  fin: { rows: 3, camber: .0025, root: .9, sweep: .32, shade: .82, ray: .12, spineNotch: .72, colorRoot: .55 },
+  tailSegments: 6,
+  paired: { spread: .3, drop: .45, backStart: .2, backRange: .8, segments: 4 },
+  pattern: { bars: .65, spotOffset: .35, spotPhase: 17.3 },
+  eel: { peduncle: .1, tailSpread: .25 },
+  eye: { lift: .0018, pupil: .52, angle: .4, scale: .72 },
+  gill: { width: .035, shade: .78 },
+  mouth: { from: .94, band: .15, shade: .48 },
+  flex: { amplitude: .14, eel: .75, waves: 7, frequency: 5.5 },
+  // Retained #1765 pigment/attachment values, now shared by both densities.
+  skin: { backStart: .2, backEnd: .85, bellyStart: .2, bellyEnd: .75 },
+  peduncleWidth: .75, pairedAngles: [-.4,-1.35], spotLift: .0015, longFinRoot: .004,
+  normalStep: [.005,.02], // numerical surface-frame differences, not anatomy dimensions
+  // u, relative half-width / height, centre-y as a share of body depth.
+  // The small closed mouth cap keeps the +.5 nose plane; pike has a broad flat beak.
+  heads: {
+    mört: [[.76,.9165,.9165,0],[.9,.62,.58,0],[.97,.3,.26,0],[1,.12,.1,0]],
+    abborre: [[.76,.9165,.8487,0],[.9,.59,.51,0],[.97,.26,.22,0],[1,.1,.08,0]],
+    braxen: [[.76,.8487,.8487,0],[.9,.48,.44,-.015],[.97,.23,.19,-.02],[1,.09,.08,-.02]],
+    gädda: [[.72,.9756,.5738,0],[.86,.82,.3,-.01],[.96,.6,.17,-.015],[1,.45,.12,-.015]],
+    öring: [[.76,.8844,.8285,0],[.9,.6,.53,0],[.97,.3,.25,0],[1,.14,.11,0]],
+    ål: [[.87,.794,.7023,0],[.94,.75,.65,0],[.98,.55,.46,0],[1,.38,.3,0]],
+  },
+};
+
 export const CAUGHT_FISH = {
   rings: 16, around: 12,
   pupil: 0x0c0c0c, gill: 0.62, mouth: 0x2a2018, // the pupil; the gill line darkens the side by this factor; the mouth (nose tip)

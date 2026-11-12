@@ -1,0 +1,46 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Fiskarnas artformer</title><style>body{margin:0;background:#d3e3ed;font:16px system-ui}header{padding:12px 22px}canvas{display:block}</style><script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script><header>Fiskarnas faktiska produktionsmodeller · mört, abborre, braxen / gädda, öring, ål</header><script type="module">
+import * as T from 'three';
+import {RiverFish,loadFishModel} from '../src/riverfish.js';
+import {CaughtFish} from '../src/fishing.js';
+import {fishSpec,fishAt,riseAt} from '../src/riverfishswim.js';
+import {buildRiverBridges} from '../src/riverbridge.js';
+import {setHeld,restPose} from '../src/holdable.js';
+import {RIVER_FISH as C,COLORS,FISHING} from '../src/config.js';
+await loadFishModel();
+const scene=new T.Scene();scene.background=new T.Color(0xd3e3ed);
+scene.add(new T.HemisphereLight(0xe2f1ff,0x635d41,2));const sun=new T.DirectionalLight(0xfff3dd,2.5);sun.position.set(4,8,5);scene.add(sun);
+const camera=new T.PerspectiveCamera(40,1500/800,.01,1000),renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setSize(1500,800);renderer.setPixelRatio(1);renderer.toneMapping=T.ACESFilmicToneMapping;document.body.append(renderer.domElement);
+const constructionStart=performance.now();const river=new RiverFish({scene,camera});const constructionMs=performance.now()-constructionStart;
+river.sync.sharkWindow=()=>null;river.sync.sharkPhase=()=>null;
+const actualWater=buildRiverBridges().getObjectByName('bridges-water');scene.add(actualWater);actualWater.visible=false;
+const water=new T.Mesh(new T.PlaneGeometry(40,40).rotateX(-Math.PI/2),new T.MeshStandardMaterial({color:COLORS.water,roughness:.15,metalness:.2}));scene.add(water);
+const catches=C.species.map((s,i)=>new CaughtFish(scene,camera,{dropSpot:()=>new T.Vector3()},{species:s.name,cm:40},new T.Vector3()));
+function show(mode='caught'){
+ river.hide();if(river.shark.built)for(const name of ['fin','shadow','wake','rings','body','bones'])river.shark[name].visible=false;
+ const live=mode.startsWith('live');water.material.color.setHex(COLORS.water);water.material.roughness=.15;water.material.metalness=.2;water.visible=live;actualWater.visible=false;setHeld(null);catches.forEach(f=>{f.held=false;scene.add(f.model);f.cook=mode==='cooked'?FISHING.cook.done:0;f.paint()});
+ catches.forEach((f,i)=>{f.model.visible=!live;f.model.position.set((i%3-1)*.8,.15+Math.floor(i/3)*.38,0);f.model.rotation.set(0,Math.PI/2,0)});
+ if(live){river.fish.visible=true;const count=mode==='live-capacity'?18:6;river.fish.count=count;for(let i=0;i<count;i++){
+  const s=C.species[i%6],row=Math.floor((i%6)/3),up=mode==='live-down'?0:1,ys=C.look.flat+(1-C.look.flat)*up,wide=C.look.wide+(1-C.look.wide)*up;
+  const p=new T.Vector3((i%3-1)*.8,s.h*ys/2+.012,row*.65-.325+Math.floor(i/6)*.8),q=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),Math.PI/2),scale=new T.Vector3(s.w*wide,s.h*ys,s.len);
+  river.fish.setMatrixAt(i,new T.Matrix4().compose(p,q,scale));river.fish.setColorAt(i,new T.Color(s.color).multiplyScalar(C.look.shade+(1-C.look.shade)*up));
+  const a=river.fish.geometry.attributes.aFish;if(a)a.setXY(i,i%6,0);
+ }river.fish.instanceMatrix.needsUpdate=true;river.fish.instanceColor.needsUpdate=true;if(river.fish.geometry.attributes.aFish)river.fish.geometry.attributes.aFish.needsUpdate=true;}
+ camera.fov=mode==='live-normal'?70:40;camera.position.set(.3,!live?.8:mode==='live-normal'?1.62:1.3,mode==='live-normal'?1.5:2.7);camera.lookAt(0,!live?.34:0,0);camera.updateProjectionMatrix();camera.updateMatrixWorld();scene.updateMatrixWorld(true);renderer.render(scene,camera);
+}
+function natural(name,rising=true){
+ show('live');water.visible=false;actualWater.visible=true;
+ let f;for(let id=0;id<C.count&&!f;id++)for(let born=0;born<50;born++){const q=fishSpec(id,born,C.seed);if(q.spec.name===name){f=q;break}}
+ if(!f)throw Error('No natural specimen '+name);
+ river.sync.gone.clear();if(f.born)river.sync.gone.set(f.id,{b:f.born,u:0});
+ let time=0;for(;time<600;time+=.025)if(riseAt(f,time,C.seed)>.995)break;
+ if(time>=600)throw Error('No natural rise '+name);
+ if(!rising){time=0;while(riseAt(f,time,C.seed)>0)time+=.1}
+ const p=fishAt(f,time,{},C.seed);river.sync.now=()=>1000*(C.epoch+time);
+ camera.fov=70;camera.position.set(p.x+p.nx*1.5,p.water+1.62,p.z+p.nz*1.5);camera.lookAt(p.x,p.water,p.z);camera.updateProjectionMatrix();camera.updateMatrixWorld();
+ river.update(0,false,1);scene.updateMatrixWorld(true);renderer.render(scene,camera);return {id:f.id,born:f.born,name,time,point:p};
+}
+function held(index=0){show('caught');catches.forEach(f=>f.model.visible=false);const f=catches[index];f.model.visible=true;camera.fov=70;camera.updateProjectionMatrix();camera.position.set(0,1.62,0);camera.rotation.set(0,0,0);camera.updateMatrixWorld();f.take();scene.updateMatrixWorld(true);renderer.render(scene,camera);return f}
+function surface(){show('caught');water.visible=true;water.material.roughness=1;water.material.metalness=0;water.material.color.setHex(0x909683);catches.forEach((f,i)=>{f.held=true;f.placeAt(new T.Vector3((i%3-1)*.65,0,(Math.floor(i/3)-.5)*.55),Math.PI/2)});camera.position.set(.4,1.62,1.4);camera.lookAt(0,0,0);camera.updateMatrixWorld();scene.updateMatrixWorld(true);renderer.render(scene,camera)}
+show();window.fishQuality={scene,camera,renderer,river,catches,water,actualWater,show,natural,held,surface,constructionMs,ready:true};
+</script></html>

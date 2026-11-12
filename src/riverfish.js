@@ -1,7 +1,7 @@
 import { modelURL } from './modelurl.js';
 import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
-import {riverFishGeometry} from './riverfishmodel.js';
+import {riverFishGeometry,fishSpeciesMaterial,fishVisualPhase} from './riverfishmodel.js';
 import { RIVER_FISH as C, COLORS } from './config.js';
 import { fishSpec, fishAt, ringsAt, riverProject } from './riverfishswim.js';
 import { RiverFishSync } from './riverfishsync.js';
@@ -77,27 +77,8 @@ if (typeof window !== 'undefined') {
 
 /** A fish 1 m long, 1 m wide and 1 m high along +z (scaled per species): body, tail and a dorsal fin, darker back over a lighter belly. */
 export function fishGeometry() {
-  if (fishModelData?.scene) {
-    let geo = null;
-    fishModelData.scene.traverse((obj) => {
-      if (obj.isMesh && (obj.name === 'Fish_Static' || obj.name === 'Fish_Rigged') && !geo) {
-        geo = obj.geometry;
-      }
-    });
-    if (geo) {
-      const cloned = geo.clone();
-      if (!cloned.attributes.color) {
-        const pos = cloned.attributes.position, col = new Float32Array(pos.count * 3);
-        for (let i = 0; i < pos.count; i++) {
-          const y = pos.getY(i), k = y > 0.05 ? 0.62 : y < -0.15 ? 1.25 : 0.95;
-          col.set([k, k, k], i * 3);
-        }
-        cloned.setAttribute('color', new THREE.BufferAttribute(col, 3));
-      }
-      return cloned;
-    }
-  }
-  return riverFishGeometry();
+  let neutral=null;fishModelData?.scene.traverse(o=>{if(o.name==='Fish_Static')neutral=o.geometry});
+  return riverFishGeometry(neutral);
 }
 
 export class RiverFish {
@@ -110,7 +91,8 @@ export class RiverFish {
     this.sync = new RiverFishSync({ send: (m) => this.net?.send(m) ?? false, sharkTest, store, hooks: { caught: (id, ok) => this.onCaught?.(id, ok), sharkCaught: (ok) => this.onCaught?.(-1, ok) } });
     this.shark = new Shark({ scene, camera, sync: this.sync }); // #1769: the rare shark (src/shark.js; Fishing bites it through `shark.near`)
     const fishMat = new THREE.MeshLambertMaterial({ vertexColors: true, transparent: true, opacity: C.opacity, depthWrite: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
-    this.fish = new THREE.InstancedMesh(fishGeometry(), fishMat, C.count);
+    this.fish = new THREE.InstancedMesh(fishGeometry(), fishSpeciesMaterial(fishMat), C.count);
+    this.fish.geometry.setAttribute('aFish',new THREE.InstancedBufferAttribute(new Float32Array(C.count*2),2).setUsage(THREE.DynamicDrawUsage));
     const ringGeo = new THREE.RingGeometry(0.88, 1, 32, 1).rotateX(-Math.PI / 2);
     ringGeo.deleteAttribute('uv');
     const ringMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: true });
@@ -144,6 +126,7 @@ export class RiverFish {
     this.shark.update(dt, hidden, daylight); // #1769: its own distance checks (the fin within SHARK.drawDist m, the carcass on the bank)
     if (!close) { if (this.fish.visible || this.rings.visible) this.hide(); return; }
     const t = this.sync.t, seed = this.sync.seed, o = this.o ??= {}, rings = this.ringList;
+    this.fish.material.userData.fishTime.value=fishVisualPhase(t);
     let n = 0; this.shown.length = 0; rings.length = 0;
     for (let id = 0; id < C.count; id++) {
       if (this.sync.isGone(id)) continue;
@@ -157,12 +140,14 @@ export class RiverFish {
       this.fish.setMatrixAt(n, M.compose(P, Q, S));
       tint.setHex(sp.color).multiplyScalar(C.look.shade + (1 - C.look.shade) * up).lerp(deepTone, C.murk * Math.max(0, deep) * (1 - up));
       this.fish.setColorAt(n, tint);
+      this.fish.geometry.attributes.aFish.setXY(n,f.species,f.wag);
       this.shown.push({ id, born: f.born, species: sp.name, x: o.x, y: o.y, z: o.z, rise: up, drawnY: P.y });
       n++;
       ringsAt(f, t, rings, seed);
     }
     this.fish.count = n; this.fish.visible = n > 0;
     this.fish.instanceMatrix.needsUpdate = true; this.fish.instanceColor.needsUpdate = true;
+    this.fish.geometry.attributes.aFish.needsUpdate=true;
     const glow = C.ring.glow * (C.ring.night + (1 - C.ring.night) * Math.max(0, Math.min(1, daylight)));
     let k = 0;
     for (const r of rings) {
@@ -180,4 +165,4 @@ export class RiverFish {
 }
 
 const FISH_NUMBERS={mört:51,abborre:52,braxen:53,gädda:54,öring:55,ål:56};
-for (const f of C.species) creature({id:`fish:${f.name}`,no:FISH_NUMBERS[f.name],name:f.name[0].toUpperCase()+f.name.slice(1),family:'fish',level:f.weight<1?2:f.weight<2?1:0,model:{kind:'fish',name:f.name},info:{size:`${Math.round(f.len*100)} cm grundmodell`,weight:'Varierar med fångstens storlek',where:'Höje å',when:'Under ytan; ibland vid vattenytan',likes:'Eget revir i åfåran'},facts:['Levande och fångad fisk räknas som samma art.','Din största uppmätta fångst sparas på kortet.']});
+for (const f of C.species) creature({id:`fish:${f.name}`,no:FISH_NUMBERS[f.name],modelVersion:2,name:f.name[0].toUpperCase()+f.name.slice(1),family:'fish',level:f.weight<1?2:f.weight<2?1:0,model:{kind:'fish',name:f.name},info:{size:`${Math.round(f.len*100)} cm grundmodell`,weight:'Varierar med fångstens storlek',where:'Höje å',when:'Under ytan; ibland vid vattenytan',likes:'Eget revir i åfåran'},facts:['Levande och fångad fisk räknas som samma art.','Din största uppmätta fångst sparas på kortet.']});

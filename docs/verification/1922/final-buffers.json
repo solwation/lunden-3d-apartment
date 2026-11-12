@@ -1,0 +1,133 @@
+{
+  "sourceHashes": {
+    "src/config.js": "42f2b2eeb5b3beb4e09f2cd8374fea7e30b3cf6fd5f9f81ce5fc980949152858",
+    "src/riverfish.js": "c4910654a489f8a9c95d7e611a82b2756b1dcdbee03911b01de2292aaeebd25a",
+    "src/riverfishmodel.js": "5bdd5c46c16508fc9901b20f3a4e2eae42eed372b0b95526bf43c5412adc38da",
+    "src/caughtfish.js": "3a2e917473e38fc5ad432b4088bf60ea54513b79ecc5b56adf2127e3204d7caa",
+    "models/fish-generic.glb": "e722f6008e937a2390b1760a1c32a5d7d6a38acd410616c326b1339d8d238e68",
+    "src/fishsurface.js": "5e16ec1747d229437f44b78355c198ed4cdaa59255e0033b717db926cc62ce0b"
+  },
+  "constructionMs": 32.923688,
+  "live": {
+    "triangles": 411,
+    "vertices": 273,
+    "geometryBytes": 18027,
+    "instanceBytes": 1512,
+    "combinedBytes": 19539,
+    "sharesNeutralBasePosition": true
+  },
+  "caught": [
+    {
+      "name": "mört",
+      "triangles": 743,
+      "vertices": 447,
+      "bytes": 20550,
+      "bounds": {
+        "min": [
+          -0.07576821744441986,
+          -0.17229163646697998,
+          -0.5
+        ],
+        "max": [
+          0.07576821744441986,
+          0.26298007369041443,
+          0.5
+        ]
+      }
+    },
+    {
+      "name": "abborre",
+      "triangles": 743,
+      "vertices": 447,
+      "bytes": 20550,
+      "bounds": {
+        "min": [
+          -0.08196787536144257,
+          -0.16462615132331848,
+          -0.5
+        ],
+        "max": [
+          0.08196787536144257,
+          0.23882105946540833,
+          0.5
+        ]
+      }
+    },
+    {
+      "name": "braxen",
+      "triangles": 743,
+      "vertices": 447,
+      "bytes": 20550,
+      "bounds": {
+        "min": [
+          -0.05917670205235481,
+          -0.212885782122612,
+          -0.5
+        ],
+        "max": [
+          0.05917670205235481,
+          0.33850741386413574,
+          0.5
+        ]
+      }
+    },
+    {
+      "name": "gädda",
+      "triangles": 847,
+      "vertices": 577,
+      "bytes": 25854,
+      "bounds": {
+        "min": [
+          -0.06796199083328247,
+          -0.12062259018421173,
+          -0.5
+        ],
+        "max": [
+          0.06796199083328247,
+          0.1324199140071869,
+          0.5
+        ]
+      }
+    },
+    {
+      "name": "öring",
+      "triangles": 879,
+      "vertices": 617,
+      "bytes": 27486,
+      "bounds": {
+        "min": [
+          -0.07216841727495193,
+          -0.14971904456615448,
+          -0.5
+        ],
+        "max": [
+          0.07216841727495193,
+          0.21037615835666656,
+          0.5
+        ]
+      }
+    },
+    {
+      "name": "ål",
+      "triangles": 743,
+      "vertices": 447,
+      "bytes": 20550,
+      "bounds": {
+        "min": [
+          -0.032012127339839935,
+          -0.03792500123381615,
+          -0.5
+        ],
+        "max": [
+          0.032012127339839935,
+          0.04103958606719971,
+          0.5
+        ]
+      }
+    }
+  ],
+  "caughtTotalBytes": 135540,
+  "neutralLoadedGeometryBytes": 37692,
+  "allUniqueGeometryAndInstanceBytes": 187029,
+  "glbBytes": 44576
+}

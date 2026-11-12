@@ -1,0 +1,27 @@
+{
+  "sourceHashes": {
+    "src/config.js": "f0fbc106db672a888f1fead7802906a3e5318f8f986ad6e062cac4445a0a486c",
+    "src/caughtfish.js": "97af638426b13e4993d408f341ce93a5b2792dbc06a1edcbf5ba5cc020747dbf",
+    "src/fishsurface.js": "43160057a9d9a1d7a097980eb7aa01e73647457646a17e46dd1c5885450e7b22",
+    "src/riverfish.js": "c4910654a489f8a9c95d7e611a82b2756b1dcdbee03911b01de2292aaeebd25a",
+    "src/riverfishmodel.js": "5bdd5c46c16508fc9901b20f3a4e2eae42eed372b0b95526bf43c5412adc38da",
+    "models/fish-generic.glb": "e722f6008e937a2390b1760a1c32a5d7d6a38acd410616c326b1339d8d238e68"
+  },
+  "hashes": {
+    "caught:mört": "8d1db113f6b665814fd65e715e21104710394546f7be58a35dc96cbd912f8749",
+    "live-source:mört": "e04a1e93fda56bd0408bf37475fece1ebd19afc5d68b8d20dbab08e2d6b666bc",
+    "caught:abborre": "ae0319fc75ee2b9c29098018111ae7007416d44de1247788ec401295f231bbed",
+    "live-source:abborre": "be1aa3f17c6d5d8cb94580eafbf35636275484282d86d2dfca8d021342b68b96",
+    "caught:braxen": "99fad8282ce0c059bfd175ae5713ade1f3c71cfa3b32866f99c728f766daa763",
+    "live-source:braxen": "c953b4877c1996563ccf2b08343e9987343aa628437175173d619e9f32427c89",
+    "caught:gädda": "c298b0a5ea1793dfa30d81be83cd0219b10608239fa83166636232e5786e5186",
+    "live-source:gädda": "11113ed140e185c654465db3cceadd71e8079ff420f7be098865cb65e466b248",
+    "caught:öring": "f61a9b09e7e4ec6807e0f4238d6ee85fbf3ad5f44e579914c3deeeab278bf293",
+    "live-source:öring": "7542b999f4e75ff3d73527c7aa007f8e104252696ef03f082de180ce8bc2b2db",
+    "caught:ål": "3fede4679fa036c870a9f885bbf93b0f2b851b3af9eaf4c5d6f2742af8436c62",
+    "live-source:ål": "1083b2c3c4bee9e0e3ce35dd819551b6f3f354f7e4df582cb5eb907746e2bd56",
+    "packed": "9d04f006bcbcb6cec41d20757126ac137418824d9d28fcec2408322f3bbc8456",
+    "neutral": "eca66b6d5aa2e365d47bb0ac74d722385a294829531f55aa5ca5945486457a5f",
+    "glb": "e722f6008e937a2390b1760a1c32a5d7d6a38acd410616c326b1339d8d238e68"
+  }
+}

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
-import {riverFishGeometry} from '../src/riverfishmodel.js';
+import {riverFishNeutralGeometry} from '../src/riverfishmodel.js';
 import {caughtFishGeometry} from '../src/caughtfish.js';
 import {finGeometry,skeletonGeometry} from '../src/shark.js';
 import {SHARK} from '../src/config.js';
@@ -50,7 +50,7 @@ export function buildFishModel() {
   const skeleton = new THREE.Skeleton(bones);
 
   // Unit dimensions match the existing per-species instance scaling exactly.
-  const cleaned=riverFishGeometry();
+  const cleaned=riverFishNeutralGeometry();
 
   // Vertex colors: darker back, lighter belly
   const pos = cleaned.attributes.position;
@@ -189,10 +189,10 @@ export function buildSharkModel() {
   return root;
 }
 
-export function exportFishGLBs() {
+export function exportFishGLBs(fishOnly=false) {
   const exporter = new GLTFExporter();
   const fishScene = buildFishModel();
-  const sharkScene = buildSharkModel();
+  const sharkScene = fishOnly?null:buildSharkModel();
 
   const exp = (scene) => new Promise((resolve, reject) => {
     exporter.parse(
@@ -203,19 +203,19 @@ export function exportFishGLBs() {
     );
   });
 
-  return Promise.all([exp(fishScene), exp(sharkScene)]);
+  return Promise.all([exp(fishScene), sharkScene?exp(sharkScene):Promise.resolve(null)]);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   console.log('Building fish and shark GLB models...');
-  exportFishGLBs().then(([fishGlb, sharkGlb]) => {
+  exportFishGLBs(process.argv.includes('--fish-only')).then(([fishGlb, sharkGlb]) => {
     const outFish = path.resolve(process.cwd(), 'models/fish-generic.glb');
     const outShark = path.resolve(process.cwd(), 'models/shark.glb');
     fs.mkdirSync(path.dirname(outFish), { recursive: true });
     fs.writeFileSync(outFish, Buffer.from(fishGlb));
-    fs.writeFileSync(outShark, Buffer.from(sharkGlb));
+    if(sharkGlb)fs.writeFileSync(outShark, Buffer.from(sharkGlb));
     console.log(`Exported models/fish-generic.glb: ${fishGlb.byteLength} bytes`);
-    console.log(`Exported models/shark.glb: ${sharkGlb.byteLength} bytes`);
+    if(sharkGlb)console.log(`Exported models/shark.glb: ${sharkGlb.byteLength} bytes`);
   }).catch((err) => {
     console.error('Failed to export fish GLBs:', err);
     process.exit(1);

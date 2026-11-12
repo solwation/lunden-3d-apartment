@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { CAUGHT_FISH as C } from './config.js';
+import { buildFishSurface } from './fishsurface.js';
 
 // #1765: the caught fish's own model (CaughtFish in src/fishing.js), built per RIVER_FISH species from CAUGHT_FISH (all *guess*). One geometry
-// per species, cached and shared by every fish of that species; one mesh and one draw call per fish, at most ~600 triangles, no texture: the
+// per species, cached and shared by every fish of that species; one mesh and one draw call per fish, up to 900 triangles for the six #1922 surfaces, no texture: the
 // skin, its bars and spots, the fins and the eyes are vertex colours (the material's colour stays white raw and tints the whole fish golden /
 // charred when it is cooked, #1754). Units: the fish's length, the nose at z = +0.5, the tail tips at z = -0.5, the back up (+y).
 // - The body is a loft of elliptical cross-sections from the caudal peduncle (u = 0) to the nose (u = 1): it swells to `depth` at `peak`,
@@ -12,6 +13,8 @@ import { CAUGHT_FISH as C } from './config.js';
 //   (the perch's first dorsal spiny), an anal fin underneath, pairs of pectoral and pelvic fins, and the eel's long fin round its tail.
 // - Eyes: an iris ring round a black pupil on each side of the head.
 
+// The builder below preserves the #1765 custom-spec path (including the shark);
+// the six registered species return the shared #1922 surface recipe before it.
 const col = (hex) => new THREE.Color(hex);
 const smooth = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const hash = (...v) => { let h = 2166136261; for (const x of v) { h ^= x >>> 0; h = Math.imul(h, 16777619); h ^= h >>> 13; } return (h >>> 0) / 4294967296; };
@@ -84,6 +87,7 @@ const cache = new Map();
 export function caughtFishGeometry(name, spec = null) { // (#1769: `spec` = a body spec of the same shape that is no RIVER_FISH species: the shark's carcass, SHARK.look)
   let g = cache.get(name);
   if (g) return g;
+  if (!spec && C.species[name]) { g=buildFishSurface(name);cache.set(name,g);return g; }
   const s = spec ?? C.species[name] ?? Object.values(C.species)[0], B = fishBody(s), M = C.around, us = sections(s), out = new Builder();
   const V = () => new THREE.Vector3(), c = new THREE.Color(), fin = s.fins;
 
