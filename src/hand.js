@@ -142,6 +142,10 @@ function chain(parts, start, q0, lens, radii, bends) {
   nail.userData.shade = n.shade;parts.push(nail);
 }
 
+// Only the palm's back changes with finger flex. Its three front creases are immutable,
+// so project them once rather than repeating the same triangle intersections for every morph/instance.
+let palmCreases = null;
+
 /** The hand in one pose: every pose has the same vertices in the same order (they are morph targets). */
 function handGeometry(pose) {
   const parts = [];
@@ -168,18 +172,21 @@ function handGeometry(pose) {
     const edge = palmPoint(max, angle);
     return [edge[0] * (1 - t), edge[1] * (1 - t), THREE.MathUtils.lerp(edge[2], max, t)];
   }));
-  const palmMesh = new THREE.Mesh(palm, skin), ray = new THREE.Raycaster(), hits = [];
-  ray.ray.direction.set(-1, 0, 0);
-  for (const path of SURFACE.creases.paths) {
-    const curve = new THREE.CatmullRomCurve3(path.map(([y, z]) => new THREE.Vector3(0, y, z)));
-    const crease = surface(20, 1, (t, angle) => {
-      const at = curve.getPoint(t), tangent = curve.getTangent(t), offset = (angle / Math.PI - 1) * SURFACE.creases.width;
-      const y = at.y + tangent.z * offset, z = at.z - tangent.y * offset;
-      ray.ray.origin.set(1, y, z);hits.length = 0;ray.intersectObject(palmMesh, false, hits);
-      return [hits[0].point.x + SURFACE.creases.lift, y, z]; // fitted once to the actual polygon surface
-    }, false);
-    crease.userData.shade = SURFACE.creases.shade;parts.push(crease);
+  if (!palmCreases) {
+    const palmMesh = new THREE.Mesh(palm, skin), ray = new THREE.Raycaster(), hits = [];
+    ray.ray.direction.set(-1, 0, 0);
+    palmCreases = SURFACE.creases.paths.map(path => {
+      const curve = new THREE.CatmullRomCurve3(path.map(([y, z]) => new THREE.Vector3(0, y, z)));
+      const crease = surface(20, 1, (t, angle) => {
+        const at = curve.getPoint(t), tangent = curve.getTangent(t), offset = (angle / Math.PI - 1) * SURFACE.creases.width;
+        const y = at.y + tangent.z * offset, z = at.z - tangent.y * offset;
+        ray.ray.origin.set(1, y, z);hits.length = 0;ray.intersectObject(palmMesh, false, hits);
+        return [hits[0].point.x + SURFACE.creases.lift, y, z];
+      }, false);
+      crease.userData.shade = SURFACE.creases.shade;return crease;
+    });
   }
+  parts.push(...palmCreases);
   FINGERS.forEach((f, i) => {
     const q = new THREE.Quaternion().setFromAxisAngle(X, pose.spread[i]);
     chain(parts, new THREE.Vector3(0.002, f.y, f.z - 0.006), q, PHALANX.map((s) => s * f.l), [f.r, f.r * 0.93, f.r * 0.86], Array.isArray(pose.fingers[0]) ? pose.fingers[i] : pose.fingers);
