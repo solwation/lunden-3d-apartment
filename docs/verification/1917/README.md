@@ -142,5 +142,10 @@ The World driver owns/stops its Worker on 8202; all browser work uses the shared
 lock. Existing contact driver: `tools/onehandgriptest.cjs BASE OUT --render`.
 
 Personal gameplay hands are original-only; no public downstream port applies.
-Publication, pinned issue images, actual deployment and before-image pruning are
-recorded by the integration owner before issue closure.
+Published at `37a9991d4ba18fa3334b8aa982a08a06a77d9fbc`. Actual
+[Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/43185001238) and
+[Worker](https://github.com/solwation/lunden-3d-apartment/actions/runs/43185001183)
+deployments passed. The corrected [completion comment](https://github.com/solwation/lunden-3d-apartment/issues/1917#issuecomment-6818776803)
+embeds nine pinned images; all returned HTTP 200 with image content types before
+closure. Before-images are removed from the current tree in the closing commit;
+that docs-only commit triggers no new deploy. Result images follow 30-day retention.
