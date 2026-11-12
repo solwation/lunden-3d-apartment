@@ -17,7 +17,7 @@ photorealism are not claimed.
 
 The shared art recipe now supplies live rigged, missing-asset fallback and
 collection surfaces. That replacement also removes the old consumer divergence
-reported separately as #1931; that issue remains separately tracked for assessment.
+reported separately as #1931; [the focused assessment](../1931/README.md) now confirms consumer and cache parity.
 Discovery IDs/photos are unchanged; generated thumbnail version is now 2.
 
 ## Three focused risk groups

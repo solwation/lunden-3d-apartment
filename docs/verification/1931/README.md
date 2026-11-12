@@ -1,0 +1,14 @@
+# Duck consumer parity — #1931
+
+The divergence was removed by the shared recipe in #1921, source `a963287ffaacad8fa405f91c086752255aefcb2d`. This issue adds verification/documentation only; no new product shape, gameplay, asset, changelog or deployment is needed.
+
+Two focused groups establish the result:
+
+1. [Native consumer/cache probe](probe.mjs): run `node docs/verification/1931/probe.mjs` from the repository root with the existing Three installation. It parses the delivered GLB and invokes actual `Ducks.setupRigged` for each sex, then compares every position/normal/colour/index byte with the procedural fallback and actual `createBestiaryModel`. All three paths match, each has1312triangles, the fallback material is hidden after rig setup, rig geometry is shared and portrait disposal does not release rig geometry. Existing duck registrations use modelVersion2. Four seeded old version1 cache rows for both sexes and96/320sizes are skipped by actual BestiaryImages.get; four fresh factories and four subsequent memory hits use version2. Its native render spy inspects geometry/cache contracts; it is not a visual renderer or real IndexedDB test. [Raw results](consumer-parity.json).
+2. Source-bound actual browser evidence from #1921 covers swim/land, both sexes, binder and blockedGLB. [Exact mapping](source-mapping.json) proves every previously measured model/consumer/GLB/fixture/export file, full DUCKS/DUCK_SURFACE declaration and exact duck collection case unchanged. Green actual browser evidence is reused; no broad browser/World timing is rerun. Its source-identical images were reopened and pinned HTTP200 image links embedded in the completion comment before closure.
+
+[Original actual views, reproduction, costs and limits](../1921/README.md). Loaded/fallback submit one call per bird,1312triangles, four-bird flock5248triangles. Previously measured retained raw geometry224328B and GLB60324B are unchanged, not whole-browser/GPU memory. Pose differences are deliberate; only neutral surface bytes are expected equal. Feeding/bill contact, shore/swim animation, discoveries and photos are unchanged; no new device/frame-rate claim.
+
+No own images were created here; none need pruning. Existing #1921 images retain their original retention class/historical pin. Public #270 remains the independent low-priority generic mallard port; its separate factory has no original binder/gameplay consumer. No duplicate public issue or original interaction/service code is transferred.
+
+The first ad-hoc native invocation had a mistyped import alias and did not run; the saved checked probe exits0. An initial source-mapping expression did not handle Object.freeze and stopped before publishing; corrected mapping checks its entire declaration. Failed commands are not counted as passes.

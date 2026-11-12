@@ -1,0 +1,39 @@
+{
+  "rows": [
+    {
+      "female": false,
+      "triangles": 1312,
+      "fallbackLoadedBinderHash": "f2914b5e33787a585e7126df8dd96a266433eca9dd79ee3ed41cd7383ebbce80",
+      "actualSetupRigged": true,
+      "oneVisibleModel": true,
+      "thumbnailVersion": 2
+    },
+    {
+      "female": true,
+      "triangles": 1312,
+      "fallbackLoadedBinderHash": "dc2d65b8d0461800db78dc1957af50356dbcbf955b8c2f0df8e93b236de8e344",
+      "actualSetupRigged": true,
+      "oneVisibleModel": true,
+      "thumbnailVersion": 2
+    }
+  ],
+  "cache": {
+    "seededOldKeys": 4,
+    "freshV2Factories": 4,
+    "memoryHits": 4,
+    "readKeys": [
+      "duck:male:2:96",
+      "duck:male:2:320",
+      "duck:female:2:96",
+      "duck:female:2:320"
+    ],
+    "writeKeys": [
+      "duck:male:2:96",
+      "duck:male:2:320",
+      "duck:female:2:96",
+      "duck:female:2:320"
+    ],
+    "renderSpy": "Native cache-contract spy inspects actual factory geometry; not a visual renderer. Actual GLB/404/binder images reused from source-identical1921."
+  },
+  "pass": true
+}

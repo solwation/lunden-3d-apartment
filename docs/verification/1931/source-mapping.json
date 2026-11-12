@@ -1,0 +1,21 @@
+{
+  "alreadyFixedBy": 1921,
+  "sourceRevision": "a963287ffaacad8fa405f91c086752255aefcb2d",
+  "reviewedMain": "195e59d37ae3181bbf34c0dd709a1882f33b40a3",
+  "exactPreviouslyMeasuredFiles": {
+    "src/duckmodel.js": "89df904a18fbe46c8d14bca5d9a3e8b9bc47da69f531bab2bc92f1ef120ac6fd",
+    "src/ducks.js": "0054f4aca04c7aac8f3cdb2c3caadac14ece5850282b171792fec89a29671ea2",
+    "models/duck-rigged.glb": "4601e326ac23319d148c6181c5b10ed1bdfad2c3c036bdcfaaa84dd109ec1bd4",
+    "tools/buildduckglb.mjs": "82a7d41792db862bd7507701095d52536fa5065acc167bc686fef9b1b18ce5c2",
+    "tools/duckvisualtest.html": "dfe00dc9d1ae7b26840fe6f0b84b6bcf87d2ff072669bb57f88d39c9d996e442",
+    "tools/capture-duck-surfaces.cjs": "c29eb6d4252d597440be93ed43a638e70c5698d9edc040baf57fc6d14277792f",
+    "tools/capture-duck-fallback.cjs": "28727b033b9ed3565bd3aa4d0c4d24079c39116c1cacd587b10b1b3fc766df87"
+  },
+  "exactConfigSections": [
+    "DUCK_SURFACE",
+    "DUCKS"
+  ],
+  "exactBestiaryDuckCase": "  case 'duck': object=mesh((await import('./duckmodel.js')).duckModel(recipe.female)); break;",
+  "nativeCurrentConsumerProbe": "consumer-parity.json",
+  "noProductChange": true
+}
