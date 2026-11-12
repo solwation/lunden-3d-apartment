@@ -12,9 +12,9 @@ Checks: `node --experimental-default-type=module --test tools/roofpicnic1858test
 
 Original-only gameplay/food, so no public downstream port. No new meal/reward/stat system, roofs, service integration, dependencies or external assets. Existing wine statistic and ordinary bite events remain. Parent conductor publishes image URLs embedded on issue before closing; this Refs handoff neither pushes nor closes.
 
-![Day placement](day.png)
-![Seated river-park view](seated-river-diagonal.png)
-![Evening serving](night-serving.png)
+![Day placement](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1858/picnic/day.png)
+![Seated river-park view](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1858/picnic/seated-river-diagonal.png)
+![Evening serving](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1858/picnic/night-serving.png)
 
 
 ## Conductor delivery

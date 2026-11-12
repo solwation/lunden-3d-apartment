@@ -31,8 +31,8 @@ hug/kiss and current main focus/reach/wall/weapon rules remain in place.
   not physical-phone evidence or desktop-resource performance. Web Speech calls are
   captured, not a human listening test. Renderer/menus/avatars in the main view are real.
 
-![Four conversation choices in the existing menu](conversation-menu.png)
-![Fresh actual sender bubble over avatar and relevant Svara](reply-and-line.png)
+![Four conversation choices in the existing menu](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1867/conversation-menu.png)
+![Fresh actual sender bubble over avatar and relevant Svara](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1867/reply-and-line.png)
 
 The ordinary touch band scrolls: the fifth Tillbaka row is reachable in that band
 (native touch back passed), while the first picture shows all four conversation options.

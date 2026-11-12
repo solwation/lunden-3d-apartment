@@ -5,8 +5,8 @@ finns i [result.json](result.json). `node --check` på main och testdriver samt
 `git diff --check` passerade. Testet kördes genom `tools/browsertest.sh` med full
 Chromium och det gemensamma browserlåset.
 
-- [Desktopapp](desktop-pwa.png): Avsluta finns i pausmenyn även i simulerat installerat läge.
-- [Telefonläge](phone-pwa.png): Avsluta och den tomma apprubriken är dolda.
+- [Desktopapp](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1873/desktop-pwa.png): Avsluta finns i pausmenyn även i simulerat installerat läge.
+- [Telefonläge](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1873/phone-pwa.png): Avsluta och den tomma apprubriken är dolda.
 
 Vanlig desktop, installerad desktop och hybrid med touchpunkter/fint muspekdon
 kontrollerades. Riktiga knappval Touch → Mus uppdaterar menyn. Ett simulerat

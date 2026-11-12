@@ -64,5 +64,5 @@ required. #669 stays open while normal-play outcome is followed. These changes r
 known avoidable load; they do not claim a reproduced/fixed physical iPhone crash.
 
 Evidence: [before](panels-before.json), [after](panels-after.json),
-[source hashes](panels-source-hashes.json), [note](panel-note.png),
-[pause](panel-pause.png), [portrait](panel-portrait.png).
+[source hashes](panels-source-hashes.json), [note](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-669/panel-note.png),
+[pause](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-669/panel-pause.png), [portrait](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-669/panel-portrait.png).

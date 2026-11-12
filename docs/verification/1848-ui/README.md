@@ -26,9 +26,9 @@ Två faktiska korrigeringar under egen verifiering finns dokumenterade: första 
 
 ## Granskade komponentbilder
 
-![Numrerat modellrutnät med rarity, fynd och mörka silhuetter](desktop-grid.png)
-![Detaljuppslag med verkliga kattunge-/vuxenmodeller](desktop-detail.png)
-![Samma UI i touchporträtt](touch-grid.png)
+![Numrerat modellrutnät med rarity, fynd och mörka silhuetter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1848-ui/desktop-grid.png)
+![Detaljuppslag med verkliga kattunge-/vuxenmodeller](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1848-ui/desktop-detail.png)
+![Samma UI i touchporträtt](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1848-ui/touch-grid.png)
 
 Dessa är komponentbilder med markerade UI-fixturer. Diagnostikbilderna i `diagnostics/*-chain-before-lazy.png` togs före den asynkrona miniatyrkön hann fylla bilderna och är inte slutbevis för kedjans modellbilder. Integrerad appkontroll och den fysiska pärmbilden samordnas av integrationsägaren i en enda riktig världsscen; `tools/bestiarynative.cjs` kör mus/touch/keyboard på en redan öppnad verklig panel och kräver verklig statistik/foto utan att skapa upptäckter eller starta en ny värld.
 
@@ -46,8 +46,8 @@ Contexten var touchkapabel och valde normal Touch-start; världens tangentbords-
 
 Samma världsbild före/efter UI: **210 calls / 663 871 trianglar / 1 271 geometrier / 51 texturer**, exakt samma båda gånger. Totalt 27 små modelljobb, 48 cacheträffar och 24 minnesposter; inga kvarvarande bild-/fotoköjobb. Detta är en riktad isolerings-/resurskontroll, inte en generell Surface Pro-FPS-certifiering.
 
-![Verklig pärm ovanpå bordsskivan, fri från skål och fjärr, med native öppna-knapp](../1848/app/tabletop-prop.png)
-![Riktig egen klappstatistik, mötesfoto och färdig modellkedja](../1848/app/desktop-statistics-chain.png)
-![Faktisk touchdetalj med vuxen modell och information](../1848/app/touch-detail.png)
+![Verklig pärm ovanpå bordsskivan, fri från skål och fjärr, med native öppna-knapp](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1848/app/tabletop-prop.png)
+![Riktig egen klappstatistik, mötesfoto och färdig modellkedja](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1848/app/desktop-statistics-chain.png)
+![Faktisk touchdetalj med vuxen modell och information](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1848/app/touch-detail.png)
 
 Använd `tabletop-prop.png` som propbevis. Filen `../1848/app/diagnostic/tabletop-prop-pause-menu.png` har pausmenyn ovanpå och är diagnostisk; den tydliga första bilden är redan fullgod och ingen omtagning behövs. Dessa appbilder hör till core-ägarens commit; UI- och core-commits måste integreras som en sammanhängande feature före publicering. Gemensam changelog/README/topic-text ägs av core-ägaren, ingen duplicerad featurepost görs här.

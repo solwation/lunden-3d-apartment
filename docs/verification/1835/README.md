@@ -55,8 +55,8 @@ Combined config adds only OUTDOOR_GYM.effort to the frozen geometry input; outdo
 [Composition proof](composition-proof.txt), [own and combined hashes/image hashes](combined-sources.json),
 [own source hashes](source-sha256.txt). No #1836 control implementation is copied into this commit.
 
-![Gravel pad, corten edge and orange-brown stations](overview.png)
-![Black course beside the gym](obstacle-course.png)
+![Gravel pad, corten edge and orange-brown stations](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1835/overview.png)
+![Black course beside the gym](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1835/obstacle-course.png)
 
 Both final combined images were visually inspected. They use the supplied local overview/course cameras
 converted through gym.point(), ground + eye height, June/noon/clear, desktop Chromium/SwiftShader at

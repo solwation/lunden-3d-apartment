@@ -89,10 +89,10 @@ because a fresh-profile dialog still appeared with `test&shot`; only those bad
 images were retaken. The final capture clicks the real **Hoppa över** button and
 asserts the dialog is hidden. No production DOM/rendering is altered.
 
-- [Overhead before](overhead-before.png) / [after](overhead-after.png): the full
+- [Overhead before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1446/overhead-before.png) / [after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1446/overhead-after.png): the full
   eight-corner lot and houses 48/49, with 44 north and 47 to the east. The outline
   and building roof positions remain aligned while the civil grading changes.
-- [Ground before](ground-before.png) / [after](ground-after.png): eastward across
+- [Ground before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1446/ground-before.png) / [after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1446/ground-after.png): eastward across
   the lot from its west edge; the unchanged houses and changed surface/facade
   contact are visible in daylight.
 

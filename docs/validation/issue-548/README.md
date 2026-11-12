@@ -4,6 +4,6 @@ The temporary brightness material inherited its source's lamp shader, but the pe
 
 Browser verification used Chromium with SwiftShader, pinned Three.js 0.170.0. The same rendered Standard/Physical regression produces 45 → 0 before the fix and 45 → 50 after it; removing focus restores exactly the original pixels. `interactionoutlinetest.txt` includes the closed entry door's actual action target, one lamp declaration after repeated scans, discovery while already focused, existing shader hooks/live state, ordinary occlusion and selected-instance rendering. `lighttest` covers real switches, lamps, colour changes, time changes and shader coverage through both floors. Its coverage check follows delegated source materials too.
 
-![Closed entry door focused after two lamp scans](entry-focused.png)
+![Closed entry door focused after two lamp scans](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-548/entry-focused.png)
 
 The scene image was rendered from outside at midday with the actual closed entry door focused, then explicitly rescanned twice. Its opaque green leaf, hardware and glass remain visible. No extra scene geometry, light or render pass was added.

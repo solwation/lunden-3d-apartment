@@ -1,0 +1,917 @@
+{
+  "timestamp_utc": "2026-11-12T11:10:33.182552+00:00",
+  "selection": "first broken image per affected document, deduplicated; includes PNG and JPG",
+  "unique_historical_urls": 468,
+  "sampled_urls": 101,
+  "results": [
+    {
+      "path": "docs/validation/issue-1042/before-badrum-set.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1042/before-badrum-set.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "61883",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1042/before-badrum-set.png"
+    },
+    {
+      "path": "docs/validation/issue-1043/before-kitchen.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1043/before-kitchen.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "175857",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1043/before-kitchen.png"
+    },
+    {
+      "path": "docs/validation/issue-1052/before.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1052/before.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "97545",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1052/before.png"
+    },
+    {
+      "path": "docs/validation/issue-1067/clock-close.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1067/clock-close.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "75530",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1067/clock-close.png"
+    },
+    {
+      "path": "docs/validation/issue-1073/front-fore-efter.jpg",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1073/front-fore-efter.jpg",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "311237",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1073/front-fore-efter.jpg"
+    },
+    {
+      "path": "docs/validation/issue-1406/sitting.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1406/sitting.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "411116",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1406/sitting.png"
+    },
+    {
+      "path": "docs/validation/issue-1499/sitting.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1499/sitting.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "356480",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1499/sitting.png"
+    },
+    {
+      "path": "docs/validation/issue-1500-1503/before.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1500-1503/before.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "355721",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1500-1503/before.png"
+    },
+    {
+      "path": "docs/validation/issue-1504/forward.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1504/forward.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "23079",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1504/forward.png"
+    },
+    {
+      "path": "docs/validation/issue-1505/up.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1505/up.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "22720",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1505/up.png"
+    },
+    {
+      "path": "docs/validation/issue-498/ground-day.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-498/ground-day.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "341902",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-498/ground-day.png"
+    },
+    {
+      "path": "docs/validation/issue-499/bedroom-day.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-499/bedroom-day.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "427387",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-499/bedroom-day.png"
+    },
+    {
+      "path": "docs/validation/issue-505/lunden-505-before-hall.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-505/lunden-505-before-hall.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "73114",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-505/lunden-505-before-hall.png"
+    },
+    {
+      "path": "docs/validation/issue-520/plan-comparison.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-520/plan-comparison.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "22218",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-520/plan-comparison.png"
+    },
+    {
+      "path": "docs/validation/issue-523/plan-before.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-523/plan-before.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "239562",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-523/plan-before.png"
+    },
+    {
+      "path": "docs/validation/issue-524/normal-before.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-524/normal-before.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "269481",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-524/normal-before.png"
+    },
+    {
+      "path": "docs/validation/issue-525/before-day.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-525/before-day.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "105272",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-525/before-day.png"
+    },
+    {
+      "path": "docs/validation/issue-530/registered-north.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-530/registered-north.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "3691257",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-530/registered-north.png"
+    },
+    {
+      "path": "docs/validation/issue-532/registered-plan.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-532/registered-plan.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "3468309",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-532/registered-plan.png"
+    },
+    {
+      "path": "docs/validation/issue-533/registered-park.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-533/registered-park.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "4300149",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-533/registered-park.png"
+    },
+    {
+      "path": "docs/validation/issue-534/registered-west.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-534/registered-west.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "4296491",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-534/registered-west.png"
+    },
+    {
+      "path": "docs/validation/issue-535/registered-east.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-535/registered-east.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "4297480",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-535/registered-east.png"
+    },
+    {
+      "path": "docs/validation/issue-536/registered-south.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-536/registered-south.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "4292622",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-536/registered-south.png"
+    },
+    {
+      "path": "docs/validation/issue-548/entry-focused.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-548/entry-focused.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "59431",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-548/entry-focused.png"
+    },
+    {
+      "path": "docs/validation/issue-550/washer-loaded.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-550/washer-loaded.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "142901",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-550/washer-loaded.png"
+    },
+    {
+      "path": "docs/validation/issue-551/washer-running.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-551/washer-running.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "136785",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-551/washer-running.png"
+    },
+    {
+      "path": "docs/validation/issue-552/folded-wardrobe.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-552/folded-wardrobe.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "38130",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-552/folded-wardrobe.png"
+    },
+    {
+      "path": "docs/validation/issue-553/dry.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-553/dry.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "153807",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-553/dry.png"
+    },
+    {
+      "path": "docs/validation/issue-571/after-dec-door-day.jpg",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-571/after-dec-door-day.jpg",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "147170",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-571/after-dec-door-day.jpg"
+    },
+    {
+      "path": "docs/validation/issue-571/before-dec-door-day.jpg",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-571/before-dec-door-day.jpg",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "140444",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-571/before-dec-door-day.jpg"
+    },
+    {
+      "path": "docs/validation/issue-575/jamforelse-foto-vs-modell.jpg",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-575/jamforelse-foto-vs-modell.jpg",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "184023",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-575/jamforelse-foto-vs-modell.jpg"
+    },
+    {
+      "path": "docs/validation/issue-576/b4e-before.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-576/b4e-before.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "477867",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-576/b4e-before.png"
+    },
+    {
+      "path": "docs/validation/issue-577/b2c-before.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-577/b2c-before.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "520224",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-577/b2c-before.png"
+    },
+    {
+      "path": "docs/validation/issue-578/b8c8-before.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-578/b8c8-before.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "344172",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-578/b8c8-before.png"
+    },
+    {
+      "path": "docs/validation/issue-579/b1front-before.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-579/b1front-before.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "381417",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-579/b1front-before.png"
+    },
+    {
+      "path": "docs/validation/issue-580/b88sw-before.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-580/b88sw-before.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "267801",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-580/b88sw-before.png"
+    },
+    {
+      "path": "docs/validation/issue-581/b19w-before.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-581/b19w-before.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "404232",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-581/b19w-before.png"
+    },
+    {
+      "path": "docs/validation/issue-583/korsning-karpvagen-fore.jpg",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-583/korsning-karpvagen-fore.jpg",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "77745",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-583/korsning-karpvagen-fore.jpg"
+    },
+    {
+      "path": "docs/validation/issue-589/b8-desktop.jpg",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-589/b8-desktop.jpg",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/jpeg",
+      "content_length": "145303",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-589/b8-desktop.jpg"
+    },
+    {
+      "path": "docs/validation/issue-669/panel-note.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-669/panel-note.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "54305",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-669/panel-note.png"
+    },
+    {
+      "path": "docs/validation/issue-715/apartment-two-darts.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-715/apartment-two-darts.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "190785",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-715/apartment-two-darts.png"
+    },
+    {
+      "path": "docs/validation/issue-902/compact-hud.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-902/compact-hud.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "84401",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-902/compact-hud.png"
+    },
+    {
+      "path": "docs/validation/issue-974/avatar-head-boxes.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-974/avatar-head-boxes.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "5681",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-974/avatar-head-boxes.png"
+    },
+    {
+      "path": "docs/verification/1446/overhead-before.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1446/overhead-before.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "452066",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1446/overhead-before.png"
+    },
+    {
+      "path": "docs/verification/1510/auto-timeline.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1510/auto-timeline.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "227327",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1510/auto-timeline.png"
+    },
+    {
+      "path": "docs/verification/1514/kitchen-lap1-frametimes.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1514/kitchen-lap1-frametimes.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "55894",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1514/kitchen-lap1-frametimes.png"
+    },
+    {
+      "path": "docs/verification/1549/canvas-families.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1549/canvas-families.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "77998",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1549/canvas-families.png"
+    },
+    {
+      "path": "docs/verification/1557/datorhornan.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1557/datorhornan.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "308279",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1557/datorhornan.png"
+    },
+    {
+      "path": "docs/verification/1558/living-lap1-frametimes.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1558/living-lap1-frametimes.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "63805",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1558/living-lap1-frametimes.png"
+    },
+    {
+      "path": "docs/verification/1563/laptop-tillbaka-pa-sminkbordet.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1563/laptop-tillbaka-pa-sminkbordet.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "290247",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1563/laptop-tillbaka-pa-sminkbordet.png"
+    },
+    {
+      "path": "docs/verification/1567/cart-entry.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1567/cart-entry.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "358539",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1567/cart-entry.png"
+    },
+    {
+      "path": "docs/verification/1658/north-clearance.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1658/north-clearance.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "252362",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1658/north-clearance.png"
+    },
+    {
+      "path": "docs/verification/1669/before.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1669/before.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "66758",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1669/before.png"
+    },
+    {
+      "path": "docs/verification/1674/hoje-a-broarna-lagt-before.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1674/hoje-a-broarna-lagt-before.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "582747",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1674/hoje-a-broarna-lagt-before.png"
+    },
+    {
+      "path": "docs/verification/1682/before-hela.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1682/before-hela.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "266654",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1682/before-hela.png"
+    },
+    {
+      "path": "docs/verification/1685/hoje-a-broarna-lagt-before.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1685/hoje-a-broarna-lagt-before.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "670284",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1685/hoje-a-broarna-lagt-before.png"
+    },
+    {
+      "path": "docs/verification/1769/fena-i-an.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1769/fena-i-an.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "402129",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1769/fena-i-an.png"
+    },
+    {
+      "path": "docs/verification/1820/before-east-landing.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1820/before-east-landing.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "396878",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1820/before-east-landing.png"
+    },
+    {
+      "path": "docs/verification/1823/before/side.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1823/before/side.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "460622",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1823/before/side.png"
+    },
+    {
+      "path": "docs/verification/1825/road.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1825/road.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "470178",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1825/road.png"
+    },
+    {
+      "path": "docs/verification/1827/bread-from-kitchen.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1827/bread-from-kitchen.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "107162",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1827/bread-from-kitchen.png"
+    },
+    {
+      "path": "docs/verification/1829/disco-dancing.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1829/disco-dancing.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "198932",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1829/disco-dancing.png"
+    },
+    {
+      "path": "docs/verification/1831/nuts-beside-river-path.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1831/nuts-beside-river-path.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "818563",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1831/nuts-beside-river-path.png"
+    },
+    {
+      "path": "docs/verification/1835/overview.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1835/overview.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "764482",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1835/overview.png"
+    },
+    {
+      "path": "docs/verification/1837/before.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1837/before.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "83764",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1837/before.png"
+    },
+    {
+      "path": "docs/verification/1838/before/desktop-warm.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1838/before/desktop-warm.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "497086",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1838/before/desktop-warm.png"
+    },
+    {
+      "path": "docs/verification/1839/familiar-pair.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1839/familiar-pair.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "915470",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1839/familiar-pair.png"
+    },
+    {
+      "path": "docs/verification/1840/findus-first-clock.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1840/findus-first-clock.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "1108100",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1840/findus-first-clock.png"
+    },
+    {
+      "path": "docs/verification/1841/desktop-attachments.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1841/desktop-attachments.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "72005",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1841/desktop-attachments.png"
+    },
+    {
+      "path": "docs/verification/1842/observer-monkey.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1842/observer-monkey.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "583602",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1842/observer-monkey.png"
+    },
+    {
+      "path": "docs/verification/1843/restored-crossing.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1843/restored-crossing.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "926849",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1843/restored-crossing.png"
+    },
+    {
+      "path": "docs/verification/1844/climb-wall.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1844/climb-wall.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "890515",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1844/climb-wall.png"
+    },
+    {
+      "path": "docs/verification/1845/contact-hearts-final.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1845/contact-hearts-final.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "272112",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1845/contact-hearts-final.png"
+    },
+    {
+      "path": "docs/verification/1846/kiss-hearts.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1846/kiss-hearts.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "760269",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1846/kiss-hearts.png"
+    },
+    {
+      "path": "docs/verification/1847/mouse-styrkelyft.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1847/mouse-styrkelyft.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "31377",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1847/mouse-styrkelyft.png"
+    },
+    {
+      "path": "docs/verification/1848-ui/desktop-grid.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1848-ui/desktop-grid.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "139071",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1848-ui/desktop-grid.png"
+    },
+    {
+      "path": "docs/verification/1848/app/tabletop-prop.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1848/app/tabletop-prop.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "1027879",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1848/app/tabletop-prop.png"
+    },
+    {
+      "path": "docs/verification/1849/before-location.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1849/before-location.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "1045443",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1849/before-location.png"
+    },
+    {
+      "path": "docs/verification/1850/app/before-low.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1850/app/before-low.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "74769",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1850/app/before-low.png"
+    },
+    {
+      "path": "docs/verification/1851/after/phone-start.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1851/after/phone-start.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "295247",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1851/after/phone-start.png"
+    },
+    {
+      "path": "docs/verification/1852/diagnostic/hunnerup-matched-landmarks.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1852/diagnostic/hunnerup-matched-landmarks.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "524840",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1852/diagnostic/hunnerup-matched-landmarks.png"
+    },
+    {
+      "path": "docs/verification/1852/long-side/facade-before.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1852/long-side/facade-before.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "919275",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1852/long-side/facade-before.png"
+    },
+    {
+      "path": "docs/verification/1852/resumed/l-gable-close-final.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1852/resumed/l-gable-close-final.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "919689",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1852/resumed/l-gable-close-final.png"
+    },
+    {
+      "path": "docs/verification/1853/app/spectator.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1853/app/spectator.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "565634",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1853/app/spectator.png"
+    },
+    {
+      "path": "docs/verification/1854/shared-court.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1854/shared-court.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "641843",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1854/shared-court.png"
+    },
+    {
+      "path": "docs/verification/1855/shared-table.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1855/shared-table.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "715685",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1855/shared-table.png"
+    },
+    {
+      "path": "docs/verification/1856/app/before-route.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1856/app/before-route.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "783451",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1856/app/before-route.png"
+    },
+    {
+      "path": "docs/verification/1857/app/astronaut-medal.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1857/app/astronaut-medal.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "201242",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1857/app/astronaut-medal.png"
+    },
+    {
+      "path": "docs/verification/1858/locate-hus-b.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1858/locate-hus-b.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "207523",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1858/locate-hus-b.png"
+    },
+    {
+      "path": "docs/verification/1858/picnic/day.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1858/picnic/day.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "664546",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1858/picnic/day.png"
+    },
+    {
+      "path": "docs/verification/1862/roof-placed.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1862/roof-placed.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "240969",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1862/roof-placed.png"
+    },
+    {
+      "path": "docs/verification/1863/before-uninvolved.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1863/before-uninvolved.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "233695",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1863/before-uninvolved.png"
+    },
+    {
+      "path": "docs/verification/1864/shared-serving.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1864/shared-serving.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "552083",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1864/shared-serving.png"
+    },
+    {
+      "path": "docs/verification/1865/shared-clock.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1865/shared-clock.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "269864",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1865/shared-clock.png"
+    },
+    {
+      "path": "docs/verification/1866/desktop-text-only.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1866/desktop-text-only.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "55262",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1866/desktop-text-only.png"
+    },
+    {
+      "path": "docs/verification/1867/conversation-menu.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1867/conversation-menu.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "569948",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1867/conversation-menu.png"
+    },
+    {
+      "path": "docs/verification/1868/nut-held-walk.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1868/nut-held-walk.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "674579",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1868/nut-held-walk.png"
+    },
+    {
+      "path": "docs/verification/1872/campus-original.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1872/campus-original.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "107304",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1872/campus-original.png"
+    },
+    {
+      "path": "docs/verification/1873/desktop-pwa.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1873/desktop-pwa.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "444904",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1873/desktop-pwa.png"
+    },
+    {
+      "path": "docs/verification/1875/before-lowmem-cat.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1875/before-lowmem-cat.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "70021",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1875/before-lowmem-cat.png"
+    },
+    {
+      "path": "docs/verification/1876/shared-edge-before-after.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1876/shared-edge-before-after.png",
+      "method": "HEAD",
+      "status": 200,
+      "content_type": "image/png",
+      "content_length": "63842",
+      "final_url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1876/shared-edge-before-after.png"
+    }
+  ]
+}

@@ -14,12 +14,12 @@ Verifierat i riktig Chromium-webbläsare med telefonvy 640 × 480: alla sex upps
 
 | Sovrum 1 | Vardagsrum | Kökskappa |
 |---|---|---|
-| ![Sovrum 1](bedroom-day.png) | ![Vardagsrum](living-day.png) | ![Kappa](kitchen-day.png) |
+| ![Sovrum 1](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-499/bedroom-day.png) | ![Vardagsrum](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-499/living-day.png) | ![Kappa](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-499/kitchen-day.png) |
 
 ## Exempel, kväll
 
 | Sovrum 1 inifrån | Sovrum 1 utifrån |
 |---|---|
-| ![Inifrån](bedroom-night.png) | ![Utifrån](bedroom-outside-night.png) |
+| ![Inifrån](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-499/bedroom-night.png) | ![Utifrån](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-499/bedroom-outside-night.png) |
 
 93 gardinkontroller och 31 plissékontroller passerar. Jämförelse med föregående version, samma mobilvy och kameror: samtliga sex rum har identiskt antal ritningar och trianglar både dag och kväll. Dagens ritningar: 183, 182, 214, 183, 268 och 215; kvällens: 173, 171, 204, 172, 258 och 190 (Sovrum 1–4, kök, vardagsrum). Mätningen gäller renderkostnad i webbläsare, inte FPS på fysisk mobilhårdvara.

@@ -7,4 +7,4 @@ Chromium/SwiftShader, real touch start and action controls. WATERING dimensions,
 - perfcount: compared with #552, kitchen 329 → 330 draws, identical triangles; every other recorded spot unchanged. One extra pothos soil material draw, no new lights or render passes.
 - planttest: pre-existing `.where()` error on both b084464 and this change, tracked separately as #559; no claim of a complete passing legacy planttest.
 
-[dry.png](dry.png) and [watered.png](watered.png) show the same existing kitchen-window pot from the same camera. Watered leaf heights and soil vertex colours are checked quantitatively in wateringtest as well.
+[dry.png](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-553/dry.png) and [watered.png](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-553/watered.png) show the same existing kitchen-window pot from the same camera. Watered leaf heights and soil vertex colours are checked quantitatively in wateringtest as well.

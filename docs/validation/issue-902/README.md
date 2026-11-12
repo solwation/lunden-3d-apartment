@@ -28,7 +28,7 @@ or hardware-FPS measurements.
 The CSS slice is `1b188d3`; final HUD reran after rebasing over #900's unrelated OLOF config removal.
 Artifacts under `/tmp/lunden-priority-902/`: `before`, `ready-layout`, `ready-fps`, `published-layout`,
 `fps-values.json`, per-value PNG, actual-exit files and ready/final source-proof snapshots.
-The images were visually inspected; [compact original HUD](compact-hud.png) shows uncut text. [Actual Presence with a three-digit FPS display](compact-presence-fps.png)
+The images were visually inspected; [compact original HUD](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-902/compact-hud.png) shows uncut text. [Actual Presence with a three-digit FPS display](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-902/compact-presence-fps.png)
 shows the retained online/lower-FPS main cells and original divider; the display value is an input
 for geometry checking, not measured hardware FPS.
 
@@ -37,7 +37,7 @@ for geometry checking, not measured hardware FPS.
 The native marker/lives proof found an independent baseline overlap: lives x277.703..352.297,
 y94..118; actual “Huvudträff!” marker x220.672..347.328,y111..140, overlap 69.625×7px. Routing
 only original 0233b58 HUD CSS yields identical bounds to the candidate. Both diagnostic exits 0
-mean the overlap was reproduced, not approved. [Baseline image](marker-overlap-before.png).
+mean the overlap was reproduced, not approved. [Baseline image](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-902/marker-overlap-before.png).
 
 #904 tracks that geometry independently. #902 changes no marker/life positioning and weakens no
 clearance assertion. The existing FPS driver checks marker against badges/crosshair, not lives.

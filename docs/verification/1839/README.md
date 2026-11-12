@@ -22,9 +22,9 @@ The functional browser closed before image inspection. Its feeding view was reta
 
 All three final images were inspected by the worker and conductor. The loose group naturally shows three full bodies and the fourth female’s head; this is enough to show the mixed group without repositioning its members.
 
-![Familiar mixed pair near the original reach](familiar-pair.png)
-![Temporary loose group reached by the seeded AI](loose-group.png)
-![Native feeding at the second reach](downstream-fed.png)
+![Familiar mixed pair near the original reach](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1839/familiar-pair.png)
+![Temporary loose group reached by the seeded AI](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1839/loose-group.png)
+![Native feeding at the second reach](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1839/downstream-fed.png)
 
 Public transfer: #235 is historical and complete. The new generic model/pair/group/range slice is tracked in dedicated low-priority [public #244](https://github.com/solwation/kvarteret-lunden/issues/244), created after conductor queue/duplicate review. Feeding, bread, Life, rewards, audio/services and personal content are excluded from that slice. No downstream work or issue was created by this worker.
 

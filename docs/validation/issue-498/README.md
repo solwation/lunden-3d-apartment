@@ -12,13 +12,13 @@ Krukor och centrala stammar får åttkantiga kollisionsytor; de bredare bladspet
 
 | Markplan | Loftgång |
 |---|---|
-| ![Markplan dag](ground-day.png) | ![Loftgång dag](loft-day.png) |
+| ![Markplan dag](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-498/ground-day.png) | ![Loftgång dag](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-498/loft-day.png) |
 
 ## Mobilvy, kväll
 
 | Markplan | Loftgång |
 |---|---|
-| ![Markplan kväll](ground-evening.png) | ![Loftgång kväll](loft-evening.png) |
+| ![Markplan kväll](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-498/ground-evening.png) | ![Loftgång kväll](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-498/loft-evening.png) |
 
 Verifierat i Chromium med telefonvy 844 × 390, även från tidigare version med samma kameror. Detta är renderstatistik i webbläsare, inte FPS-mätningar på en fysisk telefon.
 

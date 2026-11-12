@@ -35,11 +35,11 @@ reflektionskameror eller ljus. En ny delad 256²-tegeltextur för de tre husen.
 
 ## Jämförelser
 
-- [Foto mot modell, ungefär samma kameravinkel](jamforelse-foto-vs-modell.jpg) (`at=-92,135,40`).
-- [Render mot modell, ungefär samma flygvinkel](jamforelse-render-vs-modell.jpg).
-- Före/efter: [gatan vid Hus C](gata-fore-efter.jpg), [parksidan Hus 2](park-fore-efter.jpg), [parksidan Hus 3](park-hus3-fore-efter.jpg).
-- [Vinter, snö på taken](flyg-vinter-efter.jpg).
-- [Utsikt från Hus L:s tak](fran-hus-l-tak-efter.jpg): husen syns i fjärran över Å-husen. Från L1007:s
+- [Foto mot modell, ungefär samma kameravinkel](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-575/jamforelse-foto-vs-modell.jpg) (`at=-92,135,40`).
+- [Render mot modell, ungefär samma flygvinkel](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-575/jamforelse-render-vs-modell.jpg).
+- Före/efter: [gatan vid Hus C](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-575/gata-fore-efter.jpg), [parksidan Hus 2](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-575/park-fore-efter.jpg), [parksidan Hus 3](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-575/park-hus3-fore-efter.jpg).
+- [Vinter, snö på taken](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-575/flyg-vinter-efter.jpg).
+- [Utsikt från Hus L:s tak](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-575/fran-hus-l-tak-efter.jpg): husen syns i fjärran över Å-husen. Från L1007:s
   fönster skyms de helt av Å-husen A–C (kontrollerat från vardagsrum och övre plan), så ingen
   fönstervy påverkas.
 

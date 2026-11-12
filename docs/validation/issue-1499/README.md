@@ -12,7 +12,7 @@ legs across the cushions. Face, beard, cap and clothing details are also improve
 Verification: `PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/santaseatingtest.cjs BASE OUT`.
 The actual apartment check passed leg clearance, sole contact, the existing greeting/
 gift callback, sleep-pose switching and hidden sleep glass, without page errors.
-See [results](result.json), [sitting](sitting.png) and [sleeping](sleeping.png).
+See [results](result.json), [sitting](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1499/sitting.png) and [sleeping](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1499/sleeping.png).
 The first camera was obstructed by a wall; only that framing was corrected and the
 same focused check repeated. Final images were opened and inspected. The coffee
 table partly occludes the boots in the image, so floor contact is established by

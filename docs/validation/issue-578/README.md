@@ -23,10 +23,10 @@ Playwright-Chromium/SwiftShader, 15 juli 12:00, klart väder. Före = ba77c61 (#
 
 | Vy | Före | Efter | Referens |
 |---|---|---|---|
-| Västra paviljongen från nordväst | [före](b8c8-before.png) | [efter](b8c8-after.png) | Commons 8 |
-| Borggårdssidan | [före](b8n-before.png) | [efter](b8n-after.png) | Hemsö By8 |
-| Södra sidan | [före](b8s-before.png) | [efter](b8s-after.png) | — |
-| Östra paviljongen | [före](b8pav-before.png) | [efter](b8pav-after.png) | — |
+| Västra paviljongen från nordväst | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-578/b8c8-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-578/b8c8-after.png) | Commons 8 |
+| Borggårdssidan | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-578/b8n-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-578/b8n-after.png) | Hemsö By8 |
+| Södra sidan | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-578/b8s-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-578/b8s-after.png) | — |
+| Östra paviljongen | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-578/b8pav-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-578/b8pav-after.png) | — |
 
 Från L1007 skyms 8 av skolan (byggnad 3) och byggnad 88; från Sankt Lars väg syns östra paviljongen bortom 88.
 

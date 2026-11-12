@@ -1,6 +1,6 @@
 # Höje ås två broar vid Sankt Lars väg, #532
 
-[Registrerad modellplan mot flygbilden](registered-plan.png). Rött: vägbrons kartlinje, gult: GC-brons kartlinje inklusive anslutningar, blått: åns kartlinje. GC-däcket är 40 m, kortare än OSM-sträckan inklusive anslutningar (cirka 45,5 m). Vägbrons kartsträcka är cirka 45,8 m; detta är inte ett verifierat konstruktionsmått.
+[Registrerad modellplan mot flygbilden](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-532/registered-plan.png). Rött: vägbrons kartlinje, gult: GC-brons kartlinje inklusive anslutningar, blått: åns kartlinje. GC-däcket är 40 m, kortare än OSM-sträckan inklusive anslutningar (cirka 45,5 m). Vägbrons kartsträcka är cirka 45,8 m; detta är inte ett verifierat konstruktionsmått.
 
 ## Underlag och registrering
 
@@ -28,10 +28,10 @@ Riktig Chromium/Three.js 0.170.0/SwiftShader. Före = `558617b` på port 8159, e
 
 | Tillgänglig vy | Före | Efter |
 |---|---|---|
-| Parkplanet x=25/z=63, ögon −1,35 m, vinter | [bild](park-before.png) | [bild](park-after.png) |
-| Hus A:s gångbara tak x=0/z=51, ögon 14,28 m, vinter | [bild](roof-before.png) | [bild](roof-after.png) |
+| Parkplanet x=25/z=63, ögon −1,35 m, vinter | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-532/park-before.png) | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-532/park-after.png) |
+| Hus A:s gångbara tak x=0/z=51, ögon 14,28 m, vinter | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-532/roof-before.png) | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-532/roof-after.png) |
 
-Båda platserna kontrollerades fria; taket identifieras faktiskt som `roof-Hus A`. Kamerorna är identiska före/efter. [Sommar från parkplanet](summer-park-after.png) / [sommar från taket](summer-roof-after.png): befintlig lövvegetation behålls och får skymma. [Mobilvy](phone-after.png): Android-/touchprofil 844 ×390; inte uppmätt fysisk telefon-fps.
+Båda platserna kontrollerades fria; taket identifieras faktiskt som `roof-Hus A`. Kamerorna är identiska före/efter. [Sommar från parkplanet](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-532/summer-park-after.png) / [sommar från taket](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-532/summer-roof-after.png): befintlig lövvegetation behålls och får skymma. [Mobilvy](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-532/phone-after.png): Android-/touchprofil 844 ×390; inte uppmätt fysisk telefon-fps.
 
 - `bridgetest.html`: samtliga kontroller passerar — riktig scen, båda OSM-ändpunkterna, geografisk round-trip, däck/anslutningar, separat GC, 40 m, renderbudget och oförändrad gånggräns. En **verklig vertikal ray under vägbron träffar vattenytan**, inte en dold mark-/vägplatta.
 - `walktest.html`: alla befintliga vägar och kollisioner passerar.

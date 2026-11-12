@@ -35,9 +35,9 @@ Start the normal dev server, then `PLAYWRIGHT_MODULE=… NORDIC_GYM_BEFORE=… t
 
 ## Results
 
-![Before: open space under the old parking](app/before-low.png)
-![After: parking and stair foot on the drawn slope](app/after-low.png)
-![After: complete rear contact and retained building](app/after-rear.png)
+![Before: open space under the old parking](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1850/app/before-low.png)
+![After: parking and stair foot on the drawn slope](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1850/app/after-low.png)
+![After: complete rear contact and retained building](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1850/app/after-rear.png)
 
 Applicable public follow-up: a separate **low-priority** environment port owned by the conductor after exact source publication. Port the generic Nordic/terrain helper and builder adaptation; do not transfer personal cat gameplay or these original-app result images. No push or closure is performed by this worker.
 

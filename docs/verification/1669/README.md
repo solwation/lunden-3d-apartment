@@ -12,9 +12,9 @@ Checks:
 - `tools/browsertest.sh node tools/playroomspeakerstest.cjs http://localhost:8772 OUT`: observes the eight actual production front-cylinder geometries after all transforms and projects every vertex against its case's actual right/up axes. All eight fit within x ±0.18 / y ±0.20 m (0.2 mm Float32 tolerance). Pre-fix main `8ce555ce`, with `WOOFER_BASELINE=1`, reproduced four lower edges at -0.249984 m; the fixed woofer edges are about -0.195 m. Raw fixed values: [result.json](result.json).
 - Matched front closeups, production `Playroom` component, ordinary non-disco room lighting, AA at 1400×900. Pictures were inspected. No page/shader errors, Chromium/SwiftShader, peak 507 MiB. North/south component views keep the same 29/15 draws and 67044/66314 triangles before/after. No new meshes, lights or textures; no full-world or native-GPU performance claim.
 
-![Before](before.png)
+![Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1669/before.png)
 
-![After](after.png)
+![After](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1669/after.png)
 
 The #1658 ceiling clearance remains 80.69 mm at all four boxes, with the same
 inward/downward orientation and sound centres (maximum rounding error 0.046 mm).

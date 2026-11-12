@@ -31,11 +31,11 @@ No external media playback is required by this snack interaction.
 
 ## Result images
 
-![Cart in the entry, beside the clear exit](cart-entry.png)
+![Cart in the entry, beside the clear exit](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1567/cart-entry.png)
 
-![Full glass case, kettle, stacked tubs and bin](glass-full.png)
+![Full glass case, kettle, stacked tubs and bin](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1567/glass-full.png)
 
-![Eating from the tub in a cinema seat, touch controls](cinema-eating.png)
+![Eating from the tub in a cinema seat, touch controls](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1567/cinema-eating.png)
 
 Images were opened and inspected. The transient popping badge in the cart views
 comes from the native E action while the fixture advances simulation time to the full

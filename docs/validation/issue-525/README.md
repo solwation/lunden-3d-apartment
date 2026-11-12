@@ -22,25 +22,25 @@ Om backdrop blur saknas används en något tätare transparent yta. `hud-no-blur
 
 | Före | Efter |
 |---|---|
-| ![Före](before-day.png) | ![Efter](after-day.png) |
+| ![Före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-525/before-day.png) | ![Efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-525/after-day.png) |
 
 ## Telefon, mörk interiör
 
 | Före | Efter |
 |---|---|
-| ![Före](before-dark.png) | ![Efter](after-dark.png) |
+| ![Före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-525/before-dark.png) | ![Efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-525/after-dark.png) |
 
 ## Telefon, snö och ljus bakgrund
 
 | Före | Efter |
 |---|---|
-| ![Före](before-snow.png) | ![Efter](after-snow.png) |
+| ![Före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-525/before-snow.png) | ![Efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-525/after-snow.png) |
 
 ## Dator
 
 | Före | Efter |
 |---|---|
-| ![Före](before-desktop.png) | ![Efter](after-desktop.png) |
+| ![Före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-525/before-desktop.png) | ![Efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-525/after-desktop.png) |
 
 Verifierat i Chromium med telefonvy 844 × 390 och datorvy 1280 × 720. Detta är webbläsarkontroller och mobilvy, inte en mätning på fysisk mobilhårdvara. Blurens radie är samma lilla 2 px som telefonkontrollerna hade tidigare; det nya formspråket kräver inga nya 3D-passar.
 

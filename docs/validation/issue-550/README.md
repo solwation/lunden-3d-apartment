@@ -6,6 +6,6 @@ All dimensions, basket placement, capacity and small garment proportions in LAUN
 
 Chromium/SwiftShader checks: laundrytest ALL PASS (actual drum touch action, physical bounds, closed/full rejection without item loss, clean/wet independence, stable ids/restock and actual page reload), itemtest ALL PASS, walktest ALL PASS and perfcount ALL PASS.
 
-![Two original shirts loaded behind the washer's open round door](washer-loaded.png)
+![Two original shirts loaded behind the washer's open round door](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-550/washer-loaded.png)
 
 This is the loading part of #395. Washing programmes and drying/folding/storage follow in #551 and #552.

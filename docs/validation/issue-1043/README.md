@@ -9,11 +9,11 @@ dimensions in `KITCHEN` are visual guesses, not manufacturer measurements.
 
 | View | Before | After | Actual render calls / triangles |
 |---|---|---|---|
-| Kitchen | [before](before-kitchen.png) | [after](after-kitchen.png) | 81 / 8832 → 84 / 9052 |
-| Glass | [before](before-hob.png) | [after](after-hob.png) | 61 / 7508 → 64 / 7728 |
-| Hood underside | [before](before-hood.png) | [after](after-hood.png) | 32 / 5222 → 35 / 5442 |
+| Kitchen | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1043/before-kitchen.png) | [after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1043/after-kitchen.png) | 81 / 8832 → 84 / 9052 |
+| Glass | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1043/before-hob.png) | [after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1043/after-hob.png) | 61 / 7508 → 64 / 7728 |
+| Hood underside | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1043/before-hood.png) | [after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1043/after-hood.png) | 32 / 5222 → 35 / 5442 |
 
-[Live power display and preserved heat effect](after-hob-on.png).
+[Live power display and preserved heat effect](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1043/after-hob-on.png).
 
 These are actual production `buildInterior` kitchen components from the plan,
 with production `Lights` and `DayCycle` at June noon, ordinary room/bench/hood

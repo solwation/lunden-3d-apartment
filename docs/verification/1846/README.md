@@ -18,8 +18,8 @@ Samma statiska kamera/scen, bara effekten av/på: **35→36 draw calls**, **335 
 
 ## Granskade resultatbilder
 
-![Verkligt ankpar pussas i ån med fem läsbara hjärtan](kiss-hearts.png)
-![Närbild av modellernas mötande näbbfronter och fria kroppar](kiss-close.png)
+![Verkligt ankpar pussas i ån med fem läsbara hjärtan](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1846/kiss-hearts.png)
+![Närbild av modellernas mötande näbbfronter och fria kroppar](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1846/kiss-close.png)
 
 Närbilden använder halverat kamerafov som vittnesutsnitt. Samma faktiska kroppar, kontaktfas och fem partiklar visas; inga modeller/positioner byts för bilden. `approach.png` visar den första ansatsen. Båda slutbilderna är direkt inspekterade och accepterade före browserrelease.
 

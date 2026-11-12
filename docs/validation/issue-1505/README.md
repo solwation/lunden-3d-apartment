@@ -10,7 +10,7 @@ Minimum checks:
 - `tools/seatedlooktest.cjs http://localhost:8770 http://localhost:8771 /tmp/headpitch1505-final`: passed, two real Chromium clients through local PlayerRoom using the production main.js state callback. Standing/walking/crouching/cycling up, down and neutral; mirror pitch agrees; ordinary and legs-up seated gaze/body anchors still pass; no page errors. [Raw results](result.json).
 - Changed JS syntax checks and `git diff --check`: passed.
 
-[Up](up.png) and [down](down.png) visually inspected. Bounded component renders, not a full World scene.
+[Up](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1505/up.png) and [down](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1505/down.png) visually inspected. Bounded component renders, not a full World scene.
 The first evidence camera was behind the standing avatar and the fixture bench crossed its legs;
 corrected only the evidence camera/support visibility and reran the same focused check.
 No broad combat, scene or platform sweeps.

@@ -14,8 +14,8 @@ Alla befintliga accepterade repetitioner används. Inga ändringar i COUNTERS (3
 
 ## Granskade resultatbilder
 
-![Styrkelyft på dator med avatarer, egen rad och rep](mouse-styrkelyft.png)
-![Samma verkliga dialog vid touchbredd och fokuserat listval](touch-styrkelyft.png)
+![Styrkelyft på dator med avatarer, egen rad och rep](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1847/mouse-styrkelyft.png)
+![Samma verkliga dialog vid touchbredd och fokuserat listval](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1847/touch-styrkelyft.png)
 
 Båda visar de lokala fixture-spelarna Gymprov B (150 rep) och Gymprov A (120 rep), med B markerad som egen rad. Båda bilderna är direkt inspekterade och accepterade före browserrelease. Ingen 3D-route eller verklig gameplay-session påstås av dessa komponentbilder.
 

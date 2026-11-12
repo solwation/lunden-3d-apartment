@@ -28,15 +28,15 @@ Ankmamma starts at50 feeds; the counter is accepted by the Worker and has most/f
 
 ## Result images
 
-![Kitchen bread in hand](bread-from-kitchen.png)
+![Kitchen bread in hand](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1827/bread-from-kitchen.png)
 
 The held slice was dispensed from the existing kitchen pantry bag; this camera shows it carried inside the kitchen.
 
-![Feed badge and score at the river](duck-feed-points.png)
+![Feed badge and score at the river](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1827/duck-feed-points.png)
 
 One native E feeding: a real quarter-bite is missing, the duck badge is visible and the HUD score has risen6→12.
 
-![Ankmamma progress after four bites](duck-medal-progress.png)
+![Ankmamma progress after four bites](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1827/duck-medal-progress.png)
 
 Actual medal menu after the same slice's four bites: Ankmamma4/50, with its normal progress bar.
 

@@ -4,7 +4,7 @@ Peabs försäljningsplan, tryckt sida 46 i [broschyren](../../peab/lunden-planri
 
 ## Planjämförelse
 
-[Före](plan-before.png) / [efter](plan-after.png): faktiska `GARAGE.rects`, `partials` och `bikes` lagda på originalbilden. Grönt är cykelrum, blått förråd, turkost garage/teknik/hallar, rött dörrrektanglar och orange antagna cykelställ. De tunna linjerna visar modellens golvrektanglar, även skarvar inom samma rum; renderade väggar finns bara mot oanslutna kanter. [Före-konfiguration](config-before.json) kommer från main `19a0121`.
+[Före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-523/plan-before.png) / [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-523/plan-after.png): faktiska `GARAGE.rects`, `partials` och `bikes` lagda på originalbilden. Grönt är cykelrum, blått förråd, turkost garage/teknik/hallar, rött dörrrektanglar och orange antagna cykelställ. De tunna linjerna visar modellens golvrektanglar, även skarvar inom samma rum; renderade väggar finns bara mot oanslutna kanter. [Före-konfiguration](config-before.json) kommer från main `19a0121`.
 
 | Avvikelse före | Korrigering |
 |---|---|
@@ -30,12 +30,12 @@ Cyklarna är statisk garagegeometri, inga sparade flyttbara föremål. Befintlig
 
 | Vy | Före (`19a0121`) | Efter |
 |---|---|---|
-| Garagehallen, tidigare cyklar bland bilar | [bild](garage-before.png) | [bild](garage-after.png) |
-| Västra CYKEL-rummet | [bild](bike-west-before.png) | [bild](bike-west-after.png) |
-| Hyrförrådsgång | [bild](rental-before.png) | [bild](rental-after.png) |
-| Ordinarie C | [bild](storage-C-before.png) | [bild](storage-C-after.png) |
-| Ordinarie B | [bild](storage-B-before.png) | [bild](storage-B-after.png) |
-| Ordinarie A | [bild](storage-A-before.png) | [bild](storage-A-after.png) |
+| Garagehallen, tidigare cyklar bland bilar | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-523/garage-before.png) | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-523/garage-after.png) |
+| Västra CYKEL-rummet | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-523/bike-west-before.png) | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-523/bike-west-after.png) |
+| Hyrförrådsgång | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-523/rental-before.png) | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-523/rental-after.png) |
+| Ordinarie C | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-523/storage-C-before.png) | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-523/storage-C-after.png) |
+| Ordinarie B | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-523/storage-B-before.png) | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-523/storage-B-after.png) |
+| Ordinarie A | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-523/storage-A-before.png) | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-523/storage-A-after.png) |
 
 Samma kameror före/efter. Före-bilder på de saknade rummen är diagnostiska: kameran står där modellen tidigare saknade källargolv. Efter-bilderna visar faktisk ny burgeometri. Inga referensbilder har ritats om.
 

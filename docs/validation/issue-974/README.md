@@ -19,7 +19,7 @@ full-height capsule cannot hide every head contact. Cached v1 clients stay suppo
   baseline was relaxed. It is outside the new v2 geometry. Unknown-version fixtures
   now use 9 because 2 is a valid new contract.
 
-[Avatar debug image](avatar-head-boxes.png) shows actual Avatar geometry and the
+[Avatar debug image](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-974/avatar-head-boxes.png) shows actual Avatar geometry and the
 three wireframe volumes, with the top visibly narrower. It is a small rendered
 scene; the functional two-peer test suppresses apartment bootstrap. These results
 do not claim full-apartment performance or physical-phone stability. Head geometry

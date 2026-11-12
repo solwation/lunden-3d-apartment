@@ -18,13 +18,13 @@ The final simulated period visits all18 goals for every cat and spans about530m 
 
 All five result images were inspected by the worker and conductor; no more capture was requested.
 
-![Sotis climbing the existing brick pillar](climb-wall.png)
+![Sotis climbing the existing brick pillar](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1844/climb-wall.png)
 
-![Sotis resting on the existing entrance roof](roof-rest.png)
+![Sotis resting on the existing entrance roof](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1844/roof-rest.png)
 
-![Findus behind the green Nordic hall](Nordic-rear.png)
+![Findus behind the green Nordic hall](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1844/Nordic-rear.png)
 
-![Findus closer, with the same rear hall and stair](Nordic-rear-near.png)
+![Findus closer, with the same rear hall and stair](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1844/Nordic-rear-near.png)
 
 ![Offline illustration of actual saved model positions](actual-travel-map.png)
 

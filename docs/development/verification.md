@@ -43,8 +43,9 @@ CLAUDE.md ("Image retention") keep only long-term reference material and evidenc
 
 Issue comments must embed images with URLs pinned to the image commit (`blob/<sha>/docs/...`), so pruning
 never breaks the evidence on GitHub. History is never rewritten: the pruned images remain reachable through
-those URLs and `git show <sha>:<path>`. Image links inside pre-#1879 issue READMEs therefore show as missing
-in the tree; read them from the issue comment or history.
+those URLs and `git show <sha>:<path>`. The pruned files remain absent from the current tree. Historical Markdown image
+citations use revision-pinned URLs ([#1936 link repair](../verification/1936/README.md)),
+so reading those records does not require restoring expired images.
 A citation keeps only the files it names: a directory link cites the directory's README, and where a
 directory held only images, #1879 redirected the link to the issue itself.
 

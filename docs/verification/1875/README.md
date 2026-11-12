@@ -63,25 +63,25 @@ not used to claim a packing-induced draw-count change; the fixed inspection reta
 
 Before lowmem:
 
-![Kanel before packing correction](before-lowmem-cat.png)
+![Kanel before packing correction](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1875/before-lowmem-cat.png)
 
 After lowmem:
 
-![Kanel after packing correction](after-lowmem-cat.png)
+![Kanel after packing correction](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1875/after-lowmem-cat.png)
 
 Normal-profile reference:
 
-![Kanel with unchanged float normals](after-normal-cat.png)
+![Kanel with unchanged float normals](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1875/after-normal-cat.png)
 
 Full-app copper-pot control, before/after lowmem:
 
-![Full app lowmem before](before-lowmem.png)
-![Full app lowmem after](after-lowmem.png)
+![Full app lowmem before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1875/before-lowmem.png)
+![Full app lowmem after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1875/after-lowmem.png)
 
 Full-app normal-profile control, before/after:
 
-![Full app normal before](before-normal.png)
-![Full app normal after](after-normal.png)
+![Full app normal before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1875/before-normal.png)
+![Full app normal after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1875/after-normal.png)
 
 ## Isolated real producer
 
@@ -92,8 +92,8 @@ is **not** the current merged pot from the full application. Both render 4 calls
 triangles and 2,112 normal bytes. The subtle inner-wall shading changes in 8,081 pixels
 (at most 16 channel levels); no shape, position or material changes.
 
-![Actual source pot before normalization](before-source-pot.png)
-![Actual source pot after normalization](after-source-pot.png)
+![Actual source pot before normalization](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1875/before-source-pot.png)
+![Actual source pot after normalization](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1875/after-source-pot.png)
 
 ## Reproduction and limitations
 

@@ -4,11 +4,11 @@ Avlägsna kulisser utanför terrängrektangeln (`src/edgebackdrop.js`, `EDGE_BAC
 
 | Vy | Före | Efter |
 |---|---|---|
-| hela-omradet-fran-soder | ![](before-hela.png) | ![](after-hela.png) |
-| fran-norr-over-lunden | ![](before-norr.png) | ![](after-norr.png) |
-| oversikt-fran-soder | ![](before-oversikt.png) | ![](after-oversikt.png) |
-| hela-omradet, januari | ![](before-jan.png) | ![](after-jan.png) |
-| hela-omradet, `&lowmem&quality=0` (844x390) | ![](before-low.png) | ![](after-low.png) |
+| hela-omradet-fran-soder | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1682/before-hela.png) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1682/after-hela.png) |
+| fran-norr-over-lunden | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1682/before-norr.png) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1682/after-norr.png) |
+| oversikt-fran-soder | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1682/before-oversikt.png) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1682/after-oversikt.png) |
+| hela-omradet, januari | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1682/before-jan.png) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1682/after-jan.png) |
+| hela-omradet, `&lowmem&quality=0` (844x390) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1682/before-low.png) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1682/after-low.png) |
 
 Extra efter-vyer: `after-nw-radhus-och-hallar.png` (`at=-420,150,-60,-25,120`: radhusen vid Kallby ängaväg, villor och hallar i fjärran) och `after-ne-malmovagen.png` (`at=-60,-560,170,-20,60`: norra marken och Malmövägen; mjuk ramp mot terrängens norra kant, som står ~9 m över plattan).
 

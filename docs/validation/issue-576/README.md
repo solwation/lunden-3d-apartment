@@ -32,12 +32,12 @@ Playwright-Chromium med SwiftShader, 15 juli klockan 12, klart väder, 1280 × 8
 
 | Vy | Före | Efter | Jämförs med |
 |---|---|---|---|
-| 4 från borggården (öster) | [före](b4e-before.png) | [efter](b4e-after.png) | Commons 4 |
-| 4:s södra ändkropp | [före](b4s-before.png) | [efter](b4s-after.png) | Commons 4 (paviljongen till höger) |
-| 4 från väster | [före](b4w-before.png) | [efter](b4w-after.png) | Hemsö By4 |
-| 9:s södra ändkropp från sydost | [före](b9s-before.png) | [efter](b9s-after.png) | Commons 9 |
-| 9 från borggården (väster) | [före](b9w-before.png) | [efter](b9w-after.png) | Commons 9, längan |
-| Översikt | [före](aerialw-before.png) | [efter](aerialw-after.png) | Hemsös karta |
+| 4 från borggården (öster) | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-576/b4e-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-576/b4e-after.png) | Commons 4 |
+| 4:s södra ändkropp | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-576/b4s-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-576/b4s-after.png) | Commons 4 (paviljongen till höger) |
+| 4 från väster | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-576/b4w-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-576/b4w-after.png) | Hemsö By4 |
+| 9:s södra ändkropp från sydost | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-576/b9s-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-576/b9s-after.png) | Commons 9 |
+| 9 från borggården (väster) | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-576/b9w-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-576/b9w-after.png) | Commons 9, längan |
+| Översikt | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-576/aerialw-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-576/aerialw-after.png) | Hemsös karta |
 
 Silhuetten blir låg och lång som på fotona, med vitt förkläde, pilastrar och tegelfält; tvåvåningsblocket på 4 reser sig ur längan. Från L1007 och Sankt Lars väg skyms båda husen av skolan och träden (oförändrad utsikt utöver avlägsna glimtar).
 

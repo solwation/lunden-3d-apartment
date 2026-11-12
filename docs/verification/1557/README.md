@@ -6,14 +6,14 @@ Alla tillkommande mått och proportioner är fortfarande **guess**, centralisera
 `TILLY_DESK`. Detta är personlig inredning enbart för originalet; inget förs till den
 publika rundvandringen.
 
-![Datorhörnan](datorhornan.png)
+![Datorhörnan](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1557/datorhornan.png)
 
 Skrivbordet med röd skiva, svarta T-ben, liggande och stående skärm, monitorarmar,
 ringlampa/webbkamera, underlägg, tangentbord, mus, högtalare, små tillbehör och
 RGB-dator. Stolen har svart klädsel, ljusa sömmar, kolfibermönstrade sidor och
 stiliserat Batman-märke. Skärminnehållet är påhittat och statiskt.
 
-![Rumsöversikt](rumsoversikt.png)
+![Rumsöversikt](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1557/rumsoversikt.png)
 
 Vy från dörren mot fönstret visar relationen till dagbädd, affischer och sminkbord.
 Ingen befintlig möbel eller affisch har flyttats. Stolens placering lämnar en

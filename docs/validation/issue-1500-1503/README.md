@@ -11,8 +11,8 @@ Scoped checks only; no unrelated apartment/performance or device sweep.
   blocked chooser/power/channel/seek/select commands, other-TV independence, real
   end→loop playback, volume 100 front / 35 rear / 19 far,10 completed sips, saved blush,
   continued TV during sleep, ordinary three-package placement and release at 21.
-  No page errors. See [results](result.json) and inspected [before](before.png),
-  [after](after.png), [pile](pile.png). Identical aligned wrappers appear as a column;
+  No page errors. See [results](result.json) and inspected [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1500-1503/before.png),
+  [after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1500-1503/after.png), [pile](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1500-1503/pile.png). Identical aligned wrappers appear as a column;
   the three support IDs and non-overlapping mesh bounds establish the individual packages.
 - `tools/playroomsoundtest.cjs BASE OUT`: actual World/Web Audio route passes cue,
   collision, stationary pocket drop and mute/exit. Measured RMS .01133 for stroke/

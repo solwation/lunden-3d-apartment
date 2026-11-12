@@ -51,7 +51,7 @@ none. The 20 s after-run's first such frame (97 ms at 10.48 s) also comes before
 nearby. So they are a scene cost of the living-room view at the higher level that Auto kept, not a
 reallocation hitch. Harness: `stepcost.cjs`, `levels.cjs` (orchestra evidence dir).
 
-![Before/after timeline](../../verification/1510/auto-timeline.png)
+![Before/after timeline](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1510/auto-timeline.png)
 
 Limits: one machine and GPU, no GPU timer (classification is always uncertain), no physical phone;
 thresholds are *guess*.

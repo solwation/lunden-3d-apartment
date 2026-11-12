@@ -37,12 +37,12 @@ spawns at its preferred point, using the same respawn wait, incremented birth id
 snapshot. The unchanged room protocol was checked; no extra two-browser sync run was needed for a
 placement-only change with identical slots, messages and claims.
 
-![Nuts clearly visible from the river path](nuts-beside-river-path.png)
+![Nuts clearly visible from the river path](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1831/nuts-beside-river-path.png)
 
 Existing short-range glints and nut meshes at the grass edge of the real river path. A third ordinary
 heap nut joined the preferred pair in this deterministic fixture; it remains inside the same20-slot cap.
 
-![Squirrel fed with the pathside nut](squirrel-fed-from-pathside-nut.png)
+![Squirrel fed with the pathside nut](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1831/squirrel-fed-from-pathside-nut.png)
 
 The normally picked-up nut has been taken by the squirrel; the badge and +6 reward appear, with the
 normal nut-in-mouth pose and empty hand. Feeding code and rewards are unchanged.

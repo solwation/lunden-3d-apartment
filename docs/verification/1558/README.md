@@ -94,7 +94,7 @@ there. Programs at `warm.done` were 421 in every run. The warm-up duration (abou
 from navigation in this off-screen setup) did not change measurably. No startup improvement
 is claimed.
 
-![Living-room turn, lap 1, frame intervals before/after](living-lap1-frametimes.png)
+![Living-room turn, lap 1, frame intervals before/after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1558/living-lap1-frametimes.png)
 
 ## Functional checks (headless SwiftShader, not timing)
 

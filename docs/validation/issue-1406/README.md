@@ -11,7 +11,7 @@ profile was run for this isolated gameplay addition.
 - `tools/santaapptest.cjs`: actual apartment desktop pointer-lock E and landscape
   touch pass, including both greetings, busy hands, gifts while sleeping,
   `keepWorld`/`loadWorld`, sofa movement and 15/16/21 boundaries. No page errors.
-  See [results](result.json), [sitting](sitting.png), [sleeping](sleeping.png).
+  See [results](result.json), [sitting](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1406/sitting.png), [sleeping](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1406/sleeping.png).
 - Actual embedded source `I0SW0f0ww84` played in Chromium, state PLAYING,
   16.65 seconds elapsed, duration 231.601 seconds. It is a looping published
   Toy Tinkers excerpt, not the full Swedish Christmas broadcast.
@@ -19,7 +19,7 @@ profile was run for this isolated gameplay addition.
 
 The final actual-apartment media check also passed: the TV's real YouTube frames
 advanced while visible, and 16:00 removed both the player and glögg glass.
-See [media results](media.json), [TV](tv.png) and [sipping](sipping.png).
+See [media results](media.json), [TV](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1406/tv.png) and [sipping](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1406/sipping.png).
 The glass was moved outside the fist after its first image showed it hidden;
 only this affected visual check was repeated. The later config extraction keeps
 those same pose values. Opening a present also invalidates its old wrapping

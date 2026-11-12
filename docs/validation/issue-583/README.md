@@ -63,8 +63,8 @@ på Surface Pro eller telefon.
 
 | Vy | Bild |
 |---|---|
-| Sankt Lars väg × Karpvägen från gångområdet | [före](korsning-karpvagen-fore.jpg) / [efter](korsning-karpvagen-efter.jpg) |
-| Karpvägsskylten på nära håll | [efter](karpvagen-skylt-nara.jpg) |
-| Svängen vid nordöstra hörnet | [efter](svangen-sankt-lars-vag.jpg) |
-| Karpvägens sväng in i parken | [efter](karpvagen-svangen.jpg) |
-| Sävsländegatan / Hattsnäckegränden (bakgrunden) | [efter](savslandegatan.jpg) |
+| Sankt Lars väg × Karpvägen från gångområdet | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-583/korsning-karpvagen-fore.jpg) / [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-583/korsning-karpvagen-efter.jpg) |
+| Karpvägsskylten på nära håll | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-583/karpvagen-skylt-nara.jpg) |
+| Svängen vid nordöstra hörnet | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-583/svangen-sankt-lars-vag.jpg) |
+| Karpvägens sväng in i parken | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-583/karpvagen-svangen.jpg) |
+| Sävsländegatan / Hattsnäckegränden (bakgrunden) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-583/savslandegatan.jpg) |

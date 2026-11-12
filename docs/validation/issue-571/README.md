@@ -15,15 +15,15 @@ Every size, colour and count is a visual *guess* (`XMAS_TREE` in `src/config.js`
 
 | | before | after |
 |---|---|---|
-| doorway, noon, 10 Dec | ![](before-dec-door-day.jpg) | ![](after-dec-door-day.jpg) |
-| doorway, 22:00, 10 Dec | ![](before-dec-door-night.jpg) | ![](after-dec-door-night.jpg) |
-| doorway, noon, 7 Jan (out of season: as before) | — | ![](after-jan7-door-day.jpg) |
+| doorway, noon, 10 Dec | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-571/before-dec-door-day.jpg) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-571/after-dec-door-day.jpg) |
+| doorway, 22:00, 10 Dec | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-571/before-dec-door-night.jpg) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-571/after-dec-door-night.jpg) |
+| doorway, noon, 7 Jan (out of season: as before) | — | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-571/after-jan7-door-day.jpg) |
 
 Close-ups (noon / 22:00) and the phone format (390 × 844, noon / 21:00):
 
-![](after-dec-close-day.jpg) ![](after-dec-close-night.jpg)
+![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-571/after-dec-close-day.jpg) ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-571/after-dec-close-night.jpg)
 
-![](after-dec-phone-day.jpg) ![](after-dec-phone-night.jpg)
+![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-571/after-dec-phone-day.jpg) ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-571/after-dec-phone-night.jpg)
 
 ## Rendering cost
 

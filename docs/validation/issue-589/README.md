@@ -37,11 +37,11 @@ Desktop `tools/perfcount.html`: identical before and after (e.g. kitchen 341 cal
 ## Screenshots
 
 15 July 12:00, clear. Desktop detail vs the phone level in the same 1280×800 frame:
-[byggnad 8](b8-desktop.jpg) / [phone level](b8-phone-detail.jpg),
-[school](school-desktop.jpg) / [phone level](school-phone-detail.jpg),
-[overview](overview-desktop.jpg) / [phone level](overview-phone-detail.jpg).
-Phone frame 390×844 before / after: [Klockhuset](b1-phone-before.jpg) / [after](b1-phone-after.jpg),
-[Sankt Lars väg](street-phone-before.jpg) / [after](street-phone-after.jpg).
+[byggnad 8](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-589/b8-desktop.jpg) / [phone level](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-589/b8-phone-detail.jpg),
+[school](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-589/school-desktop.jpg) / [phone level](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-589/school-phone-detail.jpg),
+[overview](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-589/overview-desktop.jpg) / [phone level](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-589/overview-phone-detail.jpg).
+Phone frame 390×844 before / after: [Klockhuset](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-589/b1-phone-before.jpg) / [after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-589/b1-phone-after.jpg),
+[Sankt Lars väg](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-589/street-phone-before.jpg) / [after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-589/street-phone-after.jpg).
 
 Close up the phone level shows plainer windows (four panes instead of twelve) and a single cornice; from the street and
 the flat the buildings read the same.

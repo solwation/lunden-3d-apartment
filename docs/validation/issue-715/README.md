@@ -176,7 +176,7 @@ remain unverified.
 
 The separate final picture-only capture completed with driver exit 0 and no page
 errors at source `33e7dfd`, 960×600, production quality 0. The
-[reviewed apartment image](apartment-two-darts.png) shows the actual held Nerf,
+[reviewed apartment image](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-715/apartment-two-darts.png) shows the actual held Nerf,
 local dart and incoming dart in the dining/living view. The
 [capture metadata](apartment-picture.json) records all four child render-layer
 checks as true, local NDC `(0.124, -0.149, 0.920)` and incoming NDC

@@ -40,9 +40,9 @@ rejection/timeout feedback even after walking away. State/replay always update.
   preserved participant's real reset ACK/HUD at q19. Ordinary player-join notices
   remain allowed. Before/after roof cameras match. Images were directly inspected.
 
-![Before: distant roof receives someone else's boule reset](before-uninvolved.png)
-![After: same roof stays free of boule verdicts](after-uninvolved.png)
-![After: participant still receives the real verdict at the court](after-participant.png)
+![Before: distant roof receives someone else's boule reset](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1863/before-uninvolved.png)
+![After: same roof stays free of boule verdicts](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1863/after-uninvolved.png)
+![After: participant still receives the real verdict at the court](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1863/after-participant.png)
 
 The report image is only a contemporaneous picnic view with no visible boule message;
 it does not establish an environment defect or a precise camera to reproduce. The

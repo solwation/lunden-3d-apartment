@@ -6,4 +6,4 @@ The 25-second drying time and wardrobe reserve/capacity/spacing are gameplay ass
 
 Chromium/SwiftShader: the complete laundrytest passes loading, touch programme controls, dirty/wet rejection, pause/membership, washer/dryer real reloads with exact time, actual wardrobe touch storage, full capacity with original ids intact, full-flow real reload and the actual reset control followed by a fresh page. wardrobetest passes all 315 seam rays plus both panels' travel/access checks. walktest passes existing routes; perfcount passes. The folding bounds test measures the rendered cloth geometry in its own frame so camera/held rotation cannot change its thickness comparison.
 
-![Two original clean dry folded garments on the existing Sovrum 3 shelf](folded-wardrobe.png)
+![Two original clean dry folded garments on the existing Sovrum 3 shelf](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-552/folded-wardrobe.png)

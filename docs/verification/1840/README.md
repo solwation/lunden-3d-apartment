@@ -39,9 +39,9 @@ To reproduce the staged browser fixture, run `tools/browsertest.sh node tools/ca
 
 The screenshots use actual production cats near their scheduled base positions from **two fixture wall clocks**, with normal local notice/outing reactions retained; daylight remains fixed at noon for readable comparison. The bottom label shows the cat's wall clock (2026-11-03 23:59:10 UTC and2026-11-04 00:08:26 UTC); the normal HUD's12:00 is the held daylight clock. Controlled clock/spawn and one fixture-created fish shorten travel/interaction setup. This is not a continuous walking route, native fishing achievement, physical-phone/FPS or whole-scene performance claim. Feeding and petting use the existing production lifecycle/actions.
 
-![Findus at the first fixture clock](findus-first-clock.png)
-![Findus111m away at the second fixture clock](findus-second-clock.png)
-![Test illustration: exact route points projected over the actual scene](territory-overview.png)
+![Findus at the first fixture clock](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1840/findus-first-clock.png)
+![Findus111m away at the second fixture clock](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1840/findus-second-clock.png)
+![Test illustration: exact route points projected over the actual scene](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1840/territory-overview.png)
 
 All three images were inspected by worker and conductor before the held browser was released. The overview is explicitly a **test illustration**: exact route x/z points projected over the real scene with an overlay that remains visible in front of trees. There is no corresponding product map/UI.
 

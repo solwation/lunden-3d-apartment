@@ -1,0 +1,43 @@
+{
+  "baseline": "f3f5ae145854bd40ecfe5e3ecd8cdb814142e5a0",
+  "before": {
+    "command": "python3 .orchestra/shared/scripts/check-links.py",
+    "exit": 1,
+    "broken_links": 479,
+    "tracked_markdown_files": 297
+  },
+  "changed_historical_records": 101,
+  "replaced_occurrences": 479,
+  "unique_historical_paths": 468,
+  "all_history_statuses": [
+    "historical-image"
+  ],
+  "all_containing_revisions": [
+    "2eaf0273ce3228c8322a17a14f72869abea00b42"
+  ],
+  "all_removal_commits": [
+    "7ae586f53bfcc279e61eb80600544685dbb9a1e0"
+  ],
+  "native_blob_type_and_positive_size_verified": 468,
+  "http_head_sample": {
+    "urls": 101,
+    "status_200_image_content_type": 101,
+    "not_requested": 367
+  },
+  "exact_baseline_plus_recorded_destination_replacements": true,
+  "existing_checker_unchanged_sha256": "d0b71e35500f3be498c5979350daf1a619ac8dcaa5dbb4019c62bcdbf722a7b5",
+  "current_1927_1928_1930_evidence_untouched": true,
+  "images_restored": 0,
+  "product_or_tool_changes": 0,
+  "after": {
+    "command": "python3 .orchestra/shared/scripts/check-links.py",
+    "exit": 0,
+    "broken_links": 0,
+    "relative_links_checked": 1918,
+    "tracked_markdown_files": 298
+  },
+  "diff_check": "PASS",
+  "exact_existing_modified_paths_verified": 102,
+  "new_documentation_evidence_files_verified": 7,
+  "all_changed_paths_are_documentation": true
+}

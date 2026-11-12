@@ -22,7 +22,7 @@ Verkliga nosytors mätta gap är 2,65e-15 m (flyttalsnoll). Båda återgår till
 
 ### Slutbild
 
-![Två riktiga katter med noskontakt och fem läsbara hjärtan](contact-hearts-final.png)
+![Två riktiga katter med noskontakt och fem läsbara hjärtan](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1845/contact-hearts-final.png)
 
 Denna granskade närbild använder halverat kamerafov som vittnesutsnitt; kattpositioner och kontakt ändras inte av kameran. Slutlig `heartScale` är **2,5**, med befintliga Hearts konstruktionsvärden `k=2.5`, `material.size=0.1125`, fem partiklar. De ursprungliga bilderna `contact-hearts.png` och `contact-close.png` använder 1,3 och är förejustering: noskontakt godkändes men hjärtana var bara rosa prickar. I samma hållna appscen återspelades samma naturliga möte för enbart slutbilden med de nya konstruktionsvärdena. Övrig grön funktions-/återgångsdata återanvänds; inga nya matriser eller appstarter för effektstorleken.
 

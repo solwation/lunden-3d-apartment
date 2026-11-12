@@ -22,11 +22,11 @@ benchmark.
 
 | View | Before | After |
 | --- | --- | --- |
-| Bathroom set, including parked hand shower | [before](before-badrum-set.png) | [after](after-badrum-set.png) |
-| Bathroom overhead spray face | [before](before-badrum-head.png) | [after](after-badrum-head.png) |
-| Bathroom thermostat | [before](before-badrum-mixer.png) | [after](after-badrum-mixer.png) |
-| WC set | [before](before-wc-set.png) | [after](after-wc-set.png) |
-| WC hand-shower spray face | [before](before-wc-head.png) | [after](after-wc-head.png) |
+| Bathroom set, including parked hand shower | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1042/before-badrum-set.png) | [after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1042/after-badrum-set.png) |
+| Bathroom overhead spray face | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1042/before-badrum-head.png) | [after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1042/after-badrum-head.png) |
+| Bathroom thermostat | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1042/before-badrum-mixer.png) | [after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1042/after-badrum-mixer.png) |
+| WC set | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1042/before-wc-set.png) | [after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1042/after-wc-set.png) |
+| WC hand-shower spray face | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1042/before-wc-head.png) | [after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1042/after-wc-head.png) |
 
 The baseline is `src/interior.js` from `ff75a5d`, served through a Playwright route
 in a separate browser context; all other files are identical to the candidate.

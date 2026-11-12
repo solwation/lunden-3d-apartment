@@ -18,4 +18,4 @@ Brick crops at 13:00: sunlit south 85.9 → 96.4, shaded north 83.0 → 79.7 (ra
 The 09:00 front gain is the low morning sun that really reaches the north-east-facing façade in June.
 Night, rain and the garage use the unchanged `LIGHTING.sky.overcast` values (exposure 1).
 
-![front](front-fore-efter.jpg) ![patio](patio-fore-efter.jpg) ![living](living-fore-efter.jpg) ![kitchen](kitchen-fore-efter.jpg)
+![front](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1073/front-fore-efter.jpg) ![patio](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1073/patio-fore-efter.jpg) ![living](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1073/living-fore-efter.jpg) ![kitchen](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1073/kitchen-fore-efter.jpg)

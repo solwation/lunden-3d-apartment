@@ -18,9 +18,9 @@ Den bevarade rawrapporten innehåller id, text, playerName, created och image �
 | Karpvägen2–4, OSM342815183 | `[-231,16.5,42] → [-205,14.4,68]`, okt17:24 | Blått tak längs huvudaxeln, två tydliga vita teknikhus och andra landmärken. Ingen entydig originalmatch. |
 | Nordic, guess-1762 | `[-164.4,18.85,-361] → [-198,17,-359]`, juni20:00 | Tvärs verkliga solpanelrader från östra remsan; separata upphöjda paneler/vit ventilationsbox och annan bakgrund. Inte en tillräcklig match för att bestämma placering. |
 
-![Diagnostik Hus B, ingen ändring](locate-hus-b.png)
-![Diagnostik Karpvägen2–4, ingen ändring](locate-karp-axis.png)
-![Diagnostik Nordic tvärs, ingen ändring](locate-nordic-cross.png)
+![Diagnostik Hus B, ingen ändring](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1858/locate-hus-b.png)
+![Diagnostik Karpvägen2–4, ingen ändring](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1858/locate-karp-axis.png)
+![Diagnostik Nordic tvärs, ingen ändring](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1858/locate-nordic-cross.png)
 
 Tidigare kamerainramningar sparas ärligt: `locate-karp.png` står inte på huvudaxeln; `locate-nordic.png` använde först för låg kamerahöjd och ser därför insidan (fixturfel, ingen produktbugg); `locate-nordic-roof.png` är korrigerad längsvy över panelerna. Nordics verkliga record var base5.912492/eave16.712492/ridge17.012492. Sol-/månadsval provades som kameravillkor, inte som bevis för rapportens okända speldatum. Inga ytterligare kandidat-/campusmatriser kördes. `page-errors.json` dokumenterar eventuella sidfel, inte visuellt godkännande.
 

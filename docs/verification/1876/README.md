@@ -121,9 +121,9 @@ All table values are milliseconds, `median / p95`; each pair is r170 → candida
 
 ## Images
 
-![Synthetic shared-edge miss before and after](shared-edge-before-after.png)
+![Synthetic shared-edge miss before and after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1876/shared-edge-before-after.png)
 
-![Actual A/B/C/L architectural component surfaces](architecture-surfaces.png)
+![Actual A/B/C/L architectural component surfaces](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1876/architecture-surfaces.png)
 
 The first image is the explicitly synthetic upstream seam, not a newly observed house
 hole. The second uses unchanged production geometry, clipped above the lowest floor

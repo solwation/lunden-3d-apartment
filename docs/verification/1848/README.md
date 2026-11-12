@@ -57,12 +57,12 @@ Use the existing Three/Playwright installation (the Node catalogue check imports
 
 The recorded preparation used player.spawn(3.64,9.4,0), looked at the real binder target, and clicked its visible action button. After closing via Esc, player.spawn(4.4,7.8,π) (normal collision correction yielded eye[4.529,1.62,8.5]) looked at the cat's actual head, stepped9×0.1s for the seen-only proof and clicked the real “Klappa katten” choice.13×0.1s completed the photo event. Return to the tabletop view for fixed-view draw comparison and normal action-open; select#002, open its real photo, Esc and keyboard next. `tools/bestiaryappflow.py CONTROL OUT` records the native reopen/portrait/photo-back follow-up from that already-validated desktop detail state. `tools/bestiarynative.cjs` is the UI worker's reusable native helper for an already-open real panel. No fixture directly credits discoveries, points or photos.
 
-![Tabletop prop and normal action](app/tabletop-prop.png)
-![Actual one-of-65 collection](app/desktop-grid.png)
-![Desktop known and unknown cards](app/desktop-detail.png)
-![Actual encounter statistics, photo and chain](app/desktop-statistics-chain.png)
-![Portrait detail](app/touch-detail.png)
-![Portrait actual statistics and chain](app/touch-statistics-chain.png)
+![Tabletop prop and normal action](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1848/app/tabletop-prop.png)
+![Actual one-of-65 collection](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1848/app/desktop-grid.png)
+![Desktop known and unknown cards](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1848/app/desktop-detail.png)
+![Actual encounter statistics, photo and chain](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1848/app/desktop-statistics-chain.png)
+![Portrait detail](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1848/app/touch-detail.png)
+![Portrait actual statistics and chain](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1848/app/touch-statistics-chain.png)
 
 
 ## Conductor integration

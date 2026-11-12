@@ -21,11 +21,11 @@ Slutliga åskådarvyer ger 49 calls/384 768 trianglar (armgång) och 52/386 286 
 
 ## Granskade resultatbilder
 
-![Annan spelare hänger med händerna vid portalbalken](observer-monkey.png)
-![Annan spelare ligger och pressar den befintliga rörliga stocken](observer-press.png)
-![Balansgång med stödfot på balken](keys-balance-body.png)
-![Normal förstapersonsorientering under armgång, pitch 0](monkey-normal-hud.png)
-![Touchplattans balansprogress](touch-balance-hud.png)
+![Annan spelare hänger med händerna vid portalbalken](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1842/observer-monkey.png)
+![Annan spelare ligger och pressar den befintliga rörliga stocken](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1842/observer-press.png)
+![Balansgång med stödfot på balken](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1842/keys-balance-body.png)
+![Normal förstapersonsorientering under armgång, pitch 0](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1842/monkey-normal-hud.png)
+![Touchplattans balansprogress](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1842/touch-balance-hud.png)
 
 Åskådarvyerna är riktiga mottagarfigurer från sparade Room-paket; vittneskameran ändrar bara bildutsnitt. Förstapersonsbildens normala ögonläge/pitch återställdes från apparatens sparade position i den hållna receiver-scenen och återrenderades, utan ny input-/Roommatris, och visar horisont/redskap vid pitch 0. Den saknar gymrutan i denna capture-fixtur och är endast orienteringsbevis. Ursprungliga `keys-monkey-body.png`, `keys-monkey-hud.png` och `touch-monkey-hud.png` är diagnostik: saknad figur/stale himmelcanvas och ska inte användas som godkända resultatbilder.
 

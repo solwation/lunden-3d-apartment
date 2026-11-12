@@ -24,11 +24,11 @@ Playwright-Chromium/SwiftShader, 15 juli 12:00, klart väder. Före = c4fa765 (#
 
 | Vy | Före | Efter | Referens |
 |---|---|---|---|
-| Sydvästra hörnet | [före](b88sw-before.png) | [efter](b88sw-after.png) | Ednia-bilden |
-| Sydfasaden från gatan | [före](b88s-before.png) | [efter](b88s-after.png) | Hemsö By88 |
-| Snett ovanifrån (tak och innergård) | [före](b88air-before.png) | [efter](b88air-after.png) | Hemsös beskrivning |
-| Från L1007:s övervåning | [före](kitchenup-before.png) | [efter](kitchenup-after.png) | — |
-| Sankt Lars väg | [före](street-before.png) | [efter](street-after.png) | — |
+| Sydvästra hörnet | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-580/b88sw-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-580/b88sw-after.png) | Ednia-bilden |
+| Sydfasaden från gatan | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-580/b88s-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-580/b88s-after.png) | Hemsö By88 |
+| Snett ovanifrån (tak och innergård) | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-580/b88air-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-580/b88air-after.png) | Hemsös beskrivning |
+| Från L1007:s övervåning | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-580/kitchenup-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-580/kitchenup-after.png) | — |
+| Sankt Lars väg | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-580/street-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-580/street-after.png) | — |
 
 88 syns från Sankt Lars väg och från hemmets norrfönster till höger om skolan; där läses nu rött tegel med pelarrytm och breda fönster i stället för en ljus volym.
 

@@ -33,9 +33,9 @@ When putting the nut down, `heldItem()` became `null` and focus placement checks
    - Places the nut down on the ground, verifying `slot.alive = true` and `slot.held = false`.
    - Zero console or page errors.
 3. **Visual evidence:**
-   - [Holding nut while walking](nut-held-walk.png): Player walking on park pavement holding an acorn with touch controls and "Lägg ner" action button.
-   - [Nut placed on pavement](nut-placed-ground.png): Placed acorn with glowing ring/beam glint and "Ta en nöt" prompt.
+   - [Holding nut while walking](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1868/nut-held-walk.png): Player walking on park pavement holding an acorn with touch controls and "Lägg ner" action button.
+   - [Nut placed on pavement](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1868/nut-placed-ground.png): Placed acorn with glowing ring/beam glint and "Ta en nöt" prompt.
 4. **Downstream transfer:** N/A (squirrel nuts and held-object placement are original-only gameplay not present in `solwation/kvarteret-lunden`).
 
-![Holding nut while walking](nut-held-walk.png)
-![Nut placed on pavement](nut-placed-ground.png)
+![Holding nut while walking](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1868/nut-held-walk.png)
+![Nut placed on pavement](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1868/nut-placed-ground.png)

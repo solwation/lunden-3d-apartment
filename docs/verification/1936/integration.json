@@ -1,0 +1,9 @@
+{
+  "worker": "3bbf61ff95a2e6cdf5ff6f5b708cf9c56aa1434c",
+  "integratedBase": "5fc0da6b03401a96c0dc06cd089df575340e78eb",
+  "all479ReplacementsReconstructedExact": true,
+  "historicalDocuments": 101,
+  "allWorkerEvidenceExact": true,
+  "checkerExact": true,
+  "otherMainChangesPreserved": true
+}

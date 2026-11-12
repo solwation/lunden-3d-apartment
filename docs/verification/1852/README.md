@@ -13,11 +13,11 @@ One actual app bootstrap on source `49233f38` was opened on an owned local HTTP 
 
 The school pavilions/clock tower on the left, Lunden's brick houses farther ahead, and the pale long building on the right are consistent with a camera near the southeastern roof end of **Hunnerupshemmet / 85**, mapped source **88457603**, approximately `[-170,18.5,-39]` looking toward `[-20,-3,7]`. The right-hand pale volume is consistent with **Östra längan vid Karpvägen**, source **88457595**. This identifies plausible foreground context, not an exact recovered report camera or definitive identification of the user's faulty triangle. Leaf cover, sky and framing differ from the original.
 
-![Diagnostic landmark match near the southeastern roof end; no fix shown](diagnostic/hunnerup-matched-landmarks.png)
+![Diagnostic landmark match near the southeastern roof end; no fix shown](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1852/diagnostic/hunnerup-matched-landmarks.png)
 
 A second local view makes the same roof's two shaded planes/nock easier to inspect:
 
-![Diagnostic view along the existing roof planes from a nearby northern candidate](diagnostic/northwest-candidate.png)
+![Diagnostic view along the existing roof planes from a nearby northern candidate](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1852/diagnostic/northwest-candidate.png)
 
 The source currently models Hunnerupshemmet as a 1.5 m-rise gable roof at eave 14.4548997 m and ridge 15.9548997 m. Those heights, levels and roof type are existing **visual assumptions**, not a verified Peab roof specification. A tonal break between its two planes therefore exists by design. It would be speculative to flatten it or change all roofs based only on the report's word “L-huset”.
 

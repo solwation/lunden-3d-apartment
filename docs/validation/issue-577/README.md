@@ -24,11 +24,11 @@ Playwright-Chromium/SwiftShader, 15 juli 12:00, klart väder. Före = 58feef9 (#
 
 | Vy | Före | Efter | Referens |
 |---|---|---|---|
-| 2:s västra paviljong från sydväst | [före](b2c-before.png) | [efter](b2c-after.png) | Commons 2 |
-| 2 från borggården | [före](b2s-before.png) | [efter](b2s-after.png) | — |
-| 7:s västra paviljong från sydväst | [före](b7c-before.png) | [efter](b7c-after.png) | Commons 7 |
-| 7 från borggården | [före](b7s-before.png) | [efter](b7s-after.png) | Hemsö By7 |
-| Borggården mot norr | [före](courtyard-before.png) | [efter](courtyard-after.png) | — |
+| 2:s västra paviljong från sydväst | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-577/b2c-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-577/b2c-after.png) | Commons 2 |
+| 2 från borggården | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-577/b2s-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-577/b2s-after.png) | — |
+| 7:s västra paviljong från sydväst | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-577/b7c-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-577/b7c-after.png) | Commons 7 |
+| 7 från borggården | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-577/b7s-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-577/b7s-after.png) | Hemsö By7 |
+| Borggården mot norr | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-577/courtyard-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-577/courtyard-after.png) | — |
 
 ## Tester och prestanda
 

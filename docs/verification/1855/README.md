@@ -18,9 +18,9 @@ Nut ledger `nutDrops` has at most18 explicit world drops (guess),20min world TTL
 
 ## Actual images and exact phases
 
-![Two actual objects on the courtyard table, with real small Room peer](shared-table.png)
+![Two actual objects on the courtyard table, with real small Room peer](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1855/shared-table.png)
 
-![Client B: same fish and nut through production model/adapters](client-b.png)
+![Client B: same fish and nut through production model/adapters](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1855/client-b.png)
 
 Both inspected and accepted by conductor. Main view is the real app/table; B intentionally renders only a plain table proxy plus production food models and a few buttons, not the whole environment. The fish are fixture-created, not newly earned catches; the nut is naturally generated and its pickup is real. The glowing nut marker is the existing glint. HUD FPS is not measured here.
 

@@ -20,11 +20,11 @@ maximum ground relief across each 2×2 m stand/approach sample was 0.06230 m. Ev
 45–55 m away, and all are connected to the starting position. The Worker samples eligible destinations uniformly;
 it does not follow a fixed route. The atlas is a gameplay placement guess, not a survey.
 
-![Initial board on the east landing](before-east-landing.png)
+![Initial board on the east landing](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1820/before-east-landing.png)
 
 `before-east-landing.png`: same actual board on its original east landing, local score zero.
 
-![Relocated board on clear park grass](after-ring-face.png)
+![Relocated board on clear park grass](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1820/after-ring-face.png)
 
 `after-ring-face.png`: after the 50-point threshold, board at (-4, -3, 70), 47.26 m from its original position,
 turned toward the triggering shooter; local board still reads 50 (best shot 40). The close camera is on nearby clear grass.

@@ -55,7 +55,7 @@ there as well. This is not the drawing case and remains #1506 territory. Lap 2 i
 both variants (median about 45 ms). This repeats across variants on the shared machine, so
 the comparison uses lap1 against lap1.
 
-![Kitchen lap 1 frame times](kitchen-lap1-frametimes.png)
+![Kitchen lap 1 frame times](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1514/kitchen-lap1-frametimes.png)
 
 ## Tests
 

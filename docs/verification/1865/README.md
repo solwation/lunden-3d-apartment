@@ -52,8 +52,8 @@ explicit time edits count as activity. One pending control waits for its ACK, th
    including the early rejected timing probe; peer reload counters are accounted for
    separately. No receive/per-frame clock stream. No observed page errors.
 
-![Actual clock and same peer date/time](shared-clock.png)
-![Actual calendar, selected 21 December, matching peer](shared-calendar.png)
+![Actual clock and same peer date/time](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1865/shared-clock.png)
+![Actual calendar, selected 21 December, matching peer](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1865/shared-calendar.png)
 
 ## Honest fixture phases and limits
 

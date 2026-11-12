@@ -9,7 +9,7 @@ The picture's temporary foil canvas is capped too. The existing computer-menu an
 repaint identically. Actual Billys/Gorbys open/closed meshes, visibility/material flags and ray distances,
 and AO geometry/rays, have identical fingerprints.
 
-![Original upload-sized raster on the left; directly painted light raster on the right](canvas-families.png)
+![Original upload-sized raster on the left; directly painted light raster on the right](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1549/canvas-families.png)
 
 Inspected: AO blocker/stair-hole edges, gold text, food-brand lettering and illustration. The picture is a
 source-texture comparison, not a screenshot of the physical phone's display. The small interpolation and

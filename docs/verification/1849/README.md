@@ -22,9 +22,9 @@ Browserfixturen pausar ordinarie RAF efter byggsteget och pumpar Player för en 
 
 Godkända, direkt inspekterade bilder:
 
-![Platsen före](before-location.png)
-![Fallet genom marken före](before-fall.png)
-![Samma kant stoppar touch-sprint efter](after-touch-stop.png)
+![Platsen före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1849/before-location.png)
+![Fallet genom marken före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1849/before-fall.png)
+![Samma kant stoppar touch-sprint efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1849/after-touch-stop.png)
 
 `after-keyboard-stop.png` är en blank resize/canvas-fångst: viewportändringen gav tom canvas vid första stillbilden i den pausade RAF-fixturen. Den används **inte** som visuellt acceptansbevis. Position-/inputtracen är separat grön. Den efterföljande touchbilden är korrekt renderad och visar stödet ovan mark. Bildernas viewport skiljer sig: före1280×800, touch844×390; inga pixelidentitetspåståenden.
 

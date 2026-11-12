@@ -41,15 +41,15 @@ repeated for this isolated two-triangle addition. The first fixture stopped imme
 referenced an undeclared `__app`; changing that fixture to `window.__app` allowed the complete green run.
 This was a test setup correction, not a product failure.
 
-![Sign from Sankt Lars väg](road.png)
+![Sign from Sankt Lars väg](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1825/road.png)
 
 Road overview: turquoise title above the two right upper windows, next to the green entrance bay.
 
-![Sign from the footway](footway.png)
+![Sign from the footway](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1825/footway.png)
 
 Footway inspection view: the full facade and its title/subtitle remain legible together.
 
-![Close facade lettering](sign-close.png)
+![Close facade lettering](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1825/sign-close.png)
 
 Close inspection view: self-drawn letters and the small right-aligned SPORTCENTER line below.
 

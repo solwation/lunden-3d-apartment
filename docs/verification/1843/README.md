@@ -17,10 +17,10 @@ Road geometry, curbs, both crossings, school shelter/paving, street/park lamps a
 
 ## Inspected result views
 
-![Restored northern crossing, with local work equipment removed](restored-crossing.png)
-![Readable ordinary stop name with post-clearance correction](restored-stop-name.png)
+![Restored northern crossing, with local work equipment removed](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1843/restored-crossing.png)
+![Readable ordinary stop name with post-clearance correction](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1843/restored-stop-name.png)
 
-The accepted overview is reused from the first app turn, after the local restoration but before only the28 mm extra face separation. The final close view is captured on the final40 mm offset; all street objects, pole sites, label content and terrain are otherwise identical. [First-turn metadata](diagnostic/panel-through-post-browser.json) binds the overview to that earlier12 mm face-offset variant. The [initial occluded close view](diagnostic/panel-through-post-restored-stop-name.png) demonstrates the post intersection and is diagnostic, not acceptance. Only the affected near view is retaken in the second short turn; no new overview/campus/profile sweep. The final browser is held until image inspection before release.
+The accepted overview is reused from the first app turn, after the local restoration but before only the28 mm extra face separation. The final close view is captured on the final40 mm offset; all street objects, pole sites, label content and terrain are otherwise identical. [First-turn metadata](diagnostic/panel-through-post-browser.json) binds the overview to that earlier12 mm face-offset variant. The [initial occluded close view](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1843/diagnostic/panel-through-post-restored-stop-name.png) demonstrates the post intersection and is diagnostic, not acceptance. Only the affected near view is retaken in the second short turn; no new overview/campus/profile sweep. The final browser is held until image inspection before release.
 
 This is actual original-app Chromium/SwiftShader rendering with controlled local inspection spawns. It is not a continuous walking/bus journey, physical-device/FPS measurement or wider campus verification. No collision behavior or route is changed.
 

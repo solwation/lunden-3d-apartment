@@ -7,9 +7,9 @@ shared instanced trunk/crown batches. 31 + 4 trees were placed (the north-bank s
 
 | View | Before | After |
 |---|---|---|
-| hoje-a-broarna-lagt (`at=11.3,370.1,-2,-20,88`) | ![](hoje-a-broarna-lagt-before.png) | ![](hoje-a-broarna-lagt-after.png) |
-| On the road bridge looking west (`at=23.6,122,90,0,-3`) | ![](bron-vast-before.png) | ![](bron-vast-after.png) |
-| On the road bridge looking south-west (`at=23.6,128,135,-5,-3`) | ![](bron-sydvast-before.png) | ![](bron-sydvast-after.png) |
+| hoje-a-broarna-lagt (`at=11.3,370.1,-2,-20,88`) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1674/hoje-a-broarna-lagt-before.png) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1674/hoje-a-broarna-lagt-after.png) |
+| On the road bridge looking west (`at=23.6,122,90,0,-3`) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1674/bron-vast-before.png) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1674/bron-vast-after.png) |
+| On the road bridge looking south-west (`at=23.6,128,135,-5,-3`) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1674/bron-sydvast-before.png) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1674/bron-sydvast-after.png) |
 
 ## Budget (one render at each view, perfcount's counting, `origin/main` 939ec43a vs. this change)
 

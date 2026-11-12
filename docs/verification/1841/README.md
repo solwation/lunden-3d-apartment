@@ -22,8 +22,8 @@ GET pages now hold10 reports. Even ten full1200 KiB PUT envelopes are about11.72
 
 ## Inspected UI images and limits
 
-![Desktop dialog with two own pictures](desktop-attachments.png)
-![Touch dialog with two own pictures](touch-attachments.png)
+![Desktop dialog with two own pictures](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1841/desktop-attachments.png)
+![Touch dialog with two own pictures](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1841/touch-attachments.png)
 
 Both images were inspected by worker and conductor. They show the actual index/AdminReports component fixture, **not** a full3D bootstrap or a report sent to production KV/GitHub. Only procedural fixture images/text were submitted to a local interception. There is no physical-phone/camera-sheet/FPS claim.
 

@@ -4,4 +4,4 @@ The washer's existing fascia has a small start/status display. Its assumed 35 ga
 
 Life's laundry extra saves exact remaining game time and start ids; no timestamp or offline progress. The expanded laundrytest checks real touch start, actual page reload with exactly preserved time, independent wet/clean state, removal/replacement membership and cancellation. It passes all loading and programme checks. The dishwasher's life2test section 385 also passes. Perfcount remains unchanged at its normal locations (Tvätt out of view); the control display adds one draw when in view, no light/pass. The existing generic pump sound follows running/paused/cancelled state.
 
-![Washer's actual control showing 24 game seconds remaining](washer-running.png)
+![Washer's actual control showing 24 game seconds remaining](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-551/washer-running.png)

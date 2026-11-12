@@ -4,7 +4,7 @@ Granskat från `c7df3f98` den 2026-10-24. Rapportbilden visar datorn på golvet 
 
 En separat osynlig yta täcker lämpliga mittpunkter på bordets fria högra del. Den används enbart vid ommöblering av laptop, inte av vanliga föremål. Efter 5 cm rutnätssnappning och rotation måste basen och det öppna locket rymmas på den fria skivan, framför spegelns utstick. Dessa fria mått är fortfarande märkta som gissningar. Laptopens flytt använder samma förhandsvisning, lokala sparning, revision och synk som annan ommöblering; ytan följer med bordet. När laptopen väl står där identifieras den som stödledd och följer med om bordet flyttas.
 
-![Datorn tillbaka på sminkbordet](laptop-tillbaka-pa-sminkbordet.png)
+![Datorn tillbaka på sminkbordet](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1563/laptop-tillbaka-pa-sminkbordet.png)
 
 Resultatbilden togs om med slutlig kod `84e428b6`: laptopen flyttades först till golvet, förhandsvisades sedan giltigt på `(2,35; 4,01; 11,75)` och bekräftades med appens touchknapp (revision 2). Profilvalet var stängt, inga sidfel uppstod och `testkit.shot` tog bilden med full kvalitet och skuggor. Råresultat: `/tmp/orkester-codex-20261024/verify1563/final-shot.json`. Bildens SHA-256: `2b78e6beb7da19c78b2e74ceb937cd53cd5d2d6a0db640d025a838b19547dead`.
 

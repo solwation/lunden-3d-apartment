@@ -10,11 +10,11 @@ Fyra mesh-/materialgrupper (kruka, jord, blad, stam); totalt **10 632 trianglar*
 
 | Vy | Före (`1c430f9`) | Efter |
 |---|---|---|
-| Normal uteplatsvy | [bild](normal-before.png) | [bild](normal-after.png) |
-| Krukans kant och jord | [bild](pot-before.png) | [bild](pot-after.png) |
-| Kronans silhuett | [bild](crown-before.png) | [bild](crown-after.png) |
+| Normal uteplatsvy | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-524/normal-before.png) | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-524/normal-after.png) |
+| Krukans kant och jord | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-524/pot-before.png) | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-524/pot-after.png) |
+| Kronans silhuett | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-524/crown-before.png) | [bild](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-524/crown-after.png) |
 
-[Mobilvy](phone-after.png): Chromium med Android-/touchprofil, 844 ×390. Detta verifierar utseende och touchlayout, inte fysisk telefon-GPU eller uppmätt fps på telefon. Samma kameror i före/efter på dator.
+[Mobilvy](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-524/phone-after.png): Chromium med Android-/touchprofil, 844 ×390. Detta verifierar utseende och touchlayout, inte fysisk telefon-GPU eller uppmätt fps på telefon. Samma kameror i före/efter på dator.
 
 ## Verifiering
 

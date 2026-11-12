@@ -27,8 +27,8 @@ Efter appfasen klipps endast TriGrid.hits cellintervall mot dess befintliga grid
 
 Två riktiga lokala PlayerRoom-klienter körs: appens socket och en separat WebSocket-peer i samma dokument, utan andra världens bootstrap. Medlemskap=2 och en riktig mottagar-Ghost verifieras. `before/runtime-peer.json` och `after/runtime-peer.json` innehåller 60 tidssteg och verkliga meddelanden. Ghost.update max 4,3→1,8 ms, Ghost.draw 3,8→1,6 ms; meddelandehantering 0,1→0,2 ms. Cachetemperatur/vy skiljer, så detta är funktion och avgränsning, ingen rättvis nät-prestandavinst. Peer-fixturens bp25 klipps av befintlig gräns till 1 i båda körningar; det är inte 25 procent. Inga produktionsrader eller externa tjänster används.
 
-![Telefonprofil efter](after/phone-start.png)
-![Verklig annan lokal Ghost efter](after/after-two-clients.png)
+![Telefonprofil efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1851/after/phone-start.png)
+![Verklig annan lokal Ghost efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1851/after/after-two-clients.png)
 
 Båda efterbilderna direkt granskade och accepterade av dirigenten. HUD:s 1 fps kommer från stoppad/stegrad testscen och är **inte** en FPS-mätning. Förebilder finns under `before/`. Före-/efterverktygen nådde avsiktliga 10-/15-minutersgränser; sena extra kommandon som inte kördes räknas inte som godkända. En import med query gav dubbel registerpost i testfixturen (`registration-probe-diagnostic.txt`); korrigerat genom fixturekopia av samma metodkroppar utan metadataregistrering, ingen produktbugg eller levererad extramodul.
 

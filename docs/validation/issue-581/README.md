@@ -24,10 +24,10 @@ Playwright-Chromium/SwiftShader, 15 juli 12:00, klart väder. Före = 536df1f (#
 
 | Vy | Före | Efter | Referens |
 |---|---|---|---|
-| Västra långsidan | [före](b19w-before.png) | [efter](b19w-after.png) | Commons 19, Hemsö By19 |
-| Norra gaveln från gatan | [före](b19n-before.png) | [efter](b19n-after.png) | Hemsös beskrivning |
-| Östra delen | [före](b19e-before.png) | [efter](b19e-after.png) | — |
-| Översikt | [före](b19air-before.png) | [efter](b19air-after.png) | Hemsös karta |
+| Västra långsidan | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-581/b19w-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-581/b19w-after.png) | Commons 19, Hemsö By19 |
+| Norra gaveln från gatan | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-581/b19n-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-581/b19n-after.png) | Hemsös beskrivning |
+| Östra delen | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-581/b19e-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-581/b19e-after.png) | — |
+| Översikt | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-581/b19air-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-581/b19air-after.png) | Hemsös karta |
 
 Från Hus L:s östra gavel och L1007 skyms 19 av HepCat och Consensum; den syns från Sankt Lars väg österut och från gångvägen norr om huset.
 

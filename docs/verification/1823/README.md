@@ -36,15 +36,15 @@ Combined emitted geometry SHA256: `b8036d92fd31cce02630397c8651bfcf1cd552d61871e
 
 ## Images
 
-![Old glass wrapping much of the side](before/side.png)
+![Old glass wrapping much of the side](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1823/before/side.png)
 
 Before: original dark corner glazing and grey profiles, with no visible stair or entry door.
 
-![Road front and new green glass entrance](after/road.png)
+![Road front and new green glass entrance](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1823/after/road.png)
 
 Road: unchanged seven-bay brick front, with narrow green-profile entrance and visible staircase/globes on the right.
 
-![Side circulation bay adjoining the green hall](after/side.png)
+![Side circulation bay adjoining the green hall](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1823/after/side.png)
 
 Side: 12 m entrance bay and visible switchback scene, adjoining the separate #1824 green hall.
 

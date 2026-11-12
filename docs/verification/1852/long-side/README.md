@@ -93,9 +93,9 @@ The close result uses[−19,13,−24] toward[−19,8,2], FOV55.
 The close frame records272calls/812362triangles in this scene; that different framing
 is not a before/after budget comparison. [Close-view metadata](close-view.json).
 
-![Before: long side and loftgång with the old shared backing material](facade-before.png)
-![After: same geometry, views and lighting with isolated backing depth](facade-after.png)
-![After close: retained façade planes, openings and loftgång](facade-after-close.png)
+![Before: long side and loftgång with the old shared backing material](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1852/long-side/facade-before.png)
+![After: same geometry, views and lighting with isolated backing depth](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1852/long-side/facade-after.png)
+![After close: retained façade planes, openings and loftgång](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1852/long-side/facade-after-close.png)
 
 ## Fixture corrections and limits
 

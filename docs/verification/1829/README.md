@@ -21,8 +21,8 @@ Checks:
   120 steps yield none. [Result](browser.json), [raw output](browser.txt).
 - `git diff --check` passes.
 
-![Dancing to the disco music](disco-dancing.png)
-![Dansdrake progress](dance-medal-progress.png)
+![Dancing to the disco music](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1829/disco-dancing.png)
+![Dansdrake progress](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1829/dance-medal-progress.png)
 
 Limits: automated desktop Chromium with touch input enabled, no physical-phone or two-client claim.
 The browser uses test-mode rendering and controlled spawns/steps, not a continuous walk or a real-time

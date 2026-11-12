@@ -1,0 +1,2876 @@
+[
+  {
+    "file": "docs/validation/issue-1042/README.md",
+    "line": 25,
+    "target": "before-badrum-set.png",
+    "path": "docs/validation/issue-1042/before-badrum-set.png"
+  },
+  {
+    "file": "docs/validation/issue-1042/README.md",
+    "line": 25,
+    "target": "after-badrum-set.png",
+    "path": "docs/validation/issue-1042/after-badrum-set.png"
+  },
+  {
+    "file": "docs/validation/issue-1042/README.md",
+    "line": 26,
+    "target": "before-badrum-head.png",
+    "path": "docs/validation/issue-1042/before-badrum-head.png"
+  },
+  {
+    "file": "docs/validation/issue-1042/README.md",
+    "line": 26,
+    "target": "after-badrum-head.png",
+    "path": "docs/validation/issue-1042/after-badrum-head.png"
+  },
+  {
+    "file": "docs/validation/issue-1042/README.md",
+    "line": 27,
+    "target": "before-badrum-mixer.png",
+    "path": "docs/validation/issue-1042/before-badrum-mixer.png"
+  },
+  {
+    "file": "docs/validation/issue-1042/README.md",
+    "line": 27,
+    "target": "after-badrum-mixer.png",
+    "path": "docs/validation/issue-1042/after-badrum-mixer.png"
+  },
+  {
+    "file": "docs/validation/issue-1042/README.md",
+    "line": 28,
+    "target": "before-wc-set.png",
+    "path": "docs/validation/issue-1042/before-wc-set.png"
+  },
+  {
+    "file": "docs/validation/issue-1042/README.md",
+    "line": 28,
+    "target": "after-wc-set.png",
+    "path": "docs/validation/issue-1042/after-wc-set.png"
+  },
+  {
+    "file": "docs/validation/issue-1042/README.md",
+    "line": 29,
+    "target": "before-wc-head.png",
+    "path": "docs/validation/issue-1042/before-wc-head.png"
+  },
+  {
+    "file": "docs/validation/issue-1042/README.md",
+    "line": 29,
+    "target": "after-wc-head.png",
+    "path": "docs/validation/issue-1042/after-wc-head.png"
+  },
+  {
+    "file": "docs/validation/issue-1043/README.md",
+    "line": 12,
+    "target": "before-kitchen.png",
+    "path": "docs/validation/issue-1043/before-kitchen.png"
+  },
+  {
+    "file": "docs/validation/issue-1043/README.md",
+    "line": 12,
+    "target": "after-kitchen.png",
+    "path": "docs/validation/issue-1043/after-kitchen.png"
+  },
+  {
+    "file": "docs/validation/issue-1043/README.md",
+    "line": 13,
+    "target": "before-hob.png",
+    "path": "docs/validation/issue-1043/before-hob.png"
+  },
+  {
+    "file": "docs/validation/issue-1043/README.md",
+    "line": 13,
+    "target": "after-hob.png",
+    "path": "docs/validation/issue-1043/after-hob.png"
+  },
+  {
+    "file": "docs/validation/issue-1043/README.md",
+    "line": 14,
+    "target": "before-hood.png",
+    "path": "docs/validation/issue-1043/before-hood.png"
+  },
+  {
+    "file": "docs/validation/issue-1043/README.md",
+    "line": 14,
+    "target": "after-hood.png",
+    "path": "docs/validation/issue-1043/after-hood.png"
+  },
+  {
+    "file": "docs/validation/issue-1043/README.md",
+    "line": 16,
+    "target": "after-hob-on.png",
+    "path": "docs/validation/issue-1043/after-hob-on.png"
+  },
+  {
+    "file": "docs/validation/issue-1052/README.md",
+    "line": 8,
+    "target": "before.png",
+    "path": "docs/validation/issue-1052/before.png"
+  },
+  {
+    "file": "docs/validation/issue-1052/README.md",
+    "line": 8,
+    "target": "after.png",
+    "path": "docs/validation/issue-1052/after.png"
+  },
+  {
+    "file": "docs/validation/issue-1067/README.md",
+    "line": 7,
+    "target": "clock-close.png",
+    "path": "docs/validation/issue-1067/clock-close.png"
+  },
+  {
+    "file": "docs/validation/issue-1067/README.md",
+    "line": 8,
+    "target": "tower-100m-day.png",
+    "path": "docs/validation/issue-1067/tower-100m-day.png"
+  },
+  {
+    "file": "docs/validation/issue-1067/README.md",
+    "line": 9,
+    "target": "tower-100m-night.png",
+    "path": "docs/validation/issue-1067/tower-100m-night.png"
+  },
+  {
+    "file": "docs/validation/issue-1073/README.md",
+    "line": 21,
+    "target": "front-fore-efter.jpg",
+    "path": "docs/validation/issue-1073/front-fore-efter.jpg"
+  },
+  {
+    "file": "docs/validation/issue-1073/README.md",
+    "line": 21,
+    "target": "patio-fore-efter.jpg",
+    "path": "docs/validation/issue-1073/patio-fore-efter.jpg"
+  },
+  {
+    "file": "docs/validation/issue-1073/README.md",
+    "line": 21,
+    "target": "living-fore-efter.jpg",
+    "path": "docs/validation/issue-1073/living-fore-efter.jpg"
+  },
+  {
+    "file": "docs/validation/issue-1073/README.md",
+    "line": 21,
+    "target": "kitchen-fore-efter.jpg",
+    "path": "docs/validation/issue-1073/kitchen-fore-efter.jpg"
+  },
+  {
+    "file": "docs/validation/issue-1406/README.md",
+    "line": 14,
+    "target": "sitting.png",
+    "path": "docs/validation/issue-1406/sitting.png"
+  },
+  {
+    "file": "docs/validation/issue-1406/README.md",
+    "line": 14,
+    "target": "sleeping.png",
+    "path": "docs/validation/issue-1406/sleeping.png"
+  },
+  {
+    "file": "docs/validation/issue-1406/README.md",
+    "line": 22,
+    "target": "tv.png",
+    "path": "docs/validation/issue-1406/tv.png"
+  },
+  {
+    "file": "docs/validation/issue-1406/README.md",
+    "line": 22,
+    "target": "sipping.png",
+    "path": "docs/validation/issue-1406/sipping.png"
+  },
+  {
+    "file": "docs/validation/issue-1499/README.md",
+    "line": 15,
+    "target": "sitting.png",
+    "path": "docs/validation/issue-1499/sitting.png"
+  },
+  {
+    "file": "docs/validation/issue-1499/README.md",
+    "line": 15,
+    "target": "sleeping.png",
+    "path": "docs/validation/issue-1499/sleeping.png"
+  },
+  {
+    "file": "docs/validation/issue-1500-1503/README.md",
+    "line": 14,
+    "target": "before.png",
+    "path": "docs/validation/issue-1500-1503/before.png"
+  },
+  {
+    "file": "docs/validation/issue-1500-1503/README.md",
+    "line": 15,
+    "target": "after.png",
+    "path": "docs/validation/issue-1500-1503/after.png"
+  },
+  {
+    "file": "docs/validation/issue-1500-1503/README.md",
+    "line": 15,
+    "target": "pile.png",
+    "path": "docs/validation/issue-1500-1503/pile.png"
+  },
+  {
+    "file": "docs/validation/issue-1504/README.md",
+    "line": 11,
+    "target": "forward.png",
+    "path": "docs/validation/issue-1504/forward.png"
+  },
+  {
+    "file": "docs/validation/issue-1504/README.md",
+    "line": 11,
+    "target": "toward-neighbour.png",
+    "path": "docs/validation/issue-1504/toward-neighbour.png"
+  },
+  {
+    "file": "docs/validation/issue-1505/README.md",
+    "line": 13,
+    "target": "up.png",
+    "path": "docs/validation/issue-1505/up.png"
+  },
+  {
+    "file": "docs/validation/issue-1505/README.md",
+    "line": 13,
+    "target": "down.png",
+    "path": "docs/validation/issue-1505/down.png"
+  },
+  {
+    "file": "docs/validation/issue-1510/README.md",
+    "line": 54,
+    "target": "../../verification/1510/auto-timeline.png",
+    "path": "docs/verification/1510/auto-timeline.png"
+  },
+  {
+    "file": "docs/validation/issue-498/README.md",
+    "line": 15,
+    "target": "ground-day.png",
+    "path": "docs/validation/issue-498/ground-day.png"
+  },
+  {
+    "file": "docs/validation/issue-498/README.md",
+    "line": 15,
+    "target": "loft-day.png",
+    "path": "docs/validation/issue-498/loft-day.png"
+  },
+  {
+    "file": "docs/validation/issue-498/README.md",
+    "line": 21,
+    "target": "ground-evening.png",
+    "path": "docs/validation/issue-498/ground-evening.png"
+  },
+  {
+    "file": "docs/validation/issue-498/README.md",
+    "line": 21,
+    "target": "loft-evening.png",
+    "path": "docs/validation/issue-498/loft-evening.png"
+  },
+  {
+    "file": "docs/validation/issue-499/README.md",
+    "line": 17,
+    "target": "bedroom-day.png",
+    "path": "docs/validation/issue-499/bedroom-day.png"
+  },
+  {
+    "file": "docs/validation/issue-499/README.md",
+    "line": 17,
+    "target": "living-day.png",
+    "path": "docs/validation/issue-499/living-day.png"
+  },
+  {
+    "file": "docs/validation/issue-499/README.md",
+    "line": 17,
+    "target": "kitchen-day.png",
+    "path": "docs/validation/issue-499/kitchen-day.png"
+  },
+  {
+    "file": "docs/validation/issue-499/README.md",
+    "line": 23,
+    "target": "bedroom-night.png",
+    "path": "docs/validation/issue-499/bedroom-night.png"
+  },
+  {
+    "file": "docs/validation/issue-499/README.md",
+    "line": 23,
+    "target": "bedroom-outside-night.png",
+    "path": "docs/validation/issue-499/bedroom-outside-night.png"
+  },
+  {
+    "file": "docs/validation/issue-505/README.md",
+    "line": 8,
+    "target": "lunden-505-before-hall.png",
+    "path": "docs/validation/issue-505/lunden-505-before-hall.png"
+  },
+  {
+    "file": "docs/validation/issue-505/README.md",
+    "line": 8,
+    "target": "lunden-505-after-hall.png",
+    "path": "docs/validation/issue-505/lunden-505-after-hall.png"
+  },
+  {
+    "file": "docs/validation/issue-505/README.md",
+    "line": 9,
+    "target": "lunden-505-before-upper.png",
+    "path": "docs/validation/issue-505/lunden-505-before-upper.png"
+  },
+  {
+    "file": "docs/validation/issue-505/README.md",
+    "line": 9,
+    "target": "lunden-505-after-upper.png",
+    "path": "docs/validation/issue-505/lunden-505-after-upper.png"
+  },
+  {
+    "file": "docs/validation/issue-505/README.md",
+    "line": 10,
+    "target": "lunden-505-before-core.png",
+    "path": "docs/validation/issue-505/lunden-505-before-core.png"
+  },
+  {
+    "file": "docs/validation/issue-505/README.md",
+    "line": 10,
+    "target": "lunden-505-after-core.png",
+    "path": "docs/validation/issue-505/lunden-505-after-core.png"
+  },
+  {
+    "file": "docs/validation/issue-505/README.md",
+    "line": 24,
+    "target": "lunden-505-mobile-hall.png",
+    "path": "docs/validation/issue-505/lunden-505-mobile-hall.png"
+  },
+  {
+    "file": "docs/validation/issue-505/README.md",
+    "line": 24,
+    "target": "lunden-505-mobile-upper.png",
+    "path": "docs/validation/issue-505/lunden-505-mobile-upper.png"
+  },
+  {
+    "file": "docs/validation/issue-505/README.md",
+    "line": 25,
+    "target": "lunden-505-mobile-core.png",
+    "path": "docs/validation/issue-505/lunden-505-mobile-core.png"
+  },
+  {
+    "file": "docs/validation/issue-520/README.md",
+    "line": 5,
+    "target": "plan-comparison.png",
+    "path": "docs/validation/issue-520/plan-comparison.png"
+  },
+  {
+    "file": "docs/validation/issue-520/README.md",
+    "line": 23,
+    "target": "north.png",
+    "path": "docs/validation/issue-520/north.png"
+  },
+  {
+    "file": "docs/validation/issue-520/README.md",
+    "line": 31,
+    "target": "room.png",
+    "path": "docs/validation/issue-520/room.png"
+  },
+  {
+    "file": "docs/validation/issue-523/README.md",
+    "line": 7,
+    "target": "plan-before.png",
+    "path": "docs/validation/issue-523/plan-before.png"
+  },
+  {
+    "file": "docs/validation/issue-523/README.md",
+    "line": 7,
+    "target": "plan-after.png",
+    "path": "docs/validation/issue-523/plan-after.png"
+  },
+  {
+    "file": "docs/validation/issue-523/README.md",
+    "line": 33,
+    "target": "garage-before.png",
+    "path": "docs/validation/issue-523/garage-before.png"
+  },
+  {
+    "file": "docs/validation/issue-523/README.md",
+    "line": 33,
+    "target": "garage-after.png",
+    "path": "docs/validation/issue-523/garage-after.png"
+  },
+  {
+    "file": "docs/validation/issue-523/README.md",
+    "line": 34,
+    "target": "bike-west-before.png",
+    "path": "docs/validation/issue-523/bike-west-before.png"
+  },
+  {
+    "file": "docs/validation/issue-523/README.md",
+    "line": 34,
+    "target": "bike-west-after.png",
+    "path": "docs/validation/issue-523/bike-west-after.png"
+  },
+  {
+    "file": "docs/validation/issue-523/README.md",
+    "line": 35,
+    "target": "rental-before.png",
+    "path": "docs/validation/issue-523/rental-before.png"
+  },
+  {
+    "file": "docs/validation/issue-523/README.md",
+    "line": 35,
+    "target": "rental-after.png",
+    "path": "docs/validation/issue-523/rental-after.png"
+  },
+  {
+    "file": "docs/validation/issue-523/README.md",
+    "line": 36,
+    "target": "storage-C-before.png",
+    "path": "docs/validation/issue-523/storage-C-before.png"
+  },
+  {
+    "file": "docs/validation/issue-523/README.md",
+    "line": 36,
+    "target": "storage-C-after.png",
+    "path": "docs/validation/issue-523/storage-C-after.png"
+  },
+  {
+    "file": "docs/validation/issue-523/README.md",
+    "line": 37,
+    "target": "storage-B-before.png",
+    "path": "docs/validation/issue-523/storage-B-before.png"
+  },
+  {
+    "file": "docs/validation/issue-523/README.md",
+    "line": 37,
+    "target": "storage-B-after.png",
+    "path": "docs/validation/issue-523/storage-B-after.png"
+  },
+  {
+    "file": "docs/validation/issue-523/README.md",
+    "line": 38,
+    "target": "storage-A-before.png",
+    "path": "docs/validation/issue-523/storage-A-before.png"
+  },
+  {
+    "file": "docs/validation/issue-523/README.md",
+    "line": 38,
+    "target": "storage-A-after.png",
+    "path": "docs/validation/issue-523/storage-A-after.png"
+  },
+  {
+    "file": "docs/validation/issue-524/README.md",
+    "line": 13,
+    "target": "normal-before.png",
+    "path": "docs/validation/issue-524/normal-before.png"
+  },
+  {
+    "file": "docs/validation/issue-524/README.md",
+    "line": 13,
+    "target": "normal-after.png",
+    "path": "docs/validation/issue-524/normal-after.png"
+  },
+  {
+    "file": "docs/validation/issue-524/README.md",
+    "line": 14,
+    "target": "pot-before.png",
+    "path": "docs/validation/issue-524/pot-before.png"
+  },
+  {
+    "file": "docs/validation/issue-524/README.md",
+    "line": 14,
+    "target": "pot-after.png",
+    "path": "docs/validation/issue-524/pot-after.png"
+  },
+  {
+    "file": "docs/validation/issue-524/README.md",
+    "line": 15,
+    "target": "crown-before.png",
+    "path": "docs/validation/issue-524/crown-before.png"
+  },
+  {
+    "file": "docs/validation/issue-524/README.md",
+    "line": 15,
+    "target": "crown-after.png",
+    "path": "docs/validation/issue-524/crown-after.png"
+  },
+  {
+    "file": "docs/validation/issue-524/README.md",
+    "line": 17,
+    "target": "phone-after.png",
+    "path": "docs/validation/issue-524/phone-after.png"
+  },
+  {
+    "file": "docs/validation/issue-525/README.md",
+    "line": 25,
+    "target": "before-day.png",
+    "path": "docs/validation/issue-525/before-day.png"
+  },
+  {
+    "file": "docs/validation/issue-525/README.md",
+    "line": 25,
+    "target": "after-day.png",
+    "path": "docs/validation/issue-525/after-day.png"
+  },
+  {
+    "file": "docs/validation/issue-525/README.md",
+    "line": 31,
+    "target": "before-dark.png",
+    "path": "docs/validation/issue-525/before-dark.png"
+  },
+  {
+    "file": "docs/validation/issue-525/README.md",
+    "line": 31,
+    "target": "after-dark.png",
+    "path": "docs/validation/issue-525/after-dark.png"
+  },
+  {
+    "file": "docs/validation/issue-525/README.md",
+    "line": 37,
+    "target": "before-snow.png",
+    "path": "docs/validation/issue-525/before-snow.png"
+  },
+  {
+    "file": "docs/validation/issue-525/README.md",
+    "line": 37,
+    "target": "after-snow.png",
+    "path": "docs/validation/issue-525/after-snow.png"
+  },
+  {
+    "file": "docs/validation/issue-525/README.md",
+    "line": 43,
+    "target": "before-desktop.png",
+    "path": "docs/validation/issue-525/before-desktop.png"
+  },
+  {
+    "file": "docs/validation/issue-525/README.md",
+    "line": 43,
+    "target": "after-desktop.png",
+    "path": "docs/validation/issue-525/after-desktop.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 15,
+    "target": "registered-north.png",
+    "path": "docs/validation/issue-530/registered-north.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 15,
+    "target": "plan-before.png",
+    "path": "docs/validation/issue-530/plan-before.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 15,
+    "target": "plan-after.png",
+    "path": "docs/validation/issue-530/plan-after.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 43,
+    "target": "front-summer-before.png",
+    "path": "docs/validation/issue-530/front-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 43,
+    "target": "front-summer-after.png",
+    "path": "docs/validation/issue-530/front-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 43,
+    "target": "front-winter-before.png",
+    "path": "docs/validation/issue-530/front-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 43,
+    "target": "front-winter-after.png",
+    "path": "docs/validation/issue-530/front-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 44,
+    "target": "westfront-summer-before.png",
+    "path": "docs/validation/issue-530/westfront-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 44,
+    "target": "westfront-summer-after.png",
+    "path": "docs/validation/issue-530/westfront-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 44,
+    "target": "westfront-winter-before.png",
+    "path": "docs/validation/issue-530/westfront-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 44,
+    "target": "westfront-winter-after.png",
+    "path": "docs/validation/issue-530/westfront-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 45,
+    "target": "corner-summer-before.png",
+    "path": "docs/validation/issue-530/corner-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 45,
+    "target": "corner-summer-after.png",
+    "path": "docs/validation/issue-530/corner-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 45,
+    "target": "corner-winter-before.png",
+    "path": "docs/validation/issue-530/corner-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 45,
+    "target": "corner-winter-after.png",
+    "path": "docs/validation/issue-530/corner-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 46,
+    "target": "roof-summer-before.png",
+    "path": "docs/validation/issue-530/roof-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 46,
+    "target": "roof-summer-after.png",
+    "path": "docs/validation/issue-530/roof-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 46,
+    "target": "roof-winter-before.png",
+    "path": "docs/validation/issue-530/roof-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 46,
+    "target": "roof-winter-after.png",
+    "path": "docs/validation/issue-530/roof-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-530/README.md",
+    "line": 48,
+    "target": "phone-after.png",
+    "path": "docs/validation/issue-530/phone-after.png"
+  },
+  {
+    "file": "docs/validation/issue-532/README.md",
+    "line": 3,
+    "target": "registered-plan.png",
+    "path": "docs/validation/issue-532/registered-plan.png"
+  },
+  {
+    "file": "docs/validation/issue-532/README.md",
+    "line": 31,
+    "target": "park-before.png",
+    "path": "docs/validation/issue-532/park-before.png"
+  },
+  {
+    "file": "docs/validation/issue-532/README.md",
+    "line": 31,
+    "target": "park-after.png",
+    "path": "docs/validation/issue-532/park-after.png"
+  },
+  {
+    "file": "docs/validation/issue-532/README.md",
+    "line": 32,
+    "target": "roof-before.png",
+    "path": "docs/validation/issue-532/roof-before.png"
+  },
+  {
+    "file": "docs/validation/issue-532/README.md",
+    "line": 32,
+    "target": "roof-after.png",
+    "path": "docs/validation/issue-532/roof-after.png"
+  },
+  {
+    "file": "docs/validation/issue-532/README.md",
+    "line": 34,
+    "target": "summer-park-after.png",
+    "path": "docs/validation/issue-532/summer-park-after.png"
+  },
+  {
+    "file": "docs/validation/issue-532/README.md",
+    "line": 34,
+    "target": "summer-roof-after.png",
+    "path": "docs/validation/issue-532/summer-roof-after.png"
+  },
+  {
+    "file": "docs/validation/issue-532/README.md",
+    "line": 34,
+    "target": "phone-after.png",
+    "path": "docs/validation/issue-532/phone-after.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 8,
+    "target": "registered-park.png",
+    "path": "docs/validation/issue-533/registered-park.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 32,
+    "target": "park-summer-before.png",
+    "path": "docs/validation/issue-533/park-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 32,
+    "target": "park-summer-after.png",
+    "path": "docs/validation/issue-533/park-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 32,
+    "target": "park-winter-before.png",
+    "path": "docs/validation/issue-533/park-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 32,
+    "target": "park-winter-after.png",
+    "path": "docs/validation/issue-533/park-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 33,
+    "target": "courtyard-summer-before.png",
+    "path": "docs/validation/issue-533/courtyard-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 33,
+    "target": "courtyard-summer-after.png",
+    "path": "docs/validation/issue-533/courtyard-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 33,
+    "target": "courtyard-winter-before.png",
+    "path": "docs/validation/issue-533/courtyard-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 33,
+    "target": "courtyard-winter-after.png",
+    "path": "docs/validation/issue-533/courtyard-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 34,
+    "target": "patio-summer-before.png",
+    "path": "docs/validation/issue-533/patio-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 34,
+    "target": "patio-summer-after.png",
+    "path": "docs/validation/issue-533/patio-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 34,
+    "target": "patio-winter-before.png",
+    "path": "docs/validation/issue-533/patio-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 34,
+    "target": "patio-winter-after.png",
+    "path": "docs/validation/issue-533/patio-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 35,
+    "target": "roof-summer-before.png",
+    "path": "docs/validation/issue-533/roof-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 35,
+    "target": "roof-summer-after.png",
+    "path": "docs/validation/issue-533/roof-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 35,
+    "target": "roof-winter-before.png",
+    "path": "docs/validation/issue-533/roof-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 35,
+    "target": "roof-winter-after.png",
+    "path": "docs/validation/issue-533/roof-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-533/README.md",
+    "line": 37,
+    "target": "phone-after.png",
+    "path": "docs/validation/issue-533/phone-after.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 7,
+    "target": "registered-west.png",
+    "path": "docs/validation/issue-534/registered-west.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 37,
+    "target": "side-summer-before.png",
+    "path": "docs/validation/issue-534/side-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 37,
+    "target": "side-summer-after.png",
+    "path": "docs/validation/issue-534/side-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 37,
+    "target": "side-winter-before.png",
+    "path": "docs/validation/issue-534/side-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 37,
+    "target": "side-winter-after.png",
+    "path": "docs/validation/issue-534/side-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 38,
+    "target": "corner-summer-before.png",
+    "path": "docs/validation/issue-534/corner-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 38,
+    "target": "corner-summer-after.png",
+    "path": "docs/validation/issue-534/corner-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 38,
+    "target": "corner-winter-before.png",
+    "path": "docs/validation/issue-534/corner-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 38,
+    "target": "corner-winter-after.png",
+    "path": "docs/validation/issue-534/corner-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 39,
+    "target": "parkcorner-summer-before.png",
+    "path": "docs/validation/issue-534/parkcorner-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 39,
+    "target": "parkcorner-summer-after.png",
+    "path": "docs/validation/issue-534/parkcorner-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 39,
+    "target": "parkcorner-winter-before.png",
+    "path": "docs/validation/issue-534/parkcorner-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 39,
+    "target": "parkcorner-winter-after.png",
+    "path": "docs/validation/issue-534/parkcorner-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 40,
+    "target": "roof-summer-before.png",
+    "path": "docs/validation/issue-534/roof-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 40,
+    "target": "roof-summer-after.png",
+    "path": "docs/validation/issue-534/roof-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 40,
+    "target": "roof-winter-before.png",
+    "path": "docs/validation/issue-534/roof-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 40,
+    "target": "roof-winter-after.png",
+    "path": "docs/validation/issue-534/roof-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-534/README.md",
+    "line": 42,
+    "target": "phone-after.png",
+    "path": "docs/validation/issue-534/phone-after.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 7,
+    "target": "registered-east.png",
+    "path": "docs/validation/issue-535/registered-east.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 43,
+    "target": "gable-summer-before.png",
+    "path": "docs/validation/issue-535/gable-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 43,
+    "target": "gable-summer-after.png",
+    "path": "docs/validation/issue-535/gable-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 43,
+    "target": "gable-winter-before.png",
+    "path": "docs/validation/issue-535/gable-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 43,
+    "target": "gable-winter-after.png",
+    "path": "docs/validation/issue-535/gable-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 44,
+    "target": "street-summer-before.png",
+    "path": "docs/validation/issue-535/street-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 44,
+    "target": "street-summer-after.png",
+    "path": "docs/validation/issue-535/street-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 44,
+    "target": "street-winter-before.png",
+    "path": "docs/validation/issue-535/street-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 44,
+    "target": "street-winter-after.png",
+    "path": "docs/validation/issue-535/street-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 45,
+    "target": "courtyard-summer-before.png",
+    "path": "docs/validation/issue-535/courtyard-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 45,
+    "target": "courtyard-summer-after.png",
+    "path": "docs/validation/issue-535/courtyard-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 45,
+    "target": "courtyard-winter-before.png",
+    "path": "docs/validation/issue-535/courtyard-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 45,
+    "target": "courtyard-winter-after.png",
+    "path": "docs/validation/issue-535/courtyard-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 46,
+    "target": "roof-summer-before.png",
+    "path": "docs/validation/issue-535/roof-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 46,
+    "target": "roof-summer-after.png",
+    "path": "docs/validation/issue-535/roof-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 46,
+    "target": "roof-winter-before.png",
+    "path": "docs/validation/issue-535/roof-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 46,
+    "target": "roof-winter-after.png",
+    "path": "docs/validation/issue-535/roof-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-535/README.md",
+    "line": 48,
+    "target": "phone-after.png",
+    "path": "docs/validation/issue-535/phone-after.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 7,
+    "target": "registered-south.png",
+    "path": "docs/validation/issue-536/registered-south.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 33,
+    "target": "park-summer-before.png",
+    "path": "docs/validation/issue-536/park-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 33,
+    "target": "park-summer-after.png",
+    "path": "docs/validation/issue-536/park-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 33,
+    "target": "park-winter-before.png",
+    "path": "docs/validation/issue-536/park-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 33,
+    "target": "park-winter-after.png",
+    "path": "docs/validation/issue-536/park-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 34,
+    "target": "patio-summer-before.png",
+    "path": "docs/validation/issue-536/patio-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 34,
+    "target": "patio-summer-after.png",
+    "path": "docs/validation/issue-536/patio-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 34,
+    "target": "patio-winter-before.png",
+    "path": "docs/validation/issue-536/patio-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 34,
+    "target": "patio-winter-after.png",
+    "path": "docs/validation/issue-536/patio-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 35,
+    "target": "courtyard-summer-before.png",
+    "path": "docs/validation/issue-536/courtyard-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 35,
+    "target": "courtyard-summer-after.png",
+    "path": "docs/validation/issue-536/courtyard-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 35,
+    "target": "courtyard-winter-before.png",
+    "path": "docs/validation/issue-536/courtyard-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 35,
+    "target": "courtyard-winter-after.png",
+    "path": "docs/validation/issue-536/courtyard-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 36,
+    "target": "roof-summer-before.png",
+    "path": "docs/validation/issue-536/roof-summer-before.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 36,
+    "target": "roof-summer-after.png",
+    "path": "docs/validation/issue-536/roof-summer-after.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 36,
+    "target": "roof-winter-before.png",
+    "path": "docs/validation/issue-536/roof-winter-before.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 36,
+    "target": "roof-winter-after.png",
+    "path": "docs/validation/issue-536/roof-winter-after.png"
+  },
+  {
+    "file": "docs/validation/issue-536/README.md",
+    "line": 38,
+    "target": "phone-after.png",
+    "path": "docs/validation/issue-536/phone-after.png"
+  },
+  {
+    "file": "docs/validation/issue-548/README.md",
+    "line": 7,
+    "target": "entry-focused.png",
+    "path": "docs/validation/issue-548/entry-focused.png"
+  },
+  {
+    "file": "docs/validation/issue-550/README.md",
+    "line": 9,
+    "target": "washer-loaded.png",
+    "path": "docs/validation/issue-550/washer-loaded.png"
+  },
+  {
+    "file": "docs/validation/issue-551/README.md",
+    "line": 7,
+    "target": "washer-running.png",
+    "path": "docs/validation/issue-551/washer-running.png"
+  },
+  {
+    "file": "docs/validation/issue-552/README.md",
+    "line": 9,
+    "target": "folded-wardrobe.png",
+    "path": "docs/validation/issue-552/folded-wardrobe.png"
+  },
+  {
+    "file": "docs/validation/issue-553/README.md",
+    "line": 10,
+    "target": "dry.png",
+    "path": "docs/validation/issue-553/dry.png"
+  },
+  {
+    "file": "docs/validation/issue-553/README.md",
+    "line": 10,
+    "target": "watered.png",
+    "path": "docs/validation/issue-553/watered.png"
+  },
+  {
+    "file": "docs/validation/issue-571/README.md",
+    "line": 18,
+    "target": "before-dec-door-day.jpg",
+    "path": "docs/validation/issue-571/before-dec-door-day.jpg"
+  },
+  {
+    "file": "docs/validation/issue-571/README.md",
+    "line": 18,
+    "target": "after-dec-door-day.jpg",
+    "path": "docs/validation/issue-571/after-dec-door-day.jpg"
+  },
+  {
+    "file": "docs/validation/issue-571/README.md",
+    "line": 19,
+    "target": "before-dec-door-night.jpg",
+    "path": "docs/validation/issue-571/before-dec-door-night.jpg"
+  },
+  {
+    "file": "docs/validation/issue-571/README.md",
+    "line": 19,
+    "target": "after-dec-door-night.jpg",
+    "path": "docs/validation/issue-571/after-dec-door-night.jpg"
+  },
+  {
+    "file": "docs/validation/issue-571/README.md",
+    "line": 20,
+    "target": "after-jan7-door-day.jpg",
+    "path": "docs/validation/issue-571/after-jan7-door-day.jpg"
+  },
+  {
+    "file": "docs/validation/issue-571/README.md",
+    "line": 24,
+    "target": "after-dec-close-day.jpg",
+    "path": "docs/validation/issue-571/after-dec-close-day.jpg"
+  },
+  {
+    "file": "docs/validation/issue-571/README.md",
+    "line": 24,
+    "target": "after-dec-close-night.jpg",
+    "path": "docs/validation/issue-571/after-dec-close-night.jpg"
+  },
+  {
+    "file": "docs/validation/issue-571/README.md",
+    "line": 26,
+    "target": "after-dec-phone-day.jpg",
+    "path": "docs/validation/issue-571/after-dec-phone-day.jpg"
+  },
+  {
+    "file": "docs/validation/issue-571/README.md",
+    "line": 26,
+    "target": "after-dec-phone-night.jpg",
+    "path": "docs/validation/issue-571/after-dec-phone-night.jpg"
+  },
+  {
+    "file": "docs/validation/issue-575/README.md",
+    "line": 38,
+    "target": "jamforelse-foto-vs-modell.jpg",
+    "path": "docs/validation/issue-575/jamforelse-foto-vs-modell.jpg"
+  },
+  {
+    "file": "docs/validation/issue-575/README.md",
+    "line": 39,
+    "target": "jamforelse-render-vs-modell.jpg",
+    "path": "docs/validation/issue-575/jamforelse-render-vs-modell.jpg"
+  },
+  {
+    "file": "docs/validation/issue-575/README.md",
+    "line": 40,
+    "target": "gata-fore-efter.jpg",
+    "path": "docs/validation/issue-575/gata-fore-efter.jpg"
+  },
+  {
+    "file": "docs/validation/issue-575/README.md",
+    "line": 40,
+    "target": "park-fore-efter.jpg",
+    "path": "docs/validation/issue-575/park-fore-efter.jpg"
+  },
+  {
+    "file": "docs/validation/issue-575/README.md",
+    "line": 40,
+    "target": "park-hus3-fore-efter.jpg",
+    "path": "docs/validation/issue-575/park-hus3-fore-efter.jpg"
+  },
+  {
+    "file": "docs/validation/issue-575/README.md",
+    "line": 41,
+    "target": "flyg-vinter-efter.jpg",
+    "path": "docs/validation/issue-575/flyg-vinter-efter.jpg"
+  },
+  {
+    "file": "docs/validation/issue-575/README.md",
+    "line": 42,
+    "target": "fran-hus-l-tak-efter.jpg",
+    "path": "docs/validation/issue-575/fran-hus-l-tak-efter.jpg"
+  },
+  {
+    "file": "docs/validation/issue-576/README.md",
+    "line": 35,
+    "target": "b4e-before.png",
+    "path": "docs/validation/issue-576/b4e-before.png"
+  },
+  {
+    "file": "docs/validation/issue-576/README.md",
+    "line": 35,
+    "target": "b4e-after.png",
+    "path": "docs/validation/issue-576/b4e-after.png"
+  },
+  {
+    "file": "docs/validation/issue-576/README.md",
+    "line": 36,
+    "target": "b4s-before.png",
+    "path": "docs/validation/issue-576/b4s-before.png"
+  },
+  {
+    "file": "docs/validation/issue-576/README.md",
+    "line": 36,
+    "target": "b4s-after.png",
+    "path": "docs/validation/issue-576/b4s-after.png"
+  },
+  {
+    "file": "docs/validation/issue-576/README.md",
+    "line": 37,
+    "target": "b4w-before.png",
+    "path": "docs/validation/issue-576/b4w-before.png"
+  },
+  {
+    "file": "docs/validation/issue-576/README.md",
+    "line": 37,
+    "target": "b4w-after.png",
+    "path": "docs/validation/issue-576/b4w-after.png"
+  },
+  {
+    "file": "docs/validation/issue-576/README.md",
+    "line": 38,
+    "target": "b9s-before.png",
+    "path": "docs/validation/issue-576/b9s-before.png"
+  },
+  {
+    "file": "docs/validation/issue-576/README.md",
+    "line": 38,
+    "target": "b9s-after.png",
+    "path": "docs/validation/issue-576/b9s-after.png"
+  },
+  {
+    "file": "docs/validation/issue-576/README.md",
+    "line": 39,
+    "target": "b9w-before.png",
+    "path": "docs/validation/issue-576/b9w-before.png"
+  },
+  {
+    "file": "docs/validation/issue-576/README.md",
+    "line": 39,
+    "target": "b9w-after.png",
+    "path": "docs/validation/issue-576/b9w-after.png"
+  },
+  {
+    "file": "docs/validation/issue-576/README.md",
+    "line": 40,
+    "target": "aerialw-before.png",
+    "path": "docs/validation/issue-576/aerialw-before.png"
+  },
+  {
+    "file": "docs/validation/issue-576/README.md",
+    "line": 40,
+    "target": "aerialw-after.png",
+    "path": "docs/validation/issue-576/aerialw-after.png"
+  },
+  {
+    "file": "docs/validation/issue-577/README.md",
+    "line": 27,
+    "target": "b2c-before.png",
+    "path": "docs/validation/issue-577/b2c-before.png"
+  },
+  {
+    "file": "docs/validation/issue-577/README.md",
+    "line": 27,
+    "target": "b2c-after.png",
+    "path": "docs/validation/issue-577/b2c-after.png"
+  },
+  {
+    "file": "docs/validation/issue-577/README.md",
+    "line": 28,
+    "target": "b2s-before.png",
+    "path": "docs/validation/issue-577/b2s-before.png"
+  },
+  {
+    "file": "docs/validation/issue-577/README.md",
+    "line": 28,
+    "target": "b2s-after.png",
+    "path": "docs/validation/issue-577/b2s-after.png"
+  },
+  {
+    "file": "docs/validation/issue-577/README.md",
+    "line": 29,
+    "target": "b7c-before.png",
+    "path": "docs/validation/issue-577/b7c-before.png"
+  },
+  {
+    "file": "docs/validation/issue-577/README.md",
+    "line": 29,
+    "target": "b7c-after.png",
+    "path": "docs/validation/issue-577/b7c-after.png"
+  },
+  {
+    "file": "docs/validation/issue-577/README.md",
+    "line": 30,
+    "target": "b7s-before.png",
+    "path": "docs/validation/issue-577/b7s-before.png"
+  },
+  {
+    "file": "docs/validation/issue-577/README.md",
+    "line": 30,
+    "target": "b7s-after.png",
+    "path": "docs/validation/issue-577/b7s-after.png"
+  },
+  {
+    "file": "docs/validation/issue-577/README.md",
+    "line": 31,
+    "target": "courtyard-before.png",
+    "path": "docs/validation/issue-577/courtyard-before.png"
+  },
+  {
+    "file": "docs/validation/issue-577/README.md",
+    "line": 31,
+    "target": "courtyard-after.png",
+    "path": "docs/validation/issue-577/courtyard-after.png"
+  },
+  {
+    "file": "docs/validation/issue-578/README.md",
+    "line": 26,
+    "target": "b8c8-before.png",
+    "path": "docs/validation/issue-578/b8c8-before.png"
+  },
+  {
+    "file": "docs/validation/issue-578/README.md",
+    "line": 26,
+    "target": "b8c8-after.png",
+    "path": "docs/validation/issue-578/b8c8-after.png"
+  },
+  {
+    "file": "docs/validation/issue-578/README.md",
+    "line": 27,
+    "target": "b8n-before.png",
+    "path": "docs/validation/issue-578/b8n-before.png"
+  },
+  {
+    "file": "docs/validation/issue-578/README.md",
+    "line": 27,
+    "target": "b8n-after.png",
+    "path": "docs/validation/issue-578/b8n-after.png"
+  },
+  {
+    "file": "docs/validation/issue-578/README.md",
+    "line": 28,
+    "target": "b8s-before.png",
+    "path": "docs/validation/issue-578/b8s-before.png"
+  },
+  {
+    "file": "docs/validation/issue-578/README.md",
+    "line": 28,
+    "target": "b8s-after.png",
+    "path": "docs/validation/issue-578/b8s-after.png"
+  },
+  {
+    "file": "docs/validation/issue-578/README.md",
+    "line": 29,
+    "target": "b8pav-before.png",
+    "path": "docs/validation/issue-578/b8pav-before.png"
+  },
+  {
+    "file": "docs/validation/issue-578/README.md",
+    "line": 29,
+    "target": "b8pav-after.png",
+    "path": "docs/validation/issue-578/b8pav-after.png"
+  },
+  {
+    "file": "docs/validation/issue-579/README.md",
+    "line": 26,
+    "target": "b1front-before.png",
+    "path": "docs/validation/issue-579/b1front-before.png"
+  },
+  {
+    "file": "docs/validation/issue-579/README.md",
+    "line": 26,
+    "target": "b1front-after.png",
+    "path": "docs/validation/issue-579/b1front-after.png"
+  },
+  {
+    "file": "docs/validation/issue-579/README.md",
+    "line": 26,
+    "target": "b1close-after.png",
+    "path": "docs/validation/issue-579/b1close-after.png"
+  },
+  {
+    "file": "docs/validation/issue-579/README.md",
+    "line": 27,
+    "target": "b1axis-before.png",
+    "path": "docs/validation/issue-579/b1axis-before.png"
+  },
+  {
+    "file": "docs/validation/issue-579/README.md",
+    "line": 27,
+    "target": "b1axis-after.png",
+    "path": "docs/validation/issue-579/b1axis-after.png"
+  },
+  {
+    "file": "docs/validation/issue-579/README.md",
+    "line": 28,
+    "target": "street-before.png",
+    "path": "docs/validation/issue-579/street-before.png"
+  },
+  {
+    "file": "docs/validation/issue-579/README.md",
+    "line": 28,
+    "target": "street-after.png",
+    "path": "docs/validation/issue-579/street-after.png"
+  },
+  {
+    "file": "docs/validation/issue-579/README.md",
+    "line": 29,
+    "target": "kitchenup-before.png",
+    "path": "docs/validation/issue-579/kitchenup-before.png"
+  },
+  {
+    "file": "docs/validation/issue-579/README.md",
+    "line": 29,
+    "target": "kitchenup-after.png",
+    "path": "docs/validation/issue-579/kitchenup-after.png"
+  },
+  {
+    "file": "docs/validation/issue-580/README.md",
+    "line": 27,
+    "target": "b88sw-before.png",
+    "path": "docs/validation/issue-580/b88sw-before.png"
+  },
+  {
+    "file": "docs/validation/issue-580/README.md",
+    "line": 27,
+    "target": "b88sw-after.png",
+    "path": "docs/validation/issue-580/b88sw-after.png"
+  },
+  {
+    "file": "docs/validation/issue-580/README.md",
+    "line": 28,
+    "target": "b88s-before.png",
+    "path": "docs/validation/issue-580/b88s-before.png"
+  },
+  {
+    "file": "docs/validation/issue-580/README.md",
+    "line": 28,
+    "target": "b88s-after.png",
+    "path": "docs/validation/issue-580/b88s-after.png"
+  },
+  {
+    "file": "docs/validation/issue-580/README.md",
+    "line": 29,
+    "target": "b88air-before.png",
+    "path": "docs/validation/issue-580/b88air-before.png"
+  },
+  {
+    "file": "docs/validation/issue-580/README.md",
+    "line": 29,
+    "target": "b88air-after.png",
+    "path": "docs/validation/issue-580/b88air-after.png"
+  },
+  {
+    "file": "docs/validation/issue-580/README.md",
+    "line": 30,
+    "target": "kitchenup-before.png",
+    "path": "docs/validation/issue-580/kitchenup-before.png"
+  },
+  {
+    "file": "docs/validation/issue-580/README.md",
+    "line": 30,
+    "target": "kitchenup-after.png",
+    "path": "docs/validation/issue-580/kitchenup-after.png"
+  },
+  {
+    "file": "docs/validation/issue-580/README.md",
+    "line": 31,
+    "target": "street-before.png",
+    "path": "docs/validation/issue-580/street-before.png"
+  },
+  {
+    "file": "docs/validation/issue-580/README.md",
+    "line": 31,
+    "target": "street-after.png",
+    "path": "docs/validation/issue-580/street-after.png"
+  },
+  {
+    "file": "docs/validation/issue-581/README.md",
+    "line": 27,
+    "target": "b19w-before.png",
+    "path": "docs/validation/issue-581/b19w-before.png"
+  },
+  {
+    "file": "docs/validation/issue-581/README.md",
+    "line": 27,
+    "target": "b19w-after.png",
+    "path": "docs/validation/issue-581/b19w-after.png"
+  },
+  {
+    "file": "docs/validation/issue-581/README.md",
+    "line": 28,
+    "target": "b19n-before.png",
+    "path": "docs/validation/issue-581/b19n-before.png"
+  },
+  {
+    "file": "docs/validation/issue-581/README.md",
+    "line": 28,
+    "target": "b19n-after.png",
+    "path": "docs/validation/issue-581/b19n-after.png"
+  },
+  {
+    "file": "docs/validation/issue-581/README.md",
+    "line": 29,
+    "target": "b19e-before.png",
+    "path": "docs/validation/issue-581/b19e-before.png"
+  },
+  {
+    "file": "docs/validation/issue-581/README.md",
+    "line": 29,
+    "target": "b19e-after.png",
+    "path": "docs/validation/issue-581/b19e-after.png"
+  },
+  {
+    "file": "docs/validation/issue-581/README.md",
+    "line": 30,
+    "target": "b19air-before.png",
+    "path": "docs/validation/issue-581/b19air-before.png"
+  },
+  {
+    "file": "docs/validation/issue-581/README.md",
+    "line": 30,
+    "target": "b19air-after.png",
+    "path": "docs/validation/issue-581/b19air-after.png"
+  },
+  {
+    "file": "docs/validation/issue-583/README.md",
+    "line": 66,
+    "target": "korsning-karpvagen-fore.jpg",
+    "path": "docs/validation/issue-583/korsning-karpvagen-fore.jpg"
+  },
+  {
+    "file": "docs/validation/issue-583/README.md",
+    "line": 66,
+    "target": "korsning-karpvagen-efter.jpg",
+    "path": "docs/validation/issue-583/korsning-karpvagen-efter.jpg"
+  },
+  {
+    "file": "docs/validation/issue-583/README.md",
+    "line": 67,
+    "target": "karpvagen-skylt-nara.jpg",
+    "path": "docs/validation/issue-583/karpvagen-skylt-nara.jpg"
+  },
+  {
+    "file": "docs/validation/issue-583/README.md",
+    "line": 68,
+    "target": "svangen-sankt-lars-vag.jpg",
+    "path": "docs/validation/issue-583/svangen-sankt-lars-vag.jpg"
+  },
+  {
+    "file": "docs/validation/issue-583/README.md",
+    "line": 69,
+    "target": "karpvagen-svangen.jpg",
+    "path": "docs/validation/issue-583/karpvagen-svangen.jpg"
+  },
+  {
+    "file": "docs/validation/issue-583/README.md",
+    "line": 70,
+    "target": "savslandegatan.jpg",
+    "path": "docs/validation/issue-583/savslandegatan.jpg"
+  },
+  {
+    "file": "docs/validation/issue-589/README.md",
+    "line": 40,
+    "target": "b8-desktop.jpg",
+    "path": "docs/validation/issue-589/b8-desktop.jpg"
+  },
+  {
+    "file": "docs/validation/issue-589/README.md",
+    "line": 40,
+    "target": "b8-phone-detail.jpg",
+    "path": "docs/validation/issue-589/b8-phone-detail.jpg"
+  },
+  {
+    "file": "docs/validation/issue-589/README.md",
+    "line": 41,
+    "target": "school-desktop.jpg",
+    "path": "docs/validation/issue-589/school-desktop.jpg"
+  },
+  {
+    "file": "docs/validation/issue-589/README.md",
+    "line": 41,
+    "target": "school-phone-detail.jpg",
+    "path": "docs/validation/issue-589/school-phone-detail.jpg"
+  },
+  {
+    "file": "docs/validation/issue-589/README.md",
+    "line": 42,
+    "target": "overview-desktop.jpg",
+    "path": "docs/validation/issue-589/overview-desktop.jpg"
+  },
+  {
+    "file": "docs/validation/issue-589/README.md",
+    "line": 42,
+    "target": "overview-phone-detail.jpg",
+    "path": "docs/validation/issue-589/overview-phone-detail.jpg"
+  },
+  {
+    "file": "docs/validation/issue-589/README.md",
+    "line": 43,
+    "target": "b1-phone-before.jpg",
+    "path": "docs/validation/issue-589/b1-phone-before.jpg"
+  },
+  {
+    "file": "docs/validation/issue-589/README.md",
+    "line": 43,
+    "target": "b1-phone-after.jpg",
+    "path": "docs/validation/issue-589/b1-phone-after.jpg"
+  },
+  {
+    "file": "docs/validation/issue-589/README.md",
+    "line": 44,
+    "target": "street-phone-before.jpg",
+    "path": "docs/validation/issue-589/street-phone-before.jpg"
+  },
+  {
+    "file": "docs/validation/issue-589/README.md",
+    "line": 44,
+    "target": "street-phone-after.jpg",
+    "path": "docs/validation/issue-589/street-phone-after.jpg"
+  },
+  {
+    "file": "docs/validation/issue-591/README.md",
+    "line": 9,
+    "target": "../issue-571/after-dec-door-day.jpg",
+    "path": "docs/validation/issue-571/after-dec-door-day.jpg"
+  },
+  {
+    "file": "docs/validation/issue-591/README.md",
+    "line": 24,
+    "target": "after-dec24-door-day.jpg",
+    "path": "docs/validation/issue-591/after-dec24-door-day.jpg"
+  },
+  {
+    "file": "docs/validation/issue-591/README.md",
+    "line": 24,
+    "target": "after-dec24-door-night.jpg",
+    "path": "docs/validation/issue-591/after-dec24-door-night.jpg"
+  },
+  {
+    "file": "docs/validation/issue-669/README.md",
+    "line": 67,
+    "target": "panel-note.png",
+    "path": "docs/validation/issue-669/panel-note.png"
+  },
+  {
+    "file": "docs/validation/issue-669/README.md",
+    "line": 68,
+    "target": "panel-pause.png",
+    "path": "docs/validation/issue-669/panel-pause.png"
+  },
+  {
+    "file": "docs/validation/issue-669/README.md",
+    "line": 68,
+    "target": "panel-portrait.png",
+    "path": "docs/validation/issue-669/panel-portrait.png"
+  },
+  {
+    "file": "docs/validation/issue-715/README.md",
+    "line": 179,
+    "target": "apartment-two-darts.png",
+    "path": "docs/validation/issue-715/apartment-two-darts.png"
+  },
+  {
+    "file": "docs/validation/issue-902/README.md",
+    "line": 31,
+    "target": "compact-hud.png",
+    "path": "docs/validation/issue-902/compact-hud.png"
+  },
+  {
+    "file": "docs/validation/issue-902/README.md",
+    "line": 31,
+    "target": "compact-presence-fps.png",
+    "path": "docs/validation/issue-902/compact-presence-fps.png"
+  },
+  {
+    "file": "docs/validation/issue-902/README.md",
+    "line": 40,
+    "target": "marker-overlap-before.png",
+    "path": "docs/validation/issue-902/marker-overlap-before.png"
+  },
+  {
+    "file": "docs/validation/issue-974/README.md",
+    "line": 22,
+    "target": "avatar-head-boxes.png",
+    "path": "docs/validation/issue-974/avatar-head-boxes.png"
+  },
+  {
+    "file": "docs/verification/1446/README.md",
+    "line": 92,
+    "target": "overhead-before.png",
+    "path": "docs/verification/1446/overhead-before.png"
+  },
+  {
+    "file": "docs/verification/1446/README.md",
+    "line": 92,
+    "target": "overhead-after.png",
+    "path": "docs/verification/1446/overhead-after.png"
+  },
+  {
+    "file": "docs/verification/1446/README.md",
+    "line": 95,
+    "target": "ground-before.png",
+    "path": "docs/verification/1446/ground-before.png"
+  },
+  {
+    "file": "docs/verification/1446/README.md",
+    "line": 95,
+    "target": "ground-after.png",
+    "path": "docs/verification/1446/ground-after.png"
+  },
+  {
+    "file": "docs/verification/1514/README.md",
+    "line": 58,
+    "target": "kitchen-lap1-frametimes.png",
+    "path": "docs/verification/1514/kitchen-lap1-frametimes.png"
+  },
+  {
+    "file": "docs/verification/1549/README.md",
+    "line": 12,
+    "target": "canvas-families.png",
+    "path": "docs/verification/1549/canvas-families.png"
+  },
+  {
+    "file": "docs/verification/1557/README.md",
+    "line": 9,
+    "target": "datorhornan.png",
+    "path": "docs/verification/1557/datorhornan.png"
+  },
+  {
+    "file": "docs/verification/1557/README.md",
+    "line": 16,
+    "target": "rumsoversikt.png",
+    "path": "docs/verification/1557/rumsoversikt.png"
+  },
+  {
+    "file": "docs/verification/1558/README.md",
+    "line": 97,
+    "target": "living-lap1-frametimes.png",
+    "path": "docs/verification/1558/living-lap1-frametimes.png"
+  },
+  {
+    "file": "docs/verification/1563/README.md",
+    "line": 7,
+    "target": "laptop-tillbaka-pa-sminkbordet.png",
+    "path": "docs/verification/1563/laptop-tillbaka-pa-sminkbordet.png"
+  },
+  {
+    "file": "docs/verification/1567/README.md",
+    "line": 34,
+    "target": "cart-entry.png",
+    "path": "docs/verification/1567/cart-entry.png"
+  },
+  {
+    "file": "docs/verification/1567/README.md",
+    "line": 36,
+    "target": "glass-full.png",
+    "path": "docs/verification/1567/glass-full.png"
+  },
+  {
+    "file": "docs/verification/1567/README.md",
+    "line": 38,
+    "target": "cinema-eating.png",
+    "path": "docs/verification/1567/cinema-eating.png"
+  },
+  {
+    "file": "docs/verification/1658/README.md",
+    "line": 16,
+    "target": "north-clearance.png",
+    "path": "docs/verification/1658/north-clearance.png"
+  },
+  {
+    "file": "docs/verification/1658/README.md",
+    "line": 18,
+    "target": "south-clearance.png",
+    "path": "docs/verification/1658/south-clearance.png"
+  },
+  {
+    "file": "docs/verification/1669/README.md",
+    "line": 15,
+    "target": "before.png",
+    "path": "docs/verification/1669/before.png"
+  },
+  {
+    "file": "docs/verification/1669/README.md",
+    "line": 17,
+    "target": "after.png",
+    "path": "docs/verification/1669/after.png"
+  },
+  {
+    "file": "docs/verification/1674/README.md",
+    "line": 10,
+    "target": "hoje-a-broarna-lagt-before.png",
+    "path": "docs/verification/1674/hoje-a-broarna-lagt-before.png"
+  },
+  {
+    "file": "docs/verification/1674/README.md",
+    "line": 10,
+    "target": "hoje-a-broarna-lagt-after.png",
+    "path": "docs/verification/1674/hoje-a-broarna-lagt-after.png"
+  },
+  {
+    "file": "docs/verification/1674/README.md",
+    "line": 11,
+    "target": "bron-vast-before.png",
+    "path": "docs/verification/1674/bron-vast-before.png"
+  },
+  {
+    "file": "docs/verification/1674/README.md",
+    "line": 11,
+    "target": "bron-vast-after.png",
+    "path": "docs/verification/1674/bron-vast-after.png"
+  },
+  {
+    "file": "docs/verification/1674/README.md",
+    "line": 12,
+    "target": "bron-sydvast-before.png",
+    "path": "docs/verification/1674/bron-sydvast-before.png"
+  },
+  {
+    "file": "docs/verification/1674/README.md",
+    "line": 12,
+    "target": "bron-sydvast-after.png",
+    "path": "docs/verification/1674/bron-sydvast-after.png"
+  },
+  {
+    "file": "docs/verification/1682/README.md",
+    "line": 7,
+    "target": "before-hela.png",
+    "path": "docs/verification/1682/before-hela.png"
+  },
+  {
+    "file": "docs/verification/1682/README.md",
+    "line": 7,
+    "target": "after-hela.png",
+    "path": "docs/verification/1682/after-hela.png"
+  },
+  {
+    "file": "docs/verification/1682/README.md",
+    "line": 8,
+    "target": "before-norr.png",
+    "path": "docs/verification/1682/before-norr.png"
+  },
+  {
+    "file": "docs/verification/1682/README.md",
+    "line": 8,
+    "target": "after-norr.png",
+    "path": "docs/verification/1682/after-norr.png"
+  },
+  {
+    "file": "docs/verification/1682/README.md",
+    "line": 9,
+    "target": "before-oversikt.png",
+    "path": "docs/verification/1682/before-oversikt.png"
+  },
+  {
+    "file": "docs/verification/1682/README.md",
+    "line": 9,
+    "target": "after-oversikt.png",
+    "path": "docs/verification/1682/after-oversikt.png"
+  },
+  {
+    "file": "docs/verification/1682/README.md",
+    "line": 10,
+    "target": "before-jan.png",
+    "path": "docs/verification/1682/before-jan.png"
+  },
+  {
+    "file": "docs/verification/1682/README.md",
+    "line": 10,
+    "target": "after-jan.png",
+    "path": "docs/verification/1682/after-jan.png"
+  },
+  {
+    "file": "docs/verification/1682/README.md",
+    "line": 11,
+    "target": "before-low.png",
+    "path": "docs/verification/1682/before-low.png"
+  },
+  {
+    "file": "docs/verification/1682/README.md",
+    "line": 11,
+    "target": "after-low.png",
+    "path": "docs/verification/1682/after-low.png"
+  },
+  {
+    "file": "docs/verification/1685/README.md",
+    "line": 7,
+    "target": "hoje-a-broarna-lagt-before.png",
+    "path": "docs/verification/1685/hoje-a-broarna-lagt-before.png"
+  },
+  {
+    "file": "docs/verification/1685/README.md",
+    "line": 7,
+    "target": "hoje-a-broarna-lagt-after.png",
+    "path": "docs/verification/1685/hoje-a-broarna-lagt-after.png"
+  },
+  {
+    "file": "docs/verification/1685/README.md",
+    "line": 8,
+    "target": "valley-w-before.png",
+    "path": "docs/verification/1685/valley-w-before.png"
+  },
+  {
+    "file": "docs/verification/1685/README.md",
+    "line": 8,
+    "target": "valley-w-after.png",
+    "path": "docs/verification/1685/valley-w-after.png"
+  },
+  {
+    "file": "docs/verification/1685/README.md",
+    "line": 9,
+    "target": "valley-n-before.png",
+    "path": "docs/verification/1685/valley-n-before.png"
+  },
+  {
+    "file": "docs/verification/1685/README.md",
+    "line": 9,
+    "target": "valley-n-after.png",
+    "path": "docs/verification/1685/valley-n-after.png"
+  },
+  {
+    "file": "docs/verification/1685/README.md",
+    "line": 10,
+    "target": "valley-e-before.png",
+    "path": "docs/verification/1685/valley-e-before.png"
+  },
+  {
+    "file": "docs/verification/1685/README.md",
+    "line": 10,
+    "target": "valley-e-after.png",
+    "path": "docs/verification/1685/valley-e-after.png"
+  },
+  {
+    "file": "docs/verification/1685/README.md",
+    "line": 11,
+    "target": "ground-n-before.png",
+    "path": "docs/verification/1685/ground-n-before.png"
+  },
+  {
+    "file": "docs/verification/1685/README.md",
+    "line": 11,
+    "target": "ground-n-after.png",
+    "path": "docs/verification/1685/ground-n-after.png"
+  },
+  {
+    "file": "docs/verification/1685/README.md",
+    "line": 12,
+    "target": "bron-sydvast-before.png",
+    "path": "docs/verification/1685/bron-sydvast-before.png"
+  },
+  {
+    "file": "docs/verification/1685/README.md",
+    "line": 12,
+    "target": "bron-sydvast-after.png",
+    "path": "docs/verification/1685/bron-sydvast-after.png"
+  },
+  {
+    "file": "docs/verification/1769/README.md",
+    "line": 8,
+    "target": "fena-i-an.png",
+    "path": "docs/verification/1769/fena-i-an.png"
+  },
+  {
+    "file": "docs/verification/1769/README.md",
+    "line": 9,
+    "target": "fena-i-handen.png",
+    "path": "docs/verification/1769/fena-i-handen.png"
+  },
+  {
+    "file": "docs/verification/1769/README.md",
+    "line": 10,
+    "target": "annan-spelare-fena.png",
+    "path": "docs/verification/1769/annan-spelare-fena.png"
+  },
+  {
+    "file": "docs/verification/1769/README.md",
+    "line": 11,
+    "target": "haj-pa-stranden.png",
+    "path": "docs/verification/1769/haj-pa-stranden.png"
+  },
+  {
+    "file": "docs/verification/1769/README.md",
+    "line": 12,
+    "target": "skelett.png",
+    "path": "docs/verification/1769/skelett.png"
+  },
+  {
+    "file": "docs/verification/1820/README.md",
+    "line": 23,
+    "target": "before-east-landing.png",
+    "path": "docs/verification/1820/before-east-landing.png"
+  },
+  {
+    "file": "docs/verification/1820/README.md",
+    "line": 27,
+    "target": "after-ring-face.png",
+    "path": "docs/verification/1820/after-ring-face.png"
+  },
+  {
+    "file": "docs/verification/1823/README.md",
+    "line": 39,
+    "target": "before/side.png",
+    "path": "docs/verification/1823/before/side.png"
+  },
+  {
+    "file": "docs/verification/1823/README.md",
+    "line": 43,
+    "target": "after/road.png",
+    "path": "docs/verification/1823/after/road.png"
+  },
+  {
+    "file": "docs/verification/1823/README.md",
+    "line": 47,
+    "target": "after/side.png",
+    "path": "docs/verification/1823/after/side.png"
+  },
+  {
+    "file": "docs/verification/1825/README.md",
+    "line": 44,
+    "target": "road.png",
+    "path": "docs/verification/1825/road.png"
+  },
+  {
+    "file": "docs/verification/1825/README.md",
+    "line": 48,
+    "target": "footway.png",
+    "path": "docs/verification/1825/footway.png"
+  },
+  {
+    "file": "docs/verification/1825/README.md",
+    "line": 52,
+    "target": "sign-close.png",
+    "path": "docs/verification/1825/sign-close.png"
+  },
+  {
+    "file": "docs/verification/1827/README.md",
+    "line": 31,
+    "target": "bread-from-kitchen.png",
+    "path": "docs/verification/1827/bread-from-kitchen.png"
+  },
+  {
+    "file": "docs/verification/1827/README.md",
+    "line": 35,
+    "target": "duck-feed-points.png",
+    "path": "docs/verification/1827/duck-feed-points.png"
+  },
+  {
+    "file": "docs/verification/1827/README.md",
+    "line": 39,
+    "target": "duck-medal-progress.png",
+    "path": "docs/verification/1827/duck-medal-progress.png"
+  },
+  {
+    "file": "docs/verification/1829/README.md",
+    "line": 24,
+    "target": "disco-dancing.png",
+    "path": "docs/verification/1829/disco-dancing.png"
+  },
+  {
+    "file": "docs/verification/1829/README.md",
+    "line": 25,
+    "target": "dance-medal-progress.png",
+    "path": "docs/verification/1829/dance-medal-progress.png"
+  },
+  {
+    "file": "docs/verification/1831/README.md",
+    "line": 40,
+    "target": "nuts-beside-river-path.png",
+    "path": "docs/verification/1831/nuts-beside-river-path.png"
+  },
+  {
+    "file": "docs/verification/1831/README.md",
+    "line": 45,
+    "target": "squirrel-fed-from-pathside-nut.png",
+    "path": "docs/verification/1831/squirrel-fed-from-pathside-nut.png"
+  },
+  {
+    "file": "docs/verification/1835/README.md",
+    "line": 58,
+    "target": "overview.png",
+    "path": "docs/verification/1835/overview.png"
+  },
+  {
+    "file": "docs/verification/1835/README.md",
+    "line": 59,
+    "target": "obstacle-course.png",
+    "path": "docs/verification/1835/obstacle-course.png"
+  },
+  {
+    "file": "docs/verification/1837/README.md",
+    "line": 21,
+    "target": "before.png",
+    "path": "docs/verification/1837/before.png"
+  },
+  {
+    "file": "docs/verification/1837/README.md",
+    "line": 22,
+    "target": "after.png",
+    "path": "docs/verification/1837/after.png"
+  },
+  {
+    "file": "docs/verification/1837/README.md",
+    "line": 23,
+    "target": "remote-look.png",
+    "path": "docs/verification/1837/remote-look.png"
+  },
+  {
+    "file": "docs/verification/1838/README.md",
+    "line": 44,
+    "target": "before/desktop-warm.png",
+    "path": "docs/verification/1838/before/desktop-warm.png"
+  },
+  {
+    "file": "docs/verification/1838/README.md",
+    "line": 45,
+    "target": "after/desktop-warm.png",
+    "path": "docs/verification/1838/after/desktop-warm.png"
+  },
+  {
+    "file": "docs/verification/1838/README.md",
+    "line": 46,
+    "target": "before/phone-warm.png",
+    "path": "docs/verification/1838/before/phone-warm.png"
+  },
+  {
+    "file": "docs/verification/1838/README.md",
+    "line": 47,
+    "target": "after/phone-warm.png",
+    "path": "docs/verification/1838/after/phone-warm.png"
+  },
+  {
+    "file": "docs/verification/1839/README.md",
+    "line": 25,
+    "target": "familiar-pair.png",
+    "path": "docs/verification/1839/familiar-pair.png"
+  },
+  {
+    "file": "docs/verification/1839/README.md",
+    "line": 26,
+    "target": "loose-group.png",
+    "path": "docs/verification/1839/loose-group.png"
+  },
+  {
+    "file": "docs/verification/1839/README.md",
+    "line": 27,
+    "target": "downstream-fed.png",
+    "path": "docs/verification/1839/downstream-fed.png"
+  },
+  {
+    "file": "docs/verification/1840/README.md",
+    "line": 42,
+    "target": "findus-first-clock.png",
+    "path": "docs/verification/1840/findus-first-clock.png"
+  },
+  {
+    "file": "docs/verification/1840/README.md",
+    "line": 43,
+    "target": "findus-second-clock.png",
+    "path": "docs/verification/1840/findus-second-clock.png"
+  },
+  {
+    "file": "docs/verification/1840/README.md",
+    "line": 44,
+    "target": "territory-overview.png",
+    "path": "docs/verification/1840/territory-overview.png"
+  },
+  {
+    "file": "docs/verification/1841/README.md",
+    "line": 25,
+    "target": "desktop-attachments.png",
+    "path": "docs/verification/1841/desktop-attachments.png"
+  },
+  {
+    "file": "docs/verification/1841/README.md",
+    "line": 26,
+    "target": "touch-attachments.png",
+    "path": "docs/verification/1841/touch-attachments.png"
+  },
+  {
+    "file": "docs/verification/1842/README.md",
+    "line": 24,
+    "target": "observer-monkey.png",
+    "path": "docs/verification/1842/observer-monkey.png"
+  },
+  {
+    "file": "docs/verification/1842/README.md",
+    "line": 25,
+    "target": "observer-press.png",
+    "path": "docs/verification/1842/observer-press.png"
+  },
+  {
+    "file": "docs/verification/1842/README.md",
+    "line": 26,
+    "target": "keys-balance-body.png",
+    "path": "docs/verification/1842/keys-balance-body.png"
+  },
+  {
+    "file": "docs/verification/1842/README.md",
+    "line": 27,
+    "target": "monkey-normal-hud.png",
+    "path": "docs/verification/1842/monkey-normal-hud.png"
+  },
+  {
+    "file": "docs/verification/1842/README.md",
+    "line": 28,
+    "target": "touch-balance-hud.png",
+    "path": "docs/verification/1842/touch-balance-hud.png"
+  },
+  {
+    "file": "docs/verification/1843/README.md",
+    "line": 20,
+    "target": "restored-crossing.png",
+    "path": "docs/verification/1843/restored-crossing.png"
+  },
+  {
+    "file": "docs/verification/1843/README.md",
+    "line": 21,
+    "target": "restored-stop-name.png",
+    "path": "docs/verification/1843/restored-stop-name.png"
+  },
+  {
+    "file": "docs/verification/1843/README.md",
+    "line": 23,
+    "target": "diagnostic/panel-through-post-restored-stop-name.png",
+    "path": "docs/verification/1843/diagnostic/panel-through-post-restored-stop-name.png"
+  },
+  {
+    "file": "docs/verification/1844/README.md",
+    "line": 21,
+    "target": "climb-wall.png",
+    "path": "docs/verification/1844/climb-wall.png"
+  },
+  {
+    "file": "docs/verification/1844/README.md",
+    "line": 23,
+    "target": "roof-rest.png",
+    "path": "docs/verification/1844/roof-rest.png"
+  },
+  {
+    "file": "docs/verification/1844/README.md",
+    "line": 25,
+    "target": "Nordic-rear.png",
+    "path": "docs/verification/1844/Nordic-rear.png"
+  },
+  {
+    "file": "docs/verification/1844/README.md",
+    "line": 27,
+    "target": "Nordic-rear-near.png",
+    "path": "docs/verification/1844/Nordic-rear-near.png"
+  },
+  {
+    "file": "docs/verification/1845/README.md",
+    "line": 25,
+    "target": "contact-hearts-final.png",
+    "path": "docs/verification/1845/contact-hearts-final.png"
+  },
+  {
+    "file": "docs/verification/1846/README.md",
+    "line": 21,
+    "target": "kiss-hearts.png",
+    "path": "docs/verification/1846/kiss-hearts.png"
+  },
+  {
+    "file": "docs/verification/1846/README.md",
+    "line": 22,
+    "target": "kiss-close.png",
+    "path": "docs/verification/1846/kiss-close.png"
+  },
+  {
+    "file": "docs/verification/1847/README.md",
+    "line": 17,
+    "target": "mouse-styrkelyft.png",
+    "path": "docs/verification/1847/mouse-styrkelyft.png"
+  },
+  {
+    "file": "docs/verification/1847/README.md",
+    "line": 18,
+    "target": "touch-styrkelyft.png",
+    "path": "docs/verification/1847/touch-styrkelyft.png"
+  },
+  {
+    "file": "docs/verification/1848-ui/README.md",
+    "line": 29,
+    "target": "desktop-grid.png",
+    "path": "docs/verification/1848-ui/desktop-grid.png"
+  },
+  {
+    "file": "docs/verification/1848-ui/README.md",
+    "line": 30,
+    "target": "desktop-detail.png",
+    "path": "docs/verification/1848-ui/desktop-detail.png"
+  },
+  {
+    "file": "docs/verification/1848-ui/README.md",
+    "line": 31,
+    "target": "touch-grid.png",
+    "path": "docs/verification/1848-ui/touch-grid.png"
+  },
+  {
+    "file": "docs/verification/1848-ui/README.md",
+    "line": 49,
+    "target": "../1848/app/tabletop-prop.png",
+    "path": "docs/verification/1848/app/tabletop-prop.png"
+  },
+  {
+    "file": "docs/verification/1848-ui/README.md",
+    "line": 50,
+    "target": "../1848/app/desktop-statistics-chain.png",
+    "path": "docs/verification/1848/app/desktop-statistics-chain.png"
+  },
+  {
+    "file": "docs/verification/1848-ui/README.md",
+    "line": 51,
+    "target": "../1848/app/touch-detail.png",
+    "path": "docs/verification/1848/app/touch-detail.png"
+  },
+  {
+    "file": "docs/verification/1848/README.md",
+    "line": 60,
+    "target": "app/tabletop-prop.png",
+    "path": "docs/verification/1848/app/tabletop-prop.png"
+  },
+  {
+    "file": "docs/verification/1848/README.md",
+    "line": 61,
+    "target": "app/desktop-grid.png",
+    "path": "docs/verification/1848/app/desktop-grid.png"
+  },
+  {
+    "file": "docs/verification/1848/README.md",
+    "line": 62,
+    "target": "app/desktop-detail.png",
+    "path": "docs/verification/1848/app/desktop-detail.png"
+  },
+  {
+    "file": "docs/verification/1848/README.md",
+    "line": 63,
+    "target": "app/desktop-statistics-chain.png",
+    "path": "docs/verification/1848/app/desktop-statistics-chain.png"
+  },
+  {
+    "file": "docs/verification/1848/README.md",
+    "line": 64,
+    "target": "app/touch-detail.png",
+    "path": "docs/verification/1848/app/touch-detail.png"
+  },
+  {
+    "file": "docs/verification/1848/README.md",
+    "line": 65,
+    "target": "app/touch-statistics-chain.png",
+    "path": "docs/verification/1848/app/touch-statistics-chain.png"
+  },
+  {
+    "file": "docs/verification/1849/README.md",
+    "line": 25,
+    "target": "before-location.png",
+    "path": "docs/verification/1849/before-location.png"
+  },
+  {
+    "file": "docs/verification/1849/README.md",
+    "line": 26,
+    "target": "before-fall.png",
+    "path": "docs/verification/1849/before-fall.png"
+  },
+  {
+    "file": "docs/verification/1849/README.md",
+    "line": 27,
+    "target": "after-touch-stop.png",
+    "path": "docs/verification/1849/after-touch-stop.png"
+  },
+  {
+    "file": "docs/verification/1850/README.md",
+    "line": 38,
+    "target": "app/before-low.png",
+    "path": "docs/verification/1850/app/before-low.png"
+  },
+  {
+    "file": "docs/verification/1850/README.md",
+    "line": 39,
+    "target": "app/after-low.png",
+    "path": "docs/verification/1850/app/after-low.png"
+  },
+  {
+    "file": "docs/verification/1850/README.md",
+    "line": 40,
+    "target": "app/after-rear.png",
+    "path": "docs/verification/1850/app/after-rear.png"
+  },
+  {
+    "file": "docs/verification/1851/README.md",
+    "line": 30,
+    "target": "after/phone-start.png",
+    "path": "docs/verification/1851/after/phone-start.png"
+  },
+  {
+    "file": "docs/verification/1851/README.md",
+    "line": 31,
+    "target": "after/after-two-clients.png",
+    "path": "docs/verification/1851/after/after-two-clients.png"
+  },
+  {
+    "file": "docs/verification/1852/README.md",
+    "line": 16,
+    "target": "diagnostic/hunnerup-matched-landmarks.png",
+    "path": "docs/verification/1852/diagnostic/hunnerup-matched-landmarks.png"
+  },
+  {
+    "file": "docs/verification/1852/README.md",
+    "line": 20,
+    "target": "diagnostic/northwest-candidate.png",
+    "path": "docs/verification/1852/diagnostic/northwest-candidate.png"
+  },
+  {
+    "file": "docs/verification/1852/long-side/README.md",
+    "line": 96,
+    "target": "facade-before.png",
+    "path": "docs/verification/1852/long-side/facade-before.png"
+  },
+  {
+    "file": "docs/verification/1852/long-side/README.md",
+    "line": 97,
+    "target": "facade-after.png",
+    "path": "docs/verification/1852/long-side/facade-after.png"
+  },
+  {
+    "file": "docs/verification/1852/long-side/README.md",
+    "line": 98,
+    "target": "facade-after-close.png",
+    "path": "docs/verification/1852/long-side/facade-after-close.png"
+  },
+  {
+    "file": "docs/verification/1852/resumed/README.md",
+    "line": 71,
+    "target": "l-gable-close-final.png",
+    "path": "docs/verification/1852/resumed/l-gable-close-final.png"
+  },
+  {
+    "file": "docs/verification/1852/resumed/README.md",
+    "line": 72,
+    "target": "l-numbered-surfaces.png",
+    "path": "docs/verification/1852/resumed/l-numbered-surfaces.png"
+  },
+  {
+    "file": "docs/verification/1853/README.md",
+    "line": 34,
+    "target": "app/spectator.png",
+    "path": "docs/verification/1853/app/spectator.png"
+  },
+  {
+    "file": "docs/verification/1853/README.md",
+    "line": 35,
+    "target": "app/fountain.png",
+    "path": "docs/verification/1853/app/fountain.png"
+  },
+  {
+    "file": "docs/verification/1853/README.md",
+    "line": 44,
+    "target": "app/field-final.png",
+    "path": "docs/verification/1853/app/field-final.png"
+  },
+  {
+    "file": "docs/verification/1854/README.md",
+    "line": 25,
+    "target": "shared-court.png",
+    "path": "docs/verification/1854/shared-court.png"
+  },
+  {
+    "file": "docs/verification/1854/README.md",
+    "line": 26,
+    "target": "shared-client-b.png",
+    "path": "docs/verification/1854/shared-client-b.png"
+  },
+  {
+    "file": "docs/verification/1854/README.md",
+    "line": 27,
+    "target": "shared-scoreboard.png",
+    "path": "docs/verification/1854/shared-scoreboard.png"
+  },
+  {
+    "file": "docs/verification/1855/README.md",
+    "line": 21,
+    "target": "shared-table.png",
+    "path": "docs/verification/1855/shared-table.png"
+  },
+  {
+    "file": "docs/verification/1855/README.md",
+    "line": 23,
+    "target": "client-b.png",
+    "path": "docs/verification/1855/client-b.png"
+  },
+  {
+    "file": "docs/verification/1856/README.md",
+    "line": 41,
+    "target": "app/before-route.png",
+    "path": "docs/verification/1856/app/before-route.png"
+  },
+  {
+    "file": "docs/verification/1856/README.md",
+    "line": 42,
+    "target": "app/after-air-side.png",
+    "path": "docs/verification/1856/app/after-air-side.png"
+  },
+  {
+    "file": "docs/verification/1856/README.md",
+    "line": 43,
+    "target": "app/after-landed-exit.png",
+    "path": "docs/verification/1856/app/after-landed-exit.png"
+  },
+  {
+    "file": "docs/verification/1857/README.md",
+    "line": 29,
+    "target": "app/astronaut-medal.png",
+    "path": "docs/verification/1857/app/astronaut-medal.png"
+  },
+  {
+    "file": "docs/verification/1858/README.md",
+    "line": 21,
+    "target": "locate-hus-b.png",
+    "path": "docs/verification/1858/locate-hus-b.png"
+  },
+  {
+    "file": "docs/verification/1858/README.md",
+    "line": 22,
+    "target": "locate-karp-axis.png",
+    "path": "docs/verification/1858/locate-karp-axis.png"
+  },
+  {
+    "file": "docs/verification/1858/README.md",
+    "line": 23,
+    "target": "locate-nordic-cross.png",
+    "path": "docs/verification/1858/locate-nordic-cross.png"
+  },
+  {
+    "file": "docs/verification/1858/picnic/README.md",
+    "line": 15,
+    "target": "day.png",
+    "path": "docs/verification/1858/picnic/day.png"
+  },
+  {
+    "file": "docs/verification/1858/picnic/README.md",
+    "line": 16,
+    "target": "seated-river-diagonal.png",
+    "path": "docs/verification/1858/picnic/seated-river-diagonal.png"
+  },
+  {
+    "file": "docs/verification/1858/picnic/README.md",
+    "line": 17,
+    "target": "night-serving.png",
+    "path": "docs/verification/1858/picnic/night-serving.png"
+  },
+  {
+    "file": "docs/verification/1862/README.md",
+    "line": 13,
+    "target": "roof-placed.png",
+    "path": "docs/verification/1862/roof-placed.png"
+  },
+  {
+    "file": "docs/verification/1862/README.md",
+    "line": 13,
+    "target": "valley-placed.png",
+    "path": "docs/verification/1862/valley-placed.png"
+  },
+  {
+    "file": "docs/verification/1862/README.md",
+    "line": 21,
+    "target": "roof-placed.png",
+    "path": "docs/verification/1862/roof-placed.png"
+  },
+  {
+    "file": "docs/verification/1862/README.md",
+    "line": 22,
+    "target": "valley-placed.png",
+    "path": "docs/verification/1862/valley-placed.png"
+  },
+  {
+    "file": "docs/verification/1863/README.md",
+    "line": 43,
+    "target": "before-uninvolved.png",
+    "path": "docs/verification/1863/before-uninvolved.png"
+  },
+  {
+    "file": "docs/verification/1863/README.md",
+    "line": 44,
+    "target": "after-uninvolved.png",
+    "path": "docs/verification/1863/after-uninvolved.png"
+  },
+  {
+    "file": "docs/verification/1863/README.md",
+    "line": 45,
+    "target": "after-participant.png",
+    "path": "docs/verification/1863/after-participant.png"
+  },
+  {
+    "file": "docs/verification/1864/README.md",
+    "line": 13,
+    "target": "shared-serving.png",
+    "path": "docs/verification/1864/shared-serving.png"
+  },
+  {
+    "file": "docs/verification/1864/README.md",
+    "line": 25,
+    "target": "shared-serving.png",
+    "path": "docs/verification/1864/shared-serving.png"
+  },
+  {
+    "file": "docs/verification/1865/README.md",
+    "line": 55,
+    "target": "shared-clock.png",
+    "path": "docs/verification/1865/shared-clock.png"
+  },
+  {
+    "file": "docs/verification/1865/README.md",
+    "line": 56,
+    "target": "shared-calendar.png",
+    "path": "docs/verification/1865/shared-calendar.png"
+  },
+  {
+    "file": "docs/verification/1866/README.md",
+    "line": 9,
+    "target": "desktop-text-only.png",
+    "path": "docs/verification/1866/desktop-text-only.png"
+  },
+  {
+    "file": "docs/verification/1866/README.md",
+    "line": 9,
+    "target": "touch-selected.png",
+    "path": "docs/verification/1866/touch-selected.png"
+  },
+  {
+    "file": "docs/verification/1866/README.md",
+    "line": 15,
+    "target": "desktop-text-only.png",
+    "path": "docs/verification/1866/desktop-text-only.png"
+  },
+  {
+    "file": "docs/verification/1866/README.md",
+    "line": 16,
+    "target": "touch-selected.png",
+    "path": "docs/verification/1866/touch-selected.png"
+  },
+  {
+    "file": "docs/verification/1867/README.md",
+    "line": 34,
+    "target": "conversation-menu.png",
+    "path": "docs/verification/1867/conversation-menu.png"
+  },
+  {
+    "file": "docs/verification/1867/README.md",
+    "line": 35,
+    "target": "reply-and-line.png",
+    "path": "docs/verification/1867/reply-and-line.png"
+  },
+  {
+    "file": "docs/verification/1868/README.md",
+    "line": 36,
+    "target": "nut-held-walk.png",
+    "path": "docs/verification/1868/nut-held-walk.png"
+  },
+  {
+    "file": "docs/verification/1868/README.md",
+    "line": 37,
+    "target": "nut-placed-ground.png",
+    "path": "docs/verification/1868/nut-placed-ground.png"
+  },
+  {
+    "file": "docs/verification/1868/README.md",
+    "line": 40,
+    "target": "nut-held-walk.png",
+    "path": "docs/verification/1868/nut-held-walk.png"
+  },
+  {
+    "file": "docs/verification/1868/README.md",
+    "line": 41,
+    "target": "nut-placed-ground.png",
+    "path": "docs/verification/1868/nut-placed-ground.png"
+  },
+  {
+    "file": "docs/verification/1872/README.md",
+    "line": 110,
+    "target": "campus-original.png",
+    "path": "docs/verification/1872/campus-original.png"
+  },
+  {
+    "file": "docs/verification/1872/README.md",
+    "line": 114,
+    "target": "campus-adapted.png",
+    "path": "docs/verification/1872/campus-adapted.png"
+  },
+  {
+    "file": "docs/verification/1872/README.md",
+    "line": 118,
+    "target": "campus-meshlet.png",
+    "path": "docs/verification/1872/campus-meshlet.png"
+  },
+  {
+    "file": "docs/verification/1872/README.md",
+    "line": 122,
+    "target": "far-meshlet.png",
+    "path": "docs/verification/1872/far-meshlet.png"
+  },
+  {
+    "file": "docs/verification/1872/README.md",
+    "line": 126,
+    "target": "webgl-fallback.png",
+    "path": "docs/verification/1872/webgl-fallback.png"
+  },
+  {
+    "file": "docs/verification/1873/README.md",
+    "line": 8,
+    "target": "desktop-pwa.png",
+    "path": "docs/verification/1873/desktop-pwa.png"
+  },
+  {
+    "file": "docs/verification/1873/README.md",
+    "line": 9,
+    "target": "phone-pwa.png",
+    "path": "docs/verification/1873/phone-pwa.png"
+  },
+  {
+    "file": "docs/verification/1875/README.md",
+    "line": 66,
+    "target": "before-lowmem-cat.png",
+    "path": "docs/verification/1875/before-lowmem-cat.png"
+  },
+  {
+    "file": "docs/verification/1875/README.md",
+    "line": 70,
+    "target": "after-lowmem-cat.png",
+    "path": "docs/verification/1875/after-lowmem-cat.png"
+  },
+  {
+    "file": "docs/verification/1875/README.md",
+    "line": 74,
+    "target": "after-normal-cat.png",
+    "path": "docs/verification/1875/after-normal-cat.png"
+  },
+  {
+    "file": "docs/verification/1875/README.md",
+    "line": 78,
+    "target": "before-lowmem.png",
+    "path": "docs/verification/1875/before-lowmem.png"
+  },
+  {
+    "file": "docs/verification/1875/README.md",
+    "line": 79,
+    "target": "after-lowmem.png",
+    "path": "docs/verification/1875/after-lowmem.png"
+  },
+  {
+    "file": "docs/verification/1875/README.md",
+    "line": 83,
+    "target": "before-normal.png",
+    "path": "docs/verification/1875/before-normal.png"
+  },
+  {
+    "file": "docs/verification/1875/README.md",
+    "line": 84,
+    "target": "after-normal.png",
+    "path": "docs/verification/1875/after-normal.png"
+  },
+  {
+    "file": "docs/verification/1875/README.md",
+    "line": 95,
+    "target": "before-source-pot.png",
+    "path": "docs/verification/1875/before-source-pot.png"
+  },
+  {
+    "file": "docs/verification/1875/README.md",
+    "line": 96,
+    "target": "after-source-pot.png",
+    "path": "docs/verification/1875/after-source-pot.png"
+  },
+  {
+    "file": "docs/verification/1876/README.md",
+    "line": 124,
+    "target": "shared-edge-before-after.png",
+    "path": "docs/verification/1876/shared-edge-before-after.png"
+  },
+  {
+    "file": "docs/verification/1876/README.md",
+    "line": 126,
+    "target": "architecture-surfaces.png",
+    "path": "docs/verification/1876/architecture-surfaces.png"
+  }
+]

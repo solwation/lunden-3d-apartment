@@ -5,7 +5,7 @@ Knivar, gafflar, matskedar och teskedar använder samma detaljerade geometri som
 
 | Före | Efter |
 | --- | --- |
-| ![Före](before.png) | ![Efter](after.png) |
+| ![Före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1052/before.png) | ![Efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1052/after.png) |
 
 `tools/cutlerystocktest.cjs GAME OUT` använder verklig köksplan, `buildInterior`,
 `fillKitchen` och `Openable` i Chromium med WebGL/SwiftShader. Före-bilden använder

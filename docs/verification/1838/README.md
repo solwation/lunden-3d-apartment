@@ -41,10 +41,10 @@ Desktop image counters match 496 calls/924,614 triangles. The phone representati
 
 This delivers construction-time reuse. No persistent graphics cache, new storage key, SW or bundler was introduced. A new document/version has no old memo entries. Hardware device testing remains outside this bounded measurement. Generic terrain reuse is tracked in low-priority [public #246](https://github.com/solwation/kvarteret-lunden/issues/246), with explicit adaptation for its mutable parkingPatch/sampler and walking support.
 
-![Desktop before](before/desktop-warm.png)
-![Desktop after](after/desktop-warm.png)
-![Phone before](before/phone-warm.png)
-![Phone after](after/phone-warm.png)
+![Desktop before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1838/before/desktop-warm.png)
+![Desktop after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1838/after/desktop-warm.png)
+![Phone before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1838/before/phone-warm.png)
+![Phone after](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1838/after/phone-warm.png)
 
 Dirigentens integration bevarar1839:s ankcallback och1840:s kattrundor/markcallback. Cachehelper, surroundings och riverbridge är byte-identiska med slutligt verifierat workerresultat; STARTUP-data är lika och rena cachekontrakt passerar på sammanslagen källa. Mätvärdena ovan gäller den uttryckligen frysta8647ab37-basen med cacheändringen, inte en ny tidsprofil av senare orelaterade katt-/ankändringar. Inga rutinmässiga breda omtag.
 

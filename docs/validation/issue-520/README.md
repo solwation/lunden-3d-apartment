@@ -2,7 +2,7 @@
 
 Underlag: [Peabs planritningsbroschyr, tryckt sida 47](../../peab/lunden-planritningsbroschyr-webb-2024-12-18.pdf), våning 1. PDF:ens sida 24 är uppslaget 46–47; ritningen är på högra halvan. Den befintliga [kalibrerade PNG:n](../../peab/kalibrerad/vaning-1-300dpi.png) använder modellkoordinater x = (px − 1909,5) × 0,042356 och z = (py − 1073) × 0,042356. Ingen ny skala har gissats.
 
-![Modellens vägggränser på planritningen](plan-comparison.png)
+![Modellens vägggränser på planritningen](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-520/plan-comparison.png)
 
 Rött visar modellens invändiga vägggränser direkt på ritningen. Blått visar de befintliga öppningarna mot gata och gård. Grönt visar sopbehållarnas placering; lila är jetpackens krok. Kärnans trappa och hiss är befintliga och ingår inte i den röda konturen.
 
@@ -20,7 +20,7 @@ Gränserna är grafiskt avlästa från försäljningsritningen, inte uppmätta p
 
 Sopbehållarna står vid den öppna delens gatvägg, centrum x −12,95/z 1,20 med 1 m mellanrum, utan att blockera genomgången eller trapphusdörren. Deras befintliga tre sorteringskategorier, mått och interaktioner behålls. Jetpacken hänger på det mindre rummets östra vägg, x −11,39/z 9,10, krok 1,45 m över golvet och skylt ovanför. Kroken och alla återgångar hämtar samma konfiguration. Flygning tillåts inte genom portikens tak.
 
-![Från gatans mynning mot gården](north.png)
+![Från gatans mynning mot gården](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-520/north.png)
 
 Kamera x −15/y 1,62/z −1,3. Den bredare delen med behållarna ligger till vänster; trapphusdörren ligger till höger.
 
@@ -28,7 +28,7 @@ Kamera x −15/y 1,62/z −1,3. Den bredare delen med behållarna ligger till v�
 
 Kamera x −15/y 1,62/z 11,1. Rummets öppna dörr till höger, trapphuset till vänster och sopbehållarna längre fram. Tegelytorna är förskjutna 6 mm in mot hålrummet för att undvika flimmer mot bakomliggande solid massa.
 
-![Jetpacken inne i det mindre rummet](room.png)
+![Jetpacken inne i det mindre rummet](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-520/room.png)
 
 Kamera x −12,6/y 1,62/z 10,8. Krok, jetpack och skylt står innanför rummets gränser.
 

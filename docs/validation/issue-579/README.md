@@ -23,10 +23,10 @@ Playwright-Chromium/SwiftShader, 15 juli 12:00, klart väder. Före = 7d2f3bd (#
 
 | Vy | Före | Efter | Referens |
 |---|---|---|---|
-| Snett från sydost | [före](b1front-before.png) | [efter](b1front-after.png), [närmare](b1close-after.png) | Commons 1 |
-| Mittaxeln från borggården | [före](b1axis-before.png) | [efter](b1axis-after.png) | Hemsö förvaltningsbyggnaden |
-| Sankt Lars väg | [före](street-before.png) | [efter](street-after.png) | — |
-| L1007:s övervåning | [före](kitchenup-before.png) | [efter](kitchenup-after.png) | — |
+| Snett från sydost | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-579/b1front-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-579/b1front-after.png), [närmare](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-579/b1close-after.png) | Commons 1 |
+| Mittaxeln från borggården | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-579/b1axis-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-579/b1axis-after.png) | Hemsö förvaltningsbyggnaden |
+| Sankt Lars väg | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-579/street-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-579/street-after.png) | — |
+| L1007:s övervåning | [före](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-579/kitchenup-before.png) | [efter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-579/kitchenup-after.png) | — |
 
 Tornet är det enda av husen som reser sig över skolan mittemot; från gatan och hemmet skyms det i dessa vinklar av skolan och träden.
 

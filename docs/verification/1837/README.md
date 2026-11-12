@@ -18,9 +18,9 @@ The browser fixture deliberately suppresses apartment bootstrap. Three productio
 
 ## Inspected images
 
-![Before: zero pump, three sleeve variants](before.png)
-![After: full pump, same draw and triangle totals](after.png)
-![Actual received remote after look change, beside unpumped same-look control](remote-look.png)
+![Before: zero pump, three sleeve variants](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1837/before.png)
+![After: full pump, same draw and triangle totals](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1837/after.png)
+![Actual received remote after look change, beside unpumped same-look control](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1837/remote-look.png)
 
 The biceps/sleeve increase is visible; forearms, hands and shoes retain their shape. These are actual Chromium/SwiftShader module renders and actual local Worker traffic, **not** a full-scene performance claim, physical-device measurement or 100 native/manual exercises. No extra whole-world bootstrap was needed after these scoped contracts passed. The separate #1836 control work owns native exercise completion and remains independent of this unchanged callback interface. Original-only gameplay/player progress/Cloudflare integration; no applicable public transfer.
 

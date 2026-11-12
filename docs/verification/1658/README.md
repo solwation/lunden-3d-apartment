@@ -13,9 +13,9 @@ Checks:
 - `tools/browsertest.sh node tools/playroomspeakerstest.cjs http://localhost:8772 OUT`: observes the real production `BoxGeometry` after tilt/yaw/translation, before merging; all four ceiling/room bounds, downward/inward orientations and sound-source alignments pass. The largest geometry/audio centre difference is 0.046 mm (Float32 rounding). Raw values: [clearance-result.json](clearance-result.json).
 - North/south pictures use the production `Playroom` component with normal non-disco ambient, antialiasing at 1400×900. No page/shader errors; peak 491 MiB, Chromium/SwiftShader. No physical phone, whole-world route or native-GPU performance claim. The ceiling mounts intentionally touch the ceiling; the speaker boxes are fully below it.
 
-![Northern corners](north-clearance.png)
+![Northern corners](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1658/north-clearance.png)
 
-![Southern corners](south-clearance.png)
+![Southern corners](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1658/south-clearance.png)
 
 The pictures and green checks predate the unrelated DJ delivery rebase. The
 speaker construction block is byte-identical afterwards (SHA256

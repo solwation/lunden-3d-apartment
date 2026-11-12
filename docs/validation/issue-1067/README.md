@@ -4,9 +4,9 @@ Klockhuset behåller plats, storlek och urtavlornas radie. Fyra dynamiska urtavl
 
 Verifierat med `tools/towerclocktest.cjs` i Chromium/WebGL: samtliga fyra sidors tim-/minutvisare jämförs mot den faktiska `WallClock`, inklusive tio tider, paus, spolning i båda riktningar och midnatt. Både full och enklare campusgeometri passerar. Bilderna är från den riktiga campusbyggaren med plan mark, utan lägenheten. Kontrollernas ljus följer verklig DayCycle; ingen fysisk telefonprestanda påstås.
 
-- [Urtavlan på nära håll, 09:00](clock-close.png)
-- [100 meter söderifrån, 09:00](tower-100m-day.png)
-- [Samma 100 meter, 03:00](tower-100m-night.png)
+- [Urtavlan på nära håll, 09:00](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1067/clock-close.png)
+- [100 meter söderifrån, 09:00](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1067/tower-100m-day.png)
+- [Samma 100 meter, 03:00](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-1067/tower-100m-night.png)
 
 Tiden blir lättare att läsa genom tydliga markeringar och kraftigare visare. Urtavlan har naturlig storlek och blir fortfarande liten på stort avstånd; bilderna återger hela kameravyn utan förstoring av själva klockan.
 

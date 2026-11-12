@@ -6,7 +6,7 @@ the west wall).
 
 The user: "hörnet till höger om vitrinskåpet". Seen from the doorway the wall-hung BESTÅ hangs on the right-hand
 (west) wall; #571 had the tree to its left (the SW corner by the patio door,
-[issue-571](../issue-571/after-dec-door-day.jpg)). The corner to its right, nearer the doorway, is the NW corner — the
+[issue-571](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-571/after-dec-door-day.jpg)). The corner to its right, nearer the doorway, is the NW corner — the
 armchair corner. The tree now stands there (`FURNITURE` `xmastree`, x 0.82, z 8.45, rot −135 so the presents face the
 room; *guess*): the crown (r 0.55) keeps 5–8 cm off the west wall and the passage wall, ends ~1 m before the BESTÅ
 (z 9.95) and ~0.8 m west of the doorway (x 2.15–3.25). Because the corner sits right beside the doorway, a view
@@ -21,4 +21,4 @@ home pose) is dropped so the new default applies (rearrange.js `carryOld`; chris
 
 | noon, 24 Dec | 22:00, 24 Dec |
 |---|---|
-| ![](after-dec24-door-day.jpg) | ![](after-dec24-door-night.jpg) |
+| ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-591/after-dec24-door-day.jpg) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/validation/issue-591/after-dec24-door-night.jpg) |

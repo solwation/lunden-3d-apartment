@@ -22,9 +22,9 @@ Native E från kastringen kastade lillen; native touch på riktiga handlingsknap
 
 Produktions-Boule räknas till **3 synliga meshdraws och 0 ljus**, samma som före; ingen ny geometri/material/texture skapas i produktionsbanan för synk. Det är komponentgränsen, ingen helscen-/telefon-FPS-profil. Den lilla mottagarens canvas är testkostnad och ingår inte i produktionsbudgeten. Inga nya per-framebollmeddelanden: bara diskreta kast/reset/resync via befintlig 5 Hz-budget. Servern skickar samma korta startbeskrivning/slutläge till rummet, inga frame-arrayer. Lokal replay är högst 12 s, 30 Hz och sju objekt; senaste lagringsposten prövas <12 kB och växer inte med historiken.
 
-![Verklig bana, annan Ghost och mottagare](shared-court.png)
-![Mottagarens samma klot och läsbara resultat](shared-client-b.png)
-![Spelarens fysiska poängtavla, samma 1–0](shared-scoreboard.png)
+![Verklig bana, annan Ghost och mottagare](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1854/shared-court.png)
+![Mottagarens samma klot och läsbara resultat](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1854/shared-client-b.png)
+![Spelarens fysiska poängtavla, samma 1–0](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1854/shared-scoreboard.png)
 
 Mottagarens fixturefigur flyttades åt sidan inför bilden för fri sikt över banan; inga objekt/resultat ändrades. Sista tavlebilden är enbart kameraomramning av samma revision, utan fixturepanelen. Native touch är Playwrights riktiga browserinput på desktop med touchstöd, ingen fysisk telefon eller faktisk produktionsdeployment. Inga nya djur-, gym-, campus- eller breda UI-matriser kördes.
 

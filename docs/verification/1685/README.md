@@ -4,12 +4,12 @@ Five *guess* patches in `SITE.riverPark.patches` (`forest-west-north`, `forest-w
 
 | View (`at`) | Before | After |
 |---|---|---|
-| hoje-a-broarna-lagt (`11.3,370.1,-2,-20,88`) | ![](hoje-a-broarna-lagt-before.png) | ![](hoje-a-broarna-lagt-after.png) |
-| West reach (`-110,172,90,-14,14`) | ![](valley-w-before.png) | ![](valley-w-after.png) |
-| Ground, north bank west (`-175,176,90,-4,4`) | ![](valley-n-before.png) | ![](valley-n-after.png) |
-| East reach (`30,150,-90,-12,12`) | ![](valley-e-before.png) | ![](valley-e-after.png) |
-| Ground, north of the east reach (`90,92,-120,-4,4`) | ![](ground-n-before.png) | ![](ground-n-after.png) |
-| Bridge south-west (`23.6,128,135,-5,-3`) | ![](bron-sydvast-before.png) | ![](bron-sydvast-after.png) |
+| hoje-a-broarna-lagt (`11.3,370.1,-2,-20,88`) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1685/hoje-a-broarna-lagt-before.png) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1685/hoje-a-broarna-lagt-after.png) |
+| West reach (`-110,172,90,-14,14`) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1685/valley-w-before.png) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1685/valley-w-after.png) |
+| Ground, north bank west (`-175,176,90,-4,4`) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1685/valley-n-before.png) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1685/valley-n-after.png) |
+| East reach (`30,150,-90,-12,12`) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1685/valley-e-before.png) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1685/valley-e-after.png) |
+| Ground, north of the east reach (`90,92,-120,-4,4`) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1685/ground-n-before.png) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1685/ground-n-after.png) |
+| Bridge south-west (`23.6,128,135,-5,-3`) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1685/bron-sydvast-before.png) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1685/bron-sydvast-after.png) |
 
 ## renderer.info (one render per view, perfcount counting; before = origin/main 2c8c63be, after = this change before rebasing onto ed63071a)
 

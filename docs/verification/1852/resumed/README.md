@@ -68,8 +68,8 @@ fix needs its own low public issue. These original diagnostic images are not tra
 
 ## Reviewed pictures and next question
 
-![Actual closer unmodified Hus L: roof, long façade and near gable](l-gable-close-final.png)
-![Numbered unmodified Hus L surfaces for the next precise question](l-numbered-surfaces.png)
+![Actual closer unmodified Hus L: roof, long façade and near gable](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1852/resumed/l-gable-close-final.png)
+![Numbered unmodified Hus L surfaces for the next precise question](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1852/resumed/l-numbered-surfaces.png)
 
 Both final pictures were opened and inspected. The numbered overlay is an inspection
 annotation only, rendered over the real app:1 roof/solar panels,2 long façade,

@@ -107,23 +107,23 @@ not meshlet-preparation time and was common to the experiment.
 
 Campus original:
 
-![Original WebGPU geometry](campus-original.png)
+![Original WebGPU geometry](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1872/campus-original.png)
 
 Campus adapted, regular drawing:
 
-![Adapted geometry, ordinary drawing](campus-adapted.png)
+![Adapted geometry, ordinary drawing](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1872/campus-adapted.png)
 
 Campus meshlets, default LOD:
 
-![Meshlets with automatic detail](campus-meshlet.png)
+![Meshlets with automatic detail](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1872/campus-meshlet.png)
 
 Far meshlets:
 
-![Far meshlet view](far-meshlet.png)
+![Far meshlet view](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1872/far-meshlet.png)
 
 WebGL fallback:
 
-![WebGL fallback](webgl-fallback.png)
+![WebGL fallback](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1872/webgl-fallback.png)
 
 ## Reproduce and limits
 

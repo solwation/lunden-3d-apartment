@@ -38,9 +38,9 @@ Första efterföljande touch-”broms” hade analog.y=1 och stannade mot kanten
 
 ## Resultatbilder och budget
 
-![Befintlig cykel före, samma verkliga app](app/before-route.png)
-![Verklig befintlig cykel i kort luftfärd](app/after-air-side.png)
-![Efter verklig landning och native avstigning](app/after-landed-exit.png)
+![Befintlig cykel före, samma verkliga app](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1856/app/before-route.png)
+![Verklig befintlig cykel i kort luftfärd](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1856/app/after-air-side.png)
+![Efter verklig landning och native avstigning](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/2eaf0273ce3228c8322a17a14f72869abea00b42/docs/verification/1856/app/after-landed-exit.png)
 
 Samtliga tre direkt visade och accepterade av dirigenten. `after-air-rider.png` kompletterar sadelkontrollen men är inte ensamt gapbevis. HUD är pausad/stegrad och är inte FPS. Ingen separat annan-spelares renderer/Roommatris kördes: gamla p/bk, Ghosts, PlayerRoom och deras kadens är byteoförändrade; luftpositionen går som befintligt feet-p. Ingen ny payload/service.
 
