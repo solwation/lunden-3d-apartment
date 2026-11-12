@@ -31,16 +31,16 @@ consumes random values.
 
 | View | Before | After |
 | --- | --- | --- |
-| Whole quarter | [baseline](baseline-quarter.png) | [current](current-quarter.png) |
-| Front/identity | [baseline](baseline-front.png) | [current](current-front.png) |
-| Whole side | [baseline](baseline-side.png) | [current](current-side.png) |
-| Normal eye height | [baseline](baseline-normal.png) | [current](current-normal.png) |
-| Pet distance | [baseline](baseline-pet-close.png) | [current](current-pet-close.png) |
-| Grazing | [baseline](baseline-graze.png) | [current](current-graze.png) |
-| Walk | [baseline](baseline-walk.png) | [current](current-walk.png) |
-| Pet pose | [baseline](baseline-pet.png) | [current](current-pet.png) |
-| Winter rugs | [baseline](baseline-winter.png) | [current](current-winter.png) |
-| Actual BestiaryImages 96/320 | [baseline](baseline-binder.png) | [current](current-binder.png) |
+| Whole quarter | [baseline](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/5d19eaeeaebb31109f5b0167c2b4786b24c04176/docs/verification/1919/baseline-quarter.png) | [current](current-quarter.png) |
+| Front/identity | [baseline](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/5d19eaeeaebb31109f5b0167c2b4786b24c04176/docs/verification/1919/baseline-front.png) | [current](current-front.png) |
+| Whole side | [baseline](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/5d19eaeeaebb31109f5b0167c2b4786b24c04176/docs/verification/1919/baseline-side.png) | [current](current-side.png) |
+| Normal eye height | [baseline](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/5d19eaeeaebb31109f5b0167c2b4786b24c04176/docs/verification/1919/baseline-normal.png) | [current](current-normal.png) |
+| Pet distance | [baseline](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/5d19eaeeaebb31109f5b0167c2b4786b24c04176/docs/verification/1919/baseline-pet-close.png) | [current](current-pet-close.png) |
+| Grazing | [baseline](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/5d19eaeeaebb31109f5b0167c2b4786b24c04176/docs/verification/1919/baseline-graze.png) | [current](current-graze.png) |
+| Walk | [baseline](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/5d19eaeeaebb31109f5b0167c2b4786b24c04176/docs/verification/1919/baseline-walk.png) | [current](current-walk.png) |
+| Pet pose | [baseline](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/5d19eaeeaebb31109f5b0167c2b4786b24c04176/docs/verification/1919/baseline-pet.png) | [current](current-pet.png) |
+| Winter rugs | [baseline](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/5d19eaeeaebb31109f5b0167c2b4786b24c04176/docs/verification/1919/baseline-winter.png) | [current](current-winter.png) |
+| Actual BestiaryImages 96/320 | [baseline](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/5d19eaeeaebb31109f5b0167c2b4786b24c04176/docs/verification/1919/baseline-binder.png) | [current](current-binder.png) |
 
 All final images were opened and reviewed. The smaller eyes and curved muzzle
 show clearly at pet distance, the forehead star remains visible beneath the
@@ -119,3 +119,7 @@ preserved the exact measured pony sources, generated GLB and PONY_SURFACE/PADDOC
 configuration sections. The full config hash changed only through the independent
 cat integration. Changelog was renumbered to 1478 after the final main fetch.
 [Source mapping](integration.json). No repeat broad test run was needed.
+
+The ten local before images were pruned at closure; their links above are pinned
+to the delivered evidence revision. Metrics remain. Current images retain the normal
+30-day result-image policy. [Reviewed issue results](https://github.com/solwation/lunden-3d-apartment/issues/1919#issuecomment-6819579855).
