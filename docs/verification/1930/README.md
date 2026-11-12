@@ -17,10 +17,10 @@ new visual guess. Only Santa's thumbnail version changes, 1 → 2; ID
 
 | Actual production consumer | Before | Result |
 | --- | --- | --- |
-| Loaded 96 and 320 px collection images | [Before](before/loaded-cards.png) | [After](loaded-cards.png) |
-| 404 fallback, both image sizes | [Before](before/fallback-cards.png) | [After](fallback-cards.png) |
-| Actual loaded Santa in furniture.sofa, after rendering/disposal of portraits | [Before](before/loaded-sofa.png) | [After](loaded-sofa.png) |
-| Actual fallback Santa, same sofa fixture | [Before](before/fallback-sofa.png) | [After](fallback-sofa.png) |
+| Loaded 96 and 320 px collection images | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8846d037a53940e7fd89f2904f7d52d0300db72b/docs/verification/1930/before/loaded-cards.png) | [After](loaded-cards.png) |
+| 404 fallback, both image sizes | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8846d037a53940e7fd89f2904f7d52d0300db72b/docs/verification/1930/before/fallback-cards.png) | [After](fallback-cards.png) |
+| Actual loaded Santa in furniture.sofa, after rendering/disposal of portraits | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8846d037a53940e7fd89f2904f7d52d0300db72b/docs/verification/1930/before/loaded-sofa.png) | [After](loaded-sofa.png) |
+| Actual fallback Santa, same sofa fixture | [Before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8846d037a53940e7fd89f2904f7d52d0300db72b/docs/verification/1930/before/fallback-sofa.png) | [After](fallback-sofa.png) |
 
 The implementer opened the loaded/fallback cards, loaded result sofa and its
 baseline. The loaded baseline also exposes the resource-ownership defect: after
@@ -102,3 +102,5 @@ This original-only Christmas character has no public downstream transfer.
 
 
 Root reviewed the combined product/factory/config/fixture/evidence diff and opened actual loaded/fallback96/320cards and loaded sofa before/after. Rebase preserves every executed model/fixture/GLB source and exact LANDSKRONA configuration; [integration mapping](integration.json) binds delivery and changelog1486 after latest main fetch. Existing two scoped green groups are reused without a broad rerun.
+
+Published source `8846d037a53940e7fd89f2904f7d52d0300db72b`; actual Pages and Worker deploys succeeded. [Pinned image comment](https://github.com/solwation/lunden-3d-apartment/issues/1930#issuecomment-6821663341) includes all five HTTP200/image-type checks before closure. Four own baseline PNGs are pruned here; result images retain the standard30-day lifetime.
