@@ -37,7 +37,7 @@ counts and hidden/alternative geometry.
   152,308 bytes; no performance gain is claimed from those numbers.
 
 All new images are actual unmodified production factories in a controlled component,
-not a full World playthrough. Chromium1248/SwiftShader, DPR1, 1500×950 for prop images,
+not a full World playthrough. Chromium1248/SwiftShader, DPR 1, 1500×950 for prop images,
 900×600 for the Hand canvas. The temporary gallery reparented drawer toys for a clear
 view; it did not replace their geometry/materials. The final captures have no page
 errors. [Raw component results](people-props/result.json), [source/reference hashes](people-props/source-manifest.json),

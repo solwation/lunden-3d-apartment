@@ -68,9 +68,9 @@ flying, but is not representative of its usual distant ground footprint.
 | **Ducks**, both sexes: flock on bank/water, bill-contact greeting, feeding, collection/fallback | Ball/ellipsoid head, neck and body remain distinct shapes; plumage is very coarse/mostly uniform in the reviewed swim image. Collection/fallback still uses the older 640-triangle recipe while loaded runtime uses the corrected 960/896-triangle version. | Natural mallard outline, bill/neck integration and restrained feather patterns for both sexes. Same identifiable appearance in real poses and collection/fallback, with existing bill contacts and waterline intact. |
 | **Six ordinary fish**: live river batch, catch/held/cooking, remote proxy and collection | Every live species still shares one mört-derived topology; a stretched generic fish cannot give eel, pike and bream their characteristic anatomy. Existing detailed catch/collection models are distinct but visibly faceted, flat-finned and simply painted; the remote proxy remains a generic sphere/cone fish. | Species-specific silhouettes where visible, natural flex along body/tail and finer eye/gill/skin response. Shared/reduced representations should remain identifiable without six costly always-active render pipelines. Preserve sizes, catch/cooking transitions and water rendering. |
 | **Shark**: surface fin/wake, caught body then skeleton, held fin and collection | Current form is recognizable but coarse: flat triangular fins, angular snout and simple skin; existing posed/whole image does not prove a more convincing swim. The collection is the intentional landed body without the detached dorsal. | Low-priority visual refinement of the existing fictional visitor, with coherent body/fins/skin/animation and actual live/caught/bones phases. Do not mistake intentional detached fin/gameplay for a model defect or alter the fantasy premise. |
-| **Gulls**: actual flock, ground/flight views, collection | Three unlit triangles, no head/beak/body volume; near view reads as a folded paper shape. Current span is a guessed3.2m, high flock scaled1.8× for visibility. At normal ground distance birds occupy few pixels. | Readable gull outline and natural gliding/flapping at the distances actually seen, especially flight proximity; preserve one flock batch and cheap far silhouette. Reassess visibility scaling against the intended natural impression, not arbitrary realism detail at subpixel sizes. |
+| **Gulls**: actual flock, ground/flight views, collection | Three unlit triangles, no head/beak/body volume; near view reads as a folded paper shape. Current span is a guessed 3.2m, high flock scaled 1.8× for visibility. At normal ground distance birds occupy few pixels. | Readable gull outline and natural gliding/flapping at the distances actually seen, especially flight proximity; preserve one flock batch and cheap far silhouette. Reassess visibility scaling against the intended natural impression, not arbitrary realism detail at subpixel sizes. |
 | **Ambient yellow/orange butterflies**: outdoor-cat chase and collection | Four uniformly coloured triangles without body/antennae or natural wing contours/pattern; whole-body X scaling approximates wing beats. | Recognizable small butterfly body and paired wings, restrained markings and rotation around the body; preserve the near-only chase and very small geometry/material cost. |
-| **Magic butterfly**: wand Flutter instances and collection | A64px four-oval sprite flattens/scales to mimic flapping. It is intentionally a short magic effect, not an ordinary biological species. | Review alongside butterflies for coherent wing motion/readability at its actual8cm effect size. Keep the fantasy colour/fade/finite pool and instancing; no costly realistic insect anatomy mandate. |
+| **Magic butterfly**: wand Flutter instances and collection | A 64px four-oval sprite flattens/scales to mimic flapping. It is intentionally a short magic effect, not an ordinary biological species. | Review alongside butterflies for coherent wing motion/readability at its actual 8cm effect size. Keep the fantasy colour/fade/finite pool and instancing; no costly realistic insect anatomy mandate. |
 
 ## Additional people, hands and manufactured figures
 
@@ -82,7 +82,7 @@ Each is judged as a person/animal or as its real manufactured material, as appro
 
 ## What the counts do and do not prove
 
-Chromium/SwiftShader, Three r170, DPR1; geometry/bestiary renders only. The capture
+Chromium/SwiftShader, Three r170, DPR 1; geometry/bestiary renders only. The capture
 records **actual submitted render calls/triangles** separately from raw traversal
 counts, because invisible alternative eye/accessory meshes must not count as draws.
 `geometryAttributeBytes` is a sum of CPU attribute/index array bytes in that recipe,
@@ -91,13 +91,13 @@ The component has no physical phone, full-scene frame-time or battery result.
 
 | Current scope | Submitted calls / triangles | Evidence and limit |
 | --- | --- | --- |
-| Each of37 default collection cats | 24 /10,008 | [All rows](cats-costs.json); actual open-eye default. Closed/held/near/far states have different costs; do not multiply by all12 outdoor cats regardless of LOD. |
-| Each of10 collection squirrels | 1 /3,382 | [Rows](squirrels-costs.json); existing runtime far geometry is1,396 triangles per prior source-bound #1908 checks. |
+| Each of 37 default collection cats | 24 /10,008 | [All rows](cats-costs.json); actual open-eye default. Closed/held/near/far states have different costs; do not multiply by all 12 outdoor cats regardless of LOD. |
+| Each of 10 collection squirrels | 1 /3,382 | [Rows](squirrels-costs.json); existing runtime far geometry is 1,396 triangles per prior source-bound #1908 checks. |
 | Each duck collection recipe | 1 /640 | [Rows](ducks-costs.json). Loaded production male/female costs960/896; these are different recipes, not a new saving. |
 | Each pony collection recipe | 1 /1,080 | [Rows](ponies-costs.json); existing runtime rig uses one draw per pony. |
 | Ordinary fish collection, mört/abborre/braxen/gädda/öring/ål | 1 /433,499,409,537,547,417 | [Rows](fish-costs.json); these are the detailed catch shapes, not six live species topologies. |
 | Live river,18 fish | Existing fish batch plus rings batch | One generic433-triangle body per filled instance, both distance-gated. No new FPS/memory claim. |
-| Actual Birds flock | 1 /30 for10 birds | [Actual shader capture](animal-inventory.json); low-memory count5 is the existing source rule, not new phone timing. |
+| Actual Birds flock | 1 /30 for 10 birds | [Actual shader capture](animal-inventory.json); low-memory count 5 is the existing source rule, not new phone timing. |
 | Ambient butterfly / magic collection sprite | 1 /4; 2 /4 | [Rows](insects-costs.json). Magic collection transparent DoubleSide has two passes; actual Flutter is a separate finite instanced effect, not one mesh per effect. |
 
 The previous cat evaluation still presents **96.3% draw-call savings, eliminated GC
@@ -131,7 +131,7 @@ Higher polygon counts, more bones, a PBR material or a different file extension 
 implementation options, never the user's outcome. Licensed external assets require
 verified provenance, compatible reuse and adaptation to existing identity/poses.
 
-Choose2–3 sufficient checks in the issue's short plan. Record an initial scoped cost
+Choose 2–3 sufficient checks in the issue's short plan. Record an initial scoped cost
 baseline (submitted calls/triangles, buffers/maps/asset bytes and pose/update cost),
 then compare the same count/variants/distance/quality/viewport/time on the same
 renderer after the change. Use an affected real scene for warm steady frame intervals
@@ -164,6 +164,30 @@ This audit changes documentation only and supplies no model patch to port now.
 
 ## Follow-up issues
 
-The reviewed per-area issues and final additional-figure inventory are linked here
-when the combined review is complete. The audit itself ends once coverage, evidence
-and those concrete issues are delivered; it does not claim their implementation.
+The audit produced **13 visual improvement issues and 3 separately reproduced bugs**.
+They are independent deliveries, not prerequisites for closing this analysis. No
+improvement issue is claimed or implemented by the audit itself. Each includes its
+observed gap, actual consumers, visual acceptance, a scoped cost baseline and limits,
+priority rationale, public applicability and published baseline evidence.
+
+| Issue | Priority |
+| --- | --- |
+| [#1916 — Mer naturtrogna spelarfigurer och bilförare med bibehållen prestanda](https://github.com/solwation/lunden-3d-apartment/issues/1916) | medium |
+| [#1917 — Mer naturtrogna förstapersonshänder och armövergångar](https://github.com/solwation/lunden-3d-apartment/issues/1917) | medium |
+| [#1918 — Naturtrogna katter med bibehållna raser, pälsar, poser och spelprestanda](https://github.com/solwation/lunden-3d-apartment/issues/1918) | medium |
+| [#1919 — Mer naturtrogna ponnyer enligt Zoey- och Princessfotot](https://github.com/solwation/lunden-3d-apartment/issues/1919) | medium |
+| [#1920 — Mer naturtrogna ekorrar med sammanhängande päls och svans](https://github.com/solwation/lunden-3d-apartment/issues/1920) | medium |
+| [#1921 — Mer naturtrogna gräsänder i form, fjäderdräkt och rörelse](https://github.com/solwation/lunden-3d-apartment/issues/1921) | medium |
+| [#1922 — Arttrogna fiskformer och simrörelser i ån, handen och pärmen](https://github.com/solwation/lunden-3d-apartment/issues/1922) | medium |
+| [#1923 — Gör soffans tomte mer mänsklig med trovärdiga kläder och händer](https://github.com/solwation/lunden-3d-apartment/issues/1923) | medium |
+| [#1924 — Trovärdigare måssiluetter och flygrörelser med billig fjärrflock](https://github.com/solwation/lunden-3d-apartment/issues/1924) | low |
+| [#1925 — Trovärdigare fjärilsform och vingrörelse vid katterna och trollstaven](https://github.com/solwation/lunden-3d-apartment/issues/1925) | low |
+| [#1926 — Mer naturtrogen hajform och rörelse inom befintlig spelpremiss](https://github.com/solwation/lunden-3d-apartment/issues/1926) | low |
+| [#1927 — Återge Pingping som en verklig sydd mjukiskudde](https://github.com/solwation/lunden-3d-apartment/issues/1927) | low |
+| [#1928 — Gör små figurprylar trovärdiga som leksaker, tyg och keramik](https://github.com/solwation/lunden-3d-apartment/issues/1928) | low |
+| [#1929 — Bugg: GLB-utvärderingen beskriver obelagda prestandavinster som levererade](https://github.com/solwation/lunden-3d-apartment/issues/1929) | medium |
+| [#1930 — Bugg: Tomtens pärmbild saknar ben](https://github.com/solwation/lunden-3d-apartment/issues/1930) | low |
+| [#1931 — Bugg: Änderna har olika modell i spelet och djurpärmen](https://github.com/solwation/lunden-3d-apartment/issues/1931) | low |
+
+[Final verification and limits](validation.md). The output is this source-bound
+inventory, reviewed evidence and actionable issues, not upgraded production assets.
