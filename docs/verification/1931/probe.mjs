@@ -22,7 +22,7 @@ for(const female of[false,true]){
  assert.equal(registry.get(`duck:${female?'female':'male'}`).modelVersion,2);
  a.mesh.updateMatrixWorld(true);assert.ok(a.skinnedMesh.matrixWorld.elements.every(Number.isFinite));
  rows.push({female,triangles:fallback.index.count/3,fallbackLoadedBinderHash:h,actualSetupRigged:true,oneVisibleModel:true,thumbnailVersion:2});
- binder.dispose();assert.ok(a.skinnedMesh.geometry.attributes.position.array.length>0);
+ let released=0;a.skinnedMesh.geometry.addEventListener('dispose',()=>released++);assert.notEqual(binder.object.geometry,a.skinnedMesh.geometry);binder.dispose();assert.equal(released,0);assert.ok(a.skinnedMesh.geometry.attributes.position.array.length>0);
 }
 const data=new Map(),readKeys=[],writeKeys=[];
 for(const sex of['male','female'])for(const size of[96,320])data.set(`duck:${sex}:1:${size}`,{data:'old-v1-sentinel'});

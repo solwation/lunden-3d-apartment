@@ -12,3 +12,6 @@ Two focused groups establish the result:
 No own images were created here; none need pruning. Existing #1921 images retain their original retention class/historical pin. Public #270 remains the independent low-priority generic mallard port; its separate factory has no original binder/gameplay consumer. No duplicate public issue or original interaction/service code is transferred.
 
 The first ad-hoc native invocation had a mistyped import alias and did not run; the saved checked probe exits0. An initial source-mapping expression did not handle Object.freeze and stopped before publishing; corrected mapping checks its entire declaration. Failed commands are not counted as passes.
+
+
+[Completion with reopened pinned actual images](https://github.com/solwation/lunden-3d-apartment/issues/1931#issuecomment-6821558510): three HTTP200 image URLs verified before closure. The final native probe also asserts distinct portrait/rig geometry and zero dispose events on the live rig geometry. Source972172b93ec8f0c828cb6a38b285c98ebc9df913 triggered no workflows; this resolving evidence-only commit adds no product/changelog/image/deployment.
