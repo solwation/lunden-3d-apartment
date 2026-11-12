@@ -302,19 +302,25 @@ The conductor runs this loop in every `/orkester` queue session:
 
 ## Shared version and maintenance
 
-Shared release: **v0.12.0**, commit **9e7c6e388df0ebdd25c0ba76d3debc73de3c41fa**. Imported with
-`git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git 9e7c6e388df0ebdd25c0ba76d3debc73de3c41fa --squash`
-in [original #1904](https://github.com/solwation/lunden-3d-apartment/issues/1904). The complete
-[v0.11.2..v0.12.0 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/6151b2e887ce4587285271708affc07af09fddb6...9e7c6e388df0ebdd25c0ba76d3debc73de3c41fa)
-adds image-hosting examples (v0.11.3), dashboard-compatible HTTPS Markdown images in
-standalone paragraphs (v0.11.4), and an optional expert-panel review hook (v0.12.0).
-The panel remains optional and is not enabled as a new host requirement. The generic
-hosting examples do not override this project's required images on `main`, pinned
-repository URLs, image retention or no-branches rule. Use standalone Markdown image
-paragraphs with HTTPS URLs; HTML image tags are not dashboard-compatible.
-No priority, timer, ownership or publication-rule migration is required.
-Public adoption is tracked in [public #265](https://github.com/solwation/kvarteret-lunden/issues/265).
-[Verification and host-rule review](../docs/verification/1904/README.md).
+Shared release: **v0.13.1**, commit **78fb119b8b37e645a303f40b86551815fd5e095b**. Imported with
+`git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git 78fb119b8b37e645a303f40b86551815fd5e095b --squash`
+in [original #1934](https://github.com/solwation/lunden-3d-apartment/issues/1934).
+The complete [v0.12.0..v0.13.1 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/9e7c6e388df0ebdd25c0ba76d3debc73de3c41fa...78fb119b8b37e645a303f40b86551815fd5e095b)
+was reviewed: private image/dashboard permission clarification (#65), dynamic
+capacity and integration-throughput guidance (#66), and host-configured automatic
+issue intake (#67). The local intake mode above selects queue sessions; explicit
+user scope, deferral and stop retain precedence. The local capacity correction is
+tracked separately in [#1935](https://github.com/solwation/lunden-3d-apartment/issues/1935).
+No priority, ownership, publication or timer migration is introduced by the import.
+Local original-first/public-low ordering and configured timers still govern.
+Public adoption and trigger adaptation are tracked in
+[public #272](https://github.com/solwation/kvarteret-lunden/issues/272); capacity
+adaptation is [public #273](https://github.com/solwation/kvarteret-lunden/issues/273).
+The image examples do not override required images on main, revision-pinned URLs,
+retention or the no-branches rule. Optional expert-panel review remains optional.
+The previous v0.12.0 import is recorded in
+[original #1904](https://github.com/solwation/lunden-3d-apartment/issues/1904) and
+[public #265](https://github.com/solwation/kvarteret-lunden/issues/265).
 The previous v0.11.2 import (`6151b2e887ce4587285271708affc07af09fddb6`) remains recorded
 in original #1893 and public #264.
 The earlier v0.11.1 import remains recorded in original #1891 and public #263.
