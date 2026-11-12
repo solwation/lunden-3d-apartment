@@ -71,3 +71,5 @@ result image, product changelog, browser or deployment requirement for this work
 Root owns integration, any actually triggered CI/publication gates and closure.
 
 Root reviewed the retention explanation and representative old records, then reconstructed all479replacements across101documents exactly from the saved occurrences/mapping. Every captured worker evidence file remains exact; current main/cache evidence is preserved. [Integration receipt](integration.json). The unchanged full checker is run once on integrated tracked HEAD below because newer main adds documentation.
+
+[Publication record](https://github.com/solwation/lunden-3d-apartment/issues/1936#issuecomment-6822142121) for `9ee704c2c12d36a0b0ec2c89cbd6c473c0bdd6cf`. Integrated unchanged full checker: exit0,1924relative links in299MD. Inga workflows triggades för denna docs-only revision; Pages/Worker paths har granskats och ingen produktdeploy påstås.
