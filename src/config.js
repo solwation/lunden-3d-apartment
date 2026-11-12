@@ -3585,6 +3585,22 @@ export const CAT_OUTDOOR = { stay: 600 };
 // The cat walks on all four (#224, cat.js `pose`): it rises from sitting to standing in `rise` s before it walks and sits
 // down again in the same time when it stops; a diagonal-pair gait, one leg cycle per `stride` m (× breed size), legs
 // swinging ±`swing` rad, the hind knee flexing up to `knee` rad as the paw comes forward, the body bobbing `bob` m. Our picks.
+// #1918: authored anatomy estimates (guess), relative to the established cat pivots.
+// Immutable surfaces; pose/contact/gameplay anchors stay in cat.js.
+export const CAT_SURFACE = {
+  segments: { small: [8, 6], main: [12, 8], muzzle: [12, 8], eye: [8, 6], limb: 8, ear: [4, 3] },
+  bodyWidth: .9, bodyTaper: .12, bodyDepth: .94, neckForward: .5, headScale: .92,
+  headWidth: [.9, .12, .28, .5], headFrontDepth: .91,
+  eye: [.0105, .0072, .003], pupil: [.0026, .0062, .0012],
+  eyePosition: [.031, .012, .054], pupilDepth: .0025, eyeYaw: .3, eyeProfile: [.22, .8],
+  shut: { scale: [.0105, .0014, .0015], y: .01, z: .056 },
+  muzzleHeight: [.63, .16], muzzleDepth: [.76, .24],
+  nose: { scale: [.0075, .005, .006], y: -.012, muzzleDepth: .67, offset: .004 },
+  ear: { width: .029, taper: .75, base: -.012, height: .052, back: -.012, rim: .005, recess: .008,
+    position: [.045, .056, -.005], rotation: [-.12, 0, -.18] },
+  limbBulge: [1.04, 1.08],
+  patch: { bodyZ: [.35, .75], bodyX: [.42, .68], headZ: [.55, .78], headX: [.10, .10, .26, .1] },
+};
 export const CAT_WALK = { rise: 0.3, stride: 0.3, swing: 0.4, knee: 0.6, bob: 0.006 };
 // #542: assumed clearance for a resting cat on Entréplan below the high stair soffit.
 export const CAT_FLOOR_HEADROOM = 0.8;

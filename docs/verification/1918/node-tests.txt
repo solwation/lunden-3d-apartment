@@ -1,0 +1,112 @@
+TAP version 13
+# Subtest: exact production spawn/look catalogue, append-only numbers and valid arbitrary-length chains
+ok 1 - exact production spawn/look catalogue, append-only numbers and valid arbitrary-length chains
+  ---
+  duration_ms: 1.757094
+  type: 'test'
+  ...
+# Subtest: observer obeys real shader high-bird visibility, frustum/range/occlusion and bounded sparse work
+ok 2 - observer obeys real shader high-bird visibility, frustum/range/occlusion and bounded sparse work
+  ---
+  duration_ms: 2.002792
+  type: 'test'
+  ...
+# Subtest: visual sight continues past transparent/hidden hits and retains opaque moving doors/instances
+ok 3 - visual sight continues past transparent/hidden hits and retains opaque moving doors/instances
+  ---
+  duration_ms: 1.229896
+  type: 'test'
+  ...
+# Subtest: \#1882 outdoor cats: binder pages name the cat and where it roams; saved collection progression unchanged
+ok 4 - \#1882 outdoor cats: binder pages name the cat and where it roams; saved collection progression unchanged
+  ---
+  duration_ms: 0.650498
+  type: 'test'
+  ...
+# Subtest: bounded pair selection, active approach/contact once, cooldown and return
+ok 5 - bounded pair selection, active approach/contact once, cooldown and return
+  ---
+  duration_ms: 2.631391
+  type: 'test'
+  ...
+# Subtest: busy/feed, lost view, blocked way and chance never strand or steal a cat
+ok 6 - busy/feed, lost view, blocked way and chance never strand or steal a cat
+  ---
+  duration_ms: 0.496598
+  type: 'test'
+  ...
+# Subtest: contact destinations face each other and keep standing bodies apart
+ok 7 - contact destinations face each other and keep standing bodies apart
+  ---
+  duration_ms: 0.1667
+  type: 'test'
+  ...
+# Subtest: actual breed models touch nose surfaces while torso bounds remain separated
+ok 8 - actual breed models touch nose surfaces while torso bounds remain separated
+  ---
+  duration_ms: 80.779907
+  type: 'test'
+  ...
+# Subtest: corrected cat thumbnails invalidate old generated cat model cache
+ok 9 - corrected cat thumbnails invalidate old generated cat model cache
+  ---
+  duration_ms: 0.872297
+  type: 'test'
+  ...
+# Subtest: held/hugging eyes and paws still use the production pose recipe
+ok 10 - held/hugging eyes and paws still use the production pose recipe
+  ---
+  duration_ms: 62.025675
+  type: 'test'
+  ...
+# Subtest: phone CPU cleanup keeps shared primitive buffers readable for later snapshots
+ok 11 - phone CPU cleanup keeps shared primitive buffers readable for later snapshots
+  ---
+  duration_ms: 94.094158
+  type: 'test'
+  ...
+# Subtest: continuous coat follows local opacity and remains shared across repeated selections
+ok 12 - continuous coat follows local opacity and remains shared across repeated selections
+  ---
+  duration_ms: 7.033974
+  type: 'test'
+  ...
+# Subtest: neutral GLB contains original articulated cat, no personal image/foreign skeleton
+ok 13 - neutral GLB contains original articulated cat, no personal image/foreign skeleton
+  ---
+  duration_ms: 23.392015
+  type: 'test'
+  ...
+# Subtest: every breed/coat/kitten keeps exact visible vertices through late GLB and six gait phases
+ok 14 - every breed/coat/kitten keeps exact visible vertices through late GLB and six gait phases
+  ---
+  duration_ms: 551.608899
+  type: 'test'
+  ...
+# Subtest: Siamese, Maine Coon and kitten retain different ears/body/head/tail proportions
+ok 15 - Siamese, Maine Coon and kitten retain different ears/body/head/tail proportions
+  ---
+  duration_ms: 9.154567
+  type: 'test'
+  ...
+# Subtest: clone materials and real eye colours stay independent across a model swap
+ok 16 - clone materials and real eye colours stay independent across a model swap
+  ---
+  duration_ms: 2.239792
+  type: 'test'
+  ...
+# Subtest: climbing uses real paws and invalid old import cannot hide or reparent a cat
+ok 17 - climbing uses real paws and invalid old import cannot hide or reparent a cat
+  ---
+  duration_ms: 2.66609
+  type: 'test'
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 719.906588

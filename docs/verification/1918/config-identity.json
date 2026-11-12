@@ -1,0 +1,15 @@
+{
+  "reason": "After final screenshots, art and density inputs moved unchanged into CAT_SURFACE; no render-affecting changes.",
+  "before": {
+    "forms": 37,
+    "poses": 74,
+    "geometryPoseMaterialSha256": "1fb47753c69545d72c36b5c97e342769ccb67c8f3675e197fb86ce9bbf3e3675"
+  },
+  "after": {
+    "forms": 37,
+    "poses": 74,
+    "geometryPoseMaterialSha256": "1fb47753c69545d72c36b5c97e342769ccb67c8f3675e197fb86ce9bbf3e3675"
+  },
+  "glbBefore": "03a21faba65a120cdb2cac4fbaeaec6647122c27ac79b83ebbea7e931cfbac44",
+  "glbAfter": "03a21faba65a120cdb2cac4fbaeaec6647122c27ac79b83ebbea7e931cfbac44"
+}

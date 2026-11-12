@@ -24,7 +24,7 @@ test('neutral GLB contains original articulated cat, no personal image/foreign s
   const data=fs.readFileSync('models/cat-rigged.glb');assert.equal(data.toString('ascii',0,4),'glTF');assert.equal(data.readUInt32LE(8),data.length);
   const json=JSON.parse(data.subarray(20,20+data.readUInt32LE(12)).toString());
   assert.equal(json.images,undefined);assert.equal(json.skins,undefined);
-  const model=await loadRiggedCatModel();assert.ok(installCatModel(model));assert.equal(model.scene.userData.catRecipe,1);
+  const model=await loadRiggedCatModel();assert.ok(installCatModel(model));assert.equal(model.scene.userData.catRecipe,2);
   assert.ok(model.scene.getObjectByName('cat-nose'));
   model.scene.traverse(o=>{if(o.userData.catPrimitive)assert.equal(o.geometry.userData.keepCpu,true,'later snapshots require retained CPU attributes');});
 });
@@ -59,10 +59,11 @@ test('Siamese, Maine Coon and kitten retain different ears/body/head/tail propor
 
 test('clone materials and real eye colours stay independent across a model swap',async()=>{
   const a=createCatPuppet(BREEDS[0],VARIANTS[0]),b=createCatPuppet(BREEDS[1],BREEDS[1].coats[0]);
-  const before=a.parts.body.material.color.getHex();b.parts.body.material.color.setHex(0xff0000);
-  assert.equal(a.parts.body.material.color.getHex(),before);assert.equal(a.parts.eyes[0].eye.children[0].material.color.getHex(),VARIANTS[0].eye);
+  const before=Array.from(a.parts.body.geometry.attributes.color.array);b.parts.body.material.color.setHex(0xff0000);
+  assert.deepEqual(Array.from(a.parts.body.geometry.attributes.color.array),before);
+  assert.notEqual(a.parts.body.material,b.parts.body.material);assert.equal(a.parts.eyes[0].eye.children[0].material.color.getHex(),VARIANTS[0].eye);
   assert.equal(b.parts.eyes[0].eye.children[0].material.color.getHex(),BREEDS[1].coats[0].eye);
-  a.setupRigged(await loadRiggedCatModel());assert.equal(a.parts.body.material.color.getHex(),before);
+  a.setupRigged(await loadRiggedCatModel());assert.deepEqual(Array.from(a.parts.body.geometry.attributes.color.array),before);
 });
 
 test('climbing uses real paws and invalid old import cannot hide or reparent a cat',async()=>{

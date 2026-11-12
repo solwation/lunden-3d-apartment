@@ -1,0 +1,11 @@
+{
+  "baseline": "7fa7fdebe0dc201dbb9b6878be3e7ca5a6e27887",
+  "sha256": {
+    "src/cat.js": "5c0482ec71d5dbb1bf64ea7d97df54f5a7fd8408e636665e8891631cfced798a",
+    "src/catmodel.js": "9cdd1f925f0e1e077cb86a1a986ceeb978ef2214479a684909304b983a43ec05",
+    "src/config.js": "1214b480633a268129898e100b3889d69dee8f7e5b340df81ae7783426dcb30e",
+    "src/outdoorcats.js": "d7db098615db198b796b14ddbf2239e6b088dd1550c3cda17644d16f35757dc9",
+    "src/bestiarymetadata.js": "ff318d64ffdd0ff2f6d4ef47503dfd24f15187b655caee7ebb1699bf7f2012d9",
+    "models/cat-rigged.glb": "03a21faba65a120cdb2cac4fbaeaec6647122c27ac79b83ebbea7e931cfbac44"
+  }
+}

@@ -49,7 +49,8 @@ function bakePose(p, stand) {
     g.applyMatrix4(rel.multiplyMatrices(inv, o.matrixWorld));
     col.copy(o.material.color);
     const n = g.attributes.position.count, c = new Float32Array(n * 3);
-    for (let i = 0; i < n; i++) { c[i * 3] = col.r; c[i * 3 + 1] = col.g; c[i * 3 + 2] = col.b; }
+    const tint=o.material.vertexColors ? g.attributes.color : null;
+    for (let i = 0; i < n; i++) { c[i * 3] = col.r*(tint?.getX(i)??1); c[i * 3 + 1] = col.g*(tint?.getY(i)??1); c[i * 3 + 2] = col.b*(tint?.getZ(i)??1); }
     g.setAttribute('color', new THREE.BufferAttribute(c, 3));
     geos.push(g);
   });

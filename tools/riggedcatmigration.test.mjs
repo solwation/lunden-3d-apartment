@@ -6,7 +6,7 @@ import { execFileSync } from 'node:child_process';
 
 test('corrected cat thumbnails invalidate old generated cat model cache',()=>{
   const cats=registry.list().filter(e=>e.model?.kind==='cat');
-  assert.ok(cats.length>=30);assert.ok(cats.every(e=>e.modelVersion===2));
+  assert.ok(cats.length>=30);assert.ok(cats.every(e=>e.modelVersion===3));
 });
 
 test('held/hugging eyes and paws still use the production pose recipe',async()=>{
@@ -34,4 +34,12 @@ test('phone CPU cleanup keeps shared primitive buffers readable for later snapsh
       assert.ok(geo.clone().attributes.normal.array.length);
     }
   `],{cwd:process.cwd(),stdio:'pipe'});
+});
+
+// The continuous colour surfaces own materials; they must join the real spawn fade.
+test('continuous coat follows local opacity and remains shared across repeated selections',()=>{
+  const b=BREEDS[0],v=b.coats[0],c=createCatPuppet(b,v,false);const geometry=c.parts.body.geometry;
+  c.setOpacity(.25);assert.equal(c.parts.body.material.opacity,.25);assert.equal(c.head.children[0].material.opacity,.25);
+  c.setCat(b,v,true);assert.equal(c.parts.body.geometry,geometry);
+  assert.ok(c.head.getObjectByName('cat-nose').position.z<c.parts.muzzle.position.z+.035*c.shape.muzzle+.006);
 });

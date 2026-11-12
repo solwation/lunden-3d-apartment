@@ -707,3 +707,15 @@ occlusion, edge clearance and observer state; see [result images](../verificatio
 ## Restored northern bus-stop boards (#1843)
 
 `street.js` procedurally paints the two ordinary yellow/blue bus-stop boards into one shared canvas (no operator logo, photo or new font). `SITE.street.busStopName` is split into two fitted lines: “Lund S:t Lars” / “Karpvägen”. Both front/back faces keep existing pole x/z sites. Only these boards use the40 mm face offset, clearing their30 mm-radius post so the name/icon remains visible; all other street signs retain12 mm. No added lights/draws; the removed signal/warning geometry reduces the same-input street component by4 meshes/236 triangles. [Final near view and diagnostic for the corrected post intersection](../verification/1843/README.md).
+
+## Cat continuous surfaces (#1918)
+
+`catmodel.js` recipe 2 supplies shared immutable tapered torso/skull, shallow
+muzzle, curved ears and recessed eye buffers. `CAT_SURFACE` holds authored
+proportion estimates. `cat.js` paints chest/blaze on shared surface geometry,
+with coat-specific colour views and private materials; late GLB installation
+preserves those colours and existing part/contact references. OutdoorCats
+multiplies vertex colour into its existing merged LOD bake. No pose/brain or
+tail-allocation rewrite is included. Cat thumbnail modelVersion 3 invalidates
+older generated images. The neutral GLB and attribution describe the same
+recipe. [Whole-cat, actual consumer and bounded cost evidence](../verification/1918/README.md).

@@ -3,7 +3,7 @@ import { registerCats } from './bestiarymetadata.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { catPrimitive, installCatModel, applyCatModel } from './catmodel.js';
-import { LEVELS, CAT_FLOOR_HEADROOM, CAT_FISH, CAT_LEAVE, CAT_IGNORED, CAT_OUTDOOR, CAT_FURNITURE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, REST, MIELE, KITTEN } from './config.js';
+import { LEVELS, CAT_FLOOR_HEADROOM, CAT_FISH, CAT_LEAVE, CAT_IGNORED, CAT_OUTDOOR, CAT_FURNITURE, CAT_SURFACE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, REST, MIELE, KITTEN } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { rugLift } from './rugs.js';
 import { sfx } from './audio.js';
@@ -297,8 +297,8 @@ if (typeof window !== 'undefined') {
   loadRiggedCatModel().catch(() => {});
 }
 
-function blob(material, sx, sy, sz, x, y, z) {
-  const m = new THREE.Mesh(catPrimitive('sphere'), material);
+function blob(material, sx, sy, sz, x, y, z, kind = 'sphere') {
+  const m = new THREE.Mesh(catPrimitive(kind), material);
   m.scale.set(sx, sy, sz);
   m.position.set(x, y, z);
   m.castShadow = true;
@@ -351,8 +351,9 @@ function buildCat() {
 
   // body + bib (in a torso group the breed can widen); their shape comes from `pose` (sitting ↔ standing, #224)
   const torso = new THREE.Group();
-  const body = blob(ROLE.coat, 1, 1, 1, 0, 0, 0);
-  const bib = blob(ROLE.bib, 1, 1, 1, 0, 0, 0);
+  const body = blob(ROLE.coat, 1, 1, 1, 0, 0, 0, 'body');
+  const bib = blob(ROLE.bib, 1, 1, 1, 0, 0, 0, 'body');
+  bib.visible=false; // colour lies on the continuous torso surface (#1918).
   torso.add(body, bib);
   cat.add(torso);
   // hind legs, each on a hip pivot: the haunch (thigh) and a hock pivot with the shin and the paw. Sitting, the shin
@@ -360,9 +361,9 @@ function buildCat() {
   const hips = [];
   for (const s of [-1, 1]) {
     const hip = new THREE.Group();
-    const thigh = blob(ROLE.coat, 1, 1, 1, 0, 0, 0);
+    const thigh = blob(ROLE.coat, 1, 1, 1, 0, 0, 0, 'haunch');
     const hock = new THREE.Group();
-    const foot = blob(ROLE.paw, 1, 1, 1, 0, -HIND_SHIN, 0.015);
+    const foot = blob(ROLE.paw, 1, 1, 1, 0, -HIND_SHIN, 0.015, 'paw');
     hock.add(limb(ROLE.paw, 0.019, HIND_SHIN, 0, 0, 0), foot);
     hip.add(thigh, hock);
     cat.add(hip);
@@ -371,37 +372,39 @@ function buildCat() {
 
   // front legs, each on a shoulder pivot: the right one lifts to the face, all four swing when it walks (#163, #224)
   const leftShoulder = new THREE.Group();
-  leftShoulder.add(limb(ROLE.paw, 0.021, 0.17, 0, 0, 0), blob(ROLE.paw, 0.026, 0.017, 0.035, 0, -0.153, 0.015));
+  leftShoulder.add(limb(ROLE.paw, 0.021, 0.17, 0, 0, 0), blob(ROLE.paw, 0.026, 0.017, 0.035, 0, -0.153, 0.015, 'paw'));
   cat.add(leftShoulder);
   const shoulder = new THREE.Group();
   shoulder.add(limb(ROLE.paw, 0.021, 0.17, 0, 0, 0));
-  const paw = blob(ROLE.paw, 0.026, 0.017, 0.035, 0, -0.153, 0.015);
+  const paw = blob(ROLE.paw, 0.026, 0.017, 0.035, 0, -0.153, 0.015, 'paw');
   shoulder.add(paw);
   cat.add(shoulder);
 
   // head
   const head = new THREE.Group();
-  head.add(blob(ROLE.coat, 0.072, 0.064, 0.068, 0, 0, 0));
-  const muzzle = blob(ROLE.face, 0.042, 0.032, 0.035, 0, -0.022, 0.05);
+  head.add(blob(ROLE.coat, 0.072, 0.064, 0.068, 0, 0, 0, 'head'));
+  const muzzle = blob(ROLE.face, 0.042, 0.032, 0.035, 0, -0.022, 0.05, 'muzzle');
   head.add(muzzle);
-  const nose = blob(pink, 0.009, 0.007, 0.006, 0, -0.008, 0.083); nose.name = 'cat-nose'; head.add(nose);           // nose
+  const nose = blob(pink, ...CAT_SURFACE.nose.scale, 0, -0.008, 0.083, 'small'); nose.name = 'cat-nose'; head.add(nose);           // nose
   const blaze = blob(ROLE.blaze, 0.016, 0.03, 0.01, 0, 0.03, 0.058);         // blaze
+  blaze.visible=false; // the blaze is painted onto the skull, retaining its consumer reference.
   head.add(blaze);
   const eyes = [], ears = [];
   for (const s of [-1, 1]) {
     const ear = new THREE.Mesh(catPrimitive('ear'), ROLE.ear);
-    ear.position.set(s * 0.042, 0.063, -0.005);
-    ear.rotation.set(-0.15, Math.PI / 4, s * -0.3);
+    ear.position.set(s * CAT_SURFACE.ear.position[0], CAT_SURFACE.ear.position[1], CAT_SURFACE.ear.position[2]);
+    ear.rotation.set(CAT_SURFACE.ear.rotation[0], CAT_SURFACE.ear.rotation[1], s * CAT_SURFACE.ear.rotation[2]);
     ear.castShadow = true;
     head.add(ear);
     ears.push(ear);
     // eyes on a lid pivot so they can close (scale y → 0) while being petted
     const eye = new THREE.Group();
-    eye.position.set(s * 0.028, 0.012, 0.06);
-    eye.add(blob(eyeMat, 0.014, 0.012, 0.008, 0, 0, 0), blob(pupilMat, 0.004, 0.01, 0.004, 0, 0, 0.007));
+    eye.position.set(s * CAT_SURFACE.eyePosition[0], CAT_SURFACE.eyePosition[1], CAT_SURFACE.eyePosition[2]);
+    eye.rotation.y=s*CAT_SURFACE.eyeYaw;
+    eye.add(blob(eyeMat, ...CAT_SURFACE.eye, 0, 0, 0, 'eye'), blob(pupilMat, ...CAT_SURFACE.pupil, 0, 0, CAT_SURFACE.pupilDepth, 'small'));
     head.add(eye);
     // closed eye: a thin dark line, shown instead
-    const shut = blob(pupilMat, 0.013, 0.0018, 0.004, s * 0.028, 0.01, 0.066);
+    const shut = blob(pupilMat, ...CAT_SURFACE.shut.scale, s * CAT_SURFACE.eyePosition[0], CAT_SURFACE.shut.y, CAT_SURFACE.shut.z);
     shut.visible = false;
     head.add(shut);
     eyes.push({ eye, shut });
@@ -445,15 +448,44 @@ function buildCat() {
   return { cat, head, shoulder, leftShoulder, hips, tailGroup, tip, eyes, hand, torso, body, bib, muzzle, ears, tail, butt, blaze };
 }
 
+// Shared positions/normals/UV/index, coat-specific colour only; no per-frame generation.
+const surfaceCoats=new Map();
+function applySurfaceCoat(parts,coat) {
+  for(const [mesh,kind,patch] of [[parts.body,'body',coat.bib],[parts.head.children[0],'head',coat.blaze]]) {
+    const source=catPrimitive(kind),key=`${kind}:${coat.coat}:${patch}:${!!coat.maps}`;
+    let geometry=surfaceCoats.get(key);
+    if(!geometry) {
+      geometry=new THREE.BufferGeometry();
+      geometry.userData={...source.userData};
+      for(const name of ['position','normal','uv'])geometry.setAttribute(name,source.attributes[name]);
+      geometry.setIndex(source.index);
+      const p=source.attributes.position,c=new Float32Array(p.count*3),base=new THREE.Color(coat.coat),light=new THREE.Color(patch),color=new THREE.Color();
+      for(let i=0;i<p.count;i++) {
+        const x=p.getX(i),y=p.getY(i),z=p.getZ(i);
+        const m=CAT_SURFACE.patch;
+        const mask=kind==='body' ? THREE.MathUtils.smoothstep(z,...m.bodyZ)*(1-THREE.MathUtils.smoothstep(Math.abs(x),...m.bodyX)) : THREE.MathUtils.smoothstep(z,...m.headZ)*(1-THREE.MathUtils.smoothstep(Math.abs(x),m.headX[0]+m.headX[1]*(1-y),m.headX[2]+m.headX[3]*(1-y)));
+        color.copy(base).lerp(light,mask);color.toArray(c,i*3);
+      }
+      geometry.setAttribute('color',new THREE.BufferAttribute(c,3));surfaceCoats.set(key,geometry);
+    }
+    mesh.geometry=geometry;
+    if(!mesh.material.userData.catSurface) { mesh.material=mesh.material.clone();mesh.material.userData.catSurface=true; }
+    mesh.material.copy(ROLE.coat);mesh.material.userData.catSurface=true;mesh.material.color.setHex(0xffffff);mesh.material.vertexColors=true;mesh.material.needsUpdate=true;
+  }
+}
+
 /** Shape the cat for a breed (see BREEDS), `sh` = shapeOf(breed, kitten) (#363: a kitten is the same cat, re-proportioned). */
 function applyBreed(p, b, sh = shapeOf(b)) {
   p.cat.scale.setScalar(sh.size);
   p.hand.scale.setScalar(1 / sh.size); // the visitor's hand stays the same size
-  p.head.scale.setScalar(sh.head);
+  p.head.scale.setScalar(sh.head * CAT_SURFACE.headScale);
   for (const e of p.ears) e.scale.setScalar(sh.ears);
-  for (const e of p.eyes) { e.eye.scale.setScalar(sh.eyes); e.shut.scale.set(0.013 * sh.eyes, 0.0018, 0.004); }
+  for (const e of p.eyes) { e.eye.scale.setScalar(sh.eyes); e.shut.scale.set(CAT_SURFACE.shut.scale[0] * sh.eyes, CAT_SURFACE.shut.scale[1], CAT_SURFACE.shut.scale[2]); }
   p.muzzle.scale.set(0.042, 0.032, 0.035 * sh.muzzle);
   p.muzzle.position.z = 0.05 - 0.035 * (1 - sh.muzzle) * 0.6;
+  // The short kitten/Persian muzzle carries its nose with it; contact readers use this mesh.
+  const nose=p.head.getObjectByName('cat-nose');
+  nose.position.set(0,CAT_SURFACE.nose.y,p.muzzle.position.z+.035*sh.muzzle*CAT_SURFACE.nose.muzzleDepth+CAT_SURFACE.nose.offset);
   for (const m of Object.values(ROLE)) m.roughness = b.name === 'sphynx' ? 0.55 : 0.8;
 }
 
@@ -586,6 +618,12 @@ export class CatSpawner {
     // arrivals after an outdoor bake or held-cat snapshot. No second pose mixer.
     if (!installCatModel(gltf)) return;
     applyCatModel(this.object);
+    // Drop stale fallback attributes also in cached coats that are not currently on screen.
+    for(const geometry of surfaceCoats.values()) {
+      const source=catPrimitive(geometry.userData.catPrimitive.split(':')[0]);
+      for(const name of ['position','normal','uv']) geometry.setAttribute(name,source.attributes[name]);
+      geometry.setIndex(source.index);
+    }
     this.modelLoaded = true;
   }
 
@@ -652,6 +690,7 @@ export class CatSpawner {
     this.playWait = KITTEN.every[0]; // (no draw here: setCat must not use up the seeded rand)
     applyVariant(coat);
     applyBreed(this.parts, breed, this.shape);
+    applySurfaceCoat(this.parts,coat);
     const bl = coat.blaze3 ?? [0.016, 0.03, 0.01, 0.03]; // Miele: a short narrow stripe, the tip of her painted V (#328)
     this.parts.blaze.scale.set(bl[0], bl[1], bl[2]);
     this.parts.blaze.position.y = bl[3];
@@ -693,6 +732,8 @@ export class CatSpawner {
 
   setOpacity(a) {
     for (const m of catMats()) m.opacity = a;
+    this.parts.body.material.opacity=a;
+    this.head.children[0].material.opacity=a;
     if (this.skinnedMesh?.material) {
       this.skinnedMesh.material.transparent = a < 1;
       this.skinnedMesh.material.opacity = a;

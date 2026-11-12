@@ -1,0 +1,13 @@
+{
+  "mode": "procedural fallback; arrays deduplicated by identity, attributes+index, includes hidden visitor hand, X, bib/blaze references; no GLB/GPU totals",
+  "forms": 37,
+  "singleCatBytes": 75728,
+  "paletteArrays": 24,
+  "paletteBytes": 33696,
+  "baselineSingleCatBytes": 68912,
+  "baselineSubmittedCalls": 24,
+  "baselineSubmittedTriangles": 10008,
+  "currentSubmittedCalls": 22,
+  "currentSubmittedTriangles": 2672,
+  "glbBytes": 56324
+}
