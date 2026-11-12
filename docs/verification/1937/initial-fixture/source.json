@@ -1,0 +1,15 @@
+{
+  "head": "f3f5ae145854bd40ecfe5e3ecd8cdb814142e5a0",
+  "hashes": {
+    "tools/ghostitemtest.cjs": "bafd32191dfdc60f0130ab35f497da02a5e6cad24b1710f770f647943d5c9fb4",
+    "tools/ghostitem.html": "9017cfa9694ba396794796c9c41137538c73c736ad9991db3a936ad95e46597f",
+    "src/heldcategory.js": "5b14cfe785cd062b3d0c6d7d432cb73d8bf286d24d194bc3e64469ed716bb23b",
+    "src/ghostprops.js": "bf1742332389a8097ebd05b75b927fd6dd6d8dda944288c422fc47bcc7269d4e",
+    "src/ghosts.js": "9c59d6fbdc17b39fe2a503bea45cad9038887a15b57623f8750b5a0ee109366f",
+    "src/avatar.js": "b06ac39ba60edf8c03367e1d2aef8903c5e2ba876c48b83bb3b01f4e8334520f",
+    "src/config.js": "cdf82c3262063f082d10de315eacde9e99922534c72a0137213e4aa29e806ed6"
+  },
+  "profile": "/tmp/ghostitem-iaoGDx",
+  "executable": "/home/devcontainers/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+  "base": "http://localhost:8201"
+}

@@ -1,0 +1,89 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS all canonical categories plus three negative cases
+PASS category cup: intended wire input and effective proxy
+PASS category plate: intended wire input and effective proxy
+PASS category food: intended wire input and effective proxy
+PASS category bottle: intended wire input and effective proxy
+PASS category book: intended wire input and effective proxy
+PASS category paper: intended wire input and effective proxy
+PASS category tool: intended wire input and effective proxy
+PASS category plant: intended wire input and effective proxy
+PASS category cue: intended wire input and effective proxy
+PASS category box: intended wire input and effective proxy
+PASS category nut: intended wire input and effective proxy
+PASS category binoculars: intended wire input and effective proxy
+PASS category spray: intended wire input and effective proxy
+PASS category gift: intended wire input and effective proxy
+PASS category bag: intended wire input and effective proxy
+PASS category rod: intended wire input and effective proxy
+PASS category fish: intended wire input and effective proxy
+PASS category sharkfin: intended wire input and effective proxy
+PASS cup proxy triangle budget
+PASS plate proxy triangle budget
+PASS food proxy triangle budget
+PASS bottle proxy triangle budget
+PASS book proxy triangle budget
+PASS paper proxy triangle budget
+PASS tool proxy triangle budget
+PASS plant proxy triangle budget
+PASS cue proxy triangle budget
+PASS box proxy triangle budget
+PASS nut proxy triangle budget
+PASS binoculars proxy triangle budget
+PASS spray proxy triangle budget
+PASS gift proxy triangle budget
+PASS bag proxy triangle budget
+PASS rod proxy triangle budget
+PASS fish proxy triangle budget
+PASS sharkfin proxy triangle budget
+PASS empty category shows no proxy
+PASS actual saber wins over cup category
+PASS unknown wire category is sanitized to no proxy
+PASS all model, camera and projected proxy coordinates finite
+FAIL one submitted draw per category proxy; saber remains in both
+draw calls 40 without proxies 23
+PASS cup: finite model/camera/projection
+PASS cup: intended visible proxy submits one draw and changes actual pixels
+PASS plate: finite model/camera/projection
+PASS plate: intended visible proxy submits one draw and changes actual pixels
+PASS food: finite model/camera/projection
+PASS food: intended visible proxy submits one draw and changes actual pixels
+PASS bottle: finite model/camera/projection
+PASS bottle: intended visible proxy submits one draw and changes actual pixels
+PASS book: finite model/camera/projection
+PASS book: intended visible proxy submits one draw and changes actual pixels
+PASS paper: finite model/camera/projection
+PASS paper: intended visible proxy submits one draw and changes actual pixels
+PASS tool: finite model/camera/projection
+PASS tool: intended visible proxy submits one draw and changes actual pixels
+PASS plant: finite model/camera/projection
+PASS plant: intended visible proxy submits one draw and changes actual pixels
+PASS cue: finite model/camera/projection
+PASS cue: intended visible proxy submits one draw and changes actual pixels
+PASS box: finite model/camera/projection
+PASS box: intended visible proxy submits one draw and changes actual pixels
+PASS nut: finite model/camera/projection
+PASS nut: intended visible proxy submits one draw and changes actual pixels
+PASS binoculars: finite model/camera/projection
+PASS binoculars: intended visible proxy submits one draw and changes actual pixels
+PASS spray: finite model/camera/projection
+PASS spray: intended visible proxy submits one draw and changes actual pixels
+PASS gift: finite model/camera/projection
+PASS gift: intended visible proxy submits one draw and changes actual pixels
+PASS bag: finite model/camera/projection
+PASS bag: intended visible proxy submits one draw and changes actual pixels
+PASS rod: finite model/camera/projection
+PASS rod: intended visible proxy submits one draw and changes actual pixels
+PASS fish: finite model/camera/projection
+PASS fish: intended visible proxy submits one draw and changes actual pixels
+PASS sharkfin: finite model/camera/projection
+PASS sharkfin: intended visible proxy submits one draw and changes actual pixels
+PASS none: finite model/camera/projection
+PASS none: no hidden/empty proxy pixels or submitted draws
+PASS weapon: finite model/camera/projection
+PASS weapon: no hidden/empty proxy pixels or submitted draws
+PASS unknown: finite model/camera/projection
+PASS unknown: no hidden/empty proxy pixels or submitted draws
+PASS far ghosts have finite state and no effective proxies
+PASS far fish has no proxy draw or pixels
+FAIL [ 'one submitted draw per category proxy; saber remains in both' ]

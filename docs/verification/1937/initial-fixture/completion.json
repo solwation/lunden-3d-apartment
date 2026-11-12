@@ -1,0 +1,8 @@
+{
+  "checks": 86,
+  "errors": [
+    "one submitted draw per category proxy; saber remains in both"
+  ],
+  "contextClosed": true,
+  "profileRemoved": true
+}

@@ -1,0 +1,7 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+{"calls":40,"tris":242591,"items":["ghost-item:cup","ghost-item:plate","ghost-item:food","ghost-item:bottle","ghost-item:book","ghost-item:paper","ghost-item:tool","ghost-item:plant","ghost-item:cue","ghost-item:box","ghost-item:nut","ghost-item:binoculars","ghost-item:spray","ghost-item:gift","ghost-item:bag","ghost-item:rod","ghost-item:fish","ghost-item:sharkfin",null,null],"his":["cup","plate","food","bottle","book","paper","tool","plant","cue","box","nut","binoculars","spray","gift","bag","rod","fish","sharkfin","","cup"],"itemTris":{"cup":76,"plate":68,"food":32,"bottle":72,"book":24,"paper":12,"tool":24,"plant":52,"cue":48,"box":12,"nut":66,"binoculars":60,"spray":60,"gift":36,"bag":40,"rod":46,"fish":161,"sharkfin":66}}
+draw calls 40 without proxies 22
+FAIL [
+  'no category must show no proxy: ghost-item:sharkfin',
+  'proxies must cost one draw call each: 40 vs 22'
+]

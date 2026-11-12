@@ -1,0 +1,10 @@
+{
+  "pid": 1501465,
+  "checkout": "/home/devcontainers/lunden-wt/lunden-1937-ghost-categories",
+  "command": [
+    "python3",
+    "tools/devserve.py",
+    "8201"
+  ],
+  "stoppedByOwner": true
+}
