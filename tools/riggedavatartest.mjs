@@ -199,3 +199,33 @@ test('late rig availability preserves Olof/mirror retained mesh and bone referen
   assert.ok(posedBounds(fig.mesh).max.y < 2.2);
   avatar.dispose(); fig.avatar.dispose();
 });
+
+// The old segmented limbs could pass bone/IK tests while opening visible rings at
+// elbows and knees. Exercise the actual new shared surface across those joints.
+test('continuous elbow/knee surfaces have normalized adjacent-bone weights through bent poses', async () => {
+  await loaded();
+  for (const lk of [
+    { ...decodeAvatarLook('241302112', '1916'), cut: 0, sleeves: 1, legs: 0, height: 195 },
+    { ...decodeAvatarLook('241302112', '1916'), cut: 1, legs: 1, height: 120 },
+  ]) {
+    const a = new Avatar(lk), g = a.mesh.geometry, si = g.attributes.skinIndex, sw = g.attributes.skinWeight;
+    const joints = ['elbowL', 'elbowR', 'kneeL', 'kneeR'].map(n => [NAMES.indexOf(n), NAMES.indexOf(n.replace('elbow', 'shoulder').replace('knee', 'thigh'))]);
+    const joined = new Set();
+    for (let i = 0; i < si.count; i++) {
+      const weights = Array.from({ length: 4 }, (_, j) => sw.array[i * 4 + j]);
+      assert.ok(Math.abs(weights.reduce((n, v) => n + v, 0) - 1) < 2e-6, 'weights stay normalized');
+      assert.ok(weights.every(v => v >= 0 && v <= 1));
+      for (const [joint, parent] of joints) {
+        const has = id => Array.from({ length: 4 }, (_, j) => si.array[i * 4 + j] === id && weights[j] > .1).some(Boolean);
+        if (has(joint) && has(parent)) joined.add(joint);
+      }
+    }
+    assert.equal(joined.size, joints.length, 'each joint has a real shared deforming surface');
+    for (const state of [{ crouch: 1 }, { hands: { R: armTarget.up(-1, .5) } }, { speed: 3 }]) {
+      a.update(.125, state); const box = posedBounds(a.mesh);
+      assert.ok([...box.min.toArray(), ...box.max.toArray()].every(Number.isFinite));
+      assert.ok(box.getSize(new THREE.Vector3()).y < 2.6);
+    }
+    a.dispose();
+  }
+});

@@ -4,7 +4,7 @@ import { GYM_PUMP } from './config.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, DANCE, AVATAR_AIR as AIR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SURFACE as SURFACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, DANCE, AVATAR_AIR as AIR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { reactionPose, mixHand } from './reactpose.js';
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, THIGH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
@@ -60,14 +60,17 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
   // the head: neck, head, ears, face, hair
   add(new THREE.CylinderGeometry(0.05, 0.055, 0.12, 8), 'skin', 'head', [0, 0.02, 0]);
   P[P.length - 1].face = FACE_PART.neck;
-  const skullShape = RH.skull;
-  const jawShape = RH.jaw;
-  // #1101: the same skull and jaw ellipsoids (the beard shell projects onto them), rounder, shaded as one surface where
-  // they meet (no jagged crease across the cheeks); faceWarp narrows the jaw towards the chin
-  add(blendNormals(sphere(skullShape.radius, ...FACE.skullSegments).scale(...skullShape.scale).translate(...skullShape.centre), skullShape, jawShape), 'skin', 'head');
-  P[P.length - 1].rifleSkull = true;
-  add(blendNormals(sphere(jawShape.radius, ...FACE.jawSegments).scale(...jawShape.scale).translate(...jawShape.centre), jawShape, skullShape), 'skin', 'head');
-  P[P.length - 1].rifleJaw = true; // internal identity only
+  // #1916 one continuous cheek/jaw/chin surface rather than intersecting skull
+  // and jaw shells. Facial controls, mouth weights and broad hit boxes stay shared.
+  add(shape(ringSurface([...SURFACE.head].reverse(), SURFACE.headSides), (v) => {
+    const front = smoothstep(...SURFACE.face.front, v.z / Math.max(0.001, Math.hypot(v.x, v.z)));
+    const F = SURFACE.face;
+    v.z += front * (F.cheek[0] * bump(Math.abs(v.x), ...F.cheek.slice(1, 3)) * bump(v.y, ...F.cheek.slice(3))
+      + F.brow[0] * bump(v.y, ...F.brow.slice(1)) + F.chin[0] * bump(v.y, ...F.chin.slice(1))
+      - F.socket[0] * bump(Math.abs(v.x), FACE.eye.at[0], F.socket[1]) * bump(v.y, FACE.eye.at[1], F.socket[2]));
+  }), 'skin', 'head');
+  add.last().rifleSkull = true;
+  add.last().continuousHead = true;
   for (const s of [-1, 1]) { // ears
     add(sphere(0.028, 8, 5).scale(0.55, 1, 0.72), 'skin', 'head', [s * 0.1, H - 0.005, 0], 0.94);
     facePart(P, FACE_PART.ear, [s * 0.1, H - 0.005, 0]);
@@ -353,11 +356,10 @@ function facePart(P, id, anchor) {
     : place(anchor, 'head');
 }
 // --- the body (#1103) ----------------------------------------------------------------------------------------------------
-// Everything below the head, on Olof's rigid skeleton (every vertex follows one bone): a torso whose chest, shoulder
-// blades and bust are pushed out of the plain lathe, sloping shoulders with deltoid caps, arms with a little muscle, wrists
-// that reach the hands, flat hands with the palm towards the thigh (fingers spread front to back, the thumb forward),
-// trousers with a seat and a fly seam, a belt (no buckle, #1189) and low trainers with a sole. Folds and seams are only
-// where they cost a ring or a thin box (*guess*: shapes by eye against an ordinary adult, not measured).
+// #1916 continuous elliptical limb surfaces blend the existing Olof bones around
+// shoulders, elbows, wrists, knees and ankles. Ring weights are built only once;
+// the shared 15-bone pose/IK and single draw are unchanged. Artistic guesses in
+// AVATAR_SURFACE; these surfaces do not define gameplay colliders.
 const smoothstep = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
 const bump = (y, at, w) => Math.max(0, 1 - ((y - at) / w) ** 2);
 /** Moves a geometry's vertices with `f(v)` (bone-local coordinates, before `add` puts it on its bone). */
@@ -365,7 +367,84 @@ function shape(g, f) {
   const a = g.attributes.position, v = new THREE.Vector3();
   for (let i = 0; i < a.count; i++) { f(v.fromBufferAttribute(a, i)); a.setXYZ(i, v.x, v.y, v.z); }
   g.computeVertexNormals();
+  smoothRingSeam(g);
   return g;
+}
+
+/** Continuous elliptical rings [y, rx, rz, centre-z], with a closed seam and caps. */
+function ringSurface(rings, sides = SURFACE.sides) {
+  const position = [], index = [], stride = sides + 1;
+  for (const [y, rx, rz, z = 0] of rings) for (let j = 0; j <= sides; j++) {
+    const a = j / sides * Math.PI * 2;
+    position.push(Math.sin(a) * rx, y, Math.cos(a) * rz + z);
+  }
+  for (let i = 0; i < rings.length - 1; i++) for (let j = 0; j < sides; j++) {
+    const a = i * stride + j, b = a + stride;
+    index.push(a, b, a + 1, a + 1, b, b + 1);
+  }
+  for (const row of [0, rings.length - 1]) {
+    const c = position.length / 3, [y, , , z = 0] = rings[row]; position.push(0, y, z);
+    for (let j = 0; j < sides; j++) {
+      const a = row * stride + j;
+      index.push(...(row === 0 ? [c, a, a + 1] : [c, a + 1, a]));
+    }
+  }
+  const g = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(position, 3));
+  g.setIndex(index); g.computeVertexNormals();
+  g.userData.ringSides = sides; g.userData.ringCount = rings.length;
+  smoothRingSeam(g);
+  return g;
+}
+function smoothRingSeam(g) {
+  const sides = g.userData.ringSides;
+  const lathePoints = g.type === 'LatheGeometry' ? g.parameters.points.length : 0;
+  if (!sides && !lathePoints) return;
+  const n = g.attributes.normal, v = new THREE.Vector3(), w = new THREE.Vector3();
+  for (let i = 0; i < (lathePoints || g.userData.ringCount); i++) {
+    const a = lathePoints ? i : i * (sides + 1), b = lathePoints ? g.parameters.segments * lathePoints + i : a + sides;
+    v.fromBufferAttribute(n, a).add(w.fromBufferAttribute(n, b)).normalize();
+    n.setXYZ(a, v.x, v.y, v.z); n.setXYZ(b, v.x, v.y, v.z);
+  }
+}
+
+/** Cut a ring profile at exact cloth boundaries, keeping the shared skin outline. */
+function ringRange(table, top, bottom) {
+  const at = y => {
+    for (let i = 1; i < table.length; i++) if (y >= table[i][0]) {
+      const a = table[i - 1], b = table[i], t = (y - a[0]) / (b[0] - a[0]);
+      return [y, ...a.slice(1).map((v, k) => v + t * (b[k + 1] - v))];
+    }
+    return [y, ...table.at(-1).slice(1)];
+  };
+  return [at(top), ...table.filter(r => r[0] < top && r[0] > bottom), at(bottom)];
+}
+/** Static weights across adjacent joints; index0 remains the dominant bone for suit shading. */
+function limbWeights(g, side, leg = false) {
+  const names = leg ? ['thigh', 'knee', 'foot'] : ['shoulder', 'elbow', 'hand'];
+  const ids = names.map(n => NAMES.indexOf(n + side)), root = NAMES.indexOf(leg ? 'hips' : 'torso');
+  const a = g.attributes.position, si = new Uint16Array(a.count * 4), sw = new Float32Array(a.count * 4);
+  for (let i = 0; i < a.count; i++) {
+    const y = a.getY(i), bend = smoothstep(-(leg ? THIGH : UPPER) + SURFACE.jointBlend, -(leg ? THIGH : UPPER) - SURFACE.jointBlend, y);
+    const end = -(leg ? THIGH + SHIN : UPPER + FORE + HAND);
+    const wrist = smoothstep(end + SURFACE.wristBlend, end - SURFACE.wristBlend, y);
+    const inner = smoothstep(...SURFACE.attachInner, a.getX(i) * (side === 'L' ? 1 : -1));
+    const attach = SURFACE.shoulderBlend * smoothstep(...SURFACE.attachHeight, y) * inner;
+    const weights = [[ids[0], (1 - bend) * (1 - attach)], [ids[1], bend * (1 - wrist)], [ids[2], wrist], [root, (1 - bend) * attach]].sort((a, b) => b[1] - a[1]);
+    for (let j = 0; j < 4; j++) { si[i * 4 + j] = weights[j][0]; sw[i * 4 + j] = weights[j][1]; }
+  }
+  return g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4)).setAttribute('skinWeight', new THREE.Float32BufferAttribute(sw, 4));
+}
+/** Soft, directional garment compression, modeled once in the existing surface. */
+function garment(g, leg = false, wide = 1) {
+  const K = leg ? SURFACE.trouser : SURFACE.sleeve, F = SURFACE.folds;
+  return shape(g, v => {
+    const a = Math.atan2(v.x, v.z), y = v.y;
+    const fold = K.fold * (Math.sin(y * F.jointRate + Math.sin(a) * F.angle) * bump(y, leg ? -THIGH : -UPPER, F.jointWidth)
+      + F.cuffStrength * Math.sin(y * F.cuffRate + a) * bump(y, leg ? F.legCuff : SURFACE.sleeve.long, F.cuffWidth));
+    const extra = (K.ease + fold) / Math.max(0.01, Math.hypot(v.x, v.z));
+    const bell = leg ? 1 + (wide - 1) * smoothstep(...F.legWide, y) : 1;
+    v.x *= (1 + extra) * bell; v.z *= (1 + extra) * bell;
+  });
 }
 
 function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
@@ -378,10 +457,19 @@ function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
     (v) => { if (v.z < 0) v.z *= 1 + 0.12 * bump(v.y, -0.06, 0.07); }), 'pants', 'hips');
   // the torso: the chest (or bust) forward, the shoulder blades back, a flatter belly
   const chest = isFemale ? (y) => 0.2 * bump(y, 0.42, 0.08) + 0.05 * bump(y, 0.5, 0.08) : (y) => 0.1 * bump(y, 0.45, 0.12);
-  add(shape(lathe(isFemale ? TORSO_PROFILE_FEMALE : TORSO_PROFILE, 14).scale(...torsoScale), (v) => {
+  const profile = isFemale ? TORSO_PROFILE_FEMALE : TORSO_PROFILE;
+  const clothProfile = [...profile, ...SURFACE.cloth.rings.map(y => {
+    const j = profile.findIndex(p => p[1] > y), a = profile[j - 1], b = profile[j];
+    return [THREE.MathUtils.lerp(a[0], b[0], (y - a[1]) / (b[1] - a[1])), y];
+  })].sort((a, b) => a[1] - b[1]);
+  add(shape(lathe(clothProfile, 14).scale(...torsoScale), (v) => {
     const front = Math.max(0, v.x === 0 && v.z === 0 ? 0 : v.z / Math.hypot(v.x, v.z));
     if (v.z > 0) v.z *= 1 + chest(v.y) * front - 0.04 * bump(v.y, 0.2, 0.1);
     else v.z *= 1 + 0.08 * bump(v.y, 0.47, 0.1);
+    const C = SURFACE.cloth, a = Math.atan2(v.x, v.z), r = Math.hypot(v.x, v.z);
+    const fold = C.waistFold * Math.sin(a * C.waveAngle[0] + v.y * C.waveHeight[0]) * bump(v.y, ...C.waist)
+      + C.sideFold * Math.sin(v.y * C.waveHeight[1] + a * C.waveAngle[1]) * bump(v.y, ...C.side) * (1 - front);
+    if (r > 0) { v.x *= 1 + fold / r; v.z *= 1 + fold / r; }
   }), 'top', 'torso');
   add(lathe([[0.152, -0.01], [0.16, 0.05]], 14).scale(...torsoScale), 'top', 'torso', [0, 0, 0], 0.82); // the hem
   add(lathe([[0.142, -0.02], [0.147, 0.03]], 14).scale(isFemale ? 1.1 : 1.15, 1, 0.75), 'fixed', 'torso', [0, -0.02, 0], 1, 0x2a2523); // the belt
@@ -391,23 +479,14 @@ function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
   // arms: a deltoid cap over the shoulder joint, the sleeve (a T-shirt's ends above the biceps with a hem; a long one has
   // soft folds at the elbow and a cuff at the wrist), the bare skin below, the wrist reaching the hand
   for (const s of ['L', 'R']) {
-    const sh = 'shoulder' + s, el = 'elbow' + s, sx = s === 'L' ? 1 : -1;
-    add(sphere(0.056, 8, 5).scale(1, 0.92, 0.95), cut === 1 ? 'skin' : 'top', sh, [0.004 * sx, 0.004, 0]);
-    if (sleeves) {
-      add(lathe([[0, -UPPER - 0.01], [0.043, -UPPER], [0.047, -0.25], [0.044, -0.22], [0.05, -0.15], [0.054, -0.04], [0.052, 0.005]], 9), 'top', sh); // (open at the top: the deltoid closes it)
-      add(sphere(0.043, 8, 5), 'top', el);
-      add(lathe([[0, -0.205], [0.036, -0.2], [0.039, -0.175], [0.036, -0.155], [0.045, -0.06], [0, 0.02]], 9), 'top', el);
-      add(lathe([[0.034, -0.245], [0.038, -0.196]], 9), 'top', el, [0, 0, 0], 0.8); // the cuff
-      add(lathe([[0, -0.278], [0.024, -0.272], [0.028, -0.235], [0, -0.2]], 7).scale(0.8, 1, 1.1), 'skin', el); // the wrist under it
-    } else {
-      if (cut !== 1) { // (#1244: a tank top has no sleeve)
-        add(lathe([[0.051, -0.13], [0.057, -0.125], [0.058, -0.06], [0.055, 0.005]], 9), 'top', sh);
-        add(lathe([[0.058, -0.135], [0.06, -0.112]], 9), 'top', sh, [0, 0, 0], 0.82); // the sleeve's hem
-      } else add(lathe([[0, -0.13], [0.05, -0.12], [0.056, -0.06], [0.054, 0.005]], 9), 'skin', sh); // the bare shoulder
-      add(lathe([[0, -UPPER], [0.036, -UPPER + 0.006], [0.039, -0.23], [0.045, -0.15], [0.045, -0.08], [0, -0.05]], 8), 'skin', sh); // biceps
-      add(sphere(0.04, 8, 5), 'skin', el);
-      add(shape(lathe([[0, -0.278], [0.024, -0.272], [0.028, -0.235], [0.038, -0.13], [0.041, -0.03], [0, 0.01]], 9), (v) => { v.x *= 0.8 + 0.2 * smoothstep(-0.25, -0.12, v.y); v.z *= 0.88 + 0.2 * (1 - smoothstep(-0.25, -0.12, v.y)); }), 'skin', el);
-    }
+    const sh = 'shoulder' + s, sx = s === 'L' ? 1 : -1;
+    const boundary = sleeves ? SURFACE.sleeve.long : SURFACE.sleeve.short;
+    const upper = SURFACE.arm[0][0], lower = SURFACE.arm.at(-1)[0];
+    const skin = (top, bottom) => limbWeights(ringSurface(ringRange(SURFACE.arm, top, bottom)), s);
+    if (cut !== 1 || sleeves) {
+      add(limbWeights(garment(ringSurface(ringRange(SURFACE.arm, upper, boundary))), s), 'top', sh);
+      add(skin(boundary + SURFACE.clothOverlap, lower), 'skin', sh);
+    } else add(skin(upper, lower), 'skin', sh);
     // the hand: a flat palm towards the thigh, four fingers front (index) to back (little), curled a little inwards, the thumb forward
     add(sphere(0.042, 8, 6).scale(0.45, 1.1, 0.95), 'skin', 'hand' + s, [-0.002 * sx, -0.016, 0.002]);
     for (let f = 0; f < 4; f++) {
@@ -426,17 +505,11 @@ function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
   }
   const lw = legs === 2 ? AVATAR_CLOTHES.legs.wide : 1, hy = AVATAR_CLOTHES.legs.shorts;
   for (const s of ['L', 'R']) {
-    if (legs === 1) { // #1244 shorts: mid-thigh hem, bare legs below
-      add(lathe([[0.066, hy], [0.077, -0.12], [0.08, -0.04], [0.06, 0.035], [0, 0.045]], 9), 'pants', 'thigh' + s);
-      add(lathe([[0.067, hy], [0.067, hy + 0.025]], 9), 'pants', 'thigh' + s, [0, 0, 0], 0.8); // the hem
-      add(lathe([[0, -0.48], [0.044, -0.47], [0.054, -0.44], [0.058, -0.34], [0.06, hy + 0.01]], 9), 'skin', 'thigh' + s);
-      add(lathe([[0, -0.42], [0.043, -0.4], [0.046, -0.37], [0.048, -0.29], [0.052, -0.13], [0.05, -0.01], [0.042, 0.04], [0, 0.05]], 9), 'skin', 'knee' + s);
-    } else {
-    const wide = (g, bell) => (lw === 1 ? g : shape(g, (v) => { const f = bell ? lw * (1 + 0.08 * smoothstep(-0.2, -0.39, v.y)) : 1 + (lw - 1) * smoothstep(-0.04, -0.3, v.y); v.x *= f; v.z *= f; })); // #1244: wide legs
-    add(wide(lathe([[0, -0.48], [0.044, -0.47], [0.054, -0.44], [0.062, -0.34], [0.077, -0.12], [0.08, -0.04], [0.06, 0.035], [0, 0.045]], 9)), 'pants', 'thigh' + s);
-    add(wide(lathe([[0, -0.42], [0.043, -0.4], [0.046, -0.37], [0.048, -0.29], [0.055, -0.13], [0.054, -0.01], [0.042, 0.04], [0, 0.05]], 9), true), 'pants', 'knee' + s);
-    add(wide(lathe([[0.046, -0.392], [0.048, -0.368]], 9), true), 'pants', 'knee' + s, [0, 0, 0], 0.8); // the hem
-    }
+    const top = SURFACE.leg[0][0], bottom = SURFACE.leg.at(-1)[0];
+    if (legs === 1) {
+      add(limbWeights(garment(ringSurface(ringRange(SURFACE.leg, top, hy)), true), s, true), 'pants', 'thigh' + s);
+      add(limbWeights(ringSurface(ringRange(SURFACE.leg, hy + SURFACE.clothOverlap, bottom)), s, true), 'skin', 'thigh' + s);
+    } else add(limbWeights(garment(ringSurface(SURFACE.leg), true, lw), s, true), 'pants', 'thigh' + s);
     add(shape(sphere(0.5, 10, 4, 0, Math.PI * 2, 0, Math.PI / 2).scale(0.105, 0.18, 0.27), (v) => {
       v.y *= 1 - 0.58 * smoothstep(-0.02, 0.12, v.z); v.y += -0.442; v.z += 0.055;
     }), 'fixed', 'foot' + s, [0, SHIN, 0], 1, 0); // (#1149: the shoe and its sole on the ankle, flat on the floor in a squat)
@@ -541,7 +614,7 @@ function hairParts(style) {
     g.computeVertexNormals();
     return g;
   };
-  const strand = (i) => 1 + HC.streak * Math.sin(i * 2.39 + 0.7); // a strand's shade by column (golden-angle scatter)
+  const strand = (i) => 1 + SURFACE.hair.streak * Math.sin(i * 2.39 + 0.7); // a strand's shade by column (golden-angle scatter)
   const [crown, side, back] = HC.thick[style] ?? HC.thick[0];
   const thick = (a, e) => { const ring = side + (back - side) * Math.max(0, -Math.cos(a * deg)); return ring + (crown - ring) * smooth(5, 75, e); };
   // the scalp shell from the hairline (or `low`) up to `high` (90: the crown), with an extra `bump(a, s, i)` lift
@@ -576,7 +649,13 @@ function hairParts(style) {
   const L = HAIR.long, parting = style === 1, curtain = (a) => parting && Math.abs(a) >= L.from - 1e-9;
   const longTop = (a) => hairline(a) + (L.top - hairline(a)) * smooth(L.front, L.back, Math.abs(a));
   const low = (a) => (curtain(a) ? Math.max(hairline(a), longTop(a)) : hairline(a));
-  const bump = style === 0 ? (a, s, i) => 0.0045 * Math.sin(i * 1.9 + 0.4) * smooth(0.45, 0.9, s) + 0.004 * smooth(0.25, 0.7, s) * (1 - smooth(25, 55, Math.abs(a))) : () => 0;
+  const bump = (a, s, i) => {
+    const K = SURFACE.hair;
+    const tousle = style === 0 ? 0.0045 * Math.sin(i * 1.9 + 0.4) * smooth(0.45, 0.9, s) + 0.004 * smooth(0.25, 0.7, s) * (1 - smooth(25, 55, Math.abs(a))) : 0;
+    if (style >= 3) return tousle;
+    return tousle + K.wave * Math.sin(a * deg * K.frequency + s * K.flow) * Math.sin(s * Math.PI)
+      - K.part[2] * Math.exp(-(((a - K.part[0]) / K.part[1]) ** 2)) * Math.sin(s * Math.PI);
+  };
   out.push([shell(az, low, crownTop, HC.rows,
     (a, e, s, i) => Math.max(0.0015, thick(a, e) * (curtain(a) || (style === 4 && Math.abs(a) >= 72) ? 1 : feather(s)) * (parting && a === 0 ? 0.55 : 1) + bump(a, s, i)),
     (a, s, i) => strand(i) * (parting && a === 0 && s > 0.15 ? 0.8 : 1) * (0.92 + 0.08 * smooth(0, 0.3, s))), 'hair', 1]);
@@ -719,22 +798,6 @@ function faceWarp(g) {
   }
 }
 
-/** Near where ellipsoid `own` meets `other` (RH shapes: radius, scale, centre), the vertex normals turn toward the average
- * of both surfaces' normals, so the two read as one smooth head; elsewhere they keep their own. */
-function blendNormals(g, own, other) {
-  const p = g.attributes.position, n = g.attributes.normal, a = new THREE.Vector3(), b = new THREE.Vector3(), q = new THREE.Vector3();
-  const grad = (e, out) => out.set(...[0, 1, 2].map((i) => (q.getComponent(i) - e.centre[i]) / e.scale[i] ** 2)).normalize();
-  const dist = (e) => Math.hypot(...[0, 1, 2].map((i) => (q.getComponent(i) - e.centre[i]) / e.scale[i])) - e.radius;
-  for (let i = 0; i < p.count; i++) {
-    q.fromBufferAttribute(p, i);
-    const w = 0.5 * (1 - smoothstep(0, FACE.blend, Math.abs(dist(other))));
-    if (w <= 0) continue;
-    grad(own, a).multiplyScalar(1 - w).add(grad(other, b).multiplyScalar(w)).normalize();
-    n.setXYZ(i, a.x, a.y, a.z);
-  }
-  return g;
-}
-
 /** Bends a part around the face: z falls back by k·x² (lips, so their corners meet the cheeks). */
 function bend(g, k) {
   const p = g.attributes.position;
@@ -754,22 +817,54 @@ function noseGeometry(N) {
   return g;
 }
 
+/** Almond-shaped sclera and its continuous lid surround, in the eye's frame. */
+const eyeHeight = x => Math.max(0, 1 - (x / FACE.eye.r) ** 2);
+function eyeSurface(lid = false) {
+  const E = FACE.eye, K = SURFACE.eye, position = [], index = [];
+  const cols = K.columns, rows = K.rows;
+  if (lid) {
+    for (let i = 0; i <= cols * 2; i++) {
+      const a = i / (cols * 2) * Math.PI * 2, x = E.r * Math.cos(a), y = Math.sign(Math.sin(a)) * eyeHeight(x) * (Math.sin(a) >= 0 ? K.upper : K.lower);
+      for (let j = 0; j <= 2; j++) {
+        const t = j / 2;
+        position.push(THREE.MathUtils.lerp(x, K.outer[0] * Math.cos(a), t), THREE.MathUtils.lerp(y, K.outer[1] * Math.sin(a), t), THREE.MathUtils.lerp(E.r * E.scale[2] * K.lidDepth, K.outer[2] - E.at[2], t));
+      }
+    }
+    for (let i = 0; i < cols * 2; i++) for (let j = 0; j < 2; j++) { const a = i * 3 + j, b = a + 3; index.push(a, a + 1, b, b, a + 1, b + 1); }
+  } else {
+    for (let i = 0; i <= cols; i++) {
+      const x = (i / cols * 2 - 1) * E.r, h = eyeHeight(x);
+      for (let j = 0; j <= rows; j++) {
+        const y = -K.lower * h + j / rows * (K.upper + K.lower) * h;
+        position.push(x, y, E.r * E.scale[2] * (K.scleraBase + K.scleraRound * h));
+      }
+    }
+    for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
+      const a = i * (rows + 1) + j, b = a + rows + 1;
+      if (i > 0) index.push(a, b, a + 1);
+      if (i < cols - 1) index.push(b, b + 1, a + 1);
+    }
+  }
+  const g = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(position, 3));
+  g.setIndex(index); g.computeVertexNormals(); return g;
+}
+
 /** Eyes set in shallow sockets under a brow ridge (eyeball, iris, pupil, upper and lower lids), brows along the ridge,
  * a nose with wings, two lips with a seam, cheekbones and a chin. All on the head bone; numbers AVATAR_FACE. */
 function addFace(add, sphere, P) {
-  const F = FACE, E = F.eye, L = F.lid, N = F.nose, B = F.brow;
+  const F = FACE, E = F.eye, N = F.nose, B = F.brow;
   for (const s of [-1, 1]) {
     const x = s * E.at[0], [, y, z] = E.at;
     const eye = (...a) => { add(...a); facePart(P, FACE_PART.eye, [x, y, z]); }; // (#1138: sized / opened about the eyeball's centre)
-    eye(sphere(F.socket.r, 10, 4).scale(...F.socket.scale), 'skin', 'head', [x, y, F.socket.z], F.socket.shade); // the socket's shade
-    eye(sphere(E.r, 8, 5).scale(...E.scale), 'fixed', 'head', [x, y, z], 1, E.white);
-    const irisZ = z + E.r * E.scale[2] * Math.sqrt(1 - (E.iris / E.r) ** 2);
-    eye(sphere(E.iris, 10, 3).scale(1, 1, 0.4), 'iris', 'head', [x, y - 0.0005, irisZ]); // (#1138: the player's eye colour)
-    eye(sphere(E.pupil, 8, 3).scale(1, 1, 0.3), 'fixed', 'head', [x, y - 0.0005, irisZ + E.iris * 0.4 - E.pupil * 0.15], 1, E.pupilColour);
-    eye(sphere(L.r, 8, 3, 0, Math.PI * 2, 0, Math.PI * L.upper).scale(...L.scale), 'skin', 'head', [x, y, z], 0.9); // upper lid
-    eye(sphere(L.r, 8, 2, 0, Math.PI * 2, Math.PI * (1 - L.lower), Math.PI * L.lower).scale(...L.scale), 'skin', 'head', [x, y, z], 0.94);
-    add(sphere(F.ridge.r, 8, 4).scale(...F.ridge.scale), 'skin', 'head', [s * F.ridge.at[0], F.ridge.at[1], F.ridge.at[2]], F.ridge.shade);
-    P[P.length - 1].face = FACE_PART.cowlHide;
+    eye(eyeSurface(), 'fixed', 'head', [x, y, z], 1, E.white);
+    const irisZ = E.r * E.scale[2];
+    const pupil = (r, depth) => shape(sphere(r, 10, 4).scale(1, 1, depth), v => {
+      const edge = eyeHeight(v.x);
+      v.y = Math.max(-edge * SURFACE.eye.lower, Math.min(edge * SURFACE.eye.upper, v.y));
+    });
+    eye(pupil(E.iris, SURFACE.eye.irisDepth), 'iris', 'head', [x, y, z + irisZ]);
+    eye(pupil(E.pupil, SURFACE.eye.pupilDepth), 'fixed', 'head', [x, y, z + irisZ + E.iris * SURFACE.eye.irisDepth], 1, E.pupilColour);
+    eye(eyeSurface(true), 'skin', 'head', [x, y, z], 0.97);
     // (#1138: a tube-less copy of the same arc is each brow vertex's pivot, so the brow thickens about its centre line)
     const arc = (tube) => new THREE.TorusGeometry(B.radius, tube, 3, 6, B.arc).rotateZ(Math.PI / 2 - B.arc / 2).translate(0, -B.radius, 0)
       .scale(1, 1, 0.6).rotateZ(s * B.tilt).rotateY(s * B.turn).translate(s * B.at[0], B.at[1], B.at[2]);
@@ -792,7 +887,7 @@ function addFace(add, sphere, P) {
   add(bend(sphere(Math.min(ur, lr), 10, 3).scale(1, 0.06, 0.22), F.lips.bend), 'fixed', 'head', [0, (uy + ly) / 2, (uz + lz) / 2 + 0.0015], 1, F.lips.seam);
   P[P.length - 1].mouth = 'seam'; // (#1122: its lower half drops with the lower lip, the dark opening)
   P[P.length - 1].face = FACE_PART.cowlHide;
-  add(sphere(F.chin.r, 7, 4).scale(...F.chin.scale), 'skin', 'head', F.chin.at, 0.98);
+  // The chin and brow ridge are part of the continuous head, not separate bumps.
 }
 // the tops' torso (hip at 0; scaled 1.15 / 1.08 × 1 × 0.7): a narrower waist, the chest, sloping shoulders (the trapezius)
 // up to the neck (#1103). The suit's atlas (#891) maps over the widest radius and the top height, both kept.
@@ -901,7 +996,7 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
         pucker[i] = Math.round(255 * (['upper', 'lower', 'seam'].includes(part.mouth) ? 1 : skin));
       }
       if (hb) mouth[i] = mouthWeight(part.mouth, gp.getX(i) - hb.x, gp.getY(i) - hb.y, gp.getZ(i) - hb.z);
-      jaw[i] = part.rifleJaw ? 1 : 0; nose[i] = part.rifleNose ? 1 : 0; contact[i] = part.rifleSkull ? 1 : 0; reg[i] = part.shoe ? 5 : region; si[i * 4] = k; sw[i * 4] = 1;
+      jaw[i] = part.rifleJaw || (part.continuousHead && gp.getY(i) - hb.y < SURFACE.jawTop) ? 1 : 0; nose[i] = part.rifleNose ? 1 : 0; contact[i] = part.rifleSkull ? 1 : 0; reg[i] = part.shoe ? 5 : region; if (g.attributes.skinIndex) { for (let j = 0; j < 4; j++) { si[i * 4 + j] = g.attributes.skinIndex.array[i * 4 + j]; sw[i * 4 + j] = g.attributes.skinWeight.array[i * 4 + j]; } } else { si[i * 4] = k; sw[i * 4] = 1; }
     }
     g.setAttribute('color', new THREE.BufferAttribute(col, 3));
     g.setAttribute('region', new THREE.BufferAttribute(reg, 1));

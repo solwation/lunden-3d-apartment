@@ -1,0 +1,11 @@
+{
+  "pass": true,
+  "pageErrors": 0,
+  "drawsForFourAvatars": 4,
+  "samples": 116,
+  "peak": 0.93,
+  "swings": 10,
+  "endMs": 1932,
+  "source": "Existing tools/avatarmouthtest.cjs + tools/avatarmouth.html; only CDN URLs redirected to cached Three r170. Both normal and maximum-open images reviewed.",
+  "fixtureSha256": "b663f0ddcaaed0dfbec80a6883c35a8d1a743506eed0b142dd37a39d354c783f"
+}

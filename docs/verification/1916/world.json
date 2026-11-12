@@ -1,0 +1,120 @@
+{
+  "baseline": "2f03ba02",
+  "environment": "Chromium1248 / SwiftShader, main/World, fixed scheduler and camera, DPR1, quality1, res=light; no device/FPS claim",
+  "versions": {
+    "node": "v22.20.0",
+    "chromium": "156.0.8078.4"
+  },
+  "hashes": {
+    "before": {
+      "src/avatar.js": "4ed532afb4f960f4da011213d83e96cf9d681c149b090f42ec12d2783f769753",
+      "src/config.js": "6bbefd02116dfb3bafa27bcc0b21ce7039718174b90c07bb275ea92d339f2ed6",
+      "src/olof.js": "f3b47f1300d74dc9dddc79291291f301aa502a7b192d6a3dbcd25d550d65f050",
+      "models/avatar-rigged.glb": "b55ff07a0c72d5028d3ca386d2d0a0b39fcbf28510b384b21dd3d8c74875b7f6"
+    },
+    "after": {
+      "src/avatar.js": "6849e080c0c16c732bc59b8f1606ee22759662cfda5823e616e507c7395c89fe",
+      "src/config.js": "67dd3bbc8eba1992cbbfae7cde4e752cd248b5d6d78653df6a4600276b926c9d",
+      "src/olof.js": "d289fc4b5bca6a70c970be6b4997f6a00734f8659f69c3e84ab900894f3a4296",
+      "models/avatar-rigged.glb": "c20e4d08018079095c38089db329bfb2c450c78b3a8ca59ba5783cede99dfd37"
+    }
+  },
+  "errors": [],
+  "before": {
+    "quality": 1,
+    "pixelRatio": 0.75,
+    "viewport": [
+      1280,
+      960
+    ],
+    "mirror": "nissedal",
+    "gl": "WebKit WebGL",
+    "warm": {
+      "updateMsPerAvatar": {
+        "median": 0.010000000009313226,
+        "p95": 0.01999999999534339
+      },
+      "renderFinishMs": {
+        "median": 728.5,
+        "p95": 5393.600000000093
+      },
+      "renderSamples": 30,
+      "drawingBuffer": [
+        480,
+        360
+      ],
+      "calls": 420,
+      "triangles": 909887,
+      "skeletonBones": 15,
+      "remoteTriangles": 11558,
+      "attributesBytes": 3606096,
+      "programs": 135,
+      "textures": 95
+    },
+    "driver": {
+      "visible": true,
+      "meshIdentity": true,
+      "handErrors": [
+        3.9350319887992495e-16,
+        1.297406170555098e-15
+      ],
+      "footErrors": [
+        2.7194799110210365e-16,
+        2.7194799110210365e-16
+      ],
+      "triangles": 11174
+    }
+  },
+  "after": {
+    "quality": 1,
+    "pixelRatio": 0.75,
+    "viewport": [
+      1280,
+      960
+    ],
+    "mirror": "nissedal",
+    "gl": "WebKit WebGL",
+    "warm": {
+      "updateMsPerAvatar": {
+        "median": 0.010000000009313226,
+        "p95": 0.015000000013969839
+      },
+      "renderFinishMs": {
+        "median": 54.60000000009313,
+        "p95": 5495.299999999814
+      },
+      "renderSamples": 30,
+      "drawingBuffer": [
+        480,
+        360
+      ],
+      "calls": 420,
+      "triangles": 910553,
+      "skeletonBones": 15,
+      "remoteTriangles": 12224,
+      "attributesBytes": 3813888,
+      "programs": 135,
+      "textures": 95
+    },
+    "driver": {
+      "visible": true,
+      "meshIdentity": true,
+      "handErrors": [
+        3.9350319887992495e-16,
+        1.297406170555098e-15
+      ],
+      "footErrors": [
+        2.7194799110210365e-16,
+        2.7194799110210365e-16
+      ],
+      "triangles": 11808
+    }
+  },
+  "pass": true,
+  "postRunReview": {
+    "driverContactsAndMesh": "pass; both phases <1e-5m and actual retained mesh",
+    "runtimeBudget": "pass; identical calls/15bones and <10% remote triangles/attribute bytes",
+    "scheduler": "Stopped with the real renderer instance setAnimationLoop(null) after __app readiness, before captures/samples. The original prototype prepatch was a no-op in Three r170 and was removed from the reusable driver.",
+    "sampling": "40 draws:10warm+30measured;640x480 canvas *0.75game pixelRatio =480x360 actual buffer"
+  }
+}

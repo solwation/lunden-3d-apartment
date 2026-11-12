@@ -2314,3 +2314,14 @@ The bicycle GLB frame connection omitted by its exporter is restored in both LOD
 (#1912): the low frame tube now joins the steering head. Grip points, four instance
 batches, ride/exit code and the garage/courtyard's shared geometry factory remain.
 [Whole models and actual yard/moved proxy verification](../verification/1912/README.md).
+
+## Continuous avatar surfaces (#1916)
+
+The shared Avatar/Olof recipe keeps the existing 15-bone rig and pose/IK authority,
+with continuous elliptical limb surfaces blended across the adjacent joints. Head,
+eyelid and garment surfaces are built once per cached appearance variant; all
+appearance/accessory controls and private palette buffers remain. Mirrors, remote
+Ghosts, the customizer and OlofDriver consume this same geometry. The gameplay
+three-box head collider and first-person Hand are independent. Artistic surface
+assumptions live in `AVATAR_SURFACE`; no new per-frame mesh or material is built.
+[Matched images, actual consumers and bounded costs](../verification/1916/README.md).

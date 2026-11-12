@@ -7,8 +7,8 @@ import { Avatar } from './avatar.js';
 // Olof is only the driver of our car (#900). The skeleton and IK here are shared with the players' avatars (src/avatar.js).
 //
 // Since #1156 he is drawn with the players' Avatar (as detailed as theirs: face, hair, beard, body, the talking mouth) in a
-// fixed look (OLOF.look + his colours, olofLook): one SkinnedMesh — one draw call, like one player avatar — on a rigid
-// skeleton (every vertex follows one bone): hips, torso, head, two arms (shoulder, elbow, hand) and two legs (hip, knee,
+// fixed look (OLOF.look + his colours, olofLook): one SkinnedMesh — one draw call, like one player avatar — on the shared
+// skeleton (continuous limb surfaces blend adjacent bones, #1916): hips, torso, head, two arms (shoulder, elbow, hand) and two legs (hip, knee,
 // ankle). Poses are solved each frame by two-bone IK from a few target points (the feet at the pedals, the hands on the
 // wheel / waving), so the same figure can sit in any seat (and in the car's driving seat, #599).
 

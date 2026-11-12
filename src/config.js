@@ -3930,6 +3930,35 @@ export const JOIN_NOTICE = { graceMs: 45_000, batchMs: 1500, names: 3, anon: 'An
 // is lit normally (`emissiveSolid`). `walkSpeed` m/s: above it the legs walk; `poseFar` m: beyond it the pose is not updated;
 // `bodyTurn` rad: how far the head may turn from the body before the body follows. All by eye (*guess*).
 export const AVATAR = { fill: 0.07, rim: 0.85, rimPower: 2.2, emissiveOutline: 0.28, emissiveSolid: 0.06, walkSpeed: 0.25, poseFar: 30, bodyTurn: 0.9 };
+// #1916 visual guesses in the unchanged humanoid bone frame (metres): continuous
+// elliptical ring surfaces [height, half-width, half-depth, centre-z]. Rings at
+// either side of an elbow/knee share the same surface and blend the existing bones.
+// These are artistic proportions, not measured anatomy or gameplay colliders.
+export const AVATAR_SURFACE = {
+  sides: 12, jointBlend: 0.055, wristBlend: 0.028, shoulderBlend: 0.45,
+  attachInner: [0.03, -0.04], attachHeight: [-0.04, 0.05], clothOverlap: 0.005, jawTop: 0.075,
+  folds: { jointWidth: 0.12, cuffWidth: 0.05, jointRate: 95, cuffRate: 120, cuffStrength: 0.6, legCuff: -0.79, legWide: [-0.07, -0.42], angle: 2 },
+  arm: [[0.05, 0.012, 0.014], [0.035, 0.038, 0.039], [0.005, 0.054, 0.051], [-0.035, 0.055, 0.05],
+    [-0.08, 0.05, 0.045], [-0.13, 0.044, 0.042], [-0.19, 0.041, 0.041], [-0.235, 0.036, 0.038],
+    [-0.26, 0.035, 0.036], [-0.28, 0.035, 0.036], [-0.30, 0.035, 0.036], [-0.325, 0.038, 0.038],
+    [-0.36, 0.039, 0.038], [-0.405, 0.035, 0.034], [-0.455, 0.029, 0.03], [-0.49, 0.025, 0.027],
+    [-0.525, 0.021, 0.024], [-0.55, 0.019, 0.023], [-0.575, 0.019, 0.023]],
+  leg: [[0.04, 0.042, 0.052], [0.015, 0.066, 0.076], [-0.04, 0.079, 0.083], [-0.12, 0.077, 0.079],
+    [-0.22, 0.07, 0.071], [-0.31, 0.061, 0.061], [-0.375, 0.052, 0.054], [-0.41, 0.049, 0.052],
+    [-0.44, 0.05, 0.052], [-0.47, 0.049, 0.051], [-0.51, 0.052, 0.053], [-0.57, 0.055, 0.059],
+    [-0.63, 0.052, 0.057], [-0.7, 0.045, 0.05], [-0.77, 0.038, 0.042], [-0.81, 0.036, 0.038], [-0.845, 0.035, 0.037]],
+  sleeve: { ease: 0.006, short: -0.13, long: -0.49, fold: 0.003 },
+  trouser: { ease: 0.004, fold: 0.0035 },
+  headSides: 24,
+  head: [[-0.022, 0.012, 0.023, 0.035], [-0.012, 0.036, 0.049, 0.034], [0.005, 0.057, 0.065, 0.03],
+    [0.025, 0.073, 0.078, 0.025], [0.05, 0.084, 0.088, 0.02], [0.075, 0.096, 0.099, 0.014],
+    [0.1, 0.103, 0.108, 0.01], [0.125, 0.101, 0.105, 0.01], [0.15, 0.093, 0.097, 0.01],
+    [0.175, 0.081, 0.084, 0.01], [0.195, 0.063, 0.067, 0.01], [0.211, 0.04, 0.044, 0.01], [0.221, 0.001, 0.001, 0.01]],
+  face: { cheek: [0.003, 0.05, 0.04, 0.073, 0.035], brow: [0.003, 0.127, 0.018], chin: [0.003, 0.01, 0.025], socket: [0.004, 0.021, 0.014], front: [0.25, 0.9] },
+  eye: { upper: 0.0054, lower: 0.0042, outer: [0.019, 0.012, 0.105], columns: 12, rows: 4, irisDepth: 0.22, pupilDepth: 0.12, lidDepth: 0.9, scleraBase: 0.85, scleraRound: 0.15 },
+  cloth: { waistFold: 0.003, sideFold: 0.003, waveAngle: [3, 2], waveHeight: [38, 30], waist: [0.10, 0.10], side: [0.32, 0.16], rings: [0.075, 0.10, 0.17, 0.21, 0.30, 0.36, 0.40] },
+  hair: { wave: 0.0016, frequency: 7, flow: 2, part: [-18, 7, 0.003], streak: 0.12 },
+};
 // The avatars' face (#1101, src/avatar.js addFace / faceWarp), *guess* by eye against the skull / jaw ellipsoids of
 // PVP_RIFLE_HEAD, head-bone frame (metres, the face looks +z). eye: [x, y, z] of the eyeball's centre, its radius / scale,
 // the iris and pupil radii, the eye colours; ridge: the brow ridge over each eye [x, y, z, r, scale]; brow: the arc
@@ -3943,8 +3972,8 @@ export const AVATAR_FACE = {
   socket: { r: 0.0185, scale: [1.08, 0.72, 0.3], z: 0.107, shade: 0.88 },
   ridge: { at: [0.031, 0.126, 0.099], r: 0.028, scale: [1.2, 0.3, 0.36], shade: 0.93 },
   brow: { at: [0.035, 0.1265, 0.1175], radius: 0.034, arc: 1.0, tilt: -0.1, turn: 0.38, tube: 0.0027 },
-  nose: { top: 0.115, bottom: 0.071, z: 0.113, width: [0.0045, 0.0135], depth: [0.009, 0.038], alar: [0.0095, 0.0755, 0.1165, 0.0068] },
-  lips: { upper: [0.047, 0.1165, 0.02, [1, 0.24, 0.3]], lower: [0.0365, 0.1155, 0.018, [1, 0.3, 0.33]], seam: 0x4a2a28, bend: 7 },
+  nose: { top: 0.115, bottom: 0.071, z: 0.113, width: [0.0045, 0.0135], depth: [0.009, 0.027], alar: [0.0095, 0.0755, 0.1165, 0.0068] },
+  lips: { upper: [0.047, 0.1085, 0.02, [1, 0.2, 0.2]], lower: [0.039, 0.108, 0.018, [1, 0.24, 0.25]], seam: 0x4a2a28, bend: 7 },
   chin: { at: [0, 0.012, 0.093], r: 0.018, scale: [1.2, 0.8, 0.7] },
   warp: { width: 0.93, narrow: 0.26, y: [0.075, 0], z: [0, 0.1] },
   lipTint: 0xb0605a,
