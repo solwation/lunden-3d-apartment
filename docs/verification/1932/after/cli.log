@@ -1,0 +1,28 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS rest: actual Player/Suit/Hand has finite state and unchanged worn save
+PASS rest: original empty hands hidden
+PASS shoot: actual Player/Suit/Hand has finite state and unchanged worn save
+PASS shoot: original web hand morph
+PASS ground: actual Player/Suit/Hand has finite state and unchanged worn save
+PASS ground: real center-ray hit and configured palm origin
+PASS ground: actual attach/swing shows both hands
+PASS ground: settled reach is unchanged by same-frame feed; order is not inferred as persistent pose cause
+PASS air: actual Player/Suit/Hand has finite state and unchanged worn save
+PASS air: real center-ray hit and configured palm origin
+PASS air: actual attach/swing shows both hands
+PASS air: settled reach is unchanged by same-frame feed; order is not inferred as persistent pose cause
+PASS right: actual Player/Suit/Hand has finite state and unchanged worn save
+PASS right: real center-ray hit and configured palm origin
+PASS right: actual attach/swing shows both hands
+PASS right: settled reach is unchanged by same-frame feed; order is not inferred as persistent pose cause
+PASS up: actual Player/Suit/Hand has finite state and unchanged worn save
+PASS up: real center-ray hit and configured palm origin
+PASS up: actual attach/swing shows both hands
+PASS up: settled reach is unchanged by same-frame feed; order is not inferred as persistent pose cause
+PASS climb: actual Player/Suit/Hand has finite state and unchanged worn save
+PASS actual wall climb keeps both hands
+PASS held: actual Player/Suit/Hand has finite state and unchanged worn save
+PASS held-item priority and whole model matrix preserved
+PASS zero page errors
+PASS native phase never requested WebGL
+ALL PASS 26 checks, 0 FAIL

@@ -28,7 +28,8 @@ let checks=0,failures=0;const records=[],errors=[];const check=(ok,label)=>{chec
    const camera=new T.PerspectiveCamera(72,640/420,.03,100);camera.rotation.order='YXZ';scene.add(camera);
    const wallZ=phase==='up'?18:12;
    const world={size:{x:10,z:10},levels:[{segments:[[-40,wallZ,0,wallZ]]},{segments:[]}],doors:[],units:[],platforms:[],unitAt:()=>null,
-    roofs:{topAt:()=>24,under:()=>null,above:()=>Infinity,walls:()=>[],blocks:()=>false}};
+    // Open sky: Roofs.overhead returns null when no surface is above the climbing player (#1932).
+    roofs:{topAt:()=>24,under:()=>null,above:()=>Infinity,overhead:()=>null,walls:()=>[],blocks:()=>false}};
    const player=new Player(world,camera);player.spawn(-20,20,0);
    if(phase==='air'||phase==='right'||phase==='up'){player.pos.y+=4;player.eyeY=player.pos.y+config.PLAYER.eye;camera.position.y=player.eyeY;}
    const ground=player.groundAt(-20,20,0);

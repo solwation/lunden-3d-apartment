@@ -1,0 +1,14 @@
+{
+  "hashes": {
+    "src/hand.js": "a4ab8914a060f7fb0f76184e18674fe1ad4f4876133830897722c359c271ab75",
+    "src/spidersuit.js": "fca5205f6cfe43b5fe205bb075db2c995eead7fb55c1209a8689e000b8d6d71d",
+    "src/player.js": "d7e21cc3294b26e7988f49b37f8c1819d2f5f3bfbbe7b2e78ad7347bd142a696",
+    "src/config.js": "ebfb4896de91cdf41377caaa06cc56ef4fe5d36a4741b65528ca7817b79a7a28",
+    "src/main.js": "85253e4e1c4946553323a3e764ed56e3aba9d6df9a92c25d21df942450a5f4e9",
+    "index.html": "b0262efbacae7da61e8b86bc1e9c1aeccb932b0327a1cfd3754ef2a0b9367bb2",
+    "tools/webhandstest.cjs": "fa9f5b0659bd81533e237c37fce343084c6fb0f099c5b25c8d5134a741e03063"
+  },
+  "head": "d8c2c703b8226ba9cf29215b062d612b5d4bdef2",
+  "render": false,
+  "handBeforeSuit": true
+}

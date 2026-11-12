@@ -1,0 +1,11 @@
+{
+  "pid": 1415169,
+  "checkout": "/home/devcontainers/lunden-wt/lunden-1932-webhands-fixture",
+  "command": [
+    "python3",
+    "tools/devserve.py",
+    "8201"
+  ],
+  "three": "Local cached Three.js 0.170.0 served through /__three/ by devserve.py; production import map file unchanged.",
+  "stoppedByOwner": true
+}
