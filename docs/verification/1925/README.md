@@ -32,7 +32,7 @@ Images saved and opened:
 - `magic-normal.png`, `magic-close.png`, `magic-folded.png`: the actual small instanced
   wand butterflies; the final painted open span is 7.92cm.
 - `collection-0/1/2.png`: actual yellow, orange and magic collection recipes.
-- Matching source-frozen views are in `before/`; the same whole/front/side/normal
+- Matching source-frozen views are [pinned at the published revision](https://github.com/solwation/lunden-3d-apartment/tree/e054d606a6e98a557e7182cf98b50ce27cd987b0/docs/verification/1925/before); the same whole/front/side/normal
   cameras and open ambient time π/32 are used before/after (closed time0 separately).
 
 ## Three scoped risk groups
@@ -128,3 +128,6 @@ ordinary thirty-day policy. This worker supplies only a local Refs handoff.
 
 
 Root read the combined production/fixture/source-bound evidence and opened whole, normal, folded and corrected magic images. Rebase keeps every measured butterfly/Marks/OutdoorCats/fixture file, all three relevant config sections and the exact two butterfly collection cases. The separately integrated gull case is preserved exactly. [Integration mapping](integration.json) binds this delivery, changelog1484 after latest main fetch.
+
+
+Published source `e054d606a6e98a557e7182cf98b50ce27cd987b0`: actual Pages and Worker deployment succeeded. [Ten reviewed pinned before/result images](https://github.com/solwation/lunden-3d-apartment/issues/1925#issuecomment-6821295013) returned HTTP200 image types before closure. This resolving docs commit prunes all thirteen own before PNGs; raw measurements and result images remain.
