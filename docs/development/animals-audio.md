@@ -1111,17 +1111,26 @@ seed and the week's number, all *guess*) a large shark's fin cuts the surface of
 tests use it) makes it a pure function like the fish: `sharkWindow(k)` / `sharkNow(t)` / `nextSharkWindow(t)`, `sharkAt(w, t)` (back and forth
 along up to `span` m of one of the fish's swim stretches, so clear of the road bridge's piers, a little sideways, at the surface; `show` lets it
 rise at the start and sink at the end), `sharkPhase(record, ms)` ('body' for `SHARK.body` s, 'bones' for `SHARK.bones` s, then null) and
-`cleanSharkRecord`. `src/shark.js` draws the fin (34 triangles), a dark shape under it, a wake V and up to three rings (deterministic: one per
-`ring.every` s at the shark's place then) within `drawDist` m of the eye, and the caught shark lying on its side where it was landed: the body
-(`caughtFishGeometry('haj', SHARK.look)`, the #1765 loft with a dark-red wound where the fin was, ~470 triangles) for an hour, then the skeleton
-(`skeletonGeometry`, ~680 triangles: skull, jaws with teeth, spine, ribs, fin rays) for a day, then nothing; everything is built the first time
-it is needed (nothing at the start). `RiverFish` owns it (`riverFish.shark`, updated in `RiverFish.update`).
+`cleanSharkRecord`. `src/shark.js` now uses the authored `sharksurface.js` / `SHARK.surface`
+recipe (#1926): a tapered shark head, underside mouth, five gills, swept paired fins
+and asymmetric tail. The landed/binder body is 852 triangles and deliberately
+lacks the removed first dorsal. The fin is 66 triangles, smoothly swept, in the
+same height/hand frame. The existing shadow shares the body's geometry, flattened
+in its original centre/heading/material; wake, rings and phase authority remain.
+The actual swim phase submits five shark passes (the transparent DoubleSide wake
+already uses two), not four inferred from object count. Body/skeleton/held phases
+remain one call. The 660-triangle skeleton is unchanged. Absence or far distance
+builds no shark meshes; the existing one-hour body/day skeleton schedule remains.
+`RiverFish` owns it (`riverFish.shark`, updated in `RiverFish.update`). The shark's
+thumbnail version is 2; ID/number 57 and saved photos remain stable.
+[Matched images, all retained views, submitted costs and limits](../verification/1926/README.md).
+
 
 Fishing (#1753): `Fishing.appetite` adds the shark (`shark.near`, id −1) with appetite `SHARK.bite`; its bite must be struck within
 `strike.window` s and tears loose with chance `strike.slip` before the room is asked ("Något stort slet sig loss!"). A strike calls
 `RiverFishSync.catchShark(p, yaw)` with the landing spot (`dropSpot(1.7)`); the room answers `sok` / `sno`. Caught: `landShark` lays the rod
 down and puts `SharkFin` ("hajfenan", a Holdable with no home, at most `keepFins`) in the hand; keep.js's `fishing` record gets `fins` (`h`, or
-`p` / `q`). The others see it as held category `sharkfin` (ghostprops.js proxy, ~10 triangles). main.js `onSharkCatch` pays `bump('sharkFin')`
+`p` / `q`). The others see it as held category `sharkfin` (ghostprops.js shared-profile proxy, 66 triangles/one draw, exact legacy hand envelope). main.js `onSharkCatch` pays `bump('sharkFin')`
 once (`SCORE.first.sharkFin` 400 with its badge); nothing about the shark is listed beforehand.
 
 Sync (`src/riverfishsync.js`, `cloudflare/riverfish.js`, protocol in that file): 'L' carries `sh` (the room's live catch record) and `sk: 1`

@@ -1,0 +1,2 @@
+PASS shared bounded carcass 852 tri/23364 B, fin 66 tri/1836 B, finite surfaces, original length/fin anchors, outward closed mirrored fins
+PASS remote fin shares one 1836 B cache, exact legacy envelope, finite attributes and red cut cap

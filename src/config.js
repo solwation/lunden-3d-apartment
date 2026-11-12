@@ -7888,6 +7888,29 @@ export const SHARK = {
     dorsal2: [0.25, 0.3, 0.05, 0.02], anal: [0.2, 0.25, 0.04, 0.015], pec: [0.66, 0.22], pelvic: [0.36, 0.07], eye: [0.9, 0.012],
     back: 0x4c5862, side: 0x6a767f, belly: 0xe9e7e1, fins: { dorsal: 0x4e5963, tail: 0x4e5963, paired: 0x55616b, lower: 0x55616b }, iris: 0x202020,
     spots: [[0x7c231d, 1, 0.52, 0.6, 0.985, 0.995, 0.03]] },
+  // #1926 project-authored surface estimates (guess), normalized to existing length/fin height.
+  surface: {
+    rings: 20, around: 16, minRadius: .0001,
+    // Exact legacy remote category-proxy Float32 envelope; no new wire data.
+    ghost: { min: [-0.025980761274695396,0.007499999832361937,-0.2449999898672104],
+      max: [0.025980761274695396,0.44999998807907104,0.08499999344348907] },
+    // z, half-width, half-height, centre-y; the nose/tail length planes stay +/-.5.
+    profile: [[-.31,.012,.018,0],[-.25,.028,.03,0],[-.1,.065,.075,0],[.08,.09,.095,0],[.22,.085,.088,0],[.34,.07,.066,-.002],[.43,.046,.038,-.006],[.485,.018,.014,-.009],[.5,.002,.006,-.009]],
+    skin: { back: [.1,.85], belly: [.05,.8], mouthZ: .4, mouthAngle: [-.82,-.5], mouth: 0x30383a },
+    gill: { z: [.235,.207,.179,.151,.123], angles: [-.3,.08,.46,.84], width: .003, lift: .0008, color: 0x303b42 },
+    eye: { z: .405, angle: .25, radius: .0075, lift: .0015, segments: 8, color: 0x111b20 },
+    tail: [[.018,-.31],[.11,-.4],[.18,-.5],[.05,-.45],[0,-.39],[-.12,-.48],[-.04,-.38],[-.018,-.31]],
+    pectoral: [[.07,-.04,.17],[.16,-.06,.08],[.26,-.075,-.12],[.21,-.07,-.105],[.1,-.045,.035]],
+    pelvic: [[.045,-.045,-.12],[.11,-.06,-.21],[.085,-.055,-.23],[.03,-.045,-.19]],
+    dorsal2: [[0,.065,-.13],[0,.105,-.2],[0,.05,-.22]],
+    anal: [[0,-.045,-.18],[0,-.085,-.25],[0,-.03,-.25]],
+    finThickness: .002, finEdgeShade: .9, finBellyMix: .35,
+    wound: { z: .05, rx: .016, rz: .045, lift: .001, segments: 8 },
+    wholeDorsal: { height: .14, at: [0,.091,.05] },
+    // height, leading-z, trailing-z, half-thickness in units of fin height.
+    finProfile: [[0,.34,-.2,.07],[.12,.3,-.17,.064],[.25,.25,-.14,.057],[.4,.185,-.125,.048],[.55,.11,-.12,.038],[.7,.025,-.145,.028],[.82,-.065,-.18,.019],[.92,-.16,-.225,.01],[1,-.26,-.26,0]],
+    finRootShade: .8, finEdgeTint: .9, shadowScaleY: .28,
+  },
   bone: 0xe6dfca, finColor: 0x59626b, cut: 0x8a2a24, // the skeleton's bone, the fin's grey skin and its cut base
 };
 

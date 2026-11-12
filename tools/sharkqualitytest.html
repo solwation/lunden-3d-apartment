@@ -1,0 +1,25 @@
+<!doctype html><html><meta charset="utf-8"><link rel="icon" href="data:,"><title>Shark production forms</title><style>body{margin:0}canvas{display:block}</style><script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script><script type="module">
+import * as T from'three';import{Shark,SharkFin,loadSharkModel}from'../src/shark.js';import{SHARK as S,RIVER_FISH}from'../src/config.js';import{sharkAt,sharkWindow,sharkPhase}from'../src/sharkswim.js';import{riverPoint}from'../src/riverfishswim.js';import{buildRiverBridges}from'../src/riverbridge.js';import{setHeld}from'../src/holdable.js';
+const gltf=await loadSharkModel(),scene=new T.Scene();scene.background=new T.Color(0xd3e3ed);scene.add(new T.HemisphereLight(0xffffff,0x786b54,2));const sun=new T.DirectionalLight(0xfff3df,2.5);sun.position.set(4,8,5);scene.add(sun);
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(1200,800);renderer.setPixelRatio(1);renderer.toneMapping=T.ACESFilmicToneMapping;document.body.append(renderer.domElement);const camera=new T.PerspectiveCamera(40,1.5,.01,1000);scene.add(camera);
+const sync={t:40,seed:RIVER_FISH.seed,roomMs:0,shark:null,sharkWindow(){return this.live?sharkWindow(0,this.seed,true):null},sharkPhase(){return sharkPhase(this.shark,this.roomMs)}};const shark=new Shark({scene,camera,sync});
+const ground=new T.Mesh(new T.PlaneGeometry(40,40).rotateX(-Math.PI/2),new T.MeshStandardMaterial({color:0x929b74,roughness:1}));scene.add(ground);const water=buildRiverBridges().getObjectByName('bridges-water');scene.add(water);water.visible=false;
+const held=new SharkFin(scene,camera,{dropSpot:()=>new T.Vector3()},new T.Vector3());let whole;gltf?.scene.traverse(o=>{if(o.name==='Shark_whole')whole=new T.Mesh(o.geometry,new T.MeshLambertMaterial({vertexColors:true,side:T.DoubleSide}))});if(whole){whole.visible=false;scene.add(whole)}
+function render(){camera.updateProjectionMatrix();camera.updateMatrixWorld();scene.updateMatrixWorld(true);renderer.render(scene,camera)}
+function show(mode='body-quarter'){
+ setHeld(null);held.held=false;scene.add(held.model);held.model.visible=false;if(whole){whole.visible=false;whole.position.set(0,0,0)}sync.live=false;sync.shark=null;sync.roomMs=0;camera.fov=40;ground.visible=true;water.visible=false;camera.position.set(3,1.7,4);camera.lookAt(0,.25,0);
+ if(mode.startsWith('river')||mode==='fin-close'){
+  ground.visible=false;water.visible=true;sync.live=true;sync.t=40;const o=sharkAt(sync.sharkWindow(),sync.t,{},sync.seed),bank=riverPoint(o.s),off=bank.hw+2;
+  camera.fov=mode==='river-normal'?70:40;camera.position.set(o.x+bank.nx*off,o.y+1.62,o.z+bank.nz*off);camera.lookAt(o.x,o.y+.15,o.z);if(mode==='fin-close'){camera.position.set(o.x+1.2,o.y+.8,o.z+1.4);camera.lookAt(o.x,o.y+.2,o.z)}
+ }else if(mode==='held'){
+  ground.visible=false;camera.fov=70;camera.position.set(0,1.62,0);camera.rotation.set(0,0,0);camera.updateMatrixWorld();held.model.visible=true;held.take();
+ }else if(mode==='whole'){
+  if(whole){whole.visible=true;whole.position.y=-new T.Box3().setFromObject(whole).min.y+.03;}
+ }else{
+  sync.shark={w:0,at:0,p:[0,0,0],r:0};sync.roomMs=mode==='bones'?(S.body+.1)*1000:0;
+  if(mode==='body-side')camera.position.set(4,1,0);if(mode==='body-front')camera.position.set(0,1.1,4);if(mode==='body-normal'){camera.fov=70;camera.position.set(2,1.62,3)}camera.lookAt(0,.25,0);
+ }
+ shark.update(0,false,1);render();return shark.state();
+}
+window.sharkQuality={scene,camera,renderer,shark,sync,ground,water,held,whole,show,render,ready:true};show();
+</script></html>

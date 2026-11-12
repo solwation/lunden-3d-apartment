@@ -1,0 +1,36 @@
+{
+  "baselineRevision": "ad9eab1160e095847280a52c585d221a51b75cf1",
+  "sha256": {
+    "src/config.js": "4fa3b3ffc69c95d091ebc81b59181332226fb8d844f3068d02d96a9402d9c643",
+    "src/shark.js": "137f852b851f0080bffb878b8e234545785de9a77c68fdcac9c5589f8bafe345",
+    "src/sharksurface.js": "5c1fb0599466131ec52162dc2d07d85ab9934030cf6678daa9c03e3fbdbd4994",
+    "src/caughtfish.js": "a89a0aeab36d1b131745d364815544526b48112605622a4d9f6aa9dde5e530ba",
+    "models/shark.glb": "649061a972726cc55e7c26b8bd10a7edc2d372c23f7593ac019ac6d1615a4e47",
+    "models/fish-generic.glb": "6c6d3b760c8144786c4465d06a6e8d87ccf5575fc4096570d3fb5e6882243e32",
+    "tools/buildfishglb.mjs": "deb4d01c1e71ad49414b7a345fd2abfcadad41ba5e8a7506a716c110a81da604",
+    "tools/measure-shark-geometry.mjs": "5c32f44b25e7fb8f40150ef490c6b8e438c924e8bbe7bd45169f277603dd4a15",
+    "tools/sharksurfacetest.mjs": "83ab104d789b9acee164a65da54556e245ba056ed822c99322c34cb60aea0feb",
+    "tools/sharkqualitytest.html": "75c197c65f6c3e96a2cda0d17dca09007e4b8d83a74def946f043291a9decf3f",
+    "tools/capture-shark-quality.cjs": "f7018a13f607885ff85db13412d2ddf1a5f2df26976cc6bebcc780f1f4858874",
+    "src/ghostprops.js": "6d72dd25882acb4caf68f28fdbb220b946e202e23ebcdc5fb24ec8716bb2d01e",
+    "tools/ghostsharkquality.html": "1583a7c224f8c0d1923135e3d5d688fa084764eb85f38b00937a76dcea77fd58",
+    "tools/capture-ghost-shark-quality.cjs": "7a2dc776ebbe45a83ff0f8d2b2c0757ab2aec130fc8a771c9853e3876a84a0a6"
+  },
+  "mainCaptureSha256": {
+    "src/config.js": "ae1a90d3f34a45b02bd900253b7ea742bb0d32630dc940d6fe459f986bfdbeca",
+    "src/shark.js": "176c1e7de5220a50d4041c7a32ffed8d1c79005c6d3b1596ed058a7396e9c57b",
+    "src/caughtfish.js": "a89a0aeab36d1b131745d364815544526b48112605622a4d9f6aa9dde5e530ba",
+    "models/shark.glb": "649061a972726cc55e7c26b8bd10a7edc2d372c23f7593ac019ac6d1615a4e47",
+    "models/fish-generic.glb": "6c6d3b760c8144786c4465d06a6e8d87ccf5575fc4096570d3fb5e6882243e32",
+    "src/sharksurface.js": "5c1fb0599466131ec52162dc2d07d85ab9934030cf6678daa9c03e3fbdbd4994",
+    "tools/sharkqualitytest.html": "75c197c65f6c3e96a2cda0d17dca09007e4b8d83a74def946f043291a9decf3f",
+    "tools/capture-shark-quality.cjs": "f7018a13f607885ff85db13412d2ddf1a5f2df26976cc6bebcc780f1f4858874"
+  },
+  "proxyCaptureSha256": {
+    "src/config.js": "4fa3b3ffc69c95d091ebc81b59181332226fb8d844f3068d02d96a9402d9c643",
+    "src/sharksurface.js": "5c1fb0599466131ec52162dc2d07d85ab9934030cf6678daa9c03e3fbdbd4994",
+    "src/ghostprops.js": "6d72dd25882acb4caf68f28fdbb220b946e202e23ebcdc5fb24ec8716bb2d01e",
+    "tools/ghostsharkquality.html": "1583a7c224f8c0d1923135e3d5d688fa084764eb85f38b00937a76dcea77fd58",
+    "tools/capture-ghost-shark-quality.cjs": "7a2dc776ebbe45a83ff0f8d2b2c0757ab2aec130fc8a771c9853e3876a84a0a6"
+  }
+}

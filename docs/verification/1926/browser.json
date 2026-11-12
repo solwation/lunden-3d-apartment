@@ -1,0 +1,660 @@
+{
+  "baseline": null,
+  "environment": "actual Shark/SharkFin/BestiaryImages; controlled bank plane; production opaque river water; Chromium SwiftShader DPR1",
+  "views": [
+    {
+      "mode": "body-quarter",
+      "finite": true,
+      "cameraFinite": true,
+      "changedPixels": 50162,
+      "submitted": {
+        "frame": 2,
+        "calls": 2,
+        "triangles": 854,
+        "points": 0,
+        "lines": 0
+      },
+      "state": {
+        "window": null,
+        "at": null,
+        "finShown": false,
+        "record": {
+          "w": 0,
+          "at": 0,
+          "p": [
+            0,
+            0,
+            0
+          ],
+          "r": 0
+        },
+        "phase": "body",
+        "shown": "body",
+        "tris": {
+          "fin": 66,
+          "body": 852,
+          "bones": 660
+        }
+      },
+      "waterOpaque": true,
+      "bodyMinY": 0
+    },
+    {
+      "mode": "body-side",
+      "finite": true,
+      "cameraFinite": true,
+      "changedPixels": 118598,
+      "submitted": {
+        "frame": 5,
+        "calls": 2,
+        "triangles": 854,
+        "points": 0,
+        "lines": 0
+      },
+      "state": {
+        "window": null,
+        "at": null,
+        "finShown": false,
+        "record": {
+          "w": 0,
+          "at": 0,
+          "p": [
+            0,
+            0,
+            0
+          ],
+          "r": 0
+        },
+        "phase": "body",
+        "shown": "body",
+        "tris": {
+          "fin": 66,
+          "body": 852,
+          "bones": 660
+        }
+      },
+      "waterOpaque": true,
+      "bodyMinY": 0
+    },
+    {
+      "mode": "body-front",
+      "finite": true,
+      "cameraFinite": true,
+      "changedPixels": 30580,
+      "submitted": {
+        "frame": 8,
+        "calls": 2,
+        "triangles": 854,
+        "points": 0,
+        "lines": 0
+      },
+      "state": {
+        "window": null,
+        "at": null,
+        "finShown": false,
+        "record": {
+          "w": 0,
+          "at": 0,
+          "p": [
+            0,
+            0,
+            0
+          ],
+          "r": 0
+        },
+        "phase": "body",
+        "shown": "body",
+        "tris": {
+          "fin": 66,
+          "body": 852,
+          "bones": 660
+        }
+      },
+      "waterOpaque": true,
+      "bodyMinY": 0
+    },
+    {
+      "mode": "body-normal",
+      "finite": true,
+      "cameraFinite": true,
+      "changedPixels": 26949,
+      "submitted": {
+        "frame": 11,
+        "calls": 2,
+        "triangles": 854,
+        "points": 0,
+        "lines": 0
+      },
+      "state": {
+        "window": null,
+        "at": null,
+        "finShown": false,
+        "record": {
+          "w": 0,
+          "at": 0,
+          "p": [
+            0,
+            0,
+            0
+          ],
+          "r": 0
+        },
+        "phase": "body",
+        "shown": "body",
+        "tris": {
+          "fin": 66,
+          "body": 852,
+          "bones": 660
+        }
+      },
+      "waterOpaque": true,
+      "bodyMinY": 0
+    },
+    {
+      "mode": "whole",
+      "finite": true,
+      "cameraFinite": true,
+      "changedPixels": 49361,
+      "submitted": {
+        "frame": 14,
+        "calls": 2,
+        "triangles": 912,
+        "points": 0,
+        "lines": 0
+      },
+      "state": {
+        "window": null,
+        "at": null,
+        "finShown": false,
+        "record": null,
+        "phase": null,
+        "shown": null,
+        "tris": {
+          "fin": 66,
+          "body": 852,
+          "bones": 660
+        }
+      },
+      "waterOpaque": true,
+      "bodyMinY": null
+    },
+    {
+      "mode": "river-normal",
+      "finite": true,
+      "cameraFinite": true,
+      "changedPixels": 655,
+      "submitted": {
+        "frame": 17,
+        "calls": 6,
+        "triangles": 2156,
+        "points": 0,
+        "lines": 0
+      },
+      "state": {
+        "window": {
+          "k": 0,
+          "start": 0,
+          "end": 86400
+        },
+        "at": {
+          "x": 262.4997415392197,
+          "y": -6.747533901768277,
+          "z": 48.9015649640058,
+          "show": 1
+        },
+        "finShown": true,
+        "record": null,
+        "phase": null,
+        "shown": null,
+        "tris": {
+          "fin": 66,
+          "body": 852,
+          "bones": 660
+        }
+      },
+      "waterOpaque": true,
+      "bodyMinY": null
+    },
+    {
+      "mode": "fin-close",
+      "finite": true,
+      "cameraFinite": true,
+      "changedPixels": 16380,
+      "submitted": {
+        "frame": 20,
+        "calls": 6,
+        "triangles": 2156,
+        "points": 0,
+        "lines": 0
+      },
+      "state": {
+        "window": {
+          "k": 0,
+          "start": 0,
+          "end": 86400
+        },
+        "at": {
+          "x": 262.4997415392197,
+          "y": -6.747533901768277,
+          "z": 48.9015649640058,
+          "show": 1
+        },
+        "finShown": true,
+        "record": null,
+        "phase": null,
+        "shown": null,
+        "tris": {
+          "fin": 66,
+          "body": 852,
+          "bones": 660
+        }
+      },
+      "waterOpaque": true,
+      "bodyMinY": null
+    },
+    {
+      "mode": "bones",
+      "finite": true,
+      "cameraFinite": true,
+      "changedPixels": 12732,
+      "submitted": {
+        "frame": 23,
+        "calls": 2,
+        "triangles": 662,
+        "points": 0,
+        "lines": 0
+      },
+      "state": {
+        "window": null,
+        "at": null,
+        "finShown": false,
+        "record": {
+          "w": 0,
+          "at": 0,
+          "p": [
+            0,
+            0,
+            0
+          ],
+          "r": 0
+        },
+        "phase": "bones",
+        "shown": "bones",
+        "tris": {
+          "fin": 66,
+          "body": 852,
+          "bones": 660
+        }
+      },
+      "waterOpaque": true,
+      "bodyMinY": null
+    },
+    {
+      "mode": "held",
+      "finite": true,
+      "cameraFinite": true,
+      "changedPixels": 32409,
+      "submitted": {
+        "frame": 26,
+        "calls": 1,
+        "triangles": 66,
+        "points": 0,
+        "lines": 0
+      },
+      "state": {
+        "window": null,
+        "at": null,
+        "finShown": false,
+        "record": null,
+        "phase": null,
+        "shown": null,
+        "tris": {
+          "fin": 66,
+          "body": 852,
+          "bones": 660
+        }
+      },
+      "waterOpaque": true,
+      "bodyMinY": null
+    },
+    {
+      "mode": "fin-close",
+      "finite": true,
+      "cameraFinite": true,
+      "changedPixels": 16380,
+      "submitted": {
+        "frame": 2,
+        "calls": 6,
+        "triangles": 2156,
+        "points": 0,
+        "lines": 0
+      },
+      "state": {
+        "window": {
+          "k": 0,
+          "start": 0,
+          "end": 86400
+        },
+        "at": {
+          "x": 262.4997415392197,
+          "y": -6.747533901768277,
+          "z": 48.9015649640058,
+          "show": 1
+        },
+        "finShown": true,
+        "record": null,
+        "phase": null,
+        "shown": null,
+        "tris": {
+          "fin": 66,
+          "body": 852,
+          "bones": 660
+        }
+      },
+      "waterOpaque": true,
+      "bodyMinY": null
+    },
+    {
+      "mode": "body-normal",
+      "finite": true,
+      "cameraFinite": true,
+      "changedPixels": 26949,
+      "submitted": {
+        "frame": 5,
+        "calls": 2,
+        "triangles": 854,
+        "points": 0,
+        "lines": 0
+      },
+      "state": {
+        "window": null,
+        "at": null,
+        "finShown": false,
+        "record": {
+          "w": 0,
+          "at": 0,
+          "p": [
+            0,
+            0,
+            0
+          ],
+          "r": 0
+        },
+        "phase": "body",
+        "shown": "body",
+        "tris": {
+          "fin": 66,
+          "body": 852,
+          "bones": 660
+        }
+      },
+      "waterOpaque": true,
+      "bodyMinY": 0
+    },
+    {
+      "mode": "bones",
+      "finite": true,
+      "cameraFinite": true,
+      "changedPixels": 12732,
+      "submitted": {
+        "frame": 8,
+        "calls": 2,
+        "triangles": 662,
+        "points": 0,
+        "lines": 0
+      },
+      "state": {
+        "window": null,
+        "at": null,
+        "finShown": false,
+        "record": {
+          "w": 0,
+          "at": 0,
+          "p": [
+            0,
+            0,
+            0
+          ],
+          "r": 0
+        },
+        "phase": "bones",
+        "shown": "bones",
+        "tris": {
+          "fin": 66,
+          "body": 852,
+          "bones": 660
+        }
+      },
+      "waterOpaque": true,
+      "bodyMinY": null
+    }
+  ],
+  "errors": [],
+  "contracts": {
+    "absentUnbuilt": true,
+    "farUnbuilt": true,
+    "hidden": true,
+    "nearHit": true,
+    "farMiss": true,
+    "bodyOnly": true,
+    "bonesOnly": true,
+    "expired": true,
+    "minY": 0,
+    "heldPose": {
+      "position": [
+        0.16,
+        -0.42,
+        -0.72
+      ],
+      "quaternion": [
+        0.03788932215338784,
+        0.6513206715094005,
+        0.032593199102633516,
+        0.7571548490920179
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "parentIsCamera": true
+    },
+    "placedMinY": 0.0010000000000000009
+  },
+  "timing": {
+    "viewport": [
+      640,
+      480
+    ],
+    "dpr": 1,
+    "samples": 30,
+    "warmup": 8,
+    "river-normal": {
+      "updateMs": {
+        "median": 0,
+        "p95": 0.10000000149011612,
+        "samples": [
+          0.09999999962747097,
+          0,
+          0,
+          0,
+          0.09999999962747097,
+          0,
+          0,
+          0,
+          0.09999999962747097,
+          0.10000000149011612,
+          0.09999999962747097,
+          0.10000000149011612,
+          0.09999999962747097,
+          0.09999999962747097,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.09999999962747097,
+          0,
+          0,
+          0.09999999962747097,
+          0,
+          0,
+          0.09999999962747097,
+          0.09999999962747097,
+          0.09999999962747097
+        ]
+      },
+      "renderFinishMs": {
+        "median": 0.2000000011175871,
+        "p95": 0.40000000037252903,
+        "samples": [
+          0.19999999925494194,
+          0.30000000074505806,
+          0.19999999925494194,
+          0.2000000011175871,
+          0.19999999925494194,
+          0.30000000074505806,
+          0.19999999925494194,
+          1.300000000745058,
+          0.19999999925494194,
+          0.09999999962747097,
+          0.19999999925494194,
+          0.19999999925494194,
+          0.2000000011175871,
+          0.19999999925494194,
+          0.30000000074505806,
+          0.19999999925494194,
+          0.2000000011175871,
+          0.2999999988824129,
+          0.2000000011175871,
+          0.2999999988824129,
+          0.10000000149011612,
+          0.19999999925494194,
+          0.30000000074505806,
+          0.19999999925494194,
+          0.2000000011175871,
+          0.40000000037252903,
+          0.19999999925494194,
+          0.2000000011175871,
+          0.19999999925494194,
+          0.30000000074505806
+        ]
+      },
+      "submitted": {
+        "frame": 71,
+        "calls": 6,
+        "triangles": 2156,
+        "points": 0,
+        "lines": 0
+      }
+    },
+    "body-normal": {
+      "updateMs": {
+        "median": 0,
+        "p95": 0,
+        "samples": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.09999999962747097,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "renderFinishMs": {
+        "median": 0.09999999962747097,
+        "p95": 0.19999999925494194,
+        "samples": [
+          0.19999999925494194,
+          0.09999999962747097,
+          0.10000000149011612,
+          0,
+          0.09999999962747097,
+          0.09999999962747097,
+          0.09999999962747097,
+          0.09999999962747097,
+          0.10000000149011612,
+          0.19999999925494194,
+          0.09999999962747097,
+          0.09999999962747097,
+          0,
+          0.2000000011175871,
+          0.09999999962747097,
+          0.19999999925494194,
+          0.10000000149011612,
+          0.09999999962747097,
+          0,
+          0,
+          0,
+          0.09999999962747097,
+          0.10000000149011612,
+          0.09999999962747097,
+          0.09999999962747097,
+          0.09999999962747097,
+          0.09999999962747097,
+          0.10000000149011612,
+          0.09999999962747097,
+          0
+        ]
+      },
+      "submitted": {
+        "frame": 110,
+        "calls": 2,
+        "triangles": 854,
+        "points": 0,
+        "lines": 0
+      }
+    }
+  },
+  "binder": {
+    "rows": [
+      {
+        "size": 96,
+        "opaque": 518,
+        "version": 2
+      },
+      {
+        "size": 320,
+        "opaque": 5789,
+        "version": 2
+      }
+    ],
+    "renders": 2
+  },
+  "sha256": {
+    "src/config.js": "ae1a90d3f34a45b02bd900253b7ea742bb0d32630dc940d6fe459f986bfdbeca",
+    "src/shark.js": "176c1e7de5220a50d4041c7a32ffed8d1c79005c6d3b1596ed058a7396e9c57b",
+    "src/caughtfish.js": "a89a0aeab36d1b131745d364815544526b48112605622a4d9f6aa9dde5e530ba",
+    "models/shark.glb": "649061a972726cc55e7c26b8bd10a7edc2d372c23f7593ac019ac6d1615a4e47",
+    "models/fish-generic.glb": "6c6d3b760c8144786c4465d06a6e8d87ccf5575fc4096570d3fb5e6882243e32",
+    "src/sharksurface.js": "5c1fb0599466131ec52162dc2d07d85ab9934030cf6678daa9c03e3fbdbd4994",
+    "tools/sharkqualitytest.html": "75c197c65f6c3e96a2cda0d17dca09007e4b8d83a74def946f043291a9decf3f",
+    "tools/capture-shark-quality.cjs": "f7018a13f607885ff85db13412d2ddf1a5f2df26976cc6bebcc780f1f4858874"
+  }
+}

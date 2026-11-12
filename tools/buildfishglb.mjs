@@ -3,6 +3,7 @@ import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 import {riverFishNeutralGeometry} from '../src/riverfishmodel.js';
 import {caughtFishGeometry} from '../src/caughtfish.js';
 import {finGeometry,skeletonGeometry} from '../src/shark.js';
+import {sharkBodyGeometry} from '../src/sharksurface.js';
 import {SHARK} from '../src/config.js';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -184,14 +185,13 @@ export function buildSharkModel() {
   add('Shark_skeleton',skeletonGeometry(false));
   // Separate intact inspection variant. Runtime carcass intentionally lacks its
   // first dorsal: that is the existing held fin. Never overlay alternatives.
-  const intact={...SHARK.look,dorsal:[.42,.6,.14,.04],spots:[]};
-  add('Shark_whole',caughtFishGeometry('haj-hel',intact).clone().scale(SHARK.len,SHARK.len,SHARK.len));
+  add('Shark_whole',sharkBodyGeometry(true).clone().scale(SHARK.len,SHARK.len,SHARK.len));
   return root;
 }
 
-export function exportFishGLBs(fishOnly=false) {
+export function exportFishGLBs(fishOnly=false,sharkOnly=false) {
   const exporter = new GLTFExporter();
-  const fishScene = buildFishModel();
+  const fishScene = sharkOnly?null:buildFishModel();
   const sharkScene = fishOnly?null:buildSharkModel();
 
   const exp = (scene) => new Promise((resolve, reject) => {
@@ -203,18 +203,18 @@ export function exportFishGLBs(fishOnly=false) {
     );
   });
 
-  return Promise.all([exp(fishScene), sharkScene?exp(sharkScene):Promise.resolve(null)]);
+  return Promise.all([fishScene?exp(fishScene):Promise.resolve(null), sharkScene?exp(sharkScene):Promise.resolve(null)]);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   console.log('Building fish and shark GLB models...');
-  exportFishGLBs(process.argv.includes('--fish-only')).then(([fishGlb, sharkGlb]) => {
+  exportFishGLBs(process.argv.includes('--fish-only'),process.argv.includes('--shark-only')).then(([fishGlb, sharkGlb]) => {
     const outFish = path.resolve(process.cwd(), 'models/fish-generic.glb');
     const outShark = path.resolve(process.cwd(), 'models/shark.glb');
     fs.mkdirSync(path.dirname(outFish), { recursive: true });
-    fs.writeFileSync(outFish, Buffer.from(fishGlb));
+    if(fishGlb)fs.writeFileSync(outFish, Buffer.from(fishGlb));
     if(sharkGlb)fs.writeFileSync(outShark, Buffer.from(sharkGlb));
-    console.log(`Exported models/fish-generic.glb: ${fishGlb.byteLength} bytes`);
+    if(fishGlb)console.log(`Exported models/fish-generic.glb: ${fishGlb.byteLength} bytes`);
     if(sharkGlb)console.log(`Exported models/shark.glb: ${sharkGlb.byteLength} bytes`);
   }).catch((err) => {
     console.error('Failed to export fish GLBs:', err);

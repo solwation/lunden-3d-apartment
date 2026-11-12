@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { CAUGHT_FISH as C } from './config.js';
+import { CAUGHT_FISH as C, SHARK } from './config.js';
+import { sharkBodyGeometry } from './sharksurface.js';
 import { buildFishSurface } from './fishsurface.js';
 
 // #1765: the caught fish's own model (CaughtFish in src/fishing.js), built per RIVER_FISH species from CAUGHT_FISH (all *guess*). One geometry
@@ -87,6 +88,7 @@ const cache = new Map();
 export function caughtFishGeometry(name, spec = null) { // (#1769: `spec` = a body spec of the same shape that is no RIVER_FISH species: the shark's carcass, SHARK.look)
   let g = cache.get(name);
   if (g) return g;
+  if (name === 'haj' && spec === SHARK.look) { g=sharkBodyGeometry();cache.set(name,g);return g; }
   if (!spec && C.species[name]) { g=buildFishSurface(name);cache.set(name,g);return g; }
   const s = spec ?? C.species[name] ?? Object.values(C.species)[0], B = fishBody(s), M = C.around, us = sections(s), out = new Builder();
   const V = () => new THREE.Vector3(), c = new THREE.Color(), fin = s.fins;

@@ -9,6 +9,7 @@ import { caughtFishGeometry } from './caughtfish.js';
 import { sharkAt } from './sharkswim.js';
 import { riverProject, riverPoint } from './riverfishswim.js';
 import { sfx } from './audio.js';
+import { sharkFinSurface } from './sharksurface.js';
 
 // #1769: the rare shark in Höje å. Where and when come from src/sharkswim.js (pure, the same for everybody); the catch record from the room
 // (src/riverfishsync.js, cloudflare/riverfish.js). This file draws:
@@ -17,7 +18,7 @@ import { sfx } from './audio.js';
 // - the caught shark on the bank where it was landed: the whole body (minus the fin) for SHARK.body s, then its skeleton for SHARK.bones s;
 // - SharkFin, the fin you get in the hand (a Holdable with no home, like a caught fish; Fishing keeps it in keep.js's `fishing` part).
 // Cost: nothing at the start (every mesh is built the first time it is needed and hidden beyond SHARK.drawDist m). Near the river during
-// the window: four draw calls (fin, shadow, wake, rings); near the carcass: one (body ~470 triangles, or the skeleton ~680). No texture, no
+// the window: five submitted passes (fin, shadow, two transparent wake passes, rings); near the carcass: one (body 852 triangles, or the skeleton 660). No texture, no
 // light, no shadow casting in the river.
 
 const NONE = { name: '', kind: 'none', pickable: new THREE.Object3D(), blocked: true };
@@ -108,22 +109,7 @@ export function finGeometry(h = S.fin, cut = false, useModel = true) {
       return cloned;
     }
   }
-  const H = [0, 0.3, 0.6, 0.85, 1], L = [0.34, 0.22, 0.08, -0.05, -0.26], T = [-0.2, -0.12, -0.1, -0.15, -0.26], W = [0.07, 0.055, 0.035, 0.016, 0];
-  const pos = [], cols = [], skin = new THREE.Color(S.finColor), dark = skin.clone().multiplyScalar(0.8), red = new THREE.Color(S.cut);
-  const lead = (i) => [0, H[i] * h, L[i] * h], trail = (i) => [0, H[i] * h, T[i] * h], mid = (i, sd) => [sd * W[i] * h, H[i] * h, ((L[i] + T[i]) / 2) * h];
-  const tri = (a, b, c, col) => { pos.push(...a, ...b, ...c); for (let k = 0; k < 3; k++) cols.push(col.r, col.g, col.b); };
-  for (const sd of [1, -1]) for (let i = 0; i < H.length - 1; i++) {
-    const c = i === 0 ? dark : skin, f = (a, b, cc) => (sd > 0 ? tri(a, b, cc, c) : tri(a, cc, b, c));
-    f(lead(i), mid(i, sd), lead(i + 1)); f(mid(i, sd), mid(i + 1, sd), lead(i + 1));
-    f(mid(i, sd), trail(i), mid(i + 1, sd)); f(trail(i), trail(i + 1), mid(i + 1, sd));
-  }
-  const base = cut ? red : dark;
-  tri(lead(0), mid(0, -1), mid(0, 1), base); tri(trail(0), mid(0, 1), mid(0, -1), base);
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
-  g.computeVertexNormals(); g.computeBoundingSphere();
-  return g;
+  return sharkFinSurface(h,cut);
 }
 
 const paint = (g, hex, k = 1) => {
@@ -212,8 +198,9 @@ export class Shark {
     this.built = true;
     const add = (m, name) => { m.name = name; m.visible = false; m.raycast = () => {}; m.userData.noDetail = true; m.castShadow = m.receiveShadow = false; this.scene.add(m); return m; };
     this.fin = add(new THREE.Mesh(finGeometry(S.fin * 1.15), new THREE.MeshLambertMaterial({ vertexColors: true })), 'shark-fin');
-    const shadow = new THREE.SphereGeometry(0.5, 10, 6).scale(0.19 * S.len, 0.06, S.len); shadow.deleteAttribute('uv');
+    const shadow = caughtFishGeometry('haj', S.look); // shared silhouette, built only when the shark is needed
     this.shadow = add(new THREE.Mesh(shadow, new THREE.MeshBasicMaterial({ color: 0x141c20, transparent: true, opacity: 0.55, depthWrite: false })), 'shark-shadow');
+    this.shadow.scale.set(S.len,S.surface.shadowScaleY,S.len);
     this.shadow.renderOrder = 2;
     { // the wake: a V of two additive wedges from the fin backwards, bright at the fin and fading out
       const { len, width } = S.wake, p = [0, 0, 0.1, width / 2, 0, -len, width / 2 - 0.55, 0, -len, 0, 0, 0.1, -width / 2 + 0.55, 0, -len, -width / 2, 0, -len];
@@ -286,8 +273,8 @@ export class Shark {
   state() {
     const w = this.sync.sharkWindow(), o = w ? sharkAt(w, this.sync.t, {}, this.sync.seed) : null;
     return { window: w, at: o && { x: o.x, y: o.y, z: o.z, show: o.show }, finShown: this.finShown, record: this.sync.shark, phase: this.sync.sharkPhase(), shown: this.shownPhase, pending: this.sync.sharkPending, test: this.sync.sharkTestOn,
-      tris: this.built ? { fin: this.fin.geometry.attributes.position.count / 3, body: this.body.children[0].geometry.index.count / 3, bones: this.bones.geometry.attributes.position.count / 3 } : null };
+      tris: this.built ? { fin: (this.fin.geometry.index?.count??this.fin.geometry.attributes.position.count) / 3, body: this.body.children[0].geometry.index.count / 3, bones: this.bones.geometry.attributes.position.count / 3 } : null };
   }
 }
 
-creature({id:'fish:shark',no:57,name:'Haj',family:'fish',level:4,model:{kind:'shark'},info:{size:'Ovanligt stor åbesökare',weight:'Mäts när den fångas',where:'Höje å',when:'Sällsynt besök',likes:'Att visa ryggfenan'},facts:['En särskilt sällsynt varelse i spelets å.','Fena och fångad kropp är samma varelse, inte egna arter.']});
+creature({id:'fish:shark',no:57,modelVersion:2,name:'Haj',family:'fish',level:4,model:{kind:'shark'},info:{size:'Ovanligt stor åbesökare',weight:'Mäts när den fångas',where:'Höje å',when:'Sällsynt besök',likes:'Att visa ryggfenan'},facts:['En särskilt sällsynt varelse i spelets å.','Fena och fångad kropp är samma varelse, inte egna arter.']});

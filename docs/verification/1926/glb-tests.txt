@@ -1,0 +1,34 @@
+TAP version 13
+# Subtest: shark.glb exists and contains valid glTF binary header
+ok 1 - shark.glb exists and contains valid glTF binary header
+  ---
+  duration_ms: 1.062298
+  type: 'test'
+  ...
+# Subtest: shark.glb contains fin, body, and skeleton meshes
+ok 2 - shark.glb contains fin, body, and skeleton meshes
+  ---
+  duration_ms: 6.294188
+  type: 'test'
+  ...
+# Subtest: riverfish.js and shark.js load and extract GLB geometries correctly
+ok 3 - riverfish.js and shark.js load and extract GLB geometries correctly
+  ---
+  duration_ms: 11.52278
+  type: 'test'
+  ...
+# Subtest: shark fin height and detailed skeleton match the established production source
+ok 4 - shark fin height and detailed skeleton match the established production source
+  ---
+  duration_ms: 16.001671
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 157.320218

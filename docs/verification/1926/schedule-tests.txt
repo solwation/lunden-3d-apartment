@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: the schedule: one window a week, 10-20 minutes, deterministic, at a different time of the week each week
+ok 1 - the schedule: one window a week, 10-20 minutes, deterministic, at a different time of the week each week
+  ---
+  duration_ms: 43.706635
+  type: 'test'
+  ...
+# Subtest: the shark swims in the channel at the surface, clear of the road bridge piers, slowly
+ok 2 - the shark swims in the channel at the surface, clear of the road bridge piers, slowly
+  ---
+  duration_ms: 39.90134
+  type: 'test'
+  ...
+# Subtest: phases: the body for SHARK.body s, the skeleton for SHARK.bones s, then gone
+ok 3 - phases: the body for SHARK.body s, the skeleton for SHARK.bones s, then gone
+  ---
+  duration_ms: 0.586799
+  type: 'test'
+  ...
+# Subtest: the room arbitrates: no shark outside its window, one catcher per window, reach and landing spot checked, everybody gets the record
+ok 4 - the room arbitrates: no shark outside its window, one catcher per window, reach and landing spot checked, everybody gets the record
+  ---
+  duration_ms: 1.834798
+  type: 'test'
+  ...
+# Subtest: the record survives hibernation (a fresh room object on the same storage) and is deleted once it has expired
+ok 5 - the record survives hibernation (a fresh room object on the same storage) and is deleted once it has expired
+  ---
+  duration_ms: 0.5889
+  type: 'test'
+  ...
+# Subtest: solo / offline: the catch is ours at once and remembered in the store
+ok 6 - solo / offline: the catch is ours at once and remembered in the store
+  ---
+  duration_ms: 0.375499
+  type: 'test'
+  ...
+# Subtest: through the Worker: test schedule flag, a catch reaches the other socket, the record survives hibernation; nothing else stored
+ok 7 - through the Worker: test schedule flag, a catch reaches the other socket, the record survives hibernation; nothing else stored
+  ---
+  duration_ms: 90.048666
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 333.185104
