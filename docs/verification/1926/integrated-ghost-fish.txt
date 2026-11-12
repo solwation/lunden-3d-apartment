@@ -1,0 +1,1 @@
+PASS indexed generic fish 161 triangles/5754 B; finite attributes, exact legacy envelope, nose down, identity hand frame, bounded shared cache and unknown category

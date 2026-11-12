@@ -194,3 +194,6 @@ checks and embeds pinned result images before closing.
 This shark is original-only capture/gameplay content. No public ambient-fish
 transfer applies. No broader gameplay, animal, network or performance work is
 included.
+
+
+Root reviewed the combined product/fixture/export diff and opened final body, whole, river, held, bones, binder and normal Ghost before/after. Rebase keeps the measured SHARK recipe and shark/fixture/GLB files exactly; current six-species, packed and neutral buffers and fish GLB remain [byte-identical](integrated-fish-hashes.json). [Integration mapping](integration.json) binds the selective shark branches, preserved current fish exporter/proxy and changelog1485. Scoped native shark/proxy and generic-fish checks pass on this combined source; existing actual browser evidence is reused through these identities.

@@ -156,7 +156,7 @@ const ITEM_PARTS = {
   rod: () => { const up = (g) => g.rotateX(-(Math.PI / 2 - ROD_UP));
     return [[up(new THREE.CylinderGeometry(0.004, 0.009, ROD_LEN - 0.3, 5, 1, true).translate(0, 0.15 + (ROD_LEN - 0.3) / 2, 0)), 0x1f3d2c, [0, 0, 0]],
       [up(new THREE.CylinderGeometry(0.016, 0.016, 0.3, 6).translate(0, 0, 0)), 0xb98a55, [0, 0, 0]], [new THREE.BoxGeometry(0.03, 0.05, 0.05), 0x3a3f44, [0, -0.045, -0.02]]]; },
-  };
+};
 // #1922: one generic fish because hi=fish carries no species. Preserve the old
 // hanging envelope and hand frame; retain indices/colours in the shared cache.
 function ghostFishGeometry() {
