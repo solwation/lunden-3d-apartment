@@ -52,10 +52,15 @@ Treat a user's chat request for changes as a request to get them resolved. Befor
 implementation, create one issue per independently reviewable change, or update an
 existing matching issue, in the host's tracker; capture the requested outcome and
 acceptance under [Issueflow](ISSUE-WORKFLOW.md) for GitHub. Then start or resume the
-orchestra within that scope without asking for a separate `/orkester` command or
-confirmation. This also applies when no orchestra is running, none has run yet, or
-the previous idle watch has ended. Follow startup/recovery below and the host's run
-mode; a scoped request does not silently expand to the whole backlog or enable timers.
+orchestra without asking for a separate `/orkester` command or confirmation.
+This trigger also applies when the agent itself creates or adds a work issue:
+registering the issue alone is not completion. Start or resume even when no
+orchestra is running, none has run yet, or the previous idle watch has ended.
+Follow startup/recovery below, explicit user limits and the host's documented
+intake run mode (a scoped task by default). A host may instead select a queue
+session for this trigger; preserve any explicit scope and use only that host's
+configured polling, idle watch and heartbeat. Do not silently expand an explicitly
+scoped task or enable timers outside its authorized mode.
 
 If a run is already active, add the request to that conductor's work and apply the
 normal selection and ownership rules; do not start a competing run or reset its idle
@@ -71,8 +76,9 @@ relieving a reported bug with one does not resolve it: the report still gets an 
 recording the diagnosis and the relief applied. The hand-back says which messages
 became which issues and which only led to operational actions.
 
-Respect explicit limits such as "do not start the orchestra", "only create issues"
-or "discuss only". Record requested changes as issues when allowed, keeping any
+Respect explicit limits such as "do not start the orchestra", "only register the
+issue; do not start work" or "discuss only". Asking to "create an issue" alone is
+not a deferral of execution. Record requested changes as issues when allowed, keeping any
 explicitly deferred work paused and unclaimed until the user authorizes execution;
 do not let queue selection bypass that limit. A prior explicit stop still applies
 unless the user authorizes resumption. Answer questions, status requests and discussion
@@ -82,7 +88,9 @@ pause, drain or exit an active orchestra run: handle the user's interjection and
 immediately resume the run's work in the same turn (monitoring active workers,
 dispatching startable issues, integrating handoffs, or continuing the idle watch)
 without waiting for another command. Chat intake does not grant publication permissions
-beyond the host/user rules or install a background listener.
+beyond the host/user rules or install a background listener. The trigger is handled
+by an active agent session; it does not start a new agent from an external issue
+event while no agent session is running.
 
 ### Check the installed workflow
 
@@ -196,7 +204,22 @@ preparation saves total work or shortens the critical path, never just to fill i
 capacity; state its output and files. Helpers and reviewers count against the worker
 cap; workers do not spawn teams. Independent reads need no extra agent. Across issues,
 independent deliveries run concurrently up to capacity
-([coordination](COORDINATION.md#select-and-claim)).
+([coordination](COORDINATION.md#select-and-claim)). Treat host capacity as an upper
+bound rather than a fixed target to fill, and evaluate real capacity continuously
+between dispatches:
+
+- **Scale down** when warning signals appear: API rate limits or quota throttling
+  (HTTP 429), high local CPU or memory pressure, slow verification cycles, platform
+  worker spawn failures, or an accumulating integration queue (`integration-ready`
+  handoffs waiting for review). Throttle dispatch or pause new workers until pending
+  handoffs are integrated and resources recover.
+- **Scale up** cautiously towards the host ceiling only when: multiple independent,
+  high-priority issues are startable; recent runs and checkouts completed cleanly without
+  throttling; integration queue depth is low; and the conductor has verified headroom to
+  integrate incoming handoffs promptly.
+- **Respect integration throughput:** Never spawn more concurrent workers than the
+  conductor can integrate without backlog; concurrent work that outpaces integration
+  creates rebase churn, stale checkouts, and coordination drag.
 
 One integration owner combines and publishes each issue. A helper needs no child issue
 for tests, docs or review and verifies on the owner's exact revision. Keep coupled edits

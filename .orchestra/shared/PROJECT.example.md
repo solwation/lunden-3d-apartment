@@ -7,7 +7,10 @@ not executable code. Keep project details here, never in the shared instructions
   Optional context map: <document sections per label, path or topic; omit if unused>.
 - User language: <language>. Explicit user scope: <argument or request>.
 - Mode: <single task or unattended queue>; empty scope: <bounded pass (default) or
-  queue session>.
+  queue session>. Issue-intake mode for chat changes and agent-created/added work
+  issues: <scoped task (default) or queue session with this host's configured timers>.
+  Preserve explicit scope/deferral and reuse an active conductor; issue registration
+  alone is not completion. No external agent-starting daemon is implied.
 - Repositories and coordination issues: <owner/repo, status issue per repository>.
 - Issue workflow authority: shared ISSUE-WORKFLOW.md for GitHub; specify an adapter
   for other trackers. Local ancestor/port constraints: <policy>.
@@ -20,6 +23,8 @@ not executable code. Keep project details here, never in the shared instructions
 - Capacity: <concurrent active issue workers, includes helpers; integration-ready
   waits and parent summary labels use no slot>; whether the conductor's own
   implementation counts as a slot; direct conductor implementation: <allowed?>.
+  Optional dynamic capacity: <baseline/ceiling or dynamic scaling rules between
+  dispatches based on integration queue depth, rate limits and system load>.
   Expensive shared verification: <browser/e2e/device runs and how they are queued>.
 - Per-worktree isolation: <port range or allocation, server/config overrides, no
   `reuseExistingServer` across checkouts, check that the server serves this revision>.
@@ -125,10 +130,10 @@ Visual evidence in completion comments and issues should be directly visible via
    `https://github.com/<owner>/<repo>/releases/download/<tag>/<image>.png`
 
 3. **GitHub Pages or static doc sites**:
-   If the repository publishes GitHub Pages (e.g. from `docs/` or a `gh-pages` branch), store verification images in the published documentation assets directory and reference the public URL (`https://<owner>.github.io/<repo>/...`).
+   If the repository publishes GitHub Pages (e.g. from `docs/` or a `gh-pages` branch), store verification images in the published documentation assets directory and reference the public URL (`https://<owner>.github.io/<repo>/...`). Note that public hosting options apply only when the project's host policy permits external publication.
 
 4. **Project upload script**:
-   Provide a helper script (e.g. `scripts/upload-asset.sh`) that uploads an image to the project's chosen bucket/storage (S3, R2, or a dedicated storage service) and outputs the formatted `![alt](url)` markdown snippet directly to standard output for the agent or conductor to paste into the comment.
+   Provide a helper script (e.g. `scripts/upload-asset.sh`) that uploads an image to the project's chosen bucket/storage (S3, R2, or a dedicated storage service) and outputs the formatted `![alt](url)` markdown snippet directly to standard output for the agent or conductor to paste into the comment. External or public storage services apply only when permitted by the host policy.
 
 #### Dashboard compatibility (`solwation/github-dashboard`)
 
@@ -138,6 +143,7 @@ When visual evidence is reviewed in [solwation/github-dashboard](https://github.
 - **HTTPS required:** Always use `https://` URLs. The dashboard enforces a strict Content Security Policy (`img-src 'self' https: data: blob:`) that blocks unencrypted `http://` resources.
 - **Standalone paragraph for responsive layout:** Place the image embed in its own paragraph (separated by blank lines above and below). `github-dashboard` detects standalone image blocks (`.markdown-image-block`) and formats them responsively beside the text on wider screens instead of breaking the reading line.
 - **GitHub blob URLs:** GitHub blob URLs (`https://github.com/<owner>/<repo>/blob/...`) are automatically rewritten to raw URLs (`?raw=true`) by `github-dashboard`, but using `https://raw.githubusercontent.com/...` or an explicit `?raw=true` parameter ensures compatibility with all Markdown readers.
+- **Private repositories and token permissions:** For private repositories, revision-pinned blob or raw URLs are the correct format, but `github-dashboard` requires the reader's dashboard token to have `Contents: Read-only` permission to fetch and display private assets via the Contents API. A placeholder card displaying *View on GitHub* indicates missing token permissions rather than an invalid link format; agents must not rewrite or alter working URLs when encountering this placeholder.
 
 For optional activities, mark them optional explicitly and report a failure or skip.
 An unavailable required tool does not silently make an activity optional. Existing
