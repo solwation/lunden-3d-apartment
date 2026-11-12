@@ -1,0 +1,14 @@
+{
+  "nativeSantaClassSha256": "64bd3e651d0b5e0d34cb7052b9f5d5f4cbb2340a5f08189b9998715190299c60",
+  "nativeSantaClassExact": true,
+  "unchanged": {
+    "src/santasurface.js": "07aabc901be87ab0a598deff86f34fef27e1d4db144b07de0490423d1c6437d7",
+    "models/santa.glb": "e4ee917e1880086042928412ccf6807e69f3437e739f0eecf040249fdd64c130",
+    "src/furniture.js": "d11d316b42a626d9c6931da25bb42dc33b9504704cb56b9837545819c7382535",
+    "src/rest.js": "34622ed84b783b6969ac9c84cd5db3ae0a0d7b8298d3611d56ec93ecd771f10a",
+    "src/bestiaryimages.js": "43c6a479b1e1b9d88afa9afe70da28ff918bba632805be92987a7753e0d617ba",
+    "src/bestiarystore.js": "b07045d134f82fa30f1cdcf3f2a7f9d841150000435f9349702015a318fd8514"
+  },
+  "defaultFigureFactorySha256": "ee1dcb782fd509c3048ced52a303b37904eafd43b0f260c29482f9a392752427",
+  "defaultFigureFactoryExact": true
+}

@@ -17,7 +17,7 @@ export async function createBestiaryModel(recipe) {
   case 'butterfly': object=mesh(butterflyGeometry(),hingeButterfly(new THREE.MeshLambertMaterial({color:recipe.color,side:THREE.DoubleSide})));break;
   case 'magicButterfly': { const {TEXTURES}=await import('./marks.js'); object=mesh(butterflyGeometry({magic:true}),hingeButterfly(new THREE.MeshBasicMaterial({map:TEXTURES.butterfly(),transparent:true,side:THREE.DoubleSide}),{magic:true}));ownTextures=true;break; }
   case 'gull': { const {gullGeometry}=await import('./gullmodel.js');object=mesh(gullGeometry(true),new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,side:THREE.DoubleSide}));sharedGeometry=true;break; }
-  case 'santa': {const f=(await import('./santa.js')).santaFigure();object=f.object;f.text.material.map.dispose();f.text.material.dispose();ownTextures=true;break;}
+  case 'santa': object=(await import('./santa.js')).santaPortrait();ownTextures=true;break;
   case 'olof': { const {buildOlof}=await import('./olof.js'); object=buildOlof().object;break; }
   case 'pingping': object=(await import('./pingping.js')).pingpingModel();ownTextures=true;break;
   default:throw new Error(`Unknown creature model ${recipe.kind}`);

@@ -4,6 +4,7 @@ import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
 import { santaBody, santaArm, santaLegGeometry } from './santasurface.js';
 import { SANTA as S, santaState } from './santaconfig.js';
+import { LANDSKRONA } from './config.js';
 
 // An original-only Christmas Eve guest. All poses are in the movable sofa's frame.
 // Static coloured parts are merged; the pose-specific legs, two arms, glass and sleep text stay separate.
@@ -143,6 +144,20 @@ function figure() {
   return { object, body, legs, left, right, glass, pick, text, head: new THREE.Vector3(), sitLegsGeo, sleepLegsGeo };
 }
 
+/** Complete collection-only sitting pose, with independently disposable GLB resources. */
+export function santaPortrait() {
+  const f=figure(),local={y:LANDSKRONA.seatHeight,z:S.portraitSeatZ};
+  f.legs.geometry.dispose();f.legs.geometry=f.sitLegsGeo||santaLegGeometry(local,false);
+  f.legs.name='santa-portrait-legs';f.object.position.y=local.y+.04;
+  f.sleepLegsGeo?.dispose();
+  // figure() shares loaded arms/glass with the world. A disposable portrait must own them.
+  const sourceGeos=new Set(),sourceMats=new Set(),geos=new Map(),mats=new Map();
+  santaModelData?.scene.traverse(o=>{if(o.geometry)sourceGeos.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[])sourceMats.add(m)});
+  const ownedMaterial=m=>{if(!sourceMats.has(m))return m;if(!mats.has(m))mats.set(m,m.clone());return mats.get(m)};
+  f.object.traverse(o=>{if(sourceGeos.has(o.geometry)){if(!geos.has(o.geometry))geos.set(o.geometry,o.geometry.clone());o.geometry=geos.get(o.geometry)}if(o.material)o.material=Array.isArray(o.material)?o.material.map(ownedMaterial):ownedMaterial(o.material)});
+  f.text.material.map?.dispose();f.text.material.dispose();return f.object;
+}
+
 export class Santa {
   /** `sofa`: existing rest target. Santa waits offscreen when the player already occupies a required spot.
    * `onStateChange(next, previous)` is also the hook for the living-room TV programme. */
@@ -264,5 +279,5 @@ export class Santa {
   }
 }
 
-creature({id:'figure:santa',no:63,name:'Tomten',family:'figures',level:3,model:{kind:'santa'},info:{size:'Sittande besökare',weight:'Ej uppmätt',where:'Soffan hemma',when:'Julafton',likes:'Julmys och hälsningar'},facts:['Kommer på besök på julafton.','Hälsa på honom för att hitta posten.']});
+creature({id:'figure:santa',no:63,modelVersion:2,name:'Tomten',family:'figures',level:3,model:{kind:'santa'},info:{size:'Sittande besökare',weight:'Ej uppmätt',where:'Soffan hemma',when:'Julafton',likes:'Julmys och hälsningar'},facts:['Kommer på besök på julafton.','Hälsa på honom för att hitta posten.']});
 export { figure as santaFigure };

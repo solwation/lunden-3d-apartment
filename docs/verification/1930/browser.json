@@ -1,0 +1,317 @@
+{
+  "baseline": "5469140e4b97e3cbc0570782bed99b2f3c373f18",
+  "cases": [
+    {
+      "loaded": true,
+      "version": 1,
+      "rows": [
+        {
+          "size": 96,
+          "opaque": 835,
+          "draw": {
+            "calls": 5,
+            "triangles": 4220,
+            "finite": true
+          }
+        },
+        {
+          "size": 320,
+          "opaque": 8358,
+          "draw": {
+            "calls": 5,
+            "triangles": 4220,
+            "finite": true
+          }
+        }
+      ],
+      "geometryCounts": {
+        "rawBytes": 452520,
+        "finite": true,
+        "legTriangles": 0
+      },
+      "overlap": {
+        "geometry": true,
+        "material": true
+      },
+      "legPixels": [
+        {
+          "size": 96,
+          "changed": 0
+        },
+        {
+          "size": 320,
+          "changed": 0
+        }
+      ],
+      "portraitMinY": -0.4,
+      "disposal": {
+        "assetGeometry": 12,
+        "assetMaterial": 9,
+        "sittingClones": 0,
+        "sleepingClones": 0
+      },
+      "cache": {
+        "before": [],
+        "after": [
+          "figure:santa:1:320",
+          "figure:santa:1:96"
+        ],
+        "renders": 2,
+        "noExtraMemoryRender": true,
+        "persistedHits": 2,
+        "persistedRenders": 0
+      },
+      "discoveryPreserved": true,
+      "found": true,
+      "photoPreserved": true,
+      "sofa": {
+        "santaPixels": 34934,
+        "finite": true,
+        "minY": 1.0728836041806744e-8,
+        "calls": 6,
+        "triangles": 4932
+      },
+      "phase": "before",
+      "mode": "loaded"
+    },
+    {
+      "loaded": true,
+      "version": 2,
+      "rows": [
+        {
+          "size": 96,
+          "opaque": 1221,
+          "draw": {
+            "calls": 6,
+            "triangles": 4932,
+            "finite": true
+          }
+        },
+        {
+          "size": 320,
+          "opaque": 13571,
+          "draw": {
+            "calls": 6,
+            "triangles": 4932,
+            "finite": true
+          }
+        }
+      ],
+      "geometryCounts": {
+        "rawBytes": 529416,
+        "finite": true,
+        "legTriangles": 712
+      },
+      "overlap": {
+        "geometry": false,
+        "material": false
+      },
+      "legPixels": [
+        {
+          "size": 96,
+          "changed": 548
+        },
+        {
+          "size": 320,
+          "changed": 6117
+        }
+      ],
+      "portraitMinY": 1.0728836041806744e-8,
+      "disposal": {
+        "assetGeometry": 0,
+        "assetMaterial": 0,
+        "sittingClones": 3,
+        "sleepingClones": 3
+      },
+      "cache": {
+        "before": [
+          "figure:santa:1:320",
+          "figure:santa:1:96"
+        ],
+        "after": [
+          "figure:santa:1:320",
+          "figure:santa:1:96",
+          "figure:santa:2:320",
+          "figure:santa:2:96"
+        ],
+        "renders": 2,
+        "noExtraMemoryRender": true,
+        "persistedHits": 2,
+        "persistedRenders": 0
+      },
+      "discoveryPreserved": true,
+      "found": true,
+      "photoPreserved": true,
+      "sofa": {
+        "santaPixels": 37961,
+        "finite": true,
+        "minY": 1.0728836041806744e-8,
+        "calls": 6,
+        "triangles": 4932
+      },
+      "phase": "after",
+      "mode": "loaded"
+    },
+    {
+      "loaded": false,
+      "version": 1,
+      "rows": [
+        {
+          "size": 96,
+          "opaque": 835,
+          "draw": {
+            "calls": 6,
+            "triangles": 4244,
+            "finite": true
+          }
+        },
+        {
+          "size": 320,
+          "opaque": 9231,
+          "draw": {
+            "calls": 6,
+            "triangles": 4244,
+            "finite": true
+          }
+        }
+      ],
+      "geometryCounts": {
+        "rawBytes": 452520,
+        "finite": true,
+        "legTriangles": 0
+      },
+      "overlap": {
+        "geometry": false,
+        "material": false
+      },
+      "legPixels": [
+        {
+          "size": 96,
+          "changed": 0
+        },
+        {
+          "size": 320,
+          "changed": 0
+        }
+      ],
+      "portraitMinY": -0.4,
+      "disposal": {
+        "assetGeometry": 0,
+        "assetMaterial": 0,
+        "sittingClones": 0,
+        "sleepingClones": 0
+      },
+      "cache": {
+        "before": [],
+        "after": [
+          "figure:santa:1:320",
+          "figure:santa:1:96"
+        ],
+        "renders": 2,
+        "noExtraMemoryRender": true,
+        "persistedHits": 2,
+        "persistedRenders": 0
+      },
+      "discoveryPreserved": true,
+      "found": true,
+      "photoPreserved": true,
+      "sofa": {
+        "santaPixels": 38014,
+        "finite": true,
+        "minY": 1.0728836041806744e-8,
+        "calls": 7,
+        "triangles": 4956
+      },
+      "phase": "before",
+      "mode": "fallback"
+    },
+    {
+      "loaded": false,
+      "version": 2,
+      "rows": [
+        {
+          "size": 96,
+          "opaque": 1224,
+          "draw": {
+            "calls": 7,
+            "triangles": 4956,
+            "finite": true
+          }
+        },
+        {
+          "size": 320,
+          "opaque": 13594,
+          "draw": {
+            "calls": 7,
+            "triangles": 4956,
+            "finite": true
+          }
+        }
+      ],
+      "geometryCounts": {
+        "rawBytes": 529416,
+        "finite": true,
+        "legTriangles": 712
+      },
+      "overlap": {
+        "geometry": false,
+        "material": false
+      },
+      "legPixels": [
+        {
+          "size": 96,
+          "changed": 548
+        },
+        {
+          "size": 320,
+          "changed": 6117
+        }
+      ],
+      "portraitMinY": 1.0728836041806744e-8,
+      "disposal": {
+        "assetGeometry": 0,
+        "assetMaterial": 0,
+        "sittingClones": 0,
+        "sleepingClones": 0
+      },
+      "cache": {
+        "before": [
+          "figure:santa:1:320",
+          "figure:santa:1:96"
+        ],
+        "after": [
+          "figure:santa:1:320",
+          "figure:santa:1:96",
+          "figure:santa:2:320",
+          "figure:santa:2:96"
+        ],
+        "renders": 2,
+        "noExtraMemoryRender": true,
+        "persistedHits": 2,
+        "persistedRenders": 0
+      },
+      "discoveryPreserved": true,
+      "found": true,
+      "photoPreserved": true,
+      "sofa": {
+        "santaPixels": 38014,
+        "finite": true,
+        "minY": 1.0728836041806744e-8,
+        "calls": 7,
+        "triangles": 4956
+      },
+      "phase": "after",
+      "mode": "fallback"
+    }
+  ],
+  "errors": [],
+  "sha256": {
+    "src/santa.js": "5a8eb7663eed5155651fa8daa303d51ce055e8215240b8e3adbfd1c4c4517556",
+    "src/santaconfig.js": "9bb507a99bc7392f7d7e7d6fa6b1a345ce81099d0b0629d33218d367b577bb3b",
+    "src/bestiarymodels.js": "d4e5a9f3e8206de81af9e43bae6d83eb37796391eb4efed04f0f5164455ac2bc",
+    "src/santasurface.js": "07aabc901be87ab0a598deff86f34fef27e1d4db144b07de0490423d1c6437d7",
+    "models/santa.glb": "e4ee917e1880086042928412ccf6807e69f3437e739f0eecf040249fdd64c130",
+    "tools/santaportraittest.html": "97ce1104610ffca900c0d0f9638f08518920168b36f7b457c4ca20fe2015291b",
+    "tools/capture-santa-portrait.cjs": "da26134213ff183f427aea58adb4d3fed330859826f6b453e81eff86674e8096"
+  }
+}

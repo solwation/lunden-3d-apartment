@@ -1,0 +1,2 @@
+PASS loaded portrait/sofa console and page errors:0 (intentional404 excluded)
+PASS 404 fallback portrait/sofa console and page errors:0 (intentional404 excluded)

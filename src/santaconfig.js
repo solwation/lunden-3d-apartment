@@ -33,6 +33,8 @@ export const SANTA = {
   },
   month: 12, date: 24, arrives: 15, sleeps: 16, leaves: 21,
   seatIndex: 1,
+  portraitSeatZ: -.08, // existing LANDSKRONA rest/export seat frame (furniture.js), #1930
+
   blush: { base: 0xe4a39b, red: 0xbf363b, fullAfterSips: 10 }, // visual colour guesses; one step per completed sip
   // Visual anatomy guesses; front is supplied from the actual LANDSKRONA depth.
   hat: { radius: 0.16, height: 0.36, bend: 0.16, drop: 0.10 },

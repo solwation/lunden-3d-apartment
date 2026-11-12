@@ -34,6 +34,15 @@ Subtle static vertex tint and shallow grooves suggest cloth and beard without
 adding texture, shader animation or lights. Existing arm/glass animation and the
 movable sofa frame remain unchanged. [Matched result views and bounded costs](../verification/1923/README.md).
 
+### Complete Santa collection pose (#1930)
+
+`bestiarymodels.js` uses the explicit `santaPortrait()` factory for a complete
+seated figure with the existing LANDSKRONA frame and sitting-leg recipe. It owns
+loaded arm/glass copies and disposes unused pose/text resources, so offscreen
+thumbnail cleanup leaves the live sofa guest intact. Only Santa's thumbnail
+version becomes 2; native sitting/sleeping and discovery/photo data remain.
+[Loaded/fallback cards, old-cache renewal, ownership and local costs](../verification/1930/README.md).
+
 ### First-person hand surfaces (#1917)
 
 `Hand` keeps the existing relaxed/grip/spread/web controls, camera-space contacts,
