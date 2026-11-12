@@ -61,8 +61,13 @@ geometry/material construction is introduced. The neutral GLB was regenerated
 from the same source and retains its six standalone clips.
 
 Personal characters/gameplay are original-only, so there is no downstream port.
-Publication, pinned issue images and the actual Pages result belong to the
-integration owner.
+Published at `8129ccb15a487bb988e7c37ccaa218742129965e`. Both actual
+[Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/43182363385) and
+[Worker](https://github.com/solwation/lunden-3d-apartment/actions/runs/43182363338)
+deployments passed. The integration owner reviewed the combined patch, whole poses,
+meeting view, actual World/mirror/driver and mouth results. Relative links and
+changelog id 1475 were checked. All seven pinned issue images returned HTTP 200
+with image content types before the closing push.
 
 ## Measured costs
 
@@ -118,8 +123,9 @@ images are private and are not counted as passing timing evidence.
 
 [Actual hall mirror](world-mirror.png), [actual driver](world-driver.png),
 [talking mouth closed](mouth-closed.png) and [open](mouth-open.png).
-Before-images are retained only until the integration owner pins them in the
-issue comment and performs the required image retention step.
+Before-images were removed from the current tree after the
+[pinned completion comment](https://github.com/solwation/lunden-3d-apartment/issues/1916#issuecomment-6818592641);
+they remain available at the evidence revision. Result images follow 30-day retention.
 
 Reproduce with the existing HTTP server, cached dependencies, and
 `tools/browsertest.sh node tools/avatarrealism-component.cjs BASE OUT` plus
