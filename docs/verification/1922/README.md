@@ -248,3 +248,17 @@ The capture emits before images with a `ghost-fish-before-` prefix; the saved
 copies here live under `before/` so the integrator can prune them after pinned
 publication. The six-species matrix is reused through the exact default-buffer
 identity proof rather than rerun for this independent bounded proxy.
+
+## Root integration review
+
+Root reviewed the combined production/fixture/export diff and opened the matched
+whole live/caught/held/cooked/binder/normal/water views and generic proxy before/after.
+Only the generic hi=fish proxy remains category-level; it now uses the cheap shared
+shape without new protocol fields. All six live/caught surfaces and the neutral GLB
+remain byte-identical across its optional-density extension. Rebase preserves all
+six fish/proxy-related config sections and every measured model/fixture/export file;
+[delivered hashes and mapping](integration.json) bind the measurements.
+The old ghostitemtest category-index failure is separately tracked in
+[#1937](https://github.com/solwation/lunden-3d-apartment/issues/1937); only its intentional
+fish triangle ceiling changed here, and the new actual-Ghost checks provide scoped
+passing evidence. Changelog id1482 assigned after final main fetch.
