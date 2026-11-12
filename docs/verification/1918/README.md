@@ -51,7 +51,7 @@ cat); positions/normals/UV/index remain shared. The GLB increases 22.76%, report
 separately rather than treated as a rendering or heap saving.
 
 [Comparison samples](comparison.json) contain 10 warm-up plus 30 measured
-render+`gl.finish` samples per phase at 640×480 in Chromium 1248/SwiftShader.
+render+`gl.finish` samples per phase at 640×480 in Playwright Chromium build 1248/SwiftShader.
 Sub-millisecond results are near timer resolution and do not support a hardware
 speedup claim; the actual submitted calls/triangles are the useful cost evidence.
 [Buffer accounting](buffers.json), [consumer results](browser.json) and
@@ -87,3 +87,7 @@ paths and the bounded actual consumers above. Public downstream transfer should
 include generic surfaces, buffer sharing, cache version and LOD colour support,
 with a generic neutral export; personal Miele/photos/names and game systems stay
 in the original project.
+
+Integration review: [source preservation and inspected views](integration.json).
+The final rebase adds only unrelated Hand configuration; cat inputs and model
+buffers match the verified worker delivery. Changelog id is 1477.

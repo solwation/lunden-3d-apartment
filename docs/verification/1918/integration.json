@@ -1,0 +1,15 @@
+{
+  "workerCommit": "440c5b829a3b2534492da30f42a53b5adf3602b8",
+  "integratedSourceSHA256": {
+    "src/cat.js": "5c0482ec71d5dbb1bf64ea7d97df54f5a7fd8408e636665e8891631cfced798a",
+    "src/catmodel.js": "9cdd1f925f0e1e077cb86a1a986ceeb978ef2214479a684909304b983a43ec05",
+    "src/config.js": "36e62bab4fdb1c0f1f121141d34497b783e0aad00b17be73cb1a50680ab7f99b",
+    "src/outdoorcats.js": "d7db098615db198b796b14ddbf2239e6b088dd1550c3cda17644d16f35757dc9",
+    "src/bestiarymetadata.js": "ff318d64ffdd0ff2f6d4ef47503dfd24f15187b655caee7ebb1699bf7f2012d9",
+    "models/cat-rigged.glb": "03a21faba65a120cdb2cac4fbaeaec6647122c27ac79b83ebbea7e931cfbac44"
+  },
+  "sourceMapping": "All cat/product/model source bytes match worker final manifest; config differs only by unrelated #1917 HAND_SURFACE. Full CAT_SURFACE byte-identical to worker final. Config identity proves74 geometry/pose/material cases plus neutral GLB unchanged after art centralization. Green scoped checks reused.",
+  "review": "Root read full cat/catmodel/config/LOD/cache/test/attribution patch; opened baseline and final side/quarter, actual CatSpawner/Bestiary, clean normal view and actual photo. A suspected detached point in the gallery was checked with an isolated actual pet profile and ear-hidden diagnostic; whole ear base remains attached, no additional product defect established. All image inspection claims are limited to these rendered states. Still stylized/faceted, no photorealism or hardware FPS promise.",
+  "checks": "17/17 targeted Node plus actual consumers, finite poses/cameras and intended cat in frustum; source hash, GLB hash/bytes, relative links and next unique changelog1477 pass.",
+  "downstream": "Generic profiles/colours only, separate public low issue required before original closure. No personal cat/photos/names/gameplay/services in public."
+}
