@@ -47,16 +47,16 @@ Discovery IDs/photos are unchanged; generated thumbnail version is now 2.
 
 | View | Before | After |
 | --- | --- | --- |
-| Whole quarter | [before](baseline-quarter.png) | [after](current-quarter.png) |
-| Front | [before](baseline-front.png) | [after](current-front.png) |
-| Side | [before](baseline-side.png) | [after](current-side.png) |
-| Normal four-bird view | [before](baseline-normal.png) | [after](current-normal.png) |
-| Near feeding distance | [before](baseline-near.png) | [after](current-near.png) |
-| Swim/water depth | [before](baseline-swim.png) | [after](current-swim.png) |
-| Waddle | [before](baseline-waddle.png) | [after](current-waddle.png) |
-| Flap | [before](baseline-flap.png) | [after](current-flap.png) |
-| Eat | [before](baseline-eat.png) | [after](current-eat.png) |
-| Real collection 96/320 | [before](baseline-binder.png) | [after](current-binder.png) |
+| Whole quarter | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/a963287ffaacad8fa405f91c086752255aefcb2d/docs/verification/1921/baseline-quarter.png) | [after](current-quarter.png) |
+| Front | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/a963287ffaacad8fa405f91c086752255aefcb2d/docs/verification/1921/baseline-front.png) | [after](current-front.png) |
+| Side | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/a963287ffaacad8fa405f91c086752255aefcb2d/docs/verification/1921/baseline-side.png) | [after](current-side.png) |
+| Normal four-bird view | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/a963287ffaacad8fa405f91c086752255aefcb2d/docs/verification/1921/baseline-normal.png) | [after](current-normal.png) |
+| Near feeding distance | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/a963287ffaacad8fa405f91c086752255aefcb2d/docs/verification/1921/baseline-near.png) | [after](current-near.png) |
+| Swim/water depth | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/a963287ffaacad8fa405f91c086752255aefcb2d/docs/verification/1921/baseline-swim.png) | [after](current-swim.png) |
+| Waddle | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/a963287ffaacad8fa405f91c086752255aefcb2d/docs/verification/1921/baseline-waddle.png) | [after](current-waddle.png) |
+| Flap | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/a963287ffaacad8fa405f91c086752255aefcb2d/docs/verification/1921/baseline-flap.png) | [after](current-flap.png) |
+| Eat | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/a963287ffaacad8fa405f91c086752255aefcb2d/docs/verification/1921/baseline-eat.png) | [after](current-eat.png) |
+| Real collection 96/320 | [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/a963287ffaacad8fa405f91c086752255aefcb2d/docs/verification/1921/baseline-binder.png) | [after](current-binder.png) |
 
 Missing-asset actual fallback: [land](fallback-land.png), [water](fallback-swim.png),
 [normal](fallback-normal.png), [counters](fallback.json).
@@ -109,3 +109,7 @@ Git revision. The fixture exposes the real producer with controlled flock state;
 its new fallback query only skips successful GLB setup when explicitly requested.
 Public transfer uses its own low issue, anonymous ambient producers and own images;
 feeding/kissing/rewards/audio/services are original-only.
+
+Ten local before images were pruned at closure. Their comparison links are pinned
+to the delivered evidence revision; metrics remain and current results follow the
+30-day policy. [Reviewed issue results](https://github.com/solwation/lunden-3d-apartment/issues/1921#issuecomment-6819932772).
