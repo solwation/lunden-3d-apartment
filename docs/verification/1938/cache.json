@@ -1,0 +1,633 @@
+{
+  "old": "ac2fd0ea484bf7e905fb92d6bb9bb6ae40f005f3",
+  "bug": "990e8914b036b608c104e5b014b7553a4595569d",
+  "cases": [
+    {
+      "entries": [
+        {
+          "variant": "",
+          "chain": [],
+          "facts": [
+            "Katten kan följa fjärilen med blicken och jaga den.",
+            "Bara sedd: denna fjäril har ingen egen spelarinteraktion."
+          ],
+          "info": {
+            "size": "Liten lågpolymodell",
+            "weight": "Mycket lätt",
+            "where": "Gården",
+            "when": "När en katt spanar och jagar",
+            "likes": "Att fladdra framför katten"
+          },
+          "modelVersion": 1,
+          "rarity": {
+            "key": "common",
+            "label": "Vanlig",
+            "level": 0,
+            "color": "#9ca9ae"
+          },
+          "family": {
+            "id": "insects",
+            "label": "Fjärilar",
+            "order": 7
+          },
+          "id": "butterfly:yellow",
+          "no": 60,
+          "interactive": false,
+          "name": "Gul fjäril",
+          "model": {
+            "kind": "butterfly",
+            "color": 15916092
+          }
+        },
+        {
+          "variant": "",
+          "chain": [],
+          "facts": [
+            "Katten kan följa fjärilen med blicken och jaga den.",
+            "Bara sedd: denna fjäril har ingen egen spelarinteraktion."
+          ],
+          "info": {
+            "size": "Liten lågpolymodell",
+            "weight": "Mycket lätt",
+            "where": "Parken",
+            "when": "När en katt spanar och jagar",
+            "likes": "Att fladdra framför katten"
+          },
+          "modelVersion": 1,
+          "rarity": {
+            "key": "common",
+            "label": "Vanlig",
+            "level": 0,
+            "color": "#9ca9ae"
+          },
+          "family": {
+            "id": "insects",
+            "label": "Fjärilar",
+            "order": 7
+          },
+          "id": "butterfly:orange",
+          "no": 61,
+          "interactive": false,
+          "name": "Orange fjäril",
+          "model": {
+            "kind": "butterfly",
+            "color": 15234602
+          }
+        },
+        {
+          "variant": "",
+          "chain": [],
+          "facts": [
+            "En magisk fjärilsform som trollstaven skapar.",
+            "Stjärnor, hjärtan och rök är effekter och får inga djurposter."
+          ],
+          "info": {
+            "size": "Liten magisk vinge",
+            "weight": "Ingen verklig vikt",
+            "where": "Vid trollstavens träff",
+            "when": "En kort stund efter magi",
+            "likes": "Stjärnstoft"
+          },
+          "modelVersion": 1,
+          "rarity": {
+            "key": "rare",
+            "label": "Sällsynt",
+            "level": 2,
+            "color": "#6d9ee5"
+          },
+          "family": {
+            "id": "insects",
+            "label": "Fjärilar",
+            "order": 7
+          },
+          "id": "butterfly:magic",
+          "no": 62,
+          "name": "Magisk fjäril",
+          "model": {
+            "kind": "magicButterfly"
+          }
+        }
+      ],
+      "rows": [
+        {
+          "id": "butterfly:yellow",
+          "size": 96,
+          "opaque": 354,
+          "dataHash": "327cc6ccc4d6a77da0b864ac65a3da337674687fabee2d782fdbd728117ba7b7"
+        },
+        {
+          "id": "butterfly:yellow",
+          "size": 320,
+          "opaque": 3909,
+          "dataHash": "68ebda3bc4bf4f0f65d4f9082312234a8814bc246193a4abd1794448f3719781"
+        },
+        {
+          "id": "butterfly:orange",
+          "size": 96,
+          "opaque": 354,
+          "dataHash": "5d0ab1e0a6107b11612c7b3f8c4f1219b782eea6a0b4a1a23dd30974dad3ee64"
+        },
+        {
+          "id": "butterfly:orange",
+          "size": 320,
+          "opaque": 3909,
+          "dataHash": "b7c7fe3e6d14e02aa3a9545754c257f230b6caeac6adf506183bf7d68bb76f5d"
+        },
+        {
+          "id": "butterfly:magic",
+          "size": 96,
+          "opaque": 697,
+          "dataHash": "46bccf9590770b942a820989f5e820d4dd98b01adc77b9160525586a46bc9436"
+        },
+        {
+          "id": "butterfly:magic",
+          "size": 320,
+          "opaque": 6978,
+          "dataHash": "78c46aa74f0504d9ac0b17a6dec9ea8f82c4b2af000dc52a2e51d8011f356446"
+        }
+      ],
+      "first": {
+        "renders": 6,
+        "hits": 0
+      },
+      "memoryHits": 6,
+      "persisted": {
+        "renders": 0,
+        "hits": 6
+      },
+      "keysBefore": [],
+      "keysAfter": [
+        "butterfly:magic:1:320",
+        "butterfly:magic:1:96",
+        "butterfly:orange:1:320",
+        "butterfly:orange:1:96",
+        "butterfly:yellow:1:320",
+        "butterfly:yellow:1:96"
+      ],
+      "discovery": "{\"v\":1,\"rows\":{\"butterfly:yellow\":{\"seen\":true,\"found\":true,\"firstSeen\":1794481942055,\"lastSeen\":1794481942055,\"seenCount\":1,\"foundCount\":1,\"actions\":{\"find\":1},\"best\":{},\"photos\":[]},\"butterfly:orange\":{\"seen\":true,\"found\":true,\"firstSeen\":1794481942055,\"lastSeen\":1794481942055,\"seenCount\":1,\"foundCount\":1,\"actions\":{\"find\":1},\"best\":{},\"photos\":[]},\"butterfly:magic\":{\"seen\":true,\"found\":true,\"firstSeen\":1794481942055,\"lastSeen\":1794481942055,\"seenCount\":1,\"foundCount\":1,\"actions\":{\"find\":1},\"best\":{},\"photos\":[]}}}",
+      "discoveryPreserved": true,
+      "found": true,
+      "photos": [
+        {
+          "id": "butterfly:yellow:1794481942594:8kied6",
+          "entry": "butterfly:yellow",
+          "time": 1794481942594,
+          "dataHash": "327cc6ccc4d6a77da0b864ac65a3da337674687fabee2d782fdbd728117ba7b7"
+        }
+      ],
+      "photosPreserved": true,
+      "draws": [
+        {
+          "finite": true,
+          "calls": 1,
+          "triangles": 4
+        },
+        {
+          "finite": true,
+          "calls": 1,
+          "triangles": 4
+        },
+        {
+          "finite": true,
+          "calls": 1,
+          "triangles": 4
+        },
+        {
+          "finite": true,
+          "calls": 1,
+          "triangles": 4
+        },
+        {
+          "finite": true,
+          "calls": 2,
+          "triangles": 4
+        },
+        {
+          "finite": true,
+          "calls": 2,
+          "triangles": 4
+        }
+      ],
+      "phase": "old"
+    },
+    {
+      "entries": [
+        {
+          "variant": "",
+          "chain": [],
+          "facts": [
+            "Katten kan följa fjärilen med blicken och jaga den.",
+            "Bara sedd: denna fjäril har ingen egen spelarinteraktion."
+          ],
+          "info": {
+            "size": "Liten lågpolymodell",
+            "weight": "Mycket lätt",
+            "where": "Gården",
+            "when": "När en katt spanar och jagar",
+            "likes": "Att fladdra framför katten"
+          },
+          "modelVersion": 1,
+          "rarity": {
+            "key": "common",
+            "label": "Vanlig",
+            "level": 0,
+            "color": "#9ca9ae"
+          },
+          "family": {
+            "id": "insects",
+            "label": "Fjärilar",
+            "order": 7
+          },
+          "id": "butterfly:yellow",
+          "no": 60,
+          "interactive": false,
+          "name": "Gul fjäril",
+          "model": {
+            "kind": "butterfly",
+            "color": 15916092
+          }
+        },
+        {
+          "variant": "",
+          "chain": [],
+          "facts": [
+            "Katten kan följa fjärilen med blicken och jaga den.",
+            "Bara sedd: denna fjäril har ingen egen spelarinteraktion."
+          ],
+          "info": {
+            "size": "Liten lågpolymodell",
+            "weight": "Mycket lätt",
+            "where": "Parken",
+            "when": "När en katt spanar och jagar",
+            "likes": "Att fladdra framför katten"
+          },
+          "modelVersion": 1,
+          "rarity": {
+            "key": "common",
+            "label": "Vanlig",
+            "level": 0,
+            "color": "#9ca9ae"
+          },
+          "family": {
+            "id": "insects",
+            "label": "Fjärilar",
+            "order": 7
+          },
+          "id": "butterfly:orange",
+          "no": 61,
+          "interactive": false,
+          "name": "Orange fjäril",
+          "model": {
+            "kind": "butterfly",
+            "color": 15234602
+          }
+        },
+        {
+          "variant": "",
+          "chain": [],
+          "facts": [
+            "En magisk fjärilsform som trollstaven skapar.",
+            "Stjärnor, hjärtan och rök är effekter och får inga djurposter."
+          ],
+          "info": {
+            "size": "Liten magisk vinge",
+            "weight": "Ingen verklig vikt",
+            "where": "Vid trollstavens träff",
+            "when": "En kort stund efter magi",
+            "likes": "Stjärnstoft"
+          },
+          "modelVersion": 1,
+          "rarity": {
+            "key": "rare",
+            "label": "Sällsynt",
+            "level": 2,
+            "color": "#6d9ee5"
+          },
+          "family": {
+            "id": "insects",
+            "label": "Fjärilar",
+            "order": 7
+          },
+          "id": "butterfly:magic",
+          "no": 62,
+          "name": "Magisk fjäril",
+          "model": {
+            "kind": "magicButterfly"
+          }
+        }
+      ],
+      "rows": [
+        {
+          "id": "butterfly:yellow",
+          "size": 96,
+          "opaque": 354,
+          "dataHash": "327cc6ccc4d6a77da0b864ac65a3da337674687fabee2d782fdbd728117ba7b7"
+        },
+        {
+          "id": "butterfly:yellow",
+          "size": 320,
+          "opaque": 3909,
+          "dataHash": "68ebda3bc4bf4f0f65d4f9082312234a8814bc246193a4abd1794448f3719781"
+        },
+        {
+          "id": "butterfly:orange",
+          "size": 96,
+          "opaque": 354,
+          "dataHash": "5d0ab1e0a6107b11612c7b3f8c4f1219b782eea6a0b4a1a23dd30974dad3ee64"
+        },
+        {
+          "id": "butterfly:orange",
+          "size": 320,
+          "opaque": 3909,
+          "dataHash": "b7c7fe3e6d14e02aa3a9545754c257f230b6caeac6adf506183bf7d68bb76f5d"
+        },
+        {
+          "id": "butterfly:magic",
+          "size": 96,
+          "opaque": 697,
+          "dataHash": "46bccf9590770b942a820989f5e820d4dd98b01adc77b9160525586a46bc9436"
+        },
+        {
+          "id": "butterfly:magic",
+          "size": 320,
+          "opaque": 6978,
+          "dataHash": "78c46aa74f0504d9ac0b17a6dec9ea8f82c4b2af000dc52a2e51d8011f356446"
+        }
+      ],
+      "first": {
+        "renders": 0,
+        "hits": 6
+      },
+      "memoryHits": 6,
+      "persisted": {
+        "renders": 0,
+        "hits": 6
+      },
+      "keysBefore": [
+        "butterfly:magic:1:320",
+        "butterfly:magic:1:96",
+        "butterfly:orange:1:320",
+        "butterfly:orange:1:96",
+        "butterfly:yellow:1:320",
+        "butterfly:yellow:1:96"
+      ],
+      "keysAfter": [
+        "butterfly:magic:1:320",
+        "butterfly:magic:1:96",
+        "butterfly:orange:1:320",
+        "butterfly:orange:1:96",
+        "butterfly:yellow:1:320",
+        "butterfly:yellow:1:96"
+      ],
+      "discovery": "{\"v\":1,\"rows\":{\"butterfly:yellow\":{\"seen\":true,\"found\":true,\"firstSeen\":1794481942055,\"lastSeen\":1794481942055,\"seenCount\":1,\"foundCount\":1,\"actions\":{\"find\":1},\"best\":{},\"photos\":[]},\"butterfly:orange\":{\"seen\":true,\"found\":true,\"firstSeen\":1794481942055,\"lastSeen\":1794481942055,\"seenCount\":1,\"foundCount\":1,\"actions\":{\"find\":1},\"best\":{},\"photos\":[]},\"butterfly:magic\":{\"seen\":true,\"found\":true,\"firstSeen\":1794481942055,\"lastSeen\":1794481942055,\"seenCount\":1,\"foundCount\":1,\"actions\":{\"find\":1},\"best\":{},\"photos\":[]}}}",
+      "discoveryPreserved": true,
+      "found": true,
+      "photos": [
+        {
+          "id": "butterfly:yellow:1794481942594:8kied6",
+          "entry": "butterfly:yellow",
+          "time": 1794481942594,
+          "dataHash": "327cc6ccc4d6a77da0b864ac65a3da337674687fabee2d782fdbd728117ba7b7"
+        }
+      ],
+      "photosPreserved": true,
+      "draws": [],
+      "phase": "bug"
+    },
+    {
+      "entries": [
+        {
+          "variant": "",
+          "chain": [],
+          "facts": [
+            "Katten kan följa fjärilen med blicken och jaga den.",
+            "Bara sedd: denna fjäril har ingen egen spelarinteraktion."
+          ],
+          "info": {
+            "size": "Liten lågpolymodell",
+            "weight": "Mycket lätt",
+            "where": "Gården",
+            "when": "När en katt spanar och jagar",
+            "likes": "Att fladdra framför katten"
+          },
+          "modelVersion": 2,
+          "rarity": {
+            "key": "common",
+            "label": "Vanlig",
+            "level": 0,
+            "color": "#9ca9ae"
+          },
+          "family": {
+            "id": "insects",
+            "label": "Fjärilar",
+            "order": 7
+          },
+          "id": "butterfly:yellow",
+          "no": 60,
+          "interactive": false,
+          "name": "Gul fjäril",
+          "model": {
+            "kind": "butterfly",
+            "color": 15916092
+          }
+        },
+        {
+          "variant": "",
+          "chain": [],
+          "facts": [
+            "Katten kan följa fjärilen med blicken och jaga den.",
+            "Bara sedd: denna fjäril har ingen egen spelarinteraktion."
+          ],
+          "info": {
+            "size": "Liten lågpolymodell",
+            "weight": "Mycket lätt",
+            "where": "Parken",
+            "when": "När en katt spanar och jagar",
+            "likes": "Att fladdra framför katten"
+          },
+          "modelVersion": 2,
+          "rarity": {
+            "key": "common",
+            "label": "Vanlig",
+            "level": 0,
+            "color": "#9ca9ae"
+          },
+          "family": {
+            "id": "insects",
+            "label": "Fjärilar",
+            "order": 7
+          },
+          "id": "butterfly:orange",
+          "no": 61,
+          "interactive": false,
+          "name": "Orange fjäril",
+          "model": {
+            "kind": "butterfly",
+            "color": 15234602
+          }
+        },
+        {
+          "variant": "",
+          "chain": [],
+          "facts": [
+            "En magisk fjärilsform som trollstaven skapar.",
+            "Stjärnor, hjärtan och rök är effekter och får inga djurposter."
+          ],
+          "info": {
+            "size": "Liten magisk vinge",
+            "weight": "Ingen verklig vikt",
+            "where": "Vid trollstavens träff",
+            "when": "En kort stund efter magi",
+            "likes": "Stjärnstoft"
+          },
+          "modelVersion": 2,
+          "rarity": {
+            "key": "rare",
+            "label": "Sällsynt",
+            "level": 2,
+            "color": "#6d9ee5"
+          },
+          "family": {
+            "id": "insects",
+            "label": "Fjärilar",
+            "order": 7
+          },
+          "id": "butterfly:magic",
+          "no": 62,
+          "name": "Magisk fjäril",
+          "model": {
+            "kind": "magicButterfly"
+          }
+        }
+      ],
+      "rows": [
+        {
+          "id": "butterfly:yellow",
+          "size": 96,
+          "opaque": 349,
+          "dataHash": "41e04422bd71867b7b6583dd06f0f13dedaeb54a38d86e7d96662c9489ddbdce"
+        },
+        {
+          "id": "butterfly:yellow",
+          "size": 320,
+          "opaque": 3853,
+          "dataHash": "4e3e589270fb164d68f0b4950e281dee2a2a7000003a6c4516bf636451aa6a98"
+        },
+        {
+          "id": "butterfly:orange",
+          "size": 96,
+          "opaque": 349,
+          "dataHash": "feb141d8c3187f5ee6ceb2bcbe27cbec9473f39a54dd918048b64c446cdebe8a"
+        },
+        {
+          "id": "butterfly:orange",
+          "size": 320,
+          "opaque": 3853,
+          "dataHash": "6251577ed474af132483b402ac41838ae006f617cbda768b7e462f7d833e1923"
+        },
+        {
+          "id": "butterfly:magic",
+          "size": 96,
+          "opaque": 1509,
+          "dataHash": "5ee43a1d5768f50baf18d8be7cd555209aeff050bf7bb3ed89b2d9a0d1a12792"
+        },
+        {
+          "id": "butterfly:magic",
+          "size": 320,
+          "opaque": 15364,
+          "dataHash": "8b11855aea30d0e9d41992b57331834267ac200c2829e7660b47bd5e314c303b"
+        }
+      ],
+      "first": {
+        "renders": 6,
+        "hits": 0
+      },
+      "memoryHits": 6,
+      "persisted": {
+        "renders": 0,
+        "hits": 6
+      },
+      "keysBefore": [
+        "butterfly:magic:1:320",
+        "butterfly:magic:1:96",
+        "butterfly:orange:1:320",
+        "butterfly:orange:1:96",
+        "butterfly:yellow:1:320",
+        "butterfly:yellow:1:96"
+      ],
+      "keysAfter": [
+        "butterfly:magic:1:320",
+        "butterfly:magic:1:96",
+        "butterfly:magic:2:320",
+        "butterfly:magic:2:96",
+        "butterfly:orange:1:320",
+        "butterfly:orange:1:96",
+        "butterfly:orange:2:320",
+        "butterfly:orange:2:96",
+        "butterfly:yellow:1:320",
+        "butterfly:yellow:1:96",
+        "butterfly:yellow:2:320",
+        "butterfly:yellow:2:96"
+      ],
+      "discovery": "{\"v\":1,\"rows\":{\"butterfly:yellow\":{\"seen\":true,\"found\":true,\"firstSeen\":1794481942055,\"lastSeen\":1794481942055,\"seenCount\":1,\"foundCount\":1,\"actions\":{\"find\":1},\"best\":{},\"photos\":[]},\"butterfly:orange\":{\"seen\":true,\"found\":true,\"firstSeen\":1794481942055,\"lastSeen\":1794481942055,\"seenCount\":1,\"foundCount\":1,\"actions\":{\"find\":1},\"best\":{},\"photos\":[]},\"butterfly:magic\":{\"seen\":true,\"found\":true,\"firstSeen\":1794481942055,\"lastSeen\":1794481942055,\"seenCount\":1,\"foundCount\":1,\"actions\":{\"find\":1},\"best\":{},\"photos\":[]}}}",
+      "discoveryPreserved": true,
+      "found": true,
+      "photos": [
+        {
+          "id": "butterfly:yellow:1794481942594:8kied6",
+          "entry": "butterfly:yellow",
+          "time": 1794481942594,
+          "dataHash": "327cc6ccc4d6a77da0b864ac65a3da337674687fabee2d782fdbd728117ba7b7"
+        }
+      ],
+      "photosPreserved": true,
+      "draws": [
+        {
+          "finite": true,
+          "calls": 1,
+          "triangles": 82
+        },
+        {
+          "finite": true,
+          "calls": 1,
+          "triangles": 82
+        },
+        {
+          "finite": true,
+          "calls": 1,
+          "triangles": 82
+        },
+        {
+          "finite": true,
+          "calls": 1,
+          "triangles": 82
+        },
+        {
+          "finite": true,
+          "calls": 2,
+          "triangles": 12
+        },
+        {
+          "finite": true,
+          "calls": 2,
+          "triangles": 12
+        }
+      ],
+      "phase": "fixed"
+    }
+  ],
+  "errors": [],
+  "source": {
+    "src/outdoorcats.js": "e75e1829d89a53a6208493e8b05704c99397352936fee12dbba6a11b6e29b371",
+    "src/marks.js": "cc51ac3b9b669944fa7f02fa897376f8f0d9cc990282def3dfdd73f38d82879f",
+    "src/butterflymodel.js": "61b3066bb21837d86ee704df2dcd5ee79a9bfdd5fa12fc64a2e44bb4d9b41734",
+    "src/bestiarymodels.js": "e187f71bdbfdd5cbd5965018b401e567f7ae0218ac421b4efcd5b8343cab2464",
+    "src/bestiaryimages.js": "43c6a479b1e1b9d88afa9afe70da28ff918bba632805be92987a7753e0d617ba",
+    "src/bestiarystore.js": "b07045d134f82fa30f1cdcf3f2a7f9d841150000435f9349702015a318fd8514",
+    "src/idb.js": "55a57bb453ef380441537c4eb8839c403bf13debfa43f0dc3d794cd0e88f2dee",
+    "src/config.js": "cdf82c3262063f082d10de315eacde9e99922534c72a0137213e4aa29e806ed6",
+    "tools/butterflycache1938.html": "7d164178d9f6b23c7ee407a1df28ffd90b3500c5043ed51aadf945fee2f7c8d0",
+    "tools/butterflycache1938.cjs": "eebb47e907fb4fe842ab0f2adf2eaedc95dc7ba7fe6f150a357d3429aeacc990"
+  },
+  "photoEvidence": "Synthetic actual-photo payloads compared exactly in browser, then replaced with SHA256 in this persisted text evidence."
+}

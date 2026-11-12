@@ -1,0 +1,15 @@
+{
+  "ownedServerStopped": [
+    {
+      "pid": 1517661,
+      "args": [
+        "python3",
+        "tools/devserve.py",
+        "8204"
+      ],
+      "cwd": "/home/devcontainers/lunden-wt/lunden-1938-butterfly-cache"
+    }
+  ],
+  "browserCLIExit": 0,
+  "sharedLockReleased": true
+}

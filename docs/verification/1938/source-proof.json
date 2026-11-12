@@ -1,0 +1,16 @@
+{
+  "base": "990e8914b036b608c104e5b014b7553a4595569d",
+  "productionChange": "Only three butterfly metadata versions1\u21922; no geometry/material/shader/controller/cache implementation change.",
+  "source": {
+    "src/butterflymodel.js": "61b3066bb21837d86ee704df2dcd5ee79a9bfdd5fa12fc64a2e44bb4d9b41734",
+    "src/bestiarymodels.js": "e187f71bdbfdd5cbd5965018b401e567f7ae0218ac421b4efcd5b8343cab2464",
+    "src/bestiaryimages.js": "43c6a479b1e1b9d88afa9afe70da28ff918bba632805be92987a7753e0d617ba",
+    "src/bestiarystore.js": "b07045d134f82fa30f1cdcf3f2a7f9d841150000435f9349702015a318fd8514",
+    "src/idb.js": "55a57bb453ef380441537c4eb8839c403bf13debfa43f0dc3d794cd0e88f2dee",
+    "src/config.js": "cdf82c3262063f082d10de315eacde9e99922534c72a0137213e4aa29e806ed6"
+  },
+  "normalizedRegistrationFiles": {
+    "src/outdoorcats.js": "b49e31e1360e815eb5479228035b82545bbb3e78f55a91a1767485acf6c85ed6",
+    "src/marks.js": "2fa3d2a211c61a088fc6e370a2da85fe25c57f2f311c0122b3d3127abc3353bd"
+  }
+}

@@ -310,6 +310,8 @@ head views. [Seated results](../validation/issue-1504/README.md), [pitch results
 
 ## Butterfly realism (#1925)
 
+After a changed collection model, verify old persisted96/320keys as well as fresh rendering. `tools/browsertest.sh node tools/butterflycache1938.cjs OUT` covers all three butterfly IDs through real old/current/fixed sources and IndexedDB, preserving discoveries/photos while version2 renews only the thumbnails. [Cache boundary evidence](../verification/1938/README.md).
+
 `node --test tools/outdoorcatbraintest.mjs` retains time/season/chasing behaviour.
 Through `tools/browsertest.sh`, run `node tools/butterflyrealismtest.cjs BASE OUT`
 for frozen-source matched whole/front/side/normal/wing-phase images, actual

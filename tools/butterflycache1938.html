@@ -1,0 +1,25 @@
+<!doctype html><meta charset="utf-8"><link rel="icon" href="data:,"><title>Butterfly thumbnail version boundary</title>
+<style>body{background:#e2eaf0;font:16px system-ui}#cards{display:flex;gap:16px;align-items:start}img{display:block;background:#cedee9}section{display:flex;flex-direction:column;gap:8px}</style>
+<script type="importmap">{"imports":{"three":"/__three/build/three.module.js","three/addons/":"/__three/examples/jsm/"}}</script><div id="cards"></div>
+<script type="module">
+import * as T from 'three';
+import '../src/outdoorcats.js';import '../src/marks.js';
+import {registry} from '../src/bestiary.js';import {BestiaryImages} from '../src/bestiaryimages.js';
+import {BestiaryCollection} from '../src/bestiarystore.js';import {withStore} from '../src/idb.js';
+const ids=['butterfly:yellow','butterfly:orange','butterfly:magic'],renderer=new T.WebGLRenderer({antialias:true});renderer.setPixelRatio(1);
+const draws=[],render=renderer.render.bind(renderer);renderer.render=(scene,camera)=>{scene.updateMatrixWorld(true);let finite=[...camera.matrixWorld.elements,...camera.matrixWorldInverse.elements,...camera.projectionMatrix.elements,...camera.projectionMatrixInverse.elements].every(Number.isFinite);scene.traverse(o=>{finite&&=[...o.matrix.elements,...o.matrixWorld.elements].every(Number.isFinite);if(o.geometry)for(const a of [o.geometry.index,...Object.values(o.geometry.attributes)].filter(Boolean))finite&&=a.array.every(Number.isFinite)});if(!finite)throw Error('Nonfinite actual portrait data');const value=render(scene,camera);draws.push({finite,calls:renderer.info.render.calls,triangles:renderer.info.render.triangles});return value;};
+async function pixels(data){const img=new Image();img.src=data;await img.decode();const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const g=c.getContext('2d');g.drawImage(img,0,0);const rgba=g.getImageData(0,0,c.width,c.height).data;let opaque=0;for(let i=3;i<rgba.length;i+=4)if(rgba[i]>10)opaque++;return {opaque,img};}
+async function run(){
+ const collection=new BestiaryCollection({registry,storage:localStorage,store:withStore});await collection.load();
+ for(const id of ids)if(!collection.get(id).found)collection.record(id,'find',{token:'1938-cache'});
+ const discoveryBefore=localStorage.getItem('lunden.bestiary'),photosBefore=await withStore('bestiaryPhotos','readonly',s=>s.getAll()),keysBefore=await withStore('bestiaryThumbs','readonly',s=>s.getAllKeys());
+ const images=new BestiaryImages({registry,renderer,store:withStore}),rows=[];
+ for(const id of ids){const section=document.createElement('section');section.append(document.createTextNode(id));document.querySelector('#cards').append(section);for(const size of [96,320]){const data=await images.get(id,size),p=await pixels(data);section.append(p.img);rows.push({id,size,data,opaque:p.opaque});}}
+ const first={renders:images.renders,hits:images.hits};for(const r of rows)await images.get(r.id,r.size);const fresh=new BestiaryImages({registry,renderer,store:withStore});for(const r of rows)if(await fresh.get(r.id,r.size)!==r.data)throw Error('Persistent data drift');
+ // Use the real photo writer, once, to seed a personal photo alongside old cache data.
+ if(!photosBefore.length){if(!await collection.addPhoto(ids[0],rows[0].data))throw Error('Photo seed failed');}
+ const photosAfter=await withStore('bestiaryPhotos','readonly',s=>s.getAll());
+ return {entries:ids.map(id=>registry.get(id)),rows,first,memoryHits:images.hits-first.hits,persisted:{renders:fresh.renders,hits:fresh.hits},keysBefore,keysAfter:await withStore('bestiaryThumbs','readonly',s=>s.getAllKeys()),discovery:localStorage.getItem('lunden.bestiary'),discoveryPreserved:localStorage.getItem('lunden.bestiary')===discoveryBefore,found:ids.every(id=>collection.get(id).found),photos:photosAfter,photosPreserved:!photosBefore.length||JSON.stringify(photosBefore)===JSON.stringify(photosAfter),draws};
+}
+window.butterflyCache1938={run,ready:true};
+</script>

@@ -387,5 +387,5 @@ export class OutdoorCats {
 }
 
 
-for(const [color,no,label] of [[BUTTERFLY_SURFACE.colors.yellow,60,'Gul fjäril'],[BUTTERFLY_SURFACE.colors.orange,61,'Orange fjäril']]) creature({id:`butterfly:${no===60?'yellow':'orange'}`,no,interactive:false,name:label,family:'insects',model:{kind:'butterfly',color},info:{size:'Liten lågpolymodell',weight:'Mycket lätt',where:no===60?'Gården':'Parken',when:'När en katt spanar och jagar',likes:'Att fladdra framför katten'},facts:['Katten kan följa fjärilen med blicken och jaga den.','Bara sedd: denna fjäril har ingen egen spelarinteraktion.']});
+for(const [color,no,label] of [[BUTTERFLY_SURFACE.colors.yellow,60,'Gul fjäril'],[BUTTERFLY_SURFACE.colors.orange,61,'Orange fjäril']]) creature({id:`butterfly:${no===60?'yellow':'orange'}`,modelVersion:2,no,interactive:false,name:label,family:'insects',model:{kind:'butterfly',color},info:{size:'Liten lågpolymodell',weight:'Mycket lätt',where:no===60?'Gården':'Parken',when:'När en katt spanar och jagar',likes:'Att fladdra framför katten'},facts:['Katten kan följa fjärilen med blicken och jaga den.','Bara sedd: denna fjäril har ingen egen spelarinteraktion.']});
 export { butterflyGeometry };

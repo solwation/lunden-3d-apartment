@@ -444,5 +444,5 @@ class Smoke {
   }
 }
 
-creature({id:'butterfly:magic',no:62,name:'Magisk fjäril',family:'insects',level:2,model:{kind:'magicButterfly'},info:{size:'Liten magisk vinge',weight:'Ingen verklig vikt',where:'Vid trollstavens träff',when:'En kort stund efter magi',likes:'Stjärnstoft'},facts:['En magisk fjärilsform som trollstaven skapar.','Stjärnor, hjärtan och rök är effekter och får inga djurposter.']});
+creature({id:'butterfly:magic',modelVersion:2,no:62,name:'Magisk fjäril',family:'insects',level:2,model:{kind:'magicButterfly'},info:{size:'Liten magisk vinge',weight:'Ingen verklig vikt',where:'Vid trollstavens träff',when:'En kort stund efter magi',likes:'Stjärnstoft'},facts:['En magisk fjärilsform som trollstaven skapar.','Stjärnor, hjärtan och rök är effekter och får inga djurposter.']});
 export { TEXTURES };
