@@ -21,12 +21,12 @@ baseline commit. Final actual component views are [front](cats-front.png),
 and [actual BestiaryImages at 96/320 px](cat-binder.png). The rows include sit,
 walk, wash, pet, play, held and eating, using the actual pose methods.
 
-Matched clean normal views: [before](baseline-normal.png), [after](current-normal.png).
+Matched clean normal views: [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8e226fa183ade3ccc1bfb638427bc75e2120d7b6/docs/verification/1918/baseline-normal.png), [after](current-normal.png).
 The camera uses 70° FOV at 1.62 m height, looking toward the cat at about 1.7 m;
 these are component scenes with the same lighting, ground and inputs, not a full
 World run. Each phase checks finite scene/camera matrices, the intended visible
 cat in the frustum and successful production GLB installation.
-Actual `catphoto.snapshot` images are [before](baseline-photo.jpg) and
+Actual `catphoto.snapshot` images are [before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8e226fa183ade3ccc1bfb638427bc75e2120d7b6/docs/verification/1918/baseline-photo.jpg) and
 [after](current-photo.jpg); render-target/viewport state is restored.
 
 ## Cost and coverage
@@ -83,11 +83,20 @@ poses before/after that move; the re-exported GLB is byte-identical.
 Tail allocation, behavior/brain, spawn rules, distance cutoffs, saved photos and
 collection IDs are unchanged. No full World/mobile timing run was needed for
 these immutable surfaces; gameplay coverage is the existing real pose/contact
-paths and the bounded actual consumers above. Public downstream transfer should
-include generic surfaces, buffer sharing, cache version and LOD colour support,
-with a generic neutral export; personal Miele/photos/names and game systems stay
-in the original project.
+paths and the bounded actual consumers above. Public transfer is tracked separately in [public #268](https://github.com/solwation/kvarteret-lunden/issues/268),
+priority low, for selective generic form/colour adaptation to its own anonymous
+batched cats. No public code is delivered here; personal profiles/photos/names,
+gameplay and services stay in the original project.
 
 Integration review: [source preservation and inspected views](integration.json).
 The final rebase adds only unrelated Hand configuration; cat inputs and model
 buffers match the verified worker delivery. Changelog id is 1477.
+
+Published at `8e226fa183ade3ccc1bfb638427bc75e2120d7b6`.
+[Pages](https://github.com/solwation/lunden-3d-apartment/actions/runs/43187360876) and
+[Worker](https://github.com/solwation/lunden-3d-apartment/actions/runs/43187360800)
+passed for that revision. The pinned completion comment embeds the before/after
+and actual consumer views; all eight image URLs returned HTTP 200/image types
+before closure. This issue's two before screenshots are removed in the resolving
+commit, while remaining accessible at the pinned evidence revision. Result images
+follow 30-day retention. The resolving docs-only commit triggers no new deploy.
