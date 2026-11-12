@@ -99,3 +99,6 @@ Root alone integrates, publishes the triggered deployment checks and embeds
 pinned result images before closure. Before images are pruned after pinned
 publication; results have the standard 30-day lifetime and text/JSON remain.
 This original-only Christmas character has no public downstream transfer.
+
+
+Root reviewed the combined product/factory/config/fixture/evidence diff and opened actual loaded/fallback96/320cards and loaded sofa before/after. Rebase preserves every executed model/fixture/GLB source and exact LANDSKRONA configuration; [integration mapping](integration.json) binds delivery and changelog1486 after latest main fetch. Existing two scoped green groups are reused without a broad rerun.

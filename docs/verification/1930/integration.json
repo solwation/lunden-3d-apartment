@@ -1,0 +1,17 @@
+{
+  "worker": "c610d587ac7998679fd29316c1fcc04b71d14514",
+  "integratedBase": "d8c2c703b8226ba9cf29215b062d612b5d4bdef2",
+  "unchangedMeasuredFiles": {
+    "src/santa.js": "5a8eb7663eed5155651fa8daa303d51ce055e8215240b8e3adbfd1c4c4517556",
+    "src/santaconfig.js": "9bb507a99bc7392f7d7e7d6fa6b1a345ce81099d0b0629d33218d367b577bb3b",
+    "src/bestiarymodels.js": "d4e5a9f3e8206de81af9e43bae6d83eb37796391eb4efed04f0f5164455ac2bc",
+    "src/santasurface.js": "07aabc901be87ab0a598deff86f34fef27e1d4db144b07de0490423d1c6437d7",
+    "models/santa.glb": "e4ee917e1880086042928412ccf6807e69f3437e739f0eecf040249fdd64c130",
+    "tools/santaportraittest.html": "97ce1104610ffca900c0d0f9638f08518920168b36f7b457c4ca20fe2015291b",
+    "tools/capture-santa-portrait.cjs": "da26134213ff183f427aea58adb4d3fed330859826f6b453e81eff86674e8096"
+  },
+  "exactLANDSKRONAConfig": true,
+  "changelog": 1486,
+  "rootReviewed": "Complete production/portrait/config/binder/fixture/evidence diff and actual loaded/fallback96/320cards, loaded sofa and before lost arms.",
+  "reuse": "Every executed measured file exact; unrelated shared config changes exclude LANDSKRONA. No new green broad rerun."
+}
