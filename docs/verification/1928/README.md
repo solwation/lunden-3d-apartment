@@ -126,14 +126,14 @@ views. Root opened all first quarter and five normal proposals before locking.
 
 | Prop/consumer | Before | Result | Normal/actual consumer |
 |---|---|---|---|
-| Owl | [quarter](before-owl-quarter.png) | [quarter](final-owl-quarter.png) | [normal](final-owl-normal.png), [held](final-owl-held.png) |
-| Straight desk | [quarter](before-desk-quarter.png) | [quarter](final-desk-quarter.png) | [normal](final-desk-normal.png), [whole](final-desk-whole.png) |
-| Corner desk | [quarter](before-corner-quarter.png) | [quarter](final-corner-quarter.png) | [side-standing normal](final-corner-normal.png), [whole](final-corner-whole.png) |
-| Lamp | [quarter](before-lamp-quarter.png) | [quarter](final-lamp-quarter.png) | [normal](final-lamp-normal.png), [whole](final-lamp-whole.png) |
-| ALEX unicorn | [quarter](before-unicorn-quarter.png) | [quarter](final-unicorn-quarter.png) | [normal](final-unicorn-normal.png), [whole](final-unicorn-whole.png) |
-| Dino | [quarter](before-dino-quarter.png) | [quarter](final-dino-quarter.png) | [actual drawer](final-dino-home.png), [held](final-dino-held.png) |
-| Brick figure | [quarter](before-lego-quarter.png) | [quarter](final-lego-quarter.png) | [actual drawer](final-lego-home.png), [held](final-lego-held.png) |
-| Mini duck | [quarter](before-duck-quarter.png) | [quarter](final-duck-quarter.png) | [actual drawer](final-duck-home.png), [held](final-duck-held.png) |
+| Owl | [quarter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/3b280ab25252fabdfc9ef89b21b2ef3cf5d493ff/docs/verification/1928/before-owl-quarter.png) | [quarter](final-owl-quarter.png) | [normal](final-owl-normal.png), [held](final-owl-held.png) |
+| Straight desk | [quarter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/3b280ab25252fabdfc9ef89b21b2ef3cf5d493ff/docs/verification/1928/before-desk-quarter.png) | [quarter](final-desk-quarter.png) | [normal](final-desk-normal.png), [whole](final-desk-whole.png) |
+| Corner desk | [quarter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/3b280ab25252fabdfc9ef89b21b2ef3cf5d493ff/docs/verification/1928/before-corner-quarter.png) | [quarter](final-corner-quarter.png) | [side-standing normal](final-corner-normal.png), [whole](final-corner-whole.png) |
+| Lamp | [quarter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/3b280ab25252fabdfc9ef89b21b2ef3cf5d493ff/docs/verification/1928/before-lamp-quarter.png) | [quarter](final-lamp-quarter.png) | [normal](final-lamp-normal.png), [whole](final-lamp-whole.png) |
+| ALEX unicorn | [quarter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/3b280ab25252fabdfc9ef89b21b2ef3cf5d493ff/docs/verification/1928/before-unicorn-quarter.png) | [quarter](final-unicorn-quarter.png) | [normal](final-unicorn-normal.png), [whole](final-unicorn-whole.png) |
+| Dino | [quarter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/3b280ab25252fabdfc9ef89b21b2ef3cf5d493ff/docs/verification/1928/before-dino-quarter.png) | [quarter](final-dino-quarter.png) | [actual drawer](final-dino-home.png), [held](final-dino-held.png) |
+| Brick figure | [quarter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/3b280ab25252fabdfc9ef89b21b2ef3cf5d493ff/docs/verification/1928/before-lego-quarter.png) | [quarter](final-lego-quarter.png) | [actual drawer](final-lego-home.png), [held](final-lego-held.png) |
+| Mini duck | [quarter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/3b280ab25252fabdfc9ef89b21b2ef3cf5d493ff/docs/verification/1928/before-duck-quarter.png) | [quarter](final-duck-quarter.png) | [actual drawer](final-duck-home.png), [held](final-duck-held.png) |
 
 [Full gallery](gallery.html); [whole secretary](final-owl-whole.png);
 [low-memory held owl](lowmem/lowmem-owl-held.png).
@@ -167,3 +167,5 @@ save round trip or deployment was run by this worker. Root alone owns integratio
 publishing, actual Pages/Worker gates and final pinned image comment/closure.
 
 Root reviewed the complete production/config/fixture/evidence delta and opened the final front/side/quarter sheet, actual drawer/held brick figure, held owl, corner normal and whole ALEX. [Integration mapping](integration.json) preserves every captured furniture/desk/figure/fixture and evidence file exactly. Entire config is exact after substituting only current-main PINGPING and SHARK declarations, unrelated to these selected furniture factories. All other model integrations remain exact current main. Thus the three green groups/255 comparisons are reused without calling the intentionally stale whole-config hash green. Changelog1488 follows latest main.
+
+Root published all twelve embedded result/comparison images with HTTP200/image type after actual Pages/Worker success in [completion evidence](https://github.com/solwation/lunden-3d-apartment/issues/1928#issuecomment-6821867298). This resolving commit prunes all46 own baseline PNGs and pins their README/gallery references to source `3b280ab25252fabdfc9ef89b21b2ef3cf5d493ff`.
