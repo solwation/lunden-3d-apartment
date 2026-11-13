@@ -70,7 +70,8 @@ The public instruction counterpart is tracked in
 | Queue poll | Every 300 seconds during active work and idle; also before every new selection |
 | Wait mechanism | Interactive Claude Code: a background timer (Bash `run_in_background` with `sleep`, at most 60 s per wait) or Monitor; a finishing worker or user message also wakes the conductor. A runtime that cannot wait (`claude -p`, one-shot cloud runs) runs a bounded pass and says that no poll or idle watch ran |
 | Delivery mode | Direct to `main`, no PRs or feature branches ([workspace and delivery](#workspace-and-delivery)) |
-| Idle watch | 60 minutes after latest resolved implementation issue by this session in either repository, else from first idle entry |
+| Project review | Core default ([empty queue at start](shared/COORDINATION.md#review-the-project-on-an-empty-queue)): once per run, both repositories in scope, read-only, at most 5 findings; skipped for a scope naming specific issues |
+| Idle watch | 60 minutes after latest resolved implementation issue by this session in either repository, else from first idle entry (after any project review) |
 | Heartbeat | Swedish issue comment every 30 minutes, first at 25–30; done/current/remaining estimate |
 
 `/orkester` in this project, with or without an argument, starts an explicit queue
@@ -254,7 +255,9 @@ first, `--apply` only while no worker is active, and
 `--archive ~/.local/state/orkester-archive` for unproven work (outside all checkouts).
 The primary clones `~/lunden-3d-apartment` and `~/kvarteret-lunden` and the `/mnt/c`
 copy stay outside the roots and are never pruned; pass `--protect` for any other clone
-that must stay. Whoever creates a writing checkout (a worker, or the conductor for a
+that must stay. These named roots replace the core's default `workingtree/` root
+(core v0.14.0 permits a host-named root); do not create `workingtree/` here, and never
+run `git clean -x` in a primary clone. Whoever creates a writing checkout (a worker, or the conductor for a
 worker or for itself) first writes `issue=owner/repo#N` and `session=<session id>` to
 `orchestra-claim` in its git directory (`git rev-parse --git-dir`, outside the working
 tree), so the prune script counts it as active before its first commit (core v0.11.0);
@@ -334,8 +337,12 @@ The conductor runs this loop in every `/orkester` queue session:
    the integration queue before dispatch; review/integrate ready work under the same
    ownership (diff, evidence, acceptance; no routine reruns), using a slot while active.
 4. Give the freed slot the next priority issue after a fresh selection.
-5. When nothing is startable, no worker is active and no owned handoff can be integrated
-   now, review all work delivered in the
+5. If the run's first complete fetch (after resume and due intake) shows nothing startable
+   and no integrable owned handoff, run the core's one-time
+   [project review](shared/COORDINATION.md#review-the-project-on-an-empty-queue) first;
+   its findings become issues under step 6 and are delivered by this run.
+   On a later drain (nothing startable, no worker active and no owned handoff can be integrated
+   now), review all work delivered in the
    session since the last review, across both repositories (the core's
    [session review](shared/COORDINATION.md#review-the-session)). Workers may
    take read-only review parts within the currently evaluated active capacity. Also check changelog ids,
@@ -347,23 +354,26 @@ The conductor runs this loop in every `/orkester` queue session:
 
 ## Shared version and maintenance
 
-Shared release: **v0.13.1**, commit **78fb119b8b37e645a303f40b86551815fd5e095b**. Imported with
-`git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git 78fb119b8b37e645a303f40b86551815fd5e095b --squash`
-in [original #1934](https://github.com/solwation/lunden-3d-apartment/issues/1934).
-The complete [v0.12.0..v0.13.1 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/9e7c6e388df0ebdd25c0ba76d3debc73de3c41fa...78fb119b8b37e645a303f40b86551815fd5e095b)
-was reviewed: private image/dashboard permission clarification (#65), dynamic
-capacity and integration-throughput guidance (#66), and host-configured automatic
-issue intake (#67). The local intake mode above selects queue sessions; explicit
-user scope, deferral and stop retain precedence. The local capacity correction is
-tracked separately in [#1935](https://github.com/solwation/lunden-3d-apartment/issues/1935).
-No priority, ownership, publication or timer migration is introduced by the import.
-Local original-first/public-low ordering and configured timers still govern.
-Public adoption and trigger adaptation are tracked in
-[public #272](https://github.com/solwation/kvarteret-lunden/issues/272); capacity
-adaptation is [public #273](https://github.com/solwation/kvarteret-lunden/issues/273).
-The image examples do not override required images on main, revision-pinned URLs,
-retention or the no-branches rule. Optional expert-panel review remains optional.
-[Scenario, source and link verification](https://github.com/solwation/lunden-3d-apartment/issues/1934#issuecomment-6820495335) records this import.
+Shared release: **v0.14.0**, commit **edb110b8fe5e761fea1d3bdb10b5457e5acacb95**. Imported with
+`git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git edb110b8fe5e761fea1d3bdb10b5457e5acacb95 --squash`
+in [original #1939](https://github.com/solwation/lunden-3d-apartment/issues/1939).
+The complete [v0.13.1..v0.14.0 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/78fb119b8b37e645a303f40b86551815fd5e095b...edb110b8fe5e761fea1d3bdb10b5457e5acacb95)
+was reviewed: a one-time read-only project review when a run starts with nothing
+startable (#69, adopted with the core default above and in the session loop) and a
+default `workingtree/` worktree root (#68, superseded here by the host-named `~/wt`
+and `~/lunden-wt` roots). No priority, ownership, publication, timer or issue migration.
+Public adoption is tracked in [public #275](https://github.com/solwation/kvarteret-lunden/issues/275).
+Retained from earlier imports: the local intake mode above selects queue sessions; explicit
+user scope, deferral and stop retain precedence. Local original-first/public-low ordering
+and configured timers still govern. The core's image examples do not override required
+images on main, revision-pinned URLs, retention or the no-branches rule. Optional
+expert-panel review remains optional.
+The previous v0.13.1 import (`78fb119b8b37e645a303f40b86551815fd5e095b`) remains recorded in
+[original #1934](https://github.com/solwation/lunden-3d-apartment/issues/1934)
+([verification](https://github.com/solwation/lunden-3d-apartment/issues/1934#issuecomment-6820495335)) and
+[public #272](https://github.com/solwation/kvarteret-lunden/issues/272); the local capacity
+correction in [#1935](https://github.com/solwation/lunden-3d-apartment/issues/1935) and
+[public #273](https://github.com/solwation/kvarteret-lunden/issues/273).
 The previous v0.12.0 import is recorded in
 [original #1904](https://github.com/solwation/lunden-3d-apartment/issues/1904) and
 [public #265](https://github.com/solwation/kvarteret-lunden/issues/265).
