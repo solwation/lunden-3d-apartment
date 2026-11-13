@@ -62,12 +62,13 @@ means the shared rules apply unchanged.
 | Integration queue and recovery | Handoff comment on the issue plus private session checkpoint: integration owner, branch/checkout, revision, evidence and next action; conductor reconciles at every queue check |
 | Capacity | At most two active agents including the conductor; its implementation or active integration counts as a slot and is allowed for small cohesive changes. Integration-ready waits and parent summaries use no slot. No expensive shared verification (no browser/e2e/device runs) |
 | Isolation | No servers or ports. In Claude Code, give a worker its own checkout with the Agent tool's `isolation: "worktree"`; the worker writes the claim marker first, since the tool creates the checkout |
-| Worktree root and cleanup | Core default. Claude Code removes an unchanged `isolation: "worktree"` checkout itself; the conductor removes the rest after closure and prunes leftover worktrees of this repository at drain with `scripts/prune-worktrees.sh`. Unproven work is preserved as a private branch; no archive directory |
+| Worktree root and cleanup | Core default: `workingtree/` in this checkout, ignored by `.gitignore`. Claude Code removes an unchanged `isolation: "worktree"` checkout itself; the conductor removes the rest after closure and prunes leftover worktrees of this repository at drain with `scripts/prune-worktrees.sh`. Unproven work is preserved as a private branch; no archive directory |
 | Runtime/model selection | Claude Code's Agent tool chooses a model per worker (`sonnet`, `opus`, `haiku`, `fable` aliases). Reasoning effort follows the agent definition and is not set per call unless the maintainer asks. Choose per the resource rules in [ORCHESTRA.md](ORCHESTRA.md) and disclose when a control is unavailable; no price assumptions |
 | Heartbeat, stale work | Core default |
 | Delivery mode | Direct to `main` (see *Commit and push requested changes*); PR mode does not apply |
 | Wait mechanism | Interactive Claude Code blocks a foreground `sleep`: wait with a background timer (Bash `run_in_background` running `sleep 300`, which re-invokes the conductor when it exits) or the Monitor tool with an until-loop; a finishing worker or a maintainer message also wakes the conductor. `claude -p '/orkester'` and one-shot cloud runs cannot wait: they run a bounded pass and say that no poll or idle watch ran |
 | Session review on drain | Core default |
+| Project review on an empty queue | Core default: check consistency between the core, adapters, PROJECT.example.md, INSTALL.md and CHANGELOG, run the required checks, and file at most 5 findings |
 | Workspace/server setup | None; Markdown only |
 | Required checks | `python3 scripts/check-links.py` and the maintainer checks below |
 | Installed version, upstream discovery | Not applicable: the root files are the installed core and the conductor already runs the newest revision (see above) |

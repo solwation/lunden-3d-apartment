@@ -30,7 +30,9 @@ Reading these files alone never starts an unattended run. A chat request for cha
 starts the workflow under [chat intake](#turn-chat-requests-into-work). An empty scope,
 such as a bare `/orkester`, lets the conductor choose the work: by default one
 [bounded pass](COORDINATION.md#run-a-bounded-pass); a host policy may configure a queue
-session instead.
+session instead. Either run starts with a
+[project review](COORDINATION.md#review-the-project-on-an-empty-queue) when nothing is
+startable.
 
 ## Checklist
 
@@ -238,6 +240,14 @@ Make the scoped change; unrelated defects become separate issues.
   (for example a `git worktree` on its own branch). Never edit or run state-changing git
   commands (checkout, switch, stash, reset, clean, rebase, commit) in a checkout you do
   not own; reading is fine. Only the integration owner changes the integration checkout.
+- Create checkouts under the host's worktree root, by default a git-ignored
+  `workingtree/` directory inside the project checkout (one subdirectory per
+  checkout, for example `git worktree add workingtree/issue-57 -b issue-57 origin/main`),
+  never as sibling directories beside the project. Ignore it in the committed
+  `.gitignore` (`/workingtree/`); until that is on main, add it to `.git/info/exclude`.
+  Never run `git clean -x` in the integration checkout, since it deletes ignored
+  directories and with them every checkout in the root. A checkout the platform creates (such
+  as a tool's own worktree isolation) stays where the platform puts it.
 - Whoever creates a writing checkout marks it as in use before work starts: write
   `issue=<owner/repo#N>` and `session=<session ID>` to `orchestra-claim` in its git
   directory (`git rev-parse --git-dir`, outside the working tree). A checkout that has
@@ -388,8 +398,9 @@ and removes only the integrated ones. A claim marker whose issue is not shown cl
 a checkout without commits of its own whose HEAD changed recently (`--min-age`), counts
 as active, so another session's fresh checkout survives a whole-root prune; it is a dry run unless `--apply` is given,
 `--archive <dir>` preserves unproven work as bundle and patch before removal, and
-`--protect` keeps named clones. The host policy names the worktree root and the archive
-location.
+`--protect` keeps named clones. The worktree root is `workingtree/` in the project
+checkout ([isolation](#isolate-concurrent-agents)) unless the host policy names
+another; the host policy also names the archive location.
 
 ### Close after a best-guess fix
 

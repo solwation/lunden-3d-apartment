@@ -25,12 +25,14 @@ work](ORCHESTRA.md#resume-unfinished-work-first), then dispatches.
 | Integration owner | The one agent that combines, publishes and closes an issue's delivery |
 | Resolved | Closed by this session after its change reached main (or merged, in PR mode); the idle watch counts from the latest such closure |
 | Drain | Nothing is startable, no worker is active and no owned handoff can be integrated now |
+| Project review | A bounded, read-only review of the project in scope, run once when a run starts with nothing to do; its findings become issues the run then delivers |
 
 ## Run a bounded pass
 
 A bounded pass is the default for an empty scope ([read map](ORCHESTRA.md#read-map)).
 Select, claim and deliver within scope and capacity until nothing is startable;
-do not ask the user to choose. Run [session review](#review-the-session), then a final
+do not ask the user to choose. If nothing is startable at the start, run the
+[project review](#review-the-project-on-an-empty-queue) first. Run [session review](#review-the-session), then a final
 complete fetch before stopping. No polling, idle watch or timers. Release inactive
 claims and active labels; retain genuine waiting handoffs under the
 [handoff procedure](ORCHESTRA.md#handoff-for-integration), reporting owner and next action.
@@ -209,6 +211,43 @@ up the conductor's own leftover claims and labels directly. Record range, parts,
 findings and created issues in the status comment, and resume selection if eligible
 work appeared. The next drain reviews only later deliveries; a drain with nothing new
 skips it. The review never restarts the idle deadline. A host may extend or disable it.
+
+## Review the project on an empty queue
+
+A run that finds nothing to do at its start does not simply stop or idle: the review
+creates issues, and the orchestra then fixes them. When a bounded pass or queue session
+has resumed unfinished work and run due intake, and its first complete fetch shows
+nothing startable and no owned handoff to integrate, the conductor reviews the project
+once before stopping or entering the idle watch. Active by default; a host may limit
+or disable it. A scope naming specific issues skips it, and a scope naming an area
+bounds it to that area.
+
+- **Once per run.** Never on an idle poll, a later drain or a resume of the same run;
+  later drains use the [session review](#review-the-session). Skip it when the run's
+  records (the private checkpoint, an earlier project review's issues or result note)
+  show a project review at the current main revision of every repository in scope.
+- **Read-only and bounded.** Start from the current remote main branch. Spend about one
+  ordinary review: run the project's fast required checks, then read what most likely
+  hides defects first: recent changes since the last project review, known risk areas,
+  host-named areas and failing or missing checks. Workers may take read-only parts
+  within capacity. They fix nothing. An optional host
+  [expert panel](PROJECT.example.md#expert-panel-review-hook) applies here as well.
+- **Concrete findings only.** File a defect, an inconsistency between code,
+  configuration and documentation, a failing check, or a missing check on a risky path,
+  each with evidence (file and line, failing command or reproduction). Do not file
+  style preferences, speculative refactors or wishes. Search open and recently closed
+  issues first and add to a matching one instead of duplicating it. Stop at the host's
+  finding cap (default 5), most severe first.
+- **Normal issues.** Each finding gets an issue with acceptance and triaged priority,
+  noting that the project review found it and at which revision. A decision only the
+  user can make goes through the [question channel](#ask-through-the-issue) instead.
+  Record the reviewed revisions, scope and created issues in the status comment or
+  result note.
+
+Then select again from a fresh complete fetch. The created issues are ordinary
+eligible work and are delivered by this run. With no findings, stop or enter the idle
+watch as before. Its deadline starts at the first idle entry after the review; the
+review itself never restarts it.
 
 ## Poll, idle and stop
 
