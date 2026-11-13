@@ -354,15 +354,23 @@ The conductor runs this loop in every `/orkester` queue session:
 
 ## Shared version and maintenance
 
-Shared release: **v0.14.0**, commit **edb110b8fe5e761fea1d3bdb10b5457e5acacb95**. Imported with
-`git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git edb110b8fe5e761fea1d3bdb10b5457e5acacb95 --squash`
-in [original #1939](https://github.com/solwation/lunden-3d-apartment/issues/1939).
-The complete [v0.13.1..v0.14.0 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/78fb119b8b37e645a303f40b86551815fd5e095b...edb110b8fe5e761fea1d3bdb10b5457e5acacb95)
-was reviewed: a one-time read-only project review when a run starts with nothing
-startable (#69, adopted with the core default above and in the session loop) and a
-default `workingtree/` worktree root (#68, superseded here by the host-named `~/wt`
-and `~/lunden-wt` roots). No priority, ownership, publication, timer or issue migration.
-Public adoption is tracked in [public #275](https://github.com/solwation/kvarteret-lunden/issues/275).
+Shared release: **v0.14.1**, commit **412b663a134cd0198f6ca992f677b34de136cf1b**. Imported with
+`git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git 412b663a134cd0198f6ca992f677b34de136cf1b --squash`
+in [original #1941](https://github.com/solwation/lunden-3d-apartment/issues/1941).
+The complete [v0.14.0..v0.14.1 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/edb110b8fe5e761fea1d3bdb10b5457e5acacb95...412b663a134cd0198f6ca992f677b34de136cf1b)
+was reviewed: a documentation release that brings the core README and its Pages site up
+to date with the core (#70, #71) and makes the release checklist and
+`scripts/check-release.sh` cover both (#72). ORCHESTRA.md, COORDINATION.md, WORKER.md,
+ISSUE-WORKFLOW.md, the Issueflow snapshot and `scripts/prune-worktrees.sh` are unchanged.
+The README's default `workingtree/` root stays superseded here by the host-named `~/wt`
+and `~/lunden-wt` roots. No priority, ownership, publication, timer or issue migration.
+Public adoption is tracked in [public #277](https://github.com/solwation/kvarteret-lunden/issues/277).
+The previous v0.14.0 import (`edb110b8fe5e761fea1d3bdb10b5457e5acacb95`) remains recorded in
+[original #1939](https://github.com/solwation/lunden-3d-apartment/issues/1939) and
+[public #275](https://github.com/solwation/kvarteret-lunden/issues/275): it added the one-time
+read-only project review when a run starts with nothing startable (#69, adopted with the
+core default above and in the session loop) and the default `workingtree/` worktree root
+(#68, superseded here by the host-named roots).
 Retained from earlier imports: the local intake mode above selects queue sessions; explicit
 user scope, deferral and stop retain precedence. Local original-first/public-low ordering
 and configured timers still govern. The core's image examples do not override required
