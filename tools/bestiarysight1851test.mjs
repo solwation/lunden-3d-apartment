@@ -1,4 +1,4 @@
-// node --experimental-default-type=module --test tools/bestiarysight1851test.mjs
+// node --test tools/bestiarysight1851test.mjs
 import test from'node:test';import assert from'node:assert/strict';import * as T from'three';import{Marks}from'../src/marks.js';
 const make=(objects)=>{const root=new T.Group();root.add(...objects);root.updateMatrixWorld(true);const ray=new T.Raycaster(),camera=new T.PerspectiveCamera();ray.camera=camera;ray.layers.enable(7);const m=Object.create(Marks.prototype);Object.assign(m,{surfaces:[root],ray,camera});m.visited=[];const segment=m.segment;m.segment=function(a,b,items){this.visited.push(...items);return segment.call(this,a,b,items);};return m;};
 const plane=(z,mat=new T.MeshBasicMaterial(),x=0,y=0)=>{const m=new T.Mesh(new T.PlaneGeometry(4,4),mat);m.position.set(x,y,z);return m;},from=new T.Vector3(0,0,0),to=new T.Vector3(0,0,-10);

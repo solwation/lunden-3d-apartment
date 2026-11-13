@@ -1,4 +1,4 @@
-// node --experimental-default-type=module --test tools/bridgefall1849test.mjs
+// node --test tools/bridgefall1849test.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';

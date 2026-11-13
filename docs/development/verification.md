@@ -9154,14 +9154,14 @@ The complete 65-form personal creature collection is verified in three risk grou
 
 ## #1849 — Solid timber-bridge fill
 
-`node --experimental-default-type=module --test tools/bridgefall1849test.mjs` checks the timber fill edge with a negative control, 20/30fps collision and reversal, both ramps/deck at walk/sprint in both directions (20/60fps), and retained road/GC traversal. The scoped real-world browser fixture uses native keys/CDP touch with a controlled Player frame pump; see [method and limits](../verification/1849/README.md). No house-variant sweep applies to this bridge-local support fix.
+`node --test tools/bridgefall1849test.mjs` checks the timber fill edge with a negative control, 20/30fps collision and reversal, both ramps/deck at walk/sprint in both directions (20/60fps), and retained road/GC traversal. The scoped real-world browser fixture uses native keys/CDP touch with a controlled Player frame pump; see [method and limits](../verification/1849/README.md). No house-variant sweep applies to this bridge-local support fix.
 ## #1850 — Nordic rear ground contact
 
 Two scoped risk groups: 9 source/contact/isolation checks plus 11 retained Nordic architecture checks; one actual local before/after app turn with 12 mesh/cat/budget checks and 3 directly inspected result images. Actual parking/skirt and cat/parking errors are below 3 µm, foot post corner error below 3.1 mm, same 14 campus meshes and +7 triangles to 87,721 under 87,800. Foundation extension is a contact-model assumption, not surveyed basement evidence. Shared terrain, Player, bridges and A/B/C/L remain unchanged. [Sources, raw results, fixture scope and images](../verification/1850/README.md).
 
 ### Shared boule (#1854)
 
-`node --experimental-default-type=module --test cloudflare/boule.test.mjs tools/bouleclienttest.mjs tools/bouletest.mjs cloudflare/billiards.test.mjs cloudflare/roommusic.test.mjs src/outbox.test.mjs cloudflare/deploypaths.test.mjs` covers deterministic replay, true local Worker/Room revision/ownership/races/persistence/latejoin/hibernation, legacy capability and offline/disconnect, existing rules/physics, pool/music and outbox. `tools/boulesyncbrowser.cjs` uses one actual app and one small true Room receiver with production Boule/BouleClient, native keyboard/touch, same seven final objects and result, plus a three-draw/no-light component boundary. It holds via CONTROL.release; its explicit focus marker precedes native E. `boulesyncrecover.cjs` can reuse the existing held Playwright Page exposed on the driver's globalThis through a local Node inspector, without bootstrapping another world. [Saved images, fixture diagnostics, exact source phases and rollout](../verification/1854/README.md).
+`node --test cloudflare/boule.test.mjs tools/bouleclienttest.mjs tools/bouletest.mjs cloudflare/billiards.test.mjs cloudflare/roommusic.test.mjs src/outbox.test.mjs cloudflare/deploypaths.test.mjs` covers deterministic replay, true local Worker/Room revision/ownership/races/persistence/latejoin/hibernation, legacy capability and offline/disconnect, existing rules/physics, pool/music and outbox. `tools/boulesyncbrowser.cjs` uses one actual app and one small true Room receiver with production Boule/BouleClient, native keyboard/touch, same seven final objects and result, plus a three-draw/no-light component boundary. It holds via CONTROL.release; its explicit focus marker precedes native E. `boulesyncrecover.cjs` can reuse the existing held Playwright Page exposed on the driver's globalThis through a local Node inspector, without bootstrapping another world. [Saved images, fixture diagnostics, exact source phases and rollout](../verification/1854/README.md).
 
 #1853 shared football: [scoped evidence](../verification/1853/README.md) separates initial-layout
 native keyboard/touch / real local PlayerRoom peer / Rest / Life proof from the corrected final
@@ -9182,18 +9182,18 @@ Three scoped groups: durable fish/nut transactions and real Worker wake/latejoin
 
 ### Boule HUD interest (#1863)
 
-`node --experimental-default-type=module --test tools/bouleclienttest.mjs cloudflare/boule.test.mjs tools/bouletest.mjs`
+`node --test tools/bouleclienttest.mjs cloudflare/boule.test.mjs tools/bouletest.mjs`
 covers quiet uninvolved welcome/background revisions, nearby nonparticipants, interested participants,
 walking away, duplicate ACK/reconnect, explicit rejection/timeout, and the existing authoritative
-turn/result/score/replay contracts. With `node --experimental-default-type=module cloudflare/dev.mjs 8952`,
-`node --experimental-default-type=module tools/boulenoticeworker.mjs ws://localhost:8952` exercises production
+turn/result/score/replay contracts. With `node cloudflare/dev.mjs 8952`,
+`node tools/boulenoticeworker.mjs ws://localhost:8952` exercises production
 BouleClient against the true local HTTP/WebSocket Worker. `tools/boulenoticebrowser.cjs` holds one real app
 and local Worker peer for the old-receive/new-handler HUD comparison; it does not launch another world.
 [Revision-bound evidence and limitations](../verification/1863/README.md).
 
 ### Persistent authoritative clock (#1865)
 
-Model/range/persistence/TZ: `node --experimental-default-type=module --test cloudflare/worldtime.test.mjs cloudflare/timesync.test.mjs tools/clockinputtest.mjs cloudflare/deploypaths.test.mjs`.
+Model/range/persistence/TZ: `node --test cloudflare/worldtime.test.mjs cloudflare/timesync.test.mjs tools/clockinputtest.mjs cloudflare/deploypaths.test.mjs`.
 Use the updated PlayerRoom time/chat-storage cases for real Room/welcome/hibernation.
 `tools/worldtimeworker.mjs ws://localhost:8956` tests real local HTTP/WebSockets.
 `tools/worldtimebrowser.cjs` uses one full app and the renderer-free production UI peer
@@ -9202,7 +9202,7 @@ Use the updated PlayerRoom time/chat-storage cases for real Room/welcome/hiberna
 
 ### Player Prata / Konversera / Svara (#1867)
 
-`node --experimental-default-type=module --test tools/conversationtest.mjs cloudflare/conversation.test.mjs tools/hugtest.mjs tools/kisstest.mjs cloudflare/deploypaths.test.mjs`
+`node --test tools/conversationtest.mjs cloudflare/conversation.test.mjs tools/hugtest.mjs tools/kisstest.mjs cloudflare/deploypaths.test.mjs`
 covers fixed IDs, menu/back/target reset, latest directed one-use/expired/wrong-person
 reply, server replay/range/weapon/restore, reviewed rate guard, no optimistic line, bounded pending and
 ACK cooldown. `tools/conversationbrowser.cjs` uses one real app and the renderer-free
