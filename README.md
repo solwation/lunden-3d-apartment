@@ -58,7 +58,7 @@ Detailed 5-phase delivery gates (Planning → Isolation → Verification → Rev
 
 ```sh
 git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.13.1 --squash
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.14.0 --squash
 cp .orchestra/shared/PROJECT.example.md .orchestra/project.md
 ```
 
