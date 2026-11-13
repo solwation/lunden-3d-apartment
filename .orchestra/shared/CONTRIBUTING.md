@@ -58,14 +58,18 @@ Choose the version under the [versioning rules](#improve-it-across-projects), th
 
 1. In [CHANGELOG.md](CHANGELOG.md), add `## X.Y.Z — YYYY-MM-DD` directly under
    *Unreleased*, so the bullets become that version's section.
-2. Set the pin `git subtree add ... vX.Y.Z --squash` in [README.md](README.md) and
-   [INSTALL.md](INSTALL.md); both change in every release.
+2. Set the pin `git subtree add ... vX.Y.Z --squash` in [README.md](README.md),
+   [INSTALL.md](INSTALL.md) and the GitHub Pages site [docs/index.html](docs/index.html);
+   all three change in every release. Then update README.md and the Pages site to
+   the released core in every release: compare their claims (phases, run modes, isolation, install
+   steps, file list) with the bundled CHANGELOG entries and the core, and fix any
+   drift in the same release commit, even when the entries seem unrelated.
 3. Commit as `Release vX.Y.Z` and tag that commit `vX.Y.Z` (the latest tags are
    lightweight, earlier ones annotated; either works). Push the commit and the tag.
 4. Create the GitHub release `vX.Y.Z — <short Swedish subtitle>` (see `gh release list`
    for the style) with the CHANGELOG section as notes.
-5. Run `scripts/check-release.sh`: pins, a release for every tag and a CHANGELOG
-   heading for the latest tag must all match.
+5. Run `scripts/check-release.sh`: pins (README, INSTALL and the Pages site), a
+   release for every tag and a CHANGELOG heading for the latest tag must all match.
 6. Never move or delete a tag. If tag or release creation is denied by permissions,
    leave the issue's release criterion open, report the blocker and do not close an
    issue whose only remaining criterion is the release.

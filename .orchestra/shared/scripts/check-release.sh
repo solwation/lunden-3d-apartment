@@ -12,8 +12,8 @@ tags=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' | sort -V)
 latest=$(echo "$tags" | tail -n 1)
 [ -n "$latest" ] || { echo "No v* tags found (fetch tags first)"; exit 1; }
 
-# (a) pins in README.md and INSTALL.md equal the latest tag
-for f in README.md INSTALL.md; do
+# (a) pins in README.md, INSTALL.md and the Pages site equal the latest tag
+for f in README.md INSTALL.md docs/index.html; do
   pins=$(grep -o 'dirigenten-och-orkestern\.git v[0-9][0-9.]*' "$f" | awk '{print $2}' | sort -u)
   [ -n "$pins" ] || report "$f: no version pin found"
   for p in $pins; do

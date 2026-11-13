@@ -367,10 +367,10 @@
       margin: 0 auto;
     }
 
-    /* 5-Phase Workflow Cards */
+    /* 6-Phase Workflow Cards */
     .phases-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 20px;
     }
 
@@ -617,7 +617,7 @@
       <nav class="nav-links">
         <a href="#why">Why a Conductor</a>
         <a href="#architecture">Architecture</a>
-        <a href="#workflow">5 Phases</a>
+        <a href="#workflow">6 Phases</a>
         <a href="#quickstart">Quickstart</a>
         <a href="#files">Core Files</a>
       </nav>
@@ -712,7 +712,7 @@
             <ul class="comp-list">
               <li class="comp-item">
                 <span class="comp-icon">✅</span>
-                <span><strong>Unattended execution:</strong> You give one instruction or type <code>/orkester</code>; the queue runs completely autonomously.</span>
+                <span><strong>Unattended execution:</strong> Ask for a change and the conductor files an issue and delivers it. Type <code>/orkester</code> and it works through the open issues unattended. If the queue is empty, it first reviews the project, files concrete findings as issues and fixes them.</span>
               </li>
               <li class="comp-item">
                 <span class="comp-icon">✅</span>
@@ -720,7 +720,7 @@
               </li>
               <li class="comp-item">
                 <span class="comp-icon">✅</span>
-                <span><strong>Isolated worktrees:</strong> Each worker plays its part in its own dedicated worktree, on its own branch and ports, with automatic cleanup.</span>
+                <span><strong>Isolated worktrees:</strong> Each worker plays its part in its own worktree under a git-ignored <code>workingtree/</code> directory, on its own branch and ports, with automatic cleanup.</span>
               </li>
               <li class="comp-item">
                 <span class="comp-icon">✅</span>
@@ -826,14 +826,14 @@
       </div>
     </section>
 
-    <!-- The 5-Phase Workflow -->
+    <!-- The 6-Phase Workflow -->
     <section id="workflow">
       <div class="container">
         <div class="section-header">
           <div class="section-tag">Structured Delivery</div>
-          <h2 class="section-title">The 5 Delivery Gates</h2>
+          <h2 class="section-title">The 6 Delivery Gates</h2>
           <p class="section-desc">
-            Every change follows five rigorous, repeatable gates. No skipped verification, no mysterious branches left behind.
+            Every change follows six repeatable gates. No skipped verification, no mysterious branches left behind.
           </p>
         </div>
 
@@ -843,16 +843,16 @@
             <div class="phase-num">1</div>
             <h3 class="phase-title">Planning</h3>
             <p class="phase-desc">
-              Write a sharp 5-line plan: outcome, boundary, 2–3 checks, smallest useful team, and integration owner. Claim work under Issueflow metadata.
+              Write a short plan: outcome and boundary, critical path, 2–3 risk-based checks, smallest useful team, integration owner and follow-up. Claim the issue under Issueflow.
             </p>
           </div>
 
           <!-- Phase 2 -->
           <div class="phase-card">
             <div class="phase-num">2</div>
-            <h3 class="phase-title">Isolation</h3>
+            <h3 class="phase-title">Implementation</h3>
             <p class="phase-desc">
-              Each writing agent works in its own git worktree with dedicated ports. An <code>orchestra-claim</code> marker protects active work from early pruning.
+              Make the scoped change in an isolated checkout under <code>workingtree/</code>, with its own branch and ports. An <code>orchestra-claim</code> marker protects active work from early pruning.
             </p>
           </div>
 
@@ -861,7 +861,7 @@
             <div class="phase-num">3</div>
             <h3 class="phase-title">Verification</h3>
             <p class="phase-desc">
-              Run agreed risk-based checks against a stable revision. No endless rerun loops; stop once evidence passes. Hard gates are never waived.
+              Run the agreed risk-based checks on the delivered revision. No endless rerun loops; stop once evidence passes. Hard gates are never waived.
             </p>
           </div>
 
@@ -870,7 +870,7 @@
             <div class="phase-num">4</div>
             <h3 class="phase-title">Review</h3>
             <p class="phase-desc">
-              The conductor reviews the combined diff once against acceptance criteria. Finished workers hand off via <code>integration-ready</code> to free slots.
+              The conductor reads the combined diff once against acceptance. Finished workers hand off via <code>integration-ready</code> and free their slot.
             </p>
           </div>
 
@@ -879,7 +879,16 @@
             <div class="phase-num">5</div>
             <h3 class="phase-title">Delivery</h3>
             <p class="phase-desc">
-              Deliver directly to <code>main</code> (or PR). Post completion evidence with revision, checks, and limitations. Automatic worktree prune at drain.
+              Deliver directly to <code>main</code> or through a PR, as the project policy says, and verify that the delivered revision is on the remote main branch.
+            </p>
+          </div>
+
+          <!-- Phase 6 -->
+          <div class="phase-card">
+            <div class="phase-num">6</div>
+            <h3 class="phase-title">Follow-up</h3>
+            <p class="phase-desc">
+              Post completion evidence (revision, checks, limitations), close the issue and remove its checkout. At drain, review the session; on an empty start, review the project.
             </p>
           </div>
         </div>
@@ -934,8 +943,9 @@ and fill in the project policy from what you know about this repository.</pre>
           <div class="code-block">
             <button class="copy-btn" onclick="navigator.clipboard.writeText(this.nextElementSibling.innerText); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 2000);">Copy</button>
             <pre>git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.12.0 --squash
-cp .orchestra/shared/PROJECT.example.md .orchestra/project.md</pre>
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.14.1 --squash
+cp .orchestra/shared/PROJECT.example.md .orchestra/project.md
+echo '/workingtree/' >> .gitignore   # worker checkouts live here</pre>
           </div>
         </div>
       </div>
@@ -984,6 +994,18 @@ cp .orchestra/shared/PROJECT.example.md .orchestra/project.md</pre>
               <tr>
                 <td><a href="https://github.com/solwation/dirigenten-och-orkestern/blob/main/INSTALL.md" class="file-tag" target="_blank">INSTALL.md</a></td>
                 <td>Complete installation guide, slash command adapters, updates, and release discovery.</td>
+              </tr>
+              <tr>
+                <td><a href="https://github.com/solwation/dirigenten-och-orkestern/blob/main/CONTRIBUTING.md" class="file-tag" target="_blank">CONTRIBUTING.md</a></td>
+                <td>Improving the package, field reports, maintainer checks, and the release checklist.</td>
+              </tr>
+              <tr>
+                <td><a href="https://github.com/solwation/dirigenten-och-orkestern/blob/main/scripts" class="file-tag" target="_blank">scripts/</a></td>
+                <td>Link checker, release consistency check, and leftover-worktree pruning.</td>
+              </tr>
+              <tr>
+                <td><a href="https://github.com/solwation/dirigenten-och-orkestern/blob/main/issueflow/ISSUEFLOW.md" class="file-tag" target="_blank">issueflow/</a></td>
+                <td>Offline snapshot of the Issueflow guide, with its license.</td>
               </tr>
             </tbody>
           </table>
