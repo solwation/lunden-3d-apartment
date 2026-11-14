@@ -330,6 +330,8 @@ src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision
                        keyboard / touch input: stroke at `SWIM.speed` + the current downstream, no jump / sprint / crouch speed, the eye at the
                        surface, a bank in reach = helped up, else the old rescue as last resort); rules in src/swim.js, details in
                        [environment](environment.md) "Swimming in Höje å". `player.swimming` / `player.swim.depth` are the hooks for the dive (#1944)
+src/sharkattack.js     #1947 the shark that bites swimmers, pure rules (`attackStep`); src/sharkhunt.js = the real river + drawing hand-off; see
+                       animals-audio.md "The shark bites swimmers"; `SHARK.attack` in config.js; src/sharkattack.test.mjs
 src/swim.js            #1943 the pure swimming rules (no three.js): `currentDir` / `current` (the river's flow at a `riverAt` frame, downstream along
                        the centre line), `swimVelocity`, `exitDecision`, `swimEye`; `SWIM` in config.js; src/swim.test.mjs
                        the jump (#636): Space / the touch #jump-btn (always on touch, suit or not) = a *press* (`spaceDown` / `jumpPress`) off

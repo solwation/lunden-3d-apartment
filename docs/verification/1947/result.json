@@ -1,0 +1,261 @@
+{
+ "pass": true,
+ "results": [
+  {
+   "ok": true,
+   "name": "on the bank: no shark",
+   "data": {
+    "ev": [],
+    "phase": "idle"
+   }
+  },
+  {
+   "ok": true,
+   "name": "swimming with &shark=attack: a shark surfaces within seconds",
+   "data": {
+    "after": 2.199999999999997
+   }
+  },
+  {
+   "ok": true,
+   "name": "it surfaces in the river a warning away and comes closer",
+   "data": {
+    "ev": [
+     "onWarn"
+    ],
+    "d0": 19.999999999999947,
+    "want": 20,
+    "wet": true,
+    "badges": [
+     "Plask! Du simmar i ån",
+     "🦈 En haj! Simma i land!"
+    ],
+    "drawn": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "the warning says so in Swedish",
+   "data": [
+    "Plask! Du simmar i ån",
+    "🦈 En haj! Simma i land!"
+   ]
+  },
+  {
+   "ok": true,
+   "name": "swimming to the bank gets out before the shark arrives",
+   "data": {
+    "after": 4.549999999999989,
+    "swim": false,
+    "wet": false,
+    "ev": [
+     "onWarn"
+    ],
+    "phase": "warn",
+    "dist": 7.686890704983497
+   }
+  },
+  {
+   "ok": true,
+   "name": "on land: never bitten; the shark waits, gives up and sinks",
+   "data": {
+    "goneAfter": 5.316666666666653,
+    "ev": [
+     "onWarn",
+     "onGone"
+    ],
+    "phase": "idle",
+    "dead": false,
+    "hunter": false,
+    "sharkWet": true,
+    "badges": [
+     "Plask! Du simmar i ån",
+     "🦈 En haj! Simma i land!",
+     "Hajen gav upp – du klarade dig"
+    ],
+    "at": [
+     -149.78446548778004,
+     -5.684600059214893,
+     211.6407868442612
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "the shark never left the water"
+  },
+  {
+   "ok": true,
+   "name": "second swim: the fin is up and close",
+   "data": {
+    "d": 5.451666666668171,
+    "ev": [
+     "onWarn"
+    ],
+    "show": 1,
+    "finShown": false,
+    "speed": 2.5000000000005813
+   }
+  },
+  {
+   "ok": true,
+   "name": "drawn with the #1769 fin, shadow and wake (no meshes of its own)",
+   "data": {
+    "fin": true,
+    "shadow": true,
+    "wake": true,
+    "rings": false,
+    "at": [
+     -143.6784538380125,
+     -7.218863304919342,
+     206.28266063617752
+    ],
+    "finShown": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "the bank view shows the swimming avatar",
+   "data": {
+    "swimAvatar": true,
+    "eye": [
+     -146.25591085364448,
+     -4.78386302599119,
+     211.55777984750287
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "staying in the water: bitten, the fatal cover starts",
+   "data": {
+    "after": 1.9166666666666647,
+    "ev": [
+     "onWarn",
+     "onBite"
+    ],
+    "d": 1.3783333333351169,
+    "active": true,
+    "fatal": true,
+    "cover": true,
+    "swim": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "awake at a free outdoor spot, not in the river",
+   "data": {
+    "at": [
+     -40.48356169653151,
+     0,
+     -13.21558865583301
+    ],
+    "swim": false,
+    "wet": false,
+    "river": 142.42997093578663,
+    "text": "Hajen bet dig …du vaknar på en säker plats utomhus",
+    "badges": [
+     "🦈 Hajen tog dig – du lever igen"
+    ],
+    "outdoor": true,
+    "free": true,
+    "lives": 10,
+    "max": 10,
+    "deaths": 1,
+    "moved": 243.6275360201419
+   }
+  },
+  {
+   "ok": true,
+   "name": "the cover and the badge tell about the shark",
+   "data": {
+    "text": "Hajen bet dig …du vaknar på en säker plats utomhus",
+    "badges": [
+     "🦈 Hajen tog dig – du lever igen"
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "a death like any other: counted, all lives again",
+   "data": {
+    "lives": 10,
+    "deaths": 1,
+    "before": {
+     "swim": true,
+     "lives": 10,
+     "max": 10,
+     "deaths": 0,
+     "at": [
+      -149.133764323428,
+      -7.783868375738591,
+      206.43723669425947
+     ]
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "the cover fades away",
+   "data": {
+    "t": -1,
+    "hidden": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "an ordinary fall keeps its own text",
+   "data": "Du slog dig …och vaknar på en säker plats utomhus"
+  },
+  {
+   "ok": true,
+   "name": "the shared shark in the river: a swimmer 12 m off is left alone (and no local shark)",
+   "data": {
+    "window": true,
+    "show": 1,
+    "wet": true,
+    "ev": [],
+    "phase": "idle",
+    "d": 14.141037392877065,
+    "swim": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "the shared shark is drawn at its own place as before",
+   "data": {
+    "fin": true,
+    "wake": true,
+    "shadow": true,
+    "shown": true,
+    "off": 0,
+    "hunter": false
+   }
+  },
+  {
+   "ok": true,
+   "name": "beside the shared shark in the water: bitten",
+   "data": {
+    "ev": [
+     "onBite"
+    ],
+    "d": 0.799982332982994,
+    "active": true,
+    "text": "Hajen bet dig …du vaknar på en säker plats utomhus"
+   }
+  },
+  {
+   "ok": true,
+   "name": "and awake on land again",
+   "data": {
+    "swim": false,
+    "wet": false
+   }
+  },
+  {
+   "ok": true,
+   "name": "no page errors",
+   "data": []
+  }
+ ]
+}

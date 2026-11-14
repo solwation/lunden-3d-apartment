@@ -1143,6 +1143,31 @@ in `localStorage` `lunden.shark`. Test: `&shark=now` (client) or `LUNDEN_SHARK_T
 cloudflare/shark.test.mjs` (schedule, path, arbitration, phases, hibernation, solo, through the Worker); browser `tools/sharktest.cjs` (two
 clients). Images: [docs/verification/1769](../verification/1769/).
 
+### The shark bites swimmers (#1947)
+
+Swimming in Höje å ([#1943](environment.md#swimming-in-höje-å-1943)) carries a small risk. `src/sharkattack.js` (pure, no three.js;
+`node --test src/sharkattack.test.mjs`) is the state machine `attackStep(st, w)`: while the visitor swims there is a chance per second
+(`SHARK.attack.perMinute` 0.12 = about one attack per 8 min in the water, none in the first `calm` 20 s of a swim nor for `again` 120 s after
+one) that a shark surfaces `speed x warn` (2.5 m/s x 8 s = 20 m) up or down the river and makes for the swimmer at `speed`, round bends along
+the channel, never over a bank; its fin within `bite` (1.4 m) of a swimmer bites. On land the visitor is safe: the shark goes to where they left
+the water, waits `linger` s (it bites if they come back in) and sinks (`sink`). All of `SHARK.attack` is *guess*, tuned by feel.
+`src/sharkhunt.js` (`SharkHunt`, main.js `sharkHunt`, updated right after `player.update`) gives the rules the real river (`riverAt`,
+`swimWater`, a spawn point on the centre line by chainage), and hands the attacking shark to `Shark.hunter`: `Shark.update` draws it with the
+#1769 fin, shadow and wake (`Shark.place`; no rings, no mesh / material / light of its own, built on the first attack). "In the water" is
+`player.swim` without `swim.exit` (so #1944's dive counts and a swimmer being helped up a bank is already safe). The attacking shark is
+**local**: nothing travels and other players do not see it. The **shared weekly shark** bites too: a swimmer within `SHARK.attack.shared`
+(3 m) of its fin (`shark.near`) is bitten at once, and while its window is open no local shark turns up.
+
+The bite is a death through the existing fatal-fall path: main.js `onBite` plays `sfx.splash` + `sfx.chew`, calls `fall.hurt(0, true, cause)`
+(`Fall.hurt`'s new `cause` = { html, sound, onWake }: the same red → black cover with "Hajen bet dig …", `sfx.ouch`, the eye pulled under from
+the surface instead of the fall's jolt, no fall deduction, then `wake` → `respawnOutdoors` and the `onWake` hooks as after a fatal fall, so held
+items, jetpack and binoculars behave as there) and asks for the lives with `combat.fall(FALL.maxReport, FALL.maxReport)`, the existing
+fatal-damage request (the room's when online, else the offline holder's): every life gone, full again, `combat.deaths` counted; no protocol
+change. Badges: "🦈 En haj! Simma i land!" (it surfaced), "Hajen gav upp – du klarade dig" (escaped), "🦈 Hajen tog dig – du lever igen"
+(awake). Fishing for the shark (#1769) is unchanged. Debug: `&shark=attack` uses `SHARK.attack.test` (an attack about 2 s into every swim;
+`&shark=now` still opens the shared shark's window). Browser check `tools/sharkattacktest.cjs` (warning, escape to the bank, bite, wake at a
+free outdoor spot with all lives, the shared shark's bite, its unchanged drawing); images in [docs/verification/1947](../verification/1947/).
+
 
 ## Ducks by the river (#1815)
 

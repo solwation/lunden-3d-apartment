@@ -1320,6 +1320,10 @@ tools/swimtest.cjs (#1943) swimming in Höje å in the real app through `Player.
                        (walk in = swim and no rescue, eye over the surface, down / upstream speed, drift, no jump / sprint / crouch, touch stick, a 6 m fall without
                        landing, bank exits at every station of the walkable stretch, `splashCheck` still rescues; three result images; `--quick` skips the bank sweep).
                        Pure rules: `node --test src/swim.test.mjs`. Images: [docs/verification/1943](../verification/1943/)
+tools/sharkattacktest.cjs (#1947) the shark that bites swimmers, real app with `&shark=attack`: `THREE_DIR=… tools/browsertest.sh node tools/sharkattacktest.cjs GAME OUT`
+                       (no shark on land, warning + fin on its way, escape to the bank = no bite and the shark gives up, staying = bitten, the cover's text,
+                       awake at a free outdoor spot off the river with all lives, the shared #1769 shark bites beside it and is drawn as before; four result images).
+                       Pure rules: `node --test src/sharkattack.test.mjs`. Images: [docs/verification/1947](../verification/1947/)
 tools/farwalktest.html / .cjs (#1236; #1943: on foot the river checks expect swimming, the rescue rule is checked through `splashCheck` and the bicycle) the real Player outside the home block: slope down to the river, water as obstacle, bridges and rails, far buildings, the WALK edge, water rescue (`node tools/farwalktest.cjs http://localhost:8776`)
 tools/loggia1471test.cjs (#1471) every upper Å-hus loggia: standing, walking, jetpack landing, Spider-Man climb, railing / slab hold (see "Upper loggias carry the visitor")
 tools/roofaudittest.html (#1294) a landing on every roof inside WALK (the drawn roof read by a ray; real Player dropped on it) and the walls hold at head height; run after changing buildings' roof geometry (sitebackdrop / southbackdrop / campusfacades / karpfacade / schoolfacade / stlars41), src/buildingroofs.js, src/roofs.js or `BUILDING_ROOFS`
