@@ -1,7 +1,7 @@
 // #1943: swimming in Höje å in the real app, through production Player.update (only the starts are spawned).
 //   THREE_DIR=/path/to/three tools/browsertest.sh node tools/swimtest.cjs GAME OUT
 // Checks: walking into the river starts a swim (no rescue), the eye floats just above the surface, the same input is faster downstream
-// than upstream and an idle swimmer drifts downstream; jump / sprint / crouch change nothing; a fall into the water does not land;
+// than upstream and an idle swimmer drifts downstream; jump / sprint change nothing (crouch dives, #1944: tools/divetest.cjs); a fall into the water does not land;
 // swimming into a bank gets the swimmer out along the whole walkable stretch (how: climb or last-resort rescue, counted); the bicycle's
 // splash rule still rescues. Saves result images in OUT (first person at the surface; the avatar stroking and treading water).
 const fs = require('node:fs'), path = require('node:path'), kit = require('./testkit.cjs');
@@ -84,7 +84,7 @@ const check = (ok, name, data) => { results.push({ ok: !!ok, name, data }); pass
     check(r.eye.over > 0.05 && r.eye.over < 0.25 && Math.abs(r.eye.feet) < 1e-6, 'the eye floats just above the surface, the feet follow the bed', r.eye);
     check(Math.abs(r.down.along - (S.speed + S.current)) < 0.08 && Math.abs(r.up.along + (S.speed - S.current)) < 0.08 && r.down.along > -r.up.along * 1.5, 'downstream is faster than upstream for the same input', { down: r.down.along, up: r.up.along });
     check(Math.abs(r.idle.along - S.current) < 0.05 && r.idle.swim, 'an idle swimmer drifts slowly downstream', r.idle);
-    check(Math.abs(r.sprint.along - r.down.along) < 0.02 && Math.abs(r.crouch.along - r.down.along) < 0.02 && !r.crouch.crouched && r.crouch.eye > 0.05, 'sprint and crouch change nothing in the water', { sprint: r.sprint.along, crouch: r.crouch });
+    check(Math.abs(r.sprint.along - r.down.along) < 0.02 && Math.abs(r.crouch.along - r.down.along) < 0.02 && !r.crouch.crouched && r.crouch.eye < -0.3, 'sprint changes nothing in the water; crouch dives (#1944, tools/divetest.cjs) at the same speed', { sprint: r.sprint.along, crouch: r.crouch });
     check(Math.abs(r.jump.dy) < 1e-6 && !r.jump.fall && r.jump.vy === 0 && r.jump.swim, 'no jump in the water', r.jump);
     check(Math.abs(r.touch.along - (S.speed + S.current)) < 0.08, 'the touch stick swims too', r.touch);
     check(r.fall.swim && !r.fall.lands.length && !r.fall.events.length, 'a 6 m fall into the water: swimming, no landing (no fall damage)', r.fall);

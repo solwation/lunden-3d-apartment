@@ -2322,7 +2322,7 @@ export const WALK = { x0: -285, x1: 320, z0: -200, z1: 452, cell: 40, maxSlope: 
 
 // #1943: swimming in Höje å (src/swim.js the pure rules, src/player.js `swimStep`, src/avatar.js the pose). On foot in the river (the same
 // stretch the #1281 splash rule covered) the visitor floats instead of being put back on the bank; the bicycle keeps the old splash.
-// Everything here is a gameplay choice (*guess*): the river's flow is not measured, the bed is only 0.6 m under the drawn water line.
+// Everything here is a gameplay choice (*guess*): the river's flow is not measured, the bed is 0.6 m under the drawn water line at the channel's edge and 1.8 m mid-channel (#1944, SITE.bridges.pool).
 export const SWIM = {
   speed: 0.9, // m/s through the water at full input (*guess*: a calm breaststroke / slow crawl, well under PLAYER.walk 1.6)
   current: 0.35, // m/s the water carries a swimmer downstream along the centre line (*guess*: "slight"; with `speed` 1.25 m/s down, 0.55 m/s up)
@@ -2345,7 +2345,7 @@ export const SWIM = {
     under: 0.1, // m the eye must be under the water line to count as diving (`Player.diving`) (*guess*)
     // The view under the surface (src/divelook.js): the scene's fog takes the sky's horizon colour x `tint` and is pulled in to `near` … `far` m
     // (murky river water, *guess*), and one DOM element lays a colour wash with a darker rim (the mask's edge) over the picture. No render pass.
-    look: { tint: [0.34, 0.6, 0.52], near: 0.2, far: 12, wash: 'radial-gradient(ellipse at center, rgba(30,95,90,.16) 45%, rgba(4,26,30,.62) 100%)', fade: 0.25 },
+    look: { tint: [0.34, 0.6, 0.52], near: 0.1, far: 8, wash: 'radial-gradient(ellipse at center, rgba(20,92,108,.36) 40%, rgba(3,24,32,.74) 100%)', fade: 0.25 },
     // The avatar under water: the torso lies nearly level (`lean` rad from upright), the legs trail straight back (`legs` rad from the vertical)
     // with `kick` x the surface flutter, eased in at `ease` /s. *guess*, by eye, so the figure clears the bed at `eyeOverBed`.
     avatar: { lean: 1.42, legs: 1.5, kick: 0.5, ease: 4 },

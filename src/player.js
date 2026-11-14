@@ -1036,7 +1036,7 @@ export class Player {
 
   /** The camera to the feet + the eye height (smoothed over stair steps). */
   settleEye(dt) {
-    const s = this.swim, target = s && (!s.exit || s.depth > 0) ? waterYAt(this.pos.x, this.pos.z) + swimEye(s.t, s.depth) // #1943: floating, the eyes just above the surface
+    const s = this.swim, target = s && !s.exit ? waterYAt(this.pos.x, this.pos.z) + swimEye(s.t, s.depth) // #1943: floating, the eyes just above the surface
       : this.pos.y + (this.crouched ? PLAYER.crouchEye : PLAYER.eye);
     this.eyeY += (target - this.eyeY) * Math.min(1, dt * 14);
     this.camera.position.set(this.pos.x, this.eyeY, this.pos.z);

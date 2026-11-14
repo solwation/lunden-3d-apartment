@@ -147,8 +147,13 @@ export function swimWater(x, z) {
   return r.distance < r.width / 2 + r.bank && groundBelowDeckY(x, z) < waterYAt(x, z, r) - WALK.waterDepth;
 }
 /** #1943: the river bed under a swimmer (the terrain under every deck). #1944: never under the DRAWN bed: the terrain mesh's 1.3 m cells cut
- * the pool's curve short (up to a few dm over the smooth sampler), and a diver's eye and hands are measured from this. */
-export const swimBedY = (x, z) => Math.max(groundBelowDeckY(x, z), renderedTerrainY(x, z) + 0.01);
+ * the pool's curve short (up to a few dm over the smooth sampler), and a diver's eye and hands are measured from this. At the water's edge
+ * the drawn bank can lie over the water line where the smooth one is still under it: the feet stay under the surface there (as before #1944),
+ * so the swimmer is still one to everybody else (ghosts.js `swimProbe`). */
+export function swimBedY(x, z) {
+  const g = groundBelowDeckY(x, z);
+  return Math.min(Math.max(g, renderedTerrainY(x, z) + 0.01), Math.max(g, waterYAt(x, z) - WALK.waterDepth - 0.02));
+}
 
 /** #1281: the nearest bank point to put someone back on who fell into the river at (x, z): searched on rings round the splash, the first
  * ring with a dry (`WALK.bankDry` m over the water line), walkable (gradient under `WALK.maxSlope * WALK.slideOut`) spot clear of every wall

@@ -1,0 +1,244 @@
+{
+ "pass": true,
+ "results": [
+  {
+   "ok": true,
+   "name": "the water is deep enough mid-channel; at the surface nobody dives",
+   "data": {
+    "station": {
+     "x": -146.055,
+     "z": 206.35000000000002,
+     "depth": 1.703046687324023,
+     "smooth": 1.7998074090935328
+    },
+    "surface": {
+     "overWater": 0.120630840307272,
+     "overBed": 1.8258114042491815,
+     "overDrawn": 1.8358114042491813,
+     "diving": false,
+     "swim": true,
+     "c": false
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "crouch held: the eye goes under the surface down to 0.4 m over the bed (over the drawn bed too)",
+   "data": {
+    "goingDown": {
+     "overWater": -0.10578961345554827,
+     "overBed": 1.600091970326595,
+     "overDrawn": 1.6100919703265948,
+     "dive": true,
+     "c": true
+    },
+    "down": {
+     "overWater": -1.3014535958347198,
+     "overBed": 0.3956971055111662,
+     "overDrawn": 0.405697105511166,
+     "diving": true,
+     "crouched": false,
+     "depth": 1.4171507013458862,
+     "feet": 0
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "under water: forward, back against the current, sideways, and the current carries an idle diver",
+   "data": {
+    "down": 1.2569444444447369,
+    "up": -0.5530555555544229,
+    "idle": 0.351944444445157,
+    "sideways": 0.5499999999988735
+   }
+  },
+  {
+   "ok": true,
+   "name": "letting go: back at the surface within 2 s, still swimming",
+   "data": {
+    "upIn": 1.0666666666666678,
+    "up": {
+     "overWater": 0.13270127394003772,
+     "overBed": 1.8325581486101825,
+     "overDrawn": 1.8425581486101823,
+     "diving": false,
+     "depth": 0,
+     "swim": true,
+     "c": false
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "the touch crouch toggle dives and surfaces",
+   "data": {
+    "down": {
+     "overWater": -1.3062136127043775,
+     "overBed": 0.39240379820541627,
+     "overDrawn": 0.40240379820541605,
+     "diving": true
+    },
+    "up": {
+     "overWater": 0.10873060639307397,
+     "overBed": 1.7993923744354952,
+     "overDrawn": 1.809392374435495,
+     "diving": false
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "under the surface: the fog is pulled in and the wash is on",
+   "data": {
+    "opacity": "1",
+    "fog": [
+     0.1,
+     8
+    ],
+    "colour": "7fb2b0",
+    "eye": {
+     "overWater": -1.3122372046498212,
+     "overBed": 0.3856952801008511,
+     "overDrawn": 0.39569528010085087
+    },
+    "diving": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "back at the surface: the normal fog and no wash",
+   "data": {
+    "opacity": "0",
+    "fog": [
+     45,
+     650
+    ],
+    "colour": "cfe0ec",
+    "eye": {
+     "overWater": 0.12204697975861478,
+     "overBed": 1.818756231032908,
+     "overDrawn": 1.8287562310329077
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "crouch on land: down to the crouch eye at crouch speed, up again (no dive)",
+   "data": {
+    "stand": 1.62,
+    "crouch": 0.9500000798858173,
+    "crouched": true,
+    "swim": false,
+    "diving": false,
+    "c": true,
+    "want": [
+     1.62,
+     0.95
+    ],
+    "speed": 0.7999999999992724,
+    "crouchSpeed": 0.8,
+    "up": 1.6199999201093949,
+    "upCrouched": false
+   }
+  },
+  {
+   "ok": true,
+   "name": "dives along the whole river: never through the bed, always back at the surface",
+   "data": {
+    "n": 313,
+    "underDeck": 6,
+    "bad": [],
+    "minOverDrawn": 0.3568626689627825,
+    "minOverBed": 0.2697210236320915,
+    "deepest": -1.3699892797752895,
+    "shallow": 0
+   }
+  },
+  {
+   "ok": true,
+   "name": "a dive passes under the road and GC bridges and surfaces after them (no rescue)",
+   "data": [
+    {
+     "kind": "road",
+     "moved": 18.018081931712565,
+     "t": 20.41666666666679,
+     "underFrames": 1035,
+     "low": 0.3908833189002845,
+     "swim": true,
+     "up": 0.5833333333333335,
+     "eye": {
+      "overWater": 0.037983178830281794,
+      "overBed": 1.0823822311112554,
+      "overDrawn": 1.0923822311112552
+     },
+     "rescues": 0
+    },
+    {
+     "kind": "gc",
+     "moved": 18.017451678189843,
+     "t": 20.41666666666679,
+     "underFrames": 857,
+     "low": 0.3899633395414668,
+     "swim": true,
+     "up": 0.6000000000000002,
+     "eye": {
+      "overWater": 0.026079829093738738,
+      "overBed": 1.099080803007607,
+      "overDrawn": 1.15993766082235
+     },
+     "rescues": 0
+    }
+   ]
+  },
+  {
+   "ok": true,
+   "name": "a diving avatar: under the surface near the bed, clear of it, the mask on",
+   "data": {
+    "swim": true,
+    "dive": 0.9999999976447038,
+    "mask": true,
+    "maskOnHead": true,
+    "headOverWater": -1.4890510359703581,
+    "headOverBed": 0.214188242260132,
+    "lowest": [
+     "footL",
+     0.16353265156816654
+    ],
+    "dy": -0.6199817149347958,
+    "cam": {
+     "overWater": -0.8524402602202681,
+     "overBed": 0.41385225515716506,
+     "overDrawn": 0.42385225515716485
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "back at the surface: only the head above the water, no mask",
+   "data": {
+    "swim": true,
+    "dive": 2.3695248466398577e-9,
+    "mask": false,
+    "maskOnHead": true,
+    "headOverWater": 0.061575093833201144,
+    "headOverBed": 1.7648143720636913,
+    "lowest": [
+     "footL",
+     0.8593177337868596
+    ],
+    "dy": 0.43587070555362245,
+    "cam": {
+     "overWater": 3.12,
+     "overBed": 1.62,
+     "overDrawn": 1.8436862688747944
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "no page errors",
+   "data": []
+  }
+ ]
+}

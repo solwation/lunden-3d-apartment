@@ -4,7 +4,7 @@ import { RIVER_FISH as C, SITE } from './config.js';
 // node test can use them. Every client that knows the room's clock draws the same fish in the same places and the same rings at the same
 // moments, so nothing but the clock, the seed and the caught fish travels (src/riverfishsync.js).
 // A fish patrols a stretch of the river's centre line (SITE.river.path): along = home + range x (two slow sine waves), sideways a share of the
-// channel's free half width (the bed is flat out to width/2, riverbridge.js riverGround), its depth between the bed and the surface. The
+// channel's free half width (the bed is at SITE.bridges.bedY at width/2 and, since #1944, deeper towards the centre line: riverbridge.js riverGround; the fish keep the band over bedY), its depth between the bed and the surface. The
 // stretches avoid the river's two ends and the road bridge's piers (the formula of riverbridge.js pierBoxes, re-derived here from SITE.bridges
 // because riverbridge.js needs three.js; tools/riverfishtest.cjs checks the fish against the real pierBoxes). Now and then (one chance per
 // slot of RIVER_FISH.rise.every s) a fish rises: its back breaks the surface and a ring spreads from that spot.

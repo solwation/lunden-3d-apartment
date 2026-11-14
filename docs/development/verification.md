@@ -1316,8 +1316,12 @@ tools/lighttest.html   headless test: aim at every light switch / floor lamp, to
 tools/powertest.html   the power cut (#604): fuse box, flicker, Kv. Lunden dark / surroundings lit, hold-to-mend on touch, reload has power;
                        #612: fridge/freezer/oven/microwave lamps dark, brew/dishwasher/washer/dryer paused and resumed, the lift's rescue drive
 tools/visitlightstest.html  the visitable flats' lamps (#620): a switch with a wall behind it in every room of L1004 and L1201, E lights / puts out, the frame gets brighter, power cut + mend, no extra light object
+tools/divetest.cjs (#1944) diving in Höje å in the real app through `Player.update`: `THREE_DIR=… tools/browsertest.sh node tools/divetest.cjs GAME OUT`
+                       (crouch held = eye under the surface to 0.4 m over the drawn bed, same speeds with / against the current, letting go and the touch toggle
+                       surface, fog + wash on / off, crouch on land unchanged, dives at every station of the river and through under both bridges, the
+                       avatar under water with the mask and at the surface without; three result images).
 tools/swimtest.cjs (#1943) swimming in Höje å in the real app through `Player.update`: `THREE_DIR=… tools/browsertest.sh node tools/swimtest.cjs GAME OUT [--quick]`
-                       (walk in = swim and no rescue, eye over the surface, down / upstream speed, drift, no jump / sprint / crouch, touch stick, a 6 m fall without
+                       (walk in = swim and no rescue, eye over the surface, down / upstream speed, drift, no jump / sprint (crouch dives, #1944), touch stick, a 6 m fall without
                        landing, bank exits at every station of the walkable stretch, `splashCheck` still rescues; three result images; `--quick` skips the bank sweep).
                        Pure rules: `node --test src/swim.test.mjs`. Images: [docs/verification/1943](../verification/1943/)
 tools/sharkattacktest.cjs (#1947) the shark that bites swimmers, real app with `&shark=attack`: `THREE_DIR=… tools/browsertest.sh node tools/sharkattacktest.cjs GAME OUT`
