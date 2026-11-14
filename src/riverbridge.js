@@ -67,7 +67,9 @@ export function pierBoxes(){const out=[];for(const r of bridgeRecords)if(r.kind=
 export function riverGround(x,z,base){
  const r=riverAt(x,z),w2=r.width/2,d=r.distance,dy=fall(r),bedY=B.bedY+dy,shoreY=(B.shoreY??-5.5)+dy,bankSlope=Math.min(r.bank*.4,2.5),shoreSpan=B.shoreSpan??7.5,valleySpan=B.valleySpan??8.5;
  const sm=t=>t*t*(3-2*t);
- if(d<=w2)return bedY;
+ // #1944: a deeper pool down the middle of the channel (B.pool m at the centre line, eased to the old flat bed level at width/2), so a diver has room;
+ // the bed's edge, the banks and the water line are where they were.
+ if(d<=w2)return bedY-(B.pool??0)*sm(1-d/w2);
  if(d<w2+bankSlope){const u=sm((d-w2)/bankSlope);return bedY+(shoreY-bedY)*u;}
  // #1531: the shore flat and valley keep the #533 footprint (valleyWidths) where the open channel was narrowed after the photo,
  // so the walking shore, the paths and piers under the bridges stay where they were; only the margin between channel and shore widens.
@@ -146,8 +148,8 @@ export function buildRiverBridges(approachGround=()=>B.deckY){
   }else roadDeckParts(r,y,box,beam,slats);
   for(const end of [-1,1])box('concrete',r.width+.6+r.ext,y-B.bedY,1.25,r.ext/2,(y+B.bedY)/2,end*r.len/2);
   if(r.kind==='road')for(const z of [-r.len/3,0,r.len/3])for(const side of [-1,1]){
-   const x=side*r.width*.29;box('concrete',r.pier,y-r.slab-B.bedY,r.pier,x,(y-r.slab+B.bedY)/2,z);
-   box('concrete',r.foot,.45,r.foot,x,B.bedY+.225,z);
+   const x=side*r.width*.29,bed=B.bedY-(B.pool??0);box('concrete',r.pier,y-r.slab-bed,r.pier,x,(y-r.slab+bed)/2,z); // (#1944: down to the pool's deepest bed)
+   box('concrete',r.foot,.45,r.foot,x,bed+.225,z);
   }
   const matrix=new THREE.Matrix4().makeRotationY(Math.atan2(r.dx,r.dz)).setPosition(r.x,0,r.z);
   for(const[k,v]of Object.entries(parts))for(let i=before[k];i<v.length;i++)v[i].applyMatrix4(matrix);
@@ -165,7 +167,8 @@ export function buildRiverBridges(approachGround=()=>B.deckY){
  // The old eastern source vertex sits 6.5 m inside the terrain; overlap the continuation at the exact boundary.
  const [east,z]=R.upstream.boundary;
  parts.water.push(pathStrip({path:[[east,z],...riverPath],w:[widths[0],...widths]},w=>-w/2,w=>w/2,0,waterYAt));
- const mats={concrete:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95}),steel:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,metalness:.45,roughness:.55}),asphalt:new THREE.MeshStandardMaterial({color:COLORS.asphalt,roughness:.85}),water:new THREE.MeshStandardMaterial({color:COLORS.water,roughness:.15,metalness:.2})};
+ // (#1944: the water is drawn from both sides, so a diver looking up sees the surface, not the sky through it; opaque, still one draw call)
+ const mats={concrete:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95}),steel:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,metalness:.45,roughness:.55}),asphalt:new THREE.MeshStandardMaterial({color:COLORS.asphalt,roughness:.85}),water:new THREE.MeshStandardMaterial({color:COLORS.water,roughness:.15,metalness:.2,side:THREE.DoubleSide})};
  for(const[k,list]of Object.entries(parts)){const geo=mergeGeometries(list.map(g=>g.index?g.toNonIndexed():g));const mesh=new THREE.Mesh(geo,mats[k]);mesh.name=`bridges-${k}`;mesh.castShadow=k!=='water';mesh.receiveShadow=true;group.add(mesh);list.forEach(g=>g.dispose());}
  group.userData.records=bridgeRecords;return group;
 }

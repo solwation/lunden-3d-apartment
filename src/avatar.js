@@ -1292,26 +1292,50 @@ function airFeet(fig, feet, aa, v, hy, hz) {
 }
 
 // #1943: the swimming pose (SWIM.avatar; figure frame: +y up, +z forward). `st` 0 treading water … 1 stroking, `ph` the stroke's phase.
-const SW = SWIM.avatar;
-const swimLean = (st) => SW.treadLean + (SW.lean - SW.treadLean) * st;
-/** The height of the water line in the figure's frame for hips at `hy`: just over the neck joint of the leaning torso, so only the head is above it. */
-const swimLineAt = (hy, st) => hy + NECK * Math.cos(swimLean(st)) + SW.chin;
+// #1944 `dv` 0 … 1: diving (SWIM.dive.avatar): the torso nearly level, the legs straight back, so the figure clears the bed.
+const SW = SWIM.avatar, DV = SWIM.dive.avatar;
+const swimLean = (st, dv = 0) => { const l = SW.treadLean + (SW.lean - SW.treadLean) * st; return l + (DV.lean - l) * dv; };
+/** The height of the water line in the figure's frame for hips at `hy`: just over the neck joint of the leaning torso, so only the head is above it.
+ * (For a diver the owner puts this line, the head's height, at the eye's depth instead: ghosts.js.) */
+const swimLineAt = (hy, st, dv = 0) => hy + NECK * Math.cos(swimLean(st, dv)) + SW.chin;
 /** The figure-frame water line of a figure that is not posed (far away): the swimming pose's. */
 export const swimLineFar = () => swimLineAt(HIP - 0.02, 1); // (a function: olof.js and this module import each other)
 /** Hand `i` (0 left, 1 right): a crawl stroke round the shoulder (forward at the surface, down and back under it, forward again over it; the
  * two arms half a cycle apart), mixed with sculling out to the sides at the surface when treading water. */
 function swimHand(fig, i, hy, hz, st, ph) {
-  const sx = i ? -1 : 1, L = swimLean(st), sy = hy + SH[1] * Math.cos(L), sz = hz + SH[1] * Math.sin(L), a = ph + i * Math.PI;
+  const dv = fig.diveAmt ?? 0, sx = i ? -1 : 1, L = swimLean(st, dv), sy = hy + SH[1] * Math.cos(L), sz = hz + SH[1] * Math.sin(L), a = ph + i * Math.PI;
   const crawl = { at: [sx * (SH[0] + SW.out), sy + SW.up - SW.lift * Math.sin(a), sz + 0.05 + SW.reach * Math.cos(a)], pole: [sx * 0.8, 0.5, -0.4] };
   const C = SW.scull, t = fig.time * Math.PI * 2 * C.hz + i * 0.6;
-  const tread = { at: [sx * (SH[0] + C.out + C.sweep * Math.sin(t)), swimLineAt(hy, st) - 0.03, sz + C.fwd + C.sweep * 0.6 * Math.cos(t)], pole: [sx * 0.9, -0.4, -0.3] };
+  const tread = { at: [sx * (SH[0] + C.out + C.sweep * Math.sin(t)), swimLineAt(hy, st, dv) - 0.03, sz + C.fwd + C.sweep * 0.6 * Math.cos(t)], pole: [sx * 0.9, -0.4, -0.3] };
   return mixHand(tread, crawl, st);
 }
 /** Foot `i`: the legs trail back from the hips with a flutter kick (hanging and pedalling slowly when treading water). */
 function swimFoot(fig, i, hy, hz, st) {
-  const sx = i ? -1 : 1, B = SW.treadLegs + (SW.legs - SW.treadLegs) * st, L = (THIGH + SHIN) * 0.95;
-  const k = SW.kick * Math.sin(fig.time * Math.PI * 2 * SW.kickHz * (0.4 + 0.6 * st) + i * Math.PI);
+  const dv = fig.diveAmt ?? 0, b0 = SW.treadLegs + (SW.legs - SW.treadLegs) * st, B = b0 + (DV.legs - b0) * dv, sx = i ? -1 : 1, L = (THIGH + SHIN) * 0.95;
+  const k = SW.kick * (1 - (1 - DV.kick) * dv) * Math.sin(fig.time * Math.PI * 2 * SW.kickHz * (0.4 + 0.6 * st) + i * Math.PI);
   return [sx * 0.1, hy - Math.cos(B) * L + k * Math.sin(B), hz - Math.sin(B) * L + k * Math.cos(B)];
+}
+
+// #1944: the diving mask (SWIM.dive.mask; head bone frame): a rubber skirt round both eyes, one glass pane in it, a strap round the head.
+// One merged vertex-coloured geometry and one material shared by every diver.
+let maskParts = null;
+function diveMask() {
+  if (!maskParts) {
+    const M = SWIM.dive.mask, d = M.front - M.back, zc = (M.front + M.back) / 2, list = [];
+    const put = (g, colour) => { g = g.index ? g.toNonIndexed() : g; const c = new THREE.Color(colour), n = g.attributes.position.count, a = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) a.set([c.r, c.g, c.b], i * 3); g.setAttribute('color', new THREE.BufferAttribute(a, 3)); g.deleteAttribute('uv'); list.push(g); };
+    for (const s of [-1, 1]) {
+      put(new THREE.BoxGeometry(M.w, M.wall, d).translate(0, M.y + s * (M.h - M.wall) / 2, zc), M.rubber); // top / bottom of the skirt
+      put(new THREE.BoxGeometry(M.wall, M.h, d).translate(s * (M.w - M.wall) / 2, M.y, zc), M.rubber); // its sides
+    }
+    put(new THREE.BoxGeometry(M.w - M.wall, M.h - M.wall, 0.003).translate(0, M.y, M.front - 0.006), M.glass);
+    put(new THREE.TorusGeometry(M.strap, M.band / 2, 4, 20).rotateX(Math.PI / 2).scale(0.96, 1, 1).translate(0, M.y, RH.skull.centre[2]), M.rubber); // the strap (a flat ring round the skull)
+    maskParts = { geometry: mergeGeometries(list), material: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.45 }) };
+    list.forEach((g) => g.dispose());
+  }
+  const m = new THREE.Mesh(maskParts.geometry, maskParts.material);
+  m.name = 'dive-mask'; m.castShadow = m.receiveShadow = false;
+  return m;
 }
 
 // --- Rigged GLB avatar loader -------------------------------------------------------------------
@@ -1539,6 +1563,14 @@ export class Avatar {
     m.emissive.setScalar(A.emissiveSolid);
   }
 
+  /** #1944: the diving mask on the face, only while diving. Its own small mesh on the head bone (shared geometry and material, made at the
+   * first dive; one draw call per diver, none otherwise), so the shared head geometry and its shader stay as they are. */
+  setMask(on) {
+    on = !!on;
+    if (!this.mask) { if (!on || !this.bones?.head) return; this.mask = diveMask(); this.bones.head.add(this.mask); }
+    this.mask.visible = on;
+  }
+
   /** A temporary visual outfit; the selected base look/geometry and combat solid flag stay intact. */
   setSuit(on) {
     on = on === true;
@@ -1556,8 +1588,9 @@ export class Avatar {
    * #1799 `air`: 1 flying, 2 swinging on a strand, 3 climbing a wall (no gait; AVATAR_AIR), `airV`: [x, y, z] m/s in the figure's
    * frame (+x its left, +y up, +z forward) — what the hanging legs trail against and the climbing steps follow.
    * #1943 `swim`: in the water (then `speed` is the speed through the water: strokes above SWIM.avatar.strokeSpeed, else treading water).
-   * `swimAmt` (0 … 1) and `swimLine` (the water line's height in the figure's frame) tell the owner how deep to set the figure. */
-  update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null, air = 0, airV = null, swim = false } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
+   * `swimAmt` (0 … 1) and `swimLine` (the water line's height in the figure's frame) tell the owner how deep to set the figure.
+   * #1944 `dive` 0 … 1 (with `swim`): under the surface, lying level with the diving mask on; `diveAmt` is the eased amount. */
+  update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null, air = 0, airV = null, swim = false, dive = 0 } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
     this.time += dt;
 
     // #1799: each air pose blends in and out on its own (their sum ≤ 1, the rest is the ground pose)
@@ -1573,6 +1606,9 @@ export class Avatar {
     // #1943: swimming blends in and out like the air poses; the strokes' phase follows the speed through the water
     const sa = this.swimAmt = THREE.MathUtils.lerp(this.swimAmt ?? 0, swim ? 1 : 0, Math.min(1, dt * SW.ease));
     const st = this.strokeAmt = THREE.MathUtils.lerp(this.strokeAmt ?? 0, swim && speed > SW.strokeSpeed ? 1 : 0, Math.min(1, dt * 4));
+    // #1944: diving (`dive` 0 … 1 while swimming): level under the surface, the mask on
+    const dv = this.diveAmt = THREE.MathUtils.lerp(this.diveAmt ?? 0, swim ? THREE.MathUtils.clamp(dive, 0, 1) : 0, Math.min(1, dt * DV.ease));
+    this.setMask(swim && dive > 0.05);
     if (swim) this.swimPhase = (this.swimPhase ?? 0) + dt * Math.PI * 2 * SW.strokeHz * st * THREE.MathUtils.clamp(speed / SWIM.speed, 0.6, 1.4);
     const walking = speed > A.walkSpeed && !am && !swim, k = THREE.MathUtils.clamp(speed / 1.6, 0.4, 1.4);
     if (walking) this.phase += dt * speed / STRIDE * Math.PI * 2;
@@ -1596,7 +1632,7 @@ export class Avatar {
     });
     if (aa[0] + aa[1] + climbA > 0.001) airFeet(this, feet, aa, av, hipY, hipZ);
     if (sa > 0.001) feet.forEach((f, i) => { const w = swimFoot(this, i, hipY, hipZ, st); for (let j = 0; j < 3; j++) f[j] += (w[j] - f[j]) * sa; }); // #1943
-    this.swimLine = swimLineAt(hipY, st);
+    this.swimLine = swimLineAt(hipY, st, dv);
     const armSwing = -step * 0.55;
     const rest = (side, swing) => {
       const r = armTarget.rest(side, swing), R = CR.rest;
@@ -1629,7 +1665,7 @@ export class Avatar {
     let knee = c ? CR.knees.map((v, i) => KNEE_REST[i] + (v - KNEE_REST[i]) * c) : KNEE_REST;
     if (climbA > 0.001) knee = knee.map((v, i) => v + (AIR.climb.knees[i] - v) * climbA); // #1799: knees out on the wall
     const airLean = AIR.fly.lean * aa[0] + AIR.swing.lean * aa[1] + AIR.climb.lean * climbA;
-    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: airLean - swimLean(st) * sa + 0.03 * g + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + SW.head * swimLean(st) * sa + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
+    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: airLean - swimLean(st, dv) * sa + 0.03 * g + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + SW.head * swimLean(st, dv) * sa + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
       knee, flat: c, toes: F.turn * c });
     if (sway) this.bones.hips.position.x = sway; // #1622: the feet targets were moved the other way, so they stay planted
   }
@@ -1646,6 +1682,7 @@ export class Avatar {
 
   dispose() {
     this.disposed = true;
+    this.mask?.removeFromParent(); // (#1944: shared geometry / material, not disposed)
     if (this.suit) releaseSuitTexture();
     this.material?.dispose();
     this.mesh?.skeleton?.dispose();

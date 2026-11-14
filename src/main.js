@@ -228,6 +228,7 @@ import { DoorSync } from './doorsync.js'; // #1775: doors opened / shut, seen by
 import { GraffitiSync } from './graffitisync.js'; // #1724: … shared with the other players
 import { farWalls, swimWater } from './farwalk.js'; // (#1707: the paint's surfaces on phones; #1943: who swims)
 import { current as riverCurrent } from './swim.js';
+import { DiveLook } from './divelook.js'; // #1944: the view under the surface
 import { Chat } from './chat.js';
 import { BASKET, COMBAT, CHAT, GHOSTS, TOUCH, NEW_YEAR, TOAST, TOAST_LINES, SOUNDS } from './config.js';
 import { Basketball, Hoop } from './basket.js';
@@ -555,6 +556,7 @@ player.onWaterRescue = (what, at) => { // #1236, #1281: put back after the river
   splashEl.style.transition = 'none'; splashEl.style.opacity = '1'; void splashEl.offsetWidth; splashEl.style.transition = 'opacity 1.2s ease-out'; splashEl.style.opacity = '0';
   badge('Plask! Du ramlade i ån', false);
 };
+const diveLook = new DiveLook({ scene, camera, player, water: waterYAt }); // #1944: fog + a wash while the eye is under the river's surface
 player.onSwim = (into, at) => { // #1943: into the river on foot: a splash, then swimming (no rescue)
   if (!into) return;
   sfx.splash(new THREE.Vector3(at.x, waterYAt(at.x, at.z), at.z));
@@ -3140,7 +3142,7 @@ let reactionCam = { active: false, start: 0, camFrom: null, camTo: null, kind: -
 const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey, mirrored: () => !rest.active || !!rest.spot?.gymPose || !!rest.spot?.gymWirePose,
   // #1943: a figure whose feet are under the river's surface swims (the bed is far below every other walkable level, so the cheap height test rejects everyone else)
   swim: (p) => { if (p.y > SITE.bridges.waterY + 1 || p.y >= waterYAt(p.x, p.z) - WALK.waterDepth || !swimWater(p.x, p.z)) return null; const c = riverCurrent(riverAt(p.x, p.z)); return { water: waterYAt(p.x, p.z), cx: c.x, cz: c.z }; },
-  state: () => ({ bp: gymPumpState(), p: [player.pos.x, player.pos.y, player.pos.z], r: reactionCam.active && reactionCam.camFrom ? reactionCam.camFrom.yaw : camera.rotation.y, look: [0, reactionCam.active && reactionCam.camFrom ? reactionCam.camFrom.pitch : camera.rotation.x], c: player.crouched, dn: playroom.music.danceCode ?? 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 && player.outdoors ? 2 : 1) : 0, am: player.climb ? 3 : player.swing ? 2 : player.flying || player.fling ? 1 : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, fb: fishing.wire, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
+  state: () => ({ bp: gymPumpState(), p: [player.pos.x, player.pos.y, player.pos.z], r: reactionCam.active && reactionCam.camFrom ? reactionCam.camFrom.yaw : camera.rotation.y, look: [0, reactionCam.active && reactionCam.camFrom ? reactionCam.camFrom.pitch : camera.rotation.x], c: player.crouched || !!player.swim?.dive /* #1944: crouched in the water = diving */, dn: playroom.music.danceCode ?? 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 && player.outdoors ? 2 : 1) : 0, am: player.climb ? 3 : player.swing ? 2 : player.flying || player.fling ? 1 : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, fb: fishing.wire, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
 football=new Football({site:world.football,camera,ghosts,life,
   canPlay:()=>overlay.hidden&&!reading&&!heldItem()&&!rest.active&&!player.riding&&!player.flying&&!player.climb&&!player.swing&&Math.abs(player.pos.y-world.football.ground(player.pos.x,player.pos.z))<FOOTBALL.playHeightSlack,
   spectating:()=>rest.active&&rest.target?.id?.startsWith('football-bench-'),onRecord:recordFootball,say:t=>badge(t,false)});
@@ -3622,6 +3624,7 @@ function step(dt) {
     if (sun.target.position.x !== fx || sun.target.position.z !== fz) { sun.target.position.x = fx; sun.target.position.z = fz; sun.target.updateMatrixWorld(); shadowState.hold = Math.max(shadowState.hold, 0.1); }
   }
   day.update(dt);
+  diveLook.update(); // #1944 (after the day cycle: it sets the fog anew each frame)
   setEdgeLight((hemi.intensity + ambient.intensity) * renderer.toneMappingExposure / LIGHTING.edgeRef); // edges follow the light, not glow (#1592)
   wallClock.update(day.hour);
   calendar.update(); // redraws only when the page or the date changed

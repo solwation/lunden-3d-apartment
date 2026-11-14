@@ -662,12 +662,14 @@ export const SITE = {
   // All heights, widths, pier dimensions, rail/truss section sizes and colours below are visual ASSUMPTIONS.
   bridges: {road:{ends:[[23.9,100],[23.3,145.8]],width:7.2,slab:.45,pier:.75,foot:1.8},
     gc:{ends:[[18.1,101],[17.8,146.5]],length:40,width:3,slab:.18,truss:1.45,panels:10,steel:.10},
-    deckY:-3,waterY:-7,bedY:-7.6,shoreY:-5.5,shoreSpan:7.5,valleySpan:8.5,rail:1.1,post:.07,railStep:1.9,approach:8,pierMargin:.2,
+    deckY:-3,waterY:-7,bedY:-7.6,pool:1.2,shoreY:-5.5,shoreSpan:7.5,valleySpan:8.5,rail:1.1,post:.07,railStep:1.9,approach:8,pierMargin:.2,
     // #1285 (supersedes #1271 local underpass cut): Höje å and its valley lie generally lower than the road bridge.
     // Road deck at deckY (-3); waterY (-7), bedY and shoreY below are visual guesses at the road-bridge centre (#1350).
     // #1684: waterY/bedY were -6.2/-6.8, which left the water only 0.7 m under the 15 m wide shore flat (a player report: the river looked like it floated
     // over the ground). Both are 0.8 m lower now (*guess*), the shore flat unchanged, so the water lies 1.5 m under the bank crest; the water
     // ribbon also runs under the whole bank slope (riverbridge.js) and surfaces exactly where the sloping bank meets the water line.
+    // #1944: `pool` (m, *guess*, no bathymetry): the bed deepens from bedY at the channel's edge (width/2) to bedY - pool at the centre line, i.e. 1.8 m of
+    // water mid-channel, so a diver has room; the bed's edge, the banks, the shore and the water line are unchanged (riverbridge.js riverGround).
     // No surveyed apartment-floor RH2000 datum or measured bathymetry. Riverbed at bedY (-7.6), shore/path at shoreY (-5.5), 1.5 m above water (#1684); gives 2.05 m clearance
     // under road slab and 2.32 m under GC bridge). Valley slopes up from shoreSpan (4.5 m past bank) over valleySpan
     // (8.5 m) to base terrain (-3), meeting the road bridge abutments (ends at z ~100 and z ~145.8) from bank to bank.
@@ -2335,6 +2337,22 @@ export const SWIM = {
   // `strokeSpeed` m/s through the water: above it the arms stroke. All *guess*, by eye.
   avatar: { ease: 5, lean: 1.0, treadLean: 0.3, head: 0.85, chin: 0.04, strokeHz: 0.8, strokeSpeed: 0.2, reach: 0.4, lift: 0.27, up: 0.07, out: 0.05,
     scull: { out: 0.4, fwd: 0.2, sweep: 0.09, hz: 0.55 }, legs: 1.05, treadLegs: 0.15, kick: 0.09, kickHz: 2.2 },
+  // #1944: diving. Crouch (Ctrl / C, the touch toggle) held while swimming takes the swimmer under the surface with a diving mask on; letting
+  // go brings them back up. Everything is a gameplay choice (*guess*); the water is SITE.bridges.pool + 0.6 m deep mid-channel (also a guess).
+  dive: {
+    rate: 1.3, // m/s the eye goes down / comes up (*guess*: the 1.4 m to the bed mid-channel takes about a second)
+    eyeOverBed: 0.4, // m the diver's eye stays over the bed, so the deepest dive follows the bed and never goes through it (*guess*)
+    under: 0.1, // m the eye must be under the water line to count as diving (`Player.diving`) (*guess*)
+    // The view under the surface (src/divelook.js): the scene's fog takes the sky's horizon colour x `tint` and is pulled in to `near` … `far` m
+    // (murky river water, *guess*), and one DOM element lays a colour wash with a darker rim (the mask's edge) over the picture. No render pass.
+    look: { tint: [0.34, 0.6, 0.52], near: 0.2, far: 12, wash: 'radial-gradient(ellipse at center, rgba(30,95,90,.16) 45%, rgba(4,26,30,.62) 100%)', fade: 0.25 },
+    // The avatar under water: the torso lies nearly level (`lean` rad from upright), the legs trail straight back (`legs` rad from the vertical)
+    // with `kick` x the surface flutter, eased in at `ease` /s. *guess*, by eye, so the figure clears the bed at `eyeOverBed`.
+    avatar: { lean: 1.42, legs: 1.5, kick: 0.5, ease: 4 },
+    // The diving mask (cyklop) on the face while diving (head bone frame, m; avatar.js `diveMask`): a dark rubber skirt `w` x `h` round both eyes
+    // from z `back` to `front`, one glass pane in it and a strap round the head (`strap` radius, `band` height). Shape and colours *guess*.
+    mask: { w: 0.15, h: 0.066, y: 0.106, back: 0.086, front: 0.14, wall: 0.009, strap: 0.111, band: 0.016, rubber: 0x15181c, glass: 0x7fb4c9 },
+  },
 };
 
 // The garage under the courtyard and Hus L's basement (#357, #417, src/garage.js), per the våning −1 overview plan

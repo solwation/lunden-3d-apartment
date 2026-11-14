@@ -42,7 +42,23 @@ export function exitDecision(st, { blocked, pushing, bank, dt }, C = SWIM) {
 }
 
 /** The eye's height over the water line at swim time `t` (s): SWIM.eye with a small bob, less `depth` m under it (0 at the surface; the
- * hook for #1944's dive). */
+ * dive, #1944 `diveStep`). */
 export function swimEye(t, depth = 0, C = SWIM) {
   return C.eye + C.bob * Math.sin(t * Math.PI * 2 * C.bobHz) - depth;
 }
+
+/** #1944: how far under its floating height the eye may go where the water is `water` m deep (surface to bed): down to SWIM.dive.eyeOverBed
+ * over the bed, never under it; 0 in the shallows. */
+export function diveMax(water, C = SWIM) {
+  return Math.max(0, C.eye + water - C.dive.eyeOverBed);
+}
+
+/** #1944: the dive depth one frame on. `want`: the crouch input is held (down towards the bed), else up to the surface, at SWIM.dive.rate
+ * m/s. The bed's limit applies at once, so a rising bed lifts the diver and nothing holds them down: letting go always ends at depth 0. */
+export function diveStep(depth, want, water, dt, C = SWIM) {
+  const max = diveMax(water, C), step = C.dive.rate * dt;
+  return Math.max(0, Math.min(max, want ? depth + step : depth - step));
+}
+
+/** #1944: is an eye `depth` m under its floating height under the surface (the mask's view, `Player.diving`)? */
+export const isDiving = (depth, C = SWIM) => depth > C.eye + C.dive.under;

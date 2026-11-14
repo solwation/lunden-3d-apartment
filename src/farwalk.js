@@ -6,7 +6,7 @@ import {footballSegments} from './footballgeo.js';
 import { SITE, WALK, PLAYER, OUTDOOR, PADDOCK } from './config.js';
 import { riverAt, waterYAt, deckAt, bridgeRecords, pierBoxes, upstreamRiverZone } from './riverbridge.js';
 import { parkDeckAt } from './riverpark.js';
-import { groundY, groundBelowDeckY, treeFeet, southTreeFeet } from './surroundings.js';
+import { groundY, groundBelowDeckY, renderedTerrainY, treeFeet, southTreeFeet } from './surroundings.js';
 import { fenceSegments, stile, stileWalls } from './paddockgeo.js';
 import { parkedCarSegments } from './parkinglayout.js';
 import { busStopSegments } from './busstopgeo.js';
@@ -146,8 +146,9 @@ export function swimWater(x, z) {
   const r = riverAt(x, z);
   return r.distance < r.width / 2 + r.bank && groundBelowDeckY(x, z) < waterYAt(x, z, r) - WALK.waterDepth;
 }
-/** #1943: the river bed under a swimmer (the terrain under every deck). */
-export const swimBedY = (x, z) => groundBelowDeckY(x, z);
+/** #1943: the river bed under a swimmer (the terrain under every deck). #1944: never under the DRAWN bed: the terrain mesh's 1.3 m cells cut
+ * the pool's curve short (up to a few dm over the smooth sampler), and a diver's eye and hands are measured from this. */
+export const swimBedY = (x, z) => Math.max(groundBelowDeckY(x, z), renderedTerrainY(x, z) + 0.01);
 
 /** #1281: the nearest bank point to put someone back on who fell into the river at (x, z): searched on rings round the splash, the first
  * ring with a dry (`WALK.bankDry` m over the water line), walkable (gradient under `WALK.maxSlope * WALK.slideOut`) spot clear of every wall

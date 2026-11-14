@@ -32,18 +32,21 @@ test('rendered water vertices follow the same continuous downstream level as the
  for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i),y=p.getY(i);near(y,waterYAt(x,z),2e-5);lo=Math.min(lo,y);hi=Math.max(hi,y);}
  // #1814: the local western continuation extends the fall while every old station above remains exact.
  const total=riverAt(...riverPath.at(-1)).along*R.fall.perM;assert(total>.7&&total<.8,`${total}`);assert(hi-lo>total-.002&&hi-lo<total+.008,`${hi-lo} vs ${total}`);
- for(const[x,z]of riverPath){const bed=groundBelowDeckY(x,z);near(bed,waterYAt(x,z)-.6);near(shoreYAt(x,z)-waterYAt(x,z),1.5);assert(inWater(x,z,bed));}
+ // #1944: the pool (SITE.bridges.pool) deepens the centre line only: at the channel's edge (width/2) the bed is at its old level
+ for(let i=1;i<riverPath.length;i++){const x=(riverPath[i-1][0]+riverPath[i][0])/2,z=(riverPath[i-1][1]+riverPath[i][1])/2,r=riverAt(x,z);for(const s of[-1,1]){const ex=x+s*r.nx*r.width/2,ez=z+s*r.nz*r.width/2,e=riverAt(ex,ez);if(Math.abs(e.distance-e.width/2)<.01)near(riverGround(ex,ez,-3),waterYAt(ex,ez)-.6,.03);}}
+ for(const[x,z]of riverPath){const bed=groundBelowDeckY(x,z);near(bed,waterYAt(x,z)-.6-B.pool);near(shoreYAt(x,z)-waterYAt(x,z),1.5);assert(inWater(x,z,bed));}
  // The continued channel now meets the far-bank cut at both terrain edges, rather than rising over the water.
- for(const[x,z]of [R.upstream.boundary,riverPath.at(-1)])near(groundBelowDeckY(x,z),waterYAt(x,z)-.6,.08);
+ for(const[x,z]of [R.upstream.boundary,riverPath.at(-1)])near(groundBelowDeckY(x,z),waterYAt(x,z)-.6-B.pool,.08);
 
 });
 
+// #1944 re-baselined the concrete snapshot: the road bridge's piers and footings reach the pool's bed (bedY - SITE.bridges.pool).
 // #1684 re-baselined the concrete snapshot again: the abutments/piers reach the 0.8 m lower bed (SITE.bridges.bedY).
 // #1530 re-baselined the concrete/steel/asphalt snapshots for the photo-based road-bridge cross-section and vertex colours
 // #1704 re-baselined them again for the east G/C path on the road slab (cross-section only, same three batches).
 // (the river fall still does not touch them; deck datum and undersides are checked in southbanktest/bridgetest).
 test('the default constant-deck bridge geometry and mapped park paths retain the pre-fall buffers',()=>{
- const expected={'bridges-concrete':'c56100a53954e1b055a7d92a1441b6bf2a8c70d75dc8a8ac343518aaaba1e734','bridges-steel':'1070ca39faaaeb2318dc4af70d7a569a3236dfebb47b5e25df732606287915d9','bridges-asphalt':'93cfeb3ee56af0fb96877234d0e91b2ecc7a1c5d0558b60f5c59a6aca7d3bee5'};
+ const expected={'bridges-concrete':'bc2c2507c61b8e8209730ee7194ee656581b936fec0616076a1f9a79480d90f8','bridges-steel':'1070ca39faaaeb2318dc4af70d7a569a3236dfebb47b5e25df732606287915d9','bridges-asphalt':'93cfeb3ee56af0fb96877234d0e91b2ecc7a1c5d0558b60f5c59a6aca7d3bee5'};
  for(const m of buildRiverBridges().children.filter(m=>m.name!=='bridges-water')){const h=createHash('sha256'),g=m.geometry;for(const k of Object.keys(g.attributes).sort())h.update(k).update(Buffer.from(g.attributes[k].array.buffer));if(g.index)h.update(Buffer.from(g.index.array.buffer));assert.equal(h.digest('hex'),expected[m.name]);}
  assert.equal(hash(JSON.stringify(SITE.riverPark.paths)),'2e682c6a3361bbdab008dafb210f8b24b8b5566f784932735b1aafb153173150');
 });

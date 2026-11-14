@@ -1,9 +1,10 @@
+// #1944: the dive: crouch held goes down to SWIM.dive.eyeOverBed over the bed, released always comes up, a rising bed lifts the diver.
 // #1943: the pure swimming rules: the current runs downstream along the centre line, the same input is faster with it than against
 // it, an idle swimmer drifts, and the edge decision (climb / last-resort rescue).   node --test src/swim.test.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SWIM, SITE } from './config.js';
-import { currentDir, current, swimVelocity, exitDecision, swimEye } from './swim.js';
+import { currentDir, current, swimVelocity, exitDecision, swimEye, diveMax, diveStep, isDiving } from './swim.js';
 
 // A river frame like riverbridge.js riverAt builds for the segment a -> b: normal (-dz, dx) / len.
 const frame = ([ax, az], [bx, bz]) => { const dx = bx - ax, dz = bz - az, l = Math.hypot(dx, dz); return { nx: -dz / l, nz: dx / l, dx: dx / l, dz: dz / l }; };
@@ -60,4 +61,38 @@ test('the edge: climb where a bank is in reach, rescue only after SWIM.rescueAft
 test('the eye floats just above the surface; a depth lowers it (the dive hook)', () => {
   for (let t = 0; t < 3; t += 0.05) { const e = swimEye(t); assert.ok(e > 0.05 && e < 0.25, `eye ${e}`); }
   assert.ok(swimEye(0, 1) < 0);
+});
+
+// #1944
+const DEEP = 0.6 + SITE.bridges.pool; // the water's depth at the centre line (riverbridge.js riverGround)
+const eyeOver = (depth) => SWIM.eye - depth; // the eye over the water line (without the bob)
+
+test('the dive: held crouch goes down at SWIM.dive.rate to SWIM.dive.eyeOverBed over the bed and stays there', () => {
+  assert.ok(DEEP >= 1.5, `mid-channel is deep enough to dive in (${DEEP} m)`);
+  let d = 0, t = 0; const dt = 1 / 60;
+  assert.ok(!isDiving(d));
+  d = diveStep(d, true, DEEP, dt); assert.ok(Math.abs(d - SWIM.dive.rate * dt) < 1e-12);
+  while (t < 5) { d = diveStep(d, true, DEEP, dt); t += dt; assert.ok(eyeOver(d) + DEEP >= SWIM.dive.eyeOverBed - 1e-9, 'never closer to the bed'); }
+  assert.ok(Math.abs(eyeOver(d) + DEEP - SWIM.dive.eyeOverBed) < 1e-9, 'at the bed limit');
+  assert.equal(d, diveMax(DEEP));
+  assert.ok(isDiving(d) && eyeOver(d) < -1, `the eye is ${-eyeOver(d)} m under the surface`);
+  assert.ok(swimEye(0, d) < -1);
+});
+
+test('the dive: letting go always reaches the surface, from any depth, in bounded time', () => {
+  for (const water of [0.3, 0.6, 1, DEEP, 5]) {
+    let d = diveMax(water), t = 0; const dt = 1 / 30;
+    while (d > 0 && t < 10) { d = diveStep(d, false, water, dt); t += dt; }
+    assert.equal(d, 0); assert.ok(t <= diveMax(water) / SWIM.dive.rate + 2 * dt, `up from ${water} m in ${t} s`);
+    assert.ok(!isDiving(d) && swimEye(0, d) > 0);
+  }
+});
+
+test('the dive: a rising bed lifts the diver at once; the shallows allow no dive', () => {
+  let d = diveMax(DEEP);
+  d = diveStep(d, true, 0.8, 0); // (dt 0: the limit alone, as player.js applies it after the stroke)
+  assert.equal(d, diveMax(0.8)); assert.ok(eyeOver(d) + 0.8 >= SWIM.dive.eyeOverBed - 1e-9);
+  assert.equal(diveMax(0.2), 0); assert.equal(diveStep(0.5, true, 0.2, 1 / 60), 0, 'no room: at the surface');
+  assert.equal(diveStep(0, false, DEEP, 1), 0);
+  assert.ok(!isDiving(SWIM.eye) && isDiving(SWIM.eye + SWIM.dive.under + 0.01), 'diving = the eye SWIM.dive.under m below the water line');
 });

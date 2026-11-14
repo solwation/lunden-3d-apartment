@@ -7,7 +7,7 @@ import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY, groundBelowDeckY } from './surroundings.js';
 import { deckAt, deckUnderAt, waterYAt, upstreamRiverZone, riverAt } from './riverbridge.js';
 import { farWalls, slideAt, inWater, splashBank, tooSteep, buildingRescue, atEdge, surfaceY, underDeck, stileSurface, swimWater, swimBedY } from './farwalk.js'; // #1236: walking beyond the block
-import { swimVelocity, exitDecision, swimEye } from './swim.js'; // #1943: the pure swimming rules
+import { swimVelocity, exitDecision, swimEye, diveStep, isDiving } from './swim.js'; // #1943: the pure swimming rules; #1944: the dive
 import { bicycleCurbY } from './street.js';
 import { stowBicycleHand, restoreBicycleHand } from './holdable.js';
 
@@ -85,7 +85,7 @@ export class Player {
     this.riding = null; // #903: transient bicycle mode, never persisted
     this.onJump = null;     // (suit: boolean) the feet left the ground on a jump (#636)
     // #1943: swimming in the river (never persisted): { t (s in the water), stuck (s against an edge), depth (m the eye is under its floating
-    // height: 0, the hook for #1944's dive), moving (stroking this frame), exit ({ x, z } while being helped up a bank) }, else null.
+    // height; #1944: the dive), dive (#1944: crouch is held, on the way down / at the bed), moving (stroking this frame), exit ({ x, z } while being helped up a bank) }, else null.
     this.swim = null;
     this.onSwim = null;     // (in: boolean, at: { x, z }) into / out of the water (main.js: the splash)
   }
@@ -156,8 +156,10 @@ export class Player {
     return !!r?.inside && r.contains(this.pos.x, this.pos.z);
   }
 
-  /** #1943: swimming in the river (`swim` holds the details). #1944: `crouch` (wanted) while this is true is the dive input. */
+  /** #1943: swimming in the river (`swim` holds the details). #1944: `crouch` (wanted) while this is true is the dive input (`diving`). */
   get swimming() { return !!this.swim; }
+  /** #1944: under the surface (the eye SWIM.dive.under m below the water line). `swim.dive` is the wish (crouch held), `swim.depth` how deep. */
+  get diving() { return !!this.swim && isDiving(this.swim.depth); }
 
   /** Outside the flat (street, lawn, patio, up on the roofs); used for terrain and ambience. */
   get outdoors() {
@@ -960,7 +962,7 @@ export class Player {
   swimCheck() {
     if (this.swim || !this.underWater(true)) return false;
     const p = this.pos;
-    this.swim = { t: 0, stuck: 0, depth: 0, moving: false, exit: null };
+    this.swim = { t: 0, stuck: 0, depth: 0, dive: false, moving: false, exit: null };
     p.y = swimBedY(p.x, p.z);
     this.vy = 0; this.fall = null; this.fling = null; this.jv.x = this.jv.z = 0; this.slideV = 0; this.sliding = false; this.slideDir = null;
     this.flying = false; this.crouched = false; this.sprinting = false;
@@ -972,12 +974,16 @@ export class Player {
    * `settleEye`), the stroke goes where the ordinary movement input points at SWIM.speed and the current carries the swimmer downstream
    * (swim.js). The water's edge holds the swimmer in; swimming into it with a walkable bank spot within SWIM.exitReach helps them up there
    * (the banks are too steep to walk), and SWIM.rescueAfter s against an edge with no way up ends in the old rescue. The jetpack's thrust
-   * lifts out of the water. No jump, sprint or crouch speed here; `crouch` (wanted) is left alone for #1944's dive. False when the swim ended
+   * lifts out of the water. No jump or sprint here; #1944: `crouch` (wanted) held dives (`swim.dive`, `swim.depth`, swim.js `diveStep`): the
+   * same strokes and current under the surface, the eye down to SWIM.dive.eyeOverBed over the bed. False when the swim ended
    * this frame and the ordinary update should go on. */
   swimStep(dt, fwd, side, amount) {
     const s = this.swim, p = this.pos;
     this.vy = 0; this.fall = null; this.fling = null; this.flying = false; this.crouched = false; this.sprinting = false; this.sliding = false; this.slideV = 0;
     s.t += dt;
+    // #1944: crouch held = dive (down to the bed at SWIM.dive.rate), released = up again; climbing out always surfaces
+    s.dive = this.crouch && !s.exit;
+    s.depth = diveStep(s.depth, s.dive, waterYAt(p.x, p.z) - p.y, dt);
     if (s.exit) { // up the bank to the dry spot
       const dx = s.exit.x - p.x, dz = s.exit.z - p.z, d = Math.hypot(dx, dz), step = SWIM.climbSpeed * dt;
       if (d <= step) { p.set(s.exit.x, surfaceY(s.exit.x, s.exit.z, p.y), s.exit.z); this.swim = null; this.safeUntil = performance.now() + WALK.splashSafe * 1000; this.onSwim?.(false, { x: p.x, z: p.z }); return true; }
@@ -1015,6 +1021,7 @@ export class Player {
       if (swimWater(p.x, z0)) p.z = z0; else if (swimWater(x0, p.z)) p.x = x0; else { p.x = x0; p.z = z0; }
     }
     p.y = swimBedY(p.x, p.z);
+    s.depth = diveStep(s.depth, s.dive, waterYAt(p.x, p.z) - p.y, 0); // (#1944: the bed where the stroke ended limits the depth)
     let bank = null;
     if (blocked && pushing) { // a walkable spot on the bank just ahead, reached through no wall
       bank = splashBank(bx, bz, p.y, SWIM.exitReach);
@@ -1029,7 +1036,7 @@ export class Player {
 
   /** The camera to the feet + the eye height (smoothed over stair steps). */
   settleEye(dt) {
-    const s = this.swim, target = s && !s.exit ? waterYAt(this.pos.x, this.pos.z) + swimEye(s.t, s.depth) // #1943: floating, the eyes just above the surface
+    const s = this.swim, target = s && (!s.exit || s.depth > 0) ? waterYAt(this.pos.x, this.pos.z) + swimEye(s.t, s.depth) // #1943: floating, the eyes just above the surface
       : this.pos.y + (this.crouched ? PLAYER.crouchEye : PLAYER.eye);
     this.eyeY += (target - this.eyeY) * Math.min(1, dt * 14);
     this.camera.position.set(this.pos.x, this.eyeY, this.pos.z);

@@ -7,7 +7,7 @@ import { pumpWire } from './gympump.js';
 import * as THREE from 'three';
 import { FALL, TOAST, SOUNDS, KISS, HUG, REACT } from './config.js';
 import { makesSteps, strideFor } from './spatialsound.js';
-import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, CHAT, encodeAvatarLook, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
+import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, CHAT, SWIM, encodeAvatarLook, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
 import { Avatar, armTarget, swimLineFar } from './avatar.js';
 import { totalScore } from './stats.js';
 import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge.js';
@@ -331,7 +331,13 @@ export class Ghost { // (exported for tools/ghostprops.html)
     // is the one through the water (the current taken off), so someone only drifting treads water
     const wet = swimProbe && !this.pose && !this.gx && !this.bikeMesh && !this.air ? swimProbe(this.root.position) : null;
     this.swim = !!wet;
-    const sink = (amt, line) => { this.swimDy = amt * (wet.water - this.root.position.y - line * this.avatar.object.scale.y); this.avatar.object.position.y = this.swimDy; };
+    // #1944: crouched in the water = diving (`crouch` 0 … 1, the existing `c` flag): the figure goes down until its head is SWIM.dive.eyeOverBed
+    // over the bed (its feet position), wears the mask and lies level (avatar.js)
+    const dive = wet ? this.crouch ?? 0 : 0;
+    const sink = (amt, line, dv = dive) => {
+      const top = wet.water - this.root.position.y - line * this.avatar.object.scale.y, deep = Math.min(top, SWIM.dive.eyeOverBed - line * this.avatar.object.scale.y);
+      this.swimDy = amt * (top + (deep - top) * dv); this.avatar.object.position.y = this.swimDy;
+    };
     if (wet) { vx -= wet.cx; vz -= wet.cz; sink(1, swimLineFar()); } else this.swimDy = 0;
     if (d > AVATAR.poseFar) { if (this.itemProp) this.itemProp.visible = false; return; } // (#1297: the hand prop only near, with the posed avatar)
     const gaze = this.root.rotation.y, sp = this.pose || this.gx ? 0 : Math.hypot(vx, vz);
@@ -377,8 +383,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const amount = Math.max(kissed, hugged); // (the look and gait give way to either embrace)
     const air = this.pose || this.bikeMesh || amount ? 0 : this.air ?? 0, by = this.body + Math.PI; // #1799: the velocity in the figure's frame (+z forward, +x its left)
     const airV = air ? [vx * Math.cos(by) - vz * Math.sin(by), this.vy ?? 0, vx * Math.sin(by) + vz * Math.cos(by)] : null;
-    this.avatar.update(dt, { speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount });
-    if (wet) sink(this.avatar.swimAmt, this.avatar.swimLine); // (blending in from standing on the bed)
+    this.avatar.update(dt, { speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: wet ? 0 : this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive });
+    if (wet) sink(this.avatar.swimAmt, this.avatar.swimLine, this.avatar.diveAmt); // (blending in from standing on the bed)
     applyRestPose(this.avatar, this.pose, this.look, react);
     applyGymBodyPose(this.avatar,this.gx,this.look);
     if (this.bikeMesh) this.poseBike(dt, Math.hypot(vx, vz), turn);
