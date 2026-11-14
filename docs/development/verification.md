@@ -1325,6 +1325,10 @@ tools/divetest.cjs (#1944) diving in Höje å in the real app through `Player.up
                        (crouch held = eye under the surface to 0.4 m over the drawn bed, same speeds with / against the current, letting go and the touch toggle
                        surface, fog + wash on / off, crouch on land unchanged, dives at every station of the river and through under both bridges, the
                        avatar under water with the mask and at the surface without; three result images).
+tools/musseltest.cjs (#1945) the blue mussels on the bed of Höje å in the real app (`A.step`, the real E key under a pointer lock): `THREE_DIR=… tools/browsertest.sh node tools/musseltest.cjs GAME OUT`
+                       (nothing placed / drawn on land, the first swim builds the bed, no target from the bank, out of reach from the surface over deep water,
+                       dive + take + put down + take again + put back, consumeHeld (#1946's hook), regrowth, the pool, the mud attribute and the view from the bank; `MUSSEL_MONTH=1` under snow; three result images).
+                       `node --test tools/musselfieldtest.mjs` (three resolver needed): the pure placement on the real river and the regrowth.
 tools/swimtest.cjs (#1943) swimming in Höje å in the real app through `Player.update`: `THREE_DIR=… tools/browsertest.sh node tools/swimtest.cjs GAME OUT [--quick]`
                        (walk in = swim and no rescue, eye over the surface, down / upstream speed, drift, no jump / sprint (crouch dives, #1944), touch stick, a 6 m fall without
                        landing, bank exits at every station of the walkable stretch, `splashCheck` still rescues; three result images; `--quick` skips the bank sweep).

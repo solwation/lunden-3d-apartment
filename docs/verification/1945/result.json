@@ -1,0 +1,382 @@
+{
+ "pass": true,
+ "results": [
+  {
+   "ok": true,
+   "name": "on land at the start: nothing placed, nothing drawn, no target",
+   "data": {
+    "drawn": 0,
+    "visible": false,
+    "spots": 0,
+    "targets": 0,
+    "calls": 0
+   }
+  },
+  {
+   "ok": true,
+   "name": "the first swim places the bed (on the drawn bed, in open water) and draws only the mussels near",
+   "data": {
+    "spots": 343,
+    "swim": {
+     "spots": 343,
+     "drawn": 12,
+     "visible": true,
+     "out": 0,
+     "loose": 0,
+     "held": false,
+     "hi": ""
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "from the bank (standing and crouched): no mussel can be aimed at",
+   "data": {
+    "bank": {
+     "swim": false,
+     "focus": null,
+     "targets": 0,
+     "visible": false,
+     "dist": 6.952039187311374
+    },
+    "bankCrouched": {
+     "swim": false,
+     "focus": null,
+     "targets": 0
+    },
+    "surfaceDeep": {
+     "eye": {
+      "overWater": 0.10801821459125005,
+      "overBed": 1.7942142033835893
+     },
+     "focus": null,
+     "drawn": 12,
+     "dist": 1.8309769800899176
+    },
+    "surfaceShallow": {
+     "eye": {
+      "overWater": 0.1080183329233142,
+      "overBed": 0.8856350066448684
+     },
+     "focus": {
+      "kind": "holdable",
+      "name": "en blåmussla",
+      "verb": "ta",
+      "blocked": false,
+      "mussel": true,
+      "item": false
+     },
+     "dist": 0.8588789064659286
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "from the surface straight over a deep mussel: out of reach",
+   "data": {
+    "eye": {
+     "overWater": 0.10801821459125005,
+     "overBed": 1.7942142033835893
+    },
+    "focus": null,
+    "drawn": 12,
+    "dist": 1.8309769800899176
+   }
+  },
+  {
+   "ok": true,
+   "name": "from the surface in the shallows: a mussel within an arm's length can be taken",
+   "data": {
+    "eye": {
+     "overWater": 0.1080183329233142,
+     "overBed": 0.8856350066448684
+    },
+    "focus": {
+     "kind": "holdable",
+     "name": "en blåmussla",
+     "verb": "ta",
+     "blocked": false,
+     "mussel": true,
+     "item": false
+    },
+    "dist": 0.8588789064659286
+   }
+  },
+  {
+   "ok": true,
+   "name": "a diver at the bed has the mussel in focus (\"ta en blåmussla\")",
+   "data": {
+    "eye": {
+     "overWater": -1.3265227148527812,
+     "overBed": 0.3880696480691501
+    },
+    "diving": true,
+    "focus": {
+     "kind": "holdable",
+     "name": "en blåmussla",
+     "verb": "ta",
+     "blocked": false,
+     "mussel": true,
+     "item": false
+    },
+    "state": {
+     "spots": 343,
+     "drawn": 12,
+     "visible": true,
+     "out": 0,
+     "loose": 0,
+     "held": false,
+     "hi": ""
+    },
+    "dist": 0.8422927151867456,
+    "calls": 0,
+    "name": "river-mussels"
+   }
+  },
+  {
+   "ok": true,
+   "name": "E takes the mussel: held in the hand (a child of the camera), gone from the bed, others see the mussel category",
+   "data": {
+    "state": {
+     "spots": 343,
+     "drawn": 11,
+     "visible": true,
+     "out": 1,
+     "loose": 1,
+     "held": true,
+     "hi": "mussel"
+    },
+    "isMussel": true,
+    "name": "en blåmussla",
+    "gone": true,
+    "inCamera": true,
+    "visible": true,
+    "hand": 0.4001562194943282,
+    "focus": {
+     "kind": "place",
+     "name": "en blåmussla här",
+     "verb": "lägga ner",
+     "blocked": false,
+     "mussel": false,
+     "item": true
+    },
+    "outdoorPlace": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "holding it, the bed beside is a place to put it down",
+   "data": {
+    "focus": {
+     "kind": "place",
+     "name": "en blåmussla här",
+     "verb": "lägga ner",
+     "blocked": false,
+     "mussel": false,
+     "item": true
+    },
+    "at": [
+     -147.6330131716154,
+     -8.869993000917397,
+     205.85850388165912
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "E puts it down on the bed (lying on it), where it can be taken again",
+   "data": {
+    "held": false,
+    "placed": true,
+    "overBed": 0.04174945214714931,
+    "off": 0.053026383409293276,
+    "state": {
+     "spots": 343,
+     "drawn": 11,
+     "visible": true,
+     "out": 1,
+     "loose": 1,
+     "held": false,
+     "hi": ""
+    },
+    "focus": {
+     "kind": "holdable",
+     "name": "en blåmussla",
+     "verb": "ta",
+     "blocked": false,
+     "mussel": false,
+     "item": true
+    },
+    "inScene": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "taken again; its old spot is where it can be put back",
+   "data": {
+    "held": true,
+    "focus": {
+     "kind": "holdable",
+     "name": "blåmusslan",
+     "verb": "lägga tillbaka",
+     "blocked": false,
+     "mussel": false,
+     "item": false
+    },
+    "gone": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "put back: it is one of the bed's mussels again",
+   "data": {
+    "held": false,
+    "state": {
+     "spots": 343,
+     "drawn": 12,
+     "visible": true,
+     "out": 0,
+     "loose": 0,
+     "held": false,
+     "hi": ""
+    },
+    "gone": false,
+    "focus": {
+     "kind": "holdable",
+     "name": "en blåmussla",
+     "verb": "ta",
+     "blocked": false,
+     "mussel": true,
+     "item": false
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "consumeHeld takes the mussel out of the hand (once)",
+   "data": {
+    "held": true,
+    "heldPos": [
+     -147.05823756418278,
+     -8.773271127049766,
+     206.1923581063071
+    ],
+    "consumed": true,
+    "after": {
+     "held": false,
+     "state": {
+      "spots": 343,
+      "drawn": 12,
+      "visible": true,
+      "out": 1,
+      "loose": 0,
+      "held": false,
+      "hi": ""
+     },
+     "gone": true,
+     "again": false
+    },
+    "near": {
+     "gone": true,
+     "t": -439.2500365203367
+    },
+    "away": {
+     "gone": false,
+     "state": {
+      "spots": 343,
+      "drawn": 0,
+      "visible": false,
+      "out": 0,
+      "loose": 0,
+      "held": false,
+      "hi": ""
+     },
+     "swim": false
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "it grows back, but not while the diver is beside its spot; out of the water nothing is drawn",
+   "data": {
+    "held": true,
+    "heldPos": [
+     -147.05823756418278,
+     -8.773271127049766,
+     206.1923581063071
+    ],
+    "consumed": true,
+    "after": {
+     "held": false,
+     "state": {
+      "spots": 343,
+      "drawn": 12,
+      "visible": true,
+      "out": 1,
+      "loose": 0,
+      "held": false,
+      "hi": ""
+     },
+     "gone": true,
+     "again": false
+    },
+    "near": {
+     "gone": true,
+     "t": -439.2500365203367
+    },
+    "away": {
+     "gone": false,
+     "state": {
+      "spots": 343,
+      "drawn": 0,
+      "visible": false,
+      "out": 0,
+      "loose": 0,
+      "held": false,
+      "hi": ""
+     },
+     "swim": false
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "at most the pool is out of the bed at once; a mussel is never saved with the home; a reset sends the loose ones back to the river",
+   "data": {
+    "near": 4,
+    "taken": 4,
+    "loose": 3,
+    "pool": 3,
+    "out": 4,
+    "flags": {
+     "isMussel": true,
+     "outdoorPlace": true,
+     "nut": false,
+     "fish": false
+    },
+    "keep": false,
+    "reset": {
+     "loose": 0,
+     "out": 1
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "the bed's mud is a byte per terrain vertex on the terrain's own grass material; from the bank nothing of the mussels is drawn",
+   "data": {
+    "swim": false,
+    "visible": false,
+    "mudVertices": 6695,
+    "vertices": 81486,
+    "bytes": 81486,
+    "material": "seasonal-grass"
+   }
+  },
+  {
+   "ok": true,
+   "name": "no page errors",
+   "data": []
+  }
+ ]
+}

@@ -8736,14 +8736,15 @@ export const MUSSELS = {
   boundsClear: 2, // m inside the walkable area's outer wall (WALK), where a swimmer cannot go
   size: [0.1, 0.14], // m shell length, drawn larger than life (5-8 cm) so they are found through the dive mask, as the nuts are (*guess*)
   shape: { width: 0.5, thick: 0.34, taper: 0.42, segments: [10, 6] }, // shell width / thickness as a part of its length, how narrow the hinge end is, sphere segments (~100 triangles)
-  colors: { shell: 0x161d33, band: 0x3b4d86, edge: 0x232a45, umbo: 0x8d93ad }, // blue-black shell, blue-violet growth bands, a worn pale hinge end (photos of Mytilus edulis, by eye)
-  rough: 0.32, metal: 0.15, // a wet shell's sheen (*guess*)
+  colors: { shell: 0x0f1220, band: 0x29355c, edge: 0x1a1f33, umbo: 0x868ca6 }, // blue-black shell, blue-violet growth bands, a worn pale hinge end (photos of Mytilus edulis, by eye)
+  rough: 0.45, metal: 0.1, // a wet shell's sheen (*guess*)
   near: 9, // m from the eye within which a mussel is drawn (the fog under water is full at SWIM.dive.look.far 8 m)
   max: 64, // instances in the one InstancedMesh (the most that can lie within `near`: ~4 clumps of 5 on each side, with margin)
   pick: 0.11, // m radius of the ball E aims at round a mussel (the nut's is 0.12)
+  reach: 1.1, // m a hand reaches a mussel lying under water (*guess*: an arm's length, not HOLD.reach 2.2): from the surface only those in the shallows, a diver at the bed all of them
   regrow: [45, 120], regrowFar: 7, // s until a taken mussel is back on its spot, and only once the diver is this far away (or out of the water): no pop-in
   loose: 3, // mussels that can be out of the bed at once (in the hand or put down somewhere); taking another sends the oldest one put down back
-  held: { pos: [0.15, -0.16, -0.38], rot: [0.5, 0.9, 0.25] }, // the pose in the hand (camera space), as the nut's
+  held: { pos: [0.1, -0.115, -0.37], rot: [1.1, 0.3, 0.9] }, // the pose in the hand (camera space, where the nut's is): the broad side towards the eye
   sink: 0.012, // m a lying mussel is sunk into the bed's mud
-  bed: { color: 0x74664b, under: 0.05, fade: 0.3 }, // the river bed's mud / sand tone (*guess*) instead of grass: full `fade` m under `under` m below the water line (surroundings.js `bedMud`, grass.js)
+  bed: { color: 0x74664b, under: 0, fade: 0.15 }, // the river bed's mud / sand tone (*guess*) instead of grass: full `fade` m under `under` m below the water line (surroundings.js `bedMud`, grass.js)
 };

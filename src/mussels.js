@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { MUSSELS as C, HOLD, SITE, WALK } from './config.js';
+import { MUSSELS as C, SITE, WALK } from './config.js';
 import { Holdable, heldItem, setHeld, handBusy } from './holdable.js';
-import { riverPath, riverAt, pierBoxes } from './riverbridge.js';
+import { riverPath, riverAt, pierBoxes, waterYAt } from './riverbridge.js';
 import { swimWater, swimBedY, farWalls } from './farwalk.js';
 import { musselSpots, MusselField, bedSpot } from './musselfield.js';
 
@@ -40,7 +40,7 @@ export class Mussel extends Holdable {
     const sphere = new THREE.Sphere(), hit = new THREE.Vector3();
     mesh.raycast = function (rc, out) { // a ball to aim at, as the nut's
       sphere.set(this.getWorldPosition(V), C.pick);
-      if (rc.ray.intersectSphere(sphere, hit)) out.push({ distance: rc.ray.origin.distanceTo(hit), point: hit.clone(), object: this });
+      if (rc.ray.intersectSphere(sphere, hit) && (rc.ray.origin.distanceTo(hit) <= C.reach || !underWater(V))) out.push({ distance: rc.ray.origin.distanceTo(hit), point: hit.clone(), object: this });
     };
     super(scene, camera, { name: 'en blåmussla', verb: 'ta', backName: 'blåmusslan', backVerb: 'lägga tillbaka', model: mesh, home: { pos: new THREE.Vector3(), rot: new THREE.Euler() },
       heldPose: { pos: new THREE.Vector3(...C.held.pos), rot: new THREE.Euler(...C.held.rot) }, pick: { pos: new THREE.Vector3(), size: [C.pick * 1.5, C.pick, C.pick * 1.5] } });
@@ -68,6 +68,8 @@ export class Mussel extends Holdable {
 }
 
 const lift = (s) => s.size * C.shape.thick * 0.5 - C.sink;
+/** Does the point `p` lie under the river's surface (a loose mussel put down on the bed: within `reach` only, like the bed's own)? */
+const underWater = (p) => p.y < SITE.bridges.waterY + 1 && swimWater(p.x, p.z) && p.y < waterYAt(p.x, p.z);
 
 export class Mussels {
   /** `player`: the Player (`swimming`); `onTake(spot)`: a mussel was picked off the bed. Nothing is placed until somebody swims. */
@@ -83,7 +85,7 @@ export class Mussels {
       if (!this.visible) return;
       for (let k = 0; k < this.count; k++) {
         const s = self.drawn[k]; sphere.center.set(s.x, s.y + lift(s), s.z); sphere.radius = C.pick;
-        if (rc.ray.intersectSphere(sphere, hit)) out.push({ distance: rc.ray.origin.distanceTo(hit), point: hit.clone(), object: this, instanceId: k });
+        if (rc.ray.intersectSphere(sphere, hit) && rc.ray.origin.distanceTo(hit) <= C.reach) out.push({ distance: rc.ray.origin.distanceTo(hit), point: hit.clone(), object: this, instanceId: k });
       }
     };
     this.target = { name: 'en blåmussla', kind: 'holdable', verb: 'ta', pickable: this.mesh, get blocked() { return handBusy(null); }, toggle: () => this.takeAimed() };
@@ -113,7 +115,7 @@ export class Mussels {
   consumeHeld() { const m = this.held; if (!m) return false; m.vanish(); return true; }
 
   /** The drawn mussel the eye looks at within reach (nearest along the look ray), or null. */
-  aimed(reach = HOLD.reach) {
+  aimed(reach = C.reach) {
     if (!this.mesh.visible) return null;
     const o = this.camera.getWorldPosition(V), d = this.camera.getWorldDirection(D); let best = null, bt = reach;
     for (let k = 0; k < this.mesh.count; k++) {
@@ -144,7 +146,7 @@ export class Mussels {
   returned(m) { if (m.spot) this.field?.restore(m.spot); m.vanish(); }
 
   /** Where a swimmer's held mussel can be put down on the bed along the look `ray` (main.js outdoorSpot's answer under water), or null. */
-  bedSpot(ray, reach = HOLD.reach - 0.2) {
+  bedSpot(ray, reach = C.reach) {
     const p = bedSpot(ray.origin, ray.direction, reach, swimBedY, swimWater);
     return p && { point: new THREE.Vector3(p.x, p.y, p.z), distance: Math.max(0.3, p.distance), outdoor: true };
   }

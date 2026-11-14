@@ -52,25 +52,32 @@ export function grassMeanColor(color = G.summer) {
   return c.setRGB(c.r * sum[0] / n, c.g * sum[1] / n, c.b * sum[2] / n * (1 - 0.5 * G.patchWarmth));
 }
 
-/** Broad irregular tone patches use meter UVs too: no extra geometry, texture, lighting or render pass. */
-export function grassMaterial(color = G.summer) {
+/** Broad irregular tone patches use meter UVs too: no extra geometry, texture, lighting or render pass.
+ * #1945: with `bed` ({ color }) the geometry's `bedMud` attribute (0 … 1 per vertex, surroundings.js) mixes that mud / sand tone in instead of
+ * the grass (and instead of the snow): the river bed under the water. A program variant of its own, so the other lawns are untouched. */
+export function grassMaterial(color = G.summer, bed = null) {
   const material = new THREE.MeshStandardMaterial({ color, map: grassTexture(), roughness: 1 });
   material.name = 'seasonal-grass';
   const base = material.color.clone(), autumn = new THREE.Color(G.autumn), snow = { value: 0 };
   material.onBeforeCompile = (shader) => {
     shader.uniforms.grassSnow = snow;
-    shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 grassMeters;')
-      .replace('#include <uv_vertex>', '#include <uv_vertex>\ngrassMeters = uv;');
-    shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec2 grassMeters;\nuniform float grassSnow;')
+    shader.vertexShader = shader.vertexShader.replace('#include <common>', `#include <common>\nvarying vec2 grassMeters;${bed ? '\nattribute float bedMud;\nvarying float grassBed;' : ''}`)
+      .replace('#include <uv_vertex>', `#include <uv_vertex>\ngrassMeters = uv;${bed ? '\ngrassBed = bedMud;' : ''}`);
+    const mud = bed && new THREE.Color(bed.color); // (linear, as diffuseColor)
+    shader.fragmentShader = shader.fragmentShader.replace('#include <common>', `#include <common>\nvarying vec2 grassMeters;\nuniform float grassSnow;${bed ? '\nvarying float grassBed;' : ''}`)
       .replace('#include <map_fragment>', `#include <map_fragment>
         if (grassSnow < 0.5) {
           vec2 p = grassMeters * ${G.patchScale.toFixed(4)};
           float grassPatch = sin(p.x + sin(p.y * ${G.patchFrequencies[0].toFixed(4)})) * sin(p.y * ${G.patchFrequencies[1].toFixed(4)} - p.x * ${G.patchFrequencies[2].toFixed(4)});
           diffuseColor.rgb *= 1.0 + grassPatch * ${G.patchStrength.toFixed(4)};
           diffuseColor.b *= 1.0 - (grassPatch * 0.5 + 0.5) * ${G.patchWarmth.toFixed(4)};
-        }`);
+        }${bed ? `
+        if (grassBed > 0.0) { // broad lighter / darker patches of sand and mud
+          float bedTone = 0.88 + 0.12 * sin(grassMeters.x * 2.9 + sin(grassMeters.y * 1.7)) * sin(grassMeters.y * 3.3 - grassMeters.x * 0.6);
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(${mud.r.toFixed(4)}, ${mud.g.toFixed(4)}, ${mud.b.toFixed(4)}) * bedTone, grassBed);
+        }` : ''}`);
   };
-  material.customProgramCacheKey = () => 'grass-patches-688';
+  material.customProgramCacheKey = () => (bed ? `grass-patches-688-bed-${bed.color}` : 'grass-patches-688');
   registerSnow(material, SEASON.snow.ground); // seasons removes/reinstates the shared detail map under snow
   registerSeasonal((month) => {
     snow.value = SEASON.snowMonths.includes(month) ? 1 : 0;

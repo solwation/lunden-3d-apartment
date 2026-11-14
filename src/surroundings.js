@@ -10,9 +10,9 @@ import {buildEdgeBackdrop} from './edgebackdrop.js';
 import {buildWestBackdrop,buildEastBackdrop,buildNorthBackdrop,westTreeSpots,eastTreeSpots,northTreeSpots} from './sitebackdrop.js';
 import { buildRiverPark, parkDeckAt, parkFillAt, renderedParkFillY, parkRampFill, parkTreeSpots, parkInfillSpots, parkShrubSpots } from './riverpark.js';
 import * as THREE from 'three';
-import { grassUV } from './grass.js';
+import { grassUV, grassMaterial } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR, SOUTH_PLATEAU, PADDOCK, PARKING_SEAM } from './config.js';
+import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR, SOUTH_PLATEAU, PADDOCK, PARKING_SEAM, MUSSELS } from './config.js';
 import { gridGround, southPointGround } from './elevation.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { neighborGlass } from './neighborglass.js';
@@ -27,7 +27,7 @@ import { createParkingGrade, gradedCellTriangles, gradedCellPieces, fitDrawnPlan
 import { wallLine, wallRect } from './roofs.js';
 import { buildingRoofWalk } from './buildingroofs.js';
 import { schoolWallPlan } from './schoolwall.js';
-import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan,bridgeRecords} from './riverbridge.js';
+import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan,bridgeRecords,riverAt,waterYAt} from './riverbridge.js';
 
 // The rest of Kv. Lunden and its neighbourhood (SITE in config): the brick point blocks Hus A, B, C
 // with low hip roofs, the schools and buildings around the plot, Sankt Lars väg and Karpvägen,
@@ -372,6 +372,20 @@ function terrainGeometry(southeastCells = null) {
   geo.setAttribute('uv', new THREE.Float32BufferAttribute(new Array((pos.length / 3) * 2).fill(0), 2));
   geo.setIndex(idx);
   geo.computeVertexNormals();
+  return geo;
+}
+
+/** #1945: how much of the river bed's mud / sand tone each terrain vertex takes (the `bedMud` attribute, 0 … 1 in a byte; the terrain's own grass
+ * material mixes it in, grass.js): the ground under the water line in the channel and on its banks' feet, eased in over MUSSELS.bed.fade m of depth.
+ * Everything else stays 0 (grass). No new mesh, texture or draw call. */
+function bedMud(geo) {
+  const p = geo.attributes.position, a = new Uint8Array(p.count), M = MUSSELS.bed, top = S.bridges.waterY + 1;
+  for (let i = 0; i < p.count; i++) {
+    const y = p.getY(i); if (y > top) continue; // (nearly every vertex: far above any water line)
+    const x = p.getX(i), z = p.getZ(i), r = riverAt(x, z); if (r.distance > r.width / 2 + r.bank) continue;
+    const t = Math.max(0, Math.min(1, (waterYAt(x, z, r) - M.under - y) / M.fade)); a[i] = Math.round(255 * t * t * (3 - 2 * t));
+  }
+  geo.setAttribute('bedMud', new THREE.BufferAttribute(a, 1, true));
   return geo;
 }
 
@@ -1869,7 +1883,8 @@ export function* surroundingsParts({ grass, husL = null }) {
   // the ground south of Hus L: the raised courtyard on the garage box and the park level around it (the
   // street side north of Hus L is world.js's ground); retaining walls, railings and the garage door
   const southeastCells = lowMemory ? null : [];
-  const terrain = flat([grassUV(terrainGeometry(southeastCells)), parkRampFill(renderedTerrainY)], grass, SEASON.snow.ground);
+  // #1945: the terrain has a grass material of its own (the same look and seasons as `grass`) that also paints the river bed under the water as mud
+  const terrain = flat([bedMud(grassUV(terrainGeometry(southeastCells))), bedMud(parkRampFill(renderedTerrainY))], grassMaterial(undefined, MUSSELS.bed), SEASON.snow.ground);
   terrain.name = 'site-terrain';
   if (southeastCells) {
     group.add(...terrainCellGroups(terrain, southeastCells));
