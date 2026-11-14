@@ -94,6 +94,7 @@ import { Measure } from './measure.js';
 import { cloudTexture, groundY, renderedTerrainY, lampGroundY, treeFeet, southTreeFeet, aoTrees } from './surroundings.js';
 import { Squirrels } from './squirrels.js';
 import { Mussels } from './mussels.js';
+import { Hearts } from './pingping.js'; // #1946: the hearts of a fed fish
 import { Ducks } from './ducks.js';
 import { OutdoorCats } from './outdoorcats.js';
 import { catHabitatFree, createCatGround } from './cathabitat.js';
@@ -627,6 +628,10 @@ const riverFish = params0.has('nofish') ? null : new RiverFish({ scene, camera }
 const fishing = new Fishing({ scene, camera, riverFish, player, groundY: (x, z) => player.groundAt(x, z, -4), onMessage: (t) => badge(t, false), touch: () => touch.enabled,
   onItem: (f) => { holdables.push(f);sharedFish?.attach(f); f.model.userData.keepHidden = () => f.broken; } });
 holdables.push(fishing.rod);
+// #1946: a river fish takes a cracked mussel from a still swimmer's hand (the local layer of src/riverfishfeed.js; a hooked fish is not lured)
+const fishHearts = riverFish && new Hearts(scene, riverFish.feed.C.hearts, riverFish.feed.C.heartScale);
+if (riverFish) riverFish.bait = { player, mussels, busy: (id) => fishing.bite?.id === id || fishing.pending?.id === id,
+  onFeed: (f, at) => { fishHearts.burst(at); sfx.chew?.(at, 0.6); sfx.bubbles?.(3, 0.6); if (f) discoverCreature(`fish:${f.f.spec.name}`, 'feed'); bump('fishFeeds'); } };
 // #1686: the squirrels and nuts shared with the players near them (src/squirrelsync.js, cloudflare/squirrels.js); the ghosts give the leader the others' lures
 // (set after the ghosts exist, below)
 const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups in the wall cabinet (#90)
@@ -3699,6 +3704,7 @@ function step(dt) {
   lastWeatherPos.copy(player.pos);
   weather.update(dt, !player.outdoors || player.below || player.inCore, moved < 1 ? moved : 0, car.occupied ? car.openness : null, player.inPlayroom); // enclosed off-map clubhouse (#1485); (the garage: dry and muffled, #357) // after the day: it sets the overcast / flash the next day.update applies (#248)
   riverFish?.update(dt, player.below, day.daylight); // #1752: drawn only within RIVER_FISH.drawDist m of the river
+  fishHearts?.update(dt);
   ducks.update(dt, player.below || player.inCore || player.inPlayroom);
   mussels.update(dt); // #1945: drawn only for a swimmer
   squirrels?.update(dt, player.below, day.daylight, day.hour); // #1672: asleep (no AI, nothing drawn) in the snow months, far away and underground

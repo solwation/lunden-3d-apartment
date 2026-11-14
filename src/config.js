@@ -3877,6 +3877,7 @@ export const SCORE = {
     ponyPets: 1,                                          // a pat of a paddock pony (#1320)
     duckFeeds: 6,                                         // #1827 (*guess*): capped via DUCKS.scorePerDay, every feed still counts
     squirrelFeeds: 6,                                     // a squirrel took a nut from the hand (#1672, *guess*)
+    fishFeeds: 6,                                         // a river fish took a cracked mussel from a swimmer's hand (#1946, *guess*: as a squirrel)
     kittenPets: 12,                                       // a kitten's pat on top of `petted` (#363)
     target: 0, splashes: 0.2, cuts: 0.1, magic: 0.3,      // Nerf target: scored via TARGET_SCORE (#1708), not here
     footballGoals: 1, // #1853: exactly one base point per server-counted goal, no new medal/bonus
@@ -7871,6 +7872,16 @@ export const RIVER_FISH = {
   ring: { life: 3.2, r: [0.1, 1.5], second: 0.5, glow: 0.5, night: 0.15 },
   drawDist: 45, wag: [0.14, 7.5], murk: 0.5, opacity: 0.85, look: { flat: 0.45, wide: 1.9, shade: 0.55, deepTone: 0.6 },
   sync: { enter: 70, leave: 90, reach: 30, catchEvery: 2, respawn: [300, 600] },
+  // #1946: feeding from the hand and scaring, a local drawing layer (src/riverfishfeed.js); every number a *guess* (the user: "like the
+  // squirrels take nuts", "if you move the fish get scared and swim away"). A swimmer making no stroke with a cracked mussel in the hand for
+  // `wait` s lures the nearest fish within `radius` m (along the channel: 18 fish share the whole river, so it must reach far). It comes at
+  // `dash` m/s while further than `sight` m (the fog under water is full at 8 m), `speed` in sight and `slow` the last `near` m (faster than
+  // SWIM.current, so it catches a drifting hand), round the head (`clear` m from the eye, `lead` m out in front of the hand), stops `take` m
+  // short with its nose at the mussel, takes it and stays `eat` s; it gives up after `giveUp` s. A stroke faster than `scareSpeed` m/s scares
+  // every fish within `scare` m: `flee` m away along the channel at `fleeSpeed` (re-aimed at most every `reaim` s, kept `edge` m off the
+  // bank), `calm` s there, then `back` s easing home. `turn` rad/s: how fast a lured / scared fish turns. Hearts as for a fed squirrel.
+  feed: { radius: 30, wait: 2, dash: 3, speed: 1.4, slow: 0.8, sight: 7, near: 1.2, take: 0.05, lead: 0.9, clear: 0.8, eat: 0.9, giveUp: 30,
+    scare: 5, scareSpeed: 0.15, flee: 6, fleeSpeed: 3.2, reaim: 0.4, calm: 1.5, back: 4, turn: 7, edge: 0.4, hearts: 8, heartScale: 2.5 },
 };
 
 /**

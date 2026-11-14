@@ -5,6 +5,7 @@ import {riverFishGeometry,fishSpeciesMaterial,fishVisualPhase} from './riverfish
 import { RIVER_FISH as C, COLORS } from './config.js';
 import { fishSpec, fishAt, ringsAt, riverProject } from './riverfishswim.js';
 import { RiverFishSync } from './riverfishsync.js';
+import { FishFeed } from './riverfishfeed.js';
 import { Shark } from './shark.js';
 
 // #1752 (part of #1751): fish in Höje å and the rings they leave on the water. Where a fish is comes from src/riverfishswim.js (pure functions
@@ -15,8 +16,12 @@ import { Shark } from './shark.js';
 // height and colour and its back breaks the surface, the rest hidden by the water. Cost: TWO instanced meshes (the fish, the rings: no texture,
 // no light, no shadow), both hidden (no draw call) unless the eye is within RIVER_FISH.drawDist m of the river, and then only the fish within
 // that distance are filled in. Not targets: raycast is off (#1753 will catch them through `near` / `catchFish`).
+// #1946: a LOCAL layer on top (src/riverfishfeed.js, `this.feed`): a fish lured to a still swimmer's cracked mussel, or scared by a stroke, is
+// drawn offset from its shared place for a while (only in this client; `near`, `shown`, the rings and the room keep the shared places). An
+// eye under the surface (a diver) sees every fish as it is, at its own depth, instead of the flattened shape painted over the water.
 
-const M = new THREE.Matrix4(), Q = new THREE.Quaternion(), P = new THREE.Vector3(), S = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
+const M = new THREE.Matrix4(), Q = new THREE.Quaternion(), P = new THREE.Vector3(), S = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0), H = new THREE.Vector3();
+const W = { swim: false, moving: false, x: 0, y: 0, z: 0, hand: null, busy: null };
 const tint = new THREE.Color(), white = new THREE.Color(1, 1, 1), deepTone = new THREE.Color(COLORS.water).multiplyScalar(C.look.deepTone);
 
 let fishModelData = null;
@@ -84,7 +89,7 @@ export function fishGeometry() {
 export class RiverFish {
   /** scene, camera; `net` is set by main.js: { ready(), send(m) }. */
   constructor({ scene, camera }) {
-    Object.assign(this, { scene, camera, net: null, shown: [], ringList: [], hidden: false });
+    Object.assign(this, { scene, camera, net: null, shown: [], ringList: [], hidden: false, feed: new FishFeed(), bait: null, cand: [], pool: [], fed: 0 });
     // #1769: `&shark=now` turns on the shark's test schedule (SHARK.test); a solo catch is remembered in localStorage 'lunden.shark'
     const sharkTest = typeof location !== 'undefined' && new URLSearchParams(location.search).get('shark') === 'now';
     const store = { get: () => JSON.parse(localStorage.getItem('lunden.shark') ?? 'null'), set: (r) => localStorage.setItem('lunden.shark', JSON.stringify(r)) };
@@ -114,6 +119,19 @@ export class RiverFish {
     }
     return out;
   }
+  /** #1946: one frame of the local lure / scare layer over the shared fish `list` (`this.bait`, set by main.js: { player, mussels, busy(id),
+   * onFeed(fish, at) }). True when the eye is under the surface. */
+  feedStep(dt, list) {
+    const b = this.bait, pl = b?.player, sw = pl?.swim && !pl.swim.exit ? pl.swim : null, cam = this.camera.position;
+    if (!b || (!sw && !this.feed.active)) return false;
+    const m = sw ? b.mussels?.held : null;
+    W.swim = !!sw; W.moving = !!sw && sw.moving && Math.hypot(pl.swimV?.sx ?? 0, pl.swimV?.sz ?? 0) > C.feed.scareSpeed;
+    W.x = cam.x; W.y = cam.y; W.z = cam.z; W.busy = b.busy ?? null;
+    W.hand = m?.cracked === true && b.mussels.heldPosition(H) ? H : null; // (#1950: only a cracked mussel is bait)
+    const took = this.feed.update(dt, W, list);
+    if (took && b.mussels.consumeHeld()) { this.fed++; b.onFeed?.(list.find((f) => f.id === took.id), H); }
+    return !!sw && !!pl.diving;
+  }
   /** #1753: take fish `id` out of the river (for everybody through the room). */
   catchFish(id) { return this.sync.catch(id); }
   hide() { this.fish.visible = this.rings.visible = false; this.fish.count = this.rings.count = 0; this.shown.length = 0; }
@@ -124,24 +142,35 @@ export class RiverFish {
     const near = !!this.net?.ready?.() && q.abs < (this.sync.near ? C.sync.leave : C.sync.enter);
     if (!this.net?.ready?.()) { if (this.sync.near) this.sync.reset(); } else this.sync.setNear(near);
     this.shark.update(dt, hidden, daylight); // #1769: its own distance checks (the fin within SHARK.drawDist m, the carcass on the bank)
-    if (!close) { if (this.fish.visible || this.rings.visible) this.hide(); return; }
-    const t = this.sync.t, seed = this.sync.seed, o = this.o ??= {}, rings = this.ringList;
+    if (!close) { if (this.fish.visible || this.rings.visible) this.hide(); this.feed.reset(); return; }
+    const t = this.sync.t, seed = this.sync.seed, rings = this.ringList, list = this.cand;
     this.fish.material.userData.fishTime.value=fishVisualPhase(t);
-    let n = 0; this.shown.length = 0; rings.length = 0;
+    let n = 0; this.shown.length = 0; rings.length = 0; list.length = 0;
     for (let id = 0; id < C.count; id++) {
       if (this.sync.isGone(id)) continue;
-      const f = fishSpec(id, this.sync.born(id), seed);
+      const f = fishSpec(id, this.sync.born(id), seed), o = this.pool[id] ??= {};
       fishAt(f, t, o, seed);
       if (Math.hypot(o.x - cam.x, o.z - cam.z) > C.drawDist) continue;
-      const sp = f.spec, up = o.rise, deep = 1 - (o.y - o.bed) / Math.max(0.05, o.water - o.bed); // 0 at the surface, 1 at the bed
+      o.f = f; o.id = id; o.born = f.born; o.len = f.spec.len; list.push(o);
+    }
+    const sub = this.feedStep(dt, list); // #1946: the local offsets; `sub`: the eye is under the surface
+    for (const o of list) {
+      const f = o.f, id = o.id, e = this.feed.off.get(id);
+      const sp = f.spec, up = e ? Math.max(o.rise, e.rise) : o.rise, deep = 1 - (o.y - o.bed) / Math.max(0.05, o.water - o.bed); // 0 at the surface, 1 at the bed
       const ys = C.look.flat + (1 - C.look.flat) * up, wide = C.look.wide + (1 - C.look.wide) * up, cy = o.water + 0.012 + sp.h * ys / 2, y = up > 0 ? cy + (o.y - cy) * up : cy;
       const wag = C.wag[0] * Math.sin(t * C.wag[1] * (0.6 + 0.6 * Math.min(1, o.speed)) + f.wag);
-      Q.setFromAxisAngle(UP, o.yaw + wag); P.set(o.x, Math.max(y, o.water - sp.h * 0.4), o.z); S.set(sp.w * wide, sp.h * ys, sp.len);
+      Q.setFromAxisAngle(UP, (e ? e.yaw : o.yaw) + wag);
+      if (sub) { // seen from under the water: the whole fish where it is
+        P.set(o.x + (e?.x ?? 0), o.y + (e?.y ?? 0), o.z + (e?.z ?? 0)); S.set(sp.w, sp.h, sp.len);
+        tint.setHex(sp.color);
+      } else {
+        P.set(o.x + (e?.x ?? 0), Math.max(y, o.water - sp.h * 0.4), o.z + (e?.z ?? 0)); S.set(sp.w * wide, sp.h * ys, sp.len);
+        tint.setHex(sp.color).multiplyScalar(C.look.shade + (1 - C.look.shade) * up).lerp(deepTone, C.murk * Math.max(0, deep) * (1 - up));
+      }
       this.fish.setMatrixAt(n, M.compose(P, Q, S));
-      tint.setHex(sp.color).multiplyScalar(C.look.shade + (1 - C.look.shade) * up).lerp(deepTone, C.murk * Math.max(0, deep) * (1 - up));
       this.fish.setColorAt(n, tint);
       this.fish.geometry.attributes.aFish.setXY(n,f.species,f.wag);
-      this.shown.push({ id, born: f.born, species: sp.name, x: o.x, y: o.y, z: o.z, rise: up, drawnY: P.y });
+      this.shown.push({ id, born: f.born, species: sp.name, x: o.x, y: o.y, z: o.z, rise: o.rise, drawnY: P.y, ...(e && { off: [e.x, e.y, e.z], mode: e.mode }) });
       n++;
       ringsAt(f, t, rings, seed);
     }
@@ -161,7 +190,7 @@ export class RiverFish {
     this.rings.count = k; this.rings.visible = k > 0;
     this.rings.instanceMatrix.needsUpdate = true; this.rings.instanceColor.needsUpdate = true;
   }
-  state() { return { t: this.sync.t, near: this.sync.near, synced: this.sync.synced, fish: this.shown.slice(), rings: this.ringList.slice(), drawn: this.fish.count, ringsDrawn: this.rings.count, shark: this.shark.state() }; }
+  state() { return { t: this.sync.t, near: this.sync.near, synced: this.sync.synced, fish: this.shown.slice(), rings: this.ringList.slice(), drawn: this.fish.count, ringsDrawn: this.rings.count, feed: { offsets: this.feed.off.size, lure: this.feed.lure, still: this.feed.still, fed: this.fed }, shark: this.shark.state() }; }
 }
 
 const FISH_NUMBERS={mört:51,abborre:52,braxen:53,gädda:54,öring:55,ål:56};
