@@ -7906,6 +7906,14 @@ export const SHARK = {
   bite: 4, strike: { window: 1.0, slip: 0.35 }, reach: 30, land: 4, landOff: 1.6,
   body: 3600, bones: 24 * 3600, drawDist: 60, keepFins: 3, // (keepFins: fins kept in the world, like FISHING.keep)
   ring: { every: 2.2, life: 3.4, r: [0.3, 2.0] }, wake: { len: 2.0, width: 1.4 },
+  // #1947: the shark that bites swimmers (src/sharkattack.js; local to the swimmer, nothing shared). All *guess*, tuned by feel:
+  //  perMinute: attacks per swum minute on average (0.12 = one per ~8 min in the water), none in the first `calm` s of a swim nor for `again` s
+  //  after one; it surfaces `speed x warn` m away along the river (`warn` s of warning for a swimmer who stays put) and makes for the swimmer
+  //  at `speed` m/s (a swimmer does 0.55-1.25, SWIM); the fin within `bite` m of a swimmer bites. `shared`: within this of the weekly
+  //  shark's fin (#1769) in the water it bites too. `rise` / `sink` s for the fin to come up / go down; `linger` s it waits where the
+  //  swimmer went ashore. `test`: the rates with `&shark=attack` (an attack about `calm` s into every swim).
+  attack: { perMinute: 0.12, calm: 20, again: 120, warn: 8, speed: 2.5, bite: 1.4, shared: 3, rise: 1.2, sink: 2.5, linger: 6,
+    test: { perMinute: 600, calm: 2, again: 4 } },
   // the carcass on the bank: a CAUGHT_FISH-style body spec (src/caughtfish.js, units of the length) of a large grey shark lying on its side; no
   // first dorsal (that is the fin in your hand), a dark-red wound where it was. After general pictures of a porbeagle / blue shark (*guess*)
   look: { depth: 0.19, width: 0.16, peak: 0.6, ped: 0.16, top: 0.52, head: 0.24, nose: [1.3, 1.7], tail: 0.21, fork: 0.32, spread: 0.18,

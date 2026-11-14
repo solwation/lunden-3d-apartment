@@ -192,7 +192,7 @@ const M = new THREE.Matrix4(), Q = new THREE.Quaternion(), P = new THREE.Vector3
 
 export class Shark {
   /** scene, camera; sync: the RiverFishSync (clock, seed, the catch record). */
-  constructor({ scene, camera, sync }) { Object.assign(this, { scene, camera, sync, built: false, o: {}, ro: {}, finShown: false, shownPhase: null }); }
+  constructor({ scene, camera, sync }) { Object.assign(this, { scene, camera, sync, built: false, o: {}, ro: {}, finShown: false, shownPhase: null, hunter: null }); }
   build() {
     if (this.built) return;
     this.built = true;
@@ -226,6 +226,13 @@ export class Shark {
     const o = sharkAt(w, this.sync.t, {}, this.sync.seed);
     return o.show > 0.5 && Math.hypot(o.x - x, o.z - z) <= r ? [{ shark: true, id: -1, born: 0, species: 'haj', x: o.x, y: o.y, z: o.z, rise: 1 }] : [];
   }
+  /** The fin, shadow and wake at `o` ({ x, y, z, yaw, speed, show }) at fish time `t`. */
+  place(o, t) {
+    const sway = 0.06 * Math.sin(t * 1.3);
+    this.fin.position.set(o.x, o.y - S.fin * 1.15 * (1 - o.show) - 0.04, o.z); this.fin.rotation.set(0, o.yaw + sway, 0.04 * Math.sin(t * 0.9));
+    this.shadow.position.set(o.x - Math.sin(o.yaw) * S.len * 0.2, o.y + 0.012, o.z - Math.cos(o.yaw) * S.len * 0.2); this.shadow.rotation.set(0, o.yaw, 0);
+    this.wake.position.set(o.x, o.y + 0.02, o.z); this.wake.rotation.set(0, o.yaw, 0); this.wake.scale.set(1, 1, 0.4 + Math.min(1, o.speed / 0.5));
+  }
   /** Per frame (RiverFish.update). hidden: underground. */
   update(dt, hidden = false, daylight = 1) {
     const cam = this.camera.position, t = this.sync.t, seed = this.sync.seed, w = hidden ? null : this.sync.sharkWindow();
@@ -234,10 +241,7 @@ export class Shark {
       const o = sharkAt(w, t, this.o, seed);
       if (o.show > 0 && Math.hypot(o.x - cam.x, o.z - cam.z) < S.drawDist) {
         this.build(); fin = true;
-        const sway = 0.06 * Math.sin(t * 1.3);
-        this.fin.position.set(o.x, o.y - S.fin * 1.15 * (1 - o.show) - 0.04, o.z); this.fin.rotation.set(0, o.yaw + sway, 0.04 * Math.sin(t * 0.9));
-        this.shadow.position.set(o.x - Math.sin(o.yaw) * S.len * 0.2, o.y + 0.012, o.z - Math.cos(o.yaw) * S.len * 0.2); this.shadow.rotation.set(0, o.yaw, 0);
-        this.wake.position.set(o.x, o.y + 0.02, o.z); this.wake.rotation.set(0, o.yaw, 0); this.wake.scale.set(1, 1, 0.4 + Math.min(1, o.speed / 0.5));
+        this.place(o, t);
         const glow = 0.3 * (0.25 + 0.75 * Math.max(0, Math.min(1, daylight)));
         let n = 0;
         for (let j = 0; j < 3; j++) {
@@ -250,6 +254,11 @@ export class Shark {
         this.rings.count = n; this.rings.instanceMatrix.needsUpdate = true; this.rings.instanceColor.needsUpdate = true;
         this.fin.visible = this.shadow.visible = this.wake.visible = true; this.rings.visible = n > 0;
       }
+    }
+    const h = hidden || fin ? null : this.hunter; // #1947: the shark after a swimmer (src/sharkhunt.js) borrows the same fin, shadow and wake
+    if (h && h.show > 0 && Math.hypot(h.x - cam.x, h.z - cam.z) < S.drawDist) {
+      this.build(); fin = true; this.place(h, t);
+      this.fin.visible = this.shadow.visible = this.wake.visible = true; this.rings.visible = false;
     }
     if (!fin && this.finShown) this.fin.visible = this.shadow.visible = this.wake.visible = this.rings.visible = false;
     this.finShown = fin;

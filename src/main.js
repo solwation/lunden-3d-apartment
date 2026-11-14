@@ -73,6 +73,8 @@ import { waterYAt, riverAt } from './riverbridge.js';
 import { Fall } from './fall.js';
 import { StatsPanel } from './statspanel.js';
 import { respawnOutdoors } from './respawn.js';
+import { SharkHunt } from './sharkhunt.js';
+import { FALL } from './config.js';
 import { setupTouch } from './touch.js';
 import { setupTouchLayout } from './touchlayout.js';
 import { watchForUpdates, BUILD } from './version.js';
@@ -3154,6 +3156,18 @@ const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () =
 combat.hookBeer({ beerCans: balloon.beers }); // #1770: a balloon beer drunk up gives its life portion like a shelf beer
 for (const thing of things) if (thing.kind === 'glass') thing.onConsume = (_, id) => { combat.consume(id).catch(() => {}); };
 // Fall owns injury/death timing; Combat owns the same authoritative or offline health as shots.
+// #1947: a shark that reaches a swimmer bites. That is a death like a fatal fall: the same cover (red, black, awake on a checked outdoor
+// spot through respawnOutdoors) and the same life request (the room's, or the offline holder's: every life gone, full again).
+const sharkHunt = riverFish && new SharkHunt({ shark: riverFish.shark, player, test: params0.get('shark') === 'attack', // (`&shark=attack`: an attack seconds into every swim)
+  onWarn: () => badge('🦈 En haj! Simma i land!', false),
+  onGone: () => badge('Hajen gav upp – du klarade dig', false),
+  onBite: (at) => {
+    if (fall.active) return;
+    sfx.splash(new THREE.Vector3(at.x, at.y, at.z));
+    fall.hurt(0, true, { html: 'Hajen bet dig …<small>du vaknar på en säker plats utomhus</small>', sound: () => sfx.chew(null, 1.6),
+      onWake: () => badge('🦈 Hajen tog dig – du lever igen', false) });
+    combat.fall(FALL.maxReport, FALL.maxReport).catch(() => {});
+  } });
 fall.onDamage = async (drop, gap) => {
   try { fall.resolve(await combat.fall(drop, gap)); }
   catch (error) { console.error('Fall damage failed', error); fall.resolve(null); }
@@ -3703,6 +3717,7 @@ function step(dt) {
     player.analog.x = touch.analog.x;
     player.analog.y = touch.analog.y;
     player.update(dt);
+    sharkHunt?.update(dt); // #1947
     stickEl.classList.toggle('sprint', touch.enabled && player.sprinting); // joystick knob turns green
     if (!player.riding) footsteps();
     updateFocus();
@@ -4227,4 +4242,4 @@ const openPanel = () => !overlay.hidden ? 'menu' : !reading ? (lowMemory && port
   : viewing ? 'poster' : isAvatarCustomizerOpen() ? 'avatar' : cinema.open || computerHub.open || tvMedia.open ? 'video' : 'other';
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding, panel: openPanel }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { picnicSync, roofPicnic, football, sharedFish, ghosts, outdoorGym, ducks, medals, squirrels, outdoorCats, footprints, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, cookStores, vesselBusy, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, bestiary, bestiaryPhotos, bestiaryImages, bestiaryRegistry:registry, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen, checkPublishedHtml, prepareUpdateUrl };
+window.__app = { sharkHunt, picnicSync, roofPicnic, football, sharedFish, ghosts, outdoorGym, ducks, medals, squirrels, outdoorCats, footprints, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, cookStores, vesselBusy, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, bestiary, bestiaryPhotos, bestiaryImages, bestiaryRegistry:registry, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen, checkPublishedHtml, prepareUpdateUrl };

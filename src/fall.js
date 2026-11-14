@@ -10,6 +10,7 @@ export class Fall {
   constructor({ el, player, camera, onHurt, onDamage = null }) {
     Object.assign(this, { el, player, camera, onHurt, onDamage, t: -1, fatal: false, pending: null, onWake: [] });
     this.text = el.querySelector('p');
+    this.ownText = this.text.innerHTML; // ("Du slog dig …"; another cause of death shows its own, #1947)
   }
 
   get active() { return this.fatal && this.t >= 0 && this.t < FALL.red + FALL.black + FALL.hold; }
@@ -40,14 +41,19 @@ export class Fall {
     this.hurt(drop, result.dead === true);
   }
 
-  hurt(drop, fatal) {
+  /** `cause` (#1947, a death that is no fall, e.g. the shark's bite): { html (the cover's text), sound(), onWake() }: the same red,
+   * blackout and wake outdoors, without the landing thud, the fall's deduction and the jolt up to standing height. */
+  hurt(drop, fatal, cause = null) {
     this.drop = drop;
     this.fatal = fatal;
+    this.cause = cause;
+    this.eye0 = this.camera.position.y;
     this.t = 0;
-    sfx.landing(1);
+    if (cause) cause.sound?.(); else sfx.landing(1);
     sfx.ouch();
     this.player.keys.clear();
-    this.onHurt?.(drop);
+    if (!cause) this.onHurt?.(drop);
+    this.text.innerHTML = cause?.html ?? this.ownText;
     this.el.hidden = false;
     this.text.hidden = true;
     this.paint(0);
@@ -75,6 +81,7 @@ export class Fall {
     respawnOutdoors(this.player);
     this.camera.rotation.x = 0;
     for (const f of this.onWake) f();
+    this.cause?.onWake?.();
     this.text.hidden = false;
   }
 
@@ -85,7 +92,7 @@ export class Fall {
     this.t += dt;
     if (before < F.red * 0.5) { // the jolt: down onto the ground with the hit
       const k = Math.min(1, this.t / (F.red * 0.5));
-      this.camera.position.y = this.player.pos.y + PLAYER.eye - F.jolt * k * k;
+      this.camera.position.y = (this.cause ? this.eye0 : this.player.pos.y + PLAYER.eye) - F.jolt * k * k; // (a swimmer is pulled under from the surface)
       this.player.eyeY = this.camera.position.y;
     }
     if (this.fatal && before < out && this.t >= out) this.wake();
