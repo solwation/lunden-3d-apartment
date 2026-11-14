@@ -1,5 +1,5 @@
 // #1945: the blue mussels on the bed of Höje å in the real app: the bed's instanced mesh only for a swimmer, a dive to a mussel, the real
-// E key on it (pointer lock), held in the hand, put down on the bed, taken again, put back, taken by a fish's hook (consumeHeld) and grown
+// E key on it (pointer lock), held in the hand, the knock target on the bed beside (#1950), put back, taken by a fish's hook (consumeHeld) and grown
 // back; not reachable from the bank or from the surface over deep water. Saves result images in OUT.
 //   THREE_DIR=/path/to/three tools/browsertest.sh node tools/musseltest.cjs GAME OUT     (MUSSEL_MONTH=1: the same under snow)
 const fs = require('node:fs'), path = require('node:path'), kit = require('./testkit.cjs');
@@ -96,17 +96,13 @@ const check = (ok, name, data) => { results.push({ ok: !!ok, name, data }); pass
     await page.evaluate(() => { const T = window.__mussel, { M, deep } = T, o = M.spots.find((s) => s !== deep && s.clump === deep.clump && !s.gone) ?? deep; T.hold(T.top(o), 4); });
     await kit.shot(page, path.join(out, 'mussla-i-handen.png'));
 
-    // 4. put it down on the bed beside, take it again, put it back on its spot
+    // 4. the bed beside: a diver's closed mussel is knocked there, not put down (#1950; tools/musselcracktest.cjs covers the knocks and
+    // putting the cracked one down); its old spot is where it can be put back
     const put = await page.evaluate(() => { const T = window.__mussel, { deep, rb, fw } = T, q = rb.riverAt(deep.x, deep.z), x = deep.x + q.nz * 0.1 + q.nx * 0.45, z = deep.z - q.nx * 0.1 + q.nz * 0.45;
-      T.spotB = [x, fw.swimBedY(x, z), z]; T.hold(T.spotB, 4); return { focus: T.focus(), at: T.spotB }; });
-    check(put.focus?.kind === 'place' && !put.focus.blocked, 'holding it, the bed beside is a place to put it down', put);
-    await page.keyboard.press('KeyE');
-    const down = await page.evaluate(() => { const T = window.__mussel, { A, M, fw } = T, it = M.items.find((x) => !x.broken), m = it?.model.position; T.hold([m.x, m.y, m.z], 4);
-      return { held: !!A.heldItem(), placed: it?.placed, overBed: m.y - fw.swimBedY(m.x, m.z), off: Math.hypot(m.x - T.spotB[0], m.z - T.spotB[2]), state: T.state(), focus: T.focus(), inScene: it?.model.parent === A.scene }; });
-    check(!down.held && down.placed && down.inScene && down.overBed > -0.02 && down.overBed < 0.08 && down.off < 0.5 && down.state.loose === 1 && down.focus?.item && !down.focus.blocked, 'E puts it down on the bed (lying on it), where it can be taken again', down);
-    await page.keyboard.press('KeyE');
+      T.spotB = [x, fw.swimBedY(x, z), z]; T.hold(T.spotB, 4); return { focus: T.focus(), cracked: T.M.held?.cracked, at: T.spotB }; });
+    check(put.focus?.kind === 'holdable' && put.focus.verb === 'slå' && put.focus.name === 'musslan mot botten' && !put.focus.blocked && put.cracked === false, 'holding it (closed), the bed beside is where it is knocked ("slå musslan mot botten")', put);
     const again = await page.evaluate(() => { const T = window.__mussel, { A, deep } = T, held = !!A.heldItem()?.isMussel; T.hold(T.top(deep), 4); return { held, focus: T.focus(), gone: deep.gone }; });
-    check(again.held && again.focus?.name === 'blåmusslan' && again.gone, 'taken again; its old spot is where it can be put back', again);
+    check(again.held && again.focus?.name === 'blåmusslan' && again.gone, 'its old spot is where it can be put back', again);
     await page.keyboard.press('KeyE');
     const back = await page.evaluate(() => { const T = window.__mussel, { A, deep } = T; T.hold(T.top(deep), 3); return { held: !!A.heldItem(), state: T.state(), gone: deep.gone, focus: T.focus() }; });
     check(!back.held && !back.gone && back.state.loose === 0 && back.state.out === 0 && back.focus?.mussel, 'put back: it is one of the bed\'s mussels again', back);

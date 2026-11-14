@@ -1,0 +1,459 @@
+{
+ "pass": true,
+ "results": [
+  {
+   "ok": true,
+   "name": "a diver at a mussel on the bed; no hint yet",
+   "data": {
+    "spots": 343,
+    "deep": true,
+    "shallow": 0.7391290120174956,
+    "diving": true,
+    "focus": {
+     "kind": "holdable",
+     "name": "en blåmussla",
+     "verb": "ta",
+     "blocked": false,
+     "strike": false,
+     "item": false
+    },
+    "hits": 3,
+    "gap": 0.38,
+    "reach": 1.1,
+    "hint": "Slå musslan mot botten för att öppna den",
+    "hud": {
+     "prompt": "",
+     "button": "Ta en blåmussla",
+     "badges": [
+      "Plask! Du simmar i ån"
+     ]
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "E takes it: `mussels.held.cracked` is false, the closed shell, the hint \"Slå musslan mot botten för att öppna den\"",
+   "data": {
+    "shell": {
+     "cracked": false,
+     "hits": 0,
+     "open": false,
+     "closed": true,
+     "held": true,
+     "tris": 100
+    },
+    "flag": false,
+    "hud": {
+     "prompt": "Klicka för att slå musslan mot botten",
+     "button": "Ta en blåmussla",
+     "badges": [
+      "Plask! Du simmar i ån",
+      "Slå musslan mot botten för att öppna den"
+     ]
+    },
+    "focus": {
+     "kind": "holdable",
+     "name": "musslan mot botten",
+     "verb": "slå",
+     "blocked": false,
+     "strike": true,
+     "item": false
+    },
+    "state": {
+     "spots": 343,
+     "drawn": 11,
+     "visible": true,
+     "out": 1,
+     "loose": 1,
+     "held": true,
+     "cracked": false,
+     "hits": 0
+    },
+    "calls": 0,
+    "y": -0.115
+   }
+  },
+  {
+   "ok": true,
+   "name": "aimed at the bed beside: E knocks, it does not put down (the action says \"Slå musslan mot botten\")",
+   "data": {
+    "focus": {
+     "kind": "holdable",
+     "name": "musslan mot botten",
+     "verb": "slå",
+     "blocked": false,
+     "strike": true,
+     "item": false
+    },
+    "hud": {
+     "prompt": "Klicka för att slå musslan mot botten",
+     "button": "Ta en blåmussla",
+     "badges": [
+      "Plask! Du simmar i ån",
+      "Slå musslan mot botten för att öppna den"
+     ]
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "on touch the action button says \"Slå musslan mot botten\"",
+   "data": {
+    "button": "Slå musslan mot botten",
+    "hidden": false,
+    "was": [
+     false,
+     "mouse"
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "E knocks once: counted, the held mussel strikes down, still closed",
+   "data": {
+    "after": {
+     "cracked": false,
+     "hits": 1,
+     "open": false,
+     "closed": true,
+     "held": true,
+     "tris": 100
+    },
+    "blow": {
+     "dy": -0.2,
+     "swinging": true
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "a second E at once is too soon; the mussel is back in the hand, still held",
+   "data": {
+    "shell": {
+     "cracked": false,
+     "hits": 1,
+     "open": false,
+     "closed": true,
+     "held": true,
+     "tris": 100
+    },
+    "rest": {
+     "dy": 0,
+     "swinging": false,
+     "held": true,
+     "focus": {
+      "kind": "holdable",
+      "name": "musslan mot botten",
+      "verb": "slå",
+      "blocked": false,
+      "strike": true,
+      "item": false
+     },
+     "calls": 54
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "after 2 knocks (the action button too) it is still closed",
+   "data": {
+    "via": [
+     "button"
+    ],
+    "before": {
+     "cracked": false,
+     "hits": 2,
+     "open": false,
+     "closed": true,
+     "held": true,
+     "tris": 100
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "knock 3 cracks it: `mussels.held.cracked` true, the open shell with the meat",
+   "data": {
+    "atE": {
+     "cracked": true,
+     "hits": 3,
+     "open": false,
+     "closed": true,
+     "held": true,
+     "tris": 100,
+     "flag": true
+    },
+    "after": {
+     "cracked": true,
+     "hits": 3,
+     "open": true,
+     "closed": false,
+     "held": true,
+     "tris": 264
+    },
+    "focus": {
+     "kind": "place",
+     "name": "en blåmussla här",
+     "verb": "lägga ner",
+     "blocked": false,
+     "strike": false,
+     "item": true
+    },
+    "hud": {
+     "prompt": "Klicka för att lägga ner en blåmussla här",
+     "button": "Slå musslan mot botten",
+     "badges": []
+    },
+    "calls": 54,
+    "spot": null,
+    "deepGone": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "cracked: E on the bed puts it down as before; no draw call more than with the closed one",
+   "data": {
+    "focus": {
+     "kind": "place",
+     "name": "en blåmussla här",
+     "verb": "lägga ner",
+     "blocked": false,
+     "strike": false,
+     "item": true
+    },
+    "hud": {
+     "prompt": "Klicka för att lägga ner en blåmussla här",
+     "button": "Slå musslan mot botten",
+     "badges": []
+    },
+    "calls": [
+     54,
+     54
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "E puts the cracked mussel down on the bed (open, lying on its lower valve)",
+   "data": {
+    "held": false,
+    "placed": true,
+    "overBed": -0.003563821948233681,
+    "shell": {
+     "cracked": true,
+     "hits": 3,
+     "open": true,
+     "closed": false,
+     "held": false,
+     "tris": 264
+    },
+    "focus": {
+     "kind": "holdable",
+     "name": "en blåmussla",
+     "verb": "ta",
+     "blocked": false,
+     "strike": false,
+     "item": true
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "taken again it is still cracked; it is not knocked again and has no old spot to go back to",
+   "data": {
+    "flag": true,
+    "shell": {
+     "cracked": true,
+     "hits": 3,
+     "open": true,
+     "closed": false,
+     "held": true,
+     "tris": 264
+    },
+    "atOldSpot": {
+     "kind": "place",
+     "name": "en blåmussla här",
+     "verb": "lägga ner",
+     "blocked": false,
+     "strike": false,
+     "item": true
+    },
+    "focus": {
+     "kind": "place",
+     "name": "en blåmussla här",
+     "verb": "lägga ner",
+     "blocked": false,
+     "strike": false,
+     "item": true
+    },
+    "strike": null
+   }
+  },
+  {
+   "ok": true,
+   "name": "at the surface with the bed within reach: no knock, E puts down as before",
+   "data": {
+    "diving": false,
+    "swim": true,
+    "took": true,
+    "focus": {
+     "kind": "place",
+     "name": "en blåmussla här",
+     "verb": "lägga ner",
+     "blocked": false,
+     "strike": false,
+     "item": true
+    },
+    "dist": 0.862858487059686,
+    "strikes": [
+     null,
+     null,
+     null,
+     null
+    ],
+    "shell": {
+     "cracked": false,
+     "hits": 0,
+     "open": false,
+     "closed": true,
+     "held": true,
+     "tris": 100
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "a closed mussel put down from the surface and taken again is still closed",
+   "data": {
+    "put": {
+     "placed": true,
+     "shell": {
+      "cracked": false,
+      "hits": 0,
+      "open": false,
+      "closed": true,
+      "held": false,
+      "tris": 100
+     }
+    },
+    "retaken": {
+     "cracked": false,
+     "hits": 0,
+     "open": false,
+     "closed": true,
+     "held": true,
+     "tris": 100
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "on land (standing and crouched) no knock against the ground counts",
+   "data": {
+    "land": {
+     "swim": false,
+     "held": true,
+     "focus": {
+      "kind": "place",
+      "name": "en blåmussla här",
+      "verb": "lägga ner",
+      "blocked": false,
+      "strike": false,
+      "item": true
+     },
+     "strikes": [
+      null,
+      null,
+      null,
+      null
+     ],
+     "shell": {
+      "cracked": false,
+      "hits": 0,
+      "open": false,
+      "closed": true,
+      "held": true,
+      "tris": 100
+     }
+    },
+    "crouched": {
+     "focus": {
+      "kind": "place",
+      "name": "en blåmussla här",
+      "verb": "lägga ner",
+      "blocked": false,
+      "strike": false,
+      "item": true
+     },
+     "strikes": [
+      null,
+      null,
+      null,
+      null
+     ],
+     "shell": {
+      "cracked": false,
+      "hits": 0,
+      "open": false,
+      "closed": true,
+      "held": true,
+      "tris": 100
+     }
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "a closed (half-knocked) mussel is still put back with E on its old spot; off the bed again it starts closed",
+   "data": {
+    "alone": 0.9963817941356753,
+    "took": true,
+    "strikeFocus": true,
+    "one": {
+     "cracked": false,
+     "hits": 1,
+     "open": false,
+     "closed": true,
+     "held": true,
+     "tris": 100
+    },
+    "back": {
+     "kind": "holdable",
+     "name": "blåmusslan",
+     "verb": "lägga tillbaka",
+     "blocked": false,
+     "strike": false,
+     "item": false
+    },
+    "after": {
+     "held": false,
+     "gone": false,
+     "state": {
+      "spots": 343,
+      "drawn": 11,
+      "visible": true,
+      "out": 2,
+      "loose": 0,
+      "held": false,
+      "cracked": null,
+      "hits": null
+     }
+    },
+    "again": true,
+    "fresh": {
+     "cracked": false,
+     "hits": 0,
+     "open": false,
+     "closed": true,
+     "held": true,
+     "tris": 100
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "no page errors",
+   "data": []
+  }
+ ]
+}

@@ -1327,8 +1327,12 @@ tools/divetest.cjs (#1944) diving in Höje å in the real app through `Player.up
                        avatar under water with the mask and at the surface without; three result images).
 tools/musseltest.cjs (#1945) the blue mussels on the bed of Höje å in the real app (`A.step`, the real E key under a pointer lock): `THREE_DIR=… tools/browsertest.sh node tools/musseltest.cjs GAME OUT`
                        (nothing placed / drawn on land, the first swim builds the bed, no target from the bank, out of reach from the surface over deep water,
-                       dive + take + put down + take again + put back, consumeHeld (#1946's hook), regrowth, the pool, the mud attribute and the view from the bank; `MUSSEL_MONTH=1` under snow; three result images).
-                       `node --test tools/musselfieldtest.mjs` (three resolver needed): the pure placement on the real river and the regrowth.
+                       dive + take + the knock target on the bed beside (#1950) + put back, consumeHeld (#1946's hook), regrowth, the pool, the mud attribute and the view from the bank; `MUSSEL_MONTH=1` under snow; three result images).
+                       `node --test tools/musselfieldtest.mjs` (three resolver needed): the pure placement on the real river, the regrowth and the knock rules (#1950).
+tools/musselcracktest.cjs (#1950) cracking a picked mussel against the bed in the real app: `THREE_DIR=… tools/browsertest.sh node tools/musselcracktest.cjs GAME OUT`
+                       (the real E key takes a closed mussel + the hint, E / the action button knock it on the bed, too soon does not count, the last knock cracks it:
+                       `held.cracked`, the open geometry, no draw call more; put down + taken again still cracked; no knock at the surface or on land; four result images).
+                       The lazy test page draws by hand: call `A.testMode.draw()` before reading draw calls or aiming at a just-moved E box.
 tools/swimtest.cjs (#1943) swimming in Höje å in the real app through `Player.update`: `THREE_DIR=… tools/browsertest.sh node tools/swimtest.cjs GAME OUT [--quick]`
                        (walk in = swim and no rescue, eye over the surface, down / upstream speed, drift, no jump / sprint (crouch dives, #1944), touch stick, a 6 m fall without
                        landing, bank exits at every station of the walkable stretch, `splashCheck` still rescues; three result images; `--quick` skips the bank sweep).

@@ -34,6 +34,8 @@ const check = (ok, name, data) => { results.push({ ok: !!ok, name, data }); pass
         // the frame stepped with the diver held in place, looking at `at`: `n` steps of `dt` s
         hold: (at, n = 3, dt = 0.001) => { const { x, z } = p.pos; for (let i = 0; i < n; i++) { p.pos.set(x, fw.swimBedY(x, z), z); T.look(...at); A.step(dt); } },
         top: (s) => [s.x, s.y + 0.02, s.z],
+        // the draw calls of a frame drawn now, without the placement ring / ghost (they belong to the E target, not to the mussel)
+        calls: () => { const g = [A.placement.ghost, A.placement.ring], was = g.map((x) => x.visible); for (const x of g) x.visible = false; A.testMode.draw(); g.forEach((x, i) => { x.visible = was[i]; }); return A.renderer.info.render.calls; },
         focus: () => { const f = A.focus().focused; return f ? { kind: f.kind, name: f.name, verb: f.verb, blocked: !!f.blocked, strike: !!f.strike, item: !!f.item?.isMussel } : null; },
         hud: () => ({ prompt: document.getElementById('prompt').textContent, button: document.getElementById('action').textContent, badges: [...document.getElementById('badges').children].map((b) => b.textContent) }),
         shell: () => { const m = M.held ?? M.items.find((x) => !x.broken); return m ? { cracked: m.cracked, hits: m.hits, open: m.model.geometry === M.open, closed: m.model.geometry === M.geometry, held: m.held,
@@ -61,8 +63,11 @@ const check = (ok, name, data) => { results.push({ ok: !!ok, name, data }); pass
     const took = await page.evaluate(() => { const T = window.__crack, { A, M } = T; T.spotB = T.beside(T.deep); T.hold(T.spotB, 4);
       return { shell: T.shell(), flag: M.held?.cracked, hud: T.hud(), focus: T.focus(), state: M.state(), calls: A.renderer.info.render.calls, y: M.held.model.position.y }; });
     check(took.flag === false && took.shell.closed && took.shell.hits === 0 && took.hud.badges.includes(setup.hint), 'E takes it: `mussels.held.cracked` is false, the closed shell, the hint "Slå musslan mot botten för att öppna den"', took);
-    check(took.focus?.strike && took.focus.kind === 'holdable' && /^Slå musslan mot botten$/i.test(took.hud.button) && /slå musslan mot botten/i.test(took.hud.prompt),
+    check(took.focus?.strike && took.focus.kind === 'holdable' && /slå musslan mot botten$/.test(took.hud.prompt),
       'aimed at the bed beside: E knocks, it does not put down (the action says "Slå musslan mot botten")', { focus: took.focus, hud: took.hud });
+    const label = await page.evaluate(() => { const T = window.__crack, { A } = T; const was = [A.touch.enabled, A.activeMode]; A.touch.enabled = true; A.activeMode = 'touch'; T.hold(T.spotB, 3);
+      const o = { button: T.hud().button, hidden: document.getElementById('action').hidden, was }; [A.touch.enabled, A.activeMode] = was; T.hold(T.spotB, 3); return o; });
+    check(label.button === 'Slå musslan mot botten' && !label.hidden, 'on touch the action button says "Slå musslan mot botten"', label);
     await kit.shot(page, path.join(out, 'stangd-mussla-i-handen.png'));
     await page.evaluate(() => { const T = window.__crack; T.hold(T.spotB, 3); });
 
@@ -70,10 +75,10 @@ const check = (ok, name, data) => { results.push({ ok: !!ok, name, data }); pass
     await page.keyboard.press('KeyE');
     const hit1 = await page.evaluate(() => { const T = window.__crack, { M, K } = T, m = M.held, y0 = m.heldPose.pos.y, o = { after: T.shell() };
       T.hold(T.spotB, 1, K.swing.time * K.swing.at); o.blow = { dy: m.model.position.y - y0, swinging: m.swingT >= 0 }; return o; });
-    await kit.shot(page, path.join(out, 'slag-mot-botten.png'), { frames: 0 });
+    await kit.shot(page, path.join(out, 'slag-mot-botten.png'));
     await page.keyboard.press('KeyE');
     const soon = await page.evaluate(() => { const T = window.__crack, { M, K } = T, m = M.held, o = { shell: T.shell() };
-      T.hold(T.spotB, 30, K.gap / 20); o.rest = { dy: m.model.position.y - m.heldPose.pos.y, swinging: m.swingT >= 0, held: T.shell().held, focus: T.focus() }; return o; });
+      T.hold(T.spotB, 30, K.gap / 20); o.rest = { dy: m.model.position.y - m.heldPose.pos.y, swinging: m.swingT >= 0, held: T.shell().held, focus: T.focus(), calls: T.calls() }; return o; });
     check(hit1.after.hits === 1 && !hit1.after.cracked && hit1.after.closed && hit1.blow.swinging && hit1.blow.dy < -0.1, 'E knocks once: counted, the held mussel strikes down, still closed', hit1);
     check(soon.shell.hits === 1 && !soon.rest.swinging && Math.abs(soon.rest.dy) < 1e-6 && soon.rest.held && soon.rest.focus?.strike, 'a second E at once is too soon; the mussel is back in the hand, still held', soon);
 
@@ -83,10 +88,10 @@ const check = (ok, name, data) => { results.push({ ok: !!ok, name, data }); pass
       o.before = T.shell(); return o; });
     await page.keyboard.press('KeyE');
     const crack = await page.evaluate(() => { const T = window.__crack, { A, M, K } = T, o = { atE: { ...T.shell(), flag: M.held?.cracked } };
-      T.hold(T.spotB, 30, K.gap / 20); o.after = T.shell(); o.focus = T.focus(); o.hud = T.hud(); o.calls = A.renderer.info.render.calls; o.spot = M.held.spot; o.deepGone = T.deep.gone; return o; });
+      T.hold(T.spotB, 30, K.gap / 20); o.after = T.shell(); o.focus = T.focus(); o.hud = T.hud(); o.calls = T.calls(); o.spot = M.held.spot; o.deepGone = T.deep.gone; return o; });
     check(rest.before.hits === setup.hits - 1 && !rest.before.cracked && rest.before.closed, `after ${setup.hits - 1} knocks (the action button too) it is still closed`, rest);
     check(crack.atE.flag === true && crack.after.cracked && crack.after.open && !crack.after.closed && crack.after.tris > took.shell.tris, `knock ${setup.hits} cracks it: \`mussels.held.cracked\` true, the open shell with the meat`, crack);
-    check(crack.focus?.kind === 'place' && !crack.focus.strike && crack.calls === took.calls, 'cracked: E on the bed puts it down as before; no draw call more than with the closed one', { focus: crack.focus, hud: crack.hud, calls: [took.calls, crack.calls] });
+    check(crack.focus?.kind === 'place' && !crack.focus.strike && crack.calls === soon.rest.calls && crack.calls > 0, 'cracked: E on the bed puts it down as before; no draw call more than with the closed one', { focus: crack.focus, hud: crack.hud, calls: [soon.rest.calls, crack.calls] });
     await kit.shot(page, path.join(out, 'knackt-mussla-i-handen.png'));
     await page.evaluate(() => { const T = window.__crack; T.hold(T.spotB, 3); });
 
@@ -134,11 +139,12 @@ const check = (ok, name, data) => { results.push({ ok: !!ok, name, data }); pass
     // 6. half-knocked and put back on its old spot: one of the bed's closed mussels again; taken anew it starts closed
     const backed = await page.evaluate(() => {
       const T = window.__crack, { A, M, K, rb } = T, o = {}; M.consumeHeld();
-      const s = M.spots.find((x) => !x.gone && x !== T.deep && rb.waterYAt(x.x, x.z) - x.y > 1.3 && rb.deckAt(x.x, x.z) === null), q = rb.riverAt(s.x, s.z);
-      T.swimAt(s.x - q.nz * 0.75, s.z + q.nx * 0.75, true, T.top(s)); o.took = M.takeAimed(); const b = T.beside(s); T.hold(b, 4);
+      const alone = (x) => Math.min(...M.spots.map((y) => (y === x ? Infinity : Math.hypot(y.x - x.x, y.z - x.z)))); // (a neighbour in the look ray would be aimed at instead of the old spot)
+      const s = M.spots.filter((x) => !x.gone && x !== T.deep && rb.waterYAt(x.x, x.z) - x.y > 1.3 && rb.deckAt(x.x, x.z) === null).sort((a, b) => alone(b) - alone(a))[0]; o.alone = alone(s), q = rb.riverAt(s.x, s.z);
+      T.swimAt(s.x - q.nz * 0.75, s.z + q.nx * 0.75, true, T.top(s)); o.took = M.take(s); A.testMode.draw(); const b = T.beside(s); T.hold(b, 4); // (a drawn frame: the scene's matrix update places the old spot's E box; the lazy test page draws by hand)
       const f = A.focus().focused; o.strikeFocus = !!f?.strike; if (f?.strike) A.use(f); T.hold(b, 30, K.gap / 20); o.one = T.shell();
       T.hold(T.top(s), 4); o.back = T.focus(); const g = A.focus().focused; if (g?.name === 'blåmusslan') A.use(g); T.hold(T.top(s), 3);
-      o.after = { held: !!A.heldItem(), gone: s.gone, state: M.state() }; o.again = M.takeAimed(); o.fresh = T.shell();
+      o.after = { held: !!A.heldItem(), gone: s.gone, state: M.state() }; o.again = M.take(s); o.fresh = T.shell();
       return o;
     });
     check(backed.took && backed.strikeFocus && backed.one.hits === 1 && backed.back?.name === 'blåmusslan' && !backed.after.held && !backed.after.gone && backed.again && backed.fresh.hits === 0 && !backed.fresh.cracked && backed.fresh.closed,
