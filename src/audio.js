@@ -32,6 +32,7 @@ export const isMuted = () => muted;
 /** #1949: under water everything is heard dull: the master goes through one low-pass at `hz` while `on` (rewired only at the change, so
  * the ordinary path is untouched on land). Mute and volume stay the master's. */
 let muffle = null;
+export const isMuffled = () => !!muffle;
 export function setMuffled(on, hz = 900) {
   if (!ctx || ctx.state === 'closed' || !!muffle === !!on) return;
   if (on) {

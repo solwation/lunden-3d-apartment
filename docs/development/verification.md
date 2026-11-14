@@ -1316,6 +1316,11 @@ tools/lighttest.html   headless test: aim at every light switch / floor lamp, to
 tools/powertest.html   the power cut (#604): fuse box, flicker, Kv. Lunden dark / surroundings lit, hold-to-mend on touch, reload has power;
                        #612: fridge/freezer/oven/microwave lamps dark, brew/dishwasher/washer/dryer paused and resumed, the lift's rescue drive
 tools/visitlightstest.html  the visitable flats' lamps (#620): a switch with a wall behind it in every room of L1004 and L1201, E lights / puts out, the frame gets brighter, power cut + mend, no extra light object
+tools/diveairtest.cjs (#1949) the air while diving, real app through `Player.update` + `DiveAir.update`: `THREE_DIR=… tools/browsertest.sh node tools/diveairtest.cjs GAME OUT`
+                       (no meter on land / at the surface; diving shows it; whole dives timed still / with / against the current; the last 10 s: red meter,
+                       black edges closing in, camera shake, quickening heartbeats; surfacing ends them, a gasp, the air returns; drowning: cover text, awake
+                       outdoors, lives, one death; sounds counted through `sfx`, muffling on / off; the meter overlaps no HUD part on desktop and in the
+                       touch layout; four result images).
 tools/divetest.cjs (#1944) diving in Höje å in the real app through `Player.update`: `THREE_DIR=… tools/browsertest.sh node tools/divetest.cjs GAME OUT`
                        (crouch held = eye under the surface to 0.4 m over the drawn bed, same speeds with / against the current, letting go and the touch toggle
                        surface, fog + wash on / off, crouch on land unchanged, dives at every station of the river and through under both bridges, the

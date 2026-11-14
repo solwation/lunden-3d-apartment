@@ -38,6 +38,7 @@ URL parameters (debugging / screenshots):
 - `&beers=http://localhost:8144/beer-shelf` — test the daily beer source through `node cloudflare/dev.mjs 8144`; separate from shared-layout `&cloud=`. `&life` normally uses the prepared beer snapshot and no persistent beer cache.
 - `&lowmem` — the phone memory limits (#585, `LOW_MEMORY`: textures ≤ 1024 px, 1024² shadows, pixel ratio ≤ 1) and the lighter campus facades (#589, `CAMPUS_LOD`) on a desktop.
 - `&keepgeo` — on a phone / with `&lowmem`, keep the geometry's CPU copies and float normals (A/B of #628 step 4, `freeSceneGeometryCopies`).
+- `&air=<s>` — that many seconds of air for a still diver in Höje å instead of `SWIM.air.seconds` 60 (#1949; `&air=15` reaches the suffocation warning after 5 s under water).
 - `&shark=attack` — a shark attacks about 2 s into every swim in Höje å (#1947, `SHARK.attack.test`); `&shark=now` opens the shared weekly shark's window (#1769).
 - `&perf` — fps / draw-call overlay, CPU hitch log and bounded raw callback intervals (#592/#1507); [capture/export protocol](frame-intervals.md).
 - `&quality=0–3` — pin the adaptive graphics level (#592: resolution, shadows, mirrors, detail distance, particles); not remembered. `&quality=4` pins Ultra (#1512) where it is allowed (not phones / `&lowmem` / `&res=light` / `&test`); elsewhere it clamps to 3.

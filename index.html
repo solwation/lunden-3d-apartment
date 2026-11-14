@@ -491,8 +491,8 @@
     #jetpack.hot .bar i { background: #e5484d; }
     #jetpack.cut { flex-wrap: wrap; width: 108px; animation: turbo-blink .35s steps(2) infinite; }
     #jetpack.cut::after { flex-basis: 100%; content: 'För varm!'; font-weight: 700; color: #ffb3b3; }
-    /* #1949: the air meter while diving (src/diveair.js): top middle under the badges, clear of the jetpack / vacuum bars (left) and the minimap (right); red and blinking in the last seconds */
-    #air { position: fixed; left: 50%; top: calc(var(--hud-badge-bottom) + 4px); transform: translateX(-50%); z-index: 10; display: flex; align-items: center; gap: 6px; background: rgba(20, 35, 45, 0.6); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 13px; pointer-events: none; }
+    /* #1949: the air meter while diving (src/diveair.js): top middle under the score row and two stacked message badges (#badges), clear of the jetpack / vacuum bars (left) and the minimap (right); red and blinking in the last seconds */
+    #air { position: fixed; left: 50%; top: calc(var(--hud-badge-bottom) + 40px); transform: translateX(-50%); z-index: 10; display: flex; align-items: center; gap: 6px; background: rgba(20, 35, 45, 0.6); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 13px; pointer-events: none; }
     #air[hidden] { display: none; }
     #air .bar { width: 120px; height: 8px; background: rgba(255,255,255,.3); border-radius: 4px; overflow: hidden; }
     #air .bar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #6fd0f0, #bfeaff); }

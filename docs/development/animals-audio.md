@@ -1164,7 +1164,7 @@ the surface instead of the fall's jolt, no fall deduction, then `wake` → `resp
 items, jetpack and binoculars behave as there) and asks for the lives with `combat.fall(FALL.maxReport, FALL.maxReport)`, the existing
 fatal-damage request (the room's when online, else the offline holder's): every life gone, full again, `combat.deaths` counted; no protocol
 change. Badges: "🦈 En haj! Simma i land!" (it surfaced), "Hajen gav upp – du klarade dig" (escaped), "🦈 Hajen tog dig – du lever igen"
-(awake). Fishing for the shark (#1769) is unchanged. Debug: `&shark=attack` uses `SHARK.attack.test` (an attack about 2 s into every swim;
+(awake). #1949's drowning uses the same path ([Air while diving](environment.md#air-while-diving-1949)). Fishing for the shark (#1769) is unchanged. Debug: `&shark=attack` uses `SHARK.attack.test` (an attack about 2 s into every swim;
 `&shark=now` still opens the shared shark's window). Browser check `tools/sharkattacktest.cjs` (warning, escape to the bank, bite, wake at a
 free outdoor spot with all lives, the shared shark's bite, its unchanged drawing); images in [docs/verification/1947](../verification/1947/).
 

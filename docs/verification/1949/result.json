@@ -1,0 +1,447 @@
+{
+ "pass": true,
+ "results": [
+  {
+   "ok": true,
+   "name": "on land: no meter, full air",
+   "data": {
+    "shown": false,
+    "low": false,
+    "width": 0,
+    "bar": "rgba(0, 0, 0, 0)",
+    "air": 60,
+    "warn": 0,
+    "rate": 1,
+    "edge": false,
+    "edgeBg": "",
+    "roll": 0,
+    "muffled": false,
+    "under": false
+   }
+  },
+  {
+   "ok": true,
+   "name": "swimming at the surface: no meter",
+   "data": {
+    "shown": false,
+    "low": false,
+    "width": 0,
+    "bar": "rgba(0, 0, 0, 0)",
+    "air": 60,
+    "warn": 0,
+    "rate": 1,
+    "edge": false,
+    "edgeBg": "",
+    "roll": 0,
+    "muffled": false,
+    "under": false,
+    "swim": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "diving: the meter appears, the sound is muffled",
+   "data": {
+    "shown": true,
+    "low": false,
+    "width": 100,
+    "bar": "rgba(0, 0, 0, 0)",
+    "air": 59.983333333333334,
+    "warn": 0,
+    "rate": 1,
+    "edge": false,
+    "edgeBg": "",
+    "roll": 0,
+    "muffled": true,
+    "under": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "15 s still under water: the meter fell to 75 %, no warning yet",
+   "data": {
+    "shown": true,
+    "low": false,
+    "width": 75,
+    "bar": "rgba(0, 0, 0, 0)",
+    "air": 44.98333333333419,
+    "warn": 0,
+    "rate": 1,
+    "edge": false,
+    "edgeBg": "",
+    "roll": 0,
+    "muffled": true,
+    "under": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "bubbles are heard under water",
+   "data": {
+    "bubbles": 7,
+    "heartbeat": 0,
+    "gasp": 0,
+    "drown": 0
+   }
+  },
+  {
+   "ok": true,
+   "name": "another amount of air (the &air= parameter's option)",
+   "data": 12
+  },
+  {
+   "ok": true,
+   "name": "just over 10 s left: still no warning",
+   "data": {
+    "air": 10.183333333335545
+   }
+  },
+  {
+   "ok": true,
+   "name": "inside the last 10 s: red meter, black edges, the picture shakes",
+   "data": {
+    "shown": true,
+    "low": true,
+    "width": 10,
+    "bar": "rgb(229, 72, 77)",
+    "air": 5.983333333335444,
+    "warn": 0.4016666666664557,
+    "rate": 1,
+    "edge": true,
+    "edgeBg": "radial-gradient(rgba(0, 0, 0, 0) 53.5%, rgba(0, 0, 0, 0.72) 81.9%)",
+    "roll": 0.010285478598114496,
+    "muffled": true,
+    "under": true,
+    "shake": {
+     "roll": 0.011905501346135059,
+     "shift": 0.005501720732913995
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "nearer the end: the edges close in and the shake grows",
+   "data": {
+    "early": 53.5,
+    "late": 29.9,
+    "roll": [
+     0.011905501346135059,
+     0.020828301268713875
+    ],
+    "bg": "radial-gradient(rgba(0, 0, 0, 0) 29.9%, rgba(0, 0, 0, 0.87) 53.4%)"
+   }
+  },
+  {
+   "ok": true,
+   "name": "heartbeats, quicker and stronger towards the end",
+   "data": {
+    "n": 12,
+    "first": 0.949999999999946,
+    "last": 0.533333333333303,
+    "k0": 0.001666666666446437,
+    "k1": 0.7983333333331208
+   }
+  },
+  {
+   "ok": true,
+   "name": "at the surface: red, edges, shake and muffling stop at once (the meter stays while the air comes back)",
+   "data": {
+    "upIn": 0.9333333333333346,
+    "shown": true,
+    "low": false,
+    "width": 2.3,
+    "bar": "rgba(0, 0, 0, 0)",
+    "air": 1.4000000000021278,
+    "warn": 0,
+    "rate": 1,
+    "edge": false,
+    "edgeBg": "",
+    "roll": 0,
+    "muffled": false,
+    "under": false
+   }
+  },
+  {
+   "ok": true,
+   "name": "a gasp for air when surfacing near the end",
+   "data": {
+    "gasp": 1
+   }
+  },
+  {
+   "ok": true,
+   "name": "the air is back within seconds and the meter hides",
+   "data": {
+    "fullIn": 3.9166666666666576,
+    "air": 60
+   }
+  },
+  {
+   "ok": true,
+   "name": "holding still: the air lasts about a minute (60.0 s)",
+   "data": {
+    "t": 59.999999999997875,
+    "dead": true,
+    "swim": true,
+    "exit": false,
+    "along": 21.000000000042515,
+    "moved": 21.000000000042515
+   }
+  },
+  {
+   "ok": true,
+   "name": "swimming with the current: noticeably shorter (37.5 s)",
+   "data": {
+    "t": 37.499999999999154,
+    "dead": true,
+    "swim": true,
+    "exit": false,
+    "along": 45.93980961566265,
+    "moved": 46.162582320647495
+   }
+  },
+  {
+   "ok": true,
+   "name": "swimming against the current: shorter still (25.0 s)",
+   "data": {
+    "t": 24.99999999999986,
+    "dead": true,
+    "swim": true,
+    "exit": false,
+    "along": -13.749999999971838,
+    "moved": 13.74999999997184
+   }
+  },
+  {
+   "ok": true,
+   "name": "out of air: the fatal cover with the drowning text and sound",
+   "data": {
+    "after": 2.9999999999999942,
+    "html": "Luften tog slut …<small>du vaknar på en säker plats utomhus</small>"
+   }
+  },
+  {
+   "ok": true,
+   "name": "the meter and the warning are gone when the cover takes over",
+   "data": {
+    "shown": false,
+    "low": false,
+    "width": 100,
+    "bar": "rgba(0, 0, 0, 0)",
+    "air": 60,
+    "warn": 0,
+    "rate": 1,
+    "edge": false,
+    "edgeBg": "",
+    "roll": 0,
+    "muffled": false,
+    "under": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "no second death while one is running",
+   "data": {
+    "drown": 1,
+    "html": "Luften tog slut …<small>du vaknar på en säker plats utomhus</small>",
+    "t": 0
+   }
+  },
+  {
+   "ok": true,
+   "name": "awake at a free outdoor spot, not in the river",
+   "data": {
+    "at": [
+     -18.86035926565303,
+     -3,
+     47.815217669641214
+    ],
+    "swim": false,
+    "wet": false,
+    "river": 77.87450624300087,
+    "text": "Luften tog slut …du vaknar på en säker plats utomhus",
+    "badges": [
+     "🫧 Luften tog slut – du lever igen"
+    ],
+    "outdoor": true,
+    "free": true,
+    "lives": 10,
+    "max": 10,
+    "deaths": 1,
+    "hud": {
+     "shown": false,
+     "low": false,
+     "width": 100,
+     "bar": "rgba(0, 0, 0, 0)",
+     "air": 60,
+     "warn": 0,
+     "rate": 1,
+     "edge": false,
+     "edgeBg": "",
+     "roll": 0,
+     "muffled": false,
+     "under": false
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "the cover and the badge say the air ran out",
+   "data": {
+    "text": "Luften tog slut …du vaknar på en säker plats utomhus",
+    "badges": [
+     "🫧 Luften tog slut – du lever igen"
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "a death like any other: counted once, all lives again",
+   "data": {
+    "lives": 10,
+    "deaths": 1,
+    "before": 0
+   }
+  },
+  {
+   "ok": true,
+   "name": "awake: no meter, full air",
+   "data": {
+    "shown": false,
+    "low": false,
+    "width": 100,
+    "bar": "rgba(0, 0, 0, 0)",
+    "air": 60,
+    "warn": 0,
+    "rate": 1,
+    "edge": false,
+    "edgeBg": "",
+    "roll": 0,
+    "muffled": false,
+    "under": false
+   }
+  },
+  {
+   "ok": true,
+   "name": "the cover fades away; an ordinary fall keeps its own text",
+   "data": {
+    "t": -1,
+    "hidden": true,
+    "fallText": "Du slog dig …och vaknar på en säker plats utomhus",
+    "walk": {
+     "shown": false,
+     "low": false,
+     "width": 100,
+     "bar": "rgba(0, 0, 0, 0)",
+     "air": 60,
+     "warn": 0,
+     "rate": 1,
+     "edge": false,
+     "edgeBg": "",
+     "roll": 0,
+     "muffled": false,
+     "under": false
+    },
+    "desktop": {
+     "rect": [
+      559,
+      114,
+      721,
+      138
+     ],
+     "view": [
+      1280,
+      800
+     ],
+     "touch": false,
+     "hit": []
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "walking on land afterwards: no meter",
+   "data": {
+    "shown": false,
+    "low": false,
+    "width": 100,
+    "bar": "rgba(0, 0, 0, 0)",
+    "air": 60,
+    "warn": 0,
+    "rate": 1,
+    "edge": false,
+    "edgeBg": "",
+    "roll": 0,
+    "muffled": false,
+    "under": false
+   }
+  },
+  {
+   "ok": true,
+   "name": "the meter covers no other HUD part (desktop)",
+   "data": {
+    "rect": [
+     559,
+     114,
+     721,
+     138
+    ],
+    "view": [
+     1280,
+     800
+    ],
+    "touch": false,
+    "hit": []
+   }
+  },
+  {
+   "ok": true,
+   "name": "no page errors",
+   "data": []
+  },
+  {
+   "ok": true,
+   "name": "touch: the crouch toggle dives and the meter shows and falls",
+   "data": {
+    "before": false,
+    "down": {
+     "shown": true,
+     "low": false,
+     "width": 46.6,
+     "bar": "rgba(0, 0, 0, 0)",
+     "air": 27.983333333336322,
+     "warn": 0,
+     "rate": 1.6,
+     "edge": false,
+     "edgeBg": "",
+     "roll": 0,
+     "muffled": true,
+     "under": true
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "the meter covers no other HUD part (touch layout)",
+   "data": {
+    "rect": [
+     341,
+     114,
+     503,
+     138
+    ],
+    "view": [
+     844,
+     390
+    ],
+    "touch": true,
+    "hit": []
+   }
+  },
+  {
+   "ok": true,
+   "name": "no page errors (touch)",
+   "data": []
+  }
+ ]
+}

@@ -335,6 +335,10 @@ src/sharkattack.js     #1947 the shark that bites swimmers, pure rules (`attackS
 src/swim.js            #1943 the pure swimming rules (no three.js): `currentDir` / `current` (the river's flow at a `riverAt` frame, downstream along
                        the centre line), `swimVelocity`, `exitDecision`, `swimEye`, #1944 `diveMax` / `diveStep` / `isDiving`; `SWIM` in config.js; src/swim.test.mjs
 src/divelook.js        #1944 the view under the river's surface: the scene fog pulled in and tinted + one DOM wash, while a swimmer's camera is under the water line
+src/diveair.js         #1949 the air while diving (`DiveAir`, main.js `diveAir`, updated after the player): the HUD meter `#air` (top middle, only under water and
+                       until the air is back), the suffocation warning (red meter, camera shake, one DOM vignette), bubbles / heartbeat / gasp / muffling,
+                       `onDrown` = a death through `Fall`; rules in swim.js (`upstreamPart`, `airRate`, `airStep`, `airWarning`), `SWIM.air`; see
+                       [environment](environment.md) "Air while diving"
                        the jump (#636): Space / the touch #jump-btn (always on touch, suit or not) = a *press* (`spaceDown` / `jumpPress`) off
                        anything you stand on, not with the jetpack, not in the stairwell / lift (`inCore`), only with room to stand; `PLAYER.jump`
                        m/s (#696: ~0.7 m, *guess*: just over a seat's ~0.45 m, not onto anything taller) or with the suit `SPIDER.jump` (2.5 m); `ceilingAt(x, z, y)` stops the head under the room's
