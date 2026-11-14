@@ -1,0 +1,168 @@
+{
+ "pass": true,
+ "results": [
+  {
+   "ok": true,
+   "name": "walking into the river starts a swim, no rescue, no landing",
+   "data": {
+    "swim": true,
+    "swimming": true,
+    "t": 0.8166666666666675,
+    "events": [],
+    "swims": [
+     true
+    ],
+    "lands": [],
+    "at": [
+     -146.4502640723244,
+     -7.398925923387704,
+     209.7958136841096
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "the eye floats just above the surface, the feet follow the bed",
+   "data": {
+    "over": 0.12076297422177618,
+    "feet": 0
+   }
+  },
+  {
+   "ok": true,
+   "name": "downstream is faster than upstream for the same input",
+   "data": {
+    "down": 1.2569444444447369,
+    "up": -0.5530555555544229
+   }
+  },
+  {
+   "ok": true,
+   "name": "an idle swimmer drifts slowly downstream",
+   "data": {
+    "along": 0.351944444445157,
+    "swim": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "sprint and crouch change nothing in the water",
+   "data": {
+    "sprint": 1.2569444444447369,
+    "crouch": {
+     "along": 1.2569444444447369,
+     "swim": true,
+     "crouched": false,
+     "eye": 0.13134974898674834
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "no jump in the water",
+   "data": {
+    "dy": 0,
+    "fall": false,
+    "vy": 0,
+    "swim": true,
+    "y0": -7.781043709110407
+   }
+  },
+  {
+   "ok": true,
+   "name": "the touch stick swims too",
+   "data": {
+    "along": 1.2604166666669598
+   }
+  },
+  {
+   "ok": true,
+   "name": "a 6 m fall into the water: swimming, no landing (no fall damage)",
+   "data": {
+    "swim": true,
+    "lands": [],
+    "events": [],
+    "t": 1.1166666666666676
+   }
+  },
+  {
+   "ok": true,
+   "name": "swimming into a bank gets out everywhere (nobody stuck)",
+   "data": {
+    "n": 104,
+    "climb": 102,
+    "rescue": 2,
+    "stuck": [],
+    "rescuedAt": [
+     {
+      "x": -128,
+      "z": 206,
+      "side": -1
+     },
+     {
+      "x": -128,
+      "z": 206,
+      "side": 1
+     }
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "most banks are climbed, the rescue is the last resort",
+   "data": {
+    "climb": 102,
+    "rescue": 2
+   }
+  },
+  {
+   "ok": true,
+   "name": "the bicycle rule (splashCheck) still puts back on the bank",
+   "data": {
+    "rescued": true,
+    "events": [
+     "water"
+    ],
+    "dry": true,
+    "swim": false
+   }
+  },
+  {
+   "ok": true,
+   "name": "avatar-simtag: the avatar swims, only the head above the surface",
+   "data": {
+    "swim": true,
+    "amt": 0.9999999999924709,
+    "stroke": 0.9999999976285785,
+    "dy": -0.6696308932841242,
+    "headOverWater": 0.06383741753761196,
+    "eye": [
+     -143.33708397507772,
+     -4.0586592502684375,
+     210.4746736212058
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "avatar-trampar-vatten: the avatar swims, only the head above the surface",
+   "data": {
+    "swim": true,
+    "amt": 0.9999999999999998,
+    "stroke": 1.422853189173962e-9,
+    "dy": -0.9329916972522538,
+    "headOverWater": 0.32719822149664424,
+    "eye": [
+     -143.33708397507772,
+     -4.0586592502684375,
+     210.4746736212058
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "no page errors",
+   "data": []
+  }
+ ]
+}

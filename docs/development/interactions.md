@@ -326,6 +326,12 @@ src/hudicons.js        shared neutral SVG icons, pressed states and accessible l
 src/hudicons.css       neutral mobile/desktop button surfaces, focus states and no-blur fallback (#525)
 index.html             page shell, HUD, start overlay, import map (three from jsDelivr, pinned)
 src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision, step-up, gravity; outdoors the terrain (`groundY`, #256);
+                       #1943 swimming: on foot in Höje å `swimCheck` starts `Player.swim` and `swimStep` replaces the walking step (the same
+                       keyboard / touch input: stroke at `SWIM.speed` + the current downstream, no jump / sprint / crouch speed, the eye at the
+                       surface, a bank in reach = helped up, else the old rescue as last resort); rules in src/swim.js, details in
+                       [environment](environment.md) "Swimming in Höje å". `player.swimming` / `player.swim.depth` are the hooks for the dive (#1944)
+src/swim.js            #1943 the pure swimming rules (no three.js): `currentDir` / `current` (the river's flow at a `riverAt` frame, downstream along
+                       the centre line), `swimVelocity`, `exitDecision`, `swimEye`; `SWIM` in config.js; src/swim.test.mjs
                        the jump (#636): Space / the touch #jump-btn (always on touch, suit or not) = a *press* (`spaceDown` / `jumpPress`) off
                        anything you stand on, not with the jetpack, not in the stairwell / lift (`inCore`), only with room to stand; `PLAYER.jump`
                        m/s (#696: ~0.7 m, *guess*: just over a seat's ~0.45 m, not onto anything taller) or with the suit `SPIDER.jump` (2.5 m); `ceilingAt(x, z, y)` stops the head under the room's
@@ -662,6 +668,7 @@ src/combatworld.js     combat solid-hit broad phase (#715): fresh filtered trave
                        No geometry.boundingBox changes. Disposal releases pending jobs/accounting; removal without disposal can
                        consume the lifetime admission quota and safely fall back. COMBAT.collision caps bitsets plus reserved
                        bookkeeping, not measured JavaScript heap. No transforms or world membership are cached.
+src/avatar.js          (#1943: `update({ swim, speed })` = crawl strokes / treading water, `swimAmt`, `swimLine`; ghosts.js lowers the figure to the water line)
 src/avatar.js          the players' avatars (#705): a neutral human figure on Olof's skeleton and IK (src/olof.js exports `attachSkeleton`, `poseOlof`, `bindAt`,
                        `lathe`; his look is untouched): a face (#1101, `addFace` / `faceWarp`, tunables `AVATAR_FACE`, *guess* by eye: eyeballs with
                        iris, pupil and upper/lower lids in a shaded socket under a brow ridge, arched brows, a bridge-to-tip nose with wings, two

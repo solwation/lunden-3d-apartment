@@ -1316,7 +1316,11 @@ tools/lighttest.html   headless test: aim at every light switch / floor lamp, to
 tools/powertest.html   the power cut (#604): fuse box, flicker, Kv. Lunden dark / surroundings lit, hold-to-mend on touch, reload has power;
                        #612: fridge/freezer/oven/microwave lamps dark, brew/dishwasher/washer/dryer paused and resumed, the lift's rescue drive
 tools/visitlightstest.html  the visitable flats' lamps (#620): a switch with a wall behind it in every room of L1004 and L1201, E lights / puts out, the frame gets brighter, power cut + mend, no extra light object
-tools/farwalktest.html / .cjs (#1236) the real Player outside the home block: slope down to the river, water as obstacle, bridges and rails, far buildings, the WALK edge, water rescue (`node tools/farwalktest.cjs http://localhost:8776`)
+tools/swimtest.cjs (#1943) swimming in Höje å in the real app through `Player.update`: `THREE_DIR=… tools/browsertest.sh node tools/swimtest.cjs GAME OUT [--quick]`
+                       (walk in = swim and no rescue, eye over the surface, down / upstream speed, drift, no jump / sprint / crouch, touch stick, a 6 m fall without
+                       landing, bank exits at every station of the walkable stretch, `splashCheck` still rescues; three result images; `--quick` skips the bank sweep).
+                       Pure rules: `node --test src/swim.test.mjs`. Images: [docs/verification/1943](../verification/1943/)
+tools/farwalktest.html / .cjs (#1236; #1943: on foot the river checks expect swimming, the rescue rule is checked through `splashCheck` and the bicycle) the real Player outside the home block: slope down to the river, water as obstacle, bridges and rails, far buildings, the WALK edge, water rescue (`node tools/farwalktest.cjs http://localhost:8776`)
 tools/loggia1471test.cjs (#1471) every upper Å-hus loggia: standing, walking, jetpack landing, Spider-Man climb, railing / slab hold (see "Upper loggias carry the visitor")
 tools/roofaudittest.html (#1294) a landing on every roof inside WALK (the drawn roof read by a ray; real Player dropped on it) and the walls hold at head height; run after changing buildings' roof geometry (sitebackdrop / southbackdrop / campusfacades / karpfacade / schoolfacade / stlars41), src/buildingroofs.js, src/roofs.js or `BUILDING_ROOFS`
 tools/depthprecisiontest.cjs   far-house flicker (#1276): glass polygon offsets, near plane indoors/outdoors/flying, depth step at 300 m (`node tools/depthprecisiontest.cjs PORT`);

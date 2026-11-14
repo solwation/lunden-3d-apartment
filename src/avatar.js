@@ -1297,7 +1297,7 @@ const swimLean = (st) => SW.treadLean + (SW.lean - SW.treadLean) * st;
 /** The height of the water line in the figure's frame for hips at `hy`: just over the neck joint of the leaning torso, so only the head is above it. */
 const swimLineAt = (hy, st) => hy + NECK * Math.cos(swimLean(st)) + SW.chin;
 /** The figure-frame water line of a figure that is not posed (far away): the swimming pose's. */
-export const SWIM_LINE = swimLineAt(HIP - 0.02, 1);
+export const swimLineFar = () => swimLineAt(HIP - 0.02, 1); // (a function: olof.js and this module import each other)
 /** Hand `i` (0 left, 1 right): a crawl stroke round the shoulder (forward at the surface, down and back under it, forward again over it; the
  * two arms half a cycle apart), mixed with sculling out to the sides at the surface when treading water. */
 function swimHand(fig, i, hy, hz, st, ph) {

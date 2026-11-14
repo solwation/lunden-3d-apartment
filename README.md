@@ -32,6 +32,8 @@ Hus L:s långfasad har ett skydd mot att den bakomliggande huskroppen slår igen
 
 Vägar och gångstråk i utkanten fortsätter bort i dimman i stället för att sluta tvärt. Hela hästhagen går också att nå till fots via den befintliga stättan.
 
+Du kan simma i Höje å: gå, glid eller hoppa i så flyter du med ögonen strax över ytan och simmar med de vanliga rörelsekontrollerna. Strömmen är svag och går nedströms, så det går fortare med den än mot den, och den som inte simmar driver sakta med. Simma in mot en strand för att ta dig upp. Andra spelare ser bara ditt huvud över ytan och armarna som tar simtag. Cykeln får fortfarande ett plask och ställs tillbaka på stranden.
+
 Promenadstråken i parken och längs Höje å samt vägarna i resten av området har lampor med varma ljusfläckar på marken efter skymningen. Lamporna följer även jordramperna vid den lilla träbron.
 Vid Karpvägen finns ett utegym på grus med cortenkant, orangebruna trästationer, bänkar och en svart hinderbana. Börja med E eller touch: räckhäv, bänkpress, step-up, sit-ups, dips, armgång, sidoklättring på nätet, stubbsteg och balansgång. Ta i med snabba F-tryck eller drag upp och ner i träningsrutan; gångövningarna kräver en aktiv runda ut och tillbaka före en hel kraftcykel. Andra spelare ser själva övningen och bänkpressens rörliga stock. Repetitionerna ger poäng med dagstak och räknas till medaljen Utegymmare. Träningen bygger även avatarens överarmar; effekten avtar till normal storlek under tre dygn utan träning och syns också för andra spelare.
 

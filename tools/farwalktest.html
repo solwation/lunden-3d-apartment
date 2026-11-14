@@ -81,8 +81,8 @@ const R = [
   // [name, start, waypoints, expectation(player) -> bool]
   ['parkplanet → gångstråket ner mot ån (slänten går att gå på)', [-35, 61], [[-30, 66], [-28, 70], [-30, 80], [-39, 95], [-40, 110], [-41, 118]],
     () => player.pos.z > 117 && player.pos.y <= -2.9],
-  ['ån: rakt ut i vattnet ger plask och återstart torrt på stranden (inte en osynlig vägg)', [-41, 135], [[-41, 150]],
-    () => splashes.length >= 1 && !inWater(player.pos.x, player.pos.z, player.pos.y) && player.pos.y > waterYAt(player.pos.x, player.pos.z) + 0.3],
+  ['ån: rakt ut i vattnet ger simning (#1943: ingen osynlig vägg, ingen återstart på stranden)', [-41, 135], [[-41, 150]],
+    () => !!player.swim && splashes.length === 0 && inWater(player.pos.x, player.pos.z, player.pos.y)],
   ['vägbron: över ån längs Sankt Lars väg till södra stranden', [23.5, 90], [[23.7, 100], [23.5, 125], [23.3, 143], [23.3, 155]],
     () => player.pos.z > 150],
   ['gång- och cykelbron: över ån', [18, 92], [[18.1, 101], [17.9, 125], [17.8, 146], [17.8, 155]], () => player.pos.z > 150],
@@ -150,7 +150,7 @@ const R = [
 }
 for (const [name, start, points, ok] of R) {
   player.spawn(start[0], start[1], 0); splashes.length = 0;
-  const stuckAt = walk(points, { step: () => splashes.length > 0 });
+  const stuckAt = walk(points, { step: () => splashes.length > 0 || !!player.swim });
   const good = ok();
   check(good, `${name}${good ? '' : ` — stannade vid ${at()} (hinder vid punkt ${stuckAt})`}`);
   log.push(`   ended ${at()}`);
@@ -173,16 +173,20 @@ for (const [name, start, points, ok] of R) {
   player.spawn(WALK.x1 - 3, 20, 0); walk([[WALK.x1 + 20, 20]]);
   check(told === 1, `ytterkanten säger ifrån en gång (${told})`);
 }
-{ // #1281: ended up in the water (a drop at the river's middle): a splash, back on the nearest dry bank, still, unhurt for a while
+{ // #1943: ended up in the water on foot (a drop at the river's middle): swimming, no rescue and no landing.
+  // #1281: the rescue itself (`splashCheck`: the bicycle's rule and a swimmer's last resort): a splash, back on the nearest dry bank, still, unhurt for a while
   const r0 = riverAt(-41, 143), side = [r0.x + r0.nx * 0.2, r0.z + r0.nz * 0.2];
+  let landed = 0; const land0 = player.onLand; player.onLand = () => landed++;
   splashes.length = 0; player.spawn(...side, 0); player.pos.y = groundBelowDeckY(player.pos.x, player.pos.z); player.vy = -3; player.update(dt);
+  check(!!player.swim && splashes.length === 0 && landed === 0 && player.vy === 0 && !player.fall && inWater(player.pos.x, player.pos.z, player.pos.y), `i ån till fots: simmar, ingen återstart, ingen landning (${at()}, ${splashes.length} plask)`);
+  player.onLand = land0; player.swim = null; player.splashCheck();
   check(splashes.length === 1 && !inWater(player.pos.x, player.pos.z, player.pos.y) && player.pos.y > waterYAt(player.pos.x, player.pos.z) + 0.3 && player.vy === 0 && player.safeUntil > performance.now() && Math.hypot(player.pos.x - side[0], player.pos.z - side[1]) < 15,
     `i ån: plask, flyttas till närmaste torra strand, stilla, skyddad mot fallskada (${at()}, ${splashes.length} plask)`);
   // the respawn point is clear of every wall and not in the paddock, over a number of river positions along the whole river
   let bad = 0, n = 0;
   for (let z = 62; z < 240; z += 3) for (let x = -250; x < 310; x += 11) {
     const r = riverAt(x, z); if (r.distance > 0.5 || z !== Math.round(z)) continue;
-    n++; splashes.length = 0; player.spawn(x, z, 0); player.pos.y = groundBelowDeckY(player.pos.x, player.pos.z); player.update(dt);
+    n++; splashes.length = 0; player.spawn(x, z, 0); player.pos.y = groundBelowDeckY(player.pos.x, player.pos.z); player.splashCheck(); // (#1943: the rescue rule itself; on foot `update` swims)
     const hit = farWalls(player.pos.x, player.pos.z, player.pos.y).some((sg) => { const dx = sg[2] - sg[0], dz = sg[3] - sg[1], t = Math.max(0, Math.min(1, ((player.pos.x - sg[0]) * dx + (player.pos.z - sg[1]) * dz) / (dx * dx + dz * dz || 1e-9))); return Math.hypot(player.pos.x - sg[0] - dx * t, player.pos.z - sg[1] - dz * t) < PLAYER.radius - 0.01; });
     if (splashes.length !== 1 || hit || inWater(player.pos.x, player.pos.z, player.pos.y) || slideAt(player.pos.x, player.pos.z, player.pos.y, true)) bad++;
   }
@@ -193,9 +197,11 @@ for (const [name, start, points, ok] of R) {
   player.jet = { worn: true, lift: () => 9.81 }; player.keys = new Set();
   let low = Infinity; for (let i = 0; i < 180; i++) { player.update(dt); low = Math.min(low, player.pos.y); }
   check(splashes.length === 0 && low > waterYAt(r0.x, r0.z), `jetpacken svävar över ån utan plask (lägsta y ${low.toFixed(2)}, ${splashes.length} plask)`);
-  player.jet = { worn: true, lift: () => -20 }; for (let i = 0; i < 300 && !splashes.length; i++) player.update(dt);
-  player.jet = null;
-  check(splashes.length === 1 && !inWater(player.pos.x, player.pos.z, player.pos.y), `jetpacken ner i ån: plask och tillbaka på stranden (${at()})`);
+  player.jet = { worn: true, lift: () => -20 }; for (let i = 0; i < 300 && !player.swim; i++) player.update(dt);
+  check(!!player.swim && splashes.length === 0 && inWater(player.pos.x, player.pos.z, player.pos.y), `jetpacken ner i ån: simmar (#1943; ${at()})`);
+  player.jet = { worn: true, lift: () => 30 }; let top = -Infinity; for (let i = 0; i < 60; i++) { player.update(dt); top = Math.max(top, player.pos.y); }
+  check(!player.swim && top > waterYAt(r0.x, r0.z) + 0.5, `jetpackens lyft tar simmaren upp ur vattnet (#1943; högsta y ${top.toFixed(2)})`);
+  player.jet = null; player.spawn(-41, 132, 0);
 }
 { // #1281: ground over WALK.maxSlope cannot be climbed: walking up it you are thrown back down (a slide), without flicker at the threshold.
   // The park's real banks are under the limit except the narrow edges at the water, so the slope test lowers the limit for the park path.
@@ -234,9 +240,9 @@ for (const [name, start, points, ok] of R) {
   const q0 = slideAt(best.x, best.z, groundY(best.x, best.z)); splashes.length = 0;
   player.spawn(best.x - q0.dx * 2, best.z - q0.dz * 2, 0); // 2 m up the fall line
   let slid2 = 0; player.keys = new Set(['KeyW']);
-  for (let i = 0; i < 400 && !splashes.length; i++) { camera.rotation.y = Math.atan2(-(q0.dx), -(q0.dz)); player.update(dt); if (player.sliding) slid2++; }
+  for (let i = 0; i < 400 && !splashes.length && !player.swim; i++) { camera.rotation.y = Math.atan2(-(q0.dx), -(q0.dz)); player.update(dt); if (player.sliding) slid2++; }
   player.keys = new Set();
-  check(slid2 > 5 && splashes.length === 1, `åns brantaste kant vid (${best.x}, ${best.z}) (gradient ${best.s.toFixed(2)}, ${real ? 'över den riktiga gränsen' : 'gränsen sänkt'}): man glider ner och plaskar i (${slid2} glidbilder, ${splashes.length} plask, ${at()})`);
+  check(slid2 > 5 && !!player.swim && splashes.length === 0, `åns brantaste kant vid (${best.x}, ${best.z}) (gradient ${best.s.toFixed(2)}, ${real ? 'över den riktiga gränsen' : 'gränsen sänkt'}): man glider ner i vattnet och simmar (#1943; ${slid2} glidbilder, ${splashes.length} plask, ${at()})`);
   WALK.maxSlope = keep;
   // the jetpack flies over steep ground without sliding
   player.spawn(best.x, best.z, 0); player.pos.y = groundY(best.x, best.z) + 3; player.jet = { worn: true, lift: () => 9.81 }; let jetSlid = 0;
