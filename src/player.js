@@ -735,13 +735,19 @@ export class Player {
       const falling = !!this.fall || !!r.airborne || launch > 0 || this.pos.y-support.y>C.maxDrop;
       let vy=launch || this.vy, y=support.y;
       if(falling) { vy-=C.motion.gravity*h;y=Math.max(support.y,this.pos.y+vy*h); }
-      const airborne = y > support.y + 1e-6;
+      let airborne = y > support.y + 1e-6;
       const targetPitch = airborne ? Math.atan2(vy, Math.max(.1, Math.abs(r.speed))) : support.pitch;
-      const nextPitch = airborne ? THREE.MathUtils.lerp(r.pitch ?? support.pitch, THREE.MathUtils.clamp(targetPitch,-C.maxTilt,C.maxTilt),Math.min(1,C.motion.airPitch*h)) : support.pitch;
+      let nextPitch = airborne ? THREE.MathUtils.lerp(r.pitch ?? support.pitch, THREE.MathUtils.clamp(targetPitch,-C.maxTilt,C.maxTilt),Math.min(1,C.motion.airPitch*h)) : support.pitch;
       // Sweep vertical motion too: a large fall never skips a thin leaf or a low ceiling.
       const steps=Math.max(1,Math.ceil((Math.abs(y-this.pos.y)+Math.abs(nextPitch-(r.pitch??previous.pitch))*C.height)/C.step));let clear=true;
       for(let j=1;j<=steps;j++) { const q=this.pos.clone().lerp(new THREE.Vector3(p.x,y,p.z),j/steps);if(!this.bikeHull(q,r.yaw+(yaw-r.yaw)*j/steps,[],{...support,pitch:THREE.MathUtils.lerp(r.pitch??previous.pitch,nextPitch,j/steps)})){clear=false;break;} }
-      if(!clear) { this.vy=0;r.speed=0;continue; }
+      if(!clear) {
+        this.vy=0;r.speed=0;
+        // #1948: the air pitch can put the nose or tail into rising ground just above the landing; the fall could then never finish
+        // (no speed, no turn, no dismount while airborne). Within the ordinary no-fall drop, settle on the wheels' own contact pose instead.
+        if(!(airborne||falling) || this.pos.y-support.y>C.maxDrop || !this.bikeHull(new THREE.Vector3(p.x,support.y,p.z),yaw,[],support))continue;
+        y=support.y;vy=0;airborne=false;nextPitch=support.pitch;
+      }
       if(falling && (airborne || this.fall)) {
         const f=(this.fall??={top:this.pos.y,gap:0});f.top=Math.max(f.top,this.pos.y);f.gap=Math.max(f.gap,this.pos.y-support.y);
       }

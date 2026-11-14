@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 // #1236: runs tools/farwalktest.html headless; prints its PASS/FAIL lines, exits 1 on a failure.
+//   THREE_DIR=/path/to/three node tools/farwalktest.cjs GAME   serves three.js from a local package instead of the CDN (#1948)
+const path = require('node:path');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 (async () => {
   const base = process.argv[2] || 'http://localhost:8776';
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   try {
     const page = await browser.newPage(), errors = [];
+    if (process.env.THREE_DIR) await page.route('https://cdn.jsdelivr.net/npm/three@0.170.0/**', (route) => route.fulfill({
+      path: path.join(process.env.THREE_DIR, new URL(route.request().url()).pathname.split('three@0.170.0/')[1]), contentType: 'text/javascript' }));
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto(`${base}/tools/farwalktest.html`);
     // #1312: the page ends with "ALL PASS N checks" / "FAIL N checks" itself (also on an exception or its own 240 s budget);

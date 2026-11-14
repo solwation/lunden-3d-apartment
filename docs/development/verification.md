@@ -1734,7 +1734,7 @@ longer waits on a page busy in a synchronous run). `tools/farwalktest.html` (a s
 had no such line, so `runtests farwalktest` always waited the full 20 min although every check passed; it now prints
 `ALL PASS N checks` / `FAIL N checks` (plus `time N s`), turns any exception or unhandled rejection into a FAIL line, and has a
 240 s budget checked in every `player.update` step. A bare name runs both formats: (#1358: each check line ends with the elapsed seconds `[N s]`; the run takes ~85-140 s since `Player.isFree` uses `segNear` and `riverAt` allocates nothing) `farwalktest` = the page and
-`farwalktest.cjs` (same page through its own Chromium, 300 s limit, prints the last `#out` on a hang), about 2 × 1 min.
+`farwalktest.cjs` (same page through its own Chromium, 300 s limit, prints the last `#out` on a hang), about 2 × 1 min. With `THREE_DIR=/path/to/three` the runner serves three 0.170.0 from that local package instead of the CDN (#1948).
 `perfcount` (explicit performance run, #736: full quality, never `&test`, not in `--group`) is selectable by name:
 `node tools/runtests.cjs perfcount` prints `PASS perfcount` or `FAIL …` (exit code 1) with the time; add `--verbose` for the
 per-spot draw call / triangle / memory lines and the `PASS within the performance budget` line (~1 min 10 s).
