@@ -1,5 +1,6 @@
 // #1945: where the blue mussels lie on the bed of Höje å and when a taken one is back. Pure rules (no three.js, no DOM):
 // `node --test tools/musselfieldtest.mjs`. src/mussels.js draws them and ties them to the game.
+// #1950: `strike` / `mayStrike` / `shellTick` are the rules for cracking a picked (closed) mussel against the bed.
 // The placement is deterministic (a seeded generator walking the river's centre line), so every player has the same bed without any sync.
 
 /** A small seeded generator (mulberry32): the same numbers for the same seed everywhere. */
@@ -94,3 +95,25 @@ export function bedSpot(o, d, reach, bedY, open, step = 0.08) {
   const y = bedY(x, z), distance = Math.hypot(x - o.x, y - o.y, z - o.z);
   return distance <= reach ? { x, y, z, distance } : null;
 }
+
+// --- #1950: a picked mussel is closed; a diver knocks it against the bed until the shell cracks ---------------------------------------
+// The shell's state lives on the mussel itself (`cracked`, `hits`, `wait`), so it follows it when it is put down and taken again; a mussel
+// taken off the bed always starts with `closeShell` (the bed's mussels, also the regrown ones, are closed).
+
+/** A closed shell: no knocks yet. Returns `m`. */
+export function closeShell(m) { m.cracked = false; m.hits = 0; m.wait = 0; return m; }
+/** Can a knock land now? Only a closed shell, only a diver (under the surface), only with the bed `bedDistance` m from the eye within
+ * `cfg.reach`, and not before the last knock's `cfg.gap` s are over. Never in the air, at the surface or against the ground on land. */
+export function mayStrike(m, { diving, bedDistance }, cfg) {
+  return !m.cracked && !!diving && typeof bedDistance === 'number' && bedDistance <= cfg.reach && !(m.wait > 0);
+}
+/** One knock against the bed: 'knock', 'crack' (the `cfg.hits`th one: the shell is `cracked` from now on) or null when none can land. */
+export function strike(m, where, cfg) {
+  if (!mayStrike(m, where, cfg)) return null;
+  m.hits = (m.hits || 0) + 1; m.wait = cfg.gap;
+  if (m.hits < cfg.hits) return 'knock';
+  m.cracked = true;
+  return 'crack';
+}
+/** Time passes between knocks. */
+export function shellTick(m, dt) { if (m.wait > 0) m.wait = Math.max(0, m.wait - dt); }

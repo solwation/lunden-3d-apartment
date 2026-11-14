@@ -3,7 +3,8 @@ import { MUSSELS as C, SITE, WALK } from './config.js';
 import { Holdable, heldItem, setHeld, handBusy } from './holdable.js';
 import { riverPath, riverAt, pierBoxes, waterYAt } from './riverbridge.js';
 import { swimWater, swimBedY, farWalls } from './farwalk.js';
-import { musselSpots, MusselField, bedSpot } from './musselfield.js';
+import { musselSpots, MusselField, bedSpot, closeShell, strike, shellTick } from './musselfield.js';
+import { sfx } from './audio.js';
 
 // Blue mussels on the bed of Höje å (#1945). src/musselfield.js (no three.js) says where they lie and when a taken one is back; this file
 // draws them and ties them to the game: E / the action button on a mussel within reach takes it into the hand like a nut, E on the bed
@@ -11,6 +12,12 @@ import { musselSpots, MusselField, bedSpot } from './musselfield.js';
 // Cost: the whole bed is ONE InstancedMesh (one draw call) holding only the mussels within `near` m of a swimmer's eye, hidden for everybody
 // who does not swim (the water is opaque from above, so nothing could be seen anyway); the spots are worked out at the first swim. A mussel
 // has a mesh of its own only while it is out of the bed (in the hand or put down): at most `loose` at once, pooled holdables.
+// #1950: a picked mussel is closed (`cracked` false). A diver with the bed within `crack.reach` knocks it against the bed with E (the action
+// says "Slå musslan mot botten"); after `crack.hits` knocks the shell cracks: `cracked` true (what #1946's fish look for), the mesh's
+// geometry is swapped for the open shell with the meat showing (same mesh, same material: no draw call more). The E rule: a CLOSED mussel
+// held by a DIVER aiming at the bed is knocked, never put down there; it is still put back with E on its old spot, and put down as before
+// from the surface (the shallows) or on land, where no knock counts. A CRACKED mussel is put down anywhere as before, but has no old spot
+// to go back to (the bed's own mussels are all closed; its spot grows a closed one back as usual).
 // Local to each player (no sync): the placement is seeded, so everybody sees the same bed; who has taken what is not shared.
 
 const V = new THREE.Vector3(), M = new THREE.Matrix4(), Q = new THREE.Quaternion(), E = new THREE.Euler(), S = new THREE.Vector3(), D = new THREE.Vector3();
@@ -32,9 +39,38 @@ export function musselGeometry() {
   return g;
 }
 
+/** The cracked shell (#1950), in the closed shell's frame: the lower valve as it lay, the upper one standing open `crack.gape` rad about the
+ * hinge, both with a pearly inside, and the pale meat lying in the lower valve. One non-indexed vertex-coloured geometry (~500 triangles). */
+export function crackedGeometry(closed = musselGeometry()) {
+  const K = C.crack, g = closed.toNonIndexed(), p = g.attributes.position, nr = g.attributes.normal, cl = g.attributes.color, n = p.count;
+  const blob = new THREE.SphereGeometry(0.5, ...K.meat.segments).toNonIndexed(), bp = blob.attributes.position, bn = blob.attributes.normal;
+  const total = n * 2 + bp.count, P = new Float32Array(total * 3), N = new Float32Array(total * 3), K3 = new Float32Array(total * 3);
+  const inside = new THREE.Color(K.colors.inside), rim = new THREE.Color(K.colors.rim), meat = new THREE.Color(K.colors.meat), c = new THREE.Color();
+  const cos = Math.cos(K.gape), sin = Math.sin(K.gape); let w = 0;
+  const put = (x, y, z, nx, ny, nz, up) => { // (the upper valve turns about the hinge line: z through x = -0.5)
+    if (up) { const dx = x + 0.5; x = -0.5 + dx * cos - y * sin; y = dx * sin + y * cos; const mx = nx * cos - ny * sin; ny = nx * sin + ny * cos; nx = mx; }
+    P.set([x, y, z], w * 3); N.set([nx, ny, nz], w * 3); K3.set([c.r, c.g, c.b], w * 3); w++;
+  };
+  for (let t = 0; t < n; t += 3) {
+    const up = p.getY(t) + p.getY(t + 1) + p.getY(t + 2) >= 0, half = (i) => (up ? Math.max(0, p.getY(i)) : Math.min(0, p.getY(i))); // each valve ends at the seam
+    for (const k of [0, 1, 2]) { const i = t + k; c.fromBufferAttribute(cl, i); put(p.getX(i), half(i), p.getZ(i), nr.getX(i), nr.getY(i), nr.getZ(i), up); } // the outside, as it was
+    for (const k of [0, 2, 1]) { const i = t + k, y = half(i); c.copy(inside).lerp(rim, smooth(1 - Math.abs(y) / 0.035)); put(p.getX(i), y, p.getZ(i), -nr.getX(i), -nr.getY(i), -nr.getZ(i), up); } // the inside
+  }
+  const [sx, sy, sz] = K.meat.size, [ax, ay, az] = K.meat.at;
+  for (let i = 0; i < bp.count; i++) {
+    const l = Math.hypot(bn.getX(i) / sx, bn.getY(i) / sy, bn.getZ(i) / sz) || 1;
+    c.copy(meat).lerp(rim, 0.25 * smooth(Math.abs(bp.getZ(i)) * 4 - 1)); // a darker mantle edge
+    put(ax + bp.getX(i) * sx, ay + bp.getY(i) * sy, az + bp.getZ(i) * sz, bn.getX(i) / sx / l, bn.getY(i) / sy / l, bn.getZ(i) / sz / l, false);
+  }
+  const out = new THREE.BufferGeometry();
+  out.setAttribute('position', new THREE.BufferAttribute(P, 3)); out.setAttribute('normal', new THREE.BufferAttribute(N, 3)); out.setAttribute('color', new THREE.BufferAttribute(K3, 3));
+  out.computeBoundingSphere(); g.dispose(); blob.dispose();
+  return out;
+}
+
 /** A mussel out of the bed: in the hand, or put down somewhere. Pooled by `Mussels` (`broken` = not in use, as a nut that is gone). */
 export class Mussel extends Holdable {
-  constructor(scene, camera, host, geometry, material) {
+  constructor(scene, camera, host, geometry, material, open = geometry) {
     const mesh = new THREE.Mesh(geometry, material);
     mesh.visible = false; mesh.userData.noDetail = true;
     const sphere = new THREE.Sphere(), hit = new THREE.Vector3();
@@ -45,14 +81,16 @@ export class Mussel extends Holdable {
     super(scene, camera, { name: 'en blåmussla', verb: 'ta', backName: 'blåmusslan', backVerb: 'lägga tillbaka', model: mesh, home: { pos: new THREE.Vector3(), rot: new THREE.Euler() },
       heldPose: { pos: new THREE.Vector3(...C.held.pos), rot: new THREE.Euler(...C.held.rot) }, pick: { pos: new THREE.Vector3(), size: [C.pick * 1.5, C.pick, C.pick * 1.5] } });
     // `isMussel`: what #1946's fish look for; `outdoorPlace`: E puts it down on the ground outdoors (main.js outdoorSpot), on the bed while swimming
-    Object.assign(this, { host, isMussel: true, outdoorPlace: true, broken: true, spot: null, putT: 0 });
+    Object.assign(this, { host, isMussel: true, outdoorPlace: true, broken: true, spot: null, putT: 0, shells: [geometry, open], swingT: -1 });
+    closeShell(this); // #1950: `cracked` (false = closed; the fixed interface #1946 reads), `hits`, `wait`
     this.pickMesh = this.holder.children[this.holder.children.length - 1];
     this.model.removeFromParent();
   }
   /** Out of the bed spot `s` and into the hand. */
   appear(s) {
-    this.spot = s; this.broken = false; this.rest = null;
+    this.spot = s; this.broken = false;
     this.model.scale.setScalar(s.size);
+    closeShell(this); this.swingT = -1; this.look(); // (the bed's mussels, also the regrown ones, are closed)
     this.home.pos.set(s.x, s.y + lift(s), s.z); this.home.rot.set(s.tilt, s.yaw, 0, 'YXZ');
     this.pickMesh.position.copy(this.home.pos);
     this.model.visible = true;
@@ -60,9 +98,32 @@ export class Mussel extends Holdable {
   /** Not in use: no target, no mesh. */
   vanish() {
     if (this.held) { this.held = false; if (heldItem() === this) setHeld(null); }
-    this.model.removeFromParent(); this.model.visible = false; this.broken = true; this.placed = false; this.spot = null;
+    this.model.removeFromParent(); this.model.visible = false; this.broken = true; this.placed = false; this.spot = null; this.swingT = -1;
   }
-  onPut() { this.putT = this.host.time; }
+  onPut() { this.putT = this.host.time; this.swingT = -1; this.look(); }
+  /** Show what the shell is (#1950): the closed or the open geometry on the same mesh, its pose in the hand and how it lies put down. */
+  look() {
+    const K = C.crack, size = this.model.scale.x;
+    this.model.geometry = this.shells[this.cracked ? 1 : 0];
+    this.heldPose.rot.set(...(this.cracked ? K.held.rot : C.held.rot));
+    this.rest = this.cracked ? { q: new THREE.Quaternion(), lift: size * C.shape.thick * 0.5 - C.sink } : null; // (open, it lies on its lower valve; closed: holdable.js restPose)
+    if (this.held && this.swingT < 0) { this.model.position.copy(this.heldPose.pos); this.model.rotation.copy(this.heldPose.rot); }
+  }
+  /** One knock landed (mussels.js `Mussels.strike`): the mussel strikes down and comes back; a cracked one opens at the blow. */
+  swing() { this.swingT = 0; }
+  /** The shell cracked: it has no spot on the bed to go back to any more (its spot grows a closed one back as usual). */
+  crack() { this.spot = null; this.pickMesh.position.y = -999; }
+  /** Held: the time between knocks and the strike's motion (the model is a child of the camera). */
+  tick(dt) {
+    shellTick(this, dt);
+    if (this.swingT < 0) return;
+    const W = C.crack.swing, before = this.swingT / W.time, k = (this.swingT += dt) / W.time;
+    if (before < W.at && k >= W.at) this.look(); // the blow: now it shows cracked
+    if (k >= 1) { this.swingT = -1; this.look(); return; }
+    const a = k < W.at ? smooth(k / W.at) : 1 - smooth((k - W.at) / (1 - W.at)), h = this.heldPose;
+    this.model.position.set(h.pos.x, h.pos.y - W.down * a, h.pos.z - W.forward * a);
+    this.model.rotation.set(h.rot.x - W.tilt * a, h.rot.y, h.rot.z);
+  }
   /** Home is the bed: put back with E on its old spot, or sent home by a reset, it is one of the bed's mussels again. */
   goHome() { super.goHome(); if (this.host && !this.broken) this.host.returned(this); }
 }
@@ -73,9 +134,9 @@ const underWater = (p) => p.y < SITE.bridges.waterY + 1 && swimWater(p.x, p.z) &
 
 export class Mussels {
   /** `player`: the Player (`swimming`); `onTake(spot)`: a mussel was picked off the bed. Nothing is placed until somebody swims. */
-  constructor({ scene, camera, player, onTake = null, rnd = Math.random }) {
-    Object.assign(this, { scene, camera, player, onTake, rnd, time: 0, field: null, spots: [], drawn: [], lastTake: null });
-    this.geometry = musselGeometry();
+  constructor({ scene, camera, player, onTake = null, say = null, rnd = Math.random }) {
+    Object.assign(this, { scene, camera, player, onTake, say, rnd, hinted: false, time: 0, field: null, spots: [], drawn: [], lastTake: null });
+    this.geometry = musselGeometry(); this.open = crackedGeometry(this.geometry); // (#1950: the cracked look, only ever on a loose mussel's own mesh)
     this.material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: C.rough, metalness: C.metal });
     this.mesh = new THREE.InstancedMesh(this.geometry, this.material, C.max);
     Object.assign(this.mesh, { frustumCulled: false, visible: false, count: 0, name: 'river-mussels' });
@@ -92,7 +153,9 @@ export class Mussels {
     this.mesh.userData.door = this.target;
     scene.add(this.mesh);
     /** The pooled holdables (main.js adds them to its `holdables`). */
-    this.items = Array.from({ length: C.loose }, () => new Mussel(scene, camera, this, this.geometry, this.material));
+    this.items = Array.from({ length: C.loose }, () => new Mussel(scene, camera, this, this.geometry, this.material, this.open));
+    /** #1950: what E does while a diver holds a closed mussel and aims at the bed (main.js updateFocus, instead of the place target). */
+    this.strikeAim = { name: 'musslan mot botten', kind: 'holdable', verb: 'slå', strike: true, toggle: () => this.strike() };
   }
 
   /** The spots, worked out once (the first time somebody swims: the drawn bed exists by then). */
@@ -140,6 +203,7 @@ export class Mussels {
     this.field.take(spot); m.appear(spot); m.take();
     if (!m.held) { this.field.restore(spot); m.vanish(); return false; } // (the hand was reserved after all)
     this.lastTake = spot; this.onTake?.(spot);
+    if (!this.hinted) { this.hinted = true; this.say?.(C.crack.hint); } // #1950: the first closed mussel in the hand says how it is opened
     return true;
   }
   /** A loose mussel went home: its spot has it again (when nothing has grown there meanwhile), the holdable is free. */
@@ -149,6 +213,23 @@ export class Mussels {
   bedSpot(ray, reach = C.reach) {
     const p = bedSpot(ray.origin, ray.direction, reach, swimBedY, swimWater);
     return p && { point: new THREE.Vector3(p.x, p.y, p.z), distance: Math.max(0.3, p.distance), outdoor: true };
+  }
+
+  /** #1950: the E target for the held `item` when the bed point `spot` ({ point, distance }, `bedSpot`) is aimed at: the knock, while the
+   * mussel is closed and its holder dives with the bed within `crack.reach`; null otherwise (then E puts it down there as before). */
+  strikeTarget(item, spot) {
+    return item?.isMussel && item === this.held && !item.cracked && this.player.diving && spot && spot.distance <= C.crack.reach ? this.strikeAim : null;
+  }
+  /** E on the bed with a closed mussel: one knock ('knock'), the last one cracks it ('crack'); null when none lands (not diving, the bed
+   * out of reach, too soon after the last one, already cracked, nothing held). Seen (the mussel strikes down) and heard (a dull knock). */
+  strike() {
+    const m = this.held; if (!m) return null;
+    const K = C.crack, p = bedSpot(this.camera.getWorldPosition(V), this.camera.getWorldDirection(D), K.reach, swimBedY, swimWater);
+    const r = strike(m, { diving: !!this.player.diving, bedDistance: p?.distance }, K);
+    if (!r) return null;
+    if (r === 'crack') m.crack();
+    m.swing(); sfx.musselKnock(V.set(p.x, p.y, p.z), r === 'crack', K.swing.time * K.swing.at);
+    return r;
   }
 
   update(dt) {
@@ -171,5 +252,5 @@ export class Mussels {
   }
 
   /** For tests / the console. */
-  state() { return { spots: this.spots.length, drawn: this.mesh.count, visible: this.mesh.visible, out: this.field?.out.length ?? 0, loose: this.items.filter((x) => !x.broken).length, held: !!this.held }; }
+  state() { return { spots: this.spots.length, drawn: this.mesh.count, visible: this.mesh.visible, out: this.field?.out.length ?? 0, loose: this.items.filter((x) => !x.broken).length, held: !!this.held, cracked: this.held?.cracked ?? null, hits: this.held?.hits ?? null }; }
 }

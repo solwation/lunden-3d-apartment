@@ -395,6 +395,18 @@ export const sfx = {
       },
     };
   },
+  /** #1950: a mussel knocked against the river bed `delay` s from now: a dull thud (heard through the dive's low-pass, setMuffled);
+   * `crack` = the shell gives way: a hard snap and a few splintering ticks on top. */
+  musselKnock(pos, crack = false, delay = 0) {
+    if (!ready()) return;
+    const t = ctx.currentTime + delay, d = out(pos, 1);
+    noise(t, 0.07, d, { type: 'lowpass', freq: 520, gain: 0.55, attack: 0.002 });
+    tone(t, 0.09, d, { from: 190, to: 95, gain: 0.3 });
+    if (!crack) return;
+    noise(t, 0.035, d, { type: 'bandpass', freq: 1500, q: 1.4, gain: 0.9, attack: 0.001 });
+    tone(t, 0.05, d, { type: 'triangle', from: 880, to: 330, gain: 0.3 });
+    for (let i = 0; i < 4; i++) noise(t + 0.04 + i * 0.028 + Math.random() * 0.012, 0.014, d, { type: 'bandpass', freq: 900 + Math.random() * 900, q: 2, gain: 0.5, attack: 0.001 });
+  },
   /** Someone falls into the river (#1281): a plunge (low-passed noise burst + a dull thump) and a few bubbles rising. */
   splash(pos) {
     if (!ready()) return;

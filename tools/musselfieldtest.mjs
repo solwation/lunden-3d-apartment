@@ -6,7 +6,7 @@ import { MUSSELS as C, SITE, WALK } from '../src/config.js';
 import { riverPath, riverAt, pierBoxes, waterYAt, deckAt } from '../src/riverbridge.js';
 import { swimWater, swimBedY, farWalls } from '../src/farwalk.js';
 import { diveMax } from '../src/swim.js';
-import { musselSpots, MusselField, bedSpot, seeded, segDistance } from '../src/musselfield.js';
+import { musselSpots, MusselField, bedSpot, seeded, segDistance, closeShell, mayStrike, strike, shellTick } from '../src/musselfield.js';
 
 const foot = SITE.bridges.road.foot / 2 + C.pierClear, piers = pierBoxes().map((p) => ({ ...p, half: foot }));
 const place = (over = {}) => musselSpots({ path: riverPath, frame: riverAt, open: swimWater, bedY: swimBedY, bounds: WALK, cfg: C, piers, walls: (x, z) => farWalls(x, z, SITE.bridges.bedY), ...over });
@@ -77,4 +77,50 @@ test('bedSpot: where a diver puts a mussel down', () => {
   assert(level && level.x === 1 && Math.abs(level.distance - Math.hypot(1, 0.4)) < 1e-9);
   assert.equal(bedSpot({ x: 0, y: 0.1, z: 0 }, { x: 0.6, y: -0.8, z: 0 }, 2, flat, open), null, 'out of reach from above deep water');
   assert.equal(bedSpot({ x: 0, y: -1.6, z: 0 }, { x: 0.6, y: -0.8, z: 0 }, 2, flat, () => false), null, 'not on the bank');
+});
+
+// --- #1950: a picked mussel is closed and is cracked against the bed ---
+const K = C.crack, atBed = { diving: true, bedDistance: 0.5 };
+const knock = (m, where = atBed) => { const r = strike(m, where, K); shellTick(m, K.gap + 0.01); return r; };
+
+test('#1950: a picked mussel is closed; `crack.hits` knocks against the bed crack it, not one fewer', () => {
+  assert(K.hits >= 2 && K.hits <= 4, `a few knocks: ${K.hits}`);
+  const m = closeShell({});
+  assert.deepEqual([m.cracked, m.hits], [false, 0]);
+  for (let i = 1; i < K.hits; i++) { assert.equal(knock(m), 'knock'); assert.equal(m.cracked, false, `still closed after ${i}`); }
+  assert.equal(knock(m), 'crack');
+  assert.equal(m.cracked, true);
+  assert.equal(knock(m), null, 'a cracked shell is not knocked again'); assert.equal(m.hits, K.hits);
+});
+
+test('#1950: only the river bed counts: not in the air or on land, not at the surface, not with the bed out of reach', () => {
+  const m = closeShell({});
+  for (const where of [{ diving: false, bedDistance: 0.5 }, { diving: false, bedDistance: undefined }, { diving: true, bedDistance: undefined }, { diving: true, bedDistance: null },
+    { diving: true, bedDistance: K.reach + 0.01 }, { diving: false, bedDistance: 0 }]) {
+    for (let i = 0; i < K.hits + 2; i++) assert.equal(knock(m, where), null, JSON.stringify(where));
+    assert.equal(mayStrike(m, where, K), false);
+  }
+  assert.deepEqual([m.cracked, m.hits], [false, 0]);
+  assert.equal(mayStrike(m, { diving: true, bedDistance: K.reach }, K), true);
+});
+
+test('#1950: knocks need `crack.gap` s between them', () => {
+  const m = closeShell({});
+  assert.equal(strike(m, atBed, K), 'knock');
+  assert.equal(strike(m, atBed, K), null, 'at once: too soon'); shellTick(m, K.gap / 2);
+  assert.equal(strike(m, atBed, K), null, 'half the gap: too soon'); shellTick(m, K.gap / 2 + 1e-6);
+  assert.equal(strike(m, atBed, K), K.hits === 2 ? 'crack' : 'knock');
+  assert.equal(m.hits, 2);
+});
+
+test('#1950: the state follows the mussel through put down and take; a mussel off the bed (regrown too) starts closed', () => {
+  const m = closeShell({});
+  knock(m); const held = { ...m }; // put down half way (nothing ticks while it lies there), taken again
+  assert.equal(m.hits, held.hits); assert.equal(m.cracked, false);
+  while (!m.cracked) knock(m);
+  shellTick(m, 1000); assert.equal(m.cracked, true, 'cracked stays cracked');
+  const f = new MusselField(place(), C, () => 0), s = f.spots[0];
+  f.take(s); f.update(C.regrow[0] + 1); assert.equal(s.gone, false, 'regrown');
+  closeShell(m); // what Mussel.appear does for every mussel taken off the bed
+  assert.deepEqual([m.cracked, m.hits, m.wait], [false, 0, 0]);
 });

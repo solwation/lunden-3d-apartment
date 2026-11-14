@@ -620,7 +620,7 @@ const squirrels = params0.has('nosquirrels') ? null : new Squirrels({ scene, cam
   nutWalls: farWalls, // #1831: pathside nuts have a clear short approach, including trunks/fences
   nutOk: (x, z) => squirrelWalk(x, z) && !onRoad(x, z, 0.5) && !onWalk(x, z, 0.5) && !onParkPath(x, z, 0.4), onFeed: () => bump('squirrelFeeds') });
 if (squirrels) holdables.push(...squirrels.nutItems);
-const mussels = new Mussels({ scene, camera, player }); holdables.push(...mussels.items); // #1945: blue mussels on the bed of Höje å, taken like the nuts while diving
+const mussels = new Mussels({ scene, camera, player, say: (text) => badge(text, false) }); holdables.push(...mussels.items); // #1945: blue mussels on the bed of Höje å, taken like the nuts while diving
 // #1752: fish in Höje å and the rings they leave on the water, the same for every player (src/riverfish.js, src/riverfishsync.js, cloudflare/riverfish.js)
 const riverFish = params0.has('nofish') ? null : new RiverFish({ scene, camera });
 // #1753: the fishing rod under the road bridge (a holdable, saved like any loose thing) and the fish caught with it (keep.js `fishing`)
@@ -2493,7 +2493,7 @@ function updateFocus() {
     } else if (spot && !lifeAim && !atBack && (!hit || spot.distance <= hit.distance + 0.05)) {
       if (!spot.snapped && !top?.stackSupport) snapSpot(spot, top && spot.point.y > LEVELS[Math.max(0, player.level)].floor + 0.05 ? top.object : null); // on a grid (#368)
       placeTarget = { name: `${item.name} här`, kind: 'place', verb: item.placeVerb ?? 'lägga ner', item, point: spot.point, yaw: top?.stackYaw ?? placeYaw() };
-      focused = placeTarget;
+      focused = mussels.strikeTarget(item, spot) ?? placeTarget; // (#1950: a diver knocks a closed mussel against the bed instead of putting it down)
       placeGhost.position.copy(spot.point).y += 0.003;
       placeGhost.visible = true;
     }

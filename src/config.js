@@ -8746,5 +8746,17 @@ export const MUSSELS = {
   loose: 3, // mussels that can be out of the bed at once (in the hand or put down somewhere); taking another sends the oldest one put down back
   held: { pos: [0.1, -0.115, -0.37], rot: [1.1, 0.3, 0.9] }, // the pose in the hand (camera space, where the nut's is): the broad side towards the eye
   sink: 0.012, // m a lying mussel is sunk into the bed's mud
+  // #1950: a picked mussel is closed; a diver knocks it against the bed (E aimed at the bed) until the shell cracks. All *guess*.
+  crack: {
+    hits: 3, // knocks against the bed until the shell cracks (*guess*: "a few")
+    reach: 1.1, // m from the eye to the bed point aimed at for a knock to land (*guess*: an arm's length, as `reach` above)
+    gap: 0.38, // s between two knocks: the arm goes down and comes back (*guess*)
+    swing: { time: 0.34, down: 0.2, forward: 0.1, tilt: 0.7, at: 0.4 }, // the held mussel's strike: s it lasts, m down / forward at the blow (camera space), rad it tips, the part of the time the blow lands at (*guess*)
+    gape: 0.85, // rad the cracked shell's upper valve stands open (*guess*: wide enough that the meat shows in the hand)
+    held: { rot: [0.62, 0.35, 0.25] }, // the cracked mussel's pose in the hand (camera space): the open side towards the eye (*guess*, by eye)
+    colors: { inside: 0xb9c3d6, meat: 0xf0c58a, rim: 0x3a4468 }, // pearly pale inside of the valves, pale orange meat, the valves' rim (photos of opened Mytilus edulis, by eye)
+    meat: { size: [0.56, 0.2, 0.3], at: [0.06, -0.03, 0.04], segments: [8, 5] }, // the meat's size and centre as parts of the shell's length (it lies in the lower valve), sphere segments
+    hint: 'Slå musslan mot botten för att öppna den', // shown the first time a closed mussel is held
+  },
   bed: { color: 0x74664b, under: 0, fade: 0.15 }, // the river bed's mud / sand tone (*guess*) instead of grass: full `fade` m under `under` m below the water line (surroundings.js `bedMud`, grass.js)
 };
