@@ -2,11 +2,12 @@ import * as THREE from 'three';
 import { bicycleSpeed, bicycleTakeoff } from './bikemotion.js';
 import { basketFloor, basketCollide } from './balloongeo.js';
 import { parkFillAt } from './riverpark.js';
-import { SITE, WALK, LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, jetThin, SPIDER, SOFFITS, BICYCLE } from './config.js';
+import { SITE, WALK, LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, jetThin, SPIDER, SOFFITS, BICYCLE, SWIM } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY, groundBelowDeckY } from './surroundings.js';
-import { deckAt, deckUnderAt, waterYAt, upstreamRiverZone } from './riverbridge.js';
-import { farWalls, slideAt, inWater, splashBank, tooSteep, buildingRescue, atEdge, surfaceY, underDeck, stileSurface } from './farwalk.js'; // #1236: walking beyond the block
+import { deckAt, deckUnderAt, waterYAt, upstreamRiverZone, riverAt } from './riverbridge.js';
+import { farWalls, slideAt, inWater, splashBank, tooSteep, buildingRescue, atEdge, surfaceY, underDeck, stileSurface, swimWater, swimBedY } from './farwalk.js'; // #1236: walking beyond the block
+import { swimVelocity, exitDecision, swimEye } from './swim.js'; // #1943: the pure swimming rules
 import { bicycleCurbY } from './street.js';
 import { stowBicycleHand, restoreBicycleHand } from './holdable.js';
 
@@ -83,6 +84,10 @@ export class Player {
     this.jumpPress = false; // the touch jump button was pressed (#600, main.js)
     this.riding = null; // #903: transient bicycle mode, never persisted
     this.onJump = null;     // (suit: boolean) the feet left the ground on a jump (#636)
+    // #1943: swimming in the river (never persisted): { t (s in the water), stuck (s against an edge), depth (m the eye is under its floating
+    // height: 0, the hook for #1944's dive), moving (stroking this frame), exit ({ x, z } while being helped up a bank) }, else null.
+    this.swim = null;
+    this.onSwim = null;     // (in: boolean, at: { x, z }) into / out of the water (main.js: the splash)
   }
 
   spawn(x, z, yaw) {
@@ -96,7 +101,7 @@ export class Player {
     this.fall = null; // (a teleport is no fall, #361)
     this.flying = false; this.jv.x = this.jv.z = 0;
     this.slideV = 0; this.sliding = false; this.slideDir = null; // (#1725: a teleport/revival keeps no slide speed from the old place)
-    this.climb = null; this.swing = null; this.fling = null;
+    this.climb = null; this.swing = null; this.fling = null; this.swim = null;
     this.eyeY = this.pos.y + PLAYER.eye;
     this.camera.position.set(x, this.eyeY, z);
     this.camera.rotation.set(0, yaw, 0, 'YXZ');
@@ -150,6 +155,9 @@ export class Player {
     const r = this.world.playroom;
     return !!r?.inside && r.contains(this.pos.x, this.pos.z);
   }
+
+  /** #1943: swimming in the river (`swim` holds the details). #1944: `crouch` (wanted) while this is true is the dive input. */
+  get swimming() { return !!this.swim; }
 
   /** Outside the flat (street, lawn, patio, up on the roofs); used for terrain and ambience. */
   get outdoors() {
@@ -399,7 +407,7 @@ export class Player {
     const h = Math.hypot(n?.x ?? 0, n?.z ?? 0), wall = h > 0.7; // (a façade, not a roof's top / the ground)
     const eye = this.pos.clone(); eye.y += PLAYER.eye;
     const v = this.swing ? this.swing.v.clone() : new THREE.Vector3(this.fling?.x ?? 0, this.vy, this.fling?.z ?? 0);
-    this.climb = null;
+    this.climb = null; this.swim = null; // (#1943: a strand pulls a swimmer out of the water)
     this.swing = { a: a.clone(), nx: wall ? n.x / h : 0, nz: wall ? n.z / h : 0, len: eye.distanceTo(a), t: 0, shot,
       v };
     this.fling = null; this.fall = null; this.crouched = false;
@@ -591,7 +599,7 @@ export class Player {
   }
 
   mountBicycle(bike) {
-    if (this.riding || this.flying || this.climb || this.swing || this.fall || !bike || this.pos.distanceTo(bike.position) > BICYCLE.mountReach) return false;
+    if (this.riding || this.flying || this.climb || this.swing || this.swim || this.fall || !bike || this.pos.distanceTo(bike.position) > BICYCLE.mountReach) return false;
     if (bike.cageDoor && (bike.cageDoor.target === 0 || (bike.cageDoor.angle ?? 0) < 0.2)) return false;
     const standing = this.pos.clone();
     if (!this.bikeClear(standing) || Math.abs(this.groundAt(standing.x, standing.z, standing.y) - standing.y) > .02) return false;
@@ -764,6 +772,7 @@ export class Player {
     this.spaceDown = k.has('Space'); this.jumpPress = false;
     if (this.swing && this.swingStep(dt, pressed)) { this.settleEye(dt); return; } // on a strand (#600)
     if (this.climb && this.climbStep(dt, fwd, side, pressed)) { this.settleEye(dt); return; } // on a wall (#597)
+    if (this.swim && this.swimStep(dt, fwd, side, amount)) { this.settleEye(dt); return; } // in the river (#1943): no jump, sprint or crouch
     // crouch (#70): down at once, up only where there is head room (under the stair there may be none)
     // the jetpack (#359): its thrust first (Space / ⬆; C / Ctrl / ⬇ down faster); off the ground it flies
     // (#1783: worn indoors it is just a backpack: `lift` gives 0 there and the walking physics stay; `jetOn` still blocks the jump)
@@ -887,7 +896,7 @@ export class Player {
       // Ground steps, lift snaps, spawn/rescue and other position changes never reach this hook.
       if (jet && this.flying && this.vy > 0 && this.pos.y > y0) this.onJetRise?.(this.pos.y - y0);
     }
-    if (this.splashCheck()) { this.world.core?.snap(this); this.settleEye(dt); return; } // #1281: into the river (before a landing counts as a fall)
+    if (this.swimCheck()) { this.world.core?.snap(this); this.settleEye(dt); return; } // #1281, #1943: into the river: swimming (before a landing counts as a fall)
     if (this.fall && this.pos.y <= g) { // landed: with the jetpack on, as hard as the speed it came down at (a soft landing on thrust)
       const f = this.fall; this.fall = null; this.fling = null;
       this.onLand?.(jet ? Math.max(0, impact) ** 2 / (2 * GRAVITY) : f.low ? Math.max(0, f.from - this.pos.y) : f.top - this.pos.y, f.gap); // (an ordinary jump counts from where it left the ground, #636)
@@ -904,7 +913,7 @@ export class Player {
   slideStep(dt, mx, mz) {
     const p = this.pos, d = this.slideD ??= { x: 0, z: 0 };
     d.x = d.z = 0;
-    const out = (p.z > 60 || upstreamRiverZone(p.x, p.z)) && !this.inPlayroom && !this.flying && !this.aloft && !this.inCore && !this.unit && !this.climb && !this.swing && !this.inFootprint();
+    const out = (p.z > 60 || upstreamRiverZone(p.x, p.z)) && !this.swim && !this.inPlayroom && !this.flying && !this.aloft && !this.inCore && !this.unit && !this.climb && !this.swing && !this.inFootprint();
     const sl = out && p.y <= surfaceY(p.x, p.z, p.y) + 0.25 ? // (feet on the ground: a downhill step leaves them a hair above it, which is no fall)
        slideAt(p.x, p.z, p.y, this.sliding) : null;
     this.sliding = !!sl;
@@ -919,27 +928,109 @@ export class Player {
     d.x += sl.dx * this.slideV * dt; d.z += sl.dz * this.slideV * dt;
   }
 
-  /** #1281: feet under the river's surface (walked, slid, fallen or flown in): a splash, and back on the nearest bank (`splashBank`, else the
-   * last dry spot), standing still and safe from fall damage for `WALK.splashSafe` s. True when it happened. Flying over the water does not count. */
-  splashCheck() {
+  /** #1281: are the feet under the river's surface (walked, slid, fallen or flown in)? Flying over the water does not count. Standing dry it
+   * remembers the spot (`lastDry`, the fallback bank). `swimmer` (#1943): water under a deck counts too (`swimWater`). */
+  underWater(swimmer = false) {
     const p = this.pos;
     if ((p.z <= 60 && !upstreamRiverZone(p.x, p.z)) || this.inPlayroom || this.aloft || this.inCore || this.unit || this.inFootprint()) return false;
-    if (!(p.y < waterYAt(p.x, p.z) - WALK.waterDepth) || !inWater(p.x, p.z, p.y)) {
+    if (!(p.y < waterYAt(p.x, p.z) - WALK.waterDepth) || !(inWater(p.x, p.z, p.y) || (swimmer && swimWater(p.x, p.z)))) {
       if (!this.sliding && p.y <= surfaceY(p.x, p.z, p.y) + 0.05) { const d = this.lastDry ??= { x: p.x, z: p.z }; d.x = p.x; d.z = p.z; } // (the fallback bank)
       return false;
     }
-    const at = { x: p.x, z: p.z }, back = splashBank(p.x, p.z, p.y) ?? this.lastDry;
+    return true;
+  }
+
+  /** #1281: back on the nearest bank (`splashBank`, else the last dry spot), standing still and safe from fall damage for `WALK.splashSafe` s.
+   * The bicycle's rule (`bikeSplash`) and a swimmer's last resort (#1943). True when it happened. */
+  waterRescue() {
+    const p = this.pos, at = { x: p.x, z: p.z }, back = splashBank(p.x, p.z, p.y) ?? this.lastDry;
     if (!back) return false;
     this.pos.set(back.x, surfaceY(back.x, back.z, p.y), back.z);
-    this.vy = 0; this.fall = null; this.fling = null; this.jv.x = this.jv.z = 0; this.slideV = 0; this.sliding = false;
+    this.vy = 0; this.fall = null; this.fling = null; this.jv.x = this.jv.z = 0; this.slideV = 0; this.sliding = false; this.swim = null;
     this.safeUntil = performance.now() + WALK.splashSafe * 1000;
     this.onWaterRescue?.('water', at);
     return true;
   }
 
+  /** #1281: the bicycle in the river: a splash, and back on the bank (`waterRescue`). On foot the visitor swims instead (#1943, `swimCheck`). */
+  splashCheck() { return this.underWater() && this.waterRescue(); }
+
+  /** #1943: on foot with the feet under the river's surface: swimming starts (no rescue, and the fall that ended in the water does not
+   * count: no `onLand`, so no fall damage). True when it started. */
+  swimCheck() {
+    if (this.swim || !this.underWater(true)) return false;
+    const p = this.pos;
+    this.swim = { t: 0, stuck: 0, depth: 0, moving: false, exit: null };
+    p.y = swimBedY(p.x, p.z);
+    this.vy = 0; this.fall = null; this.fling = null; this.jv.x = this.jv.z = 0; this.slideV = 0; this.sliding = false; this.slideDir = null;
+    this.flying = false; this.crouched = false; this.sprinting = false;
+    this.onSwim?.(true, { x: p.x, z: p.z });
+    return true;
+  }
+
+  /** #1943: one frame in the river. The feet follow the bed (the body is drawn floating, avatar.js; the eye floats at the surface,
+   * `settleEye`), the stroke goes where the ordinary movement input points at SWIM.speed and the current carries the swimmer downstream
+   * (swim.js). The water's edge holds the swimmer in; swimming into it with a walkable bank spot within SWIM.exitReach helps them up there
+   * (the banks are too steep to walk), and SWIM.rescueAfter s against an edge with no way up ends in the old rescue. The jetpack's thrust
+   * lifts out of the water. No jump, sprint or crouch speed here; `crouch` (wanted) is left alone for #1944's dive. False when the swim ended
+   * this frame and the ordinary update should go on. */
+  swimStep(dt, fwd, side, amount) {
+    const s = this.swim, p = this.pos;
+    this.vy = 0; this.fall = null; this.fling = null; this.flying = false; this.crouched = false; this.sprinting = false; this.sliding = false; this.slideV = 0;
+    s.t += dt;
+    if (s.exit) { // up the bank to the dry spot
+      const dx = s.exit.x - p.x, dz = s.exit.z - p.z, d = Math.hypot(dx, dz), step = SWIM.climbSpeed * dt;
+      if (d <= step) { p.set(s.exit.x, surfaceY(s.exit.x, s.exit.z, p.y), s.exit.z); this.swim = null; this.safeUntil = performance.now() + WALK.splashSafe * 1000; this.onSwim?.(false, { x: p.x, z: p.z }); return true; }
+      p.x += dx / d * step; p.z += dz / d * step; p.y = swimBedY(p.x, p.z);
+      return true;
+    }
+    const jet = this.jet?.worn && this.outdoors ? this.jet : null;
+    if (jet && jet.lift(dt, true) > GRAVITY) { // the jetpack lifts out of the water: the ordinary update flies on from the surface
+      p.y = waterYAt(p.x, p.z) - WALK.waterDepth + 0.02; this.vy = 1; this.swim = null; this.onSwim?.(false, { x: p.x, z: p.z });
+      return false;
+    }
+    if (!swimWater(p.x, p.z)) { this.swim = null; p.y = Math.max(p.y, surfaceY(p.x, p.z, p.y)); return false; } // (moved out of the water by something else)
+    const yaw = this.camera.rotation.y;
+    const ix = -Math.sin(yaw) * fwd + Math.cos(yaw) * side, iz = -Math.cos(yaw) * fwd - Math.sin(yaw) * side, pushing = Math.hypot(ix, iz) > 0 && amount > 0;
+    const v = swimVelocity(ix, iz, pushing ? amount : 0, riverAt(p.x, p.z), this.swimV ??= {});
+    s.moving = pushing;
+    const n = Math.max(1, Math.ceil(Math.hypot(v.x, v.z) * dt / 0.05)), h = dt / n;
+    const [stat, dyn] = this.segments(); // (the perimeter wall, the bridge piers, fences: as when walking)
+    let blocked = false, bx = 0, bz = 0;
+    for (let i = 0; i < n; i++) {
+      const push = () => { for (let it = 0; it < 3; it++) { let hit = false; for (const w of stat) hit = pushOut(p, PLAYER.radius, w) || hit; for (const w of dyn) hit = pushOut(p, PLAYER.radius, w) || hit; if (!hit) break; } };
+      // the current first: against a bank (a bend) it turns towards the centre line instead of pushing the swimmer ashore
+      let x0 = p.x, z0 = p.z;
+      p.x += v.cx * h; p.z += v.cz * h; push();
+      if (!swimWater(p.x, p.z)) {
+        const r = riverAt(x0, z0), d = Math.hypot(r.x - x0, r.z - z0) || 1, c = Math.hypot(v.cx, v.cz) * h;
+        p.x = x0 + (r.x - x0) / d * c; p.z = z0 + (r.z - z0) / d * c; push();
+        if (!swimWater(p.x, p.z)) { p.x = x0; p.z = z0; }
+      }
+      if (!pushing) continue;
+      x0 = p.x; z0 = p.z;
+      p.x += v.sx * h; p.z += v.sz * h; push();
+      if (swimWater(p.x, p.z)) continue;
+      blocked = true; bx = p.x; bz = p.z; // the water's edge: along it where one axis is still water
+      if (swimWater(p.x, z0)) p.z = z0; else if (swimWater(x0, p.z)) p.x = x0; else { p.x = x0; p.z = z0; }
+    }
+    p.y = swimBedY(p.x, p.z);
+    let bank = null;
+    if (blocked && pushing) { // a walkable spot on the bank just ahead, reached through no wall
+      bank = splashBank(bx, bz, p.y, SWIM.exitReach);
+      if (bank && farWalls(p.x, p.z, p.y).some((w) => crosses(p.x, p.z, bank.x, bank.z, w))) bank = null;
+    }
+    const what = exitDecision(s, { blocked, pushing, bank, dt });
+    if (what === 'climb') s.exit = bank;
+    else if (what === 'rescue' && this.waterRescue()) this.onSwim?.(false, { x: p.x, z: p.z }); // (`waterRescue` says so itself: onWaterRescue)
+    this.edgeNotice();
+    return true;
+  }
+
   /** The camera to the feet + the eye height (smoothed over stair steps). */
   settleEye(dt) {
-    const target = this.pos.y + (this.crouched ? PLAYER.crouchEye : PLAYER.eye);
+    const s = this.swim, target = s && !s.exit ? waterYAt(this.pos.x, this.pos.z) + swimEye(s.t, s.depth) // #1943: floating, the eyes just above the surface
+      : this.pos.y + (this.crouched ? PLAYER.crouchEye : PLAYER.eye);
     this.eyeY += (target - this.eyeY) * Math.min(1, dt * 14);
     this.camera.position.set(this.pos.x, this.eyeY, this.pos.z);
   }

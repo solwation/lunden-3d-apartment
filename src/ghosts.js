@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import { FALL, TOAST, SOUNDS, KISS, HUG, REACT } from './config.js';
 import { makesSteps, strideFor } from './spatialsound.js';
 import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, CHAT, encodeAvatarLook, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
-import { Avatar, armTarget } from './avatar.js';
+import { Avatar, armTarget, SWIM_LINE } from './avatar.js';
 import { totalScore } from './stats.js';
 import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge.js';
 import { setMirrorExtra } from './reflections.js';
@@ -94,6 +94,10 @@ const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const lerpAngle = (a, b, t) => a + wrap(b - a) * t;
 export const airMode = (am) => (am === 1 || am === 2 || am === 3 ? am : 0); // #1799: the `am` field (1 flying, 2 swinging, 3 climbing; else on the ground)
 const SWING = 0.35; // s the saber's cut lasts
+// #1943: is a figure with its feet at `p` swimming? Set by main.js (`Ghosts` option `swim`), so this module needs no terrain: (p) => null or
+// { water: the surface's height there, cx, cz: the current (m/s) }. Derived from the position alone, so no new state field travels: a swimmer's
+// feet follow the river bed, under the surface (player.js `swimStep`), and nobody else stands there.
+let swimProbe = null;
 const tmpV = new THREE.Vector3();
 const pickMat = new THREE.MeshBasicMaterial();
 
@@ -323,6 +327,12 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const hug = this.hug, hugAge = hug ? (t - hug.start) / 1000 : -1, hugged = hugAmount(hugAge); // (#1405)
     if (hug && hugAge >= HUG.duration) this.hug = null;
     if (!hugged) this.avatar.object.position.set(0, 0, 0); // back where the body stands after a hug, also when not posed
+    // #1943: in the river (derived from the position): the figure is set so deep that only the head is above the surface, and its speed
+    // is the one through the water (the current taken off), so someone only drifting treads water
+    const sw = swimProbe && !this.pose && !this.gx && !this.bikeMesh && !this.air ? swimProbe(this.root.position) : null;
+    this.swim = !!sw;
+    const sink = (amt, line) => { this.swimDy = amt * (sw.water - this.root.position.y - line * this.avatar.object.scale.y); this.avatar.object.position.y = this.swimDy; };
+    if (sw) { vx -= sw.cx; vz -= sw.cz; sink(1, SWIM_LINE); } else this.swimDy = 0;
     if (d > AVATAR.poseFar) { if (this.itemProp) this.itemProp.visible = false; return; } // (#1297: the hand prop only near, with the posed avatar)
     const gaze = this.root.rotation.y, sp = this.pose || this.gx ? 0 : Math.hypot(vx, vz);
     this.speed += ((sp > 8 ? 0 : sp) - this.speed) * Math.min(1, dt * 10);
@@ -367,14 +377,15 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const amount = Math.max(kissed, hugged); // (the look and gait give way to either embrace)
     const air = this.pose || this.bikeMesh || amount ? 0 : this.air ?? 0, by = this.body + Math.PI; // #1799: the velocity in the figure's frame (+z forward, +x its left)
     const airV = air ? [vx * Math.cos(by) - vz * Math.sin(by), this.vy ?? 0, vx * Math.sin(by) + vz * Math.cos(by)] : null;
-    this.avatar.update(dt, { speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV });
+    this.avatar.update(dt, { speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!sw && !amount });
+    if (sw) sink(this.avatar.swimAmt, this.avatar.swimLine); // (blending in from standing on the bed)
     applyRestPose(this.avatar, this.pose, this.look, react);
     applyGymBodyPose(this.avatar,this.gx,this.look);
     if (this.bikeMesh) this.poseBike(dt, Math.hypot(vx, vz), turn);
     this.heldCat.update(this.avatar, this.root);
     if (this.tag) {
       if (this.pose || this.gx) { this.tag.position.copy(this.root.worldToLocal(this.head)); this.tag.position.y += (G.tagY - 1.78) * this.avatar.look.tall; }
-      else this.tag.position.set(0, this.tagY, 0);
+      else this.tag.position.set(0, this.tagY + (this.swimDy ?? 0), 0); // (#1943: over a swimmer's head)
     }
     if (this.pick) {
       if (this.pose) {
@@ -432,7 +443,8 @@ function avatarWire(code) {
 export class Ghosts {
   /** scene; url: the Worker ('' = off); name(): our name; state(): { p: [x, y, z] feet, r: yaw, c?: actual crouched boolean }; active(): playing (not the
    * start screen); weapon(): the key (COMBAT.weapons) of what we hold or ''; score(): displayed points (defaults to stats.totalScore); onHit / onHurt: the room's word on a hit (#667). */
-  constructor({ scene, camera, url, name = () => '', state, active = () => true, weapon = () => '', score = totalScore, onHit = () => {}, onHurt = () => {}, mirrored = () => true }) {
+  constructor({ scene, camera, url, name = () => '', state, active = () => true, weapon = () => '', score = totalScore, onHit = () => {}, onHurt = () => {}, mirrored = () => true, swim = null }) {
+    swimProbe = swim ?? swimProbe; // #1943
     Object.assign(this, { scene, camera, name, state, active, weapon, score, onHit, onHurt, mirrored, mine: null, myGhost: null, rules: null, ws: null, me: null, others: new Map(), sent: null, prev: null,
       lastSent: 0, lastBeat: 0, outbox: [], shots: 0, dropped: 0, greetAt: -1e9, greetsSeen: 0, lastMove: -Infinity, retryAt: 0, backoff: 0, openedAt: 0, connects: 0, messages: 0, resends: 0, resent: null, stateAt: 0 });
     const savedAv = (() => { try { return localStorage.getItem('lunden.avatar'); } catch { return null; } })();
@@ -633,7 +645,7 @@ export class Ghosts {
         g.jetT = (g.jetT ?? 0) - dt;
         if (nearer < SOUNDS.jetNearest && g.jetT <= 0) { g.jetT = SOUNDS.jetEvery; this.onJet?.(g); }
       }
-      if (g.dEye < SOUNDS.range.step && makesSteps({ speed: g.vh, vy: g.vy, crouch: g.crouch, pose: g.pose, riding: !!g.bikeMesh, jp: g.jp }, SOUNDS)) {
+      if (g.dEye < SOUNDS.range.step && !g.swim && makesSteps({ speed: g.vh, vy: g.vy, crouch: g.crouch, pose: g.pose, riding: !!g.bikeMesh, jp: g.jp }, SOUNDS)) {
         g.stride = (g.stride ?? 0) + g.vh * dt;
         if (g.stride >= strideFor(g.vh, SOUNDS)) { g.stride = 0; this.onStep?.(g); }
       } else g.stride = 0;

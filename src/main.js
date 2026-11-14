@@ -224,7 +224,8 @@ import { buildElCabinet } from './elcabinet.js'; // #1707: the electrical cabine
 import { Graffiti, collisionHit } from './graffiti.js'; // #1707: the spray paint (72 h, local)
 import { DoorSync } from './doorsync.js'; // #1775: doors opened / shut, seen by the other players
 import { GraffitiSync } from './graffitisync.js'; // #1724: … shared with the other players
-import { farWalls } from './farwalk.js'; // (#1707: the paint's surfaces on phones)
+import { farWalls, swimWater } from './farwalk.js'; // (#1707: the paint's surfaces on phones; #1943: who swims)
+import { current as riverCurrent } from './swim.js';
 import { Chat } from './chat.js';
 import { BASKET, COMBAT, CHAT, GHOSTS, TOUCH, NEW_YEAR, TOAST, TOAST_LINES, SOUNDS } from './config.js';
 import { Basketball, Hoop } from './basket.js';
@@ -551,6 +552,12 @@ player.onWaterRescue = (what, at) => { // #1236, #1281: put back after the river
   sfx.splash(at ? new THREE.Vector3(at.x, waterYAt(at.x, at.z), at.z) : undefined);
   splashEl.style.transition = 'none'; splashEl.style.opacity = '1'; void splashEl.offsetWidth; splashEl.style.transition = 'opacity 1.2s ease-out'; splashEl.style.opacity = '0';
   badge('Plask! Du ramlade i ån', false);
+};
+player.onSwim = (into, at) => { // #1943: into the river on foot: a splash, then swimming (no rescue)
+  if (!into) return;
+  sfx.splash(new THREE.Vector3(at.x, waterYAt(at.x, at.z), at.z));
+  splashEl.style.transition = 'none'; splashEl.style.opacity = '0.6'; void splashEl.offsetWidth; splashEl.style.transition = 'opacity 0.8s ease-out'; splashEl.style.opacity = '0';
+  badge('Plask! Du simmar i ån', false);
 };
 player.onEdge = () => badge('Här slutar promenadområdet', false); // #1236: the outer wall
 // the jetpack on its hook by the garage door (#359): worn on the back, flies; home again after a bad fall
@@ -1280,7 +1287,7 @@ const lastPos = new THREE.Vector3();
 function footsteps() {
   const d = Math.hypot(player.pos.x - lastPos.x, player.pos.z - lastPos.z);
   lastPos.copy(player.pos);
-  if (d > 0.5 || player.vy !== 0 || player.flying) return; // teleport / falling / flying (#359)
+  if (d > 0.5 || player.vy !== 0 || player.flying || player.swim) return; // teleport / falling / flying (#359) / swimming (#1943: no footsteps or step count)
   bump('metres', d);
   stride += d;
   if (stride < (player.sprinting ? PLAYER.strideRun : PLAYER.strideWalk)) return;
@@ -3129,6 +3136,8 @@ const gymPumpState = pumpSampler(() => stats.gymPump);
 const smoothStep = (t) => { const c = Math.min(1, Math.max(0, t)); return c * c * (3 - 2 * c); };
 let reactionCam = { active: false, start: 0, camFrom: null, camTo: null, kind: -1 };
 const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey, mirrored: () => !rest.active || !!rest.spot?.gymPose || !!rest.spot?.gymWirePose,
+  // #1943: a figure whose feet are under the river's surface swims (the bed is far below every other walkable level, so the cheap height test rejects everyone else)
+  swim: (p) => { if (p.y > SITE.bridges.waterY + 1 || p.y >= waterYAt(p.x, p.z) - WALK.waterDepth || !swimWater(p.x, p.z)) return null; const c = riverCurrent(riverAt(p.x, p.z)); return { water: waterYAt(p.x, p.z), cx: c.x, cz: c.z }; },
   state: () => ({ bp: gymPumpState(), p: [player.pos.x, player.pos.y, player.pos.z], r: reactionCam.active && reactionCam.camFrom ? reactionCam.camFrom.yaw : camera.rotation.y, look: [0, reactionCam.active && reactionCam.camFrom ? reactionCam.camFrom.pitch : camera.rotation.x], c: player.crouched, dn: playroom.music.danceCode ?? 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 && player.outdoors ? 2 : 1) : 0, am: player.climb ? 3 : player.swing ? 2 : player.flying || player.fling ? 1 : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, fb: fishing.wire, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
 football=new Football({site:world.football,camera,ghosts,life,
   canPlay:()=>overlay.hidden&&!reading&&!heldItem()&&!rest.active&&!player.riding&&!player.flying&&!player.climb&&!player.swing&&Math.abs(player.pos.y-world.football.ground(player.pos.x,player.pos.z))<FOOTBALL.playHeightSlack,

@@ -139,10 +139,21 @@ export function inWater(x, z, y) {
   return r.distance < r.width / 2 + r.bank && surfaceY(x, z, y) < waterYAt(x, z, r) - WALK.waterDepth;
 }
 
+/** #1943: open water for a swimmer at (x, z): as `inWater`, but a deck overhead (the road / GC bridges, the timber footbridge) changes
+ * nothing, since the swimmer passes under it; the bed is always the terrain (`swimBedY`). The under-bridge footpath stays dry land. */
+export function swimWater(x, z) {
+  if (z < 60 && !upstreamRiverZone(x, z)) return false;
+  const r = riverAt(x, z);
+  return r.distance < r.width / 2 + r.bank && groundBelowDeckY(x, z) < waterYAt(x, z, r) - WALK.waterDepth;
+}
+/** #1943: the river bed under a swimmer (the terrain under every deck). */
+export const swimBedY = (x, z) => groundBelowDeckY(x, z);
+
 /** #1281: the nearest bank point to put someone back on who fell into the river at (x, z): searched on rings round the splash, the first
  * ring with a dry (`WALK.bankDry` m over the water line), walkable (gradient under `WALK.maxSlope * WALK.slideOut`) spot clear of every wall
- * (`farWalls`: buildings, fences, rails, trunks, cars) and off the decks. Returns `{ x, z }` or null (nothing within `WALK.bankMax`). */
-export function splashBank(x, z, y) {
+ * (`farWalls`: buildings, fences, rails, trunks, cars) and off the decks. Returns `{ x, z }` or null (nothing within `max`, default
+ * `WALK.bankMax`; #1943: a swimmer climbing out looks only `SWIM.exitReach` m away). */
+export function splashBank(x, z, y, max = WALK.bankMax) {
   const calm = WALK.maxSlope * WALK.slideOut, R = PLAYER.radius + 0.15;
   const ok = (px, pz) => {
     if (px < WALK.x0 + 1 || px > WALK.x1 - 1 || pz < WALK.z0 + 1 || pz > WALK.z1 - 1) return false;
@@ -155,7 +166,7 @@ export function splashBank(x, z, y) {
     }
     return true;
   };
-  for (let d = WALK.bankStep; d <= WALK.bankMax; d += WALK.bankStep) {
+  for (let d = WALK.bankStep; d <= max; d += WALK.bankStep) {
     const n = Math.max(12, Math.ceil(d * 3)); // (a denser ring the further out)
     let best = null;
     for (let i = 0; i < n; i++) {

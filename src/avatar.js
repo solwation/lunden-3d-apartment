@@ -4,7 +4,7 @@ import { GYM_PUMP } from './config.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SURFACE as SURFACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, DANCE, AVATAR_AIR as AIR, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SURFACE as SURFACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, DANCE, AVATAR_AIR as AIR, SWIM, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { reactionPose, mixHand } from './reactpose.js';
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, THIGH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
@@ -1291,6 +1291,29 @@ function airFeet(fig, feet, aa, v, hy, hz) {
   });
 }
 
+// #1943: the swimming pose (SWIM.avatar; figure frame: +y up, +z forward). `st` 0 treading water … 1 stroking, `ph` the stroke's phase.
+const SW = SWIM.avatar;
+const swimLean = (st) => SW.treadLean + (SW.lean - SW.treadLean) * st;
+/** The height of the water line in the figure's frame for hips at `hy`: just over the neck joint of the leaning torso, so only the head is above it. */
+const swimLineAt = (hy, st) => hy + NECK * Math.cos(swimLean(st)) + SW.chin;
+/** The figure-frame water line of a figure that is not posed (far away): the swimming pose's. */
+export const SWIM_LINE = swimLineAt(HIP - 0.02, 1);
+/** Hand `i` (0 left, 1 right): a crawl stroke round the shoulder (forward at the surface, down and back under it, forward again over it; the
+ * two arms half a cycle apart), mixed with sculling out to the sides at the surface when treading water. */
+function swimHand(fig, i, hy, hz, st, ph) {
+  const sx = i ? -1 : 1, L = swimLean(st), sy = hy + SH[1] * Math.cos(L), sz = hz + SH[1] * Math.sin(L), a = ph + i * Math.PI;
+  const crawl = { at: [sx * (SH[0] + SW.out), sy + SW.up - SW.lift * Math.sin(a), sz + 0.05 + SW.reach * Math.cos(a)], pole: [sx * 0.8, 0.5, -0.4] };
+  const C = SW.scull, t = fig.time * Math.PI * 2 * C.hz + i * 0.6;
+  const tread = { at: [sx * (SH[0] + C.out + C.sweep * Math.sin(t)), swimLineAt(hy, st) - 0.03, sz + C.fwd + C.sweep * 0.6 * Math.cos(t)], pole: [sx * 0.9, -0.4, -0.3] };
+  return mixHand(tread, crawl, st);
+}
+/** Foot `i`: the legs trail back from the hips with a flutter kick (hanging and pedalling slowly when treading water). */
+function swimFoot(fig, i, hy, hz, st) {
+  const sx = i ? -1 : 1, B = SW.treadLegs + (SW.legs - SW.treadLegs) * st, L = (THIGH + SHIN) * 0.95;
+  const k = SW.kick * Math.sin(fig.time * Math.PI * 2 * SW.kickHz * (0.4 + 0.6 * st) + i * Math.PI);
+  return [sx * 0.1, hy - Math.cos(B) * L + k * Math.sin(B), hz - Math.sin(B) * L + k * Math.cos(B)];
+}
+
 // --- Rigged GLB avatar loader -------------------------------------------------------------------
 let riggedAvatarData = null;
 let riggedAvatarLoading = null;
@@ -1531,8 +1554,10 @@ export class Avatar {
   /** Pose it. `speed`: m/s along the ground (walks when above A.walkSpeed, the legs' phase follows the distance), `turn`:
    * the head's yaw against the body (rad), `pitch`: camera elevation (rad), `hands`: { L, R } overrides (see `armTarget`), `crouch`: 0 … 1.
    * #1799 `air`: 1 flying, 2 swinging on a strand, 3 climbing a wall (no gait; AVATAR_AIR), `airV`: [x, y, z] m/s in the figure's
-   * frame (+x its left, +y up, +z forward) — what the hanging legs trail against and the climbing steps follow. */
-  update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null, air = 0, airV = null } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
+   * frame (+x its left, +y up, +z forward) — what the hanging legs trail against and the climbing steps follow.
+   * #1943 `swim`: in the water (then `speed` is the speed through the water: strokes above SWIM.avatar.strokeSpeed, else treading water).
+   * `swimAmt` (0 … 1) and `swimLine` (the water line's height in the figure's frame) tell the owner how deep to set the figure. */
+  update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null, air = 0, airV = null, swim = false } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
     this.time += dt;
 
     // #1799: each air pose blends in and out on its own (their sum ≤ 1, the rest is the ground pose)
@@ -1545,7 +1570,11 @@ export class Avatar {
     const want = dance === 2 ? 2 : dance ? 1 : 0, ez = Math.min(1, dt * DANCE.ease);
     const fa = this.flossAmt = THREE.MathUtils.lerp(this.flossAmt ?? 0, want === 1 ? 1 : 0, ez), ga = this.gangnamAmt = THREE.MathUtils.lerp(this.gangnamAmt ?? 0, want === 2 ? 1 : 0, ez);
     this.danceAmt = fa + ga;
-    const walking = speed > A.walkSpeed && !am, k = THREE.MathUtils.clamp(speed / 1.6, 0.4, 1.4);
+    // #1943: swimming blends in and out like the air poses; the strokes' phase follows the speed through the water
+    const sa = this.swimAmt = THREE.MathUtils.lerp(this.swimAmt ?? 0, swim ? 1 : 0, Math.min(1, dt * SW.ease));
+    const st = this.strokeAmt = THREE.MathUtils.lerp(this.strokeAmt ?? 0, swim && speed > SW.strokeSpeed ? 1 : 0, Math.min(1, dt * 4));
+    if (swim) this.swimPhase = (this.swimPhase ?? 0) + dt * Math.PI * 2 * SW.strokeHz * st * THREE.MathUtils.clamp(speed / SWIM.speed, 0.6, 1.4);
+    const walking = speed > A.walkSpeed && !am && !swim, k = THREE.MathUtils.clamp(speed / 1.6, 0.4, 1.4);
     if (walking) this.phase += dt * speed / STRIDE * Math.PI * 2;
     this.gait = THREE.MathUtils.lerp(this.gait ?? 0, walking ? 1 : 0, Math.min(1, dt * 8));
     const g = this.gait, ph = this.phase, s = Math.sin(ph), sw = s * 0.3 * k * g; // the leg swing (m forward / back of the hip)
@@ -1566,6 +1595,8 @@ export class Avatar {
       f[0] += (side * GN.footX - f[0]) * ga; f[1] += GN.lift * up * ga; f[2] += GN.footFwd * up * ga;
     });
     if (aa[0] + aa[1] + climbA > 0.001) airFeet(this, feet, aa, av, hipY, hipZ);
+    if (sa > 0.001) feet.forEach((f, i) => { const w = swimFoot(this, i, hipY, hipZ, st); for (let j = 0; j < 3; j++) f[j] += (w[j] - f[j]) * sa; }); // #1943
+    this.swimLine = swimLineAt(hipY, st);
     const armSwing = -step * 0.55;
     const rest = (side, swing) => {
       const r = armTarget.rest(side, swing), R = CR.rest;
@@ -1587,6 +1618,10 @@ export class Avatar {
       if (!hands.L) handL = mixHand(handL, rp.hands[0], rp.amt);
       if (!hands.R) handR = mixHand(handR, rp.hands[1], rp.amt);
     }
+    if (sa > 0.001) { // #1943: the arms swim (a held thing keeps its hand)
+      if (!hands.L) handL = mixHand(handL, swimHand(this, 0, hipY, hipZ, st, this.swimPhase ?? 0), sa);
+      if (!hands.R) handR = mixHand(handR, swimHand(this, 1, hipY, hipZ, st, this.swimPhase ?? 0), sa);
+    }
     this.updateMouth(dt);
     if (rp) { this.mouth = Math.max(this.mouth, rp.mouth); this.material.userData.u.uMouth.value = this.mouth; }
     this.material.userData.u.uKiss.value = kiss;
@@ -1594,7 +1629,7 @@ export class Avatar {
     let knee = c ? CR.knees.map((v, i) => KNEE_REST[i] + (v - KNEE_REST[i]) * c) : KNEE_REST;
     if (climbA > 0.001) knee = knee.map((v, i) => v + (AIR.climb.knees[i] - v) * climbA); // #1799: knees out on the wall
     const airLean = AIR.fly.lean * aa[0] + AIR.swing.lean * aa[1] + AIR.climb.lean * climbA;
-    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: airLean + 0.03 * g + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
+    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: airLean - swimLean(st) * sa + 0.03 * g + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + SW.head * swimLean(st) * sa + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
       knee, flat: c, toes: F.turn * c });
     if (sway) this.bones.hips.position.x = sway; // #1622: the feet targets were moved the other way, so they stay planted
   }

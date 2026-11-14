@@ -2318,6 +2318,25 @@ export const WALK = { x0: -285, x1: 320, z0: -200, z1: 452, cell: 40, maxSlope: 
   bankStep: 1, bankMax: 40, bankDry: 0.4, bankClear: 1.5, // #1281: the bank search's ring step and reach (m), how far over the water line a bank point must be (m) and the dry margin round it (m)
   trunk: { big: 0.45, tree: 0.3, birch: 0.2, young: 0.15 } }; // `trunk`: half-width of a tree trunk's collision diamond by kind (*guess*, the drawn trunks are thinner than a body)
 
+// #1943: swimming in Höje å (src/swim.js the pure rules, src/player.js `swimStep`, src/avatar.js the pose). On foot in the river (the same
+// stretch the #1281 splash rule covered) the visitor floats instead of being put back on the bank; the bicycle keeps the old splash.
+// Everything here is a gameplay choice (*guess*): the river's flow is not measured, the bed is only 0.6 m under the drawn water line.
+export const SWIM = {
+  speed: 0.9, // m/s through the water at full input (*guess*: a calm breaststroke / slow crawl, well under PLAYER.walk 1.6)
+  current: 0.35, // m/s the water carries a swimmer downstream along the centre line (*guess*: "slight"; with `speed` 1.25 m/s down, 0.55 m/s up)
+  eye: 0.12, bob: 0.015, bobHz: 0.9, // m the eye floats over the local water line ("eyes just above the surface"), its bob (m) and rate (Hz), *guess*
+  exitReach: 8, // m: how far from the water's edge a walkable bank spot is looked for when swimming into the bank (farwalk.js splashBank; *guess*)
+  climbSpeed: 3, // m/s the swimmer is helped up the (too steep to walk) bank to that spot (*guess*)
+  rescueAfter: 4, // s of swimming against an edge with no way up before the old #1281 rescue puts the swimmer on the nearest bank (*guess*)
+  // The avatar (others and the mirror image see it): the torso leans forward `lean` rad when swimming (`treadLean` treading water), the water
+  // line sits `chin` m over the neck joint so only the head is above it, the head is tipped back by `head` x the lean to look ahead.
+  // Crawl strokes: each hand circles its shoulder (`reach` m fore/aft, `lift` m up/down, centre `up` m over the shoulder), `strokeHz` cycles/s at
+  // `speed`; treading: the hands scull out to the sides at the surface. Legs trail back (`legs` rad from the vertical, `kick` m flutter).
+  // `strokeSpeed` m/s through the water: above it the arms stroke. All *guess*, by eye.
+  avatar: { ease: 5, lean: 1.0, treadLean: 0.3, head: 0.85, chin: 0.04, strokeHz: 0.8, strokeSpeed: 0.2, reach: 0.4, lift: 0.27, up: 0.07, out: 0.05,
+    scull: { out: 0.4, fwd: 0.2, sweep: 0.09, hz: 0.55 }, legs: 1.05, treadLegs: 0.15, kick: 0.09, kickHz: 2.2 },
+};
+
 // The garage under the courtyard and Hus L's basement (#357, #417, src/garage.js), per the våning −1 overview plan
 // (plan brochure p. 46; docs/peab/garage-vaning-m1.jpg, measured on docs/peab/kalibrerad/vaning-m1-300dpi.png with the
 // #253 transform x = (px − 1909.5) × 0.042356, z = (py − 1073) × 0.042356 — it fits Hus L's outline on this sheet:
