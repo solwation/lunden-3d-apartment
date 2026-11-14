@@ -1325,6 +1325,7 @@ tools/divetest.cjs (#1944) diving in Höje å in the real app through `Player.up
                        (crouch held = eye under the surface to 0.4 m over the drawn bed, same speeds with / against the current, letting go and the touch toggle
                        surface, fog + wash on / off, crouch on land unchanged, dives at every station of the river and through under both bridges, the
                        avatar under water with the mask and at the surface without; three result images).
+tools/fishfeedtest.cjs (#1946) a fish takes a cracked mussel from a still swimmer's hand, flees from a stroke: `THREE_DIR=… tools/browsertest.sh node tools/fishfeedtest.cjs GAME OUT` (~75 s); `node --test src/riverfishfeed.test.mjs` the pure lure / flee rules.
 tools/musseltest.cjs (#1945) the blue mussels on the bed of Höje å in the real app (`A.step`, the real E key under a pointer lock): `THREE_DIR=… tools/browsertest.sh node tools/musseltest.cjs GAME OUT`
                        (nothing placed / drawn on land, the first swim builds the bed, no target from the bank, out of reach from the surface over deep water,
                        dive + take + the knock target on the bed beside (#1950) + put back, consumeHeld (#1946's hook), regrowth, the pool, the mud attribute and the view from the bank; `MUSSEL_MONTH=1` under snow; three result images).

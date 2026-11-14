@@ -1007,6 +1007,9 @@ the fish within reach, `RiverFish.catchFish(id)` takes one out of the room (arbi
 `sync.respawn` s), `onCaught(id, ok)` reports the answer. Tests: `node --test cloudflare/riverfish.test.mjs`; browser `tools/riverfishtest.cjs`
 (two clients against `cloudflare/dev.mjs`); perfcount view `river`.
 
+Feeding and scaring (#1946) is a local drawing layer over these shared fish (`src/riverfishfeed.js`; a diver also sees the fish at their real
+depth): see [environment](environment.md#feeding-the-fish-with-mussels-fish-scared-by-strokes-1946).
+
 ## Fishing rod, bites and caught fish (#1753, part 2 of #1751)
 
 `src/fishing.js`, tunables `FISHING` (all *guess*). A 2 m rod (`FishingRod`, a Holdable, `isFishingRod`) lies on the north shore flat under the

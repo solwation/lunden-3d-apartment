@@ -1,0 +1,214 @@
+{
+ "pass": true,
+ "results": [
+  {
+   "ok": true,
+   "name": "a diver at the bed mid-channel, fish drawn",
+   "data": {
+    "station": {
+     "id": 6,
+     "x": -63.20471126284702,
+     "z": 163.17276297880267,
+     "depth": 1.7735927045816418
+    },
+    "stations": 9,
+    "swim": true,
+    "diving": true,
+    "eye": {
+     "overWater": -1.3791348585113807
+    },
+    "spots": 343,
+    "cfg": {
+     "radius": 30,
+     "wait": 2,
+     "dash": 3,
+     "speed": 1.4,
+     "slow": 0.8,
+     "sight": 7,
+     "near": 1.2,
+     "take": 0.05,
+     "lead": 0.9,
+     "clear": 0.8,
+     "eat": 0.9,
+     "giveUp": 30,
+     "scare": 5,
+     "scareSpeed": 0.15,
+     "flee": 6,
+     "fleeSpeed": 3.2,
+     "reaim": 0.4,
+     "calm": 1.5,
+     "back": 4,
+     "turn": 7,
+     "edge": 0.4,
+     "hearts": 8,
+     "heartScale": 2.5
+    },
+    "score": 6,
+    "feed": {
+     "offsets": 0,
+     "lure": null,
+     "still": 0,
+     "fed": 0
+    },
+    "drawn": 2
+   }
+  },
+  {
+   "ok": true,
+   "name": "still with a CLOSED mussel for 8 s: no fish leaves its path",
+   "data": {
+    "took": true,
+    "held": true,
+    "cracked": false,
+    "moving": false,
+    "lure": false,
+    "feed": {
+     "offsets": 0,
+     "lure": null,
+     "still": 0,
+     "fed": 0
+    },
+    "sharedOk": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "still with a CRACKED mussel: a fish leaves its path and comes down to the hand (the shared fish unchanged)",
+   "data": {
+    "near": true,
+    "id": 6,
+    "t": 7.233333333333317,
+    "species": "gädda",
+    "mode": "lure",
+    "toHand": 0.7381658682120978,
+    "fishY": -8.616639807753671,
+    "sharedY": -7.576353144351226,
+    "handY": -8.6242269738776,
+    "eye": {
+     "overWater": -1.3709910498618472
+    },
+    "held": true,
+    "drift": 2.531351026461831,
+    "sharedOk": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "the fish takes the mussel from the hand of a diver carried by the current: mussel gone, hearts, +score, counted once",
+   "data": {
+    "took": true,
+    "t": 3.433333333333331,
+    "at": {
+     "mode": "eat",
+     "toEye": 0.7853631016499386
+    },
+    "hearts": true,
+    "held": false,
+    "heldItem": false,
+    "fed": 1,
+    "score": 6,
+    "feed": {
+     "offsets": 1,
+     "lure": null,
+     "still": 0,
+     "fed": 1
+    },
+    "loose": 0,
+    "drift": 3.731741144425626,
+    "swim": true,
+    "moving": false
+   }
+  },
+  {
+   "ok": true,
+   "name": "afterwards the fish is back on its shared path (no offset left)",
+   "data": {
+    "done": true,
+    "feed": {
+     "offsets": 0,
+     "lure": null,
+     "still": 0,
+     "fed": 1
+    },
+    "sharedOk": true,
+    "fish": {
+     "id": 6,
+     "born": 0,
+     "species": "gädda",
+     "x": -83.70766876571805,
+     "y": -7.236650307141333,
+     "z": 176.25459927273022,
+     "rise": 0,
+     "drawnY": -7.236650307141333
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "a stroke during the approach: the fish turns and flees from the swimmer (the mussel stays in the hand)",
+   "data": {
+    "took": true,
+    "approach": true,
+    "id": 6,
+    "d0": 1.629445762469018,
+    "moving": true,
+    "d1": 5.722310278935521,
+    "mode": "flee",
+    "lure": null,
+    "fleeing": 1,
+    "held": true,
+    "inChannel": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "while stroking nobody comes; still again a fish comes after the wait and takes the mussel; then all are back on their paths",
+   "data": {
+    "stillFleeing": true,
+    "early": false,
+    "fed": true,
+    "t": 15.466666666666622,
+    "stats": 2,
+    "home": true,
+    "feed": {
+     "offsets": 0,
+     "lure": null,
+     "still": 0,
+     "fed": 2
+    },
+    "sharedOk": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "a swimmer at the surface: ignored without a mussel, fed with a cracked one",
+   "data": {
+    "surface": {
+     "eye": {
+      "overWater": 0.11063799651257167
+     },
+     "diving": false,
+     "ignored": true,
+     "took": true,
+     "eye2": {
+      "overWater": 0.11284951890979045
+     },
+     "heldUp": true,
+     "close": true,
+     "id": 6
+    },
+    "surfaceFed": {
+     "fed": true,
+     "stats": 3,
+     "home": true,
+     "sharedOk": true
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "no page errors",
+   "data": []
+  }
+ ]
+}

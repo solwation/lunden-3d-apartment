@@ -156,8 +156,9 @@ export class RiverFish {
     const sub = this.feedStep(dt, list); // #1946: the local offsets; `sub`: the eye is under the surface
     for (const o of list) {
       const f = o.f, id = o.id, e = this.feed.off.get(id);
-      const sp = f.spec, up = e ? Math.max(o.rise, e.rise) : o.rise, deep = 1 - (o.y - o.bed) / Math.max(0.05, o.water - o.bed); // 0 at the surface, 1 at the bed
-      const ys = C.look.flat + (1 - C.look.flat) * up, wide = C.look.wide + (1 - C.look.wide) * up, cy = o.water + 0.012 + sp.h * ys / 2, y = up > 0 ? cy + (o.y - cy) * up : cy;
+      const sp = f.spec, up = e ? Math.max(o.rise, 0.6 * e.rise) : o.rise, deep = 1 - (o.y - o.bed) / Math.max(0.05, o.water - o.bed); // 0 at the surface, 1 at the bed
+      const ys = C.look.flat + (1 - C.look.flat) * up, wide = C.look.wide + (1 - C.look.wide) * up, cy = o.water + 0.012 + sp.h * ys / 2;
+      const oy = e && e.rise > o.rise ? o.y + (o.water - sp.h * (0.5 - C.rise.show) - o.y) * e.rise : o.y, y = up > 0 ? cy + (oy - cy) * up : cy; // (a fish at the hand of a swimmer at the surface breaks it with half its body: easier to see than a rising fish's back)
       const wag = C.wag[0] * Math.sin(t * C.wag[1] * (0.6 + 0.6 * Math.min(1, o.speed)) + f.wag);
       Q.setFromAxisAngle(UP, (e ? e.yaw : o.yaw) + wag);
       if (sub) { // seen from under the water: the whole fish where it is
