@@ -150,12 +150,12 @@ export class RiverFish {
       if (this.sync.isGone(id)) continue;
       const f = fishSpec(id, this.sync.born(id), seed), o = this.pool[id] ??= {};
       fishAt(f, t, o, seed);
-      if (Math.hypot(o.x - cam.x, o.z - cam.z) > C.drawDist) continue;
-      o.f = f; o.id = id; o.born = f.born; o.len = f.spec.len; list.push(o);
+      o.f = f; o.id = id; o.born = f.born; o.len = f.spec.len; list.push(o); // (every fish: a lured one may come from beyond `drawDist`)
     }
     const sub = this.feedStep(dt, list); // #1946: the local offsets; `sub`: the eye is under the surface
     for (const o of list) {
       const f = o.f, id = o.id, e = this.feed.off.get(id);
+      if (Math.hypot(o.x + (e?.x ?? 0) - cam.x, o.z + (e?.z ?? 0) - cam.z) > C.drawDist) continue;
       const sp = f.spec, up = e ? Math.max(o.rise, 0.6 * e.rise) : o.rise, deep = 1 - (o.y - o.bed) / Math.max(0.05, o.water - o.bed); // 0 at the surface, 1 at the bed
       const ys = C.look.flat + (1 - C.look.flat) * up, wide = C.look.wide + (1 - C.look.wide) * up, cy = o.water + 0.012 + sp.h * ys / 2;
       const oy = e && e.rise > o.rise ? o.y + (o.water - sp.h * (0.5 - C.rise.show) - o.y) * e.rise : o.y, y = up > 0 ? cy + (oy - cy) * up : cy; // (a fish at the hand of a swimmer at the surface breaks it with half its body: easier to see than a rising fish's back)

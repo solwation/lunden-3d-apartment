@@ -7874,13 +7874,13 @@ export const RIVER_FISH = {
   sync: { enter: 70, leave: 90, reach: 30, catchEvery: 2, respawn: [300, 600] },
   // #1946: feeding from the hand and scaring, a local drawing layer (src/riverfishfeed.js); every number a *guess* (the user: "like the
   // squirrels take nuts", "if you move the fish get scared and swim away"). A swimmer making no stroke with a cracked mussel in the hand for
-  // `wait` s lures the nearest fish within `radius` m (along the channel: 18 fish share the whole river, so it must reach far). It comes at
+  // `wait` s lures the nearest fish within `radius` m (18 fish share 665 m of river with gaps of 100 m and more, so it must reach far). It comes at
   // `dash` m/s while further than `sight` m (the fog under water is full at 8 m), `speed` in sight and `slow` the last `near` m (faster than
   // SWIM.current, so it catches a drifting hand), round the head (`clear` m from the eye, `lead` m out in front of the hand), stops `take` m
-  // short with its nose at the mussel, takes it and stays `eat` s; it gives up after `giveUp` s. A stroke faster than `scareSpeed` m/s scares
+  // short with its nose at the mussel (taken within `grab` m of that: the hand drifts between two frames), takes it and stays `eat` s; it gives up after `giveUp` s. A stroke faster than `scareSpeed` m/s scares
   // every fish within `scare` m: `flee` m away along the channel at `fleeSpeed` (re-aimed at most every `reaim` s, kept `edge` m off the
   // bank), `calm` s there, then `back` s easing home. `turn` rad/s: how fast a lured / scared fish turns. Hearts as for a fed squirrel.
-  feed: { radius: 30, wait: 2, dash: 3, speed: 1.4, slow: 0.8, sight: 7, near: 1.2, take: 0.05, lead: 0.9, clear: 0.8, eat: 0.9, giveUp: 30,
+  feed: { radius: 120, wait: 2, dash: 6, speed: 1.4, slow: 0.8, sight: 7, near: 1.2, take: 0.05, grab: 0.04, lead: 0.9, clear: 0.8, eat: 0.9, giveUp: 40,
     scare: 5, scareSpeed: 0.15, flee: 6, fleeSpeed: 3.2, reaim: 0.4, calm: 1.5, back: 4, turn: 7, edge: 0.4, hearts: 8, heartScale: 2.5 },
 };
 

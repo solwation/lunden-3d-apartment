@@ -2,6 +2,8 @@
 // with a cracked one a fish leaves its path, comes to the hand and takes it (mussel gone, hearts, score, bestiary); a stroke during the
 // approach makes the fish flee, and stopping lets a new one come; a swimmer at the surface is fed too; afterwards every fish is drawn on its
 // shared place again. The swimmer is really carried by the current during the feedings. Saves result images in OUT.
+// Deterministic: the fish clock is the test's own (a fixed start, advanced by the stepped frames; FEED_CLOCK=<s> shifts the start to try other
+// fish constellations), every scenario starts at the same station with the feed layer cleared, and waits are on states, not on times.
 //   THREE_DIR=/path/to/three tools/browsertest.sh node tools/fishfeedtest.cjs GAME OUT
 const fs = require('node:fs'), path = require('node:path'), kit = require('./testkit.cjs');
 const base = process.argv[2] || 'http://localhost:8154', out = process.argv[3] || '/tmp/fishfeed1946';
@@ -14,7 +16,7 @@ const check = (ok, name, data) => { results.push({ ok: !!ok, name, data }); pass
     if (process.env.THREE_DIR) await ctx.route('https://cdn.jsdelivr.net/npm/three@0.170.0/**', (route) => route.fulfill({
       path: path.join(process.env.THREE_DIR, new URL(route.request().url()).pathname.split('three@0.170.0/')[1]), contentType: 'text/javascript' }));
     const page = await ctx.newPage(), errors = []; page.on('pageerror', (e) => errors.push(e.message));
-    await page.goto(`${base}/?shot&cloud=&month=6&time=13&freeze&weather=clear&test=lazy&nosquirrels&air=100000`, { waitUntil: 'commit' });
+    await page.goto(`${base}/?shot&cloud=&month=6&time=13&freeze&weather=clear&test=lazy&nosquirrels&air=100000&feedclock=${Number(process.env.FEED_CLOCK) || 0}`, { waitUntil: 'commit' });
     page.on('console', (m) => { if (/Startup failed/.test(m.text())) { console.error(m.text()); process.exit(1); } if (/Shader Error|WebGLProgram/.test(m.text())) errors.push(m.text().slice(0, 300)); });
     await page.waitForFunction(() => window.__app?.player && window.__app?.mussels && window.__app?.riverFish, null, { timeout: 600000, polling: 200 });
     await kit.skipNameDialog(page); fs.mkdirSync(out, { recursive: true });
@@ -24,15 +26,21 @@ const check = (ok, name, data) => { results.push({ ok: !!ok, name, data }); pass
       const A = window.__app, p = A.player, M = A.mussels, RF = A.riverFish, rb = await import('/src/riverbridge.js'), fw = await import('/src/farwalk.js'), C = await import('/src/config.js'), sw = await import('/src/riverfishswim.js');
       A.renderer.setAnimationLoop(null); A.touch.enabled = true;
       if (A.sharkHunt) A.sharkHunt.random = () => 1; // (no shark attack during the test)
+      let clock = (C.RIVER_FISH.epoch + 5000 + (Number(new URLSearchParams(location.search).get('feedclock')) || 0)) * 1000;
+      RF.sync.now = () => clock; // the fish clock is the test's: the same fish in the same places every run
+      const step = (dt) => { clock += dt * 1000; A.step(dt); };
       const T = window.__feed = { A, p, M, RF, rb, fw, C, sw, dt: 1 / 30,
         look: (x, y, z) => { const c = A.camera.position, dx = x - c.x, dz = z - c.z; A.camera.rotation.set(Math.atan2(y - c.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); A.camera.updateMatrixWorld(); },
         // into the water at (x, z) looking downstream and a little down; dived or not. The current carries the swimmer from here on.
         swimAt: (x, z, dive) => { p.keys.clear(); p.crouch = false; p.spawn(x, z, 0); p.pos.set(x, fw.swimBedY(x, z), z); p.crouch = dive;
-          for (let i = 0; i < (dive ? 100 : 20); i++) { p.pos.set(x, fw.swimBedY(x, z), z); T.ahead(); A.step(T.dt); } },
+          for (let i = 0; i < (dive ? 100 : 20); i++) { p.pos.set(x, fw.swimBedY(x, z), z); T.ahead(); step(T.dt); } },
+        // a new scenario: back at the station, nothing in the hand, no fish offset left from the scenario before
+        start: (dive) => { T.aim = null; M.consumeHeld(); T.swimAt(T.st.x, T.st.z, dive); RF.feed.reset(); step(T.dt); },
         ahead: (pitch = -0.12) => { const q = rb.riverAt(p.pos.x, p.pos.z); A.camera.rotation.set(pitch, Math.atan2(-q.nz, q.nx), 0, 'YXZ'); A.camera.updateMatrixWorld(); },
-        run: (s, each) => { for (let t = 0; t < s; t += T.dt) { T.aim?.(); A.step(T.dt); if (each?.()) return true; } return false; },
+        run: (s, each) => { for (let t = 0; t < s; t += T.dt) { T.aim?.(); step(T.dt); if (each?.()) return true; } return false; },
         give: (cracked) => { const s = M.spots.filter((q) => !q.gone).sort((a, b) => Math.hypot(a.x - p.pos.x, a.z - p.pos.z) - Math.hypot(b.x - p.pos.x, b.z - p.pos.z))[0]; const ok = M.take(s); if (M.held) M.held.cracked = cracked; return ok; },
         feed: () => RF.state().feed,
+        len: (id) => sw.fishSpec(id, RF.sync.born(id), RF.sync.seed).spec.len,
         fish: (id) => RF.shown.find((f) => f.id === id),
         drawnAt: (id) => { const f = T.fish(id); return f && { x: f.x + (f.off?.[0] ?? 0), y: f.y + (f.off?.[1] ?? 0), z: f.z + (f.off?.[2] ?? 0), mode: f.mode ?? null }; },
         dist: (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z),
@@ -49,7 +57,7 @@ const check = (ok, name, data) => { results.push({ ok: !!ok, name, data }); pass
           if (clear) { cand.push({ id, x: r.x, z: r.z, depth: rb.waterYAt(r.x, r.z) - fw.swimBedY(r.x, r.z) }); break; } } }
       if (!cand.length) return { fail: 'no station' };
       T.st = cand.sort((a, b) => b.depth - a.depth)[0];
-      T.swimAt(T.st.x, T.st.z, true);
+      T.start(true);
       return { station: T.st, stations: cand.length, swim: !!p.swim, diving: p.diving, eye: T.eye(), spots: M.spots.length, cfg: C.RIVER_FISH.feed, score: C.SCORE.each.fishFeeds, feed: T.feed(), drawn: RF.fish.count };
     });
     console.log(JSON.stringify(setup, null, 1));
@@ -62,7 +70,7 @@ const check = (ok, name, data) => { results.push({ ok: !!ok, name, data }); pass
 
     // 2. cracked: a fish comes to the hand (the picture when it is close), takes it; hearts, score, bestiary
     const come = await page.evaluate(() => { const T = window.__feed, { A, p, M } = T; M.held.cracked = true; A.stats.fishFeeds = 0; T.s0 = A.totalScore(); T.x0 = p.pos.x; T.z0 = p.pos.z;
-      let id = null, t = 0; const near = T.run(45, () => { t += T.dt; id = T.feed().lure ?? id; const f = id !== null && T.drawnAt(id), h = M.heldPosition(); return f && h && T.dist(f, h) < 0.75; });
+      let id = null, t = 0; const near = T.run(45, () => { t += T.dt; id = T.feed().lure ?? id; const f = id !== null && T.drawnAt(id), h = M.heldPosition(); return f && h && T.dist(f, h) < T.len(id) / 2 + 0.4; });
       T.lured = id; const f = T.drawnAt(id), h = M.heldPosition(), q = T.fish(id);
       return { near, id, t, species: q?.species, mode: f?.mode, toHand: f && h && T.dist(f, h), fishY: f?.y, sharedY: q?.y, handY: h?.y, eye: T.eye(), held: !!M.held, drift: Math.hypot(p.pos.x - T.x0, p.pos.z - T.z0), sharedOk: T.sharedOk() }; });
     check(come.near && come.mode === 'lure' && come.held && come.fishY < come.sharedY - 0.2 && come.sharedOk, 'still with a CRACKED mussel: a fish leaves its path and comes down to the hand (the shared fish unchanged)', come);
@@ -78,7 +86,7 @@ const check = (ok, name, data) => { results.push({ ok: !!ok, name, data }); pass
 
     // 3. a stroke during the approach: the fish flee; still again: a new one comes and is fed
     const flee = await page.evaluate(() => { const T = window.__feed, { A, p, M } = T, o = {};
-      T.swimAt(p.pos.x, p.pos.z, true); o.took = T.give(true);
+      T.start(true); o.took = T.give(true);
       let id = null; o.approach = T.run(45, () => { id = T.feed().lure ?? id; const f = id !== null && T.drawnAt(id), h = M.heldPosition(); return f && T.dist(f, h) < 1.3; });
       const f0 = T.drawnAt(id); o.id = id; o.d0 = T.dist(f0, A.camera.position);
       T.aim = () => { const f = T.drawnAt(id); if (f) T.look(f.x, f.y, f.z); }; // (keep looking at it: the stroke goes towards the fish)
@@ -99,11 +107,11 @@ const check = (ok, name, data) => { results.push({ ok: !!ok, name, data }); pass
 
     // 4. at the surface (no dive): fed too; without a mussel a still swimmer is ignored
     const surface = await page.evaluate(() => { const T = window.__feed, { A, p, M } = T, o = {};
-      T.swimAt(p.pos.x, p.pos.z, false); T.run(1.5); o.eye = T.eye(); o.diving = p.diving;
+      T.start(false); T.run(1.5); o.eye = T.eye(); o.diving = p.diving;
       let any = false; T.run(6, () => { any ||= T.feed().offsets > 0; }); o.ignored = !any;
-      T.swimAt(p.pos.x, p.pos.z, true); T.run(3); o.took = T.give(true); p.crouch = false; T.run(2.5); o.eye2 = T.eye(); o.heldUp = !!M.held;
+      T.start(true); o.took = T.give(false); p.crouch = false; T.run(2.5); o.eye2 = T.eye(); o.heldUp = !!M.held; M.held.cracked = true; // (cracked once up, so nobody comes during the rise)
       T.aim = () => T.ahead(-0.3);
-      let id = null; o.close = T.run(60, () => { id = T.feed().lure ?? id; const f = id !== null && T.drawnAt(id), h = M.heldPosition(); return f && h && Math.hypot(f.x - h.x, f.z - h.z) < 0.45; });
+      let id = null; o.close = T.run(60, () => { id = T.feed().lure ?? id; const f = id !== null && T.drawnAt(id), h = M.heldPosition(); return f && h && Math.hypot(f.x - h.x, f.z - h.z) < T.len(id) / 2 + 0.25; }); // (its nose a hand's breadth from the mussel)
       o.id = id; return o; });
     await kit.shot(page, path.join(out, 'fisk-vid-ytan.png'));
     const surfaceFed = await page.evaluate(() => { const T = window.__feed, { A, M } = T, o = {}; o.fed = T.run(20, () => !M.held); o.stats = A.stats.fishFeeds; T.aim = null; o.home = T.run(14, () => T.feed().offsets === 0); o.sharedOk = T.sharedOk(); return o; });

@@ -39,6 +39,11 @@ export class FishFeed {
     const s = Math.max(1, Math.min(riverLength - 1, fs + ds * C.flee)), c = riverPoint(s, Q), room = Math.max(0, c.hw - C.edge);
     const d = Math.max(-room, Math.min(room, fd + dd * C.flee));
     e.tx = c.x + c.nx * d; e.tz = c.z + c.nz * d;
+    const now = Math.hypot(x - w.x, z - w.z);
+    if (Math.hypot(e.tx - w.x, e.tz - w.z) < now + C.flee / 2) { // (beyond the fish's own stretch of the river the frame is no help: straight away)
+      const ax = now > 1e-3 ? (x - w.x) / now : c.nz, az = now > 1e-3 ? (z - w.z) / now : -c.nx;
+      e.tx = x + ax * C.flee; e.tz = z + az * C.flee;
+    }
   }
 
   /**
@@ -72,11 +77,12 @@ export class FishFeed {
         const d = Math.hypot(f.x + (e?.x ?? 0) - w.hand.x, f.z + (e?.z ?? 0) - w.hand.z);
         if (d < bd) { bd = d; best = f; }
       }
-      if (best) { const e = this.entry(best); e.mode = 'lure'; e.t = 0; e.far = true; this.lure = best.id; }
+      if (best) { const e = this.entry(best); e.mode = 'lure'; e.t = 0; e.far = true; e.s = undefined; this.lure = best.id; }
     }
     for (const f of fish) {
       const e = this.off.get(f.id); if (!e) continue;
-      const x0 = f.x + e.x, y0 = f.y + e.y, z0 = f.z + e.z; let x = x0, y = y0, z = z0, face = null;
+      // where it was drawn last frame, in the world: its own swimming (not the shared fish's, which goes on underneath) moves it from there
+      const x0 = e.wx ?? f.x + e.x, y0 = e.wy ?? f.y + e.y, z0 = e.wz ?? f.z + e.z; let x = x0, y = y0, z = z0, face = null;
       e.t += dt; e.rise = 0;
       if (e.mode === 'lure' || e.mode === 'eat') {
         const h = w.hand, stop = (f.len ?? 0.3) / 2 + C.take;
@@ -87,17 +93,19 @@ export class FishFeed {
           const a = e.ax ?? 0, b = e.az ?? 1; x = e.hx + (w.x - e.ex) - a * stop; z = e.hz + (w.z - e.ez) - b * stop; y = e.hy + (w.y - e.ey); face = Math.atan2(a, b); e.rise = 1;
         } else {
           const dx = h.x - x, dy = h.y - y, dz = h.z - z, dh = Math.hypot(dx, dz), d = Math.hypot(dx, dy, dz);
-          if (d <= stop + 1e-3) { // at the hand: the bait is taken
+          if (d <= stop + C.grab) { // at the hand (within `grab`: the hand drifts on between two frames): the bait is taken
             took = { id: f.id, born: f.born };
             Object.assign(e, { mode: 'eat', t: 0, ax: dh > 1e-4 ? dx / dh : 0, az: dh > 1e-4 ? dz / dh : 1, hx: h.x, hy: h.y, hz: h.z, ex: w.x, ey: w.y, ez: w.z });
             this.lure = null; this.still = 0; e.rise = 1; face = Math.atan2(e.ax, e.az);
           } else {
             const v = d > C.sight ? C.dash : d > C.near ? C.speed : C.slow; let step = Math.min(v * dt, d - stop), ux, uy = dy / d, uz;
-            const a = riverProject(x, z, Q), as = a.s, ad = a.d, b = riverProject(h.x, h.z, R);
-            if (e.far && Math.abs(b.s - as) > C.sight) { // far off: along the channel (never across a bank on a bend)
-              const s = as + Math.sign(b.s - as) * step, c = riverPoint(s, Q), room = Math.max(0, c.hw - C.edge), want = Math.max(-room, Math.min(room, b.d));
-              const dd = ad + Math.max(-step * 0.5, Math.min(step * 0.5, want - ad)), nx = c.x + c.nx * dd, nz = c.z + c.nz * dd;
-              x = nx; z = nz; y += Math.max(-step * 0.5, Math.min(step * 0.5, dy)); step = 0;
+            const b = riverProject(h.x, h.z, R);
+            if (e.far && e.s === undefined) { const a = riverProject(x, z, Q); e.s = a.s; e.d = a.d; } // (its own place in the river frame, kept: re-projecting every frame can stall at a bend)
+            if (e.far && Math.abs(b.s - e.s) > C.sight && d > C.sight) { // far off: along the channel (never across a bank on a bend)
+              e.s += Math.sign(b.s - e.s) * step;
+              const c = riverPoint(e.s, Q), room = Math.max(0, c.hw - C.edge), want = Math.max(-room, Math.min(room, b.d));
+              e.d += Math.max(-step * 0.5, Math.min(step * 0.5, want - e.d));
+              x = c.x + c.nx * e.d; z = c.z + c.nz * e.d; y += Math.max(-step * 0.5, Math.min(step * 0.5, dy)); step = 0;
             } else {
               e.far = false;
               // towards the hand from in front of the swimmer: a fish behind or beside the head goes round it first
@@ -127,16 +135,16 @@ export class FishFeed {
         const dx = e.tx - x, dz = e.tz - z, d = Math.hypot(dx, dz), step = Math.min(C.fleeSpeed * dt, d);
         if (d > 1e-3) { x += dx / d * step; z += dz / d * step; }
         y += Math.max(-C.slow * dt, Math.min(C.slow * dt, f.y - y)); // back to its own depth as it goes
-        if (d - step < 0.05 && (e.calm = (e.calm ?? 0) + dt) >= C.calm) this.goBack(e);
         e.x = x - f.x; e.y = y - f.y; e.z = z - f.z;
+        if (d - step < 0.05 && (e.calm = (e.calm ?? 0) + dt) >= C.calm) this.goBack(e);
       } else if (e.mode === 'back') {
         if (e.t >= C.back) { this.off.delete(f.id); continue; }
         const k = 1 - sm(e.t / C.back); e.x = e.x0 * k; e.y = e.y0 * k; e.z = e.z0 * k;
         x = f.x + e.x; y = f.y + e.y; z = f.z + e.z;
       } else { e.x = x - f.x; e.y = y - f.y; e.z = z - f.z; }
       // the heading follows the way the drawn fish moves (or the hand, close to it)
-      const mx = x - x0 + (f.x - (e.fx ?? f.x)), mz = z - z0 + (f.z - (e.fz ?? f.z));
-      e.fx = f.x; e.fz = f.z;
+      const mx = x - x0, mz = z - z0;
+      e.wx = x; e.wy = y; e.wz = z;
       if (face === null && dt > 0 && Math.hypot(mx, mz) / dt > 0.05) face = Math.atan2(mx, mz);
       if (face === null && e.mode === 'back') face = f.yaw ?? e.yaw;
       if (face !== null) e.yaw = turnTo(e.yaw, face, C.turn * dt);

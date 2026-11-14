@@ -6,31 +6,32 @@
    "name": "a diver at the bed mid-channel, fish drawn",
    "data": {
     "station": {
-     "id": 6,
-     "x": -63.20471126284702,
-     "z": 163.17276297880267,
-     "depth": 1.7735927045816418
+     "id": 4,
+     "x": 257.1188570706847,
+     "z": 50.17730314183165,
+     "depth": 1.7843532900877026
     },
-    "stations": 9,
+    "stations": 6,
     "swim": true,
     "diving": true,
     "eye": {
-     "overWater": -1.3791348585113807
+     "overWater": -1.3875064340154752
     },
     "spots": 343,
     "cfg": {
-     "radius": 30,
+     "radius": 120,
      "wait": 2,
-     "dash": 3,
+     "dash": 6,
      "speed": 1.4,
      "slow": 0.8,
      "sight": 7,
      "near": 1.2,
      "take": 0.05,
+     "grab": 0.04,
      "lead": 0.9,
      "clear": 0.8,
      "eat": 0.9,
-     "giveUp": 30,
+     "giveUp": 40,
      "scare": 5,
      "scareSpeed": 0.15,
      "flee": 6,
@@ -50,7 +51,7 @@
      "still": 0,
      "fed": 0
     },
-    "drawn": 2
+    "drawn": 5
    }
   },
   {
@@ -76,19 +77,19 @@
    "name": "still with a CRACKED mussel: a fish leaves its path and comes down to the hand (the shared fish unchanged)",
    "data": {
     "near": true,
-    "id": 6,
-    "t": 7.233333333333317,
-    "species": "gädda",
+    "id": 15,
+    "t": 4.2999999999999945,
+    "species": "abborre",
     "mode": "lure",
-    "toHand": 0.7381658682120978,
-    "fishY": -8.616639807753671,
-    "sharedY": -7.576353144351226,
-    "handY": -8.6242269738776,
+    "toHand": 0.5077267771240388,
+    "fishY": -8.030675728180935,
+    "sharedY": -7.233291231718846,
+    "handY": -8.207916410076676,
     "eye": {
-     "overWater": -1.3709910498618472
+     "overWater": -1.2929136575778815
     },
     "held": true,
-    "drift": 2.531351026461831,
+    "drift": 1.5049999999984685,
     "sharedOk": true
    }
   },
@@ -97,10 +98,10 @@
    "name": "the fish takes the mussel from the hand of a diver carried by the current: mussel gone, hearts, +score, counted once",
    "data": {
     "took": true,
-    "t": 3.433333333333331,
+    "t": 0.4333333333333333,
     "at": {
      "mode": "eat",
-     "toEye": 0.7853631016499386
+     "toEye": 0.45312738642432887
     },
     "hearts": true,
     "held": false,
@@ -114,7 +115,7 @@
      "fed": 1
     },
     "loose": 0,
-    "drift": 3.731741144425626,
+    "drift": 1.656666666664981,
     "swim": true,
     "moving": false
    }
@@ -132,14 +133,14 @@
     },
     "sharedOk": true,
     "fish": {
-     "id": 6,
+     "id": 15,
      "born": 0,
-     "species": "gädda",
-     "x": -83.70766876571805,
-     "y": -7.236650307141333,
-     "z": 176.25459927273022,
+     "species": "abborre",
+     "x": 247.53955160050953,
+     "y": -7.197740338492976,
+     "z": 54.05161428499115,
      "rise": 0,
-     "drawnY": -7.236650307141333
+     "drawnY": -7.197740338492976
     }
    }
   },
@@ -149,10 +150,10 @@
    "data": {
     "took": true,
     "approach": true,
-    "id": 6,
-    "d0": 1.629445762469018,
+    "id": 9,
+    "d0": 1.6227695572561358,
     "moving": true,
-    "d1": 5.722310278935521,
+    "d1": 3.308872892212417,
     "mode": "flee",
     "lure": null,
     "fleeing": 1,
@@ -167,7 +168,7 @@
     "stillFleeing": true,
     "early": false,
     "fed": true,
-    "t": 15.466666666666622,
+    "t": 6.699999999999986,
     "stats": 2,
     "home": true,
     "feed": {
@@ -185,17 +186,17 @@
    "data": {
     "surface": {
      "eye": {
-      "overWater": 0.11063799651257167
+      "overWater": 0.11284951890997608
      },
      "diving": false,
      "ignored": true,
      "took": true,
      "eye2": {
-      "overWater": 0.11284951890979045
+      "overWater": 0.13409417700733872
      },
      "heldUp": true,
      "close": true,
-     "id": 6
+     "id": 1
     },
     "surfaceFed": {
      "fed": true,
