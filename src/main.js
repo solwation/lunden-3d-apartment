@@ -93,6 +93,7 @@ import { Compass } from './compass.js';
 import { Measure } from './measure.js';
 import { cloudTexture, groundY, renderedTerrainY, lampGroundY, treeFeet, southTreeFeet, aoTrees } from './surroundings.js';
 import { Squirrels } from './squirrels.js';
+import { Mussels } from './mussels.js';
 import { Ducks } from './ducks.js';
 import { OutdoorCats } from './outdoorcats.js';
 import { catHabitatFree, createCatGround } from './cathabitat.js';
@@ -619,6 +620,7 @@ const squirrels = params0.has('nosquirrels') ? null : new Squirrels({ scene, cam
   nutWalls: farWalls, // #1831: pathside nuts have a clear short approach, including trunks/fences
   nutOk: (x, z) => squirrelWalk(x, z) && !onRoad(x, z, 0.5) && !onWalk(x, z, 0.5) && !onParkPath(x, z, 0.4), onFeed: () => bump('squirrelFeeds') });
 if (squirrels) holdables.push(...squirrels.nutItems);
+const mussels = new Mussels({ scene, camera, player }); holdables.push(...mussels.items); // #1945: blue mussels on the bed of Höje å, taken like the nuts while diving
 // #1752: fish in Höje å and the rings they leave on the water, the same for every player (src/riverfish.js, src/riverfishsync.js, cloudflare/riverfish.js)
 const riverFish = params0.has('nofish') ? null : new RiverFish({ scene, camera });
 // #1753: the fishing rod under the road bridge (a holdable, saved like any loose thing) and the fish caught with it (keep.js `fishing`)
@@ -805,7 +807,8 @@ scene.add(placeGhost);
 const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), floorHit = new THREE.Vector3();
 /** #1287: a held cat goes down anywhere the visitor can stand outside: the ground, a roof, a terrace, a bridge (`groundAt`).
  * The look ray meets the plane of the feet within reach; that spot must be level with them (no stepping off an edge) with no wall between. */
-function outdoorSpot() {
+function outdoorSpot(item) {
+  if (player.swim && item?.isMussel) return mussels.bedSpot(raycaster.ray); // #1945: a swimmer puts a mussel down on the bed (it slopes: no level-ground rule)
   if (player.unit || player.inCore || player.flying || player.fall || !player.outdoors) return null;
   const fy = player.pos.y;
   if (Math.abs(fy - player.groundAt(player.pos.x, player.pos.z, fy)) > 0.05) return null;
@@ -2392,7 +2395,7 @@ function updateFocus() {
   // the car key only while its cabinet is open
   const extra = [...(santa.visible ? [santa.pickable] : []), ...(cat.visible && !cat.held ? [cat.object] : []), ...(olofDriver.greetable(rest.active && rest.target?.car === car) ? [olofDriver.fig.pick] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []), ...car.targets(rest.target).map((t) => t.pickable), // our car's doors and front seats (#250)
     ...roofPicnic.targets().map(t=>t.pickable), // #1858 explicit roof picnic is independent of indoor furniture visibility
-    ...ducks.targets(),
+    ...ducks.targets(), ...mussels.targets(), // (#1945: the bed's mussels, for a swimmer)
     ...(football?.targets ?? []).map(t=>t.pickable), // exactly two moving ball targets, never cached as static Marks geometry
     ...(paddock?.targets() ?? []), // the paddock's ponies: Klappa (#1293)
     ...jetpack.targets(), // the jetpack on its hook / where it was stood down (#359)
@@ -2467,7 +2470,7 @@ function updateFocus() {
     if (spot && item.softOnly && !top.object.userData.soft) { // Cats: not on a table or a worktop (#1061)
       if (!hit || spot.distance <= hit.distance + 0.05) focused = { name: '', kind: 'place', blocked: true, blockedText: `${item.name === 'Miele' ? 'Miele' : item.name === 'kattungen' ? 'Kattungen' : 'Katten'} får inte vara på bordet` };
       spot = null;
-    } else if (!spot) { const f = floorSpot() ?? (item.softOnly || (item.outdoorPlace && !item.noPlace) ? outdoorSpot() : !item.noPlace ? groundPlaceSpot() : null); if (f && f.distance < reach && (f.outdoor || !behindWall(f.point))) spot = f; } // a table top is always above (before) the floor
+    } else if (!spot) { const f = floorSpot() ?? (item.softOnly || (item.outdoorPlace && !item.noPlace) ? outdoorSpot(item) : !item.noPlace ? groundPlaceSpot() : null); if (f && f.distance < reach && (f.outdoor || !behindWall(f.point))) spot = f; } // a table top is always above (before) the floor
     if (spot && item.isVacuum && stairUnderside(spot.point.x, spot.point.z) !== null && stairUnderside(spot.point.x, spot.point.z) < spot.point.y + 0.3) {
       spot = null; // low headroom under the stair winders / soffit (#389)
     }
@@ -2710,7 +2713,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
 }
 for (const h of holdables) h.model.userData.keepHidden = () => h.broken; // #1726: F's show-all must not bring shot-to-pieces things back
-world.looseItems.push(...holdables.filter((h) => h !== beer && !h.isSquirrelNut).flatMap((h) => (h.homeParent ? [h.holder] : [h.holder, h.model])), ...toys.deco); // (the secretary's things go home into it with F, and the secret drawer shows one at a time, #183)
+world.looseItems.push(...holdables.filter((h) => h !== beer && !h.isSquirrelNut && !h.isMussel).flatMap((h) => (h.homeParent ? [h.holder] : [h.holder, h.model])), ...toys.deco); // (the secretary's things go home into it with F, and the secret drawer shows one at a time, #183)
 // #1720: not the squirrels' nuts: they are outdoors and squirrels.js owns their visibility; F's show-all drew all 18 (even those not lying out) at the origin
 const milk = fridge?.milkAt ? new Milk(scene, camera, fridge) : null; // the milk carton in the fridge (#168): not hidden with F, only sent home
 if (milk) { holdables.push(milk); life.keepPart('milk', { save: () => milk.keepState(), load: (v) => milk.loadKeep(v) }); } // what is left in it is kept with the life sim's things (#382)
@@ -3697,6 +3700,7 @@ function step(dt) {
   weather.update(dt, !player.outdoors || player.below || player.inCore, moved < 1 ? moved : 0, car.occupied ? car.openness : null, player.inPlayroom); // enclosed off-map clubhouse (#1485); (the garage: dry and muffled, #357) // after the day: it sets the overcast / flash the next day.update applies (#248)
   riverFish?.update(dt, player.below, day.daylight); // #1752: drawn only within RIVER_FISH.drawDist m of the river
   ducks.update(dt, player.below || player.inCore || player.inPlayroom);
+  mussels.update(dt); // #1945: drawn only for a swimmer
   squirrels?.update(dt, player.below, day.daylight, day.hour); // #1672: asleep (no AI, nothing drawn) in the snow months, far away and underground
   paddock?.update(dt, player.below, weather.kind === 'snow' ? 0 : weather.rain); // #1280: the ponies move only while the paddock is within view distance
   balloon.update(player, player.below); // #1646: before player.update, which stands on / is walled in by the basket
@@ -4256,4 +4260,4 @@ const openPanel = () => !overlay.hidden ? 'menu' : !reading ? (lowMemory && port
   : viewing ? 'poster' : isAvatarCustomizerOpen() ? 'avatar' : cinema.open || computerHub.open || tvMedia.open ? 'video' : 'other';
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding, panel: openPanel }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { diveAir, sharkHunt, picnicSync, roofPicnic, football, sharedFish, ghosts, outdoorGym, ducks, medals, squirrels, outdoorCats, footprints, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, cookStores, vesselBusy, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, bestiary, bestiaryPhotos, bestiaryImages, bestiaryRegistry:registry, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen, checkPublishedHtml, prepareUpdateUrl };
+window.__app = { mussels, diveAir, sharkHunt, picnicSync, roofPicnic, football, sharedFish, ghosts, outdoorGym, ducks, medals, squirrels, outdoorCats, footprints, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, cookStores, vesselBusy, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, bestiary, bestiaryPhotos, bestiaryImages, bestiaryRegistry:registry, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen, checkPublishedHtml, prepareUpdateUrl };

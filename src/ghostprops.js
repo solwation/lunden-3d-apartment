@@ -148,6 +148,8 @@ const ITEM_PARTS = {
   binoculars: () => [[new THREE.CylinderGeometry(0.03, 0.026, 0.13, 6).rotateX(Math.PI / 2), 0x2a2d31, [-0.04, 0.03, -0.12]], [new THREE.CylinderGeometry(0.03, 0.026, 0.13, 6).rotateX(Math.PI / 2), 0x2a2d31, [0.04, 0.03, -0.12]], [new THREE.BoxGeometry(0.05, 0.02, 0.05), 0x444a50, [0, 0.03, -0.12]]],
   // #1755: a spray can (#1707): body, a coloured cap and the nozzle
   spray: () => [[new THREE.CylinderGeometry(0.033, 0.033, 0.15, 6), 0xc9ccd0, [0, 0.04, -0.1]], [new THREE.CylinderGeometry(0.03, 0.033, 0.035, 6), 0xd23b3b, [0, 0.135, -0.1]], [new THREE.BoxGeometry(0.014, 0.012, 0.02), 0x222222, [0, 0.16, -0.108]]],
+  // #1945: a blue mussel: one dark, elongated shell with a paler hinge end
+  mussel: () => [[new THREE.SphereGeometry(0.05, 7, 4).scale(1.25, 0.42, 0.62), 0x1b2440, [0, 0.03, -0.1]], [new THREE.SphereGeometry(0.016, 5, 3), 0x8d93ad, [-0.056, 0.03, -0.1]]],
   // #1755: a wrapped Christmas gift: a red box with a crossed ribbon
   gift: () => [[new THREE.BoxGeometry(0.14, 0.12, 0.14), 0xb02a2a, [0, 0.03, -0.12]], [new THREE.BoxGeometry(0.146, 0.126, 0.026), 0xe8c24a, [0, 0.03, -0.12]], [new THREE.BoxGeometry(0.026, 0.126, 0.146), 0xe8c24a, [0, 0.03, -0.12]]],
   // #1755: a rubbish / laundry bag: a soft sack with a knotted neck

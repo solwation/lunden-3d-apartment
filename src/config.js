@@ -8723,3 +8723,27 @@ export const SMALL_FIGURES = {
     beak: [.006,.002,.004], beakAt: [.0175,.020,0], tail: [.006,.004,.007], tailAt: [-.013,.014,0],
     eye: [.0013,.0014,.0006], eyeAt: [.012,.023,.006], wing: [.008,.0045,.001], wingAt: [-.002,.012,.0098], smallSegments: [6,4] }
 };
+
+// #1945: blue mussels on the bed of Höje å, picked up while diving (src/mussels.js draws and wires them, src/musselfield.js places them).
+// Everything is a gameplay choice (*guess*): blue mussels (Mytilus edulis) are really a salt / brackish water species and nothing is known
+// about the bed of Höje å; the user asked for them. Real shells are 5-8 cm long, about half as wide and a third as thick.
+export const MUSSELS = {
+  seed: 1945, // the placement's seed: every player gets the same bed, with no sync
+  spacing: 7, // m along the centre line between clumps (*guess*: a diver sees ~6 m, so the next clump is always nearly in view)
+  clump: [2, 5], radius: 0.55, // mussels per clump and the clump's radius in m (*guess*: they grow in small beds)
+  edge: 0.5, // m inside the channel's edge (SITE.river width / 2) a mussel keeps: on the bed, not up the bank
+  pierClear: 0.3, wallClear: 0.5, // m clear of a road-bridge pier's footing (SITE.bridges.road.foot) and of any other far wall segment (rails, posts)
+  boundsClear: 2, // m inside the walkable area's outer wall (WALK), where a swimmer cannot go
+  size: [0.1, 0.14], // m shell length, drawn larger than life (5-8 cm) so they are found through the dive mask, as the nuts are (*guess*)
+  shape: { width: 0.5, thick: 0.34, taper: 0.42, segments: [10, 6] }, // shell width / thickness as a part of its length, how narrow the hinge end is, sphere segments (~100 triangles)
+  colors: { shell: 0x161d33, band: 0x3b4d86, edge: 0x232a45, umbo: 0x8d93ad }, // blue-black shell, blue-violet growth bands, a worn pale hinge end (photos of Mytilus edulis, by eye)
+  rough: 0.32, metal: 0.15, // a wet shell's sheen (*guess*)
+  near: 9, // m from the eye within which a mussel is drawn (the fog under water is full at SWIM.dive.look.far 8 m)
+  max: 64, // instances in the one InstancedMesh (the most that can lie within `near`: ~4 clumps of 5 on each side, with margin)
+  pick: 0.11, // m radius of the ball E aims at round a mussel (the nut's is 0.12)
+  regrow: [45, 120], regrowFar: 7, // s until a taken mussel is back on its spot, and only once the diver is this far away (or out of the water): no pop-in
+  loose: 3, // mussels that can be out of the bed at once (in the hand or put down somewhere); taking another sends the oldest one put down back
+  held: { pos: [0.15, -0.16, -0.38], rot: [0.5, 0.9, 0.25] }, // the pose in the hand (camera space), as the nut's
+  sink: 0.012, // m a lying mussel is sunk into the bed's mud
+  bed: { color: 0x74664b, under: 0.05, fade: 0.3 }, // the river bed's mud / sand tone (*guess*) instead of grass: full `fade` m under `under` m below the water line (surroundings.js `bedMud`, grass.js)
+};

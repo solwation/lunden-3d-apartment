@@ -69,4 +69,7 @@ test('#1769: a shark fin has its own category, and the Worker keeps it', () => {
   assert.equal(heldCategory({ isSharkFin: true }), 'sharkfin');
   assert.equal(heldCategory(make('SharkFin')), 'sharkfin');
   assert.equal(cleanHeldCategory('sharkfin'), 'sharkfin');
+  assert.equal(heldCategory({ isMussel: true }), 'mussel'); // #1945
+  assert.equal(heldCategory(make('Mussel')), 'mussel');
+  assert.equal(cleanHeldCategory('mussel'), 'mussel');
 });
