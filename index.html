@@ -491,6 +491,13 @@
     #jetpack.hot .bar i { background: #e5484d; }
     #jetpack.cut { flex-wrap: wrap; width: 108px; animation: turbo-blink .35s steps(2) infinite; }
     #jetpack.cut::after { flex-basis: 100%; content: 'För varm!'; font-weight: 700; color: #ffb3b3; }
+    /* #1949: the air meter while diving (src/diveair.js): top middle under the badges, clear of the jetpack / vacuum bars (left) and the minimap (right); red and blinking in the last seconds */
+    #air { position: fixed; left: 50%; top: calc(var(--hud-badge-bottom) + 4px); transform: translateX(-50%); z-index: 10; display: flex; align-items: center; gap: 6px; background: rgba(20, 35, 45, 0.6); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 13px; pointer-events: none; }
+    #air[hidden] { display: none; }
+    #air .bar { width: 120px; height: 8px; background: rgba(255,255,255,.3); border-radius: 4px; overflow: hidden; }
+    #air .bar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #6fd0f0, #bfeaff); }
+    #air.low { background: rgba(120, 10, 10, 0.8); animation: turbo-blink .35s steps(2) infinite; }
+    #air.low .bar i { background: #e5484d; }
     /* the vacuum cleaner (#391): dust cup fill bar under the score while held */
     #vacuum-hud { position: fixed; left: calc(16px + var(--sl)); top: var(--hud-badge-bottom); display: flex; align-items: center; gap: 6px; background: rgba(20, 35, 45, 0.45); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 13px; pointer-events: none; }
         #vacuum-hud[hidden] { display: none; }
@@ -1614,6 +1621,7 @@
     <div id="cue-power" hidden aria-live="off">Kraft<span class="bar"><i></i></span><b>15 %</b><span class="keys"><kbd>E</kbd> stöt · <kbd>Esc</kbd> avbryt</span></div>
     <div id="jetpack" hidden title="Jetpacken: värme">🚀<span class="bar"><i></i></span></div>
     <div id="vacuum-hud" hidden title="Dammsugaren: dammbehållare">🧹<span class="bar"><i></i></span></div>
+    <div id="air" hidden title="Luft under vattnet" role="status" aria-label="Luft">🫧<span class="bar"><i></i></span></div>
     <div id="jet-glow" aria-hidden="true"></div>
     <div id="touch-controls" class="hud-controls">
       <button id="measure-btn" aria-label="Mät avstånd" title="Mät avstånd (Q)" aria-pressed="false">📏</button>

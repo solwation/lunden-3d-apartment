@@ -2353,6 +2353,21 @@ export const SWIM = {
     // from z `back` to `front`, one glass pane in it and a strap round the head (`strap` radius, `band` height). Shape and colours *guess*.
     mask: { w: 0.15, h: 0.066, y: 0.106, back: 0.086, front: 0.14, wall: 0.009, strap: 0.111, band: 0.016, rubber: 0x15181c, glass: 0x7fb4c9 },
   },
+  // #1949: the air while diving (swim.js `airStep`, src/diveair.js the meter, the warning and the sounds). The user: "about a minute under
+  // water, less when swimming, less still against the current; the last 10 seconds the meter turns red, the picture shakes and gets black
+  // edges; out of air = dead". The factors and the looks are gameplay choices (*guess*).
+  air: {
+    seconds: 60, // s of air holding still under the surface (the user's "about 1 minute")
+    swim: 1.6, // x as fast while stroking with or across the current (60 s -> 37.5 s; *guess*)
+    upstream: 2.4, // x as fast stroking straight against the current (-> 25 s; in between by the upstream part of the stroke; *guess*)
+    warn: 10, // s left at the current rate when the warning starts (the user's "last 10 seconds")
+    recover: 15, // s of air back per second at the surface or on land (an empty meter is full again in 4 s; *guess*)
+    // The warning's look and sound, growing with the warning 0 … 1 (*guess*, by eye): the camera's roll (`roll` rad) and offset (`shift` m)
+    // shake at `hz`; one DOM vignette whose clear middle shrinks from `clear[0]` to `clear[1]` % of the screen's half diagonal and whose
+    // black edge goes from `dark[0]` to `dark[1]` opaque; heartbeats every `beat[0]` … `beat[1]` s; bubbles every `bubbles[0]` … `bubbles[1]` s
+    // while under water; a gasp when surfacing with under `gasp` of the air left; under water every sound is low-passed at `muffle` Hz.
+    look: { roll: 0.02, shift: 0.012, hz: 9, clear: [78, 18], dark: [0.55, 0.97], beat: [0.95, 0.38], bubbles: [1.6, 3.6], gasp: 0.35, muffle: 900 },
+  },
 };
 
 // The garage under the courtyard and Hus L's basement (#357, #417, src/garage.js), per the våning −1 overview plan

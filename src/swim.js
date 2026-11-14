@@ -62,3 +62,30 @@ export function diveStep(depth, want, water, dt, C = SWIM) {
 
 /** #1944: is an eye `depth` m under its floating height under the surface (the mask's view, `Player.diving`)? */
 export const isDiving = (depth, C = SWIM) => depth > C.eye + C.dive.under;
+
+/** #1949: how much of the stroke goes against the current, 0 … 1: 1 straight upstream, 0 across or downstream (and without a stroke).
+ * (sx, sz) the stroke's velocity, (cx, cz) the current's (`swimVelocity`'s `o.sx, o.sz, o.cx, o.cz`). */
+export function upstreamPart(sx, sz, cx, cz) {
+  const s = Math.hypot(sx, sz), c = Math.hypot(cx, cz);
+  return s > 0 && c > 0 ? Math.max(0, -(sx * cx + sz * cz) / (s * c)) : 0;
+}
+
+/** #1949: how fast a diver uses air, in seconds of still air per second: 1 holding still, SWIM.air.swim while stroking, rising to
+ * SWIM.air.upstream with the part of the stroke that goes against the current (`up` 0 … 1, `upstreamPart`). */
+export function airRate(moving, up = 0, C = SWIM) {
+  const A = C.air;
+  return moving ? A.swim + (A.upstream - A.swim) * Math.max(0, Math.min(1, up)) : 1;
+}
+
+/** #1949: the air (s of still diving left, 0 … SWIM.air.seconds) one frame on: under the surface it goes down at `airRate`, anywhere else it
+ * comes back at SWIM.air.recover. 0 = out of air (the caller's drowning). */
+export function airStep(air, under, moving, up, dt, C = SWIM) {
+  const A = C.air;
+  return Math.max(0, Math.min(A.seconds, under ? air - airRate(moving, up, C) * dt : air + A.recover * dt));
+}
+
+/** #1949: how far into the suffocation warning a diver is, 0 (none) … 1 (out of air): the last SWIM.air.warn seconds at the rate the air
+ * is being used right now (so a diver swimming hard is warned at a fuller meter). */
+export function airWarning(air, rate, C = SWIM) {
+  return Math.max(0, Math.min(1, 1 - air / (Math.max(rate, 1e-6) * C.air.warn)));
+}

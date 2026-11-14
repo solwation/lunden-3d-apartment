@@ -1,10 +1,11 @@
+// #1949: the air: about a minute still, less swimming, least upstream, back quickly at the surface, a warning in the last seconds.
 // #1944: the dive: crouch held goes down to SWIM.dive.eyeOverBed over the bed, released always comes up, a rising bed lifts the diver.
 // #1943: the pure swimming rules: the current runs downstream along the centre line, the same input is faster with it than against
 // it, an idle swimmer drifts, and the edge decision (climb / last-resort rescue).   node --test src/swim.test.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SWIM, SITE } from './config.js';
-import { currentDir, current, swimVelocity, exitDecision, swimEye, diveMax, diveStep, isDiving } from './swim.js';
+import { currentDir, current, swimVelocity, exitDecision, swimEye, diveMax, diveStep, isDiving, upstreamPart, airRate, airStep, airWarning } from './swim.js';
 
 // A river frame like riverbridge.js riverAt builds for the segment a -> b: normal (-dz, dx) / len.
 const frame = ([ax, az], [bx, bz]) => { const dx = bx - ax, dz = bz - az, l = Math.hypot(dx, dz); return { nx: -dz / l, nz: dx / l, dx: dx / l, dz: dz / l }; };
@@ -95,4 +96,54 @@ test('the dive: a rising bed lifts the diver at once; the shallows allow no dive
   assert.equal(diveMax(0.2), 0); assert.equal(diveStep(0.5, true, 0.2, 1 / 60), 0, 'no room: at the surface');
   assert.equal(diveStep(0, false, DEEP, 1), 0);
   assert.ok(!isDiving(SWIM.eye) && isDiving(SWIM.eye + SWIM.dive.under + 0.01), 'diving = the eye SWIM.dive.under m below the water line');
+});
+
+// #1949: the diver's air
+const airTime = (moving, up, dt = 1 / 60) => { let air = SWIM.air.seconds, t = 0; while (air > 0 && t < 600) { air = airStep(air, true, moving, up, dt); t += dt; } return t; };
+
+test('air: about a minute holding still, noticeably less swimming, least against the current', () => {
+  const still = airTime(false, 0), swim = airTime(true, 0), up = airTime(true, 1), half = airTime(true, 0.5);
+  assert.ok(Math.abs(still - 60) < 0.1, `still ${still}`);
+  assert.ok(Math.abs(still - SWIM.air.seconds) < 0.1 && Math.abs(swim - SWIM.air.seconds / SWIM.air.swim) < 0.1 && Math.abs(up - SWIM.air.seconds / SWIM.air.upstream) < 0.1);
+  assert.ok(swim < still * 0.75, `swimming ${swim} s vs still ${still} s`);
+  assert.ok(up < swim * 0.75, `upstream ${up} s vs swimming ${swim} s`);
+  assert.ok(half < swim && half > up, 'partly upstream lies between');
+  assert.equal(airRate(false, 1), 1, 'no stroke: the direction does not matter');
+});
+
+test('air: the upstream part comes from the stroke against the current on the real river', () => {
+  const f = frame(path[8], path[9]), d = currentDir(f);
+  const part = (ix, iz, amount = 1) => { const v = swimVelocity(ix, iz, amount, f); return upstreamPart(v.sx, v.sz, v.cx, v.cz); };
+  assert.ok(Math.abs(part(-d.x, -d.z) - 1) < 1e-9, 'straight upstream');
+  assert.equal(part(d.x, d.z), 0, 'downstream');
+  assert.ok(Math.abs(part(f.nx, f.nz)) < 1e-9, 'across');
+  assert.equal(part(0, 0, 0), 0, 'no stroke');
+  const diag = part(-d.x + f.nx, -d.z + f.nz);
+  assert.ok(Math.abs(diag - Math.SQRT1_2) < 1e-9, `45 degrees upstream ${diag}`);
+});
+
+test('air: comes back quickly at the surface, never over full or under empty', () => {
+  let air = 0, t = 0;
+  while (air < SWIM.air.seconds && t < 60) { air = airStep(air, false, false, 0, 1 / 60); t += 1 / 60; }
+  assert.ok(t <= 6, `full again after ${t} s`);
+  assert.equal(airStep(SWIM.air.seconds, false, true, 1, 1), SWIM.air.seconds);
+  assert.equal(airStep(0.01, true, true, 1, 1), 0);
+});
+
+test('air: the warning covers the last SWIM.air.warn seconds at the current rate and reaches 1 at empty', () => {
+  const A = SWIM.air;
+  assert.equal(A.warn, 10);
+  assert.equal(airWarning(A.seconds, 1), 0);
+  assert.equal(airWarning(A.warn + 0.01, 1), 0, 'still: none before 10 s are left');
+  assert.ok(airWarning(A.warn - 0.5, 1) > 0);
+  assert.ok(Math.abs(airWarning(A.warn / 2, 1) - 0.5) < 1e-9);
+  assert.equal(airWarning(0, 1), 1);
+  const rate = airRate(true, 1); // upstream: the same 10 s start at a fuller meter
+  assert.equal(airWarning(A.warn * rate + 0.01, rate), 0);
+  assert.ok(airWarning(A.warn * rate - 0.5, rate) > 0 && airWarning(A.warn * rate - 0.5, 1) === 0);
+  for (const [moving, up] of [[false, 0], [true, 0], [true, 1]]) { // time actually spent in the warning
+    let air = A.seconds, w = 0; const r = airRate(moving, up);
+    while (air > 0) { if (airWarning(air, r) > 0) w += 1 / 60; air = airStep(air, true, moving, up, 1 / 60); }
+    assert.ok(Math.abs(w - A.warn) < 0.1, `${moving}/${up}: ${w} s of warning`);
+  }
 });

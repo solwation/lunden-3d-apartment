@@ -29,6 +29,18 @@ export function toggleMuted() {
   return muted;
 }
 export const isMuted = () => muted;
+/** #1949: under water everything is heard dull: the master goes through one low-pass at `hz` while `on` (rewired only at the change, so
+ * the ordinary path is untouched on land). Mute and volume stay the master's. */
+let muffle = null;
+export function setMuffled(on, hz = 900) {
+  if (!ctx || ctx.state === 'closed' || !!muffle === !!on) return;
+  if (on) {
+    muffle = ctx.createBiquadFilter(); muffle.type = 'lowpass'; muffle.frequency.value = hz; muffle.Q.value = 0.7;
+    master.disconnect(ctx.destination); master.connect(muffle).connect(ctx.destination);
+  } else {
+    master.disconnect(muffle); muffle.disconnect(); muffle = null; master.connect(ctx.destination);
+  }
+}
 /** The running AudioContext, its master gain and the shared noise buffer (music, sonos.js), or null before initAudio. */
 export const audioParts = () => (ctx ? { ctx, master, noiseBuf } : null);
 
@@ -390,6 +402,40 @@ export const sfx = {
     noise(t + 0.02, 0.35, d, { type: 'highpass', freq: 3000, gain: 0.18, attack: 0.01 });
     tone(t, 0.25, d, { from: 140, to: 55, gain: 0.5 });
     for (let i = 0; i < 4; i++) tone(t + 0.25 + i * 0.09 + Math.random() * 0.04, 0.08, d, { from: 420 + Math.random() * 300, to: 900 + Math.random() * 500, gain: 0.05 });
+  },
+  /** #1949: air bubbles rising past a diver's ears: `n` short upward blips over a soft low gurgle. */
+  bubbles(n = 4, k = 1) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(null, 0.9 * k);
+    noise(t, 0.5, d, { type: 'lowpass', freq: 320, q: 0.8, gain: 0.22, attack: 0.08 });
+    for (let i = 0; i < n; i++) tone(t + i * 0.085 + Math.random() * 0.05, 0.07 + Math.random() * 0.04, d, { from: 260 + Math.random() * 220, to: 620 + Math.random() * 420, gain: 0.16 });
+  },
+  /** #1949: one heartbeat in the ears of a diver running out of air (lub-dub), `k` 0 … 1 = how near the end: louder and tighter. */
+  heartbeat(k = 0) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(null, 0.55 + 0.45 * k), gap = 0.2 - 0.07 * k;
+    tone(t, 0.14, d, { from: 78, to: 42, gain: 0.9 });
+    noise(t, 0.06, d, { type: 'lowpass', freq: 260, gain: 0.35 });
+    tone(t + gap, 0.12, d, { from: 92, to: 50, gain: 0.65 });
+    noise(t + gap, 0.05, d, { type: 'lowpass', freq: 320, gain: 0.25 });
+  },
+  /** #1949: a gasp for air at the surface after a long dive: a breathy inhale sweeping up, then a shorter breath out. */
+  gasp() {
+    if (!ready()) return;
+    const t = ctx.currentTime + 0.05, d = out(null, 0.9);
+    for (const [t0, dur, f0, f1, gain, attack] of [[t, 0.75, 700, 2600, 0.5, 0.4], [t + 0.85, 0.5, 1700, 800, 0.22, 0.08]]) {
+      const { f } = noise(t0, dur, d, { freq: f0, q: 1.4, gain, attack });
+      f.frequency.setValueAtTime(f0, t0); f.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+    }
+    tone(t, 0.6, d, { type: 'triangle', from: 210, to: 330, gain: 0.07 }); // a little voice in the inhale
+  },
+  /** #1949: out of air under water: the last breath goes out in a rush of bubbles, a choked falling groan under it. */
+  drown() {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(null, 1);
+    noise(t, 1.3, d, { type: 'lowpass', freq: 420, q: 0.9, gain: 0.5, attack: 0.05 });
+    tone(t, 1.1, d, { type: 'sawtooth', from: 150, to: 62, gain: 0.16 });
+    for (let i = 0; i < 14; i++) tone(t + 0.05 + i * 0.075 + Math.random() * 0.04, 0.09, d, { from: 520 - i * 22 + Math.random() * 120, to: 880 - i * 30 + Math.random() * 200, gain: 0.17 * (1 - i / 18) });
   },
   /** Hands rubbed under a running tap (#437): wet splashy swishes for `dur` s, a little irregular. */
   handwash(pos, dur = 2) {
