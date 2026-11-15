@@ -22,7 +22,7 @@ export class ThingShare {
   /** `item` is thing `id` (the same id for the same thing in every client). `opt` (#1976), for things that are more than a model at a
    *  place: mode(item, usual): its state here when the usual rule is not enough (a ball in the air is still ours); away(item): after
    *  it went home because somebody else holds it; lie(item): after it was laid where somebody else put it; home(item): after it came
-   *  home. #1976, things with contents: save(item) → a short string (thingsync.js `cleanData`) or null, load(item, string | null).
+   *  home; goHome(item): instead of item.goHome(). #1976, things with contents: save(item) → a short string (thingsync.js `cleanData`) or null, load(item, string | null).
  *  Such a thing is never plain 'home' to the room once it has been touched: put back in its place it is 'put' there, so what is in
  *  it travels too (unless `plainHome(item)` says its home keeps nothing); and a change of its contents while it stands (somebody pours into a glass on the table) is sent as a new 'put'. */
   register(id, item, opt = {}) {
@@ -52,24 +52,26 @@ export class ThingShare {
     if (s.m === 'held') {
       if (mine) return; // (our own take, echoed; or refused while we hold it anyway)
       const had = this.mode(it) === 'held';
-      this.release(it); it.goHome(); e.opt.away?.(it); it.model.visible = false; e.last = 'home';
+      this.release(it); this.goHome(e); e.opt.away?.(it); it.model.visible = false; e.last = this.mode(it);
       if (had) this.say('Någon annan hann före'); // (we had it in the hand: both took it at once and the room gave it to them)
     } else if (s.m === 'world') {
       if (mine && why === 'room') return; // (our own put, echoed)
       this.release(it);
-      it.goHome(); // (out of the inventory / a holder; then to where it lies)
+      this.goHome(e); // (out of the inventory / a holder; then to where it lies)
       this.scene.add(it.model); it.model.position.set(...s.p); it.model.quaternion.set(...s.q); it.model.visible = true; it.placed = true; e.opt.lie?.(it);
       if (e.opt.load) { e.opt.load(it, s.d ?? null); e.data = e.opt.save?.(it) ?? null; }
-      e.last = 'world';
+      e.last = this.mode(it); // (what it is HERE now: an eaten fruit is 'home' although the room has it lying)
     } else {
       if (mine && why === 'room') return; // (our own putting back, echoed)
       if (why === 'reset' && this.mode(it) !== 'home') return; // the connection dropped: what we hold or see lying stays as it is
       if (this.mode(it) === 'held' && why !== 'refused') return; // (it is in our hand: our take is on its way)
-      this.release(it); it.goHome(); it.model.visible = true; e.opt.home?.(it);
+      this.release(it); this.goHome(e); it.model.visible = true; e.opt.home?.(it);
       if (e.opt.load && why === 'room') { e.opt.load(it, null); e.data = e.opt.save?.(it, null) ?? null; } // (sent home plain: empty and clean)
-      e.last = 'home';
+      e.last = this.mode(it);
     }
   }
+  /** Back to its own place (`opt.goHome` for things that are no Holdable). */
+  goHome(e) { if (e.opt.goHome) e.opt.goHome(e.item); else e.item.goHome(); }
   /** The room's welcome: `list` = the things that are not at home. After it our own changes are sent. */
   welcome(list) {
     this.ledger.welcome(list);

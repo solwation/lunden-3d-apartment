@@ -122,6 +122,16 @@ const setup = () => {
     await A.page.evaluate(() => { const c = T.it('u0'); c.contents.clear(); c.dirty = false; c.heat = 0; c.show(); c.goHome(); }); await ac();
     const cupC3 = await C.page.evaluate(() => { const c = T.it('u0'); return { room: T.S.ledger.get('u0').m, state: c.state, fill: c.fill, dirty: c.dirty, away: !!c.sharedAway }; });
     check(cupC3.room === 'home' && cupC3.state === 'cabinet' && cupC3.fill === 0 && !cupC3.dirty && !cupC3.away, 'washed and back in A\'s cabinet: a clean cup at home at C', cupC3);
+    // #1976: a piece of fruit carries its bites; eaten up it is gone for everybody
+    const ap = await A.page.evaluate(async () => { const f = T.it('q0'); f.take(); await T.pump(600); f.biteOff(); f.biteOff(); const p = T.a.player.pos, at = new T.V(p.x + 0.9, p.y, p.z + 0.4); f.placeAt(at, 0.3); return { kind: f.kind, bites: f.bites, scoops: f.scoops.length, at: [at.x, at.y, at.z] }; }); await ac();
+    const apC = await C.page.evaluate(() => { const f = T.it('q0'), i = T.info('q0'); return { state: f.state, bites: f.bites, scoops: f.scoops.length, local: i.local, visible: f.model.visible, p: i.p }; });
+    check(ap.bites === 2 && apC.state === 'placed' && apC.bites === 2 && apC.scoops === ap.scoops && apC.visible && Math.hypot(apC.p[0] - ap.at[0], apC.p[2] - ap.at[2]) < 0.05, `a piece of fruit (${ap.kind}): bitten twice by A, it lies at C with the same two bites`, { ap, apC });
+    await C.page.evaluate(([x, y, z]) => { T.look(x, y + 0.03, z); T.a.step(0.05); }, apC.p);
+    await kit.shot(C.page, `${out}/c-sees-the-bitten-fruit-a-put-down.png`);
+    await C.page.evaluate(([x, , z]) => { T.stand(x + 0.3, z + 0.8); }, apC.p); await ac(900);
+    const eat = await C.page.evaluate(async () => { const f = T.it('q0'); f.take(); await T.pump(700); const held = f.held; for (let k = 0; k < 6 && !f.completed; k++) { f.use(); for (let i = 0; i < 30; i++) T.a.step(1 / 60); } if (f.isRemnant) f.discard(); return { held, state: f.state, bites: f.bites }; }); await ac(2000);
+    const apA = await A.page.evaluate(() => { const f = T.it('q0'); return { state: f.state, visible: f.model.visible, bites: f.bites }; });
+    check(eat.held && eat.state === 'eaten' && apA.state === 'eaten' && !apA.visible, 'C eats it up: it is gone at A too', { eat, apA });
     // #1976: a pot from the window board (at home it is part of the merged sill mesh) and the basketball (B has left: A and C)
     const pot = await A.page.evaluate(() => { const it = T.it('l0'); it.take(); return { held: it.held, n: [...T.S.items.keys()].filter((k) => k[0] === 'l').length }; }); await ac();
     const potB = await C.page.evaluate(() => { const it = T.it('l0'); return { other: T.S.ledger.heldByOther('l0'), away: it.away.has(it.pot), groupVisible: it.model.visible }; });

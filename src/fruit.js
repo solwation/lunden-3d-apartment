@@ -197,6 +197,36 @@ export class Fruit {
     this.model.rotation.set(s.kind === 'banana' ? s.tilt : 0, s.turn, s.kind === 'banana' ? 0 : s.tilt, 'YXZ');
   }
 
+  /** #1976: what a shared piece of fruit carries (thingsync.js `cleanData`): how many bites, where they were taken (not a banana:
+   *  its bites follow its curve), eaten up or not. Null while it is whole. */
+  shareData() {
+    const eaten = this.state === 'eaten';
+    if (!this.bites && !eaten) return null;
+    const r3 = (v) => Math.round(v * 1000) / 1000, o = { b: this.bites, ...(eaten ? { e: 1 } : {}) };
+    const s = this.kind === 'banana' ? [] : this.scoops.filter((x) => !x.n).map((x) => [r3(x.c.x), r3(x.c.y), r3(x.c.z)]);
+    const full = JSON.stringify(s.length ? { ...o, s } : o);
+    return full.length <= 200 ? full : JSON.stringify(o);
+  }
+  /** #1976: the reverse, on another player's copy of this piece: the same bites (a missing or odd bite place falls back to the side),
+   *  whole for null. Nothing is counted or rewarded here. */
+  loadShare(d) {
+    let o = null;
+    try { o = typeof d === 'string' ? JSON.parse(d) : null; } catch { o = null; }
+    const max = C.bites[this.kind], b = Number.isInteger(o?.b) ? Math.max(0, Math.min(max, o.b)) : 0;
+    this.bites = b; this.bite = 0; this.completed = b >= max;
+    this.peeled = (this.kind === 'orange' || this.kind === 'banana') && b > 0;
+    const n = Math.max(0, b - (this.peeled ? 1 : 0));
+    this.scoops = [];
+    for (let k = 0; k < n; k++) {
+      if (this.kind === 'banana') { const t = (k + 1) / (C.bites.banana - 1); this.scoops.push({ c: this.curve.getPoint(t).add(new THREE.Vector3(0, 0.0205, 0)), n: this.curve.getTangent(t).negate() }); continue; }
+      const R = this.radius * 0.62, at = Array.isArray(o?.s?.[k]) && o.s[k].length === 3 && o.s[k].every(Number.isFinite) ? new THREE.Vector3(...o.s[k]) : null;
+      const ok = at && at.distanceTo(this.mid) < this.radius * 3;
+      this.scoops.push({ c: ok ? at : this.mid.clone().addScaledVector(new THREE.Vector3(Math.cos(k * 2.1), 0, Math.sin(k * 2.1)), this.radius * 0.95 + R - this.radius * 0.38), R });
+    }
+    this.reshape();
+    if (o?.e === 1) { this.state = 'eaten'; this.model.visible = false; }
+  }
+
   get isRemnant() { return !!this.remains && this.bites >= C.bites[this.kind]; }
   get wasteKind() { return this.isRemnant && this.state !== 'eaten' ? 'food' : null; }
 

@@ -1669,6 +1669,12 @@ not re-sent all the time) and dirt (`thingcontents.js` `cupData` / `readCup`). A
 (`plainHome`: a clean cup, no contents kept). A refused re-put of a standing thing (e.g. the dishwasher finished while nobody was
 near) leaves what we see as it is. The coffee jug and the pan are not shared yet.
 
+#1976 (fifth slice): the fruit in the bowl (`q<slot>`; `fruitShare` in main.js, fruit.js `shareData` / `loadShare`): a piece carries
+how many bites were taken and where (a banana's follow its curve), so a bitten apple looks the same to everybody; eaten up (or its
+core thrown away) it is gone for all, and a refilled bowl (F) makes it whole again for all. Fruit is no Holdable, so the adapter
+supplies `goHome`. After a remote change ThingShare records what the thing is HERE (`mode`), not what the room called it: an eaten
+fruit is `home` locally although the room has it lying, which keeps two clients from answering each other for ever.
+
 - **Our own actions** are noticed by comparing each thing's state from frame to frame (`mode`: in the hand or carried in the inventory
   / the bicycle's hand = `held`, put down = `world`, else `home`) and sent as `take` / `put` (the model's world place and turn) /
   `home`. So E, the inventory, F and every other way a thing moves are covered without touching the things' classes; swapping

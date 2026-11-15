@@ -3362,6 +3362,15 @@ const cupShare = {
   load: (c, d) => { const r = readCup(d, CUPS.designs); if (r.design) c.setDesign(r.design); c.contents.clear(); c.contents.a = r.a; c.heat = r.heat; c.coffeeWas = r.a.coffee ?? 0; c.milkWas = r.a.milk ?? 0; c.dirty = r.used; c.show(); },
 };
 cups.cups.forEach((c, i) => thingShare.register(`u${i}`, c, cupShare));
+// the fruit in the bowl (fruit.js; no Holdable): a piece carries its bites (where they were taken), and eaten up it is gone for all
+const fruitShare = {
+  mode: (f) => (f.held ? 'held' : f.state === 'placed' ? 'world' : 'home'),
+  goHome: (f) => { f.held = false; f.home(); },
+  lie: (f) => { delete f.placed; f.state = 'placed'; },
+  save: (f) => f.shareData(),
+  load: (f, d) => f.loadShare(d),
+};
+fruit.fruit.forEach((f, i) => thingShare.register(`q${i}`, f, fruitShare));
 // the pots on the window boards: at home they are part of the merged sill meshes, so anywhere else their own model must show
 sillPots.forEach((it, i) => thingShare.register(`l${i}`, it, { away: (p) => p.setAway(true), lie: (p) => p.setAway(true) }));
 // the basketball: in the air it is still its thrower's; it lies where it came to rest (the room allows that far from the thrower)
