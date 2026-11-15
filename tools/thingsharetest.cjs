@@ -167,6 +167,17 @@ const setup = () => {
     const tub = await A.page.evaluate(async () => { const t = T.S.items.get('m0')?.item; if (!t) return null; t.bites = 5; t.show(); t.take(); await T.pump(600); const p = T.a.player.pos, at = new T.V(p.x - 1.1, p.y, p.z + 0.5); t.placeAt(at, 0); return { at: [at.x, at.y, at.z] }; }); await ac();
     const tubC = await C.page.evaluate(() => { const t = T.S.items.get('m0')?.item; if (!t) return null; const i = T.info('m0'); return { bites: t.bites, away: t.away, local: i.local, visible: i.visible, p: i.p }; });
     check(!!tub && !!tubC && tubC.bites === 5 && !tubC.away && tubC.local === 'world' && tubC.visible && Math.hypot(tubC.p[0] - tub.at[0], tubC.p[2] - tub.at[2]) < 0.05, 'a popcorn tub stands at C with the popcorn that is left', { tub, tubC });
+    // #1980: the whole chicken carries how far it is cooked and which pieces are gone
+    const bird = await A.page.evaluate(async () => { const c = T.S.items.get('i0')?.item; if (!c) return null; c.take({ silent: true }); await T.pump(600);
+      c.shareLoad(JSON.stringify({ c: 1, k: 0.2, g: 1, l: 2 })); const p = T.a.player.pos, at = new T.V(p.x + 0.1, p.y, p.z + 1.4); c.placeAt(at, 0); return { at: [at.x, at.y, at.z], done: c.done }; }); await ac();
+    const birdC = await C.page.evaluate(() => { const c = T.S.items.get('i0')?.item; if (!c) return null; const i = T.info('i0'); return { done: c.done, burnt: c.burnt, gone: c.parts.map((p) => !!p.gone), body: c.bodyLeft, local: i.local, visible: i.visible, p: i.p, rewarded: c.rewarded }; });
+    check(!!bird && bird.done && !!birdC && birdC.done && !birdC.burnt && birdC.gone[0] && !birdC.gone[1] && birdC.body === 2 && birdC.local === 'world' && birdC.visible && Math.hypot(birdC.p[0] - bird.at[0], birdC.p[2] - bird.at[2]) < 0.05,
+      'the golden chicken A put down lies at C: cooked, one piece gone, two bites of the body left', { bird, birdC });
+    await C.page.evaluate(([x, y, z]) => { T.look(x, y + 0.08, z); T.a.step(0.05); }, birdC.p);
+    await kit.shot(C.page, `${out}/c-sees-the-golden-chicken-a-put-down.png`);
+    await A.page.evaluate(async () => { const c = T.S.items.get('i0').item; c.take({ silent: true }); await T.pump(600); c.shareLoad(null); c.putBack(); }); await ac(); // (putBack: out of the hand and home)
+    const birdC2 = await C.page.evaluate(() => { const c = T.S.items.get('i0').item; return { room: T.S.ledger.get('i0').m, done: c.done, gone: c.parts.some((p) => p.gone), local: T.S.mode(c) }; });
+    check(birdC2.room === 'home' && birdC2.local === 'home' && !birdC2.done && !birdC2.gone, 'a fresh bird back in A\'s fridge is a raw whole bird at home at C', birdC2);
     // #1976: a pot from the window board (at home it is part of the merged sill mesh) and the basketball (B has left: A and C)
     const pot = await A.page.evaluate(() => { const it = T.it('l0'); it.take(); return { held: it.held, n: [...T.S.items.keys()].filter((k) => k[0] === 'l').length }; }); await ac();
     const potB = await C.page.evaluate(() => { const it = T.it('l0'); return { other: T.S.ledger.heldByOther('l0'), away: it.away.has(it.pot), groupVisible: it.model.visible }; });

@@ -1694,6 +1694,13 @@ are left of it and how far they are cooked; it never goes back in the basket, so
 the basket / on the oven tray is each player's own. A popcorn tub (`m<i>`, a fixed pool; home = back in the stack) carries how much
 popcorn is left.
 
+#1980 (third slice): the whole chicken (`i0`; chicken.js `shareData` / `shareLoad`): where it lies (a table, the grill, the oven tray:
+all `world` to the room), how long it has cooked (eighths of the cooking time), how dark it fried on, which pieces are gone and how
+much of the body is left. It cooks only for the player whose grill / oven it is on; the others see it lying there, coloured as
+cooked. `shareLoad` rewards and reports nothing (as `loadState`): a bird somebody else cooked is not our cooking, and the grill
+chore's own events come only from our own actions. A piece broken off is in its eater's hand only. The food lying IN the pan, the
+basket's heap and the cart's popcorn case stay each player's own.
+
 - **Our own actions** are noticed by comparing each thing's state from frame to frame (`mode`: in the hand or carried in the inventory
   / the bicycle's hand = `held`, put down = `world`, else `home`) and sent as `take` / `put` (the model's world place and turn) /
   `home`. So E, the inventory, F and every other way a thing moves are covered without touching the things' classes; swapping

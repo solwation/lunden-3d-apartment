@@ -3,6 +3,9 @@
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [life](life.md), [furniture](furniture.md).
+
+Shared between the players (#1980): fish fingers, the bag and bunches of fries, popcorn tubs and the whole chicken carry their bites / portions / cooking to whoever takes them; see [storage](storage.md) ("Shared loose things").
+
 ## Module and test map
 
 ```text

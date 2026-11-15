@@ -212,6 +212,31 @@ export class Chicken extends Holdable {
     this.retarget(); // no completion/reward events on restoration
   }
 
+  /** #1980: what the shared bird carries (thingsync.js `cleanData`): how long it has cooked (in eighths of the cooking time), how
+   *  dark it fried on, which parts are gone (a bit per part) and how much of the body is left. Null while it is raw and whole. */
+  shareData() {
+    const g = this.parts.reduce((m, p, i) => m | (p.gone ? 1 << i : 0), 0), c = Math.round(this.cooked / C.cookSeconds * 8) / 8;
+    if (!c && !g && this.bodyLeft >= C.bodyBites) return null;
+    return JSON.stringify({ c, k: Math.round((this.brownK ?? 0) * 10) / 10, g, l: this.bodyLeft });
+  }
+  /** #1980: the reverse, on another player's copy of the bird: the same cooking and missing parts (raw and whole for null). Like
+   *  loadState it rewards and reports nothing: a bird somebody else cooked is not our cooking. */
+  shareLoad(d) {
+    let o = null;
+    try { o = typeof d === 'string' ? JSON.parse(d) : null; } catch { o = null; }
+    this.cooked = Number.isFinite(o?.c) ? Math.max(0, Math.min(C.burnSeconds, o.c * C.cookSeconds)) : 0;
+    this.burnt = this.cooked >= C.burnSeconds; this.done = this.burnt || this.cooked >= C.cookSeconds;
+    if (this.done) this.rewarded = true; if (this.burnt) this.burntCounted = true;
+    this.brownK = this.burnt ? 1 : Number.isFinite(o?.k) ? Math.max(0, Math.min(1, o.k)) : 0;
+    const g = Number.isInteger(o?.g) ? o.g : 0;
+    this.parts.forEach((p, i) => { p.gone = !!(g & (1 << i)); for (const m of p.meshes) m.visible = !p.gone; });
+    this.bodyLeft = Number.isInteger(o?.l) ? Math.max(0, Math.min(C.bodyBites, o.l)) : C.bodyBites;
+    for (const m of this.body) { m.userData.s0 ??= m.scale.clone(); m.scale.copy(m.userData.s0).multiplyScalar(0.45 + 0.55 * this.bodyLeft / C.bodyBites); m.visible = this.bodyLeft > 0; }
+    this.smokeT = 0; this.paint(this.done ? 1 : Math.min(1, this.cooked / C.cookSeconds), this.brownK);
+    this.retarget();
+    this.life && (this.life.dirty = true);
+  }
+
   /** #1034: x.chicken owns the bird; this record only identifies its already held portion. */
   saveStowed(item) {
     if (item === this) return { whole:true, generation:this.generation };

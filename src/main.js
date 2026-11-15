@@ -3424,6 +3424,13 @@ if (fries) {
     while (fries.bunches.length <= +g[1]) { const b = new FriesBunch(fries); fries.bunches.push(b); shareBunch(b); }
     return thingShare.items.get(id) ?? null; });
 }
+// #1980, the whole chicken (chicken.js): where it lies (a table, the grill, the oven tray: all `world` to the room), how far it
+// is cooked and which pieces are gone. It cooks only for the player whose grill / oven it is on; the others see it lying there,
+// coloured as cooked. A piece broken off is in its eater's hand only. Nothing is rewarded or reported for a bird somebody else cooked.
+if (chicken) thingShare.register('i0', chicken, {
+  goHome: (c) => { if (heldItem()?.isChickenPiece && heldItem().bird === c) heldItem().putBack(); c.goHome({ silent: true }); },
+  lie: (c) => { c.inPan = c.inGrill = c.inOven = false; c.plate.visible = true; c.retarget(); },
+  save: (c) => c.shareData(), load: (c, d) => c.shareLoad(d) });
 // #1980, the popcorn tubs (popcorn.js: a fixed pool; home = back in the stack, hidden): a tub carries how much popcorn is left
 popcornTubs.forEach((t, i) => thingShare.register(`m${i}`, t, { plainHome: () => true,
   lie: (x) => { x.away = false; }, home: (x) => { x.model.visible = false; },
