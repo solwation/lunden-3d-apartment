@@ -19,12 +19,14 @@ const hash = (id) => { let h = 0; for (let i = 0; i < id.length; i++) h = (h * 3
 export class RoomLife {
   /** ctx: the Durable Object's (storage); send(ws, text); peers(): [{ ws, a }] the open connections with their attachments; clock(): ms. */
   constructor(ctx, send, peers, clock = () => Date.now()) {
-    Object.assign(this, { ctx, send, peers, clock, state: new Map(), touched: 0, chain: Promise.resolve() }); // id -> { e, h, pv }
+    Object.assign(this, { ctx, send, peers, clock, state: new Map(), parts: new Map(), touched: 0, chain: Promise.resolve() }); // id -> { e, h, pv }; parts: name -> JSON text
     this.ready = (async () => {
       const st = ctx?.storage;
       if (!st) return;
       const meta = await st.get('lim');
       this.touched = meta?.v === 1 && Number.isFinite(meta.at) ? meta.at : 0;
+      const px = await st.get('lix');
+      if (px?.v === 1 && Array.isArray(px.p)) for (const r of px.p.slice(0, 32)) if (Array.isArray(r) && LIFE_SYNC.parts.includes(r[0]) && typeof r[1] === 'string' && r[1].length <= LIFE_SYNC.part) this.parts.set(r[0], r[1]);
       for (let c = 0; c < LIFE_SYNC.chunks; c++) {
         const rows = await st.get(`li${c}`);
         for (const r of Array.isArray(rows) ? rows.slice(0, LIFE_SYNC.max) : []) {
@@ -87,7 +89,7 @@ export class RoomLife {
   }
   async sweep(now, feet = null, gone = null) {
     if (this.state.size && now - this.touched > LIFE_SYNC.keepDays * 864e5 && this.touched) { // long untouched: starts over
-      try { const all = new Set(this.state.keys()); await this.commit(new Map(), all, now); this.state = new Map(); } catch { /* next time */ }
+      try { const all = new Set(this.state.keys()); await this.ctx?.storage?.put('lix', { v: 1, p: [] }); await this.commit(new Map(), all, now); this.state = new Map(); this.parts = new Map(); } catch { /* next time */ }
       return;
     }
     const r = this.released(feet, gone);
@@ -102,6 +104,21 @@ export class RoomLife {
       await this.sweep(now);
       const rows = [...this.state.keys()].map((i) => this.row(i));
       for (let k = 0; k === 0 || k < rows.length; k += LIFE_SYNC.page) this.send(ws, JSON.stringify({ t: 'li', k: 'a', ...(k === 0 ? { f: 1 } : {}), ...(k + LIFE_SYNC.page >= rows.length ? { z: 1 } : {}), r: rows.slice(k, k + LIFE_SYNC.page) }));
+    });
+  }
+  /** What the room has of the home's other state (after the kitchen's pages). */
+  partsWelcome(ws) { return this.enqueue(() => this.send(ws, JSON.stringify({ t: 'lx', k: 'a', p: [...this.parts] }))); }
+  /** A part's new word { k, d }: saved, then told to the others. Too fast or a failed save: dropped (the sender's next change says it again). */
+  part(ws, a, m, now = this.clock()) {
+    return this.enqueue(async () => {
+      if (now - (a.lxAt ?? 0) < LIFE_SYNC.partEvery * 1000 * 0.6) return;
+      a.lxAt = now;
+      if (this.parts.get(m.k) === m.d) return;
+      const next = new Map(this.parts); next.set(m.k, m.d);
+      try { await this.ctx?.storage?.put('lix', { v: 1, p: [...next] }); if (now - this.touched > 864e5) { await this.ctx?.storage?.put('lim', { v: 1, at: now }); this.touched = now; } } catch { return; }
+      this.parts = next;
+      const out = JSON.stringify({ t: 'lx', k: m.k, d: m.d, by: a.i });
+      for (const { ws: x } of this.peers()) if (x !== ws) this.send(x, out);
     });
   }
   handle(ws, a, m, now = this.clock()) { return this.enqueue(() => this.transact(ws, a, m, now)); }

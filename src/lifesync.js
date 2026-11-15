@@ -85,6 +85,20 @@ export function cleanLifeText(text, L = LIFE_SYNC) {
 }
 export const LIFE_PREFIX = '{"t":"li"';
 
+// The home's state that is no instance (the dishwasher's and the laundry machines' programmes, made beds, watered plants, the milk):
+//   client -> room: { t: 'lx', k: name, d: JSON text } (`name` one of LIFE_SYNC.parts); room -> the others: { t: 'lx', k, d, by };
+//   room -> a new connection, after the kitchen's pages: { t: 'lx', k: 'a', p: [[name, d], …] } (what the room has; maybe none).
+// The room keeps the last word per part and never reads it.
+export const PART_PREFIX = '{"t":"lx"';
+/** A part message from a client (text), or null. */
+export function cleanPartText(text, L = LIFE_SYNC) {
+  if (typeof text !== 'string' || text.length > L.part + 80) return null;
+  let m; try { m = JSON.parse(text); } catch { return null; }
+  if (m?.t !== 'lx' || !L.parts.includes(m.k) || typeof m.d !== 'string' || m.d.length < 1 || m.d.length > L.part || !/^[\x20-\x7e]+$/.test(m.d)) return null;
+  try { JSON.parse(m.d); } catch { return null; }
+  return { k: m.k, d: m.d };
+}
+
 /** Rows from the room ([[record, holder | 0], …]) → [{ e, h }] (malformed ones dropped). */
 export function cleanLifeRows(rows, L = LIFE_SYNC, C = THING_SYNC) {
   const out = [];

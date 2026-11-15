@@ -65,7 +65,21 @@ const setup = () => {
     await Promise.all([ev(A, (id) => T.L.view(id).take(), made.sausage), ev(B, (id) => T.L.view(id).take(), made.sausage)]); await calm(A, B);
     const race = [await ev(A, (id) => T.see(id), made.sausage), await ev(B, (id) => T.see(id), made.sausage)];
     check(race.filter((r) => r?.held).length === 1 && race.filter((r) => r === null).length === 1, 'both take it at once: exactly one keeps it, it is gone for the other', race);
+    // the home's other state: an unmade bed, a watered plant, the milk, the dishwasher's programme
+    const home = () => ({ beds: T.a.bedCare.units.filter((u) => !u.made).map((u) => u.id), plants: T.a.watering.plants.filter((p) => p.watered).map((p) => p.id), milk: Math.round(T.a.milk?.ml ?? -1), dw: T.a.dishProg?.state ?? null });
+    const did = await ev(A, () => { const u = T.a.bedCare.units[0], p = T.a.watering.plants[0]; u.apply(false); p.apply(true); T.a.watering.rebuildSills(); T.a.milk?.drain(200); const d = T.a.dishProg; if (d) { d.state = 'running'; d.left = 500; d.ids = []; }
+      return { bed: u.id, plant: p.id }; });
+    for (let i = 0; i < 6; i++) await Promise.all([ev(A, () => T.pump(700)), ev(B, () => T.pump(700))]);
+    const ha = await ev(A, home), hb = await ev(B, home);
+    check(hb.beds.includes(did.bed) && hb.plants.includes(did.plant) && hb.milk === ha.milk && ha.milk > 0 && hb.dw === ha.dw && ['running', 'paused'].includes(hb.dw),
+      'an unmade bed, a watered plant, less milk and a started dishwasher at A: the same at B', { did, ha, hb });
+    await ev(B, (id) => { T.a.bedCare.units.find((u) => u.id === id).apply(true); }, did.bed);
+    for (let i = 0; i < 4; i++) await Promise.all([ev(A, () => T.pump(700)), ev(B, () => T.pump(700))]);
+    const ha2 = await ev(A, home);
+    check(!ha2.beds.includes(did.bed), 'B makes the bed: made at A too', ha2);
     const C = await open('Cia'); await calm(A, B, C);
+    const hc = await ev(C, home);
+    check(!hc.beds.includes(did.bed) && hc.plants.includes(did.plant) && hc.milk === ha.milk && ['running', 'paused'].includes(hc.dw), 'a late C gets the home\'s state too', hc);
     const mc = await ev(C, () => T.map()); ma = await ev(A, () => T.map()); mb = await ev(B, () => T.map());
     const strip = (m) => m.split(' ').filter((r) => !r.startsWith(made.sausage)).join(' ');
     check(strip(mc) === strip(ma) && strip(mc) === strip(mb) && !mc.includes(made.sausage), 'a late C gets the same kitchen, without what is in somebody\'s hand', { c: mc.split(' ').length });
@@ -80,6 +94,8 @@ const setup = () => {
     const D = await open('Dan'); await calm(D);
     const md = await ev(D, () => T.map());
     check(md === last, 'everybody left: a new player D finds the kitchen as it was (saved by the room)', { d: md.split(' ').length });
+    const hd = await ev(D, home);
+    check(hd.plants.includes(did.plant) && hd.milk === ha.milk, 'D finds the watered plant and the milk as they were', hd);
     await ev(D, () => { T.stand(3.9, 2.5); T.look(3.65, 0.8, 1.45); T.a.step(0.05); T.look(3.65, 0.8, 1.45); });
     await kit.shot(D.page, `${out}/d-finds-the-kitchen-as-it-was-left.png`);
     check(!errors.length, 'no page errors', errors);

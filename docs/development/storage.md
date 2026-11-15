@@ -1776,13 +1776,17 @@ instances follow it.
   kitchen until it is put down. New ids made while in a room come from a random range of our own (`Items.mint`), so two clients
   never make the same id. `Items.adopt(record)` applies the room's word without asking the rules. Offline, and in the `&life`
   developer scenario, nothing is shared and the own save (`lunden.life`) decides; while in a room that save holds the room's kitchen.
-- **Not shared yet** (each player's own, saved with the life record's `x` parts): crumbs and dust (`mess`), the dishwasher's and the
-  laundry machines' programmes, the milk carton, made beds, watered plants. The day's chore goals are shared by `choresync.js`
-  (above) whoever's copy they were done in.
+- **The home's other state** (`LifeParts`, `window.__lifeParts`; `LIFE_SYNC.parts`): the dishwasher's and the laundry machines'
+  programmes, unmade beds, watered plants and the milk left are shared whole per part, the last word wins: `{ t: 'lx', k: name, d:
+  JSON text }`, kept by the room in the storage value `lix` and sent to a newcomer after the kitchen's pages (`k: 'a'`). The parts
+  are the ones `life.keepPart` already saves; a programme's signature leaves out its countdown, so it is told when it starts,
+  pauses and ends, and every client counts down for itself. A room without a part gets ours when it says anything.
+- **Not shared yet** (each player's own): crumbs and dust (`mess`, its own issue), the popcorn cart's case, the fruit remains and
+  the day's task list itself. The day's chore goals are shared by `choresync.js` (above) whoever's copy they were done in.
 
 Tests: `node --test src/lifeshare.test.mjs` (real `Items`, the real room logic, messages passed by hand: seeding, adopting,
-carrying, races, a leaving holder, a failed save, pages and split batches, reconnecting) and `tools/lifesharetest.cjs` (real
-clients against `cloudflare/dev.mjs`).
+carrying, races, a leaving holder, a failed save, pages and split batches, reconnecting; the parts) and
+`tools/lifesharetest.cjs` (real clients against `cloudflare/dev.mjs`: the kitchen, then a bed, a plant, the milk and the dishwasher).
 
 ## Shared moving Nerf target (#1820)
 

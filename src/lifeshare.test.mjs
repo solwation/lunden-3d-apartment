@@ -188,3 +188,79 @@ test('offline nothing is sent and the own kitchen stays; a reconnect takes the r
   assert.equal(w.room.state.get(x).h, 'B2');
   assert.equal(a.items.get(x), null, 'A sees it taken again');
 });
+
+// --- the home's state that is no instance (LifeParts) ---------------------------------------------------------------
+import { LifeParts } from './lifeshare.js';
+import { cleanPartText } from './lifesync.js';
+
+function partsWorld(storage = new Map()) {
+  const peers = [], clock = { t: 5e6 };
+  const ctx = { storage: { get: async (k) => structuredClone(storage.get(k)), put: async (k, v) => { storage.set(k, structuredClone(v)); } } };
+  const room = new RoomLife(ctx, (ws, text) => ws.inbox.push(JSON.parse(text)), () => peers.filter((p) => p.open).map((p) => ({ ws: p, a: p.a })), () => clock.t);
+  const join = async (name, home) => {
+    const p = { open: true, a: { i: name }, inbox: [], out: [], home };
+    p.parts = new LifeParts({ connected: () => p.open, send: (m) => { p.out.push(m); return true; }, now: () => clock.t / 1000 });
+    p.parts.add('beds', { save: () => (home.beds.length ? home.beds : null), load: (v) => { home.beds = Array.isArray(v) ? v : []; }, sig: (v) => JSON.stringify([...(v ?? [])].sort()) });
+    p.parts.add('dishwasher', { save: () => home.dw, load: (v) => { home.dw = v; home.loads = (home.loads ?? 0) + 1; }, sig: (v) => (v?.s ? `${v.s}|${(v.ids ?? []).join()}` : 'idle') });
+    p.parts.add('secret', { save: () => 1, load: () => {} }); // (not a name the room takes: never registered)
+    peers.push(p);
+    p.parts.receive({ t: 'lx', k: 'reset' });
+    await room.partsWelcome(p);
+    return p;
+  };
+  const settle = async () => {
+    for (let i = 0; i < 40; i++) {
+      let moved = false; clock.t += 600;
+      for (const p of peers) {
+        if (!p.open) continue;
+        for (const m of p.inbox.splice(0)) { p.parts.receive(m); moved = true; }
+        p.parts.update();
+        for (const m of p.out.splice(0)) { const c = cleanPartText(JSON.stringify(m)); assert.ok(c, 'valid part messages'); await room.part(p, p.a, c, clock.t); moved = true; }
+      }
+      if (!moved) return;
+    }
+    assert.fail('never settles');
+  };
+  return { room, join, settle, ctx, storage, clock };
+}
+
+test('parts: the wire takes only the listed names and JSON text', () => {
+  assert.deepEqual(cleanPartText('{"t":"lx","k":"beds","d":"[\\"a\\"]"}'), { k: 'beds', d: '["a"]' });
+  assert.equal(cleanPartText('{"t":"lx","k":"tasks","d":"1"}'), null);
+  assert.equal(cleanPartText('{"t":"lx","k":"beds","d":"{oops"}'), null);
+  assert.equal(cleanPartText(`{"t":"lx","k":"beds","d":"${'1'.repeat(LIFE_SYNC.part + 1)}"}`), null);
+});
+
+test('parts: ours is told to a room that has none; a newcomer gets the room\'s; a change reaches the other; saved', async () => {
+  const w = partsWorld();
+  const a = await w.join('A', { beds: ['b1'], dw: null });
+  await w.settle();
+  assert.equal(w.room.parts.get('beds'), '["b1"]');
+  assert.equal(w.room.parts.has('dishwasher'), false, 'an idle machine says nothing');
+  assert.equal(w.room.parts.has('secret'), false);
+  const b = await w.join('B', { beds: ['b7', 'b8'], dw: null });
+  await w.settle();
+  assert.deepEqual(b.home.beds, ['b1'], 'the room\'s word, not B\'s own');
+  b.home.beds = []; // B makes the bed
+  await w.settle();
+  assert.deepEqual(a.home.beds, []);
+  const again = new RoomLife(w.ctx, () => {}, () => []); await again.ready;
+  assert.equal(again.parts.get('beds'), 'null');
+});
+
+test('parts: a programme is told when it starts and ends, not while its time runs down', async () => {
+  const w = partsWorld();
+  const a = await w.join('A', { beds: [], dw: null }), b = await w.join('B', { beds: [], dw: null });
+  await w.settle();
+  a.home.dw = { s: 'running', left: 100, ids: ['plate#1'] };
+  await w.settle();
+  assert.deepEqual(b.home.dw, { s: 'running', left: 100, ids: ['plate#1'] });
+  const loads = b.home.loads;
+  for (let i = 0; i < 5; i++) { a.home.dw = { ...a.home.dw, left: a.home.dw.left - 7 }; b.home.dw = { ...b.home.dw, left: b.home.dw.left - 6 }; await w.settle(); }
+  assert.equal(b.home.loads, loads, 'no message while both count down');
+  a.home.dw = { s: 'done' }; b.home.dw = { s: 'done' }; // both finish by themselves
+  await w.settle();
+  assert.equal(w.room.parts.get('dishwasher'), '{"s":"done"}');
+  b.home.dw = null; await w.settle(); // B empties it
+  assert.equal(a.home.dw, null);
+});

@@ -14,6 +14,41 @@ import { cleanLifeRecord, cleanLifeRows } from './lifesync.js';
 
 const HELD = (p) => !p || (p.at !== 'world' && p.at !== 'slot' && p.at !== 'on');
 
+/** #1981: the home's state that is no instance (life.js `keepPart`: the dishwasher's and the laundry machines' programmes, made
+ *  beds, watered plants, the milk) shared whole per part; the last word wins. A part: { save() → JSON | null, load(v), sig?(v) →
+ *  what counts as a change (a programme's countdown does not: each client counts for itself) }. On joining, the room's word is
+ *  loaded; what the room does not have yet is told from ours. */
+export class LifeParts {
+  constructor({ connected = () => false, send = () => false, now = () => performance.now() / 1000, cfg = LIFE_SYNC }) {
+    Object.assign(this, { connected, send, now, cfg, parts: new Map(), last: new Map(), live: false, sentAt: -1e9 });
+  }
+  add(name, part) { if (this.cfg.parts.includes(name) && part) this.parts.set(name, part); }
+  sig(name) { const p = this.parts.get(name), v = p.save() ?? null; return p.sig ? p.sig(v) : JSON.stringify(v); }
+  put(name, d) { const p = this.parts.get(name); if (!p) return; let v; try { v = JSON.parse(d); } catch { return; } p.load(v); this.last.set(name, this.sig(name)); }
+  receive(m) {
+    if (m?.t !== 'lx') return;
+    if (m.k === 'reset') { this.live = false; return; }
+    if (m.k === 'a') {
+      const have = new Map((Array.isArray(m.p) ? m.p : []).filter((r) => Array.isArray(r) && typeof r[1] === 'string'));
+      for (const name of this.parts.keys()) { if (have.has(name)) this.put(name, have.get(name)); else this.last.set(name, JSON.stringify(null) === JSON.stringify(this.parts.get(name).save() ?? null) ? this.sig(name) : ''); } // (ours, when it says anything, is told)
+      this.live = true;
+    } else if (this.live && typeof m.d === 'string') this.put(m.k, m.d);
+  }
+  /** Per frame: a changed part is told, one at a time. */
+  update() {
+    if (!this.connected()) { this.live = false; return; }
+    if (!this.live || this.now() - this.sentAt < this.cfg.partEvery) return;
+    for (const [name, p] of this.parts) {
+      const s = this.sig(name);
+      if (s === this.last.get(name)) continue;
+      const d = JSON.stringify(p.save() ?? null);
+      if (d.length <= this.cfg.part && /^[\x20-\x7e]+$/.test(d) && !this.send({ t: 'lx', k: name, d })) return; // (cannot go now: next frame)
+      this.last.set(name, s); this.sentAt = this.now();
+      return;
+    }
+  }
+}
+
 export class LifeShare {
   /** items: the Items; connected(); send(m): false when it cannot go now; me(): our connection's id; say(text); now(): s. */
   constructor({ items, connected = () => false, send = () => false, me = () => '', say = () => {}, now = () => performance.now() / 1000, cfg = LIFE_SYNC }) {
