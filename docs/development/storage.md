@@ -1694,6 +1694,12 @@ the food in it is not shared). Split out as their own issues: cooked food (#1980
 - **Saving.** `keep.js` is unchanged: a thing another player put down is saved where it lies like any put-down thing; one they hold
   is at its home in our save. While connected the room's list wins for the things it lists (#1978: also what was put down on an
   earlier visit, by anybody); offline and solo nothing is sent and the player's own save decides.
+- **The inventory (#1977).** A thing on a place of the inventory (#1954) is `held` (`mode` counts `isStowed`), so it is away for the
+  others and swapping places sends nothing. The saved inventory (#1959) is restored before the room's welcome: what we carry in is then
+  announced as ours; a carried thing the room lists as held by somebody else or lying somewhere was taken meanwhile and is released
+  from its place (`apply` → `goHome`, `inventoryTick` drops the record), so there are never two of it. When we leave, what we carried
+  goes home for the others. `tools/thinginventorytest.cjs` (two real pages; a real reload; no `&test` and no `&at`: both start
+  without the saved world).
 - **Tests.** `node --test src/thingshare.test.mjs` (two ThingShare objects against the real `RoomThings`); `tools/thingsharetest.cjs`
   (three real pages against `cloudflare/dev.mjs`; images in [docs/verification/1975](../verification/1975/)).
 
