@@ -2385,6 +2385,27 @@ export const SWIM = {
   },
 };
 
+// #1952: things drifting downstream on and in Höje å, so the water is seen to flow (src/riverdrift.js the pure rules, src/riverdriftview.js
+// the two draw calls). The user: "small bubbles or particles floating downstream". Everything is a look chosen by eye (*guess*): the real
+// river's flow, foam and litter are not measured. Positions are a pure function of time along the smoothed centre line; nothing is simulated.
+export const RIVER_DRIFT = {
+  speed: SWIM.current, // m/s downstream: the same water that carries a swimmer (the public version without swimming: 0.35, *guess*)
+  path: { step: 1, smooth: 5 }, // the centre line resampled every `step` m with its corners rounded over +-`smooth` m (*guess*: a 90° bend is cut by ~1.7 m)
+  pier: { clear: 0.3, bend: 3 }, // lanes pass a bridge pier `clear` m off its (askew) box, steering out over `bend` m up / downstream (*guess*)
+  // On the surface (one mesh of flat quads, one draw call): `count` things within `range` m up / downstream of the camera's station, drawn
+  // only while the camera is within `drawDist` m of the centre line. Lanes use `laneMax` of the channel's half width less `margin` m; things
+  // fade over `fade` m at the window's ends and `endFade` m at the river's ends. Flecks: half-width `size` m (min, max), `stretch` x as long
+  // along the flow, opacity `alpha` (min, max), lying `lift` m over the water. One in `leaf.share` is a leaf.
+  surface: { count: 300, range: 48, drawDist: 75, laneMax: 0.82, margin: 0.4, fade: 8, endFade: 10, lift: 0.015,
+    size: [0.035, 0.1], stretch: 1.7, alpha: [0.3, 0.8], color: 0xeef3ee,
+    leaf: { share: 0.05, size: [0.06, 0.09], stretch: 1.6, alpha: 0.95, colors: [0x9a7a2e, 0x7d5a27, 0x6f7f35] } },
+  // Under water (one Points object, one draw call, only while the eye is under the surface): `count` specks within `range` m (the dive's
+  // fog ends at SWIM.dive.look.far), between `top` m under the surface and `bed` m over the bed; `size` m across, opacity `alpha` (min,
+  // max); a share `silt` of them are dark specks instead of pale bubbles; `bob` m of slow up-and-down at `bobHz`.
+  under: { count: 220, range: 9, laneMax: 0.9, margin: 0.25, fade: 2.5, endFade: 10, top: 0.06, bed: 0.25,
+    size: 0.04, alpha: [0.4, 0.9], color: 0xdff0ea, silt: 0.3, siltColor: 0x6b6046, bob: 0.03, bobHz: 0.25, night: 0.25 },
+};
+
 // The garage under the courtyard and Hus L's basement (#357, #417, src/garage.js), per the våning −1 overview plan
 // (plan brochure p. 46; docs/peab/garage-vaning-m1.jpg, measured on docs/peab/kalibrerad/vaning-m1-300dpi.png with the
 // #253 transform x = (px − 1909.5) × 0.042356, z = (py − 1073) × 0.042356 — it fits Hus L's outline on this sheet:
