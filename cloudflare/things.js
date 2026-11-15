@@ -64,7 +64,7 @@ export class RoomThings {
   /** The room is empty: nobody holds anything any more; what lies stays (it is saved). */
   reset() { for (const [i, e] of [...this.state]) if (e.m === 'held') this.state.delete(i); this.woke = true; }
   row(i, e) { return { i, m: e.m, at: e.at, by: e.by, ...(e.m === 'world' ? { p: e.p, q: e.q } : {}) }; }
-  near(a, p) { const s = a?.s?.p; return !Array.isArray(s) || Math.hypot(s[0] - p[0], s[1] - p[1], s[2] - p[2]) <= THING_SYNC.reach; } // (no position yet: not refused)
+  near(a, p, reach = THING_SYNC.reach) { const s = a?.s?.p; return !Array.isArray(s) || Math.hypot(s[0] - p[0], s[1] - p[1], s[2] - p[2]) <= reach; } // (no position yet: not refused)
   handle(ws, a, m, now = this.clock()) { return this.enqueue(() => this.transact(ws, a, m, now)); }
   async transact(ws, a, m, now) {
     this.wake();
@@ -77,7 +77,7 @@ export class RoomThings {
     else if (m.k === 'take') {
       if (old.m === 'world' && !this.near(a, old.p)) why = 'far';
       else if (!mine.includes(m.i) && mine.length >= THING_SYNC.held) why = 'full';
-    } else if (m.k === 'put') { if (!this.near(a, m.p)) why = 'far'; }
+    } else if (m.k === 'put') { if (!this.near(a, m.p, THING_SYNC.putReach?.[m.i[0]])) why = 'far'; } // (a thrown ball lands further off)
     else if (old.m === 'world' && old.by !== a.i && !this.near(a, old.p)) why = 'far'; // 'home' of a thing lying somewhere: only from beside it
     const at = Math.max(now, old.at + 1); // the room's clock never goes back per thing
     const next = m.k === 'take' ? { m: 'held', at, by: a.i } : m.k === 'put' ? { m: 'world', at, by: a.i, p: m.p, q: m.q } : { m: 'home', at, by: a.i };

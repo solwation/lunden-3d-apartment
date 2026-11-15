@@ -95,6 +95,22 @@ const setup = () => {
     await Promise.all([A.page.evaluate(() => T.pump(2500)), C.page.evaluate(() => T.pump(2500))]);
     a = await info(A, 's0'); const cs = await info(C, 's0');
     check(a.room === 'home' && a.visible && a.local === 'home' && cs.room === 'home' && cs.visible, 'B leaves: what B held is home again for the others', { a, cs });
+    // #1976: a pot from the window board (at home it is part of the merged sill mesh) and the basketball (B has left: A and C)
+    const ac = async (ms = 1500) => { await Promise.all([A.page.evaluate((ms) => T.pump(ms), ms), C.page.evaluate((ms) => T.pump(ms), ms)]); };
+    await C.page.evaluate(() => T.stand(3.2, 5.6)); await ac(800);
+    const pot = await A.page.evaluate(() => { const it = T.it('l0'); it.take(); return { held: it.held, n: [...T.S.items.keys()].filter((k) => k[0] === 'l').length }; }); await ac();
+    const potB = await C.page.evaluate(() => { const it = T.it('l0'); return { other: T.S.ledger.heldByOther('l0'), away: it.away.has(it.pot), groupVisible: it.model.visible }; });
+    const potAt = await A.page.evaluate(() => { const p = T.a.player.pos, at = new T.V(p.x + 0.4, p.y, p.z + 0.9); T.it('l0').placeAt(at, 0); return [at.x, at.y, at.z]; }); await ac();
+    const potB2 = await C.page.evaluate(() => { const it = T.it('l0'), i = T.info('l0'); return { ...i, away: it.away.has(it.pot), parts: it.model.children.every((m) => m.visible) }; });
+    check(pot.held && pot.n > 3 && potB.other && potB.away && !potB.groupVisible && potB2.local === 'world' && potB2.visible && potB2.parts && potB2.away && Math.hypot(potB2.p[0] - potAt[0], potB2.p[2] - potAt[2]) < 0.05,
+      'a window-board pot: out of the merged sill mesh and hidden at C while A holds it, its own model standing where A put it', { pot, potB, potB2: potB2.p });
+    await C.page.evaluate(([x, y, z]) => { T.look(x, y + 0.1, z); T.a.step(0.05); }, potB2.p);
+    await kit.shot(C.page, `${out}/c-sees-the-pot-a-put-down.png`);
+    const ball = await A.page.evaluate(() => { const it = T.it('o0'); it.take(); return { held: it.held }; }); await ac();
+    const ballB = await info(C, 'o0');
+    await A.page.evaluate(() => T.it('o0').putBack()); await ac();
+    const ballB2 = await info(C, 'o0');
+    check(ball.held && ballB.other && !ballB.visible && ballB2.room === 'home' && ballB2.visible, 'the basketball: gone at C while A has it, home again when A puts it back', { ball, ballB, ballB2 });
     // #1978: everybody leaves; a new player later finds the bow where A put it (saved by the room), and nothing is held
     await A.ctx.close(); await C.ctx.close();
     await new Promise((r) => setTimeout(r, 1500));

@@ -1643,9 +1643,14 @@ fishing rod are not shared yet (their flight / return-home timers need rules of 
 
 #1976 (first slice) adds the things without contents: the book (`p0`), the TV remote (`e0`) and the loose things of the rooms by
 their index in main.js `things` (`t<i>`: ornaments, photos, potted plants, the rifle; 42 of them, 61 shared things in all). Bottles and
-glasses (the same list, skipped), cups, food and the life simulator's items carry contents or personal rules and are not shared yet;
-neither are the window-board pots (their merged sill mesh needs an adapter), the billiard cues (billiardsync.js owns them), the pan,
-the ball and the rod.
+glasses (the same list, skipped), cups, food and the life simulator's items carry contents or personal rules and are not shared yet.
+
+#1976 (second slice): things that are more than a model at a place register with an adapter (`register(id, item, { mode, away, lie,
+home })`): the window-board pots (`l<i>`: at home they are part of the merged sill meshes, so `away` / `lie` call `setAway(true)` and
+their own model shows wherever they stand), the basketball (`o0`: in the air it is still its thrower's, `mode`; it lies where it came
+to rest, for which the room allows `THING_SYNC.putReach.o` m from the thrower) and the fishing rod (`r0`; its "back under the bridge"
+timer, #1781, is left to whoever put it down: `fishing.rodKept`). Not shared: the billiard cues (the rack's slots and the table's own
+sync own them) and the pan (it carries food and dirt: with the things that have contents).
 
 - **Our own actions** are noticed by comparing each thing's state from frame to frame (`mode`: in the hand or carried in the inventory
   / the bicycle's hand = `held`, put down = `world`, else `home`) and sent as `take` / `put` (the model's world place and turn) /

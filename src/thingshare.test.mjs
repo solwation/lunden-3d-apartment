@@ -83,3 +83,27 @@ test('offline nothing is sent; a dropped connection brings back what the others 
   B.bow.take(); B.share.update();
   assert.equal(B.out.length, 0);
 });
+
+test('#1976 adapters: a ball in the air is still its thrower\'s; a pot shows its own model away from home; hooks run for the others', async () => {
+  const w = world(), A = await w.client('aaaa'), B = await w.client('bbbb');
+  const calls = [];
+  for (const c of [A, B]) {
+    c.ball = { name: 'ball', flying: false, held: false, placed: false, model: { parent: 'scene', visible: true, position: new V(), quaternion: new V(), getWorldPosition(o) { return o.copy(this.position); }, getWorldQuaternion(o) { return o.copy(this.quaternion); } },
+      take() { c.hand = c.ball; c.ball.held = true; c.ball.placed = false; }, goHome() { c.ball.placed = false; c.ball.flying = false; } };
+    c.share.register('o0', c.ball, { mode: (b, usual) => (b.flying ? 'held' : usual), lie: (b) => { b.flying = false; calls.push(`${c.id}:lie`); }, away: () => calls.push(`${c.id}:away`), home: () => calls.push(`${c.id}:home`) });
+    c.share.items.get('o0').last = 'home';
+  }
+  A.ball.take(); await w.run(A, B);
+  assert.deepEqual(calls, ['bbbb:away']); assert.equal(B.ball.model.visible, false);
+  // thrown: out of the hand, flying, `placed` as the real ball is: still held as far as the room knows
+  A.hand = null; Object.assign(A.ball, { held: false, placed: true, flying: true }); A.ball.model.position.set(20, 3, 0); await w.run(A, B);
+  assert.equal(A.share.ledger.get('o0').m, 'held'); assert.equal(B.ball.model.visible, false);
+  // it comes to rest 30 m away: put there (the ball's own reach), and it lies there at B
+  A.ball.flying = false; A.ball.model.position.set(30, 0, 0); await w.run(A, B);
+  assert.equal(B.share.ledger.get('o0').m, 'world'); assert.equal(B.ball.placed, true); assert.equal(B.ball.model.position.x, 30);
+  assert.deepEqual(calls, ['bbbb:away', 'bbbb:lie']);
+  // a saber cannot be put 30 m away
+  A.saber.take(); await w.run(A, B);
+  A.saber.placeAt([30, 0, 0]); await w.run(A, B);
+  assert.equal(B.share.ledger.get('s0').m, 'held', 'refused: too far for an ordinary thing');
+});

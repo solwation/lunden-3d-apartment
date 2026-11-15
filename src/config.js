@@ -8695,13 +8695,14 @@ export const DOOR_SYNC = {
 // `max` lists the groups and how many indexes each may have (the clients build the lists identically, as the doors do):
 // s saber, b blaster, w wand, f flashlight, a the bow, h the harpoon gun, k binoculars, c spray can, o basketball, r fishing rod.
 // #1976: p the book, e the TV remote, t = world.things by index (ornaments, photos, potted plants, the rifle; bottles and glasses
-// have contents and are not registered yet). o and r are reserved: the ball and the rod are not shared yet.
+// have contents and are not registered yet), l the pots on the window boards, o the basketball, r the fishing rod.
 // `every`: s between a connection's messages (faster ones are dropped); `reach`: m from the player's reported position within which a
 // thing may be put down / taken from where it lies; `held`: things one connection may hold at once (the inventory's places and a nut
 // stack's worth of margin); `x`, `y`, `z`: the bounds of a place a thing may be put (m; the site with a margin). All *guess* limits.
 export const THING_SYNC = {
-  max: { s: 4, b: 8, w: 8, f: 4, a: 1, h: 1, k: 2, c: 12, o: 2, r: 1, p: 2, e: 2, t: 160 }, // (#1976: p the book, e the remote control, t the loose things of world.things by their index)
+  max: { s: 4, b: 8, w: 8, f: 4, a: 1, h: 1, k: 2, c: 12, o: 2, r: 1, p: 2, e: 2, t: 160, l: 80 }, // (#1976: p the book, e the remote control, t the loose things of world.things by their index)
   every: 0.12, reach: 8, held: 12, x: [-600, 600], y: [-60, 120], z: [-300, 600],
+  putReach: { o: 60 }, // #1976: a thrown basketball comes to rest far from its thrower: its own reach for 'put' (m, *guess*)
   keepDays: 30, // #1978 (*guess*): days a lying thing stays where it was put without anybody touching it, before it goes home
 };
 

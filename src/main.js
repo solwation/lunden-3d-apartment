@@ -3344,6 +3344,13 @@ for (const [g, list] of [['s', [saber]], ['b', toys.blasters], ['w', toys.wands]
 // rifle) by their index in `things`; bottles and glasses carry drink and wait for their own rules, as do cups, food and life items
 thingShare.register('p0', book); thingShare.register('e0', remote);
 things.forEach((it, i) => { if (!['Bottle', 'Glass'].includes(it.constructor.name)) thingShare.register(`t${i}`, it); });
+// the pots on the window boards: at home they are part of the merged sill meshes, so anywhere else their own model must show
+sillPots.forEach((it, i) => thingShare.register(`l${i}`, it, { away: (p) => p.setAway(true), lie: (p) => p.setAway(true) }));
+// the basketball: in the air it is still its thrower's; it lies where it came to rest (the room allows that far from the thrower)
+thingShare.register('o0', ball, { mode: (b, usual) => (b.flying ? 'held' : usual), lie: (b) => { b.flying = false; b.returning = false; b.v?.set(0, 0, 0); } });
+// the fishing rod: its own "back under the bridge" timer (#1781) is left to whoever put it down
+thingShare.register('r0', fishing.rod);
+fishing.rodKept = () => { const s = thingShare.ledger.get('r0'); return thingShare.live && s.m === 'world' && s.by !== (ghosts.me ?? ''); };
 ghosts.onThings = (m) => (m.welcome ? thingShare.welcome(m.welcome) : thingShare.receive(m));
 target.sync.net = { ready: () => ghosts.connected, send: m => ghosts.target(m) };
 ghosts.onTarget = (m, welcome) => target.sync.receive(m, welcome);

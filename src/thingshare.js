@@ -19,10 +19,13 @@ export class ThingShare {
     Object.assign(this, { scene, connected, me, hand, say, items: new Map(), live: false });
     this.ledger = new ThingLedger({ send, me, cfg, hooks: { change: (s, was, why) => { const e = this.items.get(s.i); if (e) this.apply(e, s, why); } } });
   }
-  /** `item` is thing `id` (the same id for the same thing in every client). */
-  register(id, item) {
-    const e = { id, item, last: null };
-    this.items.set(id, e);
+  /** `item` is thing `id` (the same id for the same thing in every client). `opt` (#1976), for things that are more than a model at a
+   *  place: mode(item, usual): its state here when the usual rule is not enough (a ball in the air is still ours); away(item): after
+   *  it went home because somebody else holds it; lie(item): after it was laid where somebody else put it; home(item): after it came
+   *  home. */
+  register(id, item, opt = {}) {
+    const e = { id, item, opt, last: null };
+    this.items.set(id, e); (this.byItem ??= new Map()).set(item, opt);
     const take = item.take.bind(item);
     item.take = (...a) => {
       if (this.ledger.heldByOther(id)) { this.say('Någon annan har den just nu'); return undefined; }
@@ -31,7 +34,10 @@ export class ThingShare {
     return e;
   }
   /** Where the thing is here: 'held' (in the hand or carried), 'world' (put down) or 'home'. */
-  mode(item) { return this.hand.held() === item || item.held || this.hand.stowed(item) ? 'held' : item.placed ? 'world' : 'home'; }
+  mode(item, opt = this.byItem?.get(item)) {
+    const usual = this.hand.held() === item || item.held || this.hand.stowed(item) ? 'held' : item.placed ? 'world' : 'home';
+    return opt?.mode ? opt.mode(item, usual) : usual;
+  }
   /** Out of our hand without putting it anywhere (the room says it is not ours). */
   release(item) {
     if (this.hand.held() === item) { item.held = false; item.trigger?.(false); item.relax?.(); this.hand.drop(); item.onPut?.(); }
@@ -43,18 +49,18 @@ export class ThingShare {
     if (s.m === 'held') {
       if (mine) return; // (our own take, echoed; or refused while we hold it anyway)
       const had = this.mode(it) === 'held';
-      this.release(it); it.goHome(); it.model.visible = false; e.last = 'home';
+      this.release(it); it.goHome(); e.opt.away?.(it); it.model.visible = false; e.last = 'home';
       if (had) this.say('Någon annan hann före'); // (we had it in the hand: both took it at once and the room gave it to them)
     } else if (s.m === 'world') {
       if (mine && why === 'room') return; // (our own put, echoed)
       this.release(it);
       it.goHome(); // (out of the inventory / a holder; then to where it lies)
-      this.scene.add(it.model); it.model.position.set(...s.p); it.model.quaternion.set(...s.q); it.model.visible = true; it.placed = true; e.last = 'world';
+      this.scene.add(it.model); it.model.position.set(...s.p); it.model.quaternion.set(...s.q); it.model.visible = true; it.placed = true; e.opt.lie?.(it); e.last = 'world';
     } else {
       if (mine && why === 'room') return; // (our own putting back, echoed)
       if (why === 'reset' && this.mode(it) !== 'home') return; // the connection dropped: what we hold or see lying stays as it is
       if (this.mode(it) === 'held' && why !== 'refused') return; // (it is in our hand: our take is on its way)
-      this.release(it); it.goHome(); it.model.visible = true; e.last = 'home';
+      this.release(it); it.goHome(); it.model.visible = true; e.opt.home?.(it); e.last = 'home';
     }
   }
   /** The room's welcome: `list` = the things that are not at home. After it our own changes are sent. */

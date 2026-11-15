@@ -493,7 +493,7 @@ export class Fishing {
    *  bridge (never a second one). `awaySince` (ms, wall clock) is kept by keep.js so a reload counts the time away. Local to this client. */
   rodWatch() {
     const r = this.rod, h = F.home, away = !r.held && !isStowed(r) && r.placed && !r.broken && this.state === 'idle' && Math.hypot(r.model.position.x - h.x, r.model.position.z - h.z) > 1;
-    if (!away) { this.awaySince = null; return; }
+    if (!away || this.rodKept?.()) { this.awaySince = null; return; } // (#1976 `rodKept`: another player put it there; the room keeps it, not our timer)
     const t = this.now();
     if (this.awaySince === null || this.awaySince > t) this.awaySince = t;
     else if (t - this.awaySince >= F.respawn * 1000) { r.goHome(); r.model.visible = false; this.awaySince = null; }
