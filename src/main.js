@@ -131,6 +131,7 @@ import { NewYear, glassesOut } from './newyear.js';
 import { saveResume, saveSession, takeResume } from './resume.js';
 import { saveWorld, loadWorld, hasRestoredBicycleHand } from './keep.js';
 import { lifeDev, devScenario, Life } from './life.js';
+import { LifeShare } from './lifeshare.js';
 import { DishProgramme } from './dishwasher.js';
 import { buildDropoff } from './waste.js';
 import { shownRows } from './actions.js';
@@ -3445,6 +3446,10 @@ thingShare.register('o0', ball, { mode: (b, usual) => (b.flying ? 'held' : usual
 thingShare.register('r0', fishing.rod);
 fishing.rodKept = () => { const s = thingShare.ledger.get('r0'); return thingShare.live && s.m === 'world' && s.by !== (ghosts.me ?? ''); };
 ghosts.onThings = (m) => (m.welcome ? thingShare.welcome(m.welcome) : thingShare.receive(m));
+// #1981 (part of #1964): the life simulator's things (food, dishes, laundry, rubbish) are ONE kitchen for the room (src/lifeshare.js;
+// the room: cloudflare/life.js). Never in the `&life` developer scenario (it rebuilds the kitchen for itself).
+const lifeShare = window.__lifeShare = lifeDev() ? null : new LifeShare({ items: life.items, connected: () => ghosts.connected, send: (m) => ghosts.life(m), me: () => ghosts.me ?? '', say: (t) => badge(t, false) });
+if (lifeShare) ghosts.onLife = (m) => lifeShare.receive(m);
 // #1976 (the user, 2026-11-15): everybody who helped with a chore gets its points. A goal of the day's chores we complete is told
 // to the room and counts for the others' same chore; theirs count for ours (tasks.js `completeGoal(…, by)`: paid only with a goal of
 // our own). The room remembers who helped by a random key kept in this player's storage, so help given before leaving is paid at the
@@ -3851,6 +3856,7 @@ function step(dt) {
   toys.update(dt);
   arrows.update(dt);
   inventoryTick(); inventoryHud.update(overlay.hidden && !reading && !statsOpen); // #1954
+  lifeShare?.update(); // #1981: our changes to the shared kitchen, in batches
   thingShare.update(); // #1975: what we took / put down goes to the room
   harpoon?.step(dt); // #1953: the spear on its line
   marks.update(dt);

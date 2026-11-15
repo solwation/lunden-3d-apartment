@@ -102,11 +102,12 @@ export class Items {
   // --- instances --------------------------------------------------------------
   /** A new instance of `type` at `place` (props override the type's defaults); null + no change if the place is not
    * allowed (`this.lastReason` says why) or the type is unknown. */
-  create(type, place, props = {}) {
+  create(type, place, props = {}, { force = false } = {}) {
     const d = this.defs[type];
     if (!d) { this.lastReason = `Okänd sak: ${type}`; return null; }
     let id = props.id;
     if (id && this.items.has(id)) id = null;
+    if (!id && this.mint) { do id = this.mint(type); while (this.items.has(id)); } // (#1981: in a shared room every client makes ids of its own)
     if (!id) { do id = `${type}#${(this.counters[type] = (this.counters[type] ?? 0) + 1)}`; while (this.items.has(id)); }
     else { const n = Number(id.split('#')[1]); if (Number.isFinite(n) && n > (this.counters[type] ?? 0)) this.counters[type] = n; }
     const unit = UNITS.has(d.unit) ? d.unit : 'count';
@@ -124,7 +125,7 @@ export class Items {
       home: clonePlace(props.home) ?? (place?.at === 'slot' ? clonePlace(place) : null), // made in a store: that slot is its home
       parts: Array.isArray(props.parts) ? props.parts.map((p) => ({ ...p })) : [], // what it is made of (a sandwich's layers, #379)
     };
-    const why = this.check(item, place, { ignoreShut: true }); // (stocking a shut store is fine: nobody reaches in)
+    const why = force ? null : this.check(item, place, { ignoreShut: true }); // (stocking a shut store is fine: nobody reaches in; `force`: the shared room's word, #1981)
     if (why) { this.lastReason = why; return null; }
     item.place = clonePlace(place);
     this.items.set(id, item);
@@ -323,18 +324,42 @@ export class Items {
   // --- saving (#371): versioned plain JSON, read tolerantly -----------------------------------------------
   /** Everything as plain JSON: { v, counters, items: [{ id, type, place, amount, pkg, prep, clean, machine, home, parts }] }. */
   serialize() {
-    const items = this.all().map((i) => {
-      const e = { id: i.id, type: i.type, place: clonePlace(i.place) };
-      if (i.amount !== (this.defs[i.type]?.amount ?? 1)) e.amount = i.amount; // (#387: compact — a default amount and a home that is the place are left out; create() gives them back)
-      // create() restores type defaults, just as it restores a default amount.
-      for (const k of ['pkg', 'prep', 'clean', 'moisture']) if (i[k] !== null && i[k] !== undefined && i[k] !== this.defs[i.type]?.[k]) e[k] = i[k];
-      if (i.toasted) e.toasted = true;
-      if (Object.keys(i.machine).length) e.machine = { ...i.machine };
-      if (i.home && !(i.place?.at === 'slot' && samePlace(i.home, i.place))) e.home = clonePlace(i.home);
-      if (i.parts.length) e.parts = i.parts.map((x) => ({ ...x }));
-      return e;
-    });
-    return { v: ITEMS_VERSION, counters: { ...this.counters }, items };
+    return { v: ITEMS_VERSION, counters: { ...this.counters }, items: this.all().map((i) => this.record(i)) };
+  }
+  /** One instance as its compact saved record. */
+  record(i) {
+    const e = { id: i.id, type: i.type, place: clonePlace(i.place) };
+    if (i.amount !== (this.defs[i.type]?.amount ?? 1)) e.amount = i.amount; // (#387: compact — a default amount and a home that is the place are left out; create() gives them back)
+    // create() restores type defaults, just as it restores a default amount.
+    for (const k of ['pkg', 'prep', 'clean', 'moisture']) if (i[k] !== null && i[k] !== undefined && i[k] !== this.defs[i.type]?.[k]) e[k] = i[k];
+    if (i.toasted) e.toasted = true;
+    if (Object.keys(i.machine).length) e.machine = { ...i.machine };
+    if (i.home && !(i.place?.at === 'slot' && samePlace(i.home, i.place))) e.home = clonePlace(i.home);
+    if (i.parts.length) e.parts = i.parts.map((x) => ({ ...x }));
+    return e;
+  }
+  /** #1981: make instance `rec.id` exactly what record `rec` says (the shared room's word: no rule is asked, the room keeps the
+   * places unique). Made when missing; 'move' / 'change' are emitted only for what really differs. Null for an unknown type. */
+  adopt(rec) {
+    const d = this.defs[rec?.type];
+    if (!d || typeof rec.id !== 'string' || !clonePlace(rec.place)) return null;
+    const props = { id: rec.id, amount: rec.amount, pkg: rec.pkg, prep: rec.prep, clean: rec.clean, moisture: rec.moisture, machine: rec.machine, home: rec.home, parts: rec.parts, toasted: rec.toasted };
+    const it = this.items.get(rec.id);
+    if (!it || it.type !== rec.type) { if (it) this.remove(it, { cascade: true }); return this.create(rec.type, rec.place, props, { force: true }); }
+    const sig = (r) => JSON.stringify([r.amount ?? d.amount ?? 1, r.pkg ?? d.pkg ?? null, r.prep ?? d.prep ?? null, r.clean ?? d.clean ?? null, r.moisture ?? d.moisture ?? null, !!r.toasted, Object.entries(r.machine ?? d.machine ?? {}).sort(), r.home ?? null, r.parts ?? []]);
+    const now = this.record(it);
+    if (JSON.stringify(now.place) !== JSON.stringify(clonePlace(rec.place))) { const from = it.place; it.place = clonePlace(rec.place); this.emit('move', it, from); }
+    if (!now.home && it.home) now.home = clonePlace(it.home); // (record() leaves out a home that is the place)
+    const want = { ...rec, home: rec.home ?? (rec.place.at === 'slot' ? clonePlace(rec.place) : null) };
+    if (sig(now) !== sig(want)) {
+      it.amount = Math.max(0, Number.isFinite(rec.amount) ? rec.amount : d.amount ?? 1);
+      it.pkg = PKG.has(rec.pkg) ? rec.pkg : d.pkg ?? null; it.prep = PREP.has(rec.prep) ? rec.prep : d.prep ?? null;
+      it.clean = CLEAN.has(rec.clean) ? rec.clean : d.clean ?? null; it.moisture = MOISTURE.has(rec.moisture) ? rec.moisture : d.moisture ?? null;
+      it.toasted = !!rec.toasted; it.machine = { ...(rec.machine ?? d.machine ?? {}) };
+      it.home = clonePlace(want.home); it.parts = Array.isArray(rec.parts) ? rec.parts.map((x) => ({ ...x })) : [];
+      this.emit('change', it);
+    }
+    return it;
   }
 
   /**

@@ -8719,6 +8719,15 @@ export const THING_SYNC = {
   keepDays: 30, // #1978 (*guess*): days a lying thing stays where it was put without anybody touching it, before it goes home
 };
 
+// #1981 (part of #1964): the life simulator's things (items.js instances: food, dishes, laundry, rubbish) shared between the players
+// (src/lifesync.js, src/lifeshare.js, cloudflare/life.js): the room keeps one record per instance and the clients follow it.
+// `every`: s between a connection's messages (a batch of changes; the room refuses faster ones); `ops`: changes per message;
+// `maxBytes`: characters per message (the one `li` prefix allowed past PLAYERS.maxBytes, as graffiti); `rec`: characters per record;
+// `max`: instances the room keeps; `held`: instances one connection may hold at once (the hand + the inventory); `chunks`: storage
+// values the records are spread over (by id, so a change writes only its own); `page`: records per welcome message; `keepDays`: an
+// untouched shared kitchen starts over after this long (as THING_SYNC.keepDays). All *guess* limits.
+export const LIFE_SYNC = { every: 0.5, ops: 30, maxBytes: 7000, rec: 600, max: 700, held: 12, chunks: 8, page: 60, keepDays: 30 };
+
 // #1921: authored mallard surface estimates (guess), in the existing bill/rig frame.
 // Profiles are [z, centreY, halfWidth, halfHeight], neck uses [y, centreZ, width, depth].
 export const DUCK_SURFACE = {

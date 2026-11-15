@@ -34,7 +34,7 @@ import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js';
 
 const CAP_KEY = 'lunden.mp.capMonth';
 const monthNow = () => new Date().toISOString().slice(0, 7);
-const URGENT = new Set(['a', 'fall', 'consume', 'dr', 'rf', 'th', 'ch']); // #1763: outbox messages that go ahead of a due state (stateDue); #1777: wherever they wait, and the river fish's catch requests too
+const URGENT = new Set(['a', 'fall', 'consume', 'dr', 'rf', 'th', 'ch', 'li']); // #1763: outbox messages that go ahead of a due state (stateDue); #1777: wherever they wait, and the river fish's catch requests too
 const params = new URLSearchParams(location.search);
 export const ANON = 'Anonym';
 
@@ -527,6 +527,7 @@ export class Ghosts {
       this.onSharedFish?.(m.sharedFish??null,true);
       this.onSquirrels?.(m.nutDrops??{k:'D',v:0},true);
       if (Array.isArray(m.doors)) this.onDoors?.({ t: 'dr', list: m.doors }); // the doors standing open (#1775, src/doorsync.js)
+      this.onLife?.({ t: 'li', k: 'reset' }); // #1981: the room's kitchen follows in its own messages
       this.onChores?.({ welcome: true }); // #1976: say who we are; the room answers with what it remembers
       this.onThings?.({ welcome: Array.isArray(m.things) ? m.things : [] }); // #1975: the loose things that are not at home (src/thingshare.js)
       if (m.tm) this.onTime?.(m.tm, null); // the room's shared game time (#1774, src/timesync.js)
@@ -562,6 +563,7 @@ export class Ghosts {
     else if (m.t === 'tg') this.onTarget?.(m, false);
     else if (m.t === 'dr') this.onDoors?.(m); // a door opened / shut by somebody (#1775, src/doorsync.js)
     else if (m.t === 'ch') this.onChores?.(m); // #1976: a chore's goal completed by somebody / what the room remembers (src/choresync.js)
+    else if (m.t === 'li') this.onLife?.(m); // #1981: the room's kitchen (src/lifeshare.js)
     else if (m.t === 'th') this.onThings?.(m); // #1975: a loose thing taken / put down / sent home by somebody (src/thingshare.js)
     else if (m.t === 'gf') this.onGraffiti?.(m); // the shared spray paint (#1724, src/graffitisync.js)
     else if (m.t === 'bl') this.onBoule?.(m); // #1854 shared courtyard boule
@@ -751,6 +753,17 @@ export class Ghosts {
   chores(msg) {
     this.lastMove = performance.now(); // (a completed goal is activity: an idle, disconnected player comes back, and the welcome re-sends the day's own goals)
     if (!this.connected) return false;
+    this.outbox.push(msg);
+    this.trimOutbox();
+    this.sendShot();
+    return true;
+  }
+
+  /** #1981: a batch of the life simulator's changes (src/lifeshare.js) { t: 'li', n, s?, x? }: one at a time (false while the last
+   *  one still waits, or when not connected: the caller keeps its changes and tries again). */
+  life(msg) {
+    if (!this.connected || this.outbox.some((m) => m.t === 'li')) return false;
+    this.lastMove = performance.now(); // (handling the food / the dishes is activity)
     this.outbox.push(msg);
     this.trimOutbox();
     this.sendShot();

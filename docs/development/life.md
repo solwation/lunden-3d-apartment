@@ -9,6 +9,10 @@ everybody who completed a goal is paid when the chore is done; see [storage](sto
 ## Module and test map
 
 ```text
+src/lifeshare.js       #1981: the life simulator's things as ONE kitchen for the players' room (`LifeShare`, `window.__lifeShare`): our
+                       instances follow the room's records, our changes go out in batches; wire `src/lifesync.js`, room
+                       `cloudflare/life.js`; `Items.record` / `Items.adopt` / `Items.mint` in items.js. Details: storage.md
+                       ("Shared kitchen"). Tests: `src/lifeshare.test.mjs`, `tools/lifesharetest.cjs`
 src/toilet.js          toilet (Ifö Spira 6260) with an animated lid and a flush button (`flush`, its own E target in
                        world.lids: dips, sfx.flush, the water drains and returns, no flush until refilled, #155); #321: a deep
                        bowl (rings `TOILET.bowl.profile`, all the porcelain one merged mesh), toilet-blue water (its own mesh);

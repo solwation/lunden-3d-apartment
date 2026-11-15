@@ -1,0 +1,14 @@
+PASS an empty room takes A's whole kitchen {"live":true,"shadow":35,"dirty":0,"pending":0,"local":35}
+PASS B has the same kitchen as A: every thing, the same place {"a":35,"b":35}
+PASS A lays a plate with a sausage on the table: it stands at B too {"made":{"plate":"plate#410509001","sausage":"sausage#410509002"},"b":{"at":"world","amount":1,"clean":"used","visible":true,"held":false,"p":[3.45,0.76,1],"on":["sausage"]}}
+PASS A carries the plate: it and its sausage are gone at B {"a":{"at":"hand","amount":1,"clean":"used","visible":true,"held":true,"p":[3.55,1.4,-0.43],"on":["sausage"]},"b":null,"bs":null}
+PASS A puts it down elsewhere: it stands there at B, the sausage on it {"at":"world","amount":1,"clean":"used","visible":true,"held":false,"p":[3.8,0.76,1.6],"on":["sausage"]}
+PASS B takes the sausage: it is off A's plate and in nobody's sight but B's {"a":{"at":"world","amount":1,"clean":"used","visible":true,"held":false,"p":[3.8,0.76,1.6],"on":[]},"bs":{"at":"hand","amount":1,"clean":null,"visible":true,"held":true,"p":[4.05,1.18,2.32],"on":[]}}
+PASS half eaten and a dirty plate: the same amount and dirt at A {"sa":{"at":"world","amount":0.5,"clean":null,"visible":true,"held":false,"p":[3.5,0.76,1.3],"on":[]},"sb":{"at":"world","amount":0.5,"clean":null,"visible":true,"held":false,"p":[3.5,0.76,1.3],"on":[]},"plate":"dirty"}
+PASS both take it at once: exactly one keeps it, it is gone for the other [null,{"at":"hand","amount":0.5,"clean":null,"visible":true,"held":true,"p":[4.05,1.18,2.32],"on":[]}]
+PASS a late C gets the same kitchen, without what is in somebody's hand {"c":36}
+PASS the holder leaves: the sausage is put down, at the same place for those who stay [{"at":"world","amount":0.5,"clean":null,"visible":true,"held":false,"p":[3.5,0.76,1.3],"on":[]},{"at":"world","amount":0.5,"clean":null,"visible":true,"held":false,"p":[3.5,0.76,1.3],"on":[]}]
+PASS every kitchen is whole (one place per thing, nothing on a missing carrier) [[],[]]
+PASS everybody left: a new player D finds the kitchen as it was (saved by the room) {"d":37}
+PASS no page errors []
+ALL PASSED

@@ -1747,6 +1747,43 @@ done is paid at the next visit while the room still exists, otherwise the points
 - **Tests.** `node --test cloudflare/chores.test.mjs cloudflare/players.test.mjs`; `tools/choresharetest.cjs` (three real pages
   against `cloudflare/dev.mjs`: two helpers are paid, the third is not, a returning helper is remembered).
 
+## Shared kitchen: the life simulator's things (#1981, part of #1964)
+
+The life simulator's instances (`src/items.js`: food, packages, plates, cutlery, laundry, rubbish bags; whatever lies out, stands in a
+store's slot or lies on a carrier) are ONE kitchen for the players' room. They do not go through the loose-things protocol above (they
+are made and used up, have slots and carriers and more state than a string): the room keeps one **record per instance**
+(`Items.record`: id, type, place, amount, package, preparation, dirt, machine fields, home, parts) and every client makes its own
+instances follow it.
+
+- **Wire** (`src/lifesync.js`, shared with the Worker): `{ t: 'li', n, s: [record …], x: [id …] }` from a client is one batch of
+  changes (instances as they are now, instances that are gone), taken whole or refused whole; the room answers everybody with
+  `{ t: 'li', by, n, s: [[record, holder | 0] …], x }`, or the sender alone with `{ no: why, … }` and the touched instances as the room
+  has them. A new connection gets the whole kitchen in pages (`k: 'a'`, `f` first, `z` last) after the welcome. The `li` prefix is
+  allowed up to `LIFE_SYNC.maxBytes` characters (as graffiti blocks); a client has at most one batch waiting, at most every
+  `LIFE_SYNC.every` s, so the message budget (`GHOSTS.hz`, `PLAYERS.perSecond`) is untouched.
+- **Room** (`cloudflare/life.js` `RoomLife`): no game rule, only what keeps the kitchen whole: an instance held by a connected player
+  cannot be changed by anybody else (the first batch wins); one thing per slot / carrier spot; a carrier exists before what lies on
+  it; at most `LIFE_SYNC.max` instances and `LIFE_SYNC.held` held per connection. A place that is not `world` / `slot` / `on` is
+  "in the sender's hand". When a holder leaves, the thing is put back where it was taken from if that is free, else at the
+  leaver's feet, else it is gone (the stock comes back by itself, `Life.restock`).
+- **Saved** (the user, 2026-11-15: the shared world is kept between visits): Durable Object storage values `li0` … `li7` (rows
+  `[record, holder | 0, taken-from place | 0]`, spread by id so a change writes only its own chunk) and `lim` `{ v: 1, at }`, written
+  BEFORE a change is confirmed; a failed write refuses the batch. Untouched for `LIFE_SYNC.keepDays` days the kitchen starts over.
+- **Client** (`src/lifeshare.js` `LifeShare`, `window.__lifeShare`): on joining, the room's kitchen replaces our own (what we carry
+  stays in our hand and is told to the room); an EMPTY room takes our kitchen instead. Our own changes are noticed through the
+  items' events and sent in batches, carriers first; a refused batch is tried twice more (a batch cut in two, a slot freed a moment
+  later) and then our instances go back to what the room says. What somebody else holds, and what lies on it, does not exist in our
+  kitchen until it is put down. New ids made while in a room come from a random range of our own (`Items.mint`), so two clients
+  never make the same id. `Items.adopt(record)` applies the room's word without asking the rules. Offline, and in the `&life`
+  developer scenario, nothing is shared and the own save (`lunden.life`) decides; while in a room that save holds the room's kitchen.
+- **Not shared yet** (each player's own, saved with the life record's `x` parts): crumbs and dust (`mess`), the dishwasher's and the
+  laundry machines' programmes, the milk carton, made beds, watered plants. The day's chore goals are shared by `choresync.js`
+  (above) whoever's copy they were done in.
+
+Tests: `node --test src/lifeshare.test.mjs` (real `Items`, the real room logic, messages passed by hand: seeding, adopting,
+carrying, races, a leaving holder, a failed save, pages and split batches, reconnecting) and `tools/lifesharetest.cjs` (real
+clients against `cloudflare/dev.mjs`).
+
 ## Shared moving Nerf target (#1820)
 
 `cloudflare/target.js` keeps the room's target snapshot (position, yaw, points since moving and revision) and copies
