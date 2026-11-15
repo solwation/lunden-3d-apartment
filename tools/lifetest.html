@@ -67,18 +67,23 @@ try {
   const { A, settle, aim, shut, life, I, step } = kit(f);
   const lid = (k) => A.world.lids.find(k);
   const fridge = lid((l) => l.kind === 'fridge' && !l.freezer), freezer = lid((l) => l.kind === 'fridge' && l.freezer), pantry = lid((l) => l.stock === 'pantry');
-  const opener = { fridge, freezer, pantry };
+  // What to open to reach a store, outermost first: its door, or for a freezer drawer (fridge.js `storeId`, #1219 / #1229)
+  // the freezer door and then that drawer (#1989).
+  const doors = { fridge, freezer, pantry };
+  const openers = (store) => doors[store] ? [doors[store]] : [freezer, freezer.drawers.find((q) => q.storeId === store)];
   const home = (type) => I.all().find((i) => i.type === type && i.home?.at === 'slot' && LIFE_FOOD.stock.some(([t, s, k]) => t === type && i.home.store === s && i.home.slot === k));
   // every starting thing in its home slot, named in the prompt once its store is open
   for (const [type, store, slot] of LIFE_FOOD.stock) {
     const it = home(type), v = life.view(it);
     check(it && it.place.at === 'slot' && it.place.store === store && it.place.slot === slot && it.amount === ITEMS[type].amount, `${type}: in ${store} slot ${slot}, ${it?.amount} ${it?.unit}`);
-    const o = opener[store]; o.toggle(); settle(o);
+    const way = openers(store);
+    if (!way.every(Boolean)) { check(false, `${type}: the test has no way to open ${store}`); continue; }
+    for (const o of way) { o.toggle(); settle(o); }
     const p = v.where(); p.y += 0.02;
     const name = I.name(it), stands = store === 'pantry' ? [[4.6, p.z], [4.5, p.z - 0.3], [4.5, p.z + 0.3]] : [[p.x, 3.9], [p.x - 0.2, 3.8], [p.x + 0.2, 3.75], [p.x, 4.15]];
     const text = aim(p, new RegExp(`Ta ${name}`), stands);
     check(!!text, `${type} in the open ${store}: "${text}"`);
-    o.toggle(); settle(o);
+    for (const o of way.reverse()) { o.toggle(); settle(o); }
   }
   // the cucumber out of the fridge and back
   fridge.toggle(); settle(fridge);
@@ -632,12 +637,20 @@ try {
 } catch (e) { pass = false; lines.push(`FAIL M1 flow error ${e.stack}`); }
 
 // a new visit keeps the amounts (lunden.life, #371): not the &life scenario, the visitor's own home
+// A fresh home needs every record of the earlier visits gone (#1989): the M1 flow above leaves its last home in
+// lunden.playerWorld (#1515) and its place in the tab's session records (resume.js), and those are restored over a
+// missing lunden.life — the block of cheese then starts one slice short.
+const forgetVisits = () => {
+  for (const key of ['lunden.life', 'lunden.playerWorld', 'lunden.resume']) localStorage.removeItem(key);
+  for (const key of ['lunden.session', 'lunden.resume']) sessionStorage.removeItem(key);
+};
 try {
-  localStorage.removeItem('lunden.life');
+  forgetVisits();
   let f = await load('shot');
   let { life, I } = kit(f);
   const cheese = I.all().find((i) => i.type === 'cheese' && i.home?.store === 'fridge');
   const bread = I.all().find((i) => i.type === 'breadBag' && i.home?.store === 'pantry');
+  check(cheese?.amount === ITEMS.cheese.amount && bread?.amount === ITEMS.breadBag.amount, `a fresh home: a whole cheese and bread bag (${cheese?.amount} g, ${bread?.amount} slices)`);
   check(cheese && bread && LIFE_FOOD.stock.every(([t, s]) => I.all().some((i) => i.type === t && i.home?.store === s)), `a fresh home: the whole stock (${I.all().length} things)`);
   I.consume(cheese, 120); I.consume(bread, 3); I.set(bread, { pkg: 'open' });
   life.flush();
@@ -648,7 +661,7 @@ try {
   check(c2?.amount === 380 && b2?.amount === 9 && b2.pkg === 'open', `a new visit: the cheese ${c2?.amount} g, the bread ${b2?.amount} slices, open`);
   check(LIFE_FOOD.stock.every(([t, s]) => I.all().filter((i) => i.type === t && i.home?.store === s).length === 1), 'no second of anything');
   f.remove();
-  localStorage.removeItem('lunden.life');
+  forgetVisits();
 } catch (e) { pass = false; lines.push(`FAIL #373 visit error ${e.stack}`); }
 
 lines.push(pass ? 'ALL PASS' : 'SOME FAILED');

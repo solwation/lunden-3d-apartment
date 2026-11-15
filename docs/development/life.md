@@ -230,9 +230,10 @@ tools/storetest.html   headless test (#369, #560): actual chosen slot anchor/par
 tools/itemtest.html    headless test (#366): items.js with plain asserts (two instances, amounts never < 0, one place, carriers,
                        stores, events, carriers without cycles) and the view in the game (&life: take the cucumber, half used = half as long,
                        down, F; a plate loaded with bread + two slices: carried, put down turned, in and out of the fridge, one taken off)
-tools/lifetest.html    headless test of the life sim's M1, the sandwich flow (#373 …): the stock in its places named in the prompt, the
-                       cucumber out and back, used up → a fresh one on the next opening (never while the old one is out), a new
-                       visit keeps the amounts (lunden.life); each tool taken and put back with E, the board off its place and
+tools/lifetest.html    headless test of the life sim's M1, the sandwich flow (#373 …): the stock in its places named in the prompt (a
+                       freezer-drawer store behind the freezer door and its pulled-out drawer, #1989), the cucumber out and back,
+                       used up → a fresh one on the next opening (never while the old one is out), a new visit keeps the amounts
+                       (lunden.life, from a home with the earlier sections' lunden.playerWorld / session records cleared); each tool taken and put back with E, the board off its place and
                        back, the wrong tool's messages with nothing used (#374); no cut off a worktop, a full board, the board carrying
                        its slices, pushing them onto a plate (#375); one / three slices, the chop, the mass balance, fast presses,
                        slices taken one by one, the end, a reload (#376); the bread bag closed / opened, slices down to 0 and no
