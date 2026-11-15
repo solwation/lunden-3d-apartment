@@ -53,7 +53,7 @@ import { BeerShelf } from './beershelf.js';
 import { initHudIcons, fitChoiceLabels, setIcon, setPressed, setWeatherIcon, formatTemp } from './hudicons.js';
 import {SharedFish} from './sharedfishclient.js';
 import * as THREE from 'three';
-import { FISH, THING_SYNC, UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, PLAYROOM, BOULE, encodeAvatarWireLook, decodeAvatarLook, avatarLook, avatarBody, avatarHeightCm } from './config.js';
+import { POPCORN, FRIES, FISH, THING_SYNC, UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, PLAYROOM, BOULE, encodeAvatarWireLook, decodeAvatarLook, avatarLook, avatarBody, avatarHeightCm } from './config.js';
 import { setupAvatarCustomizer, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen } from './customizer.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 import * as showFireworks from './fireworks.js';
@@ -170,7 +170,7 @@ import { ToiletPaper } from './toiletpaper.js';
 import { AirFryer } from './airfryer.js';
 import { CookStores } from './cookstores.js'; // #1881: sausages in the air fryer and on the oven tray
 import { cookRefusal } from './cookrules.js'; // #1881 / #1887: one cooking rule, each food where it sensibly cooks
-import { buildFries } from './fries.js';
+import { buildFries, FriesBunch } from './fries.js';
 import { Vacuum } from './vacuum.js';
 import { Cloth } from './cloth.js';
 import { TasksManager } from './tasks.js';
@@ -3398,9 +3398,37 @@ const fishShare = {
 };
 const shareFish = (f) => thingShare.register(`x${fish.fingers.indexOf(f)}`, f, fishShare);
 if (fish) { fish.fingers.forEach(shareFish); fish.onNew = shareFish; }
-thingShare.resolve = (id) => { if (!fish) return null; const g = /^x(\d+)$/.exec(id); if (!g || +g[1] >= THING_SYNC.max.x) return null;
+thingShare.resolvers.push((id) => { if (!fish) return null; const g = /^x(\d+)$/.exec(id); if (!g || +g[1] >= THING_SYNC.max.x) return null;
   while (fish.fingers.length <= +g[1]) { const f = new FishFinger(fish); fish.fingers.push(f); shareFish(f); }
-  return thingShare.items.get(id) ?? null; };
+  return thingShare.items.get(id) ?? null; });
+// #1980, the fries: the bag carries how many portions are left; a bunch taken out of the basket (made on demand, as the fish
+// fingers) carries how many fries are left of it and how far they are cooked; eaten or cleared away it is gone. The heap in the
+// basket / on the oven tray is each player's own.
+if (fries) {
+  thingShare.register('g0', fries.bag, { save: (b) => (b.left < FRIES.portions ? JSON.stringify({ l: b.left }) : null),
+    load: (b, d) => { let l = FRIES.portions; try { const v = JSON.parse(d)?.l; if (Number.isInteger(v)) l = Math.max(0, Math.min(FRIES.portions, v)); } catch { /* malformed / none: a full bag */ } b.left = l; b.shape(); } });
+  const bunchShare = {
+    mode: (b) => { if (b.state === 'held') { b.sharedOut = false; return 'held'; } return b.state === 'pool' ? 'home' : 'world'; },
+    goHome: (b) => b.hide(),
+    away: (b) => { b.sharedOut = true; },
+    lie: (b) => { b.sharedOut = true; delete b.placed; b.state = 'placed'; },
+    home: (b) => { b.sharedOut = false; b.model.visible = false; },
+    usedUp: () => true, plainHome: () => true, // (a bunch never goes back in the basket: out of play is eaten or cleared away)
+    save: (b) => (b.state === 'pool' ? null : JSON.stringify({ n: b.n, c: Math.round(b.cook / FRIES.golden * 8) / 8 })),
+    load: (b, d) => { let o = null; try { o = JSON.parse(d); } catch { /* malformed: a full raw bunch */ }
+      b.shareLoad(Number.isInteger(o?.n) ? Math.max(1, Math.min(FRIES.bunch, o.n)) : FRIES.bunch, Number.isFinite(o?.c) ? Math.max(0, Math.min(6, o.c)) * FRIES.golden : 0); },
+  };
+  const shareBunch = (b) => thingShare.register(`y${fries.bunches.indexOf(b)}`, b, bunchShare);
+  fries.bunches.forEach(shareBunch); fries.onNew = shareBunch;
+  thingShare.resolvers.push((id) => { const g = /^y(\d+)$/.exec(id); if (!g || +g[1] >= THING_SYNC.max.y) return null;
+    while (fries.bunches.length <= +g[1]) { const b = new FriesBunch(fries); fries.bunches.push(b); shareBunch(b); }
+    return thingShare.items.get(id) ?? null; });
+}
+// #1980, the popcorn tubs (popcorn.js: a fixed pool; home = back in the stack, hidden): a tub carries how much popcorn is left
+popcornTubs.forEach((t, i) => thingShare.register(`m${i}`, t, { plainHome: () => true,
+  lie: (x) => { x.away = false; }, home: (x) => { x.model.visible = false; },
+  save: (x) => (x.bites > 0 ? JSON.stringify({ b: x.bites }) : null),
+  load: (x, d) => { let b = 0; try { const v = JSON.parse(d)?.b; if (Number.isInteger(v)) b = Math.max(0, Math.min(POPCORN.tub.bites, v)); } catch { /* none / malformed: an empty tub */ } x.bites = b; x.nibble = 0; x.show(); } }));
 // the pots on the window boards: at home they are part of the merged sill meshes, so anywhere else their own model must show
 sillPots.forEach((it, i) => thingShare.register(`l${i}`, it, { away: (p) => p.setAway(true), lie: (p) => p.setAway(true) }));
 // the basketball: in the air it is still its thrower's; it lies where it came to rest (the room allows that far from the thrower)

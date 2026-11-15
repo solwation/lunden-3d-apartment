@@ -17,8 +17,8 @@ export class ThingShare {
    *  say(text): a badge. */
   constructor({ scene, connected = () => false, send = () => false, me = () => '', hand, say = () => {}, cfg }) {
     Object.assign(this, { scene, connected, me, hand, say, items: new Map(), live: false });
-    this.ledger = new ThingLedger({ send, me, cfg, hooks: { change: (s, was, why) => { const e = this.items.get(s.i) ?? this.resolve?.(s.i) ?? null; if (e) this.apply(e, s, why); } } });
-    this.resolve = null; // #1980: (id) => the entry of a thing that is made on demand (a fish finger out of the carton), registered now; or null
+    this.ledger = new ThingLedger({ send, me, cfg, hooks: { change: (s, was, why) => { const e = this.items.get(s.i) ?? this.resolve(s.i); if (e) this.apply(e, s, why); } } });
+    this.resolvers = []; // #1980: (id) => the entry of a thing that is made on demand (a fish finger out of the carton), registered now; or null
   }
   /** `item` is thing `id` (the same id for the same thing in every client). `opt` (#1976), for things that are more than a model at a
    *  place: mode(item, usual): its state here when the usual rule is not enough (a ball in the air is still ours); away(item): after
@@ -37,6 +37,8 @@ export class ThingShare {
     };
     return e;
   }
+  /** #1980: the entry of an unknown id, made now by whoever makes such things (`resolvers`), or null. */
+  resolve(id) { for (const f of this.resolvers) { const e = f(id); if (e) return e; } return null; }
   /** Where the thing is here: 'held' (in the hand or carried), 'world' (put down) or 'home'. */
   mode(item, opt = this.byItem?.get(item)) {
     const usual = this.hand.held() === item || item.held || this.hand.stowed(item) ? 'held' : item.placed ? 'world' : 'home';

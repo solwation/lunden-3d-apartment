@@ -151,6 +151,22 @@ const setup = () => {
     const ate = await C.page.evaluate(async (id) => { const pk = T.a.fish, f = T.it(id); f.take(); await T.pump(700); const held = f.held; pk.eaten(f); await T.pump(300); return { held, state: f.state, left: pk.left }; }, f0.id); await ac(1500);
     const fA = await A.page.evaluate((id) => { const pk = T.a.fish, f = T.it(id); return { state: f.state, visible: f.model.visible, left: pk.left, room: T.S.ledger.get(id).m }; }, f0.id);
     check(ate.held && fA.state === 'box' && !fA.visible && fA.room === 'home' && fA.left === f0.left, 'C eats it up: gone at A, and A\'s carton does not get it back', { ate, fA });
+    // #1980: the bag of fries carries how many portions are left; a bunch out of the basket how many fries and how cooked; cleared away it is gone
+    const fr = await A.page.evaluate(async () => { const F = T.a.fries; if (!F) return null; const C = (await import('/src/config.js')).FRIES, bag = F.bag; bag.take(); await T.pump(600); bag.left = 4; bag.shape();
+      const p = T.a.player.pos, at = new T.V(p.x + 1.2, p.y, p.z - 0.4); bag.placeAt(at, 0); await T.pump(700);
+      return { bagAt: [at.x, at.y, at.z], golden: C.golden }; });
+    const bunch = await A.page.evaluate(async () => { const F = T.a.fries, M = await import('/src/fries.js'), C = (await import('/src/config.js')).FRIES;
+      let b = F.bunches.find((x) => x.state === 'pool' && !x.sharedOut); if (!b) { b = new M.FriesBunch(F); F.bunches.push(b); F.onNew?.(b); }
+      b.fill(3, C.golden + 1, 0); b.take(); await T.pump(700); const p = T.a.player.pos, at = new T.V(p.x + 1.0, p.y, p.z + 0.3); b.placeAt(at, 0.2); return { id: `y${F.bunches.indexOf(b)}`, at: [at.x, at.y, at.z], golden: C.golden }; }); await ac();
+    const frC = await C.page.evaluate((id) => { const F = T.a.fries, b = T.S.items.get(id)?.item, bi = T.info('g0'); return { bagLeft: F.bag.left, bagLocal: bi.local, bagP: bi.p, bunch: b && { state: b.state, n: b.n, cook: b.cook, visible: b.model.visible, out: !!b.sharedOut } }; }, bunch.id);
+    check(frC.bagLeft === 4 && frC.bagLocal === 'world' && !!frC.bunch && frC.bunch.state === 'placed' && frC.bunch.n === 3 && frC.bunch.cook >= bunch.golden && frC.bunch.visible && frC.bunch.out, 'the bag of fries stands at C with 4 portions left; a golden bunch of three lies there too', { bunch, frC });
+    await A.page.evaluate(async (id) => { const b = T.it(id); b.take(); await T.pump(600); b.hide(); }, bunch.id); await ac();
+    const frC2 = await C.page.evaluate((id) => { const b = T.it(id); return { state: b.state, visible: b.model.visible, room: T.S.ledger.get(id).m }; }, bunch.id);
+    check(frC2.state === 'pool' && !frC2.visible && frC2.room === 'home', 'the bunch eaten / cleared away by A is gone at C', frC2);
+    // #1980: a popcorn tub carries how much is left
+    const tub = await A.page.evaluate(async () => { const t = T.S.items.get('m0')?.item; if (!t) return null; t.bites = 5; t.show(); t.take(); await T.pump(600); const p = T.a.player.pos, at = new T.V(p.x - 1.1, p.y, p.z + 0.5); t.placeAt(at, 0); return { at: [at.x, at.y, at.z] }; }); await ac();
+    const tubC = await C.page.evaluate(() => { const t = T.S.items.get('m0')?.item; if (!t) return null; const i = T.info('m0'); return { bites: t.bites, away: t.away, local: i.local, visible: i.visible, p: i.p }; });
+    check(!!tub && !!tubC && tubC.bites === 5 && !tubC.away && tubC.local === 'world' && tubC.visible && Math.hypot(tubC.p[0] - tub.at[0], tubC.p[2] - tub.at[2]) < 0.05, 'a popcorn tub stands at C with the popcorn that is left', { tub, tubC });
     // #1976: a pot from the window board (at home it is part of the merged sill mesh) and the basketball (B has left: A and C)
     const pot = await A.page.evaluate(() => { const it = T.it('l0'); it.take(); return { held: it.held, n: [...T.S.items.keys()].filter((k) => k[0] === 'l').length }; }); await ac();
     const potB = await C.page.evaluate(() => { const it = T.it('l0'); return { other: T.S.ledger.heldByOther('l0'), away: it.away.has(it.pot), groupVisible: it.model.visible }; });

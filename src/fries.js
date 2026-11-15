@@ -186,6 +186,9 @@ export class FriesBunch {
 
   get useLabel() { return this.held ? 'Ät' : null; }
 
+  /** #1980: another player's bunch as it lies: `n` fries cooked `cook` s (no new portion: nothing is counted for us). */
+  shareLoad(n, cook) { Object.assign(this, { n, cook, hot: 0 }); this.sticks.forEach((s, j) => { s.visible = j < n; }); cookColour(this.mat.color, cook); }
+
   /** `n` fries cooked `cook` s, `hot` s of steam left: into the hand. */
   fill(n, cook, hot) {
     Object.assign(this, { n, cook, hot, portionId: `fries:${++this.mgr.portionSeq}` });
@@ -349,7 +352,7 @@ export class Fries {
     const id = typeof s.id === 'string' && /^fries:([0-9]+)$/.exec(s.id), integer = n => Number.isSafeInteger(n) && n >= 0;
     if (!id || !integer(s.seq) || +id[1] < 1 || +id[1] > s.seq || !integer(s.n) || s.n < 1 || s.n > FR.bunch || !integer(s.bag) || s.bag > FR.portions || !integer(s.count) || s.count+s.n > FR.portion*FR.max || ![s.cook,s.hot,s.sourceCook,s.sourceHot].every(n => Number.isFinite(n) && n >= 0)) return null;
     let item = this.bunches.find(b => b.portionId === s.id);
-    if (!item) { item = new FriesBunch(this); this.bunches.push(item); }
+    if (!item) { item = new FriesBunch(this); this.bunches.push(item); this.onNew?.(item); }
     this.portionSeq = Math.max(this.portionSeq,s.seq); this.bag.left=s.bag; this.bag.shape();
     Object.assign(this,{count:s.count,cook:s.sourceCook,hot:s.sourceHot,falling:0}); this.heap.count=s.count;
     this.spots.forEach((p,i)=>{p.start=-1;this.heap.setMatrixAt(i,p.m);}); this.heap.instanceMatrix.needsUpdate=true; this.paint();
@@ -424,8 +427,8 @@ export class Fries {
     this.count -= n;
     this.heap.count = this.count;
     this.heap.boundingSphere = null;
-    let b = this.bunches.find((x) => x.state === 'pool');
-    if (!b) { b = new FriesBunch(this); this.bunches.push(b); }
+    let b = this.bunches.find((x) => x.state === 'pool' && !x.sharedOut); // (#1980 `sharedOut`: another player has that one)
+    if (!b) { b = new FriesBunch(this); this.bunches.push(b); this.onNew?.(b); }
     b.fill(n, this.cook, this.hot);
     b.take();
     if (!this.count) { this.cook = 0; this.hot = 0; this.paint(); } // empty: the next pour starts frozen

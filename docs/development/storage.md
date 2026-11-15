@@ -1688,6 +1688,12 @@ taken it out ourselves) and `press` skips it; back in the carton it counts again
 pan, the fryer, the oven tray: all `world` to the room) a stick carries its bites and how far it is cooked, in eighths of the
 frying time. The other players see a stick in our pan lying there, coloured as cooked; it cooks only for the player whose pan it is.
 
+#1980 (second slice): the fries and the popcorn. The bag of fries (`g0`) carries how many portions are left. A bunch taken out of the
+basket (`y<i>`, made on demand like the fish fingers; `ThingShare.resolvers` is a list, one resolver per kind) carries how many fries
+are left of it and how far they are cooked; it never goes back in the basket, so out of play it is always "used up". The heap in
+the basket / on the oven tray is each player's own. A popcorn tub (`m<i>`, a fixed pool; home = back in the stack) carries how much
+popcorn is left.
+
 - **Our own actions** are noticed by comparing each thing's state from frame to frame (`mode`: in the hand or carried in the inventory
   / the bicycle's hand = `held`, put down = `world`, else `home`) and sent as `take` / `put` (the model's world place and turn) /
   `home`. So E, the inventory, F and every other way a thing moves are covered without touching the things' classes; swapping
