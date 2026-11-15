@@ -5266,10 +5266,6 @@ export const LIGHTING = {
     overcast: { hemi: 2.0, ambient: 0.6, fill: 0.9, sun: 2.2, exposure: 1.0 },
     clear: { hemi: 1.5, ambient: 0.25, fill: 0.35, sun: 3.0, exposure: 1.5 },
   },
-  // Architectural edge lines (#1592, src/architectureedges.js) are unlit: their surface tint is scaled by
-  // (hemi + ambient intensity) × exposure / `edgeRef`, capped at 1. 2.6 = that sum by day under both `overcast` and
-  // `clear` above, so daytime edges keep #1579's look; at night (DAY.nightAmbient) they fall to ~0.03, i.e. dark again.
-  edgeRef: 2.6,
   pool: 4,
   switchHeight: 1.05,                     // centre of the switch above the floor
   ceiling: { intensity: 2.4, range: 6, color: 0xffe2b8 },
@@ -8839,3 +8835,12 @@ export const MUSSELS = {
   },
   bed: { color: 0x74664b, under: 0, fade: 0.15 }, // the river bed's mud / sand tone (*guess*) instead of grass: full `fade` m under `under` m below the water line (surroundings.js `bedMud`, grass.js)
 };
+
+// #1957: the look of the architectural edge lines (src/architectureedges.js). The user found them too drawn ("tecknat"),
+// above all in L1007's kitchen, where #1579's surface tint blended over the lit cabinet green drew lines lighter than the
+// fronts. They now multiply what is drawn, reading as shadow joints: close up a joint darkens its surface towards
+// `shade` × its hue by `strength` (white: 1 − 0.2 × 0.45 ≈ 9 % darker, about #1579's contrast on white walls, never
+// lighter); one-pixel lines do not thin with distance, so beyond `fadeNear` m from the eye the darkening fades smoothly to
+// `fadeMin` of that at `fadeFar` m, where dense joints otherwise merge into ink. All *guesses* by eye against
+// before/after shots of the kitchen, a bathroom and a façade (docs/verification/1957/).
+export const EDGE_LOOK = { strength: 0.2, shade: 0.55, fadeNear: 2.5, fadeFar: 10, fadeMin: 0.45 };

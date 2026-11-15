@@ -110,7 +110,6 @@ import { bindGroundAOShadow } from './groundao.js';
 import { Jetpack } from './jetpack.js';
 import { SpiderSuit } from './spidersuit.js';
 import { DayCycle } from './daycycle.js';
-import { setEdgeLight } from './architectureedges.js';
 import { Flare } from './flare.js';
 import { Birds } from './birds.js';
 import { Balloon } from './balloon.js';
@@ -3675,7 +3674,6 @@ function step(dt) {
   const eyeUnderWater = diveLook.update(); // #1944 (after the day cycle: it sets the fog anew each frame)
   riverFlora?.update(dt, camera.position, player.below, eyeUnderWater, day.month); // #1956
   if (riverDrift) { riverDrift.surface.update(dt, camera.position, eyeUnderWater || player.below); riverDrift.under.update(dt, camera.position, eyeUnderWater, day.daylight); } // #1952
-  setEdgeLight((hemi.intensity + ambient.intensity) * renderer.toneMappingExposure / LIGHTING.edgeRef); // edges follow the light, not glow (#1592)
   wallClock.update(day.hour);
   calendar.update(); // redraws only when the page or the date changed
   patio.update(day, dt);

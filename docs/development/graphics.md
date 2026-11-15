@@ -149,11 +149,13 @@ src/architectureedges.js sharp architectural edges (#474), captured before loose
                        hide its blocks (the worktop round the sink, vanity tops, thresholds). Moving anchors remain separate.
                        world.js and core.js build them once; furniture and loose things have no outlines. tools/architecturetest.html
                        verifies batching, exclusions, moving doors/lift, no box diagonals, the merged worktop's seams (#603) and real WebGL occlusion.
-                       #1579 tints each edge by its surface colour × 0.62; #1592: the material is unlit, so one module-level
-                       uniform (`setEdgeLight`, shared by every edge material through the same onBeforeCompile, no closure) scales
-                       that tint by (hemi + ambient) × exposure / `LIGHTING.edgeRef` (2.6 = the daytime sum, capped at 1). main.js
-                       sets it after `day.update`: day keeps #1579's look, night/blinds/garage darkness pull the lines dark again
-                       instead of glowing. Lamps (point lights) are not counted, so lit rooms at night get darker-than-surface lines.
+                       #1579 tints each edge by its surface colour × 0.62. #1957 (replacing #1592's light-level uniform): the
+                       lines multiply what is already drawn (CustomBlending dst × src, after the opaque pass, no fog/tone mapping),
+                       so a joint never comes out lighter than its surface (the tint over the lit cabinet green drew light outlines
+                       in L1007's kitchen) and follows day, night, blinds and lamps by itself. The tint only gives the joint its hue
+                       (normalised): close up the surface is darkened towards `EDGE_LOOK.shade` × hue by `strength` (≈ 9 % on white);
+                       beyond `fadeNear` m from the eye it fades to `fadeMin` of that at `fadeFar` m, since one-pixel lines do not
+                       thin with distance. Values in `src/config.js` `EDGE_LOOK` (guesses); [images](../verification/1957/).
                        #1615: a single vertex-coloured material (the A/B/C/L stair cores incl. door leaves, the playhouse shell) counts as
                        one group over the whole geometry, so its edges take the painted vertex colours, not the white base (light grey).
 textures/              image textures the page loads (published by stamp.sh): stair-pictures.jpg = the 2 × 2 atlas
