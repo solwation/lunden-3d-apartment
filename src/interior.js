@@ -199,10 +199,43 @@ export function frame(B, r, dir) {
   };
   // point d in front of the plane at u (for cylinders etc.)
   const at = (u, d) => (dir === 'w' ? [f - d, u] : dir === 'e' ? [f + d, u] : [u, f - d]);
-  return { u0, u1, f, depth, box, at, dir };
+  // local (u along the front, y, d in front of the plane) -> world, and any geometry into the batch (front() frames)
+  const map = (u, y, d) => (dir === 'w' ? [f - d, y, u] : dir === 'e' ? [f + d, y, u] : [u, y, f - d]);
+  return { u0, u1, f, depth, box, at, dir, map, add: (geo, m, origin) => B.add(geo, m, origin) };
 }
 
 const FT = 0.02; // front thickness
+
+/** The shaker frame's raised rim: one ring, 6 mm proud of the slab, its inner edge a 45 degree chamfer (#1973) instead
+ * of a straight 6 mm step: the upward facing inner ledge of a box rail took the full ceiling light and drew a bright
+ * line per drawer. 24 triangles instead of the four rail boxes' 48, same material and batch. */
+function shakerFrame(F, a0, a1, y0, y1, rw, material) {
+  const R = 0.006, c = Math.min(R, rw / 2), P = [], N = [], UV = [];
+  const loop = (i, d) => [[a0 + i, y0 + i, d], [a1 - i, y0 + i, d], [a1 - i, y1 - i, d], [a0 + i, y1 - i, d]]; // ring corners at inset i
+  const dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]]; // outward (u, y) of the bottom, right, top, left sides
+  const origin = new THREE.Vector3(...F.map(0, 0, 0));
+  const quad = (A, B, C, D, want) => { // want = outward normal in local (u, y, d); wound so the world normal follows it
+    const [pa, pb, pc, pd] = [A, B, C, D].map((q) => new THREE.Vector3(...F.map(...q)));
+    const wn = new THREE.Vector3(...F.map(...want)).sub(origin);
+    const n = new THREE.Vector3().subVectors(pb, pa).cross(new THREE.Vector3().subVectors(pc, pa)).normalize();
+    const flip = n.dot(wn) < 0;
+    if (flip) n.negate();
+    for (const v of flip ? [pa, pd, pc, pa, pc, pb] : [pa, pb, pc, pa, pc, pd]) { P.push(v.x, v.y, v.z); N.push(n.x, n.y, n.z); UV.push(0, 0); }
+  };
+  const o = loop(0, 0), oB = loop(0, -0.006), t = loop(rw - c, 0), k = loop(rw, -0.006);
+  for (let s = 0; s < 4; s++) {
+    const s2 = (s + 1) % 4, [du, dy] = dirs[s];
+    quad(oB[s], oB[s2], o[s2], o[s], [du, dy, 0]); // the outer side wall (faces the gap)
+    quad(o[s], o[s2], t[s2], t[s], [0, 0, 1]);     // the flat face
+    quad(t[s], t[s2], k[s2], k[s], [-du, -dy, 1]); // the chamfer, tilted towards the opening
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(N, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(UV, 2));
+  g.setIndex(Array.from({ length: P.length / 3 }, (_, i) => i)); // indexed like BoxGeometry, so the batch can merge it
+  F.add(g, material);
+}
 
 /**
  * Shaker front (Form Tall): slab with a raised 6 cm frame, 3 mm gaps around.
@@ -214,10 +247,13 @@ function front(F, a0, a1, y0, y1, material, handle, { low = false, rail = 0.06 }
   a0 += g; a1 -= g; y0 += g; y1 -= g;
   const rw = Math.min(rail, (y1 - y0) / 4, (a1 - a0) / 4);
   F.box(a0, a1, -FT, -0.006, y0, y1, material);
-  F.box(a0, a1, -0.006, 0, y1 - rw, y1, material);
-  F.box(a0, a1, -0.006, 0, y0, y0 + rw, material);
-  F.box(a0, a0 + rw, -0.006, 0, y0 + rw, y1 - rw, material);
-  F.box(a1 - rw, a1, -0.006, 0, y0 + rw, y1 - rw, material);
+  if (F.map) shakerFrame(F, a0, a1, y0, y1, rw, material);
+  else {
+    F.box(a0, a1, -0.006, 0, y1 - rw, y1, material);
+    F.box(a0, a1, -0.006, 0, y0, y0 + rw, material);
+    F.box(a0, a0 + rw, -0.006, 0, y0 + rw, y1 - rw, material);
+    F.box(a1 - rw, a1, -0.006, 0, y0 + rw, y1 - rw, material);
+  }
   if (!handle) return;
   const L = 0.15, t = 0.012, mid = (a0 + a1) / 2;
   if (handle === 'top' || handle === 'bottom') {

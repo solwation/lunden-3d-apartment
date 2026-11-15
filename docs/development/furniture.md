@@ -52,6 +52,9 @@ src/cushions.js        decorative cushions (one atlas material: leaf print | bob
 src/interior.js        fitted kitchen, laundry, bathroom fittings, tiled floors/walls (FINISH, KITCHEN,
                        TILED_ROOMS in config); merged into one mesh per material; a tiled room's floor runs on through
                        its door openings (`doorwayTiles`, world.js `doorways`, #306): to the closed leaf, the front door's whole depth.
+                       #1973: `front()`'s shaker frame is one ring (`shakerFrame`, 24 triangles, via `frame().map/add`) with a 45 degree chamfer on its
+                       inner edge, so no upward-facing ledge catches ceiling light as a bright line per drawer; the box rails remain only as a fallback
+                       for frames without `map`.
                        Floor drains (#1072, `floorDrain` / FLOOR_DRAIN, all *guess*): a square stainless grate in each shower
                        (Badrum, WC/dusch, the visitable flats' wet rooms via standardinterior.js) and in front of the laundry
                        machines; a few mm proud of the tiles in the floor batch, visual only (collision floor flat)
