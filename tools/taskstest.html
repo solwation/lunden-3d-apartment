@@ -106,11 +106,13 @@ try {
   const dishScore = totalScore(), dishReward = taskReward('washDish');
   life.emit('washed', { what: 'tallriken' });
   check(task('washDish').isDone && totalScore() === dishScore + dishReward && task('makeBed').active, 'washing completes selected dish chore while selected bed chore remains');
-  const bedScore = totalScore(), bedReward = taskReward('makeBed');
+  const bedScore = totalScore(), bedReward = taskReward('makeBed'), bedCount = stats.tasks;
   life.emit('bedMade', { id: 'fixture-bed' }); life.emit('bedMade', { id: 'fixture-bed' });
   check(!task('makeBed').isDone, 'bed chore requires resting too, and duplicate making is one goal');
   life.emit('bedRumpled', { id: 'fixture-bed' }); life.emit('bedRumpled', { id: 'fixture-bed' });
-  check(task('makeBed').isDone && totalScore() === bedScore + bedReward, 'bed events finish once in either order');
+  // The bed is the third finished chore of this day's set, so its award carries the whole-set bonus too (#994, #1979).
+  check(task('makeBed').isDone && stats.tasks === bedCount + 1 && totalScore() === bedScore + bedReward + SCORE.taskDayBonus, 'bed events finish once in either order');
+  check(tasks.bonusPoints === SCORE.taskDayBonus, 'the third finished chore of the day adds the whole-set bonus once');
   stage('UI cooldown persistence reset');
   // UI, cooldown repeats, persistence and input release.
   cleanTasks(); tasks.read();
