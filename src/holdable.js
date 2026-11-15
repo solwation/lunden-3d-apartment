@@ -54,7 +54,8 @@ export const heldItem = () => current;
 // with the same pose; one that was reset, removed, broken or re-homed meanwhile is simply dropped from its place (never resurrected).
 // Squirrel nuts stack: up to INVENTORY.stack of them share a place (`stacks`), the next one comes into the hand when the held one is
 // gone. Only the classes in POCKET (weapons, tools, the catch) are carried; food, cups, the life simulator's items, the cat, drawings
-// and paper keep the old rule (one at a time; they cannot be swapped away, the hand must be emptied first). Never saved.
+// and paper keep the old rule (one at a time; they cannot be swapped away, the hand must be emptied first). Saved across a reload by
+// keep.js's `inventory` part (#1959) through `inventoryContents` / `stowInto` / `freeHand` / `settleInventory` below.
 const POCKET = new Set(['Saber', 'Blaster', 'Wand', 'Flashlight', 'Bow', 'Harpoon', 'Binoculars', 'FishingRod', 'CaughtFish', 'SharkFin', 'Mussel', 'Nut', 'SprayCan', 'Basketball', 'Rifle']);
 const pockets = Array(I.slots).fill(null), stacks = Array.from({ length: I.slots }, () => []);
 let active = 0;
@@ -125,6 +126,31 @@ export function inventoryTick() {
     if (i !== active && !pockets[i] && stacks[i].length) pockets[i] = stacks[i].pop(); // a stack always has a top
   }
   if (!bicycleHand && !current) while (stacks[active].length && !attach(stacks[active].pop()));
+}
+// --- saving (#1959, keep.js `inventory`) -------------------------------------------------------------------------------------
+/** What each place holds, for saving: [[top, ...stacked]] (the active place's top is the hand's, when it can be carried), and the active place. */
+export const inventoryContents = () => ({ active, slots: pockets.map((_, i) => {
+  const top = topOf(i);
+  return [...(top && (i !== active || pocketable(top)) ? [top] : []), ...stacks[i].map((r) => r.item)];
+}) });
+/** Loading: put `item` (just taken into the hand by its own `take()`, or already the hand's) into place `slot`, without hooks. */
+export function stowInto(item, slot) {
+  if (!(slot >= 0 && slot < I.slots) || !item || isPocketed(item)) return false;
+  if (current === item) current = null;
+  const rec = detach(item);
+  if (!pockets[slot] && !stacks[slot].length) pockets[slot] = rec; else stacks[slot].push(rec);
+  return true;
+}
+/** Loading: empty the hand for a moment without hooks (it may hold something that cannot be carried); give the thing back to `settleInventory`. */
+export function freeHand() { const h = current; current = null; return h; }
+/** Loading, last: the thing `freeHand` returned is back in the hand, and place `i` (the saved active one) is the active place. */
+export function settleInventory(i, hand = null) {
+  if (!(i >= 0 && i < I.slots)) i = 0;
+  if (hand) { current = hand; active = i; return; }
+  active = i;
+  const rec = pockets[i]; pockets[i] = null;
+  if (rec) attach(rec);
+  inventoryTick();
 }
 /** Take `item` into the hand (null = empty hand). What was held goes to its place in the inventory when it can be carried and there
  * is room (#1954); otherwise home (cups, #90). */

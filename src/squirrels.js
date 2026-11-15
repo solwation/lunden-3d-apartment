@@ -437,6 +437,21 @@ export class Squirrels {
     const it = heldItem(); if (!it?.isSquirrelNut) return;
     it.slot.alive = false; it.slot.held = false; it.sync(); discoverCreature(`squirrel:${a.spec.name}`, 'feed'); this.onFeed?.(a.brain, a);
   }
+  /** #1959: bring back the nuts that were carried across a reload (`kinds`: 0 acorn / 1 hazelnut): each takes a free slot and comes into the hand
+   * (keep.js then stows it). Returns the nuts, fewer when no slot is free; none in a room (the take needs the room's answer). */
+  restoreCarried(kinds) {
+    const out = [];
+    if (this.net?.on) return out;
+    for (const kind of kinds) {
+      const i = this.nuts.slots.findIndex((s, j) => !s.alive && !s.held && !s.sharedDrop && !this.nutItems[j].held);
+      if (i < 0) break;
+      const s = this.nuts.slots[i], it = this.nutItems[i], c = this.camera.position;
+      Object.assign(s, { alive: true, held: false, by: null, kind: kind ? 1 : 0, age: 0, life: C.life[1], x: c.x, z: c.z, y: this.ground(c.x, c.z) });
+      it.appear(); it.take();
+      if (it.held) out.push(it); else { s.alive = false; it.vanish(); }
+    }
+    return out;
+  }
   /** The room refused our take (somebody was first): the nut leaves the hand again. */
   dropHeld(slot) { const it = this.nutItems[this.nuts.slots.indexOf(slot)]; if (!it?.held) return; slot.alive = false; slot.held = false; it.sync(); }
   /** Per frame: the glint under each nut lying out within `markDist` m, eased in by distance (one instanced mesh). */

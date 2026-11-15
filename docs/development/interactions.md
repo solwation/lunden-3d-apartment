@@ -545,8 +545,9 @@ src/inventoryhud.js    #1954: the inventory's HUD row (`#inventory`, DOM only): 
                        A carried thing is detached like the bicycle's stowed hand (no hooks; `isStowed` covers both) and loses its
                        place if it was reset, broken or re-homed meanwhile (`inventoryTick`). Squirrel nuts stack, `stack` (8) to a
                        place; the next comes into the hand when the held one is gone. Everything else (cups, food, life items, the
-                       cat, drawings, paper) keeps one-at-a-time and cannot be swapped away. Not saved: carried things are back at
-                       their homes after a reload (caught fish / fins: at the feet). `node --test src/inventory.test.mjs`
+                       cat, drawings, paper) keeps one-at-a-time and cannot be swapped away. Saved across a reload (#1959, keep.js
+                       `inventory`, see storage.md): every place, the nut stacks and the active place. `node --test src/inventory.test.mjs`,
+                       tools/inventorykeeptest.cjs (real reload)
 src/holdable.js        things you take and hold (one at a time): home + pick box, held pose in camera space,
                        use = click / touch button / fast look; E on the home puts it back, E on a table top /
                        worktop / the floor (HOLD.reach) puts it down (`placeAt`, lying by its shape — `restPose`;

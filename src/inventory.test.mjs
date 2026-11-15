@@ -91,3 +91,63 @@ test('a carried thing that was reset or broke meanwhile loses its place and is n
   assert.equal(counts(), '01000'); assert.equal(isPocketed(bow), false);
   assert.equal(selectSlot(0), true); assert.equal(heldItem(), null);
 });
+
+// #1959: keep.js `inventory` part: the places, the stacks and the active place survive saveWorld → loadWorld (the other parts fail
+// on the stand-in app and are skipped: each part is tried on its own).
+const K = await import('./keep.js');
+const named = (cls, name, extra = {}) => thing(cls, { name, home: { pos: { x: n, y: 0, z: 0 } }, keepPos: { x: n, y: 0, z: 0 }, ...extra });
+const quiet = async (fn) => { const w = console.warn; console.warn = () => {}; try { return await fn(); } finally { console.warn = w; } };
+const appFor = (holdables, extra = {}) => ({ holdables, cups: null, fishing: null, squirrels: null, ...extra });
+
+test('keep: carried things, their places and the active place come back after a reload', async () => {
+  reset();
+  const list = ['Bow', 'Saber', 'Wand', 'Flashlight'].map((c, i) => named(c, c + i));
+  for (const t of list) t.take();
+  selectSlot(1); // the saber in hand, the bow on place 1 ... (slots: 0 bow, 1 saber (active), 2 wand, 3 flashlight)
+  const before = inventorySlots().map((s) => [s.item?.name, s.count, s.active]);
+  const app = appFor(list);
+  const saved = await quiet(() => JSON.parse(JSON.stringify(K.saveWorld(app))));
+  assert.ok(saved.inventory && saved.inventory.a === 1);
+  // the page is rebuilt: the same things are at home again, the inventory empty
+  reset(); for (const t of list) { t.broken = false; t.held = false; t.placed = false; t.model.parent = 'home'; }
+  assert.equal(counts(), '00000');
+  await quiet(() => K.loadWorld(app, saved));
+  assert.deepEqual(inventorySlots().map((s) => [s.item?.name, s.count, s.active]), before);
+  assert.equal(heldItem(), list[1]); assert.equal(list[1].held, true);
+  for (const t of [list[0], list[2], list[3]]) { assert.ok(isPocketed(t)); assert.equal(t.held, false); assert.equal(t.model.parent, null); }
+  assert.equal(list.reduce((s, t) => s + t.puts, 0), 0);
+});
+
+test('keep: a thing that is gone at load is dropped from its place, an old save without inventory changes nothing', async () => {
+  reset();
+  const [a, b, c] = ['Bow', 'Saber', 'Wand'].map((cl, i) => named(cl, cl + i));
+  a.take(); b.take(); c.take();
+  const saved = await quiet(() => JSON.parse(JSON.stringify(K.saveWorld(appFor([a, b, c])))));
+  reset();
+  for (const t of [a, b, c]) { t.broken = false; t.held = false; t.placed = false; t.model.parent = 'home'; }
+  b.broken = true; // broken meanwhile: not restored
+  await quiet(() => K.loadWorld(appFor([a, b, c]), saved));
+  assert.ok([a, c].every((t) => heldItem() === t || isPocketed(t))); assert.ok(!isPocketed(b) && heldItem() !== b);
+  assert.equal(inventorySlots().reduce((s, x) => s + x.count, 0), 2);
+  const old = { v: 1 }; reset();
+  await quiet(() => K.loadWorld(appFor([a, b, c]), old));
+  assert.equal(counts(), '00000');
+});
+
+test('keep: a cup in the hand over carried things stays in the hand', async () => {
+  reset();
+  const bow = named('Bow', 'bow'), cup = named('Cup', 'cup');
+  bow.take(); cup.take(); // bow carried, the cup in the hand
+  assert.equal(heldItem(), cup);
+  assert.equal(isPocketed(bow), true);
+  const app = appFor([bow, cup]);
+  const saved = await quiet(() => JSON.parse(JSON.stringify(K.saveWorld(app))));
+  assert.deepEqual(saved.inventory.s.map((l) => l.length).join(''), '10000');
+  const slot = inventorySlots().findIndex((x) => x.active);
+  // reload: the page starts empty; the things part has put the cup into the hand again
+  cup.held = false; setHeld(null); reset(); bow.broken = false; bow.held = false; bow.model.parent = 'home'; cup.broken = false; cup.held = false; cup.model.parent = 'home';
+  cup.take(); assert.equal(heldItem(), cup); const puts = cup.puts;
+  await quiet(() => K.loadWorld(app, saved));
+  assert.ok(isPocketed(bow)); assert.equal(heldItem(), cup); assert.equal(cup.held, true);
+  assert.equal(inventorySlots().findIndex((x) => x.active), slot); assert.equal(cup.puts, puts);
+});

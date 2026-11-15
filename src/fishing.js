@@ -571,10 +571,12 @@ export class Fishing {
     this.remoteShown = n;
   }
   /** keep.js `fishing`: the caught fish (species, length, raw) lying about (where, how) or in the hand. */
+  /** The fish `saveState` writes, in its order (keep.js `inventory` names a carried one by its index here; `loadState` tags each restored one with `keepIdx`). */
+  keptFish() { return this.fish.filter((f) => !(f.broken || f.dropState?.foreign && !f.dropState.intent)); }
+  keptFins() { return this.fins.filter((f) => !f.broken); }
   saveState() {
     const out = [];
-    for (const f of this.fish) {
-      if (f.broken||f.dropState?.foreign&&!f.dropState.intent) continue;
+    for (const f of this.keptFish()) {
       const e = { id:f.dropId,...(f.dropState?{sd:{...f.dropState}}:{}),sp: f.species, cm: f.cm, raw: f.raw ? 1 : 0 };
       if (f.cook > 0) {const precision=f.dropState?100:10; e.ck = Math.round(f.cook * precision) / precision; e.by = f.by; }
       if (f.bites) e.b = f.bites;
@@ -590,7 +592,7 @@ export class Fishing {
       }
       out.push(e);
     }
-    const fins = this.fins.filter((f) => !f.broken).map((f) => { // #1769
+    const fins = this.keptFins().map((f) => { // #1769
       if (f.held || isStowed(f)) return { h: 1 };
       const p = f.model.getWorldPosition(new THREE.Vector3()), q = f.model.getWorldQuaternion(new THREE.Quaternion());
       return { p: [p.x, p.y, p.z].map((v) => Math.round(v * 1000) / 1000), q: [q.x, q.y, q.z, q.w].map((v) => Math.round(v * 1000) / 1000) };
@@ -605,7 +607,7 @@ export class Fishing {
       if (this.now() - s.ra >= F.respawn * 1000) { this.rod.goHome(); this.rod.model.visible = false; this.awaySince = null; } else this.awaySince = s.ra;
     }
     let personal=0;
-    for (const e of s.fish.slice(0, F.keep+SHARED_FISH.max)) {
+    for (const [ei, e] of s.fish.slice(0, F.keep+SHARED_FISH.max).entries()) {
       if(this.dropReceipts.includes(e?.id)||(!e?.sd&&personal++>=F.keep))continue;
       const spec = RIVER_FISH.species.find((x) => x.name === e?.sp), range = F.species[e?.sp]?.cm;
       if (!spec || !range || !Number.isInteger(e.cm) || e.cm < range[0] || e.cm > range[1]) continue;
@@ -614,7 +616,7 @@ export class Fishing {
       const oven = e.on === 'oven' ? this.cookers.oven : null, fryer = e.on === 'airfryer' ? this.cookers.fryer : null; // (#1881)
       if (!e.h && !placed && !grill && !pan && !oven && !fryer) continue;
       const fish = this.addFish({ id:e.id,sd:e.sd,species: e.sp, cm: e.cm, raw: e.raw !== 0, cook: Number.isFinite(e.ck) ? e.ck : undefined, by: e.by, bites: e.b }, placed ? new THREE.Vector3(...e.p) : this.dropSpot(0.5));
-      fish._restoring=true;
+      fish._restoring=true; fish.keepIdx = ei;
       if (oven || fryer) { fish.held = true; if (oven) { fish.settle(oven.model, oven.spot, 0.15); fish.heat = { kind: 'oven', oven }; } else { fish.settle(fryer.basket, new THREE.Vector3(0, fryer.plateY, fryer.frontZ + 0.125), 0); fish.heat = { kind: 'airfryer', fryer }; } }
       else if (grill || pan) { fish.held = true; if (grill) fish.intoGrill(grill, { silent: true }); else { fish.settle(pan.model, new THREE.Vector3(0, 0.004, 0), Math.PI / 2 - 0.2); fish.heat = { kind: 'pan', pan }; } }
       else if (e.h && !heldItem()) fish.take();
@@ -622,10 +624,10 @@ export class Fishing {
       else { fish.held = true; fish.putBack(); }
       fish._restoring=false;
     }
-    for (const e of (Array.isArray(s.fins) ? s.fins : []).slice(0, SHARK.keepFins)) { // #1769
+    for (const [ei, e] of (Array.isArray(s.fins) ? s.fins : []).slice(0, SHARK.keepFins).entries()) { // #1769
       const placed = Array.isArray(e?.p) && e.p.length === 3 && e.p.every(Number.isFinite) && Array.isArray(e.q) && e.q.length === 4 && e.q.every(Number.isFinite);
       if (!placed && !e?.h) continue;
-      const fin = this.addFin(placed ? new THREE.Vector3(...e.p) : this.dropSpot(0.5));
+      const fin = this.addFin(placed ? new THREE.Vector3(...e.p) : this.dropSpot(0.5)); fin.keepIdx = ei;
       if (e.h && !heldItem()) fin.take();
       else if (placed) { fin.model.position.set(...e.p); fin.model.quaternion.set(...e.q); fin.placed = true; }
       else { fin.held = true; fin.putBack(); }

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { BeerCan, BeerPortion } from './beercan.js';
 import { SONOS, MOCCAMASTER, DRINKS } from './config.js';
-import { stowedItem, heldItem } from './holdable.js';
+import { stowedItem, heldItem, inventoryContents, stowInto, freeHand, settleInventory } from './holdable.js';
 
 // The world's state across a reload made by the page (#277): the automatic update (#192) and "Ladda om" put a
 // `world` part into the resume record (resume.js) next to the place; the new page reads it back once everything is
@@ -316,6 +316,51 @@ const PARTS = {
     load: ({ fishing }, s) => fishing?.loadState(s),
   },
 
+  // #1959: the five places of the inventory (holdable.js): which things are carried where, and the active place. A holdable is named
+  // by its `things` key, a caught fish / shark fin by its index in fishing's saved list, a nut by its kind. Comes after `things`
+  // and `fishing` (they bring the things back to the world / the hand first); a thing that is gone or broken is simply left out.
+  inventory: {
+    save(a) {
+      const { active, slots } = inventoryContents();
+      const list = a.holdables.filter((h) => keepable(a, h)), k = keys(list, holdKey), fish = a.fishing?.keptFish() ?? [], fins = a.fishing?.keptFins() ?? [];
+      const name = (it) => {
+        if (it.isSquirrelNut) return ['u', it.slot?.kind ? 1 : 0];
+        if (it.isCaughtFish) return fish.includes(it) ? ['f', fish.indexOf(it)] : null;
+        if (it.isSharkFin) return fins.includes(it) ? ['n', fins.indexOf(it)] : null;
+        const i = list.indexOf(it);
+        return i >= 0 ? k[i] : null;
+      };
+      const s = slots.map((l) => l.map((it) => (it.broken && !it.isSquirrelNut ? null : name(it))).filter((e) => e !== null));
+      if (!s.some((l) => l.length)) return null;
+      return { v: 1, a: active, s };
+    },
+    load(a, s) {
+      if (s?.v !== 1 || !Array.isArray(s.s)) return;
+      const map = byKey(a.holdables.filter((h) => keepable(a, h)), holdKey);
+      const byIdx = (arr, i) => arr.find((x) => x.keepIdx === i);
+      const plan = [], nuts = []; // [[item, slot]]
+      s.s.slice(0, 16).forEach((l, slot) => {
+        for (const e of Array.isArray(l) ? l.slice(0, 64) : []) {
+          if (typeof e === 'string') { const h = map.get(e); if (h && !h.broken && !plan.some(([x]) => x === h)) plan.push([h, slot]); }
+          else if (Array.isArray(e) && e[0] === 'f') { const f = byIdx(a.fishing?.fish ?? [], e[1]); if (f && !f.broken) plan.push([f, slot]); }
+          else if (Array.isArray(e) && e[0] === 'n') { const f = byIdx(a.fishing?.fins ?? [], e[1]); if (f && !f.broken) plan.push([f, slot]); }
+          else if (Array.isArray(e) && e[0] === 'u') nuts.push([e[1] ? 1 : 0, slot]);
+        }
+      });
+      const hand = freeHand(); // whatever the hand holds (the saved hand thing, or a cup) steps aside while the places are filled
+      let keepHand = null;
+      if (hand) { const own = plan.find(([x]) => x === hand); if (own) { stowInto(hand, own[1]); plan.splice(plan.indexOf(own), 1); } else keepHand = hand; }
+      for (const [item, slot] of plan) {
+        if (item.held) continue;
+        item.take();
+        if (heldItem() === item) stowInto(item, slot); // (a refused take leaves the thing where it was: dropped from its place)
+      }
+      const made = a.squirrels?.restoreCarried(nuts.map(([kind]) => kind)) ?? [];
+      made.forEach((it, i) => { if (heldItem() === it) stowInto(it, nuts[i][1]); });
+      settleInventory(Number.isInteger(s.a) ? s.a : 0, keepHand);
+    },
+  },
+
   jetpack: { // the jetpack (#359): stood down somewhere (the spot), or on your back
     save: ({ jetpack }) => jetpack?.saveState() ?? null,
     load: ({ jetpack }, s) => jetpack?.loadState(s),
@@ -405,7 +450,7 @@ const restKey = (t) => `${t.name}|${t.spots[0] ? vec(t.spots[0].pos).join(',') :
 
 // the order things come back in: the clock before the lamps (dusk), the car before its seat, fronts before what
 // lies in them, the TV before sitting in front of it
-const ORDER = ['clock', 'santa', 'car', 'lift', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'fishing', 'jetpack', 'spidersuit', 'life', 'christmasGifts', 'rest', 'cat', 'bicycleHand'];
+const ORDER = ['clock', 'santa', 'car', 'lift', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'fishing', 'inventory', 'jetpack', 'spidersuit', 'life', 'christmasGifts', 'rest', 'cat', 'bicycleHand'];
 
 /** The world part of a reload record. */
 export function saveWorld(a) {

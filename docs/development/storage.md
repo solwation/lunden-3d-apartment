@@ -1782,3 +1782,15 @@ someone else's prompt. No new persistent store, history, rights or score. The ne
 requires welcome.conversation.v1 and chains existing welcome/listener hooks. Server first
 checkpoint c9101c6b was deployed as dfc293e7 before the client: Worker41848572870, actual
 Wrangler success2026-11-04T14:33:31UTC. Root verifies the final client publication separately.
+
+Inventory (#1959): the world record gains the optional `inventory:{v:1,a,s}` part (KEEP_VERSION stays 1: older records have no such key and
+load as before; it is read after `things` and `fishing`). `s` is five lists (one per place, top thing first, then the stacked ones), `a` the
+active place. An entry is the thing's `things` key (`holdKey`, the same duplicate suffixes) for a holdable, `["f",i]` / `["n",i]` for the
+i-th caught fish / shark fin in `fishing.keptFish()` / `keptFins()` order (`loadState` tags the restored ones with `keepIdx`), `["u",kind]`
+for a nut. Loading empties the hand without hooks, `take()`s each resolved thing and `stowInto`s its saved place (holdable.js), then
+`settleInventory(a)` makes the saved place active (the thing there comes into the hand). A thing that is missing, broken or already held
+is dropped from its place; it is never both in the world and a place. A thing the hand held that cannot be carried (a cup) stays in the hand.
+Nuts have no identity across a reload: `Squirrels.restoreCarried(kinds)` gives each a free slot (so a carried nut is a new acorn/hazelnut);
+not in a multiplayer room (the take needs the room's answer). Not saved: mussels (their bed spots are built only when swimming) and, until
+their own issues (#1960, #1961), food, cups and life items. F5 keeps only the place (as before): the part is written by "Ladda om", the
+update flow, `lunden.playerWorld` and the GL-restore reload.

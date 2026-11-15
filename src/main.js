@@ -4293,7 +4293,7 @@ function continueAfterReload(r) {
   setTimeout(() => { reloadedEl.hidden = true; }, RELOAD_NOTE_S * 1000 + 700);
 }
 // the world's state for a reload made by the page (#277, keep.js): what each part needs
-const keepApp = { fishing, santa, christmasGifts, bicycleStow: { fruit, fish, fries, chicken }, life, jetpack, suit, car, world, lights, day, grill, sonos, patio, holdables, cups, beer, chicken, scene, rest, cat, BREEDS, VARIANTS,
+const keepApp = { fishing, squirrels, santa, christmasGifts, bicycleStow: { fruit, fish, fries, chicken }, life, jetpack, suit, car, world, lights, day, grill, sonos, patio, holdables, cups, beer, chicken, scene, rest, cat, BREEDS, VARIANTS,
   sitAt: (target, spot, stand) => sitAt(target, spot, stand, true) };
 Object.assign(keepApp.bicycleStow, { miele, heldDrawing, drawing: heldDrawing, toiletPaper, paper: toiletPaper });
 function keepWorld() { try { return saveWorld(keepApp); } catch (e) { console.warn('keep', e); return null; } }
