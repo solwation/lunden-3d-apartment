@@ -33,7 +33,8 @@ import { RoomRiverFish, cleanRiverFish } from './riverfish.js';
 import { RoomTime, cleanTime } from './roomtime.js'; // #1774
 import { RoomGraffiti, cleanGraffiti, GRAFFITI_SYNC } from './graffiti.js';
 import { RoomDoors, cleanDoor } from './doors.js';
-import { RoomThings, cleanThingText } from './things.js'; // #1974: loose things shared between the players
+import { RoomThings, cleanThingText } from './things.js';
+import { RoomChores, cleanChoreText } from './chores.js'; // #1976: who helped with which chore // #1974: loose things shared between the players
 import { RoomTarget, cleanTarget } from './target.js';
 import { RoomTrails } from './trails.js';
 export { GRAFFITI_SYNC };
@@ -377,6 +378,7 @@ export class PlayerRoom {
     this.football=new RoomFootball(ctx,FOOTBALL,send,()=>this.open().map(ws=>({ws,a:att(ws)})));
     this.doors = new RoomDoors(send, () => this.open().map((ws) => ({ ws }))); // #1775: the doors' state (memory only, no KV)
     this.things = new RoomThings(ctx, send, () => this.open().map((ws) => ({ ws, a: att(ws) })), (ws, a) => { try { ws.serializeAttachment(a); } catch { /* gone */ } }); // #1974: who holds what (memory + the holders' attachments), where things lie (saved, #1978)
+    this.chores = new RoomChores(send, () => this.open().map((ws) => ({ ws }))); // #1976: who completed which goal of the day's chores (memory only)
     this.conversation = new RoomConversation(() => this.open().map(ws => ({ ws, a: att(ws) })), send);
     this.roomTime = new RoomTime(ctx, () => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1865: persisted server-reference world calendar
     this.graffiti = new RoomGraffiti(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1724: the shared spray paint (memory only, no KV)
@@ -626,6 +628,7 @@ export class PlayerRoom {
     const tg = plain.startsWith('{"t":"tg"') ? cleanTarget(plain) : null;
     const dr = plain.startsWith('{"t":"dr"') ? cleanDoor(plain) : null; // #1775
     const th = plain.startsWith('{"t":"th"') ? cleanThingText(plain) : null; // #1974
+    const ch = plain.startsWith('{"t":"ch"') ? cleanChoreText(plain) : null; // #1976
     const cv = plain.startsWith('{"t":"cv"') ? cleanConversation(plain) : null;
     const tm = plain.startsWith('{"t":"tm"') ? cleanTime(plain) : null; // #1774 (a malformed one is an ordinary, ignored state)
     const talk = cleanTalk(plain), hello = !talk && cleanGreet(plain), toast = !talk && !hello && cleanToast(plain), sound = !talk && !hello && !toast && cleanSound(plain), react = !talk && !hello && !toast && !sound && cleanReact(plain), pool = !talk && !hello && !toast && !sound && !react && cleanPool(plain), mus = !talk && !hello && !toast && !sound && !react && !pool && cleanMusic(plain), cinema = !talk && !hello && !toast && !sound && !react && !pool && !mus && cleanCinema(plain), snake = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && cleanSnake(plain), paddock = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && cleanPaddock(plain), sq = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && cleanSquirrels(plain), rf = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && !sq && cleanRiverFish(plain), shot = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && !sq && !rf && cleanShot(plain);
@@ -725,6 +728,7 @@ export class PlayerRoom {
     else if (tg) this.target.handle(ws, a, tg, now);
     else if (dr) this.doors.handle(ws, a, dr, now); // #1775
     else if (th) await this.things.handle(ws, a, th, now); // #1974, #1978 (saved before it is confirmed)
+    else if (ch) this.chores.handle(ws, a, ch, now); // #1976
     else if (tm) await this.roomTime.handle(ws, a, tm, now); // #1774
     else if (gf !== null) { if (gf) this.graffiti.handle(ws, a, gf, now); } // #1724 (a malformed block is dropped)
     else if (shot) {

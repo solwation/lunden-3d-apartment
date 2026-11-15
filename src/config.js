@@ -8691,6 +8691,11 @@ export const DOOR_SYNC = {
   every: 0.12, // s: a door message at most this often per connection (the room drops faster ones)
 };
 
+// #1976: the day's chores shared between the players (src/choresync.js, cloudflare/chores.js): `every` s between a connection's goal
+// messages, the room remembers `days` days of at most `goals` goals with at most `helpers` helpers each (all *guess* bounds); `name`:
+// the longest helper name passed on.
+export const CHORE_SYNC = { every: 0.2, days: 3, goals: 200, helpers: 32, name: 24 };
+
 // #1974 (part of #1964): loose things shared between the players (src/thingsync.js, cloudflare/things.js). An id is `<group letter><index>`;
 // `max` lists the groups and how many indexes each may have (the clients build the lists identically, as the doors do):
 // s saber, b blaster, w wand, f flashlight, a the bow, h the harpoon gun, k binoculars, c spray can, o basketball, r fishing rod.

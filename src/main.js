@@ -229,7 +229,8 @@ import { buildElCabinet } from './elcabinet.js'; // #1707: the electrical cabine
 import { Graffiti, collisionHit } from './graffiti.js'; // #1707: the spray paint (72 h, local)
 import { DoorSync } from './doorsync.js';
 import { ThingShare } from './thingshare.js'; // #1975: loose things the players share
-import { drinkData, readDrink, cupData, readCup } from './thingcontents.js'; // #1976: what a shared vessel carries // #1775: doors opened / shut, seen by the other players
+import { drinkData, readDrink, cupData, readCup } from './thingcontents.js'; // #1976: what a shared vessel carries
+import { helperKey, newHelperKey, cleanGoal } from './choresync.js'; // #1976: the day's chores shared between the players // #1775: doors opened / shut, seen by the other players
 import { GraffitiSync } from './graffitisync.js'; // #1724: … shared with the other players
 import { farWalls, swimWater, swimBedY } from './farwalk.js'; // (#1707: the paint's surfaces on phones; #1943: who swims)
 import { current as riverCurrent } from './swim.js';
@@ -3369,6 +3370,25 @@ thingShare.register('o0', ball, { mode: (b, usual) => (b.flying ? 'held' : usual
 thingShare.register('r0', fishing.rod);
 fishing.rodKept = () => { const s = thingShare.ledger.get('r0'); return thingShare.live && s.m === 'world' && s.by !== (ghosts.me ?? ''); };
 ghosts.onThings = (m) => (m.welcome ? thingShare.welcome(m.welcome) : thingShare.receive(m));
+// #1976 (the user, 2026-11-15): everybody who helped with a chore gets its points. A goal of the day's chores we complete is told
+// to the room and counts for the others' same chore; theirs count for ours (tasks.js `completeGoal(…, by)`: paid only with a goal of
+// our own). The room remembers who helped by a random key kept in this player's storage, so help given before leaving is paid at the
+// next visit while the room exists (src/choresync.js, cloudflare/chores.js).
+const choreKey = (() => { try { let k = helperKey(localStorage.getItem('lunden.helperKey')); if (!k) { k = newHelperKey(); localStorage.setItem('lunden.helperKey', k); } return k; } catch { return newHelperKey(); } })();
+tasks.onGoal = (i, g, d) => { ghosts.chores({ t: 'ch', k: 'g', u: choreKey, d, i, g }); };
+tasks.onDoneByOthers = (t) => badge(`"${t.title}" blev klart av de andra – inga poäng den här gången`, false);
+ghosts.onChores = (m) => {
+  if (m.welcome) { // who we are, and what we did today (the room may be a new one)
+    ghosts.chores({ t: 'ch', k: 'hi', u: choreKey });
+    for (const t of tasks.tasks) if (t.active) for (const g of t.own) ghosts.chores({ t: 'ch', k: 'g', u: choreKey, d: tasks.day, i: t.id, g });
+    return;
+  }
+  const rows = m.k === 'L' && Array.isArray(m.rows) ? m.rows.slice(0, 600).map((r) => (Array.isArray(r) ? cleanGoal(...r) : null)) : m.k === 'g' ? [cleanGoal(m.d, m.i, m.g, 0, m.n)] : [];
+  for (const r of rows) {
+    if (!r || r.d !== tasks.day) continue;
+    if (tasks.completeGoal(r.i, r.g, r.mine ? true : r.name || 'en annan spelare') && !r.mine) badge(`${r.name || 'En annan spelare'} hjälpte till med ett uppdrag`, false);
+  }
+};
 target.sync.net = { ready: () => ghosts.connected, send: m => ghosts.target(m) };
 ghosts.onTarget = (m, welcome) => target.sync.receive(m, welcome);
 if (riverFish) { // #1752

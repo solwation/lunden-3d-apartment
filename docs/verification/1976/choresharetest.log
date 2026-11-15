@@ -1,0 +1,9 @@
+PASS the chore is open and unpaid for all three {"a":{"goals":[],"own":[],"helpers":[],"done":false,"points":null,"paid":false,"count":0},"b":{"goals":[],"own":[],"helpers":[],"done":false,"points":null,"paid":false,"count":0},"c":{"goals":[],"own":[],"helpers":[],"done":false,"points":null,"paid":false,"count":0}}
+NOTE A was idle-disconnected: the goal goes out with the reconnect's welcome
+PASS A does the dishes: the goal counts for B and C, credited to Anna {"a":{"goals":["dishes"],"own":["dishes"],"helpers":[],"done":false,"points":null,"paid":false,"count":0},"b":{"goals":["dishes"],"own":[],"helpers":["Anna"],"done":false,"points":null,"paid":false,"count":0},"c":{"goals":["dishes"],"own":[],"helpers":["Anna"],"done":false,"points":null,"paid":false,"count":0}}
+PASS A is paid: one goal was A's own {"goals":["dishes","rubbish","wipe"],"own":["dishes"],"helpers":["Bo"],"done":true,"points":30,"paid":true,"count":1}
+PASS B is paid: two goals were B's own {"goals":["dishes","rubbish","wipe"],"own":["rubbish","wipe"],"helpers":["Anna"],"done":true,"points":30,"paid":true,"count":1}
+PASS C did nothing: the chore is done for C, for nothing {"goals":["dishes","rubbish","wipe"],"own":[],"helpers":["Anna","Bo"],"done":true,"points":0,"paid":false,"count":0}
+PASS A comes back: the room remembers that the dishes were A's; the chore is done and not paid twice {"goals":["dishes","rubbish","wipe"],"own":["dishes"],"helpers":["Bo"],"done":true,"points":5,"paid":true,"count":1}
+PASS no page errors []
+ALL PASSED

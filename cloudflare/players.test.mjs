@@ -1977,3 +1977,23 @@ test('#1974 things: validation, one winner on a simultaneous take, put / home by
   assert.equal(f.got[0].things, undefined);
   f.ws.close(); await settle(env);
 });
+
+// #1976: a chore's goal one player completes is told to the others; the room remembers who helped
+test('#1976 chores: a goal reaches the others with the helper\'s name; a returning helper is told which goals were theirs', async () => {
+  const env = setup();
+  const a = await connect(env, 'Anna'), b = await connect(env, 'Bo');
+  const ch = (c) => c.got.filter((m) => m.t === 'ch');
+  const ua = 'a'.repeat(16), ub = 'b'.repeat(16), day = '2026-11-15';
+  now += 1000; a.send({ t: 'ch', k: 'g', u: ua, d: day, i: 'resetKitchen', g: 'dishes' }); await settle(env);
+  assert.deepEqual(ch(b), [{ t: 'ch', k: 'g', d: day, i: 'resetKitchen', g: 'dishes', n: 'Anna' }]);
+  assert.equal(ch(a).length, 0);
+  now += 1000; b.send({ t: 'ch', k: 'g', u: ub, d: day, i: 'resetKitchen', g: 'wipe' }); await settle(env);
+  now += 1000; a.send({ t: 'ch', k: 'g', u: 'not-a-key', d: day, i: 'resetKitchen', g: 'rubbish' }); await settle(env);
+  assert.equal(ch(b).length, 1, 'a malformed chore message changes nothing');
+  a.ws.close(); await settle(env); await settle(env);
+  const a2 = await connect(env, 'Anna');
+  now += 3000; a2.send({ t: 'ch', k: 'hi', u: ua }); await settle(env);
+  assert.deepEqual(ch(a2).at(-1), { t: 'ch', k: 'L', rows: [[day, 'resetKitchen', 'dishes', 1, ''], [day, 'resetKitchen', 'wipe', 0, 'Bo']] });
+  for (const x of [a2, b]) x.ws.close();
+  await settle(env);
+});

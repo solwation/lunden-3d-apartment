@@ -82,6 +82,7 @@ export class TasksManager {
     this.tasks = TASK_DEFINITIONS.map((def) => ({
       ...def,
       completedGoals: new Set(),
+      own: new Set(), helpers: new Set(), // #1976: the goals WE completed; the names of the other players whose goals count for us
       isDone: false,
       shown: !def.hidden,
       active: false,
@@ -243,7 +244,7 @@ export class TasksManager {
     if (this.day === day) return false;
     this.day = day; this.bonusPoints = null;
     for (const t of this.tasks) {
-      t.completedGoals.clear(); t.isDone = t.active = t.failed = t.replenished = false;
+      t.completedGoals.clear(); t.own.clear(); t.helpers.clear(); t.isDone = t.active = t.failed = t.replenished = false;
       t.completions = t.readyAt = 0; t.points = null; t.placedBird = t.grilledBird = null;
     }
     const pool = this.tasks.filter(t => this.available(t));
@@ -290,7 +291,7 @@ export class TasksManager {
       this.renewChicken = false;
       const t = this.tasks.find(t => t.id === 'grillChicken');
       if (t?.active && !t.isDone) {
-        t.completedGoals.clear(); t.placedBird = t.grilledBird = null; t.failed = false;
+        t.completedGoals.clear(); t.own.clear(); t.helpers.clear(); t.placedBird = t.grilledBird = null; t.failed = false;
         const bird = this.life.extras?.get('chicken')?.save();
         // Preserve an already usable raw bird, including one restored after a pending renewal.
         if (!bird || bird.done || bird.burnt) {
@@ -307,6 +308,7 @@ export class TasksManager {
     for (const t of this.tasks) {
       const state = {};
       if (t.completedGoals.size) state.goals = [...t.completedGoals];
+      if (t.own.size !== t.completedGoals.size) state.own = [...t.own]; // (#1976: left out while every goal is ours, as before)
       if (t.completions || t.isDone) state.completions = t.completions;
       if (t.isDone) state.done = true;
       if (t.points !== null) state.points = t.points;
@@ -327,6 +329,7 @@ export class TasksManager {
       t.completedGoals = new Set((Array.isArray(saved) ? saved : []).filter(id => t.goals.some(g => g.id === id)));
       t.isDone = t.goals.every(g => t.completedGoals.has(g.id));
       const state = record.v !== 1 ? record.tasks?.[t.id] : null;
+      t.own = new Set(Array.isArray(state?.own) ? state.own.filter(id => t.completedGoals.has(id)) : t.completedGoals); t.helpers = new Set();
       t.isDone ||= !!state?.done; t.failed = !!state?.failed;
       if (record.v !== 3 && t.failed) t.isDone = false;
       t.completions = Number.isSafeInteger(state?.completions) ? Math.max(0, state.completions) : record.v === 3 ? 0 : Number(t.isDone);
@@ -365,7 +368,10 @@ export class TasksManager {
     this.ensureDay(); this.persist(); this.renderUI();
   }
 
-  completeGoal(taskId, goalId) {
+  /** #1976 (the user, 2026-11-15: everybody who helped with a chore gets its points): `by` = null when WE completed the goal, true when
+   *  the room remembers that we did (an earlier visit), or the name of another player in the room whose goal counts for our task too.
+   *  When the last goal falls into place we are paid only if at least one goal was ours; done wholly by others it is done, for nothing. */
+  completeGoal(taskId, goalId, by = null) {
     this.ensureDay();
     const task = this.tasks.find((t) => t.id === taskId);
     if (!task?.active || task.isDone || !task.goals.some((g) => g.id === goalId)) return false;
@@ -374,14 +380,18 @@ export class TasksManager {
     if (task.completedGoals.has(goalId)) return false;
 
     task.completedGoals.add(goalId);
+    if (by === null || by === true) task.own.add(goalId); else task.helpers.add(String(by));
+    if (by === null) this.onGoal?.(task.id, goalId, this.day); // (main.js tells the room: it counts for the others' same task)
 
     // Check if all goals are complete
     const allDone = task.goals.every((g) => task.completedGoals.has(g.id));
     if (allDone && !task.isDone) {
-      task.points = taskReward(task.id);
-      task.isDone = true;
-      task.completions++; task.replenished = false;
-      this.triggerTaskComplete(task);
+      task.isDone = true; task.replenished = false;
+      if (task.own.size) {
+        task.points = taskReward(task.id);
+        task.completions++;
+        this.triggerTaskComplete(task);
+      } else { task.points = 0; this.onDoneByOthers?.(task); } // (the others did all of it: done, no points, not counted)
     }
 
     this.life.dirty = true; this.persist();

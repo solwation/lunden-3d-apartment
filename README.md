@@ -36,6 +36,8 @@ Du kan simma i Höje å: gå, glid eller hoppa i så flyter du med ögonen strax
 
 Vapen och verktyg delas mellan spelarna i samma värld: det någon håller i är borta för de andra, och det någon lägger ner ligger kvar på samma plats för alla och kan tas upp av vem som helst. Det som lagts ner ligger kvar till nästa besök, även när alla har loggat ut; det ingen rört på 30 dagar går hem av sig självt.
 
+Dagens uppdrag går att göra tillsammans: ett delmål som en spelare klarar räknas för alla i samma värld, och när uppdraget blir klart får var och en som själv klarat minst ett delmål poängen. Den som inte hjälpte till får uppdraget avbockat utan poäng.
+
 Du kan bära upp till fem saker samtidigt: tar du något medan du håller ett vapen, ett verktyg eller en fångst hamnar det du höll på en egen plats i stället för att läggas tillbaka. Byt det du har i handen med F1–F4 och F6, med scrollhjulet eller genom att klicka i raden längst ned (på pekskärm: knappen 🎒). Nötter delar plats, upp till åtta stycken. Mat, koppar och livssimulatorns saker håller du som förut en åt gången, och det du bär med dig sparas inte vid omladdning.
 
 I en dynbox på södra stranden längst nedströms, där ån fortfarande går att simma i, ligger ett harpungevär. Klicka (eller tryck på handlingsknappen) för att skjuta harpunen, även under vattnet när du dyker: den sitter i en lina, vänder efter tio meter och dras tillbaka innan nästa skott. Träffar du en fisk räknas den som fångad och läggs på stranden; träffar du hajen får du dess fena. Inget annat – varken andra spelare eller djur – kan träffas.

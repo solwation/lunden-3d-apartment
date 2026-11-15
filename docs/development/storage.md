@@ -1686,6 +1686,29 @@ near) leaves what we see as it is. The coffee jug and the pan are not shared yet
 - **Tests.** `node --test src/thingshare.test.mjs` (two ThingShare objects against the real `RoomThings`); `tools/thingsharetest.cjs`
   (three real pages against `cloudflare/dev.mjs`; images in [docs/verification/1975](../verification/1975/)).
 
+## Shared chores: everybody who helped is paid (#1976)
+
+The user, 2026-11-15: "if you help each other with a chore, everybody who helped gets the points"; a helper who left before it was
+done is paid at the next visit while the room still exists, otherwise the points lapse.
+
+- **Rule** (`src/tasks.js` `completeGoal(taskId, goalId, by)`). A goal of the day's chores that one player completes counts for the
+  same chore of everybody else in the room (if they have that chore today and it is not done). Each chore keeps `own` (the goals our
+  own hands completed) and `helpers` (the other players' names). When the last goal falls into place we are paid, as before, only if
+  `own` is not empty; a chore done wholly by others is done for us too, for nothing ("… blev klart av de andra"), and is not counted.
+  A goal is never paid twice (`taskPaid`). `own` is saved with the chore (left out while every goal is ours).
+- **Protocol** (`src/choresync.js`; the room: `cloudflare/chores.js` `RoomChores`). Client to room `{ t: 'ch', k: 'hi', u }` after
+  the welcome and `{ t: 'ch', k: 'g', u, d, i, g }` for a completed goal (`u` a random helper key kept in the player's own storage,
+  `lunden.helperKey`; `d` the player's day). Room to everybody else `{ t: 'ch', k: 'g', d, i, g, n }` once per goal (`n` the helper's
+  display name; the key never leaves the room), and to the sender of `hi` the list `{ t: 'ch', k: 'L', rows: [[d, i, g, mine, name]] }`.
+- **Memory only**, bounded by `CHORE_SYNC` (3 days, 200 goals a day, 32 helpers a goal): the room forgets when it is evicted.
+- **Coming back / idle.** On every welcome the client says who it is and re-sends the goals it completed today, and applies the
+  room's list (its own goals count as its own). A completed goal is activity (`ghosts.chores` sets `lastMove`), so a player the idle
+  rule had disconnected comes back and the goal goes out with that welcome.
+- **Limit.** The mess, the dishes, the laundry and the rubbish themselves are still each player's own (the life simulator's items are
+  not shared yet), so today a helper's goal counts although it was done in their own copy of the kitchen.
+- **Tests.** `node --test cloudflare/chores.test.mjs cloudflare/players.test.mjs`; `tools/choresharetest.cjs` (three real pages
+  against `cloudflare/dev.mjs`: two helpers are paid, the third is not, a returning helper is remembered).
+
 ## Shared moving Nerf target (#1820)
 
 `cloudflare/target.js` keeps the room's target snapshot (position, yaw, points since moving and revision) and copies

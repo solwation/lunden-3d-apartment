@@ -3,6 +3,9 @@
 Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code spans and module maps are relative to the repository root.
 
 Related: [food](food.md), [storage](storage.md), [interactions](interactions.md).
+Chores are shared between the players in a room (#1976): a goal one player completes counts for the others' same chore, and
+everybody who completed a goal is paid when the chore is done; see [storage](storage.md) ("Shared chores").
+
 ## Module and test map
 
 ```text
