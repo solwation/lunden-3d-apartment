@@ -180,9 +180,10 @@ Keep these checks brief; no new background monitoring service is required.
   when priority, headroom and review throughput permit it. Do not duplicate an
   active issue or create future claims merely to fill capacity.
 
-Keep one publishing/integration owner. Expensive browser jobs remain serial under
-[the existing browser wrapper](../tools/browsertest.sh) and its shared lock; they do
-not set the total agent count. Maintain isolated checkouts and the agreed 2–3 scoped
+Keep one publishing/integration owner. Expensive browser jobs run under
+[the existing browser wrapper](../tools/browsertest.sh): one at a time, plus a second
+memory-gated slot when `MemAvailable` leaves room for its ceiling (user, 2026-11-15, #1985);
+they do not set the total agent count. Maintain isolated checkouts and the agreed 2–3 scoped
 checks per change. In session status/checkpoints, report measured headroom and time,
 active roles / chosen capacity / runtime ceiling, pending browser/integration work,
 the scale-up/down decision and a concrete reason for unused suitable capacity.

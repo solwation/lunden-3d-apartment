@@ -189,8 +189,10 @@ Public has no equivalent Quit/install section, so this fix has no applicable por
 ## Browser memory
 
 Run every browser test through `tools/browsertest.sh` (#1599), e.g.
-`tools/browsertest.sh node tools/playroomtest.cjs http://localhost:8137`. It takes the shared lock
-`~/.local/state/orkester/browser.lock`, so parallel agents run one browser at a time. Each test gets its own systemd
+`tools/browsertest.sh node tools/playroomtest.cjs http://localhost:8137`. It takes a browser slot (#1985): slot 1 is the
+shared lock `~/.local/state/orkester/browser.lock` (older copies of the wrapper still share it), slot 2 … `BROWSERTEST_SLOTS`
+(default 2) are `browser.lock.2` …, taken only while `MemAvailable` ≥ the test's ceiling + `BROWSERTEST_RESERVE` (1536 MiB), so a
+second test runs beside the first only when it fits; otherwise it waits as before (`BROWSERTEST_SLOTS=1` = one at a time). Each test gets its own systemd
 user scope with `BROWSERTEST_MEM` (default 4G, no swap) and `BROWSERTEST_TIMEOUT` (default 30m). A test that exceeds
 either limit is the only thing stopped, with a `browsertest: FAIL — memory ceiling …` or `… time limit …` line, and the
 peak is printed after every run. Raise the ceiling only for a measured reason, never above 8G on the 16 GB WSL machine.
