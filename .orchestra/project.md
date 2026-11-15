@@ -273,6 +273,9 @@ release requirements are satisfied. One final issue comment can cover result, ch
 limits and phase timings. Use truthful tool attribution; no forced provider footer.
 
 The 2–3-check risk plan and 10-minute verification review point are in the shared core.
+One own browser run per issue with its result images, older browser regressions only for touched
+shared code, and no integrator rerun after an unrelated rebase (user, 2026-11-15, #1986; details in the
+[verification guide](../docs/development/verification.md#verification-policy)).
 Historical inventories are candidates, not mandatory sweep lists. Hard contracts,
 actual reproduced bugs and user acceptance remain gates. Project-specific activities
 per phase are the [phase hooks](#project-phase-hooks) below.

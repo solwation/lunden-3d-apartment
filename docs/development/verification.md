@@ -15,6 +15,12 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+**Browser runs per issue (user, 2026-11-15, #1986):** issues were closing too slowly, mostly in the browser queue. Run
+one browser test of your own per issue and capture the result images in that same run. Rerun older regression browser
+tests only when the change touches their shared code; otherwise node tests suffice. The integrator does not rerun green
+browser evidence after a rebase that does not touch the same files. `tools/browsertest.sh` runs a second browser beside
+the first when memory allows (#1985, [Browser memory](#browser-memory)).
+
 ## Hand accessory fixture visibility (#1933)
 
 `tools/handringtest.cjs BASE OUT` retains all36 ring/metal/wrist/palm/grip/hug cases
