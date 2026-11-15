@@ -1,0 +1,496 @@
+{
+ "pass": true,
+ "results": [
+  {
+   "ok": true,
+   "name": "Space in the water: one stroke starts (counts as swimming, the swish sounds)",
+   "data": {
+    "kicks": 1,
+    "moving": true,
+    "on": true,
+    "sound": 1,
+    "under": false
+   }
+  },
+  {
+   "ok": true,
+   "name": "one stroke: a push of 1.8 m/s that fades out and carries about 0.72 m; the eye stays at the surface",
+   "data": {
+    "one": {
+     "carried": 0.7258333333343833,
+     "peak": 2.0937500000004414,
+     "fading": true,
+     "endSpeed": 7.127631818093505e-13,
+     "eye": {
+      "overWater": 0.10900382458602742,
+      "overBed": 1.8052868322630946
+     },
+     "swim": true
+    },
+    "afterMoving": false
+   }
+  },
+  {
+   "ok": true,
+   "name": "the movement keys alone: as before (1.25 m/s down, 0.55 m/s up)",
+   "data": {
+    "down": 1.2534722222225139,
+    "up": -0.5515277777766482
+   }
+  },
+  {
+   "ok": true,
+   "name": "keys + strokes in a row: clearly faster, down- and upstream",
+   "data": {
+    "down": {
+     "along": 2.3748784722229646,
+     "kicks": 10,
+     "swim": true
+    },
+    "up": {
+     "along": -1.6729340277770504,
+     "kicks": 10,
+     "swim": true
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "the current counts as before: faster downstream than upstream by twice the current",
+   "data": {
+    "both": [
+     2.3748784722229646,
+     -1.6729340277770504
+    ],
+    "only": [
+     1.4723784722229194,
+     -0.7704340277770538
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "strokes alone (no movement keys) swim too, also against the current",
+   "data": {
+    "down": {
+     "along": 1.4723784722229194,
+     "kicks": 10,
+     "swim": true
+    },
+    "up": {
+     "along": -0.7704340277770538,
+     "kicks": 10,
+     "swim": true
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "hammering the button gives no more than the pause allows; holding Space is one stroke",
+   "data": {
+    "hammer": {
+     "along": 2.3796701388896464,
+     "kicks": 10,
+     "swim": true
+    },
+    "held": {
+     "along": 1.3734722222225757,
+     "kicks": 1,
+     "swim": true
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "lookDown at the surface: the stroke goes level at full strength, no dip and no lift out of the water",
+   "data": {
+    "lo": 0.10591962048820758,
+    "hi": 0.13416796945895815,
+    "depth": 0,
+    "diving": false,
+    "carried": 0.7200000000008255,
+    "feet": 0
+   }
+  },
+  {
+   "ok": true,
+   "name": "lookUp at the surface: the stroke goes level at full strength, no dip and no lift out of the water",
+   "data": {
+    "lo": 0.10591720817614725,
+    "hi": 0.13415747890756702,
+    "depth": 0,
+    "diving": false,
+    "carried": 0.7200000000008255,
+    "feet": 0
+   }
+  },
+  {
+   "ok": true,
+   "name": "the touch jump button strokes",
+   "data": {
+    "flagged": true,
+    "kicks": 1,
+    "carried": 0.7200000000006835
+   }
+  },
+  {
+   "ok": true,
+   "name": "crouch held + a stroke looking up: the eye rises during the stroke, then sinks back to the bed",
+   "data": {
+    "start": {
+     "overWater": -1.3122372046498212,
+     "overBed": 0.3856952801008511
+    },
+    "end": {
+     "overWater": -1.2892527743564006,
+     "overBed": 0.4103822512575448
+    },
+    "top": -0.6929399461521664,
+    "tTop": 0.6166666666666669,
+    "low": 0.38568016322451015,
+    "diving": true,
+    "depth": 1.419580272036907,
+    "swim": true,
+    "along": 0.26673091655925796,
+    "under": [
+     true
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "a stroke 40 degrees up: up and forwards at once",
+   "data": {
+    "start": {
+     "overWater": -1.3122372046498212,
+     "overBed": 0.3856952801008511
+    },
+    "end": {
+     "overWater": -1.2869124205646756,
+     "overBed": 0.4099516672175607
+    },
+    "top": -0.9252125482228157,
+    "tTop": 0.5333333333333333,
+    "low": 0.3856952801008511,
+    "diving": true,
+    "depth": 1.4168640877822365,
+    "swim": true,
+    "along": 0.5565197081809965,
+    "under": [
+     true
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "under water looking level: the depth stays, the stroke goes forwards",
+   "data": {
+    "start": {
+     "overWater": -1.3122372046498212,
+     "overBed": 0.3856952801008511
+    },
+    "end": {
+     "overWater": -1.3033772135953896,
+     "overBed": 0.3939966684104679
+    },
+    "top": -1.2819758015271958,
+    "tTop": 1.6333333333333324,
+    "low": 0.38567838251687014,
+    "diving": true,
+    "depth": 1.417319128428821,
+    "swim": true,
+    "along": 0.7258333333347373,
+    "under": [
+     true
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "looking down at the bed: never through it",
+   "data": {
+    "start": {
+     "overWater": -1.3122372046498212,
+     "overBed": 0.3856952801008511
+    },
+    "end": {
+     "overWater": -1.3056469279049532,
+     "overBed": 0.3935649574163076
+    },
+    "top": -1.2865300780548328,
+    "tTop": 1.649999999999999,
+    "low": 0.38567877813813567,
+    "diving": true,
+    "depth": 1.419211885321261,
+    "swim": true,
+    "along": 0.26673091655784087,
+    "under": [
+     true
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "crouch held + strokes up in a row: higher still, never out of the water, down again afterwards",
+   "data": {
+    "start": {
+     "overWater": -1.3122372046498212,
+     "overBed": 0.3856952801008511
+    },
+    "end": {
+     "overWater": -1.2791080246625466,
+     "overBed": 0.4062095025365391
+    },
+    "top": -0.08133400663699408,
+    "tTop": 1.4999999999999996,
+    "low": 0.3856840564418018,
+    "diving": true,
+    "depth": 1.4052626936056813,
+    "swim": true,
+    "along": 1.5050885424853164,
+    "under": [
+     true,
+     true,
+     true,
+     true,
+     true,
+     true
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "crouch released + a stroke up: at the surface (no later than without a stroke), not out of the water",
+   "data": {
+    "stroke": {
+     "start": {
+      "overWater": -1.3122372046498212,
+      "overBed": 0.3856952801008511
+     },
+     "end": {
+      "overWater": 0.12241245241521881,
+      "overBed": 1.8187622634068896
+     },
+     "top": 0.13415856866502995,
+     "tTop": 2.749999999999995,
+     "low": 0.3856952801008511,
+     "diving": false,
+     "depth": 0,
+     "swim": true,
+     "along": 0.2667309165585494,
+     "under": [
+      true
+     ]
+    },
+    "none": {
+     "start": {
+      "overWater": -1.3122372046498212,
+      "overBed": 0.3856952801008511
+     },
+     "end": {
+      "overWater": 0.12241245241521437,
+      "overBed": 1.8207057602757883
+     },
+     "top": 0.13415856866484965,
+     "tTop": 2.749999999999995,
+     "low": 0.3856952801008511,
+     "diving": false,
+     "depth": 0,
+     "swim": true,
+     "along": 0.0058333333354712025,
+     "under": []
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "crouch released + strokes down: stays under while they last, then floats up (nobody stuck under the surface)",
+   "data": {
+    "start": {
+     "overWater": -1.3122372046498212,
+     "overBed": 0.3856952801008511
+    },
+    "end": {
+     "overWater": 0.13253329824427862,
+     "overBed": 1.8250535073243013
+    },
+    "top": 0.13415732690340576,
+    "tTop": 3.866666666666658,
+    "low": 0.3855200238820693,
+    "diving": false,
+    "depth": 0,
+    "swim": true,
+    "along": 0.7611227778247494,
+    "under": [
+     true,
+     true,
+     true
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "a level stroke mid-water does not change the ordinary float up",
+   "data": {
+    "withStroke": 0.3144636899471296,
+    "without": 0.31439489089512307
+   }
+  },
+  {
+   "ok": true,
+   "name": "strokes use air as swimming does: 1 still, 1.6 with the current, 2.4 against it",
+   "data": {
+    "still": 1.0027777777777207,
+    "down": 1.6044444444442678,
+    "up": 2.406666666666615
+   }
+  },
+  {
+   "ok": true,
+   "name": "a stroke straight up counts as a stroke too (swim.moving, swimV.sy)",
+   "data": {
+    "moving": true,
+    "sy": 1.7183779666673775,
+    "flat": 0.2963802054322953
+   }
+  },
+  {
+   "ok": true,
+   "name": "on land Space jumps as before (no stroke)",
+   "data": {
+    "vy": 3.536666666666667,
+    "want": 3.7,
+    "top": 0.6679444444444451,
+    "landed": true,
+    "t": 0.7500000000000007,
+    "swim": false,
+    "sounds": 0
+   }
+  },
+  {
+   "ok": true,
+   "name": "the worn jetpack still lifts out of the water, without a stroke",
+   "data": {
+    "kicks": 0,
+    "left": true,
+    "flying": true,
+    "vy": 1.1033333333333333
+   }
+  },
+  {
+   "ok": true,
+   "name": "the avatar under water: one stroke per press, both arms together from stretched out ahead, out and back",
+   "data": {
+    "strokes": 1,
+    "hands": [
+     [
+      {
+       "ahead": 0.4092417875173792,
+       "side": 0.2709371856602751,
+       "y": -0.004084359600756926
+      },
+      {
+       "ahead": -0.26761728735942886,
+       "side": 0.27093718562335645,
+       "y": 0.121405172864403
+      }
+     ],
+     [
+      {
+       "ahead": 0.48201204108320866,
+       "side": 0.4224170588741299,
+       "y": 0.028016467930537914
+      },
+      {
+       "ahead": 0.48201204107819623,
+       "side": 0.4224170588820387,
+       "y": 0.028016467956458513
+      }
+     ],
+     [
+      {
+       "ahead": -0.04350485985581165,
+       "side": 0.5680862459182131,
+       "y": -0.07291953265022144
+      },
+      {
+       "ahead": -0.04350485984347159,
+       "side": 0.5680862459181908,
+       "y": -0.07291953264492967
+      }
+     ]
+    ],
+    "before": 0,
+    "started": 1,
+    "kickT": 0.3360000000000002,
+    "swim": true,
+    "dive": 0.9999999956385885,
+    "headOverWater": -1.489339330861088
+   }
+  },
+  {
+   "ok": true,
+   "name": "the avatar at the surface: one stroke per press, both arms together from stretched out ahead, out and back",
+   "data": {
+    "strokes": 1,
+    "hands": [
+     [
+      {
+       "ahead": -0.14866069754985242,
+       "side": 0.27093717934799894,
+       "y": 0.2546531688987326
+      },
+      {
+       "ahead": 0.28527950850634337,
+       "side": 0.27093717934799083,
+       "y": -0.09341518086883305
+      }
+     ],
+     [
+      {
+       "ahead": 0.3584303173369206,
+       "side": 0.39774961442813433,
+       "y": 0.31236836921246525
+      },
+      {
+       "ahead": 0.35843031733692016,
+       "side": 0.3977496144281431,
+       "y": 0.31236836921246525
+      }
+     ],
+     [
+      {
+       "ahead": -0.028989292738334126,
+       "side": 0.5680862459233386,
+       "y": 0.15879639040908167
+      },
+      {
+       "ahead": -0.028989292738312696,
+       "side": 0.5680862459233503,
+       "y": 0.15879639040908167
+      }
+     ]
+    ],
+    "before": 0,
+    "started": 1,
+    "kickT": 0.3360000000000002,
+    "swim": true,
+    "dive": 4.3988570704726715e-9,
+    "headOverWater": 0.06284606278898064
+   }
+  },
+  {
+   "ok": true,
+   "name": "the avatar is where it was: under the surface diving, only the head above it otherwise",
+   "data": {
+    "diver": -1.489339330861088,
+    "top": 0.06284606278898064
+   }
+  },
+  {
+   "ok": true,
+   "name": "no page errors",
+   "data": []
+  }
+ ]
+}
