@@ -7,6 +7,7 @@ import { buildSchoolFacade, schoolTextures, schoolRoofTint } from './schoolfacad
 import { buildCampusFacade } from './campusfacades.js';
 import { TowerClock } from './towerclock.js';
 import { lowMemory } from './lowmemory.js';
+import { BatchLod } from './lod.js';
 import { parkingLots, onEastRoad, onEastBuildingAt } from './parkinglayout.js';
 import { buildKarpFacade, karpBrickTexture } from './karpfacade.js';
 import { buildRealgym20 } from './realgym20.js';
@@ -102,16 +103,19 @@ function eastLotParts(ground,access,surfColor){
 function tintRoof(W,b,parts,from){const rc=W.roofColors,hex=rc?.sources?.[b.source]??(b.campus?(b.campus.roofColor??rc?.styles?.[b.campus.style]):b.classic?rc?.classic:undefined);if(hex==null||!parts.schoolRoof)return;const tint=schoolRoofTint(hex);for(let i=from;i<parts.schoolRoof.length;i++)parts.schoolRoof[i].userData.tint??=tint;} // #1696: geometry with its own tint (chimney caps) keeps it
 // #1731: a record's optional `sunk` (m) lowers its floor below the highest corner's ground, for a house sunk into a slope the terrain does not show.
 function buildBackdrop(W,key,ground,brick=null,reflectiveGlass=null,karp=null){
- const group=new THREE.Group();group.name=key+'-backdrop';const parts={facade:[],roof:[],glass:[],access:[],...(brick||W.buildings.some(b=>b.classic)?{modern:[]}: {})},records=[],modernEnds=[];
+ const group=new THREE.Group();group.name=key+'-backdrop';const lodOn=key==='east'&&!lowMemory,farModern=[],farEnds=[]; // #1969: the campus' detailed `modern` batches get a light far level (desktop; phones build only the light one)
+const parts={facade:[],roof:[],glass:[],access:[],...(brick||W.buildings.some(b=>b.classic)?{modern:[]}: {})},records=[],modernEnds=[];
  for(const b of W.buildings){const p=b.polygon.slice(0,-1),holes=(b.holes??[]).map(h=>h.slice(0,-1)),height=b.storey??W.storey,heights=p.map(v=>ground(...v)),base=Math.max(...heights)-(b.sunk??0),bottom=Math.min(...heights,base)-.1,eave=base+b.levels*height;const footprint=shape(p);footprint.holes=holes.map(h=>new THREE.Path(h.map(([x,z])=>new THREE.Vector2(x,-z))));const wallParts=b.modern?parts.modern:parts.facade,roofFrom=parts.schoolRoof?.length??0;
   if(b.karp&&karp){parts.karpBrick??=[];parts.karpGlass??=[];parts.karpRoof??=[];records.push({...b,base,bottom,...buildKarpFacade(b,p,base,bottom,height,parts)});continue;}
   if(b.template==='realgym20'){records.push({...b,base,bottom,...buildRealgym20(b,p,base,bottom,parts,ground)});continue;} // #1532: photo-based volumes in the existing batches
   if(b.template==='nordicgym'){records.push({...b,base,bottom,...buildNordicGym(b,p,base,bottom,parts,ground)});continue;} // #1745: the gym (no OSM footprint), merged into the existing batches
   if(b.classic){if(reflectiveGlass)parts.schoolGlass??=[];parts.schoolBrick??=[];parts.schoolRoof??=[];const school=buildSchoolFacade(p,base,bottom,eave,parts);tintRoof(W,b,parts,roofFrom);records.push({...b,base,bottom,eave,...school});continue;}
   // #576–#581: photo-specific hospital facades share the school's brick, trim, glass and roof batches.
-  if(b.campus){if(reflectiveGlass)parts.schoolGlass??=[];parts.schoolBrick??=[];parts.schoolRoof??=[];records.push({...b,base,bottom,...buildCampusFacade(b,p,holes,base,bottom,parts)});tintRoof(W,b,parts,roofFrom);
+  if(b.campus){if(reflectiveGlass)parts.schoolGlass??=[];parts.schoolBrick??=[];parts.schoolRoof??=[];const mFrom=parts.modern?.length??0;records.push({...b,base,bottom,...buildCampusFacade(b,p,holes,base,bottom,parts)});tintRoof(W,b,parts,roofFrom);
+   if(lodOn&&parts.modern){for(let i=mFrom;i<parts.modern.length;i++)parts.modern[i].userData.fullOnly=true;const lite=Object.fromEntries(Object.keys(parts).map(k=>[k,[]]));buildCampusFacade(b,p,holes,base,bottom,lite,true);farModern.push(...lite.modern);for(const[k,l]of Object.entries(lite))if(k!=='modern')l.forEach(g=>g.dispose());} // #1969: the same building once more, light (CAMPUS_LOD), for the far level
+
    // Complete northern and eastern campus source groups; the remaining western group stays together.
-   if(key==='east'&&['88457552','88457606'].includes(b.source))modernEnds.push(parts.modern.length);
+   if(key==='east'&&['88457552','88457606'].includes(b.source)){modernEnds.push(parts.modern.length);farEnds.push(farModern.length);}
    continue;}
   const windows=[];
   const body=new THREE.ExtrudeGeometry(footprint,{depth:eave-bottom,bevelEnabled:false,steps:1});body.rotateX(-Math.PI/2).translate(0,bottom,0);const bodyGeo=plain(body),cols=[],col=new THREE.Color();for(let i=0;i<bodyGeo.attributes.position.count;i++){col.setHex(bodyGeo.attributes.position.getY(i)<base-.03?W.plinth:(b.facade??W.facade));cols.push(col.r,col.g,col.b);}bodyGeo.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));wallParts.push(bodyGeo);
@@ -162,10 +166,13 @@ function buildBackdrop(W,key,ground,brick=null,reflectiveGlass=null,karp=null){
   // #1679: snow-covered roofs stay white rather than taking the blue-grey roof tint (same toggle as busstop.js).
   const roofMat=mats.schoolRoof;registerSeasonal(month=>{const colored=!SEASON.snowMonths.includes(month);if(roofMat.vertexColors!==colored){roofMat.vertexColors=colored;roofMat.needsUpdate=true;}});}
  registerSnow(mats.roof,SEASON.snow.roof);registerSnow(mats.access,SEASON.snow.paving);
- for(const [k,list]of Object.entries(parts)){if(['facade','modern','schoolBrick','schoolRoof','access'].includes(k)||k==='glass'&&brick)for(const g of list)if(!g.attributes.color){const c=new THREE.Color(g.userData.tint??(k==='schoolRoof'?schoolRoofTint():k==='access'?0xa7a397:k==='glass'?W.glass:k==='schoolBrick'?0xffffff:W.facade)),cols=Array.from({length:g.attributes.position.count},()=>[c.r,c.g,c.b]).flat();g.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));}if(!list.length)continue;for(const g of list)if(k==='schoolBrick'||k==='facade'&&brick){const uv=[],a=g.attributes.position,n=g.attributes.normal;for(let i=0;i<a.count;i++)uv.push((Math.abs(n.getX(i))>Math.abs(n.getZ(i))?a.getZ(i):a.getX(i))/2,a.getY(i)/2);g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));}
+ for(const [k,list]of Object.entries(parts)){if(['facade','modern','schoolBrick','schoolRoof','access'].includes(k)||k==='glass'&&brick)for(const g of k==='modern'&&lodOn?[...list,...farModern]:list)if(!g.attributes.color){const c=new THREE.Color(g.userData.tint??(k==='schoolRoof'?schoolRoofTint():k==='access'?0xa7a397:k==='glass'?W.glass:k==='schoolBrick'?0xffffff:W.facade)),cols=Array.from({length:g.attributes.position.count},()=>[c.r,c.g,c.b]).flat();g.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));}if(!list.length)continue;for(const g of list)if(k==='schoolBrick'||k==='facade'&&brick){const uv=[],a=g.attributes.position,n=g.attributes.normal;for(let i=0;i<a.count;i++)uv.push((Math.abs(n.getX(i))>Math.abs(n.getZ(i))?a.getZ(i):a.getX(i))/2,a.getY(i)/2);g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));}
   // Native per-camera/shadow frusta see complete source groups; phones retain the original master batch.
   const ends=key==='east'&&k==='modern'&&!lowMemory?[0,...modernEnds,list.length]:[0,list.length];
-  for(let i=1;i<ends.length;i++){const mesh=new THREE.Mesh(mergeGeometries(list.slice(ends[i-1],ends[i])),mats[k]);mesh.name=key+'-'+k+(i>1?'-'+i:'');mesh.receiveShadow=true;mesh.castShadow=k!=='access'&&k!=='lawn'&&k!=='schoolGlass'&&k!=='karpGlass';group.add(mesh);}
+  for(let i=1;i<ends.length;i++){const mesh=new THREE.Mesh(mergeGeometries(list.slice(ends[i-1],ends[i])),mats[k]);mesh.name=key+'-'+k+(i>1?'-'+i:'');mesh.receiveShadow=true;mesh.castShadow=k!=='access'&&k!=='lawn'&&k!=='schoolGlass'&&k!=='karpGlass';group.add(mesh);
+   if(k==='modern'&&lodOn&&farModern.length){const fe=ends.length===2?[0,farModern.length]:[0,...farEnds,farModern.length],fl=[...list.slice(ends[i-1],ends[i]).filter(g=>!g.userData.fullOnly),...farModern.slice(fe[i-1],fe[i])];
+    if(fl.length){const far=new THREE.Mesh(mergeGeometries(fl),mats[k]);far.name=mesh.name+'-far';far.receiveShadow=true;far.castShadow=mesh.castShadow;group.add(far);new BatchLod(mesh,far,{...SITE.east.lod,material:()=>mats[k].clone()});}}}
+  if(k==='modern')farModern.forEach(g=>g.dispose());
   list.forEach(g=>g.dispose());}
  for(const b of records.filter(b=>b.template==='nordicgym'&&b.model.front.sign))group.add(buildNordicGymSign(b));
  const clocks=records.filter(b=>b.clock).map(b=>new TowerClock(b.clock));

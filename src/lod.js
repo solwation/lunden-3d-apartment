@@ -121,10 +121,10 @@ export function patchDitherLod(material, { far = false, range, centre = null }) 
 }
 
 /** A depth material (shadow casters) that follows the same fade; `map`/`alphaTest` cut leaf cards out like three's own. */
-export function lodDepthMaterial({ far = false, range, map = null, alphaTest = 0, side = THREE.FrontSide }) {
+export function lodDepthMaterial({ far = false, range, map = null, alphaTest = 0, side = THREE.FrontSide, centre = null }) {
   const m = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map, alphaTest, side });
   m.name = far ? 'lod-depth-far' : 'lod-depth-near';
-  patchDitherLod(m, { far, range });
+  patchDitherLod(m, { far, range, centre });
   return m;
 }
 
@@ -245,7 +245,40 @@ export function updateInstanceLods(camera) {
   view.dir.set(0, 0, -1).transformDirection(camera.matrixWorld);
   view.frustum.setFromProjectionMatrix(_pv.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
   for (const s of sets) s.update(cam, false, view);
+  for (const b of batches) b.update(cam);
 }
+
+/**
+ * #1969: two levels of ONE merged mesh (a batch of buildings): `near` (full detail) and `far` (a lighter geometry of the same
+ * things). The whole batch fades at once, by the distance from the camera to the batch's bounding box (so standing among its
+ * buildings is distance 0): the same dither as the instanced levels, through a centre uniform kept that far from the camera.
+ * Each level needs a material of its own (`material(far)` makes one; it is patched here) and gets a matching depth material when
+ * it casts shadows. Outside the zone only one level is visible.
+ */
+export class BatchLod {
+  constructor(near, far, { start, end, margin = 1, material }) {
+    Object.assign(this, { near, far, start, end, margin, enabled: true, d: 0 });
+    this.range = lodRange(start, end); this.centre = { value: new THREE.Vector3() };
+    for (const [mesh, isFar] of [[near, false], [far, true]]) {
+      mesh.material = patchDitherLod(material(isFar), { far: isFar, range: this.range, centre: this.centre });
+      if (mesh.castShadow) mesh.customDepthMaterial = lodDepthMaterial({ far: isFar, range: this.range, centre: this.centre, side: mesh.material.side });
+    }
+    near.geometry.boundingBox ?? near.geometry.computeBoundingBox();
+    near.updateWorldMatrix(true, false);
+    this.box = near.geometry.boundingBox.clone().applyMatrix4(near.matrixWorld);
+    far.visible = false; far.userData.lodFar = true; near.userData.batchLod = far.userData.batchLod = this;
+    batches.push(this);
+  }
+  update(cam) {
+    const d = this.d = this.enabled ? this.box.distanceToPoint(cam) : 0;
+    this.centre.value.set(cam.x + d, cam.y, cam.z); // (the shader only measures the distance)
+    this.near.visible = d < this.end + this.margin;
+    this.far.visible = d > this.start - this.margin;
+  }
+}
+const batches = [];
+/** For tests: the batch levels. */
+export const batchLods = () => batches;
 const view = { frustum: new THREE.Frustum(), dir: new THREE.Vector3() }, _pv = new THREE.Matrix4();
 
 /** For tests. */

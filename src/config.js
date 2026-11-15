@@ -1273,6 +1273,7 @@ export const SITE = {
   },
 
   east: {
+    lod: { start: 30, end: 42 }, // #1969: m from a detailed campus batch's bounding box at which it fades (src/lod.js BatchLod) into its light level (CAMPUS_LOD), only that beyond `end` (*guess*: from the flat the three batches are 45 – 80 m away)
     buildings: [
       {"source":"88457546","polygon":[[39.82,-133.52],[50.71,-133.78],[50.79,-130.68],[64.45,-131.0],[64.9,-113.43],[50.44,-113.08],[50.33,-117.48],[45.1,-117.36],[45.18,-114.52],[26.82,-114.08],[26.39,-131.02],[39.88,-131.33],[39.82,-133.52]],"name":"Sankt Thomas skola / byggnad 1 (Klockhuset)","levels":1,"levelsSource":"Commons 2014 photo and Hemsö: two tall storeys; Google 3D (#1734): a one-storey front wing towards the courtyard","storey":4.6,"frameColor":15657439,
         // #1733: the centre (risalit, pediment, great arched window, entrance, clock tower) stands on the park side (model −z,

@@ -1100,8 +1100,18 @@ reading its per-level value from a `QUALITY` table; `state` is the line in the `
 
 Real weather (#674) costs nothing per frame beyond a few typed-array reads (`RealWeather.at`) and a 4×/s simulated temperature; one month (24 × days hours × 4 arrays, ~15 KB) is held, at most three months in memory, the fetch happens once after the first frames.
 
-Not knobs (yet): the campus facades' LOD (#589) is chosen once at build time (a runtime switch needs a second geometry
-per batch), and the Christmas tree's shimmer costs 0.016 ms (#571) — not worth one.
+Campus batches by distance (#1969, desktop only): the three detailed `east-modern*` batches (49 750 triangles) each have a
+second, light geometry (the phones' `CAMPUS_LOD` build of the same buildings: 21 590 triangles) and fade as a whole
+(`src/lod.js` `BatchLod`: the dither of #1958 through a centre uniform kept at the camera's distance to the batch's bounding
+box; a material and a shadow depth material per level) between `SITE.east.lod` 30 and 42 m from the box. From the flat and the
+courtyard all three are light: −28 160 triangles in the main pass (and as many in the shadow pass when they cast), the same draw
+calls; standing among the buildings nothing changes; inside the zone both levels of that batch draw. The other campus batches
+(brick, roofs, glass) surround the quarter (their boxes reach the flat) and stay as they are. Cost: the campus facades are
+built twice at start (not timed) and ~21.6 k triangles more of geometry memory. `tools/campuslodtest.cjs` measures it and
+compares the two levels from one camera (13 of 51 840 pixels differ visibly from the courtyard); `eastbackdroptest` counts the
+near levels only. Phones build only the light level, as before.
+
+Not knobs (yet): the Christmas tree's shimmer costs 0.016 ms (#571) — not worth one.
 
 **Keeping future graphics safe (step D).**
 - *Budgets:* `PERF.budget` in config — per view at the highest level: ≤ 520 draw calls and ≤ 1 000 000 triangles at

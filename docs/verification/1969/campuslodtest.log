@@ -1,0 +1,9 @@
+browsertest: waiting for a browser slot (2 max; another browser test is running or memory is short)
+browsertest: running in browser slot 2 of 2
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS three campus batches with a light level (28160 triangles lighter in all), shadows follow [{"name":"east-modern","near":16232,"far":5374,"shadow":true},{"name":"east-modern-2","near":11784,"far":4084,"shadow":true},{"name":"east-modern-3","near":21734,"far":12132,"shadow":true}]
+PASS from the courtyard every batch is light: the same draw calls, fewer triangles {"off":{"calls":140,"triangles":536834,"levels":["east-modern:0m:N","east-modern-2:0m:N","east-modern-3:0m:N"]},"on":{"calls":140,"triangles":508674,"levels":["east-modern:75m:F","east-modern-2:57m:F","east-modern-3:62m:F"]},"saved":28160}
+PASS among the campus buildings the batches one stands in or beside keep their full detail (none is light only) {"off":{"calls":39,"triangles":356338,"levels":["east-modern:0m:N","east-modern-2:0m:N","east-modern-3:0m:N"]},"on":{"calls":40,"triangles":360422,"levels":["east-modern:5m:N","east-modern-2:31m:NF","east-modern-3:0m:N"]}}
+PASS in between: never more than both levels of a batch at once {"off":{"calls":50,"triangles":380910,"levels":["east-modern:0m:N","east-modern-2:0m:N","east-modern-3:0m:N"]},"on":{"calls":52,"triangles":386268,"levels":["east-modern:44m:F","east-modern-2:35m:NF","east-modern-3:32m:NF"]}}
+PASS no page errors []
+ALL PASSED
