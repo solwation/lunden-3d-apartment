@@ -1963,10 +1963,17 @@ test('#1974 things: validation, one winner on a simultaneous take, put / home by
   assert.deepEqual(th(b).at(-1), { t: 'th', i: 's0', m: 'home', at: now, by: ia });
   const d = await connect(env, 'D');
   assert.deepEqual(d.got[0].things, [['a0', 'world', ib, [11, 0, 12], [0, 0, 0, 1]]]);
-  // everybody leaves: the next player starts with everything at home
+  // #1978: everybody leaves: what lies is saved and the next player finds it there; nothing is held any more
+  await say(b, { i: 'k1', k: 'take', n: 20 });
   for (const x of [b, c, d]) x.ws.close();
   await settle(env); await settle(env);
   const e = await connect(env, 'E');
-  assert.equal(e.got[0].things, undefined);
-  e.ws.close(); await settle(env);
+  assert.deepEqual(e.got[0].things, [['a0', 'world', ib, [11, 0, 12], [0, 0, 0, 1]]]);
+  // taken from where it lay and put back home: the saved place is gone too
+  now += 1000; e.send({ p: [11, 0, 11], r: 0 }); await settle(env);
+  await say(e, { i: 'a0', k: 'take', n: 1 }); await say(e, { i: 'a0', k: 'home', n: 2 });
+  e.ws.close(); await settle(env); await settle(env);
+  const f = await connect(env, 'F');
+  assert.equal(f.got[0].things, undefined);
+  f.ws.close(); await settle(env);
 });

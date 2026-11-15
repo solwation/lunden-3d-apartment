@@ -376,7 +376,7 @@ export class PlayerRoom {
     this.boule = new RoomBoule(ctx, () => this.open().map(ws => ({ ws, a: att(ws) })), send);
     this.football=new RoomFootball(ctx,FOOTBALL,send,()=>this.open().map(ws=>({ws,a:att(ws)})));
     this.doors = new RoomDoors(send, () => this.open().map((ws) => ({ ws }))); // #1775: the doors' state (memory only, no KV)
-    this.things = new RoomThings(send, () => this.open().map((ws) => ({ ws, a: att(ws) })), (ws, a) => { try { ws.serializeAttachment(a); } catch { /* gone */ } }); // #1974: who holds what, where things lie (memory + the holders' attachments)
+    this.things = new RoomThings(ctx, send, () => this.open().map((ws) => ({ ws, a: att(ws) })), (ws, a) => { try { ws.serializeAttachment(a); } catch { /* gone */ } }); // #1974: who holds what (memory + the holders' attachments), where things lie (saved, #1978)
     this.conversation = new RoomConversation(() => this.open().map(ws => ({ ws, a: att(ws) })), send);
     this.roomTime = new RoomTime(ctx, () => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1865: persisted server-reference world calendar
     this.graffiti = new RoomGraffiti(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1724: the shared spray paint (memory only, no KV)
@@ -580,16 +580,17 @@ export class PlayerRoom {
     this.ctx.acceptWebSocket(server);
     const i = crypto.randomUUID().slice(0, 8), n = cleanName(url.searchParams.get('n'));
     const attachment = { i, n, s: null, turned: false, rightFirstTurn: null, leftTinyTurn: null, leftStandingTurn: null, frontTurn: null, rearFirstTurn: null, l: COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false, consumed: [] };
-    if (!others.length) { this.target.reset(); this.things.reset(); } // (#1974: an empty room forgets where things were)
+    if (!others.length) { this.target.reset(); this.things.reset(); } // (#1974: nobody holds anything in an empty room; #1978: what lies stays)
     attachment.tgs = {...this.target.state};
     server.serializeAttachment(attachment);
-    send(server, JSON.stringify({ t: 'w', conversation: { v: 1 }, picnic:await this.picnic.welcome(), sharedFish:await this.sharedFish.welcome(),nutDrops:await this.squirrels.welcome(now),boule: this.boule.snapshot(), target: this.target.snapshot(), football:this.football.join(server,attachment,now), i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons }, ...(others.length ? this.doorsWelcome() : (this.doors.reset(), {})), ...(this.roomTime.welcome(now) ? { tm: this.roomTime.welcome(now) } : {}), trails: this.trails.snapshot(now) })); // (#1773: trails)
+    send(server, JSON.stringify({ t: 'w', conversation: { v: 1 }, picnic:await this.picnic.welcome(), sharedFish:await this.sharedFish.welcome(),nutDrops:await this.squirrels.welcome(now),boule: this.boule.snapshot(), target: this.target.snapshot(), football:this.football.join(server,attachment,now), i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons }, ...(others.length ? this.doorsWelcome() : (this.doors.reset(), {})), ...this.thingsWelcome(await this.things.welcome(now)), ...(this.roomTime.welcome(now) ? { tm: this.roomTime.welcome(now) } : {}), trails: this.trails.snapshot(now) })); // (#1773: trails)
     this.broadcast({ t: 'j', i, n, l: COMBAT.lives }, server);
     this.graffiti.join(server, others.map((ws) => ({ ws, a: att(ws) })), now); // #1724
     return new Response(null, { status: 101, webSocket: client });
   }
 
-  doorsWelcome() { const d = this.doors.list(), t = this.things.list(); return { ...(d.length ? { doors: d } : {}), ...(t.length ? { things: t } : {}) }; } // #1775, #1974
+  doorsWelcome() { const d = this.doors.list(); return d.length ? { doors: d } : {}; } // #1775
+  thingsWelcome(t) { return t.length ? { things: t } : {}; } // #1974, #1978: what is held, and what lies (saved, so a lone first player gets it too)
 
   async webSocketMessage(ws, message) {
     await this.football.ready;
@@ -723,7 +724,7 @@ export class PlayerRoom {
     else if (ft) this.football.handle(ws,a,ft,now);
     else if (tg) this.target.handle(ws, a, tg, now);
     else if (dr) this.doors.handle(ws, a, dr, now); // #1775
-    else if (th) this.things.handle(ws, a, th, now); // #1974
+    else if (th) await this.things.handle(ws, a, th, now); // #1974, #1978 (saved before it is confirmed)
     else if (tm) await this.roomTime.handle(ws, a, tm, now); // #1774
     else if (gf !== null) { if (gf) this.graffiti.handle(ws, a, gf, now); } // #1724 (a malformed block is dropped)
     else if (shot) {
@@ -780,7 +781,7 @@ export class PlayerRoom {
     }
     ws.serializeAttachment(a);
     this.snake.trim();
-    await this.picnic.flush();await this.squirrels.flush();await this.sharedFish.flush();await this.poolFlush();
+    await this.picnic.flush();await this.squirrels.flush();await this.sharedFish.flush();await this.things.flush();await this.poolFlush();
     await this.cinema.flush();for(const tv of this.tvs)await tv.flush();
     if (lifeChanged) await this.scheduleRecovery();
     this.sweep(now);

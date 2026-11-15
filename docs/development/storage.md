@@ -1608,10 +1608,16 @@ The room can say, per loose thing, who holds it or where it lies, and decide who
 only: no thing in the game is connected to it yet (#1975 connects the weapons and tools, #1976 more kinds, #1977 the inventory).
 
 - **State.** `home` (the default: never stored, each player's own save decides), `world` (a place `p` and a turn `q`) or `held` (by one
-  connection). `cloudflare/things.js` `RoomThings` keeps it in memory only, as the doors (#1775): no KV, no Durable Object storage, and an
-  empty room forgets everything. What a connection HOLDS is also in its socket attachment (`th`, at most `THING_SYNC.held` short ids),
-  so a room that wakes from hibernation still refuses a held thing to the others; where things LIE is lost by a hibernation (the
-  clients keep what they were told; only a late joiner's welcome is then incomplete).
+  connection), kept by `cloudflare/things.js` `RoomThings`.
+- **Saved between visits (#1978; the user, 2026-11-15).** Where things LIE is written to the room's existing Durable Object storage
+  (one value, key `things`: `{ v: 1, rows: [[i, by, p, q, at], …] }`; at most one row per id, so bounded by `THING_SYNC.max`, about
+  25 kB at the most) BEFORE the change is confirmed or broadcast; a failed write refuses the request (`no: 'save'`) and changes nothing
+  (the pattern of #1855's shared fish). Changes run one after another and wait for the saved state to be read; the welcome waits too,
+  and a lone first player gets the list as well. One write per put-down and per take of a lying thing; taking from home, holding,
+  swapping inventory places and sending a held thing home write nothing. A lying thing nobody has touched for `THING_SYNC.keepDays`
+  (30, *guess*) days goes home by itself at the next welcome. No new binding, no KV.
+- **Held things are never stored**: they are in memory and in the holder's socket attachment (`th`, at most `THING_SYNC.held` short
+  ids), so a room that wakes from hibernation still refuses a held thing to the others, and what a player held when they left goes home.
 - **Ids.** `<group letter><index>`, validated against `THING_SYNC.max` in `src/config.js` (one letter per kind, the clients build the
   lists identically); no names or contents travel.
 - **Protocol** (`src/thingsync.js`, shared by the client and the Worker). Client to room `{ t: 'th', i, k: 'take' | 'put' | 'home', n }`
@@ -1622,7 +1628,7 @@ only: no thing in the game is connected to it yet (#1975 connects the weapons an
 - **Rules.** A thing held by a connected player cannot be taken, moved or sent home by anybody else: of two simultaneous takes the
   first the room gets wins and the other is refused. A lying thing may be taken (or sent home) only from within `THING_SYNC.reach` m of
   it, a thing may be put down only within reach of where its holder stands and inside the site's bounds. When a player leaves, what
-  they held goes home for the others; what lies stays. Places are rounded to mm, turns normalised.
+  they held goes home for the others; what lies stays (also when everybody has left, #1978). Places are rounded to mm, turns normalised.
 - **Client.** `ThingLedger` (`src/thingsync.js`): numbered requests, the room's word applied through `hooks.change(state, was, why)`,
   a refusal restores the room's state, older news is ignored, the welcome replaces everything, a dropped connection resets. Offline
   nothing is sent or kept.
@@ -1653,7 +1659,8 @@ the ball and the rod.
   is then announced as ours. Things we had put down privately before joining are not announced (they stay where our own save has
   them until somebody takes them). A dropped connection brings back what the others held and leaves the rest as it is.
 - **Saving.** `keep.js` is unchanged: a thing another player put down is saved where it lies like any put-down thing; one they hold
-  is at its home in our save. Offline and solo nothing is sent or kept.
+  is at its home in our save. While connected the room's list wins for the things it lists (#1978: also what was put down on an
+  earlier visit, by anybody); offline and solo nothing is sent and the player's own save decides.
 - **Tests.** `node --test src/thingshare.test.mjs` (two ThingShare objects against the real `RoomThings`); `tools/thingsharetest.cjs`
   (three real pages against `cloudflare/dev.mjs`; images in [docs/verification/1975](../verification/1975/)).
 

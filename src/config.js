@@ -8702,6 +8702,7 @@ export const DOOR_SYNC = {
 export const THING_SYNC = {
   max: { s: 4, b: 8, w: 8, f: 4, a: 1, h: 1, k: 2, c: 12, o: 2, r: 1, p: 2, e: 2, t: 160 }, // (#1976: p the book, e the remote control, t the loose things of world.things by their index)
   every: 0.12, reach: 8, held: 12, x: [-600, 600], y: [-60, 120], z: [-300, 600],
+  keepDays: 30, // #1978 (*guess*): days a lying thing stays where it was put without anybody touching it, before it goes home
 };
 
 // #1921: authored mallard surface estimates (guess), in the existing bill/rig frame.

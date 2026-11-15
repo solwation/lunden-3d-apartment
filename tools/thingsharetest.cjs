@@ -5,7 +5,7 @@
 // Checks: the same id list at every client; A takes the lightsaber: it is gone at B and B cannot take it; A puts it down: it lies at
 // the same place at B; B takes it: gone at A; both take a wand at once: exactly one keeps it; a thing carried in A's inventory is away
 // at B; a late C sees what is held and what lies; B leaves: what B held is home again at A. Screenshots: B's and C's view of the
-// saber lying where A put it.
+// saber lying where A put it; #1978: after everybody has left, a new player D finds what was put down still lying there.
 const kit = require('./testkit.cjs'), fs = require('node:fs');
 const [game = 'http://localhost:8196', worker = 'http://localhost:8197', out = '/tmp/thingshare'] = process.argv.slice(2); fs.mkdirSync(out, { recursive: true });
 let failed = 0; const check = (ok, name, data) => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name} ${data === undefined ? '' : JSON.stringify(data)}`); if (!ok) failed++; };
@@ -95,6 +95,16 @@ const setup = () => {
     await Promise.all([A.page.evaluate(() => T.pump(2500)), C.page.evaluate(() => T.pump(2500))]);
     a = await info(A, 's0'); const cs = await info(C, 's0');
     check(a.room === 'home' && a.visible && a.local === 'home' && cs.room === 'home' && cs.visible, 'B leaves: what B held is home again for the others', { a, cs });
+    // #1978: everybody leaves; a new player later finds the bow where A put it (saved by the room), and nothing is held
+    await A.ctx.close(); await C.ctx.close();
+    await new Promise((r) => setTimeout(r, 1500));
+    const D = await open('Dag');
+    await D.page.evaluate(() => T.pump(1200));
+    const dd = { bow: await info(D, 'a0'), saber: await info(D, 's0'), b0: await info(D, 'b0'), book: await info(D, 'p0') };
+    check(dd.bow.local === 'world' && dd.bow.room === 'world' && dd.bow.visible && Math.hypot(dd.bow.p[0] - bowAt[0], dd.bow.p[2] - bowAt[2]) < 0.05 && dd.book.local === 'world' && dd.saber.room === 'home' && dd.b0.room === 'home' && dd.b0.visible,
+      'everybody left: a new player finds what was put down still lying there; what was held is home', dd);
+    await D.page.evaluate(([x, y, z]) => { T.stand(x + 0.2, z + 1.6); T.look(x, y + 0.05, z); T.a.step(0.05); }, dd.bow.p);
+    await kit.shot(D.page, `${out}/d-finds-the-bow-after-everybody-left.png`);
     check(errors.length === 0, 'no page errors', errors);
   } catch (e) { console.log(`FAIL ${e.stack || e}`); failed++; } finally { await browser.close(); }
   console.log(failed ? 'SOME FAILED' : 'ALL PASSED');
