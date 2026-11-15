@@ -131,7 +131,7 @@ import { NewYear, glassesOut } from './newyear.js';
 import { saveResume, saveSession, takeResume } from './resume.js';
 import { saveWorld, loadWorld, hasRestoredBicycleHand } from './keep.js';
 import { lifeDev, devScenario, Life } from './life.js';
-import { LifeShare, LifeParts } from './lifeshare.js';
+import { LifeShare, LifeParts, MessShare } from './lifeshare.js';
 import { DishProgramme } from './dishwasher.js';
 import { buildDropoff } from './waste.js';
 import { shownRows } from './actions.js';
@@ -3470,6 +3470,9 @@ if (lifeParts) {
   if (milk) lifeParts.add('milk', { save: () => milk.keepState(), load: (v) => { if (!v || (milk.away && !v.away)) milk.refill(); if (v) milk.loadKeep(v); life.dirty = true; } });
   ghosts.onParts = (m) => lifeParts.receive(m);
 }
+// #1990: crumbs and dust are the room's too; only the first player in the room makes the dust
+const messShare = window.__messShare = lifeShare ? new MessShare({ mess, connected: () => ghosts.connected, send: (m) => ghosts.messy(m), changed: () => { life.dirty = true; } }) : null;
+if (messShare) { ghosts.onMess = (m) => messShare.receive(m); mess.quiet = () => ghosts.connected && !ghosts.first; }
 // #1976 (the user, 2026-11-15): everybody who helped with a chore gets its points. A goal of the day's chores we complete is told
 // to the room and counts for the others' same chore; theirs count for ours (tasks.js `completeGoal(…, by)`: paid only with a goal of
 // our own). The room remembers who helped by a random key kept in this player's storage, so help given before leaving is paid at the
@@ -3876,7 +3879,7 @@ function step(dt) {
   toys.update(dt);
   arrows.update(dt);
   inventoryTick(); inventoryHud.update(overlay.hidden && !reading && !statsOpen); // #1954
-  lifeShare?.update(); lifeParts?.update(); // #1981: our changes to the shared kitchen, in batches; the home's other state
+  lifeShare?.update(); lifeParts?.update(); messShare?.update(); // #1981, #1990: our changes to the shared kitchen, in batches; the home's other state
   thingShare.update(); // #1975: what we took / put down goes to the room
   harpoon?.step(dt); // #1953: the spear on its line
   marks.update(dt);

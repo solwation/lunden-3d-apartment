@@ -264,3 +264,85 @@ test('parts: a programme is told when it starts and ends, not while its time run
   b.home.dw = null; await w.settle(); // B empties it
   assert.equal(a.home.dw, null);
 });
+
+// --- #1990: crumbs and dust (MessShare) ------------------------------------------------------------------------------
+import { MessShare } from './lifeshare.js';
+import { cleanMessText } from './lifesync.js';
+
+function messWorld(storage = new Map()) {
+  const peers = [], clock = { t: 9e6 };
+  const ctx = { storage: { get: async (k) => structuredClone(storage.get(k)), put: async (k, v) => { if (ctx.fail) throw new Error('no'); storage.set(k, structuredClone(v)); } } };
+  const room = new RoomLife(ctx, (ws, text) => ws.inbox.push(JSON.parse(text)), () => peers.filter((p) => p.open).map((p) => ({ ws: p, a: p.a })), () => clock.t);
+  const spot = (kind, x, z, amt) => ({ kind, level: 0, x, y: 0, z, surf: 'floor', room: 'kök', amt, rot: 1 });
+  const join = async (name, spots = []) => {
+    const p = { open: true, a: { i: name }, inbox: [], out: [], mess: { spots, redraw() { p.drawn = (p.drawn ?? 0) + 1; } } };
+    p.share = new MessShare({ mess: p.mess, connected: () => p.open, send: (m) => { p.out.push(m); return true; }, now: () => clock.t / 1000 });
+    peers.push(p);
+    p.share.receive({ t: 'lm', k: 'reset' });
+    await room.messWelcome(p);
+    return p;
+  };
+  const settle = async () => {
+    for (let i = 0; i < 40; i++) {
+      let moved = false; clock.t += 600;
+      for (const p of peers) {
+        if (!p.open) continue;
+        for (const m of p.inbox.splice(0)) { p.share.receive(m); moved = true; }
+        p.share.update();
+        for (const m of p.out.splice(0)) { const c = cleanMessText(JSON.stringify(m)); assert.ok(c, 'valid mess messages'); await room.messy(p, p.a, c, clock.t); moved = true; }
+      }
+      if (!moved) return;
+    }
+    assert.fail('never settles');
+  };
+  const view = (p) => p.mess.spots.map((s) => `${s.kind}@${s.x},${s.z}=${Math.round(s.amt * 100)}`).sort().join(' ');
+  return { room, join, settle, spot, view, ctx, clock };
+}
+
+test('mess: a new room takes ours; a newcomer gets the room\'s instead of their own', async () => {
+  const w = messWorld();
+  const a = await w.join('A', [w.spot('crumb', 1, 1, 0.5), w.spot('dust', 2, 2, 0.35)]);
+  await w.settle();
+  assert.equal(w.room.mess.size, 2);
+  const b = await w.join('B', [w.spot('crumb', 9, 9, 1)]);
+  await w.settle();
+  assert.equal(w.view(b), w.view(a));
+  assert.equal(w.view(a), 'crumb@1,1=50 dust@2,2=35');
+});
+
+test('mess: crumbs added by one lie at the other; wiped by one they are gone for both; both adding at once adds up', async () => {
+  const w = messWorld();
+  const a = await w.join('A', [w.spot('crumb', 1, 1, 0.25)]); await w.settle();
+  const b = await w.join('B'); await w.settle();
+  b.mess.spots.push(w.spot('smear', 3, 3, 0.5)); await w.settle();
+  assert.equal(w.view(a), 'crumb@1,1=25 smear@3,3=50');
+  a.mess.spots[0].amt += 0.25; b.mess.spots.find((s) => s.kind === 'crumb').amt += 0.25; // both crumble at the same spot
+  await w.settle();
+  assert.equal(w.view(a), 'crumb@1,1=75 smear@3,3=50'); assert.equal(w.view(b), w.view(a));
+  a.mess.spots = a.mess.spots.filter((s) => s.kind !== 'crumb'); // A wipes the crumbs away
+  b.mess.spots.find((s) => s.kind === 'smear').amt -= 0.2; // B wipes a bit of the smear
+  await w.settle();
+  assert.equal(w.view(a), 'smear@3,3=30'); assert.equal(w.view(b), w.view(a));
+  const again = new RoomLife(w.ctx, () => {}, () => []); await again.ready;
+  assert.equal(again.mess.size, 1, 'saved');
+});
+
+test('mess: the room keeps at most its cap of a kind; a spot past it does not stay', async () => {
+  const w = messWorld();
+  const a = await w.join('A', Array.from({ length: LIFE_SYNC.messMax.smear }, (_, i) => w.spot('smear', i, 0, 0.5))); await w.settle();
+  assert.equal(w.room.mess.size, LIFE_SYNC.messMax.smear);
+  a.mess.spots.push(w.spot('smear', 99, 99, 0.5)); await w.settle();
+  assert.equal(a.mess.spots.length, LIFE_SYNC.messMax.smear, 'the one too many is gone again');
+  assert.equal(cleanMessText('{"t":"lm","o":[["goo",0,1,0,1,"floor",null,0.5,0]]}'), null);
+  assert.equal(cleanMessText('{"t":"lm","o":[["crumb",0,1,0,1,"floor",null,2,0]]}'), null);
+});
+
+test('mess: a failed save changes nothing for the others and the sender goes back to the room\'s word', async () => {
+  const w = messWorld();
+  const a = await w.join('A', [w.spot('crumb', 1, 1, 0.5)]); await w.settle();
+  const b = await w.join('B'); await w.settle();
+  w.ctx.fail = true;
+  a.mess.spots[0].amt = 1; await w.settle();
+  assert.equal(w.view(b), 'crumb@1,1=50');
+  assert.equal(w.view(a), 'crumb@1,1=50');
+});

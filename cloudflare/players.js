@@ -35,7 +35,7 @@ import { RoomGraffiti, cleanGraffiti, GRAFFITI_SYNC } from './graffiti.js';
 import { RoomDoors, cleanDoor } from './doors.js';
 import { RoomThings, cleanThingText } from './things.js';
 import { RoomLife } from './life.js'; // #1981: the life simulator's things as one kitchen
-import { cleanLifeText, LIFE_PREFIX, cleanPartText, PART_PREFIX } from '../src/lifesync.js';
+import { cleanLifeText, LIFE_PREFIX, cleanPartText, PART_PREFIX, cleanMessText, MESS_PREFIX } from '../src/lifesync.js';
 import { LIFE_SYNC } from '../src/config.js';
 import { RoomChores, cleanChoreText } from './chores.js'; // #1976: who helped with which chore // #1974: loose things shared between the players
 import { RoomTarget, cleanTarget } from './target.js';
@@ -590,7 +590,7 @@ export class PlayerRoom {
     attachment.tgs = {...this.target.state};
     server.serializeAttachment(attachment);
     send(server, JSON.stringify({ t: 'w', conversation: { v: 1 }, picnic:await this.picnic.welcome(), sharedFish:await this.sharedFish.welcome(),nutDrops:await this.squirrels.welcome(now),boule: this.boule.snapshot(), target: this.target.snapshot(), football:this.football.join(server,attachment,now), i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons }, ...(others.length ? this.doorsWelcome() : (this.doors.reset(), {})), ...this.thingsWelcome(await this.things.welcome(now)), ...(this.roomTime.welcome(now) ? { tm: this.roomTime.welcome(now) } : {}), trails: this.trails.snapshot(now) })); // (#1773: trails)
-    await this.life.welcome(server, now); await this.life.partsWelcome(server); // #1981: the room's kitchen, in pages; then the home's other state
+    await this.life.welcome(server, now); await this.life.partsWelcome(server); await this.life.messWelcome(server); // #1981, #1990: the room's kitchen, in pages; then the home's other state
     this.broadcast({ t: 'j', i, n, l: COMBAT.lives }, server);
     this.graffiti.join(server, others.map((ws) => ({ ws, a: att(ws) })), now); // #1724
     return new Response(null, { status: 101, webSocket: client });
@@ -608,7 +608,7 @@ export class PlayerRoom {
     if (this.billed() >= PLAYERS.monthlyCap) { await this.save(); this.closeAll(CLOSE.cap, 'cap'); await this.ctx.storage.deleteAlarm(); this.recoveryAlarm = null; return; }
     const a = att(ws);
     if (!a) return;
-    if (typeof message !== 'string' || message.length > (message.startsWith(GRASS_PREFIX) ? PADDOCK_SYNC.maxGrass + 64 : message.startsWith(GRAFFITI_SYNC.prefix) ? GRAFFITI_SYNC.maxBytes : message.startsWith(LIFE_PREFIX) || message.startsWith(PART_PREFIX) ? LIFE_SYNC.maxBytes : PLAYERS.maxBytes)) { this.drop(ws, CLOSE.big, 'too big'); return; } // (#1644: the paddock's grass mask and #1724's graffiti blocks are the bigger messages)
+    if (typeof message !== 'string' || message.length > (message.startsWith(GRASS_PREFIX) ? PADDOCK_SYNC.maxGrass + 64 : message.startsWith(GRAFFITI_SYNC.prefix) ? GRAFFITI_SYNC.maxBytes : message.startsWith(LIFE_PREFIX) || message.startsWith(PART_PREFIX) || message.startsWith(MESS_PREFIX) ? LIFE_SYNC.maxBytes : PLAYERS.maxBytes)) { this.drop(ws, CLOSE.big, 'too big'); return; } // (#1644: the paddock's grass mask and #1724's graffiti blocks are the bigger messages)
     const now = Date.now();
     if (now - a.w >= 1000) { if (!a.over) a.k = Math.max(0, a.k - 1); a.w = now; a.c = 0; a.over = false; }
     a.c++; a.t = now;
@@ -634,7 +634,7 @@ export class PlayerRoom {
     const dr = plain.startsWith('{"t":"dr"') ? cleanDoor(plain) : null; // #1775
     const th = plain.startsWith('{"t":"th"') ? cleanThingText(plain) : null; // #1974
     const ch = plain.startsWith('{"t":"ch"') ? cleanChoreText(plain) : null; // #1976
-    const li = plain.startsWith(LIFE_PREFIX) ? cleanLifeText(plain) : null, lx = plain.startsWith(PART_PREFIX) ? cleanPartText(plain) : null; // #1981
+    const li = plain.startsWith(LIFE_PREFIX) ? cleanLifeText(plain) : null, lx = plain.startsWith(PART_PREFIX) ? cleanPartText(plain) : null, lm = plain.startsWith(MESS_PREFIX) ? cleanMessText(plain) : null; // #1981, #1990
     const cv = plain.startsWith('{"t":"cv"') ? cleanConversation(plain) : null;
     const tm = plain.startsWith('{"t":"tm"') ? cleanTime(plain) : null; // #1774 (a malformed one is an ordinary, ignored state)
     const talk = cleanTalk(plain), hello = !talk && cleanGreet(plain), toast = !talk && !hello && cleanToast(plain), sound = !talk && !hello && !toast && cleanSound(plain), react = !talk && !hello && !toast && !sound && cleanReact(plain), pool = !talk && !hello && !toast && !sound && !react && cleanPool(plain), mus = !talk && !hello && !toast && !sound && !react && !pool && cleanMusic(plain), cinema = !talk && !hello && !toast && !sound && !react && !pool && !mus && cleanCinema(plain), snake = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && cleanSnake(plain), paddock = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && cleanPaddock(plain), sq = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && cleanSquirrels(plain), rf = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && !sq && cleanRiverFish(plain), shot = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && !sq && !rf && cleanShot(plain);
@@ -735,6 +735,7 @@ export class PlayerRoom {
     else if (dr) this.doors.handle(ws, a, dr, now); // #1775
     else if (th) await this.things.handle(ws, a, th, now); // #1974, #1978 (saved before it is confirmed)
     else if (ch) this.chores.handle(ws, a, ch, now); // #1976
+    else if (lm) { await this.life.messy(ws, a, lm, now); ws.serializeAttachment(a); } // #1990: crumbs and dust
     else if (lx) { await this.life.part(ws, a, lx, now); ws.serializeAttachment(a); } // #1981: the dishwasher's programme, made beds …
     else if (li) { await this.life.handle(ws, a, li, now); ws.serializeAttachment(a); } // #1981 (saved before it is confirmed)
     else if (tm) await this.roomTime.handle(ws, a, tm, now); // #1774

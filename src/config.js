@@ -8730,7 +8730,10 @@ export const THING_SYNC = {
 export const LIFE_SYNC = { every: 0.5, ops: 30, maxBytes: 7000, rec: 600, max: 700, held: 12, chunks: 8, page: 60, keepDays: 30,
   // the home's state that is no instance (life.js `keepPart`), shared whole per part, the last word wins: `parts` the names the room
   // takes, `part` characters of a part's JSON (a full dishwasher's ids fit), `partEvery` s between a connection's part messages
-  parts: ['dishwasher', 'laundry', 'beds', 'watering', 'milk'], part: 3000, partEvery: 0.5 };
+  parts: ['dishwasher', 'laundry', 'beds', 'watering', 'milk'], part: 3000, partEvery: 0.5,
+  // #1990: crumbs and dust (src/mess.js) as changes of amount per spot: `messOps` changes per message, `messEvery` s between a
+  // connection's messages, `messMax` spots of each kind the room keeps (as LIFE_MESS.max), `messKinds` / `messSurf` what it takes
+  messOps: 24, messEvery: 0.5, messMax: { crumb: 48, dust: 32, smear: 16 }, messSurf: ['worktop', 'table', 'floor'] };
 
 // #1921: authored mallard surface estimates (guess), in the existing bill/rig frame.
 // Profiles are [z, centreY, halfWidth, halfHeight], neck uses [y, centreZ, width, depth].

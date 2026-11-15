@@ -212,7 +212,7 @@ export class Mess {
 
   /** Dust now and then (game time `dt`): a bit more near a wall in a random room, while the automatic mess is on. */
   update(dt) {
-    if (!this.auto) return;
+    if (!this.auto || this.quiet?.()) return; // (`quiet`: in a shared room somebody else makes the dust, #1990)
     this.dustT += dt;
     if (this.dustT < M.dust.every) return;
     this.dustT = 0;

@@ -5,6 +5,8 @@
 // A carries it: gone at B; put down elsewhere: there at B with the sausage on it; B takes the sausage off: gone from A's plate; a
 // changed amount and a dirty plate follow; both take one thing at once: one keeps it; a late C gets the same kitchen; A leaves with
 // a thing in the hand: it is put down for the others; after everybody left, D finds the kitchen as it was (saved).
+// #1981 part 2: an unmade bed, a watered plant, the milk and a started dishwasher follow. #1990: crumbs and dust lie at the other
+// player too, adding and wiping at once both count, only one player makes dust.
 const kit = require('./testkit.cjs'), fs = require('node:fs');
 const [game = 'http://localhost:8196', worker = 'http://localhost:8197', out = '/tmp/lifeshare'] = process.argv.slice(2); fs.mkdirSync(out, { recursive: true });
 let failed = 0; const check = (ok, name, data) => { console.log(`${ok ? 'PASS' : 'FAIL'} ${name} ${data === undefined ? '' : JSON.stringify(data)}`); if (!ok) failed++; };
@@ -77,7 +79,27 @@ const setup = () => {
     for (let i = 0; i < 4; i++) await Promise.all([ev(A, () => T.pump(700)), ev(B, () => T.pump(700))]);
     const ha2 = await ev(A, home);
     check(!ha2.beds.includes(did.bed), 'B makes the bed: made at A too', ha2);
+    // #1990: crumbs and dust
+    const spots = () => T.L.mess.spots.map((s) => `${s.kind}@${s.x.toFixed(2)},${s.z.toFixed(2)}=${Math.round(s.amt * 100)}`).sort().join(' ');
+    const pumpAB = async (n = 5) => { for (let i = 0; i < n; i++) await Promise.all([ev(A, () => T.pump(700)), ev(B, () => T.pump(700))]); };
+    await pumpAB(3);
+    const m0 = [await ev(A, spots), await ev(B, spots)];
+    await ev(A, () => { T.L.mess.add('crumb', 3.6, 0.754, 1.25, { surf: 'table', amt: 0.6 }); T.L.mess.add('dust', 3.0, 0, 2.2, { surf: 'floor', amt: 0.35 }); });
+    await pumpAB();
+    const m1 = [await ev(A, spots), await ev(B, spots)];
+    check(m0[0] === m0[1] && m1[0] === m1[1] && m1[1].includes('crumb@3.60,1.25=60') && m1[1].includes('dust@3.00,2.20=35'), 'crumbs on the table and dust on the floor at A lie at B too', m1[1]);
+    await ev(B, () => { T.stand(3.9, 2.5); T.look(3.6, 0.8, 1.3); T.a.step(0.05); T.look(3.6, 0.8, 1.3); });
+    await kit.shot(B.page, `${out}/b-sees-the-crumbs-a-made.png`);
+    await Promise.all([ev(A, () => { T.L.mess.add('crumb', 3.6, 0.754, 1.25, { surf: 'table', amt: 0.2 }); }), ev(B, () => { T.L.mess.take(3.6, 1.25, 0.1, { rate: 0.5, kinds: ['crumb'] }); })]);
+    await pumpAB();
+    const m2 = [await ev(A, spots), await ev(B, spots)];
+    check(m2[0] === m2[1] && m2[0].includes('crumb@3.60,1.25=30'), 'A crumbles more while B wipes: both changes count, the same at both', m2[0]);
+    await ev(B, () => { T.L.mess.take(3.0, 2.2, 0.2, { kinds: ['dust'] }); }); await pumpAB();
+    const m3 = [await ev(A, spots), await ev(B, spots)];
+    const quiet = [await ev(A, () => !!T.L.mess.quiet()), await ev(B, () => !!T.L.mess.quiet())];
+    check(m3[0] === m3[1] && !m3[0].includes('dust@3.00,2.20') && quiet.filter((q) => !q).length === 1, 'B vacuums the dust: gone at A; exactly one of the two makes new dust', { quiet });
     const C = await open('Cia'); await calm(A, B, C);
+    check((await ev(C, spots)) === m3[0], 'a late C gets the same crumbs', await ev(C, spots));
     const hc = await ev(C, home);
     check(!hc.beds.includes(did.bed) && hc.plants.includes(did.plant) && hc.milk === ha.milk && ['running', 'paused'].includes(hc.dw), 'a late C gets the home\'s state too', hc);
     const mc = await ev(C, () => T.map()); ma = await ev(A, () => T.map()); mb = await ev(B, () => T.map());
@@ -94,6 +116,7 @@ const setup = () => {
     const D = await open('Dan'); await calm(D);
     const md = await ev(D, () => T.map());
     check(md === last, 'everybody left: a new player D finds the kitchen as it was (saved by the room)', { d: md.split(' ').length });
+    check((await ev(D, spots)).includes('crumb@3.60,1.25=30'), 'D finds the crumbs as they were left', await ev(D, spots));
     const hd = await ev(D, home);
     check(hd.plants.includes(did.plant) && hd.milk === ha.milk, 'D finds the watered plant and the milk as they were', hd);
     await ev(D, () => { T.stand(3.9, 2.5); T.look(3.65, 0.8, 1.45); T.a.step(0.05); T.look(3.65, 0.8, 1.45); });

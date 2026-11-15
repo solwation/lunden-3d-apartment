@@ -1,5 +1,5 @@
 import { LIFE_SYNC } from './config.js';
-import { cleanLifeRecord, cleanLifeRows } from './lifesync.js';
+import { cleanLifeRecord, cleanLifeRows, cleanMessRow, messKey } from './lifesync.js';
 
 // #1981 (part of #1964): the life simulator's things (items.js: food, dishes, laundry, rubbish) follow the room's ONE kitchen
 // (the protocol: src/lifesync.js; the room: cloudflare/life.js). No three.js: `node --test src/lifeshare.test.mjs`.
@@ -46,6 +46,51 @@ export class LifeParts {
       this.last.set(name, s); this.sentAt = this.now();
       return;
     }
+  }
+}
+
+/** #1990: crumbs, dust and smears (src/mess.js `spots`) follow the room's. A spot is its place (lifesync.js `messKey`); what we
+ *  add or take is sent as a change of amount per spot, and the room's word about a spot (plus whatever of ours is not sent yet)
+ *  is what lies here. `known`: key -> the amount the room has, as far as we have heard (and what we have sent). */
+export class MessShare {
+  /** mess: the Mess (spots, redraw()); connected(); send(m); changed(): after the room changed our spots (save, redraw …). */
+  constructor({ mess, connected = () => false, send = () => false, changed = () => {}, now = () => performance.now() / 1000, cfg = LIFE_SYNC }) {
+    Object.assign(this, { mess, connected, send, changed, now, cfg, known: new Map(), live: false, sentAt: -1e9 });
+  }
+  row(s, v) { return [s.kind, s.level, s.x, s.y, s.z, s.surf, s.room, v, s.rot]; }
+  local() { const m = new Map(); for (const s of this.mess.spots) m.set(messKey(this.row(s, 0)), s); return m; }
+  /** The room says spot `r` holds r[7] now: here it is that, plus what we have changed and not sent. */
+  set(r, here) {
+    const key = messKey(r), s = here.get(key), ours = (s?.amt ?? 0) - (this.known.get(key) ?? 0), amt = Math.min(1, r[7] + ours);
+    if (r[7] > 0) this.known.set(key, r[7]); else this.known.delete(key);
+    if (amt <= 0.001) { if (s) { this.mess.spots = this.mess.spots.filter((x) => x !== s); here.delete(key); } return; }
+    if (s) s.amt = amt;
+    else { const n = { kind: r[0], level: r[1], x: r[2], y: r[3], z: r[4], surf: r[5], room: r[6], amt, rot: r[8] }; this.mess.spots.push(n); here.set(key, n); }
+  }
+  receive(m) {
+    if (m?.t !== 'lm') return;
+    if (m.k === 'reset') { this.live = false; return; }
+    const rows = (Array.isArray(m.s) ? m.s : []).map((r) => cleanMessRow(r, 0, 1, this.cfg)).filter(Boolean);
+    if (m.k === 'a') {
+      this.known.clear();
+      if (!m.e) { this.mess.spots = []; const here = new Map(); for (const r of rows) this.set(r, here); } // the room's mess replaces ours (a new room takes ours: sent as additions)
+      this.live = true;
+    } else if (this.live) { const here = this.local(); for (const r of rows) this.set(r, here); }
+    else return;
+    this.mess.redraw(); this.changed();
+  }
+  /** Per frame: what we added / took since the last time, as changes of amount. */
+  update() {
+    if (!this.connected()) { this.live = false; return; }
+    if (!this.live || this.now() - this.sentAt < this.cfg.messEvery) return;
+    const here = this.local(), o = [];
+    for (const [key, s] of here) { const d = Math.round((s.amt - (this.known.get(key) ?? 0)) * 1000) / 1000; if (d !== 0) o.push([key, this.row(s, Math.max(-1, Math.min(1, d))), s.amt]); }
+    for (const [key, v] of this.known) if (!here.has(key)) { const p = key.split('|'); o.push([key, [p[0], +p[1], +p[2], +p[3], +p[4], 'floor', null, -Math.min(1, v), 0], 0]); }
+    if (!o.length) return;
+    const batch = o.slice(0, this.cfg.messOps);
+    if (!this.send({ t: 'lm', o: batch.map((x) => x[1]) })) return;
+    for (const [key, , amt] of batch) { if (amt > 0) this.known.set(key, amt); else this.known.delete(key); }
+    this.sentAt = this.now();
   }
 }
 

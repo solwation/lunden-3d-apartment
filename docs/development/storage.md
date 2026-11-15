@@ -1793,12 +1793,18 @@ instances follow it.
   JSON text }`, kept by the room in the storage value `lix` and sent to a newcomer after the kitchen's pages (`k: 'a'`). The parts
   are the ones `life.keepPart` already saves; a programme's signature leaves out its countdown, so it is told when it starts,
   pauses and ends, and every client counts down for itself. A room without a part gets ours when it says anything.
-- **Not shared yet** (each player's own): crumbs and dust (`mess`, its own issue), the popcorn cart's case, the fruit remains and
-  the day's task list itself. The day's chore goals are shared by `choresync.js` (above) whoever's copy they were done in.
+- **Crumbs, dust and smears** (#1990; `MessShare`, `window.__messShare`): a spot never moves, so it is its place (`messKey`:
+  `kind|level|x|y|z` in mm) and needs no id. What a client adds or takes is sent as a CHANGE of amount per spot (`{ t: 'lm', o:
+  [[kind, level, x, y, z, surf, room, delta, rot] …] }`, at most every `LIFE_SYNC.messEvery` s), so two players crumbling and
+  wiping at the same spot both count; the room clamps, keeps at most `LIFE_SYNC.messMax` spots of a kind, saves (storage value
+  `lim2`) and tells everybody the touched spots as they are now (`amt` 0: gone). A newcomer gets every spot (`k: 'a'`; `e: 1` from
+  a room that keeps nothing yet: it takes the newcomer's). Dust is made by ONE player only: the one with the smallest connection
+  id in the room (`ghosts.first`, `Mess.quiet`); it reaches the others as any other spot.
+- **Not shared yet** (each player's own): the popcorn cart's case, the fruit remains and the day's task list itself. The day's chore goals are shared by `choresync.js` (above) whoever's copy they were done in.
 
 Tests: `node --test src/lifeshare.test.mjs` (real `Items`, the real room logic, messages passed by hand: seeding, adopting,
-carrying, races, a leaving holder, a failed save, pages and split batches, reconnecting; the parts) and
-`tools/lifesharetest.cjs` (real clients against `cloudflare/dev.mjs`: the kitchen, then a bed, a plant, the milk and the dishwasher).
+carrying, races, a leaving holder, a failed save, pages and split batches, reconnecting; the parts; the mess) and
+`tools/lifesharetest.cjs` (real clients against `cloudflare/dev.mjs`: the kitchen, then a bed, a plant, the milk, the dishwasher, crumbs and dust).
 
 ## Shared moving Nerf target (#1820)
 

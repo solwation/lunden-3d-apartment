@@ -1,5 +1,5 @@
 import { LIFE_SYNC } from '../src/config.js';
-import { cleanLifeRecord, cleanLifePlace, lifeKey } from '../src/lifesync.js';
+import { cleanLifeRecord, cleanLifePlace, lifeKey, cleanMessRow, messKey } from '../src/lifesync.js';
 
 // #1981 (part of #1964): the life simulator's things (food, dishes, laundry, rubbish) as ONE kitchen for the room. The protocol is
 // in src/lifesync.js. The room keeps a record per instance and who holds it; it asks no game rule, only what keeps the kitchen whole:
@@ -19,12 +19,14 @@ const hash = (id) => { let h = 0; for (let i = 0; i < id.length; i++) h = (h * 3
 export class RoomLife {
   /** ctx: the Durable Object's (storage); send(ws, text); peers(): [{ ws, a }] the open connections with their attachments; clock(): ms. */
   constructor(ctx, send, peers, clock = () => Date.now()) {
-    Object.assign(this, { ctx, send, peers, clock, state: new Map(), parts: new Map(), touched: 0, chain: Promise.resolve() }); // id -> { e, h, pv }; parts: name -> JSON text
+    Object.assign(this, { ctx, send, peers, clock, state: new Map(), parts: new Map(), mess: new Map(), touched: 0, chain: Promise.resolve() }); // id -> { e, h, pv }; parts: name -> JSON text; mess: key -> spot row (#1990)
     this.ready = (async () => {
       const st = ctx?.storage;
       if (!st) return;
       const meta = await st.get('lim');
       this.touched = meta?.v === 1 && Number.isFinite(meta.at) ? meta.at : 0;
+      const ms = await st.get('lim2');
+      if (ms?.v === 1 && Array.isArray(ms.s)) for (const r of ms.s.slice(0, 200)) { const row = cleanMessRow(r, 0.001, 1); if (row) this.mess.set(messKey(row), row); }
       const px = await st.get('lix');
       if (px?.v === 1 && Array.isArray(px.p)) for (const r of px.p.slice(0, 32)) if (Array.isArray(r) && LIFE_SYNC.parts.includes(r[0]) && typeof r[1] === 'string' && r[1].length <= LIFE_SYNC.part) this.parts.set(r[0], r[1]);
       for (let c = 0; c < LIFE_SYNC.chunks; c++) {
@@ -89,7 +91,7 @@ export class RoomLife {
   }
   async sweep(now, feet = null, gone = null) {
     if (this.state.size && now - this.touched > LIFE_SYNC.keepDays * 864e5 && this.touched) { // long untouched: starts over
-      try { const all = new Set(this.state.keys()); await this.ctx?.storage?.put('lix', { v: 1, p: [] }); await this.commit(new Map(), all, now); this.state = new Map(); this.parts = new Map(); } catch { /* next time */ }
+      try { const all = new Set(this.state.keys()); await this.ctx?.storage?.put('lix', { v: 1, p: [] }); await this.ctx?.storage?.put('lim2', { v: 1, s: [] }); await this.commit(new Map(), all, now); this.state = new Map(); this.parts = new Map(); this.mess = new Map(); } catch { /* next time */ }
       return;
     }
     const r = this.released(feet, gone);
@@ -119,6 +121,30 @@ export class RoomLife {
       this.parts = next;
       const out = JSON.stringify({ t: 'lx', k: m.k, d: m.d, by: a.i });
       for (const { ws: x } of this.peers()) if (x !== ws) this.send(x, out);
+    });
+  }
+  /** #1990: every spot of crumbs / dust to a new connection (`e`: nothing is kept yet at all: bring your own). */
+  messWelcome(ws) { return this.enqueue(() => this.send(ws, JSON.stringify({ t: 'lm', k: 'a', s: [...this.mess.values()], ...(!this.state.size && !this.mess.size ? { e: 1 } : {}) }))); }
+  /** #1990: amounts added to / taken from spots (rows with a delta): saved, then the touched spots as they are now go to everybody.
+   *  A new spot past its kind's cap is not made (the sender hears amt 0). Too fast / a failed save: the sender gets the room's word. */
+  messy(ws, a, ops, now = this.clock()) {
+    return this.enqueue(async () => {
+      const slow = now - (a.lmAt ?? 0) < LIFE_SYNC.messEvery * 1000 * 0.6;
+      a.lmAt = now;
+      const next = new Map(this.mess), keys = new Set(), count = (k) => { let n = 0; for (const r of next.values()) if (r[0] === k) n++; return n; };
+      for (const r of ops) {
+        const key = messKey(r), cur = next.get(key);
+        keys.add(key);
+        if (slow) continue;
+        if (cur) { const amt = Math.round(Math.min(1, cur[7] + r[7]) * 1000) / 1000; if (amt <= 0.001) next.delete(key); else next.set(key, [...cur.slice(0, 7), amt, cur[8]]); }
+        else if (r[7] > 0.001 && count(r[0]) < LIFE_SYNC.messMax[r[0]]) next.set(key, r);
+      }
+      let ok = !slow;
+      if (ok) { try { await this.ctx?.storage?.put('lim2', { v: 1, s: [...next.values()] }); } catch { ok = false; } }
+      if (ok) this.mess = next;
+      const gone = (key) => { const p = key.split('|'); return [p[0], +p[1], +p[2], +p[3], +p[4], 'floor', null, 0, 0]; };
+      const out = JSON.stringify({ t: 'lm', s: [...keys].map((k) => this.mess.get(k) ?? gone(k)) });
+      if (ok) for (const { ws: x } of this.peers()) this.send(x, out); else this.send(ws, out);
     });
   }
   handle(ws, a, m, now = this.clock()) { return this.enqueue(() => this.transact(ws, a, m, now)); }

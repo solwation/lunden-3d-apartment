@@ -90,6 +90,30 @@ export const LIFE_PREFIX = '{"t":"li"';
 //   room -> a new connection, after the kitchen's pages: { t: 'lx', k: 'a', p: [[name, d], …] } (what the room has; maybe none).
 // The room keeps the last word per part and never reads it.
 export const PART_PREFIX = '{"t":"lx"';
+
+// #1990: crumbs, dust and smears (src/mess.js). A spot never moves, so it IS its place: the key `kind|level|x|y|z` (mm). Changes are
+// amounts added or taken, so two players at the same spot never overwrite each other:
+//   client -> room: { t: 'lm', o: [[kind, level, x, y, z, surf, room, delta, rot], …] } (`delta` -1 … 1: more / less of it);
+//   room -> everybody: { t: 'lm', s: [[kind, level, x, y, z, surf, room, amt, rot], …] } the touched spots as they are now (amt 0: gone);
+//   room -> a new connection: { t: 'lm', k: 'a', s: [every spot], e?: 1 } (`e`: the room's kitchen is new: bring your own mess).
+export const MESS_PREFIX = '{"t":"lm"';
+export const messKey = (r) => `${r[0]}|${r[1]}|${r[2]}|${r[3]}|${r[4]}`;
+/** One spot row with a number in [lo, hi] at index 7, or null. */
+export function cleanMessRow(r, lo, hi, L = LIFE_SYNC, C = THING_SYNC) {
+  if (!Array.isArray(r) || r.length < 8 || !L.messMax[r[0]] || (r[1] !== 0 && r[1] !== 1)) return null;
+  const [x, y, z, v] = [r[2], r[3], r[4], r[7]];
+  if (![x, y, z, v].every(fin) || x < C.x[0] || x > C.x[1] || y < C.y[0] || y > C.y[1] || z < C.z[0] || z > C.z[1] || v < lo || v > hi) return null;
+  const room = typeof r[6] === 'string' && r[6].length <= 24 && /^[\x20-\x7e]*$/.test(r[6]) ? r[6] : null;
+  return [r[0], r[1], r3(x), r3(y), r3(z), L.messSurf.includes(r[5]) ? r[5] : 'floor', room, r3(v), fin(r[8]) ? r3(r[8]) : 0];
+}
+/** A mess message from a client (text), or null: [row with a delta, …]. */
+export function cleanMessText(text, L = LIFE_SYNC) {
+  if (typeof text !== 'string' || text.length > L.maxBytes) return null;
+  let m; try { m = JSON.parse(text); } catch { return null; }
+  if (m?.t !== 'lm' || !Array.isArray(m.o) || !m.o.length || m.o.length > L.messOps) return null;
+  const o = m.o.map((r) => cleanMessRow(r, -1, 1, L));
+  return o.every((r) => r && r[7] !== 0) ? o : null;
+}
 /** A part message from a client (text), or null. */
 export function cleanPartText(text, L = LIFE_SYNC) {
   if (typeof text !== 'string' || text.length > L.part + 80) return null;
