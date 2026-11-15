@@ -53,14 +53,18 @@ export const heldItem = () => current;
 // detached exactly like the bicycle's stowed hand (no put / take hooks, no placement change, its owner state untouched) and comes back
 // with the same pose; one that was reset, removed, broken or re-homed meanwhile is simply dropped from its place (never resurrected).
 // Squirrel nuts stack: up to INVENTORY.stack of them share a place (`stacks`), the next one comes into the hand when the held one is
-// gone. Only the classes in POCKET (weapons, tools, the catch) are carried; food, cups, the life simulator's items, the cat, drawings
+// gone. Only the classes in POCKET (weapons, tools, the catch; #1960: cups, glasses, bottles, fruit, fish fingers, fries, popcorn) are carried; chicken, the life simulator's items, the cat, drawings
 // and paper keep the old rule (one at a time; they cannot be swapped away, the hand must be emptied first). Saved across a reload by
 // keep.js's `inventory` part (#1959) through `inventoryContents` / `stowInto` / `freeHand` / `settleInventory` below.
-const POCKET = new Set(['Saber', 'Blaster', 'Wand', 'Flashlight', 'Bow', 'Harpoon', 'Binoculars', 'FishingRod', 'CaughtFish', 'SharkFin', 'Mussel', 'Nut', 'SprayCan', 'Basketball', 'Rifle']);
+const POCKET = new Set(['Saber', 'Blaster', 'Wand', 'Flashlight', 'Bow', 'Harpoon', 'Binoculars', 'FishingRod', 'CaughtFish', 'SharkFin', 'Mussel', 'Nut', 'SprayCan', 'Basketball', 'Rifle',
+  'Glass', 'Bottle', 'BeerCan', 'Milk', 'PopcornTub', 'FriesBag']); // #1960: drinks and a popcorn tub / fries bag (plain holdables)
+// #1960: food and cups are plain objects or their own classes: carried by what they are. A whole chicken and a chicken piece are not (one
+// shared `piece` slot in chicken.js; a second piece would replace the carried one), the cat, drawings, paper and the life items neither.
+const POCKET_FLAGS = ['isCup', 'isFruit', 'isFish', 'isFries'];
 const pockets = Array(I.slots).fill(null), stacks = Array.from({ length: I.slots }, () => []);
 let active = 0;
 /** May `item` be carried in a place of the inventory? */
-export const pocketable = (item) => !!item && !item.broken && !item.lifeItem && (item.isRifle || POCKET.has(item.constructor?.name));
+export const pocketable = (item) => !!item && !item.broken && !item.lifeItem && !item.isSharedPicnic && (item.isRifle || POCKET.has(item.constructor?.name) || POCKET_FLAGS.some((f) => item[f]));
 const stackable = (item) => !!item?.isSquirrelNut;
 /** Detach `item` (the hand's) without hooks: the record that `attach` brings back. */
 function detach(item) {

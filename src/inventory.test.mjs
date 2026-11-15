@@ -73,7 +73,7 @@ test('nuts stack up to eight on one place and come back one by one', () => {
 
 test('a thing that cannot be carried keeps the old rule', () => {
   reset();
-  const cup = thing('Cup', { isCup: true }), bow = thing('Bow'), cup2 = thing('Cup', { isCup: true });
+  const cup = thing('ChickenPiece', { isChickenPiece: true }), bow = thing('Bow'), cup2 = thing('ChickenPiece', { isChickenPiece: true });
   assert.equal(pocketable(cup), false);
   bow.take();
   assert.equal(cup.take(), true); // the bow is carried, the cup in the hand
@@ -150,4 +150,50 @@ test('keep: a cup in the hand over carried things stays in the hand', async () =
   await quiet(() => K.loadWorld(app, saved));
   assert.ok(isPocketed(bow)); assert.equal(heldItem(), cup); assert.equal(cup.held, true);
   assert.equal(inventorySlots().findIndex((x) => x.active), slot); assert.equal(cup.puts, puts);
+  bow.broken = true; cup.held = false; setHeld(null); inventoryTick(); bow.broken = false; // (leave no carried things for the next test)
+});
+
+// #1960: food and cups are carried too; their state (contents, bites, dirty) is untouched while they are away from the hand.
+test('food, cups and glasses are pocketable; chicken pieces, the whole bird and a picnic glass are not', () => {
+  for (const [cls, flags] of [['Cup', { isCup: true }], ['Fruit', { isFruit: true }], ['Object', { isFish: true }], ['FriesBunch', { isFries: true }], ['Glass', {}], ['Bottle', {}], ['PopcornTub', {}], ['BeerCan', {}], ['Milk', {}]]) {
+    assert.ok(pocketable(thing(cls, flags)), cls);
+  }
+  assert.equal(pocketable(thing('ChickenPiece', { isChickenPiece: true })), false);
+  assert.equal(pocketable(thing('Chicken')), false);
+  assert.equal(pocketable(thing('Glass', { isSharedPicnic: true })), false);
+  assert.equal(pocketable(thing('Cup', { isCup: true, broken: true })), false);
+});
+
+test('a cup with coffee and a half-eaten fruit are carried, swapped and come back unchanged', () => {
+  reset();
+  const cup = thing('Cup', { isCup: true, state: 'cabinet', contents: { a: { coffee: 0.6 } }, heat: 0.7, dirty: false });
+  const fruit = thing('Fruit', { isFruit: true, state: 'bowl', bites: 2, peeled: true });
+  cup.take(); cup.state = 'held'; fruit.take(); fruit.state = 'held';
+  assert.equal(heldItem(), fruit); assert.ok(isPocketed(cup)); assert.equal(cup.puts, 0);
+  assert.equal(handBusy(thing('Saber')), false);
+  assert.equal(selectSlot(0), true); assert.equal(heldItem(), cup);
+  assert.deepEqual(cup.contents.a, { coffee: 0.6 }); assert.equal(cup.heat, 0.7);
+  assert.equal(selectSlot(1), true); assert.equal(heldItem(), fruit); assert.equal(fruit.bites, 2); assert.equal(fruit.peeled, true);
+  assert.equal(fruit.puts, 0);
+});
+
+test('keep: a carried cup and a carried food portion come back to their places after a reload', async () => {
+  reset();
+  const cups = [thing('Cup', { isCup: true, state: 'cabinet' }), thing('Cup', { isCup: true, state: 'cabinet' })];
+  const fruit = thing('Fruit', { isFruit: true, state: 'bowl' });
+  let loaded = null;
+  const owner = { saveStowed: (it) => (it === fruit && it.state === 'held' ? { slot: 0, bites: 1 } : null), loadStowed: (st) => { loaded = st; fruit.take(); fruit.state = 'held'; return fruit; } };
+  cups[0].take(); cups[0].state = 'held'; fruit.take(); fruit.state = 'held'; cups[1].take(); cups[1].state = 'held';
+  assert.equal(counts(), '11100');
+  const app = appFor([], { cups: { cups }, bicycleStow: { fruit: owner } });
+  const saved = await quiet(() => JSON.parse(JSON.stringify(K.saveWorld(app))));
+  assert.deepEqual(saved.inventory.s.slice(0, 3).map((l) => l[0][0] + (l[0][1] ?? '')), ['c0', 'bfruit', 'c1']);
+  assert.deepEqual(saved.things.cups.map((c) => c.s), ['pocket', 'held']);
+  reset(); for (const c of [...cups, fruit]) c.broken = false; // (reset marks what it empties as broken)
+  for (const c of cups) { c.state = 'cabinet'; c.held = false; c.model.parent = 'home'; } fruit.state = 'bowl'; fruit.held = false; fruit.model.parent = 'home';
+  cups[1].take(); cups[1].state = 'held'; // the things part brings the hand cup back
+  await quiet(() => K.loadWorld(app, saved));
+  assert.deepEqual(loaded, { slot: 0, bites: 1 });
+  assert.ok(isPocketed(cups[0]) || heldItem() === cups[0]); assert.ok(isPocketed(fruit) || heldItem() === fruit);
+  assert.equal(inventorySlots().reduce((s, x) => s + x.count, 0), 3);
 });

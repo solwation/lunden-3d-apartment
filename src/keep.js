@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { BeerCan, BeerPortion } from './beercan.js';
 import { SONOS, MOCCAMASTER, DRINKS } from './config.js';
-import { stowedItem, heldItem, inventoryContents, stowInto, freeHand, settleInventory } from './holdable.js';
+import { stowedItem, heldItem, isPocketed, inventoryContents, stowInto, freeHand, settleInventory } from './holdable.js';
 
 // The world's state across a reload made by the page (#277): the automatic update (#192) and "Ladda om" put a
 // `world` part into the resume record (resume.js) next to the place; the new page reads it back once everything is
@@ -222,7 +222,7 @@ const PARTS = {
         if (Object.keys(e).length) out[k[i]] = e;
       });
       const cups = a.cups.cups.map((c) => {
-        const e = { s: c.state, d: c.design };
+        const e = { s: isPocketed(c) ? 'pocket' : c.state, d: c.design }; // 'pocket': carried in the inventory (#1960; `inventory` brings it back to a place)
         if (c.state === 'cabinet') e.slot = c.slot;
         if (c.state === 'dishwasher' && Number.isInteger(c.rackSlot)) e.rk = c.rackSlot; // standing in the dishwasher's upper rack (#1264): the slot
         if (c.state === 'placed') { e.p = vec(c.model.position); e.ry = r3(c.model.rotation.y); }
@@ -287,7 +287,7 @@ const PARTS = {
           const st = a.life?.items.store('dwUpper');
           if (st?.parkCup && e.rk >= 0 && e.rk < st.slots.length && !st.parkedCups.has(e.rk)) { c.held = false; c.model.removeFromParent(); st.parkCup(c, e.rk); }
           else { c.held = false; c.state = 'spare'; c.slot = null; c.model.removeFromParent(); }
-        } else if (e.s === 'spare') { c.held = false; c.state = 'spare'; c.slot = null; c.model.removeFromParent(); }
+        } else if (e.s === 'spare' || e.s === 'pocket') { c.held = false; c.state = 'spare'; c.slot = null; c.model.removeFromParent(); }
         else if (e.s === 'placed' && isVec(e.p)) {
           c.held = false; c.state = 'placed'; c.slot = null; c.placedAt = performance.now();
           a.scene.add(c.model);
@@ -325,6 +325,8 @@ const PARTS = {
       const list = a.holdables.filter((h) => keepable(a, h)), k = keys(list, holdKey), fish = a.fishing?.keptFish() ?? [], fins = a.fishing?.keptFins() ?? [];
       const name = (it) => {
         if (it.isSquirrelNut) return ['u', it.slot?.kind ? 1 : 0];
+        if (it.isCup) { const i = a.cups.cups.indexOf(it); return i >= 0 ? ['c', i] : null; } // #1960: a cup by its index in `cups`
+        for (const [kind, owner] of Object.entries(a.bicycleStow ?? {})) { const st = owner?.saveStowed?.(it); if (st) return ['b', kind, st]; } // food: its owner's stowed record
         if (it.isCaughtFish) return fish.includes(it) ? ['f', fish.indexOf(it)] : null;
         if (it.isSharkFin) return fins.includes(it) ? ['n', fins.indexOf(it)] : null;
         const i = list.indexOf(it);
@@ -338,12 +340,14 @@ const PARTS = {
       if (s?.v !== 1 || !Array.isArray(s.s)) return;
       const map = byKey(a.holdables.filter((h) => keepable(a, h)), holdKey);
       const byIdx = (arr, i) => arr.find((x) => x.keepIdx === i);
-      const plan = [], nuts = []; // [[item, slot]]
+      const plan = [], nuts = [], food = []; // [[item, slot]]; food: [kind, stowed record, slot]
       s.s.slice(0, 16).forEach((l, slot) => {
         for (const e of Array.isArray(l) ? l.slice(0, 64) : []) {
           if (typeof e === 'string') { const h = map.get(e); if (h && !h.broken && !plan.some(([x]) => x === h)) plan.push([h, slot]); }
           else if (Array.isArray(e) && e[0] === 'f') { const f = byIdx(a.fishing?.fish ?? [], e[1]); if (f && !f.broken) plan.push([f, slot]); }
           else if (Array.isArray(e) && e[0] === 'n') { const f = byIdx(a.fishing?.fins ?? [], e[1]); if (f && !f.broken) plan.push([f, slot]); }
+          else if (Array.isArray(e) && e[0] === 'c') { const c = a.cups.cups[e[1]]; if (c && !plan.some(([x]) => x === c)) plan.push([c, slot]); }
+          else if (Array.isArray(e) && e[0] === 'b' && typeof e[1] === 'string' && e[2] && typeof e[2] === 'object') food.push([e[1], e[2], slot]);
           else if (Array.isArray(e) && e[0] === 'u') nuts.push([e[1] ? 1 : 0, slot]);
         }
       });
@@ -354,6 +358,11 @@ const PARTS = {
         if (item.held) continue;
         item.take();
         if (heldItem() === item) stowInto(item, slot); // (a refused take leaves the thing where it was: dropped from its place)
+      }
+      for (const [kind, st, slot] of food) { // food: the owner's own restore takes it into the hand (no bite / eaten callbacks)
+        if (!Object.hasOwn(a.bicycleStow ?? {}, kind) || heldItem()) continue;
+        const it = a.bicycleStow[kind]?.loadStowed?.(st);
+        if (it && heldItem() === it) stowInto(it, slot);
       }
       const made = a.squirrels?.restoreCarried(nuts.map(([kind]) => kind)) ?? [];
       made.forEach((it, i) => { if (heldItem() === it) stowInto(it, nuts[i][1]); });
