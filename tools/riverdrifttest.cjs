@@ -50,8 +50,8 @@ const frames = (page, n = 6) => page.evaluate((n) => new Promise((done) => { con
     // 1. far from the river (the courtyard): nothing drawn, nothing added
     await page.evaluate(() => { const T = window.__drift, p = T.p; p.spawn(-20, 10, 0); p.update(T.dt); T.face(0, 1); });
     await frames(page, 6);
-    const far = await page.evaluate(() => { const T = window.__drift, e = T.A.camera.position; return { eye: [e.x, e.z], river: T.rb.riverAt(e.x, e.z).distance, surface: T.S.mesh.visible, under: T.U.points.visible, calls: T.calls(T.S.mesh), parents: [T.S.mesh.parent === T.A.scene, T.U.points.parent === T.A.scene] }; });
-    check(far.river > 75 && !far.surface && !far.under && far.calls.on - far.calls.off === 1, 'in the courtyard: neither object is visible, so +0 draw calls (forcing the flecks on there would cost the one call)', far);
+    const far = await page.evaluate(() => { const T = window.__drift, e = T.A.camera.position; return { eye: [e.x, e.z], river: T.rb.riverAt(e.x, e.z).distance, surface: T.S.mesh.visible, under: T.U.points.visible, calls: [T.frame(), T.frame(), T.frame(), T.frame()], inScene: [T.S.mesh.parent === T.A.scene, T.U.points.parent === T.A.scene] }; });
+    check(far.river > 75 && !far.surface && !far.under && far.calls[3] === far.calls[2], 'in the courtyard: neither object is visible (+0 draw calls; the frame\'s own count is steady)', far);
 
     // 2. from the bank: one draw call, flecks on the water, moving downstream at the current's speed
     await page.evaluate(() => { const T = window.__drift, b = T.bank(T.best.x, T.best.z, 1, 3.5); T.face(T.best.x + T.d.x * 6 - b.x, T.best.z + T.d.z * 6 - b.z, -0.3); });

@@ -1334,6 +1334,10 @@ tools/musselcracktest.cjs (#1950) cracking a picked mussel against the bed in th
                        (the real E key takes a closed mussel + the hint, E / the action button knock it on the bed, too soon does not count, the last knock cracks it:
                        `held.cracked`, the open geometry, no draw call more; put down + taken again still cracked; no knock at the surface or on land; four result images).
                        The lazy test page draws by hand: call `A.testMode.draw()` before reading draw calls or aiming at a just-moved E box.
+tools/riverdrifttest.cjs (#1952) flecks drifting downstream on Höje å and specks under its surface in the real app: `THREE_DIR=… tools/browsertest.sh node tools/riverdrifttest.cjs GAME OUT` (~80 s)
+                       (nothing drawn in the courtyard, one draw call at the river, every drawn fleck on open water and clear of the piers at stations along the
+                       whole river, the measured drift speed, the specks only while diving (+1 draw call), an idle diver drifting with them; three result images).
+                       Pure rules: `node --test src/riverdrift.test.mjs`. Images: [docs/verification/1952](../verification/1952/)
 tools/swimstroketest.cjs (#1951) swim strokes with the jump button in the real app through `Player.update`: `THREE_DIR=… tools/browsertest.sh node tools/swimstroketest.cjs GAME OUT` (~95 s)
                        (one stroke's push and fade, speeds with / without strokes down- and upstream, the pause (hammering, a held key), no dip / lift at the surface,
                        the touch jump button, under water up / level / down with crouch held and released, the air used, the jump on land, the jetpack out of the

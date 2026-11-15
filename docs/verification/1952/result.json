@@ -1,0 +1,166 @@
+{
+ "pass": true,
+ "results": [
+  {
+   "ok": true,
+   "name": "in the courtyard: neither object is visible (+0 draw calls; the frame's own count is steady)",
+   "data": {
+    "eye": [
+     -20,
+     10
+    ],
+    "river": 117.06820746897937,
+    "surface": false,
+    "under": false,
+    "calls": [
+     143,
+     164,
+     164,
+     164
+    ],
+    "inScene": [
+     true,
+     true
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "at the river: the flecks are exactly one draw call; nothing under water is drawn",
+   "data": {
+    "calls": {
+     "on": 36,
+     "off": 35
+    },
+    "visible": 289
+   }
+  },
+  {
+   "ok": true,
+   "name": "the flecks move downstream at the current's speed (the swimmer's 0.35 m/s)",
+   "data": {
+    "flecks": 277,
+    "seconds": 2.6349999999997715,
+    "wall": 4.384699999999953,
+    "mean": 0.34322383630837994,
+    "min": 0.2636130393081457,
+    "max": 0.38124443708833955,
+    "across": 0.0346486623463559,
+    "speed": 0.35,
+    "swimCurrent": 0.35
+   }
+  },
+  {
+   "ok": true,
+   "name": "along the whole river (bends, under the bridges): every fleck lies on open water, just over the water line, clear of the piers",
+   "data": {
+    "stations": 69,
+    "drawn": 19564,
+    "land": [],
+    "pier": [],
+    "high": [],
+    "underDeck": 334,
+    "bend": 1123,
+    "lift": [
+     0.01426289822143012,
+     0.015697454263071897
+    ],
+    "ends": [],
+    "landN": 0
+   }
+  },
+  {
+   "ok": true,
+   "name": "from the road bridge: drawn, one draw call",
+   "data": {
+    "eye": [
+     28.3995881615505,
+     -1.3796975326808458,
+     122.37105338175314
+    ],
+    "overWater": 5.615874512855919,
+    "visible": true,
+    "calls": {
+     "on": 49,
+     "off": 48
+    }
+   }
+  },
+  {
+   "ok": true,
+   "name": "swimming at the surface: no specks under water, the flecks on it",
+   "data": {
+    "swim": true,
+    "under": false,
+    "surface": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "diving: the specks are exactly one draw call and the surface flecks are off",
+   "data": {
+    "calls": {
+     "on": 42,
+     "off": 41
+    },
+    "eye": [
+     -147.14539569788076,
+     -8.494281316524377,
+     206.3808963292169
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "every speck is in the water: under the surface, over the bed, clear of the piers",
+   "data": {
+    "shown": 208,
+    "bad": [],
+    "depth": [
+     0.06004643479086802,
+     1.4489845096738554
+    ]
+   }
+  },
+  {
+   "ok": true,
+   "name": "the specks drift downstream at the current's speed",
+   "data": {
+    "specks": 196,
+    "seconds": 3.0166666666666595,
+    "mean": 0.3500000030836605
+   }
+  },
+  {
+   "ok": true,
+   "name": "an idle diver drifts along with them (no relative motion)",
+   "data": {
+    "diver": 0.35000000000070947,
+    "specks": 0.3500000030836605
+   }
+  },
+  {
+   "ok": true,
+   "name": "swimming upstream the specks come towards the diver (at the stroke's speed through the water)",
+   "data": {
+    "n": 197,
+    "closing": 0.8999999999988472,
+    "want": 0.9
+   }
+  },
+  {
+   "ok": true,
+   "name": "back at the surface: the specks are gone, the flecks are back",
+   "data": {
+    "diving": false,
+    "under": false,
+    "surface": true
+   }
+  },
+  {
+   "ok": true,
+   "name": "no page errors",
+   "data": []
+  }
+ ]
+}
