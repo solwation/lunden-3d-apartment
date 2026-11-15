@@ -30,6 +30,7 @@ const setup = () => {
       const r = await kit.open(browser, q, { init: (n) => { localStorage.setItem('lunden.name', n); sessionStorage.setItem('lunden.nameSkipped', '1'); }, arg: name });
       r.page.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
       await r.page.waitForFunction(() => window.__app?.renderer && window.__ghosts?.connected && window.__lifeShare?.live, null, { timeout: 900000 });
+      if (!(await r.page.evaluate(() => String(window.__ghosts.onLife).includes('life(m.l)')))) errors.push(`${name}: ghosts.onLife is no longer the lives handler`);
       await r.page.evaluate(setup); return r;
     };
     const ev = (c, fn, arg) => c.page.evaluate(fn, arg);

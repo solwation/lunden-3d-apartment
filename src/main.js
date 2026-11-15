@@ -3459,7 +3459,7 @@ ghosts.onThings = (m) => (m.welcome ? thingShare.welcome(m.welcome) : thingShare
 // #1981 (part of #1964): the life simulator's things (food, dishes, laundry, rubbish) are ONE kitchen for the room (src/lifeshare.js;
 // the room: cloudflare/life.js). Never in the `&life` developer scenario (it rebuilds the kitchen for itself).
 const lifeShare = window.__lifeShare = lifeDev() ? null : new LifeShare({ items: life.items, connected: () => ghosts.connected, send: (m) => ghosts.life(m), me: () => ghosts.me ?? '', say: (t) => badge(t, false) });
-if (lifeShare) ghosts.onLife = (m) => lifeShare.receive(m);
+if (lifeShare) ghosts.onKitchen = (m) => lifeShare.receive(m); // (not onLife: that is the player's lives, combat.js)
 // the home's state that is no instance: programmes (their countdown is each client's own), made beds, watered plants, the milk
 const lifeParts = window.__lifeParts = lifeShare ? new LifeParts({ connected: () => ghosts.connected, send: (m) => ghosts.parts(m) }) : null;
 if (lifeParts) {

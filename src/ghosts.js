@@ -527,7 +527,7 @@ export class Ghosts {
       this.onSharedFish?.(m.sharedFish??null,true);
       this.onSquirrels?.(m.nutDrops??{k:'D',v:0},true);
       if (Array.isArray(m.doors)) this.onDoors?.({ t: 'dr', list: m.doors }); // the doors standing open (#1775, src/doorsync.js)
-      this.onMess?.({ t: 'lm', k: 'reset' }); this.onParts?.({ t: 'lx', k: 'reset' }); this.onLife?.({ t: 'li', k: 'reset' }); // #1981: the room's kitchen follows in its own messages
+      this.onMess?.({ t: 'lm', k: 'reset' }); this.onParts?.({ t: 'lx', k: 'reset' }); this.onKitchen?.({ t: 'li', k: 'reset' }); // #1981: the room's kitchen follows in its own messages
       this.onChores?.({ welcome: true }); // #1976: say who we are; the room answers with what it remembers
       this.onThings?.({ welcome: Array.isArray(m.things) ? m.things : [] }); // #1975: the loose things that are not at home (src/thingshare.js)
       if (m.tm) this.onTime?.(m.tm, null); // the room's shared game time (#1774, src/timesync.js)
@@ -565,7 +565,7 @@ export class Ghosts {
     else if (m.t === 'ch') this.onChores?.(m); // #1976: a chore's goal completed by somebody / what the room remembers (src/choresync.js)
     else if (m.t === 'lm') this.onMess?.(m); // #1990: crumbs and dust
     else if (m.t === 'lx') this.onParts?.(m); // #1981: the home's other shared state
-    else if (m.t === 'li') this.onLife?.(m); // #1981: the room's kitchen (src/lifeshare.js)
+    else if (m.t === 'li') this.onKitchen?.(m); // #1981: the room's kitchen (src/lifeshare.js)
     else if (m.t === 'th') this.onThings?.(m); // #1975: a loose thing taken / put down / sent home by somebody (src/thingshare.js)
     else if (m.t === 'gf') this.onGraffiti?.(m); // the shared spray paint (#1724, src/graffitisync.js)
     else if (m.t === 'bl') this.onBoule?.(m); // #1854 shared courtyard boule
