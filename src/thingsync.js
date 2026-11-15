@@ -4,12 +4,12 @@ import { THING_SYNC } from './config.js';
 // imports the validation, `node --test src/thingsync.test.mjs` runs the rest). The room (cloudflare/things.js) keeps, per thing, where
 // it is: at HOME (the default, never stored), lying in the WORLD at a place, or HELD by one connection. Memory only, as the doors (#1775).
 //   client -> room: { t: 'th', i, k: 'take' | 'put' | 'home', n, p?: [x, y, z], q?: [x, y, z, w] } (`n`: the sender's request number;
-//     `p`, `q` with 'put': where it lies and how it is turned).
+//     `p`, `q` with 'put': where it lies and how it is turned; #1976 `d`: what it carries, see `cleanData`).
 //   room -> everybody (the sender too): { t: 'th', i, m: 'held' | 'world' | 'home', at, by, p?, q? } (`at`: the room's clock, strictly
 //     rising per thing; `by`: who holds it / put it there / sent it home).
 //   room -> the sender only, when refused: { t: 'th', i, no: why, n, m, at, by?, p?, q? } with the thing's state as the room has it,
 //     so the client puts things right ('held' by somebody else, 'far', 'full', 'bad').
-//   welcome: things: [[i, 'held', by] | [i, 'world', by, p, q], …] (only what is not at home; left out when none).
+//   welcome: things: [[i, 'held', by] | [i, 'world', by, p, q, d?], …] (only what is not at home; left out when none).
 // Nothing here says what a thing IS beyond its id's group: no names, no contents.
 
 const ID = /^([a-z])(0|[1-9]\d{0,2})$/, KINDS = new Set(['take', 'put', 'home']);
@@ -34,18 +34,23 @@ export function cleanTurn(q) {
   const l = Math.hypot(...q);
   return l > 0.9 && l < 1.1 ? q.map((v) => r3(v / l)) : null;
 }
+/** #1976: what a thing carries with it (its drink, bites, dirt …): a short printable-ASCII string its own class writes and reads; the
+ *  room only keeps and passes it on. Returns the string, or null (none / not valid). */
+export function cleanData(d, C = THING_SYNC) { return typeof d === 'string' && d.length > 0 && d.length <= C.data && /^[\x20-\x7e]+$/.test(d) ? d : null; }
+
 /** A thing message from a client (already parsed), or null. */
 export function cleanThing(m, C = THING_SYNC) {
   if (m?.t !== 'th' || !thingId(m.i, C) || !KINDS.has(m.k) || !Number.isSafeInteger(m.n) || m.n < 0) return null;
   if (m.k !== 'put') return { i: m.i, k: m.k, n: m.n };
   const p = cleanPlace(m.p, C), q = cleanTurn(m.q);
-  return p && q ? { i: m.i, k: 'put', n: m.n, p, q } : null;
+  const d = cleanData(m.d, C);
+  return p && q ? { i: m.i, k: 'put', n: m.n, p, q, ...(d ? { d } : {}) } : null;
 }
 /** A state from the room (a broadcast, a refusal's state or a welcome row turned into one), or null. */
 export function cleanThingState(m, C = THING_SYNC) {
   if (!thingId(m?.i, C) || !['held', 'world', 'home'].includes(m.m)) return null;
   const s = { i: m.i, m: m.m, at: fin(m.at) ? m.at : 0, by: typeof m.by === 'string' ? m.by.slice(0, 16) : '' };
-  if (m.m === 'world') { s.p = cleanPlace(m.p, C); s.q = cleanTurn(m.q); if (!s.p || !s.q) return null; }
+  if (m.m === 'world') { s.p = cleanPlace(m.p, C); s.q = cleanTurn(m.q); if (!s.p || !s.q) return null; const d = cleanData(m.d, C); if (d) s.d = d; }
   return s;
 }
 
@@ -66,8 +71,8 @@ export class ThingLedger {
     this.hooks.change?.(s, was, why);
   }
   /** Ask the room: `k` 'take' | 'put' | 'home' (with `p`, `q` for 'put'). False when it cannot be sent (offline: do it locally only). */
-  request(i, k, p = null, q = null) {
-    const m = cleanThing({ t: 'th', i, k, n: ++this.n, ...(k === 'put' ? { p, q } : {}) }, this.cfg);
+  request(i, k, p = null, q = null, d = null) {
+    const m = cleanThing({ t: 'th', i, k, n: ++this.n, ...(k === 'put' ? { p, q, ...(d ? { d } : {}) } : {}) }, this.cfg);
     if (!m || !this.send({ t: 'th', ...m })) return false;
     this.pending.set(m.n, m);
     return true;
@@ -92,7 +97,7 @@ export class ThingLedger {
     const next = new Map();
     for (const row of Array.isArray(list) ? list.slice(0, 400) : []) {
       if (!Array.isArray(row)) continue;
-      const s = cleanThingState(row[1] === 'world' ? { i: row[0], m: 'world', by: row[2], p: row[3], q: row[4] } : { i: row[0], m: row[1], by: row[2] }, this.cfg);
+      const s = cleanThingState(row[1] === 'world' ? { i: row[0], m: 'world', by: row[2], p: row[3], q: row[4], d: row[5] } : { i: row[0], m: row[1], by: row[2] }, this.cfg);
       if (s) next.set(s.i, s);
     }
     const gone = [...this.state.keys()].filter((i) => !next.has(i));

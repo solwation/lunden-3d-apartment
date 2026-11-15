@@ -40,8 +40,8 @@ const setup = () => {
     check(ids[0] === ids[1] && ids[0].split(',').length >= 15 && ids[0].startsWith('s0,'), 'the same thing ids at both clients', ids[0]);
     // #1976: things without contents are shared too: the book, the remote, ornaments / photos / plants (never a bottle or a glass)
     const kinds = await A.page.evaluate(() => ({ n: T.S.items.size, book: T.S.items.has('p0'), remote: T.S.items.has('e0'), t: [...T.S.items.keys()].filter((k) => k[0] === 't').length,
-      drinks: [...T.S.items.values()].filter((e) => ['Bottle', 'Glass'].includes(e.item.constructor.name) || e.item.isCup).length, first: [...T.S.items.keys()].find((k) => k[0] === 't') }));
-    check(kinds.book && kinds.remote && kinds.t > 0 && kinds.drinks === 0, 'the book, the remote and the loose ornaments are registered; nothing with contents', kinds);
+      glass: [...T.S.items.entries()].find(([, e]) => e.item.constructor.name === 'Glass')?.[0] ?? null, first: [...T.S.items.entries()].find(([k, e]) => k[0] === 't' && e.item.constructor.name === 'Trinket')?.[0] }));
+    check(kinds.book && kinds.remote && kinds.t > 0 && !!kinds.glass && !!kinds.first, 'the book, the remote, the loose ornaments and the glasses are registered', kinds);
     await A.page.evaluate(() => T.it('p0').take()); await both();
     const bk = { a: await info(A, 'p0'), b: await info(B, 'p0') };
     const bookAt = await A.page.evaluate(() => { const p = T.a.player.pos, at = new T.V(p.x + 0.3, p.y, p.z + 0.5); T.it('p0').placeAt(at, 0.4); return [at.x, at.y, at.z]; });
@@ -95,9 +95,20 @@ const setup = () => {
     await Promise.all([A.page.evaluate(() => T.pump(2500)), C.page.evaluate(() => T.pump(2500))]);
     a = await info(A, 's0'); const cs = await info(C, 's0');
     check(a.room === 'home' && a.visible && a.local === 'home' && cs.room === 'home' && cs.visible, 'B leaves: what B held is home again for the others', { a, cs });
-    // #1976: a pot from the window board (at home it is part of the merged sill mesh) and the basketball (B has left: A and C)
+    // (B has left: A and C from here on)
     const ac = async (ms = 1500) => { await Promise.all([A.page.evaluate((ms) => T.pump(ms), ms), C.page.evaluate((ms) => T.pump(ms), ms)]); };
     await C.page.evaluate(() => T.stand(3.2, 5.6)); await ac(800);
+    // #1976: what is in a glass follows it: wine poured into a standing glass at A is in C's glass; taken, drunk from and put down, it
+    // stands there at C with what is left and marked as used
+    await A.page.evaluate((id) => { const g = T.it(id); g.contents.set('wine', 0.5); g.show(); }, kinds.glass); await ac(1200);
+    const g1 = await C.page.evaluate((id) => { const g = T.it(id); return { a: { ...g.contents.a }, used: !!g.used, room: T.S.ledger.get(id).m, local: T.S.mode(g) }; }, kinds.glass);
+    await A.page.evaluate((id) => T.it(id).take(), kinds.glass); await ac();
+    const gAt = await A.page.evaluate((id) => { const g = T.it(id), p = T.a.player.pos, at = new T.V(p.x - 0.4, p.y, p.z + 0.8); g.contents.set('wine', 0.2); g.used = true; g.show(); g.placeAt(at, 0); return [at.x, at.y, at.z]; }, kinds.glass); await ac();
+    const g2 = await C.page.evaluate((id) => { const g = T.it(id), i = T.info(id); return { a: { ...g.contents.a }, used: !!g.used, local: i.local, p: i.p }; }, kinds.glass);
+    check(g1.a.wine === 0.5 && !g1.used && g1.room === 'world' && g2.a.wine === 0.2 && g2.used && g2.local === 'world' && Math.hypot(g2.p[0] - gAt[0], g2.p[2] - gAt[2]) < 0.05, 'a glass carries its drink: poured at A it is in C\'s glass; drunk from and put down, it stands at C with what is left, used', { g1, g2 });
+    await C.page.evaluate(([x, y, z]) => { T.look(x, y + 0.08, z); T.a.step(0.05); }, g2.p);
+    await kit.shot(C.page, `${out}/c-sees-the-glass-of-wine-a-put-down.png`);
+    // #1976: a pot from the window board (at home it is part of the merged sill mesh) and the basketball (B has left: A and C)
     const pot = await A.page.evaluate(() => { const it = T.it('l0'); it.take(); return { held: it.held, n: [...T.S.items.keys()].filter((k) => k[0] === 'l').length }; }); await ac();
     const potB = await C.page.evaluate(() => { const it = T.it('l0'); return { other: T.S.ledger.heldByOther('l0'), away: it.away.has(it.pot), groupVisible: it.model.visible }; });
     const potAt = await A.page.evaluate(() => { const p = T.a.player.pos, at = new T.V(p.x + 0.4, p.y, p.z + 0.9); T.it('l0').placeAt(at, 0); return [at.x, at.y, at.z]; }); await ac();

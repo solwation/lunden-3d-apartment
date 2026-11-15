@@ -1652,6 +1652,16 @@ to rest, for which the room allows `THING_SYNC.putReach.o` m from the thrower) a
 timer, #1781, is left to whoever put it down: `fishing.rodKept`). Not shared: the billiard cues (the rack's slots and the table's own
 sync own them) and the pan (it carries food and dirt: with the things that have contents).
 
+#1976 (third slice; the user, 2026-11-15: what is in a thing follows it to whoever takes it): a `put` may carry `d`, a short
+printable-ASCII string (`thingsync.js` `cleanData`, at most `THING_SYNC.data` characters) that the room keeps with where the thing
+lies (also in the saved rows and the welcome) and passes on; only the thing's own adapter writes and reads it (`register(id, item,
+{ save, load })`). A thing with contents is never plain `home` once it carries something: put back in its place it is `put` there,
+and a change of its contents while it stands (somebody pours into a glass on the table) is a new `put`; while it is held the
+contents are the holder's and nothing is sent. A plain `home` empties and cleans the others' copies. First users: the bottles (they
+pour without end: nothing to carry) and the glasses (`src/thingcontents.js` `drinkData` / `readDrink`: the amounts per drink, drunk
+from or not; a reader drops unknown drinks, bad numbers and more than a glassful). Beer travels as an amount only: its source ledger
+(#1007) stays with the player who poured it, so a shared glass of beer gives no portion to the one who drinks it up.
+
 - **Our own actions** are noticed by comparing each thing's state from frame to frame (`mode`: in the hand or carried in the inventory
   / the bicycle's hand = `held`, put down = `world`, else `home`) and sent as `take` / `put` (the model's world place and turn) /
   `home`. So E, the inventory, F and every other way a thing moves are covered without touching the things' classes; swapping

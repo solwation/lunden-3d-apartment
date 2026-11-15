@@ -1,5 +1,5 @@
 import { THING_SYNC } from '../src/config.js';
-import { cleanThing, thingId, cleanPlace, cleanTurn } from '../src/thingsync.js';
+import { cleanThing, thingId, cleanPlace, cleanTurn, cleanData } from '../src/thingsync.js';
 
 // #1974 (part of #1964): loose things shared between the players: who holds a thing, or where it lies. The protocol is in
 // src/thingsync.js. #1978 (the user, 2026-11-15: the shared world is kept between visits): where things LIE is saved in the room's
@@ -27,14 +27,15 @@ export class RoomThings {
       for (const r of saved.rows.slice(0, 1000)) {
         if (!Array.isArray(r) || !thingId(r[0]) || this.state.has(r[0])) continue;
         const p = cleanPlace(r[2]), q = cleanTurn(r[3]);
-        if (p && q && Number.isFinite(r[4])) this.state.set(r[0], { m: 'world', at: r[4], by: typeof r[1] === 'string' ? r[1].slice(0, 16) : '', p, q });
+        const d = cleanData(r[5]);
+        if (p && q && Number.isFinite(r[4])) this.state.set(r[0], { m: 'world', at: r[4], by: typeof r[1] === 'string' ? r[1].slice(0, 16) : '', p, q, ...(d ? { d } : {}) });
       }
     }).catch(() => { /* an unreadable save: start with everything at home */ });
   }
   /** One change after another, each after the saved state is loaded. */
   enqueue(fn) { const work = this.chain.then(async () => { await this.ready; return fn(); }); this.chain = work.catch(() => {}); return work; }
   flush() { return this.chain; }
-  rows(state = this.state) { const out = []; for (const [i, e] of state) if (e.m === 'world') out.push([i, e.by, e.p, e.q, e.at]); return out; }
+  rows(state = this.state) { const out = []; for (const [i, e] of state) if (e.m === 'world') out.push([i, e.by, e.p, e.q, e.at, ...(e.d ? [e.d] : [])]); return out; }
   /** Write where things lie; throws when the storage does. */
   async commit(state) { if (this.ctx?.storage) await this.ctx.storage.put('things', { v: 1, rows: this.rows(state) }); }
   /** After a hibernation the map holds only what was saved: what the connections hold is in their attachments. */
@@ -57,13 +58,13 @@ export class RoomThings {
     return this.enqueue(async () => {
       this.wake(); await this.expire(now);
       const out = [];
-      for (const [i, e] of this.state) out.push(e.m === 'held' ? [i, 'held', e.by] : [i, 'world', e.by, e.p, e.q]);
+      for (const [i, e] of this.state) out.push(e.m === 'held' ? [i, 'held', e.by] : [i, 'world', e.by, e.p, e.q, ...(e.d ? [e.d] : [])]);
       return out;
     });
   }
   /** The room is empty: nobody holds anything any more; what lies stays (it is saved). */
   reset() { for (const [i, e] of [...this.state]) if (e.m === 'held') this.state.delete(i); this.woke = true; }
-  row(i, e) { return { i, m: e.m, at: e.at, by: e.by, ...(e.m === 'world' ? { p: e.p, q: e.q } : {}) }; }
+  row(i, e) { return { i, m: e.m, at: e.at, by: e.by, ...(e.m === 'world' ? { p: e.p, q: e.q, ...(e.d ? { d: e.d } : {}) } : {}) }; }
   near(a, p, reach = THING_SYNC.reach) { const s = a?.s?.p; return !Array.isArray(s) || Math.hypot(s[0] - p[0], s[1] - p[1], s[2] - p[2]) <= reach; } // (no position yet: not refused)
   handle(ws, a, m, now = this.clock()) { return this.enqueue(() => this.transact(ws, a, m, now)); }
   async transact(ws, a, m, now) {
@@ -80,7 +81,7 @@ export class RoomThings {
     } else if (m.k === 'put') { if (!this.near(a, m.p, THING_SYNC.putReach?.[m.i[0]])) why = 'far'; } // (a thrown ball lands further off)
     else if (old.m === 'world' && old.by !== a.i && !this.near(a, old.p)) why = 'far'; // 'home' of a thing lying somewhere: only from beside it
     const at = Math.max(now, old.at + 1); // the room's clock never goes back per thing
-    const next = m.k === 'take' ? { m: 'held', at, by: a.i } : m.k === 'put' ? { m: 'world', at, by: a.i, p: m.p, q: m.q } : { m: 'home', at, by: a.i };
+    const next = m.k === 'take' ? { m: 'held', at, by: a.i } : m.k === 'put' ? { m: 'world', at, by: a.i, p: m.p, q: m.q, ...(m.d ? { d: m.d } : {}) } : { m: 'home', at, by: a.i };
     if (!why && (old.m === 'world' || next.m === 'world')) { // where things lie changes: saved before anybody hears of it
       const after = new Map(this.state); if (next.m === 'home') after.delete(m.i); else after.set(m.i, next);
       try { await this.commit(after); } catch { why = 'save'; }

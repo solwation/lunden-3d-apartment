@@ -228,7 +228,8 @@ import { buildMailbox, mailboxGround } from './mailbox.js'; // #1706: the yellow
 import { buildElCabinet } from './elcabinet.js'; // #1707: the electrical cabinet with the spray cans
 import { Graffiti, collisionHit } from './graffiti.js'; // #1707: the spray paint (72 h, local)
 import { DoorSync } from './doorsync.js';
-import { ThingShare } from './thingshare.js'; // #1975: loose things the players share // #1775: doors opened / shut, seen by the other players
+import { ThingShare } from './thingshare.js'; // #1975: loose things the players share
+import { drinkData, readDrink } from './thingcontents.js'; // #1976: what a shared vessel carries // #1775: doors opened / shut, seen by the other players
 import { GraffitiSync } from './graffitisync.js'; // #1724: … shared with the other players
 import { farWalls, swimWater, swimBedY } from './farwalk.js'; // (#1707: the paint's surfaces on phones; #1943: who swims)
 import { current as riverCurrent } from './swim.js';
@@ -3340,10 +3341,14 @@ const thingShare = window.__thingShare = new ThingShare({ scene, connected: () =
   hand: { held: () => heldItem(), drop: () => setHeld(null), stowed: (it) => isStowed(it) }, say: (t) => badge(t, false) });
 for (const [g, list] of [['s', [saber]], ['b', toys.blasters], ['w', toys.wands], ['f', [toys.flashlight]], ['a', [bow]], ['h', [harpoon]], ['k', [binoculars]], ['c', elCabinet.cans]])
   list.forEach((it, i) => { if (it) thingShare.register(`${g}${i}`, it); });
-// #1976: things without contents: the book, the TV remote and the loose things of the rooms (ornaments, photos, potted plants, the
-// rifle) by their index in `things`; bottles and glasses carry drink and wait for their own rules, as do cups, food and life items
+// #1976: the book, the TV remote and the loose things of the rooms (ornaments, photos, potted plants, the rifle, bottles, glasses) by
+// their index in `things`
 thingShare.register('p0', book); thingShare.register('e0', remote);
-things.forEach((it, i) => { if (!['Bottle', 'Glass'].includes(it.constructor.name)) thingShare.register(`t${i}`, it); });
+// (#1976, contents) the bottles carry nothing (they pour without end) and the glasses their drink and whether they were drunk from:
+// what is in a glass follows it to whoever takes it. Beer travels as an amount only (its source ledger, #1007, stays local).
+const glassShare = { save: (g, was) => (g.contents.pouring ? was : drinkData(g.contents.a, g.used)),
+  load: (g, d) => { const r = readDrink(d); g.contents.clear(); g.contents.a = r.a; g.used = r.used; g.show(); } };
+things.forEach((it, i) => { if (it.constructor.name === 'Glass') thingShare.register(`t${i}`, it, glassShare); else thingShare.register(`t${i}`, it); });
 // the pots on the window boards: at home they are part of the merged sill meshes, so anywhere else their own model must show
 sillPots.forEach((it, i) => thingShare.register(`l${i}`, it, { away: (p) => p.setAway(true), lie: (p) => p.setAway(true) }));
 // the basketball: in the air it is still its thrower's; it lies where it came to rest (the room allows that far from the thrower)

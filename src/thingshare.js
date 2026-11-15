@@ -22,9 +22,11 @@ export class ThingShare {
   /** `item` is thing `id` (the same id for the same thing in every client). `opt` (#1976), for things that are more than a model at a
    *  place: mode(item, usual): its state here when the usual rule is not enough (a ball in the air is still ours); away(item): after
    *  it went home because somebody else holds it; lie(item): after it was laid where somebody else put it; home(item): after it came
-   *  home. */
+   *  home. #1976, things with contents: save(item) → a short string (thingsync.js `cleanData`) or null, load(item, string | null).
+ *  Such a thing is never plain 'home' to the room once it has been touched: put back in its place it is 'put' there, so what is in
+ *  it travels too; and a change of its contents while it stands (somebody pours into a glass on the table) is sent as a new 'put'. */
   register(id, item, opt = {}) {
-    const e = { id, item, opt, last: null };
+    const e = { id, item, opt, last: null, data: null };
     this.items.set(id, e); (this.byItem ??= new Map()).set(item, opt);
     const take = item.take.bind(item);
     item.take = (...a) => {
@@ -55,19 +57,23 @@ export class ThingShare {
       if (mine && why === 'room') return; // (our own put, echoed)
       this.release(it);
       it.goHome(); // (out of the inventory / a holder; then to where it lies)
-      this.scene.add(it.model); it.model.position.set(...s.p); it.model.quaternion.set(...s.q); it.model.visible = true; it.placed = true; e.opt.lie?.(it); e.last = 'world';
+      this.scene.add(it.model); it.model.position.set(...s.p); it.model.quaternion.set(...s.q); it.model.visible = true; it.placed = true; e.opt.lie?.(it);
+      if (e.opt.load) { e.opt.load(it, s.d ?? null); e.data = e.opt.save?.(it) ?? null; }
+      e.last = 'world';
     } else {
       if (mine && why === 'room') return; // (our own putting back, echoed)
       if (why === 'reset' && this.mode(it) !== 'home') return; // the connection dropped: what we hold or see lying stays as it is
       if (this.mode(it) === 'held' && why !== 'refused') return; // (it is in our hand: our take is on its way)
-      this.release(it); it.goHome(); it.model.visible = true; e.opt.home?.(it); e.last = 'home';
+      this.release(it); it.goHome(); it.model.visible = true; e.opt.home?.(it);
+      if (e.opt.load && why === 'room') { e.opt.load(it, null); e.data = e.opt.save?.(it, null) ?? null; } // (sent home plain: empty and clean)
+      e.last = 'home';
     }
   }
   /** The room's welcome: `list` = the things that are not at home. After it our own changes are sent. */
   welcome(list) {
     this.ledger.welcome(list);
     for (const e of this.items.values()) {
-      e.last = this.mode(e.item);
+      e.last = this.mode(e.item); e.data = e.opt.save?.(e.item) ?? null;
       if (e.last === 'held' && this.ledger.get(e.id).m !== 'held') this.ledger.request(e.id, 'take'); // what we carry in: ours
     }
     this.live = true;
@@ -81,15 +87,16 @@ export class ThingShare {
     for (const e of this.items.values()) {
       const it = e.item;
       if (this.ledger.heldByOther(e.id)) { if (it.model.visible) it.model.visible = false; continue; } // (a box's lid or a season may show it again)
-      const m = this.mode(it);
-      if (m === e.last) continue;
-      e.last = m;
+      const m = this.mode(it), d = e.opt.save && m !== 'held' ? e.opt.save(it, e.data) ?? null : null; // (`e.data`: what we last told: returned while it is being poured into)
+      if (m === e.last && (m === 'held' || d === e.data)) continue; // (contents are compared only while it stands: held, they are the holder's)
+      const moved = m !== e.last;
+      e.last = m; e.data = d;
       if (m === 'held') this.ledger.request(e.id, 'take');
-      else if (m === 'home') this.ledger.request(e.id, 'home');
-      else {
+      else if (m === 'home' && !(e.opt.save && (d || !moved))) this.ledger.request(e.id, 'home');
+      else { // put down; or a thing with contents back in its place / changed where it stands
         it.model.updateWorldMatrix?.(true, false);
         const p = it.model.getWorldPosition(new it.model.position.constructor()), q = it.model.getWorldQuaternion(new it.model.quaternion.constructor());
-        this.ledger.request(e.id, 'put', [p.x, p.y, p.z], [q.x, q.y, q.z, q.w]);
+        this.ledger.request(e.id, 'put', [p.x, p.y, p.z], [q.x, q.y, q.z, q.w], d);
       }
     }
   }
