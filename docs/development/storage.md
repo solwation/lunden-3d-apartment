@@ -1680,6 +1680,14 @@ player's own machine's, `plainHome`) and the frying pan (`n0`: where it stands, 
 the food in it is not shared). Split out as their own issues: cooked food (#1980), the life simulator's items, stores and machines
 (#1981), the billiard cues (#1982).
 
+#1980 (cooked food, first slice): the fish fingers (`x<i>` = the index in the carton's pool, `fishShare` in main.js). They are made
+on demand, so they register as they appear (`FishPack.onNew` for ours, `ThingShare.resolve(id)` for one another player took out)
+and the protocol has a "used up" flag: `{ k: 'home', x: 1 }` (passed on once, nothing kept) for one that was eaten, as opposed to
+one put back in the carton. One out of the carton by somebody else's doing counts down our carton too (`sharedOut`; not when we had
+taken it out ourselves) and `press` skips it; back in the carton it counts again, eaten it does not. Lying anywhere (a table, the
+pan, the fryer, the oven tray: all `world` to the room) a stick carries its bites and how far it is cooked, in eighths of the
+frying time. The other players see a stick in our pan lying there, coloured as cooked; it cooks only for the player whose pan it is.
+
 - **Our own actions** are noticed by comparing each thing's state from frame to frame (`mode`: in the hand or carried in the inventory
   / the bicycle's hand = `held`, put down = `world`, else `home`) and sent as `take` / `put` (the model's world place and turn) /
   `home`. So E, the inventory, F and every other way a thing moves are covered without touching the things' classes; swapping

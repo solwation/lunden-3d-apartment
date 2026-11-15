@@ -328,7 +328,7 @@ export class FishPack {
     const id = typeof s.id === 'string' && /^fish:([0-9]+)$/.exec(s.id), integer = n => Number.isSafeInteger(n) && n >= 0;
     if (!id || !integer(s.seq) || +id[1] < 1 || +id[1] > s.seq || !integer(s.left) || s.left >= C.n || !integer(s.bites) || s.bites >= C.bites || ![s.cook,s.hot].every(n => Number.isFinite(n) && n >= 0)) return null;
     let item = this.fingers.find(f => f.portionId === s.id);
-    if (!item) { item = new FishFinger(this); this.fingers.push(item); }
+    if (!item) { item = new FishFinger(this); this.fingers.push(item); this.onNew?.(item); }
     this.portionSeq = Math.max(this.portionSeq,s.seq); this.left = s.left;
     Object.assign(item,{portionId:s.id,cook:s.cook,hot:s.hot}); item.setBites(s.bites); item.paint(); item.take(); return item;
   }
@@ -342,8 +342,8 @@ export class FishPack {
     if (h?.fried) return; // fried: it does not go back in the carton (#214)
     if (h) { this.putIn(h); return; }
     if (this.left <= 0) { sfx.click(this.object.position); return; } // empty
-    let f = this.fingers.find((x) => x.state === 'box');
-    if (!f) { f = new FishFinger(this); this.fingers.push(f); }
+    let f = this.fingers.find((x) => x.state === 'box' && !x.sharedOut); // (#1980 `sharedOut`: another player has that one)
+    if (!f) { f = new FishFinger(this); this.fingers.push(f); this.onNew?.(f); }
     else { f.portionId = `fish:${++this.portionSeq}`; }
     this.left--;
     f.take();
@@ -357,7 +357,7 @@ export class FishPack {
 
   eaten(f) {
     const portionId = f.portionId;
-    f.hide();
+    f.hide(); f.usedUp = true; // (#1980: gone, not back in the carton: told to the other players)
     this.eatenCount++;
     this.onEaten?.(f);
     this.onConsume?.(f, portionId);
@@ -365,7 +365,7 @@ export class FishPack {
 
   /** The cat ate it off the floor (#163). */
   eatenByCat(f) {
-    f.hide();
+    f.hide(); f.usedUp = true;
     this.catCount = (this.catCount ?? 0) + 1;
     this.onCatEaten?.();
   }

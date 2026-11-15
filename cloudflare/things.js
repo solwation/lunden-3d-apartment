@@ -90,7 +90,7 @@ export class RoomThings {
     if (next.m === 'home') this.state.delete(m.i); else this.state.set(m.i, next);
     const th = next.m === 'held' ? [...mine.filter((x) => x !== m.i), m.i] : mine.filter((x) => x !== m.i);
     if (th.length !== mine.length || next.m === 'held') { a.th = th; this.save(ws, a); }
-    const out = JSON.stringify({ t: 'th', ...this.row(m.i, next) });
+    const out = JSON.stringify({ t: 'th', ...this.row(m.i, next), ...(next.m === 'home' && m.x ? { x: 1 } : {}) }); // (#1980: used up, told once, not kept)
     for (const { ws: x } of this.peers()) this.send(x, out);
   }
   /** A connection left: what it held goes home for everybody (nothing held is saved, so nothing is written). */

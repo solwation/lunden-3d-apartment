@@ -41,7 +41,7 @@ export function cleanData(d, C = THING_SYNC) { return typeof d === 'string' && d
 /** A thing message from a client (already parsed), or null. */
 export function cleanThing(m, C = THING_SYNC) {
   if (m?.t !== 'th' || !thingId(m.i, C) || !KINDS.has(m.k) || !Number.isSafeInteger(m.n) || m.n < 0) return null;
-  if (m.k !== 'put') return { i: m.i, k: m.k, n: m.n };
+  if (m.k !== 'put') return { i: m.i, k: m.k, n: m.n, ...(m.k === 'home' && m.x === 1 ? { x: 1 } : {}) }; // (#1980 `x`: sent home because it was used up: eaten)
   const p = cleanPlace(m.p, C), q = cleanTurn(m.q);
   const d = cleanData(m.d, C);
   return p && q ? { i: m.i, k: 'put', n: m.n, p, q, ...(d ? { d } : {}) } : null;
@@ -50,6 +50,7 @@ export function cleanThing(m, C = THING_SYNC) {
 export function cleanThingState(m, C = THING_SYNC) {
   if (!thingId(m?.i, C) || !['held', 'world', 'home'].includes(m.m)) return null;
   const s = { i: m.i, m: m.m, at: fin(m.at) ? m.at : 0, by: typeof m.by === 'string' ? m.by.slice(0, 16) : '' };
+  if (m.m === 'home' && m.x === 1) s.x = 1;
   if (m.m === 'world') { s.p = cleanPlace(m.p, C); s.q = cleanTurn(m.q); if (!s.p || !s.q) return null; const d = cleanData(m.d, C); if (d) s.d = d; }
   return s;
 }
@@ -71,8 +72,8 @@ export class ThingLedger {
     this.hooks.change?.(s, was, why);
   }
   /** Ask the room: `k` 'take' | 'put' | 'home' (with `p`, `q` for 'put'). False when it cannot be sent (offline: do it locally only). */
-  request(i, k, p = null, q = null, d = null) {
-    const m = cleanThing({ t: 'th', i, k, n: ++this.n, ...(k === 'put' ? { p, q, ...(d ? { d } : {}) } : {}) }, this.cfg);
+  request(i, k, p = null, q = null, d = null, used = false) {
+    const m = cleanThing({ t: 'th', i, k, n: ++this.n, ...(k === 'put' ? { p, q, ...(d ? { d } : {}) } : {}), ...(k === 'home' && used ? { x: 1 } : {}) }, this.cfg);
     if (!m || !this.send({ t: 'th', ...m })) return false;
     this.pending.set(m.n, m);
     return true;

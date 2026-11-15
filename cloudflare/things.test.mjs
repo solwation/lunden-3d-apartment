@@ -75,3 +75,14 @@ test('#1978: a lying thing nobody touched for THING_SYNC.keepDays days goes home
   const bad = new RoomThings({ storage: mk({ things: 'nonsense' }) }, () => {}, () => []);
   assert.deepEqual(await bad.welcome(1), []);
 });
+
+test('#1980: a thing sent home because it was used up is told as such once, and nothing is kept', async () => {
+  const sent = [], A = { i: 'aaaa', s: { p: [0, 0, 0] } }, B = { i: 'bbbb', s: { p: [0, 0, 0] } }, room = new RoomThings({ storage: mk() }, (ws, text) => sent.push([ws, JSON.parse(text)]), () => [{ ws: 'wa', a: A }, { ws: 'wb', a: B }]);
+  await room.handle('wa', A, msg({ i: 'x0', k: 'take', n: 1 }), 1000);
+  await room.handle('wa', A, msg({ i: 'x0', k: 'home', n: 2, x: 1 }), 2000);
+  assert.deepEqual(sent.at(-1), ['wb', { t: 'th', i: 'x0', m: 'home', at: 2000, by: 'aaaa', x: 1 }]);
+  assert.deepEqual(await room.welcome(3000), []);
+  await room.handle('wa', A, msg({ i: 'x0', k: 'take', n: 3 }), 4000);
+  await room.handle('wa', A, msg({ i: 'x0', k: 'home', n: 4 }), 5000); // back in the carton: a plain home
+  assert.equal(sent.at(-1)[1].x, undefined);
+});

@@ -139,6 +139,18 @@ const setup = () => {
     const panC = await C.page.evaluate(() => { const n = T.S.items.get('n0')?.item; if (!n) return null; const i = T.info('n0'); return { dirty: n.dirty, local: i.local, p: i.p, onHob: n.onHob }; });
     check(Math.abs(jugC.fill - 0.6) < 0.01 && jugC.local === 'world' && Math.hypot(jugC.p[0] - jug.at[0], jugC.p[2] - jug.at[2]) < 0.05 && !!panC && panC.dirty && panC.local === 'world' && !panC.onHob && Math.hypot(panC.p[0] - panA.at[0], panC.p[2] - panA.at[2]) < 0.05,
       'the coffee jug stands at C with its coffee, the frying pan with its dirt', { jug, jugC, panA, panC });
+    // #1980: fish fingers come out of a carton and are used up: one A takes counts down C's carton and is skipped by C; bitten and
+    // put down it lies at C with the bite; C eats it up: gone at A, not back in the carton; one put back in the carton is back for all
+    const f0 = await A.page.evaluate(async () => { const pk = T.a.fish; if (!pk) return null; const left0 = pk.left; pk.press(); await T.pump(700); const f = pk.holding; const id = `x${pk.fingers.indexOf(f)}`;
+      f.setBites(1); const p = T.a.player.pos, at = new T.V(p.x + 0.5, p.y, p.z + 1.1); f.placeAt(at, 0.4); return { id, left0, left: pk.left, at: [at.x, at.y, at.z] }; }); await ac();
+    const fC = await C.page.evaluate((id) => { const pk = T.a.fish, e = T.S.items.get(id); if (!e) return { missing: true, left: pk.left }; const f = e.item, i = T.info(id); return { left: pk.left, state: f.state, bites: f.bites, out: !!f.sharedOut, visible: f.model.visible, p: i.p }; }, f0.id);
+    check(!!f0 && f0.left === f0.left0 - 1 && fC.left === f0.left0 - 1 && fC.state === 'placed' && fC.bites === 1 && fC.out && fC.visible, 'a fish finger A took, bit and put down: it lies at C with the bite, and C\'s carton counts one less', { f0, fC });
+    const next = await C.page.evaluate(async (id) => { const pk = T.a.fish; pk.press(); await T.pump(600); const f = pk.holding, mine = `x${pk.fingers.indexOf(f)}`; pk.putIn(f); await T.pump(600); return { mine, other: id, left: pk.left }; }, f0.id); await ac(800);
+    check(next.mine !== next.other, 'C takes one out of the carton: not the one A has out; put back, the carton counts it again', next);
+    await C.page.evaluate(([x, , z]) => { T.stand(x + 0.2, z + 0.7); }, fC.p); await ac(900);
+    const ate = await C.page.evaluate(async (id) => { const pk = T.a.fish, f = T.it(id); f.take(); await T.pump(700); const held = f.held; pk.eaten(f); await T.pump(300); return { held, state: f.state, left: pk.left }; }, f0.id); await ac(1500);
+    const fA = await A.page.evaluate((id) => { const pk = T.a.fish, f = T.it(id); return { state: f.state, visible: f.model.visible, left: pk.left, room: T.S.ledger.get(id).m }; }, f0.id);
+    check(ate.held && fA.state === 'box' && !fA.visible && fA.room === 'home' && fA.left === f0.left, 'C eats it up: gone at A, and A\'s carton does not get it back', { ate, fA });
     // #1976: a pot from the window board (at home it is part of the merged sill mesh) and the basketball (B has left: A and C)
     const pot = await A.page.evaluate(() => { const it = T.it('l0'); it.take(); return { held: it.held, n: [...T.S.items.keys()].filter((k) => k[0] === 'l').length }; }); await ac();
     const potB = await C.page.evaluate(() => { const it = T.it('l0'); return { other: T.S.ledger.heldByOther('l0'), away: it.away.has(it.pot), groupVisible: it.model.visible }; });

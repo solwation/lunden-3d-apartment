@@ -17,12 +17,14 @@ export class ThingShare {
    *  say(text): a badge. */
   constructor({ scene, connected = () => false, send = () => false, me = () => '', hand, say = () => {}, cfg }) {
     Object.assign(this, { scene, connected, me, hand, say, items: new Map(), live: false });
-    this.ledger = new ThingLedger({ send, me, cfg, hooks: { change: (s, was, why) => { const e = this.items.get(s.i); if (e) this.apply(e, s, why); } } });
+    this.ledger = new ThingLedger({ send, me, cfg, hooks: { change: (s, was, why) => { const e = this.items.get(s.i) ?? this.resolve?.(s.i) ?? null; if (e) this.apply(e, s, why); } } });
+    this.resolve = null; // #1980: (id) => the entry of a thing that is made on demand (a fish finger out of the carton), registered now; or null
   }
   /** `item` is thing `id` (the same id for the same thing in every client). `opt` (#1976), for things that are more than a model at a
    *  place: mode(item, usual): its state here when the usual rule is not enough (a ball in the air is still ours); away(item): after
    *  it went home because somebody else holds it; lie(item): after it was laid where somebody else put it; home(item): after it came
-   *  home; goHome(item): instead of item.goHome(). #1976, things with contents: save(item) → a short string (thingsync.js `cleanData`) or null, load(item, string | null).
+   *  home (`home(item, used)`: `used` when its holder used it up); goHome(item): instead of item.goHome(); usedUp(item): it went
+ *  home because we used it up (eaten), told to the others with the 'home'. #1976, things with contents: save(item) → a short string (thingsync.js `cleanData`) or null, load(item, string | null).
  *  Such a thing is never plain 'home' to the room once it has been touched: put back in its place it is 'put' there, so what is in
  *  it travels too (unless `plainHome(item)` says its home keeps nothing); and a change of its contents while it stands (somebody pours into a glass on the table) is sent as a new 'put'. */
   register(id, item, opt = {}) {
@@ -65,7 +67,7 @@ export class ThingShare {
       if (mine && why === 'room') return; // (our own putting back, echoed)
       if (why === 'reset' && this.mode(it) !== 'home') return; // the connection dropped: what we hold or see lying stays as it is
       if (this.mode(it) === 'held' && why !== 'refused') return; // (it is in our hand: our take is on its way)
-      this.release(it); this.goHome(e); it.model.visible = true; e.opt.home?.(it);
+      this.release(it); this.goHome(e); it.model.visible = true; e.opt.home?.(it, s.x === 1);
       if (e.opt.load && why === 'room') { e.opt.load(it, null); e.data = e.opt.save?.(it, null) ?? null; } // (sent home plain: empty and clean)
       e.last = this.mode(it);
     }
@@ -95,7 +97,7 @@ export class ThingShare {
       const moved = m !== e.last;
       e.last = m; e.data = d;
       if (m === 'held') this.ledger.request(e.id, 'take');
-      else if (m === 'home' && (!e.opt.save || !(d || !moved) || e.opt.plainHome?.(it))) { if (moved) this.ledger.request(e.id, 'home'); } // (`plainHome`: its home never keeps contents, e.g. a cup back in the cabinet)
+      else if (m === 'home' && (!e.opt.save || !(d || !moved) || e.opt.plainHome?.(it))) { if (moved) this.ledger.request(e.id, 'home', null, null, null, !!e.opt.usedUp?.(it)); } // (`plainHome`: its home never keeps contents, e.g. a cup back in the cabinet)
       else { // put down; or a thing with contents back in its place / changed where it stands
         it.model.updateWorldMatrix?.(true, false);
         const p = it.model.getWorldPosition(new it.model.position.constructor()), q = it.model.getWorldQuaternion(new it.model.quaternion.constructor());

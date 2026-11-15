@@ -53,7 +53,7 @@ import { BeerShelf } from './beershelf.js';
 import { initHudIcons, fitChoiceLabels, setIcon, setPressed, setWeatherIcon, formatTemp } from './hudicons.js';
 import {SharedFish} from './sharedfishclient.js';
 import * as THREE from 'three';
-import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, PLAYROOM, BOULE, encodeAvatarWireLook, decodeAvatarLook, avatarLook, avatarBody, avatarHeightCm } from './config.js';
+import { FISH, THING_SYNC, UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, PLAYROOM, BOULE, encodeAvatarWireLook, decodeAvatarLook, avatarLook, avatarBody, avatarHeightCm } from './config.js';
 import { setupAvatarCustomizer, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen } from './customizer.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 import * as showFireworks from './fireworks.js';
@@ -165,7 +165,7 @@ import { HandWash } from './handwash.js';
 import { Milk } from './milk.js';
 import { BeerCan } from './beercan.js';
 import { buildCups } from './cups.js';
-import { buildFish } from './fishfingers.js';
+import { buildFish, FishFinger } from './fishfingers.js';
 import { ToiletPaper } from './toiletpaper.js';
 import { AirFryer } from './airfryer.js';
 import { CookStores } from './cookstores.js'; // #1881: sausages in the air fryer and on the oven tray
@@ -3379,6 +3379,28 @@ thingShare.register('j0', cups.jug, { plainHome: () => true,
 // the frying pan: where it stands (on the hob or not) and whether it needs washing up; the food in it is not shared yet
 if (pan) thingShare.register('n0', pan, { lie: (p) => { p.onHob = !!p.hob && p.model.getWorldPosition(new THREE.Vector3()).distanceTo(p.hob.zone) < 0.05; },
   save: (p) => (p.dirty ? '{"u":1}' : null), load: (p, d) => p.setDirty(d === '{"u":1}') });
+// #1980, the fish fingers (fishfingers.js: made on demand out of the carton, so registered as they appear: ours through `onNew`, the
+// others' through `resolve`). One out of the carton by somebody else's doing counts down our carton too and is skipped when we take
+// one; eaten it is gone (not back in the carton); lying anywhere (the pan, the fryer and the oven tray too) it carries its bites and
+// how far it is cooked (in eighths of the frying time, so a frying stick is a handful of messages).
+const fishShare = {
+  mode: (f) => { f.wasOut = f.state !== 'box'; if (f.state === 'held') { f.usedUp = f.sharedOut = false; return 'held'; } return f.state === 'box' ? 'home' : 'world'; }, // (`wasOut`: out of OUR carton already, as of the last look)
+  goHome: (f) => f.hide(),
+  out: (f) => { if (!f.sharedOut) { f.sharedOut = true; if (!f.wasOut) fish.left = Math.max(0, fish.left - 1); } }, // (one we had taken out ourselves is already counted)
+  away: (f) => fishShare.out(f),
+  lie: (f) => { fishShare.out(f); delete f.placed; f.state = 'placed'; },
+  home: (f, used) => { if (f.sharedOut && !used) fish.left = Math.min(FISH.n, fish.left + 1); f.sharedOut = false; f.model.visible = false; }, // (in the carton, or eaten: not seen)
+  usedUp: (f) => !!f.usedUp,
+  plainHome: () => true,
+  save: (f) => (f.state === 'box' ? null : JSON.stringify({ b: f.bites, c: Math.round(f.cook / FISH.fry.seconds * 8) / 8 })),
+  load: (f, d) => { let o = null; try { o = JSON.parse(d); } catch { /* malformed: raw and whole */ }
+    f.setBites(Number.isInteger(o?.b) ? Math.max(0, Math.min(FISH.bites - 1, o.b)) : 0); f.cook = Number.isFinite(o?.c) ? Math.max(0, Math.min(4, o.c)) * FISH.fry.seconds : 0; f.paint(); },
+};
+const shareFish = (f) => thingShare.register(`x${fish.fingers.indexOf(f)}`, f, fishShare);
+if (fish) { fish.fingers.forEach(shareFish); fish.onNew = shareFish; }
+thingShare.resolve = (id) => { if (!fish) return null; const g = /^x(\d+)$/.exec(id); if (!g || +g[1] >= THING_SYNC.max.x) return null;
+  while (fish.fingers.length <= +g[1]) { const f = new FishFinger(fish); fish.fingers.push(f); shareFish(f); }
+  return thingShare.items.get(id) ?? null; };
 // the pots on the window boards: at home they are part of the merged sill meshes, so anywhere else their own model must show
 sillPots.forEach((it, i) => thingShare.register(`l${i}`, it, { away: (p) => p.setAway(true), lie: (p) => p.setAway(true) }));
 // the basketball: in the air it is still its thrower's; it lies where it came to rest (the room allows that far from the thrower)
