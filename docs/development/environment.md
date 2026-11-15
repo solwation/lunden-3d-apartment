@@ -112,6 +112,8 @@ src/patio.js           patio: Rusta Verona lounge + slatted table (#408), cushio
                        corner (SITE.terrain.west.stair, down to Karpvägen), its back against the retaining wall south of the
                        stair (x −70.82, z 11.55, `y` = the terrain there), holding the bow (src/bow.js). Which building the user
                        calls the church is not modelled by name (see #690); the box is placed by the stair itself
+                       #1953: `inside: 'harpoon'` is a third, likewise empty box on the south shore flat of Höje å near the downstream
+                       end of the swimmable river (FURNITURE; our own choice of spot, *guess*), holding the harpoon gun (src/harpoon.js)
                        (furniture builders, FURNITURE + PATIO in config); seasons via Patio.update:
                        parasol folds at night/in winter, beers in summer, snowman in winter
                        #1121: in front of the hedge (x 2.15–3.42, z 15.6–16.3) L1007's own 67 cm kettle grill with a side table

@@ -1,0 +1,35 @@
+  … +0s loading
+  … +32s loaded
+PASS +35s the harpoon gun and its box exist
+PASS +35s the box stands on the ground (terrain at its centre) — {"x":-219.24,"y":-5.756,"z":232.3,"ground":-5.755566332739751,"river":6.488119677323378,"water":-7.255566332739751,"wall":3.054968924560837,"swim":true}
+PASS +35s on the dry shore, within 12 m of the swimmable river — [6.488119677323378,-7.255566332739751]
+PASS +35s no trunk or wall within 1.5 m of it — 3.054968924560837
+PASS +35s shut: the gun is neither seen nor takeable
+PASS +38s open: the gun lies in the box, E takes it
+PASS +53s taken: in the hand, the spear on the gun
+PASS +53s no weapon: it fires on a click but has no `shoots` / `hitsTarget`
+PASS +59s a shot: the spear leaves the gun on its line — {"fired":true,"line":true,"inScene":true,"stuck":{"tip":-5.782261124068945,"ground":-5.7570322769060045},"again":false,"far":1.3618311015752442,"phase":"ready","docked":true,"shots":1}
+PASS +59s it sticks in the ground, its point just under the grass — {"tip":-5.782261124068945,"ground":-5.7570322769060045}
+PASS +59s no second shot while the spear is out
+PASS +59s reeled in: the spear is on the gun again, the line gone
+PASS +60s the spear stops at the end of the line and comes back — {"fired":true,"far":9.999999999999996,"phase":"ready","line":10}
+  … +60s a fish from the bank
+PASS +94s a river fish within reach of the bank — {"id":11,"species":"öring","dist":6.869959098099367,"fired":true,"carried":true,"hits":1,"catches":1,"added":1,"gone":true,"got":{"species":"öring","cm":31,"placed":true,"held":false,"d":0.600375751730827,"dy":0.07102939327771285},"held":true,"said":"Du harpunerade en öring, 31 cm! Den ligger vid dina fötter.","look":[-175.88343666854888,-6.768571819835088,210.3726772170817]}
+PASS +94s the spear hits the fish and brings it back on the line
+PASS +94s it counts as a catch: the fish is gone from the river, a caught fish is yours
+PASS +94s the fish lies at your feet
+PASS +94s the gun stays in the hand; the badge says so — Du harpunerade en öring, 31 cm! Den ligger vid dina fötter.
+  … +116s under water
+PASS +118s diving in the river with the gun still in the hand — {"swim":true,"diving":true,"held":true,"eye":-1.285435510726499,"fish":{"id":3,"species":"abborre","d":3.118778081048426}}
+PASS +118s a fish within reach under water — {"id":3,"species":"abborre","d":3.118778081048426}
+PASS +118s a shot under water: the spear flies on its line — {"phase":"out","wet":true,"line":true}
+PASS +168s under water: a hit fish is a catch — {"id":0,"dist":3.282228387927507,"fired":true,"hits":1,"catches":1,"gone":true,"species":"abborre","got":"abborre","ashore":1.2051818880204666,"inWater":false,"far":4.000000000000011,"placed":true,"held":true,"swim":true,"said":"Du harpunerade en abborre, 23 cm! Den ligger på stranden."}
+PASS +168s the fish is laid on the dry bank — 1.21 m over the water, 4.0 m away
+PASS +168s the swimmer keeps the gun; the badge says where the fish is — Du harpunerade en abborre, 23 cm! Den ligger på stranden.
+  … +168s the shark
+PASS +201s the shark that attacks a swimmer can be hit — {"t":6.066666666666655,"fired":true,"hits":1,"fins":1,"phase":"leave","bitten":false,"ashore":1.1674826044920321,"said":"Du harpunerade hajen! Fenan ligger på stranden.","held":true}
+PASS +201s the attack is over: no bite
+PASS +201s it counts as catching the shark: its fin lies on the bank — Du harpunerade hajen! Fenan ligger på stranden.
+PASS +201s put back with the spear out: the gun lies in the box again, the spear on it — {"out":true,"held":false,"phase":"ready","docked":true,"home":0}
+PASS +201s no page errors
+ALL PASSED

@@ -2,7 +2,7 @@ import {dropId} from './shareddropwire.js';
 import * as THREE from 'three';
 import { cookRate } from './cookrules.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FISHING as F, RIVER_FISH, SHARK, SHARED_FISH } from './config.js';
+import { FISHING as F, RIVER_FISH, SHARK, SHARED_FISH, HARPOON } from './config.js';
 import { Holdable, heldItem, setHeld, stowedItem, restPose, handBusy } from './holdable.js';
 import { forgetBicycleHand } from './keep.js';
 import { caughtFishGeometry } from './caughtfish.js';
@@ -353,8 +353,59 @@ export class Fishing {
     }
     this.riverFish.catchFish(b.id); // (solo: answered at once through `caught`)
   }
+  /** #1953: a harpoon hit (src/harpoon.js) is a catch like a hooked one: the room decides (`done(ok, b)` once, at once when solo).
+   * `pick`: a river fish { id, born, species } or { shark: true } (the shared weekly shark). False when a spear catch is already waiting. */
+  spear(pick, done) {
+    if (this.speared || !this.riverFish) return false;
+    const sync = this.riverFish.sync;
+    if (pick.shark) {
+      const spot = this.spearSpot(), b = this.speared = { shark: true, id: -1, born: 0, species: 'haj', spot, done };
+      if (!sync.catchShark([spot.at.x, spot.at.y, spot.at.z], spot.yaw)) { this.speared = null; done(false, b); }
+      return true;
+    }
+    this.speared = { id: pick.id, born: pick.born, species: pick.species, cm: catchCm(pick.id, pick.born, sync.seed, F.species[pick.species]?.cm ?? [15, 40]), done };
+    this.riverFish.catchFish(pick.id); // (solo: answered at once through `caught`)
+    return true;
+  }
+  /** #1953: stop waiting for the room's answer on the harpooned catch (it then counts as lost). */
+  giveUpSpear() { const b = this.speared, sync = this.riverFish?.sync; if (!b) return; if (b.shark) sync?.giveUpShark?.(); else sync?.giveUp?.(b.id); if (this.speared === b) { this.speared = null; b.done(false, b); } }
+  /** #1953: where a harpooned catch is laid: at your feet on land; for a swimmer on the nearest dry bank spot on their side of the
+   * river (within HARPOON.bank m; `yaw`: along the bank, nose downstream). */
+  spearSpot() {
+    const p = this.player.pos, q = riverProject(p.x, p.z), c = riverPoint(q.s), side = q.d >= 0 ? 1 : -1, yaw = Math.round(Math.atan2(c.nz, -c.nx) * 100) / 100;
+    if (this.player.swim) {
+      const water = waterAt(q.s);
+      for (let d = Math.abs(q.d) + 0.5; d <= Math.abs(q.d) + HARPOON.bank; d += 0.5) {
+        const x = c.x + c.nx * side * d, z = c.z + c.nz * side * d, y = this.player.groundAt(x, z, water + 3);
+        if (Number.isFinite(y) && y > water + 0.3) return { at: new THREE.Vector3(x, y, z), yaw, ashore: true };
+      }
+    }
+    return { at: this.dropSpot(0.5), yaw, ashore: false };
+  }
+  /** #1953: the harpooned fish `b` (from `spear`) is yours: it lies at `spearSpot` (the harpoon stays in the hand) and counts as a catch. */
+  landSpeared(b) {
+    const spot = this.spearSpot(), fish = this.addFish({ species: b.species, cm: b.cm, raw: true }, spot.at);
+    this.catches++;
+    fish.held = true; fish.placeAt(spot.at, spot.yaw);
+    sfx.splash?.(fish.where());
+    this.onMessage(`Du harpunerade ${fish.name}! ${spot.ashore ? 'Den ligger på stranden.' : 'Den ligger vid dina fötter.'}`);
+    this.onCatch(fish);
+    return fish;
+  }
+  /** #1953: a harpooned shark: its fin lies at `spot` (default `spearSpot`); the shared shark's body is drawn from the room's record. */
+  landSpearedShark(spot = this.spearSpot()) {
+    const fin = this.addFin(spot.at);
+    this.catches++;
+    fin.held = true; fin.placeAt(spot.at, spot.yaw);
+    sfx.splash?.(fin.where());
+    this.onMessage(`Du harpunerade hajen! Fenan ligger ${spot.ashore ? 'på stranden' : 'vid dina fötter'}.`);
+    this.onSharkCatch(fin);
+    return fin;
+  }
   /** The room's verdict on our catch (RiverFish.onCaught). */
   caught(id, ok) {
+    const sp = this.speared;
+    if (sp && sp.id === id) { this.speared = null; sp.done(ok, sp); return; } // #1953: the harpoon's catch, not the rod's
     const b = this.pending;
     if (this.state !== 'reel' || !b || b.id !== id) return;
     this.pending = null;

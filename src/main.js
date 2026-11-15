@@ -223,6 +223,7 @@ let resetFrameRate = () => {}; // safe before the HUD is initialized during star
 import { Ghosts } from './ghosts.js';
 import { Combat } from './combat.js';
 import { Bow, Arrows } from './bow.js';
+import { Harpoon } from './harpoon.js'; // #1953: the harpoon gun in the box by Höje å
 import { buildMailbox, mailboxGround } from './mailbox.js'; // #1706: the yellow letterbox and the binoculars
 import { buildElCabinet } from './elcabinet.js'; // #1707: the electrical cabinet with the spray cans
 import { Graffiti, collisionHit } from './graffiti.js'; // #1707: the spray paint (72 h, local)
@@ -1010,6 +1011,11 @@ scene.traverse((o) => { if (o.userData.box?.item?.inside === 'bow') bowBox = o; 
 const arrows = new Arrows(scene, { camera });
 const bow = bowBox ? new Bow(scene, camera, bowBox, arrows) : null;
 if (bow) holdables.push(bow);
+// #1953: the harpoon gun in the cushion box on the south shore of Höje å (src/harpoon.js): only fish and the shark can be hit
+let harpoonBox = null;
+scene.traverse((o) => { if (o.userData.box?.item?.inside === 'harpoon') harpoonBox = o; });
+const harpoon = harpoonBox ? new Harpoon(scene, camera, harpoonBox, { riverFish, fishing, player, say: (t) => badge(t, false) }) : null;
+if (harpoon) holdables.push(harpoon);
 const mailbox = buildMailbox(scene, camera, mailboxGround(renderedTerrainY)); // #1706: the hatch (a world.lids cabinet door: E, saved, &open) and the binoculars in it (a holdable: saved like any loose thing)
 const binoculars = mailbox.binoculars;
 world.lids.push(mailbox.lid);
@@ -3182,6 +3188,7 @@ const sharkHunt = riverFish && new SharkHunt({ shark: riverFish.shark, player, t
       onWake: () => badge('🦈 Hajen tog dig – du lever igen', false) });
     combat.fall(FALL.maxReport, FALL.maxReport).catch(() => {});
   } });
+if (harpoon) harpoon.sharkHunt = sharkHunt; // #1953: the attacking shark can be harpooned
 // #1949: a diver's air (src/diveair.js). Out of air = a death like the shark's bite: the same cover, wake and life request.
 // (`&air=<s>`: that many seconds of still air instead of SWIM.air.seconds, for checks.)
 const diveAir = new DiveAir({ player, camera, el: document.getElementById('air'), seconds: Number(params0.get('air')) || 0,
@@ -3489,7 +3496,7 @@ ghosts.onReact = (m, g) => {
     greet.say({ head: g.head, s: 1 }, K.line, { pitch: K.id === 'scream' ? 1.4 : K.id === 'laugh' ? 1.2 : 0.9, rate: 1.05, voice: 1 }, REACT.duration, g.avatar);
   }
 };
-window.__binoculars = binoculars; window.__mailbox = mailbox; window.__graffiti = graffiti; window.__graffitiSync = graffitiSync; window.__elCabinet = elCabinet; window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows; window.__presence = presence;
+window.__binoculars = binoculars; window.__mailbox = mailbox; window.__graffiti = graffiti; window.__graffitiSync = graffitiSync; window.__elCabinet = elCabinet; window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__harpoon = harpoon; window.__arrows = arrows; window.__presence = presence;
 chat = new Chat({ ghosts, log: document.getElementById('chat-log'), setting: document.getElementById('menu-chat-setting'), name: () => leaderboard.name, // #675
   camera, layer: document.getElementById('speech'), hidden: (p) => behindWall(p) }); // bubbles over the ghosts (#676)
 terminalInput.addEventListener('input', () => {
@@ -3693,6 +3700,7 @@ function step(dt) {
   dropoff.update(dt); // a lid (#387)
   toys.update(dt);
   arrows.update(dt);
+  harpoon?.step(dt); // #1953: the spear on its line
   marks.update(dt);
   breaker.update(dt);
   balls.update(dt);

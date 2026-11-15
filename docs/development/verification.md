@@ -1419,6 +1419,10 @@ tools/crashtest.cjs    crash reports (#629): Playwright + `node cloudflare/dev.m
 tools/bowtest.cjs      the bow (#690): one page, frames driven by hand: the box on the ground by the NW stair and clear of it, shut = not
                        takeable, open = bow + quiver, take, a too-short draw, full draw (string, nocked arrow), the arrow's arc, its
                        heading, sticking, a tap shot, back in the box; screenshots (box open, drawn, in flight, stuck). ~3–5 min
+tools/harpoontest.cjs  the harpoon gun (#1953): one page, solo, frames driven by hand: the box on the shore flat by the southern river and
+                       clear of trunks, shut = not takeable, take, a shot into the ground sticks and is reeled back, never further than the
+                       line, a fish hit from the bank and one hit while diving are catches (at the feet / laid on the bank), the attacking
+                       shark harpooned (no bite, the fin), no weapon flags, back in the box; screenshots. ~3–5 min
 tools/combattest.cjs   fights (#667): three pages (A, B, C) against dev.mjs: unarmed B a ghost and not hittable, armed all solid, hearts only in a
                        fight, B shown no shots while unarmed; A's missed dart drawn on B from the same start / direction / speed (the blasters'
                        pool, drawn only), A's thrown ball on B (screenshot), ten hits (points / deductions / lives), out of lives → start,

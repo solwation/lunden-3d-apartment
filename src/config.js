@@ -3560,6 +3560,14 @@ export const CAMPUS_LOD = { curve: 3, roofGrid: 2, maxTris: 42200 };
 export const BOW = { held: { x: 0.09, y: -0.06, z: -0.7 }, heldScale: 0.6, drawTime: 0.9, minDraw: 0.15, speed: [14, 42], tap: 0.5, gravity: 9.81,
   len: 0.72, stick: 20, flight: 6, arrows: 12, pull: 0.32,
   grip: [0, -0.02, -0.005] }; // model-local leather-cylinder centre; hand fit is a visual guess (#910)
+// #1953: the harpoon gun in the box by Höje å (src/harpoon.js, rules in src/harpoonflight.js). All *guess* (a ~0.75 m band speargun for
+// fresh water; no product measured): `held` / `grip` the camera-space pose and the model-local hand point; `spear` its length (m);
+// `speed` m/s off the gun; `drag` 1/s the water slows it by, `sink` m/s² it drops in water, `gravity` in the air; `line` m of line (the
+// spear turns back when it is that far from the muzzle), `flight` s at most on the way out, `stuck` s it sits in something solid before
+// it is reeled in, `reel` m/s on the way back; `hit`: m round a fish (+ `len` x its length) and round a shark's fin that count as a hit;
+// `verdict` s to wait for the room's answer once the spear is back; `bank` m: how far a swimmer's catch is looked for a dry spot ashore.
+export const HARPOON = { held: { x: 0.17, y: -0.2, z: -0.42 }, grip: [0, -0.06, 0.07], spear: 0.8, speed: 24, drag: 1.1, sink: 0.5, gravity: 9.81,
+  line: 10, flight: 2.5, stuck: 0.35, reel: 14, hit: { fish: 0.2, len: 0.4, shark: 1.3 }, verdict: 3, bank: 25 };
 export const RIFLE = { mag: 30, rpm: 600, spread: 0.012, range: 60, reloadDelay: 0.25, reloadSeconds: 1.6, magLife: 120, maxDrops: 6,
   held: { x: 0.17, y: -0.24, z: -0.56 },
   grip: [0, -0.062, 0.088] }; // model-local pistol grip center; hand fit is a visual guess (#913)
@@ -6171,6 +6179,11 @@ export const FURNITURE = [
   // x −70.5 … −68.69, down to Karpvägen), its back against the retaining wall from the stair's end (z 10.6) to Hus C, facing
   // west; `y` = the terrain there (west.profile at z ≈ 11.6, groundY checked in tools/bowtest.html)
   { type: 'dynbox', inside: 'bow', level: 0, x: -70.5 - 0.29 - 0.03, z: 11.55, y: -1.024, rot: 90 },
+  // #1953: a third cushion box with the harpoon gun (src/harpoon.js), on the south shore flat of Höje å at the downstream (south-west)
+  // end of the swimmable river: 6.5 m from the centre line, 2 m downstream of path vertex (-220.92, 225.61), a spot with no trunk
+  // (collision) or shrub within 3 m, its back to the water (the lid opens towards whoever comes from the land side); `y` = the shore flat there (player.groundAt, checked in
+  // tools/harpoontest.cjs). The spot is our own choice (*guess*: the user said "near the river in the southern part of Höje å")
+  { type: 'dynbox', inside: 'harpoon', level: 0, x: -219.24, z: 232.3, y: -5.756, rot: 149 },
   { type: 'planter', level: 0, x: 0.45, z: 13.25, plant: 'palm', detailedPalm: true, walls: { x0: 0.065, z0: 12.7 } }, // fronds clear of the façade + screen wall (#137)
   { type: 'planter', level: 0, x: 5.3, z: 16.45, plant: 'agave' },
   // #1121 (an in-game wish): the family's big kettle grill with its side table in front of the hedge (z 16.8 from x 1.26),

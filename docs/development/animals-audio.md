@@ -1146,6 +1146,25 @@ in `localStorage` `lunden.shark`. Test: `&shark=now` (client) or `LUNDEN_SHARK_T
 cloudflare/shark.test.mjs` (schedule, path, arbitration, phases, hibernation, solo, through the Worker); browser `tools/sharktest.cjs` (two
 clients). Images: [docs/verification/1769](../verification/1769/).
 
+### The harpoon gun (#1953)
+
+A harpoon gun (`src/harpoon.js`, [interactions](interactions.md)) lies in a cushion box on the south shore of the river's downstream end. Its
+spear, on a line, catches **only fish**: every other creature and player is simply not a target.
+
+- A river fish it meets is asked for like a hooked one (`Fishing.spear(pick, done)` → `RiverFish.catchFish`, the room decides; solo at once).
+  `Fishing.caught` hands the verdict to the spear's request first (`speared`), so the rod's own pending catch is untouched. The fish rides
+  back on the spear; when the spear is in the gun again `Fishing.landSpeared` adds the `CaughtFish` (size from `catchCm`, as a hooked fish)
+  **lying** at `spearSpot`: at the visitor's feet on land, or for a swimmer on the nearest dry bank spot on their side (searched up to
+  `HARPOON.bank` m from the channel). The gun stays in the hand; `onCatch` runs as for the rod (statistics, bestiary, fish quest). A refused or
+  unanswered request (`HARPOON.verdict` s, `giveUpSpear`) is "Fisken slet sig från harpunen".
+- The shared weekly shark (#1769) within `HARPOON.hit.shark` m of its fin: `Fishing.spear({ shark: true })` → `RiverFishSync.catchShark` with
+  `spearSpot` as the carcass's place; accepted, `landSpearedShark` lays the fin there and runs `onSharkCatch`.
+- The shark that attacks a swimmer (#1947) is local and has no record: `SharkHunt.harpooned()` ends the attack (it sinks, the usual
+  `again` pause) and `landSpearedShark` gives its fin; no carcass.
+
+Checked by `tools/harpoontest.cjs` (fish from the bank and under water, the attacking shark); the weekly shark's path and a room's refusal
+are not covered by a browser test.
+
 ### The shark bites swimmers (#1947)
 
 Swimming in Höje å ([#1943](environment.md#swimming-in-höje-å-1943)) carries a small risk. `src/sharkattack.js` (pure, no three.js;

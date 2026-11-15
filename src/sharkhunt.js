@@ -57,5 +57,13 @@ export class SharkHunt {
     this.bitten = true; // (one bite per swim: the death moves the swimmer out of the water)
     this.onBite({ x: p.x, y: waterYAt(p.x, p.z), z: p.z }, shared);
   }
+  /** #1953: where the attacking shark's fin is now ({ x, y, z }) while it is up enough to be hit, else null. */
+  target() { return this.st.phase === 'warn' && this.st.show > 0.5 ? this.o : null; }
+  /** #1953: the harpoon hit it: the attack is over (it sinks; the usual pause before the next one). True when there was one to hit. */
+  harpooned() {
+    if (this.st.phase !== 'warn') return false;
+    this.st.phase = 'leave'; this.st.cool = (this.test ? { ...A, ...A.test } : A).again;
+    return true;
+  }
   state() { return { ...this.st, bitten: this.bitten, test: this.test, drawn: !!this.shark.hunter && this.shark.finShown }; }
 }

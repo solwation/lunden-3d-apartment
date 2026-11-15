@@ -602,6 +602,16 @@ src/bow.js             the bow (#690, BOW): our own recurve bow (one vertex-colo
                        are never hit) for BOW.stick s. In a fight it is weapon 'bow': each arrow is one shot message with its
                        speed; combat.js `aimArc` judges a hit along the arc, the others see the arrow in the same pool.
                        tools/bowtest.cjs (one page; frames driven by hand), combattest's bow step
+src/harpoon.js         the harpoon gun (#1953, HARPOON, all *guess*): a band speargun (one vertex-coloured mesh, the spear a second one, a Line to it
+                       while it is out) in a third cushion box on the south shore of Höje å (patio.js `dynbox` inside 'harpoon'); seen / takeable
+                       only while the lid is open, E on the box puts it back (as the bow). A click / the touch action button (`trigger`,
+                       `clickIsUse`) shoots the spear along the view, also while diving. Rules in src/harpoonflight.js (pure;
+                       `node --test src/harpoonflight.test.mjs`): drag and a slight sink in the water, gravity in the air; it turns back
+                       HARPOON.line m from the muzzle, sits `stuck` s in a solid mesh (bow.js `solidHit`, the water surface skipped) and is
+                       reeled in before the next shot. Only fish are targets: `collect` lists RiverFish.shown (true place; from above the
+                       water also the drawn place), the weekly shark's fin and `SharkHunt.target()`; a hit calls `Fishing.spear` /
+                       `landSpeared` / `landSpearedShark` (animals-audio.md). No weapon: no `shoots` / `hitsTarget`, no weapon key, nothing
+                       else is tested; local only (no message). `harpoon.step(dt)` runs every frame from main.js. tools/harpoontest.cjs
 src/binoculars.js      the binoculars (#1706, BINOCULARS), a Holdable lying in the yellow letterbox (src/mailbox.js): take / hold / put down / put back and saving
 src/fishing.js         the fishing rod under the road bridge, casting, bites and caught fish (#1753, FISHING; details in animals-audio.md): `noPlace` keeps the click for casting while the line is out or the eye aims at the river
                        are the ordinary holdable path (keep.js `things`, key `kikaren|home`). Right mouse button / the touch power button (`useAlt`, `altIcon` '🔭') raises

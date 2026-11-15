@@ -49,6 +49,7 @@ export function heldCategory(item) {
   if (item.isCaughtFish) return 'fish'; // #1753: a fish from Höje å (not the fish fingers below)
   if (item.isFish) return 'food'; // a fish finger (fishfingers.js builds a plain object, so no class name)
   if (item.isBinoculars) return 'binoculars';
+  if (item.isHarpoon) return ''; // #1953: the harpoon gun has no proxy model for the other players (its spear is local, too)
   if (item.isSprayCan) return 'spray';
   if (item.isCloth) return 'tool';
   if (item.isPaper) return 'paper';

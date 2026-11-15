@@ -341,6 +341,7 @@ function setParasol(p, f) {
  * away (Patio.update). Not a seat: E on it is the lid (#400).
  * `item.inside: 'bow'` (#690, the box at the foot of the NW stair): empty inside — bow.js lays the bow and the quiver in
  * it (`userData.box`: the lid and the inner size); `item.y`: its floor's height (outdoors on the terrain).
+ * `item.inside: 'harpoon'` (#1953, the box by Höje å): the same empty box for the harpoon gun (harpoon.js).
  */
 let dynboxMat, dynboxDark;
 function dynboxMaterials(color) {
@@ -382,12 +383,12 @@ export function dynbox(item = {}) {
   const lid = new Openable({ name: 'dynboxens lock', object: pivot, mode: 'flap', axis: [1, 0, 0], sign: -1, max: P.dynbox.max, speed: 1.6 });
   // inside: a folded blanket at one end, the patio cushions in two piles while they are put away
   const contents = new THREE.Group();
-  if (item.inside !== 'bow') addFoldedThrow(contents, { surface: upholsterySurface(g, 'Vikta fleecepläden', { id: 'throw-folded', replaceDetails: true }), w: 0.4, d: 0.42, layer: 0.025, layers: 4, x: L / 2 - t - 0.24, z: 0, y: 0.05, yaw: 0.05, color: 'grey' });
+  if (!item.inside) addFoldedThrow(contents, { surface: upholsterySurface(g, 'Vikta fleecepläden', { id: 'throw-folded', replaceDetails: true }), w: 0.4, d: 0.42, layer: 0.025, layers: 4, x: L / 2 - t - 0.24, z: 0, y: 0.05, yaw: 0.05, color: 'grey' });
   const tmp = new THREE.Group();
   // Private copy handles are linked once to the matching movable module after Furniture builds.
-  const copies = item.inside === 'bow' ? [] : ['sofa'].map(part => ({ part, surface: upholsterySurface(tmp, 'Förvarade kuddar', { id: part, replaceDetails: true }) }));
+  const copies = item.inside ? [] : ['sofa'].map(part => ({ part, surface: upholsterySurface(tmp, 'Förvarade kuddar', { id: part, replaceDetails: true }) }));
   g.userData.patioCushionCopies = copies;
-  const piles = item.inside === 'bow' ? [] : addCushions(tmp, P.cushions.map((c) => ({ ...c, yaw: 0.1 * Math.sin(c.x * 7), lean: Math.PI / 2 })), { backZ: 0, seatY: 0, surfaceFor: c => copies.find(copy => copy.part === c.materialGroup).surface });
+  const piles = item.inside ? [] : addCushions(tmp, P.cushions.map((c) => ({ ...c, yaw: 0.1 * Math.sin(c.x * 7), lean: Math.PI / 2 })), { backZ: 0, seatY: 0, surfaceFor: c => copies.find(copy => copy.part === c.materialGroup).surface });
   piles.forEach((m, i) => {
     const s = m.geometry.boundingBox ?? (m.geometry.computeBoundingBox(), m.geometry.boundingBox);
     const th = (s.max.z - s.min.z) * 0.8, pile = i % 2, k = Math.floor(i / 2);

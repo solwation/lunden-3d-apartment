@@ -64,6 +64,23 @@ function quiverGeometry() {
   return mergeGeometries(parts);
 }
 
+/** What a step from → to hits first: a solid, drawn mesh (not moving things, skinned figures, sprites, transparent or hidden things, or
+ * anything `skip(object)` says, tested up its parents). Shared by the arrows and the harpoon's spear (#1953, src/harpoon.js). */
+export function solidHit(scene, camera, ray, from, to, skip = () => false) {
+  const d = to.clone().sub(from), len = d.length();
+  if (len < 1e-6) return null;
+  ray.set(from, d.divideScalar(len)); ray.far = len;
+  ray.camera = camera; // (sprites — the other players' name tags — need it to be tested at all)
+  for (const h of ray.intersectObjects(scene.children, true)) {
+    const o = h.object;
+    if (!o.isMesh || o.isSprite || o.isSkinnedMesh || o.material?.transparent || o.material?.visible === false) continue;
+    let out = false;
+    for (let p = o; p; p = p.parent) if (!p.visible || p.userData.moving || skip(p)) { out = true; break; }
+    if (!out) return h;
+  }
+  return null;
+}
+
 /** Arrows in flight and stuck (one pool; also the other players' arrows, #667). */
 export class Arrows {
   constructor(scene, { camera = null, skip = () => false } = {}) {
@@ -90,20 +107,7 @@ export class Arrows {
   }
 
   /** What the arrow's step from → to hits first: a solid, drawn mesh (not moving things, figures, ghosts, sprites). */
-  hit(from, to) {
-    const d = to.clone().sub(from), len = d.length();
-    if (len < 1e-6) return null;
-    this.ray.set(from, d.divideScalar(len)); this.ray.far = len;
-    this.ray.camera = this.camera; // (sprites — the other players' name tags — need it to be tested at all)
-    for (const h of this.ray.intersectObjects(this.scene.children, true)) {
-      const o = h.object;
-      if (!o.isMesh || o.isSprite || o.isSkinnedMesh || o.material?.transparent || o.material?.visible === false) continue;
-      let skip = false;
-      for (let p = o; p; p = p.parent) if (!p.visible || p.userData.moving || this.skip(p)) { skip = true; break; }
-      if (!skip) return h;
-    }
-    return null;
-  }
+  hit(from, to) { return solidHit(this.scene, this.camera, this.ray, from, to, this.skip); }
 
   update(dt) {
     for (const a of this.list) {
