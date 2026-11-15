@@ -5,7 +5,7 @@ import { cookingActions } from './cooking.js';
 import { dishActions } from './dishes.js';
 import { wasteActions } from './waste.js';
 import { Items, SIZES } from './items.js';
-import { Holdable, heldItem, setHeld, handBusy, isStowed, bicycleHandsBusy } from './holdable.js';
+import { Holdable, heldItem, setHeld, handBusy, isStowed, isPocketed, forgetPocketed, bicycleHandsBusy } from './holdable.js';
 import { buildModel } from './lifemodels.js';
 import { sfx } from './audio.js';
 import { ActionSet, firstAllowed, Runner } from './actions.js';
@@ -63,6 +63,7 @@ export class LifeItem extends Holdable {
   sync() {
     if (isStowed(this)) { this.refresh(); return; } // ordinary saved hand place stays intact while detached
     const p = this.item.place, m = this.model;
+    if (p.at === 'pocket') { this.held = false; this.placed = false; this.refresh(); return; } // #1961: carried in the inventory (holdable.js owns the detached model)
     const wasHeld = this.held;
     this.held = p.at === 'hand';
     this.placed = p.at === 'world';
@@ -92,9 +93,15 @@ export class LifeItem extends Holdable {
     this.model.traverse((m) => { m.userData.door ??= this.takeTarget; }); // (meshes a show() built — a sandwich's layers — are part of it too; what lies on it keeps its own)
   }
 
+  /** #1961: holdable.js puts this instance away (true) / back in the hand (false): the domain place follows, nothing else changes. */
+  onPocket(on) { this.life.items.move(this.item, on ? { at: 'pocket' } : { at: 'hand' }, { force: true, except: this.life.items.held() }); }
+  /** Loading (keep.js `inventory`): the instance (saved at `pocket`) into the hand so that holdable.js can put it on its place. */
+  adoptHand() { return !this.life.items.move(this.item, { at: 'hand' }, { force: true, except: this.life.items.held() }) && heldItem() === this; }
+
   take() {
     if (handBusy(this)) return;
-    const why = this.life.items.move(this.item, { at: 'hand' });
+    const held = this.life.items.held(); // #1961: a carried-away one in the hand goes to a place of its own (setHeld, from sync)
+    const why = this.life.items.move(this.item, { at: 'hand' }, { except: held && held !== this.item && heldItem()?.item === held ? held : null });
     if (why) { this.life.say(why); return; }
     this.t = 0;
     this.lastYaw = this.camera.rotation.y; this.lastPitch = this.camera.rotation.x;
@@ -178,12 +185,18 @@ export class Life {
     if (it?.place.at === 'world') this.lastWorld.set(it.id, { ...it.place, pos: [...it.place.pos] });
     return it;
   }
+  /** Home (a store's slot, else where it last lay, else at the visitor's feet) for an instance that is nowhere (#1961). */
+  rehome(it) {
+    for (const place of [it.home, this.lastWorld.get(it.id), this.feet()]) if (place && !this.items.move(it, place, { ignoreShut: true, force: true })) return true;
+    return false;
+  }
   view(item) { return this.views.get(typeof item === 'string' ? item : item?.id) ?? null; }
 
   dropView(item) {
     const v = this.views.get(item.id);
     if (!v) return;
     if (heldItem() === v) { v.held = false; setHeld(null); }
+    forgetPocketed(v); // #1961
     v.model.removeFromParent();
     v.holder.removeFromParent();
     this.views.delete(item.id);
@@ -242,10 +255,11 @@ export class Life {
   interrupt(why) { this.runner.interrupt(why); }
 
   /** The E targets: every item not in the hand. */
-  targets() { const out = [...(this.storeTargets ?? [])], holding = !!this.items.held() || !!heldItem()?.wasteKind || !!heldItem()?.isVacuum; for (const v of this.views.values()) if (!v.held && (holding || !this.items.has(v.item, 'fixed') || v.item.amount > 0 || v.item.machine.nobag)) out.push(v.target); return out; } // (#386: a bin with something in it / no bag: tie it up, a new bag) // + the stores' boxes (#369; they raycast only while a life item is held); a bin only with something in the hand (#381)
+  targets() { const out = [...(this.storeTargets ?? [])], holding = !!this.items.held() || !!heldItem()?.wasteKind || !!heldItem()?.isVacuum; for (const v of this.views.values()) if (!v.held && !isPocketed(v) && (holding || !this.items.has(v.item, 'fixed') || v.item.amount > 0 || v.item.machine.nobag)) out.push(v.target); return out; } // (#386: a bin with something in it / no bag: tie it up, a new bag) // + the stores' boxes (#369; they raycast only while a life item is held); a bin only with something in the hand (#381)
 
   update(dt) {
     for (const v of this.views.values()) v.update(dt);
+    for (const v of this.views.values()) if (v.item.place.at === 'pocket' && !isPocketed(v) && !v.held) this.rehome(v.item); // #1961: a carried instance that lost its place (a reset, a record without the inventory) is never stranded
     for (const st of this.items.stores.values()) { // a store opened after being shut: what was used up is back (#373)
       const open = !st.isOpen || !!st.isOpen();
       if (open && this.wasOpen.get(st.id) === false) this.restock(st.id);
@@ -415,8 +429,8 @@ function baseActions(life) {
     id: 'take', order: 20, label: (c) => `ta ${nm(c.target)}`,
     applies: (c) => !!c.target && c.target.place.at !== 'hand' && !I.has(c.target, 'fixed'), // (a bin stays in its place, #381)
     check: (c) => {
-      if (c.heldView && c.heldView !== c.targetView) return `Lägg ifrån dig ${c.heldView.name ?? 'det du håller'} först`;
-      return c.targetView?.shutReason() ?? I.check(c.target, { at: 'hand' });
+      if (c.heldView && c.heldView !== c.targetView && handBusy(c.targetView)) return `Lägg ifrån dig ${c.heldView.name ?? 'det du håller'} först`; // (#1961: not when the hand's thing can be carried)
+      return c.targetView?.shutReason() ?? I.check(c.target, { at: 'hand' }, { except: c.held });
     },
     quiet: (c) => !!c.heldView, // (holding something: not worth a row of its own when there is something else to do)
     run: (c) => c.targetView.take(),

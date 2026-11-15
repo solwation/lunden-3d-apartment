@@ -197,3 +197,58 @@ test('keep: a carried cup and a carried food portion come back to their places a
   assert.ok(isPocketed(cups[0]) || heldItem() === cups[0]); assert.ok(isPocketed(fruit) || heldItem() === fruit);
   assert.equal(inventorySlots().reduce((s, x) => s + x.count, 0), 3);
 });
+
+// #1961: the life simulator's things. A stand-in view per instance with LifeItem's hooks; the real domain (items.js).
+const { Items } = await import('./items.js');
+const { ITEMS } = await import('./config.js');
+const lifeThing = (items, type) => {
+  const item = items.create(type, { at: 'world', pos: [0, 1, 0], yaw: 0 });
+  const life = { items };
+  const v = thing('LifeItem', { lifeItem: true, life, item,
+    onPocket(on) { items.move(item, on ? { at: 'pocket' } : { at: 'hand' }, { force: true, except: items.held() }); } });
+  Object.assign(v, {
+    take() {
+      if (handBusy(v)) return false;
+      const h = items.held();
+      if (items.move(item, { at: 'hand' }, { except: h && h !== item && heldItem()?.item === h ? h : null })) return false;
+      setHeld(v); v.held = true; v.model.parent = HAND; return true;
+    } });
+  return v;
+};
+test('life things are carried: the domain counts a carried thing as in no hand, store or carrier', () => {
+  reset();
+  const items = new Items(ITEMS);
+  const bag = lifeThing(items, 'rubbishBag'), clothes = lifeThing(items, 'laundryClothes');
+  assert.ok(!pocketable(bag) || bag.item.place.at === 'hand'); // only a held thing is judged
+  assert.equal(bag.take(), true); assert.ok(pocketable(bag));
+  assert.equal(clothes.take(), true);
+  assert.ok(isPocketed(bag)); assert.deepEqual(bag.item.place, { at: 'pocket' }); assert.deepEqual(clothes.item.place, { at: 'hand' });
+  assert.equal(items.held(), clothes.item); // exactly one in the hand
+  assert.deepEqual(items.audit(), []);
+  assert.equal(items.check(bag.item, { at: 'hand' }), `Lägg ifrån dig ${items.name(clothes.item)} först`); // the domain rule is unchanged
+  assert.equal(selectSlot(0), true);
+  assert.equal(heldItem(), bag); assert.equal(items.held(), bag.item); assert.deepEqual(clothes.item.place, { at: 'pocket' });
+  assert.deepEqual(items.audit(), []);
+});
+test('a carried life thing is dropped from its place when removed; fixed things (bins) are never carried', () => {
+  reset();
+  const items = new Items(ITEMS);
+  const bag = lifeThing(items, 'rubbishBag'), other = lifeThing(items, 'knife');
+  bag.take(); other.take();
+  assert.ok(isPocketed(bag));
+  H.forgetPocketed(bag); items.remove(bag.item);
+  assert.ok(!isPocketed(bag));
+  const bin = lifeThing(items, 'bin'); bin.item.place = { at: 'hand' };
+  assert.equal(pocketable(bin), false);
+  assert.match(items.check(bin.item, { at: 'pocket' }), /bära/);
+});
+test('a record with a carried thing loads it back as carried, and a new visit sends it home', () => {
+  const items = new Items(ITEMS);
+  const bag = items.create('rubbishBag', { at: 'pocket' });
+  assert.deepEqual(items.audit(), []);
+  const rec = items.serialize();
+  const a = new Items(ITEMS); a.load(rec, { hand: true });
+  assert.deepEqual(a.get(bag.id).place, { at: 'pocket' });
+  const b = new Items(ITEMS); b.load(rec, { hand: false });
+  assert.notEqual(b.get(bag.id).place.at, 'pocket');
+});

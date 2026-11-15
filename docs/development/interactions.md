@@ -541,14 +541,15 @@ src/inventoryhud.js    #1954: the inventory's HUD row (`#inventory`, DOM only): 
                        #1954, the inventory (in src/holdable.js, INVENTORY): `slots` (5) places, one of them the hand. `setHeld(item)`
                        moves a held thing that can be carried (`pocketable`: the classes in `POCKET` = weapons, flashlight, binoculars,
                        spray cans, the ball, the rod, caught fish, shark fin, mussels, nuts; #1960: cups, glasses, bottles, beer cans, milk, fruit, fish
-                       fingers, fries bunches/bags, popcorn tubs) to its place instead of sending it home,
+                       fingers, fries bunches/bags, popcorn tubs; #1961: every life instance except the fixed bins) to its place instead of sending it home,
                        so `handBusy(item)` is false while there is a place for `item`; `selectSlot(i)` / `cycleSlot(dir)` swap the hand.
                        A carried thing is detached like the bicycle's stowed hand (no hooks; `isStowed` covers both) and loses its
                        place if it was reset, broken or re-homed meanwhile (`inventoryTick`). Squirrel nuts stack, `stack` (8) to a
-                       place; the next comes into the hand when the held one is gone. Everything else (the chicken and its pieces, life items, the
-                       cat, drawings, paper; #1961 is the life items) keeps one-at-a-time and cannot be swapped away. Saved across a reload (#1959, keep.js
+                       place; the next comes into the hand when the held one is gone. Everything else (the chicken and its pieces, the
+                       cat, drawings, paper) keeps one-at-a-time and cannot be swapped away. Saved across a reload (#1959, keep.js
                        `inventory`, see storage.md): every place, the nut stacks and the active place. `node --test src/inventory.test.mjs`,
-                       tools/inventorykeeptest.cjs (real reload), tools/inventoryfoodtest.cjs (#1960: cup, fruit, fish finger, glass)
+                       tools/inventorykeeptest.cjs (real reload), tools/inventoryfoodtest.cjs (#1960: cup, fruit, fish finger, glass),
+                       tools/inventorylifetest.cjs (#1961: rubbish bag, laundry, cucumber, knife)
 src/holdable.js        things you take and hold (one at a time): home + pick box, held pose in camera space,
                        use = click / touch button / fast look; E on the home puts it back, E on a table top /
                        worktop / the floor (HOLD.reach) puts it down (`placeAt`, lying by its shape — `restPose`;

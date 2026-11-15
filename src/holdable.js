@@ -53,7 +53,7 @@ export const heldItem = () => current;
 // detached exactly like the bicycle's stowed hand (no put / take hooks, no placement change, its owner state untouched) and comes back
 // with the same pose; one that was reset, removed, broken or re-homed meanwhile is simply dropped from its place (never resurrected).
 // Squirrel nuts stack: up to INVENTORY.stack of them share a place (`stacks`), the next one comes into the hand when the held one is
-// gone. Only the classes in POCKET (weapons, tools, the catch; #1960: cups, glasses, bottles, fruit, fish fingers, fries, popcorn) are carried; chicken, the life simulator's items, the cat, drawings
+// gone. Only the classes in POCKET (weapons, tools, the catch; #1960: cups, glasses, bottles, fruit, fish fingers, fries, popcorn; #1961: the life simulator's items) are carried; chicken, the cat, drawings
 // and paper keep the old rule (one at a time; they cannot be swapped away, the hand must be emptied first). Saved across a reload by
 // keep.js's `inventory` part (#1959) through `inventoryContents` / `stowInto` / `freeHand` / `settleInventory` below.
 const POCKET = new Set(['Saber', 'Blaster', 'Wand', 'Flashlight', 'Bow', 'Harpoon', 'Binoculars', 'FishingRod', 'CaughtFish', 'SharkFin', 'Mussel', 'Nut', 'SprayCan', 'Basketball', 'Rifle',
@@ -64,7 +64,10 @@ const POCKET_FLAGS = ['isCup', 'isFruit', 'isFish', 'isFries'];
 const pockets = Array(I.slots).fill(null), stacks = Array.from({ length: I.slots }, () => []);
 let active = 0;
 /** May `item` be carried in a place of the inventory? */
-export const pocketable = (item) => !!item && !item.broken && !item.lifeItem && !item.isSharedPicnic && (item.isRifle || POCKET.has(item.constructor?.name) || POCKET_FLAGS.some((f) => item[f]));
+export const pocketable = (item) => !!item && !item.broken && !item.isSharedPicnic && (item.lifeItem ? lifePocketable(item) : item.isRifle || POCKET.has(item.constructor?.name) || POCKET_FLAGS.some((f) => item[f]));
+// #1961: a life simulator's thing (an instance in items.js) is carried like any other holdable; its instance is then at `{ at: 'pocket' }`
+// (neither in the hand, on a carrier, in a store nor lying out), so the domain rules count it as in none of those. Fixed things (the bins) stay.
+const lifePocketable = (v) => !!v.item && v.life?.items.get(v.item.id) === v.item && !v.life.items.has(v.item, 'fixed') && !v.item.lock && v.item.place?.at === 'hand';
 const stackable = (item) => !!item?.isSquirrelNut;
 /** Detach `item` (the hand's) without hooks: the record that `attach` brings back. */
 function detach(item) {
@@ -74,6 +77,7 @@ function detach(item) {
   item.relax?.();
   if (model) { rec.pos.copy(model.position); rec.quat.copy(model.quaternion); }
   model?.removeFromParent();
+  item.onPocket?.(true); // #1961: a life instance leaves the hand for `{ at: 'pocket' }`
   return rec;
 }
 /** Is the carried record still the thing that was put away (not reset, removed, broken or back in the world)? */
@@ -86,7 +90,15 @@ function attach(rec) {
   parent?.add(item.model); item.model.position.copy(pos); item.model.quaternion.copy(quat); item.model.scale.copy(scale); item.model.visible = visible;
   const camera = item.camera ?? (parent?.isCamera ? parent : null);
   if (camera?.isCamera) { item.lastYaw = camera.rotation.y; item.lastPitch = camera.rotation.x; }
+  item.onPocket?.(false); // #1961: the life instance is in the hand again
   return true;
+}
+/** A carried thing that no longer exists (a life instance removed meanwhile) loses its place at once. */
+export function forgetPocketed(item) {
+  for (let i = 0; i < I.slots; i++) {
+    if (pockets[i]?.item === item) pockets[i] = null;
+    stacks[i] = stacks[i].filter((r) => r.item !== item);
+  }
 }
 /** The thing on top of place `i`: the hand's for the active place, else the carried one. */
 const topOf = (i) => (i === active ? current : pockets[i]?.item ?? null);

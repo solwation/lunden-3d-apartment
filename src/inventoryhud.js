@@ -12,10 +12,17 @@ const ICONS = [['isRifle', '🔫'], ['isBow', '🏹'], ['isHarpoon', '🔱'], ['
 const BY_CLASS = { Saber: '⚔️', Blaster: '🔫', Wand: '🪄', Flashlight: '🔦', Basketball: '🏀',
   Glass: '🍷', Bottle: '🍾', BeerCan: '🍺', Milk: '🥛', PopcornTub: '🍿', FriesBag: '🍟' }; // #1960: the drinks and snacks that can be carried
 const FRUIT = { apple: '🍎', pear: '🍐', orange: '🍊', clementine: '🍊', banana: '🍌' }; // fruit.js kinds
+// #1961: the life simulator's things by instance type (items.js), else by tag
+const LIFE_ICON = { toiletRoll: '🧻', hallJacket: '🧥', hallShoes: '👟', wateringCan: '🚿', laundryClothes: '👕', eggCarton: '🥚', rawEgg: '🥚', friedEgg: '🍳', sausagePack: '🌭', sausage: '🌭',
+  bunBag: '🥖', hotdogBun: '🌭', billysBox: '🍕', billys: '🍕', gorbysBox: '🥟', pirog: '🥟', iceCreamBox: '🍨', iceCreamConeVanilla: '🍦', iceCreamConeStrawberry: '🍦', iceCreamConeChocolate: '🍦',
+  plate: '🍽️', board: '🪵', cucumber: '🥒', cucumberSlice: '🥒', cheese: '🧀', cheeseSlice: '🧀', cheeseSlicer: '🧀', butter: '🧈', breadBag: '🍞', breadSlice: '🍞', peas: '🫛',
+  rubbishBag: '🗑️', knife: '🔪', butterKnife: '🔪', glass: '🥛' };
+const LIFE_TAG = [['food', '🍽️'], ['dish', '🍽️'], ['tool', '🔪']];
 /** The icon of a held / carried thing. */
 export function inventoryIcon(item) {
   if (!item) return '';
   for (const [flag, icon] of ICONS) if (item[flag]) return icon;
+  if (item.lifeItem) return LIFE_ICON[item.item?.type] ?? LIFE_TAG.find(([t]) => item.life?.items.has(item.item, t))?.[1] ?? '📦';
   if (item.isFruit) return FRUIT[item.kind] ?? '🍎'; // #1960: what is carried shows, not a generic hand
   if (item.isFries) return '🍟';
   if (item.isFish) return '🍤'; // a fish finger (fishfingers.js: a plain object)

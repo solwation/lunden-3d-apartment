@@ -327,6 +327,7 @@ const PARTS = {
         if (it.isSquirrelNut) return ['u', it.slot?.kind ? 1 : 0];
         if (it.isCup) { const i = a.cups.cups.indexOf(it); return i >= 0 ? ['c', i] : null; } // #1960: a cup by its index in `cups`
         for (const [kind, owner] of Object.entries(a.bicycleStow ?? {})) { const st = owner?.saveStowed?.(it); if (st) return ['b', kind, st]; } // food: its owner's stowed record
+        if (it.lifeItem) return it.item?.id ? ['l', it.item.id] : null; // #1961: a life instance by its id (its record is in `life`, place `pocket`)
         if (it.isCaughtFish) return fish.includes(it) ? ['f', fish.indexOf(it)] : null;
         if (it.isSharkFin) return fins.includes(it) ? ['n', fins.indexOf(it)] : null;
         const i = list.indexOf(it);
@@ -340,7 +341,7 @@ const PARTS = {
       if (s?.v !== 1 || !Array.isArray(s.s)) return;
       const map = byKey(a.holdables.filter((h) => keepable(a, h)), holdKey);
       const byIdx = (arr, i) => arr.find((x) => x.keepIdx === i);
-      const plan = [], nuts = [], food = []; // [[item, slot]]; food: [kind, stowed record, slot]
+      const plan = [], nuts = [], food = [], lives = []; // [[item, slot]]; food: [kind, stowed record, slot]
       s.s.slice(0, 16).forEach((l, slot) => {
         for (const e of Array.isArray(l) ? l.slice(0, 64) : []) {
           if (typeof e === 'string') { const h = map.get(e); if (h && !h.broken && !plan.some(([x]) => x === h)) plan.push([h, slot]); }
@@ -348,6 +349,7 @@ const PARTS = {
           else if (Array.isArray(e) && e[0] === 'n') { const f = byIdx(a.fishing?.fins ?? [], e[1]); if (f && !f.broken) plan.push([f, slot]); }
           else if (Array.isArray(e) && e[0] === 'c') { const c = a.cups.cups[e[1]]; if (c && !plan.some(([x]) => x === c)) plan.push([c, slot]); }
           else if (Array.isArray(e) && e[0] === 'b' && typeof e[1] === 'string' && e[2] && typeof e[2] === 'object') food.push([e[1], e[2], slot]);
+          else if (Array.isArray(e) && e[0] === 'l' && typeof e[1] === 'string') lives.push([e[1], slot]);
           else if (Array.isArray(e) && e[0] === 'u') nuts.push([e[1] ? 1 : 0, slot]);
         }
       });
@@ -363,6 +365,10 @@ const PARTS = {
         if (!Object.hasOwn(a.bicycleStow ?? {}, kind) || heldItem()) continue;
         const it = a.bicycleStow[kind]?.loadStowed?.(st);
         if (it && heldItem() === it) stowInto(it, slot);
+      }
+      for (const [id, slot] of lives) { // life instances: their record (`life`, loaded before this part) says `pocket`; into the hand, then onto the place
+        const v = a.life?.view(id);
+        if (v && !isPocketed(v) && v.item.place.at === 'pocket' && v.adoptHand()) stowInto(v, slot);
       }
       const made = a.squirrels?.restoreCarried(nuts.map(([kind]) => kind)) ?? [];
       made.forEach((it, i) => { if (heldItem() === it) stowInto(it, nuts[i][1]); });
@@ -459,7 +465,7 @@ const restKey = (t) => `${t.name}|${t.spots[0] ? vec(t.spots[0].pos).join(',') :
 
 // the order things come back in: the clock before the lamps (dusk), the car before its seat, fronts before what
 // lies in them, the TV before sitting in front of it
-const ORDER = ['clock', 'santa', 'car', 'lift', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'fishing', 'inventory', 'jetpack', 'spidersuit', 'life', 'christmasGifts', 'rest', 'cat', 'bicycleHand'];
+const ORDER = ['clock', 'santa', 'car', 'lift', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'fishing', 'jetpack', 'spidersuit', 'life', 'inventory', 'christmasGifts', 'rest', 'cat', 'bicycleHand'];
 
 /** The world part of a reload record. */
 export function saveWorld(a) {

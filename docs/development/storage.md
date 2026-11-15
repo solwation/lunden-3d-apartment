@@ -1860,6 +1860,6 @@ for a nut. #1960: `["c",i]` is the i-th cup of `cups.cups` (its contents/heat/di
 is dropped from its place; it is never both in the world and a place. A thing the hand held that cannot be carried (a cup) stays in the hand.
 Nuts have no identity across a reload: `Squirrels.restoreCarried(kinds)` gives each a free slot (so a carried nut is a new acorn/hazelnut);
 not in a multiplayer room (the take needs the room's answer). Not saved: mussels (their bed spots are built only when swimming) and, until
-their own issues (#1960, #1961), food, cups and life items. The part is written wherever the world is: "Ladda om", the update flow, the
+their own issues, the chicken and its pieces (#1983). #1961: `["l",id]` is a life instance (its record, with place `{at:"pocket"}`, is in the `life` part, which now loads *before* `inventory`; loading moves the instance into the hand (`LifeItem.adoptHand`) and `stowInto`s it). A new visit (`hand:false`) and an instance whose place did not come back (`Life.update` sweeps `pocket` instances nobody carries) go home like a held one. The part is written wherever the world is: "Ladda om", the update flow, the
 GL-restore reload and `lunden.playerWorld` on page hide, which is what brings the places back after a plain F5 (`tools/inventorykeeptest.cjs`
 checks both a new navigation and `page.reload()`).

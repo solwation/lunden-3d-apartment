@@ -6,6 +6,7 @@
 //   place  — exactly one of
 //            { at: 'world', pos: [x, y, z], yaw }        lying / standing somewhere (a worktop, a table, the floor)
 //            { at: 'hand' }                             in the visitor's hand (one at a time)
+//            { at: 'pocket' }                           carried in a place of the inventory (#1961; holdable.js knows which one)
 //            { at: 'slot', store, slot }                in a store's slot (the fridge, a drawer …, #369)
 //            { at: 'on', parent, slot }                 on a carrier (a plate, the cutting board, #370)
 //   amount — in the type's unit ('g' | 'ml' | 'count'), never below 0
@@ -67,11 +68,12 @@ export function clonePlace(p) {
   if (!p) return null;
   if (p.at === 'world') return { at: 'world', pos: [...p.pos], yaw: p.yaw ?? 0 };
   if (p.at === 'hand') return { at: 'hand' };
+  if (p.at === 'pocket') return { at: 'pocket' };
   if (p.at === 'slot') return { at: 'slot', store: p.store, slot: p.slot };
   if (p.at === 'on') return { at: 'on', parent: p.parent, slot: p.slot };
   return null;
 }
-const samePlace = (a, b) => !!a && !!b && a.at === b.at && (a.at === 'slot' ? a.store === b.store && a.slot === b.slot : a.at === 'on' ? a.parent === b.parent && a.slot === b.slot : a.at === 'hand');
+const samePlace = (a, b) => !!a && !!b && a.at === b.at && (a.at === 'slot' ? a.store === b.store && a.slot === b.slot : a.at === 'on' ? a.parent === b.parent && a.slot === b.slot : a.at === 'hand' || a.at === 'pocket');
 
 export class Items {
   /** defs = ITEMS (config): type → { name, tags, unit, amount, size, pkg?, prep?, clean?, carrier?: { slots, size, accepts } } */
@@ -204,6 +206,7 @@ export class Items {
         const h = this.held();
         return h && h !== item && h !== opts.except ? `Lägg ifrån dig ${this.name(h)} först` : null;
       }
+      case 'pocket': return this.has(item, 'fixed') ? `${what} går inte att bära` : null;
       case 'slot': {
         const s = this.store(place.store);
         if (!s) return 'Platsen finns inte';
@@ -362,7 +365,7 @@ export class Items {
     for (const e of valid) {
       const props = { id: e.id, amount: e.amount, pkg: e.pkg, prep: e.prep, clean: e.clean, moisture: e.moisture, machine: e.machine, home: e.home, parts: e.parts, toasted: e.toasted };
       let place = clonePlace(e.place);
-      if (place?.at === 'hand' && !hand) place = null;
+      if ((place?.at === 'hand' || place?.at === 'pocket') && !hand) place = null; // (a new visit: the inventory is empty too)
       let it = place ? this.create(e.type, place, props) : null;
       if (!it) {
         const why = place ? this.lastReason : 'not in the hand at a new visit';
@@ -381,7 +384,7 @@ export class Items {
     const out = [], seen = new Map();
     let inHand = 0;
     for (const i of this.items.values()) {
-      if (!i.place || !['world', 'hand', 'slot', 'on'].includes(i.place.at)) out.push(`${i.id}: no place`);
+      if (!i.place || !['world', 'hand', 'pocket', 'slot', 'on'].includes(i.place.at)) out.push(`${i.id}: no place`);
       if (!(i.amount >= 0)) out.push(`${i.id}: amount ${i.amount}`);
       if (i.place?.at === 'hand') inHand++;
       if (i.place?.at === 'slot' || i.place?.at === 'on') {
