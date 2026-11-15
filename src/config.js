@@ -8691,6 +8691,17 @@ export const DOOR_SYNC = {
   every: 0.12, // s: a door message at most this often per connection (the room drops faster ones)
 };
 
+// #1974 (part of #1964): loose things shared between the players (src/thingsync.js, cloudflare/things.js). An id is `<group letter><index>`;
+// `max` lists the groups and how many indexes each may have (the clients build the lists identically, as the doors do):
+// s saber, b blaster, w wand, f flashlight, a the bow, h the harpoon gun, k binoculars, c spray can, o basketball, r fishing rod.
+// `every`: s between a connection's messages (faster ones are dropped); `reach`: m from the player's reported position within which a
+// thing may be put down / taken from where it lies; `held`: things one connection may hold at once (the inventory's places and a nut
+// stack's worth of margin); `x`, `y`, `z`: the bounds of a place a thing may be put (m; the site with a margin). All *guess* limits.
+export const THING_SYNC = {
+  max: { s: 4, b: 8, w: 8, f: 4, a: 1, h: 1, k: 2, c: 12, o: 2, r: 1 },
+  every: 0.12, reach: 8, held: 12, x: [-600, 600], y: [-60, 120], z: [-300, 600],
+};
+
 // #1921: authored mallard surface estimates (guess), in the existing bill/rig frame.
 // Profiles are [z, centreY, halfWidth, halfHeight], neck uses [y, centreZ, width, depth].
 export const DUCK_SURFACE = {

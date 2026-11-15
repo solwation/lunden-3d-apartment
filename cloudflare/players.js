@@ -33,6 +33,7 @@ import { RoomRiverFish, cleanRiverFish } from './riverfish.js';
 import { RoomTime, cleanTime } from './roomtime.js'; // #1774
 import { RoomGraffiti, cleanGraffiti, GRAFFITI_SYNC } from './graffiti.js';
 import { RoomDoors, cleanDoor } from './doors.js';
+import { RoomThings, cleanThingText } from './things.js'; // #1974: loose things shared between the players
 import { RoomTarget, cleanTarget } from './target.js';
 import { RoomTrails } from './trails.js';
 export { GRAFFITI_SYNC };
@@ -375,6 +376,7 @@ export class PlayerRoom {
     this.boule = new RoomBoule(ctx, () => this.open().map(ws => ({ ws, a: att(ws) })), send);
     this.football=new RoomFootball(ctx,FOOTBALL,send,()=>this.open().map(ws=>({ws,a:att(ws)})));
     this.doors = new RoomDoors(send, () => this.open().map((ws) => ({ ws }))); // #1775: the doors' state (memory only, no KV)
+    this.things = new RoomThings(send, () => this.open().map((ws) => ({ ws, a: att(ws) })), (ws, a) => { try { ws.serializeAttachment(a); } catch { /* gone */ } }); // #1974: who holds what, where things lie (memory + the holders' attachments)
     this.conversation = new RoomConversation(() => this.open().map(ws => ({ ws, a: att(ws) })), send);
     this.roomTime = new RoomTime(ctx, () => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1865: persisted server-reference world calendar
     this.graffiti = new RoomGraffiti(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1724: the shared spray paint (memory only, no KV)
@@ -451,7 +453,7 @@ export class PlayerRoom {
     const a = att(ws);
     try { ws.close(code, reason); } catch { /* gone */ }
     if (a) this.broadcast({ t: 'x', i: a.i }, ws);
-    this.picnic.leave(a);this.sharedFish.leave(a);this.poolTrim(ws); this.paddock.trim(ws, a); this.squirrels.trim(ws, a); this.riverFish.trim(ws, a); this.trails.leave(a?.i); this.graffiti.trim(this.open().filter((x) => x !== ws).length); this.roomTime.trim(this.open().filter((x) => x !== ws).length);
+    this.things.leave(a); this.picnic.leave(a);this.sharedFish.leave(a);this.poolTrim(ws); this.paddock.trim(ws, a); this.squirrels.trim(ws, a); this.riverFish.trim(ws, a); this.trails.leave(a?.i); this.graffiti.trim(this.open().filter((x) => x !== ws).length); this.roomTime.trim(this.open().filter((x) => x !== ws).length);
     this.cinema.trim(ws);for(const tv of this.tvs)tv.trim(ws);this.snake.trim(ws);
     this.football.trim(ws,a);
     const cinemaSave=Promise.all([this.cinema.flush(),...this.tvs.map(tv=>tv.flush())]);this.ctx.waitUntil?.(cinemaSave);
@@ -578,7 +580,7 @@ export class PlayerRoom {
     this.ctx.acceptWebSocket(server);
     const i = crypto.randomUUID().slice(0, 8), n = cleanName(url.searchParams.get('n'));
     const attachment = { i, n, s: null, turned: false, rightFirstTurn: null, leftTinyTurn: null, leftStandingTurn: null, frontTurn: null, rearFirstTurn: null, l: COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false, consumed: [] };
-    if (!others.length) this.target.reset();
+    if (!others.length) { this.target.reset(); this.things.reset(); } // (#1974: an empty room forgets where things were)
     attachment.tgs = {...this.target.state};
     server.serializeAttachment(attachment);
     send(server, JSON.stringify({ t: 'w', conversation: { v: 1 }, picnic:await this.picnic.welcome(), sharedFish:await this.sharedFish.welcome(),nutDrops:await this.squirrels.welcome(now),boule: this.boule.snapshot(), target: this.target.snapshot(), football:this.football.join(server,attachment,now), i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons }, ...(others.length ? this.doorsWelcome() : (this.doors.reset(), {})), ...(this.roomTime.welcome(now) ? { tm: this.roomTime.welcome(now) } : {}), trails: this.trails.snapshot(now) })); // (#1773: trails)
@@ -587,7 +589,7 @@ export class PlayerRoom {
     return new Response(null, { status: 101, webSocket: client });
   }
 
-  doorsWelcome() { const d = this.doors.list(); return d.length ? { doors: d } : {}; } // #1775
+  doorsWelcome() { const d = this.doors.list(), t = this.things.list(); return { ...(d.length ? { doors: d } : {}), ...(t.length ? { things: t } : {}) }; } // #1775, #1974
 
   async webSocketMessage(ws, message) {
     await this.football.ready;
@@ -622,6 +624,7 @@ export class PlayerRoom {
     let ft=null;try{ft=cleanFootballCommand(JSON.parse(plain));}catch{}
     const tg = plain.startsWith('{"t":"tg"') ? cleanTarget(plain) : null;
     const dr = plain.startsWith('{"t":"dr"') ? cleanDoor(plain) : null; // #1775
+    const th = plain.startsWith('{"t":"th"') ? cleanThingText(plain) : null; // #1974
     const cv = plain.startsWith('{"t":"cv"') ? cleanConversation(plain) : null;
     const tm = plain.startsWith('{"t":"tm"') ? cleanTime(plain) : null; // #1774 (a malformed one is an ordinary, ignored state)
     const talk = cleanTalk(plain), hello = !talk && cleanGreet(plain), toast = !talk && !hello && cleanToast(plain), sound = !talk && !hello && !toast && cleanSound(plain), react = !talk && !hello && !toast && !sound && cleanReact(plain), pool = !talk && !hello && !toast && !sound && !react && cleanPool(plain), mus = !talk && !hello && !toast && !sound && !react && !pool && cleanMusic(plain), cinema = !talk && !hello && !toast && !sound && !react && !pool && !mus && cleanCinema(plain), snake = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && cleanSnake(plain), paddock = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && cleanPaddock(plain), sq = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && cleanSquirrels(plain), rf = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && !sq && cleanRiverFish(plain), shot = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && !sq && !rf && cleanShot(plain);
@@ -720,6 +723,7 @@ export class PlayerRoom {
     else if (ft) this.football.handle(ws,a,ft,now);
     else if (tg) this.target.handle(ws, a, tg, now);
     else if (dr) this.doors.handle(ws, a, dr, now); // #1775
+    else if (th) this.things.handle(ws, a, th, now); // #1974
     else if (tm) await this.roomTime.handle(ws, a, tm, now); // #1774
     else if (gf !== null) { if (gf) this.graffiti.handle(ws, a, gf, now); } // #1724 (a malformed block is dropped)
     else if (shot) {
@@ -855,7 +859,7 @@ export class PlayerRoom {
     const a = att(ws);
     try { ws.close(code === 1005 || code === 1006 ? 1000 : code, 'bye'); } catch { /* already closed */ }
     if (a) this.broadcast({ t: 'x', i: a.i }, ws);
-    this.picnic.leave(a);this.sharedFish.leave(a);this.poolTrim(ws); this.paddock.trim(ws, a); this.squirrels.trim(ws, a); this.riverFish.trim(ws, a); this.trails.leave(a?.i); this.graffiti.trim(this.open().filter((x) => x !== ws).length); this.roomTime.trim(this.open().filter((x) => x !== ws).length); await this.picnic.flush();await this.squirrels.flush();await this.sharedFish.flush();await this.poolFlush();
+    this.things.leave(a); this.picnic.leave(a);this.sharedFish.leave(a);this.poolTrim(ws); this.paddock.trim(ws, a); this.squirrels.trim(ws, a); this.riverFish.trim(ws, a); this.trails.leave(a?.i); this.graffiti.trim(this.open().filter((x) => x !== ws).length); this.roomTime.trim(this.open().filter((x) => x !== ws).length); await this.picnic.flush();await this.squirrels.flush();await this.sharedFish.flush();await this.poolFlush();
     this.cinema.trim(ws);for(const tv of this.tvs)tv.trim(ws);this.snake.trim(ws);
     this.football.trim(ws,a);await this.cinema.flush();for(const tv of this.tvs)await tv.flush();
     await this.football.flush();

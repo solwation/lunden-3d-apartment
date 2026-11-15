@@ -1907,3 +1907,66 @@ test('#1865: persisted authoritative world clock, bounded edits and late/rejoin 
   now += 400; re.send({t:'tm',v:2,k:'set',q:1,stamp,p:0,s:0}); await settle(env); re.ws.close(); await settle(env); env.PLAYERS.hibernate('world'); now += 864e5;
   const run = await connect(env, 'Running'); assert.equal(run.got[0].tm.stamp, stamp + 864e5); run.ws.close(); await settle(env);
 });
+
+// #1974 (part of #1964): loose things shared between the players: who holds a thing, where it lies; memory + the holders' attachments
+test('#1974 things: validation, one winner on a simultaneous take, put / home by the holder, reach, welcome, leaving sends things home', async () => {
+  const env = setup();
+  const a = await connect(env, 'A'), b = await connect(env, 'B');
+  const ia = a.got[0].i, ib = b.got[0].i;
+  const th = (c) => c.got.filter((m) => m.t === 'th');
+  const say = async (c, m, wait = 1000) => { now += wait; c.send({ t: 'th', ...m }); await settle(env); };
+  assert.equal(a.got[0].things, undefined, 'nothing away from home at the start');
+  // validation: unknown group, index over the max, padded index, bad kind, no / bad request number, a put without or with a bad place
+  for (const bad of [{ i: 'z0', k: 'take', n: 1 }, { i: 's4', k: 'take', n: 1 }, { i: 's01', k: 'take', n: 1 }, { i: 's0', k: 'grab', n: 1 }, { i: 's0', k: 'take' }, { i: 's0', k: 'take', n: -1 },
+    { i: 's0', k: 'put', n: 1 }, { i: 's0', k: 'put', n: 1, p: [0, 0, 9999], q: [0, 0, 0, 1] }, { i: 's0', k: 'put', n: 1, p: [0, 0, 0], q: [0, 0, 0, 5] }, { i: 's0', k: 'put', n: 1, p: [0, 'x', 0], q: [0, 0, 0, 1] }]) await say(a, bad);
+  assert.equal(th(a).length + th(b).length, 0, 'malformed thing messages change nothing');
+  assert.equal(a.closed, null);
+  // both stand at a known place
+  now += 1000; a.send({ p: [10, 0, 10], r: 0 }); b.send({ p: [11, 0, 10], r: 0 }); await settle(env);
+  // A takes the saber: everybody, A too, hears it is held by A
+  await say(a, { i: 's0', k: 'take', n: 1 });
+  for (const c of [a, b]) assert.deepEqual(th(c).at(-1), { t: 'th', i: 's0', m: 'held', at: now, by: ia });
+  // B cannot take, move or send home what A holds: refused to B only, with the room's state
+  for (const [k, extra] of [['take', {}], ['put', { p: [11, 0, 10], q: [0, 0, 0, 1] }], ['home', {}]]) {
+    const before = th(a).length;
+    await say(b, { i: 's0', k, n: 7, ...extra });
+    assert.equal(th(a).length, before, `${k}: nothing is broadcast`);
+    const no = th(b).at(-1);
+    assert.equal(no.no, 'held'); assert.equal(no.n, 7); assert.equal(no.m, 'held'); assert.equal(no.by, ia);
+  }
+  // A puts it down beside themselves (the turn is normalised); too far away is refused
+  await say(a, { i: 's0', k: 'put', n: 2, p: [10, 0, 60], q: [0, 0, 0, 1] });
+  assert.equal(th(a).at(-1).no, 'far');
+  await say(a, { i: 's0', k: 'put', n: 3, p: [10.5, 0.0004, 10], q: [0, 2, 0, 0].map((v) => v / 2) });
+  for (const c of [a, b]) assert.deepEqual(th(c).at(-1), { t: 'th', i: 's0', m: 'world', at: now, by: ia, p: [10.5, 0, 10], q: [0, 1, 0, 0] });
+  // a simultaneous take of the lying thing: the first the room gets wins, the other is refused; `at` strictly rises
+  now += 1000; a.send({ t: 'th', i: 's0', k: 'take', n: 4 }); b.send({ t: 'th', i: 's0', k: 'take', n: 8 }); await settle(env);
+  assert.equal(th(b).at(-1).no, 'held'); assert.equal(th(b).at(-1).by, ia);
+  assert.deepEqual(th(a).at(-1), { t: 'th', i: 's0', m: 'held', at: now, by: ia });
+  // B takes the bow from home and puts it down; from far away A may not take it, from beside it A may
+  await say(b, { i: 'a0', k: 'take', n: 9 }); await say(b, { i: 'a0', k: 'put', n: 10, p: [11, 0, 12], q: [0, 0, 0, 1] });
+  now += 1000; a.send({ p: [200, 0, 200], r: 0 }); await settle(env);
+  await say(a, { i: 'a0', k: 'take', n: 5 });
+  assert.equal(th(a).at(-1).no, 'far');
+  now += 1000; a.send({ p: [10, 0, 10], r: 0 }); await settle(env);
+  // a late joiner is welcomed with what is not at home
+  const c = await connect(env, 'C');
+  assert.deepEqual(c.got[0].things, [['s0', 'held', ia], ['a0', 'world', ib, [11, 0, 12], [0, 0, 0, 1]]]);
+  // too fast from one connection: dropped
+  now += 1000; a.send({ t: 'th', i: 'k0', k: 'take', n: 11 }); a.send({ t: 'th', i: 'k1', k: 'take', n: 12 }); await settle(env);
+  assert.equal(th(b).filter((m) => m.i === 'k1').length, 0); assert.equal(th(b).filter((m) => m.i === 'k0').length, 1);
+  // the holder sends a thing home; home is not in the next welcome
+  await say(a, { i: 'k0', k: 'home', n: 13 });
+  assert.deepEqual(th(b).at(-1), { t: 'th', i: 'k0', m: 'home', at: now, by: ia });
+  // A leaves: the saber A held goes home for the others; what lies in the world stays
+  now += 1000; a.ws.close(); await settle(env); await settle(env);
+  assert.deepEqual(th(b).at(-1), { t: 'th', i: 's0', m: 'home', at: now, by: ia });
+  const d = await connect(env, 'D');
+  assert.deepEqual(d.got[0].things, [['a0', 'world', ib, [11, 0, 12], [0, 0, 0, 1]]]);
+  // everybody leaves: the next player starts with everything at home
+  for (const x of [b, c, d]) x.ws.close();
+  await settle(env); await settle(env);
+  const e = await connect(env, 'E');
+  assert.equal(e.got[0].things, undefined);
+  e.ws.close(); await settle(env);
+});

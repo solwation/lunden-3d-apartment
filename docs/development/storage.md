@@ -1602,6 +1602,32 @@ Doors opened and closed by one player are seen by the others in the players' roo
 - **Tests.** `node --test cloudflare/players.test.mjs src/doorsync.test.mjs`; `tools/doorsynctest.cjs` (three real pages against `cloudflare/dev.mjs`, a screenshot of the second player's view).
 
 
+## Shared loose things: protocol and ownership (#1974, part of #1964)
+
+The room can say, per loose thing, who holds it or where it lies, and decide who gets to take it. This first part is the protocol
+only: no thing in the game is connected to it yet (#1975 connects the weapons and tools, #1976 more kinds, #1977 the inventory).
+
+- **State.** `home` (the default: never stored, each player's own save decides), `world` (a place `p` and a turn `q`) or `held` (by one
+  connection). `cloudflare/things.js` `RoomThings` keeps it in memory only, as the doors (#1775): no KV, no Durable Object storage, and an
+  empty room forgets everything. What a connection HOLDS is also in its socket attachment (`th`, at most `THING_SYNC.held` short ids),
+  so a room that wakes from hibernation still refuses a held thing to the others; where things LIE is lost by a hibernation (the
+  clients keep what they were told; only a late joiner's welcome is then incomplete).
+- **Ids.** `<group letter><index>`, validated against `THING_SYNC.max` in `src/config.js` (one letter per kind, the clients build the
+  lists identically); no names or contents travel.
+- **Protocol** (`src/thingsync.js`, shared by the client and the Worker). Client to room `{ t: 'th', i, k: 'take' | 'put' | 'home', n }`
+  (+ `p`, `q` for `put`; `n` the sender's request number); at most one per `THING_SYNC.every` s per connection. Room to everybody, the
+  sender too: `{ t: 'th', i, m, at, by, p?, q? }` with `at` the room's clock, strictly rising per thing. A refusal goes to the sender
+  only, with the room's state: `{ …, no: 'held' | 'far' | 'full', n }`. The welcome `w` carries `things: [[i, 'held', by] |
+  [i, 'world', by, p, q], …]` (left out when everything is at home).
+- **Rules.** A thing held by a connected player cannot be taken, moved or sent home by anybody else: of two simultaneous takes the
+  first the room gets wins and the other is refused. A lying thing may be taken (or sent home) only from within `THING_SYNC.reach` m of
+  it, a thing may be put down only within reach of where its holder stands and inside the site's bounds. When a player leaves, what
+  they held goes home for the others; what lies stays. Places are rounded to mm, turns normalised.
+- **Client.** `ThingLedger` (`src/thingsync.js`): numbered requests, the room's word applied through `hooks.change(state, was, why)`,
+  a refusal restores the room's state, older news is ignored, the welcome replaces everything, a dropped connection resets. Offline
+  nothing is sent or kept.
+- **Tests.** `node --test src/thingsync.test.mjs cloudflare/things.test.mjs cloudflare/players.test.mjs`.
+
 ## Shared moving Nerf target (#1820)
 
 `cloudflare/target.js` keeps the room's target snapshot (position, yaw, points since moving and revision) and copies
