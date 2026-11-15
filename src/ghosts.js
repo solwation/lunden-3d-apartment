@@ -341,6 +341,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
     if (wet) { vx -= wet.cx; vz -= wet.cz; sink(1, swimLineFar()); } else this.swimDy = 0;
     if (d > AVATAR.poseFar) { if (this.itemProp) this.itemProp.visible = false; return; } // (#1297: the hand prop only near, with the posed avatar)
     const gaze = this.root.rotation.y, sp = this.pose || this.gx ? 0 : Math.hypot(vx, vz);
+    // #1951: a swim stroke (the jump button) shows as a jump in the speed through the water to more than the ordinary stroke ever gives
+    if (wet && sp <= 8 && sp > SWIM.kick.avatar.over && sp - this.speed > SWIM.kick.avatar.jump) this.avatar.swimStroke();
     this.speed += ((sp > 8 ? 0 : sp) - this.speed) * Math.min(1, dt * 10);
     if (this.pose || this.gx) { this.body = gaze; this.speed = 0; }
     if (!this.have) { this.body = gaze; this.have = true; }

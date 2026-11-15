@@ -3,7 +3,7 @@ import { synthFootstep } from './footsteps.js';
 // given a world position and is panned/attenuated relative to the camera.
 // The AudioContext can only start after a user gesture — call initAudio() from a click.
 
-import { SOUNDS, KISS, PLAYROOM, SANTA, FOOTSTEPS, SQUIRRELS } from './config.js';
+import { SOUNDS, KISS, PLAYROOM, SANTA, FOOTSTEPS, SQUIRRELS, SWIM } from './config.js';
 import { distanceGain, VoiceCap } from './spatialsound.js';
 
 let ctx = null, master = null, noiseBuf = null;
@@ -415,6 +415,16 @@ export const sfx = {
     noise(t + 0.02, 0.35, d, { type: 'highpass', freq: 3000, gain: 0.18, attack: 0.01 });
     tone(t, 0.25, d, { from: 140, to: 55, gain: 0.5 });
     for (let i = 0; i < 4; i++) tone(t + 0.25 + i * 0.09 + Math.random() * 0.04, 0.08, d, { from: 420 + Math.random() * 300, to: 900 + Math.random() * 500, gain: 0.05 });
+  },
+  /** #1951: one swim stroke: a short soft swish of water past the ears (band-passed noise sweeping down) with a small dull push under it;
+   * `under` the surface it is lower and quieter (and the diver's low-pass muffles it further, #1949). */
+  swimStroke(under = false) {
+    if (!ready()) return;
+    const K = SWIM.kick.sound, t = ctx.currentTime, d = out(null, K.gain * (under ? K.under : 1)), f0 = under ? 520 : 1500, f1 = under ? 190 : 480;
+    const { f } = noise(t, 0.42, d, { type: 'bandpass', freq: f0, q: 0.8, gain: 0.5, attack: 0.07 });
+    f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1, t + 0.4);
+    noise(t, 0.3, d, { type: 'lowpass', freq: under ? 260 : 420, q: 0.7, gain: 0.3, attack: 0.05 });
+    if (!under) for (let i = 0; i < 2; i++) noise(t + 0.05 + i * 0.07 + Math.random() * 0.03, 0.05, d, { type: 'highpass', freq: 3200, gain: 0.06 }); // a little spray
   },
   /** #1949: air bubbles rising past a diver's ears: `n` short upward blips over a soft low gurgle. */
   bubbles(n = 4, k = 1) {

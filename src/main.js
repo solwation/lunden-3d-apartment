@@ -566,6 +566,7 @@ player.onSwim = (into, at) => { // #1943: into the river on foot: a splash, then
   splashEl.style.transition = 'none'; splashEl.style.opacity = '0.6'; void splashEl.offsetWidth; splashEl.style.transition = 'opacity 0.8s ease-out'; splashEl.style.opacity = '0';
   badge('Plask! Du simmar i ån', false);
 };
+player.onSwimKick = (under) => sfx.swimStroke(under); // #1951: a swim stroke with the jump button: a soft swish
 player.onEdge = () => badge('Här slutar promenadområdet', false); // #1236: the outer wall
 // the jetpack on its hook by the garage door (#359): worn on the back, flies; home again after a bad fall
 const jetpack = new Jetpack({ scene, camera, player, groundY, hud: { el: document.getElementById('jetpack'), glow: document.getElementById('jet-glow'),

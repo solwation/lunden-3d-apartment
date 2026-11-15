@@ -2368,6 +2368,20 @@ export const SWIM = {
     // while under water; a gasp when surfacing with under `gasp` of the air left; under water every sound is low-passed at `muffle` Hz.
     look: { roll: 0.02, shift: 0.012, hz: 9, clear: [78, 18], dark: [0.55, 0.97], beat: [0.95, 0.38], bubbles: [1.6, 3.6], gasp: 0.35, muffle: 900 },
   },
+  // #1951: a swim stroke with the jump button (Space / the touch jump button; swim.js `kickStart`, `kickStep`, `kickDepth`; player.js
+  // `swimStep`). The user: "press jump to swim one stroke up or forwards, the way you look; to swim faster, or up when under water".
+  // One press = one push the way the eye looks that fades out; under the surface it has the look's vertical part too, at the surface it goes
+  // level along the heading at full strength (never out of the water). All gameplay choices (*guess*), tuned by feel.
+  kick: {
+    speed: 1.8, // m/s the push starts at, on top of the ordinary stroke and the current (*guess*: twice SWIM.speed, so a stroke is clearly felt)
+    time: 0.8, // s over which the push fades linearly to nothing (one stroke carries 0.72 m; *guess*)
+    pause: 0.6, // s from one stroke's start before the next can start (*guess*: strokes in a row add about 1.1 m/s on average, not more)
+    // The avatar: both arms pull together from stretched out ahead (`reach` m in front of the shoulders) out to the sides (`out` m) and back
+    // to the hips over `time` s, the legs' flutter grows by `legs` x; others see it when the speed through the water jumps by `jump` m/s to
+    // over `over` m/s (ghosts.js; the ordinary stroke never passes SWIM.speed). *guess*, by eye.
+    avatar: { time: 0.7, reach: 0.5, out: 0.3, legs: 1.5, jump: 0.45, over: 1.15 },
+    sound: { gain: 0.5, under: 0.7 }, // the swish's loudness at the surface, and x this under it (audio.js `swimStroke`; *guess*)
+  },
 };
 
 // The garage under the courtyard and Hus L's basement (#357, #417, src/garage.js), per the våning −1 overview plan

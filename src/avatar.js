@@ -1293,7 +1293,7 @@ function airFeet(fig, feet, aa, v, hy, hz) {
 
 // #1943: the swimming pose (SWIM.avatar; figure frame: +y up, +z forward). `st` 0 treading water … 1 stroking, `ph` the stroke's phase.
 // #1944 `dv` 0 … 1: diving (SWIM.dive.avatar): the torso nearly level, the legs straight back, so the figure clears the bed.
-const SW = SWIM.avatar, DV = SWIM.dive.avatar;
+const SW = SWIM.avatar, DV = SWIM.dive.avatar, KA = SWIM.kick.avatar;
 const swimLean = (st, dv = 0) => { const l = SW.treadLean + (SW.lean - SW.treadLean) * st; return l + (DV.lean - l) * dv; };
 /** The height of the water line in the figure's frame for hips at `hy`: just over the neck joint of the leaning torso, so only the head is above it.
  * (For a diver the owner puts this line, the head's height, at the eye's depth instead: ghosts.js.) */
@@ -1309,10 +1309,20 @@ function swimHand(fig, i, hy, hz, st, ph) {
   const tread = { at: [sx * (SH[0] + C.out + C.sweep * Math.sin(t)), swimLineAt(hy, st, dv) - 0.03, sz + C.fwd + C.sweep * 0.6 * Math.cos(t)], pole: [sx * 0.9, -0.4, -0.3] };
   return mixHand(tread, crawl, st);
 }
+/** #1951: hand `i` in one swim stroke (the jump button), `u` 0 … 1 through it: both arms pull together, from stretched out ahead of the
+ * shoulders, out to the sides and back to the hips (a breaststroke pull along the leaning torso). */
+function kickHand(fig, i, hy, hz, st, u) {
+  const dv = fig.diveAmt ?? 0, sx = i ? -1 : 1, L = swimLean(st, dv), a = Math.PI * Math.min(1, u * 1.15), f = KA.reach * Math.cos(a) + 0.08;
+  // along the torso's own axis (up the spine = ahead when it lies in the water), a little under the body on the way back
+  const sy = hy + SH[1] * Math.cos(L), sz = hz + SH[1] * Math.sin(L);
+  return { at: [sx * (SH[0] + 0.03 + KA.out * Math.sin(a)), sy + f * Math.cos(L) + SW.up * (1 - dv) - 0.06 * Math.sin(a), sz + f * Math.sin(L) + 0.05], pole: [sx * 0.9, -0.3, -0.4] };
+}
+/** #1951: how much of the arms a stroke `u` 0 … 1 through takes (in fast, out at the end). */
+const kickMix = (u) => (u >= 1 ? 0 : Math.min(1, u * 8, (1 - u) * 5));
 /** Foot `i`: the legs trail back from the hips with a flutter kick (hanging and pedalling slowly when treading water). */
 function swimFoot(fig, i, hy, hz, st) {
   const dv = fig.diveAmt ?? 0, b0 = SW.treadLegs + (SW.legs - SW.treadLegs) * st, B = b0 + (DV.legs - b0) * dv, sx = i ? -1 : 1, L = (THIGH + SHIN) * 0.95;
-  const k = SW.kick * (1 - (1 - DV.kick) * dv) * Math.sin(fig.time * Math.PI * 2 * SW.kickHz * (0.4 + 0.6 * st) + i * Math.PI);
+  const k = SW.kick * (1 - (1 - DV.kick) * dv) * (1 + KA.legs * kickMix((fig.kickT ?? 9) / KA.time)) * Math.sin(fig.time * Math.PI * 2 * SW.kickHz * (0.4 + 0.6 * st) + i * Math.PI);
   return [sx * 0.1, hy - Math.cos(B) * L + k * Math.sin(B), hz - Math.sin(B) * L + k * Math.cos(B)];
 }
 
@@ -1609,6 +1619,7 @@ export class Avatar {
     // #1944: diving (`dive` 0 … 1 while swimming): level under the surface, the mask on
     const dv = this.diveAmt = THREE.MathUtils.lerp(this.diveAmt ?? 0, swim ? THREE.MathUtils.clamp(dive, 0, 1) : 0, Math.min(1, dt * DV.ease));
     this.setMask(swim && dive > 0.05);
+    this.kickT = swim ? (this.kickT ?? 9) + dt : 9; // #1951: s into a swim stroke (`swimStroke`)
     if (swim) this.swimPhase = (this.swimPhase ?? 0) + dt * Math.PI * 2 * SW.strokeHz * st * THREE.MathUtils.clamp(speed / SWIM.speed, 0.6, 1.4);
     const walking = speed > A.walkSpeed && !am && !swim, k = THREE.MathUtils.clamp(speed / 1.6, 0.4, 1.4);
     if (walking) this.phase += dt * speed / STRIDE * Math.PI * 2;
@@ -1657,6 +1668,11 @@ export class Avatar {
     if (sa > 0.001) { // #1943: the arms swim (a held thing keeps its hand)
       if (!hands.L) handL = mixHand(handL, swimHand(this, 0, hipY, hipZ, st, this.swimPhase ?? 0), sa);
       if (!hands.R) handR = mixHand(handR, swimHand(this, 1, hipY, hipZ, st, this.swimPhase ?? 0), sa);
+      const ku = this.kickT / KA.time, km = kickMix(ku) * sa; // #1951: one stroke with both arms over the crawl / the sculling
+      if (km > 0) {
+        if (!hands.L) handL = mixHand(handL, kickHand(this, 0, hipY, hipZ, st, ku), km);
+        if (!hands.R) handR = mixHand(handR, kickHand(this, 1, hipY, hipZ, st, ku), km);
+      }
     }
     this.updateMouth(dt);
     if (rp) { this.mouth = Math.max(this.mouth, rp.mouth); this.material.userData.u.uMouth.value = this.mouth; }
@@ -1669,6 +1685,10 @@ export class Avatar {
       knee, flat: c, toes: F.turn * c });
     if (sway) this.bones.hips.position.x = sway; // #1622: the feet targets were moved the other way, so they stay planted
   }
+
+  /** #1951: one swim stroke with both arms starts now (a swimming figure; ghosts.js sees it in the speed through the water). Not again
+   * before most of SWIM.kick.pause has passed, as for the swimmer. */
+  swimStroke() { if ((this.kickT ?? 9) > SWIM.kick.pause * 0.8) this.kickT = 0; }
 
   /** The talking mouth follows its line (#1122); `update` calls it, a figure posed otherwise (Olof, #1156) calls it itself. */
   updateMouth(dt) {

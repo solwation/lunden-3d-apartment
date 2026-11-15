@@ -125,7 +125,7 @@ export class RiverFish {
     const b = this.bait, pl = b?.player, sw = pl?.swim && !pl.swim.exit ? pl.swim : null, cam = this.camera.position;
     if (!b || (!sw && !this.feed.active)) return false;
     const m = sw ? b.mussels?.held : null;
-    W.swim = !!sw; W.moving = !!sw && sw.moving && Math.hypot(pl.swimV?.sx ?? 0, pl.swimV?.sz ?? 0) > C.feed.scareSpeed;
+    W.swim = !!sw; W.moving = !!sw && sw.moving && Math.hypot(pl.swimV?.sx ?? 0, pl.swimV?.sy ?? 0, pl.swimV?.sz ?? 0) > C.feed.scareSpeed; // (#1951: `sy`, a stroke straight up or down)
     W.x = cam.x; W.y = cam.y; W.z = cam.z; W.busy = b.busy ?? null;
     W.hand = m?.cracked === true && b.mussels.heldPosition(H) ? H : null; // (#1950: only a cracked mussel is bait)
     const took = this.feed.update(dt, W, list);

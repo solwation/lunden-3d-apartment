@@ -7,7 +7,7 @@ import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY, groundBelowDeckY } from './surroundings.js';
 import { deckAt, deckUnderAt, waterYAt, upstreamRiverZone, riverAt } from './riverbridge.js';
 import { farWalls, slideAt, inWater, splashBank, tooSteep, buildingRescue, atEdge, surfaceY, underDeck, stileSurface, swimWater, swimBedY } from './farwalk.js'; // #1236: walking beyond the block
-import { swimVelocity, exitDecision, swimEye, diveStep, isDiving } from './swim.js'; // #1943: the pure swimming rules; #1944: the dive
+import { swimVelocity, exitDecision, swimEye, diveStep, isDiving, kickState, kickStart, kickStep, kickDepth } from './swim.js'; // #1943: the pure swimming rules; #1944: the dive; #1951: the stroke
 import { bicycleCurbY } from './street.js';
 import { stowBicycleHand, restoreBicycleHand } from './holdable.js';
 
@@ -780,7 +780,7 @@ export class Player {
     this.spaceDown = k.has('Space'); this.jumpPress = false;
     if (this.swing && this.swingStep(dt, pressed)) { this.settleEye(dt); return; } // on a strand (#600)
     if (this.climb && this.climbStep(dt, fwd, side, pressed)) { this.settleEye(dt); return; } // on a wall (#597)
-    if (this.swim && this.swimStep(dt, fwd, side, amount)) { this.settleEye(dt); return; } // in the river (#1943): no jump, sprint or crouch
+    if (this.swim && this.swimStep(dt, fwd, side, amount, pressed)) { this.settleEye(dt); return; } // in the river (#1943): no sprint or crouch; the jump input is a swim stroke (#1951)
     // crouch (#70): down at once, up only where there is head room (under the stair there may be none)
     // the jetpack (#359): its thrust first (Space / ⬆; C / Ctrl / ⬇ down faster); off the ground it flies
     // (#1783: worn indoors it is just a backpack: `lift` gives 0 there and the walking physics stay; `jetOn` still blocks the jump)
@@ -968,7 +968,7 @@ export class Player {
   swimCheck() {
     if (this.swim || !this.underWater(true)) return false;
     const p = this.pos;
-    this.swim = { t: 0, stuck: 0, depth: 0, dive: false, moving: false, exit: null };
+    this.swim = { t: 0, stuck: 0, depth: 0, dive: false, moving: false, exit: null, kick: kickState(), kicks: 0 };
     p.y = swimBedY(p.x, p.z);
     this.vy = 0; this.fall = null; this.fling = null; this.jv.x = this.jv.z = 0; this.slideV = 0; this.sliding = false; this.slideDir = null;
     this.flying = false; this.crouched = false; this.sprinting = false;
@@ -980,31 +980,39 @@ export class Player {
    * `settleEye`), the stroke goes where the ordinary movement input points at SWIM.speed and the current carries the swimmer downstream
    * (swim.js). The water's edge holds the swimmer in; swimming into it with a walkable bank spot within SWIM.exitReach helps them up there
    * (the banks are too steep to walk), and SWIM.rescueAfter s against an edge with no way up ends in the old rescue. The jetpack's thrust
-   * lifts out of the water. No jump or sprint here; #1944: `crouch` (wanted) held dives (`swim.dive`, `swim.depth`, swim.js `diveStep`): the
-   * same strokes and current under the surface, the eye down to SWIM.dive.eyeOverBed over the bed. False when the swim ended
-   * this frame and the ordinary update should go on. */
-  swimStep(dt, fwd, side, amount) {
+   * lifts out of the water. No sprint here; #1944: `crouch` (wanted) held dives (`swim.dive`, `swim.depth`, swim.js `diveStep`): the
+   * same strokes and current under the surface, the eye down to SWIM.dive.eyeOverBed over the bed.
+   * #1951: `pressed` (the jump input, pressed this frame) is one swim stroke the way the eye looks (`swim.kick`, swim.js `kickStart` /
+   * `kickStep` / `kickDepth`; `swim.kicks` counts them, `onSwimKick(under)` says so): a fading push on top of the ordinary stroke, with its
+   * vertical part under the surface only. It counts as a stroke everywhere (`swim.moving`, `swimV.sx, sy, sz`: the air, the fish, the bank).
+   * With the jetpack worn the jump input is its thrust instead. False when the swim ended this frame and the ordinary update should go on. */
+  swimStep(dt, fwd, side, amount, pressed = false) {
     const s = this.swim, p = this.pos;
     this.vy = 0; this.fall = null; this.fling = null; this.flying = false; this.crouched = false; this.sprinting = false; this.sliding = false; this.slideV = 0;
     s.t += dt;
     // #1944: crouch held = dive (down to the bed at SWIM.dive.rate), released = up again; climbing out always surfaces
     s.dive = this.crouch && !s.exit;
-    s.depth = diveStep(s.depth, s.dive, waterYAt(p.x, p.z) - p.y, dt);
+    const jet = this.jet?.worn && this.outdoors ? this.jet : null, yaw = this.camera.rotation.y;
+    s.kick ??= kickState();
+    if (s.exit) s.kick.on = false; // (climbing out ends a stroke)
+    else if (pressed && !jet && kickStart(s.kick, yaw, this.camera.rotation.x, this.diving)) { s.kicks = (s.kicks ?? 0) + 1; this.onSwimKick?.(this.diving); }
+    const kv = kickStep(s.kick, dt, this.kickV ??= {}), kicking = Math.hypot(kv.x, kv.y, kv.z) > 0;
+    s.depth = kickDepth(s.depth, s.dive, kv.y, waterYAt(p.x, p.z) - p.y, dt); // (without a stroke: `diveStep`)
     if (s.exit) { // up the bank to the dry spot
       const dx = s.exit.x - p.x, dz = s.exit.z - p.z, d = Math.hypot(dx, dz), step = SWIM.climbSpeed * dt;
       if (d <= step) { p.set(s.exit.x, surfaceY(s.exit.x, s.exit.z, p.y), s.exit.z); this.swim = null; this.safeUntil = performance.now() + WALK.splashSafe * 1000; this.onSwim?.(false, { x: p.x, z: p.z }); return true; }
       p.x += dx / d * step; p.z += dz / d * step; p.y = swimBedY(p.x, p.z);
       return true;
     }
-    const jet = this.jet?.worn && this.outdoors ? this.jet : null;
     if (jet && jet.lift(dt, true) > GRAVITY) { // the jetpack lifts out of the water: the ordinary update flies on from the surface
       p.y = waterYAt(p.x, p.z) - WALK.waterDepth + 0.02; this.vy = 1; this.swim = null; this.onSwim?.(false, { x: p.x, z: p.z });
       return false;
     }
     if (!swimWater(p.x, p.z)) { this.swim = null; p.y = Math.max(p.y, surfaceY(p.x, p.z, p.y)); return false; } // (moved out of the water by something else)
-    const yaw = this.camera.rotation.y;
-    const ix = -Math.sin(yaw) * fwd + Math.cos(yaw) * side, iz = -Math.cos(yaw) * fwd - Math.sin(yaw) * side, pushing = Math.hypot(ix, iz) > 0 && amount > 0;
-    const v = swimVelocity(ix, iz, pushing ? amount : 0, riverAt(p.x, p.z), this.swimV ??= {});
+    const ix = -Math.sin(yaw) * fwd + Math.cos(yaw) * side, iz = -Math.cos(yaw) * fwd - Math.sin(yaw) * side, input = Math.hypot(ix, iz) > 0 && amount > 0;
+    const v = swimVelocity(ix, iz, input ? amount : 0, riverAt(p.x, p.z), this.swimV ??= {});
+    v.sx += kv.x; v.sz += kv.z; v.x += kv.x; v.z += kv.z; v.sy = kv.y; // #1951: the stroke's push is part of the swimmer's own stroke
+    const pushing = input || kicking;
     s.moving = pushing;
     const n = Math.max(1, Math.ceil(Math.hypot(v.x, v.z) * dt / 0.05)), h = dt / n;
     const [stat, dyn] = this.segments(); // (the perimeter wall, the bridge piers, fences: as when walking)

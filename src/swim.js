@@ -89,3 +89,53 @@ export function airStep(air, under, moving, up, dt, C = SWIM) {
 export function airWarning(air, rate, C = SWIM) {
   return Math.max(0, Math.min(1, 1 - air / (Math.max(rate, 1e-6) * C.air.warn)));
 }
+
+// ---- #1951: a swim stroke with the jump button ----
+// One press gives one push the way the eye looks: SWIM.kick.speed m/s fading linearly to nothing over SWIM.kick.time s, and no new one until
+// SWIM.kick.pause s after the last one started. Under the surface (`isDiving`) the push has the look's vertical part; at the surface it goes
+// level along the heading at full strength, so a stroke never lifts anyone out of the water and looking down at the water does not weaken it
+// (going under is the crouch input's job, `diveStep`). The state `k` = { x, y, z (the push's unit direction, y up), t (s into the push),
+// left (s until the next may start), on } lives in `player.swim.kick`.
+
+/** A fresh stroke state: nothing going on, ready for a press. */
+export const kickState = () => ({ x: 0, y: 0, z: 0, t: 0, left: 0, on: false });
+
+/** The unit direction of a stroke for an eye at `yaw` / `pitch` (rad, the camera's: yaw 0 looks towards -z, pitch + up): the look itself
+ * `under` the surface, the level heading at it. */
+export function kickDir(yaw, pitch, under, o = {}) {
+  const c = under ? Math.cos(pitch) : 1;
+  o.x = -Math.sin(yaw) * c; o.y = under ? Math.sin(pitch) : 0; o.z = -Math.cos(yaw) * c;
+  return o;
+}
+
+/** A press of the jump button: starts a stroke unless the pause since the last one is still running. True when it started. */
+export function kickStart(k, yaw, pitch, under, C = SWIM) {
+  if (k.left > 0) return false;
+  kickDir(yaw, pitch, under, k);
+  k.t = 0; k.left = C.kick.pause; k.on = true;
+  return true;
+}
+
+/** The push's speed (m/s) `t` s into a stroke. */
+export const kickSpeed = (t, C = SWIM) => (t >= 0 && t < C.kick.time ? C.kick.speed * (1 - t / C.kick.time) : 0);
+
+/** One frame of the stroke: `o.x, o.y, o.z` its velocity (m/s, the average over the frame; all 0 without a stroke), and the state moved on. */
+export function kickStep(k, dt, o = {}, C = SWIM) {
+  const K = C.kick, t1 = Math.min(K.time, k.t + dt);
+  // the fade is linear, so the frame's average speed is the speed at its middle (over the part of the frame the push still lasts)
+  const v = k.on && dt > 0 ? kickSpeed((k.t + t1) / 2, C) * (t1 - k.t) / dt : 0;
+  o.x = k.x * v; o.y = k.y * v; o.z = k.z * v;
+  if (k.on) { k.t += dt; if (k.t >= K.time) k.on = false; }
+  k.left = Math.max(0, k.left - dt);
+  return o;
+}
+
+/** The dive depth one frame on with a stroke's vertical speed `vy` (m/s, + up) in it. Under the surface the stroke moves the eye. Where it
+ * goes the same way as the ordinary rule (`diveStep`: crouch held sinks, released floats up, both at SWIM.dive.rate) the two add up; where it
+ * goes against it, it takes over by its share of that rate: a stroke straight up is felt in full with crouch held (and one straight down
+ * with crouch released), and the sinking / floating comes back as the push fades. At the surface (not `isDiving`) the vertical part is not
+ * used at all. The limits are `diveStep`'s: never over the floating height (depth 0), never nearer the bed than SWIM.dive.eyeOverBed. */
+export function kickDepth(depth, want, vy, water, dt, C = SWIM) {
+  const v = isDiving(depth, C) ? vy : 0, rate = C.dive.rate, against = want ? v > 0 : v < 0, w = against ? Math.min(1, Math.abs(v) / rate) : 0;
+  return Math.max(0, Math.min(diveMax(water, C), depth + ((want ? rate : -rate) * (1 - w) - v) * dt));
+}
