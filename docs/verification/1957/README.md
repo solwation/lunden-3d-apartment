@@ -9,6 +9,6 @@ Samma kamera före/efter, riktig Chromium/WebGL (SwiftShader), `&time=12&month=6
 | Fasad (norr, Hus L) | `2.5,-14,180,8,0` |
 
 `kok-overskap-fore-efter.png`: överskåpens ramar förstorade, före överst, efter under.
-Före-bilderna (`before/`) tas bort i det stängande commitet; issuekommentaren länkar dem fäst vid bildcommitet.
+Före-bilderna låg i `before/` i `27c217ba` och togs bort i det stängande commitet; issuekommentaren länkar dem fästa vid det commitet.
 
 Kontroller: `tools/architecturetest.html` ALL PASS (77 lägenhetssatser, 15 trapphussatser, 23 synliga linjeanrop i testvyn – oförändrat; ny kontroll av multiplikativ blandning och att fogarna faktiskt mörkar).
