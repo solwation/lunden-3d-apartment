@@ -2,6 +2,7 @@ import { rememberFragmentCompile } from './vertexcompile.js';
 import * as THREE from 'three';
 import { FOLIAGE as F } from './config.js';
 import { lowMemory } from './lowmemory.js';
+import { patchDitherLod, lodDepthMaterial } from './lod.js';
 
 // Tree crowns and shrubs out of leaf cards (#679): instead of a flat-shaded icosahedron, every crown lobe is a slightly
 // lumpy opaque leaf mass (the "core", so a crown still reads as a full volume when the mipmapped cards thin out at a
@@ -103,22 +104,37 @@ export function* leafAtlasParts() {
   return atlasTex;
 }
 
-let leafMat = null;
-/** The one leaf material: white (instance colours tint it; tools/riverparktest finds crowns by the white colour), alpha-tested. */
-export function leafMaterial() {
-  if (leafMat) return leafMat;
+function makeLeafMaterial() {
   // Two-sided cards from single quads: DoubleSide, but the back of a card keeps the front's (radial) normal instead of
   // three's flipped one, so a crown is lit as one soft volume from both sides; both sides cast shadows
-  leafMat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: leafAtlas(), alphaTest: F.alphaTest, roughness: 0.92, vertexColors: true,
+  const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: leafAtlas(), alphaTest: F.alphaTest, roughness: 0.92, vertexColors: true,
     side: THREE.DoubleSide, shadowSide: THREE.DoubleSide });
-  leafMat.onBeforeCompile = (shader) => {
+  mat.onBeforeCompile = (shader) => {
     shader.fragmentShader = shader.fragmentShader.replace('#include <normal_fragment_begin>',
       THREE.ShaderChunk.normal_fragment_begin.replace('float faceDirection = gl_FrontFacing ? 1.0 : - 1.0;', 'float faceDirection = 1.0;'));
   };
-  rememberFragmentCompile(leafMat.onBeforeCompile); // exact fragment-only normal patch, native vertex positions (#1453)
-  leafMat.customProgramCacheKey = () => 'foliage-leaves-v1';
-  leafMat.name = 'foliage-leaves';
-  return leafMat;
+  rememberFragmentCompile(mat.onBeforeCompile); // exact fragment-only normal patch, native vertex positions (#1453)
+  mat.customProgramCacheKey = () => 'foliage-leaves-v1';
+  mat.name = 'foliage-leaves';
+  return mat;
+}
+
+let leafMat = null;
+/** The one leaf material: white (instance colours tint it; tools/riverparktest finds crowns by the white colour), alpha-tested. */
+export function leafMaterial() {
+  return leafMat ??= makeLeafMaterial();
+}
+
+/**
+ * A distance-LOD variant of the leaf material (#1958, src/lod.js): the same look, dither-fading by the instance's distance
+ * (`far` false: the full lobe fading out, true: the far lobe fading in) and its matching shadow depth material. Both
+ * variants share one program (the level is a uniform); the shared `leafMaterial()` itself never fades.
+ * @returns {{ material: THREE.Material, depth: THREE.Material }}
+ */
+export function lodLeafMaterial({ far, range }) {
+  const material = patchDitherLod(makeLeafMaterial(), { far, range });
+  material.name = far ? 'foliage-leaves-far' : 'foliage-leaves-lod';
+  return { material, depth: lodDepthMaterial({ far, range, map: material.map, alphaTest: material.alphaTest, side: THREE.DoubleSide }) };
 }
 
 const lobes = new Map();
@@ -219,12 +235,13 @@ export function barkTexture(kind = 'bark') {
  * with `F.trunk.branches` branches leaving it in its upper part and reaching up into the crown (local units: the trunk's
  * instance scale stretches them with the tree). One merged geometry, one draw call per batch as before.
  */
-let trunkGeo = null;
-export function trunkGeometry() {
-  if (trunkGeo) return trunkGeo;
+let trunkGeo = null, trunkGeoFar = null;
+/** `far` (#1958): a cheap trunk for the distance LOD: a 4-sided stem and the leader only, no branches (14 triangles). */
+export function trunkGeometry(far = false) {
+  if (far ? trunkGeoFar : trunkGeo) return far ? trunkGeoFar : trunkGeo;
   const T = F.trunk, r = rng(97), parts = [];
   // open-ended: the foot is in the ground, the top inside the crown (or hidden by the branches in winter)
-  const stem = new THREE.CylinderGeometry(T.top, T.base, 1, T.sides, 1, true).translate(0, 0.5, 0);
+  const stem = new THREE.CylinderGeometry(T.top, T.base, 1, far ? T.farSides : T.sides, 1, true).translate(0, 0.5, 0);
   parts.push(stem);
   const up = new THREE.Vector3(0, 1, 0);
   /** A tapering limb from `start` to `end` (radii r0 → r1), `sides` round, open (its ends are buried). */
@@ -235,7 +252,7 @@ export function trunkGeometry() {
     parts.push(b);
   };
   limb(new THREE.Vector3(0, 0.98, 0), new THREE.Vector3(0.02, 1 + T.rise, 0), T.top, T.top * 0.05, 3); // the leader: no open top
-  for (let i = 0; i < T.branches; i++) {
+  for (let i = 0; i < (far ? 0 : T.branches); i++) {
     // main branches round the trunk, out and up (local units: the instance's y scale is ~3× its x/z, so a small `rise`
     // still climbs steeply), the first `T.forks` forking once near the end
     const a = (i / T.branches) * 6.28 + r() * 0.9, y0 = T.from + r() * (1 - T.from) * 0.85, k = 0.75 + r() * 0.5;
@@ -255,8 +272,8 @@ export function trunkGeometry() {
   }
   parts.forEach((p) => p.dispose()); flat.forEach((p) => p.dispose());
   geo.computeBoundingSphere();
-  geo.name = 'foliage-trunk';
-  trunkGeo = geo;
+  geo.name = far ? 'foliage-trunk-far' : 'foliage-trunk';
+  if (far) trunkGeoFar = geo; else trunkGeo = geo;
   return geo;
 }
 
@@ -264,4 +281,16 @@ export function trunkGeometry() {
 export function barkMaterial(kind = 'bark') {
   const tex = barkTexture(kind);
   return new THREE.MeshStandardMaterial({ color: kind === 'birch' ? F.trunk.birchColor : F.trunk.color, map: tex, roughness: kind === 'birch' ? 0.85 : 1 });
+}
+
+/** Bark material pair for a LOD trunk batch (#1958): `kind` as barkMaterial; the far level has no texture, see lodTrunkFar. */
+export function lodBarkMaterial(kind, range) {
+  const material = patchDitherLod(barkMaterial(kind), { far: false, range });
+  return { material, depth: lodDepthMaterial({ far: false, range }) };
+}
+
+/** The far trunk material (#1958): untextured, tinted per instance (bark brown or birch white), fading in. */
+export function lodFarTrunkMaterial(range) {
+  const material = patchDitherLod(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 }), { far: true, range });
+  return { material, depth: lodDepthMaterial({ far: true, range }) };
 }

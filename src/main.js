@@ -125,6 +125,7 @@ import { Quality } from './quality.js';
 import { QualitySetting } from './qualitysetting.js';
 import { HitchLog } from './hitchlog.js';
 import { applySeason } from './seasons.js';
+import { updateInstanceLods } from './lod.js';
 import { ChristmasSeason } from './christmas.js';
 import { NewYear, glassesOut } from './newyear.js';
 import { saveResume, saveSession, takeResume } from './resume.js';
@@ -3953,6 +3954,7 @@ function step(dt) {
   for (const u of world.units) u.cull(camera.position, away); // a visited flat: its shell from afar, nothing from there (#574)
   detail?.update(camera); // far-away small things are not drawn (#189)
   updateCarLods(camera); // phones: far parked cars coarse (#1213; no sets on desktop)
+  updateInstanceLods(camera); // #1958: trees (and later others) beyond the dither zone use their far level
   // Media projection must use the final camera pose, just like the following WebGL frame.
   cinema.update(player.inPlayroom, camera, renderer);
   tvMedia.update(player,camera,renderer,power.on&&world.furnitureOn!==false&&!document.hidden);

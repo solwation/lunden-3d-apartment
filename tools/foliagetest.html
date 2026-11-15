@@ -35,8 +35,9 @@ f.onload = async () => {
       if (o.geometry.name === 'foliage-trunk') trunks.push(o);
     });
     const mats = new Set(crowns.map((c) => c.material));
-    check(crowns.length >= 4 && mats.size === 1, `${crowns.length} crown/shrub batches, ${mats.size} shared leaf material`);
-    const mat = [...mats][0], tex = mat.map;
+    // #1958: the site's tree crowns use a dither-LOD variant (near + far levels, src/lod.js); everything else shares the one leaf material
+    check(crowns.length >= 4 && mats.size <= 3 && [...mats].filter((m) => !/-lod$|-far$/.test(m.name)).length === 1, `${crowns.length} crown/shrub batches, ${mats.size} leaf materials (one shared + the tree LOD near/far variants)`);
+    const mat = [...mats].find((m) => m.name === 'foliage-leaves'), tex = mat.map;
     check(mat.alphaTest > 0 && !mat.flatShading && mat.color.getHex() === 0xffffff && mat.vertexColors && mat.side === 2, `alpha-tested (${mat.alphaTest}), smooth, white, vertex colours, two-sided`);
     const size = tex.image.width;
     check(size === (lowmem ? F.atlasPhone : F.atlas) && size <= (lowmem ? 256 : 512), `one leaf atlas of ${size} px`);

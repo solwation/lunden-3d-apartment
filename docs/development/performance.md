@@ -1606,7 +1606,32 @@ one 512² leaf atlas (256² on phones, a `DataTexture`, ~1.3 / 0.3 MB with mips)
 both): desktop kitchen 628 034 → 621 648, park 895 157 → 893 663, big hall 1 007 801 → 1 006 343 triangles (over budget
 before as well, #704); phone kitchen 437 230 → 426 064, park 579 166 → 571 220, basement 915 934 → 908 628; textures
 ~297 → ~298 MB desktop, ~81 → ~82 MB phone. One new program pair (leaf material + its alpha-tested depth variant), compiled
-by the warm-up like every scene material. No distance LOD: an InstancedMesh draws every lobe; fewer cards on phones only.
+by the warm-up like every scene material. The site's trees got a distance LOD in #1958 (below); fewer cards on phones.
+
+## Distance LOD with dithered crossfade (#1958)
+
+`src/lod.js` is the shared helper (header comment = API). Per instance the vertex shader derives a fade f from the distance
+between the MAIN camera (`lodCamera` uniform, also in the shadow pass) and the instance centre: 0 up to `start`, 1 from `end`,
+linear in between. The fragment shader discards by a 4x4 Bayer pattern in screen space (near level keeps `t >= f`, far level
+`t < f`: complementary, so no transparent pass, no blending, one draw per level). `patchDitherLod(material, {far, range})` edits
+an existing material (any prior `onBeforeCompile` is kept; both levels share one program, the level is a uniform; it leaves vertex
+positions alone and is registered with `rememberFragmentCompile`, so tightfrustum and the site instance batch still accept it);
+`lodDepthMaterial` gives the matching `customDepthMaterial`, so shadows fade with the same pattern. `InstanceLod(sources, farMesh,
+{start, end, margin, step, range})` packs the near-needed instances to the front of each near mesh (`count`; seeds reordered the same
+way; an emptied mesh gets a far-away bounding sphere so it is culled, not drawn with 0 instances) and fills ONE far mesh with the
+instances beyond `start - margin` that are also (nearly) in the camera frustum; repack when the camera moved `step` m or turned 3
+degrees. `updateInstanceLods(camera)` runs once per frame in main.js; `lod.sync()` after seasons.js rewrites the near buffers.
+Reuse: build the far mesh (cheaper geometry, same instance layout), patch both materials with a shared `lodRange`, add depth
+materials, construct an `InstanceLod`. Node test: `tools/lodtest.mjs`.
+
+Trees (surroundings.js `trees()`, `FOLIAGE.lod`): zone 46..54 m desktop, 30..38 m phones (*guess*); far crowns are the existing 36-
+triangle (phone 30) `far` lobe, far trunks a 4-sided stem + leader (14 instead of 46 triangles, untextured, per-instance bark/birch
+tint). Cost: +0..+2 draw calls on desktop (far crown + far trunk), -1..-17 on phones, -1..-9 % / -5..-15 % triangles in the
+measured views; one program per material kind is shared by both levels. Limits: far-level shadows come only from
+instances in (or near) the main frustum, so at a very low sun a tree behind the camera beyond 54 m does not shade the ±14 m shadow
+box; the zone is measured to the instance centre, so a trunk (foot) and its crown (centre) fade a few metres apart. Courtyard
+plantings, vines and the south woodland (already `far` lobes) are not LOD'd. `&nolod` disables the zone for A/B runs.
+[Evidence](../verification/1958/README.md).
 
 Combat collision (#715) uses a capped conservative private occupancy grid, prepared incrementally with native-raycast fallback. [Actual-scene CPU update measurements and cold-build limitations](../validation/issue-715/README.md) document the confirmed desktop gain; these are not rendered-frame/FPS measurements or physical-phone validation.
 

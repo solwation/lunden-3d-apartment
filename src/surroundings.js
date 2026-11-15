@@ -17,7 +17,8 @@ import { gridGround, southPointGround } from './elevation.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { neighborGlass } from './neighborglass.js';
 import { registerTrees, registerSnow } from './seasons.js';
-import { lobeGeometry, leafMaterial, trunkGeometry, barkMaterial } from './foliage.js';
+import { lobeGeometry, leafMaterial, trunkGeometry, barkMaterial, lodLeafMaterial, lodBarkMaterial, lodFarTrunkMaterial } from './foliage.js';
+import { InstanceLod, lodRange } from './lod.js';
 import { buildStreet } from './street.js';
 import { buildHepcat, hepcatTexture, hepcatStone } from './hepcat.js';
 import { buildStreetSigns } from './streetsigns.js';
@@ -1624,14 +1625,30 @@ function trees(rand) {
     const mesh = new THREE.InstancedMesh(geo, mat, items.length); mesh.name = name; mesh.castShadow = true;
     items.forEach((it, i) => put(mesh, it, i)); mesh.computeBoundingSphere(); meshes.push(mesh); return mesh;
   };
-  const bark = barkMaterial('bark'), birchBark = barkMaterial('birch'), leaf = leafMaterial();
-  for (const [k, items] of cells(trunkM, (mm) => [mm.elements[12], mm.elements[14]])) batch(`tree-trunks ${k}`, trunkGeo, bark, items, (mesh, mm, i) => mesh.setMatrixAt(i, mm));
-  for (const [k, items] of cells(birchM, (mm) => [mm.elements[12], mm.elements[14]])) batch(`tree-birches ${k}`, trunkGeo, birchBark, items, (mesh, mm, i) => mesh.setMatrixAt(i, mm));
+  // #1958: distance LOD with a dithered crossfade (src/lod.js): every cell keeps its full-detail mesh, and ONE far mesh per
+  // kind (crowns, trunks) holds the trees beyond FOLIAGE.lod.start; both levels share the dither range (a few metres).
+  const L = FOLIAGE.lod, off = typeof location !== 'undefined' && /[?&]nolod\b/.test(location.search) /* #1958: &nolod = one level everywhere (A/B) */, range = off ? lodRange(1e6, 2e6) : lowMemory ? lodRange(L.startPhone, L.endPhone) : lodRange(L.start, L.end), reach = { start: range.value.x, end: range.value.y, margin: L.margin, step: L.step, range };
+  const withDepth = (mesh, { material, depth }) => { mesh.material = material; mesh.customDepthMaterial = depth; return mesh; };
+  const bark = lodBarkMaterial('bark', range), birchBark = lodBarkMaterial('birch', range), leaf = lodLeafMaterial({ far: false, range });
+  const barkSrc = [], birchSrc = [], crownSrc = [];
+  for (const [k, items] of cells(trunkM, (mm) => [mm.elements[12], mm.elements[14]])) barkSrc.push({ mesh: withDepth(batch(`tree-trunks ${k}`, trunkGeo, bark.material, items, (mesh, mm, i) => mesh.setMatrixAt(i, mm)), bark), tint: new THREE.Color(FOLIAGE.trunk.color).multiplyScalar(L.trunkTint) });
+  for (const [k, items] of cells(birchM, (mm) => [mm.elements[12], mm.elements[14]])) birchSrc.push({ mesh: withDepth(batch(`tree-birches ${k}`, trunkGeo, birchBark.material, items, (mesh, mm, i) => mesh.setMatrixAt(i, mm)), birchBark), tint: new THREE.Color(FOLIAGE.trunk.birchColor).multiplyScalar(L.trunkTint) });
   for (const [k, items] of cells(lobes, (l) => [l.pos.x, l.pos.z])) {
-    const crown = batch(`tree-crowns ${k}`, lobeGeometry('tree'), leaf, items, (mesh, l, i) => { mesh.setMatrixAt(i, m.compose(l.pos, l.rot, l.scale)); mesh.setColorAt(i, col.setHSL(0.27, 0.45, 0.3)); });
+    const crown = withDepth(batch(`tree-crowns ${k}`, lobeGeometry('tree'), leaf.material, items, (mesh, l, i) => { mesh.setMatrixAt(i, m.compose(l.pos, l.rot, l.scale)); mesh.setColorAt(i, col.setHSL(0.27, 0.45, 0.3)); }), leaf);
     // colours and leaf cover come from the season (seasons.js); keep each tree's own variation
     registerTrees(crown, items);
+    crownSrc.push({ mesh: crown, seeds: items });
   }
+  const farMesh = (name, geo, { material, depth }, sources) => {
+    const mesh = new THREE.InstancedMesh(geo, material, sources.reduce((n, s) => n + s.mesh.count, 0));
+    mesh.name = name; mesh.castShadow = true; mesh.customDepthMaterial = depth;
+    meshes.push(mesh);
+    return mesh;
+  };
+  const farCrowns = farMesh('tree-crowns far', lobeGeometry('far'), lodLeafMaterial({ far: true, range }), crownSrc);
+  const farTrunks = farMesh('tree-trunks far', trunkGeometry(true), lodFarTrunkMaterial(range), [...barkSrc, ...birchSrc]);
+  if (crownSrc.length) new InstanceLod(crownSrc, farCrowns, reach);
+  if (barkSrc.length + birchSrc.length) new InstanceLod([...barkSrc, ...birchSrc], farTrunks, reach);
   return meshes;
 }
 

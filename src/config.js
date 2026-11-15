@@ -2054,7 +2054,7 @@ export const FOLIAGE = {
   coreScale: { tree: 1, shrub: 1, far: 0.62 }, cardScale: { tree: 1, shrub: 1, far: 1.4 },
   core: 0.42, lump: 0.18, coreJitter: 0.45, coreShade: 0.95, shell: [0.45, 0.85], size: 0.72, tilt: 0.6, jitter: 0.35,
   ao: 0.45, bright: 1.22, leafLight: [0.62, 1.0], coreGround: 0.45, alphaTest: 0.4,
-  trunk: { base: 0.2, top: 0.1, sides: 5, branches: 3, forks: 2, from: 0.5, reach: 0.95, rise: 0.3, color: 0x8a735f, birchColor: 0xf2efe8 },
+  trunk: { base: 0.2, top: 0.1, sides: 5, farSides: 4, branches: 3, forks: 2, from: 0.5, reach: 0.95, rise: 0.3, color: 0x8a735f, birchColor: 0xf2efe8 },
   bark: 64,
   // #1083: a crown standing near an Å-hus (SITE.blocks) is narrowed so its leaf cards stay `wallClearance` m outside the
   // façade instead of poking through the brick and windows (a pruned crown; *guess*, by eye — no measurement)
@@ -2064,6 +2064,13 @@ export const FOLIAGE = {
   // own InstancedMesh with its own bounding sphere, so frustum culling skips whole groups of trees instead of drawing all ~1500
   // crowns and ~1200 trunks from every spot.
   cell: 130,
+  // #1958: distance LOD of the site's trees with a dithered crossfade (src/lod.js). Between `start` and `end` m (measured to
+  // the instance centre) a tree is drawn at both levels, a Bayer-dither pattern fading the full one out and the far one in;
+  // before `start` only the full tree, after `end` only the far one (the 36-triangle 'far' lobe, a 14-triangle trunk).
+  // Narrow on purpose (both levels are drawn inside it). *guess*, by eye: 50 m is about where a lobe's cards stop reading
+  // as single cards; phones switch earlier (their frames are the tighter ones). `margin`/`step`: instances join a level's
+  // buffer `margin` m before the shader needs them and the packing is redone when the camera moved `step` m (margin > step).
+  lod: { start: 46, end: 54, startPhone: 30, endPhone: 38, margin: 2, step: 1, trunkTint: 0.72 },
 };
 
 export const FENCE_HEIGHT = 1.8; // bofakta: Skärmvägg H = 1,8 m

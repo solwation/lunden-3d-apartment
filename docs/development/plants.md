@@ -27,6 +27,9 @@ src/foliage.js         leaf-card crowns and branching trunks for the site's tree
                        southern woodland (#679, FOLIAGE): `lobeGeometry(level)` (core + alpha-tested cards, radial normals, AO
                        vertex colours), `leafMaterial()` (one shared, two-sided, `leafAtlas()` 512 / 256 px), `trunkGeometry()`,
                        `barkMaterial('bark' | 'birch')`; instancing and seasons.js unchanged
+src/lod.js             shared distance LOD with a dithered crossfade (#1958): `InstanceLod`, `patchDitherLod`, `lodDepthMaterial`; the
+                       site's trees (surroundings.js `trees()`) are its first user, see "Distance LOD of the site's trees" below
+tools/lodtest.mjs      node test (#1958): fade/zone/membership math, dither complementarity, buffer packing, seasons interplay
 tools/foliagetest.html headless test (#679): every crown batch on the shared leaf material, atlas size, triangles per lobe (≤ the
                        old 80), soft normals, cut-out shadows, branching barked trunks, January bare / July back, leafy pixels
                        (`?lowmem` for the phone profile)
@@ -85,6 +88,20 @@ Darker, denser canopy (#1804): the Google 3D review set (docs/references/google-
 
 Shared hedge form (#1143): `hedgeform.js` `hedgeBody` builds both the patio hedges and the entrance boxwood runs as a subdivided box (`cell` grid, bottom face dropped), rounded at the edges, dented mostly inward by smooth world-space noise (`dent`, `HEDGE` in config.js, all *guess*), pinched and darkened at the foot and varied in tone through vertex colours; leaf UVs are unwrapped so the long edges have no seam. `hedgeMaterial` adds brown stem glimpses in the leaf atlas's dark gaps in the lower 40 % (only while the map is on, so winter snow stays plain). Same draws as before (patio batch 1, boxwood 2); hedge triangles 6 600 → 25 748 in the full scene. Hus A/B/C have no hedges; the parking shrubs (SITE.shrubs) are round instanced crowns and unchanged. tools/boxwoodtest.html allows ±1.2 cm dent tolerance on the bed edge.
 
+
+## Distance LOD of the site's trees (#1958)
+
+`src/lod.js` is the reusable helper (API in its header comment and in [performance.md](performance.md#distance-lod-with-dithered-crossfade-1958)).
+Trees: every `tree-crowns|trunks|birches <cell>` InstancedMesh keeps its full geometry and gets a dither-LOD material variant
+(`lodLeafMaterial`, `lodBarkMaterial`, foliage.js) plus a matching `customDepthMaterial`, so shadows fade like the trees. Two
+extra InstancedMeshes, `tree-crowns far` (the existing 36-triangle `far` lobe, #1723's look) and `tree-trunks far` (a 4-sided stem and
+the leader, 14 triangles instead of 46, untextured, one instance colour for bark and birch), hold the trees beyond
+`FOLIAGE.lod.start`; `InstanceLod` repacks the buffers (near instances to the front of each cell mesh, `count` drawn) when the
+camera moved `FOLIAGE.lod.step` m. The zone `FOLIAGE.lod.start..end` (46..54 m desktop, 30..38 m phones, *guess*) is where both levels
+draw and the 4x4 Bayer pattern hands the pixels over. `seasons.js` indexes its seeds by instance index, so `InstanceLod` reorders the
+seeds array together with the buffers and `applySeason` calls `crown.userData.lod.sync()` to refresh the far copy (colours, bare
+winter). `&nolod` (surroundings.js) puts the zone at 1e6 m for A/B measurements; `lod.setRange(a, b)` does the same at run time.
+Courtyard plantings, vines, the south woodland and the shared `leafMaterial()` are untouched (they never fade).
 
 ## Fixed entrance pots on phones (#1455)
 

@@ -44,6 +44,7 @@ export function applySeason(month) {
     });
     crown.instanceColor.needsUpdate = true;
     crown.instanceMatrix.needsUpdate = true;
+    crown.userData.lod?.sync(); // #1958: the far copy of a distance-LOD crown follows the colours and scales
   }
   const snow = SEASON.snowMonths.includes(month);
   for (const r of registry.materials) {
