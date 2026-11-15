@@ -3340,6 +3340,10 @@ const thingShare = window.__thingShare = new ThingShare({ scene, connected: () =
   hand: { held: () => heldItem(), drop: () => setHeld(null), stowed: (it) => isStowed(it) }, say: (t) => badge(t, false) });
 for (const [g, list] of [['s', [saber]], ['b', toys.blasters], ['w', toys.wands], ['f', [toys.flashlight]], ['a', [bow]], ['h', [harpoon]], ['k', [binoculars]], ['c', elCabinet.cans]])
   list.forEach((it, i) => { if (it) thingShare.register(`${g}${i}`, it); });
+// #1976: things without contents: the book, the TV remote and the loose things of the rooms (ornaments, photos, potted plants, the
+// rifle) by their index in `things`; bottles and glasses carry drink and wait for their own rules, as do cups, food and life items
+thingShare.register('p0', book); thingShare.register('e0', remote);
+things.forEach((it, i) => { if (!['Bottle', 'Glass'].includes(it.constructor.name)) thingShare.register(`t${i}`, it); });
 ghosts.onThings = (m) => (m.welcome ? thingShare.welcome(m.welcome) : thingShare.receive(m));
 target.sync.net = { ready: () => ghosts.connected, send: m => ghosts.target(m) };
 ghosts.onTarget = (m, welcome) => target.sync.receive(m, welcome);

@@ -1635,6 +1635,12 @@ the wands (`w0–2`), the flashlight (`f0`), the bow (`a0`), the harpoon gun (`h
 (`c0–5`): each list's own order, the same in every client (`tools/thingsharetest.cjs` compares the lists). The basketball and the
 fishing rod are not shared yet (their flight / return-home timers need rules of their own), nor anything with contents (#1976).
 
+#1976 (first slice) adds the things without contents: the book (`p0`), the TV remote (`e0`) and the loose things of the rooms by
+their index in main.js `things` (`t<i>`: ornaments, photos, potted plants, the rifle; 42 of them, 61 shared things in all). Bottles and
+glasses (the same list, skipped), cups, food and the life simulator's items carry contents or personal rules and are not shared yet;
+neither are the window-board pots (their merged sill mesh needs an adapter), the billiard cues (billiardsync.js owns them), the pan,
+the ball and the rod.
+
 - **Our own actions** are noticed by comparing each thing's state from frame to frame (`mode`: in the hand or carried in the inventory
   / the bicycle's hand = `held`, put down = `world`, else `home`) and sent as `take` / `put` (the model's world place and turn) /
   `home`. So E, the inventory, F and every other way a thing moves are covered without touching the things' classes; swapping

@@ -38,6 +38,21 @@ const setup = () => {
     await both(1500);
     const ids = [await A.page.evaluate(() => T.ids()), await B.page.evaluate(() => T.ids())];
     check(ids[0] === ids[1] && ids[0].split(',').length >= 15 && ids[0].startsWith('s0,'), 'the same thing ids at both clients', ids[0]);
+    // #1976: things without contents are shared too: the book, the remote, ornaments / photos / plants (never a bottle or a glass)
+    const kinds = await A.page.evaluate(() => ({ n: T.S.items.size, book: T.S.items.has('p0'), remote: T.S.items.has('e0'), t: [...T.S.items.keys()].filter((k) => k[0] === 't').length,
+      drinks: [...T.S.items.values()].filter((e) => ['Bottle', 'Glass'].includes(e.item.constructor.name) || e.item.isCup).length, first: [...T.S.items.keys()].find((k) => k[0] === 't') }));
+    check(kinds.book && kinds.remote && kinds.t > 0 && kinds.drinks === 0, 'the book, the remote and the loose ornaments are registered; nothing with contents', kinds);
+    await A.page.evaluate(() => T.it('p0').take()); await both();
+    const bk = { a: await info(A, 'p0'), b: await info(B, 'p0') };
+    const bookAt = await A.page.evaluate(() => { const p = T.a.player.pos, at = new T.V(p.x + 0.3, p.y, p.z + 0.5); T.it('p0').placeAt(at, 0.4); return [at.x, at.y, at.z]; });
+    await both();
+    const bk2 = await info(B, 'p0');
+    check(bk.a.inHand && bk.b.other && !bk.b.visible && bk2.local === 'world' && bk2.visible && Math.hypot(bk2.p[0] - bookAt[0], bk2.p[2] - bookAt[2]) < 0.05, 'the book: gone at B while A holds it, lying at the same place when A puts it down', { held: bk.b, put: bk2.p });
+    const orn = await A.page.evaluate((id) => { const it = T.it(id); it.take(); return { name: it.name, cls: it.constructor.name, held: it.held }; }, kinds.first); await both();
+    const ob = await info(B, kinds.first);
+    await A.page.evaluate((id) => T.it(id).putBack(), kinds.first); await both();
+    const ob2 = await info(B, kinds.first);
+    check(orn.held && ob.other && !ob.visible && ob2.room === 'home' && ob2.visible, `a loose thing (${orn.name}): gone at B while A holds it, home again when A puts it back`, { orn, ob, ob2 });
     // A takes the saber
     await A.page.evaluate(() => T.it('s0').take()); await both();
     let a = await info(A, 's0'), b = await info(B, 's0');
