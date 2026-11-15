@@ -1,7 +1,7 @@
 // #1943: swimming in Höje å in the real app, through production Player.update (only the starts are spawned).
 //   THREE_DIR=/path/to/three tools/browsertest.sh node tools/swimtest.cjs GAME OUT
 // Checks: walking into the river starts a swim (no rescue), the eye floats just above the surface, the same input is faster downstream
-// than upstream and an idle swimmer drifts downstream; jump / sprint change nothing (crouch dives, #1944: tools/divetest.cjs); a fall into the water does not land;
+// than upstream and an idle swimmer drifts downstream; sprint changes nothing, Space is a swim stroke and no jump (#1951: tools/swimstroketest.cjs; crouch dives, #1944: tools/divetest.cjs); a fall into the water does not land;
 // swimming into a bank gets the swimmer out along the whole walkable stretch (how: climb or last-resort rescue, counted); the bicycle's
 // splash rule still rescues. Saves result images in OUT (first person at the surface; the avatar stroking and treading water).
 const fs = require('node:fs'), path = require('node:path'), kit = require('./testkit.cjs');
@@ -47,8 +47,9 @@ const check = (ok, name, data) => { results.push({ ok: !!ok, name, data }); pass
       const leg = (dx, dz, keys, s = 3) => { start(); face(dx, dz); const x0 = p.pos.x, z0 = p.pos.z; run(s, keys); return { along: ((p.pos.x - x0) * d.x + (p.pos.z - z0) * d.z) / s, swim: !!p.swim }; };
       out.down = leg(d.x, d.z, ['KeyW']); out.up = leg(-d.x, -d.z, ['KeyW']); out.idle = leg(d.x, d.z, []);
       out.sprint = leg(d.x, d.z, ['KeyW', 'ShiftLeft']);
-      start(); face(d.x, d.z); const y0 = p.pos.y; p.keys.add('Space'); p.update(dt); p.keys.delete('Space'); run(0.3, []);
-      out.jump = { dy: p.pos.y - fw.swimBedY(p.pos.x, p.pos.z), fall: !!p.fall, vy: p.vy, swim: !!p.swim, y0 };
+      start(); face(d.x, d.z); const y0 = p.pos.y; const k0 = p.swim.kicks; p.keys.add('Space'); p.update(dt); p.keys.delete('Space'); run(0.3, []);
+      out.jump = { dy: p.pos.y - fw.swimBedY(p.pos.x, p.pos.z), fall: !!p.fall, vy: p.vy, swim: !!p.swim, y0, kicks: p.swim.kicks - k0, eye: A.camera.position.y - rb.waterYAt(p.pos.x, p.pos.z) };
+      run(1, []); // (#1951: the stroke's push has faded before the next leg)
       start(); p.crouch = true; const c = leg(d.x, d.z, ['KeyW']); out.crouch = { ...c, crouched: p.crouched, eye: A.camera.position.y - rb.waterYAt(p.pos.x, p.pos.z) }; p.crouch = false;
       start(); face(d.x, d.z); p.analog.y = 1; { const x0 = p.pos.x, z0 = p.pos.z; run(2, []); out.touch = { along: ((p.pos.x - x0) * d.x + (p.pos.z - z0) * d.z) / 2 }; } p.analog.y = 0;
       // 3. a fall from 6 m into the water: no landing, swimming
@@ -85,7 +86,7 @@ const check = (ok, name, data) => { results.push({ ok: !!ok, name, data }); pass
     check(Math.abs(r.down.along - (S.speed + S.current)) < 0.08 && Math.abs(r.up.along + (S.speed - S.current)) < 0.08 && r.down.along > -r.up.along * 1.5, 'downstream is faster than upstream for the same input', { down: r.down.along, up: r.up.along });
     check(Math.abs(r.idle.along - S.current) < 0.05 && r.idle.swim, 'an idle swimmer drifts slowly downstream', r.idle);
     check(Math.abs(r.sprint.along - r.down.along) < 0.02 && Math.abs(r.crouch.along - r.down.along) < 0.02 && !r.crouch.crouched && r.crouch.eye < -0.3, 'sprint changes nothing in the water; crouch dives (#1944, tools/divetest.cjs) at the same speed', { sprint: r.sprint.along, crouch: r.crouch });
-    check(Math.abs(r.jump.dy) < 1e-6 && !r.jump.fall && r.jump.vy === 0 && r.jump.swim, 'no jump in the water', r.jump);
+    check(Math.abs(r.jump.dy) < 1e-6 && !r.jump.fall && r.jump.vy === 0 && r.jump.swim && r.jump.kicks === 1 && r.jump.eye > 0.05 && r.jump.eye < 0.25, 'no jump in the water: Space is one swim stroke (#1951, tools/swimstroketest.cjs), the eye stays at the surface', r.jump);
     check(Math.abs(r.touch.along - (S.speed + S.current)) < 0.08, 'the touch stick swims too', r.touch);
     check(r.fall.swim && !r.fall.lands.length && !r.fall.events.length, 'a 6 m fall into the water: swimming, no landing (no fall damage)', r.fall);
     if (!quick) check(r.exits.n > 20 && !r.exits.stuck.length, 'swimming into a bank gets out everywhere (nobody stuck)', { n: r.exits.n, climb: r.exits.climb, rescue: r.exits.rescue, stuck: r.exits.stuck, rescuedAt: r.exits.far });

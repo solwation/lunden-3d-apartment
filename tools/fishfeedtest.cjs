@@ -105,6 +105,19 @@ const check = (ok, name, data) => { results.push({ ok: !!ok, name, data }); pass
       return o; });
     check(retry.stillFleeing && !retry.early && retry.fed && retry.stats === 2 && retry.home && retry.sharedOk, 'while stroking nobody comes; still again a fish comes after the wait and takes the mussel; then all are back on their paths', retry);
 
+    // 3b. #1951: one swim stroke with the jump button (no movement keys) during the approach scares the fish too
+    const kick = await page.evaluate(() => { const T = window.__feed, { A, p, M } = T, o = {};
+      T.start(true); o.took = T.give(true);
+      let id = null; o.approach = T.run(45, () => { id = T.feed().lure ?? id; const f = id !== null && T.drawnAt(id), h = M.heldPosition(); return f && T.dist(f, h) < 1.3; });
+      const f0 = T.drawnAt(id); o.d0 = T.dist(f0, A.camera.position); o.keys = [...p.keys];
+      T.aim = () => { const f = T.drawnAt(id); if (f) T.look(f.x, f.y, f.z); };
+      const n0 = p.swim.kicks; p.keys.add('Space'); T.run(T.dt); p.keys.delete('Space'); o.kicks = p.swim.kicks - n0; o.moving = p.swim.moving;
+      T.run(0.9); T.aim = null;
+      const f1 = T.drawnAt(id); o.d1 = T.dist(f1, A.camera.position); o.mode = f1.mode; o.lure = T.feed().lure; o.held = !!M.held;
+      M.consumeHeld(); T.ahead(); o.home = T.run(14, () => T.feed().offsets === 0); // (the mussel put away, so nobody is fed here: the fish go back to their paths)
+      return o; });
+    check(kick.took && kick.approach && !kick.keys.length && kick.kicks === 1 && kick.moving && kick.mode === 'flee' && kick.lure === null && kick.d1 > kick.d0 + 0.5 && kick.held && kick.home, 'a swim stroke with the jump button (#1951) during the approach: the fish flees', kick);
+
     // 4. at the surface (no dive): fed too; without a mussel a still swimmer is ignored
     const surface = await page.evaluate(() => { const T = window.__feed, { A, p, M } = T, o = {};
       T.start(false); T.run(1.5); o.eye = T.eye(); o.diving = p.diving;

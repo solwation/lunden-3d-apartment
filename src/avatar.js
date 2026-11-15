@@ -1313,9 +1313,9 @@ function swimHand(fig, i, hy, hz, st, ph) {
  * shoulders, out to the sides and back to the hips (a breaststroke pull along the leaning torso). */
 function kickHand(fig, i, hy, hz, st, u) {
   const dv = fig.diveAmt ?? 0, sx = i ? -1 : 1, L = swimLean(st, dv), a = Math.PI * Math.min(1, u * 1.15), f = KA.reach * Math.cos(a) + 0.08;
-  // along the torso's own axis (up the spine = ahead when it lies in the water), a little under the body on the way back
+  // along the torso's own axis (up the spine = ahead when it lies in the water); at the surface the sweep breaks the water line (`lift`), a diver's goes a little under the body
   const sy = hy + SH[1] * Math.cos(L), sz = hz + SH[1] * Math.sin(L);
-  return { at: [sx * (SH[0] + 0.03 + KA.out * Math.sin(a)), sy + f * Math.cos(L) + SW.up * (1 - dv) - 0.06 * Math.sin(a), sz + f * Math.sin(L) + 0.05], pole: [sx * 0.9, -0.3, -0.4] };
+  return { at: [sx * (SH[0] + 0.03 + KA.out * Math.sin(a)), sy + f * Math.cos(L) + SW.up * (1 - dv) + (KA.lift * (1 - dv) - 0.06 * dv) * Math.sin(a), sz + f * Math.sin(L) + 0.05], pole: [sx * 0.9, -0.3, -0.4] };
 }
 /** #1951: how much of the arms a stroke `u` 0 … 1 through takes (in fast, out at the end). */
 const kickMix = (u) => (u >= 1 ? 0 : Math.min(1, u * 8, (1 - u) * 5));

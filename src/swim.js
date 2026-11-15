@@ -132,10 +132,11 @@ export function kickStep(k, dt, o = {}, C = SWIM) {
 
 /** The dive depth one frame on with a stroke's vertical speed `vy` (m/s, + up) in it. Under the surface the stroke moves the eye. Where it
  * goes the same way as the ordinary rule (`diveStep`: crouch held sinks, released floats up, both at SWIM.dive.rate) the two add up; where it
- * goes against it, it takes over by its share of that rate: a stroke straight up is felt in full with crouch held (and one straight down
- * with crouch released), and the sinking / floating comes back as the push fades. At the surface (not `isDiving`) the vertical part is not
- * used at all. The limits are `diveStep`'s: never over the floating height (depth 0), never nearer the bed than SWIM.dive.eyeOverBed. */
+ * goes against it, it takes that rule's place: fully while the push is at least SWIM.kick.hold x that rate, less as it fades. So a stroke up
+ * is felt with crouch held (and one down with crouch released), and the sinking / floating comes back as the push ends. At the surface (not
+ * `isDiving`) the vertical part is not used at all. The limits are `diveStep`'s: never over the floating height (depth 0), never nearer the
+ * bed than SWIM.dive.eyeOverBed. */
 export function kickDepth(depth, want, vy, water, dt, C = SWIM) {
-  const v = isDiving(depth, C) ? vy : 0, rate = C.dive.rate, against = want ? v > 0 : v < 0, w = against ? Math.min(1, Math.abs(v) / rate) : 0;
+  const v = isDiving(depth, C) ? vy : 0, rate = C.dive.rate, against = want ? v > 0 : v < 0, w = against ? Math.min(1, Math.abs(v) / (rate * C.kick.hold)) : 0;
   return Math.max(0, Math.min(diveMax(water, C), depth + ((want ? rate : -rate) * (1 - w) - v) * dt));
 }

@@ -340,7 +340,7 @@ src/diveair.js         #1949 the air while diving (`DiveAir`, main.js `diveAir`,
                        `onDrown` = a death through `Fall`; rules in swim.js (`upstreamPart`, `airRate`, `airStep`, `airWarning`), `SWIM.air`; see
                        [environment](environment.md) "Air while diving"
                        the jump (#636): Space / the touch #jump-btn (always on touch, suit or not) = a *press* (`spaceDown` / `jumpPress`) off
-                       anything you stand on, not with the jetpack, not in the stairwell / lift (`inCore`), only with room to stand; `PLAYER.jump`
+                       anything you stand on (in the river the same press is a swim stroke, #1951: environment.md), not with the jetpack, not in the stairwell / lift (`inCore`), only with room to stand; `PLAYER.jump`
                        m/s (#696: ~0.7 m, *guess*: just over a seat's ~0.45 m, not onto anything taller) or with the suit `SPIDER.jump` (2.5 m); `ceilingAt(x, z, y)` stops the head under the room's
                        ceiling (RH, `SOFFITS`, the stair's underside, a visited flat's levels, the garage's, outdoors roofs.js `above`) so
                        nobody jumps through the building; a collision segment with a fifth number (its top y: the boxwood hedge,

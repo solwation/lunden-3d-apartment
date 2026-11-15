@@ -1325,7 +1325,7 @@ tools/divetest.cjs (#1944) diving in Höje å in the real app through `Player.up
                        (crouch held = eye under the surface to 0.4 m over the drawn bed, same speeds with / against the current, letting go and the touch toggle
                        surface, fog + wash on / off, crouch on land unchanged, dives at every station of the river and through under both bridges, the
                        avatar under water with the mask and at the surface without; three result images).
-tools/fishfeedtest.cjs (#1946) a fish takes a cracked mussel from a still swimmer's hand, flees from a stroke: `THREE_DIR=… tools/browsertest.sh node tools/fishfeedtest.cjs GAME OUT` (~75 s); `node --test src/riverfishfeed.test.mjs` the pure lure / flee rules.
+tools/fishfeedtest.cjs (#1946) a fish takes a cracked mussel from a still swimmer's hand, flees from a stroke (the movement keys, or the jump button's stroke #1951): `THREE_DIR=… tools/browsertest.sh node tools/fishfeedtest.cjs GAME OUT` (~75 s); `node --test src/riverfishfeed.test.mjs` the pure lure / flee rules.
 tools/musseltest.cjs (#1945) the blue mussels on the bed of Höje å in the real app (`A.step`, the real E key under a pointer lock): `THREE_DIR=… tools/browsertest.sh node tools/musseltest.cjs GAME OUT`
                        (nothing placed / drawn on land, the first swim builds the bed, no target from the bank, out of reach from the surface over deep water,
                        dive + take + the knock target on the bed beside (#1950) + put back, consumeHeld (#1946's hook), regrowth, the pool, the mud attribute and the view from the bank; `MUSSEL_MONTH=1` under snow; three result images).
@@ -1334,8 +1334,12 @@ tools/musselcracktest.cjs (#1950) cracking a picked mussel against the bed in th
                        (the real E key takes a closed mussel + the hint, E / the action button knock it on the bed, too soon does not count, the last knock cracks it:
                        `held.cracked`, the open geometry, no draw call more; put down + taken again still cracked; no knock at the surface or on land; four result images).
                        The lazy test page draws by hand: call `A.testMode.draw()` before reading draw calls or aiming at a just-moved E box.
+tools/swimstroketest.cjs (#1951) swim strokes with the jump button in the real app through `Player.update`: `THREE_DIR=… tools/browsertest.sh node tools/swimstroketest.cjs GAME OUT` (~95 s)
+                       (one stroke's push and fade, speeds with / without strokes down- and upstream, the pause (hammering, a held key), no dip / lift at the surface,
+                       the touch jump button, under water up / level / down with crouch held and released, the air used, the jump on land, the jetpack out of the
+                       water, the avatar's arm pull; two result images). Pure rules: `node --test src/swim.test.mjs`. Images: [docs/verification/1951](../verification/1951/)
 tools/swimtest.cjs (#1943) swimming in Höje å in the real app through `Player.update`: `THREE_DIR=… tools/browsertest.sh node tools/swimtest.cjs GAME OUT [--quick]`
-                       (walk in = swim and no rescue, eye over the surface, down / upstream speed, drift, no jump / sprint (crouch dives, #1944), touch stick, a 6 m fall without
+                       (walk in = swim and no rescue, eye over the surface, down / upstream speed, drift, no jump (Space = one stroke, #1951) / sprint (crouch dives, #1944), touch stick, a 6 m fall without
                        landing, bank exits at every station of the walkable stretch, `splashCheck` still rescues; three result images; `--quick` skips the bank sweep).
                        Pure rules: `node --test src/swim.test.mjs`. Images: [docs/verification/1943](../verification/1943/)
 tools/sharkattacktest.cjs (#1947) the shark that bites swimmers, real app with `&shark=attack`: `THREE_DIR=… tools/browsertest.sh node tools/sharkattacktest.cjs GAME OUT`

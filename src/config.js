@@ -2375,11 +2375,12 @@ export const SWIM = {
   kick: {
     speed: 1.8, // m/s the push starts at, on top of the ordinary stroke and the current (*guess*: twice SWIM.speed, so a stroke is clearly felt)
     time: 0.8, // s over which the push fades linearly to nothing (one stroke carries 0.72 m; *guess*)
+    hold: 0.5, // a push up / down against the crouch rule (held = sink, released = float up) stops that rule while it is at least this x SWIM.dive.rate (swim.js `kickDepth`; *guess*)
     pause: 0.6, // s from one stroke's start before the next can start (*guess*: strokes in a row add about 1.1 m/s on average, not more)
     // The avatar: both arms pull together from stretched out ahead (`reach` m in front of the shoulders) out to the sides (`out` m) and back
-    // to the hips over `time` s, the legs' flutter grows by `legs` x; others see it when the speed through the water jumps by `jump` m/s to
+    // to the hips over `time` s (at the surface the sweep is `lift` m higher, so the arms show over the water), the legs' flutter grows by `legs` x; others see it when the speed through the water jumps by `jump` m/s to
     // over `over` m/s (ghosts.js; the ordinary stroke never passes SWIM.speed). *guess*, by eye.
-    avatar: { time: 0.7, reach: 0.5, out: 0.3, legs: 1.5, jump: 0.45, over: 1.15 },
+    avatar: { time: 0.7, reach: 0.5, out: 0.3, lift: 0.14, legs: 1.5, jump: 0.45, over: 1.15 },
     sound: { gain: 0.5, under: 0.7 }, // the swish's loudness at the surface, and x this under it (audio.js `swimStroke`; *guess*)
   },
 };
