@@ -11,8 +11,8 @@
 #   active      in use: carries a claim marker (see below) whose issue is not known
 #               to be closed; has no commits of its own and its HEAD changed within
 #               --min-age (a fresh worker checkout); or references an open issue
-#               (branch name or unmerged commit subjects, looked up with gh): never
-#               removed
+#               (a number ending the branch name, or #N in unmerged commit subjects,
+#               looked up with gh): never removed
 #   unproven    uncommitted changes, or commits whose patch is not on main, with no
 #               open issue: removed with --apply only together with --archive DIR,
 #               which first writes DIR/<name>.bundle (all local refs beyond main)
@@ -136,7 +136,7 @@ for d in "${candidates[@]}"; do
       ahead=$((ahead + $(git -C "$d" rev-list --count "$base..$ref" 2>/dev/null || echo 0)))
       new=$((new + $(git -C "$d" cherry "$base" "$ref" 2>/dev/null | grep -c '^+')))
     done
-    nums=$( { printf '%s\n' "$branch" | grep -oE '[0-9]{2,6}$'; git -C "$d" log --format=%s "$base..HEAD" 2>/dev/null | grep -oE '#[0-9]+' | tr -d '#'; } | sort -un)
+    nums=$( { printf '%s\n' "$branch" | grep -oE '[0-9]{1,6}$'; git -C "$d" log --format=%s "$base..HEAD" 2>/dev/null | grep -oE '#[0-9]+' | tr -d '#'; } | sort -un)
     open=0
     for n in $nums; do
       st=unknown
@@ -192,8 +192,10 @@ for d in "${candidates[@]}"; do
   if [ $kind = wt ]; then
     main=$(dirname "$(git -C "$d" rev-parse --path-format=absolute --git-common-dir)")
     if git -C "$main" worktree remove --force "$d" >/dev/null 2>&1 || { rm -rf "$d" && git -C "$main" worktree prune; }; then
-      if [ "$branch" != "(detached)" ] && git -C "$main" merge-base --is-ancestor "$branch" "$base" 2>/dev/null; then
-        git -C "$main" branch -D "$branch" >/dev/null 2>&1 && echo "           removed worktree and merged branch $branch"
+      # integrated: its commits are on main, merged as they are or as patches (rebase, cherry-pick)
+      if [ "$branch" != "(detached)" ] && { git -C "$main" merge-base --is-ancestor "$branch" "$base" 2>/dev/null ||
+           { git -C "$main" cherry "$base" "$branch" >/dev/null 2>&1 && ! git -C "$main" cherry "$base" "$branch" | grep -q '^+'; }; }; then
+        git -C "$main" branch -D "$branch" >/dev/null 2>&1 && echo "           removed worktree and integrated branch $branch"
       elif [ "$branch" = "(detached)" ]; then echo "           removed worktree"
       else echo "           removed worktree (branch $branch kept, not on main)"; fi
       n_removed=$((n_removed+1)); freed_mb=$((freed_mb+mb))

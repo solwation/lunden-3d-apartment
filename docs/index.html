@@ -645,7 +645,7 @@
           <span class="gradient-text">The conductor runs the orchestra.</span>
         </h1>
         <p class="hero-desc">
-          Give your AI coding assistant a baton. Instead of one agent juggling everything in a single fragile thread, the agent you talk to plans, delegates each issue to worker agents in isolated worktrees, listens to their sections, and delivers verified code directly to main.
+          Give your AI coding assistant a baton. Instead of one agent juggling everything in a single fragile thread, the agent you talk to plans, delegates each issue to worker agents in isolated worktrees, listens to their sections, and delivers verified code to main, pushed directly or through a pull request as your project policy says.
         </p>
         <div class="hero-actions">
           <a href="#quickstart" class="btn btn-primary">
@@ -712,7 +712,7 @@
             <ul class="comp-list">
               <li class="comp-item">
                 <span class="comp-icon">✅</span>
-                <span><strong>Unattended execution:</strong> Ask for a change and the conductor files an issue and delivers it. Type <code>/orkester</code> and it works through the open issues unattended. If the queue is empty, it first reviews the project, files concrete findings as issues and fixes them.</span>
+                <span><strong>Unattended execution:</strong> Ask for a change and the conductor files an issue and delivers it. Start a run with <code>/orkester</code> in Claude Code, or ask any other agent to run the orchestra, and it works through the open issues unattended. If the queue is empty, it first reviews the project, files concrete findings as issues and fixes them.</span>
               </li>
               <li class="comp-item">
                 <span class="comp-icon">✅</span>
@@ -943,10 +943,13 @@ and fill in the project policy from what you know about this repository.</pre>
           <div class="code-block">
             <button class="copy-btn" onclick="navigator.clipboard.writeText(this.nextElementSibling.innerText); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 2000);">Copy</button>
             <pre>git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.14.1 --squash
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.14.3 --squash
 cp .orchestra/shared/PROJECT.example.md .orchestra/project.md
 echo '/workingtree/' >> .gitignore   # worker checkouts live here</pre>
           </div>
+          <p style="color: var(--text-muted); margin-top: 16px;">
+            Then fill in <code>.orchestra/project.md</code>, point your agent's entry file (<code>AGENTS.md</code>, <code>CLAUDE.md</code>, …) at it and at <code>.orchestra/shared/ORCHESTRA.md</code>, and start a run with <code>/orkester</code> (the Claude Code adapter; other agents can simply be asked to run the orchestra). See <a href="https://github.com/solwation/dirigenten-och-orkestern/blob/main/INSTALL.md" class="file-tag" target="_blank">INSTALL.md</a> for the entry snippets, adapters and updates.
+          </p>
         </div>
       </div>
     </section>

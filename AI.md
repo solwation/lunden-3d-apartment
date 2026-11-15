@@ -43,11 +43,16 @@ installed core; there is no `.orchestra/shared` subtree, release pin or separate
 project policy, and this file takes the role of `.orchestra/project.md`. Upstream
 update discovery does not apply: the conductor already runs the newest revision.
 `/orkester` is the thin adapter in
-[.claude/commands/orkester.md](.claude/commands/orkester.md). A change to the core
+[.claude/commands/orkester.md](.claude/commands/orkester.md). [AGENTS.md](AGENTS.md) is
+the entry file for every agent; [.claude/CLAUDE.md](.claude/CLAUDE.md) only imports it,
+because Claude Code skips `AGENTS.md` whenever a `CLAUDE.md` exists in the checkout or
+any directory above it. Keep rules out of both. A change to the core
 governs the session that makes it from the point it is read again, and any later
 session; record which revision a delivery followed when that matters. Consumers
 importing this repository by subtree receive the adapter under
-`.orchestra/shared/.claude/`, where hosts do not load it.
+`.orchestra/shared/.claude/`, where hosts do not load it, and a copy of AGENTS.md,
+which an agent may load when it reads files beside it; that file therefore says it
+applies only in this repository.
 
 ## Host settings
 
@@ -61,8 +66,8 @@ means the shared rules apply unchanged.
 | Claims, races, expiry, handover | Core default: `orkester:` claims active work and retains documented integration ownership for finished handoffs; never take over active work or a waiting handoff |
 | Integration queue and recovery | Handoff comment on the issue plus private session checkpoint: integration owner, branch/checkout, revision, evidence and next action; conductor reconciles at every queue check |
 | Capacity | At most two active agents including the conductor; its implementation or active integration counts as a slot and is allowed for small cohesive changes. Integration-ready waits and parent summaries use no slot. No expensive shared verification (no browser/e2e/device runs) |
-| Isolation | No servers or ports. In Claude Code, give a worker its own checkout with the Agent tool's `isolation: "worktree"`; the worker writes the claim marker first, since the tool creates the checkout |
-| Worktree root and cleanup | Core default: `workingtree/` in this checkout, ignored by `.gitignore`. Claude Code removes an unchanged `isolation: "worktree"` checkout itself; the conductor removes the rest after closure and prunes leftover worktrees of this repository at drain with `scripts/prune-worktrees.sh`. Unproven work is preserved as a private branch; no archive directory |
+| Isolation | No servers or ports. In Claude Code, give a worker its own checkout with the Agent tool's `isolation: "worktree"`, which creates it under `.claude/worktrees/` (git-ignored here); the worker writes the claim marker first, since the tool creates the checkout |
+| Worktree root and cleanup | Core default: `workingtree/` in this checkout, ignored by `.gitignore`; Agent-tool checkouts live in `.claude/worktrees/`, also ignored. Claude Code removes an unchanged `isolation: "worktree"` checkout itself; the conductor removes the rest after closure and prunes leftover worktrees of this repository at drain and startup over both roots with `scripts/prune-worktrees.sh workingtree .claude/worktrees` (add `--apply` after reading the dry run). Unproven work is preserved as a private branch; no archive directory |
 | Runtime/model selection | Claude Code's Agent tool chooses a model per worker (`sonnet`, `opus`, `haiku`, `fable` aliases). Reasoning effort follows the agent definition and is not set per call unless the maintainer asks. Choose per the resource rules in [ORCHESTRA.md](ORCHESTRA.md) and disclose when a control is unavailable; no price assumptions |
 | Heartbeat, stale work | Core default |
 | Delivery mode | Direct to `main` (see *Commit and push requested changes*); PR mode does not apply |
@@ -70,7 +75,7 @@ means the shared rules apply unchanged.
 | Session review on drain | Core default |
 | Project review on an empty queue | Core default: check consistency between the core, adapters, PROJECT.example.md, INSTALL.md and CHANGELOG, run the required checks, and file at most 5 findings |
 | Workspace/server setup | None; Markdown only |
-| Required checks | `python3 scripts/check-links.py` and the maintainer checks below |
+| Required checks | `python3 scripts/check-links.py`; after a change under `scripts/` also `python3 -B -m unittest discover -s scripts -p 'test_*.py'` (CI runs both); and the maintainer checks below |
 | Installed version, upstream discovery | Not applicable: the root files are the installed core and the conductor already runs the newest revision (see above) |
 | Shell pitfall | `gh issue view` without `--json` may fail here with "GraphQL: Projects (classic) is being deprecated ... (repository.issue.projectCards)". Use `gh api repos/solwation/dirigenten-och-orkestern/issues/N` and `.../issues/N/comments` instead |
 | Attribution and licenses | Commit trailers and PR notes name the tool and model that did the work; never another provider. The repository license is [LICENSE.md](LICENSE.md); the Issueflow snapshot keeps its own [license](issueflow/LICENSE.md) |

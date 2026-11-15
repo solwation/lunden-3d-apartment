@@ -2,6 +2,46 @@
 
 ## Unreleased
 
+## 0.14.3 — 2026-11-13
+
+- AI.md: Claude Code's Agent tool puts worker checkouts in `.claude/worktrees/`, which
+  `.gitignore` now ignores so they no longer show as untracked in the integration
+  checkout, and the drain and startup prune runs over both `workingtree/` and
+  `.claude/worktrees/` (#78).
+
+- `scripts/prune-worktrees.sh --apply` now also deletes the branch of an integrated
+  worktree whose commits reached main as patches (rebase or cherry-pick), as the
+  direct-to-main delivery produces; it was kept and wrongly reported as "not on main",
+  and no later prune could find it. A regression test covers a cherry-picked delivery (#79).
+
+## 0.14.2 — 2026-11-13
+
+- Add `scripts/test_check_release.py`, run by CI: it exercises
+  `scripts/check-release.sh` in a disposable repository through its `RELEASES_FILE`
+  hook and covers a consistent release, a stale or missing pin in README.md,
+  INSTALL.md and the Pages site, a tag without a release and a missing CHANGELOG
+  heading (#77).
+
+- Name the script unit tests as a required check after changes under `scripts/`, in
+  AI.md and CONTRIBUTING.md with the command CI runs, and ignore `__pycache__/` so a
+  local test run leaves the checkout clean (#76).
+
+- Pages site: the manual install now continues with the project policy, the agent
+  entry file and how to start a run, as README does; the hero names PR delivery
+  beside direct delivery, and `/orkester` is presented as the Claude Code adapter (#75).
+
+- State when Claude Code actually reads `AGENTS.md` in INSTALL.md: only when no
+  `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists in the project or any
+  directory above it. This repository's own `AGENTS.md` now says it applies only at the
+  root of the upstream repository, so the copy a consumer receives under
+  `.orchestra/shared` is inert, and `.claude/CLAUDE.md` imports it for Claude Code
+  sessions where a parent `CLAUDE.md` would otherwise hide it (#74).
+
+- `scripts/prune-worktrees.sh` now also looks up a one-digit issue number ending a
+  branch name. A checkout on `issue-7` with an open issue was classified `unproven`
+  and could be archived and removed; it is `active` like any other. A regression test
+  covers the open-issue lookup with a stand-in `gh` (#73).
+
 ## 0.14.1 — 2026-11-13
 
 - Bring README.md up to date with the core: six phase gates, chat intake, bounded
