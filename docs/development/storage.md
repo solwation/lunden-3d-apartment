@@ -1628,6 +1628,29 @@ only: no thing in the game is connected to it yet (#1975 connects the weapons an
   nothing is sent or kept.
 - **Tests.** `node --test src/thingsync.test.mjs cloudflare/things.test.mjs cloudflare/players.test.mjs`.
 
+### The first shared things: weapons and tools (#1975)
+
+`src/thingshare.js` `ThingShare` ties the protocol to real Holdables. main.js registers the lightsaber (`s0`), the blasters (`b0–2`),
+the wands (`w0–2`), the flashlight (`f0`), the bow (`a0`), the harpoon gun (`h0`), the binoculars (`k0`) and the spray cans
+(`c0–5`): each list's own order, the same in every client (`tools/thingsharetest.cjs` compares the lists). The basketball and the
+fishing rod are not shared yet (their flight / return-home timers need rules of their own), nor anything with contents (#1976).
+
+- **Our own actions** are noticed by comparing each thing's state from frame to frame (`mode`: in the hand or carried in the inventory
+  / the bicycle's hand = `held`, put down = `world`, else `home`) and sent as `take` / `put` (the model's world place and turn) /
+  `home`. So E, the inventory, F and every other way a thing moves are covered without touching the things' classes; swapping
+  inventory places sends nothing (#1977 is the rest of the inventory's rules).
+- **The others' actions** (`apply`): held by somebody else → the thing is hidden at its home and its `take` refuses ("Någon annan har
+  den just nu"; the holder's avatar shows it); lying where somebody put it → it lies there here too, `placed`, taken with E like any
+  put-down thing; home → back at its home. Two players taking the same thing at once: the room gives it to the first, the other's hand
+  is emptied ("Någon annan hann före").
+- **Joining.** Before the welcome nothing is sent. The welcome's list is applied (the room wins for what it lists); what we carry in
+  is then announced as ours. Things we had put down privately before joining are not announced (they stay where our own save has
+  them until somebody takes them). A dropped connection brings back what the others held and leaves the rest as it is.
+- **Saving.** `keep.js` is unchanged: a thing another player put down is saved where it lies like any put-down thing; one they hold
+  is at its home in our save. Offline and solo nothing is sent or kept.
+- **Tests.** `node --test src/thingshare.test.mjs` (two ThingShare objects against the real `RoomThings`); `tools/thingsharetest.cjs`
+  (three real pages against `cloudflare/dev.mjs`; images in [docs/verification/1975](../verification/1975/)).
+
 ## Shared moving Nerf target (#1820)
 
 `cloudflare/target.js` keeps the room's target snapshot (position, yaw, points since moving and revision) and copies

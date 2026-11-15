@@ -530,6 +530,8 @@ src/minimap.js         plan view with the visitor's arrow, current room highligh
 src/measure.js         tape measure mode (Q / 📏), two surface clicks/taps, distance label
 src/rest.js            sitting / lying down (REST): seat & bed spots from furniture userData.rest, look clamp
 src/playroom.js        eight individual cinema seats use the same `restTarget` / E / touch / stand-up flow, with a clear walk-up aisle
+src/thingshare.js      #1975 (part of #1964): the weapons and tools are shared between the players: what one holds is gone for the others, what
+                       one puts down lies there for everybody and can be taken; protocol, ids and rules in storage.md ("Shared loose things")
 src/inventoryhud.js    #1954: the inventory's HUD row (`#inventory`, DOM only): five boxes with the key (F1–F4, F6: F5 stays the browser's
                        reload), an icon for the thing on top and a count for stacked nuts; the hand's box highlighted; a click / tap
                        chooses. Shown while something is carried; on touch behind the 🎒 button (`#inventory-btn`), closed again by a

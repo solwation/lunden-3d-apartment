@@ -1,0 +1,11 @@
+PASS the same thing ids at both clients "s0,b0,b1,b2,w0,w1,w2,f0,a0,h0,k0,c0,c1,c2,c3,c4,c5"
+PASS A takes the lightsaber: held by A in the room, gone at B {"a":{"local":"held","room":"held","mine":true,"other":false,"visible":true,"inHand":true,"p":[2.76,1.32,4.5]},"b":{"local":"home","room":"held","mine":false,"other":true,"visible":false,"inHand":false,"p":[2.81,4.98,9.25]}}
+PASS B cannot take what A holds {"held":false,"inHand":false}
+PASS A puts it down: it lies at the same place at B {"a":[3.1,0.04,4.7],"b":[3.1,0.04,4.7],"d":0}
+PASS B takes it: in B's hand, gone at A {"a":{"local":"home","room":"held","mine":false,"other":true,"visible":false,"inHand":false,"p":[2.81,4.98,9.25]},"b":{"local":"held","room":"held","mine":true,"other":false,"visible":true,"inHand":true,"p":[3.46,1.04,5.57]}}
+PASS both take a wand at once: exactly one keeps it {"a":{"local":"held","room":"held","mine":true,"other":false,"visible":true,"inHand":true,"p":[2.7,1.4,4.58]},"b":{"local":"home","room":"held","mine":false,"other":true,"visible":false,"inHand":false,"p":[2.58,4.53,2.85]}}
+PASS a blaster carried in A's inventory is still held: both are away at B {"a0":{"local":"held","room":"held","mine":true,"other":false,"visible":true,"inHand":false,"p":[0.18,-0.15,-0.45]},"a1":{"local":"held","room":"held","mine":true,"other":false,"visible":true,"inHand":true,"p":[2.68,1.47,4.55]},"b0":{"local":"home","room":"held","mine":false,"other":true,"visible":false,"inHand":false,"p":[2.81,4.77,9.06]},"b1":{"local":"home","room":"held","mine":false,"other":true,"visible":false,"inHand":false,"p":[2.81,4.55,9.38]}}
+PASS a late joiner sees what is held and what lies {"saber":{"local":"home","room":"held","mine":false,"other":true,"visible":false,"inHand":false,"p":[2.81,4.98,9.25]},"bow":{"local":"world","room":"world","mine":false,"other":false,"visible":true,"inHand":false,"p":[2,0.03,4.6]},"b0":{"local":"home","room":"held","mine":false,"other":true,"visible":false,"inHand":false,"p":[2.81,4.77,9.06]}}
+PASS B leaves: what B held is home again for the others {"a":{"local":"home","room":"home","mine":false,"other":false,"visible":true,"inHand":false,"p":[2.81,4.98,9.25]},"cs":{"local":"home","room":"home","mine":false,"other":false,"visible":true,"inHand":false,"p":[2.81,4.98,9.25]}}
+PASS no page errors []
+ALL PASSED

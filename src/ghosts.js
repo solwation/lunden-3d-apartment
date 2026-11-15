@@ -34,7 +34,7 @@ import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js';
 
 const CAP_KEY = 'lunden.mp.capMonth';
 const monthNow = () => new Date().toISOString().slice(0, 7);
-const URGENT = new Set(['a', 'fall', 'consume', 'dr', 'rf']); // #1763: outbox messages that go ahead of a due state (stateDue); #1777: wherever they wait, and the river fish's catch requests too
+const URGENT = new Set(['a', 'fall', 'consume', 'dr', 'rf', 'th']); // #1763: outbox messages that go ahead of a due state (stateDue); #1777: wherever they wait, and the river fish's catch requests too
 const params = new URLSearchParams(location.search);
 export const ANON = 'Anonym';
 
@@ -527,6 +527,7 @@ export class Ghosts {
       this.onSharedFish?.(m.sharedFish??null,true);
       this.onSquirrels?.(m.nutDrops??{k:'D',v:0},true);
       if (Array.isArray(m.doors)) this.onDoors?.({ t: 'dr', list: m.doors }); // the doors standing open (#1775, src/doorsync.js)
+      this.onThings?.({ welcome: Array.isArray(m.things) ? m.things : [] }); // #1975: the loose things that are not at home (src/thingshare.js)
       if (m.tm) this.onTime?.(m.tm, null); // the room's shared game time (#1774, src/timesync.js)
       for (const p of m.ps ?? []) { const g = this.add(p.i, p.n, p.av && typeof p.ax === 'string' ? p.av + p.ax : p.av); if (g && p.p) g.push(p, t); }
     } else if (m.t === 'j') { if (this.add(m.i, m.n, m.av)) this.notice.joined(m.n); }
@@ -559,6 +560,7 @@ export class Ghosts {
     else if (m.t === 'ft') this.onFootball?.(m,false);
     else if (m.t === 'tg') this.onTarget?.(m, false);
     else if (m.t === 'dr') this.onDoors?.(m); // a door opened / shut by somebody (#1775, src/doorsync.js)
+    else if (m.t === 'th') this.onThings?.(m); // #1975: a loose thing taken / put down / sent home by somebody (src/thingshare.js)
     else if (m.t === 'gf') this.onGraffiti?.(m); // the shared spray paint (#1724, src/graffitisync.js)
     else if (m.t === 'bl') this.onBoule?.(m); // #1854 shared courtyard boule
     else if (m.t === 'pool') this.onPool?.(m); // the shared billiard table (#1355, src/billiards.js): only sent to players inside the children's room
@@ -742,6 +744,15 @@ export class Ghosts {
 
   /** #1853 actions share the existing state/shot budget; no ball position stream. */
   football(msg){if(!this.connected)return false;this.outbox.push(msg);this.trimOutbox();this.lastMove=performance.now();this.sendShot();return true;}
+
+  /** #1975: a loose thing's take / put / home (src/thingsync.js) { t: 'th', i, k, n, p?, q? }: every one is kept, in order. False when not connected. */
+  things(msg) {
+    if (!this.connected) return false;
+    this.outbox.push(msg);
+    this.trimOutbox();
+    this.sendShot();
+    return true;
+  }
 
   /** A door message (#1775, src/doorsync.js) { t: 'dr', i, o }: only the newest for a door waits in the outbox. False when not connected. */
   doors(msg) {

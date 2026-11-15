@@ -178,7 +178,7 @@ import { buildCoffeeJar } from './coffeejar.js';
 import { FruitBowl } from './fruit.js';
 import { Drawing } from './drawing.js';
 import { CatCalendar, CalendarPanel } from './calendar.js';
-import { heldItem, handBusy, selectSlot, cycleSlot, inventoryTick, inventorySlots } from './holdable.js';
+import { heldItem, handBusy, setHeld, isStowed, selectSlot, cycleSlot, inventoryTick, inventorySlots } from './holdable.js';
 import { InventoryHUD, INVENTORY_KEYS } from './inventoryhud.js'; // #1954: the five places and their row in the HUD
 import { heldCategory } from './heldcategory.js';
 import { Tap, animateWater } from './water.js';
@@ -227,7 +227,8 @@ import { Harpoon } from './harpoon.js'; // #1953: the harpoon gun in the box by 
 import { buildMailbox, mailboxGround } from './mailbox.js'; // #1706: the yellow letterbox and the binoculars
 import { buildElCabinet } from './elcabinet.js'; // #1707: the electrical cabinet with the spray cans
 import { Graffiti, collisionHit } from './graffiti.js'; // #1707: the spray paint (72 h, local)
-import { DoorSync } from './doorsync.js'; // #1775: doors opened / shut, seen by the other players
+import { DoorSync } from './doorsync.js';
+import { ThingShare } from './thingshare.js'; // #1975: loose things the players share // #1775: doors opened / shut, seen by the other players
 import { GraffitiSync } from './graffitisync.js'; // #1724: … shared with the other players
 import { farWalls, swimWater, swimBedY } from './farwalk.js'; // (#1707: the paint's surfaces on phones; #1943: who swims)
 import { current as riverCurrent } from './swim.js';
@@ -3333,6 +3334,13 @@ playroom.music.peers = () => ghosts.others.values(); // #1667: existing dn poses
   if (garage.door) doorSync.register('q0', garage.door, { isOpen: () => garage.door.target > 0 });
   ghosts.onDoors = (m) => doorSync.receive(m);
 }
+// #1975 (part of #1964): the weapons and tools one player puts down are seen and can be taken by the others (src/thingshare.js; the
+// room: cloudflare/things.js). The ids follow THING_SYNC.max's groups and each list's own order, the same in every client.
+const thingShare = window.__thingShare = new ThingShare({ scene, connected: () => ghosts.connected, send: (m) => ghosts.things(m), me: () => ghosts.me ?? '',
+  hand: { held: () => heldItem(), drop: () => setHeld(null), stowed: (it) => isStowed(it) }, say: (t) => badge(t, false) });
+for (const [g, list] of [['s', [saber]], ['b', toys.blasters], ['w', toys.wands], ['f', [toys.flashlight]], ['a', [bow]], ['h', [harpoon]], ['k', [binoculars]], ['c', elCabinet.cans]])
+  list.forEach((it, i) => { if (it) thingShare.register(`${g}${i}`, it); });
+ghosts.onThings = (m) => (m.welcome ? thingShare.welcome(m.welcome) : thingShare.receive(m));
 target.sync.net = { ready: () => ghosts.connected, send: m => ghosts.target(m) };
 ghosts.onTarget = (m, welcome) => target.sync.receive(m, welcome);
 if (riverFish) { // #1752
@@ -3720,6 +3728,7 @@ function step(dt) {
   toys.update(dt);
   arrows.update(dt);
   inventoryTick(); inventoryHud.update(overlay.hidden && !reading && !statsOpen); // #1954
+  thingShare.update(); // #1975: what we took / put down goes to the room
   harpoon?.step(dt); // #1953: the spear on its line
   marks.update(dt);
   breaker.update(dt);
