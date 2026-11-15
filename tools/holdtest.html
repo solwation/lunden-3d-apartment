@@ -204,12 +204,12 @@ f.onload = async () => {
   pass &= check(!photo.placed && photo.model.position.distanceTo(M) < 1e-6, 'F: back in its place');
   w.__app.toggleFurniture(true);
   } catch (e) { pass = false; lines.push(`FAIL error ${e.stack}`); }
-  // the fruit bowl on the coffee table (#326): take an apple, three bites (scooped out, counted), the fourth eats it; a
+  // the fruit bowl on the coffee table (#326; it stands on the rug, #1393: y 0.47 + 1.4 cm): take an apple, three bites (scooped out, counted), the fourth eats it and leaves the core (#1962); a
   // pear onto the dining table, an orange back in the bowl, a cup not into the bowl, F refills it; the remote still there
   try {
   const { fruit, remote } = w.__app;
   const bowlAt = at(fruit.group);
-  pass &= check(fruit.fruit.length >= 8 && fruit.inBowl.length === fruit.fruit.length && Math.abs(bowlAt.y - 0.47) < 0.01 && bowlAt.x < 3.5, `the bowl on the coffee table's west half (${bowlAt.x.toFixed(2)}, ${bowlAt.z.toFixed(2)}), ${fruit.fruit.length} pieces`);
+  pass &= check(fruit.fruit.length >= 8 && fruit.inBowl.length === fruit.fruit.length && Math.abs(bowlAt.y - 0.47) < 0.02 && bowlAt.x < 3.5, `the bowl on the coffee table's west half (${bowlAt.x.toFixed(2)}, ${bowlAt.z.toFixed(2)}, y ${bowlAt.y.toFixed(3)}), ${fruit.fruit.length} pieces, ${fruit.inBowl.length} in it`);
   pass &= check(Math.hypot(remote.home.pos.x - bowlAt.x, remote.home.pos.z - bowlAt.z) > 0.3, 'clear of the remote');
   const bowlStands = [[3.33, 9.7], [3.0, 9.8], [3.7, 9.8], [3.33, 9.5]];
   const apple = fruit.fruit.find((p) => p.kind === 'apple' && p.spec.y > 0.03); // the one on top
@@ -227,8 +227,14 @@ f.onload = async () => {
   const m3 = dists()[0];
   pass &= check(held.bites === 3 && held.scoops.length === 3 && heldItem() === held && m3 < m0 * 0.7, `three bites: still in the hand, bitten into (skin ${(m0 * 100).toFixed(1)} → ${(m3 * 100).toFixed(1)} cm from its middle)`);
   const n0 = stats.fruit ?? 0;
-  while (heldItem() === held) { held.use(); for (let i = 0; i < 30; i++) step(1 / 60); }
-  pass &= check(held.state === 'eaten' && !held.model.visible && stats.fruit === n0 + 1 && !heldItem(), `eaten up after ${held.bites} bites, counted (${stats.fruit})`);
+  // #1962: the last bite leaves the apple's core in the hand for Matavfall (fruit.js `isRemnant`); the loop is bounded so a
+  // fruit that is never finished fails the row below instead of hanging the page
+  for (let k = 0; k < 8 && heldItem() === held && !held.isRemnant; k++) { held.use(); for (let i = 0; i < 30; i++) step(1 / 60); }
+  pass &= check(held.isRemnant && heldItem() === held && stats.fruit === n0 + 1, `eaten up after ${held.bites} bites, counted (${stats.fruit}); the core stays in the hand`);
+  held.use(); for (let i = 0; i < 30; i++) step(1 / 60);
+  pass &= check(held.bites === 4 && stats.fruit === n0 + 1 && heldItem() === held, 'the core cannot be eaten');
+  held.discard(); step(1 / 60);
+  pass &= check(held.state === 'eaten' && !held.model.visible && !heldItem(), 'thrown away: gone, the hand empty');
   // a pear onto the dining table
   const pear = fruit.fruit.find((p) => p.kind === 'pear');
   pear.take(); step(1 / 60);

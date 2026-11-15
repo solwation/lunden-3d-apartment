@@ -927,7 +927,8 @@ tools/targetscoretest.mjs node test (#1708): `TARGET_SCORE` (src/config.js, src/
                        30 a local day for every weapon, older saves converted once; the server cannot see the source, so its
                        SCORE_RATE cap is unchanged
 tools/booktest.html    headless test: take the book, read, turn pages, close, put it down, back on the side table
-tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time (#1954: the saber may be carried), F → home; the preview
+tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time (#1954: the saber may be carried), F → home
+                       (#1962: the apple's last bite leaves its core in the hand, thrown away with `discard`; the eat loop is bounded); the preview
                        (#368): the cup's ghost on the grid inside the table, ⟳ / R turn 45°, looking away cancels, down as the ghost;
                        the hand (#195): hidden when empty, at the saber's grip, a reach out and back; Pingping (#269): take him
                        (both hands on his sides), a hug (squashed, counted), onto the sofa (not a cup), back in the bed, F
