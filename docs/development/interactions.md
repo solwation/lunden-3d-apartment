@@ -530,6 +530,21 @@ src/minimap.js         plan view with the visitor's arrow, current room highligh
 src/measure.js         tape measure mode (Q / 📏), two surface clicks/taps, distance label
 src/rest.js            sitting / lying down (REST): seat & bed spots from furniture userData.rest, look clamp
 src/playroom.js        eight individual cinema seats use the same `restTarget` / E / touch / stand-up flow, with a clear walk-up aisle
+src/inventoryhud.js    #1954: the inventory's HUD row (`#inventory`, DOM only): five boxes with the key (F1–F4, F6: F5 stays the browser's
+                       reload), an icon for the thing on top and a count for stacked nuts; the hand's box highlighted; a click / tap
+                       chooses. Shown while something is carried; on touch behind the 🎒 button (`#inventory-btn`), closed again by a
+                       choice. main.js: `pickSlot(i)` (keys, boxes; a badge when a thing that cannot be carried is held or on the
+                       bicycle), the wheel → `cycleSlot` (after the binoculars' zoom, the choice list, the note and the pendant
+                       listeners; 140 ms apart), `inventoryTick()` + `inventoryHud.update()` every frame. tools/inventorytest.cjs
+                       #1954, the inventory (in src/holdable.js, INVENTORY): `slots` (5) places, one of them the hand. `setHeld(item)`
+                       moves a held thing that can be carried (`pocketable`: the classes in `POCKET` = weapons, flashlight, binoculars,
+                       spray cans, the ball, the rod, caught fish, shark fin, mussels, nuts) to its place instead of sending it home,
+                       so `handBusy(item)` is false while there is a place for `item`; `selectSlot(i)` / `cycleSlot(dir)` swap the hand.
+                       A carried thing is detached like the bicycle's stowed hand (no hooks; `isStowed` covers both) and loses its
+                       place if it was reset, broken or re-homed meanwhile (`inventoryTick`). Squirrel nuts stack, `stack` (8) to a
+                       place; the next comes into the hand when the held one is gone. Everything else (cups, food, life items, the
+                       cat, drawings, paper) keeps one-at-a-time and cannot be swapped away. Not saved: carried things are back at
+                       their homes after a reload (caught fish / fins: at the feet). `node --test src/inventory.test.mjs`
 src/holdable.js        things you take and hold (one at a time): home + pick box, held pose in camera space,
                        use = click / touch button / fast look; E on the home puts it back, E on a table top /
                        worktop / the floor (HOLD.reach) puts it down (`placeAt`, lying by its shape — `restPose`;
@@ -912,7 +927,7 @@ tools/targetscoretest.mjs node test (#1708): `TARGET_SCORE` (src/config.js, src/
                        30 a local day for every weapon, older saves converted once; the server cannot see the source, so its
                        SCORE_RATE cap is unchanged
 tools/booktest.html    headless test: take the book, read, turn pages, close, put it down, back on the side table
-tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home; the preview
+tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time (#1954: the saber may be carried), F → home; the preview
                        (#368): the cup's ghost on the grid inside the table, ⟳ / R turn 45°, looking away cancels, down as the ghost;
                        the hand (#195): hidden when empty, at the saber's grip, a reach out and back; Pingping (#269): take him
                        (both hands on his sides), a hug (squashed, counted), onto the sofa (not a cup), back in the bed, F

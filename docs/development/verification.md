@@ -1423,6 +1423,10 @@ tools/harpoontest.cjs  the harpoon gun (#1953): one page, solo, frames driven by
                        clear of trunks, shut = not takeable, take, a shot into the ground sticks and is reeled back, never further than the
                        line, a fish hit from the bank and one hit while diving are catches (at the feet / laid on the bank), the attacking
                        shark harpooned (no bite, the fin), no weapon flags, back in the box; screenshots. ~3–5 min
+tools/inventorytest.cjs the inventory (#1954): one page, solo: three real things on three places (one model in the hand, the others
+                       detached, nothing sent home), choosing / stepping swaps the hand, a shot's spear is back when the gun is put
+                       away, an empty place, nuts stack when some lie out (else only src/inventory.test.mjs), putting back frees the
+                       place, the HUD row and the touch button; screenshots. ~2 min
 tools/combattest.cjs   fights (#667): three pages (A, B, C) against dev.mjs: unarmed B a ghost and not hittable, armed all solid, hearts only in a
                        fight, B shown no shots while unarmed; A's missed dart drawn on B from the same start / direction / speed (the blasters'
                        pool, drawn only), A's thrown ball on B (screenshot), ten hits (points / deductions / lives), out of lives → start,

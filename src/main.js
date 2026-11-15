@@ -179,7 +179,8 @@ import { buildCoffeeJar } from './coffeejar.js';
 import { FruitBowl } from './fruit.js';
 import { Drawing } from './drawing.js';
 import { CatCalendar, CalendarPanel } from './calendar.js';
-import { heldItem, handBusy } from './holdable.js';
+import { heldItem, handBusy, selectSlot, cycleSlot, inventoryTick, inventorySlots } from './holdable.js';
+import { InventoryHUD, INVENTORY_KEYS } from './inventoryhud.js'; // #1954: the five places and their row in the HUD
 import { heldCategory } from './heldcategory.js';
 import { Tap, animateWater } from './water.js';
 import { snapshot } from './catphoto.js';
@@ -2252,6 +2253,7 @@ document.addEventListener('keydown', (e) => {
     else if (!noteEl.hidden && scrollNote(notePaper, e.code, e.shiftKey)) e.preventDefault(); // #275
     return;
   }
+  if (INVENTORY_KEYS.includes(e.code) && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); if (!e.repeat) pickSlot(INVENTORY_KEYS.indexOf(e.code)); return; } // #1954: F1–F4, F6 choose a place
   if(heldItem()===remote&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&['KeyJ','KeyL','BracketLeft','BracketRight'].includes(e.code)){e.preventDefault();if(!e.repeat)remote.seek(['KeyJ','BracketLeft'].includes(e.code)?-1:1);return;}
   if(outdoorGym.isActive(rest)&&e.code==='KeyF'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();if(!e.repeat&&gymInputAllowed())outdoorGym.exert(rest);return;}
   if (e.code === 'Backspace' && focused?.kind === 'ghost' && conversation.back()) { e.preventDefault(); choices.key = ''; return; }
@@ -3077,6 +3079,22 @@ document.getElementById('rearrange-rotate').addEventListener('click', () => rear
 document.getElementById('rearrange-raise').addEventListener('click', () => rearrange.raise(1));
 document.getElementById('rearrange-lower').addEventListener('click', () => rearrange.raise(-1));
 // a pendant's height with the wheel (#1106): up = higher
+// #1954: the inventory. F1–F4 / F6 choose a place, the wheel steps to the next / previous place with something in it (not while it
+// zooms the binoculars, moves a choice, scrolls a note or a rearranged pendant: those listeners come first or are checked here), a
+// click / tap on the row's boxes chooses too. A held thing that cannot be carried (a cup, food …) must be put down first.
+function pickSlot(i) {
+  const r = selectSlot(i);
+  if (r === 'busy') badge('Lägg ned det du håller först', false);
+  else if (r === 'riding') badge('Inte på cykeln', false);
+  return r;
+}
+const inventoryHud = new InventoryHUD({ row: document.getElementById('inventory'), button: document.getElementById('inventory-btn'), touch: () => touch.enabled, onSelect: pickSlot });
+let wheelSlotAt = 0;
+document.addEventListener('wheel', (e) => {
+  if (!locked || statsOpen || reading || choices.rows || rearrange.enabled || measure.active || !noteEl.hidden || !e.deltaY || e.defaultPrevented) return;
+  if (performance.now() - wheelSlotAt < 140) return; // (a trackpad sends a burst)
+  if (cycleSlot(e.deltaY > 0 ? 1 : -1)) { wheelSlotAt = performance.now(); e.preventDefault(); }
+}, { passive: false });
 document.addEventListener('wheel', (e) => { if (rearrange.enabled && terminal.hidden && rearrange.selected?.piece.pendant && e.deltaY) { e.preventDefault(); rearrange.raise(e.deltaY < 0 ? 1 : -1); } }, { passive: false });
 document.getElementById('rearrange-menu').addEventListener('click', () => showTerminal(true));
 document.getElementById('rearrange-finish').addEventListener('click', exitRearranging);
@@ -3496,7 +3514,7 @@ ghosts.onReact = (m, g) => {
     greet.say({ head: g.head, s: 1 }, K.line, { pitch: K.id === 'scream' ? 1.4 : K.id === 'laugh' ? 1.2 : 0.9, rate: 1.05, voice: 1 }, REACT.duration, g.avatar);
   }
 };
-window.__binoculars = binoculars; window.__mailbox = mailbox; window.__graffiti = graffiti; window.__graffitiSync = graffitiSync; window.__elCabinet = elCabinet; window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__harpoon = harpoon; window.__arrows = arrows; window.__presence = presence;
+window.__binoculars = binoculars; window.__mailbox = mailbox; window.__graffiti = graffiti; window.__graffitiSync = graffitiSync; window.__elCabinet = elCabinet; window.__ghosts = ghosts; window.__combat = combat; window.__inventory = { selectSlot, cycleSlot, inventorySlots, pickSlot, hud: inventoryHud }; window.__bow = bow; window.__harpoon = harpoon; window.__arrows = arrows; window.__presence = presence;
 chat = new Chat({ ghosts, log: document.getElementById('chat-log'), setting: document.getElementById('menu-chat-setting'), name: () => leaderboard.name, // #675
   camera, layer: document.getElementById('speech'), hidden: (p) => behindWall(p) }); // bubbles over the ghosts (#676)
 terminalInput.addEventListener('input', () => {
@@ -3700,6 +3718,7 @@ function step(dt) {
   dropoff.update(dt); // a lid (#387)
   toys.update(dt);
   arrows.update(dt);
+  inventoryTick(); inventoryHud.update(overlay.hidden && !reading && !statsOpen); // #1954
   harpoon?.step(dt); // #1953: the spear on its line
   marks.update(dt);
   breaker.update(dt);

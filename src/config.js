@@ -3560,6 +3560,9 @@ export const CAMPUS_LOD = { curve: 3, roofGrid: 2, maxTris: 42200 };
 export const BOW = { held: { x: 0.09, y: -0.06, z: -0.7 }, heldScale: 0.6, drawTime: 0.9, minDraw: 0.15, speed: [14, 42], tap: 0.5, gravity: 9.81,
   len: 0.72, stick: 20, flight: 6, arrows: 12, pull: 0.32,
   grip: [0, -0.02, -0.005] }; // model-local leather-cylinder centre; hand fit is a visual guess (#910)
+// #1954: the inventory (src/holdable.js): `slots` places for carried things, one of them the hand; `stack`: squirrel nuts that share a
+// place (the user's numbers, 2026-11-15).
+export const INVENTORY = { slots: 5, stack: 8 };
 // #1953: the harpoon gun in the box by Höje å (src/harpoon.js, rules in src/harpoonflight.js). All *guess* (a ~0.75 m band speargun for
 // fresh water; no product measured): `held` / `grip` the camera-space pose and the model-local hand point; `spear` its length (m);
 // `speed` m/s off the gun; `drag` 1/s the water slows it by, `sink` m/s² it drops in water, `gravity` in the air; `line` m of line (the

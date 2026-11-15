@@ -1,0 +1,19 @@
+PASS +40s the first thing is in the hand, on place 1 — [{"n":1,"on":true,"name":"harpungeväret"},{"n":0,"on":false,"name":null},{"n":0,"on":false,"name":null},{"n":0,"on":false,"name":null},{"n":0,"on":false,"name":null}]
+PASS +40s a second thing is not blocked while a carriable one is held
+PASS +40s the second thing takes place 2; the first is carried (detached, not sent home) — [{"n":1,"on":false,"name":"harpungeväret"},{"n":1,"on":true,"name":"pilbågen"},{"n":0,"on":false,"name":null},{"n":0,"on":false,"name":null},{"n":0,"on":false,"name":null}]
+PASS +40s three things on three places, one model in the hand — [{"n":1,"on":false,"name":"harpungeväret"},{"n":1,"on":false,"name":"pilbågen"},{"n":1,"on":true,"name":"kikaren"},{"n":0,"on":false,"name":null},{"n":0,"on":false,"name":null}]
+PASS +40s the HUD row shows the five places, the hand's highlighted — [{"on":false,"icon":"🔱","count":"","key":"F1"},{"on":false,"icon":"🏹","count":"","key":"F2"},{"on":true,"icon":"🔭","count":"","key":"F3"},{"on":false,"icon":"","count":"","key":"F4"},{"on":false,"icon":"","count":"","key":"F6"}]
+PASS +46s choosing place 1 puts the harpoon gun back in the hand
+PASS +46s put away mid-shot: the spear is back on the gun, the bow in the hand
+PASS +46s the held weapon shoots (the bow's arrow)
+PASS +46s stepping forward goes through the carried things and wraps round
+PASS +46s an empty place = empty hands, everything still carried — [{"n":1,"on":false,"name":"harpungeväret"},{"n":1,"on":false,"name":"pilbågen"},{"n":1,"on":false,"name":"kikaren"},{"n":0,"on":false,"name":null},{"n":0,"on":true,"name":null}]
+PASS +46s stepping back from the empty place finds the nearest carried thing
+NOTE only 0 nuts lie out now: the stacking is covered by src/inventory.test.mjs only
+PASS +46s the held thing put back in its box leaves its place empty — [{"n":1,"on":false,"name":"harpungeväret"},{"n":0,"on":true,"name":null},{"n":1,"on":false,"name":"kikaren"},{"n":0,"on":false,"name":null},{"n":0,"on":false,"name":null}]
+PASS +46s the others are still carried
+PASS +46s touch: the 🎒 button is shown, the row closed — {"btn":false,"row":true}
+PASS +46s touch: the button opens the row
+PASS +59s touch: a tap on a box puts that thing in the hand and closes the row — {"k":true,"row":true}
+PASS +59s no page errors
+ALL PASSED

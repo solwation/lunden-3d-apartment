@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { cookRate } from './cookrules.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { FISHING as F, RIVER_FISH, SHARK, SHARED_FISH, HARPOON } from './config.js';
-import { Holdable, heldItem, setHeld, stowedItem, restPose, handBusy } from './holdable.js';
+import { Holdable, heldItem, setHeld, stowedItem, isStowed, restPose, handBusy } from './holdable.js';
 import { forgetBicycleHand } from './keep.js';
 import { caughtFishGeometry } from './caughtfish.js';
 import { riverProject, riverPoint, waterAt, catchCm } from './riverfishswim.js';
@@ -453,7 +453,7 @@ export class Fishing {
     this.fins.push(fin);
     this.onItem(fin);
     const alive = this.fins.filter((f) => !f.broken);
-    if (alive.length > SHARK.keepFins) alive.find((f) => !f.held && f !== heldItem() && f !== stowedItem())?.remove();
+    if (alive.length > SHARK.keepFins) alive.find((f) => !f.held && f !== heldItem() && !isStowed(f))?.remove();
     this.fins = this.fins.filter((f) => !f.broken);
     return fin;
   }
@@ -475,7 +475,7 @@ export class Fishing {
     this.fish.push(fish);
     this.onItem(fish);
     const alive = this.fish.filter((f) => !f.broken&&!f.dropState);
-    if (alive.length > F.keep) alive.find((f) => !f.held && f !== heldItem() && f !== stowedItem())?.remove();
+    if (alive.length > F.keep) alive.find((f) => !f.held && f !== heldItem() && !isStowed(f))?.remove();
     this.fish = this.fish.filter((f) => !f.broken);
     return fish;
   }
@@ -492,7 +492,7 @@ export class Fishing {
   /** #1781: the rod lying away from its home (put down elsewhere, not in a hand, line in): after FISHING.respawn s the same rod is back under the
    *  bridge (never a second one). `awaySince` (ms, wall clock) is kept by keep.js so a reload counts the time away. Local to this client. */
   rodWatch() {
-    const r = this.rod, h = F.home, away = !r.held && stowedItem() !== r && r.placed && !r.broken && this.state === 'idle' && Math.hypot(r.model.position.x - h.x, r.model.position.z - h.z) > 1;
+    const r = this.rod, h = F.home, away = !r.held && !isStowed(r) && r.placed && !r.broken && this.state === 'idle' && Math.hypot(r.model.position.x - h.x, r.model.position.z - h.z) > 1;
     if (!away) { this.awaySince = null; return; }
     const t = this.now();
     if (this.awaySince === null || this.awaySince > t) this.awaySince = t;
@@ -579,7 +579,7 @@ export class Fishing {
       if (f.cook > 0) {const precision=f.dropState?100:10; e.ck = Math.round(f.cook * precision) / precision; e.by = f.by; }
       if (f.bites) e.b = f.bites;
       const gi = f.heat?.kind === 'grill' ? this.cookers.grills.indexOf(f.heat.grill) : -1;
-      if (f.held || f === stowedItem() || f.dropState?.intent==='take') e.h = 1;
+      if (f.held || isStowed(f) || f.dropState?.intent==='take') e.h = 1;
       else if (gi >= 0) e.on = `grill${gi}`;
       else if (f.heat?.kind === 'pan' && f.heat.pan === this.cookers.pan) e.on = 'pan';
       else if (f.heat?.kind === 'oven' && f.heat.oven === this.cookers.oven) e.on = 'oven'; // (#1881)
@@ -591,7 +591,7 @@ export class Fishing {
       out.push(e);
     }
     const fins = this.fins.filter((f) => !f.broken).map((f) => { // #1769
-      if (f.held || f === stowedItem()) return { h: 1 };
+      if (f.held || isStowed(f)) return { h: 1 };
       const p = f.model.getWorldPosition(new THREE.Vector3()), q = f.model.getWorldQuaternion(new THREE.Quaternion());
       return { p: [p.x, p.y, p.z].map((v) => Math.round(v * 1000) / 1000), q: [q.x, q.y, q.z, q.w].map((v) => Math.round(v * 1000) / 1000) };
     });

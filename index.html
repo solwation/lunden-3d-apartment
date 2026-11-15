@@ -456,6 +456,17 @@
     #measure-btn { position: fixed; right: calc(122px + var(--sr)); bottom: calc(160px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
     #crouch-btn { position: fixed; right: calc(122px + var(--sr)); bottom: calc(100px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; touch-action: manipulation; }
     #crouch-btn.on { background: var(--accent); }
+    /* #1954: the inventory row (src/inventoryhud.js): five places, the hand's highlighted; on touch behind the 🎒 button */
+    #inventory { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(14px + var(--sb)); display: flex; gap: 6px; z-index: 5; }
+    #inventory[hidden], #inventory-btn[hidden] { display: none; }
+    #inventory button { position: relative; width: 52px; height: 52px; padding: 0; border: 2px solid transparent; border-radius: 10px; background: var(--panel); color: inherit; font-size: 24px; line-height: 1; opacity: 0.75; touch-action: manipulation; }
+    #inventory button.on { border-color: var(--accent); opacity: 1; }
+    #inventory button.empty { opacity: 0.4; }
+    #inventory kbd { position: absolute; left: 4px; top: 2px; font: 600 9px/1 system-ui, sans-serif; opacity: 0.7; }
+    #inventory .count { position: absolute; right: 4px; bottom: 2px; font: 700 12px/1 system-ui, sans-serif; }
+    body.touch #inventory { bottom: calc(70px + var(--sb)); }
+    body.touch #inventory kbd { display: none; }
+    #inventory-btn { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(12px + var(--sb)); z-index: 5; width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; touch-action: manipulation; }
     #power-btn { position: fixed; right: calc(24px + var(--sr)); bottom: calc(100px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: #c8202a; color: #fff; font-size: 22px; touch-action: manipulation; }
     #power-btn[hidden] { display: none; }
     #turn-btn { position: fixed; right: calc(24px + var(--sr)); bottom: calc(160px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; touch-action: manipulation; } /* turn what you put down (#368) */
@@ -1623,6 +1634,8 @@
     <div id="vacuum-hud" hidden title="Dammsugaren: dammbehållare">🧹<span class="bar"><i></i></span></div>
     <div id="air" hidden title="Luft under vattnet" role="status" aria-label="Luft">🫧<span class="bar"><i></i></span></div>
     <div id="jet-glow" aria-hidden="true"></div>
+    <button id="inventory-btn" class="touch-only" hidden aria-label="Visa vad du bär" aria-expanded="false">🎒</button>
+    <div id="inventory" hidden role="listbox" aria-label="Saker du bär"></div>
     <div id="touch-controls" class="hud-controls">
       <button id="measure-btn" aria-label="Mät avstånd" title="Mät avstånd (Q)" aria-pressed="false">📏</button>
       <button id="crouch-btn" class="touch-only" aria-label="Huka dig">🧎</button>

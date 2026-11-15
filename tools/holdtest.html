@@ -82,9 +82,9 @@ f.onload = async () => {
   pass &= check(lookAt(sp, /ta lightsabern/i), `the saber: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(heldItem() === saber, 'the saber in the hand');
-  // the cup is blocked now
-  pass &= check(lookAt(cupAt(), /lägg ifrån dig det du håller först/i, [[3.6, 9.4], [3.0, 9.6], [4.4, 9.5]]), `the cup while holding the saber: "${btn.textContent}"`);
-  btn.click(); step(1 / 60);
+  // #1954: the cup is no longer blocked: the saber can be carried, so taking the cup would move it to its own place in the inventory
+  // (tools/inventorytest.cjs); it is not taken here, the saber stays in the hand
+  pass &= check(lookAt(cupAt(), /^(?!.*lägg ifrån dig)/i, [[3.6, 9.4], [3.0, 9.6], [4.4, 9.5]]) && !cup.target.blocked, `the cup while holding the saber: "${btn.textContent}"`);
   pass &= check(heldItem() === saber && cup.state === 'placed', 'still the saber in the hand, the cup stays');
   // the saber goes down on the dining table, lying flat
   const table = { x: 3.5, y: 0.75, z: 1.6 };

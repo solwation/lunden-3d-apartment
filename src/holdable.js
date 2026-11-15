@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { INVENTORY as I } from './config.js';
 
 // Things you can take down and hold (#78, #86, #87, #89): the lightsaber, the Nerf blasters, the magic
 // wands, the flashlight. Each has a home (hooks, a rack, a shelf) with an invisible pick box, a model
@@ -13,7 +14,7 @@ let current = null;
 let bicycleHand = null; // #984: transient reservation, never a second inventory or saved item.
 export const stowedItem = () => bicycleHand?.item ?? null;
 export const bicycleHandsBusy = () => !!bicycleHand;
-export const isStowed = item => !!item && bicycleHand?.item === item;
+export const isStowed = item => !!item && (bicycleHand?.item === item || isPocketed(item));
 /** Atomically free both hands without put/take hooks, placement changes or a second instance. */
 export function stowBicycleHand() {
   if (bicycleHand) return;
@@ -45,15 +46,111 @@ export function restoreBicycleHand() {
 
 /** The item in the visitor's hand, or null. */
 export const heldItem = () => current;
-/** Take `item` into the hand (null = empty hand); anything still held goes home (cups, #90). */
+
+// --- the inventory (#1954) -------------------------------------------------------------------------------------------------
+// INVENTORY.slots places, one of them the hand (`active`). Taking a thing while the hand holds a pocketable one moves that one to its
+// place instead of sending it home; `selectSlot` swaps which place is in the hand, as weapons are swapped in an FPS. A carried thing is
+// detached exactly like the bicycle's stowed hand (no put / take hooks, no placement change, its owner state untouched) and comes back
+// with the same pose; one that was reset, removed, broken or re-homed meanwhile is simply dropped from its place (never resurrected).
+// Squirrel nuts stack: up to INVENTORY.stack of them share a place (`stacks`), the next one comes into the hand when the held one is
+// gone. Only the classes in POCKET (weapons, tools, the catch) are carried; food, cups, the life simulator's items, the cat, drawings
+// and paper keep the old rule (one at a time; they cannot be swapped away, the hand must be emptied first). Never saved.
+const POCKET = new Set(['Saber', 'Blaster', 'Wand', 'Flashlight', 'Bow', 'Harpoon', 'Binoculars', 'FishingRod', 'CaughtFish', 'SharkFin', 'Mussel', 'Nut', 'SprayCan', 'Basketball', 'Rifle']);
+const pockets = Array(I.slots).fill(null), stacks = Array.from({ length: I.slots }, () => []);
+let active = 0;
+/** May `item` be carried in a place of the inventory? */
+export const pocketable = (item) => !!item && !item.broken && !item.lifeItem && (item.isRifle || POCKET.has(item.constructor?.name));
+const stackable = (item) => !!item?.isSquirrelNut;
+/** Detach `item` (the hand's) without hooks: the record that `attach` brings back. */
+function detach(item) {
+  const model = item.model, rec = { item, state: item.state, parent: model?.parent, pos: model?.position.clone(), quat: model?.quaternion.clone(), scale: model?.scale.clone(), visible: model?.visible };
+  item.held = false; // stop use/automatic fire before cancelling a trigger (never loose a drawn bow)
+  item.trigger?.(false);
+  item.relax?.();
+  if (model) { rec.pos.copy(model.position); rec.quat.copy(model.quaternion); }
+  model?.removeFromParent();
+  return rec;
+}
+/** Is the carried record still the thing that was put away (not reset, removed, broken or back in the world)? */
+const intact = (rec) => !!rec?.item && !rec.item.broken && !rec.item.held && !rec.item.placed && !rec.item.model.parent && rec.item.state === rec.state;
+/** The record's thing into the hand again, as it was held. False (nothing changes) when it is no longer intact. */
+function attach(rec) {
+  if (!intact(rec)) return false;
+  const { item, parent, pos, quat, scale, visible } = rec;
+  current = item; item.held = true;
+  parent?.add(item.model); item.model.position.copy(pos); item.model.quaternion.copy(quat); item.model.scale.copy(scale); item.model.visible = visible;
+  const camera = item.camera ?? (parent?.isCamera ? parent : null);
+  if (camera?.isCamera) { item.lastYaw = camera.rotation.y; item.lastPitch = camera.rotation.x; }
+  return true;
+}
+/** The thing on top of place `i`: the hand's for the active place, else the carried one. */
+const topOf = (i) => (i === active ? current : pockets[i]?.item ?? null);
+const countOf = (i) => (topOf(i) ? 1 : 0) + stacks[i].length;
+/** The place a newly taken `item` goes to: a nut joins a place of nuts with room; else the hand when it is empty; else a free place. -1: none. */
+function placeFor(item) {
+  if (stackable(item)) for (let i = 0; i < I.slots; i++) if (stackable(topOf(i)) && countOf(i) < I.stack) return i;
+  if (!current && !pockets[active] && !stacks[active].length) return active;
+  for (let i = 0; i < I.slots; i++) if (countOf(i) === 0) return i;
+  return -1;
+}
+/** Is `item` carried in the inventory (not in the hand)? */
+export const isPocketed = (item) => !!item && (pockets.some((r) => r?.item === item) || stacks.some((st) => st.some((r) => r.item === item)));
+/** The places for the HUD: [{ item (the top thing or null), count, active }]. */
+export const inventorySlots = () => pockets.map((_, i) => ({ item: topOf(i), count: countOf(i), active: i === active }));
+export const activeSlot = () => active;
+/** Put place `i` in the hand (the held thing goes to its own place). Returns true, or why not: 'riding', 'busy' (a thing that cannot be
+ * carried is held: put it down first), 'same'. */
+export function selectSlot(i) {
+  if (!(i >= 0 && i < I.slots)) return 'same';
+  if (bicycleHand) return 'riding';
+  if (i === active) return 'same';
+  if (current && !pocketable(current)) return 'busy';
+  if (current) { const item = current; current = null; pockets[active] = detach(item); }
+  active = i;
+  const rec = pockets[i]; pockets[i] = null;
+  if (rec) attach(rec);
+  inventoryTick();
+  return true;
+}
+/** The next (dir 1) / previous (-1) place with something in it, into the hand. False when there is no other. */
+export function cycleSlot(dir) {
+  for (let k = 1; k < I.slots; k++) { const i = (active + dir * k + I.slots * k) % I.slots; if (countOf(i) > 0) return selectSlot(i) === true; }
+  return false;
+}
+/** Per frame (main.js): things that left the game while carried lose their place; an empty hand over a stack of nuts takes the next one. */
+export function inventoryTick() {
+  for (let i = 0; i < I.slots; i++) {
+    if (pockets[i] && !intact(pockets[i])) pockets[i] = null;
+    if (stacks[i].length) stacks[i] = stacks[i].filter(intact);
+    if (i !== active && !pockets[i] && stacks[i].length) pockets[i] = stacks[i].pop(); // a stack always has a top
+  }
+  if (!bicycleHand && !current) while (stacks[active].length && !attach(stacks[active].pop()));
+}
+/** Take `item` into the hand (null = empty hand). What was held goes to its place in the inventory when it can be carried and there
+ * is room (#1954); otherwise home (cups, #90). */
 export function setHeld(item) {
   if (bicycleHand) return false; // reserved hands cannot take or send the stowed object home
   const prev = current;
+  if (item && prev && prev !== item && pocketable(prev)) {
+    const to = placeFor(item);
+    if (to >= 0) {
+      current = null;
+      const rec = detach(prev);
+      if (to === active) stacks[active].push(rec); // a nut on the held nut
+      else {
+        pockets[active] = rec; active = to;
+        if (pockets[to]) { stacks[to].push(pockets[to]); pockets[to] = null; } // a nut on a carried place of nuts
+      }
+      current = item;
+      return;
+    }
+  }
   current = item; // first, so the previous item's putBack does not come back here for itself
   if (prev && prev !== item) prev.putBack();
 }
-/** Is the hand busy with something other than `item`? (#102: put that down first) */
-export const handBusy = (item) => !!bicycleHand || (!!current && current !== item);
+/** Is the hand busy with something other than `item`? (#102: put that down first; #1954: not when the held thing can be carried and
+ * there is a place for `item`) */
+export const handBusy = (item) => !!bicycleHand || (!!current && current !== item && !(item && pocketable(current) && placeFor(item) >= 0));
 
 const tmpBox = new THREE.Box3();
 /**
