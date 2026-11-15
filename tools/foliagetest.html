@@ -42,7 +42,7 @@ f.onload = async () => {
     const size = tex.image.width;
     check(size === (lowmem ? F.atlasPhone : F.atlas) && size <= (lowmem ? 256 : 512), `one leaf atlas of ${size} px`);
     let flat = 0;
-    A.scene.traverse((o) => { if (o.isInstancedMesh && o.material?.flatShading) flat++; });
+    A.scene.traverse((o) => { if (o.isInstancedMesh && o.material?.flatShading && !o.userData.stone) flat++; }); // (#1987: the river's stones are facetted rock, not foliage)
     check(flat === 0, `no flat-shaded instanced foliage left (${flat})`);
     // triangles per lobe level as FOLIAGE promises (core + 2 per card) and never more than the old 80-triangle lobe
     const triOf = { 0: 20, 1: 80 };

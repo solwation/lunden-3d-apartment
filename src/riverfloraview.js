@@ -124,6 +124,7 @@ export class RiverFlora {
     };
     this.meshes = { stones: mesh('river-stones', stoneGeometry(), flat, items.stones), weeds: mesh('river-weeds', weedGeometry(), weedMat, items.weeds),
       lilies: mesh('river-lilies', lilyGeometry(), leaf, items.lilies), flowers: mesh('river-lily-flowers', flowerGeometry(), leaf, items.flowers) };
+    this.meshes.stones.userData.stone = true; // #1987: facetted on purpose (a few flat faces read as rock); not foliage (tools/foliagetest.html)
     this.meshes.lilies.renderOrder = this.meshes.flowers.renderOrder = 2; // (after the opaque water they lie on)
   }
   /** The most entries of `list` any window of 2 x range m holds. */
