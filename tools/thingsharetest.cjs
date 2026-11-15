@@ -132,6 +132,13 @@ const setup = () => {
     const eat = await C.page.evaluate(async () => { const f = T.it('q0'); f.take(); await T.pump(700); const held = f.held; for (let k = 0; k < 6 && !f.completed; k++) { f.use(); for (let i = 0; i < 30; i++) T.a.step(1 / 60); } if (f.isRemnant) f.discard(); return { held, state: f.state, bites: f.bites }; }); await ac(2000);
     const apA = await A.page.evaluate(() => { const f = T.it('q0'); return { state: f.state, visible: f.model.visible, bites: f.bites }; });
     check(eat.held && eat.state === 'eaten' && apA.state === 'eaten' && !apA.visible, 'C eats it up: it is gone at A too', { eat, apA });
+    // #1976: the coffee jug carries its level away from the machine; the frying pan whether it needs washing up
+    const jug = await A.page.evaluate(async () => { const j = T.it('j0'); j.mocca.setFill(0.6); j.take(); await T.pump(600); const p = T.a.player.pos, at = new T.V(p.x + 0.2, p.y, p.z - 0.9); j.placeAt(at, 0); return { fill: j.fill, at: [at.x, at.y, at.z] }; }); await ac();
+    const jugC = await C.page.evaluate(() => { const j = T.it('j0'), i = T.info('j0'); return { fill: j.fill, local: i.local, p: i.p }; });
+    const panA = await A.page.evaluate(async () => { const n = T.S.items.get('n0')?.item; if (!n) return null; n.take(); await T.pump(600); n.setDirty(true); const p = T.a.player.pos, at = new T.V(p.x - 0.9, p.y, p.z - 0.6); n.placeAt(at, 0); return { at: [at.x, at.y, at.z] }; }); await ac();
+    const panC = await C.page.evaluate(() => { const n = T.S.items.get('n0')?.item; if (!n) return null; const i = T.info('n0'); return { dirty: n.dirty, local: i.local, p: i.p, onHob: n.onHob }; });
+    check(Math.abs(jugC.fill - 0.6) < 0.01 && jugC.local === 'world' && Math.hypot(jugC.p[0] - jug.at[0], jugC.p[2] - jug.at[2]) < 0.05 && !!panC && panC.dirty && panC.local === 'world' && !panC.onHob && Math.hypot(panC.p[0] - panA.at[0], panC.p[2] - panA.at[2]) < 0.05,
+      'the coffee jug stands at C with its coffee, the frying pan with its dirt', { jug, jugC, panA, panC });
     // #1976: a pot from the window board (at home it is part of the merged sill mesh) and the basketball (B has left: A and C)
     const pot = await A.page.evaluate(() => { const it = T.it('l0'); it.take(); return { held: it.held, n: [...T.S.items.keys()].filter((k) => k[0] === 'l').length }; }); await ac();
     const potB = await C.page.evaluate(() => { const it = T.it('l0'); return { other: T.S.ledger.heldByOther('l0'), away: it.away.has(it.pot), groupVisible: it.model.visible }; });

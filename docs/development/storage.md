@@ -1675,6 +1675,11 @@ core thrown away) it is gone for all, and a refilled bowl (F) makes it whole aga
 supplies `goHome`. After a remote change ThingShare records what the thing is HERE (`mode`), not what the room called it: an eaten
 fruit is `home` locally although the room has it lying, which keeps two clients from answering each other for ever.
 
+#1976 (sixth slice): the coffee jug (`j0`: away from the machine it carries its level in tenths; on the plate the level is each
+player's own machine's, `plainHome`) and the frying pan (`n0`: where it stands, on the hob or not, and whether it needs washing up;
+the food in it is not shared). Split out as their own issues: cooked food (#1980), the life simulator's items, stores and machines
+(#1981), the billiard cues (#1982).
+
 - **Our own actions** are noticed by comparing each thing's state from frame to frame (`mode`: in the hand or carried in the inventory
   / the bicycle's hand = `held`, put down = `world`, else `home`) and sent as `take` / `put` (the model's world place and turn) /
   `home`. So E, the inventory, F and every other way a thing moves are covered without touching the things' classes; swapping

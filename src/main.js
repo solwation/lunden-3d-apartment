@@ -3371,6 +3371,14 @@ const fruitShare = {
   load: (f, d) => f.loadShare(d),
 };
 fruit.fruit.forEach((f, i) => thingShare.register(`q${i}`, f, fruitShare));
+// the coffee jug: on the machine's plate its level is the machine's own (each player brews their own); standing anywhere else it
+// carries how much coffee is in it (in tenths, so pouring a cup is one message)
+thingShare.register('j0', cups.jug, { plainHome: () => true,
+  save: (j) => (j.fill > 0.05 ? JSON.stringify({ f: Math.round(j.fill * 10) / 10 }) : null),
+  load: (j, d) => { if (!d) return; try { const f = JSON.parse(d)?.f; if (Number.isFinite(f)) j.mocca.setFill(Math.max(0, Math.min(1, f))); } catch { /* malformed: the level stays */ } } });
+// the frying pan: where it stands (on the hob or not) and whether it needs washing up; the food in it is not shared yet
+if (pan) thingShare.register('n0', pan, { lie: (p) => { p.onHob = !!p.hob && p.model.getWorldPosition(new THREE.Vector3()).distanceTo(p.hob.zone) < 0.05; },
+  save: (p) => (p.dirty ? '{"u":1}' : null), load: (p, d) => p.setDirty(d === '{"u":1}') });
 // the pots on the window boards: at home they are part of the merged sill meshes, so anywhere else their own model must show
 sillPots.forEach((it, i) => thingShare.register(`l${i}`, it, { away: (p) => p.setAway(true), lie: (p) => p.setAway(true) }));
 // the basketball: in the air it is still its thrower's; it lies where it came to rest (the room allows that far from the thrower)
