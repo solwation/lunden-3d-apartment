@@ -1,0 +1,11 @@
+PASS the empty hand shows nothing — {"hi":"","item":null,"vis":false}
+PASS real Book taken: the peer sees a book proxy — {"taken":{"held":"Book"},"s1":{"hi":"book","item":"ghost-item:book","vis":true}}
+PASS put back: the proxy is gone — {"hi":"","item":null,"vis":false}
+PASS a real Thing (glass) taken: category cup — {"t3":{"cls":"Glass","kind":"glass"},"s3":{"hi":"cup","item":"ghost-item:cup","vis":true}}
+PASS real BilliardCue taken: the peer sees a cue proxy, not a box — {"tc":{"cls":"BilliardCue"},"sc":{"hi":"cue","item":"ghost-item:cue","vis":true}}
+PASS the real whole chicken: the peer sees a chicken proxy — {"t":{"cls":"Chicken","held":true},"sx":{"hi":"chicken","item":"ghost-item:chicken","vis":true}}
+PASS a real apple from the bowl: the peer sees a food proxy — {"t":{"cls":"Fruit","kind":"apple"},"sx":{"hi":"food","item":"ghost-item:food","vis":true}}
+PASS a real banana: the peer sees a banana proxy — {"t":{"cls":"Fruit","kind":"banana"},"sx":{"hi":"banana","item":"ghost-item:banana","vis":true}}
+PASS a real orange: the peer sees a orange proxy — {"t":{"cls":"Fruit","kind":"orange"},"sx":{"hi":"orange","item":"ghost-item:orange","vis":true}}
+PASS the real harpoon gun: the peer sees a harpoon proxy — {"t":{"cls":"Harpoon"},"sx":{"hi":"harpoon","item":"ghost-item:harpoon","vis":true}}
+PASS no page errors

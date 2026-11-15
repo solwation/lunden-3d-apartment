@@ -1496,6 +1496,7 @@ This character/gameplay change does not apply to the public viewer.
 
 ## Held-item category on the wire (`hi`, #1297)
 
+(#1963 added specific keys for food and tools — chicken, drumstick, fries, popcorn, fishfinger, banana, orange, pear, pan, flashlight, remote, harpoon — still category keys only, validated by the same whitelist.)
 Players' states carry an optional `hi` (one of `HELD_CATEGORIES` in `src/heldcategory.js`, a short lowercase key; no names, photos or content) beside the weapon key `h`. It rides the existing 5 Hz state message, the welcome snapshot (`ps`, taken from the socket attachment's last clean state, so also after hibernation) and the `t:'s'` broadcast — no new message type, socket or timer, and at most ~14 extra bytes. `cleanState` (cloudflare/players.js) keeps `hi` only when it is exactly a whitelisted string; everything else is dropped, so a stale or hostile client cannot grow the state.
 
 Rollout order (the Worker is deployed by the owner only): (1) deploy the Worker (`cloudflare/`, `wrangler deploy`), (2) publish the client (GitHub Pages). Mixed versions are safe in every order: an old Worker's `cleanState` drops the unknown `hi` (clients keep working, others just see nothing in the hand); an old client ignores `hi` in states it receives; a new Worker with old clients simply never sees the field. Published before the Worker, the feature is dormant until the Worker is deployed.

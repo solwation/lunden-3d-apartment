@@ -61,6 +61,20 @@ const check = (ok, label, d = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} ${la
     if (sc?.hi) await shot('cue');
     await app.evaluate(() => { const a = window.__app; a.heldItem()?.putBack?.(); });
     await wait((s) => s.hi === '');
+    // #1963: the peer sees WHAT is carried: a chicken is a chicken (it was the generic red apple), each fruit its own shape, the harpoon gun
+    const real = async (label, take, want) => {
+      const t = await app.evaluate(take);
+      const sx = await wait((s) => s.hi === want);
+      check(!!t && sx?.hi === want && sx.item === `ghost-item:${want}`, `${label}: the peer sees a ${want} proxy`, JSON.stringify({ t, sx }));
+      if (sx?.hi === want) await shot(want);
+      await app.evaluate(() => { const a = window.__app, h = a.heldItem(); if (h?.discard && h.isRemnant) h.discard(); else h?.putBack?.(); });
+      await wait((s) => s.hi === '');
+    };
+    await real('the real whole chicken', () => { const a = window.__app, c = a.chicken; if (!c) return null; if (!c.held) { a.heldItem()?.putBack?.(); c.take({ silent: true }); } return { cls: a.heldItem()?.constructor?.name ?? null, held: c.held }; }, 'chicken');
+    await real('a real apple from the bowl', () => { const a = window.__app, f = a.fruit.fruit.find((x) => x.kind === 'apple' && x.state === 'bowl'); f.take(); return { cls: a.heldItem()?.constructor?.name, kind: f.kind }; }, 'food');
+    await real('a real banana', () => { const a = window.__app, f = a.fruit.fruit.find((x) => x.kind === 'banana' && x.state === 'bowl'); f.take(); return { cls: a.heldItem()?.constructor?.name, kind: f.kind }; }, 'banana');
+    await real('a real orange', () => { const a = window.__app, f = a.fruit.fruit.find((x) => x.kind === 'orange' && x.state === 'bowl'); f.take(); return { cls: a.heldItem()?.constructor?.name, kind: f.kind }; }, 'orange');
+    await real('the real harpoon gun', () => { const h = window.__harpoon; if (!h) return null; h.take(); return { cls: window.__app.heldItem()?.constructor?.name }; }, 'harpoon');
     check(errors.length === 0, 'no page errors', errors.join(' | '));
   } finally { await b1.close(); await b2.close(); }
   process.exit(failed ? 1 : 0);

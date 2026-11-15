@@ -4,7 +4,9 @@
 // Weapons keep their own wire field `h`; this covers the ordinary held things heldItem() (holdable.js) can return.
 
 /** The whitelist: one simple proxy model per key (ghostprops.js ghostItem). */
-export const HELD_CATEGORIES = Object.freeze(['cup', 'plate', 'food', 'bottle', 'book', 'paper', 'tool', 'plant', 'cue', 'box', 'nut', 'binoculars', 'spray', 'gift', 'bag', 'rod', 'fish', 'sharkfin', 'mussel']); // 'nut' (#1686): a squirrel nut; a crouched, still player holding one lures the squirrels for the shared leader. #1755: binoculars (#1706), spray can (#1707), Christmas gift, rubbish/laundry bag: no longer the generic box. #1753: the fishing rod and a caught fish. #1769: a shark fin
+export const HELD_CATEGORIES = Object.freeze(['cup', 'plate', 'food', 'bottle', 'book', 'paper', 'tool', 'plant', 'cue', 'box', 'nut', 'binoculars', 'spray', 'gift', 'bag', 'rod', 'fish', 'sharkfin', 'mussel',
+  // #1963: what was one generic 'food' / 'tool' / nothing: the other players see WHAT is carried
+  'chicken', 'drumstick', 'fries', 'popcorn', 'fishfinger', 'banana', 'orange', 'pear', 'pan', 'flashlight', 'remote', 'harpoon']); // 'nut' (#1686): a squirrel nut; a crouched, still player holding one lures the squirrels for the shared leader. #1755: binoculars (#1706), spray can (#1707), Christmas gift, rubbish/laundry bag: no longer the generic box. #1753: the fishing rod and a caught fish. #1769: a shark fin
 const SET = new Set(HELD_CATEGORIES);
 /** `hi` as it goes on the wire / into a Ghost: a whitelisted key, else '' (none). */
 export const cleanHeldCategory = (v) => (typeof v === 'string' && SET.has(v) ? v : '');
@@ -14,9 +16,11 @@ export const cleanHeldCategory = (v) => (typeof v === 'string' && SET.has(v) ? v
 const BY_CLASS = {
   Cup: 'cup', Glass: 'cup', PicnicGlass: 'cup', PicnicBottle: 'bottle', Jug: 'bottle', Bottle: 'bottle', Milk: 'bottle', Beer: 'bottle', BeerCan: 'bottle',
   Book: 'book', HeldDrawing: 'paper', ToiletPaper: 'paper', Photo: 'paper',
-  Pan: 'tool', Cloth: 'tool', Vacuum: 'tool', Flashlight: 'tool', Remote: 'tool', Scoop: 'tool', Toaster: 'box',
-  SillPot: 'plant', Nut: 'nut', Binoculars: 'binoculars', SprayCan: 'spray', ChristmasGift: 'gift', FishingRod: 'rod', CaughtFish: 'fish', SharkFin: 'sharkfin', Mussel: 'mussel', BilliardCue: 'cue', Fruit: 'food', FishFinger: 'food', FishPack: 'box', FriesBag: 'food', FriesBunch: 'food', PopcornTub: 'food', Chicken: 'food', ChickenPiece: 'food',
+  Pan: 'pan', Cloth: 'tool', Vacuum: 'tool', Flashlight: 'flashlight', Remote: 'remote', Scoop: 'tool', Toaster: 'box',
+  SillPot: 'plant', Nut: 'nut', Binoculars: 'binoculars', SprayCan: 'spray', ChristmasGift: 'gift', FishingRod: 'rod', CaughtFish: 'fish', SharkFin: 'sharkfin', Mussel: 'mussel', BilliardCue: 'cue', Fruit: 'food', FishFinger: 'fishfinger', FishPack: 'box', FriesBag: 'fries', FriesBunch: 'fries', PopcornTub: 'popcorn', Chicken: 'chicken', ChickenPiece: 'drumstick', Harpoon: 'harpoon',
 };
+/** #1963: a fruit by its kind (fruit.js `kind`); an apple is the generic red 'food'. */
+const FRUIT = { pear: 'pear', orange: 'orange', clementine: 'orange', banana: 'banana' };
 const WEAPON_CLASSES = new Set(['Saber', 'Blaster', 'Wand', 'Bow', 'Basketball', 'MieleHeld']);
 
 /** Category of a life-sim item's tags (config ITEMS), or ''. */
@@ -47,9 +51,10 @@ export function heldCategory(item) {
   if (item.isSharkFin) return 'sharkfin'; // #1769
   if (item.isMussel) return 'mussel'; // #1945: a blue mussel from the bed of Höje å
   if (item.isCaughtFish) return 'fish'; // #1753: a fish from Höje å (not the fish fingers below)
-  if (item.isFish) return 'food'; // a fish finger (fishfingers.js builds a plain object, so no class name)
+  if (item.isFish) return 'fishfinger'; // a fish finger (fishfingers.js builds a plain object, so no class name)
+  if (item.isFruit || cls === 'Fruit') return FRUIT[item.kind] ?? 'food'; // #1963
   if (item.isBinoculars) return 'binoculars';
-  if (item.isHarpoon) return ''; // #1953: the harpoon gun has no proxy model for the other players (its spear is local, too)
+  if (item.isHarpoon) return 'harpoon'; // #1953 / #1963: the gun is seen in the hand (its spear on the line stays local)
   if (item.isSprayCan) return 'spray';
   if (item.isCloth) return 'tool';
   if (item.isPaper) return 'paper';
