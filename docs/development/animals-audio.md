@@ -105,6 +105,8 @@ src/catbinderprop.js   the binder as an object (#1255, `CAT_BINDER`): a small ri
                        materials merged into three meshes, no texture, no light, no shadow caster) lying on the coffee table's slat shelf; built by
                        furniture.js `coffeetable`, so it is the table piece's child and moves with it (F rearranging, saved layouts). Target kind
                        'binder' (E / the action button); `occluded()` refuses a pick through the table top from above (the pick ray has no table in it).
+src/bestiaryimages.js  portrait renderer for the animal binder index (#1848): renders into its own WebGLRenderTarget and must NOT call renderer.setViewport (it is multiplied by the world pixel ratio and shrank/cropped
+                       every portrait, cats looked empty, #1984). Cache key ends in PORTRAIT_REV; bump it when portrait rendering changes. Test: tools/bestiaryportrait1984test.cjs.
 src/catbinder.js       `BinderPanel` (#1379, main.js `showBinder`): four fixed pockets per page in CAT_CARD.breeds order (Miele last),
                        silhouettes for undiscovered variants; found cards use an uncropped existing photo, name, breed, tier and points.
                        Click/touch opens that variant's album with weight/facts/find/pat/hug counters and photo actions; an extra page retains legacy photos.

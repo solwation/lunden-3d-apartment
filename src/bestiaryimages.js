@@ -1,12 +1,14 @@
 import * as THREE from 'three';
 import { createBestiaryModel } from './bestiarymodels.js';
+// Bump to drop cached portraits rendered with the old pixel-ratio-scaled viewport (#1984): they are cropped, tiny or blank.
+export const PORTRAIT_REV=2;
 // One queued offscreen render on demand, reusing the world renderer. Nothing is drawn while the binder is closed.
 export class BestiaryImages {
  constructor({registry,renderer,store,maxMemory=24}) { Object.assign(this,{registry,renderer,store,maxMemory});this.memory=new Map();this.pending=new Map();this.queue=Promise.resolve();this.disposed=false;this.renders=0;this.hits=0; }
  get(id,size=96) {
   if(size!==96&&size!==320)return Promise.reject(new Error('Unsupported thumbnail size'));
   const entry=this.registry.get(id);if(!entry)return Promise.reject(new Error('Unknown creature'));
-  const key=`${id}:${entry.modelVersion}:${size}`;
+  const key=`${id}:${entry.modelVersion}:${size}:${PORTRAIT_REV}`;
   if(this.memory.has(key)){this.hits++;return Promise.resolve(this.memory.get(key));}
   if(this.pending.has(key))return this.pending.get(key);
   const task=this.queue.then(async()=>{
@@ -26,7 +28,8 @@ export class BestiaryImages {
   // Save counters too: an offscreen UI job must not masquerade as world draw-budget growth.
   target.texture.colorSpace=THREE.SRGBColorSpace;
   const counters={...r.info.render};
-  try {r.xr.enabled=false;r.shadowMap.enabled=false;r.info.autoReset=true;r.autoClear=true;r.setRenderTarget(target);r.setViewport(0,0,size,size);r.setScissorTest(false);r.setClearColor(0x000000,0);r.clear();r.render(scene,camera);r.readRenderTargetPixels(target,0,0,size,size,pixels);
+  try {r.xr.enabled=false;r.shadowMap.enabled=false;r.info.autoReset=true;r.autoClear=true;r.setRenderTarget(target);r.setScissorTest(false); // the target brings its own full-size viewport; r.setViewport would be scaled by the world's pixel ratio and crop/shrink the portrait (#1984)
+   r.setClearColor(0x000000,0);r.clear();r.render(scene,camera);r.readRenderTargetPixels(target,0,0,size,size,pixels);
    const canvas=document.createElement('canvas');canvas.width=canvas.height=size;const ctx=canvas.getContext('2d'),image=ctx.createImageData(size,size);
    for(let y=0;y<size;y++)image.data.set(pixels.subarray((size-y-1)*size*4,(size-y)*size*4),y*size*4);ctx.putImageData(image,0,0);return canvas.toDataURL('image/png');
   } finally {r.setRenderTarget(previous,face,mip);r.setViewport(viewport);r.setScissor(scissor);r.setScissorTest(test);r.setClearColor(clear,alpha);r.autoClear=auto;r.shadowMap.enabled=shadows;r.xr.enabled=xr;r.info.autoReset=infoReset;Object.assign(r.info.render,counters);target.dispose();root.remove(object);}
