@@ -66,6 +66,14 @@ const URL_ = (at) => `${game}/?shot&cloud=&quality=0&month=7&time=13&freeze&weat
     await page.screenshot({ path: `${shots}/inventory-after-reload.png`, timeout: 300000 });
     const again = await page.evaluate(() => { const I = window.__inventory; I.selectSlot(0); window.__app.frame(0.05); return { h: window.__app.heldItem() === window.__harpoon, bow: window.__bow.held === false }; });
     check(again.h && again.bow, 'choosing place 1 after the reload swaps in the harpoon as before');
+    // F5 (#1959 review): a plain browser reload of the same tab, no synthetic pagehide; place 1 is active now.
+    const want5 = await page.evaluate(() => window.__inventory.inventorySlots().map((s) => ({ n: s.count, on: s.active, name: s.item?.name ?? null })));
+    await page.reload({ waitUntil: 'commit' });
+    await ready();
+    await run(3);
+    const after5 = await page.evaluate(() => window.__inventory.inventorySlots().map((s) => ({ n: s.count, on: s.active, name: s.item?.name ?? null })));
+    console.log('want5 ', JSON.stringify(want5)); console.log('after5', JSON.stringify(after5));
+    check(JSON.stringify(after5) === JSON.stringify(want5), 'F5 (page.reload) brings back the same places and active place');
     check(errors.length === 0, 'no page errors', errors.join(' | '));
   } catch (e) { console.log('FAIL exception', e.stack ?? e); failed++; } finally { await browser.close(); }
   console.log(failed ? 'SOME FAILED' : 'ALL PASSED');

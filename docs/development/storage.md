@@ -1792,5 +1792,6 @@ for a nut. Loading empties the hand without hooks, `take()`s each resolved thing
 is dropped from its place; it is never both in the world and a place. A thing the hand held that cannot be carried (a cup) stays in the hand.
 Nuts have no identity across a reload: `Squirrels.restoreCarried(kinds)` gives each a free slot (so a carried nut is a new acorn/hazelnut);
 not in a multiplayer room (the take needs the room's answer). Not saved: mussels (their bed spots are built only when swimming) and, until
-their own issues (#1960, #1961), food, cups and life items. F5 keeps only the place (as before): the part is written by "Ladda om", the
-update flow, `lunden.playerWorld` and the GL-restore reload.
+their own issues (#1960, #1961), food, cups and life items. The part is written wherever the world is: "Ladda om", the update flow, the
+GL-restore reload and `lunden.playerWorld` on page hide, which is what brings the places back after a plain F5 (`tools/inventorykeeptest.cjs`
+checks both a new navigation and `page.reload()`).
