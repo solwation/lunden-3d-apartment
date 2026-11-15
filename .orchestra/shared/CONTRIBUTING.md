@@ -37,7 +37,9 @@ Agents maintaining this repository start with [AI.md](AI.md), its own host polic
 for the orchestra, Issueflow labels and delivery to `main`.
 
 Review diff, relative links and contradictions with the host policy; `python3
-scripts/check-links.py` checks relative links and heading anchors (also run by CI). Exercise install
+scripts/check-links.py` checks relative links and heading anchors (also run by CI). After a
+change under `scripts/`, run the unit tests the same way CI does: `python3 -B -m unittest
+discover -s scripts -p 'test_*.py'`. Exercise install
 and update in a disposable Git repository when changing distribution instructions.
 Walk through a small fix, an independent helper, a failed check, a claim race and an
 idle fetch failure. For resource-policy changes also check an economical implementation,
