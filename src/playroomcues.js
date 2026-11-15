@@ -97,7 +97,16 @@ export class BilliardCue extends Holdable {
     }
   }
 
-  putInRack(slotIndex) {
+  /** Out of the rack's bookkeeping (its slot is free again); the model stays where it is. */
+  leaveRack() {
+    if (this.inRack && this.slotIndex !== null && this.rack.slots[this.slotIndex] === this) this.rack.vacateSlot(this.slotIndex);
+    this.slotIndex = null;
+    this.inRack = false;
+  }
+
+  /** `quiet` (#1982): no click, when another player's move is shown here. */
+  putInRack(slotIndex, quiet = false) {
+    if (this.inRack && this.slotIndex !== slotIndex) this.leaveRack(); // (moved from another slot)
     if (this.held) {
       this.held = false;
       if (heldItem() === this) setHeld(null);
@@ -113,7 +122,7 @@ export class BilliardCue extends Holdable {
     this.rack.occupySlot(slotIndex, this);
     this.goHome();
     this.rack.group.add(this.model);
-    sfx.click?.(this.where());
+    if (!quiet) sfx.click?.(this.where());
   }
 
   putBack() {
@@ -147,6 +156,7 @@ export class PlayroomCueRack {
     this.c = C;
     this.slots = new Array(C.count).fill(null);
     this.cues = [];
+    this.away = () => false; // #1982: (cue) => it is somewhere the rack must not fetch it from (another player has it; set by main.js)
 
     const OX = R.x + C.x, OZ = R.z + C.z;
     this.worldPos = new THREE.Vector3(OX, C.y, OZ);
@@ -251,6 +261,21 @@ export class PlayroomCueRack {
     return true;
   }
 
+  /** #1982: `cue` back in the rack without a sound: in slot `want` (its own by default) when that is free, else the next free one. */
+  settle(cue, want = cue.cueIndex) {
+    cue.leaveRack();
+    const slot = this.slots[want] === null ? want : this.nextFreeSlot();
+    if (slot === null) return false;
+    cue.putInRack(slot, true);
+    return true;
+  }
+
+  /** #1982: `cue` lies where another player put it: no slot is its own, and in the playroom it belongs to the room's group. */
+  laid(cue) {
+    cue.leaveRack();
+    if (inPlayroom(cue.model.position.x, cue.model.position.z)) this.group.add(cue.model);
+  }
+
   makeCues(scene, camera, billiards) {
     const mat = this.furMat;
     const cues = [];
@@ -276,7 +301,7 @@ export class PlayroomCueRack {
   replenishAll() {
     for (let i = 0; i < this.cues.length; i++) {
       const cue = this.cues[i];
-      cue.putInRack(i);
+      if (!this.away(cue)) cue.putInRack(i);
     }
   }
 

@@ -1649,8 +1649,7 @@ glasses (the same list, skipped), cups, food and the life simulator's items carr
 home })`): the window-board pots (`l<i>`: at home they are part of the merged sill meshes, so `away` / `lie` call `setAway(true)` and
 their own model shows wherever they stand), the basketball (`o0`: in the air it is still its thrower's, `mode`; it lies where it came
 to rest, for which the room allows `THING_SYNC.putReach.o` m from the thrower) and the fishing rod (`r0`; its "back under the bridge"
-timer, #1781, is left to whoever put it down: `fishing.rodKept`). Not shared: the billiard cues (the rack's slots and the table's own
-sync own them) and the pan (it carries food and dirt: with the things that have contents).
+timer, #1781, is left to whoever put it down: `fishing.rodKept`). Not shared in that slice: the billiard cues (#1982, below) and the pan (it carries food and dirt: with the things that have contents).
 
 #1976 (third slice; the user, 2026-11-15: what is in a thing follows it to whoever takes it): a `put` may carry `d`, a short
 printable-ASCII string (`thingsync.js` `cleanData`, at most `THING_SYNC.data` characters) that the room keeps with where the thing
@@ -1701,6 +1700,18 @@ cooked. `shareLoad` rewards and reports nothing (as `loadState`): a bird somebod
 chore's own events come only from our own actions. A piece broken off is in its eater's hand only. The food lying IN the pan, the
 basket's heap and the cart's popcorn case stay each player's own.
 
+#1982: the billiard cues (`d<i>` = the cue's index, `playroomcues.js`). Home is a slot of the wall rack, and a cue may be put back in
+any free slot. In its own slot it is plain `home`; in another slot it is `put` at that slot's place carrying the slot's number as
+`d` (`save` / `load` in main.js), so every client has it in the same slot (`PlayroomCueRack.settle(cue, slot)`: that slot when free
+here, else the next free one, without a sound). A cue somebody else holds leaves the rack's bookkeeping (`BilliardCue.leaveRack`),
+so "take a cue from the rack" hands out another one; lying anywhere it is an ordinary put-down thing (`PlayroomCueRack.laid`: in
+the playroom the model hangs under the room's group, as when we lay it there ourselves). The rack's own refill (all cues gone →
+back in the rack) skips what it must not fetch (`PlayroomCueRack.away`, set in main.js while the share is live): a cue another
+player holds, one we carry, and one another player left outside the playroom; those come back when their holder puts them back or
+leaves, or with `keepDays`. The table's own sync (`billiardsync.js`: strokes, the aiming cue others see) is untouched: it only asks
+whether a cue is in our hand. `THING_SYNC.x` / `.z` reach down to the playroom (`PLAYROOM.x` / `.z` = -1500) since this slice;
+before it a thing put down in the playroom was not told to the room at all.
+
 - **Our own actions** are noticed by comparing each thing's state from frame to frame (`mode`: in the hand or carried in the inventory
   / the bicycle's hand = `held`, put down = `world`, else `home`) and sent as `take` / `put` (the model's world place and turn) /
   `home`. So E, the inventory, F and every other way a thing moves are covered without touching the things' classes; swapping
@@ -1722,7 +1733,8 @@ basket's heap and the cart's popcorn case stay each player's own.
   goes home for the others. `tools/thinginventorytest.cjs` (two real pages; a real reload; no `&test` and no `&at`: both start
   without the saved world).
 - **Tests.** `node --test src/thingshare.test.mjs` (two ThingShare objects against the real `RoomThings`); `tools/thingsharetest.cjs`
-  (three real pages against `cloudflare/dev.mjs`; images in [docs/verification/1975](../verification/1975/)).
+  (three real pages against `cloudflare/dev.mjs`; images in [docs/verification/1975](../verification/1975/)); `tools/cuesharetest.cjs`
+  (#1982: two pages in the playroom: take, another slot, laid down, taken from the floor, the holder aims, a holder leaves).
 
 ## Shared chores: everybody who helped is paid (#1976)
 

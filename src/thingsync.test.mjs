@@ -4,8 +4,8 @@ import { thingId, cleanPlace, cleanTurn, cleanThing, cleanThingState, ThingLedge
 import { THING_SYNC as C } from './config.js';
 
 test('ids: a known group, an index under its max, no padding', () => {
-  for (const i of ['s0', 's3', 'a0', 'c11', 'r0']) assert.equal(thingId(i), true, i);
-  for (const i of ['s4', 'a1', 'z0', 's01', 's-1', 'S0', 's', '0', 's0 ', 5, null, 'c12', '__proto__']) assert.equal(thingId(i), false, String(i));
+  for (const i of ['s0', 's3', 'a0', 'c11', 'r0', 'd3']) assert.equal(thingId(i), true, i);
+  for (const i of ['s4', 'a1', 'd4', 'z0', 's01', 's-1', 'S0', 's', '0', 's0 ', 5, null, 'c12', '__proto__']) assert.equal(thingId(i), false, String(i));
   assert.ok(Object.values(C.max).every((n) => Number.isInteger(n) && n > 0 && n <= 1000));
 });
 

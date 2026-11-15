@@ -3442,6 +3442,16 @@ popcornTubs.forEach((t, i) => thingShare.register(`m${i}`, t, { plainHome: () =>
 sillPots.forEach((it, i) => thingShare.register(`l${i}`, it, { away: (p) => p.setAway(true), lie: (p) => p.setAway(true) }));
 // the basketball: in the air it is still its thrower's; it lies where it came to rest (the room allows that far from the thrower)
 thingShare.register('o0', ball, { mode: (b, usual) => (b.flying ? 'held' : usual), lie: (b) => { b.flying = false; b.returning = false; b.v?.set(0, 0, 0); } });
+// #1982, the billiard cues (playroomcues.js; `d<i>` = the cue's index): home = a slot of the rack. Its own slot is plain 'home'; in
+// another slot it is 'put' there carrying the slot's number, so everybody has it in the same slot. Lying anywhere it is an ordinary
+// put-down thing. The rack never fetches back a cue another player holds or left outside the playroom (`away`).
+billiardCues.forEach((c, i) => thingShare.register(`d${i}`, c, {
+  goHome: (x) => { if (!x.rack.settle(x)) x.goHome(); },
+  away: (x) => x.leaveRack(), lie: (x) => x.rack.laid(x),
+  save: (x) => (x.inRack && x.slotIndex !== null && x.slotIndex !== x.cueIndex ? String(x.slotIndex) : null),
+  load: (x, d) => { const n = d === null ? NaN : Number(d); if (Number.isInteger(n) && n >= 0 && n < x.rack.slots.length) x.rack.settle(x, n); } }));
+playroom.cueRack.away = (c) => { if (!thingShare.live) return false; const s = thingShare.ledger.get(`d${c.cueIndex}`), me = ghosts.me ?? '';
+  return thingShare.mode(c) === 'held' || (s.m === 'held' && s.by !== me) || (s.m === 'world' && s.by !== me && c.placed); };
 // the fishing rod: its own "back under the bridge" timer (#1781) is left to whoever put it down
 thingShare.register('r0', fishing.rod);
 fishing.rodKept = () => { const s = thingShare.ledger.get('r0'); return thingShare.live && s.m === 'world' && s.by !== (ghosts.me ?? ''); };
