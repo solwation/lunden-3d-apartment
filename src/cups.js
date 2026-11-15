@@ -532,7 +532,7 @@ export function buildCups(scene, camera, world, cabinetBox) {
   /** Opening the cabinet (#215): every empty shelf spot gets a new cup with a pattern not already in there. */
   function refill() {
     for (let i = freeSlot(); i >= 0; i = freeSlot()) {
-      let c = cups.find((x) => x.state === 'spare');
+      let c = cups.find((x) => x.state === 'spare' && !x.sharedAway); // (#1976 `sharedAway`: another player holds that cup)
       if (!c) c = cups.filter((x) => x.state === 'placed').sort((a, b) => a.placedAt - b.placedAt)[0]; // the oldest out goes
       if (!c) return;
       c.contents.clear(); c.heat = 0; c.coffeeWas = c.milkWas = 0; c.dirty = false; c.show();

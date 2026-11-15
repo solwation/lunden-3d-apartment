@@ -229,7 +229,7 @@ import { buildElCabinet } from './elcabinet.js'; // #1707: the electrical cabine
 import { Graffiti, collisionHit } from './graffiti.js'; // #1707: the spray paint (72 h, local)
 import { DoorSync } from './doorsync.js';
 import { ThingShare } from './thingshare.js'; // #1975: loose things the players share
-import { drinkData, readDrink } from './thingcontents.js'; // #1976: what a shared vessel carries // #1775: doors opened / shut, seen by the other players
+import { drinkData, readDrink, cupData, readCup } from './thingcontents.js'; // #1976: what a shared vessel carries // #1775: doors opened / shut, seen by the other players
 import { GraffitiSync } from './graffitisync.js'; // #1724: … shared with the other players
 import { farWalls, swimWater, swimBedY } from './farwalk.js'; // (#1707: the paint's surfaces on phones; #1943: who swims)
 import { current as riverCurrent } from './swim.js';
@@ -3349,6 +3349,18 @@ thingShare.register('p0', book); thingShare.register('e0', remote);
 const glassShare = { save: (g, was) => (g.contents.pouring ? was : drinkData(g.contents.a, g.used)),
   load: (g, d) => { const r = readDrink(d); g.contents.clear(); g.contents.a = r.a; g.used = r.used; g.show(); } };
 things.forEach((it, i) => { if (it.constructor.name === 'Glass') thingShare.register(`t${i}`, it, glassShare); else thingShare.register(`t${i}`, it); });
+// the coffee cups (cups.js: a pool, each player's cups wear random patterns): a cup another player holds is out of our pool until it
+// comes back; where one stands it carries its pattern, drink, heat and dirt; back in the cabinet it is just a clean cup again
+const cupShare = {
+  mode: (c) => (c.held || c.state === 'held' ? 'held' : c.state === 'placed' || c.state === 'dishwasher' ? 'world' : 'home'),
+  away: (c) => { c.shatter(); c.sharedAway = true; },
+  lie: (c) => { c.sharedAway = false; delete c.placed; c.state = 'placed'; c.slot = null; c.placedAt = performance.now(); },
+  home: (c) => { c.sharedAway = false; },
+  plainHome: () => true,
+  save: (c, was) => (c.contents.pouring ? was : cupData(c.contents.a, c.dirty, c.heat, c.design)),
+  load: (c, d) => { const r = readCup(d, CUPS.designs); if (r.design) c.setDesign(r.design); c.contents.clear(); c.contents.a = r.a; c.heat = r.heat; c.coffeeWas = r.a.coffee ?? 0; c.milkWas = r.a.milk ?? 0; c.dirty = r.used; c.show(); },
+};
+cups.cups.forEach((c, i) => thingShare.register(`u${i}`, c, cupShare));
 // the pots on the window boards: at home they are part of the merged sill meshes, so anywhere else their own model must show
 sillPots.forEach((it, i) => thingShare.register(`l${i}`, it, { away: (p) => p.setAway(true), lie: (p) => p.setAway(true) }));
 // the basketball: in the air it is still its thrower's; it lies where it came to rest (the room allows that far from the thrower)

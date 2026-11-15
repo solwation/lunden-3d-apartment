@@ -108,6 +108,20 @@ const setup = () => {
     check(g1.a.wine === 0.5 && !g1.used && g1.room === 'world' && g2.a.wine === 0.2 && g2.used && g2.local === 'world' && Math.hypot(g2.p[0] - gAt[0], g2.p[2] - gAt[2]) < 0.05, 'a glass carries its drink: poured at A it is in C\'s glass; drunk from and put down, it stands at C with what is left, used', { g1, g2 });
     await C.page.evaluate(([x, y, z]) => { T.look(x, y + 0.08, z); T.a.step(0.05); }, g2.p);
     await kit.shot(C.page, `${out}/c-sees-the-glass-of-wine-a-put-down.png`);
+    // #1976: a coffee cup from the cabinet: out of C's pool while A holds it; put down with coffee it stands at C with A's pattern,
+    // the coffee, warm and used; back in A's cabinet it is home (a clean cup) at C
+    const cup = await A.page.evaluate(() => { const c = T.it('u0'); c.take(); return { held: c.held, design: c.design }; }); await ac();
+    const cupC = await C.page.evaluate(() => { const c = T.it('u0'); return { other: T.S.ledger.heldByOther('u0'), state: c.state, away: !!c.sharedAway, inScene: !!c.model.parent }; });
+    const cupAt = await A.page.evaluate(() => { const c = T.it('u0'), p = T.a.player.pos, at = new T.V(p.x - 0.7, p.y, p.z - 0.2); c.contents.set('coffee', 0.6); c.heat = 0.9; c.dirty = true; c.show(); c.placeAt(at, 0.5); return [at.x, at.y, at.z]; }); await ac();
+    const cupC2 = await C.page.evaluate(() => { const c = T.it('u0'), i = T.info('u0'); return { state: c.state, design: c.design, a: { ...c.contents.a }, heat: c.heat, dirty: c.dirty, visible: c.model.visible, inScene: !!c.model.parent, p: i.p, away: !!c.sharedAway }; });
+    check(cup.held && cupC.other && cupC.state === 'spare' && cupC.away && !cupC.inScene && cupC2.state === 'placed' && cupC2.design === cup.design && cupC2.a.coffee === 0.6 && cupC2.heat > 0.9 && cupC2.dirty && cupC2.visible && cupC2.inScene && !cupC2.away && Math.hypot(cupC2.p[0] - cupAt[0], cupC2.p[2] - cupAt[2]) < 0.05,
+      'a coffee cup: out of C\'s pool while A holds it; put down it stands at C with A\'s pattern, the coffee, warm, used', { cup, cupC, cupC2 });
+    await C.page.evaluate(([x, y, z]) => { T.look(x, y + 0.05, z); T.a.step(0.05); }, cupC2.p);
+    await kit.shot(C.page, `${out}/c-sees-the-cup-of-coffee-a-put-down.png`);
+    await A.page.evaluate(() => { const c = T.it('u0'); c.take(); }); await ac();
+    await A.page.evaluate(() => { const c = T.it('u0'); c.contents.clear(); c.dirty = false; c.heat = 0; c.show(); c.goHome(); }); await ac();
+    const cupC3 = await C.page.evaluate(() => { const c = T.it('u0'); return { room: T.S.ledger.get('u0').m, state: c.state, fill: c.fill, dirty: c.dirty, away: !!c.sharedAway }; });
+    check(cupC3.room === 'home' && cupC3.state === 'cabinet' && cupC3.fill === 0 && !cupC3.dirty && !cupC3.away, 'washed and back in A\'s cabinet: a clean cup at home at C', cupC3);
     // #1976: a pot from the window board (at home it is part of the merged sill mesh) and the basketball (B has left: A and C)
     const pot = await A.page.evaluate(() => { const it = T.it('l0'); it.take(); return { held: it.held, n: [...T.S.items.keys()].filter((k) => k[0] === 'l').length }; }); await ac();
     const potB = await C.page.evaluate(() => { const it = T.it('l0'); return { other: T.S.ledger.heldByOther('l0'), away: it.away.has(it.pot), groupVisible: it.model.visible }; });

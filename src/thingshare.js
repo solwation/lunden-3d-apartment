@@ -24,7 +24,7 @@ export class ThingShare {
    *  it went home because somebody else holds it; lie(item): after it was laid where somebody else put it; home(item): after it came
    *  home. #1976, things with contents: save(item) → a short string (thingsync.js `cleanData`) or null, load(item, string | null).
  *  Such a thing is never plain 'home' to the room once it has been touched: put back in its place it is 'put' there, so what is in
- *  it travels too; and a change of its contents while it stands (somebody pours into a glass on the table) is sent as a new 'put'. */
+ *  it travels too (unless `plainHome(item)` says its home keeps nothing); and a change of its contents while it stands (somebody pours into a glass on the table) is sent as a new 'put'. */
   register(id, item, opt = {}) {
     const e = { id, item, opt, last: null, data: null };
     this.items.set(id, e); (this.byItem ??= new Map()).set(item, opt);
@@ -48,6 +48,7 @@ export class ThingShare {
   /** The room's word about a thing, applied to the real one. */
   apply(e, s, why) {
     const it = e.item, mine = s.by === this.me();
+    if (why === 'refused' && s.m === 'world' && this.mode(it) === 'world') return; // (a re-put of a standing thing was refused, e.g. from too far: what we see stays)
     if (s.m === 'held') {
       if (mine) return; // (our own take, echoed; or refused while we hold it anyway)
       const had = this.mode(it) === 'held';
@@ -92,7 +93,7 @@ export class ThingShare {
       const moved = m !== e.last;
       e.last = m; e.data = d;
       if (m === 'held') this.ledger.request(e.id, 'take');
-      else if (m === 'home' && !(e.opt.save && (d || !moved))) this.ledger.request(e.id, 'home');
+      else if (m === 'home' && (!e.opt.save || !(d || !moved) || e.opt.plainHome?.(it))) { if (moved) this.ledger.request(e.id, 'home'); } // (`plainHome`: its home never keeps contents, e.g. a cup back in the cabinet)
       else { // put down; or a thing with contents back in its place / changed where it stands
         it.model.updateWorldMatrix?.(true, false);
         const p = it.model.getWorldPosition(new it.model.position.constructor()), q = it.model.getWorldQuaternion(new it.model.quaternion.constructor());

@@ -1662,6 +1662,13 @@ pour without end: nothing to carry) and the glasses (`src/thingcontents.js` `dri
 from or not; a reader drops unknown drinks, bad numbers and more than a glassful). Beer travels as an amount only: its source ledger
 (#1007) stays with the player who poured it, so a shared glass of beer gives no portion to the one who drinks it up.
 
+#1976 (fourth slice): the coffee cups (`u<i>` = the index in cups.js's pool; `cupShare` in main.js). The pool recycles cups and every
+player's cups wear random patterns, so a standing cup carries its pattern with its drink, coarse heat (half steps: a cooling cup is
+not re-sent all the time) and dirt (`thingcontents.js` `cupData` / `readCup`). A cup another player holds leaves our pool
+(`sharedAway`: the cabinet's refill skips it) until it stands somewhere or is home again; back in the cabinet it is a plain `home`
+(`plainHome`: a clean cup, no contents kept). A refused re-put of a standing thing (e.g. the dishwasher finished while nobody was
+near) leaves what we see as it is. The coffee jug and the pan are not shared yet.
+
 - **Our own actions** are noticed by comparing each thing's state from frame to frame (`mode`: in the hand or carried in the inventory
   / the bicycle's hand = `held`, put down = `world`, else `home`) and sent as `take` / `put` (the model's world place and turn) /
   `home`. So E, the inventory, F and every other way a thing moves are covered without touching the things' classes; swapping

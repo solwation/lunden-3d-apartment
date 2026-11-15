@@ -20,6 +20,20 @@ export function drinkData(a, used = false, heat = 0) {
   const s = JSON.stringify(o);
   return s.length <= THING_SYNC.data ? s : null;
 }
+/** A coffee cup: its drink as `drinkData` (the heat in half steps, so a cooling cup is not re-sent all the time) and its pattern
+ *  (cups.js DESIGNS key: each player's cups wear random ones, so the pattern travels with the cup). Never null. */
+export function cupData(a, used, heat, design) {
+  const o = JSON.parse(drinkData(a, used, Math.round((heat || 0) * 2) / 2) ?? '{}');
+  if (typeof design === 'string' && /^[a-zA-Z0-9-]{1,24}$/.test(design)) o.g = design;
+  return JSON.stringify(o);
+}
+/** The reverse: { a, used, heat, design } (`design` null unless it is one of `designs`). */
+export function readCup(d, designs = []) {
+  const out = readDrink(d);
+  let g = null;
+  try { g = JSON.parse(d)?.g; } catch { /* malformed: no pattern */ }
+  return { ...out, design: typeof g === 'string' && designs.includes(g) ? g : null };
+}
 /** The reverse: { a, used, heat } (empty and clean for null / anything malformed). The amounts never sum over 1. */
 export function readDrink(d) {
   const out = { a: {}, used: false, heat: 0 };

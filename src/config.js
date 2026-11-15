@@ -8700,7 +8700,7 @@ export const DOOR_SYNC = {
 // thing may be put down / taken from where it lies; `held`: things one connection may hold at once (the inventory's places and a nut
 // stack's worth of margin); `x`, `y`, `z`: the bounds of a place a thing may be put (m; the site with a margin). All *guess* limits.
 export const THING_SYNC = {
-  max: { s: 4, b: 8, w: 8, f: 4, a: 1, h: 1, k: 2, c: 12, o: 2, r: 1, p: 2, e: 2, t: 160, l: 80 }, // (#1976: p the book, e the remote control, t the loose things of world.things by their index)
+  max: { s: 4, b: 8, w: 8, f: 4, a: 1, h: 1, k: 2, c: 12, o: 2, r: 1, p: 2, e: 2, t: 160, l: 80, u: 24 }, // (u: the coffee cups by their index in the pool, cups.js) // (#1976: p the book, e the remote control, t the loose things of world.things by their index)
   every: 0.12, reach: 8, held: 12, x: [-600, 600], y: [-60, 120], z: [-300, 600],
   putReach: { o: 60 }, // #1976: a thrown basketball comes to rest far from its thrower: its own reach for 'put' (m, *guess*)
   data: 200, // #1976: the longest contents string a thing may carry (its drink, how much is eaten, dirt …; printable ASCII, opaque to the room)
