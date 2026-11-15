@@ -9,11 +9,16 @@ export const INVENTORY_KEYS = ['F1', 'F2', 'F3', 'F4', 'F6'];
 
 const ICONS = [['isRifle', '🔫'], ['isBow', '🏹'], ['isHarpoon', '🔱'], ['isFishingRod', '🎣'], ['isBinoculars', '🔭'], ['isSquirrelNut', '🌰'], ['isMussel', '🦪'],
   ['isCaughtFish', '🐟'], ['isSharkFin', '🦈'], ['isSprayCan', '🎨'], ['isCup', '☕'], ['isMiele', '🐈']];
-const BY_CLASS = { Saber: '⚔️', Blaster: '🔫', Wand: '🪄', Flashlight: '🔦', Basketball: '🏀' };
+const BY_CLASS = { Saber: '⚔️', Blaster: '🔫', Wand: '🪄', Flashlight: '🔦', Basketball: '🏀',
+  Glass: '🍷', Bottle: '🍾', BeerCan: '🍺', Milk: '🥛', PopcornTub: '🍿', FriesBag: '🍟' }; // #1960: the drinks and snacks that can be carried
+const FRUIT = { apple: '🍎', pear: '🍐', orange: '🍊', clementine: '🍊', banana: '🍌' }; // fruit.js kinds
 /** The icon of a held / carried thing. */
 export function inventoryIcon(item) {
   if (!item) return '';
   for (const [flag, icon] of ICONS) if (item[flag]) return icon;
+  if (item.isFruit) return FRUIT[item.kind] ?? '🍎'; // #1960: what is carried shows, not a generic hand
+  if (item.isFries) return '🍟';
+  if (item.isFish) return '🍤'; // a fish finger (fishfingers.js: a plain object)
   return BY_CLASS[item.constructor?.name] ?? '✋';
 }
 
