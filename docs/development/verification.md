@@ -1334,6 +1334,9 @@ tools/musselcracktest.cjs (#1950) cracking a picked mussel against the bed in th
                        (the real E key takes a closed mussel + the hint, E / the action button knock it on the bed, too soon does not count, the last knock cracks it:
                        `held.cracked`, the open geometry, no draw call more; put down + taken again still cracked; no knock at the surface or on land; four result images).
                        The lazy test page draws by hand: call `A.testMode.draw()` before reading draw calls or aiming at a just-moved E box.
+tools/riverfloratest.cjs (#1956) the plants and stones of Höje å in the real app: counts, every stone on the drawn bed, every weed under the
+                       surface, every lily leaf on the water; two draw calls from the bank (none in winter / far away), at most four under
+                       water, a dive through a planted stretch; screenshots (the lilies, the bed). ~2 min
 tools/riverdrifttest.cjs (#1952) flecks drifting downstream on Höje å and specks under its surface in the real app: `THREE_DIR=… tools/browsertest.sh node tools/riverdrifttest.cjs GAME OUT` (~80 s)
                        (nothing drawn in the courtyard, one draw call at the river, every drawn fleck on open water and clear of the piers at stations along the
                        whole river, the measured drift speed, the specks only while diving (+1 draw call), an idle diver drifting with them; three result images).

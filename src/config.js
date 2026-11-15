@@ -2388,6 +2388,22 @@ export const SWIM = {
 // #1952: things drifting downstream on and in Höje å, so the water is seen to flow (src/riverdrift.js the pure rules, src/riverdriftview.js
 // the two draw calls). The user: "small bubbles or particles floating downstream". Everything is a look chosen by eye (*guess*): the real
 // river's flow, foam and litter are not measured. Positions are a pure function of time along the smoothed centre line; nothing is simulated.
+// #1956: what grows and lies in Höje å (src/riverflora.js places it, src/riverfloraview.js draws it). Everything here is *guess*: no
+// survey of the river's bed or plants; the kinds are what a slow lowland stream in Skåne plausibly has (pondweed-like ribbons,
+// yellow / white water lilies near the banks, field stones). `ends`: m kept clear at both ends of the line; `range`: m up / downstream
+// of the eye that is filled in; `drawDist`: m from the centre line within which anything is drawn.
+// stones: `perM` per metre of river, half-size `size` (min, max; mostly small: the share is cubed), sunk `sink` of their height into the bed.
+// weeds: clumps `perM` per metre inside patches (`patch` m long, a `share` of them planted), height `h` (never nearer the surface than
+//   `clear` m), `lean` (downstream, at the tip, per m of height) and `sway` (amplitude per m of height, Hz) in the current.
+// lilies: a cluster every `every` m with chance `chance`, `pads` leaves within `spread` m, radius `r`, between `bank` (shares of the half
+//   width) from the centre line; a `flower` share of the pads carries one. Leaves in the months `months`, flowers in `bloom`.
+export const RIVER_FLORA = {
+  seed: 1956, ends: 12, range: 55, drawDist: 80,
+  stones: { perM: 0.6, size: [0.06, 0.4], sink: 0.35, colors: [0x6f6a60, 0x857f72, 0x5a5650, 0x7a705e] },
+  weeds: { perM: 1.1, patch: 9, share: 0.6, h: [0.3, 0.95], clear: 0.12, lean: 0.3, sway: [0.1, 0.35], colors: [0x3f6b2e, 0x4f7a34, 0x2f5a3a, 0x6b7f3a] },
+  lilies: { every: 24, chance: 0.65, pads: [4, 9], spread: 2.2, r: [0.11, 0.2], bank: [0.45, 0.85], flower: 0.3, lift: 0.012, months: [5, 9], bloom: [6, 8],
+    pad: 0x3d7a35, stem: 0x2c4f2a, petal: 0xf6f3ea, heart: 0xe8c23a },
+};
 export const RIVER_DRIFT = {
   speed: SWIM.current, // m/s downstream: the same water that carries a swimmer (the public version without swimming: 0.35, *guess*)
   path: { step: 1, smooth: 5 }, // the centre line resampled every `step` m with its corners rounded over +-`smooth` m (*guess*: a 90° bend is cut by ~1.7 m)

@@ -304,6 +304,30 @@ The water ribbon itself is still and one colour, so the flow is shown by things 
 - **Main loop:** `riverDrift.surface.update(dt, camera.position, hidden)`, `riverDrift.under.update(dt, camera.position, under, day.daylight)` right after `diveLook.update()`; `&nodrift` leaves both out. Fishing, fish, ducks, mussels, the shark, swimming and diving are untouched (no shared state; the flecks are an ordinary transparent object drawn after the opaque water).
 - **Checks:** `node --test src/riverdrift.test.mjs` (in the channel and clear of the piers along the whole river, speed, wrap without a pop, pure function); `tools/riverdrifttest.cjs` (real app: +0 draw calls in the courtyard, +1 at the river, +1 under water with the surface part off; ~19 500 drawn flecks at 69 stations all on `swimWater`; measured speeds; result images in [docs/verification/1952](../verification/1952/)).
 
+### Plants and stones in the river (#1956)
+
+Höje å has an underwater scene of its own: field stones and clumps of ribbon weed on the bed, water-lily leaves on the surface near the
+banks with stems down to the bed, and lily flowers in summer. Kinds, numbers, sizes and colours are all *guess* (`RIVER_FLORA`; no
+survey of the bed or its plants).
+
+- **Where:** `src/riverflora.js` `floraLayout` (pure) places everything in the river's own frame (`s` along the smoothed centre line of
+  `riverdrift.js` `driftPath`, `u` across) from `RIVER_FLORA.seed`, so it is the same on every visit and for every player; nothing is
+  saved or sent. Stones are mostly small (the size share is cubed), weed grows in patches with bare bed between, lilies in clusters on
+  one side between `bank` shares of the half width; bridge piers (`driftRiver().obstacles`) and the `ends` are kept clear.
+- **Drawn** by `src/riverfloraview.js` `RiverFlora`: four instanced meshes (`river-stones`, `river-weeds`, `river-lilies`,
+  `river-lily-flowers`), no texture, no shadow. Each thing is set on the DRAWN bed (`farwalk.js` `swimBedY`) and only in open water
+  (`swimWater`); a weed never reaches nearer the surface than `weeds.clear`, a lily's stem is as long as the water is deep. The water's
+  surface is opaque from above, so stones and weed are drawn only while the eye is under it (`diveLook.update()`); leaves and flowers
+  from both sides. Only the instances within `range` m up / downstream of the eye are filled in (rewritten when the eye has moved 8 m
+  along the river) and nothing is drawn beyond `drawDist` m from the centre line.
+- **Movement:** the weed leans downstream and sways, in the vertex shader (by the square of the height, out of step per clump); the
+  rest is still.
+- **Seasons:** lily leaves in the months `lilies.months` (May–September), flowers in `bloom` (June–August); stones and weed all year.
+- **Nothing collides:** a swimmer, the fish, the mussels, the rod's float and the harpoon pass through all of it.
+- **Main loop:** `riverFlora.update(dt, camera.position, player.below, eyeUnderWater, day.month)` next to the drift; `&noflora` leaves it out.
+- **Checks:** `node --test src/riverflora.test.mjs`; `tools/riverfloratest.cjs` (real app: on the bed / under the surface / on the water,
+  draw calls from the bank and under water, seasons, far away, a dive through it; images in [docs/verification/1956](../verification/1956/)).
+
 ### Blue mussels on the river bed (#1945)
 
 Blue mussels lie on the bed of Höje å along the whole swimmable stretch; a swimmer takes one with E / the action button like a nut, carries it and puts it down again. (Blue mussels are really a salt / brackish water species; the user asked for them. Everything in `MUSSELS`, config.js, is a *guess*.)

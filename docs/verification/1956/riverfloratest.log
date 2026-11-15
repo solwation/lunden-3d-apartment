@@ -1,0 +1,12 @@
+PASS +45s stones, weed, lily leaves and flowers along the river — {"stones":475,"weeds":432,"lilies":92,"flowers":28}
+PASS +45s every stone sits on the drawn bed, in open water — {"stone":0}
+PASS +45s every weed is rooted in the bed and ends under the surface
+PASS +45s every lily leaf lies on the water
+PASS +53s from the bank in July: lily leaves and flowers only, two draw calls — {"at":555.4800257650716,"total":{"stones":475,"weeds":432,"lilies":92,"flowers":28},"drawn":{"stones":0,"weeds":0,"lilies":20,"flowers":6},"calls":2}
+PASS +53s no leaves in January; leaves without flowers in May
+PASS +53s nothing is drawn far from the river or while hidden
+PASS +62s diving among the plants (nothing stops the swimmer) — 1.364344767399822
+PASS +62s under the surface: stones and weed are drawn too, at most four draw calls — {"at":540.5946673227008,"total":{"stones":475,"weeds":432,"lilies":92,"flowers":28},"drawn":{"stones":73,"weeds":68,"lilies":20,"flowers":6},"calls":4}
+PASS +62s the weed sways (its clock runs)
+PASS +113s no page errors
+ALL PASSED

@@ -2267,4 +2267,9 @@ See [raw timings, scope, decision and images](../verification/1876/README.md).
 
 ## Drifting flecks on Höje å (#1952)
 
+`src/riverfloraview.js` (#1956) adds at most four draw calls and only within `RIVER_FLORA.drawDist` (80 m) of the river: lily leaves
+and flowers (two calls, ~20 triangles a leaf, ~50 a flower; none November–April) and, only while the eye is under the surface, stones
+(80 triangles each) and weed clumps (56 each). Only the instances within 55 m up / downstream of the eye are in the buffers: at most
+about 70 stones, 110 clumps and 30 leaves at once (≈ 13 k triangles under water, under 1 k above). No texture, no shadow, no light.
+
 `src/riverdriftview.js` adds at most one draw call on the river's surface (`river-drift`: 300 quads, 600 triangles, one 32 px generated texture) and one under it (`river-drift-under`: 220 points, only while the eye is under the surface, when the surface part is off). No light, no shadow caster, no render pass. Measured with `tools/riverdrifttest.cjs` (hand-made renders with the object shown / hidden): bank view 36 vs 35 calls, from the road bridge 49 vs 48, diving 42 vs 41, courtyard +0 (both objects invisible beyond `RIVER_DRIFT.surface.drawDist` 75 m from the centre line). Per frame at the river: one scan of the centre line's ~820 samples and 300 (or 220) pure position evaluations written into a preallocated buffer; no allocation. Not measured on the Surface Pro or a phone. See [environment](environment.md#things-drifting-downstream-1952).

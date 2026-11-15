@@ -28,6 +28,7 @@ URL parameters (debugging / screenshots):
 - `&jetpack` — the jetpack on your back (outdoors, #359).
 - `&spidersuit` — the Spider-Man suit on (#597; climbing outdoors only).
 - `&weather=rain|storm|snow|hail|clear` — force the weather (#248, #249).
+- `&noflora` — no stones, weed or water lilies in Höje å (#1956).
 - `&nodrift` — no drifting flecks on Höje å and no specks under its surface (#1952).
 - `&blinds=0…1` — every pleated blind drawn up that far (#273; not saved).
 - `&fries` — golden, steaming fries in the open air-fryer basket (#301).
