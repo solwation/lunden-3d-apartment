@@ -4081,6 +4081,7 @@ export const GHOSTS = { enabled: true, hz: 5, move: 0.02, turn: 0.03, beatMs: 10
   resendMs: 3000, // #1759: a state left unchanged this long is sent once more (the room's per-second limit may have dropped it after a network stall's burst; *guess*)
   retry: [2000, 5000, 15_000, 30_000, 60_000, 300_000], fullRetry: 60_000, offRetry: 600_000,
   opacity: 0.25, delay: 200, jump: 100, far: 900, tagFar: 15, max: 30, // #1296: `far` reaches across the whole walk/fly area (WALK x -260..320, z -200..250 is ~740 m corner to corner, camera far 1000); beyond `tagFar` the tag grows with distance (constant angular size, never fogged) so a far player stays a visible marker instead of vanishing
+  lod: { start: 30, end: 37, margin: 1 }, // #1966: from `start` m a plain standing player fades (src/lod.js) into the shared far figure, only that beyond `end`; it starts where the pose stops (AVATAR.poseFar); `margin` m of slack for both buffers (*guess*)
   tagWidth: 0.64, tagHeight: 0.16, tagY: 1.98, tagNamePx: 22, tagScorePx: 18, // #672: 20% smaller sprite; two compact lines (*guess*)
   scoreMax: 1e7, // matches the existing leaderboard validation in cloudflare/worker.js; display only, not authoritative
   outbox: 3, // outbox: shots waiting for the 5 Hz budget (#667)

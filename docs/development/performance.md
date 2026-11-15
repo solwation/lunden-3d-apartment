@@ -1355,6 +1355,15 @@ CPU canvases and geometry copies dominate), GPU peak is 216 MB, +13 MB (+6 %) ov
 `maxPixelRatio: 1.0`, `shadowMapSize: 1024` in `src/config.js`. Screenshots: `/tmp/shots-grafik` (not in the repo; the living
 room looks slightly crisper, nothing else changes).
 
+Far players as one draw call (#1966, `src/ghostfar.js`): from `GHOSTS.lod.start` (30 m, where the pose stops anyway) a plain standing
+player's skinned figure dither-fades (`src/lod.js`; `patchDitherLod(material, { centre })` is the single-mesh variant: the fade comes
+from the distance to a per-material centre uniform instead of the instance matrix) into a standing far figure of 268 triangles, and
+beyond `GHOSTS.lod.end` (37 m) only that is drawn: every far player is one instance of ONE `InstancedMesh` (`ghost-far`), coloured
+per instance from the player's look (skin, top, trousers, hair, shoes). A player who sits, lies, swims, flies, cycles, dances,
+crouches, hugs or wears the suit keeps the real figure at any distance (`farBodyFits`); tags, vehicles and props are untouched.
+Measured with 24 stand-in players in one view (`tools/ghostlodtest.cjs`, SwiftShader, 1280 x 800): at 60 m 94 → 71 draw calls and
+645 908 → 363 288 triangles; at 10 m nothing changes; in the zone one call more. Not measured on an Iris 640 or a phone.
+
 Ghosts (#666, `src/ghosts.js`), avatars (#705, `src/avatar.js`): each other player costs two draw calls (one SkinnedMesh with vertex colours, one
 name tag sprite; an armed player one more for the prop, `src/ghostprops.js` (#1126): the weapon's own model baked to one vertex-coloured
 geometry shared by every ghost — rifle ≈ 0.3 k, lite blaster ≈ 0.4 k, saber 0.6 k + its blade (one more call), wand 0.1 k, bow 0.5 k triangles), no shadow pass, no extra pass for the outline (a fresnel term in the same Lambert material's shader, one program for

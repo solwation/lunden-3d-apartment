@@ -58,11 +58,13 @@ export const lodCamera = { value: new THREE.Vector3() };
 /** A shared fade range uniform for the materials of one kind of thing. */
 export const lodRange = (start, end) => ({ value: new THREE.Vector2(start, end) });
 
-const VERT_DECL = 'uniform vec3 uLodCam;\nuniform vec2 uLodRange;\nvarying float vLodFade;\n';
+const VERT_DECL = 'uniform vec3 uLodCam;\nuniform vec3 uLodCentre;\nuniform vec2 uLodRange;\nvarying float vLodFade;\n';
 const VERT_BODY = `
 #ifdef USE_INSTANCING
   vec3 lodCentre = (modelMatrix * vec4(instanceMatrix[3].xyz, 1.0)).xyz;
   vLodFade = clamp((distance(lodCentre, uLodCam) - uLodRange.x) / max(uLodRange.y - uLodRange.x, 0.001), 0.0, 1.0);
+#elif defined(LOD_CENTRE)
+  vLodFade = clamp((distance(uLodCentre, uLodCam) - uLodRange.x) / max(uLodRange.y - uLodRange.x, 0.001), 0.0, 1.0);
 #else
   vLodFade = 0.0;
 #endif
@@ -89,8 +91,9 @@ const FRAG_BODY = `
 `;
 
 /** The shader edit itself (vertex: per-instance fade; fragment: the dither discard). Vertex positions are not touched. */
-function patchShader(shader, far, range) {
+function patchShader(shader, far, range, centre) {
   shader.uniforms.uLodCam = lodCamera;
+  shader.uniforms.uLodCentre = centre ?? NO_CENTRE;
   shader.uniforms.uLodRange = range;
   shader.uniforms.uLodFar = { value: far ? 1 : 0 };
   shader.vertexShader = shader.vertexShader
@@ -107,11 +110,12 @@ function patchShader(shader, far, range) {
  * fade (a plain mesh counts as fade 0: near drawn, far not). The edit keeps vertex positions, so tightfrustum and the
  * site instance batch (which audit `hasNativeVertexCompile`) still treat the material as native.
  */
-export function patchDitherLod(material, { far = false, range }) {
+export function patchDitherLod(material, { far = false, range, centre = null }) {
+  if (centre) (material.defines ??= {}).LOD_CENTRE = ''; // #1966: a single (skinned) mesh fades by the distance to `centre` ({ value: Vector3 }, world)
   const before = material.onBeforeCompile, key = material.customProgramCacheKey?.bind(material) ?? (() => '');
-  const patched = function (shader, renderer) { before.call(this, shader, renderer); patchShader(shader, far, range); };
+  const patched = function (shader, renderer) { before.call(this, shader, renderer); patchShader(shader, far, range, centre); };
   material.onBeforeCompile = patched;
-  material.customProgramCacheKey = () => `${key()}|dither-lod-v1`;
+  material.customProgramCacheKey = () => `${key()}|dither-lod-v1${centre ? 'c' : ''}`;
   rememberFragmentCompile(patched, before); // the edit leaves vertex positions alone (audited here)
   return material;
 }
@@ -125,6 +129,7 @@ export function lodDepthMaterial({ far = false, range, map = null, alphaTest = 0
 }
 
 const sets = [];
+const NO_CENTRE = { value: new THREE.Vector3() };
 const NOWHERE = new THREE.Sphere(new THREE.Vector3(0, -1e6, 0), 0); // an emptied mesh is frustum-culled (no zero-instance draw call)
 const _sphere = new THREE.Sphere(), _centre = new THREE.Vector3();
 

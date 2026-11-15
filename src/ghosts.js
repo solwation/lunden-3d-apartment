@@ -19,6 +19,7 @@ import { canHug, hugAmount, playerChoices } from './hug.js';
 import { Hearts } from './pingping.js';
 import { cleanHeldCategory } from './heldcategory.js';
 import { trimOutbox } from './outbox.js';
+import { GhostFar } from './ghostfar.js'; // #1966: far players as one draw call
 import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
 
 // Other players as ghosts (#666): a WebSocket to the Worker's players' room (cloudflare/players.js, one Durable Object for
@@ -150,6 +151,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.avatar.setPump(this.pump ?? 0);
     this.avatar.setSolid(true); // always solid (#1025)
     if (hadSuit) this.avatar.setSuit(true);
+    this.onAvatar?.(this.avatar); // #1966: the new body fades by distance too
     if (this.pack) { this.avatar.bones.torso.add(this.pack); }
     this.mesh = this.avatar.mesh;
     this.mesh.name = `ghost:${this.name}`;
@@ -579,6 +581,7 @@ export class Ghosts {
     if (!g && this.others.size < G.max) {
       const look = av ? decodeAvatarLook(av, id) : null;
       g = new Ghost(this.group, id, name, false, look);
+      g.onAvatar = (av) => (this.far ??= new GhostFar(this.group)).adopt(av); g.onAvatar(g.avatar); // #1966: its body fades into the shared far figure
       if (av) g.avatarCode = av;
       this.others.set(id, g);
     } else if (g && av && av !== g.avatarCode) {
@@ -641,6 +644,7 @@ export class Ghosts {
     }
     const eye = this.camera.position, armed = !!s.h;
     for (const g of this.others.values()) { g.draw(t, eye); g.setSolid(armed && !!g.h); }
+    if (this.far && (this.others.size || this.far.mesh.visible)) this.far.update(this.others.values(), eye); // #1966
     this.updateKisses(t);
     this.updateHugs(t);
     if (this.onStep || this.onJet) this.soundTick(t);

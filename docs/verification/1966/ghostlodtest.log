@@ -1,0 +1,7 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS at 10 m nothing changes: 24 real figures, no far figure {"off":{"calls":94,"triangles":645908,"far":0,"real":24},"on":{"calls":94,"triangles":645908,"far":0,"real":24}}
+PASS in the zone both levels draw (one more call, the dither splits the pixels) {"off":{"calls":94,"triangles":645908,"far":0,"real":24},"on":{"calls":95,"triangles":652340,"far":24,"real":24}}
+PASS at 60 m 24 skinned figures are one instanced mesh of 268 triangles each {"off":{"calls":94,"triangles":645908,"far":0,"real":24},"on":{"calls":71,"triangles":363288,"far":24,"real":0},"saved":{"calls":23,"triangles":282620}}
+PASS a sitting player keeps the real figure at any distance {"calls":72,"triangles":374836,"far":23,"real":1}
+PASS no page errors []
+ALL PASSED
