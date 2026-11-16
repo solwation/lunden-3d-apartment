@@ -8773,7 +8773,7 @@ export const LIFE_SYNC = { every: 0.5, ops: 30, maxBytes: 7000, rec: 600, max: 7
   // takes, `part` characters of a part's JSON (a full dishwasher's ids fit), `partEvery` s between a connection's part messages
   parts: ['dishwasher', 'laundry', 'beds', 'watering', 'milk'], part: 3000, partEvery: 0.5,
   // #1990: crumbs and dust (src/mess.js) as changes of amount per spot: `messOps` changes per message, `messEvery` s between a
-  // connection's messages, `messMax` spots of each kind the room keeps (as LIFE_MESS.max), `messKinds` / `messSurf` what it takes
+  // connection's messages, `messMax` spots of each kind the room keeps (as LIFE_MESS.max; its keys are the kinds it takes), `messSurf` the surfaces
   messOps: 24, messEvery: 0.5, messMax: { crumb: 48, dust: 32, smear: 16 }, messSurf: ['worktop', 'table', 'floor'] };
 
 // #1921: authored mallard surface estimates (guess), in the existing bill/rig frame.

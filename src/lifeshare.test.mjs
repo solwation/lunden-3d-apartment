@@ -346,3 +346,28 @@ test('mess: a failed save changes nothing for the others and the sender goes bac
   assert.equal(w.view(b), 'crumb@1,1=50');
   assert.equal(w.view(a), 'crumb@1,1=50');
 });
+
+test('mess: crumbs and dust alone keep a shared kitchen from starting over; a kitchen nobody touches still does (#2005)', async () => {
+  const day = 864e5, t0 = 5e9, keep = LIFE_SYNC.keepDays * day;
+  const op = cleanMessText('{"t":"lm","o":[["crumb",0,1,0,1,"floor",null,0.5,0]]}');
+  assert.ok(op);
+  const kitchen = async (crumbAt) => {
+    const storage = new Map([['lim', { v: 1, at: t0 }]]);
+    const ctx = { storage: { get: async (k) => structuredClone(storage.get(k)), put: async (k, v) => { storage.set(k, structuredClone(v)); } } };
+    const room = new RoomLife(ctx, () => {}, () => []); await room.ready;
+    room.state.set('cup', { e: { id: 'cup' }, h: null, pv: 0 }); // something kept in the kitchen
+    if (crumbAt) { await room.messy({}, { i: 'A' }, op, crumbAt); assert.equal(storage.get('lim').at, crumbAt, 'a saved crumb counts as a touch'); }
+    await room.welcome({}, t0 + keep + day / 2);
+    return room;
+  };
+  const used = await kitchen(t0 + keep - day);
+  assert.equal(used.state.size, 1); assert.equal(used.mess.size, 1);
+  const left = await kitchen(0);
+  assert.equal(left.state.size, 0, 'untouched past keepDays: starts over');
+  // too fast: nothing saved, no touch
+  const storage = new Map([['lim', { v: 1, at: t0 }]]);
+  const room = new RoomLife({ storage: { get: async (k) => structuredClone(storage.get(k)), put: async (k, v) => { storage.set(k, structuredClone(v)); } } }, () => {}, () => []); await room.ready;
+  const a = { i: 'A', lmAt: t0 + 2 * day };
+  await room.messy({}, a, op, t0 + 2 * day + 10);
+  assert.equal(storage.get('lim').at, t0); assert.equal(room.mess.size, 0);
+});

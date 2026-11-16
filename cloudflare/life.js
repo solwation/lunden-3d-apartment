@@ -47,7 +47,12 @@ export class RoomLife {
     if (!st) return;
     const chunks = new Set([...ids].map(hash));
     for (const c of chunks) { const rows = []; for (const [i, v] of state) if (hash(i) === c) rows.push([v.e, v.h ?? 0, v.pv ?? 0]); await st.put(`li${c}`, rows); }
-    if (now - this.touched > 864e5) { await st.put('lim', { v: 1, at: now }); this.touched = now; }
+    await this.touch(now);
+  }
+  /** The kitchen was used now (instances, a part or crumbs/dust, #2005): `lim` moves on, at most once a day. Throws when the storage does. */
+  async touch(now) {
+    const st = this.ctx?.storage;
+    if (st && now - this.touched > 864e5) { await st.put('lim', { v: 1, at: now }); this.touched = now; }
   }
   /** Is the whole of `state` sound where `ids` are concerned? '' or why not. */
   check(state, ids) {
@@ -117,7 +122,7 @@ export class RoomLife {
       a.lxAt = now;
       if (this.parts.get(m.k) === m.d) return;
       const next = new Map(this.parts); next.set(m.k, m.d);
-      try { await this.ctx?.storage?.put('lix', { v: 1, p: [...next] }); if (now - this.touched > 864e5) { await this.ctx?.storage?.put('lim', { v: 1, at: now }); this.touched = now; } } catch { return; }
+      try { await this.ctx?.storage?.put('lix', { v: 1, p: [...next] }); await this.touch(now); } catch { return; }
       this.parts = next;
       const out = JSON.stringify({ t: 'lx', k: m.k, d: m.d, by: a.i });
       for (const { ws: x } of this.peers()) if (x !== ws) this.send(x, out);
@@ -140,7 +145,7 @@ export class RoomLife {
         else if (r[7] > 0.001 && count(r[0]) < LIFE_SYNC.messMax[r[0]]) next.set(key, r);
       }
       let ok = !slow;
-      if (ok) { try { await this.ctx?.storage?.put('lim2', { v: 1, s: [...next.values()] }); } catch { ok = false; } }
+      if (ok) { try { await this.ctx?.storage?.put('lim2', { v: 1, s: [...next.values()] }); await this.touch(now); } catch { ok = false; } }
       if (ok) this.mess = next;
       const gone = (key) => { const p = key.split('|'); return [p[0], +p[1], +p[2], +p[3], +p[4], 'floor', null, 0, 0]; };
       const out = JSON.stringify({ t: 'lm', s: [...keys].map((k) => this.mess.get(k) ?? gone(k)) });

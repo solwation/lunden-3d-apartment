@@ -1797,7 +1797,7 @@ instances follow it.
   `kind|level|x|y|z` in mm) and needs no id. What a client adds or takes is sent as a CHANGE of amount per spot (`{ t: 'lm', o:
   [[kind, level, x, y, z, surf, room, delta, rot] …] }`, at most every `LIFE_SYNC.messEvery` s), so two players crumbling and
   wiping at the same spot both count; the room clamps, keeps at most `LIFE_SYNC.messMax` spots of a kind, saves (storage value
-  `lim2`) and tells everybody the touched spots as they are now (`amt` 0: gone). A newcomer gets every spot (`k: 'a'`; `e: 1` from
+  `lim2`; a saved change also counts as touching the kitchen for `keepDays`, #2005) and tells everybody the touched spots as they are now (`amt` 0: gone). A newcomer gets every spot (`k: 'a'`; `e: 1` from
   a room that keeps nothing yet: it takes the newcomer's). Dust is made by ONE player only: the one with the smallest connection
   id in the room (`ghosts.first`, `Mess.quiet`); it reaches the others as any other spot.
 - **Not shared yet** (each player's own): the popcorn cart's case, the fruit remains and the day's task list itself. The day's chore goals are shared by `choresync.js` (above) whoever's copy they were done in.
