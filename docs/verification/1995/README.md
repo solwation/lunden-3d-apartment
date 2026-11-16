@@ -110,8 +110,8 @@ were not benchmarked.
 
 ## Reviewed images
 
-[Near before](before/avatar-near.png), [near after](avatar-near.png),
-[meeting before](before/avatar-meeting.png), [meeting after](avatar-meeting.png).
+[Near before](https://github.com/solwation/lunden-3d-apartment/blob/e236824ebdefd2d24bd7ca47e74bf55eaf17474d/docs/verification/1995/before/avatar-near.png?raw=true), [near after](avatar-near.png),
+[meeting before](https://github.com/solwation/lunden-3d-apartment/blob/e236824ebdefd2d24bd7ca47e74bf55eaf17474d/docs/verification/1995/before/avatar-meeting.png?raw=true), [meeting after](avatar-meeting.png).
 [Whole front](avatar-front.png), [side](avatar-side.png), [quarter](avatar-quarter.png),
 [minimum options](avatar-extreme-min.png), [maximum options](avatar-extreme-max.png),
 [actual new customizer face preview](customizer-near.png).

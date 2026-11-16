@@ -4123,6 +4123,11 @@ export const AVATAR = { fill: 0.07, rim: 0.85, rimPower: 2.2, emissiveOutline: 0
 // either side of an elbow/knee share the same surface and blend the existing bones.
 // These are artistic proportions, not measured anatomy or gameplay colliders.
 export const AVATAR_SURFACE = {
+  // #1995 authored surface-response guesses: one PBR material, no image maps.
+  // Detail is in bind-pose metres and fades with pixel footprint at distance.
+  finish: { skin: 0.55, cloth: 0.92, hair: 0.48, eye: 0.16, shoe: 0.72, accessory: 0.6,
+    metalRoughness: 0.28, metalness: 0.72, weaveRate: 950, weaveStrength: 0.045,
+    hairSway: 0.18, hairBend: 12, hairRate: 170, hairStrength: 0.09, skinRate: 155, skinStrength: 0.018 },
   sides: 12, jointBlend: 0.055, wristBlend: 0.028, shoulderBlend: 0.45,
   attachInner: [0.03, -0.04], attachHeight: [-0.04, 0.05], clothOverlap: 0.005, jawTop: 0.075,
   folds: { jointWidth: 0.12, cuffWidth: 0.05, jointRate: 95, cuffRate: 120, cuffStrength: 0.6, legCuff: -0.79, legWide: [-0.07, -0.42], angle: 2 },
@@ -4137,13 +4142,20 @@ export const AVATAR_SURFACE = {
     [-0.63, 0.052, 0.057], [-0.7, 0.045, 0.05], [-0.77, 0.038, 0.042], [-0.81, 0.036, 0.038], [-0.845, 0.035, 0.037]],
   sleeve: { ease: 0.006, short: -0.13, long: -0.49, fold: 0.003 },
   trouser: { ease: 0.004, fold: 0.0035 },
+  // #1995 one frontal nasal sculpt [y, cartilage half-width, projection].
+  // Its boundary follows the cheek; artistic anatomy in head-local metres.
+  nosePatch: { concentration: 1.65, maxProjection: 0.023, rings: [0.065, 0.080, 0.087, 0.116, 0.134],
+    profile: [[0.134, 0.008, 0], [0.126, 0.008, 0.001], [0.116, 0.008, 0.004],
+      [0.106, 0.008, 0.008], [0.096, 0.009, 0.014], [0.087, 0.010, 0.020],
+      [0.080, 0.013, 0.023], [0.075, 0.017, 0.019], [0.070, 0.018, 0.009],
+      [0.065, 0.020, 0.002], [0.060, 0.024, 0]] },
   headSides: 24,
   head: [[-0.022, 0.012, 0.023, 0.035], [-0.012, 0.036, 0.049, 0.034], [0.005, 0.057, 0.065, 0.03],
     [0.025, 0.073, 0.078, 0.025], [0.05, 0.084, 0.088, 0.02], [0.075, 0.096, 0.099, 0.014],
     [0.1, 0.103, 0.108, 0.01], [0.125, 0.101, 0.105, 0.01], [0.15, 0.093, 0.097, 0.01],
     [0.175, 0.081, 0.084, 0.01], [0.195, 0.063, 0.067, 0.01], [0.211, 0.04, 0.044, 0.01], [0.221, 0.001, 0.001, 0.01]],
   face: { cheek: [0.003, 0.05, 0.04, 0.073, 0.035], brow: [0.003, 0.127, 0.018], chin: [0.003, 0.01, 0.025], socket: [0.004, 0.021, 0.014], front: [0.25, 0.9] },
-  eye: { upper: 0.0054, lower: 0.0042, outer: [0.019, 0.012, 0.105], columns: 12, rows: 4, irisDepth: 0.22, pupilDepth: 0.12, lidDepth: 0.9, scleraBase: 0.85, scleraRound: 0.15 },
+  eye: { upper: 0.0054, lower: 0.0042, outer: [0.0175, 0.008], skinLift: 0.0006, normalStep: 0.001, columns: 12, rows: 4, irisDepth: 0.22, pupilDepth: 0.12, lidDepth: 0.9, scleraBase: 0.85, scleraRound: 0.15 },
   cloth: { waistFold: 0.003, sideFold: 0.003, waveAngle: [3, 2], waveHeight: [38, 30], waist: [0.10, 0.10], side: [0.32, 0.16], rings: [0.075, 0.10, 0.17, 0.21, 0.30, 0.36, 0.40] },
   hair: { wave: 0.0016, frequency: 7, flow: 2, part: [-18, 7, 0.003], streak: 0.12 },
 };
@@ -4202,7 +4214,7 @@ export const AVATAR_HAIR = { centre: [0, 0.09, 0], rows: 6, step: 12, streak: 0.
 export const AVATAR_SKIN = {
   cheek: [0.056, 0.072, 0.06, 0.028, 0.85], blush: [1.08, 0.8, 0.76],
   nose: [0, 0.076, 0.12, 0.016, 0.5], lipRim: [0, 0.042, 0.09, 0.02, 0.4],
-  eye: [0.034, 0.107, 0.06, 0.02, 0.8, 1.3], socket: [0.66, 0.58, 0.62],
+  eye: [0.034, 0.113, 0.06, 0.014, 0.35, 1.3], socket: [0.66, 0.58, 0.62],
   under: [-0.03, 0.04, 0.55], underTint: [0.8, 0.74, 0.74], ear: [0.085, 0.102, 0.5],
   hand: [1.03, 0.94, 0.92], limb: [1.02, 0.96, 0.95], rimTint: [1.0, 0.86, 0.8, 0.6],
   cloth: { armpit: 0.22, crotch: 0.1, knee: 0.12, hairUnder: 0.25 },

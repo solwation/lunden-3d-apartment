@@ -14,6 +14,21 @@ and compare real scoped render/update/memory costs at fixed inputs and quality.
 A format change or a higher polygon count does not establish quality or speed.
 [Full coverage, measured baseline, limits and concrete follow-ups](../verification/1915/README.md).
 
+### Player facial surfaces (#1995)
+
+The live `Avatar` recipe uses one continuous cheek/orbit/nose skin instead of a
+separate nasal bridge and alar spheres. Front-focused head rings retain the
+combined head/nose triangle budget. A shared byte-sized `noseBlend` keeps nose
+customization local and flattens the cartilage under the existing suit mask;
+head/eye/jaw controls, mouth, rig, poses and protocol remain. Eyelid rims follow
+the same head surface and cheek normals. The one Standard material distinguishes
+skin, eyes, hair, matte cloth and existing metal accessories, with restrained
+bind-space colour detail that fades with pixel footprint. `AVATAR_SURFACE` owns
+the artistic assumptions. No image texture, light, pass or frame-time build is
+added. The loaded rig still receives this live geometry/material, so the neutral
+GLB's standalone inspection surface is unchanged. [Matched views, fixed budget
+and software-renderer limitations](../verification/1995/README.md).
+
 ### Butterfly wing hinges (#1925)
 
 `butterflymodel.js` supplies shared authored contours and a bounded vertex hinge.

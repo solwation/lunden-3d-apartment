@@ -229,3 +229,44 @@ test('continuous elbow/knee surfaces have normalized adjacent-bone weights throu
     a.dispose();
   }
 });
+
+test('#1995: the customizable nose is one connected surface, not separate alar blobs', () => {
+  const g = avatarModelGeometry(decodeAvatarLook('240302101', 'nose-surface'));
+  const p = g.attributes.position, nose = g.attributes.rifleNose, part = g.attributes.facePart;
+  const parents = new Map();
+  const root = key => { let k = key; while (parents.get(k) !== k) k = parents.get(k); return k; };
+  const point = i => [p.getX(i), p.getY(i), p.getZ(i)].map(x => x.toFixed(6)).join(',');
+  for (let i = 0; i < p.count; i += 3) {
+    if (part.getX(i) !== 1 || !g.attributes.rifleSkull.getX(i)) continue;
+    const keys = [i, i + 1, i + 2].map(j => {
+      assert.equal(part.getX(j), 1, 'nasal skin stays in the continuous head/mask surface');
+      const key = point(j); if (!parents.has(key)) parents.set(key, key); return key;
+    });
+    for (const key of keys.slice(1)) parents.set(root(key), root(keys[0]));
+  }
+  assert.ok(parents.size > 30, 'authored bridge/tip/base surface is present');
+  assert.ok(nose.array.some(x => x > 0), 'nasal contact metadata is retained');
+  assert.ok(g.attributes.noseBlend.array.some(x => x > 0), 'local nose customization falloff is retained');
+  assert.equal(new Set([...parents.keys()].map(root)).size, 1, 'bridge, tip and both alar wings are connected');
+});
+
+test('#1995: posterior head keeps its authored profile and cannot follow nose controls', async () => {
+  const { AVATAR_SURFACE: S, AVATAR_FACE: F } = await import('../src/config.js');
+  const { bindAt } = await import('../src/olof.js');
+  const g = avatarModelGeometry(decodeAvatarLook('240302101', 'posterior-invariant'));
+  const p = g.attributes.position, b = bindAt('head'); let checked = 0;
+  for (let i = 0; i < p.count; i++) {
+    if (!g.attributes.rifleSkull.getX(i) || g.attributes.facePart.getX(i) !== 1 || p.getZ(i) - b.z >= 0) continue;
+    const y = p.getY(i) - b.y, rows = S.head;
+    const found = rows.findIndex(r => r[0] >= y), j = found < 0 ? rows.length - 1 : Math.max(1, found);
+    const a = rows[j - 1], c = rows[j], t = THREE.MathUtils.clamp((y - a[0]) / (c[0] - a[0]), 0, 1);
+    const rx = THREE.MathUtils.lerp(a[1], c[1], t), rz = THREE.MathUtils.lerp(a[2], c[2], t), z = THREE.MathUtils.lerp(a[3], c[3], t);
+    const x = (p.getX(i) - b.x) / F.warp.width;
+    const authored = z - rz * Math.sqrt(Math.max(0, 1 - (x / rx) ** 2));
+    assert.ok(Math.abs((p.getZ(i) - b.z) - authored) < 2e-6, 'posterior vertex stays on the authored elliptical profile');
+    assert.equal(g.attributes.noseBlend.getX(i), 0, 'posterior vertex has no nose-size/width/mask influence');
+    assert.equal(g.attributes.rifleNose.getX(i), 0, 'posterior skin is not classified as nasal contact');
+    checked++;
+  }
+  assert.ok(checked > 100, 'actual posterior surface was checked');
+});
