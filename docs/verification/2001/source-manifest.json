@@ -1,0 +1,109 @@
+{
+  "base": "3f7c3d0b1983bec2cde7fd44855c1c0af19744ba",
+  "files": {
+    "src/avatar.js": "dd68fa4d078b74bbd1abe75fab6eca7d07ea3407a2efd569e7ee52c5b3a090ba",
+    "src/config.js": "25107d06930c2ca2add546986b84a83207b67d815eccb8ffeedbb9d47f1757d3",
+    "src/olof.js": "d289fc4b5bca6a70c970be6b4997f6a00734f8659f69c3e84ab900894f3a4296",
+    "src/avatarpreview.js": "ed79d8f1a4a98783d1d30fb1996daacfb76227bb9d24a55f6360f9781fc6e216",
+    "tools/avatarshouldertest.mjs": "66f1d38f08975cb696033c372e3669df7b2c66a2e821121155b3aa98a5fbc80c",
+    "tools/gympumptest.mjs": "56fe5ed673493c5ccff1019902b2d51837b4e403cde3d4cf3939459b55fbab5b",
+    "tools/avatarbodybrowser.cjs": "754e1aa4f658e1406dfdf3c84a560d56770630da8f865339a73276c2bc8d5ffc",
+    "tools/avatarbodyart.cjs": "9cf300cf75778bb1527ba6c1a36e4cd36e3d8915f557a036e458907e269e00ad",
+    "tools/avatarhandrolebrowser.cjs": "4cb1467b5a6dfe3290221a3318ffc3c465fb5ccdd503a3b1a7dc2858ecce7e4b",
+    "tools/avatarbodycost.mjs": "04b0aa3fbba12f8e01825f9314851ac050182204210f2db1cc7f9b9111d2d21e",
+    "tools/verify-avatar-body.html": "66a0e33aaf5d73787ad7c2e74e1e91adc3daffe9a59c7acc6ea2d728f7aa6abb"
+  },
+  "images": {
+    "actual-preview.png": {
+      "sha256": "29c763e48444d7d328b021c6df15c0bf3b1b3ae914d1e6e73ee78ef478fda0c4",
+      "source": "dd68fa4d078b74bbd1abe75fab6eca7d07ea3407a2efd569e7ee52c5b3a090ba",
+      "reviewed": true
+    },
+    "art-after.png": {
+      "sha256": "7a7e30f9cce11a07af6abf3dfd7f684fe0ae6533f479861d29bd14ed6e48d8a9",
+      "source": "dd68fa4d078b74bbd1abe75fab6eca7d07ea3407a2efd569e7ee52c5b3a090ba",
+      "reviewed": true
+    },
+    "art-axilla-cloth.png": {
+      "sha256": "764dd17e10afd89016ef6bae6cf7c113c4d51e090fe2ded653ba5680c18f0fdc",
+      "source": "dd68fa4d078b74bbd1abe75fab6eca7d07ea3407a2efd569e7ee52c5b3a090ba",
+      "reviewed": true
+    },
+    "art-axilla-skin.png": {
+      "sha256": "937e9958185da9d9ffd27a6457a64fedd75c4a7e84636aa3259e9dae36411bca",
+      "source": "dd68fa4d078b74bbd1abe75fab6eca7d07ea3407a2efd569e7ee52c5b3a090ba",
+      "reviewed": true
+    },
+    "avatar-front.png": {
+      "sha256": "8d81cbad7181ff79b8828d439ad73491067430b603ef6e310dc5be72592f6573",
+      "source": "dd68fa4d078b74bbd1abe75fab6eca7d07ea3407a2efd569e7ee52c5b3a090ba",
+      "reviewed": true
+    },
+    "avatar-meeting.png": {
+      "sha256": "9466b172f87b0a736ed41fb519bdbe4adda07b94d6339d465c94a3720df98e3d",
+      "source": "dd68fa4d078b74bbd1abe75fab6eca7d07ea3407a2efd569e7ee52c5b3a090ba",
+      "reviewed": true
+    },
+    "avatar-quarter.png": {
+      "sha256": "c4b444ceb5b7e555c33431537c8a41f593c312993e2bea8826f7da9883d9d93e",
+      "source": "dd68fa4d078b74bbd1abe75fab6eca7d07ea3407a2efd569e7ee52c5b3a090ba",
+      "reviewed": true
+    },
+    "avatar-side.png": {
+      "sha256": "0f47bc5e8464c8808a859b5552069ea1622ac2dcb3b92deee0066375b2a7514f",
+      "source": "dd68fa4d078b74bbd1abe75fab6eca7d07ea3407a2efd569e7ee52c5b3a090ba",
+      "reviewed": true
+    },
+    "before/art-before.png": {
+      "sha256": "63bc997b6261a1953e8a5423fe9e75e58ae2dea1cea501015a3225495f741726",
+      "source": "3f7c3d0b",
+      "reviewed": true
+    },
+    "before/avatar-front.png": {
+      "sha256": "bbc4175474dd91f75d61dec8f93bf8e639a10db89f4c177ddd3debcd97382b35",
+      "source": "3f7c3d0b",
+      "reviewed": true
+    },
+    "before/avatar-meeting.png": {
+      "sha256": "d89fe2f3f6e857f1eef4078b459cdde4a6ad7092869f391e83780dc4f20d5c33",
+      "source": "3f7c3d0b",
+      "reviewed": true
+    },
+    "before/avatar-quarter.png": {
+      "sha256": "8ab05540ad80e13812a7e5c13dbffc04c770ae71d79ee0ec410c0f66aa407284",
+      "source": "3f7c3d0b",
+      "reviewed": true
+    },
+    "before/avatar-side.png": {
+      "sha256": "177b601f0dc92f16ebf9daa6bebaa73584e81980f49b904a4680816bb0f0cdc4",
+      "source": "3f7c3d0b",
+      "reviewed": true
+    },
+    "before/hand-role-shoulder.png": {
+      "sha256": "7c113f5ac5362d20e153ac2d4c21bfd39c007083cab5285661ed84eeceb29a85",
+      "source": "043b40f515477c35d8cc64cc0da8aa83abef60436c4180720bca59f9987d52c5",
+      "reviewed": true
+    },
+    "hand-role-shoulder.png": {
+      "sha256": "c8bfe0578a205c330a8e3e8dca3daf801c4498a66b33ddc40c199529f3db9a63",
+      "source": "dd68fa4d078b74bbd1abe75fab6eca7d07ea3407a2efd569e7ee52c5b3a090ba",
+      "reviewed": true
+    },
+    "suit-body.png": {
+      "sha256": "b937b31a82fb6a43d7c6c7dc98e8c19c4a4afa0067a9395071fa327d324af60f",
+      "source": {
+        "avatarSHA256": "043b40f515477c35d8cc64cc0da8aa83abef60436c4180720bca59f9987d52c5",
+        "finalEquivalence": "hand-role-equivalence.json + hand-role.json"
+      },
+      "reviewed": true
+    },
+    "suit-mask.png": {
+      "sha256": "49beb3805f4a00a7c6db6669aa33759c0868bbf0b3d08db9dd4805f6a5a8bf7f",
+      "source": {
+        "avatarSHA256": "043b40f515477c35d8cc64cc0da8aa83abef60436c4180720bca59f9987d52c5",
+        "finalEquivalence": "hand-role-equivalence.json + hand-role.json"
+      },
+      "reviewed": true
+    }
+  }
+}

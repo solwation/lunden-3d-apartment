@@ -38,7 +38,14 @@ test('avatar: all sleeve/cut variants share immutable buffers but own their pump
     for(let i=0;i<attrs.position.count;i++) {
       const w=attrs.armPump.getZ(i), d=attrs.armPump.getW(i), bone=NAMES[attrs.skinIndex.getX(i)], region=attrs.bare.getX(i)===1?0:1;
       assert.ok(Number.isFinite(w)&&Number.isFinite(d)&&w>=0&&w<=1);
-      if(w>0){assert.match(bone,/^shoulder[LR]$/);assert.ok(region===0||region===1); if(region===0)skin++;else cloth++; max=Math.max(max,w);}
+      if(w>0){
+        if(bone==='torso'){
+          // #2001 welded armhole: a torso-dominant transition may participate in
+          // the same smooth upper-arm bulge, but unrelated body/head parts may not.
+          assert.ok([0,1,2,3].some(j=>/^shoulder[LR]$/.test(NAMES[attrs.skinIndex.getComponent(i,j)])&&attrs.skinWeight.getComponent(i,j)>0));
+          assert.ok(attrs.position.getY(i)>1.29&&attrs.position.getY(i)<1.51);
+          assert.ok(Math.abs(attrs.armPump.getX(i))===Math.fround(.2));
+        }else assert.match(bone,/^shoulder[LR]$/);assert.ok(region===0||region===1); if(region===0)skin++;else cloth++; max=Math.max(max,w);}
       else if(!/^shoulder/.test(bone))assert.equal(d,0);
     }
     assert.ok(max>.98); assert.ok(skin>0||cloth>0); if(cut!==1)assert.ok(cloth>0,'shirt sleeves grow too');

@@ -1,0 +1,31 @@
+{
+  "beforeAvatarSHA256": "043b40f515477c35d8cc64cc0da8aa83abef60436c4180720bca59f9987d52c5",
+  "afterAvatarSHA256": "dd68fa4d078b74bbd1abe75fab6eca7d07ea3407a2efd569e7ee52c5b3a090ba",
+  "errors": [],
+  "before": {
+    "bare": {
+      "calls": 1,
+      "glError": 0,
+      "pixelHash": "29f16586c9313fa81512fc751221fd9d66baf0b4fe30707d650756c1e233ba8f"
+    },
+    "suit": {
+      "calls": 1,
+      "glError": 0,
+      "pixelHash": "42b6b4e3067d90f3a9e2bde6539b4e53902852883dfe0544be105caad8becdc0"
+    }
+  },
+  "after": {
+    "bare": {
+      "calls": 1,
+      "glError": 0,
+      "pixelHash": "0997e0bd75007ed59d0c4bcccafa41526d53d817f72b69d893a9814e603aa932"
+    },
+    "suit": {
+      "calls": 1,
+      "glError": 0,
+      "pixelHash": "42b6b4e3067d90f3a9e2bde6539b4e53902852883dfe0544be105caad8becdc0"
+    }
+  },
+  "positiveControlHash": "e1f9c75c42e7c16200b00f0073ebf1c98277ebc42b7a941e6dd93b1169a057d7",
+  "pass": true
+}

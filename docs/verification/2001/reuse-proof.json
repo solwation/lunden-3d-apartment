@@ -1,0 +1,14 @@
+{
+  "configOutsideSurface": {
+    "unchangedFrom": "3f7c3d0b",
+    "sha256": "9a802c48916eb926725ff8e20b5fbde990f4a3afb845d004dfdc074824746575"
+  },
+  "hairRecipe": {
+    "unchangedFrom": "3f7c3d0b",
+    "sha256": "26ad543a3c4894c770405adea7b64638664486876e5c098faf059e0a19166160"
+  },
+  "avatarRuntimeClass": {
+    "unchangedFrom": "3f7c3d0b",
+    "sha256": "ee01c26193e2ac3d5879c121c184886f70e40cf5c47c08a2388bf43a44b78b31"
+  }
+}

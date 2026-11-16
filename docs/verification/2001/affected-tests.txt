@@ -1,0 +1,136 @@
+TAP version 13
+# Subtest: connected shoulder/torso, deformation identity and pump, gender0 cut0
+ok 1 - connected shoulder/torso, deformation identity and pump, gender0 cut0
+  ---
+  duration_ms: 376.837239
+  type: 'test'
+  ...
+# Subtest: connected shoulder/torso, deformation identity and pump, gender0 cut1
+ok 2 - connected shoulder/torso, deformation identity and pump, gender0 cut1
+  ---
+  duration_ms: 150.444615
+  type: 'test'
+  ...
+# Subtest: connected shoulder/torso, deformation identity and pump, gender0 cut2
+ok 3 - connected shoulder/torso, deformation identity and pump, gender0 cut2
+  ---
+  duration_ms: 179.292982
+  type: 'test'
+  ...
+# Subtest: connected shoulder/torso, deformation identity and pump, gender1 cut0
+ok 4 - connected shoulder/torso, deformation identity and pump, gender1 cut0
+  ---
+  duration_ms: 179.596981
+  type: 'test'
+  ...
+# Subtest: connected shoulder/torso, deformation identity and pump, gender1 cut1
+ok 5 - connected shoulder/torso, deformation identity and pump, gender1 cut1
+  ---
+  duration_ms: 162.119003
+  type: 'test'
+  ...
+# Subtest: connected shoulder/torso, deformation identity and pump, gender1 cut2
+ok 6 - connected shoulder/torso, deformation identity and pump, gender1 cut2
+  ---
+  duration_ms: 123.053351
+  type: 'test'
+  ...
+# Subtest: raised arms, crouch, seat and driving keep actual surface finite and hand anchors unchanged
+ok 7 - raised arms, crouch, seat and driving keep actual surface finite and hand anchors unchanged
+  ---
+  duration_ms: 146.708921
+  type: 'test'
+  ...
+# Subtest: pump: completed reps, saturation, linear offline decay, save roundtrip and invalid anchors
+ok 8 - pump: completed reps, saturation, linear offline decay, save roundtrip and invalid anchors
+  ---
+  duration_ms: 1.570499
+  type: 'test'
+  ...
+# Subtest: avatar: all sleeve/cut variants share immutable buffers but own their pump; only shoulder skin/cloth marked
+ok 9 - avatar: all sleeve/cut variants share immutable buffers but own their pump; only shoulder skin/cloth marked
+  ---
+  duration_ms: 1355.094249
+  type: 'test'
+  ...
+# Subtest: wire: bounded hundredths, old peers clear, Worker retains progress for room snapshots; main keeps score callback
+ok 10 - wire: bounded hundredths, old peers clear, Worker retains progress for room snapshots; main keeps score callback
+  ---
+  duration_ms: 5.291394
+  type: 'test'
+  ...
+# Subtest: models/avatar-rigged.glb exists and has valid glTF 2.0 binary header
+ok 11 - models/avatar-rigged.glb exists and has valid glTF 2.0 binary header
+  ---
+  duration_ms: 2.924796
+  type: 'test'
+  ...
+# Subtest: avatar-rigged.glb parses with SkinnedMesh, 15 humanoid bones and animations
+ok 12 - avatar-rigged.glb parses with SkinnedMesh, 15 humanoid bones and animations
+  ---
+  duration_ms: 50.040539
+  type: 'test'
+  ...
+# Subtest: avatar-rigged.glb proportions match Olof bind pose heights
+ok 13 - avatar-rigged.glb proportions match Olof bind pose heights
+  ---
+  duration_ms: 8.951289
+  type: 'test'
+  ...
+# Subtest: actual inverse bind matrices preserve every rest vertex and production bone order
+ok 14 - actual inverse bind matrices preserve every rest vertex and production bone order
+  ---
+  duration_ms: 53.397434
+  type: 'test'
+  ...
+# Subtest: all six exported clips keep real deformed vertices inside one connected human envelope
+ok 15 - all six exported clips keep real deformed vertices inside one connected human envelope
+  ---
+  duration_ms: 179.143881
+  type: 'test'
+  ...
+# Subtest: production loaded avatars retain detailed source variants and private palettes
+ok 16 - production loaded avatars retain detailed source variants and private palettes
+  ---
+  duration_ms: 646.929312
+  type: 'test'
+  ...
+# Subtest: loaded runtime poses match the same established procedural IK through movement, tools and air
+ok 17 - loaded runtime poses match the same established procedural IK through movement, tools and air
+  ---
+  duration_ms: 226.079826
+  type: 'test'
+  ...
+# Subtest: late rig availability preserves Olof/mirror retained mesh and bone references
+ok 18 - late rig availability preserves Olof/mirror retained mesh and bone references
+  ---
+  duration_ms: 134.896536
+  type: 'test'
+  ...
+# Subtest: continuous elbow/knee surfaces have normalized adjacent-bone weights through bent poses
+ok 19 - continuous elbow/knee surfaces have normalized adjacent-bone weights through bent poses
+  ---
+  duration_ms: 488.009709
+  type: 'test'
+  ...
+# Subtest: \#1995: the customizable nose is one connected surface, not separate alar blobs
+ok 20 - \#1995: the customizable nose is one connected surface, not separate alar blobs
+  ---
+  duration_ms: 61.568926
+  type: 'test'
+  ...
+# Subtest: \#1995: posterior head keeps its authored profile and cannot follow nose controls
+ok 21 - \#1995: posterior head keeps its authored profile and cannot follow nose controls
+  ---
+  duration_ms: 8.78819
+  type: 'test'
+  ...
+1..21
+# tests 21
+# suites 0
+# pass 21
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2540.318702

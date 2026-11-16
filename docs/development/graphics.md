@@ -29,6 +29,22 @@ added. The loaded rig still receives this live geometry/material, so the neutral
 GLB's standalone inspection surface is unchanged. [Matched views, fixed budget
 and software-renderer limitations](../verification/1995/README.md).
 
+### Player body and clothing fit (#2001)
+
+`upperBody` / `AVATAR_SURFACE.body` join the ribcage, oval armholes and rounded
+upper arms before palette separation. Shared positions, skin/pump weights and
+normals preserve the connection through the existing 15-bone rig. The first
+horizontal arm ring sits below the armhole so the cross-section's turn does not
+fold back; short sleeves end below that connection. A lower neckline, integrated
+hem and fitted hoodie pocket replace overlapping primitives. One byte-sized,
+triangle-constant `suitRole` gives skin and suit stable torso/head/limb/hand identity
+independent of blended bone indices. The six measured looks remain one body draw,
+with fewer triangles and attribute bytes including that byte. No head/hair,
+collider, gait, texture, pass or per-frame build is added. Inner-axilla compression
+still limits LBS normals; the guard and exposed high-arm imagery do not claim every
+posed triangle is error-free. [Final art, actual preview, source equivalence,
+counts and software timing limits](../verification/2001/README.md).
+
 ### Butterfly wing hinges (#1925)
 
 `butterflymodel.js` supplies shared authored contours and a bounded vertex hinge.

@@ -4136,11 +4136,25 @@ export const AVATAR_SURFACE = {
     [-0.26, 0.035, 0.036], [-0.28, 0.035, 0.036], [-0.30, 0.035, 0.036], [-0.325, 0.038, 0.038],
     [-0.36, 0.039, 0.038], [-0.405, 0.035, 0.034], [-0.455, 0.029, 0.03], [-0.49, 0.025, 0.027],
     [-0.525, 0.021, 0.024], [-0.55, 0.019, 0.023], [-0.575, 0.019, 0.023]],
+  // #2001 authored ribcage and sewn shoulder loft, torso-local metres.
+  // The three hole rows must remain consecutive, with 24 torso / 12 arm sides.
+  // The first horizontal arm ring and short cuff sit BELOW the hole, so the
+  // 90-degree change of cross-section cannot fold the inner attachment back.
+  body: { sides: 24, hole: [.40, .475, .55], armStart: -.17, armholeRound: .57735026919,
+    shoulderRows: [.2, .4, .6, .8, .9], shoulderBulge: [.022, .009], pumpJoin: .4,
+    chest: .007, bust: .017, chestAt: .43, chestWidth: .14, hemShade: .90,
+    hoodieLength: .055, hoodieTaper: .25, hoodieEase: .008,
+    male: [[-.025,.174,.119],[-.012,.174,.119],[.045,.166,.117],[.12,.155,.11],
+      [.25,.145,.102],[.34,.163,.112],[.40,.179,.119],[.475,.187,.122],[.55,.166,.102],
+      [.578,.12,.076],[.596,.071,.060],[.607,.056,.055]],
+    female: [[-.025,.177,.123],[-.012,.177,.123],[.045,.169,.120],[.12,.149,.106],
+      [.25,.132,.095],[.34,.153,.111],[.40,.169,.12],[.475,.176,.119],[.55,.156,.098],
+      [.578,.114,.074],[.596,.069,.060],[.607,.056,.055]] },
   leg: [[0.04, 0.042, 0.052], [0.015, 0.066, 0.076], [-0.04, 0.079, 0.083], [-0.12, 0.077, 0.079],
     [-0.22, 0.07, 0.071], [-0.31, 0.061, 0.061], [-0.375, 0.052, 0.054], [-0.41, 0.049, 0.052],
     [-0.44, 0.05, 0.052], [-0.47, 0.049, 0.051], [-0.51, 0.052, 0.053], [-0.57, 0.055, 0.059],
     [-0.63, 0.052, 0.057], [-0.7, 0.045, 0.05], [-0.77, 0.038, 0.042], [-0.81, 0.036, 0.038], [-0.845, 0.035, 0.037]],
-  sleeve: { ease: 0.006, short: -0.13, long: -0.49, fold: 0.003 },
+  sleeve: { ease: 0.006, short: -0.195, long: -0.49, fold: 0.003 },
   trouser: { ease: 0.004, fold: 0.0035 },
   // #1995 one frontal nasal sculpt [y, cartilage half-width, projection].
   // Its boundary follows the cheek; artistic anatomy in head-local metres.

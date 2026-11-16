@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="sv"><meta charset="utf-8"><title>Kropp och klädpassform #2001</title>
+<style>body{margin:0;background:#edf0f3;color:#182633;font:17px system-ui}header{padding:18px 24px}h1{margin:0 0 8px;font-size:25px}p{margin:6px 0}button{font:inherit;margin:8px 8px 0 0;padding:7px 14px}canvas{display:block;width:1500px;height:800px}#labels{position:relative;width:1500px;pointer-events:none}#labels span{position:absolute;font-weight:600;padding:8px 12px;background:#ffffffe0;border-radius:4px}#status{font:14px monospace}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<header><h1>Kropp och kläder #2001 · produktionsmodell och IK</h1>
+<p>Matchade kroppsformer och poser. Samma kamera, ljus och utseende före/efter.</p>
+<p id="status">Laddar den faktiska modellen …</p><button onclick="window.avatarView('front')">Framifrån</button><button onclick="window.avatarView('side')">Sida</button><button onclick="window.avatarView('quarter')">Snett framifrån</button>
+</header><div id="labels"></div>
+<script type="module">
+import * as T from 'three';
+import { Avatar, armTarget, loadRiggedAvatarModel } from '../src/avatar.js';
+import { avatarLook } from '../src/config.js';
+import { poseOlof, seatedPose } from '../src/olof.js';
+const gltf = await loadRiggedAvatarModel();
+if(!gltf)throw Error('GLB load failed');
+const renderer = new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(1);renderer.setSize(1500,800);document.body.append(renderer.domElement);
+const scene=new T.Scene();scene.background=new T.Color('#edf0f3');scene.add(new T.HemisphereLight(0xffffff,0x8c857c,2));
+const sun=new T.DirectionalLight(0xfff4df,2);sun.position.set(2,5,4);scene.add(sun);
+const grid=new T.GridHelper(4,16,0xb8c3cc,0xd9e0e5);scene.add(grid);
+const camera=new T.PerspectiveCamera(36,500/400,.03,20);
+const names=['180 cm · smal · T-shirt','165 cm · linne · gång','195 cm · kraftig · hoodie · löpning','120 cm · barn · hoodie · huk','180 cm · kraftig · linne · sittande','165 cm · lång ärm · lyft arm'];
+const avatars=names.map((name,i)=>{
+ const look={...avatarLook('2001-'+i),style:i%5,sleeves:i===5?1:0,gender:i%2,cut:[0,1,2,2,1,0][i],legs:i%3,facial:0,hat:0,phones:0,glasses:0,necklace:0,height:[180,165,195,120,180,165][i],bodyBuild:[0,4,8,0,8,4][i]};
+ const av=new Avatar(look);av.object.rotation.y=0;av.gait=i===1||i===2?1:0;av.phase=.8;av.time=1;
+ av.update(0,i===1?{speed:1.2}:i===2?{speed:3}:i===3?{crouch:1}:i===5?{hands:{R:armTarget.up(-1,.6)}}:{});
+ if(i===4)poseOlof(av,seatedPose(.45 / av.object.scale.y));
+ scene.add(av.object);
+ const label=document.createElement('span');label.textContent=name;label.style.left=(i%3*500+8)+'px';label.style.top=(Math.floor(i/3)*400+8)+'px';document.querySelector('#labels').append(label);
+ return av;
+});
+const seat=new T.Mesh(new T.BoxGeometry(.46,.05,.4),new T.MeshLambertMaterial({color:0x8e7259}));seat.position.set(0,.425,-.03);scene.add(seat);
+function bounds(av){av.object.updateMatrixWorld(true);av.mesh.skeleton.update();const box=new T.Box3(),v=new T.Vector3();for(let i=0;i<av.mesh.geometry.attributes.position.count;i++){av.mesh.getVertexPosition(i,v);v.applyMatrix4(av.mesh.matrixWorld);box.expandByPoint(v)}return box;}
+window.avatarView=view=>{
+ renderer.setScissorTest(true);
+ for(let i=0;i<avatars.length;i++){
+  avatars.forEach((av,j)=>av.object.visible=i===j);seat.visible=i===4;
+  const direction=view==='side'?[1,0,0]:view==='quarter'?[.75,.1,1]:[0,0,1];
+  const target=new T.Vector3(0,.95,0);camera.position.copy(target).add(new T.Vector3(...direction).normalize().multiplyScalar(3.6));camera.lookAt(target);
+  renderer.setViewport(i%3*500,(1-Math.floor(i/3))*400,500,400);renderer.setScissor(i%3*500,(1-Math.floor(i/3))*400,500,400);renderer.render(scene,camera);
+ }
+ renderer.setScissorTest(false);return {calls:renderer.info.render.calls};
+};
+const measured=avatars.map((av,i)=>({pose:names[i],min:bounds(av).min.toArray(),max:bounds(av).max.toArray(),triangles:av.mesh.geometry.attributes.position.count/3}));
+if(measured.some(m=>[...m.min,...m.max].some(v=>!Number.isFinite(v))||m.max[1]>2.2||m.min[1]<-.6))throw Error('Invalid deformed vertex envelope');
+window.__avatar1907={avatars,renderer,scene,camera,measured};
+window.avatarView('front');document.querySelector('#status').textContent='PASS · verkligt deformerade vertexgränser inom mänsklig kroppshöjd. Visuell granskning krävs separat.';
+window.__ready=true;
+</script></html>

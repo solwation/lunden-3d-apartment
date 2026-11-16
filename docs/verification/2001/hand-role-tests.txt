@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: connected shoulder/torso, deformation identity and pump, gender0 cut0
+ok 1 - connected shoulder/torso, deformation identity and pump, gender0 cut0
+  ---
+  duration_ms: 214.686964
+  type: 'test'
+  ...
+# Subtest: connected shoulder/torso, deformation identity and pump, gender0 cut1
+ok 2 - connected shoulder/torso, deformation identity and pump, gender0 cut1
+  ---
+  duration_ms: 131.225856
+  type: 'test'
+  ...
+# Subtest: connected shoulder/torso, deformation identity and pump, gender0 cut2
+ok 3 - connected shoulder/torso, deformation identity and pump, gender0 cut2
+  ---
+  duration_ms: 100.47149
+  type: 'test'
+  ...
+# Subtest: connected shoulder/torso, deformation identity and pump, gender1 cut0
+ok 4 - connected shoulder/torso, deformation identity and pump, gender1 cut0
+  ---
+  duration_ms: 91.490099
+  type: 'test'
+  ...
+# Subtest: connected shoulder/torso, deformation identity and pump, gender1 cut1
+ok 5 - connected shoulder/torso, deformation identity and pump, gender1 cut1
+  ---
+  duration_ms: 74.260519
+  type: 'test'
+  ...
+# Subtest: connected shoulder/torso, deformation identity and pump, gender1 cut2
+ok 6 - connected shoulder/torso, deformation identity and pump, gender1 cut2
+  ---
+  duration_ms: 99.443791
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1243.629035

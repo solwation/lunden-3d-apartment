@@ -1,0 +1,71 @@
+--- /tmp/2001-prior-avatar.js	2026-11-16 11:26:20.569498841 +0100
++++ src/avatar.js	2026-11-16 11:26:20.593498814 +0100
+@@ -1045,11 +1045,11 @@
+ };
+ const v3 = (c) => `vec3(${c.map((v) => v.toFixed(3)).join(',')})`;
+ function skinShading() {
+-  const hb = bindAt('head'), bone = (n) => `${NAMES.indexOf(n)}.0`;
++  const hb = bindAt('head');
+   return `if (vBare > 0.5 && uSuit < 0.5) {
+-        float sb = floor(vSuitBone + 0.5); vec3 tone = vec3(1.0);
++        float skinRole = floor(vSuitRole + 0.5); vec3 tone = vec3(1.0);
+         // Surface identity survives torso/arm bone blending; bone labels do not.
+-        if (vSurface.y > 0.5) {
++        if (skinRole == 2.0) {
+           vec3 q = vSuitAt - vec3(${hb.x.toFixed(4)}, ${hb.y.toFixed(4)}, ${hb.z.toFixed(4)});
+           ${skinArea('cheek', SK.cheek)}
+           ${skinArea('noseTip', SK.nose)}
+@@ -1060,7 +1060,7 @@
+           tone *= mix(vec3(1.0), ${v3(SK.blush)}, clamp(cheek + noseTip + lipRim + ear * 0.5, 0.0, 1.0));
+           tone *= mix(vec3(1.0), ${v3(SK.socket)}, clamp(socket, 0.0, 1.0));
+           tone *= mix(vec3(1.0), ${v3(SK.underTint)}, clamp(under + ear * 0.4, 0.0, 1.0));
+-        } else if (sb == ${bone('handL')} || sb == ${bone('handR')}) tone = ${v3(SK.hand)};
++        } else if (skinRole == 4.0) tone = ${v3(SK.hand)};
+         else tone = ${v3(SK.limb)};
+         diffuseColor.rgb *= tone;
+       }`;
+@@ -1147,7 +1147,7 @@
+       if (g.attributes.skinIndex) for (let v = i; v < i + 3; v++) for (let j = 0; j < 4; j++) {
+         if (/^(hand|knee|foot)/.test(NAMES[g.attributes.skinIndex.getComponent(v,j)])) red += g.attributes.skinWeight.getComponent(v,j);
+       } else if (/^(hand|knee|foot)/.test(part.bone)) red = 3;
+-      suitRole.fill(part.bone === 'torso' ? 1 : part.bone === 'head' ? 2 : red >= 1.5 ? 3 : 0, i, i + 3);
++      suitRole.fill(part.bone === 'torso' ? 1 : part.bone === 'head' ? 2 : /^hand/.test(part.bone) ? 4 : red >= 1.5 ? 3 : 0, i, i + 3);
+     }
+     const pump = g.attributes.armPump ? new Float32Array(g.attributes.armPump.array) : new Float32Array(n * 4), shoulder = /^shoulder[LR]$/.test(part.bone) && (region === REGION.skin || region === REGION.top) ? bindAt(part.bone) : null;
+     const facePt = new Float32Array(n).fill(part.face ?? 0), anchor = new Float32Array(n * 3); // (#1138, see faceShape)
+@@ -1234,14 +1234,14 @@
+     Object.assign(sh.uniforms, u);
+     // Bind-pose coordinates follow the original skin: colours/own canvas only, no new
+     // geometry, skeleton, head envelope or per-avatar colour-buffer replacement (#891).
+-    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float region; attribute float suitRole; varying float vSuitRole; attribute float noseBlend; varying vec2 vSurface; attribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; varying float vSuitBone; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + FACE_SHAPE_DECL)
++    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float region; attribute float suitRole; varying float vSuitRole; attribute float noseBlend; varying vec2 vSurface; attribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + FACE_SHAPE_DECL)
+       .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
+ float pumpF = 1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z;
+ float pumpD = uPump * ${GYM_PUMP.circumference} * armPump.w;
+ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / pumpF * dot(position.xz - armPump.xy, objectNormal.xz), objectNormal.z / pumpF));`)
+-      .replace('#include <begin_vertex>', `#include <begin_vertex>\ntransformed.xz = armPump.xy + (transformed.xz - armPump.xy) * (1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z);\nvSuitRole = suitRole; vSurface = vec2(region, facePart); vSuitAt = position; vSuitBone = skinIndex.x; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart) * step(facePart, ${FACE_PART.watchStrap}.0 - 0.5); // (#1334: the rings, bracelets and watch cases are metal)\n${faceShape()}\ntransformed.x *= 1.0 - uKiss * pucker * ${KISS.narrow.toFixed(5)};\ntransformed.z += uKiss * pucker * ${KISS.pucker.toFixed(5)};\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
++      .replace('#include <begin_vertex>', `#include <begin_vertex>\ntransformed.xz = armPump.xy + (transformed.xz - armPump.xy) * (1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z);\nvSuitRole = suitRole; vSurface = vec2(region, facePart); vSuitAt = position; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart) * step(facePart, ${FACE_PART.watchStrap}.0 - 0.5); // (#1334: the rings, bracelets and watch cases are metal)\n${faceShape()}\ntransformed.x *= 1.0 - uKiss * pucker * ${KISS.narrow.toFixed(5)};\ntransformed.z += uKiss * pucker * ${KISS.pucker.toFixed(5)};\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
+     sh.fragmentShader = sh.fragmentShader
+-      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitBone; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;')
++      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;')
+       .replace('#include <color_fragment>', `#include <color_fragment>
+       if (uSuit > 0.5) {
+         vec3 red = vec3(${new THREE.Color(SPIDER.colors.red).toArray().join(',')}), blue = vec3(${new THREE.Color(SPIDER.colors.blue).toArray().join(',')});
+@@ -1258,7 +1258,7 @@
+             vec2 uv = vec2((vSuitAt.x - ${(Number(headMin.x) || 0).toFixed(4)}) / ${(Number(headSize.x) || 1).toFixed(4)}, 1.0 - uSuitMaskBand + (vSuitAt.y - ${(Number(headMin.y) || 0).toFixed(4)}) / ${(Number(headSize.y) || 1).toFixed(4)} * uSuitMaskBand);
+             diffuseColor.rgb = texture2D(uSuitTexture, clamp(uv, 0.0, 1.0)).rgb;
+           }
+-        } else if (role == 3.0) diffuseColor.rgb = red;
++        } else if (role == 3.0 || role == 4.0) diffuseColor.rgb = red;
+       }
+       ${skinShading()}
+       ${surfaceColor()}
+@@ -1272,7 +1272,7 @@
+       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
+       #include <opaque_fragment>`);
+   };
+-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-v14';
++  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-v15';
+   return m;
+ }
+ 

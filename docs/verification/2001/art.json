@@ -1,0 +1,18 @@
+{
+  "revision": 0,
+  "hashes": {
+    "before": {
+      "src/avatar.js": "d6536bd8d7b3d8b076d7913da108f796d2d690025f4dacfbd9923d2682cd707b",
+      "src/config.js": "145df86ae12f34b98bdec76da8017960cff975ac1382e9a018375be504de0c60",
+      "src/olof.js": "d289fc4b5bca6a70c970be6b4997f6a00734f8659f69c3e84ab900894f3a4296",
+      "src/avatarpreview.js": "ed79d8f1a4a98783d1d30fb1996daacfb76227bb9d24a55f6360f9781fc6e216"
+    },
+    "after": {
+      "src/avatar.js": "dd68fa4d078b74bbd1abe75fab6eca7d07ea3407a2efd569e7ee52c5b3a090ba",
+      "src/config.js": "25107d06930c2ca2add546986b84a83207b67d815eccb8ffeedbb9d47f1757d3",
+      "src/olof.js": "d289fc4b5bca6a70c970be6b4997f6a00734f8659f69c3e84ab900894f3a4296",
+      "src/avatarpreview.js": "ed79d8f1a4a98783d1d30fb1996daacfb76227bb9d24a55f6360f9781fc6e216"
+    }
+  },
+  "finalRecapture": "hand-role.json"
+}

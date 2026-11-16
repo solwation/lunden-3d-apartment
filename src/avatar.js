@@ -442,46 +442,135 @@ function garment(g, leg = false, wide = 1) {
   });
 }
 
+/** #2001 one welded torso/shoulder surface, split into palette parts only after
+ * normal generation. The armhole boundary has identical positions AND weights on
+ * both sides of the split, so a raised arm stretches fabric instead of opening a gap. */
+function upperBody(sleeves, female, cut) {
+  const B = SURFACE.body, S = B.sides, stride = S + 1;
+  const rings = (female ? B.female : B.male).map(r => [...r]);
+  if (cut === 2) for (const r of rings) {
+    r[0] -= B.hoodieLength * (1 - smoothstep(0, B.hoodieTaper, r[0]));
+    r[1] += B.hoodieEase * (1 - smoothstep(B.hoodieTaper, B.hole[0], r[0]));
+    r[2] += B.hoodieEase;
+  }
+  const holeRows = B.hole.map(y => rings.findIndex(r => r[0] === y));
+  const pos = [], weights = [], ids = [], pump = [], shade = [], groups = [[], [], []];
+  const torso = NAMES.indexOf('torso');
+  const vertex = (p, si = [torso, 0, 0, 0], sw = [1, 0, 0, 0], pp = [0, 0, 0, 0], sh = 1) => {
+    const k = pos.length / 3; pos.push(...p); ids.push(...si); weights.push(...sw); pump.push(...pp); shade.push(sh); return k;
+  };
+  // Independent depth and width preserve a ribcage instead of revolving a vase.
+  for (let row = 0; row < rings.length; row++) {
+    const [y, rx, rz, centre = 0] = rings[row];
+    for (let j = 0; j <= S; j++) {
+      const a = j / S * Math.PI * 2, front = Math.max(0, Math.cos(a));
+      const fold = SURFACE.cloth.waistFold * Math.sin(a * 3 + y * 38) * bump(y, .1, .1);
+      // An oval armhole, rather than a rectangular flange around the deltoid.
+      const onHole = (row === holeRows[0] || row === holeRows[2]) && Math.abs(Math.sin(a)) >= Math.sin(Math.PI / 3) - 1e-6;
+      const yy = onHole ? B.hole[1] + (y - B.hole[1]) * Math.sqrt(Math.max(0, 1 - (Math.cos(a) / B.armholeRound) ** 2)) : y;
+      vertex([Math.sin(a) * (rx + fold), yy, Math.cos(a) * (rz + fold) + centre +
+        (female ? B.bust : B.chest) * front ** 2 * bump(y, B.chestAt, B.chestWidth)],
+        undefined, undefined, undefined, row < 2 ? B.hemShade : 1);
+    }
+  }
+  for (let row = 0; row < rings.length - 1; row++) for (let j = 0; j < S; j++) {
+    if (row >= holeRows[0] && row < holeRows[2] && ((j >= 4 && j < 8) || (j >= 16 && j < 20))) continue;
+    const a = row * stride + j, b = a + stride;
+    groups[0].push(a, a + 1, b, a + 1, b + 1, b);
+  }
+  for (const [side, sx, group] of [['L', 1, 1], ['R', -1, 2]]) {
+    // Twelve boundary vertices around the actual side opening; no shoulder cap.
+    const cols = sx === 1 ? [4, 5, 6, 7, 8] : [20, 19, 18, 17, 16];
+    let previous = [[1,0],[2,0],[2,1],[2,2],[2,3],[2,4],[1,4],[0,4],[0,3],[0,2],[0,1],[0,0]]
+      .map(([r,c]) => holeRows[r] * stride + cols[c]);
+    const stitch = next => {
+      for (let j = 0; j < 12; j++) {
+        const k = (j + 1) % 12, q = [previous[j], next[j], previous[k], previous[k], next[j], next[k]];
+        groups[group].push(...(sx === 1 ? q : [q[0],q[2],q[1],q[3],q[5],q[4]]));
+      }
+      previous = next;
+    };
+    const sh = bindAt('shoulder' + side).sub(bindAt('torso'));
+    const boundary = cut === 1 ? SURFACE.arm.at(-1)[0] : sleeves ? SURFACE.sleeve.long : SURFACE.sleeve.short;
+    const arm = ringSurface(ringRange(SURFACE.arm, B.armStart, boundary));
+    if (cut !== 1) garment(arm);
+    limbWeights(arm, side);
+    const p = arm.attributes.position, si = arm.attributes.skinIndex, sw = arm.attributes.skinWeight;
+    const root = [...previous];
+    // Correspondence and weights follow the actual endpoints, not independent
+    // loft ellipses below the pivot. This avoids a wedge that folds into a fin.
+    for (const t of B.shoulderRows) {
+      const next = [], blend = t, bulge = Math.sin(Math.PI * t);
+      for (let j = 0; j < 12; j++) {
+        const i = sx === 1 ? j : (12 - j) % 12, a = j / 12 * Math.PI * 2;
+        const start = pos.slice(root[j] * 3, root[j] * 3 + 3);
+        const end = [p.getX(i) + sh.x, p.getY(i) + sh.y, p.getZ(i)];
+        const at = start.map((v, k) => THREE.MathUtils.lerp(v, end[k], k === 1 ? THREE.MathUtils.lerp(t, t * t, Math.max(0, Math.sin(a))) : t));
+        at[0] += sx * B.shoulderBulge[0] * bulge;
+        at[2] += Math.cos(a) * B.shoulderBulge[1] * bulge;
+        const influence = new Map([[torso, 1 - blend]]);
+        for (let k = 0; k < 4; k++) {
+          const id = si.getComponent(i, k);
+          influence.set(id, (influence.get(id) || 0) + blend * sw.getComponent(i, k));
+        }
+        const pairs = [...influence].sort((a, b) => b[1] - a[1]);
+        while (pairs.length < 4) pairs.push([0, 0]);
+        const [w, d] = armPumpShape(at[1] - sh.y, UPPER), fade = smoothstep(0, B.pumpJoin, t);
+        next.push(vertex(at, pairs.slice(0,4).map(v => v[0]), pairs.slice(0,4).map(v => v[1]), [sh.x, sh.z, fade*w, fade*d]));
+      }
+      stitch(next);
+    }
+    for (let row = 0; row < arm.userData.ringCount; row++) {
+      const rowIndices = [];
+      for (let j = 0; j < 12; j++) {
+        const i = row * 13 + (sx === 1 ? j : (12-j)%12), y = p.getY(i);
+        const [w,d] = armPumpShape(y, UPPER);
+        rowIndices.push(vertex([p.getX(i) + sh.x, y + sh.y, p.getZ(i)],
+          Array.from(si.array.slice(i*4,i*4+4)), Array.from(sw.array.slice(i*4,i*4+4)), [sh.x, sh.z, w,d]));
+      }
+      stitch(rowIndices);
+    }
+    arm.dispose();
+  }
+  const g = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+  g.setIndex(groups.flat()); g.computeVertexNormals();
+  // Smooth only the duplicated cylindrical seam, never cap normals into the neck.
+  const n = g.attributes.normal, v = new THREE.Vector3(), w = new THREE.Vector3();
+  for (let row = 0; row < rings.length; row++) {
+    const a = row*stride, b = a+S; v.fromBufferAttribute(n,a).add(w.fromBufferAttribute(n,b)).normalize();
+    n.setXYZ(a,v.x,v.y,v.z); n.setXYZ(b,v.x,v.y,v.z);
+  }
+  g.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(ids,4));
+  g.setAttribute('skinWeight',new THREE.Float32BufferAttribute(weights,4));
+  g.setAttribute('armPump',new THREE.Float32BufferAttribute(pump,4));
+  g.setAttribute('shade',new THREE.Float32BufferAttribute(shade,1));
+  g.userData.sewn = true;
+  return groups.map((indices, i) => {
+    const part = g.clone(); part.setIndex(indices);
+    if (i) { const sh = bindAt('shoulder'+(i===1?'L':'R')).sub(bindAt('torso')); part.translate(-sh.x,-sh.y,-sh.z); }
+    return part;
+  });
+}
+
 function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
   const sphere = (r, w = 10, h = 7, ...a) => new THREE.SphereGeometry(r, w, h, ...a);
   const cap = (r, h, seg = 5) => new THREE.CapsuleGeometry(r, h, 1, seg);
   const hipScale = isFemale ? [1.2, 1, 0.78] : [1.15, 1, 0.75];
-  const torsoScale = isFemale ? [1.08, 1, 0.7] : [1.15, 1, 0.7];
   // the seat: rounder at the back, a soft crotch instead of a flat disc
   add(shape(lathe([[0, -0.122], [0.06, -0.118], [0.11, -0.1], [0.14, -0.04], [0.142, 0.03], [0, 0.05]], 14).scale(...hipScale),
     (v) => { if (v.z < 0) v.z *= 1 + 0.12 * bump(v.y, -0.06, 0.07); }), 'pants', 'hips');
-  // the torso: the chest (or bust) forward, the shoulder blades back, a flatter belly
-  const chest = isFemale ? (y) => 0.2 * bump(y, 0.42, 0.08) + 0.05 * bump(y, 0.5, 0.08) : (y) => 0.1 * bump(y, 0.45, 0.12);
-  const profile = isFemale ? TORSO_PROFILE_FEMALE : TORSO_PROFILE;
-  const clothProfile = [...profile, ...SURFACE.cloth.rings.map(y => {
-    const j = profile.findIndex(p => p[1] > y), a = profile[j - 1], b = profile[j];
-    return [THREE.MathUtils.lerp(a[0], b[0], (y - a[1]) / (b[1] - a[1])), y];
-  })].sort((a, b) => a[1] - b[1]);
-  add(shape(lathe(clothProfile, 14).scale(...torsoScale), (v) => {
-    const front = Math.max(0, v.x === 0 && v.z === 0 ? 0 : v.z / Math.hypot(v.x, v.z));
-    if (v.z > 0) v.z *= 1 + chest(v.y) * front - 0.04 * bump(v.y, 0.2, 0.1);
-    else v.z *= 1 + 0.08 * bump(v.y, 0.47, 0.1);
-    const C = SURFACE.cloth, a = Math.atan2(v.x, v.z), r = Math.hypot(v.x, v.z);
-    const fold = C.waistFold * Math.sin(a * C.waveAngle[0] + v.y * C.waveHeight[0]) * bump(v.y, ...C.waist)
-      + C.sideFold * Math.sin(v.y * C.waveHeight[1] + a * C.waveAngle[1]) * bump(v.y, ...C.side) * (1 - front);
-    if (r > 0) { v.x *= 1 + fold / r; v.z *= 1 + fold / r; }
-  }), 'top', 'torso');
-  add(lathe([[0.152, -0.01], [0.16, 0.05]], 14).scale(...torsoScale), 'top', 'torso', [0, 0, 0], 0.82); // the hem
-  add(lathe([[0.142, -0.02], [0.147, 0.03]], 14).scale(isFemale ? 1.1 : 1.15, 1, 0.75), 'fixed', 'torso', [0, -0.02, 0], 1, 0x2a2523); // the belt
-  // (no buckle: a light box below the hem read as a spot in the crotch, #1189)
-  add(new THREE.BoxGeometry(0.005, 0.075, 0.004), 'pants', 'hips', [0.012, -0.045, 0.106], 0.72); // the fly's seam
-  add(new THREE.TorusGeometry(0.06, 0.011, 5, 14).rotateX(Math.PI / 2).scale(1, 1, 1), 'top', 'torso', [0, 0.628, 0], 0.8); // the collar: a low round rim at the neck's base (#1221)
-  // arms: a deltoid cap over the shoulder joint, the sleeve (a T-shirt's ends above the biceps with a hem; a long one has
-  // soft folds at the elbow and a cuff at the wrist), the bare skin below, the wrist reaching the hand
+  const upper = upperBody(sleeves, isFemale, cut);
+  add(upper[0], 'top', 'torso');
+  // The body surface contains its own snug neckline and hem; no stacked rings.
+  add(new THREE.BoxGeometry(0.005, 0.075, 0.004), 'pants', 'hips', [0.012, -0.045, 0.106], 0.72);
+  // Sewn shoulders are part of the torso topology; bare forearms overlap the cuff.
   for (const s of ['L', 'R']) {
     const sh = 'shoulder' + s, sx = s === 'L' ? 1 : -1;
-    const boundary = sleeves ? SURFACE.sleeve.long : SURFACE.sleeve.short;
-    const upper = SURFACE.arm[0][0], lower = SURFACE.arm.at(-1)[0];
-    const skin = (top, bottom) => limbWeights(ringSurface(ringRange(SURFACE.arm, top, bottom)), s);
-    if (cut !== 1 || sleeves) {
-      add(limbWeights(garment(ringSurface(ringRange(SURFACE.arm, upper, boundary))), s), 'top', sh);
-      add(skin(boundary + SURFACE.clothOverlap, lower), 'skin', sh);
-    } else add(skin(upper, lower), 'skin', sh);
+    add(upper[s === 'L' ? 1 : 2], cut === 1 ? 'skin' : 'top', sh);
+    if (cut !== 1) {
+      const boundary = sleeves ? SURFACE.sleeve.long : SURFACE.sleeve.short;
+      add(limbWeights(ringSurface(ringRange(SURFACE.arm, boundary + SURFACE.clothOverlap, SURFACE.arm.at(-1)[0])), s), 'skin', sh);
+    }
     // the hand: a flat palm towards the thigh, four fingers front (index) to back (little), curled a little inwards, the thumb forward
     add(sphere(0.042, 8, 6).scale(0.45, 1.1, 0.95), 'skin', 'hand' + s, [-0.002 * sx, -0.016, 0.002]);
     for (let f = 0; f < 4; f++) {
@@ -493,9 +582,10 @@ function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
   // legs: trousers with a little room at the knee and a hem resting on the shoe; low trainers: the upper falls from the
   // ankle collar to a flat toe, on a sole a little wider than it
   if (cut === 2) { // #1244 hoodie: a long ribbed hem over the belt, a kangaroo pocket, a hood rolled at the back of the neck
-    add(lathe([[0.163, -0.085], [0.162, 0.03]], 14).scale(...torsoScale), 'top', 'torso', [0, 0, 0], 0.82);
-    add(lathe([[0.164, -0.09], [0.166, -0.07]], 14).scale(...torsoScale), 'top', 'torso', [0, 0, 0], 0.7);
-    add(new THREE.BoxGeometry(0.15, 0.07, 0.012), 'top', 'torso', [0, 0.03, 0.113], 0.86);
+    // A curved pocket follows the abdomen, rather than a box below the waist.
+    const pocket = new THREE.PlaneGeometry(.16, .08, 4, 2);
+    shape(pocket, v => { v.y += .17; v.z = .124 * Math.sqrt(1 - (v.x / .18) ** 2) + .009; });
+    add(pocket, 'top', 'torso', [], .9);
     add(new THREE.TorusGeometry(0.072, 0.024, 5, 14).rotateX(Math.PI / 2 - 0.35).scale(1.05, 1, 1), 'top', 'torso', [0, 0.625, -0.035], 0.92);
   }
   const lw = legs === 2 ? AVATAR_CLOTHES.legs.wide : 1, hy = AVATAR_CLOTHES.legs.shorts;
@@ -955,10 +1045,11 @@ const skinArea = (name, [x, y, z, r, k, wide = 1]) => {
 };
 const v3 = (c) => `vec3(${c.map((v) => v.toFixed(3)).join(',')})`;
 function skinShading() {
-  const hb = bindAt('head'), bone = (n) => `${NAMES.indexOf(n)}.0`;
+  const hb = bindAt('head');
   return `if (vBare > 0.5 && uSuit < 0.5) {
-        float sb = floor(vSuitBone + 0.5); vec3 tone = vec3(1.0);
-        if (sb == ${bone('head')}) {
+        float skinRole = floor(vSuitRole + 0.5); vec3 tone = vec3(1.0);
+        // Surface identity survives torso/arm bone blending; bone labels do not.
+        if (skinRole == 2.0) {
           vec3 q = vSuitAt - vec3(${hb.x.toFixed(4)}, ${hb.y.toFixed(4)}, ${hb.z.toFixed(4)});
           ${skinArea('cheek', SK.cheek)}
           ${skinArea('noseTip', SK.nose)}
@@ -969,7 +1060,7 @@ function skinShading() {
           tone *= mix(vec3(1.0), ${v3(SK.blush)}, clamp(cheek + noseTip + lipRim + ear * 0.5, 0.0, 1.0));
           tone *= mix(vec3(1.0), ${v3(SK.socket)}, clamp(socket, 0.0, 1.0));
           tone *= mix(vec3(1.0), ${v3(SK.underTint)}, clamp(under + ear * 0.4, 0.0, 1.0));
-        } else if (sb == ${bone('handL')} || sb == ${bone('handR')}) tone = ${v3(SK.hand)};
+        } else if (skinRole == 4.0) tone = ${v3(SK.hand)};
         else tone = ${v3(SK.limb)};
         diffuseColor.rgb *= tone;
       }`;
@@ -1049,13 +1140,22 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
     const col = new Float32Array(n * 3), bare = new Float32Array(n), reg = new Uint8Array(n), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), contact = new Uint8Array(n), nose = new Uint8Array(n), jaw = new Uint8Array(n), mouth = new Float32Array(n), pucker = new Uint8Array(n);
     const hb = part.bone === 'head' ? bindAt('head') : null, gp = g.attributes.position;
     const noseBlend = g.attributes.noseBlend || new THREE.Uint8BufferAttribute(new Uint8Array(n), 1, true);
-    const pump = new Float32Array(n * 4), shoulder = /^shoulder[LR]$/.test(part.bone) && (region === REGION.skin || region === REGION.top) ? bindAt(part.bone) : null;
+    const suitRole = new Uint8Array(n);
+    // Semantic role is constant per raster triangle, independent of interpolated bone IDs.
+    for (let i = 0; i < n; i += 3) {
+      let red = 0;
+      if (g.attributes.skinIndex) for (let v = i; v < i + 3; v++) for (let j = 0; j < 4; j++) {
+        if (/^(hand|knee|foot)/.test(NAMES[g.attributes.skinIndex.getComponent(v,j)])) red += g.attributes.skinWeight.getComponent(v,j);
+      } else if (/^(hand|knee|foot)/.test(part.bone)) red = 3;
+      suitRole.fill(part.bone === 'torso' ? 1 : part.bone === 'head' ? 2 : /^hand/.test(part.bone) ? 4 : red >= 1.5 ? 3 : 0, i, i + 3);
+    }
+    const pump = g.attributes.armPump ? new Float32Array(g.attributes.armPump.array) : new Float32Array(n * 4), shoulder = /^shoulder[LR]$/.test(part.bone) && (region === REGION.skin || region === REGION.top) ? bindAt(part.bone) : null;
     const facePt = new Float32Array(n).fill(part.face ?? 0), anchor = new Float32Array(n * 3); // (#1138, see faceShape)
     const anc = part.anchor?.isBufferGeometry ? (part.anchor.index ? part.anchor.toNonIndexed() : part.anchor).attributes.position.array : null;
     if (anc) anchor.set(anc.subarray(0, n * 3)); else if (part.anchor) for (let i = 0; i < n; i++) anchor.set(part.anchor, i * 3);
     for (let i = 0; i < n; i++) {
-      if (shoulder) { const [w, d] = armPumpShape(gp.getY(i) - shoulder.y, UPPER); pump.set([shoulder.x, shoulder.z, w, d], i * 4); }
-      if (region === REGION.fixed && !part.shoe) { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; } else col.fill((vs ? shade * vs[i] : shade) * clothShade(part.bone, region, g.attributes.position, i), i * 3, i * 3 + 3);
+      if (shoulder && !g.attributes.armPump) { const [w, d] = armPumpShape(gp.getY(i) - shoulder.y, UPPER); pump.set([shoulder.x, shoulder.z, w, d], i * 4); }
+      if (region === REGION.fixed && !part.shoe) { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; } else col.fill((vs ? shade * vs[i] : shade) * (g0.userData.sewn ? 1 : clothShade(part.bone, region, g.attributes.position, i)), i * 3, i * 3 + 3);
       bare[i] = region === REGION.skin ? 1 : 0;
       // Pull the adjacent muzzle skin with the lips, so a pout never leaves floating lip islands.
       if (hb) {
@@ -1080,7 +1180,8 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
     g.setAttribute('facePart', new THREE.BufferAttribute(facePt, 1));
     g.setAttribute('faceAnchor', new THREE.BufferAttribute(anchor, 3));
     g.setAttribute('armPump', new THREE.BufferAttribute(pump, 4));
-    for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'color', 'region', 'bare', 'noseBlend', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw', 'mouth', 'pucker', 'facePart', 'faceAnchor', 'armPump'].includes(a)) g.deleteAttribute(a);
+    g.setAttribute('suitRole', new THREE.BufferAttribute(suitRole, 1));
+    for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'color', 'region', 'bare', 'noseBlend', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw', 'mouth', 'pucker', 'facePart', 'faceAnchor', 'armPump', 'suitRole'].includes(a)) g.deleteAttribute(a);
     geos.push(g);
   }
   b = mergeGeometries(geos);
@@ -1105,7 +1206,7 @@ export function avatarModelGeometry(lk) {
     col[i * 3] = c.r * s; col[i * 3 + 1] = c.g * s; col[i * 3 + 2] = c.b * s;
   }
   const g = new THREE.BufferGeometry();
-  for (const name of ['position', 'normal', 'region', 'bare', 'noseBlend', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw', 'mouth', 'pucker', 'facePart', 'faceAnchor', 'armPump']) g.setAttribute(name, b.attributes[name]);
+  for (const name of ['position', 'normal', 'region', 'bare', 'noseBlend', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw', 'mouth', 'pucker', 'facePart', 'faceAnchor', 'armPump', 'suitRole']) g.setAttribute(name, b.attributes[name]);
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   g.userData.headProjection = b.userData.headProjection;
   g.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0.95, 0), 1.3); // limbs and a raised arm stay inside (culling by the root)
@@ -1133,31 +1234,31 @@ function makeMaterial(rim, headProjection) {
     Object.assign(sh.uniforms, u);
     // Bind-pose coordinates follow the original skin: colours/own canvas only, no new
     // geometry, skeleton, head envelope or per-avatar colour-buffer replacement (#891).
-    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float region; attribute float noseBlend; varying vec2 vSurface; attribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; varying float vSuitBone; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + FACE_SHAPE_DECL)
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float region; attribute float suitRole; varying float vSuitRole; attribute float noseBlend; varying vec2 vSurface; attribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + FACE_SHAPE_DECL)
       .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
 float pumpF = 1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z;
 float pumpD = uPump * ${GYM_PUMP.circumference} * armPump.w;
 objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / pumpF * dot(position.xz - armPump.xy, objectNormal.xz), objectNormal.z / pumpF));`)
-      .replace('#include <begin_vertex>', `#include <begin_vertex>\ntransformed.xz = armPump.xy + (transformed.xz - armPump.xy) * (1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z);\nvSurface = vec2(region, facePart); vSuitAt = position; vSuitBone = skinIndex.x; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart) * step(facePart, ${FACE_PART.watchStrap}.0 - 0.5); // (#1334: the rings, bracelets and watch cases are metal)\n${faceShape()}\ntransformed.x *= 1.0 - uKiss * pucker * ${KISS.narrow.toFixed(5)};\ntransformed.z += uKiss * pucker * ${KISS.pucker.toFixed(5)};\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
+      .replace('#include <begin_vertex>', `#include <begin_vertex>\ntransformed.xz = armPump.xy + (transformed.xz - armPump.xy) * (1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z);\nvSuitRole = suitRole; vSurface = vec2(region, facePart); vSuitAt = position; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart) * step(facePart, ${FACE_PART.watchStrap}.0 - 0.5); // (#1334: the rings, bracelets and watch cases are metal)\n${faceShape()}\ntransformed.x *= 1.0 - uKiss * pucker * ${KISS.narrow.toFixed(5)};\ntransformed.z += uKiss * pucker * ${KISS.pucker.toFixed(5)};\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitBone; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;')
+      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;')
       .replace('#include <color_fragment>', `#include <color_fragment>
       if (uSuit > 0.5) {
         vec3 red = vec3(${new THREE.Color(SPIDER.colors.red).toArray().join(',')}), blue = vec3(${new THREE.Color(SPIDER.colors.blue).toArray().join(',')});
         diffuseColor.rgb = blue;
-        // Integer bone IDs travel through an interpolated float varying. Round before
-        // classification so rasterization precision cannot speckle one part blue/red.
-        float suitBone = floor(vSuitBone + 0.5);
-        if (suitBone == ${NAMES.indexOf('torso')}.0) {
+        // A triangle-constant authored surface role cannot interpolate through
+        // unrelated head/hand bone labels at the sewn shoulder or knee.
+        float role = floor(vSuitRole + 0.5);
+        if (role == 1.0) {
           vec2 uv = vec2(vSuitAt.x / ${2 * Math.max(...TORSO_PROFILE.map(p => p[0])) * 1.15} + 0.5, (vSuitAt.y - ${bindAt('torso').y}) / ${TORSO_ATLAS_TOP} * (1.0 - uSuitMaskBand));
           diffuseColor.rgb = texture2D(uSuitTexture, clamp(uv, 0.0, 1.0)).rgb;
-        } else if (suitBone == ${NAMES.indexOf('head')}.0) {
+        } else if (role == 2.0) {
           diffuseColor.rgb = red;
           if (vSuitAt.z > ${(Number(headFront) || 0).toFixed(4)}) {
             vec2 uv = vec2((vSuitAt.x - ${(Number(headMin.x) || 0).toFixed(4)}) / ${(Number(headSize.x) || 1).toFixed(4)}, 1.0 - uSuitMaskBand + (vSuitAt.y - ${(Number(headMin.y) || 0).toFixed(4)}) / ${(Number(headSize.y) || 1).toFixed(4)} * uSuitMaskBand);
             diffuseColor.rgb = texture2D(uSuitTexture, clamp(uv, 0.0, 1.0)).rgb;
           }
-        } else if (suitBone == ${NAMES.indexOf('handL')}.0 || suitBone == ${NAMES.indexOf('handR')}.0 || suitBone == ${NAMES.indexOf('kneeL')}.0 || suitBone == ${NAMES.indexOf('kneeR')}.0 || suitBone == ${NAMES.indexOf('footL')}.0 || suitBone == ${NAMES.indexOf('footR')}.0) diffuseColor.rgb = red;
+        } else if (role == 3.0 || role == 4.0) diffuseColor.rgb = red;
       }
       ${skinShading()}
       ${surfaceColor()}
@@ -1171,7 +1272,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
       #include <opaque_fragment>`);
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-v13';
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-v15';
   return m;
 }
 
