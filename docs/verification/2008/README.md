@@ -93,8 +93,8 @@ All four images were saved in the same browser turn and visually inspected. The 
 baseline captures were moved into `before/` before commit; raw action records retain
 their original capture filenames:
 
-- [Working cold baseline](before/before-index.png): known cats and unknown silhouettes.
-- [Reproduced current-key blank cache](before/before-empty-cache-index.png): empty cat art.
+- [Working cold baseline](https://github.com/solwation/lunden-3d-apartment/blob/e1e612fafe58c3619e9ee218f6850fb379bd6a87/docs/verification/2008/before/before-index.png): known cats and unknown silhouettes.
+- [Reproduced current-key blank cache](https://github.com/solwation/lunden-3d-apartment/blob/e1e612fafe58c3619e9ee218f6850fb379bd6a87/docs/verification/2008/before/before-empty-cache-index.png): empty cat art.
 - [Selective cache repair](after-repaired-index.png): actual visible cat art restored.
 - [Normal reload, persisted valid cache](after-reload-index.png): same cat art, no new renders.
 
@@ -129,3 +129,6 @@ source files are byte-identical to sources.json; [integration.json](integration.
 records parity and image hashes. Root reviewed the provider, actual browser harness,
 metadata/photo preservation and result images. Existing passing evidence is reused;
 no broad normal-app bootstrap is repeated for the unrelated body rebase.
+
+Before-images were published and embedded in the issue comment before closure,
+pinned to e1e612fafe58c3619e9ee218f6850fb379bd6a87. They are removed in the resolving commit; links above remain.
