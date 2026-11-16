@@ -59,7 +59,7 @@ for (const gender of [0,1]) for (const cut of [0,1,2]) test(`connected shoulder/
  assert.ok(duplicates>30,'actual shared seam sampled');g.dispose();
  const av=new Avatar({...avatarLook('shoulder2001'),gender,cut,sleeves:0});
  for(const state of [{},{hands:{L:armTarget.up(1,.6),R:armTarget.up(-1,.6)}},{crouch:1},{speed:3}]){
-  av.gait=state.speed?1:0;av.phase=.8;av.time=1;av.update(0,state);
+  av.gait=state.speed?1:0;av.phase=.8;av.cycles=.8/(2*Math.PI);av.time=1;av.update(0,state);
   const facing=shoulderFacing(av,Object.keys(state).length>0);assert.ok(facing.count>150);assert.ok(facing.min>0,`geometric and actually skinned normals agree: ${JSON.stringify({state,...facing})}`);
  }
  av.dispose();

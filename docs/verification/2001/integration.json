@@ -1,0 +1,235 @@
+{
+  "rows": [
+    {
+      "calls": 1,
+      "triangles": 11212,
+      "bytes": 3599052,
+      "bones": 15,
+      "phase": 0.8,
+      "gaitInfo": {
+        "active": false,
+        "phase": 0,
+        "cycles": 0,
+        "contact": [
+          false,
+          false
+        ],
+        "stance": [
+          0,
+          0.7352941176470588
+        ],
+        "swing": [
+          -1,
+          -1
+        ],
+        "speed": 0,
+        "stepHz": 1,
+        "strideLen": 0,
+        "duty": 0.68,
+        "run": 0,
+        "dir": [
+          0,
+          1
+        ],
+        "footfalls": 0,
+        "lastFoot": -1,
+        "footfall": false
+      }
+    },
+    {
+      "calls": 1,
+      "triangles": 11940,
+      "bytes": 3832740,
+      "bones": 15,
+      "cycles": 0.31899062114018295,
+      "phase": 2.0042771838760873,
+      "gaitInfo": {
+        "active": true,
+        "phase": 0.31899062114018295,
+        "cycles": 0.31899062114018295,
+        "contact": [
+          true,
+          false
+        ],
+        "stance": [
+          0.5799829475276053,
+          -1
+        ],
+        "swing": [
+          -1,
+          0.5977569358670732
+        ],
+        "speed": 1.6,
+        "stepHz": 2.3,
+        "strideLen": 1.3913043478260874,
+        "duty": 0.55,
+        "run": 0,
+        "dir": [
+          0,
+          1
+        ],
+        "footfalls": 0,
+        "lastFoot": -1,
+        "footfall": false
+      }
+    },
+    {
+      "calls": 1,
+      "triangles": 11728,
+      "bytes": 3764688,
+      "bones": 15,
+      "cycles": 0.4023239544735161,
+      "phase": 2.527875959474385,
+      "gaitInfo": {
+        "active": true,
+        "phase": 0.4023239544735161,
+        "cycles": 0.4023239544735161,
+        "contact": [
+          false,
+          false
+        ],
+        "stance": [
+          -1,
+          -1
+        ],
+        "swing": [
+          0.10794620070674044,
+          0.8542148574231585
+        ],
+        "speed": 4.8,
+        "stepHz": 3.3,
+        "strideLen": 2.9090909090909087,
+        "duty": 0.33,
+        "run": 1,
+        "dir": [
+          0,
+          1
+        ],
+        "footfalls": 0,
+        "lastFoot": -1,
+        "footfall": false
+      }
+    },
+    {
+      "calls": 1,
+      "triangles": 12612,
+      "bytes": 4048452,
+      "bones": 15,
+      "phase": 0.8,
+      "gaitInfo": {
+        "active": false,
+        "phase": 0,
+        "cycles": 0,
+        "contact": [
+          false,
+          false
+        ],
+        "stance": [
+          0,
+          0.7352941176470588
+        ],
+        "swing": [
+          -1,
+          -1
+        ],
+        "speed": 0,
+        "stepHz": 1,
+        "strideLen": 0,
+        "duty": 0.68,
+        "run": 0,
+        "dir": [
+          0,
+          1
+        ],
+        "footfalls": 0,
+        "lastFoot": -1,
+        "footfall": false
+      }
+    },
+    {
+      "calls": 1,
+      "triangles": 16132,
+      "bytes": 5178372,
+      "bones": 15,
+      "phase": 0.8,
+      "gaitInfo": {
+        "active": false,
+        "phase": 0,
+        "cycles": 0,
+        "contact": [
+          false,
+          false
+        ],
+        "stance": [
+          0,
+          0.7352941176470588
+        ],
+        "swing": [
+          -1,
+          -1
+        ],
+        "speed": 0,
+        "stepHz": 1,
+        "strideLen": 0,
+        "duty": 0.68,
+        "run": 0,
+        "dir": [
+          0,
+          1
+        ],
+        "footfalls": 0,
+        "lastFoot": -1,
+        "footfall": false
+      }
+    },
+    {
+      "calls": 1,
+      "triangles": 11172,
+      "bytes": 3586212,
+      "bones": 15,
+      "phase": 0.8,
+      "gaitInfo": {
+        "active": false,
+        "phase": 0,
+        "cycles": 0,
+        "contact": [
+          false,
+          false
+        ],
+        "stance": [
+          0,
+          0.7352941176470588
+        ],
+        "swing": [
+          -1,
+          -1
+        ],
+        "speed": 0,
+        "stepHz": 1,
+        "strideLen": 0,
+        "duty": 0.68,
+        "run": 0,
+        "dir": [
+          0,
+          1
+        ],
+        "footfalls": 0,
+        "lastFoot": -1,
+        "footfall": false
+      }
+    }
+  ],
+  "glError": 0,
+  "errors": [],
+  "pass": true,
+  "base": "5627ecb9",
+  "scope": "Focused combined body + published gait consumer; previous galleries retain original base provenance; no hardware timing claim",
+  "source": {
+    "src/avatar.js": "f5aec235501ce4aa8fc617c5f0f993ab0e2de9287d126bee39e38562f88b4c55",
+    "src/config.js": "cc4edf9e4c408dfd6a3bade0b2b02db772119125b5795abce04b1b29ed15a69e",
+    "src/olof.js": "f223b1a3cafa734606f5c6d477f21490549846a6f6f979238de1ab890be11ac6",
+    "tools/avatarshouldertest.mjs": "3d5f821aefcb482e09c1eeb9bf77b5c2e66af3f5da6fbe0feeab4880dc4604b5",
+    "tools/verify-avatar-body.html": "66a0e33aaf5d73787ad7c2e74e1e91adc3daffe9a59c7acc6ea2d728f7aa6abb"
+  },
+  "imageHash": "0c2580cd43cbdb786c105f9d17e503a548367fdc90f775fa5ac357b3ad8f291b"
+}

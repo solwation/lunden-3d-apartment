@@ -2,7 +2,7 @@
 
 Base: `3f7c3d0b1983bec2cde7fd44855c1c0af19744ba`. Original-only child of #2000.
 The [scope/budget was posted before implementation](https://github.com/solwation/lunden-3d-apartment/issues/2001#issuecomment-6912785682).
-Root owns integration/publication. This checkout has not been pushed or closed.
+Root owns integration/publication. The integration below combines the body with the subsequently published gait.
 
 ## Selected approach and locked budget
 
@@ -128,3 +128,15 @@ are stopped before handoff.
 
 All before-images are under `before/`; root pins them before publication and removes
 that directory in the resolving commit. Final images use normal verification retention.
+
+## Combined integration on 5627ecb9
+
+The focused [integration check](integration.json) loads the actual Avatar fixture
+with #2003 and #2006 movement, advances walking/running at 1.6/4.8 m/s and
+saves [the resulting six-look view](integration-gait-body.png). All six exact
+triangle/attribute/bone/draw budgets match the body handoff; surfaces are finite
+and GL/page errors are absent. [10/10 shoulder and gym checks](integration-tests.txt)
+pass on this combination. The shoulder fixture now sets `cycles` as well as the
+legacy `phase`, so the published gait actually exercises the intended stride.
+The source hashes in integration.json bind this additional view; original image
+and timing provenance above remains unchanged. No broad performance rerun.
