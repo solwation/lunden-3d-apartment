@@ -134,3 +134,7 @@ records parity and image hashes. Root reviewed code, matched art, final kiss,
 back/baseline, extremes, accessories, suit and actual close-up preview. Existing
 passing evidence is reused. The combined Ghost movement consumer is finalized
 under #2004 after this geometry is published.
+
+Before-images were published and embedded before closure, pinned to
+[3c1f9457](https://github.com/solwation/lunden-3d-apartment/tree/3c1f9457d2177325e1d12a030a8139645dc7330d/docs/verification/2002/before).
+They are removed from main in the resolving commit; the pinned links remain.
