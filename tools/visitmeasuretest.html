@@ -1,0 +1,19 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Mätbar lägenhetsnivå #1999</title><link rel="icon" href="data:,">
+<style>body{margin:0;font:16px system-ui;color:#20383a;background:#e4ebe8}header{padding:12px 18px;height:76px;box-sizing:border-box}small{display:block;color:#4c6262}canvas{display:block}#measure{position:fixed;left:20px;bottom:18px;background:#fff;padding:10px;border-radius:6px}</style>
+<header><strong id="title">Mätbar mellannivå</strong><small>Avgränsad komponent: produktionens VisitUnit + Measure, enkla provytor. Mätstråle vid 14 m, granskad från sidan.</small></header><div id="measure" hidden></div>
+<script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import {fixture} from './visitmeasurefixture.mjs';
+const f=fixture(document.querySelector('#measure')),{T,scene,camera,measure,unit}=f;
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(900,500);document.body.append(renderer.domElement);scene.background=new T.Color(0xe4ebe8);
+scene.add(new T.HemisphereLight(0xffffff,0x778c8e,2));const light=new T.DirectionalLight(0xfff1d8,3);light.position.set(3,6,-7);scene.add(light);
+const floor=new T.Mesh(new T.PlaneGeometry(16,24),new T.MeshStandardMaterial({color:0xd7c9ad}));floor.rotation.x=-Math.PI/2;floor.position.set(0,-.02,0);scene.add(floor);
+const review=new T.PerspectiveCamera(40,1.8,.05,100);review.position.set(6,4,-8);review.lookAt(0,1.4,2.5);
+const midSolid=unit.mid.group.children.find(m=>m.isMesh),native=midSolid.raycast;
+const render=()=>{renderer.info.reset();renderer.render(scene,review);return{calls:renderer.info.render.calls,triangles:renderer.info.render.triangles}};
+window.__vm={...f,renderer,review,render,midSolid,native,mode(before=false){midSolid.raycast=before?()=>{}:native;f.at(14);measure.setActive(true);const hit=measure.hit();
+ for(const x of [-.5,.5]){const p=new T.Vector3(x,1.4,1.5).project(camera);measure.press(new T.Vector2(p.x,p.y));}
+ document.querySelector('#title').textContent=before?'Före: punkterna hamnar på bakväggen bakom den synliga inredningen':'Efter: punkterna ligger på den synliga inredningens framsida';
+ return{hit:hit.toArray(),points:measure.points.map(p=>p.toArray()),level:unit.shown,originalVisible:f.fitting.visible,...render()};}};
+window.__vm.mode();
+</script></html>

@@ -18,7 +18,7 @@ Before/after submissions are exactly **7 calls / 362 triangles** in the same com
 
 ## Inspected images
 
-[Before: points on the back wall](before/mid.png), [after: points on the fitting](after-mid.png). Both images were directly inspected. The before capture was moved into `before/` for issue-image retention; the runner initially writes `before-mid.png`. The header labels the synthetic component and review-camera method explicitly.
+[Before: points on the back wall](https://github.com/solwation/lunden-3d-apartment/blob/cb8d97254ef355d1fa88a6133493f622cf593e4a/docs/verification/1999/before/mid.png?raw=true), [after: points on the fitting](after-mid.png). Both images were directly inspected. The before capture was moved into `before/` for issue-image retention; the runner initially writes `before-mid.png`. The header labels the synthetic component and review-camera method explicitly.
 
 ## Shared-path / house assessment
 

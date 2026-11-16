@@ -113,6 +113,8 @@ and mobile touch. `tools/measurecomponenttest.cjs` checks ray visibility and exa
 known geometry in WebGL. [Evidence and limits](../validation/issue-1069/README.md).
 The public viewer already supplies this interaction; no downstream import applies.
 
+Visited-flat mid-level surfaces (#1999): `VisitUnit.buildMid` keeps native `Mesh.raycast` on its visible merged solid surfaces. The original detail parents are hidden in mid, so measurement must use the merged surface; only merged `LineSegments` keep a no-op raycast. `Measure.hit` still rejects hidden originals/ancestors and culled unit groups. No geometry, material, draw or door threshold changes. L1004/L1201 share this path; A/B/C/L stair cores do not use VisitUnit. [Production-component regression and inspected result](../verification/1999/README.md).
+
 ## Touch action layout (#1057)
 
 `#touch-controls` in the native index groups gameplay controls at the lower right

@@ -177,7 +177,8 @@ export class VisitUnit {
           if (!depth.has(side)) depth.set(side, lodDepthMaterial({ range, centre, side }));
           mesh.customDepthMaterial = depth.get(side);
         }
-        mesh.raycast = () => {}; // (drawn only: E, shots and sight lines go to the real parts)
+        // Visible merged solids remain measurement surfaces while their originals are hidden; outlines are render-only.
+        if (mesh.isLineSegments) mesh.raycast = () => {};
         mesh.userData.noDetail = true; mesh.userData.noArchitectureEdges = true;
         group.add(mesh);
       }
