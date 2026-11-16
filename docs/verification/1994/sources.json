@@ -1,0 +1,13 @@
+{
+  "base": "b9973faab2f376983f37707390855ee8fc09612e",
+  "sha256": {
+    "index.html": "571e55fa2e57bb094e4604f0dca82f26c3cc91ddbbc0356d88ed6c6fceca04e6",
+    "src/customizer.js": "c185e13d2436c67a0e5bf2fbd817950022ae15af9da7c76ca2b651ee1f5f28dd",
+    "src/avatarpreview.js": "ed79d8f1a4a98783d1d30fb1996daacfb76227bb9d24a55f6360f9781fc6e216",
+    "src/avatar.js": "67a8bb4bc9eb270bd354e9ac2ce3fe24c47879c8825cc0b9a6242ccc17bed6d7",
+    "src/config.js": "520e0705e495c02752c344a8fc41e846b232c78d0b65e469465409f2d5ca72c8",
+    "tools/avatarcustomizertest.mjs": "7c5c19c73a8486722486062fad1b0a9cbebcdf169a00f7dd1c3614f4c3f2f3e9",
+    "tools/avatarcustomizer1994browser.cjs": "070265f9b8fb1f4ef4d65f860c98e5cd86c369e3678c271870f67f591cc05a12",
+    "tools/avatarcustomizer1994correct.cjs": "a0ee0c4191b883ee3628159c5d02148cc3c106b8fdd3146accc7e13bbcebed8d"
+  }
+}

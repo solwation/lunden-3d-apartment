@@ -1,0 +1,154 @@
+TAP version 13
+# Subtest: \#1156: Olof's hoodie colour is top 10; old top digits and seeded looks keep their colours
+ok 1 - \#1156: Olof's hoodie colour is top 10; old top digits and seeded looks keep their colours
+  ---
+  duration_ms: 5.471903
+  type: 'test'
+  ...
+# Subtest: avatar customization: palettes and encoding roundtrip
+ok 2 - avatar customization: palettes and encoding roundtrip
+  ---
+  duration_ms: 0.482801
+  type: 'test'
+  ...
+# Subtest: \#1244: curly hair (style 4) roundtrips; styles above 4 are rejected; old codes decode unchanged
+ok 3 - \#1244: curly hair (style 4) roundtrips; styles above 4 are rejected; old codes decode unchanged
+  ---
+  duration_ms: 0.3715
+  type: 'test'
+  ...
+# Subtest: \#1244: trouser / top models roundtrip as tags; defaults add nothing; bad values ignored
+ok 4 - \#1244: trouser / top models roundtrip as tags; defaults add nothing; bad values ignored
+  ---
+  duration_ms: 0.6263
+  type: 'test'
+  ...
+# Subtest: \#1136 avatar height: backward-compatible code, proportions and eye height
+ok 5 - \#1136 avatar height: backward-compatible code, proportions and eye height
+  ---
+  duration_ms: 0.966601
+  type: 'test'
+  ...
+# Subtest: avatar customization: avatarLook seed vs look object independence
+ok 6 - avatar customization: avatarLook seed vs look object independence
+  ---
+  duration_ms: 0.1846
+  type: 'test'
+  ...
+# Subtest: avatar customization: clearLocalHome preserves the chosen avatar and resets home keys
+ok 7 - avatar customization: clearLocalHome preserves the chosen avatar and resets home keys
+  ---
+  duration_ms: 0.9768
+  type: 'test'
+  ...
+# Subtest: \#1138 face fields: extension encoding, old codes unchanged, unknown tags skipped
+ok 8 - \#1138 face fields: extension encoding, old codes unchanged, unknown tags skipped
+  ---
+  duration_ms: 1.165701
+  type: 'test'
+  ...
+# Subtest: \#1165 hair length and glasses: tags h / g, old codes unchanged, bad values skipped, combined with face and height
+ok 9 - \#1165 hair length and glasses: tags h / g, old codes unchanged, bad values skipped, combined with face and height
+  ---
+  duration_ms: 0.960201
+  type: 'test'
+  ...
+# Subtest: \#1191 neck length slider: tag a, mid default omitted, roundtrips, shifts head hitbox base Y
+ok 10 - \#1191 neck length slider: tag a, mid default omitted, roundtrips, shifts head hitbox base Y
+  ---
+  duration_ms: 1.2044
+  type: 'test'
+  ...
+# Subtest: \#1173 wire-only seeded height preserves exact local proportions and saved codes
+ok 11 - \#1173 wire-only seeded height preserves exact local proportions and saved codes
+  ---
+  duration_ms: 4.198103
+  type: 'test'
+  ...
+# Subtest: \#1175 wire-only build preserves own width and saved codes across receiver seeds
+ok 12 - \#1175 wire-only build preserves own width and saved codes across receiver seeds
+  ---
+  duration_ms: 2.462701
+  type: 'test'
+  ...
+# Subtest: \#1175 all current face fields plus body/scale fit existing Worker extension bounds
+ok 13 - \#1175 all current face fields plus body/scale fit existing Worker extension bounds
+  ---
+  duration_ms: 44.919224
+  type: 'test'
+  ...
+# Subtest: \#1139: body build slim … heavy round-trips; old codes keep the seed's build
+ok 14 - \#1139: body build slim … heavy round-trips; old codes keep the seed's build
+  ---
+  duration_ms: 3.525002
+  type: 'test'
+  ...
+# Subtest: \#1140: Slumpa gives a valid look (palettes, ranges, wire code valid); Återställ is the default look
+ok 15 - \#1140: Slumpa gives a valid look (palettes, ranges, wire code valid); Återställ is the default look
+  ---
+  duration_ms: 24.339014
+  type: 'test'
+  ...
+# Subtest: \#1220 brow colour: tag v (HAIR index), absent = like the hair, old codes unchanged, wire + every tag still decodes
+ok 16 - \#1220 brow colour: tag v (HAIR index), absent = like the hair, old codes unchanged, wire + every tag still decodes
+  ---
+  duration_ms: 1.0703
+  type: 'test'
+  ...
+# Subtest: \#1220 Slumpa: brows are null or a hair colour, and survive the code
+ok 17 - \#1220 Slumpa: brows are null or a hair colour, and survive the code
+  ---
+  duration_ms: 12.516207
+  type: 'test'
+  ...
+# Subtest: \#1268 curly hair length: style 4 hair vertices span down to shoulder level for hairLength uniform scaling
+ok 18 - \#1268 curly hair length: style 4 hair vertices span down to shoulder level for hairLength uniform scaling
+  ---
+  duration_ms: 676.083715
+  type: 'test'
+  ...
+# Subtest: \#1321 headwear: tag q, old codes unchanged, bad values skipped, combined with glasses, height and the face
+ok 19 - \#1321 headwear: tag q, old codes unchanged, bad values skipped, combined with glasses, height and the face
+  ---
+  duration_ms: 0.987901
+  type: 'test'
+  ...
+# Subtest: \#1322 headphones: tag f, old codes unchanged, bad values skipped, combined with headwear, glasses and the face
+ok 20 - \#1322 headphones: tag f, old codes unchanged, bad values skipped, combined with headwear, glasses and the face
+  ---
+  duration_ms: 16.26291
+  type: 'test'
+  ...
+# Subtest: \#1323 necklaces: tag x, old codes unchanged, bad values skipped, combined with headwear, glasses and the face
+ok 21 - \#1323 necklaces: tag x, old codes unchanged, bad values skipped, combined with headwear, glasses and the face
+  ---
+  duration_ms: 1.560501
+  type: 'test'
+  ...
+# Subtest: \#1324 rings: tags i (finger 1-10) and z (metal), old codes unchanged, bad values skipped, combined with the necklace
+ok 22 - \#1324 rings: tags i (finger 1-10) and z (metal), old codes unchanged, bad values skipped, combined with the necklace
+  ---
+  duration_ms: 0.9884
+  type: 'test'
+  ...
+# Subtest: \#1334 bracelets and watches: share the z tag (metal + 4 * (bracelet + 7 * watch)), old codes unchanged, bad values skipped, within the extension limit
+ok 23 - \#1334 bracelets and watches: share the z tag (metal + 4 * (bracelet + 7 * watch)), old codes unchanged, bad values skipped, within the extension limit
+  ---
+  duration_ms: 1.322001
+  type: 'test'
+  ...
+# Subtest: \#1325 earrings and sunglasses: earrings share the g tag (glasses + 10 * earrings), old codes unchanged, bad values skipped
+ok 24 - \#1325 earrings and sunglasses: earrings share the g tag (glasses + 10 * earrings), old codes unchanged, bad values skipped
+  ---
+  duration_ms: 0.867201
+  type: 'test'
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 24
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 942.662165

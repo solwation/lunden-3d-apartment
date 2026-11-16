@@ -1,0 +1,75 @@
+{
+  "rows": [
+    {
+      "name": "body contains its intended choices",
+      "pass": true
+    },
+    {
+      "name": "hair contains its intended choices",
+      "pass": true
+    },
+    {
+      "name": "face contains its intended choices",
+      "pass": true
+    },
+    {
+      "name": "clothes contains its intended choices",
+      "pass": true
+    },
+    {
+      "name": "accessories contains its intended choices",
+      "pass": true
+    },
+    {
+      "name": "no clothing controls became accessory selects",
+      "pass": true
+    },
+    {
+      "name": "final straight hair pixels differ",
+      "pass": true,
+      "detail": {
+        "pixels": 2851
+      }
+    },
+    {
+      "name": "trouser model and colour remain buttons and change real preview",
+      "pass": true,
+      "detail": {
+        "pixels": 3782
+      }
+    },
+    {
+      "name": "accessories show labelled nonempty selections",
+      "pass": true
+    },
+    {
+      "name": "landscape turn slider fits above footer",
+      "pass": true
+    },
+    {
+      "name": "randomize preserves accessories",
+      "pass": true
+    },
+    {
+      "name": "reset restores full default look",
+      "pass": true
+    },
+    {
+      "name": "native touch Done closes editor",
+      "pass": true
+    },
+    {
+      "name": "no uncaught errors",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "sha256": {
+    "index.html": "571e55fa2e57bb094e4604f0dca82f26c3cc91ddbbc0356d88ed6c6fceca04e6",
+    "src/customizer.js": "c185e13d2436c67a0e5bf2fbd817950022ae15af9da7c76ca2b651ee1f5f28dd",
+    "src/avatarpreview.js": "ed79d8f1a4a98783d1d30fb1996daacfb76227bb9d24a55f6360f9781fc6e216",
+    "tools/avatarcustomizer1994browser.cjs": "070265f9b8fb1f4ef4d65f860c98e5cd86c369e3678c271870f67f591cc05a12",
+    "tools/avatarcustomizer1994correct.cjs": "a0ee0c4191b883ee3628159c5d02148cc3c106b8fdd3146accc7e13bbcebed8d"
+  }
+}

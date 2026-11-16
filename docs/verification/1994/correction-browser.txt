@@ -1,0 +1,15 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS body contains its intended choices
+PASS hair contains its intended choices
+PASS face contains its intended choices
+PASS clothes contains its intended choices
+PASS accessories contains its intended choices
+PASS no clothing controls became accessory selects
+PASS final straight hair pixels differ
+PASS trouser model and colour remain buttons and change real preview
+PASS accessories show labelled nonempty selections
+PASS landscape turn slider fits above footer
+PASS randomize preserves accessories
+PASS reset restores full default look
+PASS native touch Done closes editor
+PASS no uncaught errors

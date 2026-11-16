@@ -1,0 +1,137 @@
+{
+  "baseline": "b9973faab2f376983f37707390855ee8fc09612e",
+  "rows": [
+    {
+      "name": "actual app mirror choice opens five categories and real preview",
+      "pass": true
+    },
+    {
+      "name": "all original choices remain available",
+      "pass": true,
+      "detail": {
+        "originalChoices": 125
+      }
+    },
+    {
+      "name": "straight hair min/max changes rendered pixels and real shader",
+      "pass": true,
+      "detail": {
+        "pixels": 2851
+      }
+    },
+    {
+      "name": "curly hair length visible",
+      "pass": true,
+      "detail": {
+        "pixels": 2248
+      }
+    },
+    {
+      "name": "hair length visible from side",
+      "pass": true,
+      "detail": {
+        "pixels": 6147
+      }
+    },
+    {
+      "name": "face shape reflected in real head",
+      "pass": true,
+      "detail": {
+        "pixels": 221
+      }
+    },
+    {
+      "name": "eye colour reaches rendered model",
+      "pass": true
+    },
+    {
+      "name": "hoodie changes model; fixed sleeves do not offer inert controls",
+      "pass": true,
+      "detail": {
+        "pixels": 2011
+      }
+    },
+    {
+      "name": "native hat select updates live avatar",
+      "pass": true
+    },
+    {
+      "name": "native phones select updates live avatar",
+      "pass": true
+    },
+    {
+      "name": "native glasses select updates live avatar",
+      "pass": true
+    },
+    {
+      "name": "native necklace select updates live avatar",
+      "pass": true
+    },
+    {
+      "name": "native earrings select updates live avatar",
+      "pass": true
+    },
+    {
+      "name": "native ring select updates live avatar",
+      "pass": true
+    },
+    {
+      "name": "native metal select updates live avatar",
+      "pass": true
+    },
+    {
+      "name": "native bracelet select updates live avatar",
+      "pass": true
+    },
+    {
+      "name": "native watch select updates live avatar",
+      "pass": true
+    },
+    {
+      "name": "height changes visible full-body size",
+      "pass": true,
+      "detail": {
+        "pixels": 11605
+      }
+    },
+    {
+      "name": "close disposes preview and preserves actual profile code",
+      "pass": true
+    },
+    {
+      "name": "reopen restores the complete chosen look",
+      "pass": true
+    },
+    {
+      "name": "keyboard arrow selects hair category",
+      "pass": true
+    },
+    {
+      "name": "portrait touch category/style and preview usable; rotate cover hidden",
+      "pass": true
+    },
+    {
+      "name": "landscape touch accessory selection updates preview",
+      "pass": true
+    },
+    {
+      "name": "dialog and footer fit 390x844",
+      "pass": true
+    },
+    {
+      "name": "dialog and footer fit 844x390",
+      "pass": true
+    },
+    {
+      "name": "Escape closes editor",
+      "pass": true
+    },
+    {
+      "name": "no uncaught browser errors",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "source": "52994153ccdc6e4e22ed5e8fb9e6939caa4877e5ec8d462a1b39126ddadca8c8"
+}

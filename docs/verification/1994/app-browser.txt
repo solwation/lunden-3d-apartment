@@ -1,0 +1,37 @@
+browsertest: running in browser slot 2 of 2
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS actual app mirror choice opens five categories and real preview
+PASS all original choices remain available
+Debugger listening on ws://127.0.0.1:9229/4082bec1-fe67-4693-83e9-87bfe1c8d3f1
+For help, see: https://nodejs.org/en/docs/inspector
+PASS straight hair min/max changes rendered pixels and real shader
+PASS curly hair length visible
+PASS hair length visible from side
+PASS face shape reflected in real head
+PASS eye colour reaches rendered model
+Debugger attached.
+Debugger ending on ws://127.0.0.1:9229/4082bec1-fe67-4693-83e9-87bfe1c8d3f1
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+PASS hoodie changes model; fixed sleeves do not offer inert controls
+PASS native hat select updates live avatar
+PASS native phones select updates live avatar
+Debugger ending on ws://127.0.0.1:9229/4082bec1-fe67-4693-83e9-87bfe1c8d3f1
+For help, see: https://nodejs.org/en/docs/inspector
+PASS native glasses select updates live avatar
+PASS native necklace select updates live avatar
+PASS native earrings select updates live avatar
+PASS native ring select updates live avatar
+PASS native metal select updates live avatar
+PASS native bracelet select updates live avatar
+PASS native watch select updates live avatar
+PASS height changes visible full-body size
+PASS close disposes preview and preserves actual profile code
+PASS reopen restores the complete chosen look
+PASS keyboard arrow selects hair category
+PASS portrait touch category/style and preview usable; rotate cover hidden
+PASS landscape touch accessory selection updates preview
+PASS dialog and footer fit 390x844
+PASS dialog and footer fit 844x390
+PASS Escape closes editor
+PASS no uncaught browser errors
