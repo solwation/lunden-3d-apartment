@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: welcome scores accept bounded plain names and finite positive scores only
+ok 1 - welcome scores accept bounded plain names and finite positive scores only
+  ---
+  duration_ms: 1.5421
+  type: 'test'
+  ...
+# Subtest: disabled welcome makes no request and performs no storage operation
+ok 2 - disabled welcome makes no request and performs no storage operation
+  ---
+  duration_ms: 0.3036
+  type: 'test'
+  ...
+# Subtest: successful and empty replies are independent read-only GETs
+ok 3 - successful and empty replies are independent read-only GETs
+  ---
+  duration_ms: 0.6827
+  type: 'test'
+  ...
+# Subtest: HTTP, JSON and network errors quietly release optional scores
+ok 4 - HTTP, JSON and network errors quietly release optional scores
+  ---
+  duration_ms: 0.459
+  type: 'test'
+  ...
+# Subtest: stalled optional score body is aborted within its own deadline
+ok 5 - stalled optional score body is aborted within its own deadline
+  ---
+  duration_ms: 20.448493
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 116.643983

@@ -1,0 +1,78 @@
+browsertest: running in browser slot 2 of 2
+browsertest: no systemd user scope here, running without a memory ceiling
+Debugger listening on ws://127.0.0.1:9297/ca177a58-f937-451c-8d8d-bbdbbb09158a
+For help, see: https://nodejs.org/en/docs/inspector
+PHASE desktop
+PASS desktop: program/world import begins without any Start gesture while scores wait
+PASS desktop: welcome and settings are visible before world
+PASS desktop: optional scores use plain safe readable rows
+PASS desktop: early settings own focus and inert both welcome layers
+PASS desktop: runtime settings remain hidden until ready
+PASS desktop: native instructions work while world is absent
+FAIL phase=desktop AssertionError [ERR_ASSERTION]: desktop: pending running score request did not block readiness
+    at check (/home/devcontainers/lunden-wt/codex-1997/tools/welcome1997browser.cjs:6:69)
+    at /home/devcontainers/lunden-wt/codex-1997/tools/welcome1997browser.cjs:52:4
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processImmediate (node:internal/timers:453:9)
+    at process.callbackTrampoline (node:internal/async_hooks:130:17)
+HELD desktop; create docs/verification/1997/release to finish
+Debugger attached.
+Debugger ending on ws://127.0.0.1:9297/ca177a58-f937-451c-8d8d-bbdbbb09158a
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+Debugger ending on ws://127.0.0.1:9297/ca177a58-f937-451c-8d8d-bbdbbb09158a
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+PASS desktop: readiness does not await the optional scoreboard
+PASS desktop: full runtime settings released and remain visible over initial name prompt
+PASS desktop: runtime graphics controls and saved settings available
+PASS desktop: initial player prompt preserved after early settings
+PASS desktop: ready screen retains mouse/touch or phone Begin without added gate
+PASS desktop: scoreboard remains visible at ready
+PASS desktop: reverse Tab wraps to privacy action
+PASS desktop: forward Tab wraps to close
+PASS desktop: chat setting still toggles and persists
+PASS desktop: instruction toggle did not gain duplicate handlers
+PASS desktop: existing reset child opens above settings
+PASS desktop: reset cancellation returns to settings
+PASS desktop: privacy returns to settings
+PASS desktop: close returns focus to ready settings link
+PASS desktop: native entry preserves selected input mode
+PASS desktop: entry starts audio only through user gesture
+PASS desktop: mouse lock or existing arm fallback
+PHASE phone
+PASS phone: program/world import begins without any Start gesture while scores wait
+PASS phone: welcome and settings are visible before world
+PASS phone: optional scores use plain safe readable rows
+PASS phone: early settings own focus and inert both welcome layers
+PASS phone: runtime settings remain hidden until ready
+PASS phone: native instructions work while world is absent
+Debugger attached.
+Debugger attached.
+PASS phone: readiness does not await the optional scoreboard
+PASS phone: full runtime settings released and remain visible over initial name prompt
+PASS phone: runtime graphics controls and saved settings available
+PASS phone: initial player prompt preserved after early settings
+PASS phone: ready screen retains mouse/touch or phone Begin without added gate
+PASS phone: scoreboard remains visible at ready
+Debugger ending on ws://127.0.0.1:9297/ca177a58-f937-451c-8d8d-bbdbbb09158a
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+PASS phone: reverse Tab wraps to privacy action
+PASS phone: forward Tab wraps to close
+PASS phone: chat setting still toggles and persists
+PASS phone: instruction toggle did not gain duplicate handlers
+PASS phone: existing reset child opens above settings
+PASS phone: reset cancellation returns to settings
+PASS phone: privacy returns to settings
+PASS phone: last setting reachable and close stays visible
+PASS phone: close returns focus to ready settings link
+PASS phone: native entry preserves selected input mode
+PASS phone: entry starts audio only through user gesture
+PASS phone: touch HUD is active
+PASS final welcome module respects cloud= off without score requests
+PASS final lazy-config module retains early settings controller
+PASS network failure keeps cause/retry and welcome content
+PASS published lazy config URL is bound to BUILD
+PASS zero uncaught errors in remaining checks
+Waiting for the debugger to disconnect...

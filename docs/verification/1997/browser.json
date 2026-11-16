@@ -1,0 +1,229 @@
+{
+  "phase": "complete",
+  "checks": [
+    {
+      "name": "desktop: program/world import begins without any Start gesture while scores wait",
+      "pass": true
+    },
+    {
+      "name": "desktop: welcome and settings are visible before world",
+      "pass": true
+    },
+    {
+      "name": "desktop: optional scores use plain safe readable rows",
+      "pass": true
+    },
+    {
+      "name": "desktop: early settings own focus and inert both welcome layers",
+      "pass": true
+    },
+    {
+      "name": "desktop: runtime settings remain hidden until ready",
+      "pass": true
+    },
+    {
+      "name": "desktop: native instructions work while world is absent",
+      "pass": true
+    },
+    {
+      "name": "desktop: readiness does not await the optional scoreboard",
+      "pass": true
+    },
+    {
+      "name": "desktop: full runtime settings released and remain visible over initial name prompt",
+      "pass": true
+    },
+    {
+      "name": "desktop: runtime graphics controls and saved settings available",
+      "pass": true
+    },
+    {
+      "name": "desktop: initial player prompt preserved after early settings",
+      "pass": true
+    },
+    {
+      "name": "desktop: ready screen retains mouse/touch or phone Begin without added gate",
+      "pass": true
+    },
+    {
+      "name": "desktop: scoreboard remains visible at ready",
+      "pass": true
+    },
+    {
+      "name": "desktop: reverse Tab wraps to privacy action",
+      "pass": true
+    },
+    {
+      "name": "desktop: forward Tab wraps to close",
+      "pass": true
+    },
+    {
+      "name": "desktop: chat setting still toggles and persists",
+      "pass": true
+    },
+    {
+      "name": "desktop: instruction toggle did not gain duplicate handlers",
+      "pass": true
+    },
+    {
+      "name": "desktop: existing reset child opens above settings",
+      "pass": true
+    },
+    {
+      "name": "desktop: reset cancellation returns to settings",
+      "pass": true
+    },
+    {
+      "name": "desktop: privacy returns to settings",
+      "pass": true
+    },
+    {
+      "name": "desktop: close returns focus to ready settings link",
+      "pass": true
+    },
+    {
+      "name": "desktop: native entry preserves selected input mode",
+      "pass": true
+    },
+    {
+      "name": "desktop: entry starts audio only through user gesture",
+      "pass": true
+    },
+    {
+      "name": "desktop: mouse lock or existing arm fallback",
+      "pass": true
+    },
+    {
+      "name": "phone: program/world import begins without any Start gesture while scores wait",
+      "pass": true
+    },
+    {
+      "name": "phone: welcome and settings are visible before world",
+      "pass": true
+    },
+    {
+      "name": "phone: optional scores use plain safe readable rows",
+      "pass": true
+    },
+    {
+      "name": "phone: early settings own focus and inert both welcome layers",
+      "pass": true
+    },
+    {
+      "name": "phone: runtime settings remain hidden until ready",
+      "pass": true
+    },
+    {
+      "name": "phone: native instructions work while world is absent",
+      "pass": true
+    },
+    {
+      "name": "phone: readiness does not await the optional scoreboard",
+      "pass": true
+    },
+    {
+      "name": "phone: full runtime settings released and remain visible over initial name prompt",
+      "pass": true
+    },
+    {
+      "name": "phone: runtime graphics controls and saved settings available",
+      "pass": true
+    },
+    {
+      "name": "phone: initial player prompt preserved after early settings",
+      "pass": true
+    },
+    {
+      "name": "phone: ready screen retains mouse/touch or phone Begin without added gate",
+      "pass": true
+    },
+    {
+      "name": "phone: scoreboard remains visible at ready",
+      "pass": true
+    },
+    {
+      "name": "phone: reverse Tab wraps to privacy action",
+      "pass": true
+    },
+    {
+      "name": "phone: forward Tab wraps to close",
+      "pass": true
+    },
+    {
+      "name": "phone: chat setting still toggles and persists",
+      "pass": true
+    },
+    {
+      "name": "phone: instruction toggle did not gain duplicate handlers",
+      "pass": true
+    },
+    {
+      "name": "phone: existing reset child opens above settings",
+      "pass": true
+    },
+    {
+      "name": "phone: reset cancellation returns to settings",
+      "pass": true
+    },
+    {
+      "name": "phone: privacy returns to settings",
+      "pass": true
+    },
+    {
+      "name": "phone: last setting reachable and close stays visible",
+      "pass": true
+    },
+    {
+      "name": "phone: close returns focus to ready settings link",
+      "pass": true
+    },
+    {
+      "name": "phone: native entry preserves selected input mode",
+      "pass": true
+    },
+    {
+      "name": "phone: entry starts audio only through user gesture",
+      "pass": true
+    },
+    {
+      "name": "phone: touch HUD is active",
+      "pass": true
+    },
+    {
+      "name": "final welcome module respects cloud= off without score requests",
+      "pass": true
+    },
+    {
+      "name": "final lazy-config module retains early settings controller",
+      "pass": true
+    },
+    {
+      "name": "network failure keeps cause/retry and welcome content",
+      "pass": true
+    },
+    {
+      "name": "published lazy config URL is bound to BUILD",
+      "pass": true,
+      "detail": "http://localhost:8797/src/config.js?v=welcome1997"
+    },
+    {
+      "name": "zero uncaught errors in remaining checks",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "recovery": "same desktop Page after hidden-cover CSS fix; same phone Page after native existing iPhone install-sheet dismissal; final config-module shell checks, no World reload",
+  "sha256": {
+    "index.html": "974ed7d7c3e40544c4d81f85a61b1518b648c42c89555c80e1b2fc59f020849e",
+    "icons/welcome-lunden.svg": "a67ebb7f297ac6f60ee2eea6034a23b7804b78f5e1a47e492b03c2990a7a780d",
+    "src/bootstrap.js": "ab0a567771db35a9f45d671072773c2c0f8b9cb068362e2874dff6036deae978",
+    "src/welcome.js": "8235426f370a02c030d389d8b0ffd82edf6a06640ddb273e5dbd5049e184e6f9",
+    "src/main.js": "03e8f78d60e69a5dfafb0cfb89de46c777029313513c75a91f06685bbe27a60c",
+    "src/menusettings.js": "af95b86b7ae362acdc23da2f4173aa80021b9a3fefe84bd5c7a3527b03df986d",
+    "src/config.js": "e8bccb2b1a758b65a0def8fece65f308b747213ce38df9cfcbe2af66d014dc9a",
+    "tools/welcometest.mjs": "37a1e057aa771402af8b0df09199f246d1fe9e7b8a29486b911a98f52c17ae20",
+    "tools/welcome1997browser.cjs": "5a94d08aaad99a23776518e8c8dae447b7d323121a1455ee8824e52d0b8680ba",
+    "tools/welcome1997recover.cjs": "df0e3695a4673f56f775a29b401285fc0bde7909bd68787b0721f06a9524fa86"
+  }
+}

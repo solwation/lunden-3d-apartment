@@ -1,0 +1,46 @@
+{
+  "phase": "desktop",
+  "checks": [
+    {
+      "name": "desktop: program/world import begins without any Start gesture while scores wait",
+      "pass": true
+    },
+    {
+      "name": "desktop: welcome and settings are visible before world",
+      "pass": true
+    },
+    {
+      "name": "desktop: optional scores use plain safe readable rows",
+      "pass": true
+    },
+    {
+      "name": "desktop: early settings own focus and inert both welcome layers",
+      "pass": true
+    },
+    {
+      "name": "desktop: runtime settings remain hidden until ready",
+      "pass": true
+    },
+    {
+      "name": "desktop: native instructions work while world is absent",
+      "pass": true
+    },
+    {
+      "name": "desktop: pending running score request did not block readiness",
+      "pass": false
+    }
+  ],
+  "errors": [],
+  "failure": "AssertionError [ERR_ASSERTION]: desktop: pending running score request did not block readiness\n    at check (/home/devcontainers/lunden-wt/codex-1997/tools/welcome1997browser.cjs:6:69)\n    at /home/devcontainers/lunden-wt/codex-1997/tools/welcome1997browser.cjs:52:4\n    at runNextTicks (node:internal/process/task_queues:65:5)\n    at process.processImmediate (node:internal/timers:453:9)\n    at process.callbackTrampoline (node:internal/async_hooks:130:17)",
+  "sha256": {
+    "index.html": "3a281c3802326d3923d80f873a460f094925f6d819541397f712d17caaea7c3a",
+    "icons/welcome-lunden.svg": "a67ebb7f297ac6f60ee2eea6034a23b7804b78f5e1a47e492b03c2990a7a780d",
+    "src/bootstrap.js": "ab0a567771db35a9f45d671072773c2c0f8b9cb068362e2874dff6036deae978",
+    "src/welcome.js": "9421f20fc0d92f3e01e62e876b8a95afffe682495e644c212f7b533e171844a4",
+    "src/main.js": "03e8f78d60e69a5dfafb0cfb89de46c777029313513c75a91f06685bbe27a60c",
+    "src/menusettings.js": "af95b86b7ae362acdc23da2f4173aa80021b9a3fefe84bd5c7a3527b03df986d",
+    "src/config.js": "e8bccb2b1a758b65a0def8fece65f308b747213ce38df9cfcbe2af66d014dc9a",
+    "tools/welcometest.mjs": "37a1e057aa771402af8b0df09199f246d1fe9e7b8a29486b911a98f52c17ae20",
+    "tools/welcome1997browser.cjs": "7d6e44e67a32c1da8f770a5ac0d5c6352d31817a9caad8b5f2a1c7309fb6f63c"
+  }
+}
