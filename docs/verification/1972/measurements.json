@@ -1,0 +1,182 @@
+{
+ "desktop": {
+  "sizes": {
+   "near": 4800,
+   "far": 1236
+  },
+  "patio-near": {
+   "off": {
+    "calls": 269,
+    "triangles": 633400,
+    "levels": "patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N boxwood:0m:N"
+   },
+   "on": {
+    "calls": 270,
+    "triangles": 634028,
+    "levels": "patio-hedge:24m:NF patio-hedge:15m:N patio-hedge:10m:N patio-hedge:5m:N patio-hedge:4m:N patio-hedge:13m:N patio-hedge:18m:NF patio-hedge:29m:F boxwood:25m:NF"
+   }
+  },
+  "patio-mid": {
+   "off": {
+    "calls": 327,
+    "triangles": 815964,
+    "levels": "patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N boxwood:0m:N"
+   },
+   "on": {
+    "calls": 332,
+    "triangles": 814580,
+    "levels": "patio-hedge:32m:F patio-hedge:26m:NF patio-hedge:24m:NF patio-hedge:23m:NF patio-hedge:22m:NF patio-hedge:26m:NF patio-hedge:29m:F patio-hedge:37m:F boxwood:43m:F"
+   }
+  },
+  "patio-far": {
+   "off": {
+    "calls": 403,
+    "triangles": 861648,
+    "levels": "patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N boxwood:0m:N"
+   },
+   "on": {
+    "calls": 403,
+    "triangles": 858084,
+    "levels": "patio-hedge:48m:F patio-hedge:45m:F patio-hedge:43m:F patio-hedge:43m:F patio-hedge:42m:F patio-hedge:44m:F patio-hedge:46m:F patio-hedge:51m:F boxwood:63m:F"
+   }
+  },
+  "box-near": {
+   "off": {
+    "calls": 328,
+    "triangles": 730028,
+    "levels": "patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N boxwood:0m:N"
+   },
+   "on": {
+    "calls": 332,
+    "triangles": 729432,
+    "levels": "patio-hedge:33m:F patio-hedge:30m:F patio-hedge:27m:NF patio-hedge:25m:NF patio-hedge:25m:NF patio-hedge:27m:NF patio-hedge:29m:F patio-hedge:37m:F boxwood:5m:N"
+   }
+  },
+  "box-mid": {
+   "off": {
+    "calls": 356,
+    "triangles": 823680,
+    "levels": "patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N boxwood:0m:N"
+   },
+   "on": {
+    "calls": 357,
+    "triangles": 822208,
+    "levels": "patio-hedge:48m:F patio-hedge:46m:F patio-hedge:44m:F patio-hedge:43m:F patio-hedge:43m:F patio-hedge:44m:F patio-hedge:46m:F patio-hedge:51m:F boxwood:23m:NF"
+   }
+  },
+  "box-far": {
+   "off": {
+    "calls": 404,
+    "triangles": 915690,
+    "levels": "patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N boxwood:0m:N"
+   },
+   "on": {
+    "calls": 404,
+    "triangles": 912126,
+    "levels": "patio-hedge:61m:F patio-hedge:59m:F patio-hedge:58m:F patio-hedge:57m:F patio-hedge:57m:F patio-hedge:58m:F patio-hedge:59m:F patio-hedge:63m:F boxwood:37m:F"
+   }
+  },
+  "patio-all": {
+   "off": {
+    "calls": 451,
+    "triangles": 938986,
+    "levels": "patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N patio-hedge:0m:N boxwood:0m:N"
+   },
+   "on": {
+    "calls": 451,
+    "triangles": 935422,
+    "levels": "patio-hedge:47m:F patio-hedge:50m:F patio-hedge:47m:F patio-hedge:46m:F patio-hedge:45m:F patio-hedge:45m:F patio-hedge:46m:F patio-hedge:49m:F boxwood:65m:F"
+   }
+  }
+ },
+ "lowmem": {
+  "sizes": {
+   "near": 1792,
+   "far": 628
+  },
+  "patio-near": {
+   "off": {
+    "calls": 232,
+    "triangles": 670338,
+    "levels": "boxwood:0m:N"
+   },
+   "on": {
+    "calls": 233,
+    "triangles": 670966,
+    "levels": "boxwood:25m:NF"
+   }
+  },
+  "patio-mid": {
+   "off": {
+    "calls": 239,
+    "triangles": 698030,
+    "levels": "boxwood:0m:N"
+   },
+   "on": {
+    "calls": 239,
+    "triangles": 696866,
+    "levels": "boxwood:43m:F"
+   }
+  },
+  "patio-far": {
+   "off": {
+    "calls": 284,
+    "triangles": 731650,
+    "levels": "boxwood:0m:N"
+   },
+   "on": {
+    "calls": 284,
+    "triangles": 730486,
+    "levels": "boxwood:63m:F"
+   }
+  },
+  "box-near": {
+   "off": {
+    "calls": 281,
+    "triangles": 736949,
+    "levels": "boxwood:0m:N"
+   },
+   "on": {
+    "calls": 281,
+    "triangles": 736949,
+    "levels": "boxwood:5m:N"
+   }
+  },
+  "box-mid": {
+   "off": {
+    "calls": 281,
+    "triangles": 800603,
+    "levels": "boxwood:0m:N"
+   },
+   "on": {
+    "calls": 282,
+    "triangles": 801231,
+    "levels": "boxwood:23m:NF"
+   }
+  },
+  "box-far": {
+   "off": {
+    "calls": 316,
+    "triangles": 815649,
+    "levels": "boxwood:0m:N"
+   },
+   "on": {
+    "calls": 316,
+    "triangles": 814485,
+    "levels": "boxwood:37m:F"
+   }
+  },
+  "patio-all": {
+   "off": {
+    "calls": 318,
+    "triangles": 791656,
+    "levels": "boxwood:0m:N"
+   },
+   "on": {
+    "calls": 318,
+    "triangles": 790492,
+    "levels": "boxwood:65m:F"
+   }
+  }
+ }
+}

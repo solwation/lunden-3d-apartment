@@ -2330,3 +2330,11 @@ and flowers (two calls, ~20 triangles a leaf, ~50 a flower; none November–Apri
 about 70 stones, 110 clumps and 30 leaves at once (≈ 13 k triangles under water, under 1 k above). No texture, no shadow, no light.
 
 `src/riverdriftview.js` adds at most one draw call on the river's surface (`river-drift`: 300 quads, 600 triangles, one 32 px generated texture) and one under it (`river-drift-under`: 220 points, only while the eye is under the surface, when the surface part is off). No light, no shadow caster, no render pass. Measured with `tools/riverdrifttest.cjs` (hand-made renders with the object shown / hidden): bank view 36 vs 35 calls, from the road bridge 49 vs 48, diving 42 vs 41, courtyard +0 (both objects invisible beyond `RIVER_DRIFT.surface.drawDist` 75 m from the centre line). Per frame at the river: one scan of the centre line's ~820 samples and 300 (or 220) pure position evaluations written into a preallocated buffer; no allocation. Not measured on the Surface Pro or a phone. See [environment](environment.md#things-drifting-downstream-1952).
+
+## Hedge distance LOD: measured, not adopted (#1972)
+A coarse far level (cell 1.0 m) with a `BatchLod` dither fade for the courtyard patio hedges and the entrance boxwood saves at most 3 564
+triangles of 0.63-0.92 M (-0.4 %), no draw calls (a hedge is one draw at either level) and costs +1 to +5 calls inside the fade zone,
+where both levels draw. Hedge triangles are 4 800 today (patio hedge 376 each, boxwood 1 792), not the 25 748 of #1143, since the cell
+was coarsened in #1223. Not worth the extra meshes next to the 520-call cap; numbers in
+[docs/verification/1972/README.md](../verification/1972/README.md). Revisit only if the hedge cell is made finer again.
+
