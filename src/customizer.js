@@ -1,4 +1,5 @@
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
+import { BUILD } from './version.js';
 import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
@@ -569,7 +570,7 @@ function refreshPreview() {
     if (previewLoading) return;
     const status = customizerEl.querySelector('#avatar-preview-status');
     status.textContent = 'Laddar förhandsvisning…';
-    previewLoading = import('./avatarpreview.js').then(({ AvatarPreview }) => {
+    previewLoading = import(BUILD === 'dev' ? './avatarpreview.js' : `./avatarpreview.js?v=${encodeURIComponent(BUILD)}`).then(({ AvatarPreview }) => {
       if (!isOpen) return;
       preview = new AvatarPreview(previewCanvas);
       status.textContent = '';

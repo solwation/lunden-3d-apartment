@@ -53,6 +53,8 @@ writes the commit SHA into `src/version.js` (`BUILD`) and `version.json`, and ap
 `?v=SHA` to module imports / `data/plan.json` so a reload never mixes cached old modules.
 It also writes a **content hash** (`CONTENT` in version.js, `content` in version.json, #304) of what the page loads:
 index.html, the manifest, icons/, src/, data/, textures/, music/, models/*.glb and stamp.sh — not tools/, docs/, the PDF or the .md files.
+The mirror customizer also carries `BUILD` explicitly on its lazy `avatarpreview.js` import (#1998);
+the static-import stamp does not rewrite dynamic imports. Local `dev` keeps its plain path.
 All twelve production GLBs are copied in `models/` and participate in CONTENT (#1913).
 Model attribution Markdown stays outside CONTENT. `src/modelurl.js` explicitly carries
 `?v=BUILD` from the stamped importing module to HTTP(S) model URLs: `new URL` alone
