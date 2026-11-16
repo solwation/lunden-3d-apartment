@@ -2366,3 +2366,11 @@ where both levels draw. Hedge triangles are 4 800 today (patio hedge 376 each, b
 was coarsened in #1223. Not worth the extra meshes next to the 520-call cap; numbers in
 [docs/verification/1972/README.md](../verification/1972/README.md). Revisit only if the hedge cell is made finer again.
 
+
+## Bike yard bikes: distance LOD measured, not adopted (#1971)
+
+A coarse twin per bike-yard batch (`bikeGeometry(0)`, ~756 triangles a bike against ~1 552) with the shared dither LOD of
+`src/lod.js` (#1958, zone 16–22 m, phone 11–16 m) saves only about 7 k triangles (~1 % of a view; 9 bikes) when all are far,
+while both levels draw inside the zone (+4 calls). The bikes never switched before, so there was no pop to smooth either: not
+adopted. The prototype (incl. `InstanceLod.relocate()` for moved/ridden instances) is archived outside the repository and named
+in the issue; #1988 (garage bikes, which do have a hard switch) may reuse it. Evidence: [docs/verification/1971](../verification/1971/README.md).

@@ -1,0 +1,7 @@
+{"mode":"desktop","lod":true,"view":"near","calls":205,"tris":719652,"bikes":["yard-bikes-metal far:3","yard-bikes-frame far:3","yard-bikes-tyres far:3","yard-bikes-spokes far:3","yard-bikes-metal:9","yard-bikes-frame:9","yard-bikes-tyres:9","yard-bikes-spokes:9"]}
+{"mode":"desktop","lod":true,"view":"mid","calls":236,"tris":770831,"bikes":["yard-bikes-metal far:9","yard-bikes-frame far:9","yard-bikes-tyres far:9","yard-bikes-spokes far:9","yard-bikes-metal:9","yard-bikes-frame:9","yard-bikes-tyres:9","yard-bikes-spokes:9"]}
+{"mode":"desktop","lod":true,"view":"far","calls":261,"tris":810836,"bikes":["yard-bikes-metal far:9","yard-bikes-frame far:9","yard-bikes-tyres far:9","yard-bikes-spokes far:9"]}
+{"mode":"desktop","lod":false,"view":"near","calls":200,"tris":768854,"bikes":["yard-bikes-metal:9","yard-bikes-frame:9","yard-bikes-tyres:9","yard-bikes-spokes:9"]}
+{"mode":"desktop","lod":false,"view":"mid","calls":230,"tris":814653,"bikes":["yard-bikes-metal:9","yard-bikes-frame:9","yard-bikes-tyres:9","yard-bikes-spokes:9"]}
+{"mode":"desktop","lod":false,"view":"far","calls":260,"tris":881502,"bikes":["yard-bikes-metal:9","yard-bikes-frame:9","yard-bikes-tyres:9","yard-bikes-spokes:9"]}
+browsertest: peak 1684 MiB of 4G
