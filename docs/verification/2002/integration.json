@@ -1,0 +1,29 @@
+{
+  "worker": "82e83a06b41c842bf3d1632f45c6064cbf71e211",
+  "onto": "915104ef",
+  "finalSourceParity": {
+    "src/avatar.js": "9bb29d610cc8e489b5e44cf05e5487d4e890ce469d783f20b2e097bd01754824",
+    "src/config.js": "f53eab6c18fe8d02ae06626b8f20b84ad0eca3943f5a779239b089ced99e75d6",
+    "src/olof.js": "f223b1a3cafa734606f5c6d477f21490549846a6f6f979238de1ab890be11ac6",
+    "src/avatarpreview.js": "ed79d8f1a4a98783d1d30fb1996daacfb76227bb9d24a55f6360f9781fc6e216",
+    "tools/verify-avatar-head.html": "f3f71e21c5c69af864aea332f2a76cdc072d980a3609c01aa99fd00ac2349d1f"
+  },
+  "images": {
+    "extremes.png": "fd10fdfd9d2ec7c5802f6d75e0d6934fafc69ff1f2da78686c509149998ff39d",
+    "quarter.png": "e09565ca775fec157a747e6d844d4327fcd468f0f23d6143269d6dd6c5c94c17",
+    "meeting.png": "63d2b0816698c12c32f9a184dee25f5381b4e781d3937a7ef95a96c0bb1614a4",
+    "suit-mask.png": "bc148a4ac285e015be17c41e403b47aee85d03b22220aaaf0c181939a2d80039",
+    "accessories.png": "2182ca3644772c8a59200ccad7636c305ee9486352b384076ca45f8d1266f6f4",
+    "mouth-kiss-final.png": "063949e67eb2cee1c6d0119adee16053c642f2ae54c946f84f19e8965a26cc1a",
+    "actual-preview.png": "b023b88b5393fb38f9704d6eb78f3b77dbd87cd3e2bd5863d9ff668f1bf0d388",
+    "mouth-open.png": "8f0d569fdeeca9e6d2ddadd5e0c1745f21369b9df9940888c46225a33164204b",
+    "profile.png": "8f7343b46ced638eb4ff09a1546586a785f8172fc0eaa9e52a85ff42276f4bb3",
+    "mouth-closed.png": "5fa0266bfa0ac5ef86da857fed2ac97437c778dbfcd6f799523e0711851d4e70",
+    "back.png": "5df38e9143f78c95745eec0569e34e3af224a19f3d203b67cb8b66c55e4c9a84",
+    "before/quarter.png": "ff997ee6933f15e5bc1a0fc2869f2d49b34f3690dfa3863ee152cc3fef99cd8e",
+    "before/meeting.png": "870d06a5da24ec1d7d884e729782aeffa3c76f8084ffb4f813700599d9497b52",
+    "before/profile.png": "7d5e7f26f9af6a672057e190f89b7a989fe5cece676730a90ef6aaa45ad82e8a",
+    "before/back.png": "4336f80efca81078d37051a6c47f4430d39eb7a05970b26040bd0616fea8dbe0"
+  },
+  "review": "Root reviewed six matched art images, accepted single long-hair revision; inspected final speech/kiss, back/baseline, extremes, accessories, suit and actual close-up previews. Head/body/runtime source parity intact after unrelated portrait-cache rebase; no repeated browser required."
+}

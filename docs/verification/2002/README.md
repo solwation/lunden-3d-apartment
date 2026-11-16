@@ -125,3 +125,12 @@ Browser ownership was sequential: the closed-context art gate, a final component
 pass, then only the corrected speech/pucker follow-up. No concurrent own browsers
 or broad rerun. Owned browser/server processes were stopped after capture. Original
 player avatars are not transferred to the public downstream project.
+
+## Root integration
+
+Rebased onto915104ef after the unrelated portrait-cache fix. All five final
+checked source hashes still match verification.json; [integration.json](integration.json)
+records parity and image hashes. Root reviewed code, matched art, final kiss,
+back/baseline, extremes, accessories, suit and actual close-up preview. Existing
+passing evidence is reused. The combined Ghost movement consumer is finalized
+under #2004 after this geometry is published.
