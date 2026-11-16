@@ -251,7 +251,9 @@ Worktree root and cleanup: worker checkouts live under the ext4 roots `~/wt` and
 `~/lunden-wt` (original and public alike); `/mnt/c` is never a worktree root. The
 integration owner removes an issue's checkout at follow-up
 ([clean up checkouts](shared/ORCHESTRA.md#clean-up-checkouts)); the session review and
-startup prune both roots with `.orchestra/shared/scripts/prune-worktrees.sh`, dry run
+startup prune both ext4 roots and every existing platform-created `.claude/worktrees/`
+root inside a project checkout with `.orchestra/shared/scripts/prune-worktrees.sh`
+(pass all roots as arguments), dry run
 first, `--apply` only while no worker is active, and
 `--archive ~/.local/state/orkester-archive` for unproven work (outside all checkouts).
 The primary clones `~/lunden-3d-apartment` and `~/kvarteret-lunden` and the `/mnt/c`
@@ -358,9 +360,24 @@ The conductor runs this loop in every `/orkester` queue session:
 
 ## Shared version and maintenance
 
-Shared release: **v0.14.3**, commit **524cfb22db1cea96bf11028c0207348567fb61da**. Imported with
-`git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git 524cfb22db1cea96bf11028c0207348567fb61da --squash`
-in [original #1955](https://github.com/solwation/lunden-3d-apartment/issues/1955).
+Shared release: **v0.14.4**, commit **91156fc91cdb0e065821f27baf1cd15458a5aadf**. Imported with
+`git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git 91156fc91cdb0e065821f27baf1cd15458a5aadf --squash`
+in [original #1993](https://github.com/solwation/lunden-3d-apartment/issues/1993).
+The complete [v0.14.3..v0.14.4 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/524cfb22db1cea96bf11028c0207348567fb61da...91156fc91cdb0e065821f27baf1cd15458a5aadf)
+was reviewed: platform-created checkout directories inside a project must also be
+ignored and included among the prune roots (#80); install examples and the Pages site
+reflect this. This host already ignores `.claude/worktrees/`; the cleanup rule above
+now explicitly includes every existing such root, alongside the ext4 roots. Manual
+checkouts stay on ext4 and platform-created checkouts stay where the platform puts them.
+No changes to priorities, ownership, queue order, timers, publication or issue migration.
+This is documentation-only, with no meaningful result image or player changelog.
+Public adoption is tracked in [public #286](https://github.com/solwation/kvarteret-lunden/issues/286).
+Stable releases and version tags were checked on 2026-11-16; the exact tag and
+release target both resolve to the imported commit.
+
+The previous v0.14.3 import (`524cfb22db1cea96bf11028c0207348567fb61da`) remains recorded
+in [original #1955](https://github.com/solwation/lunden-3d-apartment/issues/1955) and
+[public #281](https://github.com/solwation/kvarteret-lunden/issues/281).
 The complete [v0.14.1..v0.14.3 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/412b663a134cd0198f6ca992f677b34de136cf1b...524cfb22db1cea96bf11028c0207348567fb61da)
 was reviewed: `scripts/prune-worktrees.sh` now treats a one-digit issue number ending a
 branch name as an issue reference (#73) and deletes the branch of an integrated worktree
