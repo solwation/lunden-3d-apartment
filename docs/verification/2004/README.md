@@ -87,12 +87,14 @@ Slutlig browser: Chrome 156.0.8078.4 / SwiftShader, 16/16 kontroller gröna;
 startstödets drift var <1e-15 m i båda konsumenterna. Varm kostnad före
 16,2–17,4 µs och efter 21,3–29,3 µs per Ghost.animate, fyra batcher om 5 000.
 Kostnaden ligger under den lokala 100 µs-budgeten; värdlast påverkar tiderna.
-Alla sex slutliga Node-kontrakt passerade (fem rörelse-/kontinuitetsfall och
-ett explicitpose-guardfall). De nio capturehasharna stämde mot disk efter
-browserns avslut. Därefter tillkom en enda guard: root-carry får bara gälla
-ordinary(key), aldrig explicit gym/cykel/luft. Den har riktat Node-bevis och
-kördes inte i någon ny browser. `final-source.json` innehåller både originalets
-capturehashar och färdig kods exakta hashvärden med denna skillnad redovisad. Hela diffen och samtliga fem slutbilder
+Alla sju riktade Node-kontrakt passerade (fem rörelse-/kontinuitetsfall,
+ett explicitpose-guardfall och ett återstarts-/fotstegsräknarfall). Den ändrade
+räknaren verifierades även med den berörda gait/IK-svitens åtta Node-prov: totalt 15/15 gröna. De nio capturehasharna stämde mot disk efter
+browserns avslut. Därefter tillkom två avgränsade rättningar: root-carry får bara gälla
+ordinary(key), aldrig explicit gym/cykel/luft; återstartens fasbyte synkar en intern
+stegbaslinje utan att öka footfalls eller skapa ett fotstegsljud. Båda har riktat
+Node-bevis och kördes inte i någon ny browser. De ändrar ingen fångad rörelsebana. `final-source.json` innehåller både originalets
+capturehashar och färdig kods exakta hashvärden med dessa två skillnader redovisade. Hela diffen och samtliga fem slutbilder
 är visuellt granskade; rörelsen bedöms med klippet och tidsdata tillsammans.
 
 Efter segmentgranskning hittades att Ghost.draw interpolerade mot sittrooten

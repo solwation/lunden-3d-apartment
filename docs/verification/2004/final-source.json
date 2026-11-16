@@ -1,6 +1,6 @@
 {
   "source": {
-    "src/avatar.js": "56d5ee761db87be20a186e01f1f5cdd0928c72f6f53bb96de6253462f9e80dc4",
+    "src/avatar.js": "086b457346172461c86111b0435f2690bcdb5c00cede7a917b7faa957c6479d7",
     "src/olof.js": "31eaf669d02db32fbf0f4f25288488583b97cbace3da5b798bb1e7e557ea053e",
     "src/ghosts.js": "1c1a491fb98914b25ed9c3fb0c845aa6675b04cefe0797a80569699a0fd1ed31",
     "src/avatarmotion.js": "60355d9f6138e78d22ccbf1883bacb83d0cde0ffd3b30e2a72ee28c0bf5356ea",
@@ -27,11 +27,17 @@
       "change": "carry branch additionally requires ordinary(key); explicit interaction poses bypass it",
       "check": "tools/avatarmotiontest.mjs: ordinary root carry cannot take authority from an explicit pose",
       "browserRerun": false
+    },
+    {
+      "file": "src/avatar.js",
+      "change": "separate phase-step baseline from cumulative footfalls; rephase syncs baseline without a landing or counter increment",
+      "check": "tools/avatarmotiontest.mjs: restart rephase does not report a landing or increment the audible footfall counter; tools/avatargaittest.mjs 8/8",
+      "browserRerun": false
     }
   ],
   "captureHeadNote": "combined.json revision c370d766 is base HEAD with working-tree corrections; capturedSource SHA256 values bind actual capture, not that HEAD string.",
   "verificationSources": {
-    "tools/avatarmotiontest.mjs": "5259e347dd2e201fd17fe6f9c7f7ae6e721a8709cfdc24216e851fb48766946b",
+    "tools/avatarmotiontest.mjs": "25fcd9a75e6fabc0248aa186c8baa293397f4041967a55ba98de77d8241f6477",
     "tools/avatarmotionbrowser.cjs": "022f26a349ef56d0c56f2643bf2475876f82d0f73bf71b075b0176a3ecc97a77",
     "tools/avatarmotionverify.cjs": "e1d9b8d63f2092ee38a683afca5919f2d04b0d238fd1234254e947d41a313af9",
     "tools/avatarmotioncapture.cjs": "07210244855beef03e347be44d0e76360a25a037c7d9173b302d3f39cb5221a8",
@@ -39,10 +45,13 @@
     "docs/verification/2004/recovery/final-capture.cjs": "e1d9b8d63f2092ee38a683afca5919f2d04b0d238fd1234254e947d41a313af9"
   },
   "checks": {
-    "nodeTests": 6,
+    "nodeTests": 15,
     "nodeExit": 0,
     "browserContracts": 16,
     "heldBrowserExit": 0,
-    "noBrowserAfterGuard": true
+    "noBrowserAfterGuard": true,
+    "focusedMotionTests": 7,
+    "sharedGaitTests": 8,
+    "noBrowserAfterMetadataCorrection": true
   }
 }

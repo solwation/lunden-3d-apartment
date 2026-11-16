@@ -1,46 +1,100 @@
 TAP version 13
-# Subtest: start/stop/turn/crouch and teleport at dt=0.016666666666666666
-ok 1 - start/stop/turn/crouch and teleport at dt=0.016666666666666666
+# Subtest: forward gait: plausible cadence, bounded stance slip, no penetration, contact flags agree with the soles
+ok 1 - forward gait: plausible cadence, bounded stance slip, no penetration, contact flags agree with the soles
   ---
-  duration_ms: 150.839473
+  duration_ms: 218.956673
+  type: 'test'
+  ...
+# Subtest: walking and running differ and the stride grows with speed
+ok 2 - walking and running differ and the stride grows with speed
+  ---
+  duration_ms: 40.081657
+  type: 'test'
+  ...
+# Subtest: backward and sideways steps plant their feet too
+ok 3 - backward and sideways steps plant their feet too
+  ---
+  duration_ms: 145.163221
+  type: 'test'
+  ...
+# Subtest: side-steps (\#2006): planted feet at speed, the legs never pass through each other, no busier than the forward gait
+ok 4 - side-steps (\#2006): planted feet at speed, the legs never pass through each other, no busier than the forward gait
+  ---
+  duration_ms: 111.628626
+  type: 'test'
+  ...
+# Subtest: gaitInfo gives the contact phase: alternating feet, stance progress 0 … 1, a footfall at each touch-down
+ok 5 - gaitInfo gives the contact phase: alternating feet, stance progress 0 … 1, a footfall at each touch-down
+  ---
+  duration_ms: 73.430057
+  type: 'test'
+  ...
+# Subtest: standing, crouching and the other poses keep their old pose (no gait)
+ok 6 - standing, crouching and the other poses keep their old pose (no gait)
+  ---
+  duration_ms: 8.20445
+  type: 'test'
+  ...
+# Subtest: walking while crouched keeps the feet planted and the crouch hips
+ok 7 - walking while crouched keeps the feet planted and the crouch hips
+  ---
+  duration_ms: 54.933569
+  type: 'test'
+  ...
+# Subtest: explicit hand targets still win over the arm swing
+ok 8 - explicit hand targets still win over the arm swing
+  ---
+  duration_ms: 41.146852
+  type: 'test'
+  ...
+# Subtest: start/stop/turn/crouch and teleport at dt=0.016666666666666666
+ok 9 - start/stop/turn/crouch and teleport at dt=0.016666666666666666
+  ---
+  duration_ms: 173.888946
   type: 'test'
   ...
 # Subtest: start/stop/turn/crouch and teleport at dt=0.03333333333333333
-ok 2 - start/stop/turn/crouch and teleport at dt=0.03333333333333333
+ok 10 - start/stop/turn/crouch and teleport at dt=0.03333333333333333
   ---
-  duration_ms: 14.970418
+  duration_ms: 14.982509
   type: 'test'
   ...
 # Subtest: start/stop/turn/crouch and teleport at dt=0.008333333333333333,0.03333333333333333,0.016666666666666666,0.05
-ok 3 - start/stop/turn/crouch and teleport at dt=0.008333333333333333,0.03333333333333333,0.016666666666666666,0.05
+ok 11 - start/stop/turn/crouch and teleport at dt=0.008333333333333333,0.03333333333333333,0.016666666666666666,0.05
   ---
-  duration_ms: 14.140923
+  duration_ms: 14.374813
   type: 'test'
   ...
 # Subtest: seated transition lands on exact pose, hand target wins without easing, explicit lying bypasses
-ok 4 - seated transition lands on exact pose, hand target wins without easing, explicit lying bypasses
+ok 12 - seated transition lands on exact pose, hand target wins without easing, explicit lying bypasses
   ---
-  duration_ms: 81.933351
+  duration_ms: 87.50547
   type: 'test'
   ...
 # Subtest: a real seat-root change preserves the rendered body and feet before descending into the chair
-ok 5 - a real seat-root change preserves the rendered body and feet before descending into the chair
+ok 13 - a real seat-root change preserves the rendered body and feet before descending into the chair
   ---
-  duration_ms: 50.923421
+  duration_ms: 64.43251
   type: 'test'
   ...
 # Subtest: ordinary root carry cannot take authority from an explicit pose
-ok 6 - ordinary root carry cannot take authority from an explicit pose
+ok 14 - ordinary root carry cannot take authority from an explicit pose
   ---
-  duration_ms: 6.667563
+  duration_ms: 7.949052
   type: 'test'
   ...
-1..6
-# tests 6
+# Subtest: restart rephase does not report a landing or increment the audible footfall counter
+ok 15 - restart rephase does not report a landing or increment the audible footfall counter
+  ---
+  duration_ms: 57.247354
+  type: 'test'
+  ...
+1..15
+# tests 15
 # suites 0
-# pass 6
+# pass 15
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 800.943297
+# duration_ms 1145.701439

@@ -1558,8 +1558,10 @@ function walkGait(av, dt, speed, walking, dir, fx, fy, fz, c) {
     info.contact[i] = q < beta && g > 0.5;
   }
   const steps = Math.floor(cyc * 2);
-  if (walking && steps > (av.footfalls ?? 0)) { av.footfalls = steps; info.lastFoot = steps % 2; info.footfall = true; }
-  av.footfalls ??= steps;
+  const previousStep = av.gaitStep ?? steps;
+  if (walking && steps > previousStep) { av.footfalls = (av.footfalls ?? 0) + steps - previousStep; info.lastFoot = steps % 2; info.footfall = true; }
+  av.gaitStep = steps;
+  av.footfalls ??= 0;
   const dropW = G.hipDrop[0] * (1 + Math.cos(4 * Math.PI * p)) / 2, dropR = G.hipDrop[1] * (1 + Math.cos(4 * Math.PI * (p - beta / 2))) / 2;
   gt.hip = (dropW + (dropR - dropW) * r + G.runDip * r) * g * (1 - c);
   gt.sway = G.sway[0] + (G.sway[1] - G.sway[0]) * r;
@@ -1944,7 +1946,10 @@ export class Avatar {
     const rp = react ? reactionPose(react.kind, react.age, [HIP - 0.02, CR.hipForward * c]) : null;
     const fx = 0.11 + (F.x - 0.11) * c, fz = 0.02 + (F.z - 0.02) * c;
     const gaitSpeed = motionFrame && walking ? groundSpeed : speed;
-    if (motionFrame && walking && this.groundMotion && !this.groundMotion.moving) this.cycles = Math.ceil(this.cycles ?? 0) + Math.max(0, lerpTab(GAIT.speeds, GAIT.duty, gaitSpeed) - MOTION.startStance * Math.min(1, this.object.scale.z));
+    if (motionFrame && walking && this.groundMotion && !this.groundMotion.moving) {
+      this.cycles = Math.ceil(this.cycles ?? 0) + Math.max(0, lerpTab(GAIT.speeds, GAIT.duty, gaitSpeed) - MOTION.startStance * Math.min(1, this.object.scale.z));
+      this.gaitStep = Math.floor(this.cycles * 2); // rephasing is not a landing; keep the public footfall counter unchanged
+    }
     const gt = walkGait(this, dt, gaitSpeed, walking, gaitDir, fx, F.y, fz, c); // #2003: explicit stance / swing phases
     groundMotion(this, dt, gt, motionFrame, walking, groundEnabled && !am && !swim && !dance && !react && !kiss && c < MOTION.groundCrouch, fx, F.y, fz);
     const idle = groundEnabled && !walking && !am && !swim && !dance && !react && !kiss ? (1 - g) * (1 - c) : 0;

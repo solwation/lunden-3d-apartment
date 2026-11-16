@@ -61,3 +61,13 @@ test('ordinary root carry cannot take authority from an explicit pose',()=>{
  transitionPose(av,1/60,-1,{},[.1,0,0,0,1,1],true);
  assert.deepEqual(av.pendingPose.hands[0].at,[.6,1.2,.1]);assert.deepEqual(av.pendingPose.hip,[.7,.2]);av.dispose();
 });
+
+test('restart rephase does not report a landing or increment the audible footfall counter',()=>{
+ const av=new Avatar('rephase-counter'),frame=[0,0,0];av.object.rotation.y=0;
+ function step(speed,dt=1/120){frame[1]+=speed*dt;av.object.position.z=frame[1];av.update(dt,{speed,groundSpeed:speed,motionFrame:frame});}
+ for(let i=0;i<240;i++)step(1.6);for(let i=0;i<240;i++)step(0);
+ const count=av.footfalls,phase=av.cycles;step(1.6);
+ assert.ok(av.cycles>phase,'restart really rephases');assert.equal(av.gaitInfo.footfall,false);assert.equal(av.footfalls,count,'no extra sound counter change before the first swing');
+ let sawLift=false,landings=0;for(let i=0;i<180;i++){step(1.6);if(av.gaitInfo.swing.some(u=>u>=0))sawLift=true;if(av.gaitInfo.footfall){assert.ok(sawLift);landings++;}}
+ assert.ok(landings>=2);av.dispose();
+});
