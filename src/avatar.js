@@ -1366,11 +1366,11 @@ function walkGait(av, dt, speed, walking, dir, fx, fy, fz, c) {
   const heel = lerpTab([0, 1], G.heel, r) * ps, toeOff = lerpTab([0, 1], G.toeOff, r) * ps;
   const lift = (G.lift[0] + (G.lift[1] - G.lift[0]) * r) * Math.min(1, speed / 1.2) * (1 - 0.5 * c), peak = G.liftPeak[0] + (G.liftPeak[1] - G.liftPeak[0]) * r;
   const sh = G.shoe, m = -S * (1 - beta) * 0.6;
-  const lat = Math.min(Math.abs(dx) * half, (G.sideMax - G.sideWidth) / 4.8), kx = Math.abs(dx) * half > 1e-4 ? lat / (Math.abs(dx) * half) : 1; // the lateral travel (ankles up to 2.4 half apart) kept within sideMax
-  const fxe = Math.max(fx, (G.sideWidth + 2.4 * lat) / 2); // side-stepping: wide enough that the feet never come closer than sideWidth: the lead foot steps out, the trailing foot closes up
+  const ax = Math.abs(dx), reachX = (G.sideMax - G.sideWidth) / 2; // side-stepping (carioca): the feet share one narrow lane and cross, the swing foot passing in front of the planted one
+  const fxe = fx + (G.sideWidth / 2 - fx) * ax, lat = Math.min(ax * half, reachX), kx = ax * half > 1e-4 ? lat / (ax * half) : 1; // the lateral travel kept within the ankles' reach from the hips
   info.footfall = false;
   for (let i = 0; i < 2; i++) {
-    const q0 = p + 0.5 * i, q = q0 - Math.floor(q0), side = i ? -1 : 1;
+    const q0 = p + 0.5 * i, q = q0 - Math.floor(q0);
     let s, th, up = 0;
     if (q < beta) { // stance: the foot planted, under the body going back at ground speed
       const u = q / beta;
@@ -1388,7 +1388,7 @@ function walkGait(av, dt, speed, walking, dir, fx, fy, fz, c) {
     const dzFoot = th >= 0 ? sh.heel * cs - sh.sole * sn - sh.heel : -sh.toe * cs - sh.sole * sn + sh.toe; // the ankle rolls over the heel / toe: its shift along z
     const fy2 = Math.max(sh.sole * cs + sh.heel * sn, sh.sole * cs - sh.toe * sn) - sh.sole; // ... and how far it must rise to keep the sole on the ground
     const f = gt.feet[i];
-    f[0] = side * fxe + dx * kx * s * g; f[1] = fy + (fy2 + up) * g; f[2] = fz + (dz * s + dzFoot * (dz > 0 ? 1 : 0)) * g;
+    f[0] = (i ? -fxe : fxe) + dx * kx * s * g; f[1] = fy + (fy2 + up) * g; f[2] = fz + (dz * s + dzFoot * (dz > 0 ? 1 : 0) + (q >= beta ? G.sideCross * ax * Math.sin(Math.PI * (q - beta) / (1 - beta)) : 0)) * g;
     gt.pitch[i] = th * g; gt.arm[i] = dz * s * g;
     info.contact[i] = q < beta && g > 0.5;
   }

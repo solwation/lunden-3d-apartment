@@ -7474,8 +7474,9 @@ export const AVATAR_GAIT = {
   armMax: 0.36, // m the wrist swings at most
   armLift: 0.16, // m the forward-swinging hand rises when running (elbows bent)
   runLean: 0.12, // rad forward lean at a run
-  backShrink: 0.2, sideShrink: 0.2, // the stride shrinks by these shares going backwards / sideways (cadence rises to match)
-  sideMax: 0.85, // m the ankles are apart at most when side-stepping (*guess*): beyond it the lateral foot travel is scaled down, so a fast strafe slides its feet a little rather than doing the splits
+  backShrink: 0.2, sideShrink: 0.25, // the stride shrinks by these shares going backwards / sideways (cadence rises to match)
+  sideMax: 0.9, // m the ankles are apart at most when side-stepping (*guess*): beyond it the lateral foot travel is scaled down, so a fast strafe slides its feet a little rather than doing the splits
+  sideCross: 0.14, // m the swing foot passes in front of the planted one when a fast strafe crosses the feet (carioca; *guess*)
   sideWidth: 0.14, // m the ankles stay apart sideways at least when side-stepping (*guess*; standing 0.22): the lead foot steps out, the trailing foot closes up to this and never crosses
   dirEase: 10, // 1/s: how fast the stride direction follows the direction of travel
   reach: 0.995, // share of the leg's length the hips keep the stance foot within (the knee stays a little bent)
