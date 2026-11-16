@@ -317,6 +317,29 @@ improvement. See [source-bound checks and complete figure/app views](../verifica
 Publication of `models/` is tracked separately by #1913; local loading does not
 establish deployed asset availability. This personal/gameplay feature is original-only.
 
+## Spegelns avatarval (#1994)
+
+`customizer.js` grupperar de befintliga valen i Kropp, Hår, Ansikte, Kläder och
+Tillbehör. En kategori visas åt gången; tillbehör har märkta vanliga vallistor.
+Hårlängden ligger vid frisyren. Vald kategori kan bytas med piltangenter samt
+Home/End. Klädernas ärmval visas när vald tröjmodell tillåter dem; värdet bevaras.
+Alla utseendefält, koder, Slumpa, Återställ och spelarens sparande finns kvar.
+
+`avatarpreview.js` laddas först när dialogen öppnas och ritar den riktiga `Avatar`
+med samma geometri, material, huvudform och proportioner som spegelbilden.
+Hela/Närbild och vridreglaget gör små detaljer och hårets sidor/baksida synliga.
+Hår/Ansikte väljer närbild automatiskt; övriga kategorier visar hela kroppen.
+En egen 220×310 WebGL-yta med DPR högst 1,5 kopieras till dialogens 2D-canvas.
+Den ritas bara vid ändringar, högst en gång per bildruta. Stängning frigör avataren,
+renderaren och dess kontext. Inga ljus eller renderinställningar i världen ändras.
+Porträtten i menyer/topplistor använder fortsatt den befintliga 2D-hjälparen.
+
+`tools/avatarcustomizertest.mjs` kontrollerar koder och bakåtkompatibilitet.
+`tools/avatarcustomizer1994browser.cjs` ersätter den gamla handskrivna DOM-mocken
+med produktens riktiga HTML, huvudappens spegelval och riktiga bildpunkter.
+Se [kontroller, före-/resultatbilder och begränsningar](../verification/1994/README.md).
+Detta är personligt avatarinnehåll/gameplay och förs inte till den publika versionen.
+
 ## Module and test map
 
 ```text

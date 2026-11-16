@@ -675,37 +675,60 @@
     .customizer-footer .btn-secondary:hover { background: rgba(255,255,255,0.2); }
     .customizer-footer .btn-primary { background: #2f80ed; color: #fff; min-width: 90px; }
     .customizer-footer .btn-primary:hover { background: #2570d4; }
-    @media (max-width: 580px) {
-      .customizer-body { flex-direction: column; align-items: center; }
-      #avatar-preview-canvas { width: 150px; height: 233px; }
-    }
-    /* #1141: phones (low or narrow screens) get a full-screen editor inside the safe area: a one-line header with a
-       smaller ✕, a compact footer, and a body where only the choices scroll so new controls (#1140) just add sections. */
+    /* #1994: category tabs stay visible; only the active category scrolls. */
+    .customizer-card.dialog-card { width: min(760px, calc(100vw - 24px)); padding-top: 0; }
+    .customizer-body { overflow: hidden; align-items: stretch; }
+    .customizer-controls { overflow-y: auto; overscroll-behavior: contain; padding: 4px; }
+    .customizer-controls [data-panel] { display: flex; flex-direction: column; gap: 18px; }
+    .customizer-controls [data-panel][hidden], .customizer-section [hidden] { display: none; }
+    .customizer-preview { width: 220px; position: static; }
+    #avatar-preview-canvas { width: 220px; height: 310px; }
+    .customizer-tabs { display: flex; flex-shrink: 0; gap: 4px; padding: 8px 16px; border-bottom: 1px solid #ffffff1a; }
+    .customizer-tabs button, .customizer-preview-views button { min-height: 44px; border: 0; border-radius: 8px; padding: 6px 12px; background: #ffffff12; color: #dbe6f0; cursor: pointer; font: 600 14px system-ui; touch-action: manipulation; }
+    .customizer-tabs button[aria-selected=true], .customizer-preview-views button[aria-pressed=true] { background: #2f80ed; color: white; }
+    .customizer-tabs button { flex: 1; }
+    .customizer-preview-views { display: flex; gap: 4px; margin-top: 8px; }
+    .customizer-turn { display: flex; align-items: center; gap: 8px; font: 13px system-ui; width: 100%; margin-top: 8px; }
+    .customizer-turn input { min-width: 0; width: 100%; min-height: 32px; accent-color: #3894e6; }
+    #avatar-preview-status { max-width: 220px; font: 12px system-ui; color: #b8cde0; }
+    .customizer-select { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 8px; align-items: center; margin: 6px 0; font: 13px system-ui; }
+    .customizer-select select { min-width: 0; width: 100%; min-height: 44px; background: #263747; color: white; border: 1px solid #7f99b0; border-radius: 6px; font: 14px system-ui; padding: 6px; }
+    .customizer-hint { font: 12px/1.4 system-ui; color: #b8cde0; margin: 4px 0 0; }
+    .customizer-section .swatches button { width: 36px; height: 36px; }
+    .customizer-section .btn-group button { min-height: 38px; }
+    .customizer-footer button { min-height: 44px; }
+    #avatar-customizer :focus-visible { outline: 3px solid #90cbff; outline-offset: 2px; }
     @media (max-height: 500px), (max-width: 600px) {
       #avatar-customizer { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); place-items: stretch; }
-      body #avatar-customizer .customizer-card.dialog-card { width: 100%; height: 100%; max-height: none; padding-top: 0; border-radius: 0; box-shadow: none; overflow: hidden; }
-      .customizer-header { align-items: center; min-height: 48px; box-sizing: border-box; padding: 2px 56px 2px 16px; }
-      .customizer-header > div { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
-      .customizer-header h2 { font-size: 17px; white-space: nowrap; }
-      .customizer-sub { margin-top: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-      body #avatar-customizer .customizer-close.dialog-close { top: 2px; right: 6px; width: 44px; height: 44px; min-width: 44px; min-height: 44px; font-size: 22px; }
-      .customizer-body { gap: 12px; padding: 8px 16px; overflow: hidden; }
-      .customizer-controls { overflow-y: auto; min-height: 0; overscroll-behavior: contain; padding: 5px; }
-      .customizer-footer { padding: 6px 16px; }
-      .customizer-footer button { min-height: 44px; padding: 0 18px; }
-      #avatar-preview-canvas { width: auto; aspect-ratio: 180 / 280; }
-    }
-    @media (max-height: 500px) and (orientation: landscape) {
-      .customizer-body { flex-direction: row; align-items: stretch; }
-      .customizer-preview { justify-content: center; }
-      #avatar-preview-canvas { height: min(280px, calc(100dvh - 120px - env(safe-area-inset-top) - env(safe-area-inset-bottom))); }
-      .customizer-controls { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); align-content: start; gap: 10px 16px; }
+      body #avatar-customizer .customizer-card.dialog-card { width: 100%; height: 100%; max-height: none; padding-top: 0; border-radius: 0; }
+      .customizer-header { padding: 8px 54px 8px 12px; min-height: 48px; }
+      .customizer-header h2 { font-size: 17px; }
+      .customizer-sub { font-size: 11px; }
+      body #avatar-customizer .customizer-close.dialog-close { top: 4px; right: 4px; width: 44px; height: 44px; }
+      .customizer-tabs { padding: 4px 8px; gap: 2px; }
+      .customizer-tabs button { font-size: 12px; padding: 4px 5px; }
+      .customizer-body { gap: 12px; padding: 8px 12px; }
+      .customizer-preview { width: 130px; flex-shrink: 0; }
+      #avatar-preview-canvas { width: 130px; height: 183px; }
+      .customizer-preview-views button { font-size: 12px; padding: 4px 8px; }
+      .customizer-footer { padding: 6px 12px; }
+      .customizer-footer button { padding: 6px 12px; font-size: 14px; }
+      .customizer-controls { flex: 1; min-height: 0; }
+      .customizer-select { grid-template-columns: 1fr; gap: 2px; }
     }
     @media (max-width: 600px) and (orientation: portrait) {
-      .customizer-body { flex-direction: column; align-items: stretch; }
-      .customizer-preview { align-items: center; }
-      #avatar-preview-canvas { height: min(200px, 26dvh); }
-      .customizer-controls { flex: 1; }
+      .customizer-body { flex-direction: column; }
+      .customizer-preview { display: grid; width: 100%; grid-template-columns: auto 1fr; column-gap: 14px; align-items: center; }
+      #avatar-preview-canvas { grid-row: 1 / 4; height: min(190px, 25dvh); width: auto; aspect-ratio: 220 / 310; }
+      .customizer-preview-views { margin: 0; }
+      .customizer-turn { margin: 0; }
+      .customizer-controls [data-panel] { gap: 14px; }
+    }
+    @media (max-height: 500px) and (orientation: landscape) {
+      .customizer-preview { width: 130px; }
+      #avatar-preview-canvas { height: min(120px, 32dvh); width: auto; aspect-ratio: 220 / 310; }
+      .customizer-preview-views { margin-top: 2px; }
+      .customizer-turn { margin-top: 0; }
     }
     #terminal { position: fixed; inset: 0; z-index: 20; background: #0008; display: grid; place-items: center; }
     #terminal[hidden], #rearrange-help[hidden] { display: none; }
@@ -1465,13 +1488,19 @@
       <div class="customizer-header">
         <div>
           <h2 id="avatar-customizer-title">Anpassa avataren</h2>
-          <small class="customizer-sub">Byt utseende vid spegeln</small>
+          <small class="customizer-sub">Välj en del och se ändringen direkt</small>
         </div>
         <button id="avatar-close-btn" class="customizer-close dialog-close" aria-label="Stäng">✕</button>
       </div>
       <div class="customizer-body">
         <div class="customizer-preview">
-          <canvas id="avatar-preview-canvas" width="180" height="280"></canvas>
+          <canvas id="avatar-preview-canvas" width="220" height="310" role="img" aria-label="Din avatar med aktuella val"></canvas>
+          <div class="customizer-preview-views" aria-label="Förhandsvisning">
+            <button type="button" data-preview-view="body" aria-pressed="true">Hela</button>
+            <button type="button" data-preview-view="face" aria-pressed="false">Närbild</button>
+          </div>
+          <label class="customizer-turn">Vrid <input id="avatar-turn" type="range" min="-180" max="180" value="0" aria-label="Vrid avataren"></label>
+          <small id="avatar-preview-status" role="status"></small>
         </div>
         <div class="customizer-controls">
           <section class="customizer-section">

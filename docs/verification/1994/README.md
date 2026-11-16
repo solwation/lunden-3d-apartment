@@ -50,8 +50,9 @@ Personligt avatarinnehåll/gameplay: ingen tillämplig publik överföring.
 
 ## Bilder
 
-- `before/desktop.png`, `before/hair.png`: gamla knapplistan och 2D-miniatyren,
-  tillgängliga tills root har publicerat beständiga bildlänkar och löst ärendet.
+- Gamla knapplistan och 2D-miniatyren finns kvar via de permanenta bildlänkarna
+  på ärendet, pinnade till bildrevision `2f884330`. Förebilderna är borttagna ur
+  det aktuella trädet enligt bildpolicyn.
 - [Kropp](desktop-body.png), [kläder](desktop-clothes.png),
   [tillbehör](desktop-accessories.png): separata lättare kategorier.
 - [Kortaste långa håret](hair-short.png), [längsta långa håret](hair-long.png):
@@ -59,5 +60,6 @@ Personligt avatarinnehåll/gameplay: ingen tillämplig publik överföring.
 - [Stående pekläge](touch-portrait.png), [liggande pekläge](touch-landscape.png):
   kvarvarande förhandsvisning, kategorier och Klar.
 
-Root ansvarar för slutlig integration/publicering, nytt changelog-id,
-inbäddade bilder på ärendet och stängning. Före-bilderna tas bort först därefter.
+Integrationsägaren granskade hela ändringen och publicerade inbäddade resultat-
+och förebilder på ärendet före stängande kodpush. Changelog-id väljs efter sista
+ombasering; berörda UI-/previewkällor är oförändrade sedan verifieringen.

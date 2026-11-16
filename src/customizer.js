@@ -19,7 +19,10 @@ export function mirrorTarget(object, name, level = 0) {
 let customizerEl = null;
 let previewCanvas = null;
 let currentLook = null;
-let defaultLook = null;
+let preview = null;
+let previewLoading = null;
+let previewFrame = null;
+let previewCloseup = false;
 let isOpen = false;
 let callbacks = {
   getLook: null,
@@ -518,6 +521,7 @@ function updateActiveSwatches() {
     if (input) input.value = String(Number.isInteger(currentLook[name]) ? currentLook[name] : AVATAR_SHAPE.mid);
   }
   for (const g of groups) {
+    for (const select of customizerEl.querySelectorAll(`select[data-type="${g.type}"]`)) select.value = String(g.value);
     const btns = customizerEl.querySelectorAll(`button[data-type="${g.type}"]`);
     for (const b of btns) {
       const idx = Number(b.dataset.index);
@@ -550,11 +554,123 @@ function updateBuildSlider() {
 /** Refresh the preview canvas and apply current look live. */
 function applyAndRefresh() {
   if (!currentLook) return;
-  if (previewCanvas) drawAvatarPreview(previewCanvas, currentLook);
+  refreshPreview();
   updateActiveSwatches();
   updateHeightSlider();
   updateBuildSlider();
+  customizerEl.querySelector('[data-group="sleeves"]').hidden = Number(currentLook.cut) > 0;
   callbacks.setLook?.(currentLook);
+}
+
+/** Load the 3D renderer only for an open editor, coalescing slider input to one frame. */
+function refreshPreview() {
+  if (!isOpen) return;
+  if (!preview) {
+    if (previewLoading) return;
+    const status = customizerEl.querySelector('#avatar-preview-status');
+    status.textContent = 'Laddar förhandsvisning…';
+    previewLoading = import('./avatarpreview.js').then(({ AvatarPreview }) => {
+      if (!isOpen) return;
+      preview = new AvatarPreview(previewCanvas);
+      status.textContent = '';
+      refreshPreview();
+    }).catch(() => { status.textContent = 'Förhandsvisningen kunde inte visas. Stäng och försök igen.'; })
+      .finally(() => { previewLoading = null; });
+    return;
+  }
+  cancelAnimationFrame(previewFrame);
+  previewFrame = requestAnimationFrame(() => {
+    if (!isOpen || !preview) return;
+    preview.draw(currentLook, { closeup: previewCloseup, yaw: Number(customizerEl.querySelector('#avatar-turn').value) * Math.PI / 180 });
+  });
+}
+
+/** Keep every existing control, but expose one task at a time. */
+function organizeControls() {
+  const controls = customizerEl.querySelector('.customizer-controls');
+  if (controls.querySelector('[data-panel]')) return;
+  const sections = [...controls.children];
+  const categories = [['body', 'Kropp'], ['hair', 'Hår'], ['face', 'Ansikte'], ['clothes', 'Kläder'], ['accessories', 'Tillbehör']];
+  const tabs = document.createElement('div');
+  tabs.className = 'customizer-tabs';
+  tabs.setAttribute('role', 'tablist');
+  tabs.setAttribute('aria-label', 'Utseende');
+  customizerEl.querySelector('.customizer-body').before(tabs);
+  const panels = new Map();
+  const selectCategory = (key) => {
+    for (const tab of tabs.children) {
+      const active = tab.dataset.category === key;
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+    }
+    for (const [id, panel] of panels) panel.hidden = id !== key;
+    controls.scrollTop = 0;
+    setCloseup(key === 'hair' || key === 'face');
+  };
+  for (const [key, title] of categories) {
+    const tab = document.createElement('button');
+    tab.textContent = title; tab.dataset.category = key; tab.id = `avatar-tab-${key}`;
+    tab.setAttribute('role', 'tab'); tab.setAttribute('aria-controls', `avatar-panel-${key}`);
+    tab.addEventListener('click', () => selectCategory(key));
+    tabs.append(tab);
+    const panel = document.createElement('div');
+    panel.dataset.panel = key; panel.id = `avatar-panel-${key}`;
+    panel.setAttribute('role', 'tabpanel'); panel.setAttribute('aria-labelledby', tab.id);
+    controls.append(panel); panels.set(key, panel);
+  }
+  tabs.addEventListener('keydown', (e) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+    e.preventDefault();
+    const all = [...tabs.children], at = all.indexOf(document.activeElement);
+    const next = e.key === 'Home' ? 0 : e.key === 'End' ? all.length - 1 : (at + (e.key === 'ArrowRight' ? 1 : -1) + all.length) % all.length;
+    selectCategory(all[next].dataset.category); all[next].focus();
+  });
+  for (const section of sections) {
+    const type = section.querySelector('[data-type]')?.dataset.type;
+    const shape = section.querySelector('[data-shape]')?.dataset.shape;
+    const key = section.querySelector('#avatar-height, #avatar-build') || ['gender', 'skin'].includes(type) ? 'body'
+      : ['style', 'facial'].includes(type) || shape === 'hairLength' ? 'hair'
+      : ['top', 'pants', 'shoes', 'legs'].includes(type) ? 'clothes'
+      : section.hasAttribute('data-face-section') ? 'face' : 'accessories';
+    panels.get(key).append(section);
+  }
+  // Hårlängd belongs beside the hairstyle; glasses belong with the other accessories.
+  const hairSection = panels.get('hair').querySelector('[data-face-section]');
+  hairSection.querySelector('h3').textContent = 'Hårlängd';
+  const glasses = document.createElement('section'); glasses.className = 'customizer-section';
+  const h = document.createElement('h3'); h.textContent = 'Glasögon'; glasses.append(h, hairSection.querySelector('.btn-group'));
+  panels.get('accessories').prepend(glasses);
+  panels.get('hair').querySelector('h3').textContent = 'Frisyr och färg';
+  const hint = document.createElement('p'); hint.className = 'customizer-hint';
+  hint.textContent = 'Vrid avataren för att se håret från sidan och bakifrån.';
+  hairSection.append(hint);
+  // Compact, labelled native selects replace long accessory button lists, retaining every value.
+  for (const section of panels.get('accessories').children) {
+    const types = new Set([...section.querySelectorAll('button[data-type]')].map(b => b.dataset.type));
+    for (const type of types) {
+      const buttons = [...section.querySelectorAll(`button[data-type="${type}"]`)];
+      const label = document.createElement('label'); label.className = 'customizer-select';
+      const name = { metal: 'Metall', ring: 'Finger', bracelet: 'Armband', watch: 'Klocka' }[type] || section.querySelector('h3').textContent;
+      const span = document.createElement('span'); span.textContent = name;
+      const select = document.createElement('select'); select.dataset.type = type;
+      for (const b of buttons) {
+        const option = document.createElement('option'); option.value = b.dataset.index;
+        option.textContent = b.title || b.textContent; select.append(option);
+      }
+      select.addEventListener('change', () => { currentLook[type] = Number(select.value); applyAndRefresh(); });
+      label.append(span, select); section.append(label);
+    }
+    for (const child of [...section.children]) if (!child.matches('h3, .customizer-select')) child.remove();
+  }
+  customizerEl.querySelectorAll('[data-preview-view]').forEach(b => b.addEventListener('click', () => setCloseup(b.dataset.previewView === 'face')));
+  customizerEl.querySelector('#avatar-turn').addEventListener('input', refreshPreview);
+  selectCategory('body');
+}
+
+function setCloseup(value) {
+  previewCloseup = value;
+  customizerEl.querySelectorAll('[data-preview-view]').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.previewView === 'face') === value)));
+  refreshPreview();
 }
 
 /** Open the customizer dialog. */
@@ -565,14 +681,13 @@ export function openAvatarCustomizer() {
 
   const look = callbacks.getLook?.() ?? avatarLook('anon');
   currentLook = { ...look };
-  defaultLook = callbacks.getDefaultLook?.() ?? avatarLook('anon');
 
   customizerEl.hidden = false;
   document.body?.classList?.add('avatar-customizer-open');
   applyAndRefresh();
   callbacks.onOpen?.();
 
-  const firstBtn = customizerEl.querySelector('button');
+  const firstBtn = customizerEl.querySelector('[data-category][aria-selected="true"]');
   firstBtn?.focus();
 }
 
@@ -581,6 +696,9 @@ export function closeAvatarCustomizer(byKey = 'close') {
   if (!isOpen) return;
   isOpen = false;
   if (customizerEl) customizerEl.hidden = true;
+  cancelAnimationFrame(previewFrame);
+  preview?.dispose();
+  preview = null;
   document.body?.classList?.remove('avatar-customizer-open');
 
   if (currentLook) {
@@ -608,6 +726,7 @@ function initCustomizerDOM() {
   addNecklaceSection(customizerEl.querySelector('.customizer-controls')); // #1323
   addRingSection(customizerEl.querySelector('.customizer-controls')); // #1324
   addWristSection(customizerEl.querySelector('.customizer-controls')); // #1334
+  organizeControls();
 
   // Handle swatches and style clicks
   customizerEl.addEventListener('click', (e) => {
