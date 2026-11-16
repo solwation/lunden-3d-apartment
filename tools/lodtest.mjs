@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { lodFade, lodMembership, ditherThreshold, ditherKeeps, packOrder, InstanceLod } from '../src/lod.js';
+import { lodFade, lodMembership, ditherThreshold, ditherKeeps, packOrder, InstanceLod, patchDitherLod, lodRange, lodDepthMaterial, onLodUpdate, updateInstanceLods } from '../src/lod.js';
 import { SEASON } from '../src/config.js';
 import { registerTrees, applySeason } from '../src/seasons.js';
 
@@ -92,4 +92,22 @@ test('InstanceLod: an emptied mesh is culled by its sphere; a view-limited far l
   assert.equal(far.count, 7);
   lod.update(new T.Vector3(1000, 0, 0), true); // everything far: the near mesh is empty and culled
   assert.equal(near.count, 0); assert.ok(near.boundingSphere.center.y < -1e5);
+});
+
+test('centre modes (#1966, #1967): a uniform, each mesh\'s origin or a per-vertex attribute; distinct programs; updaters run', () => {
+  const compile = (m) => { const s = { uniforms: {}, vertexShader: '#include <common>\n#include <begin_vertex>', fragmentShader: '#include <common>\n#include <clipping_planes_fragment>' }; m.onBeforeCompile(s, {}); return s; };
+  const range = lodRange(10, 20), centre = { value: new T.Vector3(1, 2, 3) }, keys = new Set();
+  for (const [c, define] of [[null, null], [centre, 'LOD_CENTRE'], ['origin', 'LOD_ORIGIN'], ['attribute', 'LOD_CENTRE_ATTRIBUTE']]) {
+    for (const m of [patchDitherLod(new T.MeshStandardMaterial(), { range, centre: c }), lodDepthMaterial({ far: true, range, centre: c })]) {
+      const defs = Object.keys(m.defines ?? {}).filter((k) => k.startsWith('LOD_'));
+      assert.deepEqual(defs, define ? [define] : []);
+      const s = compile(m); assert.equal(s.uniforms.uLodCentre.value === centre.value, c === centre); assert.equal(s.uniforms.uLodRange, range);
+      assert.match(s.vertexShader, /attribute vec3 lodCentre;/); // (declared only under LOD_CENTRE_ATTRIBUTE by the preprocessor)
+      keys.add(m.customProgramCacheKey() + m.name);
+    }
+  }
+  assert.equal(keys.size, 8);
+  const seen = []; onLodUpdate((cam, view) => seen.push([cam.x, !!view.frustum]));
+  const camera = new T.PerspectiveCamera(); camera.position.set(4, 0, 0); camera.updateMatrixWorld(true); updateInstanceLods(camera);
+  assert.deepEqual(seen.at(-1), [4, true]);
 });

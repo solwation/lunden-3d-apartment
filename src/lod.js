@@ -26,6 +26,11 @@ import { rememberFragmentCompile } from './vertexcompile.js';
 // `seeds` (optional) is a parallel array that is reordered together with the instances (seasons.js indexes its seeds by
 // instance index); `tint` (THREE.Color) makes the far copy's instance colour a constant instead of the source's colour.
 // After anything rewrites the near buffers (seasons.js does), call `lod.sync()`.
+// Things that are not two instanced meshes pass `centre` to say where a level measures its distance from: a uniform
+// `{ value: Vector3 }` (one mesh, #1966 far players), 'origin' (each plain mesh from its own world origin; the same material
+// drawn instanced still fades per instance) or 'attribute' (a merged mesh of many things, per vertex the local `lodCentre` of
+// its thing). The entrance plants use the last two (#1967, src/entranceplants.js) and switch their meshes from
+// `onLodUpdate(fn)`, which runs with the camera position and view frustum every `updateInstanceLods`.
 
 /** Fade 0..1 for a distance: 0 up to `start`, 1 from `end`, linear between. */
 export function lodFade(d, start, end) { return d <= start ? 0 : d >= end ? 1 : (d - start) / (end - start); }
@@ -58,13 +63,17 @@ export const lodCamera = { value: new THREE.Vector3() };
 /** A shared fade range uniform for the materials of one kind of thing. */
 export const lodRange = (start, end) => ({ value: new THREE.Vector2(start, end) });
 
-const VERT_DECL = 'uniform vec3 uLodCam;\nuniform vec3 uLodCentre;\nuniform vec2 uLodRange;\nvarying float vLodFade;\n';
+const VERT_DECL = 'uniform vec3 uLodCam;\nuniform vec3 uLodCentre;\nuniform vec2 uLodRange;\nvarying float vLodFade;\n#ifdef LOD_CENTRE_ATTRIBUTE\nattribute vec3 lodCentre;\n#endif\n';
 const VERT_BODY = `
 #ifdef USE_INSTANCING
   vec3 lodCentre = (modelMatrix * vec4(instanceMatrix[3].xyz, 1.0)).xyz;
   vLodFade = clamp((distance(lodCentre, uLodCam) - uLodRange.x) / max(uLodRange.y - uLodRange.x, 0.001), 0.0, 1.0);
 #elif defined(LOD_CENTRE)
   vLodFade = clamp((distance(uLodCentre, uLodCam) - uLodRange.x) / max(uLodRange.y - uLodRange.x, 0.001), 0.0, 1.0);
+#elif defined(LOD_CENTRE_ATTRIBUTE)
+  vLodFade = clamp((distance((modelMatrix * vec4(lodCentre, 1.0)).xyz, uLodCam) - uLodRange.x) / max(uLodRange.y - uLodRange.x, 0.001), 0.0, 1.0);
+#elif defined(LOD_ORIGIN)
+  vLodFade = clamp((distance(modelMatrix[3].xyz, uLodCam) - uLodRange.x) / max(uLodRange.y - uLodRange.x, 0.001), 0.0, 1.0);
 #else
   vLodFade = 0.0;
 #endif
@@ -93,7 +102,7 @@ const FRAG_BODY = `
 /** The shader edit itself (vertex: per-instance fade; fragment: the dither discard). Vertex positions are not touched. */
 function patchShader(shader, far, range, centre) {
   shader.uniforms.uLodCam = lodCamera;
-  shader.uniforms.uLodCentre = centre ?? NO_CENTRE;
+  shader.uniforms.uLodCentre = centre?.value ? centre : NO_CENTRE;
   shader.uniforms.uLodRange = range;
   shader.uniforms.uLodFar = { value: far ? 1 : 0 };
   shader.vertexShader = shader.vertexShader
@@ -106,16 +115,18 @@ function patchShader(shader, far, range, centre) {
 
 /**
  * Make `material` dither-fade by distance (call before it is first compiled). `far` false: the near level (drawn where the
- * pattern's threshold >= fade); true: the far level. Wraps any onBeforeCompile the material already has. Only instanced meshes
- * fade (a plain mesh counts as fade 0: near drawn, far not). The edit keeps vertex positions, so tightfrustum and the
+ * pattern's threshold >= fade); true: the far level. Wraps any onBeforeCompile the material already has. Without `centre` only
+ * instanced meshes fade (a plain mesh counts as fade 0: near drawn, far not); `centre`: a `{ value: Vector3 }` uniform (world),
+ * 'origin' or 'attribute' (see the header). The edit keeps vertex positions, so tightfrustum and the
  * site instance batch (which audit `hasNativeVertexCompile`) still treat the material as native.
  */
 export function patchDitherLod(material, { far = false, range, centre = null }) {
-  if (centre) (material.defines ??= {}).LOD_CENTRE = ''; // #1966: a single (skinned) mesh fades by the distance to `centre` ({ value: Vector3 }, world)
+  const mode = centre === 'origin' ? 'LOD_ORIGIN' : centre === 'attribute' ? 'LOD_CENTRE_ATTRIBUTE' : centre ? 'LOD_CENTRE' : null;
+  if (mode) (material.defines ??= {})[mode] = ''; // #1966: a single (skinned) mesh fades by the distance to `centre` ({ value: Vector3 }, world); #1967: by its origin / a vertex attribute
   const before = material.onBeforeCompile, key = material.customProgramCacheKey?.bind(material) ?? (() => '');
   const patched = function (shader, renderer) { before.call(this, shader, renderer); patchShader(shader, far, range, centre); };
   material.onBeforeCompile = patched;
-  material.customProgramCacheKey = () => `${key()}|dither-lod-v1${centre ? 'c' : ''}`;
+  material.customProgramCacheKey = () => `${key()}|dither-lod-v1${mode ? mode === 'LOD_CENTRE' ? 'c' : mode : ''}`;
   rememberFragmentCompile(patched, before); // the edit leaves vertex positions alone (audited here)
   return material;
 }
@@ -246,7 +257,11 @@ export function updateInstanceLods(camera) {
   view.frustum.setFromProjectionMatrix(_pv.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
   for (const s of sets) s.update(cam, false, view);
   for (const b of batches) b.update(cam);
+  for (const fn of updaters) fn(cam, view);
 }
+const updaters = [];
+/** Run `fn(cameraPosition, { frustum, dir })` every updateInstanceLods (things that switch their own meshes, #1967). */
+export function onLodUpdate(fn) { updaters.push(fn); return fn; }
 
 /**
  * #1969: two levels of ONE merged mesh (a batch of buildings): `near` (full detail) and `far` (a lighter geometry of the same

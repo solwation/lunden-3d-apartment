@@ -1652,6 +1652,19 @@ box; the zone is measured to the instance centre, so a trunk (foot) and its crow
 plantings, vines and the south woodland (already `far` lobes) are not LOD'd. `&nolod` disables the zone for A/B runs.
 [Evidence](../verification/1958/README.md).
 
+Entrance plants (#1967, desktop only, `ENTRANCE_PLANTS.lod`): from 14 m (camera to a plant's foot) each plant's pot, soil and
+swaying leaves dither-fade (`patchDitherLod(material, { centre: 'origin' })`: per plain mesh from its own world origin) into ONE
+still merged copy of all 20 plants (`entrance-plants-far`: the same triangles baked in place, vertex colours, one material,
+`centre: 'attribute'` = per vertex the plant's foot in `lodCentre`); beyond 18 m only that copy draws. Its index is rewritten to
+hold just the plants beyond `start - margin` when that set changes, and it is hidden while no far plant is in the frustum, so by
+the doors nothing changes. Shadows follow through depth materials with the same fade (the leaves' keeps the wind,
+`plantwind.js` leaves a wind depth material of its own in place). Switching runs from `onLodUpdate(fn)` in `updateInstanceLods`.
+Measured on desktop (`tools/entrancelodtest.cjs`, frame calls incl. shadow pass, off -> on): 4 m from a door 478 -> 478; 16 m
+(in the zone) 437 -> 429; 25 m 401 -> 369; 35 m 438 -> 413; along the facade 259 -> 243. Triangles rise by 2 – 7.5 k (the copy
+has the same triangles; in the zone both levels draw). Phones keep the plain meshes: their colour batch
+(`src/entranceplantbatch.js`) already draws the plants in 4 – 10 calls, and the copy saved only 3 – 5 calls at 25 – 35 m and
+cost one in the zone. `&nolod` disables it. Node test: `tools/entranceplantlodtest.mjs`. [Evidence](../verification/1967/README.md).
+
 Combat collision (#715) uses a capped conservative private occupancy grid, prepared incrementally with native-raycast fallback. [Actual-scene CPU update measurements and cold-build limitations](../validation/issue-715/README.md) document the confirmed desktop gain; these are not rendered-frame/FPS measurements or physical-phone validation.
 
 Cold-path diagnosis (#715): `combatWorldMetrics().lastPath` holds one copied record of the latest **completed** asynchronous obstacle query (completion order, not start order for concurrent callers). It records `result`, `reason` (`clear`, `blocked`, `deadline`, `cancelled`, `cache-invalidated`, `instance-mutated`, or `error`) and final `stage` (`prepare`, `cache`, `traversal`), plus elapsed time, active intervals between yields, total yielded wall time, the subset spent awaiting promoted cache entries, maximum active slice, promoted-cache count and deadline overrun. Read it with `const { combatWorldMetrics } = await import('./src/combatworld.js'); combatWorldMetrics().lastPath` on the game page after the shot resolves. Active intervals are wall-clock measurements, **not thread CPU or GPU time**; yielded time includes other tasks, cache construction and scheduling delays and does not isolate each cause. No scene objects, player identifiers, paths or history are retained or uploaded. A delayed deadline callback can overrun while the query is yielded; elapsed time alone does not prove one long synchronous raycast. The native 2 s deadline, scheduling and hit decisions are unchanged. See [new evidence and scope](../validation/issue-715/README.md#cold-path-diagnosis-2026-10-13).

@@ -5,7 +5,7 @@ Read [CLAUDE.md](../../CLAUDE.md) first for shared workflow rules. Paths in code
 Related: [furniture](furniture.md), [graphics](graphics.md), [environment](environment.md).
 
 Entrance wind bounds (#1460): after the final template compression,
-`entranceplants.js` invalidates the old windBounds marker and reuses `windShadow`.
+`entranceplants.js` invalidates the old windBounds marker and reuses `windShadow`. On desktop the entrance plants fade into one still merged copy beyond 14 – 18 m (#1967, `ENTRANCE_PLANTS.lod`; see [performance](performance.md#distance-lod-with-dithered-crossfade-1958)); their pot/soil/leaf materials are the entrance's own dither-patched clones of the shared planter materials, so the patio planters are untouched.
 All four foliage geometries regain the full local XZ shader-clamp margin
 `sqrt(2) * .06` metres, independent of compression; repeated setup is idempotent.
 Positions, attributes, seeds, programs, materials, physical footprints and proxy

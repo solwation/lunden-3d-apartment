@@ -42,7 +42,7 @@ export function windMaterial(source) {
 const depth=patch(new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking}));
 export function windShadow(mesh){
   const geo=mesh.geometry;if(!geo?.attributes.plantWind)return;
-  mesh.customDepthMaterial=depth;
+  if(!mesh.customDepthMaterial?.userData.plantWind)mesh.customDepthMaterial=depth; // (#1967: a wind depth material of its own stays)
   if(!geo.userData.windBounds){geo.computeBoundingSphere();geo.boundingSphere.radius+=Math.SQRT2*P.maxDisplacement;geo.userData.windBounds=true;}
 }
 

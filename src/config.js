@@ -1692,6 +1692,12 @@ export const ENTRANCE_PLANTS = {
     { plant: 'banana', pot: { r: .16, h: .32 }, foliageScale: [.48, .65, .48], color: 0xa36f51 },
     { plant: 'agave', pot: { r: .20, h: .35 }, foliageScale: [.64, .76, .64], color: 0xc4bda9 },
   ],
+  // #1967: beyond `end` m (camera to the plant's foot) a plant is drawn by the merged still copy of all the entrance plants
+  // (one draw call, vertex colours, no sway: PLANT_WIND moves a leaf 6 cm at most, ~3 px at 15 m) and from `start` m its own
+  // pot, soil and leaves fade into it with the dithered pixel fade of src/lod.js. `margin` m of slack round the zone for
+  // switching the meshes; `pad` m round a plant when asking whether a far one is in view; `roughness` of the copy's one
+  // material (the originals are 0.7 – 1). All *guesses* by eye; the 14 – 18 m zone follows the ~15 m named in #1967.
+  lod: { start: 14, end: 18, margin: 1, pad: 1.5, roughness: 0.85 },
 };
 
 // #605: furnished roof terraces on Hus L (src/terracedecor.js; decoration only, nothing to pick or sit on). EVERY item,
