@@ -1,0 +1,22 @@
+{
+  "pass": true,
+  "finalSources": {
+    "src/avatar.js": "9bb29d610cc8e489b5e44cf05e5487d4e890ce469d783f20b2e097bd01754824",
+    "src/config.js": "f53eab6c18fe8d02ae06626b8f20b84ad0eca3943f5a779239b089ced99e75d6",
+    "src/olof.js": "f223b1a3cafa734606f5c6d477f21490549846a6f6f979238de1ab890be11ac6",
+    "src/avatarpreview.js": "ed79d8f1a4a98783d1d30fb1996daacfb76227bb9d24a55f6360f9781fc6e216",
+    "tools/verify-avatar-head.html": "f3f71e21c5c69af864aea332f2a76cdc072d980a3609c01aa99fd00ac2349d1f"
+  },
+  "checkpoint": "result.json",
+  "completedBy": "follow-up.json",
+  "staticImageEquivalence": "pucker-reuse.json",
+  "initialFixtureFailure": "result.json speech sampled dt without advancing its performance clock; follow-up injects time into production mouthTarget. No production speech fix was needed.",
+  "costCheckpoint": "Before the final pucker-band weights; all 16 non-pucker attributes, shader, draw/texture counts are unchanged.",
+  "checks": [
+    "identical-input resource budget",
+    "mask/nose pixel invariant with bare-nose positive control",
+    "actual production AvatarPreview",
+    "corrected speech clock and final kiss pixels",
+    "non-pucker attribute parity"
+  ]
+}

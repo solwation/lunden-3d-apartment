@@ -66,7 +66,7 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
   add.last().rifleSkull = true;
   add.last().continuousHead = true;
   for (const s of [-1, 1]) { // ears
-    add(sphere(0.028, 8, 5).scale(0.55, 1, 0.72), 'skin', 'head', [s * 0.1, H - 0.005, 0], 0.94);
+    add(earSurface(s), 'skin', 'head', [s * 0.1, H - 0.005, 0], 0.97);
     facePart(P, FACE_PART.ear, [s * 0.1, H - 0.005, 0]);
   }
   addFace(add, sphere, P);
@@ -705,9 +705,11 @@ function hairParts(style) {
   // the scalp shell from the hairline (or `low`) up to `high` (90: the crown), with an extra `bump(a, s, i)` lift
   const shell = (az, low, high, rows, lift, shade, inward = false) => sheet(az.length, rows, true, (i, j) => {
     const a = az[i], e0 = low(a), s = j / rows;
-    return onSkull(a, e0 + (high(a) - e0) * s, lift(a, e0 + (high(a) - e0) * s, s, i));
+    const e = e0 + (high(a) - e0) * s;
+    const sweep = style === 0 ? HC.flow.sweep : style === 1 ? Math.sign(a) * 12 : style === 2 ? -8 : 0;
+    return onSkull(a + sweep * Math.sin(s * Math.PI), e, lift(a, e, s, i));
   }, (i, j) => shade(az[i], j / rows, i), inward);
-  const hairline = (a) => table(HC.hairline, a), feather = (s) => 0.25 + 0.75 * smooth(0, 0.4, s);
+  const hairline = (a) => table(HC.hairline, a) + HC.flow.edge * Math.sin(a * deg * 13) * (1 - smooth(45, 80, Math.abs(a))), feather = (s) => 0.25 + 0.75 * smooth(0, 0.4, s);
   const az = turn(HC.hairline, HC.step), crownTop = () => 90;
   if (style === 3) { // the beanie: body (fuller at the back), the cuff rolled over its lower edge, hair below it
     const brim = (a) => table(HC.beanie, a), bz = turn(HC.beanie, 10);
@@ -738,7 +740,8 @@ function hairParts(style) {
     const K = SURFACE.hair;
     const tousle = style === 0 ? 0.0045 * Math.sin(i * 1.9 + 0.4) * smooth(0.45, 0.9, s) + 0.004 * smooth(0.25, 0.7, s) * (1 - smooth(25, 55, Math.abs(a))) : 0;
     if (style >= 3) return tousle;
-    return tousle + K.wave * Math.sin(a * deg * K.frequency + s * K.flow) * Math.sin(s * Math.PI)
+    const groups = style < 3 ? (style === 1 ? HC.flow.longRidge : HC.flow.ridge) * (0.5 + 0.5 * Math.cos(a * deg * (style === 1 ? HC.flow.longGroups : HC.flow.groups) + s * (style === 2 ? 7 : -5))) * Math.sin(s * Math.PI) : 0;
+    return tousle + groups + K.wave * Math.sin(a * deg * K.frequency + s * K.flow) * Math.sin(s * Math.PI)
       - K.part[2] * Math.exp(-(((a - K.part[0]) / K.part[1]) ** 2)) * Math.sin(s * Math.PI);
   };
   out.push([shell(az, low, crownTop, HC.rows,
@@ -854,13 +857,17 @@ function longHair(az, top, onSkull, sheet, strand, thick, hit, smooth) { // az: 
   };
   const cols3 = az.map((a, i) => { // each column's points from the hem (j = 0) up to the top
     const rad = a * Math.PI / 180, p0 = onSkull(a, top(a), thick(a, top(a))), r0 = Math.hypot(p0[0], p0[2]);
-    const hem = L.hem[0] + (L.hem[1] - L.hem[0]) * smooth(L.from, 135, Math.abs(a)) + 0.01 * Math.sin(i * 1.7);
+    const hem = L.hem[0] + (L.hem[1] - L.hem[0]) * smooth(L.from, 135, Math.abs(a)) + 0.022 * Math.sin(rad * HAIR.flow.longGroups + 0.8) + 0.006 * Math.sin(rad * 11);
     const pts = [];
     let r = 0;
     for (let j = L.rows; j >= 0; j--) { // top down: the radius only grows
       const t = (1 - j / L.rows) ** 1.3, y = p0[1] + (hem - p0[1]) * t;
-      r = Math.max(r, r0, body(rad, y) + L.gap * smooth(0, 0.15, t)); // from the shell's edge along the skull to its widest, then hangs
-      pts[j] = [Math.sin(rad) * r, y, Math.cos(rad) * r, r];
+      const wave = L.wave * Math.sin(i * 1.7 + t * 5) * Math.sin(Math.PI * t);
+      r = Math.max(r, r0, body(rad, y) + L.gap * smooth(0, 0.15, t) + wave); // from the shell's edge along the skull to its widest, then hangs
+      const phase = rad * HAIR.flow.longGroups + t * 2;
+      const angle = rad + HAIR.flow.longSway * Math.PI / 180 * Math.sin(phase) * Math.sin(Math.PI * t);
+      const radius = Math.max(r + HAIR.flow.longRidge * (0.5 + 0.5 * Math.cos(phase)) * Math.sin(Math.PI * t), body(angle, y) + L.gap * smooth(0, 0.15, t));
+      pts[j] = [Math.sin(angle) * radius, y, Math.cos(angle) * radius, radius];
     }
     return pts;
   });
@@ -891,15 +898,22 @@ function bend(g, k) {
 }
 
 /** The same continuous forehead/cheek/socket surface used to seat the lid edges. */
-function headSculpt(v) {
+function headSculpt(v, jaw = false) {
   const F = SURFACE.face;
   const front = smoothstep(...F.front, v.z / Math.max(0.001, Math.hypot(v.x, v.z)));
+  if (jaw && front > 0 && v.y < FACE.jaw.at(-1)[0]) {
+    const rows = SURFACE.head, j = Math.max(1, rows.findIndex(r => r[0] >= v.y));
+    const a = rows[j - 1], b = rows[j], t = THREE.MathUtils.clamp((v.y - a[0]) / (b[0] - a[0]), 0, 1);
+    const target = headRows(), rx = THREE.MathUtils.lerp(a[1], b[1], t), next = THREE.MathUtils.lerp(target[j - 1][1], target[j][1], t);
+    v.x *= THREE.MathUtils.lerp(1, next / rx, front);
+  }
   v.z += front * (F.cheek[0] * bump(Math.abs(v.x), ...F.cheek.slice(1, 3)) * bump(v.y, ...F.cheek.slice(3))
     + F.brow[0] * bump(v.y, ...F.brow.slice(1)) + F.chin[0] * bump(v.y, ...F.chin.slice(1))
     - F.socket[0] * bump(Math.abs(v.x), FACE.eye.at[0], F.socket[1]) * bump(v.y, FACE.eye.at[1], F.socket[2]));
 }
+const headRows = () => SURFACE.head.map(r => FACE.jaw.find(j => j[0] === r[0]) ?? r);
 function headFront(x, y) {
-  const rows = SURFACE.head, j = Math.max(1, rows.findIndex(r => r[0] >= y));
+  const rows = headRows(), j = Math.max(1, rows.findIndex(r => r[0] >= y));
   const a = rows[j - 1], b = rows[j], t = THREE.MathUtils.clamp((y - a[0]) / (b[0] - a[0]), 0, 1);
   const rx = THREE.MathUtils.lerp(a[1], b[1], t), rz = THREE.MathUtils.lerp(a[2], b[2], t), z = THREE.MathUtils.lerp(a[3], b[3], t);
   const v = new THREE.Vector3(x, y, z + rz * Math.sqrt(Math.max(0, 1 - (x / rx) ** 2)));
@@ -916,13 +930,13 @@ function noseRise(x, y) {
 /** One head skin: the same vertex grid carries cheeks, orbit and nasal cartilage.
  * Extra front rings replace the former separate nose's triangle budget. */
 function headGeometry() {
-  const rows = [...SURFACE.head];
+  const skinRows = SURFACE.head, rows = [...skinRows];
   for (const y of SURFACE.nosePatch.rings) {
-    const j = SURFACE.head.findIndex(r => r[0] > y), a = SURFACE.head[j - 1], b = SURFACE.head[j], t = (y - a[0]) / (b[0] - a[0]);
+    const j = skinRows.findIndex(r => r[0] > y), a = skinRows[j - 1], b = skinRows[j], t = (y - a[0]) / (b[0] - a[0]);
     rows.push([y, ...a.slice(1).map((v, i) => THREE.MathUtils.lerp(v, b[i + 1], t))]);
   }
   rows.sort((a, b) => b[0] - a[0]);
-  const g = shape(ringSurface(rows, SURFACE.headSides, SURFACE.nosePatch.concentration), v => { headSculpt(v); if (v.z > 0) v.z += noseRise(v.x, v.y); });
+  const g = shape(ringSurface(rows, SURFACE.headSides, SURFACE.nosePatch.concentration), v => { headSculpt(v, true); if (v.z > 0) v.z += noseRise(v.x, v.y); });
   const p = g.attributes.position, blend = new Uint8Array(p.count);
   for (let i = 0; i < p.count; i++) blend[i] = p.getZ(i) > 0 ? Math.round(255 * noseRise(p.getX(i), p.getY(i)) / SURFACE.nosePatch.maxProjection) : 0;
   g.setAttribute('noseBlend', new THREE.Uint8BufferAttribute(blend, 1, true));
@@ -977,6 +991,30 @@ function eyeSurface(lid = false, side = 1) {
 
 /** Eyes set in shallow sockets under a brow ridge (eyeball, iris, pupil, upper and lower lids), brows along the ridge,
  * a nose with wings, two lips with a seam, cheekbones and a chin. All on the head bone; numbers AVATAR_FACE. */
+/** A small head patch with consistent winding; row pivots use this identical topology. */
+function faceGrid(cols, rows, at, reverse = false) {
+  const p = [], idx = [];
+  for (let j = 0; j <= rows; j++) for (let i = 0; i <= cols; i++) p.push(...at(i / cols, j / rows));
+  for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+    const a = j * (cols + 1) + i, b = a + cols + 1;
+    idx.push(...(reverse ? [a, b, a + 1, a + 1, b, b + 1] : [a, a + 1, b, a + 1, b + 1, b]));
+  }
+  const g = new THREE.BufferGeometry();g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3));g.setIndex(idx);g.computeVertexNormals();return g;
+}
+/** Helix, recessed concha and lobe share one closed ear surface, retaining the old attachment envelope. */
+function earSurface(side) {
+  const E = FACE.ear, p = [], idx = [], shade = [], rings = [...E.folds, [0.7, -0.006], [0, -0.006]];
+  for (let j = 0; j < rings.length; j++) for (let i = 0; i < E.sides; i++) {
+    const [r, depth] = rings[j], a = i * Math.PI * 2 / E.sides;
+    p.push(side * depth, E.height * r * Math.cos(a), E.width * r * Math.sin(a) - 0.002 * r * Math.cos(a));
+    shade.push(j === 1 || j === 2 ? 0.83 : 1);
+  }
+  for (let j = 0; j < rings.length - 1; j++) for (let i = 0; i < E.sides; i++) {
+    const a = j * E.sides + i, b = j * E.sides + (i + 1) % E.sides, c = a + E.sides, d = b + E.sides;
+    idx.push(...(side > 0 ? [a, c, b, b, c, d] : [a, b, c, b, d, c]));
+  }
+  const g = new THREE.BufferGeometry();g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3));g.setAttribute('shade', new THREE.Float32BufferAttribute(shade, 1));g.setIndex(idx);g.computeVertexNormals();return g;
+}
 function addFace(add, sphere, P) {
   const F = FACE, E = F.eye, N = F.nose, B = F.brow;
   for (const s of [-1, 1]) {
@@ -991,23 +1029,46 @@ function addFace(add, sphere, P) {
     eye(pupil(E.iris, SURFACE.eye.irisDepth), 'iris', 'head', [x, y, z + irisZ]);
     eye(pupil(E.pupil, SURFACE.eye.pupilDepth), 'fixed', 'head', [x, y, z + irisZ + E.iris * SURFACE.eye.irisDepth], 1, E.pupilColour);
     eye(eyeSurface(true, s), 'skin', 'head', [x, y, z], 0.97);
-    // (#1138: a tube-less copy of the same arc is each brow vertex's pivot, so the brow thickens about its centre line)
-    const arc = (tube) => new THREE.TorusGeometry(B.radius, tube, 3, 6, B.arc).rotateZ(Math.PI / 2 - B.arc / 2).translate(0, -B.radius, 0)
-      .scale(1, 1, 0.6).rotateZ(s * B.tilt).rotateY(s * B.turn).translate(s * B.at[0], B.at[1], B.at[2]);
-    add(arc(B.tube), 'brow', 'head', [0, 0, 0], 0.85); // (#1220: their own colour region)
-    facePart(P, FACE_PART.brow, arc(0));
-
+    // #2002: a tapered brow seated against the forehead, with the same per-vertex control pivot.
+    const centre = t => {
+      const x = s * (B.at[0] + (t - 0.5) * 0.040);
+      const y = B.at[1] + 0.004 * Math.sin(Math.PI * t) - 0.003 * t;
+      return [x, y, headFront(x, y) + 0.0018];
+    };
+    const brow = faceGrid(B.cols, 2, (u, v) => {
+      const p = centre(u), width = B.tube * (0.25 + 0.75 * Math.sin(Math.PI * u) ** 0.5);
+      p[1] += (v * 2 - 1) * width;
+      p[2] += 0.0008 * Math.sin(Math.PI * v); return p;
+    }, s < 0);
+    add(brow, 'brow', 'head', [0, 0, 0], 0.85);
+    facePart(P, FACE_PART.brow, faceGrid(B.cols, 2, u => centre(u), s < 0));
   }
-  const [uy, uz, ur, us] = F.lips.upper, [ly, lz, lr, ls] = F.lips.lower;
-  add(bend(sphere(ur, 10, 4).scale(...us), F.lips.bend), 'lips', 'head', [0, uy, uz]);
-  P[P.length - 1].mouth = 'upper'; // (#1122: stays put while talking)
-  P[P.length - 1].face = FACE_PART.cowlHide;
-  add(bend(sphere(lr, 10, 4).scale(...ls), F.lips.bend), 'lips', 'head', [0, ly, lz], 1.05);
-  P[P.length - 1].mouth = 'lower'; // (#1122: drops as a whole)
-  P[P.length - 1].face = FACE_PART.cowlHide;
-  add(bend(sphere(Math.min(ur, lr), 10, 3).scale(1, 0.06, 0.22), F.lips.bend), 'fixed', 'head', [0, (uy + ly) / 2, (uz + lz) / 2 + 0.0015], 1, F.lips.seam);
-  P[P.length - 1].mouth = 'seam'; // (#1122: its lower half drops with the lower lip, the dark opening)
-  P[P.length - 1].face = FACE_PART.cowlHide;
+  const M = F.mouth;
+  const seamY = x => M.seamY + 0.0012 * (x / M.halfWidth) ** 2;
+  for (const upper of [true, false]) {
+    const role = upper ? 'upper' : 'lower';
+    const at = (u, v, skin = false) => {
+      const x = (u * 2 - 1) * M.halfWidth, edge = Math.max(0, 1 - (x / M.halfWidth) ** 2);
+      // Cupid's bow, a fuller lower lip and closed corners; outer border seats on the same head surface.
+      const height = (upper ? M.upper * (0.75 + 0.3 * Math.exp(-(((Math.abs(x) - 0.007) / 0.004) ** 2))) : M.lower) * edge ** 0.7;
+      const f = skin ? 1 + v * M.border / Math.max(0.001, height) : v;
+      const y = seamY(x) + (upper ? 1 : -1) * height * f;
+      const z = headFront(x, y) + (skin ? 0.00015 + (1 - v) * 0.0006 : 0.00075 + M.lift * edge * (1 - v) + 0.0015 * Math.sin(v * Math.PI));
+      return [x, y, z];
+    };
+    for (const skin of [false, true]) {
+      const g = faceGrid(M.cols, skin ? 1 : 3, (u, v) => at(u, v, skin), !upper);
+      if (skin) g.setAttribute('lipFollow', new THREE.Float32BufferAttribute(Array.from({ length: 2 * (M.cols + 1) }, (_, i) => i <= M.cols ? 1 : 0), 1));
+      add(g, skin ? 'skin' : 'lips', 'head');
+      add.last().mouth = role; add.last().face = FACE_PART.cowlHide;
+    }
+  }
+  // The closed mouth is a thin ribbon; its bottom edge follows the lower lip while talking.
+  add(faceGrid(M.cols, 1, (u, v) => {
+    const x = (u * 2 - 1) * M.halfWidth, y = seamY(x) + (v - 0.5) * 0.001;
+    return [x, y, headFront(x, y) + 0.001 + M.lift * (1 - (x / M.halfWidth) ** 2)];
+  }), 'fixed', 'head', [0, 0, 0], 1, F.lips.seam);
+  add.last().mouth = 'seam'; add.last().face = FACE_PART.cowlHide;
   // The chin and brow ridge are part of the continuous head, not separate bumps.
 }
 // the tops' torso (hip at 0; scaled 1.15 / 1.08 × 1 × 0.7): a narrower waist, the chest, sloping shoulders (the trapezius)
@@ -1109,7 +1170,7 @@ function surfaceRoughness() {
 // the moustache and everything above stay; the chin, the jaw's front and a beard's lower part follow, fading towards the
 // corners and under the chin; with a moustache over the beard's opening, the beard drops only from the opening's lower
 // edge (the moustache stays, the gap opens under it). Collision and hit regions keep the closed bind pose (CPU raycasts never see the shader).
-const SEAM_Y = (FACE.lips.upper[0] + FACE.lips.lower[0]) / 2;
+const SEAM_Y = FACE.mouth.seamY;
 /** A head-bone vertex's jaw weight from its position `x, y, z` in the head bone's frame and its part's `mouth` role. */
 function mouthWeight(role, x, y, z) {
   const M = MOUTH, side = 1 - smoothstep(0.004, M.halfWidth, Math.abs(x));
@@ -1161,7 +1222,9 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
       if (hb) {
         const x = gp.getX(i) - hb.x, y = gp.getY(i) - hb.y, z = gp.getZ(i) - hb.z;
         const skin = part.rifleNose || noseBlend.getX(i) > 0 ? 0 : Math.max(0, 1 - (x / KISS.muzzleWidth) ** 2 - ((y - SEAM_Y) / KISS.muzzleHeight) ** 2) * smoothstep(...KISS.muzzleFront, z);
-        pucker[i] = Math.round(255 * (['upper', 'lower', 'seam'].includes(part.mouth) ? 1 : skin));
+        const follow = g.attributes.lipFollow?.getX(i);
+        // The new lip-to-skin band joins full lip motion to the adjacent muzzle's motion.
+        pucker[i] = Math.round(255 * (follow === undefined ? (['upper', 'lower', 'seam'].includes(part.mouth) ? 1 : skin) : skin + (1 - skin) * follow));
       }
       if (hb) mouth[i] = mouthWeight(part.mouth, gp.getX(i) - hb.x, gp.getY(i) - hb.y, gp.getZ(i) - hb.z);
       jaw[i] = part.rifleJaw || (part.continuousHead && gp.getY(i) - hb.y < SURFACE.jawTop) ? 1 : 0; nose[i] = part.rifleNose || noseBlend.getX(i) > 0.25 ? 1 : 0; contact[i] = part.rifleSkull ? 1 : 0; reg[i] = part.shoe ? 5 : region; if (g.attributes.skinIndex) { for (let j = 0; j < 4; j++) { si[i * 4 + j] = g.attributes.skinIndex.array[i * 4 + j]; sw[i * 4 + j] = g.attributes.skinWeight.array[i * 4 + j]; } } else { si[i * 4] = k; sw[i * 4] = 1; }

@@ -1,0 +1,30 @@
+{
+  "hashes": {
+    "src/avatar.js": "9bb29d610cc8e489b5e44cf05e5487d4e890ce469d783f20b2e097bd01754824",
+    "src/config.js": "f53eab6c18fe8d02ae06626b8f20b84ad0eca3943f5a779239b089ced99e75d6",
+    "src/olof.js": "f223b1a3cafa734606f5c6d477f21490549846a6f6f979238de1ab890be11ac6",
+    "src/avatarpreview.js": "ed79d8f1a4a98783d1d30fb1996daacfb76227bb9d24a55f6360f9781fc6e216",
+    "tools/verify-avatar-head.html": "f3f71e21c5c69af864aea332f2a76cdc072d980a3609c01aa99fd00ac2349d1f"
+  },
+  "errors": [],
+  "reason": "Fixture now injects a simulated clock into production mouthTarget; final pucker skin-band correction only.",
+  "speech": {
+    "peak": 0.9342208503621319,
+    "swings": 10,
+    "end": 0,
+    "talking": false
+  },
+  "pixels": {
+    "closed": {
+      "pixelHash": "3367bb7c1468e4f24521ff7b65de0c8717cce69e3949e9126eaff2dc7f822909",
+      "callsPerCell": 1,
+      "glError": 0
+    },
+    "kiss": {
+      "pixelHash": "d6bd7f4b89c52cceaaa0f97d012255dc292d9c3682cd1ed9f6f2b7f871265468",
+      "callsPerCell": 1,
+      "glError": 0
+    }
+  },
+  "pass": true
+}

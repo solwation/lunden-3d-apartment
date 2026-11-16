@@ -4185,11 +4185,15 @@ export const AVATAR_FACE = {
   lid: { r: 0.0142, scale: [1.04, 0.76, 0.62], upper: 0.37, lower: 0.18 },
   socket: { r: 0.0185, scale: [1.08, 0.72, 0.3], z: 0.107, shade: 0.88 },
   ridge: { at: [0.031, 0.126, 0.099], r: 0.028, scale: [1.2, 0.3, 0.36], shade: 0.93 },
-  brow: { at: [0.035, 0.1265, 0.1175], radius: 0.034, arc: 1.0, tilt: -0.1, turn: 0.38, tube: 0.0027 },
+  brow: { at: [0.035, 0.1265, 0.1175], radius: 0.034, arc: 1.0, tilt: -0.1, turn: 0.38, tube: 0.0027, cols: 12 },
+  // #2002: rounded chin sections, skin-seated lips and a folded ear (head-local metres).
+  jaw: [[-0.022, 0.025, 0.023, 0.035], [-0.012, 0.042, 0.049, 0.034], [0.005, 0.061, 0.065, 0.030]],
+  mouth: { cols: 12, halfWidth: 0.023, seamY: 0.043, lift: 0.0035, upper: 0.006, lower: 0.007, border: 0.003 },
+  ear: { sides: 16, width: 0.014, height: 0.028, folds: [[0, 0.004], [0.28, 0.003], [0.52, 0.002], [0.78, 0.013], [1, 0.004]] },
   nose: { top: 0.115, bottom: 0.071, z: 0.113, width: [0.0045, 0.0135], depth: [0.009, 0.027], alar: [0.0095, 0.0755, 0.1165, 0.0068] },
   lips: { upper: [0.047, 0.1085, 0.02, [1, 0.2, 0.2]], lower: [0.039, 0.108, 0.018, [1, 0.24, 0.25]], seam: 0x4a2a28, bend: 7 },
   chin: { at: [0, 0.012, 0.093], r: 0.018, scale: [1.2, 0.8, 0.7] },
-  warp: { width: 0.93, narrow: 0.26, y: [0.075, 0], z: [0, 0.1] },
+  warp: { width: 0.93, narrow: 0.14, y: [0.075, 0], z: [0, 0.1] },
   lipTint: 0xb0605a,
 };
 // The avatars' talking mouth (#1122, src/avatar.js mouthWeight / Avatar.talk) *guess* by eye, not measured: the lower lip,
@@ -4212,14 +4216,15 @@ export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76
 // (± fraction per column); long hair (style 1): the curtain round the back from |azimuth| `long.from`, hanging from the
 // hairline at its front edge, rising to elevation `long.top` between |azimuth| `front` and `back`, down to `long.hem` [sides, back] m
 // below the head bone, `long.gap` m off the shoulders, `long.depth` m thick.
-export const AVATAR_HAIR = { centre: [0, 0.09, 0], rows: 6, step: 12, streak: 0.07,
+export const AVATAR_HAIR = { centre: [0, 0.09, 0], rows: 8, step: 12, streak: 0.07,
+  flow: { sweep: 22, ridge: 0.0045, groups: 9, edge: 1.2, longGroups: 7, longRidge: 0.010, longSway: 5 },
   hairline: [[0, 37], [22, 36], [42, 29], [58, 16], [64, -4], [72, -6], [78, 13], [102, 15], [120, -6], [146, -26], [180, -30]],
   beanie: [[0, 35], [35, 32], [60, 19], [80, 9], [100, 9], [140, -8], [180, -14]],
   thick: [[0.016, 0.006, 0.009], [0.014, 0.011, 0.013], [0.006, 0.004, 0.005], [0.004, 0.003, 0.004], [0.016, 0.008, 0.012]],
   // #1377 continuous curls: aesthetic guesses in metres/degrees; bounded four-sided tubes share the avatar draw.
-  curly: { locks: 24, segments: 16, sides: 4, radius: 0.008, lift: 0.004, margin: 3,
+  curly: { locks: 18, segments: 14, sides: 6, radius: 0.007, lift: 0.004, margin: 3,
     top: 86, stagger: 18, sway: 9, turns: 2, curtainTurns: 2.5, curtainSway: 0.065 },
-  long: { top: 50, from: 64, front: 72, back: 100, hem: [-0.035, -0.25], gap: 0.016, depth: 0.012, rows: 8 } };
+  long: { wave: 0.006, top: 50, from: 64, front: 72, back: 100, hem: [-0.035, -0.25], gap: 0.016, depth: 0.012, rows: 8 } };
 // The avatars' skin and material shading (#1104, src/avatar.js skinShading / clothShade) *guess* tuned by eye in day and
 // evening light, not measured: soft areas in the head bone's frame (metres; H = 0.1 is the head's centre) as
 // [x (mirrored), y, z (in front of it), radius, strength, horizontal stretch] with an RGB multiplier: warm cheeks / nose tip / lip surround,

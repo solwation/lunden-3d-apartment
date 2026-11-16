@@ -1,0 +1,25 @@
+{
+  "baseline": "a05683d477d8705c912cd88b323ee21c555dcce6",
+  "blocks": {
+    "body": {
+      "before": "0e45c5abc87928b12d86f07729c143bb90e31471f21e20a68831d41036543c25",
+      "after": "0e45c5abc87928b12d86f07729c143bb90e31471f21e20a68831d41036543c25",
+      "equal": true
+    },
+    "skinShading": {
+      "before": "a640c5c0ff69606013b52e0a1a41d1fbc821c1416ececbb617dbd73fd05d2b92",
+      "after": "a640c5c0ff69606013b52e0a1a41d1fbc821c1416ececbb617dbd73fd05d2b92",
+      "equal": true
+    },
+    "material": {
+      "before": "4b531e081b301b880e3e043393ce40361068e8ef59695592a54007032901fa51",
+      "after": "4b531e081b301b880e3e043393ce40361068e8ef59695592a54007032901fa51",
+      "equal": true
+    },
+    "runtime": {
+      "before": "594ce21f989235f9d82283688442e4136600b59284f734328e8fa0da39f0966d",
+      "after": "594ce21f989235f9d82283688442e4136600b59284f734328e8fa0da39f0966d",
+      "equal": true
+    }
+  }
+}

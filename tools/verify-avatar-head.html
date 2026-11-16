@@ -1,0 +1,22 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Huvud och hår #2002</title>
+<style>body{margin:0;background:#edf0f3}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as T from 'three';import {Avatar,loadRiggedAvatarModel} from '../src/avatar.js';import {avatarLook} from '../src/config.js';
+if(!await loadRiggedAvatarModel())throw Error('production GLB unavailable');
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(1);renderer.setSize(1200,600);document.body.append(renderer.domElement);
+const scene=new T.Scene();scene.background=new T.Color('#edf0f3');scene.add(new T.HemisphereLight(0xffffff,0x8c857c,2));const sun=new T.DirectionalLight(0xfff4df,2);sun.position.set(2,5,4);scene.add(sun);
+const camera=new T.OrthographicCamera(-1,1,1,-1,.01,20),looks=Array.from({length:5},(_,style)=>({...avatarLook('2002-'+style),style,height:180,bodyBuild:4,gender:style%2,facial:0,hat:0,phones:0,glasses:0,necklace:0,earrings:0,headWidth:4,headLength:4,jaw:4,eyeSize:4,eyeShape:4,noseSize:4,noseWidth:4,ears:4,browThick:4,browY:4,hairLength:4}));
+let avatars=[];
+function setLooks(input){avatars.forEach(a=>{a.object.removeFromParent();a.dispose()});avatars=input.map(l=>{const a=new Avatar(l);a.object.rotation.y=0;a.update(0,{});scene.add(a.object);return a;});}
+setLooks(looks);
+function draw(mode='quarter',meeting=false){
+ const cols=avatars.length, width=renderer.domElement.width/cols,height=renderer.domElement.height;renderer.setScissorTest(true);
+ for(let i=0;i<cols;i++){avatars.forEach((a,j)=>a.object.visible=i===j);const a=avatars[i],target=a.bones.head.getWorldPosition(new T.Vector3());target.y+=(meeting?-.22:.096)*a.object.scale.y;
+ const h=meeting?1.30:.46,w=h*width/height;Object.assign(camera,{left:-w/2,right:w/2,top:h/2,bottom:-h/2});camera.updateProjectionMatrix();
+ const dir=mode==='profile'?[1,0,.02]:mode==='back'?[.25,0,-1]:mode==='front'?[0,0,1]:[.65,.03,1];camera.position.copy(target).add(new T.Vector3(...dir).normalize().multiplyScalar(3));camera.lookAt(target);
+ renderer.setViewport(i*width,0,width,height);renderer.setScissor(i*width,0,width,height);renderer.render(scene,camera);
+ }renderer.setScissorTest(false);
+}
+window.H={renderer,scene,camera,looks,get avatars(){return avatars},setLooks,draw,T,Avatar};draw();window.__ready=true;
+</script></html>

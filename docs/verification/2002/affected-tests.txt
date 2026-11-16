@@ -1,0 +1,100 @@
+TAP version 13
+# Subtest: \#2002 all five hairstyles retain bounded resources, normalized weights and semantic head roles
+ok 1 - \#2002 all five hairstyles retain bounded resources, normalized weights and semantic head roles
+  ---
+  duration_ms: 372.916127
+  type: 'test'
+  ...
+# Subtest: \#2002 lips face outward and a real upper/lower opening and pucker survive all beard variants
+ok 2 - \#2002 lips face outward and a real upper/lower opening and pucker survive all beard variants
+  ---
+  duration_ms: 180.198405
+  type: 'test'
+  ...
+# Subtest: \#2002 both ear surfaces have a recessed concha and an outward folded rim within the accessory envelope
+ok 3 - \#2002 both ear surfaces have a recessed concha and an outward folded rim within the accessory envelope
+  ---
+  duration_ms: 4.688769
+  type: 'test'
+  ...
+# Subtest: \#2002 kissing lip skin-band outer edge follows the muzzle instead of detaching with the whole lip
+ok 4 - \#2002 kissing lip skin-band outer edge follows the muzzle instead of detaching with the whole lip
+  ---
+  duration_ms: 3.167379
+  type: 'test'
+  ...
+# Subtest: models/avatar-rigged.glb exists and has valid glTF 2.0 binary header
+ok 5 - models/avatar-rigged.glb exists and has valid glTF 2.0 binary header
+  ---
+  duration_ms: 1.440891
+  type: 'test'
+  ...
+# Subtest: avatar-rigged.glb parses with SkinnedMesh, 15 humanoid bones and animations
+ok 6 - avatar-rigged.glb parses with SkinnedMesh, 15 humanoid bones and animations
+  ---
+  duration_ms: 22.220953
+  type: 'test'
+  ...
+# Subtest: avatar-rigged.glb proportions match Olof bind pose heights
+ok 7 - avatar-rigged.glb proportions match Olof bind pose heights
+  ---
+  duration_ms: 6.665256
+  type: 'test'
+  ...
+# Subtest: actual inverse bind matrices preserve every rest vertex and production bone order
+ok 8 - actual inverse bind matrices preserve every rest vertex and production bone order
+  ---
+  duration_ms: 27.964614
+  type: 'test'
+  ...
+# Subtest: all six exported clips keep real deformed vertices inside one connected human envelope
+ok 9 - all six exported clips keep real deformed vertices inside one connected human envelope
+  ---
+  duration_ms: 66.109662
+  type: 'test'
+  ...
+# Subtest: production loaded avatars retain detailed source variants and private palettes
+ok 10 - production loaded avatars retain detailed source variants and private palettes
+  ---
+  duration_ms: 333.651688
+  type: 'test'
+  ...
+# Subtest: loaded runtime poses match the same established procedural IK through movement, tools and air
+ok 11 - loaded runtime poses match the same established procedural IK through movement, tools and air
+  ---
+  duration_ms: 170.117072
+  type: 'test'
+  ...
+# Subtest: late rig availability preserves Olof/mirror retained mesh and bone references
+ok 12 - late rig availability preserves Olof/mirror retained mesh and bone references
+  ---
+  duration_ms: 43.094614
+  type: 'test'
+  ...
+# Subtest: continuous elbow/knee surfaces have normalized adjacent-bone weights through bent poses
+ok 13 - continuous elbow/knee surfaces have normalized adjacent-bone weights through bent poses
+  ---
+  duration_ms: 344.903914
+  type: 'test'
+  ...
+# Subtest: \#1995: the customizable nose is one connected surface, not separate alar blobs
+ok 14 - \#1995: the customizable nose is one connected surface, not separate alar blobs
+  ---
+  duration_ms: 49.82897
+  type: 'test'
+  ...
+# Subtest: \#1995: posterior head keeps its authored profile and cannot follow nose controls
+ok 15 - \#1995: posterior head keeps its authored profile and cannot follow nose controls
+  ---
+  duration_ms: 3.111579
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 15
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1475.451218

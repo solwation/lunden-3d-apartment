@@ -1,0 +1,20 @@
+{
+  "baseline": "a05683d477d8705c912cd88b323ee21c555dcce6",
+  "revision": 2,
+  "hashes": {
+    "before": {
+      "src/avatar.js": "f5aec235501ce4aa8fc617c5f0f993ab0e2de9287d126bee39e38562f88b4c55",
+      "src/config.js": "cc4edf9e4c408dfd6a3bade0b2b02db772119125b5795abce04b1b29ed15a69e",
+      "src/olof.js": "f223b1a3cafa734606f5c6d477f21490549846a6f6f979238de1ab890be11ac6",
+      "src/avatarpreview.js": "ed79d8f1a4a98783d1d30fb1996daacfb76227bb9d24a55f6360f9781fc6e216"
+    },
+    "after": {
+      "src/avatar.js": "ff50f60a389f87a6243370b2c6de4292b978836d2f1ae040d827586c76e50791",
+      "src/config.js": "f53eab6c18fe8d02ae06626b8f20b84ad0eca3943f5a779239b089ced99e75d6",
+      "src/olof.js": "f223b1a3cafa734606f5c6d477f21490549846a6f6f979238de1ab890be11ac6",
+      "src/avatarpreview.js": "ed79d8f1a4a98783d1d30fb1996daacfb76227bb9d24a55f6360f9781fc6e216"
+    }
+  },
+  "beforeErrors": [],
+  "afterErrors": []
+}

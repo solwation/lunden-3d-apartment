@@ -45,6 +45,19 @@ still limits LBS normals; the guard and exposed high-arm imagery do not claim ev
 posed triangle is error-free. [Final art, actual preview, source equivalence,
 counts and software timing limits](../verification/2001/README.md).
 
+### Player head and hair (#2002)
+
+`AVATAR_FACE` / `addFace` seat shaped upper/lower lip bands and a skin border on
+that same continuous head, round the front chin, and add folded ears and tapered
+brows. The lip border joins lip and muzzle pucker weights without a retained new
+attribute. Directional scalp groups, smoother curls and a grouped, uneven long
+curtain keep the existing five styles, colours and controls. Posterior nasal
+isolation, head-role shading, headwear, glasses and the existing 15-bone rig remain.
+The five measured variants add 4.09–5.45% triangles/attribute bytes, within the
+locked +10% budget, with one body draw and no new texture/light/pass. Hair and
+beards remain stylized and the older rear long-hair join remains visible.
+[Matched art, actual preview, final-source equivalence and cost limits](../verification/2002/README.md).
+
 ### Butterfly wing hinges (#1925)
 
 `butterflymodel.js` supplies shared authored contours and a bounded vertex hinge.

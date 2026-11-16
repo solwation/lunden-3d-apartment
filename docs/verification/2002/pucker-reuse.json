@@ -1,0 +1,242 @@
+{
+  "reason": "Final lip-skin band pucker weight only; static pictures use uKiss=0. All retained attributes except pucker are byte-identical for all five styles.",
+  "styles": [
+    {
+      "style": 0,
+      "changed": [
+        "pucker"
+      ],
+      "before": {
+        "position": "f1c4f6fc06299b6741d6edc5e3720d8ff6e0df62a126f9fb82c33150e28dc85e",
+        "normal": "618b33c0ab4ca2fd0982946ecd4c8e47d7a07045ba7f3297f1a7e18ab5444885",
+        "region": "f45762b95bd1bde3f8020f2491f6b68133da54d3cbab5d4536048b6643abc4ee",
+        "bare": "bdf4a42060506bff0a6540517f256295916f25d7ff0a1c846fa42df473cf665e",
+        "noseBlend": "86207ffb0111a5d2383a66aa01e072f911825451acc1f81fa4d28fc2e83596f3",
+        "skinIndex": "d77e43fc36feeb3da6825b5ecd5f5d377833db3424fc60a16d427530a6995642",
+        "skinWeight": "8cd477431e1ecfe570c269079eb01401ecbd1d46aa914b6d67b4922c55eb853b",
+        "rifleSkull": "17152aacd396854019da471ed36c1deae2368500e740c8b794330a850e1c1ff0",
+        "rifleNose": "f0273faaa602256dfaa03e7161fe126e87e8d25dd38a7852d57780190f861989",
+        "rifleJaw": "73a61f4ca13ce1450542db881ba1250453735b9a6c9b302aab52b6f7f413cd29",
+        "mouth": "3683207e1fe15330b843a337aa7406738b0ebd9cb7b3875d37eb204875e0c19c",
+        "pucker": "bff68db01c554dce414ba2f3856ca9c46abf90188c93ab109e343ff93d8c15a2",
+        "facePart": "f7d2dc8496677e039998db778e673eb2c0b7065fc933c5c3d264e7c5cc76670c",
+        "faceAnchor": "b2133e27d8a15cce8cdacf8a48ad7306f3673fb108fb3ef0c4c1eb53c67d512a",
+        "armPump": "6e56c991dab7107009dc6dfd209d27c6b0170b8a3fb00fad443034b612e5cb64",
+        "suitRole": "dac4ffe9896f905ae6dc45d5421aa3cb7b3d1399dab9c129e630515b87d4fbda",
+        "color": "43e8f1952506fb699481ffe2b50b676d6176d7b7a6b3ef0d881e07a46210d3d0"
+      },
+      "after": {
+        "position": "f1c4f6fc06299b6741d6edc5e3720d8ff6e0df62a126f9fb82c33150e28dc85e",
+        "normal": "618b33c0ab4ca2fd0982946ecd4c8e47d7a07045ba7f3297f1a7e18ab5444885",
+        "region": "f45762b95bd1bde3f8020f2491f6b68133da54d3cbab5d4536048b6643abc4ee",
+        "bare": "bdf4a42060506bff0a6540517f256295916f25d7ff0a1c846fa42df473cf665e",
+        "noseBlend": "86207ffb0111a5d2383a66aa01e072f911825451acc1f81fa4d28fc2e83596f3",
+        "skinIndex": "d77e43fc36feeb3da6825b5ecd5f5d377833db3424fc60a16d427530a6995642",
+        "skinWeight": "8cd477431e1ecfe570c269079eb01401ecbd1d46aa914b6d67b4922c55eb853b",
+        "rifleSkull": "17152aacd396854019da471ed36c1deae2368500e740c8b794330a850e1c1ff0",
+        "rifleNose": "f0273faaa602256dfaa03e7161fe126e87e8d25dd38a7852d57780190f861989",
+        "rifleJaw": "73a61f4ca13ce1450542db881ba1250453735b9a6c9b302aab52b6f7f413cd29",
+        "mouth": "3683207e1fe15330b843a337aa7406738b0ebd9cb7b3875d37eb204875e0c19c",
+        "pucker": "477c47484147661f344ca5302daef0c1978f419b60813ccb5ce0bb4a381e10f5",
+        "facePart": "f7d2dc8496677e039998db778e673eb2c0b7065fc933c5c3d264e7c5cc76670c",
+        "faceAnchor": "b2133e27d8a15cce8cdacf8a48ad7306f3673fb108fb3ef0c4c1eb53c67d512a",
+        "armPump": "6e56c991dab7107009dc6dfd209d27c6b0170b8a3fb00fad443034b612e5cb64",
+        "suitRole": "dac4ffe9896f905ae6dc45d5421aa3cb7b3d1399dab9c129e630515b87d4fbda",
+        "color": "43e8f1952506fb699481ffe2b50b676d6176d7b7a6b3ef0d881e07a46210d3d0"
+      }
+    },
+    {
+      "style": 1,
+      "changed": [
+        "pucker"
+      ],
+      "before": {
+        "position": "4a977f9c09a9ecbf1c84a0b6b7c82a51088c274378cbe61936dec67d1602b137",
+        "normal": "a1a46ba2e5ec69180b30168ab8138513c102a94ad7364d2023d51d5e9d216cb6",
+        "region": "cc1efa10ca72f8defd5223068bbd96fcae2026e354b4b01831e9966f828c3912",
+        "bare": "b84b551a1e5b4d2dc487745b38d29d01b47d9c5fb08442fa9b7f9aa9debc1255",
+        "noseBlend": "feed768c5e8aba65777841f8a8d099848d162c1fd853ec8347a8da195eae43ad",
+        "skinIndex": "0b3c47d2c5bfe0080868bf0f86342fa14e5a630967c8a94f2f05280eeb38ca19",
+        "skinWeight": "e32ad79b2ce7c31914d26ba12210550a971b484d2843fb60b45d6a47885e8055",
+        "rifleSkull": "23231cad991bc698d2cabdd467c093fd09fae0a01861398345d0c2dbdb19406e",
+        "rifleNose": "522201572c0d34c0020aa0f16208ebf90ad737825b30208278825232c969df40",
+        "rifleJaw": "56626dc6caaba42cc2ea8411ae91a72e2635a6a638cc74f97f84f5c57de020d5",
+        "mouth": "db77366f32a09b70225c18c917bce1183205d1366847674df31ced4ef58c89b4",
+        "pucker": "2a887d1ec217332628f6387c97b28eea49e3b4f4574c25286f09fc191bab9ca7",
+        "facePart": "75def39a8fe192f26d3c72eb5562210ce25263a9305024202ef7d8bd6f7928dd",
+        "faceAnchor": "79c7ba06d129ab7e0ba4d0b4862e38095ec365dce417b675b84a4bb7877ef9d8",
+        "armPump": "c171a8cae9d6e29fc960d40a4bf7453b1954cd9f2e219c576e60bf116e1748c2",
+        "suitRole": "f788c31ec9fd98d122152d8de7666743cf36492fb729f261933bd637438030cb",
+        "color": "fcbcf0e786351a5785ff7ece7d78fe094b5a09c4b81109e4d51e1fe673a6b893"
+      },
+      "after": {
+        "position": "4a977f9c09a9ecbf1c84a0b6b7c82a51088c274378cbe61936dec67d1602b137",
+        "normal": "a1a46ba2e5ec69180b30168ab8138513c102a94ad7364d2023d51d5e9d216cb6",
+        "region": "cc1efa10ca72f8defd5223068bbd96fcae2026e354b4b01831e9966f828c3912",
+        "bare": "b84b551a1e5b4d2dc487745b38d29d01b47d9c5fb08442fa9b7f9aa9debc1255",
+        "noseBlend": "feed768c5e8aba65777841f8a8d099848d162c1fd853ec8347a8da195eae43ad",
+        "skinIndex": "0b3c47d2c5bfe0080868bf0f86342fa14e5a630967c8a94f2f05280eeb38ca19",
+        "skinWeight": "e32ad79b2ce7c31914d26ba12210550a971b484d2843fb60b45d6a47885e8055",
+        "rifleSkull": "23231cad991bc698d2cabdd467c093fd09fae0a01861398345d0c2dbdb19406e",
+        "rifleNose": "522201572c0d34c0020aa0f16208ebf90ad737825b30208278825232c969df40",
+        "rifleJaw": "56626dc6caaba42cc2ea8411ae91a72e2635a6a638cc74f97f84f5c57de020d5",
+        "mouth": "db77366f32a09b70225c18c917bce1183205d1366847674df31ced4ef58c89b4",
+        "pucker": "29cdccccf116a4f1e6eb7084ba57ec5f0ce650b3c2417cdc6cb2e4a981e743bd",
+        "facePart": "75def39a8fe192f26d3c72eb5562210ce25263a9305024202ef7d8bd6f7928dd",
+        "faceAnchor": "79c7ba06d129ab7e0ba4d0b4862e38095ec365dce417b675b84a4bb7877ef9d8",
+        "armPump": "c171a8cae9d6e29fc960d40a4bf7453b1954cd9f2e219c576e60bf116e1748c2",
+        "suitRole": "f788c31ec9fd98d122152d8de7666743cf36492fb729f261933bd637438030cb",
+        "color": "fcbcf0e786351a5785ff7ece7d78fe094b5a09c4b81109e4d51e1fe673a6b893"
+      }
+    },
+    {
+      "style": 2,
+      "changed": [
+        "pucker"
+      ],
+      "before": {
+        "position": "6b6d77e599d574b9a6d1889908c613620cd44b5ef8fa168e98750eb0dc61e7d3",
+        "normal": "3229e43ef4efab3ab4ab4633799d52cecb3e9bbe4570eb3e36854398b73e06eb",
+        "region": "66bbe41e5aa9ea57b48c0b9cfcbf7e1a6355d95381d72e965cad2193dd45d8e1",
+        "bare": "d896b0fdab13dc3a0f101ac17bcea127777ec0debd132f224a654b0ae750977a",
+        "noseBlend": "7a4975b7c1dc88457bc80b3b71ecad78cc873574718e9272455e383d43073276",
+        "skinIndex": "cb5b2c99e6f00d77fd1e901236255598fbf8bc0303a17a0478233cae76b3b996",
+        "skinWeight": "74f35fac65abed606a27955f61a34b14643f5cca9d55bffd187cf685b8bae7f3",
+        "rifleSkull": "6e675c85d9ff8647bb58ea882729745e05df071343dbfb7a9eae0f8d39fb6972",
+        "rifleNose": "f47e3d749fc259821b5dcb31eded809929be15e431942656547ac7d178d5d42c",
+        "rifleJaw": "ec0e306359b21a944c8fd26ce44f438eaedebdac26311269d39effbd519e65e6",
+        "mouth": "7fbb78f2e090d3b0dac4db3dac09efe657d2a259e1ab4890c21f2102d1bf4f48",
+        "pucker": "5758e657fcec6e8dfdb369faa2c488c4094431580489e858e3a6675aa48ac8b5",
+        "facePart": "e1ceeb2e71b37f27971df2a58e58494070a3c67e81165407006f4217c896fbd6",
+        "faceAnchor": "a146eba87f0a565604a04a2e3ccfcba40a280f732d098856584ccc9b3b3654ca",
+        "armPump": "65c565e68e4c94265295f96edcb14aeced165337ede1c5b66e9b21f4b1a724fe",
+        "suitRole": "e8170358e86928349f67a36ea016b3027cf33c07686fa08bc6e5181fbca552f0",
+        "color": "ac9ecf752b47c2dc829f7df95a94e6acdc1250b7f24b5d15462811f8c323411c"
+      },
+      "after": {
+        "position": "6b6d77e599d574b9a6d1889908c613620cd44b5ef8fa168e98750eb0dc61e7d3",
+        "normal": "3229e43ef4efab3ab4ab4633799d52cecb3e9bbe4570eb3e36854398b73e06eb",
+        "region": "66bbe41e5aa9ea57b48c0b9cfcbf7e1a6355d95381d72e965cad2193dd45d8e1",
+        "bare": "d896b0fdab13dc3a0f101ac17bcea127777ec0debd132f224a654b0ae750977a",
+        "noseBlend": "7a4975b7c1dc88457bc80b3b71ecad78cc873574718e9272455e383d43073276",
+        "skinIndex": "cb5b2c99e6f00d77fd1e901236255598fbf8bc0303a17a0478233cae76b3b996",
+        "skinWeight": "74f35fac65abed606a27955f61a34b14643f5cca9d55bffd187cf685b8bae7f3",
+        "rifleSkull": "6e675c85d9ff8647bb58ea882729745e05df071343dbfb7a9eae0f8d39fb6972",
+        "rifleNose": "f47e3d749fc259821b5dcb31eded809929be15e431942656547ac7d178d5d42c",
+        "rifleJaw": "ec0e306359b21a944c8fd26ce44f438eaedebdac26311269d39effbd519e65e6",
+        "mouth": "7fbb78f2e090d3b0dac4db3dac09efe657d2a259e1ab4890c21f2102d1bf4f48",
+        "pucker": "b3fbb0aa59248c4926f16e3347cf8d01df83e3342cd28e523b814d979bd862ec",
+        "facePart": "e1ceeb2e71b37f27971df2a58e58494070a3c67e81165407006f4217c896fbd6",
+        "faceAnchor": "a146eba87f0a565604a04a2e3ccfcba40a280f732d098856584ccc9b3b3654ca",
+        "armPump": "65c565e68e4c94265295f96edcb14aeced165337ede1c5b66e9b21f4b1a724fe",
+        "suitRole": "e8170358e86928349f67a36ea016b3027cf33c07686fa08bc6e5181fbca552f0",
+        "color": "ac9ecf752b47c2dc829f7df95a94e6acdc1250b7f24b5d15462811f8c323411c"
+      }
+    },
+    {
+      "style": 3,
+      "changed": [
+        "pucker"
+      ],
+      "before": {
+        "position": "8448d182867b4def0daa455aaa910f86224c11362a650f589fe0aa06638e46bc",
+        "normal": "85fb1a28ec62329516cceac3c80cc54efb9f7936f2961b76ad2bbfe81e9fd7f1",
+        "region": "c29e98eea1c0b18099652351a6ace6b22d6b1807b90ba119d7dd92bd003263a8",
+        "bare": "61e5dc3092e6cd754de12abbb5fabbb1f217b81191c369f9c3c3592e46d147a4",
+        "noseBlend": "85e54d487f0df9716a709374e4ac962331f642e4c93aa7c8a0d10252a43c5388",
+        "skinIndex": "f4c56809ed84f5e34141e25bfaec4cd56b1ca4bd34abc666da2e3bf338e0109e",
+        "skinWeight": "093f1ec6a0a5689b2f664248bf617c56773857a493cce33b3bddc36141f1b5ed",
+        "rifleSkull": "6e15e179987d82c552f756507432844914a37d9fc9dc8c79032dc102ce54d63e",
+        "rifleNose": "ad0feaa4002164068e0f8bf8fc6147478f7659044c4da9ab79e480d49d9ab6d9",
+        "rifleJaw": "a4d8939acaa125b6eec98d47082439fb523d4a5312f18c558a90a99c8dbf44b3",
+        "mouth": "18a28c7a9b9c37ba16e1ef18e78302988d966e4b1158aa75eb2f0a25a488268c",
+        "pucker": "3a643dfd330773634e0b818538e8ed543647aa830e9370e3d95e3e89345d8c67",
+        "facePart": "204ddfab36e574005be8f4ca0e53c2f28b428429797b09d50d1c0645730aaef3",
+        "faceAnchor": "a57d077ff9e459aea16e5df891f819e69aa2364540a6e9c586e086dafba579b7",
+        "armPump": "5023d90214d476babd660ae23ecdf86a0d559e487e422c908f32dcc3e49406e8",
+        "suitRole": "3a85edce4b6b74d021688910beff0b1c8c881f90f4ccd31af30a872cba4a3dd5",
+        "color": "f83eaabf73d61688806b51a305eab3e64d60b04fc9dfa149ab212b87cbbc736f"
+      },
+      "after": {
+        "position": "8448d182867b4def0daa455aaa910f86224c11362a650f589fe0aa06638e46bc",
+        "normal": "85fb1a28ec62329516cceac3c80cc54efb9f7936f2961b76ad2bbfe81e9fd7f1",
+        "region": "c29e98eea1c0b18099652351a6ace6b22d6b1807b90ba119d7dd92bd003263a8",
+        "bare": "61e5dc3092e6cd754de12abbb5fabbb1f217b81191c369f9c3c3592e46d147a4",
+        "noseBlend": "85e54d487f0df9716a709374e4ac962331f642e4c93aa7c8a0d10252a43c5388",
+        "skinIndex": "f4c56809ed84f5e34141e25bfaec4cd56b1ca4bd34abc666da2e3bf338e0109e",
+        "skinWeight": "093f1ec6a0a5689b2f664248bf617c56773857a493cce33b3bddc36141f1b5ed",
+        "rifleSkull": "6e15e179987d82c552f756507432844914a37d9fc9dc8c79032dc102ce54d63e",
+        "rifleNose": "ad0feaa4002164068e0f8bf8fc6147478f7659044c4da9ab79e480d49d9ab6d9",
+        "rifleJaw": "a4d8939acaa125b6eec98d47082439fb523d4a5312f18c558a90a99c8dbf44b3",
+        "mouth": "18a28c7a9b9c37ba16e1ef18e78302988d966e4b1158aa75eb2f0a25a488268c",
+        "pucker": "cac83a7daf9a7bbfed20fdd3e8d298f6a489cca7b5b795e83d8d7ee8814bec75",
+        "facePart": "204ddfab36e574005be8f4ca0e53c2f28b428429797b09d50d1c0645730aaef3",
+        "faceAnchor": "a57d077ff9e459aea16e5df891f819e69aa2364540a6e9c586e086dafba579b7",
+        "armPump": "5023d90214d476babd660ae23ecdf86a0d559e487e422c908f32dcc3e49406e8",
+        "suitRole": "3a85edce4b6b74d021688910beff0b1c8c881f90f4ccd31af30a872cba4a3dd5",
+        "color": "f83eaabf73d61688806b51a305eab3e64d60b04fc9dfa149ab212b87cbbc736f"
+      }
+    },
+    {
+      "style": 4,
+      "changed": [
+        "pucker"
+      ],
+      "before": {
+        "position": "4fb5b03a4522604470e3dc454b72076361f7ac8fcb1224cf85090ed262205d08",
+        "normal": "bc2cad98f38ec90a0a6ebc32efb19eac2af9a3619a0742efbf9dcd1828674ee8",
+        "region": "88472aecfc6e8b32c835330686a7cfecb39db3c3b4cec15dd0bdf32013a6ebdd",
+        "bare": "ea0fc318e38722b4ce598bd497021784b26d0ebdc49d98f62fe6bf4db33a39fb",
+        "noseBlend": "e029d4c12b08f0c74965f9632ff7d5a208d86d22314ada2e56b59f2060004137",
+        "skinIndex": "bf77a1ffe2c845a54be4ea7fc76040a8cf319c3ea89d66bfd663ff41c72d6158",
+        "skinWeight": "72b7368c5fc923406ac1a690777291d321f793771429fb6922ef66d660c2362c",
+        "rifleSkull": "617f1f38f8877761050ad9734ffe3341d602c39d6d554a83261bf7c59193fc21",
+        "rifleNose": "7235ef4dfb2bb98bf84be1feb1a446927e513d029c8e10cad1d325fbb8bc05ca",
+        "rifleJaw": "a0027464397315a5aabcde35cf51bb57d302fb987069c4d3b667c18a3a79aad4",
+        "mouth": "3162574ac1bc30b9d8d0a154ca0d73b86ea3032433635d027f32d6adb3d82ade",
+        "pucker": "6f57dbeccffa109e237dc6c9cd5cf06aed7fb17816fc40df6be79aa57fcc974d",
+        "facePart": "6232e1a6c7d99a27c4d1751f220da2d6ee10ecd44f9c4df7ea648e101e5328ee",
+        "faceAnchor": "514317bda1acad303ae59dd9a715b8cee8ccdd7f47f8f54fd9028566daf01b9f",
+        "armPump": "99f4bc735c4bd940d282c18d9336a32408d86270b03c96b41662d7fe9ea2d2f9",
+        "suitRole": "2494eeabdef534025482172dd8fd7a9a29caf4aeb86633ede067ebf822537726",
+        "color": "4d509406d906f8db3a2ba2e680f33b2a7d1b19813d3849c8f47ab000af76ca25"
+      },
+      "after": {
+        "position": "4fb5b03a4522604470e3dc454b72076361f7ac8fcb1224cf85090ed262205d08",
+        "normal": "bc2cad98f38ec90a0a6ebc32efb19eac2af9a3619a0742efbf9dcd1828674ee8",
+        "region": "88472aecfc6e8b32c835330686a7cfecb39db3c3b4cec15dd0bdf32013a6ebdd",
+        "bare": "ea0fc318e38722b4ce598bd497021784b26d0ebdc49d98f62fe6bf4db33a39fb",
+        "noseBlend": "e029d4c12b08f0c74965f9632ff7d5a208d86d22314ada2e56b59f2060004137",
+        "skinIndex": "bf77a1ffe2c845a54be4ea7fc76040a8cf319c3ea89d66bfd663ff41c72d6158",
+        "skinWeight": "72b7368c5fc923406ac1a690777291d321f793771429fb6922ef66d660c2362c",
+        "rifleSkull": "617f1f38f8877761050ad9734ffe3341d602c39d6d554a83261bf7c59193fc21",
+        "rifleNose": "7235ef4dfb2bb98bf84be1feb1a446927e513d029c8e10cad1d325fbb8bc05ca",
+        "rifleJaw": "a0027464397315a5aabcde35cf51bb57d302fb987069c4d3b667c18a3a79aad4",
+        "mouth": "3162574ac1bc30b9d8d0a154ca0d73b86ea3032433635d027f32d6adb3d82ade",
+        "pucker": "f53ba6f335b3e75b84ed71041d8f5d6898bc3e913afd6497da394b49d0247e4f",
+        "facePart": "6232e1a6c7d99a27c4d1751f220da2d6ee10ecd44f9c4df7ea648e101e5328ee",
+        "faceAnchor": "514317bda1acad303ae59dd9a715b8cee8ccdd7f47f8f54fd9028566daf01b9f",
+        "armPump": "99f4bc735c4bd940d282c18d9336a32408d86270b03c96b41662d7fe9ea2d2f9",
+        "suitRole": "2494eeabdef534025482172dd8fd7a9a29caf4aeb86633ede067ebf822537726",
+        "color": "4d509406d906f8db3a2ba2e680f33b2a7d1b19813d3849c8f47ab000af76ca25"
+      }
+    }
+  ],
+  "checkpointSources": {
+    "src/avatar.js": "ff50f60a389f87a6243370b2c6de4292b978836d2f1ae040d827586c76e50791",
+    "src/config.js": "f53eab6c18fe8d02ae06626b8f20b84ad0eca3943f5a779239b089ced99e75d6",
+    "src/olof.js": "f223b1a3cafa734606f5c6d477f21490549846a6f6f979238de1ab890be11ac6",
+    "src/avatarpreview.js": "ed79d8f1a4a98783d1d30fb1996daacfb76227bb9d24a55f6360f9781fc6e216",
+    "tools/verify-avatar-head.html": "f3f71e21c5c69af864aea332f2a76cdc072d980a3609c01aa99fd00ac2349d1f"
+  },
+  "finalSources": {
+    "src/avatar.js": "9bb29d610cc8e489b5e44cf05e5487d4e890ce469d783f20b2e097bd01754824",
+    "src/config.js": "f53eab6c18fe8d02ae06626b8f20b84ad0eca3943f5a779239b089ced99e75d6",
+    "src/olof.js": "f223b1a3cafa734606f5c6d477f21490549846a6f6f979238de1ab890be11ac6",
+    "src/avatarpreview.js": "ed79d8f1a4a98783d1d30fb1996daacfb76227bb9d24a55f6360f9781fc6e216",
+    "tools/verify-avatar-head.html": "f3f71e21c5c69af864aea332f2a76cdc072d980a3609c01aa99fd00ac2349d1f"
+  },
+  "staticUniforms": {
+    "uKiss": 0
+  }
+}
