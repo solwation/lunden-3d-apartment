@@ -6,6 +6,7 @@ import { carGeometry, bikeGeometry, bikeSpokeTexture, standGeometry } from './st
 import { groundY } from './surroundings.js';
 import { sfx } from './audio.js';
 import { escapeField, exitTexture, EXIT_CELLS, planTexture } from './escape.js';
+import { garageBikeRowLod } from './garagelods.js';
 
 // The garage under the courtyard and Hus L's basement (#357, #417, GARAGE in config — the layout is the våning −1
 // plan's; heights, stalls, cages and lights are ours). The entrance hall behind the garage door (SITE.terrain.garageDoor)
@@ -476,11 +477,11 @@ export class Garage {
       a.floors.forEach((f, i) => add([f.geo], a.mats.floors[i]));
       delete a.geos;
     }
-    // the rack rows' bikes (#704): per row and area a near and a far mesh in the area's shell material, swapped by distance in update()
+    // #704/#1988: each row keeps its two geometries; their own dither materials follow the area's live shell colour
     this.bikeRows = [...bikeRows.values()].map((r) => {
       const [hi, lo] = [r.hi, r.lo].map((list) => { const m = new THREE.Mesh(mergeGeometries(list), r.area.mats.shell); m.raycast = () => {}; r.area.group.add(m); m.geometry.computeBoundingSphere(); return m; });
       r.hiMesh = hi; r.loMesh = lo;
-      return { hi, lo, c: hi.geometry.boundingSphere.center, r: hi.geometry.boundingSphere.radius };
+      return garageBikeRowLod(hi, lo, r.area.mats.shell);
     });
     // All basement bike spokes share one small alpha-textured draw, independent of the room light batches.
     let bikeSpokesMesh = null;
@@ -762,7 +763,7 @@ export class Garage {
         m.geometry.computeBoundingSphere(); return m;
       });
       r.hiMesh = hi; r.loMesh = lo;
-      return { hi, lo, c: hi.geometry.boundingSphere.center, r: hi.geometry.boundingSphere.radius };
+      return garageBikeRowLod(hi, lo, r.area.mats.shell);
     });
 
     let storageBikeSpokesMesh = null;
@@ -1397,13 +1398,9 @@ export class Garage {
     this.carArea.visible = vis !== 'park'; // no whole-garage car batch through a small park entrance
     for (const a of Object.values(this.areas)) a.group.visible = vis === true || (vis === 'park' ? a.name === this.parkEntrance(camera.position, true)?.area : a.name === 'entrance');
     this.blackout.visible = !vis;
-    if (vis) for (const b of this.bikeRows) { // a rack row's bikes: in full near the camera, the coarse set beyond (#704)
-      const near = Math.hypot(camera.position.x - b.c.x, camera.position.z - b.c.z) < G.bikeLodNear + b.r;
-      b.hi.visible = near; b.lo.visible = !near;
-    }
-    if (vis && this.storageBikeRows) for (const b of this.storageBikeRows) {
-      const near = Math.hypot(camera.position.x - b.c.x, camera.position.z - b.c.z) < G.bikeLodNear + b.r;
-      b.hi.visible = near; b.lo.visible = !near;
+    if (vis) { // #1988: the same 10 m + row radius, now with both levels in its dither zone
+      for (const row of this.bikeRows) row.update(camera.position);
+      for (const row of this.storageBikeRows ?? []) row.update(camera.position);
     }
     if (this.bicycles) for (const b of this.bicycles) {
       if (!b.atSource) b.updateLighting();

@@ -9302,3 +9302,8 @@ packing cost and normal/lowmem controls; `tools/normalpackingpot.cjs` illustrate
 real producer before later scene transforms normalize it. Use the pinned bare-three
 resolver and shared browser wrapper. [Source-bound evidence and limitations](../verification/1875/README.md)
 distinguish improved precision from unproven visible changes in current scene views.
+
+
+## Parked-car and garage bicycle fades (#1988)
+
+`node --test tools/lodtest.mjs tools/vehiclelodtest.mjs` checks complementary membership/packing, car layer identity and instance colours, empty culling, camera movement between repacks, native material isolation, colour/depth ranges, frozen phone shadow tiles and garage horizontal/radius/live-lighting semantics. `tools/browsertest.sh node tools/vehiclelodbrowser.cjs GAME docs/verification/1988` renders actual car builders and actual Garage rack geometry in bounded component scenes. It compares near/mid/far against native-material hard controls with the same camera, saves images and checks actual Garage sensor colours/shader errors. `--lighting-only` repeats only a corrected lighting fixture; accepted view evidence is retained. [Exact executed phases, initial fixture failure, correction, costs and limits](../verification/1988/README.md).

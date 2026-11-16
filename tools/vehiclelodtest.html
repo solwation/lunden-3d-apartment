@@ -1,0 +1,42 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Bilar och garagecyklar – LOD #1988</title><link rel="icon" href="data:,">
+<style>body{margin:0;background:#e8edf1;font:16px system-ui;color:#243342}header{height:60px;box-sizing:border-box;padding:9px 16px}small{display:block;color:#526477}canvas{display:block}</style>
+<header><strong id="title">Laddar modeller…</strong><small>Avgränsad modellvy med spelets faktiska geometrier och material · samma kamera för jämförelsen</small></header>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as T from 'three';
+import { carGeometry, carFarGeometry } from '../src/streetlife.js';
+import { Garage } from '../src/garage.js';
+import { addCarLod, updateCarLods, carLodState } from '../src/viewlod.js';
+import { updateInstanceLods, lodFade } from '../src/lod.js';
+import { VIEW_LOD, GARAGE } from '../src/config.js';
+const renderer = new T.WebGLRenderer({ antialias:true, preserveDrawingBuffer:true }); renderer.setSize(960,540);renderer.setPixelRatio(1);renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.outputColorSpace=T.SRGBColorSpace;document.body.append(renderer.domElement);
+const camera = new T.PerspectiveCamera(30,960/540,.05,200);
+const scene = () => { const s=new T.Scene();s.background=new T.Color(0xdce6ed);s.add(new T.HemisphereLight(0xffffff,0x778596,2));const sun=new T.DirectionalLight(0xfff4dd,3);sun.position.set(-8,12,6);sun.castShadow=true;Object.assign(sun.shadow.camera,{left:-10,right:10,top:10,bottom:-10,near:.1,far:40});sun.shadow.mapSize.set(1024,1024);sun.shadow.bias=-.0001;s.add(sun);return s; };
+const ground = (s,x=0,y=0,z=0) => { const m=new T.Mesh(new T.PlaneGeometry(300,300),new T.MeshStandardMaterial({color:0x85917d,roughness:1}));m.rotation.x=-Math.PI/2;m.position.set(x,y-.015,z);m.receiveShadow=true;s.add(m);return m; };
+const mats = () => [new T.MeshStandardMaterial({color:0xffffff,roughness:.25,metalness:.35}),new T.MeshStandardMaterial({vertexColors:true,roughness:.3,metalness:.45}),new T.MeshStandardMaterial({color:0x33495c,roughness:.05,metalness:.55}),new T.MeshStandardMaterial({color:0x141517,roughness:.85})];
+const carGeo=carGeometry(), cars=[];
+for(const reach of [VIEW_LOD.carNearDesktop,VIEW_LOD.carNear]){
+ const faded=scene(),hard=scene();ground(faded);ground(hard);const materials=mats();
+ const near=carGeo.map((g,j)=>{const m=new T.InstancedMesh(g,materials[j],1);m.setMatrixAt(0,new T.Matrix4());if(!j)m.setColorAt(0,new T.Color(0x9e3024));m.castShadow=m.receiveShadow=true;faded.add(m);return m;});
+ const original=near.map(m=>{const b=new T.InstancedMesh(m.geometry,m.material,1);b.setMatrixAt(0,new T.Matrix4());if(m.instanceColor)b.setColorAt(0,new T.Color(0x9e3024));b.castShadow=b.receiveShadow=true;hard.add(b);return b;});
+ const low=addCarLod(near,reach);const lowOriginal=new T.InstancedMesh(carFarGeometry(),new T.MeshStandardMaterial({vertexColors:true,roughness:.3,metalness:.3}),1);lowOriginal.setMatrixAt(0,new T.Matrix4());lowOriginal.setColorAt(0,new T.Color(0x9e3024));lowOriginal.castShadow=lowOriginal.receiveShadow=true;hard.add(lowOriginal);
+ cars.push({reach,faded,hard,near,original,low,lowOriginal,index:carLodState().length-1});
+}
+const garage=new Garage(),row=garage.bikeRows[0],area=Object.values(garage.areas).find(a=>a.group===row.hi.parent),bikeFaded=new T.Scene(),bikeHard=new T.Scene();
+for(const s of [bikeFaded,bikeHard]){s.background=new T.Color(0xdce6ed);ground(s,row.c.x,GARAGE.floor,row.c.z);s.add(new T.HemisphereLight(0xffffff,0x778596,2));}
+const bikeHi=new T.Mesh(row.hi.geometry,area.mats.shell),bikeLo=new T.Mesh(row.lo.geometry,area.mats.shell);bikeHard.add(bikeHi,bikeLo);bikeFaded.add(row.hi,row.lo);
+for(const s of [bikeFaded,bikeHard])if(garage.bikeSpokesMesh){const m=garage.bikeSpokesMesh.clone();m.geometry=garage.bikeSpokesMesh.geometry;m.material=garage.bikeSpokesMesh.material;s.add(m);}
+garage.setLevel(area,1);
+const copyInfo=()=>({calls:renderer.info.render.calls,triangles:renderer.info.render.triangles});
+window.__vehicles={renderer,camera,garage,row,cars,measure(kind,d,mode='fade'){
+ let s,level,fade;
+ if(kind==='garage'){
+  camera.position.set(row.c.x,row.c.y+.35,row.c.z+d);camera.lookAt(row.c.x,row.c.y,row.c.z);camera.updateMatrixWorld(true);garage.update(0,{pos:camera.position,below:true,inCore:false},camera);garage.setLevel(area,1);updateInstanceLods(camera);
+  const near=d<GARAGE.bikeLodNear+row.r;bikeHi.visible=near;bikeLo.visible=!near;s=mode==='fade'?bikeFaded:bikeHard;level={near:row.hi.visible,far:row.lo.visible};fade=lodFade(d,row.range.value.x,row.range.value.y);
+ }else{
+  const c=cars[kind==='phone'?1:0];camera.position.set(0,1.6,Math.sqrt(d*d-1.6*1.6));camera.lookAt(0,.7,0);camera.updateMatrixWorld(true);updateCarLods(camera);updateInstanceLods(camera);
+  const near=d<c.reach;c.original.forEach(m=>m.visible=near);c.lowOriginal.visible=!near;s=mode==='fade'?c.faded:c.hard;level=carLodState()[c.index];fade=lodFade(d,c.reach-VIEW_LOD.fade/2,c.reach+VIEW_LOD.fade/2);
+ }
+ renderer.shadowMap.needsUpdate=true;renderer.render(s,camera);return{...copyInfo(),level,fade};
+},title(text){document.getElementById('title').textContent=text;},lighting(k){garage.setLevel(area,k);return[row.hi.material.color.r,row.lo.material.color.r,area.mats.shell.color.r]},stats(){return{carTriangles:carGeo.map(g=>(g.index??g.attributes.position).count/3),carFarTriangles:(carFarGeometry().index??carFarGeometry().attributes.position).count/3,rows:garage.bikeRows.length,storageRows:garage.storageBikeRows.length,garageCentre:row.c.toArray(),garageRadius:row.r,near:GARAGE.bikeLodNear+row.r,geometryPreserved:bikeHi.geometry===row.hi.geometry&&bikeLo.geometry===row.lo.geometry,spokes:!!garage.bikeSpokesMesh,garageShadow:[row.hi.castShadow,row.lo.castShadow],carDepth:cars.every(c=>c.near.every(m=>!!m.customDepthMaterial)&&!!c.low.customDepthMaterial)}}};
+</script></html>

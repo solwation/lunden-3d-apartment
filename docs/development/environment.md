@@ -1172,3 +1172,10 @@ fits each footing to `renderedTerrainY`. No existing terrain/tree/building/path 
 The local Player support is bounded to this field/runoff and its narrow east spectator apron;
 outside it, the previous ground-support priority remains unchanged. See
 [local contacts, access, budget and app evidence](../verification/1853/README.md).
+
+
+## Parked cars and garage bicycle-row fades (#1988)
+
+`viewlod.js` keeps the original four car material batches and `carFarGeometry`; one car is packed once per material layer and once into the far batch during the fade. The former 30 m phone / 60 m desktop boundary is the centre of an 8 m dither zone. `garageBikeRowLod` in `garagelods.js` keeps the actual merged rack/storage near/far geometry and the horizontal 10 m + row bounding-sphere radius rule, with a 4 m zone centred on that boundary. Both widths are visual guesses in `config.js`.
+
+Garage clones share the area's live shell `Color`, so fluorescent sensor lighting reaches both levels. Spokes, bike removal/return vertex ranges and riding behaviour are unchanged. Phone car shadow tiles freeze before materials/buffers change and retain full-detail shadows; untiled car casters use complementary colour/depth dither. [Scoped builder checks, measured costs and inspected images](../verification/1988/README.md).

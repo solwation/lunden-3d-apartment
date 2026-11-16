@@ -2374,3 +2374,11 @@ A coarse twin per bike-yard batch (`bikeGeometry(0)`, ~756 triangles a bike agai
 while both levels draw inside the zone (+4 calls). The bikes never switched before, so there was no pop to smooth either: not
 adopted. The prototype (incl. `InstanceLod.relocate()` for moved/ridden instances) is archived outside the repository and named
 in the issue; #1988 (garage bikes, which do have a hard switch) may reuse it. Evidence: [docs/verification/1971](../verification/1971/README.md).
+
+## Parked-car and garage bicycle fades (#1988)
+
+The existing car split now uses complementary dither over 26–34 m on phones and 56–64 m on desktop. Packing still waits for 1 m camera movement and includes a 1 m membership margin, so an extra level can remain submitted briefly outside the visible zone; its shader discards all pixels. Outside that margin, ordinary near/far views keep their previous call/triangle counts. Four near car layers represent the same cars, so `viewlod.js` packs two independent membership bits rather than summing them through `InstanceLod`. Camera uniforms update every frame, including between repacks. Empty batches remain frustum-culled.
+
+Garage rack/storage rows use horizontal distance and the existing 10 m + row radius, now ±2 m. Each row retains its two real geometries and adds just one call while both draw. No spoke/light/shadow draw is added. Original phone shadow tiles remain frozen full-detail; untiled car colour/depth shaders share their range.
+
+Isolated actual-builder renders (including a floor, and the garage's existing spokes) measured cars at near 5 calls/5,138 triangles, mid 6/5,266, far 2/130; the hard control at mid was 2/130. A real garage row measured near 3/9,838, mid 4/14,366, far 3/4,706; its hard mid was 3/4,706. All six ordinary views exactly matched their same-camera hard controls. These are component submission counts, not whole-world, GPU timing or physical-phone performance claims. [Raw measurements, source hashes and images](../verification/1988/README.md).

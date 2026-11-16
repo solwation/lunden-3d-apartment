@@ -2645,7 +2645,7 @@ export const GARAGE = {
   // along their walls (the plan draws racks there): [x0, x1, z, facing ±1 (towards +z / −z)]
   // #704: a rack's bikes and stalls are drawn in full (bikeGeometry(1), ~1 400 triangles a bike) within `bikeLodNear` m of the camera,
   // beyond it as the coarse set (bikeGeometry(0), ~480): the racks' ~110 k triangles in the big hall's view were over budget. *guess*
-  bikeLodNear: 10,
+  bikeLodNear: 10, bikeLodFade: 4, // #1988: guessed 4 m dither zone centred on near + row radius
   rideableBikeRows: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   bikes: [[-41.15,-36.2,.95,1], [-29.75,-25.1,11.6,-1], [-10.6, -5.8, 11.6, -1],
     [-5.0, -0.2, 11.6, -1], [0.55, 5.3, 11.6, -1], [6.1, 10.8, 11.6, -1],  [-29.8, -25.1, 0.95, 1],[-29.8,-27.9,7,-1],[-26.6,-25.1,7,-1], [-24.2, -19.6, 7.0, -1],
@@ -3555,10 +3555,10 @@ export const RESOURCE_PROFILE = { light: { max: LOW_MEMORY.maxTextureSize, devic
 export const SHADOW_TILES = { size: 32, minInstances: 8, minSpread: 40 };
 // #1213 (phones, src/viewlod.js): in the view, a parked car (the north street's car park, the garage) further than `carNear`
 // m from the camera is drawn as a coarse body (streetlife.js `carFarGeometry`, ~100 instead of ~5.1 k triangles), all of
-// them in one draw call; the near ones keep the full batches. A car changes side `band` m past `carNear` (no flicker on
-// the edge); the split is redone when the camera has moved `step` m. All three *guess* (judged by screenshots, not a device).
+// them in one draw call; the near ones keep the full batches. #1988: both levels dither-fade through `fade` m centred on
+// the old near distance; packing includes a `step` m margin and is redone after moving `step` m. All are visual guesses.
 // #1246: desktop uses the same split from `carNearDesktop` (*guess*: a parked car's silhouette and colour hold up to ~60 m).
-export const VIEW_LOD = { carNear: 30, carNearDesktop: 60, band: 2, step: 1 };
+export const VIEW_LOD = { carNear: 30, carNearDesktop: 60, fade: 8, step: 1 };
 
 // Camera near plane by altitude (#1276): the 24-bit depth buffer resolves about d²/(near·2²⁴) m at distance d, so with the
 // walking near plane of `min` m (0.05) coplanar layers (window panes and reveals, roofs, road/ground overlays, 2 mm insets)
