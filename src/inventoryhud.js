@@ -10,7 +10,7 @@ export const INVENTORY_KEYS = ['F1', 'F2', 'F3', 'F4', 'F6'];
 const ICONS = [['isRifle', '🔫'], ['isBow', '🏹'], ['isHarpoon', '🔱'], ['isFishingRod', '🎣'], ['isBinoculars', '🔭'], ['isSquirrelNut', '🌰'], ['isMussel', '🦪'],
   ['isCaughtFish', '🐟'], ['isSharkFin', '🦈'], ['isSprayCan', '🎨'], ['isCup', '☕'], ['isMiele', '🐈']];
 const BY_CLASS = { Saber: '⚔️', Blaster: '🔫', Wand: '🪄', Flashlight: '🔦', Basketball: '🏀',
-  Glass: '🍷', Bottle: '🍾', BeerCan: '🍺', Milk: '🥛', PopcornTub: '🍿', FriesBag: '🍟' }; // #1960: the drinks and snacks that can be carried
+  Glass: '🍷', Bottle: '🍾', BeerCan: '🍺', Milk: '🥛', PopcornTub: '🍿', FriesBag: '🍟', Chicken: '🐔', ChickenPiece: '🍗' }; // #1960: the drinks and snacks that can be carried
 const FRUIT = { apple: '🍎', pear: '🍐', orange: '🍊', clementine: '🍊', banana: '🍌' }; // fruit.js kinds
 // #1961: the life simulator's things by instance type (items.js), else by tag
 const LIFE_ICON = { toiletRoll: '🧻', hallJacket: '🧥', hallShoes: '👟', wateringCan: '🚿', laundryClothes: '👕', eggCarton: '🥚', rawEgg: '🥚', friedEgg: '🍳', sausagePack: '🌭', sausage: '🌭',

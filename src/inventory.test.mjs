@@ -73,7 +73,7 @@ test('nuts stack up to eight on one place and come back one by one', () => {
 
 test('a thing that cannot be carried keeps the old rule', () => {
   reset();
-  const cup = thing('ChickenPiece', { isChickenPiece: true }), bow = thing('Bow'), cup2 = thing('ChickenPiece', { isChickenPiece: true });
+  const cup = thing('Cat', { isMiele: true }), bow = thing('Bow'), cup2 = thing('Cat', { isMiele: true });
   assert.equal(pocketable(cup), false);
   bow.take();
   assert.equal(cup.take(), true); // the bow is carried, the cup in the hand
@@ -154,12 +154,10 @@ test('keep: a cup in the hand over carried things stays in the hand', async () =
 });
 
 // #1960: food and cups are carried too; their state (contents, bites, dirty) is untouched while they are away from the hand.
-test('food, cups and glasses are pocketable; chicken pieces, the whole bird and a picnic glass are not', () => {
+test('food, cups and glasses are pocketable; a picnic glass is not (the chicken: #1983 below)', () => {
   for (const [cls, flags] of [['Cup', { isCup: true }], ['Fruit', { isFruit: true }], ['Object', { isFish: true }], ['FriesBunch', { isFries: true }], ['Glass', {}], ['Bottle', {}], ['PopcornTub', {}], ['BeerCan', {}], ['Milk', {}]]) {
     assert.ok(pocketable(thing(cls, flags)), cls);
   }
-  assert.equal(pocketable(thing('ChickenPiece', { isChickenPiece: true })), false);
-  assert.equal(pocketable(thing('Chicken')), false);
   assert.equal(pocketable(thing('Glass', { isSharedPicnic: true })), false);
   assert.equal(pocketable(thing('Cup', { isCup: true, broken: true })), false);
 });
@@ -251,4 +249,18 @@ test('a record with a carried thing loads it back as carried, and a new visit se
   assert.deepEqual(a.get(bag.id).place, { at: 'pocket' });
   const b = new Items(ITEMS); b.load(rec, { hand: false });
   assert.notEqual(b.get(bag.id).place.at, 'pocket');
+});
+
+// #1983: the whole chicken and its pieces are carried; several pieces at once, none replacing another.
+test('chicken: the whole bird and several pieces share places and swap into the hand', () => {
+  reset();
+  const bird = thing('Chicken'), p1 = thing('ChickenPiece', { isChickenPiece: true }), p2 = thing('ChickenPiece', { isChickenPiece: true });
+  assert.ok(pocketable(bird) && pocketable(p1));
+  assert.equal(p1.take(), true); assert.equal(handBusy(p2), false);
+  assert.equal(p2.take(), true); assert.equal(bird.take(), true);
+  assert.equal(counts(), '11100'); assert.equal(p1.puts + p2.puts + bird.puts, 0);
+  assert.ok(isPocketed(p1) && isPocketed(p2) && heldItem() === bird);
+  selectSlot(0); assert.equal(heldItem(), p1); assert.ok(isPocketed(bird));
+  p1.broken = true; p1.held = false; setHeld(null); inventoryTick(); // eaten / discarded: its place is free, the others stay
+  assert.equal(counts(), '01100'); assert.ok(isPocketed(p2) && isPocketed(bird));
 });

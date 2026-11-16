@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { forgetBicycleHand } from './keep.js';
-import { Holdable, setHeld, heldItem, isStowed } from './holdable.js';
+import { Holdable, setHeld, heldItem, isStowed, handBusy, forgetPocketed } from './holdable.js';
 import { sfx } from './audio.js';
 import { chicken } from './fridge.js';
 import { CHICKEN as C } from './config.js';
@@ -52,8 +52,10 @@ export class Chicken extends Holdable {
     ];
     this.body = [ch[1], ch[2]];
     this.bodyLeft = C.bodyBites;
-    for (const p of this.parts) p.target = { name: p.name, kind: 'holdable', verb: 'bryta loss', pickable: model, item: this, get blocked() { return !!heldItem(); }, toggle: () => this.breakOff(p) };
-    this.bodyTarget = { name: 'en bit av kycklingen', kind: 'holdable', verb: 'bryta loss', pickable: model, item: this, get blocked() { return !!heldItem(); }, toggle: () => this.breakOff(null) };
+    this.pieces = []; // #1983: every broken-off piece still alive (in the hand, carried in an inventory place): several at once
+    const busy = () => heldItem() === this || handBusy(this); // a carried-able thing in the hand makes room in an inventory place (#1954)
+    for (const p of this.parts) p.target = { name: p.name, kind: 'holdable', verb: 'bryta loss', pickable: model, item: this, get blocked() { return busy(); }, toggle: () => this.breakOff(p) };
+    this.bodyTarget = { name: 'en bit av kycklingen', kind: 'holdable', verb: 'bryta loss', pickable: model, item: this, get blocked() { return busy(); }, toggle: () => this.breakOff(null) };
     this.done = false;
     this.paint(0);
     const mat = new THREE.SpriteMaterial({ map: smokeTexture(), color: 0xb9bcc0, transparent: true, depthWrite: false, opacity: 0 });
@@ -86,8 +88,8 @@ export class Chicken extends Holdable {
 
   /** #1124: the last piece of a cooked bird eaten: a fresh raw chicken on its plate in the fridge (a new generation). */
   renewIfEaten() {
-    if (!this.done || this.bodyLeft > 0 || !this.parts.every((p) => p.gone) || heldItem()?.isChickenPiece) return false;
-    this.piece = null;
+    if (!this.done || this.bodyLeft > 0 || !this.parts.every((p) => p.gone) || this.pieces.length) return false; // (#1983: a piece in the hand or carried is still part of this bird)
+    
     this.loadState({ v: 1, generation: this.generation + 1, cooked: 0, bodyLeft: C.bodyBites, gone: [], place: null });
     if (this.life) { this.life.dirty = true; this.life.say('En ny rå kyckling ligger i kylen.'); }
     this.event('chickenRestocked', { surface: 'fridge' });
@@ -152,7 +154,7 @@ export class Chicken extends Holdable {
 
   take({silent=false} = {}) {
     const fromGrill = this.inGrill, fromOven = this.inOven;
-    if (heldItem() && heldItem() !== this) return;
+    if (handBusy(this)) return; // #1983: a carried-able thing in the hand goes to an inventory place
     this.lastRest = this.placementState();
     super.take(); this.inPan = this.inGrill = this.inOven = false; this.plate.visible = true; this.model.scale.setScalar(1);
     this.retarget(); this.life && (this.life.dirty = true);
@@ -170,7 +172,7 @@ export class Chicken extends Holdable {
 
   /** F: home and quiet; cooking, missing/eaten parts and reward flags survive (#708). */
   reset() {
-    if (heldItem()?.isChickenPiece) heldItem().putBack();
+    if (heldItem()?.isChickenPiece) heldItem().putBack(); // (carried pieces stay carried)
     this.silentHome = true;
     if (this.held) this.putBack(); else this.goHome();
     this.silentHome = false;
@@ -187,7 +189,7 @@ export class Chicken extends Holdable {
 
   loadState(s) {
     if (s?.v !== 1) return;
-    if (heldItem()?.isChickenPiece) heldItem().putBack();
+    for (const q of [...this.pieces]) q.discard(); // #1983: the bird is renewed / reloaded: its pieces (in hand or carried) go with the old state
     if (heldItem() === this) setHeld(null); this.held = false; this.goHome({ silent: true });
     this.generation = Number.isSafeInteger(s.generation) ? Math.max(0, s.generation) : 0;
     this.id = this.generation ? `chicken:${this.generation}` : 'chicken';
@@ -240,7 +242,7 @@ export class Chicken extends Holdable {
   /** #1034: x.chicken owns the bird; this record only identifies its already held portion. */
   saveStowed(item) {
     if (item === this) return { whole:true, generation:this.generation };
-    if (item !== this.piece || !item.isChickenPiece) return null;
+    if (!item.isChickenPiece || !this.pieces.includes(item)) return null;
     return { whole:false, generation:this.generation, part:item.part ? this.parts.indexOf(item.part) : null,
       body:item.part ? null : item.meta.bodyIdx, bites:item.bites, id:item.portionId };
   }
@@ -250,12 +252,11 @@ export class Chicken extends Holdable {
     if (s.whole) { this.take({silent:true}); return this; }
     if (!this.done || !Number.isSafeInteger(s.bites) || s.bites<0 || s.bites>=C.bites) return null;
     const part=Number.isInteger(s.part)&&s.part>=0&&s.part<this.parts.length ? this.parts[s.part] : null;
-    if (part ? !part.gone || s.body!==null : s.part!==null || !Number.isInteger(s.body) || s.body<1 || s.body>C.bodyBites || this.bodyLeft!==s.body-1) return null;
+    if (part ? !part.gone || s.body!==null : s.part!==null || !Number.isInteger(s.body) || s.body<1 || s.body>C.bodyBites || s.body-1<this.bodyLeft) return null; // (#1983: the body gives several pieces; each index is one already withdrawn)
     const id=part ? `chicken:${this.generation}:part:${s.part}` : `chicken:${this.generation}:body:${s.body}`;
-    if(s.id!==id)return null;
-    this.piece?.model.removeFromParent();
+    if(s.id!==id || this.pieces.some(q=>q.portionId===id))return null;
     const item=new ChickenPiece(this,part,part?.meshes??this.body,{partIdx:s.part,bodyIdx:s.body,generation:this.generation});
-    item.bites=s.bites; item.model.scale.setScalar(1-s.bites/(C.bites+.4)); this.piece=item; item.take(); return item;
+    item.bites=s.bites; item.model.scale.setScalar(1-s.bites/(C.bites+.4)); this.pieces.push(item); item.take(); return item;
   }
   placeAt(p,yaw) { forgetBicycleHand(this); super.placeAt(p,yaw); }
 
@@ -271,7 +272,7 @@ export class Chicken extends Holdable {
 
   /** Break a leg / wing (p) or a piece of the body (null) off into the hand. */
   breakOff(p) {
-    if (heldItem() || !this.done) return;
+    if (!this.done || (heldItem() === this || handBusy(this))) return;
     const src = p ? p.meshes : this.body;
     const partIdx = p ? this.parts.indexOf(p) : null;
     const bodyIdx = p ? null : this.bodyLeft;
@@ -283,7 +284,7 @@ export class Chicken extends Holdable {
     const piece = new ChickenPiece(this, p, src, { partIdx, bodyIdx, generation: this.generation });
     this.retarget();
     this.life && (this.life.dirty = true);
-    this.piece = piece;
+    this.pieces.push(piece);
     piece.take();
     sfx.rustle?.(this.where());
   }
@@ -300,7 +301,7 @@ export class Chicken extends Holdable {
 
   update(dt) {
     super.update(dt);
-    this.piece?.update(dt); // a piece in the hand being eaten
+    for (const q of this.pieces) q.update(dt); // a piece in the hand being eaten
     if (this.inGrill && this.model.parent !== this.grill?.object) this.inGrill = false;
     if (this.inOven && this.model.parent !== this.oven?.model) this.inOven = false;
     const grilling = this.inGrill && this.grill?.on, roasting = this.roasting;
@@ -388,15 +389,27 @@ export class ChickenPiece {
     this.model.rotation.set(0.3 - 0.2 * k, 0.6, 0.2);
   }
 
-  /** Something else was taken (or F): the piece goes back on the bird. */
+  /** Something else was taken that cannot be carried (or F): the piece goes back on the bird. */
   putBack() {
     forgetBicycleHand(this);
     if (!this.held) return;
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.model.removeFromParent();
+    this.leave();
     this.bird.restore(this.part);
   }
+
+  /** #1983: the piece ceases to exist (the bird was renewed or reloaded): out of the hand, the inventory and the bird's list. */
+  discard() {
+    this.broken = true;
+    if (heldItem() === this) setHeld(null);
+    this.held = false;
+    this.model.removeFromParent();
+    forgetPocketed(this);
+    this.leave();
+  }
+  leave() { const i = this.bird.pieces.indexOf(this); if (i >= 0) this.bird.pieces.splice(i, 1); }
 
   get useLabel() { return this.held ? 'Ät' : null; }
   use() {
@@ -418,6 +431,7 @@ export class ChickenPiece {
         this.held = false;
         setHeld(null);
         this.model.removeFromParent();
+        this.leave();
         this.bird.onEaten?.(this);
         this.bird.onConsume?.(this, portionId);
         this.bird.life && (this.bird.life.dirty = true);

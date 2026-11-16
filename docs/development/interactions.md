@@ -545,7 +545,8 @@ src/inventoryhud.js    #1954: the inventory's HUD row (`#inventory`, DOM only): 
                        so `handBusy(item)` is false while there is a place for `item`; `selectSlot(i)` / `cycleSlot(dir)` swap the hand.
                        A carried thing is detached like the bicycle's stowed hand (no hooks; `isStowed` covers both) and loses its
                        place if it was reset, broken or re-homed meanwhile (`inventoryTick`). Squirrel nuts stack, `stack` (8) to a
-                       place; the next comes into the hand when the held one is gone. Everything else (the chicken and its pieces, the
+                       place; the next comes into the hand when the held one is gone. #1983: the whole chicken and its pieces are carried too (chicken.js keeps
+                       `pieces`, a list: several pieces at once; `inventorychickentest.cjs`). Everything else (the
                        cat, drawings, paper) keeps one-at-a-time and cannot be swapped away. Saved across a reload (#1959, keep.js
                        `inventory`, see storage.md): every place, the nut stacks and the active place. `node --test src/inventory.test.mjs`,
                        tools/inventorykeeptest.cjs (real reload), tools/inventoryfoodtest.cjs (#1960: cup, fruit, fish finger, glass),
