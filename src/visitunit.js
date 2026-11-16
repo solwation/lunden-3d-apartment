@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { STANDARD } from './config.js';
+import { STANDARD, PERF } from './config.js';
+import { lowMemory } from './lowmemory.js';
+import { lodRange, patchDitherLod, lodDepthMaterial } from './lod.js';
+import { INTERACTION_MATERIAL_SOURCE } from './interactionoutline.js';
 
 // A flat you can walk into besides ours (#574, #573, VISIT_UNITS in config). world.js builds it like ours — from its floor
 // plan, in a group of its own placed at its slot in Hus L (`ox` along x, `oz` along z: plan coordinates are the group's) —
@@ -13,6 +16,28 @@ import { STANDARD } from './config.js';
 // `levels`: per level { name, floor (absolute y), ceiling (RH), top (the next floor), rect (its footprint, plan
 // coordinates), hole (the opening in its floor, plan coordinates) }; `stair` = { height(x, z), underside(x, z) } in plan
 // coordinates (absolute y); `soffits`: its lowered ceilings (SOFFITS' shape, plan coordinates; the lamps hang below them, #620); `ground`: its Entréplan is on the street (L1004: its walls are level 0's, from outside too).
+
+// #1965: `&nolod` = no mid level (the old two levels, for A/B measurements; the trees' switch, #1958)
+const NO_LOD = typeof location !== 'undefined' && /[?&]nolod\b/.test(location.search);
+// what a merged mid-level geometry may carry (`fi`: the kitchen fronts' index, standardinterior.js batchFronts)
+const PLAIN = new Set(['position', 'normal', 'uv', 'color', 'fi']);
+const SHADOW_SIDE = { [THREE.FrontSide]: THREE.BackSide, [THREE.BackSide]: THREE.FrontSide, [THREE.DoubleSide]: THREE.DoubleSide }; // (three's own choice)
+
+/** The triangles `start`..`start + count` of a non-indexed geometry as a geometry of their own (one material group). */
+function slice(g, { start, count }) {
+  const out = new THREE.BufferGeometry();
+  for (const [n, a] of Object.entries(g.attributes)) out.setAttribute(n, new THREE.BufferAttribute(a.array.slice(start * a.itemSize, (start + count) * a.itemSize), a.itemSize, a.normalized));
+  return out;
+}
+/** `g` (a clone) without an index and with every triangle's winding turned (a mirrored part baked into the flat's frame). */
+function flipped(g) {
+  if (g.index) g = g.toNonIndexed();
+  for (const a of Object.values(g.attributes)) {
+    const n = a.itemSize, arr = a.array;
+    for (let i = 0; i + 3 * n <= arr.length; i += 3 * n) for (let k = 0; k < n; k++) { const t = arr[i + n + k]; arr[i + n + k] = arr[i + 2 * n + k]; arr[i + 2 * n + k] = t; }
+  }
+  return g;
+}
 
 const shift = (s, ox, oz) => [s[0] + ox, s[1] + oz, s[2] + ox, s[3] + oz];
 const inRect = (r, x, z) => x > r.x0 && x < r.x1 && z > r.z0 && z < r.z1;
@@ -51,8 +76,10 @@ export class VisitUnit {
     this.detail = object.children.filter((o) => !(o.isMesh && S.has(o.material)) && !outer.has(o));
     object.updateMatrixWorld(true);
     const inv = object.matrixWorld.clone().invert(), parts = new Map();
+    const standsIn = this.standsIn = new Set(); // the meshes the stand-in copies (not copied again by the mid level, #1965)
     const take = (m) => {
       if (!m.isMesh || !(m.material === glass || S.has(m.material))) return;
+      standsIn.add(m);
       let g = m.geometry.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, m.matrixWorld));
       if (g.index) g = g.toNonIndexed();
       for (const n of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(n)) g.deleteAttribute(n);
@@ -66,18 +93,127 @@ export class VisitUnit {
     this.standIn.visible = false;
     object.add(this.standIn);
     this.shown = 'all';
+    this.mid = null; // (buildMid, once everything is in the flat)
   }
 
+  /**
+   * The mid level (#1965, STANDARD.lod): everything of `detail` that is drawn with the flat shut, merged into one mesh per
+   * material (and shadow flags) in the flat's frame, so the ~160-200 draw calls of the doors, fittings, lines and switches
+   * become a few dozen between `near` m and the fade zone. Pixels are the full level's (same geometry, a clone of the same
+   * material that compiles through the source's own `onBeforeCompile`, so the lamp wash and the fronts' shader are in it),
+   * so the swap at `near` is a hard one; at the far end the clones' dithered pixel fade (src/lod.js, `centre`: one point kept at the flat's distance from the camera) takes the inside
+   * away, shadows too (`lodDepthMaterial`). Not merged, drawn as they are until the fade is over (`pass`): shader materials
+   * (wall-ao), the lamps (their lit parts change), anything with attributes of its own and fixed parts with hidden or
+   * specially ordered meshes (the corner shading). Left out: what the stand-in
+   * already shows, hidden things (contents), meshes the small-detail culler has hidden by `near` m, and on phones the
+   * outline lines (PERF.detail.lowMemoryEdgesOutside). Call once, after visitlights.js has added its lamps and switches and
+   * before the first frame; without it (`&nolod`, a failed merge) `cull` keeps the old two levels.
+   */
+  buildMid() {
+    if (this.mid || NO_LOD) return null;
+    const L = STANDARD.lod, D = PERF.detail, object = this.object, centre = { value: new THREE.Vector3(0, -1e6, 0) };
+    const zone = lowMemory ? [L.startPhone, L.endPhone] : [L.start, L.end], range = lodRange(zone[0], zone[1]);
+    object.updateMatrixWorld(true);
+    const inv = object.matrixWorld.clone().invert(), m4 = new THREE.Matrix4(), buckets = new Map(), pass = new Set();
+    const put = (o, mat, geo) => {
+      if (!mat || mat.visible === false) return;
+      const key = `${mat.uuid}|${o.castShadow}|${o.receiveShadow}|${o.renderOrder}`;
+      if (!buckets.has(key)) buckets.set(key, { src: mat, like: o, geos: [] });
+      buckets.get(key).geos.push(geo);
+    };
+    const tiny = (o) => { // (detail.js hides it before `near` m: not in the merged level either)
+      o.geometry.boundingSphere ?? o.geometry.computeBoundingSphere();
+      const r = o.geometry.boundingSphere.radius * o.matrixWorld.getMaxScaleOnAxis();
+      return r < D.maxR && Math.max(D.minDist, r / D.k) <= L.near;
+    };
+    const visit = (o, top) => {
+      if (!o.visible) return;
+      if ((o.isMesh || o.isLineSegments) && o.geometry?.attributes.position && !this.standsIn.has(o)) {
+        const mats = [o.material].flat(), g = o.geometry;
+        if (o.isInstancedMesh || o.isSkinnedMesh || mats.some((m) => m?.isShaderMaterial || m?.userData.lamp) || Object.keys(g.attributes).some((n) => !PLAIN.has(n))) { if (top) pass.add(o); }
+        else if (o.isLineSegments ? !lowMemory : !tiny(o)) {
+          m4.multiplyMatrices(inv, o.matrixWorld);
+          let geo = g.clone().applyMatrix4(m4);
+          if (o.isMesh && m4.determinant() < 0) geo = flipped(geo);
+          if (Array.isArray(o.material)) { if (geo.index) geo = geo.toNonIndexed(); for (const grp of g.groups) put(o, mats[grp.materialIndex], slice(geo, grp)); }
+          else { geo.clearGroups(); put(o, o.material, geo); }
+        }
+      }
+      for (const c of o.children) visit(c, false);
+    };
+    // a fixed part with something hidden in it or drawn in an order of its own (the baked corner shading: shown by the
+    // quality level) stays as it is: what it shows can change after this
+    const moving = new Set(this.targets.map((t) => t.object));
+    const own = (o) => { let f = false; o.traverse((c) => { f ||= !c.visible || c.renderOrder !== 0; }); return f; };
+    for (const o of this.detail) if (!moving.has(o) && own(o)) pass.add(o); else visit(o, true);
+    const group = new THREE.Group(), pairs = [], depth = new Map();
+    group.name = `mid ${this.id}`;
+    try {
+      for (const { src, like, geos } of buckets.values()) {
+        const names = new Map(), indexed = geos.every((g) => g.index);
+        for (const g of geos) for (const [n, a] of Object.entries(g.attributes)) if (!names.has(n)) names.set(n, a);
+        const even = geos.map((g) => {
+          if (!indexed && g.index) g = g.toNonIndexed();
+          for (const [n, a] of names) if (!g.attributes[n]) { // (a part without uv / vertex colour beside parts with it)
+            const arr = new a.array.constructor(g.attributes.position.count * a.itemSize);
+            if (n === 'color') arr.fill(arr instanceof Float32Array ? 1 : 2 ** (8 * arr.BYTES_PER_ELEMENT) - 1);
+            g.setAttribute(n, new THREE.BufferAttribute(arr, a.itemSize, a.normalized));
+          }
+          return g;
+        });
+        const geo = mergeGeometries(even);
+        if (!geo) throw new Error(`material ${src.name || src.type}: parts do not merge`);
+        // the source's look and shader (compiled through its own callback, whatever patches it later), plus the dither
+        const mat = src.clone();
+        mat[INTERACTION_MATERIAL_SOURCE] = src; // (lampwash.js patches the source, never this delegate)
+        mat.onBeforeCompile = function (shader, renderer) { src.onBeforeCompile.call(this, shader, renderer); };
+        mat.customProgramCacheKey = () => src.customProgramCacheKey();
+        patchDitherLod(mat, { range, centre });
+        pairs.push({ src, mat, version: src.version });
+        const mesh = like.isLineSegments ? new THREE.LineSegments(geo, mat) : new THREE.Mesh(geo, mat);
+        mesh.castShadow = like.castShadow; mesh.receiveShadow = like.receiveShadow; mesh.renderOrder = like.renderOrder;
+        if (mesh.castShadow) {
+          const side = src.shadowSide ?? SHADOW_SIDE[src.side];
+          if (!depth.has(side)) depth.set(side, lodDepthMaterial({ range, centre, side }));
+          mesh.customDepthMaterial = depth.get(side);
+        }
+        mesh.raycast = () => {}; // (drawn only: E, shots and sight lines go to the real parts)
+        mesh.userData.noDetail = true; mesh.userData.noArchitectureEdges = true;
+        group.add(mesh);
+      }
+    } catch (e) { console.warn(`VisitUnit ${this.id}: no mid level (${e.message})`); return null; }
+    group.visible = false;
+    object.add(group);
+    this.rest = this.targets.map((t) => t.t); // (every door, window and lid shut: what the merged level shows)
+    this.mid = { group, pass, pairs, centre, start: zone[0], end: zone[1] };
+    return this.mid;
+  }
+
+  /** Is every door, window and lid where it was when the mid level was built (shut, not moving)? */
+  atRest() { const r = this.rest; return this.targets.every((t, i) => t.t === r[i]); }
+
   /** What is drawn for a camera at `p` (main.js, every frame): 'none' when `away` (in our flat or down in the garage: none
-   * of it can be seen from there), 'shell' farther than STANDARD.detail m from its footprint, else 'all'. */
+   * of it can be seen from there), 'shell' farther than STANDARD.detail m from its footprint, else 'all'. With a mid level
+   * (#1965, buildMid): 'all' within STANDARD.lod.near m (within STANDARD.detail m while something of it is open or moving),
+   * 'mid' (the shell, the stand-in and the merged inside, fading out by dither over the zone) up to the zone's end. */
   cull(p, away) {
-    const b = this.box, dx = Math.max(b.x0 - p.x, 0, p.x - b.x1), dz = Math.max(b.z0 - p.z, 0, p.z - b.z1);
-    const want = away ? 'none' : Math.hypot(dx, dz) > STANDARD.detail ? 'shell' : 'all';
+    const b = this.box, dx = Math.max(b.x0 - p.x, 0, p.x - b.x1), dz = Math.max(b.z0 - p.z, 0, p.z - b.z1), d = Math.hypot(dx, dz);
+    const mid = this.mid, L = STANDARD.lod;
+    let want = away ? 'none' : d > STANDARD.detail ? 'shell' : 'all';
+    if (mid && !away) {
+      const near = !this.atRest() ? STANDARD.detail : this.shown === 'all' ? L.near : L.near - L.hysteresis;
+      want = d <= near ? 'all' : d < mid.end ? 'mid' : 'shell';
+      if (want === 'mid') {
+        mid.centre.value.set(p.x + d, p.y, p.z); // (the shader measures only the distance; lodCamera = p this frame, as BatchLod.update)
+        for (const q of mid.pairs) if (q.version !== q.src.version) { q.version = q.src.version; q.mat.needsUpdate = true; } // (the source was patched again: lampwash.js)
+      }
+    }
     if (want === this.shown) return;
     this.shown = want;
     this.object.visible = want !== 'none';
-    for (const o of this.detail) o.visible = want === 'all';
-    this.standIn.visible = want === 'shell';
+    for (const o of this.detail) o.visible = want === 'all' || (want === 'mid' && mid.pass.has(o));
+    this.standIn.visible = want === 'shell' || want === 'mid';
+    if (mid) mid.group.visible = want === 'mid';
   }
 
   /** Its level at feet height y (0 its entrance floor, 1 the floor above). */

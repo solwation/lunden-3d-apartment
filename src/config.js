@@ -4935,6 +4935,13 @@ export const STANDARD = {
   // draw calls (#574, visitunit.js `cull`): farther than `detail` m from its footprint only its walls, floors, ceilings and
   // window frames are drawn (no doors, fittings, glass); from inside our flat or under the ground none of it (our pick)
   detail: 12,
+  // #1965 (visitunit.js `buildMid` / `cull`): between `near` m and the fade zone a visited flat's inside is ONE merged mesh
+  // per material (its doors, fittings and outline lines in their shut pose; things too small to be drawn at `near` m left
+  // out), which the dithered pixel fade of src/lod.js takes away over `start`..`end` m (`startPhone`..`endPhone` on phones:
+  // inside the old `detail` distance, so a phone never draws more than before). `hysteresis` m: all the parts come back this
+  // much nearer than they left. While a door, window or lid of the flat is open or moving, `detail` is used instead of
+  // `near` (the merged level only knows the shut pose). All distances *guess* (the issue: "~12-30 m").
+  lod: { near: 5, hysteresis: 0.5, start: 24, end: 28, startPhone: 9, endPhone: 12 },
 };
 
 // The visitable flats' lamps (#620, src/visitlights.js): Peab's standard finish has ceiling outlets, and the brochure does

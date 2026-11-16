@@ -470,6 +470,7 @@ document.addEventListener('wheel', (e) => { if (locked && !noteEl.hidden) notePa
 
 const lights = new Lights(scene, world);
 const visitLights = new VisitLights(scene, world.units); // the visitable flats' ceiling lamps and switches (#620)
+for (const u of world.units) u.buildMid(); // #1965: their merged mid level (after the lamps and switches are in them)
 const lookDir = new THREE.Vector3(); // (the light pool prefers lamps in front, #276)
 // every visit starts at the browser's own time and date (#95), or ?time=HH (e.g. ?time=21.5) / ?month=1–12 /
 // ?day=1–31 (with ?month alone the date is the 15th)

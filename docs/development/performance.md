@@ -1159,6 +1159,22 @@ with both flats (desktop, calls with → without the visited flats): garage driv
 387 → 202; at L1201: the loftgång in front of it 263 → 117, its hall 249 → 116, its living room 248 → 109, its Allrum 136 →
 107. perfcount (desktop and `?lowmem`) within PERF.budget.
 
+The visited flats' mid level (#1965, `VisitUnit.buildMid`, STANDARD.lod): the inside of a visited flat (its doors, fittings,
+outline lines and switches in their shut pose, minus what the stand-in already shows, hidden contents and what the small-detail
+culler hides by `near` m) is merged once at start into one mesh per material (L1004: 182 part draws → 36 merged + 5 kept as
+they are — wall-ao shader parts, lamps, fixed parts with hidden or specially ordered meshes; 55 k triangles, ~4.0 MB of
+geometry; L1201: 151 → 34 + 5, 41 k triangles, ~3.2 MB). Within `near` 5 m all the real parts are drawn (within
+STANDARD.detail while a door, window or lid of the flat is open or moving: the merged level only knows the shut pose); from
+there to the zone's end the shell, the stand-in and the merged level; the merged clones use the dither of src/lod.js with a
+`centre` uniform kept at the flat's distance from the camera (as `BatchLod.update`), so the inside and its shadow fade out over
+24..28 m (phones 9..12 m, inside the old 12 m: a phone never draws more than before). The merged clones compile through their
+source's own `onBeforeCompile` (lamp wash, fronts) and recompile when the source's version changes. `&nolod` keeps the old
+two levels. Measured in front of L1004 (`tools/visitlodtest.cjs`, desktop 1024 x 640, top quality, screen draws of one
+`__app.frame`, without → with): 6 m 409 → 325 calls / 817 k → 776 k triangles, 9 m 453 → 362, 11.5 m 471 → 383; at 14-26 m
+(where the old code drew the shell only) 385 → 392, 427 → 434, 432 → 439 calls (+7, ~+6 k triangles: the inside is now seen
+through the windows); within 5 m and from 28 m unchanged. The swap at 5 m: 0.36 % of the pixels differ at 5.5 m, 0.07 % at
+9 m, all one-pixel outline joints and window-reveal edges.
+
 Opening kitchen fronts in the visited flats (#621): every front an Openable of its own costs two calls (its mesh and its
 architecture edges; measured +42 at L1004's kitchen, its hall view 493 → 541, over PERF.budget). `standardinterior.js`
 `batchFronts` draws all of a flat's fronts as one vertex-coloured mesh + one LineSegments: each vertex carries its front's
