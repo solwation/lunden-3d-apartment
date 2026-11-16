@@ -1,10 +1,11 @@
+import { groundMotion } from './avatarmotion.js';
 import { modelURL } from './modelurl.js';
 import { armPumpShape, pumpWire } from './gympump.js';
 import { GYM_PUMP } from './config.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SURFACE as SURFACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, AVATAR_GAIT as GAIT, DANCE, AVATAR_AIR as AIR, SWIM, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SURFACE as SURFACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, AVATAR_GAIT as GAIT, AVATAR_MOTION as MOTION, DANCE, AVATAR_AIR as AIR, SWIM, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { reactionPose, mixHand } from './reactpose.js';
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, THIGH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
@@ -1908,7 +1909,7 @@ export class Avatar {
    * #1943 `swim`: in the water (then `speed` is the speed through the water: strokes above SWIM.avatar.strokeSpeed, else treading water).
    * `swimAmt` (0 … 1) and `swimLine` (the water line's height in the figure's frame) tell the owner how deep to set the figure.
    * #1944 `dive` 0 … 1 (with `swim`): under the surface, lying level with the diving mask on; `diveAmt` is the eased amount. */
-  update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null, air = 0, airV = null, swim = false, dive = 0, gaitDir = null } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
+  update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null, air = 0, airV = null, swim = false, dive = 0, gaitDir = null, motionFrame = null, groundSpeed = speed, groundEnabled = true } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
     this.time += dt;
 
     // #1799: each air pose blends in and out on its own (their sum ≤ 1, the rest is the ground pose)
@@ -1929,10 +1930,11 @@ export class Avatar {
     this.setMask(swim && dive > 0.05);
     this.kickT = swim ? (this.kickT ?? 9) + dt : 9; // #1951: s into a swim stroke (`swimStroke`)
     if (swim) this.swimPhase = (this.swimPhase ?? 0) + dt * Math.PI * 2 * SW.strokeHz * st * THREE.MathUtils.clamp(speed / SWIM.speed, 0.6, 1.4);
-    const walking = speed > A.walkSpeed && !am && !swim;
+    const walking = groundSpeed > A.walkSpeed && !am && !swim;
     this.gait = THREE.MathUtils.lerp(this.gait ?? 0, walking ? 1 : 0, Math.min(1, dt * 8));
     const g = this.gait;
-    const c = THREE.MathUtils.clamp(crouch, 0, 1), F = CR.feet;
+    this.motionCrouch = (this.motionCrouch ?? crouch) + (crouch - (this.motionCrouch ?? crouch)) * (1 - Math.exp(-MOTION.crouchEase * dt));
+    const c = THREE.MathUtils.clamp(this.motionCrouch, 0, 1), F = CR.feet;
     const breathe = Math.sin(this.time * 1.7) * 0.004;
     // #1149: crouching is a deep squat (AVATAR_CROUCH), every term linear in `crouch` (the head boxes follow the same hips and lean)
     const FL = DANCE.floss, flossPh = this.time * FL.hz * Math.PI * 2, flossSn = Math.sin(flossPh), flossCs = Math.cos(flossPh);
@@ -1942,7 +1944,9 @@ export class Avatar {
     const rp = react ? reactionPose(react.kind, react.age, [HIP - 0.02, CR.hipForward * c]) : null;
     const fx = 0.11 + (F.x - 0.11) * c, fz = 0.02 + (F.z - 0.02) * c;
     const gt = walkGait(this, dt, speed, walking, gaitDir, fx, F.y, fz, c); // #2003: explicit stance / swing phases
-    const sway = flossSway + gt.sway;
+    groundMotion(this, dt, gt, motionFrame, walking, groundEnabled && !am && !swim && !dance && !react && !kiss && c < MOTION.groundCrouch, fx, F.y, fz);
+    const idle = groundEnabled && !walking && !am && !swim && !dance && !react && !kiss ? (1 - g) * (1 - c) : 0;
+    const sway = flossSway + gt.sway + MOTION.idleSway * idle * Math.sin(this.time * Math.PI * 2 * MOTION.idleHz);
     let hipY = HIP - 0.02 - CR.hipDrop * c + (rp?.dy ?? 0) + kissLift * kiss - flossBob - gBob + breathe - gt.hip - AIR.climb.hipDrop * climbA;
     const hipZ = CR.hipForward * c, feet = gt.feet;
     if (g > 0.001 && !c) { // the hips stay within the legs' reach of both ankles (a long stride sinks them, as a real runner's do)
@@ -1997,8 +2001,7 @@ export class Avatar {
     if (climbA > 0.001) knee = knee.map((v, i) => v + (AIR.climb.knees[i] - v) * climbA); // #1799: knees out on the wall
     const airLean = AIR.fly.lean * aa[0] + AIR.swing.lean * aa[1] + AIR.climb.lean * climbA;
     poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: airLean - swimLean(st, dv) * sa + 0.03 * g - GAIT.runLean * rr + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + SW.head * swimLean(st, dv) * sa + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
-      knee, flat: Math.max(c, g), toes: F.turn * c, pitch: g > 0.001 ? gt.pitch : null });
-    if (sway) this.bones.hips.position.x = sway; // #1622: the feet targets were moved the other way, so they stay planted
+      hipX: sway, knee, flat: Math.max(c, g, motionFrame && groundEnabled && !am && !swim ? 1 : 0), toes: F.turn * c, pitch: g > 0.001 || this.groundMotion ? gt.pitch : null, footYaw: this.groundMotion ? gt.yaw : null });
   }
 
   /** #1951: one swim stroke with both arms starts now (a swimming figure; ghosts.js sees it in the speed through the water). Not again

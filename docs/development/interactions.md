@@ -440,6 +440,15 @@ src/spidersuit.js      the Spider-Man suit (#597, SPIDER, all values *guess*): o
                        `avatar.gaitInfo` / `avatar.footfalls` expose the contact phase (per-foot `contact`, `stance` 0 … 1, `lastFoot`, `footfall` this frame) for
                        #2004 (start / stop / turn) and the footstep sounds. Crouch walking shortens the stride by `AVATAR_CROUCH.step`. Sideways (#2006) is a carioca: both feet share one narrow lane (`sideWidth`) and cross, the swing foot passing `sideCross` in front of
                        the planted one, so the planted foot travels at ground speed (slip ≤ 0.16 m/s up to 4.8 m/s; `sideMax` is the ankles' reach, `sideShrink` 0.25 → cadence ≈ 1.3 × forward). Limits: no terrain IK. Tests: `tools/avatargaittest.mjs`, `tools/ghostgaittest.cjs`.
+                       #2004: `avatarmotion.js` retains the delivered steady gait, with ground-frame foot anchors during take-off,
+                       sequential landing/settling steps and small turn-in-place adjustments. `Ghost.animate` derives ground motion from
+                       its already rendered root; there is no new network field, root/input easing or collider change. Idle hips shift
+                       gently over planted feet, and visual crouch follows with a bounded time constant. `poseOlof` optionally collects
+                       pose targets so the Ghost pose chain resolves one final IK pose. Standing/seated transitions reframe the last
+                       visible targets into the destination root frame before blending; explicit gym/bike/lie/long-sit poses retain
+                       authority and standing hand overrides remain immediate. Teleports, large heading discontinuities and long
+                       drawing gaps discard cached motion. Assumptions live in `AVATAR_MOTION`; no terrain IK or cloth collision.
+                       [Actual own/remote sequence, contacts, exact hand comparisons and local warm cost](../verification/2004/README.md).
                        #600: with it on fall.js never hurts (a soft landing). Space / the touch jump button (#jump-btn, directly right of 🧎 in the #1089 thumb-arc touch cluster;
                        on touch always, #636) is a *press* (`player.spaceDown` / `jumpPress`): standing it jumps at `jump` m/s (indoors
                        too, the ceiling stops it, `player.ceilingAt`); without the suit it is the low jump `PLAYER.jump`; on a wall it

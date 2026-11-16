@@ -8,6 +8,8 @@ Skriv en befintlig privat adminkod i den vanliga chattrutan. Efter lyckad inlogg
 
 **Byt spelare** i startmenyn låter dig välja en sparad spelare med avatarminiatyr eller ange ett nytt namn. Din avatar syns även vid spelarnamnet i startmenyn, och aktiva spelare visas med avatarer under **Spelar just nu**. Varje spelare behåller sitt utseende, hem, smuts, poäng, statistik och kattfoton i samma webbläsare. **Ta bort** frågar först och raderar den valda spelarens lokala data.
 
+Avatarerna tar omtag med fötterna när de stannar eller vänder sig, och övergången mellan stående och sittande är mjukare. [Rörelsesekvens och avgränsad verifiering](docs/verification/2004/README.md).
+
 En välkomstbild visas direkt medan världen laddas i bakgrunden. Topplistan hämtas utan att fördröja starten, och du kan läsa kontrollerna redan under laddningen. När besöket är redo väljer du mus och tangentbord eller touch.
 
 **Inställningar** i start- och pausmenyn öppnar en egen ruta för chattvisning, kontroller för tangentbord/mus/touch, anpassning av touchknappar samt återställning och data.

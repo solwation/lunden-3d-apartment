@@ -95,9 +95,10 @@ const lerp3 = (a, b, t) => a.map((x, i) => x + (b[i] - x) * t);
  * the knees' pole (x outward per side), flat 0 … 1 how far the feet are turned level on the floor (0: rigid with the shin)
  * and toes (rad) how far they then turn outward; #2003 `pitch` [left, right] (rad, toe up, default none) tilts each level foot about its own x (heel strike / toe-off; only with `flat`).
  */
-export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, can, knee = KNEE, flat = 0, toes = 0, pitch = null }) {
+export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, can, knee = KNEE, flat = 0, toes = 0, pitch = null, footYaw = null, hipX = 0 }) {
+  if (fig.collectPose) { fig.pendingPose = { hip, lean, head, turn, feet, hands, can, knee, flat, toes, pitch, footYaw, hipX }; return; }
   const B = fig.bones, hy = hip[0], hz = hip[1];
-  B.hips.position.set(0, hy, hz);
+  B.hips.position.set(hipX, hy, hz);
   B.hips.quaternion.identity();
   const tq = q3.setFromAxisAngle(X, -lean);
   B.torso.quaternion.copy(tq);
@@ -110,7 +111,7 @@ export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, 
     const foot = B['foot' + s];
     if (foot) { // the shin's rotation undone (level, the toes turned out) as far as `flat`
       if (flat > 0) {
-        q2.setFromAxisAngle(Y, sx * toes);
+        q2.setFromAxisAngle(Y, sx * toes + (footYaw?.[i] ?? 0));
         if (pitch && pitch[i]) q2.multiply(q4.setFromAxisAngle(X, -pitch[i])); // #2003: toe-up pitch about the (turned) foot's own x
         foot.quaternion.copy(q1.copy(out).invert().multiply(q2)).slerp(qI, 1 - flat);
       }

@@ -7477,6 +7477,14 @@ export const AVATAR_CROUCH = {
 // Sources (*guess* = fitted by eye to ordinary adult gait data, not measured on this rig): walking ~1.4 m/s at ~110-120 steps/min and
 // running ~3 m/s at ~165 steps/min are textbook figures; the rest is interpolated. Before #2003 the avatar used one sine with a fixed
 // 0.78 m cycle: 4.1 / 8.3 / 12.4 footfalls/s at 1.6 / 3.2 / 4.8 m/s.
+// #2004 visual transition guesses, in model metres / seconds / radians. No navigation or wire state.
+export const AVATAR_MOTION = {
+  startTime: .16, startReach: .48, settleDistance: .025, contactHeight: .012,
+  stepTime: .19, stepExtra: .13, stepTravel: .35, stepLift: .055, turnStep: .25,
+  settleEase: 14, idleSway: .008, idleHz: .17, crouchEase: 8, poseTime: .44, poseLean: .30, seatTurnEase: 8, seatTurnSnap: .001, groundCrouch: .01,
+  resetDistance: .75, resetTurn: 1.4, resetTime: .25,
+};
+
 export const AVATAR_GAIT = {
   speeds: [0.25, 0.8, 1.6, 3.2, 4.8], // m/s (the table's points)
   stepHz: [1.0, 1.65, 2.3, 2.9, 3.3], // footfalls per second (both feet) -> a stride (leg cycle) of 2 v / stepHz

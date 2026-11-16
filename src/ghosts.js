@@ -1,3 +1,4 @@
+import { transitionPose } from './avatarmotion.js';
 import {gymPoseWire} from './gymposewire.js';
 import {applyGymBodyPose} from './gymbodypose.js';
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
@@ -7,7 +8,7 @@ import { pumpWire } from './gympump.js';
 import * as THREE from 'three';
 import { FALL, TOAST, SOUNDS, KISS, HUG, REACT } from './config.js';
 import { makesSteps, strideFor } from './spatialsound.js';
-import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, CHAT, SWIM, encodeAvatarLook, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
+import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, AVATAR_MOTION as MOTION, CHAT, SWIM, encodeAvatarLook, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
 import { Avatar, armTarget, swimLineFar } from './avatar.js';
 import { totalScore } from './stats.js';
 import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge.js';
@@ -324,7 +325,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
    * where it looks; a weapon is held out in the right hand and the prop sits in it. `d`: distance to the eye (far away: not
    * posed). `this.hands` (optional { L, R }, see armTarget in avatar.js) overrides an arm: the surface for a wave (#673). */
   animate(t, d, vx, vz) {
-    const dt = this.lastDraw ? Math.min(0.1, (t - this.lastDraw) / 1000) : 0;
+    const elapsed = this.lastDraw ? (t - this.lastDraw) / 1000 : 0, dt = Math.min(0.1, elapsed);
+    if (elapsed > MOTION.resetTime) { this.avatar.groundMotion = null; this.avatar.poseMotion = null; }
     this.lastDraw = t;
     const hug = this.hug, hugAge = hug ? (t - hug.start) / 1000 : -1, hugged = hugAmount(hugAge); // (#1405)
     if (hug && hugAge >= HUG.duration) this.hug = null;
@@ -346,7 +348,15 @@ export class Ghost { // (exported for tools/ghostprops.html)
     // #1951: a swim stroke (the jump button) shows as a jump in the speed through the water to more than the ordinary stroke ever gives
     if (wet && sp <= 8 && sp > SWIM.kick.avatar.over && sp - this.speed > SWIM.kick.avatar.jump) this.avatar.swimStroke();
     this.speed += ((sp > 8 ? 0 : sp) - this.speed) * Math.min(1, dt * 10);
-    if (this.pose || this.gx) { this.body = gaze; this.speed = 0; }
+    if (this.pose || this.gx) {
+      // Ordinary sitting follows the existing rendered body heading into the seat;
+      // explicit gym/lying anchors keep their exact heading.
+      if (this.pose === 1 && !this.gx && this.have) {
+        const off = wrap(gaze - this.body); this.body += off * (1 - Math.exp(-dt * MOTION.seatTurnEase));
+        if (Math.abs(off) < MOTION.seatTurnSnap) this.body = gaze;
+      } else this.body = gaze;
+      this.speed = 0;
+    }
     if (!this.have) { this.body = gaze; this.have = true; }
     if (this.speed > AVATAR.walkSpeed && this.air !== 3) { // the body faces where it goes, unless that is backwards / sideways to the look (#1799: on a wall it faces the wall)
       const going = Math.atan2(-vx, -vz);
@@ -389,11 +399,24 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const airV = air ? [vx * Math.cos(by) - vz * Math.sin(by), this.vy ?? 0, vx * Math.sin(by) + vz * Math.cos(by)] : null;
     let gaitDir = null; // #2003: the travel direction in the figure's frame (+z forward, +x its left), so that walking backwards / sideways steps that way
     if (this.speed > AVATAR.walkSpeed && !air) { const gv = this.gaitV ??= [0, 1], hv = Math.hypot(vx, vz); if (hv > 1e-3) { gv[0] = (vx * Math.cos(by) - vz * Math.sin(by)) / hv; gv[1] = (vx * Math.sin(by) + vz * Math.cos(by)) / hv; gaitDir = gv; } }
-    this.avatar.update(dt, { gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: wet ? 0 : this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive });
+    const previousFrame = this.motionFrame;
+    const groundSpeed = previousFrame && dt > 0 ? Math.hypot(this.root.position.x - previousFrame[0], this.root.position.z - previousFrame[1]) / dt : sp;
+    const motionFrame = this.motionFrame ??= [0, 0, 0];
+    motionFrame[0] = this.root.position.x; motionFrame[1] = this.root.position.z; motionFrame[2] = by;
+    const groundEnabled = !this.pose && !this.gx && !this.bikeMesh && !amount;
+    this.avatar.collectPose = true;
+    this.avatar.update(dt, { motionFrame, groundSpeed: groundEnabled && groundSpeed <= 8 ? groundSpeed : 0, groundEnabled, gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: wet ? 0 : this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive });
     if (wet) sink(this.avatar.swimAmt, this.avatar.swimLine, this.avatar.diveAmt); // (blending in from standing on the bed)
     applyRestPose(this.avatar, this.pose, this.look, react);
     applyGymBodyPose(this.avatar,this.gx,this.look);
     if (this.bikeMesh) this.poseBike(dt, Math.hypot(vx, vz), turn);
+    const poseKey = this.gx || this.bikeMesh || air || wet || amount ? -1 : this.pose || 0;
+    const poseFrame = this.poseFrame ??= [0, 0, 0, 0, 1, 1];
+    poseFrame[0] = this.root.position.x; poseFrame[1] = this.root.position.y; poseFrame[2] = this.root.position.z;
+    poseFrame[3] = by; poseFrame[4] = this.avatar.object.scale.z; poseFrame[5] = this.avatar.object.scale.y;
+    transitionPose(this.avatar, dt, poseKey, hands, poseFrame);
+    this.avatar.collectPose = false;
+    poseOlof(this.avatar, this.avatar.pendingPose);
     this.heldCat.update(this.avatar, this.root);
     if (this.tag) {
       const lift = ((this.tagH ?? G.tagHeight) - G.tagHeight) / 2; // #2007: the life row grows the badge upwards; name/score keep their place
