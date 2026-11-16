@@ -1,0 +1,25 @@
+{
+  "worker": "102982d7d26a2ce360ca63457e38a019bea9e12f",
+  "onto": "a05683d477d8705c912cd88b323ee21c555dcce6",
+  "time": "2026-11-16T10:48:10.352601+00:00",
+  "sourceHashParity": {
+    "src/bestiaryimages.js": "250cc2093396f5073a92ccc270441040f82a1d0f6802491e00b6a7030ec750dc",
+    "src/bestiarymodels.js": "e187f71bdbfdd5cbd5965018b401e567f7ae0218ac421b4efcd5b8343cab2464",
+    "src/catbinder.js": "4826f05e6216c8f7f5243c72845033755106240c74a443c7db2b00dcbb59b801",
+    "src/catmodel.js": "9cdd1f925f0e1e077cb86a1a986ceeb978ef2214479a684909304b983a43ec05",
+    "src/cat.js": "5c0482ec71d5dbb1bf64ea7d97df54f5a7fd8408e636665e8891631cfced798a",
+    "src/main.js": "03e8f78d60e69a5dfafb0cfb89de46c777029313513c75a91f06685bbe27a60c",
+    "src/idb.js": "55a57bb453ef380441537c4eb8839c403bf13debfa43f0dc3d794cd0e88f2dee",
+    "index.html": "974ed7d7c3e40544c4d81f85a61b1518b648c42c89555c80e1b2fc59f020849e",
+    "tools/binder2008browser.cjs": "3597eba001a08e50a45b64e3b9ab45358b54000b06bd25bbce50d41750b72097",
+    "tools/bestiarycache2008check.js": "c711a42c4dd64b364154e6934a2d0e588a6fbd477b906427f1b16624d3e87b34",
+    "tools/bestiarytest.mjs": "62875b95be3c5b8c75e63f9c15848759286a66fa773e69f9a09e32f46b3b5369"
+  },
+  "images": {
+    "after-repaired-index.png": "a54cd459d3aacf76fc28116a08bb954bed802381f9d192dfea5d87341a677939",
+    "after-reload-index.png": "657b792a9e5a5bde43fd4a23e8ebb2551a46b3da1752dd9d0928d73be72aca89",
+    "before/before-index.png": "79d5e52818d75d5416c5cf3115f8f5b0d9d0b268989bef541655bdcc826077e3",
+    "before/before-empty-cache-index.png": "bf9d76c588104d0e1e7bdabe05ae7b90920c90be6b2abc74117ab6b50c493b79"
+  },
+  "review": "Root reviewed provider, actual browser harness, metadata guards, before and both after images. All eleven checked source files match after unrelated body rebase; source-bound green evidence reused without repeat World/browser."
+}

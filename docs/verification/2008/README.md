@@ -121,3 +121,11 @@ assert `renders===0` and inspect its visible image pixels. With baseline source 
 seeded first-page pixels are zero; with the fix they are replaced in place.
 Create `<prefix>.release` to stop. Stop the server too. Both owned processes were
 stopped and the browser wrapper released before this delivery.
+
+## Root integration
+
+Rebased onto a05683d4 after the unrelated body delivery. All eleven checked
+source files are byte-identical to sources.json; [integration.json](integration.json)
+records parity and image hashes. Root reviewed the provider, actual browser harness,
+metadata/photo preservation and result images. Existing passing evidence is reused;
+no broad normal-app bootstrap is repeated for the unrelated body rebase.
