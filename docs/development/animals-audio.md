@@ -534,8 +534,8 @@ one invisible pick box per pony (kept out of the scene, tested only by main.js's
 Sounds from other players (#1302): the bicycle bell (B while riding, the touch button `#bell-btn` in the turn button's slot, `ringBell()` in main.js) plays `sfx.bell(null)` for us and sends
 `ghosts.sound('bell')` (Worker relay: storage.md). Everything others make goes through `sfx.playAt(pos, kind, gain)` (audio.js; kinds 'bell' | 'step' | 'jet'): squared distance fade to nothing at
 `SOUNDS.range[kind]` (spatialsound.js `distanceGain`), the panner's direction from the camera listener, at most `SOUNDS.maxVoices` (8) at once (`VoiceCap`), silent when muted / before the audio unlock.
-Footsteps and the jetpack roar are derived in `Ghosts.soundTick` from each ghost's interpolated speed, crouch, pose, `bk` and `jp` (no extra traffic, no per-frame allocation): one step per stride within 25 m
-while walking on the ground, a roar burst every 0.35 s from the 2 nearest thrusting ghosts. Shots already sound through `combat.remote` (`sfx.nerf`). Tests: `node --test cloudflare/spatialsound.test.mjs cloudflare/players.test.mjs`;
+Footsteps and the jetpack roar are derived in `Ghosts.soundTick` from each ghost's interpolated speed, crouch, pose, `bk` and `jp` (no extra traffic, no per-frame allocation): one step within 25 m
+while walking on the ground (#2003: one per footfall of the avatar's own gait, `Avatar.footfalls`, so sound and feet stay in step; `SOUNDS.stride` is only the fallback for a figure without it), a roar burst every 0.35 s from the 2 nearest thrusting ghosts. Shots already sound through `combat.remote` (`sfx.nerf`). Tests: `node --test cloudflare/spatialsound.test.mjs cloudflare/players.test.mjs`;
 `node tools/playersoundpeertest.cjs GAME WORKER` (real Ghosts clients through `node cloudflare/dev.mjs PORT`) and `node tools/bellapptest.cjs GAME WORKER` (the whole app on a phone context: B / the button ring, not riding: nothing).
 
 Shelter hay (#1396): `PaddockFeed` is an isolated ambient feeding controller; the normal pony

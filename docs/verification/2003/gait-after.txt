@@ -1,0 +1,24 @@
+forward   {"speed":1.6,"cadence":2.375,"counter":2.375,"slip":0.02985415416015118,"slipP95":0.01374023407063163,"soleMin":-1.7301678353898176e-9,"ankleMax":0.14873513426196588,"hipRange":0.06311693008027786,"mism":0.040625}
+forward   {"speed":3.2,"cadence":3,"counter":2.875,"slip":0.03324479165071398,"slipP95":0.012089800557255614,"soleMin":-5.813086609296469e-10,"ankleMax":0.29247593913367814,"hipRange":0.0894169970587565,"mism":0.026041666666666668}
+forward   {"speed":4.8,"cadence":3.375,"counter":3.25,"slip":0.062102734212219235,"slipP95":0.17986886080791464,"soleMin":-1.888929651583382e-9,"ankleMax":0.2924715647158812,"hipRange":0.13730484982034585,"mism":0.028125}
+backward  {"speed":1.6,"cadence":2.875,"counter":2.875,"slip":0.060506520394459855,"slipP95":0.12701368425362958,"soleMin":-6.705885569058267e-10,"ankleMax":0.08913508133274753,"hipRange":0.03635491364941568,"mism":0.04375}
+backward  {"speed":3.2,"cadence":3.625,"counter":3.625,"slip":0.09061963421854603,"slipP95":0.3122446806775514,"soleMin":-3.5053866059842065e-9,"ankleMax":0.21118993933393276,"hipRange":0.06423063870067502,"mism":0.025}
+backward  {"speed":4.8,"cadence":4.125,"counter":4.125,"slip":0.13937724218586342,"slipP95":0.42705877155967187,"soleMin":-3.079384143511721e-9,"ankleMax":0.2111904279758666,"hipRange":0.06418260474913773,"mism":0.029166666666666667}
+sideways  {"speed":1.6,"cadence":4.125,"counter":4.125,"slip":0.024776074386158652,"slipP95":0.1361502621291777,"soleMin":-1.2061006290919885e-9,"ankleMax":0.0712491592341909,"hipRange":0.03224657648031881,"mism":0.042708333333333334}
+sideways  {"speed":3.2,"cadence":5.25,"counter":5.25,"slip":0.026538402802862696,"slipP95":0.11042309722704147,"soleMin":-2.925354673777303e-9,"ankleMax":0.16149995388837624,"hipRange":0.07353026463937673,"mism":0.025}
+sideways  {"speed":4.8,"cadence":6,"counter":6,"slip":2.3670364416844387e-9,"slipP95":5.214637336668736e-9,"soleMin":-1.7698293802714815e-9,"ankleMax":0.16113713777141273,"hipRange":0.07355384366484274,"mism":0}
+✔ forward gait: plausible cadence, bounded stance slip, no penetration, contact flags agree with the soles (23.483628ms)
+✔ walking and running differ and the stride grows with speed (32.048434ms)
+✔ backward and sideways steps plant their feet too (106.174666ms)
+✔ gaitInfo gives the contact phase: alternating feet, stance progress 0 … 1, a footfall at each touch-down (68.573533ms)
+✔ standing, crouching and the other poses keep their old pose (no gait) (6.775024ms)
+✔ walking while crouched keeps the feet planted and the crouch hips (53.972943ms)
+✔ explicit hand targets still win over the arm swing (46.075432ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 345.63119

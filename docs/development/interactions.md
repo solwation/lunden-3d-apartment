@@ -432,6 +432,14 @@ src/spidersuit.js      the Spider-Man suit (#597, SPIDER, all values *guess*): o
                        straight and trail back/against the movement (Superman), climbing is a ladder (feet to the wall, knees out, one foot up
                        at a time on a phase paced by the climbing speed, still when still). Each pose blends in/out (`AVATAR_AIR`, *guess*);
                        the mirror image uses the same path. Test: `tools/ghostairposetest.cjs BASE OUT [OLD_BASE]` (tools/ghostairpose.html).
+                       #2003: walk and run (`AVATAR_GAIT`, `walkGait` in avatar.js). The leg cycle's phase follows the distance walked; each foot has an
+                       explicit stance (planted, under the body at exactly the ground speed, heel strike to toe-off angle via `poseOlof`'s `pitch`) and
+                       swing (Hermite arc, touch-down moving back at body speed). Stride/cadence by speed table (≈ 2.3 / 2.9 / 3.3 footfalls/s at 1.6 / 3.2 / 4.8 m/s),
+                       stance duty < 0.5 when running (a flight phase), the hips sink as far as the legs' reach needs, arms swing against the legs
+                       (elbows bent and lifted when running). `Ghost.animate` passes the travel direction (`gaitDir`, figure frame) so backing up and strafing step that way.
+                       `avatar.gaitInfo` / `avatar.footfalls` expose the contact phase (per-foot `contact`, `stance` 0 … 1, `lastFoot`, `footfall` this frame) for
+                       #2004 (start / stop / turn) and the footstep sounds. Crouch walking shortens the stride by `AVATAR_CROUCH.step`. Limits: no terrain IK, sideways steps
+                       cross the legs. Tests: `tools/avatargaittest.mjs`, `tools/ghostgaittest.cjs`.
                        #600: with it on fall.js never hurts (a soft landing). Space / the touch jump button (#jump-btn, directly right of 🧎 in the #1089 thumb-arc touch cluster;
                        on touch always, #636) is a *press* (`player.spaceDown` / `jumpPress`): standing it jumps at `jump` m/s (indoors
                        too, the ceiling stops it, `player.ceilingAt`); without the suit it is the low jump `PLAYER.jump`; on a wall it
