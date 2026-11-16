@@ -247,7 +247,9 @@ Make the scoped change; unrelated defects become separate issues.
   `.gitignore` (`/workingtree/`); until that is on main, add it to `.git/info/exclude`.
   Never run `git clean -x` in the integration checkout, since it deletes ignored
   directories and with them every checkout in the root. A checkout the platform creates (such
-  as a tool's own worktree isolation) stays where the platform puts it.
+  as a tool's own worktree isolation) stays where the platform puts it; when that directory
+  lies inside the project checkout, ignore it in `.gitignore` as well and count it among the
+  host's worktree roots that [clean-up](#clean-up-checkouts) prunes.
 - Whoever creates a writing checkout marks it as in use before work starts: write
   `issue=<owner/repo#N>` and `session=<session ID>` to `orchestra-claim` in its git
   directory (`git rev-parse --git-dir`, outside the working tree). A checkout that has
@@ -400,7 +402,8 @@ as active, so another session's fresh checkout survives a whole-root prune; it i
 `--archive <dir>` preserves unproven work as bundle and patch before removal, and
 `--protect` keeps named clones. The worktree root is `workingtree/` in the project
 checkout ([isolation](#isolate-concurrent-agents)) unless the host policy names
-another; the host policy also names the archive location.
+another; a directory where the platform creates checkouts is pruned as a further root
+(pass every root to the script). The host policy also names the archive location.
 
 ### Close after a best-guess fix
 

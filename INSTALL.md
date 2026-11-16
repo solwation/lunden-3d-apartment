@@ -11,7 +11,7 @@ Install into a clean working tree (requires Git's `subtree` command):
 
 ```sh
 git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.14.3 --squash
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.14.4 --squash
 ```
 
 Copy the project example to `.orchestra/project.md`, fill it in, then link the host's
@@ -20,7 +20,10 @@ is only a thin adapter: read host policy, read core, pass user scope (for an emp
 scope see the [read map](ORCHESTRA.md#read-map)). Do not copy the core into a second
 prompt. Keep project configuration outside `.orchestra/shared`. Add `/workingtree/`
 to the project's `.gitignore`: worker checkouts go there by default
-([isolation](ORCHESTRA.md#isolate-concurrent-agents)), not beside the project.
+([isolation](ORCHESTRA.md#isolate-concurrent-agents)), not beside the project. If your
+agent platform creates its own worktrees inside the project (Claude Code's Agent tool
+uses `.claude/worktrees/`), ignore that directory too and name it in the project
+policy's worktree roots so the prune covers it.
 
 ### Connect agent entry points
 

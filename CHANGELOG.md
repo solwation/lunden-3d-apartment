@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.14.4 — 2026-11-15
+
+- Platform-created worktree directories: ORCHESTRA.md, PROJECT.example.md and
+  INSTALL.md now tell consumers to git-ignore a directory where the platform creates
+  checkouts inside the project (such as Claude Code's `.claude/worktrees/`) and to prune
+  it as a further worktree root, as this repository's own host policy already does (#80). README and the Pages site show the extra
+  `.gitignore` line in their install snippet.
+
 ## 0.14.3 — 2026-11-13
 
 - AI.md: Claude Code's Agent tool puts worker checkouts in `.claude/worktrees/`, which

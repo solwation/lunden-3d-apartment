@@ -30,9 +30,10 @@ not executable code. Keep project details here, never in the shared instructions
   `reuseExistingServer` across checkouts, check that the server serves this revision>.
 - Worktree root and cleanup: <directory holding session checkouts; by default
   `workingtree/` inside the project checkout, listed in `.gitignore`, never sibling
-  directories beside the project; the integration owner removes an issue's checkout at
-  follow-up and the session review and
-  startup prune the root with `scripts/prune-worktrees.sh`; archive directory for
+  directories beside the project; any directory where the platform creates its own
+  checkouts (for example Claude Code's `.claude/worktrees/`), also git-ignored; the
+  integration owner removes an issue's checkout at follow-up and the session review and
+  startup prune every root with `scripts/prune-worktrees.sh`; archive directory for
   unproven work, protected clones, or cleanup disabled>.
 - Runtime/model selection: <available economical/stronger capabilities, concrete model
   identifiers/effort controls in the adapter, or selection unavailable/locked>. Follow
