@@ -1622,6 +1622,10 @@ export const COURTYARD = {
   gravel: [{ x0: -30.4, x1: -19.9, z0: 19.2, z1: 29.7 }, { x0: -38.0, x1: -32.6, z0: 19.2, z1: 29.7 }],
   // the Borggården's pergola with a dining table (red-brown on the plan) and a second one south of Hus C
   pergolas: [{ x0: -19.3, x1: -13.2, z0: 19.6, z1: 29.4 }, { x0: -63.2, x1: -57.7, z0: 42.1, z1: 48.5 }],
+  // #1968: the pergolas' 272 string-light bulbs (spheres of r 0.03, 80 triangles) fade, a pergola at a time, into octahedra
+  // (`r`: about the same mean silhouette area, 8 triangles) between `start` and `end` m from the pergola's box, where a bulb is
+  // about two pixels (src/lod.js BatchLod; `margin` m of overlap; all *guess*, by eye at 1280 x 800). Desktop only.
+  bulbLod: { start: 18, end: 24, margin: 1, r: 0.04 },
   grill: { x: -20.85, z: 20.27 },               // grillplats beside the pergola (spot: guess); it can be lit (GRILL)
   sandboxes: [{ x0: -25.6, x1: -22.2, z0: 23.9, z1: 27.4 }, { x0: -53.9, x1: -49.6, z0: 44.1, z1: 48.5 }], // lekplats
   boule: { x0: -36.4, x1: -33.2, z0: 20.0, z1: 28.8 }, // boulebana: not marked on the plan; the gravel strip with benches facing it (guess)
@@ -1711,6 +1715,12 @@ export const ENTRANCE_PLANTS = {
 // hides the terraces), the merged decor is not drawn. `hue` jitters each plant's green a little so no two match.
 export const TERRACE_DECOR = {
   skip: ['L1201'], far: 160, hue: 0.025,
+  // #1968: [start, end] m of each kind's dithered fade-out (src/lod.js), measured to the nearest point of the terrace row;
+  // beyond `end` the kind is not drawn. The bulbs (r 0.022) are under a pixel from ~35 m; the soft things (leaves, flowers,
+  // parasol cloth: a palm is ~7 px tall at 70 m) and the furniture (a pixel or two at 110 m) end where they no longer read
+  // (*guess*, by eye at 1280 × 800 from raised viewpoints south of the yard). Keep bulbs <= soft <= solid <= `far` (the
+  // old cut for everything, still the limit with `&nolod`). `phone`: the low-memory profile ends each kind earlier.
+  lod: { bulbs: [30, 38], soft: [60, 72], solid: [105, 120], phone: { bulbs: [22, 30], soft: [45, 56], solid: [80, 92] } },
   door: { margin: 0.12, depth: 0.9 },
   railBox: { d: 0.2, h: 0.17, drop: 0.03, color: 0x3d3f3c },
   bulbs: { day: 0xd9d5ca, night: 0xffcf8a, on: 0.35, r: 0.022 },

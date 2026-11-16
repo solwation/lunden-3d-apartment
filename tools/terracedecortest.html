@@ -94,6 +94,15 @@ async function run() {
   check(seen(-5, 30, -10), 'drawn from above the roof (jetpack)');
   check(seen(-60, 1.7, 5), 'drawn from beside the gable');
   check(!seen(-5, 1.7, 300), `not drawn beyond ${T.far} m`);
+  // #1968: each kind ends at its own distance (TERRACE_DECOR.lod; the dithered fade of src/lod.js ends there)
+  const kinds = (z) => { seen(-5, U.deck, zs + z); return ['solid', 'soft', 'bulbs'].filter((k) => gate.meshes.some((m) => m.userData.lodKind === k && m.layers.test(camera.layers))).join('+'); };
+  const TL = lowMemory ? T.lod.phone : T.lod;
+  check(kinds(TL.bulbs[1] - 1) === 'solid+soft+bulbs' && kinds(TL.bulbs[1] + 1) === 'solid+soft', `the bulbs end at ${TL.bulbs[1]} m`);
+  check(kinds(TL.soft[1] - 1) === 'solid+soft' && kinds(TL.soft[1] + 1) === 'solid', `the soft things end at ${TL.soft[1]} m`);
+  check(kinds(TL.solid[1] - 1) === 'solid' && kinds(TL.solid[1] + 1) === '' && TL.solid[1] <= T.far, `the solid things end at ${TL.solid[1]} m (far ${T.far} m)`);
+  gate.setLod(false);
+  check(kinds(T.far - 1) === 'solid+soft+bulbs' && kinds(T.far + 1) === '', 'with the fade off everything draws up to far, as before');
+  gate.setLod(true);
   gate.update(camera);
   // the bulbs glow after dusk
   const bulbs = gate.meshes.find((m) => m.name === 'terraceDecorBulbs');

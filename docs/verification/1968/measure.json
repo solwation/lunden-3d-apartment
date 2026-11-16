@@ -1,0 +1,390 @@
+{
+ "cfg": {
+  "lowMemory": false,
+  "lod": {
+   "bulbs": [
+    30,
+    38
+   ],
+   "soft": [
+    60,
+    72
+   ],
+   "solid": [
+    105,
+    120
+   ],
+   "phone": {
+    "bulbs": [
+     22,
+     30
+    ],
+    "soft": [
+     45,
+     56
+    ],
+    "solid": [
+     80,
+     92
+    ]
+   }
+  },
+  "far": 160,
+  "B": {
+   "start": 18,
+   "end": 24,
+   "margin": 1,
+   "r": 0.04
+  },
+  "row": {
+   "x": -15.087499999999999,
+   "y": 9.459999999999999,
+   "z": 10.799
+  },
+  "count": {
+   "solid": 8,
+   "soft": 8,
+   "bulbs": 5
+  },
+  "tris": {
+   "solid": 9336,
+   "soft": 20772,
+   "bulbs": 1096
+  },
+  "bulbs": [
+   152
+  ],
+  "bulbTri": [
+   80,
+   8
+  ],
+  "box": {
+   "isBox3": true,
+   "min": {
+    "x": -19.329999923706055,
+    "y": 2.4200000762939453,
+    "z": 19.56999969482422
+   },
+   "max": {
+    "x": -13.170000076293945,
+    "y": 2.8299999237060547,
+    "z": 29.549999237060547
+   }
+  },
+  "pergolaLod": true
+ },
+ "m": {
+  "terrace-near": {
+   "off": {
+    "calls": 369,
+    "triangles": 817150,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 5,
+    "sphere": 152,
+    "octa": 0
+   },
+   "on": {
+    "calls": 369,
+    "triangles": 817150,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 5,
+    "sphere": 152,
+    "octa": 0
+   },
+   "saved": {
+    "calls": 0,
+    "triangles": 0
+   }
+  },
+  "terrace-bulbs-zone": {
+   "off": {
+    "calls": 426,
+    "triangles": 878288,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 5,
+    "sphere": 152,
+    "octa": 152
+   },
+   "on": {
+    "calls": 426,
+    "triangles": 878288,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 5,
+    "sphere": 152,
+    "octa": 152
+   },
+   "saved": {
+    "calls": 0,
+    "triangles": 0
+   }
+  },
+  "terrace-mid": {
+   "off": {
+    "calls": 449,
+    "triangles": 931258,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 5,
+    "sphere": 0,
+    "octa": 152
+   },
+   "on": {
+    "calls": 444,
+    "triangles": 930162,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 0,
+    "sphere": 0,
+    "octa": 152
+   },
+   "saved": {
+    "calls": 5,
+    "triangles": 1096
+   }
+  },
+  "terrace-soft-zone": {
+   "off": {
+    "calls": 457,
+    "triangles": 962011,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 5,
+    "sphere": 0,
+    "octa": 152
+   },
+   "on": {
+    "calls": 452,
+    "triangles": 960915,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 0,
+    "sphere": 0,
+    "octa": 152
+   },
+   "saved": {
+    "calls": 5,
+    "triangles": 1096
+   }
+  },
+  "terrace-far": {
+   "off": {
+    "calls": 466,
+    "triangles": 985395,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 5,
+    "sphere": 0,
+    "octa": 152
+   },
+   "on": {
+    "calls": 453,
+    "triangles": 963527,
+    "solid": 8,
+    "soft": 0,
+    "bulbs": 0,
+    "sphere": 0,
+    "octa": 152
+   },
+   "saved": {
+    "calls": 13,
+    "triangles": 21868
+   }
+  },
+  "terrace-solid-zone": {
+   "off": {
+    "calls": 489,
+    "triangles": 1016015,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 5,
+    "sphere": 0,
+    "octa": 152
+   },
+   "on": {
+    "calls": 476,
+    "triangles": 994147,
+    "solid": 8,
+    "soft": 0,
+    "bulbs": 0,
+    "sphere": 0,
+    "octa": 152
+   },
+   "saved": {
+    "calls": 13,
+    "triangles": 21868
+   }
+  },
+  "terrace-gone": {
+   "off": {
+    "calls": 504,
+    "triangles": 1059761,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 5,
+    "sphere": 0,
+    "octa": 152
+   },
+   "on": {
+    "calls": 483,
+    "triangles": 1028557,
+    "solid": 0,
+    "soft": 0,
+    "bulbs": 0,
+    "sphere": 0,
+    "octa": 152
+   },
+   "saved": {
+    "calls": 21,
+    "triangles": 31204
+   }
+  },
+  "terrace-beyond": {
+   "off": {
+    "calls": 470,
+    "triangles": 1043364,
+    "solid": 0,
+    "soft": 0,
+    "bulbs": 0,
+    "sphere": 0,
+    "octa": 152
+   },
+   "on": {
+    "calls": 470,
+    "triangles": 1043364,
+    "solid": 0,
+    "soft": 0,
+    "bulbs": 0,
+    "sphere": 0,
+    "octa": 152
+   },
+   "saved": {
+    "calls": 0,
+    "triangles": 0
+   }
+  },
+  "pergola-near": {
+   "off": {
+    "calls": 398,
+    "triangles": 885298,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 5,
+    "sphere": 152,
+    "octa": 0
+   },
+   "on": {
+    "calls": 398,
+    "triangles": 885298,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 5,
+    "sphere": 152,
+    "octa": 0
+   },
+   "saved": {
+    "calls": 0,
+    "triangles": 0
+   }
+  },
+  "pergola-zone": {
+   "off": {
+    "calls": 413,
+    "triangles": 893600,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 0,
+    "sphere": 152,
+    "octa": 0
+   },
+   "on": {
+    "calls": 414,
+    "triangles": 894816,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 0,
+    "sphere": 152,
+    "octa": 152
+   },
+   "saved": {
+    "calls": -1,
+    "triangles": -1216
+   }
+  },
+  "pergola-far": {
+   "off": {
+    "calls": 440,
+    "triangles": 958581,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 0,
+    "sphere": 152,
+    "octa": 0
+   },
+   "on": {
+    "calls": 440,
+    "triangles": 947637,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 0,
+    "sphere": 0,
+    "octa": 152
+   },
+   "saved": {
+    "calls": 0,
+    "triangles": 10944
+   }
+  },
+  "walk-courtyard": {
+   "off": {
+    "calls": 331,
+    "triangles": 864810,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 5,
+    "sphere": 152,
+    "octa": 0
+   },
+   "on": {
+    "calls": 331,
+    "triangles": 864810,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 5,
+    "sphere": 152,
+    "octa": 0
+   },
+   "saved": {
+    "calls": 0,
+    "triangles": 0
+   }
+  },
+  "walk-south": {
+   "off": {
+    "calls": 525,
+    "triangles": 1066315,
+    "solid": 8,
+    "soft": 8,
+    "bulbs": 5,
+    "sphere": 152,
+    "octa": 0
+   },
+   "on": {
+    "calls": 512,
+    "triangles": 1024863,
+    "solid": 8,
+    "soft": 0,
+    "bulbs": 0,
+    "sphere": 0,
+    "octa": 152
+   },
+   "saved": {
+    "calls": 13,
+    "triangles": 41452
+   }
+  }
+ }
+}

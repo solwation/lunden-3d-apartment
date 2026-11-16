@@ -9,9 +9,9 @@ const HIDDEN = 7; // existing render-only layer; physical traces include it
 
 /** Opt-in complete static batches. No geometry, instance buffers, visible flags or raycasts change. */
 export class CeilingBatchGate extends THREE.Object3D {
-  constructor(meshes, baseShown = () => true) {
+  constructor(meshes, baseShown = () => true, meshShown = null) { // meshShown(mesh): a further per-mesh condition (#1968: terrace decor kinds end at their own distance)
     super(); this.name = 'ceiling-batch-gate'; this.isLOD = true; this.autoUpdate = true;
-    this.meshes = meshes; this.baseShown = baseShown; this.occluders = garageCeilings();
+    this.meshes = meshes; this.baseShown = baseShown; this.meshShown = meshShown; this.occluders = garageCeilings();
     this.box = new THREE.Box3(); this.part = new THREE.Box3(); this.eye = new THREE.Vector3();
     this.bounds = meshes.map(mesh => {
       if (mesh.isInstancedMesh) { if (!mesh.boundingBox) mesh.computeBoundingBox(); }
@@ -29,6 +29,6 @@ export class CeilingBatchGate extends THREE.Object3D {
     this.eye.setFromMatrixPosition(camera.matrixWorld); this.box.makeEmpty();
     this.meshes.forEach((mesh,i) => this.box.union(this.part.copy(this.bounds[i]).applyMatrix4(mesh.matrixWorld)));
     const shown = this.baseShown() && !wholeBoxOccluded(this.eye, this.box, this.occluders, PERF.detail.occlusionMargin);
-    for (const mesh of this.meshes) mesh.layers.set(shown ? 0 : HIDDEN);
+    for (const mesh of this.meshes) mesh.layers.set(shown && (!this.meshShown || this.meshShown(mesh)) ? 0 : HIDDEN);
   }
 }

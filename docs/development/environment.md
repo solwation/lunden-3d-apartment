@@ -39,11 +39,14 @@ src/terracedecor.js    the furnished roof terraces (#605, TERRACE_DECOR, all *gu
                        rugs, a sofa, raised beds, railing boxes, string lights); L1201 stays EMPTY (#573). Seats have explicit Rest targets (#1818); visible
                        batches keep collision off and `raycast` off. Three merged meshes for the whole row (solid / soft with plant wind /
                        bulbs, warm after dusk via exterior's update); an `isLOD` gate puts them on layer 7 from north of the
-                       set-back wall below the roof and beyond `far`. Foliage is squeezed clear of screens / wall (`fitCrown`).
+                       set-back wall below the roof and beyond `far`; each kind dither-fades out earlier over its own
+                       `TERRACE_DECOR.lod` zone (#1968, performance.md). Foliage is squeezed clear of screens / wall (`fitCrown`).
                        Hooked in by one line at the end of exterior.js (`userData.terraceDecor`)
 tools/terracedecortest.html L1201 empty, every other terrace furnished in its own style, items on the deck and clear of the
                        terrace door, no leaf through a screen / the wall, three meshes, triangle budget, the gate, the bulbs,
                        every chair / sofa faces its table (#1091; the module turns items by −r: r 90 faces west)
+tools/terracelodtest.cjs #1968 (browser, `tools/browsertest.sh`): draw calls / triangles of the same frame with the terraces' and
+                       pergola bulbs' distance fade on and off (`gate.setLod`, `BatchLod.enabled`), day and night pictures; `lowmem` arg: phone profile
 src/patiodecor.js      #888, #1120: the neighbours' ground-floor patios on Hus L's back (PATIO_DECOR, every placement/colour a *guess*;
                        L1007 is ours, in FURNITURE, never touched). #1120: like the roof terraces, each patio gets a varied style
                        (bistro, matgrupp, lounge, solstolar, grill, odling, grönska; dealt by a seeded shuffle) built from

@@ -1,4 +1,6 @@
 import { CeilingBatchGate } from './ceilingbatchgate.js';
+import { BatchLod } from './lod.js';
+import { lowMemory } from './lowmemory.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -591,19 +593,30 @@ export function buildCourtyard() {
   seeds.forEach((sd, i) => { vine.setMatrixAt(i, m.compose(sd.pos, sd.rot, sd.scale)); vine.setColorAt(i, col.setHSL(0.28, 0.45, 0.28)); });
   registerTrees(vine, seeds);
   vine.castShadow = true;
-  const bulbMat = new THREE.MeshBasicMaterial({ color: 0x2a2620, toneMapped: false });
-  const bulbGeo = new THREE.SphereGeometry(0.03, 8, 6);
+  // #1968: from C.bulbLod.start m off a pergola's box its bulbs (a pixel or two by then) fade, the whole pergola at once (the
+  // dithered pixel fade of src/lod.js BatchLod), into octahedra of 8 triangles instead of the sphere's 80. Each pergola is one
+  // merged mesh per level behind its own ceiling gate: one draw call either side of the zone, two only inside it. Desktop only
+  // (as #1969: a phone keeps one level, its calls count more than these triangles); `&nolod` keeps one level too (A/B).
+  const BL = C.bulbLod, bulbLod = !lowMemory && !(typeof location !== 'undefined' && /[?&]nolod\b/.test(location.search));
+  const bulbMats = [], bulbMaterial = () => { const mat = new THREE.MeshBasicMaterial({ color: 0x2a2620, toneMapped: false }); bulbMats.push(mat); return mat; };
+  const bulbMat = bulbMaterial(), bulbGeo = new THREE.SphereGeometry(0.03, 8, 6), bulbFarGeo = new THREE.OctahedronGeometry(BL.r, 0);
+  const strung = (geo, list) => mergeGeometries(list.map(([x, y, z]) => geo.clone().translate(x, y, z)));
   // Keep each complete pergola's bounds separate for the existing frustum and
   // whole-box ceiling tests; a site-wide box can span different ceiling rectangles.
   group.add(vine);
+  const bulbLods = [];
   for (const [start, end] of bulbRanges) {
-    const bulb = new THREE.InstancedMesh(bulbGeo, bulbMat, end - start);
-    bulbs.slice(start, end).forEach(([x, y, z], i) => bulb.setMatrixAt(i, m.makeTranslation(x, y, z)));
-    bulb.name = 'courtyard-pergola-bulbs';
+    const list = bulbs.slice(start, end), bulb = new THREE.Mesh(strung(bulbGeo, list), bulbMat);
+    bulb.name = 'courtyard-pergola-bulbs'; bulb.userData.bulbs = list.length;
     group.add(new CeilingBatchGate([bulb]));
+    if (!bulbLod) continue;
+    const far = new THREE.Mesh(strung(bulbFarGeo, list), bulbMat);
+    far.name = 'courtyard-pergola-bulbs far';
+    group.add(new CeilingBatchGate([far]));
+    bulbLods.push(new BatchLod(bulb, far, { start: BL.start, end: BL.end, margin: BL.margin, material: bulbMaterial }));
   }
   const lit = new THREE.Color(0xffd08a), off = new THREE.Color(0x2a2620); const bollardOff = new THREE.Color(0x8d8b84);
-  return { object: group, segments, seats, targets, surfaces, bicycles, swings,
+  return { object: group, segments, seats, targets, surfaces, bicycles, swings, bulbLods,
     updateSwings(dt, target) {
       let changed = false;
       swings.forEach((swing, i) => {
@@ -620,7 +633,7 @@ export function buildCourtyard() {
       }
     },
     /** night 0 … 1 (with the window lights): the pergola's bulbs glow after dusk (no lights, colour only). */
-    update(night, power = true) { const on = night > 0.35 && power; bulbMat.color.copy(on ? lit : off); bollardGlow.color.copy(on ? lit : bollardOff); // the bollards too (#112); power: not in a power cut (#604)
+    update(night, power = true) { const on = night > 0.35 && power; for (const mat of bulbMats) mat.color.copy(on ? lit : off); bollardGlow.color.copy(on ? lit : bollardOff); // the bollards too (#112); power: not in a power cut (#604)
       // #1525: the bollards' ground pools fade in after dusk (hysteresis like the street lamps), out in a power cut
       const now = performance.now(), dt = Math.min(1, (now - poolT) / 1000); poolT = now;
       if (!poolLit && night > PL.on && power) poolLit = true; else if (poolLit && (night < PL.off || !power)) poolLit = false;

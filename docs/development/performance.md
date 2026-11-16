@@ -1110,6 +1110,18 @@ calls; standing among the buildings nothing changes; inside the zone both levels
 built twice at start (not timed) and ~21.6 k triangles more of geometry memory. `tools/campuslodtest.cjs` measures it and
 compares the two levels from one camera (13 of 51 840 pixels differ visibly from the courtyard); `eastbackdroptest` counts the
 near levels only. Phones build only the light level, as before.
+Roof terraces and pergola bulbs by distance (#1968): the roof terraces' merged decor no longer pops out at
+`TERRACE_DECOR.far` 160 m; each kind dither-fades out (`patchDitherLod` with a `centre` the gate keeps at the terrace row's
+nearest point, so the shader's distance is the gate's; shadow depth materials fade with it, the leaves' keeps its wind sway)
+over its own `TERRACE_DECOR.lod` zone and is then on the hidden layer: bulbs 30–38 m, soft things (leaves, flowers, parasol
+cloth) 60–72 m, solid things 105–120 m (phones: 22–30, 45–56, 80–92). No far level: the fade ends in nothing. The pergolas'
+272 bulbs are now one merged mesh per pergola (was an instanced batch; same calls and triangles) and, on desktop only, fade a
+pergola at a time (`BatchLod`, distance to the pergola's box) into octahedra (`COURTYARD.bulbLod` 18–24 m: 8 instead of 80
+triangles per bulb); +1 call only while that pergola is inside the zone. Measured with `tools/terracelodtest.cjs` (desktop,
+same rendered frame LOD off/on): at 20 m and walking in the courtyard nothing changes; beyond 38 m −5 calls / −1 096
+triangles; beyond 72 m −13 / −21 868; 120–160 m −21 / −31 204; walking on the lawn 110 m south −13 / −41 452; the Borggården's
+pergola at 40 m −10 944 triangles, same calls (inside its zone +1 call, +1 216 triangles). Phone profile (pre-rebase checkpoint
+of the same terrace code): −1 / −2 / −3 calls beyond 30 / 56 / 92 m. [Numbers and pictures](../verification/1968/measure.json).
 
 Not knobs (yet): the Christmas tree's shimmer costs 0.016 ms (#571) — not worth one.
 

@@ -5,6 +5,7 @@ import { CeilingBatchGate } from './ceilingbatchgate.js';
 import { lowMemory } from './lowmemory.js';
 import { planter } from './patio.js';
 import { windGeometry, windMaterial, windShadow } from './plantwind.js';
+import { lodDepthMaterial, lodRange, patchDitherLod } from './lod.js';
 
 // #605: the furnished roof terraces on Hus L — palms and pot plants, loungers, tables and chairs, parasols, grills, rugs,
 // railing boxes and string lights, one style per terrace (TERRACE_DECOR in config; every placement is a *guess*). L1201's
@@ -15,6 +16,9 @@ import { windGeometry, windMaterial, windShadow } from './plantwind.js';
 // banana / agave geometry as the entrance plants). A gate (`isLOD`: three calls its `update(camera)` while projecting)
 // moves the three meshes to the hidden layer 7 (as DetailCuller does, so the warm-up still compiles and draws them) when
 // the camera is further than `far`, or north of the set-back wall below Hus L's roof — the building hides the terraces.
+// #1968: the three kinds end at their own distance (TERRACE_DECOR.lod: the bulbs first, then the soft things, the solid ones
+// last at `far`) and each fades out through a few metres with the dithered pixel fade of src/lod.js instead of popping. There
+// is no cheaper far level: the fade ends in nothing, and beyond its end a kind is on the hidden layer (no draw call).
 
 const KEEP = ['position', 'normal', 'color', 'plantWind'];
 const HIDDEN = 7;
@@ -327,32 +331,47 @@ export function buildTerraceDecor(exterior, D) {
     records.push(rec);
     batches.push([solid.slice(start[0]), soft.slice(start[1]), bulbs.slice(start[2])]);
   }
-  const gate = new TerraceGate({ zs, upperTop: info.y3 + (H.upperStoreys - 1) * H.storeyHeight, xw: info.list[0].x0, xe: info.list.at(-1).x1, deck: info.deck });
+  // #1968: every kind fades out over its own [start, end] m (measured to the nearest point of the terrace row: `centre`,
+  // which the gate moves); the shadows follow through depth materials with the same fade. `&nolod`: the old pop at `far` (A/B).
+  const lodOff = typeof location !== 'undefined' && /[?&]nolod\b/.test(location.search), L = lowMemory ? T.lod.phone : T.lod;
+  const centre = { value: new THREE.Vector3() }, ranges = { solid: lodRange(0, 1), soft: lodRange(0, 1), bulbs: lodRange(0, 1) }, ends = {};
+  const fade = (material, kind) => patchDitherLod(material, { far: false, range: ranges[kind], centre });
+  const gate = new TerraceGate({ zs, upperTop: info.y3 + (H.upperStoreys - 1) * H.storeyHeight, xw: info.list[0].x0, xe: info.list.at(-1).x1, deck: info.deck }, ends, centre);
   gate.name = 'terrace-decor';
+  /** The fade on (TERRACE_DECOR.lod) or off (every kind in full up to `far`, as before #1968); tests and A/B measurements. */
+  gate.setLod = (on) => {
+    for (const k of Object.keys(ranges)) { ranges[k].value.set(on ? L[k][0] : 1e6, on ? L[k][1] : 2e6); ends[k] = on ? L[k][1] : T.far; }
+    gate.level = null;
+  };
+  gate.setLod(!lodOff);
   const meshes = [];
-  const add = (geos, material, name, shadow) => {
+  const add = (geos, material, name, shadow, kind, depth = null) => {
     if (!geos.length) return null;
     const mesh = new THREE.Mesh(mergeGeometries(geos), material);
     mesh.name = name; mesh.castShadow = mesh.receiveShadow = shadow;
+    mesh.userData.lodKind = kind;
+    if (depth) mesh.customDepthMaterial = depth;
     mesh.raycast = () => {}; // decoration: never in the way of a pick or a throw
     gate.add(mesh); meshes.push(mesh);
     return mesh;
   };
-  const solidMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.78, metalness: 0.05 });
-  const softMat = windMaterial(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, side: THREE.DoubleSide }));
-  const bulbMat = new THREE.MeshBasicMaterial({ color: T.bulbs.day, toneMapped: false });
+  const depthMaterial = () => new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking });
+  const solidMat = fade(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.78, metalness: 0.05 }), 'solid');
+  const softMat = fade(windMaterial(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, side: THREE.DoubleSide })), 'soft');
+  const bulbMat = fade(new THREE.MeshBasicMaterial({ color: T.bulbs.day, toneMapped: false }), 'bulbs');
+  const solidDepth = lodDepthMaterial({ range: ranges.solid, centre }), softDepth = fade(windMaterial(depthMaterial()), 'soft'); // (the leaves' shadow keeps its wind sway)
   // Complete source terraces retain their original one-pass geometry/wind seeds. Native spheres
   // can reject the roof decoration above the patio view; phones retain their original three draws.
   for (const [s, f, b] of lowMemory ? [[solid, soft, bulbs]] : batches) {
-    add(s, solidMat, 'terraceDecorSolid', true);
-    const leaves = add(f, softMat, 'terraceDecorSoft', true);
-    if (leaves) windShadow(leaves); // includes the existing full shader-sway sphere margin
-    add(b, bulbMat, 'terraceDecorBulbs', false);
+    add(s, solidMat, 'terraceDecorSolid', true, 'solid', solidDepth);
+    const leaves = add(f, softMat, 'terraceDecorSoft', true, 'soft');
+    if (leaves) { windShadow(leaves); leaves.customDepthMaterial = softDepth; } // includes the existing full shader-sway sphere margin
+    add(b, bulbMat, 'terraceDecorBulbs', false, 'bulbs');
   }
   const day = new THREE.Color(T.bulbs.day), night = new THREE.Color(T.bulbs.night);
   const prev = exterior.userData.update;
   exterior.userData.update = (n, power = true) => { prev?.(n, power); bulbMat.color.copy(n > T.bulbs.on && power ? night : day); }; // (out in a power cut, #604)
-  gate.add(new CeilingBatchGate(meshes, () => gate.shown !== false));
+  gate.add(new CeilingBatchGate(meshes, () => gate.shown !== false, (mesh) => gate.kindShown(mesh)));
   gate.meshes = meshes;
   gate.userData.records = records;
   return gate;
@@ -360,14 +379,19 @@ export function buildTerraceDecor(exterior, D) {
 
 /** Shown only where the terraces can be seen (see the header). three calls `update(camera)` for an `isLOD` object. */
 class TerraceGate extends THREE.Object3D {
-  constructor(box) { super(); this.isLOD = true; this.autoUpdate = true; this.box = box; this.meshes = []; this.shown = null; this.centre = new THREE.Vector3((box.xw + box.xe) / 2, box.deck, box.zs); }
+  /** `ends`: { solid, soft, bulbs } m, where each kind's fade ends (bulbs <= soft <= solid); `centre`: the fade's { value } uniform. */
+  constructor(box, ends, centre) { super(); this.isLOD = true; this.autoUpdate = true; this.box = box; this.ends = ends; this.fadeCentre = centre; this.meshes = []; this.shown = null; this.level = null; this.centre = new THREE.Vector3((box.xw + box.xe) / 2, box.deck, box.zs); }
+  /** Is this mesh's kind within its distance? (level 0: nothing, 1: solid, 2: + soft, 3: + bulbs) */
+  kindShown(mesh) { return this.level >= LEVEL[mesh.userData.lodKind]; }
   update(camera) {
-    const e = camera.matrixWorld.elements, x = e[12], y = e[13], z = e[14], b = this.box;
+    const e = camera.matrixWorld.elements, x = e[12], y = e[13], z = e[14], b = this.box, n = this.ends;
     const behind = z < b.zs - 0.3 && y < b.upperTop + 0.3 && x > b.xw - 0.5 && x < b.xe + 0.5;
-    const dx = Math.max(0, b.xw - x, x - b.xe), dz = z - b.zs, dy = y - b.deck;
-    const show = !behind && dx * dx + dy * dy + dz * dz < T.far * T.far;
-    if (show === this.shown) return;
-    this.shown = show;
-    for (const m of this.meshes) m.layers.set(show ? 0 : HIDDEN);
+    const dx = Math.max(0, b.xw - x, x - b.xe), dz = z - b.zs, dy = y - b.deck, d2 = dx * dx + dy * dy + dz * dz;
+    this.fadeCentre.value.set(Math.min(b.xe, Math.max(b.xw, x)), b.deck, b.zs); // the row's nearest point: the shader fades by the same distance
+    const level = behind || d2 >= n.solid * n.solid ? 0 : d2 >= n.soft * n.soft ? 1 : d2 >= n.bulbs * n.bulbs ? 2 : 3;
+    if (level === this.level) return;
+    this.level = level; this.shown = level > 0;
+    for (const m of this.meshes) m.layers.set(this.kindShown(m) ? 0 : HIDDEN);
   }
 }
+const LEVEL = { solid: 1, soft: 2, bulbs: 3 };
