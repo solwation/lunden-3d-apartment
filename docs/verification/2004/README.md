@@ -45,7 +45,7 @@ Tidiga numeriska prov hittade för låg fot under partiell huk samt förändrad
 fotvinkel på ett låst stöd under start. Rättningen håller markskorna plana även
 under huken och låter ankarets pitch följa samma kontakt. Den första sittbanan
 blandade lokala mål utan rootframe-kompensation och lät benen skära stolen.
-`before/interim-sit.png` visar det underkända mellanresultatet; det är inte en
+[underkänd mellanbild](https://github.com/solwation/lunden-3d-apartment/blob/718154af0ef92b458d34bc0495b65989a4b9eb8a/docs/verification/2004/before/interim-sit.png) visar det underkända mellanresultatet; det är inte en
 ursprunglig baslinje eller ett godkänt resultat. Ny bana bevarar föregående
 synliga höft/fötter vid rootbytet och landar sedan på den oförändrade sittposen.
 
@@ -104,3 +104,9 @@ befintliga 0↔1-snapshotövergången. Den första startkontakten tappades ocks�
 under gait-inblend: nu styr faktisk stöd-/svingfas ankaret tills det första
 lyftet, med en kontinuerlig anslutning till den bevarade svingkurvan. Förebilden ska publiceras med pinnad kommentar och därefter
 rensas av integrationsägaren.
+
+Root har granskat slutdiff, fem orienteringsbilder, kontrakt/tidsdata och
+slutmanifest. Samtliga final-source-hashar är verifierade, och de två
+efterföljande ändringarnas tidigare källor går att rekonstruera exakt. Bilder
+och klipp publicerades före stängning, pinnade till718154af; underkänd
+mellanbild tas bort i resolvingcommit medan den pinnade länken består.
