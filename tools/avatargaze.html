@@ -1,0 +1,41 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar gaze</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2011 component page: one avatar's head at conversation distance, driven by tools/avatargazetest.cjs. window.__frame({ blink, target: [x, y, z] | null,
+// glasses }) settles the gaze (target in the figure's own frame, +x its left, +z forward), forces the blink amount and renders; returns the numbers.
+import * as THREE from 'three';
+import { Avatar } from '../src/avatar.js';
+import { decodeAvatarLook, avatarEyeHeight, AVATAR_GAZE } from '../src/config.js';
+const q = new URLSearchParams(location.search);
+const code = q.get('code') ?? '210000100c5e8o2w0l8j0n0b0r8t8y8';
+const W = 480, H = 480, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(1, 4, 4); scene.add(sun);
+const lk = { ...decodeAvatarLook(code, 'gaze'), tall: 1, build: 1 };
+const a = new Avatar(lk); a.object.position.set(0, 1.62 - avatarEyeHeight(lk), 0); scene.add(a.object);
+a.object.rotation.y = 0; // facing +z, towards the camera
+const cam = new THREE.PerspectiveCamera(10, 1, 0.05, 50);
+cam.position.set(0, 1.64, 4.4); cam.lookAt(0, 1.62, 0);
+const u = a.material.userData.u;
+window.__frame = ({ blink = 0, target = null, glasses = 0 } = {}) => {
+  u.uGlasses.value = glasses;
+  a.object.updateMatrixWorld(true);
+  a.lookAt(target ? new THREE.Vector3(...target).applyMatrix4(a.object.matrixWorld) : null);
+  a.eyes && (a.eyes.blink.wait = 99); // no random blink while a frame is set up
+  for (let i = 0; i < 120; i++) a.update(1 / 60, {});
+  u.uBlink.value = glasses === 3 ? 0 : blink;
+  a.material.userData.u.uBlink.value = u.uBlink.value;
+  renderer.render(scene, cam);
+  return { yaw: a.eyes.yaw, pitch: a.eyes.pitch, headY: a.bones.head.rotation.y, headX: a.bones.head.rotation.x, ex: a.eyes.ex, ey: a.eyes.ey, gaze: u.uGaze.value.toArray(), blink: u.uBlink.value, limits: { maxYaw: AVATAR_GAZE.maxYaw, maxPitch: AVATAR_GAZE.maxPitch, eye: AVATAR_GAZE.eye }, calls: renderer.info.render.calls };
+};
+window.__ready = true;
+</script></body></html>

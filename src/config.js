@@ -6594,6 +6594,15 @@ export const AVATAR_SHAPE = {
     neck:       { tag: 'a', min: -0.04, max: 0.04, zero: 0, label: 'Hals' },
   },
 };
+// #2011: blinking and the living gaze (src/avatargaze.js, src/avatar.js). Blinks use the existing eye part (lids and eyeball squeezed shut about
+// its centre in the avatars' vertex shader, uniform uBlink), no new geometry, draw call or network field. All numbers are *guess*es by eye
+// from ordinary human behaviour (a blink takes ~0.1-0.15 s, one every ~4 s, now and then twice in a row).
+export const AVATAR_BLINK = { interval: [2, 6], double: 0.18, doubleGap: [0.12, 0.28], close: 0.06, hold: 0.03, open: 0.11, depth: 0.97 };
+// Gaze: a player within `range` m (the one talking before the nearest) is looked at. The head takes `headShare` of the angle off its own
+// direction, at most `maxYaw` / `maxPitch` rad; the eyes the rest, up to `eyeYaw` / `eyePitch` rad off the head's line, shown as an iris
+// shift of at most `eye` m [x, y]. A target further than `cone` rad off the head is not looked at. Small saccades of the irises at rest.
+export const AVATAR_GAZE = { range: 6, retarget: 0.3, cone: 1.6, headShare: 0.45, maxYaw: 0.5, maxPitch: 0.22, eyeYaw: 0.5, eyePitch: 0.3, eye: [0.0042, 0.0026],
+  follow: 7, saccadeFollow: 30, saccade: { interval: [0.4, 1.6], amp: [0.0011, 0.0007], withTarget: 0.4 } };
 // #1165: glasses, 0 none, 1 round, 2 square frames: a look field `glasses`, the extension's `g` tag (absent when 0). The frames are part
 // of the shared head geometry and collapse to a point in the vertex shader when not chosen (src/avatar.js), so no extra draw call.
 // #1325: kind 3 sunglasses (the square frames plus dark lenses, `lens`).

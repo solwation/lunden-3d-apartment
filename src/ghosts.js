@@ -7,6 +7,8 @@ import { poseOlof } from './olof.js';
 import { pumpWire } from './gympump.js';
 import * as THREE from 'three';
 import { FALL, TOAST, SOUNDS, KISS, HUG, REACT } from './config.js';
+import { chooseGazeTarget } from './avatargaze.js';
+import { AVATAR_GAZE } from './config.js';
 import { makesSteps, strideFor } from './spatialsound.js';
 import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, AVATAR_MOTION as MOTION, CHAT, SWIM, encodeAvatarLook, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
 import { Avatar, armTarget, swimLineFar } from './avatar.js';
@@ -100,6 +102,7 @@ const SWING = 0.35; // s the saber's cut lasts
 // { water: the surface's height there, cx, cz: the current (m/s) }. Derived from the position alone, so no new state field travels: a swimmer's
 // feet follow the river bed, under the surface (player.js `swimStep`), and nobody else stands there.
 let swimProbe = null;
+const gazePoint = new THREE.Vector3();
 const tmpV = new THREE.Vector3();
 const pickMat = new THREE.MeshBasicMaterial();
 
@@ -670,11 +673,36 @@ export class Ghosts {
       }
     }
     const eye = this.camera.position, armed = !!s.h;
+    this.updateGazes(t, eye);
     for (const g of this.others.values()) { g.draw(t, eye); g.setSolid(armed && !!g.h); }
     if (this.far && (this.others.size || this.far.mesh.visible)) this.far.update(this.others.values(), eye); // #1966
     this.updateKisses(t);
     this.updateHugs(t);
     if (this.onStep || this.onJet) this.soundTick(t);
+  }
+
+  /** #2011: every AVATAR_GAZE.retarget s each nearby player looks at the nearest other player (us included, at the camera), the one talking
+   * first; nobody in range, or too far away to matter: no target. Local only, nothing is sent. */
+  updateGazes(t, eye) {
+    if (t - (this.gazeAt ?? -1e9) < AVATAR_GAZE.retarget * 1000) return;
+    this.gazeAt = t;
+    const cands = this.gazeCands ??= [], me = this.myGhost?.avatar;
+    cands.length = 0;
+    cands.push({ x: eye.x, y: eye.y, z: eye.z, talking: !!me?.talking, skip: false }); // (0: us)
+    const list = [];
+    for (const g of this.others.values()) {
+      const p = g.root.position, visible = g.root.visible && g.dEye < G.far;
+      list.push(g);
+      cands.push({ x: p.x, y: p.y + 1.6 * (g.avatar.look?.tall ?? 1), z: p.z, talking: g.avatar.talking, skip: !visible || g.dEye > 60 });
+    }
+    for (let i = 0; i < list.length; i++) {
+      const g = list[i], p = g.root.position;
+      if (!g.root.visible || g.dEye > 60) { g.avatar.lookAt(null); continue; }
+      cands[i + 1].skip = true; // (not itself)
+      const k = chooseGazeTarget(p, cands);
+      cands[i + 1].skip = !g.root.visible || g.dEye > 60;
+      if (k < 0) g.avatar.lookAt(null); else g.avatar.lookAt(gazePoint.set(cands[k].x, cands[k].y, cands[k].z));
+    }
   }
 
   /** The others' footsteps and jetpack roar (#1302), derived locally from their state (speed, crouch, pose, `bk`, `jp`): no

@@ -5,7 +5,8 @@ import { GYM_PUMP } from './config.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SURFACE as SURFACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, AVATAR_GAIT as GAIT, AVATAR_MOTION as MOTION, DANCE, AVATAR_AIR as AIR, SWIM, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SURFACE as SURFACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, AVATAR_GAIT as GAIT, AVATAR_MOTION as MOTION, DANCE, AVATAR_AIR as AIR, SWIM, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion, AVATAR_BLINK, AVATAR_GAZE } from './config.js';
+import { newBlink, stepBlink, solveGaze, stepSaccade } from './avatargaze.js';
 import { topTexture } from './spidersuit.js';
 import { reactionPose, mixHand } from './reactpose.js';
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, THIGH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
@@ -35,7 +36,7 @@ const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4, lips: 6, iris: 7,
 // #1138: which face part a head-bone vertex belongs to (the `facePart` attribute; 0 = not on the head), see faceShape
 // #1165: hair (the scalp shell / curtain, lengthened below the crown), round and square glasses frames and the temples + bridge shared by both
 // #1241: cowlHide collapses protruding facial features (lips, brow ridge) under the Spider-Man mask
-const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10, cowlHide: 11, hatDome: 12, peakFront: 13, peakBack: 14, knit: 15, hatCrown: 16, hatBrim: 17, phoneBand: 18, phoneCup: 19, phoneNeck: 20, studs: 21, hoops: 22, drops: 23, pearlStuds: 24, lens: 25, // #1325: earrings (head bone, follow the ear) and sunglass lenses
+const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10, cowlHide: 11, hatDome: 12, peakFront: 13, peakBack: 14, knit: 15, hatCrown: 16, hatBrim: 17, phoneBand: 18, phoneCup: 19, phoneNeck: 20, studs: 21, hoops: 22, drops: 23, pearlStuds: 24, lens: 25, iris: 26, /* #2011: iris + pupil, moved by the gaze */ // #1325: earrings (head bone, follow the ear) and sunglass lenses
  
   chain: 30, pearls: 31, pendant: 32, goldChain: 33,
   ring: 40, braceletBase: 50, watchCase: 60, watchStrap: 70, watchDial: 80, watchFace: 90 }; // 50-55 #1334 bracelets, 60-95 watches (case / strap / dial / glass, + side * 3 + model - 1)
@@ -1020,7 +1021,7 @@ function addFace(add, sphere, P) {
   const F = FACE, E = F.eye, N = F.nose, B = F.brow;
   for (const s of [-1, 1]) {
     const x = s * E.at[0], [, y, z] = E.at;
-    const eye = (...a) => { add(...a); facePart(P, FACE_PART.eye, [x, y, z]); }; // (#1138: sized / opened about the eyeball's centre)
+    const eye = (...a) => { add(...a); facePart(P, a[1] === 'iris' || a[5] === E.pupilColour ? FACE_PART.iris : FACE_PART.eye, [x, y, z]); }; // (#1138: sized / opened about the eyeball's centre)
     eye(eyeSurface(), 'fixed', 'head', [x, y, z], 1, E.white);
     const irisZ = E.r * E.scale[2];
     const pupil = (r, depth) => shape(sphere(r, 10, 4).scale(1, 1, depth), v => {
@@ -1159,7 +1160,7 @@ function surfaceRoughness() {
     else if (region == 1.0 || region == 2.0) finish = ${F.cloth.toFixed(3)};
     else if (region == 3.0 || region == 8.0 || region == 9.0) finish = ${F.hair.toFixed(3)};
     else if (region == 5.0) finish = ${F.shoe.toFixed(3)};
-    if (abs(vSurface.y - ${FACE_PART.eye.toFixed(1)}) < 0.5 && vBare < 0.5) finish = ${F.eye.toFixed(3)};
+    if ((abs(vSurface.y - ${FACE_PART.eye.toFixed(1)}) < 0.5 || abs(vSurface.y - ${FACE_PART.iris.toFixed(1)}) < 0.5) && vBare < 0.5) finish = ${F.eye.toFixed(3)};
     if (uSuit > 0.5) finish = ${F.cloth.toFixed(3)};
     roughnessFactor = mix(finish, ${F.metalRoughness.toFixed(3)}, vRing);`;
 }
@@ -1289,7 +1290,7 @@ function releaseSuitTexture() { if (--suitUsers === 0) { suitTexture.dispose(); 
 
 function makeMaterial(rim, headProjection) {
   const headMin = headProjection.min, headSize = headProjection.getSize(new THREE.Vector3()), headFront = headProjection.getCenter(new THREE.Vector3()).z;
-  const u = { uPump: { value: 0 }, uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 }, uKiss: { value: 0 },
+  const u = { uPump: { value: 0 }, uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 }, uKiss: { value: 0 }, uBlink: { value: 0 }, uGaze: { value: new THREE.Vector2() },
     uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uEarrings: { value: 0 }, uHat: { value: 0 }, uPhones: { value: 0 }, uNecklace: { value: 0 }, uRingFinger: { value: 0 }, uBracelet: { value: 0 }, uWatch: { value: 0 }, uRingColor: { value: new THREE.Color(RING.colours[0]) }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) } };
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: SURFACE.finish.cloth, metalness: 0, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
@@ -1336,7 +1337,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
       #include <opaque_fragment>`);
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-v15';
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-v16';
   return m;
 }
 
@@ -1346,7 +1347,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
 // pivot (`faceAnchor`: an eyeball's centre, the nose's bridge, an ear's centre, a brow's centre line), then every head vertex
 // but the neck is widened, lengthened from the chin and its lower face (faceWarp's jaw region) widened or narrowed. No new
 // geometry or draw call; collision and hit regions keep the plain head (CPU raycasts never see the shader).
-const FACE_SHAPE_DECL = 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform float uEar, uHair, uGlasses, uEarrings, uHat, uPhones, uNecklace, uRingFinger, uBracelet, uWatch, uNeck, uSuit; uniform vec2 uBrow;';
+const FACE_SHAPE_DECL = 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform vec2 uGaze; uniform float uBlink; uniform float uEar, uHair, uGlasses, uEarrings, uHat, uPhones, uNecklace, uRingFinger, uBracelet, uWatch, uNeck, uSuit; uniform vec2 uBrow;';
 const CHIN_Y = RH.jaw.centre[1] - RH.jaw.radius * RH.jaw.scale[1]; // the head lengthens from its chin
 function faceShape() {
   const hb = bindAt('head'), W = FACE.warp, f = (v) => v.toFixed(4), P = FACE_PART;
@@ -1360,7 +1361,18 @@ function faceShape() {
       if (uSuit > 0.5 && abs(facePart - ${P.head}.0) > 0.5 && abs(facePart - ${P.neck}.0) > 0.5) {
         transformed = vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)});
       } else {
-        if (abs(facePart - ${P.eye}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uEye;
+        if (abs(facePart - ${P.eye}.0) < 0.5 || abs(facePart - ${P.iris}.0) < 0.5) {
+          transformed = faceAnchor + (transformed - faceAnchor) * uEye;
+          if (facePart > ${P.iris}.0 - 0.5) { // #2011: the gaze moves the iris and pupil, kept inside the almond so the lids cover the rest
+            vec2 d = transformed.xy - faceAnchor.xy + uGaze;
+            float er = ${f(FACE.eye.r)} * uEye.x;
+            d.x = clamp(d.x, -er * 0.98, er * 0.98);
+            float h = 1.0 - (d.x / er) * (d.x / er);
+            d.y = clamp(d.y, -h * ${f(SURFACE.eye.lower)} * uEye.y, h * ${f(SURFACE.eye.upper)} * uEye.y);
+            transformed.xy = faceAnchor.xy + d;
+          }
+          transformed.y = faceAnchor.y + (transformed.y - faceAnchor.y) * (1.0 - uBlink * ${f(AVATAR_BLINK.depth)}); // #2011: a blink squeezes the eye shut about its centre
+        }
         else if (abs(facePart - ${P.nose}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uNose;
         else if (abs(facePart - ${P.ear}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uEar;
         else if (abs(facePart - ${P.brow}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uBrow.x + vec3(0.0, uBrow.y, 0.0);
@@ -1913,6 +1925,8 @@ export class Avatar {
    * #1944 `dive` 0 … 1 (with `swim`): under the surface, lying level with the diving mask on; `diveAmt` is the eased amount. */
   update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null, air = 0, airV = null, swim = false, dive = 0, gaitDir = null, motionFrame = null, groundSpeed = speed, groundEnabled = true } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
     this.time += dt;
+    const eyes = this.updateEyes(dt, turn, pitch, kiss > 0 || !!react || swim || air === 3);
+    turn += eyes.yaw; pitch += eyes.pitch; // #2011: the head turns a little towards whom it looks at
 
     // #1799: each air pose blends in and out on its own (their sum ≤ 1, the rest is the ground pose)
     const am = air === 1 || air === 2 || air === 3 ? air : 0, ae = Math.min(1, dt * AIR.ease), av = airV ?? [0, 0, 0];
@@ -2014,6 +2028,38 @@ export class Avatar {
   /** #1951: one swim stroke with both arms starts now (a swimming figure; ghosts.js sees it in the speed through the water). Not again
    * before most of SWIM.kick.pause has passed, as for the swimmer. */
   swimStroke() { if ((this.kickT ?? 9) > SWIM.kick.pause * 0.8) this.kickT = 0; }
+
+  /** #2011: where to look (a world point, or null for nothing in particular; ghosts.js sets it a few times a second). */
+  lookAt(point) { if (point) (this.gazeTarget ??= new THREE.Vector3()).copy(point); else this.gazeTarget = null; }
+
+  /** #2011: true when the eyes cannot be seen (the Spider-Man mask, sunglasses, the diving mask): then nothing blinks or looks. */
+  get eyesHidden() { return !!this.suit || this.material?.userData.u.uGlasses.value === 3 || !!this.mask?.visible; }
+
+  /** #2011: blinking and the gaze, once per update. Returns the head's extra { yaw, pitch } (rad); sets uBlink / uGaze on the material.
+   * `still` (a kiss, a BIO reaction, swimming, a wall): the head is left alone, the eyes keep blinking. */
+  updateEyes(dt, turn, pitch, still) {
+    const u = this.material?.userData.u, none = this.noGaze ??= { yaw: 0, pitch: 0 };
+    if (!u?.uBlink) return none;
+    const G = AVATAR_GAZE, e = this.eyes ??= { blink: newBlink(), saccade: {}, yaw: 0, pitch: 0, ex: 0, ey: 0, sx: 0, sy: 0 };
+    if (this.eyesHidden) { u.uBlink.value = 0; u.uGaze.value.set(0, 0); e.yaw = e.pitch = e.ex = e.ey = 0; return none; }
+    u.uBlink.value = stepBlink(e.blink, dt);
+    let want = null;
+    if (this.gazeTarget && !still) { // the target's angles in the figure's own frame (+z forward, +x its left)
+      const v = this.gazeV ??= new THREE.Vector3(), h = this.gazeH ??= new THREE.Vector3();
+      this.object.updateWorldMatrix(true, false);
+      this.bones.head.getWorldPosition(h); this.object.worldToLocal(h);
+      this.object.worldToLocal(v.copy(this.gazeTarget)).sub(h);
+      want = solveGaze(Math.atan2(v.x, v.z), Math.atan2(v.y, Math.hypot(v.x, v.z)), turn, pitch);
+    }
+    const k = 1 - Math.exp(-dt * G.follow), ks = 1 - Math.exp(-dt * G.saccadeFollow), sc = stepSaccade(e.saccade, dt);
+    e.yaw += ((want?.yaw ?? 0) - e.yaw) * k; e.pitch += ((want?.pitch ?? 0) - e.pitch) * k;
+    e.ex += ((want?.ex ?? 0) - e.ex) * k; e.ey += ((want?.ey ?? 0) - e.ey) * k;
+    e.sx += ((sc.x ?? 0) - e.sx) * ks; e.sy += ((sc.y ?? 0) - e.sy) * ks;
+    const sa = want ? G.saccade.withTarget : 1;
+    u.uGaze.value.set(e.ex * G.eye[0] + e.sx * sa, e.ey * G.eye[1] + e.sy * sa);
+    e.out = this.eyesOut ??= { yaw: 0, pitch: 0 }; e.out.yaw = e.yaw; e.out.pitch = e.pitch;
+    return e.out;
+  }
 
   /** The talking mouth follows its line (#1122); `update` calls it, a figure posed otherwise (Olof, #1156) calls it itself. */
   updateMouth(dt) {
