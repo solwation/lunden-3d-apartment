@@ -1,0 +1,88 @@
+TAP version 13
+# Subtest: fade is 0 before the zone, 1 after it, linear inside and monotonic
+ok 1 - fade is 0 before the zone, 1 after it, linear inside and monotonic
+  ---
+  duration_ms: 0.945299
+  type: 'test'
+  ...
+# Subtest: membership: near buffer until end + margin, far buffer from start - margin; a zone instance is in both
+ok 2 - membership: near buffer until end + margin, far buffer from start - margin; a zone instance is in both
+  ---
+  duration_ms: 0.923699
+  type: 'test'
+  ...
+# Subtest: dither: near and far keep complementary pixels, every pixel drawn once, the share follows the fade
+ok 3 - dither: near and far keep complementary pixels, every pixel drawn once, the share follows the fade
+  ---
+  duration_ms: 0.3559
+  type: 'test'
+  ...
+# Subtest: packOrder moves the wanted ids to the front, stably
+ok 4 - packOrder moves the wanted ids to the front, stably
+  ---
+  duration_ms: 0.3112
+  type: 'test'
+  ...
+# Subtest: InstanceLod: draws each instance at the level(s) its distance needs and keeps seeds aligned with the buffers
+ok 5 - InstanceLod: draws each instance at the level(s) its distance needs and keeps seeds aligned with the buffers
+  ---
+  duration_ms: 3.675397
+  type: 'test'
+  ...
+# Subtest: InstanceLod: the far copy follows seasons.js (colours, winter hides it), one packing per camera step
+ok 6 - InstanceLod: the far copy follows seasons.js (colours, winter hides it), one packing per camera step
+  ---
+  duration_ms: 1.405399
+  type: 'test'
+  ...
+# Subtest: InstanceLod: an emptied mesh is culled by its sphere; a view-limited far level holds only what the camera sees
+ok 7 - InstanceLod: an emptied mesh is culled by its sphere; a view-limited far level holds only what the camera sees
+  ---
+  duration_ms: 1.3825
+  type: 'test'
+  ...
+# Subtest: centre modes (\#1966, \#1967): a uniform, each mesh's origin or a per-vertex attribute; distinct programs; updaters run
+ok 8 - centre modes (\#1966, \#1967): a uniform, each mesh's origin or a per-vertex attribute; distinct programs; updaters run
+  ---
+  duration_ms: 1.522199
+  type: 'test'
+  ...
+# Subtest: four material layers count as the same cars: one near/far copy per car through the zone, colours/matrices stay aligned
+ok 9 - four material layers count as the same cars: one near/far copy per car through the zone, colours/matrices stay aligned
+  ---
+  duration_ms: 9.851694
+  type: 'test'
+  ...
+# Subtest: normal near/far views use only the original level, with empty levels frustum-culled; the main-camera uniform keeps moving between packing steps
+ok 10 - normal near/far views use only the original level, with empty levels frustum-culled; the main-camera uniform keeps moving between packing steps
+  ---
+  duration_ms: 1.323299
+  type: 'test'
+  ...
+# Subtest: car colour/depth shaders share the exact distance range and complementary levels; unrelated shared materials stay native
+ok 11 - car colour/depth shaders share the exact distance range and complementary levels; unrelated shared materials stay native
+  ---
+  duration_ms: 0.921199
+  type: 'test'
+  ...
+# Subtest: phone shadow tiles retain original full-car matrices/materials while view buffers are repacked
+ok 12 - phone shadow tiles retain original full-car matrices/materials while view buffers are repacked
+  ---
+  duration_ms: 1.569199
+  type: 'test'
+  ...
+# Subtest: garage rows retain actual geometry, row-radius/horizontal distance, one level outside the zone and shared live lighting
+ok 13 - garage rows retain actual geometry, row-radius/horizontal distance, one level outside the zone and shared live lighting
+  ---
+  duration_ms: 1.1242
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 409.929444

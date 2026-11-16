@@ -1,0 +1,5 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS actual near/far car and rack geometry kept; real garage contains rack/storage rows; untiled car depth follows fade {"carTriangles":[488,3384,592,672],"carFarTriangles":128,"rows":11,"storageRows":4,"garageCentre":[-38.68000030517578,-2.5275882482528687,1.4030924141407013],"garageRadius":2.5380397854853967,"near":12.538039785485397,"geometryPreserved":true,"spokes":true,"garageShadow":[false,false],"carDepth":true}
+PASS both garage levels follow actual sensor-off shell colour ""
+PASS both garage levels follow actual sensor-on shell colour ""
+PASS no page or GLSL shader errors []

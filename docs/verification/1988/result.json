@@ -1,0 +1,598 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "name": "actual near/far car and rack geometry kept; real garage contains rack/storage rows; untiled car depth follows fade",
+      "detail": {
+        "carTriangles": [
+          488,
+          3384,
+          592,
+          672
+        ],
+        "carFarTriangles": 128,
+        "rows": 11,
+        "storageRows": 4,
+        "garageCentre": [
+          -38.68000030517578,
+          -2.5275882482528687,
+          1.4030924141407013
+        ],
+        "garageRadius": 2.5380397854853967,
+        "near": 12.538039785485397,
+        "geometryPreserved": true,
+        "spokes": true,
+        "garageShadow": [
+          false,
+          false
+        ],
+        "carDepth": true
+      }
+    },
+    {
+      "ok": true,
+      "name": "desktop-near: ordinary view costs exactly the same as the previous hard level",
+      "detail": {
+        "distance": 12,
+        "hard": {
+          "calls": 5,
+          "triangles": 5138,
+          "level": {
+            "near": 1,
+            "far": 0,
+            "cars": 1,
+            "transition": 0,
+            "start": 56,
+            "end": 64
+          },
+          "fade": 0
+        },
+        "fade": {
+          "calls": 5,
+          "triangles": 5138,
+          "level": {
+            "near": 1,
+            "far": 0,
+            "cars": 1,
+            "transition": 0,
+            "start": 56,
+            "end": 64
+          },
+          "fade": 0
+        }
+      }
+    },
+    {
+      "ok": true,
+      "name": "desktop-mid: complementary half-fade draws both existing levels",
+      "detail": {
+        "distance": 60,
+        "hard": {
+          "calls": 2,
+          "triangles": 130,
+          "level": {
+            "near": 1,
+            "far": 1,
+            "cars": 1,
+            "transition": 1,
+            "start": 56,
+            "end": 64
+          },
+          "fade": 0.5
+        },
+        "fade": {
+          "calls": 6,
+          "triangles": 5266,
+          "level": {
+            "near": 1,
+            "far": 1,
+            "cars": 1,
+            "transition": 1,
+            "start": 56,
+            "end": 64
+          },
+          "fade": 0.5
+        }
+      }
+    },
+    {
+      "ok": true,
+      "name": "desktop-far: ordinary view costs exactly the same as the previous hard level",
+      "detail": {
+        "distance": 75,
+        "hard": {
+          "calls": 2,
+          "triangles": 130,
+          "level": {
+            "near": 0,
+            "far": 1,
+            "cars": 1,
+            "transition": 0,
+            "start": 56,
+            "end": 64
+          },
+          "fade": 1
+        },
+        "fade": {
+          "calls": 2,
+          "triangles": 130,
+          "level": {
+            "near": 0,
+            "far": 1,
+            "cars": 1,
+            "transition": 0,
+            "start": 56,
+            "end": 64
+          },
+          "fade": 1
+        }
+      }
+    },
+    {
+      "ok": true,
+      "name": "phone-near: ordinary view costs exactly the same as the previous hard level",
+      "detail": {
+        "distance": 10,
+        "hard": {
+          "calls": 5,
+          "triangles": 5138,
+          "level": {
+            "near": 1,
+            "far": 0,
+            "cars": 1,
+            "transition": 0,
+            "start": 26,
+            "end": 34
+          },
+          "fade": 0
+        },
+        "fade": {
+          "calls": 5,
+          "triangles": 5138,
+          "level": {
+            "near": 1,
+            "far": 0,
+            "cars": 1,
+            "transition": 0,
+            "start": 26,
+            "end": 34
+          },
+          "fade": 0
+        }
+      }
+    },
+    {
+      "ok": true,
+      "name": "phone-mid: complementary half-fade draws both existing levels",
+      "detail": {
+        "distance": 30,
+        "hard": {
+          "calls": 2,
+          "triangles": 130,
+          "level": {
+            "near": 1,
+            "far": 1,
+            "cars": 1,
+            "transition": 1,
+            "start": 26,
+            "end": 34
+          },
+          "fade": 0.5
+        },
+        "fade": {
+          "calls": 6,
+          "triangles": 5266,
+          "level": {
+            "near": 1,
+            "far": 1,
+            "cars": 1,
+            "transition": 1,
+            "start": 26,
+            "end": 34
+          },
+          "fade": 0.5
+        }
+      }
+    },
+    {
+      "ok": true,
+      "name": "phone-far: ordinary view costs exactly the same as the previous hard level",
+      "detail": {
+        "distance": 45,
+        "hard": {
+          "calls": 2,
+          "triangles": 130,
+          "level": {
+            "near": 0,
+            "far": 1,
+            "cars": 1,
+            "transition": 0,
+            "start": 26,
+            "end": 34
+          },
+          "fade": 1
+        },
+        "fade": {
+          "calls": 2,
+          "triangles": 130,
+          "level": {
+            "near": 0,
+            "far": 1,
+            "cars": 1,
+            "transition": 0,
+            "start": 26,
+            "end": 34
+          },
+          "fade": 1
+        }
+      }
+    },
+    {
+      "ok": true,
+      "name": "garage-near: ordinary view costs exactly the same as the previous hard level",
+      "detail": {
+        "distance": 8.538039785485397,
+        "hard": {
+          "calls": 3,
+          "triangles": 9838,
+          "level": {
+            "near": true,
+            "far": false
+          },
+          "fade": 0
+        },
+        "fade": {
+          "calls": 3,
+          "triangles": 9838,
+          "level": {
+            "near": true,
+            "far": false
+          },
+          "fade": 0
+        }
+      }
+    },
+    {
+      "ok": true,
+      "name": "garage-mid: complementary half-fade draws both existing levels",
+      "detail": {
+        "distance": 12.538039785485397,
+        "hard": {
+          "calls": 3,
+          "triangles": 4706,
+          "level": {
+            "near": true,
+            "far": true
+          },
+          "fade": 0.5
+        },
+        "fade": {
+          "calls": 4,
+          "triangles": 14366,
+          "level": {
+            "near": true,
+            "far": true
+          },
+          "fade": 0.5
+        }
+      }
+    },
+    {
+      "ok": true,
+      "name": "garage-far: ordinary view costs exactly the same as the previous hard level",
+      "detail": {
+        "distance": 16.538039785485395,
+        "hard": {
+          "calls": 3,
+          "triangles": 4706,
+          "level": {
+            "near": false,
+            "far": true
+          },
+          "fade": 1
+        },
+        "fade": {
+          "calls": 3,
+          "triangles": 4706,
+          "level": {
+            "near": false,
+            "far": true
+          },
+          "fade": 1
+        }
+      }
+    },
+    {
+      "ok": false,
+      "name": "both garage levels follow actual sensor-off shell colour"
+    }
+  ],
+  "views": {
+    "desktop-near": {
+      "distance": 12,
+      "hard": {
+        "calls": 5,
+        "triangles": 5138,
+        "level": {
+          "near": 1,
+          "far": 0,
+          "cars": 1,
+          "transition": 0,
+          "start": 56,
+          "end": 64
+        },
+        "fade": 0
+      },
+      "fade": {
+        "calls": 5,
+        "triangles": 5138,
+        "level": {
+          "near": 1,
+          "far": 0,
+          "cars": 1,
+          "transition": 0,
+          "start": 56,
+          "end": 64
+        },
+        "fade": 0
+      }
+    },
+    "desktop-mid": {
+      "distance": 60,
+      "hard": {
+        "calls": 2,
+        "triangles": 130,
+        "level": {
+          "near": 1,
+          "far": 1,
+          "cars": 1,
+          "transition": 1,
+          "start": 56,
+          "end": 64
+        },
+        "fade": 0.5
+      },
+      "fade": {
+        "calls": 6,
+        "triangles": 5266,
+        "level": {
+          "near": 1,
+          "far": 1,
+          "cars": 1,
+          "transition": 1,
+          "start": 56,
+          "end": 64
+        },
+        "fade": 0.5
+      }
+    },
+    "desktop-far": {
+      "distance": 75,
+      "hard": {
+        "calls": 2,
+        "triangles": 130,
+        "level": {
+          "near": 0,
+          "far": 1,
+          "cars": 1,
+          "transition": 0,
+          "start": 56,
+          "end": 64
+        },
+        "fade": 1
+      },
+      "fade": {
+        "calls": 2,
+        "triangles": 130,
+        "level": {
+          "near": 0,
+          "far": 1,
+          "cars": 1,
+          "transition": 0,
+          "start": 56,
+          "end": 64
+        },
+        "fade": 1
+      }
+    },
+    "phone-near": {
+      "distance": 10,
+      "hard": {
+        "calls": 5,
+        "triangles": 5138,
+        "level": {
+          "near": 1,
+          "far": 0,
+          "cars": 1,
+          "transition": 0,
+          "start": 26,
+          "end": 34
+        },
+        "fade": 0
+      },
+      "fade": {
+        "calls": 5,
+        "triangles": 5138,
+        "level": {
+          "near": 1,
+          "far": 0,
+          "cars": 1,
+          "transition": 0,
+          "start": 26,
+          "end": 34
+        },
+        "fade": 0
+      }
+    },
+    "phone-mid": {
+      "distance": 30,
+      "hard": {
+        "calls": 2,
+        "triangles": 130,
+        "level": {
+          "near": 1,
+          "far": 1,
+          "cars": 1,
+          "transition": 1,
+          "start": 26,
+          "end": 34
+        },
+        "fade": 0.5
+      },
+      "fade": {
+        "calls": 6,
+        "triangles": 5266,
+        "level": {
+          "near": 1,
+          "far": 1,
+          "cars": 1,
+          "transition": 1,
+          "start": 26,
+          "end": 34
+        },
+        "fade": 0.5
+      }
+    },
+    "phone-far": {
+      "distance": 45,
+      "hard": {
+        "calls": 2,
+        "triangles": 130,
+        "level": {
+          "near": 0,
+          "far": 1,
+          "cars": 1,
+          "transition": 0,
+          "start": 26,
+          "end": 34
+        },
+        "fade": 1
+      },
+      "fade": {
+        "calls": 2,
+        "triangles": 130,
+        "level": {
+          "near": 0,
+          "far": 1,
+          "cars": 1,
+          "transition": 0,
+          "start": 26,
+          "end": 34
+        },
+        "fade": 1
+      }
+    },
+    "garage-near": {
+      "distance": 8.538039785485397,
+      "hard": {
+        "calls": 3,
+        "triangles": 9838,
+        "level": {
+          "near": true,
+          "far": false
+        },
+        "fade": 0
+      },
+      "fade": {
+        "calls": 3,
+        "triangles": 9838,
+        "level": {
+          "near": true,
+          "far": false
+        },
+        "fade": 0
+      }
+    },
+    "garage-mid": {
+      "distance": 12.538039785485397,
+      "hard": {
+        "calls": 3,
+        "triangles": 4706,
+        "level": {
+          "near": true,
+          "far": true
+        },
+        "fade": 0.5
+      },
+      "fade": {
+        "calls": 4,
+        "triangles": 14366,
+        "level": {
+          "near": true,
+          "far": true
+        },
+        "fade": 0.5
+      }
+    },
+    "garage-far": {
+      "distance": 16.538039785485395,
+      "hard": {
+        "calls": 3,
+        "triangles": 4706,
+        "level": {
+          "near": false,
+          "far": true
+        },
+        "fade": 1
+      },
+      "fade": {
+        "calls": 3,
+        "triangles": 4706,
+        "level": {
+          "near": false,
+          "far": true
+        },
+        "fade": 1
+      }
+    }
+  },
+  "errors": [],
+  "source": {
+    "src/viewlod.js": "a53b28537025a5d9910bd79e251839d5153dd1a8e26dab6cfedd8adc151486e3",
+    "src/garagelods.js": "20cbd673080ae5cbae400cf3a195c40946f48018b9719124e6f7d345d77c30b5",
+    "src/garage.js": "565fe0d77c038b6a67eca36c11561cf1b5ed60faba0de5d726537aff9129fb32",
+    "src/config.js": "ba327527d49b68a4ad53445d5cab59d82a33d09d3a8c856f346ea42016e69864",
+    "src/lod.js": "191ed05a2ab1ec2ea5aa9f456518b9512b793921dcaf74803109eb42f8b0814b",
+    "src/streetlife.js": "98e2b190395eedf205ca455d3673692b3711bbc73d1faea379c49ea2e1fcebb8"
+  },
+  "environment": {
+    "viewport": [
+      960,
+      600
+    ],
+    "canvas": [
+      960,
+      540
+    ],
+    "renderer": "Chromium SwiftShader",
+    "scope": "actual carGeometry/carFarGeometry, addCarLod and Garage/garageBikeRowLod; isolated scenes, not full app or device/performance evidence"
+  },
+  "chromium": "156.0.8078.4",
+  "geometry": {
+    "carTriangles": [
+      488,
+      3384,
+      592,
+      672
+    ],
+    "carFarTriangles": 128,
+    "rows": 11,
+    "storageRows": 4,
+    "garageCentre": [
+      -38.68000030517578,
+      -2.5275882482528687,
+      1.4030924141407013
+    ],
+    "garageRadius": 2.5380397854853967,
+    "near": 12.538039785485397,
+    "geometryPreserved": true,
+    "spokes": true,
+    "garageShadow": [
+      false,
+      false
+    ],
+    "carDepth": true
+  },
+  "passed": false,
+  "failure": "Error: both garage levels follow actual sensor-off shell colour\n    at check (/home/devcontainers/lunden-wt/codex-1988/tools/vehiclelodbrowser.cjs:6:157)\n    at /home/devcontainers/lunden-wt/codex-1988/tools/vehiclelodbrowser.cjs:22:2"
+}
