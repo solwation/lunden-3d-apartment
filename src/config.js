@@ -4751,7 +4751,10 @@ export const TOASTER = { w: 0.28, d: 0.17, h: 0.18, slot: { l: 0.13, w: 0.032 },
 // Raw/golden colours and held/piece poses retained from #194; darken = maximum charred shading (*guess*).
 export const CHICKEN = { cookSeconds: 10, burnSeconds: 30, smokeSeconds: 60, darken: 0.8,
   held: { x: 0.18, y: -0.3, z: -0.55 },
-  raw: [0xe9c7a6, 0xddb48f], bodyBites: 3, bites: 2, piece: { x: 0.15, y: -0.17, z: -0.36 } };
+  raw: [0xe9c7a6, 0xddb48f], bodyBites: 3, bites: 2, piece: { x: 0.15, y: -0.17, z: -0.36,
+    // #1992: guessed hand-model dimensions in metres; a tapered drumstick and two white bone knuckles, like the 🍗 icon.
+    leg: { radius: 0.045, meatLength: 0.12, boneLength: 0.07, boneRadius: 0.009, knobRadius: 0.012,
+      tilt: 0.48, gripY: -0.06 } } };
 // #1881 / #1887 (the user, 2026-11-07): one cooking rule for every food, read by src/cookrules.js, but realism before symmetry
 // ("pommes gör man inte i stekpanna, och när man kör saker i ugnen behöver man en plåt"). Each food lists the appliances it
 // sensibly cooks in as `rate` (appliance → how fast it cooks there, a factor on the food's own seconds: FISH.fry, FRIES,

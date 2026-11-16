@@ -57,6 +57,14 @@ src/chicken.js         #708: whole fridge chicken cooks only on the existing cou
                        plate at home in the fridge, rewardable again, saved through x.chicken; event chickenRestocked + a hint.
                        Events chickenPlaced/chickenTaken/grilled/chickenBurnt/chickenEaten/chickenReturnedHome carry
                        stable item.id/type, machine.cook/cooked/burnt, state and (where relevant) surface; pan refusal is explicit.
+                       #1992: chickenpiece.js gives held legs an upright tapered drumstick with an exposed double-knuckle bone,
+                       gripped below the meat, matching the inventory's 🍗 emoji (the HUD uses emoji, not a separate 3D asset).
+                       Bird materials preserve golden/burnt colour; wings and breast pieces retain their own source geometry,
+                       centred in bird-local coordinates so placement/yaw never changes the hand model. Existing bites,
+                       portions, inventory ids and save format are unchanged. CHICKEN.piece.leg dimensions/tilt/grip are guesses.
+                       src/chickenpiece.test.mjs: leg silhouette/materials, bone exposure, world-pose invariance/source preservation.
+                       tools/chickenpiecetest.cjs: actual-app InventoryHUD/Hand/touch Ät, bites/reward, swapping/piece restoration,
+                       wing/body/burnt identities and same-run result images; no broad performance or device claim.
                        tools/grillchickentest.html: bounded actual Chicken/Grill/Pan/Life fixture + raw/golden/burnt images.
                        #717: the grill E helper stops at the cooking grate so real food meshes own pickup ray hits.
                        tools/grillinteractiontest.html checks actual main raycast/HUD, desktop E, touch and +1 per eaten piece.

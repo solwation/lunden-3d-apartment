@@ -3,6 +3,7 @@ import { forgetBicycleHand } from './keep.js';
 import { Holdable, setHeld, heldItem, isStowed, handBusy, forgetPocketed } from './holdable.js';
 import { sfx } from './audio.js';
 import { chicken } from './fridge.js';
+import { chickenPieceModel } from './chickenpiece.js';
 import { CHICKEN as C } from './config.js';
 import { cookRefusal, cookRate } from './cookrules.js';
 
@@ -362,17 +363,9 @@ export class ChickenPiece {
     const bodyIdx = meta.bodyIdx ?? (part ? null : bird.bodyLeft + 1);
     const gen = meta.generation ?? bird.generation ?? 0;
     this.portionId = part ? `chicken:${gen}:part:${partIdx}` : `chicken:${gen}:body:${bodyIdx}`;
-    this.model = new THREE.Group();
-    const box = new THREE.Box3();
-    for (const m of meshes) {
-      m.updateWorldMatrix(true, false);
-      const c = new THREE.Mesh(m.geometry, m.material);
-      m.matrixWorld.decompose(c.position, c.quaternion, c.scale);
-      this.model.add(c);
-      box.expandByObject(c);
-    }
-    const mid = box.getCenter(new THREE.Vector3());
-    for (const c of this.model.children) { c.position.sub(mid); if (!part) c.scale.multiplyScalar(0.4); }
+    this.drumstick = !!part && partIdx < 2;
+    this.model = chickenPieceModel(meshes, { drumstick: this.drumstick, body: !part });
+    if (this.drumstick) this.grip = [0, C.piece.leg.gripY, 0]; // hold the bone below the meat, leaving the silhouette clear
   }
 
   take() {
@@ -386,7 +379,7 @@ export class ChickenPiece {
 
   pose(k) {
     this.model.position.set(C.piece.x - 0.1 * k, C.piece.y + 0.09 * k, C.piece.z + 0.16 * k);
-    this.model.rotation.set(0.3 - 0.2 * k, 0.6, 0.2);
+    this.model.rotation.set(0.3 - 0.2 * k, this.drumstick ? 0 : 0.6, this.drumstick ? C.piece.leg.tilt : 0.2);
   }
 
   /** Something else was taken that cannot be carried (or F): the piece goes back on the bird. */

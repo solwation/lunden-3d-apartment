@@ -21,6 +21,17 @@ tests only when the change touches their shared code; otherwise node tests suffi
 browser evidence after a rebase that does not touch the same files. `tools/browsertest.sh` runs a second browser beside
 the first when memory allows (#1985, [Browser memory](#browser-memory)).
 
+## Chicken pieces in the hand (#1992)
+
+`node --test src/chickenpiece.test.mjs src/inventory.test.mjs` checks the upright meat/bone silhouette,
+shared cooked/burnt materials, two bone knuckles, bird-world-pose invariance, untouched source meshes
+and existing inventory rules. `tools/browsertest.sh node tools/chickenpiecetest.cjs GAME OUT` uses the
+actual app with controlled golden/burnt bird preparation, its InventoryHUD/Hand and native touch Ät.
+It covers the emoji reference, visible meat/bone projection, eating animation, bites/one award,
+inventory swapping and saved ChickenPiece restoration, plus wing/body/burnt identities.
+Images are captured in this same run. This is Chromium/SwiftShader evidence, not physical-device
+or frame-rate evidence. [Results and captures](../verification/1992/).
+
 ## Hand accessory fixture visibility (#1933)
 
 `tools/handringtest.cjs BASE OUT` retains all36 ring/metal/wrist/palm/grip/hug cases
