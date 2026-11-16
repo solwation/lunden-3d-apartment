@@ -18,12 +18,13 @@ const hip = new THREE.Vector3();
  * (`gaitInfo.contact`) disagree with a sole point being on the ground, and the footfall counter's rate. */
 export function measure(speed, dir = [0, 1], secs = 8, lead = 2) {
   const av = new Avatar('gait-2003'), state = { speed, gaitDir: dir };
-  let t = 0, minY = Infinity, falls = 0, claimed = 0, mism = 0, maxY = 0, hipMin = Infinity, hipMax = -Infinity, steps0 = null;
+  let sepMin = Infinity, sepMax = -Infinity, t = 0, minY = Infinity, falls = 0, claimed = 0, mism = 0, maxY = 0, hipMin = Infinity, hipMax = -Infinity, steps0 = null;
   const prev = new Map(), slips = [], down = [false, false];
   for (let i = 0; i < Math.round((secs + lead) / DT); i++) {
     av.update(DT, state); t += DT;
     av.object.updateMatrixWorld(true);
     if (t > lead && steps0 === null) steps0 = av.footfalls;
+    if (t > lead) { av.bones.footL.getWorldPosition(V); const lx = V.x; av.bones.footR.getWorldPosition(V); sepMin = Math.min(sepMin, -(lx - V.x)); sepMax = Math.max(sepMax, -(lx - V.x)); } // (the figure faces world -z: its left is world -x)
     av.bones.hips.getWorldPosition(hip);
     if (t > lead) { hipMin = Math.min(hipMin, hip.y); hipMax = Math.max(hipMax, hip.y); }
     for (const [fi, s] of ['L', 'R'].entries()) {
@@ -49,7 +50,7 @@ export function measure(speed, dir = [0, 1], secs = 8, lead = 2) {
   }
   slips.sort((a, b) => a - b);
   const out = { speed, cadence: falls / secs, counter: (av.footfalls - steps0) / secs, slip: slips.length ? slips.reduce((a, b) => a + b, 0) / slips.length : 0,
-    slipP95: slips[Math.floor(slips.length * 0.95)] ?? 0, soleMin: minY, ankleMax: maxY, hipRange: hipMax - hipMin, mism: mism / claimed };
+    slipP95: slips[Math.floor(slips.length * 0.95)] ?? 0, soleMin: minY, ankleMax: maxY, hipRange: hipMax - hipMin, sepMin, sepMax, mism: mism / claimed };
   av.dispose();
   return out;
 }
@@ -80,9 +81,20 @@ test('walking and running differ and the stride grows with speed', () => {
 
 test('backward and sideways steps plant their feet too', () => {
   for (const dir of [[0, -1], [1, 0], [-1, 0], [0.6, 0.8]]) for (const m of rows(dir)) {
-    assert.ok(m.slip < 0.15 && m.slipP95 < 0.6, `${dir} ${m.speed} m/s: slip ${m.slip} / ${m.slipP95}`);
+    const lim = 0.15 + 0.7 * Math.abs(dir[0]) * m.speed; // (a wide strafe slides its feet part of the way: AVATAR_GAIT.sideMax)
+    assert.ok(m.slip < lim && m.slipP95 < lim + 0.45, `${dir} ${m.speed} m/s: slip ${m.slip} / ${m.slipP95}`);
     assert.ok(m.soleMin > -0.01 && m.cadence < 6.5, `${dir} ${m.speed} m/s: sole ${m.soleMin}, cadence ${m.cadence}`);
   }
+});
+
+test('side-steps keep the feet at least sideWidth apart and are no busier than the forward gait', () => {
+  const fwd = rows([0, 1]), side = rows([1, 0]), left = rows([-1, 0]);
+  side.forEach((m, i) => {
+    assert.ok(m.sepMin >= GAIT.sideWidth - 0.005 && m.sepMax <= GAIT.sideMax + 0.05, `${m.speed} m/s: ankles ${m.sepMin} m apart sideways (min ${GAIT.sideWidth})`);
+    assert.ok(left[i].sepMin >= GAIT.sideWidth - 0.005, `${m.speed} m/s left: ${left[i].sepMin}`);
+    assert.ok(m.cadence <= fwd[i].cadence * 1.35 + 0.1, `${m.speed} m/s: sideways ${m.cadence} vs forward ${fwd[i].cadence} footfalls/s`);
+  });
+  for (const m of rows([0.6, 0.8])) assert.ok(m.sepMin > 0.1, `diagonal ${m.speed} m/s: ${m.sepMin}`);
 });
 
 test('gaitInfo gives the contact phase: alternating feet, stance progress 0 … 1, a footfall at each touch-down', () => {

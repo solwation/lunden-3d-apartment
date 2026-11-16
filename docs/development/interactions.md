@@ -438,8 +438,8 @@ src/spidersuit.js      the Spider-Man suit (#597, SPIDER, all values *guess*): o
                        stance duty < 0.5 when running (a flight phase), the hips sink as far as the legs' reach needs, arms swing against the legs
                        (elbows bent and lifted when running). `Ghost.animate` passes the travel direction (`gaitDir`, figure frame) so backing up and strafing step that way.
                        `avatar.gaitInfo` / `avatar.footfalls` expose the contact phase (per-foot `contact`, `stance` 0 … 1, `lastFoot`, `footfall` this frame) for
-                       #2004 (start / stop / turn) and the footstep sounds. Crouch walking shortens the stride by `AVATAR_CROUCH.step`. Limits: no terrain IK, sideways steps
-                       cross the legs. Tests: `tools/avatargaittest.mjs`, `tools/ghostgaittest.cjs`.
+                       #2004 (start / stop / turn) and the footstep sounds. Crouch walking shortens the stride by `AVATAR_CROUCH.step`. Sideways is a side-step: the ankles stay `AVATAR_GAIT.sideWidth` apart at least and at most `sideMax`
+                       (lead foot out, trailing foot closes up, never crossing); a wide fast strafe therefore slides its feet part of the way. Limits: no terrain IK. Tests: `tools/avatargaittest.mjs`, `tools/ghostgaittest.cjs`.
                        #600: with it on fall.js never hurts (a soft landing). Space / the touch jump button (#jump-btn, directly right of 🧎 in the #1089 thumb-arc touch cluster;
                        on touch always, #636) is a *press* (`player.spaceDown` / `jumpPress`): standing it jumps at `jump` m/s (indoors
                        too, the ceiling stops it, `player.ceilingAt`); without the suit it is the low jump `PLAYER.jump`; on a wall it
