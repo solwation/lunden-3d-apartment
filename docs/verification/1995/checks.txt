@@ -1,0 +1,33 @@
+# Verification outcomes
+
+Final source is bound to the SHA-256 hashes in result.json.
+
+Affected rig/body tests: node --test tools/riggedavatartest.mjs tools/avatarbodytest.mjs
+22/22 pass after final continuous-head correction and rebase onto 878236d8.
+
+Unchanged look round-trip/color contract: 25/25 avatarcustomizertest.mjs passed with
+the initial candidate (part of 46/46 initial rig/body/customizer tests). The final
+correction does not edit that encoding/palette logic.
+
+Final corrected component and actual new customizer preview: PASS, browser CLI exit0.
+Seven component result captures + actual 220x310 near preview, no page/shader errors.
+Baseline imagery/resources reused from the same baseline hash; candidate images
+were recaptured only after concrete visual rejection/correction, as directed by
+the integration owner. One initial setup failure reached no page (HTTP server had
+exited); it is not counted as a passing check. Intermediate candidates are not
+kept as active final evidence. No broad old browser suite rerun.
+
+No owned server, Worker or browser lock remains.
+
+Final suit branch: avatarnoselimitbrowser.cjs PASS (CLI0), four384x384 production
+component renders. Bare nose controls change actual pixels; suit min/max pixel
+hashes are identical, one draw/11444tri and GL error0. Images inspected.
+final-source.json maps the sole final shader correction to the reviewed image
+hashes, with exact uSuit=0 equivalence. No geometry/test baseline changes.
+
+Posterior correction:23/23 rig/body tests pass, including actual posterior ellipse
+and zero nose control/contact influence. Six-look comparison: all nonposterior
+attribute components exact;42 wrong posterior nose weights/look become0.
+Refreshed only tiny suit proof/images (derived bbox threshold changed), then final
+side/quarter capture only. No World or broad checks. Source hashes match both
+final browser records; own8795/8796 ports/processes clear.

@@ -1,0 +1,449 @@
+{
+  "baseline": "e55baee202693ced69439373d8b258158a2e6a20",
+  "pass": true,
+  "rows": [
+    {
+      "look": {
+        "style": 0,
+        "sleeves": 0,
+        "skin": 10118723,
+        "hair": 2826520,
+        "top": 3108277,
+        "pants": 4938360,
+        "shoes": 2762019,
+        "build": 1,
+        "tall": 1,
+        "gender": 0,
+        "facial": 0,
+        "eyes": 7230006,
+        "glasses": 0,
+        "earrings": 0,
+        "hat": 0,
+        "phones": 0,
+        "necklace": 0,
+        "ring": 0,
+        "metal": 0,
+        "bracelet": 0,
+        "watch": 0,
+        "brows": null,
+        "eyeSize": 4,
+        "eyeShape": 4,
+        "headWidth": 4,
+        "headLength": 4,
+        "jaw": 4,
+        "noseSize": 4,
+        "noseWidth": 4,
+        "ears": 4,
+        "browThick": 4,
+        "browY": 4,
+        "hairLength": 4,
+        "neck": 4,
+        "figure": 0,
+        "facialHair": 0,
+        "cut": 0,
+        "legs": 0
+      },
+      "frontAndNonHeadVertices": 33696,
+      "posteriorVertices": 636,
+      "changedAttributeComponents": 558,
+      "changedOutsidePosterior": 0,
+      "posteriorNoseInfluencesBefore": 42,
+      "posteriorNoseInfluencesAfter": 0,
+      "headProjectionBefore": {
+        "min": [
+          -0.09571951627731323,
+          1.5180000066757202,
+          -0.09369999915361404
+        ],
+        "max": [
+          0.09571951627731323,
+          1.7610000371932983,
+          0.13699999451637268
+        ]
+      },
+      "headProjectionAfter": {
+        "min": [
+          -0.09571951627731323,
+          1.5180000066757202,
+          -0.09799999743700027
+        ],
+        "max": [
+          0.09571951627731323,
+          1.7610000371932983,
+          0.13699999451637268
+        ]
+      }
+    },
+    {
+      "look": {
+        "style": 1,
+        "sleeves": 1,
+        "skin": 14724746,
+        "hair": 1381658,
+        "top": 8015792,
+        "pants": 4938360,
+        "shoes": 15263976,
+        "build": 1,
+        "tall": 1,
+        "gender": 1,
+        "facial": 0,
+        "eyes": 7230006,
+        "glasses": 0,
+        "earrings": 0,
+        "hat": 0,
+        "phones": 0,
+        "necklace": 1,
+        "ring": 0,
+        "metal": 0,
+        "bracelet": 0,
+        "watch": 0,
+        "brows": null,
+        "eyeSize": 4,
+        "eyeShape": 4,
+        "headWidth": 4,
+        "headLength": 4,
+        "jaw": 4,
+        "noseSize": 4,
+        "noseWidth": 4,
+        "ears": 4,
+        "browThick": 4,
+        "browY": 4,
+        "hairLength": 4,
+        "neck": 4,
+        "figure": 1,
+        "facialHair": 0,
+        "cut": 1,
+        "legs": 1
+      },
+      "frontAndNonHeadVertices": 35880,
+      "posteriorVertices": 636,
+      "changedAttributeComponents": 558,
+      "changedOutsidePosterior": 0,
+      "posteriorNoseInfluencesBefore": 42,
+      "posteriorNoseInfluencesAfter": 0,
+      "headProjectionBefore": {
+        "min": [
+          -0.09571951627731323,
+          1.5180000066757202,
+          -0.09369999915361404
+        ],
+        "max": [
+          0.09571951627731323,
+          1.7610000371932983,
+          0.13699999451637268
+        ]
+      },
+      "headProjectionAfter": {
+        "min": [
+          -0.09571951627731323,
+          1.5180000066757202,
+          -0.09799999743700027
+        ],
+        "max": [
+          0.09571951627731323,
+          1.7610000371932983,
+          0.13699999451637268
+        ]
+      }
+    },
+    {
+      "look": {
+        "style": 2,
+        "sleeves": 0,
+        "skin": 14724746,
+        "hair": 14271114,
+        "top": 14250542,
+        "pants": 5988456,
+        "shoes": 2046556,
+        "build": 1,
+        "tall": 1,
+        "gender": 0,
+        "facial": 0,
+        "eyes": 7230006,
+        "glasses": 0,
+        "earrings": 0,
+        "hat": 0,
+        "phones": 2,
+        "necklace": 0,
+        "ring": 0,
+        "metal": 0,
+        "bracelet": 0,
+        "watch": 0,
+        "brows": null,
+        "eyeSize": 4,
+        "eyeShape": 4,
+        "headWidth": 4,
+        "headLength": 4,
+        "jaw": 4,
+        "noseSize": 4,
+        "noseWidth": 4,
+        "ears": 4,
+        "browThick": 4,
+        "browY": 4,
+        "hairLength": 4,
+        "neck": 4,
+        "figure": 0,
+        "facialHair": 0,
+        "cut": 2,
+        "legs": 2
+      },
+      "frontAndNonHeadVertices": 35400,
+      "posteriorVertices": 636,
+      "changedAttributeComponents": 558,
+      "changedOutsidePosterior": 0,
+      "posteriorNoseInfluencesBefore": 42,
+      "posteriorNoseInfluencesAfter": 0,
+      "headProjectionBefore": {
+        "min": [
+          -0.09571951627731323,
+          1.5180000066757202,
+          -0.09369999915361404
+        ],
+        "max": [
+          0.09571951627731323,
+          1.7610000371932983,
+          0.13699999451637268
+        ]
+      },
+      "headProjectionAfter": {
+        "min": [
+          -0.09571951627731323,
+          1.5180000066757202,
+          -0.09799999743700027
+        ],
+        "max": [
+          0.09571951627731323,
+          1.7610000371932983,
+          0.13699999451637268
+        ]
+      }
+    },
+    {
+      "look": {
+        "style": 3,
+        "sleeves": 1,
+        "skin": 13011043,
+        "hair": 1381658,
+        "top": 14723118,
+        "pants": 4938360,
+        "shoes": 4207659,
+        "build": 1,
+        "tall": 1,
+        "gender": 1,
+        "facial": 0,
+        "eyes": 7230006,
+        "glasses": 1,
+        "earrings": 0,
+        "hat": 0,
+        "phones": 0,
+        "necklace": 0,
+        "ring": 0,
+        "metal": 0,
+        "bracelet": 0,
+        "watch": 0,
+        "brows": null,
+        "eyeSize": 4,
+        "eyeShape": 4,
+        "headWidth": 4,
+        "headLength": 4,
+        "jaw": 4,
+        "noseSize": 4,
+        "noseWidth": 4,
+        "ears": 4,
+        "browThick": 4,
+        "browY": 4,
+        "hairLength": 4,
+        "neck": 4,
+        "figure": 0,
+        "facialHair": 0,
+        "cut": 0,
+        "legs": 0
+      },
+      "frontAndNonHeadVertices": 37428,
+      "posteriorVertices": 636,
+      "changedAttributeComponents": 558,
+      "changedOutsidePosterior": 0,
+      "posteriorNoseInfluencesBefore": 42,
+      "posteriorNoseInfluencesAfter": 0,
+      "headProjectionBefore": {
+        "min": [
+          -0.09571951627731323,
+          1.5180000066757202,
+          -0.09369999915361404
+        ],
+        "max": [
+          0.09571951627731323,
+          1.7610000371932983,
+          0.13699999451637268
+        ]
+      },
+      "headProjectionAfter": {
+        "min": [
+          -0.09571951627731323,
+          1.5180000066757202,
+          -0.09799999743700027
+        ],
+        "max": [
+          0.09571951627731323,
+          1.7610000371932983,
+          0.13699999451637268
+        ]
+      }
+    },
+    {
+      "look": {
+        "style": 4,
+        "sleeves": 0,
+        "skin": 15845800,
+        "hair": 9079952,
+        "top": 3108277,
+        "pants": 4938360,
+        "shoes": 2046556,
+        "build": 1,
+        "tall": 1,
+        "gender": 0,
+        "facial": 0,
+        "eyes": 7230006,
+        "glasses": 0,
+        "earrings": 0,
+        "hat": 0,
+        "phones": 0,
+        "necklace": 0,
+        "ring": 0,
+        "metal": 0,
+        "bracelet": 0,
+        "watch": 0,
+        "brows": null,
+        "eyeSize": 4,
+        "eyeShape": 4,
+        "headWidth": 4,
+        "headLength": 4,
+        "jaw": 4,
+        "noseSize": 4,
+        "noseWidth": 4,
+        "ears": 4,
+        "browThick": 4,
+        "browY": 4,
+        "hairLength": 4,
+        "neck": 4,
+        "figure": 0,
+        "facialHair": 0,
+        "cut": 1,
+        "legs": 1
+      },
+      "frontAndNonHeadVertices": 48456,
+      "posteriorVertices": 636,
+      "changedAttributeComponents": 558,
+      "changedOutsidePosterior": 0,
+      "posteriorNoseInfluencesBefore": 42,
+      "posteriorNoseInfluencesAfter": 0,
+      "headProjectionBefore": {
+        "min": [
+          -0.09571951627731323,
+          1.5180000066757202,
+          -0.09369999915361404
+        ],
+        "max": [
+          0.09571951627731323,
+          1.7610000371932983,
+          0.13699999451637268
+        ]
+      },
+      "headProjectionAfter": {
+        "min": [
+          -0.09571951627731323,
+          1.5180000066757202,
+          -0.09799999743700027
+        ],
+        "max": [
+          0.09571951627731323,
+          1.7610000371932983,
+          0.13699999451637268
+        ]
+      }
+    },
+    {
+      "look": {
+        "style": 0,
+        "sleeves": 1,
+        "skin": 14724746,
+        "hair": 4862752,
+        "top": 3054248,
+        "pants": 7166533,
+        "shoes": 15263976,
+        "build": 1,
+        "tall": 1,
+        "gender": 1,
+        "facial": 0,
+        "eyes": 7230006,
+        "glasses": 0,
+        "earrings": 0,
+        "hat": 1,
+        "phones": 0,
+        "necklace": 0,
+        "ring": 0,
+        "metal": 0,
+        "bracelet": 0,
+        "watch": 0,
+        "brows": null,
+        "eyeSize": 4,
+        "eyeShape": 4,
+        "headWidth": 4,
+        "headLength": 4,
+        "jaw": 4,
+        "noseSize": 4,
+        "noseWidth": 4,
+        "ears": 4,
+        "browThick": 4,
+        "browY": 4,
+        "hairLength": 4,
+        "neck": 4,
+        "figure": 0,
+        "facialHair": 0,
+        "cut": 2,
+        "legs": 2
+      },
+      "frontAndNonHeadVertices": 34200,
+      "posteriorVertices": 636,
+      "changedAttributeComponents": 558,
+      "changedOutsidePosterior": 0,
+      "posteriorNoseInfluencesBefore": 42,
+      "posteriorNoseInfluencesAfter": 0,
+      "headProjectionBefore": {
+        "min": [
+          -0.09571951627731323,
+          1.5180000066757202,
+          -0.09369999915361404
+        ],
+        "max": [
+          0.09571951627731323,
+          1.7610000371932983,
+          0.13699999451637268
+        ]
+      },
+      "headProjectionAfter": {
+        "min": [
+          -0.09571951627731323,
+          1.5180000066757202,
+          -0.09799999743700027
+        ],
+        "max": [
+          0.09571951627731323,
+          1.7610000371932983,
+          0.13699999451637268
+        ]
+      }
+    }
+  ],
+  "sourceHashes": {
+    "before": {
+      "src/avatar.js": "9a6681f89e85f3434331f9fa6f10b2faecfa5af2aa7c9fde4e25582af01931af",
+      "src/config.js": "22cc6ebf92016ec27df9bcdd9a5887376c20b13e4849ef324e1dee9280d39e76"
+    },
+    "after": {
+      "src/avatar.js": "d6536bd8d7b3d8b076d7913da108f796d2d690025f4dacfbd9923d2682cd707b",
+      "src/config.js": "22cc6ebf92016ec27df9bcdd9a5887376c20b13e4849ef324e1dee9280d39e76"
+    }
+  },
+  "method": "Compare every component of every production geometry attribute for the six measured looks, classifying posterior as continuous-head/rifleSkull vertices with bind z<0. All nonposterior data compare exactly;42 accidentally nose-influenced posterior vertices/look become0. New node regression independently checks actual posterior geometry against the authored ellipse and requires no noseBlend/rifleNose influence."
+}

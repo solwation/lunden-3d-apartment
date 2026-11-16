@@ -1,0 +1,41 @@
+{
+  "errors": [],
+  "environment": "Chromium / SwiftShader; 384x384 production Avatar; no World",
+  "hashes": {
+    "src/avatar.js": "d6536bd8d7b3d8b076d7913da108f796d2d690025f4dacfbd9923d2682cd707b",
+    "src/config.js": "22cc6ebf92016ec27df9bcdd9a5887376c20b13e4849ef324e1dee9280d39e76"
+  },
+  "bare-min": {
+    "calls": 1,
+    "triangles": 11444,
+    "glError": 0,
+    "hasNoseBlend": true,
+    "pixelHash": "bd5bd1a45433ac8b86dfeef5e8e55e2d5f81981118f1abaf189b8fa9501f2a08",
+    "variedChannels": 166
+  },
+  "bare-max": {
+    "calls": 1,
+    "triangles": 11444,
+    "glError": 0,
+    "hasNoseBlend": true,
+    "pixelHash": "cb2822c92824b2060e9bd33435f8acad377aa83c1bfac3e98bf4065a9d031788",
+    "variedChannels": 166
+  },
+  "suit-min": {
+    "calls": 1,
+    "triangles": 11444,
+    "glError": 0,
+    "hasNoseBlend": true,
+    "pixelHash": "9d6359a1d0090fdb8845fb5c21c040c4e0192c4affd231e88eef7f324036d7b6",
+    "variedChannels": 179
+  },
+  "suit-max": {
+    "calls": 1,
+    "triangles": 11444,
+    "glError": 0,
+    "hasNoseBlend": true,
+    "pixelHash": "9d6359a1d0090fdb8845fb5c21c040c4e0192c4affd231e88eef7f324036d7b6",
+    "variedChannels": 179
+  },
+  "pass": true
+}
