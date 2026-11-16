@@ -1,0 +1,32 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS native touch start enables real controls
+PASS golden leg is held by its bone { piece: true, grip: [ 0, -0.06, 0 ], cooked: true, touch: true }
+PASS inventory reference is the 🍗 emoji
+PASS meat projects above the exposed double-knuckle bone and keeps cooked colour {
+  meat: [ 0.3055759172986908, -0.4763840542326983, 0.30303418173313684 ],
+  bone: [ 0.3871861832551263, -0.744379968680696, 0.35006271026338287 ],
+  knuckles: 2,
+  color: 12084778,
+  sourceColor: 12084778
+}
+PASS production touch action offers Ät
+PASS native Ät starts the existing eating animation
+PASS first bite keeps the portion in hand
+PASS inventory swap and persisted ChickenPiece restoration retain bitten drumstick and stable identity { swap: true, restored: 'chicken-piece-meat', alive: 1 }
+PASS final bite consumes one piece and awards once
+PASS wing keeps its identity, finite geometry and cooking state { name: 'vingen', leg: false, meshes: 1, color: 9325084, finite: true }
+PASS body keeps its identity, finite geometry and cooking state {
+  name: 'kycklingbiten',
+  leg: false,
+  meshes: 2,
+  color: 12084778,
+  finite: true
+}
+PASS burnt keeps its identity, finite geometry and cooking state {
+  name: 'kycklingbenet',
+  leg: true,
+  meshes: 4,
+  color: 5713167,
+  finite: true
+}
+PASS no browser page errors []

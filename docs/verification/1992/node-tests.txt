@@ -1,0 +1,118 @@
+TAP version 13
+# Subtest: a leg has taller tapered meat, an exposed pale bone and two distinct knuckles, retaining the cooked materials
+ok 1 - a leg has taller tapered meat, an exposed pale bone and two distinct knuckles, retaining the cooked materials
+  ---
+  duration_ms: 5.361693
+  type: 'test'
+  ...
+# Subtest: wing/body hand geometry is invariant to the bird world pose and keeps the source unchanged
+ok 2 - wing/body hand geometry is invariant to the bird world pose and keeps the source unchanged
+  ---
+  duration_ms: 3.086096
+  type: 'test'
+  ...
+# Subtest: a second weapon goes to a free place instead of sending the first home
+ok 3 - a second weapon goes to a free place instead of sending the first home
+  ---
+  duration_ms: 3.310796
+  type: 'test'
+  ...
+# Subtest: choosing a place swaps what is in the hand; the wheel skips empty places
+ok 4 - choosing a place swaps what is in the hand; the wheel skips empty places
+  ---
+  duration_ms: 0.5908
+  type: 'test'
+  ...
+# Subtest: five places, then the hand is busy
+ok 5 - five places, then the hand is busy
+  ---
+  duration_ms: 0.363999
+  type: 'test'
+  ...
+# Subtest: nuts stack up to eight on one place and come back one by one
+ok 6 - nuts stack up to eight on one place and come back one by one
+  ---
+  duration_ms: 0.839099
+  type: 'test'
+  ...
+# Subtest: a thing that cannot be carried keeps the old rule
+ok 7 - a thing that cannot be carried keeps the old rule
+  ---
+  duration_ms: 1.993697
+  type: 'test'
+  ...
+# Subtest: a carried thing that was reset or broke meanwhile loses its place and is never brought back
+ok 8 - a carried thing that was reset or broke meanwhile loses its place and is never brought back
+  ---
+  duration_ms: 0.2663
+  type: 'test'
+  ...
+# Subtest: keep: carried things, their places and the active place come back after a reload
+ok 9 - keep: carried things, their places and the active place come back after a reload
+  ---
+  duration_ms: 3.403796
+  type: 'test'
+  ...
+# Subtest: keep: a thing that is gone at load is dropped from its place, an old save without inventory changes nothing
+ok 10 - keep: a thing that is gone at load is dropped from its place, an old save without inventory changes nothing
+  ---
+  duration_ms: 1.139999
+  type: 'test'
+  ...
+# Subtest: keep: a cup in the hand over carried things stays in the hand
+ok 11 - keep: a cup in the hand over carried things stays in the hand
+  ---
+  duration_ms: 0.921399
+  type: 'test'
+  ...
+# Subtest: food, cups and glasses are pocketable; a picnic glass is not (the chicken: \#1983 below)
+ok 12 - food, cups and glasses are pocketable; a picnic glass is not (the chicken: \#1983 below)
+  ---
+  duration_ms: 0.405899
+  type: 'test'
+  ...
+# Subtest: a cup with coffee and a half-eaten fruit are carried, swapped and come back unchanged
+ok 13 - a cup with coffee and a half-eaten fruit are carried, swapped and come back unchanged
+  ---
+  duration_ms: 0.2664
+  type: 'test'
+  ...
+# Subtest: keep: a carried cup and a carried food portion come back to their places after a reload
+ok 14 - keep: a carried cup and a carried food portion come back to their places after a reload
+  ---
+  duration_ms: 1.516798
+  type: 'test'
+  ...
+# Subtest: life things are carried: the domain counts a carried thing as in no hand, store or carrier
+ok 15 - life things are carried: the domain counts a carried thing as in no hand, store or carrier
+  ---
+  duration_ms: 0.954398
+  type: 'test'
+  ...
+# Subtest: a carried life thing is dropped from its place when removed; fixed things (bins) are never carried
+ok 16 - a carried life thing is dropped from its place when removed; fixed things (bins) are never carried
+  ---
+  duration_ms: 0.5021
+  type: 'test'
+  ...
+# Subtest: a record with a carried thing loads it back as carried, and a new visit sends it home
+ok 17 - a record with a carried thing loads it back as carried, and a new visit sends it home
+  ---
+  duration_ms: 0.564299
+  type: 'test'
+  ...
+# Subtest: chicken: the whole bird and several pieces share places and swap into the hand
+ok 18 - chicken: the whole bird and several pieces share places and swap into the hand
+  ---
+  duration_ms: 0.241
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 156.123

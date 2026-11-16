@@ -1,0 +1,118 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "name": "native touch start enables real controls"
+    },
+    {
+      "ok": true,
+      "name": "golden leg is held by its bone",
+      "detail": {
+        "piece": true,
+        "grip": [
+          0,
+          -0.06,
+          0
+        ],
+        "cooked": true,
+        "touch": true
+      }
+    },
+    {
+      "ok": true,
+      "name": "inventory reference is the 🍗 emoji"
+    },
+    {
+      "ok": true,
+      "name": "meat projects above the exposed double-knuckle bone and keeps cooked colour",
+      "detail": {
+        "meat": [
+          0.3055759172986908,
+          -0.4763840542326983,
+          0.30303418173313684
+        ],
+        "bone": [
+          0.3871861832551263,
+          -0.744379968680696,
+          0.35006271026338287
+        ],
+        "knuckles": 2,
+        "color": 12084778,
+        "sourceColor": 12084778
+      }
+    },
+    {
+      "ok": true,
+      "name": "production touch action offers Ät"
+    },
+    {
+      "ok": true,
+      "name": "native Ät starts the existing eating animation"
+    },
+    {
+      "ok": true,
+      "name": "first bite keeps the portion in hand"
+    },
+    {
+      "ok": true,
+      "name": "inventory swap and persisted ChickenPiece restoration retain bitten drumstick and stable identity",
+      "detail": {
+        "swap": true,
+        "restored": "chicken-piece-meat",
+        "alive": 1
+      }
+    },
+    {
+      "ok": true,
+      "name": "final bite consumes one piece and awards once"
+    },
+    {
+      "ok": true,
+      "name": "wing keeps its identity, finite geometry and cooking state",
+      "detail": {
+        "name": "vingen",
+        "leg": false,
+        "meshes": 1,
+        "color": 9325084,
+        "finite": true
+      }
+    },
+    {
+      "ok": true,
+      "name": "body keeps its identity, finite geometry and cooking state",
+      "detail": {
+        "name": "kycklingbiten",
+        "leg": false,
+        "meshes": 2,
+        "color": 12084778,
+        "finite": true
+      }
+    },
+    {
+      "ok": true,
+      "name": "burnt keeps its identity, finite geometry and cooking state",
+      "detail": {
+        "name": "kycklingbenet",
+        "leg": true,
+        "meshes": 4,
+        "color": 5713167,
+        "finite": true
+      }
+    },
+    {
+      "ok": true,
+      "name": "no browser page errors",
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "source": {
+    "src/chicken.js": "01f6352402a0cfd09e6e029563f35495cf77bd9ae8748a7e7f35c1ca0fd6a640",
+    "src/chickenpiece.js": "fe68a53bad01e3a2ca06499645a245ad79b0e21649cd54da1831e5928002e2da",
+    "src/config.js": "c1a5157beebede1706a1c65fb97a2c3115783c97912ca0b25ab2464ebdd3428a",
+    "src/inventoryhud.js": "e237dd3752d79b15d6c816432907c55023e43b199b132ad4cf06ac671efab45b"
+  },
+  "setup": "Controlled golden/burnt bird via Chicken.loadState; real app, InventoryHUD, Hand and touch Ät; Chromium SwiftShader, not physical-device evidence.",
+  "chromium": "156.0.8078.4",
+  "passed": true
+}

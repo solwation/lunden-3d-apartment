@@ -1,0 +1,11 @@
+{
+  "reason": "WSL lacked emoji glyphs; locally installed the existing Segoe UI Emoji system font and retook only the inventory reference image. No application/source changes after green behavior verification.",
+  "image": "golden-drumstick-inventory.png",
+  "chromium": "156.0.8078.4",
+  "viewport": {
+    "width": 960,
+    "height": 600
+  },
+  "font": "Segoe UI Emoji",
+  "completedAt": "2026-11-16T07:39:08.041Z"
+}
