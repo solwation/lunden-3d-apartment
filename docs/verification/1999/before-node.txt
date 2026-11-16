@@ -1,0 +1,63 @@
+TAP version 13
+# Subtest: actual Measure picks the visible fitting in full and merged levels, back wall in shell, nothing when away
+not ok 1 - actual Measure picks the visible fitting in full and merged levels, back wall in shell, nothing when away
+  ---
+  duration_ms: 11.19695
+  type: 'test'
+  location: '/home/devcontainers/lunden-wt/codex-1999/tools/visitmeasuretest.mjs:5:1'
+  failureType: 'testCodeFailure'
+  error: 'hit 4.899999998509884, want 1.5'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    z (file:///home/devcontainers/lunden-wt/codex-1999/tools/visitmeasuretest.mjs:4:26)
+    TestContext.<anonymous> (file:///home/devcontainers/lunden-wt/codex-1999/tools/visitmeasuretest.mjs:8:2)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: merged solids retain native Mesh.raycast; lines stay disabled; legacy bug selects the back wall
+not ok 2 - merged solids retain native Mesh.raycast; lines stay disabled; legacy bug selects the back wall
+  ---
+  duration_ms: 4.621621
+  type: 'test'
+  location: '/home/devcontainers/lunden-wt/codex-1999/tools/visitmeasuretest.mjs:13:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be reference-equal to "expected":
+    + actual - expected
+
+    + [Function (anonymous)]
+    - [Function: raycast]
+               ^
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  stack: |-
+    TestContext.<anonymous> (file:///home/devcontainers/lunden-wt/codex-1999/tools/visitmeasuretest.mjs:15:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: open leaf still keeps full detail within12m and returns to merged after closing; render topology is unchanged
+ok 3 - open leaf still keeps full detail within12m and returns to merged after closing; render topology is unchanged
+  ---
+  duration_ms: 3.730616
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 1
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 147.599067

@@ -1,0 +1,119 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "name": "legacy raycast suppression reproduces actual Measure.hit back-wall error with hidden original"
+    },
+    {
+      "ok": true,
+      "name": "visible merged fitting is the actual surface hit, not hidden original"
+    },
+    {
+      "ok": true,
+      "name": "actual Measure.press markers lie on the visible fitting"
+    },
+    {
+      "ok": true,
+      "name": "identical before/after render submissions"
+    },
+    {
+      "ok": true,
+      "name": "full, shell and away respect actual production visibility"
+    },
+    {
+      "ok": true,
+      "name": "no page or GLSL errors"
+    }
+  ],
+  "errors": [],
+  "source": {
+    "src/visitunit.js": "27296c2199370e07a9007bc983dd2a284f3bd6069c4660dd7c225f8e8bcae893",
+    "src/measure.js": "0a57d65531bcd7d46c096b6994be40de8b703df2b5ef5d3eb3af421652e3bcae",
+    "src/lod.js": "191ed05a2ab1ec2ea5aa9f456518b9512b793921dcaf74803109eb42f8b0814b",
+    "src/config.js": "145df86ae12f34b98bdec76da8017960cff975ac1382e9a018375be504de0c60",
+    "tools/visitmeasurefixture.mjs": "7a3cd1b6c83d23733ce39c2af233d16b91618d3168c41dec263336fa55b8b943",
+    "tools/visitmeasuretest.html": "d47a8b068564629979308e93ad4c94f4ad797740a82206790690483de4c8cd26",
+    "tools/visitmeasurebrowser.cjs": "68256f895bd5c09895d13b93e77bcf347c3d20283a12cb8987ed0e53c4243da7"
+  },
+  "before": {
+    "hit": [
+      0,
+      1.4,
+      4.899999998509884
+    ],
+    "points": [
+      [
+        -0.60967741930677,
+        1.4,
+        4.899999998509884
+      ],
+      [
+        0.60967741930677,
+        1.4,
+        4.899999998509884
+      ]
+    ],
+    "level": "mid",
+    "originalVisible": false,
+    "calls": 7,
+    "triangles": 362
+  },
+  "after": {
+    "hit": [
+      0,
+      1.4,
+      1.5
+    ],
+    "points": [
+      [
+        -0.49999999999999967,
+        1.4,
+        1.5000000000000018
+      ],
+      [
+        0.49999999999999967,
+        1.4,
+        1.5000000000000018
+      ]
+    ],
+    "level": "mid",
+    "originalVisible": false,
+    "calls": 7,
+    "triangles": 362
+  },
+  "levels": [
+    {
+      "d": 4,
+      "hit": [
+        0,
+        1.4,
+        1.5
+      ],
+      "level": "all"
+    },
+    {
+      "d": 14,
+      "hit": [
+        0,
+        1.4,
+        1.5
+      ],
+      "level": "mid"
+    },
+    {
+      "d": 30,
+      "hit": [
+        0,
+        1.4,
+        4.899999998509884
+      ],
+      "level": "shell"
+    },
+    {
+      "away": true,
+      "hit": null,
+      "level": "none"
+    }
+  ],
+  "passed": true
+}

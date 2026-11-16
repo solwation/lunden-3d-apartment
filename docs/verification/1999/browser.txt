@@ -1,0 +1,7 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS legacy raycast suppression reproduces actual Measure.hit back-wall error with hidden original
+PASS visible merged fitting is the actual surface hit, not hidden original
+PASS actual Measure.press markers lie on the visible fitting
+PASS identical before/after render submissions
+PASS full, shell and away respect actual production visibility
+PASS no page or GLSL errors
