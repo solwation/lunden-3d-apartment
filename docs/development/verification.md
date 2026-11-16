@@ -15,6 +15,11 @@ The dated issue records and test inventories below are candidate coverage and re
 historical evidence, not a minimum checklist for every change. Retake only bad camera
 poses; extend a passing plan only for new code, failure or a concrete material risk.
 
+**Image syntax in comments (#1996):** embed every result image as `![alt](url)` in its own paragraph, never as
+`[alt](url)` or with the URL wrapped in backticks (seen on #1968: the images did not show on GitHub or in github-dashboard).
+Before posting a comment with images, run `python3 tools/comment_images.py --allow-links comment.md` (`--allow-links` keeps
+ordinary links such as "([före](url))" allowed; `tools/comment_images_test.py` covers it).
+
 **Browser runs per issue (user, 2026-11-15, #1986):** issues were closing too slowly, mostly in the browser queue. Run
 one browser test of your own per issue and capture the result images in that same run. Rerun older regression browser
 tests only when the change touches their shared code; otherwise node tests suffice. The integrator does not rerun green
