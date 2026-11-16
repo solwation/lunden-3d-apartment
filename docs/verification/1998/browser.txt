@@ -1,0 +1,9 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS actual lazy preview request carries preview1998a
+PASS preview resolves the matching stamped Avatar module preview1998a
+PASS real preview draws nonempty production Avatar pixels preview1998a
+PASS actual lazy preview request carries preview1998b
+PASS preview resolves the matching stamped Avatar module preview1998b
+PASS real preview draws nonempty production Avatar pixels preview1998b
+PASS neither deployment requests an unversioned preview URL
+PASS no page, resource or shader errors
