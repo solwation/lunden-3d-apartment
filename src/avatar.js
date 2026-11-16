@@ -4,7 +4,7 @@ import { GYM_PUMP } from './config.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SURFACE as SURFACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, DANCE, AVATAR_AIR as AIR, SWIM, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
+import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SURFACE as SURFACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, AVATAR_GAIT as GAIT, DANCE, AVATAR_AIR as AIR, SWIM, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion } from './config.js';
 import { topTexture } from './spidersuit.js';
 import { reactionPose, mixHand } from './reactpose.js';
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, THIGH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
@@ -1335,7 +1335,72 @@ const gangnamHands = (t, ph, shY) => {
   };
   return [hand(1), hand(-1)];
 };
-const STRIDE = 0.78; // m per step cycle (one leg's whole swing; *guess*: a calm walk)
+/** #2003: linear interpolation in a table (xs ascending), clamped at the ends. */
+const lerpTab = (xs, ys, x) => { const n = xs.length - 1; if (x <= xs[0]) return ys[0]; if (x >= xs[n]) return ys[n]; let i = 1; while (x > xs[i]) i++; return ys[i - 1] + (ys[i] - ys[i - 1]) * (x - xs[i - 1]) / (xs[i] - xs[i - 1]); };
+const smin = (a, b, k) => { const h = Math.max(k - Math.abs(a - b), 0) / k; return Math.min(a, b) - h * h * k / 4; }; // smooth minimum
+/** #2003: the walk / run cycle of `av` for this frame (AVATAR_GAIT). The phase follows the distance walked, so a foot in its stance phase
+ * travels back under the body at exactly the ground speed (no sliding); a foot in its swing phase takes a Hermite arc forward that arrives
+ * moving back at body speed, with a heel strike / toe-off angle. Fills `av.gt` (reused, no allocation): `feet` (ankle targets, figure frame),
+ * `pitch` (toe-up rad), `arm` (arm swing m, [left, right]), `hip` (m the hips sink), `sway` (m), `run` (0 … 1), and `av.gaitInfo` for
+ * consumers (contact flags, stance progress, footfall counter; see Avatar.gaitInfo). `dir` [x, z]: the travel direction in the figure's
+ * frame (+z forward, +x its left; null = forward). `fx`, `fz`, `fy`: the standing ankle spot; `c`: crouch 0 … 1. */
+function walkGait(av, dt, speed, walking, dir, fx, fy, fz, c) {
+  const G = GAIT, gt = av.gt ??= { feet: [[0, 0, 0], [0, 0, 0]], pitch: [0, 0], arm: [0, 0], hip: 0, sway: 0, run: 0 };
+  const info = av.gaitInfo ??= { active: false, phase: 0, cycles: 0, contact: [false, false], stance: [-1, -1], swing: [-1, -1], speed: 0, stepHz: 0, strideLen: 0, duty: 0, run: 0, dir: [0, 1], footfalls: 0, lastFoot: -1, footfall: false };
+  const gd = av.gaitDirV ??= [0, 1];
+  if (walking) {
+    let tx = dir ? dir[0] : 0, tz = dir ? dir[1] : 1; const tl = Math.hypot(tx, tz);
+    if (tl > 1e-3) { tx /= tl; tz /= tl; } else { tx = 0; tz = 1; }
+    const e = gd[0] * tx + gd[1] * tz < -0.2 ? 1 : Math.min(1, dt * G.dirEase); // (a reversal is a new gait, not a turn through zero)
+    let nx = gd[0] + (tx - gd[0]) * e, nz = gd[1] + (tz - gd[1]) * e; const nl = Math.hypot(nx, nz);
+    if (nl < 0.05) { nx = tx; nz = tz; } else { nx /= nl; nz /= nl; }
+    gd[0] = nx; gd[1] = nz;
+  }
+  const sc = av.object.scale.z || 1, g = av.gait ?? 0, r = walking || g > 0.001 ? THREE.MathUtils.smoothstep(speed, G.run[0], G.run[1]) : 0, ck = 1 - CR.step * c;
+  const hz = lerpTab(G.speeds, G.stepHz, speed), beta = lerpTab(G.speeds, G.duty, speed);
+  const shrink = (1 - G.backShrink * Math.max(0, -gd[1]) - G.sideShrink * Math.abs(gd[0])) * ck; // the stride's own length scale
+  const rate = hz / (2 * shrink); // cycles per second: the leg cycle (a stride) is 2 v / stepHz long, shorter by `shrink`
+  if (walking) { av.cycles = (av.cycles ?? 0) + dt * rate; av.phase = av.cycles * Math.PI * 2; }
+  const cyc = av.cycles ?? 0, p = cyc - Math.floor(cyc), S = speed / (rate * sc), half = beta * S / 2; // S: stride in figure units
+  const dz = gd[1], dx = gd[0], ps = Math.abs(dz) * Math.min(1, speed / 1.2) * (dz > 0 ? 1 : 0.4); // foot angle share (not sideways)
+  const heel = lerpTab([0, 1], G.heel, r) * ps, toeOff = lerpTab([0, 1], G.toeOff, r) * ps;
+  const lift = (G.lift[0] + (G.lift[1] - G.lift[0]) * r) * Math.min(1, speed / 1.2) * (1 - 0.5 * c), peak = G.liftPeak[0] + (G.liftPeak[1] - G.liftPeak[0]) * r;
+  const sh = G.shoe, m = -S * (1 - beta) * 0.6;
+  info.footfall = false;
+  for (let i = 0; i < 2; i++) {
+    const q0 = p + 0.5 * i, q = q0 - Math.floor(q0), side = i ? -1 : 1;
+    let s, th, up = 0;
+    if (q < beta) { // stance: the foot planted, under the body going back at ground speed
+      const u = q / beta;
+      s = half * (1 - 2 * u);
+      th = u < 0.2 ? heel * (1 - THREE.MathUtils.smoothstep(u, 0, 0.2)) : u > 0.55 ? -toeOff * THREE.MathUtils.smoothstep(u, 0.55, 1) : 0;
+      info.stance[i] = u; info.swing[i] = -1;
+    } else { // swing: a Hermite arc from the toe-off spot to the touch-down spot
+      const w = (q - beta) / (1 - beta), w2 = w * w, w3 = w2 * w;
+      s = (2 * w3 - 3 * w2 + 1) * -half + (w3 - 2 * w2 + w) * m + (-2 * w3 + 3 * w2) * half + (w3 - w2) * m;
+      th = -toeOff + (heel + toeOff) * THREE.MathUtils.smoothstep(w, 0, 0.75);
+      up = lift * Math.sin(Math.PI * Math.pow(w, peak));
+      info.stance[i] = -1; info.swing[i] = w;
+    }
+    const cs = Math.cos(th), sn = Math.sin(th);
+    const dzFoot = th >= 0 ? sh.heel * cs - sh.sole * sn - sh.heel : -sh.toe * cs - sh.sole * sn + sh.toe; // the ankle rolls over the heel / toe: its shift along z
+    const fy2 = Math.max(sh.sole * cs + sh.heel * sn, sh.sole * cs - sh.toe * sn) - sh.sole; // ... and how far it must rise to keep the sole on the ground
+    const f = gt.feet[i];
+    f[0] = side * fx + dx * s * g; f[1] = fy + (fy2 + up) * g; f[2] = fz + (dz * s + dzFoot * (dz > 0 ? 1 : 0)) * g;
+    gt.pitch[i] = th * g; gt.arm[i] = dz * s * g;
+    info.contact[i] = q < beta && g > 0.5;
+  }
+  const steps = Math.floor(cyc * 2);
+  if (walking && steps > (av.footfalls ?? 0)) { av.footfalls = steps; info.lastFoot = steps % 2; info.footfall = true; }
+  av.footfalls ??= steps;
+  const dropW = G.hipDrop[0] * (1 + Math.cos(4 * Math.PI * p)) / 2, dropR = G.hipDrop[1] * (1 + Math.cos(4 * Math.PI * (p - beta / 2))) / 2;
+  gt.hip = (dropW + (dropR - dropW) * r + G.runDip * r) * g * (1 - c);
+  gt.sway = G.sway[0] + (G.sway[1] - G.sway[0]) * r;
+  gt.sway *= g * (1 - c) * (0.4 + 0.6 * Math.abs(dz)) * Math.sin(2 * Math.PI * (p - beta / 2 + 0.25));
+  gt.run = r * g;
+  info.active = g > 0.001; info.phase = p; info.cycles = cyc; info.speed = speed; info.stepHz = hz; info.strideLen = S * sc; info.duty = beta; info.run = r; info.dir[0] = dx; info.dir[1] = dz;
+  return gt;
+}
 const KNEE_REST = [0, 0.25, 1]; // poseOlof's default knee pole
 /** #1149: how far a shoulder moves (figure frame [x, y, z]) when the hips drop by `dy`, move by `dz` and the torso leans
  * CR.lean × c: a hand held out (a weapon, a wave) moves with it instead of being reached up for. */
@@ -1677,7 +1742,7 @@ export class Avatar {
    * #1943 `swim`: in the water (then `speed` is the speed through the water: strokes above SWIM.avatar.strokeSpeed, else treading water).
    * `swimAmt` (0 … 1) and `swimLine` (the water line's height in the figure's frame) tell the owner how deep to set the figure.
    * #1944 `dive` 0 … 1 (with `swim`): under the surface, lying level with the diving mask on; `diveAmt` is the eased amount. */
-  update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null, air = 0, airV = null, swim = false, dive = 0 } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
+  update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null, air = 0, airV = null, swim = false, dive = 0, gaitDir = null } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
     this.time += dt;
 
     // #1799: each air pose blends in and out on its own (their sum ≤ 1, the rest is the ground pose)
@@ -1698,22 +1763,27 @@ export class Avatar {
     this.setMask(swim && dive > 0.05);
     this.kickT = swim ? (this.kickT ?? 9) + dt : 9; // #1951: s into a swim stroke (`swimStroke`)
     if (swim) this.swimPhase = (this.swimPhase ?? 0) + dt * Math.PI * 2 * SW.strokeHz * st * THREE.MathUtils.clamp(speed / SWIM.speed, 0.6, 1.4);
-    const walking = speed > A.walkSpeed && !am && !swim, k = THREE.MathUtils.clamp(speed / 1.6, 0.4, 1.4);
-    if (walking) this.phase += dt * speed / STRIDE * Math.PI * 2;
+    const walking = speed > A.walkSpeed && !am && !swim;
     this.gait = THREE.MathUtils.lerp(this.gait ?? 0, walking ? 1 : 0, Math.min(1, dt * 8));
-    const g = this.gait, ph = this.phase, s = Math.sin(ph), sw = s * 0.3 * k * g; // the leg swing (m forward / back of the hip)
+    const g = this.gait;
+    const c = THREE.MathUtils.clamp(crouch, 0, 1), F = CR.feet;
     const breathe = Math.sin(this.time * 1.7) * 0.004;
     // #1149: crouching is a deep squat (AVATAR_CROUCH), every term linear in `crouch` (the head boxes follow the same hips and lean)
     const FL = DANCE.floss, flossPh = this.time * FL.hz * Math.PI * 2, flossSn = Math.sin(flossPh), flossCs = Math.cos(flossPh);
-    const sway = -flossSn * FL.hipSway * fa, flossBob = FL.bob * (1 - Math.cos(2 * flossPh)) / 2 * fa;
+    const flossSway = -flossSn * FL.hipSway * fa, flossBob = FL.bob * (1 - Math.cos(2 * flossPh)) / 2 * fa;
     const GN = DANCE.gangnam, gp = ga > 0.001, gPh = this.time * GN.hz * Math.PI; // #1757: one leg per beat, half a sine cycle per beat
     const gBob = gp ? (GN.squat + GN.bounce * Math.abs(Math.cos(gPh))) * ga : 0; // bent knees, lowest as the feet land on each beat
-    const c = THREE.MathUtils.clamp(crouch, 0, 1), F = CR.feet, step = sw * (1 - CR.step * c);
     const rp = react ? reactionPose(react.kind, react.age, [HIP - 0.02, CR.hipForward * c]) : null;
-    const hipY = HIP - 0.02 - CR.hipDrop * c + (rp?.dy ?? 0) + kissLift * kiss - flossBob - gBob + breathe - 0.012 * g * Math.abs(Math.cos(ph)) * k - AIR.climb.hipDrop * climbA, hipZ = CR.hipForward * c;
-    const lift = (v) => Math.max(0, v) * 0.12 * g * k * (1 - 0.5 * c);
     const fx = 0.11 + (F.x - 0.11) * c, fz = 0.02 + (F.z - 0.02) * c;
-    const feet = [[fx - sway, F.y + lift(Math.cos(ph)), fz + step], [-fx - sway, F.y + lift(-Math.cos(ph)), fz - step]];
+    const gt = walkGait(this, dt, speed, walking, gaitDir, fx, F.y, fz, c); // #2003: explicit stance / swing phases
+    const sway = flossSway + gt.sway;
+    let hipY = HIP - 0.02 - CR.hipDrop * c + (rp?.dy ?? 0) + kissLift * kiss - flossBob - gBob + breathe - gt.hip - AIR.climb.hipDrop * climbA;
+    const hipZ = CR.hipForward * c, feet = gt.feet;
+    if (g > 0.001 && !c) { // the hips stay within the legs' reach of both ankles (a long stride sinks them, as a real runner's do)
+      const L = GAIT.reach * (THIGH + SHIN);
+      for (let i = 0; i < 2; i++) { const f = feet[i], hx = f[0] - sway - (i ? -0.085 : 0.085), hz = f[2] - hipZ; hipY = smin(hipY, f[1] + Math.sqrt(Math.max(0, L * L - hx * hx - hz * hz)), 0.04); }
+    }
+    feet[0][0] -= sway; feet[1][0] -= sway;
     if (gp) feet.forEach((f, i) => { // #1757: a gallop, a little wider, one foot up and forward per beat
       const side = i ? -1 : 1, up = Math.max(0, side * Math.sin(gPh));
       f[0] += (side * GN.footX - f[0]) * ga; f[1] += GN.lift * up * ga; f[2] += GN.footFwd * up * ga;
@@ -1721,14 +1791,16 @@ export class Avatar {
     if (aa[0] + aa[1] + climbA > 0.001) airFeet(this, feet, aa, av, hipY, hipZ);
     if (sa > 0.001) feet.forEach((f, i) => { const w = swimFoot(this, i, hipY, hipZ, st); for (let j = 0; j < 3; j++) f[j] += (w[j] - f[j]) * sa; }); // #1943
     this.swimLine = swimLineAt(hipY, st, dv);
-    const armSwing = -step * 0.55;
+    const rr = gt.run, armK = GAIT.armRatio[0] + (GAIT.armRatio[1] - GAIT.armRatio[0]) * rr;
+    const armL = THREE.MathUtils.clamp(-gt.arm[0] * armK, -GAIT.armMax, GAIT.armMax), armR = THREE.MathUtils.clamp(-gt.arm[1] * armK, -GAIT.armMax, GAIT.armMax);
     const rest = (side, swing) => {
       const r = armTarget.rest(side, swing), R = CR.rest;
       return c ? { at: r.at.map((v, i) => v + ((i ? R.at[i] : side * R.at[0]) - v) * c), pole: r.pole.map((v, i) => v + ((i ? R.pole[i] : side * R.pole[0]) - v) * c) } : r;
     };
     // a hand held out (a weapon, a wave) moves with the shoulder as the body goes down
     const held = (h) => { if (!c || !h) return h; const d = shoulderShift(c, hipY - (HIP - 0.02 + breathe), hipZ); return { ...h, at: h.at.map((v, i) => v + d[i]) }; };
-    let handL = held(hands.L) ?? rest(1, armSwing), handR = held(hands.R) ?? rest(-1, -armSwing);
+    const swung = (side, sw) => { const h = rest(side, sw); if (rr > 0.001) h.at[1] += GAIT.armLift * rr * (1 + sw / GAIT.armMax) / 2; return h; }; // running: the elbows bend, the forward hand rises
+    let handL = held(hands.L) ?? swung(1, armL), handR = held(hands.R) ?? swung(-1, armR);
     if (fa > 0.001) { // #1622: the floss. Both straight arms swing across the hips one way while the hips go the other; the arms pass each other in depth.
       if (!hands.L) handL = mixHand(handL, flossArm(1, 1, flossSn, flossCs), fa);
       if (!hands.R) handR = mixHand(handR, flossArm(-1, -1, flossSn, flossCs), fa);
@@ -1758,8 +1830,8 @@ export class Avatar {
     let knee = c ? CR.knees.map((v, i) => KNEE_REST[i] + (v - KNEE_REST[i]) * c) : KNEE_REST;
     if (climbA > 0.001) knee = knee.map((v, i) => v + (AIR.climb.knees[i] - v) * climbA); // #1799: knees out on the wall
     const airLean = AIR.fly.lean * aa[0] + AIR.swing.lean * aa[1] + AIR.climb.lean * climbA;
-    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: airLean - swimLean(st, dv) * sa + 0.03 * g + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + SW.head * swimLean(st, dv) * sa + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
-      knee, flat: c, toes: F.turn * c });
+    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: airLean - swimLean(st, dv) * sa + 0.03 * g - GAIT.runLean * rr + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + SW.head * swimLean(st, dv) * sa + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
+      knee, flat: Math.max(c, g), toes: F.turn * c, pitch: g > 0.001 ? gt.pitch : null });
     if (sway) this.bones.hips.position.x = sway; // #1622: the feet targets were moved the other way, so they stay planted
   }
 

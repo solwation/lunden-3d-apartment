@@ -7452,6 +7452,34 @@ export const AVATAR_CROUCH = {
   time: .2, // s, our own mirror image going down or up (others follow their sent states)
 };
 
+// #2003: the avatars' walk and run (Avatar.update). One stride = one leg's whole cycle; each foot has an explicit stance phase (the foot is
+// planted: it travels back under the body at exactly the ground speed, so it does not slide) and a swing phase (a Hermite arc forward that
+// meets the ground moving back at body speed). Tables are by ground speed (m/s, world); values between the points are linear.
+// Sources (*guess* = fitted by eye to ordinary adult gait data, not measured on this rig): walking ~1.4 m/s at ~110-120 steps/min and
+// running ~3 m/s at ~165 steps/min are textbook figures; the rest is interpolated. Before #2003 the avatar used one sine with a fixed
+// 0.78 m cycle: 4.1 / 8.3 / 12.4 footfalls/s at 1.6 / 3.2 / 4.8 m/s.
+export const AVATAR_GAIT = {
+  speeds: [0.25, 0.8, 1.6, 3.2, 4.8], // m/s (the table's points)
+  stepHz: [1.0, 1.65, 2.3, 2.9, 3.3], // footfalls per second (both feet) -> a stride (leg cycle) of 2 v / stepHz
+  duty: [0.68, 0.62, 0.55, 0.4, 0.33], // share of a leg's cycle on the ground (below 0.5 = a flight phase when running)
+  run: [2.1, 3.0], // m/s: the blend from the walking to the running style (hip, arms, foot angles) between these
+  lift: [0.075, 0.17], // m the swing foot clears the ground, walking / running (peaks early when running: a heel kick)
+  liftPeak: [0.85, 0.6], // exponent on the swing's progress: smaller = the foot rises sooner
+  heel: [0.32, 0.06], // rad toe-up at touch-down, walking / running (a heel strike / a forefoot landing)
+  toeOff: [0.5, 0.7], // rad toes down as the heel leaves the ground
+  hipDrop: [0.02, 0.07], // m the hips sink at double support (walking) / in mid stance (running); the leg reach lowers them further
+  runDip: 0.03, // m lower hips when running (knees stay bent)
+  sway: [0.02, 0.008], // m the hips shift over the stance foot, walking / running
+  armRatio: [0.62, 0.85], // arm swing = this x the opposite foot's travel from the hip
+  armMax: 0.36, // m the wrist swings at most
+  armLift: 0.16, // m the forward-swinging hand rises when running (elbows bent)
+  runLean: 0.12, // rad forward lean at a run
+  backShrink: 0.2, sideShrink: 0.45, // the stride shrinks by these shares going backwards / sideways (cadence rises to match)
+  dirEase: 10, // 1/s: how fast the stride direction follows the direction of travel
+  reach: 0.995, // share of the leg's length the hips keep the stance foot within (the knee stays a little bent)
+  shoe: { heel: 0.084, toe: 0.194, sole: 0.05 }, // the shoe's heel / toe distance behind / in front of the ankle and the ankle's height over the sole (avatar.js)
+};
+
 // #1639: reactions in the BIO (cry, laugh, scream in terror). One-shot event { t: 'rx', k } (the room's PLAYERS.reactions = kinds.length),
 // never a state field. `duration` s of procedural pose, eased in / out over `ease`; `every` = our minimum gap between two (the room's
 // PLAYERS.reactEvery * .8 is shorter). Keys and labels are the player-facing controls. Pose numbers are by eye (*guess*): m / rad / Hz.

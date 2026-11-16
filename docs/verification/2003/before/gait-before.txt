@@ -1,0 +1,18 @@
+forward   {"speed":1.6,"cadence":4.125,"slip":1.3199477201223195,"slipP95":1.983831622789154,"minY":0.04749999999999971,"maxY":0.16150000000000003,"mism":0,"claimed":0}
+forward   {"speed":3.2,"cadence":8.25,"slip":6.193649894066071,"slipP95":6.787706988146951,"minY":0.047499999999999765,"maxY":0.2071,"mism":0,"claimed":0}
+forward   {"speed":4.8,"cadence":12.375,"slip":9.442144607551192,"slipP95":10.042862205462626,"minY":0.047499999999999765,"maxY":0.2071,"mism":0,"claimed":0}
+backward  {"speed":1.6,"cadence":4.125,"slip":4.4863680912623485,"slipP95":5.183831622789121,"minY":0.04749999999999971,"maxY":0.16150000000000003,"mism":0,"claimed":0}
+backward  {"speed":3.2,"cadence":8.25,"slip":12.593644108936765,"slipP95":13.187706988147099,"minY":0.047499999999999765,"maxY":0.2071,"mism":0,"claimed":0}
+backward  {"speed":4.8,"cadence":12.375,"slip":19.042140691292566,"slipP95":19.642862205462635,"minY":0.047499999999999765,"maxY":0.2071,"mism":0,"claimed":0}
+sideways  {"speed":1.6,"cadence":4.125,"slip":3.3208860864954097,"slipP95":3.9247737642446694,"minY":0.04749999999999971,"maxY":0.16150000000000003,"mism":0,"claimed":0}
+sideways  {"speed":3.2,"cadence":8.25,"slip":9.925732084519083,"slipP95":10.487816306604612,"minY":0.047499999999999765,"maxY":0.2071,"mism":0,"claimed":0}
+sideways  {"speed":4.8,"cadence":12.375,"slip":15.030789951284767,"slipP95":15.599697383293996,"minY":0.047499999999999765,"maxY":0.2071,"mism":0,"claimed":0}
+﹣ forward gait: plausible cadence, bounded stance slip, no ground penetration (0.766523ms) # SKIP
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 21.494388

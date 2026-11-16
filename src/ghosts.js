@@ -387,7 +387,9 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const amount = Math.max(kissed, hugged); // (the look and gait give way to either embrace)
     const air = this.pose || this.bikeMesh || amount ? 0 : this.air ?? 0, by = this.body + Math.PI; // #1799: the velocity in the figure's frame (+z forward, +x its left)
     const airV = air ? [vx * Math.cos(by) - vz * Math.sin(by), this.vy ?? 0, vx * Math.sin(by) + vz * Math.cos(by)] : null;
-    this.avatar.update(dt, { speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: wet ? 0 : this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive });
+    let gaitDir = null; // #2003: the travel direction in the figure's frame (+z forward, +x its left), so that walking backwards / sideways steps that way
+    if (this.speed > AVATAR.walkSpeed && !air) { const gv = this.gaitV ??= [0, 1], hv = Math.hypot(vx, vz); if (hv > 1e-3) { gv[0] = (vx * Math.cos(by) - vz * Math.sin(by)) / hv; gv[1] = (vx * Math.sin(by) + vz * Math.cos(by)) / hv; gaitDir = gv; } }
+    this.avatar.update(dt, { gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: wet ? 0 : this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive });
     if (wet) sink(this.avatar.swimAmt, this.avatar.swimLine, this.avatar.diveAmt); // (blending in from standing on the bed)
     applyRestPose(this.avatar, this.pose, this.look, react);
     applyGymBodyPose(this.avatar,this.gx,this.look);
@@ -658,7 +660,7 @@ export class Ghosts {
     this.soundAt = t;
     if (!dt) return;
     for (const g of this.others.values()) {
-      if (!g.root.visible || g.dEye > SOUNDS.range.step + SOUNDS.range.jet) { g.stride = 0; continue; }
+      if (!g.root.visible || g.dEye > SOUNDS.range.step + SOUNDS.range.jet) { g.stride = 0; g.stepSeen = undefined; continue; }
       if (g.jp === 2 && g.dEye < SOUNDS.range.jet) {
         let nearer = 0;
         for (const o of this.others.values()) if (o !== g && o.jp === 2 && o.dEye < g.dEye) nearer++;
@@ -666,9 +668,15 @@ export class Ghosts {
         if (nearer < SOUNDS.jetNearest && g.jetT <= 0) { g.jetT = SOUNDS.jetEvery; this.onJet?.(g); }
       }
       if (g.dEye < SOUNDS.range.step && !g.swim && makesSteps({ speed: g.vh, vy: g.vy, crouch: g.crouch, pose: g.pose, riding: !!g.bikeMesh, jp: g.jp }, SOUNDS)) {
-        g.stride = (g.stride ?? 0) + g.vh * dt;
-        if (g.stride >= strideFor(g.vh, SOUNDS)) { g.stride = 0; this.onStep?.(g); }
-      } else g.stride = 0;
+        if (typeof g.avatar?.footfalls === 'number') { // #2003: one step per footfall of the avatar's own gait (its contact phase), so sound and feet stay in step
+          const n = g.avatar.footfalls;
+          if (g.stepSeen !== undefined && n !== g.stepSeen) this.onStep?.(g);
+          g.stepSeen = n;
+        } else {
+          g.stride = (g.stride ?? 0) + g.vh * dt;
+          if (g.stride >= strideFor(g.vh, SOUNDS)) { g.stride = 0; this.onStep?.(g); }
+        }
+      } else { g.stride = 0; g.stepSeen = undefined; }
     }
   }
 

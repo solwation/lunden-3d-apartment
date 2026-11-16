@@ -64,7 +64,7 @@ export function buildOlof() {
 }
 
 // --- posing ------------------------------------------------------------------------------------------------------
-const q1 = new THREE.Quaternion(), q2 = new THREE.Quaternion(), q3 = new THREE.Quaternion(), qT = new THREE.Quaternion();
+const q1 = new THREE.Quaternion(), q2 = new THREE.Quaternion(), q3 = new THREE.Quaternion(), qT = new THREE.Quaternion(), q4 = new THREE.Quaternion();
 const v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), v3 = new THREE.Vector3(), v4 = new THREE.Vector3(), m3 = new THREE.Matrix4();
 
 /** Two-bone IK in one frame: `upper` (whose parent has rotation `parentQ` in that frame) starts at S and reaches with its
@@ -93,9 +93,9 @@ const lerp3 = (a, b, t) => a.map((x, i) => x + (b[i] - x) * t);
  * sideways, rad), feet: [[x, y, z] ×2] the ankles (L = +x), hands: [{ at: [x, y, z], pole: [x, y, z] } ×2] the wrists,
  * can: [x, y, z] the can's axis (the right hand), or null to keep the hand straight on. Optional (#1149): knee [x, y, z]
  * the knees' pole (x outward per side), flat 0 … 1 how far the feet are turned level on the floor (0: rigid with the shin)
- * and toes (rad) how far they then turn outward.
+ * and toes (rad) how far they then turn outward; #2003 `pitch` [left, right] (rad, toe up, default none) tilts each level foot about its own x (heel strike / toe-off; only with `flat`).
  */
-export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, can, knee = KNEE, flat = 0, toes = 0 }) {
+export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, can, knee = KNEE, flat = 0, toes = 0, pitch = null }) {
   const B = fig.bones, hy = hip[0], hz = hip[1];
   B.hips.position.set(0, hy, hz);
   B.hips.quaternion.identity();
@@ -109,7 +109,11 @@ export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, 
     ik(B['thigh' + s], B['knee' + s], I, S.set(sx * 0.085, 0, 0), T.set(fx, fy - hy, fz - hz), THIGH, SHIN, P.set(sx * knee[0], knee[1], knee[2]), out);
     const foot = B['foot' + s];
     if (foot) { // the shin's rotation undone (level, the toes turned out) as far as `flat`
-      if (flat > 0) foot.quaternion.copy(q1.copy(out).invert().multiply(q2.setFromAxisAngle(Y, sx * toes))).slerp(qI, 1 - flat);
+      if (flat > 0) {
+        q2.setFromAxisAngle(Y, sx * toes);
+        if (pitch && pitch[i]) q2.multiply(q4.setFromAxisAngle(X, -pitch[i])); // #2003: toe-up pitch about the (turned) foot's own x
+        foot.quaternion.copy(q1.copy(out).invert().multiply(q2)).slerp(qI, 1 - flat);
+      }
       else foot.quaternion.identity();
     }
     const h = hands[i];
