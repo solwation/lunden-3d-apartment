@@ -1,0 +1,78 @@
+[
+  {
+    "ok": true,
+    "label": "explicit hand target immediate"
+  },
+  {
+    "ok": true,
+    "label": "rest 1 finite/exact mode"
+  },
+  {
+    "ok": true,
+    "label": "rest 2 finite/exact mode"
+  },
+  {
+    "ok": true,
+    "label": "rest 3 finite/exact mode"
+  },
+  {
+    "ok": true,
+    "label": "gym explicit pose bypasses transition"
+  },
+  {
+    "ok": true,
+    "label": "air clears ground anchors"
+  },
+  {
+    "ok": true,
+    "label": "swimming clears ground anchors"
+  },
+  {
+    "ok": true,
+    "label": "held prop follows final hand"
+  },
+  {
+    "ok": true,
+    "label": "gym final hand contacts unchanged with held item",
+    "delta": 0
+  },
+  {
+    "ok": true,
+    "label": "bike final hand contacts unchanged with held item",
+    "delta": 0
+  },
+  {
+    "ok": true,
+    "label": "lie final hand contacts unchanged with held item",
+    "delta": 0
+  },
+  {
+    "ok": true,
+    "label": "longsit final hand contacts unchanged with held item",
+    "delta": 0
+  },
+  {
+    "ok": true,
+    "label": "cycling does not advance gait phase"
+  },
+  {
+    "ok": true,
+    "label": "view 2 planted start <12mm",
+    "drift": 8.326672684688674e-17
+  },
+  {
+    "ok": true,
+    "label": "view 3 planted start <12mm",
+    "drift": 1.1443916996305594e-16
+  },
+  {
+    "ok": true,
+    "label": "own and remote thigh/knee/foot centre lines clear seat interior",
+    "counts": [
+      0,
+      8,
+      0,
+      0
+    ]
+  }
+]

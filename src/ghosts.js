@@ -305,6 +305,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.root.position.lerpVectors(a.p, b.p, k);
     this.root.rotation.y = lerpAngle(a.r, b.r, k);
     this.crouch = THREE.MathUtils.lerp(a.c, b.c, k);
+    this.poseCarry = k < 1 && a.pose !== b.pose && [0,1].includes(a.pose) && [0,1].includes(b.pose);
     this.pose = (k < 1 ? a : b).pose;this.gx=gymPoseWire((k<1?a:b).gx);
     this.dance = (k < 1 ? a : b).dn ?? 0; // #1622 / #1757: 0, 1 floss or 2 Gangnam Style (validated in push)
     this.air = (k < 1 ? a : b).am ?? 0; // #1799: 0 on the ground (or an older client), 1 flying, 2 swinging, 3 climbing
@@ -414,7 +415,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const poseFrame = this.poseFrame ??= [0, 0, 0, 0, 1, 1];
     poseFrame[0] = this.root.position.x; poseFrame[1] = this.root.position.y; poseFrame[2] = this.root.position.z;
     poseFrame[3] = by; poseFrame[4] = this.avatar.object.scale.z; poseFrame[5] = this.avatar.object.scale.y;
-    transitionPose(this.avatar, dt, poseKey, hands, poseFrame);
+    transitionPose(this.avatar, dt, poseKey, hands, poseFrame, this.poseCarry);
     this.avatar.collectPose = false;
     poseOlof(this.avatar, this.avatar.pendingPose);
     this.heldCat.update(this.avatar, this.root);

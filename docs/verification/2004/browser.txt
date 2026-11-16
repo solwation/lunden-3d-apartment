@@ -1,0 +1,232 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+SEQUENCE_READY [
+  { ok: true, label: 'explicit hand target immediate' },
+  { ok: true, label: 'rest 1 finite/exact mode' },
+  { ok: true, label: 'rest 2 finite/exact mode' },
+  { ok: true, label: 'rest 3 finite/exact mode' },
+  { ok: true, label: 'gym explicit pose bypasses transition' },
+  { ok: true, label: 'air clears ground anchors' },
+  { ok: true, label: 'swimming clears ground anchors' },
+  { ok: true, label: 'held prop follows final hand' }
+] []
+[in#0 @ 0x37fa5d00] Error opening input: No such file or directory
+Error opening input file /tmp/2004-frames/frame%03d.png.
+Error opening input files: No such file or directory
+ACTION_FAILED Error: Command failed: /home/devcontainers/.cache/ms-playwright/ffmpeg-1013/ffmpeg-linux -hide_banner -loglevel error -framerate 12 -i /tmp/2004-frames/frame%03d.png -c:v libvpx-vp9 -crf 32 -b:v 0 -y docs/verification/2004/sequence.webm
+[in#0 @ 0x37fa5d00] Error opening input: No such file or directory
+Error opening input file /tmp/2004-frames/frame%03d.png.
+Error opening input files: No such file or directory
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:916:11)
+    at Object.execFileSync (node:child_process:952:15)
+    at module.exports (/tmp/2004-browser-action.cjs:4:5)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processImmediate (node:internal/timers:453:9)
+    at process.callbackTrampoline (node:internal/async_hooks:130:17)
+    at async /home/devcontainers/lunden-wt/codex-2004/tools/avatarmotionbrowser.cjs:17:203 {
+  status: 254,
+  signal: null,
+  output: [
+    null,
+    <Buffer >,
+    <Buffer 5b 69 6e 23 30 20 40 20 30 78 33 37 66 61 35 64 30 30 5d 20 45 72 72 6f 72 20 6f 70 65 6e 69 6e 67 20 69 6e 70 75 74 3a 20 4e 6f 20 73 75 63 68 20 66 ... 127 more bytes>
+  ],
+  pid: 254135,
+  stdout: <Buffer >,
+  stderr: <Buffer 5b 69 6e 23 30 20 40 20 30 78 33 37 66 61 35 64 30 30 5d 20 45 72 72 6f 72 20 6f 70 65 6e 69 6e 67 20 69 6e 70 75 74 3a 20 4e 6f 20 73 75 63 68 20 66 ... 127 more bytes>
+}
+EXPLICIT [
+  { ok: true, label: 'explicit hand target immediate' },
+  { ok: true, label: 'rest 1 finite/exact mode' },
+  { ok: true, label: 'rest 2 finite/exact mode' },
+  { ok: true, label: 'rest 3 finite/exact mode' },
+  { ok: true, label: 'gym explicit pose bypasses transition' },
+  { ok: true, label: 'air clears ground anchors' },
+  { ok: true, label: 'swimming clears ground anchors' },
+  { ok: true, label: 'held prop follows final hand' },
+  {
+    ok: true,
+    label: 'gym final hand contacts unchanged with held item',
+    delta: 0
+  },
+  {
+    ok: true,
+    label: 'bike final hand contacts unchanged with held item',
+    delta: 0
+  },
+  {
+    ok: true,
+    label: 'lie final hand contacts unchanged with held item',
+    delta: 0
+  },
+  {
+    ok: true,
+    label: 'longsit final hand contacts unchanged with held item',
+    delta: 0
+  },
+  { ok: true, label: 'cycling does not advance gait phase' }
+]
+BUDGET {
+  unit: 'microseconds/Ghost.animate',
+  before: [
+    9.079999995231628,
+    8.739999997615815,
+    9.260000002384185,
+    8.120000004768372
+  ],
+  after: [ 15.3, 12.379999995231628, 12.039999997615814, 12.4 ],
+  budget: 100
+}
+FINAL_VIDEO_READY
+CORRECTED_CONTACTS [
+  { ok: true, label: 'explicit hand target immediate' },
+  { ok: true, label: 'rest 1 finite/exact mode' },
+  { ok: true, label: 'rest 2 finite/exact mode' },
+  { ok: true, label: 'rest 3 finite/exact mode' },
+  { ok: true, label: 'gym explicit pose bypasses transition' },
+  { ok: true, label: 'air clears ground anchors' },
+  { ok: true, label: 'swimming clears ground anchors' },
+  { ok: true, label: 'held prop follows final hand' },
+  {
+    ok: true,
+    label: 'gym final hand contacts unchanged with held item',
+    delta: 0
+  },
+  {
+    ok: true,
+    label: 'bike final hand contacts unchanged with held item',
+    delta: 0
+  },
+  {
+    ok: true,
+    label: 'lie final hand contacts unchanged with held item',
+    delta: 0
+  },
+  {
+    ok: true,
+    label: 'longsit final hand contacts unchanged with held item',
+    delta: 0
+  },
+  { ok: true, label: 'cycling does not advance gait phase' }
+]
+CORRECTED_BUDGET {
+  unit: 'microseconds/Ghost.animate',
+  before: [ 9.2, 9.3, 9.7, 8.239999997615815 ],
+  after: [
+    16.220000004768373,
+    13.160000002384185,
+    15.280000007152557,
+    13.919999992847442
+  ],
+  budget: 100
+}
+CORRECTED_SEQUENCE_READY
+COMBINED_FINAL_READY 13 {
+  unit: 'microseconds/Ghost.animate',
+  before: [
+    8.779999995231629,
+    8.939999997615814,
+    9.120000004768372,
+    8.780000007152557
+  ],
+  after: [
+    16.12000000476837,
+    13.460000002384186,
+    13.920000004768372,
+    12.979999995231628
+  ],
+  budget: 100
+}
+SEAT_CLEARANCE [ 0, 7, 0, 24 ] [
+  {
+    t: 8.133333333333333,
+    view: 1,
+    segment: [ 'thighR', 'kneeR' ],
+    point: [ 0.22400031070642454, 0.45, -3.073766504345138 ],
+    a: [ 0.32547697863538966, 0.8529976579255384, -3.024614472168161 ],
+    b: [ 0.2218201244865315, 0.4413417541353105, -3.0748225163863196 ],
+    seat: [ 0.4187544812776239, 0.41, -2.9776969007180276 ]
+  },
+  {
+    t: 8.133333333333333,
+    view: 3,
+    segment: [ 'thighL', 'kneeL' ],
+    point: [ 0.21336311333750388, 0.45, -2.8716143468247495 ],
+    a: [ 0.3236047783334565, 0.8605295323955947, -2.865045834724863 ],
+    b: [ 0.21272833167915622, 0.44763613314998163, -2.871652168922264 ],
+    seat: [ 0.4187544812776239, 0.41, -2.9776969007180276 ]
+  },
+  {
+    t: 8.15,
+    view: 1,
+    segment: [ 'kneeL', 'footL' ],
+    point: [ 0.20462267183663863, 0.45, -2.8475733614612326 ],
+    a: [ 0.20391617795306133, 0.45849584377775326, -2.848055163648735 ],
+    b: [ 0.23697487257668345, 0.06095311687314825, -2.825510380521976 ],
+    seat: [ 0.4187544812776239, 0.41, -2.9776969007180276 ]
+  }
+]
+SEAT_CLEARANCE_CORRECTED [ 0, 7, 0, 0 ] []
+COMBINED_FINAL_READY [
+  { ok: true, label: 'explicit hand target immediate' },
+  { ok: true, label: 'rest 1 finite/exact mode' },
+  { ok: true, label: 'rest 2 finite/exact mode' },
+  { ok: true, label: 'rest 3 finite/exact mode' },
+  { ok: true, label: 'gym explicit pose bypasses transition' },
+  { ok: true, label: 'air clears ground anchors' },
+  { ok: true, label: 'swimming clears ground anchors' },
+  { ok: true, label: 'held prop follows final hand' },
+  {
+    ok: true,
+    label: 'gym final hand contacts unchanged with held item',
+    delta: 0
+  },
+  {
+    ok: true,
+    label: 'bike final hand contacts unchanged with held item',
+    delta: 0
+  },
+  {
+    ok: true,
+    label: 'lie final hand contacts unchanged with held item',
+    delta: 0
+  },
+  {
+    ok: true,
+    label: 'longsit final hand contacts unchanged with held item',
+    delta: 0
+  },
+  { ok: true, label: 'cycling does not advance gait phase' },
+  {
+    ok: true,
+    label: 'view 2 planted start <12mm',
+    drift: 8.326672684688674e-17
+  },
+  {
+    ok: true,
+    label: 'view 3 planted start <12mm',
+    drift: 1.1443916996305594e-16
+  },
+  {
+    ok: true,
+    label: 'own and remote thigh/knee/foot centre lines clear seat interior',
+    counts: [ 0, 8, 0, 0 ]
+  }
+] {
+  unit: 'microseconds/Ghost.animate',
+  before: [
+    16.740000009536743,
+    16.739999997615815,
+    17.419999992847444,
+    16.160000002384187
+  ],
+  after: [
+    29.279999995231627,
+    27.47999999523163,
+    21.920000004768372,
+    21.339999997615813
+  ],
+  budget: 100
+}

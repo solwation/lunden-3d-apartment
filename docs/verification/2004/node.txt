@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: start/stop/turn/crouch and teleport at dt=0.016666666666666666
+ok 1 - start/stop/turn/crouch and teleport at dt=0.016666666666666666
+  ---
+  duration_ms: 150.839473
+  type: 'test'
+  ...
+# Subtest: start/stop/turn/crouch and teleport at dt=0.03333333333333333
+ok 2 - start/stop/turn/crouch and teleport at dt=0.03333333333333333
+  ---
+  duration_ms: 14.970418
+  type: 'test'
+  ...
+# Subtest: start/stop/turn/crouch and teleport at dt=0.008333333333333333,0.03333333333333333,0.016666666666666666,0.05
+ok 3 - start/stop/turn/crouch and teleport at dt=0.008333333333333333,0.03333333333333333,0.016666666666666666,0.05
+  ---
+  duration_ms: 14.140923
+  type: 'test'
+  ...
+# Subtest: seated transition lands on exact pose, hand target wins without easing, explicit lying bypasses
+ok 4 - seated transition lands on exact pose, hand target wins without easing, explicit lying bypasses
+  ---
+  duration_ms: 81.933351
+  type: 'test'
+  ...
+# Subtest: a real seat-root change preserves the rendered body and feet before descending into the chair
+ok 5 - a real seat-root change preserves the rendered body and feet before descending into the chair
+  ---
+  duration_ms: 50.923421
+  type: 'test'
+  ...
+# Subtest: ordinary root carry cannot take authority from an explicit pose
+ok 6 - ordinary root carry cannot take authority from an explicit pose
+  ---
+  duration_ms: 6.667563
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 800.943297

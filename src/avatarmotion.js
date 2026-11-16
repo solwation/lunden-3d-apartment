@@ -24,20 +24,29 @@ export function groundMotion(av, dt, gt, frame, moving, enabled, fx, fy, fz) {
   const jump = m && (Math.hypot(frame[0] - m.frame[0], frame[1] - m.frame[1]) > M.resetDistance || Math.abs(wrap(frame[2] - m.frame[2])) > M.resetTurn || dt > M.resetTime);
   if (!m || jump) {
     m = av.groundMotion = { frame: frame.slice(), feet: [[0, 0, 0], [0, 0, 0]], yaw: [frame[2], frame[2]], pitch: [0, 0],
-      contact: [true, true], moving, mode: moving ? 'walk' : 'idle', step: -1, age: 0, startAge: M.startTime,
+      contact: [true, true], startSupport: [false, false], startOffset: [null, null], moving, mode: moving ? 'walk' : 'idle', step: -1, age: 0, startAge: M.startTime,
       from: [0, 0, 0], to: [0, 0, 0], fromYaw: 0, fromPitch: 0, duration: 0, next: 0, steps: 0, reset: !!jump };
     for (let i = 0; i < 2; i++) world(m.feet[i], gt.feet[i], frame, sc);
   }
   m.reset = !!jump;
   const neutral = (i, out) => world(out, [i ? -fx : fx, fy, fz], frame, sc);
   if (moving) {
-    if (!m.moving) { m.startAge = 0; m.step = -1; }
+    if (!m.moving) { m.startAge = 0; m.step = -1; m.startSupport[0] = m.contact[0]; m.startSupport[1] = m.contact[1]; m.startOffset.fill(null); }
     m.startAge += dt; m.mode = 'walk';
     for (let i = 0; i < 2; i++) {
       // During take-off the support foot keeps its previous ground anchor. The
       // next swing rejoins the existing gait, without delaying root motion.
-      if (m.startAge < M.startTime && info.contact[i] && m.contact[i] && distance(m.feet[i], neutral(i, m.to)) < M.startReach * sc) {
-        local(gt.feet[i], m.feet[i], frame, sc); gt.pitch[i] = m.pitch[i];
+      if (m.startSupport[i] && info.stance[i] >= 0 && distance(m.feet[i], neutral(i, m.to)) < M.startReach * sc) {
+        local(gt.feet[i], m.feet[i], frame, sc); gt.pitch[i] = m.pitch[i]; info.contact[i] = true;
+      } else {
+        if (m.startSupport[i]) {
+          local(m.from, m.feet[i], frame, sc);
+          m.startOffset[i] = [...m.from.map((v,j) => v - gt.feet[i][j]), m.pitch[i] - gt.pitch[i], Math.max(0, info.swing[i])];
+          m.startSupport[i] = false;
+        }
+        const offset = m.startOffset[i];
+        if (offset && info.swing[i] >= 0) { const w = 1 - ease((info.swing[i] - offset[4]) / Math.max(.001, 1 - offset[4])); for (let j = 0; j < 3; j++) gt.feet[i][j] += offset[j] * w; gt.pitch[i] += offset[3] * w; }
+        else if (offset) m.startOffset[i] = null;
       }
       world(m.feet[i], gt.feet[i], frame, sc);
       m.contact[i] = info.contact[i]; m.yaw[i] = frame[2]; m.pitch[i] = gt.pitch[i];
@@ -122,7 +131,7 @@ function reframePose(p, from, to) {
   }
   p.footYaw ??= [0, 0]; p.footYaw[0] += yaw; p.footYaw[1] += yaw;
 }
-export function transitionPose(av, dt, key, hands = {}, frame = null) {
+export function transitionPose(av, dt, key, hands = {}, frame = null, carry = false) {
   const target = av.pendingPose;
   if (!target) return;
   let s = av.poseMotion;
@@ -135,7 +144,9 @@ export function transitionPose(av, dt, key, hands = {}, frame = null) {
     else s.age = M.poseTime;
     s.key = key;
   }
-  if (s.age < M.poseTime) {
+  if (carry && ordinary(key) && frame && s.frame && s.last.feet && !jumped) {
+    av.pendingPose = copyPose(s.out ??= {}, s.last); reframePose(av.pendingPose, s.frame, frame);
+  } else if (s.age < M.poseTime) {
     s.age = Math.min(M.poseTime, s.age + dt);
     const e = ease(s.age / M.poseTime), p = copyPose(s.out ??= {}, target), a = s.from;
     for (const k of ['lean', 'head', 'turn', 'flat', 'toes', 'hipX']) p[k] = a[k] + (p[k] - a[k]) * e;

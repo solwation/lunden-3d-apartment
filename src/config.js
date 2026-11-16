@@ -7479,7 +7479,7 @@ export const AVATAR_CROUCH = {
 // 0.78 m cycle: 4.1 / 8.3 / 12.4 footfalls/s at 1.6 / 3.2 / 4.8 m/s.
 // #2004 visual transition guesses, in model metres / seconds / radians. No navigation or wire state.
 export const AVATAR_MOTION = {
-  startTime: .16, startReach: .48, settleDistance: .025, contactHeight: .012,
+  startStance: .15, startTime: .16, startReach: .48, settleDistance: .025, contactHeight: .012,
   stepTime: .19, stepExtra: .13, stepTravel: .35, stepLift: .055, turnStep: .25,
   settleEase: 14, idleSway: .008, idleHz: .17, crouchEase: 8, poseTime: .44, poseLean: .30, seatTurnEase: 8, seatTurnSnap: .001, groundCrouch: .01,
   resetDistance: .75, resetTurn: 1.4, resetTime: .25,

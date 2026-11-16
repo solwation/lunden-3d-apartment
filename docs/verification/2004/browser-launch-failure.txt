@@ -1,0 +1,15 @@
+browsertest: running in browser slot 2 of 2
+browsertest: no systemd user scope here, running without a memory ceiling
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+page.goto: Timeout 30000ms exceeded.
+Call log:
+[2m  - navigating to "http://localhost:8804/tools/avatarmotion.html", waiting until "load"[22m
+
+    at /home/devcontainers/lunden-wt/codex-2004/tools/avatarmotionbrowser.cjs:9:13 {
+  name: 'TimeoutError'
+}
+
+Node.js v22.20.0

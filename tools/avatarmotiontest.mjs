@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import { Avatar } from '../src/avatar.js';
 import { poseOlof } from '../src/olof.js';
 import { applyRestPose } from '../src/remote-pose.js';
-import { transitionPose } from '../src/avatarmotion.js';
+import { transitionPose, copyPose } from '../src/avatarmotion.js';
 import * as THREE from 'three';
 const v = new THREE.Vector3();
 const sample = av => ['footL','footR','hips','handL','handR','head'].map(k=>av.bones[k].getWorldPosition(new THREE.Vector3()).toArray());
@@ -51,4 +51,13 @@ test('a real seat-root change preserves the rendered body and feet before descen
  assert.ok(max<.1,'continuous descent '+max);
  const seatedPose=sample(av);const startRise=drive(0,standing,0);for(const i of [0,1,2])assert.ok(dist(seatedPose[i],startRise[i])<1e-8,'standing root switch keeps visible hip/foot '+i);
  results.push({seatRootContinuity:true,seatMaxJointStep:max});av.dispose();
+});
+
+// A delayed standing/sitting snapshot must not freeze an explicit interaction pose.
+test('ordinary root carry cannot take authority from an explicit pose',()=>{
+ const av=new Avatar('explicit-carry');av.collectPose=true;av.update(1/60);
+ const frame=[0,0,0,0,1,1];transitionPose(av,1/60,0,{},frame);
+ const expected=copyPose({},av.pendingPose);expected.hands[0].at=[.6,1.2,.1];expected.hip=[.7,.2];av.pendingPose=expected;
+ transitionPose(av,1/60,-1,{},[.1,0,0,0,1,1],true);
+ assert.deepEqual(av.pendingPose.hands[0].at,[.6,1.2,.1]);assert.deepEqual(av.pendingPose.hip,[.7,.2]);av.dispose();
 });

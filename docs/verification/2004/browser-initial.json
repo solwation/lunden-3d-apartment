@@ -1,0 +1,50 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "label": "explicit hand target immediate"
+    },
+    {
+      "ok": true,
+      "label": "rest 1 finite/exact mode"
+    },
+    {
+      "ok": true,
+      "label": "rest 2 finite/exact mode"
+    },
+    {
+      "ok": true,
+      "label": "rest 3 finite/exact mode"
+    },
+    {
+      "ok": true,
+      "label": "gym explicit pose bypasses transition"
+    },
+    {
+      "ok": true,
+      "label": "air clears ground anchors"
+    },
+    {
+      "ok": true,
+      "label": "swimming clears ground anchors"
+    },
+    {
+      "ok": true,
+      "label": "held prop follows final hand"
+    }
+  ],
+  "errors": [],
+  "source": {
+    "src/avatar.js": "0fce5442ba57426bf3cd7f3e4588bcde36fdb8733bd26bdd143fd1414cc0157a",
+    "src/olof.js": "31eaf669d02db32fbf0f4f25288488583b97cbace3da5b798bb1e7e557ea053e",
+    "src/ghosts.js": "857993839552564f95f0ba38d1a3cc94f3eef1f04f1ce9037fb4c0beef701a31",
+    "src/avatarmotion.js": "3f2ff582c6cd0792667a45ebe94aa095c2e39585f85e5a348a3784ea10b7ef7a",
+    "src/config.js": "8e9fd4fe7b899d75f37d2fce4dd73302a717a0a03f5eccaee6ce706a1eb527bb",
+    "src/remote-pose.js": "4fa52f3924f40997aab40da35019ae70af1a81cf153b35b78354a44e1b3d5fa7",
+    "src/gymbodypose.js": "870193dbfb0e78595b42e4b8630e8a42af758e57e478710fc812d8018d073c47",
+    "tools/avatarmotion.html": "e965430a81df278c060d1f2cfcc4a36c0f48ae5d6046c1529e5a923d691cda00",
+    "tools/avatarmotionbrowser.cjs": "36c7339d25369b5849981ddbf669484941b311f1b3f3e7aaacfc21a7c1f474c2"
+  },
+  "browser": "156.0.8078.4",
+  "baseline": "a05683d4"
+}

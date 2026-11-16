@@ -1943,7 +1943,9 @@ export class Avatar {
     const gBob = gp ? (GN.squat + GN.bounce * Math.abs(Math.cos(gPh))) * ga : 0; // bent knees, lowest as the feet land on each beat
     const rp = react ? reactionPose(react.kind, react.age, [HIP - 0.02, CR.hipForward * c]) : null;
     const fx = 0.11 + (F.x - 0.11) * c, fz = 0.02 + (F.z - 0.02) * c;
-    const gt = walkGait(this, dt, speed, walking, gaitDir, fx, F.y, fz, c); // #2003: explicit stance / swing phases
+    const gaitSpeed = motionFrame && walking ? groundSpeed : speed;
+    if (motionFrame && walking && this.groundMotion && !this.groundMotion.moving) this.cycles = Math.ceil(this.cycles ?? 0) + Math.max(0, lerpTab(GAIT.speeds, GAIT.duty, gaitSpeed) - MOTION.startStance * Math.min(1, this.object.scale.z));
+    const gt = walkGait(this, dt, gaitSpeed, walking, gaitDir, fx, F.y, fz, c); // #2003: explicit stance / swing phases
     groundMotion(this, dt, gt, motionFrame, walking, groundEnabled && !am && !swim && !dance && !react && !kiss && c < MOTION.groundCrouch, fx, F.y, fz);
     const idle = groundEnabled && !walking && !am && !swim && !dance && !react && !kiss ? (1 - g) * (1 - c) : 0;
     const sway = flossSway + gt.sway + MOTION.idleSway * idle * Math.sin(this.time * Math.PI * 2 * MOTION.idleHz);

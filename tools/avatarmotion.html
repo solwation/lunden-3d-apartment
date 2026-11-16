@@ -1,0 +1,99 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Avatarövergångar #2004</title><link rel="icon" href="data:,">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<style>body{margin:0;background:#e9edef;font:16px system-ui;color:#192b38}h1{font-size:23px;margin:16px 20px 6px}p{margin:0 20px 14px}.labels{display:grid;grid-template-columns:repeat(4,1fr);text-align:center;font-weight:650}canvas{display:block}#phase{font-weight:700}</style>
+<h1>Vila, start, stopp och vändning · #2004</h1><p>Samma avatar och tidsförlopp. Egen bild: track → beforeMirror. Fjärrbild: 5 Hz snapshots → draw. <span id="phase"></span></p>
+<div class="labels"><span>Före · egen spegel</span><span>Före · fjärravatar</span><span>Efter · egen spegel</span><span>Efter · fjärravatar</span></div>
+<script type="module">
+import * as T from 'three';
+import * as current from '../src/ghosts.js';
+import * as before from '/before/src/ghosts.js';
+import * as C from '../src/config.js';
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(1);renderer.setSize(1440,660);document.body.append(renderer.domElement);
+let now=10000;const nativeNow=performance.now.bind(performance);performance.now=()=>now;
+localStorage.setItem('lunden.avatar',C.encodeAvatarLook(C.avatarLook('motion-2004')));
+let state={p:[0,0,0],r:0,look:[0,0]};let wet=false;
+const rows=[];
+for(const mod of [before,current]){
+ const scene=new T.Scene();scene.background=new T.Color(0xdce3e6);scene.add(new T.HemisphereLight(0xffffff,0x828b71,1.5));const light=new T.DirectionalLight(0xffefdb,2.1);light.position.set(-2,5,-3);scene.add(light);
+ const plane=new T.Mesh(new T.PlaneGeometry(30,30),new T.MeshStandardMaterial({color:0xa3ae99,roughness:1}));plane.rotation.x=-Math.PI/2;scene.add(plane);const grid=new T.GridHelper(30,150,0x75836e,0x95a18c);grid.position.y=.001;scene.add(grid);
+ const cam=new T.PerspectiveCamera(32,360/660,.02,50);
+ const owners=new mod.Ghosts({scene,camera:cam,url:'',name:()=> 'motion-2004',state:()=>state,swim:()=>wet?{water:.75,cx:0,cz:0}:null});
+ const ghost=new mod.Ghost(scene,'motion-2004','Medspelare',false,owners.myLook);ghost.avatarCode=owners.avatarCode;if(ghost.tag)ghost.tag.visible=false;
+ const seat=new T.Mesh(new T.BoxGeometry(.48,.08,.48),new T.MeshStandardMaterial({color:0x735c42}));seat.position.y=.41;scene.add(seat);
+ rows.push({scene,cam,owners,ghost,seat,lastPush:-Infinity});
+}
+const V=new T.Vector3();
+function sample(g){g.avatar.object.updateMatrixWorld(true);return {root:g.root.position.toArray(),body:g.body,mode:g.avatar.gaitInfo?.motion,adjustments:g.avatar.gaitInfo?.adjustments,contact:g.avatar.gaitInfo?.contact?.slice(),joints:['footL','footR','hips','handL','handR','head'].map(k=>g.avatar.bones[k].getWorldPosition(new T.Vector3()).toArray()),quats:['thighL','thighR','kneeL','kneeR','torso'].map(k=>g.avatar.bones[k].quaternion.toArray())};}
+window.motionState=t=>{const walk=Math.max(0,Math.min(1.8,t-1.2)),r=Math.max(0,Math.min(1.8,(t-4.3)*1.8/1.4));const seated=t>=8&&t<9;return{p:[seated?Math.sin(r)*.5:0,0,-walk*1.6+(seated?Math.cos(r)*.5:0)],r,c:t>=6.4&&t<7.2,pose:t>=8&&t<9?1:0,look:[0,0]};};
+window.tickMotion=(t,dt=1/60)=>{
+ now+=dt*1000;state=window.motionState(t);const out=[];let col=0;
+ renderer.setScissorTest(true);
+ for(const row of rows){const{scene,cam,owners,ghost,seat}=row;
+  owners.track(state,now);owners.beforeMirror();const own=owners.myGhost;own.root.visible=true;
+  if(now-row.lastPush>=200-1e-4){ghost.push(state,now);row.lastPush=now;}ghost.draw(now,new T.Vector3(...state.p));
+  if(ghost.tag)ghost.tag.visible=false;
+  const origin=[0,0,state.p[2]-(state.pose===1?Math.cos(state.r)*.5:0)];cam.position.set(origin[0]+2.6,1.5,origin[2]-4.3);cam.lookAt(origin[0],.88,origin[2]);seat.position.x=origin[0]+.43*Math.sin(state.r);seat.position.z=origin[2]+.43*Math.cos(state.r);seat.visible=t>7.5&&t<9.8;
+  for(const [g,isOwn]of [[own,true],[ghost,false]]){own.root.visible=isOwn;ghost.root.visible=!isOwn;renderer.setViewport(col*360,0,360,660);renderer.setScissor(col*360,0,360,660);renderer.render(scene,cam);out.push(sample(g));col++;}
+  owners.afterMirror();
+ }
+ renderer.setScissorTest(false);document.querySelector('#phase').textContent=`${t.toFixed(2)} s · ${t<1.2?'Vila':t<3?'Gång':t<4.3?'Stopp':t<5.7?'Vändning':t<6.4?'Vila':t<7.2?'Huk':t<8?'Stå':t<9?'Sitt':'Res dig'}`;
+ return {t,views:out};
+};
+window.runMotion=async()=>{
+ const stream=renderer.domElement.captureStream(0),track=stream.getVideoTracks()[0],chunks=[];
+ const rec=new MediaRecorder(stream,{mimeType:'video/webm;codecs=vp9',videoBitsPerSecond:2800000});rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};const done=new Promise(resolve=>rec.onstop=resolve);rec.start();const data=[];
+ for(let n=0;n<=330;n++){data.push(window.tickMotion(n/30,1/30));track.requestFrame();await new Promise(r=>setTimeout(r,1000/30));}
+ rec.stop();await done;track.stop();const bytes=new Uint8Array(await new Blob(chunks,{type:'video/webm'}).arrayBuffer());let text='';for(let i=0;i<bytes.length;i+=8192)text+=String.fromCharCode(...bytes.subarray(i,i+8192));return{video:btoa(text),data};
+};
+window.probeInteractions=()=>{
+ const row=rows[1],g=row.ghost,av=g.avatar,checks=[];const check=(ok,label)=>{checks.push({ok,label});if(!ok)throw Error(label);};
+ const frame=(opts,n=90)=>{for(let k=0;k<n;k++){now+=1000/60;g.pose=opts.pose??0;g.gx=opts.gx??null;g.air=opts.air??0;g.crouch=opts.crouch??0;g.hands=opts.hands??{};g.root.position.set(0,0,0);g.animate(now,1,0,0);}};
+ const hand={at:[.25,.82,.30],pole:[1,.5,-.2]};frame({hands:{L:hand}});check(av.pendingPose.hands[0].at.every((x,i)=>x===hand.at[i]),'explicit hand target immediate');
+ for(const pose of [1,2,3]){frame({pose});check(g.pose===pose&&Number.isFinite(av.bones.hips.position.y),'rest '+pose+' finite/exact mode');}
+ frame({gx:[4,.5]});check(av.poseMotion.key===-1,'gym explicit pose bypasses transition');
+ frame({air:1});check(av.airAmt[0]>.99&&av.groundMotion===null,'air clears ground anchors');
+ wet=true;frame({});check(av.swimAmt>.99&&av.groundMotion===null,'swimming clears ground anchors');wet=false;
+ g.setItem('cup');frame({});av.object.updateMatrixWorld(true);const p=g.root.worldToLocal(av.hand('R'));check(g.itemProp&&g.itemProp.position.distanceTo(p)<1e-8,'held prop follows final hand');g.setItem('');
+ return checks;
+};
+window.probeExplicitContacts=()=>{
+ const checks=[];const hand={at:[.25,.82,.3],pole:[1,.5,-.2]};
+ function run(row,kind){const g=row.ghost;g.setItem('cup');g.hands={L:hand};g.pose=kind==='lie'?2:kind==='longsit'?3:0;g.gx=kind==='gym'?[4,.5]:null;g.setBike(kind==='bike');g.air=0;wet=false;g.crouch=0;g.root.position.set(0,0,0);g.root.rotation.y=0;g.bikeYaw=0;
+  for(let k=0;k<100;k++){now+=1000/60;g.animate(now,1,kind==='bike'?1.6:0,0);}
+  g.avatar.object.updateMatrixWorld(true);return{hands:['L','R'].map(s=>g.avatar.hand(s).toArray()),item:g.itemProp.position.toArray(),cycles:g.avatar.cycles??0};}
+ for(const kind of ['gym','bike','lie','longsit']){const a=run(rows[0],kind),b=run(rows[1],kind),delta=Math.max(...a.hands.flat().map((v,i)=>Math.abs(v-b.hands.flat()[i])));checks.push({ok:delta<1e-8,label:kind+' final hand contacts unchanged with held item',delta});if(delta>=1e-8)throw Error(kind+' hand drift '+delta);}
+ const g=rows[1].ghost,start=g.avatar.cycles;for(let i=0;i<30;i++){now+=1000/60;g.setBike(true);g.bikeYaw=0;g.pose=0;g.animate(now,1,1.6,0);}checks.push({ok:g.avatar.cycles===start,label:'cycling does not advance gait phase'});
+ return checks;
+};
+window.captureFrames=async()=>{
+ const capture=document.createElement('canvas');capture.width=1440;capture.height=735;const ctx=capture.getContext('2d');const frames=[],data=[];
+ for(let n=0;n<=660;n++){
+  const t=n/60;data.push(tickMotion(t,1/60));
+  if(n%5===0){ctx.fillStyle='#edf0f2';ctx.fillRect(0,0,1440,735);ctx.fillStyle='#192b38';ctx.font='bold 20px system-ui';ctx.fillText('#2004 · '+document.querySelector('#phase').textContent,20,27);ctx.font='16px system-ui';['Före · egen spegel','Före · fjärravatar','Efter · egen spegel','Efter · fjärravatar'].forEach((s,i)=>ctx.fillText(s,i*360+70,58));ctx.drawImage(renderer.domElement,0,75);frames.push(capture.toDataURL('image/png').split(',')[1]);await new Promise(requestAnimationFrame);}
+ }
+ return{frames,data};
+};
+window.benchMotion=()=>{
+ const samples=[];for(const row of rows){const g=row.ghost;wet=false;g.setBike(false);g.setItem('');g.gx=null;g.pose=0;g.air=0;g.hands={};g.crouch=0;const batches=[];
+  for(let j=0;j<5;j++){const at=nativeNow();for(let n=0;n<5000;n++){now+=1000/60;g.root.position.z-=1.6/60;g.animate(now,1,0,-1.6);}if(j)batches.push((nativeNow()-at)*1000/5000);}
+  samples.push(batches);
+ }return{unit:'microseconds/Ghost.animate',before:samples[0],after:samples[1],budget:100};
+};
+window.probeSeatClearance=()=>{
+ const hits=[],perView=[0,0,0,0],trace=[];
+ for(let n=0;n<=660;n++){
+  const t=n/60;tickMotion(t,1/60);if(t<7.5||t>9.8)continue;
+  let vi=0;for(const row of rows)for(const g of [row.owners.myGhost,row.ghost]){
+   g.avatar.object.updateMatrixWorld(true);const joints={};for(const k of ['thighL','kneeL','footL','thighR','kneeR','footR'])joints[k]=g.avatar.bones[k].getWorldPosition(new T.Vector3());
+   for(const side of ['L','R'])for(const segment of [['thigh'+side,'knee'+side],['knee'+side,'foot'+side]]){
+    const a=joints[segment[0]],b=joints[segment[1]],y=.45;if((a.y-y)*(b.y-y)>=0)continue;const u=(y-a.y)/(b.y-a.y),x=a.x+(b.x-a.x)*u,z=a.z+(b.z-a.z)*u;
+    const inside=Math.abs(x-row.seat.position.x)<.23&&Math.abs(z-row.seat.position.z)<.23;
+    if(inside){const hit={t,view:vi,segment,point:[x,y,z],a:a.toArray(),b:b.toArray(),seat:row.seat.position.toArray()};perView[vi]++;hits.push(hit);}
+   }
+   if(vi===3&&n%3===0)trace.push({t,hip:g.avatar.bones.hips.getWorldPosition(new T.Vector3()).toArray(),joints:Object.fromEntries(Object.entries(joints).map(([k,v])=>[k,v.toArray()]))});vi++;
+  }
+ }return{perView,hits,trace};
+};
+window.disposeMotion=()=>{for(const r of rows){r.ghost.dispose();r.owners.myGhost.dispose();r.owners.sample.dispose();}renderer.dispose();performance.now=nativeNow;};
+window.motionReady=true;
+</script></html>

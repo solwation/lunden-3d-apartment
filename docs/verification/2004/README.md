@@ -1,7 +1,9 @@
 # Avatarövergångar #2004
 
-Pågående integrationsunderlag. Runtimebas `a05683d4` med levererad gång #2003/#2006 och kropp #2001.
-Huvud #2002 kopplas in efter publicering för den gemensamma slutbedömningen i #2000.
+Runtimebas `a05683d4` med levererad gång #2003/#2006 och kropp #2001.
+Slutsekvensen kombinerar detta med huvudpass #2002 (`3c1f9457`), på publicerad bas
+`a018b022`. Förekolumnerna är frysta från `a05683d4`; #2001:s separata
+utseendejämförelse använder i stället `3f7c3d0b`. Ingen gemensam före-SHA påstås.
 Root äger integration, bildpublicering och stängning; arbetaren pushar/stänger inte.
 
 Lästa ägartexter: CLAUDE, orchestra/worker, interactions, graphics/performance-kartan,
@@ -64,6 +66,39 @@ slutliga kontaktmål. Ingen terräng-IK, möbel-/klädkollision eller anatomisk
 muskelsimulering införs. Extrem acceleration kan fortfarande ge korta visuella
 avvikelser; huvudplanens konstnärliga referens är ingen AAA-produktionsgaranti.
 
-Slutliga hashes, browserutfall, budget, kombinerad huvud-SHA och granskning fylls i
-vid överlämningen. Förebilden ska publiceras med pinnad kommentar och därefter
+`combined.json` anger `revision=c370d766`, som var bas-HEAD med efterföljande
+okommitterade runtimekorrigeringar vid capture. Den HEAD-strängen är alltså inte
+ett påstående om exakt körd commit: dess registrerade SHA256-värden binder
+slutsekvens, 16 kontrakt, varm budget och browserversion till
+exakta SHA256 för produktionskällorna och det använda capture-underlaget.
+`seat-clearance.json` mäter verkliga thigh→knee och knee→foot mot stolskivans y=.45
+samt XZ-interiör (1 cm indrag från kanten). Baseline har åtta fjärrsegmentträffar;
+efter har egen/fjärr noll. Detta mäter centrumlinjer, inte tygets hela volym.
+`start-contact.json` mäter första stödets faktiska världsdrift. Snapshot-rooten
+interpoleras före poseflaggan, så en kort övergång bär nu synliga mål i världsramen
+även under denna befintliga nätinterpolation; den fysiska rooten ändras inte.
+
+Reproducerbar slutdriver: `CHROME_PATH=/path/to/chrome tools/browsertest.sh node
+tools/avatarmotionbrowser.cjs http://127.0.0.1:8804 docs/verification/2004`.
+Den faktiska hållna körningen återupptogs under implementationen; CLI avslutades normalt med exit 0.
+`recovery/held-runner.cjs`, `recovery/final-capture.cjs` och `browser.txt` bevarar
+hur samma browser användes. Slutdrivern sammanför samma capture/prober utan manuell väntan.
+Slutlig browser: Chrome 156.0.8078.4 / SwiftShader, 16/16 kontroller gröna;
+startstödets drift var <1e-15 m i båda konsumenterna. Varm kostnad före
+16,2–17,4 µs och efter 21,3–29,3 µs per Ghost.animate, fyra batcher om 5 000.
+Kostnaden ligger under den lokala 100 µs-budgeten; värdlast påverkar tiderna.
+Alla sex slutliga Node-kontrakt passerade (fem rörelse-/kontinuitetsfall och
+ett explicitpose-guardfall). De nio capturehasharna stämde mot disk efter
+browserns avslut. Därefter tillkom en enda guard: root-carry får bara gälla
+ordinary(key), aldrig explicit gym/cykel/luft. Den har riktat Node-bevis och
+kördes inte i någon ny browser. `final-source.json` innehåller både originalets
+capturehashar och färdig kods exakta hashvärden med denna skillnad redovisad. Hela diffen och samtliga fem slutbilder
+är visuellt granskade; rörelsen bedöms med klippet och tidsdata tillsammans.
+
+Efter segmentgranskning hittades att Ghost.draw interpolerade mot sittrooten
+innan sittflaggan slog om. Enbart omräkning vid flaggbytet räckte därför inte.
+Den slutliga rättningen bär även synliga mål i världsramen under just den
+befintliga 0↔1-snapshotövergången. Den första startkontakten tappades också
+under gait-inblend: nu styr faktisk stöd-/svingfas ankaret tills det första
+lyftet, med en kontinuerlig anslutning till den bevarade svingkurvan. Förebilden ska publiceras med pinnad kommentar och därefter
 rensas av integrationsägaren.
