@@ -6524,6 +6524,7 @@ export const TOWER_CLOCK = {
 // stepYield (#1130, *guess*): longest wait for a frame after a loading step, so a throttled tab is not held up.
 // #1838 guess: at most 32k exact points per transient build cache; released before warm-up, no saved state.
 export const STARTUP = { pointCacheEntries: 32768, dataTimeout: 5000, planTimeout: 15000, dataAttempts: 2, retryDelay: 250, recoveryTimeout: 120000, stepYield: 50,
+  welcomeScoresTimeout: 5000, // *guess*: optional welcome-score read, never on the scene/start critical path
   // #1131: one step lasting this long shows "Det här tar ovanligt lång tid" + retry (literal in index.html). *guess*: well
   // above a normal phone "Bygger huset", below the 120 s hard limit; SwiftShader/headless can exceed it harmlessly.
   stallSeconds: 40,

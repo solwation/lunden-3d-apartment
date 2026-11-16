@@ -2305,6 +2305,12 @@ Avatar and persistence details: [local player profiles](storage.md#local-player-
 
 ## Separate settings panel (#1518)
 
+#1997: inställningarnas controller förbereds nu av `welcome.js` före världen.
+Kontrollerna kan läsas redan under laddningen; huvudappen återanvänder samma
+controller och frigör övriga val vid färdig förstavy. Den anropande knappen får
+tillbaka fokus, och en väntande namnfråga får sedan fokus. Se
+[välkomstbildens startkontrakt](deployment.md#välkomstbild-under-laddningen-1997).
+
 The start/pause menu exposes `#menu-settings`; `#settings-dialog` owns the existing
 chat toggle, instructions, touch-layout entry, home reset, statistics reset and
 privacy entry. IDs and action listeners are preserved. `MenuSettings` keeps the

@@ -44,6 +44,42 @@ tools/changelog_stamp.py the published changelog.json (run by stamp.sh): `t` per
                        a warning on duplicate / out-of-order ids (#341)
 ```
 
+## Välkomstbild under laddningen (#1997)
+
+`index.html` har samma välkomstlayout under laddningen och när besöket är redo:
+varm grön/beige färgskala, serifrubrik och den lätta, schematiska
+[husillustrationen](../../icons/welcome-lunden.svg). Bilden är dekorativ och visar
+inte verifierad husgeometri. Referensen är publicens `index.html`/`style.css` vid
+`e9b4e7f88ecc7359bea6c3e89473605438d7e456` (hämtad origin/main; dessa filer är
+oförändrade från `8be9d8dd`). Layoutkänslan är anpassad till originalets spel,
+spelare och topplista; ingen kod har kopierats från publicens historik.
+
+Bootstrap startar `startWelcome()` parallellt med den befintliga versionskontrollen.
+`src/welcome.js` visar en begränsad, skrivskyddad topplista och öppnar samma
+`MenuSettings`-instans som huvudappen sedan använder. Den valfria `/scores`-läsningen
+har egen femsekundersgräns (`STARTUP.welcomeScoresTimeout`) och inväntas aldrig
+av program-/världsladdning eller inträde. Tomt, trasigt, frånkopplat och avstängt
+svar får lugn text; namn skrivs med `textContent`. Ingen ny lagring eller identitet
+införs. `cloud=` och utvecklingslägets avstängda moln följs; den dynamiska
+config-URL:en bär BUILD vid publicering.
+
+Kontrollerna kan läsas före världsladdningen. Grafik/chatt/återställning/data är
+märkta som väntande och visas först när `hideLoading` får släppa det befintliga
+förstabildsskyddet. Instruktionsknappen ägs av `MenuSettings` redan från början,
+vilket undviker dubbla klicklyssnare när main anländer. Om namnfrågan kommer medan
+inställningarna är öppna hålls den undan tills inställningarna stängs, och får då
+fokus. De gamla mus-/pek-/ljud-/fullscreen-/pointer-lock-funktionerna används
+oförändrade. Fler val använder ett vanligt details-element; paus öppnar det.
+Laddningssteg, tidsgränser, återförsök och telefonens varmkörningsskydd är kvar.
+Start-/inställningsvyn kan läsas stående på telefon; spelvyn behåller vridrådet.
+
+Verifiering: `tools/welcometest.mjs` och en hållen faktisk desktop-/telefonstart,
+inklusive korrigering på samma Page och slutliga isolerade skal-/versionsprov.
+[Resultat, källhashar, bilder och begränsningar](../verification/1997/README.md).
+Publicen har redan den välkomstvy som är förlaga och sin egen kontroller-/hjälpruta.
+Nya topplistan, spelarflödena och molnläsningen gäller bara originalet; ingen
+publik överföring behövs. Ingen byggnadsgeometri eller A/B/C/L-variant ändras.
+
 ## Publishing and update lifecycle
 
 Static site, no build step for development, no npm. Every push to `main` deploys to

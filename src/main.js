@@ -13,7 +13,7 @@ import { DanceTime } from './dancescore.js';
 import { stepSurface } from './stepsurface.js';
 import { OutdoorGym } from './outdoorgym.js';
 import { GymEffortHUD } from './gymefforthud.js';
-import { MenuSettings } from './menusettings.js';
+import { welcomeSettings, finishWelcome } from './welcome.js';
 import { renderPlayingNow } from './playerportraits.js';
 import { growGymPump } from './stats.js';
 import { pumpSampler } from './gympump.js';
@@ -247,8 +247,7 @@ import { Mess } from './mess.js';
 import { readTestMode, makeTestController } from './testmode.js';
 
 const overlay = document.getElementById('overlay');
-const menuSettings = new MenuSettings({ dialog: document.getElementById('settings-dialog'), trigger: document.getElementById('menu-settings'), menu: overlay,
-  children: [document.getElementById('reset-confirm'), document.getElementById('privacy-dialog')] });
+const menuSettings = welcomeSettings();
 // Start the bounded shelf read while the renderer and plan are prepared; dev scenarios use only the prepared snapshot.
 const beerParams = new URLSearchParams(location.search);
 const beerShelfData = loadBeerShelf({ endpoint: beerParams.get('beers') || undefined, refresh: !beerParams.has('life') || beerParams.has('beers'), persist: !beerParams.has('life') });
@@ -256,7 +255,9 @@ const loadingEl = document.getElementById('loading');
 const skipWarmUp = (/HeadlessChrome/.test(navigator.userAgent) || readTestMode() !== null) && !new URLSearchParams(location.search).has('warm'); // `&test` (#703) skips it too
 let startupSceneReady = !lowMemory || skipWarmUp; // phones release their cover after a complete visible render (#697)
 function hideLoading() {
-  if (!startupSceneReady || !loadingEl || loadingEl.hidden) return;
+  if (!startupSceneReady) return;
+  finishWelcome();
+  if (!loadingEl || loadingEl.hidden) return;
   loadingEl.classList.add('done');
   setTimeout(() => { loadingEl.hidden = true; }, 400);
 }
@@ -1402,17 +1403,6 @@ document.getElementById('to-start')?.addEventListener('click', () => {
   }
   resumeFromMenu();
 });
-const toggleInst = document.getElementById('toggle-instructions');
-const instEl = document.getElementById('instructions');
-if (toggleInst && instEl) {
-  toggleInst.addEventListener('click', () => {
-    const closed = instEl.hidden;
-    instEl.hidden = !closed;
-    const label = toggleInst.querySelector('.inst-btn-label');
-    if (label) label.textContent = closed ? 'Dölj instruktioner' : 'Visa instruktioner';
-    toggleInst.setAttribute('aria-expanded', closed ? 'true' : 'false');
-  });
-}
 const params = new URLSearchParams(location.search);
 if (params.has('shot')) { overlay.hidden = true; if (loadingEl && startupSceneReady) loadingEl.hidden = true; }
 if (params.has('tv')) for (const t of world.furnitureTargets) if (t.kind === 'tv') t.toggle();
@@ -1602,6 +1592,7 @@ function showOverlay(show) {
   const mouseBtn = document.getElementById('start-mouse');
   const touchBtn = document.getElementById('start-touch');
   const goBtn = document.getElementById('start-go');
+  if (show) document.getElementById('welcome-more').open = played;
   if (show && played) {
     if (kicker) kicker.textContent = 'KV. LUNDEN / L1007 · PAUS';
     if (title) title.textContent = 'Pausmeny';
@@ -1611,8 +1602,8 @@ function showOverlay(show) {
     if (goBtn) goBtn.textContent = 'Fortsätt';
   } else if (show) {
     if (kicker) kicker.textContent = 'KV. LUNDEN / L1007';
-    if (title) title.textContent = 'Gå runt i lägenheten';
-    if (desc) desc.textContent = 'Byggd direkt från den måttsatta planritningen: entréplan och övre plan, förbundna med trappan.';
+    if (title) title.textContent = 'Välkommen till Lunden.';
+    if (desc) desc.textContent = 'Kliv in i L1007, upptäck kvarteret och gör dig hemmastadd. Det finns alltid något nytt att hitta.';
     if (mouseBtn) mouseBtn.textContent = 'Mus & tangentbord';
     if (touchBtn) touchBtn.textContent = 'Touch';
     if (goBtn) goBtn.textContent = 'Börja';

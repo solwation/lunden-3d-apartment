@@ -417,7 +417,7 @@
     #player-badge button:hover { background: #f0f7fa; }
     #player-badge button[hidden] { display: none; }
     #lb-name { margin: 10px 0 4px; }
-    #lb-name[hidden], #lb-start { display: none !important; }
+    #lb-name[hidden], #lb-start[hidden] { display: none !important; }
     #lb-name label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
     #lb-name input { font: 15px system-ui, sans-serif; padding: 10px 12px; border: 1px solid #c8ced3; border-radius: 6px; width: 100%; box-sizing: border-box; }
     #lb-name .player-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
@@ -730,6 +730,72 @@
       .customizer-preview-views { margin-top: 2px; }
       .customizer-turn { margin-top: 0; }
     }
+    /* #1997: the same welcome shell is useful before and after the first complete frame. */
+    .welcome { color: #293e34; background: #eeeee3 url('icons/welcome-lunden.svg') right bottom / auto 105% no-repeat !important; overflow-y: auto; overscroll-behavior: contain; }
+    .welcome::before { content: ''; position: fixed; inset: 0; background: linear-gradient(90deg,#f2f0e5 0%,#f2f0e5f5 32%,#f2f0e5b5 63%,#f2f0e538); pointer-events: none; }
+    #loading.welcome, #overlay.welcome { display: grid; place-items: center; padding: max(32px,var(--st)) max(32px,var(--sr)) max(24px,var(--sb)) max(32px,var(--sl)); box-sizing: border-box; }
+    #loading.welcome[hidden], #overlay.welcome[hidden] { display: none; }
+    .welcome-layout { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(270px, 340px); column-gap: clamp(36px,8vw,140px); row-gap: 24px; width: min(1080px, 100%); margin: auto; align-items: center; }
+    #loading .welcome-copy, #overlay .welcome-copy { background: transparent; box-shadow: none; border: 0; padding: 0; margin: 0; max-width: 540px; max-height: none; overflow: visible; text-align: left; }
+    .welcome-copy .kicker { font-size: 10px; letter-spacing: 2px; color: #667659; }
+    .welcome-copy h1, .welcome-board h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; color: #2e493b; }
+    .welcome-copy h1, #overlay .welcome-copy h1 { font-size: clamp(44px,5.6vw,76px); letter-spacing: -2px; line-height: 1.04; margin: 22px 0; }
+    .welcome-copy > p { color: #556450; font-size: 16px; line-height: 1.7; max-width: 430px; }
+    .welcome-highlights { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 20px 0 28px; font-size: 12px; color: #68735c; }
+    .welcome-highlights span::before { content: '·'; color: #a77746; font-weight: bold; margin-right: 7px; }
+    .welcome-progress { max-width: 390px; padding: 18px 0; border-top: 1px solid #bfc7b5; }
+    .welcome-progress strong { font-size: 14px; font-weight: 600; }
+    .welcome .loading-step { justify-content: flex-start; color: #68735c; font-size: 12px; margin: 10px 0; }
+    .welcome .loading-bar { height: 3px; background: #d1dac8; margin: 10px 0 0; }
+    .welcome .loading-bar i, .welcome .loading-pulse { background: #48694b; }
+    .welcome-settings { border: 0; border-bottom: 1px solid #829178; background: transparent; color: #374e3c; min-height: 44px; padding: 10px 0 6px; cursor: pointer; font: 600 13px system-ui,sans-serif; touch-action: manipulation; }
+    .welcome-settings span { margin-left: 16px; }
+    .welcome-settings:hover { color: #192f21; border-color: #192f21; }
+    .welcome-board { background: #faf9f0ed; border: 1px solid #ffffffb0; padding: 24px; border-radius: 16px 3px 16px 3px; box-shadow: 0 18px 54px #263b2820; min-width: 0; }
+    .welcome-board-kicker { font-size: 9px; letter-spacing: 1.5px; color: #788068; font-weight: 650; }
+    .welcome-board h2 { font-size: 28px; letter-spacing: -.6px; margin: 12px 0 8px; }
+    .welcome-board-desc, .welcome-score-status { color: #6c7662; font-size: 12px; line-height: 1.6; margin: 8px 0 16px; }
+    .welcome-board .lb { margin: 18px 0; border: 0; padding: 0; max-height: 310px; overflow-y: auto; scrollbar-width: thin; }
+    .welcome-board .lb li { border-bottom: 1px solid #dfe2d4; background: transparent; color: #47533e; padding: 10px 0; min-height: 24px; font-size: 13px; }
+    .welcome-board .lb li b { color: #3d6043; font-size: 14px; margin-left: 12px; }
+    .welcome-board .lb small { display: none; }
+    .welcome-board-foot { color: #87907b; font-size: 11px; line-height: 1.5; margin: 18px 0 0; }
+    .welcome-foot { grid-column: 1 / -1; color: #7f8974; font-size: 11px; margin: 10px 0 0; }
+    .welcome-foot p { display: inline; margin: 0 18px 0 0; font-size: 11px !important; }
+    #overlay .start { max-width: 430px; margin: 20px 0 6px; }
+    #overlay .welcome-copy .go { background: #36553f; border-radius: 7px; min-height: 48px; font-size: 14px; }
+    #overlay .welcome-copy .go.alt { color: #36553f; background: #f6f5e9; box-shadow: inset 0 0 0 1px #8d9c80; }
+    #overlay .welcome-copy #player-badge { background: #f6f5e9c0; border-color: #c4cdbb; margin: 16px 0; }
+    .welcome-more { max-width: 430px; margin: 14px 0 0; }
+    .welcome-more summary { min-height: 44px; display: list-item; cursor: pointer; font-size: 13px; padding-top: 12px; box-sizing: border-box; }
+    .welcome-more .menu-options { margin: 0; }
+    .welcome #share-note { font-size: 11px; line-height: 1.5; margin: 12px 0; color: #7c856e; }
+    .welcome-settings-note { font-size: 13px; color: #68735c; }
+    [data-welcome-runtime][hidden], [data-welcome-pending][hidden] { display: none; }
+    body.welcome-pending #settings-dialog { z-index: 55; }
+    body:has(#settings-dialog:not([hidden])) #player-dialog { visibility: hidden; }
+    body:has(#loading:not([hidden]):not(.done)) #rotate, body:has(#overlay:not([hidden])) #rotate, body:has(#settings-dialog:not([hidden])) #rotate { display: none !important; }
+    .welcome :focus-visible { outline: 3px solid #ac7840; outline-offset: 4px; }
+    @media (min-width: 901px) { body:has(#overlay:not([hidden])) #corner-qr { left: auto; top: auto; right: 20px; bottom: 20px; background: #f6f5e9; color: #526348; border: 1px solid #c8d0be; } }
+    @media (max-width: 720px) {
+      #loading.welcome, #overlay.welcome { display: block; padding: max(32px,var(--st)) max(24px,var(--sr)) max(24px,var(--sb)) max(24px,var(--sl)); }
+      .welcome { background-size: auto 700px !important; }
+      .welcome::before { background: linear-gradient(180deg,#f2f0e5 0%,#f2f0e5f5 40%,#f2f0e5b8 80%,#f2f0e566); }
+      .welcome-layout { grid-template-columns: 1fr; gap: 28px; }
+      .welcome-copy h1, #overlay .welcome-copy h1 { font-size: clamp(42px,10vw,60px); margin: 18px 0; }
+      .welcome-copy > p { font-size: 14px; }
+      .welcome-highlights { margin: 18px 0 22px; font-size: 11px; }
+      .welcome-board { padding: 20px; max-width: 440px; }
+      .welcome-board h2 { font-size: 25px; }
+      .welcome-board .lb { max-height: 220px; }
+      .welcome-foot { margin-top: 0; }
+    }
+    @media (max-height: 500px) and (min-width: 721px) {
+      #loading.welcome, #overlay.welcome { display: block; padding: 24px 32px; }
+      .welcome-layout { align-items: start; gap: 20px 40px; }
+      .welcome-copy h1, #overlay .welcome-copy h1 { font-size: 44px; margin: 12px 0; }
+      .welcome-highlights { margin: 12px 0; }
+    }
     #terminal { position: fixed; inset: 0; z-index: 20; background: #0008; display: grid; place-items: center; }
     #terminal[hidden], #rearrange-help[hidden] { display: none; }
     #terminal form { width: min(440px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; padding: 20px; box-sizing: border-box; background: #172322; color: #e5f4e6; border: 1px solid #648571; border-radius: 10px; font: 15px/1.5 monospace; }
@@ -929,18 +995,34 @@
 </head>
 <body>
   <script>
+    document.body.classList.add('welcome-pending');
     // touch-only device (phone, tablet): a short start screen (&phone forces it for screenshots)
     if (matchMedia('(pointer: coarse) and (hover: none)').matches || /[?&]phone\b/.test(location.search)) document.body.classList.add('phone');
   </script>
-  <div id="loading" role="status" aria-live="polite">
-    <div class="card loading-card">
-      <img class="loading-icon" src="icons/icon-192.png" alt="" width="64" height="64">
-      <div class="kicker">KV. LUNDEN / L1007</div>
-      <h1>Laddar lägenheten…</h1>
-      <p>Förbereder 3D-modellen och planritningen.</p>
-      <p class="loading-step"><span class="loading-pulse" aria-hidden="true"></span><span data-loading-step>Startar</span><span data-loading-elapsed>0 s</span></p>
-      <div class="loading-bar"><i></i></div>
-      <div class="loading-slow" data-startup-slow hidden><p>Det här tar ovanligt lång tid.</p><button type="button">Försök igen</button></div>
+  <div id="loading" class="welcome">
+    <div class="welcome-layout">
+      <div class="card loading-card welcome-copy">
+        <div class="kicker">KV. LUNDEN · ETT HEM ATT UPPTÄCKA</div>
+        <h1>Välkommen till<br>Lunden.</h1>
+        <p class="welcome-desc">Kliv in i L1007, upptäck kvarteret och gör dig hemmastadd. Det finns alltid något nytt att hitta.</p>
+        <div class="welcome-highlights"><span>Två våningar</span><span>Ett levande kvarter</span><span>I din egen takt</span></div>
+        <div class="welcome-progress" role="status" aria-live="polite">
+          <strong>Vi förbereder ditt besök.</strong>
+          <p class="loading-step"><span class="loading-pulse" aria-hidden="true"></span><span data-loading-step>Startar</span><span data-loading-elapsed>0 s</span></p>
+          <div class="loading-bar"><i></i></div>
+        </div>
+        <div class="loading-slow" data-startup-slow hidden><p>Det här tar ovanligt lång tid.</p><button type="button">Försök igen</button></div>
+        <button id="loading-settings" type="button" class="welcome-settings" aria-haspopup="dialog" aria-controls="settings-dialog">Inställningar &amp; kontroller <span aria-hidden="true">↗</span></button>
+      </div>
+      <aside class="welcome-board" aria-labelledby="loading-board-title">
+        <span class="welcome-board-kicker">UPPTÄCK. LEK. SAMLA POÄNG.</span>
+        <h2 id="loading-board-title">Lundens topplista</h2>
+        <p class="welcome-board-desc">Några av kvarterets flitigaste upptäckare.</p>
+        <ol id="loading-scores" class="lb" hidden></ol>
+        <p class="welcome-score-status" data-welcome-scores-status>Hämtar topplistan…</p>
+        <p class="welcome-board-foot">Ditt nästa besök börjar strax.</p>
+      </aside>
+      <p class="welcome-foot">En virtuell plats att känna sig hemma på. Byggd från L1007:s planritning.</p>
     </div>
   </div>
   <script>
@@ -989,11 +1071,13 @@
       }, 500);
     })();
   </script>
-  <div id="overlay">
-    <div class="card">
-      <div class="kicker" id="menu-kicker">KV. LUNDEN / L1007</div>
-      <h1 id="menu-title">Gå runt i lägenheten</h1>
-      <p id="menu-desc">Byggd direkt från den måttsatta planritningen: entréplan och övre plan, förbundna med trappan.</p>
+  <div id="overlay" class="welcome">
+    <div class="welcome-layout">
+    <div class="card welcome-copy">
+      <div class="kicker" id="menu-kicker">KV. LUNDEN · ETT HEM ATT UPPTÄCKA</div>
+      <h1 id="menu-title">Välkommen till Lunden.</h1>
+      <p id="menu-desc">Kliv in i L1007, upptäck kvarteret och gör dig hemmastadd. Det finns alltid något nytt att hitta.</p>
+      <div class="welcome-highlights"><span>Två våningar</span><span>Ett levande kvarter</span><span>I din egen takt</span></div>
       <p class="resume" id="resume" hidden>Du fortsätter där du var.
         <button id="restart" class="linkish">Börja från start</button></p>
       <p class="resume" id="reset-done" hidden role="status">Hemmet är återställt.</p>
@@ -1006,7 +1090,6 @@
         </div>
         <button id="player-new" type="button" hidden title="Byt spelare eller starta ny session">Byt spelare</button>
       </div>
-      <ol id="lb-start" class="lb" hidden></ol>
       <p id="share-note" class="share-note" hidden>Andra spelare ser att du är online och ser din avatar, ditt namn (eller ”Anonym”) och din poäng.</p>
       <div class="start">
         <button id="start-mouse" class="go">Mus &amp; tangentbord</button>
@@ -1014,8 +1097,8 @@
         <button id="start-go" class="go">Börja</button>
       </div>
 
-      <p><a href="music/" target="_blank" rel="noopener" style="color:inherit">Om musiken</a></p>
-      <p id="weather-credit" style="font-size:.8em;opacity:.8">Väderdata: <a href="https://open-meteo.com/" target="_blank" rel="noopener" style="color:inherit">Open-Meteo.com</a> (CC BY 4.0)</p>
+      <button id="menu-settings" class="welcome-settings" type="button" aria-haspopup="dialog" aria-controls="settings-dialog">Inställningar &amp; kontroller <span aria-hidden="true">↗</span></button>
+
 
       <div id="menu-presence" class="menu-presence" hidden>
         <span class="presence-icon" aria-hidden="true">👥</span>
@@ -1025,6 +1108,7 @@
         </div>
       </div>
 
+      <details id="welcome-more" class="welcome-more"><summary>Fler val</summary>
       <div class="menu-options">
         <div class="menu-section-title">Navigering</div>
         <button id="to-start" class="menu-btn" type="button">
@@ -1048,10 +1132,7 @@
           </span>
           <span class="btn-icon" aria-hidden="true">🏅</span>
         </button>
-        <button id="menu-settings" class="menu-btn" type="button" aria-haspopup="dialog" aria-controls="settings-dialog">
-          <span class="btn-text"><b>Inställningar</b><span class="btn-desc">Chatt, kontroller, återställning och data</span></span>
-          <span class="btn-icon" aria-hidden="true">⚙</span>
-        </button>
+
 
         <div class="menu-section-title" id="app-section-title">App &amp; fönster</div>
         <button id="install-btn" class="menu-btn" hidden type="button">
@@ -1070,6 +1151,18 @@
         </button>
         <p class="resume" id="quit-help" hidden role="status">Webbläsaren tillåter inte att sidan stänger fönstret. Stäng fliken eller fönstret med webbläsarens stängknapp.</p>
       </div>
+      </details>
+    </div>
+    <aside class="welcome-board" aria-labelledby="welcome-board-title">
+      <span class="welcome-board-kicker">UPPTÄCK. LEK. SAMLA POÄNG.</span>
+      <h2 id="welcome-board-title">Lundens topplista</h2>
+      <p class="welcome-board-desc">Några av kvarterets flitigaste upptäckare.</p>
+      <ol id="lb-start" class="lb" hidden></ol>
+      <p class="welcome-score-status" data-welcome-scores-status>Hämtar topplistan…</p>
+      <p class="welcome-board-foot">Varje upptäckt räknas. Vad hittar du i dag?</p>
+    </aside>
+    <div class="welcome-foot">      <p><a href="music/" target="_blank" rel="noopener" style="color:inherit">Om musiken</a></p>
+      <p id="weather-credit" style="font-size:.8em;opacity:.8">Väderdata: <a href="https://open-meteo.com/" target="_blank" rel="noopener" style="color:inherit">Open-Meteo.com</a> (CC BY 4.0)</p></div>
     </div>
   </div>
   <aside id="corner-qr" aria-label="QR-kod till sidan">
@@ -1081,7 +1174,9 @@
       <button id="settings-close" type="button" class="dialog-close" aria-label="Stäng inställningar">×</button>
       <div class="kicker">SPELETS INSTÄLLNINGAR</div>
       <h1 id="settings-title">Inställningar</h1>
+      <p data-welcome-pending class="welcome-settings-note">Läs gärna kontrollerna medan Lunden laddar. Övriga inställningar blir tillgängliga när besöket är redo.</p>
       <div class="menu-options">
+        <div data-welcome-runtime hidden>
         <div class="menu-section-title">Chatt och touch</div>
         <button id="menu-chat-setting" class="menu-btn" type="button" aria-pressed="true">
           <span class="btn-text"><b>Visa chat: PÅ</b><span class="btn-desc">Visa meddelanden och pratbubblor från andra spelare.</span></span>
@@ -1098,6 +1193,7 @@
           <button type="button" role="radio" data-fps="60">60 FPS</button>
         </div>
         <p id="quality-note" aria-live="polite"></p>
+        </div>
         <div class="menu-section-title">Kontroller</div>
         <button id="toggle-instructions" class="menu-btn" type="button" aria-expanded="false" aria-controls="instructions">
           <span class="btn-text">
@@ -1141,6 +1237,7 @@
           </div>
         </div>
 
+        <div data-welcome-runtime hidden>
         <div class="menu-section-title">Återställning &amp; data</div>
         <button id="reset-home" class="menu-btn" type="button">
           <span class="btn-text">
@@ -1164,6 +1261,7 @@
           </span>
           <span class="btn-icon" aria-hidden="true">🔒</span>
         </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1764,7 +1862,7 @@
         document.documentElement.classList.remove('resuming');
         loading.querySelector('[data-startup-slow]')?.setAttribute('hidden', '');
         loading.querySelector('h1').textContent = 'Starten kunde inte slutföras';
-        loading.querySelector('p').textContent = 'Försök ladda igen. Din sparade plats och ditt hem finns kvar.';
+        loading.querySelector('.welcome-desc').textContent = 'Försök ladda igen. Din sparade plats och ditt hem finns kvar.';
         loading.querySelector('.loading-bar').hidden = true;
         if (!loading.querySelector('[data-startup-retry]')) {
           const button = document.createElement('button');

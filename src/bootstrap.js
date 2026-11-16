@@ -1,9 +1,11 @@
+import { startWelcome } from './welcome.js';
 import { prepareStartup } from './startup.js';
 import { BUILD } from './version.js';
 import { watchStartup, importWithRetry } from './startuprecovery.js';
 
 // Loading steps (#1130): index.html's dependency-free `__lundenLoading` (bootstrap stays small; main.js uses loadingstep.js).
 const step = (name, fraction) => { try { window.__lundenLoading?.step(name, fraction); } catch { /* cosmetic */ } };
+startWelcome();
 const start = await prepareStartup({status(text){step(text,0.04)}});
 if(start){
   step('Hämtar programfilerna',0.06);

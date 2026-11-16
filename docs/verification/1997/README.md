@@ -72,7 +72,7 @@ Bilderna är direkt granskade, och `git diff --check` passerar.
 
 ## Bilder
 
-- [Före](before/loading.png): tidigare tomma laddningskortet; behåll tills root
+- [Före](https://github.com/solwation/lunden-3d-apartment/blob/2f680c401370f0c5a82f1aa7915e7786be1e6a80/docs/verification/1997/before/loading.png?raw=true): tidigare tomma laddningskortet; behåll tills root
   publicerat den beständiga bildlänken, ta sedan bort i lösningscommiten.
 - [Laddning på dator](desktop-loading.png), [redo på dator](desktop-ready.png).
 - [Tidiga inställningar](desktop-early-settings.png).

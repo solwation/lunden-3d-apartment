@@ -1,8 +1,15 @@
 // The settings panel keeps the start menu inert and delegates existing actions.
 export class MenuSettings {
-  constructor({ dialog, trigger, menu, children = [] }) {
-    Object.assign(this, { dialog, trigger, menu, children });
+  constructor({ dialog, trigger, menu, children = [], backgrounds = [], onClose = () => {} }) {
+    Object.assign(this, { dialog, trigger, menu, children, backgrounds, onClose });
     trigger.addEventListener('click', () => this.open());
+    const toggle = dialog.querySelector('#toggle-instructions'), instructions = dialog.querySelector('#instructions');
+    toggle?.addEventListener('click', () => {
+      const open = instructions.hidden;
+      instructions.hidden = !open;
+      toggle.querySelector('.inst-btn-label').textContent = open ? 'Dölj instruktioner' : 'Visa instruktioner';
+      toggle.setAttribute('aria-expanded', String(open));
+    });
     dialog.querySelector('#settings-close').addEventListener('click', () => this.close());
     this.observer = new MutationObserver(records => {
       if (dialog.hidden) return;
@@ -14,6 +21,9 @@ export class MenuSettings {
       }
     });
     for (const child of children) if (child) this.observer.observe(child, { attributes: true, attributeFilter: ['hidden'] });
+    document.addEventListener('focusin', e => {
+      if (!dialog.hidden && !dialog.contains(e.target) && !children.some(child => child && !child.hidden && child.contains(e.target))) this.focusables(dialog)[0]?.focus({ preventScroll: true });
+    });
     document.addEventListener('keydown', e => {
       if (dialog.hidden) return;
       const child = children.find(el => el && !el.hidden);
@@ -32,12 +42,16 @@ export class MenuSettings {
     return [...root.querySelectorAll('button:not([disabled]), input:not([disabled]), a[href], select, [tabindex="0"]')]
       .filter(el => el.getClientRects().length && !el.hidden);
   }
-  open() {
+  open(trigger = this.trigger) {
+    this.returnTo = trigger;
     this.dialog.hidden = false; this.menu.inert = true;
+    for (const background of this.backgrounds) if (background) background.inert = true;
     this.dialog.querySelector('#settings-close').focus({ preventScroll: true });
   }
   close(restoreFocus = true) {
     this.dialog.hidden = true; this.menu.inert = false;
-    if (restoreFocus) this.trigger.focus({ preventScroll: true });
+    for (const background of this.backgrounds) if (background) background.inert = false;
+    if (restoreFocus) (this.returnTo?.getClientRects().length ? this.returnTo : this.trigger).focus({ preventScroll: true });
+    this.onClose(restoreFocus);
   }
 }
