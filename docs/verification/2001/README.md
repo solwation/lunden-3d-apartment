@@ -126,8 +126,10 @@ were corrected. The final body capture and the semantic correction reused the sa
 bounded component, never a World/whole-performance rerun. All own browsers/servers
 are stopped before handoff.
 
-All before-images are under `before/`; root pins them before publication and removes
-that directory in the resolving commit. Final images use normal verification retention.
+Before-images were published and embedded before closure, pinned to
+[c6265d7c](https://github.com/solwation/lunden-3d-apartment/tree/c6265d7c649cdc12a7a0c8221e71028c35d55c51/docs/verification/2001/before).
+They are removed from main in the resolving commit; pinned links remain. Final
+images use normal verification retention.
 
 ## Combined integration on 5627ecb9
 
