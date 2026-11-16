@@ -396,8 +396,9 @@ export class Ghost { // (exported for tools/ghostprops.html)
     if (this.bikeMesh) this.poseBike(dt, Math.hypot(vx, vz), turn);
     this.heldCat.update(this.avatar, this.root);
     if (this.tag) {
-      if (this.pose || this.gx) { this.tag.position.copy(this.root.worldToLocal(this.head)); this.tag.position.y += (G.tagY - 1.78) * this.avatar.look.tall; }
-      else this.tag.position.set(0, this.tagY + (this.swimDy ?? 0) + ((this.tagH ?? G.tagHeight) - G.tagHeight) / 2, 0); // (#1943: over a swimmer's head; the life row grows the badge upwards, #2007)
+      const lift = ((this.tagH ?? G.tagHeight) - G.tagHeight) / 2; // #2007: the life row grows the badge upwards; name/score keep their place
+      if (this.pose || this.gx) { this.tag.position.copy(this.root.worldToLocal(this.head)); this.tag.position.y += (G.tagY - 1.78) * this.avatar.look.tall + lift; }
+      else this.tag.position.set(0, this.tagY + (this.swimDy ?? 0) + lift, 0); // (#1943: over a swimmer's head)
     }
     if (this.pick) {
       if (this.pose) {
