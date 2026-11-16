@@ -397,7 +397,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.heldCat.update(this.avatar, this.root);
     if (this.tag) {
       if (this.pose || this.gx) { this.tag.position.copy(this.root.worldToLocal(this.head)); this.tag.position.y += (G.tagY - 1.78) * this.avatar.look.tall; }
-      else this.tag.position.set(0, this.tagY + (this.swimDy ?? 0), 0); // (#1943: over a swimmer's head)
+      else this.tag.position.set(0, this.tagY + (this.swimDy ?? 0) + ((this.tagH ?? G.tagHeight) - G.tagHeight) / 2, 0); // (#1943: over a swimmer's head; the life row grows the badge upwards, #2007)
     }
     if (this.pick) {
       if (this.pose) {
