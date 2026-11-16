@@ -943,9 +943,10 @@ and fill in the project policy from what you know about this repository.</pre>
           <div class="code-block">
             <button class="copy-btn" onclick="navigator.clipboard.writeText(this.nextElementSibling.innerText); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 2000);">Copy</button>
             <pre>git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.14.3 --squash
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.14.4 --squash
 cp .orchestra/shared/PROJECT.example.md .orchestra/project.md
-echo '/workingtree/' >> .gitignore   # worker checkouts live here</pre>
+echo '/workingtree/' >> .gitignore   # worker checkouts live here
+echo '/.claude/worktrees/' >> .gitignore   # if Claude Code's Agent tool creates worktrees</pre>
           </div>
           <p style="color: var(--text-muted); margin-top: 16px;">
             Then fill in <code>.orchestra/project.md</code>, point your agent's entry file (<code>AGENTS.md</code>, <code>CLAUDE.md</code>, …) at it and at <code>.orchestra/shared/ORCHESTRA.md</code>, and start a run with <code>/orkester</code> (the Claude Code adapter; other agents can simply be asked to run the orchestra). See <a href="https://github.com/solwation/dirigenten-och-orkestern/blob/main/INSTALL.md" class="file-tag" target="_blank">INSTALL.md</a> for the entry snippets, adapters and updates.

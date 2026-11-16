@@ -59,9 +59,10 @@ The six phase gates (Planning → Implementation → Verification → Review →
 
 ```sh
 git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.14.3 --squash
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.14.4 --squash
 cp .orchestra/shared/PROJECT.example.md .orchestra/project.md
 echo '/workingtree/' >> .gitignore   # worker checkouts live here
+echo '/.claude/worktrees/' >> .gitignore   # if Claude Code's Agent tool creates worktrees
 ```
 
 Fill in `.orchestra/project.md`, point your agent's entry file (`AGENTS.md`, `CLAUDE.md`, …) at it and at `.orchestra/shared/ORCHESTRA.md`, and start a run with `/orkester` (the Claude Code adapter; other agents can simply be asked to run the orchestra). See [INSTALL.md](INSTALL.md) for full instructions, updates, and adapters.
