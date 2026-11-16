@@ -107,22 +107,14 @@ src/catbinderprop.js   the binder as an object (#1255, `CAT_BINDER`): a small ri
                        'binder' (E / the action button); `occluded()` refuses a pick through the table top from above (the pick ray has no table in it).
 src/bestiaryimages.js  portrait renderer for the animal binder index (#1848): renders into its own WebGLRenderTarget and must NOT call renderer.setViewport (it is multiplied by the world pixel ratio and shrank/cropped
                        every portrait, cats looked empty, #1984). Cache key ends in PORTRAIT_REV; bump it when portrait rendering changes. Test: tools/bestiaryportrait1984test.cjs.
-src/catbinder.js       `BinderPanel` (#1379, main.js `showBinder`): four fixed pockets per page in CAT_CARD.breeds order (Miele last),
-                       silhouettes for undiscovered variants; found cards use an uncropped existing photo, name, breed, tier and points.
-                       Click/touch opens that variant's album with weight/facts/find/pat/hug counters and photo actions; an extra page retains legacy photos.
-                       CAT_CARD.pageSize/albumSlots are presentation settings (4/8); normal capacity is CAT_CARD.max=8 (#1399); older larger archives are retained.
-                       ← → / A D / Home / End / dots / swipe / Nästa–Förra; E / Esc closes the top layer first. Test: `tools/bindertest.cjs`.
-                       Photo menu (#1257, the last part of #1249; DOM + CSS only, perfcount unchanged): every photo has `Spara`/`Sparad` (aria-pressed toggle = the card's `saved` flag, a saved card is never rotated out;
-                       persisted by the existing 'catCards' store) and `Kasta` (opens `.confirm`, the safe "Behåll" has focus; "Kasta" deletes the card). Tapping a photo or the card's "Visa foton (n av 8)" opens it enlarged
-                       (`.viewer`, ‹ › / ← → / swipe browse the variant's photos, same Spara / Kasta). `back()` (E / Esc, wired in main.js) closes the question, then enlarged photo, then album, then panel. The card line `slotline`
-                       says what the next find does ("byter ut det äldsta osparade fotot (X)", that photo is outlined + badged "Byts ut först"; all saved: red "Alla platser är sparade…"). `CatCards.onNotice` ({type:'rotated'|'full'})
-                       drives the in-game toast `#cat-notice` (main.js `catNotice`, `CAT_CARD.noticeS` *guess*): "…det äldsta osparade fotot (X) byttes ut" / "alla 8 foton … är sparade, det nya fotot lades inte till. Kasta eller avmarkera…".
-                       Model helpers: `nextOut(breed)`, `isFull(breed)`, `isArchive(breed)`, `savedCount(breed)`. The legacy page has the same buttons (no limit there). Buttons are ≥ 44 px; the viewer is a row (photo + buttons) at max-height 520 px.
-                       Rarity visuals (#1256, UI only — no texture, light or draw call; perfcount unchanged: 507 calls max at 'park'): `CAT_CARD.fx` (level / ★ count / tilt per tier, *guess*) →
-                       `decorate()` in catbinder.js adds `fx-0..4` (+ `miele` for the `star` breed) and aria-hidden layers (`.foil`, `.shine`, `.glitter`, `.holo`, `.star-fx`); the CSS is in index.html.
-                       0 plain · 1 coloured border + glow · 2 foil + shine band + ★ · 3 glitter + holographic sheen + more ★ · 4 rainbow frame, gold foil, most ★ (Miele extra ★ and a ★ after the name).
-                       Pointer / touch movement tilts the card and moves the sheen (CSS vars --rx --ry --mx --my); prefers-reduced-motion: no animation, no tilt, the still layers stay.
-src/catcards.js        cat card binder data model (#1249, part 1 of 4 — #1254–#1257, all delivered: binder object + UI #1255, rarity #1256, photo menu #1257, all above). No DOM: one slot per BREED (`CAT_CARD.breeds`, Miele last;
+                       #2008 validates disk PNG dimensions/alpha before accepting a cache hit, replaces only invalid entries at the same key, and rejects empty new GPU readbacks before caching.
+                       Valid disk entries are decoded once per memory miss and reused without a new model render. No discovery/photo store is reset. See docs/verification/2008/README.md.
+src/catbinder.js       `BinderPanel` (#1848, main.js `showBinder`): responsive numbered animal grid grouped by family, with generated 96px model portraits for known entries and silhouettes for unknown ones.
+                       Visible images are scheduled through IntersectionObserver/requestIdleCallback and BestiaryImages; this index does not depend on an encounter photo.
+                       Click/touch opens 320px detail portraits, discovery/action statistics, facts, forms and a separate strip of saved encounter photos. Arrow/Home/End keys move through the grid;
+                       previous/next browse detail entries; E/Esc returns through the photo/detail/panel layers. Rarity decorations use CAT_CARD.fx and index.html CSS.
+                       Tests: tools/bestiaryuitest.cjs (component UI); tools/binder2008browser.cjs plus tools/bestiarycache2008check.js (actual normal-start grid/cache regression).
+src/catcards.js        legacy cat-photo data model (#1249, #1254–#1257); its former four-pocket photo UI was replaced by the #1848 model-driven animal index. Legacy data is retained. No DOM: one slot per BREED (`CAT_CARD.breeds`, Miele last;
                        a game cat is random — breed + coat + random name — so there are no fixed individuals), points from SCORE (breeds;
                        Miele `first.miele` 1000), rarity tier = highest `CAT_CARD.tiers` entry reached (common <30, ovanlig 30–99, sällsynt
                        100, episk 250, legendarisk = Miele). A card = a photo of a find; normal max `CAT_CARD.max` 8 per breed, a new one rotates

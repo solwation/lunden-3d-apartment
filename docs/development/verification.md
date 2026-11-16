@@ -9314,3 +9314,8 @@ distinguish improved precision from unproven visible changes in current scene vi
 ## Measuring visited-flat mid surfaces (#1999)
 
 `node --test tools/visitmeasuretest.mjs` uses actual VisitUnit/buildMid/cull and Measure.hit against explicit simple fitting/back-wall surfaces. It checks full/mid/shell/away, hidden original movement, native solid raycast versus render-only lines, the old failure control and unchanged open-leaf thresholds/topology. `tools/browsertest.sh node tools/visitmeasurebrowser.cjs GAME docs/verification/1999` renders those actual components, reproduces the old suppression in memory, verifies real Measure.hit/press markers and identical render submissions, and saves before/after views. Synthetic surfaces are explicit; this does not load an actual furnished World or certify native input/physical phones. [Source hashes, raw checks and result images](../verification/1999/README.md).
+
+
+## Animal-index invalid portrait cache recovery (#2008)
+
+`node --test tools/bestiarytest.mjs` checks collection/photo/profile persistence. The bounded normal-app browser driver `tools/binder2008browser.cjs` opens the actual BinderPanel without test mode; `tools/bestiarycache2008check.js` asserts visible DOM pixels, in-place disk repair, valid-cache reuse, fish, shared renderer restoration at world ratios .6/2 and rejected empty fresh readbacks. A further normal page reload checks persisted repaired pixels with zero new index rendering. [Executed phases, source hashes, inspected images and limitations](../verification/2008/README.md) distinguish the reproduced transparent-cache failure from the user's unobserved device/cache. This is not a general cold-start failure or physical-phone proof.

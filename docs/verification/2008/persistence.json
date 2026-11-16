@@ -1,0 +1,101 @@
+{
+  "id": "persisted-page-index",
+  "time": "2026-11-16T10:44:13.273Z",
+  "result": {
+    "firstPage": [
+      {
+        "id": "cat:huskatt:svartvit:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 284
+      },
+      {
+        "id": "cat:huskatt:svartvit:adult",
+        "known": true,
+        "alpha": 2101,
+        "colored": 388
+      },
+      {
+        "id": "cat:huskatt:rödrandig:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 1680
+      },
+      {
+        "id": "cat:huskatt:rödrandig:adult",
+        "known": false,
+        "alpha": 2101,
+        "colored": 2099
+      },
+      {
+        "id": "cat:huskatt:grå:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 207
+      },
+      {
+        "id": "cat:huskatt:grå:adult",
+        "known": false,
+        "alpha": 2101,
+        "colored": 333
+      },
+      {
+        "id": "cat:huskatt:svart:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 17
+      },
+      {
+        "id": "cat:huskatt:svart:adult",
+        "known": false,
+        "alpha": 2101,
+        "colored": 5
+      },
+      {
+        "id": "cat:huskatt:vit:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 519
+      },
+      {
+        "id": "cat:huskatt:vit:adult",
+        "known": false,
+        "alpha": 2101,
+        "colored": 701
+      },
+      {
+        "id": "cat:huskatt:röd och vit:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 1500
+      },
+      {
+        "id": "cat:huskatt:röd och vit:adult",
+        "known": false,
+        "alpha": 2101,
+        "colored": 1867
+      },
+      {
+        "id": "cat:siames:siames:kitten",
+        "known": true,
+        "alpha": 1413,
+        "colored": 1374
+      },
+      {
+        "id": "cat:siames:siames:adult",
+        "known": false,
+        "alpha": 1840,
+        "colored": 1820
+      }
+    ],
+    "renders": 0,
+    "hits": 21,
+    "metadata": "{\"v\":1,\"rows\":{\"cat:huskatt:svartvit:adult\":{\"seen\":true,\"found\":true,\"firstSeen\":1700000000000,\"seenCount\":3,\"foundCount\":1,\"actions\":{\"pet\":1},\"best\":{}},\"cat:perser:vit:adult\":{\"seen\":true,\"found\":true,\"firstSeen\":1700000000000,\"seenCount\":3,\"foundCount\":1,\"actions\":{\"pet\":1},\"best\":{}},\"cat:siames:siames:kitten\":{\"seen\":true,\"found\":true,\"firstSeen\":1700000000000,\"seenCount\":3,\"foundCount\":1,\"actions\":{\"pet\":1},\"best\":{}},\"cat:Miele:Miele:adult\":{\"seen\":true,\"found\":true,\"firstSeen\":1700000000000,\"seenCount\":3,\"foundCount\":1,\"actions\":{\"pet\":1},\"best\":{}},\"fish:abborre\":{\"seen\":true,\"found\":true,\"firstSeen\":1700000000000,\"seenCount\":3,\"foundCount\":1,\"actions\":{\"pet\":1},\"best\":{}}}}",
+    "photo": {
+      "id": "2008-preserved-photo",
+      "data": "preserve-test-sentinel"
+    }
+  },
+  "shot": "after-reload-index.png",
+  "ok": true
+}

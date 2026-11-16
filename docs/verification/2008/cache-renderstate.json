@@ -1,0 +1,313 @@
+{
+  "id": "fixed-index-cache-renderstate",
+  "time": "2026-11-16T10:42:44.348Z",
+  "result": {
+    "mode": null,
+    "devicePixelRatio": 1.5,
+    "revision": 2,
+    "firstPage": [
+      {
+        "id": "cat:huskatt:svartvit:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 284
+      },
+      {
+        "id": "cat:huskatt:svartvit:adult",
+        "known": true,
+        "alpha": 2101,
+        "colored": 388
+      },
+      {
+        "id": "cat:huskatt:rödrandig:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 1680
+      },
+      {
+        "id": "cat:huskatt:rödrandig:adult",
+        "known": false,
+        "alpha": 2101,
+        "colored": 2099
+      },
+      {
+        "id": "cat:huskatt:grå:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 207
+      },
+      {
+        "id": "cat:huskatt:grå:adult",
+        "known": false,
+        "alpha": 2101,
+        "colored": 333
+      },
+      {
+        "id": "cat:huskatt:svart:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 17
+      },
+      {
+        "id": "cat:huskatt:svart:adult",
+        "known": false,
+        "alpha": 2101,
+        "colored": 5
+      },
+      {
+        "id": "cat:huskatt:vit:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 519
+      },
+      {
+        "id": "cat:huskatt:vit:adult",
+        "known": false,
+        "alpha": 2101,
+        "colored": 701
+      },
+      {
+        "id": "cat:huskatt:röd och vit:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 1500
+      },
+      {
+        "id": "cat:huskatt:röd och vit:adult",
+        "known": false,
+        "alpha": 2101,
+        "colored": 1867
+      },
+      {
+        "id": "cat:siames:siames:kitten",
+        "known": true,
+        "alpha": 1413,
+        "colored": 1374
+      },
+      {
+        "id": "cat:siames:siames:adult",
+        "known": false,
+        "alpha": 1840,
+        "colored": 1820
+      }
+    ],
+    "renders": 21,
+    "disk": [
+      {
+        "key": "cat:huskatt:svartvit:kitten:3:96:2",
+        "alpha": 1684,
+        "colored": 284
+      },
+      {
+        "key": "cat:huskatt:svartvit:adult:3:96:2",
+        "alpha": 2101,
+        "colored": 388
+      },
+      {
+        "key": "cat:huskatt:rödrandig:kitten:3:96:2",
+        "alpha": 1684,
+        "colored": 1680
+      },
+      {
+        "key": "cat:huskatt:rödrandig:adult:3:96:2",
+        "alpha": 2101,
+        "colored": 2099
+      },
+      {
+        "key": "cat:huskatt:grå:kitten:3:96:2",
+        "alpha": 1684,
+        "colored": 207
+      },
+      {
+        "key": "cat:huskatt:grå:adult:3:96:2",
+        "alpha": 2101,
+        "colored": 333
+      },
+      {
+        "key": "cat:huskatt:svart:kitten:3:96:2",
+        "alpha": 1684,
+        "colored": 17
+      },
+      {
+        "key": "cat:huskatt:svart:adult:3:96:2",
+        "alpha": 2101,
+        "colored": 5
+      },
+      {
+        "key": "cat:huskatt:vit:kitten:3:96:2",
+        "alpha": 1684,
+        "colored": 519
+      },
+      {
+        "key": "cat:huskatt:vit:adult:3:96:2",
+        "alpha": 2101,
+        "colored": 701
+      },
+      {
+        "key": "cat:huskatt:röd och vit:kitten:3:96:2",
+        "alpha": 1684,
+        "colored": 1500
+      },
+      {
+        "key": "cat:huskatt:röd och vit:adult:3:96:2",
+        "alpha": 2101,
+        "colored": 1867
+      },
+      {
+        "key": "cat:siames:siames:kitten:3:96:2",
+        "alpha": 1413,
+        "colored": 1374
+      },
+      {
+        "key": "cat:siames:siames:adult:3:96:2",
+        "alpha": 1840,
+        "colored": 1820
+      },
+      {
+        "key": "cat:brittiskt korthår:blå:kitten:3:96:2",
+        "alpha": 1957,
+        "colored": 296
+      },
+      {
+        "key": "cat:brittiskt korthår:blå:adult:3:96:2",
+        "alpha": 2328,
+        "colored": 276
+      },
+      {
+        "key": "cat:maine coon:rödrandig:kitten:3:96:2",
+        "alpha": 1902,
+        "colored": 1895
+      },
+      {
+        "key": "cat:maine coon:rödrandig:adult:3:96:2",
+        "alpha": 2261,
+        "colored": 2261
+      },
+      {
+        "key": "cat:maine coon:grå:kitten:3:96:2",
+        "alpha": 1902,
+        "colored": 213
+      },
+      {
+        "key": "cat:maine coon:grå:adult:3:96:2",
+        "alpha": 2261,
+        "colored": 282
+      },
+      {
+        "key": "cat:maine coon:brunrandig:kitten:3:96:2",
+        "alpha": 1902,
+        "colored": 1882
+      }
+    ],
+    "reopened": [
+      {
+        "id": "cat:huskatt:svartvit:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 284
+      },
+      {
+        "id": "cat:huskatt:svartvit:adult",
+        "known": true,
+        "alpha": 2101,
+        "colored": 388
+      },
+      {
+        "id": "cat:huskatt:rödrandig:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 1680
+      },
+      {
+        "id": "cat:huskatt:rödrandig:adult",
+        "known": false,
+        "alpha": 2101,
+        "colored": 2099
+      },
+      {
+        "id": "cat:huskatt:grå:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 207
+      },
+      {
+        "id": "cat:huskatt:grå:adult",
+        "known": false,
+        "alpha": 2101,
+        "colored": 333
+      },
+      {
+        "id": "cat:huskatt:svart:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 17
+      },
+      {
+        "id": "cat:huskatt:svart:adult",
+        "known": false,
+        "alpha": 2101,
+        "colored": 5
+      },
+      {
+        "id": "cat:huskatt:vit:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 519
+      },
+      {
+        "id": "cat:huskatt:vit:adult",
+        "known": false,
+        "alpha": 2101,
+        "colored": 701
+      },
+      {
+        "id": "cat:huskatt:röd och vit:kitten",
+        "known": false,
+        "alpha": 1684,
+        "colored": 1500
+      },
+      {
+        "id": "cat:huskatt:röd och vit:adult",
+        "known": false,
+        "alpha": 2101,
+        "colored": 1867
+      },
+      {
+        "id": "cat:siames:siames:kitten",
+        "known": true,
+        "alpha": 1413,
+        "colored": 1374
+      },
+      {
+        "id": "cat:siames:siames:adult",
+        "known": false,
+        "alpha": 1840,
+        "colored": 1820
+      }
+    ],
+    "reopenRenderDelta": 0,
+    "fish": {
+      "alpha": 787,
+      "colored": 775
+    },
+    "ratios": [
+      {
+        "ratio": 0.6,
+        "alpha": 23439,
+        "colored": 4340,
+        "stateRestored": true
+      },
+      {
+        "ratio": 2,
+        "alpha": 23439,
+        "colored": 4340,
+        "stateRestored": true
+      }
+    ],
+    "emptyReadbackRejected": true,
+    "metadataUnchanged": true,
+    "photoUnchanged": true
+  },
+  "shot": "after-repaired-index.png",
+  "ok": true
+}
