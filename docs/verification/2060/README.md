@@ -41,5 +41,5 @@ evaluations of the slider offset next to #2049's three of the variant's.
 
 Not covered: physical GPUs/Surface, the in-game mirror and the customizer's live preview (same material and
 uniforms). Avatars with non-middle width sliders change shape slightly round the wings (the cheek moves with
-the nose instead of piling up beside it); the wing itself moves about as far as before (≈ 10 mm between the
-ends at the largest size). Close-up crops were cut from the two sheets with a pngjs script, not a separate render.
+the nose instead of piling up beside it); the wing itself moves 11.8 mm between the narrowest small and the
+widest large nose (12.9 before). Close-up crops were cut from the two sheets with a pngjs script, not a separate render.

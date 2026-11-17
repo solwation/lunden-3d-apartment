@@ -4213,9 +4213,10 @@ export const AVATAR_NOSE = {
 };
 // #2060 the nose width slider's sideways reach (src/avatarnose.js noseMask), head-bone metres after faceWarp, [low, at the bridge]
 // blended over AVATAR_NOSE.mask.narrow: a point at x moves by (width − 1) · x / (1 + (x / peak)²) faded out from `from` to `reach`.
-// #2048's x · smoothstep fade piled the moved cheek up in a thin ring round the wings (compressed to a quarter at the widest
-// slider, a shading edge); this keeps the wing's movement (≈ 10 mm between the ends) but spreads the cheek's over 4 cm, still
-// narrow at the bridge so the inner eye corners stay put. *Guess* by eye, tuned so no stretch of skin falls below ≈ 0.65.
+// #2048's x · smoothstep fade piled the moved cheek up in a thin ring round the wings (squeezed to a quarter at the widest
+// slider: a shading edge). This keeps most of the wing's movement (12 mm between the narrowest small and the widest large nose,
+// 13 before) but spreads the cheek's over 4 cm, still narrow at the bridge so the inner eye corners stay put. *Guess* by eye,
+// tuned so no strip of skin is squeezed below about 0.65.
 export const AVATAR_NOSE_WIDTH = { peak: [0.024, 0.0125], from: [0.0075, 0.002], reach: [0.055, 0.02] };
 // #2049 the nose's shape variants (src/avatarnose.js noseFormOffset), a look field `noseForm`: 0 straight (#2048's nose, the default
 // and every old code), 1 convex (aquiline), 2 upturned (snub), 3 broad with a flat bridge. All 26 lowercase tags are taken, so it
