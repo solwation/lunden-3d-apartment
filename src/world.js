@@ -1379,6 +1379,7 @@ function* worldParts(plan) {
       return visit.length ? [...visit, ...own] : own;
     },
     lamps: [...furniture.lights, ...mirrorLamps, ...hallWall.lamps], // floor lamps + mirror LED strips + the hall mirror's night light, #572 (lights.js makes them switchable)
+    outdoorLamps: { street: surroundings.userData.streetLamps, bollards: courtyard.lamps }, // #2039: lit lamp sets for the avatars' light
     windowLights: { object: surroundings.userData.windows.object, update(h, n, power = true) { surroundings.userData.windows.update(h, n, power); courtyard.update(n, power); exterior.userData.update(n, power); } }, // power: false in a power cut (#604) // neighbours' lit windows, the pergola's bulbs, the loftgång lanterns (daycycle)
     get furnitureOn() { return furniture.object.visible; },
     size: { x: W, z: D },

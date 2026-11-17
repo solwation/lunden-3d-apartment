@@ -295,7 +295,7 @@ export function buildCourtyard() {
   for (const r of C.beds) { geos.wood.push(box(r.x0, r.x1, 0, BED_Y, r.z0, r.z1)); solid(r.x0, r.x1, r.z0, r.z1, BED_Y); geos.soil.push(plate({ x0: r.x0 + 0.05, x1: r.x1 - 0.05, z0: r.z0 + 0.05, z1: r.z1 - 0.05 }, 0.48)); }
 
   // #112: bollards along the walks (a glowing band under the cap), the playhouse, the bike rack
-  const glow = [], pools = [], paint = [], bikes = [], bikeSpokes = [], bicycles = [];
+  const glow = [], pools = [], paint = [], bikes = [], bikeSpokes = [], bicycles = [], lampAt = [];
   let bicycleRack;
   for (const row of C.bollards.rows) for (let x = row.x0; x <= row.x1; x += row.step) {
     const { h, r } = C.bollards;
@@ -303,6 +303,7 @@ export function buildCourtyard() {
     glow.push(new THREE.CylinderGeometry(r - 0.005, r - 0.005, 0.08, 12).translate(x, h - 0.08, row.z));
     const PL = C.bollards.pool; // #1525: its pool of light on the ground (no light object)
     pools.push(poolGeometry(x, row.z, 1, 0, PL.r, PL.r, groundY, { rings: PL.rings, segs: PL.segs }));
+    lampAt.push(x, groundY(x, row.z) + h, row.z, PL.r); // #2039: the avatars' lamp light (avatarlight.js lampLight)
     segments.push(...rectSegs(x - r, x + r, row.z - r, row.z + r));
   }
   {
@@ -617,6 +618,7 @@ export function buildCourtyard() {
   }
   const lit = new THREE.Color(0xffd08a), off = new THREE.Color(0x2a2620); const bollardOff = new THREE.Color(0x8d8b84);
   return { object: group, segments, seats, targets, surfaces, bicycles, swings, bulbLods,
+    lamps: { at: Float32Array.from(lampAt), get glow() { return poolLevel; } }, // #2039: the bollards as a light set for the avatars
     updateSwings(dt, target) {
       let changed = false;
       swings.forEach((swing, i) => {

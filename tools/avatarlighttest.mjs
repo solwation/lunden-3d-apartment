@@ -53,3 +53,41 @@ test('#2017 AvatarLight: probes the zone at C.probe, sets the avatar factor', ()
   assert.ok(got[0] < 0.6 && got.every((f) => f >= C.min));
   assert.equal(new AvatarLight().apply(avatar, {}, 0, 0, 0, 0), 1); // not wired: unchanged
 });
+
+// #2039: the street lamps at night
+import { lampLight, lampShare, lampGlsl } from '../src/avatarlight.js';
+test('#2039 lamp light: full right under a lit lamp, nothing halfway between two lamps 24 m apart, nothing by day or when unlit', () => {
+  const at = [0, 6.47, 0, 7.25, 24, 6.47, 0, 7.25], lit = [{ at, glow: 1, gain: 1 }];
+  const under = lampLight(lit, 0, 0, 0), near = lampLight(lit, 3, 0, 0), between = lampLight(lit, 12, 0, 0);
+  assert.ok(under > 0.95 && near > 0.3 && near < under && between === 0);
+  assert.equal(lampLight([{ at, glow: 0, gain: 1 }], 0, 0, 0), 0); // by day (the pools faded out)
+  assert.equal(lampLight(null, 0, 0, 0), 0);
+  assert.ok(lampLight([{ at, glow: 1, gain: 0.4 }], 0, 0, 0) < 0.45); // a weaker set (the bollards)
+  assert.ok(lampLight(lit, 0, 9, 0) < under && lampLight(lit, 0, 12, 0) < 0.1); // up on a balcony / roof above the head
+  // two lamps overlapping saturate below 1
+  assert.ok(lampLight([{ at: [0, 6.47, 0, 7.25, 2, 6.47, 0, 7.25], glow: 1, gain: 1 }], 1, 0, 0) <= 1);
+});
+
+test('#2039 zone level / factor / lamp share: under a lamp brighter and warm, between lamps the plain night, day and rooms unchanged', () => {
+  const sc = sceneLevel(night), under = { kind: 'outdoors', lamp: lampLight([{ at: [0, 6.47, 0, 7.25], glow: 1 }], 0, 0, 0) };
+  const between = { kind: 'outdoors', lamp: 0 };
+  assert.ok(zoneLevel(under, dark) > zoneLevel(between, dark) + 0.1);
+  assert.equal(lightFactor(under, dark, sc), lightFactor(between, dark, sc)); // the lamp adds warm light (uLamp), it does not scale the bluish night
+  assert.equal(zoneLevel(between, dark), zoneLevel({ kind: 'outdoors' }, dark)); // between lamps = the old night level
+  assert.equal(zoneLevel({ kind: 'outdoors', lamp: 0 }, day), zoneLevel({ kind: 'outdoors' }, day));
+  assert.ok(lampShare(under) > 0.95 && lampShare(between) === 0);
+  for (const z of [{ kind: 'room', lit: 1, lamp: 1 }, { kind: 'core', lamp: 1 }, { kind: 'garage' }, { kind: 'playroom' }]) assert.equal(lampShare(z), 0);
+  assert.match(lampGlsl(), /outgoingLight \+= diffuseColor\.rgb \* vec3\(/);
+});
+
+test('#2039 AvatarLight: eases the lamp share onto the avatar (setLamp), 0 indoors', () => {
+  const al = new AvatarLight(), got = []; let zone = { kind: 'outdoors', lamp: 1 };
+  al.lights = night; al.env = () => dark; al.zone = () => zone;
+  const avatar = { setLight() {}, setLamp: (v) => got.push(v) }, st = {};
+  al.apply(avatar, st, 0, 0, 0, 1000);
+  assert.equal(got.at(-1), 1); // snaps on the first frame
+  zone = { kind: 'room', lit: 1 };
+  for (let i = 1; i < 120; i++) al.apply(avatar, st, 0, 0, 0, 1000 + i * 16);
+  assert.ok(got.at(-1) < 0.02);
+  assert.doesNotThrow(() => al.apply({ setLight() {} }, {}, 0, 0, 0, 0)); // an avatar without setLamp
+});

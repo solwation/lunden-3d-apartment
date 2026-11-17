@@ -212,11 +212,14 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
   const body = new THREE.InstancedMesh(mergeGeometries(L.body.map(keepPN)), new THREE.MeshStandardMaterial({ color: 0x3a3d40, roughness: 0.6, metalness: 0.3 }), spots.length);
   const headMat = new THREE.MeshStandardMaterial({ color: 0xf2efe6, emissive: 0xffe2a8, emissiveIntensity: 0, roughness: 0.4 });
   const head = new THREE.InstancedMesh(keepPN(L.glass), headMat, spots.length);
-  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1), lampAt = [];
   spots.forEach(([x, z, yaw, path], i) => {
     one.set(1, path === true ? PATH_LIGHTS.height / S.lamps.h : 1, 1);
     m.compose(new THREE.Vector3(x, (path ? pathGround : groundY)(x, z), z), q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), one);
     body.setMatrixAt(i, m); head.setMatrixAt(i, m);
+    // #2039: the head (the glass) and its pool's mean radius, for the avatars' lamp light (avatarlight.js lampLight)
+    const shape = path === true ? PATH_LIGHTS.pool : path === 'road' ? ROAD_LIGHTS.pool : S.lamps.pool, at = new THREE.Vector3(0, S.lamps.h + 0.27, S.lamps.arm).applyMatrix4(m);
+    lampAt.push(at.x, at.y, at.z, (shape.along + shape.across) / 2);
   });
   body.castShadow = true;
   body.name = 'streetLampPosts'; head.name = 'streetLampHeads';
@@ -323,6 +326,8 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
   let phase = 0, last = performance.now();
   return {
     object: group,
+    /** #2039: the lamps as a light set for the avatars: `at` = [x, y, z, reach, …] per head, `glow` 0 … 1 (the pools' fade). */
+    lamps: { at: Float32Array.from(lampAt), get glow() { return glow; } },
     /** night 0 (day) … 1: the lamp heads glow and their pools fade in; the traffic light cycles (called with the window lights). */
     update(night) {
       const now = performance.now(), dt = Math.min(1, (now - last) / 1000);

@@ -55,6 +55,8 @@ import {SharedFish} from './sharedfishclient.js';
 import * as THREE from 'three';
 import { POPCORN, FRIES, FISH, THING_SYNC, UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, PLAYROOM, BOULE, encodeAvatarWireLook, decodeAvatarLook, avatarLook, avatarBody, avatarHeightCm } from './config.js';
 import { wetEnv } from './avatarweather.js';
+import { lampLight } from './avatarlight.js'; // #2039: the street lamps on the avatars
+import { AVATAR_LIGHT } from './config.js';
 import { setupAvatarCustomizer, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen } from './customizer.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 import * as showFireworks from './fireworks.js';
@@ -3183,6 +3185,8 @@ const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboa
   state: () => ({ bp: gymPumpState(), p: [player.pos.x, player.pos.y, player.pos.z], r: reactionCam.active && reactionCam.camFrom ? reactionCam.camFrom.yaw : camera.rotation.y, look: [0, reactionCam.active && reactionCam.camFrom ? reactionCam.camFrom.pitch : camera.rotation.x], c: player.crouched || !!player.swim?.dive /* #1944: crouched in the water = diving */, dn: playroom.music.danceCode ?? 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 && player.outdoors ? 2 : 1) : 0, am: player.climb ? 3 : player.swing ? 2 : player.flying || player.fling ? 1 : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, fb: fishing.wire, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
 // #2017: the avatars' light follows the local light level: the zone a figure stands in (src/avatarlight.js; no light, no extra draw call)
 ghosts.light.lights = { hemi, ambient, fill, sun };
+// #2039: the outdoor lamp sets (street.js, courtyard.js) with their strength: the bollards are low and small
+const avatarLamps = [[world.outdoorLamps?.street, 1], [world.outdoorLamps?.bollards, AVATAR_LIGHT.lamp.bollard]].filter(([l]) => l).map(([l, gain]) => ({ at: l.at, get glow() { return l.glow; }, gain }));
 ghosts.light.env = () => ({ day: day.daylight, overcast: weather.overcast });
 ghosts.light.zone = (x, y, z) => {
   const p = world.playroom;
@@ -3194,7 +3198,8 @@ ghosts.light.zone = (x, y, z) => {
     const lv = unit ? unit.levelAt(y) : y > LEVELS[0].floor + 1.6 ? 1 : 0, room = unit ? null : world.roomAt(lv, x, z);
     return { kind: 'room', lit: unit ? 0.5 : room && lights.roomLit(lv, room) ? 1 : 0 };
   }
-  return { kind: 'outdoors', shade: (world.roofs?.above(x, z, y + 0.3) ?? Infinity) < y + 6 }; // under a roof / canopy / deck: no direct sun
+  return { kind: 'outdoors', shade: (world.roofs?.above(x, z, y + 0.3) ?? Infinity) < y + 6, // under a roof / canopy / deck: no direct sun
+    lamp: lampLight(avatarLamps, x, y, z) }; // #2039: the lit street lamps / courtyard bollards nearby
 };
 football=new Football({site:world.football,camera,ghosts,life,
   canPlay:()=>overlay.hidden&&!reading&&!heldItem()&&!rest.active&&!player.riding&&!player.flying&&!player.climb&&!player.swing&&Math.abs(player.pos.y-world.football.ground(player.pos.x,player.pos.z))<FOOTBALL.playHeightSlack,

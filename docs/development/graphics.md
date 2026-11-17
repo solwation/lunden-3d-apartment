@@ -897,6 +897,18 @@ The zone is re-probed every 0.25 s per avatar (a few array lookups), the factor 
 call. Hooked in `Ghosts.update` (others) and `beforeMirror` / `showSelf` (our own avatar). Check: `node --test tools/avatarlighttest.mjs`;
 browser comparison and costs: `tools/browsertest.sh node tools/avatarlightbrowser.cjs GAME OUT` ([images](../verification/2017/)).
 
+Street lamps at night (#2039): outdoors, the zone also carries `lamp` (0 … 1, `lampLight` in `src/avatarlight.js`): how much of the
+nearby lit lamps reaches the figure, from the lamp sets `world.outdoorLamps` (`street.js` `lamps`: every street / path / road lamp head
+with its pool's mean reach; `courtyard.js` `lamps`: the bollards, at `AVATAR_LIGHT.lamp.bollard` strength), each lamp
+(1 − (d / reach)²)², saturating, times the set's pool fade (`glow`: 0 by day). The factor `uLight` ignores it (the dim bluish night
+stays the base), and a second uniform `uLamp` (`Avatar.setLamp`, eased like the factor) adds the lamps' warm pool colour on the surface's
+own colour after `outgoingLight *= uLight`, full on surfaces facing up, less on vertical / downward ones (`AVATAR_LIGHT.lamp`, all
+*guess*). The zone level gains `lamp.level × lamp`, so the pupils (#2033) narrow under a lamp too; rooms, stairwell, garage and day are
+unchanged. Window light (lit façades, the courtyard's window spill) is not included. Still no light object, shadow caster or draw call;
+the probe scans the ~200 lamp heads with a box reject every 0.25 s per avatar. Check: `node --test tools/avatarlighttest.mjs`; in the
+game under / between lamps at night, a room at night and the same lamp by day: `tools/browsertest.sh node tools/avatarlampbrowser.cjs
+GAME OUT` ([images](../verification/2039/)).
+
 ## Living avatar skin (#2032)
 
 `src/avatarskin.js` (`avatarSkinGLSL`, tunables `AVATAR_SKIN_DETAIL`, all *guess*) adds three GLSL pieces to the avatars' one material

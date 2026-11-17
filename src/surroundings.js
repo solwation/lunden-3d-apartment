@@ -2130,6 +2130,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   yield 0.9;
   const windows = buildWindowLights(details.list), street = buildStreet(groundY, lampGroundY, treeFeet); // #1363: path poles/pools follow actual terrain
   group.add(windows.object, ...(windows.spill ? [windows.spill] : []), street.object, buildStreetSigns(groundY)); // + street name signs at the junctions (#583)
+  group.userData.streetLamps = street.lamps; // #2039: the avatars' lamp light
   group.userData.windows = { object: windows.object, update(hour, night, power = true) { for (const b of backdrops) b.userData.updateClocks(hour); windows.update(hour, night, power); updateLoggiaLamps(night, power); street.update(night);glassMaterial.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night); } };
   return group;
 }

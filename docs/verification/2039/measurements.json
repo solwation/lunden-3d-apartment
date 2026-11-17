@@ -1,0 +1,111 @@
+{
+ "natt": {
+  "shadowCasters": 1,
+  "lamps": {
+   "count": 192,
+   "A": [
+    -18.611740112304688,
+    6.47,
+    -23.3
+   ],
+   "B": [
+    5.388259410858154,
+    6.47,
+    -23.3
+   ],
+   "dist": 23.999999523162842
+  },
+  "views": {
+   "lampa": {
+    "pixels": 15252,
+    "lum": 85.2,
+    "rb": 1.019,
+    "factor": 0.667,
+    "lamp": 1,
+    "zone": {
+     "kind": "outdoors",
+     "shade": false,
+     "lamp": 0.9999999999999778
+    },
+    "calls": 162,
+    "root": [
+     -18.61,
+     0,
+     -23.3
+    ]
+   },
+   "mellan": {
+    "pixels": 15072,
+    "lum": 37.1,
+    "rb": 0.688,
+    "factor": 0.667,
+    "lamp": 0,
+    "zone": {
+     "kind": "outdoors",
+     "shade": false,
+     "lamp": 0
+    },
+    "calls": 188,
+    "root": [
+     -6.61,
+     0,
+     -23.3
+    ]
+   },
+   "rum": {
+    "pixels": 12464,
+    "lum": 90.3,
+    "rb": 0.981,
+    "factor": 2,
+    "lamp": 0,
+    "zone": {
+     "kind": "room",
+     "lit": 1
+    },
+    "calls": 386,
+    "root": [
+     2.87,
+     0,
+     7.85
+    ]
+   }
+  }
+ },
+ "dag": {
+  "shadowCasters": 1,
+  "lamps": {
+   "count": 192,
+   "A": [
+    -18.611740112304688,
+    6.47,
+    -23.3
+   ],
+   "B": [
+    5.388259410858154,
+    6.47,
+    -23.3
+   ],
+   "dist": 23.999999523162842
+  },
+  "views": {
+   "lampa": {
+    "pixels": 15249,
+    "lum": 161.5,
+    "rb": 0.764,
+    "factor": 1.107,
+    "lamp": 0,
+    "zone": {
+     "kind": "outdoors",
+     "shade": false,
+     "lamp": 0
+    },
+    "calls": 154,
+    "root": [
+     -18.61,
+     0,
+     -23.3
+    ]
+   }
+  }
+ }
+}

@@ -10,6 +10,7 @@ import { newBlink, stepBlink, solveGaze, stepSaccade } from './avatargaze.js';
 import { armFixShader, installArmFix } from './avatararmfix.js'; // #2022
 import { newWet, stepWet, falling, wetEnv, WET_DECL, wetVertex, wetColor, wetRoughness } from './avatarweather.js'; // #2018
 import { eyeUniforms, EyeLight, EYE_VDECL, EYE_FDECL, eyePupil, eyeAt, eyeView, eyeWet, eyeGlint } from './avatareyes.js'; // #2033
+import { lampUniforms, LAMP_FDECL, lampGlsl } from './avatarlight.js'; // #2039: the street lamps' light
 import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #2014
 import { avatarSkinGLSL, skinKey } from './avatarskin.js'; // #2032
 import { faceExprUniforms, faceExprShader } from './avatarface.js'; // #2031
@@ -1358,6 +1359,7 @@ function makeMaterial(rim, headProjection) {
   Object.assign(u, faceExprUniforms()); // #2031: the expression weights
   Object.assign(u, eyeUniforms()); // #2033
   Object.assign(u, exertUniforms()); // #2037: flush and sweat sheen
+  Object.assign(u, lampUniforms()); // #2039
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: SURFACE.finish.cloth, metalness: 0, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
@@ -1377,6 +1379,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     sh.vertexShader = faceExprShader(sh.vertexShader, { hb: bindAt('head'), chinY: CHIN_Y, P: FACE_PART }); // #2031
     sh.vertexShader = sh.vertexShader.replace('#include <skinning_vertex>', `${eyeView()}\n#include <skinning_vertex>`); // #2033: after every bind-pose shape (face, expression), before skinning
     sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', `#include <common>\n${LAMP_FDECL}`) // #2039
       .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim, uLight;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;\n' + WET_DECL + skin.decl + '\n' + EYE_FDECL)
       .replace('#include <color_fragment>', `#include <color_fragment>
       if (uSuit > 0.5) {
@@ -1410,6 +1413,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       .replace('#include <opaque_fragment>', `float edge = pow(1.0 - clamp(abs(dot(normalize(normal), normalize(vViewPosition))), 0.0, 1.0), ${A.rimPower.toFixed(2)});
       ${eyeGlint(FACE_PART.eye, FACE_PART.iris)}
       outgoingLight *= uLight; // #2017: the local light level (src/avatarlight.js)
+      ${lampGlsl()}
       outgoingLight = mix(outgoingLight, uRimColor, uOutline * edge);
       outgoingLight *= mix(vec3(1.0), ${v3(SK.rimTint.slice(0, 3))}, vBare * (1.0 - uSuit) * edge * ${SK.rimTint[3].toFixed(3)}); // light scattered through skin reddens its edges
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
@@ -1932,6 +1936,8 @@ export class Avatar {
   /** #1837: own material uniform; shared bind-pose buffers remain immutable. */
   /** #2017: the light factor of the place the figure stands in (1 = the scene lights as they are). */
   setLight(f) { const u = this.material?.userData.u.uLight; if (u) u.value = f; }
+  /** #2039: the share of a lit outdoor lamp's warm light on the figure (0 … 1; src/avatarlight.js). */
+  setLamp(v) { const u = this.material?.userData.u.uLamp; if (u) u.value = v; }
   /** #2033: the light the eyes stand in (avatarlight.js zone / env): the pupil follows it in updateEyes, the sun's glint dims indoors. */
   setEyeLight(zone, env) { (this.eyeLight ??= new EyeLight()).set(zone, env); }
 

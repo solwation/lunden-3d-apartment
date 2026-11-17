@@ -9198,4 +9198,10 @@ export const AVATAR_FOOT_IK = {
 // `reference` / `sunShare`: the scene-light sum (hemi + ambient + fill + sunShare x sun) of a clear day; `min`/`max`: the factor's bounds;
 // `tau`: easing (s); `probe`: zone re-probe interval (s); `minScene`: lowest scene level divided by (night).
 export const AVATAR_LIGHT = { reference: 4.4, sunShare: 0.6, minScene: 0.12, min: 0.4, max: 2, tau: 0.4, probe: 0.25,
-  level: { overcastCut: 0.25, shade: 0.55, windowShare: 0.65, lamp: 0.35, night: 0.08, coreBase: 0.38, coreDay: 0.12, garage: 0.5, playroom: 0.6 } };
+  level: { overcastCut: 0.25, shade: 0.55, windowShare: 0.65, lamp: 0.35, night: 0.08, coreBase: 0.38, coreDay: 0.12, garage: 0.5, playroom: 0.6 },
+  // #2039: outdoor lamps at night (avatarlight.js lampLight; all *guess*, tuned by eye against night shots under / between the street
+  // lamps). `level`: the zone level a figure right under a lit lamp gains (the pupils); `rgb`: the street lamps' pool colour (#434,
+  // 0xffc887 in linear RGB); `gain`: the added light's strength on a surface facing up (its own colour × gain); `side` / `under`: the
+  // share on vertical / downward-facing surfaces; `chest`: m over the feet where the height above a lamp head starts to count;
+  // `bollard`: the courtyard bollards' strength against a street lamp (low, small pools).
+  lamp: { level: 0.12, rgb: [1, 0.578, 0.242], gain: 0.9, side: 0.6, under: 0.25, chest: 1.2, bollard: 0.4 } };
