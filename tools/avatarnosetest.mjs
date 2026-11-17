@@ -84,6 +84,7 @@ test('#2048 the size and width sliders fold no skin at either end', () => {
 test('#2048 forms: a bridge narrower between the eyes than the wings, a rounded tip, an underside with nostrils and a creased wing', () => {
   const width = (y) => { let w = 0; const h = noseHeight(0, y) / 2; for (let x = 0; x < 0.03; x += 0.0002) if (noseHeight(x, y) > h) w = x; return w; }; // half width at half height
   assert.ok(width(0.107) < 0.006 && width(0.07) > 2 * width(0.107), `bridge ${width(0.107)} vs base ${width(0.07)}`);
+  assert.equal(noseHeight(0, 0.05) + noseHeight(0.03, 0.09) + noseHeight(0, 0.15), 0, 'the face round the nose is not lifted');
   let tipY = 0, tip = 0; for (let y = 0.06; y < 0.1; y += 0.0002) if (noseHeight(0, y) > tip) { tip = noseHeight(0, y); tipY = y; }
   assert.ok(tipY > 0.074 && tipY < 0.084 && tip > 0.02, `the tip ${tip} at ${tipY}`);
   // the columella stands out between the nostrils, the nostril is a dip between it and the wing

@@ -25,7 +25,7 @@ const proof = { baseline, triangles: {}, headTriangles: {}, errors: {} };
       }
       await page.goto(`${base}/tools/avatarexpr.html`);
       await page.waitForFunction(() => window.__ready, null, { timeout: 120000 });
-      const counts = await page.evaluate(async ([cell, dist, only, aim]) => {
+      const counts = await page.evaluate(async ([cell, dist, only, aim, kiss]) => {
         const THREE = await import('three'), { Avatar } = await import('/src/avatar.js'), { decodeAvatarLook, avatarEyeHeight } = await import('/src/config.js');
         document.querySelector('canvas').remove();
         const C = cell, COLS = 5, ROWS = only ? only.length : 6, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
@@ -38,7 +38,7 @@ const proof = { baseline, triangles: {}, headTriangles: {}, errors: {} };
           ['200000100', {}],
           ['400000100', {}],
           ['000000100', { noseSize: 0, noseWidth: 0 }],
-          ['200000100', { noseSize: 8, noseWidth: 8 }],
+          ['200000100', { noseSize: 8, noseWidth: 8, glasses: 1 }],
           ['200000100', {}, true],
         ];
         if (only) looks.splice(0, looks.length, ...only.map((i) => looks[i]));
@@ -58,7 +58,7 @@ const proof = { baseline, triangles: {}, headTriangles: {}, errors: {} };
           else { sun.position.set(-0.6, 3, -4); hemi.intensity = 0.8; }
           av.forEach((a, row) => VIEWS.forEach(([yaw, dy], col) => {
             for (const b of av) b.object.visible = b === a;
-            a.update(1 / 60, {}); const u = a.material.userData.u; u.uBlink.value = 0;
+            a.update(1 / 60, {}); const u = a.material.userData.u; u.uBlink.value = 0; u.uKiss.value = kiss;
             const h = a.bones.head.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, aim[0], aim[1]));
             sun.target.position.copy(h); sun.position.add(h); sun.target.updateMatrixWorld();
             const D = dist; cam.position.set(h.x + Math.sin(yaw) * D, h.y + dy * D / 1.1, h.z + Math.cos(yaw) * D); cam.lookAt(h);
@@ -74,7 +74,7 @@ const proof = { baseline, triangles: {}, headTriangles: {}, errors: {} };
           return t;
         };
         return { tris: av.map((a) => a.mesh.geometry.attributes.position.count / 3), head: head(av[0].mesh.geometry) };
-      }, [Number(process.env.CELL) || 300, Number(process.env.DIST) || 0.62, process.env.ONLY ? process.env.ONLY.split(',').map(Number) : null, [Number(process.env.AIMY) || 0.085, Number(process.env.AIMZ) || 0.1]]);
+      }, [Number(process.env.CELL) || 300, Number(process.env.DIST) || 0.62, process.env.ONLY ? process.env.ONLY.split(',').map(Number) : null, [Number(process.env.AIMY) || 0.085, Number(process.env.AIMZ) || 0.1], Number(process.env.KISS) || 0]);
       proof.triangles[phase] = counts.tris; proof.headTriangles[phase] = counts.head;
       for (const [light, name] of [['day', 'nose.png'], ['raking', 'nose-raking.png'], ['back', 'nose-backlight.png']]) {
         await page.evaluate((b) => window.__sheet(b), light);

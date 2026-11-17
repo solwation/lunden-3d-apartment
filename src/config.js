@@ -4209,6 +4209,7 @@ export const AVATAR_NOSE = {
     x: [0, 0.0019, 0.0038, 0.0057, 0.0077, 0.0098, 0.0119, 0.0140, 0.0163, 0.0190, 0.0222],
     y: [0.135, 0.126, 0.117, 0.108, 0.100, 0.093, 0.087, 0.082, 0.0785, 0.0755, 0.0728, 0.0703, 0.068, 0.0658, 0.0636, 0.0612, 0.0588, 0.0563] },
   mask: { x: [0.006, 0.032, 0.02], narrow: [0.085, 0.105], y: [0.05, 0.064, 0.1, 0.12], widthTop: [0.088, 0.11], pivot: 0.09, length: 0.5 },
+  skin: [0.04, 0.3],
   shade: { nostril: 0.7, nostrilPower: 2, ambient: [0.5, 0.35] },
 };
 // #2043 the head's silhouette (src/avatarcontour.js), head-bone metres, *guess* by eye against the before views

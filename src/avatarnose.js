@@ -21,8 +21,9 @@ const f = (v) => (+v).toFixed(6);
 const clamp01 = (t) => Math.min(1, Math.max(0, t));
 const smooth = (e0, e1, x) => { const t = clamp01((x - e0) / (e1 - e0)); return t * t * (3 - 2 * t); };
 const bell = (t) => (Math.abs(t) < 1 ? (1 - t * t) ** 2 : 0);
-/** Polynomial smooth maximum: max(a, b) with a fillet of width k (a crease where two forms meet). */
-const smax = (a, b, k) => { const h = Math.max(k - Math.abs(a - b), 0) / k; return Math.max(a, b) + h * h * k / 4; };
+/** Polynomial smooth maximum of two heights ≥ 0: max(a, b) with a fillet of width k where they meet, the fillet shrinking
+ * with the lower one so it never lifts the face where both forms are 0. */
+const smax = (a, b, k) => { const w = Math.min(k, 2 * Math.min(a, b)); if (w <= 0) return Math.max(a, b); const h = Math.max(w - Math.abs(a - b), 0) / w; return Math.max(a, b) + h * h * w / 4; };
 
 /** A profile table [[y, half width, height], …] (top first) at y: [half width, height], the height 0 outside it. */
 function tableAt(D, y) {
@@ -150,6 +151,7 @@ export function noseVertexGLSL(hb) {
 export function noseFragmentGLSL(hb, head = 1) {
   const [, ax, ay, bx, by, ra, rb] = N.ala, O = N.nostril, [, cr, cw] = N.crease, W = FACE.warp, S = N.shade;
   const decl = `
+varying float vNose; // #2048: noseBlend, the nose's own height (avatar.js begin_vertex)
 // #2048 the nose's hollows (src/avatarnose.js): x 0 … 1 in the nostrils, y in the alar crease
 vec2 noseCavity(vec3 at) {
   vec3 nq = at - vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)});
@@ -166,5 +168,7 @@ vec2 noseCavity(vec3 at) {
   const light = `if (vBare > 0.5 && uSuit < 0.5 && floor(vSuitRole + 0.5) == 2.0 && abs(vSurface.y - ${f(head)}) < 0.5) { vec2 nc = noseCavity(vSuitAt); reflectedLight.indirectDiffuse *= 1.0 - ${f(S.ambient[0])} * nc.x - ${f(S.ambient[1])} * nc.y; } // #2048`;
   return { decl, color, light };
 }
+/** The nose's own skin (0 … 1, from its height), for avatarskin.js' nose shine, flush and light through thin skin. */
+export const NOSE_SKIN = `smoothstep(${f(N.skin[0])}, ${f(N.skin[1])}, vNose)`;
 /** The program cache key's suffix. */
 export const noseKey = () => '-nose2048';

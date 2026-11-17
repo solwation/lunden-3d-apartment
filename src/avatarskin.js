@@ -24,9 +24,10 @@ const PORE_DIRS = [[0, 1, PHI], [1, PHI, 0], [PHI, 0, 1]].map(norm), PORE_K = [1
 const GRAIN_DIRS = [[PHI, 1, 0], [-1, 0, PHI], [0, PHI, -1]].map(norm), GRAIN_K = [1, 1.17, 0.89], GRAIN_PH = [0.4, 2.2, 5.0];
 
 /** The GLSL pieces. `head` / `hand` = the head and left-hand bones' bind positions (Vector3), `part` = avatar.js FACE_PART. */
-export function avatarSkinGLSL({ head, hand, part }) {
+export function avatarSkinGLSL({ head, hand, part, nose = null }) {
   if (!SKIN_DETAIL.on) return { decl: '', color: '', normal: '', light: '' };
   const isPart = (p) => `(1.0 - step(0.5, abs(vSurface.y - ${p.toFixed(1)})))`;
+  const isNose = nose ?? isPart(part.nose); // #2048: the nose is part of the head skin; avatar.js passes its own weight
   const finger = `step(${(part.finger - 0.5).toFixed(1)}, vSurface.y) * step(vSurface.y, ${(part.finger + 19.5).toFixed(1)})`;
   const waves = (dirs, ks, phs, k0, s, g) => dirs.map((d, i) => `skWave(p, ${v3(d)}, ${f(k0 * ks[i])}, ${f(phs[i])}, ${s}, ${g});`).join(' ');
   const [P, Pd] = D.pore, [G, Gd] = D.grain, kP = TAU / P, kG = TAU / G, [c0, c1] = D.fade;
@@ -40,7 +41,7 @@ void skWave(vec3 p, vec3 d, float k, float ph, inout float s, inout vec3 g) { fl
         if (skRole == 2.0) {
           vec3 q = vSuitAt - ${v3([head.x, head.y, head.z])};
           vec2 c = vec2(abs(q.x) - ${f(cx)}, q.y - ${f(cy)});
-          skFlush = ${f(D.ear)} * ${isPart(part.ear)} + ${f(D.nose)} * ${isPart(part.nose)} + ${f(cs)} * exp(-dot(c, c) / ${f(cr * cr)}) * step(${f(cz)}, q.z);
+          skFlush = ${f(D.ear)} * ${isPart(part.ear)} + ${f(D.nose)} * ${isNose} + ${f(cs)} * exp(-dot(c, c) / ${f(cr * cr)}) * step(${f(cz)}, q.z);
         } else if (skRole == 4.0) {
           float sx = vSuitAt.x < 0.0 ? -1.0 : 1.0;
           vec3 h = vSuitAt - vec3(sx * ${f(hand.x)}, ${f(hand.y)}, ${f(hand.z)});
@@ -69,7 +70,7 @@ void skWave(vec3 p, vec3 d, float k, float ph, inout float s, inout vec3 g) { fl
           normal = normalize(abs(det) * normal - sign(det) * (dH.x * R1 + dH.y * R2));
           roughnessFactor = clamp(roughnessFactor + ${f(D.poreRough)} * pit / ${f(3 - D.poreTop)} * skFadeP, 0.0, 1.0);
         }
-        roughnessFactor = max(roughnessFactor - ${f(D.tZone)} * ${isPart(part.nose)}, 0.05);
+        roughnessFactor = max(roughnessFactor - ${f(D.tZone)} * ${isNose}, 0.05);
       }
     }`;
   // Light (after lights_fragment_end): wrap + backlight transmission for the directional lights (the sun); uLight scales it afterwards.
@@ -77,7 +78,7 @@ void skWave(vec3 p, vec3 d, float k, float ph, inout float s, inout vec3 g) { fl
   const light = `#if NUM_DIR_LIGHTS > 0
     if (vBare > 0.5 && uSuit < 0.5) { // #2032: light through thin skin
       vec3 qe = vSuitAt - ${v3([head.x, head.y, head.z])}; float skRim = smoothstep(0.45, 1.0, length(vec2((qe.y - ${f(E.y)}) / ${f(E.h)}, qe.z / ${f(E.w)})));
-      float skThin = max(max(${f(T.ear)} * mix(${f(E.inner)}, 1.0, skRim) * ${isPart(part.ear)}, ${f(T.nose)} * ${isPart(part.nose)}), max(${f(T.finger)} * ${finger}, ${f(T.other)}));
+      float skThin = max(max(${f(T.ear)} * mix(${f(E.inner)}, 1.0, skRim) * ${isPart(part.ear)}, ${f(T.nose)} * ${isNose}), max(${f(T.finger)} * ${finger}, ${f(T.other)}));
       vec3 skTint = sqrt(max(material.diffuseColor, vec3(0.0))) * ${v3(D.sss)};
       for (int i = 0; i < NUM_DIR_LIGHTS; i++) {
         vec3 L = directionalLights[i].direction;
