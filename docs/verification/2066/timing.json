@@ -1,0 +1,173 @@
+{
+  "baseline": "1a5b33ed",
+  "triangles": {
+    "before": [
+      15660,
+      15660,
+      15660,
+      16624,
+      15860,
+      15660,
+      15660,
+      15660,
+      15660,
+      15660,
+      15660,
+      15660,
+      15660
+    ],
+    "after": [
+      15660,
+      15660,
+      15660,
+      16624,
+      15860,
+      15660,
+      15660,
+      15660,
+      15660,
+      15660,
+      15660,
+      15660,
+      15660
+    ]
+  },
+  "errors": {
+    "before": [],
+    "after": []
+  },
+  "frameMs": {
+    "before": {
+      "ms": 72.04999999981374,
+      "calls": 1,
+      "triangles": 15660,
+      "pixel": [
+        158,
+        122,
+        105,
+        255
+      ]
+    },
+    "after": {
+      "ms": 76.69375000009313,
+      "calls": 1,
+      "triangles": 15660,
+      "pixel": [
+        157,
+        122,
+        105,
+        255
+      ]
+    }
+  },
+  "info": {
+    "before": [
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 16624,
+        "bones": 15
+      },
+      {
+        "triangles": 15860,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      }
+    ],
+    "after": [
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 16624,
+        "bones": 15
+      },
+      {
+        "triangles": 15860,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      },
+      {
+        "triangles": 15660,
+        "bones": 15
+      }
+    ]
+  }
+}

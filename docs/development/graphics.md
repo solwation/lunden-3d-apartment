@@ -1295,3 +1295,18 @@ attributes, lights, passes or textures. `tools/avatarsockettest.mjs` checks seat
 existing lid/sculpt/gaze checks cover the shared behavior. `tools/avatarsocket2063browser.cjs` captures front, 45°, 60°, profile,
 three skin tones, smallest/largest openings, glasses, blink/gaze and backlight in one run.
 [Images, source baseline, paired software timing and limits](../verification/2063/README.md).
+
+## Continuous face profile (#2066)
+
+`AVATAR_SCULPT.shape` adds geometry-only root depression, upper-lip support, mentolabial groove and
+chin pad to `sculptShape`. The shared `headFront` query seats the #2065 lips on that profile, and the
+#2051 beard ray-probes the actual reshaped head. The lower authored head/jaw rings have a broader,
+more forward rounded chin; `jawRise` raises only the low lateral/rear shell toward the ear. Its central
+mask leaves lip and eye heights alone. Values are artistic guesses in head-local metres, not measured
+human anatomy. Eye-depth, nose sliders, head-form/appearance codes and ordinary head boxes stay shared.
+
+The same mesh topology remains: no extra triangles, shader work, attribute, varying, texture, light or
+pass. Budget/evidence: 30 scoped Node checks, all eight head-form slider corners, three skin tones,
+beard/moustache/cap/hat/headphones, daylight and backlight; 15 bones and one draw in the timing fixture.
+[Matched images, source-bound budget/timing and limits](../verification/2066/README.md)
+(`tools/avatarprofiletest.mjs`, `tools/avatarprofile2066browser.cjs`).
