@@ -50,3 +50,5 @@ This delivery is the lip geometry. Eye depth, ocular shading and fine skin are
 separate sibling issues. The face's pre-existing pore marks and protruding eyes
 remain in this source-bound baseline/candidate comparison. No full-world sweep,
 physical-device test or downstream transfer applies: player avatars are original-only.
+
+Integrated on main as `e347566c` / `c841bf42`, published with `93a06f25`; Pages 44159419315 and Worker 44159419233 passed. All three result images embedded in the issue before closure.
