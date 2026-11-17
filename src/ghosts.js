@@ -119,6 +119,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.id = id; this.name = name || ANON; this.snaps = []; this.h = ''; this.hi = ''; this.itemProp = null; this.itemHold = new THREE.Vector3(); this.solid = false; this.prop = null; this.self = self;
     this.avatarLook = look ?? (self ? `me:${name}` : id);
     this.avatar = new Avatar(this.avatarLook, tint(name));
+    this.avatar.idleSeed = id; this.avatar.idleLook = !self; // #2035: each player rests in its own rhythm; our mirror image keeps our view
     this.avatar.setPump(this.pump ?? 0);
     this.avatar.setSolid(true); // always solid (#1025)
     this.mesh = this.avatar.mesh;

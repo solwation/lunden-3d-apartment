@@ -12,7 +12,7 @@ export const POSES = {
   cross: { hands: { L: { at: [-.18, 1.2, .26], pole: [.3, -.8, -.4] }, R: { at: [.18, 1.2, .3], pole: [-.3, -.8, -.4] } } },
 };
 const posed = (av, state) => {
-  av.gait = 0; av.phase = .8; av.time = 1; av.update(0, state); av.update(1, state);
+  av.gait = 0; av.phase = .8; av.time = 1; av.noIdle = true; av.update(0, state); av.update(1, state); // (#2035: the shoulders are measured in the plain rest pose)
   av.object.updateMatrixWorld(true); av.mesh.skeleton.update();
   const a = av.mesh.geometry.attributes.position, out = new Float32Array(a.count * 3), v = new THREE.Vector3();
   for (let i = 0; i < a.count; i++) { av.mesh.getVertexPosition(i, v); out.set([v.x, v.y, v.z], i * 3); }

@@ -65,6 +65,7 @@ export function buildOlof() {
 
 // --- posing ------------------------------------------------------------------------------------------------------
 const q1 = new THREE.Quaternion(), q2 = new THREE.Quaternion(), q3 = new THREE.Quaternion(), qT = new THREE.Quaternion(), q4 = new THREE.Quaternion();
+const qH = new THREE.Quaternion(), q5 = new THREE.Quaternion(), Z = new THREE.Vector3(0, 0, 1);
 const v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), v3 = new THREE.Vector3(), v4 = new THREE.Vector3(), m3 = new THREE.Matrix4();
 
 /** Two-bone IK in one frame: `upper` (whose parent has rotation `parentQ` in that frame) starts at S and reaches with its
@@ -94,20 +95,24 @@ const lerp3 = (a, b, t) => a.map((x, i) => x + (b[i] - x) * t);
  * can: [x, y, z] the can's axis (the right hand), or null to keep the hand straight on. Optional (#1149): knee [x, y, z]
  * the knees' pole (x outward per side), flat 0 … 1 how far the feet are turned level on the floor (0: rigid with the shin)
  * and toes (rad) how far they then turn outward; #2003 `pitch` [left, right] (rad, toe up, default none) tilts each level foot about its own x (heel strike / toe-off; only with `flat`).
+ * #2035 `hipRoll` (rad, + lifts the left side) tilts the hips sideways, the legs' IK following; `torsoRoll` (rad) the torso's own sideways tilt.
  */
-export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, can, knee = KNEE, flat = 0, toes = 0, pitch = null, footYaw = null, hipX = 0 }) {
-  if (fig.collectPose) { fig.pendingPose = { hip, lean, head, turn, feet, hands, can, knee, flat, toes, pitch, footYaw, hipX }; return; }
+export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, can, knee = KNEE, flat = 0, toes = 0, pitch = null, footYaw = null, hipX = 0, hipRoll = 0, torsoRoll = 0 }) {
+  if (fig.collectPose) { fig.pendingPose = { hip, lean, head, turn, feet, hands, can, knee, flat, toes, pitch, footYaw, hipX, hipRoll, torsoRoll }; return; }
   const B = fig.bones, hy = hip[0], hz = hip[1];
   B.hips.position.set(hipX, hy, hz);
-  B.hips.quaternion.identity();
+  const hq = hipRoll ? qH.setFromAxisAngle(Z, hipRoll) : qH.identity(); // #2035: the hips tilt sideways (+ lifts the left side)
+  B.hips.quaternion.copy(hq);
   const tq = q3.setFromAxisAngle(X, -lean);
+  if (torsoRoll) tq.premultiply(q5.setFromAxisAngle(Z, torsoRoll)); // (the torso's rotation in the figure's frame, its own under the hips)
   B.torso.quaternion.copy(tq);
+  if (hipRoll) B.torso.quaternion.premultiply(q5.copy(hq).invert());
   B.head.quaternion.setFromEuler(new THREE.Euler(-head, turn, 0, 'YXZ'));
   const I = qT.identity();
   const S = new THREE.Vector3(), T = new THREE.Vector3(), P = new THREE.Vector3(), out = new THREE.Quaternion();
   ['L', 'R'].forEach((s, i) => {
     const sx = i ? -1 : 1, [fx, fy, fz] = feet[i];
-    ik(B['thigh' + s], B['knee' + s], I, S.set(sx * 0.085, 0, 0), T.set(fx, fy - hy, fz - hz), THIGH, SHIN, P.set(sx * knee[0], knee[1], knee[2]), out);
+    ik(B['thigh' + s], B['knee' + s], hipRoll ? hq : I, S.set(sx * 0.085, 0, 0).applyQuaternion(hq), T.set(fx, fy - hy, fz - hz), THIGH, SHIN, P.set(sx * knee[0], knee[1], knee[2]), out);
     const foot = B['foot' + s];
     if (foot) { // the shin's rotation undone (level, the toes turned out) as far as `flat`
       if (flat > 0) {

@@ -17,6 +17,7 @@ import { exertUniforms, exertShader } from './avatarbreath.js'; // #2037
 import { topTexture } from './spidersuit.js';
 import { reactionPose, mixHand } from './reactpose.js';
 import { footGround } from './avatarfootik.js';
+import { newIdle, stepIdle, idleHands } from './avataridle.js'; // #2035: the living rest
 import { fingerSegments, fingerGLSL, gripFor, gripAngles, easeGrip, gripPoint } from './avatargrip.js'; // #2016: the fingers' grip shapes
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, THIGH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
@@ -2067,8 +2068,9 @@ export class Avatar {
     groundMotion(this, dt, gt, motionFrame, walking, groundEnabled && !am && !swim && !dance && !react && !kiss && c < MOTION.groundCrouch, fx, F.y, fz);
     const stepHip = footGround(this, dt, gt, motionFrame, floorY, this.object.scale.z || 1, ground, !!ground && groundEnabled && !am && !swim && !dance && !react && !kiss && c < MOTION.groundCrouch); // #2015: feet onto the real steps / slope
     const idle = groundEnabled && !walking && !am && !swim && !dance && !react && !kiss ? (1 - g) * (1 - c) : 0;
-    const sway = flossSway + gt.sway + MOTION.idleSway * idle * Math.sin(this.time * Math.PI * 2 * MOTION.idleHz);
-    let hipY = HIP - 0.02 - CR.hipDrop * c + (rp?.dy ?? 0) + kissLift * kiss - flossBob - gBob + breathe - gt.hip - AIR.climb.hipDrop * climbA + stepHip;
+    const iv = this.updateIdle(dt, idle > 0.5 && c < MOTION.groundCrouch, (1 - g) * (1 - c), !hands.L && !hands.R, turn, pitch); // #2035: weight shift, glances, arms
+    const sway = flossSway + gt.sway + MOTION.idleSway * idle * Math.sin(this.time * Math.PI * 2 * MOTION.idleHz) + iv.hipX;
+    let hipY = HIP - 0.02 - CR.hipDrop * c + (rp?.dy ?? 0) + kissLift * kiss - flossBob - gBob + breathe - gt.hip - AIR.climb.hipDrop * climbA + stepHip + iv.hipY;
     const hipZ = CR.hipForward * c, feet = gt.feet;
     const stepIK = this.footIK?.active && (Math.abs(this.footIK.off[0]) > 0.004 || Math.abs(this.footIK.off[1]) > 0.004); // #2015: also standing on uneven ground
     if ((g > 0.001 || stepIK) && !c) { // the hips stay within the legs' reach of both ankles (a long stride sinks them, as a real runner's do)
@@ -2106,6 +2108,11 @@ export class Avatar {
       if (!hands.L) handL = mixHand(handL, rp.hands[0], rp.amt);
       if (!hands.R) handR = mixHand(handR, rp.hands[1], rp.amt);
     }
+    if (iv.amt > 0.001) { // #2035: arms crossed, in the pockets or stretching (a busy hand keeps its target, the free one lets go)
+      const ih = this.idleHandsOut = idleHands(iv.kind, hipY, SH[1], this.idleHandsOut);
+      if (!hands.L) handL = mixHand(handL, ih[0], iv.amt);
+      if (!hands.R) handR = mixHand(handR, ih[1], iv.amt);
+    }
     if (sa > 0.001) { // #1943: the arms swim (a held thing keeps its hand)
       if (!hands.L) handL = mixHand(handL, swimHand(this, 0, hipY, hipZ, st, this.swimPhase ?? 0), sa);
       if (!hands.R) handR = mixHand(handR, swimHand(this, 1, hipY, hipZ, st, this.swimPhase ?? 0), sa);
@@ -2122,8 +2129,8 @@ export class Avatar {
     let knee = c ? CR.knees.map((v, i) => KNEE_REST[i] + (v - KNEE_REST[i]) * c) : KNEE_REST;
     if (climbA > 0.001) knee = knee.map((v, i) => v + (AIR.climb.knees[i] - v) * climbA); // #1799: knees out on the wall
     const airLean = AIR.fly.lean * aa[0] + AIR.swing.lean * aa[1] + AIR.climb.lean * climbA;
-    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: airLean - swimLean(st, dv) * sa + 0.03 * g - GAIT.runLean * rr + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + SW.head * swimLean(st, dv) * sa + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach, turn, feet, hands: [handL, handR], can: null,
-      hipX: sway, knee, flat: Math.max(c, g, motionFrame && groundEnabled && !am && !swim ? 1 : 0), toes: F.turn * c, pitch: g > 0.001 || this.groundMotion || this.footIK?.active ? gt.pitch : null, footYaw: this.groundMotion ? gt.yaw : null });
+    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: airLean - swimLean(st, dv) * sa + 0.03 * g - GAIT.runLean * rr + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach + iv.lean, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + SW.head * swimLean(st, dv) * sa + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach + iv.head, turn: turn + iv.turn, feet, hands: [handL, handR], can: null,
+      hipX: sway, hipRoll: iv.roll, torsoRoll: iv.torsoRoll, knee, flat: Math.max(c, g, motionFrame && groundEnabled && !am && !swim ? 1 : 0), toes: F.turn * c, pitch: g > 0.001 || this.groundMotion || this.footIK?.active ? gt.pitch : null, footYaw: this.groundMotion ? gt.yaw : null });
   }
 
   /** #1951: one swim stroke with both arms starts now (a swimming figure; ghosts.js sees it in the speed through the water). Not again
@@ -2148,6 +2155,14 @@ export class Avatar {
     const sw = this.sway ??= newSway();
     stepSway(sw, dt, b.head.matrixWorld.elements, b.torso.matrixWorld.elements);
     u.uSwayHair.value.fromArray(sw.hair.p); u.uSwayBun.value.fromArray(sw.bun.p); u.uSwayHem.value.fromArray(sw.hem.p);
+  }
+
+  /** #2035: the living rest while standing still (src/avataridle.js), once per update; seeded by `idleSeed` (Ghost: the player's id) or the
+   * look. `idleLook` false (our own mirror image) keeps the head on the player's view, `noIdle` (fixed-pose measurements) turns it all off.
+   * `turn` / `pitch` include the gaze's share, taken off here. */
+  updateIdle(dt, on, weight, arms, turn, pitch) {
+    const s = this.idle ??= newIdle(this.idleSeed ?? this.seed), e = this.eyes;
+    return stepIdle(s, dt, { on: on && !this.noIdle, weight, arms, look: this.idleLook !== false && !this.gazeTarget, turn: turn - (e?.yaw ?? 0), pitch: pitch - (e?.pitch ?? 0) });
   }
 
   /** #2011: where to look (a world point, or null for nothing in particular; ghosts.js sets it a few times a second). */

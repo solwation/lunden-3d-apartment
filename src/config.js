@@ -7603,6 +7603,22 @@ export const AVATAR_MOTION = {
   settleEase: 14, idleSway: .008, idleHz: .17, crouchEase: 8, poseTime: .44, poseLean: .30, seatTurnEase: 8, seatTurnSnap: .001, groundCrouch: .01,
   resetDistance: .75, resetTurn: 1.4, resetTime: .25,
 };
+// #2035: a standing avatar's living rest (src/avataridle.js), derived locally from a per-player seed (no network field). All *guesses* by
+// eye against ordinary idle footage, in model metres / seconds / radians; ranges [a, b] are drawn per event from the seeded random.
+// `live` 1/s: how fast the whole rest blends in / out. `weight`: the body moves over one leg (contrapposto): `shift` m the hips move over
+// it, `roll` rad the hips tilt (the free side drops, its knee bends), `drop` m they sink, `counter` share the shoulders tilt back the
+// other way; it changes side every `hold` s over `move` s, sometimes back to both legs (`centre` share). `look`: a glance around when
+// the player has not turned the view for `quiet` s (`input` rad/s counts as turning) and no one is looked at (#2011 wins): `yaw`/`pitch`
+// rad, `inT`/`hold`/`outT` s, `wait` s between. `gesture`: after `after` s of standing still the arms cross, go into the pockets or
+// stretch overhead (only with both hands free), `hold` s for the first two, `gap` s between, `blend` s in / out, `cancel` 1/s the fade
+// when a hand gets busy; `stretch`: up / hold / down s, `lean` (back) and `head` (up) rad.
+export const AVATAR_IDLE = {
+  live: 4,
+  weight: { first: [1.2, 3], hold: [3.5, 8], move: [0.9, 1.5], amount: [0.6, 1], centre: 0.2, shift: 0.032, roll: 0.09, drop: 0, counter: 0.5 },
+  look: { quiet: 2.5, input: 0.15, first: [2, 6], wait: [5, 11], yaw: [0.35, 0.8], pitch: [-0.1, 0.12], inT: 0.55, hold: [1.1, 2.6], outT: 0.75, fade: 3 },
+  gesture: { after: [8, 14], hold: [7, 13], gap: [3, 7], blend: 0.9, cancel: 6 },
+  stretch: { up: 1.1, top: 1.0, down: 1.3, lean: 0.09, head: 0.22 },
+};
 
 export const AVATAR_GAIT = {
   speeds: [0.25, 0.8, 1.6, 3.2, 4.8], // m/s (the table's points)
