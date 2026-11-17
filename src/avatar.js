@@ -5,7 +5,7 @@ import { GYM_PUMP } from './config.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SURFACE as SURFACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, AVATAR_GAIT as GAIT, AVATAR_MOTION as MOTION, DANCE, AVATAR_AIR as AIR, SWIM, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion, AVATAR_BLINK, AVATAR_GAZE, AVATAR_LIDS } from './config.js';
+import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SURFACE as SURFACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, AVATAR_GAIT as GAIT, AVATAR_MOTION as MOTION, DANCE, AVATAR_AIR as AIR, SWIM, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion, AVATAR_BLINK, AVATAR_GAZE, AVATAR_LIDS, AVATAR_NOSE as NOSE } from './config.js';
 import { newBlink, stepBlink, solveGaze, stepSaccade } from './avatargaze.js';
 import { armFixShader, installArmFix } from './avatararmfix.js'; // #2022
 import { newWet, stepWet, falling, wetEnv, WET_DECL, wetVertex, wetColor, wetRoughness } from './avatarweather.js'; // #2018
@@ -21,6 +21,7 @@ import { sculptShape, sculptShader, sculptKey, sealLipEdge } from './avatarsculp
 import { addFlyaways, flyUniforms, flyMaterial, flyKey, FLY_VDECL, FLY_FDECL, flyBind, flyProject, flyAlpha, flyLight } from './avatarflyaway.js'; // #2040
 import { browSurface, browSlide, browUniforms, applyBrowLook, browFDecl, browColor, browRoughness } from './avatarbrow.js'; // #2046
 import { hairlineAt, hairlineShell, hairlineAvoid, hairlineUniforms, applyHairlineLook, hairlineFDecl, hairlineColor } from './avatarhairline.js'; // #2050
+import { refineNose, noseHeight, noseVertexGLSL, noseFragmentGLSL, noseKey } from './avatarnose.js'; // #2048: the nose
 import { topTexture } from './spidersuit.js';
 import { profileAt, contourRows, roundChinCap, neckGeometry } from './avatarcontour.js'; // #2043
 import { reactionPose, mixHand } from './reactpose.js';
@@ -1034,20 +1035,12 @@ function headFront(x, y) {
   headSculpt(v); return v.z;
 }
 /** Local cartilage projection; its smooth falloff stays within the central face. */
-function noseRise(x, y) {
-  const rows = SURFACE.nosePatch.profile;
-  if (y >= rows[0][0] || y <= rows.at(-1)[0]) return 0;
-  const j = rows.findIndex(r => r[0] <= y), a = rows[j - 1], b = rows[j], t = (y - a[0]) / (b[0] - a[0]);
-  const w = THREE.MathUtils.lerp(a[1], b[1], t), h = THREE.MathUtils.lerp(a[2], b[2], t);
-  return h * Math.max(0, 1 - (x / w) ** 2) ** 2;
-}
-/** One head skin: the same vertex grid carries cheeks, orbit and nasal cartilage.
- * Extra front rings replace the former separate nose's triangle budget. */
+/** One head skin: the same vertex grid carries cheeks, orbit and nasal cartilage (#2048: a finer grid round the nose, src/avatarnose.js). */
 function headGeometry() {
   const rows = contourRows(SURFACE.head, SURFACE.nosePatch.rings); // #2043: nose rings + contour rings on the cubic profile, a rounded chin
-  const g = shape(roundChinCap(ringSurface(rows, SURFACE.headSides, SURFACE.nosePatch.concentration), rows), v => { headSculpt(v, true); if (v.z > 0) v.z += noseRise(v.x, v.y); });
+  const g = shape(refineNose(roundChinCap(ringSurface(rows, SURFACE.headSides, SURFACE.nosePatch.concentration), rows), rows), v => { headSculpt(v, true); if (v.z > 0) v.z += noseHeight(v.x, v.y); });
   const p = g.attributes.position, blend = new Uint8Array(p.count);
-  for (let i = 0; i < p.count; i++) blend[i] = p.getZ(i) > 0 ? Math.round(255 * noseRise(p.getX(i), p.getY(i)) / SURFACE.nosePatch.maxProjection) : 0;
+  for (let i = 0; i < p.count; i++) blend[i] = p.getZ(i) > 0 ? Math.round(255 * Math.min(1, noseHeight(p.getX(i), p.getY(i)) / NOSE.maxProjection)) : 0;
   g.setAttribute('noseBlend', new THREE.Uint8BufferAttribute(blend, 1, true));
   g.userData.projectionMinY = SURFACE.head[0][0]; // #2043: the Spider mask keeps its projection above the rounded chin
   return g;
@@ -1176,6 +1169,7 @@ function skinShading() {
           vec3 q = vSuitAt - vec3(${hb.x.toFixed(4)}, ${hb.y.toFixed(4)}, ${hb.z.toFixed(4)});
           ${skinArea('cheek', SK.cheek)}
           ${skinArea('noseTip', SK.nose)}
+          ${noseFragmentGLSL(hb, FACE_PART.head).color}
           ${skinArea('lipRim', SK.lipRim)}
           ${skinArea('socket', SK.eye)}
           float under = ${SK.under[2].toFixed(3)} * (1.0 - smoothstep(${SK.under[0].toFixed(3)}, ${SK.under[1].toFixed(3)}, q.y));
@@ -1392,7 +1386,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     sh.vertexShader = sh.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>\n${flyProject(bindAt('head').add(new THREE.Vector3(...HAIR.centre)))}`); // #2040
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>\n${LAMP_FDECL}`) // #2039
-      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim, uLight;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;\n' + WET_DECL + skin.decl + '\n' + EYE_FDECL + '\n' + FLY_FDECL + '\n' + browFDecl() + '\n' + hairlineFDecl())
+      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim, uLight;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;\n' + WET_DECL + skin.decl + '\n' + EYE_FDECL + '\n' + FLY_FDECL + '\n' + browFDecl() + '\n' + hairlineFDecl() + '\n' + noseFragmentGLSL(bindAt('head'), FACE_PART.head).decl)
       .replace('#include <color_fragment>', `#include <color_fragment>
       if (uSuit > 0.5) {
         vec3 red = vec3(${new THREE.Color(SPIDER.colors.red).toArray().join(',')}), blue = vec3(${new THREE.Color(SPIDER.colors.blue).toArray().join(',')});
@@ -1422,7 +1416,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       ${flyAlpha()}`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>\n${surfaceRoughness()}\n${browRoughness({ region: REGION.brow, part: FACE_PART.brow, skin: SURFACE.finish.skin })}\n${wetRoughness()}\n${eyeWet(FACE_PART.eye, FACE_PART.iris)}`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\n${skin.normal}`) // #2032
-      .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${skin.light}\n${flyLight({ hair: REGION.hair, beard: REGION.beard })}`) // #2032, #2040
+      .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${skin.light}\n${noseFragmentGLSL(bindAt('head'), FACE_PART.head).light}\n${flyLight({ hair: REGION.hair, beard: REGION.beard })}`) // #2032, #2040
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\nmetalnessFactor = vRing * ${SURFACE.finish.metalness.toFixed(3)};`)
       .replace('#include <bumpmap_pars_fragment>', '#include <bumpmap_pars_fragment>\n' + clothDecl()).replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n' + clothNormal()) // #2034
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>\ntotalEmissiveRadiance += uRingColor * vRing * ${RING.shine.toFixed(3)};`)
@@ -1437,7 +1431,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     sh.fragmentShader = exertShader(sh.fragmentShader, { head: bindAt('head') }); // #2037
     sh.fragmentShader = sculptShader(sh.fragmentShader, { head: bindAt('head'), part: FACE_PART }); // #2044
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050'; // #2032, #2031, #2033, #2037, #2040, #2034, #2050
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey(); // #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048
   return m;
 }
 
@@ -1458,11 +1452,7 @@ function faceShape() {
   const hb = bindAt('head'), W = FACE.warp, f = (v) => v.toFixed(4), P = FACE_PART;
   const lift = PHONES.hatLift.reduceRight((acc, l, i) => `(uHat < ${i}.5 ? ${f(l)} : ${acc})`, '0.0');
   return `if (facePart > ${P.finger}.0 - 0.5) ${GRIP_GLSL().body} else if (facePart > 0.5) {
-      if (abs(facePart - ${P.head}.0) < 0.5 && noseBlend > 0.0) {
-        vec3 nasalPivot = vec3(${f(hb.x)}, ${f(hb.y + FACE.nose.top)}, ${f(hb.z + FACE.nose.z)});
-        transformed = mix(transformed, nasalPivot + (transformed - nasalPivot) * uNose, noseBlend * (1.0 - uSuit));
-        transformed.z -= uSuit * noseBlend * ${f(SURFACE.nosePatch.maxProjection)};
-      }
+      if (abs(facePart - ${P.head}.0) < 0.5) ${noseVertexGLSL(hb)}
       if (uSuit > 0.5 && abs(facePart - ${P.head}.0) > 0.5 && abs(facePart - ${P.neck}.0) > 0.5) {
         transformed = vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)});
       } else {

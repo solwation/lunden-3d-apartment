@@ -4184,6 +4184,33 @@ export const AVATAR_SURFACE = {
     // waviness at `bend` rad/m of height, `strength` the shade contrast. Guesses by eye, faded with pixel footprint.
     strands: 72, sway: 0.09, bend: 40, strength: 0.13 },
 };
+// #2048 the nose (src/avatarnose.js), all *guess* by eye against the before views (docs/verification/2048) in raking light,
+// head-bone metres before faceWarp (the face looks +z; eye centre y 0.107, lip seam 0.043). `dorsum` rows top first
+// [y, half width, projection]: the bridge narrowest between the eyes, widest at the tip, narrowing under it into the columella.
+// `tip` / `base` / `ala` / `nostril`: [height or depth m, x (mirrored), y, half width, half height]; the tip's two domes, the lower
+// nose's body between the wings, the alar wings (`ala[5]` the edge's sharpness: higher = flatter top, steeper crease) and the
+// nostrils' dip. `blend` the smooth maximum's fillet m where forms meet. `crease` [-, radius (of the wing's), width] the alar
+// crease's ambient occlusion. `maxProjection` scales the vertex attribute noseBlend (≥ the highest point). `grid`: the finer
+// skin round the nose, `columns` head columns either side of the middle and the rings from `top` to `bottom` replaced by a grid
+// of columns `x` (mirrored) and rows `y` (top first). `mask`: the sliders' reach (after faceWarp): across from `x[0]` to
+// `x[1]` (low) / `x[2]` (up the bridge, between `narrow` heights), vertically `y` [in from, in to, out from, out to], width only
+// below `widthTop`, length about `pivot` times `length`. `shade`: the nostrils' albedo darkening and its power, the ambient
+// light taken from [nostril, crease]. A shape variant (#2049) scales these forms.
+export const AVATAR_NOSE = {
+  body: [[0.140, 0.0075, 0], [0.130, 0.0072, 0.0012], [0.121, 0.0070, 0.0032], [0.112, 0.0078, 0.0058], [0.104, 0.0090, 0.0096],
+    [0.096, 0.0106, 0.0146], [0.089, 0.0124, 0.0182], [0.083, 0.0140, 0.0198], [0.0785, 0.0150, 0.0200], [0.0750, 0.0150, 0.0190],
+    [0.0720, 0.0155, 0.0160], [0.0695, 0.0158, 0.0105], [0.0675, 0.0150, 0.0055], [0.0655, 0.0140, 0.0020], [0.0635, 0.0130, 0]],
+  ridge: [[0.124, 0.004, 0], [0.112, 0.0042, 0.0006], [0.098, 0.0046, 0.0012], [0.086, 0.0052, 0.0010], [0.078, 0.0055, 0]],
+  tip: [0.0022, 0.0028, 0.0775, 0.0055, 0.0055],
+  ala: [0.0056, 0.0148, 0.0676, 0.0078, 0.0716, 0.0058, 0.0046, 2.2, 0.7],
+  nostril: [0.0045, 0.0055, 0.0663, 0.0036, 0.0024],
+  blend: 0.008, crease: [0.0012, 1.0, 0.25], maxProjection: 0.025,
+  grid: { columns: 3, top: 0.142, bottom: 0.05,
+    x: [0, 0.0019, 0.0038, 0.0057, 0.0077, 0.0098, 0.0119, 0.0140, 0.0163, 0.0190, 0.0222],
+    y: [0.135, 0.126, 0.117, 0.108, 0.100, 0.093, 0.087, 0.082, 0.0785, 0.0755, 0.0728, 0.0703, 0.068, 0.0658, 0.0636, 0.0612, 0.0588, 0.0563] },
+  mask: { x: [0.006, 0.032, 0.02], narrow: [0.085, 0.105], y: [0.05, 0.064, 0.1, 0.12], widthTop: [0.088, 0.11], pivot: 0.09, length: 0.5 },
+  shade: { nostril: 0.7, nostrilPower: 2, ambient: [0.5, 0.35] },
+};
 // #2043 the head's silhouette (src/avatarcontour.js), head-bone metres, *guess* by eye against the before views
 // (docs/verification/2043). rings: extra head-shell heights on the cubic profile through AVATAR_SURFACE.head / AVATAR_FACE.jaw,
 // only where the outline curves (jaw angle, chin, cheek, back of the skull, crown); chin: the flat underside rounded as a
@@ -4313,7 +4340,7 @@ export const AVATAR_HAIR = { centre: [0, 0.09, 0], bunAt: [0, 0.212, -0.078], /*
 // elbows a little; `rimTint` [r, g, b, strength] reddens skin at grazing angles (scattered light). `cloth` darkens clothes in folds (armpits, crotch — kept faint, #1189 —, behind the knee) and hair underneath, per vertex.
 export const AVATAR_SKIN = {
   cheek: [0.056, 0.072, 0.06, 0.028, 0.85], blush: [1.08, 0.8, 0.76],
-  nose: [0, 0.076, 0.12, 0.016, 0.5], lipRim: [0, 0.042, 0.09, 0.02, 0.4],
+  nose: [0, 0.074, 0.12, 0.02, 0.18], lipRim: [0, 0.042, 0.09, 0.02, 0.4],
   eye: [0.034, 0.113, 0.06, 0.014, 0.2, 1.3], socket: [0.66, 0.58, 0.62], // #2044: the socket is sculpted now (AVATAR_SCULPT), so less paint (was 0.35)
   under: [-0.03, 0.04, 0.55], underTint: [0.8, 0.74, 0.74], ear: [0.085, 0.102, 0.5],
   hand: [1.03, 0.94, 0.92], limb: [1.02, 0.96, 0.95], rimTint: [1.0, 0.86, 0.8, 0.6],
