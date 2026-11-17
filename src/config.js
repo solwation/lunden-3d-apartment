@@ -9202,6 +9202,25 @@ export const AVATAR_BREATH = { gym: 0.8, build: 30, cool: 75, maxDt: 0.25, flush
   color: [0.92, 0.95, 1], lightGain: 1, minLevel: 0.12, max: 96,
   cheek: [0.056, 0.072, 0.06, 0.034], forehead: [0.125, 0.15, 0.05], nose: [0, 0.076, 0.12, 0.018],
   flushColor: [1.08, 0.78, 0.76], flushFace: 0.45, flushBody: 0.18, sheenRough: 0.26, sheenFace: 0.3, sheenBody: 0.35 };
+/** #2034: procedural cloth folds and weave as a normal perturbation in the avatar's fragment shader (src/avatarcloth.js). All *guesses*,
+ * tuned by eye on tools/avatarcloth.html. Lengths in bind-pose metres. `bend`: joint angle (rad) where a joint's crease folds start / are full;
+ * `hip`: the thigh's forward swing (rad) for the lap / belly folds. `elbow` / `knee`: Gaussian half-width `w` of the fold band along the limb,
+ * `amp` the fold depth's multiplier, `tilt` how far the ridges fan back from the crease (rad of phase per unit of 1 − cos), `stretch` the share of the shallow pull lines on the
+ * outside of the joint. `belly` (the top's front above the hem), `lap` (the trousers' front over the hip crease; `slant` tilts its creases
+ * up towards the hips), `ankle`, `wrist`: bunched bands (centre `y`, half-width `w`, ridge `rate` rad/m, resting strength `rest`, the extra
+ * with the pose `pose`). `fade` / `weaveFade`: phase change per pixel (rad) over which folds / weave fade out (no shimmer at distance).
+ * `cavity`: how much a fold's trough darkens. `tops` / `pants`: per garment [fold amplitude m, fold rate rad/m, weave amplitude m, weave kind];
+ * weave kinds 0 jersey, 1 knit, 2 fleece, 3 denim twill, 4 fine twill; `weave[kind]` = [column width m, row height m, colour contrast]. */
+export const AVATAR_CLOTH = {
+  bend: [0.35, 1.7], hip: [0.35, 1.45],
+  elbow: { w: 0.07, tilt: 2.6, stretch: 0.35, amp: 2 }, knee: { w: 0.08, tilt: 2.2, stretch: 0.5, amp: 1.5 },
+  belly: { y: 0.95, w: 0.055, rate: 120, rest: 0.08, pose: 0.9 }, lap: { y: 0.73, w: 0.09, rate: 95, slant: 0.7, rest: 0.05, pose: 1 },
+  ankle: { y: 0.17, w: 0.05, rate: 150, rest: 0.4, pose: 0.5 }, wrist: { w: 0.03, rate: 170, rest: 0.3 },
+  fade: [0.5, 1.3], weaveFade: [0.9, 2.0], cavity: 0.38,
+  tops: { tshirt: [0.0048, 110, 0.00006, 0], sweater: [0.0058, 82, 0.00015, 1], hoodie: [0.0064, 84, 0.00012, 2] },
+  pants: { jeans: [0.0066, 76, 0.00016, 3], trousers: [0.0056, 88, 0.00008, 4] },
+  weave: [[0.0017, 0.0015, 0.04], [0.0055, 0.0042, 0.05], [0.006, 0.009, 0.03], [0.0035, 0.0035, 0.1], [0.002, 0.002, 0.04]],
+};
 
 /** #2015: the avatar's feet on the real ground (src/avatarfootik.js). Offsets are in the figure's units. */
 export const AVATAR_FOOT_IK = {

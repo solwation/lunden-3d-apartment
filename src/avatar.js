@@ -11,6 +11,7 @@ import { armFixShader, installArmFix } from './avatararmfix.js'; // #2022
 import { newWet, stepWet, falling, wetEnv, WET_DECL, wetVertex, wetColor, wetRoughness } from './avatarweather.js'; // #2018
 import { eyeUniforms, EyeLight, EYE_VDECL, EYE_FDECL, eyePupil, eyeAt, eyeView, eyeWet, eyeGlint } from './avatareyes.js'; // #2033
 import { lampUniforms, LAMP_FDECL, lampGlsl } from './avatarlight.js'; // #2039: the street lamps' light
+import { clothUniforms, clothDecl, clothNormal, installCloth } from './avatarcloth.js'; // #2034
 import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #2014
 import { avatarSkinGLSL, skinKey } from './avatarskin.js'; // #2032
 import { faceExprUniforms, faceExprShader } from './avatarface.js'; // #2031
@@ -1418,6 +1419,7 @@ function makeMaterial(rim, headProjection) {
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
   flyMaterial(m, u); // #2040: alpha-to-coverage for the flyaways
+  Object.assign(u, clothUniforms()); // #2034
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
     // Bind-pose coordinates follow the original skin: colours/own canvas only, no new
@@ -1466,6 +1468,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\n${skin.normal}`) // #2032
       .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${skin.light}\n${flyLight({ hair: REGION.hair, beard: REGION.beard })}`) // #2032, #2040
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\nmetalnessFactor = vRing * ${SURFACE.finish.metalness.toFixed(3)};`)
+      .replace('#include <bumpmap_pars_fragment>', '#include <bumpmap_pars_fragment>\n' + clothDecl()).replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n' + clothNormal()) // #2034
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>\ntotalEmissiveRadiance += uRingColor * vRing * ${RING.shine.toFixed(3)};`)
       .replace('#include <opaque_fragment>', `float edge = pow(1.0 - clamp(abs(dot(normalize(normal), normalize(vViewPosition))), 0.0, 1.0), ${A.rimPower.toFixed(2)});
       ${eyeGlint(FACE_PART.eye, FACE_PART.iris)}
@@ -1477,7 +1480,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       #include <opaque_fragment>`);
     sh.fragmentShader = exertShader(sh.fragmentShader, { head: bindAt('head') }); // #2037
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033' + '-exert2037' + flyKey(); // #2032, #2031, #2033, #2037, #2040
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033' + '-exert2037' + flyKey() + '-cloth2034'; // #2032, #2031, #2033, #2037, #2040, #2034
   return m;
 }
 
@@ -1923,6 +1926,7 @@ export class Avatar {
     this.mesh = new THREE.SkinnedMesh(geometry, this.material);
     this.bones = attachSkeleton(this.mesh);
     installArmFix(this.mesh, this.material.userData.u.uArmFix); // #2022
+    installCloth(this.mesh, this.material.userData.u, lk); // #2034
     this.mesh.castShadow = this.mesh.receiveShadow = false;
     this.mesh.name = 'avatar';
     this.object.add(this.mesh);
@@ -1974,6 +1978,7 @@ export class Avatar {
     this.mesh = clonedMesh;
     this.bones = bones;
     installArmFix(clonedMesh, mat.userData.u.uArmFix); // #2022
+    installCloth(clonedMesh, mat.userData.u, lk); // #2034
     this.riggedScene = clonedScene;
     this.object.add(this.riggedScene);
 

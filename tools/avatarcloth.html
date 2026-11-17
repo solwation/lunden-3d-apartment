@@ -1,0 +1,85 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar cloth folds</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#c4c9ce}canvas{display:block}</style></head>
+<body><script type="module">
+// #2034 component page, driven by tools/avatarclothtest.cjs: three avatars (sweater + jeans, T-shirt + jeans, hoodie + wide trousers)
+// standing, crouching, sitting and with bent elbows; close-ups of the elbow, knee, lap and the weave; fold on/off pixel differences
+// and a far-view shimmer measure (frame-to-frame change under a sub-pixel camera drift, folds on vs off).
+import * as THREE from 'three';
+import { Avatar } from '../src/avatar.js';
+import { poseOlof } from '../src/olof.js';
+import { setClothLook, clothSignal, applyClothSignal } from '../src/avatarcloth.js';
+import { decodeAvatarLook, avatarEyeHeight } from '../src/config.js';
+const code = '210000100c5e8o2w0l8j0n0b0r8t8y8';
+const W = 800, H = 600, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(W, H); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xc4c9ce);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x7d7468, 1.2));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.6); sun.position.set(-2.2, 3.2, -2.6); scene.add(sun);
+const looks = [{ cut: 0, sleeves: 1, legs: 0, top: 0x7a3a34, pants: 0x4b5a78 }, { cut: 0, sleeves: 0, legs: 0, top: 0xe8e8e0, pants: 0x3f5274 }, { cut: 2, sleeves: 1, legs: 2, top: 0x3a6a44, pants: 0x6d5a45 }];
+const avatars = [], seats = []; window.__avatars = avatars;
+looks.forEach((o, i) => {
+  const lk = { ...decodeAvatarLook(code, 'cloth'), tall: 1, build: 1, style: 0, ...o }, a = new Avatar(lk);
+  a.baseY = 1.62 - avatarEyeHeight(lk); a.object.position.set((i - 1) * 0.7, a.baseY, 0); a.object.rotation.y = Math.PI; scene.add(a.object); avatars.push(a);
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.06, 0.42), new THREE.MeshStandardMaterial({ color: 0x5b4636, roughness: 0.8 }));
+  seat.position.set((i - 1) * 0.7, a.baseY + 0.42, -0.12); seat.visible = false; scene.add(seat); seats.push(seat);
+});
+const cam = new THREE.PerspectiveCamera(30, W / H, 0.02, 60);
+const X = new THREE.Vector3(1, 0, 0);
+let pose = 'stand';
+const sit = (a) => poseOlof(a, { hip: [0.5, 0], lean: 0.08, head: 0, turn: 0, feet: [[0.13, 0.05, 0.44], [-0.13, 0.05, 0.44]],
+  hands: [{ at: [0.2, 0.62, 0.36], pole: [0.7, -0.6, -0.3] }, { at: [-0.2, 0.62, 0.36], pole: [-0.7, -0.6, -0.3] }], can: null, flat: 1 });
+const apply = () => {
+  for (const [i, a] of avatars.entries()) {
+    for (let k = 0; k < (pose === 'crouch' ? 240 : 60); k++) a.update(1 / 60, { crouch: pose === 'crouch' ? 1 : 0 });
+    if (pose === 'sit') sit(a);
+    if (pose === 'bent') for (const s of ['L', 'R']) a.bones['elbow' + s].quaternion.setFromAxisAngle(X, -1.75);
+    seats[i].visible = pose === 'sit';
+  }
+  scene.updateMatrixWorld(true);
+};
+const world = (a, bone, off = [0, 0, 0]) => a.bones[bone].localToWorld(new THREE.Vector3(...off));
+// views: [eye, target] from the figures' joints (the figures face −z, their left is world −x)
+const views = {
+  full: () => [new THREE.Vector3(1.3, 1.55, -3.6), new THREE.Vector3(0, pose === 'stand' || pose === 'bent' ? 0.95 : 0.7, 0)],
+  elbow: () => { const p = world(avatars[0], 'elbowL'); return [p.clone().add(new THREE.Vector3(-0.36, 0.34, -0.3)), p.clone().add(new THREE.Vector3(0, 0.0, -0.06))]; },
+  knee: () => { const p = world(avatars[0], 'kneeL'); return [p.clone().add(new THREE.Vector3(-0.62, 0.12, -0.28)), p]; },
+  lap: () => { const p = world(avatars[1], 'hips'); return [p.clone().add(new THREE.Vector3(-0.25, 0.25, -0.62)), p.clone().add(new THREE.Vector3(0, -0.02, -0.05))]; },
+  weave: () => { const p = world(avatars[0], 'hips'); return [p.clone().add(new THREE.Vector3(-0.12, 0.08, -0.5)), p.clone().add(new THREE.Vector3(-0.08, 0.02, -0.1))]; },
+  weaveTee: () => { const p = world(avatars[1], 'hips'); return [p.clone().add(new THREE.Vector3(-0.12, 0.08, -0.5)), p.clone().add(new THREE.Vector3(-0.08, 0.02, -0.1))]; },
+  weaveHoodie: () => { const p = world(avatars[2], 'hips'); return [p.clone().add(new THREE.Vector3(-0.12, 0.08, -0.5)), p.clone().add(new THREE.Vector3(-0.08, 0.02, -0.1))]; },
+  far: () => [new THREE.Vector3(2.5, 1.7, -12.0), new THREE.Vector3(0, 0.9, 0)],
+};
+const fov = { full: 30, elbow: 30, knee: 30, lap: 30, weave: 30, weaveTee: 30, weaveHoodie: 30, far: 30 };
+const setView = (v, jitter = 0) => { const [e, t] = views[v](); cam.fov = fov[v]; cam.updateProjectionMatrix(); cam.position.copy(e).add(new THREE.Vector3(jitter, jitter * 0.5, 0)); cam.lookAt(t); };
+// the folds alone on / off (the weave stays: it does not depend on the pose)
+const setFolds = (on) => { for (const a of avatars) { const u = a.material.userData.u; setClothLook(u, a.look); if (!on) { u.uClothTop.value.x = 0; u.uClothPants.value.x = 0; } } };
+const pixels = () => { const gl = renderer.getContext(), px = new Uint8Array(W * H * 4); gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, px); return px; };
+const diff = (a, b) => { let s = 0, n = 0, big = 0; for (let i = 0; i < a.length; i += 4) { const d = (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2])) / 3; s += d; n++; if (d > 8) big++; } return { mean: s / n, share8: big / n }; };
+const draw = () => { renderer.info.reset(); renderer.render(scene, cam); const seat = seats.filter((m) => m.visible).length; return { calls: renderer.info.render.calls - seat, tris: renderer.info.render.triangles - 12 * seat }; }; // (avatars only)
+const signal = () => avatars.map((a) => { const u = a.material.userData.u; return { bend: u.uClothBend.value.toArray().map((v) => +v.toFixed(2)), hip: [+u.uClothHip.value.x.toFixed(2), +u.uClothHip.value.y.toFixed(2)] }; });
+window.__pose = (name) => { pose = name; apply(); setView('full'); draw(); return signal(); };
+window.__view = (v) => { setFolds(true); setView(v); return draw(); };
+// how much the folds change the picture in a view (mean abs RGB difference, share of pixels changed by more than 8 of 255)
+window.__foldDiff = (v) => { setView(v); setFolds(false); draw(); const off = pixels(); setFolds(true); draw(); return diff(off, pixels()); };
+// far view: mean frame-to-frame change while the camera drifts by a fraction of a pixel, with folds on and off
+window.__shimmer = (frames = 12) => {
+  const run = (on) => { setFolds(on); let prev = null, s = 0; for (let f = 0; f < frames; f++) { setView('far', f * 0.0015); draw(); const p = pixels(); if (prev) s += diff(prev, p).mean; prev = p; } return s / (frames - 1); };
+  const off = run(false), on = run(true); setFolds(true); return { off, on, ratio: on / off };
+};
+window.__cost = (n = 20, frames = 600) => { // CPU: the cloth pose signal + uniform writes per skeleton update (what installCloth adds)
+  const B = avatars[0].bones, u = avatars[0].material.userData.u, st = {}, t0 = performance.now();
+  for (let f = 0; f < frames * n; f++) applyClothSignal(clothSignal(B, st), u);
+  const ms = (performance.now() - t0) / frames;
+  return { n, frames, msPerFrame: ms, perAvatarUs: ms / n * 1000 };
+};
+apply();
+window.__render = draw;
+window.__ready = true;
+</script></body></html>
