@@ -6674,7 +6674,7 @@ export const AVATAR_PHONES = { tag: 'f', names: ['Inga', 'På öronen', 'Runt ha
 // (little, ring, middle, index, then the thumb [base, tip]); `point` where the middle of a held thing (a compact one: its box centre; a long one: its own grip origin) goes, in the hand's frame: out from the palm
 // (towards the palm side), along the fingers (-y) and across the hand (z, the thumb's side), in metres, so the curled fingers close round it. All artistic guesses (*guess*), tuned by eye in close-ups.
 // `byCategory` = heldcategory.js `hi`, `byWeapon` = COMBAT.weapons `h`; anything else the relaxed hand. `compact` the largest size (m) of a thing held by its middle; `split` the knuckle's share of a finger's length.
-export const AVATAR_GRIP = { ease: 14, split: 0.6, compact: 0.25, thumb: { prox: 0.026, dist: 0.024 },
+export const AVATAR_GRIP = { ease: 14, split: 0.6, compact: 0.25, sink: 0.004, thumb: { prox: 0.026, dist: 0.024 },
   shapes: {
     relaxed: { fingers: [[0.45, 0.55], [0.4, 0.5], [0.33, 0.45], [0.25, 0.35]], thumb: [0.15, 0.1], point: [0, 0, 0] },
     cylinder: { fingers: [[1.05, 1.25], [1.0, 1.25], [0.95, 1.2], [0.85, 1.1]], thumb: [0.5, 0.4], point: [0.045, -0.045, 0.005] },

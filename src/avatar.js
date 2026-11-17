@@ -585,9 +585,13 @@ function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
       add(limbWeights(ringSurface(ringRange(SURFACE.arm, boundary + SURFACE.clothOverlap, SURFACE.arm.at(-1)[0])), s), 'skin', sh);
     }
     // the hand: a flat palm towards the thigh, four fingers front (index) to back (little), curled a little inwards, the thumb forward
-    add(sphere(0.042, 8, 6).scale(0.45, 1.1, 0.95), 'skin', 'hand' + s, [-0.002 * sx, -0.016, 0.002]);
+    add(sphere(0.042, 8, 5).scale(0.45, 1.1, 0.95), 'skin', 'hand' + s, [-0.002 * sx, -0.016, 0.002]);
+    // #2016: a digit segment is a 5-sided lathe of cylinder length h between its two joint centres: the proximal one chamfered at both ends (30 triangles), the distal one
+    // with a rounded tip (40; a capsule's cone tip would spike). The end spheres' centres stay on the joints, so a bend opens no gap.
+    const digit = (r, h, seg) => lathe(seg ? [[0, -h / 2 - r], [0.87 * r, -h / 2 - 0.5 * r], [r, h / 2], [0.8 * r, h / 2 + 0.55 * r], [0, h / 2 + r]]
+      : [[0, -h / 2 - r], [0.87 * r, -h / 2 - 0.5 * r], [0.87 * r, h / 2 + 0.5 * r], [0, h / 2 + r]], 5);
     // #2016: every finger (and the thumb) is two capsules the vertex shader bends about their joints (src/avatargrip.js): the hand closes round what it holds
-    for (let f = 0; f < 5; f++) fingerSegments(f, sx, (r, h, seg) => cap(r, h, seg && f < 4 ? 3 : 4)).forEach(([g, at], seg) => { // (the fingertips a triangle round: smooth-shaded, and the triangle budget)
+    for (let f = 0; f < 5; f++) fingerSegments(f, sx, digit).forEach(([g, at], seg) => {
       add(g, 'skin', 'hand' + s, at, 0.96); add.last().face = FACE_PART.finger + (sx > 0 ? 0 : 10) + f * 2 + seg;
     });
   }

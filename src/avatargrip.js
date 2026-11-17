@@ -55,28 +55,30 @@ const FINGER_R = 0.0074, FINGER_TOP = -0.056;
 /** One finger's joints for hand side sx: knuckle `m`, middle joint `p`, tip `t` (hand-bone frame, before the bone's own bind offset),
  * the radius of each segment and the unit bend axis (positive angle = towards the palm). Finger 4 = the thumb. */
 export function fingerJoints(f, sx) {
+  // The joints are the CENTRES of the capsules' end spheres: a segment runs from joint to joint with a rounded end of its radius about each, so the
+  // spheres of neighbouring segments coincide and no gap opens when the distal bends about the shared joint. The base sinks into the palm.
   if (f === 4) {
-    const base = new THREE.Vector3(-sx * 0.006, -0.012, 0.022);
+    const r = [0.0088, 0.0078], base = new THREE.Vector3(-sx * 0.006, -0.012, 0.022);
     const u = new THREE.Vector3(0, -0.85, 0.52).applyAxisAngle(new THREE.Vector3(0, 0, 1), -sx * THUMB_TILT * 0.5).normalize();
     const p = base.clone().addScaledVector(u, G.thumb.prox), t = p.clone().addScaledVector(u, G.thumb.dist);
     const palm = new THREE.Vector3(-sx, 0, 0), axis = new THREE.Vector3().crossVectors(u, palm).normalize();
-    return { m: base, p, t, r: [0.0088, 0.0078], axis };
+    return { m: base, p, t, r, axis };
   }
-  const len = LENS[f], total = len + 2 * FINGER_R, z = (f - 1.5) * 0.0165;
+  const len = LENS[f], total = len + 2 * FINGER_R, z = (f - 1.5) * 0.0165, r = [FINGER_R, FINGER_R * 0.9];
   const d = new THREE.Vector3(Math.sin(-sx * TILT), -Math.cos(-sx * TILT), 0);
   const centre = new THREE.Vector3(-sx * 0.006, FINGER_TOP - len / 2, z);
-  const m = centre.clone().addScaledVector(d, -total / 2);
-  const p = m.clone().addScaledVector(d, total * G.split), t = m.clone().addScaledVector(d, total);
-  return { m, p, t, r: [FINGER_R, FINGER_R * 0.9], axis: new THREE.Vector3(0, 0, -sx) };
+  const top = centre.clone().addScaledVector(d, -total / 2), run = total - G.sink; // the finger's length from the sunk knuckle centre to the tip
+  const m = top.clone().addScaledVector(d, r[0] - G.sink), p = m.clone().addScaledVector(d, run * G.split), t = top.clone().addScaledVector(d, total - r[1]);
+  return { m, p, t, r, axis: new THREE.Vector3(0, 0, -sx) };
 }
 
-/** The two capsules (proximal, distal) of finger `f` as [geometry, centre-in-hand-frame, shade] with the geometry already oriented; bodyParts adds
- * them on the hand bone with the part ids `facePartBase + side * 10 + f * 2 + segment`. */
+/** The two capsules (proximal, distal) of finger `f` as [geometry, centre-in-hand-frame] with the geometry already oriented; bodyParts adds
+ * them on the hand bone with the part ids `FACE_PART.finger + side * 10 + f * 2 + segment`. `capsule(radius, cylinderLength, segment)`. */
 export function fingerSegments(f, sx, capsule) {
   const j = fingerJoints(f, sx), out = [];
   [[j.m, j.p, j.r[0]], [j.p, j.t, j.r[1]]].forEach(([a, b, r], seg) => {
     const dir = b.clone().sub(a), h = dir.length(), mid = a.clone().add(b).multiplyScalar(0.5);
-    const g = capsule(r, Math.max(0.001, h - 2 * r), seg);
+    const g = capsule(r, Math.max(0.001, h), seg);
     g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize()));
     out.push([g, mid.toArray()]);
   });

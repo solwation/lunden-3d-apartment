@@ -65,7 +65,7 @@ test('finger geometry: two segments per finger that join at the joint, mirrored 
     assert.ok(Math.abs(j.axis.length() - 1) < 1e-9);
     const mid = j.m.clone().add(j.p).multiplyScalar(0.5);
     assert.ok(new THREE.Vector3(...segs[0][1]).distanceTo(mid) < 1e-9);
-    assert.ok(j.m.distanceTo(j.p) > 0.015 && j.p.distanceTo(j.t) > 0.01);
+    assert.ok(j.m.distanceTo(j.p) > 0.01 && j.p.distanceTo(j.t) > 0.007);
     // a positive bend swings the tip towards the palm (-sx on x) for the four fingers
     if (f < 4) { const q = new THREE.Quaternion().setFromAxisAngle(j.axis, 1), tip = j.t.clone().sub(j.m).applyQuaternion(q); assert.ok(sx * (tip.x - (j.t.x - j.m.x)) < -0.01, `finger ${f} side ${sx}`); }
   }
