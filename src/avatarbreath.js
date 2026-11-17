@@ -169,7 +169,7 @@ export class BreathPuffs {
       const p = L[i], t = p.age / p.life;
       P[i * 3] = p.x; P[i * 3 + 1] = p.y; P[i * 3 + 2] = p.z;
       D[i * 4] = p.size * (B.grow[0] + (B.grow[1] - B.grow[0]) * Math.sqrt(t));
-      D[i * 4 + 1] = p.alpha * smooth(0, B.fadeIn, t) * Math.pow(1 - t, 1.6);
+      D[i * 4 + 1] = p.alpha * smooth(0, B.fadeIn, t) * Math.pow(1 - t, 1.2);
       D[i * 4 + 2] = Math.max(B.minLevel, Math.min(1.2, scene * p.light));
       D[i * 4 + 3] = p.seed;
     }

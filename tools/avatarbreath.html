@@ -1,0 +1,85 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar breath</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#46525e}canvas{display:block}</style></head>
+<body><script type="module">
+// #2037 component page, driven by tools/avatarbreathtest.cjs: avatars through the real breath / exertion code (updateBreath, the shared
+// BreathPuffs pool, the material's exertShader) with a fake clock: puffs outdoors in frost, none indoors or in mild weather; a face rested
+// beside the same face after a long sprint, and both a while later; draw calls with N avatars (puffs shown / hidden) and the CPU cost.
+import * as THREE from 'three';
+import { Avatar } from '../src/avatar.js';
+import { wetEnv } from '../src/avatarweather.js';
+import { updateBreath, BreathPuffs, newBreath } from '../src/avatarbreath.js';
+import { decodeAvatarLook, avatarEyeHeight } from '../src/config.js';
+const code = '210000100c5e8o2w0l8j0n0b0r8t8y8';
+const W = 640, H = 480, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H); document.body.appendChild(renderer.domElement);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x46525e);
+scene.add(new THREE.HemisphereLight(0xdfe8f2, 0x6a6660, 1.5));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.4); sun.position.set(1.5, 3, -4); scene.add(sun);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(20, 20).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0xe8edf2, roughness: 0.9 }));
+scene.add(ground);
+const pool = new BreathPuffs(scene);
+const make = (o, x, seed) => {
+  const lk = { ...decodeAvatarLook(code, seed), tall: 1, build: 1, ...o }, a = new Avatar(lk);
+  a.baseY = 0; a.object.position.set(x, 0, 0); a.object.rotation.y = Math.PI; scene.add(a.object); return a;
+};
+let avatars = [make({ style: 1, top: 0x7a2f2f }, -0.6, 'b0'), make({ style: 2, top: 0x2f4f7a }, 0, 'b1'), make({ style: 4, top: 0x3a6a44 }, 0.6, 'b2')];
+const fig = {};
+const cam = new THREE.PerspectiveCamera(24, W / H, 0.05, 50);
+const wide = () => { cam.position.set(2.3, 1.75, -2.6); cam.lookAt(0, 1.45, 0); };
+const face = () => { cam.fov = 20; cam.updateProjectionMatrix(); cam.position.set(0.17, 1.66, -1.3); cam.lookAt(0.17, 1.63, 0); };
+// `secs` of simulated time in 1/30 s steps; `cues(i)` the face cues of avatar i (the middle one runs in the winter shot)
+const sim = (secs, cues = () => ({ run: 0 }), puffs = pool) => {
+  const dt = 1 / 30;
+  for (let t = 0; t < secs - 1e-6; t += dt) {
+    scene.updateMatrixWorld(true);
+    avatars.forEach((a, i) => { a.update(dt); updateBreath(a, dt, cues(i), fig, puffs); });
+    pool.update(dt);
+  }
+};
+const draw = () => { scene.updateMatrixWorld(true); renderer.info.reset(); renderer.render(scene, cam); return { calls: renderer.info.render.calls, puffs: pool.n, exert: avatars.map((a) => a.breath ? [+a.breath.flush.toFixed(3), +a.breath.sheen.toFixed(3)] : null) }; };
+const env = (temp, kind, outdoors) => Object.assign(wetEnv, { temp, kind, rain: kind ? 0.6 : 0, outdoorAt: () => outdoors });
+const reset = () => { pool.list.length = 0; pool.update(0.01); avatars.forEach((a, i) => { a.breath = newBreath(0.3 + i * 0.02); }); };
+const steps = {
+  winter: () => { wide(); env(-6, 'snow', true); reset(); sim(1.0, (i) => ({ run: i === 1 ? 1 : 0 })); return draw(); },
+  indoors: () => { wide(); env(-6, 'snow', false); reset(); sim(1.0, (i) => ({ run: i === 1 ? 1 : 0 })); return draw(); },
+  mild: () => { wide(); env(14, null, true); reset(); sim(1.0, (i) => ({ run: i === 1 ? 1 : 0 })); return draw(); },
+  faces: () => { // left rested, right after a 40 s sprint (the same look); warm indoors, so no puffs
+    for (const a of avatars) a.object.removeFromParent();
+    avatars = [make({ style: 1, top: 0x7a2f2f }, 0.34, 'f'), make({ style: 1, top: 0x7a2f2f }, 0, 'f')];
+    env(20, null, false); reset(); sim(40, (i) => ({ run: i === 1 ? 1 : 0 })); face(); return draw();
+  },
+  faces30: () => { sim(30); return draw(); },
+  facesLater: () => { sim(45); return draw(); },
+  winterFaces: () => { env(-6, null, true); reset(); avatars[1].breath = newBreath(0.3); avatars[0].breath = newBreath(0.33); sim(1.0, (i) => ({ run: i === 1 ? 1 : 0 })); cam.fov = 26; cam.updateProjectionMatrix(); cam.position.set(1.25, 1.68, -1.25); cam.lookAt(0.15, 1.6, -0.2); return draw(); },
+};
+window.__step = (name) => steps[name]();
+window.__calls = (n = 12) => { // n avatars outdoors in frost: draw calls with puffs visible vs hidden, and the CPU cost of breath per avatar
+  for (const a of avatars) a.object.removeFromParent();
+  avatars = []; for (let i = 0; i < n; i++) avatars.push(make({ style: 1 + (i % 4) }, (i % 6 - 2.5) * 0.6, 'n' + i));
+  avatars.forEach((a, i) => { a.object.position.z = Math.floor(i / 6) * 1.2; });
+  wide(); cam.position.set(3.5, 2.4, -5); cam.lookAt(0, 1.2, 0.6); cam.fov = 30; cam.updateProjectionMatrix();
+  env(-6, null, true); reset(); avatars.forEach((a, i) => { a.breath = newBreath(0.3 + (i % 3) * 0.01); }); sim(0.8, () => ({ run: 1 }));
+  const on = draw(); pool.points.visible = false; const off = draw(); pool.points.visible = on.puffs > 0;
+  const frames = 600, t0 = performance.now(); for (let f = 0; f < frames; f++) { for (const a of avatars) updateBreath(a, 1 / 60, { run: 1 }, fig, pool); pool.update(1 / 60); }
+  const ms = (performance.now() - t0) / frames;
+  return { n, puffs: on.puffs, callsWithPuffs: on.calls, callsWithout: off.calls, msPerFrame: ms, perAvatarUs: ms / n * 1000 };
+};
+window.__ghostSmoke = async () => { // the real Ghosts / Ghost wiring: a running figure outdoors in frost puffs into Ghosts' shared pool
+  const { Ghosts, Ghost } = await import('../src/ghosts.js');
+  const sc = new THREE.Scene(), gs = new Ghosts({ scene: sc, camera: cam, url: null, state: () => ({ p: [0, 0, 0], r: 0 }) });
+  const g = new Ghost(gs.group, 7, 'Löpare'); g.root.visible = true;
+  env(-6, null, true);
+  let t = 1000, puffs = 0;
+  for (let k = 0; k < 150; k++) { g.root.position.x += 4 * 0.033; sc.updateMatrixWorld(true); g.animate(t += 33, 2, 4, 0); gs.update(0.033); puffs = Math.max(puffs, gs.breath.n); }
+  return { puffs, run: +(g.avatar.gt?.run ?? 0).toFixed(2), heat: +g.avatar.breath.heat.toFixed(3), inGroup: gs.group.children.includes(gs.breath.points) };
+};
+window.__ready = true;
+</script></body></html>

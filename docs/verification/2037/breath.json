@@ -1,0 +1,126 @@
+{
+ "winter": {
+  "calls": 5,
+  "puffs": 3,
+  "exert": [
+   [
+    0,
+    0
+   ],
+   [
+    0,
+    0
+   ],
+   [
+    0,
+    0
+   ]
+  ]
+ },
+ "indoors": {
+  "calls": 4,
+  "puffs": 0,
+  "exert": [
+   [
+    0,
+    0
+   ],
+   [
+    0,
+    0
+   ],
+   [
+    0,
+    0
+   ]
+  ]
+ },
+ "mild": {
+  "calls": 4,
+  "puffs": 0,
+  "exert": [
+   [
+    0,
+    0
+   ],
+   [
+    0,
+    0
+   ],
+   [
+    0,
+    0
+   ]
+  ]
+ },
+ "faces": {
+  "calls": 3,
+  "puffs": 0,
+  "exert": [
+   [
+    0,
+    0
+   ],
+   [
+    1,
+    1
+   ]
+  ]
+ },
+ "faces30": {
+  "calls": 3,
+  "puffs": 0,
+  "exert": [
+   [
+    0,
+    0
+   ],
+   [
+    0.568,
+    0.183
+   ]
+  ]
+ },
+ "facesLater": {
+  "calls": 3,
+  "puffs": 0,
+  "exert": [
+   [
+    0,
+    0
+   ],
+   [
+    0,
+    0
+   ]
+  ]
+ },
+ "winterFaces": {
+  "calls": 4,
+  "puffs": 2,
+  "exert": [
+   [
+    0,
+    0
+   ],
+   [
+    0,
+    0
+   ]
+  ]
+ },
+ "calls": {
+  "n": 12,
+  "puffs": 12,
+  "callsWithPuffs": 14,
+  "callsWithout": 13,
+  "msPerFrame": 0.00433333333581686,
+  "perAvatarUs": 0.36111111131807166
+ },
+ "ghosts": {
+  "puffs": 1,
+  "run": 1,
+  "heat": 0.161,
+  "inGroup": true
+ }
+}

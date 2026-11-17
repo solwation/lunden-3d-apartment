@@ -9144,7 +9144,7 @@ export const AVATAR_WET = { wetRate: 0.0125, dryIndoor: 1 / 300, dryOutdoor: 1 /
 // (`nose` [x, y, z, radius]), `sheenFace` elsewhere on the face, `sheenBody` on arms and legs.
 export const AVATAR_BREATH = { gym: 0.8, build: 30, cool: 75, maxDt: 0.25, flushAt: [0.3, 0.85], sheenAt: [0.45, 1],
   rate: [0.25, 0.8], heatBreath: 0.6, exhale: 0.45, cold: -6, warm: 6, snowMin: 0.7, mouth: [0, 0.042, 0.12],
-  density: [0.22, 0.42], speed: [0.35, 0.6], rise: 0.03, drag: 2.2, buoyancy: 0.06, life: [1.7, 1.2], size: [0.1, 0.16], grow: [0.5, 2.4], fadeIn: 0.12,
+  density: [0.5, 0.75], speed: [0.35, 0.6], rise: 0.03, drag: 2.2, buoyancy: 0.06, life: [1.7, 1.1], size: [0.08, 0.11], grow: [0.7, 2.7], fadeIn: 0.1,
   color: [0.92, 0.95, 1], lightGain: 1, minLevel: 0.12, max: 96,
   cheek: [0.056, 0.072, 0.06, 0.034], forehead: [0.125, 0.15, 0.05], nose: [0, 0.076, 0.12, 0.018],
   flushColor: [1.08, 0.78, 0.76], flushFace: 0.45, flushBody: 0.18, sheenRough: 0.26, sheenFace: 0.3, sheenBody: 0.35 };
