@@ -475,7 +475,9 @@ function upperBody(sleeves, female, cut) {
       // #2013 corrective weight: torso skin around each armhole follows its shoulder bone by a falling share, so a lifted arm
       // drags the pectoral/lat fabric up with it instead of tearing the armhole open or pinching the armpit.
       const pivot = pivots[at[0] < 0 ? 1 : 0], reach = Math.hypot(at[0] - pivot.x, (at[1] - pivot.y) * B.followTall, at[2] - pivot.z);
-      const follow = B.follow * (1 - smoothstep(B.followRadius[0], B.followRadius[1], reach));
+      const follow = B.follow * (1 - smoothstep(B.followRadius[0], B.followRadius[1], reach))
+        * THREE.MathUtils.lerp(B.followRim[0], 1, smoothstep(-B.followRim[2], B.followRim[2], at[1] - pivot.y)) // upper rim follows, lower rim (the armpit crease) less
+        * THREE.MathUtils.lerp(B.followRim[1], 1, smoothstep(-B.followRim[2], B.followRim[2], -(at[2] - pivot.z))); // back rim follows, front rim less
       vertex(at, follow > 1e-3 ? [torso, pivot.id, 0, 0] : undefined, follow > 1e-3 ? [1 - follow, follow, 0, 0] : undefined,
         undefined, row < 2 ? B.hemShade : 1);
     }
@@ -507,7 +509,7 @@ function upperBody(sleeves, female, cut) {
     // Correspondence and weights follow the actual endpoints, not independent
     // loft ellipses below the pivot. This avoids a wedge that folds into a fin.
     for (const t of B.shoulderRows) {
-      const next = [], blend = t, bulge = Math.sin(Math.PI * t);
+      const next = [], blend = t ** B.rowBlend, bulge = Math.sin(Math.PI * t);
       for (let j = 0; j < 12; j++) {
         const i = sx === 1 ? j : (12 - j) % 12, a = j / 12 * Math.PI * 2;
         const start = pos.slice(root[j] * 3, root[j] * 3 + 3);

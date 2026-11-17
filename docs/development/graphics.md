@@ -47,16 +47,19 @@ counts and software timing limits](../verification/2001/README.md).
 
 #### Shoulder volume when the arm moves (#2013)
 
-Torso vertices around each armhole carry a falling share (`AVATAR_SURFACE.body.follow`,
-`followRadius`, `followTall`; guesses) of the matching shoulder bone as a corrective weight
-instead of 100% torso, and the sewn shoulder rows start from those root weights. Rest pose and
-the 15-bone rig are unchanged and torso stays the dominant bone for suit shading. The first
-reading of the torso-to-arm surface edge stretch dropped from about 1.86x to 1.69x (99th percentile, arms up)
-and chest/armpit triangle collapse is no worse for waving, rifle hold and reaching. A fully crossed-arm pose still crushes
-the inner rim (about 0.19-0.28 of the rest area at the worst 1% of triangles), so inner-axilla compression is reduced, not removed.
-Check with `node --test tools/avatarshouldertest.mjs` (numeric bounds via `tools/avatarshouldervolume.mjs`) and the
-pose sheet `tools/avatarshoulderbrowser.cjs` / `tools/verify-avatar-shoulders.html`
-([images](../verification/2013/)).
+Torso vertices around each armhole carry a falling share of the matching shoulder bone as a corrective
+weight instead of 100% torso (`AVATAR_SURFACE.body.follow`, `followRadius`, `followTall`, `followRim`,
+`rowBlend`; guesses chosen by a grid search). The share is zero on the lower rim (the armpit crease) and
+kept on the upper/back rim, and the sewn-shoulder rows start from those root weights. Rest pose and the
+15-bone rig are unchanged and torso stays dominant for suit shading. Worst-1% triangle area (posed/rest)
+never falls below the pre-#2013 value for lift, wave, forward, rifle hold or crossed arms (both bodies and sleeve
+lengths); 99th-percentile edge stretch improves for arms up (1.86 to 1.77), wave, forward and cross, and gets
+0.04 worse for the rifle hold. Static weights cannot do better: a grid search found no setting that also
+reaches 1.69 stretch without losing area, and a shader-only corrective would not be covered by the CPU check.
+Inner-axilla compression in crossed arms is not reduced, only not worsened. Check with
+`node --test tools/avatarshouldertest.mjs` (bounds against the stored before-table, via
+`tools/avatarshouldervolume.mjs`) and the pose sheets `tools/avatarshoulderbrowser.cjs` /
+`tools/verify-avatar-shoulders.html` ([images](../verification/2013/)).
 
 ### Player head and hair (#2002)
 

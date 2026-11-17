@@ -10,25 +10,24 @@ import { Avatar, loadRiggedAvatarModel } from '../src/avatar.js';
 import { avatarLook } from '../src/config.js';
 import { POSES } from './avatarshouldervolume.mjs';
 await loadRiggedAvatarModel();
-const W = 300, H = 330, poses = { rest: {}, ...POSES }, names = Object.keys(poses);
-const bodies = [[0, 0], [0, 1], [1, 0], [1, 1]];
-const renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); renderer.setPixelRatio(1);
-renderer.setSize(W * names.length, H * bodies.length); document.body.append(renderer.domElement);
+const all = { rest: {}, ...POSES }, bodies = [[0, 0], [0, 1], [1, 0], [1, 1]];
+const renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); renderer.setPixelRatio(1); document.body.append(renderer.domElement);
 const scene = new T.Scene(); scene.background = new T.Color('#edf0f3'); scene.add(new T.HemisphereLight(0xffffff, 0x8c857c, 2));
 const sun = new T.DirectionalLight(0xfff4df, 2); sun.position.set(2, 5, 4); scene.add(sun);
-const camera = new T.PerspectiveCamera(36, W / H, .03, 20);
 const avs = bodies.map(([gender, sleeves], i) => { const a = new Avatar({ ...avatarLook('s2013'), gender, sleeves, cut: 0, style: i, height: 175, bodyBuild: 4, hat: 0, glasses: 0, phones: 0, facial: 0 }); scene.add(a.object); return a; });
-window.shoulderView = (azimuth = .6) => {
+// view: { names: pose names (columns), az: camera azimuth from the front, dist, ty: target height, W, H, up: camera elevation }
+window.shoulderView = ({ names = Object.keys(all), az = 0, dist = 2.3, ty = 1.2, W = 340, H = 330, lift = .12, fov = 36 } = {}) => {
+  renderer.setSize(W * names.length, H * bodies.length); const camera = new T.PerspectiveCamera(fov, W / H, .03, 20);
   renderer.setScissorTest(true);
   bodies.forEach((_, r) => names.forEach((n, c) => {
     avs.forEach((a, j) => a.object.visible = j === r);
-    const a = avs[r]; a.gait = 0; a.phase = .8; a.time = 1; a.update(0, poses[n]); a.update(1, poses[n]);
-    const t = new T.Vector3(0, 1.22, 0), d = new T.Vector3(Math.sin(azimuth), .12, Math.cos(azimuth)).multiplyScalar(1.8);
+    const a = avs[r]; a.gait = 0; a.phase = .8; a.time = 1; a.update(0, all[n]); a.update(1, all[n]);
+    const t = new T.Vector3(0, ty, 0), d = new T.Vector3(Math.sin(Math.PI + az), lift, Math.cos(Math.PI + az)).normalize().multiplyScalar(dist);
     camera.position.copy(t).add(d); camera.lookAt(t);
     renderer.setViewport(c * W, (bodies.length - 1 - r) * H, W, H); renderer.setScissor(c * W, (bodies.length - 1 - r) * H, W, H); renderer.render(scene, camera);
   }));
   renderer.setScissorTest(false);
 };
-window.shoulderView(); document.querySelector('#status').textContent = 'kolumner: ' + names.join(', ') + ' · rader: man/kvinna x kort/lång ärm';
+window.shoulderView(); document.querySelector('#status').textContent = 'rader: man/kvinna x kort/lång ärm';
 window.__ready = true;
 </script></html>

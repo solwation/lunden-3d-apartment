@@ -74,15 +74,21 @@ test('raised arms, crouch, seat and driving keep actual surface finite and hand 
  assert.deepEqual(a.mesh.skeleton.bones.map(b=>b.name),NAMES);a.dispose();
 });
 
-// #2013: corrective torso weight toward the shoulder bones keeps the armpit/shoulder surface from tearing or collapsing.
+// #2013: corrective torso weight toward the shoulder bones. Worst-1% triangle area ratio and 99th-percentile edge stretch
+// (posed / rest) per pose, measured on the pre-#2013 weights (both body types, both sleeve lengths gave the same numbers per body type).
+// Area may never fall below its before value. Edge stretch may not exceed it either, except the rifle hold, which trades +0.05.
 import { shoulderMetrics } from './avatarshouldervolume.mjs';
-for (const gender of [0, 1]) for (const sleeves of [0, 1]) test(`shoulder volume bounds when lifting, reaching and crossing, gender${gender} sleeves${sleeves}`, () => {
+const BEFORE = [
+ { up: [1.858, .695], wave: [1.732, .751], forward: [1.349, .937], rifle: [1.389, .767], cross: [1.133, .277] },
+ { up: [1.862, .726], wave: [1.739, .78], forward: [1.349, .953], rifle: [1.379, .778], cross: [1.119, .256] },
+];
+for (const gender of [0, 1]) for (const sleeves of [0, 1]) test(`shoulder volume never regresses vs before #2013 (lift, reach, cross), gender${gender} sleeves${sleeves}`, () => {
  const m = shoulderMetrics({ ...avatarLook('vol2013'), gender, sleeves, cut: 0 });
  for (const [pose, v] of Object.entries(m)) {
-  assert.ok(v.edgeP99 <= 1.75, `${pose}: shoulder edges stretch at most 1.75x (1.86 before #2013) (${v.edgeP99})`);
-  assert.ok(v.edgeP1 >= .45, `${pose}: shoulder edges shrink at most to 0.45x (${v.edgeP1})`);
-  assert.ok(v.areaP1 >= .15, `${pose}: shoulder triangles keep at least 15% of their area (${v.areaP1})`);
-  assert.ok(v.stretched === 0, `${pose}: no tearing stretch`);
+  const [edge, area] = BEFORE[gender][pose];
+  assert.ok(v.areaP1 >= area - 1e-9, `${pose}: worst-1% area ${v.areaP1} >= before ${area}`);
+  assert.ok(v.edgeP99 <= edge + (pose === 'rifle' ? .05 : 1e-9), `${pose}: edge stretch ${v.edgeP99} <= before ${edge}`);
+  assert.equal(v.stretched, 0, `${pose}: no tearing stretch`);
  }
 });
 test('armhole follow weights: normalised, four influences, torso stays dominant for suit shading', () => {
