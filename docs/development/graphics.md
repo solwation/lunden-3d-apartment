@@ -99,6 +99,11 @@ ends lie flat at the nape so cuffs still cover them. `beardShell`/`moustacheShel
 moustache alone is a tapered, drooping band instead of two blocks. The fragment shader draws
 fine strands round the head bone's axis for head hair and beards (`AVATAR_SURFACE.hair.strands`),
 a whole number per turn and faded by footprint. Variants add 0.4–4.3% triangles over the
+**Headwear check (#2021).** Cap, beanie, hat and headphones were checked against all five hairstyles in front, profile, back and back-quarter views
+(`tools/avatarhat2021browser.cjs`, evidence in `docs/verification/2021/`): the `uHat` tuck keeps every style, including the curls and the bun
+(`AVATAR_HAIR.bunAt`, unchanged and still the single source for the sway), inside the headwear. The one visible fault was the brimmed hat: its brim started at the
+skull lift while the crown stands `0.012` m higher, leaving a slit that showed hair; the brim now starts at the crown's lower edge (no new geometry or draw call).
+
 #2002 result (curly 2.1%), within +10%, one draw, no texture/pass/attribute.
 [Before/after views, counts and limits](../verification/2012/README.md).
 

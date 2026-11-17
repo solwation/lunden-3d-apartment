@@ -10,11 +10,11 @@ const camera=new T.OrthographicCamera(-1,1,1,-1,.01,20),looks=Array.from({length
 let avatars=[];
 function setLooks(input){avatars.forEach(a=>{a.object.removeFromParent();a.dispose()});avatars=input.map(l=>{const a=new Avatar(l);a.object.rotation.y=0;a.update(0,{});scene.add(a.object);return a;});}
 setLooks(looks);
-function draw(mode='quarter',meeting=false){
+function draw(mode='quarter',meeting=false,zoom=.46){
  const cols=avatars.length, width=renderer.domElement.width/cols,height=renderer.domElement.height;renderer.setScissorTest(true);
  for(let i=0;i<cols;i++){avatars.forEach((a,j)=>a.object.visible=i===j);const a=avatars[i],target=a.bones.head.getWorldPosition(new T.Vector3());target.y+=(meeting?-.22:.096)*a.object.scale.y;
- const h=meeting?1.30:.46,w=h*width/height;Object.assign(camera,{left:-w/2,right:w/2,top:h/2,bottom:-h/2});camera.updateProjectionMatrix();
- const dir=mode==='profile'?[1,0,.02]:mode==='back'?[.25,0,-1]:mode==='front'?[0,0,1]:[.65,.03,1];camera.position.copy(target).add(new T.Vector3(...dir).normalize().multiplyScalar(3));camera.lookAt(target);
+ const h=meeting?1.30:zoom,w=h*width/height;Object.assign(camera,{left:-w/2,right:w/2,top:h/2,bottom:-h/2});camera.updateProjectionMatrix();
+ const dir=mode==='profile'?[1,0,.02]:mode==='back'?[.25,0,-1]:mode==='front'?[0,0,1]:mode==='backq'?[1,.2,-.8]:[.65,.03,1];camera.position.copy(target).add(new T.Vector3(...dir).normalize().multiplyScalar(3));camera.lookAt(target);
  renderer.setViewport(i*width,0,width,height);renderer.setScissor(i*width,0,width,height);renderer.render(scene,camera);
  }renderer.setScissorTest(false);
 }

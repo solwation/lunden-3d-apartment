@@ -180,9 +180,9 @@ function addHats(add, P) {
     const A = az(cols);
     return solid(cols, rows, (i, j) => { const a = A[i], e0 = table(edge, a), e = e0 + ((90 - e0) * j) / rows; return skull(a, e, lift(e) + extra); });
   };
-  const brim = (a0, a1, cols, edge, len, drop, double = true) => { // a flat plate from the dome's lower edge outwards, both sides
+  const brim = (a0, a1, cols, edge, len, drop, double = true, extra = 0) => { // a flat plate from the dome's lower edge outwards, both sides
     const A = az(cols, a0, a1), pos = (i, j) => {
-      const a = A[i], e = table(edge, a), p = skull(a, e, lift(e)), l = len(a) * j;
+      const a = A[i], e = table(edge, a), p = skull(a, e, lift(e) + extra), l = len(a) * j;
       return [p[0] + Math.sin(a * deg) * l, p[1] + drop * j, p[2] + Math.cos(a * deg) * l];
     };
     const top = grid(cols, 1, false, (i, j) => pos(i, j)), under = grid(cols, 1, false, (i, j) => pos(i, j), true);
@@ -199,7 +199,7 @@ function addHats(add, P) {
   for (const g of solid(16, 2, (i, j) => { const a = A[i], e = table(E, a) - 2 + 12 * (j / 2); return skull(a, e, lift(e) + 0.012 * Math.sin(Math.min(1, j / 1.2) * Math.PI / 2) + 0.004); }, true)) put(g, 0.8, FACE_PART.knit);
   // the brimmed hat: a crown that is a little taller, and a brim round the head dipping towards its edge
   for (const g of dome(HAT.edge.hat, 4, 16, 0.012)) put(g, 0.92, FACE_PART.hatCrown);
-  for (const g of brim(-180, 180, 16, HAT.edge.hat, () => HAT.brim, -0.012)) put(g, 0.8, FACE_PART.hatBrim);
+  for (const g of brim(-180, 180, 16, HAT.edge.hat, () => HAT.brim, -0.012, true, 0.012)) put(g, 0.8, FACE_PART.hatBrim); // #2021: the brim starts at the taller crown's lower edge (no gap showing the hair between them)
 }
 /** #1322 (#1318): headphones, two kinds in the shared geometry (the shader keeps the chosen one, uPhones): 1 on the ears (head bone frame: a band arching over
  * the head at the ears' height, two cups with a lighter pad on their inner side; the shader lifts the band over headwear and pushes the cups out over a knitted
