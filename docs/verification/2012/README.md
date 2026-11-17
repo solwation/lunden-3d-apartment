@@ -58,3 +58,8 @@ Still stylized opaque geometry, no hair cards. The beard+moustache opening still
 shows its older lip patch below the moustache (unchanged). Pre-existing: a hair
 block above the curly+beanie cuff in a side view and the bun under the brimmed hat
 are unchanged. No phone, hardware GPU or World test.
+
+Source binding: the result images and `browser-after.json` were recaptured after
+rebasing onto `96a3c561` (#2014 sway, `AVATAR_HAIR.bunAt` kept as the bun's single
+source); `browser-both.json` holds the matched before/after pass on the pre-rebase
+commit with identical hair/beard source. `tools/avatarswaytest.mjs` 5/5 after the rebase.

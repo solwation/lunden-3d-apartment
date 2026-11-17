@@ -1,0 +1,67 @@
+{
+  "baseline": "1c348ad4",
+  "hashes": {
+    "after": {
+      "src/avatar.js": "f036d42f38c708a8f1c8f9ea27f056ea44e6abd99ddb9f2c9e4440933d04c629",
+      "src/config.js": "5e1a05d447c486f10dedb902c17664e510a8eeb7f66295b6764a0e3cd78f4026"
+    }
+  },
+  "errors": {
+    "after": []
+  },
+  "triangles": {
+    "after:hair-close": [
+      11892,
+      12588,
+      12252,
+      13144,
+      17372
+    ],
+    "after:hair-profile": [
+      11892,
+      12588,
+      12252,
+      13144,
+      17372
+    ],
+    "after:hair-back": [
+      11892,
+      12588,
+      12252,
+      13144,
+      17372
+    ],
+    "after:beard-close": [
+      11892,
+      12568,
+      11988,
+      12560
+    ],
+    "after:beard-profile": [
+      11892,
+      12568,
+      11988,
+      12560
+    ],
+    "after:headwear": [
+      12588,
+      17372,
+      12252,
+      11892,
+      17372
+    ],
+    "after:headwear-back": [
+      12588,
+      17372,
+      12252,
+      11892,
+      17372
+    ],
+    "after:phones": [
+      12588,
+      13144,
+      11892,
+      17372
+    ]
+  }
+}
