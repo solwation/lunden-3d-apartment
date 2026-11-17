@@ -1,0 +1,111 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar expressions</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2031 component page: facial expressions (neutral, smile, surprise, grimace) on three looks – plain; full beard + moustache, glasses
+// and extreme face sliders; long hair under a knitted hat – front and three-quarter close-ups in one sheet, the bearded look through a
+// three.js Reflector (the mirrors' class, src/reflections.js), and a filmstrip of the eased transitions driven by updateFace's real cues.
+// Driven by tools/avatarexprtest.cjs: window.__sheet(), __mirror(), __strip(), __trace(), __cost().
+import * as THREE from 'three';
+import { Reflector } from 'three/addons/objects/Reflector.js';
+import { Avatar } from '../src/avatar.js';
+import { updateFace, flinch } from '../src/avatarface.js';
+import { decodeAvatarLook, avatarEyeHeight } from '../src/config.js';
+const C = 200, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(C * 6, C * 4); document.body.appendChild(renderer.domElement);
+renderer.setScissorTest(true);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.5));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.4); sun.position.set(1.5, 3, 4); scene.add(sun);
+const looks = [
+  ['210000100', {}],
+  ['312050113', { glasses: 1, eyeSize: 8, browY: 8, browThick: 8, headLength: 8, jaw: 0, noseSize: 8 }],
+  ['420131110', { hat: 3, eyeSize: 0, browY: 0, headWidth: 0 }],
+];
+const avatars = looks.map(([code, extra], i) => {
+  const lk = { ...decodeAvatarLook(code, 'expr' + i), tall: 1, build: 1, ...extra };
+  const a = new Avatar(lk); a.object.position.set((i - 1) * 3, 1.62 - avatarEyeHeight(lk), 0); scene.add(a.object);
+  a.eyes && (a.eyes.blink.wait = 1e9); // no random blink in the frames
+  return a;
+});
+for (const a of avatars) for (let i = 0; i < 60; i++) a.update(1 / 60, {});
+const head = (a) => a.bones.head.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 0.085, 0.02));
+const cam = new THREE.PerspectiveCamera(11, 1, 0.05, 50);
+const frame = (a, yaw, dist = 1.15) => { const h = head(a); cam.position.set(h.x + Math.sin(yaw) * dist, h.y + 0.02, h.z + Math.cos(yaw) * dist); cam.lookAt(h); };
+const set = (a, e) => { a.material.userData.u.uExpr.value.set(...e); a.material.userData.u.uBlink.value = 0; };
+const EXPR = [['neutral', [0, 0, 0]], ['smile', [1, 0, 0]], ['surprise', [0, 1, 0]], ['grimace', [0, 0, 1]]];
+const cell = (col, row) => { renderer.setViewport(col * C, (3 - row) * C, C, C); renderer.setScissor(col * C, (3 - row) * C, C, C); };
+const pose = () => { for (const a of avatars) { a.update(1 / 60, {}); a.material.userData.u.uBlink.value = 0; } };
+// The sheet: rows neutral / smile / surprise / grimace; columns: each look front, then three-quarter.
+window.__sheet = () => {
+  renderer.setSize(C * 6, C * 4); pose(); let calls = 0;
+  EXPR.forEach(([, e], row) => avatars.forEach((a, i) => {
+    for (const a2 of avatars) a2.object.visible = a2 === a;
+    set(a, e);
+    for (const [k, yaw] of [[0, 0], [1, 0.62]]) { cell(i + k * 3, row); frame(a, yaw); renderer.render(scene, cam); calls = Math.max(calls, renderer.info.render.calls); }
+  }));
+  for (const a of avatars) a.object.visible = true;
+  return { calls };
+};
+// The mirror: the bearded look facing a Reflector 0.45 m in front, seen from beside its head; one row of four.
+let mirror = null;
+window.__mirror = () => {
+  const a = avatars[1], h = head(a);
+  if (!mirror) { mirror = new Reflector(new THREE.PlaneGeometry(0.7, 0.7), { textureWidth: 768, textureHeight: 768, clipBias: 0.003, color: 0xd6dadd }); mirror.rotation.y = Math.PI; scene.add(mirror); }
+  mirror.position.set(h.x, h.y, h.z + 0.45);
+  renderer.setSize(C * 2 * 4, C * 2); pose();
+  for (const a2 of avatars) a2.object.visible = a2 === a;
+  const mc = new THREE.PerspectiveCamera(17, 1, 0.05, 50);
+  mc.position.set(h.x + 0.2, h.y + 0.03, h.z + 0.12); mc.lookAt(h.x, h.y, h.z + 0.9);
+  EXPR.forEach(([, e], col) => { set(a, e); renderer.setViewport(col * C * 2, 0, C * 2, C * 2); renderer.setScissor(col * C * 2, 0, C * 2, C * 2); renderer.render(scene, mc); });
+  mirror.visible = false; for (const a2 of avatars) a2.object.visible = true;
+  return { calls: renderer.info.render.calls };
+};
+// The real cue path over time (60 fps): neutral, a wave (smile), released, a hit (grimace), a scream (surprise), released.
+const timeline = (t) => t < 0.5 ? {} : t < 2.5 ? { wave: true } : t < 4 ? {} : t < 6.5 ? {} : t < 8.5 ? { react: 'scream' } : {};
+window.__trace = () => {
+  const a = avatars[0], out = []; a.face = null; let prev = [0, 0, 0], maxStep = [0, 0, 0];
+  for (let f = 0; f <= 60 * 11; f++) {
+    const t = f / 60;
+    if (f === Math.round(4.5 * 60)) flinch(a);
+    updateFace(a, 1 / 60, timeline(t));
+    const v = a.material.userData.u.uExpr.value.toArray();
+    v.forEach((x, k) => { maxStep[k] = Math.max(maxStep[k], Math.abs(x - prev[k])); });
+    prev = v; if (f % 15 === 0) out.push([+t.toFixed(2), ...v.map((x) => +x.toFixed(3))]);
+  }
+  return { samples: out, maxStep, end: prev };
+};
+// A filmstrip of the eased smile coming and going (the same cue path), 8 frames front.
+window.__strip = () => {
+  const a = avatars[0]; a.face = null; renderer.setSize(C * 8, C); pose();
+  for (const a2 of avatars) a2.object.visible = a2 === a;
+  const at = [0.5, 0.6, 0.7, 0.9, 1.5, 2.7, 3.0, 4.0], got = [];
+  let t = 0, k = 0;
+  for (let f = 0; f <= 60 * 4; f++, t = f / 60) {
+    updateFace(a, 1 / 60, timeline(t));
+    if (k < at.length && t >= at[k] - 1e-6) { a.update(0, {}); a.material.userData.u.uBlink.value = 0; renderer.setViewport(k * C, 0, C, C); renderer.setScissor(k * C, 0, C, C); frame(a, 0.3); renderer.render(scene, cam); got.push([at[k], +a.material.userData.u.uExpr.value.x.toFixed(3)]); k++; }
+  }
+  for (const a2 of avatars) a2.object.visible = true;
+  return got;
+};
+// Cost: 24 posed avatars, whole-figure framing, 120 renders with the expression off and on (SwiftShader, CPU, only a relative hint).
+window.__cost = () => {
+  renderer.setSize(640, 480); renderer.setScissorTest(false); renderer.setViewport(0, 0, 640, 480);
+  const crowd = [], wide = new THREE.PerspectiveCamera(50, 640 / 480, 0.1, 100); wide.position.set(0, 1.6, 9); wide.lookAt(0, 1, 0);
+  for (const a of avatars) a.object.visible = false;
+  for (let i = 0; i < 24; i++) { const a = new Avatar({ ...decodeAvatarLook(looks[i % 3][0], 'c' + i), ...looks[i % 3][1] }); a.object.position.set((i % 8 - 3.5) * 0.9, 0, -Math.floor(i / 8) * 1.5); scene.add(a.object); a.update(1 / 60, {}); crowd.push(a); }
+  const run = (e) => { for (const a of crowd) a.material.userData.u.uExpr.value.set(...e); renderer.render(scene, wide); const gl = renderer.getContext(); gl.finish(); const t0 = performance.now(); for (let i = 0; i < 120; i++) renderer.render(scene, wide); gl.finish(); return (performance.now() - t0) / 120; };
+  run([0, 0, 0]); const off = run([0, 0, 0]), on = run([1, 0.5, 0.5]), off2 = run([0, 0, 0]);
+  const calls = renderer.info.render.calls, tris = renderer.info.render.triangles;
+  for (const a of crowd) { scene.remove(a.object); a.dispose?.(); }
+  for (const a of avatars) a.object.visible = true; renderer.setScissorTest(true);
+  return { avatars: crowd.length, msOff: +((off + off2) / 2).toFixed(2), msOn: +on.toFixed(2), calls, triangles: tris };
+};
+window.__ready = true;
+</script></body></html>

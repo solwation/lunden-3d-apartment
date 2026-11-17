@@ -11,6 +11,7 @@ import { armFixShader, installArmFix } from './avatararmfix.js'; // #2022
 import { newWet, stepWet, falling, wetEnv, WET_DECL, wetVertex, wetColor, wetRoughness } from './avatarweather.js'; // #2018
 import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #2014
 import { avatarSkinGLSL, skinKey } from './avatarskin.js'; // #2032
+import { faceExprUniforms, faceExprShader } from './avatarface.js'; // #2031
 import { topTexture } from './spidersuit.js';
 import { reactionPose, mixHand } from './reactpose.js';
 import { footGround } from './avatarfootik.js';
@@ -1350,6 +1351,7 @@ function makeMaterial(rim, headProjection) {
   const headMin = headProjection.min, headSize = headProjection.getSize(new THREE.Vector3()), headFront = headProjection.getCenter(new THREE.Vector3()).z;
   const u = { uPump: { value: 0 }, uLight: { value: 1 }, uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uFing: { value: Array.from({ length: 10 }, () => new THREE.Vector2()) }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 }, uKiss: { value: 0 }, uBlink: { value: 0 }, uGaze: { value: new THREE.Vector2() }, uSwayHair: { value: new THREE.Vector3() }, uSwayBun: { value: new THREE.Vector3() }, uSwayHem: { value: new THREE.Vector3() }, uSwayOn: { value: new THREE.Vector3(0, 0, 1) }, uWet: { value: 0 }, uSnow: { value: 0 }, uArmFix: { value: new THREE.Vector2() },
     uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uEarrings: { value: 0 }, uHat: { value: 0 }, uPhones: { value: 0 }, uNecklace: { value: 0 }, uRingFinger: { value: 0 }, uBracelet: { value: 0 }, uWatch: { value: 0 }, uRingColor: { value: new THREE.Color(RING.colours[0]) }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) } };
+  Object.assign(u, faceExprUniforms()); // #2031: the expression weights
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: SURFACE.finish.cloth, metalness: 0, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
@@ -1366,6 +1368,7 @@ float pumpF = 1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z;
 float pumpD = uPump * ${GYM_PUMP.circumference} * armPump.w;
 objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / pumpF * dot(position.xz - armPump.xy, objectNormal.xz), objectNormal.z / pumpF));`)
       .replace('#include <begin_vertex>', `#include <begin_vertex>\ntransformed.xz = armPump.xy + (transformed.xz - armPump.xy) * (1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z);\nvSuitRole = suitRole; ${wetVertex()} vSurface = vec2(region, facePart); vSuitAt = position; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart) * step(facePart, ${FACE_PART.watchStrap}.0 - 0.5); // (#1334: the rings, bracelets and watch cases are metal)\n${faceShape()}${swayShader()}\ntransformed.x *= 1.0 - uKiss * pucker * ${KISS.narrow.toFixed(5)};\ntransformed.z += uKiss * pucker * ${KISS.pucker.toFixed(5)};\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
+    sh.vertexShader = faceExprShader(sh.vertexShader, { hb: bindAt('head'), chinY: CHIN_Y, P: FACE_PART }); // #2031
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim, uLight;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;\n' + WET_DECL + skin.decl)
       .replace('#include <color_fragment>', `#include <color_fragment>
@@ -1404,7 +1407,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
       #include <opaque_fragment>`);
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey(); // #2032
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031'; // #2032, #2031
   return m;
 }
 

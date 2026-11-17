@@ -6,6 +6,7 @@ import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { applyRestPose } from './remote-pose.js';
 import { poseOlof } from './olof.js';
 import { pumpWire } from './gympump.js';
+import { updateFace } from './avatarface.js'; // #2031
 import * as THREE from 'three';
 import { FALL, TOAST, SOUNDS, KISS, HUG, REACT } from './config.js';
 import { chooseGazeTarget } from './avatargaze.js';
@@ -422,6 +423,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.avatar.collectPose = true;
     this.avatar.updateWeather(wetEnv.outdoorAt(this)); // #2018
     this.avatar.update(dt, { ground: this.ground, floorY: this.root.position.y, motionFrame, groundSpeed: groundEnabled && groundSpeed <= 8 ? groundSpeed : 0, groundEnabled, gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: wet ? 0 : this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive });
+    updateFace(this.avatar, dt, { wave: this.waveT > 0, hug: hugged, kiss: kissed, react: react ? REACT.kinds[react.kind]?.id : null, gym: this.gx ? 0.6 + 0.4 * Math.sin(Math.PI * this.gx[1]) : 0, run: this.avatar.gt?.run ?? 0 }); // #2031: the face follows what the figure does
     if (wet) sink(this.avatar.swimAmt, this.avatar.swimLine, this.avatar.diveAmt); // (blending in from standing on the bed)
     applyRestPose(this.avatar, this.pose, this.look, react);
     applyGymBodyPose(this.avatar,this.gx,this.look);

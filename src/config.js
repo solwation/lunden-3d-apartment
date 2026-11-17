@@ -4216,6 +4216,22 @@ export const AVATAR_FACE = {
 // a spoken line follows the voice's start / word boundaries / end, closed after `liveMax` s if the end never comes.
 export const AVATAR_MOUTH = { drop: 0.009, below: 0.004, chinY: -0.03, halfWidth: 0.024, frontZ: [0.05, 0.085],
   rate: 13, vowel: 1, consonant: 0.4, space: 0.08, pause: 3, follow: 22, maxSecs: 6, liveMax: 20 };
+// The avatars' facial expressions (#2031, src/avatarface.js) *guess* by eye, not measured. Three weights 0 … 1 (smile, surprise,
+// grimace) come locally from what the figure already does: `cues` says how strongly a greeting wave, a hug, a kiss or a laugh
+// smiles, a scream surprises, and a hit (held `flinch` s), crying, gym work and running grimace; no network field. Each weight
+// eases towards its goal at `rise` 1/s and back at `fall` 1/s (no jumps); a grimace mutes the other two. The shapes are vertex
+// offsets in the head-bone frame (metres), weighted by smooth fields of the bind position so skin, lips, beard and brows on the
+// same spot move together: `corner` [x, y, σx, σy] round the mouth corners with each expression's [out, up, forward] there;
+// `cheek` [x, y, σx, σy] lifted by `cheekLift` (and puffed by `cheekPuff` when smiling); the brow band from `band` [rise from,
+// full at, fade from, gone at] (y), arched about `arch` [x, σ], raised `browUp` by surprise and lowered `browDown` / drawn in
+// `browIn` (share of x) by a grimace, most at the inner ends (`inner` [full to, gone at] |x|); `front` [z from, full at] keeps it
+// on the face; `squint` / `widen` close / open the eyes (their height about the eye's centre); `jaw` the surprise's mouth drop.
+export const AVATAR_EXPR = { rise: 7, fall: 2.4, flinch: 0.7,
+  cues: { wave: 0.9, hug: 1, kiss: 0.7, laugh: 1, scream: 1, cry: 0.75, hit: 1, gym: 0.6, run: 0.35 },
+  corner: [0.023, 0.044, 0.012, 0.012], smile: [0.0024, 0.0042, -0.001], surprise: [-0.0018, -0.0006, 0.0006], grimace: [0.0032, -0.0016, -0.0006],
+  cheek: [0.04, 0.078, 0.016, 0.014], cheekLift: [0.0024, 0, 0.0016], cheekPuff: 0.0008,
+  band: [0.108, 0.12, 0.15, 0.185], arch: [0.035, 0.03], browUp: 0.0055, browDown: 0.0032, browIn: 0.1, inner: [0.02, 0.055], front: [0.05, 0.085],
+  squint: [0.22, 0, 0.36], widen: 0.18, jaw: 0.004 };
 // The avatars' full beard (#1097, src/avatar.js beardShell) *guess* tuned by eye against the avatar head (PVP_RIFLE_HEAD skull / jaw): degrees from `centre` (head-bone frame, metres);
 // the grid's rows/columns line up with the moustache variant's mouth opening [half width, bottom, top] (two quads high at 12 rows, two wide; #2020: moved up to the #2002 lips, whose seam sits about -17 degrees; no separate lip patch)
 export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76, cols: 16, rows: 12, cheek: [-6, 10], cheekAz: [22, 90],

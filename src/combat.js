@@ -7,6 +7,7 @@ import { COMBAT as C, TOYS, BASKET, pvpHitPoints, PVP_HEAD_BOXES as HB, rifleBox
 import { nerfSegments, nerfPlayerContact } from './nerf.js';
 import { bowSegments, bowPlayerContact } from './bowflight.js';
 import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld } from './combatworld.js';
+import { flinch } from './avatarface.js'; // #2031
 
 // Combat between players (#667) on top of the ghosts (#666, src/ghosts.js; the room's check: cloudflare/players.js).
 // Only between two players who both hold a weapon (COMBAT.weapons; main.js `weaponKey`): they are drawn solid for each
@@ -436,6 +437,7 @@ export class Combat {
 
   /** The room: our shot hit someone. */
   hit(m, g) {
+    flinch(g?.avatar); // #2031: the one hit grimaces
     recordPlayerKill(m, this.ghosts.me); // server lethal-hit receipt only; separate from hit points (#871)
     const award = m.award;
     if (award !== undefined) {
@@ -458,6 +460,7 @@ export class Combat {
   /** The room: someone hit us. Out of lives: to the start, full again. */
   hurt(m) {
     this.hurts++;
+    flinch(this.ghosts.myGhost?.avatar); // #2031: our mirror image too
     this.lives = m.dead ? this.maxLives : Math.max(0, m.l);
     this.flashT = C.flash;
     this.flashEl.style.opacity = '1';
