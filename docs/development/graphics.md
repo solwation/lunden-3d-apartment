@@ -957,6 +957,22 @@ shared machine, nine figures at 3 – 6 m within noise; no Surface measurement. 
 SITE docs/verification/2032` (component page `tools/avatarskin.html`: light / medium / dark skin before and after in day light and backlight,
 frame-to-frame shimmer ratio at 2 / 4 / 8 m ≤ 1.1, cost) ([images](../verification/2032/)).
 
+## Cloth folds and weave (#2034)
+
+`src/avatarcloth.js` (tunables `AVATAR_CLOTH`, all *guess*) adds pose-driven folds and a per-garment weave to the avatars' one material
+as a normal perturbation after `normal_fragment_maps` (program key suffix `-cloth2034`). `installCloth` (on the avatar and its mirror clone)
+measures the elbows' and knees' bend, its direction and the thighs' forward swing from the bones' local rotations each skeleton update
+(`clothSignal` → `applyClothSignal`, about 1 µs per avatar) and writes a few vec4 uniforms; no network field, attribute, texture, mesh or
+draw call. The shader raises pull folds in the elbow / knee crease that deepen with the joint angle, shallow pull lines over the outside
+of the joint, bunched rings at the waistband / lap with the hips' flex, at the jeans' ankle and a long sleeve's wrist, and a fine weave
+per garment (`clothKinds`: jersey T-shirt / vest, knitted sweater, fleece hoodie, denim jeans, finer twill for the wide trousers).
+Everything is a height field over the bind-pose position (so it rides with skinning) turned into a normal with screen-space derivatives;
+both layers fade out by the pixel footprint before they could shimmer. Check: `node --test tools/avatarclothtest.mjs` and
+`tools/browsertest.sh node tools/avatarclothtest.cjs SITE OUT` (component page `tools/avatarcloth.html`: three outfits standing,
+crouching, sitting and with bent elbows, fold on/off pixel difference per pose, far-view shimmer ratio, draw calls, CPU cost)
+([images](../verification/2034/)). The conductor finished the delivery from the worker's last saved state; the planned extra tuning
+(wider crease mask, irregular phase) was not done.
+
 ## Wet, living avatar eyes (#2033)
 
 `src/avatareyes.js` (tunables `AVATAR_EYES`, all *guess*) adds the wet look to the avatars' eyes on their one material (uniform `uEyeLit`,
