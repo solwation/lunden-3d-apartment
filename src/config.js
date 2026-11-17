@@ -4184,6 +4184,18 @@ export const AVATAR_SURFACE = {
     // waviness at `bend` rad/m of height, `strength` the shade contrast. Guesses by eye, faded with pixel footprint.
     strands: 72, sway: 0.09, bend: 40, strength: 0.13 },
 };
+// #2043 the head's silhouette (src/avatarcontour.js), head-bone metres, *guess* by eye against the before views
+// (docs/verification/2043). rings: extra head-shell heights on the cubic profile through AVATAR_SURFACE.head / AVATAR_FACE.jaw,
+// only where the outline curves (jaw angle, chin, cheek, back of the skull, crown); chin: the flat underside rounded as a
+// quarter ellipse `depth` deep, one ring per `angles` (degrees); neck: rings top first [y, rx, rz, centre z], open at both
+// ends (the top inside the head, the bottom inside the collar; the old cylinder spanned y -0.04..0.08, the neck slider's
+// range), set back under the jaw, `sides` columns; larynx [y, half height, half width] m and its bump (male, female).
+export const AVATAR_CONTOUR = {
+  rings: [-0.0035, 0.015, 0.0375, 0.0575, 0.108, 0.142, 0.1625, 0.185, 0.203],
+  chin: { depth: 0.006, angles: [30, 60] },
+  neck: { sides: 16, larynx: [0.0, 0.012, 0.011], larynxAmp: [0.0035, 0.0012],
+    rings: [[0.07, 0.044, 0.043, -0.008], [0.014, 0.045, 0.043, -0.006], [-0.012, 0.048, 0.046, -0.004], [-0.042, 0.055, 0.053, 0]] },
+};
 // The avatars' face (#1101, src/avatar.js addFace / faceWarp), *guess* by eye against the skull / jaw ellipsoids of
 // PVP_RIFLE_HEAD, head-bone frame (metres, the face looks +z). eye: [x, y, z] of the eyeball's centre, its radius / scale,
 // the iris and pupil radii, the eye colours; ridge: the brow ridge over each eye [x, y, z, r, scale]; brow: the arc

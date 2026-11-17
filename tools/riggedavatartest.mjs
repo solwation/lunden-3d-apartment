@@ -253,14 +253,14 @@ test('#1995: the customizable nose is one connected surface, not separate alar b
 test('#1995: posterior head keeps its authored profile and cannot follow nose controls', async () => {
   const { AVATAR_SURFACE: S, AVATAR_FACE: F } = await import('../src/config.js');
   const { bindAt } = await import('../src/olof.js');
+  const { profileAt } = await import('../src/avatarcontour.js');
   const g = avatarModelGeometry(decodeAvatarLook('240302101', 'posterior-invariant'));
   const p = g.attributes.position, b = bindAt('head'); let checked = 0;
   for (let i = 0; i < p.count; i++) {
     if (!g.attributes.rifleSkull.getX(i) || g.attributes.facePart.getX(i) !== 1 || p.getZ(i) - b.z >= 0) continue;
-    const y = p.getY(i) - b.y, rows = S.head;
-    const found = rows.findIndex(r => r[0] >= y), j = found < 0 ? rows.length - 1 : Math.max(1, found);
-    const a = rows[j - 1], c = rows[j], t = THREE.MathUtils.clamp((y - a[0]) / (c[0] - a[0]), 0, 1);
-    const rx = THREE.MathUtils.lerp(a[1], c[1], t), rz = THREE.MathUtils.lerp(a[2], c[2], t), z = THREE.MathUtils.lerp(a[3], c[3], t);
+    const y = p.getY(i) - b.y;
+    if (y < S.head[0][0] - 1e-6) continue; // #2043: the chin's rounded underside (scaled rings below the authored profile)
+    const [, rx, rz, z] = profileAt(S.head, y); // #2043: the authored rows joined by the head's monotone cubic
     const x = (p.getX(i) - b.x) / F.warp.width;
     const authored = z - rz * Math.sqrt(Math.max(0, 1 - (x / rx) ** 2));
     assert.ok(Math.abs((p.getZ(i) - b.z) - authored) < 2e-6, 'posterior vertex stays on the authored elliptical profile');

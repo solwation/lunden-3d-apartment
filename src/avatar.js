@@ -18,6 +18,7 @@ import { faceExprUniforms, faceExprShader } from './avatarface.js'; // #2031
 import { exertUniforms, exertShader } from './avatarbreath.js'; // #2037
 import { addFlyaways, flyUniforms, flyMaterial, flyKey, FLY_VDECL, FLY_FDECL, flyBind, flyProject, flyAlpha, flyLight } from './avatarflyaway.js'; // #2040
 import { topTexture } from './spidersuit.js';
+import { profileAt, contourRows, roundChinCap, neckGeometry } from './avatarcontour.js'; // #2043
 import { reactionPose, mixHand } from './reactpose.js';
 import { footGround } from './avatarfootik.js';
 import { newIdle, stepIdle, idleHands } from './avataridle.js'; // #2035: the living rest
@@ -74,7 +75,7 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
   const isFemale = (Number(gender) || 0) === 1;
   bodyParts(add, cut === 2 ? 1 : cut === 1 ? 0 : sleeves, isFemale, legs, cut);
   // the head: neck, head, ears, face, hair
-  add(new THREE.CylinderGeometry(0.05, 0.055, 0.12, 8), 'skin', 'head', [0, 0.02, 0]);
+  add(neckGeometry(isFemale), 'skin', 'head'); // #2043: a tapered column set back under the jaw (was an 8-sided cylinder)
   P[P.length - 1].face = FACE_PART.neck;
   // #1916 one continuous cheek/jaw/chin surface rather than intersecting skull
   // and jaw shells. Facial controls, mouth weights and broad hit boxes stay shared.
@@ -1013,9 +1014,7 @@ function headSculpt(v, jaw = false) {
   const F = SURFACE.face;
   const front = smoothstep(...F.front, v.z / Math.max(0.001, Math.hypot(v.x, v.z)));
   if (jaw && front > 0 && v.y < FACE.jaw.at(-1)[0]) {
-    const rows = SURFACE.head, j = Math.max(1, rows.findIndex(r => r[0] >= v.y));
-    const a = rows[j - 1], b = rows[j], t = THREE.MathUtils.clamp((v.y - a[0]) / (b[0] - a[0]), 0, 1);
-    const target = headRows(), rx = THREE.MathUtils.lerp(a[1], b[1], t), next = THREE.MathUtils.lerp(target[j - 1][1], target[j][1], t);
+    const rx = profileAt(SURFACE.head, v.y)[1], next = profileAt(headRows(), v.y)[1]; // #2043: the cubic profile, as the rings
     v.x *= THREE.MathUtils.lerp(1, next / rx, front);
   }
   v.z += front * (F.cheek[0] * bump(Math.abs(v.x), ...F.cheek.slice(1, 3)) * bump(v.y, ...F.cheek.slice(3))
@@ -1024,9 +1023,7 @@ function headSculpt(v, jaw = false) {
 }
 const headRows = () => SURFACE.head.map(r => FACE.jaw.find(j => j[0] === r[0]) ?? r);
 function headFront(x, y) {
-  const rows = headRows(), j = Math.max(1, rows.findIndex(r => r[0] >= y));
-  const a = rows[j - 1], b = rows[j], t = THREE.MathUtils.clamp((y - a[0]) / (b[0] - a[0]), 0, 1);
-  const rx = THREE.MathUtils.lerp(a[1], b[1], t), rz = THREE.MathUtils.lerp(a[2], b[2], t), z = THREE.MathUtils.lerp(a[3], b[3], t);
+  const [, rx, rz, z] = profileAt(headRows(), y); // #2043
   const v = new THREE.Vector3(x, y, z + rz * Math.sqrt(Math.max(0, 1 - (x / rx) ** 2)));
   headSculpt(v); return v.z;
 }
@@ -1041,16 +1038,12 @@ function noseRise(x, y) {
 /** One head skin: the same vertex grid carries cheeks, orbit and nasal cartilage.
  * Extra front rings replace the former separate nose's triangle budget. */
 function headGeometry() {
-  const skinRows = SURFACE.head, rows = [...skinRows];
-  for (const y of SURFACE.nosePatch.rings) {
-    const j = skinRows.findIndex(r => r[0] > y), a = skinRows[j - 1], b = skinRows[j], t = (y - a[0]) / (b[0] - a[0]);
-    rows.push([y, ...a.slice(1).map((v, i) => THREE.MathUtils.lerp(v, b[i + 1], t))]);
-  }
-  rows.sort((a, b) => b[0] - a[0]);
-  const g = shape(ringSurface(rows, SURFACE.headSides, SURFACE.nosePatch.concentration), v => { headSculpt(v, true); if (v.z > 0) v.z += noseRise(v.x, v.y); });
+  const rows = contourRows(SURFACE.head, SURFACE.nosePatch.rings); // #2043: nose rings + contour rings on the cubic profile, a rounded chin
+  const g = shape(roundChinCap(ringSurface(rows, SURFACE.headSides, SURFACE.nosePatch.concentration), rows), v => { headSculpt(v, true); if (v.z > 0) v.z += noseRise(v.x, v.y); });
   const p = g.attributes.position, blend = new Uint8Array(p.count);
   for (let i = 0; i < p.count; i++) blend[i] = p.getZ(i) > 0 ? Math.round(255 * noseRise(p.getX(i), p.getY(i)) / SURFACE.nosePatch.maxProjection) : 0;
   g.setAttribute('noseBlend', new THREE.Uint8BufferAttribute(blend, 1, true));
+  g.userData.projectionMinY = SURFACE.head[0][0]; // #2043: the Spider mask keeps its projection above the rounded chin
   return g;
 }
 
@@ -1315,6 +1308,7 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
     const [g0, region, shade, fixed] = part;
     if (part.rifleSkull) {
       g0.computeBoundingBox(); headProjection = g0.boundingBox.clone();
+      if (g0.userData.projectionMinY !== undefined) headProjection.min.y = Math.max(headProjection.min.y, bindAt('head').y + g0.userData.projectionMinY); // #2043
     }
     const g = g0.index ? g0.toNonIndexed() : g0;
     const n = g.attributes.position.count, k = NAMES.indexOf(part.bone), c = new THREE.Color(fixed), vs = g.attributes.shade?.array; // per-vertex shade (hair strands, #1102)

@@ -3,13 +3,16 @@ import assert from 'node:assert/strict';
 import { avatarModelGeometry } from '../src/avatar.js';
 import { avatarLook } from '../src/config.js';
 import { bindAt } from '../src/olof.js';
-import { AVATAR_FLYAWAY, AVATAR_HAIR } from '../src/config.js';
+import { AVATAR_FLYAWAY, AVATAR_HAIR, AVATAR_CONTOUR, AVATAR_SURFACE } from '../src/config.js';
 import { isFlyaway } from '../src/avatarflyaway.js';
 const flyVerts=(a)=>{let n=0;for(let i=0;i<a.position.count;i++)if(isFlyaway(a,i,7,11))n++;return n;};
+// #2043: the head contour's own triangles (its own +10 % head budget below) are left out of the older whole-figure budgets:
+// extra head rings and chin rings × 2·headSides, and the 16-sided open neck in place of the 8-sided capped cylinder (32)
+const contour2043=(AVATAR_CONTOUR.rings.length+AVATAR_CONTOUR.chin.angles.length)*2*AVATAR_SURFACE.headSides+(AVATAR_CONTOUR.neck.rings.length-1)*2*AVATAR_CONTOUR.neck.sides-32;
 const baseline=[[11172,3586212],[11940,3832740],[11532,3701772],[12456,3998376],[16092,5165532]];
 test('#2002 all five hairstyles retain bounded resources, normalized weights and semantic head roles',()=>{
  for(let style=0;style<5;style++){
-  const g=avatarModelGeometry({...avatarLook('2002-base'),style,facial:0}),a=g.attributes,keep=1-flyVerts(a)/a.position.count; // (#2040: the flyaways have their own budget below)
+  const g=avatarModelGeometry({...avatarLook('2002-base'),style,facial:0}),a=g.attributes,keep=1-(flyVerts(a)+3*contour2043)/a.position.count; // (#2040: the flyaways have their own budget below)
   assert(a.position.count*keep/3<=baseline[style][0]*1.1);assert(Object.values(a).reduce((n,v)=>n+v.array.byteLength,0)*keep<=baseline[style][1]*1.1);
   assert.equal(Object.keys(a).length,17,'no additional retained attributes');
   for(let i=0;i<a.position.count;i++){
@@ -54,7 +57,7 @@ const v2012=[['s0f0',11700],['s0f1',12056],['s0f2',11724],['s0f3',12052],['s1f0'
 test('#2012 hairstyle and facial-hair variants stay within +10% of the #2002 triangles',()=>{
  for(const[key,tris]of v2012){const style=+key[1],facial=+key[3];
   const g=avatarModelGeometry({...avatarLook('2012-'+style),style,facial,gender:style%2});
-  const own=(g.attributes.position.count-flyVerts(g.attributes))/3;assert(own<=tris*1.1,`${key}: ${own} > ${tris}×1.1`);g.dispose();}
+  const own=(g.attributes.position.count-flyVerts(g.attributes))/3-contour2043;assert(own<=tris*1.1,`${key}: ${own} > ${tris}×1.1`);g.dispose();}
 });
 test('#2012 long hair: the scalp and curtain share one normal wherever they meet (no visible join)',()=>{
  const g=avatarModelGeometry({...avatarLook('2012-long'),style:1,facial:0,gender:1}),a=g.attributes,hb=bindAt('head'),seen=new Map();let shared=0;
@@ -91,4 +94,24 @@ test('#2040 flyaways: budget, zero-width bind ribbons, roles and the hat flag',(
   if(style===1)assert(kinds.has(2),'long hair keeps strands below a hat');
   g.dispose();
  }
+});
+// #2043: the smoother head contour stays within +10 % of the head's triangles before it (b5cb5c95, every head-bone part incl. the
+// collapsed accessories), the chin's underside is a dome below the authored lowest ring, and the neck is one closed-round smooth column
+const head2043=[['s0f0',6604],['s0f1',7492],['s0f3',7568],['s1f0',7524],['s2f0',6940],['s3f0',7632],['s4f0',12220]];
+test('#2043 head contour: budget, rounded chin underside and a smooth neck',()=>{
+ const hb=bindAt('head');
+ for(const[key,tris]of head2043){const style=+key[1],facial=+key[3];
+  const g=avatarModelGeometry({...avatarLook('cnt'),style,facial,gender:style%2}),a=g.attributes;let head=0;
+  for(let i=0;i<a.position.count;i+=3){const f=a.facePart.getX(i);if(f>0&&f<30)head++;}
+  assert(head<=tris*1.1,`${key}: ${head} head triangles > ${tris}×1.1`);g.dispose();}
+ const g=avatarModelGeometry({...avatarLook('2043'),style:0,facial:0,gender:0}),a=g.attributes,low=AVATAR_SURFACE.head[0][0];
+ let bottom=Infinity,neck=0;const normals=new Map();
+ for(let i=0;i<a.position.count;i++){
+  const y=a.position.getY(i)-hb.y;
+  if(a.rifleSkull.getX(i)&&a.facePart.getX(i)===1){bottom=Math.min(bottom,y);if(y<low-1e-6)assert(a.rifleJaw.getX(i),'the rounded chin is jaw for the rifle');}
+  if(a.facePart.getX(i)===2){neck++;const k=[a.position.getX(i),a.position.getY(i),a.position.getZ(i)].map(v=>v.toFixed(5)).join(),n=[a.normal.getX(i),a.normal.getY(i),a.normal.getZ(i)];
+   if(normals.has(k)){const m=normals.get(k);assert(m[0]*n[0]+m[1]*n[1]+m[2]*n[2]>0.9999,'one normal per neck vertex (no seam or facet)');}else normals.set(k,n);}
+ }
+ assert(Math.abs(bottom-(low-AVATAR_CONTOUR.chin.depth))<1e-4,`the chin's underside reaches ${bottom}, not a flat cap at ${low}`);
+ assert.equal(neck/3,(AVATAR_CONTOUR.neck.rings.length-1)*2*AVATAR_CONTOUR.neck.sides);g.dispose();
 });
