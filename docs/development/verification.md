@@ -5738,26 +5738,13 @@ the target; final moves both together and waits for ordinary visibility. The
 intentional invalid-version9 rejection control is checked separately from valid
 version1 packets. `--protocol-only` runs just the real transport/DOM assertions
 for diagnosis; the final accepted run uses the complete default path.
-### Lower-front jaw contact (#928)
+### Lower-front jaw contact (#928, retired in #2056)
 
-Start an owned `python3 tools/devserve.py 8870 .` and a NEW owned
-`node cloudflare/dev.mjs 8871` AFTER freezing backend/config sources; retain PID,
-start time and hashes. Run `PLAYWRIGHT_MODULE=/path/to/playwright
-CHROME_PATH=/path/to/chrome node tools/riflejawtest.cjs http://localhost:8870
-http://localhost:8871 /tmp/rifle-jaw`. It runs actual Avatar/Ghosts/Combat, the local
-room and original marker/HUD DOM with no bootstrap/WebGL. A finite180s grid
-retains its measured checkpoint and fails on incomplete coverage; all60 canonical
-looks/seven standing-bind samples/four headings, nearest unsupported surfaces,
-forged deeper first jaw entry, misses and sampled whole r3-cell corners are checked.
-Supported actual jaw-to-profile pose offsets are distinguished from a nearer
-UNSUPPORTED surface. Gameplay uses fresh real attachments after the CPU grid,
-without idle/timer/budget overrides, then verifies head2/body1, real full-ray wall,
-miss/version/crouch fallback, low-HP single reset/kill/award/replay and all styles.
-Output includes parity/result JSON, actual receipt/wire/style logs and reviewed
-`rifle-jaw-native.png`. Node `cloudflare/players.test.mjs` also covers actual jaw
-legacy/version/rate replay/lethal/public-reset/bounded-high-world/origin receipts,
-while preserving prior recovery/rate/points cases. Keep FAILED partial/idle/proof
-attempts separate; a green geometry result alone is not the vertical acceptance.
+`tools/riflejawtest.cjs` and `tools/rifleheadtest.cjs` were retired: they compared the
+pure skull/jaw sphere profiles with separate skull/jaw shells that #1916 replaced by one
+continuous head surface (both failed before #2043). Head hits use the three-box
+collider; run `node tools/headboxestest.cjs`, `tools/headboxesbrowsertest.cjs` and the
+avatar tests instead (same as for the `riflenose*` tests retired in #1331).
 ### Exposed frontal skull strips (#931)
 
 `node tools/riflefronttest.cjs http://localhost:8878 http://localhost:8879 /tmp/rifle-front`

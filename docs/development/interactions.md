@@ -1334,13 +1334,20 @@ Head markers remain receipts: only the room's validated `head:true` creates
 The existing score/kill/replay gate and one-hit sound/marker effects are retained.
 No draw, apartment-FPS or physical-phone acceptance follows from the native tests.
 
-`tools/rifleheadtest.cjs gameURL workerURL artifactDir` runs real Avatar/Ghosts/
+`tools/rifleheadtest.cjs` (retired in #2056, see below) ran real Avatar/Ghosts/
 Combat and the local Worker without bootstrap/WebGL. It verifies the restricted
 geometry profile and actual acknowledged head2/body1, nearest face, a real wall
 within the old 0.3m gap, miss, forged point/version, crouch fallback, overkill from
 1HP, shared reset, one kill/award and idempotent effects. Its PNG shows the actual
 receipt marker/HUD and bounded measured protocol rows, not a rendered avatar.
 Parents #892/#879/#874 remain open for #898/#899 and their other weapon/pose parts.
+
+Retired in #2056: `tools/rifleheadtest.cjs` ("skull profile topology mismatch") and
+`tools/riflejawtest.cjs` ("wrong actual jaw topology") compared the pure profiles
+against the separate skull/jaw sphere shells that #1916 replaced with one continuous
+head surface, so they failed before #2043. Head hits use the three-box collider; use
+`headboxestest`, `headboxesbrowsertest` and the avatar tests (as for the retired
+`riflenose*` tests, #1331).
 
 ## NW bicycles (#903, #905)
 
@@ -1431,7 +1438,7 @@ on steeper angles stay body1, even if a client supplies a hidden-skull contact.
 The internal tag and actual nearest posed face still reject nearer hair/hat.
 Nothing changes weapon participation, wall/nearest-hit selection, score budget,
 one lethal UUID, life recovery, or authoritative hit-marker receipts.
-`tools/rifleheadtest.cjs` now includes all60 canonical variants, rounded nearest
+`tools/rifleheadtest.cjs` (retired in #2056) included all60 canonical variants, rounded nearest
 unsupported/hidden-contact grids, a dense beanie oblique regression and actual
 Worker/Ghosts/Combat new-style head2/covered-beanie-body1/steep-forgery-body1.
 The DOM screenshot verifies the real head marker and measured protocol rows,
@@ -1465,7 +1472,7 @@ steep, covered and ambiguous jaw points keep body1; independently supported nose
 and skull branches keep their own profile/region dispatch. Head2 still subtracts
 from the single authoritative lives counter and only accepted receipts show the
 existing “Huvudträff!” marker. Score budget, kill UUID, recovery and replay are
-unchanged. `tools/riflejawtest.cjs` verifies actual skinned contact/ray/Worker/
+unchanged. `tools/riflejawtest.cjs` (retired in #2056) verified actual skinned contact/ray/Worker/
 Ghosts/Combat and HUD DOM without game bootstrap/WebGL; its screenshot is
 receipt/HUD evidence rather than a rendered-avatar or physical-phone claim.
 ### Extra exposed frontal skull (#931)
