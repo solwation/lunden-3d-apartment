@@ -4145,6 +4145,8 @@ export const AVATAR_SURFACE = {
     // #2013 torso skin near an armhole follows its shoulder bone by up to `follow` (guess), fading over `followRadius` metres (height scaled by followTall). `followRim` = [lower, front, blend m]: share of `follow` kept on the lower rim (armpit crease) and front rim; `rowBlend` = exponent on the sewn-shoulder row blend. Chosen by a grid search against the pre-#2013 weights.
     follow: .35, followRadius: [.05, .17], rowBlend: 1.15, followTall: .6, followRim: [0, 1, .12],
     chest: .007, bust: .017, chestAt: .43, chestWidth: .14, hemShade: .90,
+    // #2019 the sweater's lowest rings flare out by `hemFlare` m (guess; a hem lying over the waistband, not on it) and fade out between the heights `hemFlareTo` (m), so the hem stands clear of the trousers' seat and thighs instead of z-fighting with them.
+    hemFlare: .014, hemFlareTo: [-.012, .12],
     hoodieLength: .055, hoodieTaper: .25, hoodieEase: .008,
     male: [[-.025,.174,.119],[-.012,.174,.119],[.045,.166,.117],[.12,.155,.11],
       [.25,.145,.102],[.34,.163,.112],[.40,.179,.119],[.475,.187,.122],[.55,.166,.102],

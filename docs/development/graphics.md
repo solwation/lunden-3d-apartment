@@ -61,6 +61,17 @@ Inner-axilla compression in crossed arms is not reduced, only not worsened. Chec
 `tools/avatarshouldervolume.mjs`) and the pose sheets `tools/avatarshoulderbrowser.cjs` /
 `tools/verify-avatar-shoulders.html` ([images](../verification/2013/)).
 
+#### Sweater hem and long-hair ends (#2019)
+
+The sweater's two lowest rings flare out by `AVATAR_SURFACE.body.hemFlare` (14 mm, a *guess*, fading out by
+`hemFlareTo`), so the hem stands 9 mm or more clear of the trousers' seat and thighs instead of lying in the same
+surface (z-fighting, worst on the female body and with the hoodie). Long hair (`longHair`) now measures the sweater's
+own `SURFACE.body` rings (both bodies, hoodie ease and flare) instead of the older `TORSO_PROFILE` ellipse, so its ends
+hang outside the back of the sweater (13 mm or more). Same geometry, no new part or draw call. Check with
+`node --test tools/avatarhemtest.mjs` (rest-pose gaps, both bodies, tee/long sleeves/hoodie/wide trousers) and
+`tools/browsertest.sh node tools/avatarhemtest.cjs SITE docs/verification/2019` on `tools/avatarhem.html`
+([images](../verification/2019/)).
+
 ### Player head and hair (#2002)
 
 `AVATAR_FACE` / `addFace` seat shaped upper/lower lip bands and a skin border on

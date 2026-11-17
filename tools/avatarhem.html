@@ -1,0 +1,31 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar hem</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2019 component page, driven by tools/avatarhemtest.cjs: back views of the sweater hem against the trousers and of long hair ends,
+// both body types, at rest and mid-stride; window.__shot(view, walk) renders one close view deterministically.
+import * as THREE from 'three';
+import { Avatar } from '../src/avatar.js';
+import { decodeAvatarLook, avatarEyeHeight } from '../src/config.js';
+const code = '210000100c5e8o2w0l8j0n0b0r8t8y8';
+const W = 640, H = 480, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(-2, 4, -3); scene.add(sun);
+const avatars = [];
+[[0, 1], [1, 1], [0, 0], [1, 0]].forEach(([g, long], i) => {
+  const lk = { ...decodeAvatarLook(code, 'hem'), tall: 1, build: 1, gender: g, figure: g, style: long ? 1 : 0, top: 0x7a2f2f }, a = new Avatar(lk);
+  a.baseY = 1.62 - avatarEyeHeight(lk); a.noSway = new URLSearchParams(location.search).has('off'); a.object.position.set(i * 0.7 - 1.05, a.baseY, 0); scene.add(a.object); avatars.push(a);
+});
+const cam = new THREE.PerspectiveCamera(22, W / H, 0.05, 50);
+window.__shot = (dist = 3.2, y = 1.05, walk = true) => {
+  for (const a of avatars) { a.object.rotation.y = 0; for (let f = 0; f < (walk ? 45 : 2); f++) a.update(1 / 60, { speed: walk ? 1.4 : 0 }); }
+  cam.position.set(0, y + 0.1, -dist); cam.lookAt(0, y, 0);
+  scene.updateMatrixWorld(true); renderer.render(scene, cam); return renderer.info.render.calls;
+};
+window.__ready = true;
+</script></body></html>

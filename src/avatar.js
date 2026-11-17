@@ -457,6 +457,7 @@ function upperBody(sleeves, female, cut) {
     r[1] += B.hoodieEase * (1 - smoothstep(B.hoodieTaper, B.hole[0], r[0]));
     r[2] += B.hoodieEase;
   }
+  for (const r of rings) { const k = B.hemFlare * (1 - smoothstep(...B.hemFlareTo, r[0])); r[1] += k; r[2] += k; } // #2019
   const holeRows = B.hole.map(y => rings.findIndex(r => r[0] === y));
   const pos = [], weights = [], ids = [], pump = [], shade = [], groups = [[], [], []];
   const torso = NAMES.indexOf('torso');
@@ -884,21 +885,24 @@ function hairParts(style) {
 function longHair(az, top, onSkull, sheet, strand, thick, hit, smooth, scalp) { // az: the figure's left (+x) round the back to its right
   const L = HAIR.long, cols = az.length - 1;
   const ears = [-1, 1].map((s) => ({ radius: 0.028, scale: [0.55, 1, 0.72], centre: [s * 0.1, H - 0.005, 0] })); // as the ears in parts()
-  const torsoAt = (y) => { // the torso's radius in the bind pose at head-frame height y (the wider of both figures)
+  const rings = [SURFACE.body.male, SURFACE.body.female], flare = (y) => SURFACE.body.hemFlare * (1 - smoothstep(...SURFACE.body.hemFlareTo, y));
+  const torsoAt = (y) => { // #2019: the sweater's own half-axes [x, z] at head-frame height y (the wider of both figures, hoodie ease and hem flare included), so the hair clears the real surface
     const t = y + NECK;
-    let r = 0;
-    for (const prof of [TORSO_PROFILE, TORSO_PROFILE_FEMALE]) for (let k = 1; k < prof.length; k++) {
-      const [r0, y0] = prof[k - 1], [r1, y1] = prof[k];
-      if (t >= y0 && t <= y1) r = Math.max(r, r0 + ((r1 - r0) * (t - y0)) / (y1 - y0 || 1));
+    let rx = 0, rz = 0;
+    for (const rs of rings) for (let k = 1; k < rs.length; k++) {
+      const [y0, x0, z0] = rs[k - 1], [y1, x1, z1] = rs[k];
+      if (t < y0 || t > y1) continue;
+      const u = (t - y0) / (y1 - y0 || 1), f = flare(t) + SURFACE.body.hoodieEase;
+      rx = Math.max(rx, x0 + (x1 - x0) * u + f); rz = Math.max(rz, z0 + (z1 - z0) * u + f);
     }
-    return r;
+    return [rx, rz];
   };
   const body = (a, y) => { // how far out the head, ears, neck and torso reach at height y in direction a (from the axis)
     const d = [Math.sin(a), 0, Math.cos(a)], o = [0, y, 0];
     let r = Math.max(hit(RH.skull, o, d), hit(RH.jaw, o, d), ...ears.map((e) => hit(e, o, d)));
     if (y > -0.04 && y < 0.08) r = Math.max(r, 0.055);
-    const t = torsoAt(y);
-    if (t > 0) r = Math.max(r, 1 / Math.hypot(d[0] / (t * 1.15), d[2] / (t * 0.7)));
+    const [tx, tz] = torsoAt(y);
+    if (tx > 0) r = Math.max(r, 1 / Math.hypot(d[0] / tx, d[2] / tz));
     return r;
   };
   const cols3 = az.map((a, i) => { // each column's points from the hem (j = 0) up to the top
