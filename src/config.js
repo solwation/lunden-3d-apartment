@@ -4216,7 +4216,7 @@ export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76
 // (± fraction per column); long hair (style 1): the curtain round the back from |azimuth| `long.from`, hanging from the
 // hairline at its front edge, rising to elevation `long.top` between |azimuth| `front` and `back`, down to `long.hem` [sides, back] m
 // below the head bone, `long.gap` m off the shoulders, `long.depth` m thick.
-export const AVATAR_HAIR = { centre: [0, 0.09, 0], rows: 8, step: 12, streak: 0.07,
+export const AVATAR_HAIR = { centre: [0, 0.09, 0], bunAt: [0, 0.212, -0.078], /* #2014: the bun's centre in the head frame (the bun's geometry and its sway read it) */ rows: 8, step: 12, streak: 0.07,
   flow: { sweep: 22, ridge: 0.0045, groups: 9, edge: 1.2, longGroups: 7, longRidge: 0.010, longSway: 5 },
   hairline: [[0, 37], [22, 36], [42, 29], [58, 16], [64, -4], [72, -6], [78, 13], [102, 15], [120, -6], [146, -26], [180, -30]],
   beanie: [[0, 35], [35, 32], [60, 19], [80, 9], [100, 9], [140, -8], [180, -14]],
@@ -6609,10 +6609,10 @@ export const AVATAR_GAZE = { range: 6, retarget: 0.3, cone: 1.6, headShare: 0.45
 // (1 = a free mass), `r` m the group's lever arm behind the pivot (turning drags it sideways), `min`/`max` [x, y, z] m the offset's walls in the
 // bone's own frame (x its left, y up, z forward): they stop the hair at the shoulders / neck / head and the hem at the trousers. All *guesses* by eye.
 export const AVATAR_SWAY = { maxDt: 0.05, step: 1 / 120, accelMax: 30, accelFilter: 0.04, resetDistance: 1.5,
-  hair: { omega: 13, zeta: 0.3, gain: 0.8, r: 0.12, min: [-0.035, -0.012, -0.03], max: [0.035, 0.035, 0.012] },
-  bun: { omega: 20, zeta: 0.25, gain: 0.8, r: 0.07, min: [-0.012, -0.006, -0.012], max: [0.012, 0.012, 0.006] },
-  hem: { omega: 16, zeta: 0.4, gain: 0.6, r: 0.17, min: [-0.018, 0, -0.02], max: [0.018, 0, 0.012] },
-  hairDepth: 0.22, bunRadius: [0.045, 0.07], hemDepth: 0.14 };
+  hair: { omega: 13, zeta: 0.3, gain: 1.2, r: 0.12, min: [-0.035, 0, -0.03], max: [0.035, 0.035, 0.03] },
+  bun: { omega: 20, zeta: 0.25, gain: 0.8, r: 0.07, min: [-0.012, 0, -0.012], max: [0.012, 0.012, 0.012] },
+  hem: { omega: 16, zeta: 0.4, gain: 1.0, r: 0.17, min: [-0.025, 0, -0.025], max: [0.025, 0, 0.025] },
+  hairDepth: 0.22, bunRadius: [0.045, 0.07], hemFade: [0.0, 0.14] };
 // #1165: glasses, 0 none, 1 round, 2 square frames: a look field `glasses`, the extension's `g` tag (absent when 0). The frames are part
 // of the shared head geometry and collapse to a point in the vertex shader when not chosen (src/avatar.js), so no extra draw call.
 // #1325: kind 3 sunglasses (the square frames plus dark lenses, `lens`).

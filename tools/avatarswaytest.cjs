@@ -13,7 +13,7 @@ const frames = [['1-walk', 1.5], ['2-stop', 2.15], ['3-forward-swing', 2.3], ['4
     const page = await ctx.newPage();
     page.on('pageerror', (e) => errors.push(e.message));
     page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-    await page.goto(base + '/tools/avatarsway.html');
+    await page.goto(base + '/tools/avatarsway.html' + (process.env.SWAY_OFF ? '?off' : ''));
     await page.waitForFunction(() => window.__ready, null, { timeout: 60000 });
     for (const [name, t] of frames) {
       data[name] = await page.evaluate((x) => window.__to(x), t);

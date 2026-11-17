@@ -25,6 +25,7 @@ looks.forEach((o, i) => {
   a.baseY = 1.62 - avatarEyeHeight(lk); a.object.position.set((i - 1) * 0.55, a.baseY, 0); scene.add(a.object); avatars.push(a);
 });
 const cam = new THREE.PerspectiveCamera(22, W / H, 0.05, 50);
+if (new URLSearchParams(location.search).has('off')) for (const a of avatars) a.noSway = true; // baseline without sway
 const state = { t: 0, z: 0, yaw: 0, speed: 0 };
 function advance(dt) {
   const t = state.t;
@@ -39,7 +40,7 @@ function advance(dt) {
 window.__to = (t) => {
   if (t < state.t) { state.t = state.z = state.yaw = 0; state.x = 0; for (const a of avatars) a.sway = null; }
   while (state.t < t - 1e-9) advance(1 / 60);
-  return { t: state.t, speed: state.speed, hair: avatars.map((a) => a.sway.hair.p.map((v) => +v.toFixed(4))), bun: avatars.map((a) => a.sway.bun.p.map((v) => +v.toFixed(4))), hem: avatars.map((a) => a.sway.hem.p.map((v) => +v.toFixed(4))), calls: renderer.info.render.calls };
+  return { t: state.t, speed: state.speed, hair: avatars.map((a) => (a.sway?.hair.p ?? [0, 0, 0]).map((v) => +v.toFixed(4))), bun: avatars.map((a) => (a.sway?.bun.p ?? [0, 0, 0]).map((v) => +v.toFixed(4))), hem: avatars.map((a) => (a.sway?.hem.p ?? [0, 0, 0]).map((v) => +v.toFixed(4))), calls: renderer.info.render.calls };
 };
 window.__cost = (n = 20, frames = 600) => { // n avatars' update (CPU, ms per frame): sway on vs off
   const crowd = []; for (let i = 0; i < n; i++) { const a = new Avatar({ ...decodeAvatarLook(code, 'c' + i), tall: 1, build: 1, style: 1 }); scene.add(a.object); crowd.push(a); }

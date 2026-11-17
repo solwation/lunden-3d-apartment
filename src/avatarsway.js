@@ -78,10 +78,17 @@ if (facePart > 0.5 && abs(facePart - ${g.hair}.0) < 0.5) {
   float sy = transformed.y - ${f(g.head[1] + g.hairY)}, sw = pow(clamp(-sy / ${f(S.hairDepth)}, 0.0, 1.0), 1.6) * (1.0 - step(0.5, ${g.hat}));
   vec3 bc = vec3(${f(g.head[0])}, ${f(g.head[1] + g.bun[0])}, ${f(g.head[2] + g.bun[1])});
   float bw = 1.0 - smoothstep(${f(S.bunRadius[0])}, ${f(S.bunRadius[1])}, distance(transformed, bc));
-  transformed += uSwayHair * sw * uSwayOn.x + uSwayBun * bw * uSwayOn.y;
+  // only away from the body: the sway is a flare along the outward direction (from the head's axis, resp. the bun's centre), so hair lying on the
+  // neck, shoulders and back never goes into them (no z-fighting, no spikes)
+  vec2 hn = normalize(transformed.xz - vec2(${f(g.head[0])}, ${f(g.head[2])}) + vec2(0.0, -0.0001)), bn = normalize(transformed.xz - bc.xz + vec2(0.0, -0.0001));
+  vec3 hs = uSwayHair * sw * uSwayOn.x, bs = uSwayBun * bw * uSwayOn.y;
+  transformed.xz += hn * max(0.0, dot(hn, hs.xz)) + bn * max(0.0, dot(bn, bs.xz));
+  transformed.y += max(0.0, hs.y) + max(0.0, bs.y);
 }
 if (region > 0.5 && region < 1.5 && int(skinIndex.x + 0.5) == ${g.torso} && skinWeight.x > 0.99) {
-  transformed += uSwayHem * (1.0 - smoothstep(0.0, ${f(S.hemDepth)}, transformed.y - ${f(g.torsoY)})) * uSwayOn.z;
+  vec2 en = normalize(transformed.xz + vec2(0.0, 0.0001));
+  float hw = (1.0 - smoothstep(${f(S.hemFade[0])}, ${f(S.hemFade[1])}, transformed.y - ${f(g.torsoY)})) * uSwayOn.z; // (a flare: only outward, so the hem never goes into the trousers)
+  transformed.xz += en * max(0.0, dot(en, uSwayHem.xz)) * hw;
 }
 #endif`;
 }

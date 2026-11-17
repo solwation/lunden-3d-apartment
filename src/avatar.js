@@ -828,7 +828,7 @@ function hairParts(style) {
     }
   }
   if (style === 2) { // the bun at the back of the crown: a coil around a knot, tilted with the head's curve, and its band
-    const at = [0, 0.212, -0.078], tilt = -0.66;
+    const at = HAIR.bunAt, tilt = -0.66;
     out.push([new THREE.SphereGeometry(0.036, 10, 7).scale(1.05, 0.9, 1).rotateX(tilt).translate(...at), 'hair', 1.06]);
     out.push([new THREE.TorusGeometry(0.03, 0.016, 6, 12).rotateX(Math.PI / 2).rotateX(tilt).translate(at[0], at[1] - 0.012, at[2] + 0.009), 'hair', 0.96]);
     out.push([new THREE.TorusGeometry(0.03, 0.0045, 4, 12).rotateX(Math.PI / 2).rotateX(tilt).translate(at[0], at[1] - 0.026, at[2] + 0.02), 'top', 0.85]);
@@ -1351,7 +1351,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
 const FACE_SHAPE_DECL = 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform vec2 uGaze; uniform float uBlink; uniform float uEar, uHair, uGlasses, uEarrings, uHat, uPhones, uNecklace, uRingFinger, uBracelet, uWatch, uNeck, uSuit; uniform vec2 uBrow; ' + SWAY_DECL;
 const CHIN_Y = RH.jaw.centre[1] - RH.jaw.radius * RH.jaw.scale[1]; // the head lengthens from its chin
 function swayShader() { // #2014 (src/avatarsway.js): hair, bun and hem sway, after the face shape
-  return swayGLSL({ head: bindAt('head').toArray(), hairY: HAIR.centre[1], bun: [0.212, -0.078], torsoY: bindAt('torso').y, torso: NAMES.indexOf('torso'), hair: FACE_PART.hair, hat: 'uHat' });
+  return swayGLSL({ head: bindAt('head').toArray(), hairY: HAIR.centre[1], bun: [HAIR.bunAt[1], HAIR.bunAt[2]], torsoY: bindAt('torso').y, torso: NAMES.indexOf('torso'), hair: FACE_PART.hair, hat: 'uHat' });
 }
 function faceShape() {
   const hb = bindAt('head'), W = FACE.warp, f = (v) => v.toFixed(4), P = FACE_PART;
