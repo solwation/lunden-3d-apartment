@@ -1,0 +1,51 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar shadow</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2010 component page: the real Ghost + AvatarShadows on four grounds (sunlit grass, a light floor against a wall, a staircase, a jump).
+// Driven by tools/avatarshadowtest.cjs. __view(name, shadows): renders one view; __stats(): draw calls / triangles with and without the shadows.
+import * as THREE from 'three';
+import { Ghost } from '../src/ghosts.js';
+import { AvatarShadows } from '../src/avatarshadow.js';
+const W = 520, H = 400;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(W, H); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+const mat = (c) => new THREE.MeshLambertMaterial({ color: c });
+const box = (w, h, d, x, y, z, c) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(c)); m.position.set(x, y, z); scene.add(m); return m; };
+// scene areas along x: grass (x 0), light floor + wall (x 10), stairs (x 20), jump (x 30)
+box(6, 0.1, 6, 0, -0.05, 0, 0x7fae5a);
+box(6, 0.1, 6, 10, -0.05, 0, 0xe8e4dc); box(6, 2.4, 0.15, 10, 1.2, -1.2, 0xf2efe8); // the wall: 1.2 m behind the player (z -1.2)
+const STEP_H = 0.18, STEP_D = 0.28, stairs = [];
+for (let i = 0; i < 10; i++) { box(1.6, STEP_H, STEP_D, 20, STEP_H * i + STEP_H / 2, -1.4 + i * STEP_D, 0xd9d4ca); }
+box(6, 0.1, 6, 30, -0.05, 0, 0xe8e4dc);
+const ground = (x, z) => x > 18.5 && x < 21.5 ? Math.max(0, Math.min(10, Math.floor((z + 1.4 + STEP_D / 2) / STEP_D) + 1) * STEP_H) * (z > -1.4 - STEP_D / 2 ? 1 : 0) : 0;
+const g = new Ghost(scene, 7, 'Spelare', false); if (g.tag) g.tag.visible = false; scene.add(g.root); g.root.visible = true;
+const sh = new AvatarShadows(scene); sh.ground = ground;
+let t = 1000;
+const run = (ms, vx, vz) => { for (let n = 0; n < Math.round(ms / 16.7); n++) { t += 16.7; g.air = 0; g.dEye = 5; g.swim = false; g.animate(t, 1, vx, vz); } };
+const VIEWS = {
+  grass:  { at: [0, 0, 0], yaw: 0.6, cam: [1.8, 0.9, 2.4], look: [0, 0.4, 0] },
+  floor:  { at: [10, 0, 0], yaw: -0.5, cam: [11.6, 1.0, 2.2], look: [10, 0.5, -0.4], walk: 0 },
+  walk:   { at: [10, 0, 0.5], yaw: 0, cam: [12.3, 0.45, 1.4], look: [10.2, 0.2, 0.5], walk: 1.6 },
+  stairs: { at: [20, STEP_H * 5, -1.4 + 4 * STEP_D + 0.08], yaw: Math.PI, cam: [21.4, 1.3, -2.3], look: [20, 0.55, -0.2], walk: 0 },
+  jump:   { at: [30, 0.45, 0], yaw: 0.6, cam: [31.8, 0.5, 2.4], look: [30, 0.4, 0] },
+};
+window.__view = (name, on = true) => {
+  const v = VIEWS[name]; g.root.position.set(...v.at); g.root.rotation.y = v.yaw; g.have = false;
+  const sp = v.walk ?? 0, vx = -Math.sin(v.yaw) * sp, vz = -Math.cos(v.yaw) * sp; run(2500, vx, vz);
+  sh.update([g], null); sh.mesh.visible = on && sh.n > 0;
+  const cam = new THREE.PerspectiveCamera(35, W / H, 0.05, 80); cam.position.set(...v.cam); cam.lookAt(...v.look);
+  renderer.info.reset(); renderer.render(scene, cam);
+  return { calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, blobs: sh.n, alphas: Array.from(sh.alpha.array.slice(0, sh.n)).map((a) => Math.round(a * 100) / 100) };
+};
+window.__ready = true;
+</script></body></html>

@@ -8996,3 +8996,9 @@ export const MUSSELS = {
 // `fadeMin` of that at `fadeFar` m, where dense joints otherwise merge into ink. All *guesses* by eye against
 // before/after shots of the kitchen, a bathroom and a façade (docs/verification/1957/).
 export const EDGE_LOOK = { strength: 0.2, shade: 0.55, fadeNear: 2.5, fadeFar: 10, fadeMin: 0.45 };
+
+// #2010: the soft contact shadow under other players (src/avatarshadow.js): one InstancedMesh of flat blobs for ALL avatars (a body
+// blob + one per shoe), so it is one extra draw call. Alphas / radii (m) are by eye against the sun-lit courtyard and a light floor (*guess*).
+// `lift`: a foot this far above its own ground [full, gone] fades its blob; `jump`: the same for the body blob (jump / flight / fall);
+// `range`: only players nearer than this (m) get one (the far figure and distant bodies are too small to matter).
+export const AVATAR_SHADOW = { bodyAlpha: 0.3, footAlpha: 0.42, bodyRadius: [0.36, 0.3], footRadius: [0.1, 0.19], lift: [0.03, 0.22], jump: [0.12, 0.6], range: 40, rise: 0.012, maxDrop: 1.5 };

@@ -22,6 +22,7 @@ import { canHug, hugAmount, playerChoices } from './hug.js';
 import { Hearts } from './pingping.js';
 import { cleanHeldCategory } from './heldcategory.js';
 import { trimOutbox } from './outbox.js';
+import { AvatarShadows } from './avatarshadow.js'; // #2010: soft contact shadows, one draw call
 import { GhostFar } from './ghostfar.js'; // #1966: far players as one draw call
 import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
 
@@ -483,7 +484,7 @@ function avatarWire(code) {
 export class Ghosts {
   /** scene; url: the Worker ('' = off); name(): our name; state(): { p: [x, y, z] feet, r: yaw, c?: actual crouched boolean }; active(): playing (not the
    * start screen); weapon(): the key (COMBAT.weapons) of what we hold or ''; score(): displayed points (defaults to stats.totalScore); onHit / onHurt: the room's word on a hit (#667). */
-  constructor({ scene, camera, url, name = () => '', state, active = () => true, weapon = () => '', score = totalScore, onHit = () => {}, onHurt = () => {}, mirrored = () => true, swim = null }) {
+  constructor({ scene, camera, url, name = () => '', state, active = () => true, weapon = () => '', score = totalScore, onHit = () => {}, onHurt = () => {}, mirrored = () => true, swim = null, ground = null }) {
     swimProbe = swim ?? swimProbe; // #1943
     Object.assign(this, { scene, camera, name, state, active, weapon, score, onHit, onHurt, mirrored, mine: null, myGhost: null, rules: null, ws: null, me: null, others: new Map(), sent: null, prev: null,
       lastSent: 0, lastBeat: 0, outbox: [], shots: 0, dropped: 0, greetAt: -1e9, greetsSeen: 0, lastMove: -Infinity, retryAt: 0, backoff: 0, openedAt: 0, connects: 0, messages: 0, resends: 0, resent: null, stateAt: 0 });
@@ -497,6 +498,7 @@ export class Ghosts {
     this.group = new THREE.Group();
     this.group.name = 'ghosts';
     scene.add(this.group);
+    this.shadows = new AvatarShadows(this.group); this.shadows.ground = ground; // #2010: ground(x, z, feetY) = the walkable height
     // a hidden outline avatar so that the warm-up compiles the others' program with the scene's (#705): nothing to compile when the first one turns up
     this.sample = new Avatar('warm');
     this.sample.object.visible = false;
@@ -678,6 +680,7 @@ export class Ghosts {
     if (this.far && (this.others.size || this.far.mesh.visible)) this.far.update(this.others.values(), eye); // #1966
     this.updateKisses(t);
     this.updateHugs(t);
+    this.shadows.update(this.others.values(), eye); // #2010
     if (this.onStep || this.onJet) this.soundTick(t);
   }
 

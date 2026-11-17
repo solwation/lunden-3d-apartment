@@ -809,3 +809,15 @@ multiplies vertex colour into its existing merged LOD bake. No pose/brain or
 tail-allocation rewrite is included. Cat thumbnail modelVersion 3 invalidates
 older generated images. The neutral GLB and attribution describe the same
 recipe. [Whole-cat, actual consumer and bounded cost evidence](../verification/1918/README.md).
+
+## Contact shadow under other players (#2010)
+
+`src/avatarshadow.js` (`AvatarShadows`, tunables `AVATAR_SHADOW`): avatars cast no shadow-map shadow, so every other player gets a soft
+blob under the body and one under each shoe. All blobs of all players are ONE `InstancedMesh` (+1 draw call, +2 triangles per blob, a
+per-instance alpha attribute, depth tested, no depth write, polygon offset), created in `Ghosts` and updated at the end of `Ghosts.update`.
+Each blob rests on the ground found for its own x/z through `ghosts.shadows.ground` (`main.js` passes `player.groundAt`), so a foot on a
+stair step, grass, a floor or a roof gets its own height and nothing lands on another storey; the shoe blob fades with the sole's lift
+(swing phase), the body blob with the root's height over the ground (jump, flight, fall) and is off when swimming. Players beyond 30 m
+(not posed) use standing feet; beyond `AVATAR_SHADOW.range` none. Our own mirror image, the appearance preview and the far figure are not
+touched. Component page and check: `tools/avatarshadow.html`, `PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarshadowtest.cjs GAME OUT`
+(grass / light floor by a wall / stairs / jump; one extra draw call, [images](../verification/2010/)).
