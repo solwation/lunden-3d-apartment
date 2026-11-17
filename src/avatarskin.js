@@ -12,9 +12,9 @@ import { AVATAR_SKIN_DETAIL as D } from './config.js';
 
 export const SKIN_DETAIL = { on: true };
 /** The program cache key's suffix (a different program with the detail switched off). */
-export const skinKey = () => (SKIN_DETAIL.on ? '-skin2032' : '-skinoff');
+export const skinKey = () => (SKIN_DETAIL.on ? '-skin2067' : '-skinoff');
 
-const f = (v) => (+v).toFixed(5);
+const f = (v) => (+v).toFixed(8);
 const v3 = (a) => `vec3(${a.map(f).join(',')})`;
 const TAU = Math.PI * 2;
 // Quasi-periodic directions (icosahedral, φ = golden ratio) with slightly different wave numbers and phases: no visible lattice.
@@ -57,7 +57,18 @@ void skWave(vec3 p, vec3 d, float k, float ph, inout float s, inout vec3 g) { fl
         float skFp = max(length(skDpx), length(skDpy)); // bind metres per pixel
         float skFadeP = 1.0 - smoothstep(${f(P / c0)}, ${f(P / c1)}, skFp), skFadeG = 1.0 - smoothstep(${f(G / c0)}, ${f(G / c1)}, skFp);
         float skLip = 1.0 - step(0.5, abs(floor(vSurface.x + 0.5) - 6.0)), skRole = floor(vSuitRole + 0.5);
-        skFadeP *= (1.0 - skLip) * (skRole == 2.0 ? 1.0 : 0.7);
+        // #2067: dense fine relief, weighted to cheeks/nose; both layers leave lips and lids smooth.
+        float skDetail = 0.7;
+        if (skRole == 2.0) {
+          vec3 q = vSuitAt - ${v3([head.x, head.y, head.z])};
+          vec2 cheek = vec2(abs(q.x) - ${f(D.detail.cheek[0])}, q.y - ${f(D.detail.cheek[1])}) / ${f(D.detail.cheek[2])};
+          vec2 mouth = vec2(q.x / ${f(D.detail.mouth[1])}, (q.y - ${f(D.detail.mouth[0])}) / ${f(D.detail.mouth[2])});
+          float front = smoothstep(0.03, 0.08, q.z);
+          skDetail = mix(${f(D.detail.base)}, max(exp(-dot(cheek, cheek)), ${isNose}), front);
+          skDetail *= 1.0 - front * exp(-dot(mouth, mouth));
+        }
+        skDetail *= (1.0 - skLip) * (1.0 - ${isPart(part.eye)});
+        skFadeP *= skDetail; skFadeG *= skDetail;
         if (skFadeP + skFadeG > 0.0) {
           vec3 p = vSuitAt, gP = vec3(0.0), gG = vec3(0.0); float sP = 0.0, sG = 0.0;
           ${waves(PORE_DIRS, PORE_K, PORE_PH, kP, 'sP', 'gP')}

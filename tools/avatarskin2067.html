@@ -1,0 +1,130 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar skin</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#9aa4ad}canvas{display:block}</style></head>
+<body><script type="module">
+// #2032 component page, driven by tools/avatarskintest.cjs: one avatar per skin tone (light, medium, dark: SKIN[0], [2], [4]), each built
+// twice, with the living-skin detail (src/avatarskin.js) off and on (separate programs via SKIN_DETAIL.on before the first compile).
+// __sheet(kind) draws a contact sheet (rows = tones; columns = off / on per view) in day light or backlight; __shimmer(d) measures the
+// frame-to-frame change while the camera creeps sideways at distance d; __cost() times close-up and crowd frames, detail off vs on.
+import * as THREE from 'three';
+import { Avatar } from '../src/avatar.js';
+import { SKIN_DETAIL } from '../src/avatarskin.js';
+import { decodeAvatarLook, SKIN } from '../src/config.js';
+const code = '210000100c5e8o2w0l8j0n0b0r8t8y8', T = 400;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(T, T); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x9aa4ad);
+const hemi = new THREE.HemisphereLight(0xdfe8f2, 0x6b625a, 1.4); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff0dc, 2.6); scene.add(sun, sun.target);
+const cam = new THREE.PerspectiveCamera(30, 1, 0.02, 60);
+const tones = [['ljus', SKIN[0]], ['mellan', SKIN[2]], ['mörk', SKIN[4]]];
+const figures = {}; // `${tone}-${on}` -> avatar
+for (const [name, skin] of tones) for (const on of [false, true]) {
+  SKIN_DETAIL.on = on;
+  const a = new Avatar({ ...decodeAvatarLook(code, 'skin'), tall: 1, build: 1, style: 0, hat: 0, skin });
+  a.object.position.set(0, 0, 0); scene.add(a.object); a.update(1 / 60);
+  for (const o of Object.values(figures)) o.object.visible = false;
+  figures[`${name}-${on}`] = a;
+  scene.updateMatrixWorld(true); cam.position.set(0, 1.5, -2); cam.lookAt(0, 1.5, 0); renderer.render(scene, cam); // compiles with this flag
+}
+SKIN_DETAIL.on = true;
+const show = (key) => { for (const [k, a] of Object.entries(figures)) a.object.visible = k === key; return figures[key]; };
+const at = (a, bone, off = [0, 0, 0]) => a.bones[bone].localToWorld(new THREE.Vector3(...off));
+// The figure faces −z (Avatar turns it by π): its front is −z, its left (handL, +x in the model) is −x in the world.
+const views = {
+  face: (a) => { const h = at(a, 'head', [0, 0.09, 0]); return { eye: h.clone().add(new THREE.Vector3(0.08, 0.02, -0.2884)), look: h }; },
+  ear: (a) => { const h = at(a, 'head', [0.06, 0.1, 0]); return { eye: h.clone().add(new THREE.Vector3(-0.36, 0.0, -0.1)), look: h }; },
+  hand: (a) => { const h = at(a, 'handL', [0.0, -0.05, 0.0]); return { eye: h.clone().add(new THREE.Vector3(-0.26, 0.05, -0.12)), look: h }; },
+  cheek: (a) => { const h = at(a, 'head', [0.045, 0.075, 0.07]); return { eye: h.clone().add(new THREE.Vector3(0.08, 0.03, -0.2)), look: h }; },
+  far: (a, d = 4) => { const h = at(a, 'head', [0, 0.0, 0]); return { eye: h.clone().add(new THREE.Vector3(0.2 * d, 0.05, -d)), look: h.clone().add(new THREE.Vector3(0, -0.3, 0)) }; },
+};
+// Light setups relative to the view: day = the sun over the camera's shoulder, back = the sun low behind the subject.
+function light(kind, v) {
+  const toCam = v.eye.clone().sub(v.look).setY(0).normalize();
+  if (kind === 'day') { hemi.intensity = 1.4; sun.intensity = 2.6; sun.color.set(0xfff0dc); sun.position.copy(v.look).addScaledVector(toCam, 3).add(new THREE.Vector3(1.2, 3, 0)); }
+  else { hemi.intensity = 0.55; sun.intensity = 3.2; sun.color.set(0xffd9a8); sun.position.copy(v.look).addScaledVector(toCam, -3).add(new THREE.Vector3(0.4, 0.6, 0)); }
+  sun.target.position.copy(v.look);
+}
+function draw(key, view, kind, arg) {
+  const a = show(key), v = views[view](a, arg);
+  cam.position.copy(v.eye); cam.lookAt(v.look); light(kind, v);
+  scene.updateMatrixWorld(true); renderer.render(scene, cam);
+}
+const sheetCanvas = document.createElement('canvas'), sctx = sheetCanvas.getContext('2d');
+/** A contact sheet: rows = tones, columns = for each view: off, on. Returns a PNG data URL. */
+window.__sheet = (kind, viewList) => {
+  const cols = viewList.length * 2, pad = 22;
+  sheetCanvas.width = cols * T; sheetCanvas.height = tones.length * T + pad;
+  sctx.fillStyle = '#222'; sctx.fillRect(0, 0, sheetCanvas.width, sheetCanvas.height);
+  sctx.font = '14px sans-serif'; sctx.fillStyle = '#fff';
+  viewList.forEach((v, i) => ['före', 'efter'].forEach((t, j) => sctx.fillText(`${{ face: 'ansikte', cheek: 'kind', hand: 'handrygg', ear: 'öra' }[v] ?? v} ${kind === 'day' ? 'dagsljus' : 'motljus'} – ${t}`, (i * 2 + j) * T + 6, 16)));
+  tones.forEach(([name], r) => viewList.forEach((view, i) => [false, true].forEach((on, j) => {
+    draw(`${name}-${on}`, view, kind); sctx.drawImage(renderer.domElement, (i * 2 + j) * T, pad + r * T);
+    if (i === 0 && j === 0) { sctx.fillStyle = '#fff'; sctx.fillText(name, 6, pad + r * T + T - 8); }
+  })));
+  return sheetCanvas.toDataURL('image/jpeg', 0.9);
+};
+const px = document.createElement('canvas'), pctx = px.getContext('2d', { willReadFrequently: true }); px.width = px.height = T;
+const grab = () => { pctx.drawImage(renderer.domElement, 0, 0); return pctx.getImageData(0, 0, T, T).data; };
+const luma = (d, i) => 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+/** Frame-to-frame change (mean |Δluma| over the figure's pixels) while the camera creeps 0.3 px a frame, detail off vs on, at distance d. */
+window.__shimmer = (d, tone = 'mellan', frames = 12) => {
+  const out = {};
+  for (const on of [false, true]) {
+    const a = show(`${tone}-${on}`), v = views.far(a, d), side = new THREE.Vector3(1, 0, 0);
+    const pxM = 2 * d * Math.tan(15 * Math.PI / 180) / T; // metres per pixel at the head
+    let prev = null, sum = 0, n = 0, imgs = [];
+    for (let f = 0; f < frames; f++) {
+      cam.position.copy(v.eye).addScaledVector(side, f * 0.3 * pxM); cam.lookAt(v.look.clone().addScaledVector(side, f * 0.3 * pxM)); light('day', v);
+      scene.updateMatrixWorld(true); renderer.render(scene, cam);
+      const img = grab(); imgs.push(img);
+      if (prev) for (let i = 0; i < img.length; i += 4) { const bg = Math.abs(img[i] - 0x9a) + Math.abs(img[i + 1] - 0xa4) + Math.abs(img[i + 2] - 0xad) < 6; if (bg) continue; sum += Math.abs(luma(img, i) - luma(prev, i)); n++; }
+      prev = img;
+    }
+    out[on ? 'on' : 'off'] = { meanDelta: +(sum / Math.max(n, 1)).toFixed(3), pixels: Math.round(n / (frames - 1)) };
+    out[on ? 'imgOn' : 'imgOff'] = imgs[0];
+  }
+  let diff = 0, m = 0; for (let i = 0; i < out.imgOn.length; i += 4) { const dd = Math.abs(luma(out.imgOn, i) - luma(out.imgOff, i)); if (dd > 0) { diff += dd; m++; } }
+  delete out.imgOn; delete out.imgOff;
+  out.ratio = +(out.on.meanDelta / Math.max(out.off.meanDelta, 1e-6)).toFixed(3); out.onVsOffMeanLuma = +(diff / Math.max(m, 1)).toFixed(3);
+  return out;
+};
+/** ms per frame (gl finish via a 1-pixel read) for a full-frame face close-up and for 9 figures at 3 – 6 m, detail off vs on. */
+window.__cost = (frames = 40) => {
+  const gl = renderer.getContext(), one = new Uint8Array(4);
+  const time = (fn) => { fn(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, one); const t0 = performance.now(); for (let f = 0; f < frames; f++) { fn(f); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, one); } return (performance.now() - t0) / frames; };
+  const res = {};
+  renderer.setSize(640, 640);
+  for (const on of [false, true, false, true, false, true]) {
+    const key = `mellan-${on}`, close = time(() => draw(key, 'face', 'day'));
+    // crowd: nine clones of the same figure (same program) at 3 – 6 m
+    show(null); SKIN_DETAIL.on = on; const crowd = [];
+    for (let i = 0; i < 9; i++) { const c = new Avatar({ ...decodeAvatarLook(code, 'skin'), tall: 1, build: 1, style: 0, hat: 0, skin: SKIN[2] }).object; c.position.set((i % 3 - 1) * 0.9, 0, (Math.floor(i / 3)) * 1.2); scene.add(c); crowd.push(c); }
+    SKIN_DETAIL.on = true; cam.position.set(0.8, 1.6, -4); cam.lookAt(0, 1.2, 1); light('day', { eye: cam.position.clone(), look: new THREE.Vector3(0, 1.2, 1) });
+    const far = time(() => renderer.render(scene, cam));
+    for (const c of crowd) c.removeFromParent();
+    const k = on ? 'on' : 'off'; res[k] = res[k] ?? { close: [], crowd: [] }; res[k].close.push(+close.toFixed(2)); res[k].crowd.push(+far.toFixed(2));
+  }
+  renderer.setSize(T, T);
+  const best = (xs) => Math.min(...xs);
+  res.closeRatio = +(best(res.on.close) / best(res.off.close)).toFixed(3); res.crowdRatio = +(best(res.on.crowd) / best(res.off.crowd)).toFixed(3);
+  res.calls = renderer.info.render.calls; res.programs = renderer.info.programs.length;
+  return res;
+};
+window.__snap2067 = (tone, view, kind, state = 'rest') => {
+  const key = `${tone}-true`, a = figures[key], u = a.mesh.material.userData.uniforms;
+  if (u?.uExert) u.uExert.value.set(state === 'sweat' ? 0.8 : 0, state === 'sweat' ? 1 : 0);
+  if (u?.uWet) u.uWet.value = state === 'rain' ? 1 : 0;
+  draw(key, view, kind);
+  return { image: renderer.domElement.toDataURL('image/jpeg', 0.92), calls: renderer.info.render.calls };
+};
+window.__budget2067 = () => { const a = figures['mellan-true'], g = a.mesh.geometry, p = g.attributes; return { triangles: (g.index?.count ?? p.position.count) / 3, bones: a.mesh.skeleton.bones.length, attributes: Object.keys(p) }; };
+window.__time2067 = () => { const gl = renderer.getContext(), xs=[]; for(let i=0;i<25;i++){const t=performance.now();draw('mellan-true','face','day');gl.finish();if(i>=5)xs.push(performance.now()-t);}xs.sort((a,b)=>a-b);return { median:xs[xs.length>>1], p90:xs[Math.floor(xs.length*.9)], n:xs.length }; };
+window.__ready = true;
+</script></body></html>
