@@ -99,29 +99,74 @@ export function computerFurniture() {
 
     parts.push(...gamingPc(s));
 
-    // Gaming chair: bucket seat with side bolsters, tall tilted racing back with wings, headrest and lumbar pillow, 4D arm rests, caster star base.
-    const cz=D.seatOffset,sy=D.seat;
+    // #2026 CHAIR BLOCK (premium racing chair) -- begin
+    // Black leather-look racing chair: bucket seat with accent-colour bolsters, tilted back with accent wing panels, neck and lumbar
+    // pillows, contrast stitching (cream lines), an embroidered original hexagon-and-bolt monogram on the back, sturdy 4D arm rests and a
+    // chrome five-star base on twin-wheel casters. The seat/rest target, footprint and facing are unchanged (seat height `sy`, centre `cz`).
+    const cz=D.seatOffset,sy=D.seat,cw=D.chair[0],cd=D.chair[2];
     const tilt=new THREE.Matrix4().makeTranslation(0,sy,cz).multiply(new THREE.Matrix4().makeRotationX(.09)).multiply(new THREE.Matrix4().makeTranslation(0,-sy,-cz));
-    const seat=0x1b1c22;
-    add(D.chair[0],.07,D.chair[2],0,sy-.035,cz,seat,FINISH.fabric);
-    for(const x of [-1,1]){add(.07,.09,D.chair[2]*.95,x*(D.chair[0]/2+.005),sy-.01,cz-.005,accent,FINISH.fabric);}
-    add(D.chair[0]*.8,.05,.07,0,sy-.015,cz-D.chair[2]/2+.01,seat,FINISH.fabric);     // front lip
-    const bz=cz+.15; // the back leans from the rear edge of the seat
-    add(.4,.5,.08,0,sy+.27,bz,seat,FINISH.fabric,tilt);
-    add(.18,.4,.012,0,sy+.27,bz-.044,0x101116,FINISH.fabric,tilt);
-    for(const x of [-1,1]){add(.075,.56,.1,x*.22,sy+.3,bz-.005,accent,FINISH.fabric,tilt);add(.016,.4,.012,x*.07,sy+.27,bz-.05,led(base,1,.5,2),FINISH.paint,tilt);}
-    add(.32,.15,.09,0,sy+.62,bz+.01,seat,FINISH.fabric,tilt);
-    add(.2,.1,.05,0,sy+.62,bz-.04,accent,FINISH.fabric,tilt);                       // headrest cushion
-    add(.28,.09,.05,0,sy+.14,bz-.05,accent,FINISH.fabric,tilt);                     // lumbar pillow
-    for(const x of [-1,1]){add(.03,.17,.03,x*.255,sy+.08,cz-.02,dark,FINISH.metal);add(.065,.03,.26,x*.255,sy+.18,cz-.04,dark,FINISH.fabric);}
-    const gas=new THREE.CylinderGeometry(.026,.03,sy-.12,8).translate(0,(sy-.12)/2+.09,cz);place(gas,0x30333c,FINISH.metal);
-    add(.15,.025,.15,0,sy-.08,cz,dark,FINISH.metal);
-    for(let k=0;k<5;k++){
-      const a=k/5*Math.PI*2,r=.115;
-      box(.23,.022,.04,Math.cos(a)*r,.085,cz+Math.sin(a)*r,0x2a2d36,FINISH.metal,new THREE.Matrix4().makeTranslation(Math.cos(a)*r,0,cz+Math.sin(a)*r).multiply(new THREE.Matrix4().makeRotationY(-a)).multiply(new THREE.Matrix4().makeTranslation(-Math.cos(a)*r,0,-(cz+Math.sin(a)*r))));
-      const wx=Math.cos(a)*.225,wz=cz+Math.sin(a)*.225;
-      place(new THREE.CylinderGeometry(.03,.03,.03,6).rotateZ(Math.PI/2).rotateY(-a+Math.PI/2).translate(wx,.032,wz),dark,FINISH.paint);
+    const leather=0x17181d,panel=0x23252d,thread=0xe6dcc0,chrome=0xa7acb6,bz=cz+.15;   // the back leans from the rear edge of the seat
+    const stitch=(w,h,d,x,y,z,t)=>box(w,h,d,x,y,z,thread,FINISH.paint,t);               // a stitched seam line
+    const slant=(len,th,x,y,z,ang,t)=>box(len,th,.004,0,0,0,thread,FINISH.paint,(t||new THREE.Matrix4()).clone().multiply(new THREE.Matrix4().makeTranslation(x,y,z)).multiply(new THREE.Matrix4().makeRotationZ(ang)));
+    // seat: leather pan, accent bolsters with double seams, front lip, centre seams
+    add(cw,.07,cd,0,sy-.035,cz,leather,FINISH.paint);
+    for(const x of [-1,1]){
+      add(.07,.09,cd*.95,x*(cw/2+.005),sy-.01,cz-.005,accent,FINISH.paint);
+      for(const o of [.19,.232])stitch(.004,.003,cd*.85,x*o,sy+.036,cz-.005);
+      stitch(.004,.003,cd*.8,x*.095,sy+.001,cz);
     }
+    add(cw*.8,.05,.07,0,sy-.015,cz-cd/2+.01,leather,FINISH.paint);
+    stitch(cw*.7,.003,.004,0,sy+.006,cz-cd/2+.045);
+    // back: leather shell, quilted centre inset, accent wing/shoulder panels with seams, embroidered monogram on the rear
+    add(.4,.5,.08,0,sy+.27,bz,leather,FINISH.paint,tilt);
+    add(.18,.4,.012,0,sy+.27,bz-.044,panel,FINISH.paint,tilt);
+    for(const y of [-.12,-.04,.04,.12])stitch(.18,.003,.004,0,sy+.27+y,bz-.051,tilt);
+    for(const x of [-.045,.045])stitch(.003,.4,.004,x,sy+.27,bz-.051,tilt);
+    for(const x of [-1,1]){
+      add(.075,.56,.1,x*.22,sy+.3,bz-.005,accent,FINISH.paint,tilt);
+      add(.09,.2,.11,x*.235,sy+.5,bz-.005,accent,FINISH.paint,tilt);               // shoulder wings
+      add(.016,.4,.012,x*.07,sy+.27,bz-.05,led(base,1,.5,2),FINISH.paint,tilt);
+      for(const o of [.2,.24])stitch(.003,.5,.004,x*o,sy+.3,bz-.0565,tilt);
+      stitch(.003,.46,.004,x*.2,sy+.3,bz+.0465,tilt);stitch(.003,.46,.004,x*.24,sy+.3,bz+.0465,tilt);
+    }
+    add(.3,.4,.008,0,sy+.27,bz+.042,panel,FINISH.paint,tilt);                       // rear centre panel carrying the monogram
+    for(const y of [-.17,.17])stitch(.3,.003,.004,0,sy+.27+y,bz+.0485,tilt);
+    for(const x of [-.14,.14])stitch(.003,.34,.004,x,sy+.27,bz+.0485,tilt);
+    const my=sy+.3,mz=bz+.0495,hr=.085;                                              // monogram: hexagon ring with a lightning bolt
+    for(let k=0;k<6;k++){const a=k/6*Math.PI*2+Math.PI/6;slant(hr*1.02,.01,Math.cos(a)*hr*.866,my+Math.sin(a)*hr*.866,mz,a+Math.PI/2,tilt);}
+    slant(.05,.01,.012,my+.036,mz,0,tilt);slant(.085,.01,0,my,mz,Math.atan2(.072,.036),tilt);slant(.05,.01,-.012,my-.036,mz,0,tilt);
+    stitch(.05,.005,.004,0,sy+.42,bz+.0495,tilt);
+    // headrest shell and a detachable-looking neck pillow (accent band), lumbar pillow with accent stripe
+    add(.32,.15,.09,0,sy+.62,bz+.01,leather,FINISH.paint,tilt);
+    add(.22,.1,.055,0,sy+.62,bz-.045,panel,FINISH.paint,tilt);
+    add(.222,.03,.058,0,sy+.62,bz-.045,accent,FINISH.paint,tilt);
+    for(const y of [-.04,.04])stitch(.2,.003,.004,0,sy+.62+y,bz-.0735,tilt);
+    stitch(.3,.003,.004,0,sy+.6,bz+.0555,tilt);
+    add(.28,.09,.05,0,sy+.14,bz-.05,panel,FINISH.paint,tilt);
+    add(.282,.022,.052,0,sy+.14,bz-.05,accent,FINISH.paint,tilt);
+    for(const y of [-.03,.03])stitch(.26,.003,.004,0,sy+.14+y,bz-.0765,tilt);
+    // sturdy 4D arm rests: steel post, pivot block, padded top with seam, side knob, cross bar under the seat
+    for(const x of [-1,1]){
+      add(.034,.22,.034,x*.255,sy+.035,cz-.02,chrome,FINISH.metal);
+      add(.05,.03,.09,x*.255,sy+.15,cz-.03,0x2a2d36,FINISH.metal);
+      add(.07,.045,.27,x*.255,sy+.18,cz-.04,leather,FINISH.paint);
+      stitch(.004,.003,.23,x*.255,sy+.2035,cz-.04);
+      box(.012,.02,.02,x*.285,sy+.12,cz-.02,accent,FINISH.paint);
+    }
+    box(.5,.02,.05,0,sy-.075,cz-.02,chrome,FINISH.metal);
+    // chrome five-star base, gas lift with a black skirt, twin-wheel casters
+    place(new THREE.CylinderGeometry(.026,.03,sy-.12,8).translate(0,(sy-.12)/2+.09,cz),chrome,FINISH.metal);
+    place(new THREE.CylinderGeometry(.04,.048,.1,10).translate(0,.2,cz),leather,FINISH.paint);
+    add(.15,.025,.15,0,sy-.08,cz,0x2a2d36,FINISH.metal);
+    place(new THREE.CylinderGeometry(.045,.06,.05,10).translate(0,.1,cz),chrome,FINISH.metal);
+    for(let k=0;k<5;k++){
+      const a=k/5*Math.PI*2,r=.115,sx=Math.sin(a),cx=Math.cos(a);
+      box(.25,.03,.048,cx*r,.088,cz+sx*r,chrome,FINISH.metal,new THREE.Matrix4().makeTranslation(cx*r,0,cz+sx*r).multiply(new THREE.Matrix4().makeRotationY(-a)).multiply(new THREE.Matrix4().makeTranslation(-cx*r,0,-(cz+sx*r))));
+      const wx=cx*.225,wz=cz+sx*.225;
+      box(.022,.045,.022,wx,.062,wz,0x2a2d36,FINISH.metal);                         // caster fork
+      for(const o of [-.014,.014])place(new THREE.CylinderGeometry(.03,.03,.016,8).rotateZ(Math.PI/2).rotateY(-a+Math.PI/2).translate(wx+sx*o,.032,wz-cx*o),dark,FINISH.paint);
+    }
+    // #2026 CHAIR BLOCK -- end
   }
   return parts;
 }

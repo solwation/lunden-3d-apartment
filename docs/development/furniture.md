@@ -498,6 +498,18 @@ Sizes are guesses; wing/centre monitors are flat-centre (the media plane stays f
 The old Pricka grönt game and white power box were replaced by the app selector.
 These are personal furnishings and gameplay, excluded from the public downstream.
 
+### Premium racing chairs (#2026, part of #2023)
+
+The four SPEL chairs are one contiguous `#2026 CHAIR BLOCK` in `computerFurniture()` (`src/computerfurniture.js`): black
+leather-look seat and back (`FINISH.paint`), bucket seat with accent-colour bolsters and double cream seams, quilted back inset,
+accent wing and shoulder panels with seams, a neck pillow and a lumbar pillow with accent bands, an original embroidered
+monogram (hexagon ring with an inner stroke, thread lines only, no brand mark) on the rear panel, sturdy 4D arm rests (post, pivot block,
+padded top, side knob, cross bar), and a chrome five-star base with gas-lift skirt and twin-wheel casters. Seat height, centre
+(`seatOffset`), rest target, footprint and facing are untouched. These chairs are not part of the #1010 upholstery handling (that covers
+the home gaming chair); no new lights. Clubhouse furniture 1192 -> 1448 parts, 41,392 -> 47,936 triangles (+6.5k, all in the
+existing merged batch); SPEL room view 92,084 -> 98,508 triangles at 31-32 draw calls (unchanged). Capture script:
+`tools/clubhousechairshots.cjs`.
+
 ### Luxury glass gaming PCs (#2024, part of #2023)
 
 `gamingPc(s)` in `src/computerfurniture.js` replaces the old on-desk mid-tower with a wide dual-chamber glass case on its own
