@@ -4175,7 +4175,7 @@ export const AVATAR_SURFACE = {
     [0.025, 0.073, 0.078, 0.025], [0.05, 0.084, 0.088, 0.02], [0.075, 0.096, 0.099, 0.014],
     [0.1, 0.103, 0.108, 0.01], [0.125, 0.101, 0.105, 0.01], [0.15, 0.093, 0.097, 0.01],
     [0.175, 0.081, 0.084, 0.01], [0.195, 0.063, 0.067, 0.01], [0.211, 0.04, 0.044, 0.01], [0.221, 0.001, 0.001, 0.01]],
-  face: { cheek: [0.003, 0.05, 0.04, 0.073, 0.035], brow: [0.003, 0.127, 0.018], chin: [0.003, 0.01, 0.025], socket: [0.009, 0.022, 0.013], front: [0.25, 0.9] },
+  face: { cheek: [0.003, 0.05, 0.04, 0.073, 0.035], brow: [0.003, 0.127, 0.018], chin: [0.003, 0.01, 0.025], socket: [0.013, 0.022, 0.013], front: [0.25, 0.9] },
   eye: { upper: 0.0054, lower: 0.0042, outer: [0.0175, 0.008], skinLift: 0.0006, normalStep: 0.001, columns: 12, rows: 4, irisDepth: 0.22, pupilDepth: 0.12, lidDepth: 0.9, scleraBase: 0.85, scleraRound: 0.15 },
   cloth: { waistFold: 0.003, sideFold: 0.003, waveAngle: [3, 2], waveHeight: [38, 30], waist: [0.10, 0.10], side: [0.32, 0.16], rings: [0.075, 0.10, 0.17, 0.21, 0.30, 0.36, 0.40] },
   hair: { wave: 0.0016, frequency: 7, flow: 2, part: [-18, 7, 0.003], streak: 0.12,
@@ -4283,8 +4283,8 @@ export const AVATAR_LIP_VOLUME = { rows: 2, upperBulge: 0.004, lowerBulge: 0.005
 
 export const AVATAR_FACE = {
   skullSegments: [18, 12], jawSegments: [14, 10], blend: 0.014, // blend: m either side of the skull / jaw seam shaded as one
-  // #2063: inset into the orbit, behind the brow/cheek; depth stays fixed when sizing the opening (*guess*, m).
-  eye: { at: [0.034, 0.107, 0.1015], r: 0.013, scale: [1, 0.72, 0.4], iris: 0.0062, pupil: 0.0028, white: 0xebe5db, irisColour: 0x6e5236, pupilColour: 0x141010 },
+  // #2063: inset 12 mm into the orbit; the extra 4 mm hides the far eye at oblique angles. Depth is fixed when sizing the opening (*guess*, m).
+  eye: { at: [0.034, 0.107, 0.0975], r: 0.013, scale: [1, 0.72, 0.4], iris: 0.0062, pupil: 0.0028, white: 0xebe5db, irisColour: 0x6e5236, pupilColour: 0x141010 },
   lid: { r: 0.0142, scale: [1.04, 0.76, 0.62], upper: 0.37, lower: 0.18 },
   socket: { r: 0.0185, scale: [1.08, 0.72, 0.3], z: 0.107, shade: 0.88 },
   // #2063: spectacles stay in front of the nasal bridge when the eye centre is inset (*guess*, head-local m).
