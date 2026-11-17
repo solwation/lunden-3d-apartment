@@ -39,8 +39,10 @@ const finger = (g, side = 'R') => g.avatar.material.userData.u.uFing.value.slice
 /** A shot of ghost i's right hand from `view` ('front' | 'side' | 'above' | 'far'): `dist` metres away, in the figure's frame (+z ahead of it). */
 window.__shot = (i, view = 'side', dist = 0.5, which = 'R') => {
   const g = i === 'mirror' ? mirror : ghosts[i], p = g.avatar.hand(which, new THREE.Vector3());
-  const off = { front: [0, 0.05, 1], side: [which === 'R' ? 1 : -1, 0.05, 0.25], above: [0.1, 1, 0.5], far: [0.4, 0.2, 1], back: [0, 0.1, -1] }[view];
+  const hv = view.startsWith('h:') ? view.slice(2).split(',').map(Number) : null; // a direction in the hand bone's frame (x out of the palm side for the left hand, -y along the fingers, +z the thumb's side)
+  const off = hv ?? { front: [0, 0.05, 1], side: [which === 'R' ? 1 : -1, 0.05, 0.25], above: [0.1, 1, 0.5], far: [0.4, 0.2, 1], back: [0, 0.1, -1] }[view];
   const d = new THREE.Vector3(...off).normalize().multiplyScalar(dist);
+  if (hv) d.applyQuaternion(g.avatar.bones['hand' + which].getWorldQuaternion(new THREE.Quaternion()));
   cam.fov = view === 'far' ? 30 : 22; cam.updateProjectionMatrix();
   // the figure faces +z in the world here (root rotated by pi: the avatar's own frame faces -z of the root)
   cam.position.copy(p).add(d); cam.lookAt(p);

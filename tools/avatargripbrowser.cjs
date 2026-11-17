@@ -25,6 +25,8 @@ const [base = 'http://127.0.0.1:8616', out = 'docs/verification/2016', only = ''
         if (only && !`${k}-${view}`.includes(only)) continue;
         const r = await shot(`${k}-${view}`, idx[k], view, dist); if (view === 'side') check(r.grip === grip, `${k}: grip ${r.grip}`);
       }
+      // fingers visible: from the thumb's side and from below the fingertips, in the hand's own frame (right hand: palm side is +x)
+      if (!only || k.includes(only)) { await shot(`${k}-thumb`, idx[k], 'h:0.3,-0.5,1', 0.4); await shot(`${k}-tips`, idx[k], 'h:0.5,-1,0.3', 0.4); await shot(`${k}-outer`, idx[k], 'h:-1,-0.2,0.3', 0.4); }
       if (!only || k.includes(only)) await shot(`${k}-normal`, idx[k], 'far', 2.2);
     }
     if (!only) {
