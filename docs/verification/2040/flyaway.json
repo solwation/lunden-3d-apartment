@@ -1,0 +1,99 @@
+{
+ "baseline": "3c411005cc2aa50198e5aaa8483116d04c2b87d2",
+ "alpha": {
+  "kort": 255,
+  "långt": 255,
+  "lockigt": 255,
+  "knut": 255,
+  "skägg": 255,
+  "keps": 255,
+  "mössa": 255
+ },
+ "info": {
+  "msaa": true,
+  "samples": 4,
+  "kort-after": {
+   "tris": 12424,
+   "flyTris": 264,
+   "calls": 1
+  },
+  "kort-before": {
+   "tris": 12160,
+   "flyTris": 0,
+   "calls": 1
+  },
+  "långt-after": {
+   "tris": 13304,
+   "flyTris": 448,
+   "calls": 1
+  },
+  "långt-before": {
+   "tris": 12856,
+   "flyTris": 0,
+   "calls": 1
+  },
+  "lockigt-after": {
+   "tris": 18040,
+   "flyTris": 400,
+   "calls": 1
+  },
+  "lockigt-before": {
+   "tris": 17640,
+   "flyTris": 0,
+   "calls": 1
+  },
+  "knut-after": {
+   "tris": 12720,
+   "flyTris": 240,
+   "calls": 1
+  },
+  "knut-before": {
+   "tris": 12480,
+   "flyTris": 0,
+   "calls": 1
+  },
+  "skägg-after": {
+   "tris": 13296,
+   "flyTris": 384,
+   "calls": 1
+  },
+  "skägg-before": {
+   "tris": 12912,
+   "flyTris": 0,
+   "calls": 1
+  },
+  "keps-after": {
+   "tris": 12424,
+   "flyTris": 264,
+   "calls": 1
+  },
+  "keps-before": {
+   "tris": 12160,
+   "flyTris": 0,
+   "calls": 1
+  },
+  "mössa-after": {
+   "tris": 13304,
+   "flyTris": 448,
+   "calls": 1
+  },
+  "mössa-before": {
+   "tris": 12856,
+   "flyTris": 0,
+   "calls": 1
+  }
+ },
+ "cost": {
+  "before": [
+   153.82,
+   164.33,
+   160.95
+  ],
+  "after": [
+   182.47,
+   185.41,
+   185.68
+  ],
+  "ratio": 1.186
+ }
+}

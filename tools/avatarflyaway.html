@@ -1,0 +1,120 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar flyaways</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#8795a3}canvas{display:block}</style></head>
+<body><script type="module">
+// #2040 component page, driven by tools/avatarflyawaytest.cjs: flyaway hairs and the backlit hair rim (src/avatarflyaway.js).
+// Each look is built twice: from the checkout (`after`) and, when the driver serves the baseline under /base/ (page.route), from the
+// baseline src/avatar.js + src/config.js (`before`). __sheet(rows, cols) draws a contact sheet; __alpha() the least canvas alpha of a
+// backlit close-up on an alpha:true canvas (as the game's); __info() triangles and draw calls; __cost() ms/frame before vs after.
+import * as THREE from 'three';
+const after = await import('../src/avatar.js'), cfg = await import('../src/config.js');
+let before = null;
+try { before = await import('../base/src/avatar.js'); } catch { before = null; }
+const T = 320;
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(T, T); document.body.appendChild(renderer.domElement);
+renderer.toneMapping = THREE.NeutralToneMapping;
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x8795a3);
+const hemi = new THREE.HemisphereLight(0xdfe8f2, 0x6b625a, 1.4); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff0dc, 2.6); scene.add(sun, sun.target);
+const cam = new THREE.PerspectiveCamera(30, 1, 0.02, 80);
+const base = { tall: 1, build: 1, glasses: 0, phones: 0, earrings: 0, necklace: 0, ring: 0, bracelet: 0, watch: 0, hat: 0, facial: 0, hairLength: undefined };
+const looks = {
+  kort: { style: 0, gender: 0, hair: 0x4a3426, skin: 0xe0b089 },
+  långt: { style: 1, gender: 1, hair: 0xb98d55, skin: 0xf0cdb2 },
+  lockigt: { style: 4, gender: 0, hair: 0x2a1d16, skin: 0x9a6a48 },
+  knut: { style: 2, gender: 1, hair: 0x7a3b1f, skin: 0xe8bf9f },
+  skägg: { style: 0, gender: 0, facial: 3, hair: 0x5a3a24, beard: 0x5a3a24, skin: 0xd6a07c },
+  keps: { style: 0, gender: 0, hat: 1, hair: 0x4a3426, skin: 0xe0b089 },
+  mössa: { style: 1, gender: 1, hat: 3, hair: 0xb98d55, skin: 0xf0cdb2 },
+};
+const figures = {};
+for (const [name, o] of Object.entries(looks)) for (const [phase, mod] of [['after', after], ['before', before]]) {
+  if (!mod) continue;
+  const a = new mod.Avatar({ ...cfg.avatarLook('fly-' + name), ...base, top: 0x3d6b8f, pants: 0x30343a, ...o });
+  scene.add(a.object); a.update(1 / 60); a.object.visible = false;
+  figures[`${name}-${phase}`] = a;
+}
+const show = (key) => { for (const [k, a] of Object.entries(figures)) a.object.visible = k === key; return figures[key]; };
+const at = (a, bone, off = [0, 0, 0]) => a.bones[bone].localToWorld(new THREE.Vector3(...off));
+// The figure faces −z. near: a three-quarter close-up of the head; side: a profile; m3: 3 m away (fov 12°); far: 12 m (normal fov).
+const views = {
+  near: (a) => { const h = at(a, 'head', [0, 0.06, 0]); return { eye: h.clone().add(new THREE.Vector3(0.32, 0.06, -0.62)), look: h, fov: 30 }; },
+  side: (a) => { const h = at(a, 'head', [0, 0.04, 0]); return { eye: h.clone().add(new THREE.Vector3(0.72, 0.03, 0.05)), look: h, fov: 30 }; },
+  m3: (a) => { const h = at(a, 'head', [0, -0.02, 0]); return { eye: h.clone().add(new THREE.Vector3(1.2, 0.1, -2.75)), look: h, fov: 12 }; },
+  // detail: the crown's contour against the sky up close (the chin's for a beard)
+  detail: (a) => a.look.facial
+    ? (() => { const h = at(a, 'head', [0, -0.035, 0.07]); return { eye: h.clone().add(new THREE.Vector3(0.26, -0.03, -0.2)), look: h, fov: 30 }; })()
+    : (() => { const h = at(a, 'head', [0, 0.19, -0.02]); return { eye: h.clone().add(new THREE.Vector3(0.16, 0.0, -0.3)), look: h, fov: 30 }; })(),
+  far: (a) => { const h = at(a, 'head', [0, -0.6, 0]); return { eye: h.clone().add(new THREE.Vector3(4, 0.3, -11.3)), look: h, fov: 12 }; },
+};
+function light(kind, v) {
+  const toCam = v.eye.clone().sub(v.look).setY(0).normalize();
+  if (kind === 'day') { hemi.intensity = 1.4; sun.intensity = 2.6; sun.color.set(0xfff0dc); sun.position.copy(v.look).addScaledVector(toCam, 3).add(new THREE.Vector3(1.2, 3, 0)); }
+  else { hemi.intensity = 0.6; sun.intensity = 3.2; sun.color.set(0xffd9a8); sun.position.copy(v.look).addScaledVector(toCam, -3).add(new THREE.Vector3(0.3, 0.9, 0)); }
+  sun.target.position.copy(v.look);
+}
+function draw(key, view, kind) {
+  const a = show(key); if (!a) return false;
+  const v = views[view](a);
+  cam.fov = v.fov; cam.updateProjectionMatrix(); cam.position.copy(v.eye); cam.lookAt(v.look); light(kind, v);
+  scene.updateMatrixWorld(true); renderer.render(scene, cam);
+  return true;
+}
+const sheetCanvas = document.createElement('canvas'), sctx = sheetCanvas.getContext('2d');
+const label = { near: 'nära', side: 'profil', m3: '3 m', far: '12 m', detail: 'detalj', back: 'motljus', day: 'dagsljus', before: 'före', after: 'efter' };
+/** rows: look names; cols: [phase, view, light]. Returns a JPEG data URL. */
+window.__sheet = (rows, cols) => {
+  const pad = 22;
+  sheetCanvas.width = cols.length * T; sheetCanvas.height = rows.length * T + pad;
+  sctx.fillStyle = '#222'; sctx.fillRect(0, 0, sheetCanvas.width, sheetCanvas.height);
+  sctx.font = '14px sans-serif'; sctx.fillStyle = '#fff';
+  cols.forEach(([phase, view, kind], i) => sctx.fillText(`${label[phase]} – ${label[kind]}, ${label[view]}`, i * T + 6, 16));
+  rows.forEach((name, r) => cols.forEach(([phase, view, kind], i) => {
+    if (draw(`${name}-${phase}`, view, kind)) sctx.drawImage(renderer.domElement, i * T, pad + r * T);
+    if (i === 0) { sctx.fillStyle = '#fff'; sctx.fillText(name, 6, pad + r * T + T - 8); }
+  }));
+  return sheetCanvas.toDataURL('image/jpeg', 0.92);
+};
+/** The least alpha the canvas holds after a backlit close-up of each look (1 = the page never shows through). */
+window.__alpha = () => {
+  const gl = renderer.getContext(), px = new Uint8Array(T * T * 4), out = {};
+  for (const name of Object.keys(looks)) { draw(`${name}-after`, 'near', 'back'); gl.readPixels(0, 0, T, T, gl.RGBA, gl.UNSIGNED_BYTE, px); let m = 255; for (let i = 3; i < px.length; i += 4) m = Math.min(m, px[i]); out[name] = m; }
+  return out;
+};
+window.__info = () => {
+  const res = { msaa: renderer.getContextAttributes().antialias, samples: renderer.getContext().getParameter(renderer.getContext().SAMPLES) };
+  for (const [k, a] of Object.entries(figures)) {
+    const g = a.mesh.geometry.attributes; let fly = 0;
+    if (k.endsWith('after')) for (let i = 0; i < g.position.count; i++) if (g.faceAnchor.getZ(i) > 0.5 && [7, 11].includes(g.facePart.getX(i))) fly++;
+    renderer.info.reset(); renderer.info.autoReset = false; draw(k, 'near', 'back'); res[k] = { tris: g.position.count / 3, flyTris: fly / 3, calls: renderer.info.render.calls }; renderer.info.autoReset = true;
+  }
+  return res;
+};
+/** ms per frame (a 1-pixel read for gl finish) for nine figures of one look at 3 – 6 m, before vs after, alternating. */
+window.__cost = (frames = 30) => {
+  const gl = renderer.getContext(), one = new Uint8Array(4), res = { before: [], after: [] };
+  renderer.setSize(640, 640);
+  for (const phase of ['before', 'after', 'before', 'after', 'before', 'after']) {
+    const mod = phase === 'after' ? after : before; if (!mod) continue;
+    show(null); const crowd = [];
+    for (let i = 0; i < 9; i++) { const c = new mod.Avatar({ ...cfg.avatarLook('crowd' + i), ...base, ...Object.values(looks)[i % 5] }); c.object.position.set((i % 3 - 1) * 0.9, 0, Math.floor(i / 3) * 1.2); c.update(1 / 60); scene.add(c.object); crowd.push(c); }
+    cam.fov = 40; cam.updateProjectionMatrix(); cam.position.set(0.8, 1.6, -4); cam.lookAt(0, 1.3, 1); light('back', { eye: cam.position.clone(), look: new THREE.Vector3(0, 1.3, 1) });
+    scene.updateMatrixWorld(true); renderer.render(scene, cam); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, one);
+    const t0 = performance.now(); for (let f = 0; f < frames; f++) { renderer.render(scene, cam); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, one); }
+    res[phase].push(+((performance.now() - t0) / frames).toFixed(2));
+    for (const c of crowd) { c.object.removeFromParent(); c.dispose?.(); }
+  }
+  renderer.setSize(T, T);
+  if (res.before.length) res.ratio = +(Math.min(...res.after) / Math.min(...res.before)).toFixed(3);
+  return res;
+};
+window.__lab = { THREE, after, before, cfg, scene, renderer, cam, light, base, looks, show }; // (ad-hoc measurements)
+window.__ready = true;
+</script></body></html>

@@ -3,11 +3,14 @@ import assert from 'node:assert/strict';
 import { avatarModelGeometry } from '../src/avatar.js';
 import { avatarLook } from '../src/config.js';
 import { bindAt } from '../src/olof.js';
+import { AVATAR_FLYAWAY, AVATAR_HAIR } from '../src/config.js';
+import { isFlyaway } from '../src/avatarflyaway.js';
+const flyVerts=(a)=>{let n=0;for(let i=0;i<a.position.count;i++)if(isFlyaway(a,i,7,11))n++;return n;};
 const baseline=[[11172,3586212],[11940,3832740],[11532,3701772],[12456,3998376],[16092,5165532]];
 test('#2002 all five hairstyles retain bounded resources, normalized weights and semantic head roles',()=>{
  for(let style=0;style<5;style++){
-  const g=avatarModelGeometry({...avatarLook('2002-base'),style,facial:0}),a=g.attributes;
-  assert(a.position.count/3<=baseline[style][0]*1.1);assert(Object.values(a).reduce((n,v)=>n+v.array.byteLength,0)<=baseline[style][1]*1.1);
+  const g=avatarModelGeometry({...avatarLook('2002-base'),style,facial:0}),a=g.attributes,keep=1-flyVerts(a)/a.position.count; // (#2040: the flyaways have their own budget below)
+  assert(a.position.count*keep/3<=baseline[style][0]*1.1);assert(Object.values(a).reduce((n,v)=>n+v.array.byteLength,0)*keep<=baseline[style][1]*1.1);
   assert.equal(Object.keys(a).length,17,'no additional retained attributes');
   for(let i=0;i<a.position.count;i++){
    assert(Number.isFinite(a.position.getX(i)+a.position.getY(i)+a.position.getZ(i)+a.normal.getX(i)+a.normal.getY(i)+a.normal.getZ(i)));
@@ -51,7 +54,7 @@ const v2012=[['s0f0',11700],['s0f1',12056],['s0f2',11724],['s0f3',12052],['s1f0'
 test('#2012 hairstyle and facial-hair variants stay within +10% of the #2002 triangles',()=>{
  for(const[key,tris]of v2012){const style=+key[1],facial=+key[3];
   const g=avatarModelGeometry({...avatarLook('2012-'+style),style,facial,gender:style%2});
-  assert(g.attributes.position.count/3<=tris*1.1,`${key}: ${g.attributes.position.count/3} > ${tris}×1.1`);g.dispose();}
+  const own=(g.attributes.position.count-flyVerts(g.attributes))/3;assert(own<=tris*1.1,`${key}: ${own} > ${tris}×1.1`);g.dispose();}
 });
 test('#2012 long hair: the scalp and curtain share one normal wherever they meet (no visible join)',()=>{
  const g=avatarModelGeometry({...avatarLook('2012-long'),style:1,facial:0,gender:1}),a=g.attributes,hb=bindAt('head'),seen=new Map();let shared=0;
@@ -62,4 +65,30 @@ test('#2012 long hair: the scalp and curtain share one normal wherever they meet
   const dot=m[0]*n[0]+m[1]*n[1]+m[2]*n[2];if(dot<0)continue; // the curtain's inner (back-facing) surface
   shared++;assert(dot>0.999,`normal break at ${k}: ${dot}`);}
  assert(shared>20,'the curtain joins the scalp at shared positions');g.dispose();
+});
+// #2040: flyaway strands stay within their stated budget, are zero-width ribbons in the bind pose (no CPU raycast/headshot surface), carry the
+// hair's / beard's own region and face part, keep a unit tangent as their normal and leave head strands above the hat line hidden under a hat
+test('#2040 flyaways: budget, zero-width bind ribbons, roles and the hat flag',()=>{
+ const hb=bindAt('head');
+ for(const[style,facial,gender]of[[0,0,0],[0,1,0],[0,2,0],[0,3,0],[1,0,1],[2,0,0],[3,0,1],[4,0,0]]){
+  const g=avatarModelGeometry({...avatarLook('2040-'+style),style,facial,gender}),a=g.attributes,kinds=new Set();let fly=0;
+  for(let i=0;i<a.position.count;i+=3){
+   const f=[i,i+1,i+2].map(k=>isFlyaway(a,k,7,11));if(!f[0]&&!f[1]&&!f[2])continue;
+   assert(f[0]&&f[1]&&f[2],'whole triangles');fly++;
+   const p=[i,i+1,i+2].map(k=>[a.position.getX(k),a.position.getY(k),a.position.getZ(k)]);
+   const u=p[1].map((v,j)=>v-p[0][j]),w=p[2].map((v,j)=>v-p[0][j]);
+   assert(Math.hypot(u[1]*w[2]-u[2]*w[1],u[2]*w[0]-u[0]*w[2],u[0]*w[1]-u[1]*w[0])<1e-12,'zero area in the bind pose');
+   for(const k of[i,i+1,i+2]){
+    const kind=a.faceAnchor.getZ(k),beard=kind===3;kinds.add(kind);
+    assert.equal(a.region.getX(k),beard?8:3);assert.equal(a.facePart.getX(k),beard?11:7);
+    assert(Math.abs(Math.hypot(a.normal.getX(k),a.normal.getY(k),a.normal.getZ(k))-1)<1e-3,'unit tangent');
+    if(kind===2)assert(a.position.getY(k)-hb.y<AVATAR_HAIR.centre[1]-0.05+1e-6,'a strand left visible under a hat stays below the hat line');
+   }
+  }
+  assert(fly<=AVATAR_FLYAWAY.budget,`s${style}f${facial}: ${fly} flyaway triangles > ${AVATAR_FLYAWAY.budget}`);
+  if(style!==3)assert(fly>=100,`s${style}f${facial}: only ${fly} flyaway triangles`);else assert.equal(fly,facial?fly:0);
+  if(facial===1||facial===3)assert(kinds.has(3),'beard strands');
+  if(style===1)assert(kinds.has(2),'long hair keeps strands below a hat');
+  g.dispose();
+ }
 });

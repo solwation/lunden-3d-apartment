@@ -4303,6 +4303,27 @@ export const AVATAR_SKIN_DETAIL = {
   sss: [1.0, 0.25, 0.12], wrap: 0.45, wrapK: 0.6, back: [0.35, 3.0, 0.65], thin: { ear: 1, nose: 0.4, finger: 0.55, other: 0 },
   earRim: { y: 0.095, h: 0.028, w: 0.014, inner: 0.3 },
 };
+// #2040 flyaway hairs (src/avatarflyaway.js), all *guess* tuned by eye against a low sun, not measured. Per hairstyle (0 short, 1 long,
+// 2 bun, 3 beanie, 4 curly) and beard (`beard` facial 1/3, `moustache` facial 2): `n` strands of `seg` segments (2 triangles each),
+// `len` [min, max] m, `out` how much they leave the surface (vs. following the hair's flow down/back), `sag` droop (share of the length),
+// `curl` [turns, radius m]. Strands are camera-facing ribbons widened in the vertex shader: `width` [root, tip] half-width m (stylised,
+// about 3× a real hair), never drawn narrower than `minPx` px wide; alpha = real/drawn width → alpha-to-coverage (needs MSAA, else off).
+// They fade out between `fade` [start, end] m from the camera (the far figure #1966 has none). `spacing` m = the least root distance,
+// `rootIn` m = how far the root sits inside the hair. `flutter` = the tip's share of the hair sway (#2014). `rim`: soft backlight on
+// all hair and beard [strength, edge power, back power, × on flyaways (thin: more light through)] tinted `tint` [scale, lift] of √albedo. Budget: ≤ `budget` triangles per avatar.
+export const AVATAR_FLYAWAY = {
+  styles: [
+    { n: 44, seg: 3, len: [0.018, 0.04], out: 0.75, sag: 0.25, curl: [0, 0] },
+    { n: 56, seg: 4, len: [0.03, 0.07], out: 0.55, sag: 0.3, curl: [0, 0] },
+    { n: 40, seg: 3, len: [0.015, 0.035], out: 0.6, sag: 0.2, curl: [0, 0] },
+    null,
+    { n: 40, seg: 5, len: [0.02, 0.045], out: 0.7, sag: 0.15, curl: [1.6, 0.004] },
+  ],
+  beard: { n: 30, seg: 2, len: [0.006, 0.013], out: 0.6, sag: 0.45, curl: [0, 0] },
+  moustache: { n: 10, seg: 2, len: [0.005, 0.01], out: 0.5, sag: 0.5, curl: [0, 0] },
+  width: [0.0004, 0.00012], minPx: 1.1, fade: [6, 10], spacing: 0.009, rootIn: 0.0015, flutter: 1.6,
+  rim: [0.7, 4.0, 3.0, 3.0], tint: [0.5, 0.03], budget: 600,
+};
 // Combat between players (#667, src/combat.js; the room's check: cloudflare/players.js COMBAT). Only when both hold a weapon:
 // `weapons` = what counts, in the order they are looked for (the room's list must have each one: there its range and rate);
 // remove one here to leave it out. Both armed: drawn solid (`solid` opacity), else a ghost. A hit is judged by the shooter

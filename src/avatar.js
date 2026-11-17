@@ -15,6 +15,7 @@ import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #20
 import { avatarSkinGLSL, skinKey } from './avatarskin.js'; // #2032
 import { faceExprUniforms, faceExprShader } from './avatarface.js'; // #2031
 import { exertUniforms, exertShader } from './avatarbreath.js'; // #2037
+import { addFlyaways, flyUniforms, flyMaterial, flyKey, FLY_VDECL, FLY_FDECL, flyBind, flyProject, flyAlpha, flyLight } from './avatarflyaway.js'; // #2040
 import { topTexture } from './spidersuit.js';
 import { reactionPose, mixHand } from './reactpose.js';
 import { footGround } from './avatarfootik.js';
@@ -85,19 +86,19 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
   }
   addFace(add, sphere, P);
   // facial hair: 0 none, 1 beard, 2 mustache, 3 beard + mustache (#1340: face part cowlHide, not hair: the hair-length slider must not squash it; the head warp still moves it)
-  const f = Number(facial) || 0;
+  const f = Number(facial) || 0, flyFrom = {}, fly = (kind, g) => ((flyFrom[kind] ??= []).push(g.clone()), g); // #2040: the surfaces flyaways grow from, before placement
   if (f === 2) { // mustache only (#2012: a tapered, drooping band instead of two blocks)
-    add(moustacheShell(), 'beard', 'head', [0, 0, 0], 0.95);
+    add(fly('moustache', moustacheShell()), 'beard', 'head', [0, 0, 0], 0.95);
     P[P.length - 1].face = FACE_PART.cowlHide;
   }
   if (f === 1 || f === 3) { // #1097: one continuous full beard, the sculpted lips (#2002) showing through its mouth opening
-    add(beardShell(f === 3), 'beard', 'head', [0, 0, 0], 0.9);
+    add(fly('beard', beardShell(f === 3)), 'beard', 'head', [0, 0, 0], 0.9);
     P[P.length - 1].face = FACE_PART.cowlHide;
     if (f === 3) P[P.length - 1].mouth = 'moustache'; // (#1122: the moustache over the opening stays, the beard below it drops)
     // #2020: no separate dark lip patch behind the opening any more (it sat below the #2002 lips as a dark rectangle)
   }
   // hair (#1102): 0 short, 1 long, 2 a bun, 3 a beanie (in the top's colour) – see hairParts
-  for (const [g, region, shade] of hairParts(style)) { add(g, region, 'head', [0, 0, 0], shade); P[P.length - 1].face = FACE_PART.hair; }
+  for (const [g, region, shade] of hairParts(style)) { add(region === 'hair' ? fly(style, g) : g, region, 'head', [0, 0, 0], shade); P[P.length - 1].face = FACE_PART.hair; }
   addGlasses(add, P); // #1165
   addHats(add, P); // #1321
   addPhones(add, P); // #1322
@@ -105,6 +106,7 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
   addNecklaces(add, P, gender); // #1323
   addRings(add, P); // #1324
   addWrist(add, P); // #1334
+  addFlyaways(add, P, flyFrom, { part: FACE_PART, centre: HAIR.centre, seamY: SEAM_Y, beardMouth: f === 3 ? 'moustache' : undefined }); // #2040 (last: earlier parts keep their vertex order)
   return P;
 }
 /** #1165: glasses frames in the head bone's frame, in front of the eyes (FACE.eye): two round rims, two square ones, and the
@@ -1411,9 +1413,11 @@ function makeMaterial(rim, headProjection) {
   Object.assign(u, eyeUniforms()); // #2033
   Object.assign(u, exertUniforms()); // #2037: flush and sweat sheen
   Object.assign(u, lampUniforms()); // #2039
+  Object.assign(u, flyUniforms()); // #2040
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: SURFACE.finish.cloth, metalness: 0, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
+  flyMaterial(m, u); // #2040: alpha-to-coverage for the flyaways
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
     // Bind-pose coordinates follow the original skin: colours/own canvas only, no new
@@ -1421,17 +1425,18 @@ function makeMaterial(rim, headProjection) {
     const fix = armFixShader(); // #2022
     const skin = avatarSkinGLSL({ head: bindAt('head'), hand: bindAt('handL'), part: FACE_PART }); // #2032
     sh.vertexShader = sh.vertexShader.replace('#include <skinbase_vertex>', fix.base).replace('#include <skinnormal_vertex>', fix.normal).replace('#include <skinning_vertex>', fix.skin)
-      .replace('#include <common>', '#include <common>\nattribute float region; attribute float suitRole; varying float vSuitRole; attribute float noseBlend; varying vec2 vSurface; attribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + WET_DECL + '\n' + FACE_SHAPE_DECL() + '\n' + fix.decl + '\n' + EYE_VDECL)
+      .replace('#include <common>', '#include <common>\nattribute float region; attribute float suitRole; varying float vSuitRole; attribute float noseBlend; varying vec2 vSurface; attribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + WET_DECL + '\n' + FACE_SHAPE_DECL() + '\n' + fix.decl + '\n' + EYE_VDECL + '\n' + FLY_VDECL)
       .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
 float pumpF = 1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z;
 float pumpD = uPump * ${GYM_PUMP.circumference} * armPump.w;
 objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / pumpF * dot(position.xz - armPump.xy, objectNormal.xz), objectNormal.z / pumpF));`)
-      .replace('#include <begin_vertex>', `#include <begin_vertex>\ntransformed.xz = armPump.xy + (transformed.xz - armPump.xy) * (1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z);\nvSuitRole = suitRole; ${wetVertex()} vSurface = vec2(region, facePart); vSuitAt = position; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart) * step(facePart, ${FACE_PART.watchStrap}.0 - 0.5); // (#1334: the rings, bracelets and watch cases are metal)\n${faceShape()}${swayShader()}\ntransformed.x *= 1.0 - uKiss * pucker * ${KISS.narrow.toFixed(5)};\ntransformed.z += uKiss * pucker * ${KISS.pucker.toFixed(5)};\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
+      .replace('#include <begin_vertex>', `#include <begin_vertex>\ntransformed.xz = armPump.xy + (transformed.xz - armPump.xy) * (1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z);\nvSuitRole = suitRole; ${wetVertex()} vSurface = vec2(region, facePart); vSuitAt = position; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart) * step(facePart, ${FACE_PART.watchStrap}.0 - 0.5); // (#1334: the rings, bracelets and watch cases are metal)\n${faceShape()}${swayShader()}\n${flyBind(FACE_PART, bindAt('head').add(new THREE.Vector3(...HAIR.centre)))}\ntransformed.x *= 1.0 - uKiss * pucker * ${KISS.narrow.toFixed(5)};\ntransformed.z += uKiss * pucker * ${KISS.pucker.toFixed(5)};\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
     sh.vertexShader = faceExprShader(sh.vertexShader, { hb: bindAt('head'), chinY: CHIN_Y, P: FACE_PART }); // #2031
     sh.vertexShader = sh.vertexShader.replace('#include <skinning_vertex>', `${eyeView()}\n#include <skinning_vertex>`); // #2033: after every bind-pose shape (face, expression), before skinning
+    sh.vertexShader = sh.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>\n${flyProject(bindAt('head').add(new THREE.Vector3(...HAIR.centre)))}`); // #2040
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>\n${LAMP_FDECL}`) // #2039
-      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim, uLight;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;\n' + WET_DECL + skin.decl + '\n' + EYE_FDECL)
+      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim, uLight;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;\n' + WET_DECL + skin.decl + '\n' + EYE_FDECL + '\n' + FLY_FDECL)
       .replace('#include <color_fragment>', `#include <color_fragment>
       if (uSuit > 0.5) {
         vec3 red = vec3(${new THREE.Color(SPIDER.colors.red).toArray().join(',')}), blue = vec3(${new THREE.Color(SPIDER.colors.blue).toArray().join(',')});
@@ -1455,10 +1460,11 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       ${surfaceColor()}
       diffuseColor.rgb = mix(diffuseColor.rgb, uRingColor, vRing); // #1324: the ring's metal
       float wetSnow = 0.0; // #2018
-      ${wetColor(bindAt('torso').y)}`)
+      ${wetColor(bindAt('torso').y)}
+      ${flyAlpha()}`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>\n${surfaceRoughness()}\n${wetRoughness()}\n${eyeWet(FACE_PART.eye, FACE_PART.iris)}`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\n${skin.normal}`) // #2032
-      .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${skin.light}`) // #2032
+      .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${skin.light}\n${flyLight({ hair: REGION.hair, beard: REGION.beard })}`) // #2032, #2040
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\nmetalnessFactor = vRing * ${SURFACE.finish.metalness.toFixed(3)};`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>\ntotalEmissiveRadiance += uRingColor * vRing * ${RING.shine.toFixed(3)};`)
       .replace('#include <opaque_fragment>', `float edge = pow(1.0 - clamp(abs(dot(normalize(normal), normalize(vViewPosition))), 0.0, 1.0), ${A.rimPower.toFixed(2)});
@@ -1471,7 +1477,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       #include <opaque_fragment>`);
     sh.fragmentShader = exertShader(sh.fragmentShader, { head: bindAt('head') }); // #2037
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033' + '-exert2037'; // #2032, #2031, #2033, #2037
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033' + '-exert2037' + flyKey(); // #2032, #2031, #2033, #2037, #2040
   return m;
 }
 

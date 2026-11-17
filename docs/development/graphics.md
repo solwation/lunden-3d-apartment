@@ -133,6 +133,21 @@ beard from just above the lip seam (`opening.e`) downwards. Only facial 3 change
 geometry is bit-identical); beard + moustache gains 92 triangles (12,912 to 13,004), one draw.
 [Views](../verification/2041/README.md) (`tools/avatarbeard2041browser.cjs`).
 
+#### Flyaway hairs and backlit hair rim (#2040)
+
+`src/avatarflyaway.js` (tunables `AVATAR_FLYAWAY`, all *guess*) adds a few dozen loose strands per hairstyle and beard to the shared
+variant geometry (appended last in `parts`, so earlier parts keep their vertex order) and two shader pieces to the one material. Roots are
+area-weighted samples of the outward-facing hair/beard triangles (least spacing `spacing`), sunk `rootIn` into the hair; each strand leaves
+along the hair's flow with droop (`sag`) or curl and is a ribbon whose two sides share one centre-line point in the bind pose, so CPU raycasts
+and the headshot surfaces never see it. `normal` carries the strand tangent and `faceAnchor` its data (side, t + strand index, kind 1 head /
+2 below the hat line / 3 beard; plain hair keeps 0, 0, 0), so no attribute is added. After `project_vertex` the ribbon opens towards the
+camera to its stylised width but at least `minPx` pixel; alpha = real/drawn width with `alphaToCoverage` (custom blending keeps the canvas
+alpha at 1, so the page never shows through), so a sub-pixel strand is faint instead of jagged, with no sorting. Strands get zero width
+without MSAA (`&test`), under the Spider-Man suit, beyond `fade` m and, for head strands above the hat line, under any hat (#2021); their tips
+follow the #2014 hair spring outwards. A soft rim per directional light (`rim`) lights hair and beards whose edge faces away from the sun,
+stronger on the flyaways, tinted by √albedo. Budget: ≤ 600 triangles per avatar (short 264, long 448, bun 240, curly 400, beard +120,
+moustache +28, beanie 0), no texture, attribute or draw call; the far figure (#1966) has none. [Before/after views, alpha and cost](../verification/2040/README.md).
+
 ### Butterfly wing hinges (#1925)
 
 `butterflymodel.js` supplies shared authored contours and a bounded vertex hinge.
