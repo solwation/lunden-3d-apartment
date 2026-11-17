@@ -27,6 +27,7 @@ import { footGround } from './avatarfootik.js';
 import { newIdle, stepIdle, idleHands } from './avataridle.js'; // #2035: the living rest
 import { fingerSegments, fingerGLSL, gripFor, gripAngles, easeGrip, gripPoint } from './avatargrip.js'; // #2016: the fingers' grip shapes
 import { newRest, stepRest, restFingers } from './avatargrip.js'; import { newTalk, stepTalk, talkHand } from './avatartalk.js'; // #2038: free hands' rest, talk gestures
+import { earGeometry, earLobe } from './avatarear.js'; // #2047: the ear's form
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, THIGH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
 // The players' avatars (#705): a neutral human figure for the other players (src/ghosts.js) and for our own reflection in the
@@ -86,7 +87,7 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
   add.last().rifleSkull = true;
   add.last().continuousHead = true;
   for (const s of [-1, 1]) { // ears
-    add(earSurface(s), 'skin', 'head', [s * 0.1, H - 0.005, 0], 0.97);
+    add(earGeometry(s), 'skin', 'head', [s * 0.1, H - 0.005, 0], 0.97); // #2047: helix, antihelix, concha and lobe, angled out
     facePart(P, FACE_PART.ear, [s * 0.1, H - 0.005, 0]);
   }
   addFace(add, sphere, P);
@@ -134,15 +135,15 @@ function addGlasses(add, P) {
  * (lying in the side plane), drops (a stud with a short chain and a pearl) and pearl studs. They collapse to the ear's centre unless chosen (uEarrings) and scale with the
  * ear slider (uEar). Also the sunglasses' dark lenses (facePart 25, shown for glasses kind 3). Always in the shared geometry, no extra draw call. */
 function addEarrings(add, P) {
-  const K = EARR, C = K.colours, ey = H - 0.005, lobe = ey - 0.028 * 0.74, outer = 0.1 + 0.0154 * 0.68; // the lobe's outer face
+  const K = EARR, C = K.colours, ey = H - 0.005, [lx, ly, lz] = earLobe(1), lobe = ey + ly, outer = 0.1 + lx; // the lobe's outer face (#2047)
   for (const s of [-1, 1]) {
     const at = [s * 0.1, ey, 0], put = (g, colour, id) => { add(g, 'fixed', 'head', [0, 0, 0], 1, colour); facePart(P, id, at); };
     const ball = (r, x, y, z) => new THREE.SphereGeometry(r, 6, 4).translate(x, y, z);
-    put(ball(K.stud, s * outer, lobe, 0), C.gold, FACE_PART.studs);
-    put(new THREE.TorusGeometry(K.hoop, K.wire, 4, 14).rotateY(Math.PI / 2).translate(s * (outer - 0.002), lobe - K.hoop + 0.004, 0), C.gold, FACE_PART.hoops);
-    put(mergeGeometries([ball(K.stud * 0.8, s * outer, lobe, 0), new THREE.CylinderGeometry(K.wire * 0.6, K.wire * 0.6, K.drop, 3).translate(s * (outer + 0.001), lobe - K.drop / 2, 0)].map((g) => (g.index ? g.toNonIndexed() : g))), C.gold, FACE_PART.drops);
-    put(new THREE.SphereGeometry(K.dropPearl, 8, 5).scale(1, 1.25, 1).translate(s * (outer + 0.001), lobe - K.drop - K.dropPearl * 0.9, 0), C.pearl, FACE_PART.drops);
-    put(ball(K.pearl, s * (outer + 0.001), lobe, 0), C.pearl, FACE_PART.pearlStuds);
+    put(ball(K.stud, s * outer, lobe, lz), C.gold, FACE_PART.studs);
+    put(new THREE.TorusGeometry(K.hoop, K.wire, 4, 14).rotateY(Math.PI / 2).translate(s * (outer - 0.002), lobe - K.hoop + 0.004, lz), C.gold, FACE_PART.hoops);
+    put(mergeGeometries([ball(K.stud * 0.8, s * outer, lobe, lz), new THREE.CylinderGeometry(K.wire * 0.6, K.wire * 0.6, K.drop, 3).translate(s * (outer + 0.001), lobe - K.drop / 2, lz)].map((g) => (g.index ? g.toNonIndexed() : g))), C.gold, FACE_PART.drops);
+    put(new THREE.SphereGeometry(K.dropPearl, 8, 5).scale(1, 1.25, 1).translate(s * (outer + 0.001), lobe - K.drop - K.dropPearl * 0.9, lz), C.pearl, FACE_PART.drops);
+    put(ball(K.pearl, s * (outer + 0.001), lobe, lz), C.pearl, FACE_PART.pearlStuds);
   }
   // sunglasses: a dark lens in each square frame (see addGlasses), slightly behind the frame's front
   const E = FACE.eye, z = E.at[2] + 0.017, y = E.at[1], rx = 0.0225, hy = 0.0165;
@@ -1084,20 +1085,6 @@ function faceGrid(cols, rows, at, reverse = false) {
     idx.push(...(reverse ? [a, b, a + 1, a + 1, b, b + 1] : [a, a + 1, b, a + 1, b + 1, b]));
   }
   const g = new THREE.BufferGeometry();g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3));g.setIndex(idx);g.computeVertexNormals();return g;
-}
-/** Helix, recessed concha and lobe share one closed ear surface, retaining the old attachment envelope. */
-function earSurface(side) {
-  const E = FACE.ear, p = [], idx = [], shade = [], rings = [...E.folds, [0.7, -0.006], [0, -0.006]];
-  for (let j = 0; j < rings.length; j++) for (let i = 0; i < E.sides; i++) {
-    const [r, depth] = rings[j], a = i * Math.PI * 2 / E.sides;
-    p.push(side * depth, E.height * r * Math.cos(a), E.width * r * Math.sin(a) - 0.002 * r * Math.cos(a));
-    shade.push(j === 1 || j === 2 ? 0.83 : 1);
-  }
-  for (let j = 0; j < rings.length - 1; j++) for (let i = 0; i < E.sides; i++) {
-    const a = j * E.sides + i, b = j * E.sides + (i + 1) % E.sides, c = a + E.sides, d = b + E.sides;
-    idx.push(...(side > 0 ? [a, c, b, b, c, d] : [a, b, c, b, d, c]));
-  }
-  const g = new THREE.BufferGeometry();g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3));g.setAttribute('shade', new THREE.Float32BufferAttribute(shade, 1));g.setIndex(idx);g.computeVertexNormals();return g;
 }
 function addFace(add, sphere, P) {
   const F = FACE, E = F.eye, N = F.nose;

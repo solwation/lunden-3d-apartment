@@ -1,0 +1,121 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar ears</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#8795a3}canvas{display:block}</style></head>
+<body><script type="module">
+// #2047 component page, driven by tools/avatareartest.cjs: the ear (helix, antihelix, concha, lobe, angled out from the head) and the
+// accessories at the ear (earrings, headphones, the beanie, glasses' temples, long hair). Each look is built twice: from the checkout
+// (`after`) and, when the driver serves the baseline under /base/ (page.route), from the baseline modules (`before`).
+// __sheet(rows, cols) draws a contact sheet; __info() triangles and draw calls; __cost() ms/frame before vs after.
+import * as THREE from 'three';
+const after = await import('../src/avatar.js'), cfg = await import('../src/config.js');
+let before = null;
+try { before = await import('../base/src/avatar.js'); } catch { before = null; }
+const T = 300;
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(T, T); document.body.appendChild(renderer.domElement);
+renderer.toneMapping = THREE.NeutralToneMapping;
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x8795a3);
+const hemi = new THREE.HemisphereLight(0xdfe8f2, 0x6b625a, 1.4); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff0dc, 2.6); scene.add(sun, sun.target);
+const cam = new THREE.PerspectiveCamera(30, 1, 0.02, 80);
+const base = { tall: 1, build: 1, glasses: 0, phones: 0, earrings: 0, necklace: 0, ring: 0, bracelet: 0, watch: 0, hat: 0, facial: 0, hairLength: undefined, ears: undefined };
+const looks = {
+  ljus: { style: 0, gender: 0, hair: 0x4a3426, skin: cfg.SKIN[0] },
+  mellan: { style: 0, gender: 1, hair: 0x2b2118, skin: cfg.SKIN[2] },
+  mörk: { style: 0, gender: 0, hair: 0x15151a, skin: cfg.SKIN[4] },
+  knoppar: { style: 2, gender: 1, hair: 0x7a3b1f, skin: cfg.SKIN[1], earrings: 1 },
+  ringar: { style: 2, gender: 1, hair: 0x2b2118, skin: cfg.SKIN[3], earrings: 2 },
+  hängen: { style: 0, gender: 1, hair: 0xb98d55, skin: cfg.SKIN[0], earrings: 3 },
+  hörlurar: { style: 0, gender: 0, hair: 0x4a3426, skin: cfg.SKIN[1], phones: 1 },
+  mössa: { style: 0, gender: 0, hair: 0x4a3426, skin: cfg.SKIN[2], hat: 3 },
+  keps: { style: 0, gender: 0, hair: 0x4a3426, skin: cfg.SKIN[1], hat: 1 },
+  glasögon: { style: 0, gender: 0, hair: 0x2b2118, skin: cfg.SKIN[1], glasses: 2 },
+  långt: { style: 1, gender: 1, hair: 0xb98d55, skin: cfg.SKIN[0] },
+  lockigt: { style: 4, gender: 0, hair: 0x2a1d16, skin: cfg.SKIN[3] },
+};
+const figures = {};
+for (const [name, o] of Object.entries(looks)) for (const [phase, mod] of [['after', after], ['before', before]]) {
+  if (!mod) continue;
+  const a = new mod.Avatar({ ...cfg.avatarLook('ear-' + name), ...base, top: 0x3d6b8f, pants: 0x30343a, ...o });
+  scene.add(a.object); a.update(1 / 60); a.object.visible = false;
+  figures[`${name}-${phase}`] = a;
+}
+const show = (key) => { for (const [k, a] of Object.entries(figures)) a.object.visible = k === key; return figures[key]; };
+const at = (a, bone, off = [0, 0, 0]) => a.bones[bone].localToWorld(new THREE.Vector3(...off));
+// The figure faces −z; its right ear (model −x) is on world +x. Views of the head (fov 30 at 0.5 m) and of the ear up close.
+const ring = (yawDeg, dist = 0.5, fov = 30, side = 0) => (a) => {
+  let h = at(a, 'head', [0, 0.085, 0]);
+  if (side) { const e = at(a, 'head', [0.1, 0.095, 0]), w = at(a, 'head', [-0.1, 0.095, 0]); h = e.x > w.x ? e : w; } // the ear on world +x
+  const y = yawDeg * Math.PI / 180;
+  return { eye: h.clone().add(new THREE.Vector3(Math.sin(y) * dist, 0.01, -Math.cos(y) * dist)), look: h, fov };
+};
+const views = {
+  front: ring(0), q: ring(40), side: ring(90), bq: ring(140), rear: ring(180),
+  near: ring(55, 0.24, 30, 0.085), // the right ear up close, three-quarter from the front
+  nside: ring(90, 0.22, 30, 0.085), // the right ear up close, in profile
+  nback: ring(145, 0.24, 30, 0.085), // the right ear up close from behind
+};
+function light(kind, v) {
+  const toCam = v.eye.clone().sub(v.look).setY(0).normalize();
+  if (kind === 'day') { hemi.intensity = 1.4; sun.intensity = 2.6; sun.color.set(0xfff0dc); sun.position.copy(v.look).addScaledVector(toCam, 3).add(new THREE.Vector3(1.2, 3, 0)); }
+  else { hemi.intensity = 0.6; sun.intensity = 3.2; sun.color.set(0xffd9a8); sun.position.copy(v.look).addScaledVector(toCam, -3).add(new THREE.Vector3(0.3, 0.9, 0)); }
+  sun.target.position.copy(v.look);
+}
+function draw(key, view, kind) {
+  const a = show(key); if (!a) return false;
+  const v = views[view](a);
+  cam.fov = v.fov; cam.updateProjectionMatrix(); cam.position.copy(v.eye); cam.lookAt(v.look); light(kind, v);
+  scene.updateMatrixWorld(true); renderer.render(scene, cam);
+  return true;
+}
+const sheetCanvas = document.createElement('canvas'), sctx = sheetCanvas.getContext('2d');
+const label = { front: 'rakt', q: 'snett', side: 'profil', bq: 'snett bakifrån', rear: 'bakifrån', near: 'öra nära', nside: 'öra profil', nback: 'öra bakifrån', back: 'motljus', day: 'dagsljus', before: 'före', after: 'efter' };
+/** rows: look names; cols: [phase, view, light]. Returns a JPEG data URL. */
+window.__sheet = (rows, cols) => {
+  const pad = 22;
+  sheetCanvas.width = cols.length * T; sheetCanvas.height = rows.length * T + pad;
+  sctx.fillStyle = '#222'; sctx.fillRect(0, 0, sheetCanvas.width, sheetCanvas.height);
+  sctx.font = '14px sans-serif'; sctx.fillStyle = '#fff';
+  cols.forEach(([phase, view, kind], i) => sctx.fillText(`${label[phase]} – ${label[kind]}, ${label[view]}`, i * T + 6, 16));
+  rows.forEach((name, r) => cols.forEach(([phase, view, kind], i) => {
+    if (draw(`${name}-${phase}`, view, kind)) sctx.drawImage(renderer.domElement, i * T, pad + r * T);
+    if (i === 0) { sctx.fillStyle = '#fff'; sctx.fillText(name, 6, pad + r * T + T - 8); }
+  }));
+  return sheetCanvas.toDataURL('image/jpeg', 0.92);
+};
+window.__info = () => {
+  const res = {};
+  for (const [k, a] of Object.entries(figures)) {
+    const g = a.mesh.geometry.attributes; let ear = 0, head = 0;
+    for (let i = 0; i < g.position.count; i += 3) { const f = g.facePart.getX(i); if (f === 5) ear++; if (f > 0 && f < 30) head++; }
+    renderer.info.reset(); renderer.info.autoReset = false; draw(k, 'q', 'day'); res[k] = { tris: g.position.count / 3, head, ear, calls: renderer.info.render.calls }; renderer.info.autoReset = true;
+  }
+  return res;
+};
+/** ms per frame (a 1-pixel read for gl finish) for nine figures at 3 – 6 m and for a full-frame ear close-up, before vs after, alternating. */
+window.__cost = (frames = 30) => {
+  const gl = renderer.getContext(), one = new Uint8Array(4), res = { before: { crowd: [], close: [] }, after: { crowd: [], close: [] } };
+  const time = (fn) => { fn(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, one); const t0 = performance.now(); for (let f = 0; f < frames; f++) { fn(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, one); } return +((performance.now() - t0) / frames).toFixed(2); };
+  renderer.setSize(640, 640);
+  for (const phase of ['before', 'after', 'before', 'after', 'before', 'after']) {
+    const mod = phase === 'after' ? after : before; if (!mod) continue;
+    res[phase].close.push(time(() => draw(`ljus-${phase}`, 'near', 'back')));
+    show(null); const crowd = [];
+    for (let i = 0; i < 9; i++) { const c = new mod.Avatar({ ...cfg.avatarLook('crowd' + i), ...base, ...Object.values(looks)[i] }); c.object.position.set((i % 3 - 1) * 0.9, 0, Math.floor(i / 3) * 1.2); c.update(1 / 60); scene.add(c.object); crowd.push(c); }
+    cam.fov = 40; cam.updateProjectionMatrix(); cam.position.set(0.8, 1.6, -4); cam.lookAt(0, 1.3, 1); light('back', { eye: cam.position.clone(), look: new THREE.Vector3(0, 1.3, 1) });
+    scene.updateMatrixWorld(true);
+    res[phase].crowd.push(time(() => renderer.render(scene, cam)));
+    for (const c of crowd) { c.object.removeFromParent(); c.dispose?.(); }
+  }
+  renderer.setSize(T, T);
+  if (res.before.crowd.length) { res.crowdRatio = +(Math.min(...res.after.crowd) / Math.min(...res.before.crowd)).toFixed(3); res.closeRatio = +(Math.min(...res.after.close) / Math.min(...res.before.close)).toFixed(3); }
+  return res;
+};
+window.__ready = true;
+</script></body></html>

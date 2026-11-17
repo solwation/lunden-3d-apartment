@@ -4196,6 +4196,23 @@ export const AVATAR_CONTOUR = {
   neck: { sides: 16, larynx: [0.0, 0.012, 0.011], larynxAmp: [0.0035, 0.0012],
     rings: [[0.07, 0.044, 0.043, -0.008], [0.014, 0.045, 0.043, -0.006], [-0.012, 0.048, 0.046, -0.004], [-0.042, 0.055, 0.053, 0]] },
 };
+// #2047 the avatar ear (src/avatarear.js), head-bone metres before the face warp, in the ear's own frame: origin at the old
+// attachment point [±0.1, 0.095, 0], `L` outwards, y up, z forwards. *Guess* by eye against adult ear proportions (about 6 × 3 cm,
+// the helix standing 1.5–2 cm off the scalp at a 25–30° cephalo-auricular angle). `cols` columns round the outline, `outline`
+// [up, down, front, back] half-extents and `tilt` (z per y: the top leans back), `lobeTaper` the lobe's narrowing; `centre` the concha's
+// [y, z]; `rings` the front surface's radial stations (0 = the concha's floor, 1 = the helix's edge); `floor`/`rise` the concha floor and
+// the bowl's rim, `antihelix`/`scapha`/`helix`/`tragus`/`lobe` the folds' [height, station, half width]; `rim` the helix's thickness
+// (helix, lobe); `back` the cranial surface's rings [station, L, flare share] down to a root inside the head; `flare` the angle (rad)
+// about a vertical hinge at z = `hinge`, scaled by height from `flareLow` (lobe) to 1 (top); `shade` cavity darkening [concha, scapha,
+// sulcus]; `lobePoint` [station, angle°] where earrings pierce the lobe.
+export const AVATAR_EAR = {
+  cols: 18, outline: [0.027, 0.0285, 0.012, 0.0172], tilt: 0.12, lobeTaper: 0.2, centre: [-0.0045, 0.003],
+  rings: [0.2, 0.4, 0.55, 0.68, 0.78, 0.88, 0.96, 1],
+  floor: 0.0012, rise: 0.0052, antihelix: [0.0045, 0.58, 0.1], scapha: [0.0024, 0.76, 0.065], helix: [0.0045, 0.92, 0.075],
+  tragus: [0.0042, 0.72, 0.12], lobe: [0.0025, 0.75, 0.3], rim: [0.0032, 0.0045],
+  back: [[0.8, -0.003, 0.85], [0.55, -0.002, 0.4], [0.35, -0.007, 0]],
+  flare: 0.68, flareLow: 0.5, hinge: 0.008, shade: [0.7, 0.88, 0.86], lobePoint: [0.7, 272],
+};
 // The avatars' face (#1101, src/avatar.js addFace / faceWarp), *guess* by eye against the skull / jaw ellipsoids of
 // PVP_RIFLE_HEAD, head-bone frame (metres, the face looks +z). eye: [x, y, z] of the eyeball's centre, its radius / scale,
 // the iris and pupil radii, the eye colours; ridge: the brow ridge over each eye [x, y, z, r, scale]; brow: the arc
@@ -4209,10 +4226,9 @@ export const AVATAR_FACE = {
   socket: { r: 0.0185, scale: [1.08, 0.72, 0.3], z: 0.107, shade: 0.88 },
   ridge: { at: [0.031, 0.126, 0.099], r: 0.028, scale: [1.2, 0.3, 0.36], shade: 0.93 },
   brow: { at: [0.035, 0.1265, 0.1175], radius: 0.034, arc: 1.0, tilt: -0.1, turn: 0.38, tube: 0.0027, cols: 12 },
-  // #2002: rounded chin sections, skin-seated lips and a folded ear (head-local metres).
+  // #2002: rounded chin sections and skin-seated lips (head-local metres); the ear is AVATAR_EAR (#2047).
   jaw: [[-0.022, 0.025, 0.023, 0.035], [-0.012, 0.042, 0.049, 0.034], [0.005, 0.061, 0.065, 0.030]],
   mouth: { cols: 12, halfWidth: 0.023, seamY: 0.043, lift: 0.0035, upper: 0.006, lower: 0.007, border: 0.003 },
-  ear: { sides: 16, width: 0.014, height: 0.028, folds: [[0, 0.004], [0.28, 0.003], [0.52, 0.002], [0.78, 0.013], [1, 0.004]] },
   nose: { top: 0.115, bottom: 0.071, z: 0.113, width: [0.0045, 0.0135], depth: [0.009, 0.027], alar: [0.0095, 0.0755, 0.1165, 0.0068] },
   lips: { upper: [0.047, 0.1085, 0.02, [1, 0.2, 0.2]], lower: [0.039, 0.108, 0.018, [1, 0.24, 0.25]], seam: 0x4a2a28, bend: 7 },
   chin: { at: [0, 0.012, 0.093], r: 0.018, scale: [1.2, 0.8, 0.7] },
