@@ -5,6 +5,7 @@ import { freeCanvasAfterUpload } from './lowmemory.js';
 import { posterDesigns, neonSignCell } from './posterdesigns.js';
 import { drawSign, exitSignSpots } from './clubhouseexit.js';
 import { POSTER_WALLS, posterLayout } from './posterlayout.js';
+import { clubhouseLedPieces } from './clubhouseleds.js';
 
 // #1574: the playhouse's own posters, neon runs, neon signs, pub pendants and wall lamps. One canvas atlas, one unlit vertex-coloured mesh (a single extra
 // draw, no light source), hidden with the room's group. Every placement comes from PLAYROOM.posters (*guess*); the layout is pure so tools/ can check it.
@@ -40,7 +41,7 @@ function photoCell(ctx, { img, item }, w, h) {
 
 /** Builds the mesh (the group's child) and returns it with the layout it came from. */
 export function roomPosters() {
-  const [AW, AH] = P.atlas, [cw, ch] = P.cell, layout = posterLayout(), designs = posterDesigns(), stripY = AH - P.sign[1];
+  const [AW, AH] = P.atlas, [cw, ch] = P.cell, layout = posterLayout(), designs = posterDesigns(), nSigns = Object.keys(P.neon.signs).length, stripY = AH - Math.ceil(nSigns / 2) * P.sign[1], signCell = (i) => [(i % 2) * P.sign[0], AH - (Math.floor(i / 2) + 1) * P.sign[1]]; // #2027: two sign cells per strip row, rows from the atlas bottom up
   // A solid white swatch: emissive runs, lamps and shades take their colour from the vertices. It fills the last poster
   // cell, which no design uses (#1608: in the atlas's corner it showed as a white square on the 8-BALL sign below it).
   const free = P.cols * Math.floor(stripY / ch) - 1;
@@ -60,7 +61,7 @@ export function roomPosters() {
       if (photo) photoCell(ctx, photo, cw, ch); else { ctx.scale(cw / 192, ch / 256); draw(ctx); }
       ctx.restore();
     });
-    for (const [i, name] of Object.keys(P.neon.signs).entries()) { ctx.save(); ctx.translate(i * P.sign[0], stripY); ctx.beginPath(); ctx.rect(0, 0, P.sign[0], P.sign[1]); ctx.clip(); neonSignCell(ctx, name, P.sign); ctx.restore(); }
+    for (const [i, name] of Object.keys(P.neon.signs).entries()) { ctx.save(); ctx.translate(...signCell(i)); ctx.beginPath(); ctx.rect(0, 0, P.sign[0], P.sign[1]); ctx.clip(); neonSignCell(ctx, name, P.sign); ctx.restore(); }
     ctx.fillStyle = '#fff'; ctx.fillRect(sx, sy, cw, ch);
     ctx.save(); ctx.translate(ex, ey); ctx.beginPath(); ctx.rect(0, 0, ew, ch); ctx.clip(); drawSign(ctx, ew, ch); ctx.restore();
     return freeCanvasAfterUpload(Object.assign(new THREE.CanvasTexture(canvas), { colorSpace: THREE.SRGBColorSpace, anisotropy: 4 }));
@@ -77,12 +78,13 @@ export function roomPosters() {
     cellUV(g, ...uvRect, P.atlas); const t = tintGeometry(g.toNonIndexed(), tint).translate(R.x, 0, R.z); geos.push(t); meta.push({ kind: zone ? 'poster' : 'lamp', zone, base: new THREE.Color(0xffffff), n: t.attributes.position.count });
   };
   for (const p of layout.posters) quad(p.wall, p.rect, [(p.design % P.cols) * cw, Math.floor(p.design / P.cols) * ch, cw, ch], new THREE.Color(0xffffff), POSTER_WALLS[p.wall].zone);
-  layout.signs.forEach((s, i) => quad(s.wall, s.rect, [i * P.sign[0], stripY, P.sign[0], P.sign[1]], new THREE.Color(0xffffff)));
+  layout.signs.forEach((s, i) => quad(s.wall, s.rect, [...signCell(i), P.sign[0], P.sign[1]], new THREE.Color(0xffffff)));
   for (const { x, z } of exitSignSpots()) { // facing north, into the rooms; a constant brightness (kind 'lamp') so they stay readable while a film darkens the room
     const g = new THREE.PlaneGeometry(E.w, E.h).rotateY(Math.PI).translate(x, E.y, z); cellUV(g, ex, ey, ew, ch, P.atlas);
     const t = tintGeometry(g.toNonIndexed(), new THREE.Color().setScalar(E.brightness)).translate(R.x, 0, R.z); geos.push(t); meta.push({ kind: 'lamp', n: t.attributes.position.count });
   }
   for (const r of layout.runs) box(r.rect, r.color);
+  for (const { geometry, color } of clubhouseLedPieces()) { const t = tintGeometry(swatch(geometry), color).translate(R.x, 0, R.z); geos.push(t); meta.push({ kind: 'lamp', n: t.attributes.position.count }); } // #2027: SPEL's hexagon LED panels, LED lines and corner lamps
   { // #1620: the DJ booth's LED strips (emissive vertex colours, no light): the podium's south and west edges and the counter's front
     const J = R.dj, D = J.podium, L = J.led, [c0, c1] = L.colors, y0 = D.h * .3, cy = D.h + .1;
     box({ x0: D.x0, x1: D.x1, y0, y1: y0 + L.h, z0: D.z1, z1: D.z1 + L.t }, c0);

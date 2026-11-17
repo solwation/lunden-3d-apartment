@@ -461,6 +461,10 @@ cinema carpet), desk, stool, DJ bench and billiard table. All belong to the hidd
 Playroom group, with no real lights and no new frame-loop code. The public viewer
 has no gameplay clubhouse, so this finish has no downstream transfer.
 
+### SPEL hexagon LED panels, neon and corner lamps (#2027, part of #2023)
+
+`src/clubhouseleds.js` builds, from `PLAYROOM.posters.leds` (*guess*, an original design after `docs/speldator-referens-rgb-spelhorna.jpg` for direction only), two clusters of pointy-top hexagon acoustic panels on SPEL's north wall either side of the GAME ON sign (dark slabs, about a third glowing purple/pink/turquoise/peach/blue as a coloured field with a pale core), diamond-chain LED lines above the south wall's posters and two corner floor lamps (dark base, glowing tube). `playroomposters.js` merges the pieces as vertex-coloured `lamp` geometry into its one unlit mesh: no new draw call, no light, constant brightness. The north wall's four posters were removed for the clusters (their designs remain on the other SPEL walls). The new original `SPEL PÅ` neon sign hangs over the south passage (`posters.neon.signs.spelpa`, below the exit sign); sign cells are now two per atlas strip row (atlas 1536x1536). `tools/clubhouseleds2027test.cjs` records views plus draw/triangle counts. Cost: about +1,000 triangles in SPEL, draw calls unchanged.
+
 ### Clubhouse screens and computer stations (#1488)
 
 `src/playroomdevices.js` owns the cinema plane and four independently selectable

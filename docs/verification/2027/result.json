@@ -1,0 +1,29 @@
+{
+  "res": {
+    "north-wall": {
+      "calls": 30,
+      "triangles": 69934,
+      "postersMeshTris": 1606,
+      "lights": 0
+    },
+    "south-wall": {
+      "calls": 24,
+      "triangles": 113430,
+      "postersMeshTris": 1606,
+      "lights": 0
+    },
+    "southeast-corner": {
+      "calls": 20,
+      "triangles": 76470,
+      "postersMeshTris": 1606,
+      "lights": 0
+    },
+    "northwest-corner": {
+      "calls": 35,
+      "triangles": 70024,
+      "postersMeshTris": 1606,
+      "lights": 0
+    }
+  },
+  "errors": []
+}

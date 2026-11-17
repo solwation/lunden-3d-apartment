@@ -84,7 +84,7 @@ export function posterDesigns() {
 
 /** The two wall neon signs: a dark panel and a tube-style outline (rose / cyan) with a glow, drawn into a `size` px atlas cell. */
 export function neonSignCell(c, name, [w, h]) {
-  const spel = name === 'spel', col = spel ? '#59f3ff' : '#ffb866', col2 = spel ? '#ff59cc' : '#ff6a5a', s = spel ? 'GAME ON' : '8-BALL';
+  const spel = name !== 'biljard', col = name === 'spelpa' ? '#ff7be0' : spel ? '#59f3ff' : '#ffb866', col2 = name === 'spelpa' ? '#9a6bff' : spel ? '#ff59cc' : '#ff6a5a', s = name === 'spelpa' ? 'SPEL PÅ' : spel ? 'GAME ON' : '8-BALL'; // #2027: 'spelpa' = the original SPEL PÅ sign over the passage
   c.fillStyle = '#0c0e18'; c.fillRect(0, 0, w, h);
   c.shadowColor = col2; c.shadowBlur = 18; c.strokeStyle = col2; c.lineWidth = 7; c.beginPath(); c.roundRect(14, 14, w - 28, h - 28, 36); c.stroke();
   c.shadowColor = col; c.shadowBlur = 22; c.font = `900 ${h * .5}px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round';
