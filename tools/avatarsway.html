@@ -1,0 +1,57 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar sway</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2014 component page, driven by tools/avatarswaytest.cjs: three avatars (long hair, bun, curly) walk, stop and turn in step;
+// window.__to(t) replays the sequence deterministically (60 fps) to time t and renders; window.__cost() times Avatar.update with and without sway.
+import * as THREE from 'three';
+import { Avatar } from '../src/avatar.js';
+import { decodeAvatarLook, avatarEyeHeight } from '../src/config.js';
+const code = '210000100c5e8o2w0l8j0n0b0r8t8y8';
+const W = 640, H = 480, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, -3); scene.add(sun);
+const looks = [{ style: 1, top: 0x7a2f2f }, { style: 2 }, { style: 4 }], avatars = [];
+looks.forEach((o, i) => {
+  const lk = { ...decodeAvatarLook(code, 'sway'), tall: 1, build: 1, ...o }, a = new Avatar(lk);
+  a.baseY = 1.62 - avatarEyeHeight(lk); a.object.position.set((i - 1) * 0.55, a.baseY, 0); scene.add(a.object); avatars.push(a);
+});
+const cam = new THREE.PerspectiveCamera(22, W / H, 0.05, 50);
+const state = { t: 0, z: 0, yaw: 0, speed: 0 };
+function advance(dt) {
+  const t = state.t;
+  state.speed = t < 2 ? 1.4 : t < 2.15 ? 1.4 * (1 - (t - 2) / 0.15) : 0;
+  if (t >= 3.15 && t < 3.55) state.yaw += Math.PI * 2 / 3 / 0.4 * dt; // a 120 degree turn in 0.4 s
+  state.z += state.speed * dt * Math.cos(state.yaw); state.x = (state.x ?? 0) + state.speed * dt * Math.sin(state.yaw);
+  state.t += dt;
+  for (const a of avatars) { const i = avatars.indexOf(a); a.object.position.set(state.x + (i - 1) * 0.55, a.baseY, state.z); a.object.rotation.y = state.yaw; a.update(dt, { speed: state.speed }); }
+  cam.position.set(state.x + 1.6, 1.55, state.z - 2.6); cam.lookAt(state.x, 1.3, state.z);
+  scene.updateMatrixWorld(true); renderer.render(scene, cam);
+}
+window.__to = (t) => {
+  if (t < state.t) { state.t = state.z = state.yaw = 0; state.x = 0; for (const a of avatars) a.sway = null; }
+  while (state.t < t - 1e-9) advance(1 / 60);
+  return { t: state.t, speed: state.speed, hair: avatars.map((a) => a.sway.hair.p.map((v) => +v.toFixed(4))), bun: avatars.map((a) => a.sway.bun.p.map((v) => +v.toFixed(4))), hem: avatars.map((a) => a.sway.hem.p.map((v) => +v.toFixed(4))), calls: renderer.info.render.calls };
+};
+window.__cost = (n = 20, frames = 600) => { // n avatars' update (CPU, ms per frame): sway on vs off
+  const crowd = []; for (let i = 0; i < n; i++) { const a = new Avatar({ ...decodeAvatarLook(code, 'c' + i), tall: 1, build: 1, style: 1 }); scene.add(a.object); crowd.push(a); }
+  const run = (off) => {
+    for (const a of crowd) a.noSway = off;
+    const t0 = performance.now();
+    for (let f = 0; f < frames; f++) { for (const [i, a] of crowd.entries()) { a.object.position.set(i * 0.5, 0, f * 0.02 * (1 + Math.sin(f * 0.05))); a.update(1 / 60, { speed: 1.4 }); } scene.updateMatrixWorld(true); }
+    return (performance.now() - t0) / frames;
+  };
+  run(false); run(true); // warm up
+  const on = run(false), off = run(true);
+  return { n, frames, msOn: on, msOff: off, perAvatarUs: (on - off) / n * 1000 };
+};
+window.__ready = true;
+</script></body></html>

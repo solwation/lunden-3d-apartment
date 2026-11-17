@@ -6603,6 +6603,16 @@ export const AVATAR_BLINK = { interval: [2, 6], double: 0.18, doubleGap: [0.12, 
 // shift of at most `eye` m [x, y]. A target further than `cone` rad off the head is not looked at. Small saccades of the irises at rest.
 export const AVATAR_GAZE = { range: 6, retarget: 0.3, cone: 1.6, headShare: 0.45, maxYaw: 0.5, maxPitch: 0.22, eyeYaw: 0.5, eyePitch: 0.3, eye: [0.0042, 0.0026],
   follow: 7, saccadeFollow: 30, saccade: { interval: [0.4, 1.6], amp: [0.0011, 0.0007], withTarget: 0.4 } };
+// #2014: secondary motion of long hair (styles 1, 4), the bun (2) and the sweater/jacket hem: one damped spring per group (src/avatarsway.js),
+// driven by the rendered head's (hair, bun) or torso's (hem) acceleration and turning, derived locally for every player (no network field).
+// Per group: `omega` rad/s (the spring's natural frequency), `zeta` damping ratio (< 1 overshoots once or twice), `gain` of the pseudo-force
+// (1 = a free mass), `r` m the group's lever arm behind the pivot (turning drags it sideways), `min`/`max` [x, y, z] m the offset's walls in the
+// bone's own frame (x its left, y up, z forward): they stop the hair at the shoulders / neck / head and the hem at the trousers. All *guesses* by eye.
+export const AVATAR_SWAY = { maxDt: 0.05, step: 1 / 120, accelMax: 30, accelFilter: 0.04, resetDistance: 1.5,
+  hair: { omega: 13, zeta: 0.3, gain: 0.8, r: 0.12, min: [-0.035, -0.012, -0.03], max: [0.035, 0.035, 0.012] },
+  bun: { omega: 20, zeta: 0.25, gain: 0.8, r: 0.07, min: [-0.012, -0.006, -0.012], max: [0.012, 0.012, 0.006] },
+  hem: { omega: 16, zeta: 0.4, gain: 0.6, r: 0.17, min: [-0.018, 0, -0.02], max: [0.018, 0, 0.012] },
+  hairDepth: 0.22, bunRadius: [0.045, 0.07], hemDepth: 0.14 };
 // #1165: glasses, 0 none, 1 round, 2 square frames: a look field `glasses`, the extension's `g` tag (absent when 0). The frames are part
 // of the shared head geometry and collapse to a point in the vertex shader when not chosen (src/avatar.js), so no extra draw call.
 // #1325: kind 3 sunglasses (the square frames plus dark lenses, `lens`).
