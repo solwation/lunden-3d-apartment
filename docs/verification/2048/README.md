@@ -5,9 +5,9 @@ Baseline `37d922df` (before: its `src/avatar.js`, `src/config.js` and `src/avata
 
 | Image | Shows |
 |---|---|
-| `before/nose.png` (removed at closure) / `nose.png` | daylight. Rows: light skin; medium skin; dark skin; nose sliders smallest + narrowest (light); largest + widest with round glasses (medium); medium skin in the Spider suit. Columns: front, three-quarter, profile, low three-quarter, from below |
-| `before/nose-raking.png` / `nose-raking.png` | the same views with a low sun from the side (form only) |
-| `before/nose-backlight.png` / `nose-backlight.png` | the sun behind the head |
+| [before](https://github.com/solwation/lunden-3d-apartment/blob/4771179d/docs/verification/2048/before/nose.png) (removed at closure) / `nose.png` | daylight. Rows: light skin; medium skin; dark skin; nose sliders smallest + narrowest (light); largest + widest with round glasses (medium); medium skin in the Spider suit. Columns: front, three-quarter, profile, low three-quarter, from below |
+| [before](https://github.com/solwation/lunden-3d-apartment/blob/4771179d/docs/verification/2048/before/nose-raking.png) (removed at closure) / `nose-raking.png` | the same views with a low sun from the side (form only) |
+| [before](https://github.com/solwation/lunden-3d-apartment/blob/4771179d/docs/verification/2048/before/nose-backlight.png) (removed at closure) / `nose-backlight.png` | the sun behind the head |
 
 Before: one smooth ridge from the brow to a pointed tip with a dark painted spot at the tip; no wings,
 nostrils or transition into the cheek. After: a bridge narrowest between the eyes, a rounded tip of two
