@@ -478,6 +478,11 @@ and animation yield while an app owns the screen; monitor-arm and lid transforms
 remain intact. See [computer controls](interactions.md#shared-computers-1488)
 and [focused verification](verification.md#shared-computer-clients-1488).
 Cinema playback remains independent and lasts until its last occupant leaves.
+
+Reference for the wanted luxury "wow" look of the SPEL stations (user, 2026-11-17): [RGB gaming corner](../speldator-referens-rgb-spelhorna.jpg) —
+glass dual-chamber PC full of RGB fans, triple curved monitors on an arm, lit desk mat, premium racing chair, hexagon LED wall panels,
+neon sign, LED-lined floating shelves with figures/controllers and a patterned rug. Use it for direction only; game logos and
+characters in it are not to be copied.
 The old Pricka grönt game and white power box were replaced by the app selector.
 These are personal furnishings and gameplay, excluded from the public downstream.
 
