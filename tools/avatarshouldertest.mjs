@@ -74,10 +74,12 @@ test('raised arms, crouch, seat and driving keep actual surface finite and hand 
  assert.deepEqual(a.mesh.skeleton.bones.map(b=>b.name),NAMES);a.dispose();
 });
 
-// #2013: corrective torso weight toward the shoulder bones. Worst-1% triangle area ratio and 99th-percentile edge stretch
-// (posed / rest) per pose, measured on the pre-#2013 weights (both body types, both sleeve lengths gave the same numbers per body type).
-// Area may never fall below its before value. Edge stretch may not exceed it either, except the rifle hold, which trades +0.05.
-import { shoulderMetrics } from './avatarshouldervolume.mjs';
+// #2013/#2022: shoulder/armpit volume. Worst-1% triangle area ratio and 99th-percentile edge stretch (posed / rest) per pose,
+// measured on the pre-#2013 weights (both body types; both sleeve lengths gave the same numbers per body type). Area may never
+// fall below its before value and edge stretch may not exceed it; #2022's pose-driven corrective (src/avatararmfix.js, measured
+// through the CPU skinning path) also keeps arms-up stretch at or below 1.69.
+import { shoulderMetrics, POSES } from './avatarshouldervolume.mjs';
+import { armFixDelta } from '../src/avatararmfix.js';
 const BEFORE = [
  { up: [1.858, .695], wave: [1.732, .751], forward: [1.349, .937], rifle: [1.389, .767], cross: [1.133, .277] },
  { up: [1.862, .726], wave: [1.739, .78], forward: [1.349, .953], rifle: [1.379, .778], cross: [1.119, .256] },
@@ -87,17 +89,21 @@ for (const gender of [0, 1]) for (const sleeves of [0, 1]) test(`shoulder volume
  for (const [pose, v] of Object.entries(m)) {
   const [edge, area] = BEFORE[gender][pose];
   assert.ok(v.areaP1 >= area - 1e-9, `${pose}: worst-1% area ${v.areaP1} >= before ${area}`);
-  assert.ok(v.edgeP99 <= edge + (pose === 'rifle' ? .05 : 1e-9), `${pose}: edge stretch ${v.edgeP99} <= before ${edge}`);
+  assert.ok(v.edgeP99 <= edge + 1e-9, `${pose}: edge stretch ${v.edgeP99} <= before ${edge}`);
   assert.equal(v.stretched, 0, `${pose}: no tearing stretch`);
  }
+ assert.ok(m.up.edgeP99 <= 1.69, `arms up: edge stretch ${m.up.edgeP99} <= 1.69 (#2022)`);
 });
-test('armhole follow weights: normalised, four influences, torso stays dominant for suit shading', () => {
- const a = avatarModelGeometry({ ...avatarLook('w2013'), gender: 0, cut: 0, sleeves: 0 }).attributes;
- let followers = 0;
- for (let i = 0; i < a.position.count; i++) {
-  let sum = 0; for (let k = 0; k < 4; k++) sum += a.skinWeight.getComponent(i, k);
-  assert.ok(Math.abs(sum - 1) < 1e-4, 'weights sum to one');
-  if (NAMES[a.skinIndex.getX(i)] === 'torso' && a.skinWeight.getY(i) > .01 && /^shoulder/.test(NAMES[a.skinIndex.getY(i)])) followers++;
- }
- assert.ok(followers > 20, 'torso skin around the armholes follows the shoulder bones');
+test('#2022 corrective: off with hanging arms, on with lifted arms, same rig and weights', () => {
+ const av = new Avatar({ ...avatarLook('fix2022'), gender: 0, cut: 0, sleeves: 0 }), g = av.mesh.geometry.attributes, u = av.material.userData.u.uArmFix;
+ assert.deepEqual(av.mesh.skeleton.bones.map(b => b.name), NAMES, 'no new bone');
+ const moved = () => { av.object.updateMatrixWorld(true); av.mesh.skeleton.update(); let n = 0;
+  for (let i = 0; i < g.position.count; i++) if (armFixDelta(g.position.getX(i), g.position.getY(i), g.position.getZ(i), [0, 1, 2, 3].map(k => g.skinIndex.getComponent(i, k)), [0, 1, 2, 3].map(k => g.skinWeight.getComponent(i, k)), g.armPump.getX(i), u.value) !== 0) n++;
+  return n; };
+ for (const state of [{}, POSES.rifle, POSES.forward]) { av.gait = 0; av.update(0, state); av.update(1, state); assert.equal(moved(), 0, `no corrective: ${JSON.stringify(state)}`); }
+ av.update(0, POSES.up); av.update(1, POSES.up);
+ assert.ok(moved() > 100, 'armhole surface follows the lifted arm'); assert.ok(u.value.x > .99 && u.value.y > .99, 'both arms lifted');
+ av.update(0, POSES.wave); av.update(1, POSES.wave); av.object.updateMatrixWorld(true); av.mesh.skeleton.update();
+ assert.ok(u.value.x < .01 && u.value.y > .99, 'per side: only the waving arm');
+ av.dispose();
 });

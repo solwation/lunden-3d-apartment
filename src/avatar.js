@@ -7,6 +7,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SURFACE as SURFACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, AVATAR_GAIT as GAIT, AVATAR_MOTION as MOTION, DANCE, AVATAR_AIR as AIR, SWIM, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion, AVATAR_BLINK, AVATAR_GAZE } from './config.js';
 import { newBlink, stepBlink, solveGaze, stepSaccade } from './avatargaze.js';
+import { armFixShader, installArmFix } from './avatararmfix.js'; // #2022
 import { newWet, stepWet, falling, wetEnv, WET_DECL, wetVertex, wetColor, wetRoughness } from './avatarweather.js'; // #2018
 import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #2014
 import { topTexture } from './spidersuit.js';
@@ -458,7 +459,6 @@ function upperBody(sleeves, female, cut) {
   const holeRows = B.hole.map(y => rings.findIndex(r => r[0] === y));
   const pos = [], weights = [], ids = [], pump = [], shade = [], groups = [[], [], []];
   const torso = NAMES.indexOf('torso');
-  const pivots = ['L', 'R'].map(s => Object.assign(bindAt('shoulder' + s).sub(bindAt('torso')), { id: NAMES.indexOf('shoulder' + s) }));
   const vertex = (p, si = [torso, 0, 0, 0], sw = [1, 0, 0, 0], pp = [0, 0, 0, 0], sh = 1) => {
     const k = pos.length / 3; pos.push(...p); ids.push(...si); weights.push(...sw); pump.push(...pp); shade.push(sh); return k;
   };
@@ -473,14 +473,7 @@ function upperBody(sleeves, female, cut) {
       const yy = onHole ? B.hole[1] + (y - B.hole[1]) * Math.sqrt(Math.max(0, 1 - (Math.cos(a) / B.armholeRound) ** 2)) : y;
       const at = [Math.sin(a) * (rx + fold), yy, Math.cos(a) * (rz + fold) + centre +
         (female ? B.bust : B.chest) * front ** 2 * bump(y, B.chestAt, B.chestWidth)];
-      // #2013 corrective weight: torso skin around each armhole follows its shoulder bone by a falling share, so a lifted arm
-      // drags the pectoral/lat fabric up with it instead of tearing the armhole open or pinching the armpit.
-      const pivot = pivots[at[0] < 0 ? 1 : 0], reach = Math.hypot(at[0] - pivot.x, (at[1] - pivot.y) * B.followTall, at[2] - pivot.z);
-      const follow = B.follow * (1 - smoothstep(B.followRadius[0], B.followRadius[1], reach))
-        * THREE.MathUtils.lerp(B.followRim[0], 1, smoothstep(-B.followRim[2], B.followRim[2], at[1] - pivot.y)) // upper rim follows, lower rim (the armpit crease) less
-        * THREE.MathUtils.lerp(B.followRim[1], 1, smoothstep(-B.followRim[2], B.followRim[2], -(at[2] - pivot.z))); // back rim follows, front rim less
-      vertex(at, follow > 1e-3 ? [torso, pivot.id, 0, 0] : undefined, follow > 1e-3 ? [1 - follow, follow, 0, 0] : undefined,
-        undefined, row < 2 ? B.hemShade : 1);
+      vertex(at, undefined, undefined, undefined, row < 2 ? B.hemShade : 1); // (#2022: the armhole's pose-driven follow is src/avatararmfix.js)
     }
   }
   for (let row = 0; row < rings.length - 1; row++) for (let j = 0; j < S; j++) {
@@ -510,7 +503,7 @@ function upperBody(sleeves, female, cut) {
     // Correspondence and weights follow the actual endpoints, not independent
     // loft ellipses below the pivot. This avoids a wedge that folds into a fin.
     for (const t of B.shoulderRows) {
-      const next = [], blend = t ** B.rowBlend, bulge = Math.sin(Math.PI * t);
+      const next = [], blend = t, bulge = Math.sin(Math.PI * t);
       for (let j = 0; j < 12; j++) {
         const i = sx === 1 ? j : (12 - j) % 12, a = j / 12 * Math.PI * 2;
         const start = pos.slice(root[j] * 3, root[j] * 3 + 3);
@@ -1354,7 +1347,7 @@ function releaseSuitTexture() { if (--suitUsers === 0) { suitTexture.dispose(); 
 
 function makeMaterial(rim, headProjection) {
   const headMin = headProjection.min, headSize = headProjection.getSize(new THREE.Vector3()), headFront = headProjection.getCenter(new THREE.Vector3()).z;
-  const u = { uPump: { value: 0 }, uLight: { value: 1 }, uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uFing: { value: Array.from({ length: 10 }, () => new THREE.Vector2()) }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 }, uKiss: { value: 0 }, uBlink: { value: 0 }, uGaze: { value: new THREE.Vector2() }, uSwayHair: { value: new THREE.Vector3() }, uSwayBun: { value: new THREE.Vector3() }, uSwayHem: { value: new THREE.Vector3() }, uSwayOn: { value: new THREE.Vector3(0, 0, 1) }, uWet: { value: 0 }, uSnow: { value: 0 },
+  const u = { uPump: { value: 0 }, uLight: { value: 1 }, uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uFing: { value: Array.from({ length: 10 }, () => new THREE.Vector2()) }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 }, uKiss: { value: 0 }, uBlink: { value: 0 }, uGaze: { value: new THREE.Vector2() }, uSwayHair: { value: new THREE.Vector3() }, uSwayBun: { value: new THREE.Vector3() }, uSwayHem: { value: new THREE.Vector3() }, uSwayOn: { value: new THREE.Vector3(0, 0, 1) }, uWet: { value: 0 }, uSnow: { value: 0 }, uArmFix: { value: new THREE.Vector2() },
     uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uEarrings: { value: 0 }, uHat: { value: 0 }, uPhones: { value: 0 }, uNecklace: { value: 0 }, uRingFinger: { value: 0 }, uBracelet: { value: 0 }, uWatch: { value: 0 }, uRingColor: { value: new THREE.Color(RING.colours[0]) }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) } };
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: SURFACE.finish.cloth, metalness: 0, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
@@ -1363,7 +1356,9 @@ function makeMaterial(rim, headProjection) {
     Object.assign(sh.uniforms, u);
     // Bind-pose coordinates follow the original skin: colours/own canvas only, no new
     // geometry, skeleton, head envelope or per-avatar colour-buffer replacement (#891).
-    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float region; attribute float suitRole; varying float vSuitRole; attribute float noseBlend; varying vec2 vSurface; attribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + WET_DECL + '\n' + FACE_SHAPE_DECL())
+    const fix = armFixShader(); // #2022
+    sh.vertexShader = sh.vertexShader.replace('#include <skinbase_vertex>', fix.base).replace('#include <skinnormal_vertex>', fix.normal).replace('#include <skinning_vertex>', fix.skin)
+      .replace('#include <common>', '#include <common>\nattribute float region; attribute float suitRole; varying float vSuitRole; attribute float noseBlend; varying vec2 vSurface; attribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + WET_DECL + '\n' + FACE_SHAPE_DECL() + '\n' + fix.decl)
       .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
 float pumpF = 1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z;
 float pumpD = uPump * ${GYM_PUMP.circumference} * armPump.w;
@@ -1404,7 +1399,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
       #include <opaque_fragment>`);
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light';
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022';
   return m;
 }
 
@@ -1847,6 +1842,7 @@ export class Avatar {
     applyFaceShape(this.material.userData.u, lk);
     this.mesh = new THREE.SkinnedMesh(geometry, this.material);
     this.bones = attachSkeleton(this.mesh);
+    installArmFix(this.mesh, this.material.userData.u.uArmFix); // #2022
     this.mesh.castShadow = this.mesh.receiveShadow = false;
     this.mesh.name = 'avatar';
     this.object.add(this.mesh);
@@ -1897,6 +1893,7 @@ export class Avatar {
 
     this.mesh = clonedMesh;
     this.bones = bones;
+    installArmFix(clonedMesh, mat.userData.u.uArmFix); // #2022
     this.riggedScene = clonedScene;
     this.object.add(this.riggedScene);
 

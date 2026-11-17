@@ -45,21 +45,22 @@ still limits LBS normals; the guard and exposed high-arm imagery do not claim ev
 posed triangle is error-free. [Final art, actual preview, source equivalence,
 counts and software timing limits](../verification/2001/README.md).
 
-#### Shoulder volume when the arm moves (#2013)
+#### Shoulder volume when the arm moves (#2013, #2022)
 
-Torso vertices around each armhole carry a falling share of the matching shoulder bone as a corrective
-weight instead of 100% torso (`AVATAR_SURFACE.body.follow`, `followRadius`, `followTall`, `followRim`,
-`rowBlend`; guesses chosen by a grid search). The share is zero on the lower rim (the armpit crease) and
-kept on the upper/back rim, and the sewn-shoulder rows start from those root weights. Rest pose and the
-15-bone rig are unchanged and torso stays dominant for suit shading. Worst-1% triangle area (posed/rest)
-never falls below the pre-#2013 value for lift, wave, forward, rifle hold or crossed arms (both bodies and sleeve
-lengths); 99th-percentile edge stretch improves for arms up (1.86 to 1.77), wave, forward and cross, and gets
-0.04 worse for the rifle hold. Static weights cannot do better: a grid search found no setting that also
-reaches 1.69 stretch without losing area, and a shader-only corrective would not be covered by the CPU check.
-Inner-axilla compression in crossed arms is not reduced, only not worsened. Check with
-`node --test tools/avatarshouldertest.mjs` (bounds against the stored before-table, via
-`tools/avatarshouldervolume.mjs`) and the pose sheets `tools/avatarshoulderbrowser.cjs` /
-`tools/verify-avatar-shoulders.html` ([images](../verification/2013/)).
+A pose-driven corrective in `src/avatararmfix.js` (#2022) replaced #2013's static follow weights. Each skeleton update
+measures each upper arm's elevation in the torso frame and sets `uArmFix` (vec2, one per side; 0 for hanging, forward and
+rifle-hold arms, 1 from about horizontal). A lifted arm then moves a falling share of the torso weight around its armhole to
+the shoulder bone (less below the pivot), and re-blends the sewn shoulder rows' shoulder share s as s^rows, so the fabric rides
+up with the arm instead of stretching the armpit. Lowered arms keep the plain rig weights, so the rifle hold no longer pays for
+the lift. The vertex shader adds the change to the bone blend (positions and normals) after `skinbase_vertex`; the CPU path
+overrides the mesh's `applyBoneTransform` with the same formula, so `getVertexPosition` and the volume tool measure what is
+drawn. Same 15-bone rig, geometry, attributes and draw call; values `AVATAR_SURFACE.body.armFix` (guesses from a random search).
+Measured against the pre-#2013 weights (male; female similar): arms-up 99th-percentile edge stretch 1.858 → 1.667, wave
+1.732 → 1.605, rifle hold unchanged at 1.389 (#2013 had 1.432), and no pose's worst-1% triangle area below its before value.
+Forward reach and crossed arms are back at the pre-#2013 values (#2013's small gains there came with the rifle cost), and the
+inner armpit of crossed arms is still unimproved. Check with `node --test tools/avatarshouldertest.mjs` (bounds against the stored
+before-table, via `tools/avatarshouldervolume.mjs`) and the pose sheets `tools/avatarshoulderbrowser.cjs` /
+`tools/verify-avatar-shoulders.html` ([#2013 images](../verification/2013/), [#2022 images](../verification/2022/)).
 
 #### Sweater hem and long-hair ends (#2019)
 
