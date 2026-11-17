@@ -1,0 +1,84 @@
+{
+  "base": "http://localhost:8633",
+  "errors": [],
+  "loadSeconds": 47.221,
+  "door": "playhouse",
+  "views": {
+    "room": {
+      "calls": 32,
+      "tris": 100922,
+      "inRoom": true,
+      "cam": [
+        -1494,
+        1.62,
+        -1498.7
+      ]
+    },
+    "shelves-west": {
+      "calls": 42,
+      "tris": 124360,
+      "inRoom": true,
+      "cam": [
+        -1494.4,
+        1.1,
+        -1502.1
+      ]
+    },
+    "shelves-east": {
+      "calls": 28,
+      "tris": 307527,
+      "inRoom": true,
+      "cam": [
+        -1493.6,
+        1.1,
+        -1502
+      ]
+    },
+    "shelf-closeup": {
+      "calls": 41,
+      "tris": 101154,
+      "inRoom": true,
+      "cam": [
+        -1495.79,
+        1.2,
+        -1503.51
+      ]
+    },
+    "poster-gap": {
+      "calls": 44,
+      "tris": 124434,
+      "inRoom": true,
+      "cam": [
+        -1495.3,
+        1.1,
+        -1502.1
+      ]
+    },
+    "rug": {
+      "calls": 34,
+      "tris": 100926,
+      "inRoom": true,
+      "cam": [
+        -1494,
+        2.45,
+        -1498.7
+      ]
+    }
+  },
+  "furniture": {
+    "largestMesh": {
+      "name": "",
+      "tris": 81338
+    },
+    "footprints": 28,
+    "segments": 144,
+    "nearCyanPedestal": [
+      [
+        3.1,
+        3.6,
+        -1.515,
+        -1.075
+      ]
+    ]
+  }
+}

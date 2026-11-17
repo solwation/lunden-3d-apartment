@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PLAYROOM as R, COURTYARD, COMPUTER_MEDIA } from './config.js';
 import { computerFurniture, pcPedestalRect } from './computerfurniture.js';
+import { clubhouseShelves } from './clubhouseshelves.js';
 import { restTarget } from './rest.js';
 import { PlayroomDevices } from './playroomdevices.js';
 import { PlayroomDJ, djVinylMaterial } from './playroomdj.js';
@@ -94,6 +95,7 @@ export class Playroom {
       cbox(col.steel, F.ball.x - 0.04, F.ball.x + 0.04, h - 0.03, h, F.ball.z - 0.04, F.ball.z + 0.04), cbox(col.steel, F.ball.x - 0.005, F.ball.x + 0.005, F.ball.y + F.ball.r, h - 0.03, F.ball.z - 0.005, F.ball.z + 0.005),
     ];
     fur.push(...computerFurniture());
+    fur.push(...clubhouseShelves()); // #2028: floating shelves with figures, framed poster and pattern rug in SPEL
     fur.push(...popcornCartParts()); // #1567: the popcorn cart and its bin in the entry
     // Shallow diffusers sit inside a slim rounded frame instead of floating light squares.
     const rim=R.appearance.panelRimWidth;

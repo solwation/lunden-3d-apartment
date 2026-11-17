@@ -526,6 +526,20 @@ Cost: SPEL room view 31 draws before and after, 69.0k → 91.0k triangles (the f
 acceptable because the room is drawn only inside, far below the courtyard view's ~570k). Test: `tools/computerfurnituretest.mjs`; evidence
 `docs/verification/2024/`. Keep the PC in `gamingPc` so sibling stories (#2025–#2028) can change desk, chairs and decor beside it.
 
+### Shelves, poster and rug in SPEL (#2028, part of #2023)
+
+`clubhouseShelves()` in `src/clubhouseshelves.js` (pushed into the furniture batch next to `computerFurniture()` in `src/playroom.js`)
+returns ONE merged vertex-coloured geometry: a floating wall shelf (y 1.3, 15 cm deep, lit strip under the lip) over each station from the
+desk's far edge to the PC pedestal's, plus one in the wall gap between the two stations of each side, and an original framed poster
+(night sky, sun, mountains, block-pixel title) under each gap shelf. Shelf items are invented: robot, wizard, blob and astronaut figures, a
+trophy, controllers, headsets and game boxes with plain geometric covers (no brands or characters). The shelves hang below the existing
+SPEL wall posters (y 1.5-2.3) and clear the monitors (top 1.22) and PCs (top .96). One 5 x 6 m rug (`SHELF.rug`, flat quads whose top
+stays under 1.2 cm) lies under the stations with a woven border, a lattice of the four station colours and a centre medallion. It
+crosses the aisle but is flat, so collisions, contact shadows and the aisle are unchanged. Shelves are visual only (a very tall avatar's head can
+pass through a shelf, like the existing wall posters). Cost: SPEL room view 32 draws before and after, 92.1k -> 100.9k triangles (+8.8k, of
+which the rug ~0.6k); no light. Test: `tools/clubhouseshelvestest.mjs`; capture `tools/clubhouseshelfshots.cjs`; evidence
+`docs/verification/2028/`. Personal clubhouse decor, excluded from the public downstream.
+
 ### Cinema network video (#1376)
 
 `src/cinemaplayer.js` accepts a visitor's own HTTPS YouTube watch/shorts/live/embed
