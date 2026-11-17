@@ -15,7 +15,7 @@ black, blond and grey hair, dark skin with black, blond and grey hair (medium sk
 | `tillbehor.jpg` | cap, knitted hat (long hair), hat (curly), round and square glasses with headphones: still covering, no gaps |
 | `samtal.jpg` | 1.5 m at the game's pixel density, daylight and backlight, short and long |
 | `utan-msaa.jpg` | the no-MSAA fallback (`&test`, or a device without antialiasing): front, profile, detail, 1.5 m |
-| [before/kort-fore.jpg](https://github.com/solwation/lunden-3d-apartment/blob/HEAD/docs/verification/2050/before/kort-fore.jpg) (removed at closure) | the base alone (front, three-quarter, profile) |
+| [before/kort-fore.jpg](https://github.com/solwation/lunden-3d-apartment/blob/79fa4c1e/docs/verification/2050/before/kort-fore.jpg) (removed at closure) | the base alone (front, three-quarter, profile) |
 | `hairline.json` | triangles, hair triangles and draw calls (with and without MSAA), and the timing run |
 
 Before: the scalp shell ended in a hard, polygonal and tufted edge against forehead, temples, sideburns and nape. After: the hair thins
