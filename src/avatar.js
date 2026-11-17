@@ -2124,7 +2124,7 @@ export class Avatar {
         if (!hands.R) handR = mixHand(handR, kickHand(this, 1, hipY, hipZ, st, ku), km);
       }
     }
-    const tk = stepTalk(this.talkState ??= newTalk(), dt, { talking: this.talking, mouth: this.mouth, free: [!hands.L, !hands.R], quiet: am || swim || fa + ga > 0.01 || rp || kiss ? 1 : Math.max(c, rr) }); // #2038 (src/avatartalk.js)
+    const tk = stepTalk(this.talkState ??= newTalk(), dt, { talking: this.talking, mouth: this.mouth, free: [!hands.L, !hands.R], quiet: am || swim || fa + ga > 0.01 || rp || kiss ? 1 : Math.max(c, rr, iv.amt) }); // #2038 (src/avatartalk.js); #2035's crossed arms / pockets / stretch quiet the hands
     handL = talkHand(handL, tk.hand[0]); handR = talkHand(handR, tk.hand[1]); pitch += tk.head; this.headTilt = tk.tilt;
     const asw = this.armSwing ??= [0, 0]; asw[0] = armL / GAIT.armMax; asw[1] = armR / GAIT.armMax; this.runAmt = rr * g; // (the free fingers follow the arms, #2038)
     this.updateMouth(dt);

@@ -12,7 +12,7 @@ const DT = 1 / 60;
 let now = 0; // the talking mouth (#1122) runs on performance.now: follow the simulated clock
 Object.defineProperty(performance, 'now', { value: () => now * 1000, configurable: true, writable: true });
 const fing = (av, side) => av.material.userData.u.uFing.value.slice(side ? 5 : 0, side ? 10 : 5).flatMap((v) => [v.x, v.y]);
-const make = (look, seed) => { const av = new Avatar(look); av.handRest = newRest(seed); av.talkState = newTalk(seed); return av; }; // (seeded: the same unevenness every run)
+const make = (look, seed) => { const av = new Avatar(look); av.handRest = newRest(seed); av.talkState = newTalk(seed); av.noIdle = true; return av; }; // (seeded: the same unevenness every run; #2035's living rest off: fixed-pose measurements)
 const run = (av, secs, state = {}, each = null) => { for (let i = 0; i < Math.round(secs / DT); i++) { now += DT; av.update(DT, state); each?.(av, i); } };
 
 test('talk state: gestures while talking, exactly zero after it ends', () => {
