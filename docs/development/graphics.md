@@ -1023,9 +1023,9 @@ crouching, sitting and with bent elbows, fold on/off pixel difference per pose, 
 
 `src/avatareyes.js` (tunables `AVATAR_EYES`, all *guess*) adds the wet look to the avatars' eyes on their one material (uniform `uEyeLit`,
 program key suffix `-eyes2033`): no texture, mesh, triangle, light, draw call or network field. Hooks in `src/avatar.js`: in the eye branch of
-`faceShape()` the pupil (the dark `fixed` disc of the `iris` part) scales about the iris' centre (`eyePupil`) and, after the blink, each eye
-vertex gets its place in the opening (x corner to corner, y lower to upper lid, the blink and eye size undone) and its offset from a wet
-ball (`eyeAt`); right before the skinning (after the face shape and #2031's expressions) the ball's centre and the head's up go to view
+`faceShape()` the pupil (the dark `fixed` disc of the `iris` part) scales about the iris' centre (`eyePupil`); after the gaze and before
+the blink (#2045) each eye vertex gets its place in the opening (x corner to corner, y lower to upper lid, the eye size undone; `eyeAt`)
+and after the blink its offset from a wet ball (`eyeBall`); right before the skinning (after the face shape and #2031's expressions) the ball's centre and the head's up go to view
 space through the skinning (`eyeView`). Fragment: after
 the roughness the eyeball darkens softly under the upper lid and in its corners, is glossy along the lower lid (the tear line) and the lid
 margin just outside is wet (`eyeWet`); the flat eye geometry's own highlight is kept broad and the pupil matt, so the one sharp highlight is
@@ -1039,3 +1039,24 @@ reading (the appearance preview) the eyes keep the plain size and full glint. Hi
 Budget: on eye fragments only, a few `pow` per directional light; per vertex one branch. The far figure (`ghostfar.js`) has none of it.
 Check: `node --test tools/avatareyestest.mjs` and `tools/browsertest.sh node tools/avatareyestest.cjs SITE docs/verification/2033 [BEFORE]`
 (component page `tools/avatareyes.html`) ([images](../verification/2033/)).
+
+## Avatar eyelids, lashes and round irises (#2045)
+
+`src/avatarlids.js` (tunables `AVATAR_LIDS`, all *guess*) builds the eye's own parts in `addFace` (eye frame: metres from the eyeball's
+centre, before the head's widthwise warp) and blinks them; still one draw call, no attribute, light, pass or network field. The iris is a
+24-sided dome whose rim tucks into the eyeball, shaded per vertex (`shade` attribute: a lighter collarette, a dark limbal ring); the pupil a
+24-sided disc just over it (the #2033 light scale and the #2011 gaze clamp act on both as before). The lids are one skin ring round the
+opening: the margin's back sits inside the opening behind the eyeball (no slit where they meet), its front edge stands `thick` m proud of
+the eyeball (thickness in profile), rounds over and falls onto the head's surface tangentially (`headFront`, so #2044's socket sculpt
+carries the outer edge along); the upper lid has a shallow, darker fold (`crease`) and its front row is darker (the lash line). The upper
+lashes are a closed wedge along the margin in the brows' colour × `lash.shade` (region 9 inside the eye part: no glint, hair roughness).
+`lidBlink` (vertex, the eye branch after the gaze; replaces #2011's squeeze about the centre) moves both margins onto a closing line a
+third down the lower opening, the upper lid's skin up to `fold` m above its margin stretching with them, squeezes the eyeball, iris and
+pupil onto the line and pushes them `push` m back, and folds the lashes down; the lashes collapse onto the margin when shorter than
+`lash.px` on screen (`uFly`, #2040: buffer height and MSAA), so a far figure's lash line is the darker margin only and never flickers.
+Budget: 1,248 eye triangles per avatar against #2033's 608 (+640, 7.2 % of the 8,904 head-bone triangles of style 0); the #2002/#2012
+whole-avatar budgets in `tools/avatarheadtest.mjs` leave that growth out, `tools/avatarlidstest.mjs` holds it. Vertex: a few ALU per
+eye vertex; fragment unchanged but the lashes' region test. Known limits: the lid's outer edge still meets the coarse head mesh (#2043)
+along a visible line in steep views, and the eye stands well proud of the temple in profile (the socket is #2044's).
+Check: `node --test tools/avatarlidstest.mjs tools/avatareyestest.mjs tools/avatarheadtest.mjs` and
+`tools/browsertest.sh node tools/avatarlids2045browser.cjs SITE docs/verification/2045 [BEFORE]` ([images](../verification/2045/)).
