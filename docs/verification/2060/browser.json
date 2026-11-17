@@ -1,0 +1,59 @@
+{
+  "baseline": "1a5fab00",
+  "triangles": {
+    "before": {
+      "old": [
+        15000,
+        15000,
+        15000
+      ],
+      "extremes": [
+        15000,
+        15000,
+        15000,
+        15000,
+        15000,
+        15000,
+        15000,
+        15000
+      ]
+    },
+    "after": {
+      "old": [
+        15000,
+        15000,
+        15000
+      ],
+      "extremes": [
+        15000,
+        15000,
+        15000,
+        15000,
+        15000,
+        15000,
+        15000,
+        15000
+      ]
+    }
+  },
+  "errors": {
+    "before": [],
+    "after": []
+  },
+  "frameMs": {
+    "before": {
+      "old": 1.8,
+      "extremes": 4.5
+    },
+    "after": {
+      "old": 2.1,
+      "extremes": 9.2
+    }
+  },
+  "oldCodeSheet": {
+    "pixels": 1014000,
+    "sameSize": true,
+    "differing": 0,
+    "maxChannelDelta": 0
+  }
+}
