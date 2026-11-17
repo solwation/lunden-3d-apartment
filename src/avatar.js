@@ -129,7 +129,7 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
  * bridge and temples both use. Always in the shared geometry; the vertex shader collapses the kinds that are not chosen (a point,
  * no pixels), so a look without glasses draws the same and there is no extra draw call. Thin dark bars (colour GLASSES.colour). */
 function addGlasses(add, P) {
-  const E = FACE.eye, z = E.at[2] + 0.017, y = E.at[1], rx = 0.0225, hy = 0.0165, t = 0.0022, c = GLASSES.colour, at = [0, y, z];
+  const E = FACE.eye, z = FACE.accessoryFront, y = E.at[1], rx = 0.0225, hy = 0.0165, t = 0.0022, c = GLASSES.colour, at = [0, y, z];
   const mark = (id) => facePart(P, id, at);
   const bar = (w, h, d, x, yy, zz) => new THREE.BoxGeometry(w, h, d).translate(x, yy, zz);
   for (const s of [-1, 1]) {
@@ -156,7 +156,7 @@ function addEarrings(add, P) {
     put(ball(K.pearl, s * (outer + 0.001), lobe, lz), C.pearl, FACE_PART.pearlStuds);
   }
   // sunglasses: a dark lens in each square frame (see addGlasses), slightly behind the frame's front
-  const E = FACE.eye, z = E.at[2] + 0.017, y = E.at[1], rx = 0.0225, hy = 0.0165;
+  const E = FACE.eye, z = FACE.accessoryFront, y = E.at[1], rx = 0.0225, hy = 0.0165;
   for (const s of [-1, 1]) {
     add(new THREE.BoxGeometry(2 * rx, 2 * hy, 0.0012).translate(s * E.at[0], y, z), 'fixed', 'head', [0, 0, 0], 1, GLASSES.lens);
     facePart(P, FACE_PART.lens, [0, y, z]);
@@ -1413,7 +1413,7 @@ function faceShape() {
 /** Sets an avatar material's face uniforms from a look's face fields (missing ones: the middle, config.js avatarShape). */
 function applyFaceShape(u, lk) {
   const v = (name) => avatarShape(name, lk[name]);
-  u.uEye.value.set(v('eyeSize'), v('eyeSize') * v('eyeShape'), v('eyeSize'));
+  u.uEye.value.set(v('eyeSize'), v('eyeSize') * v('eyeShape'), 1); // #2063: larger openings do not project the globe out of its socket
   u.uNose.value.set(v('noseSize') * v('noseWidth'), v('noseSize'), v('noseSize'));
   u.uEar.value = v('ears');
   u.uBrow.value.set(v('browThick'), v('browY'));

@@ -1256,7 +1256,22 @@ pupil onto the line and pushes them `push` m back, and folds the lashes down; th
 `lash.px` on screen (`uFly`, #2040: buffer height and MSAA), so a far figure's lash line is the darker margin only and never flickers.
 Budget: 1,248 eye triangles per avatar against #2033's 608 (+640, 6.7 % of style 0's head-bone triangles after #2043); the #2002/#2012
 whole-avatar budgets in `tools/avatarheadtest.mjs` leave that growth out, `tools/avatarlidstest.mjs` holds it. Vertex: a few ALU per
-eye vertex; fragment unchanged but the lashes' region test. Known limits: the lid's outer edge meets the head mesh along a visible line in steep views, and the eye stands well proud of the
-temple in profile (the eye's depth against the head; the socket is #2044's).
+eye vertex; fragment unchanged but the lashes' region test. Known limit: the lid's outer edge meets the head mesh along a visible line in steep views. #2063 seats the eye behind the temple in profile (see below).
 Check: `node --test tools/avatarlidstest.mjs tools/avatareyestest.mjs tools/avatarheadtest.mjs` and
 `tools/browsertest.sh node tools/avatarlids2045browser.cjs SITE docs/verification/2045 [BEFORE]` ([images](../verification/2045/)).
+
+
+## Inset avatar eyes (#2063)
+
+`AVATAR_FACE.eye.at.z` seats the globe 8 mm farther back and `eye.scale.z` flattens it from 0.55 to 0.4;
+`AVATAR_SURFACE.face.socket` deepens the same continuous head surface by 5 mm. These are artistic guesses in metres,
+not measured human dimensions. The #2045 lids, iris and pupil use the shared globe coordinates and head surface, so they follow.
+`applyFaceShape` keeps the eye's z scale at 1 while retaining the existing width/height controls: larger openings no longer
+push the eye forward. `AVATAR_FACE.accessoryFront` keeps glasses and sunglasses at their previous nasal-bridge depth;
+the diving mask has its independent `SWIM.dive.mask.front`. Codes, wire fields, skeleton, material and detail LOD are unchanged.
+
+Budget: unchanged eye/whole style-0 figure counts (1,248 / 15,620 triangles), one draw, no new shader operations, varyings,
+attributes, lights, passes or textures. `tools/avatarsockettest.mjs` checks seating, accessory clearance and the slider ends;
+existing lid/sculpt/gaze checks cover the shared behavior. `tools/avatarsocket2063browser.cjs` captures front, 45°, 60°, profile,
+three skin tones, smallest/largest openings, glasses, blink/gaze and backlight in one run.
+[Images, source baseline, paired software timing and limits](../verification/2063/README.md).

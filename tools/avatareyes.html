@@ -13,7 +13,7 @@
 // in the game. window.__frame({ preset: 'sun' | 'dark', sun: [x, y, z], blink, view: 'close' | 'face', exposure, seconds }) renders and
 // returns the numbers. #2045 adds `yaw` (rad, the camera round the head; + towards the figure's left), `dist` / `fov` (the camera), `look`
 // ({ skin, eyes, hair, brows } colours swapped into the colour attribute), `glasses` (kind 0-3), `gaze` ([x, y] m, the iris' shift), `aim`
-// (±1: centre one eye, 0 between them), `follow` (the camera faces the head, not the body) and `W` / `H` (the canvas' size).
+// (±1: centre one eye, 0 between them), #2063 `eyeSize` / `eyeShape` (shader scales), `follow` (the camera faces the head, not the body) and `W` / `H` (the canvas' size).
 import * as THREE from 'three';
 import { Avatar, avatarModelGeometry } from '../src/avatar.js';
 import { AvatarLight } from '../src/avatarlight.js';
@@ -41,7 +41,7 @@ const cam = new THREE.PerspectiveCamera(10, W / H, 0.02, 50);
 const eyeAt = (s) => { a.object.updateMatrixWorld(true); return a.bones.head.localToWorld(new THREE.Vector3(s * AVATAR_FACE.eye.at[0], AVATAR_FACE.eye.at[1], AVATAR_FACE.eye.at[2])); };
 let now = 0;
 let lookKey = '';
-window.__frame = ({ preset = 'sun', sun: dir = [2, 4, 4], blink = 0, view = 'close', exposure = 1, seconds = 3, I = null, yaw = 0, dist = null, fov = null, look = null, glasses = 0, gaze = [0, 0], aim = 0, follow = false, W: w = W, H: h = H } = {}) => {
+window.__frame = ({ preset = 'sun', sun: dir = [2, 4, 4], blink = 0, view = 'close', exposure = 1, seconds = 3, I = null, yaw = 0, dist = null, fov = null, look = null, eyeSize = 1, eyeShape = 1, glasses = 0, gaze = [0, 0], aim = 0, follow = false, W: w = W, H: h = H } = {}) => {
   if (renderer.domElement.width !== w || renderer.domElement.height !== h) { renderer.setSize(w, h); cam.aspect = w / h; }
   const key = JSON.stringify(look ?? {});
   if (key !== lookKey) { lookKey = key; a.mesh.geometry.setAttribute('color', avatarModelGeometry({ ...lk, ...(look ?? {}) }).attributes.color); }
@@ -51,7 +51,7 @@ window.__frame = ({ preset = 'sun', sun: dir = [2, 4, 4], blink = 0, view = 'clo
   a.lookAt(null);
   a.eyes && (a.eyes.blink.wait = 99); // no random blink while a frame is set up
   for (let i = 0, n = Math.round(seconds * 60); i < n; i++) { now += 1000 / 60; probe.apply(a, st, 0, 0, 0, now); a.update(1 / 60, {}); }
-  u.uBlink.value = blink; u.uGaze.value.set(...gaze); u.uGlasses.value = glasses; // (the saccades held still: the same iris place in every frame)
+  u.uEye.value.set(eyeSize, eyeSize * eyeShape, 1); u.uBlink.value = blink; u.uGaze.value.set(...gaze); u.uGlasses.value = glasses; // (the saccades held still: the same iris place in every frame)
   const c = aim ? eyeAt(aim) : eyeAt(1).add(eyeAt(-1)).multiplyScalar(0.5);
   const fwd = new THREE.Vector3(0, 0, 1).applyQuaternion(follow ? a.bones.head.getWorldQuaternion(new THREE.Quaternion()) : a.object.quaternion); fwd.y = 0; fwd.normalize();
   cam.fov = fov ?? (view === 'close' ? 9 : 16); cam.updateProjectionMatrix();

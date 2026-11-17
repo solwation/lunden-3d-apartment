@@ -1,0 +1,12 @@
+{
+  "före": {
+    "errors": [],
+    "frames": 33,
+    "renderReadbackMs": 109.91666666604578
+  },
+  "efter": {
+    "errors": [],
+    "frames": 33,
+    "renderReadbackMs": 155.10833333370587
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "baseline": "b78e0b64",
+  "environment": "Chromium SwiftShader 640x400 canvas (800x800 viewport), render plus synchronous PNG readback; paired alternating rounds, shared host",
+  "samples": [
+    {
+      "round": 0,
+      "revision": "before",
+      "ms": 104.83999999985099
+    },
+    {
+      "round": 0,
+      "revision": "candidate",
+      "ms": 109.82999999970198
+    },
+    {
+      "round": 1,
+      "revision": "candidate",
+      "ms": 108.95
+    },
+    {
+      "round": 1,
+      "revision": "before",
+      "ms": 104.43999999985098
+    },
+    {
+      "round": 2,
+      "revision": "before",
+      "ms": 104.55
+    },
+    {
+      "round": 2,
+      "revision": "candidate",
+      "ms": 108.61000000014901
+    },
+    {
+      "round": 3,
+      "revision": "candidate",
+      "ms": 116.17000000029802
+    },
+    {
+      "round": 3,
+      "revision": "before",
+      "ms": 105.010000000149
+    },
+    {
+      "round": 4,
+      "revision": "before",
+      "ms": 105.38000000044704
+    },
+    {
+      "round": 4,
+      "revision": "candidate",
+      "ms": 110.15999999940395
+    },
+    {
+      "round": 5,
+      "revision": "candidate",
+      "ms": 111.239999999851
+    },
+    {
+      "round": 5,
+      "revision": "before",
+      "ms": 110.11999999955296
+    }
+  ],
+  "errors": [],
+  "before": {
+    "medianMs": 104.925,
+    "minMs": 104.43999999985098,
+    "maxMs": 110.11999999955296
+  },
+  "candidate": {
+    "medianMs": 109.99499999955296,
+    "minMs": 108.61000000014901,
+    "maxMs": 116.17000000029802
+  }
+}
