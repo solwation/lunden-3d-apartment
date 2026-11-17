@@ -7883,7 +7883,9 @@ export const COMPUTER_MEDIA = {
   desk: { width:1.45, depth:.6, height:.65, seat:.38, seatOffset:.8,
     monitorWidth:.65, monitorHeight:.38, monitorY:1, monitorDepth:.04, bezel:.025,
     top:.04, leg:.04, keyboard:[.4,.025,.14], chair:[.42,.06,.42], backHeight:.35,
-    case:[.18,.32,.3], homePlaneOffset:.085 },
+    case:[.18,.32,.3], homePlaneOffset:.085,
+    // #2025: the clubhouse stations' two side monitors (angled in, curved round the viewer: `radius`) and the large desk mat [w, d, centre z]; all *guess*es.
+    wing:{ width:.42, angle:.42, radius:1.3 }, mat:[1.0,.36,.12] },
   // #2024: the clubhouse PCs are wide dual-chamber glass cases (front + side glass, cable chamber on the desk side) on a low
   // drawer pedestal right of each desk (station-local +x, `gap` from the desk, back flush with it at `z`). Sizes are *guess*es
   // scaled to the child-sized desks (#1486), no product data: pedestal [w,h,d], case [w,h,d], cable-chamber width, fan size.

@@ -483,6 +483,14 @@ Reference for the wanted luxury "wow" look of the SPEL stations (user, 2026-11-1
 glass dual-chamber PC full of RGB fans, triple curved monitors on an arm, lit desk mat, premium racing chair, hexagon LED wall panels,
 neon sign, LED-lined floating shelves with figures/controllers and a patterned rug. Use it for direction only; game logos and
 characters in it are not to be copied.
+#2025 luxury desks: each station has three thin monitors on a dual arm (clamp and pole on the back edge): the
+centre one is the playable #1488 screen (its plane in `playroomdevices.js` is unchanged), the two wings
+(`COMPUTER_MEDIA.desk.wing`, angled 24 degrees inwards and bent on a 1.3 m radius by `curvedPanel()` in
+`computerfurniture.js`) show a cheap static skyline picture as vertex colours above 1.0 (no texture, no light). The desk top is a
+dark carbon look with a lit front lip, rear wall-wash strip and side lines; the 1.0 x .36 m desk mat (`desk.mat`) has a glowing
+rim; keyboard is lower-profile. The headset moved back to z -.2 so it clears the left wing. Everything stays in the one
+merged furniture batch: clubhouse furniture 340 -> 384 parts, 18,432 -> 19,376 triangles, no new draw call or light.
+Sizes are guesses; wing/centre monitors are flat-centre (the media plane stays flat for the CSS3D surface).
 The old Pricka grönt game and white power box were replaced by the app selector.
 These are personal furnishings and gameplay, excluded from the public downstream.
 

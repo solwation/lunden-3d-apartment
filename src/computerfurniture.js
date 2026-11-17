@@ -8,6 +8,35 @@ const led = (hue, sat = 1, light = .56, gain = 2.1) => new THREE.Color().setHSL(
 const hueOf = hex => { const o = {}; new THREE.Color(hex).getHSL(o); return o.h; };
 
 /**
+ * #2025: a thin curved monitor wing, bent round a viewer standing `radius` in front of it. `face` false: the solid shell
+ * (arc extruded up, `thick` deep behind the front); true: the picture sheet, a coarse grid whose vertex colours (LED values
+ * above 1.0, so it glows without a light) form a cheap static city-at-night image in the station's colour. Faces +z, centred.
+ */
+function curvedPanel(w,h,thick,radius,face,base=0,side=1) {
+  const half=w/2/radius,arc=t=>[radius*Math.sin(t),radius-radius*Math.cos(t)];
+  if(!face){
+    const front=[],back=[],steps=6;
+    for(let i=0;i<=steps;i++){const t=-half+2*half*i/steps,[x,z]=arc(t);front.push([x,z]);back.push([x+thick*Math.sin(t),z-thick*Math.cos(t)]);}
+    const shape=new THREE.Shape();front.forEach(([x,z],i)=>i?shape.lineTo(x,-z):shape.moveTo(x,-z));
+    for(const [x,z] of back.reverse())shape.lineTo(x,-z);
+    return new THREE.ExtrudeGeometry(shape,{depth:h,bevelEnabled:false}).rotateX(-Math.PI/2).translate(0,-h/2,0);
+  }
+  const nx=10,ny=6,pos=[],nor=[],col=[],idx=[],c=new THREE.Color();
+  for(let j=0;j<=ny;j++)for(let i=0;i<=nx;i++){
+    const t=-half+2*half*i/nx,[x,z]=arc(t),u=i/nx,v=j/ny;
+    pos.push(x,h/2-h*v,z);nor.push(-Math.sin(t),0,Math.cos(t));
+    const blob=Math.sin((i*1.9+side*2.4)*1.1)*.5+.5,horizon=Math.max(0,1-Math.abs(v-.55)*2.2),city=v>.55?blob*(v-.55)*2.2:0;   // sky glow band over a skyline of lit blocks
+    c.setHSL((base+.62-.34*horizon-.12*city+.05*u)%1,.95,.14+.3*horizon+.3*city,THREE.SRGBColorSpace).multiplyScalar(1.5);
+    col.push(c.r,c.g,c.b);
+  }
+  for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const a=j*(nx+1)+i;idx.push(a,a+nx+1,a+1,a+1,a+nx+1,a+nx+2);}
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3));
+  g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));g.setIndex(idx);
+  return g;
+}
+
+/**
  * Four themed gaming stations (#1598): a desk with a curved-look monitor on a stand, an RGB keyboard on a desk mat with a mouse,
  * a headset stand, a mid-tower PC turned to show its tempered-glass side with three RGB fans, and a racing-style gaming chair
  * on a five-star caster base. Everything is static merged geometry in the room's one furniture batch (no lights, no casters);
@@ -23,34 +52,50 @@ export function computerFurniture() {
     const box=(w,h,d,x,y,z,c=0x20232b,finish=FINISH.paint,extra)=>place(new THREE.BoxGeometry(w,h,d).translate(x,y,z),c,finish,extra);
     const dark=0x15171d,steel=0x8b9099,H=D.height;
 
-    // Desk: wood top, steel legs, a glowing RGB edge under the front lip.
-    add(D.width,D.top,D.depth,0,H-D.top/2,0,0x553b35,FINISH.wood);
+    // #2025 DESK BLOCK (desk, monitors on a dual arm, desk mat, keyboard, mouse) -- begin
+    // Desk: dark carbon-look top, steel legs, lit front lip and a rear strip washing the wall.
+    add(D.width,D.top,D.depth,0,H-D.top/2,0,0x1b1d24,FINISH.wood);
     for(const x of [-1,1])for(const z of [-1,1])add(D.leg,H-D.top,D.leg,x*(D.width/2-D.leg),(H-D.top)/2,z*(D.depth/2-D.leg),steel,FINISH.metal);
-    box(D.width-.08,.014,.012,0,H-D.top-.012,D.depth/2+.004,led(base,1,.55,2.4));
+    box(D.width-.08,.016,.012,0,H-D.top-.012,D.depth/2+.004,led(base,1,.55,2.6));
+    box(D.width-.06,.008,.012,0,H+.004,-D.depth/2+.014,led(base+.5,1,.55,2.2));
+    for(const x of [-1,1])box(.006,.006,D.depth-.04,x*(D.width/2-.004),H+.002,0,led(base,1,.55,2));
 
-    // Monitor: thin bezel panel on a neck and a wide foot, an accent chin line and a rear LED bar.
-    add(D.monitorWidth+2*D.bezel,D.monitorHeight+2*D.bezel,D.monitorDepth,0,D.monitorY,-D.monitorDepth/2,dark);
-    box(D.monitorWidth*.28,.008,.004,0,D.monitorY-D.monitorHeight/2-D.bezel*.55,.002,led(base,.9,.6,2.4));
-    add(D.bezel,D.monitorY-D.monitorHeight/2-H,D.monitorDepth,0,(D.monitorY-D.monitorHeight/2+H)/2,-D.monitorDepth/2-.02,0x2a2d36,FINISH.metal);
-    add(D.monitorWidth*.42,.018,D.depth/3,0,H+.009,-.04,0x2a2d36,FINISH.metal);
-    box(.012,D.monitorHeight*.7,.012,-D.monitorWidth/2-D.bezel-.004,D.monitorY,-D.monitorDepth/2,led(base+.5,1,.55,2.2));
-    box(.012,D.monitorHeight*.7,.012,D.monitorWidth/2+D.bezel+.004,D.monitorY,-D.monitorDepth/2,led(base+.5,1,.55,2.2));
+    // Three thin curved monitors on a dual arm. The centre screen is the playable one (the plane in playroomdevices.js sits on
+    // it, unchanged); the two wings are angled inwards, bent round the viewer, and show a cheap static emissive picture.
+    const M=D.monitorY,wing=D.wing,wa=wing.angle,ww=wing.width,wh=D.monitorHeight-.02,pole=-D.depth/2+.03;
+    add(D.monitorWidth+.024,D.monitorHeight+.024,D.monitorDepth,0,M,-D.monitorDepth/2,dark);
+    box(D.monitorWidth*.28,.008,.004,0,M-D.monitorHeight/2-.012,.002,led(base,.9,.6,2.4));
+    box(.07,.03,.06,0,H+.015,pole,0x2a2d36,FINISH.metal);                          // arm clamp on the back edge
+    box(.034,M+.1-H,.034,0,(M+.1+H)/2,pole,0x2a2d36,FINISH.metal);                // arm pole
+    box(.03,.05,-D.monitorDepth-pole,0,M,(pole-D.monitorDepth)/2,0x2a2d36,FINISH.metal);
+    for(const s of [-1,1]){
+      const cx=s*(D.monitorWidth/2+.012+.004+ww/2*Math.cos(wa)),cz=ww/2*Math.sin(wa),m=new THREE.Matrix4().makeTranslation(cx,M,cz).multiply(new THREE.Matrix4().makeRotationY(-s*wa));
+      place(curvedPanel(ww,wh+.02,.022,wing.radius,false),dark,FINISH.paint,m);
+      const face=curvedPanel(ww-.02,wh,.002,wing.radius,true,base,s).toNonIndexed(),glow=face.attributes.color.array.slice();
+      place(face,dark,FINISH.paint,m.clone().multiply(new THREE.Matrix4().makeTranslation(0,0,.0125)));
+      face.setAttribute('color',new THREE.BufferAttribute(glow,3));                    // clubhouseSurface flattened the picture colours; put them back
+      const tx=cx,tz=cz-.03,dx=tx,dz=tz-pole,len=Math.hypot(dx,dz);   // arm from the pole to the back of the wing
+      box(.026,.044,len,tx/2,M-.01,(tz+pole)/2,0x2a2d36,FINISH.metal,new THREE.Matrix4().makeTranslation(tx/2,0,(tz+pole)/2).multiply(new THREE.Matrix4().makeRotationY(Math.atan2(dx,dz))).multiply(new THREE.Matrix4().makeTranslation(-tx/2,0,-(tz+pole)/2)));
+    }
 
-    // Desk mat with a lit front edge, mechanical RGB keyboard (rainbow rows) and a mouse.
-    const ky=H+.006,kz=D.depth/3;
-    box(.96,.006,.31,.04,H+.003,kz,0x101217,FINISH.fabric);
-    box(.96,.007,.01,.04,H+.003,kz+.155,led(base,1,.55,2.2));
-    add(D.keyboard[0]+.04,.022,D.keyboard[2]+.02,-.05,ky+.011,kz,dark);
-    for(let row=0;row<5;row++)box(D.keyboard[0]*.94,.008,D.keyboard[2]/7,-.05,ky+.026,kz+(row-2)*D.keyboard[2]/5.6,led(base+row*.11,1,.58,2.2));
-    add(.062,.032,.108,.34,ky+.016,kz,dark);
-    box(.008,.006,.03,.34,ky+.035,kz-.025,led(base+.4,1,.6,2.4));
-    box(.064,.005,.004,.34,ky+.012,kz+.056,led(base,1,.6,2.4));
+    // Large lit desk mat (glowing rim), low-profile mechanical RGB keyboard (rainbow rows) and a mouse.
+    const ky=H+.008,kz=D.depth/3,mat=D.mat;
+    box(mat[0],.006,mat[1],0,H+.003,mat[2],0x0c0d12,FINISH.fabric);
+    box(mat[0],.007,.008,0,H+.0035,mat[2]+mat[1]/2-.004,led(base,1,.55,2.6));
+    box(mat[0],.007,.008,0,H+.0035,mat[2]-mat[1]/2+.004,led(base+.3,1,.55,2.2));
+    for(const x of [-1,1])box(.008,.007,mat[1],x*(mat[0]/2-.004),H+.0035,mat[2],led(base+.15,1,.55,2.4));
+    add(D.keyboard[0]+.03,.014,D.keyboard[2]+.016,-.08,ky+.007,kz,dark);
+    for(let row=0;row<5;row++)box(D.keyboard[0]*.95,.007,D.keyboard[2]/7,-.08,ky+.017,kz+(row-2)*D.keyboard[2]/5.6,led(base+row*.11,1,.58,2.2));
+    add(.062,.028,.108,.36,ky+.014,kz,dark);
+    box(.008,.006,.03,.36,ky+.031,kz-.025,led(base+.4,1,.6,2.4));
+    box(.064,.005,.004,.36,ky+.01,kz+.056,led(base,1,.6,2.4));
+    // #2025 DESK BLOCK -- end
 
     // Headset on a stand, left of the monitor.
-    box(.12,.012,.12,-.57,H+.006,-.03,dark,FINISH.metal);
-    box(.014,.24,.014,-.57,H+.126,-.03,steel,FINISH.metal);
-    add(.15,.022,.045,-.57,H+.26,-.03,dark);
-    for(const x of [-1,1]){add(.034,.1,.09,-.57+x*.075,H+.2,-.03,0x23252d);box(.006,.07,.07,-.57+x*.092,H+.2,-.03,led(base,1,.55,2.4));}
+    box(.12,.012,.12,-.57,H+.006,-.2,dark,FINISH.metal);
+    box(.014,.24,.014,-.57,H+.126,-.2,steel,FINISH.metal);
+    add(.15,.022,.045,-.57,H+.26,-.2,dark);
+    for(const x of [-1,1]){add(.034,.1,.09,-.57+x*.075,H+.2,-.2,0x23252d);box(.006,.07,.07,-.57+x*.092,H+.2,-.2,led(base,1,.55,2.4));}
 
     parts.push(...gamingPc(s));
 
