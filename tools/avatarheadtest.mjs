@@ -18,8 +18,8 @@ const contour2043=(AVATAR_CONTOUR.rings.length+AVATAR_CONTOUR.chin.angles.length
 // (front rings + rolled edge + rim back + back rings − 1) bands per ear, against the 384 of the old folded disc pair
 const earTris=AVATAR_EAR.cols*(1+2*(AVATAR_EAR.rings.length+1+AVATAR_EAR.back.length)),ear2047=2*earTris-384;
 // #2053: long hair's locks (their own +10 % head budget in tools/avatarlonghairtest.mjs) are left out the same way: the curtain's triangles
-// over the 2 × 24 columns × 8 rows of the sheet pair before it
-const long2053=(style)=>style===1?longHairTris(24)-2*24*AVATAR_HAIR.long.rows:0;
+// over the sheet pair before it (2 surfaces × 24 columns × 8 rows × 2)
+const long2053=(style)=>style===1?longHairTris(24)-4*24*AVATAR_HAIR.long.rows:0;
 const nose2048=noseTriangles(contourRows(AVATAR_SURFACE.head,AVATAR_SURFACE.nosePatch.rings)); // #2048: the nose's finer grid has its own +10 % budget (avatarnosetest)
 const baseline=[[11172,3586212],[11940,3832740],[11532,3701772],[12456,3998376],[16092,5165532]];
 test('#2002 all five hairstyles retain bounded resources, normalized weights and semantic head roles',()=>{

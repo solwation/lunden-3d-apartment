@@ -6,7 +6,7 @@ const fs = require('fs'), os = require('os'), path = require('path'), { execFile
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const [site = 'http://localhost:8153', out = 'docs/verification/2053'] = process.argv.slice(2);
 const baseline = process.env.BASELINE || execFileSync('git', ['merge-base', 'HEAD', 'origin/main']).toString().trim();
-const old = Object.fromEntries(['src/avatar.js', 'src/config.js'].map((f) => [f, execFileSync('git', ['show', `${baseline}:${f}`], { maxBuffer: 32e6 })]));
+const old = Object.fromEntries(['src/avatar.js', 'src/config.js', 'src/avatarhairline.js'].map((f) => [f, execFileSync('git', ['show', `${baseline}:${f}`], { maxBuffer: 32e6 })]));
 const only = process.env.ONLY ? process.env.ONLY.split(',') : null; // (iterate on a subset of sheets)
 (async () => {
   fs.mkdirSync(out, { recursive: true });

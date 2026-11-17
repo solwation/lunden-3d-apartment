@@ -44,9 +44,11 @@ function figure(name, phase, pose) {
   const mod = phase === 'after' ? after : before;
   if (!mod) return (figures[key] = null);
   const a = new mod.Avatar({ ...cfg.avatarLook('longhair-' + name), ...base, ...looks[name] });
-  scene.add(a.object); poses[pose](a); a.object.visible = false;
+  scene.add(a.object); poses[pose](a); a.object.visible = false; ownProgram(a, phase);
   return (figures[key] = a);
 }
+// the baseline's shaders differ (e.g. avatarhairline.js) under the same program cache key: keep the phases' programs apart
+const ownProgram = (a, phase) => { const m = a.mesh.material, k0 = m.customProgramCacheKey.bind(m); m.customProgramCacheKey = () => k0() + '-' + phase; };
 const show = (a) => { for (const b of Object.values(figures)) if (b) b.object.visible = b === a; return a; };
 const at = (a, bone, off = [0, 0, 0]) => a.bones[bone].localToWorld(new THREE.Vector3(...off));
 // The figure faces −z (its left is +x). Head and shoulders down to the shoulder blades, about 0.95 m away.
@@ -104,7 +106,7 @@ window.__cost = (frames = 20) => {
   for (const phase of ['before', 'after', 'before', 'after', 'before', 'after']) {
     const mod = phase === 'after' ? after : before; if (!mod) continue;
     show(null); const crowd = [];
-    for (let i = 0; i < 9; i++) { const c = new mod.Avatar({ ...cfg.avatarLook('crowd' + i), ...base, ...Object.values(looks)[i % 3] }); c.object.position.set((i % 3 - 1) * 0.7, 0, -Math.floor(i / 3) * 0.8); c.update(1 / 60); scene.add(c.object); crowd.push(c); }
+    for (let i = 0; i < 9; i++) { const c = new mod.Avatar({ ...cfg.avatarLook('crowd' + i), ...base, ...Object.values(looks)[i % 3] }); ownProgram(c, phase); c.object.position.set((i % 3 - 1) * 0.7, 0, -Math.floor(i / 3) * 0.8); c.update(1 / 60); scene.add(c.object); crowd.push(c); }
     cam.fov = 40; cam.updateProjectionMatrix(); cam.position.set(0.3, 1.6, 1.6); cam.lookAt(0, 1.35, -0.8); light('day', { eye: cam.position.clone(), look: new THREE.Vector3(0, 1.35, -0.8) });
     scene.updateMatrixWorld(true);
     res[phase].push(time(() => renderer.render(scene, cam)));

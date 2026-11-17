@@ -264,6 +264,28 @@ The coverage is the alpha under the #2040/#2046 alpha-to-coverage, so the skin u
 their edges, and flyaways are not rooted below or in the sparse band (`hairlineAvoid`). Checks: `node --test tools/avatarhairlinetest.mjs`
 and `PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarhairlinetest.cjs SITE OUT` ([views and cost](../verification/2050/README.md)).
 
+#### Long hair in locks (#2053)
+
+`src/avatarlonghair.js` (tunables `AVATAR_LONGHAIR`, all *guess*) replaces long hair's single outer/inner curtain sheet (`longHair` in
+`hairParts`) with `perCol` locks per scalp column: ribbons from the scalp's lowest row (shared positions and normals, so no join) that hang
+clear of the head, ears and neck (the old analytic clearance and gap) and of the real sweater, overlap their neighbours below the top and
+taper to a point at their own length, which varies by ±`jag` about the old hem (less at the face edge). Every other lock lies a few mm
+further out and a little shorter (layers with air between them); edge normals are bent across the lock and edges are darker. The sweater
+clearance is a table (azimuth × height) sampled from `upperBody`'s torso and shoulder caps of both figures (plain and hoodie ease, not the
+hanging arms), un-warped by faceWarp's x factor because hair is built before faceWarp; a lock ends where the sweater below juts out more
+steeply than `stop[0]` or has pushed it out by `stop[1]` (it rests on the shoulder instead of fanning out over it). A shorter, darker
+under-layer and its inner surface keep the curtain closed where the locks part; the locks' lowest `backRows` rows have back faces. Two
+two-sided strands per side fall forward over the shoulders onto the chest. Skinning: the front strands blend from the head to the torso
+along their length and the rest of the curtain shares up to `torso[2]` with the torso bone below `torso[0]`, so a nod or turn bends hair
+that rests on the back and chest instead of swinging it into the body (an extreme head tilt still pushes the nape's hair a little into the
+collar). The under-layer and front strands carry `userData.noFly` (no #2040 flyaways rooted there); sway (#2014), the hair-length slider
+and #2052's hanging strand tangent act on every curtain vertex as before. The soft hairline (#2050) no longer thins hair far below the
+scalp shell's edge (its locks and strands hung below the line at the face edge and were erased). Cost: +800 triangles on the long-haired
+head (+8.5 % of 9444), no attribute, texture, light, pass or draw call. Checks: `node --test tools/avatarlonghairtest.mjs` (budget, uneven
+hem, tapered tips, front strands on the torso bone, flyaways, no hair inside the body standing / walking / running / sitting via
+`tools/avatarlonghairpose.mjs`, which also reports nods and turns) and `PLAYWRIGHT_MODULE=… tools/browsertest.sh node
+tools/avatarlonghairtest.cjs SITE OUT` ([views, motion and cost](../verification/2053/README.md)).
+
 #### Gloss along the hair strands (#2052)
 
 `src/avatarhairgloss.js` (tunables `AVATAR_HAIR_GLOSS`, all *guess*) replaces the general GGX highlight on hair, bun, beard, brows and

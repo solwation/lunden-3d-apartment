@@ -116,7 +116,7 @@ export function hairlineColor({ hb, region }) {
         float hsg = hE >= hLine ? 1.0 : -1.0;
         float dm = hsg * sqrt(best) * 0.0174533 * hr + ${f(L.wobble)} * (0.6 * sin(haz * 23.0 + 1.3) + 0.4 * sin(haz * 41.0 + 0.4)); // metres across the line (+ a slow wave)
         float hg = clamp(abs(normalize(hv).y), 0.15, 1.0); // d(distance) / d(along the meridian)
-        if (dm < ${f(L.band)}) {
+        if (dm < ${f(L.band)} && dm > ${f(-(L.baby + L.drop * deg * 0.12 + 0.003))}) { // (#2053: well below the shell's lowest edge it is a hanging lock or strand, not the line)
           vec3 hfw = fwidth(vSuitAt);
           float hpx = max(max(hfw.x, hfw.y), max(hfw.z, 0.000001)); // metres per pixel here
           float hlw = 6.2831853 * hrxz / ${f(L.lanes)}, hlt = (haz / 6.2831853 + 0.5) * ${f(L.lanes)};

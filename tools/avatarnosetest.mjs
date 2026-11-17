@@ -7,16 +7,21 @@ import { avatarLook, avatarShape, AVATAR_SURFACE, AVATAR_NOSE as N, AVATAR_FACE 
 import { bindAt } from '../src/olof.js';
 import { contourRows } from '../src/avatarcontour.js';
 import { noseTriangles, noseForms, noseHeight, noseMask, noseFormOffset, noseFormWeights } from '../src/avatarnose.js';
+import { longHairTris } from '../src/avatarlonghair.js';
+import { AVATAR_HAIR } from '../src/config.js';
 
 // head-bone triangles (facePart 1 … 29) per variant before #2048 (37d922df, after the eyes #2045 and ears #2047)
 const before = [['s0f0', 8524], ['s0f1', 9412], ['s0f3', 9488], ['s1f0', 9444], ['s2f0', 8860], ['s3f0', 9552], ['s4f0', 14140]];
 const own = noseTriangles(contourRows(AVATAR_SURFACE.head, AVATAR_SURFACE.nosePatch.rings));
+// #2053: long hair's locks grow the head on their own budget (tools/avatarlonghairtest.mjs), left out here
+const long2053 = (style) => (style === 1 ? longHairTris(24) - 4 * 24 * AVATAR_HAIR.long.rows : 0);
 const shell = (a, i) => a.facePart.getX(i) === 1 && a.rifleSkull.getX(i) === 1;
 
 test('#2048 budget: the finer nose grid stays within +10 % of the head triangles', () => {
   for (const [key, tris] of before) {
     const style = +key[1], facial = +key[3], g = avatarModelGeometry({ ...avatarLook('nose'), style, facial, gender: style % 2 }), a = g.attributes;
     let head = 0; for (let i = 0; i < a.position.count; i += 3) { const f = a.facePart.getX(i); if (f > 0 && f < 30) head++; }
+    head -= long2053(style);
     assert.equal(head, tris + own, `${key}: ${head} head triangles = ${tris} + the nose's ${own}`);
     assert.ok(own <= tris * 0.1, `${key}: nose +${own} > ${tris}×0.1`);
     g.dispose();

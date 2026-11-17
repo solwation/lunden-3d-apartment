@@ -863,11 +863,11 @@ function longHair(az, top, onSkull, sheet, strand, thick, hit, smooth, scalp) { 
   const hem = (a) => L.hem[0] + (L.hem[1] - L.hem[0]) * smooth(L.from, 135, Math.abs(a)) + 0.022 * Math.sin(a * Math.PI / 180 * HAIR.flow.longGroups + 0.8) + 0.006 * Math.sin(a * Math.PI / 180 * 11);
   return longHairParts({ az, edge, body, table: longHairTable(), hem, strand, bones: { head: NAMES.indexOf('head'), torso: NAMES.indexOf('torso') } });
 }
-/** #2053: the sweater's torso and sewn shoulders of both figures (plain and hoodie ease), bind pose in the head's frame, for the locks' clearance. */
+/** #2053: the sweater's torso and sewn shoulders (their caps, not the hanging arms) of both figures (plain and hoodie ease), bind pose in the head's frame, for the locks' clearance. */
 let longTable = null;
 function longHairTable() {
   const hb = bindAt('head'), bone = ['torso', 'shoulderL', 'shoulderR'];
-  return (longTable ??= clearanceTable([false, true].flatMap((female) => [0, 2].flatMap((cut) => upperBody(1, female, cut).map((g, k) => { const o = bindAt(bone[k]).sub(hb); return g.translate(o.x, o.y, o.z); })))));
+  return (longTable ??= clearanceTable([false, true].flatMap((female) => [0, 2].flatMap((cut) => upperBody(1, female, cut).map((g, k) => { const o = bindAt(bone[k]).sub(hb); g.translate(o.x, o.y, o.z); return k ? { geometry: g, minY: o.y - 0.03 } : g; })))));
 }
 
 // --- the face (#1101) -----------------------------------------------------------------------------------------------------

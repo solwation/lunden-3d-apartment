@@ -22,7 +22,7 @@ const smooth = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1
 const hash = (k) => { const s = Math.sin(k * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); }; // 0 … 1, the same per lock every build
 
 /** The curtain's triangles for `cols` scalp columns: locks (front faces and the lowest rows' back faces), the under-layer and its inner surface,
- * the two-sided front strands (before #2053: 2 · cols · AVATAR_HAIR.long.rows). */
+ * the two-sided front strands (before #2053: the outer and inner sheet, 4 · cols · AVATAR_HAIR.long.rows). */
 export const longHairTris = (cols) => cols * LH.perCol * 2 * (LH.rows + LH.backRows) + 2 * cols * LH.under.rows * 2 + 2 * LH.front.n * 2 * 2 * LH.front.rows;
 /** faceWarp's x factor at head-frame (y, z) (avatar.js faceWarp: the lower face narrows towards the front). */
 export function warpX(y, z) {
@@ -30,7 +30,8 @@ export function warpX(y, z) {
   return W.width * (1 - W.narrow * smooth(W.y[0], W.y[1], y) * smooth(W.z[0], W.z[1], z));
 }
 
-/** The sweater's clearance: `geos` (bind-pose BufferGeometries in the head bone's frame, after placement, i.e. as rendered) sampled densely
+/** The sweater's clearance: `geos` (bind-pose BufferGeometries in the head bone's frame, after placement, i.e. as rendered, or
+ * { geometry, minY }: only its triangles reaching above head-frame height minY, e.g. a sleeve's shoulder cap but not the hanging arm) sampled densely
  * on their triangles, un-warped (x / warpX), binned by azimuth (`da` degrees) and height (`dy` m). at(azimuth deg, y) = the largest horizontal
  * radius from the head's axis within one bin around it (0: nothing there). */
 export function clearanceTable(geos, { da = 2, dy = 0.005, y0 = 0.1, y1 = -0.45 } = {}) {
@@ -42,11 +43,11 @@ export function clearanceTable(geos, { da = 2, dy = 0.005, y0 = 0.1, y1 = -0.45 
     const ia = ((Math.floor((Math.atan2(x, q.z) / deg + 180) / da) % na) + na) % na, k = ia * ny + iy;
     tab[k] = Math.max(tab[k], Math.hypot(x, q.z));
   };
-  for (const g of geos) {
-    const P = g.attributes.position, I = g.index, n = I ? I.count : P.count;
+  for (const item of geos) {
+    const g = item.isBufferGeometry ? item : item.geometry, minY = item.minY ?? -Infinity, P = g.attributes.position, I = g.index, n = I ? I.count : P.count;
     for (let t = 0; t + 2 < n; t += 3) {
       a.fromBufferAttribute(P, I ? I.getX(t) : t); b.fromBufferAttribute(P, I ? I.getX(t + 1) : t + 1); c.fromBufferAttribute(P, I ? I.getX(t + 2) : t + 2);
-      if (Math.max(a.y, b.y, c.y) < y1 || Math.min(a.y, b.y, c.y) > y0) continue;
+      if (Math.max(a.y, b.y, c.y) < Math.max(y1, minY) || Math.min(a.y, b.y, c.y) > y0) continue;
       const m = Math.max(1, Math.ceil(Math.max(a.distanceTo(b), b.distanceTo(c), c.distanceTo(a)) / 0.003));
       for (let i = 0; i <= m; i++) for (let j = 0; i + j <= m; j++) put(p.set(0, 0, 0).addScaledVector(a, i / m).addScaledVector(b, j / m).addScaledVector(c, (m - i - j) / m));
     }
@@ -123,11 +124,12 @@ export function longHairParts({ az, edge, body, table, hem, strand, bones }) {
    * juts out more steeply than `stop`, where it ends. → { rAt(y), end } */
   const column = (as, p0, yHem) => {
     const dy = 0.004, ys = [p0[1]], rs = [Math.hypot(p0[0], p0[2])];
-    let r = rs[0];
+    let r = rs[0], pushed = 0;
     for (let y = p0[1] - dy; y > yHem - 1e-9; y -= dy) {
       const t = (p0[1] - y) / (p0[1] - yHem), s = Math.max(...as.map((a) => sweater(a, y)));
-      if (s - r > LH.stop * dy && p0[1] - y > 0.03) break; // (the shoulder's top: rest on it)
-      r = Math.max(r, s, ...as.map((a) => head(a, y, t))); ys.push(y); rs.push(r);
+      if ((s - r > LH.stop[0] * dy || pushed + s - r > LH.stop[1]) && p0[1] - y > 0.03) break; // (the shoulder's top: rest on it)
+      const h = Math.max(r, ...as.map((a) => head(a, y, t)));
+      pushed += Math.max(0, s - h); r = Math.max(h, s); ys.push(y); rs.push(r);
     }
     return { end: ys.at(-1), rAt: (y) => { const u = Math.min(ys.length - 1, Math.max(0, (ys[0] - y) / dy)), k = Math.floor(u), f = u - k; return k + 1 < rs.length ? rs[k] + (rs[k + 1] - rs[k]) * f : rs.at(-1); } };
   };
@@ -140,7 +142,7 @@ export function longHairParts({ az, edge, body, table, hem, strand, bones }) {
   for (let i = 0; i < cols; i++) for (let s = 0; s < LH.perCol; s++) {
     const k = locks.length, f0 = s / LH.perCol, f1 = (s + 1) / LH.perCol, c0 = azAt(i, (f0 + f1) / 2), half = span(i) * (f1 - f0) / 2;
     const outer = k % 2 === 1, top = edgeAt(i, (f0 + f1) / 2);
-    const want = hem(c0) + LH.jag * (2 * hash(k) - 1) + (outer ? LH.outerShort : 0);
+    const want = hem(c0) + LH.jag * (2 * hash(k) - 1) * (0.4 + 0.6 * smooth(L.from, 100, Math.abs(c0))) + (outer ? LH.outerShort : 0);
     const col = column([c0 - half * (1 + LH.overlap), c0, c0 + half * (1 + LH.overlap)], top.p, Math.min(want, top.p[1] - 0.04));
     const tip = col.end, ts = LH.taper[0] + (LH.taper[1] - LH.taper[0]) * hash(k + 0.5);
     const air = (t) => (outer ? LH.air[0] * smooth(0, 0.08, t) + (LH.air[1] - LH.air[0]) * smooth(0.05, 0.5, t) : 0);
@@ -225,7 +227,7 @@ export function longHairParts({ az, edge, body, table, hem, strand, bones }) {
     for (let j = 0; j <= S.rows; j++) {
       const t = j / S.rows, y = y0 + (yEnd - y0) * t, ad = a0 + (a1 - a0) * smooth(0.25, 0.85, t);
       const q = Math.max(lockAt(ad, y) + S.lift, need(ad, y, t) + S.lift);
-      r = j === 0 ? r : t < 0.35 ? Math.max(r, q) : q;
+      r = j === 0 ? r : Math.max(r, q); // (it falls from the head's widest and only moves out over the shoulder: no kink in at the neck)
       const half = (S.width / 2) * (1 - 0.88 * smooth(0.5, 1, t)) / r / deg;
       pts.push([-1, 1].map((s) => polar(ad + s * half, y, r)));
       sh.push([0.92, 0.92].map((v) => v * strand(k + (side > 0 ? 5 : 9))));
