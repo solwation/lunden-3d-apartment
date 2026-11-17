@@ -1,0 +1,70 @@
+{
+ "shimmer": {
+  "2": {
+   "off": {
+    "meanDelta": 0.814,
+    "pixels": 50606
+   },
+   "on": {
+    "meanDelta": 0.793,
+    "pixels": 50606
+   },
+   "ratio": 0.974,
+   "onVsOffMeanLuma": 3.96
+  },
+  "4": {
+   "off": {
+    "meanDelta": 1.645,
+    "pixels": 17237
+   },
+   "on": {
+    "meanDelta": 1.617,
+    "pixels": 17237
+   },
+   "ratio": 0.983,
+   "onVsOffMeanLuma": 3.87
+  },
+  "8": {
+   "off": {
+    "meanDelta": 3.163,
+    "pixels": 4745
+   },
+   "on": {
+    "meanDelta": 3.125,
+    "pixels": 4745
+   },
+   "ratio": 0.988,
+   "onVsOffMeanLuma": 3.405
+  }
+ },
+ "cost": {
+  "off": {
+   "close": [
+    45.23,
+    28.46,
+    36.45
+   ],
+   "crowd": [
+    174.99,
+    200.76,
+    267.79
+   ]
+  },
+  "on": {
+   "close": [
+    32.88,
+    34.3,
+    49.73
+   ],
+   "crowd": [
+    148.08,
+    154.72,
+    165.57
+   ]
+  },
+  "closeRatio": 1.155,
+  "crowdRatio": 0.846,
+  "calls": 9,
+  "programs": 2
+ }
+}

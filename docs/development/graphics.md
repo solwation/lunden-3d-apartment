@@ -896,3 +896,23 @@ overcast, plus a lamp share from `lights.roomLit`), else outdoors, in shade when
 The zone is re-probed every 0.25 s per avatar (a few array lookups), the factor is a uniform write per frame: no light, no shadow, no draw
 call. Hooked in `Ghosts.update` (others) and `beforeMirror` / `showSelf` (our own avatar). Check: `node --test tools/avatarlighttest.mjs`;
 browser comparison and costs: `tools/browsertest.sh node tools/avatarlightbrowser.cjs GAME OUT` ([images](../verification/2017/)).
+
+## Living avatar skin (#2032)
+
+`src/avatarskin.js` (`avatarSkinGLSL`, tunables `AVATAR_SKIN_DETAIL`, all *guess*) adds three GLSL pieces to the avatars' one material
+(program key suffix `-skin2032`), hooked in `makeMaterial` after `skinShading()`, after `normal_fragment_maps` and after
+`lights_fragment_end`. No texture, mesh, triangle, draw call or network field. Colour: a warmer flush (an albedo multiplier, so it works
+for every skin tone) on the ears and nose (by `facePart`), wider on the cheeks and on the knuckles / finger joints of the back of the
+hand (hand-bone bind frame). Normal: pores (pits where a three-wave quasi-periodic sum peaks) and broader shallow dimples, in bind-pose
+metres with an analytic gradient (no derivative inside the skin branch), bumped like three's `perturbNormalArb`; each layer fades out
+between 3.5 and 2 pixels per period, so it shows only within roughly an arm's length and leaves nothing to shimmer at distance or in the
+#1966 dither fade; pits are a little rougher and the nose a little shinier. Light: per directional light a wrapped diffuse past the
+terminator and a backlight transmission term (`back`: distortion, power, strength) scaled by a thickness per part (the ear's rim full,
+its middle `inner`; nose; fingers), tinted red times √albedo so darker skin glows a little less but stays red. It is added before
+`uLight` (#2017), so the local light level scales it. The far figure (`ghostfar.js`) has none of it.
+Budget: 0 triangles / draw calls / textures; per skin fragment within close range 6 sin + 6 cos and about 60 other ALU operations, beyond
+the fade range one footprint test (the branch is skipped); wrap + transmission about 20 operations per directional light on bare skin.
+Measured under SwiftShader (software sin/cos, so a pessimistic proxy): a 640 × 640 face close-up +15 – 65 % frame time across runs on a
+shared machine, nine figures at 3 – 6 m within noise; no Surface measurement. Check: `tools/browsertest.sh node tools/avatarskintest.cjs
+SITE docs/verification/2032` (component page `tools/avatarskin.html`: light / medium / dark skin before and after in day light and backlight,
+frame-to-frame shimmer ratio at 2 / 4 / 8 m ≤ 1.1, cost) ([images](../verification/2032/)).

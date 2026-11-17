@@ -4258,6 +4258,22 @@ export const AVATAR_SKIN = {
   hand: [1.03, 0.94, 0.92], limb: [1.02, 0.96, 0.95], rimTint: [1.0, 0.86, 0.8, 0.6],
   cloth: { armpit: 0.22, crotch: 0.1, knee: 0.12, hairUnder: 0.25 },
 };
+// #2032 living skin (src/avatarskin.js), all *guess* tuned by eye in day light and backlight, not measured. Bind-pose metres.
+// `pore` / `grain`: [period m, depth m] of the procedural micro-normal (pits / broad shallow dimples; stylised larger than real pores so they
+// survive a close-up), each fading out between `fade` [start, end] pixels per period (no shimmer at distance or in the far fade).
+// `poreTop` / `grainTop` = the wave sums' threshold for a pit / dimple (of 3), `poreRough` the extra roughness in the pits, `tZone` = shine on the nose.
+// `flush` [r, g, b] multiplies the albedo by `ear` / `nose` / `cheek` [x, y, z, radius, strength] / `knuckle` / `joint` strengths.
+// `knuckle` / `joint` = [y in the hand bone's frame (m), half-width m]. Backlight: `sss` [r, g, b] (times √albedo, so darker skin glows
+// less but still red), `wrap` (wrapped diffuse past the terminator, 0 … 1), `wrapK`, `back` [distortion, power, strength] and the
+// thickness `thin` per part (ear, nose, finger, other skin); the ear's (head frame: centre height `y`, half height `h`, half depth `w` m,
+// measured from the bind geometry) is `inner` in the middle and full at the rim.
+export const AVATAR_SKIN_DETAIL = {
+  pore: [0.0024, 0.000016], poreTop: 1.2, grain: [0.0065, 0.00003], grainTop: 0.6, fade: [3.5, 2], poreRough: 0.08, tZone: 0.1,
+  flush: [1.05, 0.84, 0.82], ear: 0.55, nose: 0.35, cheek: [0.05, 0.068, 0.05, 0.034, 0.3],
+  knuckle: [-0.053, 0.009, 0.8], joint: [-0.077, 0.006, 0.5],
+  sss: [1.0, 0.25, 0.12], wrap: 0.45, wrapK: 0.6, back: [0.35, 3.0, 0.65], thin: { ear: 1, nose: 0.4, finger: 0.55, other: 0 },
+  earRim: { y: 0.095, h: 0.028, w: 0.014, inner: 0.3 },
+};
 // Combat between players (#667, src/combat.js; the room's check: cloudflare/players.js COMBAT). Only when both hold a weapon:
 // `weapons` = what counts, in the order they are looked for (the room's list must have each one: there its range and rate);
 // remove one here to leave it out. Both armed: drawn solid (`solid` opacity), else a ghost. A hit is judged by the shooter
