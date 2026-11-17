@@ -4171,7 +4171,7 @@ export const AVATAR_SURFACE = {
   // AVATAR_NOSE since #2048 (src/avatarnose.js, on its own finer grid inside these rings).
   nosePatch: { concentration: 1.65, rings: [0.065, 0.080, 0.087, 0.116, 0.134] },
   headSides: 24,
-  head: [[-0.022, 0.012, 0.023, 0.035], [-0.012, 0.036, 0.049, 0.034], [0.005, 0.057, 0.065, 0.03],
+  head: [[-0.022, 0.020, 0.050, 0.035], [-0.012, 0.041, 0.060, 0.034], [0.005, 0.057, 0.065, 0.03],
     [0.025, 0.073, 0.078, 0.025], [0.05, 0.084, 0.088, 0.02], [0.075, 0.096, 0.099, 0.014],
     [0.1, 0.103, 0.108, 0.01], [0.125, 0.101, 0.105, 0.01], [0.15, 0.093, 0.097, 0.01],
     [0.175, 0.081, 0.084, 0.01], [0.195, 0.063, 0.067, 0.01], [0.211, 0.04, 0.044, 0.01], [0.221, 0.001, 0.001, 0.01]],
@@ -4292,7 +4292,7 @@ export const AVATAR_FACE = {
   ridge: { at: [0.031, 0.126, 0.099], r: 0.028, scale: [1.2, 0.3, 0.36], shade: 0.93 },
   brow: { at: [0.035, 0.1265, 0.1175], radius: 0.034, arc: 1.0, tilt: -0.1, turn: 0.38, tube: 0.0027, cols: 12 },
   // #2002: rounded chin sections and skin-seated lips (head-local metres); the ear is AVATAR_EAR (#2047).
-  jaw: [[-0.022, 0.025, 0.023, 0.035], [-0.012, 0.042, 0.049, 0.034], [0.005, 0.061, 0.065, 0.030]],
+  jaw: [[-0.022, 0.033, 0.050, 0.035], [-0.012, 0.047, 0.060, 0.034], [0.005, 0.061, 0.065, 0.030]],
   mouth: { cols: 12, halfWidth: 0.023, seamY: 0.043, lift: 0.0035, upper: 0.006, lower: 0.007, border: 0.003 },
   nose: { top: 0.115, bottom: 0.071, z: 0.113, width: [0.0045, 0.0135], depth: [0.009, 0.027], alar: [0.0095, 0.0755, 0.1165, 0.0068] },
   lips: { upper: [0.047, 0.1085, 0.02, [1, 0.2, 0.2]], lower: [0.039, 0.108, 0.018, [1, 0.24, 0.25]], seam: 0x4a2a28, bend: 7 },
@@ -4449,7 +4449,13 @@ export const AVATAR_SKIN_DETAIL = {
 // `lip`: the lip border's roll [height m, σ m, offset m outside the outline] and the soft colour transition across the outline
 // [share of skin on the lip edge, over m inside; share of lip colour on the skin, over m outside].
 export const AVATAR_SCULPT = {
+  // #2066: geometry-only profile forms (artistic guesses, head-local m). The shared skin/lip query and beard probe follow them.
+  jawRise: { height: 0.018, x: [0.035, 0.09], y: [0.035, -0.025], z: [0.02, 0.10] },
   shape: {
+    radix: [-0.0025, 0, 0.129, 0, 0.126, 0.009, 0],
+    upperLip: [0.0018, 0, 0.057, 0, 0.052, 0.014, 0],
+    mentolabial: [-0.004, 0, 0.027, 0.020, 0.027, 0.006, 0, 0.009],
+    chinPad: [0.005, 0, 0.006, 0.020, 0.006, 0.014, 0],
     sulcus: [-0.0022, 0.026, 0.1175, 0.044, 0.1165, 0.0055, 0],
     ridge: [0.0012, 0.018, 0.1255, 0.048, 0.1245, 0.005, 0],
   },

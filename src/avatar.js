@@ -19,7 +19,7 @@ import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #20
 import { avatarSkinGLSL, skinKey } from './avatarskin.js'; // #2032
 import { faceExprUniforms, faceExprShader } from './avatarface.js'; // #2031
 import { exertUniforms, exertShader } from './avatarbreath.js'; // #2037
-import { sculptShape, sculptShader, sculptKey, sealLipEdge } from './avatarsculpt.js'; // #2044: sculpted face forms
+import { sculptShape, jawRise, sculptShader, sculptKey, sealLipEdge } from './avatarsculpt.js'; // #2044: sculpted face forms
 import { addFlyaways, flyUniforms, flyMaterial, flyKey, FLY_VDECL, FLY_FDECL, flyBind, flyProject, flyAlpha, flyLight } from './avatarflyaway.js'; // #2040
 import { browSurface, browSlide, browUniforms, applyBrowLook, browFDecl, browColor, browRoughness } from './avatarbrow.js'; // #2046
 import { hairlineAt, hairlineShell, hairlineAvoid, hairlineUniforms, applyHairlineLook, hairlineFDecl, hairlineColor } from './avatarhairline.js'; // #2050
@@ -875,6 +875,7 @@ function headSculpt(v, jaw = false) {
     + F.brow[0] * bump(v.y, ...F.brow.slice(1)) + F.chin[0] * bump(v.y, ...F.chin.slice(1))
     - F.socket[0] * bump(Math.abs(v.x), FACE.eye.at[0], F.socket[1]) * bump(v.y, FACE.eye.at[1], F.socket[2]));
   v.z += front * sculptShape(v.x, v.y); // #2044: the upper-lid sulcus and brow ridge (src/avatarsculpt.js)
+  if (jaw) v.y += jawRise(v.x, v.y, v.z); // #2066: the continuous lower side jaw turns up toward the ear
 }
 const headRows = () => SURFACE.head.map(r => FACE.jaw.find(j => j[0] === r[0]) ?? r);
 function headFront(x, y) {

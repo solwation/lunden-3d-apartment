@@ -28,6 +28,12 @@ const sum = (forms, x, y, smile) => Object.values(forms).reduce((h, F) => h + fo
 /** The shape forms' depth (m, + out) at head-local (x, y) before faceWarp; headSculpt scales it by its front weight. */
 export const sculptShape = (x, y) => sum(S.shape, x, y, 0);
 
+/** #2066: lift only the low lateral/rear jaw toward the ear; central lips/chin/eyes stay at their authored heights. */
+export function jawRise(x, y, z) {
+  const J = S.jawRise;
+  return J.height * smooth(...J.x, Math.abs(x)) * smooth(...J.y, y) * (1 - smooth(...J.z, z));
+}
+
 /** The lips' outline as addFace draws it (#2002): the seam's height and the upper / lower lip's height at x; `edge` 0 at the corners. */
 export function lipOutline(x) {
   const M = FACE.mouth, u = x / M.halfWidth, edge = Math.max(0, 1 - u * u);
