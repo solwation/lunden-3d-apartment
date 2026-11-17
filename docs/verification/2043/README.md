@@ -5,8 +5,8 @@ Baseline `b5cb5c95` (before: its `src/avatar.js` + `src/config.js` served in pla
 
 | Image | Shows |
 |---|---|
-| `before/contour.png` / `contour.png` | daylight. Rows: light skin, short hair; dark skin, full beard + moustache, cap and headphones; medium skin in the Spider suit; jaw slider square + beard + short neck; jaw slider pointed + long head + long neck. Columns: front, three-quarter, profile, low three-quarter (under the jaw) |
-| `before/contour-backlight.png` / `contour-backlight.png` | the same views with the sun behind the head |
+| [before](https://github.com/solwation/lunden-3d-apartment/blob/43a9b477/docs/verification/2043/before/contour.png) (removed at closure) / `contour.png` | daylight. Rows: light skin, short hair; dark skin, full beard + moustache, cap and headphones; medium skin in the Spider suit; jaw slider square + beard + short neck; jaw slider pointed + long head + long neck. Columns: front, three-quarter, profile, low three-quarter (under the jaw) |
+| [before](https://github.com/solwation/lunden-3d-apartment/blob/43a9b477/docs/verification/2043/before/contour-backlight.png) (removed at closure) / `contour-backlight.png` | the same views with the sun behind the head |
 
 Before: the cheek and jaw outline broke into straight segments between the head rings, the chin had a
 flat underside, and the chin sat straight on an 8-sided cylinder neck (facets visible in the Spider
