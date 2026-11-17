@@ -153,7 +153,7 @@ src/corehouse.js       Hus A's, B's and C's stair cores (#637, #638, #639, #652;
                        a long hall band x −62.34 … −60.44, z 20.12 … 30.54 with the stair at its south end and the lift WEST of it (door east:
                        `lift.side: 'e'`, built in a frame turned 90° — core.js' `Lift` has `rot`, `loc`, `wseg`, `wpt`), the lobby from the east
                        entrance (x −53.4) west to the hall's east wall. The stair (16 risers per storey in one run: 4 straight treads of `stair.tread` per flight + 7 winders round the stringer's end, `stairS` /
-                       `stairY` as #644), the lights, the floor plates and the lift are the same in all three.
+                       `stairY` as #644; #2029: `heights` returns the tread's top, `Y + RISE × (⌊stairS⌋ + 1)` via `treadTop`, a step function, so feet / shadows / `groundAt` stand on the drawn treads, while `stairY` stays the ramp line half a riser above the nosings that only the handrails follow; the eye is smoothed by `Player.settleEye`, as on Hus L's stair), the lights, the floor plates and the lift are the same in all three.
                        Hus A (#637, #643, #644, #649, #652; −1, 1 … 4 = y −3 … 9): hall band x −1.05 … 0.80, z 37.3 … 45.5, the lift north of it (car x −0.40 …
                        0.80, door south through the 0.3 thick front wall z 37.0 … 37.3: `lift.side: 's'`), two flights from the hall's edge z 42.84 (tread 0.25) with
                        winders over the south end; våning 1's lobby from the courtyard entrance (the recess's back wall z = `SITE.blocks` 'Hus A' z0 + the recess depth, the

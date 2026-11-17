@@ -11,6 +11,8 @@ const [base = 'http://localhost:8615', out = 'docs/verification/2015', only = ''
 const SEQ = [
   { name: 'house-L-stair', house: 'Hus L (L1007)', pts: [[3.0, 7.13], [4.35, 7.13]], y0: null, cam: [0, 1.1, 0.5, 0.4, 55], self: false },
   { name: 'house-A-stair', house: 'Hus A', pts: [[-0.75, 42.45], [-0.75, 43.85]], y0: 0, cam: [-1.5, 0.0, 0.6, 0.4, 62], self: false },
+  { name: 'house-B-stair', house: 'Hus B', pts: [[-32.5, 46.7], [-32.5, 48.1]], y0: 0, cam: [-0.9, 0.0, 0.6, 0.4, 62], self: false }, // (#2029)
+  { name: 'house-C-stair', house: 'Hus C', pts: [[-61.9, 27.45], [-61.9, 28.85]], y0: 0, cam: [-1.5, 0.0, 0.6, 0.4, 62], self: false },
   { name: 'ramp', house: 'rampen vid Hus L:s östra gavel', pts: [[12.5, 12.0], [12.5, 24.0]], y0: 0.9, cam: [-0.55, 2.3, 1.1, 0.35, 50], self: false },
   { name: 'house-L-stair-mirror', house: 'Hus L (L1007), spegelbilden', pts: [[3.0, 7.13], [4.35, 7.13]], y0: null, cam: [0, 1.1, 0.5, 0.4, 55], self: true },
 ];
@@ -85,9 +87,14 @@ const SEQ = [
         const withIK = run(true, at), without = run(false, null);
         const sum = (a) => { const s = [...a].map(Math.abs).sort((x, y) => x - y); return a.length ? { n: a.length, max: s[s.length - 1], p95: s[Math.floor(s.length * 0.95)], mean: s.reduce((x, y) => x + y, 0) / s.length } : null; };
         const hl = (h) => (h.length ? { min: Math.min(...h), max: Math.max(...h) } : null);
-        return { shots: withIK.shots, ik: { stance: sum(withIK.stats.stance), pen: withIK.stats.pen, hip: hl(withIK.stats.hipRel) }, old: { stance: sum(without.stats.stance), pen: without.stats.pen, hip: hl(without.stats.hipRel) }, startY };
+        // #2029: the camera's eye height while walking up and down at 1.4 m/s (Player.settleEye smooths the tread steps): largest eye move per 60 Hz frame (cm), largest lag behind the target (cm)
+        let eyeMax = 0, lagMax = 0, groundSteps = 0, prevG = null;
+        { const [a, b] = sq.pts, len = Math.hypot(b[0] - a[0], b[1] - a[1]), W = 1.4; let y = startY; player.pos.set(a[0], startY, a[1]); player.eyeY = startY + cfg.PLAYER.eye;
+          for (let i = 0, n = Math.round((2 * len + 0.6) / W / DT); i < n; i++) { const u = i * DT * W - 0.3, s2 = Math.max(0, Math.min(len, u < len ? u : 2 * len - u)); const x = a[0] + (b[0] - a[0]) / len * s2, z = a[1] + (b[1] - a[1]) / len * s2;
+            y = player.groundAt(x, z, y); player.pos.set(x, y, z); const e0 = player.eyeY; player.settleEye(DT); eyeMax = Math.max(eyeMax, Math.abs(player.eyeY - e0)); lagMax = Math.max(lagMax, Math.abs(y + cfg.PLAYER.eye - player.eyeY)); if (prevG !== null && Math.abs(y - prevG) > 1e-4) groundSteps++; prevG = y; } }
+        return { eye: { maxStepCm: eyeMax * 100, maxLagCm: lagMax * 100, groundSteps }, shots: withIK.shots, ik: { stance: sum(withIK.stats.stance), pen: withIK.stats.pen, hip: hl(withIK.stats.hipRel) }, old: { stance: sum(without.stats.stance), pen: without.stats.pen, hip: hl(without.stats.hipRel) }, startY };
       }, { sq, frames: 6 });
-      const entry = { name: sq.name, house: sq.house, self: sq.self, startY: r.startY, withFootIK: r.ik, withoutFootIK: r.old };
+      const entry = { name: sq.name, house: sq.house, self: sq.self, startY: r.startY, withFootIK: r.ik, withoutFootIK: r.old, eye: r.eye };
       result.push(entry); console.log(JSON.stringify(entry));
       r.shots.forEach((d, i) => fs.writeFileSync(path.join(out, `.tmp-${sq.name}-${i}.png`), Buffer.from(d.split(',')[1], 'base64')));
     }

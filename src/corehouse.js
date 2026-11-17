@@ -46,6 +46,7 @@ export class CoreHouse {
     const fanPoly = (i) => [[WM, ZP], RAYS[i - 1], ...PERIM.slice(1, -1).filter((c, n) => PU[n + 1] > PU[PU.length - 1] * (i - 1) / NR + 1e-6 && PU[n + 1] < PU[PU.length - 1] * i / NR - 1e-6), RAYS[i]];
     /** How far up the stair the walking line is at (x, z), in treads (0 at the hall's edge in the west flight … ST.risers − 1 in the east one), or null off the stair. */
     this.laneS = (x, z) => laneS(x, z); this.inHole = (x, z) => inHole(x, z); this.LN = C.lane ?? null;
+    this.treadTop = (y0, s) => treadTop(y0, s);
     this.stairS = (x, z) => {
       if (z <= ST.top || z > B.z1 + 0.01 || x < B.x0 || x > B.x1) return null;
       if (z <= ZW) return x < WL0 ? (z - ST.top) / TD : x > WL1 ? SN + NW + (ZW - z) / TD : null;
@@ -55,6 +56,8 @@ export class CoreHouse {
       return null;
     };
     const stairY = (k, x, z) => { const s = this.stairS(x, z); return s === null ? null : Y[k] + RISE * (s + 0.5); }; // the line half a riser above the nosings (±9 cm)
+    /** #2029: the tread top the foot stands on (a step function: tread n's top is n × RISE, the straight / winder / fan treads and the −1 lane all span s ∈ [n − 1, n)). */
+    const treadTop = (y0, s) => y0 + RISE * (Math.floor(s + 1e-9) + 1);
     const prism = (poly, y0, y1) => new THREE.ExtrudeGeometry(new THREE.Shape(poly.map(([x, z]) => new THREE.Vector2(x, -z))), { depth: y1 - y0, bevelEnabled: false }).rotateX(-Math.PI / 2).translate(0, y0, 0);
     const bar = (a, b, r) => {
       const d = new THREE.Vector3(b[0] - a[0], b[1] - a[1], b[2] - a[2]), len = d.length();
@@ -363,10 +366,10 @@ export class CoreHouse {
     for (const f of this.floors) if (inR(f.r, x, z)) out.push(Y[f.s]);
     if (!between(x, B.x0, B.x1) || z < B.z0 || z > B.z1) return out;
     const ls = this.laneS(x, z);
-    if (ls !== null) out.push(Y[0] + this.RISE * (ls + 0.5)); // the −1 flight (#654)
+    if (ls !== null) out.push(this.treadTop(Y[0], ls)); // the −1 flight (#654): the tread's top (#2029; the rails keep the ramp line)
     if (z <= ST.top) { for (let j = 0; j < NS; j++) if (!(j === 1 && this.inHole(x, z))) out.push(Y[j]); return out; }
     const sv = this.stairS(x, z);
-    if (sv !== null) for (let k = this.LN ? 1 : 0; k < NS - 1; k++) out.push(Y[k] + this.RISE * (sv + 0.5));
+    if (sv !== null) for (let k = this.LN ? 1 : 0; k < NS - 1; k++) out.push(this.treadTop(Y[k], sv)); // the tread's top, not the rails' ramp line (#2029; the eye is smoothed in Player.settleEye)
     return out;
   }
 
