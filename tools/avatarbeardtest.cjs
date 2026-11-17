@@ -1,5 +1,5 @@
-// #2051: beards and moustaches that grow from the skin, before (BASELINE's src/avatar.js + src/config.js, served under /base/) and after
-// (the checkout) on tools/avatarbeard.html: front / three-quarter / profile / from below for light, medium and dark skin with black, grey and
+// #2051: beards and moustaches that grow from the skin, before (BASELINE) and after
+// (the checkout) on tools/avatarbeard.html (every src module the branch changed is served from BASELINE under /base/): front / three-quarter / profile / from below for light, medium and dark skin with black, grey and
 // red beards; every facial-hair option; smile, talking and kiss; cap + headphones; the cheek edge and the moustache up close in daylight
 // and backlight; 1.5 m / 3 m at the game's pixel density; the no-MSAA fallback; triangles, draw calls and timings with and without MSAA.
 //   PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarbeardtest.cjs http://localhost:8151 docs/verification/2051
@@ -8,7 +8,8 @@ const fs = require('fs'), os = require('os'), path = require('path'), { execFile
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const [site = 'http://localhost:8151', out = 'docs/verification/2051'] = process.argv.slice(2);
 const baseline = process.env.BASELINE || execFileSync('git', ['merge-base', 'HEAD', 'origin/main']).toString().trim();
-const old = Object.fromEntries(['src/avatar.js', 'src/config.js'].map((f) => [f, execFileSync('git', ['show', `${baseline}:${f}`], { maxBuffer: 32e6 })]));
+const changed = execFileSync('git', ['diff', '--name-only', '--diff-filter=M', baseline, '--', 'src']).toString().split('\n').filter(Boolean); // (every module this branch changed)
+const old = Object.fromEntries(changed.map((f) => [f, execFileSync('git', ['show', `${baseline}:${f}`], { maxBuffer: 32e6 })]));
 const only = process.env.ONLY ? process.env.ONLY.split(',') : null;
 (async () => {
   fs.mkdirSync(path.join(out, 'before'), { recursive: true });

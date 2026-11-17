@@ -3,7 +3,7 @@
 //    the hair shells' own parametrisation (avatar.js hairParts: a ray from AVATAR_HAIR.centre at azimuth a + sweep · sin(πs) and
 //    elevation hairline(a) + (90 − hairline(a)) · s): along a strand group (AVATAR_HAIR.flow's clump ridges, a · groups + s · k = const)
 //    the azimuth turns by sweep · π · cos(πs) − k / groups per unit s while the elevation climbs 90 − hairline. Below the shell (the long
-//    curtain, the curly curtain) the strands hang (meridians); the beard runs down about AVATAR_BEARD.centre, the bun coils round its
+//    curtain, the curly curtain) the strands hang (meridians); the beard follows its hairs (#2051 avatarbeard.js bdTangent), the bun coils round its
 //    tilted axis, the brows rise along their own flow (AVATAR_BROW.slope) and a flyaway along its own tangent (its `normal`). The tangent
 //    is skinned, taken to view space and passed as one varying (vHairT); the fragment re-orthogonalises it to the shading normal.
 //  - gloss: Kajiya-Kay style, two lobes shifted along the normal (Scheuermann 2004): a sharp white primary towards the root and a broader,
@@ -15,7 +15,8 @@
 // The #2040 backlit rim (lights_fragment_end) and the flyaways stay as they were. Numbers: config.js AVATAR_HAIR_GLOSS.
 // `HAIR_GLOSS.on = false` (before an avatar's material compiles) leaves the shader part out (the plain GGX highlight), for tests.
 import * as THREE from 'three';
-import { AVATAR_HAIR_GLOSS as G, AVATAR_HAIR as HAIR, AVATAR_BEARD as BEARD, AVATAR_BROW as BROW, AVATAR_FACE as FACE, AVATAR_SURFACE as SURFACE, AVATAR_LIGHT as LIGHT } from './config.js';
+import { beardTangentGLSL } from './avatarbeard.js'; // #2051: the beard's hair directions
+import { AVATAR_HAIR_GLOSS as G, AVATAR_HAIR as HAIR, AVATAR_BROW as BROW, AVATAR_FACE as FACE, AVATAR_SURFACE as SURFACE, AVATAR_LIGHT as LIGHT } from './config.js';
 
 export const HAIR_GLOSS = { on: true };
 /** The program cache key's suffix. */
@@ -83,10 +84,11 @@ export function applyGlossLook(u, lk) { if (u.uHairFlow) u.uHairFlow.value.set(.
  */
 export function glossVertex(vs, { head, region, part }) {
   if (!HAIR_GLOSS.on) return vs;
-  const hc = head.clone().add(new THREE.Vector3(...HAIR.centre)), bc = head.clone().add(new THREE.Vector3(...BEARD.centre));
+  const hc = head.clone().add(new THREE.Vector3(...HAIR.centre));
   const bun = head.clone().add(new THREE.Vector3(...HAIR.bunAt)), tilt = G.bunTilt, axis = [0, Math.cos(tilt), Math.sin(tilt)];
   const L = HAIR.long, x0 = FACE.brow.at[0] - 0.5 * BROW.length;
   const decl = `uniform vec4 uHairFlow; varying vec3 vHairT;
+${beardTangentGLSL()}
 const float HG_EDGE[${EDGE.length}] = float[${EDGE.length}](${EDGE.map(f).join(', ')});
 vec2 hgEdge(float a, float lg) { // #2052: the shell's lower edge (°) and its slope per ° of azimuth (src/avatarhairgloss.js edgeAt)
   float x = min(abs(a), 179.999) / ${f(EDGE_STEP)}, i = floor(x); int k = int(i);
@@ -119,8 +121,7 @@ if (uSuit < 0.5) {
         float ba = abs(position.x - ${f(head.x)}) / ${f(FACE.warp.width)} - ${f(x0)};
         hgB = vec3(sign(position.x - ${f(head.x)}), ${f(BROW.slope[1])} + ${f(BROW.slope[0] - BROW.slope[1])} * exp(-max(ba, 0.0) / ${f(BROW.settle)}), 0.0);
       } else if (abs(hgR - ${f(region.beard)}) < 0.5) {
-        vec3 q = position - ${v3([bc.x, bc.y, bc.z])}; float el = atan(q.y, length(q.xz) + 0.00001), th = atan(q.x, q.z);
-        hgB = -vec3(-sin(el) * sin(th), cos(el), -sin(el) * cos(th)); // down the beard's meridians
+        hgB = bdTangent(position - ${v3([head.x, head.y, head.z])}); // along the beard's hairs (#2051: down, converging; out on a moustache)
       } else {
         hgB = hgFlow(position - ${v3([hc.x, hc.y, hc.z])});
         vec3 bq = position - ${v3([bun.x, bun.y, bun.z])};
@@ -178,7 +179,7 @@ void RE_Direct_Hair(const in IncidentLight directLight, const in vec3 geometryPo
     vec3 hgt = vHairT - normal * dot(vHairT, normal); float hgl = length(hgt);
     if (hgl > 0.0001) {
       hgT = hgt / hgl;
-      hgOn = abs(hgR - ${f(region.brow)}) < 0.5 ? ${f(G.brow)} * (uFly.y > 0.5 ? 1.0 : browCov) : abs(hgR - ${f(region.beard)}) < 0.5 ? ${f(G.beard)} : 1.0;
+      hgOn = abs(hgR - ${f(region.brow)}) < 0.5 ? ${f(G.brow)} * (uFly.y > 0.5 ? 1.0 : browCov) : abs(hgR - ${f(region.beard)}) < 0.5 ? ${f(G.beard)} * (uFly.y > 0.5 ? 1.0 : beardCov) : 1.0;
       if (vFly.x > 0.5) hgOn *= ${f(G.fly)};
       hgOn *= smoothstep(0.0001, 0.3, hgl);
       vec3 hgq = vSuitAt - ${v3([hc.x, hc.y, hc.z])}; float hga = atan(hgq.x, hgq.z), hgr = max(length(hgq.xz), 0.02);

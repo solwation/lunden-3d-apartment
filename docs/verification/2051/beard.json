@@ -1,44 +1,44 @@
 {
- "baseline": "1fe1aba118b5440b513510c0360d720388de501b",
+ "baseline": "b622b587a77201d158a42e1cf1f0a63cf3badac9",
  "info": {
   "msaa": true,
   "samples": 4,
   "before": {
    "f1": {
-    "tris": 13976,
-    "headTris": 8156,
+    "tris": 15888,
+    "headTris": 10068,
     "beardTris": 888,
     "calls": 1
    },
    "f2": {
-    "tris": 13212,
-    "headTris": 7392,
+    "tris": 15124,
+    "headTris": 9304,
     "beardTris": 124,
     "calls": 1
    },
    "f3": {
-    "tris": 14052,
-    "headTris": 8232,
+    "tris": 15964,
+    "headTris": 10144,
     "beardTris": 964,
     "calls": 1
    }
   },
   "after": {
    "f1": {
-    "tris": 13976,
-    "headTris": 8156,
+    "tris": 15888,
+    "headTris": 10068,
     "beardTris": 888,
     "calls": 1
    },
    "f2": {
-    "tris": 13288,
-    "headTris": 7468,
+    "tris": 15200,
+    "headTris": 9380,
     "beardTris": 200,
     "calls": 1
    },
    "f3": {
-    "tris": 14052,
-    "headTris": 8232,
+    "tris": 15964,
+    "headTris": 10144,
     "beardTris": 964,
     "calls": 1
    }
@@ -47,29 +47,29 @@
  "cost": {
   "close": {
    "before": [
-    234.21,
-    159.01,
-    195.54
+    332.27,
+    245.19,
+    228.81
    ],
    "after": [
-    193.53,
-    248.21,
-    251.52
+    519.24,
+    296.99,
+    286.78
    ],
-   "ratio": 1.217
+   "ratio": 1.253
   },
   "crowd": {
    "before": [
-    369.34,
-    353.05,
-    509.42
+    837.69,
+    715.67,
+    515.59
    ],
    "after": [
-    406.93,
-    549.04,
-    472.2
+    1219.08,
+    857.64,
+    595.54
    ],
-   "ratio": 1.153
+   "ratio": 1.155
   }
  },
  "infoNoMsaa": {
@@ -77,40 +77,40 @@
   "samples": 0,
   "before": {
    "f1": {
-    "tris": 13976,
-    "headTris": 8156,
+    "tris": 15888,
+    "headTris": 10068,
     "beardTris": 888,
     "calls": 1
    },
    "f2": {
-    "tris": 13212,
-    "headTris": 7392,
+    "tris": 15124,
+    "headTris": 9304,
     "beardTris": 124,
     "calls": 1
    },
    "f3": {
-    "tris": 14052,
-    "headTris": 8232,
+    "tris": 15964,
+    "headTris": 10144,
     "beardTris": 964,
     "calls": 1
    }
   },
   "after": {
    "f1": {
-    "tris": 13976,
-    "headTris": 8156,
+    "tris": 15888,
+    "headTris": 10068,
     "beardTris": 888,
     "calls": 1
    },
    "f2": {
-    "tris": 13288,
-    "headTris": 7468,
+    "tris": 15200,
+    "headTris": 9380,
     "beardTris": 200,
     "calls": 1
    },
    "f3": {
-    "tris": 14052,
-    "headTris": 8232,
+    "tris": 15964,
+    "headTris": 10144,
     "beardTris": 964,
     "calls": 1
    }
@@ -119,29 +119,29 @@
  "costNoMsaa": {
   "close": {
    "before": [
-    197.79,
-    203.88,
-    154.34
+    183.86,
+    224.3,
+    209.45
    ],
    "after": [
-    220.19,
-    245.35,
-    248.61
+    282.64,
+    289.39,
+    413.91
    ],
-   "ratio": 1.427
+   "ratio": 1.537
   },
   "crowd": {
    "before": [
-    209.67,
-    179.1,
-    255.02
+    244.38,
+    455.59,
+    412.03
    ],
    "after": [
-    336.18,
-    262.51,
-    255.61
+    246.13,
+    259.46,
+    465.5
    ],
-   "ratio": 1.427
+   "ratio": 1.007
   }
  }
 }

@@ -273,7 +273,7 @@ band and blond / red hair a coloured one). The tangent needs no attribute or net
 own parametrisation from the bind position (`hairParts`: azimuth a + sweep · sin(πs) about `AVATAR_HAIR.centre`, elevation from the
 shell's edge to the crown) and follows `AVATAR_HAIR.flow`'s strand groups (sweep plus the clump ridges' twist per style, the uniform
 `uHairFlow` set from the look); the edge table is resampled every 5° into a const array. Below the shell (the long and curly curtains)
-the strands hang, the beard runs down its meridians about `AVATAR_BEARD.centre`, the bun coils round its tilted axis, the brows rise
+the strands hang, the beard follows its own hairs (#2051 `bdTangent` in `src/avatarbeard.js`: down and converging towards the chin, outwards on a moustache; without MSAA its gloss fades with `beardCov`), the bun coils round its tilted axis, the brows rise
 along `AVATAR_BROW.slope`, and a flyaway uses its own tangent (#2040's `normal`). The tangent is skinned to view space as one varying
 (`vHairT`) and re-orthogonalised to the shading normal per fragment. The lobes are evaluated per scene light inside three's `RE_Direct`
 (wrapped for hair only, so shadows and indoor lights apply), plus the #2039 street lamps' warm light from above. The band's shift is

@@ -269,6 +269,25 @@ export function beardColor({ hb, region, skinTone = 'vec3 beardTone = vec3(1.0);
     }`;
 }
 
+/** Vertex declarations for the #2052 gloss's strand tangent: `bdTangent(q)` = the tip-ward direction of the beard's hairs (head frame,
+ * unnormalised) at `q` = the bind position minus the head bone's: down and converging towards the chin, outwards and down on a moustache
+ * (facial 3 blends above the mouth), as the lanes in bdHairs run. */
+export function beardTangentGLSL() {
+  const W = FACE.warp, c = B.centre, sm = (e0, e1, x) => `smoothstep(${f(e0)}, ${f(e1)}, ${x})`;
+  return `uniform float uBeard;
+vec3 bdTangent(vec3 q) { // #2051 (src/avatarbeard.js)
+  float wy = clamp((q.y - ${f(W.y[0])}) / ${f(W.y[1] - W.y[0])}, 0.0, 1.0), wz = clamp((q.z - ${f(W.z[0])}) / ${f(W.z[1] - W.z[0])}, 0.0, 1.0);
+  q.x /= ${f(W.width)} * (1.0 - ${f(W.narrow)} * wy * wy * (3.0 - 2.0 * wy) * wz * wz * (3.0 - 2.0 * wz)); // (the face warp)
+  vec3 d = q - vec3(${f(c[0])}, ${f(c[1])}, ${f(c[2])});
+  float th = atan(d.x, d.z), el = atan(d.y, length(d.xz) + 0.00001), a = degrees(th), e = degrees(el), X = a * cos(el);
+  vec3 taz = vec3(cos(th), 0.0, -sin(th)), tel = vec3(-sin(el) * sin(th), cos(el), -sin(el) * cos(th));
+  vec3 beard = normalize(${f(Hr.converge)} * X * taz - tel);
+  vec3 mou = normalize(sign(X) * taz - (${f(Hr.slope[0])} + ${f(2 * Hr.slope[1])} * abs(X)) * tel);
+  float m = uBeard > 2.5 ? (1.0 - ${sm(M.blend[0], M.blend[1], 'abs(a)')}) * ${sm(O.e - 2, O.e + 3, 'e')} : uBeard < 1.5 ? 0.0 : 1.0;
+  return mix(beard, mou, m);
+}`;
+}
+
 /** Fragment roughness (after the surface finish): without MSAA the uncovered beard is skin. */
 export const beardRoughness = ({ region, skin }) =>
   `if (uFly.y < 0.5 && uSuit < 0.5 && abs(vSurface.x - ${f(region)}) < 0.5) roughnessFactor = mix(${f(skin)}, roughnessFactor, beardCov); // #2051`;
