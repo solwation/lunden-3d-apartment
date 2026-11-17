@@ -15,7 +15,7 @@ and dark skin with black, grey and red beards; facial 1 = full beard, 2 = mousta
 | `tillbehor.jpg` | cap (forwards / backwards) + headphones with each option, front, three-quarter, profile in backlight |
 | `samtal.jpg` | 1.5 m and 3 m at the game's pixel density (70° over 1080 px), daylight and backlight |
 | `utan-msaa.jpg` | the no-MSAA fallback (`&test`, or a device without antialiasing): before/after, cheek edge, 1.5 m |
-| `before/fore.jpg` (removed at closure) | the base alone: the three options front / three-quarter / profile / below / cheek edge / moustache |
+| [before/fore.jpg](https://github.com/solwation/lunden-3d-apartment/blob/c5afbc35/docs/verification/2051/before/fore.jpg) (removed at closure) (removed at closure) | the base alone: the three options front / three-quarter / profile / below / cheek edge / moustache |
 | `beard.json` | triangles, beard triangles and draw calls (with and without MSAA) and the before/after timing runs |
 
 Before: the shell was projected onto the skull/jaw ellipsoids and stood 4–17 mm off the real face (cheek edge 4–10 mm, the moustache
