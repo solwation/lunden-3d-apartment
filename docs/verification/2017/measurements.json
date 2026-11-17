@@ -3,8 +3,9 @@
   "counts": {
    "room": 400,
    "core": 1251,
-   "shade": 996
+   "shade": 993
   },
+  "shadeFound": true,
   "spots": {
    "rum": {
     "x": 2.8725,
@@ -14,17 +15,36 @@
     "ghost": [
      2.8725,
      7.85125
-    ]
+    ],
+    "rootAt": [
+     2.8725,
+     0,
+     7.85125
+    ],
+    "zoneNow": {
+     "kind": "room",
+     "lit": 0
+    },
+    "above": 12.749999999999998
    },
    "trapphus": {
-    "x": -34.75,
-    "z": 38.75,
+    "x": -33.75,
+    "z": 39.5,
     "y": 0,
     "yaw": 0,
     "ghost": [
-     -34.75,
-     36.5
-    ]
+     -33.75,
+     37.25
+    ],
+    "rootAt": [
+     -33.75,
+     0,
+     37.25
+    ],
+    "zoneNow": {
+     "kind": "core"
+    },
+    "above": 9.955384615384615
    },
    "sol": {
     "x": -28.85,
@@ -34,17 +54,67 @@
     "ghost": [
      -28.85,
      20.45
-    ]
+    ],
+    "rootAt": [
+     -28.85,
+     0,
+     20.45
+    ],
+    "zoneNow": {
+     "kind": "outdoors",
+     "shade": false
+    },
+    "above": null
    },
    "skugga": {
-    "x": -41.5,
-    "z": 35.75,
-    "y": -3,
+    "x": -34.25,
+    "z": 35,
+    "y": 0,
     "yaw": 0,
     "ghost": [
-     -41.5,
-     33.5
-    ]
+     -34.25,
+     32.75
+    ],
+    "rootAt": [
+     -34.25,
+     0,
+     32.75
+    ],
+    "zoneNow": {
+     "kind": "outdoors",
+     "shade": true
+    },
+    "above": 2.99
+   }
+  },
+  "lum": {
+   "rum": {
+    "avatarPixels": 15319,
+    "before": 144,
+    "after": 124.1,
+    "ratio": 0.862,
+    "sceneMean": 189.2
+   },
+   "trapphus": {
+    "avatarPixels": 15267,
+    "before": 145.2,
+    "after": 109.7,
+    "ratio": 0.756,
+    "sceneMean": 229.7
+   },
+   "sol": {
+    "avatarPixels": 14218,
+    "before": 141.4,
+    "after": 148.1,
+    "ratio": 1.047,
+    "sceneMean": 138.6
+   },
+   "skugga": {
+    "avatarPixels": 15256,
+    "before": 142.9,
+    "after": 113.6,
+    "ratio": 0.795,
+    "sceneMean": 184.5
    }
   },
   "calls": {
@@ -52,54 +122,62 @@
     "calls": 391,
     "tris": 607883,
     "factor": 1,
-    "zone": null
+    "zone": null,
+    "shade": null
    },
    "rum-after": {
     "calls": 375,
     "tris": 607692,
-    "factor": 0.608805031446541,
-    "zone": "room"
+    "factor": 0.719496855345912,
+    "zone": "room",
+    "shade": null
    },
    "trapphus-before": {
-    "calls": 326,
-    "tris": 848825,
+    "calls": 285,
+    "tris": 788359,
     "factor": 1,
-    "zone": null
+    "zone": null,
+    "shade": null
    },
    "trapphus-after": {
-    "calls": 326,
-    "tris": 848829,
+    "calls": 285,
+    "tris": 788359,
     "factor": 0.5534591194968554,
-    "zone": "core"
+    "zone": "core",
+    "shade": null
    },
    "sol-before": {
-    "calls": 244,
-    "tris": 681614,
+    "calls": 245,
+    "tris": 693248,
     "factor": 1,
-    "zone": null
+    "zone": null,
+    "shade": null
    },
    "sol-after": {
-    "calls": 246,
-    "tris": 693468,
+    "calls": 245,
+    "tris": 693248,
     "factor": 1.106918238993711,
-    "zone": "outdoors"
+    "zone": "outdoors",
+    "shade": false
    },
    "skugga-before": {
-    "calls": 238,
-    "tris": 727946,
+    "calls": 314,
+    "tris": 831625,
     "factor": 1,
-    "zone": null
+    "zone": null,
+    "shade": null
    },
    "skugga-after": {
-    "calls": 238,
-    "tris": 727946,
-    "factor": 1.106918238993711,
-    "zone": "outdoors"
+    "calls": 314,
+    "tris": 831625,
+    "factor": 0.608805031446541,
+    "zone": "outdoors",
+    "shade": true
    }
   },
-  "msOn": 0.016666666666666666,
-  "msOff": 0.016500000000620883,
-  "probeMs": 0.0008999999999068678,
+  "msOn": 0.03799999999968956,
+  "msOff": 0.03916666666666667,
+  "probeMs": 0.0008000000002793968,
   "zonesAt": {
    "room": {
     "kind": "room",
@@ -123,8 +201,9 @@
   "counts": {
    "room": 400,
    "core": 1251,
-   "shade": 996
+   "shade": 993
   },
+  "shadeFound": true,
   "spots": {
    "rum": {
     "x": 2.8725,
@@ -134,17 +213,36 @@
     "ghost": [
      2.8725,
      7.85125
-    ]
+    ],
+    "rootAt": [
+     2.8725,
+     0,
+     7.85125
+    ],
+    "zoneNow": {
+     "kind": "room",
+     "lit": 1
+    },
+    "above": 12.749999999999998
    },
    "trapphus": {
-    "x": -34.75,
-    "z": 38.75,
+    "x": -33.75,
+    "z": 39.5,
     "y": 0,
     "yaw": 0,
     "ghost": [
-     -34.75,
-     36.5
-    ]
+     -33.75,
+     37.25
+    ],
+    "rootAt": [
+     -33.75,
+     0,
+     37.25
+    ],
+    "zoneNow": {
+     "kind": "core"
+    },
+    "above": 9.955384615384615
    },
    "sol": {
     "x": -28.85,
@@ -154,17 +252,67 @@
     "ghost": [
      -28.85,
      20.45
-    ]
+    ],
+    "rootAt": [
+     -28.85,
+     0,
+     20.45
+    ],
+    "zoneNow": {
+     "kind": "outdoors",
+     "shade": false
+    },
+    "above": null
    },
    "skugga": {
-    "x": -41.5,
-    "z": 35.75,
-    "y": -3,
+    "x": -34.25,
+    "z": 35,
+    "y": 0,
     "yaw": 0,
     "ghost": [
-     -41.5,
-     33.5
-    ]
+     -34.25,
+     32.75
+    ],
+    "rootAt": [
+     -34.25,
+     0,
+     32.75
+    ],
+    "zoneNow": {
+     "kind": "outdoors",
+     "shade": true
+    },
+    "above": 2.99
+   }
+  },
+  "lum": {
+   "rum": {
+    "avatarPixels": 14521,
+    "before": 52.8,
+    "after": 90.2,
+    "ratio": 1.706,
+    "sceneMean": 43.3
+   },
+   "trapphus": {
+    "avatarPixels": 15317,
+    "before": 51.4,
+    "after": 86.9,
+    "ratio": 1.692,
+    "sceneMean": 204.6
+   },
+   "sol": {
+    "avatarPixels": 13009,
+    "before": 47.2,
+    "after": 31.9,
+    "ratio": 0.677,
+    "sceneMean": 16.6
+   },
+   "skugga": {
+    "avatarPixels": 13662,
+    "before": 47,
+    "after": 31.6,
+    "ratio": 0.671,
+    "sceneMean": 21.8
    }
   },
   "calls": {
@@ -172,54 +320,62 @@
     "calls": 401,
     "tris": 664177,
     "factor": 1,
-    "zone": null
+    "zone": null,
+    "shade": null
    },
    "rum-after": {
     "calls": 385,
     "tris": 663986,
-    "factor": 1.15,
-    "zone": "room"
+    "factor": 2,
+    "zone": "room",
+    "shade": null
    },
    "trapphus-before": {
-    "calls": 335,
-    "tris": 923935,
+    "calls": 295,
+    "tris": 864697,
     "factor": 1,
-    "zone": null
+    "zone": null,
+    "shade": null
    },
    "trapphus-after": {
-    "calls": 335,
-    "tris": 923939,
-    "factor": 1.15,
-    "zone": "core"
+    "calls": 294,
+    "tris": 863469,
+    "factor": 2,
+    "zone": "core",
+    "shade": null
    },
    "sol-before": {
-    "calls": 249,
-    "tris": 756068,
+    "calls": 251,
+    "tris": 767922,
     "factor": 1,
-    "zone": null
+    "zone": null,
+    "shade": null
    },
    "sol-after": {
     "calls": 251,
     "tris": 767922,
-    "factor": 0.5,
-    "zone": "outdoors"
+    "factor": 0.6666666666666667,
+    "zone": "outdoors",
+    "shade": false
    },
    "skugga-before": {
-    "calls": 247,
-    "tris": 803056,
+    "calls": 321,
+    "tris": 906195,
     "factor": 1,
-    "zone": null
+    "zone": null,
+    "shade": null
    },
    "skugga-after": {
-    "calls": 247,
-    "tris": 803056,
-    "factor": 0.5,
-    "zone": "outdoors"
+    "calls": 321,
+    "tris": 906195,
+    "factor": 0.6666666666666667,
+    "zone": "outdoors",
+    "shade": true
    }
   },
-  "msOn": 0.021833333333488553,
-  "msOff": 0.019333333332712452,
-  "probeMs": 0.000900000000372529,
+  "msOn": 0.08016666666682189,
+  "msOff": 0.073666666666201,
+  "probeMs": 0.0012000000001862645,
   "zonesAt": {
    "room": {
     "kind": "room",

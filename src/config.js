@@ -9075,5 +9075,5 @@ export const AVATAR_FOOT_IK = {
 // Levels: 1 = clear sunlit open ground; all *guess*, tuned by eye against day/night shots in the flat, the stairwell and outdoors.
 // `reference` / `sunShare`: the scene-light sum (hemi + ambient + fill + sunShare x sun) of a clear day; `min`/`max`: the factor's bounds;
 // `tau`: easing (s); `probe`: zone re-probe interval (s); `minScene`: lowest scene level divided by (night).
-export const AVATAR_LIGHT = { reference: 4.4, sunShare: 0.6, minScene: 0.12, min: 0.4, max: 1.15, tau: 0.4, probe: 0.25,
-  level: { overcastCut: 0.25, shade: 0.55, windowShare: 0.55, lamp: 0.5, night: 0.06, coreBase: 0.38, coreDay: 0.12, garage: 0.5, playroom: 0.6 } };
+export const AVATAR_LIGHT = { reference: 4.4, sunShare: 0.6, minScene: 0.12, min: 0.4, max: 2, tau: 0.4, probe: 0.25,
+  level: { overcastCut: 0.25, shade: 0.55, windowShare: 0.65, lamp: 0.35, night: 0.08, coreBase: 0.38, coreDay: 0.12, garage: 0.5, playroom: 0.6 } };
