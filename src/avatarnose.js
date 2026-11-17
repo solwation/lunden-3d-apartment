@@ -11,11 +11,12 @@
 // surface's quads round the nose for a finer local grid and zips the two together (no T-junction, no crack). The height still
 // lands in the vertex attribute `noseBlend` (height / maxProjection), so the Spider mask flattens it exactly and the rifle's nose
 // regions keep their classification. The size / width sliders scale the height, the width and the length under smooth masks
-// (noseVertexGLSL), so no slider end folds the skin. Fragment shading adds only the ambient occlusion of the nostrils' hollows
-// and the alar crease (noseFragmentGLSL); the tip's shadow is the form's. Numbers: config.js AVATAR_NOSE; the shape variants
+// (noseVertexGLSL / noseSlideAt), so no slider end folds the skin; #2060 spreads the widening over the cheek and turns the normals
+// with it (noseNormalGLSL), so no slider end leaves a shading edge beside the wings. Fragment shading adds only the ambient
+// occlusion of the nostrils' hollows and the alar crease (noseFragmentGLSL); the tip's shadow is the form's. Numbers: config.js AVATAR_NOSE; the shape variants
 // (#2049, AVATAR_NOSE_FORMS) offset this form per avatar in the vertex shader (noseFormOffset below).
 import * as THREE from 'three';
-import { AVATAR_NOSE as N, AVATAR_NOSE_FORMS as F, AVATAR_FACE as FACE, noseFormOf } from './config.js';
+import { AVATAR_NOSE as N, AVATAR_NOSE_FORMS as F, AVATAR_NOSE_WIDTH as NW, AVATAR_FACE as FACE, noseFormOf } from './config.js';
 import { profileAt } from './avatarcontour.js';
 
 const f = (v) => (+v).toFixed(6);
@@ -54,13 +55,24 @@ export function noseForms(x, y) {
 }
 export const noseHeight = (x, y) => noseForms(x, y).h;
 
-/** Slider masks at head-local (x, y) (after faceWarp, as the vertex shader sees it): [width, length] weights 0 … 1. */
+/** Slider masks at head-local (x, y) (after faceWarp, as the vertex shader sees it): [width, length] weights 0 … 1, the width's
+ * a share of x (#2060: AVATAR_NOSE_WIDTH's profile, spread out over the cheek; the length keeps #2048's mask). */
 export function noseMask(x, y) {
-  const M = N.mask, top = smooth(M.narrow[0], M.narrow[1], y);
+  const M = N.mask, top = smooth(M.narrow[0], M.narrow[1], y), ax = Math.abs(x), mix = ([a, b]) => a + (b - a) * top;
   const reach = M.x[1] + (M.x[2] - M.x[1]) * top;
-  const across = 1 - smooth(M.x[0], reach, Math.abs(x));
+  const across = 1 - smooth(M.x[0], reach, ax);
   const vert = smooth(M.y[0], M.y[1], y) * (1 - smooth(M.y[2], M.y[3], y));
-  return [across * vert * (1 - smooth(M.widthTop[0], M.widthTop[1], y)), across * vert];
+  const wide = (1 - smooth(mix(NW.from), mix(NW.reach), ax)) / (1 + (x / mix(NW.peak)) ** 2);
+  return [wide * vert * (1 - smooth(M.widthTop[0], M.widthTop[1], y)), across * vert];
+}
+
+/** #2060: the size / width / length sliders' offset [dx, dy, dz] (m) of a bind point at head-local (x, y) (after faceWarp, the vertex
+ * shader's frame) where the nose's height is `H` m, for uNose `s` [size · width, size, size]; the GLSL twin is noseSlideAt in
+ * noseFormDecl (the suit's flattening apart). The widening follows the face's sideways curve back like the broad variant's
+ * (#2049), so the cheek beside the wings is not lifted off the face; 0 for the middle sliders. */
+export function noseSlideOffset(x, y, H, [sx, sy, sz]) {
+  const [mw, ml] = noseMask(x, y), dx = (sx - 1) * x * mw;
+  return [dx, (sy - 1) * N.mask.length * (y - N.mask.pivot) * ml, (sz - 1) * H - dx * x / F.faceRound];
 }
 
 /** #2048's own triangles: the fine grid and the zip round it, less the head quads they replace, for the head rings `rows`. */
@@ -162,9 +174,21 @@ export function applyNoseLook(u, lk) { if (u.uNoseForm) u.uNoseForm.value.set(..
 
 /** Vertex declarations (global scope): the uniform and noseFormAt, noseFormAt's JS twin noseFormOffset. */
 export function noseFormDecl() {
-  const [bx, y0, y1] = F.box, [hh, hy, hs, hw] = F.hump, [sd, sy, ss, sw] = F.upturn.scoop, B = F.broad;
+  const M = N.mask, [bx, y0, y1] = F.box, [hh, hy, hs, hw] = F.hump, [sd, sy, ss, sw] = F.upturn.scoop, B = F.broad;
   return `
 uniform vec3 uNoseForm; // #2049: the nose's shape variant [convex, upturned, broad] (src/avatarnose.js)
+// #2060: the sliders' offset (uNose = size · width, size, size) at the bind point p where the nose is H high, noseSlideOffset's twin
+vec3 noseSlideAt(vec2 p, float H) {
+  vec2 d = vec2(0.0);
+  if (p.y > ${f(M.y[0])} && p.y < ${f(M.y[3])} && abs(p.x) < ${f(Math.max(M.x[1], M.x[2], ...NW.reach))}) {
+    float top = ${step(M.narrow[0], M.narrow[1], 'p.y')}, ax = abs(p.x), wp = p.x / mix(${f(NW.peak[0])}, ${f(NW.peak[1])}, top);
+    float vert = ${step(M.y[0], M.y[1], 'p.y')} * (1.0 - ${step(M.y[2], M.y[3], 'p.y')});
+    float across = (1.0 - smoothstep(${f(M.x[0])}, mix(${f(M.x[1])}, ${f(M.x[2])}, top), ax)) * vert;
+    float wide = (1.0 - smoothstep(mix(${f(NW.from[0])}, ${f(NW.from[1])}, top), mix(${f(NW.reach[0])}, ${f(NW.reach[1])}, top), ax)) / (1.0 + wp * wp) * vert * (1.0 - ${step(M.widthTop[0], M.widthTop[1], 'p.y')});
+    d = vec2((uNose.x - 1.0) * p.x * wide, (uNose.y - 1.0) * ${f(M.length)} * (p.y - ${f(M.pivot)}) * across);
+  }
+  return vec3(d, (uNose.z - 1.0) * H - d.x * p.x / ${f(F.faceRound)});
+}
 float nfBell(float t) { return abs(t) < 1.0 ? (1.0 - t * t) * (1.0 - t * t) : 0.0; }
 vec3 noseFormAt(vec2 p, float H) {
   if (abs(p.x) >= ${f(bx)} || p.y <= ${f(y0)} || p.y >= ${f(y1)}) return vec3(0.0);
@@ -179,21 +203,38 @@ vec3 noseFormAt(vec2 p, float H) {
 }`;
 }
 
-/** After beginnormal_vertex: the bind normal turned by the variant's offset (scaled like the vertex: by the size, none in the suit).
- * The offset's slope comes from finite differences; where it scales with the nose's height, that height's slope is the
- * surface's (from the normal) less the face's own sideways curve. */
+/** After beginnormal_vertex: the bind normal turned by the sliders' offset (#2060) and the variant's (#2049), both as the vertex
+ * moves (none in the suit, nothing at the middle sliders of the straight nose). The offset's slope comes from finite differences;
+ * where it scales with the nose's height, that height's slope is the surface's (from the normal) less the face's own sideways
+ * curve, faded in over the nose's first `F.slopeFade` m so the estimate cannot step at the nose's edge. Twin: noseNormalTurn. */
 export function noseNormalGLSL(hb, head = 1) {
-  return `if (abs(facePart - ${f(head)}) < 0.5 && uNoseForm != vec3(0.0) && uSuit < 0.5) { // #2049: the nose variant's normal
+  const M = N.mask, bx = Math.max(F.box[0], M.x[1], M.x[2], ...NW.reach), y0 = Math.min(F.box[1], M.y[0]), y1 = Math.max(F.box[2], M.y[3]);
+  return `if (abs(facePart - ${f(head)}) < 0.5 && (uNoseForm != vec3(0.0) || uNose != vec3(1.0)) && uSuit < 0.5) { // #2049/#2060: the nose's normal
     vec3 nq = position - vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)});
-    if (nq.z > 0.0 && abs(nq.x) < ${f(F.box[0])} && nq.y > ${f(F.box[1])} && nq.y < ${f(F.box[2])}) {
+    if (nq.z > 0.0 && abs(nq.x) < ${f(bx)} && nq.y > ${f(y0)} && nq.y < ${f(y1)}) {
       float H = noseBlend * ${f(N.maxProjection)}, e = ${f(F.fd)}, nz = max(objectNormal.z, 0.25);
-      vec2 g = H > 0.0 ? vec2(-objectNormal.x / nz + nq.x / ${f(F.faceRound)}, -objectNormal.y / nz) : vec2(0.0);
-      float s = uNose.y; vec3 d0 = noseFormAt(nq.xy, H) * s;
-      vec3 c0 = vec3(1.0, 0.0, 0.0) + (noseFormAt(nq.xy + vec2(e, 0.0), max(0.0, H + g.x * e)) * s - d0) / e;
-      vec3 c1 = vec3(0.0, 1.0, 0.0) + (noseFormAt(nq.xy + vec2(0.0, e), max(0.0, H + g.y * e)) * s - d0) / e;
+      vec2 g = vec2(-objectNormal.x / nz + nq.x / ${f(F.faceRound)}, -objectNormal.y / nz) * smoothstep(0.0, ${f(F.slopeFade)}, H);
+      vec3 d0 = noseSlideAt(nq.xy, H) + noseFormAt(nq.xy, H) * uNose.y;
+      vec2 px = nq.xy + vec2(e, 0.0), py = nq.xy + vec2(0.0, e); float hx = max(0.0, H + g.x * e), hy = max(0.0, H + g.y * e);
+      vec3 c0 = vec3(1.0, 0.0, 0.0) + (noseSlideAt(px, hx) + noseFormAt(px, hx) * uNose.y - d0) / e;
+      vec3 c1 = vec3(0.0, 1.0, 0.0) + (noseSlideAt(py, hy) + noseFormAt(py, hy) * uNose.y - d0) / e;
       objectNormal = normalize(mat3(cross(c1, vec3(0.0, 0.0, 1.0)), cross(vec3(0.0, 0.0, 1.0), c0), cross(c0, c1)) * objectNormal);
     }
   }`;
+}
+
+/** noseNormalGLSL's JS twin (tests): the bind normal `n` at head-local (x, y) with height `H` turned for uNose `s` and the variant
+ * weights `w`. `fade` overrides F.slopeFade (0: none). */
+export function noseNormalTurn(x, y, H, n, s, w, fade = F.slopeFade) {
+  const e = F.fd, nz = Math.max(n[2], 0.25), k = fade > 0 ? smooth(0, fade, H) : 1;
+  const g = [(-n[0] / nz + x / F.faceRound) * k, -n[1] / nz * k];
+  const D = (px, py, h) => { const a = noseSlideOffset(px, py, h, s), b = noseFormOffset(px, py, h, w); return a.map((v, m) => v + b[m] * s[1]); };
+  const d0 = D(x, y, H), dx = D(x + e, y, Math.max(0, H + g[0] * e)), dy = D(x, y + e, Math.max(0, H + g[1] * e));
+  const c0 = [1, 0, 0].map((v, m) => v + (dx[m] - d0[m]) / e), c1 = [0, 1, 0].map((v, m) => v + (dy[m] - d0[m]) / e);
+  const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]], z = [0, 0, 1];
+  const m0 = cross(c1, z), m1 = cross(z, c0), m2 = cross(c0, c1); // the columns
+  const o = [0, 1, 2].map((r) => m0[r] * n[0] + m1[r] * n[1] + m2[r] * n[2]), l = Math.hypot(...o);
+  return o.map((v) => v / l);
 }
 
 // --- GLSL -------------------------------------------------------------------------------------------------------------
@@ -203,16 +244,9 @@ const step = (e0, e1, x) => `smoothstep(${f(e0)}, ${f(e1)}, ${x})`;
  * `hb` the head bone's bind position. Sliders (uNose = size·width, size, size) scale the width under the width mask, the
  * length about `pivot` under the length mask, the projection exactly (noseBlend is the height); the suit removes it. */
 export function noseVertexGLSL(hb) {
-  const M = N.mask, [x0, xw, xn] = M.x;
   return `{ // #2048: the nose's sliders and the Spider mask (src/avatarnose.js)
         vec3 nq = transformed - vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)});
-        if (nq.z > 0.0 && nq.y > ${f(M.y[0])} && nq.y < ${f(M.y[3])} && abs(nq.x) < ${f(Math.max(xw, xn))}) {
-          float reach = mix(${f(xw)}, ${f(xn)}, ${step(M.narrow[0], M.narrow[1], 'nq.y')});
-          float across = (1.0 - smoothstep(${f(x0)}, reach, abs(nq.x))) * ${step(M.y[0], M.y[1], 'nq.y')} * (1.0 - ${step(M.y[2], M.y[3], 'nq.y')});
-          float keep = 1.0 - uSuit;
-          transformed.x += keep * (uNose.x - 1.0) * nq.x * across * (1.0 - ${step(M.widthTop[0], M.widthTop[1], 'nq.y')});
-          transformed.y += keep * (uNose.y - 1.0) * ${f(M.length)} * (nq.y - ${f(M.pivot)}) * across;
-        }
+        if (nq.z > 0.0) transformed += (1.0 - uSuit) * noseSlideAt(nq.xy, 0.0); // width and length (#2060: the widening along the face's curve)
         transformed.z += ((1.0 - uSuit) * (uNose.z - 1.0) - uSuit) * noseBlend * ${f(N.maxProjection)};
         if (uNoseForm != vec3(0.0) && nq.z > 0.0) transformed += (1.0 - uSuit) * uNose.y * noseFormAt(nq.xy, noseBlend * ${f(N.maxProjection)}); // #2049: the shape variant
       }`;

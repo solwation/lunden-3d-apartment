@@ -6,7 +6,7 @@ import { avatarModelGeometry } from '../src/avatar.js';
 import { avatarLook, avatarShape, AVATAR_SURFACE, AVATAR_NOSE as N, AVATAR_FACE as FACE, AVATAR_NOSE_FORMS as NF, decodeAvatarLook } from '../src/config.js';
 import { bindAt } from '../src/olof.js';
 import { contourRows } from '../src/avatarcontour.js';
-import { noseTriangles, noseForms, noseHeight, noseMask, noseFormOffset, noseFormWeights } from '../src/avatarnose.js';
+import { noseTriangles, noseForms, noseHeight, noseMask, noseFormOffset, noseFormWeights, noseSlideOffset, noseNormalTurn } from '../src/avatarnose.js';
 import { longHairTris } from '../src/avatarlonghair.js';
 import { AVATAR_HAIR } from '../src/config.js';
 
@@ -67,9 +67,9 @@ test('#2048 the size and width sliders fold no skin at either end', () => {
   const g = avatarModelGeometry({ ...avatarLook('nose'), style: 0, facial: 0 }), a = g.attributes, p = a.position, hb = bindAt('head'), M = N.mask;
   const ends = [];
   for (const size of [0, 8]) for (const width of [0, 8]) ends.push([avatarShape('noseSize', size) * avatarShape('noseWidth', width), avatarShape('noseSize', size), avatarShape('noseSize', size)]);
-  const moved = (i, [sx, sy, sz]) => {
-    const x = p.getX(i) - hb.x, y = p.getY(i) - hb.y, z = p.getZ(i) - hb.z, [mw, ml] = z > 0 ? noseMask(x, y) : [0, 0];
-    return [x + (sx - 1) * x * mw, y + (sy - 1) * M.length * (y - M.pivot) * ml, z + (sz - 1) * a.noseBlend.getX(i) * N.maxProjection];
+  const moved = (i, s) => { // the shader (noseSlideOffset is noseSlideAt's twin)
+    const x = p.getX(i) - hb.x, y = p.getY(i) - hb.y, z = p.getZ(i) - hb.z, d = z > 0 ? noseSlideOffset(x, y, a.noseBlend.getX(i) * N.maxProjection, s) : [0, 0, 0];
+    return [x + d[0], y + d[1], z + d[2]];
   };
   const normal = (A, B, C) => { const u = B.map((v, k) => v - A[k]), w = C.map((v, k) => v - A[k]); const n = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]]; const l = Math.hypot(...n); return n.map((v) => v / l); };
   let checked = 0;
@@ -120,9 +120,9 @@ test('#2049 every variant, at every size / width end, folds no skin and leaves t
   const ends = [[1, 1, 1]];
   for (const size of [0, 8]) for (const width of [0, 8]) ends.push([avatarShape('noseSize', size) * avatarShape('noseWidth', width), avatarShape('noseSize', size), avatarShape('noseSize', size)]);
   const moved = (i, s, w) => { // the shader: the sliders, then the variant's offset times the size (uNose.y)
-    const x = p.getX(i) - hb.x, y = p.getY(i) - hb.y, z = p.getZ(i) - hb.z, nb = a.noseBlend.getX(i), [mw, ml] = z > 0 ? noseMask(x, y) : [0, 0];
-    const o = z > 0 ? offsetAt(x, y, nb, w) : [0, 0, 0];
-    return [x + (s[0] - 1) * x * mw + s[1] * o[0], y + (s[1] - 1) * M.length * (y - M.pivot) * ml + s[1] * o[1], z + (s[2] - 1) * nb * N.maxProjection + s[1] * o[2]];
+    const x = p.getX(i) - hb.x, y = p.getY(i) - hb.y, z = p.getZ(i) - hb.z, nb = a.noseBlend.getX(i);
+    const o = z > 0 ? offsetAt(x, y, nb, w) : [0, 0, 0], d = z > 0 ? noseSlideOffset(x, y, nb * N.maxProjection, s) : [0, 0, 0];
+    return [x + d[0] + s[1] * o[0], y + d[1] + s[1] * o[1], z + d[2] + s[1] * o[2]];
   };
   const normal = (A, B, C) => { const u = B.map((v, k) => v - A[k]), w = C.map((v, k) => v - A[k]); const n = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]]; const l = Math.hypot(...n); return n.map((v) => v / l); };
   let checked = 0, worst = 1;
@@ -185,3 +185,42 @@ test('#2058 the kiss leaves the nose alone and tears no skin round it (pucker sm
     g.dispose();
   }
 });
+
+// #2060: the sliders' ends leave no shading edge on the cheek beside the wings. The edge was the moved skin's facets disagreeing
+// with their shading normals (the bump's frame follows the facets): the width piled the cheek up in a thin ring and the normals
+// stayed put. Measured on the cheek round the nose (no nose height at any corner) as each facet's angle to its corners' shader
+// normals (noseNormalTurn, noseNormalGLSL's twin), less the same angle on the default straight nose.
+test('#2060 the size / width ends keep the cheek beside the wings smooth for every variant (old codes untouched)', () => {
+  const g = avatarModelGeometry({ ...avatarLook('nose'), style: 0, facial: 0 }), a = g.attributes, p = a.position, n = a.normal, hb = bindAt('head');
+  const rel = (i) => [p.getX(i) - hb.x, p.getY(i) - hb.y, p.getZ(i) - hb.z], H = (i) => a.noseBlend.getX(i) * N.maxProjection;
+  const unit = (v) => { const l = Math.hypot(...v); return v.map((c) => c / l); };
+  const cheek = [];
+  for (let t = 0; t < p.count; t += 3) {
+    const [x, y, z] = rel(t);
+    if (a.facePart.getX(t) === 1 && z > 0.05 && Math.abs(x) > 0.012 && Math.abs(x) < 0.06 && y > 0.04 && y < 0.13 && [0, 1, 2].every((k) => H(t + k) === 0)) cheek.push(t);
+  }
+  assert.ok(cheek.length > 150, `${cheek.length} cheek triangles`);
+  const misfit = (s, w) => cheek.map((t) => {
+    const P = [0, 1, 2].map((k) => { const [x, y, z] = rel(t + k), d = noseSlideOffset(x, y, H(t + k), s), o = noseFormOffset(x, y, H(t + k), w); return [x + d[0] + s[1] * o[0], y + d[1] + s[1] * o[1], z + d[2] + s[1] * o[2]]; });
+    const u = P[1].map((v, m) => v - P[0][m]), v2 = P[2].map((v, m) => v - P[0][m]);
+    const fn = unit([u[1] * v2[2] - u[2] * v2[1], u[2] * v2[0] - u[0] * v2[2], u[0] * v2[1] - u[1] * v2[0]]);
+    const sn = unit([0, 1, 2].map((m) => [0, 1, 2].reduce((acc, k) => { const [x, y] = rel(t + k); return acc + noseNormalTurn(x, y, H(t + k), [n.getX(t + k), n.getY(t + k), n.getZ(t + k)], s, w)[m]; }, 0)));
+    return Math.acos(Math.min(1, fn[0] * sn[0] + fn[1] * sn[1] + fn[2] * sn[2])) * 180 / Math.PI;
+  });
+  const mid = [1, 1, 1], base = misfit(mid, [0, 0, 0]);
+  // the middle sliders of the straight nose move nothing and turn no normal (old codes stay pixel-identical)
+  for (const t of cheek.slice(0, 40)) { const [x, y] = rel(t); assert.deepEqual(noseSlideOffset(x, y, H(t), mid).map(Math.abs), [0, 0, 0]); }
+  let worst = 0;
+  for (const size of [0, 8]) for (const width of [0, 8]) for (const w of [[0, 0, 0], ...VARIANTS]) {
+    const s = [avatarShape('noseSize', size) * avatarShape('noseWidth', width), avatarShape('noseSize', size), avatarShape('noseSize', size)];
+    misfit(s, w).forEach((d, k) => { worst = Math.max(worst, d - base[k]); assert.ok(d - base[k] < 12, `variant ${w} size ${size} width ${width}: a cheek facet ${(d - base[k]).toFixed(1)}° off its normals`); });
+  }
+  // and the widening spreads over the cheek: no stretch of skin across the face shrinks below 0.6 (#2048's ring: 0.28)
+  const wide = [avatarShape('noseSize', 8) * avatarShape('noseWidth', 8), 1, 1];
+  for (let y = 0.05; y < 0.12; y += 0.002) for (let x = 0; x < 0.06; x += 0.0005) {
+    const k = (0.0005 + noseSlideOffset(x + 0.0005, y, 0, wide)[0] - noseSlideOffset(x, y, 0, wide)[0]) / 0.0005;
+    assert.ok(k > 0.6, `the skin at ${x.toFixed(4)}, ${y.toFixed(3)} squeezed to ${k.toFixed(2)}`);
+  }
+  g.dispose();
+});
+

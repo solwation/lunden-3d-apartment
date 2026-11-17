@@ -4211,6 +4211,12 @@ export const AVATAR_NOSE = {
   skin: [0.04, 0.3],
   shade: { nostril: 0.7, nostrilPower: 2, ambient: [0.5, 0.35] },
 };
+// #2060 the nose width slider's sideways reach (src/avatarnose.js noseMask), head-bone metres after faceWarp, [low, at the bridge]
+// blended over AVATAR_NOSE.mask.narrow: a point at x moves by (width − 1) · x / (1 + (x / peak)²) faded out from `from` to `reach`.
+// #2048's x · smoothstep fade piled the moved cheek up in a thin ring round the wings (compressed to a quarter at the widest
+// slider, a shading edge); this keeps the wing's movement (≈ 10 mm between the ends) but spreads the cheek's over 4 cm, still
+// narrow at the bridge so the inner eye corners stay put. *Guess* by eye, tuned so no stretch of skin falls below ≈ 0.65.
+export const AVATAR_NOSE_WIDTH = { peak: [0.024, 0.0125], from: [0.0075, 0.002], reach: [0.055, 0.02] };
 // #2049 the nose's shape variants (src/avatarnose.js noseFormOffset), a look field `noseForm`: 0 straight (#2048's nose, the default
 // and every old code), 1 convex (aquiline), 2 upturned (snub), 3 broad with a flat bridge. All 26 lowercase tags are taken, so it
 // shares the nose size's `n` tag: the value is `noseSize + 10 * noseForm` (`n6` a larger straight nose as before, `n14` a
@@ -4231,6 +4237,7 @@ export const AVATAR_NOSE_FORMS = {
   upturn: { lift: 0.005, scoop: [0.002, 0.094, 0.014, 0.0085] },
   broad: { flat: [0.45, 0.12], split: [0.078, 0.098], widen: 0.2, x: [0.004, 0.05, 0.02], narrow: [0.08, 0.1], bottom: [0.052, 0.064], top: [0.096, 0.114] },
   fd: 0.0005, faceRound: 0.1,
+  slopeFade: 0.002, // #2060: m of nose height over which the height's slope (from the normal) fades in, *guess* (no step in shading at the nose's edge)
 };
 // #2043 the head's silhouette (src/avatarcontour.js), head-bone metres, *guess* by eye against the before views
 // (docs/verification/2043). rings: extra head-shell heights on the cubic profile through AVATAR_SURFACE.head / AVATAR_FACE.jaw,

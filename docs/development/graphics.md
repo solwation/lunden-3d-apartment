@@ -84,6 +84,17 @@ differ), `tools/avatarcustomizertest.mjs` (the shared tag, the Worker, Slumpa);
 [views](../verification/2049/README.md) (`tools/avatarnose2049browser.cjs`, including a pixel comparison
 of old codes against the baseline).
 
+**Nose sliders without a cheek edge (#2060).** The width slider's widening is `noseSlideAt` (JS twin
+`noseSlideOffset`, profile `AVATAR_NOSE_WIDTH`, *guess*): a point moves by `(width − 1) · x / (1 + (x / peak)²)`
+faded out over about 4 cm of cheek (narrow at the bridge), sliding back along the face's sideways curve like
+the broad variant. #2048's `x · smoothstep` fade squeezed the cheek beside the wings to about a quarter of
+its width at the largest + widest sliders, and the normals stayed put, so the facets and their shading
+disagreed in a thin ring (an outline through the skin bump). `noseNormalGLSL` now turns the normal by the
+sliders' and the variant's offsets together (finite differences; the height's slope taken from the normal
+fades in over the nose's first `slopeFade` m). The middle sliders of the straight nose skip it, so old codes
+render pixel-identically. `avatarnosetest` (cheek facets against their shader normals at every end and
+variant, no skin squeezed below 0.6); [views](../verification/2060/README.md) (`tools/avatarnose2060browser.cjs`).
+
 **Formed ears (#2047).** `src/avatarear.js` (tunables `AVATAR_EAR`, all *guess*) replaces the folded
 disc of #2002 with an ear built on a polar grid round the concha: a superellipse outline (fuller top,
 narrower lobe, the top leaning back), a rolled helix along the top and back edge with the scapha groove
