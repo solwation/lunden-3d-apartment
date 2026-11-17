@@ -99,9 +99,20 @@ ends lie flat at the nape so cuffs still cover them. `beardShell`/`moustacheShel
 moustache alone is a tapered, drooping band instead of two blocks. The fragment shader draws
 fine strands round the head bone's axis for head hair and beards (`AVATAR_SURFACE.hair.strands`),
 a whole number per turn and faded by footprint. Variants add 0.4–4.3% triangles over the
-#2002 result (curly 2.1%), within +10%, one draw, no texture/pass/attribute. The
-moustache-and-beard opening still shows its older lip patch below the moustache.
+#2002 result (curly 2.1%), within +10%, one draw, no texture/pass/attribute.
 [Before/after views, counts and limits](../verification/2012/README.md).
+
+#### Beard mouth opening (#2020)
+
+The dark rectangular lip patch behind the beard's opening (it sat below the #2002 lips) is
+gone: the beard has no second part, and the sculpted lips on the head's own skin show
+through the opening. The beard grid has 12 rows (`AVATAR_BEARD.rows`) so the opening
+`AVATAR_BEARD.mouth` (-24 .. -12.5 degrees, two quads high, aligned with the lip seam at about
+-17) lands on row edges; the beard-only notch just shows the lips and chin skin. `mouthWeight`
+role `moustache` is unchanged (the beard below the opening follows the jaw with `uMouth`);
+the `upper` backdrop role is no longer used by the beard. Beard + moustache gained 84
+triangles (12,560 to 12,644), one draw. [Views](../verification/2020/README.md)
+(`tools/avatarbeard2020browser.cjs`).
 
 ### Butterfly wing hinges (#1925)
 

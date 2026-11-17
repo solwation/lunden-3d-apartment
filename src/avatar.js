@@ -82,14 +82,11 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
     add(moustacheShell(), 'beard', 'head', [0, 0, 0], 0.95);
     P[P.length - 1].face = FACE_PART.cowlHide;
   }
-  if (f === 1 || f === 3) { // #1097: one continuous full beard, the lips showing through its mouth opening
-    const { beard, lips } = beardShell(f === 3);
-    add(beard, 'beard', 'head', [0, 0, 0], 0.9);
+  if (f === 1 || f === 3) { // #1097: one continuous full beard, the sculpted lips (#2002) showing through its mouth opening
+    add(beardShell(f === 3), 'beard', 'head', [0, 0, 0], 0.9);
     P[P.length - 1].face = FACE_PART.cowlHide;
     if (f === 3) P[P.length - 1].mouth = 'moustache'; // (#1122: the moustache over the opening stays, the beard below it drops)
-    add(lips, 'fixed', 'head', [0, 0, 0], 1, 0x8a4c45);
-    P[P.length - 1].mouth = f === 3 ? 'moustache' : 'upper'; // (#1122: the backdrop's top stays; the lips and the dark seam open in front of it)
-    P[P.length - 1].face = FACE_PART.cowlHide;
+    // #2020: no separate dark lip patch behind the opening any more (it sat below the #2002 lips as a dark rectangle)
   }
   // hair (#1102): 0 short, 1 long, 2 a bun, 3 a beanie (in the top's colour) – see hairParts
   for (const [g, region, shade] of hairParts(style)) { add(g, region, 'head', [0, 0, 0], shade); P[P.length - 1].face = FACE_PART.hair; }
@@ -624,8 +621,8 @@ function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
  * union of the skull and jaw ellipsoids (RH.skull / RH.jaw), lifted off the skin by a thickness that is fullest at the
  * chin and tapers to nothing at the edges, so it follows the head's rounding without gaps. It covers the cheeks (up to
  * sideburns in front of the ears), the jawline, the chin and the mouth corners; `lip` (facial 3) also covers the upper lip
- * as the moustache. The mouth stays visible: a U-shaped notch without the moustache, an opening with it; `lips` is a
- * thin patch on the skin behind that opening (the plain mouth box sits inside the jaw sphere and barely shows). */
+ * as the moustache. The mouth stays visible: a U-shaped notch without the moustache, an opening with it (#2020: aligned
+ * with the #2002 lips, which show on the head's own skin; no extra patch behind it). */
 function beardShell(lip) {
   const B = BEARD, deg = Math.PI / 180;
   const { grid, smooth } = beardGrid();
@@ -639,8 +636,7 @@ function beardShell(lip) {
     (a, s) => B.thickness * (1 - 0.6 * smooth(0, 1, Math.abs(a) / B.azimuth)) * Math.sin(Math.PI * (0.15 + s * 0.85)) ** 0.6 + B.lift,
     (a, e) => !lip || Math.abs(a) > B.mouth[0] || e < B.mouth[1] || e > B.mouth[2],
     (i, s) => (1 + B.strand * Math.sin(i * 2.39 + 0.3)) * (0.9 + 0.1 * smooth(0.2, 0.7, s)));
-  const L = lip ? B.lips : B.lipsNotch, lips = grid([-L[0], L[0]], 6, 3, () => [L[1], L[2]], () => B.lift);
-  return { beard, lips };
+  return beard;
 }
 /** #2012: the moustache on its own (facial 2), a tapered, drooping band over the upper lip on the same projected skin as
  * the beard: full in the middle, thinning to the skin at its edges, its ends hanging past the mouth's corners. */

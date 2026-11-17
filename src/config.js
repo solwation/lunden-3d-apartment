@@ -4213,9 +4213,9 @@ export const AVATAR_FACE = {
 export const AVATAR_MOUTH = { drop: 0.009, below: 0.004, chinY: -0.03, halfWidth: 0.024, frontZ: [0.05, 0.085],
   rate: 13, vowel: 1, consonant: 0.4, space: 0.08, pause: 3, follow: 22, maxSecs: 6, liveMax: 20 };
 // The avatars' full beard (#1097, src/avatar.js beardShell) *guess* tuned by eye against the avatar head (PVP_RIFLE_HEAD skull / jaw): degrees from `centre` (head-bone frame, metres);
-// the grid's rows/columns line up with the moustache variant's mouth opening [half width, bottom, top] (one quad high, two wide); lips: the patch behind it, reaching under the beard so an oblique view sees no gap [half width, bottom, top]; lipsNotch: the same in the beard-only notch
-export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76, cols: 16, rows: 10, cheek: [-6, 10], cheekAz: [22, 90],
-  chinTop: -27, notch: [8, 22], mouth: [12, -27, -20], lips: [22, -30, -17], lipsNotch: [12.5, -27.5, -19.5], thickness: 0.011, lift: 0.0015,
+// the grid's rows/columns line up with the moustache variant's mouth opening [half width, bottom, top] (two quads high at 12 rows, two wide; #2020: moved up to the #2002 lips, whose seam sits about -17 degrees; no separate lip patch)
+export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76, cols: 16, rows: 12, cheek: [-6, 10], cheekAz: [22, 90],
+  chinTop: -27, notch: [8, 22], mouth: [12, -24, -12.5], thickness: 0.011, lift: 0.0015,
   // #2012 guesses by eye: `columns` replaces `cols` (an even multiple keeps the opening's edges at ±11.5°); the top edge
   // breaks into `jag` [degrees, period in degrees] from |azimuth| `jagFrom`; `strand` the shade contrast per column;
   // the moustache alone (facial 2): [half width °, top / bottom elevation at the middle, droop ° at the ends, thickness m]
