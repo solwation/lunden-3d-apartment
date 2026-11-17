@@ -1,0 +1,311 @@
+{
+  "before": {
+    "frames": {
+      "dag 0": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      "motljus 0": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      "dag 1": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      "motljus 1": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      "dag 2": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      "motljus 2": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      "snett 45°": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      "profil": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      "blink stängd": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 1,
+        "calls": 1
+      },
+      "blick åt sidan": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      }
+    },
+    "palette": [
+      {
+        "eyes": 7230006,
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      {
+        "eyes": 3876376,
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      {
+        "eyes": 9071150,
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      {
+        "eyes": 5208634,
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      {
+        "eyes": 7175530,
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      {
+        "eyes": 4157352,
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      {
+        "eyes": 8365772,
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      {
+        "eyes": 8159880,
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      }
+    ],
+    "pupils": {
+      "bright": 0.7,
+      "dark": 1.4411922786572346
+    },
+    "geometry": {
+      "triangles": 15660,
+      "head": 12140,
+      "bones": 15
+    },
+    "ms": {
+      "median": 0.4000000059604645,
+      "p90": 2.7000000029802322,
+      "n": 30
+    }
+  },
+  "after": {
+    "frames": {
+      "dag 0": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      "motljus 0": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      "dag 1": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      "motljus 1": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      "dag 2": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      "motljus 2": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      "snett 45°": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      "profil": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      "blink stängd": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 1,
+        "calls": 1
+      },
+      "blick åt sidan": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      }
+    },
+    "palette": [
+      {
+        "eyes": 7230006,
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      {
+        "eyes": 3876376,
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      {
+        "eyes": 9071150,
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      {
+        "eyes": 5208634,
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      {
+        "eyes": 7175530,
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      {
+        "eyes": 4157352,
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      {
+        "eyes": 8365772,
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      },
+      {
+        "eyes": 8159880,
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      }
+    ],
+    "pupils": {
+      "bright": 0.7,
+      "dark": 1.4411922786572346
+    },
+    "geometry": {
+      "triangles": 15660,
+      "head": 12140,
+      "bones": 15
+    },
+    "ms": {
+      "median": 0.29999999701976776,
+      "p90": 0.6999999955296516,
+      "n": 30
+    }
+  },
+  "errors": []
+}

@@ -1,0 +1,18 @@
+✔ #2033 the pupil is small in open sun, large in a dark room, monotone in between (1.162058ms)
+✔ #2033 the sun glint shows in open sun only, dimmed by cloud (0.204688ms)
+✔ #2033 the pupil narrows faster than it widens (0.381298ms)
+✔ #2033 AvatarLight feeds the eyes; no reading keeps plain eyes (1.331988ms)
+✔ #2033 the GLSL pieces are self-contained (0.57795ms)
+✔ #2045 the eyes stay within +10 % of the head's triangles over #2033's 608, in every variant (720.774806ms)
+✔ #2045 the iris and pupil are round: no corner deeper than 0.06 mm at any pupil size (0.365225ms)
+✔ #2045 the lids have thickness in front of the eyeball, a fold over the upper lid and no gap at the opening (0.46929ms)
+✔ #2045 the lashes root in the upper margin and point forward and up, both sides wound outwards (0.357292ms)
+✔ #2045 the blink GLSL is self-contained (0.424304ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1074.814938

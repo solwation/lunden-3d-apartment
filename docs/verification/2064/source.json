@@ -1,0 +1,8 @@
+{
+  "source": "37879cecac1c6518e9ece83f2441af710707f04c",
+  "baseline": "b78e0b64",
+  "capturedUTC": "2026-11-17T19:26Z",
+  "environment": "Chromium headless / SwiftShader; 640x400; fixed camera/lighting/look inputs",
+  "result": "eyes.json and ogon-fore-efter.png recovered complete after daemon restart; no capture repeated",
+  "checkedUTC": "2026-11-17T19:27:44.369053+00:00"
+}

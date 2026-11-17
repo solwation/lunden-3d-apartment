@@ -126,6 +126,16 @@ colour on the skin), so the lips no longer read as stickers. The painted socket 
 textures, lights or passes; one fragment branch on face pixels only (program key `-sculpt2044`).
 [Views](../verification/2044/README.md) (`tools/avatarsculpt2044browser.cjs`).
 
+**Eye surfaces (#2064).** `src/avatareyes.js` / `AVATAR_OCULAR` add a warm sclera corner
+falloff, a medial pink caruncle and pixel-filtered radial iris fibres with a darker limbus.
+`src/avatarlids.js` keeps the same topology but reduces iris/pupil relief; the wet glint
+uses a virtual cornea normal above that flatter coloured surface, without an additional
+transparent mesh or pass. Pupil adaptation, blink and gaze still use their existing
+uniforms and chosen `EYES` palette. Geometry, one draw and 15 bones are unchanged; one
+`vec3` varying and eye-only fragment arithmetic are added. These values are artistic
+assumptions. Socket depth belongs to #2063. [Matched views, checks and software timing
+limits](../verification/2064/README.md).
+
 ### Player body and clothing fit (#2001)
 
 `upperBody` / `AVATAR_SURFACE.body` join the ribcage, oval armholes and rounded
