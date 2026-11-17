@@ -32,6 +32,7 @@ import { newIdle, stepIdle, idleHands } from './avataridle.js'; // #2035: the li
 import { fingerSegments, fingerGLSL, gripFor, gripAngles, easeGrip, gripPoint } from './avatargrip.js'; // #2016: the fingers' grip shapes
 import { newRest, stepRest, restFingers } from './avatargrip.js'; import { newTalk, stepTalk, talkHand } from './avatartalk.js'; // #2038: free hands' rest, talk gestures
 import { earGeometry, earLobe, earEnvelope } from './avatarear.js'; // #2047: the ear's form
+import { longHairParts, clearanceTable } from './avatarlonghair.js'; // #2053: long hair in locks
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, THIGH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
 // The players' avatars (#705): a neutral human figure for the other players (src/ghosts.js) and for our own reflection in the
@@ -110,7 +111,7 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
     // #2020: no separate dark lip patch behind the opening any more (it sat below the #2002 lips as a dark rectangle)
   }
   // hair (#1102): 0 short, 1 long, 2 a bun, 3 a beanie (in the top's colour) – see hairParts
-  for (const [g, region, shade] of hairParts(style)) { add(region === 'hair' ? fly(style, g) : g, region, 'head', [0, 0, 0], shade); P[P.length - 1].face = FACE_PART.hair; }
+  for (const [g, region, shade] of hairParts(style)) { add(region === 'hair' && !g.userData.noFly ? fly(style, g) : g, region, 'head', [0, 0, 0], shade); P[P.length - 1].face = FACE_PART.hair; }
   addGlasses(add, P); // #1165
   addHats(add, P); // #1321
   addPhones(add, P); // #1322
@@ -834,7 +835,7 @@ function hairParts(style) {
  * down and never back in (each column's radius only grows downwards), kept `gap` off the skull, jaw, ears, neck and torso
  * (bind pose), with a slightly uneven hem; an inner surface `depth` behind it, darker (the underside). */
 function longHair(az, top, onSkull, sheet, strand, thick, hit, smooth, scalp) { // az: the figure's left (+x) round the back to its right
-  const L = HAIR.long, cols = az.length - 1;
+  const L = HAIR.long;
   const ears = [-1, 1].flatMap((s) => earEnvelope(s, [s * 0.1, H - 0.005, 0])); // as the ears in parts() (#2047)
   const rings = [SURFACE.body.male, SURFACE.body.female], flare = (y) => SURFACE.body.hemFlare * (1 - smoothstep(...SURFACE.body.hemFlareTo, y));
   const torsoAt = (y) => { // #2019: the sweater's own half-axes [x, z] at head-frame height y (the wider of both figures, hoodie ease and hem flare included), so the hair clears the real surface
@@ -856,36 +857,17 @@ function longHair(az, top, onSkull, sheet, strand, thick, hit, smooth, scalp) { 
     if (tx > 0) r = Math.max(r, 1 / Math.hypot(d[0] / tx, d[2] / tz));
     return r;
   };
-  const cols3 = az.map((a, i) => { // each column's points from the hem (j = 0) up to the top
-    const rad = a * Math.PI / 180, p0 = onSkull(a, top(a), thick(a, top(a))), r0 = Math.hypot(p0[0], p0[2]);
-    const hem = L.hem[0] + (L.hem[1] - L.hem[0]) * smooth(L.from, 135, Math.abs(a)) + 0.022 * Math.sin(rad * HAIR.flow.longGroups + 0.8) + 0.006 * Math.sin(rad * 11);
-    const pts = [];
-    let r = 0;
-    for (let j = L.rows; j >= 0; j--) { // top down: the radius only grows
-      const t = (1 - j / L.rows) ** 1.3, y = p0[1] + (hem - p0[1]) * t;
-      const wave = L.wave * Math.sin(i * 1.7 + t * 5) * Math.sin(Math.PI * t);
-      r = Math.max(r, r0, body(rad, y) + L.gap * smooth(0, 0.15, t) + wave); // from the shell's edge along the skull to its widest, then hangs
-      const phase = rad * HAIR.flow.longGroups + t * 2;
-      const angle = rad + HAIR.flow.longSway * Math.PI / 180 * Math.sin(phase) * Math.sin(Math.PI * t);
-      const radius = Math.max(r + HAIR.flow.longRidge * (0.5 + 0.5 * Math.cos(phase)) * Math.sin(Math.PI * t), body(angle, y) + L.gap * smooth(0, 0.15, t));
-      pts[j] = [Math.sin(angle) * radius, y, Math.cos(angle) * radius, radius];
-    }
-    return pts;
-  });
-  // #2012: the curtain's top row continues the scalp's lowest one in shade, position and normal, so no join shows
-  const outer = sheet(cols, L.rows, false, (i, j) => cols3[i][j].slice(0, 3), (i, j) => {
-    const t = 1 - j / L.rows, below = strand(i + 3) * 0.97 * (0.9 + 0.1 * smooth(0, 0.4, j / L.rows));
-    return scalp.shade(az[i]) + (below - scalp.shade(az[i])) * smooth(0, 0.35, t);
-  });
-  const inner = sheet(cols, L.rows, false, (i, j) => { const [x, y, z, r] = cols3[i][j], k = (r - L.depth) / r; return [x * k, y, z * k]; }, () => 0.7, true);
-  const sp = scalp.geometry.attributes.position, sn = scalp.geometry.attributes.normal, op = outer.attributes.position, on = outer.attributes.normal, n = new THREE.Vector3(), m = new THREE.Vector3();
-  az.forEach((a, i) => {
-    const k = scalp.column(a) * (scalp.rows + 1), o = i * (L.rows + 1) + L.rows;
-    op.setXYZ(o, sp.getX(k), sp.getY(k), sp.getZ(k));
-    n.fromBufferAttribute(sn, k).add(m.fromBufferAttribute(on, o)).normalize();
-    sn.setXYZ(k, n.x, n.y, n.z); on.setXYZ(o, n.x, n.y, n.z);
-  });
-  return [[outer, 'hair', 1], [inner, 'hair', 1]];
+  // #2053: locks with tapered tips, an uneven hem, an under-layer and strands in front of the shoulders (src/avatarlonghair.js)
+  const sp = scalp.geometry.attributes.position, sn = scalp.geometry.attributes.normal, ss = scalp.geometry.attributes.shade;
+  const edge = (i) => { const k = scalp.column(az[i]) * (scalp.rows + 1); return { p: [sp.getX(k), sp.getY(k), sp.getZ(k)], n: [sn.getX(k), sn.getY(k), sn.getZ(k)], shade: ss.getX(k) }; };
+  const hem = (a) => L.hem[0] + (L.hem[1] - L.hem[0]) * smooth(L.from, 135, Math.abs(a)) + 0.022 * Math.sin(a * Math.PI / 180 * HAIR.flow.longGroups + 0.8) + 0.006 * Math.sin(a * Math.PI / 180 * 11);
+  return longHairParts({ az, edge, body, table: longHairTable(), hem, strand, bones: { head: NAMES.indexOf('head'), torso: NAMES.indexOf('torso') } });
+}
+/** #2053: the sweater's torso and sewn shoulders of both figures (plain and hoodie ease), bind pose in the head's frame, for the locks' clearance. */
+let longTable = null;
+function longHairTable() {
+  const hb = bindAt('head'), bone = ['torso', 'shoulderL', 'shoulderR'];
+  return (longTable ??= clearanceTable([false, true].flatMap((female) => [0, 2].flatMap((cut) => upperBody(1, female, cut).map((g, k) => { const o = bindAt(bone[k]).sub(hb); return g.translate(o.x, o.y, o.z); })))));
 }
 
 // --- the face (#1101) -----------------------------------------------------------------------------------------------------

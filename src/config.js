@@ -4487,6 +4487,27 @@ export const AVATAR_HAIR_GLOSS = {
   fade: [0.0012, 0.005], far: [0.3, 0.75], wrap: 0.2, wet: 2.5, lamp: 1.8, brow: 0.35, beard: 0.8, fly: 0.6, below: 10,
   bunRadius: 0.058, bunTilt: -0.66,
 };
+// #2053 (part of #2042) long hair in locks (src/avatarlonghair.js), all *guess* by eye against the avatar in daylight and backlight, not measured.
+// The curtain (AVATAR_HAIR.long) is split into `perCol` locks per curtain column, each a ribbon of `rows` rows (packed towards the tip by
+// `rowPower`) from the scalp's lowest row down to its own tip: overlapping its neighbours by `overlap` of its width below `overlapAt` [from, to]
+// (share of its length), tapering from `taper` [min, max] of its length to `tip` of its width, its edges' normals bent `bend` across it (a
+// rounded lock), edges `edgeShade` darker. Every other lock lies on the outer layer: `air` [at the top, at the tip] m further out (a little
+// air between the layers) and `outerShort` m shorter. Each lock's length varies by ±`jag` m (golden-angle scatter) about the curtain's hem; a
+// lock ends early where the body below juts out more steeply than `stop` (dr/dy: it rests on the shoulder instead of passing into it).
+// Behind the locks a shorter, darker under-layer (`under`: length share of its shortest lock, `inset` m inside them, `rows`, shade at its
+// bottom) keeps the curtain closed where the locks part; its inner surface is `depth` m (at most) behind it. The locks' lowest `backRows`
+// rows also have a back face (seen from in front, past the neck). `clear` m = the least gap to the sweater (both figures, before the
+// head's faceWarp). `front`: per side `n` strands brought forward over the shoulders: root |azimuth| `root` [first, step], hanging to
+// `end` [|azimuth|, head-frame y m] (+ `step` per strand), `width` m, `rows`, `lift` m off whatever they lie on, skinned from the head to
+// the torso between head-frame heights `torso` [from, to] m (the part on the chest stays on it when the head turns). The rest of the
+// curtain shares up to `torso[2]` with the torso bone between heights `torso` [from, to] m (it rests on the back and shoulders when the head
+// nods or turns). Budget: the head's triangles grow by at most +10 % (#2042).
+export const AVATAR_LONGHAIR = {
+  perCol: 2, rows: 8, rowPower: 0.8, overlap: 0.35, overlapAt: [0.06, 0.3], taper: [0.5, 0.72], tip: 0.06, bend: 0.5, edgeShade: 0.86,
+  air: [0.0012, 0.0045], outerShort: 0.018, jag: 0.03, stop: 1.1, clear: 0.007, backRows: 3, torso: [-0.02, -0.14, 0.85],
+  under: { length: 0.78, inset: 0.0025, rows: 4, shade: 0.74, depth: 0.012 },
+  front: { n: 2, root: [71, 8], end: [52, -0.175], step: [5, -0.03], width: 0.015, rows: 8, lift: 0.0025, torso: [-0.03, -0.09] },
+};
 // Combat between players (#667, src/combat.js; the room's check: cloudflare/players.js COMBAT). Only when both hold a weapon:
 // `weapons` = what counts, in the order they are looked for (the room's list must have each one: there its range and rate);
 // remove one here to leave it out. Both armed: drawn solid (`solid` opacity), else a ghost. A hit is judged by the shooter
