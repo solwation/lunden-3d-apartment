@@ -916,3 +916,23 @@ Measured under SwiftShader (software sin/cos, so a pessimistic proxy): a 640 × 
 shared machine, nine figures at 3 – 6 m within noise; no Surface measurement. Check: `tools/browsertest.sh node tools/avatarskintest.cjs
 SITE docs/verification/2032` (component page `tools/avatarskin.html`: light / medium / dark skin before and after in day light and backlight,
 frame-to-frame shimmer ratio at 2 / 4 / 8 m ≤ 1.1, cost) ([images](../verification/2032/)).
+
+## Wet, living avatar eyes (#2033)
+
+`src/avatareyes.js` (tunables `AVATAR_EYES`, all *guess*) adds the wet look to the avatars' eyes on their one material (uniform `uEyeLit`,
+program key suffix `-eyes2033`): no texture, mesh, triangle, light, draw call or network field. Hooks in `src/avatar.js`: in the eye branch of
+`faceShape()` the pupil (the dark `fixed` disc of the `iris` part) scales about the iris' centre (`eyePupil`) and, after the blink, each eye
+vertex gets its place in the opening (x corner to corner, y lower to upper lid, the blink and eye size undone) and its offset from a wet
+ball (`eyeAt`); after the face shape the ball's centre and the head's up go to view space through the skinning (`eyeView`). Fragment: after
+the roughness the eyeball darkens softly under the upper lid and in its corners, is glossy along the lower lid (the tear line) and the lid
+margin just outside is wet (`eyeWet`); the flat eye geometry's own highlight is kept broad and the pupil matt, so the one sharp highlight is
+the glint (`eyeGlint`, before `uLight`): per fragment the ball's exact normal (a cornea-sized ball, `ball` × the eye's radius), a sharp
+highlight from every directional light where it reflects towards the camera (so it follows the sun), a broader one from the sky, and a thin
+line from the tear meniscus; it fades under the upper lid and with the blink. The pupil and the sun's share follow #2017: `AvatarLight.apply`
+also calls `Avatar.setEyeLight(zone, env)`; `eyeLight` gives the zone's light level (`zoneLevel`) and whether direct sun reaches the eyes
+(open ground, not shaded, by day, less under cloud; elsewhere the directional glint drops to `room`, a window or lamp); `Avatar.updateEyes`
+eases the pupil (narrowing over 0.25 s, widening over 1.8 s) from 0.7 × the drawn pupil in sun to 1.45 × in the dark. Without a light
+reading (the appearance preview) the eyes keep the plain size and full glint. Hidden eyes (the suit, sunglasses, the diving mask) skip it.
+Budget: on eye fragments only, a few `pow` per directional light; per vertex one branch. The far figure (`ghostfar.js`) has none of it.
+Check: `node --test tools/avatareyestest.mjs` and `tools/browsertest.sh node tools/avatareyestest.cjs SITE docs/verification/2033 [BEFORE]`
+(component page `tools/avatareyes.html`) ([images](../verification/2033/)).

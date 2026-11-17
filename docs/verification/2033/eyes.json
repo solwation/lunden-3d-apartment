@@ -1,0 +1,565 @@
+{
+ "after": {
+  "01-sol-ljus-framifran-hoger": {
+   "pupil": 0.7,
+   "sunGlint": 1,
+   "light": 1.1282051282051284,
+   "blink": 0,
+   "calls": 1,
+   "eyes": [
+    {
+     "glint": 249,
+     "glintAt": [
+      210,
+      142
+     ],
+     "p90": 225,
+     "pupilPx": 191,
+     "brightPx": 1171
+    },
+    {
+     "glint": 249,
+     "glintAt": [
+      445,
+      142
+     ],
+     "p90": 225,
+     "pupilPx": 194,
+     "brightPx": 1173
+    }
+   ],
+   "boxes": [
+    [
+     146,
+     132,
+     258,
+     182
+    ],
+    [
+     382,
+     131,
+     494,
+     182
+    ]
+   ]
+  },
+  "02-sol-ljus-fran-vanster": {
+   "pupil": 0.7,
+   "sunGlint": 1,
+   "light": 1.1282051282051284,
+   "blink": 0,
+   "calls": 1,
+   "eyes": [
+    {
+     "glint": 249,
+     "glintAt": [
+      184,
+      147
+     ],
+     "p90": 213,
+     "pupilPx": 195,
+     "brightPx": 1074
+    },
+    {
+     "glint": 249,
+     "glintAt": [
+      419,
+      147
+     ],
+     "p90": 212,
+     "pupilPx": 192,
+     "brightPx": 975
+    }
+   ],
+   "boxes": [
+    [
+     146,
+     132,
+     258,
+     182
+    ],
+    [
+     382,
+     131,
+     494,
+     182
+    ]
+   ]
+  },
+  "03-sol-lagt-framifran": {
+   "pupil": 0.7,
+   "sunGlint": 1,
+   "light": 1.1282051282051284,
+   "blink": 0,
+   "calls": 1,
+   "eyes": [
+    {
+     "glint": 249,
+     "glintAt": [
+      205,
+      152
+     ],
+     "p90": 233,
+     "pupilPx": 137,
+     "brightPx": 1382
+    },
+    {
+     "glint": 248,
+     "glintAt": [
+      440,
+      153
+     ],
+     "p90": 233,
+     "pupilPx": 129,
+     "brightPx": 1393
+    }
+   ],
+   "boxes": [
+    [
+     146,
+     132,
+     258,
+     182
+    ],
+    [
+     382,
+     131,
+     494,
+     182
+    ]
+   ]
+  },
+  "04-sol-blinkning-stangd": {
+   "pupil": 0.7,
+   "sunGlint": 1,
+   "light": 1.1282051282051284,
+   "blink": 1,
+   "calls": 1,
+   "eyes": [
+    {
+     "glint": 184,
+     "glintAt": [
+      225,
+      160
+     ],
+     "p90": 143,
+     "pupilPx": 0,
+     "brightPx": 0
+    },
+    {
+     "glint": 190,
+     "glintAt": [
+      463,
+      160
+     ],
+     "p90": 157,
+     "pupilPx": 0,
+     "brightPx": 0
+    }
+   ],
+   "boxes": [
+    [
+     146,
+     132,
+     258,
+     182
+    ],
+    [
+     382,
+     131,
+     494,
+     182
+    ]
+   ]
+  },
+  "05-morkt-rum-ljusare-exponering": {
+   "pupil": 1.4411922786572346,
+   "sunGlint": 0,
+   "light": 0.6666666676179682,
+   "blink": 0,
+   "calls": 1,
+   "eyes": [
+    {
+     "glint": 170,
+     "glintAt": [
+      210,
+      142
+     ],
+     "p90": 111,
+     "pupilPx": 0,
+     "brightPx": 0
+    },
+    {
+     "glint": 170,
+     "glintAt": [
+      445,
+      142
+     ],
+     "p90": 111,
+     "pupilPx": 0,
+     "brightPx": 0
+    }
+   ],
+   "boxes": [
+    [
+     146,
+     132,
+     258,
+     182
+    ],
+    [
+     382,
+     131,
+     494,
+     182
+    ]
+   ]
+  },
+  "06-morkt-rum-verklig-exponering": {
+   "pupil": 1.4421185046509488,
+   "sunGlint": 0,
+   "light": 0.6666666672436603,
+   "blink": 0,
+   "calls": 1,
+   "eyes": [
+    {
+     "glint": 92,
+     "glintAt": [
+      210,
+      142
+     ],
+     "p90": 47,
+     "pupilPx": 0,
+     "brightPx": 0
+    },
+    {
+     "glint": 92,
+     "glintAt": [
+      445,
+      142
+     ],
+     "p90": 47,
+     "pupilPx": 0,
+     "brightPx": 0
+    }
+   ],
+   "boxes": [
+    [
+     146,
+     132,
+     258,
+     182
+    ],
+    [
+     382,
+     131,
+     494,
+     182
+    ]
+   ]
+  },
+  "07-ut-i-solen-forsta-bilden": {
+   "pupil": 1.4025068886202126,
+   "sunGlint": 0,
+   "light": 0.6693873700795039,
+   "blink": 0,
+   "calls": 1,
+   "eyes": [
+    {
+     "glint": 242,
+     "glintAt": [
+      210,
+      142
+     ],
+     "p90": 177,
+     "pupilPx": 822,
+     "brightPx": 22
+    },
+    {
+     "glint": 242,
+     "glintAt": [
+      445,
+      142
+     ],
+     "p90": 177,
+     "pupilPx": 833,
+     "brightPx": 18
+    }
+   ],
+   "boxes": [
+    [
+     146,
+     132,
+     258,
+     182
+    ],
+    [
+     382,
+     131,
+     494,
+     182
+    ]
+   ]
+  },
+  "08-ut-i-solen-efter-en-sekund": {
+   "pupil": 0.7130283804275496,
+   "sunGlint": 1,
+   "light": 1.0891639981640768,
+   "blink": 0,
+   "calls": 1,
+   "eyes": [
+    {
+     "glint": 249,
+     "glintAt": [
+      210,
+      142
+     ],
+     "p90": 221,
+     "pupilPx": 203,
+     "brightPx": 1106
+    },
+    {
+     "glint": 249,
+     "glintAt": [
+      445,
+      142
+     ],
+     "p90": 221,
+     "pupilPx": 202,
+     "brightPx": 1102
+    }
+   ],
+   "boxes": [
+    [
+     146,
+     132,
+     258,
+     182
+    ],
+    [
+     382,
+     131,
+     494,
+     182
+    ]
+   ]
+  },
+  "09-ansikte-sol": {
+   "pupil": 0.7000000000000007,
+   "sunGlint": 1,
+   "light": 1.1282051282051249,
+   "blink": 0,
+   "calls": 1,
+   "eyes": [
+    {
+     "glint": 249,
+     "glintAt": [
+      288,
+      183
+     ],
+     "p90": 219,
+     "pupilPx": 13,
+     "brightPx": 89
+    },
+    {
+     "glint": 249,
+     "glintAt": [
+      356,
+      183
+     ],
+     "p90": 219,
+     "pupilPx": 14,
+     "brightPx": 90
+    }
+   ],
+   "boxes": [
+    [
+     268,
+     179,
+     304,
+     197
+    ],
+    [
+     336,
+     179,
+     371,
+     197
+    ]
+   ]
+  },
+  "10-ansikte-morkt-rum-ljusare-exponering": {
+   "pupil": 1.4411922786572346,
+   "sunGlint": 0,
+   "light": 0.6666666676179682,
+   "blink": 0,
+   "calls": 1,
+   "eyes": [
+    {
+     "glint": 169,
+     "glintAt": [
+      288,
+      183
+     ],
+     "p90": 109,
+     "pupilPx": 0,
+     "brightPx": 0
+    },
+    {
+     "glint": 159,
+     "glintAt": [
+      356,
+      183
+     ],
+     "p90": 110,
+     "pupilPx": 0,
+     "brightPx": 0
+    }
+   ],
+   "boxes": [
+    [
+     268,
+     179,
+     304,
+     197
+    ],
+    [
+     336,
+     179,
+     371,
+     197
+    ]
+   ]
+  }
+ },
+ "before": {
+  "01-sol-ljus-framifran-hoger": {
+   "pupil": null,
+   "sunGlint": null,
+   "light": 1.1282051282051284,
+   "blink": 0,
+   "calls": 1,
+   "eyes": [
+    {
+     "glint": 230,
+     "glintAt": [
+      208,
+      136
+     ],
+     "p90": 227,
+     "pupilPx": 410,
+     "brightPx": 1330
+    },
+    {
+     "glint": 242,
+     "glintAt": [
+      443,
+      136
+     ],
+     "p90": 227,
+     "pupilPx": 411,
+     "brightPx": 1348
+    }
+   ],
+   "boxes": [
+    [
+     146,
+     131,
+     258,
+     179
+    ],
+    [
+     382,
+     131,
+     494,
+     179
+    ]
+   ]
+  },
+  "05-morkt-rum-ljusare-exponering": {
+   "pupil": null,
+   "sunGlint": null,
+   "light": 0.6666666676179682,
+   "blink": 0,
+   "calls": 1,
+   "eyes": [
+    {
+     "glint": 127,
+     "glintAt": [
+      210,
+      138
+     ],
+     "p90": 112,
+     "pupilPx": 0,
+     "brightPx": 0
+    },
+    {
+     "glint": 120,
+     "glintAt": [
+      443,
+      137
+     ],
+     "p90": 112,
+     "pupilPx": 0,
+     "brightPx": 0
+    }
+   ],
+   "boxes": [
+    [
+     146,
+     131,
+     258,
+     179
+    ],
+    [
+     382,
+     131,
+     494,
+     179
+    ]
+   ]
+  },
+  "09-ansikte-sol": {
+   "pupil": null,
+   "sunGlint": null,
+   "light": 1.1282051282050636,
+   "blink": 0,
+   "calls": 1,
+   "eyes": [
+    {
+     "glint": 228,
+     "glintAt": [
+      296,
+      185
+     ],
+     "p90": 225,
+     "pupilPx": 29,
+     "brightPx": 100
+    },
+    {
+     "glint": 228,
+     "glintAt": [
+      363,
+      184
+     ],
+     "p90": 225,
+     "pupilPx": 29,
+     "brightPx": 108
+    }
+   ],
+   "boxes": [
+    [
+     269,
+     178,
+     303,
+     196
+    ],
+    [
+     337,
+     178,
+     371,
+     196
+    ]
+   ]
+  }
+ }
+}

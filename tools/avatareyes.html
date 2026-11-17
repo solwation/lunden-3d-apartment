@@ -1,0 +1,61 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar eyes</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2033 component page: one avatar's eyes in close-up under the game's four lights (hemisphere, ambient, fill, sun; NeutralToneMapping; `sun` in the camera's frame: right, up, towards the camera),
+// driven by tools/avatareyestest.cjs. The real AvatarLight (src/avatarlight.js) probes a stub zone, so the pupils follow the same path as
+// in the game. window.__frame({ preset: 'sun' | 'dark', sun: [x, y, z], blink, view: 'close' | 'face', exposure, seconds }) renders and
+// returns the numbers.
+import * as THREE from 'three';
+import { Avatar } from '../src/avatar.js';
+import { AvatarLight } from '../src/avatarlight.js';
+import { decodeAvatarLook, avatarEyeHeight, AVATAR_FACE } from '../src/config.js';
+const q = new URLSearchParams(location.search);
+const code = q.get('code') ?? '210000100c5e8o2w0l8j0n0b0r8t8y8';
+const W = 640, H = 400, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H); renderer.toneMapping = THREE.NeutralToneMapping; document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x8d969e);
+const hemi = new THREE.HemisphereLight(0xdfeaff, 0x6b6253, 1.5), ambient = new THREE.AmbientLight(0xffffff, 0.25);
+const fill = new THREE.DirectionalLight(0xf4f6ff, 0.35); fill.position.set(8, 6, -5);
+const sun = new THREE.DirectionalLight(0xfff1dc, 3.0); sun.position.set(2, 4, 4);
+scene.add(hemi, ambient, fill, sun);
+const lk = { ...decodeAvatarLook(code, 'eyes'), tall: 1, build: 1 };
+const a = new Avatar(lk); a.object.position.set(0, 1.62 - avatarEyeHeight(lk), 0); scene.add(a.object);
+const u = a.material.userData.u;
+const probe = new AvatarLight(), st = {};
+probe.lights = { hemi, ambient, fill, sun };
+const PRESET = {
+  sun: { zone: { kind: 'outdoors' }, env: { day: 1, overcast: 0 }, I: [1.5, 0.25, 0.35, 3.0] },
+  dark: { zone: { kind: 'room', lit: 0 }, env: { day: 0, overcast: 0 }, I: [0.05, 0.025, 0, 0.2] },
+};
+const cam = new THREE.PerspectiveCamera(10, W / H, 0.02, 50);
+/** The iris' centre on side `s` (+1 the figure's left): the head bone's frame (AVATAR_FACE.eye.at), enough to aim the camera. */
+const eyeAt = (s) => { a.object.updateMatrixWorld(true); return a.bones.head.localToWorld(new THREE.Vector3(s * AVATAR_FACE.eye.at[0], AVATAR_FACE.eye.at[1], AVATAR_FACE.eye.at[2])); };
+let now = 0;
+window.__frame = ({ preset = 'sun', sun: dir = [2, 4, 4], blink = 0, view = 'close', exposure = 1, seconds = 3, I = null } = {}) => {
+  const P = PRESET[preset];
+  [hemi.intensity, ambient.intensity, fill.intensity, sun.intensity] = I ?? P.I;
+  probe.zone = () => P.zone; probe.env = () => P.env;
+  a.lookAt(null);
+  a.eyes && (a.eyes.blink.wait = 99); // no random blink while a frame is set up
+  for (let i = 0, n = Math.round(seconds * 60); i < n; i++) { now += 1000 / 60; probe.apply(a, st, 0, 0, 0, now); a.update(1 / 60, {}); }
+  u.uBlink.value = blink; u.uGaze.value.set(0, 0); // (the saccades held still: the same iris place in every frame)
+  const c = eyeAt(1).add(eyeAt(-1)).multiplyScalar(0.5);
+  const fwd = new THREE.Vector3(0, 0, 1).applyQuaternion(a.object.quaternion);
+  cam.fov = view === 'close' ? 9 : 16; cam.updateProjectionMatrix();
+  cam.position.copy(c).addScaledVector(fwd, view === 'close' ? 0.62 : 1.2); cam.position.y += 0.01; cam.lookAt(c);
+  // the sun's direction in the camera's frame ([right, up, towards the camera]), so a frame reads the same whichever way the figure faces
+  cam.updateMatrixWorld(); sun.position.set(...dir).applyMatrix3(new THREE.Matrix3().setFromMatrix4(cam.matrixWorld)); sun.position.y = Math.abs(sun.position.y) < 1e-6 ? 0 : sun.position.y;
+  fill.position.set(8, 6, -5).applyMatrix3(new THREE.Matrix3().setFromMatrix4(cam.matrixWorld)); // (the game's fill, from behind the figure's right)
+  renderer.toneMappingExposure = exposure;
+  renderer.info.reset(); renderer.render(scene, cam);
+  return { pupil: u.uEyeLit?.value.x ?? null, sunGlint: u.uEyeLit?.value.y ?? null, light: u.uLight.value, blink: u.uBlink.value, calls: renderer.info.render.calls };
+};
+window.__ready = true;
+</script></body></html>

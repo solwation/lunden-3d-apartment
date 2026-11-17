@@ -50,7 +50,7 @@ export class EyeLight {
 }
 
 // --- GLSL -----------------------------------------------------------------------------------------------------------------------------
-const VARY = 'varying vec2 vEyeAt; varying vec3 vEyeC, vEyeUp;';
+const VARY = 'varying vec3 vEyeAt, vEyeC, vEyeUp;';
 /** Vertex declarations: the uniform, the varyings and two globals the eye code fills (the vertex's offset from the wet ball's centre in the
  * head's bind frame, and whether the vertex belongs to the eye). */
 export const EYE_VDECL = `uniform vec3 uEyeLit; ${VARY} vec3 eyeO = vec3(0.0); float eyeOn = 0.0;`;
@@ -61,13 +61,13 @@ export const EYE_FDECL = `uniform vec3 uEyeLit; ${VARY}`;
 export const eyePupil = (irisPart) => `if (facePart > ${irisPart}.0 - 0.5 && abs(region - 4.0) < 0.5) transformed.xy = faceAnchor.xy + (transformed.xy - faceAnchor.xy) * uEyeLit.x; // #2033`;
 
 /** Vertex, in the eye branch after the blink: the vertex's place in the eye's opening (x −1 … 1 corner to corner, y −1 lower lid … 1 upper
- * lid; the blink and the eye's size undone, so the lid edges stay at ±1) and its offset from the wet ball's centre. */
+ * lid; the blink and the eye's size undone, so the lid edges stay at ±1; z how open the lids are) and its offset from the wet ball's centre. */
 export function eyeAt() {
   const R = FACE.eye.r, zc = FACE.eye.r * FACE.eye.scale[2] - E.ball * R, K = SURFACE.eye;
   return `{ // #2033
             vec2 ed = (transformed.xy - faceAnchor.xy) / uEye.xy; ed.y /= max(1.0 - uBlink * ${f(AVATAR_BLINK.depth)}, 0.03);
             float ex = ed.x / ${f(R)}, eh = max(1.0 - ex * ex, 0.05);
-            vEyeAt = vec2(ex, ed.y / (eh * (ed.y > 0.0 ? ${f(K.upper)} : ${f(K.lower)})));
+            vEyeAt = vec3(ex, ed.y / (eh * (ed.y > 0.0 ? ${f(K.upper)} : ${f(K.lower)})), 1.0 - uBlink);
             eyeO = transformed - faceAnchor - vec3(0.0, 0.0, ${f(zc)} * uEye.z); eyeOn = 1.0;
           }`;
 }
@@ -81,18 +81,19 @@ export const eyeView = () => `if (eyeOn > 0.5) { // #2033
   #endif
   vEyeC = (modelViewMatrix * (eyeSk * vec4(transformed - eyeO * vec3(uHead.x, uHead.y, 1.0), 1.0))).xyz;
   vEyeUp = mat3(modelViewMatrix) * mat3(eyeSk) * vec3(0.0, 1.0, 0.0);
-} else { vEyeC = vec3(0.0); vEyeUp = vec3(0.0); vEyeAt = vec2(0.0); }`;
+} else { vEyeC = vec3(0.0); vEyeUp = vec3(0.0); vEyeAt = vec3(0.0); }`;
 
 const eyePart = (eye, iris) => `(uSuit < 0.5 && (abs(vSurface.y - ${eye}.0) < 0.5 || abs(vSurface.y - ${iris}.0) < 0.5))`;
 
 /** Fragment, after the roughness (before the lights read diffuseColor): the eyeball darkens under the upper lid and in its corners and
- * is wet (glossy) along the lower lid; the lid margin just outside is wet too. */
+ * is wet (glossy) along the lower lid; the lid margin just outside is wet too. Elsewhere the flattened eyeball's own (geometric) highlight
+ * is kept broad, so the wet ball's glint is the one sharp reflection. */
 export function eyeWet(eye, iris) {
   const L = E.lid, T = E.tear;
   return `if (${eyePart(eye, iris)}) { // #2033
       if (vBare < 0.5) {
         diffuseColor.rgb *= (1.0 - ${f(L.shadow)} * smoothstep(${f(L.from)}, 1.0, vEyeAt.y)) * (1.0 - ${f(L.corner)} * smoothstep(0.55, 1.0, abs(vEyeAt.x)));
-        roughnessFactor = mix(roughnessFactor, ${f(T.rough)}, 1.0 - smoothstep(-1.0, -${f(T.band)}, vEyeAt.y));
+        roughnessFactor = mix(abs(vSurface.x - 4.0) < 0.5 && abs(vSurface.y - ${iris}.0) < 0.5 ? 1.0 : max(roughnessFactor, ${f(E.ballRough)}), ${f(T.rough)}, 1.0 - smoothstep(-1.0, -${f(T.band)}, vEyeAt.y)); // (the pupil: matt, a hole)
       } else roughnessFactor = mix(roughnessFactor, ${f(T.lidRough)}, smoothstep(-1.4, -1.0, vEyeAt.y) * (1.0 - step(-0.5, vEyeAt.y)));
     }`;
 }
@@ -105,7 +106,7 @@ export function eyeGlint(eye, iris) {
   return `if (${eyePart(eye, iris)} && vBare < 0.5) { // #2033
       vec3 eN = normalize(-vViewPosition - vEyeC), eV = normalize(vViewPosition), eU = normalize(vEyeUp + vec3(0.0, 1e-5, 0.0));
       vec3 eT = normalize(eN + eU * ${f(T.lift)});
-      float eTear = 1.0 - smoothstep(-1.0, -${f(T.band)}, vEyeAt.y), eLid = 1.0 - ${f(L.glintCut)} * smoothstep(${f(L.from)}, 1.0, vEyeAt.y);
+      float eTear = 1.0 - smoothstep(-1.0, -${f(T.band)}, vEyeAt.y), eLid = 1.0 - ${f(L.glintCut)} * smoothstep(${f(L.glintFrom)}, 1.0, vEyeAt.y);
       vec3 eG = vec3(0.0);
       #if NUM_DIR_LIGHTS > 0
       vec3 eD = vec3(0.0);
@@ -120,6 +121,6 @@ export function eyeGlint(eye, iris) {
       { vec3 eL = hemisphereLights[0].direction, eH = normalize(eL + eV);
         eG += hemisphereLights[0].skyColor * (pow(max(dot(eN, eH), 0.0), ${f(E.skySharp)}) * ${f(E.sky)} + eTear * pow(max(dot(eT, eH), 0.0), ${f(T.sharp)}) * ${f(T.bright * 0.5)}); }
       #endif
-      outgoingLight += eG * eLid;
+      outgoingLight += eG * eLid * vEyeAt.z; // (a shut eye shows no glint in its hairline)
     }`;
 }
