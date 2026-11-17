@@ -103,7 +103,8 @@ test('#2043 head contour: budget, rounded chin underside and a smooth neck',()=>
  for(const[key,tris]of head2043){const style=+key[1],facial=+key[3];
   const g=avatarModelGeometry({...avatarLook('cnt'),style,facial,gender:style%2}),a=g.attributes;let head=0;
   for(let i=0;i<a.position.count;i+=3){const f=a.facePart.getX(i);if(f>0&&f<30)head++;}
-  assert(head<=tris*1.1,`${key}: ${head} head triangles > ${tris}×1.1`);g.dispose();}
+  // the +10 % is #2043's own step budget (#2042): later round-4 steps (brows #2046, …) carry their own budgets
+  assert(contour2043<=tris*0.1&&head>=tris,`${key}: contour +${contour2043} > ${tris}×0.1 (head ${head})`);g.dispose();}
  const g=avatarModelGeometry({...avatarLook('2043'),style:0,facial:0,gender:0}),a=g.attributes,low=AVATAR_SURFACE.head[0][0];
  let bottom=Infinity,neck=0;const normals=new Map();
  for(let i=0;i<a.position.count;i++){
