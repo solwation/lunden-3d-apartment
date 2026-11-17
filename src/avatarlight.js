@@ -49,10 +49,11 @@ export class AvatarLight {
   apply(avatar, st, x, y, z, now) {
     if (!this.zone || !this.env) return 1;
     if (!st.zone || now - st.probeAt >= C.probe * 1000 || Math.hypot(x - st.x, z - st.z) > 3) { st.zone = this.zone(x, y, z); st.probeAt = now; st.x = x; st.z = z; }
-    const target = lightFactor(st.zone, this.env(), sceneLevel(this.lights));
+    const env = this.env(), target = lightFactor(st.zone, env, sceneLevel(this.lights));
     const dt = st.at === undefined ? 0 : Math.min(1, (now - st.at) / 1000);
     st.at = now; st.f = approach(st.f, target, dt);
     avatar.setLight(st.f);
+    avatar.setEyeLight?.(st.zone, env); // #2033: the pupils and the eyes' sun glint (src/avatareyes.js)
     return st.f;
   }
 }

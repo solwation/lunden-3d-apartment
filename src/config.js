@@ -6655,6 +6655,20 @@ export const AVATAR_BLINK = { interval: [2, 6], double: 0.18, doubleGap: [0.12, 
 // shift of at most `eye` m [x, y]. A target further than `cone` rad off the head is not looked at. Small saccades of the irises at rest.
 export const AVATAR_GAZE = { range: 6, retarget: 0.3, cone: 1.6, headShare: 0.45, maxYaw: 0.5, maxPitch: 0.22, eyeYaw: 0.5, eyePitch: 0.3, eye: [0.0042, 0.0026],
   follow: 7, saccadeFollow: 30, saccade: { interval: [0.4, 1.6], amp: [0.0011, 0.0007], withTarget: 0.4 } };
+// #2033: wet, living eyes (src/avatareyes.js; uniforms on the avatar's own material, no geometry, draw call or network field). All *guess*es
+// by eye against close-ups. `pupil`: the pupil's scale (of AVATAR_FACE.eye.pupil) at a bright and a dark local light level (avatarlight.js
+// zoneLevel: 1 = open sun), interpolated on the level's logarithm; it narrows over `constrict` s and widens over `dilate` s (a real pupil
+// narrows in a fraction of a second and widens over seconds). `ball` (× the eye's radius) is the wet eyeball whose round normal catches the
+// glint: `sharp` the cornea's highlight exponent, `sun` / `sky` the directional lights' and the sky's glint strength, `skySharp` the sky's
+// broader reflection, `room` the directional glint kept indoors and in shade (a window or lamp instead of the sun), `overcast` how much cloud
+// dims the sun's glint. `lid`: the upper lid's soft shadow on the eyeball from `from` (0 centre … 1 lid edge, of the opening's height) with
+// `shadow` darkening, `glintCut` of the glint hidden under it, `corner` darkening in the corners. `tear`: the moist edge along the lower lid,
+// the band from `band[0]` to the edge (of the opening's lower height), `rough` its roughness, `lift` the meniscus' upward tilt and `bright`
+// its line highlight; `lidRough` the lid margin's wet roughness just outside.
+export const AVATAR_EYES = { pupil: { bright: [1, 0.7], dark: [0.08, 1.45], constrict: 0.25, dilate: 1.8 },
+  ball: 1, sharp: 1400, sun: 2.4, sky: 0.22, skySharp: 60, room: 0.35, overcast: 0.8,
+  lid: { from: 0.2, shadow: 0.45, glintCut: 0.85, corner: 0.22 },
+  tear: { band: 0.72, rough: 0.06, lift: 1.4, sharp: 90, bright: 0.6, lidRough: 0.22 } };
 // #2014: secondary motion of long hair (styles 1, 4), the bun (2) and the sweater/jacket hem: one damped spring per group (src/avatarsway.js),
 // driven by the rendered head's (hair, bun) or torso's (hem) acceleration and turning, derived locally for every player (no network field).
 // Per group: `omega` rad/s (the spring's natural frequency), `zeta` damping ratio (< 1 overshoots once or twice), `gain` of the pseudo-force

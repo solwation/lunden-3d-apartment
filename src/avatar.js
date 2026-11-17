@@ -9,6 +9,7 @@ import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_F
 import { newBlink, stepBlink, solveGaze, stepSaccade } from './avatargaze.js';
 import { armFixShader, installArmFix } from './avatararmfix.js'; // #2022
 import { newWet, stepWet, falling, wetEnv, WET_DECL, wetVertex, wetColor, wetRoughness } from './avatarweather.js'; // #2018
+import { eyeUniforms, EyeLight, EYE_VDECL, EYE_FDECL, eyePupil, eyeAt, eyeView, eyeWet, eyeGlint } from './avatareyes.js'; // #2033
 import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #2014
 import { avatarSkinGLSL, skinKey } from './avatarskin.js'; // #2032
 import { faceExprUniforms, faceExprShader } from './avatarface.js'; // #2031
@@ -1352,6 +1353,7 @@ function makeMaterial(rim, headProjection) {
   const u = { uPump: { value: 0 }, uLight: { value: 1 }, uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uFing: { value: Array.from({ length: 10 }, () => new THREE.Vector2()) }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 }, uKiss: { value: 0 }, uBlink: { value: 0 }, uGaze: { value: new THREE.Vector2() }, uSwayHair: { value: new THREE.Vector3() }, uSwayBun: { value: new THREE.Vector3() }, uSwayHem: { value: new THREE.Vector3() }, uSwayOn: { value: new THREE.Vector3(0, 0, 1) }, uWet: { value: 0 }, uSnow: { value: 0 }, uArmFix: { value: new THREE.Vector2() },
     uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uEarrings: { value: 0 }, uHat: { value: 0 }, uPhones: { value: 0 }, uNecklace: { value: 0 }, uRingFinger: { value: 0 }, uBracelet: { value: 0 }, uWatch: { value: 0 }, uRingColor: { value: new THREE.Color(RING.colours[0]) }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) } };
   Object.assign(u, faceExprUniforms()); // #2031: the expression weights
+  Object.assign(u, eyeUniforms()); // #2033
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: SURFACE.finish.cloth, metalness: 0, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
@@ -1362,15 +1364,16 @@ function makeMaterial(rim, headProjection) {
     const fix = armFixShader(); // #2022
     const skin = avatarSkinGLSL({ head: bindAt('head'), hand: bindAt('handL'), part: FACE_PART }); // #2032
     sh.vertexShader = sh.vertexShader.replace('#include <skinbase_vertex>', fix.base).replace('#include <skinnormal_vertex>', fix.normal).replace('#include <skinning_vertex>', fix.skin)
-      .replace('#include <common>', '#include <common>\nattribute float region; attribute float suitRole; varying float vSuitRole; attribute float noseBlend; varying vec2 vSurface; attribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + WET_DECL + '\n' + FACE_SHAPE_DECL() + '\n' + fix.decl)
+      .replace('#include <common>', '#include <common>\nattribute float region; attribute float suitRole; varying float vSuitRole; attribute float noseBlend; varying vec2 vSurface; attribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + WET_DECL + '\n' + FACE_SHAPE_DECL() + '\n' + fix.decl + '\n' + EYE_VDECL)
       .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
 float pumpF = 1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z;
 float pumpD = uPump * ${GYM_PUMP.circumference} * armPump.w;
 objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / pumpF * dot(position.xz - armPump.xy, objectNormal.xz), objectNormal.z / pumpF));`)
       .replace('#include <begin_vertex>', `#include <begin_vertex>\ntransformed.xz = armPump.xy + (transformed.xz - armPump.xy) * (1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z);\nvSuitRole = suitRole; ${wetVertex()} vSurface = vec2(region, facePart); vSuitAt = position; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart) * step(facePart, ${FACE_PART.watchStrap}.0 - 0.5); // (#1334: the rings, bracelets and watch cases are metal)\n${faceShape()}${swayShader()}\ntransformed.x *= 1.0 - uKiss * pucker * ${KISS.narrow.toFixed(5)};\ntransformed.z += uKiss * pucker * ${KISS.pucker.toFixed(5)};\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
     sh.vertexShader = faceExprShader(sh.vertexShader, { hb: bindAt('head'), chinY: CHIN_Y, P: FACE_PART }); // #2031
+    sh.vertexShader = sh.vertexShader.replace('#include <skinning_vertex>', `${eyeView()}\n#include <skinning_vertex>`); // #2033: after every bind-pose shape (face, expression), before skinning
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim, uLight;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;\n' + WET_DECL + skin.decl)
+      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim, uLight;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;\n' + WET_DECL + skin.decl + '\n' + EYE_FDECL)
       .replace('#include <color_fragment>', `#include <color_fragment>
       if (uSuit > 0.5) {
         vec3 red = vec3(${new THREE.Color(SPIDER.colors.red).toArray().join(',')}), blue = vec3(${new THREE.Color(SPIDER.colors.blue).toArray().join(',')});
@@ -1395,19 +1398,20 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       diffuseColor.rgb = mix(diffuseColor.rgb, uRingColor, vRing); // #1324: the ring's metal
       float wetSnow = 0.0; // #2018
       ${wetColor(bindAt('torso').y)}`)
-      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>\n${surfaceRoughness()}\n${wetRoughness()}`)
+      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>\n${surfaceRoughness()}\n${wetRoughness()}\n${eyeWet(FACE_PART.eye, FACE_PART.iris)}`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\n${skin.normal}`) // #2032
       .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${skin.light}`) // #2032
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\nmetalnessFactor = vRing * ${SURFACE.finish.metalness.toFixed(3)};`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>\ntotalEmissiveRadiance += uRingColor * vRing * ${RING.shine.toFixed(3)};`)
       .replace('#include <opaque_fragment>', `float edge = pow(1.0 - clamp(abs(dot(normalize(normal), normalize(vViewPosition))), 0.0, 1.0), ${A.rimPower.toFixed(2)});
+      ${eyeGlint(FACE_PART.eye, FACE_PART.iris)}
       outgoingLight *= uLight; // #2017: the local light level (src/avatarlight.js)
       outgoingLight = mix(outgoingLight, uRimColor, uOutline * edge);
       outgoingLight *= mix(vec3(1.0), ${v3(SK.rimTint.slice(0, 3))}, vBare * (1.0 - uSuit) * edge * ${SK.rimTint[3].toFixed(3)}); // light scattered through skin reddens its edges
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
       #include <opaque_fragment>`);
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031'; // #2032, #2031
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033'; // #2032, #2031, #2033
   return m;
 }
 
@@ -1438,6 +1442,7 @@ function faceShape() {
       } else {
         if (abs(facePart - ${P.eye}.0) < 0.5 || abs(facePart - ${P.iris}.0) < 0.5) {
           transformed = faceAnchor + (transformed - faceAnchor) * uEye;
+          ${eyePupil(P.iris)}
           if (facePart > ${P.iris}.0 - 0.5) { // #2011: the gaze moves the iris and pupil, kept inside the almond so the lids cover the rest
             vec2 d = transformed.xy - faceAnchor.xy + uGaze;
             float er = ${f(FACE.eye.r)} * uEye.x;
@@ -1447,6 +1452,7 @@ function faceShape() {
             transformed.xy = faceAnchor.xy + d;
           }
           transformed.y = faceAnchor.y + (transformed.y - faceAnchor.y) * (1.0 - uBlink * ${f(AVATAR_BLINK.depth)}); // #2011: a blink squeezes the eye shut about its centre
+          ${eyeAt()}
         }
         else if (abs(facePart - ${P.nose}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uNose;
         else if (abs(facePart - ${P.ear}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uEar;
@@ -1921,6 +1927,8 @@ export class Avatar {
   /** #1837: own material uniform; shared bind-pose buffers remain immutable. */
   /** #2017: the light factor of the place the figure stands in (1 = the scene lights as they are). */
   setLight(f) { const u = this.material?.userData.u.uLight; if (u) u.value = f; }
+  /** #2033: the light the eyes stand in (avatarlight.js zone / env): the pupil follows it in updateEyes, the sun's glint dims indoors. */
+  setEyeLight(zone, env) { (this.eyeLight ??= new EyeLight()).set(zone, env); }
 
   setPump(value) { const next = pumpWire(value); if (next === this.pump) return; this.pump = next; this.material.userData.u.uPump.value = next; }
 
@@ -2153,6 +2161,7 @@ export class Avatar {
     const G = AVATAR_GAZE, e = this.eyes ??= { blink: newBlink(), saccade: {}, yaw: 0, pitch: 0, ex: 0, ey: 0, sx: 0, sy: 0 };
     if (this.eyesHidden) { u.uBlink.value = 0; u.uGaze.value.set(0, 0); e.yaw = e.pitch = e.ex = e.ey = 0; return none; }
     u.uBlink.value = stepBlink(e.blink, dt);
+    (this.eyeLight ??= new EyeLight()).step(u, dt); // #2033: the pupil follows the light
     let want = null;
     if (this.gazeTarget && !still) { // the target's angles in the figure's own frame (+z forward, +x its left)
       const v = this.gazeV ??= new THREE.Vector3(), h = this.gazeH ??= new THREE.Vector3();
