@@ -29,6 +29,21 @@ added. The loaded rig still receives this live geometry/material, so the neutral
 GLB's standalone inspection surface is unchanged. [Matched views, fixed budget
 and software-renderer limitations](../verification/1995/README.md).
 
+**Head silhouette and neck (#2043).** `src/avatarcontour.js` (tunables `AVATAR_CONTOUR`, all *guess*)
+joins the authored head rings (`AVATAR_SURFACE.head`, the `AVATAR_FACE.jaw` widths) with a monotone
+cubic (`profileAt`, exact on the authored rows and never overshooting them) instead of straight lines,
+in the mesh, in `headSculpt`'s jaw widening and in `headFront` (lids and lips seat on the same profile).
+`contourRows` adds nine rings only where the outline curves (jaw angle, chin, cheek, back of the
+skull, crown) and rounds the chin's flat underside off as a quarter ellipse 6 mm deep (two rings, the
+cap centre lowered by `roundChinCap`). The 8-sided capped neck cylinder is replaced by `neckGeometry`:
+an open 16-sided column that tapers from the collar, sits set back under the jaw so the underside of
+the chin shows, and carries a soft larynx bump (fuller on the male figure); it keeps the old y span
+inside the head, so the neck slider stretches it as before. The Spider mask's projection keeps its old
+lower edge (`projectionMinY`). Columns, the face-front sculpt, nose, eyes and brows are untouched;
+the gameplay head boxes do not read this mesh. +592 triangles per figure (head shell 864 to 1,392,
+neck 32 to 96; about +9 % of the head's triangles), one draw.
+[Views](../verification/2043/README.md) (`tools/avatarcontour2043browser.cjs`).
+
 ### Player body and clothing fit (#2001)
 
 `upperBody` / `AVATAR_SURFACE.body` join the ribcage, oval armholes and rounded

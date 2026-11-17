@@ -1,7 +1,7 @@
 // #2043: the head's silhouette (cheek, jaw angle, chin, the under-jaw into the neck). One browser run on tools/avatarexpr.html
 // (its import map and three.js), before (src/avatar.js + src/config.js of BASELINE; src/avatarcontour.js is then unused) and after
 // (the checkout). Rows: light skin bare; dark skin full beard + cap + headphones; medium skin in the Spider suit; jaw slider
-// square + beard; jaw slider pointed + long head. Columns: front, three-quarter, profile, low three-quarter (under the jaw).
+// square + beard + short neck; jaw slider pointed + long head + long neck. Columns: front, three-quarter, profile, low three-quarter (under the jaw).
 // `contour.png` in daylight, `contour-backlight.png` with the sun behind the head (the rim shows the silhouette).
 // PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarcontour2043browser.cjs http://localhost:8143 docs/verification/2043 [before|after|both]
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
@@ -37,8 +37,8 @@ const proof = { baseline, triangles: {}, errors: {} };
           ['000000100', {}],
           ['400000103', { hat: 1, phones: 1 }],
           ['200000100', {}, true],
-          ['300050101', { jaw: 8 }],
-          ['100000100', { jaw: 0, headLength: 8 }],
+          ['300050101', { jaw: 8, neck: 0 }],
+          ['100000100', { jaw: 0, headLength: 8, neck: 8 }],
         ];
         const av = looks.map(([code, ext, suit]) => {
           const lk = { ...decodeAvatarLook(code, 'contour2043'), tall: 1, build: 1, glasses: 0, ...ext };
