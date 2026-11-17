@@ -121,14 +121,15 @@ test('#2043 head contour: budget, rounded chin underside and a smooth neck',()=>
  assert(Math.abs(bottom-(low-AVATAR_CONTOUR.chin.depth))<1e-4,`the chin's underside reaches ${bottom}, not a flat cap at ${low}`);
  assert.equal(neck/3,(AVATAR_CONTOUR.neck.rings.length-1)*2*AVATAR_CONTOUR.neck.sides);g.dispose();
 });
-// #2047: the formed ear stays within +10 % of the head's triangles before it (1fe1aba1, every head-bone part), stands out from the head
+// #2047: the formed ear stays within +10 % of the head's triangles before it (1fe1aba1, every head-bone part; later steps such as the
+// #2045 eyes grow the head on their own budgets), stands out from the head
 // at its upper back (angled out, readable from the front), keeps the old height envelope, and the earrings sit on the lobe's outer face
 const head2047=[['s0f0',7268],['s0f1',8156],['s0f3',8232],['s1f0',8188],['s2f0',7604],['s3f0',8296],['s4f0',12884]];
 test('#2047 ear: budget, angled out from the head, lobe holds the earrings',()=>{
  for(const[key,tris]of head2047){const style=+key[1],facial=+key[3];
   const g=avatarModelGeometry({...avatarLook('ear'),style,facial,gender:style%2}),a=g.attributes;let head=0,ear=0;
   for(let i=0;i<a.position.count;i+=3){const f=a.facePart.getX(i);if(f>0&&f<30)head++;if(f===5)ear++;}
-  assert.equal(ear,2*earTris);assert(ear2047<=tris*0.1&&head-ear2047===tris,`${key}: ear +${ear2047} > ${tris}×0.1 (head ${head})`);g.dispose();}
+  assert.equal(ear,2*earTris);assert(ear2047<=tris*0.1&&head-ear2047>=tris,`${key}: ear +${ear2047} > ${tris}×0.1 (head ${head})`);g.dispose();}
  const g=avatarModelGeometry({...avatarLook('ear'),style:0,facial:0,gender:1,earrings:1}),a=g.attributes,hb=bindAt('head');
  for(const side of[-1,1]){
   const ear=[],stud=[];

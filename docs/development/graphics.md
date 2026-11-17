@@ -55,8 +55,8 @@ darkens the concha, scapha and the sulcus behind. It keeps the old attachment po
 (`uEar`), the skin flush and the backlit translucency (#2032 `earRim`) still apply; the earrings take
 their lobe point from `earLobe`, and the hair keeps clear of `earEnvelope` (three ellipsoids fitted to the
 ear) instead of the old single ellipsoid. Headphone cups, hats and glasses temples were not changed.
-1,000 triangles for both ears instead of 384 (+616, about +8.5 % of the head's 7,268), one draw, no
-attribute, texture, light or pass. [Views](../verification/2047/README.md) (`tools/avatareartest.cjs`).
+1,000 triangles for both ears instead of 384 (+616: +8.5 % of the head's 7,268 before this step, +7.8 % of
+7,908 with the #2045 eyes), one draw, no attribute, texture, light or pass. [Views](../verification/2047/README.md) (`tools/avatareartest.cjs`).
 
 **Sculpted face (#2044).** `src/avatarsculpt.js` (tunables `AVATAR_SCULPT`, all *guess*) gives the face
 real forms instead of painted depth, as pure functions of the head-bone bind position (before

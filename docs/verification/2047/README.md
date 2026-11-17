@@ -1,7 +1,7 @@
 # #2047 Formed avatar ears
 
 Run: `PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatareartest.cjs http://localhost:8147 docs/verification/2047`
-(component page `tools/avatarear.html`; "före" = the branch base `1fe1aba1` — its `src/avatar.js`, `src/config.js` and
+(component page `tools/avatarear.html`; "före" = the branch base `edf705ea` (after the #2043/#2044/#2045/#2046 head steps) — its `src/avatar.js`, `src/config.js` and
 `src/avatarskin.js` served under `/base/` — and "efter" = the checkout; SwiftShader with 4× MSAA, NeutralToneMapping, the sun over the
 camera's shoulder for "dagsljus" and low behind the subject for "motljus").
 
@@ -25,10 +25,13 @@ Checks: browser run PASS (no page or shader errors, one draw call per avatar for
 axis against 0.105 before; upper back ≥ 8 mm further out than the front edge; old height envelope; stud within 4.5 mm of the lobe
 surface); all `tools/avatar*test.mjs` and `tools/riggedavatartest.mjs` pass.
 
-Cost: ears 384 → 1,000 triangles (+616 per figure; head-bone parts 7,268 → 7,884 = +8.5 % for short hair, +4.8 % for curly; whole
-figure about +4.7 %). No new attribute, texture, light, pass, uniform or shader branch; one draw. SwiftShader timing on a loaded host
-(load average ≈ 14) scattered too much to resolve a geometry change of this size: best-of-three crowd ratios 1.32 and 1.21, close-up
-1.01 and 1.12 in two runs, with single rounds varying ±40 %. A software rasterizer is a pessimistic proxy, not a Surface measurement.
+Cost: ears 384 → 1,000 triangles (+616 per figure). Head-bone parts 7,908 → 8,524 on the integrated base (+7.8 % short hair,
++4.6 % curly); against the head before this step was planned (`1fe1aba1`, 7,268, which the node test budgets) +8.5 %; whole figure about
++4.5 %. No new attribute, texture, light, pass, uniform or shader branch; one draw. SwiftShader timing on a loaded host (load average
+14–16) scattered more than a geometry change of this size: best-of-three nine-figure crowd ratios 1.32, 1.21, 0.83 and 0.99 in four
+runs (no consistent change); a full-frame ear close-up 1.01, 1.12, 1.47 and 1.15 — plausibly a little real cost from the larger
+projected ear shading over the head skin behind it (one mesh, so the head is drawn first), and only in that extreme framing. A software
+rasterizer is a pessimistic proxy, not a Surface measurement.
 
 Limits: stylised forms (no crura split of the antihelix, no intertragic notch); the concha's darkening is per vertex, so it is soft;
 the ear slider still scales the whole ear about the old attachment point; the far LOD figure (#1966) is not affected by this mesh.
