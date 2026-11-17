@@ -7,7 +7,7 @@
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs = require('node:fs'), path = require('node:path'), { execFileSync } = require('node:child_process');
 const [base = 'http://localhost:8144', out = 'docs/verification/2044'] = process.argv.slice(2);
-const baseline = process.env.BASELINE || 'b5cb5c95';
+const baseline = process.env.BASELINE || '2bcee334';
 const files = ['src/avatar.js', 'src/config.js'];
 const proof = { baseline, triangles: {}, errors: {}, frameMs: {} };
 (async () => {

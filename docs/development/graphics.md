@@ -44,6 +44,23 @@ the gameplay head boxes do not read this mesh. +592 triangles per figure (head s
 neck 32 to 96; about +9 % of the head's triangles), one draw.
 [Views](../verification/2043/README.md) (`tools/avatarcontour2043browser.cjs`).
 
+**Sculpted face (#2044).** `src/avatarsculpt.js` (tunables `AVATAR_SCULPT`, all *guess*) gives the face
+real forms instead of painted depth, as pure functions of the head-bone bind position (before
+`faceWarp`), so they hold on any head tessellation. `shape` forms (the upper-lid sulcus under the brow
+ridge and the ridge) move the head skin in `headSculpt` (`sculptShape`), so the lids and brows seated on
+`headFront` follow. The rest is finer than the head's vertex grid (about 16 mm between columns on the
+cheek): the cheekbones and the hollow under them (`form`), the one-sided nasolabial fold, the philtrum's
+columns and groove, the mouth corners and the bulge outside them, and the lip border's roll (`fine`)
+bend the shading normal per pixel (an analytic height, forward differences, three's bump formula) and
+the fine hollows take a little ambient light out (`cavity`). The smile (#2031 `uExpr.x`) deepens the
+fold and corners; expressions, the talking mouth and the kiss move the skin and the forms ride along on
+its bind position; both groups fade out by pixel footprint. `sealLipEdge` gives the lip's outer row the
+skin band's normal and the colour blends across the lip outline (part skin on the lip edge, part lip
+colour on the skin), so the lips no longer read as stickers. The painted socket darkening
+(`AVATAR_SKIN.eye`) dropped from 0.35 to 0.2 now that the socket is sculpted. No triangles, attributes,
+textures, lights or passes; one fragment branch on face pixels only (program key `-sculpt2044`).
+[Views](../verification/2044/README.md) (`tools/avatarsculpt2044browser.cjs`).
+
 ### Player body and clothing fit (#2001)
 
 `upperBody` / `AVATAR_SURFACE.body` join the ribcage, oval armholes and rounded
