@@ -1049,14 +1049,15 @@ centre, before the head's widthwise warp) and blinks them; still one draw call, 
 opening: the margin's back sits inside the opening behind the eyeball (no slit where they meet), its front edge stands `thick` m proud of
 the eyeball (thickness in profile), rounds over and falls onto the head's surface tangentially (`headFront`, so #2044's socket sculpt
 carries the outer edge along); the upper lid has a shallow, darker fold (`crease`) and its front row is darker (the lash line). The upper
-lashes are a closed wedge along the margin in the brows' colour × `lash.shade` (region 9 inside the eye part: no glint, hair roughness).
+lashes are a closed wedge along the margin in the brows' colour × `lash.shade` (region 9 inside the eye part: no glint, hair roughness;
+#2046's brow hairs (`browColor` / `browRoughness`, `part: FACE_PART.brow`) shade only the brow part).
 `lidBlink` (vertex, the eye branch after the gaze; replaces #2011's squeeze about the centre) moves both margins onto a closing line a
 third down the lower opening, the upper lid's skin up to `fold` m above its margin stretching with them, squeezes the eyeball, iris and
 pupil onto the line and pushes them `push` m back, and folds the lashes down; the lashes collapse onto the margin when shorter than
 `lash.px` on screen (`uFly`, #2040: buffer height and MSAA), so a far figure's lash line is the darker margin only and never flickers.
-Budget: 1,248 eye triangles per avatar against #2033's 608 (+640, 7.2 % of the 8,904 head-bone triangles of style 0); the #2002/#2012
+Budget: 1,248 eye triangles per avatar against #2033's 608 (+640, 6.7 % of style 0's head-bone triangles after #2043); the #2002/#2012
 whole-avatar budgets in `tools/avatarheadtest.mjs` leave that growth out, `tools/avatarlidstest.mjs` holds it. Vertex: a few ALU per
-eye vertex; fragment unchanged but the lashes' region test. Known limits: the lid's outer edge still meets the coarse head mesh (#2043)
-along a visible line in steep views, and the eye stands well proud of the temple in profile (the socket is #2044's).
+eye vertex; fragment unchanged but the lashes' region test. Known limits: the lid's outer edge meets the head mesh along a visible line in steep views, and the eye stands well proud of the
+temple in profile (the eye's depth against the head; the socket is #2044's).
 Check: `node --test tools/avatarlidstest.mjs tools/avatareyestest.mjs tools/avatarheadtest.mjs` and
 `tools/browsertest.sh node tools/avatarlids2045browser.cjs SITE docs/verification/2045 [BEFORE]` ([images](../verification/2045/)).

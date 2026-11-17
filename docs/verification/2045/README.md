@@ -1,6 +1,6 @@
 # Round irises, thick lids, crease and lash line — #2045
 
-Baseline `b5cb5c95` (before: its `src/`, `tools/` and `data/` served under `/before/`, with this branch's `tools/avatareyes.html` harness).
+Baseline `1fe1aba1` (origin/main with #2043, #2044 and #2046; before: its `src/`, `tools/` and `data/` served under `/before/`, with this branch's `tools/avatareyes.html` harness).
 `tools/avatarlids2045browser.cjs` on `tools/avatareyes.html` (SwiftShader, MSAA, the game's four lights and tone mapping). Rows: före / efter.
 
 | Image | Shows |
@@ -16,9 +16,9 @@ proud of the eyeball (visible in profile and three-quarter), a shallow darker cr
 (a lash wedge plus the darker margin); the blink brings both margins together so the shut eye is skin from lid to lid with the lashes
 folded down, in light and dark skin.
 
-Checks: browser run PASS (no page/shader errors, one draw call per frame, no bright pixel in a shut eye, far flicker 0.20 / 0.27 / 0.27
-against 0.20 / 0.28 / 0.23 before at 1 / 2 / 4 m — the 4 m difference is the darker margin line where the iris used to be, within the
+Checks: browser run PASS (no page/shader errors, one draw call per frame, no bright pixel in a shut eye, far flicker 0.19 / 0.27 / 0.31
+against 0.19 / 0.28 / 0.26 before at 1 / 2 / 4 m — the 4 m difference is the darker margin line where the iris used to be, within the
 check's tolerance); `tools/avatareyestest.cjs` (#2033 glint follows the sun, pupil sizes, shut eye) and `tools/avatargazetest.cjs`
-(#2011 blink and gaze limits) PASS. Node: `avatarlidstest` 5/5, all `tools/avatar*test.mjs` + `riggedavatartest` 164/164.
-Budget: eye triangles 608 → 1,248 per avatar (+640, 7.2 % of style 0's 8,904 head-bone triangles; limit +10 %), one draw call, no
-new attribute/light/pass/texture. Not covered: physical devices, the in-game mirror (same geometry builder).
+(#2011 blink and gaze limits) PASS. Node: `avatarlidstest` 5/5, all `tools/avatar*test.mjs` + `riggedavatartest` 171/171 (the #2046 brow test leaves the lashes, region 9 inside the eye part, out).
+Budget: eye triangles 608 → 1,248 per avatar (+640, 6.7 % of style 0's head-bone triangles without the eyes' growth, 4.2 % for style 4; limit +10 %), one draw call, no
+new attribute/light/pass/texture. The lashes share the brows' region 9; `src/avatarbrow.js` now takes a `part` so the #2046 brow hairs shade only the brow part. Not covered: physical devices, the in-game mirror (same geometry builder).

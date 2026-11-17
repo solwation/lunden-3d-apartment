@@ -33,7 +33,7 @@ test('#2046 avatars: both brows within budget, every brow vertex a brow part, no
   for (const style of [0, 1, 4]) {
     const g = avatarModelGeometry({ ...avatarLook('2046'), style, facial: 0 }), a = g.attributes;
     let n = 0;
-    for (let i = 0; i < a.position.count; i++) if (a.region.getX(i) === 9) { n++; assert.equal(a.facePart.getX(i), 6); }
+    for (let i = 0; i < a.position.count; i++) if (a.region.getX(i) === 9 && a.facePart.getX(i) !== 3) { n++; assert.equal(a.facePart.getX(i), 6); } // (#2045: the lashes share the region inside the eye part)
     assert.equal(n / 3, 4 * B.cols * B.rows); assert(n / 3 <= B.budget);
     assert.equal(Object.keys(a).length, 17); g.dispose();
   }
