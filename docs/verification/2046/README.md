@@ -12,7 +12,7 @@ blond and red hair, medium with black and grey, dark with black and grey (brows 
 | `reglage-mimik.jpg` | after: the brow slider's thickness min/max and height min/max, surprise (before/after) and grimace (three-quarter) |
 | `samtal.jpg` | 1.5 m and 3 m at the game's pixel density (70° over 1080 px), daylight and backlight, before/after |
 | `utan-msaa.jpg` | the no-MSAA fallback (`&test`, or a device without antialiasing): close-up before/after, detail, 1.5 m |
-| `before/nara-fore.jpg` | the base alone (close-up, three-quarter, detail) — removed when the issue is resolved |
+| [before/nara-fore.jpg](https://github.com/solwation/lunden-3d-apartment/blob/b8ece3c8/docs/verification/2046/before/nara-fore.jpg) (removed at closure) | the base alone (close-up, three-quarter, detail) — removed when the issue is resolved |
 | `brow.json` | triangles, brow triangles and draw calls (with and without MSAA), and one timing run |
 
 Before: solid, plastic tubes with hard edges standing 2.6 mm off the forehead. After: a thin layer 0.7 mm above the skin whose
