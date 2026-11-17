@@ -1,0 +1,146 @@
+{
+  "revision": "d73342e3",
+  "errors": [],
+  "frames": [
+    {
+      "name": "front",
+      "stats": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      }
+    },
+    {
+      "name": "45°",
+      "stats": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      }
+    },
+    {
+      "name": "60°",
+      "stats": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      }
+    },
+    {
+      "name": "profile",
+      "stats": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      }
+    },
+    {
+      "name": "0.8 eye 0°",
+      "stats": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      }
+    },
+    {
+      "name": "0.8 eye 45°",
+      "stats": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      }
+    },
+    {
+      "name": "0.8 eye 60°",
+      "stats": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      }
+    },
+    {
+      "name": "0.8 eye 90°",
+      "stats": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      }
+    },
+    {
+      "name": "1.2 eye 0°",
+      "stats": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      }
+    },
+    {
+      "name": "1.2 eye 45°",
+      "stats": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      }
+    },
+    {
+      "name": "1.2 eye 60°",
+      "stats": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      }
+    },
+    {
+      "name": "1.2 eye 90°",
+      "stats": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0,
+        "calls": 1
+      }
+    },
+    {
+      "name": "half blink",
+      "stats": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 0.5,
+        "calls": 1
+      }
+    },
+    {
+      "name": "shut dark",
+      "stats": {
+        "pupil": 0.7,
+        "sunGlint": 1,
+        "light": 1.1282051282051284,
+        "blink": 1,
+        "calls": 1
+      }
+    }
+  ]
+}

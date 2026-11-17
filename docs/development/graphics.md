@@ -1283,11 +1283,11 @@ Check: `node --test tools/avatarlidstest.mjs tools/avatareyestest.mjs tools/avat
 
 ## Inset avatar eyes (#2063)
 
-`AVATAR_FACE.eye.at.z` seats the globe 8 mm farther back and `eye.scale.z` flattens it from 0.55 to 0.4;
-`AVATAR_SURFACE.face.socket` deepens the same continuous head surface by 5 mm. These are artistic guesses in metres,
+`AVATAR_FACE.eye.at.z` seats the globe 12 mm farther back and `eye.scale.z` flattens it from 0.55 to 0.4;
+`AVATAR_SURFACE.face.socket` deepens the same continuous head surface by 9 mm. These are artistic guesses in metres,
 not measured human dimensions. The #2045 lids, iris and pupil use the shared globe coordinates and head surface, so they follow.
 `applyFaceShape` keeps the eye's z scale at 1 while retaining the existing width/height controls: larger openings no longer
-push the eye forward. `AVATAR_FACE.accessoryFront` keeps glasses and sunglasses at their previous nasal-bridge depth;
+push the eye forward. The integrated close-up review required an extra 4 mm inset and matching socket depth to hide the far-eye sliver at oblique angles. `AVATAR_FACE.accessoryFront` keeps glasses and sunglasses at their previous nasal-bridge depth;
 the diving mask has its independent `SWIM.dive.mask.front`. Codes, wire fields, skeleton, material and detail LOD are unchanged.
 
 Budget: unchanged eye/whole style-0 figure counts (1,248 / 15,620 triangles), one draw, no new shader operations, varyings,
