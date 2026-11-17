@@ -7,7 +7,7 @@ const [base = 'http://localhost:8231', out = 'docs/verification/2031'] = process
 (async () => {
   fs.mkdirSync(out, { recursive: true });
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'avatarexpr-'));
-  const ctx = await chromium.launchPersistentContext(dir, { headless: true, executablePath: process.env.CHROME_PATH, viewport: { width: 1600, height: 800 }, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  const ctx = await chromium.launchPersistentContext(dir, { headless: true, executablePath: process.env.CHROME_PATH, viewport: { width: 2100, height: 1100 }, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   const errors = [], data = {};
   try {
     const page = await ctx.newPage();

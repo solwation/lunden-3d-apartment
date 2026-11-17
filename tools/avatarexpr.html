@@ -17,7 +17,7 @@ import { Reflector } from 'three/addons/objects/Reflector.js';
 import { Avatar } from '../src/avatar.js';
 import { updateFace, flinch } from '../src/avatarface.js';
 import { decodeAvatarLook, avatarEyeHeight } from '../src/config.js';
-const C = 200, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+const C = 260, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(1); renderer.setSize(C * 6, C * 4); document.body.appendChild(renderer.domElement);
 renderer.setScissorTest(true);
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
@@ -30,14 +30,14 @@ const looks = [
 ];
 const avatars = looks.map(([code, extra], i) => {
   const lk = { ...decodeAvatarLook(code, 'expr' + i), tall: 1, build: 1, ...extra };
-  const a = new Avatar(lk); a.object.position.set((i - 1) * 3, 1.62 - avatarEyeHeight(lk), 0); scene.add(a.object);
+  const a = new Avatar(lk); a.object.position.set((i - 1) * 3, 1.62 - avatarEyeHeight(lk), 0); scene.add(a.object); a.object.rotation.y = 0; // facing +z
   a.eyes && (a.eyes.blink.wait = 1e9); // no random blink in the frames
   return a;
 });
 for (const a of avatars) for (let i = 0; i < 60; i++) a.update(1 / 60, {});
-const head = (a) => a.bones.head.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 0.085, 0.02));
+const head = (a) => a.bones.head.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 0.078, 0.02));
 const cam = new THREE.PerspectiveCamera(11, 1, 0.05, 50);
-const frame = (a, yaw, dist = 1.15) => { const h = head(a); cam.position.set(h.x + Math.sin(yaw) * dist, h.y + 0.02, h.z + Math.cos(yaw) * dist); cam.lookAt(h); };
+const frame = (a, yaw, dist = 0.88) => { const h = head(a); cam.position.set(h.x + Math.sin(yaw) * dist, h.y + 0.01, h.z + Math.cos(yaw) * dist); cam.lookAt(h); };
 const set = (a, e) => { a.material.userData.u.uExpr.value.set(...e); a.material.userData.u.uBlink.value = 0; };
 const EXPR = [['neutral', [0, 0, 0]], ['smile', [1, 0, 0]], ['surprise', [0, 1, 0]], ['grimace', [0, 0, 1]]];
 const cell = (col, row) => { renderer.setViewport(col * C, (3 - row) * C, C, C); renderer.setScissor(col * C, (3 - row) * C, C, C); };
@@ -71,7 +71,7 @@ window.__mirror = () => {
 const timeline = (t) => t < 0.5 ? {} : t < 2.5 ? { wave: true } : t < 4 ? {} : t < 6.5 ? {} : t < 8.5 ? { react: 'scream' } : {};
 window.__trace = () => {
   const a = avatars[0], out = []; a.face = null; let prev = [0, 0, 0], maxStep = [0, 0, 0];
-  for (let f = 0; f <= 60 * 11; f++) {
+  for (let f = 0; f <= 60 * 13; f++) {
     const t = f / 60;
     if (f === Math.round(4.5 * 60)) flinch(a);
     updateFace(a, 1 / 60, timeline(t));
@@ -99,7 +99,7 @@ window.__cost = () => {
   renderer.setSize(640, 480); renderer.setScissorTest(false); renderer.setViewport(0, 0, 640, 480);
   const crowd = [], wide = new THREE.PerspectiveCamera(50, 640 / 480, 0.1, 100); wide.position.set(0, 1.6, 9); wide.lookAt(0, 1, 0);
   for (const a of avatars) a.object.visible = false;
-  for (let i = 0; i < 24; i++) { const a = new Avatar({ ...decodeAvatarLook(looks[i % 3][0], 'c' + i), ...looks[i % 3][1] }); a.object.position.set((i % 8 - 3.5) * 0.9, 0, -Math.floor(i / 8) * 1.5); scene.add(a.object); a.update(1 / 60, {}); crowd.push(a); }
+  for (let i = 0; i < 24; i++) { const a = new Avatar({ ...decodeAvatarLook(looks[i % 3][0], 'c' + i), ...looks[i % 3][1] }); a.object.position.set((i % 8 - 3.5) * 0.9, 0, -Math.floor(i / 8) * 1.5); a.object.rotation.y = 0; scene.add(a.object); a.update(1 / 60, {}); crowd.push(a); }
   const run = (e) => { for (const a of crowd) a.material.userData.u.uExpr.value.set(...e); renderer.render(scene, wide); const gl = renderer.getContext(); gl.finish(); const t0 = performance.now(); for (let i = 0; i < 120; i++) renderer.render(scene, wide); gl.finish(); return (performance.now() - t0) / 120; };
   run([0, 0, 0]); const off = run([0, 0, 0]), on = run([1, 0.5, 0.5]), off2 = run([0, 0, 0]);
   const calls = renderer.info.render.calls, tris = renderer.info.render.triangles;

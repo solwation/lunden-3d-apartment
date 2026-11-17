@@ -4228,9 +4228,9 @@ export const AVATAR_MOUTH = { drop: 0.009, below: 0.004, chinY: -0.03, halfWidth
 // on the face; `squint` / `widen` close / open the eyes (their height about the eye's centre); `jaw` the surprise's mouth drop.
 export const AVATAR_EXPR = { rise: 7, fall: 2.4, flinch: 0.7,
   cues: { wave: 0.9, hug: 1, kiss: 0.7, laugh: 1, scream: 1, cry: 0.75, hit: 1, gym: 0.6, run: 0.35 },
-  corner: [0.023, 0.044, 0.012, 0.012], smile: [0.0024, 0.0042, -0.001], surprise: [-0.0018, -0.0006, 0.0006], grimace: [0.0032, -0.0016, -0.0006],
+  corner: [0.023, 0.044, 0.012, 0.012], smile: [0.003, 0.0055, -0.0012], surprise: [-0.0022, -0.0006, 0.0006], grimace: [0.0042, -0.002, -0.0008],
   cheek: [0.04, 0.078, 0.016, 0.014], cheekLift: [0.0024, 0, 0.0016], cheekPuff: 0.0008,
-  band: [0.108, 0.12, 0.15, 0.185], arch: [0.035, 0.03], browUp: 0.0055, browDown: 0.0032, browIn: 0.1, inner: [0.02, 0.055], front: [0.05, 0.085],
+  band: [0.108, 0.12, 0.15, 0.185], arch: [0.035, 0.03], browUp: 0.0065, browDown: 0.0055, browIn: 0.18, inner: [0.02, 0.055], front: [0.05, 0.085],
   squint: [0.22, 0, 0.36], widen: 0.18, jaw: 0.004 };
 // The avatars' full beard (#1097, src/avatar.js beardShell) *guess* tuned by eye against the avatar head (PVP_RIFLE_HEAD skull / jaw): degrees from `centre` (head-bone frame, metres);
 // the grid's rows/columns line up with the moustache variant's mouth opening [half width, bottom, top] (two quads high at 12 rows, two wide; #2020: moved up to the #2002 lips, whose seam sits about -17 degrees; no separate lip patch)

@@ -74,7 +74,7 @@ export function faceExprShader(vs, { hb, chinY, P }) {
     vec3 c = sm * ${v3(X.smile)} + su * ${v3(X.surprise)} + gr * ${v3(X.grimace)};
     vec3 d = wc * vec3(c.x * out1, c.y, c.z);
     d.y += wk * dot(uExpr, ${v3(X.cheekLift)}); d.z += wk * uExpr.x * ${f(X.cheekPuff)};
-    d.y += wb * (su * ${f(X.browUp)} * arch - gr * ${f(X.browDown)} * (0.4 + 0.6 * inner));
+    d.y += wb * (su * ${f(X.browUp)} * arch - gr * ${f(X.browDown)} * (0.25 + 0.75 * inner));
     d.x -= wb * gr * ${f(X.browIn)} * inner * q.x;
     transformed += d;
     transformed.y -= su * mouth * ${f(X.jaw)};
