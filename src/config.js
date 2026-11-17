@@ -9037,3 +9037,19 @@ export const AVATAR_SHADOW = { bodyAlpha: 0.3, footAlpha: 0.42, bodyRadius: [0.3
 // share of patchiness.
 export const AVATAR_WET = { wetRate: 0.0125, dryIndoor: 1 / 300, dryOutdoor: 1 / 900, snowRate: 0.01, meltIndoor: 1 / 150, meltOutdoor: 1 / 1500, meltToWet: 0.5, hail: 0.5, maxGap: 900,
   darken: 0.55, skin: 0.35, rough: 0.22, snowRough: 0.88, snowColor: 0xeef3fa, snowUp: [0.45, 0.85], snowFrom: 0.38, snowPatch: 0.4 };
+
+/** #2015: the avatar's feet on the real ground (src/avatarfootik.js). Offsets are in the figure's units. */
+export const AVATAR_FOOT_IK = {
+  reach: 0.02, // m over the root the ground is searched from (Player.groundAt itself takes any floor up to PLAYER.stepUp above that: a stair riser, a kerb)
+  maxRise: 0.45, maxDrop: 0.55, // m a foot is raised / lowered at most from the root's level
+  fade: [0.1, 0.3], // m the root is over the ground below it: full foot adaption up to the first, none (jump, flight, drop) from the second
+  rate: 26, // 1/s: how fast a foot's height / pitch follow the ground (a swinging foot rises onto the next tread inside its swing)
+  rateStance: 70, // 1/s: the same for a foot on the ground (it rolls over a nosing: the sole must not sink into the next tread)
+  ease: 10, // 1/s: how fast the adaption fades in / out when the pose starts / ends
+  heel: 0.084, toe: 0.194, // m the sole's heel / toe from the ankle: where the ground's slope is read (the shoe, AVATAR_GAIT.shoe)
+  edgeSlope: 0.6, // a rise over the sole steeper than this (tan) is a step edge under the toe or heel: the foot stays level
+  lineTol: 0.01, lineShare: 0.1, // m + share of the heel-toe rise: how far the ankle's ground may lie off the heel-toe line (a ramp is straight; a stair edge is not)
+  edgeTol: 0.05, // m over the foot's ground the heel / toe ground is looked up from (so a riser ahead is not read as a slope)
+  maxPitch: 0.45, // rad: the steepest sole tilt
+  hipFollow: 0.5, // the share of the feet's mean height offset the hips follow (the reach clamp lowers them further)
+};

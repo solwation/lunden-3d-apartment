@@ -70,7 +70,7 @@ const v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), v3 = new THREE.Vector3
 /** Two-bone IK in one frame: `upper` (whose parent has rotation `parentQ` in that frame) starts at S and reaches with its
  * child `lower` (bone lengths a, b) for T, the joint bent towards `pole`. Sets both local rotations; returns the lower
  * bone's rotation in the frame (in `out`). */
-function ik(upper, lower, parentQ, S, T, a, b, pole, out) {
+export function ik(upper, lower, parentQ, S, T, a, b, pole, out) {
   const u = v1.copy(T).sub(S); let d = u.length(); u.normalize();
   d = THREE.MathUtils.clamp(d, Math.abs(a - b) + 1e-3, a + b - 1e-4);
   const cosA = THREE.MathUtils.clamp((a * a + d * d - b * b) / (2 * a * d), -1, 1), sinA = Math.sqrt(1 - cosA * cosA);

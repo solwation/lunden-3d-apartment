@@ -412,7 +412,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const groundEnabled = !this.pose && !this.gx && !this.bikeMesh && !amount;
     this.avatar.collectPose = true;
     this.avatar.updateWeather(wetEnv.outdoorAt(this)); // #2018
-    this.avatar.update(dt, { motionFrame, groundSpeed: groundEnabled && groundSpeed <= 8 ? groundSpeed : 0, groundEnabled, gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: wet ? 0 : this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive });
+    this.avatar.update(dt, { ground: this.ground, floorY: this.root.position.y, motionFrame, groundSpeed: groundEnabled && groundSpeed <= 8 ? groundSpeed : 0, groundEnabled, gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: wet ? 0 : this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive });
     if (wet) sink(this.avatar.swimAmt, this.avatar.swimLine, this.avatar.diveAmt); // (blending in from standing on the bed)
     applyRestPose(this.avatar, this.pose, this.look, react);
     applyGymBodyPose(this.avatar,this.gx,this.look);
@@ -500,7 +500,7 @@ export class Ghosts {
     this.group = new THREE.Group();
     this.group.name = 'ghosts';
     scene.add(this.group);
-    this.shadows = new AvatarShadows(this.group); this.shadows.ground = ground; // #2010: ground(x, z, feetY) = the walkable height
+    this.shadows = new AvatarShadows(this.group); this.ground = ground; this.shadows.ground = ground; // #2010: ground(x, z, feetY) = the walkable height
     // a hidden outline avatar so that the warm-up compiles the others' program with the scene's (#705): nothing to compile when the first one turns up
     this.sample = new Avatar('warm');
     this.sample.object.visible = false;
@@ -614,7 +614,7 @@ export class Ghosts {
     let g = this.others.get(id);
     if (!g && this.others.size < G.max) {
       const look = av ? decodeAvatarLook(av, id) : null;
-      g = new Ghost(this.group, id, name, false, look);
+      g = new Ghost(this.group, id, name, false, look); g.ground = this.ground; // #2015: the feet follow the stairs / slope
       g.onAvatar = (av) => (this.far ??= new GhostFar(this.group)).adopt(av); g.onAvatar(g.avatar); // #1966: its body fades into the shared far figure
       if (av) g.avatarCode = av;
       this.others.set(id, g);
@@ -945,7 +945,7 @@ export class Ghosts {
   selfGhost() {
     const n = this.name() || '';
     const key = `${n}:${this.avatarCode}`;
-    if (!this.myGhost || this.myGhost.key !== key) { this.myGhost?.dispose(); this.myGhost = new Ghost(this.group, 'me', n, true, this.myLook); this.myGhost.key = key; }
+    if (!this.myGhost || this.myGhost.key !== key) { this.myGhost?.dispose(); this.myGhost = new Ghost(this.group, 'me', n, true, this.myLook); this.myGhost.ground = this.ground; this.myGhost.key = key; }
     this.myGhost.pump = pumpWire(this.mine?.bp); this.myGhost.avatar.setPump(this.myGhost.pump);
     return this.myGhost;
   }

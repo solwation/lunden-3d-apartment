@@ -447,8 +447,21 @@ src/spidersuit.js      the Spider-Man suit (#597, SPIDER, all values *guess*): o
                        pose targets so the Ghost pose chain resolves one final IK pose. Standing/seated transitions reframe the last
                        visible targets into the destination root frame before blending; explicit gym/bike/lie/long-sit poses retain
                        authority and standing hand overrides remain immediate. Teleports, large heading discontinuities and long
-                       drawing gaps discard cached motion. Assumptions live in `AVATAR_MOTION`; no terrain IK or cloth collision.
+                       drawing gaps discard cached motion. Assumptions live in `AVATAR_MOTION`; no cloth collision (terrain: #2015 below).
                        [Actual own/remote sequence, contacts, exact hand comparisons and local warm cost](../verification/2004/README.md).
+                       #2015: feet on stairs and slopes (`src/avatarfootik.js`, `AVATAR_FOOT_IK`). After the gait has planned its flat-floor feet,
+                       `footGround` adds the ground height under each foot from the same `ground(x, z, feetY)` hook (`Player.groundAt`, wired in
+                       main.js into `Ghosts.ground`, also used by #2010's shadows; `Ghost.ground` carries it into `Avatar.update({ ground, floorY })`),
+                       so own mirror image and other players alike; it is only an offset recomputed per frame, never fed back into the gait's or
+                       `groundMotion`'s foot state. The world height under a foot is smoothed (a planted foot keeps its height when the root steps; a
+                       swinging foot rises onto the next tread and clears the riser by also reading the toe's ground), the sole is tilted by the
+                       ground's slope (heel/toe samples; a step edge or a slope steeper than `edgeSlope` leaves it level) and the hips follow half the
+                       feet's mean offset before the existing leg-reach clamp (now also applied when standing on uneven ground) lowers them to the
+                       legs' reach; the two-bone leg IK is poseOlof's unchanged `ik`. The offset fades out when the root is more than
+                       `fade` over the ground (jump, flight) and in every non-ground pose. Limits: the heights are what the player walks on. Hus A/B/C's
+                       stair walking height is a ramp line through the tread tops (`CoreHouse.stairY`, +-9 cm from the drawn treads, so soles sit within
+                       that of them), not stepped; the gait does not choose where feet land, so a toe may overhang a riser.
+                       [Results](../verification/2015/README.md).
                        #600: with it on fall.js never hurts (a soft landing). Space / the touch jump button (#jump-btn, directly right of 🧎 in the #1089 thumb-arc touch cluster;
                        on touch always, #636) is a *press* (`player.spaceDown` / `jumpPress`): standing it jumps at `jump` m/s (indoors
                        too, the ceiling stops it, `player.ceilingAt`); without the suit it is the low jump `PLAYER.jump`; on a wall it
