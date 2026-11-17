@@ -4336,6 +4336,22 @@ export const AVATAR_FLYAWAY = {
   width: [0.0004, 0.00012], minPx: 1.1, fade: [6, 10], spacing: 0.009, rootIn: 0.0015, flutter: 1.6,
   rim: [0.7, 4.0, 3.0, 3.0], tint: [0.5, 0.03], budget: 600,
 };
+// #2046 brows of hairs (src/avatarbrow.js), all *guess* by eye against close-ups, not measured. Head-bone metres before the face warp,
+// the brow's own position AVATAR_FACE.brow.at [x, y]. Centre line: x = at.x + (u − 0.5) · `length` (u 0 = the head by the nose, 1 = the
+// tail), y = at.y + `arch` · sin(π · u^k) − `drop` · u with the arch's top at u = `peak`. `half` [head, tail] m half-thickness, tapering from
+// `taper` [from, to] u; the body fades in over `ends` [0] and out over [1] (u). A thin `lift` m above the skin, a grid of `cols` × `rows`
+// (2 triangles each) reaching `reach` [head, body] m above and `below` m under the body for the hair tips. Hairs: one per cell of `cell` m
+// along the brow × `lane` m across its flow lines, `len` [min, max] m, `width` m half-width at the root (stylised ≈ 3× a real hair, thinner
+// at the tip), rising at `slope` [head, tail] (dy/dx: upright by the nose, lying down outwards) easing over `settle` m; a cell has a hair
+// with chance `fill` × the body's density there. `base` [head, tail] = the coverage of the fine undergrowth between them. `shade`
+// [min, max] darkens each hair. Coverage is alpha-to-coverage (MSAA); without MSAA the colour mixes towards the skin (`skinShade` × skin).
+// Budget: ≤ `budget` triangles for both brows (the old tubes 96; +10 % of the ≈ 3,500-triangle head = 350).
+export const AVATAR_BROW = {
+  length: 0.042, arch: 0.0042, peak: 0.6, drop: 0.0034, half: [0.0038, 0.0011], taper: [0.12, 1.0], ends: [[-0.07, 0.07], [0.8, 1.0]],
+  lift: 0.0007, cols: 14, rows: 3, reach: [0.0036, 0.0016], below: 0.0003, span: [-0.06, 1.04],
+  cell: 0.0015, lane: 0.00042, len: [0.003, 0.005], width: 0.00012, slope: [2.4, 0.16], settle: 0.006, fill: 1,
+  base: [0.66, 0.28], shade: [0.62, 0.95], skinShade: 1.0, budget: 200,
+};
 // Combat between players (#667, src/combat.js; the room's check: cloudflare/players.js COMBAT). Only when both hold a weapon:
 // `weapons` = what counts, in the order they are looked for (the room's list must have each one: there its range and rate);
 // remove one here to leave it out. Both armed: drawn solid (`solid` opacity), else a ghost. A hit is judged by the shooter
