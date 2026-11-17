@@ -118,7 +118,7 @@ window.__cost = (frames = 40) => {
   return res;
 };
 window.__snap2067 = (tone, view, kind, state = 'rest') => {
-  const key = `${tone}-true`, a = figures[key], u = a.mesh.material.userData.uniforms;
+  const key = `${tone}-true`, a = figures[key], u = a.material.userData.u;
   if (u?.uExert) u.uExert.value.set(state === 'sweat' ? 0.8 : 0, state === 'sweat' ? 1 : 0);
   if (u?.uWet) u.uWet.value = state === 'rain' ? 1 : 0;
   draw(key, view, kind);
