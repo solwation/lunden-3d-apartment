@@ -1,7 +1,7 @@
 // #2047: the avatar ear, before (BASELINE's src/avatar.js, src/config.js and src/avatarskin.js, served under /base/) and after (the checkout)
 // on tools/avatarear.html: the head from the front, three-quarter, profile and behind, and the ear up close, in daylight and backlight for
 // light / medium / dark skin; the accessories at the ear (earrings, headphones, beanie, cap, glasses, long and curly hair); triangles,
-// draw calls (1 per avatar) and a crowd / close-up timing. MODE=quick renders only the close-up sheet (iteration).
+// draw calls (1 per avatar) and a crowd / close-up timing. MODE=quick renders only the close-up sheets (iteration), MODE=cost only times.
 //   PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatareartest.cjs http://localhost:8147 docs/verification/2047
 const fs = require('fs'), os = require('os'), path = require('path'), { execFileSync } = require('child_process');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
@@ -9,7 +9,7 @@ const [site = 'http://localhost:8147', out = 'docs/verification/2047'] = process
 const baseline = process.env.BASELINE || execFileSync('git', ['merge-base', 'HEAD', 'origin/main']).toString().trim(); // the branch's base
 const old = Object.fromEntries(['src/avatar.js', 'src/config.js', 'src/avatarskin.js'].map((f) => [f, execFileSync('git', ['show', `${baseline}:${f}`], { maxBuffer: 32e6 })]));
 (async () => {
-  fs.mkdirSync(path.join(out, 'before'), { recursive: true });
+  fs.mkdirSync(out, { recursive: true });
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'avatarear-'));
   const ctx = await chromium.launchPersistentContext(dir, { headless: true, executablePath: process.env.CHROME_PATH, viewport: { width: 400, height: 400 }, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   const errors = [], data = { baseline: execFileSync('git', ['rev-parse', baseline]).toString().trim() };
@@ -31,13 +31,15 @@ const old = Object.fromEntries(['src/avatar.js', 'src/config.js', 'src/avatarski
     };
     const ba = (views, light) => views.flatMap((v) => [['before', v, light], ['after', v, light]]);
     const tones = ['ljus', 'mellan', 'mörk'];
-    if (process.env.MODE === 'quick') {
+    if (process.env.MODE === 'cost') { // the timing alone, more rounds (a loaded host scatters single runs)
+      data.cost = await page.evaluate(() => window.__cost(40));
+      console.log('COST', JSON.stringify(data.cost));
+    } else if (process.env.MODE === 'quick') {
       await save('quick.jpg', ['ljus', 'mörk'], ba(['near', 'nside', 'nback'], 'day'));
       await save('quick-head.jpg', ['ljus', 'mörk'], ba(['front', 'q', 'bq'], 'day'));
       await save('quick-acc.jpg', ['knoppar', 'ringar', 'hörlurar', 'mössa', 'glasögon', 'långt', 'lockigt'], ba(['front', 'q', 'side'], 'day'));
       await save('quick-back.jpg', tones, ba(['nside', 'near'], 'back'));
     } else {
-      await save('before/huvud-fore.jpg', tones, ['front', 'q', 'side', 'bq', 'rear'].map((v) => ['before', v, 'day']));
       await save('huvud-dagsljus.jpg', tones, ba(['front', 'q', 'side', 'bq', 'rear'], 'day'));
       await save('ora-nara.jpg', tones, ba(['near', 'nside', 'nback'], 'day'));
       await save('ora-motljus.jpg', tones, ba(['nside', 'near', 'side'], 'back'));

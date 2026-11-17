@@ -44,6 +44,20 @@ the gameplay head boxes do not read this mesh. +592 triangles per figure (head s
 neck 32 to 96; about +9 % of the head's triangles), one draw.
 [Views](../verification/2043/README.md) (`tools/avatarcontour2043browser.cjs`).
 
+**Formed ears (#2047).** `src/avatarear.js` (tunables `AVATAR_EAR`, all *guess*) replaces the folded
+disc of #2002 with an ear built on a polar grid round the concha: a superellipse outline (fuller top,
+narrower lobe, the top leaning back), a rolled helix along the top and back edge with the scapha groove
+inside it, the antihelix ridge round a deep concha bowl, a tragus over the bowl's front, a soft lobe
+without folds, and a cranial surface from the rim down to a root inside the head. The whole ear is
+turned out about a vertical hinge at its front edge (`flare`, more at the top than at the lobe), so the
+helix stands about 1.8 cm off the head and the ear reads as a C from the front. A per-vertex `shade`
+darkens the concha, scapha and the sulcus behind. It keeps the old attachment point, so the ear slider
+(`uEar`), the skin flush and the backlit translucency (#2032 `earRim`) still apply; the earrings take
+their lobe point from `earLobe`, and the hair keeps clear of `earEnvelope` (three ellipsoids fitted to the
+ear) instead of the old single ellipsoid. Headphone cups, hats and glasses temples were not changed.
+1,000 triangles for both ears instead of 384 (+616, about +8.5 % of the head's 7,268), one draw, no
+attribute, texture, light or pass. [Views](../verification/2047/README.md) (`tools/avatareartest.cjs`).
+
 **Sculpted face (#2044).** `src/avatarsculpt.js` (tunables `AVATAR_SCULPT`, all *guess*) gives the face
 real forms instead of painted depth, as pure functions of the head-bone bind position (before
 `faceWarp`), so they hold on any head tessellation. `shape` forms (the upper-lid sulcus under the brow
@@ -108,7 +122,7 @@ hang outside the back of the sweater (13 mm or more). Same geometry, no new part
 ### Player head and hair (#2002)
 
 `AVATAR_FACE` / `addFace` seat shaped upper/lower lip bands and a skin border on
-that same continuous head, round the front chin, and add folded ears and tapered
+that same continuous head, round the front chin, and add folded ears (formed since #2047) and tapered
 brows. The lip border joins lip and muzzle pucker weights without a retained new
 attribute. Directional scalp groups, smoother curls and a grouped, uneven long
 curtain keep the existing five styles, colours and controls. Posterior nasal

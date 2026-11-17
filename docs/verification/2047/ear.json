@@ -1,0 +1,177 @@
+{
+ "baseline": "1fe1aba118b5440b513510c0360d720388de501b",
+ "info": {
+  "ljus-after": {
+   "tris": 13704,
+   "head": 7884,
+   "ear": 1000,
+   "calls": 1
+  },
+  "ljus-before": {
+   "tris": 13088,
+   "head": 7268,
+   "ear": 384,
+   "calls": 1
+  },
+  "mellan-after": {
+   "tris": 13664,
+   "head": 7884,
+   "ear": 1000,
+   "calls": 1
+  },
+  "mellan-before": {
+   "tris": 13048,
+   "head": 7268,
+   "ear": 384,
+   "calls": 1
+  },
+  "mörk-after": {
+   "tris": 13704,
+   "head": 7884,
+   "ear": 1000,
+   "calls": 1
+  },
+  "mörk-before": {
+   "tris": 13088,
+   "head": 7268,
+   "ear": 384,
+   "calls": 1
+  },
+  "knoppar-after": {
+   "tris": 14000,
+   "head": 8220,
+   "ear": 1000,
+   "calls": 1
+  },
+  "knoppar-before": {
+   "tris": 13384,
+   "head": 7604,
+   "ear": 384,
+   "calls": 1
+  },
+  "ringar-after": {
+   "tris": 14000,
+   "head": 8220,
+   "ear": 1000,
+   "calls": 1
+  },
+  "ringar-before": {
+   "tris": 13384,
+   "head": 7604,
+   "ear": 384,
+   "calls": 1
+  },
+  "hängen-after": {
+   "tris": 13664,
+   "head": 7884,
+   "ear": 1000,
+   "calls": 1
+  },
+  "hängen-before": {
+   "tris": 13048,
+   "head": 7268,
+   "ear": 384,
+   "calls": 1
+  },
+  "hörlurar-after": {
+   "tris": 13704,
+   "head": 7884,
+   "ear": 1000,
+   "calls": 1
+  },
+  "hörlurar-before": {
+   "tris": 13088,
+   "head": 7268,
+   "ear": 384,
+   "calls": 1
+  },
+  "mössa-after": {
+   "tris": 13704,
+   "head": 7884,
+   "ear": 1000,
+   "calls": 1
+  },
+  "mössa-before": {
+   "tris": 13088,
+   "head": 7268,
+   "ear": 384,
+   "calls": 1
+  },
+  "keps-after": {
+   "tris": 13704,
+   "head": 7884,
+   "ear": 1000,
+   "calls": 1
+  },
+  "keps-before": {
+   "tris": 13088,
+   "head": 7268,
+   "ear": 384,
+   "calls": 1
+  },
+  "glasögon-after": {
+   "tris": 13704,
+   "head": 7884,
+   "ear": 1000,
+   "calls": 1
+  },
+  "glasögon-before": {
+   "tris": 13088,
+   "head": 7268,
+   "ear": 384,
+   "calls": 1
+  },
+  "långt-after": {
+   "tris": 14584,
+   "head": 8804,
+   "ear": 1000,
+   "calls": 1
+  },
+  "långt-before": {
+   "tris": 13968,
+   "head": 8188,
+   "ear": 384,
+   "calls": 1
+  },
+  "lockigt-after": {
+   "tris": 19320,
+   "head": 13500,
+   "ear": 1000,
+   "calls": 1
+  },
+  "lockigt-before": {
+   "tris": 18704,
+   "head": 12884,
+   "ear": 384,
+   "calls": 1
+  }
+ },
+ "cost": {
+  "before": {
+   "crowd": [
+    333.19,
+    761.2,
+    477.09
+   ],
+   "close": [
+    117.68,
+    133.76,
+    135.12
+   ]
+  },
+  "after": {
+   "crowd": [
+    439.62,
+    803.16,
+    466.14
+   ],
+   "close": [
+    118.83,
+    170.39,
+    276.77
+   ]
+  },
+  "crowdRatio": 1.319,
+  "closeRatio": 1.01
+ }
+}
