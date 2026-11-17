@@ -4276,6 +4276,11 @@ export const AVATAR_EAR = {
 // [x, y, z, radius, arc, tilt]; nose: [top, bottom, face z, half width top / bottom, protrusion top / bottom];
 // lips: upper / lower [y, z, r, scale]; chin; warp: the whole head's `width`
 // (x) and the jaw narrowing toward the chin (`narrow` share of x at the chin, between heights `y` and depths `z`); lipTint: lip colour = skin mixed toward it.
+// #2065: authored lip volume in head-local metres (visual guesses). Existing outline, seam and controls stay shared.
+export const AVATAR_LIP_VOLUME = { rows: 2, upperBulge: 0.004, lowerBulge: 0.0055,
+  borderBase: 0.00015, edgeLift: 0.00075, seamThickness: 0.001,
+  philtrumBorder: 0.009, philtrumRise: 0.0008, philtrumX: 0.004, philtrumWidth: 0.0025 };
+
 export const AVATAR_FACE = {
   skullSegments: [18, 12], jawSegments: [14, 10], blend: 0.014, // blend: m either side of the skull / jaw seam shaded as one
   // #2063: inset into the orbit, behind the brow/cheek; depth stays fixed when sizing the opening (*guess*, m).

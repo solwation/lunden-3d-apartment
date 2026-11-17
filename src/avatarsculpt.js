@@ -44,10 +44,10 @@ export function sculptNormal(x, y, smile = 0) {
   return { form: sum(S.form, x, y, smile), fine: sum(S.fine, x, y, smile) + r * Math.exp(-(((d - off) / rs) ** 2)) * smooth(0, 0.25, lipOutline(x).edge) };
 }
 
-/** The lip grid's outer row and its skin band's inner row (avatar.js addFace: faceGrid(cols, 3) and faceGrid(cols, 1), the same
+/** The lip grid's outer row and its skin band's inner row (avatar.js addFace: the lip's last row and the band's first row, the same
  * points) get one normal, the skin's, so the lip rolls into the skin instead of ending in a lit / shadowed rim. */
-export function sealLipEdge(lip, band, cols) {
-  const nl = lip.attributes.normal, nb = band.attributes.normal, edge = 3 * (cols + 1);
+export function sealLipEdge(lip, band, cols, rows = 3) {
+  const nl = lip.attributes.normal, nb = band.attributes.normal, edge = rows * (cols + 1);
   for (let i = 0; i <= cols; i++) nl.setXYZ(edge + i, nb.getX(i), nb.getY(i), nb.getZ(i));
 }
 

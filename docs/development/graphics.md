@@ -109,6 +109,14 @@ ear) instead of the old single ellipsoid. Headphone cups, hats and glasses templ
 1,000 triangles for both ears instead of 384 (+616: +8.5 % of the head's 7,268 before this step, +7.8 % of
 7,908 with the #2045 eyes), one draw, no attribute, texture, light or pass. [Views](../verification/2047/README.md) (`tools/avatareartest.cjs`).
 
+**Lip volume (#2065).** `src/avatarlips.js` seats rounded upper/lower vermilion and a two-row skin bridge on
+`headFront`, using the same `lipOutline` as the face shader. `AVATAR_LIP_VOLUME` values are visual guesses:
+a fuller lower belly and two small philtrum columns replace the nearly flat lip strips. The seam, outline,
+regions, jaw and kiss roles remain; border follow weights fade from lip to muzzle over both rows. Reallocating
+the existing four rows per lip/border pair (3+1 to 2+2) keeps triangles, retained attributes, shader instructions,
+rig and draw calls unchanged. `sealLipEdge` takes the lip row count and still shares normals at the joined edge.
+[Matched daylight/backlight and expression views](../verification/2065/README.md).
+
 **Sculpted face (#2044).** `src/avatarsculpt.js` (tunables `AVATAR_SCULPT`, all *guess*) gives the face
 real forms instead of painted depth, as pure functions of the head-bone bind position (before
 `faceWarp`), so they hold on any head tessellation. `shape` forms (the upper-lid sulcus under the brow

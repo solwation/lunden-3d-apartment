@@ -1,3 +1,5 @@
+import { lipPoint, lipSeamPoint } from './avatarlips.js'; // #2065
+import { AVATAR_LIP_VOLUME } from './config.js';
 import { groundMotion } from './avatarmotion.js';
 import { modelURL } from './modelurl.js';
 import { armPumpShape, pumpWire } from './gympump.js';
@@ -943,32 +945,19 @@ function addFace(add, sphere, P) {
     facePart(P, FACE_PART.brow, brow.anchor);
   }
   const M = F.mouth;
-  const seamY = x => M.seamY + 0.0012 * (x / M.halfWidth) ** 2;
   for (const upper of [true, false]) {
     const role = upper ? 'upper' : 'lower';
-    const at = (u, v, skin = false) => {
-      const x = (u * 2 - 1) * M.halfWidth, edge = Math.max(0, 1 - (x / M.halfWidth) ** 2);
-      // Cupid's bow, a fuller lower lip and closed corners; outer border seats on the same head surface.
-      const height = (upper ? M.upper * (0.75 + 0.3 * Math.exp(-(((Math.abs(x) - 0.007) / 0.004) ** 2))) : M.lower) * edge ** 0.7;
-      const f = skin ? 1 + v * M.border / Math.max(0.001, height) : v;
-      const y = seamY(x) + (upper ? 1 : -1) * height * f;
-      const z = headFront(x, y) + (skin ? 0.00015 + (1 - v) * 0.0006 : 0.00075 + M.lift * edge * (1 - v) + 0.0015 * Math.sin(v * Math.PI));
-      return [x, y, z];
-    };
     const lipPair = [];
     for (const skin of [false, true]) {
-      const g = faceGrid(M.cols, skin ? 1 : 3, (u, v) => at(u, v, skin), !upper);
-      if ((lipPair.push(g), skin)) sealLipEdge(...lipPair, M.cols); // #2044: one normal along the lip's outline (no hard rim)
-      if (skin) g.setAttribute('lipFollow', new THREE.Float32BufferAttribute(Array.from({ length: 2 * (M.cols + 1) }, (_, i) => i <= M.cols ? 1 : 0), 1));
+      const g = faceGrid(M.cols, skin ? 2 : AVATAR_LIP_VOLUME.rows, (u, v) => lipPoint(u, v, upper, skin, headFront), !upper);
+      if ((lipPair.push(g), skin)) sealLipEdge(...lipPair, M.cols, AVATAR_LIP_VOLUME.rows); // #2044: one normal along the lip's outline (no hard rim)
+      if (skin) g.setAttribute('lipFollow', new THREE.Float32BufferAttribute(Array.from({ length: 3 * (M.cols + 1) }, (_, i) => 1 - Math.floor(i / (M.cols + 1)) / 2), 1));
       add(g, skin ? 'skin' : 'lips', 'head');
       add.last().mouth = role; add.last().face = FACE_PART.cowlHide;
     }
   }
   // The closed mouth is a thin ribbon; its bottom edge follows the lower lip while talking.
-  add(faceGrid(M.cols, 1, (u, v) => {
-    const x = (u * 2 - 1) * M.halfWidth, y = seamY(x) + (v - 0.5) * 0.001;
-    return [x, y, headFront(x, y) + 0.001 + M.lift * (1 - (x / M.halfWidth) ** 2)];
-  }), 'fixed', 'head', [0, 0, 0], 1, F.lips.seam);
+  add(faceGrid(M.cols, 1, (u, v) => lipSeamPoint(u, v, headFront)), 'fixed', 'head', [0, 0, 0], 1, F.lips.seam);
   add.last().mouth = 'seam'; add.last().face = FACE_PART.cowlHide;
   // The chin and brow ridge are part of the continuous head, not separate bumps.
 }
