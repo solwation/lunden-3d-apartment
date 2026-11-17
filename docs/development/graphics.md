@@ -163,6 +163,20 @@ follow the #2014 hair spring outwards. A soft rim per directional light (`rim`) 
 stronger on the flyaways, tinted by √albedo. Budget: ≤ 600 triangles per avatar (short 264, long 448, bun 240, curly 400, beard +120,
 moustache +28, beanie 0), no texture, attribute or draw call; the far figure (#1966) has none. [Before/after views, alpha and cost](../verification/2040/README.md).
 
+#### Brows of hairs (#2046)
+
+`src/avatarbrow.js` (tunables `AVATAR_BROW`, all *guess*; position `AVATAR_FACE.brow.at`) replaced the solid brow tubes. Each brow is a
+thin grid (`cols` × `rows`, 168 triangles for both, was 96) seated `lift` m above `headFront`, so it follows the forehead's sculpt; its
+per-vertex `faceAnchor` is the arched centre line, so the thickness/height slider (`uBrow`, the height now slides along the forehead's slope)
+and the #2031 expressions move it as before. The fragment recomputes the brow's own coordinates from the bind position (no attribute): hairs
+lie on flow lines that rise steeply by the nose and lie down outwards; each lane cell holds at most one hashed hair, present with the body's
+density at its root (wide and dense at the head, thin and sparse at the tail), drawn as an antialiased line in pixel footprint and faded to
+its expected coverage once lanes share a pixel (no shimmer at distance), over a thinner undergrowth (`base`). The coverage is the alpha
+under the #2040 alpha-to-coverage; without MSAA (`&test`) the colour mixes towards the skin (`uBrowSkin` × the eye-socket tone) instead,
+which leaves a faint lighter band at the brow's lower edge on light skin in extreme close-up. Brow colour and slider codes are unchanged.
+Checks: `node --test tools/avatarbrowtest.mjs` and `PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarbrowtest.cjs SITE OUT`
+([views and cost](../verification/2046/README.md)).
+
 ### Butterfly wing hinges (#1925)
 
 `butterflymodel.js` supplies shared authored contours and a bounded vertex hinge.

@@ -1,0 +1,59 @@
+{
+ "baseline": "b5cb5c9501ca528122948dc7e5789ff7d0956411",
+ "info": {
+  "msaa": true,
+  "samples": 4,
+  "before": {
+   "tris": 12424,
+   "browTris": 96,
+   "calls": 1
+  },
+  "after": {
+   "tris": 12496,
+   "browTris": 168,
+   "calls": 1
+  }
+ },
+ "cost": {
+  "close": {
+   "before": [
+    75.75,
+    86.94,
+    116.9
+   ],
+   "after": [
+    84.7,
+    100.35,
+    178.53
+   ],
+   "ratio": 1.118
+  },
+  "crowd": {
+   "before": [
+    214.32,
+    238.42,
+    384.41
+   ],
+   "after": [
+    253.72,
+    257.78,
+    418.54
+   ],
+   "ratio": 1.184
+  }
+ },
+ "infoNoMsaa": {
+  "msaa": false,
+  "samples": 0,
+  "before": {
+   "tris": 12424,
+   "browTris": 96,
+   "calls": 1
+  },
+  "after": {
+   "tris": 12496,
+   "browTris": 168,
+   "calls": 1
+  }
+ }
+}
