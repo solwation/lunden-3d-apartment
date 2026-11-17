@@ -25,6 +25,7 @@ import { canHug, hugAmount, playerChoices } from './hug.js';
 import { Hearts } from './pingping.js';
 import { cleanHeldCategory } from './heldcategory.js';
 import { trimOutbox } from './outbox.js';
+import { AvatarLight } from './avatarlight.js'; // #2017: the avatars' light follows the room's light level
 import { AvatarShadows } from './avatarshadow.js'; // #2010: soft contact shadows, one draw call
 import { GhostFar } from './ghostfar.js'; // #1966: far players as one draw call
 import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
@@ -508,6 +509,7 @@ export class Ghosts {
     this.group = new THREE.Group();
     this.group.name = 'ghosts';
     scene.add(this.group);
+    this.light = new AvatarLight(); // #2017: main.js sets zone / env / lights
     this.shadows = new AvatarShadows(this.group); this.ground = ground; this.shadows.ground = ground; // #2010: ground(x, z, feetY) = the walkable height
     // a hidden outline avatar so that the warm-up compiles the others' program with the scene's (#705): nothing to compile when the first one turns up
     this.sample = new Avatar('warm');
@@ -686,7 +688,7 @@ export class Ghosts {
     }
     const eye = this.camera.position, armed = !!s.h;
     this.updateGazes(t, eye);
-    for (const g of this.others.values()) { g.draw(t, eye); g.setSolid(armed && !!g.h); }
+    for (const g of this.others.values()) { g.draw(t, eye); g.setSolid(armed && !!g.h); if (g.root.visible) { const p = g.root.position; this.light.apply(g.avatar, g.lightSt ??= {}, p.x, p.y, p.z, t); } } // #2017
     if (this.far && (this.others.size || this.far.mesh.visible)) this.far.update(this.others.values(), eye); // #1966
     this.updateKisses(t);
     this.updateHugs(t);
@@ -977,6 +979,7 @@ export class Ghosts {
     g.air = m.am; g.vy = m.vy; // #1799
     g.react = this.myReact ?? null; // #1639 (a Ghost drops it when over)
     g.root.position.copy(m.p);
+    this.light.apply(g.avatar, g.lightSt ??= {}, m.p.x, m.p.y, m.p.z, performance.now()); // #2017
     g.root.rotation.y = m.r;
     g.bikeAt({ bk: m.bk }, { bk: m.bk }, 1);
     const now = performance.now(), goal = m.c ? 1 : 0, last = g.mirrorAt ?? -Infinity; // (#1149: goes down / up over AVATAR_CROUCH.time, as the eye)
@@ -1006,6 +1009,7 @@ export class Ghosts {
     g.air = m.am; g.vy = m.vy;
     g.react = this.myReact ?? null;
     g.root.position.copy(m.p);
+    this.light.apply(g.avatar, g.lightSt ??= {}, m.p.x, m.p.y, m.p.z, performance.now()); // #2017
     g.root.rotation.y = m.r;
     g.bikeAt({ bk: m.bk }, { bk: m.bk }, 1);
     const now = performance.now(), goal = m.c ? 1 : 0, last = g.mirrorAt ?? -Infinity;

@@ -882,3 +882,16 @@ stair step, grass, a floor or a roof gets its own height and nothing lands on an
 (not posed) use standing feet; beyond `AVATAR_SHADOW.range` none. Our own mirror image, the appearance preview and the far figure are not
 touched. Component page and check: `tools/avatarshadow.html`, `PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarshadowtest.cjs GAME OUT`
 (grass / light floor by a wall / stairs / jump; one extra draw call, [images](../verification/2010/)).
+
+## Avatar light level (#2017)
+
+Avatars take no shadow-map shadow, so the scene lights (those the player stands in) lit every avatar as if it stood in open sun: too bright
+in a dark room, the stairwell or at night, too dark next to strong sun. `src/avatarlight.js` (`AvatarLight`, tunables `AVATAR_LIGHT`, all
+*guess*) gives each avatar one factor on its own material (`uLight`, multiplies `outgoingLight` before the rim; `Avatar.setLight`; program
+key `...-sway-light-v18`): the zone's light level over what the scene lights deliver now (`sceneLevel`: hemi + ambient + fill + 0.6 x sun,
+1 = clear sunlit day), bounded to [0.4, 1.15] and eased over 0.4 s. The zone comes from `ghosts.light.zone(x, y, z)` (wired in `main.js`
+next to the Ghosts): playroom, stairwell (`world.core.contains`), garage, a room of the flat / a visited flat (window share by daylight and
+overcast, plus a lamp share from `lights.roomLit`), else outdoors, in shade when a roof / canopy / deck is overhead (`world.roofs.above`).
+The zone is re-probed every 0.25 s per avatar (a few array lookups), the factor is a uniform write per frame: no light, no shadow, no draw
+call. Hooked in `Ghosts.update` (others) and `beforeMirror` / `showSelf` (our own avatar). Check: `node --test tools/avatarlighttest.mjs`;
+browser comparison and costs: `tools/browsertest.sh node tools/avatarlightbrowser.cjs GAME OUT` ([images](../verification/2017/)).

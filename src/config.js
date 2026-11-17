@@ -9070,3 +9070,10 @@ export const AVATAR_FOOT_IK = {
   maxPitch: 0.45, // rad: the steepest sole tilt
   hipFollow: 0.5, // the share of the feet's mean height offset the hips follow (the reach clamp lowers them further)
 };
+
+// #2017 (src/avatarlight.js): other players' avatars get a light factor = the local zone's light level / what the scene lights deliver.
+// Levels: 1 = clear sunlit open ground; all *guess*, tuned by eye against day/night shots in the flat, the stairwell and outdoors.
+// `reference` / `sunShare`: the scene-light sum (hemi + ambient + fill + sunShare x sun) of a clear day; `min`/`max`: the factor's bounds;
+// `tau`: easing (s); `probe`: zone re-probe interval (s); `minScene`: lowest scene level divided by (night).
+export const AVATAR_LIGHT = { reference: 4.4, sunShare: 0.6, minScene: 0.12, min: 0.4, max: 1.15, tau: 0.4, probe: 0.25,
+  level: { overcastCut: 0.25, shade: 0.55, windowShare: 0.55, lamp: 0.5, night: 0.06, coreBase: 0.38, coreDay: 0.12, garage: 0.5, playroom: 0.6 } };

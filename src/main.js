@@ -3181,6 +3181,21 @@ const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboa
   // #1943: a figure whose feet are under the river's surface swims (the bed is far below every other walkable level, so the cheap height test rejects everyone else)
   swim: (p) => { if (p.y > SITE.bridges.waterY + 1 || p.y >= waterYAt(p.x, p.z) - WALK.waterDepth || !swimWater(p.x, p.z)) return null; const c = riverCurrent(riverAt(p.x, p.z)); return { water: waterYAt(p.x, p.z), cx: c.x, cz: c.z }; },
   state: () => ({ bp: gymPumpState(), p: [player.pos.x, player.pos.y, player.pos.z], r: reactionCam.active && reactionCam.camFrom ? reactionCam.camFrom.yaw : camera.rotation.y, look: [0, reactionCam.active && reactionCam.camFrom ? reactionCam.camFrom.pitch : camera.rotation.x], c: player.crouched || !!player.swim?.dive /* #1944: crouched in the water = diving */, dn: playroom.music.danceCode ?? 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 && player.outdoors ? 2 : 1) : 0, am: player.climb ? 3 : player.swing ? 2 : player.flying || player.fling ? 1 : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, fb: fishing.wire, ...restState(rest, ghosts.avatarCode, ghosts.me) }) });
+// #2017: the avatars' light follows the local light level: the zone a figure stands in (src/avatarlight.js; no light, no extra draw call)
+ghosts.light.lights = { hemi, ambient, fill, sun };
+ghosts.light.env = () => ({ day: day.daylight, overcast: weather.overcast });
+ghosts.light.zone = (x, y, z) => {
+  const p = world.playroom;
+  if (p?.inside && p.contains(x, z)) return { kind: 'playroom', lit: Math.min(1, playroom.lit / PLAYROOM.lit) };
+  if (world.core?.contains(x, z, y + 0.05)) return { kind: 'core' };
+  if (y < GARAGE.floor + 1.5 && world.garage?.inside(x, z)) return { kind: 'garage' };
+  const unit = world.unitAt?.(x, z, y), { x: W, z: D } = world.size;
+  if (unit || (x > 0 && x < W && z > 0 && z < D && y < UNIT_TOP - 0.3)) {
+    const lv = unit ? unit.levelAt(y) : y > LEVELS[0].floor + 1.6 ? 1 : 0, room = unit ? null : world.roomAt(lv, x, z);
+    return { kind: 'room', lit: unit ? 0.5 : room && lights.roomLit(lv, room) ? 1 : 0 };
+  }
+  return { kind: 'outdoors', shade: (world.roofs?.above(x, z, y + 0.3) ?? Infinity) < y + 6 }; // under a roof / canopy / deck: no direct sun
+};
 football=new Football({site:world.football,camera,ghosts,life,
   canPlay:()=>overlay.hidden&&!reading&&!heldItem()&&!rest.active&&!player.riding&&!player.flying&&!player.climb&&!player.swing&&Math.abs(player.pos.y-world.football.ground(player.pos.x,player.pos.z))<FOOTBALL.playHeightSlack,
   spectating:()=>rest.active&&rest.target?.id?.startsWith('football-bench-'),onRecord:recordFootball,say:t=>badge(t,false)});
