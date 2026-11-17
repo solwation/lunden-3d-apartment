@@ -13,6 +13,7 @@ import { eyeUniforms, EyeLight, EYE_VDECL, EYE_FDECL, eyePupil, eyeAt, eyeView, 
 import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #2014
 import { avatarSkinGLSL, skinKey } from './avatarskin.js'; // #2032
 import { faceExprUniforms, faceExprShader } from './avatarface.js'; // #2031
+import { exertUniforms, exertShader } from './avatarbreath.js'; // #2037
 import { topTexture } from './spidersuit.js';
 import { reactionPose, mixHand } from './reactpose.js';
 import { footGround } from './avatarfootik.js';
@@ -1354,6 +1355,7 @@ function makeMaterial(rim, headProjection) {
     uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uEarrings: { value: 0 }, uHat: { value: 0 }, uPhones: { value: 0 }, uNecklace: { value: 0 }, uRingFinger: { value: 0 }, uBracelet: { value: 0 }, uWatch: { value: 0 }, uRingColor: { value: new THREE.Color(RING.colours[0]) }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) } };
   Object.assign(u, faceExprUniforms()); // #2031: the expression weights
   Object.assign(u, eyeUniforms()); // #2033
+  Object.assign(u, exertUniforms()); // #2037: flush and sweat sheen
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: SURFACE.finish.cloth, metalness: 0, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
@@ -1410,8 +1412,9 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       outgoingLight *= mix(vec3(1.0), ${v3(SK.rimTint.slice(0, 3))}, vBare * (1.0 - uSuit) * edge * ${SK.rimTint[3].toFixed(3)}); // light scattered through skin reddens its edges
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
       #include <opaque_fragment>`);
+    sh.fragmentShader = exertShader(sh.fragmentShader, { head: bindAt('head') }); // #2037
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033'; // #2032, #2031, #2033
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033' + '-exert2037'; // #2032, #2031, #2033, #2037
   return m;
 }
 

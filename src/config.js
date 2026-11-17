@@ -9130,6 +9130,25 @@ export const AVATAR_SHADOW = { bodyAlpha: 0.3, footAlpha: 0.42, bodyRadius: [0.3
 export const AVATAR_WET = { wetRate: 0.0125, dryIndoor: 1 / 300, dryOutdoor: 1 / 900, snowRate: 0.01, meltIndoor: 1 / 150, meltOutdoor: 1 / 1500, meltToWet: 0.5, hail: 0.5, maxGap: 900,
   darken: 0.55, skin: 0.35, rough: 0.22, snowRough: 0.88, snowColor: 0xeef3fa, snowUp: [0.45, 0.85], snowFrom: 0.38, snowPatch: 0.4 };
 
+// #2037: breath in the cold and a flushed, sweaty face after hard work (src/avatarbreath.js), all *guesses* by eye, not measured; no network
+// field. Exertion: `gym` = the effort of a gym pose (running = the gait's run share, both the #2031 face's cues); `heat` builds over `build` s
+// of full effort and cools over `cool` s; the flush / sheen ramp in over `flushAt` / `sheenAt` [from, full] of it; `maxDt` s the longest step.
+// Breath: `rate` [rest, hard] breaths/s (about 15 and 48 a minute), `heatBreath` the share of heat that keeps the breath fast after the effort,
+// an exhale (a puff) at `exhale` of each cycle. Visible from `warm` °C down, full at `cold` °C, at least `snowMin` while it snows; `mouth` [x, y, z]
+// m in the head bone's frame (between the lips and the nose); `density` [rest, running] the puff's peak opacity (times the cold), `speed`
+// [rest, running] m/s out of the mouth, `rise` m/s up at once, `drag` 1/s, `buoyancy` m/s²; `life` [rest, running] s, `size` [rest, running] m
+// (diameter) growing by `grow` [start, end], fading in over `fadeIn` of the life; `color` (linear) times the scene light level (#2017) times
+// `lightGain`, never below `minLevel`; `max` puffs in the shared pool. Skin (bind metres in the head frame, as AVATAR_SKIN_DETAIL): the flush
+// `flushColor` multiplies the albedo, full on the cheeks (`cheek` [x, y, front z, radius]), `flushFace` on the rest of the face, `flushBody` on
+// other bare skin; the sheen pulls roughness towards `sheenRough`, full on the forehead (`forehead` [y from, full at, front z]) and the nose
+// (`nose` [x, y, z, radius]), `sheenFace` elsewhere on the face, `sheenBody` on arms and legs.
+export const AVATAR_BREATH = { gym: 0.8, build: 30, cool: 75, maxDt: 0.25, flushAt: [0.3, 0.85], sheenAt: [0.45, 1],
+  rate: [0.25, 0.8], heatBreath: 0.6, exhale: 0.45, cold: -6, warm: 6, snowMin: 0.7, mouth: [0, 0.042, 0.12],
+  density: [0.22, 0.42], speed: [0.35, 0.6], rise: 0.03, drag: 2.2, buoyancy: 0.06, life: [1.7, 1.2], size: [0.1, 0.16], grow: [0.5, 2.4], fadeIn: 0.12,
+  color: [0.92, 0.95, 1], lightGain: 1, minLevel: 0.12, max: 96,
+  cheek: [0.056, 0.072, 0.06, 0.034], forehead: [0.125, 0.15, 0.05], nose: [0, 0.076, 0.12, 0.018],
+  flushColor: [1.08, 0.78, 0.76], flushFace: 0.45, flushBody: 0.18, sheenRough: 0.26, sheenFace: 0.3, sheenBody: 0.35 };
+
 /** #2015: the avatar's feet on the real ground (src/avatarfootik.js). Offsets are in the figure's units. */
 export const AVATAR_FOOT_IK = {
   reach: 0.02, // m over the root the ground is searched from (Player.groundAt itself takes any floor up to PLAYER.stepUp above that: a stair riser, a kerb)

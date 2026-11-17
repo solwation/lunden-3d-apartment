@@ -7,6 +7,7 @@ import { applyRestPose } from './remote-pose.js';
 import { poseOlof } from './olof.js';
 import { pumpWire } from './gympump.js';
 import { updateFace } from './avatarface.js'; // #2031
+import { updateBreath, BreathPuffs } from './avatarbreath.js'; // #2037
 import * as THREE from 'three';
 import { FALL, TOAST, SOUNDS, KISS, HUG, REACT } from './config.js';
 import { chooseGazeTarget } from './avatargaze.js';
@@ -424,6 +425,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.avatar.updateWeather(wetEnv.outdoorAt(this)); // #2018
     this.avatar.update(dt, { ground: this.ground, floorY: this.root.position.y, motionFrame, groundSpeed: groundEnabled && groundSpeed <= 8 ? groundSpeed : 0, groundEnabled, gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: wet ? 0 : this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive });
     updateFace(this.avatar, dt, { wave: this.waveT > 0, hug: hugged, kiss: kissed, react: react ? REACT.kinds[react.kind]?.id : null, gym: this.gx ? 0.6 + 0.4 * Math.sin(Math.PI * this.gx[1]) : 0, run: this.avatar.gt?.run ?? 0 }); // #2031: the face follows what the figure does
+    updateBreath(this.avatar, dt, { run: this.avatar.gt?.run ?? 0, gym: this.gx ? 1 : 0 }, this.self ? null : this); // #2037: the face's run / gym signal: flush, sweat, breath in the cold
     if (wet) sink(this.avatar.swimAmt, this.avatar.swimLine, this.avatar.diveAmt); // (blending in from standing on the bed)
     applyRestPose(this.avatar, this.pose, this.look, react);
     applyGymBodyPose(this.avatar,this.gx,this.look);
@@ -512,6 +514,7 @@ export class Ghosts {
     this.group.name = 'ghosts';
     scene.add(this.group);
     this.light = new AvatarLight(); // #2017: main.js sets zone / env / lights
+    this.breath = new BreathPuffs(this.group, this.light).share(); // #2037: all avatars' breath puffs, one draw call
     this.shadows = new AvatarShadows(this.group); this.ground = ground; this.shadows.ground = ground; // #2010: ground(x, z, feetY) = the walkable height
     // a hidden outline avatar so that the warm-up compiles the others' program with the scene's (#705): nothing to compile when the first one turns up
     this.sample = new Avatar('warm');
@@ -650,6 +653,7 @@ export class Ghosts {
   /** Each frame: connect / disconnect, send what changed (≤ hz), and place the ghosts. */
   update(dt = 1 / 60) {
     this.kissHearts?.update(dt);
+    this.breath.update(dt); // #2037 (last frame's exhales drift and fade)
     const t = performance.now(), s = this.state(), w = this.weapon();
     s.h = COMBAT.weapons.includes(w) ? w : '';
     s.c = s.c === true;
