@@ -4294,7 +4294,7 @@ export const AVATAR_HAIR = { centre: [0, 0.09, 0], bunAt: [0, 0.212, -0.078], /*
 export const AVATAR_SKIN = {
   cheek: [0.056, 0.072, 0.06, 0.028, 0.85], blush: [1.08, 0.8, 0.76],
   nose: [0, 0.076, 0.12, 0.016, 0.5], lipRim: [0, 0.042, 0.09, 0.02, 0.4],
-  eye: [0.034, 0.113, 0.06, 0.014, 0.35, 1.3], socket: [0.66, 0.58, 0.62],
+  eye: [0.034, 0.113, 0.06, 0.014, 0.2, 1.3], socket: [0.66, 0.58, 0.62], // #2044: the socket is sculpted now (AVATAR_SCULPT), so less paint (was 0.35)
   under: [-0.03, 0.04, 0.55], underTint: [0.8, 0.74, 0.74], ear: [0.085, 0.102, 0.5],
   hand: [1.03, 0.94, 0.92], limb: [1.02, 0.96, 0.95], rimTint: [1.0, 0.86, 0.8, 0.6],
   cloth: { armpit: 0.22, crotch: 0.1, knee: 0.12, hairUnder: 0.25 },
@@ -4314,6 +4314,37 @@ export const AVATAR_SKIN_DETAIL = {
   knuckle: [-0.053, 0.009, 0.8], joint: [-0.077, 0.006, 0.5],
   sss: [1.0, 0.25, 0.12], wrap: 0.45, wrapK: 0.6, back: [0.35, 3.0, 0.65], thin: { ear: 1, nose: 0.4, finger: 0.55, other: 0 },
   earRim: { y: 0.095, h: 0.028, w: 0.014, inner: 0.3 },
+};
+// #2044 (part of #2042) the face's sculpted forms (src/avatarsculpt.js), all *guess* by eye against the avatar head in raking light and
+// backlight, not measured. Head-bone frame before faceWarp (metres; eye centre y 0.107, lip seam 0.043). Each form is
+// [depth m (+ out, − in), ax, ay, bx, by, σ m, smile gain, σ m left of a → b (default σ)]: a soft Gaussian ridge / groove round the
+// segment a → b, mirrored in x (a wider left σ makes a one-sided fold: the cheek falling steeply into the nasolabial line).
+// `shape` forms move the head skin itself (in headSculpt, so the lids and brows seat on them): the upper-lid sulcus under the brow
+// ridge and the ridge. The others are finer than the head's vertex grid (about 16 mm between columns on the cheek), so they only
+// bend the shading normal, analytically per pixel (`fine` ones also take `cavity` × depth (mm) of the ambient light out of their hollows):
+// `form` the cheekbone and the hollow under it, `fine` the nasolabial fold (the cheek's edge falling into it), the philtrum's two
+// columns and its groove, the mouth corners and the bulge outside them. They deepen by smile gain × the #2031 smile and fade out
+// between `fade` [from, to] bind metres per pixel (`form` / `fine`), so nothing shimmers at distance.
+// `lip`: the lip border's roll [height m, σ m, offset m outside the outline] and the soft colour transition across the outline
+// [share of skin on the lip edge, over m inside; share of lip colour on the skin, over m outside].
+export const AVATAR_SCULPT = {
+  shape: {
+    sulcus: [-0.0022, 0.026, 0.1175, 0.044, 0.1165, 0.0055, 0],
+    ridge: [0.0012, 0.018, 0.1255, 0.048, 0.1245, 0.005, 0],
+  },
+  form: {
+    cheekbone: [0.0022, 0.040, 0.091, 0.062, 0.084, 0.011, 0.3],
+    submalar: [-0.0008, 0.046, 0.061, 0.062, 0.058, 0.012, 0],
+  },
+  fine: {
+    nasolabial: [0.0005, 0.0225, 0.0735, 0.033, 0.040, 0.0028, 1.2, 0.008],
+    philtrum: [0.0001, 0.0035, 0.0655, 0.0062, 0.0505, 0.0025, 0],
+    philtrumGroove: [-0.00012, 0, 0.064, 0, 0.052, 0.003, 0],
+    corner: [-0.0005, 0.0235, 0.0445, 0.0235, 0.0445, 0.0024, 0.6],
+    modiolus: [0.0003, 0.029, 0.043, 0.029, 0.043, 0.0035, 0.8],
+  },
+  lip: { roll: [0.0001, 0.0008, 0.0004], blend: [0.4, 0.0012, 0.25, 0.001] },
+  cavity: 0.35, fade: { form: [0.004, 0.012], fine: [0.0015, 0.004] },
 };
 // #2040 flyaway hairs (src/avatarflyaway.js), all *guess* tuned by eye against a low sun, not measured. Per hairstyle (0 short, 1 long,
 // 2 bun, 3 beanie, 4 curly) and beard (`beard` facial 1/3, `moustache` facial 2): `n` strands of `seg` segments (2 triangles each),

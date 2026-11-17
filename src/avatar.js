@@ -16,6 +16,7 @@ import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #20
 import { avatarSkinGLSL, skinKey } from './avatarskin.js'; // #2032
 import { faceExprUniforms, faceExprShader } from './avatarface.js'; // #2031
 import { exertUniforms, exertShader } from './avatarbreath.js'; // #2037
+import { sculptShape, sculptShader, sculptKey, sealLipEdge } from './avatarsculpt.js'; // #2044: sculpted face forms
 import { addFlyaways, flyUniforms, flyMaterial, flyKey, FLY_VDECL, FLY_FDECL, flyBind, flyProject, flyAlpha, flyLight } from './avatarflyaway.js'; // #2040
 import { browSurface, browSlide, browUniforms, applyBrowLook, browFDecl, browColor, browRoughness } from './avatarbrow.js'; // #2046
 import { topTexture } from './spidersuit.js';
@@ -1021,6 +1022,7 @@ function headSculpt(v, jaw = false) {
   v.z += front * (F.cheek[0] * bump(Math.abs(v.x), ...F.cheek.slice(1, 3)) * bump(v.y, ...F.cheek.slice(3))
     + F.brow[0] * bump(v.y, ...F.brow.slice(1)) + F.chin[0] * bump(v.y, ...F.chin.slice(1))
     - F.socket[0] * bump(Math.abs(v.x), FACE.eye.at[0], F.socket[1]) * bump(v.y, FACE.eye.at[1], F.socket[2]));
+  v.z += front * sculptShape(v.x, v.y); // #2044: the upper-lid sulcus and brow ridge (src/avatarsculpt.js)
 }
 const headRows = () => SURFACE.head.map(r => FACE.jaw.find(j => j[0] === r[0]) ?? r);
 function headFront(x, y) {
@@ -1152,8 +1154,10 @@ function addFace(add, sphere, P) {
       const z = headFront(x, y) + (skin ? 0.00015 + (1 - v) * 0.0006 : 0.00075 + M.lift * edge * (1 - v) + 0.0015 * Math.sin(v * Math.PI));
       return [x, y, z];
     };
+    const lipPair = [];
     for (const skin of [false, true]) {
       const g = faceGrid(M.cols, skin ? 1 : 3, (u, v) => at(u, v, skin), !upper);
+      if ((lipPair.push(g), skin)) sealLipEdge(...lipPair, M.cols); // #2044: one normal along the lip's outline (no hard rim)
       if (skin) g.setAttribute('lipFollow', new THREE.Float32BufferAttribute(Array.from({ length: 2 * (M.cols + 1) }, (_, i) => i <= M.cols ? 1 : 0), 1));
       add(g, skin ? 'skin' : 'lips', 'head');
       add.last().mouth = role; add.last().face = FACE_PART.cowlHide;
@@ -1467,8 +1471,9 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
       #include <opaque_fragment>`);
     sh.fragmentShader = exertShader(sh.fragmentShader, { head: bindAt('head') }); // #2037
+    sh.fragmentShader = sculptShader(sh.fragmentShader, { head: bindAt('head'), part: FACE_PART }); // #2044
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046'; // #2032, #2031, #2033, #2037, #2040, #2034
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey(); // #2032, #2031, #2033, #2037, #2040, #2034
   return m;
 }
 
