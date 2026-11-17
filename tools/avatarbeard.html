@@ -1,0 +1,142 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar beards</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#8795a3}canvas{display:block}</style></head>
+<body><script type="module">
+// #2051 component page, driven by tools/avatarbeardtest.cjs: beards and moustaches that grow from the skin (src/avatarbeard.js). Each
+// figure is built from the checkout (`after`) and, when the driver serves the baseline under /base/ (page.route), from the baseline
+// src/avatar.js + src/config.js (`before`). A sheet row is [look, variant]; a column [phase, view, light, variant?] (the column's variant
+// wins). `?aa=0` renders without MSAA (the fallback that mixes the beard's edge towards the skin). __sheet(rows, cols) → JPEG data URL,
+// __info() triangles / draw calls, __cost() ms/frame before vs after (a full-frame bearded close-up and a crowd).
+import * as THREE from 'three';
+const after = await import('../src/avatar.js'), cfg = await import('../src/config.js');
+let before = null;
+try { before = await import('../base/src/avatar.js'); } catch { before = null; }
+const T = 320, AA = new URLSearchParams(location.search).get('aa') !== '0';
+const renderer = new THREE.WebGLRenderer({ antialias: AA, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(T, T); document.body.appendChild(renderer.domElement);
+renderer.toneMapping = THREE.NeutralToneMapping;
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x8795a3);
+const hemi = new THREE.HemisphereLight(0xdfe8f2, 0x6b625a, 1.4); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff0dc, 2.6); scene.add(sun, sun.target);
+const cam = new THREE.PerspectiveCamera(30, 1, 0.02, 80);
+const S = cfg.SKIN, H = cfg.HAIR;
+const base = { tall: 1, build: 1, glasses: 0, phones: 0, earrings: 0, necklace: 0, ring: 0, bracelet: 0, watch: 0, hat: 0, facial: 3, style: 0, gender: 0, brows: null, top: 0x3d6b8f, pants: 0x30343a };
+const looks = {
+  'ljus, svart': { skin: S[0], hair: H[7], beard: H[7] },
+  'ljus, röd': { skin: S[1], hair: H[6], beard: H[6] },
+  'mellan, grå': { skin: S[2], hair: H[5], beard: H[5] },
+  'mellan, svart': { skin: S[2], hair: H[0], beard: H[0] },
+  'mörk, svart': { skin: S[4], hair: H[7], beard: H[7] },
+  'mörk, grå': { skin: S[4], hair: H[5], beard: H[5] },
+};
+// variants: [look fields, expression (smile, surprise, grimace), talking mouth, kiss]
+const variants = {
+  f1: [{ facial: 1 }], f2: [{ facial: 2 }], f3: [{ facial: 3 }],
+  f1smile: [{ facial: 1 }, [1, 0, 0]], f2smile: [{ facial: 2 }, [1, 0, 0]], f3smile: [{ facial: 3 }, [1, 0, 0]],
+  f1talk: [{ facial: 1 }, [0, 0, 0], 1], f2talk: [{ facial: 2 }, [0, 0, 0], 1], f3talk: [{ facial: 3 }, [0, 0, 0], 1],
+  f1kiss: [{ facial: 1 }, [0, 0, 0], 0, 1], f2kiss: [{ facial: 2 }, [0, 0, 0], 0, 1], f3kiss: [{ facial: 3 }, [0, 0, 0], 0, 1],
+  f3surprise: [{ facial: 3 }, [0, 1, 0]],
+  f1acc: [{ facial: 1, hat: 1, phones: 1 }], f2acc: [{ facial: 2, hat: 1, phones: 1 }], f3acc: [{ facial: 3, hat: 2, phones: 1 }],
+};
+const figures = {};
+function figure(name, phase, variant) {
+  const key = `${name}-${phase}-${variant}`;
+  if (figures[key] !== undefined) return figures[key];
+  const mod = phase === 'after' ? after : before;
+  if (!mod) return (figures[key] = null);
+  const [over] = variants[variant];
+  const a = new mod.Avatar({ ...cfg.avatarLook('beard-' + name), ...base, ...looks[name], ...over });
+  scene.add(a.object); a.update(1 / 60); a.object.visible = false;
+  return (figures[key] = a);
+}
+function pose(a, variant) { // the expression / talking / kiss uniforms (set per draw: update() would ease them)
+  const [, expr = [0, 0, 0], talk = 0, kiss = 0] = variants[variant], u = a.material.userData.u;
+  u.uExpr?.value.set(...expr); u.uMouth.value = talk; u.uKiss.value = kiss; u.uBlink.value = 0;
+}
+const show = (a) => { for (const b of Object.values(figures)) if (b) b.object.visible = b === a; return a; };
+const at = (a, bone, off = [0, 0, 0]) => a.bones[bone].localToWorld(new THREE.Vector3(...off));
+// The figure faces −z. close: the face from the front; q34: three-quarter; profile: from the figure's left; low: three-quarter from below
+// (the neck line); cheek: the beard's cheek edge up close; lip: the moustache and mouth up close; talk / talk3: 1.5 m / 3 m at the game's
+// pixel density (70° over 1080 px = 23.4° over 320 px).
+const views = {
+  close: (a) => { const h = at(a, 'head', [0, 0.06, 0.05]); return { eye: h.clone().add(new THREE.Vector3(0, 0.01, -0.46)), look: h, fov: 22 }; },
+  q34: (a) => { const h = at(a, 'head', [0, 0.06, 0.04]); return { eye: h.clone().add(new THREE.Vector3(0.3, 0.02, -0.36)), look: h, fov: 22 }; },
+  profile: (a) => { const h = at(a, 'head', [0, 0.06, 0.02]); return { eye: h.clone().add(new THREE.Vector3(0.47, 0.01, -0.02)), look: h, fov: 22 }; },
+  low: (a) => { const h = at(a, 'head', [0, 0.03, 0.03]); return { eye: h.clone().add(new THREE.Vector3(0.22, -0.2, -0.36)), look: h, fov: 22 }; },
+  cheek: (a) => { const h = at(a, 'head', [0.045, 0.07, 0.07]); return { eye: h.clone().add(new THREE.Vector3(-0.17, 0.02, -0.25)), look: h, fov: 12 }; },
+  lip: (a) => { const h = at(a, 'head', [0, 0.045, 0.1]); return { eye: h.clone().add(new THREE.Vector3(-0.12, -0.01, -0.28)), look: h, fov: 11 }; },
+  talk: (a) => { const h = at(a, 'head', [0, 0.04, 0]); return { eye: h.clone().add(new THREE.Vector3(0.35, 0.05, -1.46)), look: h.clone().add(new THREE.Vector3(0, -0.12, 0)), fov: 23.4 }; },
+  talk3: (a) => { const h = at(a, 'head', [0, 0.04, 0]); return { eye: h.clone().add(new THREE.Vector3(0.7, 0.1, -2.92)), look: h.clone().add(new THREE.Vector3(0, -0.4, 0)), fov: 23.4 }; },
+};
+function light(kind, v) {
+  const toCam = v.eye.clone().sub(v.look).setY(0).normalize();
+  if (kind === 'day') { hemi.intensity = 1.4; sun.intensity = 2.6; sun.color.set(0xfff0dc); sun.position.copy(v.look).addScaledVector(toCam, 3).add(new THREE.Vector3(1.2, 3, 0)); }
+  else { hemi.intensity = 0.6; sun.intensity = 3.2; sun.color.set(0xffd9a8); sun.position.copy(v.look).addScaledVector(toCam, -3).add(new THREE.Vector3(0.3, 0.9, 0)); }
+  sun.target.position.copy(v.look);
+}
+function draw(a, view, kind, variant) {
+  if (!a) return false;
+  show(a); pose(a, variant); const v = views[view](a);
+  cam.fov = v.fov; cam.updateProjectionMatrix(); cam.position.copy(v.eye); cam.lookAt(v.look); light(kind, v);
+  scene.updateMatrixWorld(true); renderer.render(scene, cam);
+  return true;
+}
+const sheetCanvas = document.createElement('canvas'), sctx = sheetCanvas.getContext('2d');
+const label = { close: 'rakt', q34: 'snett', profile: 'profil', low: 'underifrån', cheek: 'kindkant', lip: 'mustasch', talk: '1,5 m', talk3: '3 m', back: 'motljus', day: 'dagsljus', before: 'före', after: 'efter' };
+const vlabel = (v) => ({ 1: 'helskägg', 2: 'mustasch', 3: 'skägg+mustasch' }[v[1]] ?? '') + (v.endsWith('smile') ? ', leende' : v.endsWith('talk') ? ', prat' : v.endsWith('kiss') ? ', puss' : v.endsWith('surprise') ? ', förvånad' : v.endsWith('acc') ? ', keps+lurar' : '');
+/** rows: [look, variant]; cols: [phase, view, light, variant (overrides the row's)]. Returns a JPEG data URL. */
+window.__sheet = (rows, cols) => {
+  const pad = 22;
+  sheetCanvas.width = cols.length * T; sheetCanvas.height = rows.length * T + pad;
+  sctx.fillStyle = '#222'; sctx.fillRect(0, 0, sheetCanvas.width, sheetCanvas.height);
+  sctx.font = '13px sans-serif'; sctx.fillStyle = '#fff';
+  const of = (row, col) => (col ? (col.startsWith('+') ? row + col.slice(1) : col) : row); // a '+suffix' column adds to the row's facial hair
+  cols.forEach(([phase, view, kind, variant], i) => sctx.fillText(`${label[phase]} – ${label[view]}, ${label[kind]}${variant ? ' – ' + (variant.startsWith('+') ? vlabel('f0' + variant.slice(1)).slice(2) : vlabel(variant)) : ''}`, i * T + 6, 16));
+  rows.forEach(([name, rowVariant], r) => cols.forEach(([phase, view, kind, colVariant], i) => {
+    const variant = of(rowVariant, colVariant);
+    if (draw(figure(name, phase, variant), view, kind, variant)) sctx.drawImage(renderer.domElement, i * T, pad + r * T);
+    if (i === 0) { sctx.fillStyle = '#fff'; sctx.fillText(`${name} – ${vlabel(rowVariant)}`, 6, pad + r * T + T - 8); }
+  }));
+  return sheetCanvas.toDataURL('image/jpeg', 0.92);
+};
+window.__info = () => {
+  const res = { msaa: renderer.getContextAttributes().antialias, samples: renderer.getContext().getParameter(renderer.getContext().SAMPLES) };
+  for (const phase of ['before', 'after']) for (const v of ['f1', 'f2', 'f3']) {
+    const a = figure('mellan, grå', phase, v); if (!a) continue;
+    const g = a.mesh.geometry.attributes; let beard = 0, head = 0;
+    for (let i = 0; i < g.position.count; i++) { if (g.region.getX(i) === 8) beard++; const fp = g.facePart.getX(i); if (fp > 0 && fp < 30) head++; }
+    renderer.info.reset(); renderer.info.autoReset = false; draw(a, 'close', 'day', v);
+    (res[phase] ??= {})[v] = { tris: g.position.count / 3, headTris: head / 3, beardTris: beard / 3, calls: renderer.info.render.calls }; renderer.info.autoReset = true;
+  }
+  return res;
+};
+/** ms per frame (a 1-pixel read for gl finish), before vs after alternating: a 640 px bearded close-up (the beard fills the most
+ * pixels) and nine bearded figures at 3 – 6 m. */
+window.__cost = (frames = 30) => {
+  const gl = renderer.getContext(), one = new Uint8Array(4), res = { close: { before: [], after: [] }, crowd: { before: [], after: [] } };
+  const time = (fn) => { fn(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, one); const t0 = performance.now(); for (let f = 0; f < frames; f++) { fn(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, one); } return +((performance.now() - t0) / frames).toFixed(2); };
+  renderer.setSize(640, 640);
+  for (const phase of ['before', 'after', 'before', 'after', 'before', 'after']) {
+    const mod = phase === 'after' ? after : before; if (!mod) continue;
+    const a = figure('mellan, svart', phase, 'f3');
+    res.close[phase].push(time(() => draw(a, 'close', 'day', 'f3')));
+    show(null); const crowd = [];
+    for (let i = 0; i < 9; i++) { const c = new mod.Avatar({ ...cfg.avatarLook('crowd' + i), ...base, ...Object.values(looks)[i % 6], facial: 1 + (i % 3) }); c.object.position.set((i % 3 - 1) * 0.9, 0, Math.floor(i / 3) * 1.2); c.update(1 / 60); scene.add(c.object); crowd.push(c); }
+    cam.fov = 40; cam.updateProjectionMatrix(); cam.position.set(0.8, 1.6, -4); cam.lookAt(0, 1.3, 1); light('day', { eye: cam.position.clone(), look: new THREE.Vector3(0, 1.3, 1) });
+    scene.updateMatrixWorld(true);
+    res.crowd[phase].push(time(() => renderer.render(scene, cam)));
+    for (const c of crowd) { c.object.removeFromParent(); c.dispose?.(); }
+  }
+  renderer.setSize(T, T);
+  for (const k of ['close', 'crowd']) if (res[k].before.length) res[k].ratio = +(Math.min(...res[k].after) / Math.min(...res[k].before)).toFixed(3);
+  return res;
+};
+window.__lab = { THREE, after, before, cfg, scene, renderer, cam, light, figure, draw, views };
+window.__ready = true;
+</script></body></html>

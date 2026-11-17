@@ -4314,19 +4314,31 @@ export const AVATAR_EXPR = { rise: 7, fall: 2.4, flinch: 0.7,
   cheek: [0.04, 0.078, 0.016, 0.014], cheekLift: [0.0024, 0, 0.0016], cheekPuff: 0.0008,
   band: [0.108, 0.12, 0.15, 0.185], arch: [0.035, 0.03], browUp: 0.0065, browDown: 0.0055, browIn: 0.18, inner: [0.02, 0.055], front: [0.05, 0.085],
   squint: [0.22, 0, 0.36], widen: 0.18, jaw: 0.004 };
-// The avatars' full beard (#1097, src/avatar.js beardShell) *guess* tuned by eye against the avatar head (PVP_RIFLE_HEAD skull / jaw): degrees from `centre` (head-bone frame, metres);
-// #2041 the moustache variant's mouth `opening`: the grid's quads within `frame` [± columns from the middle, from row, to row]
-// give way to `rings` bands narrowing to an oval round the #2002 lips and their skin band (lips ±13.5°, -24.4 … -16.5°; band
-// ±13.6°, -26.2 … -14.6°, measured from the bind geometry): centre elevation `e`, `half` [azimuth, elevation] degrees, its
-// ends raised `bend` degrees (the lips' smile curve); the edge sits `edgeLift` m above the head mesh's real skin and the
-// shell eases back to its own lift over `feather` degrees outside the oval.
-export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76, cols: 16, rows: 12, cheek: [-6, 10], cheekAz: [22, 90],
-  chinTop: -27, notch: [8, 22], thickness: 0.011, lift: 0.0015,
-  opening: { frame: [4, 7, 12], e: -20.6, half: [15, 6.2], bend: 1.3, rings: 3, edgeLift: 0.0008, feather: 15 },
-  // #2012 guesses by eye: `columns` replaces `cols` (an even multiple keeps the mouth frame symmetric about the middle); the top edge
-  // breaks into `jag` [degrees, period in degrees] from |azimuth| `jagFrom`; `strand` the shade contrast per column;
-  // the moustache alone (facial 2): [half width °, top / bottom elevation at the middle, droop ° at the ends, thickness m]
-  columns: 32, jag: [1.6, 11.5], jagFrom: 24, strand: 0.07, moustache: [28, -10, -18, 4, 0.0042] };
+// The avatars' full beard (#1097) and moustache, since #2051 in src/avatarbeard.js; all *guess* tuned by eye against the avatar head, not
+// measured: degrees from `centre` (head-bone frame, metres). Full beard: a grid of `columns` × `rows` over ±`azimuth`, from `bottom` (under the
+// chin) up to the cheek line `cheek` [front, sideburn] rising between |azimuth| `cheekAz`; facial 1 drops to `chinTop` under the lips
+// between |azimuth| `notch`. #2041 the moustache variant's mouth `opening`: the grid's quads within `frame` [± columns from the middle, from
+// row, to row] give way to `rings` bands narrowing to an oval round the #2002 lips and their skin band (lips ±13.5°, -24.4 … -16.5°; band
+// ±13.6°, -26.2 … -14.6°, measured from the bind geometry): centre elevation `e`, `half` [azimuth, elevation] degrees, its ends raised `bend`.
+// #2051: the shell lies on the head's real skin (head + neck mesh) `lift` m above it plus `thick` [chin, cheeks, facial 3's moustache bulk] m
+// times density^0.7, so its edges sit on the skin. `edge`: the grid reaches `rise` above the cheek line, which facial 3 lowers by `dip`
+// [degrees, eased out between |azimuth| from, to] under the nose and which wanders by `wobble` [degrees, from |azimuth|]; the density fades
+// over `top` [under the nose / lip, cheeks, sideburns], `neck`, `back` (behind the jaw) and `mouth` degrees; `patch` thins the upper cheeks.
+// `moustache` (facial 2): a band from `top` to `bottom` elevation at the middle (`philtrum` lower at the centre), its ends `droop`ing by
+// |azimuth| `half` and tapering to points from `taper` × half, fading over `feather` [above, below] degrees; a `cols` × `rows` grid with a
+// `margin` (degrees) round it, `thick` m; facial 3 blends to moustache hairs within |azimuth| `blend` above the mouth. `hair`: lanes `lane` m
+// apart, one hair per `cell` m along them, `len` [min, max] m (`lenM` on a moustache), `width` m half-width at the root (stylised ≈ 3× real),
+// a random `lean` / `curl` (lanes over its length), present with chance `fill` × the density at its root; beard lanes converge downwards by
+// `converge` (1/degree about elevation `y0`), moustache lanes fall outwards by `slope` [linear, quadratic]; `shade` [min, max] per hair, the
+// undercoat `base` (`baseShade`) only where the density is above `baseFrom`; on the silhouette it gives way by `graze` [from, to, strength]
+// (1 − |n·v|). `radius` m: the arc per degree; `budget`: triangles per option incl. its flyaways (#2042: +10 % of the ≈ 8,200-triangle head). Without MSAA the uncovered beard is skin (`skinShade` × the look's skin).
+export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76, columns: 32, rows: 12, cheek: [-6, 10], cheekAz: [22, 90],
+  chinTop: -27, notch: [8, 22], lift: 0.0005, thick: [0.011, 0.005, 0.004], radius: 0.088, skinShade: 1,
+  opening: { frame: [4, 7, 12], e: -20.6, half: [15, 6.2], bend: 1.3, rings: 3 },
+  edge: { rise: 3, dip: [4, 8, 20], wobble: [1.2, 25], top: [3.5, 10, 6], neck: 16, back: 18, mouth: 2.5, patch: 0.3 },
+  moustache: { half: 27, top: -8, bottom: -16.5, philtrum: 1, droop: 5, taper: 0.55, feather: [2.5, 1.0], thick: 0.0035, margin: 2, cols: 16, rows: 6, blend: [16, 30] },
+  hair: { lane: 0.00045, cell: 0.003, len: [0.005, 0.009], lenM: [0.004, 0.008], width: 0.00013, lean: 1.2, curl: 0.8, fill: 0.9,
+    converge: -0.006, y0: -30, slope: [0.25, 0.012], shade: [0.7, 1.12], base: 1, baseFrom: 0, baseShade: 0.82, graze: [0.55, 0.9, 0.85] }, budget: 1000 };
 // The avatars' hairstyles (#1102, src/avatar.js hairParts) *guess* by eye against the avatar head (PVP_RIFLE_HEAD skull / jaw / ears):
 // shells projected from `centre` (head-bone frame, m) onto the skull, lifted by a thickness. `hairline`: the hair's lower edge,
 // [|azimuth|, elevation] in degrees (0 = straight ahead): forehead → temples → sideburn in front of the ear → over the ear → nape;

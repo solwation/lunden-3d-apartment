@@ -23,6 +23,7 @@ import { browSurface, browSlide, browUniforms, applyBrowLook, browFDecl, browCol
 import { hairlineAt, hairlineShell, hairlineAvoid, hairlineUniforms, applyHairlineLook, hairlineFDecl, hairlineColor } from './avatarhairline.js'; // #2050
 import { refineNose, noseHeight, noseVertexGLSL, noseFragmentGLSL, noseKey, NOSE_SKIN, noseUniforms, applyNoseLook, noseFormDecl, noseNormalGLSL } from './avatarnose.js'; // #2048: the nose (#2049: its shape variants)
 import { glossUniforms, applyGlossLook, glossVertex, glossFragment, glossKey } from './avatarhairgloss.js'; // #2052: gloss along the strands
+import { beardShell, moustacheShell, beardCore, skinProbe, beardUniforms, applyBeardLook, beardFDecl, beardColor, beardRoughness, beardKey } from './avatarbeard.js'; // #2051
 import { topTexture } from './spidersuit.js';
 import { profileAt, contourRows, roundChinCap, neckGeometry } from './avatarcontour.js'; // #2043
 import { reactionPose, mixHand } from './reactpose.js';
@@ -97,11 +98,13 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
   // facial hair: 0 none, 1 beard, 2 mustache, 3 beard + mustache (#1340: face part cowlHide, not hair: the hair-length slider must not squash it; the head warp still moves it)
   const f = Number(facial) || 0, flyFrom = {}, fly = (kind, g) => ((flyFrom[kind] ??= []).push(g.clone()), g); // #2040: the surfaces flyaways grow from, before placement
   if (f === 2) { // mustache only (#2012: a tapered, drooping band instead of two blocks)
-    add(fly('moustache', moustacheShell()), 'beard', 'head', [0, 0, 0], 0.95);
+    const { g, core } = beardGeometry(2, isFemale); fly('moustache', core); // #2051: on the skin; flyaways only from its dense part
+    add(g, 'beard', 'head', [0, 0, 0], 0.95);
     P[P.length - 1].face = FACE_PART.cowlHide;
   }
   if (f === 1 || f === 3) { // #1097: one continuous full beard, the sculpted lips (#2002) showing through its mouth opening
-    add(fly('beard', beardShell(f === 3)), 'beard', 'head', [0, 0, 0], 0.9);
+    const { g, core } = beardGeometry(f, isFemale); fly('beard', core); // #2051 (src/avatarbeard.js)
+    add(g, 'beard', 'head', [0, 0, 0], 0.9);
     P[P.length - 1].face = FACE_PART.cowlHide;
     if (f === 3) P[P.length - 1].mouth = 'moustache'; // (#1122: the moustache over the opening stays, the beard below it drops)
     // #2020: no separate dark lip patch behind the opening any more (it sat below the #2002 lips as a dark rectangle)
@@ -628,127 +631,17 @@ function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
   }
   function shoePart() { add.last().shoe = true; }
 }
-/** A continuous full beard (#1097) in the head bone's frame: a shell projected from a point inside the jaw onto the
- * union of the skull and jaw ellipsoids (RH.skull / RH.jaw), lifted off the skin by a thickness that is fullest at the
- * chin and tapers to nothing at the edges, so it follows the head's rounding without gaps. It covers the cheeks (up to
- * sideburns in front of the ears), the jawline, the chin and the mouth corners; `lip` (facial 3) also covers the upper lip
- * as the moustache. The mouth stays visible: a U-shaped notch without the moustache, an opening with it (#2020: aligned
- * with the #2002 lips, which show on the head's own skin; no extra patch behind it; #2041: an oval round the lips whose
- * edge feathers down onto the actual skin, see beardMouthRing). */
-function beardShell(lip) {
-  const B = BEARD, deg = Math.PI / 180;
-  const { grid, smooth, dir, skin } = beardGrid();
-  // #2012: the sideburn/cheek edge breaks into alternating tufts and thins to the skin; the opening rows stay aligned
-  const jag = (a) => B.jag[0] * (0.5 + 0.5 * Math.cos(a * deg * 360 / B.jag[1])) * smooth(B.jagFrom, B.jagFrom + 12, Math.abs(a));
-  const top = (a) => { // the top edge: sideburns → cheeks → (without the moustache) down under the mouth at the front
-    const side = B.cheek[0] + (B.cheek[1] - B.cheek[0]) * smooth(B.cheekAz[0], 90, Math.abs(a));
-    return (lip ? side : B.chinTop + (side - B.chinTop) * smooth(B.notch[0], B.notch[1], Math.abs(a))) - jag(a);
-  };
-  const range = (a) => [B.bottom, top(a)];
-  const lift = (a, s) => B.thickness * (1 - 0.6 * smooth(0, 1, Math.abs(a) / B.azimuth)) * Math.sin(Math.PI * (0.15 + s * 0.85)) ** 0.6 + B.lift;
-  const strand = (i, s) => (1 + B.strand * Math.sin(i * 2.39 + 0.3)) * (0.9 + 0.1 * smooth(0.2, 0.7, s));
-  if (!lip) return grid([-B.azimuth, B.azimuth], B.columns, B.rows, range, lift, undefined, strand);
-  // #2041: round the oval mouth opening the shell sinks onto the head mesh's real skin (up to a centimetre inside the
-  // projection ellipsoids there), fully at the opening's edge and easing out over `feather` degrees, for grid and ring alike
-  const O = B.opening, step = (2 * B.azimuth) / B.columns, rowE = (a, j) => B.bottom + ((top(a) - B.bottom) * j) / B.rows;
-  const sunk = (a, e, d, out) => { // `out`: the shell's own distance from the centre along d
-    const u = a / O.half[0], v = (e - O.e - O.bend * Math.min(1, u * u)) / O.half[1], rho = Math.max(1e-6, Math.hypot(u, v));
-    const k = smooth(0, O.feather, (1 - 1 / rho) * Math.hypot(a, v * O.half[1])); // the distance outside the oval, degrees along its radius
-    return k >= 1 ? out : (headSkinAlong(d) + O.edgeLift) * (1 - k) + out * k;
-  };
-  const lipLift = (a, s) => { const [e0, e1] = range(a), e = e0 + (e1 - e0) * s, d = dir(a, e); return sunk(a, e, d, skin(d) + lift(a, s)) - skin(d); };
-  const keep = (a, e) => Math.abs(a) > O.frame[0] * step || e < rowE(a, O.frame[1]) || e > rowE(a, O.frame[2]); // the frame's quads give way to the ring
-  return grid([-B.azimuth, B.azimuth], B.columns, B.rows, range, lipLift, keep, strand, (g) => beardMouthRing(g, { range, lift, strand, rowE, step, sunk }));
-}
-/** #2041: the full beard's mouth opening (facial 3). The grid's quads inside a frame round the mouth (BEARD.opening.frame)
- * are replaced by `rings` bands from the frame's own edge vertices in to an oval just outside the #2002 lips and their
- * skin band (a smile-bent ellipse, BEARD.opening), so the opening follows the lips instead of the grid's rectangle; the
- * bands follow beardShell's `sunk` surface, so the edge lies on the skin with no lifted rim to see past in three-quarter view. */
-function beardMouthRing({ at, idx, vertex, dir, skin }, { range, lift, strand, rowE, step, sunk }) {
-  const B = BEARD, O = B.opening, mid = B.columns / 2, [w, j0, j1] = O.frame, R = O.rings;
-  const loop = []; // the frame's edge vertices, anticlockwise seen from outside (+azimuth to the right, up)
-  for (let i = mid - w; i < mid + w; i++) loop.push([i, j0]);
-  for (let j = j0; j < j1; j++) loop.push([mid + w, j]);
-  for (let i = mid + w; i > mid - w; i--) loop.push([i, j1]);
-  for (let j = j1; j > j0; j--) loop.push([mid - w, j]);
-  const eMid = (rowE(0, j0) + rowE(0, j1)) / 2, eHalf = (rowE(0, j1) - rowE(0, j0)) / 2, aHalf = w * step;
-  const spokes = loop.map(([i, j]) => {
-    const a = -B.azimuth + i * step, e = rowE(a, j), phi = Math.atan2((e - eMid) / eHalf, a / aHalf);
-    const ia = O.half[0] * Math.cos(phi), ie = O.e + O.bend * Math.cos(phi) ** 2 + O.half[1] * Math.sin(phi), out = [];
-    for (let r = 0; r < R; r++) {
-      const t = r / R, va = ia + (a - ia) * t, ve = ie + (e - ie) * t, d = dir(va, ve), [e0, e1] = range(va), s = (ve - e0) / (e1 - e0);
-      out.push(vertex(va, ve, sunk(va, ve, d, skin(d) + lift(va, s)), strand((va + B.azimuth) / step, s)));
-    }
-    out.push(at(i, j));
-    return out;
-  });
-  for (let k = 0; k < spokes.length; k++) {
-    const p = spokes[k], q = spokes[(k + 1) % spokes.length];
-    for (let r = 0; r < R; r++) idx.push(p[r], p[r + 1], q[r], q[r], p[r + 1], q[r + 1]);
+/** #2051: facial hair `f` (1 … 3) on the head's real skin (head + neck before the face warp, src/avatarbeard.js), with the dense part the
+ * flyaways root on; built once per kind and figure (the probe is the slow part) and cloned, since placing moves a geometry. */
+const beards = new Map();
+function beardGeometry(f, female) {
+  const key = `${f}_${female}`;
+  if (!beards.has(key)) {
+    const skin = skinProbe([headGeometry(), neckGeometry(female)]), g = f === 2 ? moustacheShell(skin) : beardShell(f === 3, skin);
+    beards.set(key, { g, core: beardCore(g, f) });
   }
-}
-/** #2041: the distance from BEARD.centre along the unit direction `d` to the head's own skin mesh (headGeometry, the
- * head bone's frame before faceWarp, like the beard), for seating the beard's mouth edge on it. */
-let headProbe = null;
-const probeRay = new THREE.Raycaster();
-function headSkinAlong(d) {
-  if (!headProbe) { headProbe = new THREE.Mesh(headGeometry(), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })); headProbe.updateMatrixWorld(); }
-  probeRay.set(new THREE.Vector3(...BEARD.centre), new THREE.Vector3(...d));
-  const hits = probeRay.intersectObject(headProbe, false);
-  return hits.length ? hits.at(-1).distance : 0;
-}
-/** #2012: the moustache on its own (facial 2), a tapered, drooping band over the upper lip on the same projected skin as
- * the beard: full in the middle, thinning to the skin at its edges, its ends hanging past the mouth's corners. */
-function moustacheShell() {
-  const B = BEARD, [half, top, bottom, droop, thick] = B.moustache;
-  const { grid, smooth } = beardGrid();
-  const hang = (a) => droop * smooth(10, half, Math.abs(a));
-  return grid([-half, half], 12, 4, (a) => [bottom - hang(a), top - hang(a) * 0.6 - 2 * smooth(0, 8, 8 - Math.abs(a))],
-    (a, s) => B.lift + thick * Math.sin(Math.PI * s) ** 0.7 * (1 - 0.75 * smooth(0.4, 1, Math.abs(a) / half)),
-    undefined, (i, s) => (1 + B.strand * Math.sin(i * 2.39 + 0.3)) * (0.88 + 0.12 * s));
-}
-/** The beard's projection (#1097): a grid over azimuth / elevation from BEARD.centre onto the skull ∪ jaw ellipsoids. */
-function beardGrid() {
-  const B = BEARD, c = B.centre, deg = Math.PI / 180;
-  const smooth = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
-  const dir = (a, e) => [Math.sin(a * deg) * Math.cos(e * deg), Math.sin(e * deg), Math.cos(a * deg) * Math.cos(e * deg)];
-  const skin = (d) => { // the far intersection of the ray c + t·d with each ellipsoid; the outermost one
-    let best = 0;
-    for (const e of [RH.skull, RH.jaw]) {
-      const o = [0, 1, 2].map((i) => (c[i] - e.centre[i]) / e.scale[i]), v = [0, 1, 2].map((i) => d[i] / e.scale[i]);
-      const qa = v[0] ** 2 + v[1] ** 2 + v[2] ** 2, qb = o[0] * v[0] + o[1] * v[1] + o[2] * v[2], qc = o[0] ** 2 + o[1] ** 2 + o[2] ** 2 - e.radius ** 2;
-      best = Math.max(best, (-qb + Math.sqrt(qb * qb - qa * qc)) / qa);
-    }
-    return best;
-  };
-  // a cols × rows grid over azimuth (0 = straight ahead, + = the figure's left) and elevation; `range(a)` → [bottom, top]
-  // elevation, `lift(a, s)` the distance off the skin (s: 0 at the bottom row → 1 at the top), `keep(a, e)` per quad
-  const grid = (az, cols, rows, range, lift, keep = () => true, shade = null, patch = null) => { // `shade(i, s)`: a per-vertex shade (#2012); `patch` adds faces (#2041)
-    const pos = [], ae = [], idx = [], sh = [], at = (i, j) => i * (rows + 1) + j;
-    for (let i = 0; i <= cols; i++) {
-      const a = az[0] + ((az[1] - az[0]) * i) / cols, [e0, e1] = range(a);
-      for (let j = 0; j <= rows; j++) {
-        const s = j / rows, e = e0 + (e1 - e0) * s, d = dir(a, e), t = skin(d) + lift(a, s);
-        pos.push(c[0] + d[0] * t, c[1] + d[1] * t, c[2] + d[2] * t); ae.push([a, e]);
-        if (shade) sh.push(shade(i, s));
-      }
-    }
-    for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
-      const q = [at(i, j), at(i + 1, j), at(i, j + 1), at(i + 1, j + 1)].map((k) => ae[k]);
-      if (!keep(q.reduce((m, p) => m + p[0], 0) / 4, q.reduce((m, p) => m + p[1], 0) / 4)) continue;
-      idx.push(at(i, j), at(i + 1, j), at(i, j + 1), at(i + 1, j), at(i + 1, j + 1), at(i, j + 1));
-    }
-    if (patch) patch({ at, idx, dir, skin, vertex: (a, e, t, v) => { // a vertex at azimuth a, elevation e, distance t from the centre
-      const d = dir(a, e); pos.push(c[0] + d[0] * t, c[1] + d[1] * t, c[2] + d[2] * t); ae.push([a, e]); if (shade) sh.push(v); return ae.length - 1;
-    } });
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    if (shade) g.setAttribute('shade', new THREE.Float32BufferAttribute(sh, 1));
-    g.setIndex(idx);
-    g.computeVertexNormals();
-    return g;
-  };
-  return { grid, smooth, dir, skin };
+  const b = beards.get(key);
+  return { g: b.g.clone(), core: b.core.clone() };
 }
 /** The hairstyles (#1102) in the head bone's frame, as [geometry, region, shade]. Every style is a shell projected from
  * AVATAR_HAIR.centre onto the skull ∪ jaw ellipsoids (RH.skull / RH.jaw) above a real hairline (forehead, temples,
@@ -1196,7 +1089,7 @@ function surfaceColor() {
       vec2 fade = vec2(1.0) - smoothstep(vec2(0.5), vec2(2.0), fwidth(weave));
       float thread = dot(sin(weave), fade) * 0.5;
       diffuseColor.rgb *= 1.0 + thread * ${F.weaveStrength.toFixed(3)};
-    } else if ((region == 3.0 || region == 8.0) && floor(vSuitRole + 0.5) == 2.0) {
+    } else if (region == 3.0 && floor(vSuitRole + 0.5) == 2.0) { // (#2051: the beard's hairs are its own, avatarbeard.js)
       // #2012: fine strands combed round the head bone's axis (meridians over the crown, down the curtain and beard);
       // a whole number per turn keeps the back continuous, and the fade uses the footprint, not the angle's wrap.
       vec3 q = vSuitAt - vec3(${hb.x.toFixed(4)}, ${hb.y.toFixed(4)}, ${hb.z.toFixed(4)});
@@ -1366,6 +1259,7 @@ function makeMaterial(rim, headProjection) {
   Object.assign(u, hairlineUniforms()); // #2050
   Object.assign(u, glossUniforms()); // #2052
   Object.assign(u, noseUniforms()); // #2049
+  Object.assign(u, beardUniforms()); // #2051
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: SURFACE.finish.cloth, metalness: 0, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
@@ -1390,7 +1284,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     sh.vertexShader = sh.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>\n${flyProject(bindAt('head').add(new THREE.Vector3(...HAIR.centre)))}`); // #2040
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>\n${LAMP_FDECL}`) // #2039
-      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim, uLight;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;\n' + WET_DECL + skin.decl + '\n' + EYE_FDECL + '\n' + FLY_FDECL + '\n' + browFDecl() + '\n' + hairlineFDecl() + '\n' + noseFragmentGLSL(bindAt('head'), FACE_PART.head).decl)
+      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim, uLight;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;\n' + WET_DECL + skin.decl + '\n' + EYE_FDECL + '\n' + FLY_FDECL + '\n' + browFDecl() + '\n' + hairlineFDecl() + '\n' + noseFragmentGLSL(bindAt('head'), FACE_PART.head).decl + '\n' + beardFDecl())
       .replace('#include <color_fragment>', `#include <color_fragment>
       if (uSuit > 0.5) {
         vec3 red = vec3(${new THREE.Color(SPIDER.colors.red).toArray().join(',')}), blue = vec3(${new THREE.Color(SPIDER.colors.blue).toArray().join(',')});
@@ -1414,11 +1308,12 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       ${surfaceColor()}
       ${browColor({ hb: bindAt('head'), region: REGION.brow, part: FACE_PART.brow, warp: FACE.warp.width, skinTone: `${skinArea('socket', SK.eye)} vec3 browTone = mix(vec3(1.0), ${v3(SK.socket)}, clamp(socket, 0.0, 1.0));` })}
       ${hairlineColor({ hb: bindAt('head'), region: REGION.hair })}
+      ${beardColor({ hb: bindAt('head'), region: REGION.beard })}
       diffuseColor.rgb = mix(diffuseColor.rgb, uRingColor, vRing); // #1324: the ring's metal
       float wetSnow = 0.0; // #2018
       ${wetColor(bindAt('torso').y)}
       ${flyAlpha()}`)
-      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>\n${surfaceRoughness()}\n${browRoughness({ region: REGION.brow, part: FACE_PART.brow, skin: SURFACE.finish.skin })}\n${wetRoughness()}\n${eyeWet(FACE_PART.eye, FACE_PART.iris)}`)
+      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>\n${surfaceRoughness()}\n${browRoughness({ region: REGION.brow, part: FACE_PART.brow, skin: SURFACE.finish.skin })}\n${beardRoughness({ region: REGION.beard, skin: SURFACE.finish.skin })}\n${wetRoughness()}\n${eyeWet(FACE_PART.eye, FACE_PART.iris)}`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\n${skin.normal}`) // #2032
       .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${skin.light}\n${noseFragmentGLSL(bindAt('head'), FACE_PART.head).light}\n${flyLight({ hair: REGION.hair, beard: REGION.beard })}`) // #2032, #2040
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\nmetalnessFactor = vRing * ${SURFACE.finish.metalness.toFixed(3)};`)
@@ -1437,7 +1332,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     const gloss = { head: bindAt('head'), region: REGION, part: FACE_PART }; // #2052
     sh.vertexShader = glossVertex(sh.vertexShader, gloss); sh.fragmentShader = glossFragment(sh.fragmentShader, gloss);
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey(); // #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey(); // #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
   return m;
 }
 
@@ -1566,6 +1461,7 @@ function applyFaceShape(u, lk) {
   applyHairlineLook(u, lk); // #2050
   applyGlossLook(u, lk); // #2052
   applyNoseLook(u, lk); // #2049
+  applyBeardLook(u, lk); // #2051
   u.uHair.value = v('hairLength'); // #1165
   u.uGlasses.value = Number.isInteger(lk.glasses) && lk.glasses > 0 && lk.glasses < GLASSES.names.length ? lk.glasses : 0;
   u.uEarrings.value = Number.isInteger(lk.earrings) && lk.earrings > 0 && lk.earrings < EARR.names.length ? lk.earrings : 0; // #1325
