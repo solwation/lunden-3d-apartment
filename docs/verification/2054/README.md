@@ -41,3 +41,5 @@ a software rasterizer is a pessimistic proxy, not a Surface (Iris 640) measureme
 Limits: the curls are stylised (domain-warped pattern, no individual hairs); the curly curtain's flat sheet still forms its front edge
 behind the ear in profile; flyaways still grow from the curls; up to the #1966 far figure (from 30 m, unchanged) the full curls are drawn;
 the customizer's 2D sketch is unchanged.
+
+| `integrerad.jpg` | the conductor's rerun of `lockigt.jpg` on the revision rebased onto #2053 long hair, before = `2137f52d` |
