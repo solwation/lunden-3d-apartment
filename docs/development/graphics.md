@@ -338,6 +338,16 @@ strand stripes no longer apply to beards; the #2040 rim light and beard/moustach
 `beardCore`). Expressions, talking and kiss move the beard with the skin as before. Checks: `node --test tools/avatarbeardtest.mjs` and
 `PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarbeardtest.cjs SITE OUT` ([views and cost](../verification/2051/README.md)).
 
+The full beard's sideburn (#2061, `src/avatarsideburn.js`, tunables `AVATAR_SIDEBURN`, all *guess*) runs up into the soft hairline
+instead of stopping short of it: the visible line (`hairlineAt`, round the hair centre) is mapped into the beard's angles at a typical
+skin radius into a small table (`SIDEBURN_TABLE`, baked into the shader), and behind `from` the beard's top follows it `over` degrees
+inside the hair (less where the line is steep, so no spike of beard shows through the sparse hair along the sideburn's front). There the
+beard thins to `flat` of its thickness, so it lies under the scalp shell and the two soft edges overlap (the beard dense where the hair is
+sparse) instead of leaving a skin strip. The back edge in front of the ear is feathered over `back` degrees (it was the grid's hard edge
+above the jaw). A curtain (long, curly) covers the sideburn as before; the moustache alone has no sideburn. Checks:
+`node --test tools/avatarsideburntest.mjs` and `PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarsideburntest.cjs SITE OUT`
+([views and cost](../verification/2061/README.md)).
+
 #### Curly hair as curl volumes (#2054)
 
 `src/avatarcurls.js` (tunables `AVATAR_HAIR.curly`, all *guess* by eye) replaces the #1377 tubes that wound over a smooth shell with

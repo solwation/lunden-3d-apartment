@@ -1,0 +1,75 @@
+{
+ "baseline": "37f40b659b7373b1d215128a4ca1a3d7dc27bc1f",
+ "info": {
+  "msaa": true,
+  "samples": 4,
+  "before": {
+   "f1": {
+    "tris": 16548,
+    "headTris": 10728,
+    "beardTris": 888,
+    "calls": 1
+   },
+   "f2": {
+    "tris": 15860,
+    "headTris": 10040,
+    "beardTris": 200,
+    "calls": 1
+   },
+   "f3": {
+    "tris": 16624,
+    "headTris": 10804,
+    "beardTris": 964,
+    "calls": 1
+   }
+  },
+  "after": {
+   "f1": {
+    "tris": 16548,
+    "headTris": 10728,
+    "beardTris": 888,
+    "calls": 1
+   },
+   "f2": {
+    "tris": 15860,
+    "headTris": 10040,
+    "beardTris": 200,
+    "calls": 1
+   },
+   "f3": {
+    "tris": 16624,
+    "headTris": 10804,
+    "beardTris": 964,
+    "calls": 1
+   }
+  }
+ },
+ "cost": {
+  "close": {
+   "before": [
+    265.24,
+    288.33,
+    287.52
+   ],
+   "after": [
+    286.53,
+    310.42,
+    306.68
+   ],
+   "ratio": 1.08
+  },
+  "crowd": {
+   "before": [
+    570.57,
+    601.71,
+    602.02
+   ],
+   "after": [
+    618.7,
+    620.53,
+    619.94
+   ],
+   "ratio": 1.084
+  }
+ }
+}

@@ -73,7 +73,7 @@ const views = {
   profile: (a) => { const h = at(a, 'head', [0, 0.06, 0.02]); return { eye: h.clone().add(new THREE.Vector3(0.47, 0.01, -0.02)), look: h, fov: 22 }; },
   side: (a) => { const h = at(a, 'head', [0.04, 0.08, 0.03]); return { eye: h.clone().add(new THREE.Vector3(0.36, 0.01, -0.01)), look: h, fov: 22 }; }, // #2061: the sideburn in profile
   sidez: (a) => { const h = at(a, 'head', [0.04, 0.08, 0.03]); return { eye: h.clone().add(new THREE.Vector3(0.36, 0.01, -0.01)), look: h, fov: 11 }; }, // #2061: the sideburn up close
-  back34: (a) => { const h = at(a, 'head', [0.04, 0.08, 0.03]); return { eye: h.clone().add(new THREE.Vector3(0.3, 0.03, 0.2)), look: h, fov: 24 }; }, // #2061: three-quarter from behind
+  back34: (a) => { const h = at(a, 'head', [0.06, 0.07, 0.05]); return { eye: h.clone().add(new THREE.Vector3(0.36, 0.04, 0.12)), look: h, fov: 28 }; }, // #2061: three-quarter from behind
   low: (a) => { const h = at(a, 'head', [0, 0.03, 0.03]); return { eye: h.clone().add(new THREE.Vector3(0.22, -0.2, -0.36)), look: h, fov: 22 }; },
   cheek: (a) => { const h = at(a, 'head', [0.045, 0.07, 0.07]); return { eye: h.clone().add(new THREE.Vector3(-0.17, 0.02, -0.25)), look: h, fov: 12 }; },
   lip: (a) => { const h = at(a, 'head', [0, 0.045, 0.1]); return { eye: h.clone().add(new THREE.Vector3(-0.12, -0.01, -0.28)), look: h, fov: 11 }; },

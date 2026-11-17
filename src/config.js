@@ -4356,7 +4356,7 @@ export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76
 // over `span`) `over` degrees above it, so the beard runs on under the hair's soft edge (#2050) instead of stopping short of it.
 // `flat` [degrees below the line, share]: the beard thins towards the line to that share of its thickness and lies under the hair shell.
 // `back` the back edge's feather (degrees) in front of the ear (it was a hard grid edge above the jaw).
-export const AVATAR_SIDEBURN = { from: [71, 76], over: 6, r: 0.098, step: 2, span: [60, 100], flat: [10, 0.12], back: 9 };
+export const AVATAR_SIDEBURN = { from: [72, 78], over: 6, r: 0.098, step: 2, span: [60, 100], flat: [10, 0.12], back: 9 };
 // The avatars' hairstyles (#1102, src/avatar.js hairParts) *guess* by eye against the avatar head (PVP_RIFLE_HEAD skull / jaw / ears):
 // shells projected from `centre` (head-bone frame, m) onto the skull, lifted by a thickness. `hairline`: the hair's lower edge,
 // [|azimuth|, elevation] in degrees (0 = straight ahead): forehead → temples → sideburn in front of the ear → over the ear → nape;
