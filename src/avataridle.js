@@ -131,11 +131,11 @@ export function idleHands(kind, hipY, shoulder, out = [{ at: [0, 0, 0], pole: [0
   const set = (h, x, y, z, px, py, pz) => { h.at[0] = x; h.at[1] = y; h.at[2] = z; h.pole[0] = px; h.pole[1] = py; h.pole[2] = pz; };
   const sy = hipY + shoulder;
   if (kind === 'cross') { // the forearms folded across the chest, the right one over the left, each hand at the other upper arm
-    set(out[0], -0.1, sy - 0.2, 0.17, 1, -0.6, 0.15);
-    set(out[1], 0.11, sy - 0.18, 0.2, -1, -0.6, 0.15);
+    set(out[0], -0.06, sy - 0.27, 0.18, 1, -0.6, 0.15);
+    set(out[1], 0.07, sy - 0.21, 0.24, -1, -0.6, 0.15);
   } else if (kind === 'pockets') { // the hands in the front pockets, the elbows out and back
-    set(out[0], 0.155, hipY + 0.05, 0.075, 0.6, -0.1, -1);
-    set(out[1], -0.155, hipY + 0.05, 0.075, -0.6, -0.1, -1);
+    set(out[0], 0.16, hipY + 0.03, 0.05, 0.6, -0.1, -1);
+    set(out[1], -0.16, hipY + 0.03, 0.05, -0.6, -0.1, -1);
   } else { // 'stretch': the hands meet overhead, the elbows out
     set(out[0], 0.05, sy + 0.5, -0.02, 1, 0.1, -0.2);
     set(out[1], -0.05, sy + 0.5, -0.02, -1, 0.1, -0.2);

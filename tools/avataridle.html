@@ -1,0 +1,85 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar idle</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2035 component page, driven by tools/avataridletest.cjs: two players (seeds 'player-a', 'player-b') stand still side by side for 60 s
+// (deterministic 60 fps replay, the same numbers as tools/avataridletest.mjs). Red rings on the floor mark where the ankles were at 0.5 s.
+// window.__strip(times, opts) renders a labelled contact sheet of the given times into one canvas (returned as a data URL with the numbers);
+// window.__cost() times Avatar.update with and without the rest.
+import * as THREE from 'three';
+import { Avatar } from '../src/avatar.js';
+import { decodeAvatarLook } from '../src/config.js';
+const code = '210000100c5e8o2w0l8j0n0b0r8t8y8';
+const W = 360, H = 460, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.5));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 4); scene.add(sun);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), new THREE.MeshStandardMaterial({ color: 0xa79f94, roughness: 1 }));
+floor.rotation.x = -Math.PI / 2; scene.add(floor);
+const grid = new THREE.GridHelper(8, 32, 0x7d756b, 0x8d857b); grid.position.y = 0.001; scene.add(grid);
+const seeds = ['player-a', 'player-b'], looks = [{ style: 1, top: 0x2f4f7a, gender: 1 }, { style: 0, top: 0x7a2f2f, gender: 0 }];
+const avatars = seeds.map((seed, i) => {
+  const a = new Avatar({ ...decodeAvatarLook(code, seed), tall: 1, build: 1, ...looks[i] });
+  a.idleSeed = seed; a.frame = [(i - 0.5) * 0.9, 0, 0];
+  a.object.position.set(a.frame[0], 0, a.frame[1]); a.object.rotation.y = 0; // facing +z, towards the camera
+  scene.add(a.object); return a;
+});
+const rings = [];
+const cam = new THREE.PerspectiveCamera(30, W / H, 0.05, 50);
+let t = 0;
+function step() {
+  t += 1 / 60;
+  for (const a of avatars) { a.update(1 / 60, { motionFrame: a.frame }); a.object.updateMatrixWorld(true); }
+  if (t > 0.5 && !rings.length) for (const a of avatars) for (const b of ['footL', 'footR']) {
+    const p = a.bones[b].getWorldPosition(new THREE.Vector3()), r = new THREE.Mesh(new THREE.RingGeometry(0.035, 0.045, 24), new THREE.MeshBasicMaterial({ color: 0xd02020 }));
+    r.rotation.x = -Math.PI / 2; r.position.set(p.x, 0.003, p.z); r.userData.at = p.clone(); scene.add(r); rings.push(r);
+  }
+}
+const to = (time) => { while (t < time - 1e-9) step(); };
+const state = () => avatars.map((a) => { const o = a.idle.out, f = ['footL', 'footR'].map((b) => a.bones[b].getWorldPosition(new THREE.Vector3()));
+  return { w: +o.w.toFixed(2), roll: +o.roll.toFixed(3), turn: +o.turn.toFixed(2), amt: +o.amt.toFixed(2), kind: o.kind,
+    drift: rings.length ? +Math.max(...f.map((p, i) => p.distanceTo(rings[i + (avatars.indexOf(a) * 2)].userData.at))).toFixed(5) : 0 }; });
+const label = (s) => [s.kind ? { cross: 'armar i kors', pockets: 'händer i fickor', stretch: 'sträcker på sig' }[s.kind] : '', Math.abs(s.w) > 0.4 ? `vikt ${s.w > 0 ? 'vänster' : 'höger'} ben` : '', Math.abs(s.turn) > 0.15 ? `blick ${s.turn > 0 ? 'vänster' : 'höger'}` : ''].filter(Boolean).join(', ') || 'vila';
+/** Contact sheet: `times` s, `cols` per row; `view` 'pair' (both players, 3/4 front) or 'a' (player A alone, closer, front). */
+window.__strip = (times, { cols = 5, view = 'pair' } = {}) => {
+  const rows = Math.ceil(times.length / cols), sheet = document.createElement('canvas'), g = sheet.getContext('2d');
+  sheet.width = cols * W; sheet.height = rows * H; const data = [];
+  avatars[1].object.visible = view === 'pair';
+  if (view === 'pair') { cam.fov = 30; cam.position.set(1.3, 1.25, 4.2); cam.lookAt(0, 0.9, 0); }
+  else { cam.fov = 30; cam.position.set(avatars[0].frame[0] + 0.6, 1.15, 4.1); cam.lookAt(avatars[0].frame[0], 0.98, 0); }
+  cam.updateProjectionMatrix();
+  times.forEach((time, i) => {
+    to(time); for (const r of rings) r.visible = view === 'pair' || r.position.x < 0;
+    renderer.render(scene, cam);
+    const x = (i % cols) * W, y = Math.floor(i / cols) * H, s = state();
+    g.drawImage(renderer.domElement, x, y);
+    g.fillStyle = 'rgba(255,255,255,.82)'; g.fillRect(x, y, W, view === 'pair' ? 44 : 26);
+    g.fillStyle = '#111'; g.font = '15px sans-serif';
+    g.fillText(`t = ${t.toFixed(1)} s` + (view === 'pair' ? '' : `: ${label(s[0])}`), x + 8, y + 18);
+    if (view === 'pair') { g.font = '12px sans-serif'; g.fillText(`A: ${label(s[0])}  ·  B: ${label(s[1])}`, x + 8, y + 37); }
+    g.strokeStyle = '#555'; g.strokeRect(x + 0.5, y + 0.5, W - 1, H - 1);
+    data.push({ t: +t.toFixed(2), a: s[0], b: s[1] });
+  });
+  return { url: sheet.toDataURL('image/png'), data, calls: renderer.info.render.calls };
+};
+window.__cost = (n = 20, frames = 600) => { // n standing avatars' update (CPU, ms per frame): the rest on vs off
+  const crowd = []; for (let i = 0; i < n; i++) { const a = new Avatar({ ...decodeAvatarLook(code, 'c' + i), tall: 1, build: 1 }); a.idleSeed = 'c' + i; a.frame = [i * 0.6, 3, 0]; crowd.push(a); }
+  const run = (off) => {
+    for (const a of crowd) a.noIdle = off;
+    const t0 = performance.now();
+    for (let f = 0; f < frames; f++) for (const a of crowd) { a.update(1 / 60, { motionFrame: a.frame }); a.object.updateMatrixWorld(true); }
+    return (performance.now() - t0) / frames;
+  };
+  run(false); run(true);
+  const on = run(false), off = run(true);
+  return { n, frames, msOn: on, msOff: off, perAvatarUs: (on - off) / n * 1000 };
+};
+window.__ready = true;
+</script></body></html>
