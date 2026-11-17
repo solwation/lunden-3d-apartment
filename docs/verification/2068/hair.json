@@ -1,0 +1,111 @@
+{
+  "baseline": "24957657",
+  "source": "2d4974f60e6d7f78cfafb6d071515bdac8192d45",
+  "info": {
+    "msaa": true,
+    "samples": 4,
+    "kort svart-after": {
+      "tris": 15660,
+      "calls": 1
+    },
+    "kort svart-before": {
+      "tris": 15660,
+      "calls": 1
+    },
+    "kort brunt-after": {
+      "tris": 15660,
+      "calls": 1
+    },
+    "kort brunt-before": {
+      "tris": 15660,
+      "calls": 1
+    },
+    "långt svart-after": {
+      "tris": 16680,
+      "calls": 1
+    },
+    "långt svart-before": {
+      "tris": 16680,
+      "calls": 1
+    },
+    "knut brun-after": {
+      "tris": 16112,
+      "calls": 1
+    },
+    "knut brun-before": {
+      "tris": 16112,
+      "calls": 1
+    },
+    "långt blont-after": {
+      "tris": 16680,
+      "calls": 1
+    },
+    "långt blont-before": {
+      "tris": 16680,
+      "calls": 1
+    },
+    "lockigt svart-after": {
+      "tris": 21816,
+      "calls": 1
+    },
+    "lockigt svart-before": {
+      "tris": 21816,
+      "calls": 1
+    },
+    "knut rött-after": {
+      "tris": 16112,
+      "calls": 1
+    },
+    "knut rött-before": {
+      "tris": 16112,
+      "calls": 1
+    },
+    "skägg grått-after": {
+      "tris": 16624,
+      "calls": 1
+    },
+    "skägg grått-before": {
+      "tris": 16624,
+      "calls": 1
+    }
+  },
+  "orbit": {
+    "before": {
+      "meanChange": 2.781,
+      "jumpShare": 0.01018
+    },
+    "after": {
+      "meanChange": 2.34,
+      "jumpShare": 0.00991
+    }
+  },
+  "cost": {
+    "close": {
+      "before": [
+        225.41,
+        251.38,
+        283.59
+      ],
+      "after": [
+        235.34,
+        282.83,
+        266.5
+      ],
+      "ratio": 1.044
+    },
+    "crowd": {
+      "before": [
+        946.86,
+        783.7,
+        1088
+      ],
+      "after": [
+        981.88,
+        1295.6,
+        928.61
+      ],
+      "ratio": 1.185
+    }
+  },
+  "errors": []
+}
