@@ -1,0 +1,146 @@
+{
+ "baseline": "edf705ea0179ecbc830e6a14a1d7ddf16dd51320",
+ "head": "1465c7de523bf682147fb5f241b2bcce92495561",
+ "orbit": {
+  "kort brunt m3": {
+   "before": {
+    "meanChange": 0.944,
+    "jumpShare": 0.00303
+   },
+   "after": {
+    "meanChange": 1.015,
+    "jumpShare": 0.00287
+   }
+  },
+  "långt blont far": {
+   "before": {
+    "meanChange": 0.242,
+    "jumpShare": 0.00053
+   },
+   "after": {
+    "meanChange": 0.244,
+    "jumpShare": 0.00053
+   }
+  },
+  "kort svart near": {
+   "before": {
+    "meanChange": 3.025,
+    "jumpShare": 0.01487
+   },
+   "after": {
+    "meanChange": 3.49,
+    "jumpShare": 0.01805
+   }
+  }
+ },
+ "info": {
+  "msaa": true,
+  "samples": 4,
+  "kort svart-after": {
+   "tris": 13728,
+   "calls": 1
+  },
+  "kort svart-before": {
+   "tris": 13728,
+   "calls": 1
+  },
+  "kort brunt-after": {
+   "tris": 13728,
+   "calls": 1
+  },
+  "kort brunt-before": {
+   "tris": 13728,
+   "calls": 1
+  },
+  "långt blont-after": {
+   "tris": 14608,
+   "calls": 1
+  },
+  "långt blont-before": {
+   "tris": 14608,
+   "calls": 1
+  },
+  "lockigt svart-after": {
+   "tris": 19344,
+   "calls": 1
+  },
+  "lockigt svart-before": {
+   "tris": 19344,
+   "calls": 1
+  },
+  "knut rött-after": {
+   "tris": 14024,
+   "calls": 1
+  },
+  "knut rött-before": {
+   "tris": 14024,
+   "calls": 1
+  },
+  "skägg grått-after": {
+   "tris": 14692,
+   "calls": 1
+  },
+  "skägg grått-before": {
+   "tris": 14692,
+   "calls": 1
+  }
+ },
+ "cost": {
+  "msaa": {
+   "crowd": {
+    "before": [
+     848.95,
+     356.46,
+     395.65
+    ],
+    "after": [
+     776.14,
+     409.51,
+     532.52
+    ],
+    "ratio": 1.149
+   },
+   "close": {
+    "before": [
+     163.56,
+     113.82,
+     115.52
+    ],
+    "after": [
+     159.49,
+     139.92,
+     130.31
+    ],
+    "ratio": 1.145
+   }
+  },
+  "noMsaa": {
+   "crowd": {
+    "before": [
+     133.23,
+     141.45,
+     138.28
+    ],
+    "after": [
+     155.97,
+     157.55,
+     167.52
+    ],
+    "ratio": 1.171
+   },
+   "close": {
+    "before": [
+     82.41,
+     82.39,
+     95.61
+    ],
+    "after": [
+     93.11,
+     102.49,
+     99.17
+    ],
+    "ratio": 1.13
+   }
+  }
+ }
+}

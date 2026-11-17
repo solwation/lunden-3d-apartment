@@ -247,6 +247,25 @@ The coverage is the alpha under the #2040/#2046 alpha-to-coverage, so the skin u
 their edges, and flyaways are not rooted below or in the sparse band (`hairlineAvoid`). Checks: `node --test tools/avatarhairlinetest.mjs`
 and `PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarhairlinetest.cjs SITE OUT` ([views and cost](../verification/2050/README.md)).
 
+#### Gloss along the hair strands (#2052)
+
+`src/avatarhairgloss.js` (tunables `AVATAR_HAIR_GLOSS`, all *guess*) replaces the general GGX highlight on hair, bun, beard, brows and
+flyaways with a Kajiya-Kay style anisotropic gloss: two lobes round the strand tangent, shifted along the normal (a sharp white
+`primary` towards the root, a broader `secondary` in the hair's own hue at √ its brightness towards the tip, so black hair keeps a white
+band and blond / red hair a coloured one). The tangent needs no attribute or network field: the vertex shader inverts the hair shells'
+own parametrisation from the bind position (`hairParts`: azimuth a + sweep · sin(πs) about `AVATAR_HAIR.centre`, elevation from the
+shell's edge to the crown) and follows `AVATAR_HAIR.flow`'s strand groups (sweep plus the clump ridges' twist per style, the uniform
+`uHairFlow` set from the look); the edge table is resampled every 5° into a const array. Below the shell (the long and curly curtains)
+the strands hang, the beard runs down its meridians about `AVATAR_BEARD.centre`, the bun coils round its tilted axis, the brows rise
+along `AVATAR_BROW.slope`, and a flyaway uses its own tangent (#2040's `normal`). The tangent is skinned to view space as one varying
+(`vHairT`) and re-orthogonalised to the shading normal per fragment. The lobes are evaluated per scene light inside three's `RE_Direct`
+(wrapped for hair only, so shadows and indoor lights apply), plus the #2039 street lamps' warm light from above. The band's shift is
+jittered per strand group and fine strand (bind azimuth), and the clump ridges' own normals break it further; the jitter fades by its
+pixel footprint and the lobes broaden and soften (`fade`, `far`) so nothing flickers at distance. A lower roughness (#2018 wet hair)
+sharpens it (`wet`). The #2040 backlit rim is unchanged. No triangle, texture, light, pass or draw call. Checks:
+`node --test tools/avatarhairglosstest.mjs` and `PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarhairglosstest.cjs SITE OUT`
+([views, orbit and cost](../verification/2052/README.md)).
+
 ### Butterfly wing hinges (#1925)
 
 `butterflymodel.js` supplies shared authored contours and a bounded vertex hinge.
