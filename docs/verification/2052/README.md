@@ -29,3 +29,5 @@ Limits: the strand direction is derived analytically from the shells' parametris
 over the ears the hairline table's kinks are smoothed, 5° steps); the curly locks use the scalp field (they wind about it), not each tube's
 own helix; the gloss has no self-shadowing between strands beyond the sun's shadow and the diffuse terminator; the environment's indirect
 specular on hair is unchanged.
+
+| `integrerad.jpg` | the conductor's quick run on the integrated revision (with #2048 nose and #2050 soft hairline), before = `e1b97ac4`: oblique/back in daylight and oblique under a street lamp |
