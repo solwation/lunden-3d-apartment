@@ -43,7 +43,7 @@ const only = process.env.ONLY ? process.env.ONLY.split(',') : null; // (iterate 
     await save('samtal.jpg', all, [...pair('talk', 'day', 'short'), ...pair('talk', 'back', 'short'), ...pair('talk', 'day', 'long')]);
     data.info = await page.evaluate(() => window.__info());
     if (!only || only.includes('cost')) data.cost = await page.evaluate(() => window.__cost(20));
-    // the no-MSAA fallback (the hairline mixes towards the skin's colour)
+    // the no-MSAA fallback (a dithered cut-out)
     await page.goto(site + '/tools/avatarhairline.html?aa=0');
     await page.waitForFunction(() => window.__ready, null, { timeout: 180000 });
     await save('utan-msaa.jpg', ['ljus, svart', 'mellan, brun', 'mörk, blond'], [...pair('front', 'day', 'short'), ...pair('side', 'day', 'short'), ['after', 'detail', 'day', 'short'], ['after', 'talk', 'day', 'short']]);

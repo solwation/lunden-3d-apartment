@@ -208,6 +208,22 @@ which leaves a faint lighter band at the brow's lower edge on light skin in extr
 Checks: `node --test tools/avatarbrowtest.mjs` and `PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarbrowtest.cjs SITE OUT`
 ([views and cost](../verification/2046/README.md)).
 
+#### Soft hairline (#2050)
+
+`src/avatarhairline.js` (tunables `AVATAR_HAIRLINE`, the visible line `AVATAR_HAIR.hairline`, all *guess*) replaced the scalp shell's hard,
+jagged lower edge (the #2012 tufts are gone). The visible line has temple recessions and tapering sideburns; `hairParts` starts the shell
+`drop` degrees below the lowest line within ±4° (`hairlineShell`, so the straight edge between columns stays under it) and keeps the
+columns laid out from `AVATAR_HAIR.cols` (no new triangles). A curtain's top (long, curly) stays on the line. The fragment recomputes the
+azimuth/elevation round `AVATAR_HAIR.centre` and the signed distance across the line (nearest of three polyline segments, so the steep
+sideburn edges thin as wide as the forehead, plus a slow `wobble`) from the bind position, no attribute: within `band` m above it the
+coverage thins towards the skin — an under-layer over the band's top and single hashed hairs on meridian lanes, present with a chance rising
+from the line — and below it only short, fine baby hairs at the forehead and temples (fainter at the nape). Hairs are antialiased lines in
+pixel footprint; once ≥ 2–3 lanes share a pixel the pattern fades to its expected coverage (earlier, a uniform mean read as a pale stripe).
+The coverage is the alpha under the #2040/#2046 alpha-to-coverage, so the skin under the shell shows through; without MSAA a dithered cut-out
+(a colour mix towards the skin, as the brows do, left the shell's own lighting as a pale ghost of the old edge). Curtains (`hairlineCurtain`: long from 63°, curly from 71°) and flyaways keep
+their edges, and flyaways are not rooted below or in the sparse band (`hairlineAvoid`). Checks: `node --test tools/avatarhairlinetest.mjs`
+and `PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarhairlinetest.cjs SITE OUT` ([views and cost](../verification/2050/README.md)).
+
 ### Butterfly wing hinges (#1925)
 
 `butterflymodel.js` supplies shared authored contours and a bounded vertex hinge.

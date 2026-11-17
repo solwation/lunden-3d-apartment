@@ -4412,9 +4412,9 @@ export const AVATAR_BROW = {
 // above] rising to 1 at the band's top; below the line only short baby hairs (`babyLen`, `babyWidth`, chance `babyFill`) at the forehead
 // and temples (fading out between |azimuth| `babyTo`) and fainter at the nape (`nape` × the chance). `shade` [min, max] darkens each hair;
 // `under` = where the under-layer starts (share of the band); `wobble` m = a slow wave on the line along its length (uneven, not a ruled edge).
-// Coverage is alpha-to-coverage (MSAA, as the brows #2046); without MSAA the colour mixes towards the skin's colour. No triangles of its own.
+// Coverage is alpha-to-coverage (MSAA, as the brows #2046); without MSAA a dithered cut-out. No triangles of its own.
 export const AVATAR_HAIRLINE = {
-  drop: 3.2, band: 0.009, baby: 0.0042, lanes: 1500, cell: 0.0011, len: [0.0024, 0.0048], width: 0.0001, edge: 0.2,
+  drop: 3.2, band: 0.009, baby: 0.0042, lanes: 1500, cell: 0.0011, len: [0.0024, 0.0042], width: 0.0001, edge: 0.2,
   babyLen: [0.0016, 0.0034], babyWidth: 0.00006, babyFill: 0.4, babyTo: [62, 76], nape: 0.5, shade: [0.72, 1.0], under: 0.15, wobble: 0.0016,
 };
 // Combat between players (#667, src/combat.js; the room's check: cloudflare/players.js COMBAT). Only when both hold a weapon:

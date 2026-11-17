@@ -1,0 +1,147 @@
+{
+ "baseline": "37d922df97aed2562e67bd279116670caca2a678",
+ "info": {
+  "msaa": true,
+  "samples": 4,
+  "before": {
+   "short": {
+    "tris": 14344,
+    "hairTris": 1064,
+    "calls": 1
+   },
+   "long": {
+    "tris": 15264,
+    "hairTris": 1984,
+    "calls": 1
+   },
+   "bun": {
+    "tris": 14680,
+    "hairTris": 1304,
+    "calls": 1
+   },
+   "beanie": {
+    "tris": 15372,
+    "hairTris": 192,
+    "calls": 1
+   },
+   "curly": {
+    "tris": 19960,
+    "hairTris": 6680,
+    "calls": 1
+   }
+  },
+  "after": {
+   "short": {
+    "tris": 14344,
+    "hairTris": 1064,
+    "calls": 1
+   },
+   "long": {
+    "tris": 15264,
+    "hairTris": 1984,
+    "calls": 1
+   },
+   "bun": {
+    "tris": 14680,
+    "hairTris": 1304,
+    "calls": 1
+   },
+   "beanie": {
+    "tris": 15372,
+    "hairTris": 192,
+    "calls": 1
+   },
+   "curly": {
+    "tris": 19960,
+    "hairTris": 6680,
+    "calls": 1
+   }
+  }
+ },
+ "cost": {
+  "close": {
+   "before": [
+    134.07,
+    223.45,
+    277.26
+   ],
+   "after": [
+    267.87,
+    269.05,
+    330.75
+   ],
+   "ratio": 1.998
+  },
+  "crowd": {
+   "before": [
+    736.68,
+    813.55,
+    944.03
+   ],
+   "after": [
+    1054.84,
+    1033.45,
+    1048.21
+   ],
+   "ratio": 1.403
+  }
+ },
+ "infoNoMsaa": {
+  "msaa": false,
+  "samples": 0,
+  "before": {
+   "short": {
+    "tris": 14344,
+    "hairTris": 1064,
+    "calls": 1
+   },
+   "long": {
+    "tris": 15264,
+    "hairTris": 1984,
+    "calls": 1
+   },
+   "bun": {
+    "tris": 14680,
+    "hairTris": 1304,
+    "calls": 1
+   },
+   "beanie": {
+    "tris": 15372,
+    "hairTris": 192,
+    "calls": 1
+   },
+   "curly": {
+    "tris": 19960,
+    "hairTris": 6680,
+    "calls": 1
+   }
+  },
+  "after": {
+   "short": {
+    "tris": 14344,
+    "hairTris": 1064,
+    "calls": 1
+   },
+   "long": {
+    "tris": 15264,
+    "hairTris": 1984,
+    "calls": 1
+   },
+   "bun": {
+    "tris": 14680,
+    "hairTris": 1304,
+    "calls": 1
+   },
+   "beanie": {
+    "tris": 15372,
+    "hairTris": 192,
+    "calls": 1
+   },
+   "curly": {
+    "tris": 19960,
+    "hairTris": 6680,
+    "calls": 1
+   }
+  }
+ }
+}

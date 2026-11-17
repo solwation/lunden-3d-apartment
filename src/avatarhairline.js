@@ -9,7 +9,8 @@
 //    the line; below the line only short, fine baby hairs at the forehead and temples (fainter at the nape). Hairs narrower than a pixel
 //    are drawn fainter and, once several lanes share a pixel, the pattern fades to its expected coverage (no shimmer at distance).
 //    The coverage is the fragment's alpha → alpha-to-coverage (the avatars' MSAA path, #2040 / #2046) shows the skin under the shell;
-//    without MSAA the colour mixes towards the skin's colour (uLineSkin) with the skin's roughness.
+//    without MSAA a dithered cut-out (a screen-space threshold per pixel) does (a colour mix towards the skin, as the brows do, left the
+//    shell's own lighting visible as a pale ghost of the old edge: it lies a few mm above the skin).
 // Numbers: config.js AVATAR_HAIRLINE and AVATAR_HAIR.hairline. Pure helpers (headless-testable) plus GLSL avatar.js splices in.
 import * as THREE from 'three';
 import { AVATAR_HAIRLINE as L, AVATAR_HAIR as HAIR } from './config.js';
@@ -65,20 +66,18 @@ function expectRate(baby) { // mean hairs over a point: (length / cell) × (2 ·
   return ((len[0] + len[1]) / 2 / L.cell) * (2 * w * 0.7) / laneW();
 }
 
-/** The material's own uniforms: uHairLine.x = the |azimuth| (degrees) from which a curtain hangs (no soft edge there); uLineSkin the
- * skin's colour (the no-MSAA fallback mixes towards it). */
-export const hairlineUniforms = () => ({ uHairLine: { value: new THREE.Vector2(400, 0) }, uLineSkin: { value: new THREE.Color(0xd0a080) } });
+/** The material's own uniform: uHairLine.x = the |azimuth| (degrees) from which a curtain hangs (no soft edge there). */
+export const hairlineUniforms = () => ({ uHairLine: { value: new THREE.Vector2(400, 0) } });
 /** From a look (avatar.js applyFaceShape). */
 export function applyHairlineLook(u, lk) {
   if (!u.uHairLine) return;
   u.uHairLine.value.x = hairlineCurtain(lk?.style);
-  if (lk?.skin !== undefined) u.uLineSkin.value.set(lk.skin);
 }
 
 /** Fragment declarations (global scope). */
 export function hairlineFDecl() {
   const n = T.length, arr = (k) => `float[${n}](${T.map((p) => f(p[k])).join(', ')})`;
-  return `uniform vec2 uHairLine; uniform vec3 uLineSkin;
+  return `uniform vec2 uHairLine;
 // #2050 the soft hairline (src/avatarhairline.js)
 const float HL_A[${n}] = ${arr(0)};
 const float HL_E[${n}] = ${arr(1)};
@@ -93,17 +92,18 @@ float hlFill(float d, float a) {
 /** Fragment colour, after the surface colour (diffuseColor = the hair's colour). Declares `lineCov` at main scope. `hb` = the head bone's
  * bind position (Vector3), `region` = the hair's palette region. */
 export function hairlineColor({ hb, region }) {
-  const c = HAIR.centre, n = T.length, cells = Math.ceil(Math.max(L.len[1], L.babyLen[1]) / L.cell) + 1;
+  const c = HAIR.centre, n = T.length, cells = Math.floor(Math.max(L.len[1], L.babyLen[1]) / L.cell) + 2;
   const lamHair = expectRate(false), lamBaby = expectRate(true), bandDeg = L.band / (0.09 * deg);
   return `float lineCov = 1.0; // #2050
     if (uSuit < 0.5 && abs(vSurface.x - ${f(region)}) < 0.5 && vFly.x < 0.5) {
       vec3 hq = vSuitAt - vec3(${f(hb.x + c[0])}, ${f(hb.y + c[1])}, ${f(hb.z + c[2])});
       float hrxz = max(length(hq.xz), 0.0001), hr = length(hq), haz = atan(hq.x, hq.z), hA = abs(haz) * 57.29578;
       float hE = atan(hq.y, hrxz) * 57.29578 - ${f(HAIR.flow.edge)} * sin(haz * 13.0) * (1.0 - smoothstep(45.0, 80.0, hA));
+      if (hE - ${f(Math.max(...T.map((p) => p[1])))} < ${f(bandDeg * 3 + 2)} && hA < uHairLine.x) { // (the crown and a curtain skip it all)
       int hs = 0;
       for (int i = 1; i < ${n - 1}; i++) if (hA >= HL_A[i]) hs = i;
       float hLine = mix(HL_E[hs], HL_E[hs + 1], clamp((hA - HL_A[hs]) / (HL_A[hs + 1] - HL_A[hs]), 0.0, 1.0));
-      if (hA < uHairLine.x && hE - hLine < ${f(bandDeg * 3 + 2)}) {
+      if (hE - hLine < ${f(bandDeg * 3 + 2)}) {
         // the signed distance (degrees of arc, + into the hair) to the nearest of three segments, azimuth scaled by cos(elevation)
         float hc = cos(radians(hE)), best = 1e9; vec2 hp = vec2(hA * hc, hE), hv = vec2(0.0, 1.0);
         for (int k = -1; k <= 1; k++) {
@@ -145,12 +145,9 @@ export function hairlineColor({ hb, region }) {
           lineCov = 1.0 - (1.0 - base) * (1.0 - hairs);
           diffuseColor.rgb *= mix(1.0, dark, hairs / max(lineCov, 0.0001) * (1.0 - base)); // (the single hairs' shade fades into the hair above the band: no seam)
           if (uFly.y > 0.5) diffuseColor.a *= lineCov;
-          else diffuseColor.rgb = mix(uLineSkin, diffuseColor.rgb, lineCov);
+          else if (lineCov < fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))))) discard; // (no MSAA: a dithered cut-out)
         }
+      }
       }
     }`;
 }
-
-/** Fragment roughness (after the surface finish): without MSAA the uncovered edge is skin. */
-export const hairlineRoughness = ({ skin }) =>
-  `if (uFly.y < 0.5 && lineCov < 1.0) roughnessFactor = mix(${f(skin)}, roughnessFactor, lineCov); // #2050`;

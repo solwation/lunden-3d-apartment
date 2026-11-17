@@ -10,8 +10,8 @@
 <body><script type="module">
 // #2050 component page, driven by tools/avatarhairlinetest.cjs: the soft hairline (src/avatarhairline.js). Each look is built from the
 // checkout (`after`) and, when the driver serves the baseline under /base/ (page.route), from the baseline src/avatar.js + src/config.js
-// (`before`); `variants` pick the hairstyle and the headwear / glasses / headphones. `?aa=0` renders without MSAA (the fallback that
-// mixes towards the skin). __sheet(rows, cols) draws a contact sheet; __info() triangles / draw calls; __cost() ms/frame before vs after.
+// (`before`); `variants` pick the hairstyle and the headwear / glasses / headphones. `?aa=0` renders without MSAA (the dithered
+// cut-out fallback). __sheet(rows, cols) draws a contact sheet; __info() triangles / draw calls; __cost() ms/frame before vs after.
 import * as THREE from 'three';
 const after = await import('../src/avatar.js'), cfg = await import('../src/config.js');
 let before = null;
