@@ -3,7 +3,7 @@ import { Billiards } from './billiards.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PLAYROOM as R, COURTYARD, COMPUTER_MEDIA } from './config.js';
-import { computerFurniture } from './computerfurniture.js';
+import { computerFurniture, pcPedestalRect } from './computerfurniture.js';
 import { restTarget } from './rest.js';
 import { PlayroomDevices } from './playroomdevices.js';
 import { PlayroomDJ, djVinylMaterial } from './playroomdj.js';
@@ -157,7 +157,7 @@ export class Playroom {
     // Collision edges stop at each chair; the wide center aisle and the route behind the rear row stay open.
     this.footprints = [rect(DJ.x-DJ.w/2-.02,DJ.x+DJ.w/2+.02,DJ.z-DJ.d/2-.02,DJ.z+DJ.d/2+.02), ...cinema.seat.rowX.flatMap((x) => cinema.seat.z.map((z) => rect(x - S.depth / 2, x + S.depth / 2, z - S.width / 2, z + S.width / 2))),
       rect(tvx - 0.02, tvx + 0.075, -R.d/2, R.clubhouse.front-R.clubhouse.wall/2),
-      ...COMPUTER_MEDIA.stations.filter(s=>s.clubhouse).flatMap(s=>{const D=COMPUTER_MEDIA.desk,x=s.x-R.x,z=s.z-R.z,cx=x+Math.sin(s.yaw)*D.seatOffset;return[rect(x-D.depth/2,x+D.depth/2,z-D.width/2,z+D.width/2),rect(cx-D.chair[2]/2,cx+D.chair[2]/2,z-D.chair[0]/2,z+D.chair[0]/2)];}),
+      ...COMPUTER_MEDIA.stations.filter(s=>s.clubhouse).flatMap(s=>{const D=COMPUTER_MEDIA.desk,x=s.x-R.x,z=s.z-R.z,cx=x+Math.sin(s.yaw)*D.seatOffset;return[rect(x-D.depth/2,x+D.depth/2,z-D.width/2,z+D.width/2),rect(cx-D.chair[2]/2,cx+D.chair[2]/2,z-D.chair[0]/2,z+D.chair[0]/2),(([a,b,c,d])=>rect(a-R.x,b-R.x,c-R.z,d-R.z))(pcPedestalRect(s))];}), // #2024: the PC's drawer pedestal
       ...popcornFootprints().map(([a,b,c,d])=>rect(a,b,c,d)), // #1567: the popcorn cart and its bin
       ...cinemaParts.footprints.map(([a,b,c,d])=>rect(a,b,c,d))]; // #1570: floor-standing fronts, centre speaker and subwoofer
     for (const q of this.footprints) for (let i = 0; i < 4; i++) { const a = q[i], b = q[(i + 1) % 4]; this.segments.push([a[0], a[1], b[0], b[1]]); }

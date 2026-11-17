@@ -7884,6 +7884,10 @@ export const COMPUTER_MEDIA = {
     monitorWidth:.65, monitorHeight:.38, monitorY:1, monitorDepth:.04, bezel:.025,
     top:.04, leg:.04, keyboard:[.4,.025,.14], chair:[.42,.06,.42], backHeight:.35,
     case:[.18,.32,.3], homePlaneOffset:.085 },
+  // #2024: the clubhouse PCs are wide dual-chamber glass cases (front + side glass, cable chamber on the desk side) on a low
+  // drawer pedestal right of each desk (station-local +x, `gap` from the desk, back flush with it at `z`). Sizes are *guess*es
+  // scaled to the child-sized desks (#1486), no product data: pedestal [w,h,d], case [w,h,d], cable-chamber width, fan size.
+  pc: { gap:.05, z:-.05, pedestal:[.44,.46,.5], case:[.38,.5,.46], cable:.09, fan:.128 },
   // #1613: `roomReach` = the furniture can be moved (Möblera om), so its reach is its whole room (`bounds`), not `reach` from x/z.
   stations: [
     { id:'pc-home', name:'Speldatorn', x:3.1, z:11.45, level:1, bounds:[2.75,5.57,7.8,12.52], roomReach:true, color:'#73e66b' },

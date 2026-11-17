@@ -465,7 +465,7 @@ has no gameplay clubhouse, so this finish has no downstream transfer.
 
 `src/playroomdevices.js` owns the cinema plane and four independently selectable
 computer planes. `computerfurniture.js` makes four child-sized rounded desks,
-matching chairs, monitor stands, keyboards and cases, merged into the existing
+matching chairs, monitor stands, keyboards and glass PCs on pedestals (#2024), merged into the existing
 clubhouse furniture material. `COMPUTER_MEDIA` defines the four themes and
 placements: two against each side wall of SPEL, with a clear central approach.
 Their collision footprints, contact shadows and ordinary rest targets follow
@@ -486,6 +486,21 @@ characters in it are not to be copied.
 The old Pricka grönt game and white power box were replaced by the app selector.
 These are personal furnishings and gameplay, excluded from the public downstream.
 
+### Luxury glass gaming PCs (#2024, part of #2023)
+
+`gamingPc(s)` in `src/computerfurniture.js` replaces the old on-desk mid-tower with a wide dual-chamber glass case on its own
+low charcoal drawer pedestal, right of each desk (station-local +x, back flush with the desk; sizes in `COMPUTER_MEDIA.pc`, all
+*guess*es scaled to the child-sized desks). The front glass faces the room and the side glass faces away from the desk; the
+cable chamber sits on the desk side behind the motherboard tray. Inside: nine dual-ring fans (three front, three bottom, three
+top exhaust on the AIO radiator under a grille) in the station's theme hue, a horizontal graphics card with a lit edge strip and
+an original chevron mark, four lit RAM sticks, an AIO pump with an "infinity" ring cap and sleeved tubes, custom-sleeved
+cables, a rainbow strip on the cable-chamber front and a theme line/toe-kick glow on the pedestal. Glass is implied by thin pale
+edge strips and tinted interior liners stand in for the RGB light spill, because the room is one opaque vertex-coloured batch;
+glow is only LED colours above 1.0 (#1598), no lights and no extra draws. `pcPedestalRect(s)` adds the pedestal to the room's
+collision footprints and contact shadows; desks, chairs, rest targets, the #1488 screen planes and the central aisle are unchanged.
+Cost: SPEL room view 31 draws before and after, 69.0k → 91.0k triangles (the furniture batch 49.5k → 71.6k, ~5.5k per station;
+acceptable because the room is drawn only inside, far below the courtyard view's ~570k). Test: `tools/computerfurnituretest.mjs`; evidence
+`docs/verification/2024/`. Keep the PC in `gamingPc` so sibling stories (#2025–#2028) can change desk, chairs and decor beside it.
 
 ### Cinema network video (#1376)
 

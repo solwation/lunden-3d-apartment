@@ -52,23 +52,7 @@ export function computerFurniture() {
     add(.15,.022,.045,-.57,H+.26,-.03,dark);
     for(const x of [-1,1]){add(.034,.1,.09,-.57+x*.075,H+.2,-.03,0x23252d);box(.006,.07,.07,-.57+x*.092,H+.2,-.03,led(base,1,.55,2.4));}
 
-    // Mid-tower PC, turned to show its glass side to the room: three RGB fans, a lit edge strip, GPU bar and power button.
-    const tx=.52,tz=-.06,tw=.22,th=.46,td=.42,t0=H+.012,front=tz+td/2;
-    add(tw,th,td,tx,t0+th/2,tz,0x14161c,FINISH.metal);
-    for(const x of [-1,1])for(const z of [-1,1])box(.03,.012,.03,tx+x*(tw/2-.03),H+.006,tz+z*(td/2-.04),dark);
-    box(tw-.03,th-.04,.006,tx,t0+th/2,front+.002,0x0a1020,FINISH.metal);          // tinted glass side panel
-    box(tw-.07,.03,.2,tx,t0+.2,tz+.03,0x1a1d28,FINISH.metal);                       // graphics card seen through the glass
-    box(tw-.05,.006,.18,tx,t0+.218,tz+.03,led(base+.3,1,.55,2.4));
-    for(let i=0;i<3;i++){
-      const y=t0+.075+i*.155,hue=base+i*.13,col=led(hue);
-      const fan=new THREE.TorusGeometry(.058,.007,4,16).translate(tx,y,front+.01);
-      place(fan,col,FINISH.paint);
-      place(new THREE.CylinderGeometry(.02,.02,.012,8).rotateX(Math.PI/2).translate(tx,y,front+.008),dark,FINISH.paint);
-      for(const a of [0,Math.PI/3,2*Math.PI/3])place(new THREE.BoxGeometry(.1,.011,.003).rotateZ(a).translate(tx,y,front+.008),dark,FINISH.paint);
-    }
-    box(.008,th-.04,.01,tx-tw/2+.012,t0+th/2,front+.008,led(base+.55,1,.55,2.4)); // vertical LED strip along the glass edge
-    box(.12,.008,.14,tx,t0+th+.003,tz,0x0e0f13);                                     // top vent
-    place(new THREE.CylinderGeometry(.012,.012,.008,10).rotateX(Math.PI/2).translate(tx+.06,t0+th-.025,front+.005),led(base+.7,1,.6,2.6),FINISH.paint);
+    parts.push(...gamingPc(s));
 
     // Gaming chair: bucket seat with side bolsters, tall tilted racing back with wings, headrest and lumbar pillow, 4D arm rests, caster star base.
     const cz=D.seatOffset,sy=D.seat;
@@ -93,6 +77,132 @@ export function computerFurniture() {
       const wx=Math.cos(a)*.225,wz=cz+Math.sin(a)*.225;
       place(new THREE.CylinderGeometry(.03,.03,.03,6).rotateZ(Math.PI/2).rotateY(-a+Math.PI/2).translate(wx,.032,wz),dark,FINISH.paint);
     }
+  }
+  return parts;
+}
+
+/** #2024: where the PC's drawer pedestal stands, as a world rectangle [x0, x1, z0, z1] (collision footprint and contact shadow). */
+export function pcPedestalRect(s) {
+  const P=C.pc,[w,,d]=P.pedestal,lx=C.desk.width/2+P.gap+w/2,c=Math.cos(s.yaw),n=Math.sin(s.yaw);
+  const x=s.x+lx*c+P.z*n,z=s.z-lx*n+P.z*c,hx=(Math.abs(c)*w+Math.abs(n)*d)/2,hz=(Math.abs(n)*w+Math.abs(c)*d)/2;
+  return [x-hx,x+hx,z-hz,z+hz];
+}
+
+/**
+ * #2024: a luxury dual-chamber gaming PC (original design, no brand marks) on a low dark drawer pedestal right of the desk.
+ * Case frame: +z = front glass facing the room, +x = side glass facing away from the desk, the cable chamber on the desk side
+ * behind the motherboard tray. Inside: nine dual-ring RGB fans in the station's theme hue (three front intake behind the glass,
+ * three bottom intake, three top exhaust on the AIO radiator under a grille), a horizontal graphics card with a lit edge strip,
+ * four lit RAM sticks, an AIO pump with an "infinity" ring cap and sleeved tubes, custom-sleeved cables into the tray, rainbow
+ * strips on the cable-chamber front and a toe-kick glow under the pedestal. Glass is implied by thin pale edge strips (the room is
+ * one opaque batch). Glow is only LED colours above 1.0 (#1598), no lights. Returns world-space parts for the furniture batch.
+ */
+export function gamingPc(s) {
+  const P=C.pc,[pw,ph,pd]=P.pedestal,[W,H,Dp]=P.case,base=hueOf(s.color),accent=new THREE.Color(s.color),parts=[];
+  const station=new THREE.Matrix4().makeRotationY(s.yaw).setPosition(s.x,0,s.z),px=C.desk.width/2+P.gap+pw/2;
+  const pedestal=station.clone().multiply(new THREE.Matrix4().makeTranslation(px,0,P.z));
+  const frame=station.clone().multiply(new THREE.Matrix4().makeTranslation(px,ph,P.z));
+  const put=(g,c,f=FINISH.paint,m=frame)=>parts.push(clubhouseSurface(g.applyMatrix4(m),c,f));
+  const box=(w,h,d,x,y,z,c,f,m)=>put(new THREE.BoxGeometry(w,h,d).translate(x,y,z),c,f,m);
+  const rbox=(w,h,d,x,y,z,c,f,m)=>put(clubhouseRoundedBox(x-w/2,x+w/2,y-h/2,y+h/2,z-d/2,z+d/2),c,f,m);
+  const shell=0x15171c,dark=0x0f1014,steel=0x8b9099,glass=0xaebdcc;
+
+  // Pedestal: a matte charcoal drawer unit with three slab drawers, slim steel pulls, a dark top and a theme glow at the toe kick.
+  const ped=(w,h,d,x,y,z,c,f=FINISH.paint)=>box(w,h,d,x,y,z,c,f,pedestal);
+  ped(pw-.04,.03,pd-.04,0,.015,0,dark);
+  box(pw-.08,.008,.006,0,.018,pd/2-.016,led(base,1,.55,2.4),FINISH.paint,pedestal);
+  rbox(pw,ph-.05,pd,0,.03+(ph-.05)/2,0,0x2a2c33,FINISH.paint,pedestal);
+  rbox(pw+.012,.022,pd+.012,0,ph-.011,0,0x3a3d45,FINISH.metal,pedestal);
+  box(pw-.03,.006,.004,0,ph-.025,pd/2+.004,led(base,1,.55,2.6),FINISH.paint,pedestal);                 // theme line under the top
+  const dh=(ph-.06)/3;
+  for(let i=0;i<3;i++){
+    const y=.035+dh*(i+.5);
+    rbox(pw-.022,dh-.01,.018,0,y,pd/2+.006,0x33363e,FINISH.paint,pedestal);
+    ped(.17,.012,.014,0,y+dh/2-.03,pd/2+.022,steel,FINISH.metal);
+  }
+
+  // Case shell: feet, base, rear, desk-side panel, cable-chamber front cover and the top grille over the exhaust fans.
+  const xd=-W/2+P.cable,mx=(xd+W/2)/2,f0=.042,front=Dp/2,rear=-Dp/2;
+  for(const x of [-1,1])for(const z of [-1,1])box(.05,.012,.05,x*(W/2-.04),.006,z*(Dp/2-.05),dark);
+  box(W,.03,Dp,0,.027,0,shell,FINISH.metal);
+  box(W,H-.012,.012,0,(H+.012)/2,rear+.006,shell,FINISH.metal);
+  box(.012,H-.012,Dp,-W/2+.006,(H+.012)/2,0,shell,FINISH.metal);
+  box(P.cable,H-.012,.016,(-W/2+xd)/2,(H+.012)/2,front-.008,0x1b1d24,FINISH.metal);
+  box(.008,H-.05,Dp-.03,xd+.004,(H+.03)/2,0,dark,FINISH.metal);                               // motherboard tray / chamber divider
+  box(P.cable,.02,Dp,(-W/2+xd)/2,H-.01,0,shell,FINISH.metal);
+  for(const z of [-1,1])box(W-P.cable,.02,.018,mx,H-.01,z*(Dp/2-.009),shell,FINISH.metal);
+  box(.018,.02,Dp,W/2-.009,H-.01,0,shell,FINISH.metal);
+  for(let k=1;k<8;k++)box(W-P.cable-.018,.004,.005,mx-.009,H-.006,rear+k*Dp/8,0x24262d,FINISH.metal);
+  // Glass: frameless corner, only thin bright edges and a corner seam suggest the panes.
+  box(.004,H-f0-.02,.004,W/2-.002,(H+f0-.02)/2,front-.002,glass,FINISH.metal);
+  for(const y of [f0+.001,H-.021]){box(W-P.cable,.004,.004,mx,y,front-.002,glass,FINISH.metal);box(.004,.004,Dp,W/2-.002,y,0,glass,FINISH.metal);}
+  // Cable-chamber front: a vertical rainbow strip, a theme bar and a lit power ring.
+  for(let k=0;k<8;k++){const h=(H-.1)/8;box(.008,h,.004,xd-.012,.06+h*(k+.5),front+.001,led(base+k*.06,1,.55,2.6));}
+  box(.04,.006,.004,(-W/2+xd)/2-.006,H-.05,front+.001,led(base,1,.55,2.4));
+  put(new THREE.TorusGeometry(.011,.0025,4,14).translate(-W/2+.03,H-.08,front+.002),led(base+.5,1,.6,2.6));
+
+  // RGB spill: tinted liners on the chamber's floor, rear wall and tray stand in for the light the fans throw inside (no light objects).
+  box(W-P.cable-.02,.001,Dp-.03,mx,f0+.0005,0,led(base,.7,.3,1.1));
+  box(W-P.cable-.02,H-f0-.02,.001,mx,(H+f0-.02)/2,rear+.0125,led(base+.04,.65,.26,1));
+  box(.001,H-.06,Dp-.03,xd+.0085,(H+.01)/2,0,led(base-.04,.65,.24,1));
+  // Motherboard: board, VRM heatsinks with a theme accent, lit I/O shroud and an M.2 plate under the graphics card.
+  const mb=xd+.01;
+  box(.004,.31,.305,mb,.275,-.05,led(base,.45,.2,1));
+  box(.02,.05,.1,mb+.012,.4,-.07,0x3a3e48,FINISH.metal);box(.002,.006,.09,mb+.023,.4,-.07,led(base,1,.55,2.4));
+  box(.02,.14,.035,mb+.012,.33,-.16,0x3a3e48,FINISH.metal);
+  box(.03,.1,.03,mb+.017,.36,-.19,0x2a2d36,FINISH.metal);box(.002,.08,.006,mb+.033,.36,-.19,led(base+.5,1,.55,2.4));
+  box(.01,.05,.16,mb+.007,.14,-.07,0x30343e,FINISH.metal);box(.002,.004,.14,mb+.013,.155,-.07,led(base+.25,1,.55,2.2));
+
+  // AIO pump on the CPU: a short block with an "infinity mirror" cap of four shrinking rings, sleeved tubes to the top radiator.
+  const py=.335,pz=-.06,cap=mb+.05;
+  put(new THREE.CylinderGeometry(.04,.04,.044,14).rotateZ(Math.PI/2).translate(mb+.026,py,pz),0x2a2d35,FINISH.metal);
+  put(new THREE.CylinderGeometry(.035,.035,.002,14).rotateZ(Math.PI/2).translate(cap-.001,py,pz),0x07080b,FINISH.metal);
+  [[.037,.005,0,3.4],[.027,.004,.07,2.6],[.018,.003,.14,2],[.009,.0025,.21,1.5]].forEach(([r,t,h,g])=>
+    put(new THREE.TorusGeometry(r,t,4,r>.02?20:12).rotateY(Math.PI/2).translate(cap,py,pz),led(base+h,1,.58,g)));
+  const rx=W/2-.075,ry=H-.02-.025-.013;
+  for(const dz of [-.018,.018]){
+    const pts=[[cap-.01,py+.03,pz+dz],[cap+.03,py+.07,pz+dz*1.5],[rx-.04,ry-.03,rear+.06+dz],[rx-.03,ry-.012,rear+.04+dz]].map(p=>new THREE.Vector3(...p));
+    put(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),10,.0065,5),0x101114,FINISH.fabric);
+  }
+  box(.13,.026,.4,rx,ry,-.005,0x16181d,FINISH.metal);                                          // radiator under the top fans
+
+  // RAM: four sticks with lit diffuser edges facing the side glass, hues stepping from the theme colour.
+  for(let i=0;i<4;i++){const z=.002+i*.013;box(.034,.12,.006,mb+.019,py,z,0x2b2e37,FINISH.metal);box(.008,.12,.007,mb+.04,py,z,led(base+.06*i+.04,1,.6,3.4));}
+
+  // Graphics card: horizontal, a dark shroud with a backplate, a lit strip and an original chevron mark facing the side glass.
+  const gx=mb+.002+.065,gy=.2,gz=-.065,gEdge=gx+.065;
+  box(.13,.05,.3,gx,gy,gz,0x5d636f,FINISH.metal);
+  box(.13,.006,.3,gx,gy+.028,gz,0x80868f,FINISH.metal);box(.1,.002,.006,gx,gy+.032,gz+.1,led(base,1,.55,2.2));
+  box(.004,.016,.27,gEdge+.002,gy+.01,gz,led(base+.33,1,.55,3.4));
+  for(const k of [-1,1])box(.003,.022,.006,gEdge+.002,gy-.011,gz+.11+k*.008,led(base,1,.6,2.4),FINISH.paint,frame.clone().multiply(new THREE.Matrix4().makeTranslation(gEdge,gy-.011,gz+.11+k*.008).multiply(new THREE.Matrix4().makeRotationX(k*.6)).multiply(new THREE.Matrix4().makeTranslation(-gEdge,-(gy-.011),-(gz+.11+k*.008)))));
+  box(.13,.07,.004,gx,gy+.005,rear+.014,steel,FINISH.metal);                                    // PCIe bracket at the rear
+  box(.006,gy-.025-f0-.025,.006,gx+.04,(gy-.025+f0+.025)/2,gz+.12,steel,FINISH.metal);          // anti-sag support post
+
+  // Custom-sleeved cables: a 24-pin comb into the tray and a GPU lead, alternating white and the theme colour.
+  for(let k=0;k<8;k++)box(.004,.06,.04,mb+.006+k*.0048,.3,.125,k%2?0xeeeef2:accent,FINISH.fabric);
+  for(let k=0;k<3;k++){
+    const pts=[[gEdge-.01,gy+.03,gz+.12+k*.006],[gEdge-.02,gy+.07,.13+k*.006],[mb+.03,gy+.07,.15+k*.006],[mb+.004,gy+.05,.15+k*.006]].map(p=>new THREE.Vector3(...p));
+    put(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),6,.0024,4),k===1?0xeeeef2:accent,FINISH.fabric);
+  }
+
+  // Nine dual-ring fans: three front intake (behind the glass), three bottom intake, three top exhaust; theme hue with a slight sweep.
+  const r=P.fan/2,zs=[rear+.025+r,rear+.025+3*r+.007,rear+.025+5*r+.014];
+  const fan=(orient,hue)=>{
+    const g=(geometry,c,f)=>put(geometry.applyMatrix4(orient),c,f);
+    for(const y of [-1,1])g(new THREE.BoxGeometry(2*r+.008,.008,.025).translate(0,y*(r+.0),0),dark);
+    for(const x of [-1,1])g(new THREE.BoxGeometry(.008,2*r-.008,.025).translate(x*r,0,0),dark);
+    g(new THREE.TorusGeometry(r-.008,.007,4,18).translate(0,0,.009),led(hue,1,.56,3.4));
+    g(new THREE.TorusGeometry(r-.008,.006,3,18).translate(0,0,-.009),led(hue+.06,1,.56,2.6));
+    g(new THREE.CylinderGeometry(r*.3,r*.3,.014,8).rotateX(Math.PI/2),0x16181e);
+    g(new THREE.CircleGeometry(r*.14,8).translate(0,0,.0075),led(hue,.3,.8,1.5));
+    for(let k=0;k<7;k++)g(new THREE.BoxGeometry(r*.68,.024,.003).translate(r*.62,0,0).applyMatrix4(new THREE.Matrix4().makeRotationZ(k/7*Math.PI*2).multiply(new THREE.Matrix4().makeRotationX(.45))),led(hue,.75,.62,2.3));
+  };
+  const at=(x,y,z,rot)=>new THREE.Matrix4().makeTranslation(x,y,z).multiply(rot??new THREE.Matrix4());
+  const up=new THREE.Matrix4().makeRotationX(-Math.PI/2);
+  for(let i=0;i<3;i++){
+    fan(at(mx,f0+.03+r+.008+i*(2*r+.007),front-.02),base-.03+i*.03);
+    fan(at(mx,f0+.0125,zs[i],up),base+.03-i*.03);
+    fan(at(rx,H-.02-.0125,zs[i],up),base+i*.03);
   }
   return parts;
 }
