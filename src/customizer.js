@@ -1,6 +1,6 @@
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { BUILD } from './version.js';
-import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES } from './config.js';
+import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_NOSE_FORMS, noseFormOf } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
 const BROW_NAMES = ['Mörkbruna', 'Bruna', 'Ljusbruna', 'Guldbruna', 'Blonda', 'Grå', 'Röda', 'Svarta'];
@@ -276,7 +276,8 @@ export function drawAvatarPreview(canvas, look) {
   // Nose & mouth
   ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
   ctx.beginPath();
-  ctx.ellipse(cx, 60 + 3 * noseS, 2 * noseS * noseW, 2.5 * noseS, 0, 0, Math.PI * 2);
+  const noseF = noseFormOf(look); // #2049: broad a little wider, upturned a little higher, convex a little lower
+  ctx.ellipse(cx, 60 + 3 * noseS + [0, 0.6, -0.8, 0][noseF], 2 * noseS * noseW * (noseF === 3 ? 1.25 : 1), 2.5 * noseS, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = '#9a5a52';
   ctx.beginPath();
@@ -488,6 +489,7 @@ export function randomAvatarLook(base, rnd = Math.random) {
   lk.height = Math.max(H.min, Math.min(H.max, Math.round(lo + rnd() * (hi - lo))));
   lk.tall = lk.height / H.base;
   lk.brows = rnd() < 0.25 ? HAIR[pick(HAIR.length)] : null; // #1220: mostly brows like the hair
+  lk.noseForm = pick(AVATAR_NOSE_FORMS.names.length); // #2049
   return lk;
 }
 
@@ -516,6 +518,7 @@ function updateActiveSwatches() {
   groups.push({ type: 'metal', value: Number(currentLook.metal) || 0 });
   groups.push({ type: 'bracelet', value: wristValue(currentLook.bracelet) }, { type: 'watch', value: wristValue(currentLook.watch) }); // #1334
   groups.push({ type: 'brows', value: HAIR.includes(currentLook.brows) ? HAIR.indexOf(currentLook.brows) : -1 }); // #1220 (-1: like the hair)
+  groups.push({ type: 'noseForm', value: noseFormOf(currentLook) }); // #2049
   groups.push({ type: 'eyes', value: EYES.includes(currentLook.eyes) ? currentLook.eyes : EYES[0], list: EYES });
   for (const name of Object.keys(AVATAR_SHAPE.fields)) { // #1138: the face sliders
     const input = customizerEl.querySelector(`input[data-shape="${name}"]`);
@@ -790,6 +793,9 @@ function initCustomizerDOM() {
     } else if (type === 'metal' && AVATAR_RING.metals[idx] !== undefined) {
       currentLook.metal = idx;
       applyAndRefresh();
+    } else if (type === 'noseForm' && AVATAR_NOSE_FORMS.names[idx] !== undefined) { // #2049
+      currentLook.noseForm = idx;
+      applyAndRefresh();
     } else if (type === 'eyes' && EYES[idx] !== undefined) {
       currentLook.eyes = EYES[idx];
       applyAndRefresh();
@@ -854,14 +860,14 @@ function initCustomizerDOM() {
 const FACE_SECTIONS = [
   ['Ögon', ['eyeSize', 'eyeShape'], true],
   ['Huvudform', ['headWidth', 'headLength', 'jaw', 'neck']],
-  ['Näsa & öron', ['noseSize', 'noseWidth', 'ears']],
+  ['Näsa & öron', ['noseSize', 'noseWidth', 'ears'], false, false, false, true], // #2049: the nose's shape variant
   ['Ögonbryn', ['browThick', 'browY'], false, false, true], // #1220: their colour
   ['Hår och glasögon', ['hairLength'], false, true], // #1165
 ];
 const EYE_NAMES = ['Bruna', 'Mörkbruna', 'Hasselbruna', 'Gröna', 'Gröngrå', 'Blå', 'Ljusblå', 'Grå'];
 function addFaceSections(controls) {
   if (!controls || controls.querySelector?.('[data-face-section]')) return;
-  for (const [title, fields, eyes, glasses, brows] of FACE_SECTIONS) {
+  for (const [title, fields, eyes, glasses, brows, noseForm] of FACE_SECTIONS) {
     const sec = document.createElement('section');
     sec.className = 'customizer-section';
     sec.dataset.faceSection = '';
@@ -908,6 +914,18 @@ function addFaceSections(controls) {
         const b = document.createElement('button');
         Object.assign(b.dataset, { type: 'glasses', index: String(i) });
         b.textContent = i === 3 ? n : i ? `${n} glasögon` : 'Inga glasögon';
+        row.append(b);
+      });
+      sec.append(row);
+    }
+    if (noseForm) { // #2049: straight / convex / upturned / broad
+      const row = document.createElement('div');
+      row.className = 'btn-group';
+      row.setAttribute('aria-label', AVATAR_NOSE_FORMS.label);
+      AVATAR_NOSE_FORMS.names.forEach((n, i) => {
+        const b = document.createElement('button');
+        Object.assign(b.dataset, { type: 'noseForm', index: String(i) });
+        b.textContent = `${n}${i === 2 ? '' : ' näsa'}`;
         row.append(b);
       });
       sec.append(row);

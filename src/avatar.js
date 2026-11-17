@@ -21,7 +21,7 @@ import { sculptShape, sculptShader, sculptKey, sealLipEdge } from './avatarsculp
 import { addFlyaways, flyUniforms, flyMaterial, flyKey, FLY_VDECL, FLY_FDECL, flyBind, flyProject, flyAlpha, flyLight } from './avatarflyaway.js'; // #2040
 import { browSurface, browSlide, browUniforms, applyBrowLook, browFDecl, browColor, browRoughness } from './avatarbrow.js'; // #2046
 import { hairlineAt, hairlineShell, hairlineAvoid, hairlineUniforms, applyHairlineLook, hairlineFDecl, hairlineColor } from './avatarhairline.js'; // #2050
-import { refineNose, noseHeight, noseVertexGLSL, noseFragmentGLSL, noseKey, NOSE_SKIN } from './avatarnose.js'; // #2048: the nose
+import { refineNose, noseHeight, noseVertexGLSL, noseFragmentGLSL, noseKey, NOSE_SKIN, noseUniforms, applyNoseLook, noseFormDecl, noseNormalGLSL } from './avatarnose.js'; // #2048: the nose (#2049: its shape variants)
 import { glossUniforms, applyGlossLook, glossVertex, glossFragment, glossKey } from './avatarhairgloss.js'; // #2052: gloss along the strands
 import { topTexture } from './spidersuit.js';
 import { profileAt, contourRows, roundChinCap, neckGeometry } from './avatarcontour.js'; // #2043
@@ -1365,6 +1365,7 @@ function makeMaterial(rim, headProjection) {
   Object.assign(u, browUniforms()); // #2046
   Object.assign(u, hairlineUniforms()); // #2050
   Object.assign(u, glossUniforms()); // #2052
+  Object.assign(u, noseUniforms()); // #2049
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: SURFACE.finish.cloth, metalness: 0, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
@@ -1379,6 +1380,7 @@ function makeMaterial(rim, headProjection) {
     sh.vertexShader = sh.vertexShader.replace('#include <skinbase_vertex>', fix.base).replace('#include <skinnormal_vertex>', fix.normal).replace('#include <skinning_vertex>', fix.skin)
       .replace('#include <common>', '#include <common>\nattribute float region; attribute float suitRole; varying float vSuitRole; attribute float noseBlend; varying float vNose; varying vec2 vSurface; attribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + WET_DECL + '\n' + FACE_SHAPE_DECL() + '\n' + fix.decl + '\n' + EYE_VDECL + '\n' + FLY_VDECL)
       .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
+${noseNormalGLSL(bindAt('head'), FACE_PART.head)}
 float pumpF = 1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z;
 float pumpD = uPump * ${GYM_PUMP.circumference} * armPump.w;
 objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / pumpF * dot(position.xz - armPump.xy, objectNormal.xz), objectNormal.z / pumpF));`)
@@ -1447,7 +1449,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
 // geometry or draw call; collision and hit regions keep the plain head (CPU raycasts never see the shader).
 let gripGlsl = null; // #2016 (lazily: olof.js and this module import each other)
 const GRIP_GLSL = () => gripGlsl ??= fingerGLSL(bindAt('handL'), bindAt('handR'), FACE_PART.finger);
-const FACE_SHAPE_DECL = () => 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform vec2 uGaze; uniform float uBlink; uniform float uEar, uHair, uGlasses, uEarrings, uHat, uPhones, uNecklace, uRingFinger, uBracelet, uWatch, uNeck, uSuit; uniform vec2 uBrow; ' + GRIP_GLSL().decl + SWAY_DECL;
+const FACE_SHAPE_DECL = () => 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform vec2 uGaze; uniform float uBlink; uniform float uEar, uHair, uGlasses, uEarrings, uHat, uPhones, uNecklace, uRingFinger, uBracelet, uWatch, uNeck, uSuit; uniform vec2 uBrow; ' + GRIP_GLSL().decl + SWAY_DECL + noseFormDecl(); // (#2049)
 const CHIN_Y = RH.jaw.centre[1] - RH.jaw.radius * RH.jaw.scale[1]; // the head lengthens from its chin
 function swayShader() { // #2014 (src/avatarsway.js): hair, bun and hem sway, after the face shape
   return swayGLSL({ head: bindAt('head').toArray(), hairY: HAIR.centre[1], bun: [HAIR.bunAt[1], HAIR.bunAt[2]], torsoY: bindAt('torso').y, torso: NAMES.indexOf('torso'), hair: FACE_PART.hair, hat: 'uHat' });
@@ -1563,6 +1565,7 @@ function applyFaceShape(u, lk) {
   applyBrowLook(u, lk); // #2046
   applyHairlineLook(u, lk); // #2050
   applyGlossLook(u, lk); // #2052
+  applyNoseLook(u, lk); // #2049
   u.uHair.value = v('hairLength'); // #1165
   u.uGlasses.value = Number.isInteger(lk.glasses) && lk.glasses > 0 && lk.glasses < GLASSES.names.length ? lk.glasses : 0;
   u.uEarrings.value = Number.isInteger(lk.earrings) && lk.earrings > 0 && lk.earrings < EARR.names.length ? lk.earrings : 0; // #1325

@@ -4208,6 +4208,27 @@ export const AVATAR_NOSE = {
   skin: [0.04, 0.3],
   shade: { nostril: 0.7, nostrilPower: 2, ambient: [0.5, 0.35] },
 };
+// #2049 the nose's shape variants (src/avatarnose.js noseFormOffset), a look field `noseForm`: 0 straight (#2048's nose, the default
+// and every old code), 1 convex (aquiline), 2 upturned (snub), 3 broad with a flat bridge. All 26 lowercase tags are taken, so it
+// shares the nose size's `n` tag: the value is `noseSize + 10 * noseForm` (`n6` a larger straight nose as before, `n14` a
+// middle-sized convex one); an old client reads a combined value as the middle size. Each variant is a smooth offset of the
+// bind position in the vertex shader (uniform uNoseForm, the variant's weights), so the geometry stays shared and the
+// size / width sliders still apply on top. All *guess* by eye, head-bone metres after faceWarp (the vertex shader's frame, eye
+// height 0.107, the tip at 0.0775). `box`: [x half width, y from, y to] where the offsets act. `hump` (convex): a bump on the
+// dorsum [height, y, half height, half width] and the tip's `droop` m down (times noseBlend, below `low` [from, to] in y);
+// `upturn`: the tip's `lift` m up (times noseBlend, below `low`) and a `scoop` [depth, y, half height, half width] in the
+// dorsum; `broad`: the bridge's projection lowered by `flat` [bridge, tip] shares (blended over `split` in y) and the nose
+// widened by `widen` across `x` [from, reach low, reach at the bridge] (narrowing between `narrow` heights) faded in over
+// `bottom` (the upper lip stays put) and out over `top` in y (the inner eye corners stay put). `fd` m: the vertex shader's finite-difference step for the normals,
+// `faceRound` m the face's sideways curvature radius (the widening follows it back; taken out of the slope a normal implies).
+export const AVATAR_NOSE_FORMS = {
+  names: ['Rak', 'Böjd', 'Uppnäsa', 'Bred'], label: 'Näsans form',
+  box: [0.052, 0.05, 0.145],
+  hump: [0.0032, 0.098, 0.017, 0.0095], droop: 0.003, low: [0.079, 0.095],
+  upturn: { lift: 0.005, scoop: [0.002, 0.094, 0.014, 0.0085] },
+  broad: { flat: [0.45, 0.12], split: [0.078, 0.098], widen: 0.2, x: [0.004, 0.05, 0.02], narrow: [0.08, 0.1], bottom: [0.052, 0.064], top: [0.096, 0.114] },
+  fd: 0.0005, faceRound: 0.1,
+};
 // #2043 the head's silhouette (src/avatarcontour.js), head-bone metres, *guess* by eye against the before views
 // (docs/verification/2043). rings: extra head-shell heights on the cubic profile through AVATAR_SURFACE.head / AVATAR_FACE.jaw,
 // only where the outline curves (jaw angle, chin, cheek, back of the skull, crown); chin: the flat underside rounded as a
@@ -6977,9 +6998,11 @@ function encodeLookExt(look) {
   if (top >= TOPS_SEEDED) out += `u${top}`; // #1156: a top beyond the digit's ten
   const bb = look.bodyBuild; // #1139: a chosen body build, also the middle (the seed's own may differ)
   if (Number.isInteger(bb) && bb >= 0 && bb < AVATAR_BUILD.steps) out += `${AVATAR_BUILD.tag}${bb}`;
+  const form = noseFormOf(look); // #2049: shares the nose size's tag, see AVATAR_NOSE_FORMS
   for (const [name, f] of Object.entries(AVATAR_SHAPE.fields)) {
-    const v = look[name];
-    if (Number.isInteger(v) && v >= 0 && v < AVATAR_SHAPE.steps && v !== AVATAR_SHAPE.mid) out += `${f.tag}${v}`;
+    const v = look[name], ok = Number.isInteger(v) && v >= 0 && v < AVATAR_SHAPE.steps;
+    if (name === 'noseSize' && form) out += `${f.tag}${(ok ? v : AVATAR_SHAPE.mid) + 10 * form}`;
+    else if (ok && v !== AVATAR_SHAPE.mid) out += `${f.tag}${v}`;
   }
   const gl = Number.isInteger(look.glasses) && look.glasses > 0 && look.glasses < AVATAR_GLASSES.names.length ? look.glasses : 0;
   const er = Number.isInteger(look.earrings) && look.earrings > 0 && look.earrings < AVATAR_EARRINGS.names.length ? look.earrings : 0; // #1325: shares the `g` tag, see AVATAR_EARRINGS
@@ -6998,6 +7021,11 @@ function encodeLookExt(look) {
   if (look.legs > 0 && look.legs < AVATAR_CLOTHES.legs.names.length) out += `${AVATAR_CLOTHES.legs.tag}${look.legs}`; // #1244
   if (look.cut > 0 && look.cut < AVATAR_CLOTHES.cut.names.length) out += `${AVATAR_CLOTHES.cut.tag}${look.cut}`;
   return out;
+}
+/** The look's nose shape variant (#2049): 0 straight (also for any missing or unknown value), 1 convex, 2 upturned, 3 broad. */
+export function noseFormOf(look) {
+  const v = look?.noseForm;
+  return Number.isInteger(v) && v > 0 && v < AVATAR_NOSE_FORMS.names.length ? v : 0;
 }
 function decodeLookExt(ext, lk) {
   if (!ext || ext.length > AVATAR_LOOK_EXT_MAX || !LOOK_EXT.test(ext)) return;
@@ -7026,6 +7054,10 @@ function decodeLookExt(ext, lk) {
     if (tag === AVATAR_CLOTHES.cut.tag) { if (v < AVATAR_CLOTHES.cut.names.length) lk.cut = v; continue; }
     // #1173: wire-only seeded scale; explicit chosen cm always take precedence.
     if (tag === 's') { if (!Number.isInteger(lk.height) && v < AVATAR_SEEDED_TALL.length) lk.tall = AVATAR_SEEDED_TALL[v]; continue; }
+    if (tag === AVATAR_SHAPE.fields.noseSize.tag) { // #2049: the size in the units, the shape variant in the tens
+      if (v % 10 < AVATAR_SHAPE.steps && Math.floor(v / 10) < AVATAR_NOSE_FORMS.names.length) { lk.noseSize = v % 10; lk.noseForm = Math.floor(v / 10); }
+      continue;
+    }
     const name = Object.keys(AVATAR_SHAPE.fields).find((k) => AVATAR_SHAPE.fields[k].tag === tag);
     if (name && v < AVATAR_SHAPE.steps) lk[name] = v;
   }
@@ -7057,7 +7089,7 @@ function nearestSeededBuild(look) {
 
 /** The face fields' defaults (#1138): the original brown eyes, every slider in the middle and brows like the hair (#1220). */
 export function defaultFaceLook() {
-  const lk = { eyes: EYES[0], glasses: 0, earrings: 0, hat: 0, phones: 0, necklace: 0, ring: 0, metal: 0, bracelet: 0, watch: 0, brows: null };
+  const lk = { eyes: EYES[0], glasses: 0, earrings: 0, hat: 0, phones: 0, necklace: 0, ring: 0, metal: 0, bracelet: 0, watch: 0, brows: null, noseForm: 0 }; // (#2049 noseForm)
   for (const name of Object.keys(AVATAR_SHAPE.fields)) lk[name] = AVATAR_SHAPE.mid;
   return lk;
 }

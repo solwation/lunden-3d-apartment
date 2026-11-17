@@ -631,3 +631,44 @@ test('#1325 earrings and sunglasses: earrings share the g tag (glasses + 10 * ea
   for (const n of Object.keys(AVATAR_SHAPE.fields)) everything[n] = n === 'jaw' ? 0 : 8;
   assert.ok(splitAvatarCode(encodeAvatarWireLook({ ...everything, height: 140, bodyBuild: 8, top: TOPS[10] })).ax.length <= AVATAR_LOOK_EXT_MAX);
 });
+
+test('#2049 nose shape: shares the n tag (noseSize + 10 * noseForm), old codes unchanged, bad values skipped, on the wire, Slumpa', async () => {
+  const { AVATAR_NOSE_FORMS, AVATAR_SHAPE, AVATAR_LOOK_EXT_MAX, splitAvatarCode, defaultFaceLook, noseFormOf } = await import('../src/config.js');
+  const { cleanState } = await import('../cloudflare/players.js');
+  const plain = avatarLook('nose-plain'), base = encodeAvatarLook(plain);
+  assert.equal(defaultFaceLook().noseForm, 0, 'straight by default');
+  assert.deepEqual(AVATAR_NOSE_FORMS.names, ['Rak', 'Böjd', 'Uppnäsa', 'Bred']);
+  for (let n = 0; n < AVATAR_SHAPE.steps; n++) { // the size alone is written exactly as before and decodes straight
+    const code = encodeAvatarLook({ ...plain, noseSize: n });
+    assert.equal(code, n === AVATAR_SHAPE.mid ? base : `${base}n${n}`);
+    const back = decodeAvatarLook(code, 'p'); assert.equal(back.noseSize, n); assert.equal(noseFormOf(back), 0);
+  }
+  for (const old of ['2413021', '241302113', '241302113n2b7', '241302113140e1n8']) { // old codes: straight, re-encode unchanged
+    const lk = decodeAvatarLook(old, 'p'); assert.equal(lk.noseForm, 0, old);
+    assert.equal(encodeAvatarLook(lk), old.length === 7 ? old + '00' : old);
+  }
+  for (let k = 1; k < 4; k++) for (const n of [0, 4, 8]) {
+    const code = encodeAvatarLook({ ...plain, noseForm: k, noseSize: n });
+    assert.equal(code, `${base}n${n + 10 * k}`);
+    const back = decodeAvatarLook(code, 'p'); assert.equal(back.noseForm, k); assert.equal(back.noseSize, n); assert.equal(encodeAvatarLook(back), code);
+  }
+  assert.equal(encodeAvatarLook({ ...plain, noseForm: 7 }), base, 'an unknown variant is not written');
+  assert.equal(encodeAvatarLook({ ...plain, noseForm: 0 }), base, 'straight is not written');
+  for (const bad of ['n40', 'n19', 'n9']) { const lk = decodeAvatarLook(base + bad, 'p'); assert.equal(lk.noseForm, 0, bad); assert.equal(lk.noseSize, AVATAR_SHAPE.mid, bad); }
+  // an older client's decoder (before #2049) only took n < steps: a combined value leaves the middle size, nothing else breaks
+  const combined = encodeAvatarLook({ ...plain, noseForm: 2, noseSize: 6, noseWidth: 1, eyeSize: 7 });
+  assert.equal(combined, `${base}e7n26b1`);
+  // remote players: the wire's ax carries it through the Worker unchanged and decodes to the same variant
+  const wire = splitAvatarCode(encodeAvatarWireLook({ ...plain, noseForm: 3, noseSize: 8 }));
+  const state = cleanState(JSON.stringify({ p: [0, 0, 0], r: 0, ...wire }));
+  assert.equal(state.ax, wire.ax); assert.equal(decodeAvatarLook(state.av + state.ax, 'peer').noseForm, 3);
+  // every tag at once still fits the extension (n takes at most one more digit)
+  const everything = { ...plain, noseForm: 3, glasses: 3, earrings: 4, hat: 4, necklace: 4, brows: HAIR[7], eyes: 0x7c8288 };
+  for (const n of Object.keys(AVATAR_SHAPE.fields)) everything[n] = n === 'jaw' ? 0 : 8;
+  assert.ok(splitAvatarCode(encodeAvatarWireLook({ ...everything, height: 140, bodyBuild: 8, top: TOPS[10] })).ax.length <= AVATAR_LOOK_EXT_MAX);
+  // Slumpa picks every variant
+  const { randomAvatarLook } = await import('../src/customizer.js');
+  let s = 11; const rnd = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296, seen = new Set();
+  for (let i = 0; i < 100; i++) seen.add(randomAvatarLook(plain, rnd).noseForm);
+  assert.deepEqual([...seen].sort(), [0, 1, 2, 3]);
+});

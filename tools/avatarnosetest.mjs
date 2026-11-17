@@ -3,10 +3,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { avatarModelGeometry } from '../src/avatar.js';
-import { avatarLook, avatarShape, AVATAR_SURFACE, AVATAR_NOSE as N, AVATAR_FACE as FACE } from '../src/config.js';
+import { avatarLook, avatarShape, AVATAR_SURFACE, AVATAR_NOSE as N, AVATAR_FACE as FACE, AVATAR_NOSE_FORMS as NF, decodeAvatarLook } from '../src/config.js';
 import { bindAt } from '../src/olof.js';
 import { contourRows } from '../src/avatarcontour.js';
-import { noseTriangles, noseForms, noseHeight, noseMask } from '../src/avatarnose.js';
+import { noseTriangles, noseForms, noseHeight, noseMask, noseFormOffset, noseFormWeights } from '../src/avatarnose.js';
 
 // head-bone triangles (facePart 1 … 29) per variant before #2048 (37d922df, after the eyes #2045 and ears #2047)
 const before = [['s0f0', 8524], ['s0f1', 9412], ['s0f3', 9488], ['s1f0', 9444], ['s2f0', 8860], ['s3f0', 9552], ['s4f0', 14140]];
@@ -96,4 +96,66 @@ test('#2048 forms: a bridge narrower between the eyes than the wings, a rounded 
   const [, ax, ay, , , ra] = N.ala; let crease = 0;
   for (let t = 0; t < 1; t += 0.05) crease = Math.max(crease, noseForms(ax + ra * Math.cos(t), ay + ra * Math.sin(t)).crease);
   assert.ok(crease > 0.8, 'the crease runs round the wing\'s upper outer edge');
+});
+
+// #2049: the shape variants (noseFormOffset, the vertex shader's noseFormAt twin) on the bind mesh as the shader sees it
+const VARIANTS = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+const offsetAt = (x, y, nb, w) => noseFormOffset(x, y, nb * N.maxProjection, w);
+
+test('#2049 old codes and the straight variant keep #2048\'s nose exactly', () => {
+  for (const code of ['000000100', '200000100n6b2', '400000100n0', '241302113e7']) assert.deepEqual(noseFormWeights(decodeAvatarLook(code, 'x')), [0, 0, 0], code);
+  assert.deepEqual(noseFormWeights({ noseForm: 9 }), [0, 0, 0], 'an unknown variant is straight');
+  for (let x = -0.045; x <= 0.045; x += 0.001) for (let y = 0.04; y <= 0.15; y += 0.001) assert.deepEqual(noseFormOffset(x, y, noseHeight(x / FACE.warp.width, y), [0, 0, 0]).map(Math.abs), [0, 0, 0]);
+  assert.deepEqual(noseFormWeights(decodeAvatarLook('000000100n36', 'x')), [0, 0, 1]);
+});
+
+test('#2049 every variant, at every size / width end, folds no skin and leaves the face round the nose alone', () => {
+  const g = avatarModelGeometry({ ...avatarLook('nose'), style: 0, facial: 0 }), a = g.attributes, p = a.position, hb = bindAt('head'), M = N.mask, [bx, y0, y1] = NF.box;
+  const ends = [[1, 1, 1]];
+  for (const size of [0, 8]) for (const width of [0, 8]) ends.push([avatarShape('noseSize', size) * avatarShape('noseWidth', width), avatarShape('noseSize', size), avatarShape('noseSize', size)]);
+  const moved = (i, s, w) => { // the shader: the sliders, then the variant's offset times the size (uNose.y)
+    const x = p.getX(i) - hb.x, y = p.getY(i) - hb.y, z = p.getZ(i) - hb.z, nb = a.noseBlend.getX(i), [mw, ml] = z > 0 ? noseMask(x, y) : [0, 0];
+    const o = z > 0 ? offsetAt(x, y, nb, w) : [0, 0, 0];
+    return [x + (s[0] - 1) * x * mw + s[1] * o[0], y + (s[1] - 1) * M.length * (y - M.pivot) * ml + s[1] * o[1], z + (s[2] - 1) * nb * N.maxProjection + s[1] * o[2]];
+  };
+  const normal = (A, B, C) => { const u = B.map((v, k) => v - A[k]), w = C.map((v, k) => v - A[k]); const n = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]]; const l = Math.hypot(...n); return n.map((v) => v / l); };
+  let checked = 0, worst = 1;
+  for (const w of VARIANTS) for (const s of ends) for (let i = 0; i < p.count; i += 3) {
+    if (!shell(a, i) || p.getZ(i) - hb.z < 0.05) continue;
+    const y = p.getY(i) - hb.y; if (y < y0 - 0.005 || y > y1 + 0.005) continue;
+    const n0 = normal(...[0, 1, 2].map((k) => moved(i + k, [1, 1, 1], [0, 0, 0]))), n1 = normal(...[0, 1, 2].map((k) => moved(i + k, s, w)));
+    const d = n0[0] * n1[0] + n0[1] * n1[1] + n0[2] * n1[2]; worst = Math.min(worst, d);
+    assert.ok(d > 0.2, `triangle ${i} turns over: variant ${w} at uNose ${s} (${d.toFixed(2)})`);
+    checked++;
+  }
+  assert.ok(checked > 3000, `${checked}`);
+  // zero at the box's edge and beyond, and the nose never sinks behind the face (height + offset ≥ 0)
+  for (const w of VARIANTS) {
+    for (let t = -1; t <= 1; t += 0.01) for (const [x, y] of [[t * bx, y0], [t * bx, y1], [bx, y0 + (t + 1) / 2 * (y1 - y0)]]) assert.ok(offsetAt(x, y, 0, w).every((v) => Math.abs(v) < 1e-7), `variant ${w} at the box edge ${x}, ${y}`);
+    for (let x = 0; x < bx; x += 0.0005) for (let y = y0; y < y1; y += 0.0005) {
+      const H = noseHeight(x / FACE.warp.width, y), o = noseFormOffset(x, y, H, w), dz = o[2] + o[0] * x / NF.faceRound; // (less the slide along the face's curve)
+      assert.ok(H + dz > -0.0004, `variant ${w} dents the face at ${x.toFixed(4)}, ${y.toFixed(4)}: ${(H + dz).toFixed(5)}`);
+    }
+  }
+  g.dispose();
+});
+
+test('#2049 the variants differ clearly in profile and from the front', () => {
+  const H = (x, y) => noseHeight(x / FACE.warp.width, y);
+  const profile = (w) => { // the midline's projection and the tip's height (where it projects most)
+    let tip = 0, tipY = 0; const at = (y) => H(0, y) + noseFormOffset(0, y, H(0, y), w)[2];
+    for (let y = 0.06; y < 0.1; y += 0.0002) if (at(y) > tip) { tip = at(y); tipY = y + noseFormOffset(0, y, H(0, y), w)[1]; }
+    return { tip, tipY, bridge: at(NF.hump[1]) };
+  };
+  const straight = profile([0, 0, 0]), convex = profile(VARIANTS[0]), up = profile(VARIANTS[1]), broad = profile(VARIANTS[2]);
+  // the dorsum's line from the radix to the tip: convex above it, upturned below it
+  const line = (p) => p.bridge - straight.bridge;
+  assert.ok(line(convex) > 0.0025, `the convex hump ${line(convex)}`);
+  assert.ok(convex.tipY < straight.tipY - 0.0015, `the convex tip droops ${convex.tipY} vs ${straight.tipY}`);
+  assert.ok(up.tipY > straight.tipY + 0.0025, `the upturned tip rises ${up.tipY} vs ${straight.tipY}`);
+  assert.ok(line(up) < -0.001, `the upturned dorsum is scooped ${line(up)}`);
+  assert.ok(line(broad) < -0.004, `the broad bridge is lower ${line(broad)}`);
+  const wing = N.ala[1] * FACE.warp.width;
+  assert.ok(noseFormOffset(wing, N.ala[2], 0.004, VARIANTS[2])[0] > 0.002, 'the broad nose\'s wings sit > 2 mm wider');
+  assert.ok(Math.abs(noseFormOffset(0.016, 0.107, 0, VARIANTS[2])[0]) < 0.0005, 'the inner eye corner stays put');
 });
