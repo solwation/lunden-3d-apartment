@@ -320,9 +320,11 @@ tools/avatarlonghairtest.cjs SITE OUT` ([views, motion and cost](../verification
 #### Gloss along the hair strands (#2052)
 
 `src/avatarhairgloss.js` (tunables `AVATAR_HAIR_GLOSS`, all *guess*) replaces the general GGX highlight on hair, bun, beard, brows and
-flyaways with a Kajiya-Kay style anisotropic gloss: two lobes round the strand tangent, shifted along the normal (a sharp white
-`primary` towards the root, a broader `secondary` in the hair's own hue at √ its brightness towards the tip, so black hair keeps a white
-band and blond / red hair a coloured one). The tangent needs no attribute or network field: the vertex shader inverts the hair shells'
+flyaways with a Kajiya-Kay style anisotropic gloss: two lobes round the strand tangent, shifted along the normal (`primary` towards
+roots, `secondary` towards tips). #2068 removes the wide white band on dark hair: below `darkRange` in linear albedo, both lobes
+narrow by `darkSharp`, the primary takes the hair's own hue at √ brightness, and `secondaryWarm` warms the secondary. Blond/grey
+albedo above the range retains the previous white primary and wider secondary. The change adds scalar/vector arithmetic inside
+`hgSpec`, with no new lobe, trigonometric operation, varying or geometry; program key `-gloss2068`. The tangent needs no attribute or network field: the vertex shader inverts the hair shells'
 own parametrisation from the bind position (`hairParts`: azimuth a + sweep · sin(πs) about `AVATAR_HAIR.centre`, elevation from the
 shell's edge to the crown) and follows `AVATAR_HAIR.flow`'s strand groups (sweep plus the clump ridges' twist per style, the uniform
 `uHairFlow` set from the look); the edge table is resampled every 5° into a const array. Below the shell (the long and curly curtains)
@@ -334,7 +336,9 @@ jittered per strand group and fine strand (bind azimuth), and the clump ridges' 
 pixel footprint and the lobes broaden and soften (`fade`, `far`) so nothing flickers at distance. A lower roughness (#2018 wet hair)
 sharpens it (`wet`). The #2040 backlit rim is unchanged. No triangle, texture, light, pass or draw call. Checks:
 `node --test tools/avatarhairglosstest.mjs` and `PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarhairglosstest.cjs SITE OUT`
-([views, orbit and cost](../verification/2052/README.md)).
+([views, orbit and cost](../verification/2052/README.md)). Dark-colour regression: `tools/avatarhair2068browser.cjs SITE OUT` captures matched short black/brown,
+long black, curly black, brown bun, blond and grey hair in daylight/backlight, with an orbit and paired timing.
+[Result and limits](../verification/2068/README.md).
 
 #### Beards that grow from the skin (#2051)
 

@@ -4528,6 +4528,8 @@ export const AVATAR_HAIR_GLOSS = {
   primary: [-0.06, 140, 0.12], secondary: [0.1, 30, 0.2, 1.0], jitter: [0.05, 18, 30, 90, 0.03],
   fade: [0.0012, 0.005], far: [0.3, 0.75], wrap: 0.2, wet: 2.5, lamp: 1.8, brow: 0.35, beard: 0.8, fly: 0.6, below: 10,
   bunRadius: 0.058, bunTilt: -0.66,
+  // #2068: dark hair reflects its own colour in a narrower band; bright hair keeps #2052's lobes (visual *guess*, linear albedo).
+  darkRange: [0.045, 0.25], darkSharp: [3.0, 2.4], secondaryWarm: [1.0, 0.86, 0.7],
 };
 // #2053 (part of #2042) long hair in locks (src/avatarlonghair.js), all *guess* by eye against the avatar in daylight and backlight, not measured.
 // The curtain (AVATAR_HAIR.long) is split into `perCol` locks per curtain column, each a ribbon of `rows` rows (packed towards the tip by

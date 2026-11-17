@@ -6,7 +6,7 @@
 //    curtain, the curly curtain) the strands hang (meridians); the beard follows its hairs (#2051 avatarbeard.js bdTangent), the bun coils round its
 //    tilted axis, the brows rise along their own flow (AVATAR_BROW.slope) and a flyaway along its own tangent (its `normal`). The tangent
 //    is skinned, taken to view space and passed as one varying (vHairT); the fragment re-orthogonalises it to the shading normal.
-//  - gloss: Kajiya-Kay style, two lobes shifted along the normal (Scheuermann 2004): a sharp white primary towards the root and a broader,
+//  - gloss: Kajiya-Kay style, two lobes shifted along the normal (Scheuermann 2004): a rootward primary (hair-tinted and narrow on dark hair, white on bright hair) and a broader,
 //    hair-tinted secondary towards the tip, per scene light inside three's RE_Direct (so the sun's shadow and indoor lights apply), plus
 //    the #2039 street lamps' warm light from above. Their shift is jittered per strand group (the bind azimuth about the hair centre,
 //    the AVATAR_HAIR.flow group counts) and per fine strand, and the clump ridges' own normals break the band further.
@@ -20,7 +20,7 @@ import { AVATAR_HAIR_GLOSS as G, AVATAR_HAIR as HAIR, AVATAR_BROW as BROW, AVATA
 
 export const HAIR_GLOSS = { on: true };
 /** The program cache key's suffix. */
-export const glossKey = () => (HAIR_GLOSS.on ? '-gloss2052' : '-glossoff');
+export const glossKey = () => (HAIR_GLOSS.on ? '-gloss2068' : '-glossoff');
 
 const f = (v) => (+v).toFixed(6);
 const v3 = (a) => `vec3(${a.map(f).join(', ')})`;
@@ -157,12 +157,17 @@ float hgLobe(float th, float nh, float shift, float e) { float c = (th + shift *
 vec3 hgSpec(vec3 l, vec3 v, vec3 n, vec3 albedo, float rough) {
   vec3 h = normalize(l + v);
   float sharp = clamp(${f(SURFACE.finish.hair)} / max(rough, 0.05), 1.0, ${f(G.wet)}), soft = mix(1.0, ${f(G.far[0])}, hgFar);
-  float e1 = ${f(P[1])} * sharp * soft, e2 = ${f(S[1])} * sharp * soft, k = sqrt(sharp) * mix(1.0, ${f(G.far[1])}, hgFar);
+  float k = sqrt(sharp) * mix(1.0, ${f(G.far[1])}, hgFar);
   float lit = clamp((dot(n, l) + ${f(G.wrap)}) / ${f(1 + G.wrap)}, 0.0, 1.0);
   float m = max(max(albedo.r, albedo.g), max(albedo.b, 0.004));
-  vec3 tint = albedo * inversesqrt(m) * ${f(S[3])}; // the hair's hue at √ its brightness: dark hair keeps little of it
+  float bright = smoothstep(${f(G.darkRange[0])}, ${f(G.darkRange[1])}, m);
+  float e1 = ${f(P[1])} * sharp * soft * mix(${f(G.darkSharp[0])}, 1.0, bright);
+  float e2 = ${f(S[1])} * sharp * soft * mix(${f(G.darkSharp[1])}, 1.0, bright);
+  vec3 tint = albedo * inversesqrt(m) * ${f(S[3])}; // #2068: retain hue and scale down with dark hair's brightness
+  vec3 primaryTint = mix(tint, vec3(1.0), bright);
+  vec3 secondaryTint = tint * mix(${v3(G.secondaryWarm)}, vec3(1.0), bright);
   float th = dot(hgT, h), nh = dot(n, h);
-  return lit * k * hgOn * (${f(P[2])} * hgLobe(th, nh, ${f(P[0])} + hgShift, e1) + ${f(S[2])} * tint * hgLobe(th, nh, ${f(S[0])} + hgShift, e2));
+  return lit * k * hgOn * (${f(P[2])} * primaryTint * hgLobe(th, nh, ${f(P[0])} + hgShift, e1) + ${f(S[2])} * secondaryTint * hgLobe(th, nh, ${f(S[0])} + hgShift, e2));
 }
 void RE_Direct_Hair(const in IncidentLight directLight, const in vec3 geometryPosition, const in vec3 geometryNormal, const in vec3 geometryViewDir, const in vec3 geometryClearcoatNormal, const in PhysicalMaterial material, inout ReflectedLight reflectedLight) {
   if (hgOn <= 0.0) { RE_Direct_Physical(directLight, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, material, reflectedLight); return; }
