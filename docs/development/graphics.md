@@ -64,8 +64,25 @@ painted tip warmth (`AVATAR_SKIN.nose`) dropped from 0.5 to 0.18 over a wider ar
 the form's. A `vNose` varying (noseBlend) gives #2032's nose shine, flush and backlit thin skin the nose's
 own surface (`avatarSkinGLSL` `nose`), which had no surface to act on since the separate nose went.
 +656 triangles per figure (+7.7 % of the head's 8,524 before this step), one draw, no attribute, texture,
-light or pass (program key `-nose2048`). Shape variants (#2049) can scale `body`, `ridge`, `tip`, `ala`
-and `nostril`. [Views](../verification/2048/README.md) (`tools/avatarnose2048browser.cjs`).
+light or pass (program key since #2049 `-nose2049`). [Views](../verification/2048/README.md) (`tools/avatarnose2048browser.cjs`).
+
+**Nose shape variants (#2049).** A look field `noseForm` (0 straight = #2048's nose and every old code,
+1 convex, 2 upturned, 3 broad with a flat bridge; `AVATAR_NOSE_FORMS`, all *guess*), chosen with buttons in
+the customizer's "Näsa & öron" section (also picked by Slumpa). All lowercase tags are taken, so it shares
+the nose size's `n` tag: `noseSize + 10 * noseForm`, written only when a variant is chosen (an older client
+reads a combined value as the middle size); remote players get it through the existing look code. Each
+variant is a smooth offset of the bind position in the vertex shader (`noseFormAt`, JS twin
+`noseFormOffset`, uniform `uNoseForm` = the variant's weights): convex a hump on the dorsum and a drooping
+tip, upturned a lifted tip and a scooped dorsum, broad a bridge lowered by a share of its height and the
+nose widened (sliding along the face's sideways curve, faded out before the inner eye corners). Offsets
+that move with the tip scale with `noseBlend`, so they vanish where the nose meets the face; the size slider
+scales the offset, the width slider adds its own widening on top; the Spider suit cancels it. The shared
+geometry is untouched (no triangles, attribute, draw, texture, light or pass); the normals follow the
+offset's Jacobian by finite differences in `beginnormal_vertex` (`noseNormalGLSL`), skipped for straight.
+`tools/avatarnosetest.mjs` (old codes exactly unchanged, no fold at any slider end, no dent, the variants
+differ), `tools/avatarcustomizertest.mjs` (the shared tag, the Worker, Slumpa);
+[views](../verification/2049/README.md) (`tools/avatarnose2049browser.cjs`, including a pixel comparison
+of old codes against the baseline).
 
 **Formed ears (#2047).** `src/avatarear.js` (tunables `AVATAR_EAR`, all *guess*) replaces the folded
 disc of #2002 with an ear built on a polar grid round the concha: a superellipse outline (fuller top,

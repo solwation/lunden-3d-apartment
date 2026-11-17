@@ -10,7 +10,7 @@
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs = require('node:fs'), path = require('node:path'), { execFileSync } = require('node:child_process');
 const [base = 'http://localhost:8149', out = 'docs/verification/2049', which = 'both'] = process.argv.slice(2);
-const baseline = process.env.BASELINE || 'e1b97ac4';
+const baseline = process.env.BASELINE || 'b622b587';
 const files = ['src/avatar.js', 'src/config.js', 'src/avatarnose.js'];
 const proof = { baseline, triangles: {}, errors: {}, frameMs: {}, oldCodeSheet: {} };
 const SETS = {
