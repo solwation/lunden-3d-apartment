@@ -4350,6 +4350,13 @@ export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76
   moustache: { half: 27, top: -8, bottom: -16.5, philtrum: 1, droop: 5, taper: 0.55, feather: [2.5, 1.0], thick: 0.0035, margin: 2, cols: 16, rows: 6, blend: [16, 30] },
   hair: { lane: 0.00045, cell: 0.003, len: [0.005, 0.009], lenM: [0.004, 0.008], width: 0.00013, lean: 1.2, curl: 0.8, fill: 0.9,
     converge: -0.006, y0: -30, slope: [0.25, 0.012], shade: [0.7, 1.12], base: 1, baseFrom: 0, baseShade: 0.82, graze: [0.55, 0.9, 0.85] }, budget: 1000 };
+// #2061 (part of #2042) the full beard's sideburn up into the scalp's hairline (src/avatarbeard.js), all *guess* by eye in profile and
+// three-quarter from behind, not measured. Behind |azimuth| `from` [start, full] (degrees round AVATAR_BEARD.centre) the beard's top follows
+// the visible hairline (AVATAR_HAIR.hairline, mapped into the beard's angles at `r` m from AVATAR_HAIR.centre, sampled every `step` degrees
+// over `span`) `over` degrees above it, so the beard runs on under the hair's soft edge (#2050) instead of stopping short of it.
+// `flat` [degrees below the line, share]: the beard thins towards the line to that share of its thickness and lies under the hair shell.
+// `back` the back edge's feather (degrees) in front of the ear (it was a hard grid edge above the jaw).
+export const AVATAR_SIDEBURN = { from: [71, 76], over: 6, r: 0.098, step: 2, span: [60, 100], flat: [10, 0.12], back: 9 };
 // The avatars' hairstyles (#1102, src/avatar.js hairParts) *guess* by eye against the avatar head (PVP_RIFLE_HEAD skull / jaw / ears):
 // shells projected from `centre` (head-bone frame, m) onto the skull, lifted by a thickness. `hairline`: the hair's lower edge,
 // [|azimuth|, elevation] in degrees (0 = straight ahead): forehead → temples → sideburn in front of the ear → over the ear → nape;

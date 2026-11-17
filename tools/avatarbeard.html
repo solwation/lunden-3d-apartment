@@ -34,6 +34,7 @@ const looks = {
   'mellan, svart': { skin: S[2], hair: H[0], beard: H[0] },
   'mörk, svart': { skin: S[4], hair: H[7], beard: H[7] },
   'mörk, grå': { skin: S[4], hair: H[5], beard: H[5] },
+  'ljus, blond': { skin: S[0], hair: H[4], beard: H[4] }, // #2061: light hair on light skin
 };
 // variants: [look fields, expression (smile, surprise, grimace), talking mouth, kiss]
 const variants = {
@@ -42,6 +43,8 @@ const variants = {
   f1talk: [{ facial: 1 }, [0, 0, 0], 1], f2talk: [{ facial: 2 }, [0, 0, 0], 1], f3talk: [{ facial: 3 }, [0, 0, 0], 1],
   f1kiss: [{ facial: 1 }, [0, 0, 0], 0, 1], f2kiss: [{ facial: 2 }, [0, 0, 0], 0, 1], f3kiss: [{ facial: 3 }, [0, 0, 0], 0, 1],
   f3surprise: [{ facial: 3 }, [0, 1, 0]],
+  // #2061: f{facial}s{style}[h] — a facial-hair option with a hairstyle (0 short, 1 long, 4 curly; h = cap + headphones)
+  ...Object.fromEntries([0, 1, 2, 3].flatMap((f) => [0, 1, 2, 4].flatMap((s) => [[`f${f}s${s}`, [{ facial: f, style: s }]], [`f${f}s${s}h`, [{ facial: f, style: s, hat: 1, phones: 1 }]]]))),
   f1acc: [{ facial: 1, hat: 1, phones: 1 }], f2acc: [{ facial: 2, hat: 1, phones: 1 }], f3acc: [{ facial: 3, hat: 2, phones: 1 }],
 };
 const figures = {};
@@ -68,6 +71,9 @@ const views = {
   close: (a) => { const h = at(a, 'head', [0, 0.06, 0.05]); return { eye: h.clone().add(new THREE.Vector3(0, 0.01, -0.46)), look: h, fov: 22 }; },
   q34: (a) => { const h = at(a, 'head', [0, 0.06, 0.04]); return { eye: h.clone().add(new THREE.Vector3(0.3, 0.02, -0.36)), look: h, fov: 22 }; },
   profile: (a) => { const h = at(a, 'head', [0, 0.06, 0.02]); return { eye: h.clone().add(new THREE.Vector3(0.47, 0.01, -0.02)), look: h, fov: 22 }; },
+  side: (a) => { const h = at(a, 'head', [0.04, 0.08, 0.03]); return { eye: h.clone().add(new THREE.Vector3(0.36, 0.01, -0.01)), look: h, fov: 22 }; }, // #2061: the sideburn in profile
+  sidez: (a) => { const h = at(a, 'head', [0.04, 0.08, 0.03]); return { eye: h.clone().add(new THREE.Vector3(0.36, 0.01, -0.01)), look: h, fov: 11 }; }, // #2061: the sideburn up close
+  back34: (a) => { const h = at(a, 'head', [0.04, 0.08, 0.03]); return { eye: h.clone().add(new THREE.Vector3(0.3, 0.03, 0.2)), look: h, fov: 24 }; }, // #2061: three-quarter from behind
   low: (a) => { const h = at(a, 'head', [0, 0.03, 0.03]); return { eye: h.clone().add(new THREE.Vector3(0.22, -0.2, -0.36)), look: h, fov: 22 }; },
   cheek: (a) => { const h = at(a, 'head', [0.045, 0.07, 0.07]); return { eye: h.clone().add(new THREE.Vector3(-0.17, 0.02, -0.25)), look: h, fov: 12 }; },
   lip: (a) => { const h = at(a, 'head', [0, 0.045, 0.1]); return { eye: h.clone().add(new THREE.Vector3(-0.12, -0.01, -0.28)), look: h, fov: 11 }; },
@@ -88,8 +94,8 @@ function draw(a, view, kind, variant) {
   return true;
 }
 const sheetCanvas = document.createElement('canvas'), sctx = sheetCanvas.getContext('2d');
-const label = { close: 'rakt', q34: 'snett', profile: 'profil', low: 'underifrån', cheek: 'kindkant', lip: 'mustasch', talk: '1,5 m', talk3: '3 m', back: 'motljus', day: 'dagsljus', before: 'före', after: 'efter' };
-const vlabel = (v) => ({ 1: 'helskägg', 2: 'mustasch', 3: 'skägg+mustasch' }[v[1]] ?? '') + (v.endsWith('smile') ? ', leende' : v.endsWith('talk') ? ', prat' : v.endsWith('kiss') ? ', puss' : v.endsWith('surprise') ? ', förvånad' : v.endsWith('acc') ? ', keps+lurar' : '');
+const label = { sidez: 'polisong nära', side: 'polisong i profil', back34: 'snett bakifrån', close: 'rakt', q34: 'snett', profile: 'profil', low: 'underifrån', cheek: 'kindkant', lip: 'mustasch', talk: '1,5 m', talk3: '3 m', back: 'motljus', day: 'dagsljus', before: 'före', after: 'efter' };
+const vlabel = (v) => ({ 0: 'utan skägg', 1: 'helskägg', 2: 'mustasch', 3: 'skägg+mustasch' }[v[1]] ?? '') + ({ 0: ', kort hår', 1: ', långt hår', 2: ', hår 2', 4: ', lockigt hår' }[v.match(/s(\d)/)?.[1]] ?? '') + (/s\dh$/.test(v) ? ', keps+lurar' : '') + (v.endsWith('smile') ? ', leende' : v.endsWith('talk') ? ', prat' : v.endsWith('kiss') ? ', puss' : v.endsWith('surprise') ? ', förvånad' : v.endsWith('acc') ? ', keps+lurar' : '');
 /** rows: [look, variant]; cols: [phase, view, light, variant (overrides the row's)]. Returns a JPEG data URL. */
 window.__sheet = (rows, cols) => {
   const pad = 22;

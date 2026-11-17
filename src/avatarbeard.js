@@ -16,6 +16,7 @@
 // Numbers: config.js AVATAR_BEARD. Pure helpers (headless-testable) plus GLSL that avatar.js splices in.
 import * as THREE from 'three';
 import { AVATAR_BEARD as B, AVATAR_FACE as FACE } from './config.js';
+import { sideburnTop, sideburnThick, sideburnBack, sideburnBackShift, sideburnGLSL } from './avatarsideburn.js'; // #2061
 
 const DEG = Math.PI / 180;
 const f = (v) => (+v).toFixed(6);
@@ -35,7 +36,7 @@ const wobble = (a) => E.wobble[0] * smooth(E.wobble[1], E.wobble[1] + 15, Math.a
 export function beardTop(a, lip) {
   const x = Math.abs(a), side = B.cheek[0] + (B.cheek[1] - B.cheek[0]) * smooth(B.cheekAz[0], 90, x);
   const top = lip ? side - E.dip[0] * (1 - smooth(E.dip[1], E.dip[2], x)) : B.chinTop + (side - B.chinTop) * smooth(B.notch[0], B.notch[1], x);
-  return top + E.rise + wobble(a);
+  return sideburnTop(a, top + E.rise + wobble(a)); // (#2061: behind the cheek the sideburn runs up under the hairline)
 }
 /** The top feather's width (degrees): crisp under the nose and the lip, soft on the cheeks, medium on the sideburns. */
 /** The back edge's irregularity (degrees). */
@@ -50,7 +51,7 @@ export function mouthOut(a, e) {
 export function beardDensity(a, e, lip, patchy = true) {
   const x = Math.abs(a);
   let d = smooth(0, topFeather(a), beardTop(a, lip) - e) * smooth(0, E.neck, e - B.bottom);
-  d *= 1 - (1 - smooth(0, E.back, B.azimuth - x + backWobble(e))) * smooth(-4, -16, e); // behind the jaw (the sideburn stays full up into the hair)
+  d *= smooth(0, sideburnBack(e), B.azimuth - x + backWobble(e) + sideburnBackShift(e)); // behind the jaw; #2061: a narrower feather in front of the ear (was a hard edge)
   if (lip) d *= smooth(0, E.mouth, mouthOut(a, e));
   const patch = smooth(18, 40, x) * smooth(-48, -22, e) * (0.5 + 0.5 * Math.sin(0.21 * a + 0.17 * e) * Math.sin(0.13 * a - 0.29 * e + 1.1));
   return patchy ? d * (1 - E.patch * patch) : d;
@@ -70,7 +71,7 @@ export function moustacheDensity(a, e) {
 function thickness(a, e, d, lip) {
   const x = Math.abs(a), chin = (1 - smooth(20, 60, x)) * smooth(-18, -45, e);
   const lipBulk = lip ? (1 - smooth(16, 30, x)) * smooth(O.e - 2, O.e + 4, e) : 0;
-  return B.lift + (B.thick[1] + (B.thick[0] - B.thick[1]) * chin + B.thick[2] * lipBulk) * Math.pow(d, 0.7);
+  return B.lift + (B.thick[1] + (B.thick[0] - B.thick[1]) * chin + B.thick[2] * lipBulk) * Math.pow(d, 0.7) * sideburnThick(a, e); // (#2061: flat under the hair)
 }
 
 /** A ray probe of the head's real skin: `geos` (head-frame geometries before the face warp, e.g. the head and the neck); returns
@@ -170,7 +171,7 @@ export function applyBeardLook(u, lk) {
   u.uBeard.value = Number(lk?.facial ?? lk?.facialHair ?? 0) || 0;
   if (lk?.skin !== undefined) u.uBeardSkin.value.set(lk.skin).multiplyScalar(B.skinShade);
 }
-export const beardKey = () => '-beard2051';
+export const beardKey = () => '-beard2051-sideburn2061';
 
 const Hr = B.hair, MPD = B.radius * DEG; // metres per degree of arc on the beard
 /** Fragment declarations (global scope). */
@@ -179,10 +180,11 @@ export function beardFDecl() {
   return `uniform float uBeard; uniform vec3 uBeardSkin;
 // #2051 beards of hairs (src/avatarbeard.js)
 float bdS(float e0, float e1, float x) { float t = clamp((x - e0) / (e1 - e0), 0.0, 1.0); return t * t * (3.0 - 2.0 * t); } // (either edge order)
+${sideburnGLSL()}
 float bdTop(float a, float lip) {
   float x = abs(a), side = ${f(B.cheek[0])} + ${f(B.cheek[1] - B.cheek[0])} * ${sm(B.cheekAz[0], 90, 'x')};
   float top = lip > 0.5 ? side - ${f(E.dip[0])} * (1.0 - ${sm(E.dip[1], E.dip[2], 'x')}) : ${f(B.chinTop)} + (side - ${f(B.chinTop)}) * ${sm(B.notch[0], B.notch[1], 'x')};
-  return top + ${f(E.rise)} + ${f(E.wobble[0])} * ${sm(E.wobble[1], E.wobble[1] + 15, 'x')} * (0.6 * sin(0.31 * a + 1.3) + 0.4 * sin(0.83 * a + 0.4));
+  return sbTop(a, top + ${f(E.rise)} + ${f(E.wobble[0])} * ${sm(E.wobble[1], E.wobble[1] + 15, 'x')} * (0.6 * sin(0.31 * a + 1.3) + 0.4 * sin(0.83 * a + 0.4)));
 }
 float bdMouthOut(float a, float e) {
   float u = a / ${f(O.half[0])}, v = (e - ${f(O.e)} - ${f(O.bend)} * min(1.0, u * u)) / ${f(O.half[1])}, rho = max(0.000001, length(vec2(u, v)));
@@ -191,7 +193,7 @@ float bdMouthOut(float a, float e) {
 float bdBeard(float a, float e, float lip, float patchy) {
   float x = abs(a), ft = ${f(E.top[0])} + ${f(E.top[1] - E.top[0])} * ${sm(8, 30, 'x')} + ${f(E.top[2] - E.top[1])} * ${sm(60, 85, 'x')};
   float d = ${sm(0, 1, '(bdTop(a, lip) - e) / ft')} * ${sm(0, E.neck, `e - ${f(B.bottom)}`)};
-  d *= 1.0 - (1.0 - ${sm(0, E.back, `${f(B.azimuth)} - x + ${f(E.wobble[0] * 1.5)} * sin(0.35 * e + 0.7)`)}) * bdS(-4.0, -16.0, e);
+  d *= bdS(0.0, sbBack(e), ${f(B.azimuth)} - x + ${f(E.wobble[0] * 1.5)} * sin(0.35 * e + 0.7) + sbBackShift(e));
   if (lip > 0.5) d *= ${sm(0, E.mouth, 'bdMouthOut(a, e)')};
   float bpatch = ${sm(18, 40, 'x')} * ${sm(-48, -22, 'e')} * (0.5 + 0.5 * sin(0.21 * a + 0.17 * e) * sin(0.13 * a - 0.29 * e + 1.1));
   return d * (1.0 - ${f(E.patch)} * bpatch * patchy);
