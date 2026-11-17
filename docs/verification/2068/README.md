@@ -59,3 +59,5 @@ The orbit's mean image change fell2.781→2.340 and large-jump share
 absence of all flicker). This was a component run, without a full-world sweep.
 
 Player avatars are original-only; public downstream transfer does not apply.
+
+Published on main as `1a5b33ed352bf597a714a1020d0395047d2ee704`; Pages44160001376 and Worker44160001183 passed. Revision-pinned result images are embedded in the issue before closure.

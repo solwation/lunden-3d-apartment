@@ -78,3 +78,5 @@ PLAYWRIGHT_MODULE=/home/olof/github-dashboard/node_modules/playwright \
   tools/browsertest.sh node tools/avatarsocket2063combined.cjs \
   http://localhost:8177 docs/verification/2063 d73342e3
 ```
+
+Published on main as `1a5b33ed352bf597a714a1020d0395047d2ee704`; Pages44160001376 and Worker44160001183 passed. Revision-pinned result images are embedded in the issue before closure.

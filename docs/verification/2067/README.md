@@ -66,3 +66,5 @@ PLAYWRIGHT_MODULE=/home/olof/github-dashboard/node_modules/playwright \
 The harness intercepts baseline `avatarskin.js` and `config.js` from the stated revision;
 every other input is shared. Component evidence does not establish full-apartment, mobile
 or native-GPU performance.
+
+Published on main as `1a5b33ed352bf597a714a1020d0395047d2ee704`; Pages44160001376 and Worker44160001183 passed. Revision-pinned result images are embedded in the issue before closure.
