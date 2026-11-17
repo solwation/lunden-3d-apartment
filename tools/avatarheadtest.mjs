@@ -5,14 +5,16 @@ import { avatarLook } from '../src/config.js';
 import { bindAt } from '../src/olof.js';
 import { AVATAR_FLYAWAY, AVATAR_HAIR, AVATAR_CONTOUR, AVATAR_SURFACE } from '../src/config.js';
 import { isFlyaway } from '../src/avatarflyaway.js';
-const flyVerts=(a)=>{let n=0;for(let i=0;i<a.position.count;i++)if(isFlyaway(a,i,7,11))n++;return n;};
+// (#2045: the eyes' growth over #2033's 608 triangles has its own budget in tools/avatarlidstest.mjs, so it is left out here like the flyaways)
+const eyeExtra=(a)=>{let n=0;for(let i=0;i<a.position.count;i++){const f=a.facePart.getX(i);if(f===3||f===26)n++;}return Math.max(0,n-608*3);};
+const flyVerts=(a)=>{let n=0;for(let i=0;i<a.position.count;i++)if(isFlyaway(a,i,7,11))n++;return n+eyeExtra(a);};
 // #2043: the head contour's own triangles (its own +10 % head budget below) are left out of the older whole-figure budgets:
 // extra head rings and chin rings × 2·headSides, and the 16-sided open neck in place of the 8-sided capped cylinder (32)
 const contour2043=(AVATAR_CONTOUR.rings.length+AVATAR_CONTOUR.chin.angles.length)*2*AVATAR_SURFACE.headSides+(AVATAR_CONTOUR.neck.rings.length-1)*2*AVATAR_CONTOUR.neck.sides-32;
 const baseline=[[11172,3586212],[11940,3832740],[11532,3701772],[12456,3998376],[16092,5165532]];
 test('#2002 all five hairstyles retain bounded resources, normalized weights and semantic head roles',()=>{
  for(let style=0;style<5;style++){
-  const g=avatarModelGeometry({...avatarLook('2002-base'),style,facial:0}),a=g.attributes,keep=1-(flyVerts(a)+3*contour2043)/a.position.count; // (#2040: the flyaways have their own budget below)
+  const g=avatarModelGeometry({...avatarLook('2002-base'),style,facial:0}),a=g.attributes,keep=1-(flyVerts(a)+3*contour2043)/a.position.count; // (#2040: the flyaways have their own budget below; #2045: the eyes theirs)
   assert(a.position.count*keep/3<=baseline[style][0]*1.1);assert(Object.values(a).reduce((n,v)=>n+v.array.byteLength,0)*keep<=baseline[style][1]*1.1);
   assert.equal(Object.keys(a).length,17,'no additional retained attributes');
   for(let i=0;i<a.position.count;i++){

@@ -11,9 +11,11 @@
 // #2033 component page: one avatar's eyes in close-up under the game's four lights (hemisphere, ambient, fill, sun; NeutralToneMapping; `sun` in the camera's frame: right, up, towards the camera),
 // driven by tools/avatareyestest.cjs. The real AvatarLight (src/avatarlight.js) probes a stub zone, so the pupils follow the same path as
 // in the game. window.__frame({ preset: 'sun' | 'dark', sun: [x, y, z], blink, view: 'close' | 'face', exposure, seconds }) renders and
-// returns the numbers.
+// returns the numbers. #2045 adds `yaw` (rad, the camera round the head; + towards the figure's left), `dist` / `fov` (the camera), `look`
+// ({ skin, eyes, hair, brows } colours swapped into the colour attribute), `glasses` (kind 0-3), `gaze` ([x, y] m, the iris' shift), `aim`
+// (±1: centre one eye, 0 between them), `follow` (the camera faces the head, not the body) and `W` / `H` (the canvas' size).
 import * as THREE from 'three';
-import { Avatar } from '../src/avatar.js';
+import { Avatar, avatarModelGeometry } from '../src/avatar.js';
 import { AvatarLight } from '../src/avatarlight.js';
 import { decodeAvatarLook, avatarEyeHeight, AVATAR_FACE } from '../src/config.js';
 const q = new URLSearchParams(location.search);
@@ -38,18 +40,23 @@ const cam = new THREE.PerspectiveCamera(10, W / H, 0.02, 50);
 /** The iris' centre on side `s` (+1 the figure's left): the head bone's frame (AVATAR_FACE.eye.at), enough to aim the camera. */
 const eyeAt = (s) => { a.object.updateMatrixWorld(true); return a.bones.head.localToWorld(new THREE.Vector3(s * AVATAR_FACE.eye.at[0], AVATAR_FACE.eye.at[1], AVATAR_FACE.eye.at[2])); };
 let now = 0;
-window.__frame = ({ preset = 'sun', sun: dir = [2, 4, 4], blink = 0, view = 'close', exposure = 1, seconds = 3, I = null } = {}) => {
+let lookKey = '';
+window.__frame = ({ preset = 'sun', sun: dir = [2, 4, 4], blink = 0, view = 'close', exposure = 1, seconds = 3, I = null, yaw = 0, dist = null, fov = null, look = null, glasses = 0, gaze = [0, 0], aim = 0, follow = false, W: w = W, H: h = H } = {}) => {
+  if (renderer.domElement.width !== w || renderer.domElement.height !== h) { renderer.setSize(w, h); cam.aspect = w / h; }
+  const key = JSON.stringify(look ?? {});
+  if (key !== lookKey) { lookKey = key; a.mesh.geometry.setAttribute('color', avatarModelGeometry({ ...lk, ...(look ?? {}) }).attributes.color); }
   const P = PRESET[preset];
   [hemi.intensity, ambient.intensity, fill.intensity, sun.intensity] = I ?? P.I;
   probe.zone = () => P.zone; probe.env = () => P.env;
   a.lookAt(null);
   a.eyes && (a.eyes.blink.wait = 99); // no random blink while a frame is set up
   for (let i = 0, n = Math.round(seconds * 60); i < n; i++) { now += 1000 / 60; probe.apply(a, st, 0, 0, 0, now); a.update(1 / 60, {}); }
-  u.uBlink.value = blink; u.uGaze.value.set(0, 0); // (the saccades held still: the same iris place in every frame)
-  const c = eyeAt(1).add(eyeAt(-1)).multiplyScalar(0.5);
-  const fwd = new THREE.Vector3(0, 0, 1).applyQuaternion(a.object.quaternion);
-  cam.fov = view === 'close' ? 9 : 16; cam.updateProjectionMatrix();
-  cam.position.copy(c).addScaledVector(fwd, view === 'close' ? 0.62 : 1.2); cam.position.y += 0.01; cam.lookAt(c);
+  u.uBlink.value = blink; u.uGaze.value.set(...gaze); u.uGlasses.value = glasses; // (the saccades held still: the same iris place in every frame)
+  const c = aim ? eyeAt(aim) : eyeAt(1).add(eyeAt(-1)).multiplyScalar(0.5);
+  const fwd = new THREE.Vector3(0, 0, 1).applyQuaternion(follow ? a.bones.head.getWorldQuaternion(new THREE.Quaternion()) : a.object.quaternion); fwd.y = 0; fwd.normalize();
+  cam.fov = fov ?? (view === 'close' ? 9 : 16); cam.updateProjectionMatrix();
+  fwd.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+  cam.position.copy(c).addScaledVector(fwd, dist ?? (view === 'close' ? 0.62 : 1.2)); cam.position.y += 0.01; cam.lookAt(c);
   // the sun's direction in the camera's frame ([right, up, towards the camera]), so a frame reads the same whichever way the figure faces
   cam.updateMatrixWorld(); sun.position.set(...dir).applyMatrix3(new THREE.Matrix3().setFromMatrix4(cam.matrixWorld)); sun.position.y = Math.abs(sun.position.y) < 1e-6 ? 0 : sun.position.y;
   fill.position.set(8, 6, -5).applyMatrix3(new THREE.Matrix3().setFromMatrix4(cam.matrixWorld)); // (the game's fill, from behind the figure's right)

@@ -6762,6 +6762,30 @@ export const AVATAR_EYES = { pupil: { bright: [1, 0.7], dark: [0.08, 1.45], cons
   ball: 0.55, ballRough: 0.42, sharp: 600, sun: 2.4, sky: 0.22, skySharp: 60, room: 0.35, overcast: 0.8,
   lid: { from: 0.25, shadow: 0.45, glintFrom: 0.7, glintCut: 0.85, corner: 0.22 },
   tear: { band: 0.72, rough: 0.06, lift: 1.4, sharp: 90, bright: 0.6, lidRough: 0.22 } };
+// #2045: round irises and pupils, thick lids with a crease and an upper lash line (src/avatarlids.js; the eye's own parts in avatar.js addFace,
+// still one draw call, no new attribute, light or network field). All *guess*es by eye against close-ups, eye frame metres (the eyeball's
+// centre, AVATAR_FACE.eye.at; before the head's widthwise warp). `iris`: `segments` round the iris and pupil discs, the iris' rings
+// [radius share, shade] (a lighter collarette, a dark limbal ring at its edge), `centre` its shade under the pupil and `fibres` an alternating
+// shade on the collarette ring; the pupil's rim sits `pupilLift` m over the iris' front and its centre `pupilDome` m higher. `lid`: `cols`
+// round the opening; `outer` the lid's edge on the skin [x, up, down] m; rows at shares `rows` of the way from the opening's edge to `outer`
+// (row 0 is the margin's back, `inset` m inside the opening and `tuck` m behind the eyeball, so no gap shows); the margin's front edge stands
+// `thick` [upper, lower] m in front of the eyeball (`corner`: share kept in the corners), its rounded top `round` m further, then the lid falls
+// back onto the skin by (1 − s^a)^b of its height over it, `fall` [a, b] (b > 1: it meets the skin tangentially); `normal` per row: how much of the head's own normal the row takes (the outer edge blends in).
+// `crease`: the upper lid's fold at share `at` (± `width`), `depth` m deep and `shade` dark. `shade`: the rows' colour factors [back, front]
+// for the upper and lower margin (the upper front is the lash line). `blink`: the lids close on a line `close` × the lower opening below the
+// centre; the upper lid's skin up to `fold` m above its margin stretches with it (the lower `foldLower`), the eyeball is pushed `push` m back
+// while shut. `lash`: the upper lashes, a wedge along the margin `length` m long, rising `up` and leaning `forward` (shares), splayed `splay`
+// towards the temple, over the opening's share `span` [medial, lateral]; colour the brows' × `shade`; they fold down by `flip` when shut and
+// are drawn only while `px` [from, to] px long on screen ([with MSAA, without]), so they never flicker on a far figure.
+export const AVATAR_LIDS = {
+  iris: { segments: 24, rings: [[0.6, 1.04], [0.86, 0.9], [1, 0.5]], centre: 0.75, fibres: 0.05, pupilLift: 0.00003, pupilDome: 0.00025, tuck: 0.0001 },
+  lid: { cols: 24, outer: [0.0175, 0.0105, 0.0085], rows: [0, 0.07, 0.25, 0.45, 0.6, 0.78, 1], inset: 0.0003, tuck: 0.0004,
+    thick: [0.0011, 0.0008], corner: 0.35, round: 0.0004, fall: [2, 2], normal: [0, 0, 0, 0.1, 0.25, 0.4, 0.7, 1] },
+  crease: { at: 0.6, width: 0.13, depth: 0.0007, shade: 0.84 },
+  shade: { upper: [0.74, 0.5], lower: [0.8, 0.8] },
+  blink: { close: 0.35, fold: 0.0032, foldLower: 0.0025, push: 0.002 },
+  lash: { segments: 14, length: 0.0011, up: 0.55, forward: 0.84, splay: 0.25, span: [0.85, 0.95], shade: 0.32, flip: 1.7, px: [[0.35, 0.7], [0.8, 1.6]] },
+};
 // #2014: secondary motion of long hair (styles 1, 4), the bun (2) and the sweater/jacket hem: one damped spring per group (src/avatarsway.js),
 // driven by the rendered head's (hair, bun) or torso's (hem) acceleration and turning, derived locally for every player (no network field).
 // Per group: `omega` rad/s (the spring's natural frequency), `zeta` damping ratio (< 1 overshoots once or twice), `gain` of the pseudo-force

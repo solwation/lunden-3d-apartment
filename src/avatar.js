@@ -5,11 +5,12 @@ import { GYM_PUMP } from './config.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SURFACE as SURFACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, AVATAR_GAIT as GAIT, AVATAR_MOTION as MOTION, DANCE, AVATAR_AIR as AIR, SWIM, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion, AVATAR_BLINK, AVATAR_GAZE } from './config.js';
+import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SURFACE as SURFACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, AVATAR_GAIT as GAIT, AVATAR_MOTION as MOTION, DANCE, AVATAR_AIR as AIR, SWIM, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion, AVATAR_BLINK, AVATAR_GAZE, AVATAR_LIDS } from './config.js';
 import { newBlink, stepBlink, solveGaze, stepSaccade } from './avatargaze.js';
 import { armFixShader, installArmFix } from './avatararmfix.js'; // #2022
 import { newWet, stepWet, falling, wetEnv, WET_DECL, wetVertex, wetColor, wetRoughness } from './avatarweather.js'; // #2018
-import { eyeUniforms, EyeLight, EYE_VDECL, EYE_FDECL, eyePupil, eyeAt, eyeView, eyeWet, eyeGlint } from './avatareyes.js'; // #2033
+import { eyeUniforms, EyeLight, EYE_VDECL, EYE_FDECL, eyePupil, eyeAt, eyeBall, eyeView, eyeWet, eyeGlint } from './avatareyes.js'; // #2033
+import { irisDisc, pupilDisc, lidSurface, upperLashes, lidBlink } from './avatarlids.js'; // #2045
 import { lampUniforms, LAMP_FDECL, lampGlsl } from './avatarlight.js'; // #2039: the street lamps' light
 import { clothUniforms, clothDecl, clothNormal, installCloth } from './avatarcloth.js'; // #2034
 import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #2014
@@ -1050,49 +1051,25 @@ function headGeometry() {
   return g;
 }
 
-/** Almond-shaped sclera and its continuous lid surround, in the eye's frame. */
+/** Almond-shaped sclera, in the eye's frame (#2045: the lids are src/avatarlids.js). */
 const eyeHeight = x => Math.max(0, 1 - (x / FACE.eye.r) ** 2);
-function eyeSurface(lid = false, side = 1) {
+function eyeSurface() {
   const E = FACE.eye, K = SURFACE.eye, position = [], index = [];
   const cols = K.columns, rows = K.rows;
-  if (lid) {
-    for (let i = 0; i <= cols * 2; i++) {
-      const a = i / (cols * 2) * Math.PI * 2, x = E.r * Math.cos(a), y = Math.sign(Math.sin(a)) * eyeHeight(x) * (Math.sin(a) >= 0 ? K.upper : K.lower);
-      for (let j = 0; j <= 2; j++) {
-        const t = j / 2;
-        const ox = K.outer[0] * Math.cos(a), oy = K.outer[1] * Math.sin(a);
-        const edge = headFront(side * E.at[0] + ox, E.at[1] + oy) + K.skinLift - E.at[2];
-        position.push(THREE.MathUtils.lerp(x, ox, t), THREE.MathUtils.lerp(y, oy, t), THREE.MathUtils.lerp(E.r * E.scale[2] * K.lidDepth, edge, t));
-      }
+  for (let i = 0; i <= cols; i++) {
+    const x = (i / cols * 2 - 1) * E.r, h = eyeHeight(x);
+    for (let j = 0; j <= rows; j++) {
+      const y = -K.lower * h + j / rows * (K.upper + K.lower) * h;
+      position.push(x, y, E.r * E.scale[2] * (K.scleraBase + K.scleraRound * h));
     }
-    for (let i = 0; i < cols * 2; i++) for (let j = 0; j < 2; j++) { const a = i * 3 + j, b = a + 3; index.push(a, a + 1, b, b, a + 1, b + 1); }
-  } else {
-    for (let i = 0; i <= cols; i++) {
-      const x = (i / cols * 2 - 1) * E.r, h = eyeHeight(x);
-      for (let j = 0; j <= rows; j++) {
-        const y = -K.lower * h + j / rows * (K.upper + K.lower) * h;
-        position.push(x, y, E.r * E.scale[2] * (K.scleraBase + K.scleraRound * h));
-      }
-    }
-    for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
-      const a = i * (rows + 1) + j, b = a + rows + 1;
-      if (i > 0) index.push(a, b, a + 1);
-      if (i < cols - 1) index.push(b, b + 1, a + 1);
-    }
+  }
+  for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
+    const a = i * (rows + 1) + j, b = a + rows + 1;
+    if (i > 0) index.push(a, b, a + 1);
+    if (i < cols - 1) index.push(b, b + 1, a + 1);
   }
   const g = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(position, 3));
   g.setIndex(index); g.computeVertexNormals();
-  if (lid) {
-    // Blend the thin orbital skin into the cheek normal instead of shading the
-    // whole lower ring like a deep projecting bag. No extra geometry is needed.
-    const n = g.attributes.normal, p = g.attributes.position, h = K.normalStep;
-    for (let i = 0; i < p.count; i++) {
-      const x = side * E.at[0] + p.getX(i), y = E.at[1] + p.getY(i);
-      const v = new THREE.Vector3(-(headFront(x + h, y) - headFront(x - h, y)) / (2 * h),
-        -(headFront(x, y + h) - headFront(x, y - h)) / (2 * h), 1).normalize();
-      n.setXYZ(i, v.x, v.y, v.z);
-    }
-  }
   return g;
 }
 
@@ -1128,14 +1105,11 @@ function addFace(add, sphere, P) {
     const x = s * E.at[0], [, y, z] = E.at;
     const eye = (...a) => { add(...a); facePart(P, a[1] === 'iris' || a[5] === E.pupilColour ? FACE_PART.iris : FACE_PART.eye, [x, y, z]); }; // (#1138: sized / opened about the eyeball's centre)
     eye(eyeSurface(), 'fixed', 'head', [x, y, z], 1, E.white);
-    const irisZ = E.r * E.scale[2];
-    const pupil = (r, depth) => shape(sphere(r, 10, 4).scale(1, 1, depth), v => {
-      const edge = eyeHeight(v.x);
-      v.y = Math.max(-edge * SURFACE.eye.lower, Math.min(edge * SURFACE.eye.upper, v.y));
-    });
-    eye(pupil(E.iris, SURFACE.eye.irisDepth), 'iris', 'head', [x, y, z + irisZ]);
-    eye(pupil(E.pupil, SURFACE.eye.pupilDepth), 'fixed', 'head', [x, y, z + irisZ + E.iris * SURFACE.eye.irisDepth], 1, E.pupilColour);
-    eye(eyeSurface(true, s), 'skin', 'head', [x, y, z], 0.97);
+    // #2045 (src/avatarlids.js): a round iris and pupil, thick lids with a crease, the upper lashes
+    eye(irisDisc(), 'iris', 'head', [x, y, z]);
+    eye(pupilDisc(), 'fixed', 'head', [x, y, z], 1, E.pupilColour);
+    eye(lidSurface((dx, dy) => headFront(x + dx, y + dy) - z), 'skin', 'head', [x, y, z], 0.97);
+    eye(upperLashes(s), 'brow', 'head', [x, y, z], AVATAR_LIDS.lash.shade);
     // #2046: a thin brow of hairs lying on the forehead (src/avatarbrow.js), its centre line the per-vertex control pivot.
     const brow = browSurface(s, headFront);
     add(brow.geometry, 'brow', 'head', [0, 0, 0], 0.85);
@@ -1451,12 +1425,12 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       ${skinShading()}
       ${skin.color}
       ${surfaceColor()}
-      ${browColor({ hb: bindAt('head'), region: REGION.brow, warp: FACE.warp.width, skinTone: `${skinArea('socket', SK.eye)} vec3 browTone = mix(vec3(1.0), ${v3(SK.socket)}, clamp(socket, 0.0, 1.0));` })}
+      ${browColor({ hb: bindAt('head'), region: REGION.brow, part: FACE_PART.brow, warp: FACE.warp.width, skinTone: `${skinArea('socket', SK.eye)} vec3 browTone = mix(vec3(1.0), ${v3(SK.socket)}, clamp(socket, 0.0, 1.0));` })}
       diffuseColor.rgb = mix(diffuseColor.rgb, uRingColor, vRing); // #1324: the ring's metal
       float wetSnow = 0.0; // #2018
       ${wetColor(bindAt('torso').y)}
       ${flyAlpha()}`)
-      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>\n${surfaceRoughness()}\n${browRoughness({ region: REGION.brow, skin: SURFACE.finish.skin })}\n${wetRoughness()}\n${eyeWet(FACE_PART.eye, FACE_PART.iris)}`)
+      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>\n${surfaceRoughness()}\n${browRoughness({ region: REGION.brow, part: FACE_PART.brow, skin: SURFACE.finish.skin })}\n${wetRoughness()}\n${eyeWet(FACE_PART.eye, FACE_PART.iris)}`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\n${skin.normal}`) // #2032
       .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${skin.light}\n${flyLight({ hair: REGION.hair, beard: REGION.beard })}`) // #2032, #2040
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\nmetalnessFactor = vRing * ${SURFACE.finish.metalness.toFixed(3)};`)
@@ -1513,8 +1487,9 @@ function faceShape() {
             d.y = clamp(d.y, -h * ${f(SURFACE.eye.lower)} * uEye.y, h * ${f(SURFACE.eye.upper)} * uEye.y);
             transformed.xy = faceAnchor.xy + d;
           }
-          transformed.y = faceAnchor.y + (transformed.y - faceAnchor.y) * (1.0 - uBlink * ${f(AVATAR_BLINK.depth)}); // #2011: a blink squeezes the eye shut about its centre
           ${eyeAt()}
+          ${lidBlink(FACE.warp.width)} // #2011: a blink (#2045: the lids close over the eye)
+          ${eyeBall()}
         }
         else if (abs(facePart - ${P.nose}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uNose;
         else if (abs(facePart - ${P.ear}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uEar;

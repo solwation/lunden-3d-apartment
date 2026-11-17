@@ -4,7 +4,7 @@
 // avatar's own material: no geometry, draw call, light or network field. Pure helpers first (tools/avatareyestest.mjs), then the GLSL
 // pieces avatar.js splices in at its eye code. Numbers: AVATAR_EYES in config.js.
 import * as THREE from 'three';
-import { AVATAR_EYES as E, AVATAR_FACE as FACE, AVATAR_SURFACE as SURFACE, AVATAR_BLINK } from './config.js';
+import { AVATAR_EYES as E, AVATAR_FACE as FACE, AVATAR_SURFACE as SURFACE } from './config.js';
 import { zoneLevel } from './avatarlight.js';
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -60,16 +60,21 @@ export const EYE_FDECL = `uniform vec3 uEyeLit; ${VARY}`;
 /** Vertex, in the eye branch right after the eye's size: the pupil (the dark disc, region `fixed`) scales about the iris' centre. */
 export const eyePupil = (irisPart) => `if (facePart > ${irisPart}.0 - 0.5 && abs(region - 4.0) < 0.5) transformed.xy = faceAnchor.xy + (transformed.xy - faceAnchor.xy) * uEyeLit.x; // #2033`;
 
-/** Vertex, in the eye branch after the blink: the vertex's place in the eye's opening (x −1 … 1 corner to corner, y −1 lower lid … 1 upper
- * lid; the blink and the eye's size undone, so the lid edges stay at ±1; z how open the lids are) and its offset from the wet ball's centre. */
+/** Vertex, in the eye branch after the gaze and before the blink (#2045: src/avatarlids.js lidBlink): the vertex's place in the eye's opening
+ * (x −1 … 1 corner to corner, y −1 lower lid … 1 upper lid, from its open place with the eye's size undone, so the lid edges stay at ±1;
+ * z how open the lids are). */
 export function eyeAt() {
-  const R = FACE.eye.r, zc = FACE.eye.r * FACE.eye.scale[2] - E.ball * R, K = SURFACE.eye;
+  const R = FACE.eye.r, K = SURFACE.eye;
   return `{ // #2033
-            vec2 ed = (transformed.xy - faceAnchor.xy) / uEye.xy; ed.y /= max(1.0 - uBlink * ${f(AVATAR_BLINK.depth)}, 0.03);
+            vec2 ed = (transformed.xy - faceAnchor.xy) / uEye.xy;
             float ex = ed.x / ${f(R)}, eh = max(1.0 - ex * ex, 0.05);
             vEyeAt = vec3(ex, ed.y / (eh * (ed.y > 0.0 ? ${f(K.upper)} : ${f(K.lower)})), 1.0 - uBlink);
-            eyeO = transformed - faceAnchor - vec3(0.0, 0.0, ${f(zc)} * uEye.z); eyeOn = 1.0;
           }`;
+}
+/** Vertex, in the eye branch after the blink: the vertex's offset from the wet ball's centre in the head's bind frame. */
+export function eyeBall() {
+  const zc = FACE.eye.r * FACE.eye.scale[2] - E.ball * FACE.eye.r;
+  return `eyeO = transformed - faceAnchor - vec3(0.0, 0.0, ${f(zc)} * uEye.z); eyeOn = 1.0; // #2033`;
 }
 
 /** Vertex, right before the skinning (after the face shape, the sway and the expressions): the ball's centre (the vertex less its offset,
@@ -84,7 +89,7 @@ export const eyeView = () => `if (eyeOn > 0.5) { // #2033
   vEyeUp = mat3(modelViewMatrix) * mat3(eyeSk) * vec3(0.0, 1.0, 0.0);
 } else { vEyeC = vec3(0.0); vEyeUp = vec3(0.0); vEyeAt = vec3(0.0); }`;
 
-const eyePart = (eye, iris) => `(uSuit < 0.5 && (abs(vSurface.y - ${eye}.0) < 0.5 || abs(vSurface.y - ${iris}.0) < 0.5))`;
+const eyePart = (eye, iris) => `(uSuit < 0.5 && abs(vSurface.x - 9.0) > 0.5 && (abs(vSurface.y - ${eye}.0) < 0.5 || abs(vSurface.y - ${iris}.0) < 0.5))`; // (#2045: not the lashes, region 9)
 
 /** Fragment, after the roughness (before the lights read diffuseColor): the eyeball darkens under the upper lid and in its corners and
  * is wet (glossy) along the lower lid; the lid margin just outside is wet too. Elsewhere the flattened eyeball's own (geometric) highlight
@@ -95,8 +100,8 @@ export function eyeWet(eye, iris) {
       if (vBare < 0.5) {
         diffuseColor.rgb *= (1.0 - ${f(L.shadow)} * smoothstep(${f(L.from)}, 1.0, vEyeAt.y)) * (1.0 - ${f(L.corner)} * smoothstep(0.55, 1.0, abs(vEyeAt.x)));
         roughnessFactor = mix(abs(vSurface.x - 4.0) < 0.5 && abs(vSurface.y - ${iris}.0) < 0.5 ? 1.0 : max(roughnessFactor, ${f(E.ballRough)}), ${f(T.rough)}, 1.0 - smoothstep(-1.0, -${f(T.band)}, vEyeAt.y)); // (the pupil: matt, a hole)
-      } else roughnessFactor = mix(roughnessFactor, ${f(T.lidRough)}, smoothstep(-1.4, -1.0, vEyeAt.y) * (1.0 - step(-0.5, vEyeAt.y)));
-    }`;
+      } else roughnessFactor = mix(roughnessFactor, ${f(T.lidRough)}, smoothstep(-1.15, -1.0, vEyeAt.y) * (1.0 - step(-0.5, vEyeAt.y))); // (#2045: the thick lid's margin)
+    } else if (uSuit < 0.5 && abs(vSurface.x - 9.0) < 0.5 && abs(vSurface.y - ${eye}.0) < 0.5) roughnessFactor = ${f(SURFACE.finish.hair)}; // #2045: the lashes`;
 }
 
 /** Fragment, before the local light level: the glint. The wet ball's normal per fragment; each directional light (the sun, the fill)

@@ -74,10 +74,10 @@ vec4 brHash(vec2 c) { return fract(sin(dot(c, vec2(12.9898, 78.233)) + vec4(0.0,
  * bone's bind position (Vector3), `region` = the brows' palette region, `warp` = the face warp's width at brow height, `skinTone` = GLSL
  * that sets `vec3 browTone` from `q` (head-frame bind position): the skin shading there (avatar.js skinShading's eye socket), so the
  * no-MSAA fallback's skin matches the real skin round the brow. */
-export function browColor({ hb, region, warp, skinTone = 'vec3 browTone = vec3(1.0);' }) {
+export function browColor({ hb, region, warp, part = null, skinTone = 'vec3 browTone = vec3(1.0);' }) {
   const meanLen = (B.len[0] + B.len[1]) / 2, expect = Math.min(0.9, B.fill * meanLen * 2 * B.width * 0.7 / (B.cell * B.lane));
   return `float browCov = 1.0; // #2046
-    if (uSuit < 0.5 && abs(vSurface.x - ${f(region)}) < 0.5) {
+    if (uSuit < 0.5 && abs(vSurface.x - ${f(region)}) < 0.5${onlyPart(part)}) {
       vec3 bq = vSuitAt - vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)}), bfw = fwidth(vSuitAt);
       float bpx = max(max(bfw.x, bfw.y), max(bfw.z, 0.000001)); // metres per pixel here
       float ba = abs(bq.x) / ${f(warp)} - ${f(X0)}, bu = ba / ${f(B.length)};
@@ -109,5 +109,7 @@ export function browColor({ hb, region, warp, skinTone = 'vec3 browTone = vec3(1
 }
 
 /** Fragment roughness (after the surface finish): without MSAA the uncovered brow is skin. */
-export const browRoughness = ({ region, skin }) =>
-  `if (uFly.y < 0.5 && uSuit < 0.5 && abs(vSurface.x - ${f(region)}) < 0.5) roughnessFactor = mix(${f(skin)}, roughnessFactor, browCov); // #2046`;
+/** `part`: only this face part (#2045: the lashes share the brows' region inside the eye part). */
+const onlyPart = (part) => (part === null ? '' : ` && abs(vSurface.y - ${f(part)}) < 0.5`);
+export const browRoughness = ({ region, skin, part = null }) =>
+  `if (uFly.y < 0.5 && uSuit < 0.5 && abs(vSurface.x - ${f(region)}) < 0.5${onlyPart(part)}) roughnessFactor = mix(${f(skin)}, roughnessFactor, browCov); // #2046`;
