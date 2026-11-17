@@ -1,15 +1,16 @@
 // #2048: the nose (bridge, tip, alar wings and crease, columella, nostrils). One browser run on tools/avatarexpr.html (its import
 // map and three.js), before (src/avatar.js, src/config.js, src/avatarskin.js of BASELINE; src/avatarnose.js is then unused) and after
-// (the checkout). Rows: light skin; medium skin; dark skin; nose sliders smallest + narrowest (light); largest + widest (medium);
-// medium skin in the Spider suit. Columns: front, three-quarter, profile, low three-quarter (from below), straight from below.
+// (the checkout). Rows: light skin; medium skin; dark skin; nose sliders smallest + narrowest (light); largest + widest with
+// glasses (medium); medium skin in the Spider suit. Columns: front, three-quarter, profile, low three-quarter, from below.
+// Env: ONLY=rows, DIST (m), CELL (px), AIMY/AIMZ (head-local aim), KISS=1 (the kiss pose) for quick looks.
 // `nose.png` in daylight, `nose-raking.png` with a low sun from the side (form only), `nose-backlight.png` with the sun behind the head.
 // PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarnose2048browser.cjs http://localhost:8148 docs/verification/2048 [before|after|both]
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs = require('node:fs'), path = require('node:path'), { execFileSync } = require('node:child_process');
 const [base = 'http://localhost:8148', out = 'docs/verification/2048', which = 'both'] = process.argv.slice(2);
-const baseline = process.env.BASELINE || '1fe1aba1';
+const baseline = process.env.BASELINE || '37d922df';
 const files = ['src/avatar.js', 'src/config.js', 'src/avatarskin.js'];
-const proof = { baseline, triangles: {}, headTriangles: {}, errors: {} };
+const proof = { baseline, triangles: {}, headTriangles: {}, errors: {}, frameMs: {} };
 (async () => {
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   try {
@@ -67,6 +68,10 @@ const proof = { baseline, triangles: {}, headTriangles: {}, errors: {} };
             sun.position.sub(h);
           }));
         };
+        window.__cost = () => { // ms per daylight sheet, same inputs (SwiftShader: relative only)
+          window.__sheet('day'); renderer.getContext().finish(); const t0 = performance.now();
+          for (let i = 0; i < 6; i++) window.__sheet('day'); renderer.getContext().finish(); return (performance.now() - t0) / 6;
+        };
         const head = (g) => { // triangles whose vertices are all skinned fully to the head bone
           const si = g.attributes.skinIndex, sw = g.attributes.skinWeight, n = g.attributes.position.count; let t = 0;
           const k = av[0].mesh.skeleton.bones.indexOf(av[0].bones.head);
@@ -74,18 +79,19 @@ const proof = { baseline, triangles: {}, headTriangles: {}, errors: {} };
           return t;
         };
         return { tris: av.map((a) => a.mesh.geometry.attributes.position.count / 3), head: head(av[0].mesh.geometry) };
-      }, [Number(process.env.CELL) || 300, Number(process.env.DIST) || 0.62, process.env.ONLY ? process.env.ONLY.split(',').map(Number) : null, [Number(process.env.AIMY) || 0.085, Number(process.env.AIMZ) || 0.1], Number(process.env.KISS) || 0]);
+      }, [Number(process.env.CELL) || 300, Number(process.env.DIST) || 0.42, process.env.ONLY ? process.env.ONLY.split(',').map(Number) : null, [Number(process.env.AIMY) || 0.085, Number(process.env.AIMZ) || 0.1], Number(process.env.KISS) || 0]);
       proof.triangles[phase] = counts.tris; proof.headTriangles[phase] = counts.head;
       for (const [light, name] of [['day', 'nose.png'], ['raking', 'nose-raking.png'], ['back', 'nose-backlight.png']]) {
         await page.evaluate((b) => window.__sheet(b), light);
         await page.locator('canvas').screenshot({ path: path.join(dir, name) });
       }
+      proof.frameMs[phase] = +(await page.evaluate(() => window.__cost())).toFixed(1);
       proof.errors[phase] = errors;
       await page.close();
     }
   } finally { await browser.close(); }
   if (which === 'both') fs.writeFileSync(path.join(out, 'browser.json'), JSON.stringify(proof, null, 2) + '\n');
   const bad = Object.values(proof.errors).flat();
-  console.log(bad.length ? 'FAIL ' + JSON.stringify(bad) : 'PASS', JSON.stringify(proof.triangles), JSON.stringify(proof.headTriangles));
+  console.log(bad.length ? 'FAIL ' + JSON.stringify(bad) : 'PASS', JSON.stringify(proof.triangles), JSON.stringify(proof.headTriangles), JSON.stringify(proof.frameMs));
   if (bad.length) process.exitCode = 1;
 })().catch((e) => { console.error(e); process.exitCode = 1; });

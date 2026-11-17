@@ -4164,13 +4164,9 @@ export const AVATAR_SURFACE = {
     [-0.63, 0.052, 0.057], [-0.7, 0.045, 0.05], [-0.77, 0.038, 0.042], [-0.81, 0.036, 0.038], [-0.845, 0.035, 0.037]],
   sleeve: { ease: 0.006, short: -0.195, long: -0.49, fold: 0.003 },
   trouser: { ease: 0.004, fold: 0.0035 },
-  // #1995 one frontal nasal sculpt [y, cartilage half-width, projection].
-  // Its boundary follows the cheek; artistic anatomy in head-local metres.
-  nosePatch: { concentration: 1.65, maxProjection: 0.023, rings: [0.065, 0.080, 0.087, 0.116, 0.134],
-    profile: [[0.134, 0.008, 0], [0.126, 0.008, 0.001], [0.116, 0.008, 0.004],
-      [0.106, 0.008, 0.008], [0.096, 0.009, 0.014], [0.087, 0.010, 0.020],
-      [0.080, 0.013, 0.023], [0.075, 0.017, 0.019], [0.070, 0.018, 0.009],
-      [0.065, 0.020, 0.002], [0.060, 0.024, 0]] },
+  // #1995 the head's column concentration toward the front and the extra head rings once added for the nose; the nose itself is
+  // AVATAR_NOSE since #2048 (src/avatarnose.js, on its own finer grid inside these rings).
+  nosePatch: { concentration: 1.65, rings: [0.065, 0.080, 0.087, 0.116, 0.134] },
   headSides: 24,
   head: [[-0.022, 0.012, 0.023, 0.035], [-0.012, 0.036, 0.049, 0.034], [0.005, 0.057, 0.065, 0.03],
     [0.025, 0.073, 0.078, 0.025], [0.05, 0.084, 0.088, 0.02], [0.075, 0.096, 0.099, 0.014],

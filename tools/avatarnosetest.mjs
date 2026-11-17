@@ -8,8 +8,8 @@ import { bindAt } from '../src/olof.js';
 import { contourRows } from '../src/avatarcontour.js';
 import { noseTriangles, noseForms, noseHeight, noseMask } from '../src/avatarnose.js';
 
-// head-bone triangles (facePart 1 … 29) per variant before #2048 (1fe1aba1)
-const before = [['s0f0', 7268], ['s0f1', 8156], ['s0f3', 8232], ['s1f0', 8188], ['s2f0', 7604], ['s3f0', 8296], ['s4f0', 12884]];
+// head-bone triangles (facePart 1 … 29) per variant before #2048 (37d922df, after the eyes #2045 and ears #2047)
+const before = [['s0f0', 8524], ['s0f1', 9412], ['s0f3', 9488], ['s1f0', 9444], ['s2f0', 8860], ['s3f0', 9552], ['s4f0', 14140]];
 const own = noseTriangles(contourRows(AVATAR_SURFACE.head, AVATAR_SURFACE.nosePatch.rings));
 const shell = (a, i) => a.facePart.getX(i) === 1 && a.rifleSkull.getX(i) === 1;
 

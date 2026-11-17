@@ -1,0 +1,33 @@
+{
+  "baseline": "37d922df",
+  "triangles": {
+    "before": [
+      14344,
+      14344,
+      14344,
+      14344,
+      14344,
+      14344
+    ],
+    "after": [
+      15000,
+      15000,
+      15000,
+      15000,
+      15000,
+      15000
+    ]
+  },
+  "headTriangles": {
+    "before": 7932,
+    "after": 8588
+  },
+  "errors": {
+    "before": [],
+    "after": []
+  },
+  "frameMs": {
+    "before": 6,
+    "after": 10.4
+  }
+}

@@ -44,6 +44,29 @@ the gameplay head boxes do not read this mesh. +592 triangles per figure (head s
 neck 32 to 96; about +9 % of the head's triangles), one draw.
 [Views](../verification/2043/README.md) (`tools/avatarcontour2043browser.cjs`).
 
+**The nose (#2048).** `src/avatarnose.js` (tunables `AVATAR_NOSE`, all *guess*) replaces #1995's single
+ridge with a painted tip spot by parametric forms in head-local metres (before `faceWarp`), still on the
+one continuous head skin: a `body` profile (narrowest between the eyes, widest at the tip, narrowing
+under it into the columella), a fine `ridge` along the dorsum, two `tip` domes, tapered capsule alar
+`ala` wings joined by a smooth maximum (`blend`; its fillet shrinks with the lower form, so it never
+lifts the face) with a groove along their upper outer edge (`crease`), and `nostril` dips in the steep
+underside between the columella and each wing. #2044's nasolabial fold starts just outside the wing.
+The head's columns are about 15 mm apart at the nose, so `refineNose` removes the head-ring quads of the
+`grid` block (3 columns either side of the middle, rings 0.05–0.142) and puts a 21 × 18 grid on the same
+cubic ring profile in their place, zipped to the block's edge (no T-junction; `avatarnosetest` checks that
+every shell edge is shared by two triangles). `noseBlend` stays the height / `maxProjection`, so the Spider
+mask subtracts exactly the nose and the rifle's nose classification (`noseBlend > 0.25`) holds; the frontal
+surface in the rifle nose patches moves by at most about 1.6 mm. The sliders (`noseVertexGLSL`) scale the
+projection exactly (`noseBlend`), the width under a smooth mask that leaves the bridge between the eyes
+alone and the length about `mask.pivot`, so no slider end folds the skin (`avatarnosetest`). Fragment:
+the nostrils' hollow is darker and the nostrils and crease take ambient light out (`noseCavity`); the
+painted tip warmth (`AVATAR_SKIN.nose`) dropped from 0.5 to 0.18 over a wider area, so the tip's shadow is
+the form's. A `vNose` varying (noseBlend) gives #2032's nose shine, flush and backlit thin skin the nose's
+own surface (`avatarSkinGLSL` `nose`), which had no surface to act on since the separate nose went.
++656 triangles per figure (+7.7 % of the head's 8,524 before this step), one draw, no attribute, texture,
+light or pass (program key `-nose2048`). Shape variants (#2049) can scale `body`, `ridge`, `tip`, `ala`
+and `nostril`. [Views](../verification/2048/README.md) (`tools/avatarnose2048browser.cjs`).
+
 **Formed ears (#2047).** `src/avatarear.js` (tunables `AVATAR_EAR`, all *guess*) replaces the folded
 disc of #2002 with an ear built on a polar grid round the concha: a superellipse outline (fuller top,
 narrower lobe, the top leaning back), a rolled helix along the top and back edge with the scapha groove
@@ -1018,7 +1041,7 @@ GAME OUT` ([images](../verification/2039/)).
 `src/avatarskin.js` (`avatarSkinGLSL`, tunables `AVATAR_SKIN_DETAIL`, all *guess*) adds three GLSL pieces to the avatars' one material
 (program key suffix `-skin2032`), hooked in `makeMaterial` after `skinShading()`, after `normal_fragment_maps` and after
 `lights_fragment_end`. No texture, mesh, triangle, draw call or network field. Colour: a warmer flush (an albedo multiplier, so it works
-for every skin tone) on the ears and nose (by `facePart`), wider on the cheeks and on the knuckles / finger joints of the back of the
+for every skin tone) on the ears (by `facePart`) and nose (#2048: by its height `vNose`), wider on the cheeks and on the knuckles / finger joints of the back of the
 hand (hand-bone bind frame). Normal: pores (pits where a three-wave quasi-periodic sum peaks) and broader shallow dimples, in bind-pose
 metres with an analytic gradient (no derivative inside the skin branch), bumped like three's `perturbNormalArb`; each layer fades out
 between 3.5 and 2 pixels per period, so it shows only within roughly an arm's length and leaves nothing to shimmer at distance or in the
