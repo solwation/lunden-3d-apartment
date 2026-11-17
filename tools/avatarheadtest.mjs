@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { avatarModelGeometry } from '../src/avatar.js';
 import { avatarLook } from '../src/config.js';
 import { bindAt } from '../src/olof.js';
-import { AVATAR_FLYAWAY, AVATAR_HAIR, AVATAR_CONTOUR, AVATAR_SURFACE } from '../src/config.js';
+import { AVATAR_FLYAWAY, AVATAR_HAIR, AVATAR_CONTOUR, AVATAR_SURFACE, AVATAR_EAR } from '../src/config.js';
 import { isFlyaway } from '../src/avatarflyaway.js';
 // (#2045: the eyes' growth over #2033's 608 triangles has its own budget in tools/avatarlidstest.mjs, so it is left out here like the flyaways)
 const eyeExtra=(a)=>{let n=0;for(let i=0;i<a.position.count;i++){const f=a.facePart.getX(i);if(f===3||f===26)n++;}return Math.max(0,n-608*3);};
@@ -11,10 +11,13 @@ const flyVerts=(a)=>{let n=0;for(let i=0;i<a.position.count;i++)if(isFlyaway(a,i
 // #2043: the head contour's own triangles (its own +10 % head budget below) are left out of the older whole-figure budgets:
 // extra head rings and chin rings × 2·headSides, and the 16-sided open neck in place of the 8-sided capped cylinder (32)
 const contour2043=(AVATAR_CONTOUR.rings.length+AVATAR_CONTOUR.chin.angles.length)*2*AVATAR_SURFACE.headSides+(AVATAR_CONTOUR.neck.rings.length-1)*2*AVATAR_CONTOUR.neck.sides-32;
+// #2047: the formed ears' extra triangles (their own +10 % head budget below) are left out the same way: a fan round the concha and
+// (front rings + rolled edge + rim back + back rings − 1) bands per ear, against the 384 of the old folded disc pair
+const earTris=AVATAR_EAR.cols*(1+2*(AVATAR_EAR.rings.length+1+AVATAR_EAR.back.length)),ear2047=2*earTris-384;
 const baseline=[[11172,3586212],[11940,3832740],[11532,3701772],[12456,3998376],[16092,5165532]];
 test('#2002 all five hairstyles retain bounded resources, normalized weights and semantic head roles',()=>{
  for(let style=0;style<5;style++){
-  const g=avatarModelGeometry({...avatarLook('2002-base'),style,facial:0}),a=g.attributes,keep=1-(flyVerts(a)+3*contour2043)/a.position.count; // (#2040: the flyaways have their own budget below; #2045: the eyes theirs)
+  const g=avatarModelGeometry({...avatarLook('2002-base'),style,facial:0}),a=g.attributes,keep=1-(flyVerts(a)+3*(contour2043+ear2047))/a.position.count; // (#2040: the flyaways have their own budget below; #2045: the eyes theirs; #2047: the ears theirs)
   assert(a.position.count*keep/3<=baseline[style][0]*1.1);assert(Object.values(a).reduce((n,v)=>n+v.array.byteLength,0)*keep<=baseline[style][1]*1.1);
   assert.equal(Object.keys(a).length,17,'no additional retained attributes');
   for(let i=0;i<a.position.count;i++){
@@ -59,7 +62,7 @@ const v2012=[['s0f0',11700],['s0f1',12056],['s0f2',11724],['s0f3',12052],['s1f0'
 test('#2012 hairstyle and facial-hair variants stay within +10% of the #2002 triangles',()=>{
  for(const[key,tris]of v2012){const style=+key[1],facial=+key[3];
   const g=avatarModelGeometry({...avatarLook('2012-'+style),style,facial,gender:style%2});
-  const own=(g.attributes.position.count-flyVerts(g.attributes))/3-contour2043;assert(own<=tris*1.1,`${key}: ${own} > ${tris}×1.1`);g.dispose();}
+  const own=(g.attributes.position.count-flyVerts(g.attributes))/3-contour2043-ear2047;assert(own<=tris*1.1,`${key}: ${own} > ${tris}×1.1`);g.dispose();}
 });
 test('#2012 long hair: the scalp and curtain share one normal wherever they meet (no visible join)',()=>{
  const g=avatarModelGeometry({...avatarLook('2012-long'),style:1,facial:0,gender:1}),a=g.attributes,hb=bindAt('head'),seen=new Map();let shared=0;
@@ -117,4 +120,25 @@ test('#2043 head contour: budget, rounded chin underside and a smooth neck',()=>
  }
  assert(Math.abs(bottom-(low-AVATAR_CONTOUR.chin.depth))<1e-4,`the chin's underside reaches ${bottom}, not a flat cap at ${low}`);
  assert.equal(neck/3,(AVATAR_CONTOUR.neck.rings.length-1)*2*AVATAR_CONTOUR.neck.sides);g.dispose();
+});
+// #2047: the formed ear stays within +10 % of the head's triangles before it (1fe1aba1, every head-bone part), stands out from the head
+// at its upper back (angled out, readable from the front), keeps the old height envelope, and the earrings sit on the lobe's outer face
+const head2047=[['s0f0',7268],['s0f1',8156],['s0f3',8232],['s1f0',8188],['s2f0',7604],['s3f0',8296],['s4f0',12884]];
+test('#2047 ear: budget, angled out from the head, lobe holds the earrings',()=>{
+ for(const[key,tris]of head2047){const style=+key[1],facial=+key[3];
+  const g=avatarModelGeometry({...avatarLook('ear'),style,facial,gender:style%2}),a=g.attributes;let head=0,ear=0;
+  for(let i=0;i<a.position.count;i+=3){const f=a.facePart.getX(i);if(f>0&&f<30)head++;if(f===5)ear++;}
+  assert.equal(ear,2*earTris);assert(ear2047<=tris*0.1&&head-ear2047===tris,`${key}: ear +${ear2047} > ${tris}×0.1 (head ${head})`);g.dispose();}
+ const g=avatarModelGeometry({...avatarLook('ear'),style:0,facial:0,gender:1,earrings:1}),a=g.attributes,hb=bindAt('head');
+ for(const side of[-1,1]){
+  const ear=[],stud=[];
+  for(let i=0;i<a.position.count;i++){const p=[a.position.getX(i)-hb.x,a.position.getY(i)-hb.y,a.position.getZ(i)-hb.z];if(Math.sign(p[0])!==side)continue;
+   if(a.facePart.getX(i)===5)ear.push(p);if(a.facePart.getX(i)===21)stud.push(p);}
+  const out=(q)=>side*q[0],upperBack=ear.filter(q=>q[1]>.1&&q[2]<-.004),front=ear.filter(q=>q[1]>.08&&q[1]<.11&&q[2]>.008);
+  assert(Math.max(...ear.map(out))>.111,'the helix stands well off the head (the old disc reached 0.105)');
+  assert(Math.max(...upperBack.map(out))>Math.max(...front.map(out))+.008,'angled out: the upper back stands further out than the front edge');
+  assert(Math.min(...ear.map(q=>q[1]))>.065&&Math.max(...ear.map(q=>q[1]))<.125,'the old height envelope (hats, headphones, hair)');
+  const c=[0,1,2].map(j=>stud.reduce((n,q)=>n+q[j],0)/stud.length),near=ear.reduce((m,q)=>Math.min(m,Math.hypot(q[0]-c[0],q[1]-c[1],q[2]-c[2])),1);
+  assert(near<.0045,`the stud sits on the lobe (${near.toFixed(4)} m from its surface)`);assert(c[1]<.085,'on the lobe, not the concha');
+ }g.dispose();
 });

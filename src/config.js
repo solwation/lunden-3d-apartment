@@ -4198,20 +4198,21 @@ export const AVATAR_CONTOUR = {
 };
 // #2047 the avatar ear (src/avatarear.js), head-bone metres before the face warp, in the ear's own frame: origin at the old
 // attachment point [±0.1, 0.095, 0], `L` outwards, y up, z forwards. *Guess* by eye against adult ear proportions (about 6 × 3 cm,
-// the helix standing 1.5–2 cm off the scalp at a 25–30° cephalo-auricular angle). `cols` columns round the outline, `outline`
-// [up, down, front, back] half-extents and `tilt` (z per y: the top leans back), `lobeTaper` the lobe's narrowing; `centre` the concha's
+// the helix standing 1.5–2 cm off the scalp). `cols` columns round the outline, `outline` [up, down, front, back] half-extents,
+// `round` its superellipse exponents (upper, lower half) and `tilt` (z per y: the top leans back), `lobeTaper` the lobe's narrowing; `centre` the concha's
 // [y, z]; `rings` the front surface's radial stations (0 = the concha's floor, 1 = the helix's edge); `floor`/`rise` the concha floor and
 // the bowl's rim, `antihelix`/`scapha`/`helix`/`tragus`/`lobe` the folds' [height, station, half width]; `rim` the helix's thickness
 // (helix, lobe); `back` the cranial surface's rings [station, L, flare share] down to a root inside the head; `flare` the angle (rad)
-// about a vertical hinge at z = `hinge`, scaled by height from `flareLow` (lobe) to 1 (top); `shade` cavity darkening [concha, scapha,
+// about a vertical hinge at z = `hinge`, scaled by height from `flareLow` (lobe) to 1 (top) — steeper than the anatomical 25–35°
+// cephalo-auricular angle because the skull behind the ear already curves away and the face warp narrows x by 0.93; `shade` cavity darkening [concha, scapha,
 // sulcus]; `lobePoint` [station, angle°] where earrings pierce the lobe.
 export const AVATAR_EAR = {
-  cols: 18, outline: [0.027, 0.0285, 0.012, 0.0172], tilt: 0.12, lobeTaper: 0.2, centre: [-0.0045, 0.003],
+  cols: 20, outline: [0.027, 0.0285, 0.012, 0.0172], round: [2.6, 2.1], tilt: 0.12, lobeTaper: 0.2, centre: [-0.0055, 0.0035],
   rings: [0.2, 0.4, 0.55, 0.68, 0.78, 0.88, 0.96, 1],
-  floor: 0.0012, rise: 0.0052, antihelix: [0.0045, 0.58, 0.1], scapha: [0.0024, 0.76, 0.065], helix: [0.0045, 0.92, 0.075],
+  floor: 0.0006, rise: 0.0048, antihelix: [0.0062, 0.58, 0.085], scapha: [0.003, 0.76, 0.06], helix: [0.0048, 0.92, 0.07],
   tragus: [0.0042, 0.72, 0.12], lobe: [0.0025, 0.75, 0.3], rim: [0.0032, 0.0045],
   back: [[0.8, -0.003, 0.85], [0.55, -0.002, 0.4], [0.35, -0.007, 0]],
-  flare: 0.68, flareLow: 0.5, hinge: 0.008, shade: [0.7, 0.88, 0.86], lobePoint: [0.7, 272],
+  flare: 0.76, flareLow: 0.45, hinge: 0.008, shade: [0.62, 0.82, 0.86], lobePoint: [0.7, 272],
 };
 // The avatars' face (#1101, src/avatar.js addFace / faceWarp), *guess* by eye against the skull / jaw ellipsoids of
 // PVP_RIFLE_HEAD, head-bone frame (metres, the face looks +z). eye: [x, y, z] of the eyeball's centre, its radius / scale,

@@ -27,7 +27,7 @@ import { footGround } from './avatarfootik.js';
 import { newIdle, stepIdle, idleHands } from './avataridle.js'; // #2035: the living rest
 import { fingerSegments, fingerGLSL, gripFor, gripAngles, easeGrip, gripPoint } from './avatargrip.js'; // #2016: the fingers' grip shapes
 import { newRest, stepRest, restFingers } from './avatargrip.js'; import { newTalk, stepTalk, talkHand } from './avatartalk.js'; // #2038: free hands' rest, talk gestures
-import { earGeometry, earLobe } from './avatarear.js'; // #2047: the ear's form
+import { earGeometry, earLobe, earEnvelope } from './avatarear.js'; // #2047: the ear's form
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, THIGH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
 // The players' avatars (#705): a neutral human figure for the other players (src/ghosts.js) and for our own reflection in the
@@ -872,7 +872,7 @@ function hairParts(style) {
       lock(points, C.radius * (0.9 + 0.1 * Math.sin(k * 1.7)), strand(k));
     }
     // #1268: curly curtain with wavy locks down sides and back so hairLength stretches it
-    const ears = [-1, 1].map((s) => ({ radius: 0.028, scale: [0.55, 1, 0.72], centre: [s * 0.1, H - 0.005, 0] }));
+    const ears = [-1, 1].flatMap((s) => earEnvelope(s, [s * 0.1, H - 0.005, 0])); // #2047: the angled-out ear
     const torsoAt = (y) => {
       const t = y + NECK;
       let r = 0;
@@ -939,7 +939,7 @@ function hairParts(style) {
  * (bind pose), with a slightly uneven hem; an inner surface `depth` behind it, darker (the underside). */
 function longHair(az, top, onSkull, sheet, strand, thick, hit, smooth, scalp) { // az: the figure's left (+x) round the back to its right
   const L = HAIR.long, cols = az.length - 1;
-  const ears = [-1, 1].map((s) => ({ radius: 0.028, scale: [0.55, 1, 0.72], centre: [s * 0.1, H - 0.005, 0] })); // as the ears in parts()
+  const ears = [-1, 1].flatMap((s) => earEnvelope(s, [s * 0.1, H - 0.005, 0])); // as the ears in parts() (#2047)
   const rings = [SURFACE.body.male, SURFACE.body.female], flare = (y) => SURFACE.body.hemFlare * (1 - smoothstep(...SURFACE.body.hemFlareTo, y));
   const torsoAt = (y) => { // #2019: the sweater's own half-axes [x, z] at head-frame height y (the wider of both figures, hoodie ease and hem flare included), so the hair clears the real surface
     const t = y + NECK;

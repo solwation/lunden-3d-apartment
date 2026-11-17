@@ -20,8 +20,9 @@ const attachW = (a) => Math.exp(-((angDist(a, 5) / 40) ** 2)); // the front edge
 
 /** The outline point (t = 1) at angle a (degrees), [y, z] in the ear's frame. */
 function outline(a) {
-  const [up, down, front, back] = E.outline, r = a * Math.PI / 180, s = Math.sin(r), c = Math.cos(r);
-  const y = s > 0 ? up * s : down * s, taper = 1 - E.lobeTaper * Math.max(0, -s) ** 2;
+  const [up, down, front, back] = E.outline, r = a * Math.PI / 180, s0 = Math.sin(r), c0 = Math.cos(r);
+  const e = 2 / (s0 > 0 ? E.round[0] : E.round[1]), s = Math.sign(s0) * Math.abs(s0) ** e, c = Math.sign(c0) * Math.abs(c0) ** e; // a superellipse: a fuller top
+  const y = s > 0 ? up * s : down * s, taper = 1 - E.lobeTaper * Math.max(0, -s0) ** 2;
   return [y, (c > 0 ? front : back) * c * taper - E.tilt * y];
 }
 /** [y, z] at station t (0 the concha's centre … 1 the outline) and angle a. */
@@ -78,4 +79,20 @@ export function earGeometry(side) {
 export function earLobe(side) {
   const [L, y, z] = frontPoint(...E.lobePoint);
   return [side * L, y, z];
+}
+/** The space the ear takes, for the hair to keep clear of it (avatar.js hairParts): three ellipsoids (lobe, middle, top) fitted round
+ * the parts of the ear outside the head, `{ radius, scale, centre }` in the head's frame for the ear attached at `anchor`. */
+let envelope = null;
+export function earEnvelope(side, anchor) {
+  if (!envelope) {
+    const p = earGeometry(1).attributes.position, pts = [];
+    for (let i = 0; i < p.count; i++) if (p.getX(i) > 0.003) pts.push([p.getX(i), p.getY(i), p.getZ(i)]);
+    envelope = [[-1, -0.008], [-0.014, 0.012], [0.006, 1]].map(([lo, hi]) => {
+      const q = pts.filter((v) => v[1] >= lo && v[1] <= hi), c = [0, 0, 0], r = [0, 0, 0];
+      for (let j = 0; j < 3; j++) { const vs = q.map((v) => v[j]), a = Math.min(...vs), b = Math.max(...vs); c[j] = (a + b) / 2; r[j] = Math.max((b - a) / 2, 1e-4); }
+      const k = Math.sqrt(Math.max(...q.map((v) => v.reduce((s, x, j) => s + ((x - c[j]) / r[j]) ** 2, 0))));
+      return { c, r: r.map((x) => x * k) };
+    });
+  }
+  return envelope.map(({ c, r }) => ({ radius: 1, scale: r, centre: [anchor[0] + side * c[0], anchor[1] + c[1], anchor[2] + c[2]] }));
 }
