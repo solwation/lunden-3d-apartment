@@ -622,21 +622,69 @@ function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
  * chin and tapers to nothing at the edges, so it follows the head's rounding without gaps. It covers the cheeks (up to
  * sideburns in front of the ears), the jawline, the chin and the mouth corners; `lip` (facial 3) also covers the upper lip
  * as the moustache. The mouth stays visible: a U-shaped notch without the moustache, an opening with it (#2020: aligned
- * with the #2002 lips, which show on the head's own skin; no extra patch behind it). */
+ * with the #2002 lips, which show on the head's own skin; no extra patch behind it; #2041: an oval round the lips whose
+ * edge feathers down onto the actual skin, see beardMouthRing). */
 function beardShell(lip) {
   const B = BEARD, deg = Math.PI / 180;
-  const { grid, smooth } = beardGrid();
+  const { grid, smooth, dir, skin } = beardGrid();
   // #2012: the sideburn/cheek edge breaks into alternating tufts and thins to the skin; the opening rows stay aligned
   const jag = (a) => B.jag[0] * (0.5 + 0.5 * Math.cos(a * deg * 360 / B.jag[1])) * smooth(B.jagFrom, B.jagFrom + 12, Math.abs(a));
   const top = (a) => { // the top edge: sideburns → cheeks → (without the moustache) down under the mouth at the front
     const side = B.cheek[0] + (B.cheek[1] - B.cheek[0]) * smooth(B.cheekAz[0], 90, Math.abs(a));
     return (lip ? side : B.chinTop + (side - B.chinTop) * smooth(B.notch[0], B.notch[1], Math.abs(a))) - jag(a);
   };
-  const beard = grid([-B.azimuth, B.azimuth], B.columns, B.rows, (a) => [B.bottom, top(a)],
-    (a, s) => B.thickness * (1 - 0.6 * smooth(0, 1, Math.abs(a) / B.azimuth)) * Math.sin(Math.PI * (0.15 + s * 0.85)) ** 0.6 + B.lift,
-    (a, e) => !lip || Math.abs(a) > B.mouth[0] || e < B.mouth[1] || e > B.mouth[2],
-    (i, s) => (1 + B.strand * Math.sin(i * 2.39 + 0.3)) * (0.9 + 0.1 * smooth(0.2, 0.7, s)));
-  return beard;
+  const range = (a) => [B.bottom, top(a)];
+  const lift = (a, s) => B.thickness * (1 - 0.6 * smooth(0, 1, Math.abs(a) / B.azimuth)) * Math.sin(Math.PI * (0.15 + s * 0.85)) ** 0.6 + B.lift;
+  const strand = (i, s) => (1 + B.strand * Math.sin(i * 2.39 + 0.3)) * (0.9 + 0.1 * smooth(0.2, 0.7, s));
+  if (!lip) return grid([-B.azimuth, B.azimuth], B.columns, B.rows, range, lift, undefined, strand);
+  // #2041: round the oval mouth opening the shell sinks onto the head mesh's real skin (up to a centimetre inside the
+  // projection ellipsoids there), fully at the opening's edge and easing out over `feather` degrees, for grid and ring alike
+  const O = B.opening, step = (2 * B.azimuth) / B.columns, rowE = (a, j) => B.bottom + ((top(a) - B.bottom) * j) / B.rows;
+  const sunk = (a, e, d, out) => { // `out`: the shell's own distance from the centre along d
+    const u = a / O.half[0], v = (e - O.e - O.bend * Math.min(1, u * u)) / O.half[1], rho = Math.max(1e-6, Math.hypot(u, v));
+    const k = smooth(0, O.feather, (1 - 1 / rho) * Math.hypot(a, v * O.half[1])); // the distance outside the oval, degrees along its radius
+    return k >= 1 ? out : (headSkinAlong(d) + O.edgeLift) * (1 - k) + out * k;
+  };
+  const lipLift = (a, s) => { const [e0, e1] = range(a), e = e0 + (e1 - e0) * s, d = dir(a, e); return sunk(a, e, d, skin(d) + lift(a, s)) - skin(d); };
+  const keep = (a, e) => Math.abs(a) > O.frame[0] * step || e < rowE(a, O.frame[1]) || e > rowE(a, O.frame[2]); // the frame's quads give way to the ring
+  return grid([-B.azimuth, B.azimuth], B.columns, B.rows, range, lipLift, keep, strand, (g) => beardMouthRing(g, { range, lift, strand, rowE, step, sunk }));
+}
+/** #2041: the full beard's mouth opening (facial 3). The grid's quads inside a frame round the mouth (BEARD.opening.frame)
+ * are replaced by `rings` bands from the frame's own edge vertices in to an oval just outside the #2002 lips and their
+ * skin band (a smile-bent ellipse, BEARD.opening), so the opening follows the lips instead of the grid's rectangle; the
+ * bands follow beardShell's `sunk` surface, so the edge lies on the skin with no lifted rim to see past in three-quarter view. */
+function beardMouthRing({ at, idx, vertex, dir, skin }, { range, lift, strand, rowE, step, sunk }) {
+  const B = BEARD, O = B.opening, mid = B.columns / 2, [w, j0, j1] = O.frame, R = O.rings;
+  const loop = []; // the frame's edge vertices, anticlockwise seen from outside (+azimuth to the right, up)
+  for (let i = mid - w; i < mid + w; i++) loop.push([i, j0]);
+  for (let j = j0; j < j1; j++) loop.push([mid + w, j]);
+  for (let i = mid + w; i > mid - w; i--) loop.push([i, j1]);
+  for (let j = j1; j > j0; j--) loop.push([mid - w, j]);
+  const eMid = (rowE(0, j0) + rowE(0, j1)) / 2, eHalf = (rowE(0, j1) - rowE(0, j0)) / 2, aHalf = w * step;
+  const spokes = loop.map(([i, j]) => {
+    const a = -B.azimuth + i * step, e = rowE(a, j), phi = Math.atan2((e - eMid) / eHalf, a / aHalf);
+    const ia = O.half[0] * Math.cos(phi), ie = O.e + O.bend * Math.cos(phi) ** 2 + O.half[1] * Math.sin(phi), out = [];
+    for (let r = 0; r < R; r++) {
+      const t = r / R, va = ia + (a - ia) * t, ve = ie + (e - ie) * t, d = dir(va, ve), [e0, e1] = range(va), s = (ve - e0) / (e1 - e0);
+      out.push(vertex(va, ve, sunk(va, ve, d, skin(d) + lift(va, s)), strand((va + B.azimuth) / step, s)));
+    }
+    out.push(at(i, j));
+    return out;
+  });
+  for (let k = 0; k < spokes.length; k++) {
+    const p = spokes[k], q = spokes[(k + 1) % spokes.length];
+    for (let r = 0; r < R; r++) idx.push(p[r], p[r + 1], q[r], q[r], p[r + 1], q[r + 1]);
+  }
+}
+/** #2041: the distance from BEARD.centre along the unit direction `d` to the head's own skin mesh (headGeometry, the
+ * head bone's frame before faceWarp, like the beard), for seating the beard's mouth edge on it. */
+let headProbe = null;
+const probeRay = new THREE.Raycaster();
+function headSkinAlong(d) {
+  if (!headProbe) { headProbe = new THREE.Mesh(headGeometry(), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })); headProbe.updateMatrixWorld(); }
+  probeRay.set(new THREE.Vector3(...BEARD.centre), new THREE.Vector3(...d));
+  const hits = probeRay.intersectObject(headProbe, false);
+  return hits.length ? hits.at(-1).distance : 0;
 }
 /** #2012: the moustache on its own (facial 2), a tapered, drooping band over the upper lip on the same projected skin as
  * the beard: full in the middle, thinning to the skin at its edges, its ends hanging past the mouth's corners. */
@@ -664,7 +712,7 @@ function beardGrid() {
   };
   // a cols × rows grid over azimuth (0 = straight ahead, + = the figure's left) and elevation; `range(a)` → [bottom, top]
   // elevation, `lift(a, s)` the distance off the skin (s: 0 at the bottom row → 1 at the top), `keep(a, e)` per quad
-  const grid = (az, cols, rows, range, lift, keep = () => true, shade = null) => { // `shade(i, s)`: a per-vertex shade (#2012)
+  const grid = (az, cols, rows, range, lift, keep = () => true, shade = null, patch = null) => { // `shade(i, s)`: a per-vertex shade (#2012); `patch` adds faces (#2041)
     const pos = [], ae = [], idx = [], sh = [], at = (i, j) => i * (rows + 1) + j;
     for (let i = 0; i <= cols; i++) {
       const a = az[0] + ((az[1] - az[0]) * i) / cols, [e0, e1] = range(a);
@@ -679,6 +727,9 @@ function beardGrid() {
       if (!keep(q.reduce((m, p) => m + p[0], 0) / 4, q.reduce((m, p) => m + p[1], 0) / 4)) continue;
       idx.push(at(i, j), at(i + 1, j), at(i, j + 1), at(i + 1, j), at(i + 1, j + 1), at(i, j + 1));
     }
+    if (patch) patch({ at, idx, dir, skin, vertex: (a, e, t, v) => { // a vertex at azimuth a, elevation e, distance t from the centre
+      const d = dir(a, e); pos.push(c[0] + d[0] * t, c[1] + d[1] * t, c[2] + d[2] * t); ae.push([a, e]); if (shade) sh.push(v); return ae.length - 1;
+    } });
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     if (shade) g.setAttribute('shade', new THREE.Float32BufferAttribute(sh, 1));
@@ -686,7 +737,7 @@ function beardGrid() {
     g.computeVertexNormals();
     return g;
   };
-  return { grid, smooth };
+  return { grid, smooth, dir, skin };
 }
 /** The hairstyles (#1102) in the head bone's frame, as [geometry, region, shade]. Every style is a shell projected from
  * AVATAR_HAIR.centre onto the skull ∪ jaw ellipsoids (RH.skull / RH.jaw) above a real hairline (forehead, temples,
@@ -1242,9 +1293,9 @@ function mouthWeight(role, x, y, z) {
   const M = MOUTH, side = 1 - smoothstep(0.004, M.halfWidth, Math.abs(x));
   if (role === 'upper') return 0;
   const w = side * smoothstep(SEAM_Y, SEAM_Y - M.below, y) * smoothstep(M.chinY, M.chinY + 0.03, y) * smoothstep(M.frontZ[0], M.frontZ[1], z);
-  if (role === 'moustache') { // the beard with a moustache: from the opening's top edge (elevation from BEARD.centre) down
-    const c = BEARD.centre, e = Math.atan2(y - c[1], Math.hypot(x, z - c[2])) * 180 / Math.PI;
-    return Math.min(w, smoothstep(BEARD.mouth[2] - 0.5, BEARD.mouth[1], e) * side);
+  if (role === 'moustache') { // the beard with a moustache: from just above the lips' seam (elevation from BEARD.centre) down (#2041: the oval opening)
+    const c = BEARD.centre, O = BEARD.opening, e = Math.atan2(y - c[1], Math.hypot(x, z - c[2])) * 180 / Math.PI;
+    return Math.min(w, smoothstep(O.e + 2, O.e - O.half[1], e) * side);
   }
   if (role === 'lower') return side;
   if (role === 'seam') return y < SEAM_Y ? side : 0;

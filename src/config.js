@@ -4241,10 +4241,15 @@ export const AVATAR_EXPR = { rise: 7, fall: 2.4, flinch: 0.7,
   band: [0.108, 0.12, 0.15, 0.185], arch: [0.035, 0.03], browUp: 0.0065, browDown: 0.0055, browIn: 0.18, inner: [0.02, 0.055], front: [0.05, 0.085],
   squint: [0.22, 0, 0.36], widen: 0.18, jaw: 0.004 };
 // The avatars' full beard (#1097, src/avatar.js beardShell) *guess* tuned by eye against the avatar head (PVP_RIFLE_HEAD skull / jaw): degrees from `centre` (head-bone frame, metres);
-// the grid's rows/columns line up with the moustache variant's mouth opening [half width, bottom, top] (two quads high at 12 rows, two wide; #2020: moved up to the #2002 lips, whose seam sits about -17 degrees; no separate lip patch)
+// #2041 the moustache variant's mouth `opening`: the grid's quads within `frame` [± columns from the middle, from row, to row]
+// give way to `rings` bands narrowing to an oval round the #2002 lips and their skin band (lips ±13.5°, -24.4 … -16.5°; band
+// ±13.6°, -26.2 … -14.6°, measured from the bind geometry): centre elevation `e`, `half` [azimuth, elevation] degrees, its
+// ends raised `bend` degrees (the lips' smile curve); the edge sits `edgeLift` m above the head mesh's real skin and the
+// shell eases back to its own lift over `feather` degrees outside the oval.
 export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76, cols: 16, rows: 12, cheek: [-6, 10], cheekAz: [22, 90],
-  chinTop: -27, notch: [8, 22], mouth: [12, -24, -12.5], thickness: 0.011, lift: 0.0015,
-  // #2012 guesses by eye: `columns` replaces `cols` (an even multiple keeps the opening's edges at ±11.5°); the top edge
+  chinTop: -27, notch: [8, 22], thickness: 0.011, lift: 0.0015,
+  opening: { frame: [4, 7, 12], e: -20.6, half: [15, 6.2], bend: 1.3, rings: 3, edgeLift: 0.0008, feather: 15 },
+  // #2012 guesses by eye: `columns` replaces `cols` (an even multiple keeps the mouth frame symmetric about the middle); the top edge
   // breaks into `jag` [degrees, period in degrees] from |azimuth| `jagFrom`; `strand` the shade contrast per column;
   // the moustache alone (facial 2): [half width °, top / bottom elevation at the middle, droop ° at the ends, thickness m]
   columns: 32, jag: [1.6, 11.5], jagFrom: 24, strand: 0.07, moustache: [28, -10, -18, 4, 0.0042] };

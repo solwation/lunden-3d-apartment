@@ -120,6 +120,19 @@ the `upper` backdrop role is no longer used by the beard. Beard + moustache gain
 triangles (12,560 to 12,644), one draw. [Views](../verification/2020/README.md)
 (`tools/avatarbeard2020browser.cjs`).
 
+**Oval opening (#2041).** The grid's rectangular opening showed a hard-edged rectangle of skin
+round the lips and, in a steep three-quarter view, a slit past the lifted shell. `AVATAR_BEARD.mouth`
+is replaced by `AVATAR_BEARD.opening`: the grid's quads inside `frame` (±4 columns, rows 7 to the
+top edge) give way to `rings` bands (`beardMouthRing`) running from the frame's own edge vertices
+in to a smile-bent oval just outside the lips and their skin band. Round the oval the shell sinks
+onto the head mesh's real skin (`headSkinAlong` raycasts `headGeometry` once per variant; the mesh
+lies up to about 1 cm inside the projection ellipsoids there), fully at the edge
+(`edgeLift` 0.8 mm) and easing back to the shell's own lift over `feather` degrees, for grid and
+bands alike, so the edge feathers onto the skin. `mouthWeight` role `moustache` now drops the
+beard from just above the lip seam (`opening.e`) downwards. Only facial 3 changes (facial 0–2
+geometry is bit-identical); beard + moustache gains 92 triangles (12,912 to 13,004), one draw.
+[Views](../verification/2041/README.md) (`tools/avatarbeard2041browser.cjs`).
+
 ### Butterfly wing hinges (#1925)
 
 `butterflymodel.js` supplies shared authored contours and a bounded vertex hinge.
