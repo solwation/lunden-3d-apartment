@@ -4358,10 +4358,26 @@ export const AVATAR_HAIR = { centre: [0, 0.09, 0], bunAt: [0, 0.212, -0.078], /*
   cols: [0, 22, 42, 58, 64, 72, 78, 102, 120, 146, 180], fine: 6, fineTo: 80, rowPower: 1.45, edgeLift: 0.08, featherTo: 0.5, clump: 2.2, clumpShade: 0.1,
   hairline: [[0, 37.5], [14, 37], [24, 38.5], [32, 37.5], [42, 30], [52, 21], [58, 14], [63, 2], [66, -4.5], [69, -5.5], [73, 1], [78, 13], [102, 15], [120, -6], [146, -26], [180, -30]],
   beanie: [[0, 35], [35, 32], [60, 19], [80, 9], [100, 9], [140, -8], [180, -14]],
-  thick: [[0.016, 0.006, 0.009], [0.014, 0.011, 0.013], [0.006, 0.004, 0.005], [0.004, 0.003, 0.004], [0.016, 0.008, 0.012]],
-  // #1377 continuous curls: aesthetic guesses in metres/degrees; bounded four-sided tubes share the avatar draw.
-  curly: { locks: 24, segments: 12, sides: 6, radius: 0.0066, lift: 0.003, margin: 3,
-    top: 86, stagger: 18, sway: 9, turns: 2, curtainTurns: 2.5, curtainSway: 0.065 },
+  thick: [[0.016, 0.006, 0.009], [0.014, 0.011, 0.013], [0.006, 0.004, 0.005], [0.004, 0.003, 0.004], [0.011, 0.006, 0.009]], // (#2054: curly's shell thinner, its curls give the volume)
+  // #2054 curl volumes (src/avatarcurls.js), aesthetic guesses by eye in metres/degrees: `seg` a clump's segments [round, along];
+  // `groove` the coil's depth (share of the radius), `coil` its turn rate (radians per radian along the axis), `grooveShade` /
+  // `occlusion` how much darker the grooves / the side towards the head are, `tone` ± a clump's shade, `hug` how much flatter its head
+  // side is, `depth` its thickness (share of its width), `stretch` [1, max] its elongation, `out` m the scalp curls' outermost reach off
+  // the skull (under the headphones' band and headwear; `hat` [m, degrees]: only so far near the lowest hat edge, src/avatarcurls.js
+  // curlReach), `shellShade` the scalp shell under them (darker: depth between the curls),
+  // `soften` how far a clump's normals lean towards its outward axis (shaded as lumps of one mass, no grazing rim round each).
+  // `scalp`: radius [edge, crown] m (± `jitter`), grown over `grow` degrees above the hairline, `margin` + `reach` × its own angular
+  // radius above the line, `turn` ± degrees off hanging down, `sink` share of the shell's thickness, `bury` share of its depth below
+  // that, `loft` m random extra lift, dart throwing `tries` / `max` / `pack` (share of the radii's sum kept between centres).
+  // `curtain`: the ringlets' radius m, `stretch` their elongation, `turn`, `out` / `gap` / `loft` off the curtain and the body,
+  // `below` how far (share of the curtain's height) they may hang below its hem, `shadeLow` darker towards the hem.
+  // `fine` the fragment's strands: `period` m, `warp` the domain warp, `coil` / `strand` / `gap` the shade of crests, strands and gaps,
+  // `relief` m their height for the shading normal, `turn` radians the gloss's strand direction turns with them, `gloss` its strength.
+  curly: { seg: [8, 4], groove: 0.08, coil: 3.2, grooveShade: 0.25, occlusion: 0.42, tone: 0.1, hug: 0.3, depth: 0.85, stretch: [1, 1.4],
+    out: 0.027, hat: [0.014, 30], shellShade: 0.62, soften: 0.7,
+    scalp: { r: [0.008, 0.0165], jitter: 0.2, grow: 20, margin: 0.5, reach: 1, turn: 70, sink: 0.4, bury: 0.2, loft: 0.004, tries: 6000, max: 80, pack: 0.6 },
+    curtain: { r: [0.0095, 0.0145], stretch: [1.3, 1.8], turn: 30, out: 0.3, gap: 0.003, loft: 0.004, below: 0.12, shadeLow: 0.12, tries: 4000, max: 50, pack: 0.62 },
+    fine: { period: 0.011, warp: [1.1, 0.7], coil: 0.2, strand: 0.16, gap: 0.3, relief: 0.0012, turn: 1.6, gloss: 0.55 } },
   long: { wave: 0.006, top: 50, from: 64, front: 72, back: 100, hem: [-0.035, -0.25], gap: 0.016, depth: 0.012, rows: 8 } };
 // The avatars' skin and material shading (#1104, src/avatar.js skinShading / clothShade) *guess* tuned by eye in day and
 // evening light, not measured: soft areas in the head bone's frame (metres; H = 0.1 is the head's centre) as

@@ -325,6 +325,23 @@ strand stripes no longer apply to beards; the #2040 rim light and beard/moustach
 `beardCore`). Expressions, talking and kiss move the beard with the skin as before. Checks: `node --test tools/avatarbeardtest.mjs` and
 `PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarbeardtest.cjs SITE OUT` ([views and cost](../verification/2051/README.md)).
 
+#### Curly hair as curl volumes (#2054)
+
+`src/avatarcurls.js` (tunables `AVATAR_HAIR.curly`, all *guess* by eye) replaces the #1377 tubes that wound over a smooth shell with
+packed curl clumps: each a small lat-long ellipsoid (8 × 4 segments, 48 triangles) with its own size, elongation, direction and tone,
+its head side flatter and its normals leaning towards its outward axis (`soften`), so the clumps shade as lumps of one mass without a
+grazing rim round each. On the scalp a deterministic dart throw packs them small and tight along the hairline and at the nape and larger
+over the crown, half sunk into a thinner, darker shell (`thick[4]`, `shellShade`); on the curly curtain they hang as ringlets clear of
+head, ears, neck and torso, the lowest past the hem (an uneven hem). Their reach off the skull is capped (`out`, and `hat` near the
+knitted hat's edge, `curlReach`) so every hat and the headphones' band still cover them. Every curl vertex carries its clump's centre
+as `faceAnchor` (y > 0.5 m tells it from plain hair's zero, z < 0.5 from a flyaway), and the hair-length slider moves a curl by its
+centre instead of squashing or stretching it. Fragment (`uCurly`, curly only): a domain-warped field in the bind position replaces the
+#2012 meridian strands with small coils and winding strands (colour: crests lighter, gaps darker; normal: one-pixel differences of
+the field through `clothBump`), faded by the pixel footprint; the #2052 gloss's strand direction turns with the coils and is weaker
+(`fine.turn`, `fine.gloss`), so the highlight breaks into short glints. Cost: curly head triangles 14,796 → 15,996 (+8.1 %), other
+styles unchanged; one uniform, no attribute, texture, light, pass or draw call. Checks: `node --test tools/avatarcurlstest.mjs` and
+`PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarcurlstest.cjs SITE OUT` ([views, sway and cost](../verification/2054/README.md)).
+
 ### Butterfly wing hinges (#1925)
 
 `butterflymodel.js` supplies shared authored contours and a bounded vertex hinge.

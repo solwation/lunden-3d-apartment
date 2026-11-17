@@ -21,10 +21,13 @@ const earTris=AVATAR_EAR.cols*(1+2*(AVATAR_EAR.rings.length+1+AVATAR_EAR.back.le
 // over the sheet pair before it (2 surfaces × 24 columns × 8 rows × 2)
 const long2053=(style)=>style===1?longHairTris(24)-4*24*AVATAR_HAIR.long.rows:0;
 const nose2048=noseTriangles(contourRows(AVATAR_SURFACE.head,AVATAR_SURFACE.nosePatch.rings)); // #2048: the nose's finer grid has its own +10 % budget (avatarnosetest)
+// #2054: curly hair's curl volumes (src/avatarcurls.js) have their own +10 % head budget (avatarcurlstest): their triangles less the 5040 of
+// the #1377 tubes they replace are left out the same way (a curl vertex carries its clump's centre, y > 0.5, as its faceAnchor)
+const curl2054=(a)=>{let n=0;for(let i=0;i<a.position.count;i++)if(a.facePart.getX(i)===7&&a.faceAnchor.getY(i)>0.5&&a.faceAnchor.getZ(i)<0.5)n++;return n?n/3-5040:0;};
 const baseline=[[11172,3586212],[11940,3832740],[11532,3701772],[12456,3998376],[16092,5165532]];
 test('#2002 all five hairstyles retain bounded resources, normalized weights and semantic head roles',()=>{
  for(let style=0;style<5;style++){
-  const g=avatarModelGeometry({...avatarLook('2002-base'),style,facial:0}),a=g.attributes,keep=1-(flyVerts(a)+3*(contour2043+ear2047+nose2048+long2053(style)))/a.position.count; // (#2040: the flyaways have their own budget below; #2045: the eyes theirs; #2047: the ears theirs; #2048: the nose its)
+  const g=avatarModelGeometry({...avatarLook('2002-base'),style,facial:0}),a=g.attributes,keep=1-(flyVerts(a)+3*(contour2043+ear2047+nose2048+long2053(style)+curl2054(a)))/a.position.count; // (#2040: the flyaways have their own budget below; #2045: the eyes theirs; #2047: the ears theirs; #2048: the nose its)
   assert(a.position.count*keep/3<=baseline[style][0]*1.1);assert(Object.values(a).reduce((n,v)=>n+v.array.byteLength,0)*keep<=baseline[style][1]*1.1);
   assert.equal(Object.keys(a).length,17,'no additional retained attributes');
   for(let i=0;i<a.position.count;i++){
@@ -69,7 +72,7 @@ const v2012=[['s0f0',11700],['s0f1',12056],['s0f2',11724],['s0f3',12052],['s1f0'
 test('#2012 hairstyle and facial-hair variants stay within +10% of the #2002 triangles',()=>{
  for(const[key,tris]of v2012){const style=+key[1],facial=+key[3];
   const g=avatarModelGeometry({...avatarLook('2012-'+style),style,facial,gender:style%2});
-  const own=(g.attributes.position.count-flyVerts(g.attributes))/3-contour2043-ear2047-nose2048-long2053(style);assert(own<=tris*1.1,`${key}: ${own} > ${tris}×1.1`);g.dispose();}
+  const own=(g.attributes.position.count-flyVerts(g.attributes))/3-contour2043-ear2047-nose2048-long2053(style)-curl2054(g.attributes);assert(own<=tris*1.1,`${key}: ${own} > ${tris}×1.1`);g.dispose();}
 });
 test('#2012 long hair: the scalp and curtain share one normal wherever they meet (no visible join)',()=>{
  const g=avatarModelGeometry({...avatarLook('2012-long'),style:1,facial:0,gender:1}),a=g.attributes,hb=bindAt('head'),seen=new Map();let shared=0;

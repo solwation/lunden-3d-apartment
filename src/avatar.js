@@ -33,6 +33,7 @@ import { fingerSegments, fingerGLSL, gripFor, gripAngles, easeGrip, gripPoint } 
 import { newRest, stepRest, restFingers } from './avatargrip.js'; import { newTalk, stepTalk, talkHand } from './avatartalk.js'; // #2038: free hands' rest, talk gestures
 import { earGeometry, earLobe, earEnvelope } from './avatarear.js'; // #2047: the ear's form
 import { longHairParts, clearanceTable } from './avatarlonghair.js'; // #2053: long hair in locks
+import { curlScalp, curlCurtain, curlUniforms, applyCurlLook, CURL_FDECL, curlColor, curlNormal, curlGloss } from './avatarcurls.js'; // #2054: curly hair as curl volumes
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, THIGH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
 // The players' avatars (#705): a neutral human figure for the other players (src/ghosts.js) and for our own reflection in the
@@ -111,7 +112,7 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
     // #2020: no separate dark lip patch behind the opening any more (it sat below the #2002 lips as a dark rectangle)
   }
   // hair (#1102): 0 short, 1 long, 2 a bun, 3 a beanie (in the top's colour) – see hairParts
-  for (const [g, region, shade] of hairParts(style)) { add(region === 'hair' && !g.userData.noFly ? fly(style, g) : g, region, 'head', [0, 0, 0], shade); P[P.length - 1].face = FACE_PART.hair; }
+  for (const [g, region, shade, at] of hairParts(style)) { add(region === 'hair' && !g.userData.noFly ? fly(style, g) : g, region, 'head', [0, 0, 0], shade); if (at) facePart(P, FACE_PART.hair, at); else P[P.length - 1].face = FACE_PART.hair; } // (#2054: a curl's centre as its anchor)
   addGlasses(add, P); // #1165
   addHats(add, P); // #1321
   addPhones(add, P); // #1322
@@ -744,30 +745,12 @@ function hairParts(style) {
   const scalp = shell(az, low, crownTop, HC.rows,
     (a, e, s, i) => Math.max(0.0015, thick(a, e) * (curtain(a) || (style === 4 && Math.abs(a) >= 72) ? 1 : feather(s)) * (parting && a === 0 ? 0.55 : 1) + bump(a, s, i)),
     rootShade, false, HC.rowPower);
-  out.push([scalp, 'hair', 1]);
+  out.push([scalp, 'hair', style === 4 ? HAIR.curly.shellShade : 1]); // (#2054: the curls' shell darker, depth between them)
   if (style === 1) out.push(...longHair([...az.filter((a) => a >= L.from), ...az.filter((a) => a <= -L.from)], low, onSkull, sheet, strand, thick, hit, smooth,
     { geometry: scalp, column: (a) => az.indexOf(a), rows: HC.rows, shade: (a) => rootShade(a, 0, az.indexOf(a)) }));
-  if (style === 4) { // #1377: continuous winding locks, rooted in the scalp rather than separate balls
-    const C = HAIR.curly;
-    const lock = (points, radius, shade) => {
-      const curve = new THREE.CatmullRomCurve3(points.map((p) => new THREE.Vector3(...p)));
-      out.push([new THREE.TubeGeometry(curve, C.segments, radius, C.sides, false), 'hair', shade]);
-    };
-    for (let k = 0; k < C.locks; k++) {
-      const a = k * 360 / C.locks - 180;
-      const start = C.top - C.stagger * (0.5 + 0.5 * Math.sin(k * 2.39));
-      const end = hairlineAt(a) + C.margin;
-      const points = [];
-      for (let j = 0; j <= C.segments; j++) {
-        const t = j / C.segments, envelope = Math.sin(Math.PI * t);
-        const phase = t * Math.PI * 2 * C.turns + k * 2.39;
-        const e = start + (end - start) * t;
-        const angle = a + C.sway * Math.sin(phase) * envelope;
-        const lift = thick(angle, e) + C.lift * envelope * (0.5 + 0.5 * Math.cos(phase)) * (1 - smooth(0.6, 0.85, t)) - C.radius * (1 - envelope); // (#2012: the ends lie flat at the nape, under a cuff)
-        points.push(onSkull(angle, e, lift));
-      }
-      lock(points, C.radius * (0.9 + 0.1 * Math.sin(k * 1.7)), strand(k));
-    }
+  if (style === 4) { // #2054: curl volumes (src/avatarcurls.js) packed on a thinner, darker shell, in place of the #1377 tubes
+    const [curls, curlAt] = curlScalp({ onSkull, thick, edge: hairlineAt });
+    out.push([curls, 'hair', 1, curlAt]);
     // #1268: curly curtain with wavy locks down sides and back so hairLength stretches it
     const ears = [-1, 1].flatMap((s) => earEnvelope(s, [s * 0.1, H - 0.005, 0])); // #2047: the angled-out ear
     const torsoAt = (y) => {
@@ -808,20 +791,8 @@ function hairParts(style) {
     const cOuter = sheet(cCols, cRows, false, (i, j) => cCols3[i][j].slice(0, 3), (i, j) => strand(i + 2) * (0.92 + 0.12 * Math.sin(j * 2.5 + i)));
     const cInner = sheet(cCols, cRows, false, (i, j) => { const [x, y, z, r] = cCols3[i][j], k = (r - 0.009) / r; return [x * k, y, z * k]; }, () => 0.75, true);
     out.push([cOuter, 'hair', 0.98], [cInner, 'hair', 1]);
-    // Continuous side/back ringlets follow the existing body-cleared curtain.
-    for (let i = 1; i < cAz.length - 1; i += 2) {
-      const rad = cAz[i] * deg, points = [];
-      for (let j = 0; j <= C.segments; j++) {
-        const t = j / C.segments, row = t * cRows, lo = Math.min(cRows - 1, Math.floor(row)), f = row - lo;
-        const p = cCols3[i][lo], q = cCols3[i][lo + 1];
-        const y = p[1] + (q[1] - p[1]) * f;
-        const envelope = Math.sin(Math.PI * t), phase = t * Math.PI * 2 * C.curtainTurns + i * 1.7;
-        const angle = rad + C.curtainSway * Math.sin(phase) * envelope;
-        const r = Math.max(p[3] + (q[3] - p[3]) * f - C.radius * 0.4, body(angle, y) + C.radius) + C.lift * (0.5 + 0.5 * Math.cos(phase)) * envelope;
-        points.push([Math.sin(angle) * r, y, Math.cos(angle) * r]);
-      }
-      lock(points, C.radius, strand(i));
-    }
+    const [ringlets, ringAt] = curlCurtain({ cols: cCols3, az: cAz, rows: cRows, body });
+    out.push([ringlets, 'hair', 1, ringAt]); // #2054: ringlets hanging from the curtain
   }
   if (style === 2) { // the bun at the back of the crown: a coil around a knot, tilted with the head's curve, and its band
     const at = HAIR.bunAt, tilt = -0.66;
@@ -1075,11 +1046,13 @@ function surfaceColor() {
       // #2012: fine strands combed round the head bone's axis (meridians over the crown, down the curtain and beard);
       // a whole number per turn keeps the back continuous, and the fade uses the footprint, not the angle's wrap.
       vec3 q = vSuitAt - vec3(${hb.x.toFixed(4)}, ${hb.y.toFixed(4)}, ${hb.z.toFixed(4)});
+      if (uCurly > 0.5 && region == 3.0) ${curlColor()} else {
       float r = max(length(q.xz), 0.02);
       float flow = (atan(q.x, q.z) + ${S.sway.toFixed(3)} * sin(q.y * ${S.bend.toFixed(1)})) * ${S.strands.toFixed(1)};
       float fade = 1.0 - smoothstep(0.5, 2.0, (fwidth(q.x) + fwidth(q.z) + fwidth(q.y)) * ${S.strands.toFixed(1)} / r);
       float line = sin(flow) * 0.65 + sin(flow * 3.0 + q.y * 90.0) * 0.35;
       diffuseColor.rgb *= 1.0 + line * fade * ${S.strength.toFixed(3)};
+      }
     } else if (region == 3.0 || region == 8.0) { // (#2046: the brows have their own hairs, avatarbrow.js)
       float flow = (vSuitAt.x + ${F.hairSway.toFixed(2)} * sin(vSuitAt.y * ${F.hairBend.toFixed(1)})) * ${F.hairRate.toFixed(1)};
       float fade = 1.0 - smoothstep(0.5, 2.0, fwidth(flow));
@@ -1242,6 +1215,7 @@ function makeMaterial(rim, headProjection) {
   Object.assign(u, glossUniforms()); // #2052
   Object.assign(u, noseUniforms()); // #2049
   Object.assign(u, beardUniforms()); // #2051
+  Object.assign(u, curlUniforms()); // #2054
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: SURFACE.finish.cloth, metalness: 0, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
@@ -1266,7 +1240,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     sh.vertexShader = sh.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>\n${flyProject(bindAt('head').add(new THREE.Vector3(...HAIR.centre)))}`); // #2040
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>\n${LAMP_FDECL}`) // #2039
-      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim, uLight;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;\n' + WET_DECL + skin.decl + '\n' + EYE_FDECL + '\n' + FLY_FDECL + '\n' + browFDecl() + '\n' + hairlineFDecl() + '\n' + noseFragmentGLSL(bindAt('head'), FACE_PART.head).decl + '\n' + beardFDecl())
+      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim, uLight;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;\n' + WET_DECL + skin.decl + '\n' + EYE_FDECL + '\n' + FLY_FDECL + '\n' + browFDecl() + '\n' + hairlineFDecl() + '\n' + CURL_FDECL + '\n' + noseFragmentGLSL(bindAt('head'), FACE_PART.head).decl + '\n' + beardFDecl())
       .replace('#include <color_fragment>', `#include <color_fragment>
       if (uSuit > 0.5) {
         vec3 red = vec3(${new THREE.Color(SPIDER.colors.red).toArray().join(',')}), blue = vec3(${new THREE.Color(SPIDER.colors.blue).toArray().join(',')});
@@ -1299,7 +1273,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\n${skin.normal}`) // #2032
       .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${skin.light}\n${noseFragmentGLSL(bindAt('head'), FACE_PART.head).light}\n${flyLight({ hair: REGION.hair, beard: REGION.beard })}`) // #2032, #2040
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\nmetalnessFactor = vRing * ${SURFACE.finish.metalness.toFixed(3)};`)
-      .replace('#include <bumpmap_pars_fragment>', '#include <bumpmap_pars_fragment>\n' + clothDecl()).replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n' + clothNormal()) // #2034
+      .replace('#include <bumpmap_pars_fragment>', '#include <bumpmap_pars_fragment>\n' + clothDecl()).replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n' + clothNormal() + curlNormal(bindAt('head'))) // #2034, #2054
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>\ntotalEmissiveRadiance += uRingColor * vRing * ${RING.shine.toFixed(3)};`)
       .replace('#include <opaque_fragment>', `float edge = pow(1.0 - clamp(abs(dot(normalize(normal), normalize(vViewPosition))), 0.0, 1.0), ${A.rimPower.toFixed(2)});
       ${eyeGlint(FACE_PART.eye, FACE_PART.iris)}
@@ -1312,9 +1286,9 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     sh.fragmentShader = exertShader(sh.fragmentShader, { head: bindAt('head') }); // #2037
     sh.fragmentShader = sculptShader(sh.fragmentShader, { head: bindAt('head'), part: FACE_PART }); // #2044
     const gloss = { head: bindAt('head'), region: REGION, part: FACE_PART }; // #2052
-    sh.vertexShader = glossVertex(sh.vertexShader, gloss); sh.fragmentShader = glossFragment(sh.fragmentShader, gloss);
+    sh.vertexShader = glossVertex(sh.vertexShader, gloss); sh.fragmentShader = curlGloss(glossFragment(sh.fragmentShader, gloss)); // (#2054: the curls turn its strands)
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey(); // #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054'; // #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
   return m;
 }
 
@@ -1358,9 +1332,11 @@ function faceShape() {
         else if (abs(facePart - ${P.ear}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uEar;
         else if (abs(facePart - ${P.brow}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * uBrow.x + vec3(0.0, uBrow.y, uBrow.y * ${browSlide(headFront).toFixed(4)}); // (#2046: along the forehead)
         else if (abs(facePart - ${P.hair}.0) < 0.5) { // #1165: the hair's length: below the crown it stretches about the head's centre (the curtain narrows when shortened and widens when long so it clears the chest)
-          float hy = transformed.y - ${f(hb.y)} - ${f(HAIR.centre[1])}, lowK = 1.0 - smoothstep(-0.03, 0.0, hy);
-          transformed.y += (uHair - 1.0) * hy * lowK;
-          transformed.xz = vec2(${f(hb.x)}, ${f(hb.z)}) + (transformed.xz - vec2(${f(hb.x)}, ${f(hb.z)})) * (1.0 + (uHair > 1.0 ? 0.4 : 0.55) * (uHair - 1.0) * clamp(-hy / 0.3, 0.0, 1.0));
+          vec3 hp = faceAnchor.y > 0.5 && faceAnchor.z < 0.5 ? faceAnchor : transformed, hq = hp; // #2054: a curl moves by its centre (src/avatarcurls.js)
+          float hy = hp.y - ${f(hb.y)} - ${f(HAIR.centre[1])}, lowK = 1.0 - smoothstep(-0.03, 0.0, hy);
+          hq.y += (uHair - 1.0) * hy * lowK;
+          hq.xz = vec2(${f(hb.x)}, ${f(hb.z)}) + (hq.xz - vec2(${f(hb.x)}, ${f(hb.z)})) * (1.0 + (uHair > 1.0 ? 0.4 : 0.55) * (uHair - 1.0) * clamp(-hy / 0.3, 0.0, 1.0));
+          transformed += hq - hp;
           // #1513: tuck bulky hair inside headwear without pushing the scalp through the skull.
           vec3 hc = vec3(${f(hb.x)}, ${f(hb.y + HAIR.centre[1])}, ${f(hb.z)});
           vec3 hd = transformed - hc;
@@ -1441,6 +1417,7 @@ function applyFaceShape(u, lk) {
   u.uBrow.value.set(v('browThick'), v('browY'));
   applyBrowLook(u, lk); // #2046
   applyHairlineLook(u, lk); // #2050
+  applyCurlLook(u, lk); // #2054
   applyGlossLook(u, lk); // #2052
   applyNoseLook(u, lk); // #2049
   applyBeardLook(u, lk); // #2051
