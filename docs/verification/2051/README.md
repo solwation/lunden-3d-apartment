@@ -46,3 +46,5 @@ Limits: without MSAA the uncovered beard is coloured as skin (`uBeardSkin` × ch
 faint band at the cheek edge on light skin; the hairs are stylised (≈ 0.26 mm wide) and the black beard's interior reads mostly as
 shading; in profile the beard's sideburn meets the scalp's soft hairline (#2050) with a narrow skin gap in front of the ear; facial 3's
 moustache shows a faint lighter gloss streak at the philtrum, where the hairs part.
+
+| `integrerad-nara.jpg` | the conductor's rerun of `nara.jpg` on the revision rebased onto #2049 (nose variants), before = `e3d1358d` |
