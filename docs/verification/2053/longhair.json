@@ -1,0 +1,32 @@
+{
+ "baseline": "b622b587a77201d158a42e1cf1f0a63cf3badac9",
+ "info": {
+  "msaa": true,
+  "samples": 4,
+  "before": {
+   "tris": 15880,
+   "headTris": 10100,
+   "hairTris": 1984,
+   "calls": 1
+  },
+  "after": {
+   "tris": 16680,
+   "headTris": 10900,
+   "hairTris": 2784,
+   "calls": 1
+  }
+ },
+ "cost": {
+  "before": [
+   1298.57,
+   1286.39,
+   1195.24
+  ],
+  "after": [
+   1482.51,
+   1035.71,
+   1087.88
+  ],
+  "ratio": 0.867
+ }
+}
