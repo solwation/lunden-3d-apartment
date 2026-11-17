@@ -22,6 +22,7 @@ import { addFlyaways, flyUniforms, flyMaterial, flyKey, FLY_VDECL, FLY_FDECL, fl
 import { browSurface, browSlide, browUniforms, applyBrowLook, browFDecl, browColor, browRoughness } from './avatarbrow.js'; // #2046
 import { hairlineAt, hairlineShell, hairlineAvoid, hairlineUniforms, applyHairlineLook, hairlineFDecl, hairlineColor } from './avatarhairline.js'; // #2050
 import { refineNose, noseHeight, noseVertexGLSL, noseFragmentGLSL, noseKey, NOSE_SKIN } from './avatarnose.js'; // #2048: the nose
+import { glossUniforms, applyGlossLook, glossVertex, glossFragment, glossKey } from './avatarhairgloss.js'; // #2052: gloss along the strands
 import { topTexture } from './spidersuit.js';
 import { profileAt, contourRows, roundChinCap, neckGeometry } from './avatarcontour.js'; // #2043
 import { reactionPose, mixHand } from './reactpose.js';
@@ -1363,6 +1364,7 @@ function makeMaterial(rim, headProjection) {
   Object.assign(u, flyUniforms()); // #2040
   Object.assign(u, browUniforms()); // #2046
   Object.assign(u, hairlineUniforms()); // #2050
+  Object.assign(u, glossUniforms()); // #2052
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: SURFACE.finish.cloth, metalness: 0, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
@@ -1430,8 +1432,10 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       #include <opaque_fragment>`);
     sh.fragmentShader = exertShader(sh.fragmentShader, { head: bindAt('head') }); // #2037
     sh.fragmentShader = sculptShader(sh.fragmentShader, { head: bindAt('head'), part: FACE_PART }); // #2044
+    const gloss = { head: bindAt('head'), region: REGION, part: FACE_PART }; // #2052
+    sh.vertexShader = glossVertex(sh.vertexShader, gloss); sh.fragmentShader = glossFragment(sh.fragmentShader, gloss);
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey(); // #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey(); // #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052
   return m;
 }
 
@@ -1558,6 +1562,7 @@ function applyFaceShape(u, lk) {
   u.uBrow.value.set(v('browThick'), v('browY'));
   applyBrowLook(u, lk); // #2046
   applyHairlineLook(u, lk); // #2050
+  applyGlossLook(u, lk); // #2052
   u.uHair.value = v('hairLength'); // #1165
   u.uGlasses.value = Number.isInteger(lk.glasses) && lk.glasses > 0 && lk.glasses < GLASSES.names.length ? lk.glasses : 0;
   u.uEarrings.value = Number.isInteger(lk.earrings) && lk.earrings > 0 && lk.earrings < EARR.names.length ? lk.earrings : 0; // #1325

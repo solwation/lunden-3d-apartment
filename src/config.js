@@ -4441,6 +4441,19 @@ export const AVATAR_HAIRLINE = {
   drop: 3.2, band: 0.009, baby: 0.0042, lanes: 1500, cell: 0.0011, len: [0.0024, 0.0042], width: 0.0001, edge: 0.2,
   babyLen: [0.0016, 0.0034], babyWidth: 0.00006, babyFill: 0.4, babyTo: [62, 76], nape: 0.5, shade: [0.72, 1.0], under: 0.15, wobble: 0.0016,
 };
+// #2052 anisotropic hair gloss (src/avatarhairgloss.js), all *guess* tuned by eye in daylight, backlight and under the night street lamps,
+// not measured. Kajiya-Kay lobes [shift along the normal, exponent, strength] (+ the secondary's hue scale): a sharp white `primary`
+// towards the root and a broader hair-tinted `secondary` towards the tip. `jitter` breaks the band per strand group: [shift amplitude,
+// groups per turn, rate per bind metre up, fine strands per turn, fine amplitude]. `fade` [from, to] bind metres per pixel over which the
+// jitter goes and the lobes broaden to `far` [exponent share, strength share] (no flicker at distance). `wrap` lets the band reach a
+// little past the terminator; `wet` the most a lower roughness (#2018 wet hair) sharpens it; `lamp` the #2039 street lamps' share;
+// `brow` / `beard` / `fly` the gloss on brows, beards and flyaways; `below` ° under the shell's edge where the strands start to hang;
+// the bun's coil within `bunRadius` m of AVATAR_HAIR.bunAt round its axis tilted `bunTilt` rad (as hairParts).
+export const AVATAR_HAIR_GLOSS = {
+  primary: [-0.06, 140, 0.13], secondary: [0.1, 30, 0.2, 1.0], jitter: [0.05, 18, 30, 90, 0.03],
+  fade: [0.0012, 0.005], far: [0.3, 0.75], wrap: 0.2, wet: 2.5, lamp: 1.8, brow: 0.6, beard: 0.8, fly: 0.6, below: 10,
+  bunRadius: 0.058, bunTilt: -0.66,
+};
 // Combat between players (#667, src/combat.js; the room's check: cloudflare/players.js COMBAT). Only when both hold a weapon:
 // `weapons` = what counts, in the order they are looked for (the room's list must have each one: there its range and rate);
 // remove one here to leave it out. Both armed: drawn solid (`solid` opacity), else a ghost. A hit is judged by the shooter
