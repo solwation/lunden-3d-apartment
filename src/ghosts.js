@@ -13,6 +13,8 @@ import { AVATAR_GAZE } from './config.js';
 import { makesSteps, strideFor } from './spatialsound.js';
 import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, AVATAR_MOTION as MOTION, CHAT, SWIM, encodeAvatarLook, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
 import { Avatar, armTarget, swimLineFar } from './avatar.js';
+import { gripFor } from './avatargrip.js';
+import { AVATAR_GRIP as GRIP } from './config.js'; // #2016: the grip of what is held
 import { totalScore } from './stats.js';
 import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge.js';
 import { setMirrorExtra } from './reflections.js';
@@ -105,13 +107,13 @@ const SWING = 0.35; // s the saber's cut lasts
 // feet follow the river bed, under the surface (player.js `swimStep`), and nobody else stands there.
 let swimProbe = null;
 const gazePoint = new THREE.Vector3();
-const tmpV = new THREE.Vector3();
+const tmpV = new THREE.Vector3(), tmpW = new THREE.Vector3();
 const pickMat = new THREE.MeshBasicMaterial();
 
 export class Ghost { // (exported for tools/ghostprops.html)
   /** `self`: our own reflection in the mirrors (#691): no name tag, never shown to the main camera. */
   constructor(parent, id, name, self = false, look = null) {
-    this.id = id; this.name = name || ANON; this.snaps = []; this.h = ''; this.hi = ''; this.itemProp = null; this.solid = false; this.prop = null; this.self = self;
+    this.id = id; this.name = name || ANON; this.snaps = []; this.h = ''; this.hi = ''; this.itemProp = null; this.itemHold = new THREE.Vector3(); this.solid = false; this.prop = null; this.self = self;
     this.avatarLook = look ?? (self ? `me:${name}` : id);
     this.avatar = new Avatar(this.avatarLook, tint(name));
     this.avatar.setPump(this.pump ?? 0);
@@ -225,6 +227,11 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.hi = hi;
     this.itemProp?.removeFromParent();
     this.itemProp = hi ? ghostItem(hi) : null;
+    this.itemHold.set(0, 0, 0); // #2016: a compact thing is held by its middle, a long one (a cue, a rod, a pan) by its own grip origin
+    if (this.itemProp) {
+      const g = this.itemProp.geometry; g.boundingBox ?? g.computeBoundingBox();
+      g.boundingBox.getSize(tmpW); if (Math.max(tmpW.x, tmpW.y, tmpW.z) < GRIP.compact) g.boundingBox.getCenter(this.itemHold);
+    }
     if (this.itemProp) this.root.add(this.itemProp);
   }
 
@@ -389,6 +396,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
       hands.R = armTarget.up(-1, (G.wave - this.waveT) * 11);
     }
     if (this.heldCat.object) Object.assign(hands, this.heldCat.hands());
+    this.avatar.setGrip('R', gripFor(showItem ? this.hi : '', this.prop ? this.h : '')); // #2016: the fingers close round what is held (no new wire field: `hi` / `h`)
     Object.assign(hands, this.hands);
     const kiss = this.kiss;
     const age = kiss ? (t - kiss.start) / 1000 : -1, kissed = kissAmount(age);
@@ -441,8 +449,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
     }
     if (showItem) {
       this.avatar.object.updateMatrixWorld(true);
-      this.root.worldToLocal(this.avatar.hand('R', tmpV));
-      this.itemProp.position.copy(tmpV);
+      this.root.worldToLocal(this.avatar.gripAt('R', tmpV)); // #2016: where the curled fingers close round it (a compact thing by its middle)
+      this.itemProp.position.copy(tmpV).sub(this.itemHold);
     }
     if (this.prop && this.prop.name !== 'ghost-prop:jetpack') {
       this.avatar.object.updateMatrixWorld(true);

@@ -12,6 +12,7 @@ import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #20
 import { topTexture } from './spidersuit.js';
 import { reactionPose, mixHand } from './reactpose.js';
 import { footGround } from './avatarfootik.js';
+import { fingerSegments, fingerGLSL, gripFor, gripAngles, easeGrip, gripPoint } from './avatargrip.js'; // #2016: the fingers' grip shapes
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, THIGH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
 // The players' avatars (#705): a neutral human figure for the other players (src/ghosts.js) and for our own reflection in the
@@ -42,7 +43,7 @@ const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4, lips: 6, iris: 7,
 const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10, cowlHide: 11, hatDome: 12, peakFront: 13, peakBack: 14, knit: 15, hatCrown: 16, hatBrim: 17, phoneBand: 18, phoneCup: 19, phoneNeck: 20, studs: 21, hoops: 22, drops: 23, pearlStuds: 24, lens: 25, iris: 26, /* #2011: iris + pupil, moved by the gaze */ // #1325: earrings (head bone, follow the ear) and sunglass lenses
  
   chain: 30, pearls: 31, pendant: 32, goldChain: 33,
-  ring: 40, braceletBase: 50, watchCase: 60, watchStrap: 70, watchDial: 80, watchFace: 90 }; // 50-55 #1334 bracelets, 60-95 watches (case / strap / dial / glass, + side * 3 + model - 1)
+  finger: 100, /* #2016: 100 + side * 10 + finger * 2 + segment (src/avatargrip.js) */ ring: 40, braceletBase: 50, watchCase: 60, watchStrap: 70, watchDial: 80, watchFace: 90 }; // 50-55 #1334 bracelets, 60-95 watches (case / strap / dial / glass, + side * 3 + model - 1)
   // 40 + 0-9: #1324 a ring on one of the ten fingers (the look's `ring` - 1) // #1323: necklaces (on the torso bone, not warped with the head)
 const H = 0.1; // The head bone's eye-height reference (ears, hair, moustache).
 
@@ -585,11 +586,10 @@ function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
     }
     // the hand: a flat palm towards the thigh, four fingers front (index) to back (little), curled a little inwards, the thumb forward
     add(sphere(0.042, 8, 6).scale(0.45, 1.1, 0.95), 'skin', 'hand' + s, [-0.002 * sx, -0.016, 0.002]);
-    for (let f = 0; f < 4; f++) {
-      const len = [0.026, 0.033, 0.036, 0.032][f], z = (f - 1.5) * 0.0165;
-      add(cap(0.0074, len, 4).rotateZ(-sx * 0.3), 'skin', 'hand' + s, [-sx * 0.006, -0.056 - len / 2, z], 0.96);
-    }
-    add(cap(0.0088, 0.03, 4).rotateX(-0.55).rotateZ(-sx * 0.25), 'skin', 'hand' + s, [-sx * 0.006, -0.03, 0.034], 0.96); // the thumb
+    // #2016: every finger (and the thumb) is two capsules the vertex shader bends about their joints (src/avatargrip.js): the hand closes round what it holds
+    for (let f = 0; f < 5; f++) fingerSegments(f, sx, (r, h, seg) => cap(r, h, seg && f < 4 ? 3 : 4)).forEach(([g, at], seg) => { // (the fingertips a triangle round: smooth-shaded, and the triangle budget)
+      add(g, 'skin', 'hand' + s, at, 0.96); add.last().face = FACE_PART.finger + (sx > 0 ? 0 : 10) + f * 2 + seg;
+    });
   }
   // legs: trousers with a little room at the knee and a hem resting on the shoe; low trainers: the upper falls from the
   // ankle collar to a flat toe, on a sole a little wider than it
@@ -1350,7 +1350,7 @@ function releaseSuitTexture() { if (--suitUsers === 0) { suitTexture.dispose(); 
 
 function makeMaterial(rim, headProjection) {
   const headMin = headProjection.min, headSize = headProjection.getSize(new THREE.Vector3()), headFront = headProjection.getCenter(new THREE.Vector3()).z;
-  const u = { uPump: { value: 0 }, uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 }, uKiss: { value: 0 }, uBlink: { value: 0 }, uGaze: { value: new THREE.Vector2() }, uSwayHair: { value: new THREE.Vector3() }, uSwayBun: { value: new THREE.Vector3() }, uSwayHem: { value: new THREE.Vector3() }, uSwayOn: { value: new THREE.Vector3(0, 0, 1) }, uWet: { value: 0 }, uSnow: { value: 0 },
+  const u = { uPump: { value: 0 }, uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uFing: { value: Array.from({ length: 10 }, () => new THREE.Vector2()) }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 }, uKiss: { value: 0 }, uBlink: { value: 0 }, uGaze: { value: new THREE.Vector2() }, uSwayHair: { value: new THREE.Vector3() }, uSwayBun: { value: new THREE.Vector3() }, uSwayHem: { value: new THREE.Vector3() }, uSwayOn: { value: new THREE.Vector3(0, 0, 1) }, uWet: { value: 0 }, uSnow: { value: 0 },
     uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uEarrings: { value: 0 }, uHat: { value: 0 }, uPhones: { value: 0 }, uNecklace: { value: 0 }, uRingFinger: { value: 0 }, uBracelet: { value: 0 }, uWatch: { value: 0 }, uRingColor: { value: new THREE.Color(RING.colours[0]) }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) } };
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: SURFACE.finish.cloth, metalness: 0, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
@@ -1359,7 +1359,7 @@ function makeMaterial(rim, headProjection) {
     Object.assign(sh.uniforms, u);
     // Bind-pose coordinates follow the original skin: colours/own canvas only, no new
     // geometry, skeleton, head envelope or per-avatar colour-buffer replacement (#891).
-    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float region; attribute float suitRole; varying float vSuitRole; attribute float noseBlend; varying vec2 vSurface; attribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + WET_DECL + '\n' + FACE_SHAPE_DECL)
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float region; attribute float suitRole; varying float vSuitRole; attribute float noseBlend; varying vec2 vSurface; attribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + WET_DECL + '\n' + FACE_SHAPE_DECL())
       .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
 float pumpF = 1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z;
 float pumpD = uPump * ${GYM_PUMP.circumference} * armPump.w;
@@ -1409,7 +1409,9 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
 // pivot (`faceAnchor`: an eyeball's centre, the nose's bridge, an ear's centre, a brow's centre line), then every head vertex
 // but the neck is widened, lengthened from the chin and its lower face (faceWarp's jaw region) widened or narrowed. No new
 // geometry or draw call; collision and hit regions keep the plain head (CPU raycasts never see the shader).
-const FACE_SHAPE_DECL = 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform vec2 uGaze; uniform float uBlink; uniform float uEar, uHair, uGlasses, uEarrings, uHat, uPhones, uNecklace, uRingFinger, uBracelet, uWatch, uNeck, uSuit; uniform vec2 uBrow; ' + SWAY_DECL;
+let gripGlsl = null; // #2016 (lazily: olof.js and this module import each other)
+const GRIP_GLSL = () => gripGlsl ??= fingerGLSL(bindAt('handL'), bindAt('handR'), FACE_PART.finger);
+const FACE_SHAPE_DECL = () => 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform vec2 uGaze; uniform float uBlink; uniform float uEar, uHair, uGlasses, uEarrings, uHat, uPhones, uNecklace, uRingFinger, uBracelet, uWatch, uNeck, uSuit; uniform vec2 uBrow; ' + GRIP_GLSL().decl + SWAY_DECL;
 const CHIN_Y = RH.jaw.centre[1] - RH.jaw.radius * RH.jaw.scale[1]; // the head lengthens from its chin
 function swayShader() { // #2014 (src/avatarsway.js): hair, bun and hem sway, after the face shape
   return swayGLSL({ head: bindAt('head').toArray(), hairY: HAIR.centre[1], bun: [HAIR.bunAt[1], HAIR.bunAt[2]], torsoY: bindAt('torso').y, torso: NAMES.indexOf('torso'), hair: FACE_PART.hair, hat: 'uHat' });
@@ -1417,7 +1419,7 @@ function swayShader() { // #2014 (src/avatarsway.js): hair, bun and hem sway, af
 function faceShape() {
   const hb = bindAt('head'), W = FACE.warp, f = (v) => v.toFixed(4), P = FACE_PART;
   const lift = PHONES.hatLift.reduceRight((acc, l, i) => `(uHat < ${i}.5 ? ${f(l)} : ${acc})`, '0.0');
-  return `if (facePart > 0.5) {
+  return `if (facePart > ${P.finger}.0 - 0.5) ${GRIP_GLSL().body} else if (facePart > 0.5) {
       if (abs(facePart - ${P.head}.0) < 0.5 && noseBlend > 0.0) {
         vec3 nasalPivot = vec3(${f(hb.x)}, ${f(hb.y + FACE.nose.top)}, ${f(hb.z + FACE.nose.z)});
         transformed = mix(transformed, nasalPivot + (transformed - nasalPivot) * uNose, noseBlend * (1.0 - uSuit));
@@ -1472,7 +1474,11 @@ function faceShape() {
           float on = step(abs(want - (idx + 1.0)), 0.5);
           transformed = faceAnchor + (transformed - faceAnchor) * on;
         }
-        else if (facePart > ${P.ring}.0 - 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(abs(uRingFinger - (facePart - ${P.ring}.0 + 1.0)), 0.5); // #1324: only the chosen finger's ring stays
+        else if (facePart > ${P.ring}.0 - 0.5) { // #1324: only the chosen finger's ring stays; #2016: it follows its finger's knuckle
+          transformed = faceAnchor + (transformed - faceAnchor) * step(abs(uRingFinger - (facePart - ${P.ring}.0 + 1.0)), 0.5);
+          int rk = int(floor(facePart - ${P.ring}.0 + 0.5)); int rs = rk / 5; rk -= rs * 5;
+          transformed = fingBend(transformed, rs * 5 + (rk == 0 ? 4 : 4 - rk), 0);
+        }
         else if (facePart > ${P.chain}.0 - 0.5) { // #1323: a necklace collapses to a point unless chosen (1 chain, 2 pearls, 3 pendant, 4 thick gold chain)
           float on = abs(facePart - ${P.chain}.0) < 0.5 ? step(abs(uNecklace - 1.0), 0.5) + step(abs(uNecklace - 3.0), 0.5)
             : abs(facePart - ${P.pearls}.0) < 0.5 ? step(abs(uNecklace - 2.0), 0.5)
@@ -1794,6 +1800,7 @@ if (typeof window !== 'undefined') {
   loadRiggedAvatarModel().catch(() => {});
 }
 
+const gripQ = new THREE.Quaternion(), tmpGrip = new THREE.Vector3();
 export class Avatar {
   /** `seed`: what the look comes from (name or id); `rim`: the outline's colour. */
   constructor(seed, rim = 0xcfe6ff) {
@@ -1992,6 +1999,7 @@ export class Avatar {
   update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null, air = 0, airV = null, swim = false, dive = 0, gaitDir = null, motionFrame = null, groundSpeed = speed, groundEnabled = true, ground = null, floorY = NaN } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
     this.time += dt;
     this.updateSway(dt); // #2014
+    this.updateGrip(dt); // #2016
     const eyes = this.updateEyes(dt, turn, pitch, kiss > 0 || !!react || swim || air === 3);
     turn += eyes.yaw; pitch += eyes.pitch; // #2011: the head turns a little towards whom it looks at
 
@@ -2155,6 +2163,26 @@ export class Avatar {
     this.mouth += (this.mouthTarget(performance.now() / 1000) - this.mouth) * Math.min(1, dt * MOUTH.follow);
     if (this.mouth < 0.002) this.mouth = 0;
     this.material.userData.u.uMouth.value = this.mouth;
+  }
+
+  /** #2016: which grip a hand closes into (src/avatargrip.js: 'relaxed', 'cylinder', 'pistol', 'pinch', 'flat'); `category` / `weapon` pick it as
+   * the other players see it. The fingers ease there in `update`. */
+  setGrip(side, name) { (this.gripTo ??= { L: 'relaxed', R: 'relaxed' })[side] = name; }
+  gripOf(side) { return this.gripTo?.[side] ?? 'relaxed'; }
+  /** Eases both hands' fingers towards their grips (`update` calls it; a figure posed otherwise calls it itself) and uploads them to the material. */
+  updateGrip(dt) {
+    const u = this.material?.userData.u.uFing.value;
+    if (!u) return;
+    const first = !this.gripNow, cur = this.gripNow ??= { L: gripAngles('relaxed'), R: gripAngles('relaxed') }, to = this.gripTo ?? { L: 'relaxed', R: 'relaxed' };
+    for (const [i, s] of ['L', 'R'].entries()) {
+      if (!easeGrip(cur[s], to[s], dt) && !first) continue;
+      for (let f = 0; f < 5; f++) u[i * 5 + f].set(cur[s][f * 2], cur[s][f * 2 + 1]);
+    }
+  }
+  /** #2016: the world point where the middle of a thing held with the hand's grip goes, so that the curled fingers close round it. */
+  gripAt(side, out = new THREE.Vector3()) {
+    const o = gripPoint(this.gripOf(side), side === 'L' ? 1 : -1), b = this.bones['hand' + side];
+    return b.getWorldPosition(out).add(tmpGrip.set(o[0], o[1], o[2]).applyQuaternion(b.getWorldQuaternion(gripQ)).multiplyScalar(this.object.scale.y));
   }
 
   /** The world position of a hand's centre (side 'L' / 'R' as in the figure's own frame: R = the figure's right, the ghost's +x). */

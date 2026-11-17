@@ -6670,6 +6670,21 @@ export const AVATAR_PHONES = { tag: 'f', names: ['Inga', 'På öronen', 'Runt ha
 // per finger in the shared body geometry, collapsed in the vertex shader unless chosen and tinted by the metal's colour (uRing); the first-person hand (src/hand.js) draws it too.
 // `sink` m the band's centre line lies inside the finger's radius, `tube` its thickness in m, `at` how far along the finger it sits (share of its length from the knuckle), `shine` a light emissive lift
 // standing in for a metal's gloss (no reflections).
+// #2016 (src/avatargrip.js): the avatars' fingers close round what they hold. Shapes: per finger [knuckle, middle joint] bend in rad towards the palm
+// (little, ring, middle, index, then the thumb [base, tip]); `point` where the middle of a held thing (a compact one: its box centre; a long one: its own grip origin) goes, in the hand's frame: out from the palm
+// (towards the palm side), along the fingers (-y) and across the hand (z, the thumb's side), in metres, so the curled fingers close round it. All artistic guesses (*guess*), tuned by eye in close-ups.
+// `byCategory` = heldcategory.js `hi`, `byWeapon` = COMBAT.weapons `h`; anything else the relaxed hand. `compact` the largest size (m) of a thing held by its middle; `split` the knuckle's share of a finger's length.
+export const AVATAR_GRIP = { ease: 14, split: 0.6, compact: 0.25, thumb: { prox: 0.026, dist: 0.024 },
+  shapes: {
+    relaxed: { fingers: [[0.45, 0.55], [0.4, 0.5], [0.33, 0.45], [0.25, 0.35]], thumb: [0.15, 0.1], point: [0, 0, 0] },
+    cylinder: { fingers: [[1.05, 1.25], [1.0, 1.25], [0.95, 1.2], [0.85, 1.1]], thumb: [0.5, 0.4], point: [0.045, -0.045, 0.005] },
+    pistol: { fingers: [[1.2, 1.3], [1.2, 1.3], [1.15, 1.3], [0.25, 0.15]], thumb: [0.35, 0.2], point: [0, 0, 0] },
+    pinch: { fingers: [[0.75, 0.8], [0.7, 0.8], [0.6, 0.7], [0.7, 0.55]], thumb: [0.55, 0.35], point: [0.03, -0.065, 0.03] },
+    flat: { fingers: [[0.08, 0.06], [0.06, 0.05], [0.05, 0.04], [0.04, 0.03]], thumb: [0.1, 0.05], point: [0.035, -0.035, 0.005] },
+  },
+  byCategory: { cup: 'cylinder', bottle: 'cylinder', plate: 'flat', book: 'flat', box: 'flat', gift: 'flat', paper: 'pinch', bag: 'cylinder', tool: 'cylinder', plant: 'cylinder', cue: 'cylinder', nut: 'pinch', binoculars: 'cylinder', spray: 'cylinder', rod: 'cylinder', fish: 'pinch', sharkfin: 'pinch', mussel: 'pinch',
+    food: 'pinch', chicken: 'flat', drumstick: 'cylinder', fries: 'cylinder', popcorn: 'cylinder', fishfinger: 'pinch', banana: 'pinch', orange: 'pinch', pear: 'pinch', pan: 'cylinder', flashlight: 'cylinder', remote: 'cylinder', harpoon: 'pistol' },
+  byWeapon: { nerf: 'pistol', rifle: 'pistol', wand: 'cylinder', saber: 'cylinder', bow: 'cylinder', ball: 'flat', web: 'cylinder' } };
 export const AVATAR_RING = { tag: 'i', metalTag: 'z', fingers: ['Tumme', 'Pekfinger', 'Långfinger', 'Ringfinger', 'Lillfinger'], sides: ['Vänster hand', 'Höger hand'], metals: ['Guld', 'Silver', 'Koppar', 'Svart titan'],
   colours: [0xe0b83c, 0xd2d6db, 0xc2703d, 0x2b2d33], sink: 0.0004, tube: 0.0022, at: 0.5, thumbAt: 0.55, shine: 0.12 };
 // #1334 (#1318, #1325): a bracelet and a wristwatch, look fields `bracelet` and `watch` (each 0 none, 1-3 the model on the left wrist, 4-6 the same on the right) in the metal

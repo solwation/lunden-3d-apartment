@@ -18,12 +18,13 @@ export class AvatarPreview {
     this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 20);
   }
 
-  draw(look, { closeup = false, yaw = 0 } = {}) {
+  draw(look, { closeup = false, yaw = 0, grip = '' } = {}) { // #2016: `grip` shows a hand shape (avatargrip.js) in the right hand
     this.avatar?.object.removeFromParent();
     this.avatar?.dispose();
     const avatar = this.avatar = new Avatar(look);
     avatar.object.rotation.y = yaw;
     avatar.update(0, {});
+    if (grip) { avatar.setGrip('R', grip); avatar.updateGrip(10); }
     this.scene.add(avatar.object);
     avatar.object.updateMatrixWorld(true);
     const target = new THREE.Vector3(0, 1.05, 0);

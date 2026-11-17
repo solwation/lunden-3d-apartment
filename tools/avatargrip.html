@@ -1,0 +1,66 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar grips</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2016 component page: other players (Ghost), our own mirror image (Ghost self) and the customizer preview with fingers closed round
+// what is held: a cup, a Nerf gun, a food item, an empty hand. Driven by tools/avatargripbrowser.cjs.
+import * as THREE from 'three';
+import { Ghost } from '../src/ghosts.js';
+import { AvatarPreview } from '../src/avatarpreview.js';
+import { avatarLook, encodeAvatarLook } from '../src/config.js';
+const CASES = [{ key: 'cup', hi: 'cup', h: '' }, { key: 'nerf', hi: '', h: 'nerf' }, { key: 'food', hi: 'food', h: '' }, { key: 'empty', hi: '', h: '' },
+  { key: 'banana', hi: 'banana', h: '' }, { key: 'plate', hi: 'plate', h: '' }, { key: 'saber', hi: '', h: 'saber' }];
+const W = 960, Hh = 720, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, Hh); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+const cam = new THREE.PerspectiveCamera(30, W / Hh, 0.02, 50);
+let t = 1000;
+const make = (i, self = false) => {
+  const g = new Ghost(scene, i + 1, 'Spelare ' + (i + 1), self);
+  if (g.tag) g.tag.visible = false;
+  g.root.position.set(i * 3, 0, 0); scene.add(g.root); g.root.visible = true;
+  g.root.rotation.y = Math.PI; g.have = false;
+  return g;
+};
+const ghosts = CASES.map((_, i) => make(i)), mirror = make(CASES.length, true);
+const hold = (g, { hi, h }) => g.push({ p: [g.root.position.x, 0, 0], r: Math.PI, h, hi }, t);
+const settle = (n = 40, list = [...ghosts, mirror]) => { for (const g of list) { g.root.rotation.y = Math.PI; for (let k = 0; k < n; k++) g.animate(t += 33, 1, 0, 0); } };
+CASES.forEach((c, i) => hold(ghosts[i], c)); hold(mirror, CASES[0]); settle(60);
+const handAt = (g) => g.avatar.hand('R', new THREE.Vector3());
+const finger = (g, side = 'R') => g.avatar.material.userData.u.uFing.value.slice(side === 'L' ? 0 : 5, side === 'L' ? 5 : 10).map((v) => [v.x, v.y]);
+/** A shot of ghost i's right hand from `view` ('front' | 'side' | 'above' | 'far'): `dist` metres away, in the figure's frame (+z ahead of it). */
+window.__shot = (i, view = 'side', dist = 0.5, which = 'R') => {
+  const g = i === 'mirror' ? mirror : ghosts[i], p = g.avatar.hand(which, new THREE.Vector3());
+  const off = { front: [0, 0.05, 1], side: [which === 'R' ? 1 : -1, 0.05, 0.25], above: [0.1, 1, 0.5], far: [0.4, 0.2, 1], back: [0, 0.1, -1] }[view];
+  const d = new THREE.Vector3(...off).normalize().multiplyScalar(dist);
+  cam.fov = view === 'far' ? 30 : 22; cam.updateProjectionMatrix();
+  // the figure faces +z in the world here (root rotated by pi: the avatar's own frame faces -z of the root)
+  cam.position.copy(p).add(d); cam.lookAt(p);
+  renderer.render(scene, cam);
+  return { fingers: finger(g, which), grip: g.avatar.gripOf(which) };
+};
+/** Pick up / release: the finger values over the frames after a change of what is held, for the smoothness check. */
+window.__transition = () => {
+  const g = ghosts[3], trace = []; const rec = (n, label) => { for (let k = 0; k < n; k++) { g.animate(t += 16.7, 1, 0, 0); trace.push({ label, v: finger(g)[2][0], w: finger(g)[3][0] }); } };
+  hold(g, { hi: '', h: '' }); settle(60, [g]); rec(2, 'rest');
+  hold(g, { hi: 'cup', h: '' }); rec(40, 'pick');
+  hold(g, { hi: '', h: '' }); rec(40, 'release');
+  return trace;
+};
+window.__sizes = () => ({ cams: [cam.position.toArray()], calls: (renderer.info.reset(), renderer.render(scene, cam), renderer.info.render.calls), tris: renderer.info.render.triangles });
+window.__preview = () => {
+  const canvas = document.createElement('canvas'); document.body.appendChild(canvas);
+  const pv = new AvatarPreview(canvas), look = avatarLook('grip-2016'); const out = [];
+  for (const grip of ['', 'cylinder', 'pistol', 'pinch', 'flat']) { pv.draw(look, { grip }); out.push(canvas.toDataURL('image/png')); }
+  return out;
+};
+window.__ready = true;
+</script></body></html>
