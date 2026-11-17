@@ -117,16 +117,17 @@ export function longHairParts({ az, edge, body, table, hem, strand, bones }) {
     return { p: A.p.map((v, d) => v + (B.p[d] - v) * f), n: unit(A.n.map((v, d) => v + (B.n[d] - v) * f)), shade: A.shade + (B.shade - A.shade) * f };
   };
   // what the hair must clear at (azimuth deg, y): the head / ears / neck / torso rings (with the curtain's gap near the top) and the sweater
-  const need = (ad, y, t) => Math.max(body(ad * deg, y) + L.gap * smooth(0, 0.15, t), table.at(ad, y) + LH.clear);
+  const head = (ad, y, t) => body(ad * deg, y) + L.gap * smooth(0, 0.15, t), sweater = (ad, y) => table.at(ad, y) + LH.clear;
+  const need = (ad, y, t) => Math.max(head(ad, y, t), sweater(ad, y));
   /** A hanging column from `p0` down towards `yHem` over azimuths `as`: radius only grows (it falls, never back in) unless the body below
    * juts out more steeply than `stop`, where it ends. → { rAt(y), end } */
   const column = (as, p0, yHem) => {
     const dy = 0.004, ys = [p0[1]], rs = [Math.hypot(p0[0], p0[2])];
     let r = rs[0];
     for (let y = p0[1] - dy; y > yHem - 1e-9; y -= dy) {
-      const t = (p0[1] - y) / (p0[1] - yHem), q = Math.max(...as.map((a) => need(a, y, t)));
-      if (q - r > LH.stop * dy && p0[1] - y > 0.03) break;
-      r = Math.max(r, q); ys.push(y); rs.push(r);
+      const t = (p0[1] - y) / (p0[1] - yHem), s = Math.max(...as.map((a) => sweater(a, y)));
+      if (s - r > LH.stop * dy && p0[1] - y > 0.03) break; // (the shoulder's top: rest on it)
+      r = Math.max(r, s, ...as.map((a) => head(a, y, t))); ys.push(y); rs.push(r);
     }
     return { end: ys.at(-1), rAt: (y) => { const u = Math.min(ys.length - 1, Math.max(0, (ys[0] - y) / dy)), k = Math.floor(u), f = u - k; return k + 1 < rs.length ? rs[k] + (rs[k + 1] - rs[k]) * f : rs.at(-1); } };
   };
@@ -218,7 +219,7 @@ export function longHairParts({ az, edge, body, table, hem, strand, bones }) {
   const S = LH.front;
   for (const side of [1, -1]) for (let k = 0; k < S.n; k++) {
     const a0 = side * (S.root[0] + S.root[1] * k), a1 = side * (S.end[0] + S.step[0] * k), yEnd = S.end[1] + S.step[1] * k;
-    const i = az.findIndex((a, n) => n < cols && (a - a0) * (azAt(n, 1) - a0) <= 0), f = Math.abs((a0 - az[i]) / span(i)), e = edgeAt(i, f);
+    const from = (n) => ((a0 - az[n]) % 360 + 360) % 360, i = az.findIndex((a, n) => n < cols && from(n) <= span(n)), e = edgeAt(i, from(i) / span(i));
     const y0 = e.p[1] - 0.004, pts = [], nrm = [], sh = [];
     let r = Math.hypot(e.p[0], e.p[2]) - 0.001;
     for (let j = 0; j <= S.rows; j++) {

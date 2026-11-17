@@ -1,0 +1,119 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar long hair</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#8795a3}canvas{display:block}</style></head>
+<body><script type="module">
+// #2053 component page, driven by tools/avatarlonghairtest.cjs: long hair in locks (src/avatarlonghair.js). Each look is built from the
+// checkout (`after`) and, when the driver serves the baseline under /base/ (page.route), from the baseline src/avatar.js + src/config.js
+// (`before`). Poses: rest, walk / run (mid-stride, the hair's sway on), sitting (olof.js seatedPose). __sheet(rows, cols) draws a contact
+// sheet; __info() triangles / draw calls; __cost() ms/frame before vs after (nine long-haired figures).
+import * as THREE from 'three';
+const after = await import('../src/avatar.js'), cfg = await import('../src/config.js'), olof = await import('../src/olof.js');
+let before = null;
+try { before = await import('../base/src/avatar.js'); } catch { before = null; }
+const T = 320;
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(T, T); document.body.appendChild(renderer.domElement);
+renderer.toneMapping = THREE.NeutralToneMapping;
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x8795a3);
+const hemi = new THREE.HemisphereLight(0xdfe8f2, 0x6b625a, 1.4); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff0dc, 2.6); scene.add(sun, sun.target);
+const cam = new THREE.PerspectiveCamera(30, 1, 0.02, 80);
+const S = cfg.SKIN, H = cfg.HAIR;
+const base = { tall: 1, build: 1, glasses: 0, phones: 0, earrings: 0, necklace: 0, ring: 0, bracelet: 0, watch: 0, hat: 0, facial: 0, style: 1, brows: null, top: 0x3d6b8f, pants: 0x30343a };
+const looks = {
+  'ljus, blond': { skin: S[0], hair: H[4], gender: 1 },
+  'mellan, röd': { skin: S[2], hair: H[6], gender: 0, top: 0x5c6b3a },
+  'mörk, svart': { skin: S[4], hair: H[7], gender: 1, top: 0x8a3b3b },
+};
+const poses = {
+  rest: (a) => { a.noIdle = true; for (let i = 0; i < 20; i++) a.update(1 / 30, {}); },
+  walk: (a) => { a.noIdle = true; for (let i = 0; i < 52; i++) a.update(1 / 30, { speed: 1.4 }); },
+  run: (a) => { a.noIdle = true; for (let i = 0; i < 46; i++) a.update(1 / 30, { speed: 4.5 }); },
+  sit: (a) => { a.noIdle = true; for (let i = 0; i < 5; i++) a.update(1 / 30, {}); olof.poseOlof(a, olof.seatedPose(0.45)); },
+};
+const figures = {};
+function figure(name, phase, pose) {
+  const key = `${name}-${phase}-${pose}`;
+  if (figures[key] !== undefined) return figures[key];
+  const mod = phase === 'after' ? after : before;
+  if (!mod) return (figures[key] = null);
+  const a = new mod.Avatar({ ...cfg.avatarLook('longhair-' + name), ...base, ...looks[name] });
+  scene.add(a.object); poses[pose](a); a.object.visible = false;
+  return (figures[key] = a);
+}
+const show = (a) => { for (const b of Object.values(figures)) if (b) b.object.visible = b === a; return a; };
+const at = (a, bone, off = [0, 0, 0]) => a.bones[bone].localToWorld(new THREE.Vector3(...off));
+// The figure faces −z (its left is +x). Head and shoulders down to the shoulder blades, about 0.95 m away.
+const ring = (dx, dz, dy = 0.06) => (a) => { const h = at(a, 'head', [0, -0.02, 0]); return { eye: h.clone().add(new THREE.Vector3(dx, dy, dz).multiplyScalar(1)), look: h.clone().add(new THREE.Vector3(0, -0.04, 0)), fov: 30 }; };
+const views = {
+  back: ring(0.12, 0.92), side: ring(-0.93, -0.02), q34: ring(-0.66, 0.62), front: ring(0.1, -0.92),
+  q34front: ring(-0.62, -0.66),
+  wide: (a) => { const h = at(a, 'head', [0, -0.1, 0]); return { eye: h.clone().add(new THREE.Vector3(-1.1, 0.15, 1.1)), look: h.clone().add(new THREE.Vector3(0, -0.12, 0)), fov: 30 }; },
+};
+function light(kind, v) {
+  const toCam = v.eye.clone().sub(v.look).setY(0).normalize();
+  if (kind === 'day') { hemi.intensity = 1.4; sun.intensity = 2.6; sun.color.set(0xfff0dc); sun.position.copy(v.look).addScaledVector(toCam, 3).add(new THREE.Vector3(1.2, 3, 0)); }
+  else { hemi.intensity = 0.6; sun.intensity = 3.2; sun.color.set(0xffd9a8); sun.position.copy(v.look).addScaledVector(toCam, -3).add(new THREE.Vector3(0.3, 0.9, 0)); }
+  sun.target.position.copy(v.look);
+}
+function draw(a, view, kind) {
+  if (!a) return false;
+  show(a); const v = views[view](a);
+  cam.fov = v.fov; cam.updateProjectionMatrix(); cam.position.copy(v.eye); cam.lookAt(v.look); light(kind, v);
+  scene.updateMatrixWorld(true); renderer.render(scene, cam);
+  return true;
+}
+const sheetCanvas = document.createElement('canvas'), sctx = sheetCanvas.getContext('2d');
+const label = { front: 'rakt', q34: 'snett bakifrån', q34front: 'snett framifrån', side: 'profil', back: 'bakifrån', wide: 'helfigur snett', light: 'motljus', day: 'dagsljus', before: 'före', after: 'efter',
+  rest: 'stilla', walk: 'gång', run: 'spring', sit: 'sittande' };
+/** rows: look names; cols: [phase, view, light, pose]. Returns a JPEG data URL. */
+window.__sheet = (rows, cols) => {
+  const pad = 22;
+  sheetCanvas.width = cols.length * T; sheetCanvas.height = rows.length * T + pad;
+  sctx.fillStyle = '#222'; sctx.fillRect(0, 0, sheetCanvas.width, sheetCanvas.height);
+  sctx.font = '13px sans-serif'; sctx.fillStyle = '#fff';
+  cols.forEach(([phase, view, kind, pose = 'rest'], i) => sctx.fillText(`${label[phase]} – ${label[view]}, ${label[kind === 'back' ? 'light' : kind]}${pose === 'rest' ? '' : ', ' + label[pose]}`, i * T + 6, 16));
+  rows.forEach((name, r) => cols.forEach(([phase, view, kind, pose = 'rest'], i) => {
+    if (draw(figure(name, phase, pose), view, kind)) sctx.drawImage(renderer.domElement, i * T, pad + r * T);
+    if (i === 0) { sctx.fillStyle = '#fff'; sctx.fillText(name, 6, pad + r * T + T - 8); }
+  }));
+  return sheetCanvas.toDataURL('image/jpeg', 0.92);
+};
+window.__info = () => {
+  const res = { msaa: renderer.getContextAttributes().antialias, samples: renderer.getContext().getParameter(renderer.getContext().SAMPLES) };
+  for (const phase of ['before', 'after']) {
+    const a = figure('ljus, blond', phase, 'rest'); if (!a) continue;
+    const g = a.mesh.geometry.attributes; let hair = 0, head = 0;
+    for (let i = 0; i < g.position.count; i++) { if (g.region.getX(i) === 3) hair++; const f = g.facePart.getX(i); if (f > 0 && f < 30) head++; }
+    renderer.info.reset(); renderer.info.autoReset = false; draw(a, 'back', 'day');
+    res[phase] = { tris: g.position.count / 3, headTris: head / 3, hairTris: hair / 3, calls: renderer.info.render.calls }; renderer.info.autoReset = true;
+  }
+  return res;
+};
+/** ms per frame (a 1-pixel read for gl finish), before vs after alternating: nine long-haired figures at 1.5 – 3 m, from behind. */
+window.__cost = (frames = 20) => {
+  const gl = renderer.getContext(), one = new Uint8Array(4), res = { before: [], after: [] };
+  const time = (fn) => { fn(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, one); const t0 = performance.now(); for (let f = 0; f < frames; f++) { fn(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, one); } return +((performance.now() - t0) / frames).toFixed(2); };
+  renderer.setSize(640, 640);
+  for (const phase of ['before', 'after', 'before', 'after', 'before', 'after']) {
+    const mod = phase === 'after' ? after : before; if (!mod) continue;
+    show(null); const crowd = [];
+    for (let i = 0; i < 9; i++) { const c = new mod.Avatar({ ...cfg.avatarLook('crowd' + i), ...base, ...Object.values(looks)[i % 3] }); c.object.position.set((i % 3 - 1) * 0.7, 0, -Math.floor(i / 3) * 0.8); c.update(1 / 60); scene.add(c.object); crowd.push(c); }
+    cam.fov = 40; cam.updateProjectionMatrix(); cam.position.set(0.3, 1.6, 1.6); cam.lookAt(0, 1.35, -0.8); light('day', { eye: cam.position.clone(), look: new THREE.Vector3(0, 1.35, -0.8) });
+    scene.updateMatrixWorld(true);
+    res[phase].push(time(() => renderer.render(scene, cam)));
+    for (const c of crowd) { c.object.removeFromParent(); c.dispose?.(); }
+  }
+  renderer.setSize(T, T);
+  if (res.before.length) res.ratio = +(Math.min(...res.after) / Math.min(...res.before)).toFixed(3);
+  return res;
+};
+window.__lab = { THREE, after, before, cfg, scene, renderer, cam, light, figure, draw, views };
+window.__ready = true;
+</script></body></html>

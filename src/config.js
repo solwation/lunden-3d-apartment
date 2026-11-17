@@ -4504,7 +4504,7 @@ export const AVATAR_HAIR_GLOSS = {
 // nods or turns). Budget: the head's triangles grow by at most +10 % (#2042).
 export const AVATAR_LONGHAIR = {
   perCol: 2, rows: 8, rowPower: 0.8, overlap: 0.35, overlapAt: [0.06, 0.3], taper: [0.5, 0.72], tip: 0.06, bend: 0.5, edgeShade: 0.86,
-  air: [0.0012, 0.0045], outerShort: 0.018, jag: 0.03, stop: 1.1, clear: 0.007, backRows: 3, torso: [-0.02, -0.14, 0.85],
+  air: [0.0012, 0.0045], outerShort: 0.018, jag: 0.03, stop: 2.5, clear: 0.007, backRows: 3, torso: [-0.02, -0.14, 0.85],
   under: { length: 0.78, inset: 0.0025, rows: 4, shade: 0.74, depth: 0.012 },
   front: { n: 2, root: [71, 8], end: [52, -0.175], step: [5, -0.03], width: 0.015, rows: 8, lift: 0.0025, torso: [-0.03, -0.09] },
 };
