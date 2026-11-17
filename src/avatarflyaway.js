@@ -191,13 +191,14 @@ export function flyLight({ hair, beard }) {
 
 /** Adds the strands to an avatar variant's part list (avatar.js `parts`): `sources` { [style | 'beard' | 'moustache']: [geometries] } in the
  * head frame before placement; `P` the list `add` appends to; `part` FACE_PART; `centre` the head frame's hair centre; `seamY` the lip seam
- * (no beard strand roots in front of the lips); `beardMouth` the beard's mouth role (its strands follow the jaw the same way). */
-export function addFlyaways(add, P, sources, { part, centre, seamY, beardMouth }) {
+ * (no beard strand roots in front of the lips); `beardMouth` the beard's mouth role (its strands follow the jaw the same way); `hairAvoid(p)` true for a
+ * head-hair root to skip (#2050: below or in the soft hairline's sparse band). */
+export function addFlyaways(add, P, sources, { part, centre, seamY, beardMouth, hairAvoid = null }) {
   for (const [kind, geos] of Object.entries(sources)) {
     const beard = kind === 'beard' || kind === 'moustache';
     const s = flyawayStrands(geos, flyawayConfig(beard ? kind : +kind), {
       centre, beard, hatSafeY: centre[1] - 0.05, seed: 2040 + (beard ? 100 + kind.length : +kind * 7),
-      avoid: beard ? (p) => Math.abs(p[0]) < 0.032 && p[1] > seamY - 0.026 && p[2] > 0 : null,
+      avoid: beard ? (p) => Math.abs(p[0]) < 0.032 && p[1] > seamY - 0.026 && p[2] > 0 : hairAvoid, // (#2050: not from the soft hairline's sparse band)
     });
     if (!s) continue;
     add(s.geometry, beard ? 'beard' : 'hair', 'head', [0, 0, 0], 1.06);

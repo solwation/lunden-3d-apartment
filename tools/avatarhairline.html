@@ -1,0 +1,129 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar hairline</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#8795a3}canvas{display:block}</style></head>
+<body><script type="module">
+// #2050 component page, driven by tools/avatarhairlinetest.cjs: the soft hairline (src/avatarhairline.js). Each look is built from the
+// checkout (`after`) and, when the driver serves the baseline under /base/ (page.route), from the baseline src/avatar.js + src/config.js
+// (`before`); `variants` pick the hairstyle and the headwear / glasses / headphones. `?aa=0` renders without MSAA (the fallback that
+// mixes towards the skin). __sheet(rows, cols) draws a contact sheet; __info() triangles / draw calls; __cost() ms/frame before vs after.
+import * as THREE from 'three';
+const after = await import('../src/avatar.js'), cfg = await import('../src/config.js');
+let before = null;
+try { before = await import('../base/src/avatar.js'); } catch { before = null; }
+const T = 320, AA = new URLSearchParams(location.search).get('aa') !== '0';
+const renderer = new THREE.WebGLRenderer({ antialias: AA, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(T, T); document.body.appendChild(renderer.domElement);
+renderer.toneMapping = THREE.NeutralToneMapping;
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x8795a3);
+const hemi = new THREE.HemisphereLight(0xdfe8f2, 0x6b625a, 1.4); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff0dc, 2.6); scene.add(sun, sun.target);
+const cam = new THREE.PerspectiveCamera(30, 1, 0.02, 80);
+const S = cfg.SKIN, H = cfg.HAIR, top = cfg.AVATAR_SHAPE.steps - 1;
+const base = { tall: 1, build: 1, glasses: 0, phones: 0, earrings: 0, necklace: 0, ring: 0, bracelet: 0, watch: 0, hat: 0, facial: 0, style: 0, gender: 0, brows: null, top: 0x3d6b8f, pants: 0x30343a };
+const looks = {
+  'ljus, svart': { skin: S[0], hair: H[7] },
+  'ljus, blond': { skin: S[0], hair: H[4] },
+  'ljus, grå': { skin: S[1], hair: H[5] },
+  'mellan, brun': { skin: S[2], hair: H[1] },
+  'mörk, svart': { skin: S[4], hair: H[7] },
+  'mörk, blond': { skin: S[4], hair: H[4] },
+  'mörk, grå': { skin: S[3], hair: H[5] },
+};
+// variants of a look: the hairstyle (0 short, 1 long, 2 bun, 3 beanie, 4 curly) and headwear (hat 1 cap, 3 knitted, 4 hat), glasses, headphones
+const variants = { short: { style: 0 }, long: { style: 1 }, bun: { style: 2 }, beanie: { style: 3 }, curly: { style: 4 },
+  cap: { style: 0, hat: 1 }, knit: { style: 1, hat: 3 }, hat: { style: 4, hat: 4 }, specs: { style: 0, glasses: 1, phones: 1 }, specsLong: { style: 1, glasses: 2, phones: 1 } };
+const figures = {};
+function figure(name, phase, variant) {
+  const key = `${name}-${phase}-${variant}`;
+  if (figures[key] !== undefined) return figures[key];
+  const mod = phase === 'after' ? after : before;
+  if (!mod) return (figures[key] = null);
+  const a = new mod.Avatar({ ...cfg.avatarLook('hairline-' + name), ...base, ...looks[name], ...variants[variant] });
+  scene.add(a.object); a.update(1 / 60); a.object.visible = false;
+  return (figures[key] = a);
+}
+const show = (a) => { for (const b of Object.values(figures)) if (b) b.object.visible = b === a; return a; };
+const at = (a, bone, off = [0, 0, 0]) => a.bones[bone].localToWorld(new THREE.Vector3(...off));
+// The figure faces −z. front: the face and forehead from the front; q34: three-quarter from the figure's left; side: the profile from its
+// left (temple, sideburn, over the ear); detail: the forehead/temple edge up close; talk: 1.5 m at the game's pixel density.
+const views = {
+  front: (a) => { const h = at(a, 'head', [0, 0.12, 0.03]); return { eye: h.clone().add(new THREE.Vector3(0, 0.04, -0.5)), look: h, fov: 30 }; },
+  q34: (a) => { const h = at(a, 'head', [0, 0.115, 0.01]); return { eye: h.clone().add(new THREE.Vector3(-0.36, 0.05, -0.36)), look: h, fov: 30 }; },
+  side: (a) => { const h = at(a, 'head', [0, 0.1, 0.0]); return { eye: h.clone().add(new THREE.Vector3(-0.5, 0.03, -0.02)), look: h, fov: 30 }; },
+  back: (a) => { const h = at(a, 'head', [0, 0.07, -0.02]); return { eye: h.clone().add(new THREE.Vector3(0.15, 0.04, 0.5)), look: h, fov: 30 }; },
+  zoom: (a) => { const h = at(a, 'head', [0.03, 0.15, 0.06]); return { eye: h.clone().add(new THREE.Vector3(-0.2, 0.03, -0.5)), look: h, fov: 7 }; },
+  mid: (a) => { const h = at(a, 'head', [0.02, 0.15, 0.07]); return { eye: h.clone().add(new THREE.Vector3(-0.1, 0.03, -0.42)), look: h, fov: 12 }; },
+  detail: (a) => { const h = at(a, 'head', [0.045, 0.15, 0.085]); return { eye: h.clone().add(new THREE.Vector3(-0.12, 0.02, -0.26)), look: h, fov: 10 }; },
+  talk: (a) => { const h = at(a, 'head', [0, 0.04, 0]); return { eye: h.clone().add(new THREE.Vector3(0.35, 0.05, -1.46)), look: h.clone().add(new THREE.Vector3(0, -0.12, 0)), fov: 23.4 }; },
+};
+function light(kind, v) {
+  const toCam = v.eye.clone().sub(v.look).setY(0).normalize();
+  if (kind === 'day') { hemi.intensity = 1.4; sun.intensity = 2.6; sun.color.set(0xfff0dc); sun.position.copy(v.look).addScaledVector(toCam, 3).add(new THREE.Vector3(1.2, 3, 0)); }
+  else { hemi.intensity = 0.6; sun.intensity = 3.2; sun.color.set(0xffd9a8); sun.position.copy(v.look).addScaledVector(toCam, -3).add(new THREE.Vector3(0.3, 0.9, 0)); }
+  sun.target.position.copy(v.look);
+}
+function draw(a, view, kind) {
+  if (!a) return false;
+  show(a); const v = views[view](a);
+  cam.fov = v.fov; cam.updateProjectionMatrix(); cam.position.copy(v.eye); cam.lookAt(v.look); light(kind, v);
+  scene.updateMatrixWorld(true); renderer.render(scene, cam);
+  return true;
+}
+const sheetCanvas = document.createElement('canvas'), sctx = sheetCanvas.getContext('2d');
+const label = { front: 'rakt', q34: 'snett', side: 'profil', back: 'bakifrån', detail: 'detalj', mid: 'halvnära', talk: '1,5 m', light: 'motljus', day: 'dagsljus', before: 'före', after: 'efter',
+  short: 'kort', long: 'långt', bun: 'knut', beanie: 'mössfrisyr', curly: 'lockigt', cap: 'keps', knit: 'mössa', hat: 'hatt', specs: 'glasögon + hörlurar', specsLong: 'glasögon + hörlurar' };
+/** rows: look names; cols: [phase, view, light, variant]. Returns a JPEG data URL. */
+window.__sheet = (rows, cols) => {
+  const pad = 22;
+  sheetCanvas.width = cols.length * T; sheetCanvas.height = rows.length * T + pad;
+  sctx.fillStyle = '#222'; sctx.fillRect(0, 0, sheetCanvas.width, sheetCanvas.height);
+  sctx.font = '13px sans-serif'; sctx.fillStyle = '#fff';
+  cols.forEach(([phase, view, kind, variant = 'short'], i) => sctx.fillText(`${label[phase]} – ${label[view]}, ${label[kind === 'back' ? 'light' : kind]}, ${label[variant]}`, i * T + 6, 16));
+  rows.forEach((name, r) => cols.forEach(([phase, view, kind, variant = 'short'], i) => {
+    if (draw(figure(name, phase, variant), view, kind)) sctx.drawImage(renderer.domElement, i * T, pad + r * T);
+    if (i === 0) { sctx.fillStyle = '#fff'; sctx.fillText(name, 6, pad + r * T + T - 8); }
+  }));
+  return sheetCanvas.toDataURL('image/jpeg', 0.92);
+};
+window.__info = () => {
+  const res = { msaa: renderer.getContextAttributes().antialias, samples: renderer.getContext().getParameter(renderer.getContext().SAMPLES) };
+  for (const phase of ['before', 'after']) {
+    for (const v of ['short', 'long', 'bun', 'beanie', 'curly']) {
+      const a = figure('ljus, svart', phase, v); if (!a) continue;
+      const g = a.mesh.geometry.attributes; let hair = 0;
+      for (let i = 0; i < g.position.count; i++) if (g.region.getX(i) === 3) hair++;
+      renderer.info.reset(); renderer.info.autoReset = false; draw(a, 'front', 'day'); (res[phase] ??= {})[v] = { tris: g.position.count / 3, hairTris: hair / 3, calls: renderer.info.render.calls }; renderer.info.autoReset = true;
+    }
+  }
+  return res;
+};
+/** ms per frame (a 1-pixel read for gl finish), before vs after alternating: a 640 px forehead close-up (the hairline fills the most
+ * pixels) and nine figures at 3 – 6 m. */
+window.__cost = (frames = 30) => {
+  const gl = renderer.getContext(), one = new Uint8Array(4), res = { close: { before: [], after: [] }, crowd: { before: [], after: [] } };
+  const time = (fn) => { fn(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, one); const t0 = performance.now(); for (let f = 0; f < frames; f++) { fn(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, one); } return +((performance.now() - t0) / frames).toFixed(2); };
+  renderer.setSize(640, 640);
+  for (const phase of ['before', 'after', 'before', 'after', 'before', 'after']) {
+    const mod = phase === 'after' ? after : before; if (!mod) continue;
+    const a = figure('mellan, brun', phase, 'short');
+    res.close[phase].push(time(() => draw(a, 'front', 'day')));
+    show(null); const crowd = [];
+    for (let i = 0; i < 9; i++) { const c = new mod.Avatar({ ...cfg.avatarLook('crowd' + i), ...base, ...Object.values(looks)[i % 7], ...Object.values(variants)[i % 5] }); c.object.position.set((i % 3 - 1) * 0.9, 0, Math.floor(i / 3) * 1.2); c.update(1 / 60); scene.add(c.object); crowd.push(c); }
+    cam.fov = 40; cam.updateProjectionMatrix(); cam.position.set(0.8, 1.6, -4); cam.lookAt(0, 1.3, 1); light('day', { eye: cam.position.clone(), look: new THREE.Vector3(0, 1.3, 1) });
+    scene.updateMatrixWorld(true);
+    res.crowd[phase].push(time(() => renderer.render(scene, cam)));
+    for (const c of crowd) { c.object.removeFromParent(); c.dispose?.(); }
+  }
+  renderer.setSize(T, T);
+  for (const k of ['close', 'crowd']) if (res[k].before.length) res[k].ratio = +(Math.min(...res[k].after) / Math.min(...res[k].before)).toFixed(3);
+  return res;
+};
+window.__lab = { THREE, after, before, cfg, scene, renderer, cam, light, figure, draw, views };
+window.__ready = true;
+</script></body></html>

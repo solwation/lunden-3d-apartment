@@ -4295,8 +4295,11 @@ export const AVATAR_HAIR = { centre: [0, 0.09, 0], bunAt: [0, 0.212, -0.078], /*
   // hairline by `rowPower`, the edge lifted only `edgeLift` of the thickness (feathered over `featherTo` of the rows) and
   // tufts `tuft` [degrees down, period in degrees, |azimuth| where they fade]; `clump` sharpens the strand-group ridges
   // (power on the cosine) and `clumpShade` darkens their valleys in the vertex shade.
-  fine: 6, fineTo: 80, rowPower: 1.45, edgeLift: 0.08, featherTo: 0.5, tuft: [1.7, 12, 70], clump: 2.2, clumpShade: 0.1,
-  hairline: [[0, 37], [22, 36], [42, 29], [58, 16], [64, -4], [72, -6], [78, 13], [102, 15], [120, -6], [146, -26], [180, -30]],
+  // #2050: the tufts are gone (the soft edge, AVATAR_HAIRLINE, breaks the line instead); `hairline` has temple recessions (|azimuth|
+  // 24–34) and tapering sideburns (64–72) — *guess* by eye, not measured. The shells' columns stay laid out from `cols` (the
+  // earlier corners; the long curtain starts at `long.from`, the curly one at 72), so the finer line costs no triangles.
+  cols: [0, 22, 42, 58, 64, 72, 78, 102, 120, 146, 180], fine: 6, fineTo: 80, rowPower: 1.45, edgeLift: 0.08, featherTo: 0.5, clump: 2.2, clumpShade: 0.1,
+  hairline: [[0, 37.5], [14, 37], [24, 38.5], [32, 37.5], [42, 30], [52, 21], [58, 14], [63, 2], [66, -4.5], [69, -5.5], [73, 1], [78, 13], [102, 15], [120, -6], [146, -26], [180, -30]],
   beanie: [[0, 35], [35, 32], [60, 19], [80, 9], [100, 9], [140, -8], [180, -14]],
   thick: [[0.016, 0.006, 0.009], [0.014, 0.011, 0.013], [0.006, 0.004, 0.005], [0.004, 0.003, 0.004], [0.016, 0.008, 0.012]],
   // #1377 continuous curls: aesthetic guesses in metres/degrees; bounded four-sided tubes share the avatar draw.
@@ -4399,6 +4402,20 @@ export const AVATAR_BROW = {
   lift: 0.0007, cols: 14, rows: 3, reach: [0.0036, 0.0016], below: 0.0003, span: [-0.06, 1.04],
   cell: 0.0015, lane: 0.00042, len: [0.003, 0.005], width: 0.00012, slope: [2.4, 0.16], settle: 0.006, fill: 1,
   base: [0.66, 0.28], shade: [0.62, 0.95], skinShade: 1.0, budget: 200,
+};
+// #2050 the soft hairline (src/avatarhairline.js), all *guess* by eye against close-ups, not measured. The visible hairline is
+// AVATAR_HAIR.hairline (elevation by |azimuth| from AVATAR_HAIR.centre, plus its `flow.edge` wave); the scalp shell reaches `drop` degrees
+// below it (geometry the soft edge hides, room for the baby hairs; a curtain's top stays on the line). In the fragment shader the hair's
+// coverage thins from full at `band` m above the line (measured across it) to nothing `baby` m below it: an under-layer that fades in over
+// the band's upper part and single hairs along the meridians (`lane` lanes per turn × `cell` m along them, one hair per cell, `len`
+// [min, max] m, `width` m half-width at the root, thinner at the tip), present with chance `fill` [at the line, `edge` share of it just
+// above] rising to 1 at the band's top; below the line only short baby hairs (`babyLen`, `babyWidth`, chance `babyFill`) at the forehead
+// and temples (fading out between |azimuth| `babyTo`) and fainter at the nape (`nape` × the chance). `shade` [min, max] darkens each hair;
+// `under` = where the under-layer starts (share of the band); `wobble` m = a slow wave on the line along its length (uneven, not a ruled edge).
+// Coverage is alpha-to-coverage (MSAA, as the brows #2046); without MSAA the colour mixes towards the skin's colour. No triangles of its own.
+export const AVATAR_HAIRLINE = {
+  drop: 3.2, band: 0.009, baby: 0.0042, lanes: 1500, cell: 0.0011, len: [0.0024, 0.0048], width: 0.0001, edge: 0.2,
+  babyLen: [0.0016, 0.0034], babyWidth: 0.00006, babyFill: 0.4, babyTo: [62, 76], nape: 0.5, shade: [0.72, 1.0], under: 0.15, wobble: 0.0016,
 };
 // Combat between players (#667, src/combat.js; the room's check: cloudflare/players.js COMBAT). Only when both hold a weapon:
 // `weapons` = what counts, in the order they are looked for (the room's list must have each one: there its range and rate);
