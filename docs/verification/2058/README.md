@@ -10,7 +10,7 @@ low three-quarter.
 |---|---|
 | `kiss.png` | after, daylight: the nose's base closed, the moustache and beard follow the lips without gaps |
 | `kiss-raking.png` | after, low sun from the side (form only) |
-| `before/kiss.png`, `before/kiss-raking.png` (removed at closure) | before: the stepped, torn triangles at the nose's base and the cheeks pushed out over the nose |
+| [before/kiss.png](https://github.com/solwation/lunden-3d-apartment/blob/71457f3c/docs/verification/2058/before/kiss.png) (removed at closure), [before/kiss-raking.png](https://github.com/solwation/lunden-3d-apartment/blob/71457f3c/docs/verification/2058/before/kiss-raking.png) (removed at closure) (removed at closure) | before: the stepped, torn triangles at the nose's base and the cheeks pushed out over the nose |
 
 Cause: the pout's muzzle weight (`pucker`, avatar.js base()) was cut to 0 wherever `noseBlend` > 0 but stayed ≈ 0.9 on the next
 vertex, so edges at the nose's base stretched up to 8.8× (and the whole lower face, cheeks up to the eyes, moved forward with
