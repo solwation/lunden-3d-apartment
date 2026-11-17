@@ -8,6 +8,7 @@ import { nerfSegments, nerfPlayerContact } from './nerf.js';
 import { bowSegments, bowPlayerContact } from './bowflight.js';
 import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld } from './combatworld.js';
 import { flinch } from './avatarface.js'; // #2031
+import { flinchGhost, flinchSelf } from './avatarhit.js';
 
 // Combat between players (#667) on top of the ghosts (#666, src/ghosts.js; the room's check: cloudflare/players.js).
 // Only between two players who both hold a weapon (COMBAT.weapons; main.js `weaponKey`): they are drawn solid for each
@@ -455,12 +456,14 @@ export class Combat {
     this.onHitCb(m, g);
     if (m.w === 'nerf') this.sfx?.playerHit?.();
     if (g) this.sfx?.splat?.(g.feet.clone().setY(g.feet.y + 1.2));
+    flinchGhost(g, this.camera.getWorldPosition(new THREE.Vector3()), m.head); // #2036: the target's body flinches away from us
   }
 
   /** The room: someone hit us. Out of lives: to the start, full again. */
-  hurt(m) {
+  hurt(m, by = null) {
     this.hurts++;
     flinch(this.ghosts.myGhost?.avatar); // #2031: our mirror image too
+    flinchSelf(this.ghosts, by, m.head); // #2036: our mirror image flinches away from the shooter
     this.lives = m.dead ? this.maxLives : Math.max(0, m.l);
     this.flashT = C.flash;
     this.flashEl.style.opacity = '1';

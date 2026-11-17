@@ -1210,6 +1210,20 @@ fresh-source-frozen Worker room covers a real body1 shot, four 2-HP Jaw receipts
 legacy fallback, lethal reset/UUID/replay, wall and miss, and wire budget. It uses no
 apartment World or WebGL and does not establish full scene physics or phone behavior.
 
+## Hit flinch (#2036)
+
+`src/avatarhit.js` (numbers `AVATAR_HIT` in `src/config.js`, all *guess*) makes a hit avatar flinch: one under-damped
+spring response per hit on the torso's and the head's bone-local pitch / roll / yaw, peaking after ~0.1 s, overshooting
+once and fading to exactly zero within 1 s. A head hit snaps the head back (front), forward (behind) or tilts and turns
+it away (side); a body hit folds the torso forward (front), shoves it forward with the head whipping back (behind) or
+bends and twists it away (side). `poseOlof` applies `fig.hitFx` on top of the finished pose, so only the rendered bones
+move: the #974 head boxes and pick body follow the network state, and the camera never reads the bones. The existing
+room events drive it with no new network field: `Combat.hit` → `flinchGhost` (the target's Ghost, away from our camera)
+on the shooter's client, `Combat.hurt` → `flinchSelf` (our mirror image, away from the shooter's Ghost; from the front
+when unknown) on the target's client. Onlookers get no hit event, so they see no flinch. Checks:
+`node --test tools/avatarhittest.mjs` and `tools/browsertest.sh node tools/avatarhittest.cjs SITE OUT`
+(component page `tools/avatarhit.html`, [result](../verification/2036/)).
+
 ## Confirmed-hit marker (#875)
 
 `src/hitmarker.js` owns the brief Swedish text above the crosshair, attached only to `Combat.hit` (the

@@ -128,6 +128,7 @@ export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, 
       hand.quaternion.copy(q1.copy(out).invert().multiply(want));
     } else hand.quaternion.identity();
   });
+  fig.hitFx?.apply(B); // #2036: a hit's flinch on top of the finished pose (src/avatarhit.js; bones only, never the hit boxes)
   // where his head is (world), for the speech bubble
   fig.object.updateMatrixWorld(true);
   B.head.getWorldPosition(fig.head);

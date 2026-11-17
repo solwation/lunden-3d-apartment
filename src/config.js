@@ -6679,6 +6679,15 @@ export const AVATAR_SWAY = { maxDt: 0.05, step: 1 / 120, accelMax: 30, accelFilt
   bun: { omega: 20, zeta: 0.25, gain: 0.8, r: 0.07, min: [-0.012, 0, -0.012], max: [0.012, 0.012, 0.012] },
   hem: { omega: 16, zeta: 0.4, gain: 1.0, r: 0.17, min: [-0.025, 0, -0.025], max: [0.025, 0, 0.025] },
   hairDepth: 0.22, bunRadius: [0.045, 0.07], hemFade: [0.0, 0.14] };
+// #2036: the body flinches when a shot hits it (src/avatarhit.js). Each hit is one under-damped spring response (`hz` natural frequency,
+// `zeta` damping ratio < 1 so it overshoots once) scaled to its peak and faded to exactly 0 over `fade` [start, end] s; `lag` s delays the
+// part that follows (the head after a body hit, the torso after a head hit). Peaks in rad, bone-local: `pitch` about x (+ the top forward),
+// `roll` about z, `yaw` about y. Head hit: the head snaps back / forward / sideways and turns away. Body hit: a front hit folds the torso
+// forward round the hit (`fold`), a back hit shoves it forward (`push`) while the head whips back (`whip`), a side hit bends and twists it away. `max` rad caps the sum of overlapping hits, `kicks` how many are kept.
+// All *guesses* by eye (a Nerf dart's flinch, not a physical impulse); only the shooter's and the target's own clients see a hit event.
+export const AVATAR_HIT = { hz: 2.2, zeta: 0.3, fade: [0.7, 1.0], lag: 0.05, max: 0.6, kicks: 4,
+  head: { pitch: 0.42, roll: 0.3, yaw: 0.3, torso: 0.07 },
+  body: { fold: 0.3, push: 0.16, whip: 0.32, roll: 0.22, yaw: 0.28, head: 0.16 } };
 // #1165: glasses, 0 none, 1 round, 2 square frames: a look field `glasses`, the extension's `g` tag (absent when 0). The frames are part
 // of the shared head geometry and collapse to a point in the vertex shader when not chosen (src/avatar.js), so no extra draw call.
 // #1325: kind 3 sunglasses (the square frames plus dark lenses, `lens`).

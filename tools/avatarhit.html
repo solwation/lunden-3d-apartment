@@ -1,0 +1,72 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar hit flinch</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2036 component page, driven by tools/avatarhittest.cjs: the real Ghost (a remote player, flinching through combat.js' `flinchGhost`) and our
+// own mirror image (`self`, through `flinchSelf`) hit on the head or the body from the front, the side or behind.
+// __sheet(rows): one contact sheet; each row { from: 'front' | 'side' | 'back', head, self?, view: 'side' | 'front' } as frames at MS after the hit.
+// A red cone shows where the shot came from and which way it travelled. Returns per frame the head's crown offset from an unhit twin's at the same moment (m).
+import * as THREE from 'three';
+import { Ghost } from '../src/ghosts.js';
+import { HitFx, flinchGhost, flinchSelf } from '../src/avatarhit.js';
+const MS = [0, 60, 100, 160, 260, 420, 1100], CW = 200, CH = 270, FPS = 60;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, -3); scene.add(sun);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.MeshLambertMaterial({ color: 0x9aa39a }));
+ground.rotation.x = -Math.PI / 2; scene.add(ground);
+const dart = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.22, 12), new THREE.MeshLambertMaterial({ color: 0xd8261e }));
+scene.add(dart);
+let t = 1000;
+const clock = () => t;
+const mk = (self) => { const g = new Ghost(scene, self ? 99 : 7, self ? 'Jag' : 'Spelare', self); if (g.tag) g.tag.visible = false; scene.add(g.root); g.avatar.hitFx = new HitFx(clock); return g; };
+const remote = mk(false), mirror = mk(true), twins = new Map([[remote, mk(false)], [mirror, mk(true)]]); // a twin never hit: the unhit pose (breathing, idle sway) at the same moment
+for (const w of twins.values()) w.root.visible = false;
+const SHOOTER = { front: [0, -4], back: [0, 4], side: [-4, 0] }; // world [x, z]; the ghost (yaw 0) faces -z, its left is world -x
+const step = (g, ms) => { for (let n = 0; n < Math.round(ms * FPS / 1000); n++) { t += 1000 / FPS; g.animate(t, 1, 0, 0); twins.get(g).animate(t, 1, 0, 0); } };
+const V = new THREE.Vector3();
+const crown = (g) => { g.root.updateMatrixWorld(true); return g.avatar.bones.head.localToWorld(V.set(0, 0.2, 0.02)).clone(); };
+window.__sheet = (rows) => {
+  renderer.setSize(MS.length * CW, rows.length * CH);
+  renderer.setScissorTest(true);
+  const info = [];
+  rows.forEach((r, ri) => {
+    const g = r.self ? mirror : remote; remote.root.visible = !r.self; mirror.root.visible = !!r.self;
+    const w = twins.get(g);
+    for (const x of [g, w]) { x.root.position.set(0, 0, 0); x.root.rotation.y = 0; x.have = false; x.avatar.hitFx.kicks.length = 0; x.avatar.time = 0; }
+    step(g, 1200); // settle
+    const [sx, sz] = SHOOTER[r.from], y = r.head ? 1.62 : 1.15;
+    const shooter = new THREE.Vector3(sx, 1.6, sz);
+    if (r.self) flinchSelf({ mine: { p: new THREE.Vector3(0, 0, 0), r: 0 }, selfGhost: () => mirror }, { root: { position: shooter } }, r.head);
+    else flinchGhost(g, shooter, r.head);
+    const dir = new THREE.Vector3(-sx, 0, -sz).normalize(); // the dart's flight: towards the figure
+    dart.position.set(0, y, 0).addScaledVector(dir, -0.38); dart.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+    const cam = new THREE.PerspectiveCamera(24, CW / CH, 0.05, 50);
+    if (r.view === 'front') cam.position.set(0.9, 1.35, -3.6); else cam.position.set(3.6, 1.35, -0.9); // front: from in front (a little to its right); side: from its right (a little in front)
+    cam.lookAt(0, 1.18, 0);
+    const row = { ...r, crown: [] };
+    let last = 0;
+    MS.forEach((ms, c) => {
+      step(g, ms - last); last = ms;
+      dart.visible = c === 0;
+      row.crown.push(crown(g).sub(crown(w)).toArray().map((v) => Math.round(v * 1000) / 1000));
+      const x = c * CW, yy = (rows.length - 1 - ri) * CH;
+      renderer.setViewport(x, yy, CW, CH); renderer.setScissor(x, yy, CW, CH);
+      renderer.render(scene, cam);
+    });
+    row.active = g.avatar.hitFx.active;
+    info.push(row);
+  });
+  renderer.setScissorTest(false);
+  return { ms: MS, rows: info };
+};
+window.__ready = true;
+</script></body></html>
