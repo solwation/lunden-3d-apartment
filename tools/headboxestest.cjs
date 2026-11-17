@@ -3,8 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 (async () => {
-  const source = fs.readFileSync(path.join(__dirname, '../src/config.js'), 'utf8');
-  const { PVP_HEAD_BOXES: H, avatarLook, rifleBoxHeadContact: hit, rifleHeadBaseY: base } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+  const { PVP_HEAD_BOXES: H, avatarLook, rifleBoxHeadContact: hit, rifleHeadBaseY: base } = await import(require('node:url').pathToFileURL(path.join(__dirname, '../src/config.js')).href);
   let checks = 0;
   const check = (ok, name) => { assert.ok(ok, name); console.log(`PASS ${name}`); checks++; };
   const near = (a, b) => Math.abs(a - b) < 1e-8;
