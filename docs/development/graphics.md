@@ -283,6 +283,26 @@ sharpens it (`wet`). The #2040 backlit rim is unchanged. No triangle, texture, l
 `node --test tools/avatarhairglosstest.mjs` and `PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarhairglosstest.cjs SITE OUT`
 ([views, orbit and cost](../verification/2052/README.md)).
 
+#### Beards that grow from the skin (#2051)
+
+`src/avatarbeard.js` (tunables `AVATAR_BEARD`, all *guess*) replaced the #2012/#2041 beard shell (`beardGrid`, `beardMouthRing`,
+`headSkinAlong` in `src/avatar.js`). The shell was projected onto the skull/jaw ellipsoids and floated 4–17 mm off the real face (its
+cheek edge 4–10 mm, the moustache alone 8–15 mm), so every edge was a hard, lifted rim. Now each option is a grid over azimuth/elevation
+from `centre` seated on the head's real skin (a ray probe of the head and neck meshes, `skinProbe`, built once per option and figure and
+cloned), lifted by `lift` plus `thick` × density^0.7, so the edges lie within a millimetre of the skin. The density (`beardDensity`,
+`moustacheDensity`, mirrored in GLSL) fades over `edge` degrees: a soft, slightly wavy cheek line with no saw-tooth (`jag`/`strand` are
+gone), a crisp line under the nose and lip, a long fade down the neck and behind the jaw, a short one round the #2041 oval (kept: same
+`opening` frame, rings and `mouthWeight` role); the upper cheeks are patchier. Facial 3 dips its top under the nose; the moustache alone
+is a band whose ends droop and taper to points past the mouth corners, just above the vermilion. The fragment recomputes (a, e) from the
+bind position (the face warp undone, no attribute or varying) and draws hairs in lanes: down and converging towards the chin on the beard,
+outwards and down from the philtrum on a moustache (facial 3 blends both above the mouth), one hashed hair per lane cell with a random
+lean, present with the density at its root, over an undercoat that is full only where the beard is dense; past ~1 px per lane only the
+expected coverage is drawn (no loop, no shimmer). Coverage is alpha → the #2040 alpha-to-coverage, and on the silhouette the undercoat
+gives way so the outline is hairs; without MSAA the colour mixes towards the skin (`uBeardSkin` × cheek/lip/under-jaw tone). The #2012
+strand stripes no longer apply to beards; the #2040 rim light and beard/moustache flyaways stay (they root only in the dense part,
+`beardCore`). Expressions, talking and kiss move the beard with the skin as before. Checks: `node --test tools/avatarbeardtest.mjs` and
+`PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarbeardtest.cjs SITE OUT` ([views and cost](../verification/2051/README.md)).
+
 ### Butterfly wing hinges (#1925)
 
 `butterflymodel.js` supplies shared authored contours and a bounded vertex hinge.

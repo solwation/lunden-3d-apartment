@@ -4333,7 +4333,7 @@ export const AVATAR_EXPR = { rise: 7, fall: 2.4, flinch: 0.7,
 // undercoat `base` (`baseShade`) only where the density is above `baseFrom`; on the silhouette it gives way by `graze` [from, to, strength]
 // (1 − |n·v|). `radius` m: the arc per degree; `budget`: triangles per option incl. its flyaways (#2042: +10 % of the ≈ 8,200-triangle head). Without MSAA the uncovered beard is skin (`skinShade` × the look's skin).
 export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76, columns: 32, rows: 12, cheek: [-6, 10], cheekAz: [22, 90],
-  chinTop: -27, notch: [8, 22], lift: 0.0005, thick: [0.011, 0.005, 0.004], radius: 0.088, skinShade: 1,
+  chinTop: -27, notch: [8, 22], lift: 0.0005, thick: [0.011, 0.005, 0.004], radius: 0.088, skinShade: 0.7,
   opening: { frame: [4, 7, 12], e: -20.6, half: [15, 6.2], bend: 1.3, rings: 3 },
   edge: { rise: 3, dip: [4, 8, 20], wobble: [1.2, 25], top: [3.5, 10, 6], neck: 16, back: 18, mouth: 2.5, patch: 0.3 },
   moustache: { half: 27, top: -8, bottom: -16.5, philtrum: 1, droop: 5, taper: 0.55, feather: [2.5, 1.0], thick: 0.0035, margin: 2, cols: 16, rows: 6, blend: [16, 30] },

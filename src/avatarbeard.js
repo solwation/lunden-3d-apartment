@@ -207,37 +207,42 @@ float bdEdge(vec2 ae, float kind) { return kind > 1.5 && kind < 2.5 ? bdMoustach
 vec4 bdHash(vec2 c) { return fract(sin(dot(c, vec2(12.9898, 78.233)) + vec4(0.0, 1.7, 3.1, 5.3)) * 43758.5453); }
 // One lane pattern: mode 0 the beard (lanes converge downwards: N = X·exp(κ(Y − Y0)), growth T = −Y), mode 1 the moustache (outwards and
 // down from the philtrum: N = Y + μ|X| + ν X², growth T = |X|); X = a·cos(e), Y = e (degrees of arc). Returns (coverage, mean shade).
-vec2 bdHairs(vec2 ae, float mode, float kind, float px) {
+vec2 bdHairs(vec2 ae, float mode, float kind, float px, float dHere) { // dHere: the density here (inside the beard it stands for the roots')
   float X = ae.x * cos(ae.y * ${f(DEG)}), Y = ae.y, sg = X < 0.0 ? -1.0 : 1.0, N, T, across, lane, cellL;
   vec2 len;
   if (mode < 0.5) { float g = exp(${f(Hr.converge)} * (Y - ${f(Hr.y0)})); N = X * g; T = -Y; across = g; lane = ${f(Hr.lane / MPD)}; cellL = ${f(Hr.cell / MPD)}; len = vec2(${f(Hr.len[0] / MPD)}, ${f(Hr.len[1] / MPD)}); }
   else { float ax = abs(X), sl = ${f(Hr.slope[0])} + 2.0 * ${f(Hr.slope[1])} * ax; N = Y + ${f(Hr.slope[0])} * ax + ${f(Hr.slope[1])} * ax * ax; T = ax; across = sqrt(1.0 + sl * sl); lane = ${f(Hr.lane / MPD)}; cellL = ${f(Hr.cell / MPD * 0.8)}; len = vec2(${f(Hr.lenM[0] / MPD)}, ${f(Hr.lenM[1] / MPD)}); }
   float ln = floor(N / lane), cl = floor(T / cellL), hairs = 0.0, dark = 0.0, w0 = ${f(Hr.width / MPD)}, pxd = px / ${f(MPD)};
-  for (int k = 0; k < 3; k++) {
+  float far = smoothstep(0.5, 1.5, pxd / lane);
+  if (far < 0.999) for (int k = 0; k < 3; k++) { // (once lanes share a pixel only the expected coverage is drawn: no loop)
     float it = cl - float(k);
     vec4 r = bdHash(vec2(it + 71.0 * mode, ln)), r2 = bdHash(vec2(ln + 37.0, it - 11.0 + 53.0 * mode));
     float t0 = (it + r.x) * cellL, s = (T - t0) / mix(len.x, len.y, r.y);
     if (s < 0.0 || s > 1.0) continue;
     float n0 = (ln + 0.2 + 0.6 * r.z) * lane, lean = ((r2.x - 0.5) * ${f(Hr.lean)} * s + (r2.z - 0.5) * ${f(Hr.curl)} * s * s) * lane;
-    vec2 root; // the hair's root in (a, e)
-    if (mode < 0.5) { float ry = -t0, rx = n0 / exp(${f(Hr.converge)} * (ry - ${f(Hr.y0)})); root = vec2(rx / max(cos(ry * ${f(DEG)}), 0.05), ry); }
-    else { float ry = n0 - ${f(Hr.slope[0])} * t0 - ${f(Hr.slope[1])} * t0 * t0; root = vec2(sg * t0 / max(cos(ry * ${f(DEG)}), 0.05), ry); }
-    float present = step(r.w, ${f(Hr.fill)} * bdDensity(root, kind));
+    float rd = dHere;
+    if (dHere < 0.95) { // near an edge: the density at the hair's own root (a, e)
+      vec2 root;
+      if (mode < 0.5) { float ry = -t0, rx = n0 / exp(${f(Hr.converge)} * (ry - ${f(Hr.y0)})); root = vec2(rx / max(cos(ry * ${f(DEG)}), 0.05), ry); }
+      else { float ry = n0 - ${f(Hr.slope[0])} * t0 - ${f(Hr.slope[1])} * t0 * t0; root = vec2(sg * t0 / max(cos(ry * ${f(DEG)}), 0.05), ry); }
+      rd = bdDensity(root, kind);
+    }
+    float present = step(r.w, ${f(Hr.fill)} * rd);
     float w = w0 * (1.0 - 0.6 * s), hd = max(w, 0.5 * pxd), d = abs(N - n0 - lean) / across;
     float c = present * (1.0 - smoothstep(hd - 0.5 * pxd, hd + 0.5 * pxd, d)) * (w / hd) * smoothstep(0.0, 0.06, s);
     dark += c * (1.0 - hairs) * mix(${f(Hr.shade[0])}, ${f(Hr.shade[1])}, r2.y);
     hairs = 1.0 - (1.0 - hairs) * (1.0 - c);
   }
   dark = hairs > 0.0001 ? dark / hairs : 1.0;
-  float far = smoothstep(0.5, 1.5, pxd / lane);
   float expect = ${f(Math.min(0.9, (Hr.fill * ((Hr.len[0] + Hr.len[1]) / 2) * 2 * Hr.width * 0.7) / (Hr.cell * Hr.lane)))};
-  return vec2(mix(hairs, expect * bdDensity(ae, kind), far), mix(dark, ${f((Hr.shade[0] + Hr.shade[1]) / 2)}, far));
+  return vec2(mix(hairs, expect * dHere, far), mix(dark, ${f((Hr.shade[0] + Hr.shade[1]) / 2)}, far));
 }`;
 }
 
 /** Fragment colour, after the surface colour (diffuseColor = the beard's colour). Declares `beardCov` at main scope. `hb` = the head
- * bone's bind position (Vector3), `region` = the beard's palette region, `warp` = AVATAR_FACE.warp (the bind position's x is undone by it). */
-export function beardColor({ hb, region }) {
+ * bone's bind position (Vector3), `region` = the beard's palette region, `skinTone` = GLSL that sets `vec3 beardTone` from `q` (head-frame
+ * bind position): the skin shading there (avatar.js skinShading), so the no-MSAA fallback's skin matches the real skin round the beard. */
+export function beardColor({ hb, region, skinTone = 'vec3 beardTone = vec3(1.0);' }) {
   const W = FACE.warp, c = B.centre;
   return `float beardCov = 1.0; // #2051
     if (uSuit < 0.5 && uBeard > 0.5 && vFly.x < 0.5 && abs(vSurface.x - ${f(region)}) < 0.5) {
@@ -246,11 +251,11 @@ export function beardColor({ hb, region }) {
       vec3 bc = bq - vec3(${f(c[0])}, ${f(c[1])}, ${f(c[2])});
       vec2 bae = vec2(atan(bc.x, bc.z), atan(bc.y, length(bc.xz))) / ${f(DEG)};
       float bpx = max(max(bfw.x, bfw.y), max(bfw.z, 0.000001)); // metres per pixel here
-      float bdens = bdEdge(bae, uBeard);
+      float bdens = bdEdge(bae, uBeard), bhere = bdDensity(bae, uBeard);
       float bm = uBeard > 2.5 ? (1.0 - bdS(${f(M.blend[0])}, ${f(M.blend[1])}, abs(bae.x))) * bdS(${f(O.e - 2)}, ${f(O.e + 3)}, bae.y) : uBeard < 1.5 ? 0.0 : 1.0; // the moustache's share
       vec2 bh = vec2(0.0, 1.0), bh2 = bh;
-      if (bm < 0.999) bh = bdHairs(bae, 0.0, uBeard, bpx);
-      if (bm > 0.001) bh2 = bdHairs(bae, 1.0, uBeard, bpx);
+      if (bm < 0.999) bh = bdHairs(bae, 0.0, uBeard, bpx, bhere);
+      if (bm > 0.001) bh2 = bdHairs(bae, 1.0, uBeard, bpx, bhere);
       bh = mix(bh, bh2, bm);
       float bbase = ${f(Hr.base)} * smoothstep(${f(Hr.baseFrom)}, 1.0, bdens);
       if (uFly.y > 0.5) { // on the silhouette the undercoat gives way: the outline is hairs
@@ -260,7 +265,7 @@ export function beardColor({ hb, region }) {
       beardCov = 1.0 - (1.0 - bbase) * (1.0 - bh.x);
       diffuseColor.rgb *= mix(${f(Hr.baseShade)}, bh.y, bh.x / max(beardCov, 0.0001));
       if (uFly.y > 0.5) diffuseColor.a *= beardCov;
-      else diffuseColor.rgb = mix(uBeardSkin, diffuseColor.rgb, beardCov);
+      else { vec3 q = vSuitAt - vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)}); ${skinTone} diffuseColor.rgb = mix(uBeardSkin * beardTone, diffuseColor.rgb, beardCov); }
     }`;
 }
 
