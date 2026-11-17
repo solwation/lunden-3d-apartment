@@ -9,6 +9,7 @@ import { contourRows } from '../src/avatarcontour.js';
 import { noseTriangles, noseForms, noseHeight, noseMask, noseFormOffset, noseFormWeights, noseSlideOffset, noseNormalTurn } from '../src/avatarnose.js';
 import { longHairTris } from '../src/avatarlonghair.js';
 import { AVATAR_HAIR } from '../src/config.js';
+import { shortHairTriangles } from '../src/avatarshorthair.js'; // #2055: the locks and wound bun (their own budget, avatarshorthairtest)
 
 // head-bone triangles (facePart 1 … 29) per variant before #2048 (37d922df, after the eyes #2045 and ears #2047)
 const before = [['s0f0', 8524], ['s0f1', 9412], ['s0f3', 9488], ['s1f0', 9444], ['s2f0', 8860], ['s3f0', 9552], ['s4f0', 14140]];
@@ -21,7 +22,7 @@ test('#2048 budget: the finer nose grid stays within +10 % of the head triangles
   for (const [key, tris] of before) {
     const style = +key[1], facial = +key[3], g = avatarModelGeometry({ ...avatarLook('nose'), style, facial, gender: style % 2 }), a = g.attributes;
     let head = 0, curl = 0; for (let i = 0; i < a.position.count; i += 3) { const f = a.facePart.getX(i); if (f > 0 && f < 30) head++; if (f === 7 && a.faceAnchor.getY(i) > 0.5 && a.faceAnchor.getZ(i) < 0.5) curl++; }
-    head -= long2053(style);
+    head -= long2053(style) + shortHairTriangles(style); // (#2055: the locks and wound bun, their own budget)
     if (curl) head -= curl - 5040; // (#2054: the curl volumes in place of the #1377 tubes have their own budget, avatarcurlstest)
     assert.equal(head, tris + own, `${key}: ${head} head triangles = ${tris} + the nose's ${own}`);
     assert.ok(own <= tris * 0.1, `${key}: nose +${own} > ${tris}×0.1`);

@@ -91,7 +91,7 @@ float hlFill(float d, float a) {
 
 /** Fragment colour, after the surface colour (diffuseColor = the hair's colour). Declares `lineCov` at main scope. `hb` = the head bone's
  * bind position (Vector3), `region` = the hair's palette region. */
-export function hairlineColor({ hb, region }) {
+export function hairlineColor({ hb, region, jag = '0.0', below = '0.0' }) { // (#2055: `jag` a GLSL expression in metres, with haz in scope, pulling the line down; `below` m more of shell under it that is still line, not a lock)
   const c = HAIR.centre, n = T.length, cells = Math.floor(Math.max(L.len[1], L.babyLen[1]) / L.cell) + 2;
   const lamHair = expectRate(false), lamBaby = expectRate(true), bandDeg = L.band / (0.09 * deg);
   return `float lineCov = 1.0; // #2050
@@ -114,9 +114,9 @@ export function hairlineColor({ hb, region }) {
           if (dd < best) { best = dd; hv = dd > 1e-8 ? w : vec2(-ba.y, ba.x); }
         }
         float hsg = hE >= hLine ? 1.0 : -1.0;
-        float dm = hsg * sqrt(best) * 0.0174533 * hr + ${f(L.wobble)} * (0.6 * sin(haz * 23.0 + 1.3) + 0.4 * sin(haz * 41.0 + 0.4)); // metres across the line (+ a slow wave)
+        float dm = hsg * sqrt(best) * 0.0174533 * hr + ${f(L.wobble)} * (0.6 * sin(haz * 23.0 + 1.3) + 0.4 * sin(haz * 41.0 + 0.4)) + ${jag}; // metres across the line (+ a slow wave)
         float hg = clamp(abs(normalize(hv).y), 0.15, 1.0); // d(distance) / d(along the meridian)
-        if (dm < ${f(L.band)} && dm > ${f(-(L.baby + L.drop * deg * 0.12 + 0.003))}) { // (#2053: well below the shell's lowest edge it is a hanging lock or strand, not the line)
+        if (dm < ${f(L.band)} && dm > ${f(-(L.baby + L.drop * deg * 0.12 + 0.003))} - ${below}) { // (#2053: well below the shell's lowest edge it is a hanging lock or strand, not the line)
           vec3 hfw = fwidth(vSuitAt);
           float hpx = max(max(hfw.x, hfw.y), max(hfw.z, 0.000001)); // metres per pixel here
           float hlw = 6.2831853 * hrxz / ${f(L.lanes)}, hlt = (haz / 6.2831853 + 0.5) * ${f(L.lanes)};

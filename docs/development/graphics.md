@@ -355,6 +355,24 @@ the field through `clothBump`), faded by the pixel footprint; the #2052 gloss's 
 styles unchanged; one uniform, no attribute, texture, light, pass or draw call. Checks: `node --test tools/avatarcurlstest.mjs` and
 `PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarcurlstest.cjs SITE OUT` ([views, sway and cost](../verification/2054/README.md)).
 
+#### Layered short hair and a wound bun (#2055)
+
+`src/avatarshorthair.js` (tunables `AVATAR_SHORT_HAIR`, all *guess*) breaks up the smooth helmet of short hair (style 0) and the bun
+(style 2). `hairLocks` lays overlapping locks over the scalp shell in tiers (`tiers`: crown, middle, lowest down to the soft hairline): each
+lock follows the shell's own parametrisation (`hairParts`' azimuth + sweep · sin(πs), elevation from the shell's edge, the clump twist from
+`glossFlow`), so the #2052 gloss tangent runs along it; its root is sunk into the shell, its tip lifted and closed back down, so the tips
+overlap the tier below and break the outline. The lowest tier stays shorter over the ears. Short hair's per-column #2012 tousle is
+replaced by the locks (`tousle: 0`); flyaways keep growing from the shell only (`userData.noFly`). The nape and the hair over the ears get
+an uneven edge from irregular tufts that pull the #2050 soft line down (`jag`, a GLSL term `hairlineColor` adds to its line distance;
+`shortJag` is its JS twin); the short shell starts that much lower there (`shortHairDrop`), and `hairlineColor`'s #2053 cut-off for hanging locks reaches that much
+further for short hair (`below`, `shortHairBelow`), so the soft line still thins the lowered shell. The side parting (`AVATAR_SURFACE.hair.part`)
+is grooved deeper and tinted towards the skin colour along its middle in the fragment (`uShortHair`, set from the look); locks keep
+`partClear` off it. `bunParts` replaces the bun's smooth ball and torus with two three-ply ropes coiled round its tilted axis (the axis
+the gloss's bun tangent and #2014's sway radius use) over a darker core, with the band as before; the bun's thin shell gets flat
+combed-back locks. Cost: short hair +660, bun +816 triangles (≤ +10 % of the head's), one uniform, one draw call. Hats still tuck the
+hair (the lifted tips included). Checks: `node --test tools/avatarshorthairtest.mjs` and
+`PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarshorthairtest.cjs SITE OUT` ([views, sway and cost](../verification/2055/README.md)).
+
 ### Butterfly wing hinges (#1925)
 
 `butterflymodel.js` supplies shared authored contours and a bounded vertex hinge.

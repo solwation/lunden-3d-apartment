@@ -1,0 +1,191 @@
+{
+ "baseline": "28d532d1e49db484bc05f4c7913884bbe45dc9ab",
+ "swayBun": [
+  [
+   0.0007,
+   0.0043,
+   -0.0002
+  ],
+  [
+   0.0002,
+   0,
+   -0.0001
+  ],
+  [
+   0.0024,
+   0.003,
+   0.0119
+  ],
+  [
+   -0.0012,
+   0,
+   -0.0014
+  ],
+  [
+   0.0036,
+   0,
+   0.0004
+  ],
+  [
+   0.0031,
+   0,
+   0.0003
+  ]
+ ],
+ "info": {
+  "msaa": true,
+  "samples": 4,
+  "before": {
+   "short": {
+    "tris": 15000,
+    "headTris": 9180,
+    "hairTris": 1064,
+    "calls": 1
+   },
+   "long": {
+    "tris": 16720,
+    "headTris": 10900,
+    "hairTris": 2784,
+    "calls": 1
+   },
+   "bun": {
+    "tris": 15336,
+    "headTris": 9516,
+    "hairTris": 1304,
+    "calls": 1
+   },
+   "beanie": {
+    "tris": 16028,
+    "headTris": 10208,
+    "hairTris": 192,
+    "calls": 1
+   },
+   "curly": {
+    "tris": 21816,
+    "headTris": 15996,
+    "hairTris": 7880,
+    "calls": 1
+   },
+   "cap": {
+    "tris": 15000,
+    "headTris": 9180,
+    "hairTris": 1064,
+    "calls": 1
+   },
+   "knit": {
+    "tris": 15000,
+    "headTris": 9180,
+    "hairTris": 1064,
+    "calls": 1
+   },
+   "phones": {
+    "tris": 15000,
+    "headTris": 9180,
+    "hairTris": 1064,
+    "calls": 1
+   },
+   "bunCap": {
+    "tris": 15336,
+    "headTris": 9516,
+    "hairTris": 1304,
+    "calls": 1
+   },
+   "bunKnit": {
+    "tris": 15336,
+    "headTris": 9516,
+    "hairTris": 1304,
+    "calls": 1
+   }
+  },
+  "after": {
+   "short": {
+    "tris": 15660,
+    "headTris": 9840,
+    "hairTris": 1724,
+    "calls": 1
+   },
+   "long": {
+    "tris": 16720,
+    "headTris": 10900,
+    "hairTris": 2784,
+    "calls": 1
+   },
+   "bun": {
+    "tris": 16152,
+    "headTris": 10332,
+    "hairTris": 2120,
+    "calls": 1
+   },
+   "beanie": {
+    "tris": 16028,
+    "headTris": 10208,
+    "hairTris": 192,
+    "calls": 1
+   },
+   "curly": {
+    "tris": 21816,
+    "headTris": 15996,
+    "hairTris": 7880,
+    "calls": 1
+   },
+   "cap": {
+    "tris": 15660,
+    "headTris": 9840,
+    "hairTris": 1724,
+    "calls": 1
+   },
+   "knit": {
+    "tris": 15660,
+    "headTris": 9840,
+    "hairTris": 1724,
+    "calls": 1
+   },
+   "phones": {
+    "tris": 15660,
+    "headTris": 9840,
+    "hairTris": 1724,
+    "calls": 1
+   },
+   "bunCap": {
+    "tris": 16152,
+    "headTris": 10332,
+    "hairTris": 2120,
+    "calls": 1
+   },
+   "bunKnit": {
+    "tris": 16152,
+    "headTris": 10332,
+    "hairTris": 2120,
+    "calls": 1
+   }
+  }
+ },
+ "cost": {
+  "close": {
+   "before": [
+    214.88,
+    244.36,
+    349.88
+   ],
+   "after": [
+    513.36,
+    622.27,
+    446.6
+   ],
+   "ratio": 2.078
+  },
+  "crowd": {
+   "before": [
+    619.98,
+    937.86,
+    1045.63
+   ],
+   "after": [
+    980.52,
+    1433.63,
+    1116.76
+   ],
+   "ratio": 1.582
+  }
+ }
+}

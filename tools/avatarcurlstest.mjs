@@ -14,7 +14,7 @@ const isCurl = (a, i) => a.facePart.getX(i) === 7 && a.faceAnchor.getY(i) > 0.5 
 const headTris = (a) => { let n = 0; for (let i = 0; i < a.position.count; i += 3) { const f = a.facePart.getX(i); if (f > 0 && f < 30) n++; } return n; };
 
 test('#2054 budget: curly head triangles within +10 % of the integrated #1377 tubes (14796), the other styles unchanged', () => {
-  const before = [9180, 10900, 9516, 10208, 14796]; // head-bone triangles per style at b622b587 (after #2048, #2050, #2052); long (style 1) +800 for #2053's locks
+  const before = [9840, 10900, 10332, 10208, 14796]; // head-bone triangles per style at b622b587 (after #2048, #2050, #2052); long (style 1) +800 for #2053's locks; short (0) +660 and bun (2) +816 for #2055's locks and wound bun
   for (let style = 0; style < 5; style++) {
     const g = avatarModelGeometry({ ...avatarLook('nose'), style, facial: 0, gender: style % 2 }), head = headTris(g.attributes);
     if (style === 4) assert.ok(head <= before[4] * 1.1, `curly: ${head} > ${before[4]} × 1.1`);

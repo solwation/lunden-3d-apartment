@@ -24,6 +24,8 @@ import { hairlineAt, hairlineShell, hairlineAvoid, hairlineUniforms, applyHairli
 import { refineNose, noseHeight, noseVertexGLSL, noseFragmentGLSL, noseKey, NOSE_SKIN, noseUniforms, applyNoseLook, noseFormDecl, noseNormalGLSL } from './avatarnose.js'; // #2048: the nose (#2049: its shape variants)
 import { glossUniforms, applyGlossLook, glossVertex, glossFragment, glossKey } from './avatarhairgloss.js'; // #2052: gloss along the strands
 import { beardShell, moustacheShell, beardCore, skinProbe, beardUniforms, applyBeardLook, beardFDecl, beardColor, beardRoughness, beardKey } from './avatarbeard.js'; // #2051
+import { AVATAR_SHORT_HAIR as SHORT } from './config.js'; // #2055
+import { hairLocks, bunParts, shortHairDrop, shortHairBump, shortHairUniforms, applyShortHairLook, shortHairFDecl, shortHairJag, shortHairBelow, shortHairColor, shortHairKey } from './avatarshorthair.js'; // #2055: layered short hair and a wound bun
 import { topTexture } from './spidersuit.js';
 import { profileAt, contourRows, roundChinCap, neckGeometry } from './avatarcontour.js'; // #2043
 import { reactionPose, mixHand } from './reactpose.js';
@@ -730,22 +732,22 @@ function hairParts(style) {
   // back), with its full thickness there, so the curtain's top row is the shell's lowest one
   const L = HAIR.long, parting = style === 1, curtain = (a) => parting && Math.abs(a) >= L.from - 1e-9;
   const longTop = (a) => hairlineAt(a) + (L.top - hairlineAt(a)) * smooth(L.front, L.back, Math.abs(a));
-  const low = (a) => (curtain(a) ? Math.max(hairlineAt(a), longTop(a)) : style === 4 && Math.abs(a) >= 72 ? hairlineAt(a) : hairline(a)); // (#2050: a curtain's top stays on the visible line)
+  const low = (a) => (curtain(a) ? Math.max(hairlineAt(a), longTop(a)) : style === 4 && Math.abs(a) >= 72 ? hairlineAt(a) : hairline(a) - shortHairDrop(style, a)); // (#2050: a curtain's top stays on the visible line; #2055: short hair lower under its tufted nape)
   // #2012: the strand groups as sharper ridges (a cosine raised to HC.clump) with darker valleys between them
   const clump = (a, s) => (style < 3 ? (0.5 + 0.5 * Math.cos(a * deg * (style === 1 ? HC.flow.longGroups : HC.flow.groups) + s * (style === 2 ? 7 : -5))) ** HC.clump : 1);
   const bump = (a, s, i) => {
     const K = SURFACE.hair;
-    const tousle = style === 0 ? (0.0045 * Math.sin(i * 1.9 + 0.4) * smooth(0.45, 0.9, s) + 0.004 * smooth(0.25, 0.7, s) * (1 - smooth(25, 55, Math.abs(a)))) * (1 - smooth(0.85, 1, s)) : 0; // (#2012: one crown point, no spikes)
+    const tousle = style === 0 ? (SHORT.tousle * Math.sin(i * 1.9 + 0.4) * smooth(0.45, 0.9, s) + 0.004 * smooth(0.25, 0.7, s) * (1 - smooth(25, 55, Math.abs(a)))) * (1 - smooth(0.85, 1, s)) : 0; // (#2012: one crown point, no spikes)
     if (style >= 3) return tousle;
     const groups = style < 3 ? (style === 1 ? HC.flow.longRidge : HC.flow.ridge) * clump(a, s) * Math.sin(s * Math.PI) : 0;
     return tousle + groups + K.wave * Math.sin(a * deg * K.frequency + s * K.flow) * Math.sin(s * Math.PI)
-      - K.part[2] * Math.exp(-(((a - K.part[0]) / K.part[1]) ** 2)) * Math.sin(s * Math.PI);
+      - K.part[2] * Math.exp(-(((a - K.part[0]) / K.part[1]) ** 2)) * Math.sin(s * Math.PI) + shortHairBump(style, a, s); // (#2055: short hair's parting deeper)
   };
   const rootShade = (a, s, i) => strand(i) * (parting && a === 0 && s > 0.15 ? 0.8 : 1) * (0.92 + 0.08 * smooth(0, 0.3, s)) * (1 - HC.clumpShade * (1 - clump(a, s)) * smooth(0, 0.3, s));
-  const scalp = shell(az, low, crownTop, HC.rows,
-    (a, e, s, i) => Math.max(0.0015, thick(a, e) * (curtain(a) || (style === 4 && Math.abs(a) >= 72) ? 1 : feather(s)) * (parting && a === 0 ? 0.55 : 1) + bump(a, s, i)),
-    rootShade, false, HC.rowPower);
+  const scalpLift = (a, e, s, i) => Math.max(0.0015, thick(a, e) * (curtain(a) || (style === 4 && Math.abs(a) >= 72) ? 1 : feather(s)) * (parting && a === 0 ? 0.55 : 1) + bump(a, s, i));
+  const scalp = shell(az, low, crownTop, HC.rows, scalpLift, rootShade, false, HC.rowPower);
   out.push([scalp, 'hair', style === 4 ? HAIR.curly.shellShade : 1]); // (#2054: the curls' shell darker, depth between them)
+  out.push(...hairLocks(style, { low, lift: (a, e, s) => scalpLift(a, e, s, 0), onSkull })); // #2055: overlapping locks (short, the bun's combed ones)
   if (style === 1) out.push(...longHair([...az.filter((a) => a >= L.from), ...az.filter((a) => a <= -L.from)], low, onSkull, sheet, strand, thick, hit, smooth,
     { geometry: scalp, column: (a) => az.indexOf(a), rows: HC.rows, shade: (a) => rootShade(a, 0, az.indexOf(a)) }));
   if (style === 4) { // #2054: curl volumes (src/avatarcurls.js) packed on a thinner, darker shell, in place of the #1377 tubes
@@ -795,10 +797,7 @@ function hairParts(style) {
     out.push([ringlets, 'hair', 1, ringAt]); // #2054: ringlets hanging from the curtain
   }
   if (style === 2) { // the bun at the back of the crown: a coil around a knot, tilted with the head's curve, and its band
-    const at = HAIR.bunAt, tilt = -0.66;
-    out.push([new THREE.SphereGeometry(0.036, 10, 7).scale(1.05, 0.9, 1).rotateX(tilt).translate(...at), 'hair', 1.06]);
-    out.push([new THREE.TorusGeometry(0.03, 0.016, 6, 12).rotateX(Math.PI / 2).rotateX(tilt).translate(at[0], at[1] - 0.012, at[2] + 0.009), 'hair', 0.96]);
-    out.push([new THREE.TorusGeometry(0.03, 0.0045, 4, 12).rotateX(Math.PI / 2).rotateX(tilt).translate(at[0], at[1] - 0.026, at[2] + 0.02), 'top', 0.85]);
+    out.push(...bunParts(HAIR.bunAt, -0.66)); // #2055: twisted ropes coiled round a core (was a smooth ball and torus), and its band
   }
   return out;
 }
@@ -1217,6 +1216,7 @@ function makeMaterial(rim, headProjection) {
   Object.assign(u, noseUniforms()); // #2049
   Object.assign(u, beardUniforms()); // #2051
   Object.assign(u, curlUniforms()); // #2054
+  Object.assign(u, shortHairUniforms()); // #2055
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: SURFACE.finish.cloth, metalness: 0, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
@@ -1241,7 +1241,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     sh.vertexShader = sh.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>\n${flyProject(bindAt('head').add(new THREE.Vector3(...HAIR.centre)))}`); // #2040
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>\n${LAMP_FDECL}`) // #2039
-      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim, uLight;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;\n' + WET_DECL + skin.decl + '\n' + EYE_FDECL + '\n' + FLY_FDECL + '\n' + browFDecl() + '\n' + hairlineFDecl() + '\n' + CURL_FDECL + '\n' + noseFragmentGLSL(bindAt('head'), FACE_PART.head).decl + '\n' + beardFDecl())
+      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim, uLight;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;\n' + WET_DECL + skin.decl + '\n' + EYE_FDECL + '\n' + FLY_FDECL + '\n' + browFDecl() + '\n' + hairlineFDecl() + '\n' + shortHairFDecl() + '\n' + CURL_FDECL + '\n' + noseFragmentGLSL(bindAt('head'), FACE_PART.head).decl + '\n' + beardFDecl())
       .replace('#include <color_fragment>', `#include <color_fragment>
       if (uSuit > 0.5) {
         vec3 red = vec3(${new THREE.Color(SPIDER.colors.red).toArray().join(',')}), blue = vec3(${new THREE.Color(SPIDER.colors.blue).toArray().join(',')});
@@ -1264,8 +1264,9 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       ${skin.color}
       ${surfaceColor()}
       ${browColor({ hb: bindAt('head'), region: REGION.brow, part: FACE_PART.brow, warp: FACE.warp.width, skinTone: `${skinArea('socket', SK.eye)} vec3 browTone = mix(vec3(1.0), ${v3(SK.socket)}, clamp(socket, 0.0, 1.0));` })}
-      ${hairlineColor({ hb: bindAt('head'), region: REGION.hair })}
+      ${hairlineColor({ hb: bindAt('head'), region: REGION.hair, jag: shortHairJag(), below: shortHairBelow() })}
       ${beardColor({ hb: bindAt('head'), region: REGION.beard, skinTone: `${skinArea('cheek', SK.cheek)} ${skinArea('lipRim', SK.lipRim)} float under = ${SK.under[2].toFixed(3)} * (1.0 - smoothstep(${SK.under[0].toFixed(3)}, ${SK.under[1].toFixed(3)}, q.y)); vec3 beardTone = mix(vec3(1.0), ${v3(SK.blush)}, clamp(cheek + lipRim, 0.0, 1.0)) * mix(vec3(1.0), ${v3(SK.underTint)}, clamp(under, 0.0, 1.0));` })}
+      ${shortHairColor({ hb: bindAt('head'), region: REGION.hair })}
       diffuseColor.rgb = mix(diffuseColor.rgb, uRingColor, vRing); // #1324: the ring's metal
       float wetSnow = 0.0; // #2018
       ${wetColor(bindAt('torso').y)}
@@ -1289,7 +1290,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     const gloss = { head: bindAt('head'), region: REGION, part: FACE_PART }; // #2052
     sh.vertexShader = glossVertex(sh.vertexShader, gloss); sh.fragmentShader = curlGloss(glossFragment(sh.fragmentShader, gloss)); // (#2054: the curls turn its strands)
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054'; // #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2033' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey(); // #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
   return m;
 }
 
@@ -1422,6 +1423,7 @@ function applyFaceShape(u, lk) {
   applyGlossLook(u, lk); // #2052
   applyNoseLook(u, lk); // #2049
   applyBeardLook(u, lk); // #2051
+  applyShortHairLook(u, lk); // #2055
   u.uHair.value = v('hairLength'); // #1165
   u.uGlasses.value = Number.isInteger(lk.glasses) && lk.glasses > 0 && lk.glasses < GLASSES.names.length ? lk.glasses : 0;
   u.uEarrings.value = Number.isInteger(lk.earrings) && lk.earrings > 0 && lk.earrings < EARR.names.length ? lk.earrings : 0; // #1325

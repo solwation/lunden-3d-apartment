@@ -4536,6 +4536,29 @@ export const AVATAR_LONGHAIR = {
   under: { length: 0.9, inset: 0.0025, rows: 4, shade: 0.74, depth: 0.012 },
   front: { n: 2, root: [71, 8], end: [52, -0.175], step: [5, -0.03], width: 0.026, rows: 8, lift: 0.0025, torso: [-0.03, -0.09] },
 };
+// #2055 (part of #2042) short hair (style 0) and the bun (style 2) without the smooth helmet (src/avatarshorthair.js), all *guess* by eye
+// against the before views (docs/verification/2055), not measured. Head-bone metres / degrees round AVATAR_HAIR.centre.
+// `tiers`: overlapping locks laid along the shell's own strand flow (its sweep and clump twist, so the #2052 gloss follows them), each
+// tier [count, root share, tip share, width m, tip lift m, length jitter (share)]: crown, middle and the lowest tier, whose tips reach
+// the soft hairline (#2050). A lock is `rows` rows long, three vertices across, root sunk `sink` m into the shell, tip closed back down.
+// Short hair's per-column tousle (#2012, 0.0045 m) is replaced by the locks. `part` the side parting [extra groove depth m, half
+// width °, scalp tint at its middle (0 … 1), tint half width m, share where it starts / ends]; locks keep `partClear` ° off it.
+// `ears` [from, to] |azimuth| ° where the lowest tier stops `earLift` (share) higher so it stays above the ear.
+// `jag`: the nape's and the ears' uneven edge, a line pulled down in tufts: [depth m, tufts per turn, sharpness (power), from |az| °
+// (none in front), full from °, share over the ear, full again from °]; the short shell runs that much lower there.
+// `bun`: the knot as twisted ropes coiled round its tilted axis (AVATAR_HAIR_GLOSS.bunTilt): `ropes` × `turns`, `segs` along each,
+// `sides` round, radius from `r` [outer, inner] m (round the axis), height `y` [start, end] m, rope thickness `thick` [start, end] m,
+// three-ply twist `ply` [depth share, turns along the rope]; a darker core sphere `core` m. `combed` the bun's own combed-back locks
+// [count, root share, tip share, width m, lift m] over its thin shell.
+export const AVATAR_SHORT_HAIR = {
+  tiers: [[7, 0.98, 0.6, 0.032, 0.0065, 0.12], [11, 0.8, 0.34, 0.03, 0.005, 0.15], [15, 0.52, 0.05, 0.028, 0.0036, 0.2]],
+  rows: 4, sink: 0.0008, tousle: 0,
+  part: [0.004, 5, 0.36, 0.003, [0.02, 0.12], [0.55, 0.8]], partClear: 11,
+  ears: [74, 108], earLift: 0.14,
+  jag: [0.013, 24, 1.6, 55, 70, 0.45, 112],
+  bun: { ropes: 2, turns: 1.45, segs: 30, sides: 6, r: [0.031, 0.011], y: [-0.019, 0.024], thick: [0.014, 0.009], ply: [0.22, 5], core: 0.027 },
+  combed: [14, 0.06, 0.82, 0.016, 0.0018],
+};
 // Combat between players (#667, src/combat.js; the room's check: cloudflare/players.js COMBAT). Only when both hold a weapon:
 // `weapons` = what counts, in the order they are looked for (the room's list must have each one: there its range and rate);
 // remove one here to leave it out. Both armed: drawn solid (`solid` opacity), else a ghost. A hit is judged by the shooter
