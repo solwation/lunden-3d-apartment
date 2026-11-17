@@ -72,3 +72,5 @@ There is no separate under-chin strap in this Avatar implementation; the existin
 is at eye height and its coordinates are unchanged. Cap, brimmed hat and headphones are shown.
 Not separately tested: full-world mirror/preview route, physical devices and an underwater mask capture.
 Avatar-only work is excluded from the public downstream.
+
+Published on main as `7c9f8e8ef796c32505ecf9eccab056510e6cf8e2`; Pages44161330786 and Worker44161330784 passed. Both paired result images were embedded in the issue before closure.
