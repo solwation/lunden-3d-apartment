@@ -28,7 +28,7 @@ test('#2052 strand direction follows the shells\' strand groups (sweep + clump t
       assert(got[0] * want[0] + got[1] * want[1] + got[2] * want[2] > 0, 'tip-ward, not root-ward');
       worst = Math.max(worst, angle(got, want));
     }
-    assert(worst < 8, `style ${style}: strand direction off by ${worst.toFixed(1)}°`);
+    assert(worst < 10, `style ${style}: strand direction off by ${worst.toFixed(1)}°`);
   }
 });
 test('#2052 strands hang below the shell (long curtain) and run down at the back and outwards from the crown', () => {

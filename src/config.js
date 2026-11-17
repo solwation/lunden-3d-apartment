@@ -4450,8 +4450,8 @@ export const AVATAR_HAIRLINE = {
 // `brow` / `beard` / `fly` the gloss on brows, beards and flyaways; `below` ° under the shell's edge where the strands start to hang;
 // the bun's coil within `bunRadius` m of AVATAR_HAIR.bunAt round its axis tilted `bunTilt` rad (as hairParts).
 export const AVATAR_HAIR_GLOSS = {
-  primary: [-0.06, 140, 0.13], secondary: [0.1, 30, 0.2, 1.0], jitter: [0.05, 18, 30, 90, 0.03],
-  fade: [0.0012, 0.005], far: [0.3, 0.75], wrap: 0.2, wet: 2.5, lamp: 1.8, brow: 0.6, beard: 0.8, fly: 0.6, below: 10,
+  primary: [-0.06, 140, 0.12], secondary: [0.1, 30, 0.2, 1.0], jitter: [0.05, 18, 30, 90, 0.03],
+  fade: [0.0012, 0.005], far: [0.3, 0.75], wrap: 0.2, wet: 2.5, lamp: 1.8, brow: 0.35, beard: 0.8, fly: 0.6, below: 10,
   bunRadius: 0.058, bunTilt: -0.66,
 };
 // Combat between players (#667, src/combat.js; the room's check: cloudflare/players.js COMBAT). Only when both hold a weapon:

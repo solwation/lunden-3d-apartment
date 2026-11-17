@@ -45,6 +45,18 @@ export function shellEdge(a, long) {
   const L = HAIR.long, h = hairlineAt(a);
   return long && Math.abs(a) >= L.from ? Math.max(h, h + (L.top - h) * smooth(L.front, L.back, Math.abs(a))) : h;
 }
+// The shell's edge resampled every EDGE_STEP ° of |azimuth| (the shader reads it from a const array: one lookup, no branch chain).
+const EDGE_STEP = 5, EDGE = Array.from({ length: 180 / EDGE_STEP + 1 }, (_, i) => hairlineAt(i * EDGE_STEP));
+/** [the shell's edge (°), its slope d edge / d azimuth] at azimuth a (°) from the resampled table: the JS twin of the GLSL hgEdge. */
+export function edgeAt(a, long) {
+  const L = HAIR.long, x = Math.min(Math.abs(a), 179.999) / EDGE_STEP, i = Math.floor(x), y0 = EDGE[i], y1 = EDGE[i + 1];
+  let h = y0 + (y1 - y0) * (x - i), dh = (y1 - y0) / EDGE_STEP;
+  if (long && Math.abs(a) >= L.from) {
+    const t = Math.min(1, Math.max(0, (Math.abs(a) - L.front) / (L.back - L.front))), sm = t * t * (3 - 2 * t), dsm = 6 * t * (1 - t) / (L.back - L.front);
+    [h, dh] = [h + (L.top - h) * sm, dh * (1 - sm) + (L.top - h) * dsm];
+  }
+  return [h, Math.sign(a) * Math.min(1.5, Math.max(-1.5, dh))];
+}
 /**
  * The tip-ward strand direction (unnormalised, head frame) at `q` = the bind position minus the hair centre, for a style's
  * glossFlow `flow` (the JS twin of the vertex GLSL, for tests): along the shell's strand groups, hanging below the shell.
@@ -52,10 +64,9 @@ export function shellEdge(a, long) {
 export function strandDir(q, flow) {
   const [sweep, twist, long] = flow, deg = Math.PI / 180;
   const rh = Math.hypot(q[0], q[2]) + 1e-5, th = Math.atan2(q[0], q[2]), el = Math.atan2(q[1], rh), thd = th / deg, eld = el / deg;
-  const sw = long ? Math.sign(thd) * sweep : sweep, share = (a) => Math.min(1, Math.max(0, (eld - shellEdge(a, long)) / Math.max(90 - shellEdge(a, long), 1)));
-  let a = thd, s = share(a);
-  for (let i = 0; i < 2; i++) { a = thd - sw * Math.sin(Math.PI * s); s = share(a); } // the shell's own azimuth parameter (before the sweep)
-  const e0 = shellEdge(a, long), slope = Math.min(1.5, Math.max(-1.5, (shellEdge(a + 1, long) - shellEdge(a - 1, long)) / 2)), on = smooth(e0 - G.below, e0 + 2, eld);
+  const sw = long ? Math.sign(thd) * sweep : sweep, share = (e0) => Math.min(1, Math.max(0, (eld - e0) / Math.max(90 - e0, 1)));
+  const a = thd - sw * Math.sin(Math.PI * share(edgeAt(thd, long)[0])); // the shell's own azimuth parameter (before the sweep), one step
+  const [e0, slope] = edgeAt(a, long), s = share(e0), on = smooth(e0 - G.below, e0 + 2, eld);
   const dth = (sw * Math.PI * Math.cos(s * Math.PI) + twist) * deg * on, de = (Math.max(90 - e0, 1) + slope * twist * (1 - s) * on) * deg;
   const taz = [Math.cos(th), 0, -Math.sin(th)], tel = [-Math.sin(el) * Math.sin(th), Math.cos(el), -Math.sin(el) * Math.cos(th)];
   return [0, 1, 2].map((i) => -(Math.cos(el) * dth * taz[i] + de * tel[i]));
@@ -65,12 +76,6 @@ export function strandDir(q, flow) {
 export const glossUniforms = () => ({ uHairFlow: { value: new THREE.Vector4(...glossFlow(0)) } });
 /** From a look (avatar.js applyFaceShape). */
 export function applyGlossLook(u, lk) { if (u.uHairFlow) u.uHairFlow.value.set(...glossFlow(lk?.style ?? 0)); }
-
-const hairlineGlsl = () => {
-  const t = HAIR.hairline, rows = [];
-  for (let i = 1; i < t.length; i++) rows.push(`if (a <= ${f(t[i][0])}) return mix(${f(t[i - 1][1])}, ${f(t[i][1])}, (a - ${f(t[i - 1][0])}) / ${f(t[i][0] - t[i - 1][0])});`);
-  return `float hgLine(float a) { a = abs(a); ${rows.join(' ')} return ${f(t.at(-1)[1])}; }`;
-};
 
 /**
  * Vertex: the declarations and, after project_vertex (skinned, transformedNormal and mvPosition known), the view-space strand tangent.
@@ -82,14 +87,22 @@ export function glossVertex(vs, { head, region, part }) {
   const bun = head.clone().add(new THREE.Vector3(...HAIR.bunAt)), tilt = G.bunTilt, axis = [0, Math.cos(tilt), Math.sin(tilt)];
   const L = HAIR.long, x0 = FACE.brow.at[0] - 0.5 * BROW.length;
   const decl = `uniform vec4 uHairFlow; varying vec3 vHairT;
-${hairlineGlsl()}
-float hgEdge(float a, float lg) { float h = hgLine(a); return lg > 0.5 && abs(a) >= ${f(L.from)} ? max(h, h + (${f(L.top)} - h) * smoothstep(${f(L.front)}, ${f(L.back)}, abs(a))) : h; }
+const float HG_EDGE[${EDGE.length}] = float[${EDGE.length}](${EDGE.map(f).join(', ')});
+vec2 hgEdge(float a, float lg) { // #2052: the shell's lower edge (°) and its slope per ° of azimuth (src/avatarhairgloss.js edgeAt)
+  float x = min(abs(a), 179.999) / ${f(EDGE_STEP)}, i = floor(x); int k = int(i);
+  float h = mix(HG_EDGE[k], HG_EDGE[k + 1], x - i), dh = (HG_EDGE[k + 1] - HG_EDGE[k]) / ${f(EDGE_STEP)};
+  if (lg > 0.5 && abs(a) >= ${f(L.from)}) {
+    float t = clamp((abs(a) - ${f(L.front)}) / ${f(L.back - L.front)}, 0.0, 1.0), sm = t * t * (3.0 - 2.0 * t);
+    dh = dh * (1.0 - sm) + (${f(L.top)} - h) * 6.0 * t * (1.0 - t) / ${f(L.back - L.front)}; h += (${f(L.top)} - h) * sm;
+  }
+  return vec2(h, sign(a) * clamp(dh, -1.5, 1.5));
+}
 vec3 hgFlow(vec3 q) { // #2052: tip-ward along the shell's strand groups (src/avatarhairgloss.js strandDir)
   float rh = length(q.xz) + 0.00001, th = atan(q.x, q.z), el = atan(q.y, rh), thd = degrees(th), eld = degrees(el);
-  float sw = uHairFlow.z > 0.5 ? sign(thd) * uHairFlow.x : uHairFlow.x, a = thd, e0 = hgEdge(a, uHairFlow.z), s = clamp((eld - e0) / max(90.0 - e0, 1.0), 0.0, 1.0);
-  for (int i = 0; i < 2; i++) { a = thd - sw * sin(3.14159265 * s); e0 = hgEdge(a, uHairFlow.z); s = clamp((eld - e0) / max(90.0 - e0, 1.0), 0.0, 1.0); }
-  float slope = clamp(0.5 * (hgEdge(a + 1.0, uHairFlow.z) - hgEdge(a - 1.0, uHairFlow.z)), -1.5, 1.5), on = smoothstep(e0 - ${f(G.below)}, e0 + 2.0, eld);
-  float dth = radians(sw * 3.14159265 * cos(s * 3.14159265) + uHairFlow.y) * on, de = radians(max(90.0 - e0, 1.0) + slope * uHairFlow.y * (1.0 - s) * on);
+  float sw = uHairFlow.z > 0.5 ? sign(thd) * uHairFlow.x : uHairFlow.x, e0 = hgEdge(thd, uHairFlow.z).x;
+  vec2 ed = hgEdge(thd - sw * sin(3.14159265 * clamp((eld - e0) / max(90.0 - e0, 1.0), 0.0, 1.0)), uHairFlow.z);
+  e0 = ed.x; float s = clamp((eld - e0) / max(90.0 - e0, 1.0), 0.0, 1.0), on = smoothstep(e0 - ${f(G.below)}, e0 + 2.0, eld);
+  float dth = radians(sw * 3.14159265 * cos(s * 3.14159265) + uHairFlow.y) * on, de = radians(max(90.0 - e0, 1.0) + ed.y * uHairFlow.y * (1.0 - s) * on);
   vec3 taz = vec3(cos(th), 0.0, -sin(th)), tel = vec3(-sin(el) * sin(th), cos(el), -sin(el) * cos(th));
   return -(cos(el) * dth * taz + de * tel);
 }`;
@@ -138,7 +151,8 @@ export function glossFragment(fs, { head, region, part, lamp = LIGHT.lamp.rgb.ma
   const pars = `varying vec3 vHairT;
 // #2052 anisotropic hair gloss (src/avatarhairgloss.js): the strand frame, set in main before the lights
 float hgOn = 0.0, hgShift = 0.0, hgFar = 0.0; vec3 hgT = vec3(0.0, 1.0, 0.0);
-float hgLobe(vec3 t, vec3 h, float shift, vec3 n, float e) { vec3 ts = normalize(t + n * shift); float c = dot(ts, h); return pow(max(1.0 - c * c, 0.0001), 0.5 * e); }
+// a lobe round the tangent tilted by shift towards the normal: T ⟂ N, so dot(normalize(T + shift · N), H) = (T·H + shift · N·H) / √(1 + shift²)
+float hgLobe(float th, float nh, float shift, float e) { float c = (th + shift * nh) * inversesqrt(1.0 + shift * shift); return pow(max(1.0 - c * c, 0.0001), 0.5 * e); }
 vec3 hgSpec(vec3 l, vec3 v, vec3 n, vec3 albedo, float rough) {
   vec3 h = normalize(l + v);
   float sharp = clamp(${f(SURFACE.finish.hair)} / max(rough, 0.05), 1.0, ${f(G.wet)}), soft = mix(1.0, ${f(G.far[0])}, hgFar);
@@ -146,7 +160,8 @@ vec3 hgSpec(vec3 l, vec3 v, vec3 n, vec3 albedo, float rough) {
   float lit = clamp((dot(n, l) + ${f(G.wrap)}) / ${f(1 + G.wrap)}, 0.0, 1.0);
   float m = max(max(albedo.r, albedo.g), max(albedo.b, 0.004));
   vec3 tint = albedo * inversesqrt(m) * ${f(S[3])}; // the hair's hue at √ its brightness: dark hair keeps little of it
-  return lit * k * hgOn * (${f(P[2])} * hgLobe(hgT, h, ${f(P[0])} + hgShift, n, e1) + ${f(S[2])} * tint * hgLobe(hgT, h, ${f(S[0])} + hgShift, n, e2));
+  float th = dot(hgT, h), nh = dot(n, h);
+  return lit * k * hgOn * (${f(P[2])} * hgLobe(th, nh, ${f(P[0])} + hgShift, e1) + ${f(S[2])} * tint * hgLobe(th, nh, ${f(S[0])} + hgShift, e2));
 }
 void RE_Direct_Hair(const in IncidentLight directLight, const in vec3 geometryPosition, const in vec3 geometryNormal, const in vec3 geometryViewDir, const in vec3 geometryClearcoatNormal, const in PhysicalMaterial material, inout ReflectedLight reflectedLight) {
   if (hgOn <= 0.0) { RE_Direct_Physical(directLight, geometryPosition, geometryNormal, geometryViewDir, geometryClearcoatNormal, material, reflectedLight); return; }
@@ -170,7 +185,7 @@ void RE_Direct_Hair(const in IncidentLight directLight, const in vec3 geometryPo
       float hgfp = length(fwidth(vSuitAt)); // bind metres per pixel
       hgFar = smoothstep(${f(ff0)}, ${f(ff1)}, hgfp);
       float hgc = 1.0 - smoothstep(0.15, 0.4, hgfp * ${f(J[1])} / (6.2832 * hgr)), hgs = 1.0 - smoothstep(0.15, 0.4, hgfp * ${f(J[3])} / (6.2832 * hgr));
-      hgShift = ${f(J[0])} * hgc * sin(hga * ${f(J[1])} + hgq.y * ${f(J[2])}) + ${f(J[4])} * hgs * sin(hga * ${f(J[3])} + 2.0 * sin(hga * 5.0 + hgq.y * 60.0));
+      hgShift = ${f(J[0])} * hgc * sin(hga * ${f(J[1])} + hgq.y * ${f(J[2])}) + ${f(J[4])} * hgs * sin(hga * ${f(J[3])} + hgq.y * ${f(3 * J[2])});
     }
   }`;
   const [lr, lg, lb] = lamp;

@@ -2,7 +2,7 @@
 // tools/avatarhairgloss.html: matched front / three-quarter / profile / back close-ups in daylight, backlight and under a night street
 // lamp for black, brown, blond, red and grey hair (short, long, curly, bun, beard), 3 m and 12 m views, a short camera orbit per distance
 // with its frame-to-frame change (flicker), triangles and draw calls, and ms/frame with and without MSAA.
-//   PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarhairglosstest.cjs http://localhost:8152 docs/verification/2052 [quick]
+//   PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/avatarhairglosstest.cjs http://localhost:8152 docs/verification/2052 [quick | cost]
 const fs = require('fs'), os = require('os'), path = require('path'), { execFileSync } = require('child_process');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const [site = 'http://localhost:8152', out = 'docs/verification/2052', mode = 'full'] = process.argv.slice(2);
@@ -35,7 +35,12 @@ async function open(ctx, query, errors) {
       fs.writeFileSync(path.join(out, name), Buffer.from(url.split(',')[1], 'base64'));
     };
     const pair = (view, kind) => [['before', view, kind], ['after', view, kind]];
-    if (mode === 'quick') {
+    if (mode === 'cost') { // the timing alone, repeated (a software rasterizer on a shared host scatters)
+      data.cost = { msaa: { crowd: await page.evaluate(() => window.__cost(16, 'crowd')), close: await page.evaluate(() => window.__cost(16, 'close')) } };
+      await page.close();
+      const p2 = await open(ctx, '?aa=0', errors);
+      data.cost.noMsaa = { crowd: await p2.evaluate(() => window.__cost(16, 'crowd')), close: await p2.evaluate(() => window.__cost(16, 'close')) };
+    } else if (mode === 'quick') {
       await save('quick.jpg', all, [...pair('near', 'day'), ...pair('back', 'day'), ...pair('near', 'night')]);
     } else {
       await save('dagsljus.jpg', all, [...pair('front', 'day'), ...pair('near', 'day'), ...pair('back', 'day')]);
