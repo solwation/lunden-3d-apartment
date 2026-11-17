@@ -4,7 +4,7 @@
 // avatar's own material: no geometry, draw call, light or network field. Pure helpers first (tools/avatareyestest.mjs), then the GLSL
 // pieces avatar.js splices in at its eye code. Numbers: AVATAR_EYES in config.js.
 import * as THREE from 'three';
-import { AVATAR_EYES as E, AVATAR_FACE as FACE, AVATAR_SURFACE as SURFACE } from './config.js';
+import { AVATAR_EYES as E, AVATAR_FACE as FACE, AVATAR_SURFACE as SURFACE, AVATAR_OCULAR as OC } from './config.js';
 import { zoneLevel } from './avatarlight.js';
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -50,7 +50,7 @@ export class EyeLight {
 }
 
 // --- GLSL -----------------------------------------------------------------------------------------------------------------------------
-const VARY = 'varying vec3 vEyeAt, vEyeC, vEyeUp;';
+const VARY = 'varying vec3 vEyeAt, vEyeC, vEyeUp, vEyeDetail;';
 /** Vertex declarations: the uniform, the varyings and two globals the eye code fills (the vertex's offset from the wet ball's centre in the
  * head's bind frame, and whether the vertex belongs to the eye). */
 export const EYE_VDECL = `uniform vec3 uEyeLit; ${VARY} vec3 eyeO = vec3(0.0); float eyeOn = 0.0;`;
@@ -68,6 +68,7 @@ export function eyeAt() {
   return `{ // #2033
             vec2 ed = (transformed.xy - faceAnchor.xy) / uEye.xy;
             float ex = ed.x / ${f(R)}, eh = max(1.0 - ex * ex, 0.05);
+            vEyeDetail = vec3((ed - (facePart > 25.5 ? uGaze / uEye.xy : vec2(0.0))) / ${f(FACE.eye.iris)}, sign(faceAnchor.x));
             vEyeAt = vec3(ex, ed.y / (eh * (ed.y > 0.0 ? ${f(K.upper)} : ${f(K.lower)})), 1.0 - uBlink);
           }`;
 }
@@ -87,7 +88,7 @@ export const eyeView = () => `if (eyeOn > 0.5) { // #2033
   #endif
   vEyeC = (modelViewMatrix * (eyeSk * vec4(transformed - eyeO * vec3(uHead.x, uHead.y, 1.0), 1.0))).xyz;
   vEyeUp = mat3(modelViewMatrix) * mat3(eyeSk) * vec3(0.0, 1.0, 0.0);
-} else { vEyeC = vec3(0.0); vEyeUp = vec3(0.0); vEyeAt = vec3(0.0); }`;
+} else { vEyeC = vec3(0.0); vEyeUp = vec3(0.0); vEyeAt = vec3(0.0); vEyeDetail = vec3(0.0); }`;
 
 const eyePart = (eye, iris) => `(uSuit < 0.5 && abs(vSurface.x - 9.0) > 0.5 && (abs(vSurface.y - ${eye}.0) < 0.5 || abs(vSurface.y - ${iris}.0) < 0.5))`; // (#2045: not the lashes, region 9)
 
@@ -95,9 +96,21 @@ const eyePart = (eye, iris) => `(uSuit < 0.5 && abs(vSurface.x - 9.0) > 0.5 && (
  * is wet (glossy) along the lower lid; the lid margin just outside is wet too. Elsewhere the flattened eyeball's own (geometric) highlight
  * is kept broad, so the wet ball's glint is the one sharp reflection. */
 export function eyeWet(eye, iris) {
-  const L = E.lid, T = E.tear;
+  const L = E.lid, T = E.tear, C = OC.caruncle;
   return `if (${eyePart(eye, iris)}) { // #2033
       if (vBare < 0.5) {
+        if (abs(vSurface.y - ${eye}.0) < 0.5) { // #2064: warm, muted sclera and the medial tear mound
+          float eEdge = smoothstep(0.25, 1.0, abs(vEyeAt.x));
+          diffuseColor.rgb *= mix(vec3(1.0), vec3(${OC.cornerTint.map(f).join(', ')}), eEdge * ${f(OC.cornerMix)});
+          vec2 eCar = vec2((vEyeAt.x * vEyeDetail.z + ${f(C.x)}) / ${f(C.width)}, vEyeAt.y / ${f(C.height)});
+          float ePink = (1.0 - smoothstep(0.35, 1.0, length(eCar))) * ${f(C.mix)};
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(${C.tint.map(f).join(', ')}), ePink);
+        } else if (abs(vSurface.x - 7.0) < 0.5) { // iris colour remains the chosen palette colour
+          float eR = length(vEyeDetail.xy), eA = atan(vEyeDetail.y, vEyeDetail.x);
+          float eAA = 1.0 - smoothstep(0.08, 0.4, max(length(dFdx(vEyeDetail.xy)), length(dFdy(vEyeDetail.xy))));
+          float eF = sin(eA * ${f(OC.fibres.count)} + sin(eA * 13.0) * 1.3 + eR * 9.0);
+          diffuseColor.rgb *= (1.0 + ${f(OC.fibres.strength)} * eF * eAA) * mix(1.0, ${f(OC.limbus.shade)}, smoothstep(${f(OC.limbus.from)}, 1.0, eR));
+        }
         diffuseColor.rgb *= (1.0 - ${f(L.shadow)} * smoothstep(${f(L.from)}, 1.0, vEyeAt.y)) * (1.0 - ${f(L.corner)} * smoothstep(0.55, 1.0, abs(vEyeAt.x)));
         roughnessFactor = mix(abs(vSurface.x - 4.0) < 0.5 && abs(vSurface.y - ${iris}.0) < 0.5 ? 1.0 : max(roughnessFactor, ${f(E.ballRough)}), ${f(T.rough)}, 1.0 - smoothstep(-1.0, -${f(T.band)}, vEyeAt.y)); // (the pupil: matt, a hole)
       } else roughnessFactor = mix(roughnessFactor, ${f(T.lidRough)}, smoothstep(-1.15, -1.0, vEyeAt.y) * (1.0 - step(-0.5, vEyeAt.y))); // (#2045: the thick lid's margin)
@@ -111,6 +124,13 @@ export function eyeGlint(eye, iris) {
   const T = E.tear, L = E.lid;
   return `if (${eyePart(eye, iris)} && vBare < 0.5) { // #2033
       vec3 eN = normalize(-vViewPosition - vEyeC), eV = normalize(vViewPosition), eU = normalize(vEyeUp + vec3(0.0, 1e-5, 0.0));
+      // #2064: a clear bulge over the flatter iris, reconstructed as a sphere per fragment.
+      // Its highlight sits above the coloured surface; there is no opaque white cornea mesh.
+      if (abs(vSurface.y - ${iris}.0) < 0.5) {
+        // The eye's radial view-space offset gives a smooth wet normal independent of the iris triangles.
+        vec3 eCor = -vViewPosition - vEyeC;
+        eN = normalize(eCor + normalize(vEyeC) * ${f(OC.corneaCentreZ)});
+      }
       vec3 eT = normalize(eN + eU * ${f(T.lift)});
       float eTear = 1.0 - smoothstep(-1.0, -${f(T.band)}, vEyeAt.y), eLid = 1.0 - ${f(L.glintCut)} * smoothstep(${f(L.glintFrom)}, 1.0, vEyeAt.y);
       vec3 eG = vec3(0.0);

@@ -12,7 +12,7 @@
 //    be under ~1 px on screen (uFly from avatarflyaway.js: the drawing buffer's height and MSAA), so a far figure's lashes never flicker.
 // Numbers: config.js AVATAR_LIDS. No attribute, light, pass or network field is added; the lids are skin (`bare`), the lashes region 9.
 import * as THREE from 'three';
-import { AVATAR_LIDS as L, AVATAR_FACE as FACE, AVATAR_SURFACE as SURFACE, AVATAR_BLINK } from './config.js';
+import { AVATAR_LIDS as L, AVATAR_FACE as FACE, AVATAR_SURFACE as SURFACE, AVATAR_BLINK, AVATAR_OCULAR as OC } from './config.js';
 
 const f = (v) => (+v).toFixed(6);
 const R = () => FACE.eye.r;
@@ -36,7 +36,7 @@ function geometry(position, index, shade) {
 
 /** The iris: a dome over the eyeball's front, `segments` round, rings shaded per vertex (region `iris`: shade × the eye colour). */
 export function irisDisc() {
-  const I = L.iris, r = FACE.eye.iris, depth = SURFACE.eye.irisDepth * r, n = I.segments, top = scleraZ(0);
+  const I = L.iris, r = FACE.eye.iris, depth = SURFACE.eye.irisDepth * r * OC.irisRelief, n = I.segments, top = scleraZ(0);
   const position = [0, 0, top + depth], shade = [I.centre], index = [];
   I.rings.forEach(([k, s], j) => {
     for (let i = 0; i < n; i++) {
@@ -56,8 +56,8 @@ export function irisDisc() {
 
 /** The pupil: a slightly raised disc just over the iris' front, scaled about its centre by the light (#2033 eyePupil). */
 export function pupilDisc() {
-  const I = L.iris, r = FACE.eye.pupil, n = I.segments, z = scleraZ(0) + SURFACE.eye.irisDepth * FACE.eye.iris + I.pupilLift;
-  const position = [0, 0, z + I.pupilDome], index = [];
+  const I = L.iris, r = FACE.eye.pupil, n = I.segments, z = scleraZ(0) + SURFACE.eye.irisDepth * FACE.eye.iris * OC.irisRelief + I.pupilLift;
+  const position = [0, 0, z + I.pupilDome * OC.irisRelief], index = [];
   for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2; position.push(r * Math.cos(a), r * Math.sin(a), z); }
   for (let i = 0; i < n; i++) index.push(0, 1 + i, 1 + (i + 1) % n);
   return geometry(position, index);

@@ -6945,6 +6945,14 @@ export const AVATAR_EYES = { pupil: { bright: [1, 0.7], dark: [0.08, 1.45], cons
   ball: 0.55, ballRough: 0.42, sharp: 600, sun: 2.4, sky: 0.22, skySharp: 60, room: 0.35, overcast: 0.8,
   lid: { from: 0.25, shadow: 0.45, glintFrom: 0.7, glintCut: 0.85, corner: 0.22 },
   tear: { band: 0.72, rough: 0.06, lift: 1.4, sharp: 90, bright: 0.6, lidRough: 0.22 } };
+// #2064: artistic guesses for the sclera's warm rim and small medial caruncle, radial iris detail,
+// and the clear virtual cornea above a shallow iris. No extra geometry, lights, textures or passes.
+export const AVATAR_OCULAR = {
+  cornerTint: [0.78, 0.48, 0.40], cornerMix: 0.27,
+  caruncle: { x: 0.82, width: 0.18, height: 0.48, tint: [0.66, 0.29, 0.25], mix: 0.72 },
+  limbus: { from: 0.82, shade: 0.6 }, fibres: { count: 43, strength: 0.11 },
+  irisRelief: 0.12, corneaCentreZ: 0.0013,
+};
 // #2045: round irises and pupils, thick lids with a crease and an upper lash line (src/avatarlids.js; the eye's own parts in avatar.js addFace,
 // still one draw call, no new attribute, light or network field). All *guess*es by eye against close-ups, eye frame metres (the eyeball's
 // centre, AVATAR_FACE.eye.at; before the head's widthwise warp). `iris`: `segments` round the iris and pupil discs, the iris' rings
