@@ -1,0 +1,125 @@
+{
+  "baseline": "1c348ad4",
+  "hashes": {
+    "before": {
+      "src/avatar.js": "f50cd46d24e7d30a1b34b0bb3e2f1bf62791f7769ec56f571ab9436f22c8c32a",
+      "src/config.js": "804b598c4dc83ced13e01a6a4629fe2aacba47955476ae17feb310aeea15c8e8"
+    },
+    "after": {
+      "src/avatar.js": "603153aa5d1d8e442fb38036e5a6ec63da9b6128a200d85c47f6412cd46e7760",
+      "src/config.js": "224d45b3bb38b4f875f9d101b9b869132e3d43305d8041d3c8a3ad9bceba4bd6"
+    }
+  },
+  "errors": {
+    "before": [],
+    "after": []
+  },
+  "triangles": {
+    "before:hair-close": [
+      11700,
+      12428,
+      12060,
+      13096,
+      17012
+    ],
+    "before:hair-profile": [
+      11700,
+      12428,
+      12060,
+      13096,
+      17012
+    ],
+    "before:hair-back": [
+      11700,
+      12428,
+      12060,
+      13096,
+      17012
+    ],
+    "before:beard-close": [
+      11700,
+      12056,
+      11724,
+      12052
+    ],
+    "before:beard-profile": [
+      11700,
+      12056,
+      11724,
+      12052
+    ],
+    "before:headwear": [
+      12428,
+      17012,
+      12060,
+      11700,
+      17012
+    ],
+    "before:headwear-back": [
+      12428,
+      17012,
+      12060,
+      11700,
+      17012
+    ],
+    "before:phones": [
+      12428,
+      13096,
+      11700,
+      17012
+    ],
+    "after:hair-close": [
+      11892,
+      12588,
+      12252,
+      13144,
+      17372
+    ],
+    "after:hair-profile": [
+      11892,
+      12588,
+      12252,
+      13144,
+      17372
+    ],
+    "after:hair-back": [
+      11892,
+      12588,
+      12252,
+      13144,
+      17372
+    ],
+    "after:beard-close": [
+      11892,
+      12568,
+      11988,
+      12560
+    ],
+    "after:beard-profile": [
+      11892,
+      12568,
+      11988,
+      12560
+    ],
+    "after:headwear": [
+      12588,
+      17372,
+      12252,
+      11892,
+      17372
+    ],
+    "after:headwear-back": [
+      12588,
+      17372,
+      12252,
+      11892,
+      17372
+    ],
+    "after:phones": [
+      12588,
+      13144,
+      11892,
+      17372
+    ]
+  }
+}

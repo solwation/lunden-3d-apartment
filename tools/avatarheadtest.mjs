@@ -46,3 +46,20 @@ test('#2002 kissing lip skin-band outer edge follows the muzzle instead of detac
  assert(band.length>50);assert(band.some(v=>v===1),'inner edge follows the lip');assert(band.some(v=>v<.97),'outer edge follows the face');
  assert(!a.lipFollow,'construction-only follow weights do not add retained attributes');g.dispose();
 });
+// #2012: finer hair/beard forms stay within +10% of the published #2002 result per variant, and long hair has no join
+const v2012=[['s0f0',11700],['s0f1',12056],['s0f2',11724],['s0f3',12052],['s1f0',12428],['s2f0',12060],['s3f0',13096],['s4f0',17012]];
+test('#2012 hairstyle and facial-hair variants stay within +10% of the #2002 triangles',()=>{
+ for(const[key,tris]of v2012){const style=+key[1],facial=+key[3];
+  const g=avatarModelGeometry({...avatarLook('2012-'+style),style,facial,gender:style%2});
+  assert(g.attributes.position.count/3<=tris*1.1,`${key}: ${g.attributes.position.count/3} > ${tris}×1.1`);g.dispose();}
+});
+test('#2012 long hair: the scalp and curtain share one normal wherever they meet (no visible join)',()=>{
+ const g=avatarModelGeometry({...avatarLook('2012-long'),style:1,facial:0,gender:1}),a=g.attributes,hb=bindAt('head'),seen=new Map();let shared=0;
+ for(let i=0;i<a.position.count;i++){if(a.region.getX(i)!==3)continue;
+  const y=a.position.getY(i)-hb.y;if(y>0.17)continue; // below the crown's pole
+  const k=[a.position.getX(i),a.position.getY(i),a.position.getZ(i)].map(v=>Math.round(v*1e5)).join(),n=[a.normal.getX(i),a.normal.getY(i),a.normal.getZ(i)];
+  const m=seen.get(k);if(!m){seen.set(k,n);continue;}
+  const dot=m[0]*n[0]+m[1]*n[1]+m[2]*n[2];if(dot<0)continue; // the curtain's inner (back-facing) surface
+  shared++;assert(dot>0.999,`normal break at ${k}: ${dot}`);}
+ assert(shared>20,'the curtain joins the scalp at shared positions');g.dispose();
+});

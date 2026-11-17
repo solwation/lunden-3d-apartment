@@ -75,11 +75,9 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
   addFace(add, sphere, P);
   // facial hair: 0 none, 1 beard, 2 mustache, 3 beard + mustache (#1340: face part cowlHide, not hair: the hair-length slider must not squash it; the head warp still moves it)
   const f = Number(facial) || 0;
-  if (f === 2) { // mustache only
-    for (const s of [-1, 1]) {
-      add(new THREE.BoxGeometry(0.024, 0.010, 0.014).rotateZ(s * -0.15), 'beard', 'head', [s * 0.014, H - 0.046, 0.114], 0.95);
-      P[P.length - 1].face = FACE_PART.cowlHide;
-    }
+  if (f === 2) { // mustache only (#2012: a tapered, drooping band instead of two blocks)
+    add(moustacheShell(), 'beard', 'head', [0, 0, 0], 0.95);
+    P[P.length - 1].face = FACE_PART.cowlHide;
   }
   if (f === 1 || f === 3) { // #1097: one continuous full beard, the lips showing through its mouth opening
     const { beard, lips } = beardShell(f === 3);
@@ -613,6 +611,33 @@ function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
  * as the moustache. The mouth stays visible: a U-shaped notch without the moustache, an opening with it; `lips` is a
  * thin patch on the skin behind that opening (the plain mouth box sits inside the jaw sphere and barely shows). */
 function beardShell(lip) {
+  const B = BEARD, deg = Math.PI / 180;
+  const { grid, smooth } = beardGrid();
+  // #2012: the sideburn/cheek edge breaks into alternating tufts and thins to the skin; the opening rows stay aligned
+  const jag = (a) => B.jag[0] * (0.5 + 0.5 * Math.cos(a * deg * 360 / B.jag[1])) * smooth(B.jagFrom, B.jagFrom + 12, Math.abs(a));
+  const top = (a) => { // the top edge: sideburns → cheeks → (without the moustache) down under the mouth at the front
+    const side = B.cheek[0] + (B.cheek[1] - B.cheek[0]) * smooth(B.cheekAz[0], 90, Math.abs(a));
+    return (lip ? side : B.chinTop + (side - B.chinTop) * smooth(B.notch[0], B.notch[1], Math.abs(a))) - jag(a);
+  };
+  const beard = grid([-B.azimuth, B.azimuth], B.columns, B.rows, (a) => [B.bottom, top(a)],
+    (a, s) => B.thickness * (1 - 0.6 * smooth(0, 1, Math.abs(a) / B.azimuth)) * Math.sin(Math.PI * (0.15 + s * 0.85)) ** 0.6 + B.lift,
+    (a, e) => !lip || Math.abs(a) > B.mouth[0] || e < B.mouth[1] || e > B.mouth[2],
+    (i, s) => (1 + B.strand * Math.sin(i * 2.39 + 0.3)) * (0.9 + 0.1 * smooth(0.2, 0.7, s)));
+  const L = lip ? B.lips : B.lipsNotch, lips = grid([-L[0], L[0]], 6, 3, () => [L[1], L[2]], () => B.lift);
+  return { beard, lips };
+}
+/** #2012: the moustache on its own (facial 2), a tapered, drooping band over the upper lip on the same projected skin as
+ * the beard: full in the middle, thinning to the skin at its edges, its ends hanging past the mouth's corners. */
+function moustacheShell() {
+  const B = BEARD, [half, top, bottom, droop, thick] = B.moustache;
+  const { grid, smooth } = beardGrid();
+  const hang = (a) => droop * smooth(10, half, Math.abs(a));
+  return grid([-half, half], 12, 4, (a) => [bottom - hang(a), top - hang(a) * 0.6 - 2 * smooth(0, 8, 8 - Math.abs(a))],
+    (a, s) => B.lift + thick * Math.sin(Math.PI * s) ** 0.7 * (1 - 0.75 * smooth(0.4, 1, Math.abs(a) / half)),
+    undefined, (i, s) => (1 + B.strand * Math.sin(i * 2.39 + 0.3)) * (0.88 + 0.12 * s));
+}
+/** The beard's projection (#1097): a grid over azimuth / elevation from BEARD.centre onto the skull ∪ jaw ellipsoids. */
+function beardGrid() {
   const B = BEARD, c = B.centre, deg = Math.PI / 180;
   const smooth = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
   const dir = (a, e) => [Math.sin(a * deg) * Math.cos(e * deg), Math.sin(e * deg), Math.cos(a * deg) * Math.cos(e * deg)];
@@ -627,13 +652,14 @@ function beardShell(lip) {
   };
   // a cols × rows grid over azimuth (0 = straight ahead, + = the figure's left) and elevation; `range(a)` → [bottom, top]
   // elevation, `lift(a, s)` the distance off the skin (s: 0 at the bottom row → 1 at the top), `keep(a, e)` per quad
-  const grid = (az, cols, rows, range, lift, keep = () => true) => {
-    const pos = [], ae = [], idx = [], at = (i, j) => i * (rows + 1) + j;
+  const grid = (az, cols, rows, range, lift, keep = () => true, shade = null) => { // `shade(i, s)`: a per-vertex shade (#2012)
+    const pos = [], ae = [], idx = [], sh = [], at = (i, j) => i * (rows + 1) + j;
     for (let i = 0; i <= cols; i++) {
       const a = az[0] + ((az[1] - az[0]) * i) / cols, [e0, e1] = range(a);
       for (let j = 0; j <= rows; j++) {
         const s = j / rows, e = e0 + (e1 - e0) * s, d = dir(a, e), t = skin(d) + lift(a, s);
         pos.push(c[0] + d[0] * t, c[1] + d[1] * t, c[2] + d[2] * t); ae.push([a, e]);
+        if (shade) sh.push(shade(i, s));
       }
     }
     for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
@@ -643,19 +669,12 @@ function beardShell(lip) {
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    if (shade) g.setAttribute('shade', new THREE.Float32BufferAttribute(sh, 1));
     g.setIndex(idx);
     g.computeVertexNormals();
     return g;
   };
-  const top = (a) => { // the top edge: sideburns → cheeks → (without the moustache) down under the mouth at the front
-    const side = B.cheek[0] + (B.cheek[1] - B.cheek[0]) * smooth(B.cheekAz[0], 90, Math.abs(a));
-    return lip ? side : B.chinTop + (side - B.chinTop) * smooth(B.notch[0], B.notch[1], Math.abs(a));
-  };
-  const beard = grid([-B.azimuth, B.azimuth], B.cols, B.rows, (a) => [B.bottom, top(a)],
-    (a, s) => B.thickness * (1 - 0.6 * smooth(0, 1, Math.abs(a) / B.azimuth)) * Math.sin(Math.PI * (0.15 + s * 0.85)) ** 0.6 + B.lift,
-    (a, e) => !lip || Math.abs(a) > B.mouth[0] || e < B.mouth[1] || e > B.mouth[2]);
-  const L = lip ? B.lips : B.lipsNotch, lips = grid([-L[0], L[0]], 6, 3, () => [L[1], L[2]], () => B.lift);
-  return { beard, lips };
+  return { grid, smooth };
 }
 /** The hairstyles (#1102) in the head bone's frame, as [geometry, region, shade]. Every style is a shell projected from
  * AVATAR_HAIR.centre onto the skull ∪ jaw ellipsoids (RH.skull / RH.jaw) above a real hairline (forehead, temples,
@@ -672,9 +691,9 @@ function hairParts(style) {
     for (let i = 1; i < t.length; i++) if (x <= t[i][0]) return t[i - 1][1] + ((t[i][1] - t[i - 1][1]) * (x - t[i - 1][0])) / (t[i][0] - t[i - 1][0]);
     return t.at(-1)[1];
   };
-  const turn = (t, step) => { // a full turn of azimuths, −180 … <180: the table's corners (mirrored) and even steps between
+  const turn = (t, step, fine = step, fineTo = 0) => { // a full turn of azimuths, −180 … <180: the table's corners (mirrored) and even steps between (#2012: `fine` below |azimuth| `fineTo`)
     const half = [];
-    for (let i = 1; i < t.length; i++) { const n = Math.max(1, Math.ceil((t[i][0] - t[i - 1][0]) / step)); for (let k = 0; k < n; k++) half.push(t[i - 1][0] + ((t[i][0] - t[i - 1][0]) * k) / n); }
+    for (let i = 1; i < t.length; i++) { const n = Math.max(1, Math.ceil((t[i][0] - t[i - 1][0]) / ((t[i][0] + t[i - 1][0]) / 2 < fineTo ? fine : step))); for (let k = 0; k < n; k++) half.push(t[i - 1][0] + ((t[i][0] - t[i - 1][0]) * k) / n); }
     half.push(180);
     return [...half.slice(1).reverse().map((a) => -a), ...half.slice(0, -1)];
   };
@@ -706,14 +725,18 @@ function hairParts(style) {
   const [crown, side, back] = HC.thick[style] ?? HC.thick[0];
   const thick = (a, e) => { const ring = side + (back - side) * Math.max(0, -Math.cos(a * deg)); return ring + (crown - ring) * smooth(5, 75, e); };
   // the scalp shell from the hairline (or `low`) up to `high` (90: the crown), with an extra `bump(a, s, i)` lift
-  const shell = (az, low, high, rows, lift, shade, inward = false) => sheet(az.length, rows, true, (i, j) => {
-    const a = az[i], e0 = low(a), s = j / rows;
+  const shell = (az, low, high, rows, lift, shade, inward = false, power = 1) => sheet(az.length, rows, true, (i, j) => {
+    const a = az[i], e0 = low(a), s = (j / rows) ** power; // (#2012: rows packed towards the hairline; s stays the elevation share)
     const e = e0 + (high(a) - e0) * s;
     const sweep = style === 0 ? HC.flow.sweep : style === 1 ? Math.sign(a) * 12 : style === 2 ? -8 : 0;
     return onSkull(a + sweep * Math.sin(s * Math.PI), e, lift(a, e, s, i));
-  }, (i, j) => shade(az[i], j / rows, i), inward);
-  const hairline = (a) => table(HC.hairline, a) + HC.flow.edge * Math.sin(a * deg * 13) * (1 - smooth(45, 80, Math.abs(a))), feather = (s) => 0.25 + 0.75 * smooth(0, 0.4, s);
-  const az = turn(HC.hairline, HC.step), crownTop = () => 90;
+  }, (i, j) => shade(az[i], (j / rows) ** power, i), inward);
+  // #2012: alternate front columns dip into small tufts and the edge hugs the skin, so the hairline reads soft, not as a ledge
+  const tuft = (a) => HC.tuft[0] * (0.5 + 0.5 * Math.cos(a * deg * 360 / HC.tuft[1])) * (0.65 + 0.35 * Math.sin(a * deg * 7 + 1)) * (1 - smooth(HC.tuft[2] - 15, HC.tuft[2], Math.abs(a)));
+  const hairline = (a) => table(HC.hairline, a) + HC.flow.edge * Math.sin(a * deg * 13) * (1 - smooth(45, 80, Math.abs(a))) - tuft(a);
+  const feather = (s) => HC.edgeLift + (1 - HC.edgeLift) * smooth(0, HC.featherTo, s);
+  // (long hair keeps its curtain's columns: finer ones there would sample new ridge peaks under a hat's cuff)
+  const az = turn(HC.hairline, HC.step, HC.fine, style === 1 ? HAIR.long.from : HC.fineTo), crownTop = () => 90;
   if (style === 3) { // the beanie: body (fuller at the back), the cuff rolled over its lower edge, hair below it
     const brim = (a) => table(HC.beanie, a), bz = turn(HC.beanie, 10);
     const rib = (i) => (i % 2 ? 1.05 : 0.94);
@@ -731,7 +754,7 @@ function hairParts(style) {
     };
     knit(brim, crownTop, HC.rows, (a, e) => 0.012 + 0.014 * smooth(25, 85, e) + 0.014 * smooth(35, 75, e) * Math.max(0, -Math.cos(a * deg)) * (1 - smooth(75, 90, e)), (a, s, i) => rib(i), 1);
     knit((a) => brim(a) - 2, (a) => brim(a) + 13, 3, (a, e, s) => 0.004 + 0.017 * Math.sin(Math.min(1, s / 0.34) * Math.PI / 2) - 0.008 * smooth(0.67, 1, s), (a, s, i) => rib(i) * (s > 0.2 && s < 0.8 ? 1 : 0.88), 0.82, true);
-    out.push([shell(turn(HC.hairline, 15), hairline, (a) => brim(a) + 3, 2, (a, e, s) => 0.0015 + 0.0035 * smooth(0, 0.6, s), (a, s, i) => strand(i) * 0.95), 'hair', 1]);
+    out.push([shell(turn(HC.hairline, 15, HC.fine, HC.fineTo), hairline, (a) => brim(a) + 3, 2, (a, e, s) => 0.0015 + 0.0035 * smooth(0, 0.6, s), (a, s, i) => strand(i) * 0.95), 'hair', 1]);
     return out;
   }
   // long hair: the shell stops where the curtain takes over (along the sideburn at the front edge, higher round the
@@ -739,18 +762,23 @@ function hairParts(style) {
   const L = HAIR.long, parting = style === 1, curtain = (a) => parting && Math.abs(a) >= L.from - 1e-9;
   const longTop = (a) => hairline(a) + (L.top - hairline(a)) * smooth(L.front, L.back, Math.abs(a));
   const low = (a) => (curtain(a) ? Math.max(hairline(a), longTop(a)) : hairline(a));
+  // #2012: the strand groups as sharper ridges (a cosine raised to HC.clump) with darker valleys between them
+  const clump = (a, s) => (style < 3 ? (0.5 + 0.5 * Math.cos(a * deg * (style === 1 ? HC.flow.longGroups : HC.flow.groups) + s * (style === 2 ? 7 : -5))) ** HC.clump : 1);
   const bump = (a, s, i) => {
     const K = SURFACE.hair;
-    const tousle = style === 0 ? 0.0045 * Math.sin(i * 1.9 + 0.4) * smooth(0.45, 0.9, s) + 0.004 * smooth(0.25, 0.7, s) * (1 - smooth(25, 55, Math.abs(a))) : 0;
+    const tousle = style === 0 ? (0.0045 * Math.sin(i * 1.9 + 0.4) * smooth(0.45, 0.9, s) + 0.004 * smooth(0.25, 0.7, s) * (1 - smooth(25, 55, Math.abs(a)))) * (1 - smooth(0.85, 1, s)) : 0; // (#2012: one crown point, no spikes)
     if (style >= 3) return tousle;
-    const groups = style < 3 ? (style === 1 ? HC.flow.longRidge : HC.flow.ridge) * (0.5 + 0.5 * Math.cos(a * deg * (style === 1 ? HC.flow.longGroups : HC.flow.groups) + s * (style === 2 ? 7 : -5))) * Math.sin(s * Math.PI) : 0;
+    const groups = style < 3 ? (style === 1 ? HC.flow.longRidge : HC.flow.ridge) * clump(a, s) * Math.sin(s * Math.PI) : 0;
     return tousle + groups + K.wave * Math.sin(a * deg * K.frequency + s * K.flow) * Math.sin(s * Math.PI)
       - K.part[2] * Math.exp(-(((a - K.part[0]) / K.part[1]) ** 2)) * Math.sin(s * Math.PI);
   };
-  out.push([shell(az, low, crownTop, HC.rows,
+  const rootShade = (a, s, i) => strand(i) * (parting && a === 0 && s > 0.15 ? 0.8 : 1) * (0.92 + 0.08 * smooth(0, 0.3, s)) * (1 - HC.clumpShade * (1 - clump(a, s)) * smooth(0, 0.3, s));
+  const scalp = shell(az, low, crownTop, HC.rows,
     (a, e, s, i) => Math.max(0.0015, thick(a, e) * (curtain(a) || (style === 4 && Math.abs(a) >= 72) ? 1 : feather(s)) * (parting && a === 0 ? 0.55 : 1) + bump(a, s, i)),
-    (a, s, i) => strand(i) * (parting && a === 0 && s > 0.15 ? 0.8 : 1) * (0.92 + 0.08 * smooth(0, 0.3, s))), 'hair', 1]);
-  if (style === 1) out.push(...longHair([...az.filter((a) => a >= L.from), ...az.filter((a) => a <= -L.from)], low, onSkull, sheet, strand, thick, hit, smooth));
+    rootShade, false, HC.rowPower);
+  out.push([scalp, 'hair', 1]);
+  if (style === 1) out.push(...longHair([...az.filter((a) => a >= L.from), ...az.filter((a) => a <= -L.from)], low, onSkull, sheet, strand, thick, hit, smooth,
+    { geometry: scalp, column: (a) => az.indexOf(a), rows: HC.rows, shade: (a) => rootShade(a, 0, az.indexOf(a)) }));
   if (style === 4) { // #1377: continuous winding locks, rooted in the scalp rather than separate balls
     const C = HAIR.curly;
     const lock = (points, radius, shade) => {
@@ -767,7 +795,7 @@ function hairParts(style) {
         const phase = t * Math.PI * 2 * C.turns + k * 2.39;
         const e = start + (end - start) * t;
         const angle = a + C.sway * Math.sin(phase) * envelope;
-        const lift = thick(angle, e) + C.lift * envelope * (0.5 + 0.5 * Math.cos(phase)) - C.radius * (1 - envelope);
+        const lift = thick(angle, e) + C.lift * envelope * (0.5 + 0.5 * Math.cos(phase)) * (1 - smooth(0.6, 0.85, t)) - C.radius * (1 - envelope); // (#2012: the ends lie flat at the nape, under a cuff)
         points.push(onSkull(angle, e, lift));
       }
       lock(points, C.radius * (0.9 + 0.1 * Math.sin(k * 1.7)), strand(k));
@@ -838,7 +866,7 @@ function hairParts(style) {
 /** Long hair's curtain (#1102): from the scalp shell's lowest row (`top`) at the sides and back, falling straight
  * down and never back in (each column's radius only grows downwards), kept `gap` off the skull, jaw, ears, neck and torso
  * (bind pose), with a slightly uneven hem; an inner surface `depth` behind it, darker (the underside). */
-function longHair(az, top, onSkull, sheet, strand, thick, hit, smooth) { // az: the figure's left (+x) round the back to its right
+function longHair(az, top, onSkull, sheet, strand, thick, hit, smooth, scalp) { // az: the figure's left (+x) round the back to its right
   const L = HAIR.long, cols = az.length - 1;
   const ears = [-1, 1].map((s) => ({ radius: 0.028, scale: [0.55, 1, 0.72], centre: [s * 0.1, H - 0.005, 0] })); // as the ears in parts()
   const torsoAt = (y) => { // the torso's radius in the bind pose at head-frame height y (the wider of both figures)
@@ -874,9 +902,20 @@ function longHair(az, top, onSkull, sheet, strand, thick, hit, smooth) { // az: 
     }
     return pts;
   });
-  const outer = sheet(cols, L.rows, false, (i, j) => cols3[i][j].slice(0, 3), (i, j) => strand(i + 3) * (0.9 + 0.1 * smooth(0, 0.4, j / L.rows)));
+  // #2012: the curtain's top row continues the scalp's lowest one in shade, position and normal, so no join shows
+  const outer = sheet(cols, L.rows, false, (i, j) => cols3[i][j].slice(0, 3), (i, j) => {
+    const t = 1 - j / L.rows, below = strand(i + 3) * 0.97 * (0.9 + 0.1 * smooth(0, 0.4, j / L.rows));
+    return scalp.shade(az[i]) + (below - scalp.shade(az[i])) * smooth(0, 0.35, t);
+  });
   const inner = sheet(cols, L.rows, false, (i, j) => { const [x, y, z, r] = cols3[i][j], k = (r - L.depth) / r; return [x * k, y, z * k]; }, () => 0.7, true);
-  return [[outer, 'hair', 0.97], [inner, 'hair', 1]];
+  const sp = scalp.geometry.attributes.position, sn = scalp.geometry.attributes.normal, op = outer.attributes.position, on = outer.attributes.normal, n = new THREE.Vector3(), m = new THREE.Vector3();
+  az.forEach((a, i) => {
+    const k = scalp.column(a) * (scalp.rows + 1), o = i * (L.rows + 1) + L.rows;
+    op.setXYZ(o, sp.getX(k), sp.getY(k), sp.getZ(k));
+    n.fromBufferAttribute(sn, k).add(m.fromBufferAttribute(on, o)).normalize();
+    sn.setXYZ(k, n.x, n.y, n.z); on.setXYZ(o, n.x, n.y, n.z);
+  });
+  return [[outer, 'hair', 1], [inner, 'hair', 1]];
 }
 
 // --- the face (#1101) -----------------------------------------------------------------------------------------------------
@@ -1134,7 +1173,7 @@ function skinShading() {
 // keep the authored weave/flow attached to skinning, and fwidth fades detail before
 // it can shimmer. No image maps, geometry deformation or frame-time JS is added.
 function surfaceColor() {
-  const F = SURFACE.finish;
+  const F = SURFACE.finish, S = SURFACE.hair, hb = bindAt('head');
   return `if (uSuit < 0.5) {
     float region = floor(vSurface.x + 0.5);
     if (region == 1.0 || region == 2.0) {
@@ -1142,6 +1181,15 @@ function surfaceColor() {
       vec2 fade = vec2(1.0) - smoothstep(vec2(0.5), vec2(2.0), fwidth(weave));
       float thread = dot(sin(weave), fade) * 0.5;
       diffuseColor.rgb *= 1.0 + thread * ${F.weaveStrength.toFixed(3)};
+    } else if ((region == 3.0 || region == 8.0) && floor(vSuitRole + 0.5) == 2.0) {
+      // #2012: fine strands combed round the head bone's axis (meridians over the crown, down the curtain and beard);
+      // a whole number per turn keeps the back continuous, and the fade uses the footprint, not the angle's wrap.
+      vec3 q = vSuitAt - vec3(${hb.x.toFixed(4)}, ${hb.y.toFixed(4)}, ${hb.z.toFixed(4)});
+      float r = max(length(q.xz), 0.02);
+      float flow = (atan(q.x, q.z) + ${S.sway.toFixed(3)} * sin(q.y * ${S.bend.toFixed(1)})) * ${S.strands.toFixed(1)};
+      float fade = 1.0 - smoothstep(0.5, 2.0, (fwidth(q.x) + fwidth(q.z) + fwidth(q.y)) * ${S.strands.toFixed(1)} / r);
+      float line = sin(flow) * 0.65 + sin(flow * 3.0 + q.y * 90.0) * 0.35;
+      diffuseColor.rgb *= 1.0 + line * fade * ${S.strength.toFixed(3)};
     } else if (region == 3.0 || region == 8.0 || region == 9.0) {
       float flow = (vSuitAt.x + ${F.hairSway.toFixed(2)} * sin(vSuitAt.y * ${F.hairBend.toFixed(1)})) * ${F.hairRate.toFixed(1)};
       float fade = 1.0 - smoothstep(0.5, 2.0, fwidth(flow));

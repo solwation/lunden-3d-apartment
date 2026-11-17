@@ -4171,7 +4171,10 @@ export const AVATAR_SURFACE = {
   face: { cheek: [0.003, 0.05, 0.04, 0.073, 0.035], brow: [0.003, 0.127, 0.018], chin: [0.003, 0.01, 0.025], socket: [0.004, 0.021, 0.014], front: [0.25, 0.9] },
   eye: { upper: 0.0054, lower: 0.0042, outer: [0.0175, 0.008], skinLift: 0.0006, normalStep: 0.001, columns: 12, rows: 4, irisDepth: 0.22, pupilDepth: 0.12, lidDepth: 0.9, scleraBase: 0.85, scleraRound: 0.15 },
   cloth: { waistFold: 0.003, sideFold: 0.003, waveAngle: [3, 2], waveHeight: [38, 30], waist: [0.10, 0.10], side: [0.32, 0.16], rings: [0.075, 0.10, 0.17, 0.21, 0.30, 0.36, 0.40] },
-  hair: { wave: 0.0016, frequency: 7, flow: 2, part: [-18, 7, 0.003], streak: 0.12 },
+  hair: { wave: 0.0016, frequency: 7, flow: 2, part: [-18, 7, 0.003], streak: 0.12,
+    // #2012 fine strands round the head bone's axis (hair and facial hair): `strands` per turn, `sway` radians of
+    // waviness at `bend` rad/m of height, `strength` the shade contrast. Guesses by eye, faded with pixel footprint.
+    strands: 72, sway: 0.09, bend: 40, strength: 0.13 },
 };
 // The avatars' face (#1101, src/avatar.js addFace / faceWarp), *guess* by eye against the skull / jaw ellipsoids of
 // PVP_RIFLE_HEAD, head-bone frame (metres, the face looks +z). eye: [x, y, z] of the eyeball's centre, its radius / scale,
@@ -4208,7 +4211,11 @@ export const AVATAR_MOUTH = { drop: 0.009, below: 0.004, chinY: -0.03, halfWidth
 // The avatars' full beard (#1097, src/avatar.js beardShell) *guess* tuned by eye against the avatar head (PVP_RIFLE_HEAD skull / jaw): degrees from `centre` (head-bone frame, metres);
 // the grid's rows/columns line up with the moustache variant's mouth opening [half width, bottom, top] (one quad high, two wide); lips: the patch behind it, reaching under the beard so an oblique view sees no gap [half width, bottom, top]; lipsNotch: the same in the beard-only notch
 export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76, cols: 16, rows: 10, cheek: [-6, 10], cheekAz: [22, 90],
-  chinTop: -27, notch: [8, 22], mouth: [12, -27, -20], lips: [22, -30, -17], lipsNotch: [12.5, -27.5, -19.5], thickness: 0.011, lift: 0.0015 };
+  chinTop: -27, notch: [8, 22], mouth: [12, -27, -20], lips: [22, -30, -17], lipsNotch: [12.5, -27.5, -19.5], thickness: 0.011, lift: 0.0015,
+  // #2012 guesses by eye: `columns` replaces `cols` (an even multiple keeps the opening's edges at ±11.5°); the top edge
+  // breaks into `jag` [degrees, period in degrees] from |azimuth| `jagFrom`; `strand` the shade contrast per column;
+  // the moustache alone (facial 2): [half width °, top / bottom elevation at the middle, droop ° at the ends, thickness m]
+  columns: 32, jag: [1.6, 11.5], jagFrom: 24, strand: 0.07, moustache: [28, -10, -18, 4, 0.0042] };
 // The avatars' hairstyles (#1102, src/avatar.js hairParts) *guess* by eye against the avatar head (PVP_RIFLE_HEAD skull / jaw / ears):
 // shells projected from `centre` (head-bone frame, m) onto the skull, lifted by a thickness. `hairline`: the hair's lower edge,
 // [|azimuth|, elevation] in degrees (0 = straight ahead): forehead → temples → sideburn in front of the ear → over the ear → nape;
@@ -4218,11 +4225,16 @@ export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76
 // below the head bone, `long.gap` m off the shoulders, `long.depth` m thick.
 export const AVATAR_HAIR = { centre: [0, 0.09, 0], bunAt: [0, 0.212, -0.078], /* #2014: the bun's centre in the head frame (the bun's geometry and its sway read it) */ rows: 8, step: 12, streak: 0.07,
   flow: { sweep: 22, ridge: 0.0045, groups: 9, edge: 1.2, longGroups: 7, longRidge: 0.010, longSway: 5 },
+  // #2012 aesthetic guesses: a finer column `fine` (degrees) for |azimuth| below `fineTo`, rows packed towards the
+  // hairline by `rowPower`, the edge lifted only `edgeLift` of the thickness (feathered over `featherTo` of the rows) and
+  // tufts `tuft` [degrees down, period in degrees, |azimuth| where they fade]; `clump` sharpens the strand-group ridges
+  // (power on the cosine) and `clumpShade` darkens their valleys in the vertex shade.
+  fine: 6, fineTo: 80, rowPower: 1.45, edgeLift: 0.08, featherTo: 0.5, tuft: [1.7, 12, 70], clump: 2.2, clumpShade: 0.1,
   hairline: [[0, 37], [22, 36], [42, 29], [58, 16], [64, -4], [72, -6], [78, 13], [102, 15], [120, -6], [146, -26], [180, -30]],
   beanie: [[0, 35], [35, 32], [60, 19], [80, 9], [100, 9], [140, -8], [180, -14]],
   thick: [[0.016, 0.006, 0.009], [0.014, 0.011, 0.013], [0.006, 0.004, 0.005], [0.004, 0.003, 0.004], [0.016, 0.008, 0.012]],
   // #1377 continuous curls: aesthetic guesses in metres/degrees; bounded four-sided tubes share the avatar draw.
-  curly: { locks: 18, segments: 14, sides: 6, radius: 0.007, lift: 0.004, margin: 3,
+  curly: { locks: 24, segments: 12, sides: 6, radius: 0.0066, lift: 0.003, margin: 3,
     top: 86, stagger: 18, sway: 9, turns: 2, curtainTurns: 2.5, curtainSway: 0.065 },
   long: { wave: 0.006, top: 50, from: 64, front: 72, back: 100, hem: [-0.035, -0.25], gap: 0.016, depth: 0.012, rows: 8 } };
 // The avatars' skin and material shading (#1104, src/avatar.js skinShading / clothShade) *guess* tuned by eye in day and

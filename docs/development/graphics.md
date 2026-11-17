@@ -58,6 +58,24 @@ locked +10% budget, with one body draw and no new texture/light/pass. Hair and
 beards remain stylized and the older rear long-hair join remains visible.
 [Matched art, actual preview, final-source equivalence and cost limits](../verification/2002/README.md).
 
+### Finer hair and beards (#2012)
+
+`hairParts` samples the front of the scalp at `AVATAR_HAIR.fine` degrees, packs rows towards
+the hairline (`rowPower`, with lifts and shades evaluated at the elevation share), feathers
+the edge to the skin (`edgeLift`) and breaks it into small alternating tufts (`tuft`).
+Strand groups are sharper ridges with darker valleys (`clump`, `clumpShade`); short hair has
+one crown point instead of a spiky pole. Long hair keeps its curtain columns, and the curtain's
+top row now takes the scalp's lowest-row position, shade and averaged normal, so the old rear
+join is gone (regression in `tools/avatarheadtest.mjs`). Curly hair has 24 locks whose
+ends lie flat at the nape so cuffs still cover them. `beardShell`/`moustacheShell` share
+`beardGrid`: 32 beard columns with a tufted cheek edge and per-column strand shade, and the
+moustache alone is a tapered, drooping band instead of two blocks. The fragment shader draws
+fine strands round the head bone's axis for head hair and beards (`AVATAR_SURFACE.hair.strands`),
+a whole number per turn and faded by footprint. Variants add 0.4–4.3% triangles over the
+#2002 result (curly 2.1%), within +10%, one draw, no texture/pass/attribute. The
+moustache-and-beard opening still shows its older lip patch below the moustache.
+[Before/after views, counts and limits](../verification/2012/README.md).
+
 ### Butterfly wing hinges (#1925)
 
 `butterflymodel.js` supplies shared authored contours and a bounded vertex hinge.
