@@ -56,3 +56,5 @@ The baseline directory must contain baseline `src/` and `tools/avatareyes.html` 
 unchanged `models/` assets. The capture tool asserts geometry/bone equality, one draw,
 pupil response and no browser errors. It does not claim full-apartment, mobile or native-GPU
 performance testing.
+
+Integrated and published on main as `f89fc191` / `24957657`; Pages run 44159072853 and Worker run 44159072287 passed. The issue comment embeds the revision-pinned result image before closure.
