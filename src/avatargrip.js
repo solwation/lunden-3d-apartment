@@ -109,3 +109,52 @@ vec3 fingBend(vec3 p, int i, int seg) {
       }`,
   };
 }
+
+// --- #2038: a free hand at rest ------------------------------------------------------------------------------------------------------
+// The `relaxed` grip stays the grip shape (what pick-up / release ease between). A hand that is free (relaxed grip, no arm override)
+// gets an extra, uneven curl on top (AVATAR_GRIP.rest, varied per figure and side), closes a little when running and lets the fingers
+// lag the arm swing on a spring. Its weight `w` eases with the grip's own rate, so a held thing's grip is exactly its shape once settled.
+const R = G.rest;
+function seeded(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>> 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+/** A figure's rest state: its own uneven extra curl per side (ten numbers each, finger order as in `gripAngles`). */
+export function newRest(seed = Math.floor(Math.random() * 2 ** 32)) {
+  const rnd = seeded(seed), add = [0, 1].map(() => {
+    const a = new Float32Array(FINGER_COUNT * 2);
+    for (let f = 0; f < 4; f++) for (let j = 0; j < 2; j++) a[f * 2 + j] = Math.max(0, R.extra[f][j] + (rnd() * 2 - 1) * R.vary);
+    for (let j = 0; j < 2; j++) a[8 + j] = Math.max(0, R.thumb[j] + (rnd() * 2 - 1) * R.vary * 0.6);
+    return a;
+  });
+  return { add, w: [1, 1], on: [true, true], lag: [0, 0], y: [0, 0], v: [0, 0], run: 0, open: [0, 0], out: [new Float32Array(10), new Float32Array(10)] };
+}
+
+/** One step: `free` [L, R] whether each hand is free, `swing` [L, R] the arm swing (-1 … 1, + forward), `run` 0 … 1, `open` [L, R] the share
+ * of the curl a talking gesture opens (src/avatartalk.js). Sets `s.on[i]` while side i still needs its rest added (or one last upload). */
+export function stepRest(s, dt, { free = [true, true], swing = [0, 0], run = 0, open = [0, 0] } = {}) {
+  const k = 1 - Math.exp(-G.ease * Math.max(0, dt)), h = Math.min(Math.max(0, dt), 0.05);
+  s.run = run; s.open[0] = open[0]; s.open[1] = open[1];
+  for (let i = 0; i < 2; i++) {
+    const want = free[i] ? 1 : 0, was = s.w[i];
+    s.w[i] = Math.abs(want - was) < 0.002 ? want : was + (want - was) * k;
+    s.on[i] = s.w[i] > 0 || was > 0;
+    // the fingers follow the arm on a damped spring; their lag behind it bends them
+    const x = swing[i] ?? 0, a = R.spring * (x - s.y[i]) - R.damp * s.v[i];
+    s.v[i] += a * h; s.y[i] += s.v[i] * h;
+    s.lag[i] = Math.max(-1, Math.min(1, s.y[i] - x));
+  }
+}
+
+/** The ten finger angles of side i (0 = L, 1 = R) with the rest added to the grip's current angles `cur`. Exactly `cur` while w is 0. */
+export function restFingers(s, i, cur) {
+  const o = s.out[i], w = s.w[i];
+  if (!w) { o.set(cur); return o; }
+  const add = s.add[i], lag = s.lag[i] * R.swing, shut = 1 - w * Math.min(1, Math.max(0, s.open[i]));
+  for (let f = 0; f < FINGER_COUNT; f++) {
+    const thumb = f === 4, run = s.run * (thumb ? R.run[2] : 1);
+    for (let j = 0; j < 2; j++) {
+      const extra = add[f * 2 + j] + (thumb ? run : run * R.run[j]) + (thumb ? 0 : lag * (j ? 0.7 : 1) * (0.7 + 0.1 * f));
+      o[f * 2 + j] = Math.max(0, (cur[f * 2 + j] + w * extra) * shut);
+    }
+  }
+  return o;
+}

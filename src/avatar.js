@@ -19,6 +19,7 @@ import { reactionPose, mixHand } from './reactpose.js';
 import { footGround } from './avatarfootik.js';
 import { newIdle, stepIdle, idleHands } from './avataridle.js'; // #2035: the living rest
 import { fingerSegments, fingerGLSL, gripFor, gripAngles, easeGrip, gripPoint } from './avatargrip.js'; // #2016: the fingers' grip shapes
+import { newRest, stepRest, restFingers } from './avatargrip.js'; import { newTalk, stepTalk, talkHand } from './avatartalk.js'; // #2038: free hands' rest, talk gestures
 import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, THIGH, bindAt, lathe, torsoR, attachSkeleton, poseOlof } from './olof.js';
 
 // The players' avatars (#705): a neutral human figure for the other players (src/ghosts.js) and for our own reflection in the
@@ -2024,6 +2025,7 @@ export class Avatar {
   update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null, air = 0, airV = null, swim = false, dive = 0, gaitDir = null, motionFrame = null, groundSpeed = speed, groundEnabled = true, ground = null, floorY = NaN } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
     this.time += dt;
     this.updateSway(dt); // #2014
+    this.handBusy = [!!hands.L, !!hands.R]; // #2038: a hand held by something keeps its grip exactly
     this.updateGrip(dt); // #2016
     const eyes = this.updateEyes(dt, turn, pitch, kiss > 0 || !!react || swim || air === 3);
     turn += eyes.yaw; pitch += eyes.pitch; // #2011: the head turns a little towards whom it looks at
@@ -2122,6 +2124,9 @@ export class Avatar {
         if (!hands.R) handR = mixHand(handR, kickHand(this, 1, hipY, hipZ, st, ku), km);
       }
     }
+    const tk = stepTalk(this.talkState ??= newTalk(), dt, { talking: this.talking, mouth: this.mouth, free: [!hands.L, !hands.R], quiet: am || swim || fa + ga > 0.01 || rp || kiss ? 1 : Math.max(c, rr) }); // #2038 (src/avatartalk.js)
+    handL = talkHand(handL, tk.hand[0]); handR = talkHand(handR, tk.hand[1]); pitch += tk.head; this.headTilt = tk.tilt;
+    const asw = this.armSwing ??= [0, 0]; asw[0] = armL / GAIT.armMax; asw[1] = armR / GAIT.armMax; this.runAmt = rr * g; // (the free fingers follow the arms, #2038)
     this.updateMouth(dt);
     if (rp) { this.mouth = Math.max(this.mouth, rp.mouth); this.material.userData.u.uMouth.value = this.mouth; }
     this.material.userData.u.uKiss.value = kiss;
@@ -2214,9 +2219,12 @@ export class Avatar {
     const u = this.material?.userData.u.uFing.value;
     if (!u) return;
     const first = !this.gripNow, cur = this.gripNow ??= { L: gripAngles('relaxed'), R: gripAngles('relaxed') }, to = this.gripTo ?? { L: 'relaxed', R: 'relaxed' };
+    const rest = this.handRest ??= newRest(), busy = this.handBusy, t = this.talkState?.out; // #2038: a free hand's rest curl (src/avatargrip.js)
+    stepRest(rest, dt, { free: [to.L === 'relaxed' && !busy?.[0], to.R === 'relaxed' && !busy?.[1]], swing: this.armSwing, run: this.runAmt ?? 0, open: t?.open });
     for (const [i, s] of ['L', 'R'].entries()) {
-      if (!easeGrip(cur[s], to[s], dt) && !first) continue;
-      for (let f = 0; f < 5; f++) u[i * 5 + f].set(cur[s][f * 2], cur[s][f * 2 + 1]);
+      if (!easeGrip(cur[s], to[s], dt) && !first && !rest.on[i]) continue;
+      const v = restFingers(rest, i, cur[s]);
+      for (let f = 0; f < 5; f++) u[i * 5 + f].set(v[f * 2], v[f * 2 + 1]);
     }
   }
   /** #2016: the world point where the middle of a thing held with the hand's grip goes, so that the curled fingers close round it. */

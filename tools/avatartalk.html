@@ -1,0 +1,71 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar hands and talk</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2038 component page: free hands at rest / walking / running, conversational gestures while a player talks, and held things
+// (a cup, a Nerf gun) keeping their grip while their holder talks. Real Ghosts (other players' path). Driven by tools/avatartalkbrowser.cjs.
+import * as THREE from 'three';
+import { Ghost } from '../src/ghosts.js';
+import { gripAngles } from '../src/avatargrip.js';
+const CASES = [{ key: 'idle', hi: '', h: '' }, { key: 'walk', hi: '', h: '' }, { key: 'run', hi: '', h: '' }, { key: 'talk', hi: '', h: '' },
+  { key: 'cup', hi: 'cup', h: '' }, { key: 'nerf', hi: '', h: 'nerf' }];
+const W = 960, Hh = 720, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, Hh); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshLambertMaterial({ color: 0x9aa39b })); floor.rotation.x = -Math.PI / 2; scene.add(floor);
+const cam = new THREE.PerspectiveCamera(30, W / Hh, 0.02, 80);
+let t = 1000;
+performance.now = () => t; // the talking mouth (#1122) runs on performance.now: here it follows the simulated clock
+const ghosts = CASES.map((c, i) => {
+  const g = new Ghost(scene, i + 1, 'Spelare ' + (i + 1), false);
+  if (g.tag) g.tag.visible = false;
+  g.root.position.set(i * 3, 0, 0); scene.add(g.root); g.root.visible = true;
+  g.root.rotation.y = Math.PI; g.have = false; g.vz = 0;
+  g.push({ p: [i * 3, 0, 0], r: Math.PI, h: c.h, hi: c.hi }, t);
+  return g;
+});
+ghosts[1].vz = 1.4; ghosts[2].vz = 4.2; // walking, running (the figure faces +z)
+/** Advance every figure `ms` milliseconds in frames of `step` ms (moving ones along +z). */
+const advance = (ms, step = 16.7) => {
+  for (let e = 0; e < ms; e += step) {
+    t += step;
+    for (const g of ghosts) { g.root.rotation.y = Math.PI; g.root.position.z += g.vz * step / 1000; g.animate(t, 1, 0, g.vz); }
+  }
+};
+advance(2000);
+const idx = (k) => CASES.findIndex((c) => c.key === k);
+const fingers = (g, side) => g.avatar.material.userData.u.uFing.value.slice(side === 'L' ? 0 : 5, side === 'L' ? 5 : 10).map((v) => [+v.x.toFixed(4), +v.y.toFixed(4)]);
+/** A close-up of figure k's hand `which` from a direction in the hand bone's frame (x out of the palm side for the left hand, -y along the fingers). */
+window.__hand = (k, which = 'R', dir = [0.3, -0.4, 1], dist = 0.4) => {
+  const g = ghosts[idx(k)], p = g.avatar.hand(which, new THREE.Vector3()), q = g.avatar.bones['hand' + which].getWorldQuaternion(new THREE.Quaternion());
+  p.add(new THREE.Vector3(0, -0.06, 0).applyQuaternion(q)); // the middle of the fingers, not the wrist
+  const d = new THREE.Vector3(...dir).normalize().multiplyScalar(dist).applyQuaternion(q);
+  cam.fov = 24; cam.updateProjectionMatrix(); cam.position.copy(p).add(d); cam.lookAt(p); renderer.render(scene, cam);
+  return { fingers: fingers(g, which), grip: g.avatar.gripOf(which) };
+};
+/** The whole upper body of figure k from its front three-quarter (the figure faces +z). */
+window.__body = (k, dist = 2.2, h = 1.25) => {
+  const g = ghosts[idx(k)], p = g.root.position.clone(); p.y = h;
+  cam.fov = 30; cam.updateProjectionMatrix(); cam.position.copy(p).add(new THREE.Vector3(0.9, 0.15, 1.9).normalize().multiplyScalar(dist)); cam.lookAt(p); renderer.render(scene, cam);
+};
+window.__advance = (ms) => advance(ms);
+window.__say = (k, text) => ghosts[idx(k)].avatar.talk(text, 6);
+/** What a figure shows now: its fingers, the head's local rotation, the talk state and the right hand's position (figure frame). */
+window.__state = (k) => {
+  const g = ghosts[idx(k)], a = g.avatar, h = a.hand('R', new THREE.Vector3()); a.object.worldToLocal(h);
+  const e = new THREE.Euler().setFromQuaternion(a.bones.head.quaternion, 'YXZ');
+  return { L: fingers(g, 'L'), R: fingers(g, 'R'), head: [e.x, e.y, e.z].map((v) => +v.toFixed(4)), handR: h.toArray().map((v) => +v.toFixed(4)),
+    talking: a.talking, mouth: +a.mouth.toFixed(3), talk: a.talkState ? { amt: +a.talkState.amt.toFixed(4) } : null };
+};
+window.__grip = (name) => [...gripAngles(name)].map((v) => +v.toFixed(4));
+window.__calls = () => { renderer.info.reset(); window.__body('talk', 9, 1); return { calls: renderer.info.render.calls, tris: renderer.info.render.triangles }; };
+window.__ready = true;
+</script></body></html>

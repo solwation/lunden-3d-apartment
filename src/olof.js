@@ -107,7 +107,7 @@ export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, 
   if (torsoRoll) tq.premultiply(q5.setFromAxisAngle(Z, torsoRoll)); // (the torso's rotation in the figure's frame, its own under the hips)
   B.torso.quaternion.copy(tq);
   if (hipRoll) B.torso.quaternion.premultiply(q5.copy(hq).invert());
-  B.head.quaternion.setFromEuler(new THREE.Euler(-head, turn, 0, 'YXZ'));
+  B.head.quaternion.setFromEuler(new THREE.Euler(-head, turn, fig.headTilt ?? 0, 'YXZ')); // #2038: a talking figure's head tilt (src/avatartalk.js)
   const I = qT.identity();
   const S = new THREE.Vector3(), T = new THREE.Vector3(), P = new THREE.Vector3(), out = new THREE.Quaternion();
   ['L', 'R'].forEach((s, i) => {

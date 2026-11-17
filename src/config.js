@@ -4216,6 +4216,14 @@ export const AVATAR_FACE = {
 // a spoken line follows the voice's start / word boundaries / end, closed after `liveMax` s if the end never comes.
 export const AVATAR_MOUTH = { drop: 0.009, below: 0.004, chinY: -0.03, halfWidth: 0.024, frontZ: [0.05, 0.085],
   rate: 13, vowel: 1, consonant: 0.4, space: 0.08, pause: 3, follow: 22, maxSecs: 6, liveMax: 20 };
+// #2038: small conversational gestures while a figure talks (src/avatartalk.js), *guess* by eye; local, no network field. The talking
+// amount follows `avatar.talking` at `rise` / `fall` 1/s (exactly 0 once quiet). A gesture every `gap` [min, max] s lasts `dur` [min, max] s:
+// a free hand lifts by `lift` [towards the middle, up, forward] m (scaled `amp` [min, max] per gesture; the right hand, the left
+// `left` of the time, both `both`), the head nods `nod` rad down over `nodDur` s. Between gestures the hands keep `rest` of the lift
+// (the right one fully, the left `restLeft`); `beat` m up and down with the mouth; `open` the share of the gesturing hand's finger curl
+// that opens; the head tilts up to `tilt` rad at `tiltHz`. Running / crouching mute it.
+export const AVATAR_TALK = { rise: 3, fall: 2.5, gap: [0.6, 2], dur: [0.9, 1.5], amp: [0.6, 1], lift: [0.08, 0.22, 0.26], left: 0.3, both: 0.2,
+  rest: 0.22, restLeft: 0.35, beat: 0.015, open: 0.55, nod: 0.1, nodDur: 0.55, tilt: 0.08, tiltHz: 0.21 };
 // The avatars' facial expressions (#2031, src/avatarface.js) *guess* by eye, not measured. Three weights 0 … 1 (smile, surprise,
 // grimace) come locally from what the figure already does: `cues` says how strongly a greeting wave, a hug, a kiss or a laugh
 // smiles, a scream surprises, and a hit (held `flinch` s), crying, gym work and running grimace; no network field. Each weight
@@ -6735,7 +6743,11 @@ export const AVATAR_PHONES = { tag: 'f', names: ['Inga', 'På öronen', 'Runt ha
 // (little, ring, middle, index, then the thumb [base, tip]); `point` where the middle of a held thing (a compact one: its box centre; a long one: its own grip origin) goes, in the hand's frame: out from the palm
 // (towards the palm side), along the fingers (-y) and across the hand (z, the thumb's side), in metres, so the curled fingers close round it. All artistic guesses (*guess*), tuned by eye in close-ups.
 // `byCategory` = heldcategory.js `hi`, `byWeapon` = COMBAT.weapons `h`; anything else the relaxed hand. `compact` the largest size (m) of a thing held by its middle; `split` the knuckle's share of a finger's length.
+// #2038 `rest`: a FREE hand (nothing held, no arm override) curls further than the `relaxed` grip: `extra` [knuckle, middle joint] per finger
+// (little … index) and the `thumb`, varied ± `vary` rad per figure and side (uneven, as real hands); running closes it by `run` [knuckle,
+// middle, thumb]; the fingers lag the arm swing on a spring (`spring` 1/s², `damp` 1/s), bending `swing` rad per unit of lag. *guess* by eye.
 export const AVATAR_GRIP = { ease: 14, split: 0.6, compact: 0.25, sink: 0.004, thumb: { prox: 0.026, dist: 0.024 },
+  rest: { extra: [[0.33, 0.22], [0.25, 0.18], [0.18, 0.13], [0.1, 0.09]], thumb: [0.22, 0.2], vary: 0.06, run: [0.3, 0.35, 0.18], swing: 0.3, spring: 40, damp: 6 },
   shapes: {
     relaxed: { fingers: [[0.45, 0.55], [0.4, 0.5], [0.33, 0.45], [0.25, 0.35]], thumb: [0.15, 0.1], point: [0, 0, 0] },
     cylinder: { fingers: [[1.05, 1.25], [1.0, 1.25], [0.95, 1.2], [0.85, 1.1]], thumb: [0.5, 0.4], point: [0.045, -0.045, 0.005] },
