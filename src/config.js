@@ -4142,6 +4142,8 @@ export const AVATAR_SURFACE = {
   // 90-degree change of cross-section cannot fold the inner attachment back.
   body: { sides: 24, hole: [.40, .475, .55], armStart: -.17, armholeRound: .57735026919,
     shoulderRows: [.2, .4, .6, .8, .9], shoulderBulge: [.022, .009], pumpJoin: .4,
+    // #2013 torso skin near an armhole follows its shoulder bone by up to `follow` (guess), fading over `followRadius` metres (height scaled by followTall).
+    follow: .25, followRadius: [.05, .17], followTall: .6,
     chest: .007, bust: .017, chestAt: .43, chestWidth: .14, hemShade: .90,
     hoodieLength: .055, hoodieTaper: .25, hoodieEase: .008,
     male: [[-.025,.174,.119],[-.012,.174,.119],[.045,.166,.117],[.12,.155,.11],

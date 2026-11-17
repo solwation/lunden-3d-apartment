@@ -73,3 +73,25 @@ test('raised arms, crouch, seat and driving keep actual surface finite and hand 
  function check(){a.object.updateMatrixWorld(true);a.mesh.skeleton.update();const v=new THREE.Vector3();for(let i=0;i<a.mesh.geometry.attributes.position.count;i++){a.mesh.getVertexPosition(i,v);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.length()<2.5);}}
  assert.deepEqual(a.mesh.skeleton.bones.map(b=>b.name),NAMES);a.dispose();
 });
+
+// #2013: corrective torso weight toward the shoulder bones keeps the armpit/shoulder surface from tearing or collapsing.
+import { shoulderMetrics } from './avatarshouldervolume.mjs';
+for (const gender of [0, 1]) for (const sleeves of [0, 1]) test(`shoulder volume bounds when lifting, reaching and crossing, gender${gender} sleeves${sleeves}`, () => {
+ const m = shoulderMetrics({ ...avatarLook('vol2013'), gender, sleeves, cut: 0 });
+ for (const [pose, v] of Object.entries(m)) {
+  assert.ok(v.edgeP99 <= 1.75, `${pose}: shoulder edges stretch at most 1.75x (1.86 before #2013) (${v.edgeP99})`);
+  assert.ok(v.edgeP1 >= .45, `${pose}: shoulder edges shrink at most to 0.45x (${v.edgeP1})`);
+  assert.ok(v.areaP1 >= .15, `${pose}: shoulder triangles keep at least 15% of their area (${v.areaP1})`);
+  assert.ok(v.stretched === 0, `${pose}: no tearing stretch`);
+ }
+});
+test('armhole follow weights: normalised, four influences, torso stays dominant for suit shading', () => {
+ const a = avatarModelGeometry({ ...avatarLook('w2013'), gender: 0, cut: 0, sleeves: 0 }).attributes;
+ let followers = 0;
+ for (let i = 0; i < a.position.count; i++) {
+  let sum = 0; for (let k = 0; k < 4; k++) sum += a.skinWeight.getComponent(i, k);
+  assert.ok(Math.abs(sum - 1) < 1e-4, 'weights sum to one');
+  if (NAMES[a.skinIndex.getX(i)] === 'torso' && a.skinWeight.getY(i) > .01 && /^shoulder/.test(NAMES[a.skinIndex.getY(i)])) followers++;
+ }
+ assert.ok(followers > 20, 'torso skin around the armholes follows the shoulder bones');
+});

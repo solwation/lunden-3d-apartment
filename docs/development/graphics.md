@@ -45,6 +45,19 @@ still limits LBS normals; the guard and exposed high-arm imagery do not claim ev
 posed triangle is error-free. [Final art, actual preview, source equivalence,
 counts and software timing limits](../verification/2001/README.md).
 
+#### Shoulder volume when the arm moves (#2013)
+
+Torso vertices around each armhole carry a falling share (`AVATAR_SURFACE.body.follow`,
+`followRadius`, `followTall`; guesses) of the matching shoulder bone as a corrective weight
+instead of 100% torso, and the sewn shoulder rows start from those root weights. Rest pose and
+the 15-bone rig are unchanged and torso stays the dominant bone for suit shading. The first
+reading of the torso-to-arm surface edge stretch dropped from about 1.86x to 1.69x (99th percentile, arms up)
+and chest/armpit triangle collapse is no worse for waving, rifle hold and reaching. A fully crossed-arm pose still crushes
+the inner rim (about 0.19-0.28 of the rest area at the worst 1% of triangles), so inner-axilla compression is reduced, not removed.
+Check with `node --test tools/avatarshouldertest.mjs` (numeric bounds via `tools/avatarshouldervolume.mjs`) and the
+pose sheet `tools/avatarshoulderbrowser.cjs` / `tools/verify-avatar-shoulders.html`
+([images](../verification/2013/)).
+
 ### Player head and hair (#2002)
 
 `AVATAR_FACE` / `addFace` seat shaped upper/lower lip bands and a skin border on

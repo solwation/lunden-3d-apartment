@@ -457,6 +457,7 @@ function upperBody(sleeves, female, cut) {
   const holeRows = B.hole.map(y => rings.findIndex(r => r[0] === y));
   const pos = [], weights = [], ids = [], pump = [], shade = [], groups = [[], [], []];
   const torso = NAMES.indexOf('torso');
+  const pivots = ['L', 'R'].map(s => Object.assign(bindAt('shoulder' + s).sub(bindAt('torso')), { id: NAMES.indexOf('shoulder' + s) }));
   const vertex = (p, si = [torso, 0, 0, 0], sw = [1, 0, 0, 0], pp = [0, 0, 0, 0], sh = 1) => {
     const k = pos.length / 3; pos.push(...p); ids.push(...si); weights.push(...sw); pump.push(...pp); shade.push(sh); return k;
   };
@@ -469,9 +470,14 @@ function upperBody(sleeves, female, cut) {
       // An oval armhole, rather than a rectangular flange around the deltoid.
       const onHole = (row === holeRows[0] || row === holeRows[2]) && Math.abs(Math.sin(a)) >= Math.sin(Math.PI / 3) - 1e-6;
       const yy = onHole ? B.hole[1] + (y - B.hole[1]) * Math.sqrt(Math.max(0, 1 - (Math.cos(a) / B.armholeRound) ** 2)) : y;
-      vertex([Math.sin(a) * (rx + fold), yy, Math.cos(a) * (rz + fold) + centre +
-        (female ? B.bust : B.chest) * front ** 2 * bump(y, B.chestAt, B.chestWidth)],
-        undefined, undefined, undefined, row < 2 ? B.hemShade : 1);
+      const at = [Math.sin(a) * (rx + fold), yy, Math.cos(a) * (rz + fold) + centre +
+        (female ? B.bust : B.chest) * front ** 2 * bump(y, B.chestAt, B.chestWidth)];
+      // #2013 corrective weight: torso skin around each armhole follows its shoulder bone by a falling share, so a lifted arm
+      // drags the pectoral/lat fabric up with it instead of tearing the armhole open or pinching the armpit.
+      const pivot = pivots[at[0] < 0 ? 1 : 0], reach = Math.hypot(at[0] - pivot.x, (at[1] - pivot.y) * B.followTall, at[2] - pivot.z);
+      const follow = B.follow * (1 - smoothstep(B.followRadius[0], B.followRadius[1], reach));
+      vertex(at, follow > 1e-3 ? [torso, pivot.id, 0, 0] : undefined, follow > 1e-3 ? [1 - follow, follow, 0, 0] : undefined,
+        undefined, row < 2 ? B.hemShade : 1);
     }
   }
   for (let row = 0; row < rings.length - 1; row++) for (let j = 0; j < S; j++) {
@@ -509,7 +515,8 @@ function upperBody(sleeves, female, cut) {
         const at = start.map((v, k) => THREE.MathUtils.lerp(v, end[k], k === 1 ? THREE.MathUtils.lerp(t, t * t, Math.max(0, Math.sin(a))) : t));
         at[0] += sx * B.shoulderBulge[0] * bulge;
         at[2] += Math.cos(a) * B.shoulderBulge[1] * bulge;
-        const influence = new Map([[torso, 1 - blend]]);
+        const influence = new Map();
+        for (let k = 0; k < 4; k++) if (weights[root[j] * 4 + k] > 0) influence.set(ids[root[j] * 4 + k], (1 - blend) * weights[root[j] * 4 + k]);
         for (let k = 0; k < 4; k++) {
           const id = si.getComponent(i, k);
           influence.set(id, (influence.get(id) || 0) + blend * sw.getComponent(i, k));
