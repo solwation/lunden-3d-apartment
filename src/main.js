@@ -54,6 +54,7 @@ import { initHudIcons, fitChoiceLabels, setIcon, setPressed, setWeatherIcon, for
 import {SharedFish} from './sharedfishclient.js';
 import * as THREE from 'three';
 import { POPCORN, FRIES, FISH, THING_SYNC, UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, PLAYROOM, BOULE, encodeAvatarWireLook, decodeAvatarLook, avatarLook, avatarBody, avatarHeightCm } from './config.js';
+import { wetEnv } from './avatarweather.js';
 import { setupAvatarCustomizer, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen } from './customizer.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 import * as showFireworks from './fireworks.js';
@@ -1222,6 +1223,8 @@ cat.interact.options = () => {
 };
 cat.watchPoint ??= () => camera.position;
 // #1287: a cat put down outside the flat (the ground, a roof, a terrace) stays there sitting (cat.js `outdoor`, CAT_OUTDOOR)
+// #2018: wet hair / clothes and snow on the shoulders: the weather's falling strength and temperature, and who stands in the open (the visitor: player.outdoors; the others by position)
+wetEnv.outdoorAt = (g) => g.self ? player.outdoors && !player.below && !player.inCore : !player.inCore && (!player.inFootprint(g.root.position.x, g.root.position.z) || g.root.position.y > UNIT_TOP - 0.3) && !world.garage?.inside(g.root.position.x, g.root.position.z);
 cat.outdoorAt = (p) => !player.unit && !player.inCore && (!player.inFootprint(p.x, p.z) || p.y > UNIT_TOP - 0.3);
 miele.dropSpot = () => { // at your feet, a little in front
   const f = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).setY(0).normalize().multiplyScalar(0.45);
@@ -4075,6 +4078,7 @@ function frame(raw) {
   else if (warm.done) warm.lateSlice(); // #1514: late drawings' programs, a few per frame
   hitch.phase('adapt');
   step(dt);
+  wetEnv.rain = weather.rain; wetEnv.kind = weather.kind; wetEnv.temp = weather.temp ?? 10; // #2018
   ghosts.update(dt);
   sharedFish?.update();picnicSync.update();
   football?.update(active()&&overlay.hidden&&!reading&&!document.hidden);

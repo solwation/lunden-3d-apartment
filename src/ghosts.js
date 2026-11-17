@@ -1,3 +1,4 @@
+import { wetEnv } from './avatarweather.js'; // #2018
 import { transitionPose } from './avatarmotion.js';
 import {gymPoseWire} from './gymposewire.js';
 import {applyGymBodyPose} from './gymbodypose.js';
@@ -410,6 +411,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     motionFrame[0] = this.root.position.x; motionFrame[1] = this.root.position.z; motionFrame[2] = by;
     const groundEnabled = !this.pose && !this.gx && !this.bikeMesh && !amount;
     this.avatar.collectPose = true;
+    this.avatar.updateWeather(wetEnv.outdoorAt(this)); // #2018
     this.avatar.update(dt, { motionFrame, groundSpeed: groundEnabled && groundSpeed <= 8 ? groundSpeed : 0, groundEnabled, gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: wet ? 0 : this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive });
     if (wet) sink(this.avatar.swimAmt, this.avatar.swimLine, this.avatar.diveAmt); // (blending in from standing on the bed)
     applyRestPose(this.avatar, this.pose, this.look, react);

@@ -9026,3 +9026,14 @@ export const EDGE_LOOK = { strength: 0.2, shade: 0.55, fadeNear: 2.5, fadeFar: 1
 // `lift`: a foot this far above its own ground [full, gone] fades its blob; `jump`: the same for the body blob (jump / flight / fall);
 // `range`: only players nearer than this (m) get one (the far figure and distant bodies are too small to matter).
 export const AVATAR_SHADOW = { bodyAlpha: 0.3, footAlpha: 0.42, bodyRadius: [0.36, 0.3], footRadius: [0.1, 0.19], lift: [0.03, 0.22], jump: [0.12, 0.6], range: 40, rise: 0.012, maxDrop: 1.5 };
+// #2018: wet hair and clothes in rain, a thin snow layer on head and shoulders in snowfall, derived locally per avatar from the weather and
+// indoor / outdoor (src/avatarweather.js; no network field). Rates are fractions (0 … 1) per second at full strength, all *guesses* by feel:
+// `wetRate` soaking in full rain (about 80 s), `dryIndoor` / `dryOutdoor` drying (about 5 min inside, 15 min outside without rain), `snowRate`
+// settling in full snowfall (about 100 s), `meltIndoor` (about 2.5 min), `meltOutdoor` per °C above freezing (a slow thaw outside), `meltToWet`
+// the share of melted snow that wets the clothes, `hail` the wetting of hail relative to rain, `maxGap` s the longest span integrated in one step
+// (a figure that was not drawn for a while catches up at most this far). Look: `darken` the cloth / hair colour factor when soaked, `skin` how
+// much of it skin takes, `rough` the roughness of a soaked surface, `snowRough` of the snow, `snowColor`, `snowUp` the world-normal.y range of
+// the surfaces snow rests on (shoulders and crown, not sleeves), `snowFrom` m above the torso bind point (nothing on legs / feet), `snowPatch` the
+// share of patchiness.
+export const AVATAR_WET = { wetRate: 0.0125, dryIndoor: 1 / 300, dryOutdoor: 1 / 900, snowRate: 0.01, meltIndoor: 1 / 150, meltOutdoor: 1 / 1500, meltToWet: 0.5, hail: 0.5, maxGap: 900,
+  darken: 0.55, skin: 0.35, rough: 0.22, snowRough: 0.88, snowColor: 0xeef3fa, snowUp: [0.45, 0.85], snowFrom: 0.38, snowPatch: 0.4 };
