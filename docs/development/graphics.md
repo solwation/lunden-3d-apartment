@@ -1197,12 +1197,12 @@ GAME OUT` ([images](../verification/2039/)).
 ## Living avatar skin (#2032)
 
 `src/avatarskin.js` (`avatarSkinGLSL`, tunables `AVATAR_SKIN_DETAIL`, all *guess*) adds three GLSL pieces to the avatars' one material
-(program key suffix `-skin2032`), hooked in `makeMaterial` after `skinShading()`, after `normal_fragment_maps` and after
+(program key suffix `-skin2067`), hooked in `makeMaterial` after `skinShading()`, after `normal_fragment_maps` and after
 `lights_fragment_end`. No texture, mesh, triangle, draw call or network field. Colour: a warmer flush (an albedo multiplier, so it works
 for every skin tone) on the ears (by `facePart`) and nose (#2048: by its height `vNose`), wider on the cheeks and on the knuckles / finger joints of the back of the
-hand (hand-bone bind frame). Normal: pores (pits where a three-wave quasi-periodic sum peaks) and broader shallow dimples, in bind-pose
+hand (hand-bone bind frame). Normal: fine dense pores and shallow grain (two three-wave quasi-periodic sums), in bind-pose
 metres with an analytic gradient (no derivative inside the skin branch), bumped like three's `perturbNormalArb`; each layer fades out
-between 3.5 and 2 pixels per period, so it shows only within roughly an arm's length and leaves nothing to shimmer at distance or in the
+between 6 and 4 pixels per period, so it shows only within roughly an arm's length and leaves nothing to shimmer at distance or in the
 #1966 dither fade; pits are a little rougher and the nose a little shinier. Light: per directional light a wrapped diffuse past the
 terminator and a backlight transmission term (`back`: distortion, power, strength) scaled by a thickness per part (the ear's rim full,
 its middle `inner`; nose; fingers), tinted red times √albedo so darker skin glows a little less but stays red. It is added before
@@ -1213,6 +1213,14 @@ Measured under SwiftShader (software sin/cos, so a pessimistic proxy): a 640 × 
 shared machine, nine figures at 3 – 6 m within noise; no Surface measurement. Check: `tools/browsertest.sh node tools/avatarskintest.cjs
 SITE docs/verification/2032` (component page `tools/avatarskin.html`: light / medium / dark skin before and after in day light and backlight,
 frame-to-frame shimmer ratio at 2 / 4 / 8 m ≤ 1.1, cost) ([images](../verification/2032/)).
+
+**Fine detail correction (#2067).** The field periods/relief are 0.65 mm / 1 µm for pores
+and 1.5 mm / 1.5 µm for grain (artistic assumptions). The old sparse 2.4 mm pores and
+6.5 mm dimples were visibly pitted. A cheek/nose weight concentrates the detail, both
+layers exclude lips and eyelids, and eight-decimal GLSL literals retain the micrometre
+relief. Geometry/rig/attributes are unchanged; the weighting adds two exponentials and
+mask arithmetic per head-skin fragment. Flush, sweat/rain and transmission retain their
+existing hooks. [Matched three-tone views, motion and scoped cost](../verification/2067/README.md).
 
 ## Cloth folds and weave (#2034)
 

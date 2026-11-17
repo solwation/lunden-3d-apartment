@@ -1,0 +1,117 @@
+{
+  "baseline": "24957657",
+  "source": "c8e18193a04e562291f070c71521dc7e813bcba0",
+  "before": {
+    "budget": {
+      "triangles": 15660,
+      "bones": 15,
+      "attributes": [
+        "position",
+        "normal",
+        "region",
+        "bare",
+        "noseBlend",
+        "skinIndex",
+        "skinWeight",
+        "rifleSkull",
+        "rifleNose",
+        "rifleJaw",
+        "mouth",
+        "pucker",
+        "facePart",
+        "faceAnchor",
+        "armPump",
+        "suitRole",
+        "color"
+      ]
+    },
+    "shimmer": {
+      "2": {
+        "off": {
+          "meanDelta": 0.885,
+          "pixels": 50811
+        },
+        "on": {
+          "meanDelta": 0.914,
+          "pixels": 50828
+        },
+        "ratio": 1.033,
+        "onVsOffMeanLuma": 11.876
+      },
+      "5": {
+        "off": {
+          "meanDelta": 2.29,
+          "pixels": 11983
+        },
+        "on": {
+          "meanDelta": 2.362,
+          "pixels": 11986
+        },
+        "ratio": 1.031,
+        "onVsOffMeanLuma": 9.834
+      }
+    },
+    "ms": {
+      "median": 0.20000000298023224,
+      "p90": 0.29999999701976776,
+      "n": 20
+    }
+  },
+  "after": {
+    "budget": {
+      "triangles": 15660,
+      "bones": 15,
+      "attributes": [
+        "position",
+        "normal",
+        "region",
+        "bare",
+        "noseBlend",
+        "skinIndex",
+        "skinWeight",
+        "rifleSkull",
+        "rifleNose",
+        "rifleJaw",
+        "mouth",
+        "pucker",
+        "facePart",
+        "faceAnchor",
+        "armPump",
+        "suitRole",
+        "color"
+      ]
+    },
+    "shimmer": {
+      "2": {
+        "off": {
+          "meanDelta": 0.886,
+          "pixels": 50815
+        },
+        "on": {
+          "meanDelta": 0.912,
+          "pixels": 50817
+        },
+        "ratio": 1.029,
+        "onVsOffMeanLuma": 11.885
+      },
+      "5": {
+        "off": {
+          "meanDelta": 2.293,
+          "pixels": 11984
+        },
+        "on": {
+          "meanDelta": 2.36,
+          "pixels": 11984
+        },
+        "ratio": 1.029,
+        "onVsOffMeanLuma": 9.841
+      }
+    },
+    "ms": {
+      "median": 0.10000000149011612,
+      "p90": 0.20000000298023224,
+      "n": 20
+    }
+  },
+  "errors": []
+}

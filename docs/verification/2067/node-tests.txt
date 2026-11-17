@@ -1,0 +1,21 @@
+✔ #2037 effort reuses the face cues: running and a gym pose count, walking does not (0.825325ms)
+✔ #2037 cold: none in mild weather, full in frost, at least snowMin while it snows (0.217849ms)
+✔ #2037 a short dash does not flush, a long sprint does and it fades over about a minute (5.947711ms)
+✔ #2037 breathing: about 15 breaths a minute at rest, about three times faster running, and still fast just after (6.406546ms)
+✔ #2037 puffs only for a figure outdoors in the cold; the uniform carries flush / sheen everywhere (5.219689ms)
+✔ #2037 the shared pool: one Points object, drifts forward from the mouth, fades, hides when empty, capped (2.236847ms)
+✔ #2037 the shader hook: uniform after <common>, the change before <normal_fragment_begin>, bare skin only (0.44613ms)
+✔ #2018 outdoors in rain the clothes soak gradually to full and stay in 0..1 (2.325475ms)
+✔ #2018 stronger rain soaks faster; indoors rain does nothing (0.639498ms)
+✔ #2018 snowfall gathers a layer outdoors, not indoors, and it holds in frost but thaws above zero (0.972726ms)
+✔ #2018 coming inside: snow melts (wetting a little) and wet clothes dry on a timescale of minutes (0.796919ms)
+✔ #2018 outdoors without rain drying is slower than indoors (0.693417ms)
+✔ #2018 a long gap catches up at most maxGap, negative or NaN steps do nothing, falling() maps the kinds (0.976239ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 181.038278

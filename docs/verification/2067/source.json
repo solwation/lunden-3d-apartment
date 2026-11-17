@@ -1,0 +1,7 @@
+{
+  "baseline": "24957657458d7e9e1342daa178e7c2bb6e876f61",
+  "source": "c8e18193a04e562291f070c71521dc7e813bcba0",
+  "utc": "2026-11-17T19:32:53.962701+00:00",
+  "environment": "Chromium headless / SwiftShader, 400x400, pixelRatio1, MSAA; same camera/look/lighting baseline and candidate",
+  "comparison": "baseline config.js + avatarskin.js from24957657; all other source identical"
+}
