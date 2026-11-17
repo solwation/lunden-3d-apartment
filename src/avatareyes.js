@@ -72,8 +72,9 @@ export function eyeAt() {
           }`;
 }
 
-/** Vertex, after the whole face shape: the ball's centre (the vertex less its offset, through the head's widening) and the head's up,
- * both in view space through the skinning, so every fragment can rebuild the ball's exact normal. */
+/** Vertex, right before the skinning (after the face shape, the sway and the expressions): the ball's centre (the vertex less its offset,
+ * through the head's widening; later moves of the whole eye carry it along) and the head's up, both in view space through the skinning, so
+ * every fragment can rebuild the ball's exact normal. */
 export const eyeView = () => `if (eyeOn > 0.5) { // #2033
   mat4 eyeSk = mat4(1.0);
   #ifdef USE_SKINNING

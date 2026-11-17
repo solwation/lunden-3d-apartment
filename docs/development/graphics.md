@@ -923,7 +923,8 @@ frame-to-frame shimmer ratio at 2 / 4 / 8 m ≤ 1.1, cost) ([images](../verifica
 program key suffix `-eyes2033`): no texture, mesh, triangle, light, draw call or network field. Hooks in `src/avatar.js`: in the eye branch of
 `faceShape()` the pupil (the dark `fixed` disc of the `iris` part) scales about the iris' centre (`eyePupil`) and, after the blink, each eye
 vertex gets its place in the opening (x corner to corner, y lower to upper lid, the blink and eye size undone) and its offset from a wet
-ball (`eyeAt`); after the face shape the ball's centre and the head's up go to view space through the skinning (`eyeView`). Fragment: after
+ball (`eyeAt`); right before the skinning (after the face shape and #2031's expressions) the ball's centre and the head's up go to view
+space through the skinning (`eyeView`). Fragment: after
 the roughness the eyeball darkens softly under the upper lid and in its corners, is glossy along the lower lid (the tear line) and the lid
 margin just outside is wet (`eyeWet`); the flat eye geometry's own highlight is kept broad and the pupil matt, so the one sharp highlight is
 the glint (`eyeGlint`, before `uLight`): per fragment the ball's exact normal (a cornea-sized ball, `ball` × the eye's radius), a sharp
