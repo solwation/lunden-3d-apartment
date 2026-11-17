@@ -1136,7 +1136,8 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
       // Pull the adjacent muzzle skin with the lips, so a pout never leaves floating lip islands.
       if (hb) {
         const x = gp.getX(i) - hb.x, y = gp.getY(i) - hb.y, z = gp.getZ(i) - hb.z;
-        const skin = part.rifleNose || noseBlend.getX(i) > 0 ? 0 : Math.max(0, 1 - (x / KISS.muzzleWidth) ** 2 - ((y - SEAM_Y) / KISS.muzzleHeight) ** 2) * smoothstep(...KISS.muzzleFront, z);
+        const skin = part.rifleNose ? 0 : Math.max(0, 1 - (x / KISS.muzzleWidth) ** 2 - ((y - SEAM_Y) / KISS.muzzleHeight) ** 2) * smoothstep(...KISS.muzzleFront, z)
+          * (1 - smoothstep(...KISS.muzzleTop, y)) * (1 - smoothstep(0, KISS.noseFade, noseBlend.getX(i))); // #2058: smooth, none on the nose
         const follow = g.attributes.lipFollow?.getX(i);
         // The new lip-to-skin band joins full lip motion to the adjacent muzzle's motion.
         pucker[i] = Math.round(255 * (follow === undefined ? (['upper', 'lower', 'seam'].includes(part.mouth) ? 1 : skin) : skin + (1 - skin) * follow));

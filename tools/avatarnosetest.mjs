@@ -165,3 +165,23 @@ test('#2049 the variants differ clearly in profile and from the front', () => {
   assert.ok(noseFormOffset(wing, N.ala[2], 0.004, VARIANTS[2])[0] > 0.002, 'the broad nose\'s wings sit > 2 mm wider');
   assert.ok(Math.abs(noseFormOffset(0.016, 0.107, 0, VARIANTS[2])[0]) < 0.0005, 'the inner eye corner stays put');
 });
+
+test('#2058 the kiss leaves the nose alone and tears no skin round it (pucker smooth, none on the nose itself)', async () => {
+  const { KISS } = await import('../src/config.js'), hb = bindAt('head');
+  for (const facial of [0, 1, 2, 3]) {
+    const g = avatarModelGeometry({ ...avatarLook('nose'), style: 0, facial }), a = g.attributes, p = a.position;
+    const at = (i, k) => [p.getX(i) * (1 - k * a.pucker.getX(i) * KISS.narrow), p.getY(i), p.getZ(i) + k * a.pucker.getX(i) * KISS.pucker]; // avatar.js begin_vertex
+    let worst = 0;
+    for (let t = 0; t < p.count; t += 3) {
+      const x = p.getX(t) - hb.x, y = p.getY(t) - hb.y, z = p.getZ(t) - hb.z;
+      if (a.facePart.getX(t) < 1 || a.facePart.getX(t) > 29 || y < 0.055 || y > 0.12 || z < 0.03 || Math.abs(x) > 0.04) continue;
+      for (let e = 0; e < 3; e++) {
+        if (a.noseBlend.getX(t + e) >= KISS.noseFade) assert.equal(a.pucker.getX(t + e), 0, `facial ${facial}: the nose never pouts`);
+        const i = t + e, j = t + (e + 1) % 3, l0 = Math.hypot(...at(i, 0).map((v, c) => v - at(j, 0)[c])), l1 = Math.hypot(...at(i, 1).map((v, c) => v - at(j, 1)[c]));
+        if (l0 > 1e-4) worst = Math.max(worst, l1 / l0);
+      }
+    }
+    assert(worst < 2, `facial ${facial}: an edge round the nose stretches ${worst.toFixed(2)}× in the kiss (was 8.8× before #2058)`);
+    g.dispose();
+  }
+});

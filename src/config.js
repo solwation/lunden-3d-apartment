@@ -2233,10 +2233,13 @@ export const GREET = { bubble: 2.8 };
 export const KISS = { phrase: 15, range: 1.35, serverRange: 1.6, hearts: 10, scale: 1.8, line: 'Puss på dig, {n}!',
   // #1398: animation/audio timings and pose are playability guesses; +100 is the user's explicit reward.
   duration: 2.2, contact: .85, release: 1.25, lean: .65, head: .5, forward: .12,
-  pucker: .018, narrow: .4, muzzleWidth: .085, muzzleHeight: .075, muzzleFront: [.05, .1], faceGap: .12, mouthHeight: 1.5, receipts: 256, soundRange: 12,
+  pucker: .018, narrow: .4, muzzleWidth: .085, muzzleHeight: .075, muzzleFront: [.05, .1], muzzleTop: [.046, .068], noseFade: .15, faceGap: .12, mouthHeight: 1.5, receipts: 256, soundRange: 12,
   hum: .36, humHz: 180, smackHz: 850, soundGain: .7,
   humGain: .3, overtoneGain: .08, smackGain: .7, smackDuration: .085, smackQ: 2, smackAttack: .003,
   popDuration: .075, popHz: [480, 140], popGain: .3 };
+// #2058: the pout's muzzle skin fades out smoothly above the lips over `muzzleTop` [from, to] (head-bone y m, the nose's base
+// ~.063, AVATAR_NOSE) and over `noseFade` of the nose's own height (noseBlend), so the nose and the cheeks beside it stay put
+// and no triangle between them tears; *guess* by eye (docs/verification/2058).
 // #1405: a hug between any two nearby players, chosen from the same E/touch menu as greeting (and kissing for Sarah/Olof).
 // `phrase` is a reserved greeting index (below PLAYERS.greetPhrases, never chosen at random); ranges as KISS (client / server
 // margin, m); `gap` the distance between the two bodies' centres in the embrace, `duration`/`contact`/`release` s of the

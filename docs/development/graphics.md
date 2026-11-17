@@ -164,7 +164,9 @@ hang outside the back of the sweater (13 mm or more). Same geometry, no new part
 `AVATAR_FACE` / `addFace` seat shaped upper/lower lip bands and a skin border on
 that same continuous head, round the front chin, and add folded ears (formed since #2047) and tapered
 brows. The lip border joins lip and muzzle pucker weights without a retained new
-attribute. Directional scalp groups, smoother curls and a grouped, uneven long
+attribute. The muzzle weight fades smoothly above the lips (`KISS.muzzleTop`) and over the nose's own
+height (`KISS.noseFade`), so the kiss leaves the nose and the cheeks beside it in place without torn
+triangles (#2058, `tools/avatarnosetest.mjs`, [images](../verification/2058/)). Directional scalp groups, smoother curls and a grouped, uneven long
 curtain keep the existing five styles, colours and controls. Posterior nasal
 isolation, head-role shading, headwear, glasses and the existing 15-bone rig remain.
 The five measured variants add 4.09–5.45% triangles/attribute bytes, within the
