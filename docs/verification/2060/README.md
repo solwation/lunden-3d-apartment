@@ -7,8 +7,8 @@ the same sheets. Columns: front, three-quarter, profile, low three-quarter, from
 
 | Image | Shows |
 |---|---|
-| `before/nose-extremes.png` → `nose-extremes.png` | daylight. Rows: straight, convex, upturned, broad, each at the smallest + narrowest and then the largest + widest sliders |
-| `before/nose-extremes-raking.png` → `nose-extremes-raking.png` | the same with a low sun from the side (form only) |
+| [before/nose-extremes.png](https://github.com/solwation/lunden-3d-apartment/blob/72b42e19/docs/verification/2060/before/nose-extremes.png) (removed at closure) → `nose-extremes.png` | daylight. Rows: straight, convex, upturned, broad, each at the smallest + narrowest and then the largest + widest sliders |
+| [before/nose-extremes-raking.png](https://github.com/solwation/lunden-3d-apartment/blob/72b42e19/docs/verification/2060/before/nose-extremes-raking.png) (removed at closure) → `nose-extremes-raking.png` | the same with a low sun from the side (form only) |
 | `nose-closeup-raking.png` | crops of the raking sheets, largest + widest rows (straight, convex, upturned, broad top to bottom); columns before / after front, before / after three-quarter |
 | `nose-closeup-below.png` | crops of the daylight sheets, straight (top) and broad (bottom) at largest + widest; before / after from below, before / after low three-quarter |
 | `old-codes.png` | old codes (light, medium, dark skin), middle sliders: pixel-identical to the baseline |
