@@ -1,0 +1,11 @@
+✔ existing rounded metre layout keeps half bond, periodic joints and a soft edge (18.51682ms)
+✔ structural height never follows colour speckle; the shared scalar texture is linear and registered (12.96405ms)
+✔ existing snow removes exposed auxiliary maps and restores cache; sheltered portik stays unchanged (0.894228ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 155.948963

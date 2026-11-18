@@ -1,0 +1,11 @@
+{
+  "baseline": "6e1576aa078b70730e73bb4ffb805dc32e1b3959",
+  "config": "All previous bytes exact; only own PAVING_SURFACE block inserted",
+  "consumer": "World/exterior exact after only the two material call replacements and imports",
+  "unchanged": {
+    "src/patio.js": "23ef933a92f93cf8490572a8f972e689e56ce38d8f8374849e4b47a173da824e",
+    "src/seasons.js": "a0398c24ce587b40be47ca552be3c7ce3bee900ef40ca7a74e48573f222476e7",
+    "data/plan.json": "5b0b4a73b71dde6c3d2e00ed8de92c512ee01a8402eaa67a788d3eb4ce620de9"
+  },
+  "public": "Neutral pavingsurface module, own block and public material call sites only; no original patio furniture import; tracked separately as public296"
+}

@@ -29,6 +29,7 @@ import { grassMaterial } from './grass.js';
 import { buildStreetLife } from './streetlife.js';
 import { buildEastLotCars } from './eastlot.js';
 import { pavingTexture } from './patio.js';
+import { pavingMaterial } from './pavingsurface.js';
 import { patioHedgeMaterial } from './patiohedge.js';
 import { screenWallParts, screenWallTexture } from './screenwall.js';
 import { screenWallSurface } from './screenwallsurface.js';
@@ -67,7 +68,7 @@ const M = {
   riser: mat(COLORS.riser, { roughness: 0.6 }), // stair risers and stringers (white)
   dark: mat(0x1d2023, { roughness: 0.3 }),
   grass: grassMaterial(),
-  patio: mat(0xffffff, { map: pavingTexture(), roughness: 0.95 }), // slab paving (PATIO.paving)
+  patio: pavingMaterial(pavingTexture(), { snow: true }), // same slab colour/metres; exposed snow policy (PATIO.paving)
   hedge: patioHedgeMaterial(),
   fence: mat(0xffffff, { map: screenWallTexture(), ...screenWallSurface() }), // #1786: boards in a cream frame (SCREEN_WALL)
 };

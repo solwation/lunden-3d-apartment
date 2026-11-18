@@ -9344,3 +9344,16 @@ checks the retained strand-flow and geometry contracts. `tools/avatarhair2068bro
 (via `tools/browsertest.sh`) uses matched baseline shader/config/Avatar modules for short black/brown,
 long black, curly black, brown bun, blond and grey hair in daylight/backlight; captures an orbit,
 triangles/draws and alternating timing samples. [Result and timing limits](../verification/2068/README.md).
+
+
+## Patio slab light response (#2074)
+
+`node --test tools/pavingsurfacetest.mjs` checks existing half-bond scale/repeat, soft
+structural edges independent of colour noise, shared linear texture/cache and the real
+exposed/sheltered snow boundary. `tools/pavingsurface2074browser.cjs SITE OUT` uses
+actual `World.M.patio`/`plate` (fixture-only exports) and `buildExterior`, matching
+colour pixels, every emitted geometry buffer/bounds, calls and summer/snow/restoration.
+Decor is hidden equally to expose the paving; this is not a full World/navigation run.
+A bad initial portik camera is corrected only in the two affected views by
+`tools/pavingportik2074retake.cjs`, with unchanged product hashes and the other green
+captures preserved. [Source binding, images, costs and limitations](../verification/2074/README.md).

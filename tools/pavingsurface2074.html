@@ -1,0 +1,59 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="icon" href="data:,"><title>Production paving surfaces #2074</title>
+<style>body{margin:0}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script></head><body><script type="module">
+import * as T from 'three';
+import { M, plate } from '../src/world.js';
+import { buildExterior, husLTerraces } from '../src/exterior.js';
+import { LEVELS, WINDOWS, UNIT_TOP, DOOR_HEIGHT, COLORS, HUS_L, SEASON } from '../src/config.js';
+import { applySeason, registerSnow } from '../src/seasons.js';
+const plan=await(await fetch('../data/plan.json')).json(),lo=plan.floors[0],W=lo.size.x,D=lo.size.z,north=[],south=[];
+for(const [li,floor] of plan.floors.entries()){
+ for(const pr of floor.windows){
+  const facade=pr.z0<D/2?'north':'south',cx=(pr.x0+pr.x1)/2;
+  const spec=WINDOWS.filter(w=>w.level===li&&w.facade===facade).sort((a,b)=>Math.abs(a.x-cx)-Math.abs(b.x-cx))[0];
+  const r=spec.width&&spec.width<pr.x1-pr.x0?{x0:cx-spec.width/2,x1:cx+spec.width/2}:pr;
+  (facade==='north'?north:south).push({x0:r.x0,x1:r.x1,y0:LEVELS[li].floor+spec.sill,y1:LEVELS[li].floor+spec.head,win:spec});
+ }
+ for(const door of floor.doors){
+  if(door.tip[1]>=0&&door.tip[1]<=D)continue;
+  (door.tip[1]<0?north:south).push({x0:Math.min(door.hinge[0],door.wall[0]),x1:Math.max(door.hinge[0],door.wall[0]),y0:LEVELS[li].floor,y1:LEVELS[li].floor+DOOR_HEIGHT});
+ }
+}
+
+const exterior=buildExterior({W,D,roofTop:UNIT_TOP,north,south,site:lo.site,frame:M.frame,wall:M.wall,mats:M});
+// The component keeps production architecture; decor is hidden in both phases so it cannot cover the paving.
+if(exterior.userData.patioDecor)exterior.userData.patioDecor.visible=false;
+if(exterior.userData.terraceDecor)exterior.userData.terraceDecor.visible=false;
+const own=plate(lo.site.patio.x0,lo.site.patio.x1,D,lo.site.patio.z1,0,M.patio);
+registerSnow(M.patio,SEASON.snow.paving);
+const portik=exterior.getObjectByName('portikPaving');if(!portik)throw Error('Missing production portik paving');
+portik.geometry.computeBoundingBox();const portikCentre=portik.geometry.boundingBox.getCenter(new T.Vector3());
+const terraces=husLTerraces(W,D),terrace=terraces.find(t=>t.x0>=0)??terraces[0],ty=UNIT_TOP+HUS_L.storeyHeight+HUS_L.court.deck;
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(1);renderer.setSize(1100,720);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.NeutralToneMapping;document.body.append(renderer.domElement);
+const scene=new T.Scene();scene.background=new T.Color(0xcddbe2);scene.add(exterior,own);
+scene.add(new T.HemisphereLight(0xe8f0f8,0x817663,1.5));const sun=new T.DirectionalLight(0xfff2df,3);scene.add(sun,sun.target);
+const camera=new T.PerspectiveCamera(48,1100/720,.025,220);
+const digest=async bytes=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');
+const mapInfo=async map=>{if(!map)return null;const im=map.image,bytes=im.data??im.getContext('2d').getImageData(0,0,im.width,im.height).data;return{id:map.uuid,size:[im.width,im.height],repeat:map.repeat.toArray(),bytes:bytes.byteLength,sha256:await digest(bytes),linear:map.colorSpace===T.NoColorSpace}};
+const matInfo=async m=>({map:await mapInfo(m.map),bump:await mapInfo(m.bumpMap),roughnessMap:await mapInfo(m.roughnessMap),roughness:m.roughness,color:m.color.getHex(),samePacked:!!m.bumpMap&&m.bumpMap===m.roughnessMap});
+window.__proof=async()=>{
+ const meshes=[];let finite=true;const bounds=[];
+ for(const root of[own,exterior])root.traverse(o=>{if(!o.isMesh)return;const g=o.geometry;g.computeBoundingBox();bounds.push([g.boundingBox.min.toArray(),g.boundingBox.max.toArray()]);const arrays=Object.values(g.attributes).map(a=>a.array);if(g.index)arrays.push(g.index.array);for(const a of arrays){finite&&=a.every(Number.isFinite);meshes.push(new Uint8Array(a.buffer,a.byteOffset,a.byteLength))}});
+ const bytes=new Uint8Array(meshes.reduce((n,a)=>n+a.byteLength,0));let off=0;for(const a of meshes){bytes.set(a,off);off+=a.byteLength}
+ return{finite,geometrySHA256:await digest(bytes),geometryBytes:bytes.byteLength,bounds,own:await matInfo(M.patio),portik:await matInfo(portik.material),terrace:{id:terrace.id,x0:terrace.x0,x1:terrace.x1,y:ty},portikCentre:portikCentre.toArray()};
+};
+window.__frame=async view=>{
+ const winter=view.startsWith('snow'),month=winter?1:6;applySeason(month);
+ let aim,eye;
+ if(view.includes('portik')){const mouth=exterior.userData.portik.spaces[0],x=(mouth.x0+mouth.x1)/2;aim=[x,.006,D-2.2];eye=[x,1.3,D-.05]}
+ else if(view==='terrace'){aim=[(terrace.x0+terrace.x1)/2,ty,D-HUS_L.court.setback/2];eye=[aim[0]+.65,ty+1.15,D-.55]}
+ else{aim=[(lo.site.patio.x0+lo.site.patio.x1)/2,0,D+1.4];eye=[aim[0]-.6,view==='patio-near'?.43:1.6,D+3.2]}
+ camera.position.fromArray(eye);camera.lookAt(...aim);camera.updateMatrixWorld(true);sun.target.position.fromArray(aim);sun.position.set(aim[0]-2,aim[1]+.6,aim[2]+1.5);
+ // Inspect the actual portik mesh alone: surrounding wall/backing can occlude a narrow sheltered-floor camera.
+ const hidden=[];if(view.includes('portik'))scene.traverse(o=>{if(o.isMesh&&o!==portik){hidden.push([o,o.visible]);o.visible=false}});
+ renderer.info.reset();renderer.render(scene,camera);
+ for(const[o,visible]of hidden)o.visible=visible;
+ return{view,month,camera:eye,target:aim,calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,geometries:renderer.info.memory.geometries,own:await matInfo(M.patio),portik:await matInfo(portik.material),image:renderer.domElement.toDataURL('image/jpeg',.95)};
+};
+applySeason(6);window.__ready=true;
+</script></body></html>

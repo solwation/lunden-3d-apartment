@@ -5072,6 +5072,12 @@ export const ASPHALT_SURFACE = {
   broadStrength: 0.035, broadScale: [0.27, 0.19, 0.11, -0.31],
 };
 
+// #2074: artistic surface assumptions for the existing 40 cm patio slabs, not surveyed concrete profiles.
+export const PAVING_SURFACE = {
+  ppm: 160, slabs: 6, depth: 0.0015, bevel: 0.002, minBevelPixels: 1.25,
+  faceRoughness: 0.93, groutRoughness: 0.99, snowRoughness: 0.95,
+};
+
 export const COLORS = {
   sky: 0xcfe0ec,   // horizon (fog); the sky above is a gradient, see surroundings.js
   wall: 0xf1f1ee,   // Väggfärg NCS S 0500-N (material choice)

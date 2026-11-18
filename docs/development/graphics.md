@@ -1409,3 +1409,35 @@ sampling and two fragment sine terms add work; no timing/FPS improvement is clai
 `World.M.fence` uses the same map for standard-material bump and roughness. The existing UVs sample an exactly flat cream-rail band for posts and horizontal faces, so these do not acquire board grooves. All geometry, collision and occluder data remain unchanged; the original shared colour canvas retains its dimensions. The additional texture costs 524,288 base bytes or 699,052 bytes with the complete RGBA mip chain (512×256 down to 1×1). No geometry, draw, pass, light or per-frame texture update is added; standard bump/roughness sampling adds fragment work.
 
 `tools/screenwallsurfacetest.mjs` checks deterministic joint registration, seam continuity, flat frame UVs and bounded fibre paths. `tools/screenwallsurface2075browser.cjs` checks real `buildExterior` ground and roof consumers using the actual `World.M.fence`, exposed only by a test route. The [saved comparisons](../verification/2075/README.md) document identical geometry/collision data and per-view render counts. This controlled component check makes no full-world or device/FPS claim. Hus A/B/C have no consumers of this screen-wall builder; this material-only change does not alter house layouts. Public transfer is tracked separately in kvarteret-lunden #297.
+
+
+## Patio paving joints (#2074)
+
+`src/pavingsurface.js` wraps each existing `pavingTexture()` colour map with a shared
+384×384 linear RGBA8 height(R)/absolute roughness(G) map. `World.M.patio` uses it for
+our patio and `buildExterior`'s neighbouring patios/roof terraces; the portik receives
+its own sheltered material using the same scalar texture. The old `src/patio.js`
+colour generator, palette, seed, speckle, rounded pixel layout and metre UVs remain
+byte-identical. Geometry, bounds, collision/walking surfaces and batches are unchanged.
+A/B/C use separate ground/access builders and are not remapped to this slab material.
+
+`PAVING_SURFACE` owns artistic assumptions: 1.5 mm bump depth, 2 mm nominal bevel with
+a 1.25-texel minimum at the existing 160 px/m resolution, concrete roughness 0.93 and
+grout 0.99. The minimum bevel footprint is 7.8125 mm; these are shading guesses, not a
+surveyed concrete profile or vertex displacement. Height depends only on the existing
+six-by-six 40 cm half-bond slab layout; colour speckle never becomes relief. The existing
+8 mm nominal joint still rounds to one pixel at this resolution, exactly as before.
+
+Existing `registerSnow` at World owns the exposed colour/map. Only the new exposed
+material registers an auxiliary-map seasonal hook: snow removes bump/roughness and
+restores the former 0.95 roughness, summer restores the identical cached map objects.
+The sheltered portik never opts in, so all its maps remain in winter. `seasons.js`
+is untouched. No new draw, geometry, lamp, render pass or per-frame upload is added;
+native Standard bump/roughness sampling and UV varyings increase fragment work.
+
+Additional packed texture: 589824 base bytes / 786424 nominal full-mip bytes (about 0.75 MiB),
+plus its 589824-byte CPU array, excluding driver overhead. One shared texture serves
+both materials. Checks: three targeted cases in `tools/pavingsurfacetest.mjs`, scoped
+syntax/diff/source preservation, and a matched actual World material/plate plus production
+exterior browser with summer/snow/restoration. [Inspected aspect-correct images, hashes,
+camera correction, exact counters and limits](../verification/2074/README.md).

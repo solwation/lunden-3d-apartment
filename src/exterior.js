@@ -8,6 +8,7 @@ import { wallLine, wallRect } from './roofs.js';
 import { groundY } from './surroundings.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow } from './groundglow.js';
 import { pavingTexture } from './patio.js';
+import { pavingMaterial } from './pavingsurface.js';
 import { patioHedgeGeometry } from './patiohedge.js';
 import { screenWallParts } from './screenwall.js';
 import { portikPlan } from './portik.js';
@@ -706,7 +707,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     const g=mergeGeometries(cells.map(r=>new THREE.PlaneGeometry(r.x1-r.x0,r.z1-r.z0).rotateX(-Math.PI/2).translate((r.x0+r.x1)/2,.006,(r.z0+r.z1)/2)));
     const p = g.attributes.position, uv = g.attributes.uv;
     for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i), p.getZ(i));
-    const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map: pavingTexture(), roughness: 0.95 }));
+    const m = new THREE.Mesh(g, pavingMaterial(pavingTexture())); // sheltered: retains its maps under snow
     m.receiveShadow = true; m.name = 'portikPaving';
     group.add(m);
   }

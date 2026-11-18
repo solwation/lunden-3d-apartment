@@ -1,0 +1,320 @@
+{
+  "baseline": "6e1576aa078b70730e73bb4ffb805dc32e1b3959",
+  "scope": "camera-only correction: portik/snow-portik; other views not rerun",
+  "errors": [],
+  "external": [],
+  "phases": {
+    "before": {
+      "geometrySHA256": "3a124a47cffd500be794858c6d99127adf56a56026a5eb2324b0dba1f6da3f83",
+      "views": {
+        "portik": {
+          "view": "portik",
+          "month": 6,
+          "camera": [
+            -14.924999999999997,
+            1.3,
+            12.649
+          ],
+          "target": [
+            -14.924999999999997,
+            0.006,
+            10.498999999999999
+          ],
+          "calls": 1,
+          "triangles": 68,
+          "textures": 1,
+          "geometries": 1,
+          "own": {
+            "map": {
+              "id": "9ff91467-864d-40f5-b7a4-789e8168dd6c",
+              "size": [
+                384,
+                384
+              ],
+              "repeat": [
+                0.41666666666666663,
+                0.41666666666666663
+              ],
+              "bytes": 589824,
+              "sha256": "67cbd18cd8d9fbb5468e9d613d47c22475cba1fec8b61b3331ffa2a13b076e1c",
+              "linear": false
+            },
+            "bump": null,
+            "roughnessMap": null,
+            "roughness": 0.95,
+            "color": 16777215,
+            "samePacked": false
+          },
+          "portik": {
+            "map": {
+              "id": "afda57ec-98ad-42fa-b214-70b6f288bd7e",
+              "size": [
+                384,
+                384
+              ],
+              "repeat": [
+                0.41666666666666663,
+                0.41666666666666663
+              ],
+              "bytes": 589824,
+              "sha256": "67cbd18cd8d9fbb5468e9d613d47c22475cba1fec8b61b3331ffa2a13b076e1c",
+              "linear": false
+            },
+            "bump": null,
+            "roughnessMap": null,
+            "roughness": 0.95,
+            "color": 16777215,
+            "samePacked": false
+          }
+        },
+        "snow-portik": {
+          "view": "snow-portik",
+          "month": 1,
+          "camera": [
+            -14.924999999999997,
+            1.3,
+            12.649
+          ],
+          "target": [
+            -14.924999999999997,
+            0.006,
+            10.498999999999999
+          ],
+          "calls": 1,
+          "triangles": 68,
+          "textures": 1,
+          "geometries": 1,
+          "own": {
+            "map": null,
+            "bump": null,
+            "roughnessMap": null,
+            "roughness": 0.95,
+            "color": 15133678,
+            "samePacked": false
+          },
+          "portik": {
+            "map": {
+              "id": "afda57ec-98ad-42fa-b214-70b6f288bd7e",
+              "size": [
+                384,
+                384
+              ],
+              "repeat": [
+                0.41666666666666663,
+                0.41666666666666663
+              ],
+              "bytes": 589824,
+              "sha256": "67cbd18cd8d9fbb5468e9d613d47c22475cba1fec8b61b3331ffa2a13b076e1c",
+              "linear": false
+            },
+            "bump": null,
+            "roughnessMap": null,
+            "roughness": 0.95,
+            "color": 16777215,
+            "samePacked": false
+          }
+        }
+      }
+    },
+    "after": {
+      "geometrySHA256": "3a124a47cffd500be794858c6d99127adf56a56026a5eb2324b0dba1f6da3f83",
+      "views": {
+        "portik": {
+          "view": "portik",
+          "month": 6,
+          "camera": [
+            -14.924999999999997,
+            1.3,
+            12.649
+          ],
+          "target": [
+            -14.924999999999997,
+            0.006,
+            10.498999999999999
+          ],
+          "calls": 1,
+          "triangles": 68,
+          "textures": 2,
+          "geometries": 1,
+          "own": {
+            "map": {
+              "id": "c4606b06-c7e0-4eeb-864a-fe89afe674fa",
+              "size": [
+                384,
+                384
+              ],
+              "repeat": [
+                0.41666666666666663,
+                0.41666666666666663
+              ],
+              "bytes": 589824,
+              "sha256": "67cbd18cd8d9fbb5468e9d613d47c22475cba1fec8b61b3331ffa2a13b076e1c",
+              "linear": false
+            },
+            "bump": {
+              "id": "1ba08088-129d-41f4-a0b4-a5555221e6cb",
+              "size": [
+                384,
+                384
+              ],
+              "repeat": [
+                0.41666666666666663,
+                0.41666666666666663
+              ],
+              "bytes": 589824,
+              "sha256": "50616374ceee66948d487efec8283098fbd108fb8b3ae3312e693b8d4c1d3b98",
+              "linear": true
+            },
+            "roughnessMap": {
+              "id": "1ba08088-129d-41f4-a0b4-a5555221e6cb",
+              "size": [
+                384,
+                384
+              ],
+              "repeat": [
+                0.41666666666666663,
+                0.41666666666666663
+              ],
+              "bytes": 589824,
+              "sha256": "50616374ceee66948d487efec8283098fbd108fb8b3ae3312e693b8d4c1d3b98",
+              "linear": true
+            },
+            "roughness": 1,
+            "color": 16777215,
+            "samePacked": true
+          },
+          "portik": {
+            "map": {
+              "id": "85fa96b8-15f4-46ef-b5bf-63749942618f",
+              "size": [
+                384,
+                384
+              ],
+              "repeat": [
+                0.41666666666666663,
+                0.41666666666666663
+              ],
+              "bytes": 589824,
+              "sha256": "67cbd18cd8d9fbb5468e9d613d47c22475cba1fec8b61b3331ffa2a13b076e1c",
+              "linear": false
+            },
+            "bump": {
+              "id": "1ba08088-129d-41f4-a0b4-a5555221e6cb",
+              "size": [
+                384,
+                384
+              ],
+              "repeat": [
+                0.41666666666666663,
+                0.41666666666666663
+              ],
+              "bytes": 589824,
+              "sha256": "50616374ceee66948d487efec8283098fbd108fb8b3ae3312e693b8d4c1d3b98",
+              "linear": true
+            },
+            "roughnessMap": {
+              "id": "1ba08088-129d-41f4-a0b4-a5555221e6cb",
+              "size": [
+                384,
+                384
+              ],
+              "repeat": [
+                0.41666666666666663,
+                0.41666666666666663
+              ],
+              "bytes": 589824,
+              "sha256": "50616374ceee66948d487efec8283098fbd108fb8b3ae3312e693b8d4c1d3b98",
+              "linear": true
+            },
+            "roughness": 1,
+            "color": 16777215,
+            "samePacked": true
+          }
+        },
+        "snow-portik": {
+          "view": "snow-portik",
+          "month": 1,
+          "camera": [
+            -14.924999999999997,
+            1.3,
+            12.649
+          ],
+          "target": [
+            -14.924999999999997,
+            0.006,
+            10.498999999999999
+          ],
+          "calls": 1,
+          "triangles": 68,
+          "textures": 2,
+          "geometries": 1,
+          "own": {
+            "map": null,
+            "bump": null,
+            "roughnessMap": null,
+            "roughness": 0.95,
+            "color": 15133678,
+            "samePacked": false
+          },
+          "portik": {
+            "map": {
+              "id": "85fa96b8-15f4-46ef-b5bf-63749942618f",
+              "size": [
+                384,
+                384
+              ],
+              "repeat": [
+                0.41666666666666663,
+                0.41666666666666663
+              ],
+              "bytes": 589824,
+              "sha256": "67cbd18cd8d9fbb5468e9d613d47c22475cba1fec8b61b3331ffa2a13b076e1c",
+              "linear": false
+            },
+            "bump": {
+              "id": "1ba08088-129d-41f4-a0b4-a5555221e6cb",
+              "size": [
+                384,
+                384
+              ],
+              "repeat": [
+                0.41666666666666663,
+                0.41666666666666663
+              ],
+              "bytes": 589824,
+              "sha256": "50616374ceee66948d487efec8283098fbd108fb8b3ae3312e693b8d4c1d3b98",
+              "linear": true
+            },
+            "roughnessMap": {
+              "id": "1ba08088-129d-41f4-a0b4-a5555221e6cb",
+              "size": [
+                384,
+                384
+              ],
+              "repeat": [
+                0.41666666666666663,
+                0.41666666666666663
+              ],
+              "bytes": 589824,
+              "sha256": "50616374ceee66948d487efec8283098fbd108fb8b3ae3312e693b8d4c1d3b98",
+              "linear": true
+            },
+            "roughness": 1,
+            "color": 16777215,
+            "samePacked": true
+          }
+        }
+      }
+    }
+  },
+  "source": {
+    "src/pavingsurface.js": "2e0461e62edeeb3eabe41620dc3d7cbbe00fcec90e26eb5b7c3a25ddbde12452",
+    "src/patio.js": "23ef933a92f93cf8490572a8f972e689e56ce38d8f8374849e4b47a173da824e",
+    "src/config.js": "e8224bbceb029048a950a3ca2c2f3324552159a65fe8d944b2ec409f8fb16933",
+    "src/world.js": "9a8b1e455954ed8a9ef619096b59a583525ec81c3646630df9ebeb17850baa25",
+    "src/exterior.js": "c7080c32bec013f932fffb5fa928f93669b9c213e46b2875aec0fab1fa46bfd0",
+    "src/seasons.js": "a0398c24ce587b40be47ca552be3c7ce3bee900ef40ca7a74e48573f222476e7",
+    "tools/pavingsurface2074.html": "9062284ba64b87c982d3287d912a2300cc27364018903607714656ddb446dc8e",
+    "tools/pavingportik2074retake.cjs": "ab4fc6e967544c3332bdc7176832beeaea0da3210cbf65ad419d39cbca762e63"
+  }
+}
