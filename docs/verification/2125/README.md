@@ -48,3 +48,5 @@ programs are separate from other lamp-washed standard materials (the real app sh
 Stylised: no fur geometry; the strand texture fades out within ~1.5 m. Site wind does not ruffle the coat. Shadows show the unbent tail.
 Ghost/held snapshots keep the unbent tail. Ground birds do not exist in the scene, so stalking targets squirrels (existing `prey()`) and
 the scheduled stalk spots. Frame time on a physical device was not measured.
+
+Publicering: Pages/Worker success på `238e094`; bild-URL:er HTTP 200 före stängning.
