@@ -5029,6 +5029,38 @@ export const GULL_SURFACE = {
   farTail: [[-.03,-.16],[-.07,-.29],[.07,-.29],[.03,-.16]],
 };
 
+// #2129 bird life (src/birdflock.js, src/birds.js): small birds (sparrow-like) in flocks and gulls that land. All numbers *guess*
+// (field-guide orders of magnitude, tuned by eye), not observations. `flocks`: one per home area (plan x/z, `r` m: perches are
+// collected inside it; `n` birds, `lowMemory` true = also on phones, where `lowMemoryN` birds fly). `wake` m: a flock further from the
+// eye than this is not simulated or drawn. Perches (only existing surfaces): `tree` crowns (aoTrees) at `crownOut` × radius out and
+// `crownUp` × radius above the crown centre (crowns of at least `minCrown` m, no spot under a roof); `roof` edges of world.roofs surfaces, `edgeIn` m inside the outline, nothing above;
+// `rail` lines (pergola beams, the park bridge's handrails); `ground` patches (courtyard gravel/lawn, the park glade) where they hop
+// `hop` m in `hopTime` s and peck. `perGroup` spots at least `gap` m apart; at most `maxGroups` per kind. Flight: `speed` m/s cruise
+// [min, max], `accel` m/s² steering, cohesion/alignment/separation weights (`sep` m), `lift` m above the higher end / any roof under
+// the line, `landDist` m to start the landing glide. Bounding flight: `burst` s of flapping then `glide` s folded, `flapHz`.
+// `dwell` s on a perch [min, max]. Flush: a threat (the eye, an outdoor cat) closer than `flush[kind]` m (horizontal, within `flushUp`
+// m vertically) to any sitting bird sends the flock off to a group at least `flee` m from it; `react` s spread of the take-off.
+// Gulls: the low circling ones (not the high flock) land now and then on a roof spot or a river bank spot within `area` m of the
+// circle centre: every `period` s [min, max] (seeded per gull), a glide down at `glide` m/s, standing `stand` s, `takeoff` s back up;
+// `flush` m sends a standing gull up early; roofs lower than `minRoofY` m (terraces, canopies) are no gull spots. `size` m span of a sparrow (gull span stays BIRDS.span); `standY` m body above the surface.
+export const BIRD_LIFE = {
+  flocks: [
+    // `lawns`: grass patches besides COURTYARD.gravel (the lawn east of the pergola, the green between Hus A and B; COURTYARD's
+    // lawn description, rectangles *guess*); the park flock uses SITE.riverPark's glades
+    { name: 'gården', x: -24, z: 30, r: 48, n: 9, lowMemory: true, lowMemoryN: 6, seed: 2129, gravel: true,
+      lawns: [{ x0: -12.5, x1: 11, z0: 19.6, z1: 25 }, { x0: -22, x1: -10.5, z0: 34.5, z1: 55 }] },
+    { name: 'parken', x: -100, z: 150, r: 75, n: 8, lowMemory: false, lowMemoryN: 0, seed: 2130, glades: true, lawns: [] },
+  ],
+  wake: 110, size: 0.24, standY: 0.035, farEnlarge: 0.5,
+  crownOut: 0.88, crownUp: 0.3, minCrown: 1.2, edgeIn: 0.35, perGroup: 10, gap: 0.35, maxGroups: { tree: 8, roof: 8, rail: 4, ground: 5 },
+  speed: [5, 8], accel: 14, cohesion: 0.6, align: 0.5, separate: 3, sep: 0.7, lift: 2.5, landDist: 3.2, flare: 2.5,
+  burst: [0.25, 0.5], glide: [0.12, 0.25], flapHz: 13, maxBank: 0.9,
+  dwell: { tree: [25, 70], roof: [20, 55], rail: [15, 40], ground: [12, 35] },
+  hop: [0.08, 0.28], hopTime: 0.22, hopHeight: 0.05, hopEvery: [0.7, 2.6], peckEvery: [0.4, 1.6], peckTime: 0.28, peckPitch: 0.75, turnEvery: [1.5, 5],
+  flush: { ground: 7, rail: 5.5, roof: 3.5, tree: 3 }, flushUp: 5, flee: 14, react: 0.3,
+  gull: { minRoofY: 8, area: 115, period: [150, 320], glide: 7, stand: [35, 90], takeoff: 9, flush: 9, standY: 0.07, perRoof: 2, spots: 24, flapHz: 2.6 },
+};
+
 // Hot-air balloon (#1646, src/balloon.js, src/balloongeo.js): now and then one drifts round the area above the cloud deck (SKYLAYER) and a
 // visitor who flies up (jetpack) can land in its basket and be carried along. All numbers *guess*. Visible `window` s of every `period` s of
 // the shared wall clock (so every client agrees), circling the plan point `center` at `radius` m and `speed` m/s at the floor height `floor` m

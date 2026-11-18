@@ -858,6 +858,22 @@ BILJARD/DJ bounds (`PLAYROOM.speakers.bounds`), rather than the full clubhouse.
 They face the centre of that room; no DJ speaker sits in BIO, SPEL or the hall.
 This gameplay-only room has no A/B/C/L house variant or public downstream equivalent.
 
+## Small birds and landing gulls (#2129)
+
+`src/birdflock.js` (no three.js; `tools/birdflocktest.mjs`) holds the behaviour; `src/birds.js` draws it. `collectPerches` takes landing places only
+from existing surfaces: tree crowns (`aoTrees`, just inside the crown shell, never under a roof or within 0.6 m of a `SITE.blocks` house), edges of the
+walkable `world.roofs` surfaces (nothing above), rail lines (the pergolas' side beams, the park bridge's handrails) and ground patches (courtyard
+gravel and two lawn rectangles, the park's central glade; paths, sandboxes, pergolas, beds, play equipment, benches, park paths, roads and water
+excluded). Two flocks (`BIRD_LIFE.flocks`: courtyard 9 birds, park 8; phones only the courtyard's 6) are simulated only within `wake` m. `SmallFlock`:
+cohesion/alignment/separation with a limited steering acceleration (round turns), bounding flight (wingbeat bursts, short folded glides), a glide slope
+down and a flare onto each bird's own spot; on the ground hops and pecks inside the patch, up high an occasional turn; after `dwell` s the flock moves to
+another group. The eye or an outdoor cat inside `flush[kind]` m sends the flock up within `react` s to a tree or roof at least `flee` m away. The low
+gulls (`GullRoost`) leave their circle every 150–320 s for a seeded roof-top or river-bank spot, stand 35–90 s with folded wings and rejoin the circle;
+someone within 9 m sends a standing gull up early. Everything is seeded and local (no network state); feeding, scores and the bestiary rules are
+unchanged (the observer reads a landed gull's real position via `Birds.gullPoint`). `Birds.groundBirds()` lists birds sitting on the ground: an
+optional hook for stalking cats (#2125), not used yet. Tunables: `BIRD_LIFE` (*guess*). Browser: `tools/birds2129browser.cjs`;
+[evidence](../verification/2129/README.md).
+
 ## Squirrels and nuts (#1672)
 
 Ten squirrels: three (the big one, the white-tail-tip one, the slim darker one) live in the crowns along Höje å, the river park and the pony

@@ -29,6 +29,7 @@ export class BestiaryObserver {
    const g=birds.mesh.geometry,u=birds.uniforms,t=u.uTime.value,seed=birds.seeds?.a??g.getAttribute('aSeed').array,flags=birds.seeds?.b??g.getAttribute('aSeed2').array;
    for(let i=0;i<(birds.count??seed.length/4);i++){
     if(flags[i*2+1]>.5&&u.uHigh.value<.05)continue;
+    if(birds.gullPoint){out.push({id:'bird:gull',point:birds.gullPoint(i,new THREE.Vector3()),maxDistance:C.birdSeenDistance});continue;} // #2129: a landed gull
     const j=i*4,angle=seed[j]+t*seed[j+3],r=seed[j+1],p=u.uCenter.value.clone().add(new THREE.Vector3(Math.cos(angle)*r,seed[j+2]+Math.sin(t*GULL_SURFACE.bobHz+seed[j]*GULL_SURFACE.seedPhase)*GULL_SURFACE.bobAmplitude,Math.sin(angle)*r));
     out.push({id:'bird:gull',point:p,maxDistance:C.birdSeenDistance});
    }

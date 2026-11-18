@@ -54,7 +54,7 @@ import { BeerShelf } from './beershelf.js';
 import { initHudIcons, fitChoiceLabels, setIcon, setPressed, setWeatherIcon, formatTemp } from './hudicons.js';
 import {SharedFish} from './sharedfishclient.js';
 import * as THREE from 'three';
-import { POPCORN, FRIES, FISH, THING_SYNC, UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, PLAYROOM, BOULE, encodeAvatarWireLook, decodeAvatarLook, avatarLook, avatarBody, avatarHeightCm } from './config.js';
+import { POPCORN, FRIES, FISH, THING_SYNC, UNIT_TOP, SITE, COURTYARD, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, PLAYROOM, BOULE, encodeAvatarWireLook, decodeAvatarLook, avatarLook, avatarBody, avatarHeightCm } from './config.js';
 import { wetEnv } from './avatarweather.js';
 import { lampLight } from './avatarlight.js'; // #2039: the street lamps on the avatars
 import { AVATAR_LIGHT } from './config.js';
@@ -73,7 +73,7 @@ import { BedCare } from './bedcare.js';
 import { HallCare } from './hallcare.js';
 import { Rearrange } from './rearrange.js';
 import { Player, inPoly, crosses } from './player.js';
-import { waterYAt, riverAt } from './riverbridge.js';
+import { waterYAt, riverAt, riverPath, deckAt } from './riverbridge.js';
 import { Fall } from './fall.js';
 import { StatsPanel } from './statspanel.js';
 import { respawnOutdoors } from './respawn.js';
@@ -492,7 +492,44 @@ const groundWet = new GroundWetness(weather, day); // #2099: wet ground in and a
 bindWetSky(day.uniforms.uHorizon.value, day.uniforms.uZenith.value);
 const leafLitter = new LeafLitter({ trees: () => aoTrees, roads: () => SITE.roads.filter((r) => r.path || r.x1 !== undefined).map((r) => (r.path ? roadSamples(r) : [[r.x0, r.z0], [r.x1, r.z0], [r.x1, r.z1], [r.x0, r.z1], [r.x0, r.z0]].map(([x, z]) => ({ x, z, w: 0 })))) }).register(); // #2105: fallen autumn leaves on the ground (month-driven shared uniforms)
 const balloon = new Balloon({ scene, camera, forced: params0.has('balloon') }); world.balloon = balloon; // #1646: the hot-air balloon above the cloud deck (hidden / no work outside its scheduled window)
-const birds = params0.has('nobirds') ? null : new Birds({ scene, camera, day, center: BIRDS.center, lowMemory, count: params0.has('birds') ? Number(params0.get('birds')) : null }); // #1252: gulls circling by day
+// #2129: where the birds may land — only surfaces the world already has (src/birdflock.js checks each spot on them)
+function birdSources() {
+  const C = COURTYARD, inR = (r, x, z, m = 0) => x > r.x0 - m && x < r.x1 + m && z > r.z0 - m && z < r.z1 + m;
+  const sw = C.swing, sl = C.slide, busy = [...C.paths, ...C.sandboxes, ...C.pergolas, ...C.beds, C.playhouse, C.boule,
+    { x0: sw.x - sw.len / 2 - 0.3, x1: sw.x + sw.len / 2 + 0.3, z0: sw.z - sw.spread - 0.3, z1: sw.z + sw.spread + 0.3 }, { x0: sl.x - 0.6, x1: sl.x + sl.len + 0.6, z0: sl.z - 0.6, z1: sl.z + 0.6 },
+    ...C.benches.map((b) => ({ x0: b.x - 1, x1: b.x + 1, z0: b.z - 1, z1: b.z + 1 }))];
+  const rails = [];
+  for (const p of C.pergolas) for (const x of [p.x0, p.x1]) rails.push([x, parkGround(x, p.z0) + 2.85, p.z0 - 0.3, x, parkGround(x, p.z1) + 2.85, p.z1 + 0.3]); // the long side beams (courtyard.js)
+  const wb = SITE.riverPark.woodBridge, [[ax, az], [bx, bz]] = wb.ends, l = Math.hypot(bx - ax, bz - az), nx = -(bz - az) / l, nz = (bx - ax) / l, ry = wb.deckY + wb.rail + wb.railSize / 2;
+  for (const s of [-1, 1]) rails.push([ax + nx * s * wb.width / 2, ry, az + nz * s * wb.width / 2, bx + nx * s * wb.width / 2, ry, bz + nz * s * wb.width / 2]); // the park bridge's handrails (riverpark.js)
+  const bank = [];
+  for (let i = 1; i < riverPath.length; i++) { // gulls on the river's banks: every 9 m along, both sides, on dry ground
+    const [x0, z0] = riverPath[i - 1], [x1, z1] = riverPath[i], n = Math.ceil(Math.hypot(x1 - x0, z1 - z0) / 9);
+    for (let k = 0; k < n; k++) {
+      const cx = x0 + (x1 - x0) * k / n, cz = z0 + (z1 - z0) * k / n, r = riverAt(cx, cz);
+      for (const side of [-1, 1]) {
+        const x = cx + r.nx * side * (r.width / 2 + 1.2), z = cz + r.nz * side * (r.width / 2 + 1.2), y = parkGround(x, z);
+        if (y > waterYAt(x, z) + 0.2 && deckAt(x, z) === null && !onRoad(x, z, 1)) bank.push({ x, y, z });
+      }
+    }
+  }
+  const houses = SITE.blocks; // Hus A–C…: no perch inside or within 0.6 m of their walls (their roofs are not walkable surfaces)
+  return { crowns: aoTrees, roofs: world.roofs, rails, bank, groundY: parkGround, topAt: (x, z) => world.roofs.topAt(x, z),
+    clear: (x, z) => !houses.some((h) => inR(h, x, z, 0.6)),
+    groundOk: (x, z) => !busy.some((r) => inR(r, x, z, 0.15)) && !onParkPath(x, z, 0.3) && !onRoad(x, z, 0.5) && squirrelWalkOk(x, z),
+    patches: (f) => [...(f.gravel ? C.gravel.map((g) => ({ kind: 'gravel', ...g })) : []), ...(f.lawns ?? []).map((g) => ({ kind: 'grass', ...g })),
+      ...(f.glades ? SITE.riverPark.glades.map((g) => ({ kind: 'grass', poly: g.polygon })) : [])] };
+}
+function squirrelWalkOk(x, z) { const r = riverAt(x, z); return r.distance > r.width / 2 + 1 || parkGround(x, z) > waterYAt(x, z, r) + 0.3; } // dry land
+const birdCatPool = [];
+function birdThreats(out) { // the eye and every outdoor cat that is out (#2129: they flush the birds); pooled, no allocation per frame
+  out.length = 0; out.push(camera.position);
+  let k = 0;
+  for (const c of outdoorCats?.cats ?? []) if (c.st !== 'away' && outdoorCats.isOut(c)) { const p = birdCatPool[k++] ??= {}; p.x = c.x; p.y = parkGround(c.x, c.z); p.z = c.z; out.push(p); }
+  return out;
+}
+const birds = params0.has('nobirds') ? null : new Birds({ scene, camera, day, center: BIRDS.center, lowMemory, count: params0.has('birds') ? Number(params0.get('birds')) : null, // #1252: gulls circling by day
+  sources: birdSources, threats: birdThreats, small: !params0.has('nosmallbirds') }); // #2129: small-bird flocks and landing gulls (perches read on the first shown frame)
 weather.real = createRealWeather(params0); // real weather for the date, fetched after the first frames; the draw stays the fallback (#674)
 if (params0.has('temp')) weather.forceTemp = Number(params0.get('temp')); // &temp=°C forces the temperature (#674)
 weather.surfaceAt = (x, z) => world.roofs.topAt(x, z); // the rain falls on the roofs you can stand on, and on you up there (#360)

@@ -774,6 +774,10 @@ src/birds.js           gulls (#1252, refined #1924; BIRDS/GULL_SURFACE, artistic
                        for ten/30,640B for five include both recipes, source/packed seeds and IDs; these are not total heap/GPU memory. Model span1.6m near, smoothly2x visibility scaling at75m,
                        no extra high-flock enlargement. Existing day/rain-snow/whiteout/underground/far/cloud-deck gates remain, as do warmDraw/noDetail flags. BestiaryObserver reads original
                        seeds once across both LODs. The gull-only modelVersion2 refreshes derived thumbnails. Whole/motion/normal views, real draws, timing and limits: docs/verification/1924/README.md.
+                       #2129: small birds and landing gulls (src/birdflock.js, BIRD_LIFE): an instance with aMode.x = 1 takes an explicit CPU pose (aPose/aMode/aTurn:
+                       position, yaw, flap, folded wings, size, bank, pitch). Low gulls land now and then on roof tops (≥ 8 m) or river-bank spots (GullRoost: a pure
+                       function of time plus a flush). The sparrow flocks (`smallMesh`, sparrowGeometry ≈120 tri, kept out of `meshes`) share THIS material: +1 draw,
+                       no new program. Details: animals-audio.md "Small birds and landing gulls"; evidence docs/verification/2129/README.md.
 src/blinds.js          pleated blinds, bottom-up (BLINDS, #273): one per window in the reveal on the room side of the frame
                        (the living room's split window: two), `blind: 'dark' | 'light'` per WINDOWS entry; the fabric (a
                        zig-zag rebuilt only while it moves, castShadow) + the top rail are two meshes per blind, the bottom
