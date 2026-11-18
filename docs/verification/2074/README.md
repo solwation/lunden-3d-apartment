@@ -121,3 +121,7 @@ resultatbilder, bäddar in revisionsbundna bilder före stängning och kontrolle
 ## Integrationsbindning
 
 Dirigenten bevarar exakt testade paving/exterior/patio/seasons-bytes från7a1044a8. World har enbart de två förväntade pavingraderna ovanpå redan accepterat skärmväggsmaterial; config har enbart PAVING_SURFACE ovanpå föregående accepterade bytes. Alla äldre changelogposter behålls och1604 är unik. Källbundna gröna komponentresultat återanvänds efter dessa oberoende tillägg, utan nytt brett omtag.
+
+## Publicering
+
+Kod/bilder `b3905e33b2f986f8db11217bc357badadd364b4f`; faktiska run-ID [44272270280, 44272270316] success på exakt revision. Alla bilder HTTP200 och inbäddade före stängning: https://github.com/solwation/lunden-3d-apartment/issues/2074#issuecomment-6973958773. Slutkvittot är enbart dokumentation; originalets sökvägsfilter utlöser ingen ny apppublicering.
