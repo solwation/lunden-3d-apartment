@@ -46,3 +46,5 @@ on phones. There are 5 new program variants (lobe near/far LOD, lobe depth, cour
 Trunks, wall vines, the far southern woodland, clipped hedges and potted plants do not move. Potted plants keep the
 window-driven wind from #518. Weather has no real wind data, so power is derived from cloud, rain and storm (*guess*). This
 was not tested on a physical Iris 640 or phone.
+
+Publicering: Pages/Worker success på `b1a229b`; före-bilder borttagna vid stängning och visas från den commiten.
