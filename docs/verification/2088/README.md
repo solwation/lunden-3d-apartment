@@ -21,12 +21,12 @@ som förut (vintervyerna är pixelidentiska utanför animerade detaljer).
 
 | Vy | Före | Efter |
 |---|---|---|
-| Hus A/B från Hus L:s tak, sommar | ![](before/tak-A-sommar.jpg) | ![](tak-A-sommar.jpg) |
-| Hus A/B, vinter | ![](before/tak-A-vinter.jpg) | ![](tak-A-vinter.jpg) |
-| Hus C/B och gamla husen, sommar | ![](before/tak-C-sommar.jpg) | ![](tak-C-sommar.jpg) |
-| Hus C/B, vinter | ![](before/tak-C-vinter.jpg) | ![](tak-C-vinter.jpg) |
-| Gångvy mot skolan, sommar | ![](before/gata-sommar.jpg) | ![](gata-sommar.jpg) |
-| Gångvy, vinter | ![](before/gata-vinter.jpg) | ![](gata-vinter.jpg) |
+| Hus A/B från Hus L:s tak, sommar | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/0c5f4a510866073739ca2e6ea1ce0fcd0127a563/docs/verification/2088/before/tak-A-sommar.jpg) | ![](tak-A-sommar.jpg) |
+| Hus A/B, vinter | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/0c5f4a510866073739ca2e6ea1ce0fcd0127a563/docs/verification/2088/before/tak-A-vinter.jpg) | ![](tak-A-vinter.jpg) |
+| Hus C/B och gamla husen, sommar | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/0c5f4a510866073739ca2e6ea1ce0fcd0127a563/docs/verification/2088/before/tak-C-sommar.jpg) | ![](tak-C-sommar.jpg) |
+| Hus C/B, vinter | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/0c5f4a510866073739ca2e6ea1ce0fcd0127a563/docs/verification/2088/before/tak-C-vinter.jpg) | ![](tak-C-vinter.jpg) |
+| Gångvy mot skolan, sommar | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/0c5f4a510866073739ca2e6ea1ce0fcd0127a563/docs/verification/2088/before/gata-sommar.jpg) | ![](gata-sommar.jpg) |
+| Gångvy, vinter | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/0c5f4a510866073739ca2e6ea1ce0fcd0127a563/docs/verification/2088/before/gata-vinter.jpg) | ![](gata-vinter.jpg) |
 
 Pixeldiff sommar: tak-A max 109 (1,6 % av pixlarna > 8), tak-C max 25, gata max 12 (skolans mörka tak på
 avstånd: medelfärgen bevarad, strukturen knappt synlig). Vinter: max 0 utom tak-A (127 på < 0,01 %, en
@@ -52,3 +52,5 @@ animerad detalj).
 - Hus L:s synliga takyta är den ljusa plåtavtäckningen (`capping`, hela takytan i `exterior.js`) som ligger
   över takboxen; den rörs inte här. Takpappen syns på loftets tak.
 - HepCat-butikens ljusa falsade tak kommer från dess egen modell och är oförändrat.
+
+Publicering: Pages/Worker success på `0c5f4a5`; före-bilder borttagna vid stängning och visas från den commiten.
