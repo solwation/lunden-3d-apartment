@@ -10,11 +10,11 @@ squirrel modules served by the harness (`before/`).
 
 | | before | after |
 |---|---|---|
-| hopping (0.035 s/frame) | ![](before/park-hop.png) | ![](park-hop.png) |
-| leap (0.05 s/frame) | ![](before/park-leap.png) | ![](park-leap.png) |
-| scan (0.25 s/frame; before: `search`) | ![](before/park-scan.png) | ![](park-scan.png) |
-| eating (0.12 s/frame) | ![](before/park-eat.png) | ![](park-eat.png) |
-| digging (0.06 s/frame) | ![](before/park-dig.png) | ![](park-dig.png) |
+| hopping (0.035 s/frame) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/11cf56246c64fae05b3ba92d65c67c844fd1747c/docs/verification/2128/before/park-hop.png) | ![](park-hop.png) |
+| leap (0.05 s/frame) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/11cf56246c64fae05b3ba92d65c67c844fd1747c/docs/verification/2128/before/park-leap.png) | ![](park-leap.png) |
+| scan (0.25 s/frame; before: `search`) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/11cf56246c64fae05b3ba92d65c67c844fd1747c/docs/verification/2128/before/park-scan.png) | ![](park-scan.png) |
+| eating (0.12 s/frame) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/11cf56246c64fae05b3ba92d65c67c844fd1747c/docs/verification/2128/before/park-eat.png) | ![](park-eat.png) |
+| digging (0.06 s/frame) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/11cf56246c64fae05b3ba92d65c67c844fd1747c/docs/verification/2128/before/park-dig.png) | ![](park-dig.png) |
 
 After: the tail swings in an S that counters each hop and opens out in the leap, curls tighter sitting up; the eating squirrel holds the
 nut in its folded front paws at the mouth and turns it (before: paws raised, nut still on the ground, nothing in the paws); the scanning
@@ -24,9 +24,9 @@ head holds and snaps between looks. Tail joint changes over six frames (`browser
 ## Close-ups (`tools/squirrelvisualtest.html`, three looks)
 
 Fluffier plume (wider profile, ragged hair-lock outline, same vertices): ![](closeup-tail-side.png) ![](closeup-tail-back.png)
-before: ![](before/closeup-tail-side.png)
+before: ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/11cf56246c64fae05b3ba92d65c67c844fd1747c/docs/verification/2128/before/closeup-tail-side.png)
 
-Eating: ![](closeup-eat.png) before: ![](before/closeup-eat.png)
+Eating: ![](closeup-eat.png) before: ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/11cf56246c64fae05b3ba92d65c67c844fd1747c/docs/verification/2128/before/closeup-eat.png)
 
 ## Checks
 
@@ -54,3 +54,5 @@ nut's place). The fallback (no GLB) morph squirrel keeps its old tail flick only
 - A found nut now leaves the ground when the squirrel starts eating it (it is in its paws), not 2 s later.
 - A follower sees `scan` as `search` (same sitting pose and head jerks; its scan sequence differs from the leader's).
 - Tree climbing (#2132): a new crown/trunk state joins the air states and gets a WIRE entry (header of `src/squirrelbrain.js`).
+
+Publicering: Pages/Worker success på `11cf562`; före-bilder borttagna vid stängning och visas från den commiten.
