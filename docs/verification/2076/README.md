@@ -115,3 +115,7 @@ integration, SHA-pinned image publication/comment, CI, public transfer and closu
 ## Integration provenance
 
 Root retained the exact tested bridge helper, builder and snapshot-test bytes from7d15aa19. The accepted shared config additionally contains the independent screen-wall block; removing only the named BRIDGE_CONCRETE addition reproduces the complete preceding accepted config. All previous changelog rows are retained plus1606. Source-bound browser evidence is reused; no unrelated full-world rerun.
+
+## Publicering
+
+Kod/bilder `bcbfbf27db9bd5785c36ec9845c915103f8ef5b9`; faktiska run-ID [44271941627, 44271941357] success på exakt revision. Alla bilder HTTP200 och inbäddade före stängning: https://github.com/solwation/lunden-3d-apartment/issues/2076#issuecomment-6973902454. Slutkvittot är enbart dokumentation; originalets sökvägsfilter utlöser ingen ny apppublicering.
