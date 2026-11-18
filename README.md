@@ -1,6 +1,7 @@
 # Kv. Lunden L1007 i 3D
 
 Ekorrarna har en fluffigare svans som rör sig i en S-form och balanserar hoppen, sitter på bakbenen och äter nöten med framtassarna, gömmer nötter mest på hösten och gräver upp gömmor på vintern, och stannar upp och spanar med ryckiga huvudrörelser. [Före/efter-bildsekvenser och kontroller](docs/verification/2128/README.md).
+
 Vintertid ligger en tunn snöhätta på fönsterbleck, räcken, murkrön, takkanter och bänkar, bara på uppåtvända ytor och bara under snömånaderna. [Före/efter januari och juli](docs/verification/2123/README.md).
 
 Gräsänderna simmar med små simtag och lätt huvudnick och lämnar ett svagt V-kölvatten; ibland tippar de på huvudet med stjärten upp, putsar eller skakar fjädrarna, och flyger upp en kort bit om man springer rakt mot dem. [Bildsekvens före/efter](docs/verification/2126/README.md).
