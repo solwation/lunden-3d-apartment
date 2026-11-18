@@ -106,3 +106,7 @@ PLAYWRIGHT_MODULE=/path/to/playwright tools/browsertest.sh node tools/avatartrai
 ## Integrationsgranskning
 
 Dirigenten har granskat helper, avatar-/configdiff, källbevarande och båda slutliga bildark. Snörningen går att läsa i normal vuxen/kort divanvy; inget ytterligare utseendeomtag behövs. Hela testade produkt/fixture/testkälla är byteidentisk vid integration. Redan publicerad löv-RGB och äldre README-/configbytes bevaras; ändringsloggen får nästa unika id1615 (arbetarens1614 var preliminärt). Källbundet grönt underlag återanvänds utan rutinomkörning.
+
+## Publicering
+
+Kod/bilder `3b8d9d7896fe0551313c49545145830066aff66e`; faktiska run-ID [44287387219, 44287387211] success på exakt revision. Alla bilder HTTP200 och inbäddade före stängning: https://github.com/solwation/lunden-3d-apartment/issues/2084#issuecomment-6976111475. Slutkvittot är enbart dokumentation; originalets sökvägsfilter utlöser ingen ny apppublicering.
