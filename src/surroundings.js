@@ -13,7 +13,7 @@ import * as THREE from 'three';
 import { asphaltMaterial, asphaltUV } from './asphaltsurface.js';
 import { grassUV, grassMaterial } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR, SOUTH_PLATEAU, PADDOCK, PARKING_SEAM, MUSSELS } from './config.js';
+import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR, SOUTH_PLATEAU, PADDOCK, PARKING_SEAM, MUSSELS, RENDER_SURFACE } from './config.js';
 import { gridGround, southPointGround } from './elevation.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { neighborGlass } from './neighborglass.js';
@@ -31,6 +31,7 @@ import { createParkingGrade, gradedCellTriangles, gradedCellPieces, fitDrawnPlan
 import { wallLine, wallRect } from './roofs.js';
 import { buildingRoofWalk } from './buildingroofs.js';
 import { roofMap, roofColor, roofUV } from './roofsurface.js';
+import { renderMaterial, renderUV, plainUV, dirtPatch } from './rendersurface.js';
 import { schoolWallPlan } from './schoolwall.js';
 import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan,bridgeRecords,riverAt,waterYAt} from './riverbridge.js';
 
@@ -1281,6 +1282,10 @@ function loggias(blocks) {
   const lamp = { glow: [], wash: [], pool: [] }; // #1078: the loggia doors' wall lights
   const letters = blocks.map((b) => b.name.slice(-1));
   const rand = rng(43);
+  // #2095: faint dirt on the white render: a splash band over each floor, streaks under the windows (rendersurface.js, *guess*);
+  // the strips stand in front of the render quads (1 cm proud) and join the same mesh
+  const grime = (xa, za, xb, zb, nx, nz, y0, y1, kind) => { const d = dirtPatch(xa + nx * 0.01, za + nz * 0.01, xb + nx * 0.01, zb + nz * 0.01, nx, nz, y0, y1, kind); if (d) walls.push(d); };
+  const splash = (xa, za, xb, zb, nx, nz, y) => grime(xa, za, xb, zb, nx, nz, y, y + RENDER_SURFACE.plinth.height, 'plinth');
   const pier = (b, x0, x1, z0, z1, y0 = b.base) => bricks.push(brickBox(x0, z0, x1, z0, 0, Math.sign(z1 - z0), Math.abs(z1 - z0), y0, b.base + b.storeys * S.storey, b.base));
   const plant = (x, y, z) => {
     if (rand() < L.plants) plants.push(new THREE.CylinderGeometry(0.17, 0.13, 0.38, 8).translate(x, y + 0.19, z), new THREE.IcosahedronGeometry(0.34, 0).translate(x, y + 0.62, z));
@@ -1302,6 +1307,7 @@ function loggias(blocks) {
       if (lx > L.mid) pier(b, cx + sx * (L.midAt - p / 2), cx + sx * (L.midAt + p / 2), cz, cz + sz * p, y0); // part-way along a long front
       if (lz > L.mid) pier(b, cx, cx + sx * p, cz + sz * (L.midAt - p / 2), cz + sz * (L.midAt + p / 2), y0);
       walls.push(quad(cx, iz, ix, iz, 0, -sz, y0, top), quad(ix, cz, ix, iz, -sx, 0, y0, top)); // the rendered inner walls
+      for (let st = st0; st < b.storeys; st++) { const y = b.base + st * S.storey; splash(cx, iz, ix, iz, 0, -sz, y); splash(ix, cz, ix, iz, -sx, 0, y); } // #2095
       for (let st = 0; st <= b.storeys; st++) {
         const y = b.base + st * S.storey, kind = loggiaKind(b, st, y, g);
         // #1203: no slab side at the solid corner's top (st0): it would fight the brick. Its exposed top still needs a floor (#1428).
@@ -1316,7 +1322,11 @@ function loggias(blocks) {
         if (kind === 'ground' || kind === 'rail') plant(cx + sx * (p + 0.45), y, iz - sz * 0.45);
       }
     }
-    for (const o of loggiaOpenings(b)) { glazing(o, frames, glass); if (o.kind === 'door') loggiaLamp(o, frames, walls, lamp); }
+    for (const o of loggiaOpenings(b)) {
+      glazing(o, frames, glass); if (o.kind === 'door') loggiaLamp(o, frames, walls, lamp);
+      if (o.kind === 'window') { const l = Math.hypot(o.x1 - o.x0, o.z1 - o.z0), ex = (o.x1 - o.x0) / l * 0.06, ez = (o.z1 - o.z0) / l * 0.06; // (the frame's 6 cm)
+        grime(o.x0 - ex, o.z0 - ez, o.x1 + ex, o.z1 + ez, ...o.n, o.y0 - RENDER_SURFACE.sill.length, o.y0, 'sill'); } // #2095
+    }
     for (const r of b.recesses ?? []) {
       // `out` = +1 when the face looks towards +x / +z; `at(along, across)` → plan [x, z]
       const nz = r.face === 'n' || r.face === 's', out = r.face === 's' || r.face === 'e' ? 1 : -1;
@@ -1328,6 +1338,11 @@ function loggias(blocks) {
       const W = walkIn(b, r), back0 = (a0, a1, ya) => { if (a1 - a0 > 1e-3) walls.push(quad(...at(a0, back), ...at(a1, back), ...nrm(out), ya, y1)); };
       if (W) { back0(r.a0, W.cut[0], y0); back0(W.cut[0], W.cut[1], y0 + W.height); back0(W.cut[1], r.a1, y0); } else back0(r.a0, r.a1, y0);
       walls.push(quad(...at(r.a0, back), ...at(r.a0, line), ...side(1), y0, y1), quad(...at(r.a1, back), ...at(r.a1, line), ...side(-1), y0, y1));
+      for (let st = s0; st <= s1; st++) { // #2095: the splash band over each floor (not across a walk-in recess's opening)
+        const y = b.base + st * S.storey, runs = W && st === s0 ? [[r.a0, W.cut[0]], [W.cut[1], r.a1]] : [[r.a0, r.a1]];
+        for (const [a0, a1] of runs) if (a1 - a0 > 0.05) splash(...at(a0, back), ...at(a1, back), ...nrm(out), y);
+        splash(...at(r.a0, back), ...at(r.a0, line), ...side(1), y); splash(...at(r.a1, back), ...at(r.a1, line), ...side(-1), y);
+      }
       const [mx, mz] = at((r.a0 + r.a1) / 2, (line + back) / 2), [w, d] = nz ? [r.a1 - r.a0, r.depth] : [r.depth, r.a1 - r.a0];
       for (let st = s0; st <= s1 + 1; st++) {
         const y = b.base + st * S.storey;
@@ -2000,8 +2015,9 @@ export function* surroundingsParts({ grass, husL = null }) {
   if (grid.length) mesh(grid, new THREE.MeshStandardMaterial({ map: facadeTexture(), roughness: 0.95 }));
   mesh([...bodies.flatMap((p) => p.plain), ...lg.bricks.map((g) => g.index ? g.toNonIndexed() : g)], new THREE.MeshStandardMaterial({ map: facadeTexture(true), roughness: 0.95 })); // + piers, parapets (#266)
   mesh(modern.flatMap(openingDecals), new THREE.MeshStandardMaterial({ map: openingTexture(), roughness: 0.6, polygonOffset: true, polygonOffsetFactor: -0.5, polygonOffsetUnits: -1 })); // the listed windows (#345)
-  const white = new THREE.MeshStandardMaterial({ color: O.site.frameColor, roughness: 0.85, side: THREE.DoubleSide });
-  mesh([...lg.slabs.map((g) => g.toNonIndexed()), ...lg.walls.map((g) => g.toNonIndexed()), ...details.frames.map(g=>g.index?g.toNonIndexed():g)].map((g) => { g.deleteAttribute('uv'); return g; }), white);
+  // #2095: the white render (walls, slabs) gets the fine render grain and its dirt strips; the window frames stay plain
+  const white = renderMaterial({ color: O.site.frameColor, roughness: 0.85, side: THREE.DoubleSide });
+  mesh([...lg.slabs.map((g) => renderUV(g.toNonIndexed())), ...lg.walls.map((g) => renderUV(g.index ? g.toNonIndexed() : g)), ...details.frames.map(g=>plainUV(g.index?g.toNonIndexed():g))], white);
   const railMesh = new THREE.Mesh(mergeGeometries(lg.rails.map((g) => g.toNonIndexed())), railMetal(new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide }))); // #2089
   railMesh.name = 'loggiaRails';
   group.add(railMesh);

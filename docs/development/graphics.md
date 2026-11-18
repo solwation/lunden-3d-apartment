@@ -566,6 +566,16 @@ src/roofsurface.js     #2088: one shared 128 px neutral-grey roof map (ROOF_SURF
                        average and far mip-mapped colour stay; snow still drops the map (seasons.js) and the vertex-colour
                        toggles are untouched. Replaces the school's 64 px seam map; geometry, walk surfaces and draws unchanged.
                        tools/roofsurfacetest.mjs; [views](../verification/2088/README.md).
+src/rendersurface.js   #2095: rendered façades (puts): Hus L's white render (exterior.js `renders`: the street storeys behind the
+                       loftgång, the set-back courtyard storey, the våning-4 gables) and the Å-husen A/B/C's white loggia /
+                       recess walls and slabs (surroundings.js loggias, the `white` mesh). One 128 px packed linear map over 0.5 m
+                       (RENDER_SURFACE, *guess*): fine sand grain + sparse pits as bump (R) and slight roughness variation (G),
+                       plus a faint sRGB albedo grain map; colour / albedo mean and roughness / mean G, so the average tone stays.
+                       `renderUV` bakes world-projected UVs per face before merging; window frames in the same mesh use
+                       `plainUV` (the neutral texel). Dirt: `dirtPatch` strips (vertex colour, 2–4 mm in front, same mesh, no
+                       new draw) under every render reveal's sill flashing (Hus L) / loggia window (A/B/C) and a splash band
+                       over the loftgång / terrace / loggia floors. Hus A/B/C stair cores (corehouse.js) have no render
+                       façade. tools/rendersurfacetest.mjs; [views](../verification/2095/README.md).
 src/visitlights.js     lamps of the visitable empty flats (#620): a ceiling lamp per room (a flat fitting in Kök / matplats, Badrum,
                        WC/dusch, Tvätt; a lamp outlet with a bare bulb on a cord elsewhere — VISIT_LIGHTS, *guess*, the brochure
                        says nothing), a switch by each room's door (lights.js `switchSpots` + `Switch`, `VISIT_LIGHTS.manual` /

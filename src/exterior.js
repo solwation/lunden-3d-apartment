@@ -4,7 +4,7 @@ import { paneTints } from './glasspanes.js';
 import { railMetal } from './railmetal.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { DECAL_OFFSET, HUS_L as H, HUS_L_REVEAL as RV, HUS_L_DOWNPIPES as DP, ENTRANCE_PLANTS as EP, NEIGHBOR_OPENINGS as O, COLORS, BRICK_SURFACE, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE, DOOR_HEIGHT, DOOR_TRIM } from './config.js';
+import { DECAL_OFFSET, HUS_L as H, HUS_L_REVEAL as RV, HUS_L_DOWNPIPES as DP, ENTRANCE_PLANTS as EP, NEIGHBOR_OPENINGS as O, COLORS, BRICK_SURFACE, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE, DOOR_HEIGHT, DOOR_TRIM, RENDER_SURFACE } from './config.js';
 import { registerSnow } from './seasons.js';
 import { entryParts, entryMaterials, entryHandleParts } from './entrancedoor.js';
 import { wallLine, wallRect } from './roofs.js';
@@ -21,6 +21,7 @@ import { buildPatioDecor } from './patiodecor.js';
 import { lowMemory } from './lowmemory.js';
 import { brickSurfaceTexture } from './bricksurface.js';
 import { roofMap, roofColor, roofUV } from './roofsurface.js';
+import { renderMaterial, renderUV, dirtPatch } from './rendersurface.js';
 
 // Brick: 250 × 65 mm + 10 mm joints → 0.26 m per brick, 0.075 m per course.
 const TILE_W = 1.04, TILE_H = 0.6; // one texture tile = 4 bricks × 8 courses
@@ -265,6 +266,10 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     const za = Math.min(zFace, zFrame), zb = Math.max(zFace, zFrame), L = RV.sill, out = zFace + (northSide ? -1 : 1) * L.out;
     skin.push(quadX(za, zb, o.y0, o.y1, o.x0 + inset, false), quadX(za, zb, o.y0, o.y1, o.x1 - inset, true), quadY(o.x0, o.x1, za, zb, o.y1 - inset, true));
     flashings.push(boxGeo(o.x0 - L.ear, o.x1 + L.ear, o.y0 - L.drop, o.y0 + L.rise, Math.min(zFlash, out), Math.max(zFlash, out)));
+    if (skin === renders) { // #2095: faint dirt streaks down the render from under the flashing (*guess*)
+      const top = o.y0 - L.drop, nz = northSide ? -1 : 1, d = dirtPatch(o.x0 - L.ear, zFace, o.x1 + L.ear, zFace, 0, nz, top - RENDER_SURFACE.sill.length, top, 'sill');
+      if (d) renders.push(d);
+    }
   };
   /** A neighbour's simplified mass x0…x1 × y0…y1 × z0…z1 (z0 the street side) with its set-back windows' reveal pockets
    * (`north` / `south`: the façade openings on either side) left open to the frames' back faces (#1076). */
@@ -323,9 +328,16 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     );
   };
   const shift = (list, dx, dy) => list.map((o) => ({ x0: o.x0 + dx, x1: o.x1 + dx, y0: o.y0 + dy, y1: o.y1 + dy, win: o.win }));
-  /** Façade quads around the holes into `out` (z plane), glass in the holes unless it is our unit. */
-  const facade = (out, x0, x1, y0, y1, z, northSide, holes, glass = true) => {
-    for (const [xa, xb, ya, yb] of complement(x0, x1, y0, y1, holes)) out.push(quadZ(xa, xb, ya, yb, z, northSide));
+  /** Façade quads around the holes into `out` (z plane), glass in the holes unless it is our unit. `plinth`: the floor
+   * in front of a render wall (#2095: a faint splash band over it on the pieces that reach the bottom, *guess*). */
+  const facade = (out, x0, x1, y0, y1, z, northSide, holes, glass = true, plinth = null) => {
+    for (const [xa, xb, ya, yb] of complement(x0, x1, y0, y1, holes)) {
+      out.push(quadZ(xa, xb, ya, yb, z, northSide));
+      if (plinth != null && ya <= y0 + 1e-4 && yb > plinth + 0.05) {
+        const d = dirtPatch(xa, z, xb, z, 0, northSide ? -1 : 1, plinth, Math.min(yb, plinth + RENDER_SURFACE.plinth.height), 'plinth');
+        if (d) out.push(d);
+      }
+    }
     if (glass) holes.forEach((o) => fakeWindow(o, z, northSide));
   };
 
@@ -461,7 +473,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
       { x0: CORE.loftDoor.side[0], x1: CORE.loftDoor.side[1], y0: roofTop, y1: roofTop + 2.2, door: true, hole: true }] // + the stairwell's door (#415, core.js draws it)
       : streetOpenings(id, ox);
     const real = visited(id); // a flat you can walk into (#573): its openings stay open, its rooms are world.js's
-    facade(renders, x0, x1, roofTop, upperTop, loftD - eps, true, holes, false);
+    facade(renders, x0, x1, roofTop, upperTop, loftD - eps, true, holes, false, roofTop);
     for (const o of holes) {
       if (!o.door) { if (!real) fakeWindow(o, loftD - eps, true, glassGeo, renders); else reveal(o, loftD - eps, loftD + RV.frame + RV.frameHalf, true, renders, RV.inset, loftD + RV.frame); continue; }
       if (o.hole) continue;
@@ -483,7 +495,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     // våning 4, set back behind the terrace: white render with the window and the terrace door
     // the terrace door's threshold sits on the finished deck (#350)
     const ta = core ? loftX1 : x0, up = (core ? open(C.core.upper, coreW, y3) : open(C.upper, ox, y3)).map((o) => ({ ...o, y0: Math.max(o.y0, deckY) }));
-    facade(renders, ta, x1, y3, upperTop, zs + eps, false, up, false);
+    facade(renders, ta, x1, y3, upperTop, zs + eps, false, up, false, deckY);
     if (!real) up.forEach((o) => courtWindow(o, zs + eps, renders));
     else up.filter((o) => recessed(o, false)).forEach((o) => reveal(o, zs + eps, zs - RV.frame - RV.frameHalf - RV.visitGap, false, renders, RV.inset, zs - RV.frame));
     if (!real) solids.push(...mass(x0 + 0.001, x1 - 0.001, y3, upperTop, loftD, zs, holes, up));
@@ -678,7 +690,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     return mesh;
   };
   add(bricks, brickMat());
-  add(renders, new THREE.MeshStandardMaterial({ color: H.render, roughness: 0.95 }));
+  add(renders.map(renderUV), renderMaterial({ color: H.render, roughness: 0.95 })); // #2095: fine render grain + faint dirt
   add(pilasters, new THREE.MeshStandardMaterial({ color: COLORS.brick, roughness: 0.95 }));
   add(solids, exteriorBackingMaterial(wall));
   add(frames, frame).name='neighborFrames';

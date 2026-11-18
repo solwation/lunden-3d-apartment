@@ -1,5 +1,7 @@
 # Kv. Lunden L1007 i 3D
 
+De ljusa putsfasaderna (Hus L:s övre våningar, Å-husens loggior) har en fin putsstruktur och svaga smutsstrimmor under fönsterbleck och vid sockeln, med samma medelton. [Före/efter nära och från gatan](docs/verification/2095/README.md).
+
 Klippta häckar har synliga bladklungor med mörka skrevor, mörkare inre nära marken och en svagt ljusare topp. [Före/efter sommar och vinter](docs/verification/2094/README.md).
 
 Grusytorna (gården, boulebanan och parkens grusgångar) har små stenar i varierande ljushet, svag ojämnhet och mjuka toner i en delad gruskarta, med oförändrad medelfärg på håll. [Före/efter och kontroller](docs/verification/2096/README.md).

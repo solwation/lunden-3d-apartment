@@ -9728,3 +9728,21 @@ export const GRAVEL_SURFACE = {
   depth: 0.0006, roughness: [0.78, 0.97], snowRoughness: 1,
   broadStrength: 0.05, broadScale: [0.43, 0.29, 0.17, -0.51],
 };
+// #2095: rendered (putsade) façade realism: Hus L's white render (exterior.js `renders`) and the Å-husen A/B/C's white
+// loggia / recess walls (surroundings.js loggias). One small shared linear map (`size` px square over `tile` m of wall,
+// world-projected per face) packs a fine render grain as bump height (R) and a slight roughness variation (G), and a second
+// small sRGB grey map gives the same grain a faint albedo (`albedo`: base grey, ± `grain` from the height, ± `mottle`; the
+// sun-less north façades show only this). Colour is divided by the albedo map's linear mean and roughness by the mean G, so
+// the façades' average colour and roughness stay. `height`: fine sand grain (3 × 3 smoothed white noise), sparse small pits
+// (`pits` = share of texels, `pit` deep) and a faint mottle (`mottleCells` periodic cells). `bump`: three's bumpScale (a
+// per-pixel height gradient, so it fades with distance as the mipmaps flatten the grain). Dirt (`sill`, `plinth`):
+// faint streaks under window sills (from the flashing's / frame's underside `length` m down, darker under the sill ends,
+// `step` m between streak columns) and a soft splash band `height` m over the floor at the foot of a render wall; both are
+// extra vertex-coloured strips `off` m in front of the wall in the same mesh (no new draw), `dark` = the strongest darkening,
+// tinted slightly brown (`tint`: per-channel weights). All values are visual *guess* values; no source gives the render.
+export const RENDER_SURFACE = { size: 128, tile: 0.5, seed: 2095, anisotropy: 4, bump: 0.1,
+  height: { grain: 0.5, pit: 0.35, pits: 0.03, mottle: 0.06, mottleCells: 4 }, albedo: { base: 232, grain: 9, mottle: 2 },
+  roughness: { mean: 0.86, spread: 0.05 },
+  sill: { length: 0.55, step: 0.11, dark: 0.16, ends: 1.5, mid: 0.45, off: 0.004 },
+  plinth: { height: 0.3, step: 0.16, dark: 0.11, mid: 0.4, off: 0.002 },
+  tint: [1, 1.06, 1.18] };

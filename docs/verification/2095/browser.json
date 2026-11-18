@@ -1,0 +1,192 @@
+{
+ "base": "80b8ba46149ec9044b3b1793159230be698196a8",
+ "phases": {
+  "before": {
+   "meshes": 5017,
+   "found": {
+    "husL": {
+     "vertices": 2754,
+     "hash": 2136654059,
+     "triangles": 918,
+     "dirtTriangles": 0,
+     "meanColour": 1,
+     "uv": true,
+     "color": false,
+     "bump": false,
+     "roughnessMap": false,
+     "roughness": 0.95,
+     "vertexColors": false,
+     "matColor": "f2efe7"
+    },
+    "aHouses": {
+     "vertices": 42084,
+     "hash": 2097187399,
+     "triangles": 14028,
+     "dirtTriangles": 0,
+     "meanColour": 1,
+     "uv": false,
+     "color": false,
+     "bump": false,
+     "roughnessMap": false,
+     "roughness": 0.85,
+     "vertexColors": false,
+     "matColor": "f0efeb"
+    }
+   },
+   "loadMs": 48807,
+   "views": {
+    "husL-gata": {
+     "calls": 448,
+     "triangles": 911842,
+     "textures": 100,
+     "programs": 110,
+     "eye": [
+      3,
+      1.62,
+      -14
+     ]
+    },
+    "husL-loftgang": {
+     "calls": 265,
+     "triangles": 759535,
+     "textures": 104,
+     "programs": 115,
+     "eye": [
+      -30,
+      8.02,
+      0.2
+     ]
+    },
+    "husL-terrass": {
+     "calls": 141,
+     "triangles": 563545,
+     "textures": 107,
+     "programs": 124,
+     "eye": [
+      2,
+      11.08,
+      12.3
+     ]
+    },
+    "husA-loggia": {
+     "calls": 113,
+     "triangles": 572297,
+     "textures": 110,
+     "programs": 125,
+     "eye": [
+      -13.4,
+      1.62,
+      24.6
+     ]
+    },
+    "husC-gata": {
+     "calls": 287,
+     "triangles": 779716,
+     "textures": 112,
+     "programs": 128,
+     "eye": [
+      -48,
+      1.62,
+      8
+     ]
+    }
+   }
+  },
+  "after": {
+   "meshes": 5017,
+   "found": {
+    "husL": {
+     "vertices": 16026,
+     "hash": -2097129908,
+     "triangles": 5342,
+     "dirtTriangles": 4386,
+     "meanColour": 0.9958340358724793,
+     "uv": true,
+     "color": true,
+     "bump": true,
+     "roughnessMap": true,
+     "roughness": 1.1036,
+     "vertexColors": true,
+     "matColor": "fffffe"
+    },
+    "aHouses": {
+     "vertices": 85356,
+     "hash": -1895787087,
+     "triangles": 28452,
+     "dirtTriangles": 14372,
+     "meanColour": 0.9981196934354581,
+     "uv": true,
+     "color": true,
+     "bump": true,
+     "roughnessMap": true,
+     "roughness": 0.9875,
+     "vertexColors": true,
+     "matColor": "ffffff"
+    }
+   },
+   "loadMs": 41132,
+   "views": {
+    "husL-gata": {
+     "calls": 448,
+     "triangles": 930690,
+     "textures": 102,
+     "programs": 112,
+     "eye": [
+      3,
+      1.62,
+      -14
+     ]
+    },
+    "husL-loftgang": {
+     "calls": 265,
+     "triangles": 778383,
+     "textures": 106,
+     "programs": 117,
+     "eye": [
+      -30,
+      8.02,
+      0.2
+     ]
+    },
+    "husL-terrass": {
+     "calls": 141,
+     "triangles": 582393,
+     "textures": 109,
+     "programs": 126,
+     "eye": [
+      2,
+      11.08,
+      12.3
+     ]
+    },
+    "husA-loggia": {
+     "calls": 113,
+     "triangles": 585277,
+     "textures": 112,
+     "programs": 126,
+     "eye": [
+      -13.4,
+      1.62,
+      24.6
+     ]
+    },
+    "husC-gata": {
+     "calls": 287,
+     "triangles": 798564,
+     "textures": 114,
+     "programs": 129,
+     "eye": [
+      -48,
+      1.62,
+      8
+     ]
+    }
+   }
+  }
+ },
+ "errors": [],
+ "external": [
+  "https://lunden-l1007.olw.workers.dev/beer-shelf",
+  "https://lunden-l1007.olw.workers.dev/beer-shelf"
+ ]
+}
