@@ -1,0 +1,172 @@
+{
+  "baseline": "8111f1e3",
+  "environment": "Chromium/SwiftShader, fixed900x600, DPR1, MSAA, NeutralToneMapping, same production level/plate builders and camera/lights",
+  "before": {
+    "views": {
+      "chalk-near": {
+        "calls": 1,
+        "renderTriangles": 2,
+        "geometryTriangles": 2,
+        "meshes": 1
+      },
+      "chalk-room": {
+        "calls": 357,
+        "renderTriangles": 43416,
+        "geometryTriangles": 110802,
+        "meshes": 569
+      },
+      "standard-near": {
+        "calls": 1,
+        "renderTriangles": 2,
+        "geometryTriangles": 2,
+        "meshes": 1
+      },
+      "standard-room": {
+        "calls": 186,
+        "renderTriangles": 28592,
+        "geometryTriangles": 30722,
+        "meshes": 262
+      }
+    },
+    "textures": [
+      {
+        "roughness": 0.7,
+        "maps": [
+          {
+            "width": 324,
+            "height": 1200,
+            "repeat": [
+              0.9259259259259258,
+              0.25
+            ],
+            "colorSpace": "srgb",
+            "baseBytes": 1555200,
+            "mippedBytes": 2073140
+          }
+        ],
+        "sameRoughUV": true
+      },
+      {
+        "roughness": 0.75,
+        "maps": [
+          {
+            "width": 360,
+            "height": 1320,
+            "repeat": [
+              0.8333333333333333,
+              0.22727272727272727
+            ],
+            "colorSpace": "srgb",
+            "baseBytes": 1900800,
+            "mippedBytes": 2534032
+          }
+        ],
+        "sameRoughUV": true
+      }
+    ],
+    "errors": []
+  },
+  "after": {
+    "views": {
+      "chalk-near": {
+        "calls": 1,
+        "renderTriangles": 2,
+        "geometryTriangles": 2,
+        "meshes": 1
+      },
+      "chalk-room": {
+        "calls": 357,
+        "renderTriangles": 43416,
+        "geometryTriangles": 110802,
+        "meshes": 569
+      },
+      "standard-near": {
+        "calls": 1,
+        "renderTriangles": 2,
+        "geometryTriangles": 2,
+        "meshes": 1
+      },
+      "standard-room": {
+        "calls": 186,
+        "renderTriangles": 28592,
+        "geometryTriangles": 30722,
+        "meshes": 262
+      }
+    },
+    "textures": [
+      {
+        "roughness": 0.7,
+        "maps": [
+          {
+            "width": 324,
+            "height": 1200,
+            "repeat": [
+              0.9259259259259258,
+              0.25
+            ],
+            "colorSpace": "srgb",
+            "baseBytes": 1555200,
+            "mippedBytes": 2073140
+          },
+          {
+            "width": 162,
+            "height": 600,
+            "repeat": [
+              0.9259259259259258,
+              0.25
+            ],
+            "colorSpace": "",
+            "baseBytes": 388800,
+            "mippedBytes": 517940
+          }
+        ],
+        "sameRoughUV": true
+      },
+      {
+        "roughness": 0.75,
+        "maps": [
+          {
+            "width": 360,
+            "height": 1320,
+            "repeat": [
+              0.8333333333333333,
+              0.22727272727272727
+            ],
+            "colorSpace": "srgb",
+            "baseBytes": 1900800,
+            "mippedBytes": 2534032
+          },
+          {
+            "width": 180,
+            "height": 660,
+            "repeat": [
+              0.8333333333333333,
+              0.22727272727272727
+            ],
+            "colorSpace": "",
+            "baseBytes": 475200,
+            "mippedBytes": 633232
+          }
+        ],
+        "sameRoughUV": true
+      }
+    ],
+    "errors": []
+  },
+  "textureChecks": [
+    {
+      "cached": true,
+      "opaque": true,
+      "roughMin": 234,
+      "roughMax": 255
+    },
+    {
+      "cached": true,
+      "opaque": true,
+      "roughMin": 236,
+      "roughMax": 255
+    }
+  ],
+  "status": "passed",
+  "byteModel": "Observed canvas dimensions \u00d7 RGBA8 and exact floor-halved mip levels; excludes driver overhead/CPU canvas copies; metadata arithmetic corrected without rerendering unchanged captures."
+}

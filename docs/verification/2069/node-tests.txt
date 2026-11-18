@@ -1,0 +1,11 @@
+✔ Ek Chalk: original metre repeat, stagger, dimensions and deterministic bounded tints (1.924258ms)
+✔ standard three-stave: original metre repeat, stagger, dimensions and deterministic bounded tints (0.703837ms)
+✔ fibre paths are finite, smoothly curved, deterministic and limited to a few millimetres (0.725175ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 111.343508

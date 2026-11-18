@@ -500,6 +500,24 @@ furnishings are built once in `clubhousefurnishings.js`. No extra visible draws,
 image downloads or postprocessing are introduced. See the scoped evidence in
 [verification](verification.md#softer-clubhouse-rendering-1481).
 
+## Parquet grain and matt varnish (#2069)
+
+`src/parquet.js` caches one colour map and a half-resolution roughness map for each authored
+`FINISH.parquet` / `STANDARD.parquet` object. World uses the pair on its existing floors and
+parquet stair treads. Existing metre UVs, six-board repeats, stagger, one-/three-stave layout,
+base palettes and roughness scalars stay. Fine deterministic curved fibres and occasional forks
+replace the straight stripes; the roughness field follows the same fibre paths with a broader,
+very low-contrast stroke. Cut boards repeat their seed/tint at the long texture boundary so
+there is no arbitrary colour reset at the repeat. `PARQUET_SURFACE` owns the visual assumptions;
+these are not measured wood or varnish data.
+
+No geometry, collision, draw, light or pass changes. The built-in Standard roughness-map branch
+adds its normal texture sample/UV varying; it is not a free shader effect. Colour-map dimensions
+stay 324×1200 / 360×1320; added maps are 162×600 / 180×660. Across both finishes: +864000 RGBA8
+base-level bytes, or +1151172 bytes for the complete nominal mip chains (driver/CPU overhead
+excluded). Maps are generated once, not per frame. Three scoped Node checks and one matched
+production-level browser fixture cover both finishes. [Images, exact checks and limits](../verification/2069/README.md).
+
 ## School grass material (#1813)
 
 Confirmed school lawn polygons use `grassUV` and `grassMaterial()` in the single `east-lawn` batch, sharing the existing grass detail texture, world-metre scale, seasonal tint and snow map removal/restoration. The old fixed bright vertex tint remains unused for those lawn geometries; playground/sport pads and sand retain their own colors in access. Drape positions, normals, polygon lifts, source outlines and rendered triangle counts are unchanged. The original paving depth bias is retained to keep the lawns above the underlying yard surface. [Scoped test and seasonal views](verification.md#school-lawns-1813).

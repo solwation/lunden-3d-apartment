@@ -43,62 +43,15 @@ import { Roofs, wallRect } from './roofs.js';
 import { buildStandardInterior, batchFronts } from './standardinterior.js';
 import { VisitUnit } from './visitunit.js';
 import { L1201_PLAN } from './l1201plan.js';
+import { parquetSurface } from './parquet.js';
 
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 
-/** Parquet (1-stav planks, FINISH.parquet): one texture repeat = `n` planks across. `staves` > 1 (STANDARD, #574): each
- * board is that many narrow rows of short staves (3-stav). */
-function plankTexture(P = FINISH.parquet) {
-  const { base: [r0, g0, b0], width, length, staves = 1 } = P;
-  const ppm = 300, n = 6;
-  const pw = Math.round(width * ppm), pl = Math.round(length * ppm);
-  const c = document.createElement('canvas');
-  c.width = pw * n; c.height = pl * 2;
-  const g = c.getContext('2d');
-  let seed = 7;
-  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  if (staves > 1) { // 3-stav: rows of short staves (a third of the board's length, staggered), the boards' long joints darker
-    const sw = pw / staves, sl = Math.round(pl / staves);
-    for (let col = 0; col < n * staves; col++) {
-      const offset = Math.round(((col * 0.53) % 1) * sl);
-      for (let y = -offset; y < c.height; y += sl) {
-        const k = 0.93 + rand() * 0.12;
-        g.fillStyle = `rgb(${r0 * k},${g0 * k},${b0 * k})`;
-        g.fillRect(col * sw, y, sw, sl);
-        for (let i = 0; i < 5; i++) { g.fillStyle = `rgba(120,90,60,${0.04 + rand() * 0.05})`; g.fillRect(col * sw + rand() * sw, y, 1 + rand(), sl); }
-        g.strokeStyle = 'rgba(90,70,50,0.22)';
-        g.strokeRect(col * sw + 0.5, y + 0.5, sw - 1, sl - 1);
-      }
-      if (col % staves === 0) { g.fillStyle = 'rgba(80,60,40,0.35)'; g.fillRect(col * sw, 0, 1, c.height); }
-    }
-  }
-  for (let col = 0; col < (staves > 1 ? 0 : n); col++) {
-    const offset = Math.round(((col * 0.37) % 1) * pl); // staggered end joints
-    for (let y = -offset; y < c.height; y += pl) {
-      const k = 0.95 + rand() * 0.08;
-      g.fillStyle = `rgb(${r0 * k},${g0 * k},${b0 * k})`;
-      g.fillRect(col * pw, y, pw, pl);
-      // faint grain along the plank
-      for (let i = 0; i < 14; i++) {
-        g.fillStyle = `rgba(120,95,70,${0.04 + rand() * 0.05})`;
-        g.fillRect(col * pw + rand() * pw, y, 1 + rand() * 1.5, pl);
-      }
-      g.strokeStyle = 'rgba(90,70,50,0.3)';
-      g.strokeRect(col * pw + 0.5, y + 0.5, pw - 1, pl - 1);
-    }
-  }
-  const tex = new THREE.CanvasTexture(c);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.repeat.set(1 / (width * n), 1 / (length * 2));
-  tex.anisotropy = 8;
-  return tex;
-}
 
 const M = {
   wall: mat(COLORS.wall),
   ceiling: mat(COLORS.ceiling),
-  floor: mat(0xffffff, { map: plankTexture(), roughness: 0.7 }),
+  floor: mat(0xffffff, { ...parquetSurface(FINISH.parquet), roughness: 0.7 }),
   tile: mat(COLORS.tile, { roughness: 0.4 }),
   cabinet: mat(COLORS.cabinet, { roughness: 0.5 }),
   counter: mat(COLORS.counter, { roughness: 0.35 }),
@@ -119,7 +72,7 @@ const M = {
 };
 // Peab's standard finish for the visitable flats (#574, STANDARD): its own parquet and limestone window boards; walls,
 // ceilings, doors, frames, glass and the stair's white parts are the same white as ours
-const SM = { ...M, floor: mat(0xffffff, { map: plankTexture(STANDARD.parquet), roughness: 0.75 }), sill: mat(STANDARD.sill, { roughness: 0.55 }) };
+const SM = { ...M, floor: mat(0xffffff, { ...parquetSurface(STANDARD.parquet), roughness: 0.75 }), sill: mat(STANDARD.sill, { roughness: 0.55 }) };
 /** How a level is built: ours (L1007, every choice we made), or a visitable flat in the standard finish (#574). */
 const OURS = { standard: false, mats: M, plate: undefined, ox: 0 };
 

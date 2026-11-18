@@ -1,0 +1,12 @@
+{
+  "baseline": "8111f1e3",
+  "time": "2026-11-18T07:46:50.549525+00:00",
+  "sha256": {
+    "src/parquet.js": "c84d64fbb12ba635bc3836cd291ff56e241751c044b80f96a83a6d5b459f8c50",
+    "src/world.js": "fc835127d1cca6cfceb1a38dc31e80358bd36405bd195f8a7b4c3966948128f3",
+    "src/config.js": "d5e3a0545750d8d2e5956e3412772015672bed8ab31a2bd8bcc1cea20bc6f3c9",
+    "tools/parquettest.mjs": "6e2098246815d20d25f522a423fd89ea59323e83a466460de06960c2eef6a270",
+    "tools/parquet2069.html": "5b20d3eb3d7d93798d4b22f2216f2e62b5393e93d4dabcbef8ee95c78fb15064",
+    "tools/parquet2069browser.cjs": "3586d62e3a04b4075fe4eb1144f47c97f569ce1bd53306ebd9c9644ab39458e2"
+  }
+}
