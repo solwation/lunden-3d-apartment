@@ -6,7 +6,9 @@ let bad=0;const check=(ok,label,data)=>{console.log(`${ok?'PASS':'FAIL'} ${label
 const p=await b.newPage({viewport:{width:1000,height:600}});const errors=[];p.on('pageerror',e=>errors.push(e.message));await p.route('**/src/bootstrap.js',r=>r.fulfill({contentType:'text/javascript',body:'// bounded street component'}));
 // Baseline already includes the original park fittings.
 
-await p.route('**/src/__pathlamp_baseline.js',r=>r.fulfill({contentType:'text/javascript',body:cp.execFileSync('git',['show','e6f5ce4e:src/street.js'],{cwd:process.cwd()})}));await p.goto(base+'/?lowmem');
+// Contract baseline (#2114): the CURRENT street.js built without the road-side lamps, served as a copy with its lamp-spot imports stubbed. Never a frozen older street.js: that crashed once unrelated config changed (#1843 removed SITE.street.trafficLight).
+await p.route('**/src/__nolamps.js',r=>r.fulfill({contentType:'text/javascript',body:'export const pathLampSpots=()=>[];export const roadLampSpots=()=>[];'}));
+await p.route('**/src/__pathlamp_baseline.js',r=>r.fulfill({contentType:'text/javascript',body:fs.readFileSync('src/street.js','utf8').replace("from './roadlamps.js'","from './__nolamps.js'")}));await p.goto(base+'/?lowmem');
 const result=await p.evaluate(async()=>{const T=await import('three'),{buildStreet}=await import('/src/street.js'),old=await import('/src/__pathlamp_baseline.js'),{PATH_LIGHTS:L,SITE}=await import('/src/config.js');
 const realNow=performance.now.bind(performance);let now=realNow();performance.now=()=>now;
 const ground=(x,z)=>-3+.012*x+.018*z,oldStreet=old.buildStreet(()=>0,ground),street=buildStreet(()=>0,ground),a=oldStreet.object,b=street.object,placements=b.userData.roadLamps;
