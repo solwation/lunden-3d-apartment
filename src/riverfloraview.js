@@ -7,7 +7,7 @@
 // river), and nothing is drawn further than `drawDist` m from the river. Nothing collides: a swimmer passes through all of it.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE, RIVER_FLORA } from './config.js';
+import { SITE, RIVER_FLORA, LILY_SURFACE as LS } from './config.js';
 import { driftHash } from './riverdrift.js';
 import { driftRiver } from './riverdriftview.js';
 import { floraLayout, floraWindow, floraSeason } from './riverflora.js';
@@ -50,18 +50,63 @@ export function weedGeometry() {
   }
   return mergeGeometries(parts);
 }
-/** A water-lily leaf of radius 1 lying at y 0 (a round leaf with its notch) and its stem hanging to y -1. */
-export function lilyGeometry() {
-  const L = F.lilies, pad = new THREE.CircleGeometry(1, 14, 0.22, Math.PI * 2 - 0.44).rotateX(-Math.PI / 2);
-  const stem = [0, Math.PI / 2].map((a) => new THREE.PlaneGeometry(0.09, 1).translate(0, -0.5, 0).rotateY(a));
-  return mergeGeometries([paint(pad, L.pad, (x, y, z) => 0.8 + 0.2 * Math.hypot(x, z)), ...stem.map((g) => paint(g, L.stem))]);
+/** A low cupped leaf of radius 1: its centre touches y 0, its notched rim rises only a few normalized mm. */
+export function lilyPadGeometry() {
+  const span = Math.PI * 2 - 2 * LS.notch, veins = Array.from({ length: LS.veins }, (_, i) => LS.notch + span * (i + 0.5) / LS.veins);
+  // Narrow extra angular columns let a faint vein remain narrow instead of shading a whole fan sector.
+  const angles = [...new Set([...Array.from({ length: LS.padSegments + 1 }, (_, i) => LS.notch + span * i / LS.padSegments),
+    ...veins.flatMap(a => [a - LS.veinWidth, a, a + LS.veinWidth])])].sort((a, b) => a - b);
+  const pos = [0, 0, 0], color = [], index = [], c = new THREE.Color(F.lilies.pad), cols = angles.length;
+  color.push(c.r * 0.8, c.g * 0.8, c.b * 0.8);
+  for (let row = 1; row <= LS.padRings; row++) for (const a of angles) {
+    const r = row / LS.padRings, vein = Math.max(0, 1 - Math.min(...veins.map(v => Math.abs(a - v))) / LS.veinWidth);
+    pos.push(r * Math.cos(a), LS.cup * r * r + LS.veinHeight * Math.sin(Math.PI * r) * vein, -r * Math.sin(a));
+    const k = (0.8 + 0.2 * r) * (1 - LS.veinShade * vein * r);
+    color.push(c.r * k, c.g * k, c.b * k);
+  }
+  for (let j = 0; j < cols - 1; j++) index.push(0, 1 + j, 2 + j);
+  for (let row = 1; row < LS.padRings; row++) for (let j = 0; j < cols - 1; j++) {
+    const a = 1 + (row - 1) * cols + j, b = a + cols;
+    index.push(a, b, b + 1, a, b + 1, a + 1);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(color, 3));
+  g.setIndex(index); g.computeVertexNormals();
+  return g.toNonIndexed();
 }
-/** A water-lily flower of radius 1 sitting at y 0: two rings of pointed petals round a yellow heart. */
+/** The cupped pad and its original cross-plane stem down to y -1, still one instanced geometry. */
+export function lilyGeometry() {
+  const L = F.lilies;
+  const stem = [0, Math.PI / 2].map((a) => new THREE.PlaneGeometry(0.09, 1).translate(0, -0.5, 0).rotateY(a));
+  return mergeGeometries([lilyPadGeometry(), ...stem.map((g) => paint(g, L.stem))]);
+}
+/** A rounded petal with a curved long axis and softly raised edges; one point closes each end without degenerate faces. */
+export function lilyPetalGeometry(len, lift, width) {
+  const pos = [0, 0.05, 0], index = [], cols = LS.petalAcross + 1;
+  for (let row = 1; row < LS.petalRows; row++) {
+    const t = row / LS.petalRows, hw = width * Math.sin(Math.PI * t) ** 0.65;
+    for (let j = 0; j < cols; j++) {
+      const s = j / LS.petalAcross * 2 - 1;
+      pos.push(len * t, 0.05 + (lift * len - 0.05) * t * t + LS.petalCup * len * s * s * Math.sin(Math.PI * t), hw * s);
+    }
+  }
+  const tip = pos.length / 3; pos.push(len, lift * len, 0);
+  for (let j = 0; j < cols - 1; j++) index.push(0, 2 + j, 1 + j);
+  for (let row = 0; row < LS.petalRows - 2; row++) for (let j = 0; j < cols - 1; j++) {
+    const a = 1 + row * cols + j, b = a + cols;
+    index.push(a, b + 1, b, a, a + 1, b + 1);
+  }
+  const last = 1 + (LS.petalRows - 2) * cols;
+  for (let j = 0; j < cols - 1; j++) index.push(last + j, last + j + 1, tip);
+  const g = new THREE.BufferGeometry();g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));g.setIndex(index);g.computeVertexNormals();
+  return g;
+}
+/** The original two 8 + 6 petal rings and yellow heart, with low rounded overlapping petals. */
 export function flowerGeometry() {
   const L = F.lilies, parts = [];
-  for (const [n, len, lift, turn] of [[8, 1, 0.35, 0], [6, 0.7, 0.75, 0.4]]) for (let i = 0; i < n; i++) {
-    const g = new THREE.BufferGeometry(), w = 0.3;
-    g.setAttribute('position', new THREE.Float32BufferAttribute([0, 0.05, -w * 0.5, 0, 0.05, w * 0.5, len, lift * len, 0], 3)); g.computeVertexNormals();
+  for (const [n, len, lift, turn, width] of LS.rings) for (let i = 0; i < n; i++) {
+    const g = lilyPetalGeometry(len, lift, width);
     parts.push(paint(g.rotateY((i / n) * Math.PI * 2 + turn), L.petal, (x, y) => 0.82 + 0.25 * y));
   }
   parts.push(paint(new THREE.SphereGeometry(0.22, 6, 4).translate(0, 0.2, 0), L.heart));

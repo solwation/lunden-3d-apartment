@@ -1,0 +1,435 @@
+{
+  "baseline": "7b5f0f17",
+  "viewport": [
+    1120,
+    800
+  ],
+  "renderer": "Chromium / SwiftShader",
+  "errors": [],
+  "phases": {
+    "before": {
+      "geometry": {
+        "stones": {
+          "triangles": 80,
+          "bytes": 8640,
+          "attributes": [
+            "position",
+            "normal",
+            "color"
+          ],
+          "capacity": 81
+        },
+        "weeds": {
+          "triangles": 56,
+          "bytes": 6048,
+          "attributes": [
+            "position",
+            "normal",
+            "color"
+          ],
+          "capacity": 91
+        },
+        "lilies": {
+          "triangles": 18,
+          "bytes": 1944,
+          "attributes": [
+            "position",
+            "normal",
+            "color"
+          ],
+          "capacity": 20
+        },
+        "flowers": {
+          "triangles": 50,
+          "bytes": 5400,
+          "attributes": [
+            "position",
+            "normal",
+            "color"
+          ],
+          "capacity": 9
+        }
+      },
+      "state": {
+        "at": 545.7558116195991,
+        "total": {
+          "stones": 475,
+          "weeds": 432,
+          "lilies": 92,
+          "flowers": 28
+        },
+        "drawn": {
+          "stones": 0,
+          "weeds": 0,
+          "lilies": 20,
+          "flowers": 6
+        },
+        "calls": 2
+      },
+      "stable": true,
+      "january": {
+        "at": 545.7558116195991,
+        "total": {
+          "stones": 475,
+          "weeds": 432,
+          "lilies": 92,
+          "flowers": 28
+        },
+        "drawn": {
+          "stones": 0,
+          "weeds": 0,
+          "lilies": 0,
+          "flowers": 0
+        },
+        "calls": 0
+      },
+      "may": {
+        "at": 545.7558116195991,
+        "total": {
+          "stones": 475,
+          "weeds": 432,
+          "lilies": 92,
+          "flowers": 28
+        },
+        "drawn": {
+          "stones": 0,
+          "weeds": 0,
+          "lilies": 20,
+          "flowers": 0
+        },
+        "calls": 1
+      },
+      "under": {
+        "at": 545.7558116195991,
+        "total": {
+          "stones": 475,
+          "weeds": 432,
+          "lilies": 92,
+          "flowers": 28
+        },
+        "drawn": {
+          "stones": 73,
+          "weeds": 63,
+          "lilies": 20,
+          "flowers": 6
+        },
+        "calls": 4
+      },
+      "hidden": {
+        "at": 545.7558116195991,
+        "total": {
+          "stones": 475,
+          "weeds": 432,
+          "lilies": 92,
+          "flowers": 28
+        },
+        "drawn": {
+          "stones": 0,
+          "weeds": 0,
+          "lilies": 0,
+          "flowers": 0
+        },
+        "calls": 0
+      },
+      "away": {
+        "at": 545.7558116195991,
+        "total": {
+          "stones": 475,
+          "weeds": 432,
+          "lilies": 92,
+          "flowers": 28
+        },
+        "drawn": {
+          "stones": 0,
+          "weeds": 0,
+          "lilies": 0,
+          "flowers": 0
+        },
+        "calls": 0
+      },
+      "contact": true,
+      "maxRim": 1.0846251801275653e-16,
+      "flower": {
+        "s": 545.8290680112917,
+        "position": [
+          -140.22049842572224,
+          -7.163800234847015,
+          207.81346830062805
+        ],
+        "radius": 0.07636246971681249
+      },
+      "batch": {
+        "count": 4,
+        "sharedLeafMaterial": true,
+        "noTextures": true,
+        "noShadows": true
+      },
+      "placementHash": "af7c6b8bd3646ffb55bef608b68b279bc553b37ed491b7f4e51694e968d81bda",
+      "views": [
+        {
+          "view": "near",
+          "camera": [
+            -139.82049842572223,
+            -6.923800234847015,
+            208.16346830062804
+          ],
+          "target": [
+            -140.24549842572225,
+            -7.145800234847015,
+            207.81346830062805
+          ],
+          "calls": 3,
+          "triangles": 662,
+          "textures": 0
+        },
+        {
+          "view": "waterlevel",
+          "camera": [
+            -139.57049842572223,
+            -7.088800234847015,
+            208.31346830062805
+          ],
+          "target": [
+            -140.24549842572225,
+            -7.145800234847015,
+            207.81346830062805
+          ],
+          "calls": 3,
+          "triangles": 662,
+          "textures": 0
+        },
+        {
+          "view": "above",
+          "camera": [
+            -139.92049842572223,
+            -6.313800234847015,
+            208.09346830062805
+          ],
+          "target": [
+            -140.24549842572225,
+            -7.145800234847015,
+            207.81346830062805
+          ],
+          "calls": 3,
+          "triangles": 662,
+          "textures": 0
+        }
+      ]
+    },
+    "after": {
+      "geometry": {
+        "stones": {
+          "triangles": 80,
+          "bytes": 8640,
+          "attributes": [
+            "position",
+            "normal",
+            "color"
+          ],
+          "capacity": 81
+        },
+        "weeds": {
+          "triangles": 56,
+          "bytes": 6048,
+          "attributes": [
+            "position",
+            "normal",
+            "color"
+          ],
+          "capacity": 91
+        },
+        "lilies": {
+          "triangles": 136,
+          "bytes": 14688,
+          "attributes": [
+            "position",
+            "color",
+            "normal"
+          ],
+          "capacity": 20
+        },
+        "flowers": {
+          "triangles": 204,
+          "bytes": 22032,
+          "attributes": [
+            "position",
+            "normal",
+            "color"
+          ],
+          "capacity": 9
+        }
+      },
+      "state": {
+        "at": 545.7558116195991,
+        "total": {
+          "stones": 475,
+          "weeds": 432,
+          "lilies": 92,
+          "flowers": 28
+        },
+        "drawn": {
+          "stones": 0,
+          "weeds": 0,
+          "lilies": 20,
+          "flowers": 6
+        },
+        "calls": 2
+      },
+      "stable": true,
+      "january": {
+        "at": 545.7558116195991,
+        "total": {
+          "stones": 475,
+          "weeds": 432,
+          "lilies": 92,
+          "flowers": 28
+        },
+        "drawn": {
+          "stones": 0,
+          "weeds": 0,
+          "lilies": 0,
+          "flowers": 0
+        },
+        "calls": 0
+      },
+      "may": {
+        "at": 545.7558116195991,
+        "total": {
+          "stones": 475,
+          "weeds": 432,
+          "lilies": 92,
+          "flowers": 28
+        },
+        "drawn": {
+          "stones": 0,
+          "weeds": 0,
+          "lilies": 20,
+          "flowers": 0
+        },
+        "calls": 1
+      },
+      "under": {
+        "at": 545.7558116195991,
+        "total": {
+          "stones": 475,
+          "weeds": 432,
+          "lilies": 92,
+          "flowers": 28
+        },
+        "drawn": {
+          "stones": 73,
+          "weeds": 63,
+          "lilies": 20,
+          "flowers": 6
+        },
+        "calls": 4
+      },
+      "hidden": {
+        "at": 545.7558116195991,
+        "total": {
+          "stones": 475,
+          "weeds": 432,
+          "lilies": 92,
+          "flowers": 28
+        },
+        "drawn": {
+          "stones": 0,
+          "weeds": 0,
+          "lilies": 0,
+          "flowers": 0
+        },
+        "calls": 0
+      },
+      "away": {
+        "at": 545.7558116195991,
+        "total": {
+          "stones": 475,
+          "weeds": 432,
+          "lilies": 92,
+          "flowers": 28
+        },
+        "drawn": {
+          "stones": 0,
+          "weeds": 0,
+          "lilies": 0,
+          "flowers": 0
+        },
+        "calls": 0
+      },
+      "contact": true,
+      "maxRim": 0.008009944476716229,
+      "flower": {
+        "s": 545.8290680112917,
+        "position": [
+          -140.22049842572224,
+          -7.163800234847015,
+          207.81346830062805
+        ],
+        "radius": 0.07636246971681249
+      },
+      "batch": {
+        "count": 4,
+        "sharedLeafMaterial": true,
+        "noTextures": true,
+        "noShadows": true
+      },
+      "placementHash": "af7c6b8bd3646ffb55bef608b68b279bc553b37ed491b7f4e51694e968d81bda",
+      "views": [
+        {
+          "view": "near",
+          "camera": [
+            -139.82049842572223,
+            -6.923800234847015,
+            208.16346830062804
+          ],
+          "target": [
+            -140.24549842572225,
+            -7.145800234847015,
+            207.81346830062805
+          ],
+          "calls": 3,
+          "triangles": 3946,
+          "textures": 0
+        },
+        {
+          "view": "waterlevel",
+          "camera": [
+            -139.57049842572223,
+            -7.088800234847015,
+            208.31346830062805
+          ],
+          "target": [
+            -140.24549842572225,
+            -7.145800234847015,
+            207.81346830062805
+          ],
+          "calls": 3,
+          "triangles": 3946,
+          "textures": 0
+        },
+        {
+          "view": "above",
+          "camera": [
+            -139.92049842572223,
+            -6.313800234847015,
+            208.09346830062805
+          ],
+          "target": [
+            -140.24549842572225,
+            -7.145800234847015,
+            207.81346830062805
+          ],
+          "calls": 3,
+          "triangles": 3946,
+          "textures": 0
+        }
+      ]
+    }
+  },
+  "source": {
+    "src/riverfloraview.js": "1354410306c12a8310c3b136e569a6691d06d5885e9a0871cee4dbd48b19d366",
+    "src/config.js": "3e977c0bb6bb0b35340793290026e7ceeea17c71bcc60140881fa551c71ef705",
+    "tools/lilysurface2073.html": "018b58714d845c6f5e7ad1d6b80d06a0d71586fcd53c1b172a320a940d253b34",
+    "tools/lilysurface2073browser.cjs": "f58e8cb195ba696785b0011d57509705a7b74a6bf888a2462b64ba133da4bd76"
+  }
+}

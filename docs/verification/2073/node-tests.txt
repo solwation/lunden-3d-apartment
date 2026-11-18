@@ -1,0 +1,17 @@
+✔ the same river every time, sorted along it (5.617464ms)
+✔ everything lies inside the channel and clear of the ends (0.970035ms)
+✔ weeds grow in patches; most stones are small (0.194299ms)
+✔ lily leaves keep to one side near the bank, do not overlap, some flower (0.470677ms)
+✔ nothing where a pier stands (1.577441ms)
+✔ the window and the seasons (0.433236ms)
+✔ pads stay at the waterline with a shallow rim, notch and narrow radial veins (8.126768ms)
+✔ petals round and cup across their width, overlap in the original two rings, and retain the radius/height envelope (3.559437ms)
+✔ production flora retains positions, contact scaling, material batches and seasonal/fill behaviour (27.305847ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 168.439855

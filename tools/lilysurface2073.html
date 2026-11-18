@@ -1,0 +1,29 @@
+<!doctype html><html><meta charset="utf-8"><title>Höje å — production water lilies</title><style>body{margin:0}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as T from 'three';
+import {RiverFlora} from '../src/riverfloraview.js';
+import {swimBedY,swimWater} from '../src/farwalk.js';
+import {RIVER_FLORA as F} from '../src/config.js';
+const scene=new T.Scene();scene.background=new T.Color(0x8eaaa9);
+const flora=new RiverFlora({scene,bedY:swimBedY,open:swimWater});
+const selected=flora.items.flowers[Math.floor(flora.items.flowers.length/2)],centre=new T.Vector3(),q=new T.Quaternion(),scale=new T.Vector3();selected.m.decompose(centre,q,scale);
+const waterY=flora.river.waterY(selected.s),water=new T.Mesh(new T.PlaneGeometry(20,20),new T.MeshStandardMaterial({color:0x486e67,roughness:.35,metalness:.1}));water.rotation.x=-Math.PI/2;water.position.set(centre.x,waterY,centre.z);scene.add(water);
+scene.add(new T.HemisphereLight(0xeaf4fb,0x686242,1.6));const sun=new T.DirectionalLight(0xfff0d6,2.7);sun.position.set(centre.x-1.5,centre.y+2.5,centre.z+1.2);sun.target.position.copy(centre);scene.add(sun,sun.target);
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(1);renderer.setSize(1120,800);renderer.toneMapping=T.NeutralToneMapping;renderer.outputColorSpace=T.SRGBColorSpace;document.body.append(renderer.domElement);
+const camera=new T.PerspectiveCamera(38,1.4,.01,200),eye=centre.clone().add(new T.Vector3(0,1,0));flora.update(0,eye,false,false,7);
+const data=()=>{
+ const geometry={};for(const [k,m]of Object.entries(flora.meshes)){const g=m.geometry;geometry[k]={triangles:(g.index?.count??g.attributes.position.count)/3,bytes:Object.values(g.attributes).reduce((n,a)=>n+a.array.byteLength,0)+(g.index?.array.byteLength??0),attributes:Object.keys(g.attributes),capacity:m.instanceMatrix.count};}
+ const state=flora.state(),version=flora.meshes.lilies.instanceMatrix.version;flora.update(.016,eye,false,false,7);const stable=version===flora.meshes.lilies.instanceMatrix.version;
+ flora.update(0,eye,false,false,1);const january=flora.state();flora.update(0,eye,false,false,5);const may=flora.state();flora.update(0,eye,false,true,7);const under=flora.state();flora.update(0,eye,true,false,7);const hidden=flora.state();flora.update(0,{x:0,y:0,z:0},false,false,7);const away=flora.state();flora.update(0,eye,false,false,7);
+ const items=Object.fromEntries(Object.entries(flora.items).map(([k,a])=>[k,a.map(e=>({s:e.s,m:[...e.m.elements],c:[...e.c]}))]));
+ let contact=true,maxRim=0;const p=new T.Vector3(),s=new T.Vector3(),n=flora.meshes.lilies.geometry.attributes.normal,a=flora.meshes.lilies.geometry.attributes.position;let localRim=0;for(let i=0;i<a.count;i++)if(n.getY(i)>.9)localRim=Math.max(localRim,a.getY(i));
+ for(const e of flora.items.lilies){e.m.decompose(p,q,s);contact&&=Math.abs(p.y-flora.river.waterY(e.s)-F.lilies.lift)<1e-6;maxRim=Math.max(maxRim,localRim*s.y);}
+ return{geometry,items,state,stable,january,may,under,hidden,away,contact,maxRim,flower:{s:selected.s,position:[...centre],radius:scale.x},batch:{count:Object.keys(flora.meshes).length,sharedLeafMaterial:flora.meshes.lilies.material===flora.meshes.flowers.material,noTextures:Object.values(flora.meshes).every(m=>!m.material.map),noShadows:Object.values(flora.meshes).every(m=>!m.castShadow&&!m.receiveShadow)}};
+};
+window.__proof=data;
+window.__frame=view=>{
+ const cameras={near:[.40,.24,.35],waterlevel:[.65,.075,.50],above:[.30,.85,.28]};camera.position.copy(centre).add(new T.Vector3(...cameras[view]));camera.lookAt(centre.clone().add(new T.Vector3(-.025,.018,0)));camera.updateMatrixWorld(true);renderer.info.reset();renderer.render(scene,camera);
+ return{view,camera:[...camera.position],target:[centre.x-.025,centre.y+.018,centre.z],calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,image:renderer.domElement.toDataURL('image/jpeg',.95)};
+};window.__ready=true;
+</script></html>

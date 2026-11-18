@@ -2424,6 +2424,15 @@ export const SWIM = {
 //   `clear` m), `lean` (downstream, at the tip, per m of height) and `sway` (amplitude per m of height, Hz) in the current.
 // lilies: a cluster every `every` m with chance `chance`, `pads` leaves within `spread` m, radius `r`, between `bank` (shares of the half
 //   width) from the centre line; a `flower` share of the pads carries one. Leaves in the months `months`, flowers in `bloom`.
+// #2073: artistic shape assumptions for existing water lilies, not a species survey.
+// Pads retain the old depth-scaled Y axis: these low normalized heights keep their rim near the water.
+export const LILY_SURFACE = {
+  padSegments: 24, padRings: 2, notch: 0.22, cup: 0.0045,
+  veins: 7, veinWidth: 0.014, veinHeight: 0.00045, veinShade: 0.09,
+  petalRows: 4, petalAcross: 2, petalCup: 0.06,
+  rings: [[8, 1, 0.35, 0, 0.32], [6, 0.7, 0.75, 0.4, 0.25]],
+};
+
 export const RIVER_FLORA = {
   seed: 1956, ends: 12, range: 55, drawDist: 80,
   stones: { perM: 0.6, size: [0.06, 0.4], sink: 0.35, colors: [0x6f6a60, 0x857f72, 0x5a5650, 0x7a705e] },

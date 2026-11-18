@@ -331,6 +331,29 @@ survey of the bed or its plants).
 - **Checks:** `node --test src/riverflora.test.mjs`; `tools/riverfloratest.cjs` (real app: on the bed / under the surface / on the water,
   draw calls from the bank and under water, seasons, far away, a dive through it; images in [docs/verification/1956](../verification/1956/)).
 
+### Low cupped lily leaves and layered flowers (#2073)
+
+`riverfloraview.js` retains the production RiverFlora layout, matrices, materials and update path.
+Only its shared leaf/flower recipes change: `lilyPadGeometry` builds a shallow two-ring surface with
+the existing notch, a gently raised rim and narrow radial vein columns; `lilyPetalGeometry` gives
+the existing eight + six petal rings a curved long axis, softly cupped width and rounded overlapping
+outline. The original cross-plane stems and yellow centre remain. `LILY_SURFACE` dimensions are
+artistic assumptions, not a survey or new species claim.
+
+The pad's centre stays at local y 0 and the stem bottom at -1. Its existing instance Y scale is the
+water depth, so the authored 0.0045 rim height becomes at most 8.01 mm on the current river's actual
+placements, above the unchanged 12 mm water-layer lift. Radius spans, flower placement/height envelope,
+weed/stone meshes, the four material batches, seasons, draw range and the 8 m refill threshold stay put.
+No texture, light, shadow or per-frame upload is added. A leaf is 18 → 136 triangles and its shared
+buffer 1,944 → 14,688 B; a flower 50 → 204 triangles and 5,400 → 22,032 B. The extra shared geometry
+is 29,376 B, independent of the instance count. No frame-rate improvement is claimed.
+
+`node --test tools/lilysurfacetest.mjs src/riverflora.test.mjs` checks geometry, finite unit normals,
+contact/size envelopes, placement rules, seasons and unchanged batching/fill behaviour. The own
+`tools/lilysurface2073browser.cjs` test uses actual RiverFlora with `swimBedY`/`swimWater`, matched
+before/after placement hashes and aspect-correct close/water-level/above sheets. [Evidence, budget
+and component limitations](../verification/2073/README.md).
+
 ### Blue mussels on the river bed (#1945)
 
 Blue mussels lie on the bed of Höje å along the whole swimmable stretch; a swimmer takes one with E / the action button like a nut, carries it and puts it down again. (Blue mussels are really a salt / brackish water species; the user asked for them. Everything in `MUSSELS`, config.js, is a *guess*.)
