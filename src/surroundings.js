@@ -18,6 +18,7 @@ import { gridGround, southPointGround } from './elevation.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { neighborGlass } from './neighborglass.js';
 import { paneTints } from './glasspanes.js';
+import { railMetal } from './railmetal.js';
 import { registerTrees, registerSnow } from './seasons.js';
 import { lobeGeometry, leafMaterial, trunkGeometry, barkMaterial, lodLeafMaterial, lodBarkMaterial, lodFarTrunkMaterial } from './foliage.js';
 import { InstanceLod, lodRange } from './lod.js';
@@ -1914,9 +1915,10 @@ export function* surroundingsParts({ grass, husL = null }) {
   group.userData.opaqueRects=mergeOpaqueRects(bw.opaque); // exact inscribed rectangles of the emitted solid wall faces, including doorway lintels
   const concrete = new THREE.MeshStandardMaterial({ color: 0xb9b4ab, roughness: 0.95, side: THREE.DoubleSide });
   flat(bw.walls, new THREE.MeshStandardMaterial({ map: historicBrick, roughness: 0.95, side: THREE.DoubleSide })); // brick retaining walls (#148)
-  const lightRail = new THREE.MeshStandardMaterial({ color: 0xb9bdbd, roughness: 0.5, metalness: 0.3 });
-  flat([...bw.rails, ...bw.stairs.rails.map((g) => g.toNonIndexed())].map((g) => { g = g.index ? g.toNonIndexed() : g; g.deleteAttribute('uv'); return g; }), lightRail);
-  group.add(new THREE.Mesh(mergeGeometries(bw.slats.map((g) => g.toNonIndexed())), new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 })));
+  const lightRail = railMetal(new THREE.MeshStandardMaterial({ color: 0xb9bdbd, metalness: 0.3 })); // #2089: matt metal
+  flat([...bw.rails, ...bw.stairs.rails.map((g) => g.toNonIndexed())].map((g) => { g = g.index ? g.toNonIndexed() : g; g.deleteAttribute('uv'); return g; }), lightRail).name = 'boxRails';
+  const boxSlats = new THREE.Mesh(mergeGeometries(bw.slats.map((g) => g.toNonIndexed())), railMetal(new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide })));
+  boxSlats.name = 'boxSlats'; group.add(boxSlats);
   flat(bw.stairs.solid, concrete, SEASON.snow.paving); // the stairs down to the park level (#148, #254)
   flat(T.stairs.filter((St) => St.walk).map((St) => groundStrip(St.walk.x0, St.walk.x1, St.walk.z0, St.walk.z1, 0.01)), COLORS.paving); // from a stair's foot on
   // collision for the courtyard (world.js keeps those near OUTDOOR): the box edge, and the Å-husen's outer walls (#259)
@@ -1999,7 +2001,8 @@ export function* surroundingsParts({ grass, husL = null }) {
   mesh(modern.flatMap(openingDecals), new THREE.MeshStandardMaterial({ map: openingTexture(), roughness: 0.6, polygonOffset: true, polygonOffsetFactor: -0.5, polygonOffsetUnits: -1 })); // the listed windows (#345)
   const white = new THREE.MeshStandardMaterial({ color: O.site.frameColor, roughness: 0.85, side: THREE.DoubleSide });
   mesh([...lg.slabs.map((g) => g.toNonIndexed()), ...lg.walls.map((g) => g.toNonIndexed()), ...details.frames.map(g=>g.index?g.toNonIndexed():g)].map((g) => { g.deleteAttribute('uv'); return g; }), white);
-  const railMesh = new THREE.Mesh(mergeGeometries(lg.rails.map((g) => g.toNonIndexed())), new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 }));
+  const railMesh = new THREE.Mesh(mergeGeometries(lg.rails.map((g) => g.toNonIndexed())), railMetal(new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide }))); // #2089
+  railMesh.name = 'loggiaRails';
   group.add(railMesh);
   if (lg.plants.length) mesh(lg.plants.map((g) => { g = g.index ? g.toNonIndexed() : g; g.deleteAttribute('uv'); return g; }), new THREE.MeshStandardMaterial({ color: 0x4f7d3a, roughness: 0.9, flatShading: true }));
   const bare = (gs) => gs.map((g) => { g = g.index?g.toNonIndexed():g; g.deleteAttribute('uv'); return g; });

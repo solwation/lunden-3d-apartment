@@ -6946,6 +6946,19 @@ export const GLASS_PANES = { paneMax: 4,
   far: { lightness: .14, tone: .06, gradient: .3, sky: .22, skyColor: 0x9fb8c6 },
 };
 
+// #2089: matt, lightly brushed / powder-coated metal on outdoor railings (src/railmetal.js, a fragment-only patch of the
+// existing materials; no texture, draw, uniform or per-frame work). All *guess* values from the look of painted steel
+// railings, nothing measured. `roughness` the new base of the railing materials (was 0.45–0.6), `streak` ± roughness of
+// fine brush lines `streakFreq` per metre across a rail, `mottle` ± roughness and `tint` ± brightness of a soft
+// powder-coat cloudiness `mottleFreq` per metre; both fade to their mean once a line/cloud gets smaller than ~a pixel
+// (screen derivatives), so nothing sparkles at distance. `far`: roughness rises towards this from `near` to `farAt` m
+// (thin rails then keep a broad, calm highlight). `rim` the share of the ambient/sky light added as a discreet edge
+// light at grazing angles (power `rimPower`); it follows the ambient light, so it fades at dusk and night. `saturation`
+// [from, to]: the patch acts only on low-saturation colours (steel/grey/white), so a vertex-coloured batch that also
+// holds wood or a green bin (the bus stop) keeps those as before.
+export const RAIL_METAL = { roughness: .58, streak: .07, streakFreq: 240, mottle: .06, tint: .035, mottleFreq: 2.2,
+  near: 6, farAt: 40, far: .78, rim: .16, rimPower: 3, saturation: [.35, .55] };
+
 // #1076: Hus L's façade windows sit in brick (or render) reveals with a sheet-metal sill flashing, as on Peab's
 // courtyard illustration (docs/peab/hus-l-gardsfasad-illustration.png, not dimensioned). `frame` = the window frame's
 // centre behind the façade face: L1007's own frame position (world.js), kept so the blinds and window boards inside stay

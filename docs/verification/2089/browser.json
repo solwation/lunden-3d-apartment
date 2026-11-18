@@ -1,0 +1,1103 @@
+{
+ "base": "e66fc9e801e690d6ee7d5a03d26df5b4150601c4",
+ "phases": {
+  "before": {
+   "meshes": 5017,
+   "railMetal": 0,
+   "rails": [
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 1296,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      5.2,
+      0,
+      9
+     ],
+     "max": [
+      5.5,
+      0.6,
+      9.7
+     ]
+    },
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 24,
+     "index": 36,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f2",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      1.9,
+      1.4,
+      0.5
+     ],
+     "max": [
+      1.9,
+      1.6,
+      0.5
+     ]
+    },
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 24,
+     "index": 36,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f2",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      2,
+      1.4,
+      0.5
+     ],
+     "max": [
+      2,
+      1.6,
+      0.5
+     ]
+    },
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 24,
+     "index": 36,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f2",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      1.9,
+      1.6,
+      0.5
+     ],
+     "max": [
+      2,
+      1.6,
+      0.5
+     ]
+    },
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 24,
+     "index": 36,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f2",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      1.9,
+      1.4,
+      0.5
+     ],
+     "max": [
+      2,
+      1.4,
+      0.5
+     ]
+    },
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 24,
+     "index": 36,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f2",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      2,
+      1.5,
+      0.5
+     ],
+     "max": [
+      2,
+      1.5,
+      0.5
+     ]
+    },
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 30828,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "8fa396",
+     "rough": 0.5,
+     "metal": 0.3,
+     "patched": false,
+     "min": [
+      -44.9,
+      0,
+      -3.6
+     ],
+     "max": [
+      11.6,
+      7.5,
+      3.1
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1980,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      -41.7,
+      9.8,
+      12.6
+     ],
+     "max": [
+      -35.9,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1872,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      -35.8,
+      9.8,
+      12.6
+     ],
+     "max": [
+      -30.3,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1872,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      -30.2,
+      9.8,
+      12.6
+     ],
+     "max": [
+      -24.8,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1764,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      -24.7,
+      9.8,
+      12.6
+     ],
+     "max": [
+      -19.6,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1764,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      -16.2,
+      9.8,
+      12.6
+     ],
+     "max": [
+      -11,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1872,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      -11,
+      9.8,
+      12.6
+     ],
+     "max": [
+      -5.5,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1872,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      -5.4,
+      9.8,
+      12.6
+     ],
+     "max": [
+      0.1,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1872,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      0.1,
+      9.8,
+      12.6
+     ],
+     "max": [
+      5.6,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1980,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      5.7,
+      9.8,
+      12.6
+     ],
+     "max": [
+      11.6,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 612,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      -41.7,
+      9.8,
+      10.8
+     ],
+     "max": [
+      -41.6,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 612,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      11.4,
+      9.8,
+      10.8
+     ],
+     "max": [
+      11.5,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 10188,
+     "index": null,
+     "attrs": "normal,position",
+     "color": "b9bdbd",
+     "rough": 0.5,
+     "metal": 0.3,
+     "patched": false,
+     "min": [
+      -70.7,
+      -3,
+      10.4
+     ],
+     "max": [
+      13.6,
+      1.1,
+      58.6
+     ]
+    },
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 588,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "ffffff",
+     "rough": 0.6,
+     "metal": 0,
+     "patched": false,
+     "min": [
+      -70.5,
+      -0.7,
+      10.6
+     ],
+     "max": [
+      13.4,
+      1,
+      52.5
+     ]
+    },
+    {
+     "name": "bus-stop-furniture",
+     "parent": "bus-stop",
+     "vertices": 684,
+     "index": null,
+     "attrs": "color,normal,position",
+     "color": "ffffff",
+     "rough": 0.6,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      34.8,
+      0,
+      188.2
+     ],
+     "max": [
+      60.5,
+      3,
+      199.9
+     ]
+    },
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 504,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "ffffff",
+     "rough": 0.6,
+     "metal": 0,
+     "patched": false,
+     "min": [
+      -70.5,
+      0,
+      12.7
+     ],
+     "max": [
+      9.4,
+      13.1,
+      57.3
+     ]
+    },
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 816,
+     "index": 1224,
+     "attrs": "normal,position,uv",
+     "color": "c7cacb",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      -70.8,
+      -2,
+      12.4
+     ],
+     "max": [
+      9.6,
+      15.3,
+      57.5
+     ]
+    }
+   ],
+   "loadMs": 53466,
+   "views": {
+    "loft-dag": {
+     "calls": 110,
+     "triangles": 567703,
+     "textures": 95,
+     "programs": 98
+    },
+    "loft-skymning": {
+     "calls": 114,
+     "triangles": 617989,
+     "textures": 96,
+     "programs": 106
+    },
+    "terrass-dag": {
+     "calls": 170,
+     "triangles": 660778,
+     "textures": 99,
+     "programs": 115
+    },
+    "terrass-skymning": {
+     "calls": 179,
+     "triangles": 735888,
+     "textures": 99,
+     "programs": 116
+    },
+    "gard-dag": {
+     "calls": 211,
+     "triangles": 618615,
+     "textures": 110,
+     "programs": 123
+    },
+    "gard-skymning": {
+     "calls": 216,
+     "triangles": 685239,
+     "textures": 110,
+     "programs": 133
+    },
+    "busshallplats-dag": {
+     "calls": 79,
+     "triangles": 483266,
+     "textures": 117,
+     "programs": 141
+    },
+    "busshallplats-skymning": {
+     "calls": 80,
+     "triangles": 522506,
+     "textures": 117,
+     "programs": 141
+    }
+   }
+  },
+  "after": {
+   "meshes": 5017,
+   "railMetal": 16,
+   "rails": [
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 1296,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      5.2,
+      0,
+      9
+     ],
+     "max": [
+      5.5,
+      0.6,
+      9.7
+     ]
+    },
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 24,
+     "index": 36,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f2",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      1.9,
+      1.4,
+      0.5
+     ],
+     "max": [
+      1.9,
+      1.6,
+      0.5
+     ]
+    },
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 24,
+     "index": 36,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f2",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      2,
+      1.4,
+      0.5
+     ],
+     "max": [
+      2,
+      1.6,
+      0.5
+     ]
+    },
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 24,
+     "index": 36,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f2",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      1.9,
+      1.6,
+      0.5
+     ],
+     "max": [
+      2,
+      1.6,
+      0.5
+     ]
+    },
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 24,
+     "index": 36,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f2",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      1.9,
+      1.4,
+      0.5
+     ],
+     "max": [
+      2,
+      1.4,
+      0.5
+     ]
+    },
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 24,
+     "index": 36,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f2",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      2,
+      1.5,
+      0.5
+     ],
+     "max": [
+      2,
+      1.5,
+      0.5
+     ]
+    },
+    {
+     "name": "loftRails",
+     "parent": "",
+     "vertices": 30828,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "8fa396",
+     "rough": 0.58,
+     "metal": 0.3,
+     "patched": true,
+     "min": [
+      -44.9,
+      0,
+      -3.6
+     ],
+     "max": [
+      11.6,
+      7.5,
+      3.1
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1980,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.58,
+     "metal": 0.2,
+     "patched": true,
+     "min": [
+      -41.7,
+      9.8,
+      12.6
+     ],
+     "max": [
+      -35.9,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1872,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.58,
+     "metal": 0.2,
+     "patched": true,
+     "min": [
+      -35.8,
+      9.8,
+      12.6
+     ],
+     "max": [
+      -30.3,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1872,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.58,
+     "metal": 0.2,
+     "patched": true,
+     "min": [
+      -30.2,
+      9.8,
+      12.6
+     ],
+     "max": [
+      -24.8,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1764,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.58,
+     "metal": 0.2,
+     "patched": true,
+     "min": [
+      -24.7,
+      9.8,
+      12.6
+     ],
+     "max": [
+      -19.6,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1764,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.58,
+     "metal": 0.2,
+     "patched": true,
+     "min": [
+      -16.2,
+      9.8,
+      12.6
+     ],
+     "max": [
+      -11,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1872,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.58,
+     "metal": 0.2,
+     "patched": true,
+     "min": [
+      -11,
+      9.8,
+      12.6
+     ],
+     "max": [
+      -5.5,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1872,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.58,
+     "metal": 0.2,
+     "patched": true,
+     "min": [
+      -5.4,
+      9.8,
+      12.6
+     ],
+     "max": [
+      0.1,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1872,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.58,
+     "metal": 0.2,
+     "patched": true,
+     "min": [
+      0.1,
+      9.8,
+      12.6
+     ],
+     "max": [
+      5.6,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 1980,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.58,
+     "metal": 0.2,
+     "patched": true,
+     "min": [
+      5.7,
+      9.8,
+      12.6
+     ],
+     "max": [
+      11.6,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 612,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.58,
+     "metal": 0.2,
+     "patched": true,
+     "min": [
+      -41.7,
+      9.8,
+      10.8
+     ],
+     "max": [
+      -41.6,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "terraceRails",
+     "parent": "",
+     "vertices": 612,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "f4f4f1",
+     "rough": 0.58,
+     "metal": 0.2,
+     "patched": true,
+     "min": [
+      11.4,
+      9.8,
+      10.8
+     ],
+     "max": [
+      11.5,
+      10.6,
+      12.6
+     ]
+    },
+    {
+     "name": "boxRails",
+     "parent": "",
+     "vertices": 10188,
+     "index": null,
+     "attrs": "normal,position",
+     "color": "b9bdbd",
+     "rough": 0.58,
+     "metal": 0.3,
+     "patched": true,
+     "min": [
+      -70.7,
+      -3,
+      10.4
+     ],
+     "max": [
+      13.6,
+      1.1,
+      58.6
+     ]
+    },
+    {
+     "name": "boxSlats",
+     "parent": "",
+     "vertices": 588,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "ffffff",
+     "rough": 0.58,
+     "metal": 0,
+     "patched": true,
+     "min": [
+      -70.5,
+      -0.7,
+      10.6
+     ],
+     "max": [
+      13.4,
+      1,
+      52.5
+     ]
+    },
+    {
+     "name": "bus-stop-furniture",
+     "parent": "bus-stop",
+     "vertices": 684,
+     "index": null,
+     "attrs": "color,normal,position",
+     "color": "ffffff",
+     "rough": 0.6,
+     "metal": 0.2,
+     "patched": true,
+     "min": [
+      34.8,
+      0,
+      188.2
+     ],
+     "max": [
+      60.5,
+      3,
+      199.9
+     ]
+    },
+    {
+     "name": "loggiaRails",
+     "parent": "",
+     "vertices": 504,
+     "index": null,
+     "attrs": "normal,position,uv",
+     "color": "ffffff",
+     "rough": 0.58,
+     "metal": 0,
+     "patched": true,
+     "min": [
+      -70.5,
+      0,
+      12.7
+     ],
+     "max": [
+      9.4,
+      13.1,
+      57.3
+     ]
+    },
+    {
+     "name": "?",
+     "parent": "",
+     "vertices": 816,
+     "index": 1224,
+     "attrs": "normal,position,uv",
+     "color": "c7cacb",
+     "rough": 0.45,
+     "metal": 0.2,
+     "patched": false,
+     "min": [
+      -70.8,
+      -2,
+      12.4
+     ],
+     "max": [
+      9.6,
+      15.3,
+      57.5
+     ]
+    }
+   ],
+   "loadMs": 41200,
+   "views": {
+    "loft-dag": {
+     "calls": 110,
+     "triangles": 567703,
+     "textures": 95,
+     "programs": 100
+    },
+    "loft-skymning": {
+     "calls": 114,
+     "triangles": 617989,
+     "textures": 96,
+     "programs": 108
+    },
+    "terrass-dag": {
+     "calls": 170,
+     "triangles": 660778,
+     "textures": 99,
+     "programs": 117
+    },
+    "terrass-skymning": {
+     "calls": 178,
+     "triangles": 734660,
+     "textures": 99,
+     "programs": 118
+    },
+    "gard-dag": {
+     "calls": 209,
+     "triangles": 618503,
+     "textures": 110,
+     "programs": 121
+    },
+    "gard-skymning": {
+     "calls": 215,
+     "triangles": 682567,
+     "textures": 110,
+     "programs": 129
+    },
+    "busshallplats-dag": {
+     "calls": 79,
+     "triangles": 483198,
+     "textures": 117,
+     "programs": 137
+    },
+    "busshallplats-skymning": {
+     "calls": 80,
+     "triangles": 522438,
+     "textures": 117,
+     "programs": 137
+    }
+   }
+  }
+ },
+ "errors": [
+  "before: THREE.WebGLProgram: Shader Error 0 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:336: 'uL",
+  "before: THREE.WebGLProgram: Shader Error 1282 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:336: ",
+  "before: THREE.WebGLProgram: Shader Error 1282 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:335: ",
+  "before: THREE.WebGLProgram: Shader Error 1282 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:371: ",
+  "before: THREE.WebGLProgram: Shader Error 1282 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:371: ",
+  "before: THREE.WebGLProgram: Shader Error 1282 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:370: ",
+  "after: THREE.WebGLProgram: Shader Error 0 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:336: 'uLa",
+  "after: THREE.WebGLProgram: Shader Error 1282 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:336: '",
+  "after: THREE.WebGLProgram: Shader Error 1282 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:335: '",
+  "after: THREE.WebGLProgram: Shader Error 1282 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:371: '",
+  "after: THREE.WebGLProgram: Shader Error 1282 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:371: '",
+  "after: THREE.WebGLProgram: Shader Error 1282 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:370: '"
+ ],
+ "external": [
+  "https://lunden-l1007.olw.workers.dev/beer-shelf",
+  "https://lunden-l1007.olw.workers.dev/beer-shelf"
+ ]
+}

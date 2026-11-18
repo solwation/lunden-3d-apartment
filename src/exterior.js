@@ -1,6 +1,7 @@
 import {solarPanelUV,solarPanelMaterial} from './solarsurface.js';
 import { neighborGlass } from './neighborglass.js';
 import { paneTints } from './glasspanes.js';
+import { railMetal } from './railmetal.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { DECAL_OFFSET, HUS_L as H, HUS_L_REVEAL as RV, HUS_L_DOWNPIPES as DP, ENTRANCE_PLANTS as EP, NEIGHBOR_OPENINGS as O, COLORS, BRICK_SURFACE, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE, DOOR_HEIGHT, DOOR_TRIM } from './config.js';
@@ -676,9 +677,10 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const glassMaterial=neighborGlass();
   add(paneTints(glassGeo),glassMaterial,false).name='neighborGlass'; // #2087: calm per-pane variation
   group.userData.neighborOpenings=neighborOpenings;
-  add(rails, new THREE.MeshStandardMaterial({ color: COLORS.balcony, roughness: 0.5, metalness: 0.3 }));
+  const loftRailMesh = add(rails, railMetal(new THREE.MeshStandardMaterial({ color: COLORS.balcony, metalness: 0.3 })));
+  if (loftRailMesh) loftRailMesh.name = 'loftRails'; // #2089: matt metal
   add([...fascia, ...capping, ...flashings], new THREE.MeshStandardMaterial({ color: Lf.fascia, roughness: 0.4, metalness: 0.4 }));
-  const terraceRailMaterial = new THREE.MeshStandardMaterial({ color: Lf.door, roughness: 0.45, metalness: 0.2 });
+  const terraceRailMaterial = railMetal(new THREE.MeshStandardMaterial({ color: Lf.door, metalness: 0.2 })); // #2089
   // Complete source terraces/gables get tighter native camera AND shadow frustums; phones retain their original batch.
   for (const parts of lowMemory ? [balc] : terraceRailBatches) {
     const railMesh = add(parts, terraceRailMaterial);

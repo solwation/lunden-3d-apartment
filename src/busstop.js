@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { railMetal } from './railmetal.js'; // #2089: the steel parts only (wood/bin stay by saturation)
 import { SEASON } from './config.js';
 import { cutAtTerrain } from './roads.js';
 import { registerSnow, registerSeasonal } from './seasons.js';
@@ -87,7 +88,7 @@ export function buildBusStop(ground) {
   const S = B.sign, [sx, sz] = busStopPoint(S.s, S.t), sy = ground(sx, sz) + B.lift;
   f.push(cyl(0.035, S.h, S.s, S.t, sy, C.steel));
   const Yc = B.cycleSign; f.push(cylAt(0.03, Yc.h, Yc.at[0], Yc.at[1], ground(...Yc.at) + B.lift, C.steel)); // the cycle sign's pole
-  const furn = new THREE.Mesh(mergeGeometries(f), new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.6, metalness: 0.2 })); furn.name = 'bus-stop-furniture'; furn.castShadow = furn.receiveShadow = true; group.add(furn);
+  const furn = new THREE.Mesh(mergeGeometries(f), railMetal(new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.6, metalness: 0.2 }), null)); furn.name = 'bus-stop-furniture'; furn.castShadow = furn.receiveShadow = true; group.add(furn);
   // glass: back and the two ends (the open front faces the road)
   const gl = [], gh = dy[1] - dy[0];
   const pane = (w, s, t, rot) => { const g = new THREE.PlaneGeometry(w, gh).rotateY(rot + yaw); const [x, z] = busStopPoint(s, t); return g.translate(x, y0 + dy[0] + gh / 2, z); };

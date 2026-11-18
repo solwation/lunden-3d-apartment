@@ -546,6 +546,17 @@ src/glasspanes.js      #2087: calm per-pane variation for opaque façade glass, 
                        vertex colour, tinted frames/units in the east brick batch keep theirs. Batches >4 m vary per
                        triangle. No draw, texture, uniform or per-frame work; CoreHouse's see-through lobby glass and
                        L1007's clear glass are untouched. tools/glasspanestest.mjs; [views](../verification/2087/README.md).
+src/railmetal.js       #2089: matt, lightly brushed / powder-coated outdoor railings: a fragment-only patch (railMetal) of the
+                       existing materials — world-position brush lines across a rail and a soft cloudiness in roughness
+                       (±tint), both faded to their mean below pixel size via screen derivatives, roughness rising towards
+                       RAIL_METAL.far with distance (no sparkle on thin bars), and an edge light taken from the fragment's
+                       ambient/sky irradiance (fades at dusk/night). Acts only on low-saturation colours, so the bus stop's
+                       mixed vertex-coloured batch keeps its wood and bin. Consumers: exterior.js loftRails (loftgång,
+                       drum spiral stair) and terraceRails, surroundings.js boxRails/boxSlats (garage-box railings, coping,
+                       park stairs' handrails) and loggiaRails (ABC), busstop.js furniture. One program key; no texture,
+                       draw, uniform, light or per-frame work; geometry, merging and batches unchanged. Indoor stair rails
+                       (corehouse/stairs.js) and sheet-metal copings are not railings here. tools/railmetaltest.mjs;
+                       [views](../verification/2089/README.md).
 src/visitlights.js     lamps of the visitable empty flats (#620): a ceiling lamp per room (a flat fitting in Kök / matplats, Badrum,
                        WC/dusch, Tvätt; a lamp outlet with a bare bulb on a cord elsewhere — VISIT_LIGHTS, *guess*, the brochure
                        says nothing), a switch by each room's door (lights.js `switchSpots` + `Switch`, `VISIT_LIGHTS.manual` /
