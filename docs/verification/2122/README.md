@@ -9,7 +9,7 @@ före/efter, native 1280×800 (`kit.shot`), JPEG utan beskärning. Före-bilder 
 
 `src/shademoss.js` (`SHADE_MOSS` i `config.js`, *guess*): en fragmentpatch kedjad på väggbatcharna styrd av världsnormalen
 (norr = −z), höjd över marken framför ytan (ett bakat värde per vertex) och världsbrus: fläckvis grön ton i ett ojämnt band
-upp till ~0,6 m och tunnare grönt i fogarna upp till 1,3 m. Inget på syd-, öst- eller västsidor eller ovansidor.
+upp till ~0,6 m och tunnare, mörkare grönt i fogarna upp till 1,3 m. Inget på syd-, öst- eller västsidor eller ovansidor.
 Tonen följer ytans egen luminans, så medeltonen står kvar.
 
 | Vy | Före | Efter |
@@ -22,7 +22,13 @@ Tonen följer ytans egen luminans, så medeltonen står kvar.
 
 Telefonprofil (`&lowmem`), Hus B: [husB-nord-telefon.jpg](husB-nord-telefon.jpg) — ingen mossa, inget nytt program.
 
-Medelton i bild över fasadytan (RGB-summa, före → efter): Hus L nära −0,55 %, Hus A −0,08 %, Hus B −0,41 %, Hus C −0,28 %.
+Medelton i bild över fasadytan (RGB-summa, före → efter): Hus L nära −0,49 %, Hus A −0,08 %, Hus B −0,33 %, Hus C −0,28 %.
+
+**Granskningsrättelse:** fogarna i mossbandet blev ljust limegröna i första versionen (ljust murbruk × mättad ton). Nu är
+tonen en dämpad oliv-/gröngrå (`hue` med ungefär halverad mättnad) och fogarna mörkare än bandet (`joints.dark` 0,6,
+`joints.amount` 0,4). Hus L nära och Hus B är omtagna efter rättelsen ([browser-retint.json](browser-retint.json): inga fel,
+6 mossiga meshar efter att Hus L:s puts togs bort); Hus L gata, Hus A och Hus C visar den första, mer mättade tonen (på avstånd
+knappt synlig).
 
 ## Kontroller
 

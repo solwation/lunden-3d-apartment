@@ -34,9 +34,20 @@ export function mossAmount(p, n, h, joint = 0, P = M) {
   const jb = 1 - smooth(0, P.joints.height, h);
   return north * Math.min(1, band * smooth(P.cover[0], P.cover[1], k) + P.joints.amount * joint * jb * (0.4 + 0.6 * n2)) * P.strength;
 }
+/** The tone factor for a mask made of the band share `b` and the joint share `j` (JS twin): joints darker than the band. */
+export const mossDark = (b, j, P = M) => (b + j > 0 ? (b * P.dark + j * P.joints.dark) / (b + j) : P.dark);
+/** mossAmount's parts { a, dark } (tests: the tone a fragment moves towards). */
+export function mossMix(p, n, h, joint = 0, P = M) {
+  const a = mossAmount(p, n, h, joint, P);
+  if (!a) return { a, dark: P.dark };
+  const u = p.x * -n.z + p.z * n.x, n1 = noise(u / P.scale[0], p.y / P.scale[0]), n2 = noise(u / P.scale[1] + 7.3, p.y / P.scale[1] + 7.3);
+  const top = P.band * (0.55 + 0.9 * n1), b = (1 - smooth(top * 0.35, top, h)) * smooth(P.cover[0], P.cover[1], n1 * 0.65 + n2 * 0.35);
+  const j = P.joints.amount * joint * (1 - smooth(0, P.joints.height, h)) * (0.4 + 0.6 * n2);
+  return { a, dark: mossDark(b, j, P) };
+}
 /** The linear colour after the moss: `c` (linear RGB) mixed by `a` towards the moss hue at c's own luminance × dark. */
-export function mossColor(c, a, P = M) {
-  const hue = mossHue(P), l = lum(c) * P.dark;
+export function mossColor(c, a, P = M, dark = P.dark) {
+  const hue = mossHue(P), l = lum(c) * dark;
   return c.map((v, i) => v + (hue[i] * l - v) * a);
 }
 
@@ -69,9 +80,11 @@ if (vMossH > -0.3 && vMossH < ${f(Math.max(P.band * 1.45, J.height))}) {
     float mossK = mossN1 * 0.65 + mossN2 * 0.35, mossTop = ${f(P.band)} * (0.55 + 0.9 * mossN1);
     float mossJ = 0.0;
   ${joint}
-    float mossA = mossNorth * ${f(P.strength)} * min(1.0, (1.0 - smoothstep(mossTop * 0.35, mossTop, vMossH)) * smoothstep(${f(P.cover[0])}, ${f(P.cover[1])}, mossK)
-      + ${f(J.amount)} * mossJ * (1.0 - smoothstep(0.0, ${f(J.height)}, vMossH)) * (0.4 + 0.6 * mossN2));
-    diffuseColor.rgb = mix(diffuseColor.rgb, vec3(${hue.map(f).join(', ')}) * dot(diffuseColor.rgb, vec3(${LUM.join(', ')})) * ${f(P.dark)}, mossA);
+    float mossB = (1.0 - smoothstep(mossTop * 0.35, mossTop, vMossH)) * smoothstep(${f(P.cover[0])}, ${f(P.cover[1])}, mossK);
+    float mossJt = ${f(J.amount)} * mossJ * (1.0 - smoothstep(0.0, ${f(J.height)}, vMossH)) * (0.4 + 0.6 * mossN2);
+    float mossA = mossNorth * ${f(P.strength)} * min(1.0, mossB + mossJt);
+    float mossD = (mossB * ${f(P.dark)} + mossJt * ${f(J.dark)}) / max(mossB + mossJt, 1e-4); // joints darker: no lime mortar
+    diffuseColor.rgb = mix(diffuseColor.rgb, vec3(${hue.map(f).join(', ')}) * dot(diffuseColor.rgb, vec3(${LUM.join(', ')})) * mossD, mossA);
     roughnessFactor = mix(roughnessFactor, 1.0, mossA * ${f(P.rough)});
   }
 }`,

@@ -1,0 +1,177 @@
+{
+ "base": "7dced3769fbcb4a31b7caa0cc1666eaed6f3061e",
+ "phases": {
+  "after": {
+   "meshes": 5019,
+   "found": [
+    {
+     "name": "?",
+     "kind": "bump",
+     "vertices": 4278,
+     "lowVertices": 902,
+     "height": [
+      0,
+      13.3
+     ],
+     "box": [
+      [
+       -45,
+       0,
+       -4
+      ],
+      [
+       12,
+       13,
+       13
+      ]
+     ],
+     "key": "{}|shademoss2122-bump|lampwashV|lampwash"
+    },
+    {
+     "name": "?",
+     "kind": "map",
+     "vertices": 702,
+     "lowVertices": 701,
+     "height": [
+      -3,
+      3.12
+     ],
+     "box": [
+      [
+       -71,
+       -3,
+       0
+      ],
+      [
+       14,
+       0,
+       53
+      ]
+     ],
+     "key": " {}|shademoss2122-map|lampwashV|lampwash"
+    },
+    {
+     "name": "?",
+     "kind": "plain",
+     "vertices": 816,
+     "lowVertices": 741,
+     "height": [
+      -3.01,
+      2.84
+     ],
+     "box": [
+      [
+       -70,
+       -3,
+       -3
+      ],
+      [
+       14,
+       0,
+       59
+      ]
+     ],
+     "key": "}|shademoss2122-plain|lampwashV|lampwash"
+    },
+    {
+     "name": "?",
+     "kind": "map",
+     "vertices": 2475,
+     "lowVertices": 1408,
+     "height": [
+      -3,
+      17.74
+     ],
+     "box": [
+      [
+       -71,
+       -3,
+       13
+      ],
+      [
+       9,
+       15,
+       57
+      ]
+     ],
+     "key": " {}|shademoss2122-map|lampwashV|lampwash"
+    },
+    {
+     "name": "?",
+     "kind": "bump",
+     "vertices": 85356,
+     "lowVertices": 14988,
+     "height": [
+      -1.9,
+      17.74
+     ],
+     "box": [
+      [
+       -71,
+       -3,
+       13
+      ],
+      [
+       9,
+       15,
+       57
+      ]
+     ],
+     "key": "{}|shademoss2122-bump|lampwashV|lampwash"
+    },
+    {
+     "name": "?",
+     "kind": "plain",
+     "vertices": 36,
+     "lowVertices": 34,
+     "height": [
+      -2.63,
+      2.77
+     ],
+     "box": [
+      [
+       -71,
+       -3,
+       13
+      ],
+      [
+       -70,
+       0,
+       37
+      ]
+     ],
+     "key": "}|shademoss2122-plain|lampwashV|lampwash"
+    }
+   ],
+   "loadMs": 42529,
+   "views": {
+    "husL-nara": {
+     "calls": 254,
+     "triangles": 760584,
+     "textures": 101,
+     "programs": 122,
+     "eye": [
+      -8,
+      1.62,
+      -2.6
+     ]
+    },
+    "husB-nord": {
+     "calls": 188,
+     "triangles": 589537,
+     "textures": 109,
+     "programs": 128,
+     "eye": [
+      -32,
+      1.62,
+      27
+     ]
+    }
+   }
+  }
+ },
+ "errors": [],
+ "external": [
+  "https://lunden-l1007.olw.workers.dev/beer-shelf"
+ ]
+}

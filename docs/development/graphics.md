@@ -1551,7 +1551,7 @@ the park stairs (surroundings.js). Where: the face's world normal from screen de
 float per vertex, `mossHeight`, ground from `groundY` 0.3 m out along the normal, stored + `offset` so a mesh without it reads
 as underground) and a two-octave world noise: a patchy, ragged band up to ~`band` m, and a thinner green in mortar joints up
 to `joints.height` m (low bump height on bump-mapped brick/render, a light map texel = mortar on the Å-husen/retaining-wall
-canvases). The colour moves towards the moss hue at the surface's own luminance × `dark`, so a façade's mean tone stays
+canvases), darker than the band (`joints.dark`) so light mortar never turns lime. The colour moves towards the muted olive moss hue at the surface's own luminance × `dark`, so a façade's mean tone stays
 within 2 % (shademosstest); roughness rises slightly. All values `SHADE_MOSS` *guesses*. Phones (lowMemory) skip it
 entirely: no attribute, no program change. No new draw, texture, light or pass; cost: 4 bytes per patched vertex and a few
 hashes per low north-facing fragment (others exit after a height test). Not covered: low roofs and bench foundations (no

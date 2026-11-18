@@ -3,7 +3,7 @@
 // a façade's mean tone stays within 2 %; the material chain and the phone no-op.
 import test from 'node:test'; import assert from 'node:assert/strict'; import { readFileSync } from 'node:fs';
 import * as THREE from 'three';
-import { mossAmount, mossColor, mossGLSL, mossHeights, mossMaterial, shadeMoss, mossHue } from '../src/shademoss.js';
+import { mossAmount, mossColor, mossMix, mossGLSL, mossHeights, mossMaterial, shadeMoss, mossHue } from '../src/shademoss.js';
 import { SHADE_MOSS as M, COLORS } from '../src/config.js';
 import { vertexCompileSlack } from '../src/vertexcompile.js';
 
@@ -41,13 +41,18 @@ test("a façade's mean tone stays within 2 % (brick, render, plinth), and the mo
   for (const [name, hex, H, joint] of [['Hus L brick, ground floor', COLORS.brick, 3.0, 0.35], ['Å-hus brick façade', COLORS.brick, 9, 0.35],
     ['white render', 0xf1eee6, 3.0, 0.05], ['plinth', 0x6e3326, 1.0, 0]]) {
     const c = lin(hex), base = lum(c); let s = 0, k = 0;
-    for (let x = 0; x < 12; x += 0.02) for (let y = 0; y < H; y += 0.02) { s += lum(mossColor(c, mossAmount(at(N.north, x + 0.71, y), N.north, y, joint))); k++; }
+    for (let x = 0; x < 12; x += 0.02) for (let y = 0; y < H; y += 0.02) { const m = mossMix(at(N.north, x + 0.71, y), N.north, y, joint); s += lum(mossColor(c, m.a, M, m.dark)); k++; }
     const d = Math.abs(s / k / base - 1);
     if (H >= 3) assert(d < 0.02, `${name}: mean tone ±2 % (${(d * 100).toFixed(2)} %)`);
     else assert(d < 0.05, `${name}: a low plinth alone still within 5 % (${(d * 100).toFixed(2)} %)`);
   }
   const hue = mossHue(); assert(hue[1] > hue[0] && hue[1] > hue[2] && Math.abs(0.2126 * hue[0] + 0.7152 * hue[1] + 0.0722 * hue[2] - 1) < 1e-9, 'green, unit luminance');
   const brick = lin(COLORS.brick), m = mossColor(brick, M.strength); assert(m[1] > brick[1] && m[0] < brick[0], 'shifts brick towards green');
+  const sat = (c) => (Math.max(...c) - Math.min(...c)) / Math.max(...c);
+  assert(sat(hue) < 0.5, `muted olive/grey-green, not lime (saturation ${sat(hue).toFixed(2)})`);
+  const mortar = lin(COLORS.mortar), mj = mossColor(mortar, M.strength, M, M.joints.dark);
+  assert(lum(mj) < lum(mortar) * 0.8 && sat(mj) < 0.5, 'a mossy joint is darker than the mortar and muted');
+  assert(M.joints.dark < M.dark, 'joints darker than the band');
 });
 
 test('heights: baked over the ground in front of the face, cached, positions untouched', () => {

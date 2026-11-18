@@ -10072,13 +10072,13 @@ export const RENDER_SURFACE = { size: 128, tile: 0.5, seed: 2095, anisotropy: 4,
 // top in m above the ground in front of the face (baked per vertex at build, `reach` m out along the normal, ground looked up
 // on a `grid` m lattice); its top is ragged by the noise (`scale`: patch / fine cells in m, `cover`: the noise's smoothstep,
 // so it is patches, not a strip). `joints`: mortar joints (low bump height, or a light map texel = mortar) carry a thinner
-// green up to `height` m. `strength`: the strongest mix towards the moss tone; the tone is `hue` (linear, normalised to unit
-// luminance) × the surface's own luminance × `dark`, so a façade's mean tone moves by well under 2 % (shademosstest).
+// green up to `height` m, darker (`joints.dark`: light mortar must not turn lime). `strength`: the strongest mix towards the moss
+// tone; the tone is `hue` (linear, normalised to unit luminance; a muted olive/grey-green) × the surface's own luminance × `dark`, so a façade's mean tone moves by well under 2 % (shademosstest).
 // `rough`: how far the moss pushes roughness towards 1. Phones (lowMemory) get none (no shader variant, no attribute).
 // All values are visual *guess* values; no source describes moss on Kv. Lunden.
 export const SHADE_MOSS = { north: [0.25, 0.75], vertical: [0.5, 0.8], band: 0.6, scale: [0.85, 0.21], cover: [0.4, 0.68],
-  joints: { height: 1.3, amount: 0.5, bump: [0.3, 0.45], map: [0.25, 0.42] }, strength: 0.65, dark: 0.78,
-  hue: [0.62, 1.12, 0.32], rough: 0.5, reach: 0.3, grid: 0.25, offset: 100 };
+  joints: { height: 1.3, amount: 0.4, dark: 0.6, bump: [0.3, 0.45], map: [0.25, 0.42] }, strength: 0.65, dark: 0.78,
+  hue: [0.82, 1.09, 0.67], rough: 0.5, reach: 0.3, grid: 0.25, offset: 100 };
 
 // #2097: parked-car finish (src/carfinish.js) for the street and east car parks' instanced batches and their far LOD. Paint:
 // a calm clear coat — a dielectric-ish body (`metalness`) with low `roughness` and the shared procedural outdoor reflection
