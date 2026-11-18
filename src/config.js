@@ -5063,6 +5063,10 @@ export const COLORS = {
   solar: 0x1d2735,
 };
 
+// #2070: shallow visual ceramic/grout relief, artistic *guesses* in metres. No displacement/collision change.
+// One packed linear map supplies height (R) and absolute roughness (G) at the existing colour-map resolution.
+export const TILE_SURFACE = { depth: 0.0008, bevel: 0.0012, minBevelPixels: 0.75, groutRoughness: 0.96 };
+
 // Fixed interior from our material choices in Peab's option portal (screenshots in
 // material/, 2026-10-01). Colours are picked from the product photos / Peab's render.
 export const FINISH = {

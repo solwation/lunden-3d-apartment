@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { STANDARD as S, KITCHEN as K, LAUNDRY_SINK, INTERACTION_OUTLINE } from './config.js';
-import { Batch, tileTexture, std, frame, slabWithHole, sinkBowl, mixer, glassPanel, showerSet, tileWalls, skirting, doorwayTiles, shell, openFront, floorDrain, showerDrainAt, laundryDrainAt } from './interior.js';
+import { Batch, std, frame, slabWithHole, sinkBowl, mixer, glassPanel, showerSet, tileWalls, skirting, doorwayTiles, shell, openFront, floorDrain, showerDrainAt, laundryDrainAt } from './interior.js';
+import { tileMaterial } from './tilesurface.js';
 import { mirrorTarget } from './customizer.js';
 
 // Peab's standard finish for a visitable flat (#574, STANDARD in config): the fixed kitchen, laundry and wet rooms of the
@@ -23,9 +24,9 @@ const M = {
   vanity: std(S.vanity, { roughness: 0.45 }),
   mirror: std(0xc6d0d4, { roughness: 0.06, metalness: 0.9 }),
   skirting: std(0xf6f6f3, { roughness: 0.45 }),
-  splash: std(0xffffff, { map: tileTexture({ tw: 0.2, th: 0.1, nx: 2, ny: 2, bond: true, color: S.splash, vary: 0.02, grout: 0xd3d5d4, ppm: 400, seed: 21 }), roughness: 0.6 }),
-  wet: std(0xffffff, { map: tileTexture({ tw: S.wetFloor.w, th: S.wetFloor.h, nx: 4, ny: 4, color: S.wetFloor.color, vary: 0.06, mottle: 0.05, grout: 0x75787a, ppm: 400, seed: 23 }), roughness: 0.75 }),
-  wetWall: std(0xffffff, { map: tileTexture({ tw: S.wetWall.w, th: S.wetWall.h, nx: 3, ny: 3, color: S.wetWall.color, vary: 0.02, grout: 0xcfd1d0, ppm: 300, seed: 25 }), roughness: 0.55 }),
+  splash: tileMaterial({ tw: 0.2, th: 0.1, nx: 2, ny: 2, bond: true, color: S.splash, vary: 0.02, grout: 0xd3d5d4, ppm: 400, seed: 21 }, 0.6),
+  wet: tileMaterial({ tw: S.wetFloor.w, th: S.wetFloor.h, nx: 4, ny: 4, color: S.wetFloor.color, vary: 0.06, mottle: 0.05, grout: 0x75787a, ppm: 400, seed: 23 }, 0.75),
+  wetWall: tileMaterial({ tw: S.wetWall.w, th: S.wetWall.h, nx: 3, ny: 3, color: S.wetWall.color, vary: 0.02, grout: 0xcfd1d0, ppm: 300, seed: 25 }, 0.55),
 };
 for (const k of ['splash', 'wet', 'wetWall']) M[k].userData.skin = true;
 // An opening front is ONE mesh (#621: a draw call each, not one per material — the kitchens have ~30 of them): its parts'

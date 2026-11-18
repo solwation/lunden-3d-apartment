@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { tileTexture, tileMaterial } from './tilesurface.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABINET, VANITY_BASIN, HAVBACK, LIGHTING, KITCHEN_SOCKETS, TAP_LEVER, LAUNDRY, SHOWER_FITTINGS, FLOOR_DRAIN } from './config.js';
 import { wallCabinet } from './cabinets.js';
@@ -23,57 +24,8 @@ import { openAvatarCustomizer } from './customizer.js';
 
 // ---------- textures ----------
 
-function rng(seed) {
-  let s = seed >>> 0;
-  return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
-}
-
-// canvas colour from an sRGB hex (THREE.Color would convert to linear), scaled by k
-const rgb = (hex, k = 1) => `rgb(${[16, 8, 0].map((s) => Math.min(255, ((hex >> s) & 255) * k)).join(',')})`;
-
-/**
- * nx × ny tiles of tw × th metres per texture repeat. `bond` = half bond (every other row
- * shifted half a tile), `vary` = per-tile shade variation, `mottle` = speckle strength
- * (granitkeramik), grout = joint colour (null: no joints, e.g. the worktop).
- */
-export function tileTexture({ tw, th, nx = 1, ny = 1, bond = false, color, vary = 0, mottle = 0, grout, joint = 0.003, ppm = 400, seed = 1 }) {
-  const W = Math.round(tw * nx * ppm), H = Math.round(th * ny * ppm);
-  const c = document.createElement('canvas');
-  c.width = W; c.height = H;
-  const g = c.getContext('2d');
-  const rand = rng(seed);
-  const tpx = W / nx, tpy = H / ny;
-  for (let r = 0; r < ny; r++) {
-    const shift = bond && r % 2 ? tpx / 2 : 0;
-    for (let col = 0; col < nx; col++) {
-      g.fillStyle = rgb(color, 1 + (rand() - 0.5) * vary);
-      for (const wrap of [0, -W]) g.fillRect(col * tpx + shift + wrap, r * tpy, tpx + 1, tpy + 1);
-    }
-  }
-  if (mottle) {
-    for (let i = 0; i < W * H * 0.02; i++) {
-      g.fillStyle = rand() < 0.5 ? `rgba(255,255,255,${mottle * rand()})` : `rgba(0,0,0,${mottle * rand()})`;
-      const s = 1 + rand() * 2.5;
-      g.fillRect(rand() * W, rand() * H, s, s);
-    }
-  }
-  if (grout != null) {
-    const j = Math.max(1, joint * ppm);
-    g.fillStyle = rgb(grout);
-    for (let r = 0; r < ny; r++) {
-      g.fillRect(0, r * tpy - j / 2, W, j);
-      const shift = bond && r % 2 ? tpx / 2 : 0;
-      for (let col = 0; col <= nx; col++) g.fillRect((col * tpx + shift) % W - j / 2, r * tpy, j, tpy);
-    }
-    g.fillRect(0, H - j / 2, W, j);
-  }
-  const tex = new THREE.CanvasTexture(c);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
-  tex.repeat.set(1 / (tw * nx), 1 / (th * ny));
-  return tex;
-}
+// Kept as a public export for existing worktop/material consumers.
+export { tileTexture } from './tilesurface.js';
 
 export const std = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.6, ...extra });
 const textured = (map, extra = {}) => new THREE.MeshStandardMaterial({ color: 0xffffff, map, roughness: 0.5, ...extra });
@@ -105,14 +57,14 @@ const M = {
   frosted: new THREE.MeshStandardMaterial({
     color: 0xf1f5f6, transparent: true, opacity: 0.55, roughness: 0.3, depthWrite: false, side: THREE.DoubleSide,
   }),
-  splash: textured(tileTexture({ tw: T.splash.w, th: T.splash.h, nx: 2, ny: 2, bond: true, color: T.splash.color, vary: 0.03, grout: T.splash.grout, joint: 0.003, ppm: 800, seed: 3 }), { roughness: T.splash.roughness }),
-  wallTile: textured(tileTexture({ tw: T.wallTile.w, th: T.wallTile.h, nx: 2, ny: 3, color: T.wallTile.color, vary: 0.02, grout: T.grout, joint: 0.003, seed: 5 }), { roughness: 0.6 }),
-  hallTile: textured(tileTexture({ tw: T.hallTile.w, th: T.hallTile.h, nx: 2, ny: 4, color: T.hallTile.color, vary: 0.12, mottle: 0.12, grout: 0x46484a, joint: 0.003, ppm: 300, seed: 11 }), { roughness: 0.7 }),
+  splash: tileMaterial({ tw: T.splash.w, th: T.splash.h, nx: 2, ny: 2, bond: true, color: T.splash.color, vary: 0.03, grout: T.splash.grout, joint: 0.003, ppm: 800, seed: 3 }, T.splash.roughness),
+  wallTile: tileMaterial({ tw: T.wallTile.w, th: T.wallTile.h, nx: 2, ny: 3, color: T.wallTile.color, vary: 0.02, grout: T.grout, joint: 0.003, seed: 5 }, 0.6),
+  hallTile: tileMaterial({ tw: T.hallTile.w, th: T.hallTile.h, nx: 2, ny: 4, color: T.hallTile.color, vary: 0.12, mottle: 0.12, grout: 0x46484a, joint: 0.003, ppm: 300, seed: 11 }, 0.7),
   havback: std(HAVBACK.color, { roughness: 0.7 }),          // IKEA HAVBÄCK, dark grey (#293)
   havbackIn: std(0x535456, { roughness: 0.75 }),
   havbackGlass: new THREE.MeshStandardMaterial({ color: 0xdcebe6, transparent: true, opacity: 0.35, roughness: 0.1, depthWrite: false }),
   brass: std(HAVBACK.knob, { roughness: 0.35, metalness: 0.6 }),
-  wetTile: textured(tileTexture({ tw: T.wetTile.w, th: T.wetTile.h, nx: 4, ny: 4, color: T.wetTile.color, vary: 0.14, mottle: 0.14, grout: 0x45474a, joint: 0.003, ppm: 400, seed: 13 }), { roughness: 0.75 }),
+  wetTile: tileMaterial({ tw: T.wetTile.w, th: T.wetTile.h, nx: 4, ny: 4, color: T.wetTile.color, vary: 0.14, mottle: 0.14, grout: 0x45474a, joint: 0.003, ppm: 400, seed: 13 }, 0.75),
 };
 
 for (const k of ['splash', 'wallTile', 'hallTile', 'wetTile']) M[k].userData.skin = true;

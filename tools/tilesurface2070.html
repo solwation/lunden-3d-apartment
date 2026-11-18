@@ -1,0 +1,24 @@
+<!doctype html><meta charset="utf-8"><title>Production tile surface #2070</title><link rel="icon" href="data:,">
+<style>body{margin:0;background:#d6d9d9;font:16px sans-serif}canvas{display:block}#label{position:absolute;top:12px;left:15px;padding:8px;background:#ffffffdd;color:#222}</style>
+<div id="label">Building the production interior…</div>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { buildInterior } from '../src/interior.js';
+import { buildStandardInterior } from '../src/standardinterior.js';
+const plan=await(await fetch('../data/plan.json')).json(),floor=plan.floors[0];
+const walls=floor.walls.map(w=>({x0:Math.min(...w.outer.map(p=>p[0])),x1:Math.max(...w.outer.map(p=>p[0])),z0:Math.min(...w.outer.map(p=>p[1])),z1:Math.max(...w.outer.map(p=>p[1]))}));
+const groups=[new THREE.Group(),new THREE.Group()];
+buildInterior(groups[0],floor,0,0,2.8,walls,new Set());
+buildStandardInterior(groups[1],floor,0,0,2.8,walls,new Set());
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(1100,720);renderer.setPixelRatio(1);renderer.toneMapping=THREE.NeutralToneMapping;document.body.append(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xd6d9d9);scene.add(...groups);
+scene.add(new THREE.HemisphereLight(0xffffff,0x80746c,1.1));
+const sun=new THREE.DirectionalLight(0xfff1dc,3);sun.position.set(1.8,2.7,3.7);sun.target.position.set(5.5,1.1,2.9);scene.add(sun,sun.target);
+const camera=new THREE.PerspectiveCamera(48,1100/720,.025,50);
+const views={kitchen:[[3.9,1.6,4.05],[5.54,1.13,2.9]],splash:[[5.05,1.34,3.45],[5.546,1.18,3.05]],bathroom:[[1.75,1.6,5.3],[.3,1.05,6.5]],wall:[[.9,1.4,5.36],[.205,1.27,6.18]],floor:[[1.65,.42,5.15],[.55,.004,6.38]]};
+const mats=g=>{const ms=new Set();g.traverse(m=>{if(m.isMesh&&m.material.userData.skin&&m.material.map)ms.add(m.material)});return[...ms];};
+window.__show=(kind,name)=>{groups.forEach((g,i)=>g.visible=i===kind);const[pos,aim]=views[name];camera.position.fromArray(pos);camera.lookAt(new THREE.Vector3(...aim));sun.position.set(name==='floor'?1.5:3.3,name==='floor'?.28:2.4,name==='floor'?5.1:4.9);sun.target.position.fromArray(aim);document.querySelector('#label').textContent=`${kind?'Standardfinish':'L1007'} — ${name}`;renderer.render(scene,camera);return{calls:renderer.info.render.calls,triangles:renderer.info.render.triangles};};
+window.__stats=()=>groups.map(g=>{let triangles=0,meshes=0;g.traverse(m=>{if(m.isMesh){meshes++;triangles+=(m.geometry.index?.count??m.geometry.attributes.position.count)/3}});return{meshes,triangles,materials:mats(g).map(m=>({repeat:m.map.repeat.toArray(),size:[m.map.image.width,m.map.image.height],color:m.map.image.toDataURL(),surface:m.bumpMap?{size:[m.bumpMap.image.width,m.bumpMap.image.height],repeat:m.bumpMap.repeat.toArray(),bytes:m.bumpMap.image.data.byteLength,sameTexture:m.bumpMap===m.roughnessMap,roughness:m.roughness,bumpScale:m.bumpScale}:null}))};});
+window.__ready=true;window.__show(0,'kitchen');
+</script>

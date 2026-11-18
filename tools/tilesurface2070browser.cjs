@@ -1,0 +1,15 @@
+// #2070: one before/after browser pass through the actual fitted-interior builders.
+const { chromium }=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
+const [base='http://localhost:8182',out='docs/verification/2070']=process.argv.slice(2),baseline=process.env.BASELINE||'8111f1e3';
+(async()=>{fs.mkdirSync(out,{recursive:true});const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});const proof={baseline,fixture:'Production buildInterior/buildStandardInterior with actual plan floor0/wall bounding boxes; controlled one directional + hemisphere, no full World or collision run',results:{}};
+try{for(const phase of ['before','after']){const page=await browser.newPage({viewport:{width:1100,height:720}}),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+if(phase==='before')for(const f of ['src/interior.js','src/standardinterior.js','src/config.js']){const body=execFileSync('git',['show',`${baseline}:${f}`],{maxBuffer:16e6});await page.route(`**/${f}`,r=>r.fulfill({contentType:'text/javascript',body}));}
+await page.goto(base+'/tools/tilesurface2070.html');await page.waitForFunction(()=>window.__ready,null,{timeout:120000});
+const stats=await page.evaluate(()=>window.__stats());const imageDir=phase==='before'?path.join(out,'before'):out;fs.mkdirSync(imageDir,{recursive:true});for(const s of stats)for(const m of s.materials){m.colorSha256=crypto.createHash('sha256').update(m.color).digest('hex');delete m.color;}
+const views={};for(const [kind,ns] of [[0,['kitchen','splash','bathroom','wall','floor']],[1,['splash','wall','floor']]])for(const name of ns){views[`${kind}-${name}`]=await page.evaluate(([k,n])=>window.__show(k,n),[kind,name]);await page.locator('canvas').screenshot({path:path.join(imageDir,`${phase}-${kind?'standard':'l1007'}-${name}.png`)});}
+assert.deepEqual(errors,[]);proof.results[phase]={stats,views,errors};await page.close();}
+for(let k=0;k<2;k++){const a=proof.results.before.stats[k],b=proof.results.after.stats[k];assert.equal(a.meshes,b.meshes);assert.equal(a.triangles,b.triangles);assert.equal(a.materials.length,b.materials.length);assert.ok(b.materials.length>=3);for(const m of b.materials){assert.ok(m.surface&&m.surface.sameTexture);assert.deepEqual(m.repeat,m.surface.repeat);assert.deepEqual(m.size,m.surface.size);}}
+assert.deepEqual(proof.results.before.views,proof.results.after.views);
+fs.writeFileSync(path.join(out,'browser.json'),JSON.stringify(proof,null,2)+'\n');console.log(JSON.stringify({pass:true,before:proof.results.before.stats.map(({meshes,triangles})=>({meshes,triangles})),after:proof.results.after.stats.map(({meshes,triangles})=>({meshes,triangles})),views:Object.keys(proof.results.after.views).length}));
+}finally{await browser.close()}})().catch(e=>{console.error(e);process.exit(1)});

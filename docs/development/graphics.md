@@ -1310,3 +1310,25 @@ pass. Budget/evidence: 30 scoped Node checks, all eight head-form slider corners
 beard/moustache/cap/hat/headphones, daylight and backlight; 15 bones and one draw in the timing fixture.
 [Matched images, source-bound budget/timing and limits](../verification/2066/README.md)
 (`tools/avatarprofiletest.mjs`, `tools/avatarprofile2066browser.cjs`).
+
+## Ceramic tile joints (#2070)
+
+`src/tilesurface.js` supplies the existing colour tiles (`tileTexture`, still re-exported by
+`interior.js`) and `tileMaterial`. The four L1007 surfaces and three standard-interior surfaces
+use one extra packed linear RGBA map each: red is structural height, green is absolute roughness.
+Bump and roughness share that texture, resolution, metric repeat and anisotropy. The samples are
+flipped to match CanvasTexture's Y orientation, including the kitchen's half-bond rows. The colour
+joint is wrapped at both texture edges, retaining the authored tile/joint dimensions and palette.
+The existing colour mottling/seed never enters height, so colour specks do not become pits.
+
+`TILE_SURFACE` holds artistic guesses: 0.8 mm shallow bump, 1.2 mm eased ceramic edge (at least
+0.75 texel to filter the old low-resolution maps), grout roughness 0.96; the ceramic retains each
+material's previous nominal roughness. This is normal relief, not vertex displacement: silhouettes,
+geometry, UVs, collision floors, tile placement/openings, material batches and shadow policy stay.
+No light, pass, texture upload per frame or custom shader hook is added. Native StandardMaterial
+bump sampling and roughness sampling do add fragment work; no frame-rate improvement is claimed.
+
+Checks: `node --test tools/tilesurfacetest.mjs` and the one matched production-builder browser
+`tools/browsertest.sh node tools/tilesurface2070browser.cjs SITE docs/verification/2070`.
+The fixture uses the real plan and `buildInterior`/`buildStandardInterior` in controlled light;
+it is not a complete World/device test. [Images, source hashes, exact budget and limits](../verification/2070/README.md).
