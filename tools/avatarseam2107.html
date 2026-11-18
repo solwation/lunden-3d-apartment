@@ -1,0 +1,73 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar seams 2107</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<script>performance.__real = performance.now.bind(performance); { let a = 2107; Math.random = () => { a = (a * 1664525 + 1013904223) >>> 0; return a / 4294967296; }; } // the same figures in both passes</script>
+<style>html,body{margin:0;background:#c4c9ce}canvas{display:block}</style></head>
+<body><script type="module">
+// #2107 component page, driven by tools/avatarseam2107browser.cjs: four figures (T-shirt + jeans, sweater + jeans, hoodie + wide trousers,
+// vest + shorts) from the front, back and side, at rest and mid-stride, and close-ups of the collar / shoulder, the waistband / front
+// pockets, the seat / back pockets and a sleeve's end. The "before" pass serves the base revision's modules.
+import * as THREE from 'three';
+import { Avatar } from '../src/avatar.js';
+import { decodeAvatarLook, avatarEyeHeight } from '../src/config.js';
+const code = '210000100c5e8o2w0l8j0n0b0r8t8y8';
+const W = 960, H = 600, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(W, H); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xc4c9ce);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x7d7468, 1.2));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.6); sun.position.set(-1.6, 3.2, 2.6); scene.add(sun);
+const looks = [{ cut: 0, sleeves: 0, legs: 0, top: 0xe8e8e0, pants: 0x3f5274 }, { cut: 0, sleeves: 1, legs: 0, top: 0x7a3a34, pants: 0x4b5a78 },
+  { cut: 2, sleeves: 1, legs: 2, top: 0x3a6a44, pants: 0x6d5a45 }, { cut: 1, sleeves: 0, legs: 1, top: 0x2f4f6f, pants: 0x8a7f6a }];
+const avatars = looks.map((o, i) => {
+  const lk = { ...decodeAvatarLook(code, 'seam'), tall: 1, build: 1, style: 0, ...o }, a = new Avatar(lk);
+  a.baseY = 1.62 - avatarEyeHeight(lk); a.object.position.set((i - 1.5) * 0.75, a.baseY, 0); scene.add(a.object);
+  return a;
+});
+const cam = new THREE.PerspectiveCamera(30, W / H, 0.02, 60);
+const pose = (walk) => { for (const a of avatars) { for (let k = 0; k < (walk ? 37 : 90); k++) a.update(1 / 60, { speed: walk ? 1.4 : 0 }); } scene.updateMatrixWorld(true); };
+const draw = () => { renderer.info.reset(); renderer.render(scene, cam); return { calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures, programs: renderer.info.programs.length }; };
+// the figures face +z: front = camera at +z, back at −z, side at +x (their left)
+const DIRS = { front: [0, 0.12, 1], back: [0, 0.12, -1] }; // (in the figures' own frame: their hips' world rotation)
+window.__group = (view, walk) => {
+  pose(walk); const side = view === 'side', d = new THREE.Vector3(...DIRS[side ? 'front' : view]).normalize().applyQuaternion(frame(avatars[0]));
+  for (const a of avatars) a.object.rotation.y += side ? -Math.PI / 2 : 0; // (side: each figure turned to show its left side)
+  scene.updateMatrixWorld(true); cam.fov = 24; cam.updateProjectionMatrix();
+  const t = new THREE.Vector3(0, 0.92, 0); cam.position.copy(t).addScaledVector(d, 5.4); cam.lookAt(t); const r = draw();
+  for (const a of avatars) a.object.rotation.y += side ? Math.PI / 2 : 0; scene.updateMatrixWorld(true);
+  return r;
+};
+const frame = (a) => a.mesh.getWorldQuaternion(new THREE.Quaternion()); // (Avatar turns its object by π: the bind pose faces +z)
+const world = (a, bone, off = [0, 0, 0]) => a.bones[bone].localToWorld(new THREE.Vector3(...off));
+const CLOSE = { // [bone, offset in the bone's frame, direction, distance]
+  collar: ['torso', [0, 0.5, 0], [0.35, 0.35, 1], 0.55], waist: ['hips', [0, -0.04, 0], [0.3, 0.1, 1], 0.55],
+  seat: ['hips', [0, -0.08, 0], [-0.25, 0.1, -1], 0.55], sleeve: ['elbowL', [0, -0.2, 0], [1, 0.1, 0.5], 0.5],
+};
+const sleeveOf = (a) => (a.look.cut === 1 ? ['shoulderL', [0, 0.02, 0], [1, 0.3, 0.6], 0.5] : a.look.sleeves ? CLOSE.sleeve : ['shoulderL', [0, -0.17, 0], [1, 0.1, 0.5], 0.5]); // (the cuff, the short sleeve's hem, the vest's armhole)
+window.__close = (k, name, walk) => {
+  pose(walk); const a = avatars[k], [bone, off, dir, dist] = name === 'sleeve' ? sleeveOf(a) : CLOSE[name], p = world(a, bone, off);
+  cam.fov = 30; cam.updateProjectionMatrix(); cam.position.copy(p).addScaledVector(new THREE.Vector3(...dir).normalize().applyQuaternion(frame(a)), dist); cam.lookAt(p);
+  return draw();
+};
+window.__time = (n = 20) => {
+  const gl = renderer.getContext(), px = new Uint8Array(4), run = (f) => { f(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); const t0 = performance.__real(); for (let i = 0; i < n; i++) { renderer.render(scene, cam); } gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); return (performance.__real() - t0) / n; };
+  return { close: +run(() => window.__close(1, 'waist', false)).toFixed(1), group: +run(() => window.__group('front', false)).toFixed(1) };
+};
+// matched A/B in one page: the same close-up with the seams on and off (uSeam.w = 0 returns at once), interleaved
+window.__ab = (n = 6, rounds = 3) => {
+  if (!avatars[0].material.userData.u.uSeam) return null;
+  const gl = renderer.getContext(), px = new Uint8Array(4), set = (w) => { for (const a of avatars) a.material.userData.u.uSeam.value.w = w; };
+  window.__close(1, 'waist', false); const t = { on: 0, off: 0 };
+  for (let r = 0; r < rounds; r++) for (const [k, w] of [['on', 1], ['off', 0]]) {
+    set(w); renderer.render(scene, cam); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    const t0 = performance.__real(); for (let i = 0; i < n; i++) renderer.render(scene, cam); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); t[k] += (performance.__real() - t0) / n / rounds;
+  }
+  set(1); return { on: +t.on.toFixed(1), off: +t.off.toFixed(1) };
+};
+window.__uniforms = () => avatars.map((a) => { const u = a.material.userData.u; return u.uSeam ? [u.uSeam.value.toArray().map((v) => +v.toFixed(3)), u.uSeamKind.value.toArray()] : null; });
+window.__ready = true;
+</script></body></html>

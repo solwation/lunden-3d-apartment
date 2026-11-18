@@ -1,0 +1,353 @@
+{
+  "baseline": "9a8ee18",
+  "source": "9a8ee180954ed3c28d7098283066837b0a2fa692",
+  "before": {
+    "group": {
+      "rest-front": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "rest-back": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "rest-side": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "walk-front": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "walk-back": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "walk-side": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      }
+    },
+    "close": {
+      "tee-jeans-collar": {
+        "calls": 3,
+        "tris": 48312,
+        "textures": 4,
+        "programs": 1
+      },
+      "tee-jeans-waist": {
+        "calls": 3,
+        "tris": 48312,
+        "textures": 4,
+        "programs": 1
+      },
+      "tee-jeans-seat": {
+        "calls": 2,
+        "tris": 32104,
+        "textures": 4,
+        "programs": 1
+      },
+      "tee-jeans-sleeve": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "sweater-jeans-collar": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "sweater-jeans-waist": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "sweater-jeans-seat": {
+        "calls": 3,
+        "tris": 48312,
+        "textures": 4,
+        "programs": 1
+      },
+      "sweater-jeans-sleeve": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "hoodie-wide-collar": {
+        "calls": 3,
+        "tris": 48312,
+        "textures": 4,
+        "programs": 1
+      },
+      "hoodie-wide-waist": {
+        "calls": 3,
+        "tris": 48312,
+        "textures": 4,
+        "programs": 1
+      },
+      "hoodie-wide-seat": {
+        "calls": 3,
+        "tris": 48312,
+        "textures": 4,
+        "programs": 1
+      },
+      "hoodie-wide-sleeve": {
+        "calls": 3,
+        "tris": 48312,
+        "textures": 4,
+        "programs": 1
+      },
+      "vest-shorts-collar": {
+        "calls": 2,
+        "tris": 32260,
+        "textures": 4,
+        "programs": 1
+      },
+      "vest-shorts-waist": {
+        "calls": 2,
+        "tris": 32260,
+        "textures": 4,
+        "programs": 1
+      },
+      "vest-shorts-seat": {
+        "calls": 2,
+        "tris": 32260,
+        "textures": 4,
+        "programs": 1
+      },
+      "vest-shorts-sleeve": {
+        "calls": 2,
+        "tris": 32260,
+        "textures": 4,
+        "programs": 1
+      }
+    },
+    "uniforms": [
+      null,
+      null,
+      null,
+      null
+    ],
+    "ms": {
+      "close": 1455.6,
+      "group": 1091.8
+    }
+  },
+  "after": {
+    "group": {
+      "rest-front": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "rest-back": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "rest-side": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "walk-front": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "walk-back": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "walk-side": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      }
+    },
+    "close": {
+      "tee-jeans-collar": {
+        "calls": 3,
+        "tris": 48312,
+        "textures": 4,
+        "programs": 1
+      },
+      "tee-jeans-waist": {
+        "calls": 3,
+        "tris": 48312,
+        "textures": 4,
+        "programs": 1
+      },
+      "tee-jeans-seat": {
+        "calls": 2,
+        "tris": 32104,
+        "textures": 4,
+        "programs": 1
+      },
+      "tee-jeans-sleeve": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "sweater-jeans-collar": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "sweater-jeans-waist": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "sweater-jeans-seat": {
+        "calls": 3,
+        "tris": 48312,
+        "textures": 4,
+        "programs": 1
+      },
+      "sweater-jeans-sleeve": {
+        "calls": 4,
+        "tris": 64364,
+        "textures": 4,
+        "programs": 1
+      },
+      "hoodie-wide-collar": {
+        "calls": 3,
+        "tris": 48312,
+        "textures": 4,
+        "programs": 1
+      },
+      "hoodie-wide-waist": {
+        "calls": 3,
+        "tris": 48312,
+        "textures": 4,
+        "programs": 1
+      },
+      "hoodie-wide-seat": {
+        "calls": 3,
+        "tris": 48312,
+        "textures": 4,
+        "programs": 1
+      },
+      "hoodie-wide-sleeve": {
+        "calls": 3,
+        "tris": 48312,
+        "textures": 4,
+        "programs": 1
+      },
+      "vest-shorts-collar": {
+        "calls": 2,
+        "tris": 32260,
+        "textures": 4,
+        "programs": 1
+      },
+      "vest-shorts-waist": {
+        "calls": 2,
+        "tris": 32260,
+        "textures": 4,
+        "programs": 1
+      },
+      "vest-shorts-seat": {
+        "calls": 2,
+        "tris": 32260,
+        "textures": 4,
+        "programs": 1
+      },
+      "vest-shorts-sleeve": {
+        "calls": 2,
+        "tris": 32260,
+        "textures": 4,
+        "programs": 1
+      }
+    },
+    "uniforms": [
+      [
+        [
+          0.875,
+          1.255,
+          0.055,
+          1
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ]
+      ],
+      [
+        [
+          0.875,
+          0.96,
+          0.055,
+          1
+        ],
+        [
+          2,
+          1,
+          0,
+          1
+        ]
+      ],
+      [
+        [
+          0.82,
+          0.96,
+          0.055,
+          1
+        ],
+        [
+          3,
+          0,
+          0,
+          1
+        ]
+      ],
+      [
+        [
+          0.875,
+          0,
+          0.7,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          0
+        ]
+      ]
+    ],
+    "ms": {
+      "close": 1916.5,
+      "group": 1482
+    }
+  },
+  "errors": []
+}

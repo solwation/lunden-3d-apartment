@@ -21,6 +21,7 @@ import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #20
 import { newLean, stepLean } from './avatarlean.js'; // #2109
 import { avatarSkinGLSL, skinKey } from './avatarskin.js'; // #2032
 import { handVertexGLSL, handFragmentGLSL, handKey } from './avatarhand.js'; // #2106: nails, creases, knuckles, tendons
+import { seamKey } from './avatarseam.js'; // #2107: garment seams, ribs, hems and pockets (spliced by avatarcloth.js)
 import { faceExprUniforms, faceExprShader } from './avatarface.js'; // #2031
 import { exertUniforms, exertShader } from './avatarbreath.js'; // #2037
 import { sculptShape, jawRise, sculptShader, sculptKey, sealLipEdge } from './avatarsculpt.js'; // #2044: sculpted face forms
@@ -1293,7 +1294,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     const gloss = { head: bindAt('head'), region: REGION, part: FACE_PART }; // #2052
     sh.vertexShader = glossVertex(sh.vertexShader, gloss); sh.fragmentShader = curlGloss(glossFragment(sh.fragmentShader, gloss)); // (#2054: the curls turn its strands)
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey(); // #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey(); // #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
   installSelfView(m); // #2080: the own camera hides head/hair; mirrors and peers keep the full figure
   return m;
 }

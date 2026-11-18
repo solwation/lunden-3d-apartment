@@ -9784,6 +9784,32 @@ export const AVATAR_CLOTH = {
   pants: { jeans: [0.0066, 76, 0.00016, 3], trousers: [0.0056, 88, 0.00008, 4] },
   weave: [[0.0017, 0.0015, 0.04], [0.0055, 0.0042, 0.05], [0.006, 0.009, 0.03], [0.0035, 0.0035, 0.1], [0.002, 0.002, 0.04]],
 };
+/** #2107: the garments' sewn details (src/avatarseam.js), drawn as relief and a little shade in the cloth block of the avatar's one fragment
+ * shader. All *guesses* by eye (tools/avatarseam2107.html), not measured; lengths in bind-pose metres (y up from the floor, the figure facing
+ * +z, +x its left). `line`: a sewn seam: `groove` half-width / `depth` of the stitched-down line and its `dark` shade, the seam allowance's
+ * welt (`weltAt` m to one side, half-width `weltW`, height `welt`), topstitch rows `rows` m from the line ([single, second]) as `thread`
+ * half-width × `threadH` height, dashes every `pitch` m, tinted by `tint` (jeans: `tintJeans`, the paler denim thread). `hem`: a turned-up
+ * hem (`step` m thick, its stitches `rows` m from the edge; `allow` m deep at the top hem / sleeve / trouser leg / shorts). `rib`: knitted
+ * ribs `pitch` m apart, `height` m, `dark` shade in the troughs, the band standing `thick` m proud; `fade` = [from, to] ribs per pixel over
+ * which they average out. Widths: `hemRib` the sweater / hoodie bottom band, `cuff` a long knit / fleece sleeve's cuff, `neck`
+ * [T-shirt, sweater] collar, `bind` the vest's neck and armhole binding. Placement: `sideZ` the side seams' z (a little behind the middle),
+ * `shoulderZ` the shoulder seam's, `armhole` [half height, half depth] of the set-in sleeve's oval round the #2001 armhole's centre,
+ * `waist` [bottom y, height] of the trousers' waistband (just under a T-shirt's hem, which covers its top), `loops` belt loops at these
+ * angles round the hips (rad from the front, mirrored) `loopW` m wide, `loopT` proud; `pocket` the front pockets' opening: a quarter
+ * ellipse [centre x, centre y, radius x, radius y] from the waistband down to the side seam; `back` the back patch pockets [centre x,
+ * centre y, half width, half height, corner radius]; `yoke` the jeans' back yoke [y at the middle, rise per m out]; `crotch` y where the
+ * inseams meet; `pocketShade` the opening's shadow. `scale` multiplies everything (0: as before #2107). */
+export const AVATAR_SEAM = {
+  line: { groove: 0.0007, depth: 0.00035, dark: 0.2, weltAt: 0.003, weltW: 0.0022, welt: 0.00025, rows: [0.0045, 0.0105], thread: 0.0005, threadH: 0.00012,
+    pitch: 0.0032, tint: 0.06, tintJeans: 0.3 },
+  hem: { step: 0.00035, rows: [0.008, 0.014], allow: { top: 0.02, sleeve: 0.018, leg: 0.022 } },
+  rib: { pitch: 0.0034, height: 0.00028, dark: 0.12, thick: 0.0005, fade: [0.25, 0.6] },
+  hemRib: 0.05, cuff: 0.055, neck: [0.014, 0.022], bind: 0.009,
+  sideZ: -0.006, shoulderZ: -0.008, armhole: [0.075, 0.062],
+  waist: [0.83, 0.036], loops: [0.62, 1.55, 3.14159], loopW: 0.0055, loopT: 0.0008,
+  pocket: [0.16, 0.83, 0.075, 0.085], back: [0.075, 0.754, 0.052, 0.048, 0.012], yoke: [0.8, 0.15], crotch: 0.79, pocketShade: 0.25,
+  scale: 1,
+};
 
 /** #2015: the avatar's feet on the real ground (src/avatarfootik.js). Offsets are in the figure's units. */
 export const AVATAR_FOOT_IK = {

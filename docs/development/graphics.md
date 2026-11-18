@@ -1656,3 +1656,18 @@ marks move exactly with the skin under them; the lines and relief fade out betwe
 No mesh, texture, draw call or network field; the far figure has none of it. Cost: on bare hand fragments roughly 60–90 ALU operations
 and a few `exp`, elsewhere one role test; per-avatar CPU 0. `tools/avatarhandtest.mjs` checks placement, mirroring, determinism and that
 the nails follow every grip shape; `tools/avatarhand2106browser.cjs` takes before/after close-ups ([images](../verification/2106/)).
+
+### Garment seams, ribs, hems and pockets (#2107)
+
+`src/avatarseam.js` (tunables `AVATAR_SEAM`, all *guess*; program key suffix `-seam2107`) adds one height + shade term to #2034's cloth
+block (`seamDetail`, spliced by `src/avatarcloth.js`), over the bind-pose position on the top (region 1) and trousers (region 2): side,
+shoulder, set-in armhole and underarm seams on the top; outseam, inseam, centre-back seam and (jeans) a back yoke on the trousers; a
+ribbed collar (T-shirt, sweater), ribbed hem band and long-sleeve cuffs (sweater, hoodie), the vest's bound neck and armholes, turned-up
+stitched hems (T-shirt, short sleeves, trouser legs, shorts), a waistband with belt loops just under a T-shirt's hem, curved front pocket
+openings and back patch pockets. Each seam is a groove, a welt on the allowance's side and optional topstitch dashes (paler on denim);
+every line is a Gaussian prefiltered by the pixel footprint (it widens and flattens keeping its area) and dashes / rib columns average
+out, so nothing shimmers far away. The look sets two uniforms (`uSeam`, `uSeamKind`: top kind, jeans, shorts, long sleeves, edge
+heights) with #2034's; garment colours and choices are unchanged. No mesh, texture, attribute, draw call or network field; per-avatar CPU
+only at look set-up. `seamAt` mirrors the shader's placement for `tools/avatarseamtest.mjs`; `tools/avatarseam2107browser.cjs` takes
+before/after views ([images](../verification/2107/)). Limits: the landmarks are the standard skeleton's (like #2034), the armhole oval
+approximates #2001's 12-vertex hole, and the waistband is covered by the hoodie's long hem.

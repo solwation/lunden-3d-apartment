@@ -9,6 +9,7 @@
 import { Vector4 } from 'three';
 import { AVATAR_CLOTH as C, AVATAR_SURFACE as SURFACE } from './config.js';
 import { bindAt } from './olof.js';
+import { seamUniforms, setSeamLook, seamDecl, SEAM_DETAIL } from './avatarseam.js'; // #2107: seams, ribs, hems, pockets
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const smooth = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); };
@@ -22,7 +23,7 @@ export function clothKinds(lk = {}) {
 /** Fresh uniforms for the avatar material (all zero: no folds until a look and a pose are set). */
 export function clothUniforms() {
   const v4 = () => ({ value: new Vector4() });
-  return { uClothBend: v4(), uClothArm: v4(), uClothLeg: v4(), uClothHip: v4(), uClothTop: v4(), uClothPants: v4() };
+  return { uClothBend: v4(), uClothArm: v4(), uClothLeg: v4(), uClothHip: v4(), uClothTop: v4(), uClothPants: v4(), ...seamUniforms() };
 }
 
 /** Sets the garment uniforms from a look; `scale` (0 … 1) scales both layers (0: cloth as before #2034). */
@@ -30,6 +31,7 @@ export function setClothLook(u, lk, scale = 1) {
   const k = clothKinds(lk), t = C.tops[k.top], p = C.pants[k.pants];
   u.uClothTop.value.set(t[0] * scale, t[1], t[2] * scale, t[3]);
   u.uClothPants.value.set(p[0] * scale, p[1], p[2] * scale, p[3]);
+  setSeamLook(u, lk); // #2107
   return k;
 }
 
@@ -160,7 +162,8 @@ vec3 clothBump(vec3 sx, vec3 sy, vec3 n, vec2 dH, float face) {
   vec3 r1 = cross(sy, n), r2 = cross(n, sx);
   float det = dot(sx, r1) * face;
   return normalize(abs(det) * n - sign(det) * (dH.x * r1 + dH.y * r2));
-}`;
+}
+${seamDecl()}`;
 }
 
 /** Fragment body (after normal_fragment_maps: \`normal\`, \`faceDirection\` exist; diffuseColor is read by the lights later). */
@@ -171,7 +174,8 @@ export function clothNormal() {
     float cOn = (cRegion == 1.0 || cRegion == 2.0) && vBare < 0.5 && uSuit < 0.5 ? 1.0 : 0.0;
     vec3 cdx = dFdx(vSuitAt), cdy = dFdy(vSuitAt), csx = dFdx(-vViewPosition), csy = dFdy(-vViewPosition);
     float cfp = max(length(cdx), length(cdy));
-    float cFold = clothFolds(vSuitAt, cRegion * cOn, cTorso, cfp);
+    float cFold = clothFolds(vSuitAt, cRegion * cOn, cTorso, cfp);${SEAM_DETAIL.on ? `
+    vec2 cSeam = seamDetail(vSuitAt, cRegion * cOn, cTorso, cfp); cFold += cSeam.x; // #2107 seams, ribs, hems, pockets` : ''}
     // (no fold slope across a garment's edge: a pixel quad that spans two parts would read the step as a steep crease)
     vec2 cdH = vec2(dFdx(cFold), dFdy(cFold)) * (1.0 - step(0.001, fwidth(cRegion * cOn + cTorso * 4.0)));
     if (cOn > 0.5) {
@@ -181,7 +185,7 @@ export function clothNormal() {
       float radius = leg ? 0.065 : cTorso > 0.5 ? 0.15 : 0.045;
       vec3 wv = clothWeave(vSuitAt, cdx, cdy, g.w, g.z, centre, radius, cfp);
       normal = clothBump(csx, csy, normal, cdH + wv.xy, faceDirection);
-      diffuseColor.rgb *= (1.0 - ${f(C.cavity)} * clamp(-cFold / max(g.x, 0.00001), 0.0, 1.5)) * (1.0 + wv.z * step(0.000001, g.z));
+      diffuseColor.rgb *= (1.0 - ${f(C.cavity)} * clamp(-${SEAM_DETAIL.on ? '(cFold - cSeam.x)' : 'cFold'} / max(g.x, 0.00001), 0.0, 1.5)) * (1.0 + wv.z * step(0.000001, g.z))${SEAM_DETAIL.on ? ' * clamp(1.0 + cSeam.y, 0.5, 1.5)' : ''};
     }
   }`;
 }
