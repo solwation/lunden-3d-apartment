@@ -1,0 +1,178 @@
+{
+ "base": "34bd557409aa84aee41d16972686483e8a2c44a1",
+ "phases": {
+  "before": {
+   "loadMs": 39640,
+   "batches": [
+    {
+     "name": "courtyard-wood",
+     "vertices": 37956,
+     "attrs": "color,normal,position,uv",
+     "bytes": 1670064,
+     "benchWood": false,
+     "railMetal": false,
+     "min": [
+      -68.9,
+      -0.039,
+      20
+     ],
+     "max": [
+      4.9,
+      2.19,
+      49.1
+     ]
+    },
+    {
+     "name": "bus-stop-furniture",
+     "vertices": 684,
+     "attrs": "color,normal,position",
+     "bytes": 24624,
+     "benchWood": false,
+     "railMetal": true,
+     "min": [
+      34.801,
+      -0.031,
+      188.225
+     ],
+     "max": [
+      60.529,
+      2.98,
+      199.93
+     ]
+    }
+   ],
+   "views": {
+    "gard-bank-nara": {
+     "at": [
+      -35.3,
+      22.8,
+      73.3,
+      -32
+     ],
+     "calls": 138,
+     "triangles": 562874,
+     "textures": 46,
+     "programs": 73
+    },
+    "gard-bank": {
+     "at": [
+      -31.8,
+      24.2,
+      70.02,
+      -14
+     ],
+     "calls": 183,
+     "triangles": 657742,
+     "textures": 54,
+     "programs": 91
+    },
+    "busskur-bank": {
+     "at": [
+      36.69,
+      191.07,
+      -17.7,
+      -24
+     ],
+     "calls": 436,
+     "triangles": 1015571,
+     "textures": 94,
+     "programs": 113
+    }
+   },
+   "busBench": [
+    37.192458152770996,
+    189.50097465515137,
+    72
+   ]
+  },
+  "after": {
+   "loadMs": 40563,
+   "batches": [
+    {
+     "name": "courtyard-wood",
+     "vertices": 37956,
+     "attrs": "benchHalf,benchSlat,color,normal,position,uv",
+     "bytes": 2125536,
+     "benchWood": true,
+     "railMetal": false,
+     "min": [
+      -68.9,
+      -0.039,
+      20
+     ],
+     "max": [
+      4.9,
+      2.19,
+      49.1
+     ]
+    },
+    {
+     "name": "bus-stop-furniture",
+     "vertices": 684,
+     "attrs": "benchHalf,benchSlat,color,normal,position",
+     "bytes": 32832,
+     "benchWood": true,
+     "railMetal": true,
+     "min": [
+      34.801,
+      -0.031,
+      188.225
+     ],
+     "max": [
+      60.529,
+      2.98,
+      199.93
+     ]
+    }
+   ],
+   "views": {
+    "gard-bank-nara": {
+     "at": [
+      -35.3,
+      22.8,
+      73.3,
+      -32
+     ],
+     "calls": 138,
+     "triangles": 562874,
+     "textures": 46,
+     "programs": 73
+    },
+    "gard-bank": {
+     "at": [
+      -31.8,
+      24.2,
+      70.02,
+      -14
+     ],
+     "calls": 183,
+     "triangles": 657742,
+     "textures": 54,
+     "programs": 91
+    },
+    "busskur-bank": {
+     "at": [
+      36.69,
+      191.07,
+      -17.7,
+      -24
+     ],
+     "calls": 437,
+     "triangles": 1016799,
+     "textures": 95,
+     "programs": 113
+    }
+   },
+   "busBench": [
+    37.192458152770996,
+    189.50097465515137,
+    72
+   ]
+  }
+ },
+ "errors": [],
+ "external": [
+  "https://lunden-l1007.olw.workers.dev/beer-shelf",
+  "https://lunden-l1007.olw.workers.dev/beer-shelf"
+ ]
+}

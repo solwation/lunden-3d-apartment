@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { railMetal } from './railmetal.js'; // #2089: the steel parts only (wood/bin stay by saturation)
+import { benchSlat, benchWood, padBenchSlats } from './benchwood.js'; // #2098: the bench's slats only (tagged)
 import { SEASON } from './config.js';
 import { cutAtTerrain } from './roads.js';
 import { registerSnow, registerSeasonal } from './seasons.js';
@@ -9,9 +10,9 @@ import { B, length as len, dir as d, busStopPoint, toLocal } from './busstopgeo.
 // #1301: the bus stop "Lund Sankt Lars" (SITE.busStop; OSM platform way 189432570 + shelter node 2000527685). A generic shelter, bench, bin,
 // sign and a low platform with a kerb and a tactile strip, in four merged meshes (frame and geometry: busstopgeo.js). All sizes are guesses (config).
 const yaw = Math.atan2(d[0], d[1]); // a box's local z follows the kerb, its x across (= np)
-/** a box (`w` across, `h` tall, `l` along) with its base at height `y` over (s, t), tinted */
-const box = (w, h, l, s, t, y, color) => {
-  const g = new THREE.BoxGeometry(w, h, l).toNonIndexed(); g.deleteAttribute('uv');
+/** a box (`w` across, `h` tall, `l` along) with its base at height `y` over (s, t), tinted; `slat` = benchSlat's [along, across, thick, seed] (#2098) */
+const box = (w, h, l, s, t, y, color, slat = null) => {
+  const g = new THREE.BoxGeometry(w, h, l).toNonIndexed(); g.deleteAttribute('uv'); if (slat) benchSlat(g, ...slat);
   g.rotateY(yaw); const [x, z] = busStopPoint(s, t); g.translate(x, y + h / 2, z);
   const c = new THREE.Color(color), a = []; for (let i = 0; i < g.attributes.position.count; i++) a.push(c.r, c.g, c.b);
   g.setAttribute('color', new THREE.Float32BufferAttribute(a, 3));
@@ -82,13 +83,13 @@ export function buildBusStop(ground) {
   const dy = Sh.glassY, post = Sh.post, hl = Sh.len / 2, hd = Sh.depth / 2;
   for (const ss of [-1, 1]) for (const tt of [-1, 1]) f.push(box(post, Sh.h, post, cs + ss * hl, ct + tt * hd, y0, C.steel));
   f.push(box(Sh.depth + 0.3, Sh.roof, Sh.len + 0.4, cs, ct, y0 + Sh.h, C.steel)); // flat roof with a small overhang
-  const bn = Sh.bench; f.push(box(bn.depth, 0.05, bn.len, cs, ct + hd - bn.depth / 2 - 0.05, y0 + bn.h - 0.05, C.wood), box(0.04, 0.3, bn.len, cs, ct + hd - 0.09, y0 + bn.h, C.wood));
+  const bn = Sh.bench; f.push(box(bn.depth, 0.05, bn.len, cs, ct + hd - bn.depth / 2 - 0.05, y0 + bn.h - 0.05, C.wood, [2, 0, 1, 1]), box(0.04, 0.3, bn.len, cs, ct + hd - 0.09, y0 + bn.h, C.wood, [2, 1, 0, 2]));
   for (const ss of [-1, 1]) f.push(box(0.05, bn.h - 0.05, 0.05, cs + ss * (bn.len / 2 - 0.1), ct + hd - bn.depth / 2 - 0.05, y0, C.steel));
   const bin = B.bin, [bx, bz] = busStopPoint(bin.s, bin.t); f.push(cyl(bin.r, bin.h, bin.s, bin.t, ground(bx, bz) + B.lift, C.bin));
   const S = B.sign, [sx, sz] = busStopPoint(S.s, S.t), sy = ground(sx, sz) + B.lift;
   f.push(cyl(0.035, S.h, S.s, S.t, sy, C.steel));
   const Yc = B.cycleSign; f.push(cylAt(0.03, Yc.h, Yc.at[0], Yc.at[1], ground(...Yc.at) + B.lift, C.steel)); // the cycle sign's pole
-  const furn = new THREE.Mesh(mergeGeometries(f), railMetal(new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.6, metalness: 0.2 }), null)); furn.name = 'bus-stop-furniture'; furn.castShadow = furn.receiveShadow = true; group.add(furn);
+  const furn = new THREE.Mesh(mergeGeometries(padBenchSlats(f)), benchWood(railMetal(new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.6, metalness: 0.2 }), null))); furn.name = 'bus-stop-furniture'; furn.castShadow = furn.receiveShadow = true; group.add(furn);
   // glass: back and the two ends (the open front faces the road)
   const gl = [], gh = dy[1] - dy[0];
   const pane = (w, s, t, rot) => { const g = new THREE.PlaneGeometry(w, gh).rotateY(rot + yaw); const [x, z] = busStopPoint(s, t); return g.translate(x, y0 + dy[0] + gh / 2, z); };

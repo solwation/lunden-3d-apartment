@@ -557,6 +557,16 @@ src/railmetal.js       #2089: matt, lightly brushed / powder-coated outdoor rail
                        draw, uniform, light or per-frame work; geometry, merging and batches unchanged. Indoor stair rails
                        (corehouse/stairs.js) and sheet-metal copings are not railings here. tools/railmetaltest.mjs;
                        [views](../verification/2089/README.md).
+src/benchwood.js       #2098: weathered outdoor bench slats. `benchSlat` tags a slat in its own frame (along + a per-slat offset,
+                       across, thick, half width/thickness: 16-bit vertex attributes, 12 B a vertex; `padBenchSlats` zero-fills
+                       the rest of a batch) and `benchWood` patches the existing material's fragment shader (BENCH_WOOD, *guess*):
+                       fine grain lines along the slat with a slow wobble and per-slat phase, a slow streak, a slight cool-grey
+                       weathering and lighter worn long edges (all line detail faded below pixel size), roughness ≥ 0.86 and
+                       metalness 0 on tagged vertices only. It chains an existing onBeforeCompile and runs after its colour step
+                       (the bus stop's railMetal still masks by the original wood colour). Consumers: courtyard.js park and pergola
+                       benches (wood batch), busstop.js bench (furniture batch). No texture, draw, uniform or per-frame work;
+                       positions unchanged. School-yard play benches and the school-wall bench are not tagged (shared backdrop
+                       batches). tools/benchwoodtest.mjs; [views](../verification/2098/README.md).
 src/roofsurface.js     #2088: one shared 128 px neutral-grey roof map (ROOF_SURFACE, *guess*): a raised seam per strip (dark
                        shadow line, light lip), slightly different strips, weathering mottle and faint rain streaks, and
                        `roofUV` baking UVs so the seams run down each triangle's own fall line (flat faces: along x, *guess*).

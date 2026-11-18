@@ -15,6 +15,7 @@ import { surfaceBox } from './furniture.js';
 import { lobeGeometry, leafMaterial } from './foliage.js';
 import { glowMaterial, poolGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { bikeGeometry, bikeSpokeTexture, standGeometry } from './streetlife.js';
+import { benchSlat, benchWood, padBenchSlats } from './benchwood.js';
 
 // The courtyard on the garage box (#80): stone walks, gravel round the playground (lawn elsewhere, #259), the Borggården's pergola
 // with a dining table and benches (pale timber, vines, string lights and herringbone brick: #149), a grill, sandboxes, a boule court, benches, raised beds,
@@ -77,8 +78,10 @@ function barX(z, pts, w, t) {
 }
 /** A geometry painted one colour (a `color` attribute) for the vertex-coloured batch (bikes, toys). */
 const tint = (g, hex) => { const c = new THREE.Color(hex), n = g.attributes.position.count; g.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(n * 3).map((_, i) => [c.r, c.g, c.b][i % 3]), 3)); return g; };
-/** A slat with eased edges, `len` along x, `w` wide (z before `rot`), `t` thick, turned `rot` rad about x, centred at (0, y, z). */
-const slat = (len, w, t, y, z, rot = 0) => new RoundedBoxGeometry(len, t, w, 1, Math.min(0.006, t / 2.2)).rotateX(rot).translate(0, y, z);
+/** A slat with eased edges, `len` along x, `w` wide (z before `rot`), `t` thick, turned `rot` rad about x, centred at (0, y, z).
+ * #2098: tagged in its own frame for the weathered bench wood (benchwood.js), each slat its own grain. */
+let slatSeed = 0;
+const slat = (len, w, t, y, z, rot = 0) => benchSlat(new RoundedBoxGeometry(len, t, w, 1, Math.min(0.006, t / 2.2)), 0, 2, 1, ++slatSeed).rotateX(rot).translate(0, y, z);
 
 /** A park bench (#682, COURTYARD.bench: wooden slats on two curved black steel end frames with armrests) at (x, z), the
  * seat facing `rot` degrees (0 = north). Local frame: 1.6 m along x, sitting towards +z, the back at −z. */
@@ -180,6 +183,7 @@ function herringbone() {
 }
 
 export function buildCourtyard() {
+  slatSeed = 0; // #2098: the same grain on every build
   const group = new THREE.Group();
   const geos = { paving: [], gravel: [], sand: [], wood: [], metal: [], soil: [], pergola: [], brick: [] };
   const vines = [], bulbs = [], bulbRanges = []; // climbing plants and string-light bulbs on the pergolas (#149)
@@ -222,7 +226,7 @@ export function buildCourtyard() {
     // #682: a long table of six planks and two benches of three slats each, on black steel trestles about every 1.6 m
     const plank = (x, w, t, y) => new RoundedBoxGeometry(w, t, tl, 1, 0.006).translate(x, y, z0 + tl / 2);
     for (let k = 0; k < 6; k++) geos.wood.push(plank(cx - 0.45 + 0.07 + k * 0.152, 0.14, 0.04, 0.74)); // a long table
-    for (const s of [-1, 1]) for (let k = -1; k <= 1; k++) geos.wood.push(plank(cx + s * 0.75 + k * 0.125, 0.11, 0.035, SEAT_Y - 0.0175)); // benches
+    for (const s of [-1, 1]) for (let k = -1; k <= 1; k++) geos.wood.push(benchSlat(plank(cx + s * 0.75 + k * 0.125, 0.11, 0.035, SEAT_Y - 0.0175), 2, 0, 1, ++slatSeed)); // benches (#2098: weathered)
     const nt = Math.max(2, Math.ceil(tl / 1.6) + 1);
     for (let k = 0; k < nt; k++) {
       const z = z0 + 0.25 + k * (tl - 0.5) / (nt - 1);
@@ -458,7 +462,7 @@ export function buildCourtyard() {
     paving: new THREE.MeshStandardMaterial({ map: paveTex, roughness: 0.95 }),
     gravel: gravelMaterial(GRAVEL_HEX, { vertexColors: true, name: 'courtyard-gravel' }), // #2096: stones, mean colour kept
     sand: new THREE.MeshStandardMaterial({ color: 0xe0cfa0, vertexColors: true, roughness: 1 }), // mottled (#681)
-    wood: new THREE.MeshStandardMaterial({ color: 0x8a6544, map: woodGrain(), vertexColors: true, roughness: 0.8 }), // grain + a tone per board (#682)
+    wood: benchWood(new THREE.MeshStandardMaterial({ color: 0x8a6544, map: woodGrain(), vertexColors: true, roughness: 0.8 })), // grain + a tone per board (#682); #2098: weathered bench slats
     metal: new THREE.MeshStandardMaterial({ color: 0x23262a, roughness: 0.5, metalness: 0.5 }),
     soil: new THREE.MeshStandardMaterial({ color: 0x3e2f24, roughness: 1 }),
     pergola: new THREE.MeshStandardMaterial({ color: 0xd8d0bf, roughness: 0.85 }),
@@ -471,7 +475,7 @@ export function buildCourtyard() {
   let metalBatch;
   for (const [k, list] of Object.entries(geos)) {
     if (!list.length) continue;
-    const mesh = new THREE.Mesh(mergeGeometries(list.map((g, i) => (k === 'wood' ? grain(g, i) : k === 'sand' ? mottle(g) : g.index ? g.toNonIndexed() : g))), mats[k]);
+    const mesh = new THREE.Mesh(mergeGeometries((k === 'wood' ? padBenchSlats(list) : list).map((g, i) => (k === 'wood' ? grain(g, i) : k === 'sand' ? mottle(g) : g.index ? g.toNonIndexed() : g))), mats[k]);
     mesh.castShadow = k === 'wood' || k === 'metal';
     mesh.receiveShadow = true;
     group.add(mesh);

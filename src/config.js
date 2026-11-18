@@ -6978,6 +6978,19 @@ export const GLASS_PANES = { paneMax: 4,
 export const RAIL_METAL = { roughness: .58, streak: .07, streakFreq: 240, mottle: .06, tint: .035, mottleFreq: 2.2,
   near: 6, farAt: 40, far: .78, rim: .16, rimPower: 3, saturation: [.35, .55] };
 
+// #2098: weathered outdoor bench slats (src/benchwood.js; the courtyard's park and pergola benches, the bus stop's bench).
+// Every value is a *guess*, tuned by eye against ordinary weathered park benches, nothing measured. Grain: dark lines
+// `grainFreq` per metre across a slat (across its width and thickness), wobbling `wobble` periods over `wobbleFreq` per
+// metre along it, darkening by up to `grain`; a slow lighter/darker streak `streak` along the slat; all fade to their mean
+// once a line is smaller than ~a pixel. `weather` the share pulled towards a cool grey of the same brightness (`grey`
+// = the grey's RGB tint), varying ± `weatherVary` along a slat. `wear`: up to this much lighter (`wearLift` × the
+// colour + `wearAdd`) within `edge` m of a slat's long edges, broken up `wearFreq` per metre along it. `roughness`: the
+// bench wood's minimum roughness (dry, matt timber), its metalness 0 (the bus stop's mixed batch has 0.2). `seedSpan` m
+// between two slats' along-coordinate offsets (8 offsets in turn; > the longest slat, the pergola benches' ~6.9 m planks).
+export const BENCH_WOOD = { grainFreq: 120, wobble: 1.6, wobbleFreq: 1.3, grain: .22, streak: .06, weather: .28,
+  weatherVary: .08, grey: [1, 1.01, 1.04], wear: .55, wearLift: 1.12, wearAdd: .05, edge: .006, wearFreq: 3.1,
+  roughness: .86, seedSpan: 8 };
+
 // #1076: Hus L's façade windows sit in brick (or render) reveals with a sheet-metal sill flashing, as on Peab's
 // courtyard illustration (docs/peab/hus-l-gardsfasad-illustration.png, not dimensioned). `frame` = the window frame's
 // centre behind the façade face: L1007's own frame position (world.js), kept so the blinds and window boards inside stay

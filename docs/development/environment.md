@@ -22,6 +22,9 @@ src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergo
                        table is six planks and its benches three slats each on steel trestles every ~1.6 m. All timber shares a
                        256 × 64 grain texture (`woodGrain`) with box-projected UVs along each board and a tone per board
                        (`grain`, vertex colours) — still one wood and one metal batch; seats, spots and collision unchanged
+                       #2098: the park benches' and pergola benches' slats are tagged (`benchSlat`, benchwood.js) and the wood material
+                       is `benchWood`-patched: grain along each slat, a slight weathered grey and lighter worn long edges; the other
+                       timber in the batch is untagged and unchanged (the bus stop's bench uses the same patch, see graphics.md)
                        #681: the playground — the playhouse has falu-red lap boards (paint boxes tilted out at the foot, also up the
                        gables), a timber sill and door step, white corner boards, a framed board door with a handle, two windows with
                        sash bars, sill and a set-back pane, a felt roof with battens, ridge cap, white barge boards and a 15 cm eave;
