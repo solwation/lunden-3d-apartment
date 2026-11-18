@@ -52,7 +52,7 @@ those behaviors/placements are unchanged by the material-only patch.
    Representative rendered views: kitchen 138 draws/24,360 triangles; splashback
    39/20,778; floor 21/15,532, identical before/after. These counts describe the controlled
    fitted-interior fixture, not the full apartment budget.
-3. Texture accounting: **7 extra textures**, 1,544,000 RGBA base-level bytes, **2,058,468 bytes
+3. Texture accounting: **7 extra textures**, 1,544,000 RGBA base-level bytes, **2,058,192 bytes
    including every mip level**. Each keeps the existing colour map's dimensions/repeat and
    anisotropy 4. One map serves both structural channels; no extra geometry, light, render
    pass or per-frame update/upload. StandardMaterial bump and roughness sampling add fragment
