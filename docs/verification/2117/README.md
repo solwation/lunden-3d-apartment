@@ -25,11 +25,11 @@ Windy hour, after (rain slants downwind, east-north-east) and its motion image:
 ![Windy hour after](windy.jpg)
 ![Windy hour motion after](windy-motion.jpg)
 
-Before, same hour: ![Windy hour before](before/windy.jpg) ![Windy hour motion before](before/windy-motion.jpg)
+Before, same hour: ![Windy hour before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/7430fd6fbeb8aca27af7aa96518581d2db7c6832/docs/verification/2117/before/windy.jpg) ![Windy hour motion before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/7430fd6fbeb8aca27af7aa96518581d2db7c6832/docs/verification/2117/before/windy-motion.jpg)
 
-Calm hour after / before: ![Calm motion after](calm-motion.jpg) ![Calm motion before](before/calm-motion.jpg) ([frame](calm.jpg))
+Calm hour after / before: ![Calm motion after](calm-motion.jpg) ![Calm motion before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/7430fd6fbeb8aca27af7aa96518581d2db7c6832/docs/verification/2117/before/calm-motion.jpg) ([frame](calm.jpg))
 
-Future day (the draw) after / before: ![Future motion after](future-motion.jpg) ![Future motion before](before/future-motion.jpg) ([frame](future.jpg))
+Future day (the draw) after / before: ![Future motion after](future-motion.jpg) ![Future motion before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/7430fd6fbeb8aca27af7aa96518581d2db7c6832/docs/verification/2117/before/future-motion.jpg) ([frame](future.jpg))
 
 Review fix: above power 0.6 `windPower` now saturates softly towards 0.8 (12 m/s: 0.93 → 0.76; ≤ ~7.5 m/s unchanged) and the
 per-card flutter stops growing above power 0.6 (`SITE_WIND.crown.flutterCap`), so a gale reads as a strong gust. The windy view was
@@ -58,3 +58,5 @@ streak bottoms it already touched; SiteWind's direction is the existing uniform 
 so their drift was verified in node only. The renderer counts in browser.json come from the previous lazy frame (0 on the first one).
 **Not verified against the live Open-Meteo service** (no egress from the cloud session): the variable names and `wind_speed_unit=ms`
 follow its documentation. The draw's climate numbers are *guesses* (`WIND` in config.js). Hail is not slanted.
+
+Publicering: Pages/Worker success på `7430fd6`; före-bilder borttagna vid stängning och visas från den commiten.
