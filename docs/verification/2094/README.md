@@ -15,7 +15,7 @@ spans under ~2 px.
 | Patio hedge, near | 4.6, 15.3, 180, -22 | [summer](patio-near-sommar.jpg), [winter](patio-near-vinter.jpg) | [summer](before/patio-near-sommar.jpg), [winter](before/patio-near-vinter.jpg) |
 | Patio hedges, walk view | 0.4, 13.2, 150, -6 | [summer](patio-walk-sommar.jpg), [winter](patio-walk-vinter.jpg) | [summer](before/patio-walk-sommar.jpg), [winter](before/patio-walk-vinter.jpg) |
 
-Detail crops, before above / after below: [boxwood](before/box-near-detalj-fore-efter.jpg), [patio](before/patio-near-detalj-fore-efter.jpg).
+Detail crops, before above / after below: [boxwood](box-near-detalj-fore-efter.jpg), [patio](patio-near-detalj-fore-efter.jpg).
 
 ## Checks
 
