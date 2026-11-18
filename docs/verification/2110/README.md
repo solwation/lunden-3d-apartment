@@ -40,3 +40,5 @@ network field added. Full numbers: [browser.json](browser.json).
 
 The hem flare is small (≤ 2.3 cm) and mostly seen at the sweater's lower edge; the mirror preview (static, no outdoor flag) shows
 no wind by design. Lift raises the hair curtain up to ~1.2 cm in strong gusts.
+
+Publicering: Pages/Worker success på `2fc1a5b`; bild-URL:er HTTP 200 före stängning.
