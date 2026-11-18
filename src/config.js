@@ -9760,11 +9760,24 @@ export const AVATAR_WET = { wetRate: 0.0125, dryIndoor: 1 / 300, dryOutdoor: 1 /
 // other bare skin; the sheen pulls roughness towards `sheenRough`, full on the forehead (`forehead` [y from, full at, front z]) and the nose
 // (`nose` [x, y, z, radius]), `sheenFace` elsewhere on the face, `sheenBody` on arms and legs.
 export const AVATAR_BREATH = { gym: 0.8, build: 30, cool: 75, maxDt: 0.25, flushAt: [0.3, 0.85], sheenAt: [0.45, 1],
-  rate: [0.25, 0.8], heatBreath: 0.6, exhale: 0.45, cold: -6, warm: 6, snowMin: 0.7, mouth: [0, 0.042, 0.12],
+  rate: [0.25, 0.8], heatBreath: 0.6, pant: [2.5, 5], exhale: 0.45, cold: -6, warm: 6, snowMin: 0.7, mouth: [0, 0.042, 0.12],
   density: [0.5, 0.75], speed: [0.35, 0.6], rise: 0.03, drag: 2.2, buoyancy: 0.06, life: [1.7, 1.1], size: [0.08, 0.11], grow: [0.7, 2.7], fadeIn: 0.1,
   color: [0.92, 0.95, 1], lightGain: 1, minLevel: 0.12, max: 96,
   cheek: [0.056, 0.072, 0.06, 0.034], forehead: [0.125, 0.15, 0.05], nose: [0, 0.076, 0.12, 0.018],
   flushColor: [1.08, 0.78, 0.76], flushFace: 0.45, flushBody: 0.18, sheenRough: 0.26, sheenFace: 0.3, sheenBody: 0.35 };
+// #2108: visible breathing (src/avatarchest.js) on #2037's breath rhythm (AVATAR_BREATH: its `phase` / `rate`; `pant` [rise, calm] s: the
+// short-term breathlessness following the effort, so a figure that just stopped running keeps breathing deeper and faster for a few
+// seconds). All *guess*es by eye against ordinary quiet / post-sprint breathing, not measured; bind-pose metres (y up from the floor,
+// +z the figure's front) and radians. Each amplitude is [rest, out of breath] at the full inhale: `chest` the front of the ribcage
+// forwards (and `chestUp` of it upwards), `belly` the abdomen forwards, `shoulder` both shoulder tops upwards, `lean` rad the upper body
+// straightening back (the head keeps its gaze), `hip` m the hips' old free-running breath lift, now in step. The inhale ends where
+// #2037's exhale (its puff) starts; the last `pause` of the exhale stays still. Fields (Gaussian, bind metres): chest centre [y, x radius, y radius], belly the same,
+// `front` [z from, z full] only the front half moves, shoulder [x, y, radius]. Diving (the mask on) gates it all off.
+export const AVATAR_CHEST = {
+  pause: 0.2,
+  chest: [0.0025, 0.011], chestUp: 0.35, belly: [0.004, 0.007], shoulder: [0.0012, 0.009], lean: [0.004, 0.022], hip: [0.0015, 0.003],
+  chestAt: [1.31, 0.13, 0.12], bellyAt: [1.06, 0.12, 0.1], front: [-0.02, 0.07], shoulderAt: [0.16, 1.48, 0.09],
+};
 /** #2034: procedural cloth folds and weave as a normal perturbation in the avatar's fragment shader (src/avatarcloth.js). All *guesses*,
  * tuned by eye on tools/avatarcloth.html. Lengths in bind-pose metres. `bend`: joint angle (rad) where a joint's crease folds start / are full;
  * `hip`: the thigh's forward swing (rad) for the lap / belly folds. `elbow` / `knee`: Gaussian half-width `w` of the fold band along the limb,

@@ -1,0 +1,145 @@
+{
+ "rev": "33dc86f8",
+ "shotAt": [
+  [
+   3.899999999999991,
+   5.833333333333318,
+   17.41666666666696,
+   18.783333333333548
+  ],
+  [
+   3.899999999999991,
+   5.833333333333318,
+   18.283333333333577,
+   17.483333333333622
+  ]
+ ],
+ "changedPixels": {
+  "before": [
+   2354,
+   3140
+  ],
+  "after": [
+   2490,
+   6951
+  ]
+ },
+ "summary": {
+  "rest 0–6 s": {
+   "before": {
+    "breathsPerMin": 10,
+    "drive": null,
+    "chestM": null,
+    "shoulderM": null,
+    "torsoPitchRange": 0,
+    "headPitchRange": 0.04302,
+    "shoulderBoneY": 0.0084
+   },
+   "after": {
+    "breathsPerMin": 10,
+    "drive": 0,
+    "chestM": 0.0025,
+    "shoulderM": 0.0012,
+    "torsoPitchRange": 0.004,
+    "headPitchRange": 0.04302,
+    "shoulderBoneY": 0.00315
+   }
+  },
+  "running 8–16 s": {
+   "before": {
+    "breathsPerMin": 52.5,
+    "drive": null,
+    "chestM": null,
+    "shoulderM": null,
+    "torsoPitchRange": 0,
+    "headPitchRange": 0.10016,
+    "shoulderBoneY": 0.08689
+   },
+   "after": {
+    "breathsPerMin": 52.5,
+    "drive": 1,
+    "chestM": 0.011,
+    "shoulderM": 0.009,
+    "torsoPitchRange": 0.02194,
+    "headPitchRange": 0.10016,
+    "shoulderBoneY": 0.08665
+   }
+  },
+  "just after 16–20 s": {
+   "before": {
+    "breathsPerMin": 15,
+    "drive": null,
+    "chestM": null,
+    "shoulderM": null,
+    "torsoPitchRange": 0.10945,
+    "headPitchRange": 0.12604,
+    "shoulderBoneY": 0.12948
+   },
+   "after": {
+    "breathsPerMin": 30,
+    "drive": 0.463,
+    "chestM": 0.011,
+    "shoulderM": 0.009,
+    "torsoPitchRange": 0.10807,
+    "headPitchRange": 0.12604,
+    "shoulderBoneY": 0.12704
+   }
+  },
+  "after 20–26 s": {
+   "before": {
+    "breathsPerMin": 20,
+    "drive": null,
+    "chestM": null,
+    "shoulderM": null,
+    "torsoPitchRange": 0,
+    "headPitchRange": 0.04636,
+    "shoulderBoneY": 0.0084
+   },
+   "after": {
+    "breathsPerMin": 30,
+    "drive": 0.139,
+    "chestM": 0.00565,
+    "shoulderM": 0.00409,
+    "torsoPitchRange": 0.01067,
+    "headPitchRange": 0.04636,
+    "shoulderBoneY": 0.00443
+   }
+  },
+  "late 38–46 s": {
+   "before": {
+    "breathsPerMin": 15,
+    "drive": null,
+    "chestM": null,
+    "shoulderM": null,
+    "torsoPitchRange": 0,
+    "headPitchRange": 0.06001,
+    "shoulderBoneY": 0.0084
+   },
+   "after": {
+    "breathsPerMin": 15,
+    "drive": 0.003,
+    "chestM": 0.00256,
+    "shoulderM": 0.00126,
+    "torsoPitchRange": 0.00414,
+    "headPitchRange": 0.06001,
+    "shoulderBoneY": 0.00319
+   }
+  }
+ },
+ "bench": {
+  "unit": "µs/Ghost.animate",
+  "before": [
+   12.73333333308498,
+   11.066666667039195,
+   12.966666666790843,
+   13.566666666418314
+  ],
+  "after": [
+   11.5,
+   10.666666666666666,
+   10.799999999503294,
+   12.800000000124177
+  ]
+ },
+ "errors": []
+}

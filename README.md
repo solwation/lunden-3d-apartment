@@ -48,6 +48,8 @@ Avatarernas händer har ljusa naglar med nagelband, fina veck över lederna, kno
 Avatarernas kläder har diskreta sömmar vid axlar, sidor och innerben, ribbade muddar och krage på tröjorna, fållar på T-shirt och byxben, en linning med hällor och fickor fram och bak, i oförändrade plaggfärger. [Bilder](docs/verification/2107/README.md).
 I svängar går avatarens huvud och blick före, bålen följer efter och kroppen lutar lätt inåt i snabba kurvor; vid löpning hålls blicken stadigare. [Före/efter och kontroller](docs/verification/2109/README.md).
 
+Avatarerna andas synligt: bröstkorg, mage och axlar höjs och sänks mjukt i andningsrytmen, djupare och snabbare direkt efter löpning och lugnare igen efter några sekunder. [Före/efter och kontroller](docs/verification/2108/README.md).
+
 Hus L:s solpaneler har diskreta cellmellanrum, tunna ledarbanor och lugn glasstruktur, med oförändrad panelgeometri och takgång. [Egna jämförelsebilder, källbundna kontroller och exakt kostnad](docs/verification/2083/README.md).
 
 Längs Realgymnasiets tegelfasad vid Sankt Lars väg går en smal trottoar med anslutningar vid båda gavlarna; bredden är uppskattad.

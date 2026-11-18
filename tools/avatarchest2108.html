@@ -1,0 +1,101 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Synlig andning #2108</title><link rel="icon" href="data:,">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<style>body{margin:0;background:#e9edef;font:16px system-ui;color:#192b38}canvas{display:block}</style>
+<script type="module">
+// #2108: the real remote consumer (Ghost.push 5 Hz → Ghost.draw → Ghost.animate: Avatar.update, updateBreath), before (/before/ = the base
+// revision) and after in lockstep: stand, run straight, stop and stand. Each row is shot at its own breath's exhaled pause and inhale peak.
+import * as T from 'three';
+import * as current from '../src/ghosts.js';
+import * as before from '/before/src/ghosts.js';
+import * as curBreath from '../src/avatarbreath.js';
+import * as befBreath from '/before/src/avatarbreath.js';
+import * as C from '../src/config.js';
+const W = 300, H = 400;
+const renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); renderer.setPixelRatio(1); renderer.setSize(W * 4, H * 2); document.body.append(renderer.domElement);
+let now = 10000; const nativeNow = performance.now.bind(performance); performance.now = () => now;
+localStorage.setItem('lunden.avatar', C.encodeAvatarLook(C.avatarLook('chest-2108')));
+const plan = [[6, 0], [10, 4.5], [30, 0]]; // [seconds, speed m/s] straight ahead
+const ends = []; { let e = 0; for (const p of plan) ends.push(e += p[0]); }
+let st = { p: [0, 0, 0], r: 0, look: [0, 0] };
+const rows = [];
+for (const [mod, br] of [[before, befBreath], [current, curBreath]]) {
+  const scene = new T.Scene(); scene.background = new T.Color(0xdce3e6); scene.add(new T.HemisphereLight(0xffffff, 0x828b71, 1.5));
+  const light = new T.DirectionalLight(0xffefdb, 2.1); light.position.set(-2, 5, 3); scene.add(light);
+  const plane = new T.Mesh(new T.PlaneGeometry(200, 200), new T.MeshStandardMaterial({ color: 0xa3ae99, roughness: 1 })); plane.rotation.x = -Math.PI / 2; scene.add(plane);
+  const cam = new T.PerspectiveCamera(15, W / H, .05, 80);
+  const owners = new mod.Ghosts({ scene, camera: cam, url: '', name: () => 'chest-2108', state: () => st, swim: () => null });
+  const ghost = new mod.Ghost(scene, 'chest-2108', 'Medspelare', false, owners.myLook); ghost.avatarCode = owners.avatarCode; if (ghost.tag) ghost.tag.visible = false;
+  ghost.avatar.breath = br.newBreath(0); // the same start for both rows (deterministic)
+  ghost.avatar.noIdle = true; // (#2035's glances / weight shift off: only the breath differs between two frames)
+  rows.push({ scene, cam, owners, ghost, lastPush: -Infinity, prev: 0 });
+}
+const fwdY = (b) => new T.Vector3(0, 0, 1).applyQuaternion(b.getWorldQuaternion(new T.Quaternion())).y;
+let t = 0;
+window.step = (dt = 1 / 60) => {
+  t += dt; now += dt * 1000;
+  let i = ends.findIndex((e) => t <= e); if (i < 0) i = plan.length - 1;
+  const v = plan[i][1], p = [st.p[0], 0, st.p[2] - v * dt];
+  st = { p, r: 0, look: [0, 0] };
+  const out = [];
+  for (const row of rows) {
+    row.owners.track(st, now);
+    if (now - row.lastPush >= 200 - 1e-4) { row.ghost.push(st, now); row.lastPush = now; }
+    row.ghost.draw(now, new T.Vector3(...st.p)); if (row.ghost.tag) row.ghost.tag.visible = false;
+    const av = row.ghost.avatar, b = av.breath ?? {}; av.object.updateMatrixWorld(true);
+    out.push({ phase: b.phase, drive: b.drive ?? null, heat: b.heat, u: av.material.userData.u.uBreathe ? [...av.material.userData.u.uBreathe.value] : null,
+      torso: fwdY(av.bones.torso), head: fwdY(av.bones.head), shoulderY: av.bones.shoulderL.getWorldPosition(new T.Vector3()).y, gait: av.gait });
+  }
+  return { t, seg: i, before: out[0], after: out[1] };
+};
+/** Renders row `k` into column `col` (0 … 3): a profile of the upper body from the figure's left. */
+window.shoot = (k, col) => {
+  const row = rows[k], o = row.ghost.root.position;
+  row.cam.position.set(o.x + 3.2, 1.36, o.z + 0.35); row.cam.lookAt(o.x, 1.3, o.z);
+  renderer.setScissorTest(true);
+  renderer.setViewport(col * W, (1 - k) * H, W, H); renderer.setScissor(col * W, (1 - k) * H, W, H); renderer.render(row.scene, row.cam);
+  renderer.setScissorTest(false);
+};
+window.labelled = (title, cols) => {
+  const c = document.createElement('canvas'); c.width = W * 4 + 70; c.height = H * 2 + 64; const x = c.getContext('2d');
+  x.fillStyle = '#edf0f2'; x.fillRect(0, 0, c.width, c.height); x.fillStyle = '#192b38'; x.font = 'bold 20px system-ui'; x.fillText(title, 12, 26);
+  x.font = '15px system-ui'; cols.forEach((s, i) => x.fillText(s, 70 + i * W + 10, 54));
+  x.save(); x.translate(44, 64 + H / 2 + 22); x.rotate(-Math.PI / 2); x.fillText('Före', 0, 0); x.restore();
+  x.save(); x.translate(44, 64 + H * 1.5 + 22); x.rotate(-Math.PI / 2); x.fillText('Efter', 0, 0); x.restore();
+  x.drawImage(renderer.domElement, 70, 64);
+  // thin guide lines at the after row's exhaled chest / shoulder heights would need pixel reads; a fixed grid every 20 px instead
+  x.strokeStyle = 'rgba(25,43,56,0.18)'; x.lineWidth = 1;
+  for (let y = 64; y < c.height; y += 20) { x.beginPath(); x.moveTo(70, y + 0.5); x.lineTo(c.width, y + 0.5); x.stroke(); }
+  return c.toDataURL('image/png').split(',')[1];
+};
+/** The breath made visible: per row, |inhaled − exhaled| of the two column pairs (rest, after the run), changed pixels red over a pale copy. */
+window.diffStrip = (title) => {
+  const src = renderer.domElement, c = document.createElement('canvas'); c.width = W * 2 + 70; c.height = H * 2 + 64;
+  const x = c.getContext('2d'), tmp = document.createElement('canvas'); tmp.width = src.width; tmp.height = src.height;
+  const tx = tmp.getContext('2d'); tx.drawImage(src, 0, 0); const img = tx.getImageData(0, 0, tmp.width, tmp.height).data;
+  x.fillStyle = '#edf0f2'; x.fillRect(0, 0, c.width, c.height); x.fillStyle = '#192b38'; x.font = 'bold 18px system-ui'; x.fillText(title, 12, 26);
+  x.font = '15px system-ui'; ['vila', 'efter löpning'].forEach((s, i) => x.fillText(s, 70 + i * W + 10, 54));
+  x.save(); x.translate(44, 64 + H / 2 + 22); x.rotate(-Math.PI / 2); x.fillText('Före', 0, 0); x.restore();
+  x.save(); x.translate(44, 64 + H * 1.5 + 22); x.rotate(-Math.PI / 2); x.fillText('Efter', 0, 0); x.restore();
+  const counts = [];
+  for (let k = 0; k < 2; k++) for (let pair = 0; pair < 2; pair++) {
+    const out = x.createImageData(W, H), o = out.data; let n = 0;
+    for (let yy = 0; yy < H; yy++) for (let xx = 0; xx < W; xx++) {
+      const at = (col) => ((k * H + yy) * src.width + col * W + xx) * 4, a = at(pair * 2), b = at(pair * 2 + 1), j = (yy * W + xx) * 4;
+      const d = Math.abs(img[a] - img[b]) + Math.abs(img[a + 1] - img[b + 1]) + Math.abs(img[a + 2] - img[b + 2]);
+      const g = 150 + (img[b] + img[b + 1] + img[b + 2]) / 9;
+      if (d > 24) { o[j] = 220; o[j + 1] = 30; o[j + 2] = 40; n++; } else { o[j] = o[j + 1] = o[j + 2] = g; }
+      o[j + 3] = 255;
+    }
+    x.putImageData(out, 70 + pair * W, 64 + k * H); counts.push(n);
+  }
+  return { png: c.toDataURL('image/png').split(',')[1], changed: { before: counts.slice(0, 2), after: counts.slice(2) } };
+};
+window.clearStrip = () => { renderer.setClearColor(0xe9edef); renderer.clear(); };
+window.plan = { plan, ends, total: ends.at(-1), exhale: curBreath.newBreath && C.AVATAR_BREATH.exhale };
+window.bench = () => { // microseconds per Ghost.animate standing, before vs after
+  const res = [];
+  for (const row of rows) { const g = row.ghost, b = []; for (let j = 0; j < 5; j++) { const at = nativeNow(); for (let n = 0; n < 3000; n++) { now += 1000 / 60; g.animate(now, 1, 0, 0); } if (j) b.push((nativeNow() - at) * 1000 / 3000); } res.push(b); }
+  return { unit: 'µs/Ghost.animate', before: res[0], after: res[1] };
+};
+window.chestReady = true;
+</script></html>

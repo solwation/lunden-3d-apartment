@@ -19,6 +19,7 @@ import { lampUniforms, LAMP_FDECL, lampGlsl } from './avatarlight.js'; // #2039:
 import { clothUniforms, clothDecl, clothNormal, installCloth } from './avatarcloth.js'; // #2034
 import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #2014
 import { newLean, stepLean } from './avatarlean.js'; // #2109
+import { chestBreath, chestUniforms, CHEST_DECL, chestGLSL, chestKey } from './avatarchest.js'; // #2108: visible breathing
 import { avatarSkinGLSL, skinKey } from './avatarskin.js'; // #2032
 import { handVertexGLSL, handFragmentGLSL, handKey } from './avatarhand.js'; // #2106: nails, creases, knuckles, tendons
 import { seamKey } from './avatarseam.js'; // #2107: garment seams, ribs, hems and pockets (spliced by avatarcloth.js)
@@ -1210,6 +1211,7 @@ function makeMaterial(rim, headProjection) {
   Object.assign(u, faceExprUniforms()); // #2031: the expression weights
   Object.assign(u, eyeUniforms()); // #2033
   Object.assign(u, exertUniforms()); // #2037: flush and sweat sheen
+  Object.assign(u, chestUniforms()); // #2108: breathing
   Object.assign(u, lampUniforms()); // #2039
   Object.assign(u, flyUniforms()); // #2040
   Object.assign(u, browUniforms()); // #2046
@@ -1232,13 +1234,13 @@ function makeMaterial(rim, headProjection) {
     const skin = avatarSkinGLSL({ head: bindAt('head'), hand: bindAt('handL'), part: FACE_PART, nose: NOSE_SKIN }); // #2032 (#2048: the nose's own skin)
     const hand = handFragmentGLSL({ bindL: bindAt('handL'), bindR: bindAt('handR'), part: FACE_PART }); // #2106
     sh.vertexShader = sh.vertexShader.replace('#include <skinbase_vertex>', fix.base).replace('#include <skinnormal_vertex>', fix.normal).replace('#include <skinning_vertex>', fix.skin)
-      .replace('#include <common>', '#include <common>\nattribute float region; attribute float suitRole; varying float vSuitRole; attribute float noseBlend; varying float vNose; varying vec2 vSurface; attribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + WET_DECL + '\n' + FACE_SHAPE_DECL() + '\n' + fix.decl + '\n' + EYE_VDECL + '\n' + FLY_VDECL)
+      .replace('#include <common>', '#include <common>\nattribute float region; attribute float suitRole; varying float vSuitRole; attribute float noseBlend; varying float vNose; varying vec2 vSurface; attribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + WET_DECL + '\n' + FACE_SHAPE_DECL() + '\n' + fix.decl + '\n' + EYE_VDECL + '\n' + FLY_VDECL + '\n' + CHEST_DECL)
       .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
 ${noseNormalGLSL(bindAt('head'), FACE_PART.head)}
 float pumpF = 1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z;
 float pumpD = uPump * ${GYM_PUMP.circumference} * armPump.w;
 objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / pumpF * dot(position.xz - armPump.xy, objectNormal.xz), objectNormal.z / pumpF));`)
-      .replace('#include <begin_vertex>', `#include <begin_vertex>\ntransformed.xz = armPump.xy + (transformed.xz - armPump.xy) * (1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z);\nvSuitRole = suitRole; ${wetVertex()} vSurface = vec2(region, facePart); vNose = noseBlend; vSuitAt = position; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart) * step(facePart, ${FACE_PART.watchStrap}.0 - 0.5); // (#1334: the rings, bracelets and watch cases are metal)\n${faceShape()}${swayShader()}\n${flyBind(FACE_PART, bindAt('head').add(new THREE.Vector3(...HAIR.centre)))}\ntransformed.x *= 1.0 - uKiss * pucker * ${KISS.narrow.toFixed(5)};\ntransformed.z += uKiss * pucker * ${KISS.pucker.toFixed(5)};\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
+      .replace('#include <begin_vertex>', `#include <begin_vertex>\ntransformed.xz = armPump.xy + (transformed.xz - armPump.xy) * (1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z);\nvSuitRole = suitRole; ${wetVertex()} vSurface = vec2(region, facePart); vNose = noseBlend; vSuitAt = position; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart) * step(facePart, ${FACE_PART.watchStrap}.0 - 0.5); // (#1334: the rings, bracelets and watch cases are metal)\n${faceShape()}${swayShader()}${chestGLSL()}\n${flyBind(FACE_PART, bindAt('head').add(new THREE.Vector3(...HAIR.centre)))}\ntransformed.x *= 1.0 - uKiss * pucker * ${KISS.narrow.toFixed(5)};\ntransformed.z += uKiss * pucker * ${KISS.pucker.toFixed(5)};\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
     sh.vertexShader = faceExprShader(sh.vertexShader, { hb: bindAt('head'), chinY: CHIN_Y, P: FACE_PART }); // #2031
     sh.vertexShader = sh.vertexShader.replace('#include <skinning_vertex>', `${eyeView()}\n#include <skinning_vertex>`); // #2033: after every bind-pose shape (face, expression), before skinning
     sh.vertexShader = sh.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>\n${flyProject(bindAt('head').add(new THREE.Vector3(...HAIR.centre)))}`); // #2040
@@ -1294,7 +1296,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     const gloss = { head: bindAt('head'), region: REGION, part: FACE_PART }; // #2052
     sh.vertexShader = glossVertex(sh.vertexShader, gloss); sh.fragmentShader = curlGloss(glossFragment(sh.fragmentShader, gloss)); // (#2054: the curls turn its strands)
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey(); // #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey() + chestKey(); // #2108, #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
   installSelfView(m); // #2080: the own camera hides head/hair; mirrors and peers keep the full figure
   return m;
 }
@@ -1946,7 +1948,9 @@ export class Avatar {
     const g = this.gait;
     this.motionCrouch = (this.motionCrouch ?? crouch) + (crouch - (this.motionCrouch ?? crouch)) * (1 - Math.exp(-MOTION.crouchEase * dt));
     const c = THREE.MathUtils.clamp(this.motionCrouch, 0, 1), F = CR.feet;
-    const breathe = Math.sin(this.time * 1.7) * 0.004;
+    const br = this.chest = chestBreath(this.breath, 1 - dv, this.chest); // #2108: #2037's rhythm (ghosts.js steps this.breath; none: no breathing)
+    const brU = this.material?.userData.u?.uBreathe?.value; if (brU) { brU[0] = br.chest; brU[1] = br.belly; brU[2] = br.shoulder; }
+    const breathe = this.breath ? br.hip : Math.sin(this.time * 1.7) * 0.004; // (an unstepped figure keeps its old free-running hip lift)
     // #1149: crouching is a deep squat (AVATAR_CROUCH), every term linear in `crouch` (the head boxes follow the same hips and lean)
     const FL = DANCE.floss, flossPh = this.time * FL.hz * Math.PI * 2, flossSn = Math.sin(flossPh), flossCs = Math.cos(flossPh);
     const flossSway = -flossSn * FL.hipSway * fa, flossBob = FL.bob * (1 - Math.cos(2 * flossPh)) / 2 * fa;
@@ -2028,7 +2032,7 @@ export class Avatar {
     let knee = c ? CR.knees.map((v, i) => KNEE_REST[i] + (v - KNEE_REST[i]) * c) : KNEE_REST;
     if (climbA > 0.001) knee = knee.map((v, i) => v + (AIR.climb.knees[i] - v) * climbA); // #1799: knees out on the wall
     const airLean = AIR.fly.lean * aa[0] + AIR.swing.lean * aa[1] + AIR.climb.lean * climbA;
-    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: airLean - swimLean(st, dv) * sa + 0.03 * g - GAIT.runLean * rr + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach + iv.lean, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + SW.head * swimLean(st, dv) * sa + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach + iv.head + ln.headPitch, turn: turn + iv.turn + ln.headYaw - ln.torsoYaw, feet, hands: [handL, handR], can: null,
+    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: airLean - swimLean(st, dv) * sa + 0.03 * g - GAIT.runLean * rr + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach + iv.lean + br.lean, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + SW.head * swimLean(st, dv) * sa + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach + iv.head + ln.headPitch - br.lean, turn: turn + iv.turn + ln.headYaw - ln.torsoYaw, feet, hands: [handL, handR], can: null,
       hipX: sway, hipRoll: iv.roll + ln.hipRoll, torsoRoll: iv.torsoRoll + ln.torsoRoll, torsoYaw: ln.torsoYaw, knee, flat: Math.max(c, g, motionFrame && groundEnabled && !am && !swim ? 1 : 0), toes: F.turn * c, pitch: g > 0.001 || this.groundMotion || this.footIK?.active ? gt.pitch : null, footYaw: this.groundMotion ? gt.yaw : null });
   }
 

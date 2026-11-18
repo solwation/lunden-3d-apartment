@@ -16,7 +16,7 @@ const clamp01 = (v) => Math.max(0, Math.min(1, Number(v) || 0));
 const smooth = (a, b, x) => { const t = clamp01((x - a) / (b - a)); return t * t * (3 - 2 * t); };
 
 /** A fresh state: rested, at a random point of the breath (so a crowd does not breathe in step). */
-export const newBreath = (phase = Math.random()) => ({ heat: 0, flush: 0, sheen: 0, phase, puffs: 0 });
+export const newBreath = (phase = Math.random()) => ({ heat: 0, flush: 0, sheen: 0, phase, puffs: 0, pant: 0, drive: 0 });
 
 /** The effort now (0 … 1) from the face's cues (#2031: `run` = the gait's run share, `gym` > 0 in a gym pose). Walking is no effort. */
 export const effortOf = (cues = {}) => Math.max(clamp01(cues.run), cues.gym ? B.gym : 0);
@@ -28,7 +28,9 @@ export const coldness = (temp = 10, kind = null) => Math.max(1 - smooth(B.cold, 
 export const breathRate = (effort, heat) => B.rate[0] + (B.rate[1] - B.rate[0]) * Math.max(clamp01(effort), clamp01(heat) * B.heatBreath);
 
 /** Advances `s` by `dt` s with the current `effort` (0 … 1): heat builds over B.build s of full effort and cools over B.cool s without it;
- * flush and sheen follow the heat above their thresholds. Returns the number of exhales that started in this step (0 or 1). */
+ * flush and sheen follow the heat above their thresholds. #2108: `pant` follows the effort (rising over B.pant[0] s, calming over B.pant[1] s),
+ * so the breath stays fast for a few seconds after a dash; `drive` (0 … 1) = how hard the figure breathes now (rate and depth, avatarchest.js).
+ * Returns the number of exhales that started in this step (0 or 1). */
 export function stepBreath(s, dt, effort = 0) {
   dt = Math.min(Math.max(Number(dt) || 0, 0), B.maxDt);
   if (!(dt > 0)) return 0;
@@ -36,8 +38,11 @@ export function stepBreath(s, dt, effort = 0) {
   s.heat = clamp01(e > 0 ? s.heat + e * dt / B.build : s.heat - dt / B.cool);
   s.flush = smooth(B.flushAt[0], B.flushAt[1], s.heat);
   s.sheen = smooth(B.sheenAt[0], B.sheenAt[1], s.heat);
+  s.pant = clamp01(s.pant + (e - s.pant) * (1 - Math.exp(-dt / B.pant[e > s.pant ? 0 : 1])));
+  const k = Math.max(e, s.pant);
+  s.drive = Math.max(k, s.heat * B.heatBreath);
   const before = s.phase;
-  s.phase = (s.phase + breathRate(e, s.heat) * dt) % 1;
+  s.phase = (s.phase + breathRate(k, s.heat) * dt) % 1;
   const crossed = before < B.exhale ? s.phase >= B.exhale || s.phase < before : s.phase >= B.exhale && s.phase < before;
   return crossed ? 1 : 0;
 }
@@ -87,7 +92,7 @@ export function updateBreath(avatar, dt, cues, figure, puffs = shared) {
   if (cold <= 0.01 || !head || avatar.mask?.visible || !wetEnv.outdoorAt(figure)) return;
   _m.copy(MOUTH).applyMatrix4(head.matrixWorld);
   _d.setFromMatrixColumn(head.matrixWorld, 2).normalize();
-  const k = Math.max(e, s.heat * B.heatBreath);
+  const k = s.drive;
   puffs.emit(_m, _d, cold * (B.density[0] + (B.density[1] - B.density[0]) * k), k, u.uLight?.value ?? 1);
   s.puffs++;
 }
