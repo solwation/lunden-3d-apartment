@@ -36,3 +36,5 @@ sat on the leaf surface and leapt crown to crown across up to 11 m.
 
 Cost: no new draw, texture, material or program; per tree a plain frame (5 limbs, ~6 kB) built once at start (~40–60 ms for 350
 trees in node, plus ~10–20 ms for the hop pairs); per frame only the path step of squirrels being simulated.
+
+Publicerad: `8a89f61`, Pages 44422719087 success. Före-bilderna är borttagna; de finns kvar på [`8a89f61`](https://github.com/solwation/lunden-3d-apartment/tree/8a89f610be761e5baf9ae7eb7a98c4ce1c881b5b/docs/verification/2132/before).
