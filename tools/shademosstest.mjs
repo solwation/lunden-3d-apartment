@@ -3,7 +3,7 @@
 // a façade's mean tone stays within 2 %; the material chain and the phone no-op.
 import test from 'node:test'; import assert from 'node:assert/strict'; import { readFileSync } from 'node:fs';
 import * as THREE from 'three';
-import { mossAmount, mossColor, mossMix, mossGLSL, mossHeights, mossMaterial, shadeMoss, mossHue } from '../src/shademoss.js';
+import { noise as mossNoiseJS, mossAmount, mossColor, mossMix, mossGLSL, mossHeights, mossMaterial, shadeMoss, mossHue } from '../src/shademoss.js';
 import { SHADE_MOSS as M, COLORS } from '../src/config.js';
 import { vertexCompileSlack } from '../src/vertexcompile.js';
 
@@ -96,4 +96,19 @@ test('wired into the wall batches of Hus L and the Å-husen (A/B/C), retaining w
   const flat = su.replace(/snowCap\(((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*)\)/g, '$1'); // (#2123's snowCap wrapper: read through it)
   for (const s of ["map: facadeTexture(), roughness: 0.95 })), groundY, 'map')", "map: facadeTexture(true), roughness: 0.95 })), groundY, 'map')", 'white), groundY, \'bump\')',
     "color: 0x6e3326, roughness: 0.95 })), groundY)", "map: historicBrick, roughness: 0.95, side: THREE.DoubleSide })), groundY, 'map')", 'concrete, SEASON.snow.paving), groundY)']) assert(flat.includes(s), s);
+});
+
+test('JS noise twin equals the GLSL mossNoise bilinear formula and stays within 0..1 (#2134)', () => {
+  const fract = (x) => x - Math.floor(x), hash = (x, y) => fract(Math.sin(x * 127.1 + y * 311.7) * 43758.5453);
+  const mix = (p, q, t) => p * (1 - t) + q * t;
+  const ref = (x, y) => { // GLSL: mix(mix(h(i), h(i+(1,0)), u.x), mix(h(i+(0,1)), h(i+(1,1)), u.x), u.y), u smoothstepped
+    const ix = Math.floor(x), iy = Math.floor(y); let ux = x - ix, uy = y - iy; ux = ux * ux * (3 - 2 * ux); uy = uy * uy * (3 - 2 * uy);
+    return mix(mix(hash(ix, iy), hash(ix + 1, iy), ux), mix(hash(ix, iy + 1), hash(ix + 1, iy + 1), ux), uy);
+  };
+  let s = 12345; const rnd = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+  for (let i = 0; i < 5000; i++) {
+    const x = (rnd() - 0.5) * 200, y = (rnd() - 0.5) * 200, v = mossNoiseJS(x, y);
+    assert(Math.abs(v - ref(x, y)) < 1e-6, `noise(${x}, ${y}) = ${v} vs ${ref(x, y)}`);
+    assert(v >= -1e-9 && v <= 1 + 1e-9, `range ${v}`);
+  }
 });

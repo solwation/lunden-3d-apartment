@@ -16,11 +16,11 @@ export const mossHue = (P = M) => P.hue.map((v) => v / lum(P.hue));
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const fract = (x) => x - Math.floor(x);
 const hash = (x, y) => fract(Math.sin(x * 127.1 + y * 311.7) * 43758.5453);
-function noise(x, y) {
+export function noise(x, y) {
   const ix = Math.floor(x), iy = Math.floor(y); let ux = x - ix, uy = y - iy;
   ux = ux * ux * (3 - 2 * ux); uy = uy * uy * (3 - 2 * uy);
   const a = hash(ix, iy), b = hash(ix + 1, iy), c = hash(ix, iy + 1), d = hash(ix + 1, iy + 1);
-  return a + (b - a) * ux + (c - a + (d - c - c + a) * ux) * uy; // (bilinear: mix(mix(a,b),mix(c,d)))
+  return a + (b - a) * ux + (c - a + (d - c - b + a) * ux) * uy; // (bilinear: mix(mix(a,b),mix(c,d)))
 }
 
 /** JS twin of the shader's mask (tests): the mix amount 0…strength at world point `p` on a face with unit world normal `n`,
