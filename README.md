@@ -8,6 +8,8 @@ Småfåglar flyger i flock med mjuka svängar, landar i trädkronor, på tak, pe
 
 Fiskarna i Höje å simmar i lösa stim som vänder tillsammans, står stilla mot strömmen i lä bakom stenar och näckrosblad och vakar ibland vid ytan så att ringar sprids, synliga från bron. [Bildsekvenser före/efter](docs/verification/2130/README.md).
 
+Ekorrarna klättrar på trädens riktiga stammar och grenar: i spiral uppför stammen med kroppen tryckt mot barken, ut längs en gren där de sitter, hoppar bara till grenar inom räckhåll, i samma krona eller nästa träd, och springer ned med huvudet först. [Före/efter-bildsekvenser och kontroller](docs/verification/2132/README.md).
+
 Ekorrarna har en fluffigare svans som rör sig i en S-form och balanserar hoppen, sitter på bakbenen och äter nöten med framtassarna, gömmer nötter mest på hösten och gräver upp gömmor på vintern, och stannar upp och spanar med ryckiga huvudrörelser. [Före/efter-bildsekvenser och kontroller](docs/verification/2128/README.md).
 
 Vintertid ligger en tunn snöhätta på fönsterbleck, räcken, murkrön, takkanter och bänkar, bara på uppåtvända ytor och bara under snömånaderna. [Före/efter januari och juli](docs/verification/2123/README.md).

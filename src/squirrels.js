@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { SQUIRRELS as C, SQUIRREL_SURFACE as SS, SQUIRREL_LIFE as SQL, PADDOCK, SITE, WALK } from './config.js';
+import { SQUIRRELS as C, SQUIRREL_SURFACE as SS, SQUIRREL_LIFE as SQL, SQUIRREL_CLIMB as SCL, TREE_FORM, PADDOCK, SITE, WALK } from './config.js';
 import { Holdable, heldItem, setHeld, handBusy } from './holdable.js';
 import { Hearts } from './pingping.js';
 import { sfx } from './audio.js';
@@ -14,7 +14,10 @@ import { SquirrelBrain, NutField, linkTrees, riverFrame, winterMonth, inBox, gro
 import { SquirrelSync } from './squirrelsync.js';
 import { nutPathSpots } from './nutpaths.js';
 import { tailWave, scanHead, eatPaws, TAIL_JOINTS } from './squirrellife.js';
-import { siteWind } from './sitewind.js';
+import { siteWind, siteWindOffset } from './sitewind.js';
+import { treeSkeleton, trunkLayout } from './treeform.js';
+import { climbFrame } from './squirrelclimb.js';
+import { lowMemory } from './lowmemory.js';
 
 // Squirrels and the nuts they look for (#1672). The brains live in squirrelbrain.js (no three.js); this file draws them and ties them to
 // the game: the crowns and ground come from the trees built in surroundings.js (river park patches and the paddock's shade trees, read
@@ -275,12 +278,17 @@ export class Nut extends Holdable {
   }
 }
 
+/** #2132: upright on a trunk (climbing up or head first down; a limb run's stretch round the stem too): the climb clip, no hop. From the shared
+ * pose alone (a follower sees `limb` as `up`), so every client agrees. */
+const isClimbing = (b) => (b.state === 'up' || b.state === 'down' || b.state === 'limb') && Math.abs(b.pitch) > 0.9;
+
 export class Squirrels {
   /** `feet`: surroundings.js treeFeet, `crowns`: its aoTrees, `ground(x, z)`: the walkable surface, `walkable(x, z)` / `nutOk(x, z)`: where it may run / a nut may lie,
    * `onFeed(brain)`: scoring. `rnd`: injectable for tests. #1780: `southFeet` (surroundings.js southTreeFeet, with their crowns) and `road(x, z, m)`
    * (roads.js onVehicle) for the home areas' own groves (SQUIRRELS.areas with a `box`). `nutWalls` supplies actual
-   * collision segments for #1831's short path-to-nut approach checks. */
-  constructor({ scene, camera, player, feet, crowns, ground, walkable, nutOk, onFeed, southFeet = [], road = null, nutWalls = () => [], rnd = Math.random }) {
+   * collision segments for #1831's short path-to-nut approach checks. #2132: `forms` (surroundings.js treeForms): each tree's trunk instance, from
+   * which its climbing frame (squirrelclimb.js, the skeleton the visitor sees: trunk axis and main limbs) is built. */
+  constructor({ scene, camera, player, feet, crowns, ground, walkable, nutOk, onFeed, southFeet = [], road = null, nutWalls = () => [], forms = [], rnd = Math.random }) {
     Object.assign(this, { sfx, scene, camera, player, ground, onFeed, rnd, winter: true, time: 0, speed: 0, acc: [], lastX: NaN, lastZ: NaN, lure: false, net: null, cand: [], track: new Map(), markT: 0, daylight: 1, hour: 12, wasFollow: false });
     const parkPatches = new Set([...(SITE.riverPark.patches ?? []).map((q) => q.name), 'bridge-west']), // (the other `patch` names in treeFeet belong to the street/backdrop areas)
       paddock = PADDOCK.trees ?? [], same = (a, b) => Math.abs(a.x - b[0]) < 0.01 && Math.abs(a.z - b[1]) < 0.01, river = riverFrame(SITE.river.path), q = {};
@@ -289,7 +297,8 @@ export class Squirrels {
     const wood = SITE.riverPark.woodBridge, gc = SITE.bridges?.gc, crossings = [wood?.ends, gc?.ends].filter(Boolean); // (the timber footbridge and the foot/cycle bridge)
     const crownOf = (f) => {
       let best = null, bd = 0.05; for (const c of crowns) { const d = Math.hypot(c.x - f.x, c.z - f.z); if (d < bd) { bd = d; best = c; } }
-      return { x: f.x, z: f.z, y: f.y, cy: best ? best.y : f.cy ?? f.y + 5, r: best ? best.r : f.r ?? 3 };
+      const form = forms.find((m) => Math.abs(m.x - f.x) < 0.01 && Math.abs(m.z - f.z) < 0.01); // (#2132: the tree as built: its skeleton to climb on)
+      return { x: f.x, z: f.z, y: f.y, cy: best ? best.y : f.cy ?? f.y + 5, r: best ? best.r : f.r ?? 3, cf: form ? climbFrame(treeSkeleton(form.matrix, form.bark, { phone: lowMemory, orders: 2 }), { m: form.matrix, aspect: TREE_FORM.branch[form.bark].aspect, layout: trunkLayout(form.bark, lowMemory) }) : null };
     };
     // #1780: the home areas' own groves: their trees (a group each) and their ground: inside the box, on land and off every road
     const groves = Object.entries(C.areas ?? {}).filter(([, A]) => A.box), fences = groveFences(walkable, road);
@@ -514,11 +523,11 @@ export class Squirrels {
     });
   }
   pose(a, d, dt = 0) {
-    const b = a.brain, g = a.group, run = b.run, hopPhase = this.time * 14 + b.spec.scale * 9, hop = run > 0.05 && !['down', 'up', 'leap'].includes(b.state) ? Math.abs(Math.sin(hopPhase)) * 0.035 * run : 0;
+    const b = a.brain, g = a.group, run = b.run, hopPhase = this.time * 14 + b.spec.scale * 9, climbing = isClimbing(b), hop = run > 0.05 && !climbing && b.state !== 'leap' ? Math.abs(Math.sin(hopPhase)) * 0.035 * run : 0;
     g.visible = d < C.drawDist && b.state !== 'nest'; // (#1716: asleep in the drey, inside the crown)
 
     // Sitting still it flicks its tail now and then and turns its head in quick jerks
-    const still = run < 0.05 && !['down', 'up', 'leap', 'eat', 'take', 'bury', 'dig', 'nest'].includes(b.state);
+    const still = run < 0.05 && !['down', 'up', 'limb', 'leap', 'eat', 'take', 'bury', 'dig', 'nest'].includes(b.state);
     if (still && (a.flickAt -= dt) <= 0) { a.flickAt = 2 + this.rnd() * 5; a.flickT = 0; }
     if (b.flick > 0.95 && a.flickT > 0.6) a.flickT = 0;
     a.flickT += dt;
@@ -540,7 +549,7 @@ export class Squirrels {
       let targetName = 'idle';
       if (b.state === 'eat' || b.state === 'take') {
         targetName = 'eat';
-      } else if (b.state === 'up' || b.state === 'down') {
+      } else if (climbing) { // (#2132: on the stem; along a limb it runs)
         targetName = 'climb';
       } else if (run > 0.05) {
         targetName = 'run';
@@ -576,7 +585,12 @@ export class Squirrels {
     }
 
     const sway = b.state === 'perch' ? Math.sin(this.time * 0.9 + b.spec.scale * 7) * 0.5 : 0, yaw = b.yaw + sway, back = HAUNCH * b.spec.scale;
-    g.position.set(b.x - Math.sin(yaw) * back, b.y + hop * b.spec.scale, b.z - Math.cos(yaw) * back); // (the body centre stays at the brain's point)
+    // (the body centre stays at the brain's point: the haunch sits `back` behind it along the body, #2132: also when it is upright on a trunk)
+    const cp = Math.cos(b.pitch), sp = Math.sin(b.pitch);
+    g.position.set(b.x - Math.sin(yaw) * cp * back, b.y - sp * back + hop * b.spec.scale, b.z - Math.cos(yaw) * cp * back);
+    // #2132: out on a limb it rides the crown's wind sway (#2101's own offset, the leaves round it move the same way; the leader's / a solo
+    // visitor's brain: a follower's squirrel is not swayed)
+    if (b.swayK > 0 && b.swayAt && !this.sync.follow) { const w = siteWindOffset(siteWind, b.swayAt, SCL.sway * b.swayK); g.position.x += w.x; g.position.z += w.z; }
     g.rotation.y = yaw;
     g.rotation.x = -(b.pitch + b.rise * 1.05 - (hop > 0 ? Math.sin(this.time * 14) * 0.12 : 0));
     a.mouth.visible = b.hasNut;
@@ -587,7 +601,7 @@ export class Squirrels {
     const sc = b.spec.scale, eating = b.state === 'eat' && b.hasNut;
     const leap = b.state === 'leap' ? Math.max(0, Math.min(1, 0.5 - b.pitch / 0.9)) : null; // (the brain's leap pitch is (0.5 - k) x 0.9)
     const across = -Math.sin(b.yaw) * siteWind.dir.y + Math.cos(b.yaw) * siteWind.dir.x; // (the downwind direction across the animal's side axis)
-    const lr = !['down', 'up', 'leap'].includes(b.state) ? run : 0;
+    const lr = !isClimbing(b) && b.state !== 'leap' ? run : 0;
     tailWave(a.tail, { t: this.time, phase: a.seed % 6.283, run: lr, hop: hopPhase * 2, leap, rise: b.rise, wind: across * siteWind.power });
     for (let j = 0; j < TAIL_JOINTS; j++) { const bone = a.bones[TAIL_BONES[j]]; if (bone) bone.quaternion.multiply(QL.setFromEuler(EL.set(a.tail[j].x, a.tail[j].y, 0))); }
     if (eating) {

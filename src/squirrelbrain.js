@@ -1,5 +1,7 @@
 import { SQUIRRELS as C, SEASON, SQUIRREL_LIFE as LIFE } from './config.js';
 import { seasonLife } from './squirrellife.js';
+import { SQUIRREL_CLIMB as K } from './config.js';
+import { limbAt, limbFor, perchF, climbRoute, crownRoute, pathOf, pathAt, climbPose, bestHop, reachOf, swayWeight } from './squirrelclimb.js';
 
 // The squirrels' brains and the nut field (#1672), with no three.js so a node test can drive them. A squirrel is a small state
 // machine: perch (sits in a crown) -> leap (hops to a neighbouring crown) | down (climbs the trunk) -> forage/search (runs about on the
@@ -10,6 +12,10 @@ import { seasonLife } from './squirrellife.js';
 // it smells (winter / early spring); a forager now and then stops to `scan` (sits right up, the head jerks: squirrels.js / squirrellife.js).
 // Every state is either in a crown / on a trunk (perch, leap, down, up, nest) or on the ground (GROUND); a new one (e.g. #2132's climbing
 // about in a crown) joins one of those, gets its case in update() and a WIRE entry in squirrelsync.js naming the old state it looks like.
+// #2132: a tree with a climbing frame (`t.cf`, src/squirrelclimb.js from #2131's skeleton) is climbed on its real bark: up the leaning trunk
+// in a loose spiral, body pressed to it, out along a main limb to perch there (`limb` / `lf`), down the same way head first; `limb` (wire:
+// up) runs along limbs / round the trunk within a crown, and a leap goes only between branch points at most SQUIRREL_CLIMB.hop m apart
+// (`t.hops[j]`, from linkTrees). Trees without a frame (a test's own, the far woodland) keep the old crown-surface perches and climb.
 
 export const winterMonth = (month) => SEASON.snowMonths.includes(month);
 const R = C.roam;
@@ -56,7 +62,7 @@ export const inBox = (b, x, z) => x >= b[0] && x <= b[1] && z >= b[2] && z <= b[
  * linked, and a grove's ground runs use `fences[g]` (its box, off the roads) instead of `walkable`; the bridges and the valley's s extent are the valley's. */
 export function linkTrees(trees, { path = null, walkable = null, crossings = [], fences = {} } = {}) {
   const fr = path ? riverFrame(path) : null, q = {};
-  trees.forEach((t, i) => { if (fr) { fr(t.x, t.z, q); t.s = q.s; t.side = q.side; } else { t.s = 0; t.side = 1; } t.near = []; t.links = []; t.via = null; });
+  trees.forEach((t, i) => { if (fr) { fr(t.x, t.z, q); t.s = q.s; t.side = q.side; } else { t.s = 0; t.side = 1; } t.near = []; t.links = []; t.via = null; t.hops = {}; });
   // #1764: every ground run is checked against the water, on the same bank too (`side` is the river's as a whole; where it bends a straight
   // run between two trees on one bank can cross it)
   const grp = (t) => t.g ?? null, can = (a, b) => { // (a grove's run sampled every 0.5 m: a road's corner is narrower than the valley's water)
@@ -68,7 +74,7 @@ export function linkTrees(trees, { path = null, walkable = null, crossings = [],
   for (let i = 0; i < trees.length; i++) for (let j = i + 1; j < trees.length; j++) {
     const a = trees[i], b = trees[j], d = Math.hypot(a.x - b.x, a.z - b.z);
     if (grp(a) !== grp(b)) continue;
-    if (d <= C.leapRange) { a.near.push(j); b.near.push(i); link(i, j); } else if (d <= R.join) far.push([d, i, j]);
+    if (d <= C.leapRange && canHop(a, b, i, j, d)) { a.near.push(j); b.near.push(i); link(i, j); } else if (d <= R.join) far.push([d, i, j]);
   }
   for (const [e1, e2] of fr && walkable ? crossings : []) { // over each bridge: the best pair of trees either side of it
     const p1 = { x: e1[0], z: e1[1] }, p2 = { x: e2[0], z: e2[1] }, deck = Math.hypot(p2.x - p1.x, p2.z - p1.z), s1 = fr(p1.x, p1.z).side, s2 = fr(p2.x, p2.z).side;
@@ -89,6 +95,16 @@ export function linkTrees(trees, { path = null, walkable = null, crossings = [],
   const vs = trees.byS.filter((i) => grp(trees[i]) === null); // (the valley's extent: the groves' s along the river means nothing)
   trees.sMin = vs.length ? trees[vs[0]].s : 0; trees.sMax = vs.length ? trees[vs[vs.length - 1]].s : 0;
   return trees;
+}
+
+/** #2132: trees i and j (trunks `d` m apart) are a crown hop apart: without climbing frames, within leapRange (the old rule); with them, two of
+ * their branch points are at most SQUIRREL_CLIMB.hop m apart (stored as a.hops[j] / b.hops[i]: { li, f, lj, fj, d } from the jumper's side). */
+function canHop(a, b, i, j, d) {
+  if (!a.cf || !b.cf) return true;
+  if (d > reachOf(a.cf) + reachOf(b.cf) + K.hop) return false;
+  const h = bestHop(a.cf, b.cf); if (!h || h.d > K.hop) return false;
+  a.hops[j] = h; b.hops[i] = { li: h.lj, f: h.fj, lj: h.li, fj: h.f, d: h.d };
+  return true;
 }
 
 /** #1780: the home areas' own groves (SQUIRRELS.areas with a `box`): { [area]: (x, z) -> bool } inside its box, on `walkable` land and off every
@@ -131,8 +147,8 @@ export function treeRoute(trees, a, b) {
 }
 
 /** Where a squirrel sits in a crown at angle `ang` (on the leaf surface, so a visitor can see it), and where it stands at the trunk's foot. */
-export const perchPoint = (t, ang, o = {}) => { o.x = t.x + Math.cos(ang) * t.r * 0.9; o.z = t.z + Math.sin(ang) * t.r * 0.9; o.y = t.cy - t.r * 0.12; return o; };
-export const footPoint = (t, ang, ground, o = {}) => { o.x = t.x + Math.cos(ang) * 0.3; o.z = t.z + Math.sin(ang) * 0.3; o.y = ground(o.x, o.z); return o; };
+export const perchPoint = (t, ang, o = {}) => { if (t.cf) return limbAt(t.cf, limbFor(t.cf, ang), perchF(ang), o); o.x = t.x + Math.cos(ang) * t.r * 0.9; o.z = t.z + Math.sin(ang) * t.r * 0.9; o.y = t.cy - t.r * 0.12; return o; };
+export const footPoint = (t, ang, ground, o = {}) => { const r = t.cf ? t.cf.r0 + K.cling : 0.3; o.x = t.x + Math.cos(ang) * r; o.z = t.z + Math.sin(ang) * r; o.y = ground(o.x, o.z); return o; };
 /** Up the trunk to the crown's height (#1716: spiralling `roam.spiral` turns round it), then out along a limb to the perch (k 0 … 1).
  * `o.a`: the angle round the trunk where it is. */
 export function climbPoint(t, ang, k, ground, o = {}) {
@@ -229,12 +245,15 @@ export class SquirrelBrain {
       tree: start, ang: 0, goal: { x: 0, z: 0 }, from: { x: 0, y: 0, z: 0 }, to: { x: 0, y: 0, z: 0 }, tree2: 0, ang2: 0, approachAfter: false, calmT: 0, left: 0, sense: 0, log: [],
       // #1716: roaming, caches, chases, the day
       clock: 0, s0: env.trees[start]?.s ?? 0, route: [], target: null, travelAfter: false, nest: -1, visits: new Map(), caches: [], prey: null, chaseT: 1,
-      dash: true, gaitT: 0, look: 0, lookT: 0, flick: 0, wps: [], foot: { x: 0, y: 0, z: 0 }, legFrom: { x: 0, y: 0, z: 0 }, deck: false });
+      dash: true, gaitT: 0, look: 0, lookT: 0, flick: 0, wps: [], foot: { x: 0, y: 0, z: 0 }, legFrom: { x: 0, y: 0, z: 0 }, deck: false,
+      // #2132: on a climbing frame: the limb it sits on and how far out (`lf`), the path it follows (`path`, then `after`), a jump's landing
+      // (`hopTo`, `hopArc`) and the crown's wind sway on it (`swayK` 0 … 1 at `swayAt`, applied by squirrels.js, not part of the brain's pose)
+      limb: -1, lf: 0, path: null, after: null, hopTo: null, hopArc: 0, swayK: 0, swayAt: null, pose_: {}, at_: {} });
     this.enterPerch(start, env.rnd() * Math.PI * 2);
     this.t = env.rnd() * 3;
   }
   get tr() { return this.env.trees[this.tree]; }
-  set(state, dur = 1) { this.state = state; this.t = 0; this.dur = dur; this.run = 0; this.log.push(state); if (this.log.length > 40) this.log.shift(); }
+  set(state, dur = 1) { this.state = state; this.t = 0; this.dur = dur; this.run = 0; this.swayK = 0; this.log.push(state); if (this.log.length > 40) this.log.shift(); }
   playerDist() { const pl = this.env.player; return Math.hypot(pl.x - this.x, pl.z - this.z); }
   place(o) { this.x = o.x; this.y = o.y; this.z = o.z; }
   /** #1764: a straight ground run from (fx, fz) (default: where it is) to (x, z) stays on land: never through Höje å. */
@@ -330,14 +349,19 @@ export class SquirrelBrain {
   }
   leapAngle(j) { const t = this.env.trees[j]; return Math.atan2(this.z - t.z, this.x - t.x) + (this.env.rnd() - 0.5) * 1.2; }
 
-  enterPerch(tree, ang) {
-    this.tree = tree; this.ang = ang; this.pitch = 0; this.rise = 0;
-    this.place(perchPoint(this.tr, ang));
-    this.yaw = ang + Math.PI / 2;
+  enterPerch(tree, ang, li = null, f = null) {
+    this.tree = tree; this.ang = ang; this.pitch = 0; this.rise = 0; this.path = null; this.after = null; this.hopTo = null; this.limb = -1;
+    const cf = this.tr.cf;
+    if (cf) { // #2132: on a limb, along it (facing out, or in when far out), a little of its slope
+      this.limb = li ?? limbFor(cf, ang); this.lf = f ?? perchF(ang); this.ang = cf.limbs[this.limb].ang;
+      const o = limbAt(cf, this.limb, this.lf, this.at_); this.place(o);
+      const back = this.lf > 0.75; this.yaw = o.yaw + (back ? Math.PI : 0); this.pitch = (back ? -o.pitch : o.pitch) * 0.5;
+    } else { this.place(perchPoint(this.tr, ang)); this.yaw = ang + Math.PI / 2; }
     this.visits.set(tree, (this.visits.get(tree) ?? 0) + 1);
     if (this.visits.size > 80) { let lo = null; for (const v of this.visits) if (!lo || v[1] < lo[1]) lo = v; this.visits.delete(lo[0]); }
     const rest = this.route.length && !this.hasNut ? between(R.rest, this.env.rnd) : between(C.perch, this.env.rnd) * this.p.perch * (1.6 - 0.6 * Math.max(0.45, this.activity()));
     this.set('perch', Math.max(this.calmT, this.hasNut ? C.carry : rest));
+    if (cf) { this.swayK = swayWeight(this.lf); this.swayAt = cf.limbs[this.limb].tip; }
     this.react = 0;
   }
   /** #1716: asleep in the drey (inside the crown, out of sight) until the morning. */
@@ -346,14 +370,47 @@ export class SquirrelBrain {
   act(a) {
     switch (a.k) {
       case 'nest': this.enterNest(); break;
-      case 'leap': if (this.route[0] === a.j) this.route.shift(); this.startLeap(a.j, this.leapAngle(a.j)); break;
+      case 'leap': if (this.route[0] === a.j) this.route.shift(); if (!this.hopVia(a.j)) this.startLeap(a.j, this.leapAngle(a.j)); break;
       case 'run': this.travelAfter = true; this.startDown(false); break;
       case 'down': case 'dig': this.startDown(false); break;
-      default: this.enterPerch(this.tree, this.env.rnd() * Math.PI * 2);
+      default: if (!this.tr.cf || !this.moveInCrown()) this.enterPerch(this.tree, this.env.rnd() * Math.PI * 2);
     }
   }
+  /** #2132: a leap to tree j between branch points (both trees with frames): first along the limbs to the take-off point when it is not
+   * there, then the jump. False: the old crown-to-crown leap. */
+  hopVia(j) {
+    const h = this.tr.hops?.[j]; if (!h || this.limb < 0) return false;
+    if (this.limb === h.li && Math.abs(this.lf - h.f) < 0.02) { this.startHop(j, h.lj, h.fj); return true; }
+    this.startLimb(crownRoute(this.tr.cf, this.limb, this.lf, h.li, h.f), { k: 'leap', j, lj: h.lj, fj: h.fj });
+    return true;
+  }
+  /** #2132: nothing else to do: now and then (`stay`) it moves within the crown: a jump to another limb within reach, else a run along the
+   * limbs (stopping further out or in on the same one, or round the trunk to another). False: it stays where it is. */
+  moveInCrown() {
+    const rnd = this.env.rnd, cf = this.tr.cf;
+    if (this.limb < 0 || rnd() >= K.stay) return false;
+    const lj = Math.floor(rnd() * cf.limbs.length), f = K.perch[0] + (K.perch[1] - K.perch[0]) * rnd();
+    const to = limbAt(cf, lj, f), d = Math.hypot(to.x - this.x, to.y - this.y, to.z - this.z);
+    if (lj !== this.limb && d <= K.hop && d > 0.4) { this.startHop(this.tree, lj, f); return true; }
+    this.startLimb(crownRoute(cf, this.limb, this.lf, lj, f), { k: 'perch', li: lj, f });
+    return true;
+  }
+  /** #2132: follow `pts` (bark points) along the limbs / round the trunk, then `after` ({ k: 'perch', li, f } | { k: 'leap', j, lj, fj }). */
+  startLimb(pts, after) {
+    this.path = pathOf(pts); this.after = after;
+    this.set('limb', Math.max(0.3, this.path.total / (C.climb * K.limb * this.p.speed))); this.run = 1;
+  }
+  /** #2132: a jump from where it is to limb `lj` at `fj` of tree `j` (this tree or a neighbour): a low arc, at most SQUIRREL_CLIMB.hop m. */
+  startHop(j, lj, fj) {
+    const t = this.env.trees[j]; Object.assign(this.from, { x: this.x, y: this.y, z: this.z });
+    const o = limbAt(t.cf, lj, fj); Object.assign(this.to, { x: o.x, y: o.y, z: o.z });
+    this.tree2 = j; this.ang2 = t.cf.limbs[lj].ang; this.hopTo = { li: lj, f: fj };
+    const d = Math.hypot(o.x - this.x, o.y - this.y, o.z - this.z); this.hopArc = K.hopArc[0] + K.hopArc[1] * d;
+    this.set('leap', Math.max(0.35, d / (C.leap * this.p.speed)));
+    this.yaw = Math.atan2(this.to.x - this.x, this.to.z - this.z); this.run = 1;
+  }
   startLeap(tree, ang) {
-    const t = this.env.trees[tree];
+    const t = this.env.trees[tree]; this.hopTo = null; this.hopArc = 0;
     Object.assign(this.from, { x: this.x, y: this.y, z: this.z }); perchPoint(t, ang, this.to);
     this.tree2 = tree; this.ang2 = ang;
     const d = Math.hypot(this.to.x - this.x, this.to.z - this.z);
@@ -361,10 +418,33 @@ export class SquirrelBrain {
     this.yaw = Math.atan2(this.to.x - this.x, this.to.z - this.z); this.run = 1;
   }
   startDown(approach) {
-    this.approachAfter = approach; this.yaw = this.ang;
+    this.approachAfter = approach;
+    const cf = this.tr.cf;
+    if (cf && this.limb >= 0) { // #2132: in along the limb and down round the trunk head first, the climb's own way reversed, to a foot spot
+      const a0 = this.ang + 2.2 + (this.lf - 0.5) * 2, foot = footPoint(this.tr, a0, this.env.ground);
+      this.path = pathOf(climbRoute(cf, foot, this.limb, this.lf).reverse());
+      this.set('down', Math.max(1, this.path.total / (C.climb * this.p.speed))); return;
+    }
+    this.path = null; this.yaw = this.ang;
     this.set('down', Math.max(1, (this.tr.cy - this.tr.y) / (C.climb * this.p.speed)));
   }
-  startUp() { this.yaw = this.ang + Math.PI; this.set('up', Math.max(1, (this.tr.cy - this.tr.y) / (C.climb * this.p.speed))); }
+  startUp() {
+    const cf = this.tr.cf;
+    if (cf) { // #2132: from where it stands, round the trunk up to the limb nearest its side and out along it
+      const li = limbFor(cf, this.ang), f = perchF(this.ang + this.clock);
+      this.path = pathOf(climbRoute(cf, { x: this.x, y: this.y, z: this.z }, li, f)); this.after = { k: 'perch', li, f };
+      this.set('up', Math.max(1, this.path.total / (C.climb * this.p.speed))); return;
+    }
+    this.path = null; this.yaw = this.ang + Math.PI; this.set('up', Math.max(1, (this.tr.cy - this.tr.y) / (C.climb * this.p.speed)));
+  }
+  /** #2132: one step along `path` (k 0 … 1 of it): placed on the bark, posed by climbPose (eased, so the turn from the stem onto a limb is
+   * not a snap), the sway weight on a limb. */
+  followPath(k, dt) {
+    const o = pathAt(this.path, k * this.path.total, this.at_), q = climbPose(o, this.pose_), e = Math.min(1, dt * 14);
+    this.place(o); this.run = 1;
+    this.yaw += wrap(q.yaw - this.yaw) * e; this.pitch += (q.pitch - this.pitch) * e;
+    if (!o.trunk && o.li >= 0) { this.swayK = swayWeight(o.f); this.swayAt = this.tr.cf.limbs[o.li].tip; } else this.swayK = 0;
+  }
   startForage() { this.left = between(C.forage, this.env.rnd) * (0.5 + 0.5 * Math.max(0.45, this.activity())); this.pickGoal(); }
   pickGoal() {
     const e = this.env, t = this.tr;
@@ -480,17 +560,38 @@ export class SquirrelBrain {
       }
       case 'nest': if (!this.night()) { this.nest = -1; this.enterPerch(this.tree, rnd() * Math.PI * 2); } break;
       case 'leap': {
-        const k = Math.min(1, this.t / this.dur), h = 0.5 + 0.15 * Math.hypot(this.to.x - this.from.x, this.to.z - this.from.z);
+        const k = Math.min(1, this.t / this.dur), h = this.hopTo ? this.hopArc : 0.5 + 0.15 * Math.hypot(this.to.x - this.from.x, this.to.z - this.from.z); // (#2132: a branch jump's own low arc)
         this.x = this.from.x + (this.to.x - this.from.x) * k; this.z = this.from.z + (this.to.z - this.from.z) * k;
         this.y = this.from.y + (this.to.y - this.from.y) * k + 4 * h * k * (1 - k); this.pitch = (0.5 - k) * 0.9;
-        if (k >= 1) this.enterPerch(this.tree2, this.ang2);
+        if (k >= 1) this.enterPerch(this.tree2, this.ang2, this.hopTo?.li ?? null, this.hopTo?.f ?? null);
+        break;
+      }
+      case 'limb': { // #2132: along the limbs / round the trunk within the crown
+        const k = Math.min(1, this.t / this.dur); this.followPath(k, dt);
+        if (k < 1) break;
+        const a = this.after; this.path = null;
+        if (a?.k === 'leap') this.startHop(a.j, a.lj, a.fj);
+        else this.enterPerch(this.tree, this.ang, a?.li ?? null, a?.f ?? null);
         break;
       }
       case 'down': case 'up': {
+        if (this.path) { // #2132: on the tree's real bark (its climbing frame)
+          const k = Math.min(1, this.t / this.dur); this.followPath(k, dt);
+          if (k < 1) break;
+          const a = this.after; this.path = null; this.pitch = 0; this.swayK = 0;
+          if (this.state === 'up') { this.enterPerch(this.tree, this.ang, a?.li ?? null, a?.f ?? null); break; }
+          this.limb = -1; this.y = e.ground(this.x, this.z);
+          if (this.approachAfter && pl.lure) this.startApproach();
+          else if (this.travelAfter && this.route.length) { this.travelAfter = false; this.startTravel(); }
+          else if (this.target?.tree === this.tree) this.startSeek();
+          else this.startForage();
+          this.travelAfter = false;
+          break;
+        }
         const k = Math.min(1, this.t / this.dur), kk = this.state === 'down' ? 1 - k : k, o = climbPoint(this.tr, this.ang, kk, e.ground);
         this.place(o); this.run = 1;
         const trunk = (kk < 0.78); this.pitch = trunk ? (this.state === 'down' ? -Math.PI / 2 : Math.PI / 2) : 0;
-        this.yaw = trunk ? (this.state === 'down' ? o.a : o.a + Math.PI) : this.ang + Math.PI / 2;
+        this.yaw = trunk ? (this.state === 'down' ? Math.atan2(Math.cos(o.a), Math.sin(o.a)) : Math.atan2(-Math.cos(o.a), -Math.sin(o.a))) : this.ang + Math.PI / 2; // (#2132: belly to the bark)
         if (k < 1) break;
         this.pitch = 0;
         if (this.state === 'up') this.enterPerch(this.tree, this.ang);
@@ -615,7 +716,7 @@ export class SquirrelBrain {
     this.clock += dt; this.t += dt; if (this.calmT > 0) this.calmT = Math.max(0, this.calmT - dt);
     if (this.state !== 'perch' && this.state !== 'nest') { // whatever it was doing on the ground or between the crowns: back in a tree
       this.rise = 0; this.slot = null; this.prey = null; this.hasNut = false; this.approachAfter = this.travelAfter = false;
-      const j = this.state === 'leap' ? this.tree2 : this.nearestTree(); this.enterPerch(j, e.rnd() * Math.PI * 2);
+      const j = this.state === 'leap' ? this.tree2 : this.state === 'limb' ? this.tree : this.nearestTree(); this.enterPerch(j, e.rnd() * Math.PI * 2);
     }
     if (dt > R.catchUp) {
       this.route = []; this.target = null;

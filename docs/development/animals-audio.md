@@ -899,9 +899,25 @@ plume opening in a leap, a tighter curl sitting up and siteWind flutter, bounded
 `eatPaws` (forearms folded to the mouth, the nut turned). The brain gets `env.month()` (squirrels.js from `registerSeasonal`), the `scan`
 ground state (wire `search`) and eats a found nut from its paws (`hasNut`, off the ground at once). `Squirrels.pose()` resets the life
 joints to rest before the mixer, then adds the offsets; everything is derived from the shared pose, so squirrelsync has no new field.
-`SQUIRREL_SURFACE.tail` is wider with a ragged `fringe` of hair locks (same vertices; bestiary `modelVersion` 3). A new climbing state
-(#2132) joins the air states with a WIRE entry. Tests: `node --test tools/squirrellifetest.mjs`; browser `tools/squirrel2128browser.cjs`.
+`SQUIRREL_SURFACE.tail` is wider with a ragged `fringe` of hair locks (same vertices; bestiary `modelVersion` 3). #2132's `limb`
+climbing state joins the air states with a WIRE entry (below). Tests: `node --test tools/squirrellifetest.mjs`; browser `tools/squirrel2128browser.cjs`.
 [Before/after frame sequences](../verification/2128/README.md).
+
+### Squirrels climbing the real trees (#2132)
+
+`src/squirrelclimb.js` (no three.js) turns each tree's world skeleton (treeform.js `treeSkeleton(matrix, bark, { orders: 2 })`, #2131;
+squirrels.js matches `treeForms` by position) into a `climbFrame`: the leaning, tapering stem and its main limbs, each carried on by the
+second limb that continues it. Points are put `cling` m off the drawn bark: `section` rebuilds a stem's 5-gon / a limb's 3-gon as
+foliage.js `trunkGeometry` draws it (stretched by `aspect`, then the instance matrix), so a squirrel sits on the limb the visitor sees, not
+the skeleton's round radius. The brain (a tree with `t.cf`) climbs `climbRoute` (a loose spiral, `turns` per m, belly to the bark, nose
+up) to a limb and out to a perch `lf` along it, comes down the reverse head first, runs along limbs / round the stem in the new `limb`
+state (wire: `up`) and jumps only between branch points at most `hop` m apart: linkTrees makes two framed trees crown neighbours
+(`near`) only when `bestHop` finds such a pair (`t.hops[j]`), otherwise they are joined by ground runs; within a crown it hops between
+limbs or runs along them (`stay`). Out on a limb squirrels.js adds #2101's `siteWindOffset` (weight `sway` x `swayWeight(lf)`) on the
+leader / a solo visitor; the woody limbs themselves do not sway. Trees without a frame keep the old crown-surface perches. Cats
+(`prey()` in main.js) still only stalk squirrels within 0.15 m of the ground. Config `SQUIRREL_CLIMB` (*guess*). Tests:
+`node --test tools/squirrelclimbtest.mjs` (against the drawn trunk geometry); browser `tools/squirrel2132browser.cjs`.
+[Before/after frame sequences](../verification/2132/README.md).
 
 ### Continuous squirrel surfaces (#1920)
 

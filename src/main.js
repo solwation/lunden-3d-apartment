@@ -95,7 +95,7 @@ import { FishQuest } from './fishquest.js'; // #1754: the hidden fishing quest
 import { Minimap } from './minimap.js';
 import { Compass } from './compass.js';
 import { Measure } from './measure.js';
-import { cloudTexture, groundY, renderedTerrainY, lampGroundY, treeFeet, southTreeFeet, aoTrees } from './surroundings.js';
+import { cloudTexture, groundY, renderedTerrainY, lampGroundY, treeFeet, southTreeFeet, aoTrees, treeForms } from './surroundings.js';
 import { Squirrels } from './squirrels.js';
 import { Mussels } from './mussels.js';
 import { Hearts } from './pingping.js'; // #1946: the hearts of a fed fish
@@ -678,6 +678,7 @@ const holdables = [saber, ...toys.items, remote, book, beer, ...things, ...sillP
 const squirrelWalk = (x, z) => { const r = riverAt(x, z); if (r.distance > r.width / 2 + SQUIRRELS.dry) return true; const w = waterYAt(x, z, r) + 0.3; return parkGround(x, z) > w && renderedTerrainY(x, z) > w; }; // (#1764: far from the river it is land, without the costly terrain lookup; #1780: near it the terrain itself is above the water too, so the road bridge's deck over Höje å is no place to forage nor a way across)
 const squirrels = params0.has('nosquirrels') ? null : new Squirrels({ scene, camera, player, feet: treeFeet, southFeet: southTreeFeet, road: onVehicle, crowns: aoTrees, ground: parkGround, walkable: squirrelWalk, // (#1780: southFeet / road: the home areas' own groves)
   nutWalls: farWalls, // #1831: pathside nuts have a clear short approach, including trunks/fences
+  forms: treeForms, // #2132: the trees' skeletons to climb on
   nutOk: (x, z) => squirrelWalk(x, z) && !onRoad(x, z, 0.5) && !onWalk(x, z, 0.5) && !onParkPath(x, z, 0.4), onFeed: () => bump('squirrelFeeds') });
 if (squirrels) holdables.push(...squirrels.nutItems);
 const mussels = new Mussels({ scene, camera, player, say: (text) => badge(text, false) }); holdables.push(...mussels.items); // #1945: blue mussels on the bed of Höje å, taken like the nuts while diving

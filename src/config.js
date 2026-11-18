@@ -8939,6 +8939,18 @@ export const SQUIRREL_LIFE = {
   tail: { wave: 0.55, lag: 0.9, amp: 0.09, yawAmp: 0.06, hopAmp: 0.2, leapOpen: 0.32, sitCurl: 0.1, wind: 0.08, max: 0.5 },
 };
 
+// #2132: the squirrels climbing the trees' real skeletons (src/squirrelclimb.js; treeform.js treeSkeleton, #2131). All *guess* (red
+// squirrels: ~0.2-0.3 kg, ~20 cm body; jumps of ~1.5-2.5 m between branches, longer only downwards). `cling` m from the bark's surface to
+// the body's centre (pressed to it); `turns` turns round the trunk per m climbed (a loose spiral); `hop` m: the longest jump between two
+// branch points (of one crown or two neighbouring crowns), `hopArc` [base, per m] m of the jump's rise; `perch` [from, to] how far out
+// along a main limb (0 trunk, 1 tip) it sits; `outer` the part of a limb it uses for a jump (its reach); `limb` x climb speed along
+// limbs; `stay` the chance a perch ends with a short run or hop in the same crown when it has nothing else to do; `sway` m of the
+// crown's wind sway (#2101 siteWindOffset weight) at a limb's tip, from `swayFrom` out (the woody limbs themselves are not swayed).
+export const SQUIRREL_CLIMB = {
+  cling: 0.06, turns: 0.22, hop: 2.6, hopArc: [0.12, 0.1], perch: [0.45, 0.92], outer: [0.55, 1], limb: 0.8, stay: 0.6,
+  sway: 0.1, swayFrom: 0.45,
+};
+
 export const SQUIRRELS = {
   simDist: 70, farDist: 130, drawDist: 150, farStep: 0.25, leapRange: 11, groundHop: 22,
   dry: 6, // #1764: farther than the river's half width + `dry` m from its centre line the park ground is always above the water (measured: the wet strip reaches at most 5.6 m from the centre line), so main.js squirrelWalk answers there without the terrain lookup
