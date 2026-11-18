@@ -4,6 +4,8 @@ Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spe
 övre plan med trappan emellan, byggt direkt från den måttsatta planritningen
 (`L1007_mattsatt_planritning.pdf`).
 
+När du sitter eller ligger syns din valda kropp när du tittar ned, med böjda ben i fåtöljen och utsträckta ben i divanen. Spegeln visar hela avataren. [Bilder och kontroller](docs/verification/2080/README.md).
+
 Längs Realgymnasiets tegelfasad vid Sankt Lars väg går en smal trottoar med anslutningar vid båda gavlarna; bredden är uppskattad.
 
 Uteplatsernas betongplattor har grunda fogar och mjuka plattkanter som reagerar på ljuset; snötäcket och den skyddade portiken behåller sin tidigare funktion.

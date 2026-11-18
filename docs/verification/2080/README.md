@@ -97,3 +97,7 @@ Reproduce with the ignored Three 0.170.0 dependency available under `node_module
 an HTTP server for this checkout on 8206 and the repository browser wrapper. Baseline
 modules are obtained from Git only inside the browser runner. The fixture has an inline
 favicon and no production cloud writes.
+
+## Integration review
+
+Root opened all five result sheets/views, reviewed the product diff, fifteen native checks and twenty lifecycle checks, and accepted the specific hem-depth proof. Product avatar/selfview/Ghosts/main bytes exactly match tested810cef8d. Config is unchanged from accepted main; all prior changelog rows retained with unique1610. Independent street/pavement/grade changes are preserved. Source-bound green component evidence reused without another browser or broad gate. README adds only the user-facing feature note.
