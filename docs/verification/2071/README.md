@@ -89,3 +89,15 @@ PLAYWRIGHT_MODULE=/home/olof/github-dashboard/node_modules/playwright \
 The script routes the pinned Three.js URL to the existing local three-0.170.0 cache for
 repeatable offline loading; source modules come from this owned checkout. No production
 storage or network service is used. The conductor owns publication and closure.
+
+## Publication
+
+Published on main as `7b5f0f1740c02d7f7731e34a067563b4b88239e9`.
+[Pages44262927980](https://github.com/solwation/lunden-3d-apartment/actions/runs/44262927980)
+and [Worker44262928008](https://github.com/solwation/lunden-3d-apartment/actions/runs/44262928008)
+both succeeded on that exact revision. The conductor inspected all four comparison sheets;
+three representative ones were embedded in the issue with permanent revision URLs verified
+HTTP200 before closure. Source modules and fixtures match the accepted worker bytes;
+only independent constant additions and changelog1601 differ from its base.
+The neutral public adaptation is tracked in
+[kvarteret-lunden#293](https://github.com/solwation/kvarteret-lunden/issues/293).
