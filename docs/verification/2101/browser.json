@@ -1,0 +1,268 @@
+{
+ "views": [
+  {
+   "name": "park-trees",
+   "target": [
+    3.5,
+    -1.967809796333313,
+    118.5999984741211
+   ],
+   "from": [
+    -5.5,
+    107.5999984741211
+   ],
+   "shots": {
+    "still": {
+     "file": "docs/verification/2101/raw/park-trees-still.png",
+     "power": 0,
+     "t": 0.8,
+     "calls": 47,
+     "triangles": 365836,
+     "programs": 43
+    },
+    "still-b": {
+     "file": "docs/verification/2101/raw/park-trees-still-b.png",
+     "power": 0,
+     "t": 2.3,
+     "calls": 47,
+     "triangles": 365836,
+     "programs": 43
+    },
+    "calm-a": {
+     "file": "docs/verification/2101/raw/park-trees-calm-a.png",
+     "power": 0.12,
+     "t": 0.8,
+     "calls": 47,
+     "triangles": 365836,
+     "programs": 43
+    },
+    "calm-b": {
+     "file": "docs/verification/2101/raw/park-trees-calm-b.png",
+     "power": 0.12,
+     "t": 2.3,
+     "calls": 47,
+     "triangles": 365836,
+     "programs": 43
+    },
+    "windy-a": {
+     "file": "docs/verification/2101/raw/park-trees-windy-a.png",
+     "power": 1,
+     "t": 0.8,
+     "calls": 47,
+     "triangles": 365836,
+     "programs": 43
+    },
+    "windy-b": {
+     "file": "docs/verification/2101/raw/park-trees-windy-b.png",
+     "power": 1,
+     "t": 2.3,
+     "calls": 47,
+     "triangles": 365836,
+     "programs": 43
+    }
+   },
+   "motion": {
+    "noise": {
+     "meanAbs": 0.001,
+     "changedPct": 0
+    },
+    "calm": {
+     "meanAbs": 1.192,
+     "changedPct": 2.05
+    },
+    "windy": {
+     "meanAbs": 5.92,
+     "changedPct": 12.59
+    },
+    "stillVsWindy": {
+     "meanAbs": 4.507,
+     "changedPct": 9.62
+    },
+    "stillVsCalm": {
+     "meanAbs": 0.858,
+     "changedPct": 1.46
+    }
+   }
+  },
+  {
+   "name": "river-reeds",
+   "target": [
+    -56.9389160238798,
+    -7.160158868291555,
+    162.37378429785466
+   ],
+   "from": [
+    -60.4389160238798,
+    158.87378429785466
+   ],
+   "shots": {
+    "still": {
+     "file": "docs/verification/2101/raw/river-reeds-still.png",
+     "power": 0,
+     "t": 0.8,
+     "calls": 43,
+     "triangles": 354134,
+     "programs": 49
+    },
+    "still-b": {
+     "file": "docs/verification/2101/raw/river-reeds-still-b.png",
+     "power": 0,
+     "t": 2.3,
+     "calls": 43,
+     "triangles": 354134,
+     "programs": 49
+    },
+    "calm-a": {
+     "file": "docs/verification/2101/raw/river-reeds-calm-a.png",
+     "power": 0.12,
+     "t": 0.8,
+     "calls": 43,
+     "triangles": 354956,
+     "programs": 49
+    },
+    "calm-b": {
+     "file": "docs/verification/2101/raw/river-reeds-calm-b.png",
+     "power": 0.12,
+     "t": 2.3,
+     "calls": 43,
+     "triangles": 353312,
+     "programs": 49
+    },
+    "windy-a": {
+     "file": "docs/verification/2101/raw/river-reeds-windy-a.png",
+     "power": 1,
+     "t": 0.8,
+     "calls": 43,
+     "triangles": 354134,
+     "programs": 49
+    },
+    "windy-b": {
+     "file": "docs/verification/2101/raw/river-reeds-windy-b.png",
+     "power": 1,
+     "t": 2.3,
+     "calls": 44,
+     "triangles": 354262,
+     "programs": 49
+    }
+   },
+   "motion": {
+    "noise": {
+     "meanAbs": 0.34,
+     "changedPct": 0.72
+    },
+    "calm": {
+     "meanAbs": 1.033,
+     "changedPct": 2.32
+    },
+    "windy": {
+     "meanAbs": 4.182,
+     "changedPct": 10.08
+    },
+    "stillVsWindy": {
+     "meanAbs": 3.612,
+     "changedPct": 8.75
+    },
+    "stillVsCalm": {
+     "meanAbs": 1.11,
+     "changedPct": 2.58
+    }
+   }
+  },
+  {
+   "name": "courtyard-shrubs",
+   "target": [
+    -21.715866088867188,
+    -2.613218069076538,
+    35.52424240112305
+   ],
+   "from": [
+    -24.215866088867188,
+    38.52424240112305
+   ],
+   "shots": {
+    "still": {
+     "file": "docs/verification/2101/raw/courtyard-shrubs-still.png",
+     "power": 0,
+     "t": 0.8,
+     "calls": 216,
+     "triangles": 731005,
+     "programs": 110
+    },
+    "still-b": {
+     "file": "docs/verification/2101/raw/courtyard-shrubs-still-b.png",
+     "power": 0,
+     "t": 2.3,
+     "calls": 216,
+     "triangles": 731005,
+     "programs": 110
+    },
+    "calm-a": {
+     "file": "docs/verification/2101/raw/courtyard-shrubs-calm-a.png",
+     "power": 0.12,
+     "t": 0.8,
+     "calls": 216,
+     "triangles": 731005,
+     "programs": 110
+    },
+    "calm-b": {
+     "file": "docs/verification/2101/raw/courtyard-shrubs-calm-b.png",
+     "power": 0.12,
+     "t": 2.3,
+     "calls": 216,
+     "triangles": 731005,
+     "programs": 110
+    },
+    "windy-a": {
+     "file": "docs/verification/2101/raw/courtyard-shrubs-windy-a.png",
+     "power": 1,
+     "t": 0.8,
+     "calls": 238,
+     "triangles": 733677,
+     "programs": 112
+    },
+    "windy-b": {
+     "file": "docs/verification/2101/raw/courtyard-shrubs-windy-b.png",
+     "power": 1,
+     "t": 2.3,
+     "calls": 238,
+     "triangles": 733677,
+     "programs": 112
+    }
+   },
+   "motion": {
+    "noise": {
+     "meanAbs": 0.775,
+     "changedPct": 0.03
+    },
+    "calm": {
+     "meanAbs": 1.049,
+     "changedPct": 3.2
+    },
+    "windy": {
+     "meanAbs": 3.441,
+     "changedPct": 11.45
+    },
+    "stillVsWindy": {
+     "meanAbs": 4.177,
+     "changedPct": 11.45
+    },
+    "stillVsCalm": {
+     "meanAbs": 1.736,
+     "changedPct": 2.83
+    }
+   }
+  }
+ ],
+ "errors": [],
+ "console": [
+  "Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+  "Failed to load resource: the server responded with a status of 404 (File not found)"
+ ],
+ "programs": [
+  "ndShader(shader, mode); }|dither-lod-v1|site-wind-lobe-v1",
+  "pile( /* shaderobject, renderer */ ) {}|site-wind-bend-v1|lampwashV|lampwash",
+  "foliage-leaves-v1|site-wind-lobe-v1|dither-lod-v1|lampwashV|lampwash",
+  "pile( /* shaderobject, renderer */ ) {}|site-wind-lobe-v1",
+  "foliage-leaves-v1|site-wind-lobe-v1|lampwashV|lampwash"
+ ]
+}
