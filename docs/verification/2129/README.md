@@ -12,7 +12,7 @@ counts as a threat (no roaming outdoor cat walking through).
 
 Before (base `b040a13c`, the same camera poses): no small birds anywhere; the gulls only circle (none on the roof or bank).
 
-![before](before/sequence.jpg)
+![before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8f013747701b1024606fa78bcf8cf52e7dcc3881/docs/verification/2129/before/sequence.jpg)
 
 After:
 
@@ -54,3 +54,5 @@ texture, light, shadow, pass or raycast target. No network fields: flocks are se
 - No sound, no bestiary entry for the small birds (gulls keep theirs; a landed gull's sighting point is its real position).
 - `groundBirds()` is only a hook; the outdoor cats do not stalk birds (#2125 may use it). Cats do flush them.
 - Other players do not flush your birds (local, like before); no phone run on a real device.
+
+Publicering: Pages/Worker success på `8f01374`; före-bilder borttagna vid stängning och visas från den commiten.
