@@ -28,9 +28,18 @@ test('direction and units: meteorological FROM degrees → downwind scene x/z (x
   const sw = at(225), d = new T.Vector2(...SITE_WIND.dir).normalize();
   assert.ok(close(sw.x, d.x, 0.01) && close(sw.z, d.y, 0.01), '#2101\'s start direction is a south-westerly');
   for (const deg of [0, 37, 180, 251, 359]) { const f = WS.windFrom(WS.windVector(deg, 7.5)); assert.ok(close(f.from, deg, 1e-6) && close(f.speed, 7.5), `round trip ${deg}`); }
-  assert.equal(WS.windPower(0), 0); assert.equal(WS.windPower(WIND.power.full), 1); assert.equal(WS.windPower(40), 1);
+  const P = WIND.power, lin = (v) => Math.min(1, v / P.full) ** P.gamma;
+  assert.equal(WS.windPower(0), 0);
+  for (const v of [1, 3, 5, 7]) if (lin(v) <= P.knee) assert.equal(WS.windPower(v), lin(v), `below the knee unchanged (${v} m/s)`);
+  let prev = 0; for (let v = 0; v <= 40; v += 0.25) { const p = WS.windPower(v); assert.ok(p >= prev - 1e-12 && p < P.top, `monotone, under ${P.top}`); prev = p; }
+  assert.ok(WS.windPower(12) > P.knee && WS.windPower(12) < 0.8 && WS.windPower(40) - WS.windPower(12) < 0.04, `a gale saturates softly: 12 m/s ${WS.windPower(12).toFixed(3)}, 40 m/s ${WS.windPower(40).toFixed(3)}`);
   const p2 = WS.windPower(2), p5 = WS.windPower(5), p10 = WS.windPower(10);
   assert.ok(p2 > 0.08 && p2 < 0.25 && p5 > p2 && p10 > p5 && p10 < 1, `2 m/s ${p2}, 5 m/s ${p5}, 10 m/s ${p10}`);
+  // the card flutter stops growing above SITE_WIND.crown.flutterCap (leaf shapes hold in a gale); the whole-crown sway keeps growing
+  const dir = new T.Vector2(1, 0), peak = (power, weight, flutter) => { let m = 0; for (let t = 0; t < 30; t += 0.03) { const o = SW.siteWindOffset({ time: t, power, dir }, { x: 3, z: 7 }, weight, flutter, 1.7); m = Math.max(m, Math.hypot(o.x, o.z)); } return m; };
+  const cap = SITE_WIND.crown.flutterCap;
+  assert.ok(close(peak(1, 0, 0.03), peak(cap, 0, 0.03), 1e-9) && peak(cap / 2, 0, 0.03) < peak(cap, 0, 0.03), 'flutter capped');
+  assert.ok(peak(0.9, 0.1, 0) > peak(cap, 0.1, 0), 'sway not capped');
 });
 
 test('real weather: the request asks for the 10 m wind in m/s; parse / pack / unpack keep it; km/h is converted', () => {

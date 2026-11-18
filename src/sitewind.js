@@ -50,9 +50,10 @@ export function siteWindOffset(state, anchor, weight, flutter = 0, seed = 0, fre
   const s = Math.sin(t * freq + ph) + W.harmonic * Math.sin(t * freq * 2.37 + ph * 1.7);
   const c = Math.sin(t * freq * 0.71 + ph + 1.3);
   const a = (W.lean + s) * weight * gust, b = W.side * c * weight * gust;
-  let x = dir.x * a - dir.y * b + flutter * Math.sin(t * W.crown.flutterFreq + seed);
-  let z = dir.y * a + dir.x * b + flutter * Math.cos(t * W.crown.flutterFreq * 1.13 + seed * 1.31);
-  x *= power; z *= power;
+  const fp = Math.min(power, W.crown.flutterCap); // (#2117: the card flutter stops growing above `flutterCap`, so a gale keeps the leaf shapes)
+  const x0 = (dir.x * a - dir.y * b) * power + flutter * Math.sin(t * W.crown.flutterFreq + seed) * fp;
+  const z0 = (dir.y * a + dir.x * b) * power + flutter * Math.cos(t * W.crown.flutterFreq * 1.13 + seed * 1.31) * fp;
+  let x = x0, z = z0;
   const l = Math.hypot(x, z);
   if (l > W.maxDisplacement) { x *= W.maxDisplacement / l; z *= W.maxDisplacement / l; }
   return { x, z };
@@ -84,9 +85,8 @@ vec3 siteWindWorld(vec3 anchor, float weight, float flutter, float seed, float f
   float s = sin(t * freq + ph) + ${num(W.harmonic)} * sin(t * freq * 2.37 + ph * 1.7);
   float c = sin(t * freq * 0.71 + ph + 1.3);
   float a = (${num(W.lean)} + s) * weight * gust, b = ${num(W.side)} * c * weight * gust;
-  vec2 o = uSiteWindDir * a + vec2(-uSiteWindDir.y, uSiteWindDir.x) * b
-    + flutter * vec2(sin(t * ${num(W.crown.flutterFreq)} + seed), cos(t * ${num(W.crown.flutterFreq * 1.13)} + seed * 1.31));
-  o *= uSiteWindPower;
+  vec2 o = (uSiteWindDir * a + vec2(-uSiteWindDir.y, uSiteWindDir.x) * b) * uSiteWindPower
+    + flutter * min(uSiteWindPower, ${num(W.crown.flutterCap)}) * vec2(sin(t * ${num(W.crown.flutterFreq)} + seed), cos(t * ${num(W.crown.flutterFreq * 1.13)} + seed * 1.31));
   float l = length(o);
   if (l > ${num(W.maxDisplacement)}) o *= ${num(W.maxDisplacement)} / l;
   return vec3(o.x, 0.0, o.y);
@@ -141,7 +141,7 @@ export function patchSiteWind(material, mode = 'lobe') {
   if (mode === 'bend') defines.SITE_WIND_BEND = ''; else if (!lowFlutter) defines.SITE_WIND_FLUTTER = '';
   const patched = function (shader, renderer) { before.call(this, shader, renderer); siteWindShader(shader, mode); };
   material.onBeforeCompile = patched;
-  material.customProgramCacheKey = function () { return `${base.call(this)}|site-wind-${mode}${lowFlutter && mode === 'lobe' ? '-lo' : ''}-v1`; };
+  material.customProgramCacheKey = function () { return `${base.call(this)}|site-wind-${mode}${lowFlutter && mode === 'lobe' ? '-lo' : ''}-v2`; };
   rememberBoundedVertexCompile(patched, before, W.maxDisplacement);
   material.userData.siteWind = mode;
   return material;

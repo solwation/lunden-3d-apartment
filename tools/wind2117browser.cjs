@@ -24,6 +24,7 @@ function fixture() {
   }
   return JSON.stringify({ _note: 'Hand-made fixture (#2117), not real data', latitude: 55.7, longitude: 13.2, hourly_units: { wind_speed_10m: 'm/s', wind_direction_10m: '°' }, hourly: h });
 }
+const ONLY = process.env.CONDITIONS?.split(','); // e.g. CONDITIONS=windy: only that one
 const CONDITIONS = [
   { name: 'windy', y: 2024, m: 6, d: 12, h: 12 }, // real (fixture): 12 m/s from 250°, light rain
   { name: 'calm', y: 2024, m: 6, d: 5, h: 12 }, // real (fixture): 0.8 m/s from 90°
@@ -66,7 +67,7 @@ async function route(ctx, phase, log) {
         return { target: [best.x, best.y - 1, best.z], from: [best.x - 9, best.z - 11] };
       });
       const res = report.phases[phase] = { loadSeconds: Math.round((Date.now() - t0) / 1000), view, conditions: {} };
-      for (const c of CONDITIONS) {
+      for (const c of CONDITIONS.filter((x) => !ONLY || ONLY.includes(x.name))) {
         const shots = {};
         for (const [label, t] of [['a', 0.8], ['b', 2.3]]) {
           const info = await page.evaluate(async ({ c, v, t }) => {

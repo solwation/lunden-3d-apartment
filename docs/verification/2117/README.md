@@ -1,6 +1,6 @@
 # #2117 — the wind follows the real weather
 
-Baseline `8ea1e4a5`. `tools/wind2117browser.cjs` loads the real game twice (before = the baseline's `config.js`, `realweather.js`,
+Baseline `8ea1e4a5` (the windy view re-shot against `dd9088d0`). `tools/wind2117browser.cjs` loads the real game twice (before = the baseline's `config.js`, `realweather.js`,
 `weather.js`, `sitewind.js`, `cloudshadow.js`, `daycycle.js`; after = the working tree) with a hand-made Open-Meteo fixture for June 2024
 (served as `&weatherapi=/tools/fixtures/wind2117-2024-06.json`, **not real data, no live request**) and shows the river-park trees at three
 weathers: a windy hour (12 June 12:00, 12 m/s from 250°, light rain), a calm hour (5 June 12:00, 0.8 m/s from 90°) and a future day
@@ -12,7 +12,7 @@ clock times, amplified in orange over the dimmed frame (rain streaks are respawn
 
 | condition | weather wind (after) | sway power before → after | sway direction before → after (x, z downwind) | rain slant after (m/m) | cloud drift after (m/s) | motion mean \|Δ\| / changed px before → after |
 |---|---|---|---|---|---|---|
-| windy (real) | 12.0 m/s from 250° | 0.39 → 0.93 | (0.71, −0.71) → (0.94, −0.34) | (0.34, −0.12) | (18.0, −6.6) | 3.24 / 5.6 % → 5.66 / 11.8 % |
+| windy (real) | 12.0 m/s from 250° | 0.39 → 0.76 | (0.71, −0.71) → (0.94, −0.34) | (0.34, −0.12) | (18.0, −6.6) | 3.21 / 5.6 % → 5.01 / 10.3 % |
 | calm (real) | 0.8 m/s from 90° | 0.12 → 0.08 | (0.71, −0.71) → (−1, 0) | (−0.02, 0) | (−1.3, 0) | 1.17 / 2.0 % → 1.13 / 2.1 % |
 | future (draw) | 3.6 m/s from 207° | 0.12 → 0.31 | (0.71, −0.71) → (0.46, −0.89) | (0.05, −0.10) | (2.6, −5.1) | 1.17 / 2.0 % → 3.78 / 7.9 % |
 
@@ -31,6 +31,12 @@ Calm hour after / before: ![Calm motion after](calm-motion.jpg) ![Calm motion be
 
 Future day (the draw) after / before: ![Future motion after](future-motion.jpg) ![Future motion before](before/future-motion.jpg) ([frame](future.jpg))
 
+Review fix: above power 0.6 `windPower` now saturates softly towards 0.8 (12 m/s: 0.93 → 0.76; ≤ ~7.5 m/s unchanged) and the
+per-card flutter stops growing above power 0.6 (`SITE_WIND.crown.flutterCap`), so a gale reads as a strong gust. The windy view was
+re-shot on `dd9088d0` with the same fixture. The streaked, edge-on-looking leaf cards at the top left of the nearest crown are **not
+wind**: they are already in the before image (power 0.39) and in #2101's calm image ([park-calm.jpg](../2101/park-calm.jpg), near-zero sway) — a
+pre-existing close-range leaf-card look, worth its own bug issue.
+
 ## Checks
 
 - `node --test tools/windsimtest.mjs` — 8/8: Open-Meteo wind in parse / pack / unpack and km/h → m/s, a response without wind, a v1
@@ -40,7 +46,7 @@ Future day (the draw) after / before: ![Future motion after](future-motion.jpg) 
   (west wind → +x, north wind → +z); rain streaks slant / snow drifts downwind and scale with the speed (4 m/s ≈ the old 0.12); the cloud
   pattern moves downwind at the expected speed and keeps its direction in a calm; SiteWind turns the short way, eases, `&wind=` pins power.
 - `node --test tools/sitewindtest.mjs tools/cloudshadowtest.mjs tools/avatarwindtest.mjs tools/aerialhazetest.mjs` — all pass.
-- `THREE_DIR=… BASE_REV=8ea1e4a5 node tools/wind2117browser.cjs http://127.0.0.1:8317 OUT` — the table above.
+- `THREE_DIR=… BASE_REV=8ea1e4a5 node tools/wind2117browser.cjs (windy re-shot with CONDITIONS=windy BASE_REV=dd9088d0) http://127.0.0.1:8317 OUT` — the table above.
 - `tools/weathertest.html` got the fixture's wind checks (m/s request, the windy/calm hours) but was not run (it is excluded from the
   routine runs, see verification.md).
 

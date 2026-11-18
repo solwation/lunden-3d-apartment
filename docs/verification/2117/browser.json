@@ -53,12 +53,12 @@
        "slant": null,
        "cloudVelocity": null,
        "cloudStrength": 0,
-       "calls": 48,
-       "triangles": 366944
+       "calls": 47,
+       "triangles": 365716
       }
      },
      "motion": {
-      "meanAbs": 3.238,
+      "meanAbs": 3.211,
       "changedPct": 5.61,
       "file": "before-windy-motion.png"
      }
@@ -192,7 +192,7 @@
        "rain": 0.506,
        "kind": "rain",
        "source": "real",
-       "power": 0.93,
+       "power": 0.762,
        "dir": [
         0.94,
         -0.342
@@ -219,7 +219,7 @@
        "rain": 0.506,
        "kind": "rain",
        "source": "real",
-       "power": 0.93,
+       "power": 0.762,
        "dir": [
         0.94,
         -0.342
@@ -233,13 +233,13 @@
         -6.567
        ],
        "cloudStrength": 0,
-       "calls": 47,
-       "triangles": 365716
+       "calls": 48,
+       "triangles": 365780
       }
      },
      "motion": {
-      "meanAbs": 5.658,
-      "changedPct": 11.79,
+      "meanAbs": 5.011,
+      "changedPct": 10.29,
       "file": "after-windy-motion.png"
      }
     },
@@ -386,5 +386,9 @@
  "external": [
   "https://lunden-l1007.olw.workers.dev/beer-shelf",
   "https://lunden-l1007.olw.workers.dev/beer-shelf"
- ]
+ ],
+ "windyRerun": {
+  "base": "dd9088d0fa549807b0c706afd64acb08ce216d96",
+  "note": "#2117 review: windy view re-shot after the soft power ceiling and the flutter cap, rebased on dd9088d0"
+ }
 }

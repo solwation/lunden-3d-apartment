@@ -23,7 +23,8 @@ export function windFrom(v) {
 /** SiteWind's power 0…1 for a speed in m/s (WIND.power: a near gale sways fully). */
 export function windPower(speed) {
   const P = W.power;
-  return Math.min(1, Math.max(0, speed / P.full) ** P.gamma);
+  const p = Math.min(1, Math.max(0, speed / P.full) ** P.gamma), r = P.top - P.knee;
+  return p <= P.knee ? p : P.knee + r * (1 - Math.exp(-(p - P.knee) / r)); // (#2117 review: a soft ceiling below `top`)
 }
 
 /** mulberry32 (as weather.js): neighbouring seeds give unrelated sequences. */

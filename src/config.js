@@ -2277,13 +2277,13 @@ export const WEATHER = {
 // sector round `other` ± `otherSpread` (spring's easterlies: the lower share in Mar–May). A weather regime lasts `regime` h (direction,
 // strength factor ×`regimeSpread`), smaller turns of ± `veer`° and ×`gustSpread` every `step` h, both blended smoothly (no jumps).
 // The day's swing: × (1 + `diurnal`[month] · cos(hour − `peak`)) (afternoon breeze, calm nights, more in summer). What falls adds
-// `rain` m/s × rain 0…1, a thunderstorm `storm` m/s. `power`: m/s → SiteWind power 0…1 = (speed / `full`)^`gamma` (a near gale sways
-// fully). `still`: below this speed the direction is kept (a calm has none). All *guesses*.
+// `rain` m/s × rain 0…1, a thunderstorm `storm` m/s. `power`: m/s → SiteWind power 0…1 = (speed / `full`)^`gamma`, above `knee`
+// compressed softly towards `top` (a gale reads as a strong gust, not a smeared crown; calm/medium below the knee unchanged). `still`: below this speed the direction is kept (a calm has none). All *guesses*.
 export const WIND = {
   mean: [5.0, 4.8, 4.6, 4.1, 3.8, 3.6, 3.5, 3.5, 3.9, 4.4, 4.8, 5.0],
   prevail: [0.72, 0.68, 0.55, 0.5, 0.55, 0.62, 0.68, 0.68, 0.66, 0.7, 0.72, 0.72], from: 245, spread: 40, other: 95, otherSpread: 50,
   regime: 36, regimeSpread: 0.35, step: 6, veer: 25, gustSpread: 0.2, diurnal: [0.05, 0.08, 0.15, 0.22, 0.25, 0.25, 0.25, 0.22, 0.15, 0.1, 0.06, 0.05], peak: 14,
-  rain: 2, storm: 6, max: 24, power: { full: 13, gamma: 0.9 }, still: 0.3,
+  rain: 2, storm: 6, max: 24, power: { full: 13, gamma: 0.9, knee: 0.6, top: 0.8 }, still: 0.3,
 };
 
 // Speech bubbles (#247, src/greet.js): Olof's lines and your own show for `bubble` s. The neighbours to greet were
@@ -7129,7 +7129,7 @@ export const HUS_L_DOWNPIPES = {
 // (and widens the culling boxes by as much).
 export const SITE_WIND = {
   dir: [0.71, -0.71], calm: 0.12, overcast: 0.18, rain: 0.3, storm: 0.6, easeSeconds: 4,
-  crown: { amp: 0.06, maxSize: 4, base: 0.35, freq: 0.9, flutter: 0.03, flutterFreq: 5.3, cardFrom: 0.5 },
+  crown: { amp: 0.06, maxSize: 4, base: 0.35, freq: 0.9, flutter: 0.03, flutterFreq: 5.3, cardFrom: 0.5, flutterCap: 0.6 }, // flutterCap (#2117, *guess*): the card flutter's power ceiling
   bend: { amp: 0.16, freq: 1.5 },
   lean: 0.35, side: 0.3, harmonic: 0.35, gust: { freq: 0.31, wave: 0.06, depth: 0.45 }, phase: [0.23, 0.31],
   maxDisplacement: 0.35,

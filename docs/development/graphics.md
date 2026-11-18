@@ -668,7 +668,7 @@ src/weather.js         weather (WEATHER, #248): a seeded draw per date (`showers
                        south-west–west round 245°, the rest mostly easterly, more in spring) with smaller turns every 6 h, the monthly mean (≈ 5 m/s in winter, 3.5 in summer, *guess*),
                        an afternoon swing and + 2 m/s in rain, + 6 in a thunderstorm, all smoothly blended (≤ 0.6 m/s per 6 min). `ease` fades the wind with rain/cloud/temperature when the
                        source switches. It slants the rain streaks (`WEATHER.slant`: 0.03 m sideways per m of fall per m/s, ≤ 0.45; 4 m/s ≈ the old fixed 0.12) and drifts the snow
-                       (`WEATHER.snowDrift`), is handed to DayCycle (`day.wind`: the cloud shadows) and drives SiteWind's power (`windPower`: (m/s ÷ 13)^0.9) and direction, which #2110's
+                       (`WEATHER.snowDrift`), is handed to DayCycle (`day.wind`: the cloud shadows) and drives SiteWind's power (`windPower`: (m/s ÷ 13)^0.9, softly capped below 0.8 above 0.6; card flutter capped at power 0.6) and direction, which #2110's
                        avatar wind follows. `&wind=power[,seconds]` still pins the power; the direction always follows the weather. Not verified against the live service either
                        (fixtures only). `tools/windsimtest.mjs`, `tools/wind2117browser.cjs`, [before/after](../verification/2117/README.md).
                        #249: each shower has a `kind`: snow (mostly Dec–Feb; slow swaying Points, a lighter sky, silent),
