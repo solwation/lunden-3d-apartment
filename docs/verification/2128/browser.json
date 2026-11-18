@@ -1,0 +1,46 @@
+{
+  "base": null,
+  "setup": {
+    "month": 10,
+    "life": {
+      "bury": 0.8,
+      "dig": 0,
+      "scan": 0.05,
+      "back": 0.25
+    },
+    "rigged": true
+  },
+  "stats": {
+    "hop": {
+      "calls": 344,
+      "programs": 131,
+      "finite": true,
+      "tailMoves": 6
+    },
+    "leap": {
+      "calls": 344,
+      "programs": 131,
+      "finite": true,
+      "tailMoves": 6
+    },
+    "scan": {
+      "calls": 344,
+      "programs": 131,
+      "finite": true,
+      "tailMoves": 6
+    },
+    "eat": {
+      "calls": 345,
+      "programs": 131,
+      "finite": true,
+      "tailMoves": 6
+    },
+    "dig": {
+      "calls": 344,
+      "programs": 131,
+      "finite": true,
+      "tailMoves": 6
+    }
+  },
+  "errors": []
+}

@@ -1,10 +1,15 @@
-import { SQUIRRELS as C, SEASON } from './config.js';
+import { SQUIRRELS as C, SEASON, SQUIRREL_LIFE as LIFE } from './config.js';
+import { seasonLife } from './squirrellife.js';
 
 // The squirrels' brains and the nut field (#1672), with no three.js so a node test can drive them. A squirrel is a small state
 // machine: perch (sits in a crown) -> leap (hops to a neighbouring crown) | down (climbs the trunk) -> forage/search (runs about on the
 // ground, looks around, smells a nut -> fetch -> eat) -> toTree -> up -> perch. A frightened one (flee) runs to the nearest trunk.
 // A crouching, still visitor with a nut in the hand lures one: it comes down, creeps up (approach), rises (take) and takes the nut,
 // then flees up a tree with it in its mouth. The personality (SQUIRRELS.animals) only tilts the numbers. See SQUIRRELS in config.js.
+// #2128: the month (env.month(), SQUIRREL_LIFE) sets how often a found nut is buried (autumn) and how often one on the ground digs up a cache
+// it smells (winter / early spring); a forager now and then stops to `scan` (sits right up, the head jerks: squirrels.js / squirrellife.js).
+// Every state is either in a crown / on a trunk (perch, leap, down, up, nest) or on the ground (GROUND); a new one (e.g. #2132's climbing
+// about in a crown) joins one of those, gets its case in update() and a WIRE entry in squirrelsync.js naming the old state it looks like.
 
 export const winterMonth = (month) => SEASON.snowMonths.includes(month);
 const R = C.roam;
@@ -205,7 +210,7 @@ export class NutField {
   }
 }
 
-const GROUND = new Set(['forage', 'search', 'fetch', 'eat', 'approach', 'take', 'travel', 'stash', 'bury', 'seek', 'dig', 'chase']);
+const GROUND = new Set(['forage', 'search', 'fetch', 'eat', 'approach', 'take', 'travel', 'stash', 'bury', 'seek', 'dig', 'chase', 'scan']);
 const LOWER = new Set(['forage', 'search']); // (a squirrel that may be chased by another one, #1716)
 
 export class SquirrelBrain {
@@ -245,6 +250,8 @@ export class SquirrelBrain {
 
   // --- #1716: the day, the home range and the tree graph ---
   now() { return this.env.now ? this.env.now() : this.clock; }
+  /** #2128: what the month means for it ({ bury, dig, scan, back }: SQUIRREL_LIFE.life); no env.month: summer (the old numbers). */
+  life() { return seasonLife(this.env.month ? this.env.month() : 0); }
   night() { const h = this.env.hour ? this.env.hour() : 12; return h < C.day.wake || h >= C.day.sleep; }
   /** How lively (0 at night, `day.midday` … 1 by day, busiest round the morning and afternoon peaks). */
   activity() {
@@ -292,7 +299,8 @@ export class SquirrelBrain {
   journeyTarget(hs) {
     const rnd = this.env.rnd, now = this.now();
     const ripe = this.caches.filter((c) => now - c.at > c.ripe && this.inRange(c.tree, hs, 1.5));
-    if (ripe.length && rnd() < 0.7) { this.target = ripe[Math.floor(rnd() * ripe.length)]; return this.target.tree; }
+    // (#2128: `back`: in autumn it mostly leaves them; in winter it goes back for them)
+    if (ripe.length && rnd() < this.life().back) { this.target = ripe[Math.floor(rnd() * ripe.length)]; return this.target.tree; }
     if (rnd() < R.favBack) { const f = this.favourites().filter((i) => i !== this.tree && this.inRange(i, hs, 1.5)); if (f.length) return f[Math.floor(rnd() * f.length)]; }
     const pool = this.rangeTrees(hs).filter((i) => this.env.trees[i].comp === this.tr.comp); return pool.length ? pool[Math.floor(rnd() * pool.length)] : this.tree;
   }
@@ -421,6 +429,8 @@ export class SquirrelBrain {
   }
   /** Up the nearest tree, and stay there a while (`calm`: the personality). */
   frighten() { this.env.onScare?.(this); this.rise = 0; this.slot = null; this.prey = null; this.route = []; this.target = null; this.calmT = between(C.scareTime, this.env.rnd) * this.p.calm; this.startToTree(true); }
+  /** #2128: stop, sit right up and scan round for a few seconds (SQUIRREL_LIFE.scan), then forage on. */
+  startScan() { this.set('scan', between(LIFE.scan.time, this.env.rnd)); this.run = 0; }
   startApproach() { this.route = []; this.target = null; this.prey = null; this.set('approach', 60); this.react = 0; }
 
   /** Ground movement towards `goal`; true on arrival. */
@@ -491,7 +501,7 @@ export class SquirrelBrain {
         this.travelAfter = false;
         break;
       }
-      case 'forage': case 'search': case 'fetch': case 'eat': case 'travel': case 'stash': case 'bury': case 'seek': case 'dig': case 'chase': this.onGround(dt); break;
+      case 'forage': case 'search': case 'fetch': case 'eat': case 'travel': case 'stash': case 'bury': case 'seek': case 'dig': case 'chase': case 'scan': this.onGround(dt); break;
       case 'toTree': case 'flee': {
         if (this.moveTo(dt, (this.state === 'flee' ? C.flee : C.run) * p.speed)) {
           this.tree = this.tree2; this.ang = this.ang2; this.startUp();
@@ -537,16 +547,24 @@ export class SquirrelBrain {
           this.sense = 0.5; const s = e.nuts.near(this.x, this.z, C_.sense);
           if (s && this.clear(s.x, s.z)) { this.slot = s; this.goal.x = s.x; this.goal.z = s.z; this.set('fetch', 30); return; }
         }
+        if (this.state === 'forage') { // #2128: now and then it stops to scan, or (winter) digs up a cache it smells
+          const L = this.life();
+          if (rnd() < L.scan * dt) { this.startScan(); return; }
+          if (L.dig > 0 && rnd() < L.dig * dt) { this.target = null; this.rise = 0; this.run = 0; this.set('dig', C_.cache.dig); return; }
+        }
         this.left -= dt;
         const there = this.state === 'fetch' ? this.moveTo(dt, C_.run * p.speed, 0.08) : this.dashTo(dt, C_.run * p.speed);
         if (there) {
           if (this.state === 'fetch') {
-            if (this.caches.length < C_.cache.max && rnd() < C_.cache.chance) { e.nuts.remove(this.slot); this.slot = null; this.hasNut = true; this.rise = 0; this.startStash(); } // #1716: bury it for later
-            else { this.set('eat', C_.eat * (0.8 + rnd() * 0.4)); this.rise = 1; this.run = 0; }
+            if (this.caches.length < C_.cache.max && rnd() < this.life().bury) { e.nuts.remove(this.slot); this.slot = null; this.hasNut = true; this.rise = 0; this.startStash(); } // #1716: bury it for later (#2128: mostly in autumn)
+            else { e.nuts.remove(this.slot); this.slot = null; this.hasNut = true; this.set('eat', C_.eat * (0.8 + rnd() * 0.4)); this.rise = 1; this.run = 0; } // (#2128: picked up: it eats it sitting up, in its front paws)
           } else { this.rise = 0; this.set('search', between(C_.search, rnd)); }
         }
         return;
       }
+      case 'scan': this.run = 0; this.pitch = 0; this.rise = Math.min(1, this.rise + dt * 5); // #2128: sat right up, still; squirrels.js jerks the head
+        if (this.t >= this.dur) { this.rise = 0; this.set('forage', 30); } // (on to the same goal, the same time left)
+        return;
       case 'search': this.rise = Math.min(1, this.t * 4); this.yaw += Math.sin(this.t * 2.3) * dt * 1.4;
         if (this.t >= this.dur) { this.rise = 0; if (this.left <= 0) this.startToTree(false); else this.pickGoal(); }
         return;

@@ -874,6 +874,19 @@ In the snow months (`registerSeasonal`, `SEASON.snowMonths`) nothing is visible,
 within `simDist`, every `farStep` s up to `farDist`, beyond only the coarse tree-graph step (#1716); `&nosquirrels` disables the module. Config: the `SQUIRRELS` block at the end
 of `src/config.js` (all *guess*). Test: `node --test tools/squirrelbraintest.mjs`; browser check `tools/squirrelstest.cjs`. #1686 below.
 
+### Squirrel life: tail, eating, caching season, scanning (#2128)
+
+`src/squirrellife.js` (no three.js) holds pure, deterministic helpers tuned by `SQUIRREL_LIFE` in `src/config.js` (all *guess*):
+`seasonLife(month)` (autumn buries most found nuts, summer keeps the old 0.4, winter/March and lighter spring dig up caches they smell and
+eat them, everybody now and then stops to `scan`), `tailWave` (seven tail-joint offsets: an S wave, a counter-swing against each hop, the
+plume opening in a leap, a tighter curl sitting up and siteWind flutter, bounded by `tail.max`), `scanHead` (still holds with snaps) and
+`eatPaws` (forearms folded to the mouth, the nut turned). The brain gets `env.month()` (squirrels.js from `registerSeasonal`), the `scan`
+ground state (wire `search`) and eats a found nut from its paws (`hasNut`, off the ground at once). `Squirrels.pose()` resets the life
+joints to rest before the mixer, then adds the offsets; everything is derived from the shared pose, so squirrelsync has no new field.
+`SQUIRREL_SURFACE.tail` is wider with a ragged `fringe` of hair locks (same vertices; bestiary `modelVersion` 3). A new climbing state
+(#2132) joins the air states with a WIRE entry. Tests: `node --test tools/squirrellifetest.mjs`; browser `tools/squirrel2128browser.cjs`.
+[Before/after frame sequences](../verification/2128/README.md).
+
 ### Continuous squirrel surfaces (#1920)
 
 The shared `squirrelParts` recipe now uses a closed, tapered trunk and face, inset

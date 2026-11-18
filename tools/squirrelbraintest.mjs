@@ -253,7 +253,7 @@ test('#1716: a found nut is sometimes buried and dug up again later', () => {
   b.route = []; b.target = c; b.tree = c.tree; let dug = false, ate = false;
   b.enterPerch(c.tree, 0); b.t = b.dur; b.p = { ...b.p, ground: 0 }; // (it goes down for the cache, not to forage)
   run(w, [b], 60, 0.1, () => { clock += 0.1; if (b.state === 'dig') dug = true; if (dug && b.state === 'eat' && b.hasNut) ate = true; });
-  assert.ok(dug && ate && b.caches.length === 0, `dug it up and ate it: ${b.log.slice(-8).join(' ')}`);
+  assert.ok(dug && ate && !b.caches.includes(c), `dug it up and ate it: ${b.log.slice(-8).join(' ')}`);
 });
 
 test('#1716: two squirrels on the ground: one now and then chases the other up a tree', () => {

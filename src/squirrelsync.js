@@ -20,7 +20,7 @@ const r1 = (v) => Math.round(v * 10) / 10;
 const between = ([a, b], r) => a + (b - a) * r();
 
 /** #1716: the newer states go over the wire as the old one they look like, so the room's validation and older clients are unchanged. */
-const WIRE = { travel: 'toTree', stash: 'toTree', seek: 'toTree', bury: 'eat', dig: 'eat', chase: 'flee', nest: 'perch' };
+const WIRE = { travel: 'toTree', stash: 'toTree', seek: 'toTree', bury: 'eat', dig: 'eat', chase: 'flee', nest: 'perch', scan: 'search' }; // (#2128: scan sits up like search)
 /** One animal's pose as 9 numbers: x y z yaw pitch rise run state nut. */
 export const encodeAnimal = (b) => [r2(b.x), r2(b.y), r2(b.z), r2(b.yaw), r2(b.pitch), r1(b.rise), r1(b.run), Math.max(0, STATES.indexOf(WIRE[b.state] ?? b.state)), b.hasNut ? 1 : 0];
 /** The nuts lying out as a flat integer list, 4 per nut: slot + 64 * kind, x cm, z cm, born. Held nuts are not in it. */

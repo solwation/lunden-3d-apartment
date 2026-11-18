@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { SQUIRRELS as C, SQUIRREL_SURFACE as SS, PADDOCK, SITE, WALK } from './config.js';
+import { SQUIRRELS as C, SQUIRREL_SURFACE as SS, SQUIRREL_LIFE as SQL, PADDOCK, SITE, WALK } from './config.js';
 import { Holdable, heldItem, setHeld, handBusy } from './holdable.js';
 import { Hearts } from './pingping.js';
 import { sfx } from './audio.js';
@@ -13,6 +13,8 @@ import { registerSeasonal } from './seasons.js';
 import { SquirrelBrain, NutField, linkTrees, riverFrame, winterMonth, inBox, groveFences, groveTreeOk, startTree } from './squirrelbrain.js';
 import { SquirrelSync } from './squirrelsync.js';
 import { nutPathSpots } from './nutpaths.js';
+import { tailWave, scanHead, eatPaws, TAIL_JOINTS } from './squirrellife.js';
+import { siteWind } from './sitewind.js';
 
 // Squirrels and the nuts they look for (#1672). The brains live in squirrelbrain.js (no three.js); this file draws them and ties them to
 // the game: the crowns and ground come from the trees built in surroundings.js (river park patches and the paddock's shade trees, read
@@ -25,7 +27,7 @@ import { nutPathSpots } from './nutpaths.js';
 // call per nut; the nut's own mesh is drawn only within `nutNear` m), and the squirrels + nuts are shared between the players near them through
 // squirrelsync.js (`net`: { send(m), remotes(), me() }, set by main.js): the leader simulates, the others adopt its snapshots.
 
-const V = new THREE.Vector3(), tint = new THREE.Color(), MAT = new THREE.Matrix4();
+const V = new THREE.Vector3(), V2 = new THREE.Vector3(), tint = new THREE.Color(), MAT = new THREE.Matrix4();
 const paint = (geo, hex) => {
   const n = geo.attributes.position.count, c = new Float32Array(n * 3); tint.setHex(hex);
   for (let i = 0; i < n; i++) tint.toArray(c, i * 3);
@@ -42,7 +44,9 @@ const blob = (rx, ry, rz, x, y, z, hex, belly = null, seg = [9, 7], fur = 0, rnd
 };
 const seeded = (seed) => () => ((seed = seed * 16807 % 2147483647) / 2147483647);
 const shade = (hex, k) => new THREE.Color(hex).multiplyScalar(k).getHex();
-const UP = new THREE.Vector3(0, 1, 0), QT = new THREE.Quaternion(), HAUNCH = 0.065; // m behind the body centre: where it sits (#1716)
+const UP = new THREE.Vector3(0, 1, 0), QT = new THREE.Quaternion(), QL = new THREE.Quaternion(), EL = new THREE.Euler(), HAUNCH = 0.065;
+// #2128: the joints squirrels.js moves on top of the clips (reset to their rest pose before the mixer each frame, so nothing accumulates)
+const TAIL_BONES = ['Tail_0', 'Tail_1', 'Tail_2', 'Tail_3', 'Tail_4', 'Tail_5', 'Tail_Tip'].map((n) => 'Joint_' + n), LIFE_BONES = [...TAIL_BONES, 'Joint_Head', 'Joint_Forearm_L', 'Joint_Forearm_R', 'Joint_Paw_L', 'Joint_Paw_R']; // m behind the body centre: where it sits (#1716)
 /** #1716: a hair tuft: an open cone `len` long from `at` along `dir`, `root` colour at the base fading to `tip` at the point. */
 function tuft(at, dir, len, r, root, tip, segs) {
   const g = new THREE.ConeGeometry(r, len, segs, 1, true); g.deleteAttribute('uv');
@@ -73,13 +77,16 @@ function surfaceLoft(rows, radial, spec, rnd, fur) {
   }
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.setIndex(indices);g.computeVertexNormals();return g;
 }
+/** #2128: a fixed 0 … 1 value per tail vertex (row, column), for the fringe's irregular locks. */
+const fringeHash=(i,j)=>{let h=Math.imul(i*73856093^j*19349663,0x85ebca6b);h^=h>>>13;h=Math.imul(h,0xc2b2ae35);return ((h^h>>>16)>>>0)/4294967296;};
 function tailSurface(curve,s,far) {
   const S=SS.tail,rows=far?S.rows.far:S.rows.near,radial=far?S.radial.far:S.radial.near,positions=[],colors=[],indices=[],side=new THREE.Vector3(1,0,0),color=new THREE.Color(),coat=new THREE.Color(s.tail),tip=s.tip?new THREE.Color(s.tip):null;
   const radius=(u,column)=>{let i=1;while(i<S.profile.length-1&&S.profile[i][0]<u)i++;const a=S.profile[i-1],b=S.profile[i];return THREE.MathUtils.lerp(a[column],b[column],THREE.MathUtils.smoothstep(u,a[0],b[0]));};
   for(let i=0;i<=rows;i++) {
     const u=i/rows,c=curve.getPointAt(u),t=curve.getTangentAt(u),normal=new THREE.Vector3().crossVectors(t,side).normalize();
     for(let j=0;j<radial;j++) {
-      const a=j*Math.PI*2/radial,flow=S.flow.reduce((v,[around,along,gain])=>v+gain*Math.sin(a*around+u*along),0),ridge=1+S.ridge*flow,p=c.clone().addScaledVector(side,Math.cos(a)*radius(u,1)*s.width*ridge).addScaledVector(normal,Math.sin(a)*radius(u,2)*ridge);
+      // #2128: a fluffy outline: irregular hair locks stand out of the plume's edge (fringe, a fixed per-vertex hash: the same every build), less at the root
+      const a=j*Math.PI*2/radial,flow=S.flow.reduce((v,[around,along,gain])=>v+gain*Math.sin(a*around+u*along),0),lock=S.fringe?S.fringe*Math.sin(Math.PI*Math.min(1,u*1.25))*(fringeHash(i,j)**2*0.75+0.25*(0.5+0.5*Math.sin(u*S.locks+a*3))):0,ridge=(1+S.ridge*flow)*(1+lock),p=c.clone().addScaledVector(side,Math.cos(a)*radius(u,1)*s.width*ridge).addScaledVector(normal,Math.sin(a)*radius(u,2)*ridge);
       positions.push(...p.toArray());color.copy(coat);if(tip)color.lerp(tip,THREE.MathUtils.smoothstep(u,S.tipStart,S.tipEnd));color.multiplyScalar(1+S.frost*flow);color.toArray(colors,colors.length);
     }
   }
@@ -301,7 +308,7 @@ export class Squirrels {
     this.nuts.preferred = nutPathSpots(SITE.riverPark.paths, this.trees, ground, nutHere, nutWalls);
     this.nuts.anchors = () => [{ x: camera.position.x, z: camera.position.z }, ...(this.net?.remotes?.() ?? []).map((r) => ({ x: r.x, z: r.z }))];
     // #1716: the home ranges drift with the wall clock (the same for every player), the day comes from the game's clock (update's `hour`)
-    const env = { trees: this.trees, ground, walkable, fences, nuts: this.nuts, player: this.player_, scares: this.cand, rnd, onTake: (b) => this.take(b), now: () => Date.now() / 1000, hour: () => this.hour, others: [], onScare: b => { const p=this.cand[0], d=p?Math.hypot(p.x-b.x,p.z-b.z):Infinity; if(p&&((d<C.touch&&!p.lure)||(d<b.p.shy*C.scareReach&&(p.v>C.scareSpeed||p.rose)))) discoverCreature(`squirrel:${b.spec.name}`,'scare'); } };
+    const env = { trees: this.trees, ground, walkable, fences, nuts: this.nuts, player: this.player_, scares: this.cand, rnd, onTake: (b) => this.take(b), now: () => Date.now() / 1000, hour: () => this.hour, month: () => this.month, others: [], onScare: b => { const p=this.cand[0], d=p?Math.hypot(p.x-b.x,p.z-b.z):Infinity; if(p&&((d<C.touch&&!p.lure)||(d<b.p.shy*C.scareReach&&(p.v>C.scareSpeed||p.rose)))) discoverCreature(`squirrel:${b.spec.name}`,'scare'); } };
     this.material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92 });
     this.nutMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6 });
     this.hearts = new Hearts(scene, C.hearts, C.heartScale);
@@ -319,7 +326,7 @@ export class Squirrels {
       mouth.rotation.x = Math.PI / 2; mouth.visible = false; mouth.raycast = () => {}; mouth.userData.noDetail = true;
       group.rotation.order = 'YXZ'; group.add(body, mouth); group.visible = false; scene.add(group);
       this.acc.push(0);
-      const an = { brain, group, mouth, body, spec, geos, flickT: 9, flickAt: 2 + rnd() * 4, head: 0, headTo: 0, headT: 0, isRigged: false };
+      const an = { brain, group, mouth, body, spec, geos, flickT: 9, flickAt: 2 + rnd() * 4, head: 0, headTo: 0, headT: 0, isRigged: false, seed: i * 7919 + 13, tail: [], stateT: 0, lastState: '' };
       if (riggedSquirrelData) {
         this.setupRigged(an, riggedSquirrelData);
       } else {
@@ -328,7 +335,7 @@ export class Squirrels {
       return an;
     }) : [];
     this.sync.brains.push(...this.animals.map((a) => a.brain)); env.others.push(...this.sync.brains);
-    registerSeasonal((month) => { this.winter = winterMonth(month); });
+    registerSeasonal((month) => { this.winter = winterMonth(month); this.month = month; }); // (#2128: the month also sets the brains' caching)
     this.hide();
   }
   setupRigged(a, gltf) {
@@ -356,6 +363,7 @@ export class Squirrels {
         a.bones[obj.name] = obj;
       }
     });
+    a.rest = LIFE_BONES.filter((n) => a.bones[n]).map((n) => [a.bones[n], a.bones[n].quaternion.clone()]); // (#2128)
 
     if (gltf.animations && gltf.animations.length > 0) {
       a.mixer = new THREE.AnimationMixer(a.riggedScene);
@@ -506,7 +514,7 @@ export class Squirrels {
     });
   }
   pose(a, d, dt = 0) {
-    const b = a.brain, g = a.group, run = b.run, hop = run > 0.05 && !['down', 'up', 'leap'].includes(b.state) ? Math.abs(Math.sin(this.time * 14 + b.spec.scale * 9)) * 0.035 * run : 0;
+    const b = a.brain, g = a.group, run = b.run, hopPhase = this.time * 14 + b.spec.scale * 9, hop = run > 0.05 && !['down', 'up', 'leap'].includes(b.state) ? Math.abs(Math.sin(hopPhase)) * 0.035 * run : 0;
     g.visible = d < C.drawDist && b.state !== 'nest'; // (#1716: asleep in the drey, inside the crown)
 
     // Sitting still it flicks its tail now and then and turns its head in quick jerks
@@ -515,13 +523,18 @@ export class Squirrels {
     if (b.flick > 0.95 && a.flickT > 0.6) a.flickT = 0;
     a.flickT += dt;
 
-    if ((a.headT -= dt) <= 0) { a.headT = 0.25 + this.rnd() * 0.7; a.headTo = still ? (this.rnd() - 0.5) * 2 : 0; }
+    if (b.state !== a.lastState) { a.lastState = b.state; a.stateT = 0; a.scanN = (a.scanN ?? 0) + 1; } else a.stateT += dt;
+    // #2128: a scan (search on the wire: a follower derives the same) holds still looks and snaps between them; elsewhere the old idle jerks
+    const scanning = b.state === 'scan' || b.state === 'search';
+    if (scanning) { const h = scanHead(a.stateT, a.seed + a.scanN); a.headTo = a.head = h.yaw / 0.65; a.headP = h.pitch; a.headT = 0; }
+    else { a.headP = 0; if ((a.headT -= dt) <= 0) { a.headT = 0.25 + this.rnd() * 0.7; a.headTo = still ? (this.rnd() - 0.5) * 2 : 0; } }
     a.head += (a.headTo - a.head) * Math.min(1, dt * 18);
-    const hk = 1 - 0.75 * Math.min(1, b.rise);
+    const hk = scanning ? 1 : 1 - 0.75 * Math.min(1, b.rise);
 
     if (a.isRigged && a.mixer) {
       const geo=a.rigGeos[d < C.look.near ? 0 : 1];
       if(a.skinnedMesh.geometry !== geo) a.skinnedMesh.geometry=geo;
+      for (const [bone, q] of a.rest) bone.quaternion.copy(q); // (#2128: the clips then the life offsets, never on top of last frame's)
       a.mixer.update(dt);
 
       let targetName = 'idle';
@@ -551,7 +564,9 @@ export class Squirrels {
 
       if (a.bones && a.bones['Joint_Head']) {
         a.bones['Joint_Head'].rotation.y = a.head * hk * 0.65;
+        if (scanning) a.bones['Joint_Head'].rotation.x += a.headP; // #2128: the scan's quick looks up and down too
       }
+      this.poseLife(a, b, run, hopPhase);
     } else if (a.body && a.body.morphTargetInfluences) {
       const geo = a.geos[d < C.look.near ? 0 : 1]; if (a.body.geometry !== geo) a.body.geometry = geo;
       const inf = a.body.morphTargetInfluences;
@@ -565,6 +580,32 @@ export class Squirrels {
     g.rotation.y = yaw;
     g.rotation.x = -(b.pitch + b.rise * 1.05 - (hop > 0 ? Math.sin(this.time * 14) * 0.12 : 0));
     a.mouth.visible = b.hasNut;
+    if (a.mouthEat && a.isRigged) this.nutInPaws(a);
+  }
+  /** #2128: the tail's S-wave and hop/leap balance, and eating with the front paws (all derived from the shared pose: state, run, rise, pitch). */
+  poseLife(a, b, run, hopPhase) {
+    const sc = b.spec.scale, eating = b.state === 'eat' && b.hasNut;
+    const leap = b.state === 'leap' ? Math.max(0, Math.min(1, 0.5 - b.pitch / 0.9)) : null; // (the brain's leap pitch is (0.5 - k) x 0.9)
+    const across = -Math.sin(b.yaw) * siteWind.dir.y + Math.cos(b.yaw) * siteWind.dir.x; // (the downwind direction across the animal's side axis)
+    const lr = !['down', 'up', 'leap'].includes(b.state) ? run : 0;
+    tailWave(a.tail, { t: this.time, phase: a.seed % 6.283, run: lr, hop: hopPhase * 2, leap, rise: b.rise, wind: across * siteWind.power });
+    for (let j = 0; j < TAIL_JOINTS; j++) { const bone = a.bones[TAIL_BONES[j]]; if (bone) bone.quaternion.multiply(QL.setFromEuler(EL.set(a.tail[j].x, a.tail[j].y, 0))); }
+    if (eating) {
+      const e = eatPaws(this.time, a.seed);
+      for (const k of ['L', 'R']) {
+        a.bones['Joint_Forearm_' + k]?.quaternion.multiply(QL.setFromEuler(EL.set(e.fore, 0, 0)));
+        a.bones['Joint_Paw_' + k]?.quaternion.multiply(QL.setFromEuler(EL.set(e.paw, 0, 0)));
+      }
+      a.bones['Joint_Head']?.quaternion.multiply(QL.setFromEuler(EL.set(e.head, 0, 0)));
+      a.mouth.rotation.set(Math.PI / 2, 0, e.spin); a.mouth.scale.setScalar(C.nutSize * sc * SQL.eatNut[2]);
+    } else if (a.mouthEat) { a.mouth.position.set(0, 0.112 * sc, (0.15 + HAUNCH) * sc); a.mouth.rotation.set(Math.PI / 2, 0, 0); a.mouth.scale.setScalar(C.nutSize * sc); }
+    a.mouthEat = eating;
+  }
+  /** #2128: while it eats, the nut sits between its front paws (after the group's transform: the paws' world places, back in the group's frame). */
+  nutInPaws(a) {
+    const g = a.group, l = a.bones['Joint_Paw_L'], r = a.bones['Joint_Paw_R']; if (!l || !r) return;
+    g.updateMatrixWorld(true); l.getWorldPosition(V); r.getWorldPosition(V2); V.add(V2).multiplyScalar(0.5); g.worldToLocal(V);
+    a.mouth.position.set(V.x, V.y + SQL.eatNut[0] * a.spec.scale, V.z + SQL.eatNut[1] * a.spec.scale);
   }
   /** For tests: where each squirrel is and what it does. */
   state() { return this.animals.map((a) => ({ name: a.spec.name, state: a.brain.state, x: a.brain.x, y: a.brain.y, z: a.brain.z, hasNut: a.brain.hasNut, visible: a.group.visible })); }
@@ -572,5 +613,5 @@ export class Squirrels {
 
 // Every configured coat/shape has its own stable collection number.
 const SQUIRREL_NUMBERS = { 'Den stora':38, Vitsvansen:39, 'Den smala':40, Parkekorren:41, Gårdsekorren:42, Tofsen:43, Klockan:44, Rödpälsen:45, Svartsvansen:46, Ljusbuken:47 };
-for (const s of C.animals) creature({ id:`squirrel:${s.name}`, no:SQUIRREL_NUMBERS[s.name], modelVersion:2, name:s.name, family:'squirrels', variant:s.tip?'Ljus svanstipp':'Rödbrun päls', level:s.tip?1:0, model:{kind:'squirrel',name:s.name}, info:{size:`${Math.round(s.scale*100)} % av grundmodellens storlek`,weight:'0,2–0,5 kg (uppskattning)',where:s.home?'Egen träddunge vid huset':'Träden vid Höje å',when:'Vaken vår–höst; vintervila',likes:'Nötter och en stilla, hukande besökare'},facts:['Varje ekorre har eget hemområde och temperament.','Kan klättra mellan träden och gömma nötter.'] });
+for (const s of C.animals) creature({ id:`squirrel:${s.name}`, no:SQUIRREL_NUMBERS[s.name], modelVersion:3, /* #2128: the fluffier tail */ name:s.name, family:'squirrels', variant:s.tip?'Ljus svanstipp':'Rödbrun päls', level:s.tip?1:0, model:{kind:'squirrel',name:s.name}, info:{size:`${Math.round(s.scale*100)} % av grundmodellens storlek`,weight:'0,2–0,5 kg (uppskattning)',where:s.home?'Egen träddunge vid huset':'Träden vid Höje å',when:'Vaken vår–höst; vintervila',likes:'Nötter och en stilla, hukande besökare'},facts:['Varje ekorre har eget hemområde och temperament.','Kan klättra mellan träden och gömma nötter.'] });
 export { squirrelGeometry };
