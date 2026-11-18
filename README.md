@@ -1,5 +1,7 @@
 # Kv. Lunden L1007 i 3D
 
+Trädkronornas lövkort som ses nästan från kanten tonas bort på nära håll, så kronorna inte längre ser strimmiga ut under och bredvid träden. [Före/efter under kronan och i parken](docs/verification/2133/README.md).
+
 Träden har fått egna arter och former: breda runda lönnar, kupolformade lindar, oregelbundna ekar och smala björkar med hängande kronor, med fler grenar som syns genom kronan och särskilt på vintern, och varje träd lutar och växer lite på sitt eget sätt. [Före/efter sommar och vinter, nära och på avstånd](docs/verification/2131/README.md).
 
 Småfåglar flyger i flock med mjuka svängar, landar i trädkronor, på tak, pergolans bjälkar och broräcket, hoppar och pickar på grus och gräs och flyger upp när man går fram; måsarna glider ner och står en stund på taken och vid ån. [Före/efter-bildsekvens och kontroller](docs/verification/2129/README.md)

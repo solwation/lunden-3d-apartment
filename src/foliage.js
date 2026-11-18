@@ -110,6 +110,26 @@ export function* leafAtlasParts() {
   return atlasTex;
 }
 
+/**
+ * #2133: fades a leaf card seen almost edge-on (its leaves would be squeezed into long streaks up close). The card's own plane
+ * normal comes from the screen derivatives of the view position (the vertex normals are radial, not the card's), `g` = |cos| of
+ * its angle to the view ray; alpha is scaled by smoothstep(F.graze.cos) before alphaTest, only within F.graze.near m and never
+ * on the opaque core (atlas cell 3: u > 0.5, v < 0.5). Fragment only: positions, shadows (depth materials) and LOD untouched.
+ */
+const f3 = (x) => x.toFixed(3);
+export const LEAF_GRAZE_GLSL = `{
+  vec3 grazeN = normalize(cross(dFdx(vViewPosition), dFdy(vViewPosition)));
+  float grazeD = length(vViewPosition), grazeG = abs(dot(grazeN, vViewPosition / max(grazeD, 1e-4)));
+  float grazeK = mix(smoothstep(${f3(F.graze.cos[0])}, ${f3(F.graze.cos[1])}, grazeG), 1.0, smoothstep(${f3(F.graze.near[0])}, ${f3(F.graze.near[1])}, grazeD));
+  if (!(vMapUv.x > 0.5 && vMapUv.y < 0.5)) diffuseColor.a *= grazeK;
+}`;
+
+/** JS mirror of LEAF_GRAZE_GLSL's card factor (tests): `g` |cos| of the view ray to the card plane normal, `d` the distance (m). */
+export function leafGrazeFade(g, d) {
+  const ss = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  const k = ss(F.graze.cos[0], F.graze.cos[1], g); return k + (1 - k) * ss(F.graze.near[0], F.graze.near[1], d);
+}
+
 function makeLeafMaterial() {
   // Two-sided cards from single quads: DoubleSide, but the back of a card keeps the front's (radial) normal instead of
   // three's flipped one, so a crown is lit as one soft volume from both sides; both sides cast shadows
@@ -117,10 +137,11 @@ function makeLeafMaterial() {
     side: THREE.DoubleSide, shadowSide: THREE.DoubleSide });
   mat.onBeforeCompile = (shader) => {
     shader.fragmentShader = shader.fragmentShader.replace('#include <normal_fragment_begin>',
-      THREE.ShaderChunk.normal_fragment_begin.replace('float faceDirection = gl_FrontFacing ? 1.0 : - 1.0;', 'float faceDirection = 1.0;'));
+      THREE.ShaderChunk.normal_fragment_begin.replace('float faceDirection = gl_FrontFacing ? 1.0 : - 1.0;', 'float faceDirection = 1.0;'))
+      .replace('#include <alphatest_fragment>', `${LEAF_GRAZE_GLSL}\n#include <alphatest_fragment>`); // #2133
   };
-  rememberFragmentCompile(mat.onBeforeCompile); // exact fragment-only normal patch, native vertex positions (#1453)
-  mat.customProgramCacheKey = () => 'foliage-leaves-v1';
+  rememberFragmentCompile(mat.onBeforeCompile); // exact fragment-only normal + edge-on patch, native vertex positions (#1453)
+  mat.customProgramCacheKey = () => 'foliage-leaves-v2';
   mat.name = 'foliage-leaves';
   return mat;
 }

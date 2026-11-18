@@ -2112,6 +2112,12 @@ export const FOLIAGE = {
   // as single cards; phones switch earlier (their frames are the tighter ones). `margin`/`step`: instances join a level's
   // buffer `margin` m before the shader needs them and the packing is redone when the camera moved `step` m (margin > step).
   lod: { start: 46, end: 54, startPhone: 30, endPhone: 38, margin: 2, step: 1, trunkTint: 0.72 },
+  // #2133: a leaf card seen almost edge-on squeezes its leaves into long streaks (texture filtering does not cause it: the
+  // streaks stay with anisotropy 16 and without mipmaps). The leaf shader fades a card out by |cos| of the angle between the
+  // view ray and the card's own plane normal: gone below `cos[0]`, whole above `cos[1]` (the leaves erode from their edges in
+  // between, as alphaTest cuts the faded alpha). Only up close: full effect within `near[0]` m, none beyond `near[1]` (at most
+  // the phone LOD start), so far crowns keep their density. The opaque core is never faded. *guess*, by eye.
+  graze: { cos: [0.1, 0.34], near: [18, 30] },
 };
 
 // #2131: TREE_FORM — species-specific crowns, branch orders and per-tree variation of the site's trees (src/treeform.js,
