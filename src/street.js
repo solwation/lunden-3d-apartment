@@ -7,6 +7,7 @@ import { registerSeasonal } from './seasons.js';
 import { wetGround } from './wetground.js';
 import { samples, onRoad, along, filletOutline, nearestS, pathStrip, vehicleTrim } from './roads.js';
 import { glowMaterial, poolGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
+import { buildLampHalos, fadeHalos, poolCore } from './lamphalo.js';
 import { schoolWallPlan } from './schoolwall.js';
 import { cabinetBodyParts } from './elcabinetbody.js';
 
@@ -250,13 +251,17 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
     return poolGeometry(x + ax * S.lamps.arm, z + az * S.lamps.arm, -az, ax,
       shape.along, shape.across, path ? pathGround : groundY, path ? shape : {});
   });
-  const pools = new THREE.Mesh(mergeGeometries(poolGeometries), fadeGlowWithFog(glowMaterial(P.color)));
+  const pools = new THREE.Mesh(mergeGeometries(poolGeometries), poolCore(fadeGlowWithFog(glowMaterial(P.color)), P)); // #2104: brighter under the head
   pools.userData.pathStart = poolGeometries.slice(0, pathEnd-paths.length).reduce((n,g)=>n+g.attributes.position.count,0);
   pools.userData.roadStart = poolGeometries.slice(0,pathEnd).reduce((n,g)=>n+g.attributes.position.count,0);
   pools.name = 'streetLampPools';
   pools.visible = false;
   pools.renderOrder = 2;
   group.add(pools);
+  // #2104: a soft halo round each head (one additive billboard mesh, the same fade as the pools)
+  const H = S.lamps.halo;
+  const halos = buildLampHalos(lampAt, { ...H, scale: (i) => (spots[i][3] === true ? H.path : 1) });
+  group.add(halos);
   let lit = false, glow = 0;
   // the building site's temporary traffic light (yellow case on a trolley) and warning triangles on stands
   const tl = S.trafficLight, yellow = [], black = [], lamps = [];
@@ -352,6 +357,7 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
       if (!lit && night > P.on) lit = true; else if (lit && night < P.off) lit = false; // hysteresis: no flicker at dusk
       glow = fadeGlow(pools, glow, lit, dt, P.fade, P.peak);
       headMat.emissiveIntensity = 1.6 * glow;
+      fadeHalos(halos, glow, H.peak);
       phase = (phase + dt) % 30;
       last = now;
       const state = phase < 12 ? 0 : phase < 14 ? 1 : phase < 28 ? 2 : 1; // red, yellow, green, yellow

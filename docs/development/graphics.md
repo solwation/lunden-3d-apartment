@@ -686,6 +686,13 @@ src/groundglow.js      light without lights (#434, #433): additive fall-off deca
                        ground-floor windows spill a faint pool in front (`COURTYARD.windowSpill`, one `windowSpillPools` mesh in
                        surroundings.js `buildWindowLights`, per-vertex level = the window's routine level × night). Front-side only
                        (one pass each), hidden by day, no light objects; radii/strengths *guess*. Night perfcount +2 calls max.
+src/lamphalo.js        street lamp halos and pool cores (#2104, `SITE.street.lamps.halo` / `pool.core`, *guesses* by eye): one additive
+                       `streetLampHalos` mesh of billboard quads (corners expanded in the vertex shader, one draw, `frustumCulled` off),
+                       the groundglow fall-off cubed (bright core, soft tail), never under `minPx` px (it dims instead: no sparkle far
+                       off), drawn `toward` m in front of the housing, dimmer seen from above, fading with the pools' glow and into the
+                       fog/aerial haze (`fadeGlowWithFog`, own cache key). `poolCore` brightens the street pools' middle under each head
+                       (rim unchanged), a little more on a wet street (#2099's shared `uGroundWet`). No lights, no lamp-wash patch (basic
+                       materials), not in siteinstancebatch. `tools/lamphalotest.mjs`, [before/after](../verification/2104/README.md).
 src/daycycle.js        real-time day (#1145; DAY.minutes = 24 × 60, was 60): it follows the visitor's clock (frames lost to the dt cap or a hidden tab catch up from Date.now(); `toNow()` = the wall clock's "Nu"), real solar path for the month (55.7° N), sun → moon light, shader sky
                        (glow, stars, clouds), fog colour; paused / spooled by the wall clock. Daylight (#1073): `LIGHTING.sky`
                        blends `overcast` (even sky/ambient/fill, sun 2.2, exposure 1) → `clear` (darker shade side, sun 3.0,

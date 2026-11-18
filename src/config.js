@@ -531,7 +531,12 @@ export const SITE = {
     ],
     // #434: the pool of light on the ground under each head (an additive decal, street.js): `along` / `across` the road
     // m (radii, guess), warm `color` at `peak` opacity; lit above `on` night (1 − daylight), out below `off`, `fade` s
-    pool: { along: 8, across: 6.5, color: 0xffc887, peak: 0.55, on: 0.35, off: 0.3, fade: 1.5 } },
+    pool: { along: 8, across: 6.5, color: 0xffc887, peak: 0.55, on: 0.35, off: 0.3, fade: 1.5,
+      core: 0.7, wet: 0.5 }, // #2104: up to 1 + `core` × brighter right under the head (× 1 + `wet` on a wet street, #2099), *guess*
+    // #2104: a soft halo round each lit head (one additive billboard mesh, lamphalo.js; no light): radius `size` m (path
+    // lamps × `path`), centred `drop` m under the glass and drawn `toward` m nearer the eye, never under `minPx` px (it
+    // dims instead), `above` = how much shows seen from above, warm `color` at `peak` × the pools' fade (all *guess*, by eye)
+    halo: { size: 1.5, path: 0.75, drop: 0.04, toward: 0.3, minPx: 4, above: 0.35, color: 0xffc98a, peak: 0.9 } },
     crossing: { x0: 9.5, x1: 12.5, z0: -30, z1: -24 }, // #1534: checked against the photo: it lands on the far pavement just west of the shelter
     // #1534: grey concrete slabs in front of the shelter, from the wall / the shelter's back wall to the road's curb, x0…x1
     // (on to the campus road's mouth); a grey timetable pillar at its edge, two big stones by the campus road (all *guess*)

@@ -1,0 +1,164 @@
+{
+ "base": "ef7dac50ea4b8f12edcfe64ce0a707b4399a8962",
+ "errors": [],
+ "before": {
+  "night": {
+   "lights": 9,
+   "heads": 192,
+   "halos": null,
+   "pools": {
+    "vertices": 59040,
+    "visible": true,
+    "opacity": 0.55
+   }
+  },
+  "loadMs": 34142,
+  "views": {
+   "natt-nara": {
+    "calls": 176,
+    "triangles": 784013,
+    "textures": 50,
+    "programs": 86,
+    "eye": [
+     -10,
+     1.62,
+     -23.5
+    ],
+    "state": {
+     "lights": 9,
+     "halos": null,
+     "pools": {
+      "visible": true,
+      "opacity": 0.55
+     }
+    }
+   },
+   "natt-avstand": {
+    "calls": 358,
+    "triangles": 933365,
+    "textures": 74,
+    "programs": 109,
+    "eye": [
+     30,
+     1.62,
+     -21
+    ],
+    "state": {
+     "lights": 9,
+     "halos": null,
+     "pools": {
+      "visible": true,
+      "opacity": 0.55
+     }
+    }
+   },
+   "dag-nara": {
+    "calls": 167,
+    "triangles": 708903,
+    "textures": 74,
+    "programs": 110,
+    "eye": [
+     -10,
+     1.62,
+     -23.5
+    ],
+    "state": {
+     "lights": 9,
+     "halos": null,
+     "pools": {
+      "visible": false,
+      "opacity": 0
+     }
+    }
+   }
+  }
+ },
+ "after": {
+  "night": {
+   "lights": 9,
+   "heads": 192,
+   "halos": {
+    "quads": 192,
+    "visible": true,
+    "opacity": 0.9
+   },
+   "pools": {
+    "vertices": 59040,
+    "visible": true,
+    "opacity": 0.55
+   }
+  },
+  "loadMs": 54329,
+  "views": {
+   "natt-nara": {
+    "calls": 177,
+    "triangles": 784397,
+    "textures": 50,
+    "programs": 88,
+    "eye": [
+     -10,
+     1.62,
+     -23.5
+    ],
+    "state": {
+     "lights": 9,
+     "halos": {
+      "quads": 192,
+      "visible": true,
+      "opacity": 0.9
+     },
+     "pools": {
+      "visible": true,
+      "opacity": 0.55
+     }
+    }
+   },
+   "natt-avstand": {
+    "calls": 359,
+    "triangles": 933749,
+    "textures": 74,
+    "programs": 111,
+    "eye": [
+     30,
+     1.62,
+     -21
+    ],
+    "state": {
+     "lights": 9,
+     "halos": {
+      "quads": 192,
+      "visible": true,
+      "opacity": 0.9
+     },
+     "pools": {
+      "visible": true,
+      "opacity": 0.55
+     }
+    }
+   },
+   "dag-nara": {
+    "calls": 167,
+    "triangles": 708903,
+    "textures": 74,
+    "programs": 112,
+    "eye": [
+     -10,
+     1.62,
+     -23.5
+    ],
+    "state": {
+     "lights": 9,
+     "halos": {
+      "quads": 192,
+      "visible": false,
+      "opacity": 0
+     },
+     "pools": {
+      "visible": false,
+      "opacity": 0
+     }
+    }
+   }
+  }
+ }
+}
