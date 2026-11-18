@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { VIEW_LOD as C } from './config.js';
 import { carFarGeometry } from './streetlife.js';
 import { freezeShadowTiles } from './shadowtiles.js';
+import { farCarMaterial, trackCarFinish } from './carfinish.js';
 import { lodCamera, lodRange, lodMembership, patchDitherLod, lodDepthMaterial } from './lod.js';
 
 // Parked-car detail (#1213/#1246/#1988): four near batches represent the SAME cars. Keep their original matrices/colours,
@@ -10,25 +11,27 @@ import { lodCamera, lodRange, lodMembership, patchDitherLod, lodDepthMaterial } 
 // its near sources are distinct things, whereas these four sources are paint/trim/glass/tyres of the same things.
 const sets = [];
 const NOWHERE = new THREE.Sphere(new THREE.Vector3(0, -1e6, 0), 0); // (an emptied batch: culled, no zero-instance draw)
-let farGeometry = null, farMaterial = null;
+let farGeometry = null, farMaterial = null, farFinish = null;
 
 /** One set of InstancedMeshes that share one matrix per car (same count and parent). Returns the coarse mesh. */
 export function addCarLod(batches, reach = C.carNear) {
   const first = batches[0], n = first.count, parent = first.parent;
   if (!n || !parent || batches.some((b) => b.count !== n || b.parent !== parent)) return null;
   farGeometry ??= carFarGeometry();
-  farMaterial ??= new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.3, metalness: 0.3 });
+  // #2097: outdoor sets (paint carrying carfinish.js's reflection) get a calm reflective far paint; the garage keeps its plain one
+  const outdoor = batches.some((b) => b.material.userData.carReflection != null);
+  const far = outdoor ? (farFinish ??= farCarMaterial()) : (farMaterial ??= new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.3, metalness: 0.3 }));
   const range = lodRange(reach - C.fade / 2, reach + C.fade / 2);
   for (const b of batches) {
     freezeShadowTiles(b); // before the buffers AND materials change: phone tiles keep the full original shadows
-    const source = b.material, mat = source.clone();
+    const source = b.material, mat = trackCarFinish(source.clone()); // (#2097: the clone's reflection follows the night too)
     mat.onBeforeCompile = source.onBeforeCompile; mat.customProgramCacheKey = source.customProgramCacheKey.bind(source);
     b.material = patchDitherLod(mat, { range });
     if (b.castShadow) b.customDepthMaterial = lodDepthMaterial({ range, side: mat.side });
   }
   const src = batches.map((b) => ({ m: b.instanceMatrix.array.slice(0, n * 16), c: b.instanceColor?.array.slice(0, n * 3) ?? null }));
   const paint = src.find((s) => s.c)?.c;
-  const lo = new THREE.InstancedMesh(farGeometry, patchDitherLod(farMaterial.clone(), { far: true, range }), n);
+  const lo = new THREE.InstancedMesh(farGeometry, patchDitherLod(trackCarFinish(far.clone()), { far: true, range }), n);
   lo.name = 'car-far';
   lo.userData.carLod = true;
   lo.position.copy(first.position); lo.quaternion.copy(first.quaternion); lo.scale.copy(first.scale);

@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { SITE, PARKING_LOT as P } from './config.js';
 import { parkingLots } from './parkinglayout.js';
 import { carGeometry } from './streetlife.js';
+import { parkedCarMaterials } from './carfinish.js';
 
 export function buildEastLotCars(ground) {
   const { cars } = parkingLots(), group = new THREE.Group(), colors = SITE.life.carColors;
@@ -28,9 +29,7 @@ export function buildEastLotCars(ground) {
     return m;
   };
   const [body, trim, glass, tyres] = carGeometry();
-  group.add(make(body, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25, metalness: 0.35 }), true),
-    make(trim, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.3, metalness: 0.45 })),
-    make(glass, new THREE.MeshStandardMaterial({ color: 0x33495c, roughness: 0.05, metalness: 0.55 })),
-    make(tyres, new THREE.MeshStandardMaterial({ color: 0x141517, roughness: 0.85 })));
+  const [paintMat, trimMat, glassMat, tyreMat] = parkedCarMaterials(); // #2097: the same finish as the street car park
+  group.add(make(body, paintMat, true), make(trim, trimMat), make(glass, glassMat), make(tyres, tyreMat));
   return group;
 }

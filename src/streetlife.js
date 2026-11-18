@@ -6,6 +6,7 @@ import { pavingTexture } from './patio.js';
 import { registerSnow } from './seasons.js';
 import { grassMaterial, grassUV } from './grass.js';
 import { buildCar, MEGANE } from './carmodel.js';
+import { parkedCarMaterials, trimU } from './carfinish.js';
 import { groundY } from './surroundings.js';
 import { registerBicycleYardEdges } from './street.js';
 import { boxwood } from './boxwood.js';
@@ -26,14 +27,16 @@ const flat = (x0, x1, z0, z1, y) => new THREE.PlaneGeometry(x1 - x0, z1 - z0).ro
 function rng(seed) { let s = seed; return () => ((s = (s * 16807) % 2147483647) / 2147483647); }
 
 /** One parked car, facing +x (#251): the body from carmodel.js (lite), as [paint, trim (vertex colours: black, lights,
- * chrome, rims), glass, tyres] geometries for instancing. */
+ * chrome, rims; a constant uv per part into carfinish.js's surface map, #2097), glass, tyres] geometries for instancing. */
 const TRIM = { black: 0x0c0d0f, roof: 0x0b0c0e, lens: 0x15181c, led: 0xdfe4ea, blink: 0xc87a10, tail: 0x8a0f12, chrome: 0xd9dde0, rim: 0x8e949a };
 export function carGeometry() {
   const { parts } = buildCar(MEGANE, { lite: true });
   const trim = Object.entries(TRIM).filter(([k]) => parts[k]).map(([k, hex]) => {
     const g = keep(parts[k]), c = new THREE.Color(hex), n = g.attributes.position.count, col = new Float32Array(n * 3);
     for (let i = 0; i < n; i++) col.set([c.r, c.g, c.b], i * 3);
-    g.deleteAttribute('uv'); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    const uv = new Float32Array(n * 2), u = trimU(k); // #2097: one texel of the trim surface map per part (roughness/metalness)
+    for (let i = 0; i < n; i++) { uv[i * 2] = u; uv[i * 2 + 1] = 0.5; }
+    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
     return g;
   });
   const bare = (g) => { g = keep(g); g.deleteAttribute('uv'); return g; };
@@ -215,10 +218,8 @@ export function buildStreetLife({ entrances = [] } = {}) {
   }
   group.add(new THREE.Mesh(merge(lines), white));
   const [body, trim, glass, carTyres] = carGeometry();
-  const carBatches = [instanced(body, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25, metalness: 0.35 }), cars, carColors),
-    instanced(trim, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.3, metalness: 0.45 }), cars),
-    instanced(glass, new THREE.MeshStandardMaterial({ color: 0x33495c, roughness: 0.05, metalness: 0.55 }), cars),
-    instanced(carTyres, new THREE.MeshStandardMaterial({ color: 0x141517, roughness: 0.85 }), cars)];
+  const [paintMat, trimMat, glassMat, tyreMat] = parkedCarMaterials(); // #2097: clear-coat paint, matte plastic and rubber
+  const carBatches = [instanced(body, paintMat, cars, carColors), instanced(trim, trimMat, cars), instanced(glass, glassMat, cars), instanced(carTyres, tyreMat, cars)];
   for (const m of carBatches) m.userData.carBatch = 'street'; // (#1213: the phone view draws the far ones coarse, src/viewlod.js)
   group.add(...carBatches);
   // the bike yard NW of Hus L (#260): light stone paving, a lighter bike place, lawns

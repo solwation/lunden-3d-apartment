@@ -9746,3 +9746,16 @@ export const RENDER_SURFACE = { size: 128, tile: 0.5, seed: 2095, anisotropy: 4,
   sill: { length: 0.55, step: 0.11, dark: 0.16, ends: 1.5, mid: 0.45, off: 0.004 },
   plinth: { height: 0.3, step: 0.16, dark: 0.11, mid: 0.4, off: 0.002 },
   tint: [1, 1.06, 1.18] };
+
+// #2097: parked-car finish (src/carfinish.js) for the street and east car parks' instanced batches and their far LOD. Paint:
+// a calm clear coat — a dielectric-ish body (`metalness`) with low `roughness` and the shared procedural outdoor reflection
+// (neighborglass.js) at `reflectionDay`, dimmed to `reflectionNight` in the dark (no per-car cubemaps, no live passes). The
+// material colour `diffuse` keeps the bodies' diffuse tone as before (0.65 = 1 − the old metalness 0.35). Trim: per part
+// roughness/metalness through a tiny map (matte black plastic, glossy lamp lenses, chrome, rims); `tyre`: rubber. `far`: the
+// coarse LOD car (rougher and dimmer: no sparkle at a distance). All visual *guess* values tuned on screenshots.
+export const CAR_FINISH = {
+  paint: { roughness: 0.2, metalness: 0.12, diffuse: 0.74 }, reflectionDay: 0.55, reflectionNight: 0.04,
+  trim: { black: [0.72, 0], roof: [0.2, 0.05], lens: [0.12, 0.2], led: [0.3, 0], blink: [0.3, 0], tail: [0.3, 0], chrome: [0.25, 0.9], rim: [0.42, 0.75] },
+  trimReflection: 0.6, tyre: { roughness: 0.95 },
+  far: { roughness: 0.4, metalness: 0.1, reflection: 0.6 },
+};
