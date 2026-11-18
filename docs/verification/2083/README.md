@@ -112,3 +112,7 @@ or changelog renumbering do not change the tested helper/UV/material recipe and 
 ## Integration review
 
 Root opened both final paired sheets and reviewed the helper/UV/material changes plus green scoped checks. Exterior/helper/fixtures/tests exactly match tested78eeccd5. Config adds only SOLAR_SURFACE to accepted main; previous bark block and every other prior byte are retained. All old changelog rows remain exact; this row is renumbered1612=max+1 without product changes. Source-bound green evidence reused, no duplicate browser or broad gate.
+
+## Publicering
+
+Kod/bilder `4c82da2a0cdd5fe2392a3c5eb8c3da6237952e38`; faktiska run-ID [44281441330, 44281441321] success på exakt revision. Alla bilder HTTP200 och inbäddade före stängning: https://github.com/solwation/lunden-3d-apartment/issues/2083#issuecomment-6975263267. Slutkvittot är enbart dokumentation; originalets sökvägsfilter utlöser ingen ny apppublicering.
