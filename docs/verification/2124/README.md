@@ -19,3 +19,5 @@ overcast damping and off inside the cloud deck; the haze contract — full fog s
 halo in output space, clear/partly cloudy/dawn/overcast; one sky program without variants) and `tools/aerialhazetest.mjs` pass.
 Cost: no pass, texture, light, draw or program variant; a few uniforms and ~15 ALU ops in the sky fragment shader, three
 multiplies + one mad per fogged fragment (the halo reuses the haze's pow 6), `duskSkyState` ~0.3 µs per frame.
+
+Publicering: Pages/Worker success på `e151425`; före-bilder borttagna vid stängning och visas från den commiten.
