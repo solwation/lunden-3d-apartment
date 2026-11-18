@@ -1,0 +1,83 @@
+{
+  "baseline": "5c578f1fe07270ce2b3cfe623ec200c499d1a7d8",
+  "runs": {
+    "normal/after": {
+      "cat": "Sotis",
+      "full": true,
+      "activity": "look",
+      "st": "bound",
+      "dist": 1.4142135623730951,
+      "programs": 96,
+      "catfurPrograms": 2,
+      "catfurLinked": [
+        true,
+        true
+      ],
+      "catfurWithLampwash": 2,
+      "catPrograms": 2,
+      "catKeyTails": [
+        "eCompile( /* shaderobject, renderer */ ) {}|catfur1|lampwash",
+        "eCompile( /* shaderobject, renderer */ ) {}|catfur1|lampwash"
+      ],
+      "ordinaryCatVisible": true,
+      "errors": []
+    },
+    "normal/before": {
+      "cat": "Sotis",
+      "full": true,
+      "activity": "look",
+      "st": "bound",
+      "dist": 1.4142135623730951,
+      "programs": 96,
+      "catfurPrograms": 0,
+      "catfurLinked": [],
+      "catfurWithLampwash": 0,
+      "catPrograms": 2,
+      "catKeyTails": [
+        ",onBeforeCompile( /* shaderobject, renderer */ ) {}|lampwash",
+        ",onBeforeCompile( /* shaderobject, renderer */ ) {}|lampwash"
+      ],
+      "ordinaryCatVisible": true,
+      "errors": []
+    },
+    "lowmem/after": {
+      "cat": "Sotis",
+      "full": true,
+      "activity": "look",
+      "st": "bound",
+      "dist": 1.4142135623730951,
+      "programs": 80,
+      "catfurPrograms": 2,
+      "catfurLinked": [
+        true,
+        true
+      ],
+      "catfurWithLampwash": 2,
+      "catPrograms": 2,
+      "catKeyTails": [
+        "eCompile( /* shaderobject, renderer */ ) {}|catfur1|lampwash",
+        "eCompile( /* shaderobject, renderer */ ) {}|catfur1|lampwash"
+      ],
+      "ordinaryCatVisible": true,
+      "errors": []
+    },
+    "lowmem/before": {
+      "cat": "Sotis",
+      "full": true,
+      "activity": "look",
+      "st": "bound",
+      "dist": 1.4142135623730951,
+      "programs": 80,
+      "catfurPrograms": 0,
+      "catfurLinked": [],
+      "catfurWithLampwash": 0,
+      "catPrograms": 2,
+      "catKeyTails": [
+        ",onBeforeCompile( /* shaderobject, renderer */ ) {}|lampwash",
+        ",onBeforeCompile( /* shaderobject, renderer */ ) {}|lampwash"
+      ],
+      "ordinaryCatVisible": true,
+      "errors": []
+    }
+  }
+}

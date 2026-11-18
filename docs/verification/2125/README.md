@@ -25,13 +25,26 @@ one directional sun with shadows and a hemisphere light. Each sheet: top row bef
   programs 4 before / 4 after; draw calls per frame within ±1 of the same frame before (only the parts the shown pose hides, e.g. the X under a raised tail)
   (cat 20–25, far LOD 2); geometries 19 / 19, textures 1 / 1.
 
+## Real app (after rebase on main `5c578f1f`)
+
+`tools/catlife2125realbrowser.cjs` ([real-browser.json](real-browser.json)) loads the real app at 12:00 in July, clear weather,
+with the visitor standing 1.4 m from Sotis's rest stop. Sotis turns into the ordinary cat (`CatSpawner`), as it does in the game. The
+before runs serve that base revision's `cat.js`, `outdoorcats.js`, `outdoorcatbrain.js`, `config.js` and `bestiaryimages.js`.
+
+| Profile | Programs before / after | Cat material programs before / after | `\|catfur1` programs (linked, with lampwash) | Errors |
+| --- | ---: | ---: | --- | ---: |
+| normal | 96 / 96 | 2 / 2 | 2 (2 linked, 2 `…\|catfur1\|lampwash`) | 0 |
+| `&lowmem` | 80 / 80 | 2 / 2 | 2 (2 linked, 2 `…\|catfur1\|lampwash`) | 0 |
+
+The cat's two programs (coat and vertex-coloured surface) are replaced, not added, so phones (`&lowmem`) get no extra variant.
+The real view, before and after: [normal](real-normal.jpg), [&lowmem](real-lowmem.jpg). At this distance a black cat changes only a little.
+
 ## Cost and limits
 
 No new draw call, texture, light, pass or network field. The fur fragment work is one 3D value noise and one strand highlight per cat
 pixel; the tail bend is a few vertex ALU ops. Per cat CPU: one small spring step and two ear angles per frame. The nose/eyes/pupils share
 the coat program with the effect off, so the cat adds no program variant in lowMemory (#2118); in the full scene the patched coat
-programs are separate from other lamp-washed standard materials (at most the two coat programs, normal and vertex-coloured).
+programs are separate from other lamp-washed standard materials (the real app showed the same total program count before and after, see above).
 Stylised: no fur geometry; the strand texture fades out within ~1.5 m. Site wind does not ruffle the coat. Shadows show the unbent tail.
 Ghost/held snapshots keep the unbent tail. Ground birds do not exist in the scene, so stalking targets squirrels (existing `prey()`) and
-the scheduled stalk spots. The full game scene was not rendered with the new shader (lampwash chaining was reviewed, not rendered);
-physical-device frame time was not measured.
+the scheduled stalk spots. Frame time on a physical device was not measured.
