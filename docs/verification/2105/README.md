@@ -14,12 +14,12 @@ month switched in the page with `applySeason` (`tools/leaflitter2105browser.cjs`
 |---|---|---|
 | Courtyard, September | | ![](courtyard-sep.jpg) |
 | Courtyard, October | | ![](courtyard-oct.jpg) |
-| Courtyard, November | ![](before/courtyard-nov.jpg) | ![](courtyard-nov.jpg) |
+| Courtyard, November | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/44bc8ad827cec2fd8357c7d22e9b80258ddd5f94/docs/verification/2105/before/courtyard-nov.jpg) | ![](courtyard-nov.jpg) |
 | Courtyard, January (snow: no leaves) | | ![](courtyard-jan.jpg) |
 | Park lawn, October | | ![](park-oct.jpg) |
-| Park lawn, November | ![](before/park-nov.jpg) | ![](park-nov.jpg) |
+| Park lawn, November | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/44bc8ad827cec2fd8357c7d22e9b80258ddd5f94/docs/verification/2105/before/park-nov.jpg) | ![](park-nov.jpg) |
 | Street (forecourt asphalt, verge), October | | ![](street-oct.jpg) |
-| Street, November | ![](before/street-nov.jpg) | ![](street-nov.jpg) |
+| Street, November | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/44bc8ad827cec2fd8357c7d22e9b80258ddd5f94/docs/verification/2105/before/street-nov.jpg) | ![](street-nov.jpg) |
 
 Checks
 - `node --test tools/leaflittertest.mjs`: 4/4 – amount per month (none Mar–Aug and in the snow months, even if an autumn share
@@ -40,3 +40,5 @@ Limits: placement is a *guess* (no survey of where leaves gather); leaves are fl
 relief, no wind drift, they do not move when walked through); the density map covers WALK only; under quality level 0 and
 on phones only the mean tint is drawn (verified via the uniform: level 0 in the test profile sets the shape flag to 0,
 the quality-3 shot sets it to 1).
+
+Publicering: Pages/Worker success på `44bc8ad`; före-bilder borttagna vid stängning och visas från den commiten.
