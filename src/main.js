@@ -3178,7 +3178,7 @@ const weaponKey = () => { if (player.riding) return ''; const h = heldItem(); re
 const gymPumpState = pumpSampler(() => stats.gymPump);
 const smoothStep = (t) => { const c = Math.min(1, Math.max(0, t)); return c * c * (3 - 2 * c); };
 let reactionCam = { active: false, start: 0, camFrom: null, camTo: null, kind: -1 };
-const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey, mirrored: () => !rest.active || !!rest.spot?.gymPose || !!rest.spot?.gymWirePose,
+const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey,
   ground: (x, z, y) => player.groundAt(x, z, y), // #2010: the contact shadows rest on the real ground (stairs, grass, floors)
   // #1943: a figure whose feet are under the river's surface swims (the bed is far below every other walkable level, so the cheap height test rejects everyone else)
   swim: (p) => { if (p.y > SITE.bridges.waterY + 1 || p.y >= waterYAt(p.x, p.z) - WALK.waterDepth || !swimWater(p.x, p.z)) return null; const c = riverCurrent(riverAt(p.x, p.z)); return { water: waterYAt(p.x, p.z), cx: c.x, cz: c.z }; },
@@ -4127,8 +4127,9 @@ function frame(raw) {
     if (viewDue && (testMode?.wantsFrame() ?? true)) {
       frameDiag.lastShadow = renderer.shadowMap.needsUpdate ? 1 : 0; // #1628: this frame's renderer.info totals include the shadow pass (crash heartbeat `gl3.sf`)
       if (reactionCam.active) ghosts.showSelf(true);
-      renderer.render(scene, camera);
-      if (!reactionCam.active && !ghosts.mirrored()) ghosts.showSelf(false);
+      else ghosts.showRestBody(rest);
+      try { renderer.render(scene, camera); }
+      finally { if (!reactionCam.active) ghosts.showSelf(false); } // #2080: no stale body in picking/menu/next view
       reportCapture.afterRender();
       drewView = true;
       lastViewDraw = f0;

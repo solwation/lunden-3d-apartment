@@ -1,3 +1,4 @@
+import { installSelfView } from './avatarselfview.js'; // #2080
 import { lipPoint, lipSeamPoint } from './avatarlips.js'; // #2065
 import { AVATAR_LIP_VOLUME } from './config.js';
 import { groundMotion } from './avatarmotion.js';
@@ -1281,6 +1282,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     sh.vertexShader = glossVertex(sh.vertexShader, gloss); sh.fragmentShader = curlGloss(glossFragment(sh.fragmentShader, gloss)); // (#2054: the curls turn its strands)
   };
   m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey(); // #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
+  installSelfView(m); // #2080: the own camera hides head/hair; mirrors and peers keep the full figure
   return m;
 }
 

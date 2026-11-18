@@ -1441,3 +1441,28 @@ both materials. Checks: three targeted cases in `tools/pavingsurfacetest.mjs`, s
 syntax/diff/source preservation, and a matched actual World material/plate plus production
 exterior browser with summer/snow/restoration. [Inspected aspect-correct images, hashes,
 camera correction, exact counters and limits](../verification/2074/README.md).
+
+
+### Own resting body (#2080)
+
+`Ghosts.showRestBody` reuses the already allocated self avatar for settled ordinary
+`Rest` spots. The production `restState` / `applyRestPose` determine the world anchor,
+seat heading, chosen height, ordinary bent legs, `legsUp` chaise and lying pose.
+Camera yaw only changes gaze. `main.js` poses the body before the normal draw even
+without a nearby mirror, then hides it in `finally` so it cannot remain in picking,
+menus, standing or the next view. Gym spots keep their existing special path.
+
+`avatarselfview.js` uses existing skin/face labels in the established PBR program.
+Own view hides head, hair, neck accessories and avatar arms; the existing camera
+`Hand` and held-object views continue to own arms/hands. This avoids duplicate hands
+and open shoulder sections inside the eye. A body-only 30 cm inner near plane
+(*guess*, display clipping rather than an anatomical measurement) removes surfaces
+through the eye. World geometry, camera near plane, proportions and poses are unchanged.
+The material stays solid, opaque and depth-tested: existing cushions/duvets can cover
+it. Reflector hooks save/restore view masks and visibility and draw the complete avatar,
+including arms, head and held proxies. BIO reactions retain the complete body too.
+
+One extra existing skinned-body draw while resting, no second avatar, new geometry,
+attribute, image map, light, pass, storage or wire field. First use can upload the
+existing bone texture if warm-up/mirrors have not done so. The skeleton updates while
+the body is drawn. [Scoped native views, costs and limits](../verification/2080/README.md).

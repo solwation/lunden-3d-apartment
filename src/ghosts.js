@@ -1,3 +1,4 @@
+import { restBodyReady } from './avatarselfview.js'; // #2080
 import { wetEnv } from './avatarweather.js'; // #2018
 import { transitionPose } from './avatarmotion.js';
 import {gymPoseWire} from './gymposewire.js';
@@ -114,7 +115,7 @@ const tmpV = new THREE.Vector3(), tmpW = new THREE.Vector3();
 const pickMat = new THREE.MeshBasicMaterial();
 
 export class Ghost { // (exported for tools/ghostprops.html)
-  /** `self`: our own reflection in the mirrors (#691): no name tag, never shown to the main camera. */
+  /** `self`: our own reflection in the mirrors (#691): no name tag, also reused for the resting first-person body (#2080). */
   constructor(parent, id, name, self = false, look = null) {
     this.id = id; this.name = name || ANON; this.snaps = []; this.h = ''; this.hi = ''; this.itemProp = null; this.itemHold = new THREE.Vector3(); this.solid = false; this.prop = null; this.self = self;
     this.avatarLook = look ?? (self ? `me:${name}` : id);
@@ -958,7 +959,7 @@ export class Ghosts {
     m.gx=s.gx; m.bp = s.bp; m.p.set(...s.p); m.r = s.r; m.h = s.h; m.hi = s.hi; m.c = s.c; m.pose = s.pose; m.look = s.look; m.sp = s.sp; m.jp = s.jp; m.dn = s.dn; m.am = s.am; m.bk = s.bk; m.cat = s.cat; m.t = t;
   }
 
-  /** Our avatar for the mirrors: one per name (the look comes from it); hidden but for the mirror's pass. */
+  /** Our avatar for the mirrors: one per name (the look comes from it); shared by mirrors and the resting first-person view. */
   selfGhost() {
     const n = this.name() || '';
     const key = `${n}:${this.avatarCode}`;
@@ -972,35 +973,58 @@ export class Ghosts {
 
   /** The mirror's pass is about to draw (reflections.js): put our solid avatar where we stand. */
   beforeMirror() {
-    const m = this.mine;
-    if (!m || !this.mirrored()) return;
-    const g = this.selfGhost();
-    g.setHeld(m.h);
-    g.setItem(m.hi);
-    g.heldCat.set(m.cat, g.root);
-    g.pose = m.pose;g.gx=m.gx;
-    g.look = m.look;
-    g.avatar.setSuit(m.sp);
-    g.setJetpack(m.jp);
-    g.dance = m.dn === 1 || m.dn === 2 ? m.dn : 0; // #1622 / #1757
-    g.air = m.am; g.vy = m.vy; // #1799
-    g.react = this.myReact ?? null; // #1639 (a Ghost drops it when over)
-    g.root.position.copy(m.p);
-    this.light.apply(g.avatar, g.lightSt ??= {}, m.p.x, m.p.y, m.p.z, performance.now()); // #2017
-    g.root.rotation.y = m.r;
-    g.bikeAt({ bk: m.bk }, { bk: m.bk }, 1);
-    const now = performance.now(), goal = m.c ? 1 : 0, last = g.mirrorAt ?? -Infinity; // (#1149: goes down / up over AVATAR_CROUCH.time, as the eye)
-    g.mirrorAt = now;
-    g.crouch = now - last < 250 ? THREE.MathUtils.clamp(goal, (g.crouch ?? goal) - (now - last) / 1000 / AVATAR_CROUCH.time, (g.crouch ?? goal) + (now - last) / 1000 / AVATAR_CROUCH.time) : goal;
-    g.root.visible = true;
-    g.mirrorTyping(!!this.mirrorTyping?.(now), now);
-    g.animate(now, 0, m.vx, m.vz);
+    const g = this.myGhost;
+    this.mirrorSelfView = { visible: g?.root.visible ?? false, body: this.selfBody, arms: this.selfArms,
+      typing: g?.typingSprite?.visible ?? false };
+    // A reflector can exit early; afterMirror always restores this exact view in its finally block.
+    this.setSelfView(false);
+    if (this.mine && this.mirrored()) this.showSelf(true);
+    else if (g) g.root.visible = false;
   }
 
-  afterMirror() { if (this.myGhost) { this.myGhost.root.visible = false; if (this.myGhost.typingSprite) this.myGhost.typingSprite.visible = false; } }
+  afterMirror() {
+    const view = this.mirrorSelfView;
+    this.mirrorSelfView = null;
+    this.setSelfView(!!view?.body, !!view?.arms);
+    if (this.myGhost) {
+      this.myGhost.root.visible = view?.visible ?? false;
+      if (this.myGhost.typingSprite) this.myGhost.typingSprite.visible = view?.typing ?? false;
+    }
+  }
+
+  /** First-person body only: the camera already owns held objects, hands and their accessories. */
+  setSelfView(body = false, arms = false) {
+    for (const [object, visible] of this.selfHidden ?? []) object.visible = visible;
+    this.selfHidden = [];
+    this.selfBody = body; this.selfArms = arms;
+    const g = this.myGhost;
+    if (!g) return;
+    g.avatar.material.userData.u.uSelfView.value.set(body ? 1 : 0, body && arms ? 1 : 0);
+    if (body) g.root.traverse(object => {
+      if ((object.isMesh || object.isSprite || object.isPoints) && object !== g.mesh) {
+        this.selfHidden.push([object, object.visible]); object.visible = false;
+      }
+    });
+  }
+
+  /** Pose even with no nearby mirror. Root/heading come from restState, never camera yaw. */
+  showRestBody(rest) {
+    if (!restBodyReady(rest, this.active()) || !this.mine || this.mine.gx || ![1, 2, 3].includes(this.mine.pose)) {
+      if (this.myGhost) this.myGhost.firstRestSpot = null;
+      this.showSelf(false); return;
+    }
+    const g = this.selfGhost();
+    // Entry has already eased the eye. Do not retain a previous standing/mirror pose at dt=0.
+    if (g.firstRestSpot !== rest.spot || g.pose !== this.mine.pose) g.avatar.poseMotion = null;
+    g.firstRestSpot = rest.spot;
+    g.body = this.mine.r;
+    this.showSelf(true);
+    this.setSelfView(true, true); // the existing first-person Hand owns arms; no open shoulder sections at the eye
+  }
 
   /** Show our solid avatar directly (third-person view during BIO reactions, #1869). */
   showSelf(show = true) {
+    this.setSelfView(false);
     if (!show) { if (this.myGhost) this.myGhost.root.visible = false; return; }
     const m = this.mine;
     if (!m) return;

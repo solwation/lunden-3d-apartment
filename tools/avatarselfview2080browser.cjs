@@ -1,0 +1,24 @@
+const { chromium }=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
+const [base='http://localhost:8206',out='docs/verification/2080']=process.argv.slice(2),baseline=process.env.BASELINE||'dd0bf970d75d3806080792e34880938046243ac2';
+const sha=s=>crypto.createHash('sha256').update(s).digest('hex'),save=(name,data)=>fs.writeFileSync(path.join(out,name),Buffer.from(data.split(',')[1],'base64'));
+(async()=>{fs.mkdirSync(out,{recursive:true});const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});const proof={baseline,results:{}},pictures={};
+try{for(const phase of['before','after']){const page=await browser.newPage({viewport:{width:1100,height:720}}),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'||/THREE.WebGLProgram/.test(m.text()))errors.push(m.text())});
+if(phase==='before')for(const f of['src/avatar.js','src/ghosts.js','src/main.js']){const body=execFileSync('git',['show',`${baseline}:${f}`],{maxBuffer:16e6});await page.route('**/'+f,r=>r.fulfill({contentType:'text/javascript',body}));}
+await page.goto(base+'/tools/avatarselfview2080.html');await page.waitForFunction(()=>window.__ready,null,{timeout:120000});const fresh=await page.evaluate(()=>window.__fresh());assert.equal(fresh.restActive,false);assert.equal(fresh.bodyVisible,false);pictures[phase]={};const views={};
+for(const name of['armchair','chaise','lie','short-armchair','short-chaise','chaise-side']){const v=await page.evaluate(n=>window.__view(n),name);pictures[phase][name]=v.image;delete v.image;views[name]=v;if(phase==='after')save(name+'.png',pictures[phase][name]);}
+const budget=await page.evaluate(()=>window.__budget());const controls=await page.evaluate(()=>window.__controls());if(controls.heldImage){save('held-hand.png',controls.heldImage);delete controls.heldImage;}if(controls.mirrorImage){save('mirror.png',controls.mirrorImage);delete controls.mirrorImage;}
+if(phase==='after')for(const [k,v]of Object.entries(controls.checks))assert.equal(v,true,k);
+proof.results[phase]={fresh,views,budget,controls,errors};
+if(phase==='after'){
+ const sheets=[['seated-paired.png',['armchair','chaise']],['short-paired.png',['short-armchair','short-chaise']],['lie-paired.png',['lie']]];
+ for(const [file,names]of sheets){const data=await page.evaluate(async({pictures,names})=>{const c=document.createElement('canvas');c.width=2200;c.height=names.length*720+36;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.fillStyle='#111';g.font='22px sans-serif';g.fillText('BEFORE',16,26);g.fillText('AFTER',1116,26);for(const [col,phase]of['before','after'].entries())for(const[row,name]of names.entries()){const img=new Image();img.src=pictures[phase][name];await img.decode();g.drawImage(img,col*1100,row*720+36)}return c.toDataURL('image/png')},{pictures,names});save(file,data)}
+ // Fresh page reload has no stale pose; chosen appearance is read through normal Ghosts storage.
+ await page.reload();await page.waitForFunction(()=>window.__ready);proof.reload=await page.evaluate(()=>window.__fresh());assert.equal(proof.reload.bodyVisible,false);assert.equal(proof.reload.restActive,false);
+}
+assert.deepEqual(errors,[]);await page.close();}
+fs.writeFileSync(path.join(out,'browser.json'),JSON.stringify(proof,null,2)+'\n');
+const a=proof.results.before,b=proof.results.after;assert.deepEqual(a.budget.geometryAttributes,b.budget.geometryAttributes);assert.equal(a.budget.triangles,b.budget.triangles);assert.deepEqual(a.budget.restConfig,b.budget.restConfig);assert.equal(a.budget.stateCallback,b.budget.stateCallback);
+for(const name of Object.keys(b.views)){assert.deepEqual(a.views[name].camera,b.views[name].camera);assert.equal(b.views[name].rendered.calls,a.views[name].rendered.calls+1);assert.equal(b.views[name].rendered.triangles,a.views[name].rendered.triangles+b.views[name].avatarTriangles);assert.ok(b.views[name].rendered.textures<=a.views[name].rendered.textures+1);assert.equal(b.views[name].hiddenAfterFrame,true);assert.deepEqual(b.views[name].maskAfterFrame,[0,0]);}
+proof.sourceSha256=Object.fromEntries(['src/avatarselfview.js','src/avatar.js','src/ghosts.js','src/main.js','src/rest.js','src/remote-pose.js','src/furniture.js','src/hand.js','tools/avatarselfview2080.html','tools/avatarselfview2080browser.cjs'].map(f=>[f,sha(fs.readFileSync(f))]));fs.writeFileSync(path.join(out,'browser.json'),JSON.stringify(proof,null,2)+'\n');console.log(JSON.stringify({pass:true,views:b.views,controls:b.controls,errors:b.errors}));
+}finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});
