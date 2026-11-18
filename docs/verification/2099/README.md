@@ -10,12 +10,12 @@ history gives wet 0.51, puddles 0.80). Before = the ground modules from bc217d9 
 
 | View | Before | After |
 |---|---|---|
-| Street, dry (pixel-identical) | ![](before/dry-street.jpg) | ![](dry-street.jpg) |
-| Courtyard, dry | ![](before/dry-courtyard.jpg) | ![](dry-courtyard.jpg) |
-| Street, raining | ![](before/rain-street.jpg) | ![](rain-street.jpg) |
-| Courtyard, raining | ![](before/rain-courtyard.jpg) | ![](rain-courtyard.jpg) |
-| Street, after rain (before = dry) | ![](before/dry-street.jpg) | ![](afterrain-street.jpg) |
-| Courtyard, after rain (before = dry) | ![](before/dry-courtyard.jpg) | ![](afterrain-courtyard.jpg) |
+| Street, dry (pixel-identical) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8c3e0ad4a5b31453cc564ad46c45175ca4ea75e0/docs/verification/2099/before/dry-street.jpg) | ![](dry-street.jpg) |
+| Courtyard, dry | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8c3e0ad4a5b31453cc564ad46c45175ca4ea75e0/docs/verification/2099/before/dry-courtyard.jpg) | ![](dry-courtyard.jpg) |
+| Street, raining | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8c3e0ad4a5b31453cc564ad46c45175ca4ea75e0/docs/verification/2099/before/rain-street.jpg) | ![](rain-street.jpg) |
+| Courtyard, raining | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8c3e0ad4a5b31453cc564ad46c45175ca4ea75e0/docs/verification/2099/before/rain-courtyard.jpg) | ![](rain-courtyard.jpg) |
+| Street, after rain (before = dry) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8c3e0ad4a5b31453cc564ad46c45175ca4ea75e0/docs/verification/2099/before/dry-street.jpg) | ![](afterrain-street.jpg) |
+| Courtyard, after rain (before = dry) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8c3e0ad4a5b31453cc564ad46c45175ca4ea75e0/docs/verification/2099/before/dry-courtyard.jpg) | ![](afterrain-courtyard.jpg) |
 | Street from 3.5 m, raining / after rain | ![](rain-street-high.jpg) | ![](afterrain-street-high.jpg) |
 
 Checks
@@ -38,3 +38,5 @@ Limits: puddle placement is a world-noise *guess* (flat ground only), not measur
 still casts faint shadows in rain; the wet gloss makes them a little more visible. The bus-shelter slabs share the kerbs'
 material and get wet under the roof. The south/edge backdrops' far roads, the bridges' asphalt and the outdoor gym keep their
 dry look (not in this issue's scope). Not measured on the Surface Pro.
+
+Publicering: Pages/Worker success på `8c3e0ad`; före-bilder borttagna vid stängning och visas från den commiten.
