@@ -49,3 +49,5 @@ No mesh, texture, draw call, shader or network change; the head boxes (`rifleBox
 the browser (noise). Limits: values are *guesses* by eye, not measured; the stabilisation is rotational only (the head's
 vertical bounce itself is not reduced, the 15-bone rig has no neck to absorb it); with a #2011 gaze target the lead adds to the
 gaze's head share (bounded by both limits).
+
+Publicering: Pages/Worker success på `c1309fa`; bild-URL:er HTTP 200 före stängning.
