@@ -102,3 +102,7 @@ node --test tools/avatartrainerstest.mjs tools/avatarbodytest.mjs tools/avatarse
 python3 tools/avatartrainers2084preservation.py
 PLAYWRIGHT_MODULE=/path/to/playwright tools/browsertest.sh node tools/avatartrainers2084browser.cjs http://localhost:8216 docs/verification/2084
 ```
+
+## Integrationsgranskning
+
+Dirigenten har granskat helper, avatar-/configdiff, källbevarande och båda slutliga bildark. Snörningen går att läsa i normal vuxen/kort divanvy; inget ytterligare utseendeomtag behövs. Hela testade produkt/fixture/testkälla är byteidentisk vid integration. Redan publicerad löv-RGB och äldre README-/configbytes bevaras; ändringsloggen får nästa unika id1615 (arbetarens1614 var preliminärt). Källbundet grönt underlag återanvänds utan rutinomkörning.
