@@ -59,3 +59,7 @@ Component limits: not the complete World/weather/fog/underwater-wash/animation s
 ## Integrationsgranskning
 
 Dirigenten har granskat helper, de två materialhookarna, alla tre slutliga bildark och källbundet grönt underlag utan rutinomkörning. Produkt/fixture/test matchar överlämningen exakt; accepterad config behåller bark- och solblock och får endast RIVER_SURFACE. Delad grafiktekniktext rekonstruerad som tidigare accepterade bytes plus denna namngivna bilaga. Changelog tilldelad nästa unika id1613; äldre rader bevarade.
+
+## Publicering
+
+Kod/bilder `c02d687594fd8c00ad1088f401c5ebd30d7222c2`; faktiska run-ID [44282734445, 44282734450] success på exakt revision. Alla bilder HTTP200 och inbäddade före stängning: https://github.com/solwation/lunden-3d-apartment/issues/2082#issuecomment-6975447586. Slutkvittot är enbart dokumentation; originalets sökvägsfilter utlöser ingen ny apppublicering.
