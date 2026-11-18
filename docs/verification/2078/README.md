@@ -43,3 +43,7 @@ Public adaptation is tracked separately as solwation/kvarteret-lunden#300. Trans
 ## Integration review
 
 Root inspected final normal/north pairs and reviewed the worker’s five inspected native pairs and three green groups. Product roads/surroundings bytes exactly equal tested48f2f0bc. Config adds only the named facadeWalks block to accepted main; every prior byte and changelog row retained. Unrelated2077 cobbled-corner change remains. Its separate material geometry does not affect the new pavement fixture. Source-bound results reused without duplicate browser or broad tests.
+
+## Publicering
+
+Kod/bilder `3c5d527608439a40c3c68f0221cc1549eca220fc`; faktiska run-ID [44276648711, 44276648845] success på exakt revision. Alla bilder HTTP200 och inbäddade före stängning: https://github.com/solwation/lunden-3d-apartment/issues/2078#issuecomment-6974559458. Slutkvittot är enbart dokumentation; originalets sökvägsfilter utlöser ingen ny apppublicering.
