@@ -1,0 +1,213 @@
+{
+  "baseline": "a366067a79ab90a67abc5a66b3db205f67788506",
+  "rows": [
+    {
+      "height": 180,
+      "beforeTriangles": 16312,
+      "afterTriangles": 16704,
+      "addedTriangles": 392,
+      "originalVerticesRestoredExactly": true,
+      "addedAtVertex": 10560,
+      "attributes": {
+        "position": {
+          "beforeBytes": 587232,
+          "afterBytes": 601344,
+          "itemSize": 3
+        },
+        "normal": {
+          "beforeBytes": 587232,
+          "afterBytes": 601344,
+          "itemSize": 3
+        },
+        "region": {
+          "beforeBytes": 48936,
+          "afterBytes": 50112,
+          "itemSize": 1
+        },
+        "bare": {
+          "beforeBytes": 195744,
+          "afterBytes": 200448,
+          "itemSize": 1
+        },
+        "noseBlend": {
+          "beforeBytes": 48936,
+          "afterBytes": 50112,
+          "itemSize": 1
+        },
+        "skinIndex": {
+          "beforeBytes": 391488,
+          "afterBytes": 400896,
+          "itemSize": 4
+        },
+        "skinWeight": {
+          "beforeBytes": 782976,
+          "afterBytes": 801792,
+          "itemSize": 4
+        },
+        "rifleSkull": {
+          "beforeBytes": 48936,
+          "afterBytes": 50112,
+          "itemSize": 1
+        },
+        "rifleNose": {
+          "beforeBytes": 48936,
+          "afterBytes": 50112,
+          "itemSize": 1
+        },
+        "rifleJaw": {
+          "beforeBytes": 48936,
+          "afterBytes": 50112,
+          "itemSize": 1
+        },
+        "mouth": {
+          "beforeBytes": 195744,
+          "afterBytes": 200448,
+          "itemSize": 1
+        },
+        "pucker": {
+          "beforeBytes": 48936,
+          "afterBytes": 50112,
+          "itemSize": 1
+        },
+        "facePart": {
+          "beforeBytes": 195744,
+          "afterBytes": 200448,
+          "itemSize": 1
+        },
+        "faceAnchor": {
+          "beforeBytes": 587232,
+          "afterBytes": 601344,
+          "itemSize": 3
+        },
+        "armPump": {
+          "beforeBytes": 782976,
+          "afterBytes": 801792,
+          "itemSize": 4
+        },
+        "suitRole": {
+          "beforeBytes": 48936,
+          "afterBytes": 50112,
+          "itemSize": 1
+        },
+        "color": {
+          "beforeBytes": 587232,
+          "afterBytes": 601344,
+          "itemSize": 3
+        }
+      }
+    },
+    {
+      "height": 120,
+      "beforeTriangles": 16144,
+      "afterTriangles": 16536,
+      "addedTriangles": 392,
+      "originalVerticesRestoredExactly": true,
+      "addedAtVertex": 11028,
+      "attributes": {
+        "position": {
+          "beforeBytes": 581184,
+          "afterBytes": 595296,
+          "itemSize": 3
+        },
+        "normal": {
+          "beforeBytes": 581184,
+          "afterBytes": 595296,
+          "itemSize": 3
+        },
+        "region": {
+          "beforeBytes": 48432,
+          "afterBytes": 49608,
+          "itemSize": 1
+        },
+        "bare": {
+          "beforeBytes": 193728,
+          "afterBytes": 198432,
+          "itemSize": 1
+        },
+        "noseBlend": {
+          "beforeBytes": 48432,
+          "afterBytes": 49608,
+          "itemSize": 1
+        },
+        "skinIndex": {
+          "beforeBytes": 387456,
+          "afterBytes": 396864,
+          "itemSize": 4
+        },
+        "skinWeight": {
+          "beforeBytes": 774912,
+          "afterBytes": 793728,
+          "itemSize": 4
+        },
+        "rifleSkull": {
+          "beforeBytes": 48432,
+          "afterBytes": 49608,
+          "itemSize": 1
+        },
+        "rifleNose": {
+          "beforeBytes": 48432,
+          "afterBytes": 49608,
+          "itemSize": 1
+        },
+        "rifleJaw": {
+          "beforeBytes": 48432,
+          "afterBytes": 49608,
+          "itemSize": 1
+        },
+        "mouth": {
+          "beforeBytes": 193728,
+          "afterBytes": 198432,
+          "itemSize": 1
+        },
+        "pucker": {
+          "beforeBytes": 48432,
+          "afterBytes": 49608,
+          "itemSize": 1
+        },
+        "facePart": {
+          "beforeBytes": 193728,
+          "afterBytes": 198432,
+          "itemSize": 1
+        },
+        "faceAnchor": {
+          "beforeBytes": 581184,
+          "afterBytes": 595296,
+          "itemSize": 3
+        },
+        "armPump": {
+          "beforeBytes": 774912,
+          "afterBytes": 793728,
+          "itemSize": 4
+        },
+        "suitRole": {
+          "beforeBytes": 48432,
+          "afterBytes": 49608,
+          "itemSize": 1
+        },
+        "color": {
+          "beforeBytes": 581184,
+          "afterBytes": 595296,
+          "itemSize": 3
+        }
+      }
+    }
+  ],
+  "unchanged": {
+    "src/olof.js": "7a447147ae00cf26485384dd3afbfc52d529b67eecead90b7f7fc65ea8d353c2",
+    "src/avatarselfview.js": "f5a5ed533eec1b5e11c53ef18ec558631a443ab74735bc6792cc156f3ab13889",
+    "src/avatarfootik.js": "e66c0b55ad5ccebeda0872c301497ba6275e679eb4de9e9186ef8331710bbdb6",
+    "src/ghosts.js": "6fe294874595d36be5a9a988d8fd2b68dc7dcda1045744ec92f9ea064fd75348",
+    "src/main.js": "91ad31a3691b88c51e4a7e840af5835c0196844ce20f90c6ff91b8e7ebc01667",
+    "src/rest.js": "34622ed84b783b6969ac9c84cd5db3ae0a0d7b8298d3611d56ec93ecd771f10a",
+    "src/remote-pose.js": "4fa52f3924f40997aab40da35019ae70af1a81cf153b35b78354a44e1b3d5fa7",
+    "src/furniture.js": "aa1d068ca4996f2f07e1d8a90abbf5a4dddc372f99f792ed1feb964b6e185a96",
+    "src/reflections.js": "b8a63b3ec6c3ba4d01083c3e91de2b77065b40645842a643a45787571331e502",
+    "src/hand.js": "a4ab8914a060f7fb0f76184e18674fe1ad4f4876133830897722c359c271ab75"
+  },
+  "sourceSha256": {
+    "src/avatartrainers.js": "470b65e6ca37047cbef9ead0b8e4194de37771bf7132107ab12599fa991daf59",
+    "src/avatar.js": "a5e97ef3e1140f15f7f356dcda936ba9be6d60360807fe95ab326a2465fe911b",
+    "src/config.js": "01abe88d88486d0f77b93470598b020bc7e24daee09db04fcbc58eca16848f4c",
+    "tools/avatartrainerstest.mjs": "12c68a930a9dd21f99eb38b0ea8e7248f794e278dd0bf5207263c0aed583edab"
+  }
+}

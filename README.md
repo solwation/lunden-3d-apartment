@@ -10,6 +10,8 @@ Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spe
 
 När du sitter eller ligger syns din valda kropp när du tittar ned, med böjda ben i fåtöljen och utsträckta ben i divanen. Spegeln visar hela avataren. [Bilder och kontroller](docs/verification/2080/README.md).
 
+Träningsskorna har ljus snörning, plös och diskreta panelkanter i dina valda skofärger, synliga även med fötterna i divanen. [Bilder och kostnad](docs/verification/2084/README.md).
+
 Hus L:s solpaneler har diskreta cellmellanrum, tunna ledarbanor och lugn glasstruktur, med oförändrad panelgeometri och takgång. [Egna jämförelsebilder, källbundna kontroller och exakt kostnad](docs/verification/2083/README.md).
 
 Längs Realgymnasiets tegelfasad vid Sankt Lars väg går en smal trottoar med anslutningar vid båda gavlarna; bredden är uppskattad.

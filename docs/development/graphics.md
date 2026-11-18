@@ -1497,3 +1497,32 @@ The native Standard material receives a bounded analytic normal perturbation fro
 Consumers: bridges-water plus the two continued water courses already merged into edge-land. The latter selects existing water-coloured vertices at the two exact adjacent water levels, preserving all other vertex colours/geometry. Both batches use identical world phases. The older local/continuation roughness difference remains; this change does not recalibrate it. The colourless edge snow variant returns the exact native shader/cache key, preserving its older winter policy.
 
 No texture, extra vertex attribute, uniform, time source, frame callback, displacement, reflection pass, new light or draw is added. Active ripple fragments add two sin/two cos calls, two fwidth calls, two smoothsteps, camera distance, small vector arithmetic and one normalization; a vec4 varying and world-position transform add vertex/interpolation work, and masked edge vertices also classify colour/height. Inactive/far fragments branch out of ripple math. Driver branch execution is not a measured FPS guarantee. A winter native program that previously shared with local water becomes a separate cached program: measured 6→7 total programs, other views 6→6. Shader binary/driver allocation is not exposed; new map/geometry bytes are exactly zero, total GPU cost is not zero. [Source-bound evidence, cost and limits](../verification/2082/README.md).
+
+
+### Trainer uppers and lacing (#2084)
+
+`src/avatartrainers.js` adds a small tongue, three crossed lace pairs and two narrow
+panel outlines to the existing `avatar.js:bodyParts` uppers. `AVATAR_TRAINERS` contains
+visual guesses, not a named product model. Detail polygons are clipped against the
+actual coarse upper triangles, with interpolated authored normals. Their tiny Y lifts
+are capped at the old maximum; X/Z, the old hemispheres/soles and their contact bounds
+stay unchanged. A separate detail block enters the existing merge after the original
+body parts, rigidly bound to the same foot bones at the same SHIN offset. All original
+attributes, including every sole/upper colour, restore byte-identically after removing
+only that contiguous inserted block. No rig, gait/pose, first-person rest mask or shader
+changes. The existing palette base shade now applies to shoe region 5 too; the old
+upper's shade is exactly 1, while new tongue/panel shades multiply the selected shoe
+colour. Laces use the existing sole's ivory, with its existing fixed-surface finish.
+
+The cached variant gains 392 triangles/1176 unindexed vertices and 125832 attribute bytes
+(111720 shared non-colour bytes +14112 own colour bytes per avatar). The exact facet
+registration exceeds the initial <200-triangle goal; this accepted bound is about 2.4%
+of the adult's existing 16312 triangles. There is still one SkinnedMesh, one material
+and one draw per avatar, with no new map/attribute kind/light/pass/frame callback or
+network/storage field. More vertices enter the existing skinning and bone-texture path;
+no FPS claim. Normal chaise images show clear lacing; tongue/panel tones remain subtle.
+`tools/avatartrainerstest.mjs` covers finite bounds, exact old attribute/palette/sole
+preservation, rig/pose equivalence and source boundaries, alongside existing body/selfview
+checks. `tools/avatartrainers2084browser.cjs` uses actual furniture/Rest/Ghosts/Avatar,
+production frame hooks and reflector. [Own captures, source hashes, budgets and limits](../verification/2084/README.md).
+This character change has no public downstream application.

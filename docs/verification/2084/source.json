@@ -1,0 +1,31 @@
+{
+  "baseline": "a366067a79ab90a67abc5a66b3db205f67788506",
+  "exactAvatarInverse": true,
+  "exactConfigInverse": true,
+  "originalChangelogRowsPreserved": 1612,
+  "onlyNewChangelogId": 1614,
+  "sourceSha256": {
+    "src/avatar.js": "a5e97ef3e1140f15f7f356dcda936ba9be6d60360807fe95ab326a2465fe911b",
+    "src/avatartrainers.js": "470b65e6ca37047cbef9ead0b8e4194de37771bf7132107ab12599fa991daf59",
+    "src/config.js": "01abe88d88486d0f77b93470598b020bc7e24daee09db04fcbc58eca16848f4c",
+    "src/avatarselfview.js": "f5a5ed533eec1b5e11c53ef18ec558631a443ab74735bc6792cc156f3ab13889",
+    "src/olof.js": "7a447147ae00cf26485384dd3afbfc52d529b67eecead90b7f7fc65ea8d353c2",
+    "src/ghosts.js": "6fe294874595d36be5a9a988d8fd2b68dc7dcda1045744ec92f9ea064fd75348",
+    "src/main.js": "91ad31a3691b88c51e4a7e840af5835c0196844ce20f90c6ff91b8e7ebc01667",
+    "src/rest.js": "34622ed84b783b6969ac9c84cd5db3ae0a0d7b8298d3611d56ec93ecd771f10a",
+    "src/remote-pose.js": "4fa52f3924f40997aab40da35019ae70af1a81cf153b35b78354a44e1b3d5fa7",
+    "src/reflections.js": "b8a63b3ec6c3ba4d01083c3e91de2b77065b40645842a643a45787571331e502",
+    "src/hand.js": "a4ab8914a060f7fb0f76184e18674fe1ad4f4876133830897722c359c271ab75",
+    "src/furniture.js": "aa1d068ca4996f2f07e1d8a90abbf5a4dddc372f99f792ed1feb964b6e185a96",
+    "tools/avatartrainerstest.mjs": "12c68a930a9dd21f99eb38b0ea8e7248f794e278dd0bf5207263c0aed583edab",
+    "tools/avatartrainers2084.html": "8e176077b9edecb122acf049bf2e3d9aaf5a8d31c456f2a70c29794aade853af",
+    "tools/avatartrainers2084browser.cjs": "91bc6f1958423d71e0bd40de9db6c680fa16cdc0f0b592c91414d6272b9aa44d"
+  },
+  "captureSha256": {
+    "docs/verification/2084/short-mirror-paired.png": "5c4877673e2fc8df3095b490cb5811e7e2d30686d0d7a2a68943796b6d43fad9",
+    "docs/verification/2084/short-chaise.png": "3d5fb9483d6f89328078ed37d6b5848d8471e47c57f7e0adf60eb63e83ae3812",
+    "docs/verification/2084/chaise-near.png": "3091005a8a9dd579115186af89835bcbdd54669486aa52035167cfa7600ac661",
+    "docs/verification/2084/feet-paired.png": "5fd2c038acf3d7ee4ba68787342b7ad8d40d5f22d216a11ffdef8f22ebcc0ea9",
+    "docs/verification/2084/chaise.png": "0a4fb25e19e26548bcc9969517b9860e49a2620fc79c3fdf6e9018ee692f54df"
+  }
+}

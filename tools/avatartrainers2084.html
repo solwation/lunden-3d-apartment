@@ -1,0 +1,86 @@
+<!doctype html><html><meta charset="utf-8"><title>Trainer details in actual resting consumers — #2084</title><link rel="icon" href="data:,">
+<style>body{margin:0;background:#d4dbe0}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as T from 'three';
+import { armchair, sofa, bed } from '../src/furniture.js';
+import { Rest, restTarget } from '../src/rest.js';
+import { restState } from '../src/remote-pose.js';
+import { Ghosts } from '../src/ghosts.js';
+import { addReflector, updateReflections } from '../src/reflections.js';
+import { Hand, handLook } from '../src/hand.js';
+import { avatarBody, decodeAvatarLook, REST } from '../src/config.js';
+const main=await (await fetch('../src/main.js')).text();
+const callbackLine=main.split('\n').find(s=>s.includes('state: () => ({ bp: gymPumpState()'));
+const callback=callbackLine.slice(callbackLine.indexOf('state: ')+7,callbackLine.lastIndexOf(' });'));
+const renderBlock=main.slice(main.indexOf('      if (reactionCam.active) ghosts.showSelf(true);'),main.indexOf('      reportCapture.afterRender();'));
+if(!callback.endsWith('})')||!renderBlock.includes('renderer.render(scene, camera)'))throw Error('Production hook anchors changed');
+const scene=new T.Scene();scene.background=new T.Color(0xd4dbe0);
+const camera=new T.PerspectiveCamera(64,1100/720,.025,60);camera.rotation.order='YXZ';scene.add(camera);
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(1);renderer.setSize(1100,720);renderer.toneMapping=T.NeutralToneMapping;document.body.append(renderer.domElement);
+scene.add(new T.HemisphereLight(0xffffff,0x8b8175,2));const sun=new T.DirectionalLight(0xfff0dc,2.5);sun.position.set(3,5,2);scene.add(sun);
+const floor=new T.Mesh(new T.PlaneGeometry(35,18),new T.MeshStandardMaterial({color:0xb5a18c,roughness:.9}));floor.rotation.x=-Math.PI/2;floor.position.y=-.015;scene.add(floor);
+const furniture=[armchair(),sofa({chaise:'right'}),bed({w:1.8,l:2})];
+const targets=furniture.map((o,i)=>{o.position.set(i*4,0,0);o.rotation.y=.43;scene.add(o);return restTarget(o,{x:i*4,z:0,level:0},0)});
+const rest=new Rest(camera),hand=new Hand(camera,scene),player={pos:new T.Vector3(0,0,-2),crouched:false,riding:null},reactionCam={active:false};
+let playing=true,held=null,ghosts;
+const ghostRef={get avatarCode(){return ghosts.avatarCode},get me(){return ghosts.me}};
+const state=Function('player','camera','reactionCam','gymPumpState','playroom','suit','jetpack','heldCategory','heldItem','miele','cat','heldCatState','fishing','restState','rest','ghosts','return '+callback)(player,camera,reactionCam,()=>null,{music:{}},{worn:false},{worn:false},()=>held?'cup':'',()=>held,{},null,()=>null,{wire:null},restState,rest,ghostRef);
+const mirrored=main.includes('mirrored: () => !rest.active')?()=>!rest.active||!!rest.spot?.gymPose||!!rest.spot?.gymWirePose:()=>true;
+ghosts=new Ghosts({scene,camera,url:'',name:()=> 'Kropp2080',active:()=>playing,state,mirrored,ground:()=>0});
+const nativeRender=Function('reactionCam','ghosts','rest','hand','dt','renderer','scene','camera',renderBlock);
+const counters=()=>({calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,programs:renderer.info.programs.length});
+const frame=(dt=1/60)=>{rest.update(dt);hand.update(dt,held);ghosts.update(dt);scene.updateMatrixWorld(true);nativeRender(reactionCam,ghosts,rest,hand,dt,renderer,scene,camera);return counters()};
+const look=(cm,variant=false)=>{const lk={...decodeAvatarLook(variant?'413211212':'241302112','body2080'),height:cm};ghosts.setMyLook(lk);handLook(lk);rest.scale=avatarBody(lk).scale;return lk};
+look(180);
+window.__view=(name)=>{
+ const short=name.startsWith('short'),index=name.includes('chaise')?1:name.includes('lie')?2:0;
+ const lk=look(short?120:180,short);const target=targets[index],spot=target.spots[index===1?3:0];
+ rest.end();camera.position.set(index*4,1.62,-2);camera.rotation.set(0,0,0);
+ rest.begin(target,spot,{x:player.pos.x,y:0,z:player.pos.z,yaw:0});rest.update(REST.move);
+ camera.rotation.y=spot.yaw+(name.includes('side')?.6:0);camera.rotation.x=index===2?.15:-.85;rest.clampLook(camera);
+ let rendered;for(let n=0;n<24;n++)rendered=frame();
+ const g=ghosts.myGhost;scene.updateMatrixWorld(true);
+ const feet=['footL','footR'].map(k=>g.avatar.bones[k].getWorldPosition(new T.Vector3()).toArray());
+ if(name.includes('near')){const at=new T.Vector3().fromArray(feet[0]).add(new T.Vector3().fromArray(feet[1])).multiplyScalar(.5);at.y+=.04;camera.position.copy(at).add(new T.Vector3(0,.48,.38).applyAxisAngle(new T.Vector3(0,1,0),spot.yaw));camera.lookAt(at);rendered=frame();}
+
+ return{name,rendered,feet,root:g.root.position.toArray(),yaw:g.root.rotation.y,objectYaw:g.avatar.object.rotation.y,spot:{pos:spot.pos.toArray(),yaw:spot.yaw,legsUp:!!spot.legsUp,kind:spot.kind},camera:{at:camera.position.toArray(),yaw:camera.rotation.y,pitch:camera.rotation.x},pose:g.pose,avatarTriangles:g.mesh.geometry.attributes.position.count/3,boneTexture:g.mesh.skeleton.boneTexture?{width:g.mesh.skeleton.boneTexture.image.width,height:g.mesh.skeleton.boneTexture.image.height,bytes:g.mesh.skeleton.boneTexture.image.data.byteLength}:null,look:{height:g.avatar.look.height,skin:g.avatar.look.skin,top:g.avatar.look.top,pants:g.avatar.look.pants,shoes:g.avatar.look.shoes},material:{solid:g.avatar.solid,transparent:g.avatar.material.transparent,depthTest:g.avatar.material.depthTest,depthWrite:g.avatar.material.depthWrite},hiddenAfterFrame:!g.root.visible,maskAfterFrame:g.avatar.material.userData.u.uSelfView?.value.toArray()??[0,0],image:renderer.domElement.toDataURL()};
+};
+window.__controls=()=>{
+ const checks={},g=ghosts.myGhost,uniform=()=>g.avatar.material.userData.u.uSelfView?.value.toArray();
+ const show=()=>ghosts.showRestBody(rest);
+ if(!ghosts.showRestBody)return{baseline:true};
+ // The production frame hides the body again, even when renderer.render throws.
+ show();checks.plainVisible=g.root.visible&&uniform()[0]===1;checks.plainArms=uniform()[1]===1;
+ const anchor=g.root.position.clone(),yaw=g.root.rotation.y;camera.rotation.y+=.6;camera.rotation.x=-.65;rest.clampLook(camera);ghosts.update();show();
+ checks.worldAnchor=g.root.position.distanceTo(anchor)<1e-12&&g.root.rotation.y===yaw&&Math.abs(g.avatar.object.rotation.y-Math.PI)<1e-9;
+ ghosts.beforeMirror();checks.fullMirror=g.root.visible&&uniform().every(v=>v===0);ghosts.afterMirror();checks.mirrorRestored=g.root.visible&&uniform()[0]===1;
+ ghosts.showSelf(false);ghosts.beforeMirror();checks.fullMirrorOutsideView=g.root.visible&&uniform().every(v=>v===0);ghosts.afterMirror();checks.hiddenAfterMirror=!g.root.visible;
+ // An actual held model and production Hand retain the camera view; the ghost proxy is hidden.
+ const cup=new T.Mesh(new T.CylinderGeometry(.04,.03,.1,12),new T.MeshStandardMaterial({color:0x286b95}));cup.position.set(.22,-.22,-.4);camera.add(cup);held={held:true,model:cup,grip:[.04,0,0]};
+ hand.update(1/60,held);ghosts.update();show();checks.heldHand=hand.visible&&uniform()[1]===1&&g.itemProp&&!g.itemProp.visible;
+ ghosts.beforeMirror();checks.heldProxyInMirror=g.itemProp.visible&&uniform()[1]===0;ghosts.afterMirror();checks.heldViewRestored=!g.itemProp.visible&&uniform()[1]===1;
+ const heldImage=(frame(),renderer.domElement.toDataURL());held=null;cup.removeFromParent();hand.update(1/60,null);ghosts.update();
+ ghosts.showSelf(false);const prior=rest.t;rest.t=.5;show();checks.entryHidden=!g.root.visible;rest.t=prior;
+ playing=false;show();checks.pausedHidden=!g.root.visible;playing=true;show();checks.resumed=g.root.visible;
+ rest.spot.gymPose=1;show();checks.gymHidden=!g.root.visible;delete rest.spot.gymPose;
+ reactionCam.active=true;ghosts.showSelf(true);checks.reactionFull=g.root.visible&&uniform().every(v=>v===0);reactionCam.active=false;
+ try{nativeRender(reactionCam,ghosts,rest,hand,1/60,{render(){throw Error('controlled renderer early exit')}},scene,camera)}catch(e){if(e.message!=='controlled renderer early exit')throw e}checks.renderFinally=!g.root.visible&&uniform().every(v=>v===0);
+ // Actual shared production reflector: verify the draw camera receives the complete material.
+ const mirrorFrame=new T.Group(),sp=rest.spot;
+ mirrorFrame.position.set(sp.pos.x-Math.sin(sp.yaw)*1.7,1.0,sp.pos.z-Math.cos(sp.yaw)*1.7);
+ mirrorFrame.rotation.y=sp.yaw;scene.add(mirrorFrame);
+ const reflector=addReflector(mirrorFrame,new T.PlaneGeometry(1.25,1.85),{level:0,name:'2080 proof'});
+ const oldPitch=camera.rotation.x,oldYaw=camera.rotation.y;camera.rotation.x=0;camera.rotation.y=sp.yaw;
+ let mirrorDraw=false;const priorDraw=g.mesh.onBeforeRender;
+ g.mesh.onBeforeRender=function(renderer,scene,view,...args){if(view!==camera&&uniform().every(v=>v===0))mirrorDraw=true;return priorDraw.call(this,renderer,scene,view,...args)};
+ ghosts.update();scene.updateMatrixWorld(true);updateReflections(camera,0,true);frame();
+ const mirrorImage=renderer.domElement.toDataURL();checks.actualMirrorDraw=mirrorDraw;checks.actualMirrorFinally=!g.root.visible&&uniform().every(v=>v===0);
+ g.mesh.onBeforeRender=priorDraw;reflector.visible=false;mirrorFrame.removeFromParent();camera.rotation.x=oldPitch;camera.rotation.y=oldYaw;
+ const previousCount=ghosts.group.children.filter(o=>o===g.root).length;rest.end();ghosts.update();show();checks.stoodHidden=!g.root.visible;checks.singleSelf=previousCount===1;
+ return{checks,heldImage,mirrorImage};
+};
+window.__fresh=()=>({restActive:rest.active,bodyVisible:ghosts.myGhost.root.visible,lookHeight:ghosts.myGhost.avatar.look.height,uniform:ghosts.myGhost.avatar.material.userData.u.uSelfView?.value.toArray()??[0,0]});
+window.__budget=()=>{const g=ghosts.myGhost,geo=g.mesh.geometry;return{geometryAttributes:Object.fromEntries(Object.entries(geo.attributes).map(([k,a])=>[k,{count:a.count,itemSize:a.itemSize,bytes:a.array.byteLength}])),triangles:geo.index?geo.index.count/3:geo.attributes.position.count/3,material:{transparent:g.avatar.material.transparent,depthTest:g.avatar.material.depthTest,depthWrite:g.avatar.material.depthWrite},programs:renderer.info.programs.length,restConfig:REST,stateCallback:callback,renderHook:renderBlock}};
+window.__ready=true;
+</script></html>

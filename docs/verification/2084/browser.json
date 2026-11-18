@@ -1,0 +1,776 @@
+{
+  "baseline": "a366067a79ab90a67abc5a66b3db205f67788506",
+  "results": {
+    "before": {
+      "views": {
+        "chaise-near": {
+          "name": "chaise-near",
+          "rendered": {
+            "calls": 16,
+            "triangles": 21146,
+            "geometries": 28,
+            "textures": 5,
+            "programs": 4
+          },
+          "feet": [
+            [
+              3.5827894551868873,
+              0.5222857142857139,
+              1.121755336410812
+            ],
+            [
+              3.377103491260456,
+              0.5222857142857139,
+              1.216087243703365
+            ]
+          ],
+          "root": [
+            3.0940432161177736,
+            -0.022857142857142965,
+            0.3274787103580515
+          ],
+          "yaw": -2.7115926535897934,
+          "objectYaw": 3.141592653589793,
+          "spot": {
+            "pos": [
+              3.0940432161177736,
+              1.16,
+              0.3274787103580515
+            ],
+            "yaw": -2.7115926535897934,
+            "legsUp": true,
+            "kind": "sit"
+          },
+          "camera": {
+            "at": [
+              3.321535568300572,
+              1.0422857142857138,
+              0.823514305180632
+            ],
+            "yaw": -2.711592653589794,
+            "pitch": -0.9011573811182587
+          },
+          "pose": 3,
+          "avatarTriangles": 16312,
+          "boneTexture": {
+            "width": 8,
+            "height": 8,
+            "bytes": 1024
+          },
+          "look": {
+            "height": 180,
+            "skin": 13011043,
+            "top": 8015792,
+            "pants": 3816513,
+            "shoes": 2046556
+          },
+          "material": {
+            "solid": true,
+            "transparent": false,
+            "depthTest": true,
+            "depthWrite": true
+          },
+          "hiddenAfterFrame": true,
+          "maskAfterFrame": [
+            0,
+            0
+          ]
+        },
+        "chaise": {
+          "name": "chaise",
+          "rendered": {
+            "calls": 28,
+            "triangles": 26926,
+            "geometries": 28,
+            "textures": 5,
+            "programs": 4
+          },
+          "feet": [
+            [
+              3.5827894551868873,
+              0.5222857142857139,
+              1.121755336410812
+            ],
+            [
+              3.377103491260456,
+              0.5222857142857139,
+              1.216087243703365
+            ]
+          ],
+          "root": [
+            3.0940432161177736,
+            -0.022857142857142965,
+            0.3274787103580515
+          ],
+          "yaw": -2.7115926535897934,
+          "objectYaw": 3.141592653589793,
+          "spot": {
+            "pos": [
+              3.0940432161177736,
+              1.16,
+              0.3274787103580515
+            ],
+            "yaw": -2.7115926535897934,
+            "legsUp": true,
+            "kind": "sit"
+          },
+          "camera": {
+            "at": [
+              3.0940432161177736,
+              1.1805714285714286,
+              0.32747871035805165
+            ],
+            "yaw": -2.7115926535897934,
+            "pitch": -0.85
+          },
+          "pose": 3,
+          "avatarTriangles": 16312,
+          "boneTexture": {
+            "width": 8,
+            "height": 8,
+            "bytes": 1024
+          },
+          "look": {
+            "height": 180,
+            "skin": 13011043,
+            "top": 8015792,
+            "pants": 3816513,
+            "shoes": 2046556
+          },
+          "material": {
+            "solid": true,
+            "transparent": false,
+            "depthTest": true,
+            "depthWrite": true
+          },
+          "hiddenAfterFrame": true,
+          "maskAfterFrame": [
+            0,
+            0
+          ]
+        },
+        "short-chaise": {
+          "name": "short-chaise",
+          "rendered": {
+            "calls": 25,
+            "triangles": 25386,
+            "geometries": 28,
+            "textures": 5,
+            "programs": 4
+          },
+          "feet": [
+            [
+              3.4120009761678536,
+              0.49353162706323495,
+              0.8442016980599742
+            ],
+            [
+              3.2781903334745164,
+              0.49353162706323495,
+              0.9055700719652527
+            ]
+          ],
+          "root": [
+            3.0940432161177736,
+            0.13888459776930207,
+            0.3274787103580515
+          ],
+          "yaw": -2.7115926535897934,
+          "objectYaw": 3.141592653589793,
+          "spot": {
+            "pos": [
+              3.0940432161177736,
+              1.16,
+              0.3274787103580515
+            ],
+            "yaw": -2.7115926535897934,
+            "legsUp": true,
+            "kind": "sit"
+          },
+          "camera": {
+            "at": [
+              3.0940432161177736,
+              0.9273876692680016,
+              0.32747871035805165
+            ],
+            "yaw": -2.7115926535897934,
+            "pitch": -0.85
+          },
+          "pose": 3,
+          "avatarTriangles": 15988,
+          "boneTexture": {
+            "width": 8,
+            "height": 8,
+            "bytes": 1024
+          },
+          "look": {
+            "height": 120,
+            "skin": 14724746,
+            "top": 3054248,
+            "pants": 2896192,
+            "shoes": 4207659
+          },
+          "material": {
+            "solid": true,
+            "transparent": false,
+            "depthTest": true,
+            "depthWrite": true
+          },
+          "hiddenAfterFrame": true,
+          "maskAfterFrame": [
+            0,
+            0
+          ]
+        }
+      },
+      "budget": {
+        "geometryAttributes": {
+          "position": {
+            "count": 47964,
+            "itemSize": 3,
+            "bytes": 575568
+          },
+          "normal": {
+            "count": 47964,
+            "itemSize": 3,
+            "bytes": 575568
+          },
+          "region": {
+            "count": 47964,
+            "itemSize": 1,
+            "bytes": 47964
+          },
+          "bare": {
+            "count": 47964,
+            "itemSize": 1,
+            "bytes": 191856
+          },
+          "noseBlend": {
+            "count": 47964,
+            "itemSize": 1,
+            "bytes": 47964
+          },
+          "skinIndex": {
+            "count": 47964,
+            "itemSize": 4,
+            "bytes": 383712
+          },
+          "skinWeight": {
+            "count": 47964,
+            "itemSize": 4,
+            "bytes": 767424
+          },
+          "rifleSkull": {
+            "count": 47964,
+            "itemSize": 1,
+            "bytes": 47964
+          },
+          "rifleNose": {
+            "count": 47964,
+            "itemSize": 1,
+            "bytes": 47964
+          },
+          "rifleJaw": {
+            "count": 47964,
+            "itemSize": 1,
+            "bytes": 47964
+          },
+          "mouth": {
+            "count": 47964,
+            "itemSize": 1,
+            "bytes": 191856
+          },
+          "pucker": {
+            "count": 47964,
+            "itemSize": 1,
+            "bytes": 47964
+          },
+          "facePart": {
+            "count": 47964,
+            "itemSize": 1,
+            "bytes": 191856
+          },
+          "faceAnchor": {
+            "count": 47964,
+            "itemSize": 3,
+            "bytes": 575568
+          },
+          "armPump": {
+            "count": 47964,
+            "itemSize": 4,
+            "bytes": 767424
+          },
+          "suitRole": {
+            "count": 47964,
+            "itemSize": 1,
+            "bytes": 47964
+          },
+          "color": {
+            "count": 47964,
+            "itemSize": 3,
+            "bytes": 575568
+          }
+        },
+        "triangles": 15988,
+        "material": {
+          "transparent": false,
+          "depthTest": true,
+          "depthWrite": true
+        },
+        "programs": 4,
+        "restConfig": {
+          "sitEye": 0.72,
+          "lieEye": 0.22,
+          "move": 0.5,
+          "avatarSeat": 0.45,
+          "avatarLieHip": 0.9,
+          "avatarLieClearance": 0.1,
+          "avatarLieSink": 0.1,
+          "avatarLieTilt": 0.4,
+          "avatarLieTorso": 0.69,
+          "avatarLegsUp": 0.08,
+          "avatarLegsReach": 0.9,
+          "sit": {
+            "yaw": 1.7,
+            "pitch": [
+              -1.1,
+              0.8
+            ]
+          },
+          "lie": {
+            "yaw": 1.3,
+            "pitch": [
+              0.15,
+              1.45
+            ],
+            "startPitch": 1.45
+          },
+          "reach": {
+            "sit": 1.7,
+            "lie": 0.8
+          }
+        },
+        "stateCallback": "() => ({ bp: gymPumpState(), p: [player.pos.x, player.pos.y, player.pos.z], r: reactionCam.active && reactionCam.camFrom ? reactionCam.camFrom.yaw : camera.rotation.y, look: [0, reactionCam.active && reactionCam.camFrom ? reactionCam.camFrom.pitch : camera.rotation.x], c: player.crouched || !!player.swim?.dive /* #1944: crouched in the water = diving */, dn: playroom.music.danceCode ?? 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 && player.outdoors ? 2 : 1) : 0, am: player.climb ? 3 : player.swing ? 2 : player.flying || player.fling ? 1 : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, fb: fishing.wire, ...restState(rest, ghosts.avatarCode, ghosts.me) })",
+        "renderHook": "      if (reactionCam.active) ghosts.showSelf(true);\n      else ghosts.showRestBody(rest);\n      try { renderer.render(scene, camera); }\n      finally { if (!reactionCam.active) ghosts.showSelf(false); } // #2080: no stale body in picking/menu/next view\n"
+      },
+      "controls": {
+        "checks": {
+          "plainVisible": true,
+          "plainArms": true,
+          "worldAnchor": true,
+          "fullMirror": true,
+          "mirrorRestored": true,
+          "fullMirrorOutsideView": true,
+          "hiddenAfterMirror": true,
+          "heldHand": true,
+          "heldProxyInMirror": true,
+          "heldViewRestored": true,
+          "entryHidden": true,
+          "pausedHidden": true,
+          "resumed": true,
+          "gymHidden": true,
+          "reactionFull": true,
+          "renderFinally": true,
+          "actualMirrorDraw": true,
+          "actualMirrorFinally": true,
+          "stoodHidden": true,
+          "singleSelf": true
+        }
+      },
+      "errors": [],
+      "external": []
+    },
+    "after": {
+      "views": {
+        "chaise-near": {
+          "name": "chaise-near",
+          "rendered": {
+            "calls": 16,
+            "triangles": 21538,
+            "geometries": 28,
+            "textures": 5,
+            "programs": 4
+          },
+          "feet": [
+            [
+              3.5827894551868873,
+              0.5222857142857139,
+              1.121755336410812
+            ],
+            [
+              3.377103491260456,
+              0.5222857142857139,
+              1.216087243703365
+            ]
+          ],
+          "root": [
+            3.0940432161177736,
+            -0.022857142857142965,
+            0.3274787103580515
+          ],
+          "yaw": -2.7115926535897934,
+          "objectYaw": 3.141592653589793,
+          "spot": {
+            "pos": [
+              3.0940432161177736,
+              1.16,
+              0.3274787103580515
+            ],
+            "yaw": -2.7115926535897934,
+            "legsUp": true,
+            "kind": "sit"
+          },
+          "camera": {
+            "at": [
+              3.321535568300572,
+              1.0422857142857138,
+              0.823514305180632
+            ],
+            "yaw": -2.711592653589794,
+            "pitch": -0.9011573811182587
+          },
+          "pose": 3,
+          "avatarTriangles": 16704,
+          "boneTexture": {
+            "width": 8,
+            "height": 8,
+            "bytes": 1024
+          },
+          "look": {
+            "height": 180,
+            "skin": 13011043,
+            "top": 8015792,
+            "pants": 3816513,
+            "shoes": 2046556
+          },
+          "material": {
+            "solid": true,
+            "transparent": false,
+            "depthTest": true,
+            "depthWrite": true
+          },
+          "hiddenAfterFrame": true,
+          "maskAfterFrame": [
+            0,
+            0
+          ]
+        },
+        "chaise": {
+          "name": "chaise",
+          "rendered": {
+            "calls": 28,
+            "triangles": 27318,
+            "geometries": 28,
+            "textures": 5,
+            "programs": 4
+          },
+          "feet": [
+            [
+              3.5827894551868873,
+              0.5222857142857139,
+              1.121755336410812
+            ],
+            [
+              3.377103491260456,
+              0.5222857142857139,
+              1.216087243703365
+            ]
+          ],
+          "root": [
+            3.0940432161177736,
+            -0.022857142857142965,
+            0.3274787103580515
+          ],
+          "yaw": -2.7115926535897934,
+          "objectYaw": 3.141592653589793,
+          "spot": {
+            "pos": [
+              3.0940432161177736,
+              1.16,
+              0.3274787103580515
+            ],
+            "yaw": -2.7115926535897934,
+            "legsUp": true,
+            "kind": "sit"
+          },
+          "camera": {
+            "at": [
+              3.0940432161177736,
+              1.1805714285714286,
+              0.32747871035805165
+            ],
+            "yaw": -2.7115926535897934,
+            "pitch": -0.85
+          },
+          "pose": 3,
+          "avatarTriangles": 16704,
+          "boneTexture": {
+            "width": 8,
+            "height": 8,
+            "bytes": 1024
+          },
+          "look": {
+            "height": 180,
+            "skin": 13011043,
+            "top": 8015792,
+            "pants": 3816513,
+            "shoes": 2046556
+          },
+          "material": {
+            "solid": true,
+            "transparent": false,
+            "depthTest": true,
+            "depthWrite": true
+          },
+          "hiddenAfterFrame": true,
+          "maskAfterFrame": [
+            0,
+            0
+          ]
+        },
+        "short-chaise": {
+          "name": "short-chaise",
+          "rendered": {
+            "calls": 25,
+            "triangles": 25778,
+            "geometries": 28,
+            "textures": 5,
+            "programs": 4
+          },
+          "feet": [
+            [
+              3.4120009761678536,
+              0.49353162706323495,
+              0.8442016980599742
+            ],
+            [
+              3.2781903334745164,
+              0.49353162706323495,
+              0.9055700719652527
+            ]
+          ],
+          "root": [
+            3.0940432161177736,
+            0.13888459776930207,
+            0.3274787103580515
+          ],
+          "yaw": -2.7115926535897934,
+          "objectYaw": 3.141592653589793,
+          "spot": {
+            "pos": [
+              3.0940432161177736,
+              1.16,
+              0.3274787103580515
+            ],
+            "yaw": -2.7115926535897934,
+            "legsUp": true,
+            "kind": "sit"
+          },
+          "camera": {
+            "at": [
+              3.0940432161177736,
+              0.9273876692680016,
+              0.32747871035805165
+            ],
+            "yaw": -2.7115926535897934,
+            "pitch": -0.85
+          },
+          "pose": 3,
+          "avatarTriangles": 16380,
+          "boneTexture": {
+            "width": 8,
+            "height": 8,
+            "bytes": 1024
+          },
+          "look": {
+            "height": 120,
+            "skin": 14724746,
+            "top": 3054248,
+            "pants": 2896192,
+            "shoes": 4207659
+          },
+          "material": {
+            "solid": true,
+            "transparent": false,
+            "depthTest": true,
+            "depthWrite": true
+          },
+          "hiddenAfterFrame": true,
+          "maskAfterFrame": [
+            0,
+            0
+          ]
+        }
+      },
+      "budget": {
+        "geometryAttributes": {
+          "position": {
+            "count": 49140,
+            "itemSize": 3,
+            "bytes": 589680
+          },
+          "normal": {
+            "count": 49140,
+            "itemSize": 3,
+            "bytes": 589680
+          },
+          "region": {
+            "count": 49140,
+            "itemSize": 1,
+            "bytes": 49140
+          },
+          "bare": {
+            "count": 49140,
+            "itemSize": 1,
+            "bytes": 196560
+          },
+          "noseBlend": {
+            "count": 49140,
+            "itemSize": 1,
+            "bytes": 49140
+          },
+          "skinIndex": {
+            "count": 49140,
+            "itemSize": 4,
+            "bytes": 393120
+          },
+          "skinWeight": {
+            "count": 49140,
+            "itemSize": 4,
+            "bytes": 786240
+          },
+          "rifleSkull": {
+            "count": 49140,
+            "itemSize": 1,
+            "bytes": 49140
+          },
+          "rifleNose": {
+            "count": 49140,
+            "itemSize": 1,
+            "bytes": 49140
+          },
+          "rifleJaw": {
+            "count": 49140,
+            "itemSize": 1,
+            "bytes": 49140
+          },
+          "mouth": {
+            "count": 49140,
+            "itemSize": 1,
+            "bytes": 196560
+          },
+          "pucker": {
+            "count": 49140,
+            "itemSize": 1,
+            "bytes": 49140
+          },
+          "facePart": {
+            "count": 49140,
+            "itemSize": 1,
+            "bytes": 196560
+          },
+          "faceAnchor": {
+            "count": 49140,
+            "itemSize": 3,
+            "bytes": 589680
+          },
+          "armPump": {
+            "count": 49140,
+            "itemSize": 4,
+            "bytes": 786240
+          },
+          "suitRole": {
+            "count": 49140,
+            "itemSize": 1,
+            "bytes": 49140
+          },
+          "color": {
+            "count": 49140,
+            "itemSize": 3,
+            "bytes": 589680
+          }
+        },
+        "triangles": 16380,
+        "material": {
+          "transparent": false,
+          "depthTest": true,
+          "depthWrite": true
+        },
+        "programs": 4,
+        "restConfig": {
+          "sitEye": 0.72,
+          "lieEye": 0.22,
+          "move": 0.5,
+          "avatarSeat": 0.45,
+          "avatarLieHip": 0.9,
+          "avatarLieClearance": 0.1,
+          "avatarLieSink": 0.1,
+          "avatarLieTilt": 0.4,
+          "avatarLieTorso": 0.69,
+          "avatarLegsUp": 0.08,
+          "avatarLegsReach": 0.9,
+          "sit": {
+            "yaw": 1.7,
+            "pitch": [
+              -1.1,
+              0.8
+            ]
+          },
+          "lie": {
+            "yaw": 1.3,
+            "pitch": [
+              0.15,
+              1.45
+            ],
+            "startPitch": 1.45
+          },
+          "reach": {
+            "sit": 1.7,
+            "lie": 0.8
+          }
+        },
+        "stateCallback": "() => ({ bp: gymPumpState(), p: [player.pos.x, player.pos.y, player.pos.z], r: reactionCam.active && reactionCam.camFrom ? reactionCam.camFrom.yaw : camera.rotation.y, look: [0, reactionCam.active && reactionCam.camFrom ? reactionCam.camFrom.pitch : camera.rotation.x], c: player.crouched || !!player.swim?.dive /* #1944: crouched in the water = diving */, dn: playroom.music.danceCode ?? 0, sp: suit.worn, bk: player.riding ? Math.atan2(-Math.cos(player.riding.yaw), Math.sin(player.riding.yaw)) : null, jp: jetpack.worn ? (jetpack.k > 0.3 && player.outdoors ? 2 : 1) : 0, am: player.climb ? 3 : player.swing ? 2 : player.flying || player.fling ? 1 : 0, hi: player.riding ? '' : heldCategory(heldItem()), cat: heldCatState(miele, cat), cq: playroom.inside ? playroom.billiards.cueState : null, fb: fishing.wire, ...restState(rest, ghosts.avatarCode, ghosts.me) })",
+        "renderHook": "      if (reactionCam.active) ghosts.showSelf(true);\n      else ghosts.showRestBody(rest);\n      try { renderer.render(scene, camera); }\n      finally { if (!reactionCam.active) ghosts.showSelf(false); } // #2080: no stale body in picking/menu/next view\n"
+      },
+      "controls": {
+        "checks": {
+          "plainVisible": true,
+          "plainArms": true,
+          "worldAnchor": true,
+          "fullMirror": true,
+          "mirrorRestored": true,
+          "fullMirrorOutsideView": true,
+          "hiddenAfterMirror": true,
+          "heldHand": true,
+          "heldProxyInMirror": true,
+          "heldViewRestored": true,
+          "entryHidden": true,
+          "pausedHidden": true,
+          "resumed": true,
+          "gymHidden": true,
+          "reactionFull": true,
+          "renderFinally": true,
+          "actualMirrorDraw": true,
+          "actualMirrorFinally": true,
+          "stoodHidden": true,
+          "singleSelf": true
+        }
+      },
+      "errors": [],
+      "external": []
+    }
+  },
+  "sourceSha256": {
+    "src/avatartrainers.js": "470b65e6ca37047cbef9ead0b8e4194de37771bf7132107ab12599fa991daf59",
+    "src/avatar.js": "a5e97ef3e1140f15f7f356dcda936ba9be6d60360807fe95ab326a2465fe911b",
+    "src/config.js": "01abe88d88486d0f77b93470598b020bc7e24daee09db04fcbc58eca16848f4c",
+    "src/avatarselfview.js": "f5a5ed533eec1b5e11c53ef18ec558631a443ab74735bc6792cc156f3ab13889",
+    "src/ghosts.js": "6fe294874595d36be5a9a988d8fd2b68dc7dcda1045744ec92f9ea064fd75348",
+    "src/main.js": "91ad31a3691b88c51e4a7e840af5835c0196844ce20f90c6ff91b8e7ebc01667",
+    "src/rest.js": "34622ed84b783b6969ac9c84cd5db3ae0a0d7b8298d3611d56ec93ecd771f10a",
+    "src/remote-pose.js": "4fa52f3924f40997aab40da35019ae70af1a81cf153b35b78354a44e1b3d5fa7",
+    "src/olof.js": "7a447147ae00cf26485384dd3afbfc52d529b67eecead90b7f7fc65ea8d353c2",
+    "tools/avatartrainers2084.html": "8e176077b9edecb122acf049bf2e3d9aaf5a8d31c456f2a70c29794aade853af",
+    "tools/avatartrainers2084browser.cjs": "91bc6f1958423d71e0bd40de9db6c680fa16cdc0f0b592c91414d6272b9aa44d"
+  }
+}
