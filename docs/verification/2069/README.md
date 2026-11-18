@@ -82,3 +82,12 @@ The public downstream can receive the neutral recipe and its matching floor-mate
 selectively, preserving its own finishes and architecture. No furniture, gameplay, personal
 image or Cloudflare integration is part of this change. The conductor owns that separate issue
 and publication, image comment, deployment verification and closure.
+
+## Integration correction
+
+An intermediate publication incorrectly resolved the shared config/changelog insertion and
+failed the parquet Node check. It is not accepted evidence. The correction reconstructs the
+entire previous configuration byte-for-byte and inserts only PARQUET_SURFACE, preserving
+TILE_SURFACE and all existing exports; it likewise preserves every prior changelog row and
+adds id1600. The parquet module, World consumer and browser harness remain identical to the
+frozen source hashes. Both parquet and tile Node checks pass after this correction.

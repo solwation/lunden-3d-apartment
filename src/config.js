@@ -5063,6 +5063,10 @@ export const COLORS = {
   solar: 0x1d2735,
 };
 
+// #2070: shallow visual ceramic/grout relief, artistic *guesses* in metres. No displacement/collision change.
+// One packed linear map supplies height (R) and absolute roughness (G) at the existing colour-map resolution.
+export const TILE_SURFACE = { depth: 0.0008, bevel: 0.0012, minBevelPixels: 0.75, groutRoughness: 0.96 };
+
 // #2069: visual timber/varnish assumptions, not measured oak finish data. Existing plank metres stay in FINISH/STANDARD.
 export const PARQUET_SURFACE = {
   ppm: 300, boards: 6, lengths: 2, seed: 7, stagger: { one: .37, three: .53 }, anisotropy: 8,
@@ -5071,3 +5075,4494 @@ export const PARQUET_SURFACE = {
   forkEvery: 7, forkLength: .26, forkWidth: .075, forkSteps: 12,
   roughScale: .5, roughBase: 255, roughGrain: .012, roughWidth: 3.5,
 };
+
+// Fixed interior from our material choices in Peab's option portal (screenshots in
+// material/, 2026-10-01). Colours are picked from the product photos / Peab's render.
+export const FINISH = {
+  // Parkettgolv Ek Chalk: white-stained oak. Colour from the swatch (avg 177/159/145, lifted
+  // a little for the indoor lighting); 1-stav planks 18 × 200 cm (typical size — guess).
+  parquet: { base: [204, 186, 170], width: 0.18, length: 2.0 },
+  hallTile: { w: 0.6, h: 0.3, color: 0x7a7c7d },  // Granitkeramik City Amsterdam 30×60, rak
+  wetTile: { w: 0.15, h: 0.15, color: 0x737577 }, // Granitkeramik City Amsterdam 15×15
+  wallTile: { w: 0.4, h: 0.2, color: 0xf4f4f2 },  // Kakel vit matt 20×40, rak liggande
+  splash: { w: 0.2, h: 0.1, color: 0xf6f6f4, grout: 0xc9cdcc, roughness: 0.82 }, // Stänkskydd vit matt 10×20,
+  // halvt förband liggande, Kakelfog Sopro ljusgrå 16; roughness: a matt glaze (0.6 gave glare spots, #271)
+  grout: 0xb9bbbb,
+  kitchenFront: 0x8d9886, // Kökslucka Form Tall (grey-green shaker)
+  counter: 0xc2c1bb,      // Laminatbänkskiva Delaware stone (kitchen + Tvätt)
+  handle: 0x1a1b1c,       // Handtag Solo svart cc 128 / Köksblandare ARM184 mattsvart
+  steel: 0xc3c7ca,        // Kyl & frys rostfri, ventilationsgaller, diskho Intra
+  black: 0x141516,        // Ugn EOK8P2B0 Pure Black, mikro KMFE264TEX, häll EH60KB6BF
+  laundryFront: 0xf2f3f1, // Lucka Arkitekt plus Frost (Tvätt)
+  vanity: 0x4d4f51,       // Kommod Core Grip 60 / Core XS Grip 50, Carbon Grey
+  chrome: 0xd7dadc,       // Rt2 blandare, takdusch Tvm 7200, duschset Rt 105, Alnön beslag
+};
+
+// IKEA HAVBÄCK tall cabinet with a door, dark grey, 40 × 35 × 195 cm (#293, IKEA's photos in docs/havback-hogskap*.jpg):
+// wall-hung in the Badrum on the shower's short wall (south), its left-hand corner (SE) seen facing that wall, back to the
+// wall. `bottom` = above the floor (*guess* from the room photo); the door hinges on the side-wall side like the photo and
+// stops at `max`° (beyond that the brass knob would meet the side wall); `shelves` = heights above the cabinet's bottom
+// (grey | glass, *guess* from the open photo). Not upstairs: WC/dusch has 32 cm of north wall beside the shower and 32 cm
+// clear east of it — too little for 40 × 35 (the user: only "if it fits").
+export const HAVBACK = { w: 0.4, d: 0.35, h: 1.95, bottom: 0.22, color: 0x4a4a48, knob: 0xb48a4e, max: 83,
+  shelves: [[0.42, 'grey'], [0.84, 'grey'], [1.23, 'grey'], [1.48, 'glass'], [1.7, 'glass']] };
+
+// Golvsockel vitmålad NCS S 0500-N (Art 5002225): height × thickness (typical size — guess).
+export const SKIRTING = { h: 0.07, t: 0.012 };
+
+// Rooms with tiled floors / walls (plan rectangles, metres). Walls are tiled up to `wallTile`
+// (the lowered ceiling height) on every wall face inside the rectangle.
+export const TILED_ROOMS = [
+  { level: 0, name: 'Hall', x0: 0.2, x1: 2.1, z0: 0.3, z1: 3.1, floor: 'hallTile' },
+  { level: 0, name: 'Tvätt', x0: 0.2, x1: 2.06, z0: 3.1, z1: 4.88, floor: 'wetTile' },
+  { level: 0, name: 'Badrum', x0: 0.2, x1: 2.06, z0: 4.88, z1: 7.6, floor: 'wetTile', wallTile: 2.5 },
+  { level: 1, name: 'WC/dusch', x0: 0.2, x1: 1.48, z0: 5.13, z1: 7.6, floor: 'wetTile', wallTile: 2.5 },
+];
+
+// Kitchen (Kök / matplats): the plan's cabinets inside `area` are built as a fitted kitchen
+// after material/Köksritning.jpg (our planning): tall oven/microwave unit, base run with
+// sink + hob, wall cabinets above, freestanding fridge + freezer with top cabinets.
+// The frying pan in the middle drawer under the hob (#159): black, Ø 28 cm (the issue), the rest guesses.
+// `home` = its place in the drawer (drawer-local: in = metres back from the front, along = along the run);
+// `held` = camera space, the handle towards you.
+export const PAN = { d: 0.28, h: 0.05, handle: 0.19, color: 0x1d1d1f, handleColor: 0x2a2522,
+  home: { in: 0.27, along: -0.06 }, held: { x: 0.2, y: -0.3, z: -0.72 } };
+// The toaster (#401, src/toaster.js): the family's OBH Nordica Piano Black (type 2674, docs/brodrost-obh-piano-black.jpg), a
+// two-slice toaster kept standing in the bottom drawer of the drawer unit by the corner (the kitchen is cramped: not on the
+// worktop). w × d × h *guess* (no measure found; an estimate from the photo, docs/brodrost-matt-gissning.jpg: ~28 × 17 × 18
+// cm); `slot` = each slot's length × width (*guess*). `cord` = how far its cord reaches (*guess*; 0.9 → 1.0 in #442: the sockets moved up the wall): it plugs into the nearest
+// free wall socket within it (KITCHEN_SOCKETS, #442; the air fryer and the Moccamaster keep theirs). The browning dial stands at
+// `dial` (1–7); a toast takes `seconds.base + seconds.step × dial` s (game-paced, like the air fryer's run; our pick).
+// `home` = its place in the drawer (drawer-local: in = metres back from the front, along = along the run); `held` = camera space.
+export const TOASTER = { w: 0.28, d: 0.17, h: 0.18, slot: { l: 0.13, w: 0.032 }, cord: 1.0,
+  dial: 4, seconds: { base: 6, step: 2 }, home: { in: 0.14, along: 0.1 }, held: { x: 0.19, y: -0.33, z: -0.62 } };
+
+// Chicken (#708): game-time seconds on the courtyard grill; burnt after 30 s, smoke lingers 60 s (*guess*).
+// Raw/golden colours and held/piece poses retained from #194; darken = maximum charred shading (*guess*).
+export const CHICKEN = { cookSeconds: 10, burnSeconds: 30, smokeSeconds: 60, darken: 0.8,
+  held: { x: 0.18, y: -0.3, z: -0.55 },
+  raw: [0xe9c7a6, 0xddb48f], bodyBites: 3, bites: 2, piece: { x: 0.15, y: -0.17, z: -0.36,
+    // #1992: guessed hand-model dimensions in metres; a tapered drumstick and two white bone knuckles, like the 🍗 icon.
+    leg: { radius: 0.045, meatLength: 0.12, boneLength: 0.07, boneRadius: 0.009, knobRadius: 0.012,
+      tilt: 0.48, gripY: -0.06 } } };
+// #1881 / #1887 (the user, 2026-11-07): one cooking rule for every food, read by src/cookrules.js, but realism before symmetry
+// ("pommes gör man inte i stekpanna, och när man kör saker i ugnen behöver man en plåt"). Each food lists the appliances it
+// sensibly cooks in as `rate` (appliance → how fast it cooks there, a factor on the food's own seconds: FISH.fry, FRIES,
+// SAUSAGE, EGG, FISHING.cook, CHICKEN), so cooked/burnt follow the same thresholds everywhere. Anything not listed is refused
+// with where the food does go ("Pommes gör man i ugnen eller airfryern", `how` = the verb phrase); a food bigger than an
+// appliance's `room` (`sizes`: the whole chicken in the pan or the air fryer's basket) is refused as too big instead. The pairs
+// that existed before #1881 keep their old rates; the later ones are *guess*. Oven food lies on the oven tray (OVEN_TRAY,
+// src/oventray.js) and cooks while the tray is in the shut, powered oven (#1219: no smoke escapes it); the air fryer cooks while
+// it runs with the basket in, the pan on a lit zone, the grill while lit. `noun` = the food in a refusal, `name` = its definite form.
+export const COOKING = {
+  sizes: { s: 1, m: 2, l: 3 },
+  appliances: { // `in` = the appliance as the place food goes ("i ugnen", "på grillen")
+    pan: { name: 'stekpannan', in: 'i stekpannan', room: 'm' },
+    oven: { name: 'ugnen', in: 'i ugnen', room: 'l' },
+    airfryer: { name: 'airfryern', in: 'i airfryern', room: 'm' },
+    grill: { name: 'grillen', in: 'på grillen', room: 'l' },
+  },
+  foods: {
+    fishFinger: { name: 'fiskpinnen', noun: 'fiskpinnar', how: 'gör man', size: 's', // #214 pan, #287 air fryer
+      rate: { pan: 1, oven: 0.4, airfryer: 1.2 * FISH.fry.seconds / AIRFRYER.seconds } },
+    fries: { name: 'pommesen', noun: 'pommes', how: 'gör man', size: 's', rate: { oven: 0.8, airfryer: 1 } }, // #301 air fryer
+    sausage: { name: 'korven', noun: 'korv', how: 'steker man', size: 's', rate: { grill: 1, pan: 1, oven: 0.8, airfryer: 1 } }, // #1124 grill, #1640 pan
+    egg: { name: 'ägget', noun: 'ägg', how: 'steker man', size: 's', rate: { pan: 1 } }, // #484 pan
+    caughtFish: { name: 'fisken', noun: 'fisk', how: 'lagar man', size: 'm', rate: { grill: 1, pan: 1.25, oven: 0.8, airfryer: 1 } }, // #1754 grill + pan
+    chicken: { name: 'kycklingen', noun: 'kyckling', how: 'steker man', size: 'l', rate: { grill: 1, oven: 1 } }, // #708 grill, #1219 oven
+  },
+};
+// #1887: the oven tray (ugnsplåt). Food for the oven lies on it, never straight on the rack: taken out of the open oven, it
+// goes down on a worktop like any held thing, takes food there, and slides back onto the oven's upper rack (where the chicken
+// roasted in #1219). Size: an ordinary enamel tray inside the 60 cm oven's cavity (*guess*); `held` = its pose in the view.
+export const OVEN_TRAY = { w: 0.44, d: 0.38, h: 0.018, rim: 0.012, color: 0x26282b,
+  held: { x: 0.02, y: -0.36, z: -0.62 } };
+// The smoke alarm in the kitchen ceiling (#194, src/hood.js): it goes off after `delay` s of smoke that the cooker hood
+// does not draw away (the hood draws what is within `hoodReach` m of its middle, below it). Position: mid-kitchen (ours).
+export const SMOKE_ALARM = { x: 4.2, y: 3.0, z: 2.6, delay: 5, hoodReach: 0.6 };
+
+export const KITCHEN = {
+  level: 0,
+  room: 'Kök / matplats', // room name (room detection) for its light switch
+  area: { x0: 3.4, x1: 5.6, z0: 0.4, z1: 5.5 },
+  plinth: 0.1,
+  baseTop: 0.9,          // top of base carcass; worktop 30 mm on top (bänkhöjd 0,93)
+  worktop: 0.03,
+  top: 2.25,             // top line of tall units and wall cabinets (guess)
+  wallBottom: 1.45,      // underside of wall cabinets (guess, ~52 cm above the worktop)
+  wallDepth: 0.35,
+  // #319: the east run's corner wall cabinet door hinges at the corner (handle on its north edge, opens to the right);
+  // the stop in degrees, before its face meets the return row's corner handle (~3 cm from the corner, 2.4 cm proud)
+  cornerDoorMax: 42,
+  hoodBottom: 1.6,       // underside of the hood (Spiskåpa Tango) under the hob cabinet
+  hoodHeight: 0.08,
+  // #1043 cosmetic dimensions (m, visual guesses, not manufacturer measurements).
+  hoodDetail: { rim: 0.014, filterGap: 0.008, spotRadius: 0.014, spotInset: 0.065 },
+  // the under-cabinet LED ("bänkbelysningen") and the hood's light (#221, #271): `pool` = the pool point light each
+  // borrows, `out` m out from the wall (still under the wall cabinets / hood, so their fronts are not lit) and `y` m over
+  // the worktop; weak, as it is close to the tiles (inverse square: 0.3 m away a strong one made blown-out spots); `wash` = the additive washes' opacity, `soft` = the metres at each end of a wash over which it fades out
+  // (no hard edges where a run stops at the hood or a cabinet). Tuned on screenshots at 19:00 (the user's, #271)
+  underLights: {
+    // #285: one continuous strip `strip` m behind the cabinets' front edge; a weak pool light over the middle of each run
+    // (two anchors: one light could not reach the sink), the even look from the washes; `spill` = how far the wash
+    // reaches under the hood from a cabinet end, `endSoft` = the fade at the tall unit / freezer (tuned on screenshots, 20:00)
+    bench: { pool: { intensity: 0.16, range: 2.5 }, out: 0.33, y: 0.45, wash: 0.45, strip: 0.05, spill: 0.12, endSoft: 0.06 },
+    hood: { pool: { intensity: 0.25, range: 2.5 }, out: 0.3, y: 0.4, wash: 0.32 },
+    soft: 0.18,
+  },
+  fridgeHeight: 1.86,    // Electrolux LRT7ME39X / LUS7ME28X: 186 cm
+  grille: 0.06,          // ventilationsgaller rostfri (over fridge/freezer and microwave)
+  sink: { w: 0.5, d: 0.4, depth: 0.19 }, // Diskho Intra Linea 5040, underlimmad; depth *guess* (typ. 18–20 cm, #122)
+  hob: { w: 0.58, d: 0.52, t: 0.006, bevel: 0.0012, // Induktionshäll EH60KB6BF; bevel is a visual guess (#1043)
+    // its four zones (#158) as [a, b, r] on the glass (a 0 = front edge … 1 = back, b 0 = north … 1 = south, r in
+    // fractions of the width); the first is the big front one that glows. A typical 4-zone layout (guess).
+    zones: [[0.33, 0.3, 0.2], [0.33, 0.75, 0.15], [0.74, 0.3, 0.15], [0.74, 0.74, 0.17]] },
+};
+
+// Wall sockets on the kitchen splashback (#442, #510, src/sockets.js; Peab tillval): black double sockets (Schneider
+// Exxact / Renova black option), at the top of the splashback just under the wall cabinets (centre `below` m under
+// KITCHEN.wallBottom), on the east wall's tiled face `wall` (x, read off the model) facing west: over the Moccamaster
+// (its z), between the sink (z ≤ 2.31) and the hob (z ≥ 3.39) and in the corner behind the air fryer (5.478 = the south
+// splashback's face; it replaced the "Hörnbox" power box on the worktop). Plate `plate` w (along the wall) × h × t (~15 × 8 cm),
+// two round cups `r` `pitch` apart; `taken` = which mouth (n = north, s = south) a fixed appliance's cord uses. Merged into the kitchen.
+export const KITCHEN_SOCKETS = { wall: 5.545, below: 0.08, plate: { w: 0.15, h: 0.08, t: 0.007 }, r: 0.02, pitch: 0.074,
+  color: 0x1f2022, cupColor: 0x27282b, at: [{ id: 'coffee', z: 1.4 }, { id: 'hob', z: 2.86 }, { id: 'corner', z: 5.478 - 0.13 }],
+  taken: { 'coffee-s': 'kaffebryggaren', 'corner-s': 'airfryern' } };
+
+// Sink bowls (#122, src/interior.js): the inset steel sink in Tvätt (40 × 26 cm as drawn, depth *guess*)
+// and the basin in the bathroom vanities (Core Grip with a porcelain top, depth *guess*).
+export const LAUNDRY_SINK = { w: 0.22, d: 0.36, depth: 0.15 };
+
+// Wall cabinet over the Tvätt worktop (#138, the user: there is one, with white doors; Peab's redrawn plan does
+// not show it). Over the whole run (machines + sink), white Arkitekt plus Frost doors like the base unit, three
+// units; bottom 58 cm over the worktop, top 30 cm under the lowered ceiling (RH 2.5). Depth/heights *guess*.
+// the wall cabinet covers the north `share` of the worktop: none over the sink (the user, #153)
+export const LAUNDRY_CABINET = { depth: 0.35, y0: 1.49, y1: 2.2, units: 2, share: 2 / 3 };
+export const VANITY_BASIN = { depth: 0.1 };
+
+// Other flats you can walk into (#574, src/visitunit.js): empty, in Peab's standard finish (STANDARD below), at their own
+// place in Hus L, entered through their own front door like ours. `slot` = the flat's id in exterior.js `husLLayout` (its
+// façade strip); `plan` = where its floor plan comes from: 'shared' = data/plan.json, L1007's sheet — bofakta
+// L1002–L1007 (2024-11-08, checked 2026-10-09) is ONE sheet for all six flats, drawn the same way round (not mirrored,
+// HUS_L), so L1007's walls, openings, stair, soffits and fixed fittings are reused as they are. Nothing of ours goes in:
+// no tillval (no Allrum door, no hall klinker), no furniture, rugs, curtains, blinds, plants, pets or personal things.
+// `plate` = the text on its front door's name plate (namePlate, as ours, #595). Doors / windows start shut on every visit; nothing is saved for it.
+export const VISIT_UNITS = [
+  { id: 'L1004', slot: 'L1004', plan: 'shared', plate: 'Lasse & Erika' }, // the plate: the user's wish (#574 comment, #623); bofakta: 126 m², 5 rok, våning 1–2, uteplats 22 m²
+  // #573: L1201, the west end flat of våning 3–4 (bofakta 2024-11-08: 99 m², 4 rok, 54 + 45 m², takterrass 12 m²), entered
+  // from the loftgång. Its own sheet (src/l1201plan.js, the base plan with Allrum), placed at its slot's `ox` and the
+  // upper flats' street face (`oz` = HUS_L.loftgangDepth). Its name plate: the user's wish (#623).
+  { id: 'L1201', slot: 'L1201', plan: 'L1201', plate: 'Linus m. Fam' },
+];
+// L1201's storeys and what its sheet gives (#573). `rh` 2.5 = the sheet's legend "RH rumshöjd ca 2,5 m om inte annat
+// anges" (no other RH is written on its rooms but the Klk's 2.2); the floors = våning 3 / 4 (VERTICAL: floor-to-floor 3.0,
+// an assumption), so the slab zone 0.5 is too. `hole` = the upper floor's opening, plan coordinates (src/l1201plan.js):
+// the stair (x 0.21–1.75, z 6.21–8.08, READ) and the void beside it ("Öppet upp" on the entrance floor, x 0.2–1.75,
+// z 8.20–8.84, READ, open to the upper ceiling under the BH 1.2 window). `stair` maps our stair (stairs.js: the same type,
+// a straight flight, 180° winders, a straight flight, the lower one on the courtyard side) onto its outline, mirrored in x:
+// our x `bx1` (the top step = the opening's edge) → its `x1`, our `winderX1` → its `x0`, our flights' z `z0`…`z1` → its;
+// tread counts, risers (3.0 / 16 = 0.19 m) and the winders' geometry are ours scaled, *guess* (no stair drawing).
+// `railing`: H 1.1 (the sheet) along the opening's east edge. Window heads and the street door's head 2.3 *guess*
+// (HUS_L.street / court), sills from the sheet. The kitchen is a galley: the tall column faces east, the run west.
+export const L1201 = {
+  levels: [{ name: 'Entréplan', rh: 2.5 }, { name: 'Övre plan', rh: 2.5 }],
+  hole: { x0: 0.2, x1: 1.75, z0: 6.205, z1: 8.835 }, // x0: the gable's face down the well (#1164)
+  stair: { x1: 1.75, x0: 0.266, z0: 6.205, z1: 8.091 },
+  railing: { x: 1.75, z0: 7.15, z1: 8.835, h: 1.1 },
+  // its handrails (#619): ours (STAIR.handrail, every size a *guess*) mapped onto its stair, at its own wall faces read off
+  // l1201plan.js — `outer`: the wall between flight A and the void (south), the west gable round the winders (its upper
+  // face, 6 mm in from the lower one), the wall north of flight B; `from` / `to` where the bottom / top wall ends (the
+  // void wall's east end, the upper wall's east end); `innerA` on the Klk's south wall (its east / west end)
+  handrail: { outer: { south: 8.091, east: 0.2, north: 6.205, from: 2.28, to: 2.095 }, innerA: { face: 7.21, from: 2.28, to: 1.107 } },
+  // the sloping half wall along flight A and the winders (#624; plan wall `half: true` at z 8.091–8.195, x 0.2–2.28): Peab's
+  // brochure (docs/parklangan-halvvagg-trappa-broschyr.png) shows it white, its top parallel to the stair and ending in a
+  // vertical edge by the living room. `top` = its top over the treads' nosings (a railing height, *guess*: no section of it
+  // in Peab's material); the wall stays solid for collision
+  halfWall: { z0: 8.091, z1: 8.195, x0: 0.2, x1: 2.28, top: 1.0 },
+  extDoorHead: 2.3,
+  windows: [
+    { level: 0, facade: 'north', x: 3.85, sill: 0.7, head: 2.3, transom: 0 },   // kitchen (HUS_L.street std: BH 0.7)
+    { level: 0, facade: 'south', x: 1.455, sill: 0.8, head: 2.3, transom: 0 },  // living room (HUS_L.court.lower)
+    { level: 0, facade: 'south', x: 3.845, sill: 0.6, head: 2.3, transom: 0 },
+    { level: 1, facade: 'north', x: 1.61, sill: 0.7, head: 2.3, transom: 0 },   // Sovrum 1
+    { level: 1, facade: 'north', x: 3.95, sill: 0.7, head: 2.3, transom: 0 },   // Sovrum 2
+    { level: 1, facade: 'south', x: 1.16, sill: 1.2, head: 2.3, transom: 0 },   // over the void (HUS_L.court.upper)
+  ],
+  soffits: [{ level: 1, x0: 0.206, x1: 1.851, z0: 3.76, z1: 6.005, height: 2.2, extent: 'rooms' }], // the Klk "RH: 2,2m"
+  kitchen: { level: 0, area: { x0: 2.8, x1: 5.4, z0: 2.9, z1: 6.15 }, layout: 'galley', tallDir: 'e', baseDir: 'w',
+    tiled: [{ level: 0, name: 'Badrum', x0: 0.2, x1: 2.675, z0: 3.41, z1: 6.005, wallTile: 2.5 },
+      { level: 1, name: 'WC/dusch', x0: 4.335, x1: 5.555, z0: 3.84, z1: 6.11, wallTile: 2.5 }] },
+  dividers: [{ level: 0, x0: 1.108, x1: 2.36, z0: 1.575, z1: 1.695 }, { level: 0, x0: 3.445, x1: 4.766, z0: 6.11, z1: 6.205 }],
+};
+// Peab's standard finish (grundutförande) of the visitable flats. SOURCED (info brochure 2024-09-11, S1): p. 20 "Släta
+// vita luckor från Marbodal och vita vitvaror från Electrolux"; p. 30 "Väggar vitmålade", "Innertak vitmålade",
+// "Fönsterbänk grå/brun i kalksten", "Golv mattlackad ekparkett, 3-stavig med vit golvsockellist", "Fönster … vit insida";
+// bofakta "KL = gräns för tillvalsklinker" (hall tiles are an option: parquet in the hall). Every colour value below is a
+// *guess* at those words; what the brochure does not name (worktop, handles, tiles, sanitary ware, mixers, wall cabinets,
+// hood) is a generic neutral choice, *guess*.
+export const STANDARD = {
+  parquet: { base: [204, 180, 146], width: 0.2, length: 2.2, staves: 3 }, // matt-lacquered oak, 3-stav (colour, board *guess*)
+  sill: 0x9d968a,       // window boards: grey/brown limestone (colour *guess*)
+  front: 0xf3f3f0,      // smooth white Marbodal fronts (white *guess*)
+  appliance: 0xf6f6f4,  // white Electrolux appliances
+  counter: 0xd9d8d3,    // worktop: light grey laminate (generic, *guess*)
+  handle: 0xb9bcbf,     // brushed steel bar handles (generic, *guess*)
+  splash: 0xf4f4f2,     // white splashback tiles 10 × 20 (generic, *guess*)
+  wetFloor: { w: 0.1, h: 0.1, color: 0x9c9fa1 }, // grey floor tiles in the wet rooms (generic, *guess*)
+  wetWall: { w: 0.2, h: 0.2, color: 0xf5f5f3 },  // white wall tiles (generic, *guess*)
+  vanity: 0xf2f2ef,     // white vanity (generic, *guess*)
+  // the shared plan's wet rooms (L1007's TILED_ROOMS rectangles, no hall klinker): floor tiles + wall tiles up to `wallTile`
+  tiled: [
+    { level: 0, name: 'Tvätt', x0: 0.2, x1: 2.06, z0: 3.1, z1: 4.88 },
+    { level: 0, name: 'Badrum', x0: 0.2, x1: 2.06, z0: 4.88, z1: 7.6, wallTile: 2.5 },
+    { level: 1, name: 'WC/dusch', x0: 0.2, x1: 1.48, z0: 5.13, z1: 7.6, wallTile: 2.5 },
+  ],
+  // kitchen: the plan's cabinet rectangles inside `area` (KITCHEN.area: the same sheet); wall cabinets over the long run
+  // and a hood over the hob (not drawn on bofakta, a usual Peab kitchen: *guess*), bottom/top as L1007's KITCHEN
+  wallCabinets: { depth: 0.35, bottom: 1.45, top: 2.25, hood: 1.6 },
+  // shadows follow the visitor into a visited flat (main.js): the sun's shadow box is centred on it within `near` m
+  near: 9,
+  // draw calls (#574, visitunit.js `cull`): farther than `detail` m from its footprint only its walls, floors, ceilings and
+  // window frames are drawn (no doors, fittings, glass); from inside our flat or under the ground none of it (our pick)
+  detail: 12,
+  // #1965 (visitunit.js `buildMid` / `cull`): between `near` m and the fade zone a visited flat's inside is ONE merged mesh
+  // per material (its doors, fittings and outline lines in their shut pose; things too small to be drawn at `near` m left
+  // out), which the dithered pixel fade of src/lod.js takes away over `start`..`end` m (`startPhone`..`endPhone` on phones:
+  // inside the old `detail` distance, so a phone never draws more than before). `hysteresis` m: all the parts come back this
+  // much nearer than they left. While a door, window or lid of the flat is open or moving, `detail` is used instead of
+  // `near` (the merged level only knows the shut pose). All distances *guess* (the issue: "~12-30 m").
+  lod: { near: 5, hysteresis: 0.5, start: 24, end: 28, startPhone: 9, endPhone: 12 },
+};
+
+// The visitable flats' lamps (#620, src/visitlights.js): Peab's standard finish has ceiling outlets, and the brochure does
+// not say more, so this is a *guess* at "a ceiling fitting in the kitchen and the wet rooms, a lamp outlet with a bare bulb
+// on a short cord in the other rooms" (the issue's own wording). A switch by every room's door, as ours (LIGHTING.switchHeight);
+// light only through the shader wash (lampwash.js: no pool light, no shadow), the room's lamp = LIGHTING.ceiling / .spots.
+export const VISIT_LIGHTS = {
+  fittings: ['Kök / matplats', 'Badrum', 'WC/dusch', 'Tvätt'],  // a flat opal ceiling fitting here; a lamp outlet with a bulb elsewhere
+  fitting: { r: 0.15, h: 0.04 },                                 // the fitting: radius, thickness (*guess*, like our dome: 30 cm wide)
+  outlet: { rose: 0.05, roseH: 0.02, cord: 0.14, bulb: 0.035 },  // the outlet: ceiling rose radius / thickness, cord length, bulb radius (*guess*)
+  below: 0.25,                                                   // the lamp's light sits this far under the ceiling (as lights.js: dome / spots)
+  glow: { color: 0xfff2dc, intensity: 1.2 },                     // what a lit fitting / bulb shows: the same as our ceiling lamps' setGlow
+  skip: ['Uteplats'],                                            // no ceiling there
+  // switches for rooms without a door of their own: L1004 (`manualShared`) takes L1007's LIGHTING.manual too (the same sheet; an own entry for the same room replaces it); both flats' own are placed on
+  // wall faces read off its plan (src/l1201plan.js), the spots a *guess* (level, room, plan x / z, `normal` = the way the wall faces)
+  manualShared: ['L1004'],
+  manual: {
+    L1004: [{ level: 1, room: 'Allrum', x: 0.2, z: 9.2, normal: [1, 0] },   // (L1007's Allrum has its tillval door's switch; here it is open to the hall)
+      { level: 0, room: 'Vardagsrum', x: 5.55, z: 8.0, normal: [-1, 0] }],   // (its own, on the east wall)
+    L1201: [
+      { level: 0, room: 'Hall', x: 2.0, z: 0.365, normal: [0, 1] },         // by the front door, on the street wall
+      { level: 0, room: 'Vardagsrum', x: 5.55, z: 7.5, normal: [-1, 0] },   // on the party wall
+      { level: 0, room: 'Klk', x: 1.95, z: 6.205, normal: [0, 1] },         // inside, by its door
+      { level: 1, room: 'Klk', x: 0.206, z: 4.2, normal: [1, 0] },          // inside, on the gable
+    ],
+  },
+};
+
+// What lies in the cabinets and drawers (#231, src/contents.js): living room, hall wardrobe, bathrooms, laundry.
+// Sizes of the things from their real counterparts (a DVD case 135 × 190 × 14 mm, a blu-ray 128 × 148 × 12, a
+// game case 135 × 170 × 14, the console the size of a PS5 slim lying down); the rest is a look, not measured.
+export const CONTENTS = {
+  byas: {
+    film: { len: 0.19, h: 0.135, t: 0.014 }, bluray: { len: 0.148, h: 0.128, t: 0.012 }, game: { len: 0.17, h: 0.135, t: 0.014 },
+    filmColours: [0x2f5d8a, 0xb8342f, 0xe0b23a, 0x2d2d2d, 0x4c8a4a, 0x7a4c9a, 0xf2f2ee, 0x1c1c1c, 0xd35400, 0x16a085],
+    console: { w: 0.36, h: 0.085, d: 0.22 }, router: { w: 0.2, h: 0.04, d: 0.13, aerial: 0.1 },
+  },
+  besta: {
+    album: { n: 8, t: 0.042, h: 0.33, d: 0.31, colours: [0xd8c8a8, 0x2c3e50, 0x7b241c, 0x1e5631, 0x5d6d7e, 0xb9770e] },
+    napkins: { w: 0.17, h: 0.045, colours: [0xf4f1e8, 0xc0392b, 0x7fb3d5, 0xf7dc6f, 0xf4f1e8] },
+  },
+  // the hall wardrobe "G": coats on the rod from the left (len = from the shoulders down, w across, t thick), the
+  // grown-ups' long ones first, the kids' short ones after (hem ≥ ~0.7 m: the cat fits under them)
+  wardrobe: {
+    coats: [
+      { len: 0.95, w: 0.44, t: 0.08, colour: 0x2c3e50 }, { len: 0.9, w: 0.44, t: 0.07, colour: 0xa0785a },
+      { len: 0.8, w: 0.46, t: 0.1, colour: 0x1c1c1c, hood: true }, { len: 0.75, w: 0.44, t: 0.09, colour: 0x556b2f, hood: true },
+      { len: 0.85, w: 0.42, t: 0.07, colour: 0x7b241c }, { len: 0.62, w: 0.36, t: 0.08, colour: 0xe84393, kid: true, hood: true },
+      { len: 0.6, w: 0.36, t: 0.08, colour: 0x2e86c1, kid: true, hood: true }, { len: 0.58, w: 0.34, t: 0.08, colour: 0xf1c40f, kid: true, hood: true },
+      { len: 0.56, w: 0.34, t: 0.07, colour: 0x27ae60, kid: true }, { len: 0.52, w: 0.32, t: 0.08, colour: 0x8e44ad, kid: true, hood: true },
+    ],
+    // a slanted shoe rack along the back: heel rail height/depth from the back, the toes up at `tilt`°
+    rack: { tilt: 70, heelY: 0.012, heelZ: 0.12, pitch: 0.19 },
+    shoes: [[0x1c1c1c, false], [0x6e4b33, false], [0xe9e6df, false], [0xe84393, true]], // [colour, kids' size]
+    boots: 0xf1c40f, // a pair of kids' rubber boots
+  },
+  towels: { w: 0.2, h: 0.04, d: 0.26, stack: 3, colours: [0xf4f4f2, 0x9fb7c8, 0xf4f4f2, 0xd5c4a1] }, // folded, in the vanity
+};
+
+// Changelog note (src/changelog.js) on the freezer door: its front is the plan's F cabinet
+// z0 − 4 cm (the freestanding freezer sticks out, see interior.js). rotY π = facing north.
+export const CHANGELOG_NOTE = { x: 4.38, y: 1.42, z: 4.8844 - 0.04 - 0.002, rotY: Math.PI, w: 0.16, tilt: -0.05,
+  limit: 100, // latest visible changes on the freezer note (#543, user request)
+  scrollLine: 40 }; // px per ↑ ↓ / W S step in the open note (#275)
+// The TODO post-its on the fridge door (#340, src/todo.js): real 76 × 76 mm notes, `cols` × `rows` at most (the last
+// says "+ N till …" when there are more; ~12 is the issue's guess), `gap` between them, tilted up to ±`tilt`°;
+// `top` = the block's top over the door's foot, `fromHinge` = its hinge-side edge from the hinge (the handle side
+// stays free); `ppm` = canvas px per metre; `maxChars` = a cleaned-up issue title's length.
+export const TODO_NOTES = { size: 0.076, cols: 3, rows: 4, gap: 0.012, margin: 0.008, tilt: 6, top: 1.66, fromHinge: 0.1,
+  ppm: 2600, maxChars: 40 };
+
+// Baked ambient occlusion (src/ao.js): darkening at a wall = strength, falling off over
+// `radius` metres. Tuned by eye on screenshots.
+export const AO = {
+  floor: { strength: 0.4, radius: 0.2 },
+  ceiling: { strength: 0.3, radius: 0.3 },
+  // #1074: on the walls themselves — a band above the floor, one below the ceiling and a column down
+  // each inner corner (multiplied together). Visual values, tuned by eye; `cutoff` = how many radii
+  // out the overlay geometry reaches (past it the darkening is under 1 %).
+  wall: {
+    floor: { strength: 0.3, radius: 0.12 },
+    ceiling: { strength: 0.25, radius: 0.2 },
+    corner: { strength: 0.3, radius: 0.16 },
+    cutoff: 5,
+  },
+};
+
+
+// Moccamaster (Technivorm KBG, black) on the worktop between the tall unit (oven/microwave) and the
+// sink, against the splashback (#59). Size ~32 × 17 × 36 cm (guess, after the KBG series). `z` = centre
+// along the east run, `back` = x of its back. E brews for `brewSeconds`: red power light, sound,
+// the jug fills.
+// #334: brewing needs water in the tank (the jug filled at a tap, poured in) and coffee in the filter (scoops from the jar);
+// `scoops` = a full pot (guess), `maxScoops` = what the filter holds.
+export const MOCCAMASTER = { back: 5.53, z: 1.4, w: 0.32, d: 0.17, h: 0.36, brewSeconds: 18, scoops: 4, maxScoops: 6 };
+// The coffee jar beside it (#334, docs/kaffeburk-sked-*.jpg, src/coffeejar.js): a square glass jar with rounded corners
+// ~10 × 10 × 18 cm (guess), a bamboo lid, a beech scoop hanging in a glass loop on its side. `gap` = from the
+// Moccamaster's side and from the splashback; `fill` = how high the ground coffee lies (of the height), `slant` = its tilt (m).
+export const COFFEE_JAR = { w: 0.1, h: 0.18, r: 0.016, lid: 0.02, gap: 0.03, fill: 0.33, slant: 0.03,
+  ground: 0x2a170c, bamboo: 0xd9bc8e, bambooEdge: 0xa7835a, beech: 0xdcc39a, stain: 0x7a5434,
+  held: { x: 0.1, y: -0.12, z: -0.42 } };
+
+// What stands on the String shelf in the kitchen (src/shelves.js `buildShelfDressing`, called by furniture.js `stringshelf`). It used to
+// stand on two oak wall boards on black brackets (#38, #291) where the cat board hung: the kitchen face of the hall/kitchen partition
+// (x 2.15, z 0.46–1.76), above the light switch (1.05 m) and the framed print (#333). #1298: those boards are gone and the String shelf
+// (STRING_SHELF) hangs there instead; everything that stood on them moved onto its three boards. Dressed like a Scandinavian kitchen
+// shelf (#291): cookbooks, glass jars of dry goods, stoneware (a speckled jug, plates, a bowl, vases), a mortar, brass candlesticks, a
+// cutting board, three framed prints; a face pot with wire glasses and faux baby eucalyptus (#343, it replaced a vase of dried
+// eucalyptus) and a trailing pothos can be taken. Sizes are everyday-object guesses; `colors` are soft, muted glazes and materials (guess).
+// Layout (*guesses*, our own arrangement of the old items over the three boards; m): `wall` = the first thing's distance from the wall,
+// `mid` = the usual depth of the things (the middle of the 32.5 cm boards), `u` = along the wall from the shelf's middle (the world's +z
+// side when it hangs on the east-facing wall). Lower board: cookbooks, jars, the face pot, a landscape print with the bud vase and the tea tin in front of it;
+// middle board: jug, vase, mortar, a small print and the pothos at the right end (its vine runs along the board towards the middle, so it
+// must stand 20 cm from the end); nothing is taller than the 28 cm between the boards; top board (open above): candles, the
+// olive bottle, the botanical print, the cutting board with plates and a bowl.
+export const SHELF_DRESSING = {
+  wall: 0.012, mid: 0.16, pothosDepth: 0.2,
+  u: { books: -0.375, jars: [-0.22, -0.14], facePot: 0.03, print1: 0.25, bud: 0.23, tin: 0.31,
+    pothos: 0.32, jug: -0.29, vase: -0.17, mortar: 0.0, print2: 0.18,
+    print0: -0.26, candles: [-0.07, 0.0], bottle: 0.15, board: 0.3 },
+  // the face pot (#343, docs/kruka-ansikte-glasogon-eukalyptus-*.jpg): Ø 11.5 × 11 cm (*guess*), glasses
+  // rings Ø 5.2 cm, the plant ~22 cm wide and ~15 cm over the rim (*guess*, measured on the photo against the pot)
+  facePot: { r: 0.0575, h: 0.11, ring: 0.026, branches: 50, spread: 0.1, back: 0.085, seed: 13 },
+  colors: {
+    oak: 0xd2b48c, bracket: 0x2a2a2a, black: 0x262524, pages: 0xf1ead9,
+    books: [0x5d6448, 0xa9674c, 0xd8cbb0, 0x55657a], // olive, terracotta, oat, slate blue
+    offwhite: 0xebe6da, sand: 0xcdb89a, sage: 0xa3ae96, clay: 0x9a7258, // stoneware glazes + the bare clay foot / rim
+    stone: 0x8f8b84, stone2: 0x7d7973, brass: 0xc9a25a, tin: 0x5f7d78, wax: 0xf3ecdc, wax2: 0xe9dccb,
+    pasta: 0xe3c47e, lentils: 0xb0573a, cork: 0xb89a72, olive: 0x6e7a55,
+    // the face pot (#343): white gloss, black wire glasses, dots, the engraved smile; the faux eucalyptus' sage / grey-green
+    // leaves with yellow-green new tips, its stems and the foam in the pot
+    porcelain: 0xf6f4ef, wire: 0x1c1c1c, smile: 0x55514d, euLeaves: [0x6f8a6c, 0x7f9a7c, 0x8ea38d, 0x62795f], euTip: 0xa9bd74,
+    euStem: 0x6f7f55, foam: 0x2b2a24,
+    pothos: 0x4c7a2f, pothos2: 0x93a845, pothos3: 0x3e6a2a, vine: 0x5a7a3a, soil: 0x3b2c22,
+  },
+};
+
+// Hall, the wall on the left as you come in (hall face of the hall/kitchen partition, x 2.057,
+// z 0.465–1.765), src/keycabinet.js: the mirror IKEA LINDBYN black Ø 110 cm (ikea.com 904.392.18,
+// #61; frame width and depth are guesses) and a Solstickan key cabinet (#36; Design House Stockholm,
+// white metal, 16.9 × 16 × 5.5 cm per royaldesign.co.uk, hinged on the left) with a Renault Megane
+// E-Tech key. The mirror has moved to the living room (#205): the wall behind the armchair on the right seen from
+// the room, i.e. the north wall's west part (room face z 7.804, x 0.202–2.152, the living-room door east of it),
+// centred on it (x 1.177), its middle 1.5 m up; rotY 0 = facing south (into the living room).
+// The cabinet hangs on the narrow wall right of the entrance door (the user, #123): the façade's inner face
+// z 0.465, x 1.812–2.057, at eye height above the light switch (x 1.95, y 1.05). rotY 0 = facing south (into
+// the hall). Centred on that wall (#135: at x 1.97 the mirror's rim hid its edge), so it overlaps the door's
+// 12 mm architrave by ~3 cm and hangs on a 13 mm spacer (z) clear of it.
+export const HALL_WALL = {
+  x: 2.057, rotY: -Math.PI / 2,
+  mirror: { x: 1.177, z: 7.804, rotY: 0, y: 1.5, d: 1.1, frame: 0.018, depth: 0.03 },
+  // where LINDBYN hung before #205, the hall wall on the left as you come in: IKEA NISSEDAL black 65 × 150 cm (#540, docs/spegel-nissedal-svart-65x150.jpg;
+  // replacing Rusta "Staffan", #218), a flat black frame ~2.5 cm wide and ~3 cm deep (guess), hung upright and centred
+  // on the wall, bottom ~0.4 m / top ~1.9 m up (guess: a full-length mirror)
+  tall: { x: 2.057, z: 1.115, rotY: -Math.PI / 2, y: 1.15, w: 0.65, h: 1.5, frame: 0.025, depth: 0.03,
+    // #572: a night light, a warm-white LED strip round the frame's outer edge (on its back edge, so it lights the wall
+    // round the mirror as a soft halo): a small lamp (lights.js: on at dusk like the others, E on the mirror toggles it).
+    // `strip` = the strip's width (m), `halo` = how far the halo reaches out on the wall (m), `glow` = its peak opacity
+    // (additive), `color` = the strip's / halo's colour, `out` = the pool anchor's distance in front of the glass (m, at
+    // the mirror's middle height), `light` = its pool light (weak: an orientation light, not a room light). All *guesses*, by eye.
+    nightLight: { strip: 0.008, halo: 0.2, glow: 0.45, color: 0xffd9a8, out: 0.4,
+      light: { intensity: 0.7, range: 3.5, color: 0xffdcb0 } } },
+  // a second NISSEDAL in the upstairs hall (#332, the user): on the west wall (face x 1.5418) right of the WC/dusch door seen
+  // from the hall, centred on the free stretch from the north wall stub's face (z 5.1345) to the door's 70 mm
+  // architrave (door 6.2444 → 6.1744): z 5.654; the same height over the Övre plan floor as downstairs; facing east
+  tallUp: { x: 1.5418, z: 5.654, rotY: Math.PI / 2, y: LEVELS[1].floor + 1.15, w: 0.4, h: 1.5, frame: 0.025, depth: 0.03, level: 1 },
+  cabinet: { x: 1.935, z: 0.478, y: 1.5, rotY: 0, w: 0.169, h: 0.16, d: 0.055 },
+};
+
+// IKEA SKOGSGRÄNSEN decorative mirror, copper colour, Ø 50 cm (#265, docs/spegel-skogsgransen.png; ikea.com 505.380.79,
+// design Anki Gneib, "a sunset over a horizon"): a tinted glass (pale pink at the top, warm peach at the horizon) on a
+// copper-plated steel back, the lower `wave` of the diameter thin horizontal copper bars with the wall between them.
+// Hung horizontally (bars at the bottom) on the living room's east wall (x 5.5), centred over the secretary
+// (FURNITURE `secretary`, z 9.35); its centre `y` (*guess*: ~25 cm of wall over the secretary's top at 1.065 + its
+// raised back edge), the copper rim `rim` round the glass and `depth` off the wall are *guesses*. rotY −π/2 = facing west.
+export const SKOGSGRANSEN = {
+  x: 5.5, z: 9.35, y: 1.58, rotY: -Math.PI / 2, d: 0.5, rim: 0.004, depth: 0.016, panel: 0.003,
+  wave: 0.3, bars: 12, bar: 0.0035, copper: 0xc07a52,
+  // the glass's tint, top → horizon (rgba over the mirror image), and the Reflector's own colour
+  tint: [[0, 'rgba(250,228,226,0.30)'], [0.55, 'rgba(240,190,160,0.42)'], [1, 'rgba(222,140,96,0.62)']], reflect: 0xd6c2b6,
+};
+
+// A small yucca palm (Yucca elephantipes, #265) in a white pot on top of the secretary at its north end (on the left
+// seen from the room), some leaves in front of the mirror's edge; a Thing you can take (things.js, kind 'plant').
+// Pot, trunk and leaf sizes are *guesses* for a ~75 cm plant. x = along the secretary (local, + = south), z = from
+// the wall. North: from the sofa (the usual view, from the south-west) it hides only the mirror's edge.
+export const YUCCA = {
+  x: -0.22, z: 0.11, pot: { r: 0.07, h: 0.13 }, potColor: 0xeeece6,
+  trunks: [{ h: 0.36, r: 0.021, lean: [-0.04, 0.02] }, { h: 0.22, r: 0.017, lean: [0.035, 0.03] }],
+  leaves: 34, leaf: [0.2, 0.32], width: 0.024, wallGap: 0.045, green: 0x2f5f2c, seed: 7,
+};
+
+// The framed photo of Miele, the family's cat (#322, docs/miele-foto-ram.jpg), on Sovrum 1's window board: a thin black
+// frame in landscape, `w` × `h` outside with a `border` wide, `depth` deep moulding and no passe-partout (*guess*: an A5 /
+// 13 × 18 frame), leaning back `lean` rad on a folding stand; the photo is textures/miele.jpg (cropped and straightened
+// from the reference, the frame trimmed). A Thing (things.js, kind 'photo'): taken into the hand; click / "Titta på Miele"
+// brings it up close (`look`: its place in the view, camera space) and back. #327: the photo re-exported brighter (gamma
+// 0.75, +10 % exposure with a soft shoulder, a little more contrast and colour) and `glow` × daylight emissive (the room's
+// lamp counts as `glowLamp` at night) — it faces the room with the window behind it, so it was in its own shadow.
+export const PHOTO_FRAME = { w: 0.21, h: 0.16, border: 0.012, depth: 0.012, lean: 0.2, texture: 'textures/miele.jpg', glow: 0.22, glowLamp: 0.6,
+  held: { pos: [0.15, -0.22, -0.45], rot: [0.3, -0.15, 0] }, look: { pos: [0, -0.02, -0.3], rot: [0.2, 0, 0] } };
+
+// Sovrum 1's hook rail (#329, src/hooks.js): on the outside of the Klk facing the room door — the Klk's west wall (face
+// x 3.80) in the alcove by the door, z 4.16 (its outer corner) … 5.01 (the door wall), the user. An oak board `w` long with `hooks` black
+// single hooks, `y` = the board's centre (*guess*); a sage terry dressing gown (`gown`: `len` from the hook, the hem ~0.5 m
+// over the floor) and a navy hoodie hung by its hood (`hoodie`) on hooks `on` (0 = north, the board faces west; the room switch by the door wall stays clear); the 3 others empty. No collision.
+export const HOOKS = { w: 0.62, h: 0.075, y: 1.72, hooks: 5, board: 0xc9a77c,
+  garments: [{ kind: 'gown', on: 1, len: 1.12, color: 0xbfc8b8, belt: 0.36, dz: 0.012 }, { kind: 'hoodie', on: 3, len: 0.68, hood: 0.27, color: 0x283247 }] };
+// The kids' hook rails (#330, the same builder; a FURNITURE item's `set` picks one, merged over HOOKS): on the wardrobe's
+// exposed end by the room door — the strips of wall between door and wardrobe are too narrow (~13 / 17 cm past the
+// architrave and switch). Four hooks at kid height (`y`, *guess*), two left empty; kids' garments `scale`d down (*guess*).
+// Sovrum 2 (Walter & Kian): a dark grey board, black hooks (the room's black lamps), a charcoal hoodie with a small red
+// print and a navy cap with a white badge. Sovrum 3 (Livia & Tuva): a pale birch board, white hooks (its white lamps), a
+// pink zip hoodie with a white zip and a lilac print, a cream tote with a rainbow.
+export const KID_HOOKS = {
+  sovrum2: { w: 0.5, y: 1.45, hooks: 4, board: 0x3a3b3e, hook: 0x141416,
+    garments: [{ kind: 'hoodie', on: 3, len: 0.68, hood: 0.27, color: 0x484a50, print: 0xc0282c, scale: 0.85 },
+      { kind: 'cap', on: 0, r: 0.085, color: 0x1d2a44, badge: 0xf2f2f2 }] },
+  sovrum3: { w: 0.5, y: 1.45, hooks: 4, board: 0xdcc8a6, hook: 0xf4f3ef, hookMetal: 0.05,
+    garments: [{ kind: 'hoodie', on: 3, len: 0.68, hood: 0.27, color: 0xeea6c4, zip: 0xffffff, print: 0x9b7bff, scale: 0.8 },
+      { kind: 'tote', on: 0, w: 0.28, h: 0.3, handle: 0.2, color: 0xefe6d2, rainbow: [0xe0524f, 0xf2b33d, 0x5fb36a, 0x4f8fe0] }] },
+};
+
+// Towel hooks in both bathrooms (#424, src/hooks.js `towelhooks`, the user's marks in docs/handdukskrok-wc-uppe-markering.jpg
+// and docs/handdukskrok-badrum-nere-pil.jpg): two round single hooks like docs/handdukar-krokar-referens.jpg (a round rose,
+// a short pin with a flat end) but brushed steel (the user); sizes *guess* from the photo. `y` = the hooks over the floor
+// (*guess*, 1.3–1.5 m in the issue), `gap` between them (*guess*). A dusty mauve / taupe terry hand towel on each by its
+// loop (colour read off the photo, *guess*; ~30 × 50 cm, hung by the loop it falls ~0.48 m), a woven border band
+// near the top and the hem. FURNITURE items 'towelhooks' (loose, no collision).
+export const TOWEL_HOOKS = { y: 1.4, gap: 0.17,
+  hook: { rose: 0.027, roseT: 0.007, pin: 0.008, len: 0.032, end: 0.011, endT: 0.006, color: 0xd0d3d5, metalness: 0.45, roughness: 0.38 },
+  towel: { color: 0x96807d, band: 0xa08986, w: 0.17, len: 0.48 },
+  towels: [{ seed: 1.1 }, { seed: 2.7, len: 0.5 }] };
+// Basin mixer levers (#526): assumed proportions, not product measurements. The side
+// pin suits the existing goosenecks; vanity mixers have a short top paddle. Pick radius
+// is deliberately wider than the visible control for mouse/touch, but excludes the spout.
+export const TAP_LEVER = { seconds: 0.24, angle: 38, pickRadius: 0.075, pickHeight: 0.6,
+  side: { height: 0.07, offset: 0.037, length: 0.085, radius: 0.0042 },
+  top: { length: 0.075, width: 0.016, thickness: 0.005, height: 0.014 },
+  joint: { radius: 0.0135, length: 0.02, segments: 18 } };
+// Washing the hands (#437, src/handwash.js): at a running basin tap with a free hand, "Tvätta händerna" rubs them under
+// the stream for `wash` s; wet they show drops and a glossier skin and dry by themselves after `wetFor` s (the last
+// `fade` s fading); E on a towel ("Torka händerna") takes `dry` s and swings it `swing` rad. A kitchen towel hangs on the
+// oven's handle (`kitchenTowel`: linen with a blue band, ~20 × 42 cm, *guess*), `kitchenTowelAt` m along the handle from its
+// middle (towards the worktop), so aiming at the oven door's middle still opens the oven. All our picks.
+// #1029 NEW material-only identity for the existing oven-handle towel (not FURNITURE).
+export const KITCHEN_TOWEL_MATERIAL = { id: 'f-kitchen-oven-towel', surface: 'towel', name: 'Kökshandduken', level: 0 };
+export const HANDWASH = { wash: 2.2, dry: 1.6, wetFor: 60, fade: 20, swing: 0.12, kitchenTowelAt: 0.14,
+  kitchenTowel: { color: 0xe6dfd2, band: 0x4b6683, w: 0.2, len: 0.42, seed: 3.3, slant: 0.2, materialSurface: { id: KITCHEN_TOWEL_MATERIAL.surface, name: KITCHEN_TOWEL_MATERIAL.name } } };
+// Day cycle (src/daycycle.js): one day in `minutes` real minutes: 24 × 60 = real time (#1145, the user's in-game wish;
+// it was 60, #125). At real pace the clock follows the visitor's own clock and date. The sun follows the real solar
+// path for the date (declination, hour angle) at Kv. Lunden, Karpvägen / S:t Lars väg in Lund
+// (55.70° N, 13.17° E, docs/tomten-google-maps.jpg). planNorth = compass bearing of the plan's
+// "north" (−z, the entrance façade): FOJAB's north arrow on the situation/overview plans
+// (docs/peab/) puts true north 58° to the left of the plan's up, so the entrance faces ENE and
+// the patio WSW. Clock time is Swedish local time (CEST in summer).
+// Every visit starts at the visitor's own time and date (main.js), unless ?time=HH[.h] / ?month=1–12 / ?day= is given.
+// The wall clock in the kitchen fast-forwards at `spool` hours per second; its "Nu" goes back to the real time.
+export const DAY = {
+  minutes: 24 * 60, startHour: 7, lat: 55.70, lon: 13.17, planNorth: 58, spool: 1.5,
+  moonlight: 0.35, nightAmbient: 0.05,
+};
+
+// Analog wall clock (src/wallclock.js) on the kitchen side of the Tvätt/Badrum wall, centred on the
+// wall between the hall and the Badrum door (the user, #121): wall face x 2.152, z 3.145 to the door
+// architrave at 5.244 − DOOR_TRIM.width = 5.174 → z 4.16 (#1272/#1291 moved it south and up for the String shelf; #1298 put the shelf on the hall/kitchen partition instead, so the
+// clock is back at its original spot: y 2.0, bottom 1.80 m). rotY π/2 = facing east. Diameter 40 cm: the user's own
+// clock (user report 2026-10-17, #1205; bottom 1.80 m, still above the calendar's top at 1.725 m). `depth` = the
+// frame's depth from the wall and `lip` = the frame's front ring width as a share of the radius — *visual guesses*
+// from the reporter's photo (docs/ingame-reports/3ad70257-7a01-4ec9-a4a0-855d8db12de8-2.jpg), not measured.
+export const WALL_CLOCK = { x: 2.152, y: 2.0, z: 4.16, rotY: Math.PI / 2, d: 0.4, depth: 0.045, lip: 0.055 };
+
+// The cat calendar (#95, src/calendar.js) on the kitchen face of the Tvätt/Badrum wall, centred under the wall clock (#121; the
+// cork board that used to hang beside it was replaced by the cat card binder, #1255, so it is no longer shifted north): a 30 × 45 cm
+// paper calendar with a cat picture for each month and the days; E opens a strip to pick the month and the day, which set the
+// day cycle's date.
+// #1298: back under the clock (z = WALL_CLOCK.z), where it hung before the String shelf's detour under the clock (#1272/#1291).
+export const CALENDAR = { x: 2.152, y: 1.5, z: WALL_CLOCK.z, w: 0.3, h: 0.45, rotY: Math.PI / 2 };
+
+// The String-style wall shelf (#1272, src/furniture.js `stringshelf`; docs/stringhylla-referens-foto.jpg, user's own 60s shelf, measured
+// in docs/stringhylla-matt-anteckning.jpg): three dark-brown boards between two white wire ladder sides. `W` × `D` = board width ×
+// depth (81 × 32.5 cm) and `H` = the sides' height (75.5 cm) are the user's measurements. The board thickness `t` and the boards'
+// `boards` heights (centres, m above the sides' bottom) are *guesses* read off the photo (the "Hyllplan …" line of the note is
+// illegible); so are the wire thickness `wire`, the ladder `rung` pitch, the `rail` offsets and the colours (our picks, flat
+// colours, no texture). `bottom` = the default hanging height of the sides' lower end above the floor (#1298: 1.84, the user's "ca 1,84 m" so nobody bumps
+// their head, *guess*; it was 0.95 in #1272 and 1.05 in #1291; the Entréplan ceiling over the kitchen is 3.0 m, so the top is at 2.595).
+export const STRING_SHELF = { W: 0.81, D: 0.325, H: 0.755, t: 0.016, boards: [0.075, 0.375, 0.665], wire: 0.004, rung: 0.04, inset: 0.012,
+  board: 0x4a2a20, white: 0xf0eee8, bottom: 1.84 };
+
+// The cat card binder as an object (#1255, src/catbinderprop.js, built into furniture.js `coffeetable`): a small ring binder
+// #1848: lying on the coffee tabletop, in the table's local frame (x along the length, z across, y up from the floor).
+// `w` × `d` × `h` = the closed binder (A5-ish, *guess*), `x` / `z` its centre on the top (clear of the default fruit bowl and remote; checked in #1848), `turn` its yaw in degrees (the long side along the table), colours are our pick.
+// No texture: flat colours, two small gold marks (a paw on the cover).
+export const CAT_BINDER = { w: 0.3, d: 0.22, h: 0.035, x: 0.05, z: 0.085, turn: 6, cover: 0x2f4f86, pages: 0xf1ead8, gold: 0xd8b24a };
+
+// Cat card binder (#1249, src/catcards.js). A cat in the game is random (breed + coat + a random name), so there is one
+// slot, with up to `max` cards (photos of where it was found), per BREED, in this order, Miele last. Points per slot come
+// from SCORE (breeds; Miele = SCORE.first.miele); the rarity tier is the highest `tiers` entry whose `from` is <= the points.
+// `weightKg` and `facts` are NOT measured from the game: typical figures for the breed, all *guess* (Miele's weight is a
+// plain guess; nobody has weighed her in the game). `legacy` = the key for old board photos whose breed was never saved.
+export const CAT_CARD = {
+  max: 8, legacy: 'okänd',
+  pageSize: 4, albumSlots: 8, // #1379/#1399: fixed collection pockets / eight-photo normal capacity; larger old archives remain intact.
+  // Photo menu of the binder (#1257, src/catbinder.js, index.html #cat-notice): seconds the "oldest card rotated out" / "slot full"
+  // notice stays on screen after a find; *guess* (long enough to read two sentences, short enough not to nag).
+  noticeS: 8,
+  tiers: [
+    { id: 'common', label: 'Vanlig', from: 0 }, { id: 'uncommon', label: 'Ovanlig', from: 30 }, { id: 'rare', label: 'Sällsynt', from: 100 },
+    { id: 'epic', label: 'Episk', from: 250 }, { id: 'legendary', label: 'Legendarisk', from: 1000 },
+  ],
+  // Rarity visuals of the binder cards (#1256, src/catbinder.js + the #binder-view CSS in index.html; UI only, no 3D cost).
+  // Per tier, in tier order: effect level (0 plain card, 1 coloured border + glow, 2 foil + shine band, 3 glitter + holographic
+  // shimmer + stars, 4 the same with a rainbow frame and more of everything), number of ★ sparkles, and the max pointer / touch
+  // tilt in degrees (0 = the card stays flat). Chosen by eye like rare trading cards; *guess*. `starExtra` = extra ★ for the
+  // `star` breed (Miele), the most spectacular card. Reduced motion: no animation and no tilt, the still layers remain.
+  fx: { level: [0, 1, 2, 3, 4], stars: [0, 0, 3, 6, 9], tilt: [0, 0, 6, 9, 12], starExtra: 4 },
+  breeds: [
+    { key: 'huskatt', label: 'Huskatt', weightKg: [3.5, 5], facts: ['Den vanligaste katten i huset.', 'Finns i många färger.'] },
+    { key: 'siames', label: 'Siames', weightKg: [3, 5], facts: ['Pratar gärna och högt.', 'Mörka öron, tassar och svans.'] },
+    { key: 'brittiskt korthår', label: 'Brittiskt korthår', weightKg: [4, 7], facts: ['Rund och lugn, med tät blå päls.'] },
+    { key: 'maine coon', label: 'Maine coon', weightKg: [5, 9], facts: ['En av de största huskattraserna.', 'Yvig svans.'] },
+    { key: 'norsk skogkatt', label: 'Norsk skogkatt', weightKg: [4, 8], facts: ['Tjock päls för kalla skogar.', 'Klättrar som en ekorre.'] },
+    { key: 'perser', label: 'Perser', weightKg: [3.5, 6], facts: ['Långhårig med platt nos.', 'Lugn och helst inomhus.'] },
+    { key: 'sphynx', label: 'Sphynx', weightKg: [3, 5], facts: ['Nästan hårlös och varm att klappa.', 'Väldigt stora öron.'] },
+    { key: 'Miele', label: 'Miele', weightKg: [4, 4], facts: ['Familjens egen katt.', 'Brun makrillrandig och vit.'], star: true },
+  ],
+};
+
+// Lens flare (#1283, src/flare.js): additive screen-space quads along the sun-to-center line
+// when looking towards the sun on a clear day or above the clouds. Occluded by buildings and trees.
+export const FLARE = {
+  enabled: true,
+  smoothTime: 0.12, // seconds exponential response (no popping/flicker)
+  elements: [
+    { t: 0.0,  size: 0.68, color: [1.0, 0.96, 0.86], alpha: 0.45, type: 0 }, // Sun core glow
+    { t: 0.0,  size: 0.30, color: [1.0, 0.90, 0.65], alpha: 0.40, type: 1 }, // Sun corona halo
+    { t: 0.25, size: 0.12, color: [1.0, 0.82, 0.50], alpha: 0.22, type: 2 }, // Warm secondary disc
+    { t: 0.50, size: 0.22, color: [0.65, 0.95, 0.75], alpha: 0.15, type: 3 }, // Soft greenish-golden halo
+    { t: 0.85, size: 0.09, color: [1.0, 0.70, 0.40], alpha: 0.18, type: 2 }, // Warm disc near center
+    { t: 1.25, size: 0.16, color: [0.55, 0.75, 1.0],  alpha: 0.20, type: 2 }, // Cool blue/violet reflection
+    { t: 1.65, size: 0.07, color: [1.0, 0.60, 0.85], alpha: 0.14, type: 2 }, // Distant magenta spot
+  ],
+};
+
+// Room lights (src/lights.js). Intensities are candela-ish (three.js physical lights), tuned by
+// eye at night. `pool` = point lights shared by the nearest lit lamps (keep small: Iris 640).
+export const LIGHTING = {
+  // Daylight (#1073, src/daycycle.js): the hemisphere sky light, the flat ambient, the shadowless fill (from the north-east,
+  // `pos` relative to the origin, so wall orientations read differently indoors) and the shadow-casting sun. `overcast` =
+  // the old even light (it stays for rain clouds, night, dawn/dusk and the garage); `clear` = a clear sky by day: less
+  // sky/fill on the shade side, a stronger sun and a little more exposure to keep rooms about as bright. DayCycle blends
+  // overcast → clear by daylight × (1 − overcast) × (not in the garage). Tuned by eye and mean luminance against
+  // before/after shots (#1073: rooms within ~2 %, sunlit vs shaded brick 1.03 → ~1.2 at 13:00 in June); *guess*.
+  sky: {
+    hemi: { sky: 0xeaf3ff, ground: 0xd6d2ca },
+    fill: { color: 0xf4f6ff, pos: [8, 6, -5] },
+    overcast: { hemi: 2.0, ambient: 0.6, fill: 0.9, sun: 2.2, exposure: 1.0 },
+    clear: { hemi: 1.5, ambient: 0.25, fill: 0.35, sun: 3.0, exposure: 1.5 },
+  },
+  pool: 4,
+  switchHeight: 1.05,                     // centre of the switch above the floor
+  ceiling: { intensity: 2.4, range: 6, color: 0xffe2b8 },
+  spots: { intensity: 2.0, range: 4, color: 0xfff0dc },
+  pendant: { intensity: 2.2, range: 5, color: 0xffd9a8 },
+  floorLamp: { intensity: 1.6, range: 5, color: 0xffd59a },
+  // Lit mirrors (#339, the user: their light and mirror images were too strong): the Badrum's Slot 50 LED, Tilly's
+  // Hollywood mirror (VANITY) and the Klk's LED mirror (KLK). `shade` scales the LED / bulbs' emissive colour (they
+  // stay a lamp of their own, at dusk too), `reflect` = their mirror image's brightness (×, the Reflector), `glass` = the
+  // glints material on their glass (emissive, roughness: a softer hotspot from the pool light), `light` = the Badrum
+  // LED's pool light (the shader wash follows it; VANITY.light / KLK.mirror.light for the others). By eye, ~50 %.
+  mirror: { shade: 0.3, reflect: 0.85, glass: { emissive: 0x262626, roughness: 0.3 }, light: { intensity: 0.9, range: 3, color: 0xfff1de } },
+  // Small lamps (#234: every lamp lights.js gets from world.lamps — floor/work/reading lamps, the SYMFONISK lamp, the
+  // BESTÅ spots, the kitchen bench light, the bathroom mirror LED — except those whose spec says `auto: false`, the
+  // cooker hood's light) switch themselves on below daylight `on` and off above `off` (hysteresis, like the patio's
+  // string lights), fading over `fade` s. E still toggles one; that holds until the automatic state next changes.
+  // The ceiling lamps (the room switches) are by hand only. Pool lights move between lamps fading out/in over
+  // `poolFade` s; a lamp in the visitor's own room counts as `otherRoom` times nearer than one in another room, one in
+  // line of sight `hidden` times nearer than one behind a wall (none for one behind a wall in another room), and a
+  // lamp that has a pool light keeps it unless another is `stick` times nearer (no flicker on a doorstep). By eye.
+  auto: { on: 0.3, off: 0.4, fade: 1 },
+  poolFade: 0.4,
+  poolPick: { otherRoom: 3, hidden: 6, stick: 1.5, behind: 1.6, near: 1.5 },
+  // #276, #294, #295: every lamp's light wherever the visitor is (src/lampwash.js): each pool anchor of every small lamp
+  // and ceiling lamp lights the flat in the lit materials' shaders as its pool light would, where it sees: its visibility
+  // polygon (`rays` rays out to its range, stopped by walls, closed doors and the façades' outer faces, so through a
+  // window to the glass). It cross-fades with the lamp's pool light, so a lit lamp looks the same from anywhere. A lamp
+  // spec's `wash` scales it (default 1). The pool lights `behind` the visitor (and further than `near` m) count as that much further away.
+  // `facade` = the inner faces of the north/south façade walls (data/plan.json, both levels): a lamp on a window board
+  // casts its rays from just inside them.
+  wash: { rays: 192, facade: [0.465, 12.234] },
+  wetRooms: ['Badrum', 'WC/dusch'],       // spots in the soffit instead of a ceiling lamp
+  pendants: [
+    // over the dining table (SKANSNAS.table): the family's three copper pendants (#307, docs/kopparlampor-koksbord.jpg).
+    // A copper dome canopy (Ø `canopy`) with two thin arms (`arm` m each) along the table's long axis (z), bent down
+    // `bend` at their tips; three glossy copper drop shades (Ø `shadeR` × 2, `shadeH` tall + a `neck`) on black cords
+    // from the centre and the arm tips, a frosted diffuser disc in each mouth. The shades' bottoms `bottoms` m above the
+    // floor (outer, middle, outer: the middle one higher; the table top is at 0.75). All sizes are *guesses* from the
+    // photo. It does not replace the room's ceiling dome (that one lights the worktops by the sink).
+    { level: 0, room: 'Kök / matplats', x: 3.5, z: 1.41, style: 'copper3', drop: 0, // = SKANSNAS.table's centre
+      canopy: 0.12, arm: 0.38, bend: 0.04, shadeR: 0.085, shadeH: 0.2, neck: 0.035, bottoms: [1.47, 1.6, 1.47],
+      copper: 0xc8845e },
+    // the living room's Umage Silvia in copper (#1105, docs/taklampa-silvia-umage-koppar.jpg) in the Medium size the user
+    // chose 2026-10-17 (#1125; it felt bigger in real life than the Ø 32 × 24.5 cm Mini of Nordic Nest art. 22136-01):
+    // Ø 50 × 41 cm (Nedgis "Silvia Medium" copper Ø 50 × H 41 cm; Lighting Styles 500 × 410 mm), pointed polypropylene petals in `rows` rings like a pine cone, glossy copper outside,
+    // white inside, an E27 bulb in the middle. Over the ILVA coffee table's centre (x 3.64, z 11.26 − 0.4 − 0.3 = 10.56);
+    // the shade's bottom `bottom` m above the floor (~1.1 m over the 0.47 table top, above the line from the sofa to the
+    // TV; the user sets height and position in Möblera om, #1106), the white cord and the ceiling cup (Ø `cup`) are *guesses* — the cord length is not given. It replaces the
+    // room's ceiling dome.
+    { level: 0, room: 'Vardagsrum', x: 3.64, z: 10.56, style: 'silvia', d: 0.5, h: 0.41, bottom: 1.6, rows: 7,
+      cup: 0.1, cord: 0xf2f2f0, copper: 0xc98a66, inner: 0xf3ede6, replaces: true },
+    // the folded white paper pendant (#134, docs/taklampa-vit-veckad-papper.png; Le Klint style), moved from the living
+    // room to Walter & Kian's room (#1105): in the free floor between the door, the gaming desk (z ≥ 10.75), the bunk
+    // (x ≥ 4.55, z ≥ 10.05) and the MALM (x ≥ 4.65) — the room's own dome hung 0.4 m from the bunk. 45 × 32 cm are
+    // *guesses*; the 40 cm cord (*guess*, shorter than the living room's 55 cm under this 2.8 m ceiling) puts the shade's
+    // bottom ~2.08 m up. It replaces the room's ceiling dome.
+    { level: 1, room: 'Sovrum 2', x: 3.7, z: 9.6, drop: 0.4, style: 'paper', w: 0.45, h: 0.32, cord: 0xf2f2f0, replaces: true },
+    // Sovrum 1's black string ceiling lamp (#174, docs/taklampa-sovrum1-svart-snore.jpg): a short black cup under a
+    // white ceiling plate, a truncated cone of vertical black strings, a clear filament globe inside. All sizes are
+    // *guesses* from the photo (bottom Ø 55, top Ø 35, 28 high, cup 10 cm); in the middle of the room, south of the
+    // lowered ceiling by the façade. It replaces the room's ceiling dome.
+    { level: 1, room: 'Sovrum 1', x: 3.55, z: 2.9, style: 'string', drop: 0, bottom: 0.55, top: 0.35, h: 0.28, cup: 0.1,
+      cupTop: 0.09, cupBottom: 0.05, plate: 0.12, strings: 300, opacity: 0.86, bulb: 0.08, bulbDrop: 0.17, replaces: true },
+  ],
+  // switches for rooms without a door of their own (normal = the way the wall faces)
+  manual: [
+    { level: 0, room: 'Hall', x: 1.95, z: 0.465, normal: [0, 1] },          // by the front door
+    { level: 0, room: 'Kök / matplats', x: 2.15, z: 1.65, normal: [1, 0] },  // under the String shelf
+    { level: 0, room: 'Vardagsrum', x: 3.4, z: 7.8, normal: [0, 1] },
+    { level: 1, room: 'Hall', x: 2.65, z: 5.13, normal: [0, 1] },           // between the bedroom doors
+    { level: 1, room: 'Klk', x: 4.85, z: 4.28, normal: [0, 1] },
+    { level: 0, room: 'Klk', x: 3.35, z: 5.55, normal: [-1, 0] },        // outside, by the door (it spans the whole Klk)
+  ],
+  // moving and raising / lowering the pendants in Möblera om (#1106, pendants.js): the lowest point of a lamp at least
+  // `minBottom` m above the floor (*guess*: you walk under it), its top at most `ceilingGap` below its ceiling fitting;
+  // `step` per wheel notch / Höj / Sänk; kept `wallGap` from walls; the parts within `band` of the ceiling stay there
+  pendantMove: { minBottom: 1.4, ceilingGap: 0, step: 0.05, wallGap: 0.03, band: 0.07 },
+};
+
+// Light modes from the smart speakers (#1176, part of #1155: "tända alla lampor på Google Home, bara all
+// extrabelysning … mys … allt på … bara fönsterlampor … kvällsmys"). src/lightmodes.js; the existing lamps only (no new
+// light, shadow caster or pool slot). `rooms`: the ceiling lamps (room switches) — true = all on, false = all off.
+// `lamps`: the small lamps (lights.floorLamps by their `name`) — true = all on, 'window' = those standing on a window
+// board (a pool anchor within `windowReach` m of a façade's inner face, LIGHTING.wash.facade: the SYMFONISK lamp behind
+// the sofa and Sovrum 1's Hue Go), or a list of names; the rest go off. `skip`: names left off with `lamps: true`.
+// Which lamps make "mys" and "kvällsmys" are *guesses* (the report names the modes only): mys = the decorative and
+// living-room lamps all over the home, kvällsmys = the living room's sofa corner, the Christmas tree and the night lights.
+// `say`: the speaker's reply. `menu`: the speaker's choice menu pages (≤ 4 rows each: #1176's 600 px desktop limit).
+export const LIGHT_MODES = {
+  windowReach: 0.25, // *guess*: window-board lamps measured 0.07–0.14 m from the façade face; the next lamp is > 1 m off
+  modes: [
+    { id: 'all', label: 'allt på', page: 'light', rooms: true, lamps: true, say: 'Okej, jag tänder alla lampor.' },
+    { id: 'extra', label: 'extrabelysning', page: 'light', rooms: false, lamps: true, skip: ['lampan i köksfläkten'], say: 'Okej, all extrabelysning på.' },
+    { id: 'window', label: 'fönsterlampor', page: 'light', rooms: false, lamps: 'window', say: 'Okej, bara fönsterlamporna.' },
+    { id: 'cozy', label: 'mys', page: 'cozy', rooms: false, say: 'Mysläge på. Ta det lugnt nu!',
+      lamps: ['golvlampan', 'spotsen', 'långlampan', 'lampan', 'julgranen', 'rottinglampan', 'Hue Go-lampan', 'bänkbelysningen', 'enhörningslampan', 'dödsstjärnan', 'spegelns nattlampa'] },
+    { id: 'evening', label: 'kvällsmys', page: 'cozy', rooms: false, say: 'Kvällsmys på. Mysigt!',
+      lamps: ['golvlampan', 'långlampan', 'lampan', 'julgranen', 'nattlampan', 'spegelns nattlampa'] },
+    { id: 'disco', label: 'disco', page: 'cozy', rooms: false, lamps: true, skip: ['lampan i köksfläkten'], disco: true, say: 'Disco! Nu dansar vi.' },
+  ],
+  // The disco (#1177, the report: "disco med färger och befintlig musik"): the small lamps switched on as `extrabelysning`
+  // change colour every `beat` s through `colors`, each lamp `spread` colours ahead of the one before (so the room is never
+  // one colour); their glow, pool light and wash follow (Lights tint, no new light). The SYMFONISK speakers play `channel`
+  // (SONOS.channels id) unless music already plays. All *guesses*: beat ≈ 120 BPM pop (not synced to the recording),
+  // a saturated party palette, Pop och rock as the liveliest of the existing channels.
+  disco: { beat: 0.5, spread: 2, channel: 'synth', colors: [0xff2a4a, 0xff8a1a, 0xffe14a, 0x3dff6a, 0x2ad8ff, 0x3a5cff, 0xb03aff, 0xff3ad0] },
+  menu: { light: 'ljuslägen …', cozy: 'myslägen …', end: 'avsluta ljusläget', back: 'tillbaka', talk: 'prata', on: ' (på nu)' },
+  ended: 'Okej, ljusläget är avslutat.',
+};
+
+// Furniture (issue #8). IKEA LANDSKRONA, Gunnared ljusgrön, oak legs.
+// 3-sits: 204 × 89 × 78 cm, seat height 44, seat depth 61, armrest height 64 (ikea.com).
+// With schäslong 282 cm wide, chaise 158 cm deep; armchair 89 × 89
+// (series dimensions, not on the product page — estimates).
+// The dark red upholstered stool in front of the armchair (#180, the user's photo docs/pall-vardagsrum-rod.jpg;
+// model unknown): all sizes and the colour are guesses from the photo (a Surface Pro on it for scale).
+export const OTTOMAN = {
+  w: 0.68, d: 0.48, h: 0.45, legH: 0.06, cushion: 0.1, overhang: 0.01,
+  color: 0x5c2c38, welt: 0x4a222c, legColor: 0x2a1f1a,
+};
+
+// IKEA SYMFONISK speakers (#186). Bookshelf speaker: ikea.com gives ~15 × 10 × 31 cm (w × d × h standing; lying it
+// is 31 × 15 × 10 with the fabric front still facing out — we use these, the exact numbers are guesses). The table
+// lamp speaker gen 2 with the glass shade: a fabric speaker base Ø 15 × 20 cm, a short stem, a frosted glass dome
+// Ø 20 cm, ~40 cm in all (guesses from ikea.com photos). Fabric colours by name.
+// Things on top of the MALM chests (the user): a small themed lamp and a pot plant you can take (#185, things.js).
+// Sizes are our picks. `x` = across the top (local, +x = the chest's left seen from the front), `z` = front/back.
+// Sovrum 2 (Star Wars, Darth Vader sheets): a Death Star lamp (Ø 15 cm globe, cool white) and a cactus in a black pot;
+// Sovrum 3 (unicorn sheets): a lying unicorn night light (frosted white, pink glow) and a pink-flowering plant in a lilac pot.
+// Each lamp is a lamp of its own (lights.js FloorLamp: E, and on with the dusk, #234); `light` = its pool light.
+export const MALM_DECO = {
+  vader: { lamp: { x: -0.2, z: -0.06, name: 'dödsstjärnan', r: 0.075, light: { intensity: 0.7, range: 3, color: 0xcfe0ff } },
+    plant: { x: 0.24, z: -0.04, name: 'kaktusen' } },
+  unicorn: { lamp: { x: 0.2, z: -0.05, name: 'enhörningslampan', light: { intensity: 0.7, range: 3, color: 0xffb8e2 } },
+    plant: { x: -0.24, z: -0.04, name: 'blomkrukan' } },
+};
+
+// Philips Hue Go (2023, White and Color Ambiance; #409) on Sovrum 1's window board: Ø 14.2 cm, ~22 cm high (galaxus.nl
+// retailer data; the charging base not counted). The split between the white body and the frosted diffuser (`split` of
+// the height), the handle loop's height (`loop`), the base and the colours are *guesses* from product photos; no logo.
+// `scenes` = what E on the handle loop steps through (our picks: warm white, soft pink, teal like the curtains, sunset
+// orange); `light` = its pool light (by eye: a soft glow on the board, the reveal and the ceiling).
+// JYSK "Hörnbord RANDERS" (#405, docs/sidobord-jysk-randers-*.jpg): JYSK gives Ø 47 cm, height 51 cm, 32 cm between
+// the legs both ways, the tray 3 cm high flat-packed (`rim`); steel, powder-coated. Leg Ø 1.2 cm, the thin rails, the
+// tray sheet, the rail square's drop under the tray, the cross's height and the caps are *guesses* from the photo. The
+// legs stand straight (the photo), not splayed. Colour: dark purple instead of JYSK's black (the user), `color` our pick.
+export const RANDERS = { d: 0.47, h: 0.51, rim: 0.03, legs: 0.32, leg: 0.012, thin: 0.004, sheet: 0.003, rail: 0.012,
+  cross: 0.1, cap: 0.012, color: 0x3b2240, caps: 0x1c1418, rough: 0.5, metal: 0.25 };
+
+// JYSK café set ABORG, mörk sand (#406, art. 3725144, docs/cafeset-jysk-aborg-*.jpg): the table 60 × 60 × 71 cm (JYSK);
+// the turned-down edge, tube Ø and the bars are *guesses* from the photo. The chairs' sizes are not given: 42 × 48 × 80,
+// seat 45 cm, a 40 cm deep seat of 7 slats, two 7.5 cm back slats (*guess*, a usual bistro chair). `color` read off the
+// photo (a warm grey-taupe), matte powder coat.
+export const ABORG = { color: 0x8f8a80, rough: 0.55, metal: 0.2, tube: 0.008,
+  table: { w: 0.6, h: 0.71, edge: 0.02 },
+  chair: { w: 0.42, d: 0.48, h: 0.8, seat: 0.45, seatD: 0.4, slats: 7, backSlats: [0.62, 0.72], backH: 0.075 } };
+
+// The Philips Hue Go (#409, #428: the classic model, docs/hue-go-produktbild.jpg, src/huego.js): a frosted hemisphere
+// lying on its curve, the flat face `tilt`° from straight up towards the room. Ø `d` across the face (*guess*, the classic
+// Hue Go ~15 cm), a clear `rimW` rim, the flat `foot` (r, h, how far the sphere is `cut` by it) and the tilt read off the
+// photo (*guess*). `scenes` = what "Byt färg" steps through (the box's warm white and rainbow colours, our picks).
+export const HUE_GO = {
+  d: 0.15, tilt: 45, rimW: 0.004, foot: { r: 0.026, h: 0.004, cut: 0.004 }, body: 0xf6f4f0, rim: 0xe4e6e8, name: 'Hue Go-lampan',
+  light: { intensity: 0.7, range: 3, color: 0xffc98a },
+  scenes: [{ name: 'varmvitt', color: 0xffc98a }, { name: 'rosa', color: 0xff9fc6 }, { name: 'lila', color: 0xb46cff },
+    { name: 'blått', color: 0x4a7dff }, { name: 'turkos', color: 0x4fc3c8 }, { name: 'grönt', color: 0x5fdc6a },
+    { name: 'solnedgång', color: 0xff7a35 }],
+};
+
+export const SYMFONISK = {
+  speaker: { w: 0.15, d: 0.1, h: 0.31 },
+  // #461: Gen 2 SYMFONISK table lamp speaker (docs/symfonisk-lamphogtalare-ikea-2026-10-07.png).
+  // Dark knitted fabric cylindrical base Ø 16 cm (R 0.08, H 0.20), rounded top rim.
+  // Large tinted/smoke glass shade Ø 22 cm (R 0.11, H 0.25) with top opening Ø 12 cm and lip rim.
+  // Cylindrical inner opal diffuser Ø 8 cm (R 0.04, H 0.22) protruding slightly through top opening.
+  lamp: { baseR: 0.08, baseH: 0.20, stem: 0.015, outerR: 0.11, outerH: 0.25, innerR: 0.04, innerH: 0.22, topHoleR: 0.06 },
+  colors: { white: 0xe8e8e4, black: 0x1f2022 },
+  // #418 (docs/symfonisk-bokhylla-staende.jpg): a standing speaker with `controls: 'front'` has a light grey fabric front
+  // (`front` by colour), a white − ⏯ + strip `controls.w` × `h` with its centre `y` over the bottom and the IKEA tab
+  // `tab` wide at the top of the front — read off the photo, *guess*
+  front: { white: 0xcfcfca },
+  controls: { w: 0.07, h: 0.017, y: 0.026, tab: 0.034 },
+};
+
+// Licensed full-length studio recordings (#500), fetched only when played; music/CREDITS.md.
+// Channel ids remain stable so saved selections keep their genre after the new names.
+const track = (id, title, artist) => ({ title, artist, files: [`music/${id}.ogg`, `music/${id}.mp3`] });
+export const MUSIC = {
+  crossfade: 6, // #1621: seconds of the DJ bench's equal-power crossfade (a design choice)
+  loadTimeout: 8000, // stalled streams try the alternative format, then stay quiet
+  lofi: [track('morning-blue','Morning Blue','Josh Woodward'),track('will-not-let-you','I Will Not Let You Let Me Down','Josh Woodward')],
+  jazz: [track('bossa-antigua','Bossa Antigua','Kevin MacLeod'),track('jazz-brunch','Jazz Brunch','Kevin MacLeod')],
+  kids: [track('carefree','Carefree','Kevin MacLeod'),track('little-tomcat','Little Tomcat','Josh Woodward')],
+  game: [track('inertia','Inertia','Josh Woodward'),track('together-on-our-own','Together On Our Own','Josh Woodward')],
+  acoustic: [track('already-there','Already There','Josh Woodward'),track('follow-the-road','Follow the Road','Josh Woodward')],
+  ambient: [track('childhood','Childhood','Scott Buckley'),track('hiraeth','Hiraeth','Scott Buckley')],
+  pcGain: 0.12,
+};
+// Volume in steps; wall/floor attenuation on top of positional distance falloff.
+export const SONOS = {
+  channels: [
+    { id: 'lofi', name: 'Lugn pop', tracks: MUSIC.lofi },
+    { id: 'jazz', name: 'Jazz', tracks: MUSIC.jazz },
+    { id: 'kids', name: 'Lätt och glatt', tracks: MUSIC.kids },
+    { id: 'synth', name: 'Pop och rock', tracks: MUSIC.game },
+    { id: 'bach', name: 'Akustiskt', tracks: MUSIC.acoustic },
+    { id: 'rain', name: 'Ambient', tracks: MUSIC.ambient },
+  ],
+  steps: 10, start: 5, gain: 0.5, wall: 0.45, floor: 0.2,
+};
+
+// #1659: additional tracks available at the clubhouse DJ bench (CC0 1.0, music/previous-sources-416.json)
+export const DJ_EXTRA_TRACKS = [
+  track('as-fast-as-you-can', 'As fast as you can', 'Centurion_of_war'),
+  track('face-the-facts', 'Face The Facts', 'Zane Little Music'),
+  track('lofi-hip-hop', 'lofi hip hop', 'omfgdude'),
+  track('revelation', 'Revelation', 'Indieteur'),
+  track('happy', 'Happy', 'Alex McCulloch'),
+  track('background-space-track', 'Background space track', 'yd'),
+  track('wild-jazz', 'Wild Jazz', 'Alex McCulloch'),
+  track('lofi-again', 'Lofi again', 'omfgdude'),
+  track('basically-not-fusion-jazz', '(Basically not) Fusion Jazz', 'Spring Spring'),
+  track('happy-moments', 'Happy moments', 'Centurion_of_war'),
+  track('happy-lullaby-song17', 'Happy Lullaby', 'cynicmusic'),
+  track('from-here-to-where', 'From Here to Where?', 'Écrivain'),
+];
+
+// #1621, #1659: the DJ bench playlist combines the Sonos channels and extra clubhouse tracks
+export const PLAYROOM_TRACKS = [
+  ...SONOS.channels.flatMap((c) => c.tracks),
+  ...DJ_EXTRA_TRACKS,
+];
+
+// The ILVA Woodstock coffee table's shape (#410, furniture.js `coffeetable`, read off ILVA's product photo
+// docs/soffbord-ilva-woodstock.jpg; only 120 × 60 × 47 is ILVA's, the rest is *guess*): `top` thickness, corner `radius`,
+// how far the long sides `bulge` out past straight (the ends half that), the leg tops set in `legIn` [x, z] from the edges,
+// `splay` [x, z] = how much further out the feet stand, `leg` = radius at the top / foot, a thin `apron` rail (height)
+// between the leg tops, a shelf of `slats` round dowels Ø `slat` along the length, `shelfY` up, between two end rails.
+export const COFFEE_TABLE = { top: 0.025, radius: 0.11, bulge: 0.012, legIn: [0.16, 0.1], splay: [0.06, 0.035], leg: [0.0175, 0.01],
+  apron: 0.035, slats: 5, slat: 0.016, shelfY: 0.16 };
+
+export const LANDSKRONA = {
+  fabric: 0xa7b39a, // Gunnared ljusgrön
+  oak: 0xc9a67a,
+  height: 0.78, seatHeight: 0.44, seatDepth: 0.61, armHeight: 0.64, armWidth: 0.12,
+  depth: 0.89, legHeight: 0.15,
+  sofaWidth: 2.82, chaiseWidth: 0.9, chaiseDepth: 1.58,
+  // the chaise's outer arm is the sofa's arm: it ends flush with the sofa's seat cushions, the chaise's
+  // long cushion runs on past it (#279, the user)
+  chaiseArmDepth: 0.89,
+  chairWidth: 0.89,
+  // #1040 visual guesses in metres/radians; retain the original collision and seat anchors.
+  upholstery: {
+    seat: { crown: 0.014, radius: 0.045, edgeR: 0.02, frontBulge: 0.008 },
+    back: { crown: 0.016, radius: 0.05, edgeR: 0.02 },
+    backLean: 0.16, weltRadius: 0.0032, weltLift: 0.001, armRadius: 0.055,
+  },
+};
+
+// Decorative cushions and throws in the sofa and the armchair (#278, docs/fatolj-kuddar-filt.jpg; #313, the user's
+// photo of what we really have, docs/vardagsrum-prydnadskuddar-filtar.jpg — dark, colours sampled brightened): four
+// kinds of cushion — a leaf print on cream (grey-blue / sage, burgundy-plum, mustard-olive, black), a near-black bobble
+// knit (raised knobs in a grid), a geometric patchwork (octagons and diamonds of triangles and squares, black to
+// off-white) and a blush pink corduroy (wide soft vertical ribs) — and two ribbed fleece throws, plum and dark grey.
+// Sizes are guesses: cushions 45 × 45 × 14 cm. Each cushion: `x` across the piece (local, + = the sitter's left),
+// `z` from the front of the back cushion, `yaw` (rad, + turns its face towards −x), `lean` (rad back),
+// `kind` = print | knit | geo | cord, `crumple` 0–1.
+// The sit spots stay clear: no cushion within ~20 cm of a spot's x (furniture.js moves the sofa's three spots a little
+// away from the arm so the corner cushion fits).
+export const CUSHIONS = {
+  size: 0.45, thick: 0.14,
+  print: { ground: '#efe8da', colors: ['#7f97a0', '#93a597', '#5e1f33', '#7a2d45', '#c9c07a', '#a39b55', '#1e1c1c'] },
+  knit: { cells: 12, color: 0x625650 },              // vertex tint = the grooves; the knobs come out ≈ #2e2824
+  geo: { colors: ['#1d1d1f', '#4a4a4c', '#828284', '#b6b5b1', '#cfc2a8', '#efebe2'] },
+  cord: { ribs: 9, color: 0xe8c3b8 },                // ribs across the cushion's width, vertex tint
+  // along the back from the chaise (left seen from the room, as in the photo) to the arm: knit, geometric, cord, print
+  sofa: [
+    { materialId: 'cushion-chaise', materialName: 'Kudde vid schäslongen', x: -1.16, z: 0.1, yaw: 0.75, lean: 0.35, kind: 'knit', crumple: 0.6 },   // the chaise's corner
+    { materialId: 'cushion-joint', materialName: 'Geometriska kudden', x: -0.57, z: 0.07, yaw: 0.12, lean: 0.4, kind: 'geo', crumple: 0.25 },   // where the chaise meets
+    { materialId: 'cushion-middle', materialName: 'Kudde i mitten', x: 0.05, z: 0.08, yaw: -0.08, lean: 0.42, kind: 'cord', crumple: 0.45 }, // between the first two seats
+    { materialId: 'cushion-corner', materialName: 'Kudde vid armstödet', x: 1.14, z: 0.1, yaw: -0.75, lean: 0.35, kind: 'print', crumple: 0.3 },  // in the corner by the arm
+  ],
+  // ribbed fleece throws (#313): soft ribs `rib` m apart with a slight sheen; `color` picks one of these
+  fleece: { rib: 0.045, plum: 0x3a1a2a, grey: 0x4a4c4f },
+  // the folded throw on the chaise's foot end: w × d (folded), `layers` thick, x/z of its centre (z from the front)
+  sofaThrow: { materialId: 'throw-folded', materialName: 'Vikta pläden', w: 0.55, d: 0.4, layer: 0.025, layers: 3, x: -0.98, zFront: 0.42, yaw: 0.08, color: 'plum' },
+  armchair: [
+    { materialId: 'cushion-print', materialName: 'Blommiga kudden', x: -0.19, z: 0.1, yaw: -0.65, lean: 0.35, kind: 'print', crumple: 0.35 },
+    { materialId: 'cushion-knit', materialName: 'Stickade kudden', x: 0.17, z: 0.08, yaw: 0.2, lean: 0.45, kind: 'knit', crumple: 0.8 },
+  ],
+  // the throw draped over the armchair's right arm (the sitter's; left seen from the front) and onto the seat
+  chairThrow: { materialId: 'throw-draped', materialName: 'Pläden över armstödet', z0: -0.12, z1: 0.34, hang: 0.25, spill: 0.2, color: 'grey' },
+  // the patio's outdoor fabrics (#399, our own): a coarse basket weave `cells` yarn pairs across, tinted per cushion;
+  // the striped one has a charcoal `band` stripe on the weave
+  weave: { cells: 16 }, stripe: { band: '#4b4d50' },
+};
+
+// Patio (src/patio.js). The lounge (Rusta Verona, #408) and the parasol (Ø 3 m, centre pole,
+// ecru) are guesses. Seasons (months 1–12): the parasol is up in `parasolMonths` while the sun
+// is up and folded otherwise; beers on the table in summer between `beerHours`; a snowman on
+// the lawn beyond the hedge in winter.
+// #1143: the shared clipped-hedge form (src/hedgeform.js) for patio hedges and entrance boxwood; all *guess*, tuned by eye
+// against close and distant screenshots. Noise scales in m; tone/shade factors multiply the material colour (vertex colours).
+export const HEDGE = {
+  bumpScale: .32, fineScale: .11,   // dent noise wavelengths (broad lumps, small tufts)
+  outward: .72,                     // noise level at the clipped face: dents go mostly inward (the outline stays in the footprint)
+  footRise: .14, footPinch: .14,    // the bottom 14 % of the height pulls in by up to 14 % (bare stems under the foliage)
+  footShade: .45, footDark: .5,     // the lower 45 % darkens towards half brightness at the ground
+  dentShade: .8, topLight: 1.08, topWarm: 1.04, // dents darker, the sunny top a little fresher and warmer
+  tone: .22, toneScale: 5, patch: .14, // slow per-hedge tone (≈ 5 m), smaller patches (0.5 m)
+  stemRise: .4, stemDensity: 9, stemColor: 0x6b5236, // brown stems in leaf gaps in the lower 40 %, ~9 per m
+};
+export const PATIO = {
+  // #680: clipped privet/hornbeam appearance, visual guesses; original height/plan footprint retained.
+  // #1143: shared hedge form: `cell` grid (m), `dent` relief depth (m), *guess* (cell .2 → .35 in #1223).
+  hedge: { height: 1.1, rounding: .065, footScale: .86, topNoise: .03, waveLength: .8,
+    color: 0x78a64b, texturePeriod: .48, bump: .012, roughness: .95, segments: 2, cell: .35, dent: .07 },
+  frame: 0x3b3e41, // the parasol's pole and base
+  // Rusta "Loungemodul Verona" (#408, docs/utesoffa-rusta-verona.jpg, the family's own: docs/utesoffa-verona-utan-dynor.jpg):
+  // one module 68.5 × 66 × 67 cm (W × D × H, rusta.se); the rest *guess* from the photos: a square steel tube `tube`, the
+  // seat frame's top `base`, seat cushions `seatT` thick, back cushions `backH` × `backT`, arm height `arm`, a divan
+  // (backless, no arms) `divanL` long; dark brown-black steel `frame`, wide flat slats, beige / sand `cushion`. #429: the two
+  // divans end to end make one long bench; its seats at `bench` (fractions of its length from the north end, our pick)
+  verona: { W: 0.685, D: 0.66, H: 0.67, tube: 0.04, base: 0.3, seatT: 0.12, backH: 0.45, backT: 0.14, arm: 0.55, divanL: 1.3,
+    bench: [0.17, 0.5, 0.83], frame: 0x2b2522, cushion: 0xd8ccb0 },
+  // the small low table from the family's photo (#408): black steel frame, dark wooden slats; 60 × 45 × 40 cm *guess*
+  slatTable: { w: 0.6, d: 0.45, h: 0.4, slats: 5, frame: 0x221f1d, wood: 0x3d3029 },
+  parasol: { radius: 1.5, height: 2.45, color: 0xe8e1d1, months: [4, 5, 6, 7, 8, 9] },
+  pot: { r: 0.3, h: 0.62, color: 0x55595c }, // fibre-clay planter Ø 60 cm (guess)
+  // #524: visual assumptions, same Trachycarpus fan palm and Ø60 ×62 cm fibre-clay pot; no botanical survey.
+  palmDetail: { trunk:1.3, bottom:.09, top:.065, bend:.025, trunkSegments:20, trunkRings:24, fibres:280, fibreLength:.055, fibreWidth:.004, fibreLift:.009,
+    fronds:16, fingers:17, fingerSegments:6, stalk:.38, fan:.42, tipDroop:.07,
+    potSegments:48, potWall:.025, soilDepth:.03, textureSize:128, potBump:.003, barkBump:.009 },
+  beerMonths: [6, 7, 8], beerHours: [12, 23],
+  // the cushion box (#400, src/patio.js `dynbox`, our own look): an anthracite slatted wood-look outdoor box, 125 × 58 × 60
+  // cm (*guess*, a common size), the lid `lid` thick hinged at the back, opening `max`° (on its stays, short of the screen
+  // wall behind it), walls `wall` thick, slats every `slat` m
+  dynbox: { L: 1.25, D: 0.58, H: 0.6, lid: 0.035, wall: 0.025, slat: 0.07, max: 88, color: 0x3d4043 },
+  // cosy outdoor cushions in the lounge sofa (#399, colours and places our pick; 45 × 45, the lumbar 50 × 30, *guess*),
+  // since #408 on the Verona sofa, in its local frame: the back row along x centred on 0 (module centres 0,
+  // ±0.685; since #489 three modules in the row), the back cushions' front at z −0.15, +z = south. `yaw` turns the face
+  // (0 = +z, π/2 = +x), `lean` back. Out on the sofa in the parasol's months unless it
+  // rains, else in the cushion box (Patio.update)
+  cushions: [
+    { materialGroup: 'sofa', x: 0.81, z: -0.06, yaw: -0.6, lean: 0.35, kind: 'weave', color: 0xc9952f, crumple: 0.45 },                  // ochre, in the corner by the east arm
+    { materialGroup: 'sofa', x: -0.34, z: -0.07, yaw: 0.05, lean: 0.4, kind: 'stripe', color: 0xf2ede2, crumple: 0.3 },                    // off-white striped, between two seats
+    { materialGroup: 'sofa', x: 0.34, z: -0.08, yaw: -0.05, lean: 0.3, kind: 'weave', color: 0x8ea488, size: 0.3, w: 0.5, crumple: 0.3 }, // a sage lumbar, between the next two
+    { materialGroup: 'sofa', x: -0.82, z: -0.06, yaw: 0.45, lean: 0.4, kind: 'weave', color: 0xb35a3c, crumple: 0.35 },                  // terracotta, at the backs' west end
+    // #1146 (the user): only the sofa row, with its backs, carries cushions. The backless divans have none (#429's four
+    // cushions leaned against the east screen wall, and lay oddly once a divan was rearranged away from it).
+  ],
+  // the snowman stands just beyond the gap in the hedge, in view from the patio door and the sofa (#73)
+  snowman: { x: 1.4, z: 18.4, months: [12, 1, 2] },
+  // paving (#53): 40 × 40 cm light grey concrete slabs, rows in half bond, darker 8 mm joints (our pick);
+  // also on the neighbours' patios
+  paving: { slab: 0.4, joint: 0.008, color: [184, 181, 175], jointColor: '#6f6b65' },
+  // LED string lights on the patio side of each screen wall (#81; all guesses except the wall's height):
+  // hooks 1.68 m up, a 6 cm sag between them, bulbs every 12 cm, warm white. They switch on below
+  // `on` daylight and off above `off` (hysteresis), fading over `fade` s; each string borrows a pool
+  // light (lights.js) with a soft, short reach.
+  stringLights: { y: 1.68, sag: 0.06, hookEvery: 1.2, spacing: 0.12, inset: 0.03, color: 0xffcf8a,
+    on: 0.3, off: 0.4, fade: 1, light: { intensity: 1.4, range: 4 } },
+};
+
+// Placement in plan metres. rot = direction the seat faces, degrees (0 = north/−z,
+// 90 = west, 180 = south, −90 = east), same convention as the ?at= camera yaw.
+// IKEA SKANSNÄS table and 4 chairs, brown beech (#62/#63; ikea.com s19561595: extendable table 150/205 ×
+// 90 cm, H 75, butterfly leaf — modelled closed, 150 cm; chair W 48 × D 51 × H 78; the seat height 45 cm,
+// leg/apron sizes and the corner radius are guesses). Frame colour shared by table and chairs; the
+// chair seat is light woven paper cord. chairUnder = how far the seat goes in under the top.
+export const SKANSNAS = {
+  color: 0x6a4e3a, seatColor: 0xd8c6a0,
+  table: { x: 3.5, z: 1.41, l: 1.5, lExtended: 2.05, w: 0.9, h: 0.75, top: 0.025, corner: 0.06, apronH: 0.07, leg: 0.05 },
+  chair: { w: 0.48, d: 0.51, h: 0.78, seat: 0.45 },
+  chairUnder: 0.2,
+};
+
+// IKEA IDANÄS upholstered storage bed, Gunnared dark grey, 180 × 200 (#91; ikea.com: length 223, width 190,
+// headboard height 121, footboard/frame height 49). Headboard thickness, leg height, drawer sizes and the
+// 22 cm mattress are guesses. `head` = depth behind the mattress taken by the sloping headboard.
+export const IDANAS = { L: 2.23, W: 1.9, frameH: 0.49, headH: 1.21, head: 0.2, legH: 0.1, mattressH: 0.22, color: 0x5f6266 };
+// The Sovrum 1 double bed's centre line (z): 2.3 until #403, when the user moved it 0.25 m south towards the Klk so the
+// RÅGRUND chair could leave the curtain's corner (CURTAINS). Its bedside tables, work lamps, the picture over it, the TV
+// across from it and the rug under it follow. Frame z 1.60–3.50: 0.66 m of floor left before the Klk wall (z 4.16).
+export const BED1_Z = 2.55;
+
+// Pillows (#308, src/bedding.js `pillow`): `head` = the ordinary pillow in its case (~50 × 60, the chintz set's case,
+// 60 across the bed), `hotel` = Hemtex "Hotellkudde" 70 × 100 in a white case (docs/hotellkudde-70x100.jpg), one under
+// each head pillow in the Sovrum 1 bed, 100 across, its head end at the headboard. `h` = height in the middle (*guess*:
+// a soft hotel pillow ~16 cm, a head pillow ~12 cm), `dent` = the hollow where a head has been.
+export const PILLOWS = {
+  head: { w: 0.6, d: 0.5, h: 0.12, dent: 0.025 },
+  hotel: { w: 1.0, d: 0.7, h: 0.16 },
+};
+
+// Bedding in every bed (#309, src/bedding.js `duvet`): duvets `th` thick (*guess*: a soft all-year duvet in its cover
+// ~7–8 cm), hanging `drop` over the mattress sides (Sovrum 1: down to the IDANÄS frame's edge; the bunks: to the side
+// rails), turned back `fold` m at the head end; `bump` = the low unevenness on top. The mattresses get rounded edges
+// (`mattressR`) in a pale ticking (`ticking`) with a fitted sheet (`sheet` colour per set) over the top `sheetH` of it.
+// Tilly's bedspread is quilted in channels `quilt` m apart. The bunks' pillows are 50 × 60 (`bunkPillow`).
+// #1019: semantic groups of the existing IDANÄS linen; originals remain builder-specific.
+export const DOUBLE_BED_LINEN = [
+  { id: 'linen-sheet', name: 'Lakanet' },
+  { id: 'linen-pillows', name: 'Örngotten' },
+  { id: 'linen-duvet', name: 'Täcket och vikningen' },
+  { id: 'linen-footthrow', name: 'Stickade fotpläden' },
+  { id: 'linen-accent', name: 'Lilla kudden' },
+];
+
+// #1020: existing sheet/case/duvet per actual MYDAL berth; names are UI labels, no new geometry.
+export const BUNK_LINEN = [
+  { id: 'lower-sheet', name: 'Underslafens lakan' },
+  { id: 'lower-pillow', name: 'Underslafens örngott' },
+  { id: 'lower-duvet', name: 'Underslafens täcke' },
+  { id: 'upper-sheet', name: 'Överslafens lakan' },
+  { id: 'upper-pillow', name: 'Överslafens örngott' },
+  { id: 'upper-duvet', name: 'Överslafens täcke' },
+];
+
+export const BEDDING = {
+  ticking: 0xe4e2db, mattressR: 0.045, sheetH: 0.75,
+  sheets: { chintz: 0xf3f1ea, vader: 0x2b2e35, unicorn: 0xf6e9f1, plain: 0xf1f0ea },
+  double: { th: 0.08, drop: 0.11, fold: 0.3 },
+  bunk: { th: 0.07, drop: 0.075, fold: 0.26 },
+  bunkPillow: { w: 0.6, d: 0.45, h: 0.12 },
+  spread: { th: 0.035, drop: 0.16, quilt: 0.16 },
+};
+
+// IKEA NYMÅNE wall/reading lamp, GU10 (#219, docs/nymane-vagglampa-vit.png): a wall plate with a round switch,
+// a short round arm and a cylinder shade pointing down and out, a fabric cord hanging from the plate. All sizes are
+// guesses from the product photo. One per bunk berth, on the side wall by the head end (`fromHead` along the bed),
+// the plate centre `aboveMattress` over the berth's mattress top, reachable lying there (REST.reach.lie 0.8 m).
+// `berths`: the side wall's x, the head end's z, which way along z the bed runs (+1 / −1), rot = the way the lamp faces.
+// The bunks (#227, docs/vaningssang-mydal-vit.png): IKEA MYDAL, white lacquered pine, for 90 × 200 mattresses,
+// 97 × 207 × 157 cm (ikea.com); posts 5.5 cm; the bed bases' tops at `base` (~85 cm free between them, guess),
+// mattresses `mattress` thick; a guard rail of two boards round the top bunk (open by the ladder), two boards in
+// each end at both bunks, a straight three-rung ladder on the room side by the foot end
+export const MYDAL = { W: 0.97, L: 2.07, H: 1.57, post: 0.055, base: [0.2, 1.1], mattress: 0.12, board: 0.09 };
+
+// Tilly's daybed (#280, docs/hemnes-dagbadd-vit.jpg): IKEA HEMNES dagbädd m 3 lådor/2 madrasser, vit, 80 × 200,
+// 207 × 89 × 83 cm (ikea.com). White frame, the back and the ends vertical beadboard (`groove` m apart) in a flat frame
+// with a top rail, the ends' cap overhanging a little; an arched apron under the top mattress, the second mattress in the
+// pull-out behind it, three drawers with round dark grey knobs (Ø `knob`). Heights of the parts are *guesses* from the
+// photo: drawer fronts `drawer` [bottom, height], the pull-out mattress `pullout` [bottom, top], the apron `apron`
+// [bottom at the ends, bottom in the middle, top], the top mattress (ÅFJÄLL, quilted with `channels` channels across)
+// `mattress` [bottom, top]. Bedding (the user: less pink, a cool 15-year-old): a charcoal bedspread with lilac
+// lightning bolts and white stars over the foot end, black / holographic lilac / graphic cushions, a faux-fur one and
+// a small muted pink one (our picks).
+// #1021: only the eight actual HEMNES textile groups; geometry and original finishes stay builder-owned.
+export const DAYBED_LINEN = [
+  { id: 'linen-mattress-top', name: 'Övre madrassens överdrag' },
+  { id: 'linen-mattress-lower', name: 'Undre madrassens överdrag' },
+  { id: 'linen-spread', name: 'Kviltade överkastet' },
+  { id: 'linen-black', name: 'Svarta kudden' },
+  { id: 'linen-holo', name: 'Holografiska kudden' },
+  { id: 'linen-graphic', name: 'Bildkudden' },
+  { id: 'linen-fur', name: 'Pälskudden' },
+  { id: 'linen-pink', name: 'Rosa kudden' },
+];
+
+// Contact shadows under loose furniture (#1075, src/contactshadow.js): one soft multiply-blended rounded rectangle per
+// floor-standing piece, sized from its collision footprint, so tables, chairs, sofas and beds sit on the floor instead of
+// floating where the sun's shadow does not reach. All values are *guesses* tuned by eye (no reference measurement).
+export const CONTACT_SHADOW = {
+  strength: 0.32,  // darkening under the middle of the footprint (0 = none, 1 = black)
+  soft: 0.07,      // m half-width of the soft edge, centred on the footprint edge (symmetric, so touching
+                   // rectangles of one piece meet without a light seam)
+  radius: 0.06,    // m corner rounding of the shape
+  lift: 0.004,     // m above the floor (on top of the floor AO overlay, under anything else)
+  maxBase: 0.06,   // m: only pieces whose lowest point is this close to the floor (not wall pieces, table-top things)
+  skip: ['rug', 'parasol'], // rugs lie flat; the parasol stands outdoors in the sun's own shadow
+};
+
+export const HEMNES_DAYBED = {
+  W: 2.07, D: 0.89, H: 0.83, groove: 0.04, knob: 0.03,
+  drawer: [0.05, 0.22], pullout: [0.29, 0.345], apron: [0.335, 0.375, 0.42], mattress: [0.42, 0.56], channels: 10,
+  colors: { frame: 0xf3f2ee, mattress: 0xf6f6f3, knob: 0x55585c, spread: '#202127', bolt: '#b79cff', star: '#f4f1ff',
+    black: 0x18181b, fur: 0xe8e2d8, pink: 0xc7949f },
+  // #1578: Tilly's bed has a fitted bottom sheet over the top mattress and one sleeping pillow at the head (-x) end, in front
+  // of the decorative cushions (those stay as they are). The sheet is in the top mattress's cover colour (`colors.mattress`), the pillow in the
+  // cream of the fur cushion (`colors.fur`), so both share existing draw calls (*guess*). All sizes in m are *guesses*: `sheet` = [thickness, front drop],
+  // `pillow` = { w along the bed, d across it, h in the middle, x / z centre }.
+  sheet: [0.005, 0.1],
+  pillow: { w: 0.42, d: 0.6, h: 0.15, x: -0.74, z: 0.1 },
+};
+// Low furniture you can jump up on and stand on (#693, #699): piece type → its standing surface's top over the piece's floor
+// (m), the same numbers as the models' seats / mattresses (LANDSKRONA.seatHeight 0.44 + cushion, OTTOMAN.h, the IDANÄS
+// mattress top + 3 cm of duvet, the HEMNES top mattress + 3 cm of spread, the BYÅS top; the courtyard benches' seat top is
+// courtyard.js SEAT_Y). Only what the plain jump (PLAYER.jump, ~0.7 m + PLAYER.hurdle 0.22) reaches; everything taller keeps
+// its plain wall. Only the footprint rectangles of a piece that are not flagged `solid` count as standable: the builders
+// (furniture.js `seatRects`, bed, daybed) mark backrests, arms, headboards and bed ends `solid` (a plain wall as before).
+// Left out on purpose: the MYDAL bunks (the lower mattress top 0.32 m sits under the top bunk's 1.1 m base: no head room),
+// tables (0.75 m), shelves. The TV on the BYÅS bench has no footprint of its own, so it never blocks the bench top.
+export const STAND_ON = {
+  sofa: 0.45, armchair: 0.45, ottoman: 0.45,
+  bed: IDANAS.frameH - 0.1 + IDANAS.mattressH + 0.03,       // 0.64 m (*guess*: the frame / mattress heights are guesses)
+  daybed: HEMNES_DAYBED.mattress[1] + 0.03,                  // 0.59 m
+  byas: 0.45,                                               // the TV bench's top (item.h)
+  // #701, #702: the patio's lounge (the Verona seat cushions' top, PATIO.verona base + seatT; the backs and arms are `solid`)
+  // and its slatted table (PATIO.slatTable.h), the living room's coffee table (its item.h 0.47, FURNITURE). Left out on
+  // purpose (#701, #702): kerbs (≤ 15 cm, 10 cm proud: under PLAYER.stepUp, walked up on as they are), the bollards (Ø 14 cm
+  // caps, 0.8 m), the street has no other low fixed object, the neighbours' hedges (1.1 m) and the fence stay walls, the
+  // dining table (0.72–0.76 m) and the patio's planters / cushion box (a lid that moves) too; indoors the kitchen worktops
+  // (BASE_CABINET 0.9 + 3 cm counter = 0.93 m, just over the reach, and their plinth is recessed under the carcass: no
+  // surface to stand on), the bedside tables (a 40 cm top with a lamp on it) and the chairs (backs).
+  veronasofa: PATIO.verona.base + PATIO.verona.seatT,       // 0.42 m
+  slattable: PATIO.slatTable.h,                             // 0.40 m (a 0.6 × 0.45 m top)
+  coffeetable: 0.47,                                        // ILVA Woodstock (#410): item.h of the one coffee table
+};
+
+// Tilly's wardrobe (#305, #311, docs/smastad-platsa-garderob.jpg): IKEA SMÅSTAD / PLATSA, the two-door 80 × 57 × 181 cm
+// (*guess*, the series also comes 120 wide: its 60 cm doors would reach too far into the room), white carcass and — the
+// user's wish — white doors (not the photo's blue), in the NW corner of the north wall (its west side against the west
+// wall). French doors (#311): the left one (seen from the front) hinged on the left edge, opening to the left, the right
+// one on the right edge, opening to the right, a knob on each by the middle joint. `max` = [left, right] degrees: the
+// left stops at 85° so its knob stays clear of the west wall (the door lies almost along it). Inside, as in the photo, a
+// shelf near the top, the clothes rail under it, a long hanging space, a shelf low down and a wire basket per door at the
+// bottom (heights are guesses from the photo); each door's half has its own contents, drawn only while that door is
+// open. Her clothes (from the MULIG rack it replaced, #281) on hangers (stuff.js `garment`, `size`: their sleeves must
+// stay inside the 55 cm carcass): an oversized black hoodie, an olive bomber, a plaid-red skirt, cargo pants, a black
+// band tee, a denim jacket, a lilac shirt, a neon green tee; folded sweaters and a cap on the top shelf, sneakers on the
+// low shelf and in a basket with the tote bag, socks in the other basket (our picks).
+export const SMASTAD = {
+  W: 0.8, D: 0.57, H: 1.81, t: 0.018, door: 0.018, plinth: 0.06, topShelf: 1.55, rail: 1.49, lowShelf: 0.44,
+  baskets: [[0.08, 0.15], [0.255, 0.15]], max: [85, 95], color: 0xf4f4f1, wire: 0xd9dadb, size: 0.75,
+  clothes: [['jacket', 0x18181b], ['jacket', 0x4b5440], ['skirt', 0x7a2633], ['trousers', 0x6b6b4e],
+    ['tee', 0x111111], ['jacket', 0x4a6fa5], ['shirt', 0xb79cff], ['tee', 0xa3e635]],
+  sweaters: [0x2a2a30, 0xb79cff, 0xe9e4da, 0x6f7f96], cap: 0x18181b,
+  shoes: [0xf2f0ec, 0x18181b, 0xb79cff], socks: [0xf2f0ec, 0x18181b, 0xb79cff, 0xa3e635], tote: { size: [0.28, 0.32, 0.08], color: 0xe6dcc4 },
+};
+
+// Tilly's K-pop posters (#280, the user): invented groups only — no real idols' names, faces, photos or logos. Each is
+// drawn on one canvas atlas (src/furniture.js `kposterTexture`), taped to the wall (A2 42 × 59.4, A3 29.7 × 42 cm).
+// `wall`: 'west' (face x 0.202) or 'north' (face z 7.804) of Sovrum 4; `at` = z (west) or x (north) of the centre,
+// `y` = centre height over the floor. Over the daybed around the basketball holder (DAYBED_Z, y 1.5), north of it and on the
+// north wall east of the wardrobe (#311); not on the east wall (the vanity, #282) or the window wall. None may be covered
+// by the wardrobe or swept by its open doors (#311, the user: move posters, never cover them; opentest checks it).
+export const KPOP_POSTERS = [
+  { art: 'nova', size: 'A2', wall: 'west', at: DAYBED_Z - 0.73, y: 1.58 }, // round the holder over the daybed (#312)
+  { art: 'moon', size: 'A2', wall: 'west', at: DAYBED_Z + 0.73, y: 1.58 },
+  { art: 'bloom', size: 'A3', wall: 'west', at: DAYBED_Z, y: 2.08 },
+  { art: 'lumi', size: 'A2', wall: 'north', at: 1.3, y: 1.6 },     // east of the wardrobe, short of the switch (#311)
+  { art: 'starlyt', size: 'A2', wall: 'west', at: 9.5, y: 1.58 }, // between the wardrobe's open left door (#311) and nova
+];
+
+// Långlampan (#270, docs/langlampan.jpg): a tall slim tube of coarse natural linen with a spiral wire frame and several
+// bulbs inside, standing in the living room's NE corner right of the TV (FURNITURE `tubelamp`). The user: it stands on a
+// round foot with a ~20 cm stem, the shade starting ~0.2 m above the floor. Shade Ø, height, the wire's pitch, the foot
+// and the bulb heights are *guesses* from the photo (about 6–7 × its diameter). Lit it is a cosy, dimmed glow: weaker than
+// the NYMÅNE floor lamp (`light`), with soft warm washes on the two corner walls (`wash`: size, centre height, opacity; a look).
+export const LANGLAMPA = {
+  r: 0.125, h: 1.6, bottom: 0.2, foot: { r: 0.125, h: 0.015 }, stem: 0.01, rim: 0.012, pitch: 0.25,
+  bulbs: [0.3, 0.55, 0.8],                   // bulb heights as fractions of the shade (three visible in the photo)
+  linen: 0xc9b48a, glow: 0xffcf7a, wire: 0x3a3226, metal: 0x2a2a2c,
+  wash: { w: 1.1, h: 2.3, y: 1.15, opacity: 0.32 },
+  light: { intensity: 0.8, range: 3.5, color: 0xffc77a },
+};
+
+// JYSK DANI floor lamp (#411, docs/golvlampa-jysk-dani-produkt.jpg + golvlampa-jysk-dani.jpg; FURNITURE `dani`): JYSK gives
+// Ø 33 × H 54 cm, bamboo / eucalyptus / rattan, E27 max 40 W. The rest is *guess* from the photos: three light wooden legs
+// (`legH` of the height, splayed out to `legR`), an upright teardrop cage of `rods` round rattan rods following `profile`
+// ([fraction of the cage height, radius] from the bottom ring to the top), a wrapped collar `collar` high at the top, thin
+// rings at `rings` (fractions), and a white fabric cylinder inside (`inner`: radius, bottom and top as fractions). Lit it
+// is warm and dim (40 W): `light` (the pool light), a striped pool on the floor round it and a soft spot on the ceiling.
+export const DANI = {
+  h: 0.54, legH: 0.16, legR: 0.15, leg: [0.011, 0.007], rods: 30, rod: 0.005,
+  profile: [[0, 0.085], [0.08, 0.13], [0.2, 0.157], [0.33, 0.165], [0.5, 0.158], [0.7, 0.135], [0.88, 0.105], [1, 0.092]],
+  collar: 0.045, rings: [0.06, 0.33, 0.66], inner: { r: 0.08, y0: 0.05, y1: 0.68 },
+  rattan: 0xb48a58, wood: 0xcfa678, fabric: 0xf3efe6, glow: 0xffc27a,
+  floorWash: { r: 0.6, opacity: 0.3 }, ceilingSpot: { r: 0.4, opacity: 0.22 },
+  light: { intensity: 0.55, range: 3.2, color: 0xffbf78 },
+};
+
+// Livia's pineapple mirror (#412, docs/spegel-ananas-livia.jpg; src/pineapple.js). No sizes given: read off the photo with a
+// hand for scale (*guess*): the oval frame `oval` (half-widths x, y) ~34 × 43 cm, the glass ~19 × 29 (`glass`), `depth` 2.2 cm,
+// the crown's collar (w, h) and `leaf.n` leaves fanning `spread` rad each side, the middle one `l` long → ~62 cm in all.
+// Colour read off the photo (matte mustard yellow); `scale` = one bump tile (2 scales × 2 rows, m), `bump` = its strength.
+export const PINEAPPLE_MIRROR = {
+  oval: [0.17, 0.215], glass: [0.095, 0.145], depth: 0.022, collar: [0.085, 0.035],
+  leaf: { n: 9, l: 0.18, w: 0.056, spread: 1.15 }, color: 0xe8b52a, scale: [0.075, 0.066], bump: 3,
+};
+
+export const NYMANE_WALL = {
+  plate: { w: 0.06, h: 0.11, d: 0.025 }, button: 0.012, arm: 0.07, shade: { r: 0.035, h: 0.08, tilt: 0.6 }, cord: 0.45,
+  fromHead: 0.42, aboveMattress: 0.42, mattress: MYDAL.base.map((b) => b + MYDAL.mattress), // the bunks' mattress tops (#227)
+  colors: { white: 0xf2f2ef, black: 0x1c1c1e }, cordColors: { white: 0xe8e6e0, black: 0x222224 },
+  light: { intensity: 0.9, range: 3.5, color: 0xffd59a }, // weaker than the floor lamp: one GU10 bulb
+  berths: [
+    { room: 'Sovrum 3', color: 'white', x: 0.2, head: 0.47 + 0.05, dir: 1, rot: -90 },   // Livia & Tuva, west wall
+    { room: 'Sovrum 2', color: 'black', x: 5.55, head: 12.23 - 0.05, dir: -1, rot: 90 }, // Walter & Kian, east wall
+  ],
+};
+
+// Tilly's vanity (#282, the user): an IKEA ALEX desk, white, 100 × 48 × 76 cm (ikea.com; a column of five drawers at
+// one end, two legs at the other — drawer heights are guesses) against Sovrum 4's east wall (face x 2.632) south of the
+// door's swing, with make-up on it; a Hollywood mirror over it (glass 60 × 80 cm, thin white frame, globe LED bulbs
+// all round — size, bulb count and height are guesses) that is a lamp of its own (E on it; at dusk like the other small
+// lamps, #234), a mirror image (#50); a small round lilac velvet stool in front (a seat; 40 cm high, Ø 36, guess).
+export const VANITY = {
+  w: 1.0, d: 0.48, h: 0.76, drawers: { w: 0.36, n: 5 },
+  laptopClearX: 0.075, // guess: just past the hair straightener's +x end (~0.07 m), for a rotated laptop (#1563)
+  laptopTarget: { x0: 0.24, x1: 0.34, z0: -0.015, z1: 0.10 }, // guess: centres that fit the open 30 × 21 cm laptop on the free end; checked after grid snap/turn (#1563)
+  mirror: { w: 0.6, h: 0.8, frame: 0.018, depth: 0.03, bottom: 0.1, bulb: 0.026, top: 3, side: 4, bottomRow: 3 },
+  light: { intensity: 0.5, range: 2.5, color: 0xffe6c4 }, // its pool light, a little whiter than the shaded lamps; halved (#339)
+  stool: { r: 0.18, h: 0.42, color: 0xc7a6e0 },
+};
+
+// #1557 personal setup, source: docs/datorsetup-secretlab-batman.jpg. ALL dimensions,
+// placement, colours and detail proportions below are guess from that photo, not manufacturer measurements.
+// East wall: desk starts z8.68 beyond the room door's 8.616 sweep; chair leaves the west passage
+// and 0.53 m to DAYBED_Z - HEMNES_DAYBED.L/2. No posters on this wall.
+export const TILLY_DESK = {
+  at: { x: 2.292, z: 9.43, rot: 90 }, chairAt: { x: 1.38, z: 9.20, rot: -90 },
+  w: 1.5, d: .65, h: .75, top: .03, round: .006,
+  leg: { x: .63, width: .07, depth: .065, foot: [.09,.035,.58], lower: .4, upper: .31, brace: [.05,.05] },
+  panel: { size: [.18,.032,.045], at: [.59,.702,.32], buttons: 6 },
+  hook: { x: .77, y: .70, z: .24, r: .035, tube: .005 },
+  mat: { size: [1.04,.004,.37], at: [-.1,.754,.10] },
+  monitors: [ { at: [-.23,1.105,-.13], size: [.66,.38,.027] }, { at: [.45,1.14,-.11], size: [.30,.54,.027] } ],
+  arm: { r: .012, z: -.24, clamp: [.065,.03,.06] }, bezel: .012,
+  ring: { at: [-.06,1.46,-.13], r: .053, tube: .008 }, webcam: { size: [.10,.024,.025], at: [-.23,1.315,-.115] },
+  keyboard: { size: [.46,.022,.15], at: [-.22,.768,.10], rows: 5, cols: 19, key: [.018,.006,.019] },
+  mouse: { at: [.20,.774,.12], scale: [.032,.021,.058], wheel: [.009,.005,.018], wheelZ: -.015, mark: [.002,.002,.014], markStep: .005, markZ: .016 },
+  speakers: { xs: [-.64,.65], at: [.82,-.19], size: [.105,.14,.10], r: .030 },
+  puck: { at: [.12,.773,-.10], r: .029, h: .025 }, charger: { at: [.63,.765,.19], r: .042, h: .022 },
+  dac: { size: [.13,.04,.09], at: [.30,.774,-.18], knob: .014 },
+  figure: { at: [.30,.835,-.18], scale: [.025,.041,.023], stitch: .003, rings: 5, eye: [.002,.003,.002], eyeAt: [.009,.012,.020] },
+  pc: { at: [.45,.265,.00], size: [.24,.52,.43], shell: .012, fan: .052, tube: .006, spacing: .135 },
+  led: { size: [1.33,.012,.012], at: [0,.80,-.307], glow: [1.5,.75], y: 1.03, opacity: .42, px: 64 },
+  chair: { radius: .31, seat: [.51,.09,.49], seatY: .47, back: [.47,.79,.105], backAt: [0,.91,-.205],
+    wing: [.08,.40,.11], wingX: .235, arm: [.075,.035,.27], armX: .27, armY: .68,
+    post: .025, postZ: -.02, armZ: .025, stemR: .035, stemGap: .08, spoke: [.027,.035], spokeY: .065, casterWidth: .032, casterInset: .025, wingZ: .03, bolsterY: .035, paddingRound: .025,
+    pillow: [.28,.12,.065], pillowAt: [0,1.20,-.125], seam: .0015, wheel: .028, legs: 5,
+    logo: { w: .24, h: .08, at: [0,1.04,-.143] }, rest: { x: 0, y: .515, z: -.01 } },
+  // #1596 triangular corner variant (Möblera om; replaces the #1569 L-shape), every value a **guess** from the player
+  // report ("en trekant in mot ett hörn med två raka sidor"). All points are desk-local [x, z] like the straight desk:
+  // -z is the back (the wall), +z the front where the Batman chair stands. The top is an isosceles right triangle whose
+  // two straight ~1.06 m sides meet at the rear peak (z -0.33, tip cut 6 cm) and whose 1.50 m front edge (z +0.45) faces
+  // the room and the chair. Turned 45° (Möblera om turns in 45° steps) the peak goes into a room corner with the sides
+  // along both walls; in the default spot (rot 90, wall at z -0.34) the peak just clears the wall. Everything below sits
+  // inside that triangle: monitors, keyboard, mouse and app screen stand at the front (#1566 computer still works),
+  // DAC + figure and the LED strip in the corner behind the screens, the PC under the peak. `footprint` holds rectangles
+  // inscribed in the triangle, so the desk fits into a corner without its collision touching the walls.
+  corner: {
+    topShape: [[-.03,-.33],[.03,-.33],[.78,.42],[.75,.45],[-.75,.45],[-.78,.42]],
+    footprint: [[-.70,.70,.34,.45],[-.45,.45,.09,.34],[-.20,.20,-.16,.09]], // [x0,x1,z0,z1]
+    legs: [{ at: [0,-.22], foot: [.16,.035,.09] }, { at: [-.42,.30], foot: [.09,.035,.30] }, { at: [.42,.30], foot: [.09,.035,.30] }],
+    monitors: [ { at: [-.17,1.105,.21], size: [.66,.38,.027] }, { at: [.33,1.14,.21], size: [.30,.54,.027] } ], armZ: .08,
+    mat: { size: [.80,.004,.24], at: [-.10,.754,.32] }, keyboard: [-.17,.768,.34], mouse: [.20,.774,.35],
+    speakers: [[-.58,.38],[.58,.38]], panel: [.25,.702,.42], charger: [.40,.761,.36], puck: [-.47,.773,.37],
+    dac: [.20,.774,.04], figure: [.20,.835,.04], pc: [0,.265,.09],
+    hook: { x: .68, y: .70, z: .475, r: .035, tube: .005 }, // under the front edge (straight desk: its +x end)
+    // #1603: the wall wash stands just behind the peak, where the top is only ~6 cm wide; turned into a corner the two
+    // walls run along the straight sides, so a wider wash would pass through them (the 0.50 m one stuck ~16 cm out,
+    // through the 12 cm wall into Speldatorn). 0.13 m keeps its ends within 3 cm of the side lines (*guess*).
+    led: { size: [.36,.012,.012], at: [0,.756,-.12], glow: [.13,.60], washZ: -.335 }, cable: [.06,-.20] },
+  appLift: .002, // #1566: the shared computer-app plane floats this far (m) in front of the decorative main-screen atlas
+  detail: { sides: 10, tubeSides: 5, ringSides: 24, sphere: [12,8], texture: [512,256], carbonPx: 64, skin: .002, thin: .003, offset: .001, cable: .012, cableInset: .025, glowGap: .010 },
+  colors: { wood: 0x853b32, black: 0x15171b, rubber: 0x08090c, steel: 0x43474e, seam: 0xdedbd0,
+    blue: 0x426dff, pink: 0xda51f3, cream: 0xe5d7b8,
+    // #1576 computer off (guesses by eye): the screen atlas multiplied to black, unlit RGB/LED parts as dark plastic
+    screenOff: 0x000000, unlit: 0x24272e },
+};
+
+// Tilly's laptop on the vanity (#283, src/laptop.js): a thin unbranded rose-gold laptop, 30 × 21 cm, lid open ~110°,
+// two stickers on the lid. E on the screen: on, then the next clip; E on the keyboard: on / off. On, it shows an invented
+// short-video app ("Klipp": no real brand, no real people) — a phone-shaped column of canvas-drawn clips that swipes up
+// to the next one every `swipe` s (the slide takes `slide` s), redrawn at `fps`; each clip has a quiet beat (`bpm`,
+// recorded loops at `gain`; unavailable files stay quiet) and the house speakers are turned down to `duck` while it plays within `near` m. Sizes are guesses.
+export const LAPTOP = { w: 0.3, d: 0.21, base: 0.014, lid: 0.006, open: 110, px: [400, 250], fps: 12, swipe: 7, slide: 0.45,
+  gain: 0.1, duck: 0.6, near: 3.5 };
+
+// Smart speakers (#325, src/nest.js): a smart display with a screen on the kitchen window board and two round speakers in
+// wall mounts (living room by the patio door, the upstairs hall). Our own plain look: no logo, no wordmark. Sizes after
+// the 2nd-gen display (screen 17.8 × 11.8 cm) and the round mini speaker (Ø 9.8 × 4.2 cm) — *guess*; chalk fabric.
+// E on one: four white dots wake (the display lights up), a chime, then a made-up answer in Swedish (Web Speech sv-SE,
+// silent when muted; a bubble over it, a caption card on the display). The house speakers are ducked to `duck` while one
+// talks within `near` m. Display idle: a clock + the weather, now and then Miele's photo (`photoEvery` / `photoFor` s);
+// dimmed by night to `night`. `talk`: how long a caption stays (`min` s, + `perChar` s a character); `chime` s before it talks.
+export const NEST = {
+  fabric: 0xd6d3cd, shell: 0xecebe7, dots: 0xffffff,
+  hub: { w: 0.178, h: 0.118, d: 0.009, screen: [0.152, 0.088], lean: 14, lift: 0.03, base: { w: 0.168, d: 0.07, h: 0.06 }, px: [480, 280] },
+  mini: { r: 0.049, h: 0.042, mount: 0.008 },
+  chime: 0.7, talk: { min: 2.5, perChar: 0.06 }, duck: 0.45, near: 6,
+  photoEvery: 40, photoFor: 10, night: 0.35, photo: 'textures/miele.jpg',
+};
+
+// The Christmas tree (#571, src/xmastree.js + src/christmas.js): stands in the living room from 1 December to 6 January
+// inclusive (the user; `season` = [month, day] first and last day, over the new year), hidden and inert the rest of the
+// year. Its default spot (#591, the user: "hörnet till höger om vitrinskåpet") is the NW corner: seen from the doorway
+// the BESTÅ hangs on the right-hand (west) wall and this is the corner to its right, nearer the doorway — the armchair
+// corner, so the armchair, the stool, the floor lamp and the tray table are hidden while the tree stands there. The spot
+// (*guess*) keeps the crown (r 0.55) 5–8 cm off the west wall (x 0.20) and the passage wall (z 7.80), clear of the BESTÅ
+// (z ≥ 9.95) and ~0.8 m west of the doorway (x 2.15–3.25), the presents facing the room (SE). Height: RH 3.0 m in the living room (bofakta) → the star's tip
+// ~2.8 m up, ~0.2 m under the ceiling. Every size, colour and count below is a visual *guess* (no reference): a
+// Nordmann fir about 2.2 m with a crown ~1.1 m across, a red enamel stand on a white felt skirt, warm-white LED string
+// lights that shimmer softly, red / gold / silver baubles, a gold bead garland, a gold star and a few presents.
+export const XMAS_TREE = {
+  season: { from: [12, 1], to: [1, 6] },
+  stand: { r0: 0.2, r1: 0.15, h: 0.17, color: 0x8e1b1f }, // julgransfot (*guess*)
+  skirt: { r: 0.5, h: 0.012, color: 0xf2efe8, border: 0xa3222a }, // felt mat round the foot (*guess*)
+  trunk: { r: 0.04, h: 0.45, color: 0x5a3f2b },
+  // the crown: from `bottom` to `top` over the floor, `r` = its radius at the bottom whorl; `tiers` whorls of serrated
+  // skirts + `sprigs` branch tips on its surface (one merged mesh, vertex colours `greens`). `taper` = the profile's
+  // exponent (< 1 = a fuller upper half); `fluff` (#1217 "fluffigare"): each whorl `overlap` × the tier spacing tall,
+  // a dark inner body `core` × r wide, sprig fans `fan` wide, ± `noise`/2 brightness jitter per vertex
+  crown: { bottom: 0.3, top: 2.5, r: 0.55, tiers: 15, sprigs: 720, taper: 0.82, greens: [0x1d4529, 0x24532f, 0x2c6237, 0x1a3d26, 0x335f3a],
+    fluff: { overlap: 2.9, core: 0.72, fan: 0.7, noise: 0.22 } },
+  star: { size: 0.115, inner: 0.47, depth: 0.025, color: 0xe8b83e, glow: 0xffd27a, halo: 0.42, haloOn: 0.55 },
+  // LED string: `n` bulbs on a spiral of `turns` turns; `twinkle` = how far each one dims (0–1) at `speed` rad/s (±50 %
+  // per bulb), `wave` = a slow brightening that runs up the tree; halos = additive point sprites `halo` m across
+  lights: { n: 160, turns: 8, bulb: 0.011, halo: 0.1, haloOn: 0.9, colors: [0xffd08a, 0xffc879, 0xffdca6], twinkle: 0.55, speed: 2.2, wave: 0.18 },
+  baubles: { n: 54, r: [0.028, 0.045], colors: [0xb0142a, 0xc9a13a, 0xd7dadf, 0x7e0f1c, 0xb0142a, 0xc9a13a] },
+  garland: { turns: 4.5, r: 0.007, color: 0xd9ad45, sag: 0.05 },
+  gifts: [ // presents under the tree on its room side: [x, z, w, d, h, paper, ribbon], local metres, +z = facing
+    [0.22, 0.42, 0.26, 0.2, 0.16, 0xb3242c, 0xe8c25a], [-0.18, 0.46, 0.22, 0.22, 0.2, 0x2a5b3e, 0xd94040],
+    [0.0, 0.62, 0.3, 0.16, 0.11, 0xe9e3d3, 0xb3242c], [-0.42, 0.18, 0.18, 0.18, 0.13, 0x274a7a, 0xe8c25a],
+  ],
+  footprint: 0.42, // collision half-width (m): the crown's lower branches can be brushed, not walked through
+  light: { intensity: 0.9, range: 4, color: 0xffc98a }, // its pool light (one anchor `ahead` m in front of the tree)
+  ahead: 0.55, anchorY: 1.2,
+};
+
+export const FURNITURE = [
+  // Vardagsrum: sofa with its back to the window (south wall, clear of curtains #459), chaise in the SE corner
+  { type: 'sofa', level: 0, x: 5.5 - 2.82 / 2, z: 12.06 - 0.89 / 2, rot: 0, chaise: 'right' }, // sitter's right = east
+  // armchair + the dark red stool (#180) in the opposite (NW) corner, turned towards the room
+  { type: 'armchair', level: 0, x: 0.78, z: 8.38, rot: -135 },
+  { type: 'ottoman', level: 0, x: 1.33, z: 8.93, rot: -135 },
+  // IKEA NYMÅNE floor lamp with 3 spots, anthracite (#56; ikea.com: H 160 cm, base Ø 25 cm; arm and head
+  // sizes are guesses): beside the armchair on the sitter's right (the side table is on the left),
+  // the spots aimed at the seat; `aim` = plan point they point at
+  { type: 'floorlamp', level: 0, x: 0.36, z: 8.86, aim: [0.78, 8.38], h: 1.6, base: 0.25 },
+  // a JYSK RANDERS tray table (#405) in the side table's place by the armchair, turned so local = world axes: without a
+  // pot plant (#1248), the book (BOOK) on the room side of the tray
+  { type: 'randerstable', level: 0, x: 1.52, z: 8.12, rot: 180 },
+  // The ABORG café set (#406, #422) outside our front, in front of the kitchen window (x 3.05–4.66; the front door x 0.80–1.81
+  // swings out to z −0.92): the table centred on the window, 3 cm off the façade (its top 0.71 is under the 0.8 sill, so the
+  // top-hung sash swings out over it). The tabletop has no pot plant (#490). The chairs
+  // either side of it, both facing straight out to the street (rot 0 = −z: furniture.js turns a piece by rot + 180°),
+  // parallel, backs to the house, 3 cm off the façade like the table. Clear of the car's stop (x 0.8–5.0, z −6.3…−4.5, CAR) and the green strip (z ≤ −2.9).
+  { type: 'aborgtable', level: 0, x: 3.85, z: -0.33, rot: 0 },
+  { type: 'aborgchair', level: 0, x: 3.28, z: -0.27, rot: 0 },
+  { type: 'aborgchair', level: 0, x: 4.42, z: -0.27, rot: 0 },
+  // IKEA BESTÅ display combination with glass doors, white / Lappviken walnut effect, 120 × 42 × 193 cm (#104, ikea.com
+  // s79612224): two columns, three 64 cm sections each (walnut door, glass door, walnut door). Wall-hung on the west
+  // wall (x 0.202) between the armchair/floor lamp (z < 9.1) and the palm (z > 11.5), 35 cm above the floor (the user:
+  // floating; tunable). Section heights, handle colour and the spots' positions are *guesses*.
+  { type: 'besta', level: 0, room: 'Vardagsrum', x: 0.202, z: 10.55, y: 0.35, rot: -90, w: 1.2, d: 0.42, h: 1.93,
+    sections: [0.64, 0.65], walnut: 0x6e4b33, handle: 0x1e1e20, spots: [-0.4, 0, 0.4], openDeg: 100,
+    // the spots on top shine down over the front (#191): a soft wash `w` × `h` down the doors, and the glass section
+    // is lit inside (a LED strip under its top, a warm glow on its back wall) — a look, not measured
+    wash: { w: 0.5, h: 1.0, opacity: 0.35 }, inside: 0.5,
+    light: { intensity: 0.8, range: 3 } }, // its pool light when the spots are on (#234; a look)
+  // Secretary "Bang" (IKEA, c. 1960, #118, docs/sekretar-bang-*.png; Bukowskis: teak veneer, L 70, D 30, H 106.5 cm) on
+  // the east wall between the TV bench (z < 8.22) and the chaise (z > 10.55), opposite the BYÅS end. Leg height, the
+  // drawer, the flap's slope, the shelf and the right drawer column's width are *guesses* from the photos.
+  { type: 'secretary', level: 0, x: 5.5, z: 9.35, rot: 90, w: 0.7, d: 0.3, h: 1.065, legH: 0.55, drawerH: 0.12, slope: 13,
+    shelf: 0.15, rightW: 0.24, teak: 0xb06a32, teakInside: 0xc07a3e,
+    frameColor: 0xf4f4f1 }, // legs, X braces and wire shelf: white per the user's in-game report (#1292, not a measurement; the Bukowskis photo shows black); knobs and key plate stay black
+  // Black metal wine rack (#105, the user's photo): 8 bottles lying level (#151, corked; necks towards the BESTÅ, i.e.
+  // south = the viewer's left), two champagne with gold foil. On the west wall between the armchair/floor lamp
+  // (z < 9.1) and the BESTÅ (z > 9.95), bottom 1.1 m up; 38 × 105 cm and the 10 cm depth are *guesses*.
+  { type: 'winerack', level: 0, x: 0.202, z: 9.52, y: 1.1, rot: -90, w: 0.38, h: 1.05, n: 8, depth: 0.1, tilt: 0, champagne: [1, 5] },
+  // The String shelf on the hall/kitchen partition's kitchen face (#1298; it hung under the clock in #1272/#1291), where the two oak wall
+  // boards were (x 2.15, z 0.56–1.56, centre 1.06; the shelf spans 0.655–1.465), the lowest point of its wire sides 1.84 m up (the
+  // user's *guess*), so its top is at 2.595 under the 3.0 m ceiling, clear of the framed print below (to 1.70) and of the light
+  // switch (z 1.65). Carries what stood on the old boards (SHELF_DRESSING). y = the shelf's centre.
+  { type: 'stringshelf', level: 0, x: 2.15, z: 1.06, y: 1.84 + 0.755 / 2, rot: -90 },
+  // The watercolour painting (#133, docs/tavla-abstrakt-svart-ram.png): portrait, thin flat black frame, 50 × 70 cm
+  // (verified user measurement #1299; previously guessed 70 × 100 cm), centred over the chaise on the east wall
+  // (x 5.5; the chaise spans z ~10.55–12.15), centre 1.55 m up.
+  // textures/tavla-akvarell-schaslong.jpg (#1095) is the user's photo docs/tavla-akvarell-ansikte-foto.jpg cropped inside
+  // the frame, straightened, the glass's reflections (lamp spot, room) flattened out against the white paper.
+  { type: 'painting', level: 0, x: 5.5, z: 11.35, y: 1.55, rot: 90, w: 0.5, h: 0.7, frame: 0.018, depth: 0.025,
+    texture: 'textures/tavla-akvarell-schaslong.jpg' },
+  // The black and white canvas at the foot of the stair (#286, docs/tavla-svartvit-trappan.jpg): coming down flight A
+  // (going west) it is straight ahead, on the passage face of Badrum's east wall (x 2.152). Square, unframed, the canvas
+  // wrapped round a ~3.5 cm stretcher with black edges; ~80 × 80 cm (*guess*, 70–90 from the user's photo against a 27"
+  // monitor). Centred on the free wall between the Badrum door and the living room (#300, the user): from the door's
+  // architrave (jamb z 6.1543 + DOOR_TRIM.width 0.07 = 6.2243) to the corner at the living room's north wall (z 7.8042,
+  // plan.json) → z 7.014; centre 1.55 m up (*guess*). textures/tavla-svartvit-trappan.jpg = the photo straightened, the
+  // ring light in front of it painted out, the black taken down to ~#1c.
+  { type: 'pictures', level: 0, x: 2.152, z: 7.014, y: 1.55, rot: -90, w: 0.8, h: 0.8, gap: 0, frame: 0, depth: 0.035,
+    rough: 0.85, cols: 1, rows: 1, atlas: 'textures/tavla-svartvit-trappan.jpg', grid: [1, 1], order: [0] },
+  // Four framed pictures in the upstairs stairwell (#220, #233, the user's photos docs/tavla-trappa-*.jpg): the east
+  // party wall (inner face x 5.551) across the stair hole, seen face on from the upstairs hall and when turning on
+  // the winders; centred on that wall between the hole's side walls (z 5.704–7.604 → 6.654), centre 1.57 m over the
+  // Övre plan floor. Each picture is 30 × 40 cm (the user); with a ~3 cm passe-partout and a 2 cm black frame that is
+  // 40 × 50 cm outside (*guess* from the photos; the watercolour runs to the frame on white paper, same size), 2 × 2
+  // with a 7 cm gap. The atlas (textures/stair-pictures.jpg, cropped and straightened from the photos, 720 × 920 px
+  // per frame inside) holds fikus, akvarell | peace, solros; `order` = which atlas cell hangs in each slot, top left
+  // → bottom right.
+  // The framed print "THIS KITCHEN IS FOR DANCING" (#333, docs/tavla-kitchen-is-for-dancing.jpg), 40 × 50 cm, a thin black
+  // frame, no passe-partout, under the kitchen String shelf (SHELF_DRESSING, x 2.15, z 0.655–1.465; the oak wall boards before #1298) on the kitchen face of the
+  // hall/kitchen partition, centred under them (z 1.06; the switch at z 1.65 stays free); centre 1.45 m up (*guess*: eye
+  // height from the dining table). Drawn on a canvas (`print`, furniture.js paintedPicture): the paper colour and the
+  // gold are *guesses* from the photo (cool light, glass reflections); `block` / `width` / `top` = the text's share of
+  // the height / the widest line's share of the width / where it starts, measured on the photo.
+  { type: 'pictures', level: 0, x: 2.15, z: 1.06, y: 1.45, rot: -90, w: 0.4, h: 0.5, gap: 0, frame: 0.02, depth: 0.025,
+    rough: 0.22, cols: 1, rows: 1, grid: [1, 1], order: [0], paint: 'dancing',
+    print: { paper: '#c9d3cb', lines: ['THIS', 'KITCHEN', 'IS FOR', 'DANCING'], block: 0.68, width: 0.6, top: 0.17,
+      font: "'Bebas Neue', 'Oswald', 'Arial Narrow', 'Liberation Sans Narrow', 'DejaVu Sans Condensed', Impact, sans-serif",
+      stem: 0.2, gold: [[0, '#d9b45a'], [0.5, '#a87a2a'], [1, '#6b4a18']] } },
+  // "Till mamma" framed (#1883, the user 2026-11-07: "Rama in den i en svart ram med glas framför bilden och häng upp den
+  // på normal tavelhöjd"; a taped home drawing since #618/#1099, textures/teckning-till-mamma.jpg drawn 2 Oct 2026).
+  // The A3 sheet (42 × 29.7 cm, DRAWING.w/h) behind glass with a 3 cm off-white passe-partout (`mat`, *guess*) in a
+  // 2 cm thin black frame (*guess*) → 52 × 39.7 cm outside, 2.5 cm deep (*guess*). Same kitchen wall face (x 2.152,
+  // facing east) as the drawing, hung straight; centre 1.50 m up (*guess*, the usual 1.45–1.55 m) and z 3.45, so
+  // its south edge (3.19) stays where the drawing's was, clear of the hall opening's architrave, and the calendar
+  // below the clock (CALENDAR, z 4.01–4.31) keeps a 30 cm gap. `glass`: a glossier picture surface with a faint
+  // painted glare instead of a separate transparent pane (two merged meshes, like the other pictures).
+  { type: 'pictures', level: 0, x: 2.152, z: 3.45, y: 1.5, rot: -90, w: 0.52, h: 0.397, gap: 0, frame: 0.02, depth: 0.025,
+    rough: 0.2, glass: true, mat: 0.03, cols: 1, rows: 1, atlas: 'textures/teckning-till-mamma.jpg', grid: [1, 1], order: [0] },
+  { type: 'pictures', level: 1, x: 5.551, z: 6.654, y: 1.57, rot: 90, w: 0.4, h: 0.5, gap: 0.07, frame: 0.02, depth: 0.03,
+    cols: 2, rows: 2, atlas: 'textures/stair-pictures.jpg', grid: [2, 2], order: [0, 1, 2, 3] },
+  // Areca / golden cane palm (#106, the user's Amazon pick: "Gold Palm 130 cm", nursery pot Ø 24).
+  // #491: foliage scaled to 80%; turned copper pot to 76% of former Ø 40 × 45 cm: Ø 30.4 × 34.2 cm.
+  // Extra pot reduction 5% and profile are visual assumptions. Position/id retained beside the patio door (between the west party wall at
+  // x 0.2 and the door at x 0.95, the wall's inner face at z 12.23). Canes, frond and leaflet lengths are *guesses*
+  // for the former ~1.5 m total height; reduced model now ~1.25 m (#491).
+  // `walls`: the fronds stay inside the west party wall and the façade (#137)
+  // #517: double #495's pot and overall height, retaining its corner and copper finish.
+  // Assumed mature silhouette: 126 cm, pot Ø 30.4 × 34.2 cm. Foliage clears west wall/BESTÅ.
+  { type: 'zzplant', level: 0, x: .37, z: 11.4, height: 1.26, pot: { r: .152, h: .342 },
+    stems: 15, pairs: 8, stemHeight: .86, stemRadius: .012, spread: .15, leafLength: .14,
+    leafWidth: .06, leafThickness: .012, leafColor: 0x376b23, stemColor: 0x78903d, leafRoughness: .28, stemRoughness: .48,
+    leafSegments: [16,8], stemSegments: [12,8], leafVariation: .18, leafTurn: .22,
+    veinBump: .0012, walls: { x0: .2, z0: 11.17, z1: 11.72 } },
+  { type: 'palm', level: 0, x: 0.47, z: 11.96, pot: { r: 0.2, h: 0.45 }, potColor: 0x3d3f42, size: 0.8, potSize: 0.95, potStyle: 'copper', canes: 15, cane: 0.72, frond: 0.85, leaflet: 0.27,
+    walls: { x0: 0.2, z1: 12.23 } },
+  // the Christmas tree (#571, #591, XMAS_TREE): only 1 Dec – 6 Jan; hides the armchair corner while it stands here
+  { type: 'xmastree', level: 0, x: 0.82, z: 8.45, rot: -135 }, // crown r 0.55 off the walls x 0.20 / z 7.80
+  // Soffbord ILVA Woodstock, top i oljebehandlad ekfaner (art. 1055729): 120 × 60 × 47 cm, legs in
+  // oiled solid oak, a fixed shelf below (ilva.dk product page). Centred on the three seats
+  // (x 2.68–4.60), 40 cm in front of the sofa (front at z 11.26). Its shape: COFFEE_TABLE (#410).
+  // Hall, right as you come in, between the EL cabinet and the wardrobes (#49, "KL" on the plan; sizes
+  // are our pick): a wall coat rack with a hat shelf and hooks (jackets, a cap) above a two-tier
+  // black shoe rack with a few pairs on it. Both centred on the free wall between the EL cabinet (z1 0.865,
+  // CABINET_FIXES) and the wardrobe's end (z 1.765), 2 cm clear of each; the jackets hang within the rack's width (#610)
+  { type: 'coatrack', level: 0, x: 0.2 + 0.14, z: 1.315, rot: -90, w: 0.86 },
+  { type: 'shoerack', level: 0, x: 0.2 + 0.16, z: 1.315, rot: -90, w: 0.86 },
+  { type: 'coffeetable', level: 0, x: 3.64, z: 11.26 - 0.4 - 0.3, w: 1.2, d: 0.6, h: 0.47 },
+  // IKEA BYÅS TV bench, high-gloss white, 160 × 42 × 45 cm (ikea.com, #67): against the wall opposite the
+  // sofa (the stair is behind it), east of the living-room door's architrave, near the sofa's centre line
+  { type: 'byas', level: 0, x: 4.25, z: 7.8 + 0.21, rot: 180, w: 1.6, d: 0.42, h: 0.45 },
+  // Långlampan (#270, LANGLAMPA): in the corner right of the TV seen from the sofa, between the BYÅS's east end (x 5.05)
+  // and the secretary (z > 9.0); `corner` = the inner faces of the east and north walls there (data/plan.json)
+  { type: 'tubelamp', level: 0, x: 5.551 - 0.16, z: 7.804 + 0.16, corner: [5.551, 7.804] },
+  // JYSK DANI (#411, DANI): upstairs hall, on the floor in front of the stair railing (#423, the user: not by Sovrum 1's
+  // door): the railing's run along the hole's west edge x 3.86 from the middle wall (z ~6.66) to z 7.54, the lamp by its north end
+  // (2 cm past the corner newel post), 2 cm clear of the handrail — out of the walk from the stair top (z 5.77–6.60) to the doors and of the WC door's
+  // swing (to x 2.35). `edge` = the hole's edge (STAIR.hole.x0).
+  { type: 'dani', level: 1, x: 3.86 - 0.02 - 0.165 - 0.02, z: (STAIR.aZ[0] + STAIR.bZ[1]) / 2 + STAIR.newel / 2 + 0.02 + 0.165, rot: 180, edge: 3.86 },
+  // Philips 55" The One PUS8897 on the bench (#68): panel ~123 × 71 cm, thin black bezel, one central
+  // anthracite pedestal; depth, stand size and the ~78 cm total height are guesses. E switches it on: a
+  // slowly moving colourful demo picture (canvas, ~12 fps) and an Ambilight glow on the wall behind.
+  { type: 'tv', mediaId: 'lounge', level: 0, x: 4.25, z: 7.8 + 0.2, y: 0.45, rot: 180, w: 1.23, h: 0.715, fps: 12 },
+  // The gold and purple painting (#1094, docs/tavla-guld-lila-40x30.jpg): acrylic and gold leaf on an unframed stretched
+  // canvas, 40 × 30 cm landscape (the user); the stretcher depth ~2 cm is a *guess*. On the north wall (inner face z 7.804)
+  // right of the TV seen from the sofa, centred in the gap between the TV's east edge (4.25 + 1.23 / 2 = 4.865) and the
+  // Långlampa's shade (5.551 − 0.16 − LANGLAMPA.r = 5.266) → x 5.066; centre 1.30 m up (*guess*: near the screen's top
+  // edge at 1.24). textures/tavla-guld-lila-vardagsrum.jpg = the photo's canvas straightened (800 × 600 px); `edge` = its
+  // painted edges, purple above, ochre below (the texture's mean top/bottom rows).
+  { type: 'pictures', level: 0, x: (4.25 + 1.23 / 2 + 5.551 - 0.16 - 0.125) / 2, z: 7.804, y: 1.3, rot: 180, w: 0.4, h: 0.3,
+    gap: 0, frame: 0, depth: 0.02, rough: 0.6, edge: [0x544859, 0x785f3b], cols: 1, rows: 1,
+    atlas: 'textures/tavla-guld-lila-vardagsrum.jpg', grid: [1, 1], order: [0] },
+  // IKEA SYMFONISK (Sonos) speakers (#186, SYMFONISK below): two bookshelf speakers and the lamp speaker (frosted glass
+  // shade) on the window board behind the sofa. #298 (the user): the white and the black bookshelf speakers swapped places.
+  // the white one stands in Sovrum 1's window (#201, the user). #418 (Sarah, docs/symfonisk-bokhylla-staende.jpg): standing
+  // upright (15 × 10 × 31), the fabric front facing the room, the − ⏯ + strip low on the front, at the far right (east end)
+  // of the board, 1.5 cm in from the reveal (x 4.6565), clear of the blind's folded pack (z ≈ 0.16) and the board's front
+  // edge (z 0.465). From the west: the Hue Go (where the speaker lay, #409), Miele's photo, the fern (the middle pot slot,
+  // ~3.85), the speaker; the other two pot slots are skipped (SILL_PLANTS.skip)
+  { type: 'symfonisk', kind: 'speaker', color: 'white', level: 1, x: 4.6565 - 0.015 - 0.075, z: 0.33, y: 0.7, rot: 180, controls: 'front' },
+  { type: 'huego', level: 1, x: 3.047 + 0.015 + 0.075, z: 0.33, y: 0.7, rot: 180 },
+  // the framed photo of Miele (#322): between the Hue Go and the fern (#418), near the board's front edge (z 0.465) and clear of
+  // the blind's folded pack (z 0.19), turned 15° towards the bed (*guess*)
+  { type: 'photoframe', level: 1, x: 3.5, z: 0.43, y: 0.7, rot: 195 },
+  // the black one on the kitchen window's inner board (#289, the user; it stood at the south end of the worktop): the east
+  // end, in the third pot's place (SILL_PLANTS.skip), facing the room, clear of the blind's folded pack (z 0.16)
+  { type: 'symfonisk', kind: 'speaker', color: 'black', level: 0, x: 4.48, z: 0.33, y: 0.8, rot: 180 },
+  // smart speakers (#325, NEST): the display in the middle pot's place on the kitchen window board (SILL_PLANTS.skip), clear of
+  // the blind's pack (z 0.16), turned 15° towards the dining table; a round one in a wall mount on the living room's west
+  // wall, one on the upstairs hall's west wall.
+  // #689: the living-room one hung on the south wall's pier between the west corner and the patio door (x 0.56, z 12.2337)
+  // until #463 ran the curtain rail to the west wall: the west panel's parked stack (x 0.22–0.81, z 12.10) now hangs in
+  // front of that whole pier, so it could be neither seen nor reached. Moved round the corner onto the west wall (face
+  // x 0.2018), above the ZZ plant (z 11.17–11.72, 1.26 m) and between the BESTÅ (ends z 11.15) and the palm, same height.
+  { type: 'nesthub', level: 0, x: 3.82, z: 0.35, y: 0.8, rot: 165 },
+  { type: 'nestmini', level: 0, x: 0.2018, z: 11.6, y: 1.68, rot: -90, room: 'vardagsrummet' },
+  // #332: the upstairs one moved south of the hall's NISSEDAL (HALL_WALL.tallUp, z 5.454–5.854), midway to the WC door's architrave (6.174)
+  { type: 'nestmini', level: 1, x: 1.5418, z: 6.014, y: 1.6, rot: -90, room: 'hallen' },
+  { type: 'symfonisk', kind: 'lamp', color: 'white', level: 0, x: 4.55, z: 12.3, y: 0.6, rot: 0 },
+  // big rug under the sofa's front legs and the coffee table (#55): 300 × 200 × 1.2 cm (size and
+  // colours are our pick), light oatmeal with a soft weave and a thin border; no collision
+  // Sarah's rug (#171, docs/matta-vardagsrum-sarah.jpg): dark olive with off-white stripes (~2 cm white, 4 cm green)
+  // bending round in U arches, square fields of 1 m (3 × 2); colours/stripes read off the photo, size kept at
+  // 300 × 200 (Sarah's own may differ)
+  { type: 'rug', materialFamily: 'living-room', level: 0, x: 3.9, z: 10.6, w: 3.0, d: 2.0, h: 0.012, color: '#5a6150', stripe: '#e6e1d6', pitch: 0.062, white: 0.022,
+    fields: ['ewn', 'nes'] },
+  // Uteplats (paved z 12.75–16.8 in front of the hedge, see PATIO). The family's Rusta Verona lounge (#408, replacing the
+  // Plantagen Oslo set of #397 / #407), the user's layout (#429, shortened #489): an L. Three modules in a row (x 3.605–5.66)
+  // with their backs to the façade under the living-room window (6 cm of air), the east end in the NE corner by the east
+  // screen wall (inner face x 5.68), seats facing south (the patio faces WSW), an arm at each end; every module has its back.
+  // Both divans end to end along the east screen wall from the row's east module (z 13.42–16.02): one long bench, cushions against the wall.
+  { type: 'veronasofa', part: 'sofa', level: 0, x: 5.66 - 1.5 * 0.685, z: 12.76 + 0.66 / 2, rot: 180 },
+  { type: 'veronasofa', part: 'divan1', level: 0, x: 5.66 - 0.5 * 0.685, z: 12.76 + 0.66 + 1.3 / 2, rot: 180 },
+  { type: 'veronasofa', part: 'divan2', level: 0, x: 5.66 - 0.5 * 0.685, z: 12.76 + 0.66 + 1.5 * 1.3, rot: 180 },
+  // the small slatted table in the L's corner: 0.6 m in front of the row's seats, 0.475 m from the bench's seat front (x 4.975):
+  // room to get up from every seat and step out past it (#302)
+  { type: 'slattable', level: 0, x: 4.2, z: 12.76 + 0.66 + 0.605 + 0.45 / 2, rot: 180, beers: true },
+  // the parasol shades the sofa corner from the afternoon / evening sun (#398): the sun reaches the patio from the
+  // south-east of the plan at noon to the west-south-west in the evening (DAY.planNorth); the pole south of the table,
+  // the canopy (radius 1.5) leaning `tilt`° towards the plan's south (= true WSW). Chosen with the computed sun in
+  // July: a ray from a seated eye towards the sun meets the canopy for 3 of the 7 seats at 15:00, 6 at 16, 6 at 17, 5 at 18 (#429, patiotest)
+  { type: 'parasol', level: 0, x: 4.5, z: 15.55, rot: 180, tilt: 12 },
+  // large planters with exotic plants (the user's wish): by the patio door and in the SE corner. The
+  // banana in the SW corner stood in the gap in the hedge (the way out to the lawn) and is gone (#52).
+  // by the hedge, and beside the living-room window
+  // the cushion box (#400): on the right as you come out of the patio door, its back to the west screen wall (face
+  // x 0.065, 4 cm of air: the lid stops at 88°, its outer face still short of it), south of the palm (z ≥ 13.55), clear of the door's
+  // swing (x ≥ 0.95) and well north of the gap in the hedge (z 16.8); the lid opens towards the patio
+  { type: 'dynbox', level: 0, x: 0.105 + 0.29, z: 13.7 + 0.625, rot: -90 },
+  // #690: a second cushion box with the bow and its quiver, at the foot of the NW stair by Hus C's NW corner (SITE.terrain.west.stair,
+  // x −70.5 … −68.69, down to Karpvägen), its back against the retaining wall from the stair's end (z 10.6) to Hus C, facing
+  // west; `y` = the terrain there (west.profile at z ≈ 11.6, groundY checked in tools/bowtest.html)
+  { type: 'dynbox', inside: 'bow', level: 0, x: -70.5 - 0.29 - 0.03, z: 11.55, y: -1.024, rot: 90 },
+  // #1953: a third cushion box with the harpoon gun (src/harpoon.js), on the south shore flat of Höje å at the downstream (south-west)
+  // end of the swimmable river: 6.5 m from the centre line, 2 m downstream of path vertex (-220.92, 225.61), a spot with no trunk
+  // (collision) or shrub within 3 m, its back to the water (the lid opens towards whoever comes from the land side); `y` = the shore flat there (player.groundAt, checked in
+  // tools/harpoontest.cjs). The spot is our own choice (*guess*: the user said "near the river in the southern part of Höje å")
+  { type: 'dynbox', inside: 'harpoon', level: 0, x: -219.24, z: 232.3, y: -5.756, rot: 149 },
+  { type: 'planter', level: 0, x: 0.45, z: 13.25, plant: 'palm', detailedPalm: true, walls: { x0: 0.065, z0: 12.7 } }, // fronds clear of the façade + screen wall (#137)
+  { type: 'planter', level: 0, x: 5.3, z: 16.45, plant: 'agave' },
+  // #1121 (an in-game wish): the family's big kettle grill with its side table in front of the hedge (z 16.8 from x 1.26),
+  // its front (lever, lid handle) facing the patio and the lid's hinge to the hedge: east of the walk from the patio door
+  // to the gap in the hedge (x ≤ 1.87), west of the parasol's base (x 4.5) and its canopy, the table on its east side
+  // (to x ≈ 3.4); the opened lid stays short of the hedge (the spot: our pick). E lights it like the courtyard's grill
+  { type: 'weberkettle', level: 0, x: 2.55, z: 15.95, rot: 0 }, // SE corner by the hedge (#397: the sofa's corner took its old spot; #429: south of the bench's end)
+  // Upstairs bedrooms (the user's plan). Beds: rot = direction from the head to the foot end.
+  // IKEA NORDKISA bedside tables, bamboo, 40 × 40 cm (ikea.com, #64; the 55 cm height is a guess, about the
+  // mattress top): one each side of the double bed's head end (east wall), clear of the Klk door
+  // either side of the IDANÄS bed (190 wide, centred at BED1_Z): its sides ∓ 0.95 ∓ 0.22
+  ...[BED1_Z - 1.17, BED1_Z + 1.17].map((z) => ({ type: 'nordkisa', level: 1, x: 5.55 - 0.23, z, rot: 90, w: 0.4, h: 0.55 })),
+  // IKEA NYMÅNE work lamps with wireless charging, white (#65; base Ø ~20 cm, arms and head guessed from the
+  // product photo), one on each bedside table, the head reaching over towards the bed; E on each one
+  ...[[BED1_Z - 1.17, 180], [BED1_Z + 1.17, 0]].map(([z, rot]) => ({ type: 'worklamp', level: 1, x: 5.55 - 0.25, z, y: 0.55, rot, onRug: true })), // their tables stand on the rug (#317)
+  // The line drawing over the RÅGRUND chair (#404, the user: "about A4 with the frame"): 21 × 30 cm outside, a 2 cm black
+  // moulded frame (its inner 0.8 cm a lower step, `step`, *guess* from the photo), a white mount showing ~2 cm beside an
+  // 11.5 × 18 cm print (*guess*: the issue's ~2 cm mount inside an A4 frame) of pale warm grey paper. textures/linjeteckning-sovrum1.jpg = docs/tavla-sovrum1-linjeteckning.png
+  // (the motif traced off the user's photo) laid on the paper and mount (40 px/cm, made with PIL). On Sovrum 1's west wall
+  // (face x 2.71) centred on the chair (z 0.92, #403), clear of the parked west curtain stack (z 0.47–0.70, CURTAINS) and
+  // the TV (z ≥ 2.07); the bottom edge 10 cm over the chair's towel rack (1.40 m) → centre 1.65 m (*guess*), under the soffit (2.4)
+  { type: 'pictures', level: 1, x: 2.711, z: 0.725 + 0.195, y: 1.65, rot: -90, w: 0.21, h: 0.3, gap: 0, frame: 0.02, step: 0.008,
+    depth: 0.025, rough: 0.3, cols: 1, rows: 1, atlas: 'textures/linjeteckning-sovrum1.jpg', grid: [1, 1], order: [0] },
+  // IKEA RÅGRUND chair with towel rack, bamboo (#60; H 140, W 39, D 44, seat 48 cm per IKEA/dimensions.com):
+  // Sovrum 1, the corner left of the window seen from inside (NW), back and towel rack against the
+  // west wall, seat facing into the room (east); the seat is below the window sill (BH 0.7). #403: moved south out of the
+  // corner (z 0.725–1.115, the west curtain stack hangs in z 0.47–0.70) and 1 cm west (x 2.70–3.14, clear of the rug);
+  // with the bed moved south (BED1_Z) the gap from it to the bed's foot corner stays ~0.52 m
+  { type: 'ragrund', level: 1, x: 2.70 + 0.22, z: 0.725 + 0.195, rot: -90, towel: 0x9fb8c9 },
+  // the user's big grey shag rug (#317, docs/matta-gra-sicksack-sovrum1.jpg, from under their sofa today) under the double
+  // bed: 240 × 340 cm (the user), the long side across the bed so it sticks out on each side (z 0.74–4.14 since #403: as
+  // near the bed's centre BED1_Z as fits; clear of the north wall z 0.47 and the Klk wall + sliding door track z 4.16). Along the bed it runs from
+  // the head wall (x 5.54, under the NORDKISA tables) 18 cm past the foot (x 3.14) — limited by the room: further west it
+  // would run under the RÅGRUND chair (x ≤ 3.14). ~2.8 cm thick, soft rounded edge, no fringe. Colour, line width and
+  // pitch *guess* from the warm-lit photo (a neutral grey); pieces standing wholly on it stand on top (rugs.js `rugUnder`)
+  { type: 'rug', level: 1, x: 5.54 - 1.2, z: 2.44, w: 2.4, d: 3.4, h: 0.028, edge: 0.012, pattern: 'zigzag', color: '#5c5b59', stripe: '#e8e4dc',
+    line: 0.012, pitch: 0.14, seed: 17 },
+  // Sovrum 1 (Sarah & Olof), head east, clear of the Klk. Bedding (#83, an IKEA set from a Sellpy ad):
+  // sage green with a dense chintz of coral and pink peonies, ochre, slate-blue leaves and grey-green
+  // stems, white outlines (colours read off the photo); a pink cushion and a light grey throw to go with it
+  // IKEA NORDLI chest of 8 drawers, white, 120 × 99 (#94; the 47 cm depth is a guess). Sovrum 1 has no
+  // wardrobe, its storage is the Klk behind the sliding door: inside 1.65 × 1.20 m (x 3.90–5.55,
+  // z 4.29–5.48), the door slides in the wall plane. The chest stands against its back (south) wall,
+  // pushed against the west wall (#336), 73 cm of floor left in front of it; facing north (into the Klk)
+  // the hook rail on the Klk's outside facing the room door, a dressing gown and a hoodie (#329, HOOKS); wall face x 3.80
+  // the towel hooks (#424, TOWEL_HOOKS): WC/dusch on the north face of the shaft box between the toilet and the vanity
+  // (z 7.054, x 0.202–0.587, facing north), Badrum on the south face of the wall stub right of the vanity towards the Tvätt
+  // doorway (z 5.134, x 0.202–0.987, facing south; the vanity starts at z 5.25); + the 6 mm tiles
+  { type: 'towelhooks', level: 1, x: 0.395, z: 7.054 - 0.006, rot: 0 },
+  { type: 'towelhooks', level: 0, x: 0.75, z: 5.134 + 0.006, rot: 180 },
+  // Tvätt (#437): one hook with a white hand towel on the wall stub south of the laundry sink (its face z 4.845, read off
+  // the model; x 0.2–0.99 up to the Badrum doorway), facing north, high enough to hang clear of the worktop (*guess*)
+  { type: 'towelhooks', level: 0, x: 0.78, z: 4.845, rot: 0, y: 1.58, towels: [{ seed: 4.2, len: 0.46 }],
+    towel: { color: 0xe9e6df, band: 0xd6d1c7, w: 0.17, len: 0.46 } },
+  // bobble bath mats in the towels' colour (#425, docs/duschmatta-referens.jpg): 50 × 80 (*guess*), `knob` = the bobble
+  // pitch (*guess* from the photo), rounded `corner`s; rugs (rugLift: the cat and things put down stand on them), no
+  // collision. WC/dusch: across the floor in front of the shower's glass (z 6.034), east of the vanity (x 0.565);
+  // Badrum: along the shower corner's east glass (x 1.10), clear of the toilet, the door (it swings out) and the HAVBÄCK
+  { type: 'rug', pattern: 'bobble', level: 1, x: 1.0, z: 6.33, w: 0.8, d: 0.5, h: 0.016, corner: 0.035, knob: 0.016, color: 0xb59e9a },
+  { type: 'rug', pattern: 'bobble', level: 0, x: 1.4, z: 7.13, w: 0.5, d: 0.8, h: 0.016, corner: 0.035, knob: 0.016, color: 0xb59e9a },
+  { type: 'hookrail', level: 1, x: 3.797, z: 4.51, rot: 90 },
+  // the kids' hook rails on the wardrobe end by the door (#330, KID_HOOKS): Sovrum 2 on wardrobe L's side wall (face
+  // x 3.8516, z 7.80–8.50, facing west; hook 3 = the room end), Sovrum 3 on wardrobe G's end panel (x 1.5037, z 4.21–4.91,
+  // facing east; hook 3 = the front end)
+  { type: 'hookrail', level: 1, x: 3.849, z: 8.15, rot: 90, set: 'sovrum2' },
+  { type: 'hookrail', level: 1, x: 1.506, z: 4.57, rot: -90, set: 'sovrum3' },
+  { type: 'nordli', level: 1, x: KLK.westFace + KLK.chestGap + 1.2 / 2, z: 5.48 - 0.235, rot: 0, w: 1.2, h: 0.99, d: 0.47, rifle: true,
+    top: { x0: -0.395, x1: -0.03, z0: -0.015, z1: 0.205 } }, // + the AK-47 in the wide bottom drawer (#196); `top` = free of make-up (#331)
+  // the Klk's clothes, shelves, make-up corner and LED mirror (#331, src/closet.js; x/z unused) and a soft round rug
+  { type: 'klk', level: 1, x: 4.725, z: 4.88, rot: 0 },
+  { type: 'cleaning', level: 0, x: 4.5, z: 6.15, rot: 0 }, // what lies and stands in the Klk under the stair (#338, src/cleaning.js; x/z unused)
+  { type: 'rug', shape: 'round', level: 1, x: KLK.westFace + KLK.chestGap + 0.6 + KLK.mirror.dx, z: 4.66, d: 0.72, h: 0.022, color: '#e9e1d2', seed: 33 },
+  // the mattress centre: the headboard (IDANAS.head) against the east wall
+  { type: 'bed', level: 1, x: 5.55 - IDANAS.head - 1.0, z: BED1_Z, rot: 90, w: 1.8, l: 2.0, model: 'idanas', sitUp: { tv: 'Sovrum 1' }, pingping: true, hotel: true, // Pingping between the pillows (#269), hotel pillows under the head pillows (#308)
+    // repeat = metres per texture tile (blooms ~8–15 cm)
+    bedding: { pattern: 'chintz', ground: '#adc2b1', repeat: 0.9, flowers: ['#d0696b', '#c9505a', '#e9b7bd', '#d4b45a'],
+      leaves: ['#6f7b86', '#8a96a0', '#7f9a83'], throw: 0xdcdcd8, cushion: 0xe2a3ab } },
+  // The meadow-grass picture over the bed (#284, docs/tavla-sovrum1-angsgras.jpg): 150 × 100 cm outside (the user), a
+  // thin flat black frame (~2 cm face, ~3 cm deep, *guess* from the photo). On the east wall (inner face x 5.551) centred
+  // on the bed (BED1_Z 2.55 since #403, spanning z 1.80–3.30, so its north end is under the RH 2.4 soffit, z < 1.96): the bottom edge
+  // 12 cm over the headboard (IDANAS.headH 1.21) → 1.33–2.33 m, 7 cm under the soffit; above the NYMÅNE work lamps.
+  // textures/angsgras-sovrum1.jpg is the photo straightened, the glass's reflections painted out, re-graded towards the print
+  // in daylight (#292: levels lifted, a gentle S-curve, +20 % saturation, warm sky / olive grass; the photo was underexposed).
+  { type: 'pictures', level: 1, x: 5.551, z: BED1_Z, y: 1.83, rot: 90, w: 1.5, h: 1.0, gap: 0, frame: 0.02, depth: 0.03,
+    cols: 1, rows: 1, atlas: 'textures/angsgras-sovrum1.jpg', grid: [1, 1], order: [0] },
+  // Bunks: long side against the side wall, head end against the façade (the user's wish);
+  // the ladder ends up on the room side at the foot end.
+  { type: 'bunk', level: 1, x: 0.2 + 0.5, z: 0.47 + 1.05, rot: 180, w: 0.9, l: 2.0, sheets: 'unicorn' }, // Sovrum 3 (Livia & Tuva)
+  // a NYMÅNE wall lamp at every berth (#219): white in Sovrum 3, black in Sovrum 2
+  ...NYMANE_WALL.berths.flatMap((b) => NYMANE_WALL.mattress.map((m, i) => ({ type: 'walllamp', level: 1, color: b.color, room: b.room,
+    x: b.x, z: b.head + b.dir * NYMANE_WALL.fromHead, y: m + NYMANE_WALL.aboveMattress, rot: b.rot, berth: i ? 'överslafen' : 'underslafen' }))),
+  // Livia & Tuva's desk (#92): IKEA ALEX, white, 132 × 58 (ikea.com; the 76 cm height and drawer sizes are
+  // guesses), under the window against the north wall, east of the bunk; a white kids' swivel chair in
+  // front (a seat, #71) and crafts on the top, the middle left free for the drawing paper (#93)
+  // Philips 32" PFS6906 (#100, Elgiganten: 3-sided Ambilight, thin silver bezel; panel ~71 × 41 cm), wall-mounted on
+  // Sovrum 3's east wall (x 2.61) straight across from the bunk (z 0.47–2.57), clear of the desk (z < 1.04) and the
+  // wands' hooks (z ≥ 2.85); centre 1.2 m up (the user: watchable from both bunks; tunable). Faces west.
+  // Sovrum 1 (#213, docs/tv-philips-43-pqs7801.png): Philips 43" PQS7801 QLED (~96 × 56 cm; slim black frame, a silver
+  // edge below; Ambilight, the user #223) on the west wall straight across from the double bed (BED1_Z), centre 1.3 m up for
+  // sitting up in bed (guess). Faces east.
+  { type: 'tv', mediaId: 'bedroom1', level: 1, room: 'Sovrum 1', x: 2.752, z: BED1_Z, y: 1.3, rot: -90, w: 0.96, h: 0.56, fps: 12, px: 320, mount: 'wall', frame: 'black', name: 'tv:n' }, // with Ambilight (#223)
+  { type: 'tv', mediaId: 'bedroom3', level: 1, x: 2.61, z: 1.75, y: 1.2, rot: 90, w: 0.71, h: 0.41, fps: 12, px: 256, mount: 'wall', name: 'tv:n' },
+  { type: 'alex', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.29 + 0.08, rot: 180, w: 1.32, d: 0.58, h: 0.76 },
+  { type: 'kidchair', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.58 + 0.25 + 0.08, rot: 0 },
+  // a round dusty-pink short-pile rug (#310, the user; docs/matta-sovrum3-rosa-farg.png for the colour,
+  // docs/matta-sovrum3-lizette-rund.png for the shape: "Matta Lizette", several sizes). Ø 160 × 1.2 cm is a guess.
+  // #318 (the user): out in the room under the bunk's ladder (room side x ~1.2, z 2.02–2.47) rather than in the corner
+  // under the desk: x 0.85–2.45, z 1.45–3.05 — 16 cm from the east wall (x 2.61), well clear of the door's swing
+  // (z ≥ 4.2), only the MALM's front corner (x ≤ 1.1, z ≥ 2.58) on it. Colour sampled from the photo. No collision (#55)
+  { type: 'rug', shape: 'round', level: 1, x: 1.65, z: 2.25, d: 1.6, h: 0.012, color: '#c8928d', seed: 31 },
+  // IKEA MALM chests of 6 drawers, white, 80 × 124 × 50 cm (the user, #235, docs/malm-byra-6-lador.png), one per
+  // bunk room with its back against the bunk's free short end (MYDAL posts reach l/2 + post = 1.055 m from its
+  // centre), centred on the bunk, facing into the room. Sovrum 3 faces south, Sovrum 2 north.
+  { type: 'malm', level: 1, room: 'Sovrum 3', x: 0.2 + 0.5, z: 0.47 + 1.05 + 1.06 + 0.25, rot: 180, w: 0.8, h: 1.24, d: 0.5, seed: 70, deco: 'unicorn' },
+  // Livia's pineapple mirror (#412, PINEAPPLE_MIRROR): centred on the west wall (inner face x 0.202) between the MALM's
+  // front (z 3.08) and wardrobe G (z 4.21); the oval's centre 1.45 m up (*guess*, child height)
+  { type: 'pineapple', level: 1, x: 0.202, z: (3.08 + 4.21) / 2, y: 1.45, rot: -90 },
+  // Sovrum 2 (Walter & Kian). watch.z: a seat in the lower bunk (local z, level with the desk's monitor)
+  // for watching films on the PC
+  { type: 'bunk', level: 1, x: 5.55 - 0.5, z: 12.23 - 1.05 - 0.08, rot: 0, w: 0.9, l: 2.0, sheets: 'vader', watch: { z: -0.3 } },
+  { type: 'malm', level: 1, room: 'Sovrum 2', x: 5.55 - 0.5, z: 12.23 - 1.05 - 1.06 - 0.25 - 0.08, rot: 0, w: 0.8, h: 1.24, d: 0.5, seed: 90, deco: 'vader', suit: true }, // its MALM (#235); the Spider-Man suit in a drawer (#597)
+  // Walter & Kian's neon print "EAT SLEEP GAME REPEAT" (#430, docs/tavla-sovrum2-eat-sleep-game-repeat.webp): ~40 × 50 cm
+  // outside (*guess*, the user: "40x50 ca"), a thin black frame (~2 cm face, no passe-partout, *guess* from the photo), the
+  // print filling it. On the east wall (inner face x 5.551) centred between wardrobe L's south face (z 8.504, plan.json) and
+  // the MALM's front (z 9.87 − 0.25 = 9.62); centre 1.55 m up (*guess*, a little over the pineapple mirror's 1.45 of #412:
+  // the boys are older), so its bottom (1.30) clears the MALM top (1.24). textures/eat-sleep-game-repeat-sovrum2.jpg = the
+  // photo's print cropped inside the frame and straightened (720 × 920 px = 36 × 46 cm).
+  { type: 'pictures', level: 1, x: 5.551, z: (8.504 + 9.62) / 2, y: 1.55, rot: 90, w: 0.4, h: 0.5, gap: 0, frame: 0.02, depth: 0.025,
+    rough: 0.5, cols: 1, rows: 1, atlas: 'textures/eat-sleep-game-repeat-sovrum2.jpg', grid: [1, 1], order: [0] },
+  // Walter & Kian's poster "THE GULAG" (#694, docs/tavla-sovrum2-the-gulag.jpg): ~42 × 59 cm (*guess*, A2-ish; the real size is
+  // unknown, the aspect 0.71 is the photo's), a printed board with a dark edge, no frame or mount (*guess* from the photo).
+  // On the west wall (inner face x 2.7517) centred over the gaming desk (z 11.45); the monitor's top is at 1.21 (desk 0.75 +
+  // arm 0.12 + 0.34), so the bottom sits at 1.40 → centre 1.695 (*guess*), top 1.99 under the soffit. textures/the-gulag-sovrum2.jpg
+  // = the photo's poster straightened and cropped (720 × 1010 px).
+  { type: 'pictures', level: 1, x: 2.752, z: 12.23 - 0.7 - 0.08, y: 1.695, rot: -90, w: 0.42, h: 0.59, gap: 0, frame: 0, depth: 0.02,
+    rough: 0.45, cols: 1, rows: 1, atlas: 'textures/the-gulag-sovrum2.jpg', grid: [1, 1], order: [0] },
+  // Walter & Kian's gaming corner (#77, #84, #459): a black desk 140 × 70 along the west wall (opposite the bunk),
+  // moved 8 cm north of the south window wall to clear the curtains, facing east; curved 34" ultrawide on a monitor arm, RGB
+  // tower at the window end (out of the bunk's line of sight), keyboard, mouse, headset, speakers (sizes
+  // our pick). E opens the shared YouTube/game selector (#1488). The black/green
+  // gaming chair in front of it is a seat (#71) and sitting down starts the PC; sitting in the lower bunk
+  // swings the monitor round towards it and plays a film.
+  { type: 'gamingdesk', mediaId:'pc-home', level: 1, x: 2.75 + 0.35, z: 12.23 - 0.7 - 0.08, rot: -90, w: 1.4, d: 0.7, fps: 12 },
+  { type: 'gamingchair', level: 1, x: 2.75 + 0.35 + 0.62, z: 12.23 - 0.7 - 0.08, rot: 90 },
+  // Sovrum 4 (Tilly): IKEA HEMNES dagbädd m 3 lådor, vit, 207 × 89 × 83 cm (ikea.com, HEMNES_DAYBED), back to the
+  // west wall, charcoal and lilac bedding (#280), its head end by the window (#312, DAYBED_Z). rot = the way the seat faces.
+  { type: 'daybed', level: 1, x: 0.2 + 0.46, z: DAYBED_Z, rot: -90 },
+  // Tilly's vanity (#282, VANITY): against the east wall (face x 2.632) south of the door's swing, short of the window
+  // corner; the drawer column at the north end, the free end (the laptop, #283) towards the window; the stool in front
+  { type: 'vanity', level: 1, x: 2.632 - VANITY.d / 2 - 0.004, z: 11.45, rot: 90 },
+  { type: 'vanitystool', level: 1, x: 2.632 - VANITY.d - 0.2, z: 11.55, rot: -90 },
+  { type: 'tillydesk', mediaId: 'pc-olof', level: 1, ...TILLY_DESK.at }, // Olof's own setup; a shared computer (#1566)
+  { type: 'batmanchair', level: 1, ...TILLY_DESK.chairAt },
+  // her wardrobe (#305, #311, SMASTAD): back to the north wall in the NW corner, its west side 4 mm off the west wall
+  // (face x 0.202); it faces the room (south)
+  { type: 'smastad', level: 1, x: 0.202 + 0.004 + SMASTAD.W / 2, z: 7.804 + 0.004 + SMASTAD.D / 2, rot: 180 },
+  // her K-pop posters (#280, KPOP_POSTERS): world coordinates, so the item sits at the origin unturned (rot 180 = yaw 0)
+  { type: 'kposters', level: 1, x: 0, z: 0, rot: 180 },
+  // Tilly's laptop (#283, LAPTOP) on the vanity's free end (vanity-local x 0.29), turned 15° towards the stool
+  { type: 'laptop', mediaId:'laptop-home', level: 1, x: 2.632 - VANITY.d / 2 - 0.004 - 0.02, z: 11.45 + 0.29, y: VANITY.h, rot: 75 },
+  // Matplats: IKEA SKANSNÄS (#62/#63), closed (150 cm), the short end to the kitchen window and a little
+  // west of its centre so the east chairs clear the kitchen fronts (x 4.95); two chairs on each long
+  // side, pushed in under the top (#57)
+  { type: 'skansnasTable', level: 0, x: SKANSNAS.table.x, z: SKANSNAS.table.z },
+  ...[-1, 1].flatMap((side) => [-1, 1].map((k) => ({
+    type: 'skansnasChair', level: 0, rot: side < 0 ? -90 : 90, // west side faces east, east side faces west
+    x: SKANSNAS.table.x + side * (SKANSNAS.table.w / 2 + SKANSNAS.chair.d / 2 - SKANSNAS.chairUnder),
+    z: SKANSNAS.table.z + k * SKANSNAS.table.l / 4,
+  }))),
+];
+
+// Optional everyday task card on the cup-cabinet door's inside (#392, #509).
+// #509: visual assumptions; size retained, mounting fractions of the actual door's height/width.
+// #993: three chores per real local calendar day (user request); no simulated-time cooldown.
+export const TASK_POOL = { active: 3 };
+
+export const TASK_NOTE = { w: 0.18, h: 0.22, tilt: 0.04, inset: 0.001, height: 0.55, across: 0.5 };
+
+// The power cut (#604, src/power.js): fiddling with the fuse box in the hall's EL/C cabinet buzzes and crackles while
+// the lamps flicker, then bangs, and Kv. Lunden (our flat, Hus L, Hus A–C, the courtyard, the stairwell, the garage)
+// goes dark until the action button is held on the fuse box for `repair` s. The surroundings (campus, Karpvägen, the
+// street lamps) keep their light. Every number here is a *guess* by eye and ear, nothing is sourced.
+export const POWER = {
+  buzz: 2.6,             // s of buzzing and crackling (lamps flickering) before the bang (*guess*)
+  flicker: 14,           // flicker steps per second while it buzzes (*guess*)
+  repair: 30,            // s the action button must be held on the fuse box; letting go pauses the progress (*guess*)
+  tinker: 1.3,           // s between the small clicks while it is being mended (*guess*)
+  bang: 1,               // the bang's loudness, 1 = as loud as a gunshot up close (*guess*)
+  spark: { size: 0.55, time: 0.45, color: 0xcfe2ff }, // the flash at the breakers: sprite size m, fade s, colour (*guess*)
+  emergency: 0.1,        // what is left of the stairwell's baked light: its battery emergency lights (*guess*)
+  pick: { out: 0.05 },   // the fuse box's pick box reaches this far in front of the breakers, m (*guess*)
+};
+
+// #1720: the rug roughness maps (furniture.js pileTextures / zigzagRugTextures) hold only soft pile patches, so they are painted at this
+// share of the colour map's size per side (a quarter of the pixels, -16 MB estimated texture memory); the colour maps keep full size. *guess*
+export const RUG_ROUGHNESS = { scale: 0.5 };
+// Furniture cheat (#465): interaction distance and support tolerance are gameplay choices, not surveyed dimensions.
+// #995: visual assumptions for the generic rug swatches, not fabric measurements.
+// #1009: visual guesses, metres; effective flat support uses the maximum (backing h + .002 gap + fiberHeight); the plush surface varies below it.
+export const LONG_PILE = { fiberHeight: .045, gridX: 156, gridZ: 96, minLoft: .55,
+  wavelength: .18, fringe: .008, edge: .005, lowShade: .8, shadeNoise: .08, maxTriangles: 33000, maxBytes: 1000000,
+  // #1086: the generic every-rug variant (visual guesses): grid spacing m (capped at gridX*gridZ cells) and a finer,
+  // more contrasted tuft field so the shag reads through printed patterns.
+  cell: .02, shag: { wavelength: .07, lowShade: .62, shadeNoise: .16 } };
+// #1026: existing movable cloth fixtures, excluding their rigid parts and lamp glow effects.
+export const SHADE_CANOPY_TEXTILES = {
+  parasol: { id: 'canopy', name: 'Parasollväven' },
+  tubelamp: { id: 'shade', name: 'Långlampans linneskärm' },
+  dani: { id: 'shade', name: 'DANI:s tygskärm' },
+};
+export const MATERIAL_LIBRARY = { tile: .25, pixels: 128, curtainTile: .4, upholsteryTile: .25 }; // generic curtain/upholstery repeats in metres, visual guesses
+export const REARRANGE = { reach: 6, supportGap: 0.06, poll: 3000 };
+
+// #514: marker graffiti on bikeNE's back west wall; dimensions/height are visual assumptions.
+export const CHEAT_NOTE = { x: -16.318, z: 3.15, width: 1.9, height: 1.25, heightAt: 1.55, fontTimeout: 2000, dayHour: 12, nightHour: 0 };
+
+// #516: neighboring opaque glazing/frame detailing. Frame/sash and patio-leaf rails follow L1007's
+// existing world.js/doors.js models; gasket/hardware/reflection choices are visual assumptions.
+export const NEIGHBOR_OPENINGS = {frame: .06, depth: .1, sash: .045, sashDepth: .04, sashOut: .03,
+  // #569: ABC trim divisions follow the existing facade atlas; depths are illustrative.
+  site: { frame: .05, sash: .025, gasket: .008, paneOut: .032, sashOut: .04,
+    frameOut: .025, frameDepth: .045, division: .62, transom: .78, frameColor: 0xf0efeb },
+  gasket: .006, gasketColor: 0x202626, gasketRoughness: .85, patioRail: .07, patioBottom: .1, floorTolerance: .12,
+  reflectionSize: 128, glassColor: 0x65818b, roughness: .07, metalness: .45, clearcoatRoughness: .04,
+  sky:'#87b5d3',horizon:'#e1e8e5',ground:'#657567',groundDark:'#303e37',silhouette:'#637e83',
+  reflectionDay: 1.4, reflectionNight: .12, hinge: .012, hingeHeight: .085, hingeYs: [.25,1.05], hingeTop: .2, hingeZ: [-.04,-.025],
+};
+
+// #1076: Hus L's façade windows sit in brick (or render) reveals with a sheet-metal sill flashing, as on Peab's
+// courtyard illustration (docs/peab/hus-l-gardsfasad-illustration.png, not dimensioned). `frame` = the window frame's
+// centre behind the façade face: L1007's own frame position (world.js), kept so the blinds and window boards inside stay
+// where they are; the neighbours' windows are set back to the same plane. `frameHalf` = half the frame's depth (world.js
+// addWindowFrame, NEIGHBOR_OPENINGS.depth): the visible reveal is frame − frameHalf deep. `pocket` = how far the
+// neighbours' simplified masses leave the reveal open (to the frame's back face), `margin` its clearance round the hole.
+// `sill`: the flashing (plåt; the illustration shows light sills, not a rollskift) `out` beyond the façade, `drop` below and
+// `rise` above the opening's bottom, `ear` past each jamb. `inset`: L1007's own reveals sit this far inside its wall faces
+// (no coplanar flicker); `visitGap`: a visited upper flat's own sheet stops short of the courtyard façades (L1201: 11.099
+// vs 11.129 m deep, src/l1201plan.js), its reveals reach that much further. Every size is a *guess*: Peab's material
+// gives no reveal or flashing details.
+export const HUS_L_REVEAL = { frame: 0.1, frameHalf: 0.05, pocket: 0.15, margin: 0.01, inset: 0.002, visitGap: 0.03,
+  sill: { out: 0.045, drop: 0.035, rise: 0.012, ear: 0.02 } };
+
+// #1077: Hus L's downpipes (exterior.js downpipes). Peab's courtyard illustration (docs/peab/hus-l-gardsfasad-illustration.png,
+// not dimensioned) shows dark pipes in the seams between the brick volumes and beside the core's raised part; nothing on the
+// street side is drawn. Every number here is a *guess*: pipe radius `r`, axis `standoff` m out from the brick, `sides`;
+// each pipe stands `offset` m from its seam (the strip boundary between two flats: `between`, 'core' for the stair core)
+// on `side` (−1 west, +1 east; clear of the patio screen walls on the party lines); `loft`: `loftOffset` m beside the east
+// wall of L1205's loft over the lift (#349), from its roof down. Street pipes drain the loftgång deck (from under its fascia), the
+// courtyard ones the roof terraces (a rainwater head `head` under the parapet's coping); clips every `clip` m; at the
+// ground a `shoe` (utkastare) bends `out` m away from the wall over its last `h` m. A pipe closer than `clear` m to a
+// window, door, portik, wall light or entrance pot is left out (a console warning). They join the wall lights' dark housing mesh
+// (no extra draw call); collision: a thin box round the foot only.
+export const HUS_L_DOWNPIPES = {
+  r: 0.05, standoff: 0.1, sides: 8, offset: 0.3, loftOffset: 0.12, clear: 0.12, clip: 1.8,
+  head: { w: 0.24, h: 0.22, d: 0.2 }, shoe: { h: 0.3, out: 0.22 },
+  street: [{ between: ['L1002', 'L1003'], side: -1 }, { between: ['L1004', 'core'], side: -1 }, { between: ['core', 'L1005'], side: -1 },
+    { between: ['L1006', 'L1007'], side: -1 }],
+  court: [{ between: ['L1002', 'L1003'], side: -1 }, { loft: true, side: 1 }, { between: ['L1006', 'L1007'], side: -1 }],
+};
+
+// #518: visual animation assumptions, not measured weather. Metres of foliage height scale the sway;
+// opening progress gates wind, rain/snow/hail strengthen it; easing prevents abrupt changes.
+export const PLANT_WIND={calm:.025,wetBoost:2,stormBoost:.5,easeSeconds:1.2,sleepThreshold:.00001,
+  heightCap:1.5,maxDisplacement:.06,variationMin:.75,variationRange:.4,speedMin:1.1,speedRange:.65};
+
+// Clock tower (#1067): readability proportions/offsets are visual guesses, not surveyed fittings.
+// Clock radius, tower size/position and original face/rim colours remain the existing campus model's.
+export const TOWER_CLOCK = {
+  textureSize: 256, segments: 32, dialOffset: .06, handOffset: .11, handSeparation: .005,
+  hourLength: .56, minuteLength: .84, hourWidth: .18, minuteWidth: .12,
+  tickRadius: .91, tickLength: .17, tickWidth: .045, numeralRadius: .54, numeralSize: .36,
+};
+
+// Startup recovery (#864): generous wall-clock allowance for sliced phone warm-up;
+// optional JSON requests get a shorter budget. Safeguards, not measured device limits.
+// stepYield (#1130, *guess*): longest wait for a frame after a loading step, so a throttled tab is not held up.
+// #1838 guess: at most 32k exact points per transient build cache; released before warm-up, no saved state.
+export const STARTUP = { pointCacheEntries: 32768, dataTimeout: 5000, planTimeout: 15000, dataAttempts: 2, retryDelay: 250, recoveryTimeout: 120000, stepYield: 50,
+  welcomeScoresTimeout: 5000, // *guess*: optional welcome-score read, never on the scene/start critical path
+  // #1131: one step lasting this long shows "Det här tar ovanligt lång tid" + retry (literal in index.html). *guess*: well
+  // above a normal phone "Bygger huset", below the 120 s hard limit; SwiftShader/headless can exceed it harmlessly.
+  stallSeconds: 40,
+  // #1133: how many of the longest startup main-thread tasks (PerformanceObserver 'longtask', ≥ 50 ms) the crash log keeps.
+  longTasksKept: 5,
+  // #1627 (*guess*): a failed main.js/dependency import is retried this many times (new URL, fresh version check) after
+  // importRetryDelay ms, then the page reloads once per importReloadWindow ms before the error view is shown.
+  importRetries: 1, importRetryDelay: 3000, importReloadWindow: 300000,
+  // #1630 (*guess*): the import counts as failed (same retry, then guarded reload) when no request finishes for this long. Measured
+  // Slow 3G (500 kbit/s, 400 ms): the largest single file (three.js 258 KB) takes 17 s; a normal start never gets near it.
+  importStallTimeout: 30000 };
+
+// #892: canonical appearance shared by Avatar and future authoritative contact profiles.
+export const SKIN = [0xf1c9a8, 0xe0ae8a, 0xc68863, 0x9a6643, 0x6b4430];
+export const HAIR = [0x2b2118, 0x4a3320, 0x7a5532, 0xb79052, 0xd9c28a, 0x8a8c90, 0x6b2d1f, 0x15151a];
+// #1156: Olof's burgundy hoodie (OLOF.colors.hoodie) is appended as top 10. Only indexes 0–9 fit the look code's single
+// top digit (avatarCodeValid; old codes keep their colours): a higher index writes TOPS_DIGIT[index] there (the nearest
+// old colour, what older clients show) and the real index in the extension's `u` tag. Seeded default looks pick among the
+// first TOPS_SEEDED only, so every seed keeps its old colour.
+export const TOPS = [0x2f6db5, 0xb5372f, 0x3c8a4e, 0xe0a82e, 0x7a4fb0, 0xe07a9a, 0x2e9aa8, 0xe8e8e0, 0x3a3f4a, 0xd9722e, OLOF.colors.hoodie];
+const TOPS_SEEDED = 10, TOPS_DIGIT = { 10: 1 }; // (10 → red)
+export const PANTS = [0x2c3140, 0x3a3c41, 0x4b5a78, 0x6d5a45, 0x23272e, 0x5b6068];
+export const SHOES = [0x2a2523, 0xe8e8e8, 0x40342b, 0x1f3a5c];
+// #1138: iris colours (index 0 = the face's original brown, AVATAR_FACE.eye.irisColour): brown, dark brown, hazel, green,
+// grey-green, blue, light blue, grey. Picked by eye (*guess*).
+export const EYES = [0x6e5236, 0x3b2618, 0x8a6a2e, 0x4f7a3a, 0x6d7d6a, 0x3f6fa8, 0x7fa6cc, 0x7c8288];
+// #1138: the face and head sliders. Each is an integer step 0 … `steps` − 1 (default the middle, `mid`), mapped linearly onto
+// [min, max] through the unchanged face in the middle (a scale factor 1, or `browY` / `jaw` an offset 0). They deform the existing head in the avatars' vertex shader
+// (src/avatar.js faceShape), no new geometry or draw call. `tag` is the field's letter in the look code's extension.
+// Ranges by eye so every end still looks like a person (*guess*, not measured).
+export const AVATAR_SHAPE = {
+  steps: 9, mid: 4,
+  fields: {
+    eyeSize:   { tag: 'e', min: 0.8, max: 1.2, label: 'Ögonstorlek' },
+    eyeShape:  { tag: 'o', min: 0.72, max: 1.28, label: 'Ögonform' }, // vertical opening: narrow → round
+    headWidth: { tag: 'w', min: 0.9, max: 1.1, label: 'Huvudets bredd' },
+    headLength: { tag: 'l', min: 0.92, max: 1.08, label: 'Huvudets längd' },
+    jaw:       { tag: 'j', min: -0.14, max: 0.14, zero: 0, label: 'Käke' }, // added to the lower face's width: pointed → square
+    noseSize:  { tag: 'n', min: 0.75, max: 1.3, label: 'Näsans storlek' },
+    noseWidth: { tag: 'b', min: 0.75, max: 1.35, label: 'Näsans bredd' },
+    ears:      { tag: 'r', min: 0.75, max: 1.3, label: 'Öron' },
+    browThick: { tag: 't', min: 0.5, max: 1.8, label: 'Ögonbrynens tjocklek' },
+    browY:     { tag: 'y', min: -0.004, max: 0.004, zero: 0, label: 'Ögonbrynens höjd' }, // m up / down
+    // #1165: the hair's length, a vertical scale of everything below the crown (src/avatar.js faceShape): the curtain of long hair, the nape and
+    // sideburns of the others; the long end is capped so the curtain stays off the chest (*guess*, by eye)
+    hairLength: { tag: 'h', min: 0.45, max: 1.25, label: 'Hårlängd' },
+    // #1191: the neck's length delta (*guess*), m up / down in the avatars' vertex shader (src/avatar.js faceShape)
+    neck:       { tag: 'a', min: -0.04, max: 0.04, zero: 0, label: 'Hals' },
+  },
+};
+// #2011: blinking and the living gaze (src/avatargaze.js, src/avatar.js). Blinks use the existing eye part (lids and eyeball squeezed shut about
+// its centre in the avatars' vertex shader, uniform uBlink), no new geometry, draw call or network field. All numbers are *guess*es by eye
+// from ordinary human behaviour (a blink takes ~0.1-0.15 s, one every ~4 s, now and then twice in a row).
+export const AVATAR_BLINK = { interval: [2, 6], double: 0.18, doubleGap: [0.12, 0.28], close: 0.06, hold: 0.03, open: 0.11, depth: 0.97 };
+// Gaze: a player within `range` m (the one talking before the nearest) is looked at. The head takes `headShare` of the angle off its own
+// direction, at most `maxYaw` / `maxPitch` rad; the eyes the rest, up to `eyeYaw` / `eyePitch` rad off the head's line, shown as an iris
+// shift of at most `eye` m [x, y]. A target further than `cone` rad off the head is not looked at. Small saccades of the irises at rest.
+export const AVATAR_GAZE = { range: 6, retarget: 0.3, cone: 1.6, headShare: 0.45, maxYaw: 0.5, maxPitch: 0.22, eyeYaw: 0.5, eyePitch: 0.3, eye: [0.0042, 0.0026],
+  follow: 7, saccadeFollow: 30, saccade: { interval: [0.4, 1.6], amp: [0.0011, 0.0007], withTarget: 0.4 } };
+// #2033: wet, living eyes (src/avatareyes.js; uniforms on the avatar's own material, no geometry, draw call or network field). All *guess*es
+// by eye against close-ups. `pupil`: the pupil's scale (of AVATAR_FACE.eye.pupil) at a bright and a dark local light level (avatarlight.js
+// zoneLevel: 1 = open sun), interpolated on the level's logarithm; it narrows over `constrict` s and widens over `dilate` s (a real pupil
+// narrows in a fraction of a second and widens over seconds). `ball` (× the eye's radius) is the cornea's wet ball (a real one ~7.8 mm against a 12 mm eyeball) whose round normal catches the
+// glint (`ballRough`: the flat eye geometry's own highlight is kept broad under it): `sharp` the cornea's highlight exponent, `sun` / `sky` the directional lights' and the sky's glint strength, `skySharp` the sky's
+// broader reflection, `room` the directional glint kept indoors and in shade (a window or lamp instead of the sun), `overcast` how much cloud
+// dims the sun's glint. `lid`: the upper lid's soft shadow on the eyeball from `from` (0 centre … 1 lid edge, of the opening's height) with
+// `shadow` darkening, `glintCut` of the glint hidden under it from `glintFrom`, `corner` darkening in the corners. `tear`: the moist edge along the lower lid,
+// the band from `band` to the edge (of the opening's lower height), `rough` its roughness, `lift` the meniscus' upward tilt and `bright`
+// its line highlight; `lidRough` the lid margin's wet roughness just outside.
+export const AVATAR_EYES = { pupil: { bright: [1, 0.7], dark: [0.08, 1.45], constrict: 0.25, dilate: 1.8 },
+  ball: 0.55, ballRough: 0.42, sharp: 600, sun: 2.4, sky: 0.22, skySharp: 60, room: 0.35, overcast: 0.8,
+  lid: { from: 0.25, shadow: 0.45, glintFrom: 0.7, glintCut: 0.85, corner: 0.22 },
+  tear: { band: 0.72, rough: 0.06, lift: 1.4, sharp: 90, bright: 0.6, lidRough: 0.22 } };
+// #2064: artistic guesses for the sclera's warm rim and small medial caruncle, radial iris detail,
+// and the clear virtual cornea above a shallow iris. No extra geometry, lights, textures or passes.
+export const AVATAR_OCULAR = {
+  cornerTint: [0.78, 0.48, 0.40], cornerMix: 0.27,
+  caruncle: { x: 0.82, width: 0.18, height: 0.48, tint: [0.66, 0.29, 0.25], mix: 0.72 },
+  limbus: { from: 0.82, shade: 0.6 }, fibres: { count: 43, strength: 0.11 },
+  irisRelief: 0.12, corneaCentreZ: 0.0013,
+};
+// #2045: round irises and pupils, thick lids with a crease and an upper lash line (src/avatarlids.js; the eye's own parts in avatar.js addFace,
+// still one draw call, no new attribute, light or network field). All *guess*es by eye against close-ups, eye frame metres (the eyeball's
+// centre, AVATAR_FACE.eye.at; before the head's widthwise warp). `iris`: `segments` round the iris and pupil discs, the iris' rings
+// [radius share, shade] (a lighter collarette, a dark limbal ring at its edge), `centre` its shade under the pupil and `fibres` an alternating
+// shade on the collarette ring; the pupil's rim sits `pupilLift` m over the iris' front and its centre `pupilDome` m higher. `lid`: `cols`
+// round the opening; `outer` the lid's edge on the skin [x, up, down] m; rows at shares `rows` of the way from the opening's edge to `outer`
+// (row 0 is the margin's back, `inset` m inside the opening and `tuck` m behind the eyeball, so no gap shows); the margin's front edge stands
+// `thick` [upper, lower] m in front of the eyeball (`corner`: share kept in the corners), its rounded top `round` m further, then the lid falls
+// back onto the skin by (1 − s^a)^b of its height over it, `fall` [a, b] (b > 1: it meets the skin tangentially); `normal` per row: how much of the head's own normal the row takes (the outer edge blends in).
+// `crease`: the upper lid's fold at share `at` (± `width`), `depth` m deep and `shade` dark. `shade`: the rows' colour factors [back, front]
+// for the upper and lower margin (the upper front is the lash line). `blink`: the lids close on a line `close` × the lower opening below the
+// centre; the upper lid's skin up to `fold` m above its margin stretches with it (the lower `foldLower`), the eyeball is pushed `push` m back
+// while shut. `lash`: the upper lashes, a wedge along the margin `length` m long, rising `up` and leaning `forward` (shares), splayed `splay`
+// towards the temple, over the opening's share `span` [medial, lateral]; colour the brows' × `shade`; they fold down by `flip` when shut and
+// are drawn only while `px` [from, to] px long on screen ([with MSAA, without]), so they never flicker on a far figure.
+export const AVATAR_LIDS = {
+  iris: { segments: 24, rings: [[0.6, 1.04], [0.86, 0.9], [1, 0.5]], centre: 0.75, fibres: 0.05, pupilLift: 0.00003, pupilDome: 0.00025, tuck: 0.0001 },
+  lid: { cols: 24, outer: [0.0175, 0.0105, 0.0085], rows: [0, 0.07, 0.25, 0.45, 0.6, 0.78, 1], inset: 0.0003, tuck: 0.0004,
+    thick: [0.0011, 0.0008], corner: 0.35, round: 0.0004, fall: [2, 2], normal: [0, 0, 0, 0.1, 0.25, 0.4, 0.7, 1] },
+  crease: { at: 0.6, width: 0.13, depth: 0.0007, shade: 0.84 },
+  shade: { upper: [0.74, 0.5], lower: [0.8, 0.8] },
+  blink: { close: 0.35, fold: 0.0032, foldLower: 0.0025, push: 0.002 },
+  lash: { segments: 14, length: 0.0011, up: 0.55, forward: 0.84, splay: 0.25, span: [0.85, 0.95], shade: 0.32, flip: 1.7, px: [[0.35, 0.7], [0.8, 1.6]] },
+};
+// #2014: secondary motion of long hair (styles 1, 4), the bun (2) and the sweater/jacket hem: one damped spring per group (src/avatarsway.js),
+// driven by the rendered head's (hair, bun) or torso's (hem) acceleration and turning, derived locally for every player (no network field).
+// Per group: `omega` rad/s (the spring's natural frequency), `zeta` damping ratio (< 1 overshoots once or twice), `gain` of the pseudo-force
+// (1 = a free mass), `r` m the group's lever arm behind the pivot (turning drags it sideways), `min`/`max` [x, y, z] m the offset's walls in the
+// bone's own frame (x its left, y up, z forward): they stop the hair at the shoulders / neck / head and the hem at the trousers. All *guesses* by eye.
+export const AVATAR_SWAY = { maxDt: 0.05, step: 1 / 120, accelMax: 30, accelFilter: 0.04, resetDistance: 1.5,
+  hair: { omega: 13, zeta: 0.3, gain: 1.2, r: 0.12, min: [-0.035, 0, -0.03], max: [0.035, 0.035, 0.03] },
+  bun: { omega: 20, zeta: 0.25, gain: 0.8, r: 0.07, min: [-0.012, 0, -0.012], max: [0.012, 0.012, 0.012] },
+  hem: { omega: 16, zeta: 0.4, gain: 1.0, r: 0.17, min: [-0.025, 0, -0.025], max: [0.025, 0, 0.025] },
+  hairDepth: 0.22, bunRadius: [0.045, 0.07], hemFade: [0.0, 0.14] };
+// #2036: the body flinches when a shot hits it (src/avatarhit.js). Each hit is one under-damped spring response (`hz` natural frequency,
+// `zeta` damping ratio < 1 so it overshoots once) scaled to its peak and faded to exactly 0 over `fade` [start, end] s; `lag` s delays the
+// part that follows (the head after a body hit, the torso after a head hit). Peaks in rad, bone-local: `pitch` about x (+ the top forward),
+// `roll` about z, `yaw` about y. Head hit: the head snaps back / forward / sideways and turns away. Body hit: a front hit folds the torso
+// forward round the hit (`fold`), a back hit shoves it forward (`push`) while the head whips back (`whip`), a side hit bends and twists it away. `max` rad caps the sum of overlapping hits, `kicks` how many are kept.
+// All *guesses* by eye (a Nerf dart's flinch, not a physical impulse); only the shooter's and the target's own clients see a hit event.
+export const AVATAR_HIT = { hz: 2.2, zeta: 0.3, fade: [0.7, 1.0], lag: 0.05, max: 0.6, kicks: 4,
+  head: { pitch: 0.42, roll: 0.3, yaw: 0.3, torso: 0.07 },
+  body: { fold: 0.3, push: 0.16, whip: 0.32, roll: 0.22, yaw: 0.28, head: 0.16 } };
+// #1165: glasses, 0 none, 1 round, 2 square frames: a look field `glasses`, the extension's `g` tag (absent when 0). The frames are part
+// of the shared head geometry and collapse to a point in the vertex shader when not chosen (src/avatar.js), so no extra draw call.
+// #1325: kind 3 sunglasses (the square frames plus dark lenses, `lens`).
+export const AVATAR_GLASSES = { tag: 'g', names: ['Inga', 'Runda', 'Fyrkantiga', 'Solglasögon'], colour: 0x1c1c20, lens: 0x0e0f14 };
+// #1325 (#1318): earrings, look field `earrings`: 0 none, 1 studs, 2 hoops, 3 drops (a stud with a chain and a pearl), 4 pearl studs. All 26 lowercase tags of the
+// look extension are taken, so earrings share the glasses' `g` tag: the value is `glasses + 10 * earrings` (`g1` round glasses as before, `g20` hoops, `g32` drops with
+// square glasses); absent when both are 0, so old codes are unchanged (an old client reads a combined value as no glasses). In the shared head geometry, collapsed in
+// the vertex shader when not chosen. Shape (*guess*, by eye against the ear ellipsoid): `stud` / `pearl` radii, `hoop` the ring's radius, `wire` its thickness, `drop` the
+// chain's length, all m.
+export const AVATAR_EARRINGS = { names: ['Inga', 'Knoppar', 'Ringar', 'Hängen', 'Pärlknoppar'], stud: 0.0052, pearl: 0.0064, hoop: 0.0135, wire: 0.0016, drop: 0.016, dropPearl: 0.0068,
+  colours: { gold: 0xd4af37, pearl: 0xf1ece2 } };
+// #1220: the brows' own colour, a look field `brows` (one of HAIR's colours; null / absent = the hair's colour, as before), the
+// extension's `v` tag with the HAIR index (absent when following the hair, so old codes keep their brows). The brows are their
+// own colour region in the avatar's per-player colour attribute (src/avatar.js), so no extra draw call.
+export const AVATAR_BROWS = { tag: 'v' };
+// #1321 (#1318): accessories. The first is headwear, look field `hat`: 0 none, 1 cap (peak forwards), 2 cap (peak backwards), 3 knitted hat, 4 brimmed
+// hat; the extension's `q` tag (absent when 0, so old codes and looks are unchanged). Like the glasses, every kind is in the shared head geometry
+// and collapses to a point in the vertex shader when not chosen (src/avatar.js), so no extra draw call. Further accessories (#1322 headphones,
+// #1323 necklaces, #1324 rings, #1325 more) add their own field and tag beside it.
+// Shape (*guess*, by eye against the skull RH.skull, head-bone frame): `lift` m above the skull at the crown / the sides (hair is at most ~0.03 thick),
+// `edge` the lower edge's elevation (degrees from AVATAR_HAIR.centre) as [|azimuth|, elevation] corners (cap / knitted hat / brimmed hat), `peak` the
+// cap's visor length, `brim` the brimmed hat's brim width (m).
+export const AVATAR_HAT = { tag: 'q', names: ['Ingen', 'Keps framåt', 'Keps bakåt', 'Mössa', 'Hatt'], lift: [0.034, 0.02], peak: 0.075, brim: 0.05,
+  // #1513 aesthetic guesses in metres: solid shell thickness and minimum hair clearance from the skull.
+  thickness: 0.003, hairGap: 0.004,
+  edge: { cap: [[0, 30], [60, 18], [100, 12], [180, 10]], knit: [[0, 27], [60, 12], [90, 0], [140, -6], [180, -10]], hat: [[0, 27], [90, 27], [180, 27]] } };
+// #1322 (#1318): headphones, look field `phones`: 0 none, 1 on the ears (a band over the head and two ear cups), 2 round the neck (a band behind the neck and
+// the cups resting on the chest); the extension's `f` tag (absent when 0, so old codes and looks are unchanged). Same mechanism as the headwear: both kinds are
+// in the shared geometry and collapse to a point in the vertex shader when not chosen (src/avatar.js), so no extra draw call. *Guess* shapes, by eye against
+// the head bone's frame: `band` the tube radius (m), `gap` m the band stands off the skull at the crown / at the ears, `cup` the ear cup's [radius, depth, x of its
+// centre] (m), `hatLift` m the band is raised over headwear 1-4 (the knitted hat also pushes the cups out sideways by `hatOut`), `neck` the neck kind's
+// [ring radius, height above the head bone, how far the cups hang down the chest, their x] in the torso frame.
+export const AVATAR_PHONES = { tag: 'f', names: ['Inga', 'På öronen', 'Runt halsen'], colour: 0x26282e, pad: 0x3c3f47,
+  band: 0.0065, gap: [0.034, 0.027], cup: [0.042, 0.03, 0.128], hatLift: [0, 0.016, 0.016, 0.018, 0.03], hatOut: 0.022, neck: { ring: [0.072, 0.085], y: 0.025, hang: 0.08, x: 0.07 } };
+// #1323 (#1318): necklaces, look field `necklace`: 0 none, 1 thin chain, 2 pearls, 3 pendant (chain with a pendant), 4 thick gold chain; the extension's `x` tag
+// (absent when 0, so old codes are unchanged). In the shared body geometry, collapsed in the vertex shader when not chosen (src/avatar.js).
+// Shape (*guess*, by eye against the torso / neck): `neckY` the ring's height on the neck and `drop` how far the chain hangs at the front, both m in the
+// torso bone's frame; `tube` the chain's thickness (`gold` the thick one's), `bead` a pearl's radius, `pendant` the pendant's radius.
+// #1324 (#1318): one ring, look fields `ring` (0 none, 1-5 left hand thumb, index, middle, ring finger, little finger, 6-10 the right hand) and `metal`
+// (0 gold, 1 silver, 2 copper, 3 black / titanium); the extension's `i` (ring) and `z` (metal) tags, absent when 0, so old codes are unchanged. One small torus
+// per finger in the shared body geometry, collapsed in the vertex shader unless chosen and tinted by the metal's colour (uRing); the first-person hand (src/hand.js) draws it too.
+// `sink` m the band's centre line lies inside the finger's radius, `tube` its thickness in m, `at` how far along the finger it sits (share of its length from the knuckle), `shine` a light emissive lift
+// standing in for a metal's gloss (no reflections).
+// #2016 (src/avatargrip.js): the avatars' fingers close round what they hold. Shapes: per finger [knuckle, middle joint] bend in rad towards the palm
+// (little, ring, middle, index, then the thumb [base, tip]); `point` where the middle of a held thing (a compact one: its box centre; a long one: its own grip origin) goes, in the hand's frame: out from the palm
+// (towards the palm side), along the fingers (-y) and across the hand (z, the thumb's side), in metres, so the curled fingers close round it. All artistic guesses (*guess*), tuned by eye in close-ups.
+// `byCategory` = heldcategory.js `hi`, `byWeapon` = COMBAT.weapons `h`; anything else the relaxed hand. `compact` the largest size (m) of a thing held by its middle; `split` the knuckle's share of a finger's length.
+// #2038 `rest`: a FREE hand (nothing held, no arm override) curls further than the `relaxed` grip: `extra` [knuckle, middle joint] per finger
+// (little … index) and the `thumb`, varied ± `vary` rad per figure and side (uneven, as real hands); running closes it by `run` [knuckle,
+// middle, thumb]; the fingers lag the arm swing on a spring (`spring` 1/s², `damp` 1/s), bending `swing` rad per unit of lag. *guess* by eye.
+export const AVATAR_GRIP = { ease: 14, split: 0.6, compact: 0.25, sink: 0.004, thumb: { prox: 0.026, dist: 0.024 },
+  rest: { extra: [[0.33, 0.22], [0.25, 0.18], [0.18, 0.13], [0.1, 0.09]], thumb: [0.22, 0.2], vary: 0.06, run: [0.3, 0.35, 0.18], swing: 0.3, spring: 40, damp: 6 },
+  shapes: {
+    relaxed: { fingers: [[0.45, 0.55], [0.4, 0.5], [0.33, 0.45], [0.25, 0.35]], thumb: [0.15, 0.1], point: [0, 0, 0] },
+    cylinder: { fingers: [[1.05, 1.25], [1.0, 1.25], [0.95, 1.2], [0.85, 1.1]], thumb: [0.5, 0.4], point: [0.045, -0.045, 0.005] },
+    pistol: { fingers: [[1.2, 1.3], [1.2, 1.3], [1.15, 1.3], [0.25, 0.15]], thumb: [0.35, 0.2], point: [0, 0, 0] },
+    pinch: { fingers: [[0.75, 0.8], [0.7, 0.8], [0.6, 0.7], [0.7, 0.55]], thumb: [0.55, 0.35], point: [0.03, -0.065, 0.03] },
+    flat: { fingers: [[0.08, 0.06], [0.06, 0.05], [0.05, 0.04], [0.04, 0.03]], thumb: [0.1, 0.05], point: [0.035, -0.035, 0.005] },
+  },
+  byCategory: { cup: 'cylinder', bottle: 'cylinder', plate: 'flat', book: 'flat', box: 'flat', gift: 'flat', paper: 'pinch', bag: 'cylinder', tool: 'cylinder', plant: 'cylinder', cue: 'cylinder', nut: 'pinch', binoculars: 'cylinder', spray: 'cylinder', rod: 'cylinder', fish: 'pinch', sharkfin: 'pinch', mussel: 'pinch',
+    food: 'pinch', chicken: 'flat', drumstick: 'cylinder', fries: 'cylinder', popcorn: 'cylinder', fishfinger: 'pinch', banana: 'pinch', orange: 'pinch', pear: 'pinch', pan: 'cylinder', flashlight: 'cylinder', remote: 'cylinder', harpoon: 'pistol' },
+  byWeapon: { nerf: 'pistol', rifle: 'pistol', wand: 'cylinder', saber: 'cylinder', bow: 'cylinder', ball: 'flat', web: 'cylinder' } };
+export const AVATAR_RING = { tag: 'i', metalTag: 'z', fingers: ['Tumme', 'Pekfinger', 'Långfinger', 'Ringfinger', 'Lillfinger'], sides: ['Vänster hand', 'Höger hand'], metals: ['Guld', 'Silver', 'Koppar', 'Svart titan'],
+  colours: [0xe0b83c, 0xd2d6db, 0xc2703d, 0x2b2d33], sink: 0.0004, tube: 0.0022, at: 0.5, thumbAt: 0.55, shine: 0.12 };
+// #1334 (#1318, #1325): a bracelet and a wristwatch, look fields `bracelet` and `watch` (each 0 none, 1-3 the model on the left wrist, 4-6 the same on the right) in the metal
+// of the ring (`metal`). All lowercase tags are taken, so they share the metal's `z` tag: `z` = metal + 4 * (bracelet + 7 * watch), written when any is chosen (a ring-only
+// code is the old `z<metal>`, older clients ignore a `z` above 3, losing only the metal). Bracelets: thin band, braided, wide cuff. Watches: classic round (leather strap),
+// square (black rubber), sport (large case, green strap); the case takes the metal, strap and dial their own fixed colours. Shapes (*guess*, by eye): `r` the wrist's radius at the
+// watch / bracelet height and `y` that height on the elbow bone (m; the wrist skin tapers 0.024 -> 0.028 between -0.272 and -0.235, the cuff starts at -0.245), `fp` the first-person hand's
+// position along the wrist (z) and its ellipse's half axes (x, y) in m.
+export const AVATAR_WRIST = { tag: 'z', bracelets: ['Inget', 'Tunt band', 'Flätat', 'Bred manschett'], watches: ['Ingen', 'Klassiskt', 'Fyrkantigt', 'Sport'], sides: ['Vänster handled', 'Höger handled'],
+  strap: [0x5b3a25, 0x23252b, 0x2f5d4a], dial: 0x14161b, face: 0xe9e6dc, r: 0.0262, yWatch: -0.254, yBracelet: -0.2675, fp: { watchZ: 0.004, braceletZ: 0.017, half: [0.0215, 0.0335] } };
+export function wristValue(v) { return Number.isInteger(v) && v >= 0 && v <= 6 ? v : 0; }
+export const AVATAR_NECKLACE = { tag: 'x', names: ['Inget', 'Tunn kedja', 'Pärlor', 'Hänge', 'Guldkedja'], neckY: 0.665, drop: 0.115, tube: 0.0028, gold: 0.0062, bead: 0.0085, pendant: 0.017,
+  colours: { chain: 0xc9ccd1, pearl: 0xf1ece2, pendant: 0xd4af37, gold: 0xe0b83c } };
+// #1244: trouser models (look field `legs`, tag `p`) and top models (`cut`, tag `m`) beyond the first, which stay the default and
+// are not carried in the code. Legs: straight, shorts (mid-thigh, bare knees), wide. Tops: T-shirt / long sleeves (the `sleeves`
+// choice), tank (sleeveless), hoodie (always long-sleeved, a long hem, a pocket and a rolled hood). `wide` / `hem` scale the leg's
+// radii (*guess* by eye), `shorts` the hem's height on the thigh bone (m).
+export const AVATAR_CLOTHES = { legs: { tag: 'p', names: ['Raka', 'Shorts', 'Vida'], wide: 1.45, shorts: -0.2 }, cut: { tag: 'm', names: ['T-shirt', 'Linne', 'Luvtröja'] } };
+/** The value (scale or offset) of a face / head slider `name` at integer step `v` (#1138). */
+export function avatarShape(name, v) {
+  const f = AVATAR_SHAPE.fields[name], n = AVATAR_SHAPE.steps - 1;
+  const k = Number.isInteger(v) && v >= 0 && v <= n ? v : AVATAR_SHAPE.mid, mid = AVATAR_SHAPE.mid, zero = f.zero ?? 1;
+  return k <= mid ? f.min + ((zero - f.min) * k) / mid : zero + ((f.max - zero) * (k - mid)) / (n - mid); // the middle: unchanged
+}
+// The look code's extension (#1138): after the digits (nine, or twelve with the height, #1136), tagged fields `[a-z]` + 1–3 digits, only those that differ from
+// the default, so an untouched look keeps only its digits. Unknown tags are skipped (newer clients may add fields), and the
+// Worker only checks the form (cloudflare/players.js cleanAvatarExt, sent as `ax` beside the digits `av` so older
+// clients keep reading `av`). `c` the eye colour (EYES), `u` a top beyond the digit (#1156), then AVATAR_SHAPE's tags.
+// (#1220: up to 24 tags; every tag at once, `u10` and the wire's `d` / `s` included, is 20 tags / 39 characters, within the 48)
+const LOOK_EXT = /^(?:[a-z][0-9]{1,3}){0,28}$/;
+export const AVATAR_LOOK_EXT_MAX = 60;
+function encodeLookExt(look) {
+  let out = '';
+  const eyes = EYES.indexOf(look.eyes);
+  if (eyes > 0) out += `c${eyes}`;
+  const top = TOPS.indexOf(look.top);
+  if (top >= TOPS_SEEDED) out += `u${top}`; // #1156: a top beyond the digit's ten
+  const bb = look.bodyBuild; // #1139: a chosen body build, also the middle (the seed's own may differ)
+  if (Number.isInteger(bb) && bb >= 0 && bb < AVATAR_BUILD.steps) out += `${AVATAR_BUILD.tag}${bb}`;
+  const form = noseFormOf(look); // #2049: shares the nose size's tag, see AVATAR_NOSE_FORMS
+  for (const [name, f] of Object.entries(AVATAR_SHAPE.fields)) {
+    const v = look[name], ok = Number.isInteger(v) && v >= 0 && v < AVATAR_SHAPE.steps;
+    if (name === 'noseSize' && form) out += `${f.tag}${(ok ? v : AVATAR_SHAPE.mid) + 10 * form}`;
+    else if (ok && v !== AVATAR_SHAPE.mid) out += `${f.tag}${v}`;
+  }
+  const gl = Number.isInteger(look.glasses) && look.glasses > 0 && look.glasses < AVATAR_GLASSES.names.length ? look.glasses : 0;
+  const er = Number.isInteger(look.earrings) && look.earrings > 0 && look.earrings < AVATAR_EARRINGS.names.length ? look.earrings : 0; // #1325: shares the `g` tag, see AVATAR_EARRINGS
+  if (gl || er) out += `${AVATAR_GLASSES.tag}${gl + 10 * er}`;
+  if (Number.isInteger(look.hat) && look.hat > 0 && look.hat < AVATAR_HAT.names.length) out += `${AVATAR_HAT.tag}${look.hat}`; // #1321
+  if (Number.isInteger(look.phones) && look.phones > 0 && look.phones < AVATAR_PHONES.names.length) out += `${AVATAR_PHONES.tag}${look.phones}`; // #1322
+  if (Number.isInteger(look.necklace) && look.necklace > 0 && look.necklace < AVATAR_NECKLACE.names.length) out += `${AVATAR_NECKLACE.tag}${look.necklace}`; // #1323
+  const hasRing = Number.isInteger(look.ring) && look.ring > 0 && look.ring <= 10;
+  if (hasRing) out += `${AVATAR_RING.tag}${look.ring}`; // #1324
+  const br = wristValue(look.bracelet), wa = wristValue(look.watch); // #1334: bracelet and watch share the metal's tag
+  const metal = Number.isInteger(look.metal) && look.metal > 0 && look.metal < AVATAR_RING.metals.length ? look.metal : 0;
+  const zv = (hasRing || br || wa ? metal : 0) + 4 * (br + 7 * wa);
+  if (zv > 0) out += `${AVATAR_RING.metalTag}${zv}`;
+  const brows = look.brows == null ? -1 : HAIR.indexOf(look.brows); // #1220
+  if (brows >= 0) out += `${AVATAR_BROWS.tag}${brows}`;
+  if (look.legs > 0 && look.legs < AVATAR_CLOTHES.legs.names.length) out += `${AVATAR_CLOTHES.legs.tag}${look.legs}`; // #1244
+  if (look.cut > 0 && look.cut < AVATAR_CLOTHES.cut.names.length) out += `${AVATAR_CLOTHES.cut.tag}${look.cut}`;
+  return out;
+}
+/** The look's nose shape variant (#2049): 0 straight (also for any missing or unknown value), 1 convex, 2 upturned, 3 broad. */
+export function noseFormOf(look) {
+  const v = look?.noseForm;
+  return Number.isInteger(v) && v > 0 && v < AVATAR_NOSE_FORMS.names.length ? v : 0;
+}
+function decodeLookExt(ext, lk) {
+  if (!ext || ext.length > AVATAR_LOOK_EXT_MAX || !LOOK_EXT.test(ext)) return;
+  for (const [, tag, digits] of ext.matchAll(/([a-z])([0-9]{1,3})/g)) {
+    const v = Number(digits);
+    if (tag === 'c') { if (v < EYES.length) lk.eyes = EYES[v]; continue; }
+    // #1175: the actual existing body build on the wire, independently of each receiver's player-id seed.
+    if (tag === 'd') { if (v <= 2) lk.build = v; continue; }
+    if (tag === 'u') { if (v < TOPS.length) lk.top = TOPS[v]; continue; } // #1156
+    if (tag === AVATAR_BUILD.tag) { if (v < AVATAR_BUILD.steps) lk.bodyBuild = v; continue; } // #1139
+    if (tag === AVATAR_GLASSES.tag) { // #1165 glasses, #1325 earrings in the tens
+      if (v % 10 < AVATAR_GLASSES.names.length && Math.floor(v / 10) < AVATAR_EARRINGS.names.length) { lk.glasses = v % 10; lk.earrings = Math.floor(v / 10); }
+      continue;
+    }
+    if (tag === AVATAR_HAT.tag) { if (v < AVATAR_HAT.names.length) lk.hat = v; continue; } // #1321
+    if (tag === AVATAR_PHONES.tag) { if (v < AVATAR_PHONES.names.length) lk.phones = v; continue; } // #1322
+    if (tag === AVATAR_NECKLACE.tag) { if (v < AVATAR_NECKLACE.names.length) lk.necklace = v; continue; } // #1323
+    if (tag === AVATAR_RING.tag) { if (v >= 1 && v <= 10) lk.ring = v; continue; } // #1324
+    if (tag === AVATAR_RING.metalTag) { // the metal in the units, #1334 bracelet and watch above it
+      const w = Math.floor(v / 28);
+      if (w <= 6) { lk.metal = v % 4; lk.bracelet = Math.floor(v / 4) % 7; lk.watch = w; }
+      continue;
+    }
+    if (tag === AVATAR_BROWS.tag) { if (v < HAIR.length) lk.brows = HAIR[v]; continue; } // #1220
+    if (tag === AVATAR_CLOTHES.legs.tag) { if (v < AVATAR_CLOTHES.legs.names.length) lk.legs = v; continue; } // #1244
+    if (tag === AVATAR_CLOTHES.cut.tag) { if (v < AVATAR_CLOTHES.cut.names.length) lk.cut = v; continue; }
+    // #1173: wire-only seeded scale; explicit chosen cm always take precedence.
+    if (tag === 's') { if (!Number.isInteger(lk.height) && v < AVATAR_SEEDED_TALL.length) lk.tall = AVATAR_SEEDED_TALL[v]; continue; }
+    if (tag === AVATAR_SHAPE.fields.noseSize.tag) { // #2049: the size in the units, the shape variant in the tens
+      if (v % 10 < AVATAR_SHAPE.steps && Math.floor(v / 10) < AVATAR_NOSE_FORMS.names.length) { lk.noseSize = v % 10; lk.noseForm = Math.floor(v / 10); }
+      continue;
+    }
+    const name = Object.keys(AVATAR_SHAPE.fields).find((k) => AVATAR_SHAPE.fields[k].tag === tag);
+    if (name && v < AVATAR_SHAPE.steps) lk[name] = v;
+  }
+}
+// #1139: the body build slider, slim … heavy, on top of the figure (gender). An integer step 0 … `steps` − 1 widens the whole
+// figure sideways and in depth (Avatar's object scale x/z, no new geometry or draw call) by [min … 1 … max], piecewise linear
+// through 1 in the middle like AVATAR_SHAPE. Without a chosen step the seed's old build (0 slim, 1 average, 2 broad) draws
+// as before: `seeded` are its steps, so 0.93 / 1 / 1.08 stay exact. Range by eye (*guess*): every end still looks like a
+// person. The look code carries a chosen step as the extension's `tag` (only when chosen; older clients skip the tag and
+// keep reading the wire's `d`, sent as the nearest old build). The head boxes follow the same width (rifleBoxPose).
+export const AVATAR_BUILD = { steps: 9, mid: 4, min: 0.86, max: 1.16, seeded: [2, 4, 6], tag: 'k', label: 'Kroppsbyggnad' };
+/** The look's body-build step (#1139): the chosen `bodyBuild`, else the seed's old build's step. */
+export function avatarBuildStep(look) {
+  const v = look?.bodyBuild, B = AVATAR_BUILD;
+  if (Number.isInteger(v) && v >= 0 && v < B.steps) return v;
+  return B.seeded[look?.build ?? 1] ?? B.mid;
+}
+/** The sideways (x/z) scale of the look's body build (#1139). */
+export function avatarBuildWidth(look) {
+  const B = AVATAR_BUILD, k = avatarBuildStep(look), n = B.steps - 1;
+  const w = k <= B.mid ? B.min + ((1 - B.min) * k) / B.mid : 1 + ((B.max - 1) * (k - B.mid)) / (n - B.mid);
+  return Math.round(w * 1e6) / 1e6; // (the seeded steps exactly 0.93 / 1 / 1.08)
+}
+/** The old three-way build (0 slim, 1 average, 2 broad) nearest a look's step, for older clients' `d` (#1139). */
+function nearestSeededBuild(look) {
+  const k = avatarBuildStep(look), S = AVATAR_BUILD.seeded;
+  return S.reduce((best, s, i) => (Math.abs(s - k) < Math.abs(S[best] - k) ? i : best), 0);
+}
+
+/** The face fields' defaults (#1138): the original brown eyes, every slider in the middle and brows like the hair (#1220). */
+export function defaultFaceLook() {
+  const lk = { eyes: EYES[0], glasses: 0, earrings: 0, hat: 0, phones: 0, necklace: 0, ring: 0, metal: 0, bracelet: 0, watch: 0, brows: null, noseForm: 0 }; // (#2049 noseForm)
+  for (const name of Object.keys(AVATAR_SHAPE.fields)) lk[name] = AVATAR_SHAPE.mid;
+  return lk;
+}
+
+// #1136: the avatar's chosen height (look.height, whole cm), three more digits after the nine of the look code (only when
+// chosen: a code without them keeps the seed's own `tall`, as before). Limits *guess*: a small child … a very tall adult.
+// The figure (src/avatar.js) is `base` cm at scale 1 (measured in the browser: skull/hair top 1.75–1.77 m standing), its
+// head bone pivots `pivot` m up, the head reaches `top` m above that and the eyes `eye` m (pivot + eye = PLAYER.eye).
+// Below `adult` cm the head grows relative to the body by (adult / height) ** `headPow` (*guess*, by eye: a child's
+// head is proportionally larger); the body scale is then picked so the whole figure is the chosen height.
+// The original five seeded vertical scales, kept exact for old local appearances (#1173).
+export const AVATAR_SEEDED_TALL = Array.from({ length: 5 }, (_, i) => 0.95 + i * 0.025);
+export const AVATAR_HEIGHT = { min: 100, max: 200, base: 175, pivot: 1.52, top: 0.23, eye: 0.1, adult: 160, headPow: 0.6 };
+const STANDARD_EYE = PLAYER.eye;
+
+/** The look's height in cm: the chosen one, else the seed's (base × tall). */
+export function avatarHeightCm(look) {
+  const h = look?.height;
+  if (Number.isInteger(h) && h >= AVATAR_HEIGHT.min && h <= AVATAR_HEIGHT.max) return h;
+  return Math.round(AVATAR_HEIGHT.base * (look?.tall ?? 1));
+}
+
+/** For a height in cm: `body` = the whole figure's scale, `head` = the head bone's extra scale, `eye` = the eye height (m). */
+export function avatarProportions(cm) {
+  const H = AVATAR_HEIGHT, m = cm / 100;
+  const head = cm < H.adult ? (H.adult / cm) ** H.headPow : 1;
+  const body = m / (H.pivot + H.top * head);
+  return { body, head, eye: body * (H.pivot + H.eye * head) };
+}
+
+/** The local camera's standing eye height for a look: PLAYER's own without a chosen height (old codes unchanged). */
+export function avatarEyeHeight(look) {
+  return Number.isInteger(look?.height) ? avatarProportions(avatarHeightCm(look)).eye : STANDARD_EYE;
+}
+
+// #1137: the local body follows the chosen height through the standing eye height's share `s` of PLAYER's own 1.62 m
+// (no chosen height: s = 1, every value exactly PLAYER's own). Crouch eye and headroom keep today's adult proportions
+// (0.95 / 1.62 and 1.85 / 1.62 of the eye height); the body radius scales with s within `radius` (*guess*: a narrow child
+// still keeps a wall clearance for the 0.05 m near plane, a tall adult only a little wider so doorways and the existing
+// furniture gaps stay passable). stepUp and the jump stay the adult's (stairs and kerbs need them; game choices).
+export const AVATAR_BODY = { radius: [0.7, 1.05] };
+const STANDARD_BODY = { eye: PLAYER.eye, crouchEye: PLAYER.crouchEye, headroom: PLAYER.headroom, radius: PLAYER.radius };
+/** The local player's body for a look: { eye, crouchEye, headroom, radius, scale } in metres (scale = eye / 1.62). */
+export function avatarBody(look) {
+  const eye = avatarEyeHeight(look), s = eye / STANDARD_BODY.eye, [lo, hi] = AVATAR_BODY.radius;
+  if (s === 1) return { ...STANDARD_BODY, scale: 1 };
+  return { eye, scale: s, crouchEye: STANDARD_BODY.crouchEye * s, headroom: STANDARD_BODY.headroom * s,
+    radius: STANDARD_BODY.radius * Math.min(hi, Math.max(lo, s)) };
+}
+
+// #1319 / #1326: the secret clubhouse inside the playhouse (src/playroom.js), open to every avatar height (#1489).
+// The room is a separate hidden interior far outside the walkable area (WALK: x -260..320,
+// z -200..250) but inside the Worker's ±5000 m pose limit, and further from the playhouse than GHOSTS.far (900 m), so the
+// ordinary pose stream already hides a player who goes in and shows him again inside to the others there. All values are
+// our own choices (*guess*): the room is much bigger than the playhouse's 2.1 × 1.9 m shell on purpose.
+export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // centre (m), size (x, z) and height (m)
+  // #1620: the DJ booth in the north-east corner (replaces the #1424 bench): a low podium to step up on (`podium`, under PLAYER.stepUp, entered from the west end) and
+  // the DJ counter on its south edge, so you stand behind it looking out over the room. `x`/`z`/`w`/`d`/`h` (top, above the floor)/`top` are the counter as before; `led`
+  // = strip thickness/height and colours (unlit vertex colours in the poster mesh, no light). All values are *guess*es, clear of table/cue and passage.
+  // #1636: adult size: a 1.8 x .65 m counter, .97 m high (standing work height), on a 1.9 x 1.29 m podium (was 1.2 x .5 / .82 m) with .6 m behind the counter for one or two people. The room's
+  // billiard/disco zone ends at its east partition (x 3 - .06), and the podium's south-west corner (x 1.0, z -3.9) stays outside the round rug (#1617, radius 2.3 about the table at 0, -1.83),
+  // so those two limits decide the size; the podium is still entered from its west end (*guess*).
+  dj: { x: 1.95, z: -4.245, w: 1.8, d: .65, h: .97, top: .05,
+    // #1664: compact two-turntable mixer layout, local x/z metres; all sizes and positions are design guesses.
+    // #1667: actual black panel, not the larger wooden counter; heights/margins and finishes are visual guesses.
+    panel: { w: 1.7, d: .53, top: .055, mixerLift: .0005, margin: .015 },
+    vinyl: { color: 0x16191c, roughness: .28, metalness: .1, textureSize: 128, grooves: 40, streakWidth: .22, streakStrength: .24 },
+    controls: { deckX: [.55,-.55], playZ: .205, browseZ: .205, displayZ: -.215,
+      crossZ: .15, crossLabelZ: .235, crossSpan: .26, faderX: [.095,-.095], faderZ: -.015, faderSpan: .17,
+      button: [.10,.065], buttonHeight: .014, pressDepth: .006, bezel: .004, labelLift: .0015,
+      activeColor: 0x39c78b, emissive: 0x37efa4, emissiveIntensity: .75,
+      pickHeight: .025, step: .1, labelPixels: [1024,384],
+      master: [0,-.205], stop: [-.29,-.205], shuffle: [.29,-.205], dance: [.29,.205] },
+    podium: { x0: 1, x1: 2.9, z0: -5.19, z1: -3.9, h: .2 },
+    led: { t: .03, h: .035, colors: [0xff3fd0, 0x2fe6ff] } },
+  // #1570: the BIO's 7.1 + 2 height speakers, wall sconces and their dimming. All sizes/positions/levels are *guess*es (local metres from the room's
+  // centre; x east, z south, y up). BIO runs x -9 .. -3.06 and z -5.2 .. 1.54; the screen is on its west wall, the passage in the south partition at x -6.75 .. -5.25.
+  cinemaAudio: { frontX: -8, tower: { w: .2, d: .26, h: 1, plinth: .04, wallGap: .03 }, // floor-standing left/right fronts along the side walls, clear of the screen and curtains from every seat
+    center: { x: -8.45, w: .62, d: .22, h: .2, y: .07 }, // the centre speaker on short feet below the screen (the screen starts at .4 m)
+    sub: { x: -8.45, z: -4.3, w: .42, d: .42, h: .38 }, // subwoofer on the floor, below the screen's lower edge
+    surround: { x: -4.7, y: 1.9, w: .2, h: .3, d: .16 }, // side surrounds on the north wall and the south partition
+    rear: { x: -3.12, z: [-3.4, .4], y: 2, w: .2, h: .3, d: .16 }, // rear surrounds on the BIO's east wall (facing west)
+    ceiling: { x: [-7.4, -4.6], z: [-3.6, -.3], w: .22, d: .22, h: .09 } }, // four height speakers under the ceiling, clear of the ceiling panels
+  // #1570: wall sconces on the BIO's side walls and the BIO's ceiling panel share one emissive mesh (no light source); `dimmed` scales their colour while a film runs.
+  sconces: { x: { north: [-7.7, -5.9, -3.9], south: [-7.7, -3.9] }, y: 1.65, w: .14, h: .3, d: .1, lit: 0xffcf8a, panel: 0xfff6dc, dimmed: .06, fadeSeconds: 6, ambientDim: .18 }, // #1619: a film darkens the salon much further (the colour/ambient scale) and slowly (6 s down and up), *guess*
+  // #1619: green emergency-exit signs (one emissive mesh, no light) above the three passages (north face, seen from inside each room) and the playhouse door. All sizes are *guess*es.
+  exitSigns: { w: .4, h: .2, y: 2.5, offset: .012, brightness: .85, green: '#0b8a3e', ink: '#ffffff', text: 'NÖDUTGÅNG' },
+  // #1575: the BIO's daily film posters (src/cinemaposters.js, Worker GET /cinema/posters in cloudflare/youtubesearch.js). Every query, count, size and
+  // place is a *guess*. Frames hang where #1570's sconces/speakers, the screen, curtains, the passage and the signs leave wall free (a fixture's
+  // depth counts as clearance so it never hides a poster at an angle; tools/cinemapostertest.cjs checks it); local metres, `wall`
+  // = 'north' (z -5.2, facing south), 'south' (the partition z 1.54, facing north) or 'east' (x -3.06, facing west), `at` along that wall, `y` the centre.
+  cinemaPosters: { w: .56, h: .84, frame: .035, depth: .025, cell: [256, 384], timeoutMs: 8000,
+    spots: [{ wall: 'north', at: -6.8 }, { wall: 'north', at: -5.3 }, { wall: 'south', at: -7.12 }, { wall: 'east', at: -4.4 }, { wall: 'east', at: -2.4 }, { wall: 'east', at: -.6 }], y: 1.25,
+    // #1597: the candidates are each allow-listed channel's newest `perChannel` uploads (playlistItems.list on its "UU…" uploads playlist, 1 unit each),
+    // keeping those published within `recentDays` whose title says "trailer"; up to `maxVetted` of them (round-robin over the channels) are vetted.
+    // #1591: posters are only trailers: a hit must have "trailer" in its title and a length of at most `maxTrailerSeconds`, so no full episode or film ever
+    // becomes a poster; `maxPerChannel` keeps one channel from filling the six spots; the newest vetted trailers win, one per film (all *guess*).
+    // #1589: only vetted videos become posters: videos.list must say madeForKids + embeddable + public + not age-restricted, the channel must be on
+    // `channels` and no block word may appear in title/channel. `channels` = hand-picked allow-list of official YouTube channel IDs (UC + 22 chars),
+    // the mandatory gate (the user's choice on #1589: SVT/SR/UR, Swedish film distributors, official children's series, Disney/Pixar and similar studios).
+    // Each was looked up on 2026-10-24 and kept only if YouTube shows its verified badge or the owner's own site/official channel links to it; being
+    // verified alone is not enough (verified song/game-replay channels are left out on purpose). Not found or not provable: SVT Bolibompa Mini, UR Barn,
+    // UR Play, Warner Bros. Pictures Sverige, DreamWorks Animation Sweden. Add channels the same way, with a comment. An empty list gives no posters.
+    // #1663: `channels` are the children's channels (madeForKids still required); `cinemaChannels` are Swedish film distributors and cinemas whose
+    // trailers need not be made for kids (the user's choice on #1663: anything not age-restricted on YouTube, with blockWords against horror/violence as an
+    // extra guard). Only their uploads from the last `cinemaRecentDays` count, as an estimate of what is on at the cinemas now (*guess*). Looked up
+    // 2026-10-28 the same way: not found or not provable then: Warner Bros. Pictures Sverige (UCCA7NCuVYoYmqH4hXg1NBZg exists, but no verified badge
+    // or owner link), Paramount Sverige, UIP Sverige and TriArt Film (no verified badge, triart.se links no channel).
+    // #1663 daily rotation: the whole vetted pool is shuffled with the Stockholm day as seed (the same for every visitor that day, new the next day), then
+    // ordered by language (#1600); `kidsShare` of the spots go to made-for-kids trailers, the rest to the others, a short group filled from the other (*guess*).
+    // blockWords are *guess*. Quota per day: 21 + 8 channels x 1 + videos.list 1 per 50 candidates (<= 4) = at most 33 units (#1597; the searches cost 302).
+    // `filterVersion` (8 since #1663: cinema channels and daily rotation): KV lists without it are never served, and a failed day under an older version is retried at once.
+    // #1600: `languages` = preferred languages in order (videos.list defaultAudioLanguage and defaultLanguage, the worse of the two); unknown comes next and every other
+    // language last, so e.g. DreamWorksTV World's Dutch/Finnish dubs only fill spots no Swedish/English/unknown trailer wants (*guess*).
+    worker: { perChannel: 50, maxVetted: 200, maxTrailerSeconds: 300, maxPerChannel: 2, recentDays: 730, cinemaRecentDays: 90, kidsShare: .5, retryHours: 6,
+      channels: [
+        'UCG4t_7XwB_DXdrpvf4U1pgg', // SVT Barn (verified)
+        'UCLuECFhnmqnX0bJ_3RSy_DA', // Barnradion, Sveriges Radio (linked from sverigesradio.se/barnradion)
+        'UCvpNIQlTMpDfR8kv9Z64f5g', // Babblarna (verified)
+        'UCvoi9I4_wUxWsYAb6KKx6Ow', // Bamse Världens starkaste björn (verified)
+        'UC4a70Q5T62wFT-aegFqQQCA', // Pippi Långstrump (verified)
+        'UC-htUfM7MKigpNxJeITBZ4Q', // Alfons Åberg, @alfonsofficiell (linked from alfons.se)
+        'UCL6vFAZiH2DCeYkRdc3zN8A', // Nicke Nyfiken (verified)
+        'UChL6e-L1iqub4AQNcUZgmrQ', // Bluey - Officiella Svenska Kanalen (verified)
+        'UCdCV7Dg8EQg8Vx98q4ow64w', // Bing Svenska - Officiella Kanalen (verified)
+        'UCT9rMDBO4QCG60JVRNaRwZg', // Greta Gris - Officiella Kanal (verified)
+        'UCfPfqRi_UmyHvsA2Ih-tb5w', // Smurfarna • Svenska (verified)
+        'UCKmcWe6P05FQ6TEmpIWHOSQ', // Brandman Sam Svenska (verified)
+        'UCC-RivmZEYZZ6yOVh8hSLsQ', // Peppy Pals (verified)
+        'UC2qqJdj6dq_D6tGlKCTopNA', // Disney Junior Sverige (verified)
+        'UCjMDyYSgLkOwpPlUkvcoB7A', // Disney Channel Sverige (verified)
+        'UCNcdbMyA59zE-Vk668bKWOg', // Disney Jr. (verified)
+        'UC_IRYSp4auq7hKLvziWVH6w', // Pixar (verified)
+        'UCia2_wzvSZrQBzbopXT1Fcg', // DreamWorks (verified)
+        'UCHaHZJAWfrlnysph7LReiYA', // DreamWorksTV World (verified)
+        'UCq7OHvWO6Z3u-LztFdrcU-g', // Illumination (verified)
+        'UCaOPA9kDa-s27ju1XG17Q1w', // Cartoon Network Sverige (verified)
+      ], cinemaChannels: [ // #1663: distributors and cinemas (madeForKids not required); the first five moved here from `channels`
+        'UCMZaJz1iJiU6L4wvpzwMBxQ', // SF Studios (linked from sfstudios.se)
+        'UClAEnyvAkPzPjnHZPVgv7zQ', // SF Studios Classics (linked from sfstudios.se)
+        'UC_4Nc4NeEG-SIaetcgMTtfw', // SF Studios, @ABSvenskFilmindustri (featured by SF Studios Classics)
+        'UCkllgTNY4dg8qdMfpPlnmyQ', // Nordisk Film Sverige (verified)
+        'UCQ8eoZdZP4gvGiVkqAh05VA', // Disney Sverige (linked from disney.se)
+        'UCcTXsW3K6Wk2NS_w8sZtc7g', // Filmstaden (verified, 2026-10-28)
+        'UC6aZ7fwmSRr00_rDYG3MvBQ', // Sony Pictures Sverige (its videos are the ones embedded on sonypictures.se, 2026-10-28)
+        'UClVKPJ5CFDyRWjYpPGj3qGA', // Universal Pictures Sweden, youtube.com/user/universalpicturesswe (linked from universalpictures.se, 2026-10-28)
+      ], languages: ['sv', 'en'], filterVersion: 8, blockWords: ['bajs', 'poop', 'kiss', 'prank', 'skibidi', '18+', 'toalett', 'toilet',
+        'skräck', 'horror', 'terror', 'slasher', 'zombie', 'exorcis', 'demon', 'massaker', 'massacre', 'blodig', 'bloody', 'murder', 'mördar', 'killer', 'scream'] } },
+  // #1574: own generated posters (one canvas atlas, one extra draw), neon, pub lamps and per-room light levels. Everything here is a *guess*
+  // (local metres from the room's centre; every wall is named for its room: hall / BILJARD / SPEL; BIO is #1575's). `along` is x on the north/south walls
+  // and z on the east/west walls; `designs` index the atlas cells (0-9 hall mix, 10-18 SPEL gaming, 19-27 BILJARD/DJ) and repeat; `y` is a poster's centre height.
+  posters: { atlas: [1536, 1536], cell: [192, 256], cols: 8, sign: [768, 256], size: [.6, .8], offset: .012, tint: { hall: 1, biljard: .8, spel: .62 }, // atlas px; poster size in m; tint = the poster's brightness in its room at normal ambient (it also follows playroom.lit)
+    walls: {
+      hallN: { y: 1.2, along: [-8.3, -7.5, -4.65, -3.7, -2.75, -1.8, 1.8, 2.75, 3.7, 4.65, 7.5, 8.3], designs: [6, 3, 5, 1, 7, 0, 2, 9, 4, 8, 6, 7] }, // between the BIO/BILJARD/SPEL passages, below the signs
+      hallS: { y: 1.25, along: [-7.4, -6.3, -5.2, -4.1, -3, -1.9, -.95, 1.9, 3, 4.1, 5.2, 6.3, 7.4, 8.4], designs: [0, 8, 3, 5, 2, 7, 9, 1, 4, 6, 7, 0, 3, 5] }, // beside the exit door (x -.47 .. .47) and its switch
+      hallE: { y: 1.25, along: [2.9, 4.1], designs: [3, 9] }, // hall's east short wall (the west one is the popcorn cart's)
+      spelN: { y: 1.5, along: [], designs: [] }, /* #2027: the north wall now holds the hexagon LED clusters and the GAME ON sign */ spelS: { y: 1.5, along: [3.9, 4.65, 7.4, 8.2], designs: [12, 15, 18, 16] },
+      spelW: { y: 1.9, along: [-4.75, -3.5, -1.9, -.3, 1], designs: [13, 14, 16, 12, 10] }, spelE: { y: 1.9, along: [-4.75, -3.5, -1.9, -.3, 1], designs: [11, 17, 15, 18, 14] }, // above the desks' monitors
+      biljN: { y: 1.75, along: [-2.45, .6, 1.5], designs: [19, 22, 24] }, biljS: { y: 1.4, along: [-2.3, -1.5, 1.5, 2.3], designs: [21, 26, 23, 27] },
+      biljE: { y: 1.5, along: [-4.4, -3.35, -2.1, -1.1, 0, 1], designs: [20, 25, 22, 19, 24, 26] }, biljW: { y: 1.5, along: [-4.4, -3.6, -.5, .3, 1.1], designs: [23, 27, 21, 20, 25] } }, // BILJARD's west wall holds the score board (z -2.43 .. -1.23); biljE holds the cue rack (#1661) at z -2.75
+    neon: { // ceiling runs round SPEL (colours 0xRRGGBB) and the two wall signs (atlas cells in the strip below the poster cells)
+      run: { y: 2.52, h: .035, d: .03, colors: { north: 0x59f3ff, east: 0xff59cc, west: 0xa670ff, south: 0xff59cc } },
+      signs: { spel: { x: 6, y: 1.9, w: 1.6, h: .53, wall: 'spelN' }, spelpa: { x: 6, y: 2.255, w: .87, h: .29, wall: 'spelS' } /* #2027: above the south passage, facing the desks */, biljard: { x: -.95, y: 1.85, w: 1.3, h: .43, wall: 'biljN' } } },
+    // #2027: SPEL's hexagon acoustic/LED panels, LED line patterns and corner lamps (*guess*, own design; emissive vertex colours in the poster mesh, no light).
+    // Pointy-top hexagons of circumradius `r` m with `gap` m between them, `depth` m thick; each cluster row is a string, `x` = dark acoustic panel, other letters
+    // glow (p purple, k pink, t turquoise, o peach, b blue); rows alternate 3/4 cells so they interlock. `x`/`y` = the cluster's centre on its wall.
+    leds: { hex: { r: .25, gap: .022, depth: .035, face: 0x1b1d2b, side: 0x0a0b12, glowDepth: .012, inset: .88, core: .55, halo: .3, wall: 'spelN',
+        colors: { p: 0xb05cff, k: 0xff4fc4, t: 0x3cf0e2, o: 0xffa070, b: 0x7a98ff } },
+      clusters: [{ x: 4.25, y: 1.55, rows: ['xkxt', 'pxo', 'xtxk', 'xbx'] }, { x: 7.75, y: 1.55, rows: ['tkxx', 'xpx', 'bxkx', 'oxt'] }],
+      // geometric LED lines (a chain of diamonds) above the south wall's posters either side of the passage; `w` = line width, `n` diamonds across x0..x1
+      lines: { wall: 'spelS', y: 2.2, amp: .17, w: .022, off: .02, chains: [{ x0: 3.25, x1: 5.05, n: 3, color: 0xffd9a0 }, { x0: 6.95, x1: 8.75, n: 3, color: 0x6ff0ff }] },
+      // corner floor lamps: a dark base disc and a glowing tube
+      lamps: [{ x: 3.28, z: 1.32, color: 0x46f0ff }, { x: 8.78, z: 1.32, color: 0xc070ff }], lamp: { h: 1.62, rTube: .014, rBase: .13, baseH: .025 } },
+    // the BILJARD pub: two pendants over the table and warm wall lamps; the lamps are unlit emissive meshes
+    pendants: { x: 0, z: [-2.6, -1], bottom: 1.74, /* #1617: 1.02 m above the taller table cloth */ h: .17, rTop: .05, rBottom: .22, cord: .012, shade: 0x1f5a3c, rim: 0xb8874d, glow: 0xffd9a0 },
+    sconces: { w: .14, h: .26, d: .09, y: 1.75, lit: 0xffb866, east: [-3.85, -1.65, .5], west: [-2.9, -1], north: [-1.88, 1.05] },
+    // #1670: real posters from the Worker's GET /playroom/posters (Wikimedia Commons, see cloudflare/playroomposters.js), painted into the same atlas
+    // cells as the designs they replace: `cells` = each room's first design index and count (hall 0-9, SPEL 10-18, BILJARD 19-27, posterdesigns.js).
+    // `timeoutMs` per request/image and `retryMs` after a failed request (as the BIO's posters), `credit` = the px band under a CC BY/BY-SA poster
+    // for its author and licence (our choice), `mat` = the dark mount around a letterboxed picture (*guess*).
+    online: { cells: { hall: [0, 10], spel: [10, 9], biljard: [19, 9] }, timeoutMs: 8000, retryMs: 300000, credit: 15, mat: 5 } },
+  // #1574: per-room light levels [BIO, BILJARD, SPEL, hall] (*guess*): the clubhouse material scales its ceiling-lamp term and its ambient term by room, so SPEL
+  // is dim (neon and screens carry it), BILJARD is dull and pub-like, and BIO/hall stay as they were. BIO's film dimming (#1570) stays as is.
+  zones: { lamp: [1, .45, .22, 1], ambient: [1, .62, .38, 1], panel: [1, .55, .22, 1] }, // panel: the ceiling light panels' glow (BILJARD/SPEL are in the poster mesh; BIO's follows #1570's sconces)
+  // #1645: four larger ceiling speakers, one in each corner of the billiard/DJ room, tilted down toward the room's centre (*guess* sizes). `inset` = distance
+  // (m) from both walls to the speaker's centre, `drop` = how far the box's centre hangs below the ceiling, `tilt` = pitch down toward the centre (rad),
+  // `w`/`h`/`d` = box size (m; d is the depth the front faces out). Not interactive: the music is controlled only from the DJ booth. `ref`/`rolloff`: the
+  // Web Audio distance model of each of the four music sources (inverse; ref distance m, rolloff factor), our choice for the billiard/DJ room. `bounds` are its inner partition faces (#1658).
+  // #1658: rotated half-height = (.4*cos(.35)+.3*sin(.35))/2 = .2393 m; .32 m drop leaves about 8 cm below the ceiling.
+  // #1669: wooferY = -h/2 + 0.13 m cone radius + 0.005 m edge margin (visual guess); keeps the cone within the front.
+  speakers: { bounds: { x0: -2.94, x1: 2.94, z0: -5.2, z1: 1.54 }, inset: .35, drop: .32, tilt: .35, w: .36, h: .4, d: .3, wooferY: -.065, ref: 4, rolloff: 0.8,
+    // DJ music stays in BILJARD: the open passages are no sound barrier, so the mix is gated by the listener's room (levels/fade seconds *guess*).
+    rooms: { hall: .3, other: 0, fade: .12 } },
+  disco: { lampDim: 0.05, ambientDim: 0.35, panelDim: 0.08 }, // #1642: cozy dark disco in BILJARD (*guess*)
+  door: { w: 0.8, h: 1.7 }, // Assumed low playhouse-style exit; its interaction works for every avatar height.
+  standOff: 0.75, // m from the door wall where you arrive inside
+  outside: 0.95, // m north of the playhouse's door wall where you stand when you come out
+  fadeMs: [220, 320], // black fade out before the move / back in after it
+  lit: 0.55, // ambient light added inside (day.lit): enough to see by, not so bright it looks like a day-lit hall
+  litDisco: 0.42, // #1642: that ambient times this while the disco light is on (cozy dark, replaces #1365's 0.82)
+  // Cinema poster dimensions and network timeout are visual/usability guesses.
+  devices: { videoTimeoutMs: 20000, // Assumed network timeout for the optional cinema player (#1376).
+    canvas: [512, 288] },
+  cinemaSync: { maxPosition: 604800, driftSeconds: 1.5, syncEveryMs: 2000, seekSeconds: 10, width: 1280 }, // Assumed media bounds, local drift correction and iframe viewport.
+  // #1328: local child-size billiards (all dimensions/rolling coefficients are visual/playability guesses).
+  billiards: { x: 0, z: -1.83, yaw: Math.PI / 2, length: 2.4, width: 1.2, height: 0.72, rail: 0.11, railH: 0.07, leg: 0.09, // #1617: bigger, taller 'children and 10-year-olds' table (about 3/4 of a 8-foot pool table, 72 cm playing height; *guess*) // #1482: centre between north z=-5.2 and the partition inner face z=1.54; retain #1411 orientation.
+    ballR: 0.03, ball: { segments: [16, 12], roughness: 0.1, spotRadius: 0.5, atlasCell: 128, fontScale: 0.62, lampGloss: 0.9, lampSharp: 60 }, // #1638: glossy balls (roughness 0.08-0.12), two numeral discs of 0.5 sphere radii (*guess*) from a 4x4 atlas; lampGloss/lampSharp = the overhead pendant lamp's reflection as a cheap specular term (no extra light/env map)
+    // #1665: visual guesses for polished walnut rails, ivory sights and fine wool felt; no physics changes.
+    finish: { woodColour: 0x72482c, railRoughness: .19, lampGloss: .5, lampSharp: 24,
+      feltRoughness: .96, feltScale: 720, feltStrength: .1, cushionShare: .3,
+      pocketSegments: 12, sightSize: .012, sightColour: 0xeadcb5 },
+    pocketR: 0.066, cueLength: 1.2, // #1617: balls/pockets/cue scaled with the table (ratios unchanged)
+    cueRack: { wall: 'biljE', x: 2.94, z: -2.75, y: 1.15, w: 0.40, h: 1.30, d: 0.08, count: 4, spacing: 0.08 }, // #1661: wall rack with 4 cues on the right wall
+    rug: { radius: 2.3, ring: [.26, .2], colour: 0x8a3a46, ringColour: 0xe3cfa4, edge: .04 }, // #1617: big round soft rug (m, *guess*): clears the table's 2.62 x 1.42 m footprint and the DJ bench; ring = inner/outer inset of the cream stripe, edge = rounded rim width
+    strokeSpeed: 3.8, strokeSeconds: 0.24, cueTravel: 0.09, // #1657: harder max stroke (3.8 m/s; smack to break the rack; *guess*) // #1637: was 2.2
+    minPower: 0.15, chargeSeconds: 1.25, chargePull: 0.14, chargeGrace: 0.35, // #1657: oscillating power meter (1.25 s per sweep, ping-pongs between minPower and 100 %; *guess*) // #1637: was 1.75 s fixed
+    friction: 0.45, bounce: 0.94, cushionBounce: 0.82, stopSpeed: 0.012, maxStep: 1 / 180,
+    // #1495: assumed wall screen dimensions/height; west wall derived from the actual partition.
+    board: { width:1.2, height:.6, y:1.2, wallGap:.04, depth:.04, rim:.025, faceGap:.002, pickDepth:.08,
+      canvas:[768,384], buttonY:.39, buttonHeight:.2,
+      ui:{titleY:.12,modeY:.24,nameY:.37,scoreY:.51,messageY:.64,seatY:.72,buttonTop:.78,buttonH:.19,titleSize:.1,textSize:.065,scoreSize:.1,pad:.02} } },
+  // Assumed clearly audible nearby billiard impacts; drop gain includes gravity, not only table speed.
+  sound: { minSpeed:.08, hitInterval:.035, cueHz:1450, ballHz:2100, railHz:480, pocketHz:130, impactGain:.75,
+    voiceSeconds:.12, hitDuration:.045, pocketDuration:.12, minGain:.25, pitchDrop:.6, toneGain:.35, pocketNoise:.3, hitNoise:.14,
+    pocketRattleDelay:.045, pocketRattleDuration:.08, pocketRattleHz:720, pocketRattleGain:.24 },
+  colors: { floor: 0x9c7956, wall: 0x526876, ceiling: 0xe0e7ef, trim: 0xc5a77c, door: 0x9c2f24 },
+  // Fantasy-room finish assumptions; retain the existing outer wall, trim and carpet dimensions.
+  finish: { wallDepth: 0.2, skirting: { height: 0.12, depth: 0.02 }, rugHeight: 0.012 },
+  // Visual material/model assumptions for the fantasy clubhouse, not measured building facts.
+  appearance: { plankWidth: .18, plankLength: 1.4, plankSeam: .0015,
+    grainScale: 120, weaveScale: 480, textureStrength: .035,
+    paintRoughness: .86, woodRoughness: .46, floorRoughness: .6,
+    fabricRoughness: .94, metalRoughness: .3, metalness: .4,
+    edgeRadius: .012, cushionRadius: .045, cushionPuff: .018, cushionSegments: 2, frameSegments: 1,
+    curtainFolds: 7, curtainSegments: 56, curtainDepth: .065,
+    panelRimWidth: .035, clothSheen: .2, lampColor: 0xffe4c0, lampStrength: 1.4, lampFalloff: .14, lampDrop: .06 },
+  // #1374: a fantasy clubhouse, not measured building architecture; every size/colour is a guess.
+  clubhouse: { side: 3, front: 1.6, wall: 0.12, passage: 1.5, passageH: 2.1,
+    welcome: { x: 0, z: 2.3, y: 2.52, w: 3.2, h: 0.3 }, label: { y: 2.25, w: 1.8, h: 0.25, offset: 0.012 },
+    atlas: [512,320], swatch: 8, lightInk: '#fff6dc', font: 48, signBackground: '#17263b', signInk: '#78eee2',
+    // #1384: assumed neon tube colours/widths in atlas pixels; no extra scene lights.
+    neon: { colors:['#ff83d7','#ffb477','#78eee2','#9caaff'], glow:9, halo:5, tube:2, core:.7, coreInk:'#efffff', weight:500 } },
+  // #1327: the child-sized fantasy furniture (all our own choices, *guess*); local metres from the room's centre (x east, z south, the door
+  // at z +5.2). Cinema screen/seats in BIO west of BILJARD; COMPUTER_MEDIA places four desks/chairs in SPEL east of it.
+  furniture: { seatHeight: 0.36, cinema: { screen: { x: -8.78, bottom: .4, topGap: .4, sideGap: .2 }, // #1415: user asks 40 cm below/above; assumed 20 cm side margins.
+      curtain: { overlap: .06, bottom: .12, // Assumed small screen-edge overlap; hem clears the existing skirting.
+        aspect: 16 / 9, pad: .03, seconds: 2.5 }, // #1619: masking curtains close to a film's picture width (+ pad of black each side) when its ratio is unknown/16:9 `aspect`; ~2.5 s to settle, *guess*
+      reach: 6, // Assumed screen-selection distance covering both cinema seat rows, only within BIO.
+      seat: { width: 0.78, depth: 0.82, height: 0.39, back: 0.83, rowX: [-6.55, -4.72], z: [-3.25, -2.4, -0.8, 0.05] } },
+    tv: {},
+    discoSwitch: { x: 0.9, y: 1.05, z: 5.2 }, // #1365/#1374: the wall switch east of the door (south wall, z +5.2; height reachable for children, guess)
+    ball: { x: 1.95, z: -4.1, y: 2.25, r: 0.17, spin: 0.5, spots: 26, spotSpin: 0.35 }, // #1662: the disco ball hangs above the DJ booth (was above the billiard table at 0, -1.5), the light spots sweep round it
+  } };
+// #1567: the popcorn cart in the playhouse entry (hall south of the BIO/BILJARD/SPEL partition). #1573: it stands against the
+// hall's west short wall (the end next to BIO), facing east into the hall, its bin in the south-west corner beside it (x -9..-6.75
+// is clear of the BIO passage at x -6.75..-5.25 and of the door/switch at x 0..0.9); #1567 had it left of the door, facing north. Every size, count and time here is a *guess* (a fantasy-room prop, no product data).
+// Local metres from the room's centre (as PLAYROOM.furniture), cart parts from the cart's floor centre (x east, z south).
+export const POPCORN = {
+  cart: { x: -8.68, z: 3.9, yaw: -Math.PI / 2, w: 0.84, d: 0.52, base: 0.2, top: 0.86, counter: 0.03, wheelR: 0.17 }, // guess: child-height cart
+  glass: { x0: -0.38, x1: 0.14, z0: -0.2, z1: 0.2, h: 0.5, roof: 0.06, opacity: 0.14 }, // guess: the glass case on the counter
+  kettle: { r: 0.075, h: 0.07, drop: 0.13 }, // guess: the kettle hangs this far below the roof
+  button: { x: 0.26, y: 0.72, r: 0.035 }, // guess: the round pop button on the front panel
+  sign: { y: 0.11, w: 0.6, h: 0.08 }, // guess: "POPCORN" above the roof (y above the roof's top), shares the clubhouse sign atlas
+  bin: { x: -8.78, z: 4.98, r: 0.17, h: 0.6 }, // guess: a small bin in the south-west corner, south of the cart
+  legacy: { x: -1.9, z: 4.9, yaw: 0 }, // #1573: where #1567 had the cart (same size): a tub saved standing on its counter moves with it to the new one
+  kernels: 260, kernelSize: 0.017, heap: 0.24, // popped kernels shown in the glass case when it is full, heap height (guess)
+  fills: 6, // guess: tubs filled from one full glass case
+  popSeconds: 4, // guess: one press pops the case full in this time
+  stack: { count: 8, min: 2, nest: 0.02, x: 0.27 }, // guess: tubs nested on the counter; refilled to `count` below `min`
+  tub: { top: 0.066, bottom: 0.048, h: 0.13, stripes: 12, kernels: 44, bites: 6, loose: 4, cooldown: 0.45, // guess: tub size/bites; `loose` tubs out at once
+    held: { x: 0.2, y: -0.25, z: -0.42 } },
+};
+// #1415: derive the large screen from the actual BIO wall span, with one source for the device plane.
+{
+  const R=PLAYROOM,s=R.furniture.cinema.screen;
+  const north=-R.d/2,south=R.clubhouse.front-R.clubhouse.wall/2;
+  Object.assign(s,{z:(north+south)/2,w:south-north-2*s.sideGap,h:R.ceiling-s.bottom-s.topGap});
+  Object.assign(R.furniture.tv,{x:s.x,w:s.w,h:s.h,y:s.bottom});
+}
+
+/** A well-formed look code (#1136): 7 or 9 digits, or 9 + a height in cm within AVATAR_HEIGHT (the Worker uses it too). */
+export function avatarCodeValid(str) {
+  if (typeof str !== 'string' || !/^[0-4][0-9][0-5][0-3][0-7][0-4][0-1]([0-1][0-3](\d{3})?)?$/.test(str)) return false;
+  if (str.length < 12) return true;
+  const h = Number(str.slice(9));
+  return h >= AVATAR_HEIGHT.min && h <= AVATAR_HEIGHT.max;
+}
+
+export function encodeAvatarLook(look) {
+  if (!look) return '';
+  const s = Math.max(0, SKIN.indexOf(look.skin));
+  const ti = Math.max(0, TOPS.indexOf(look.top)), t = TOPS_DIGIT[ti] ?? ti; // (#1156: the `u` tag carries the rest)
+  const p = Math.max(0, PANTS.indexOf(look.pants));
+  const sh = Math.max(0, SHOES.indexOf(look.shoes));
+  const h = Math.max(0, HAIR.indexOf(look.hair));
+  const st = Math.min(4, Math.max(0, Number(look.style) || 0));
+  const sl = Math.min(1, Math.max(0, Number(look.sleeves) || 0));
+  const g = Math.min(1, Math.max(0, Number(look.gender ?? look.figure) || 0));
+  const f = Math.min(3, Math.max(0, Number(look.facial ?? look.facialHair) || 0));
+  const ht = look.height;
+  const cm = Number.isInteger(ht) && ht >= AVATAR_HEIGHT.min && ht <= AVATAR_HEIGHT.max ? String(ht).padStart(3, '0') : '';
+  return `${s}${t}${p}${sh}${h}${st}${sl}${g}${f}${cm}${encodeLookExt(look)}`;
+}
+/** Network appearance (#1173/#1175): transmit actual build and seeded scale without migrating saved codes or
+ * converting it to whole-cm proportions. Older clients ignore the optional extension tag. */
+export function encodeAvatarWireLook(look) {
+  let code = encodeAvatarLook(look);
+  if (!code) return code;
+  if (Number.isInteger(look.bodyBuild)) code += `d${nearestSeededBuild(look)}`; // (#1139: older clients' nearest)
+  else if (Number.isInteger(look.build) && look.build >= 0 && look.build <= 2) code += `d${look.build}`;
+  if (Number.isInteger(look.height)) return code;
+  const scale = AVATAR_SEEDED_TALL.indexOf(look.tall);
+  return scale < 0 ? code : `${code}s${scale}`;
+}
+/** A look code split for the players' room (#1138): `av` its digits (nine, or twelve with #1136's height; every client
+ * since #1136 reads them), `ax` the tagged face extension (or ''). */
+export function splitAvatarCode(code) {
+  const m = typeof code === 'string' ? /^([0-9]*)(.*)$/.exec(code) : null;
+  return m ? { av: m[1], ax: m[2] } : { av: '', ax: '' };
+}
+
+export function decodeAvatarLook(str, seed = 'anon') {
+  const base = defaultAvatarLook(seed);
+  const m = typeof str === 'string' && /^([0-9]+)([a-z].*)?$/.exec(str); // (#1138: the digits, then the face extension)
+  if (!m || !avatarCodeValid(m[1])) return base;
+  const ext = m[2] ?? '';
+  str = m[1];
+  const gender = str.length >= 9 ? Number(str[7]) : 0;
+  const facial = str.length >= 9 ? Number(str[8]) : 0;
+  const lk = {
+    ...base,
+    skin: SKIN[Number(str[0])],
+    top: TOPS[Number(str[1])],
+    pants: PANTS[Number(str[2])],
+    shoes: SHOES[Number(str[3])],
+    hair: HAIR[Number(str[4])],
+    style: Number(str[5]),
+    sleeves: Number(str[6]),
+    gender,
+    facial,
+  };
+  if (str.length === 12) { lk.height = Number(str.slice(9)); lk.tall = lk.height / AVATAR_HEIGHT.base; } // (tall: name tags etc.)
+  decodeLookExt(ext, lk);
+  Object.defineProperty(lk, 'figure', { get() { return this.gender; }, set(v) { this.gender = v; }, enumerable: true, configurable: true });
+  Object.defineProperty(lk, 'facialHair', { get() { return this.facial; }, set(v) { this.facial = v; }, enumerable: true, configurable: true });
+  return lk;
+}
+
+/** The tiny deterministic hash of a seed string. */
+function hash(seed) {
+  let h = 2166136261;
+  for (const ch of String(seed)) h = Math.imul(h ^ ch.codePointAt(0), 16777619) >>> 0;
+  return h;
+}
+
+function defaultAvatarLook(seed) {
+  let h = hash(seed || 'anon');
+  const pick = (n) => { const v = h % n; h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0; return v; };
+  const style = pick(4), sleeves = pick(2);
+  const skin = SKIN[pick(SKIN.length)], hair = HAIR[pick(HAIR.length)], top = TOPS[pick(TOPS_SEEDED)], pants = PANTS[pick(PANTS.length)], shoes = SHOES[pick(SHOES.length)];
+  const build = pick(3); // 0 slim, 1 average, 2 broad
+  const tall = AVATAR_SEEDED_TALL[pick(AVATAR_SEEDED_TALL.length)];
+  const gender = pick(2);
+  const facial = 0; // default no facial hair
+  const lk = { style, sleeves, skin, hair, top, pants, shoes, build, tall, gender, facial, ...defaultFaceLook() };
+  Object.defineProperty(lk, 'figure', { get() { return this.gender; }, set(v) { this.gender = v; }, enumerable: true, configurable: true });
+  Object.defineProperty(lk, 'facialHair', { get() { return this.facial; }, set(v) { this.facial = v; }, enumerable: true, configurable: true });
+  return lk;
+}
+
+/** What a seed looks like: { skin, hair, top, pants, shoes (colours), style (hairstyle), sleeves (0 short / 1 long), build, gender, facial }. */
+export function avatarLook(seed) {
+  if (seed && typeof seed === 'object' && 'skin' in seed && 'top' in seed) {
+    if (!('gender' in seed) && !('figure' in seed)) seed.gender = 0;
+    if (!('facial' in seed) && !('facialHair' in seed)) seed.facial = 0;
+    return seed;
+  }
+  return defaultAvatarLook(seed);
+}
+
+// #897/#916: v1 supports only measured exposed central fronts of the standing skull.
+// Existing physical mesh dimensions, shared with Avatar. Other unsupported parts stay body-only.
+export const PVP_RIFLE_HEAD = {
+  version: 1, style: 0, bodyDamage: 1, headDamage: 2,
+  coreStyles: [0, 1, 2, 3],
+  corePatches: { 3: { across: .008, low: .132, high: .140, maxVertical: .08 } }, // *guess* lower exposed beanie core and ray-angle policy; actual nearest-surface/hidden-skull grids bound coverage
+  skull: { radius: .11, width: 14, height: 10, scale: [.94, 1.1, .98], centre: [0, .1, .01] },
+  jawFrontSidePatch: { across: [.023, .030], low: .037, high: .040, front: .100 }, // #959 *guess* immutable-standing frontal strips; unchanged original cone/8mm guard, sampled actual pose/whole-cell proof
+  jawPatch: { across: .008, low: .032, high: .048, front: .107, direction: .08, surface: .008 }, // *guess* sampled lower-front jaw core/ray guards, not physical dimensions
+  jaw: { radius: .088, width: 8, height: 6, scale: [1, .8, 1], centre: [0, .052, .03] }, // the jaw ellipsoid (the Avatar's jaw mesh is rounder and narrowed toward the chin since #1101)
+  nose: { radius: .02, width: 8, height: 6, scale: [.8, 1.1, 1.15], centre: [0, .092, .113] }, // legacy proof nose (the Avatar's visible nose is AVATAR_FACE.nose since #1101)
+  front: { styles: [0, 1, 2, 3], x: [.061, .075], y: [.078, .105], z: [.036, .11], approach: .08 }, // #931 *guess* finite extra-front contact/ray policy, actual nearest-surface grid required
+  // #971 generated by tools/riflenosesideproof.py from actual Float32 Nose triangles and continuous immutable poses.
+  // This query prism is not anatomy: its rear plane lies inside Nose, beyond every Skull point.
+  noseSidePrism: { back: .119, front: 1, numericalInset: 1e-9, polygon: [[0.007109186640188042,1.623437572504904],[0.001854007238306447,1.625380745030441],[-2.5500435096859064e-16,1.625665985801832],[-0.0018540072383065771,1.6253807450304412],[-0.007109186769831224,1.6234375724569667],[-0.008245606014800387,1.621855636375472],[-0.010420729105084105,1.618827787402282],[-0.007704711108266912,1.615093249645122],[-0.0062040728167666445,1.6130298648559913],[-0.004161198195777722,1.6122772060345725],[-8.291978215169138e-16,1.6116421686854638],[0.004161198195778574,1.612277206034573],[0.0062040728682382675,1.6130298648749553],[0.008690058496025936,1.6164481068771008],[0.01042072912742524,1.6188277872863406]] },
+  noseDepthPatch: { across: .005, low: .087, high: .092, back: .127, front: .132 }, // #950 *guess* immutable-standing central whole-cell family; original Nose profile/cone/6mm entry remain unchanged
+  noseBandPatch: { across: .005, low: .080, high: .084, front: .132 }, // #937 *guess* lower central whole-cell band; unchanged nose profile and 6mm entry guard
+  noseExtraPatch: { across: .011, low: .083, high: .101, front: .13 }, // *guess* exposed frontal side cells; original vertical/front/direction/entry guards unchanged
+  nosePatch: { across: .005, low: .083, high: .101, front: .13, direction: .2, surface: .006 }, // *guess* fail-closed frontal core, actual nearest-surface/pose/wire grid required
+  rearFirstTurn: .04, // #962 *guess* exactly one ordinary r2 heading publication; existing Rear surface unchanged
+  rear: {
+    lower: { across: .008, low: .020, high: .024, back: -.09, front: -.05 },
+    beanie: { across: .012, low: .04, high: .055, back: -.105, front: -.065 },
+    direction: .05, originBack: .25,
+  }, // *guess* conservative rear-only policy; actual pose/hidden-first-contact/cell grids required, no wider surface tolerance
+  patch: { across: .008, low: .148, high: .158 }, // *guess* canonical support core; actual positive/negative nearest-surface grid checks it
+  // #932: conservative side support policy guesses; actual posed nearest-surface/whole-cell/occlusion grids required.
+  lateralPatch: { across: [.075, .105], vertical: [.085, .112], front: [.036, .09], directionZ: .18, directionY: .05, originSide: .3 },
+  // #938: conservative *guess* inside the existing lateral policy; actual immutable-standing Ghosts pose/cell fixture.
+  // Only the left temple (positive model x), with authoritative never-changed p/r/c history, can reopen after greeting.
+  greetingLeftPatch: { vertical: [.096, .104], front: [.065, .075] },
+  // #946: separate conservative *guess* at the exposed RIGHT/BACK temple; actual immutable wave/cell/hidden proof.
+  greetingRightPatch: { vertical: [.098, .102], front: [.038, .042], directionZ: .05, directionY: .025 },
+  greetingRightFirstTurn: [-.105, -.095], // #967 *guess* first accepted negative yaw family; private history only.
+  // #967 geometric witness: source-bound interval proof of the whole style0 RIGHT ray-cell prism.
+  // Values are canonical model coordinates, not inflated hit/entry tolerances. See tools/riflerightcellproof.py.
+  greetingRightCell: { x: [-.8, -.087], vertical: [1.628, 1.632], front: [.038, .042] },
+  greetingLeftTinyTurn: .01, // #947 *guess* one accepted r2 yaw quantum from the first standing anchor; no projection/entry tolerance change
+  greetingLeftTurn: .30, // #953 *guess* independent larger standing yaw corridor; existing LEFT surface/precision unchanged
+  // #943: narrow conservative *guess* inside Front; actual immutable-heading wave/pause/cell proof, not elapsed pose settling.
+  greetingFrontPatch: { across: [.065, .071], vertical: [.086, .094], direction: .04 },
+  // #944 *guess*: tiny first-yaw corridor and a whole-cell subset of the original frontal patch; actual posed/hidden/corner proofs required.
+  afterTurnFrontPatch: { x: [.065, .071], y: [.086, .094], approach: .04, yaw: .02 },
+  // .001 derives from sqrt(3)/2000 maximum r3 contact error on the already-snapped o:r2/d:r3 ray.
+  // Head anchor is the midpoint of existing bind1.54 / settled1.52; surface/pose limits are conservative *guess*
+  // safeguards checked by the actual native fixture, not model measurements or guaranteed anti-cheat physics.
+  headY: 1.53, wireMetres: .001, surfaceMetres: .015,
+  stationaryMs: 500, stationarySpeed: .25, gait: .01, maxCoordinate: 5002, // policy gates *guess*, coordinate cap bounds existing feet5000 + actual headheight<2
+};
+let rifleSkullTriangles;
+/** The existing SphereGeometry tessellation, pure math and cached once; verified against actual Avatar vertices. */
+export function rifleSkullProfile() {
+  if (rifleSkullTriangles) return rifleSkullTriangles;
+  return rifleSkullTriangles = rifleSphereProfile(PVP_RIFLE_HEAD.skull);
+}
+/** Existing SphereGeometry Float32 vertex operations, shared by bounded surface profiles. */
+export function rifleSphereProfile(shape) {
+  const { radius, width, height, scale, centre } = shape, points = [], triangles = [];
+  for (let y = 0; y <= height; y++) for (let x = 0; x <= width; x++) {
+    const a=x/width*Math.PI*2,b=y/height*Math.PI;
+    const point=[-radius*Math.cos(a)*Math.sin(b),radius*Math.cos(b),radius*Math.sin(a)*Math.sin(b)];
+    points.push(point.map((v,i)=>Math.fround(Math.fround(Math.fround(v)*scale[i])+centre[i])));
+  }
+  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+    const a=y*(width+1)+x+1,b=a-1,c=b+width+1,d=a+width+1;
+    if(y!==0)triangles.push([points[a],points[b],points[d]]);
+    if(y!==height-1)triangles.push([points[b],points[c],points[d]]);
+  }
+  return triangles;
+}
+/** First FRONT triangle contact, t remains WORLD metres after inverse avatar scaling. */
+export function rifleSkullEntry(seed,state,origin,direction) {
+  return rifleProfileEntry(rifleSkullProfile(),seed,state,origin,direction);
+}
+/** Shared finite front-triangle entry; profile is canonical head-bind-relative. */
+export function rifleProfileEntry(triangles,seed,state,origin,direction) {
+  const look=avatarLook(seed),width=[.93,1,1.08][look.build],a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),length=Math.hypot(...direction);
+  const turn=([x,y,z])=>[(c*x-s*z)/width,y/look.tall,(s*x+c*z)/width];
+  const o=turn(origin.map((v,i)=>v-state.p[i]));o[1]-=PVP_RIFLE_HEAD.headY;
+  const dir=turn(direction.map(v=>v/length));let first=Infinity;
+  for(const [a,b,c] of triangles) {
+    const x=b[0]-a[0],y=b[1]-a[1],z=b[2]-a[2],u=c[0]-a[0],v=c[1]-a[1],w=c[2]-a[2];
+    const px=dir[1]*w-dir[2]*v,py=dir[2]*u-dir[0]*w,pz=dir[0]*v-dir[1]*u,det=x*px+y*py+z*pz;
+    if(det<=1e-12)continue;
+    const sx=o[0]-a[0],sy=o[1]-a[1],sz=o[2]-a[2],bary=(sx*px+sy*py+sz*pz)/det;
+    if(bary<0||bary>1)continue;
+    const qx=sy*z-sz*y,qy=sz*x-sx*z,qz=sx*y-sy*x,other=(dir[0]*qx+dir[1]*qy+dir[2]*qz)/det;
+    if(other<0||bary+other>1)continue;
+    const t=(u*qx+v*qy+w*qz)/det;if(t>=0)first=Math.min(first,t);
+  }
+  return Number.isFinite(first)?first:null;
+}
+/** Seed/model/ray proof for this bounded surface; no trusted client damage/head or model override. */
+export function rifleHeadContact(seed,state,shot,shooterFeet,range,maxOrigin,allowLateral = true,options = true,legacyRear = true) {
+  // Compatibility with published #931/#936 positional front/rear callers; new server additions use named options.
+  if(options===null||typeof options!=='object')options={allowFront:options,allowRear:legacyRear};
+  const H=PVP_RIFLE_HEAD,{hc,o,d}=shot;
+  if(!Number.isFinite(range)||!Number.isFinite(maxOrigin)||shot.t!=='a'||shot.w!=='rifle'||!hc||hc[0]!==H.version||state.c)return false;
+  if(Math.hypot(...o.map((v,i)=>v-shooterFeet[i]))>maxOrigin)return false;
+  const length=Math.hypot(...d),unit=d.map(v=>v/length),delta=hc.slice(1).map((v,i)=>v-o[i]),along=delta.reduce((s,v,i)=>s+v*unit[i],0);
+  if(along<0||along>range||Math.hypot(...delta.map((v,i)=>v-along*unit[i]))>H.wireMetres)return false;
+  const jaw=rifleJawRegion(seed,state,hc.slice(1),o,d)||(options.allowJawFrontSide===true&&rifleJawFrontSideRegion(seed,state,hc.slice(1),o,d)),nose=rifleNoseRegion(seed,state,hc.slice(1))||rifleNoseExtraRegion(seed,state,hc.slice(1))||rifleNoseBandRegion(seed,state,hc.slice(1))||(options.allowImmutableNoseDepth===true&&rifleNoseDepthRegion(seed,state,hc.slice(1)))||(options.allowImmutableNoseSide===true&&rifleNoseSideRegion(seed,state,hc.slice(1),o,d));
+  if(!jaw && !nose && !rifleHeadRegion(seed,state,hc.slice(1),o,d,allowLateral,options))return false;
+  const front=jaw ? rifleJawEntry(seed,state,o,d) : nose ? rifleNoseEntry(seed,state,o,d) : rifleSkullEntry(seed,state,o,d);
+  return front!==null&&Math.abs(front-along)<=(jaw ? H.jawPatch.surface : nose ? H.nosePatch.surface : H.surfaceMetres);
+}
+
+/** A quantized cell wholly inside the canonical core; boundary cells fail closed instead of inflating the patch. */
+export function rifleHeadCoreRegion(seed,state,point,origin,direction) {
+  const H=PVP_RIFLE_HEAD,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  if(!H.coreStyles.includes(look.style))return false;
+  const patch=H.corePatches[look.style]??H.patch;
+  // Beanie-facing core is body-only on steep rays: a nearer brim/nose can hide the primary skull.
+  if(patch.maxVertical!==undefined && (!Array.isArray(direction)||direction.length!==3||!direction.every(Number.isFinite)||Math.hypot(...direction)===0||Math.abs(direction[1])/Math.hypot(...direction)>patch.maxVertical))return false;
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]);
+  const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
+  return Math.abs(lx)+H.wireMetres/width<=patch.across && ly-H.wireMetres/look.tall>=patch.low && ly+H.wireMetres/look.tall<=patch.high && lz>0;
+}
+
+// #903/#983: shared bicycle handling. maxRise .12 (#1300: was .075, which stopped bikes at road kerbs 10 cm proud; kept under the 15.5 cm stair risers so stairs still stop a bike, *guess*), maxDrop .35 (grounded step),
+// maxTilt/frame clearance are game-value guesses; larger drops use ordinary gravity/landing damage. model wheels at -.50/.42,
+// radii .35, handlebar half-width .28 and saddle .80 come from bikeGeometry, not surveyed dimensions.
+// #984: shared with the existing rubber grip cylinders in bikeGeometry; model values, not surveyed measurements.
+export const BICYCLE_GRIP = { x: .31, y: .95, z: .25, radius: .018, length: .09 };
+export const BICYCLE = {
+  // #1856: game-feel guesses, not measured bicycle dynamics; existing geometry/support stays authoritative.
+  motion: { pedal: 4.5, brake: 9, rolling: .2, coast: 2, drag: .012, airDrag: .08, maxSpeed: 11,
+    gravity: 9.8, still: .03, launchSpeed: 5.5, minLift: .35, maxLift: 3, contactGap: .00001, airPitch: 5 },
+  maxDt: .1, extractStep: .1, height: 1.1, speed: 6, reverse: 2, turn: 1.6, step: .05, radius: .31, samples: 12,
+  rear: -.54, front: .46, eye: 1.25, cameraBack: .14, pitch: -.25, maxRise: .12,
+  maxDrop: .35, standDrop: .15, wheelRear: -.50, wheelFront: .42, wheelRadius: .35, contactSamples: 8, maxTilt: .65, frameClearance: .25, extract: 3, mountReach: 2.6, stand: [.9, 1.2, 1.5] };
+
+let rifleNoseTriangles;
+export function rifleNoseProfile() {
+  return rifleNoseTriangles ??= rifleSphereProfile(PVP_RIFLE_HEAD.nose);
+}
+/** Only the measured frontal nose core; no side/back/hidden-surface claim. */
+export function rifleNoseRegion(seed,state,point) {
+  const H=PVP_RIFLE_HEAD,N=H.nosePatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]);
+  const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
+  return Math.abs(lx)+H.wireMetres/width<=N.across && ly-H.wireMetres/look.tall>=N.low && ly+H.wireMetres/look.tall<=N.high && lz-H.wireMetres/width>=N.front;
+}
+export function rifleNoseEntry(seed,state,origin,direction) {
+  const a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),n=Math.hypot(...direction),[x,y,z]=direction.map(v=>v/n),N=PVP_RIFLE_HEAD.nosePatch;
+  // A frontal ray is essential: the profile alone cannot establish earlier hair/body occlusion behind it.
+  if((s*x+c*z)>=0 || Math.abs(c*x-s*z)>N.direction || Math.abs(y)>N.direction)return null;
+  return rifleProfileEntry(rifleNoseProfile(),seed,state,origin,direction);
+}
+
+export function rifleHeadFrontRegion(seed,state,point,origin,direction) {
+  const H=PVP_RIFLE_HEAD,F=H.front,look=avatarLook(seed);
+  if(state.c||!F.styles.includes(look.style)||![origin,direction].every(v=>Array.isArray(v)&&v.length===3&&v.every(Number.isFinite)))return false;
+  const a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),w=[.93,1,1.08][look.build];
+  const [dx,dy,dz]=direction,front=s*dx+c*dz,side=c*dx-s*dz;
+  if(!(front<0)||Math.abs(side)>-front*F.approach||Math.abs(dy)>-front*F.approach)return false;
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]),q=[Math.abs((c*x-s*z)/w),y/look.tall-H.headY,(s*x+c*z)/w],e=[H.wireMetres/w,H.wireMetres/look.tall,H.wireMetres/w];
+  return [F.x,F.y,F.z].every(([low,high],i)=>q[i]-e[i]>=low&&q[i]+e[i]<=high);
+}
+
+/** #944: independent measured subset, never an override of existing private front eligibility. */
+export function rifleHeadAfterTurnFrontRegion(seed,state,point,origin,direction) {
+  if(!rifleHeadFrontRegion(seed,state,point,origin,direction))return false;
+  const H=PVP_RIFLE_HEAD,F=H.afterTurnFrontPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),w=[.93,1,1.08][look.build];
+  const front=s*direction[0]+c*direction[2],side=c*direction[0]-s*direction[2];
+  if(Math.abs(side)>-front*F.approach||Math.abs(direction[1])>-front*F.approach)return false;
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]),qx=Math.abs((c*x-s*z)/w),qy=y/look.tall-H.headY;
+  return qx-H.wireMetres/w>=F.x[0]&&qx+H.wireMetres/w<=F.x[1]&&qy-H.wireMetres/look.tall>=F.y[0]&&qy+H.wireMetres/look.tall<=F.y[1];
+}
+
+// Shared dispatch: #916 owns the central core; #917 can add its independent extra-region branch here.
+export function rifleHeadRegion(seed,state,point,origin,direction,allowLateral = true,options = true,legacyRear = true) { if(options===null||typeof options!=='object')options={allowFront:options,allowRear:legacyRear}; return rifleHeadCoreRegion(seed,state,point,origin,direction) || ((options.allowRear === undefined || options.allowRear || options.allowGreetingAfterTurnRear === true || options.allowGreetingFirstTurnRear === true) && rifleHeadRearRegion(seed,state,point,origin,direction)) || ((options.allowFront === undefined || options.allowFront) && rifleHeadFrontRegion(seed,state,point,origin,direction)) || (allowLateral && rifleHeadLateralRegion(seed,state,point,origin,direction)) || ((options?.allowGreetingLeft === true || options?.allowGreetingLeftTinyTurn === true || options?.allowGreetingLeftTurn === true) && rifleHeadGreetingLeftRegion(seed,state,point,origin,direction)) || (options?.allowGreetingFront === true && rifleHeadGreetingFrontRegion(seed,state,point,origin,direction)) || (options?.allowGreetingRight === true && rifleHeadGreetingRightRegion(seed,state,point,origin,direction)) || (options?.allowGreetingRightFirstTurn === true && rifleHeadGreetingRightCellRegion(seed,state,point,origin,direction)) || (options?.allowAfterTurnFront === true && rifleHeadAfterTurnFrontRegion(seed,state,point,origin,direction)) || (options?.allowGreetingAfterTurnFront === true && rifleHeadAfterTurnFrontRegion(seed,state,point,origin,direction)); }
+
+/** Exposed lower rear skull only, with the same snapped ray as the actual native contact. */
+export function rifleHeadRearRegion(seed,state,point,origin,direction) {
+  if(!Array.isArray(origin)||!Array.isArray(direction)||origin.length!==3||direction.length!==3||![...origin,...direction].every(Number.isFinite))return false;
+  const H=PVP_RIFLE_HEAD,R=H.rear,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  if(look.style===1)return false; // Actual long hair is first; no invented exposed back surface.
+  const P=look.style===3?R.beanie:R.lower,[x,y,z]=point.map((v,i)=>v-state.p[i]);
+  const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
+  const n=Math.hypot(...direction),[dx,dy,dz]=direction.map(v=>v/n),ox=origin[0]-state.p[0],oz=origin[2]-state.p[2];
+  if(!n||(s*dx+c*dz)<=0||Math.abs(c*dx-s*dz)>R.direction||Math.abs(dy)>R.direction||(s*ox+c*oz)/width>-R.originBack)return false;
+  return Math.abs(lx)+H.wireMetres/width<=P.across && ly-H.wireMetres/look.tall>=P.low && ly+H.wireMetres/look.tall<=P.high && lz-H.wireMetres/width>=P.back && lz+H.wireMetres/width<=P.front;
+}
+
+let rifleJawTriangles;
+export function rifleJawProfile() { return rifleJawTriangles ??= rifleSphereProfile(PVP_RIFLE_HEAD.jaw); }
+/** Only the measured front approach, on the same actual r3 wire direction. No presentation pose from the shooter. */
+function rifleJawDirection(state,direction) {
+  if(!Array.isArray(direction)||direction.length!==3||!direction.every(Number.isFinite))return false;
+  const a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),n=Math.hypot(...direction);if(!n)return false;
+  const [x,y,z]=direction.map(v=>v/n),forward=s*x+c*z,lateral=c*x-s*z,D=PVP_RIFLE_HEAD.jawPatch.direction;
+  return forward<0 && Math.abs(lateral)<=-forward*D && Math.abs(y)<=-forward*D;
+}
+export function rifleJawRegion(seed,state,point,origin,direction) {
+  if(!rifleJawDirection(state,direction))return false;
+  const H=PVP_RIFLE_HEAD,J=H.jawPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]),lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
+  return Math.abs(lx)+H.wireMetres/width<=J.across && ly-H.wireMetres/look.tall>=J.low && ly+H.wireMetres/look.tall<=J.high && lz-H.wireMetres/width>=J.front;
+}
+/** #959: actual frontal Jaw strips only; the server separately requires permanent private pose history. */
+export function rifleJawFrontSideRegion(seed,state,point,origin,direction) {
+  if(state.c||!rifleJawDirection(state,direction))return false;
+  const H=PVP_RIFLE_HEAD,J=H.jawFrontSidePatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]),lx=Math.abs((c*x-s*z)/width),ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
+  return lx-H.wireMetres/width>=J.across[0]&&lx+H.wireMetres/width<=J.across[1]&&ly-H.wireMetres/look.tall>=J.low&&ly+H.wireMetres/look.tall<=J.high&&lz-H.wireMetres/width>=J.front;
+}
+export function rifleJawEntry(seed,state,origin,direction) {
+  return rifleJawDirection(state,direction) ? rifleProfileEntry(rifleJawProfile(),seed,state,origin,direction) : null;
+}
+
+/** Both exposed side temples; missing rays fail closed without changing legacy core/nose callers. */
+export function rifleHeadLateralRegion(seed,state,point,origin,direction) {
+  if(!Array.isArray(origin)||!Array.isArray(direction)||origin.length!==3||direction.length!==3||
+    !origin.every(Number.isFinite)||!direction.every(Number.isFinite))return false;
+  const H=PVP_RIFLE_HEAD,L=H.lateralPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]);
+  const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width,e=H.wireMetres/width,ey=H.wireMetres/look.tall;
+  if(Math.abs(lx)-e<L.across[0]||Math.abs(lx)+e>L.across[1]||ly-ey<L.vertical[0]||ly+ey>L.vertical[1]||lz-e<L.front[0]||lz+e>L.front[1])return false;
+  const n=Math.hypot(...direction);if(!n)return false;
+  const dx=(c*direction[0]-s*direction[2])/n,dy=direction[1]/n,dz=(s*direction[0]+c*direction[2])/n;
+  const ox=(c*(origin[0]-state.p[0])-s*(origin[2]-state.p[2]))/width;
+  return lx*dx<0&&lx*ox>0&&Math.abs(ox)>=L.originSide&&Math.abs(dz)<=L.directionZ&&Math.abs(dy)<=L.directionY;
+}
+
+/** #938: left only, inside the original ray/profile guard; eligibility belongs to the server attachment, not the wire. */
+export function rifleHeadGreetingLeftRegion(seed,state,point,origin,direction) {
+  if(!rifleHeadLateralRegion(seed,state,point,origin,direction))return false;
+  const H=PVP_RIFLE_HEAD,L=H.greetingLeftPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]);
+  const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width,e=H.wireMetres/width,ey=H.wireMetres/look.tall;
+  return lx>0&&ly-ey>=L.vertical[0]&&ly+ey<=L.vertical[1]&&lz-e>=L.front[0]&&lz+e<=L.front[1];
+}
+
+
+
+
+
+/** #934: additive frontal side family; original nose core/entry stay unchanged. */
+export function rifleNoseExtraRegion(seed,state,point) {
+  const H=PVP_RIFLE_HEAD,N=H.noseExtraPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]);
+  const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
+  return Math.abs(lx)+H.wireMetres/width<=N.across && ly-H.wireMetres/look.tall>=N.low && ly+H.wireMetres/look.tall<=N.high && lz-H.wireMetres/width>=N.front;
+}
+
+/** #937: additive lower central standing band; original nose core/entry stay unchanged. */
+export function rifleNoseBandRegion(seed,state,point) {
+  const H=PVP_RIFLE_HEAD,N=H.noseBandPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]);
+  const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
+  return Math.abs(lx)+H.wireMetres/width<=N.across && ly-H.wireMetres/look.tall>=N.low && ly+H.wireMetres/look.tall<=N.high && lz-H.wireMetres/width>=N.front;
+}
+
+/** #950: central depth cells, admitted by the server only for known immutable standing history. */
+export function rifleNoseDepthRegion(seed,state,point) {
+  const H=PVP_RIFLE_HEAD,N=H.noseDepthPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]);
+  const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width,e=H.wireMetres/width,ey=H.wireMetres/look.tall;
+  return Math.abs(lx)+e<=N.across && ly-ey>=N.low && ly+ey<=N.high && lz-e>=N.back && lz+e<=N.front;
+}
+
+/** #943: a separate narrow Front family; only authoritative immutable standing history may reopen it after greeting. */
+export function rifleHeadGreetingFrontRegion(seed,state,point,origin,direction) {
+  if(!rifleHeadFrontRegion(seed,state,point,origin,direction))return false;
+  const H=PVP_RIFLE_HEAD,F=H.greetingFrontPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const [x,y]=point.map((v,i)=>v-state.p[i]),lx=(c*x-s*(point[2]-state.p[2]))/width,ly=y/look.tall-H.headY,e=H.wireMetres/width,ey=H.wireMetres/look.tall;
+  const n=Math.hypot(...direction),[dx,dy,dz]=direction.map(v=>v/n),forward=s*dx+c*dz;
+  return Math.abs(lx)-e>=F.across[0]&&Math.abs(lx)+e<=F.across[1]&&ly-ey>=F.vertical[0]&&ly+ey<=F.vertical[1]&&Math.abs(c*dx-s*dz)<=-forward*F.direction&&Math.abs(dy)<=-forward*F.direction;
+}
+
+/** #946: right/back only; does not mirror the broad left band or infer completion of a paused wave. */
+export function rifleHeadGreetingRightRegion(seed,state,point,origin,direction) {
+  if(!rifleHeadLateralRegion(seed,state,point,origin,direction))return false;
+  const H=PVP_RIFLE_HEAD,R=H.greetingRightPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const [x,y,z]=point.map((v,i)=>v-state.p[i]),lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width,e=H.wireMetres/width,ey=H.wireMetres/look.tall;
+  const n=Math.hypot(...direction),[dx,dy,dz]=direction.map(v=>v/n);
+  return lx<0&&ly-ey>=R.vertical[0]&&ly+ey<=R.vertical[1]&&lz-e>=R.front[0]&&lz+e<=R.front[1]&&Math.abs(s*dx+c*dz)<=R.directionZ&&Math.abs(dy)<=R.directionY;
+}
+
+/** #967/#968: first-turn style0/2 only. The full cell ray cone AND actual r3 ray stay in a certified safe prism.
+ * A common-origin ray/plane intersection is linear-fractional with same-sign denominator: all cell
+ * rays are convex combinations of its eight corner intersections. Both slab ends bound the whole cone.
+ * The interval generator bounds all head pitch/breath/bind/yaw and ordinary waving/held/rest limbs;
+ * it is not a sampled pose lookup or a server claim about the client's current animation phase. */
+export function rifleHeadGreetingRightCellRegion(seed,state,point,origin,direction) {
+  const style=avatarLook(seed).style; // #968: style2 shares the certified prism; long hair/style1 stays excluded.
+  if((style!==0&&style!==2)||!rifleHeadGreetingRightRegion(seed,state,point,origin,direction))return false;
+  const P=PVP_RIFLE_HEAD.greetingRightCell,look=avatarLook(seed),w=[.93,1,1.08][look.build];
+  const a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),turn=([x,y,z])=>[(c*x-s*z)/w,y/look.tall,(s*x+c*z)/w];
+  const o=turn(origin.map((v,i)=>v-state.p[i]));if(!(o[0]<P.x[0]))return false;
+  const insideRay=d=>d[0]>0&&P.x.every(x=>{const t=(x-o[0])/d[0],y=o[1]+t*d[1],z=o[2]+t*d[2];return t>=0&&y>=P.vertical[0]&&y<=P.vertical[1]&&z>=P.front[0]&&z<=P.front[1];});
+  // The original wire-distance check alone allows rays outside the rounded cell: certify this ray too.
+  if(!insideRay(turn(direction)))return false;
+  for(const x of[-.0005,.0005])for(const y of[-.0005,.0005])for(const z of[-.0005,.0005]) {
+    const q=turn([point[0]+x-state.p[0],point[1]+y-state.p[1],point[2]+z-state.p[2]]);
+    if(!insideRay(q.map((v,i)=>v-o[i])))return false;
+  }
+  return true;
+}
+
+/** #971: all r3 cell rays AND the independently rounded direction must cross a certified
+ * occluder-free prism ending inside every allowed Nose pose. Intersection coordinates
+ * are linear-fractional in the cell, with one-signed denominator: extrema occur at
+ * its eight corners. Convexity then covers every intervening ray, not just eight samples.
+ * Server permission requires existing immutable standing history; no elapsed-time guess.
+ */
+export function rifleNoseSideRegion(seed,state,point,origin,direction) {
+  if(state.c||![point,origin,direction].every(v=>Array.isArray(v)&&v.length===3&&v.every(Number.isFinite)))return false;
+  const P=PVP_RIFLE_HEAD.noseSidePrism,look=avatarLook(seed),w=[.93,1,1.08][look.build],a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a);
+  const turn=([x,y,z])=>[(c*x-s*z)/w,y/look.tall,(s*x+c*z)/w];
+  const o=turn(origin.map((v,i)=>v-state.p[i]));
+  if(!(o[2]>P.front))return false;
+  const inside=(x,y)=>P.polygon.every((a,i)=>{
+    const b=P.polygon[(i+1)%P.polygon.length],dx=b[0]-a[0],dy=b[1]-a[1];
+    return dx*(y-a[1])-dy*(x-a[0])>=P.numericalInset*Math.hypot(dx,dy);
+  });
+  const ray=d=>{
+    if(!(d[2]<0))return false;
+    return [P.front,P.back].every(z=>{const t=(z-o[2])/d[2];return t>=0&&inside(o[0]+t*d[0],o[1]+t*d[1]);});
+  };
+  if(!ray(turn(direction)))return false;
+  // r3 rounding cell is axis-aligned in WORLD space; rotate each actual corner, not a canonical approximation.
+  for(const x of[-.0005,.0005])for(const y of[-.0005,.0005])for(const z of[-.0005,.0005]){
+    const q=turn(point.map((v,i)=>v+[x,y,z][i]-state.p[i]));
+    if(q[2]<P.back||q[2]>=P.front||!ray(q.map((v,i)=>v-o[i])))return false;
+  }
+  return true;
+}
+
+// #1149: the avatars' crouch, a deep squat ("sitta på huk") in the figure's frame (floor 0, facing +z), all linear in
+// the crouch 0 … 1 so a half crouch is in between. The hips drop to about knee height and move back behind the heels, the
+// torso leans forward (negative lean = forward in poseOlof), knees bent forward and a little apart over flat feet, the
+// forearms resting over the knees. Eye height ends near PLAYER.crouchEye. The head boxes below follow the same hips/lean.
+// *guess*: by eye against an ordinary adult's deep squat, not measured.
+export const AVATAR_CROUCH = {
+  hipDrop: .54, hipForward: -.1, lean: -.42,
+  feet: { x: .14, y: .05, z: .07, turn: .3 }, // ankle (m, ± sideways) and the toes turned out (rad)
+  knees: [.45, .2, 1], // the knee pole (x outward per side)
+  rest: { at: [.16, .36, .34], pole: [.7, -.3, -.3] }, // a wrist over the knee (x per side), the elbow out and back
+  step: .5, // the walking stride shrinks by this share when fully down
+  time: .2, // s, our own mirror image going down or up (others follow their sent states)
+};
+
+// #2003: the avatars' walk and run (Avatar.update). One stride = one leg's whole cycle; each foot has an explicit stance phase (the foot is
+// planted: it travels back under the body at exactly the ground speed, so it does not slide) and a swing phase (a Hermite arc forward that
+// meets the ground moving back at body speed). Tables are by ground speed (m/s, world); values between the points are linear.
+// Sources (*guess* = fitted by eye to ordinary adult gait data, not measured on this rig): walking ~1.4 m/s at ~110-120 steps/min and
+// running ~3 m/s at ~165 steps/min are textbook figures; the rest is interpolated. Before #2003 the avatar used one sine with a fixed
+// 0.78 m cycle: 4.1 / 8.3 / 12.4 footfalls/s at 1.6 / 3.2 / 4.8 m/s.
+// #2004 visual transition guesses, in model metres / seconds / radians. No navigation or wire state.
+export const AVATAR_MOTION = {
+  startStance: .15, startTime: .16, startReach: .48, settleDistance: .025, contactHeight: .012,
+  stepTime: .19, stepExtra: .13, stepTravel: .35, stepLift: .055, turnStep: .25,
+  settleEase: 14, idleSway: .008, idleHz: .17, crouchEase: 8, poseTime: .44, poseLean: .30, seatTurnEase: 8, seatTurnSnap: .001, groundCrouch: .01,
+  resetDistance: .75, resetTurn: 1.4, resetTime: .25,
+};
+// #2035: a standing avatar's living rest (src/avataridle.js), derived locally from a per-player seed (no network field). All *guesses* by
+// eye against ordinary idle footage, in model metres / seconds / radians; ranges [a, b] are drawn per event from the seeded random.
+// `live` 1/s: how fast the whole rest blends in / out. `weight`: the body moves over one leg (contrapposto): `shift` m the hips move over
+// it, `roll` rad the hips tilt (the free side drops, its knee bends), `drop` m they sink, `counter` share the shoulders tilt back the
+// other way; it changes side every `hold` s over `move` s, sometimes back to both legs (`centre` share). `look`: a glance around when
+// the player has not turned the view for `quiet` s (`input` rad/s counts as turning) and no one is looked at (#2011 wins): `yaw`/`pitch`
+// rad, `inT`/`hold`/`outT` s, `wait` s between. `gesture`: after `after` s of standing still the arms cross, go into the pockets or
+// stretch overhead (only with both hands free), `hold` s for the first two, `gap` s between, `blend` s in / out, `cancel` 1/s the fade
+// when a hand gets busy; `stretch`: up / hold / down s, `lean` (back) and `head` (up) rad.
+export const AVATAR_IDLE = {
+  live: 4,
+  weight: { first: [1.2, 3], hold: [3.5, 8], move: [0.9, 1.5], amount: [0.6, 1], centre: 0.2, shift: 0.032, roll: 0.09, drop: 0, counter: 0.5 },
+  look: { quiet: 2.5, input: 0.15, first: [2, 6], wait: [5, 11], yaw: [0.35, 0.8], pitch: [-0.1, 0.12], inT: 0.55, hold: [1.1, 2.6], outT: 0.75, fade: 3 },
+  gesture: { after: [8, 14], hold: [7, 13], gap: [3, 7], blend: 0.9, cancel: 6 },
+  stretch: { up: 1.1, top: 1.0, down: 1.3, lean: 0.09, head: 0.22 },
+};
+
+export const AVATAR_GAIT = {
+  speeds: [0.25, 0.8, 1.6, 3.2, 4.8], // m/s (the table's points)
+  stepHz: [1.0, 1.65, 2.3, 2.9, 3.3], // footfalls per second (both feet) -> a stride (leg cycle) of 2 v / stepHz
+  duty: [0.68, 0.62, 0.55, 0.4, 0.33], // share of a leg's cycle on the ground (below 0.5 = a flight phase when running)
+  run: [2.1, 3.0], // m/s: the blend from the walking to the running style (hip, arms, foot angles) between these
+  lift: [0.075, 0.17], // m the swing foot clears the ground, walking / running (peaks early when running: a heel kick)
+  liftPeak: [0.85, 0.6], // exponent on the swing's progress: smaller = the foot rises sooner
+  heel: [0.32, 0.06], // rad toe-up at touch-down, walking / running (a heel strike / a forefoot landing)
+  toeOff: [0.5, 0.7], // rad toes down as the heel leaves the ground
+  hipDrop: [0.02, 0.07], // m the hips sink at double support (walking) / in mid stance (running); the leg reach lowers them further
+  runDip: 0.03, // m lower hips when running (knees stay bent)
+  sway: [0.02, 0.008], // m the hips shift over the stance foot, walking / running
+  armRatio: [0.62, 0.85], // arm swing = this x the opposite foot's travel from the hip
+  armMax: 0.36, // m the wrist swings at most
+  armLift: 0.16, // m the forward-swinging hand rises when running (elbows bent)
+  runLean: 0.12, // rad forward lean at a run
+  backShrink: 0.2, sideShrink: 0.25, // the stride shrinks by these shares going backwards / sideways (cadence rises to match)
+  sideMax: 0.9, // m the ankles are apart at most when side-stepping (*guess*): beyond it the lateral foot travel is scaled down, so a fast strafe slides its feet a little rather than doing the splits
+  sideCross: 0.14, // m the swing foot passes in front of the planted one when a fast strafe crosses the feet (carioca; *guess*)
+  sideWidth: 0.14, // m the ankles stay apart sideways at least when side-stepping (*guess*; standing 0.22): the lead foot steps out, the trailing foot closes up to this and never crosses
+  dirEase: 10, // 1/s: how fast the stride direction follows the direction of travel
+  reach: 0.995, // share of the leg's length the hips keep the stance foot within (the knee stays a little bent)
+  shoe: { heel: 0.084, toe: 0.194, sole: 0.05 }, // the shoe's heel / toe distance behind / in front of the ankle and the ankle's height over the sole (avatar.js)
+};
+
+// #1639: reactions in the BIO (cry, laugh, scream in terror). One-shot event { t: 'rx', k } (the room's PLAYERS.reactions = kinds.length),
+// never a state field. `duration` s of procedural pose, eased in / out over `ease`; `every` = our minimum gap between two (the room's
+// PLAYERS.reactEvery * .8 is shorter). Keys and labels are the player-facing controls. Pose numbers are by eye (*guess*): m / rad / Hz.
+export const REACT = {
+  kinds: [
+    { id: 'cry', label: 'Gråta', key: 'KeyY', keyLabel: 'Y', hz: 7, head: -.45, lean: -.12, shake: .012, mouth: .25, line: 'Buhu…' },
+    { id: 'laugh', label: 'Skratta', key: 'KeyU', keyLabel: 'U', hz: 4.5, head: .38, lean: .2, shake: .03, mouth: .85, line: 'Hahaha!' },
+    { id: 'scream', label: 'Skrika', key: 'KeyI', keyLabel: 'I', hz: 18, head: .35, lean: .1, shake: .008, mouth: 1, line: 'Aaaaaah!' },
+  ],
+  duration: 3.5, ease: .3, every: 4,
+};
+
+// #1622: the playroom dance, offered at the speakers while the room music plays. `dn: 1` (floss) / `2` (Gangnam, #1757) in the player state (like `c`).
+// Floss: the hips swing one way while both straight arms swing across the body the other way, one arm forward while the
+// other goes back. *guess*: by eye against the well-known move, not measured.
+export const DANCE = {
+  scorePerDay: 30, // #1829 (*guess*): direct dance points per local day; all real seconds still count for medals
+  floss: { hz: 1.9, hipSway: .07, bob: .025, armSide: .4, armDepth: .17, armFwd: .03, reach: .54, lean: .08 }, // hz: whole left-right cycles per second; metres / rad; reach: the straight arm's shoulder-to-hand distance (arm is .57 long)
+  // #1757 Gangnam Style, the horse-riding dance: `dn: 2`. A bouncy gallop on bent knees (one foot lifted per beat), wrists crossed
+  // in front holding the reins, and every other section one hand swinging a lasso overhead (left, then right). *guess*: by eye
+  // against the well-known move (about 132 beats a minute), not measured. hz: beats per second; metres / rad / seconds.
+  gangnam: { hz: 2.2, squat: .07, bounce: .035, lift: .09, footX: .16, footFwd: .05, reinsY: -.27, reinsZ: .32, cross: .04, pump: .025,
+    lean: .1, section: 3.6, blend: .35, lassoY: .5, lassoX: .1, lassoR: .1, lassoHz: 1.6 }, // section: seconds per reins/lasso part; reinsY: hands below the shoulders; cross: how far each wrist passes the middle; lassoHz: overhead circles per second
+  ease: 6, // 1/s, how fast the pose blends in and out
+  stepAway: .4, // m, walking further than this from where the dance started ends it
+};
+
+// #1799: the avatars' legs off the ground — no walking gait in the air. `am` in the player state (like `dn`): 1 flying (the
+// jetpack, or flung off a web strand), 2 swinging on a strand, 3 climbing a wall; older clients send none (they walk, as before).
+// Fly / swing: both legs hang almost straight, angled back from the hips (the "Superman" trail) further the faster the body
+// goes, and trail against the sideways / vertical movement; a slow pendulum on top. Climb: a ladder — feet towards the wall,
+// knees out, one foot lifted at a time, the steps' phase following the climbing speed (still when still).
+// *guess*: by eye against the well-known poses, not measured. m, rad, s, m/s.
+export const AVATAR_AIR = {
+  ease: 6, // 1/s, how fast the air pose blends in and out (walk → lift → land without a jump)
+  reach: [.97, .9], // share of the leg's length from hip to ankle, left / right (the right knee a little bent)
+  feetX: .1, // m, each ankle out from the middle
+  fly: { back: .28, perSpeed: .07, max: .95, side: .05, vertical: .05, sway: .05, swayHz: .35, lean: -.12 }, // back: rad behind the vertical at rest; perSpeed: rad per m/s forward; side / vertical: rad per m/s across / up
+  swing: { back: .12, perSpeed: .09, max: .9, side: .09, vertical: .04, sway: .03, swayHz: .5, lean: -.04 },
+  climb: { hipDrop: .08, feetZ: .2, feetX: .15, footY: .12, lift: .26, stride: .55, knees: [.9, .15, .7], lean: -.06 }, // stride: m climbed per whole step cycle; lift: m one foot rises per step; knees: the knee pole, x outward
+};
+
+// #974: ordinary gameplay approximation, independent of hair, facial polygons and animation history.
+// Three stacked head boxes (metres in the unscaled standing avatar), narrower at the crown; *guess* by the existing head.
+export const PVP_HEAD_BOXES = {
+  version: 2, maxCoordinate: 5002,
+  boxes: [
+    { low: 1.51, high: 1.59, halfWidth: .085, back: -.10, front: .12 },
+    { low: 1.59, high: 1.69, halfWidth: .105, back: -.11, front: .14 },
+    { low: 1.69, high: 1.76, halfWidth: .075, back: -.085, front: .085 },
+  ],
+  // Avatar.update/poseOlof crouch (#1149, AVATAR_CROUCH): hips at .88-hipDrop*c, local z hipForward*c, torso rotation X=-crouchLean*c.
+  hipY: .88, hipDrop: AVATAR_CROUCH.hipDrop, hipForward: AVATAR_CROUCH.hipForward, crouchLean: AVATAR_CROUCH.lean,
+};
+
+function rifleBoxPose(seed, state) {
+  const vector = v => Array.isArray(v) && v.length === 3 && v.every(x => Number.isFinite(x) && Math.abs(x) <= PVP_HEAD_BOXES.maxCoordinate);
+  if (!state || !vector(state.p) || !Number.isFinite(state.r) || Math.abs(state.r) > 100) return null;
+  const crouch = state.c === undefined || state.c === false ? 0 : state.c === true ? 1 : state.c;
+  if (!Number.isFinite(crouch) || crouch < 0 || crouch > 1) return null;
+  const look = avatarLook(seed), wire = decodeAvatarLook(typeof state.av === 'string' ? state.av + (state.ax ?? '') : null, seed);
+  // #1175: use the same existing build as the rendered avatar, including chosen-height looks.
+  look.build = wire.build; look.bodyBuild = wire.bodyBuild; // (#1139: a chosen body build too)
+  // #1173: follow the transmitted legacy vertical scale.
+  if (!Number.isInteger(wire.height)) look.tall = wire.tall;
+  // #1137: a chosen height scales the figure uniformly (Avatar: body × build sideways) and a child's head bone around
+  // its pivot (AVATAR_HEIGHT.pivot), so the three shared boxes grow with the head the same way.
+  let width = avatarBuildWidth(look), tall = look.tall, boxes = PVP_HEAD_BOXES.boxes;
+  const neckDelta = avatarShape('neck', wire.neck ?? look.neck); // #1191: head boxes follow neck length
+  if (neckDelta) boxes = boxes.map(b => ({ ...b, low: b.low + neckDelta, high: b.high + neckDelta }));
+  if (Number.isInteger(wire.height)) {
+    const { body, head } = avatarProportions(wire.height), P = AVATAR_HEIGHT.pivot;
+    width *= body; tall = body;
+    if (head !== 1) boxes = boxes.map(b => ({ low: P + (b.low - P) * head, high: P + (b.high - P) * head,
+      halfWidth: b.halfWidth * head, back: b.back * head, front: b.front * head }));
+  }
+  const sitting = state.pose === 1 || state.pose === 3; // #1237: a long sit has the ordinary seated torso, only the legs differ
+  const yaw = state.r + Math.PI, lean = state.pose === 2 ? Math.PI / 2 - REST.avatarLieTilt : sitting ? .1 : PVP_HEAD_BOXES.crouchLean * crouch;
+  return { width, tall, boxes, yawCos: Math.cos(yaw), yawSin: Math.sin(yaw),
+    leanCos: Math.cos(lean), leanSin: Math.sin(lean), crouch,
+    hipY: state.pose === 2 ? REST.avatarLieHip : sitting ? REST.avatarSeat + .075 : PVP_HEAD_BOXES.hipY - PVP_HEAD_BOXES.hipDrop * crouch,
+    hipZ: sitting ? .07 : PVP_HEAD_BOXES.hipForward * crouch };
+}
+
+/** #1150: rigid rest frame for the existing generous capsule; no mesh/anatomical classification. */
+export function restCombatFrame(seed, state, origin, direction) {
+  const pose = rifleBoxPose(seed, state);
+  if (!pose || !state.pose) return { origin, direction, feet: state.p, ceiling: rifleHeadBaseY(seed, state) };
+  const inverse = (v, point) => {
+    const x = pose.yawCos * v[0] - pose.yawSin * v[2];
+    const y = v[1] - (point ? pose.hipY * pose.tall : 0);
+    const z = pose.yawSin * v[0] + pose.yawCos * v[2] - (point ? pose.hipZ * pose.width : 0);
+    return [x, pose.leanCos * y - pose.leanSin * z + (point ? PVP_HEAD_BOXES.hipY * pose.tall : 0), pose.leanSin * y + pose.leanCos * z];
+  };
+  return { origin: inverse(origin.map((v,i)=>v-state.p[i]), true), direction: inverse(direction, false), feet: [0,0,0], ceiling: pose.boxes[0].low * pose.tall };
+}
+
+/** Existing body capsule endpoints in world space, rotated only for actual rest. */
+export function playerBodySegment(seed, state) {
+  if (!state.pose) return COMBAT.body.map(y => [state.p[0], state.p[1] + y, state.p[2]]);
+  const pose = rifleBoxPose(seed,state), H = PVP_HEAD_BOXES;
+  return COMBAT.body.map(y => {
+    const dy = y - H.hipY * pose.tall;
+    const ly = pose.hipY * pose.tall + pose.leanCos * dy;
+    const lz = pose.hipZ * pose.width - pose.leanSin * dy;
+    return [state.p[0] + pose.yawSin * lz, state.p[1] + ly, state.p[2] + pose.yawCos * lz];
+  });
+}
+
+/** Mesh body contacts are below the logical neck in the torso frame, including horizontal rest. */
+export function playerBodyContact(seed, state, point) {
+  if (!state.pose) return point[1] < rifleHeadBaseY(seed, state);
+  const frame = restCombatFrame(seed, state, point, [0,0,0]);
+  return frame.origin[1] < frame.ceiling;
+}
+
+/** Lowest world height of the logical head: body mesh contacts below this remain ordinary body hits. */
+export function rifleHeadBaseY(seed, state) {
+  const pose = rifleBoxPose(seed, state);
+  if (!pose) return null;
+  const H = PVP_HEAD_BOXES;
+  return state.p[1] + pose.tall * Math.min(...pose.boxes.map(box => pose.hipY +
+    pose.leanCos * (box.low - H.hipY) + Math.min(pose.leanSin * box.back, pose.leanSin * box.front)));
+}
+
+/** First entry into any logical head box. The ray is normalized before scaling, so distance remains WORLD metres. */
+export function rifleBoxHeadContact(seed, state, origin, direction, range, radius = 0) {
+  const pose = rifleBoxPose(seed, state), H = PVP_HEAD_BOXES;
+  const vector = v => Array.isArray(v) && v.length === 3 && v.every(Number.isFinite);
+  if (!Number.isFinite(radius) || radius < 0 || radius > 1 || !pose || !vector(origin) || origin.some(x => Math.abs(x) > H.maxCoordinate) || !vector(direction) || !Number.isFinite(range) || range < 0) return null;
+  const length = Math.hypot(...direction);
+  if (!Number.isFinite(length) || length === 0) return null;
+  const unit = direction.map(x => x / length);
+  // Invert heading, appearance scale and the simple crouch transform, retaining a world-distance ray parameter.
+  const inverse = (v, point) => {
+    const x = (pose.yawCos * v[0] - pose.yawSin * v[2]) / pose.width;
+    const y = v[1] / pose.tall - (point ? pose.hipY : 0);
+    const z = (pose.yawSin * v[0] + pose.yawCos * v[2]) / pose.width - (point ? pose.hipZ : 0);
+    return [x, pose.leanCos * y - pose.leanSin * z + (point ? H.hipY : 0), pose.leanSin * y + pose.leanCos * z];
+  };
+  const o = inverse(origin.map((x, i) => x - state.p[i]), true), d = inverse(unit, false);
+  let first = Infinity;
+  for (const box of pose.boxes) {
+    // #980: a finite ball uses a simple padded logical box. The projected world
+    // radius follows the existing nonuniform scale/crouch transform; default 0 is unchanged.
+    const pad = [radius / pose.width, radius * Math.hypot(pose.leanCos / pose.tall, pose.leanSin / pose.width),
+      radius * Math.hypot(pose.leanSin / pose.tall, pose.leanCos / pose.width)];
+    const low = [-box.halfWidth - pad[0], box.low - pad[1], box.back - pad[2]],
+      high = [box.halfWidth + pad[0], box.high + pad[1], box.front + pad[2]];
+    let near = 0, far = range;
+    for (let axis = 0; axis < 3 && near <= far; axis++) {
+      if (d[axis] === 0) { if (o[axis] < low[axis] || o[axis] > high[axis]) far = -1; continue; }
+      const a = (low[axis] - o[axis]) / d[axis], b = (high[axis] - o[axis]) / d[axis];
+      near = Math.max(near, Math.min(a, b)); far = Math.min(far, Math.max(a, b));
+    }
+    if (near <= far) first = Math.min(first, near);
+  }
+  return Number.isFinite(first) ? { distance: first, point: origin.map((x, i) => x + unit[i] * first) } : null;
+}
+
+
+/** #893: straight attacks share the logical boxes, while keeping their original attack shape. */
+export function straightBoxHeadContact(seed, state, shot, range) {
+  if (!['wand', 'web', 'saber'].includes(shot?.w) || shot.t !== 'a') return null;
+  return rifleBoxHeadContact(seed, state, shot.o, shot.d, range);
+}
+
+// #1045: report size and one-page admin lifetime; server and client share these bounds.
+export const REPORTS = {
+  // #1493: bounded reporter metadata; old/unnamed clients use a consistent display name.
+  playerNameChars:32, unknownPlayer:'Okänd spelare',
+  maxChars: 4000, maxBytes: 16384, sessionSeconds: 3600,
+  // #1049: bounded private JPEG report attachment and total PUT body; capture waits for a real screen frame.
+  // #1841: four own photos + screenshot; bounded decoded total, base64/UTF-8 request envelope and10-report pages. Guesses.
+  photoCount: 4, photoFileBytes: 20 * 1024 * 1024, imageTotalBytes: 800 * 1024, pageSize: 10,
+  imageBytes: 200 * 1024, imageEdge: 1280, putBytes: 1200 * 1024, captureMs: 5000 };
+
+// Shower detail assumptions (#1042), chosen visually; existing outlet/interaction dimensions remain unchanged.
+export const SHOWER_FITTINGS = {
+  hoseSegments: 48, hoseRadius: 0.007, safetyColor: 0xbf2d24,
+};
+
+// Visual shower-water assumptions (guess), not measured nozzle/flow specifications (#1062).
+// One merged mesh per outlet, no per-frame vertex updates or extra lights.
+export const SHOWER_SPRAY = { jets: 36, headInset: .85, spread: .16, radius: .0013,
+  segments: 5, sides: 3, repeats: 6, speed: 3.2, opacity: .62, bend: .18 };
+
+// Floor drains in the wet rooms (#1072): a square stainless grate in a frame, flush-looking on the tiles. Peab's material
+// gives no drain model or position, so every value is a *guess* (a usual Swedish 200 mm drain frame with a ~150 mm grate).
+// `size` = frame outer edge, `grate` = grate/recess edge, `bars` = slots' bars across the grate, `h` = how far the frame
+// stands above the floor tiles (visual only: the collision floor stays flat). Showers get theirs at `shower` (fractions of
+// the plan's shower rectangle, 0.5 = centre); rooms with machines but no shower get one `laundryGap` m in front of the
+// washer/dryer run, centred along it.
+export const FLOOR_DRAIN = { size: 0.2, grate: 0.15, bars: 8, h: 0.005, shower: { u: 0.5, v: 0.5 }, laundryGap: 0.35 };
+
+// Distant ground shadows (#1079, src/groundao.js): the sun's shadow box only covers ±14 m round its target, so trees and
+// façades further away get a baked soft darkening on the ground instead — a disc under each tree and a thin band along
+// each wall foot, one multiply-blended mesh. All values are visual choices (*guess*, tuned by eye on screenshots).
+// `tree`: darkening at a crown's centre (0 = none, 1 = black), `bare` its share left in winter (bare branches: × leaves),
+// `spread` × the crown's radius for the disc's radius, `rings` / `segs` its polar grid; `wall`: darkening at the wall foot,
+// `width` m of the band, `step` m between its vertices along a wall; `lift` m over the ground; `maxStep` m: triangles that
+// would bridge a height jump (a retaining wall, the box edge) are dropped; `fade`: the shadow map's texture-space edge
+// distance (0 = its centre, 1 = its rim) over which the baked shadows fade in, so nothing is darkened twice.
+// The sun's shadow box outdoors (#1144, main.js): the shadow map covers ±14 m round the sun's target, which stayed on our
+// flat, so in the courtyard a low evening sun drew the box's straight rim across the lawn (trees' shadows on one side,
+// none on the other). Further than `home` m from our footprint outdoors the target follows the visitor, `lead` m ahead
+// along the view and snapped to a `snap` m grid (a move redraws the shadow map, so only on a grid step). Every real sun
+// shadow fades out towards the map's rim between `rim` (shadow-texture edge measure: 0 centre, 1 rim) — where
+// GROUND_AO's baked shadows fade in — so a rim that is still in view is soft instead of a ruled line. All values are
+// *guesses* tuned by eye.
+export const SHADOW_BOX = { home: 4, lead: 5, snap: 2, rim: [0.84, 1.0],
+  lowMemoryLead: 0 }; // #1192: on phones the box does not lead along the view, so turning on the spot outdoors redraws no shadows, *guess*
+
+export const GROUND_AO = {
+  tree: 0.65, bare: 0.3, spread: 1.15, rings: 3, segs: 12,
+  wall: 0.5, width: 1.0, step: 3,
+  lift: 0.03, maxStep: 0.45, fade: [0.72, 0.95],
+};
+
+// FTX ceiling valves (#1080, src/world.js `ceilingVents`): Peab names a "lägenhetsaggregat typ FTX" with mechanical supply
+// and extract air (the information brochure and the Q&A, see #1080) but no sheet shows the valves, so every value here is
+// a *guess*: a white round disc valve (a usual Ø125 duct: a ~Ø160 collar on the ceiling, a disc hanging below it on a
+// neck), supply air in the bedrooms and living rooms (`supply`, room-name prefixes), extract air in the wet rooms, laundry
+// and kitchen (`exhaust`). One per room, placed automatically from the room's centre (where its ceiling lamp hangs):
+// `offsets` m away, first towards the flat's middle (away from the façade), then along it, then diagonally, then towards the façade —
+// the first spot that keeps `wall` m from every wall (clear of the ceiling's contact shadow, AO.ceiling), `cabinet` m from
+// fitted cabinets (the kitchen hood, wall cabinets, wardrobes), `lamp[0]` m from every ceiling lamp / pendant / smoke alarm (`lamp[1]` where no spot keeps that: a small wet room's spots),
+// `hole` m from the stair opening and does not straddle a soffit's edge (`soffit`). Sizes in metres.
+export const VENTS = {
+  supply: ['Sovrum', 'Vardagsrum', 'Allrum'],
+  exhaust: ['Badrum', 'WC/dusch', 'Tvätt', 'Kök / matplats'],
+  collar: { r: 0.08, h: 0.01 },                            // the ring against the ceiling (its top 2 mm under the ceiling plate)
+  neck: 0.045,                                             // the neck's radius between the collar and the disc
+  disc: { supply: { r: 0.068, h: 0.008, gap: 0.012 }, exhaust: { r: 0.055, h: 0.01, gap: 0.02 } }, // the disc: radius, thickness, gap under the collar
+  cap: { r: 0.55, h: 0.004 },                              // the raised centre of the disc (fraction of its radius, thickness)
+  color: 0xf8f8f6, roughness: 0.45,                       // white plastic, a touch whiter and glossier than the painted ceiling
+  slot: 0x8d908f,                                          // the shadowed slot round the neck (vertex colour, no extra material)
+  segments: 24,
+  offsets: [0.8, 0.6, 1.0, 0.45, 1.2, 0.35],
+  wall: 0.25, cabinet: 0.12, lamp: [0.4, 0.25], hole: 0.3, soffit: 0.05,
+};
+
+// New Year's Eve (#1199, part of #1170, src/newyear.js): the last `count` game seconds before 00:00 on 31 December every
+// TV switches itself on and counts down (10 … 1), then shows "Gott nytt år!" for `cheer` s after midnight; the TVs it
+// switched on go off again afterwards. Champagne flutes stand on the ILVA coffee table (top 0.47 m, x 3.04…4.24,
+// z 10.26…10.86) from the countdown until `glassesUntil` o'clock on 1 January, on its east half clear of the fruit bowl
+// (x 3.33), the cups in the middle and the remote (3.98, 10.72). A flute (*guess*, a common 17–18 cl shape): foot Ø 7 cm,
+// stem, bowl to `h` 22 cm, rim Ø 5.6 cm; filled as a poured glass (DRINKS.pour.glass.champagne). They are real glasses (#1222).
+// `?newyear` starts at `debugHour` on 31 December.
+export const NEW_YEAR = { count: 10, cheer: 60, glassesUntil: 4, debugHour: 23 + 59 / 60 + 45 / 3600,
+  h: 0.22,
+  glasses: [[3.86, 10.36], [3.99, 10.44], [4.12, 10.35], [4.15, 10.52]],
+  colors: { glass: 0xe8f0f2, bg: '#08102a', digit: '#ffffff', gold: '#f3cf6a' } };
+
+// Toasting (#1222, things.js Glass.useAlt "Skåla", main.js): with a glass in the hand, a clink, the glass raised for `raise` s
+// and a line (`newYear` from the countdown until NEW_YEAR.glassesUntil, else `lines`); at most one every `every` s (the
+// player room's PLAYERS.toastEvery, kept equal by hand). Players within that room's toastRange see it; one holding a glass
+// toasts back once. Olof toasts back from within `olof` m. Our picks (*guess*).
+export const TOAST = { every: 2, raise: 0.9, olof: 6, lines: ['Skål!'], newYear: ['Skål! Gott nytt år!', 'Gott nytt år!'], back: 'Skål, {n}!', answer: ['Skål!', 'Skål på dig!'] };
+/** Every toast line in one fixed list: an index of it goes to the player room, never text (PLAYERS.toastPhrases above its length). */
+export const TOAST_LINES = [...TOAST.lines, ...TOAST.newYear, ...TOAST.answer];
+
+// Sounds from other players (#1302, src/spatialsound.js, audio.js `playAt`, ghosts.js `soundTick`). `kinds` = the sound-event keys
+// sent to the player room (its PLAYERS.sounds, kept equal by hand; today the bicycle bell); `every` = our minimum gap between two
+// sent events (the room's PLAYERS.soundEvery is shorter). `range` = metres where each kind has faded out for the listener (a
+// squared linear fade, on top of the panner's own roll-off; the room's PLAYERS.soundRange 45 m is the outer bound for events).
+// `maxVoices` = most such sounds playing at once (no flooding by a crowd). Footsteps / jetpack are derived locally from the
+// others' state (no traffic): steps only from a ghost walking on the ground (not crouched, seated, riding or thrusting) within
+// `range.step`, one per stride; the jetpack roar only from the `jetNearest` nearest thrusting ghosts, a burst every `jetEvery` s.
+// Our picks (*guess*).
+export const SOUNDS = { kinds: ['bell'], every: 0.5, maxVoices: 8, range: { bell: 40, step: 25, jet: 35 },
+  stride: { walk: 0.62, run: 0.95, runSpeed: 3.6, minSpeed: 0.5, maxSpeed: 8, maxClimb: 1.5 }, jetNearest: 2, jetEvery: 0.35, bellKey: 'KeyB', gain: { bell: 1, step: 0.7, jet: 0.7 } };
+
+// #1363: walking-route lamp placements and dimensions are visual guesses, not surveyed fittings.
+// Paths themselves retain their sourced OSM coordinates. Existing street head/glow/material batches are reused.
+export const PATH_LIGHTS = { height: 4.6, step: 18, edge: 0.65, pathClear: 0.25, treeClear: 1.2, fenceClear: 0.8,
+  waterClear: 4, duplicateClear: 10, pool: { along: 7, across: 3.5, rings: 5, segs: 20 },
+  sources: ['44447963', '123898762', '123898761', '130537426', '44447981', '1432565775', '44447962', '1228396153', '185706718', '51890086', '1432565773'] };
+
+// #1371: supplementary road fittings follow mapped road centre lines, not surveyed lamp locations.
+// Spacing, verge setbacks and low-poly glow footprint are visual guesses; reuse the existing 6.2 m street fitting.
+export const ROAD_LIGHTS = { step: 32, edge: 0.65, minRoadWidth: 3.5, clear: 0.3, buildingClear: 1,
+  treeClear: 1.2, waterClear: 4, duplicateClear: 14, pool: { along: 8, across: 6.5, rings: 3, segs: 12 } };
+
+// Midnight fireworks over the block (#1200, src/fireworks.js; #1199's New Year trigger calls `start()`): `seconds` of
+// rockets (a pool of `shells` shells, each bursting into `sparks` sparks; the phone profile uses the `phone*` counts),
+// a new one every `interval` s (the last `finale` s: `finaleInterval`) launched inside `area` (x/z, plan m, over the
+// courtyard and the houses round it) and bursting `height` m up with radius `radius` m. `flash` = how much a burst
+// lifts the existing hemisphere/ambient lights (no new light, no shadow). All values are *guess*es, not measured.
+export const FIREWORKS = {
+  seconds: 180, shells: 22, sparks: 26, phoneShells: 12, phoneSparks: 16, interval: [0.25, 0.55], finale: 15, finaleInterval: 0.1,
+  phoneInterval: [0.45, 0.9], area: { x: [-48, 16], z: [4, 56] }, height: [28, 55], radius: [8, 16], rise: [1.1, 1.8], life: 2.6,
+  flash: { hemi: 0.55, ambient: 0.25, decay: 4.5, indoors: 0.4 }, soundDistance: 10, volume: 0.5,
+};
+
+// #1483: assumed viewing zones inside the existing L1007 room walls (not new building geometry).
+// Stable identities survive rearranging; only the personal home's three TV targets participate.
+export const TV_MEDIA = {
+  // Scalar YouTube volume: Sonos-like inverse distance plus head-facing attenuation (visual/audio guesses).
+  sound: { ref: 1, rolloff: 1.1, range: 14, behind: 0.35, intervalMs: 100,
+    // #1641: the BIO adds its speakers (src/playroomcinema.js) as extra omnidirectional sources next to the screen; each adds its inverse-distance gain
+    // times the weight below in power (RMS), so the nearest speaker dominates. Levels are *guess*es.
+    speakerGain: { front: .25, center: .3, surround: .25, rear: .25, height: .15 } },
+  floorTolerance: .7, // Feet/crouch/stair-edge tolerance around the current storey's finished floor.
+  screens: [
+    { id: 'lounge', name: 'TV · Vardagsrummet', level: 0, bounds: [.18,5.57,7.8,12.52] },
+    { id: 'bedroom1', name: 'TV · Sovrum 1', level: 1, bounds: [2.75,5.57,.18,4.42] },
+    { id: 'bedroom3', name: 'TV · Sovrum 3', level: 1, bounds: [.18,2.75,.18,4.42] },
+  ],
+};
+export function tvViewer(id,p) {
+  const s=TV_MEDIA.screens.find(s=>s.id===id);
+  if(!s||!Array.isArray(p)||p.length!==3||!p.every(Number.isFinite))return false;
+  const [x0,x1,z0,z1]=s.bounds;
+  return Math.abs(p[1]-LEVELS[s.level].floor)<=TV_MEDIA.floorTolerance&&p[0]>=x0&&p[0]<=x1&&p[2]>=z0&&p[2]<=z1;
+}
+
+// #1486: personal computer stations and child-sized clubhouse desks; all dimensions/themes are visual/playability guesses.
+export const COMPUTER_MEDIA = {
+  reach: 2.8, floorTolerance: .7, offColor:0x030407, // Assumed dark, unlit monitor glass.
+  desk: { width:1.45, depth:.6, height:.65, seat:.38, seatOffset:.8,
+    monitorWidth:.65, monitorHeight:.38, monitorY:1, monitorDepth:.04, bezel:.025,
+    top:.04, leg:.04, keyboard:[.4,.025,.14], chair:[.42,.06,.42], backHeight:.35,
+    case:[.18,.32,.3], homePlaneOffset:.085,
+    // #2025: the clubhouse stations' two side monitors (angled in, curved round the viewer: `radius`) and the large desk mat [w, d, centre z]; all *guess*es.
+    wing:{ width:.42, angle:.42, radius:1.3 }, mat:[1.0,.36,.12] },
+  // #2024: the clubhouse PCs are wide dual-chamber glass cases (front + side glass, cable chamber on the desk side) on a low
+  // drawer pedestal right of each desk (station-local +x, `gap` from the desk, back flush with it at `z`). Sizes are *guess*es
+  // scaled to the child-sized desks (#1486), no product data: pedestal [w,h,d], case [w,h,d], cable-chamber width, fan size.
+  pc: { gap:.05, z:-.05, pedestal:[.44,.46,.5], case:[.38,.5,.46], cable:.09, fan:.128 },
+  // #1613: `roomReach` = the furniture can be moved (Möblera om), so its reach is its whole room (`bounds`), not `reach` from x/z.
+  stations: [
+    { id:'pc-home', name:'Speldatorn', x:3.1, z:11.45, level:1, bounds:[2.75,5.57,7.8,12.52], roomReach:true, color:'#73e66b' },
+    { id:'laptop-home', name:'Laptopen', x:2.332, z:11.74, level:1, bounds:[.18,2.75,7.8,12.52], roomReach:true, color:'#c89aff' },
+    ...[
+      ['pc-lime','Lime',3.4,-3.5,Math.PI/2,'#94e76b'],
+      ['pc-cyan','Turkos',3.4,-.3,Math.PI/2,'#58d9ec'],
+      ['pc-rose','Rosa',8.6,-3.5,-Math.PI/2,'#f193be'],
+      ['pc-amber','Guld',8.6,-.3,-Math.PI/2,'#ffc369'],
+    ].map(([id,name,x,z,yaw,color])=>({id,name:`Dator · ${name}`,x:PLAYROOM.x+x,z:PLAYROOM.z+z,y:0,level:0,yaw,color,clubhouse:true,
+      bounds:[PLAYROOM.x+PLAYROOM.clubhouse.side+PLAYROOM.clubhouse.wall/2,PLAYROOM.x+PLAYROOM.w/2,PLAYROOM.z-PLAYROOM.d/2,PLAYROOM.z+PLAYROOM.clubhouse.front-PLAYROOM.clubhouse.wall/2]})),
+    // #1566: Olof's own desk corner (#1557, src/tillydesk.js) in Sovrum 4, appended so existing
+    // stations keep their spawn slots; its landscape monitor is the app screen.
+    { id:'pc-olof', name:'Olofs dator', x:TILLY_DESK.at.x, z:TILLY_DESK.at.z, level:1, bounds:[.18,2.75,7.8,12.52], roomReach:true, color:'#5b82ff' },
+  ],
+};
+export function computerViewer(id,p) {
+  const s=COMPUTER_MEDIA.stations.find(s=>s.id===id);
+  if(!s||!Array.isArray(p)||p.length!==3||!p.every(Number.isFinite))return false;
+  const [x0,x1,z0,z1]=s.bounds,y=s.clubhouse?0:LEVELS[s.level].floor;
+  return Math.abs(p[1]-y)<=COMPUTER_MEDIA.floorTolerance&&p[0]>=x0&&p[0]<=x1&&p[2]>=z0&&p[2]<=z1;
+}
+export function nearComputer(id,p) {
+  const s=COMPUTER_MEDIA.stations.find(s=>s.id===id);
+  return !!s&&computerViewer(id,p)&&(s.roomReach||Math.hypot(p[0]-s.x,p[2]-s.z)<=COMPUTER_MEDIA.reach);
+}
+// #1487: first shared snake game. Tuned for a small arena/5 Hz existing socket budget; not measured real-world values.
+export const SNAKE = {
+  width:32,height:20,step:1/30,catchUp:.5,inputMs:210,snapshotMs:190,
+  spawn:[[.2,.25],[.5,.25],[.8,.25],[.2,.75],[.5,.75],[.8,.75],[.35,.5]], // #1566: a seventh, heading up between the columns
+  speed:2.8,turnRate:3.8,initialSegments:24,maxSegments:160,radius:.22,radiusGrowth:.0012,
+  foodCount:110,foodMax:200,foodMargin:.7,foodRadius:.12,foodGrowth:2,dropStride:3,
+  headAdvantage:1.08,collisionScale:.8,respawnMs:1400,staleMs:2000,spawnClearance:2,
+  screenWidth:512,renderMs:50,
+  // #1491: guessed screen coverage, leaving the monitor bezel and room visible.
+  viewWidth:.82,viewHeight:.58,viewLift:.4,
+};
+
+// #1577: the single-player computer games, drawn on the existing monitor texture (src/blocks.js, src/meteors.js,
+// src/arcadeview.js). Classic-style speeds, sizes and points, all our picks (*guess*). `ms` timings are game time.
+export const BLOCKS = { cols:10, rows:20, startMs:800, levelFactor:.85, minMs:80, linesPerLevel:10,
+  lineScores:[0,100,300,500,800], softDrop:1, hardDrop:2 };
+export const METEORS = { width:32, height:20, step:1/60, catchUp:.25, turn:4.2, thrust:10, drag:.5, maxSpeed:11,
+  bulletSpeed:17, bulletLife:1.1, fireMs:230, maxBullets:5, shipRadius:.42, lives:3, invulnMs:2200, respawnMs:1200,
+  sizes:[1.5,.85,.45], speeds:[1.8,3,4.4], points:[20,50,100], waveStart:3, waveSpeedUp:.08, spawnClearance:6, splitSpread:.6 };
+// #1577: global top lists for the three computer games (cloudflare/games.js, src/gameboards.js). One row per player id and
+// game (the best round). Single-player scores come from the client, so they are only bounded: a round lasts `minMs`..`maxMs`
+// and a score must fit what the rules can give in that time. All limits are our picks (*guess*).
+export const GAME_BOARDS = { top:10, maxRows:500, local:10, timeoutMs:6000, cacheMs:30_000, refreshMs:1200,
+  minMs:2000, maxMs:4*3600_000, maxScore:1e7,
+  // Klossar: at most `piecesPerSecond` pieces may hard-drop the full height, and every cleared line is worth at most
+  // a four-line clear's share at the level it was reached on.
+  blocks: { piecesPerSecond:8, linesPerSecond:4 },
+  // Ormstriden: computed by the server arena (cloudflare/snake.js); clamped like the others.
+  games: { ormstriden:'Ormstriden', klossar:'Klossar', meteoriter:'Meteoriter' } };
+
+// Original-only Christmas Eve gameplay tunables.
+export { SANTA } from './santaconfig.js';
+export { SANTA_GIFTS } from './santagiftconfig.js';
+export { SANTA_TV } from './santatvconfig.js';
+
+// #1519: deliberately soft synthetic shoe contacts; artistic tuning, not measured material acoustics.
+export const FOOTSTEPS = {
+  gain: .38, attack: .018, noiseQ: .5, releaseFloor: .0001, sourceTail: .03, voiceDuration: .28,
+  variation: .12, floorBand: .35, indoorTopMargin: .2, garageHeadroom: 1.5,
+  profiles: {
+    wood:   { duration: .18, hz: 86, endHz: 46, body: .18, noise: .11, cutoff: 420 },
+    hard:   { duration: .16, hz: 98, endHz: 52, body: .17, noise: .13, cutoff: 700 },
+    grass:  { duration: .22, hz: 64, endHz: 36, body: .07, noise: .085, cutoff: 480 },
+    gravel: { duration: .20, hz: 76, endHz: 42, body: .09, noise: .12, cutoff: 1050 },
+  },
+};
+
+// ---- Squirrels (#1672, src/squirrelbrain.js, src/squirrels.js) ----
+// Three squirrels live in the crowns round the river park (riverpark.js patches) and the pony paddock (PADDOCK.trees); they hop between
+// trees, come down to look for nuts, and a visitor who crouches still with a nut in the hand can feed one. None of this exists while the
+// ground is snowy (SEASON.snowMonths: no mesh visible, no AI, no nuts). All numbers are our picks (*guess*) except the animals' looks,
+// which follow the issue (big one, white tail tip, slim darker one).
+//  simDist/farDist: m from the eye to a squirrel's tree; nearer than `simDist` it thinks every frame, up to `farDist` every `farStep` s
+//    (and is not drawn beyond `drawDist`), further away it sleeps (no AI cost at all). A squirrel keeps the tree it was in.
+//  leapRange: longest hop from crown to crown (m); groundHop: how far from its tree it may run on the ground to another tree.
+//  speeds in m/s: run (ground), flee (frightened), climb (up/down the trunk), leap (in the air); `perch` [min, max] s sitting in a crown,
+//  `forage` [min, max] s on the ground before it goes back up, `search` [min, max] s standing up to look around, `eat` s with a nut.
+//  Personality per animal: `ground` chance to go down after a perch (else it hops on), `shy` m the ground animal flees from a standing
+//  visitor, `lure` m from which it notices a crouching visitor with a nut, `delay` s it takes to dare, `speed` multiplier, `scale` size.
+//  Nuts (acorns and hazelnuts): at most `maxNuts` lie out at once at 1.5-`spread` m from a squirrel tree (never on road/walk/in water),
+//  each lies `life` [min, max] s unless picked up, a new one appears `respawn` [min, max] s after one is gone; `sense` m a ground squirrel
+//  smells one.
+//  Feeding: crouched (player.crouched), still (< `still` m/s) with a nut in the hand and a squirrel within its `lure`: it creeps up, stops
+//  `reach` m from the hand, rises `take` s and takes the nut; the visitor gets SCORE.each.squirrelFeeds points and `hearts` hearts,
+//  the squirrel carries the nut `carry` s (visible in its mouth) up a tree.
+// #1855 only explicitly placed nuts are global drops; the20natural slots/animal cadence remain unchanged (*guess* limits).
+export const NUT_DROPS = { max:18, worldMs:20*60*1000, answerMs:6000, retryMs:1500 };
+// #1920: authored red-squirrel surface estimates (guess), retaining the original
+// nose/feet/haunch and seven-tail-joint frames. Static shared per-look geometry.
+export const SQUIRREL_SURFACE = {
+  bellyBlend: [-.45,.25],
+  radial: { near: 16, far: 12 },
+  // z, centre y, half-width, half-height; continuous trunk and tapered face.
+  body: [[-.12,.07,.015,.028],[-.085,.075,.044,.049],[-.04,.085,.043,.048],[.025,.094,.036,.043],[.065,.105,.028,.035],[.085,.12,.019,.023]],
+  head: [[.058,.122,.012,.020],[.082,.128,.032,.031],[.105,.125,.032,.029],[.126,.12,.021,.017],[.142,.118,.011,.009],[.148,.12,.006,.005]],
+  eyes: { scale: [.0045,.005,.0035], at: [.024,.134,.116], glint: [.001,.001,.0008], glintAt: [.0265,.1365,.118] },
+  tail: { rows: { near: 38, far: 18 }, radial: { near: 24, far: 12 }, profile: [[0,.013,.012],[.15,.025,.023],[.35,.044,.035],[.58,.052,.037],[.78,.05,.035],[.94,.025,.022],[1,.002,.002]],
+    flow: [[9,4,.65],[5,62,.35]], ridge: .065, frost: .06, tipStart: .72, tipEnd: .90 },
+};
+
+export const SQUIRRELS = {
+  simDist: 70, farDist: 130, drawDist: 150, farStep: 0.25, leapRange: 11, groundHop: 22,
+  dry: 6, // #1764: farther than the river's half width + `dry` m from its centre line the park ground is always above the water (measured: the wet strip reaches at most 5.6 m from the centre line), so main.js squirrelWalk answers there without the terrain lookup
+  run: 3.4, flee: 6.5, climb: 2.6, leap: 5.5, perch: [3.5, 8], forage: [16, 36], search: [1.2, 3.5], eat: 2.2, // #1787: quicker perch decisions, longer ground foraging
+  maxNuts: 20, spread: 11, life: [360, 900], respawn: [4, 12], sense: 4.5, nutSize: 2.6, // #1686: 18 at once; #1787: 20 nuts, quicker respawn [4, 12] s, spread 11 m, nutSize 2.6 for visibility
+  // #1831: reserve8 existing slots as pairs on safe grass beside sourced river paths. All distances/anchors are gameplay guesses.
+  pathNuts: { slots: 8, perHub: 2, anchors: [[-145,198],[-65,150],[-25,115],[-100,183]], anchorRadius: 40,
+    sampleStep: 6, offset: 1, pairSpacing: .45, hubSpacing: 12, treeRange: 14, trunkClear: 1.2,
+    approachStep: .3, clearance: .8, maxRelief: .18 },
+  nutNearPlayer: 65, nutBias: 0.75, heap: 0.45, heapRadius: [0.15, 0.6], // #1686: 70 % near visitor; #1787: 75 % within 65 m, 45 % in heaps beside existing nuts
+  markDist: 8, markFade: 4.5, markRing: 0.22, markBeam: 1.15, markDay: [0.35, 0.85], markNight: 0, nutNear: 16, // #1697: daylight opacity; #1742: close-only; #1787: markDist 8 m with fade from 4.5 m, nutNear 16 m
+  sync: { every: 0.5, nutEvery: 0.4, enter: 120, leave: 160, reach: 6, follow: 3, bytes: 480 }, // #1686: the shared leader's snapshot every 0.5 s (#1780: only the animals within drawDist of a visitor, nearest first, the message at most `bytes` long: the room drops one over PLAYERS.maxBytes 512); nuts at most every 0.4 s; a visitor within 120 m of a squirrel joins (leaves beyond 160); a put-down within 6 m; followers simulate on their own again after 3 s without a snapshot
+  still: 0.12, stillFor: 0.5, scareSpeed: 1.1, scareReach: 1.5, touch: 1.5, roseFor: 1.5, scareTime: [14, 30], // #1698: 'still' = under 0.12 m/s (about a slow shuffle) for 0.5 s, crouched with a nut; a visitor (any, also far ghosts) faster than 1.1 m/s within scareReach x the squirrel's shy range, or one who rises (1.5 s) within it, or anyone within 1.5 m, frightens it up the nearest tree; it stays up scareTime s x its calm (all *guess*)
+  chirp: { gain: 0.5, ref: 3, notes: 3, gap: 0.075, dur: 0.06, hz: 3600, rise: 1.35, pitchJitter: 0.12 }, // #1699: the happy 'tjipp-tjipp' when a squirrel takes the nut (#1780: `ref` m: full loudness within it, so it carries about 2.5 x as far as the ordinary 1.2 m): `notes` short rising sine chirps `gap` s apart, `dur` s each, from `hz` up by x`rise`, a squirrel's own pitch +-`pitchJitter`, played from the squirrel (all *guess*)
+  reach: 0.45, take: 0.6, hearts: 8, heartScale: 2.5, carry: 14, handAhead: 0.45,
+  // #1716: the whole Höje å valley. `valley`: trees whose trunk is within this many m of the river's centre line (SITE.river.path) and inside WALK
+  // join the squirrels' trees (besides the park patches and the paddock). `link`: the longest ordinary ground run between two trunks; pieces of the
+  // tree graph further apart are joined by their nearest pair up to `join` m (a longer dash along the shore). The home range is `range` m either
+  // side of a centre that drifts along the valley with the wall clock (the sum of three slow waves, `periods` s, `weights`, over `span` x the valley
+  // length round the start tree; all players see the same drift), so over a few hours each squirrel covers most of the river. `journey`: the chance a
+  // perch ends with a longer move (to a favourite tree `favBack` of the time, a cache when one is ripe, else another tree in the range); `fav` favourite
+  // trees are remembered. Off screen (beyond farDist) the brain only steps from tree to tree every `coarse` s; a gap over `catchUp` s puts it straight
+  // into its home range. On the ground it moves in `dash` s rushes and `pause` s wary stops (quick head turns); `spiral`: turns round the trunk while
+  // climbing. `rest`: a short sit between the hops of a journey (s). Each animal's `phase` (radians) offsets its drift. All *guess*.
+  roam: { valley: 45, link: 30, join: 120, range: 40, span: 0.75, periods: [14400, 5400, 2100], weights: [0.5, 0.3, 0.2], journey: 0.22, favBack: 0.35, fav: 3,
+    coarse: 1, catchUp: 180, dash: [0.35, 1.3], pause: [0.2, 0.8], spiral: 1.25, rest: [0.4, 1.6] },
+  // #1716: a found nut is buried `chance` of the time (at most `max` caches each) `stash` m from where it lay, and dug up again on a later journey
+  // once it is `ripe` s old; `bury` / `dig` s. Two squirrels on the ground within `chase.range` m: `chase.chance` per s that one chases the other
+  // for `chase.time` s at `chase.speed` x the flee speed. The day: in the drey from `day.sleep` to `day.wake` (hours), busiest round `day.peaks`
+  // (± `day.width` h), `day.midday` = how lively in between (perch time and ground trips follow). All *guess*.
+  cache: { chance: 0.4, max: 6, stash: [3, 8], ripe: [240, 1500], bury: 2.4, dig: 2.2 },
+  chase: { range: 12, chance: 0.03, time: [2.5, 5], speed: 0.95, calm: 4 },
+  day: { wake: 6, sleep: 20.5, peaks: [8, 16.5], width: 2, midday: 0.65 }, // #1787: midday activity 0.65 (was 0.45) so squirrels stay lively through the day
+  look: { near: 15 }, // #1716: the detailed squirrel (fluffy tail, tufted ears) within `near` m of the eye, a cheaper one with the same outline beyond (*guess*)
+  starts: [[-150, 215], [-30, 128], [-62, 168], [-105, 185]], // first tree = nearest eligible tree to these plan points (#1787: 4 start trees in the park/valley); an animal with a `home` starts by its area's centre instead
+  // #1780: home areas, so more squirrels spread over the site instead of all drifting along the river. An animal with `home` keeps its home range
+  // `r` m round the area's centre `at` [x, z], which wanders up to `wander` m with the same slow wall-clock waves (roam.periods), so it still
+  // roams (journeys, favourites, caches) but stays in its area. `box` [x0, x1, z0, z1]: an own grove away from the river: the trees inside join
+  // the squirrels' trees as a group of their own (never linked to another group), and that squirrel's ground (runs, foraging, nuts) stays inside
+  // the box and off every road (roads.js onVehicle, `roadMargin` m). Without `box` the area is a part of the Höje å valley's trees. Courtyard:
+  // the deck's trees south of Hus L (COURTYARD.trees, y 0; Hus A from z 28.8); green: the lawn between Hus A and Hus B (y -3); clock: the
+  // grove on Klockhuset's park side north of the campus road (z -160); south: the old trees east of Sankt Lars väg 42 (SITE.south.bigTrees,
+  // split by the hospital roads); west / east: Höje å beyond the two foot bridges. All boxes, centres and radii are *guess* (measured on the
+  // built scene: no wall, road or level change inside a box).
+  roadMargin: 0.5,
+  areas: {
+    court: { at: [-20, 23], r: 30, wander: 5, box: [-50, 9, 17, 28.5] },
+    green: { at: [-16.5, 44], r: 14, wander: 3, box: [-22, -10.5, 34, 55] },
+    clock: { at: [55, -178], r: 40, wander: 12, box: [-5, 112, -198, -162] },
+    south: { at: [-28, 328], r: 30, wander: 6, box: [-55, -5, 302, 352] },
+    west: { at: [-205, 214], r: 50, wander: 20 },
+    east: { at: [118, 110], r: 55, wander: 20 },
+  },
+  animals: [
+    { name: 'Den stora', phase: 0.4, scale: 1.25, width: 1, color: 0x8a5632, belly: 0xd9c3a0, tail: 0x9a6338, tip: null, ground: 0.88, shy: 4, lure: 26, delay: 0.8, speed: 1.0, perch: 1, calm: 0.7 },
+    { name: 'Vitsvansen', phase: 2.3, scale: 1.0, width: 1, color: 0xa4673a, belly: 0xe6d4b4, tail: 0xb3733f, tip: 0xf4f1e8, ground: 0.55, shy: 6.5, lure: 20, delay: 0.5, speed: 1.15, perch: 0.7, calm: 1 },
+    { name: 'Den smala', phase: 4.4, scale: 0.92, width: 0.78, color: 0x4f3626, belly: 0xb9a88c, tail: 0x5c4130, tip: null, ground: 0.35, shy: 9, lure: 15, delay: 1.4, speed: 1.3, perch: 1.4, calm: 1.5 },
+    // #1780: six home-area squirrels, and #1787: Parkekorren in the river park
+    { name: 'Parkekorren', phase: 3.7, scale: 1.08, width: 0.95, color: 0x8f522e, belly: 0xdfcbab, tail: 0x9b5c33, tip: 0xefe4d0, ground: 0.72, shy: 5, lure: 22, delay: 0.6, speed: 1.1, perch: 0.8, calm: 0.8 },
+    { name: 'Gårdsekorren', home: 'court', phase: 1.1, scale: 0.95, width: 0.92, color: 0x9a5e34, belly: 0xe2cfae, tail: 0xa86a3a, tip: null, ground: 0.85, shy: 4.5, lure: 24, delay: 0.6, speed: 1.05, perch: 0.8, calm: 0.6 },
+    { name: 'Tofsen', home: 'green', phase: 3.0, scale: 1.05, width: 1, color: 0x7c4a2c, belly: 0xd4bc96, tail: 0x8a5532, tip: null, ground: 0.70, shy: 5.5, lure: 22, delay: 0.9, speed: 1.0, perch: 1.1, calm: 0.9 },
+    { name: 'Klockan', home: 'clock', phase: 5.2, scale: 1.1, width: 0.95, color: 0xb0703f, belly: 0xebdcbf, tail: 0xbd7b45, tip: 0xf0e9dc, ground: 0.65, shy: 6, lure: 20, delay: 0.7, speed: 1.1, perch: 0.9, calm: 1.1 },
+    { name: 'Rödpälsen', home: 'south', phase: 0.7, scale: 1.0, width: 0.9, color: 0xa2552c, belly: 0xdcc5a2, tail: 0xb05f30, tip: null, ground: 0.65, shy: 7, lure: 18, delay: 1.0, speed: 1.15, perch: 1.0, calm: 1.2 },
+    { name: 'Svartsvansen', home: 'west', phase: 2.7, scale: 0.98, width: 0.85, color: 0x6a4630, belly: 0xc9b694, tail: 0x3e2a1e, tip: null, ground: 0.60, shy: 7.5, lure: 17, delay: 1.1, speed: 1.2, perch: 1.2, calm: 1.3 },
+    { name: 'Ljusbuken', home: 'east', phase: 4.0, scale: 1.02, width: 0.95, color: 0x93603a, belly: 0xf2e6cc, tail: 0x9e6a40, tip: null, ground: 0.75, shy: 5, lure: 22, delay: 0.8, speed: 1.05, perch: 0.9, calm: 0.8 },
+  ],
+};
+
+// ---- Fish in Höje å (#1752, part of #1751: src/riverfishswim.js, src/riverfishsync.js, src/riverfish.js, cloudflare/riverfish.js) ----
+// Fish swim under the surface of the modelled river (SITE.river) and now and then rise and leave a ring on the water. Every fish's path is a
+// pure function of (seed, id, born, time), so every client draws the same fish in the same places and the same rings at the same moments; the
+// players room only supplies its clock, the seed and which fish were caught (memory only, no KV). Species after #1751 (*guess* until checked):
+// roach, perch, bream, pike, trout/sea trout (they run up Höje å) and the rare eel. All sizes, colours, weights and timings are our picks (*guess*).
+//  count: fish in the whole river; seed: the shared seed (the room repeats it); epoch: s, time 0 of the swim functions (UTC 2026-11-01).
+//  species: `len`/`w`/`h` m body length/width/height, `color` (seen near the surface), `weight` relative frequency.
+//  ends: m kept clear of the two ends of the modelled river; range [min, max]: m, half the stretch one fish patrols; periods: s, its main swim
+//    wave [min, max] (a smaller second wave is 1.6-2.2 x faster); side: share of the free half width it uses; edge: m kept from the channel edge (the bed
+//    is flat out to width/2, riverbridge.js riverGround); depth [over the bed, under the surface] m for the body centre; pierClear: m beyond a
+//    road-bridge pier's footing (SITE.bridges.road.foot) where no fish swims.
+//  rise: a fish may rise once per `every` [min, max] s slot with `chance`; it takes `up` s to the surface and `down` s back; `show`: its back
+//    breaks the surface by this share of its height. ring: lives `life` s, radius `r` [start, end] m, a second ring `second` s later, strength
+//    `glow` (additive) by day, `night` share in the dark. drawDist: m from the eye (beyond: not drawn, nothing simulated). wag [rad, rad/s]: the
+//    tail-beat yaw. murk: how far a deep fish fades towards a dark water tone; opacity of the fish material. look: a fish under the surface is drawn
+//    `flat` x its height and `wide` x its width (the water blurs it), its colour x `shade`, fading to the water colour x `deepTone`.
+//  sync: a visitor within `enter` m of the river centre line joins the room's fish (`leave` m to leave); a catch (#1753) is accepted when the
+//    player stands within `reach` m of the fish, at most one per `catchEvery` s per connection; the caught fish comes back as a new fish
+//    (born + 1) after `respawn` [min, max] s.
+export const RIVER_FISH = {
+  count: 18, seed: 1754, epoch: 1793491200, // (seed 1754: the first lives of the 18 include pike, trout, bream, perch and roach; 1752 had no pike)
+  species: [
+    { name: 'mört', len: 0.2, w: 0.035, h: 0.06, color: 0xa3aca8, weight: 5 },
+    { name: 'abborre', len: 0.25, w: 0.045, h: 0.075, color: 0x7a8a40, weight: 4 },
+    { name: 'braxen', len: 0.42, w: 0.05, h: 0.15, color: 0x9a8858, weight: 2.5 },
+    { name: 'gädda', len: 0.75, w: 0.08, h: 0.1, color: 0x5f7040, weight: 1.2 },
+    { name: 'öring', len: 0.45, w: 0.06, h: 0.1, color: 0x8c846c, weight: 1.2 },
+    { name: 'ål', len: 0.65, w: 0.035, h: 0.035, color: 0x403e2e, weight: 0.4 },
+  ],
+  ends: 15, range: [8, 22], periods: [90, 200], side: 0.85, edge: 0.35, depth: [0.12, 0.1], pierClear: 0.6,
+  rise: { every: [16, 36], chance: 0.6, up: 1.1, down: 0.9, show: 0.35 },
+  ring: { life: 3.2, r: [0.1, 1.5], second: 0.5, glow: 0.5, night: 0.15 },
+  drawDist: 45, wag: [0.14, 7.5], murk: 0.5, opacity: 0.85, look: { flat: 0.45, wide: 1.9, shade: 0.55, deepTone: 0.6 },
+  sync: { enter: 70, leave: 90, reach: 30, catchEvery: 2, respawn: [300, 600] },
+  // #1946: feeding from the hand and scaring, a local drawing layer (src/riverfishfeed.js); every number a *guess* (the user: "like the
+  // squirrels take nuts", "if you move the fish get scared and swim away"). A swimmer making no stroke with a cracked mussel in the hand for
+  // `wait` s lures the nearest fish within `radius` m (18 fish share 665 m of river with gaps of 100 m and more, so it must reach far). It comes at
+  // `dash` m/s while further than `sight` m (the fog under water is full at 8 m), `speed` in sight and `slow` the last `near` m (faster than
+  // SWIM.current, so it catches a drifting hand), round the head (`clear` m from the eye, `lead` m out in front of the hand), stops `take` m
+  // short with its nose at the mussel (taken within `grab` m of that: the hand drifts between two frames), takes it and stays `eat` s; it gives up after `giveUp` s. A stroke faster than `scareSpeed` m/s scares
+  // every fish within `scare` m: `flee` m away along the channel at `fleeSpeed` (re-aimed at most every `reaim` s, kept `edge` m off the
+  // bank), `calm` s there, then `back` s easing home. `turn` rad/s: how fast a lured / scared fish turns. Hearts as for a fed squirrel.
+  feed: { radius: 120, wait: 2, dash: 6, speed: 1.4, slow: 0.8, sight: 7, near: 1.2, take: 0.05, grab: 0.04, lead: 0.9, clear: 0.8, eat: 0.9, giveUp: 40,
+    scare: 5, scareSpeed: 0.15, flee: 6, fleeSpeed: 3.2, reaim: 0.4, calm: 1.5, back: 4, turn: 7, edge: 0.4, hearts: 8, heartScale: 2.5 },
+};
+
+/**
+ * #1753 (part 2 of #1751): the fishing rod under the road bridge, casting, bites and caught fish (src/fishing.js). Every number is a
+ * *guess* (a plain 2 m spinning rod with a red-and-white float; species sizes typical for Skåne's streams, not measured in Höje å).
+ */
+// #1855: bounded explicit shared caught-fish drops in the existing PlayerRoom (*guess* limits).
+// No inventory/pose stream; live owners keep their hand, abandoned leases expire without duplicating food.
+export const SHARED_FISH = { max: 24, records: 128, worldMs: 2 * 60 * 60 * 1000,
+  heldMs: 15 * 60 * 1000, tombstoneMs: 24 * 60 * 60 * 1000, reach: 3.5, everyMs: 250,
+  drawDist: 50, answerMs: 6000, retryMs: 1500, journalMax: 128 };
+
+export const FISHING = {
+  // where the rod lies: on the north shore flat under the road bridge (SITE.bridges.road, deck z 100…145.8), just south of the
+  // north pier pair (riverbridge.js pierBoxes: x 21.7 / 25.9, z 107.6), beside the walk under the deck; along x, so it reads as tucked away by the piers
+  home: { x: 23.8, z: 109.4, yaw: 1.65 },
+  respawn: 240, // #1781 *guess*: s (wall clock, also across a reload) the rod may lie away from `home`, not in a hand, before it is back under the bridge (the one rod moves, none is added)
+  rod: { length: 2.0, butt: 0.012, tip: 0.0025, handle: 0.32, reel: 0.03 }, // m: blank length, radii at the butt and the tip, cork handle, reel radius
+  held: { x: 0.17, y: -0.19, z: -0.4, pitch: 0.75, yaw: 0.12 }, // camera-space pose of the held rod (m, rad): low right, pointing ahead and up
+  grip: [0.02, 0, -0.01], // model-local point the hand closes round: the handle just behind the reel (hand.js gripOf)
+  cast: { min: 2, max: 14, edge: 0.35, flight: 0.7, arc: 1.6 }, // m from the eye (horizontal) a cast may land; m kept off the bank; s in the air; m of arc height
+  ring: { life: 1.6, r: [0.06, 0.7] }, // the ring where the float lands / dips (s, m): one flat additive ring
+  float: { r: 0.035, bob: [0.008, 1.7], dip: 0.06 }, // m: the float's radius; its idle bob (m, Hz); how far a bite pulls it under
+  // a bite: a hazard per second, rate x the sum over the fish within `radius` m of the float of their species' appetite (bite) x
+  // (1 - distance / radius); never before `min` s after the float lands. A missed bite (no strike within `window` s) scares that
+  // fish off for `shy` s; the float stays for the next one.
+  wait: { min: 3, rate: 0.05, radius: 10, window: 1.6, shy: 25, idleHint: 45, answer: 5 }, // (answer: s to wait for the room's verdict before giving up)
+  reach: 22, // m: walking this far from the float reels the line in
+  species: { // appetite (relative bite rate) and caught length range (cm) per RIVER_FISH species name
+    mört: { bite: 1.4, cm: [12, 30] }, abborre: { bite: 1.2, cm: [14, 36] }, braxen: { bite: 0.8, cm: [28, 55] },
+    gädda: { bite: 0.6, cm: [45, 95] }, öring: { bite: 0.7, cm: [28, 60] }, ål: { bite: 0.4, cm: [45, 85] },
+  },
+  keep: 6, // caught fish kept in the world (lying about or in the hand); a seventh takes the oldest one lying about away
+  remoteDist: 60, // m: other players' floats are drawn within this distance
+  drawDist: 45, // m: the rod lying about is drawn only this close (one draw call; none at the start)
+  // #1754: cooking the catch on a kettle grill (src/grill.js, lit) or in the pan on a lit hob (src/pan.js). `done` / `burn` = s of
+  // heat until it is cooked through / burnt (fish fingers 6 / 18, the whole chicken 10 / 30); `rate` per heat source (the pan is
+  // hotter and closer); `bites` to eat it; `golden` / `char` the skin's colour cooked / burnt. All *guess*.
+  // #1765: `skin` = the mean luminance the golden / charred tint is scaled to (the tint is divided by the species' own skin luminance, so the
+  // light belly of a silvery fish does not glow orange). *guess*
+  cook: { done: 16, burn: 42, rate: { grill: 1, pan: 1.25 }, bites: 4, golden: 0xb4783c, char: 0x261c14, cooldown: 0.45, skin: 0.75 },
+  // #1754: points per fish caught by species (rarer = more; the RIVER_FISH weights 5 / 4 / 2.5 / 1.2 / 1.2 / 0.4), counted like the cat
+  // breeds (stats.js rawScore, stats.fishBySpecies). *guess*
+  points: { mört: 4, abborre: 5, braxen: 7, gädda: 12, öring: 15, ål: 25 },
+};
+
+/**
+ * #1769: the rare shark in Höje å (src/sharkswim.js: where and when, pure; src/shark.js: the fin, the carcass, the skeleton; the room
+ * cloudflare/riverfish.js arbitrates the catch and keeps one tiny record in its own Durable Object storage). Every number is a *guess*:
+ * the user asked for "about once a week", "about an hour" for the shark and "about a day" for the skeleton.
+ *  schedule: one window in every `period` s of the room's fish clock (RIVER_FISH.epoch), lasting `window` s (between), placed pseudo-randomly
+ *    within its period from the seed and the period's number, so nobody can tell exactly when. `test`: the window used with `&shark=now` or
+ *    a room started with SHARK_TEST (cloudflare/dev.mjs LUNDEN_SHARK_TEST=1): the whole of each `period`.
+ *  len / fin = the shark's length and the fin's height above the water (m); span = the longest stretch it patrols (m, back and forth over
+ *    `pass` s), kept `clear` m beyond its half length inside a RIVER_FISH swim stretch (so clear of the bridge piers); side = its share of
+ *    the channel's free half width sideways.
+ *  bite: its appetite in the FISHING bite hazard (the same sum as a fish's); strike = s to strike after a bite (shorter than FISHING.wait.window)
+ *    and the chance it tears loose anyway (before the room is asked); reach = m from the shark the catcher may stand (the room checks), land = m
+ *    from the catcher the carcass may land; landOff = m from the catcher, away from the river, it does land (src/fishing.js sharkSpot).
+ *  body / bones = s the whole shark lies on the bank, then s the skeleton lies there; drawDist = m from the eye the fin / carcass are drawn.
+ */
+export const SHARK = {
+  schedule: { period: 7 * 24 * 3600, window: [600, 1200] },
+  test: { period: 24 * 3600 },
+  len: 3.2, fin: 0.42, span: 140, pass: 260, clear: 2, side: 0.4,
+  bite: 4, strike: { window: 1.0, slip: 0.35 }, reach: 30, land: 4, landOff: 1.6,
+  body: 3600, bones: 24 * 3600, drawDist: 60, keepFins: 3, // (keepFins: fins kept in the world, like FISHING.keep)
+  ring: { every: 2.2, life: 3.4, r: [0.3, 2.0] }, wake: { len: 2.0, width: 1.4 },
+  // #1947: the shark that bites swimmers (src/sharkattack.js; local to the swimmer, nothing shared). All *guess*, tuned by feel:
+  //  perMinute: attacks per swum minute on average (0.12 = one per ~8 min in the water), none in the first `calm` s of a swim nor for `again` s
+  //  after one; it surfaces `speed x warn` m away along the river (`warn` s of warning for a swimmer who stays put) and makes for the swimmer
+  //  at `speed` m/s (a swimmer does 0.55-1.25, SWIM); the fin within `bite` m of a swimmer bites. `shared`: within this of the weekly
+  //  shark's fin (#1769) in the water it bites too. `rise` / `sink` s for the fin to come up / go down; `linger` s it waits where the
+  //  swimmer went ashore. `test`: the rates with `&shark=attack` (an attack about `calm` s into every swim).
+  attack: { perMinute: 0.12, calm: 20, again: 120, warn: 8, speed: 2.5, bite: 1.4, shared: 3, rise: 1.2, sink: 2.5, linger: 6,
+    test: { perMinute: 600, calm: 2, again: 4 } },
+  // the carcass on the bank: a CAUGHT_FISH-style body spec (src/caughtfish.js, units of the length) of a large grey shark lying on its side; no
+  // first dorsal (that is the fin in your hand), a dark-red wound where it was. After general pictures of a porbeagle / blue shark (*guess*)
+  look: { depth: 0.19, width: 0.16, peak: 0.6, ped: 0.16, top: 0.52, head: 0.24, nose: [1.3, 1.7], tail: 0.21, fork: 0.32, spread: 0.18,
+    dorsal2: [0.25, 0.3, 0.05, 0.02], anal: [0.2, 0.25, 0.04, 0.015], pec: [0.66, 0.22], pelvic: [0.36, 0.07], eye: [0.9, 0.012],
+    back: 0x4c5862, side: 0x6a767f, belly: 0xe9e7e1, fins: { dorsal: 0x4e5963, tail: 0x4e5963, paired: 0x55616b, lower: 0x55616b }, iris: 0x202020,
+    spots: [[0x7c231d, 1, 0.52, 0.6, 0.985, 0.995, 0.03]] },
+  // #1926 project-authored surface estimates (guess), normalized to existing length/fin height.
+  surface: {
+    rings: 20, around: 16, minRadius: .0001,
+    // Exact legacy remote category-proxy Float32 envelope; no new wire data.
+    ghost: { min: [-0.025980761274695396,0.007499999832361937,-0.2449999898672104],
+      max: [0.025980761274695396,0.44999998807907104,0.08499999344348907] },
+    // z, half-width, half-height, centre-y; the nose/tail length planes stay +/-.5.
+    profile: [[-.31,.012,.018,0],[-.25,.028,.03,0],[-.1,.065,.075,0],[.08,.09,.095,0],[.22,.085,.088,0],[.34,.07,.066,-.002],[.43,.046,.038,-.006],[.485,.018,.014,-.009],[.5,.002,.006,-.009]],
+    skin: { back: [.1,.85], belly: [.05,.8], mouthZ: .4, mouthAngle: [-.82,-.5], mouth: 0x30383a },
+    gill: { z: [.235,.207,.179,.151,.123], angles: [-.3,.08,.46,.84], width: .003, lift: .0008, color: 0x303b42 },
+    eye: { z: .405, angle: .25, radius: .0075, lift: .0015, segments: 8, color: 0x111b20 },
+    tail: [[.018,-.31],[.11,-.4],[.18,-.5],[.05,-.45],[0,-.39],[-.12,-.48],[-.04,-.38],[-.018,-.31]],
+    pectoral: [[.07,-.04,.17],[.16,-.06,.08],[.26,-.075,-.12],[.21,-.07,-.105],[.1,-.045,.035]],
+    pelvic: [[.045,-.045,-.12],[.11,-.06,-.21],[.085,-.055,-.23],[.03,-.045,-.19]],
+    dorsal2: [[0,.065,-.13],[0,.105,-.2],[0,.05,-.22]],
+    anal: [[0,-.045,-.18],[0,-.085,-.25],[0,-.03,-.25]],
+    finThickness: .002, finEdgeShade: .9, finBellyMix: .35,
+    wound: { z: .05, rx: .016, rz: .045, lift: .001, segments: 8 },
+    wholeDorsal: { height: .14, at: [0,.091,.05] },
+    // height, leading-z, trailing-z, half-thickness in units of fin height.
+    finProfile: [[0,.34,-.2,.07],[.12,.3,-.17,.064],[.25,.25,-.14,.057],[.4,.185,-.125,.048],[.55,.11,-.12,.038],[.7,.025,-.145,.028],[.82,-.065,-.18,.019],[.92,-.16,-.225,.01],[1,-.26,-.26,0]],
+    finRootShade: .8, finEdgeTint: .9, shadowScaleY: .28,
+  },
+  bone: 0xe6dfca, finColor: 0x59626b, cut: 0x8a2a24, // the skeleton's bone, the fin's grey skin and its cut base
+};
+
+/**
+ * #1765: the caught fish's own model (src/caughtfish.js), one cached geometry per RIVER_FISH species, in units of the fish's length (the
+ * nose at z = +0.5, the tail tips at -0.5; CaughtFish scales it by the caught length). Shapes, fins and colours are *guess*, after general
+ * pictures of the species, not measured. The river fish (src/riverfish.js) keep their cheap shape.
+ *  rings: the body's cross-sections (plus one at each bar / gap of a barred pattern and one at the gill line), around: vertices per section.
+ *  Per species: depth / width = the body's greatest height / width (x the length) at `peak` (0 = the caudal peduncle, 1 = the nose); ped = the
+ *  peduncle's share of that height; top = the share of the height above the centre line (a humped back > 0.5); head = the head's share of the body
+ *  (the gill line); nose [height, width] exponents of the head's taper (1 = pointed, 2 = round, 3+ = blunt: the pike's flat beak);
+ *  tail = the tail fin's share of the length, fork = how deep its notch is (0 = straight, < 0 = rounded), spread = half its height.
+ *  Fins in body u: dorsal / dorsal2 / adipose (top) and anal (below) = [u back, u front, height front, height back] (x the length); spiny = spines
+ *  of the first dorsal; pec / pelvic = [u, size]; long = the eel's fin round the tail [u top, u bottom, height]. eye = [u, radius].
+ *  Colours (sRGB): back / side / belly of the skin, fins = { dorsal, tail, paired (pectoral + pelvic), lower (anal) }, iris; bars = dark cross
+ *  bands [n, u from, u to, colour], spots = [[colour, count per side, u from, u to, lowest sin of the angle round, highest, radius]]: small
+ *  flat discs on the skin (4 triangles each).
+ */
+// #1922: authored fish surface/density estimates (guess). Existing species length,
+// mouth/hand/surface frames and CAUGHT_FISH anatomy dimensions remain authoritative.
+export const FISH_SURFACE = {
+  // Generic held-category proxy: guessed low density; exact #1753 Float32 envelope.
+  ghost: { species: 'mört', density: { rings: 6, around: 8, finSegments: 1, eyeSegments: 3 },
+    min: [-0.030000001192092896,-0.27000001072883606,-0.12763139605522156],
+    max: [0.030000001192092896,-0.014999999664723873,-0.032368600368499756] },
+  live: { rings: 14, around: 10, finSegments: 3, eyeSegments: 6 },
+  caught: { rings: 18, around: 16, finSegments: 4, eyeSegments: 8 },
+  fin: { rows: 3, camber: .0025, root: .9, sweep: .32, shade: .82, ray: .12, spineNotch: .72, colorRoot: .55 },
+  tailSegments: 6,
+  paired: { spread: .3, drop: .45, backStart: .2, backRange: .8, segments: 4 },
+  pattern: { bars: .65, spotOffset: .35, spotPhase: 17.3 },
+  eel: { peduncle: .1, tailSpread: .25 },
+  eye: { lift: .0018, pupil: .52, angle: .4, scale: .72 },
+  gill: { width: .035, shade: .78 },
+  mouth: { from: .94, band: .15, shade: .48 },
+  flex: { amplitude: .14, eel: .75, waves: 7, frequency: 5.5 },
+  // Retained #1765 pigment/attachment values, now shared by both densities.
+  skin: { backStart: .2, backEnd: .85, bellyStart: .2, bellyEnd: .75 },
+  peduncleWidth: .75, pairedAngles: [-.4,-1.35], spotLift: .0015, longFinRoot: .004,
+  normalStep: [.005,.02], // numerical surface-frame differences, not anatomy dimensions
+  // u, relative half-width / height, centre-y as a share of body depth.
+  // The small closed mouth cap keeps the +.5 nose plane; pike has a broad flat beak.
+  heads: {
+    mört: [[.76,.9165,.9165,0],[.9,.62,.58,0],[.97,.3,.26,0],[1,.12,.1,0]],
+    abborre: [[.76,.9165,.8487,0],[.9,.59,.51,0],[.97,.26,.22,0],[1,.1,.08,0]],
+    braxen: [[.76,.8487,.8487,0],[.9,.48,.44,-.015],[.97,.23,.19,-.02],[1,.09,.08,-.02]],
+    gädda: [[.72,.9756,.5738,0],[.86,.82,.3,-.01],[.96,.6,.17,-.015],[1,.45,.12,-.015]],
+    öring: [[.76,.8844,.8285,0],[.9,.6,.53,0],[.97,.3,.25,0],[1,.14,.11,0]],
+    ål: [[.87,.794,.7023,0],[.94,.75,.65,0],[.98,.55,.46,0],[1,.38,.3,0]],
+  },
+};
+
+export const CAUGHT_FISH = {
+  rings: 16, around: 12,
+  pupil: 0x0c0c0c, gill: 0.62, mouth: 0x2a2018, // the pupil; the gill line darkens the side by this factor; the mouth (nose tip)
+  species: {
+    mört: { depth: 0.27, width: 0.12, peak: 0.6, ped: 0.3, top: 0.55, head: 0.23, nose: [2, 2], tail: 0.17, fork: 0.55, spread: 0.11,
+      dorsal: [0.5, 0.64, 0.13, 0.04], anal: [0.22, 0.34, 0.08, 0.03], pec: [0.74, 0.08], pelvic: [0.5, 0.07], eye: [0.9, 0.032],
+      back: 0x34463f, side: 0xc4c9c3, belly: 0xf0efe8, fins: { dorsal: 0x7a5a4c, tail: 0x8c5a48, paired: 0xc8462a, lower: 0xc8462a }, iris: 0xd0261a },
+    abborre: { depth: 0.28, width: 0.13, peak: 0.6, ped: 0.28, top: 0.6, head: 0.27, nose: [1.6, 2], tail: 0.16, fork: 0.3, spread: 0.1,
+      dorsal: [0.6, 0.86, 0.12, 0.05], spiny: 6, dorsal2: [0.3, 0.52, 0.09, 0.04], anal: [0.22, 0.34, 0.08, 0.03], pec: [0.7, 0.08], pelvic: [0.68, 0.08], eye: [0.88, 0.036],
+      back: 0x2e3a18, side: 0x98a03c, belly: 0xe6dfbc, fins: { dorsal: 0x4c4c34, tail: 0xb4602c, paired: 0xdc4c1c, lower: 0xdc4c1c }, iris: 0xd8a01c,
+      bars: [6, 0.14, 0.78, 0x1c220e] },
+    braxen: { depth: 0.36, width: 0.09, peak: 0.6, ped: 0.22, top: 0.6, head: 0.2, nose: [1.6, 1.6], tail: 0.17, fork: 0.65, spread: 0.13,
+      dorsal: [0.56, 0.66, 0.15, 0.03], anal: [0.08, 0.46, 0.09, 0.04], pec: [0.76, 0.08], pelvic: [0.56, 0.07], eye: [0.9, 0.03],
+      back: 0x3a3524, side: 0xa48646, belly: 0xd8c69c, fins: { dorsal: 0x3e3a30, tail: 0x3e3a30, paired: 0x5a4c3a, lower: 0x4a4436 }, iris: 0xc8b88c },
+    gädda: { depth: 0.14, width: 0.11, peak: 0.45, ped: 0.45, top: 0.5, head: 0.3, nose: [1.1, 3.5], tail: 0.14, fork: 0.35, spread: 0.08,
+      dorsal: [0.06, 0.22, 0.08, 0.05], anal: [0.05, 0.2, 0.07, 0.04], pec: [0.68, 0.06], pelvic: [0.44, 0.05], eye: [0.84, 0.024],
+      back: 0x27321a, side: 0x667438, belly: 0xe2dbbf, fins: { dorsal: 0x7c6236, tail: 0x7c6236, paired: 0x9a7038, lower: 0x8a6634 }, iris: 0xd8b02c,
+      spots: [[0xd6cf8c, 13, 0.06, 0.72, -0.55, 0.7, 0.014]] },
+    öring: { depth: 0.22, width: 0.12, peak: 0.55, ped: 0.34, top: 0.52, head: 0.24, nose: [1.7, 2], tail: 0.15, fork: 0.15, spread: 0.1,
+      dorsal: [0.46, 0.62, 0.11, 0.04], adipose: [0.12, 0.18, 0.035, 0.01], anal: [0.18, 0.3, 0.07, 0.03], pec: [0.72, 0.07], pelvic: [0.46, 0.06], eye: [0.88, 0.03],
+      back: 0x44463a, side: 0xb4a98a, belly: 0xefe9da, fins: { dorsal: 0x6c6250, tail: 0x6c6250, paired: 0x9a8a6a, lower: 0x9a8a6a }, iris: 0xccbc80,
+      spots: [[0x1a1714, 12, 0.14, 0.92, 0.05, 0.95, 0.009], [0xc0381e, 5, 0.18, 0.75, -0.3, 0.15, 0.008]] },
+    ål: { depth: 0.065, width: 0.06, peak: 0.62, ped: 0.3, top: 0.5, head: 0.13, nose: [1.8, 2.2], tail: 0.04, fork: -0.6, spread: 0.035,
+      long: [0.62, 0.42, 0.035], pec: [0.85, 0.03], eye: [0.955, 0.012],
+      back: 0x2b2d1e, side: 0x5a5634, belly: 0xd6c682, fins: { dorsal: 0x5c5836, tail: 0x5c5836, paired: 0x6c6640, lower: 0x6a6440 }, iris: 0xd0c49a },
+  },
+};
+
+/**
+ * #1682: the world's edge. Far scenery outside SITE.backgroundGround (the modelled terrain rectangle): a feathered band round the
+ * terrain, a ground slab north of it, fields, a cycle path, Malmövägen, low box silhouettes and tree rows. All plan coordinates
+ * (x east, z south) and every number are *guess*: positions were read off the Google 3D views of 2026-10-29
+ * (docs/references/google-3d-2026-10-29, camera maths in its README) to roughly ±50 m, sizes are typical for the building type.
+ * Nothing is collidable and `WALK` / `OUTDOOR` are untouched. Two merged draw calls (land, boxes); the trees are more instances
+ * of the south backdrop's two tree batches.
+ */
+// #1812: visual road continuations, not surveyed map geometry or an expansion of WALK.
+// Continue the last mapped heading until its end is at least 700 m beyond WALK (clear-weather fog ends at 650 m).
+// Step sizes, overlap and far-layer lift are visual guesses; source polylines and their real junctions stay unchanged.
+export const ROAD_ENDS = {
+  fogClearance: 700, nearStep: 3, farStep: 24, overlap: .25,
+  parkOverlap: 2, // m + half path width: covers the original 1.5 m whole-quad sampling and oblique edge clipping (*guess*)
+  parkClip: { x0: -270, x1: 330, z1: 260 }, // existing riverpark.js drawing limits; restore its sourced outer pieces
+  items: [
+    { group: 'roads', source: 'Sankt Lars väg', end: 0, lift: .012, color: 0x5d5f61 },
+    { group: 'north', source: '130442838', end: 0, lift: .025, color: 0x5f6164 },
+    { group: 'east', source: '44447965', end: -1, lift: .025, color: 0x5f6164 },
+    { group: 'south', source: '45211117', end: -1, lift: .025, color: 0x5f6164 },
+    { group: 'east', source: '61112064', end: -1, lift: .025, color: 0xb5ac90 },
+    { group: 'park', source: '27185148', end: -1 },
+    { group: 'park', source: '61112061', end: 0 },
+  ],
+};
+export const EDGE_BACKDROP = {
+  level: -3.01,                    // m: the flat far ground the south backdrop already draws (SITE.south.ground)
+  lift: { skirt: 0.08, field: 0.18, path: 0.28, road: 0.38 }, // m above it, one step per layer: from the ground at 600 m the depth buffer resolves ~0.2 m (VIEW_NEAR)
+  north: { x0: -1000, x1: 1000, z0: -1000 }, // m: ground north of SITE.backgroundGround.z0 (nothing was drawn there), same tone as the far ground
+  // the feathered band round the terrain rectangle: terrain tone at the edge (the far ground's colour × `innerTone`, read off the lit terrain edge vs plane in a render: 113/100, 162/161, 62/55) → far-ground tone `width` m out. Only where no mapped
+  // field/forest crosses the edge (east z > 30 and the field south of it, the pony fields and the woodland at the south edge).
+  skirt: { width: 70, innerTone: [1.13, 1, 1.13], step: 8, sides: [
+    { side: 'west', from: -340, to: 460 }, { side: 'north', from: -350, to: 340 }, { side: 'east', from: -340, to: 30 },
+    { side: 'south', from: -350, to: -180 }, { side: 'south', from: 30, to: 205 }, // #1803: from x 30, not -12: the band (+0.08 m) hid the western car park 145221622 (x -33…26, z 468…531) east of x -12
+  ] },
+  fields: [
+    { name: 'Åker sydväst', color: 0xa9ad62, polygon: [[-700, 430], [-380, 400], [-350, 640], [-640, 660]] },
+    { name: 'Åker väst om skogen', color: 0x8aa14e, polygon: [[-340, 490], [-218, 480], [-218, 650], [-340, 670]] },
+    { name: 'Åker syd 1', color: 0xb9a35c, polygon: [[-400, 690], [-120, 670], [-60, 900], [-380, 930]] },
+    { name: 'Åker syd 2', color: 0x7f9a4f, polygon: [[-110, 670], [180, 640], [260, 880], [-50, 900]] },
+    { name: 'Åker syd 3', color: 0x9c8f5a, polygon: [[190, 640], [470, 600], [560, 860], [270, 890]] },
+    { name: 'Åker öster om fältet', color: 0xa9ad62, polygon: [[560, 140], [900, 60], [960, 400], [900, 560], [680, 520]] },
+    { name: 'Åker öster 2', color: 0x6f8f46, polygon: [[700, 580], [940, 580], [990, 860], [740, 880]] },
+  ],
+  // cycle path along the field edge in the south (asphalt, guess 3 m) and Malmövägen / väg 108 (guess 9 m); drawn only outside the terrain
+  // #1790 (`rivers`, drawn by edgebackdrop.js `band` in the land batch): Höje å from the terrain's east edge to Malmövägen: OSM way 137217705 nodes from where the line crosses the terrain's
+  // east edge (x 340, between the nodes (333.48, 25.71) and (375.1, 23.63)); #1814 continues the sourced line past the road and into fog.
+  // The illustrative Malmövägen strip crosses near (440.8,-12), ~17 m from the sourced road bridge (OSM 57357001), within its ±50 m estimate. Width/colour remain *guess*.
+  paths: [{ name: 'Gång- och cykelväg', width: 3, color: 0x8b8a84, path: [[-640, 560], [-470, 600], [-330, 650], [-200, 660], [-30, 650], [110, 600], [250, 570], [330, 560]] }],
+  // #1814: the same archived 2026-10-08 OSM way continues beyond both terrain edges. Plan positions are sourced up to
+  // the west snapshot's (-537.66,407.78); only the last west point (-1400,352) is a tangent continuation (*guess*) hidden in fog.
+  // Far water holds the local edge's relative level (no elevation samples); channel/bank sizes, join distance and mesh step are *guess*.
+  riverContinuation: { step: 8, bank: 24, slope: 2.2, shore: 7.5, valley: 8.5, join: 30, seamStep: 1, overlap: 0.15, waterDepth: 0.6, shoreHeight: 1.5 },
+  rivers: [
+    { name: 'Höje å uppströms', width: 6, color: 0x47657a, path: [[340,25.38],[375.1,23.63],[402.15,12.75],[416.34,4.83],[427.46,-1.37],[470.23,-35.22],[496.28,-46.7],[538.14,-51.02],[558.33,-61.33],[577.1,-76],[627.22,-108.17],[668.21,-140.1],[690.24,-147.28],[716.88,-149.4],[741.42,-151.38],[767.35,-164.95],[793.62,-184.22],[809.24,-202.08],[820.45,-220.81],[832.75,-233.83],[845.15,-246.68],[863,-256.77],[890.7,-263.27],[956.2,-265.93],[995.35,-271.91],[1018.8,-282.51],[1028.82,-291.33],[1041.34,-302.36],[1063.96,-317.6],[1086.45,-334.46],[1128.69,-356.13],[1157.51,-378.51],[1178.44,-385.18],[1193.94,-396.46],[1203.78,-409.27],[1218.09,-422.35]] },
+    { name: 'Höje å nedströms', width: 6, color: 0x47657a, path: [[-350,355.5],[-354.14,357.09],[-364.33,362.66],[-369.34,368.25],[-371.81,376.88],[-365.17,396.99],[-362.95,409.39],[-364.15,420.41],[-367.53,426.76],[-374.21,430.64],[-392.74,431.19],[-427.34,428.75],[-450.23,431.15],[-465.9,436.15],[-479.62,433.36],[-490.17,425.67],[-512.31,413.71],[-533.33,408.06],[-537.66,407.78],[-1400,352]] },
+  ],
+  roads: [{ name: 'Malmövägen / väg 108', width: 9, color: 0x5f6164, path: [[-440, -860], [-260, -660], [170, -313], [357, -100], [476, 25], [560, 130], [620, 250], [650, 380], [640, 500], [600, 600], [540, 680], [470, 760], [380, 880], [300, 1000]] }],
+  // house groups: `rows` × `cols` boxes w × d × h (m) from `at`, turned `angle`° about y, `colGap`/`rowGap` m apart; walls / roofs cycle through the palettes
+  houses: [
+    { name: 'Radhus Kallby ängaväg', at: [-480, 210], angle: -35, rows: 6, cols: 4, w: 38, d: 10.5, h: 7.5, colGap: 6, rowGap: 16, walls: [0xd8cdb8, 0xc9bda6], roofs: [0x4a4f58, 0x55484a] },
+    { name: 'Radhus Höjeådalen', at: [-660, 330], angle: -20, rows: 4, cols: 3, w: 34, d: 10.5, h: 7.5, colGap: 6, rowGap: 16, walls: [0xd8cdb8, 0xc9bda6], roofs: [0x4a4f58, 0x55484a] },
+    { name: 'Villor Tors väg öst', at: [-100, -610], angle: 20, rows: 3, cols: 6, w: 11, d: 9, h: 6.2, colGap: 10, rowGap: 12, walls: [0xe0d8c8, 0xd9c9a8, 0xc9b8a0], roofs: [0x8b4a3c, 0x4d5058, 0x7a3f36] },
+    { name: 'Villor Tors väg väst', at: [-270, -560], angle: 20, rows: 2, cols: 4, w: 11, d: 9, h: 6.2, colGap: 10, rowGap: 12, walls: [0xe0d8c8, 0xd9c9a8, 0xc9b8a0], roofs: [0x8b4a3c, 0x4d5058, 0x7a3f36] },
+    { name: 'Villor Tors väg nord', at: [60, -540], angle: 20, rows: 2, cols: 4, w: 11, d: 9, h: 6.2, colGap: 10, rowGap: 12, walls: [0xe0d8c8, 0xd9c9a8, 0xc9b8a0], roofs: [0x8b4a3c, 0x4d5058, 0x7a3f36] },
+  ],
+  halls: [ // industrial halls (Scania, Bepps): at, w, d, h, angle
+    { at: [-80, -830], w: 120, d: 46, h: 12, angle: 20, wall: 0xb4bcc6, roof: 0x6f7d92 }, { at: [60, -770], w: 70, d: 40, h: 10, angle: 20, wall: 0xaab2bd, roof: 0x7b8798 },
+    { at: [-200, -880], w: 90, d: 50, h: 13, angle: 20, wall: 0xb4bcc6, roof: 0x5f6d82 }, { at: [-10, -700], w: 50, d: 28, h: 9, angle: 20, wall: 0xc2c4c4, roof: 0x7b8798 },
+    { at: [170, -860], w: 80, d: 36, h: 11, angle: 20, wall: 0xaab2bd, roof: 0x6f7d92 }, { at: [-390, -640], w: 60, d: 30, h: 9, angle: 20, wall: 0xc2c4c4, roof: 0x6f7d92 },
+  ],
+  // #1798: OSM building footprints round the north-west of the terrain (Kallby ängar, Klostergården, Nordanväg; OSM API pull 2026-11-02, docs/references/surrounding-views/osm-north-2026-11-02.json:
+  // every mapped building >= 60 m² outside the terrain rectangle within 650 m of (-200, -100)) extruded into the same merged `edge-houses` mesh (no extra draw call, none on phones).
+  // `levels` is OSM's `building:levels` where mapped; elsewhere the count comes from the footprint area (`levelsByArea`, *guess*). Storey height, roof forms (a gable on small
+  // rectangles, a flat roof with a set-back top storey on rectangular blocks of `setback.minLevels`+ storeys, as in the Google 3D views 07_bostader_norr), the palettes and the
+  // set-back inset are *guess*, read by eye from those views. Walls and roofs cycle through the palettes by the OSM id.
+  footprints: {
+    storey: 3.0,                   // m per storey (the project's usual guess)
+    levelsByArea: [[150, 1], [500, 2], [Infinity, 4]], // [footprint area m² up to, storeys] when OSM has no building:levels
+    garageHeight: 2.8,             // m, `garage` kind (flat roof)
+    parkingHeight: 8.5,            // m, multi-storey car parks (3 levels of 2.8 m)
+    gable: { maxArea: 400, rise: 0.3, maxRise: 4.5 }, // small rectangles get a gable: ridge along the long side, rise = this fraction of the span (≤ maxRise)
+    setback: { minLevels: 4, inset: 2.4, height: 3, wall: 0x5f6672, roof: 0x4a4f58 }, // dark top storey drawn inside a rectangular block's roof edge
+    base: 0.3,                     // m the walls sink below the lowest ground corner
+    palettes: {
+      block: { walls: [0xa4574a, 0xb0644f, 0x9b5a4a, 0xd9d3c6], roofs: [0x545a68, 0x4a4f58] },
+      house: { walls: [0xb06a58, 0xa4574a, 0xd9cdb8], roofs: [0x4a4f58, 0x55484a, 0x5f6672] },
+      garage: { walls: [0xcfc9bc, 0xbab5a8], roofs: [0x777b80] },
+      parking: { walls: [0xb9b6ae], roofs: [0x8c9096] },
+    },
+    items: [
+      {"source":"33140908","kind":"parking","levels":3,"polygon":[[-461.7,-417.5],[-456.3,-416.4],[-457.5,-411.2],[-431.1,-405.4],[-421.4,-403.3],[-412,-446.4],[-453.5,-455.4]]},
+      {"source":"33140923","kind":"parking","levels":3,"polygon":[[-584.4,-85.1],[-558.6,-119.9],[-590.6,-143.6],[-592.7,-145.1],[-615.3,-114.7],[-609.7,-110.5],[-612.9,-106.2],[-592,-90.7]]},
+      {"source":"33140945","kind":"parking","levels":3,"polygon":[[-736.2,6.5],[-731.8,11.5],[-735.6,14.8],[-717.1,36.3],[-712,41.4],[-679.4,12.5],[-705.6,-17],[-707.4,-19]]},
+      {"source":"39199457","kind":"block","levels":8,"polygon":[[-872.6,-4.6],[-864.8,6.4],[-818.4,-26.6],[-823.7,-34],[-826.2,-32.2],[-828.8,-35.8]]},
+      {"source":"39199458","kind":"block","levels":2,"polygon":[[-764.5,37.4],[-759.1,45.8],[-762.7,48.1],[-760.9,51],[-806.9,80.3],[-809.2,76.7],[-818.2,82.4],[-863.5,11.5],[-852.3,4.3],[-811.9,67.6]]},
+      {"source":"39199459","kind":"block","levels":8,"polygon":[[-807.2,-44.6],[-816.6,-37.3],[-754,43.2],[-749.3,39.6],[-751.1,37.3],[-746.4,33.6]]},
+      {"source":"39502999","kind":"block","levels":2,"polygon":[[-637.6,-78.2],[-631.6,-72.2],[-633.9,-69.8],[-630.9,-66.8],[-669,-28.2],[-671.3,-30.4],[-678.4,-23.2],[-739,-82.9],[-730.3,-91.7],[-676.6,-38.7]]},
+      {"source":"39503001","kind":"block","levels":8,"polygon":[[-751.8,-97.6],[-741.1,-87.3],[-703.7,-126],[-706.3,-128.5],[-703.6,-131.2],[-708.9,-136.3],[-710.9,-134.2],[-713.8,-137]]},
+      {"source":"44480768","kind":"block","levels":8,"polygon":[[-824.4,-187.8],[-766.1,-128],[-771.5,-122.7],[-770.3,-121.5],[-775.1,-116.8],[-835.5,-178.6],[-829.5,-184.4],[-828.7,-183.6]]},
+      {"source":"44700919","kind":"block","levels":8,"polygon":[[-656.9,-442.7],[-643,-496.4],[-656.2,-499.8],[-670.1,-446.1]]},
+      {"source":"44700920","kind":"block","levels":8,"polygon":[[-649.9,-510.7],[-566.3,-496.2],[-564,-509.3],[-647.6,-523.8]]},
+      {"source":"44700921","kind":"block","levels":2,"polygon":[[-701.2,-320.3],[-643.3,-289.9],[-638.5,-298.9],[-637.6,-298.5],[-612.8,-345.7],[-622.9,-351],[-647,-305],[-695.8,-330.6]]},
+      {"source":"44700922","kind":"block","levels":8,"polygon":[[-707.5,-323.5],[-682.9,-372.3],[-695.4,-378.6],[-720,-329.8]]},
+      {"source":"44700923","kind":"block","levels":8,"polygon":[[-687.2,-387.6],[-607.6,-355.9],[-602.6,-368.7],[-682.1,-400.3]]},
+      {"source":"44700924","kind":"block","levels":8,"polygon":[[-566.5,-342.4],[-547.4,-394.1],[-561.1,-399.1],[-580.1,-347.5]]},
+      {"source":"44700925","kind":"block","levels":2,"polygon":[[-517.1,-489.7],[-432.7,-475.9],[-431,-486.6],[-428.8,-486.3],[-420.3,-538.7],[-432.7,-540.7],[-441,-489.6],[-515.2,-501.7]]},
+      {"source":"44700926","kind":"block","levels":8,"polygon":[[-521.7,-491.6],[-516.2,-545.9],[-531.4,-547.5],[-537,-493.1]]},
+      {"source":"44700928","kind":"block","levels":2,"polygon":[[-650,-441.7],[-587.2,-424.6],[-584.5,-434.8],[-582.8,-434.4],[-568.9,-485.4],[-580.1,-488.4],[-593.7,-438.3],[-647,-452.9]]},
+      {"source":"44700940","kind":"block","levels":8,"polygon":[[-612,-263.9],[-521.6,-216.4],[-519.5,-220.4],[-519,-220.2],[-516.5,-225],[-518.6,-226.2],[-517.2,-229],[-604.3,-274.7],[-605.8,-271.9],[-608.3,-273.2],[-611,-267.9],[-610.1,-267.4]]},
+      {"source":"44700941","kind":"block","levels":8,"polygon":[[-784.3,-217.2],[-795.5,-226.1],[-761.1,-269.2],[-758.2,-266.9],[-756.2,-269.4],[-750,-264.4],[-752.5,-261.2],[-750.6,-259.6],[-776.9,-226.5]]},
+      {"source":"44700942","kind":"block","levels":8,"polygon":[[-750.4,-274.8],[-685.2,-231.4],[-677.3,-243.2],[-742.5,-286.7]]},
+      {"source":"44700943","kind":"block","levels":2,"polygon":[[-561.7,-340.5],[-481.5,-308.5],[-477.5,-318.4],[-475.6,-317.7],[-456,-367],[-468.5,-372],[-487.7,-323.8],[-509.6,-332.6],[-528.7,-340.1],[-548.2,-347.9],[-557.3,-351.6]]},
+      {"source":"44700944","kind":"block","levels":8,"polygon":[[-452.5,-379],[-548.8,-405.2],[-545.6,-418.8],[-449.1,-392]]},
+      {"source":"44700948","kind":"block","levels":2,"polygon":[[-635.6,-201.8],[-566.5,-156.8],[-564.5,-155.6],[-562.1,-159.4],[-559.9,-158],[-557.5,-161.6],[-563.7,-165.6],[-562.4,-167.6],[-629.4,-211.2]]},
+      {"source":"44700949","kind":"block","levels":8,"polygon":[[-641.6,-204.8],[-610.8,-255.3],[-622.1,-262.1],[-652.8,-211.6]]},
+      {"source":"44700950","kind":"block","levels":2,"polygon":[[-563.9,-175.3],[-537.2,-217.6],[-527.4,-211.4],[-554.1,-169.1]]},
+      {"source":"88430195","kind":"house","levels":1,"polygon":[[-660.5,-351.7],[-656.4,-362.7],[-645.1,-358.5],[-649.3,-347.4]]},
+      {"source":"88430338","kind":"house","polygon":[[-540.1,-149.9],[-535.2,-146.6],[-543.2,-134.7],[-548.1,-138]]},
+      {"source":"88430358","kind":"parking","levels":3,"polygon":[[-519.8,-250.9],[-500.5,-290.7],[-466.5,-274.2],[-485.8,-234.4]]},
+      {"source":"88430478","kind":"block","levels":8,"polygon":[[-704.4,-140.1],[-695.1,-151.3],[-618.5,-87],[-623.3,-81.3],[-622.2,-80.3],[-626.7,-74.9]]},
+      {"source":"88430638","kind":"block","levels":4,"polygon":[[-642,-592],[-625.4,-590],[-626.7,-578.9],[-631.5,-579.5],[-631.8,-576.8],[-632.1,-574.2],[-633.3,-574.3],[-635.3,-558],[-633.6,-557.8],[-634.1,-553.5],[-634.3,-552.3],[-630.8,-551.9],[-632.1,-540.9],[-648,-542.8]]},
+      {"source":"88456531","kind":"house","polygon":[[-704.4,300.6],[-680.1,289.9],[-673.5,304.8],[-697.8,315.5]]},
+      {"source":"88456532","kind":"house","polygon":[[-665.5,307.7],[-659.4,307],[-658.1,317.1],[-664.2,317.9]]},
+      {"source":"88456533","kind":"house","polygon":[[-636.9,267.2],[-627.5,263],[-623.2,272.6],[-632.6,276.9]]},
+      {"source":"88456539","kind":"house","polygon":[[-716.2,219.2],[-719.1,211.6],[-744.8,222.3],[-749.3,211.4],[-721.7,199.8],[-719.7,204.4],[-711.9,201.4],[-706.4,215.4]]},
+      {"source":"88456540","kind":"house","polygon":[[-634.6,329.8],[-624.8,328.3],[-623.4,337.8],[-633.2,339.3]]},
+      {"source":"88456549","kind":"house","polygon":[[-636.4,287.5],[-619.2,284.9],[-617.6,295.6],[-615.9,306.8],[-624.3,308],[-626,296.7],[-634.8,298]]},
+      {"source":"88456551","kind":"block","polygon":[[-709.9,227],[-702.1,223.5],[-688.7,253.8],[-696.5,257.2],[-700.4,259],[-701,257.6],[-722.8,267],[-726.6,258.1],[-705,248.9],[-705.7,247.4],[-701.6,245.6]]},
+      {"source":"88456558","kind":"house","polygon":[[-623,324.8],[-615.4,323.2],[-613,334.7],[-620.6,336.3]]},
+      {"source":"88456560","kind":"house","polygon":[[-713.2,220.3],[-703.5,215.8],[-701,221.2],[-710.6,225.8]]},
+      {"source":"88774715","kind":"garage","polygon":[[-673.3,37],[-652,19.8],[-647.6,25.3],[-668.9,42.5]]},
+      {"source":"88774720","kind":"block","polygon":[[-382.8,-248.1],[-371.9,-262.3],[-363.6,-255.9],[-381.1,-233.1],[-410.3,-255.5],[-403.7,-264.1]]},
+      {"source":"88774721","kind":"block","polygon":[[-481,-52.7],[-492.5,-47.7],[-483.7,-27.2],[-475.1,-31.1],[-469.5,-19],[-486.4,-11.2],[-504.8,-53.3],[-498.2,-56.1],[-498.9,-57.8],[-488.1,-62.5]]},
+      {"source":"88774727","kind":"garage","polygon":[[-459.7,-214],[-450.6,-231.6],[-445.1,-228.8],[-454.1,-211.1]]},
+      {"source":"88774733","kind":"block","polygon":[[-437.8,-129.8],[-427.7,-143.1],[-426.6,-142.3],[-414.2,-158.7],[-405.3,-152.1],[-418,-135.3],[-421.1,-131.3],[-423.4,-128.6],[-400.2,-111.5],[-406.8,-102.8],[-437.5,-125.9]]},
+      {"source":"88774735","kind":"garage","polygon":[[-554.6,-68],[-541.1,-85.8],[-531,-78.1],[-544.5,-60.3]]},
+      {"source":"88774742","kind":"garage","polygon":[[-429.8,-189.1],[-418.7,-211.2],[-412.9,-208.3],[-423.9,-186.2]]},
+      {"source":"88774743","kind":"block","polygon":[[-509.6,-128.6],[-500.8,-122.7],[-506.8,-113.6],[-525,-125.7],[-502,-160.5],[-483.5,-148.3],[-489.3,-139.6],[-498.4,-145.6]]},
+      {"source":"88774746","kind":"garage","polygon":[[-449.7,-233.7],[-442.3,-248.4],[-436.5,-245.5],[-443.9,-230.8]]},
+      {"source":"88774747","kind":"block","polygon":[[-355.9,-169.6],[-349.3,-178.1],[-371.9,-195.9],[-353.8,-219],[-361.9,-225.4],[-375.1,-208.6],[-376.7,-209.8],[-386.8,-196.9],[-385.7,-192.8],[-387.5,-190.5],[-384.8,-188.3],[-383,-190.5],[-375.8,-184.9],[-377.6,-182.7],[-375.1,-180.8],[-373.3,-183.1],[-369.3,-180],[-371.1,-177.7],[-368.2,-175.4],[-366.4,-177.6],[-361.3,-173.6],[-363.2,-171.1],[-360.8,-169.3],[-358.8,-171.8]]},
+      {"source":"88774751","kind":"block","polygon":[[-558.4,12],[-556.5,10.2],[-554.5,12.3],[-556.7,14.4],[-554.3,16.9],[-561.5,23.8],[-569.5,15.4],[-589.4,34.4],[-596.6,27],[-571.1,2.6],[-566.7,3.3],[-564.9,1.7],[-563,3.6],[-564.8,5.3],[-562,8.2]]},
+      {"source":"88774752","kind":"garage","polygon":[[-539.2,-97.7],[-564.2,-64.6],[-570,-69],[-544.9,-102.1]]},
+      {"source":"88774753","kind":"block","polygon":[[-367.3,-274.4],[-398.5,-285.2],[-395,-295.3],[-353.7,-281],[-360.5,-261.5],[-370.6,-264.9]]},
+      {"source":"88774759","kind":"house","polygon":[[-537.1,24.8],[-530.8,33.3],[-527.1,30.5],[-525.5,32.8],[-522.9,30.8],[-524.2,28.4],[-519.6,25],[-517.8,27.3],[-514.7,24.9],[-516.5,22.7],[-513.4,20.5],[-520.1,11.8]]},
+      {"source":"88774762","kind":"block","polygon":[[-589.1,76],[-614.9,49.7],[-615.5,45],[-603.7,33.6],[-601,36.2],[-599.1,34.2],[-596.7,36.5],[-598.5,38.4],[-595.6,41.2],[-597.8,43.5],[-602.2,48.1],[-581.6,68.7],[-584.2,71.3],[-582.2,73.1],[-584.2,75.2],[-586.5,73.1]]},
+      {"source":"88774763","kind":"garage","polygon":[[-470.8,-221.6],[-461.7,-239.2],[-456.1,-236.3],[-465.2,-218.7]]},
+      {"source":"88774771","kind":"garage","polygon":[[-650.8,35.8],[-646.9,40.7],[-650.3,43.4],[-646.2,48.5],[-654.1,54.7],[-662,44.7]]},
+      {"source":"88774774","kind":"garage","polygon":[[-417.5,-213.6],[-407.5,-233.6],[-401.7,-230.7],[-411.7,-210.7]]},
+      {"source":"88774776","kind":"block","polygon":[[-481,-173.8],[-472.4,-168.6],[-478.4,-158.6],[-496.6,-169.5],[-476.3,-203.5],[-457.5,-192.2],[-462.8,-183.2],[-472.1,-188.8]]},
+      {"source":"88774781","kind":"house","polygon":[[-609.8,-14.8],[-606.3,-11.4],[-604.2,-13.5],[-601.7,-11.1],[-603.8,-8.9],[-596.6,-1.8],[-599.2,0.8],[-597.5,2.4],[-600,5],[-601.7,3.4],[-604.1,5.9],[-611.2,-1.1],[-615.4,3.2],[-614,4.5],[-616.2,6.8],[-625.6,-2.3],[-613.5,-14.8]]},
+      {"source":"88774792","kind":"house","polygon":[[-588.1,-42.3],[-576.5,-55.3],[-572.2,-56.2],[-557,-42.9],[-564,-34.8],[-573.5,-43.1],[-577.3,-38.7],[-575.5,-37.1],[-578.4,-33.7]]},
+      {"source":"88774795","kind":"garage","polygon":[[-691.6,51.8],[-681.3,42.6],[-676.7,47.7],[-687.1,56.9]]},
+      {"source":"88774804","kind":"block","polygon":[[-385.2,-131.8],[-383.1,-130.4],[-380.8,-133.6],[-382.7,-135],[-377.4,-141.9],[-375,-140.2],[-372.7,-143.5],[-374.9,-145.1],[-366,-156.6],[-382.1,-169.2],[-380.7,-171.3],[-384.1,-173.7],[-385.5,-171.8],[-391.5,-176.5],[-389.9,-178.6],[-393.4,-181.1],[-394.9,-179.2],[-398.7,-178.4],[-408.7,-165],[-405.9,-163.1],[-407.6,-160.6],[-404.9,-158.8],[-403.2,-161.3],[-399.7,-158.9],[-394.8,-165.5],[-380.8,-155.2],[-380.6,-155],[-381.3,-154],[-403.4,-125.4],[-395.1,-119],[-392.8,-122],[-390.6,-120.4],[-388.3,-123.7],[-390.3,-125.1]]},
+      {"source":"88774806","kind":"garage","polygon":[[-688.8,65.8],[-671.8,52.6],[-663.8,62.8],[-680.8,76.1]]},
+      {"source":"88774813","kind":"block","polygon":[[-428.8,-276.5],[-419.7,-272.2],[-424.6,-261.9],[-443.9,-271],[-426.9,-307.1],[-406.9,-297.7],[-411.3,-288.2],[-421.1,-292.8]]},
+      {"source":"88774814","kind":"block","polygon":[[-538.2,41.8],[-537.6,38],[-538.6,36.3],[-536.5,34.7],[-538.2,32.5],[-539.9,33.7],[-547.4,23.7],[-549.3,21.3],[-557.8,27.7],[-556.1,30],[-558,31.4],[-555.9,34.3],[-553.9,32.8],[-550.6,37.2],[-573.9,54.8],[-580.4,59.7],[-574.4,67.6],[-567.8,62.7]]},
+      {"source":"88774817","kind":"garage","polygon":[[-531.3,-89.5],[-528.9,-92.6],[-533.4,-96.1],[-527.4,-103.8],[-516.9,-95.7],[-525.2,-84.9]]},
+      {"source":"88774823","kind":"garage","polygon":[[-460.8,-241.5],[-452.2,-258.7],[-446.6,-255.9],[-455.1,-238.6]]},
+      {"source":"88775064","kind":"block","polygon":[[-445.4,-152],[-463.5,-127.2],[-464.7,-128.1],[-479.6,-107.6],[-490.2,-115.3],[-483.4,-124.8],[-481.5,-123.5],[-472.8,-135.5],[-471.4,-134.4],[-453.3,-159.2],[-452.5,-158.6],[-443.9,-170.4],[-452,-176.3],[-445.8,-184.7],[-428.7,-172.3],[-444.1,-151.1]]},
+      {"source":"94254746","kind":"house","polygon":[[-543.9,-17.7],[-549.1,-12.8],[-541.6,-4.9],[-536.3,-9.8]]},
+      {"source":"94254747","kind":"house","polygon":[[-616.2,6.8],[-618.6,9.2],[-619.9,7.9],[-624.1,12.2],[-616.5,19.4],[-623.9,27.1],[-626.3,24.7],[-628.3,26.8],[-630.9,24.2],[-628.9,22.2],[-632.3,19],[-633.9,20.7],[-636.4,18.3],[-634.8,16.6],[-637.7,13.9],[-637.8,10.2],[-625.6,-2.3]]},
+      {"source":"94254748","kind":"house","polygon":[[-527.1,-39.9],[-522.2,-40.3],[-521.3,-39.3],[-520,-40.5],[-517.2,-37.5],[-518.6,-36.2],[-511.2,-28.1],[-513.9,-25.6],[-512.2,-23.9],[-514.7,-21.6],[-516.4,-23.4],[-519.2,-20.8],[-524.8,-27.4],[-533.4,-19.6],[-535.6,-22],[-537.9,-19.9],[-540.3,-22.6],[-538.2,-24.5],[-540.5,-27.1]]},
+      {"source":"94254749","kind":"house","polygon":[[-554.3,-7.9],[-559.4,-3],[-552.3,4.8],[-547,0]]},
+      {"source":"94254750","kind":"house","polygon":[[-494.2,-4],[-495.8,-2.8],[-494.5,-1],[-493.7,0.1],[-491.3,-1.7],[-489.6,0.4],[-492.1,2.3],[-491,4],[-491.3,7.2],[-492.3,8],[-491.8,8.8],[-494.7,11],[-495.3,10.3],[-502.5,15.6],[-501.7,16.7],[-505.1,19.3],[-505.9,18.2],[-507,19],[-508.7,16.6],[-513.2,10.5],[-505.4,4.7],[-504.8,2],[-512.2,-7.8],[-514.2,-6.4],[-516.3,-9.2],[-514.3,-10.6],[-516.4,-13.4],[-508.3,-19.5],[-497.9,-5.7],[-496.4,-6.9]]},
+      {"source":"94254751","kind":"house","polygon":[[-587.8,-15.3],[-589.6,-13.2],[-592.4,-15.6],[-590.5,-17.7],[-593.9,-20.8],[-595.5,-19],[-598.2,-21.3],[-596.6,-23],[-599.4,-25.5],[-599.8,-29.3],[-588.1,-42.3],[-578.4,-33.7],[-580.7,-31.2],[-582,-32.4],[-586,-27.9],[-578.2,-20.9],[-585.3,-13]]},
+      {"source":"94254752","kind":"house","polygon":[[-549.1,-12.8],[-554.3,-7.9],[-547,0],[-541.6,-4.9]]},
+      {"source":"94254753","kind":"block","polygon":[[-481,-52.7],[-488.1,-62.5],[-481.7,-71.1],[-479.9,-69.8],[-475.7,-75.1],[-468.2,-69.2],[-441.3,-49.2],[-452.2,-34.7],[-461.4,-41.6],[-455.9,-49],[-473.1,-61.8]]},
+      {"source":"94818331","kind":"house","polygon":[[-293.1,-347.8],[-288,-363.7],[-282.9,-362],[-274.8,-359.4],[-276.6,-353.9],[-284.8,-356.5],[-286.8,-350.1],[-283.2,-348.9],[-284.5,-344.9]]},
+      {"source":"209819203","kind":"house","polygon":[[-360.7,54],[-364.5,48.7],[-355.4,42.1],[-351.5,47.3]]},
+      {"source":"209819205","kind":"house","polygon":[[-356.8,59.2],[-360.7,54],[-351.5,47.3],[-347.7,52.6]]},
+      {"source":"209819206","kind":"house","polygon":[[-376.1,68.9],[-380.1,63.5],[-370.8,56.7],[-366.9,62.1]]},
+      {"source":"209819208","kind":"house","polygon":[[-380.1,63.5],[-384.1,58.1],[-374.8,51.3],[-370.8,56.7]]},
+      {"source":"209819211","kind":"house","polygon":[[-364.2,85],[-368.2,79.6],[-358.9,72.8],[-355,78.2]]},
+      {"source":"209819213","kind":"house","polygon":[[-360.2,90.4],[-364.2,85],[-355,78.2],[-351,83.6]]},
+      {"source":"209819218","kind":"house","polygon":[[-368.2,79.6],[-372.1,74.3],[-362.9,67.4],[-358.9,72.8]]},
+      {"source":"209819221","kind":"house","polygon":[[-353,64.5],[-356.8,59.2],[-347.7,52.6],[-343.9,57.8]]},
+      {"source":"209819223","kind":"house","polygon":[[-372.1,74.3],[-376.1,68.9],[-366.9,62.1],[-362.9,67.4]]},
+      {"source":"231510230","kind":"house","polygon":[[-380.4,115],[-385.1,109.1],[-388.3,111.6],[-391.9,107.1],[-383,100],[-379.3,104.7],[-381,106],[-376.4,111.9]]},
+      {"source":"231510231","kind":"house","polygon":[[-370.7,128.6],[-375.4,122.7],[-378.6,125.2],[-382.2,120.6],[-373.2,113.6],[-369.6,118.2],[-371.3,119.5],[-366.7,125.4]]},
+      {"source":"231510232","kind":"house","polygon":[[-389.7,101.3],[-394.3,95.4],[-397.6,98],[-401.2,93.4],[-392.2,86.3],[-388.6,91],[-390.3,92.3],[-385.6,98.2]]},
+      {"source":"231510233","kind":"house","polygon":[[-400.3,88.2],[-404.9,82.3],[-408.2,84.8],[-411.8,80.2],[-402.8,73.2],[-399.2,77.8],[-400.9,79.1],[-396.3,85]]},
+      {"source":"231510234","kind":"house","polygon":[[-360.7,141.9],[-365.4,136],[-368.6,138.5],[-372.2,134],[-363.2,126.9],[-359.6,131.6],[-361.3,132.9],[-356.7,138.8]]},
+      {"source":"248225167","kind":"block","levels":2,"polygon":[[-879.9,-128.7],[-832,-70.6],[-824.4,-76.8],[-821.5,-73.3],[-779.9,-107.6],[-782.5,-110.7],[-779.4,-113.3],[-785.4,-120.6],[-827.9,-85.6],[-870,-136.8]]},
+      {"source":"248225168","kind":"block","levels":2,"polygon":[[-776.9,-226.5],[-724.8,-185],[-690.1,-228.7],[-683.1,-223.1],[-685.6,-220],[-682.7,-217.7],[-716.3,-175.5],[-718.5,-177.3],[-724.6,-169.7],[-784.3,-217.2]]},
+      {"source":"333642333","kind":"house","polygon":[[-460.7,128.9],[-464.5,122.4],[-468.1,124.5],[-471.1,119.4],[-461.2,113.6],[-458.2,118.7],[-460.1,119.8],[-456.3,126.2]]},
+      {"source":"333642337","kind":"house","polygon":[[-378.1,151.9],[-382.4,145.7],[-379,143.4],[-382.3,138.6],[-391.7,145.1],[-388.3,149.9],[-386.6,148.7],[-382.3,154.8]]},
+      {"source":"333642340","kind":"house","polygon":[[-445.4,193.9],[-449.4,187.6],[-445.9,185.4],[-449,180.4],[-458.7,186.5],[-455.5,191.5],[-453.7,190.4],[-449.7,196.7]]},
+      {"source":"333642344","kind":"house","polygon":[[-416.4,98.5],[-420.7,92.3],[-417.3,89.9],[-420.6,85.1],[-430,91.6],[-426.7,96.5],[-424.9,95.2],[-420.7,101.4]]},
+      {"source":"333642345","kind":"house","polygon":[[-477.8,136.8],[-481.8,130.4],[-478.4,128.2],[-481.5,123.3],[-491.1,129.4],[-488,134.3],[-486.2,133.2],[-482.2,139.5]]},
+      {"source":"333642347","kind":"house","polygon":[[-452.9,143.3],[-456.7,136.8],[-460.2,138.9],[-463.2,133.8],[-453.4,128.1],[-450.4,133.1],[-452.2,134.2],[-448.5,140.7]]},
+      {"source":"333642349","kind":"house","polygon":[[-407.4,111.5],[-411.7,105.3],[-408.3,103],[-411.6,98.2],[-421,104.7],[-417.6,109.5],[-415.9,108.3],[-411.6,114.4]]},
+      {"source":"333642352","kind":"house","polygon":[[-469.7,150.8],[-473.7,144.4],[-470.2,142.2],[-473.3,137.3],[-482.9,143.4],[-479.8,148.4],[-478,147.2],[-474,153.5]]},
+      {"source":"333642364","kind":"house","polygon":[[-444.3,156.7],[-448.1,150.2],[-451.6,152.3],[-454.6,147.3],[-444.8,141.5],[-441.8,146.5],[-443.6,147.6],[-439.9,154.1]]},
+      {"source":"333642371","kind":"house","polygon":[[-397.8,124.8],[-402,118.6],[-398.7,116.2],[-402,111.4],[-411.4,117.9],[-408,122.8],[-406.2,121.5],[-402,127.7]]},
+      {"source":"333642372","kind":"house","polygon":[[-461.4,164.8],[-465.4,158.4],[-461.9,156.2],[-465,151.3],[-474.7,157.4],[-471.5,162.4],[-469.7,161.2],[-465.8,167.5]]},
+      {"source":"333642379","kind":"house","polygon":[[-436,170],[-439.8,163.5],[-443.4,165.6],[-446.3,160.6],[-436.5,154.8],[-433.5,159.9],[-435.4,160.9],[-431.6,167.4]]},
+      {"source":"333642380","kind":"house","polygon":[[-387.2,138],[-391.4,131.8],[-388,129.4],[-391.3,124.6],[-400.7,131.1],[-397.4,136],[-395.6,134.7],[-391.4,140.9]]},
+      {"source":"333642381","kind":"house","polygon":[[-453.5,179.7],[-457.5,173.3],[-454,171.1],[-457.1,166.2],[-466.7,172.2],[-463.6,177.2],[-461.8,176.1],[-457.8,182.4]]},
+      {"source":"333642382","kind":"house","polygon":[[-427.3,184.4],[-431.2,177.9],[-434.7,180],[-437.7,175],[-427.8,169.2],[-424.9,174.3],[-426.7,175.4],[-422.9,181.8]]},
+      {"source":"476125241","kind":"house","polygon":[[-381.2,218.3],[-394.3,200.2],[-376.6,187.4],[-363.5,205.5]]},
+      {"source":"476125242","kind":"block","polygon":[[-435.9,247.7],[-445.6,228.5],[-423.7,217.5],[-414,236.6]]},
+      {"source":"476125243","kind":"house","polygon":[[-489,269.9],[-497.2,247.3],[-478.7,240.6],[-470.5,263.2]]},
+      {"source":"476125244","kind":"block","polygon":[[-550,141.9],[-576.3,95.1],[-563.3,87.7],[-537,134.6]]},
+      {"source":"476125245","kind":"block","polygon":[[-501.4,111.5],[-532.8,68.3],[-521.3,60],[-490,103.2]]},
+      {"source":"476125246","kind":"block","polygon":[[-445.6,75.9],[-473.8,27.3],[-459.6,19],[-431.4,67.6]]},
+      {"source":"476125247","kind":"block","polygon":[[-395.8,45.4],[-430.4,-0.3],[-414,-11.8],[-382,35]]}
+    ],
+  },
+  // #1808: the open ground between those buildings (Kallby ängar, Klostergården, Nordanväg), flat coloured polygons and ribbons in the same `edge-land` mesh (no extra draw call, none on phones).
+  // OSM API pull 2026-11-02, docs/references/surrounding-views/osm-north-ground-2026-11-02.json: surface car parks (amenity=parking without a building tag), landuse=grass / leisure=park + pitch (playgrounds >= 250 m²),
+  // natural=scrub, the one natural=water pond, the one waterway=ditch, service / residential / tertiary roads >= 30 m and footway / cycleway / pedestrian ways >= 50 m, every one with its centroid outside the
+  // terrain rectangle within 650 m of (-200, -100). Nothing within `clear` m of the terrain rectangle is drawn (the feathered band slopes over that ground). Colours, widths and lifts are *guess*, read by eye from Google 3D
+  // `07_bostader_norr` (grass is lighter than the far ground, car parks and roads are asphalt grey, scrub is olive); the trees that hide most of it from above belong to #1804.
+  ground: {
+    clear: 90,                     // m from the terrain rectangle: skip every feature with a corner nearer (band width 70 + 20)
+    lift: { yard: 0.2, scrub: 0.22, pitch: 0.22, water: 0.24, parking: 0.3 }, // m above the far ground: above the fields (0.18), parking over the paths (0.28), below the roads (0.38); roads and paths use `lift.road` / `lift.path`
+    colors: { green: 0x76a24a, pitch: 0x5f9a58, scrub: 0x55703a, parking: 0x686a6e, road: 0x5f6164, path: 0xa09d94, water: 0x47657a, ditch: 0x47657a },
+    items: [
+      {"source":"130448445","kind":"water","polygon":[[-490.8,347.9],[-495.4,354.5],[-496.2,359.5],[-494.9,366.1],[-496,376.6],[-496.9,380.5],[-495.3,386.3],[-491.8,390.3],[-486.1,392.3],[-478.1,389.6],[-475.2,385.4],[-472.3,378.7],[-472.6,372.3],[-475.2,366.2],[-475.7,361.4],[-474.3,356.3],[-475,351.8],[-477.8,347.6],[-484.8,344.4]]},
+      {"source":"145221610","kind":"road","width":4,"path":[[-12.6,463.3],[-2.2,479.2],[8.4,495.4],[18.7,511.1],[-4.9,526.5]]},
+      {"source":"145221622","kind":"parking","polygon":[[-33.5,489.9],[-1.6,468.1],[26.4,508.9],[-5.5,530.7]]},
+      {"source":"165719101","kind":"green","polygon":[[-157.8,537.7],[-125.8,520.1],[-105.7,503.8],[-85.3,489.4],[-61.3,481.3],[-47.6,490.2],[-24.7,520.8],[-19.4,532.9],[-31.5,547.2],[-126.8,605.3],[-140.2,605.3],[-156.3,594.7],[-169.8,576.6],[-173.9,557.4],[-165.9,544.6]]},
+      {"source":"179854133","kind":"path","width":2.5,"path":[[-272.8,267.6],[-276,272.8],[-294.9,297.9],[-307.9,313.9],[-318.9,324.9],[-332.3,334.9],[-344.8,341.7],[-360.5,348.1],[-367.4,351.7],[-371.9,355.6],[-375.6,361],[-378.1,366.2],[-379.3,371.1],[-381.7,385.8],[-383.4,396.4],[-385.1,403.1],[-387.6,408.2],[-392.2,412.1],[-399.4,415.6],[-456.6,422.4],[-464.2,422.3],[-473.9,420.7],[-480.2,418.8],[-486.6,415.6],[-493.5,411.8],[-501.7,408.2],[-516.6,402.2],[-538.6,395.3],[-580.9,384.6],[-591.4,380.5],[-605.2,375.4],[-613.8,373.8],[-620.4,374.1],[-634.9,375.7],[-692.9,387.7],[-704.3,391.9],[-716.7,399.6]]},
+      {"source":"333642322","kind":"parking","polygon":[[-361.8,196.5],[-371.8,183],[-356.4,171.6],[-346.4,185.1]]},
+      {"source":"333646824","kind":"green","polygon":[[-569.2,304.7],[-612.6,207.6],[-580.4,183.6],[-551.8,164.2],[-491.8,278.7],[-407.9,236.7],[-401.7,237.9],[-381.2,239.1],[-289.7,229.4],[-260,208.2],[-253.8,193.4],[-273.3,201.9],[-282.2,181.4],[-262.6,172.9],[-246.5,189.2],[-234.7,174.6],[-236.5,159.8],[-219.1,152.3],[-203.1,172.9],[-190.7,177.8],[-204.7,188.3],[-237.3,215.2],[-252.9,232.7],[-267.3,255.2],[-274.4,264.4],[-276,272.8],[-303.7,253.2],[-454.2,283.1],[-454.9,284.8],[-454.1,287.2],[-455.1,287.6],[-456.2,288.2],[-457.4,285.7],[-460.2,284.5]]},
+      {"source":"4454222","kind":"road","width":7,"path":[[-367.3,-323.6],[-365.3,-333.2],[-361.4,-353.4],[-355.3,-407],[-355.2,-426.1],[-355.7,-432.8],[-356.6,-445.8],[-357.3,-458.3],[-358,-469.1],[-360.1,-490.3],[-360.6,-496.4],[-364.2,-533.1],[-366.4,-557.6],[-366.2,-579.2]]},
+      {"source":"23268904","kind":"road","width":4,"path":[[-603.5,279.1],[-601.1,298.8],[-602,310.2],[-603.4,313.9],[-604.9,316.4],[-607.1,317.6],[-613.2,319.1],[-627.3,322.1],[-631.6,324.2],[-636.1,328.8],[-640.7,331.9],[-645.2,332.5],[-649.7,329.7],[-651.6,326.7],[-652.5,322.2],[-653.5,290.7],[-653.7,288.2],[-653.1,286.1],[-650.8,285],[-647.8,284.5],[-603.5,279.1],[-601.6,272.3],[-600.4,264.7],[-602.3,252.6],[-603.8,247.6],[-605.9,240]]},
+      {"source":"23268905","kind":"road","width":6,"path":[[-711.8,54.5],[-723,40.3],[-784.2,-37.5],[-795.7,-51.7],[-802.1,-59.4],[-805.2,-63.3],[-806.4,-65.8],[-806.3,-67.7],[-805.1,-70],[-802.7,-72],[-780,-92.2],[-777.1,-93.8],[-775.1,-94.1],[-772.6,-92.6],[-769.2,-88.9],[-768,-87.7],[-761.7,-81],[-748.5,-68],[-701.6,-20.4],[-680.1,2.3],[-671.5,12.1],[-667.5,16.7]]},
+      {"source":"23268906","kind":"road","width":6,"path":[[-583,-72.5],[-586.5,-75.5],[-596.8,-84.7],[-671.6,-146.4],[-685.6,-157.9],[-696.2,-166.7],[-698.3,-168.9],[-698.8,-171.3],[-698.8,-173.4],[-697.8,-176.2],[-697.1,-177.4],[-695.2,-180.2],[-678,-202],[-676,-203.9],[-673.4,-204.8],[-670.8,-204.3],[-668.3,-202.8],[-656.7,-194.9],[-642,-185.2],[-587.3,-148.5],[-566.8,-134.8],[-545.4,-120.3]]},
+      {"source":"23268907","kind":"road","width":6,"path":[[-480.4,-224.1],[-485.9,-226.9],[-495.7,-232],[-502.2,-235.4],[-541,-253.9],[-561.7,-264.9],[-583.5,-276.5],[-605,-288],[-611.2,-291.3],[-612.6,-292],[-615.5,-294.1],[-617.2,-296.9],[-616.8,-300.7],[-615,-305.5],[-606.2,-323.3],[-603.1,-329.7],[-601.8,-331.6],[-600.7,-332.4],[-599.2,-332.9]]},
+      {"source":"23268908","kind":"road","width":6,"path":[[-412.5,-393.2],[-432.6,-398.4],[-442.2,-401],[-554.5,-433.2],[-557.4,-433.9],[-559.4,-435],[-561.4,-438],[-562.2,-441.5],[-561.6,-447],[-557.9,-465.1],[-555.2,-470.3],[-553.8,-471.9],[-552.5,-473.3],[-549.7,-475.1],[-546.7,-475],[-543,-475],[-429.8,-456.9],[-405.5,-453],[-400,-452.1]]},
+      {"source":"23268909","kind":"road","width":6,"path":[[-408.1,-574.9],[-410.6,-577.3],[-414,-578.7],[-421.2,-581.2],[-429.7,-582.6],[-448.6,-583.5],[-456.8,-583.9],[-511.9,-586.6],[-546.9,-590.3],[-580.9,-594.6],[-636.5,-606.5],[-649.4,-609.1],[-658.5,-611.3],[-665,-612.7],[-683.2,-616.6],[-696.6,-620],[-715.2,-624.9],[-775.1,-639.2],[-782.5,-640.9]]},
+      {"source":"23268911","kind":"road","width":7,"path":[[-431.6,-334.8],[-420.2,-331],[-385.8,-319.5],[-369.8,-314.3]]},
+      {"source":"26125090","kind":"path","width":2.5,"path":[[-744.6,-114.3],[-755.6,-124.5],[-756.8,-126.3],[-762.9,-132.9],[-787.1,-159.1],[-829,-203.1],[-832.9,-206.6],[-836.6,-209.8],[-842.1,-224.9],[-842.9,-234.4],[-842.1,-241.4]]},
+      {"source":"29985994","kind":"road","width":5,"path":[[-428.4,-344],[-425.2,-353],[-419.6,-368.9],[-412.5,-393.2],[-400,-452.1]]},
+      {"source":"33140907","kind":"parking","polygon":[[-536.8,-435.7],[-477.5,-419.3],[-478.2,-416.6],[-465.6,-413.6],[-456.6,-453.3],[-490.7,-459.9],[-524.4,-464.4],[-530.5,-465.6]]},
+      {"source":"33140909","kind":"parking","polygon":[[-595.1,-325.9],[-607.7,-299.6],[-602.8,-297.2],[-603.5,-295.6],[-530,-257.2],[-511.7,-294.2],[-517,-296.4],[-522.3,-297.9],[-539.7,-304.9],[-544.8,-306.2],[-561.8,-313.8],[-567.3,-315],[-579.7,-319.9]]},
+      {"source":"33140918","kind":"parking","polygon":[[-692.1,-176.9],[-686.3,-172.2],[-688.1,-169.9],[-660.3,-146.5],[-638.5,-174.2],[-648.1,-181.5],[-648.7,-180.9],[-657.9,-187.8],[-663.5,-191],[-668.4,-194.6],[-670.6,-192],[-676.8,-197.1]]},
+      {"source":"33140933","kind":"parking","polygon":[[-600.4,-75.8],[-614.1,-61.4],[-669.9,-3.1],[-665.8,0.8],[-596.3,-71.9]]},
+      {"source":"33140943","kind":"parking","polygon":[[-796.3,-64.3],[-773.6,-33.6],[-746.9,-58],[-772.4,-84.6],[-774.9,-82.6],[-778.9,-87.2],[-797.8,-71.2],[-794.3,-66.3]]},
+      {"source":"33646352","kind":"road","width":6,"path":[[-163.1,-526.6],[-174.6,-493.2],[-196.1,-429.5],[-226.4,-341.9],[-240.9,-298.1],[-243.5,-289.9]]},
+      {"source":"34891470","kind":"road","width":7,"path":[[-667.5,16.7],[-657,6.7],[-613.6,-37.8],[-583,-72.5],[-545.4,-120.3],[-543.7,-122.6],[-535.2,-134.4],[-511.2,-171.1],[-481.6,-222],[-480.4,-224.1],[-466.5,-252.7],[-462.2,-261.5],[-454.6,-276.9],[-449,-289.9],[-434.8,-325.8],[-431.6,-334.8]]},
+      {"source":"35022546","kind":"road","width":7,"path":[[-866.8,152.3],[-811.5,122.3],[-777.5,101.2],[-763.4,91.6],[-722.1,62.6],[-714,56.3],[-711.8,54.5],[-688.8,35.3],[-679.1,27.2],[-676.3,24.9]]},
+      {"source":"36876450","kind":"road","width":4,"path":[[-587.3,-148.5],[-590.1,-144.4],[-590.6,-143.6],[-611.1,-114.6],[-602.3,-107.7],[-597,-102.7],[-592.3,-100.3],[-585.8,-100.6],[-579,-106],[-575.3,-112.3],[-574.3,-118.4],[-577.4,-123.3],[-582.1,-126.1],[-588.5,-125.6],[-594.9,-119.4],[-602.3,-107.7]]},
+      {"source":"36876452","kind":"road","width":4,"path":[[-701.6,-20.4],[-705,-17.6],[-705.6,-17],[-731.2,6.6],[-723.1,15.7],[-711.8,29.9],[-691.7,12.9],[-703.6,-1.2],[-723.1,15.7]]},
+      {"source":"36876453","kind":"road","width":4,"path":[[-701.8,72],[-657.2,34.5],[-650.6,31.5],[-644.9,34.1],[-640.4,40.9],[-640.3,44.1],[-642.5,48.2],[-649.3,54.2],[-672.7,73.2],[-690.1,87.8]]},
+      {"source":"36876454","kind":"road","width":4,"path":[[-723,40.3],[-727.7,43.8],[-746.6,57.7],[-818,104.7],[-821.7,107.1]]},
+      {"source":"36876458","kind":"road","width":4,"path":[[-481.6,-222],[-476.2,-219.2],[-463.6,-212],[-449.1,-203.5],[-445.4,-201.2],[-434.6,-196.1],[-431,-195.6],[-428.8,-197.4],[-411.5,-233.2],[-411.6,-240.7],[-416.3,-245.6],[-421.1,-247.8],[-427.3,-247.4],[-429.6,-243.9],[-449.1,-203.5]]},
+      {"source":"36876459","kind":"road","width":4,"path":[[-431.1,-405.4],[-431.6,-402.9],[-432.6,-398.4],[-433.9,-393.1],[-434.9,-389.3],[-442,-371.8],[-467.1,-302.4]]},
+      {"source":"39501713","kind":"path","width":2.5,"path":[[-479,-102.9],[-481.3,-105.8],[-482.3,-105],[-494.7,-95.5],[-496.3,-94.2],[-492.6,-89.3],[-497.1,-85.9],[-511,-75.1],[-517.2,-70.3],[-509.2,-59.9],[-498.4,-68.2],[-487.7,-76.5],[-490,-79.5],[-477.4,-89.2],[-471.8,-93.6],[-479,-102.9]]},
+      {"source":"39501715","kind":"path","width":2.5,"path":[[-481.3,-105.8],[-489.9,-91.6],[-494.4,-84.3],[-502.4,-71.1],[-509.2,-59.9],[-526.5,-47.9],[-536.6,-38.9],[-548.6,-29.4],[-549.3,-28.8],[-576.2,-5.4]]},
+      {"source":"39502412","kind":"path","width":2.5,"path":[[-577,40.8],[-580.7,38.3],[-587.5,38.8],[-589.7,40.3],[-592.1,44.6],[-592.3,46.4],[-591.5,50.4],[-588.9,53.6],[-585.7,55.2],[-580.9,55.1],[-576.4,51.9],[-574.8,48],[-577,40.8]]},
+      {"source":"39502998","kind":"path","width":2.5,"path":[[-746.6,57.7],[-770.7,26],[-791,0],[-824.5,-43.9],[-821.2,-46],[-831.4,-57.9]]},
+      {"source":"45211106","kind":"road","width":6,"path":[[-599.2,-332.9],[-598.3,-333],[-596.5,-332.6],[-591.5,-330.9],[-586,-328.7],[-563.2,-319.6],[-540.3,-310.6],[-518.5,-301.9],[-480.8,-287],[-474,-284.3],[-460.1,-279],[-454.6,-276.9]]},
+      {"source":"87658436","kind":"green","polygon":[[-816.1,25.9],[-814,29.8],[-810.4,36.1],[-808.4,38.6],[-806,40],[-803.4,40.8],[-801.1,40.9],[-798.8,40],[-796.9,38.3],[-795.6,35.3],[-795.5,32.7],[-796.5,29],[-799.5,25.3],[-803.7,23],[-808.3,21.2],[-813,19.9],[-815.5,22.7]]},
+      {"source":"88430160","kind":"parking","polygon":[[-556.4,-143.6],[-507.5,-222.8],[-503.2,-220.2],[-506,-215.7],[-496.9,-210.1],[-530.9,-155],[-539.7,-160.5],[-551.9,-140.8]]},
+      {"source":"88430169","kind":"road","width":4,"path":[[-763.4,91.6],[-759.3,97.6],[-752.5,107.4],[-735.3,95.2]]},
+      {"source":"88430171","kind":"pitch","polygon":[[-649.6,-148.6],[-637.6,-163.4],[-609.1,-140.3],[-621,-125.5]]},
+      {"source":"88430177","kind":"green","polygon":[[-620.9,-468.4],[-614.4,-496.8],[-584.8,-491.1],[-591.6,-459.9]]},
+      {"source":"88430209","kind":"path","width":2.5,"path":[[-697.7,-89],[-698.6,-87.4],[-696.3,-85.7],[-695.4,-85],[-694.9,-83.7],[-693.7,-82.8],[-690.7,-83.5],[-688.7,-82.1],[-688.1,-79.6],[-686.5,-77.2],[-682.8,-75],[-679.4,-71.5],[-678.4,-72.6],[-676.9,-73.5],[-676.4,-75],[-679.1,-76.6],[-680.9,-77.9],[-681.3,-79.7],[-680.6,-81.6],[-678.1,-82.9],[-675.9,-84.4],[-675.7,-86],[-675.8,-88.5],[-676.9,-89.1],[-680.5,-91.1],[-684.6,-86.4],[-686.1,-86.7],[-688.1,-88.8],[-688.8,-94],[-689.2,-96.2],[-690.3,-95.9],[-691.4,-95.6],[-692,-94],[-693.2,-92.4],[-694.3,-91.4],[-695,-91],[-695.8,-91],[-697.7,-89]]},
+      {"source":"88430264","kind":"green","polygon":[[-815.3,-199.3],[-801.5,-213.2],[-740.3,-158.7],[-756.8,-141.2],[-780.5,-164.8]]},
+      {"source":"88430268","kind":"green","polygon":[[-624.9,-450.8],[-596.9,-443.3],[-592.8,-457.4],[-621.9,-465.5]]},
+      {"source":"88430273","kind":"path","width":2.5,"path":[[-559,-353.6],[-549.7,-350],[-547.8,-349.3],[-528.1,-341.7],[-518.6,-338],[-509,-334.3],[-488.9,-326.5],[-468.4,-378.7],[-485.7,-383.4],[-505.5,-388.8],[-522.6,-393.5],[-539.6,-398.1],[-543.6,-399.2],[-559,-353.6]]},
+      {"source":"88430282","kind":"path","width":2.5,"path":[[-613.1,-228.4],[-604.9,-241.2],[-603.1,-244],[-574.8,-230.3],[-571.4,-228.7],[-573.9,-225.1],[-567.7,-221.2],[-568.4,-220.1],[-577.8,-205.6],[-578.9,-206.3],[-605.8,-223.7],[-613.1,-228.4]]},
+      {"source":"88430311","kind":"road","width":4,"path":[[-541,-253.9],[-538.2,-259.9],[-519.8,-299.2],[-518.5,-301.9]]},
+      {"source":"88430404","kind":"road","width":4,"path":[[-671.6,-146.4],[-668,-151.1],[-645.2,-181.1],[-642,-185.2]]},
+      {"source":"88430424","kind":"road","width":4,"path":[[-543.7,-122.6],[-537.8,-118.5],[-527.2,-110.4],[-511,-98.3],[-512.1,-96.8],[-523.1,-82.1],[-544.5,-53.5],[-547,-55.4],[-561,-66.1],[-527.2,-110.4]]},
+      {"source":"88430436","kind":"road","width":4,"path":[[-795.7,-51.7],[-791.5,-55.3],[-764.6,-78.5],[-761.7,-81]]},
+      {"source":"88430504","kind":"path","width":2.5,"path":[[-519.4,-356.4],[-535,-361],[-543.5,-363.7],[-538.6,-375.9],[-535.9,-381.2],[-534.4,-384],[-531.5,-385.4],[-526.5,-386.3],[-517.4,-384.3],[-496.7,-379.8],[-485.6,-376.9],[-488.9,-368.8],[-498.1,-367.7],[-503.6,-367.4],[-507.5,-365],[-510.5,-361.8],[-512.8,-357],[-514.1,-355.1],[-519.4,-356.4]]},
+      {"source":"88430532","kind":"road","width":4,"path":[[-592,-90.7],[-593.3,-89.1],[-596.8,-84.7],[-599.6,-81.4],[-616.1,-63.3],[-624.9,-54],[-647.2,-30.9],[-667.6,-10.1],[-676.3,-1.3],[-680.1,2.3]]},
+      {"source":"88430553","kind":"road","width":4,"path":[[-561.7,-264.9],[-558.9,-270.8],[-541.6,-307.8],[-540.3,-310.6]]},
+      {"source":"88430560","kind":"parking","polygon":[[-817.7,97.2],[-808.9,110.3],[-725.1,53.8],[-733.7,41],[-774.9,70.3]]},
+      {"source":"88430564","kind":"green","polygon":[[-773.2,-33],[-739.5,8.9],[-708.4,-19.5],[-745,-57.7]]},
+      {"source":"88430584","kind":"parking","polygon":[[-473.3,-299.8],[-447.3,-372.6],[-440.6,-391.3],[-438.5,-390.5],[-434.9,-389.3],[-432.7,-388.5],[-434.3,-384.2],[-429.4,-382.4],[-433.1,-372],[-434,-369.7],[-432.2,-369],[-458.8,-294.6],[-468.7,-298.2]]},
+      {"source":"88430592","kind":"road","width":4,"path":[[-583.5,-276.5],[-580.8,-282.2],[-564.6,-316.6],[-563.2,-319.6]]},
+      {"source":"88430598","kind":"green","polygon":[[-641.4,-457.8],[-636.9,-475],[-631.7,-494.4],[-621.5,-491.7],[-631.3,-455.1]]},
+      {"source":"88430649","kind":"green","polygon":[[-594,-234.2],[-575,-221.1],[-574.7,-220.9],[-573.5,-220.1],[-573.3,-218.8],[-573.6,-217.4],[-574.3,-215.6],[-576.2,-212.3],[-578.1,-210.7],[-580.5,-209.9],[-582.6,-210.1],[-601.6,-223.2],[-602.4,-225.1],[-602.1,-227.1],[-600.7,-229.8],[-598.7,-233],[-596.6,-234]]},
+      {"source":"88430670","kind":"road","width":4,"path":[[-784.2,-37.5],[-780.3,-40.7],[-751.6,-65.4],[-748.5,-68]]},
+      {"source":"88430684","kind":"path","width":2.5,"path":[[-839.8,-135],[-830.6,-121.9],[-827.7,-118.7],[-825.8,-118],[-823.8,-117.6],[-821.9,-117.2],[-818.1,-117.8],[-813.1,-120.8],[-811.6,-123.4],[-811.5,-124.1],[-810.8,-128.1],[-811.2,-129.7],[-811.6,-131.1],[-812.2,-132.4],[-813.5,-135.1],[-823.7,-144.9],[-824.3,-145.5],[-826.2,-147.5],[-829.2,-149.2],[-830.9,-149.6],[-834.1,-149],[-836.9,-147.9],[-839.7,-145],[-840.4,-143.1],[-841.4,-140.2],[-840.7,-137.3],[-839.8,-135]]},
+      {"source":"88430732","kind":"road","width":4,"path":[[-685.6,-157.9],[-681.9,-162.6],[-659.9,-190.7],[-656.7,-194.9]]},
+      {"source":"88430748","kind":"road","width":4,"path":[[-605,-288],[-602.5,-293.5],[-587.4,-325.5],[-586,-328.7]]},
+      {"source":"88453779","kind":"green","polygon":[[-665.6,-243.5],[-752.3,-301.1],[-808.9,-226.8],[-728.3,-158.5],[-757.1,-128.9],[-830.8,-203.1],[-900,-142.4],[-837.4,-62.1],[-871,-39.2],[-924.8,-126.5],[-1012.1,-79.6],[-1038.6,-231.4],[-978.7,-201],[-930.8,-260],[-907.3,-255.7],[-850.1,-359.2],[-805.3,-334.4],[-741.3,-449.2],[-769.5,-465.9],[-762.9,-480.7],[-722.7,-555.6],[-726.8,-573.4],[-716.6,-616.5],[-652.2,-597.1],[-660.6,-528.3],[-683.6,-439.8],[-581.8,-409.5],[-596.2,-373.2],[-693.6,-412.9],[-736.3,-323.9],[-644.8,-276.9]]},
+      {"source":"88456528","kind":"green","polygon":[[-642.1,172.5],[-644.1,168.4],[-645.2,167.1],[-647.3,167.6],[-667.5,181.1],[-672.9,184.6],[-674.2,186.1],[-674,187.9],[-672.5,188.7],[-668.6,187.7],[-643.2,176.5],[-641.7,175.3],[-641.6,173.6]]},
+      {"source":"88456529","kind":"road","width":4,"path":[[-640,159.7],[-688.1,190.4],[-682.9,201.9],[-630.5,180.1]]},
+      {"source":"88456530","kind":"road","width":6,"path":[[-605.9,240],[-608.7,234.6],[-614.9,216],[-620.7,203.6],[-630.5,180.1],[-640,159.7],[-658.9,129.4],[-690.1,87.8],[-701.8,72],[-710.6,60.6],[-714,56.3]]},
+      {"source":"88456554","kind":"road","width":4,"path":[[-608.7,234.6],[-613.8,236.6],[-670.3,258.8]]},
+      {"source":"88456559","kind":"road","width":4,"path":[[-620.7,203.6],[-684,229.2]]},
+      {"source":"88774714","kind":"parking","polygon":[[-475.1,-213.2],[-463.9,-207.5],[-422.3,-184.5],[-398.1,-233.5],[-406.5,-242.1],[-419.4,-249.7],[-434.3,-257.7],[-449.7,-264.8]]},
+      {"source":"88774716","kind":"path","width":2.5,"path":[[-577,40.8],[-579.6,35.1],[-578,29.2],[-573.5,25.7],[-570.6,25.2],[-564.1,27.7],[-563.4,28.5],[-561.3,33.2],[-561.3,35.5],[-561.8,37.7],[-565.7,42.2],[-569.7,43.6],[-577,40.8]]},
+      {"source":"88774745","kind":"path","width":2.5,"path":[[-468.2,-36.1],[-470.7,-34.7],[-473.7,-34.2],[-476.5,-34.5],[-480.5,-37.1],[-482.7,-41.2],[-482.5,-46.5],[-481.5,-48.3],[-479.7,-50.2],[-476.4,-52],[-475.2,-52.1],[-472.1,-52.2],[-468.8,-50.8],[-465.6,-47.1],[-464.8,-42.7],[-465.9,-38.8],[-468.2,-36.1]]},
+      {"source":"88774758","kind":"green","polygon":[[-449.4,-98.4],[-454.9,-96.4],[-456.9,-91.2],[-455,-86],[-447.4,-79.3],[-443.7,-77.2],[-435.8,-87.6],[-432.4,-91.3],[-430.9,-93.5],[-430.3,-95.9],[-430,-96.5],[-429,-97.2],[-427.2,-96],[-422.3,-104.4],[-432.6,-111.3],[-435.6,-109.4],[-437.4,-107.9],[-440.2,-105.4],[-440.6,-101.4],[-441.4,-100],[-445,-101.7]]},
+      {"source":"88774760","kind":"parking","polygon":[[-702.7,60.1],[-651.1,19],[-627.5,48.7],[-679,89.8]]},
+      {"source":"88774775","kind":"path","width":2.5,"path":[[-574.4,-4.4],[-574.4,-1.7],[-576,-0.3],[-577.4,0.4],[-587.3,10.4],[-590.7,9.7],[-592.5,11.5],[-602.4,22.2],[-601.7,25.6],[-602.4,26.4],[-603.9,28.1],[-608.1,28.5],[-609.4,27.2],[-610.9,25.8],[-611.3,19],[-610,17.7],[-601.6,9.1],[-594.2,9.7],[-592.4,7.9],[-591.7,0.7],[-583.4,-7],[-578.6,-7.3],[-576.7,-7],[-574.7,-9],[-573.9,-11.5],[-568.4,-17.4],[-559.7,-27.6],[-557.4,-30.3],[-550.4,-30.6],[-549.3,-28.8],[-547.7,-26.1],[-550.8,-24.7],[-553.1,-21.5],[-558.6,-15.5],[-563,-10.8],[-567.8,-5.6],[-572.6,-6.3],[-574.4,-4.4]]},
+      {"source":"88774802","kind":"path","width":2.5,"path":[[-402.7,-284.9],[-386.6,-279.5],[-374.7,-275],[-371.7,-273.2],[-371.7,-270.8],[-374.6,-264.4],[-379.5,-256.9],[-382.7,-253.2],[-384.4,-252.8],[-387,-254],[-407.9,-269.9]]},
+      {"source":"88774805","kind":"parking","polygon":[[-570.9,-68.7],[-539.9,-45.4],[-502.5,-95.4],[-533.5,-118.6]]},
+      {"source":"88774816","kind":"pitch","polygon":[[-441,-71.3],[-430.9,-85],[-419.6,-100.5],[-404.7,-89.6],[-426.2,-60.4]]},
+      {"source":"88774822","kind":"path","width":2.5,"path":[[-464.6,-166.7],[-472.2,-171.2],[-474.3,-173.8],[-474,-175.9],[-471.1,-180.8],[-467.8,-182.7],[-464.1,-181.1],[-456.7,-176.9],[-450.6,-172.4],[-448,-170.3],[-448,-168.8],[-459.3,-155.5],[-480.3,-129.7],[-483.6,-125.8],[-485.5,-125.6],[-487.2,-126.7]]},
+      {"source":"88775063","kind":"green","polygon":[[-424.3,-185.2],[-413.9,-181.7],[-411.9,-181.5],[-409.8,-182.6],[-383.8,-216.7],[-381.2,-219.9],[-380.9,-221.4],[-386.3,-226],[-399.2,-235.9]]},
+      {"source":"88775772","kind":"path","width":2.5,"path":[[-737.7,-228.9],[-735.1,-233.1],[-733,-235.9],[-729.9,-237.9],[-727.5,-237.9],[-723.2,-235.1],[-721.2,-233.4],[-720,-232.2],[-723,-228.4],[-723,-226],[-724.2,-223.1],[-722.9,-218.3],[-723.7,-216.4],[-725.4,-214.9],[-728.7,-213.9],[-731.5,-213.8],[-733.7,-214.9],[-735.3,-216],[-733.9,-219],[-736.1,-220.8],[-736.8,-223.8],[-737.8,-227],[-737.7,-228.9]]},
+      {"source":"94818335","kind":"path","width":2.5,"path":[[-286,-383.1],[-305.9,-329.1],[-310.9,-313.2]]},
+      {"source":"99668471","kind":"road","width":4,"path":[[-495.7,-232],[-498.1,-227.4],[-509.1,-206.4],[-539.5,-156],[-541.7,-152.3]]},
+      {"source":"99983106","kind":"scrub","polygon":[[-703.9,-462.1],[-701.1,-450],[-696.3,-447.2],[-684.7,-447.5],[-678.1,-461.2],[-668.1,-502],[-667.4,-514.7],[-670.1,-523.8],[-679.1,-529.3],[-687.3,-528.7],[-692.2,-515.8],[-690.2,-501.1],[-685.2,-492.6],[-687.2,-484.4],[-692.6,-477.4],[-697.6,-471.9],[-702.7,-465.2]]},
+      {"source":"99983107","kind":"scrub","polygon":[[-829,-248.9],[-826.7,-242.3],[-818.6,-237.2],[-809.1,-232.2],[-805.1,-232.4],[-775.4,-270],[-776.1,-279.9],[-781.9,-283.9],[-798.9,-276.5],[-814.9,-262.4]]},
+      {"source":"99983109","kind":"scrub","polygon":[[-753.8,-415.3],[-740.7,-411.7],[-734.4,-417.7],[-733.4,-422.5],[-727.5,-424.4],[-719.9,-429.2],[-718.5,-436],[-722.7,-441.4],[-728.6,-443.4],[-735.4,-440.1],[-747.7,-424.4]]},
+      {"source":"99983117","kind":"scrub","polygon":[[-739.7,-347.2],[-735.3,-340],[-730.5,-341.9],[-724.2,-349.4],[-702,-399.2],[-698.5,-408.7],[-702.1,-415],[-706,-417.2],[-712.1,-407.5],[-737.9,-351.5]]},
+      {"source":"99983121","kind":"scrub","polygon":[[-777.1,-300.7],[-776.2,-287.6],[-771.3,-283.1],[-763.9,-287],[-758.9,-294.8],[-760.5,-302.5],[-767.5,-312.7],[-775,-313.3],[-779.1,-309.3]]},
+      {"source":"99983543","kind":"green","polygon":[[-266.5,-306.6],[-308.7,-327.6],[-279.4,-395.5],[-266.1,-391.1],[-244.9,-435.7],[-253.8,-428.6],[-267.5,-426.2],[-290.1,-380.6],[-334.5,-378.2],[-343.4,-324.7]]},
+      {"source":"125664182","kind":"path","width":2.5,"path":[[-692,353],[-688,354],[-685,357.2],[-681.9,358.7],[-676.5,357.3],[-652.8,353.4],[-562,339.9],[-560,339.4],[-559.2,337.7],[-560.1,334.7],[-561,328],[-564.4,319.9],[-565.2,318],[-572.5,300.7],[-550.3,296.7],[-496.4,286.9]]},
+      {"source":"147088964","kind":"green","polygon":[[-737.1,249.2],[-745.8,229.1],[-735.5,224.6],[-726.8,244.8]]},
+      {"source":"147917868","kind":"road","width":4,"path":[[-688.1,190.4],[-704.8,190.7],[-707.5,191.1],[-749.6,208.3]]},
+      {"source":"147917895","kind":"parking","polygon":[[-692.3,216.4],[-637.4,192.4],[-634.5,199],[-630.9,197.4],[-617,229],[-646.6,241.9],[-653.5,226],[-680.8,238],[-687.9,222],[-689.5,222.7]]},
+      {"source":"159284502","kind":"path","width":2.5,"path":[[-842.1,-241.4],[-840.5,-251.1],[-837.3,-261],[-832.5,-269],[-828.7,-273.4],[-823.3,-279.1],[-815.9,-289.1],[-814.4,-291.4],[-813,-294.1],[-810.2,-299.9],[-808.3,-306.8],[-806.9,-315.3],[-805.7,-324.7],[-803.1,-334.9],[-803,-335.3],[-800,-342.5],[-794.4,-352.2],[-791.7,-356.7]]},
+      {"source":"159284521","kind":"path","width":2.5,"path":[[-791.7,-356.7],[-779.1,-349.2],[-748.3,-332.8],[-733.6,-324.9]]},
+      {"source":"159284523","kind":"path","width":2.5,"path":[[-791.7,-356.7],[-783.4,-369.8],[-777.1,-379.8],[-776.2,-381.3],[-763.2,-403.7],[-750.8,-424.5],[-735.2,-444.9]]},
+      {"source":"166204715","kind":"ditch","width":2,"path":[[-593.1,353.1],[-598.3,367.4]]},
+      {"source":"179854130","kind":"road","width":6,"path":[[-424.1,73.8],[-419.8,79.6],[-360.9,160.2]]},
+      {"source":"179854131","kind":"road","width":6,"path":[[-483,112.9],[-479.7,118.3],[-429,204.8]]},
+      {"source":"179854134","kind":"road","width":6,"path":[[-529.3,142.6],[-526.3,148.2],[-507.5,179.8],[-501.3,190.1],[-481.5,223.3],[-476.4,225],[-468.9,223.6],[-466.4,222.4],[-451.4,215.3],[-429,204.8],[-416.9,197.4],[-393.5,183],[-381.7,175.9],[-370.6,168],[-360.9,160.2],[-328.5,132.7],[-323.7,128.6],[-320.9,123.3],[-322.2,118.3],[-343.5,88.5],[-349.4,80.3],[-372,48.6],[-375.9,43.2]]},
+      {"source":"209819198","kind":"road","width":6,"path":[[-440.4,84.8],[-447.4,87.2],[-454.1,90.9],[-456.1,92.1],[-461.4,97.2],[-464.9,101.5]]},
+      {"source":"209819201","kind":"road","width":6,"path":[[-464.9,101.5],[-458.2,100.6],[-454,99.3],[-450.4,97],[-446.8,94.7],[-443.3,90.4],[-440.4,84.8]]},
+      {"source":"209819202","kind":"road","width":6,"path":[[-464.9,101.5],[-483,112.9],[-529.3,142.6],[-560,162.7],[-591,185.2],[-605.3,195.1],[-609.6,198.1],[-616.7,201.6],[-620.7,203.6]]},
+      {"source":"209819225","kind":"path","width":2.5,"path":[[-655.4,126.5],[-647.9,136.4],[-641.9,143.4],[-635.4,157],[-625.5,180.9],[-616.7,201.6]]},
+      {"source":"237016909","kind":"parking","polygon":[[-360.7,109.1],[-368.6,98.1],[-350.2,84.8],[-342.3,95.7]]},
+      {"source":"245484590","kind":"road","width":4,"path":[[-463.6,-212],[-441.4,-255.4]]},
+      {"source":"248225182","kind":"path","width":2.5,"path":[[-625.7,-525.1],[-626.1,-543.8],[-626.6,-551.4],[-626.6,-551.7],[-625.7,-559.1],[-624.3,-570.2],[-620.3,-595]]},
+      {"source":"333642407","kind":"path","width":2.5,"path":[[-322.2,118.3],[-342.7,136.9],[-396.4,63.4],[-419.8,79.6],[-449.2,98.6],[-479.7,118.3],[-502.3,132.9],[-526.3,148.2],[-549.8,162.7],[-557.4,167.2]]},
+      {"source":"335403591","kind":"parking","polygon":[[-528.5,200],[-535.4,188.4],[-515.8,176.8],[-509,188.4]]},
+      {"source":"335403592","kind":"parking","polygon":[[-493.5,192],[-499.9,181.5],[-481.4,170.2],[-475,180.8]]},
+      {"source":"335403595","kind":"path","width":2.5,"path":[[-393.5,183],[-401.8,171.6],[-406,166.4],[-410.8,160.7],[-414.8,155.1],[-419.8,146.3],[-422.5,140.1],[-425.1,134.2],[-427.8,128.6],[-431.5,122.6],[-436.1,116.5],[-439.7,111.1],[-443,107],[-446.5,102.3],[-449.2,98.6],[-450.4,97],[-454.1,90.9],[-456.3,87.5],[-465,81.3],[-474.4,63.8],[-478.8,52.2],[-487.1,35.8],[-504.7,24.4]]},
+      {"source":"335403597","kind":"path","width":2.5,"path":[[-451.4,215.3],[-502.3,132.9]]},
+      {"source":"476125240","kind":"path","width":2.5,"path":[[-562.7,159],[-555.8,153],[-543.5,145.2],[-532.4,137.4],[-486.2,108.1],[-478.8,103.4],[-463.5,93.1],[-456.3,87.5],[-449.6,83.6],[-443.6,80.4],[-435.9,75.7],[-427.2,69.3],[-413.8,61],[-375.9,43.2],[-369.8,32.5],[-359.9,27],[-353.1,24.9],[-344.1,24.5],[-335.8,25.4],[-327.1,28.1],[-316.8,32.1],[-306,37.3],[-299,40.1],[-293.4,41.6]]},
+      {"source":"802296865","kind":"path","width":2.5,"path":[[-815.9,-69.9],[-805.8,-56.9],[-734.2,34.1],[-733.5,36.2],[-727.7,43.8],[-722.2,50.6],[-721.7,52.7],[-721.9,54],[-722.4,55.6],[-723.4,57.2],[-725.1,59],[-766.8,88.8],[-805.8,113.4],[-808.1,113.5],[-810.5,113],[-812.3,111.8],[-814.3,110],[-818,104.7]]},
+      {"source":"802296867","kind":"path","width":2.5,"path":[[-747,1.5],[-737.2,-50.8]]},
+      {"source":"802296868","kind":"path","width":2.5,"path":[[-680.5,22.5],[-678.3,20.7],[-677.6,19.6],[-676.7,16.7],[-677.3,10.9],[-678.9,9],[-705,-17.6],[-737.2,-50.8],[-751.6,-65.4],[-764.6,-78.5],[-770.9,-84.9],[-768,-87.7]]},
+      {"source":"802296870","kind":"path","width":2.5,"path":[[-693.2,33.6],[-704.3,42.8],[-706.2,43.8],[-710.5,43.7],[-712.8,43.1],[-714.1,42.3],[-715.8,40.9],[-718.9,37.3],[-742.6,7.1],[-747,1.5],[-780.3,-40.7],[-791.5,-55.3],[-798.3,-63.6],[-805.2,-63.3]]},
+      {"source":"802296872","kind":"path","width":2.5,"path":[[-659.6,4.2],[-615.5,-40.4],[-595.2,-62.9],[-593.3,-65.1],[-592.4,-67],[-591.9,-69.2],[-591.6,-72],[-592,-73.7],[-592.8,-75.3],[-599.6,-81.4],[-699,-163.3],[-708.9,-171.1]]},
+      {"source":"802296874","kind":"path","width":2.5,"path":[[-697.1,-177.4],[-692.6,-171.9],[-691.7,-170.7],[-681.9,-162.6],[-668,-151.1],[-593.3,-89.1],[-588,-85],[-586.9,-84.1],[-585.2,-83.5],[-583.3,-83.4],[-580,-83.8],[-577.8,-84.6],[-576.6,-85.5],[-555.5,-112.6],[-554.6,-114.3],[-554.5,-115.4],[-554.8,-118.1],[-555.8,-120.5],[-557.1,-122.1],[-559,-123.7],[-590.1,-144.4],[-645.2,-181.1],[-659.9,-190.7],[-670.5,-197.8],[-678,-202]]},
+      {"source":"802296877","kind":"road","width":7,"path":[[-367.3,-323.6],[-382.8,-329],[-417.4,-340.3],[-428.4,-344]]},
+      {"source":"802296880","kind":"road","width":5,"path":[[-369.8,-314.3],[-353.3,-309.6],[-328.4,-308.3]]},
+      {"source":"802296881","kind":"path","width":2.5,"path":[[-613.4,-287.7],[-498.1,-227.4],[-491.5,-223.5],[-490.7,-222.6],[-490.2,-221.1],[-489.9,-219],[-489.9,-217.8],[-490.1,-216.7],[-490.8,-214.5],[-498.2,-200.9],[-514.4,-173.3],[-529.7,-149.5],[-538.4,-136.1]]},
+      {"source":"802296884","kind":"path","width":2.5,"path":[[-427.9,-391.8],[-425.5,-390.9],[-424.3,-389.9],[-423.2,-388.6],[-422.6,-387.2],[-422.4,-385.3],[-422.8,-383.4],[-427.5,-370.8],[-454.2,-292.4]]},
+      {"source":"802296885","kind":"path","width":2.5,"path":[[-571.2,-431.9],[-534.1,-421.3],[-517,-416.4],[-498.4,-411.2],[-478.3,-405.5],[-461.5,-400.8],[-441,-394.9],[-439.8,-394.4],[-438.7,-393.5],[-438.3,-392],[-438.5,-390.5]]},
+      {"source":"802296886","kind":"path","width":2.5,"path":[[-562.2,-441.5],[-555.3,-437.5],[-552,-436.4],[-431.6,-402.9],[-425.5,-401.2],[-423.2,-401.2],[-419.7,-401.5],[-417.7,-402.7],[-416,-404.2],[-414.9,-406],[-406.9,-440.8],[-407.7,-442.9],[-409.7,-445.7],[-411.7,-447.6],[-414.3,-448.7],[-544.5,-471],[-547.5,-471.3],[-553.8,-471.9]]},
+      {"source":"802296897","kind":"path","width":2.5,"path":[[-406,-559.9],[-405.5,-553.2],[-403.9,-547.5],[-403,-542.3],[-402.4,-534.3],[-402,-512],[-402.2,-490.8],[-403.9,-464.3],[-404.6,-462.3],[-406.6,-460.7],[-409.7,-459.7],[-422.9,-460.6],[-429.4,-461.4],[-497,-472.8],[-505.1,-474.4],[-507.5,-475.5],[-510.4,-477.8],[-514.7,-481.8],[-517.2,-483.3],[-522.4,-483.9],[-531,-485.5],[-543.7,-487.3]]},
+      {"source":"802296899","kind":"path","width":2.5,"path":[[-466.1,-263.8],[-464.1,-268.4],[-463.8,-269.4],[-463.7,-271],[-464.1,-272.8],[-464.9,-274.1],[-466.1,-275.5],[-467.5,-276.6],[-469.4,-277.8],[-519.8,-299.2],[-541.6,-307.8],[-564.6,-316.6],[-587.4,-325.5],[-592.8,-327.6],[-594.2,-327.8],[-595.6,-327.6],[-596.7,-327.2],[-598,-326.3],[-599.2,-325.3],[-600.2,-323.7],[-610.3,-302.6],[-610.4,-301.6],[-610.4,-300.2],[-609.9,-299],[-609.3,-298],[-608.5,-297.2],[-607.1,-296.2],[-602.5,-293.5],[-580.8,-282.2],[-558.9,-270.8],[-538.2,-259.9],[-487.9,-233.9],[-486.5,-233.4],[-485,-233.6],[-482.1,-234.6],[-480.4,-235.8],[-478.5,-237.7],[-477.4,-239.8],[-471,-253.6]]},
+      {"source":"945245666","kind":"road","width":4,"path":[[-466.4,222.4],[-454.1,252.6]]},
+      {"source":"945245667","kind":"road","width":4,"path":[[-416.9,197.4],[-400.6,225.8]]},
+      {"source":"945245668","kind":"parking","polygon":[[-391.6,223.4],[-406.9,196.5],[-423,205.7],[-407.7,232.5]]},
+      {"source":"945245669","kind":"parking","polygon":[[-473.8,229.7],[-456.8,222.5],[-445,250.2],[-461.9,257.5]]},
+      {"source":"1059549617","kind":"road","width":6,"path":[[-560.2,88.7],[-532.4,137.4],[-529.3,142.6]]},
+      {"source":"1059549618","kind":"road","width":6,"path":[[-518.4,59.2],[-486.2,108.1],[-483,112.9]]},
+      {"source":"1059549619","kind":"road","width":6,"path":[[-424.1,73.8],[-427.2,69.3],[-458.8,15.9]]},
+      {"source":"1059549620","kind":"road","width":6,"path":[[-375.9,43.2],[-414,-11.8]]},
+      {"source":"1533568487","kind":"path","width":2.5,"path":[[-776.2,-381.3],[-770.3,-381.6],[-760.9,-387.7],[-739.6,-402.3],[-724.7,-413.7],[-709.7,-426.3]]}
+    ],
+  },
+  // trees: rows (spacing m, jitter m) along the field edges, woods as random fills; sizes follow SITE.south.treeHeight / treeRadius
+  treeRows: [
+    { path: [[-700, 425], [-380, 395]], spacing: 14 }, { path: [[-120, 672], [-60, 900]], spacing: 13 }, { path: [[190, 640], [270, 890]], spacing: 13 },
+    { path: [[470, 600], [560, 860]], spacing: 14 }, { path: [[560, 140], [680, 520]], spacing: 13 }, { path: [[-640, 572], [-330, 662], [-30, 662], [110, 612], [330, 572]], spacing: 24 },
+  ],
+  woods: [
+    { name: 'Höjeådalen', n: 90, polygon: [[-900, -80], [-560, -40], [-520, 60], [-760, 140], [-900, 120]] },
+    { name: 'Dalgången väster om radhusen', n: 40, polygon: [[-760, 160], [-620, 130], [-560, 250], [-700, 300]] },
+    { name: 'Trädgårdar Tors väg', n: 50, polygon: [[-330, -660], [120, -620], [140, -520], [-300, -500]] },
+  ],
+  lowMemory: { houses: false, trees: false, ground: false }, // phones: the land mesh only (without the #1808 ground polygons) (viewlod.js's idea: far detail is the first to go)
+};
+
+// The yellow letterbox with the hidden binoculars (#1706, src/mailbox.js, src/binoculars.js). A generic Swedish wall box
+// without any logo, screwed to the west flank of the Klockhuset's risalit (SITE.east `campus.centre`, x 39.6, front face
+// z −133.9 on the park side since #1733, the wing's back z ≈ −131.3), in the 2.6 m recess between wing and risalit.
+// The position and every size are *guess*: Peab's / the Commons photos show no letterbox there; real wall boxes are about
+// 0.35 × 0.45 × 0.2 m, mounted at 1.2–1.4 m. The back plate sits on the flank, the front faces `yaw` (0 = south, −90 = west).
+export const MAILBOX = {
+  x: 39.6, z: -132.6, yaw: -90, height: 1.2, // back-plate centre on the wall, the box's bottom above the ground, front direction (°)
+  w: 0.38, h: 0.46, d: 0.2, wall: 0.016, // outside width / height / depth and the sheet's thickness (m)
+  open: 100, speed: 2.0, // the hatch's stop (° — it hangs down in front of the box) and its speed
+  colors: { body: 0xffcf1a, inside: 0x4a4430, slot: 0x2a2a2a, latch: 0x8a8d90 }, // generic signal yellow, dark slot and latch
+  reach: 2.2, // (E reach is the door raycaster's own)
+};
+// The binoculars (#1706): a Holdable lying in the letterbox. Right mouse button / the touch button = scope mode (never a weapon).
+export const BINOCULARS = {
+  zoom: 5, // (#1706, superseded by `zooms` since #1747: the old single ×5, kept as the reference)
+  zooms: [2, 4, 8], zoomStart: 1, // #1747: the selectable magnifications (the fov is divided by the chosen one; mouse wheel / pinch-less +/− buttons) and the index used on raising (*guess*: compact 8×32 up to ×8)
+  hint: 'Kikaren: tryck på kikarknappen (höger klick på dator) för att zooma · + / − eller mushjulet ändrar förstoringen', // #1747: shown once when taken
+  baseFov: 72, // the ordinary view's field of view (main.js step: 72 + TURBO.fov × turbo.k); the scope ignores the turbo's widening
+  sensitivity: 1, // mouse / touch look speed while zoomed = 1 / zoom × this (a narrower view turns slower in the picture)
+  held: { x: 0.12, y: -0.2, z: -0.34 }, // camera-space pose of the held binoculars (m, *guess*)
+  grip: [0.0, -0.02, 0.0], // model-local grip point (the hand fit is a visual guess)
+  size: { barrel: 0.026, length: 0.15, gap: 0.062, bell: 0.034 }, // barrel radius, length, axis distance, objective bell radius (m, *guess*: compact 8×32)
+  mask: { radius: 0.34, offset: 0.16 }, // each circle's radius and its centre's offset from the middle (fractions of the shorter screen side)
+};
+
+// The grey electrical cabinet by Sankt Lars väg with the spray cans (#1707, src/elcabinet.js, src/spraycan.js, src/graffiti.js).
+// The user (2026-10-30): "färgburkar i ett elskåp sådant där som finns utmed vägen. Någonstans i syd östra området". A generic
+// Swedish sheet-metal junction cabinet (no logo, no text), on the verge west of the west pavement of Sankt Lars väg, south of
+// Hus A (the pavement's outer edge is x ≈ 20), its door facing the street (east). Position and every size are *guess*:
+// real kopplingsskåp are about 0.5–0.8 × 0.25–0.35 × 1.0–1.4 m. The fixed body joins street.js's metal pole batch (its grey).
+export const ELCABINET = {
+  x: 19.45, z: 66, yaw: 90, // the body's back-centre at the ground; the door faces `yaw` (0 = south, 90 = east)
+  w: 0.6, d: 0.3, h: 1.2, plinth: 0.06, wall: 0.02, roof: 0.03, // outside width / depth / height, the sunk plinth, sheet and lid thickness (m)
+  shelf: 0.5, // the inner shelf's top above the cabinet's bottom (m), the cans stand on it
+  open: 110, speed: 1.8, // the door's stop (°, side-hinged on the left seen from the street) and its speed
+  colors: { door: 0x9ba0a3, handle: 0x2b2d2f, label: 0xe9e4d4, vent: 0x6f7477 }, // the body takes the pole batch's own grey
+};
+// The spray cans and the paint (#1707). Spraying never fights (no `shoots`, no weapon key); it costs SCORE.penalties.spray per started second.
+export const SPRAY = {
+  cans: [ // name (Swedish UI), paint colour, cap colour; the user asked for several colours
+    { name: 'röda sprayburken', color: 0xd7262e }, { name: 'blå sprayburken', color: 0x1f5bd6 }, { name: 'gröna sprayburken', color: 0x2e9e45 },
+    { name: 'gula sprayburken', color: 0xf3c814 }, { name: 'svarta sprayburken', color: 0x1b1b1d }, { name: 'vita sprayburken', color: 0xf3f3f1 },
+  ],
+  can: { r: 0.033, h: 0.19, cap: 0.045 }, // a standard 400 ml can: Ø 65 mm × 190 mm (+ the cap; *guess*)
+  held: { x: 0.15, y: -0.2, z: -0.36 }, grip: [0, -0.04, 0], // camera-space pose in the hand and the model-local grip point (*guess*)
+  range: 2.5, // m: how far the paint reaches from the eye (*guess*, generous for play; a real can sprays ~0.3–1 m)
+  every: 0.05, // s between paint spots while the button is held
+  gap: 0.035, // m: a new spot closer than this to the last one is skipped (holding still does not pile 20 spots a second)
+  size: 0.2, grow: 0.06, // a spot's diameter at the surface (m) and how much it grows per metre of distance (*guess*)
+  jitter: 0.012, // rad of random aim per spot (a soft, uneven line)
+  tap: 0.3, // s: a click / tap / E without a press sprays this long
+  max: 1200, // the cap on spots (the oldest goes first); one instanced mesh, so one draw call whatever the number (*guess*)
+  hours: 72, // the user: the paint stays 72 hours, then it is gone (also across reloads)
+  storageKey: 'lunden.graffiti', // localStorage { v: 1, s: [[x, y, z, nx, ny, nz, colour index, size cm, t (s since epoch)] …] }
+  saveEvery: 2, // s: the store is written at most this often while painting (and on leaving the page)
+  // #1724: sharing through the players' room (src/graffitisync.js; the room's own limits are cloudflare/graffiti.js GRAFFITI_SYNC).
+  // `block` spots per message (kept equal by hand with GRAFFITI_SYNC.block), at most one message every `every` s (the room allows one
+  // a second; each message is 1/20 of a billed request, so a full store of S.max spots is 10 messages). *guess*
+  share: { block: 120, every: 1.2 },
+};
+
+// ---- Outdoor cats (#1767, src/outdoorcatroute.js, src/outdoorcats.js; #1772 brains: src/outdoorcatbrain.js) ----
+// A few cats of their own roam the area: two on the courtyard lawns, two in the river park's central lawn by Höje å. Each walks a
+// fixed loop of `route` points [x, z] (on grass, clear of roads and water, checked by tools/outdoorcatstest.cjs) and rests `rest` s at
+// each point; where it is is a pure function of the wall clock (s since `epoch`, + its `phase` s), so every visitor sees roughly the
+// same cat in the same place (no shared sync). Breeds and coats come from cat.js BREEDS (by name). They shelter (fade out) in rain over
+// `rain` and are away in the snow months (SEASON.snowMonths).
+//  drawDist / drawDistPhone: m from the eye to a drawn cat (desktop / lowMemory); `near`: within this the full animated cat (~23 draw
+//    calls), beyond it one merged mesh (1 draw call, the sitting or standing pose). speed / returnSpeed: m/s along the route / going
+//    home. notice: m at which a cat stops and sits down to look at an approaching visitor; `take`: m at which it becomes the ordinary
+//    cat (cat.js CatSpawner: pet, carry, put down) while that cat is free; `release`: m walked away before it goes back to its loop;
+//    maxReturn: m beyond which (or with a road / water / a drop in the way) it fades out and turns up on its loop again after `away` s.
+//    fade: s to fade in / out. All numbers and names are our picks (*guess*).
+// #1772: each cat has a personality (`traits` 0 … 1: social, play, lazy, shy, curious; `kind` names it) and a brain
+// (src/outdoorcatbrain.js): at every rest stop a small utility AI weighs its needs (energy, play, company, hunger; `brain.needs`
+// drift / effects per behaviour) by its traits and picks what to do there: rest (wash / look about), sleep in the sun, wait for
+// company, explore (sniff about), stalk (creep and pounce), chase a butterfly, climb a tree. The choice and the whole outing are a pure
+// function of the wall clock and the cat's seed (the brain re-runs its needs from the start of each block of `brain.block` stops), so
+// every visitor still sees the same cat doing the same thing. Only how it meets *this* visitor is local, as before: a social cat walks
+// up from `brain.seekRange` × social m (all the way while it waits for company), and after being met follows a little; a shy one keeps
+// `brain.shyRange` m away unless the visitor stands still `brain.shyCalm` s. Outings go no further than `brain.reach` m from the stop,
+// on ground the cat may walk (the `walkable` / drop check of the way home, sampled every 0.5 m) and back the same way. Butterflies only
+// by day (`brain.butterflyHours`) in `brain.butterflyMonths`; a tree only within `brain.climbReach` m (surroundings.js treeFeet /
+// aoTrees, like the squirrels), up to `brain.branch` m. All numbers are our picks (*guess*).
+// #1925 authored butterfly silhouettes/materials, metres and radians; visual guesses, not new species.
+export const BUTTERFLY_SURFACE = {
+  span: .085, length: .055, wingY: .002, hinge: .0035,
+  colors: { yellow: 0xf2dc3c, orange: 0xe8762a },
+  wingTint: 1, edgeTint: .54, veinTint: .38, markTint: .26, bodyTint: .10,
+  fore: { contour: [[.06,.20],[.32,.82],[.72,1],[.96,.83],[1,.47],[.86,.15],[.48,-.04],[.06,-.12]], hub: [.34,.34], mark: [.72,.57,.065], vein: [[.08,.17],[.64,.75],[.12,.19]] },
+  hind: { contour: [[.06,.03],[.47,-.06],[.76,-.35],[.69,-.69],[.43,-.91],[.15,-.85],[.05,-.50]], hub: [.29,-.38], mark: [.48,-.55,.075], vein: [[.08,-.06],[.55,-.65],[.11,-.07]] },
+  markSegments: 5, markLift: .0005,
+  body: [
+    { at: [0,.003,-.012], scale: [.004,.004,.027] },
+    { at: [0,.004,.014], scale: [.006,.005,.012] },
+    { at: [0,.004,.032], scale: [.004,.004,.006] },
+  ],
+  antenna: { root: [0,.004,.035], end: [.011,.006,.052], width: .0012 },
+  fold: { min: .10, max: 1.25, hz: 16, rest: .28 },
+  magic: { hinge: .025 }, // in the unit quad; the existing .09m effect keeps an approximately .08m painted span
+  atlas: { size: 64, extent: .44, edge: '#a2a2a2', vein: '#a0a0a0', mark: '#777', body: '#454545', line: .013,
+    abdomen: [.5,.54,.022,.25], thorax: [.5,.39,.029,.08], head: [.5,.26,.024], antenna: [[.49,.25,.42,.12],[.51,.25,.58,.12]] },
+};
+
+export const OUTDOOR_CATS = {
+  // #1844 guesses: one shared wall-clock day, bounded goal choices and progressive exploration.
+  exploration: { daySeconds:86400,maxGoals:56,minGoals:8,speed:.55,initialRadius:100,growth:70,distanceCost:600,minRest:90,rest:1200,
+    lazyGoalReduction:.6,curiosityBase:.4,repeatNovelty:.08,noise:.9,specialWeight:.25,homeLazyWeight:.25,seatReserve:2,cachePlans:12,footRadius:.12,roadMargin:.2,climbPitch:1.15,climbContactBlend:.3,climbMaxOffset:.5,climbPawInset:.005 },
+  epoch: 1793491200, drawDist: 32, drawDistPhone: 18, near: 7, speed: 0.42, returnSpeed: 0.85, notice: 4.5, take: 3.2, release: 8,
+  maxReturn: 45, away: 30, fade: 1.2, rain: 0.12, maxStep: 0.6,
+  // #1782: a raw caught fish (fishing.feedable, as #1766) on the ground or held out within `reach` m (× 0.8 … 1.2 by curiosity) of a roaming
+  // cat on a clear way: it hesitates `wait` s (× its personality: a social / curious cat at once, a shy one longer and only once the visitor
+  // stands still, but at most `maxWait` s), walks there at `speed` m/s, stops CAT_FISH.stop × its size short and eats for CAT_FISH.eat s.
+  // `scan`: s between looks; `held`: m above the ground a held-out fish may be (the hand). All *guess*.
+  food: { reach: 6, wait: 1.5, maxWait: 20, speed: 0.6, scan: 0.4, held: 2 },
+  // #1845: local social timing/metres and small pooled hearts, all guess; only near visible idle ground cats.
+  nuzzle: { scan: 3, chance: .65, cooldown: 150, reach: 5, minDistance: 1.1, speed: .32, turn: 2.5, face: .12, arrive: .008, settle: .8, duration: 3, timeout: 25, maxHeadShift: .14, viewerGap: .5, maxStep: .1, rub: .06, rubHz: [3,2], heartLift: .08, hearts: 5, heartScale: 2.5 },
+  brain: {
+    block: 16, noise: 0.22, margin: 12, trot: 0.75, creep: 0.22, climb: 0.7, reach: 7, climbReach: 9, branch: [1.3, 2.6],
+    butterflyMonths: [5, 6, 7, 8, 9], butterflyHours: [9, 19], seekRange: 13, seekSpeed: 0.75, seekStop: 1.3, followTime: 8,
+    shyRange: 6, shyCalm: 4, fleeSpeed: 0.95, preyRange: 9,
+    // what an outing needs at least (s of the rest), and per behaviour the change of each need (energy up = rested; the others are urges)
+    minRest: { rest: 0, sleep: 25, seek: 15, explore: 22, stalk: 26, butterfly: 30, climb: 38 },
+    needs: {
+      drift: { energy: -0.05, play: 0.1, social: 0.09, hunger: 0.05 },
+      rest: { energy: 0.12 }, sleep: { energy: 0.45, play: -0.05 }, seek: { social: -0.6 }, explore: { energy: -0.06, play: -0.15 },
+      stalk: { energy: -0.12, hunger: -0.45, play: -0.2 }, butterfly: { energy: -0.22, play: -0.6 }, climb: { energy: -0.2, play: -0.55 },
+    },
+  },
+  // #1840: guessed larger patrol loops; offline-prevalidated against the actual site. No runtime pathfinder.
+  // Zero rests mark navigation bends; other stops retain personality-specific rests. Each lap hashes its direction.
+  cats: [
+    { name: 'Sotis', explore:true, breed: 'huskatt', coat: 'svart', zone: 'innergården', roams: 'på innergården', phase: 0, rest: [0,50,0,0,0,25,0,0,0,0,80,0,0,0,30,0,0,0,70,0,20,50,0,25], vary: true, kind: 'social',
+      traits: { social: 0.95, play: 0.35, lazy: 0.3, shy: 0, curious: 0.45 },
+      route: [[-16,18],[4,19],[5,18],[12,27],[13,31],[14,30],[14,22],[14,30],[13,31],[12,26],[6,26],[5,27],[-6,26],[-12,26],[-14,27],[-15,26],[-15,28],[-16,29],[-35,27],[-36,27],[-45,24],[-46,23],[-36,18],[-17,19]] },
+    { name: 'Kanel', explore:true, breed: 'maine coon', coat: 'rödrandig', zone: 'innergården', roams: 'på innergården', phase: 140, rest: [0,70,0,0,30,50,90,25,70,30], vary: true, kind: 'lazy',
+      traits: { social: 0.45, play: 0.2, lazy: 0.95, shy: 0.1, curious: 0.25 },
+      route: [[-40,21],[-29,20],[-28,20],[-23,20],[-20,22],[-18,22],[-19,30],[-34,31],[-48,28],[-48,24]] },
+    { name: 'Findus', explore:true, breed: 'norsk skogkatt', coat: 'grå', zone: 'parken vid Höje å', roams: 'i parken vid Höje å', phase: 60, rest: [75,35,0,90,0,30,60,45,75,0,35], vary: true, kind: 'playful',
+      traits: { social: 0.3, play: 0.95, lazy: 0.15, shy: 0.2, curious: 0.6 },
+      route: [[-80,95],[-45,95],[-28,110],[-31,116],[-40,142],[-73,162],[-75,163],[-115,151],[-138,125],[-124,99],[-111,109]] },
+    { name: 'Smulan', explore:true, breed: 'huskatt', coat: 'röd och vit', zone: 'parken vid Höje å', roams: 'i parken vid Höje å', phase: 300, rest: [45,80,0,35,0,70,45,80,35,70], vary: true, kind: 'shy',
+      traits: { social: 0.1, play: 0.4, lazy: 0.35, shy: 0.9, curious: 0.85 },
+      route: [[-70,96],[-49,96],[-38,110],[-50,127],[-53,133],[-56,133],[-82,136],[-101,121],[-98,104],[-87,96]] },
+    // #1882: eight more cats on their own #1840-style loops (no `explore`), one per further outdoor area, so a cat is usually within
+    // ~60 m of the visitor's usual places. Names, breeds/coats (existing cat.js forms), personalities, rests and phases are *guess*;
+    // the routes were planned on the actual scene (tools/catrange1882browser.cjs) and are checked by src/outdoorcatroute.test.mjs.
+    { name: 'Greta', breed: 'brittiskt korthår', coat: 'blå', zone: 'gräsmattan mellan husen', roams: 'på gräsmattan mellan Hus A och Hus B', phase: 420, rest: [40,90,35,70,0,60,80], vary: true, kind: 'lazy',
+      traits: { social: 0.4, play: 0.15, lazy: 0.9, shy: 0.2, curious: 0.3 },
+      route: [[-20,34],[-14,40],[-14,57],[-6,61],[-25,61],[-22,57],[-21,48]] },
+    { name: 'Misan', breed: 'siames', coat: 'siames', zone: 'klocktornsparken', roams: 'i parken norr om Klockhuset', phase: 90, rest: [0,60,0,30,70,45,55,40], vary: true, kind: 'social',
+      traits: { social: 0.9, play: 0.5, lazy: 0.2, shy: 0.05, curious: 0.7 },
+      route: [[15,-170],[56,-170],[60,-168],[106,-168],[110,-170],[112,-193],[60,-196],[15,-193]] },
+    { name: 'Musse', breed: 'huskatt', coat: 'grå', zone: 'skolgårdarna', roams: 'på Montessoriskolans gård', phase: 510, rest: [30,70,40,60,35,45,50], vary: true, kind: 'shy',
+      traits: { social: 0.2, play: 0.5, lazy: 0.3, shy: 0.8, curious: 0.9 },
+      route: [[-100,-60],[-76,-66],[-70,-100],[-85,-115],[-95,-145],[-105,-140],[-105,-90]] },
+    { name: 'Tiger', breed: 'maine coon', coat: 'brunrandig', zone: 'hästhagen', roams: 'vid hästhagen söder om ån', phase: 200, rest: [60,30,75,40,0,50,35], vary: true, kind: 'playful',
+      traits: { social: 0.35, play: 0.9, lazy: 0.2, shy: 0.15, curious: 0.75 },
+      route: [[-104,216],[-70,212],[-62,240],[-80,262],[-104,256],[-106,248],[-108,235]] },
+    { name: 'Snöboll', breed: 'norsk skogkatt', coat: 'vit', zone: 'ån västerut', roams: 'längs ån västerut', phase: 330, rest: [0,45,80,35,70,50,40,60], vary: true, kind: 'shy',
+      traits: { social: 0.15, play: 0.45, lazy: 0.4, shy: 0.95, curious: 0.6 },
+      route: [[-166,194],[-196,198],[-200,200],[-235,215],[-250,200],[-230,170],[-190,165],[-160,180]] },
+    { name: 'Ludde', breed: 'norsk skogkatt', coat: 'svartvit', zone: 'ån österut', roams: 'längs ån österut', phase: 30, rest: [0,45,25,60,35,50,40,30], vary: true, kind: 'playful',
+      traits: { social: 0.5, play: 0.85, lazy: 0.1, shy: 0.1, curious: 0.8 },
+      route: [[45,100],[79,105],[80,106],[108,104],[118,78],[100,74],[70,76],[48,80]] },
+    { name: 'Molly', breed: 'perser', coat: 'gräddvit', zone: 'söder om ån', roams: 'bland de gamla träden vid Sankt Lars väg', phase: 600, rest: [0,90,150,80,110,100,120], vary: true, kind: 'lazy',
+      traits: { social: 0.6, play: 0.1, lazy: 1, shy: 0.25, curious: 0.2 },
+      route: [[-30,352],[-16,341],[-5,336],[20,322],[22,338],[0,355],[-20,366]] },
+    { name: 'Pelle', breed: 'huskatt', coat: 'svartvit', zone: 'södra åstranden', roams: 'på ängarna söder om ån', phase: 250, rest: [70,35,60,50,40,45], vary: true, kind: 'social',
+      traits: { social: 0.85, play: 0.4, lazy: 0.35, shy: 0, curious: 0.55 },
+      route: [[-35,170],[0,175],[5,215],[-20,235],[-55,225],[-60,190]] },
+  ],
+  // #1885: the award "Hitta alla utekatter" (src/outdoorcathunt.js, medal `outdoorcats` in src/medalcatalog.js). A cat counts as found
+  // when it is drawn within `near` m and in view (or becomes the ordinary cat). A round = every name in `cats` found once; each finished
+  // round is one medal level (linear, capped at MAX_LEVEL). `bonus`: points for level L = bonus × L (500, 1000 … 5000), level with the
+  // biggest single rewards in the game (Miele 1000, the shark fin 400) because the cats roam the whole block (*guess*). `everyMin`: the
+  // Worker accepts at most one more finished round per this many minutes (a round means walking the whole block; *guess*); `start`: what
+  // a row may bring on the counter's first sync (*guess*).
+  hunt: { bonus: 500, everyMin: 5, start: 1 },
+};
+
+// #1775: doors opened and closed by one player are seen by everybody (src/doorsync.js, cloudflare/doors.js). A door id is a group letter
+// plus its index in that group's list, built identically on every client: w = the flat's / portik's doors (world.doors, wardrobe fronts
+// excluded), L / A / B / C = the stair-core doors of Hus L / A / B / C, g = the förråd and cage doors under the courtyard, q = the garage
+// gate. `max` = how many indexes a group may have (the room refuses anything above; counts + margin, *guess*). Our picks.
+export const DOOR_SYNC = {
+  max: { w: 40, L: 4, A: 40, B: 40, C: 40, g: 200, q: 1 },
+  every: 0.12, // s: a door message at most this often per connection (the room drops faster ones)
+};
+
+// #1976: the day's chores shared between the players (src/choresync.js, cloudflare/chores.js): `every` s between a connection's goal
+// messages, the room remembers `days` days of at most `goals` goals with at most `helpers` helpers each (all *guess* bounds); `name`:
+// the longest helper name passed on.
+export const CHORE_SYNC = { every: 0.2, days: 3, goals: 200, helpers: 32, name: 24 };
+
+// #1974 (part of #1964): loose things shared between the players (src/thingsync.js, cloudflare/things.js). An id is `<group letter><index>`;
+// `max` lists the groups and how many indexes each may have (the clients build the lists identically, as the doors do):
+// s saber, b blaster, w wand, f flashlight, a the bow, h the harpoon gun, k binoculars, c spray can, o basketball, r fishing rod.
+// #1976: p the book, e the TV remote, t = world.things by index (ornaments, photos, potted plants, the rifle; bottles and glasses
+// have contents and are not registered yet), l the pots on the window boards, o the basketball, r the fishing rod.
+// #1982: d the billiard cues by their index in the rack (playroomcues.js).
+// `every`: s between a connection's messages (faster ones are dropped); `reach`: m from the player's reported position within which a
+// thing may be put down / taken from where it lies; `held`: things one connection may hold at once (the inventory's places and a nut
+// stack's worth of margin); `x`, `y`, `z`: the bounds of a place a thing may be put (m; the site with a margin). All *guess* limits.
+export const THING_SYNC = {
+  max: { s: 4, b: 8, w: 8, f: 4, a: 1, h: 1, k: 2, c: 12, o: 2, r: 1, p: 2, e: 2, t: 160, l: 80, u: 24, q: 16, j: 1, n: 1, x: 40, g: 1, y: 24, m: 16, i: 1, d: 4 }, // (u: the coffee cups by their index in the pool, cups.js; q: the fruit in the bowl by its slot; j: the coffee jug; n: the frying pan; x: the fish fingers by their index in the carton's pool; g: the bag of fries; y: the bunches of fries by their index in the pool; m: the popcorn tubs; i: the whole chicken) // (#1976: p the book, e the remote control, t the loose things of world.things by their index)
+  every: 0.12, reach: 8, held: 12, x: [-1600, 600], y: [-60, 120], z: [-1600, 600], // (#1982: down to the playroom at PLAYROOM.x / .z = -1500, so a cue laid there is told)
+  putReach: { o: 60 }, // #1976: a thrown basketball comes to rest far from its thrower: its own reach for 'put' (m, *guess*)
+  data: 200, // #1976: the longest contents string a thing may carry (its drink, how much is eaten, dirt …; printable ASCII, opaque to the room)
+  keepDays: 30, // #1978 (*guess*): days a lying thing stays where it was put without anybody touching it, before it goes home
+};
+
+// #1981 (part of #1964): the life simulator's things (items.js instances: food, dishes, laundry, rubbish) shared between the players
+// (src/lifesync.js, src/lifeshare.js, cloudflare/life.js): the room keeps one record per instance and the clients follow it.
+// `every`: s between a connection's messages (a batch of changes; the room refuses faster ones); `ops`: changes per message;
+// `maxBytes`: characters per message (the one `li` prefix allowed past PLAYERS.maxBytes, as graffiti); `rec`: characters per record;
+// `max`: instances the room keeps; `held`: instances one connection may hold at once (the hand + the inventory); `chunks`: storage
+// values the records are spread over (by id, so a change writes only its own); `page`: records per welcome message; `keepDays`: an
+// untouched shared kitchen starts over after this long (as THING_SYNC.keepDays). All *guess* limits.
+export const LIFE_SYNC = { every: 0.5, ops: 30, maxBytes: 7000, rec: 600, max: 700, held: 12, chunks: 8, page: 60, keepDays: 30,
+  // the home's state that is no instance (life.js `keepPart`), shared whole per part, the last word wins: `parts` the names the room
+  // takes, `part` characters of a part's JSON (a full dishwasher's ids fit), `partEvery` s between a connection's part messages
+  parts: ['dishwasher', 'laundry', 'beds', 'watering', 'milk'], part: 3000, partEvery: 0.5,
+  // #1990: crumbs and dust (src/mess.js) as changes of amount per spot: `messOps` changes per message, `messEvery` s between a
+  // connection's messages, `messMax` spots of each kind the room keeps (as LIFE_MESS.max; its keys are the kinds it takes), `messSurf` the surfaces
+  messOps: 24, messEvery: 0.5, messMax: { crumb: 48, dust: 32, smear: 16 }, messSurf: ['worktop', 'table', 'floor'] };
+
+// #1921: authored mallard surface estimates (guess), in the existing bill/rig frame.
+// Profiles are [z, centreY, halfWidth, halfHeight], neck uses [y, centreZ, width, depth].
+export const DUCK_SURFACE = {
+  radial: 16, smallRadial: 8, eyeSegments: [6,4],
+  body: [[-.39,.30,.025,.035],[-.345,.295,.073,.08],[-.30,.29,.12,.12],[-.23,.29,.17,.16],[-.16,.29,.195,.18],[-.07,.29,.21,.195],[.02,.29,.215,.20],[.10,.30,.20,.195],[.18,.31,.18,.18],[.235,.335,.15,.155],[.29,.36,.11,.12],[.32,.40,.055,.065]],
+  neck: [[.27,.18,.10,.09],[.40,.22,.098,.10],[.465,.25,.081,.086],[.48,.255,.08,.087],[.495,.26,.079,.088],[.55,.27,.081,.093],[.615,.275,.065,.065]],
+  head: [[.17,.625,.03,.035],[.20,.64,.064,.075],[.24,.646,.084,.087],[.29,.635,.095,.088],[.35,.607,.08,.065],[.405,.585,.055,.035]],
+  bill: [[.355,.582,.05,.023],[.42,.58,.087,.026],[.51,.58,.077,.018],[.5541267991,.5800000131,.05,.0108155906]],
+  tail: [[-.52,.35,.045,.007],[-.45,.35,.095,.02],[-.32,.34,.105,.04]],
+  wing: [[-.37,.34,.125,.008,.012],[-.25,.35,.17,.038,.045],[-.18,.355,.185,.037,.065],[-.08,.36,.19,.035,.085],[.08,.37,.17,.025,.078],[.16,.36,.145,.006,.025]],
+  eye: { at: [.095,.65,.33], scale: [.005,.009,.009] },
+  leg: { x: .12, at: [.085,.025], scale: [.014,.07,.015] },
+  foot: { x: .12, y: .018, thickness: .012, outline: [[-.025,-.04],[-.065,.07],[-.07,.14],[-.025,.125],[0,.16],[.025,.125],[.07,.14],[.065,.07],[.025,-.04]] },
+  colors: { breast: 0x684337, flank: 0xa39b89, back: 0x665b48, female: 0x8b7655, dark: 0x493d2d, green: 0x245b3a, black: 0x1b1b13, collar: 0xe7dfcc, bill: 0xd5a33b, foot: 0xc98b35 },
+  plumage: { rows: 24, columns: 36, contrast: .4, rowOffset: .5, maleContrast: .35, breastZ: .17, backY: .4, stripeZ: .22, stripeY: [.625,.657], collar: [.465,.48], speculumZ: [-.25,-.10], speculumY: [.34,.40] },
+};
+
+// #1815: four local ducks; model dimensions, habitat, motion and timing are visual/gameplay guesses.
+export const DUCKS = Object.freeze({
+  scorePerDay: 120, // #1827 gameplay guess:20 rewarded bread bites/day, medals keep counting afterwards
+  count: 4, near: 65, draw: 100, speed: .65, swimSpeed: .85, feedReach: 2.6, cooldown: 2.4,
+  eat: 1.3, quackFirst: [3, 2], quackInterval: [14, 20], quackCooldown: 3,
+  lureReach: 9, goalReach: .25, stopReach: .2, maxStep: .1, phaseSwim: 5, phaseWalk: 15,
+  bob: .015, waddle: .13, eatNod: .10, eatPhase: 15, maxFeedHeight: 3,
+  // #1839 guesses: two stable pairs, one anchored at the familiar reach, one ranging downstream.
+  social: { seed: 1839, femaleFraction: .5, follow: 1.05, pairWait: 2.7, catchup: 1.35,
+    groupPeriod: 320, groupSeconds: 95, groupReach: 6, groupSide: 1.6 },
+  // #1846 guesses: one short visible mate greeting; same model/territories and finite bread path.
+  kiss: { first:20,scan:10,chance:.12,cooldown:180,near:12,reach:2.3,minDistance:.75,aligned:.8,
+    speed:.28,turn:1.6,turnGap:.22,face:.04,arrive:.002,settle:.4,duration:2.2,timeout:15,sample:.2,rise:.01,
+    maxStep:.1,foodReach:9,foodHeight:3,phaseSwim:5,phaseWalk:15,hearts:5,heartScale:2.5,heartLift:.12 },
+  habitat: { at: [-160, 207], restOffsets: [0, 24, 48, 72], territories: [[0, 1], [1, 2, 3]],
+    range: [-8, 80], extraBank: 4, maxShoreHeight: 1.65, routeStep: 2, shoreStep: .25,
+    sink: .12, waterMargin: .08, startShore: 3 },
+  pick: { size: [.65, .75, .9], height: .36 },
+  model: { segments: [8, 5], female: [0x827052,0x69583e,0x8c7755,0x8f7956,0xb58135,0x594a36],
+    speckle: [0.64, 1.18], eyeStripe: 0x392d21, wingBlue: 0x365578, blobs: [
+    [[0,.29,0],[.22,.21,.38],0x8c7761], [[0,.37,-.12],[.19,.1,.25],0x5e5143],
+    [[0,.47,.23],[.115,.18,.12],0x354d34], [[0,.61,.28],[.135,.13,.14],0x256746],
+    [[0,.58,.44],[.10,.035,.12],0xe2ad39], [[0,.33,-.36],[.1,.07,.17],0x3f3932]],
+    paired: [[[.12,.65,.35],[.023,.025,.025],0x16130e],[[.12,.035,.04],[.075,.03,.13],0xd88c24]] },
+});
+
+// #1837 — guesses: 100 completed reps, 72 h linear wall-clock decay, +60% upper-arm circumference.
+export const GYM_PUMP = { repsToFull: 100, decayHours: 72, circumference: 0.6, sampleMs: 15000 };
+
+// Djurpärmen (#1848): local collection and disposable model-image budgets; distances/timings are guesses.
+export const BESTIARY = { observeEvery: 0.75, seenDistance: 45, birdSeenDistance: 150, occlusionChecks: 2, seenRepeatMs: 60000, maxPhotos: 3, photoGlobalEvery: 5, photoQueue: 8, photoEveryMs: 30000, imageMemory: 24 };
+
+// #1858 user-approved preliminary placement (2026-11-04): Karpvägen 8 roof toward Höje å.
+// Move this one anchor/yaw if the intended roof differs; dimensions/colours/portions are guesses.
+export const ROOF_PICNIC = {
+  // #1864: fixed shared spawn height matches the existing measured cap;750ml bottle/model dimensions and lease/reach are guesses.
+  shared: { roofY:13.1039017774, bottle:[.78,-.48], bottleMl:750, bottleH:.30, bottleR:.038, leaseMs:120000, reach:4, everyMs:150 },
+  at: [-155.49, 114.60], yaw: -3.113, look: [-185, 206.543], roofSource: '342815182',
+  blanket: [2.5, 2.8], lift: .035, cushion: [.65,.10,.65], seats: [[-.62,.65],[.62,.65]],
+  board: [0,.05,-.25], boardSize: [.72,.035,.42], glasses: [[-.44,-.28],[.44,-.28]],
+  lanterns: [[-1.3,-1.0],[1.3,-1.0],[0,1.55]], lanternHeight: .30, lanternRadius: .09,
+  nightAt: .30, glowRadius: .85, wine: .45, portions: 6, biteSeconds: .8, drawDist: 130,
+  colors: { cloth: '#e6ddc5', stripe: '#596d65', accent: '#a15c49', pillow: 0xc7aa7d,
+    wood: 0x956747, rind: 0xdba643, cheese: 0xf1d080, salami: 0xa74648, fat: 0xf0d0ba,
+    metal: 0x38342e, wax: 0xf6dfae, glow: 0xffb65c },
+};
+
+// #1867: fixed friendly player conversations, bounded local/room defaults (*guess*).
+export const CONVERSATION = { version: 1, range: 3, serverRange: 3.3, hearRange: 12,
+  everyMs: 3000, replyMs: 20000, pendingMs: 5000, receipts: 64 };
+
+// #1928: manufactured figurine guesses, not biological anatomy or exact product dimensions.
+// The retained owl/setup photographs guide ceramic/crochet identity; unicorns retain their existing identity.
+export const SMALL_FIGURES = {
+  white: 0xffffff,
+  atlas: { size: 256, split: .5, ceramic: '#be9e66', ink: '#5a432d', flower: '#ddc497', cloth: '#e8ddba', yarn: '#a79b7f', tile: 32, petals: 6, petal: 5, centre: 2, stitchX: 8, stitchY: 7, stroke: .7 },
+  owl: { body: [.043,.079,.0335], at: [0,.079,0], segments: [12,10], boxPower: .27, dip: .006,
+    rough: .32, color: 0xffffff, eyeColor: 0xd6bc86, pupilColor: 0x231a12, eye: [.021,12], pupil: [.0075,8], eyeAt: [.021,.124,.0345], pupilZ: .0352,
+    beak: [.006,.017,4], beakAt: [0,.105,.037], backLean: -.25 },
+  desk: { segments: [16,12], taper: .22, ripple: .013, rows: 12, rough: 1, rings: 3, ringRadius: .022, ringStep: .008, ringTube: .0008, ringSegments: [4,16], ringY: -.013,
+    handScale: [.009,.006,.009], handAt: [.023,-.008,.004], handSegments: [8,6], mouth: [.005,.0007,.001], mouthAt: [0,.005,.022], smile: .4 },
+  lamp: { segments: [16,12], eye: [.003,.004,.0015], eyeAt: [.019,.145,.091], eyeColor: 0x38303b,
+    body: [.047,.037,.064], bodyAt: [0,.060,-.009], neck: [.026,.049,.025], neckAt: [0,.103,.038], head: [.025,.026,.035], headAt: [0,.145,.067], muzzle: [.020,.014,.021], muzzleAt: [0,.133,.092], eyeSegments: [8,6] },
+  unicorn: { segments: [12,8], white: 0xfffcf8, pink: 0xee86bd, gold: 0xffd23f, eye: 0x29212e, rough: .48, goldMetal: .5, goldRough: .3, baseLift: -.0005,
+    // type, dimensions, position, material index, rotation (optional). Body faces +x.
+    parts: [
+      ['sphere',[.032,.022,.017],[0,.039,0],0], ['sphere',[.012,.025,.012],[.023,.061,0],0,[0,0,-.30]],
+      ['sphere',[.020,.014,.012],[.035,.077,0],0], ['sphere',[.013,.009,.010],[.050,.071,0],0],
+      ['sphere',[.007,.015,.007],[-.022,.015,-.010],0], ['sphere',[.007,.015,.007],[.022,.015,-.010],0],
+      ['sphere',[.007,.015,.007],[-.022,.015,.010],0], ['sphere',[.007,.015,.007],[.022,.015,.010],0],
+      ['cone',[.005,.016,6],[.029,.093,-.007],0,[0,0,.20]], ['cone',[.005,.016,6],[.029,.093,.007],0,[0,0,-.20]],
+      ['cone',[.004,.025,8],[.043,.102,0],2,[0,0,-.25]],
+      ['sphere',[.009,.025,.006],[.016,.066,0],1,[0,0,-.35]], ['sphere',[.020,.006,.007],[-.036,.034,0],1,[0,0,.65]],
+      ['sphere',[.0025,.003,.001],[.039,.080,.0115],0], ['sphere',[.0025,.003,.001],[.039,.080,-.0115],0]
+    ] },
+  dino: { rough: .7, green: 0x57a350, eye: 0x253722, segments: [8,4],
+    parts: [ ['sphere',[.020,.011,.010],[0,.015,0]], ['sphere',[.007,.015,.006],[.019,.025,0],[0,0,-.55]], ['sphere',[.010,.006,.006],[.030,.035,0]],
+      ['cone',[.006,.032,8],[-.029,.014,0],[0,0,1.87]],
+      ['sphere',[.004,.006,.004],[-.009,.006,-.006]],['sphere',[.004,.006,.004],[.009,.006,-.006]],['sphere',[.004,.006,.004],[-.009,.006,.006]],['sphere',[.004,.006,.004],[.009,.006,.006]] ],
+    eyeAt: [.033,.037,.0056], eyeScale: [.0017,.0017,.0005], eyeSegments: [6,4] },
+  lego: { blue: 0x1e5bc6, red: 0xd62f2f, yellow: 0xf6d23a, rough: .3, segments: 6, eye: 0x29221b,
+    legs: [.005,.012,.006], legX: .0035, legY: .006, torso: [.014,.012,.007], torsoY: .018,
+    arm: [.004,.011,.005], armX: .009, armY: .017, armAngle: .12, hand: [.004,.003,.004], handY: .010,
+    head: [.0045,.0045,.008], headY: .028, stud: [.0025,.0025,.0015], studY: .03275,
+    face: { x: .0018, y: .029, z: .0042, eye: .00065, mouthY: .0265, mouth: [.0025,.00065] } },
+  duck: { yellow: 0xffd21f, orange: 0xff8a1f, eyeColor: 0x282017, wingColor: 0xf3bf19, rough: .4, segments: [10,6],
+    body: [.0143,.00935,.011], bodyAt: [0,.009,0], head: [.007,.007,.007], headAt: [.009,.021,0],
+    beak: [.006,.002,.004], beakAt: [.0175,.020,0], tail: [.006,.004,.007], tailAt: [-.013,.014,0],
+    eye: [.0013,.0014,.0006], eyeAt: [.012,.023,.006], wing: [.008,.0045,.001], wingAt: [-.002,.012,.0098], smallSegments: [6,4] }
+};
+
+// #1945: blue mussels on the bed of Höje å, picked up while diving (src/mussels.js draws and wires them, src/musselfield.js places them).
+// Everything is a gameplay choice (*guess*): blue mussels (Mytilus edulis) are really a salt / brackish water species and nothing is known
+// about the bed of Höje å; the user asked for them. Real shells are 5-8 cm long, about half as wide and a third as thick.
+export const MUSSELS = {
+  seed: 1945, // the placement's seed: every player gets the same bed, with no sync
+  spacing: 7, // m along the centre line between clumps (*guess*: a diver sees ~6 m, so the next clump is always nearly in view)
+  clump: [2, 5], radius: 0.55, // mussels per clump and the clump's radius in m (*guess*: they grow in small beds)
+  edge: 0.5, // m inside the channel's edge (SITE.river width / 2) a mussel keeps: on the bed, not up the bank
+  pierClear: 0.3, wallClear: 0.5, // m clear of a road-bridge pier's footing (SITE.bridges.road.foot) and of any other far wall segment (rails, posts)
+  boundsClear: 2, // m inside the walkable area's outer wall (WALK), where a swimmer cannot go
+  size: [0.1, 0.14], // m shell length, drawn larger than life (5-8 cm) so they are found through the dive mask, as the nuts are (*guess*)
+  shape: { width: 0.5, thick: 0.34, taper: 0.42, segments: [10, 6] }, // shell width / thickness as a part of its length, how narrow the hinge end is, sphere segments (~100 triangles)
+  colors: { shell: 0x0f1220, band: 0x29355c, edge: 0x1a1f33, umbo: 0x868ca6 }, // blue-black shell, blue-violet growth bands, a worn pale hinge end (photos of Mytilus edulis, by eye)
+  rough: 0.45, metal: 0.1, // a wet shell's sheen (*guess*)
+  near: 9, // m from the eye within which a mussel is drawn (the fog under water is full at SWIM.dive.look.far 8 m)
+  max: 64, // instances in the one InstancedMesh (the most that can lie within `near`: ~4 clumps of 5 on each side, with margin)
+  pick: 0.11, // m radius of the ball E aims at round a mussel (the nut's is 0.12)
+  reach: 1.1, // m a hand reaches a mussel lying under water (*guess*: an arm's length, not HOLD.reach 2.2): from the surface only those in the shallows, a diver at the bed all of them
+  regrow: [45, 120], regrowFar: 7, // s until a taken mussel is back on its spot, and only once the diver is this far away (or out of the water): no pop-in
+  loose: 3, // mussels that can be out of the bed at once (in the hand or put down somewhere); taking another sends the oldest one put down back
+  held: { pos: [0.1, -0.115, -0.37], rot: [1.1, 0.3, 0.9] }, // the pose in the hand (camera space, where the nut's is): the broad side towards the eye
+  sink: 0.012, // m a lying mussel is sunk into the bed's mud
+  // #1950: a picked mussel is closed; a diver knocks it against the bed (E aimed at the bed) until the shell cracks. All *guess*.
+  crack: {
+    hits: 3, // knocks against the bed until the shell cracks (*guess*: "a few")
+    reach: 1.1, // m from the eye to the bed point aimed at for a knock to land (*guess*: an arm's length, as `reach` above)
+    gap: 0.38, // s between two knocks: the arm goes down and comes back (*guess*)
+    swing: { time: 0.34, down: 0.2, forward: 0.1, tilt: 0.7, at: 0.4 }, // the held mussel's strike: s it lasts, m down / forward at the blow (camera space), rad it tips, the part of the time the blow lands at (*guess*)
+    gape: 0.85, // rad the cracked shell's upper valve stands open (*guess*: wide enough that the meat shows in the hand)
+    held: { rot: [0.95, -1.15, 0.1] }, // the cracked mussel's pose in the hand (camera space): the open side towards the eye (*guess*, by eye)
+    colors: { inside: 0xb9c3d6, meat: 0xf0c58a, rim: 0x3a4468 }, // pearly pale inside of the valves, pale orange meat, the valves' rim (photos of opened Mytilus edulis, by eye)
+    meat: { size: [0.56, 0.2, 0.3], at: [0.06, -0.03, 0.04], segments: [8, 5] }, // the meat's size and centre as parts of the shell's length (it lies in the lower valve), sphere segments
+    hint: 'Slå musslan mot botten för att öppna den', // shown the first time a closed mussel is held
+  },
+  bed: { color: 0x74664b, under: 0, fade: 0.15 }, // the river bed's mud / sand tone (*guess*) instead of grass: full `fade` m under `under` m below the water line (surroundings.js `bedMud`, grass.js)
+};
+
+// #1957: the look of the architectural edge lines (src/architectureedges.js). The user found them too drawn ("tecknat"),
+// above all in L1007's kitchen, where #1579's surface tint blended over the lit cabinet green drew lines lighter than the
+// fronts. They now multiply what is drawn, reading as shadow joints: close up a joint darkens its surface towards
+// `shade` × its hue by `strength` (white: 1 − 0.2 × 0.45 ≈ 9 % darker, about #1579's contrast on white walls, never
+// lighter); one-pixel lines do not thin with distance, so beyond `fadeNear` m from the eye the darkening fades smoothly to
+// `fadeMin` of that at `fadeFar` m, where dense joints otherwise merge into ink. All *guesses* by eye against
+// before/after shots of the kitchen, a bathroom and a façade (docs/verification/1957/).
+export const EDGE_LOOK = { strength: 0.2, shade: 0.55, fadeNear: 2.5, fadeFar: 10, fadeMin: 0.45 };
+
+// #2010: the soft contact shadow under other players (src/avatarshadow.js): one InstancedMesh of flat blobs for ALL avatars (a body
+// blob + one per shoe), so it is one extra draw call. Alphas / radii (m) are by eye against the sun-lit courtyard and a light floor (*guess*).
+// `lift`: a foot this far above its own ground [full, gone] fades its blob; `jump`: the same for the body blob (jump / flight / fall);
+// `range`: only players nearer than this (m) get one (the far figure and distant bodies are too small to matter).
+export const AVATAR_SHADOW = { bodyAlpha: 0.3, footAlpha: 0.42, bodyRadius: [0.36, 0.3], footRadius: [0.1, 0.19], lift: [0.03, 0.22], jump: [0.12, 0.6], range: 40, rise: 0.012, maxDrop: 1.5 };
+// #2018: wet hair and clothes in rain, a thin snow layer on head and shoulders in snowfall, derived locally per avatar from the weather and
+// indoor / outdoor (src/avatarweather.js; no network field). Rates are fractions (0 … 1) per second at full strength, all *guesses* by feel:
+// `wetRate` soaking in full rain (about 80 s), `dryIndoor` / `dryOutdoor` drying (about 5 min inside, 15 min outside without rain), `snowRate`
+// settling in full snowfall (about 100 s), `meltIndoor` (about 2.5 min), `meltOutdoor` per °C above freezing (a slow thaw outside), `meltToWet`
+// the share of melted snow that wets the clothes, `hail` the wetting of hail relative to rain, `maxGap` s the longest span integrated in one step
+// (a figure that was not drawn for a while catches up at most this far). Look: `darken` the cloth / hair colour factor when soaked, `skin` how
+// much of it skin takes, `rough` the roughness of a soaked surface, `snowRough` of the snow, `snowColor`, `snowUp` the world-normal.y range of
+// the surfaces snow rests on (shoulders and crown, not sleeves), `snowFrom` m above the torso bind point (nothing on legs / feet), `snowPatch` the
+// share of patchiness.
+export const AVATAR_WET = { wetRate: 0.0125, dryIndoor: 1 / 300, dryOutdoor: 1 / 900, snowRate: 0.01, meltIndoor: 1 / 150, meltOutdoor: 1 / 1500, meltToWet: 0.5, hail: 0.5, maxGap: 900,
+  darken: 0.55, skin: 0.35, rough: 0.22, snowRough: 0.88, snowColor: 0xeef3fa, snowUp: [0.45, 0.85], snowFrom: 0.38, snowPatch: 0.4 };
+
+// #2037: breath in the cold and a flushed, sweaty face after hard work (src/avatarbreath.js), all *guesses* by eye, not measured; no network
+// field. Exertion: `gym` = the effort of a gym pose (running = the gait's run share, both the #2031 face's cues); `heat` builds over `build` s
+// of full effort and cools over `cool` s; the flush / sheen ramp in over `flushAt` / `sheenAt` [from, full] of it; `maxDt` s the longest step.
+// Breath: `rate` [rest, hard] breaths/s (about 15 and 48 a minute), `heatBreath` the share of heat that keeps the breath fast after the effort,
+// an exhale (a puff) at `exhale` of each cycle. Visible from `warm` °C down, full at `cold` °C, at least `snowMin` while it snows; `mouth` [x, y, z]
+// m in the head bone's frame (between the lips and the nose); `density` [rest, running] the puff's peak opacity (times the cold), `speed`
+// [rest, running] m/s out of the mouth, `rise` m/s up at once, `drag` 1/s, `buoyancy` m/s²; `life` [rest, running] s, `size` [rest, running] m
+// (diameter) growing by `grow` [start, end], fading in over `fadeIn` of the life; `color` (linear) times the scene light level (#2017) times
+// `lightGain`, never below `minLevel`; `max` puffs in the shared pool. Skin (bind metres in the head frame, as AVATAR_SKIN_DETAIL): the flush
+// `flushColor` multiplies the albedo, full on the cheeks (`cheek` [x, y, front z, radius]), `flushFace` on the rest of the face, `flushBody` on
+// other bare skin; the sheen pulls roughness towards `sheenRough`, full on the forehead (`forehead` [y from, full at, front z]) and the nose
+// (`nose` [x, y, z, radius]), `sheenFace` elsewhere on the face, `sheenBody` on arms and legs.
+export const AVATAR_BREATH = { gym: 0.8, build: 30, cool: 75, maxDt: 0.25, flushAt: [0.3, 0.85], sheenAt: [0.45, 1],
+  rate: [0.25, 0.8], heatBreath: 0.6, exhale: 0.45, cold: -6, warm: 6, snowMin: 0.7, mouth: [0, 0.042, 0.12],
+  density: [0.5, 0.75], speed: [0.35, 0.6], rise: 0.03, drag: 2.2, buoyancy: 0.06, life: [1.7, 1.1], size: [0.08, 0.11], grow: [0.7, 2.7], fadeIn: 0.1,
+  color: [0.92, 0.95, 1], lightGain: 1, minLevel: 0.12, max: 96,
+  cheek: [0.056, 0.072, 0.06, 0.034], forehead: [0.125, 0.15, 0.05], nose: [0, 0.076, 0.12, 0.018],
+  flushColor: [1.08, 0.78, 0.76], flushFace: 0.45, flushBody: 0.18, sheenRough: 0.26, sheenFace: 0.3, sheenBody: 0.35 };
+/** #2034: procedural cloth folds and weave as a normal perturbation in the avatar's fragment shader (src/avatarcloth.js). All *guesses*,
+ * tuned by eye on tools/avatarcloth.html. Lengths in bind-pose metres. `bend`: joint angle (rad) where a joint's crease folds start / are full;
+ * `hip`: the thigh's forward swing (rad) for the lap / belly folds. `elbow` / `knee`: Gaussian half-width `w` of the fold band along the limb,
+ * `amp` the fold depth's multiplier, `tilt` how far the ridges fan back from the crease (rad of phase per unit of 1 − cos), `stretch` the share of the shallow pull lines on the
+ * outside of the joint. `belly` (the top's front above the hem), `lap` (the trousers' front over the hip crease; `slant` tilts its creases
+ * up towards the hips), `ankle`, `wrist`: bunched bands (centre `y`, half-width `w`, ridge `rate` rad/m, resting strength `rest`, the extra
+ * with the pose `pose`). `fade` / `weaveFade`: phase change per pixel (rad) over which folds / weave fade out (no shimmer at distance).
+ * `cavity`: how much a fold's trough darkens. `tops` / `pants`: per garment [fold amplitude m, fold rate rad/m, weave amplitude m, weave kind];
+ * weave kinds 0 jersey, 1 knit, 2 fleece, 3 denim twill, 4 fine twill; `weave[kind]` = [column width m, row height m, colour contrast]. */
+export const AVATAR_CLOTH = {
+  bend: [0.35, 1.7], hip: [0.35, 1.45],
+  elbow: { w: 0.07, tilt: 2.6, stretch: 0.35, amp: 2 }, knee: { w: 0.08, tilt: 2.2, stretch: 0.5, amp: 1.5 },
+  belly: { y: 0.95, w: 0.055, rate: 120, rest: 0.08, pose: 0.9 }, lap: { y: 0.73, w: 0.09, rate: 95, slant: 0.7, rest: 0.05, pose: 1 },
+  ankle: { y: 0.17, w: 0.05, rate: 150, rest: 0.4, pose: 0.5 }, wrist: { w: 0.03, rate: 170, rest: 0.3 },
+  fade: [0.5, 1.3], weaveFade: [0.9, 2.0], cavity: 0.38,
+  tops: { tshirt: [0.0048, 110, 0.00006, 0], sweater: [0.0058, 82, 0.00015, 1], hoodie: [0.0064, 84, 0.00012, 2] },
+  pants: { jeans: [0.0066, 76, 0.00016, 3], trousers: [0.0056, 88, 0.00008, 4] },
+  weave: [[0.0017, 0.0015, 0.04], [0.0055, 0.0042, 0.05], [0.006, 0.009, 0.03], [0.0035, 0.0035, 0.1], [0.002, 0.002, 0.04]],
+};
+
+/** #2015: the avatar's feet on the real ground (src/avatarfootik.js). Offsets are in the figure's units. */
+export const AVATAR_FOOT_IK = {
+  reach: 0.02, // m over the root the ground is searched from (Player.groundAt itself takes any floor up to PLAYER.stepUp above that: a stair riser, a kerb)
+  maxRise: 0.45, maxDrop: 0.55, // m a foot is raised / lowered at most from the root's level
+  fade: [0.1, 0.3], // m the root is over the ground below it: full foot adaption up to the first, none (jump, flight, drop) from the second
+  rate: 26, // 1/s: how fast a foot's height / pitch follow the ground (a swinging foot rises onto the next tread inside its swing)
+  rateStance: 70, // 1/s: the same for a foot on the ground (it rolls over a nosing: the sole must not sink into the next tread)
+  ease: 10, // 1/s: how fast the adaption fades in / out when the pose starts / ends
+  heel: 0.084, toe: 0.194, // m the sole's heel / toe from the ankle: where the ground's slope is read (the shoe, AVATAR_GAIT.shoe)
+  edgeSlope: 0.6, // a rise over the sole steeper than this (tan) is a step edge under the toe or heel: the foot stays level
+  lineTol: 0.01, lineShare: 0.1, // m + share of the heel-toe rise: how far the ankle's ground may lie off the heel-toe line (a ramp is straight; a stair edge is not)
+  edgeTol: 0.05, // m over the foot's ground the heel / toe ground is looked up from (so a riser ahead is not read as a slope)
+  maxPitch: 0.45, // rad: the steepest sole tilt
+  hipFollow: 0.5, // the share of the feet's mean height offset the hips follow (the reach clamp lowers them further)
+};
+
+// #2017 (src/avatarlight.js): other players' avatars get a light factor = the local zone's light level / what the scene lights deliver.
+// Levels: 1 = clear sunlit open ground; all *guess*, tuned by eye against day/night shots in the flat, the stairwell and outdoors.
+// `reference` / `sunShare`: the scene-light sum (hemi + ambient + fill + sunShare x sun) of a clear day; `min`/`max`: the factor's bounds;
+// `tau`: easing (s); `probe`: zone re-probe interval (s); `minScene`: lowest scene level divided by (night).
+export const AVATAR_LIGHT = { reference: 4.4, sunShare: 0.6, minScene: 0.12, min: 0.4, max: 2, tau: 0.4, probe: 0.25,
+  level: { overcastCut: 0.25, shade: 0.55, windowShare: 0.65, lamp: 0.35, night: 0.08, coreBase: 0.38, coreDay: 0.12, garage: 0.5, playroom: 0.6 },
+  // #2039: outdoor lamps at night (avatarlight.js lampLight; all *guess*, tuned by eye against night shots under / between the street
+  // lamps). `level`: the zone level a figure right under a lit lamp gains (the pupils); `rgb`: the street lamps' pool colour (#434,
+  // 0xffc887 in linear RGB); `gain`: the added light's strength on a surface facing up (its own colour × gain); `side` / `under`: the
+  // share on vertical / downward-facing surfaces; `chest`: m over the feet where the height above a lamp head starts to count;
+  // `bollard`: the courtyard bollards' strength against a street lamp (low, small pools).
+  lamp: { level: 0.12, rgb: [1, 0.578, 0.242], gain: 0.9, side: 0.6, under: 0.25, chest: 1.2, bollard: 0.4 } };
