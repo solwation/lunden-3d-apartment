@@ -53,3 +53,5 @@ moves under 1 cm with the lean). `Ghost.animate` 11–13 µs after vs 11–14 µ
 and fixed-pose measurements do not step a breath and stay as before; far figures (#1966) do not pose. Limits: amplitudes and
 timings are *guesses* by eye, not measured; the chest moves only on the body's front (no rib flare at the sides or back); hair
 lying on the shoulders follows the same field, a figure with crossed arms (#2035) can push its chest up to about 1 cm into them.
+
+Publicering: Pages/Worker success på `581233d`; bild-URL:er HTTP 200 före stängning.
