@@ -9848,6 +9848,27 @@ export const WET_GROUND = {
   },
   puddle: { scale: [3.4, 1.2], dark: 0.5, rough: 0.05, edge: 0.04, flat: [0.985, 0.998] },
 };
+// #2105: fallen autumn leaves on the outdoor ground (src/leaflitter.js): a fragment patch chained onto the lit ground materials
+// (lawns via grass.js, and every surface wetground.js patches: asphalt, paving, kerbs, gravel, road paint) draws small procedural
+// leaves in two jittered world-space grids, `cells` m apart, each leaf `len` (half-length, share of a cell) × `wide` (of its length).
+// Where they get smaller than a pixel (`aa` m per pixel: full detail below aa[0], only their mean tint from aa[1]) they fade to
+// the same mean colour, so the far ground keeps the litter as a tint without shimmering. How much lies where comes from one small
+// R8 density map over WALK (`cell` m texels, baked once on the first autumn month): a sparse patchy `base` everywhere, up to `tree`
+// under each site crown (crown radius × `spread`, densest at the trunk) and a `kerb` band `width` m either side of the local roads'
+// edges (the gutter and the kerb's foot). `months`: the share of that full litter by month (none in summer, the snow months and
+// spring; growing through the autumn), `colors` the month's [fresh, old] leaf tones (sRGB; September's yellow-greens, October's
+// yellows / oranges / reds, November's browns, like the crowns in SEASON.trees). `kinds`: how much of it each surface keeps (cars
+// and brooms clear the asphalt; blades hide some on the lawn). `mulch`: past mulch[0] density the gaps fill with a broken brown
+// layer up to mulch[1]. `rough`: the leaves' roughness. `minLevel`: below this quality level and on phones only the mean tint is
+// drawn (no leaf shapes). The street's own instanced pavement leaves (street.js, SITE.street.leaves) follow `months` too. All *guess*.
+export const LEAF_LITTER = {
+  months: { 9: 0.2, 10: 0.6, 11: 1 },
+  colors: { 9: [0xc4b04c, 0x8c8a3e], 10: [0xdb9a2c, 0xa5462b], 11: [0xa86a31, 0x5e4229] },
+  cells: [0.13, 0.17], len: [0.24, 0.34], wide: 0.5, aa: [0.012, 0.04],
+  cell: 1, base: 0.14, tree: 1, spread: 1.25, kerb: 0.8, width: 1.1,
+  kinds: { grass: 0.85, gravel: 0.8, paving: 0.9, asphalt: 0.55, paint: 0.45 },
+  mulch: [0.45, 0.4], rough: 0.85, minLevel: 1, seed: 2105,
+};
 // #2095: rendered (putsade) façade realism: Hus L's white render (exterior.js `renders`) and the Å-husen A/B/C's white
 // loggia / recess walls (surroundings.js loggias). One small shared linear map (`size` px square over `tile` m of wall,
 // world-projected per face) packs a fine render grain as bump height (R) and a slight roughness variation (G), and a second

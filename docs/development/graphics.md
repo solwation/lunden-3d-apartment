@@ -679,6 +679,16 @@ src/wetground.js       wet ground in and after rain (#2099, WET_GROUND, all *gue
                        puddles add DayCycle's own horizon/zenith colour by Schlick Fresnel (no mirror pass). Wet = 0 skips every branch (dry pixels
                        unchanged); the `puddles` quality knob turns puddles off at level 0 and on phones. `tools/wetgroundtest.mjs`,
                        [before/after](../verification/2099/README.md).
+src/leaflitter.js      fallen autumn leaves on the ground (#2105, LEAF_LITTER, all *guess*): `litterAmount(month)` is the share of full litter (Sep < Oct
+                       < Nov; none in summer, spring and SEASON.snowMonths). `LeafLitter` (main.js, a seasons hook) writes it and the month's [fresh,
+                       old] leaf tones to shared uniforms and, on the first autumn month, bakes one R8 density map over WALK (1 m texels): a sparse
+                       patchy base, more under each `aoTrees` crown (densest at the trunk) and a band along the local roads' kerbs (path roads' edges and the rectangular forecourt's outline). `leafLitter(material,
+                       kind)` chains a fragment-only patch (cache key `|litter2105-<kind>`) onto the lawns (grass.js; masked off the river bed's mud) and, from
+                       `wetGround`, every exposed ground surface, wrapped outside the wet patch so its step runs first (wet leaves darken too): two
+                       jittered world grids of small pinched-ellipse leaves on flat ground, fading by pixel footprint into their mean tint (plus a
+                       broken brown mulch where it is densest), so the far ground keeps the colour without shimmer. Amount 0 skips every branch. The
+                       `leafLitter` quality knob keeps only the tint at level 0 and on phones. The street's instanced pavement leaves (street.js) thin
+                       with `litterAmount` too. `tools/leaflittertest.mjs`, [before/after](../verification/2105/README.md).
 src/groundglow.js      light without lights (#434, #433): additive fall-off decals — `poolGeometry` (an ellipse draped over `groundY`),
                        `washGeometry` (an upright one on a wall; #1092: `holes` = the wall's openings, cut out so the glow lights the brick round a window/door, never its glass — the front-door and patio/terrace washes pass them; the Å-husen's loggia washes need none: their glazing stands in front of the wash and hides it), `glowMaterial` (one per set, opacity = the level), `fadeGlow`
                        #1525: courtyard night ground light — every courtyard bollard gets a warm pool (`COURTYARD.bollards.pool`,

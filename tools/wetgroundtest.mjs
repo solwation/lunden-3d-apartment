@@ -71,7 +71,7 @@ test('wetGround: chains the existing callback, unique keys per kind, fragment on
   assert.equal((s.fragmentShader.match(/uniform vec3 uGroundWet/g) || []).length, 1);
   for (const a of ['roughnessmap_fragment', 'normal_fragment_maps', 'lights_fragment_end']) assert.ok(new RegExp(`#include <${a}>\\n[^]*?wet`).test(s.fragmentShader), a);
   assert.equal(s.vertexShader, THREE.ShaderLib.physical.vertexShader); assert.ok(hasNativeVertexCompile(m));
-  assert.equal(m.customProgramCacheKey(), 'own-key|wet2099-asphalt');
+  assert.match(m.customProgramCacheKey(), /^own-key\|wet2099-asphalt(\||$)/); // (#2105: the leaf litter may follow it)
   const plain = wetGround(new THREE.MeshStandardMaterial(), 'gravel'), paint = wetGround(new THREE.MeshStandardMaterial(), 'paint');
   assert.notEqual(plain.customProgramCacheKey(), paint.customProgramCacheKey());
   // a later wrapper (lampwash.js style) keeps it once

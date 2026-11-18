@@ -1,0 +1,332 @@
+{
+ "phase": "after",
+ "rev": "HEAD~1",
+ "shots": [
+  {
+   "view": "courtyard",
+   "month": 7,
+   "detail": 1,
+   "file": "after-courtyard-m7.png",
+   "near": 30,
+   "calls": 244,
+   "triangles": 768356,
+   "textures": 58,
+   "programs": 92,
+   "quality": 0,
+   "litter": [
+    0,
+    0,
+    0
+   ],
+   "patched": 23
+  },
+  {
+   "view": "courtyard",
+   "month": 9,
+   "detail": 1,
+   "file": "after-courtyard-m9.png",
+   "near": 30,
+   "calls": 245,
+   "triangles": 769756,
+   "textures": 58,
+   "programs": 96,
+   "quality": 0,
+   "litter": [
+    0.2,
+    0,
+    0
+   ],
+   "patched": 23
+  },
+  {
+   "view": "courtyard",
+   "month": 10,
+   "detail": 1,
+   "file": "after-courtyard-m10.png",
+   "near": 30,
+   "calls": 245,
+   "triangles": 772556,
+   "textures": 58,
+   "programs": 96,
+   "quality": 0,
+   "litter": [
+    0.6,
+    0,
+    0
+   ],
+   "patched": 23
+  },
+  {
+   "view": "courtyard",
+   "month": 11,
+   "detail": 1,
+   "file": "after-courtyard-m11.png",
+   "near": 30,
+   "calls": 245,
+   "triangles": 772920,
+   "textures": 58,
+   "programs": 97,
+   "quality": 0,
+   "litter": [
+    1,
+    0,
+    0
+   ],
+   "patched": 23
+  },
+  {
+   "view": "courtyard",
+   "month": 11,
+   "detail": 0,
+   "file": "after-courtyard-m11-tint.png",
+   "near": 30,
+   "calls": 245,
+   "triangles": 772920,
+   "textures": 58,
+   "programs": 97,
+   "quality": 0,
+   "litter": [
+    1,
+    0,
+    0
+   ],
+   "patched": 23
+  },
+  {
+   "view": "courtyard",
+   "month": 1,
+   "detail": 1,
+   "file": "after-courtyard-m1.png",
+   "near": 30,
+   "calls": 241,
+   "triangles": 730400,
+   "textures": 58,
+   "programs": 108,
+   "quality": 0,
+   "litter": [
+    0,
+    0,
+    0
+   ],
+   "patched": 23
+  },
+  {
+   "view": "park",
+   "month": 7,
+   "detail": 1,
+   "file": "after-park-m7.png",
+   "near": 14,
+   "calls": 81,
+   "triangles": 522511,
+   "textures": 37,
+   "programs": 62,
+   "quality": 0,
+   "litter": [
+    0,
+    0,
+    0
+   ],
+   "patched": 23
+  },
+  {
+   "view": "park",
+   "month": 9,
+   "detail": 1,
+   "file": "after-park-m9.png",
+   "near": 14,
+   "calls": 81,
+   "triangles": 522511,
+   "textures": 37,
+   "programs": 64,
+   "quality": 0,
+   "litter": [
+    0.2,
+    0,
+    0
+   ],
+   "patched": 23
+  },
+  {
+   "view": "park",
+   "month": 10,
+   "detail": 1,
+   "file": "after-park-m10.png",
+   "near": 14,
+   "calls": 81,
+   "triangles": 522475,
+   "textures": 37,
+   "programs": 64,
+   "quality": 0,
+   "litter": [
+    0.6,
+    0,
+    0
+   ],
+   "patched": 23
+  },
+  {
+   "view": "park",
+   "month": 11,
+   "detail": 1,
+   "file": "after-park-m11.png",
+   "near": 14,
+   "calls": 80,
+   "triangles": 521659,
+   "textures": 37,
+   "programs": 65,
+   "quality": 0,
+   "litter": [
+    1,
+    0,
+    0
+   ],
+   "patched": 23
+  },
+  {
+   "view": "park",
+   "month": 11,
+   "detail": 0,
+   "file": "after-park-m11-tint.png",
+   "near": 14,
+   "calls": 80,
+   "triangles": 521659,
+   "textures": 37,
+   "programs": 65,
+   "quality": 0,
+   "litter": [
+    1,
+    0,
+    0
+   ],
+   "patched": 23
+  },
+  {
+   "view": "park",
+   "month": 1,
+   "detail": 1,
+   "file": "after-park-m1.png",
+   "near": 14,
+   "calls": 78,
+   "triangles": 481735,
+   "textures": 37,
+   "programs": 74,
+   "quality": 0,
+   "litter": [
+    0,
+    0,
+    0
+   ],
+   "patched": 23
+  },
+  {
+   "view": "street",
+   "month": 7,
+   "detail": 1,
+   "file": "after-street-m7.png",
+   "near": 4,
+   "calls": 234,
+   "triangles": 728551,
+   "textures": 63,
+   "programs": 96,
+   "quality": 0,
+   "litter": [
+    0,
+    0,
+    0
+   ],
+   "patched": 23
+  },
+  {
+   "view": "street",
+   "month": 9,
+   "detail": 1,
+   "file": "after-street-m9.png",
+   "near": 4,
+   "calls": 235,
+   "triangles": 729951,
+   "textures": 63,
+   "programs": 99,
+   "quality": 0,
+   "litter": [
+    0.2,
+    0,
+    0
+   ],
+   "patched": 23
+  },
+  {
+   "view": "street",
+   "month": 10,
+   "detail": 1,
+   "file": "after-street-m10.png",
+   "near": 4,
+   "calls": 235,
+   "triangles": 732751,
+   "textures": 63,
+   "programs": 99,
+   "quality": 0,
+   "litter": [
+    0.6,
+    0,
+    0
+   ],
+   "patched": 23
+  },
+  {
+   "view": "street",
+   "month": 11,
+   "detail": 1,
+   "file": "after-street-m11.png",
+   "near": 4,
+   "calls": 235,
+   "triangles": 734123,
+   "textures": 63,
+   "programs": 99,
+   "quality": 0,
+   "litter": [
+    1,
+    0,
+    0
+   ],
+   "patched": 23
+  },
+  {
+   "view": "street",
+   "month": 11,
+   "detail": 0,
+   "file": "after-street-m11-tint.png",
+   "near": 4,
+   "calls": 235,
+   "triangles": 734123,
+   "textures": 63,
+   "programs": 99,
+   "quality": 0,
+   "litter": [
+    1,
+    0,
+    0
+   ],
+   "patched": 23
+  },
+  {
+   "view": "street",
+   "month": 1,
+   "detail": 1,
+   "file": "after-street-m1.png",
+   "near": 4,
+   "calls": 231,
+   "triangles": 690259,
+   "textures": 63,
+   "programs": 104,
+   "quality": 0,
+   "litter": [
+    0,
+    0,
+    0
+   ],
+   "patched": 23
+  }
+ ],
+ "errors": [],
+ "note": "street view re-run after the forecourt kerb outline was added (same revision as committed)"
+}

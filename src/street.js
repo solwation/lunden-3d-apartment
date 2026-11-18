@@ -7,6 +7,7 @@ import { registerSeasonal } from './seasons.js';
 import { wetGround } from './wetground.js';
 import { streetWear, addRoadFrame } from './streetwear.js';
 import { asphaltTextures, asphaltUV } from './asphaltsurface.js';
+import { litterAmount } from './leaflitter.js';
 import { samples, onRoad, along, filletOutline, nearestS, pathStrip, vehicleTrim } from './roads.js';
 import { glowMaterial, poolGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { buildLampHalos, fadeHalos, poolCore } from './lamphalo.js';
@@ -345,9 +346,9 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
   // fallen leaves on the pavements and verges in the autumn months (one instanced mesh)
   let seed = 9; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   const leaf = new THREE.InstancedMesh(new THREE.CircleGeometry(0.045, 5).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ roughness: 0.9, side: THREE.DoubleSide }), S.leaves.n);
-  const per = S.leaves.n / S.leaves.areas.length, c = new THREE.Color();
+  const c = new THREE.Color();
   for (let i = 0; i < S.leaves.n; i++) {
-    const [x0, x1, z0, z1] = S.leaves.areas[Math.floor(i / per)];
+    const [x0, x1, z0, z1] = S.leaves.areas[i % S.leaves.areas.length]; // (#2105: interleaved, so a smaller count thins every area)
     const lx = x0 + rnd() * (x1 - x0), ly = 0.02 + rnd() * 0.004, lz = z0 + rnd() * (z1 - z0); // on the ground (#256)
     m.compose(new THREE.Vector3(lx, ly + groundY(lx, lz), lz), q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * 6.3), one.set(0.7 + rnd() * 0.7, 1, 0.5 + rnd() * 0.5));
     leaf.setMatrixAt(i, m);
@@ -355,7 +356,7 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
   }
   leaf.receiveShadow = true;
   group.add(leaf);
-  registerSeasonal((month) => { leaf.visible = S.leaves.months.includes(month); });
+  registerSeasonal((month) => { leaf.count = Math.round(S.leaves.n * Math.min(1, litterAmount(month))); leaf.visible = S.leaves.months.includes(month) && leaf.count > 0; }); // #2105: more towards late autumn
   let phase = 0, last = performance.now();
   return {
     object: group,

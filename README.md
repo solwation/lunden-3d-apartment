@@ -1,5 +1,6 @@
 # Kv. Lunden L1007 i 3D
 
+På hösten ligger nedfallna löv i höstens färger glest på gräs och gångar, tätare under träden och längs kantstenen, och fler ju senare på hösten det blir; vintern och våren är marken fri från löv. [Före/efter gård, park och gata](docs/verification/2105/README.md).
 Gatorna ser använda ut: svagt mörkare och blankare hjulspår, enstaka smala sprickor (några tätade med svart bitumen), sprickor längs vägkanten, mörkare lagningar och övergångsställets vita fält slitna där hjulen går. [Före/efter gata, korsning och regn](docs/verification/2103/README.md).
 
 Gatlyktorna har en mjuk varm gloria runt lamphuvudet på natten och en ljusare ljuspöl rakt under, lite starkare på blöt gata. [Före/efter nära och på avstånd](docs/verification/2104/README.md).

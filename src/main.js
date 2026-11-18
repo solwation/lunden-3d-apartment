@@ -43,7 +43,7 @@ import { installEntrancePlantBatch } from './entranceplantbatch.js';
 import { runCheat, cheatList, isCommand } from './cheats.js';
 import { cleanHome, cleanEverything } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
-import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, CLOUD_SHADOW, STANDARD, SHADOW_BOX, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING, VIEW_LOD, VIEW_NEAR, BIRDS, WET_GROUND } from './config.js';
+import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, CLOUD_SHADOW, STANDARD, SHADOW_BOX, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING, VIEW_LOD, VIEW_NEAR, BIRDS, WET_GROUND, LEAF_LITTER } from './config.js';
 import { fetchStartupJSON } from './startuprecovery.js';
 import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
 import { decideResourceProfile, resourceProfile, resourceProfileInfo } from './resourceprofile.js';
@@ -108,7 +108,7 @@ import { Footprints } from './footprints.js';
 import { SHOE, PAW } from './footprinttrail.js';
 import { RiverFish } from './riverfish.js';
 import { Fishing } from './fishing.js'; // #1753: the rod under the road bridge, bites and caught fish
-import { onRoad, onWalk, onVehicle } from './roads.js';
+import { onRoad, onWalk, onVehicle, samples as roadSamples } from './roads.js';
 import { onParkPath } from './riverpark.js';
 import { bindGroundAOShadow } from './groundao.js';
 import { Jetpack } from './jetpack.js';
@@ -216,6 +216,7 @@ import { Nests } from './nest.js';
 import { LightModes } from './lightmodes.js';
 import { Weather } from './weather.js';
 import { GroundWetness, bindWetSky } from './wetground.js';
+import { LeafLitter } from './leaflitter.js';
 import { createRealWeather } from './realweather.js';
 import { Posters, HeldDrawing, paperOnly } from './posters.js';
 import { PaperBalls } from './paperball.js';
@@ -489,6 +490,7 @@ const day = new DayCycle({ scene, camera, renderer, lights: { sun, hemi, ambient
 const weather = new Weather(scene, camera, day, params0.get('weather')); // rain in spring and autumn, thunder in late summer (#248)
 const groundWet = new GroundWetness(weather, day); // #2099: wet ground in and after rain (shared uniform of the ground materials)
 bindWetSky(day.uniforms.uHorizon.value, day.uniforms.uZenith.value);
+const leafLitter = new LeafLitter({ trees: () => aoTrees, roads: () => SITE.roads.filter((r) => r.path || r.x1 !== undefined).map((r) => (r.path ? roadSamples(r) : [[r.x0, r.z0], [r.x1, r.z0], [r.x1, r.z1], [r.x0, r.z1], [r.x0, r.z0]].map(([x, z]) => ({ x, z, w: 0 })))) }).register(); // #2105: fallen autumn leaves on the ground (month-driven shared uniforms)
 const balloon = new Balloon({ scene, camera, forced: params0.has('balloon') }); world.balloon = balloon; // #1646: the hot-air balloon above the cloud deck (hidden / no work outside its scheduled window)
 const birds = params0.has('nobirds') ? null : new Birds({ scene, camera, day, center: BIRDS.center, lowMemory, count: params0.has('birds') ? Number(params0.get('birds')) : null }); // #1252: gulls circling by day
 weather.real = createRealWeather(params0); // real weather for the date, fetched after the first frames; the draw stays the fallback (#674)
@@ -4047,6 +4049,8 @@ quality.register('weather', { // rain streaks / snowflakes / hail drawn (#248)
   apply: (l) => { weather.particleScale = QUALITY.particles[l]; }, state: (l) => `particles ×${QUALITY.particles[l]}`, cost: 'particle updates + overdraw' });
 quality.register('puddles', { // #2099: the wet ground's puddles (the darker, glossier film stays at every level); never on phones
   apply: (l) => { groundWet.puddles = !lowMemory && l >= WET_GROUND.puddleMinLevel; }, state: () => (groundWet.puddles ? 'on' : 'off'), cost: 'two value-noise lookups per wet ground pixel' });
+quality.register('leafLitter', { // #2105: the fallen leaves' shapes (the mean autumn tint stays at every level); never on phones
+  apply: (l) => { leafLitter.detail = !lowMemory && l >= LEAF_LITTER.minLevel; }, state: () => (leafLitter.detail ? 'leaves' : 'tint'), cost: 'two leaf-grid lookups per near ground pixel in autumn' });
 /** Feed a frame time to the level (tests drive it directly). */
 function adaptResolution(dt) { return quality.update(dt); }
 function showPerf() {

@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { WET_GROUND as W, SEASON } from './config.js';
 import { rememberFragmentCompile } from './vertexcompile.js';
+import { leafLitter } from './leaflitter.js';
 
 /** The uniforms every patched material shares: uGroundWet = (film, puddles, 0), the sky's horizon / zenith colours. */
 export const wetUniforms = {
@@ -139,5 +140,5 @@ export function wetGround(material, kind) {
   const base = key === THREE.Material.prototype.customProgramCacheKey ? () => before.toString() : key;
   m.customProgramCacheKey = function () { return `${base.call(this)}|wet2099-${kind}`; };
   m.needsUpdate = true;
-  return m;
+  return leafLitter(m, kind); // #2105: autumn leaves on the same exposed ground (the outer wrapper inserts its step first: wet leaves darken and gloss too)
 }

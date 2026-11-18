@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GRASS as G, SEASON } from './config.js';
 import { registerSeasonal, registerSnow } from './seasons.js';
 import { applyGrassPatches, grassBlendGLSL, grassTufts, linearMean } from './grassdetail.js';
+import { leafLitter } from './leaflitter.js';
 
 let texture;
 /** One shared small seamless detail map; neutral straw/leaf tones are tinted by each lawn's seasonal colour. */
@@ -97,6 +98,7 @@ export function grassMaterial(color = G.summer, bed = null) {
         }` : ''}`);
   };
   material.customProgramCacheKey = () => (bed ? `grass-patches-688-bed-${bed.color}` : 'grass-patches-688');
+  leafLitter(material, 'grass', bed ? '1.0 - grassBed' : ''); // #2105: fallen autumn leaves on the lawns (not on the river bed's mud)
   registerSnow(material, SEASON.snow.ground); // seasons removes/reinstates the shared detail map under snow
   registerSeasonal((month) => {
     snow.value = SEASON.snowMonths.includes(month) ? 1 : 0;
