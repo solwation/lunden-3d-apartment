@@ -18,14 +18,14 @@ kantljus tas från fragmentets omgivnings-/himmelsljus, så det slocknar i skymn
 
 | Vy | Före | Efter |
 |---|---|---|
-| Hus L loftgång, nära räcket, dag | ![](before/loft-dag-before.jpg) | ![](loft-dag-after.jpg) |
-| Hus L loftgång, skymning | ![](before/loft-skymning-before.jpg) | ![](loft-skymning-after.jpg) |
-| Takterrass Hus L mot gården och ABC, dag | ![](before/terrass-dag-before.jpg) | ![](terrass-dag-after.jpg) |
-| Takterrass, skymning | ![](before/terrass-skymning-before.jpg) | ![](terrass-skymning-after.jpg) |
-| Busshållplatsen, dag | ![](before/busshallplats-dag-before.jpg) | ![](busshallplats-dag-after.jpg) |
-| Busshållplatsen, skymning | ![](before/busshallplats-skymning-before.jpg) | ![](busshallplats-skymning-after.jpg) |
-| Vanlig vy: Hus A:s entré från gården, dag | ![](before/gard-dag-before.jpg) | ![](gard-dag-after.jpg) |
-| Vanlig vy, skymning | ![](before/gard-skymning-before.jpg) | ![](gard-skymning-after.jpg) |
+| Hus L loftgång, nära räcket, dag | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/da83c3a9610a284441ed8eac812d94df368f8525/docs/verification/2089/before/loft-dag-before.jpg) | ![](loft-dag-after.jpg) |
+| Hus L loftgång, skymning | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/da83c3a9610a284441ed8eac812d94df368f8525/docs/verification/2089/before/loft-skymning-before.jpg) | ![](loft-skymning-after.jpg) |
+| Takterrass Hus L mot gården och ABC, dag | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/da83c3a9610a284441ed8eac812d94df368f8525/docs/verification/2089/before/terrass-dag-before.jpg) | ![](terrass-dag-after.jpg) |
+| Takterrass, skymning | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/da83c3a9610a284441ed8eac812d94df368f8525/docs/verification/2089/before/terrass-skymning-before.jpg) | ![](terrass-skymning-after.jpg) |
+| Busshållplatsen, dag | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/da83c3a9610a284441ed8eac812d94df368f8525/docs/verification/2089/before/busshallplats-dag-before.jpg) | ![](busshallplats-dag-after.jpg) |
+| Busshållplatsen, skymning | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/da83c3a9610a284441ed8eac812d94df368f8525/docs/verification/2089/before/busshallplats-skymning-before.jpg) | ![](busshallplats-skymning-after.jpg) |
+| Vanlig vy: Hus A:s entré från gården, dag | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/da83c3a9610a284441ed8eac812d94df368f8525/docs/verification/2089/before/gard-dag-before.jpg) | ![](gard-dag-after.jpg) |
+| Vanlig vy, skymning | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/da83c3a9610a284441ed8eac812d94df368f8525/docs/verification/2089/before/gard-skymning-before.jpg) | ![](gard-skymning-after.jpg) |
 
 Pixeldiff efter mot före (max av 255 / pixlar > 5): loftgång dag 36 / 17 182, skymning 8 / 25;
 terrass dag 53 / 1 429, skymning 11 / 3; busshållplats dag 112 / 31 229 (takets ovansida och
@@ -61,3 +61,5 @@ som förut: kantljuset följer omgivningsljuset och lyser inte själv.
 Ingen ny draw, textur, uniform, ljus, render target eller per-frame-arbete; geometri, sammanslagning,
 instansering och fjärr-LOD orörda. En extra programvariant per materialtyp (en gemensam nyckel),
 ~40 ALU-instruktioner per räckesfragment (två brusfunktioner, derivator). Ingen fysisk enhet testad.
+
+Publicering: Pages/Worker success på `da83c3a`; före-bilder borttagna vid stängning och visas från den commiten.
