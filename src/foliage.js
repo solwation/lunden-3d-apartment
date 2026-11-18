@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { FOLIAGE as F } from './config.js';
 import { lowMemory } from './lowmemory.js';
 import { patchDitherLod, lodDepthMaterial } from './lod.js';
+import { patchSiteWind, siteWindLeafDepth } from './sitewind.js'; // #2101
 
 // Tree crowns and shrubs out of leaf cards (#679): instead of a flat-shaded icosahedron, every crown lobe is a slightly
 // lumpy opaque leaf mass (the "core", so a crown still reads as a full volume when the mipmapped cards thin out at a
@@ -136,9 +137,22 @@ export function leafMaterial() {
  * @returns {{ material: THREE.Material, depth: THREE.Material }}
  */
 export function lodLeafMaterial({ far, range }) {
-  const material = patchDitherLod(makeLeafMaterial(), { far, range });
+  // #2101: both levels and their shadow depth sway with the site wind (src/sitewind.js, the same GLSL and uniforms)
+  const material = patchDitherLod(patchSiteWind(makeLeafMaterial(), 'lobe'), { far, range });
   material.name = far ? 'foliage-leaves-far' : 'foliage-leaves-lod';
-  return { material, depth: lodDepthMaterial({ far, range, map: material.map, alphaTest: material.alphaTest, side: THREE.DoubleSide }) };
+  return { material, depth: patchSiteWind(lodDepthMaterial({ far, range, map: material.map, alphaTest: material.alphaTest, side: THREE.DoubleSide }), 'lobe') };
+}
+
+let windLeaf = null;
+/**
+ * #2101: the leaf material swaying with the site wind (no LOD) and its matching shadow depth material, for free-standing
+ * crowns such as the courtyard perennials. `leafMaterial()` itself stays still (wall vines, the far southern woodland).
+ * @returns {{ material: THREE.Material, depth: THREE.Material }}
+ */
+export function windLeafMaterial() {
+  if (windLeaf) return windLeaf;
+  const material = patchSiteWind(makeLeafMaterial(), 'lobe'); material.name = 'foliage-leaves-wind';
+  return windLeaf = { material, depth: siteWindLeafDepth(material) };
 }
 
 const lobes = new Map();

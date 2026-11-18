@@ -7034,6 +7034,22 @@ export const HUS_L_DOWNPIPES = {
 
 // #518: visual animation assumptions, not measured weather. Metres of foliage height scale the sway;
 // opening progress gates wind, rain/snow/hail strengthen it; easing prevents abrupt changes.
+// #2101: outdoor vegetation sway (src/sitewind.js): tree crowns / shrubs (leaf-card lobes), courtyard perennials, river reeds and
+// bank tussocks. No measured wind exists (Weather has none): every number is a visual *guess* by eye. `dir`: downwind in x/z
+// (a prevailing south-westerly blows towards the north-east, +x / −z). Power 0…1 = `calm` + `overcast`·overcast + `rain`·rain
+// (+ `storm`), eased over `easeSeconds`. `crown`: m of sway per m of lobe height (`amp`, the lobe's height capped at `maxSize`),
+// `base` share at the lobe's foot (1 at its top), `freq` rad/s, `flutter` m of extra card flutter from radius `cardFrom` out at
+// `flutterFreq`. `bend`: m per m² of stalk height. `lean` steady downwind lean, `side` crosswind share, `harmonic` second sine,
+// `gust` slow downwind gust fronts (rad/s, rad/m, depth), `phase` rad/m across the site. `maxDisplacement` m clamps every offset
+// (and widens the culling boxes by as much).
+export const SITE_WIND = {
+  dir: [0.71, -0.71], calm: 0.12, overcast: 0.18, rain: 0.3, storm: 0.6, easeSeconds: 4,
+  crown: { amp: 0.06, maxSize: 4, base: 0.35, freq: 0.9, flutter: 0.03, flutterFreq: 5.3, cardFrom: 0.5 },
+  bend: { amp: 0.16, freq: 1.5 },
+  lean: 0.35, side: 0.3, harmonic: 0.35, gust: { freq: 0.31, wave: 0.06, depth: 0.45 }, phase: [0.23, 0.31],
+  maxDisplacement: 0.35,
+};
+
 export const PLANT_WIND={calm:.025,wetBoost:2,stormBoost:.5,easeSeconds:1.2,sleepThreshold:.00001,
   heightCap:1.5,maxDisplacement:.06,variationMin:.75,variationRange:.4,speedMin:1.1,speedRange:.65};
 

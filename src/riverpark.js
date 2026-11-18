@@ -9,6 +9,7 @@ import { inPoly as inPaddockPoly, outline as paddockOutline, ringDist as paddock
 import { registerSnow, registerSeasonal } from './seasons.js';
 import { gravelMaterial, gravelUV } from './gravelsurface.js';
 import { wetGround } from './wetground.js';
+import { patchSiteWind, siteWindBounds } from './sitewind.js'; // #2101
 const P = SITE.riverPark;
 const random = (seed) => () => ((seed = seed * 16807 % 2147483647) / 2147483647);
 const inside = (x,z,poly) => { let yes=false; for(let i=0,j=poly.length-1;i<poly.length;j=i++) {
@@ -224,7 +225,7 @@ export function buildRiverPark(ground, terrain=ground) {
   const bridgeGeo=mergeGeometries(wood.map(g=>g.toNonIndexed()));bridgeGeo.rotateY(Math.atan2(dx,dz)).translate((ax+bx)/2,0,(az+bz)/2);
   const bridge=new THREE.Mesh(bridgeGeo,new THREE.MeshStandardMaterial({color:0x75634b,roughness:1}));bridge.name='park-timber-bridge';bridge.castShadow=bridge.receiveShadow=true;group.add(bridge);
   // Low waterside growth follows the actual slope. No floating planar green band or transparent layers.
-  const pos=[];parkShoreFeet.length=0;
+  const pos=[],bend=[];parkShoreFeet.length=0; // #2101: bend = m above the tuft's foot per vertex (src/sitewind.js 'bend')
   const tufts=(p,rand,count)=>{const start=parkShoreFeet.length;
   for(let k=0;k<count*20&&parkShoreFeet.length-start<count;k++) {
     const i=Math.floor(rand()*(p.length-1)),t=rand(),[a,b]=p[i],[c,d]=p[i+1],cx=a+(c-a)*t,cz=b+(d-b)*t,r=riverAt(cx,cz);
@@ -232,7 +233,7 @@ export function buildRiverPark(ground, terrain=ground) {
     const y=ground(x,z);if(y<waterYAt(x,z)+.03||!inZone(x,z)||onRoad(x,z,1)||onParkPath(x,z,.5)||parkDeckAt(x,z)!==null||parkFillFootprint(x,z,.5)||deckAt(x,z)!==null||underpassAt(x,z))continue;
     const h=P.shoreHeight[0]+rand()*(P.shoreHeight[1]-P.shoreHeight[0]);parkShoreFeet.push({x,z,y,h});
     for(let j=0;j<P.shoreLeaves;j++){const a=j*Math.PI*2/P.shoreLeaves+rand(),d=P.shoreRadius[0]+rand()*(P.shoreRadius[1]-P.shoreRadius[0]);
-      pos.push(x+Math.cos(a)*d,y,z+Math.sin(a)*d,x,y+h,z,x+Math.cos(a+.9)*d,y,z+Math.sin(a+.9)*d);}
+      pos.push(x+Math.cos(a)*d,y,z+Math.sin(a)*d,x,y+h,z,x+Math.cos(a+.9)*d,y,z+Math.sin(a+.9)*d);bend.push(0,h,0);}
   }};
   tufts(oldPath,random(2533),P.shoreCount);
   if(upPath.length>1)tufts(upPath,random(P.upstream.seed),P.upstream.shore); // #1790: the upstream banks, after the #533 tufts
@@ -244,12 +245,12 @@ export function buildRiverPark(ground, terrain=ground) {
     const off=Math.max(.3,r.width/2-inner+rr()*(inner+V.edge[2])),side=rr()<.5?-1:1,x=at.cx+r.nx*off*side,z=at.cz+r.nz*off*side;
     if(deckAt(x,z)!==null||underpassAt(x,z)||onParkPath(x,z,.5)||onRoad(x,z,1))continue;
     const y=ground(x,z),h=V.height[0]+rr()*(V.height[1]-V.height[0]);if(y+h<waterYAt(x,z)+.4)continue;parkReedFeet.push({x,z,y,h});
-    for(let j=0;j<V.leaves;j++){const a=j*Math.PI*2/V.leaves+rr(),d=V.radius[0]+rr()*(V.radius[1]-V.radius[0]),lean=.15+rr()*.25;
-      pos.push(x+Math.cos(a)*d,y,z+Math.sin(a)*d,x+Math.cos(a+.4)*lean,y+h*(.75+rr()*.25),z+Math.sin(a+.4)*lean,x+Math.cos(a+.5)*d,y,z+Math.sin(a+.5)*d);}
+    for(let j=0;j<V.leaves;j++){const a=j*Math.PI*2/V.leaves+rr(),d=V.radius[0]+rr()*(V.radius[1]-V.radius[0]),lean=.15+rr()*.25,top=h*(.75+rr()*.25);
+      pos.push(x+Math.cos(a)*d,y,z+Math.sin(a)*d,x+Math.cos(a+.4)*lean,y+top,z+Math.sin(a+.4)*lean,x+Math.cos(a+.5)*d,y,z+Math.sin(a+.5)*d);bend.push(0,top,0);}
   }
-  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.computeVertexNormals();
-  const shoreMat=new THREE.MeshStandardMaterial({color:0x6e8342,roughness:1,side:THREE.DoubleSide});
+  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setAttribute('siteWindBend',new THREE.Float32BufferAttribute(bend,1));geo.computeVertexNormals();
+  const shoreMat=patchSiteWind(new THREE.MeshStandardMaterial({color:0x6e8342,roughness:1,side:THREE.DoubleSide}),'bend'); // #2101: the tips bend in the wind
   registerSeasonal(month=>shoreMat.color.setHex(SEASON.snowMonths.includes(month)?0xaba590:month>=9?0x8f8350:0x6e8342));
-  const shore=new THREE.Mesh(geo,shoreMat);shore.name='park-shore-growth';shore.receiveShadow=true;group.add(shore);
+  const shore=new THREE.Mesh(geo,shoreMat);shore.name='park-shore-growth';shore.receiveShadow=true;siteWindBounds(shore);group.add(shore);
   group.userData.paths=P.paths;return group;
 }

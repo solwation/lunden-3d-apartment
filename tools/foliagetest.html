@@ -36,7 +36,8 @@ f.onload = async () => {
     });
     const mats = new Set(crowns.map((c) => c.material));
     // #1958: the site's tree crowns use a dither-LOD variant (near + far levels, src/lod.js); everything else shares the one leaf material
-    check(crowns.length >= 4 && mats.size <= 3 && [...mats].filter((m) => !/-lod$|-far$/.test(m.name)).length === 1, `${crowns.length} crown/shrub batches, ${mats.size} leaf materials (one shared + the tree LOD near/far variants)`);
+    // #2101: + the swaying courtyard-shrub variant (src/sitewind.js), same atlas
+    check(crowns.length >= 4 && mats.size <= 4 && [...mats].filter((m) => !/-lod$|-far$|-wind$/.test(m.name)).length === 1, `${crowns.length} crown/shrub batches, ${mats.size} leaf materials (one shared + the tree LOD near/far and courtyard wind variants)`);
     const mat = [...mats].find((m) => m.name === 'foliage-leaves'), tex = mat.map;
     check(mat.alphaTest > 0 && !mat.flatShading && mat.color.getHex() === 0xffffff && mat.vertexColors && mat.side === 2, `alpha-tested (${mat.alphaTest}), smooth, white, vertex colours, two-sided`);
     const size = tex.image.width;

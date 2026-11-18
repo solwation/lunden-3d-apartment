@@ -1,5 +1,6 @@
 # Kv. Lunden L1007 i 3D
 
+Träd, buskar och vass vid ån rör sig mjukt i vinden: knappt synligt en lugn dag, tydligt i blåst och storm, med skuggor som följer med. [Före/efter och kontroller](docs/verification/2101/README.md).
 Vid och efter regn blir asfalt, plattor och grus mörkare och blankare, med några grunda pölar som speglar himlen; marken torkar upp gradvis efteråt och ser likadan ut som förut i torrt väder. [Före/efter torrt, regn och efter regn](docs/verification/2099/README.md).
 
 Avståndsdiset har luftperspektiv: blåare på håll och ljust mot horisonten, varmare mot solen, tätare i regn och lättare en klar dag. [Före/efter dag, solnedgång och regn](docs/verification/2100/README.md).

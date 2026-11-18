@@ -189,3 +189,19 @@ There is no per-leaf readback, new GPU texture, sampling, shader, draw, light, p
 per-frame upload. Actual startup CPU increased in the scoped browser measurement;
 [paired consumer views, full-alpha proof, timings and limits](../verification/2085/README.md)
 record the cost rather than claiming a free change.
+
+## Site wind sway (#2101)
+
+`src/sitewind.js` makes the outdoor vegetation move in the vertex shader: the site's tree crowns and the shrubs in the same
+lobe batches (both LOD levels, `lodLeafMaterial`), the courtyard perennials (`windLeafMaterial()`, its own depth material) and
+the river park's reeds and bank tussocks (`siteWindBend` = m above the tuft's foot, mode `bend`). A lobe sways with its tree
+(more at its top, scaled by its world height) and its outer cards flutter a little (not on phones); stalks bend by height².
+Power 0…1 comes from the weather (`siteWindPower`: a light clear-day breeze, more under cloud and in rain, the most in a
+storm), eased in `SiteWind.update`; per frame only three shared uniforms change. Colour and shadow depth use the same GLSL and
+uniform objects, so shadows sway alike; the LOD dither, seasons, instancing and collision are untouched, and power 0 leaves
+positions exactly as before. Every offset is clamped to `SITE_WIND.maxDisplacement`, registered as a bounded vertex edit
+(`vertexcompile.js` `vertexCompileSlack`) that the tight frustum and site instance batch add to their boxes; the culling
+spheres grow by the same amount. Still: trunks, wall vines and the far southern woodland (`leafMaterial()`), hedges, and the
+potted plants (their own window-driven `PlantWind`, #518). `&wind=power[,seconds]` pins the wind (A/B frames). `siteWind` and
+`siteWindOffset` (the shader's JS mirror) are exported for later consumers (#2110). Numbers are *guesses* in `SITE_WIND`.
+`tools/sitewindtest.mjs`, `tools/sitewind2101browser.cjs`; [verification](../verification/2101/README.md).

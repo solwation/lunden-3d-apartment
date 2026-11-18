@@ -13,7 +13,8 @@ import { wetGround } from './wetground.js';
 import { groundY } from './surroundings.js';
 import { restTarget } from './rest.js';
 import { surfaceBox } from './furniture.js';
-import { lobeGeometry, leafMaterial } from './foliage.js';
+import { lobeGeometry, leafMaterial, windLeafMaterial } from './foliage.js';
+import { siteWindBounds } from './sitewind.js';
 import { glowMaterial, poolGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { bikeGeometry, bikeSpokeTexture, standGeometry } from './streetlife.js';
 import { benchSlat, benchWood, padBenchSlats } from './benchwood.js';
@@ -588,7 +589,8 @@ export function buildCourtyard() {
   let seed = 9;
   const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   const spots = C.plantings.flatMap((p) => [...Array(p.n)].map(() => [p.x0 + rand() * (p.x1 - p.x0), p.z0 + rand() * (p.z1 - p.z0)]));
-  const shrubs = new THREE.InstancedMesh(lobeGeometry('shrub'), leafMaterial(), spots.length); shrubs.name = 'courtyard-shrubs'; // leaf cards (#679), evergreen
+  const shrubs = new THREE.InstancedMesh(lobeGeometry('shrub'), windLeafMaterial().material, spots.length); shrubs.name = 'courtyard-shrubs'; // leaf cards (#679), evergreen
+  shrubs.customDepthMaterial = windLeafMaterial().depth; // #2101: sways with the site wind, its shadow too
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), col = new THREE.Color();
   const shrubBounds=new THREE.Box3().setFromBufferAttribute(shrubs.geometry.attributes.position), worldBounds=new THREE.Box3();
   let kept=0;
@@ -603,7 +605,7 @@ export function buildCourtyard() {
     if(SITE.basementPaving.some(r=>worldBounds.max.x>=r.x0-PLAYER.radius&&worldBounds.min.x<=r.x1+PLAYER.radius&&worldBounds.max.z>=r.z0-PLAYER.radius&&worldBounds.min.z<=r.z1+PLAYER.radius))return;
     shrubs.setMatrixAt(kept,m);shrubs.setColorAt(kept,col);kept++;
   });
-  shrubs.count=kept;
+  shrubs.count=kept;shrubs.computeBoundingSphere();siteWindBounds(shrubs);
   shrubs.castShadow = true;
   group.add(shrubs);
   // the pergola's vines (coloured and thinned by the season like the trees) and its string lights

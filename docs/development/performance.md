@@ -273,7 +273,9 @@ custom/interleaved position access, skins/morphs, displacement, custom render
 callbacks and unknown vertex programs veto the additional proof. Ordinary mesh
 and line-segment positions qualify; `vertexcompile.js` recognizes only exact
 registered fragment-only callbacks (lamp wash and foliage normal shading).
-Wind and other deformation remain excluded. The shader bodies/cache keys are unchanged.
+Wind and other deformation remain excluded. The shader bodies/cache keys are unchanged. #2101: the site wind sway is a registered *bounded* vertex edit; `vertexCompileSlack` sums its
+world-metre bound through fragment wrappers, and this proof and the site instance batch widen their boxes by it (unknown
+edits still veto).
 
 The wrapper installs after entrance batching and shadow tiles. Original masks
 are restored before shadow tiles copy their sources, for nested render cameras/

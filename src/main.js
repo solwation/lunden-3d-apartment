@@ -36,6 +36,7 @@ import { AdminReports } from './adminreports.js';
 import { ReportCapture } from './reportcapture.js';
 import { bindGameViewport, gameView } from './viewport.js';
 import { PlantWind, windShadow } from './plantwind.js';
+import { SiteWind } from './sitewind.js';
 import { installTightFrustum } from './tightfrustum.js';
 import { installSiteInstanceBatch } from './siteinstancebatch.js';
 import { installEntrancePlantBatch } from './entranceplantbatch.js';
@@ -707,6 +708,8 @@ const lifeStores = buildStores(life, world); // the fridge, the freezer, the pan
 const laundry = new Laundry(life,world);
 const watering = new Watering(life,world,{sillPots,things,lights});
 const plantWind=new PlantWind(world,weather);scene.traverse(windShadow);
+const [windForce, windTime] = (params0.get('wind') ?? '').split(',').map((v) => (v === '' ? NaN : Number(v)));
+const siteWind = new SiteWind(weather, { force: windForce, time: windTime }); // #2101: trees, shrubs and reeds sway; &wind=power[,seconds] pins it
 const tableSetting = new TableSetting(life,world);
 const hallCare = new HallCare(life,world);
 toiletPaper.initLife(life,world,door=>{door.toggle();if(door.isOpen)bump('cabinets',1,idOf(door));});
@@ -3926,6 +3929,7 @@ function step(dt) {
   birds?.update(dt, day.above > 0.5 ? 0 : weather.rain, player.below); // #1252: after the weather's rain; none at night, in rain or in the whiteout
   flare?.update(dt); // #1283: lens flare towards the sun
   plantWind.update(dt);
+  siteWind.update(dt); // #2101: three uniforms, no per-instance work
   greet.update(dt); conversation.update(); // speech bubbles (#247)
   if (cat.visible && !cat.held && !cat.released) cat.followRug(); // #1009: idle floor support also follows material previews.
   outdoorCats?.update(dt, player.below || player.inCore || player.inPlayroom, weather.kind === 'snow' ? 0 : weather.rain); // #1767: before the cat, which one of them may have just become

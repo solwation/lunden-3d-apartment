@@ -21,6 +21,7 @@ import { neighborGlass } from './neighborglass.js';
 import { paneTints } from './glasspanes.js';
 import { railMetal } from './railmetal.js';
 import { registerTrees, registerSnow } from './seasons.js';
+import { siteWindBounds } from './sitewind.js';
 import { lobeGeometry, leafMaterial, trunkGeometry, barkMaterial, lodLeafMaterial, lodBarkMaterial, lodFarTrunkMaterial } from './foliage.js';
 import { InstanceLod, lodRange } from './lod.js';
 import { buildStreet } from './street.js';
@@ -1643,7 +1644,7 @@ function trees(rand) {
   const meshes = [], col = new THREE.Color();
   const batch = (name, geo, mat, items, put) => {
     const mesh = new THREE.InstancedMesh(geo, mat, items.length); mesh.name = name; mesh.castShadow = true;
-    items.forEach((it, i) => put(mesh, it, i)); mesh.computeBoundingSphere(); meshes.push(mesh); return mesh;
+    items.forEach((it, i) => put(mesh, it, i)); mesh.computeBoundingSphere(); if (mat.userData.siteWind) siteWindBounds(mesh); meshes.push(mesh); return mesh; // #2101: crowns sway
   };
   // #1958: distance LOD with a dithered crossfade (src/lod.js): every cell keeps its full-detail mesh, and ONE far mesh per
   // kind (crowns, trunks) holds the trees beyond FOLIAGE.lod.start; both levels share the dither range (a few metres).
