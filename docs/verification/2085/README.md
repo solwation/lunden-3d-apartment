@@ -102,3 +102,7 @@ texture sampling, or per-frame texture upload.
 ![Autumn,512](512-autumn.jpg)
 ![Distant LOD,512; colour detail is intentionally not distinguishable here](512-lod.jpg)
 ![Ordinary near,256low-memory profile](256-normal.jpg)
+
+## Integrationsgranskning
+
+Dirigenten har granskat alla fem egna bildark, helper, foliagediff och källbundet grönt underlag. Vanlig närvy godtas som diskret toning; enskilda sidonerver främst nära, ingen extra förstärkning. Hela produkt-/fixture-/testkällan matchar överlämningen exakt och föregående config är byteidentisk. Engångskostnaden för två CPU-ytor och readback redovisas; ingen ny GPU-/framekostnad. Ingen rutinomkörning.
