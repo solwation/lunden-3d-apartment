@@ -81,3 +81,7 @@ accepted worker source. The full config additionally retains the independently d
 parquet and brick blocks; its captured hash is historical evidence. Integration preserves
 every previous config/changelog line and adds only ASPHALT_SURFACE and changelog1602.
 Three asphalt Node checks pass after this insertion; unchanged browser/roadends evidence is reused.
+
+## Publication
+
+Published code/images `f825773e60e33a7d8af2ba914336d61707ec0a5b`; Pages44263552008 and Worker44263552019 both success on that exact revision. Both image URLs HTTP200. Embedded result/checks comment before closure: https://github.com/solwation/lunden-3d-apartment/issues/2072#issuecomment-6972754558. Final receipt-only commit triggers no production deployment.
