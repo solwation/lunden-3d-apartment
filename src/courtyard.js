@@ -9,6 +9,7 @@ import { pavingTexture } from './patio.js';
 import { registerSnow, registerTrees } from './seasons.js';
 import { SEASON } from './config.js';
 import { gravelMaterial, gravelColor } from './gravelsurface.js';
+import { wetGround } from './wetground.js';
 import { groundY } from './surroundings.js';
 import { restTarget } from './rest.js';
 import { surfaceBox } from './furniture.js';
@@ -469,6 +470,7 @@ export function buildCourtyard() {
     brick: new THREE.MeshStandardMaterial({ map: herringbone(), roughness: 0.9 }),
   };
   registerSnow(mats.brick, SEASON.snow.paving);
+  wetGround(mats.paving, 'paving'); wetGround(mats.brick, 'paving'); // #2099: wet in and after rain (the gravel's own factory does it)
   registerSnow(mats.paving, SEASON.snow.paving);
   registerSnow(mats.gravel, SEASON.snow.ground);
   registerSnow(mats.sand, SEASON.snow.ground);

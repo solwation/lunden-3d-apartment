@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { PATIO, PAVING_SURFACE as S, SEASON } from './config.js';
 import { registerSeasonal } from './seasons.js';
+import { wetGround } from './wetground.js';
 
 const edgeDistance = (p, span) => { const u = ((p % span) + span) % span; return Math.min(u, span - u); };
 
@@ -42,6 +43,7 @@ export function pavingMaterial(map, { snow = false } = {}) {
   const packed = pavingSurfaceTexture();
   const material = new THREE.MeshStandardMaterial({ map, bumpMap: packed, bumpScale: S.depth,
     roughnessMap: packed, roughness: 1 });
+  if (snow) wetGround(material, 'paving'); // #2099: exposed paving gets wet in rain too; sheltered stays dry
   if (snow) registerSeasonal(month => {
     const covered = SEASON.snowMonths.includes(month);
     // Existing registerSnow at the consumer still owns colour/map; sheltered portik never registers this hook.

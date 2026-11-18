@@ -667,6 +667,17 @@ src/weather.js         weather (WEATHER, #248): a seeded draw per date (`showers
                        louder rattle); ❄️ / 🧊 in the HUD. Walking WEATHER.experience.metres outdoors while it falls calls
                        `onExperience` once per shower → stats walkRain / walkSnow / walkHail / walkStorm (big points the
                        first time, a little each later shower; a badge every time)
+src/wetground.js       wet ground in and after rain (#2099, WET_GROUND, all *guess*): `GroundWetness` (main.js, after weather.update) integrates a film
+                       `wet` and puddles `pool` (0…1) on the game clock from what falls (rain / melting hail; snow and the snow months stay dry), drying
+                       gradually (faster in sun and warmth); at start or after a clock jump it integrates the last 12 h from `Weather.fallAt` (forced,
+                       real data or the seeded draw), so a dry afternoon after a morning shower starts damp. `wetGround(material, kind)` chains a
+                       fragment-only patch (unique cache key `|wet2099-<kind>`, lampwash wraps it as before) onto the outdoor ground: the site
+                       asphalt and park asphalt paths, street kerbs / asphalt patches / zebra paint / cobbles, site pavements, courtyard paving and
+                       brick, the exposed patio and every gravel surface. Soaked: albedo × `dark`, roughness down to `rough`; puddles where a world
+                       value noise peaks on flat ground (placement *guess*, not measured low points): darker, roughness 0.05, bump flattened. Film and
+                       puddles add DayCycle's own horizon/zenith colour by Schlick Fresnel (no mirror pass). Wet = 0 skips every branch (dry pixels
+                       unchanged); the `puddles` quality knob turns puddles off at level 0 and on phones. `tools/wetgroundtest.mjs`,
+                       [before/after](../verification/2099/README.md).
 src/groundglow.js      light without lights (#434, #433): additive fall-off decals — `poolGeometry` (an ellipse draped over `groundY`),
                        `washGeometry` (an upright one on a wall; #1092: `holes` = the wall's openings, cut out so the glow lights the brick round a window/door, never its glass — the front-door and patio/terrace washes pass them; the Å-husen's loggia washes need none: their glazing stands in front of the wash and hides it), `glowMaterial` (one per set, opacity = the level), `fadeGlow`
                        #1525: courtyard night ground light — every courtyard bollard gets a warm pool (`COURTYARD.bollards.pool`,

@@ -214,6 +214,14 @@ export class Weather {
     return s;
   }
 
+  /** #2099: what fell at another hour of a date (wetground.js's history): forced weather the same as now, real data when it has the hour, else the draw. */
+  fallAt(year, month, date, hour) {
+    const f = this.force;
+    if (f === 'clear') return { rain: 0, kind: null };
+    if (f) return { rain: f === 'storm' ? 1 : 0.8, kind: f === 'storm' ? 'rain' : f };
+    return this.real?.at(year, month, date, hour) ?? rainAt(year, month, date, hour);
+  }
+
   /** Blend a change of source (the draw → real data arriving, or back) over WEATHER.climate.fade s: `s` is the new state, the result
    * eases rain, cloud and temperature from what was shown. The kind of the old rain stays while it fades out. */
   ease(s, dt) {

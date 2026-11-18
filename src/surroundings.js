@@ -11,6 +11,7 @@ import {buildWestBackdrop,buildEastBackdrop,buildNorthBackdrop,westTreeSpots,eas
 import { buildRiverPark, parkDeckAt, parkFillAt, renderedParkFillY, parkRampFill, parkTreeSpots, parkInfillSpots, parkShrubSpots } from './riverpark.js';
 import * as THREE from 'three';
 import { asphaltMaterial, asphaltUV } from './asphaltsurface.js';
+import { wetGround } from './wetground.js';
 import { grassUV, grassMaterial } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR, SOUTH_PLATEAU, PADDOCK, PARKING_SEAM, MUSSELS, RENDER_SURFACE } from './config.js';
@@ -1973,7 +1974,9 @@ export function* surroundingsParts({ grass, husL = null }) {
   const pavementClip=(road)=>road.name==='Sankt Lars väg'?c=>roadBridgeSpan(c.reduce((s,p)=>s+p[0],0)/4,c.reduce((s,p)=>s+p[1],0)/4)||c.every(([x,z])=>onRoad(x,z,-.05,road)):true;
   const walks = S.roads.flatMap((r) => (r.walks || []).map((k) => k.side > 0
     ? pathStrip(r, (w) => w / 2, (w) => w / 2 + k.w, 0.008, roadGround, pavementClip(r), undefined, vehicleTrim()) : pathStrip(r, (w) => -w / 2 - k.w, (w) => -w / 2, 0.008, roadGround, pavementClip(r), undefined, vehicleTrim())));
-  flat([...[...S.paving, ...S.basementPaving].map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks, ...facadeWalkGeometries(roadGround)], COLORS.paving, SEASON.snow.paving).name = 'site-paving';
+  const sitePaving = flat([...[...S.paving, ...S.basementPaving].map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks, ...facadeWalkGeometries(roadGround)], COLORS.paving, SEASON.snow.paving);
+  wetGround(sitePaving.material, 'paving'); // #2099
+  sitePaving.name = 'site-paving';
   yield 0.15;
   group.add(buildRiverBridges(roadGround));
   yield 0.2;

@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { GRAVEL_SURFACE as G, SEASON } from './config.js';
 import { registerSeasonal } from './seasons.js';
 import { rememberFragmentCompile } from './vertexcompile.js';
+import { wetGround } from './wetground.js';
 import { grassPatchNoise, grassPatchField, linearMean } from './grassdetail.js';
 
 const wrap = (n, span) => ((n % span) + span) % span;
@@ -98,6 +99,7 @@ export function gravelMaterial(hex, { vertexColors = false, name = 'gravel' } = 
   };
   rememberFragmentCompile(material.onBeforeCompile);
   material.customProgramCacheKey = () => 'gravel-surface-2096';
+  wetGround(material, 'gravel'); // #2099: wet in and after rain
   registerSeasonal((month) => {
     const snow = SEASON.snowMonths.includes(month);
     material.bumpMap = snow ? null : t.surface;

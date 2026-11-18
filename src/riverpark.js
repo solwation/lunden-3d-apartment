@@ -8,6 +8,7 @@ import { riverAt, waterYAt, shoreYAt, deckAt, underpassAt } from './riverbridge.
 import { inPoly as inPaddockPoly, outline as paddockOutline, ringDist as paddockRingDist } from './paddockgeo.js';
 import { registerSnow, registerSeasonal } from './seasons.js';
 import { gravelMaterial, gravelUV } from './gravelsurface.js';
+import { wetGround } from './wetground.js';
 const P = SITE.riverPark;
 const random = (seed) => () => ((seed = seed * 16807 % 2147483647) / 2147483647);
 const inside = (x,z,poly) => { let yes=false; for(let i=0,j=poly.length-1;i<poly.length;j=i++) {
@@ -209,7 +210,7 @@ export function buildRiverPark(ground, terrain=ground) {
   // #1235: asphalt (shared walking/cycling) and gravel paths are two merged meshes, one per surface material; both follow the rendered terrain.
   for(const kind of ['asphalt','gravel']) {
     const strips=P.paths.filter(p=>p.surface===kind).map(p=>pathStrip(p,w=>-w/2,w=>w/2,kind==='asphalt'?.03:.025,terrain,c=>c.some(([x,z])=>z<64||x<-270||x>SITE.backgroundGround.x1-10||z>260)||(c.every(([x,z])=>onRoad(x,z,-.05))&&!c.some(([x,z])=>deckAt(x,z)!==null)),undefined,vehicleTrim(null,(x,z)=>deckAt(x,z)!==null))); // #1351: exact carriageway-edge clipping; retain the paths under bridge decks
-    const mat=kind==='gravel'?gravelMaterial(P.surfaces[kind].color,{name:'park-gravel'}):new THREE.MeshStandardMaterial({color:P.surfaces[kind].color,roughness:.9});registerSnow(mat,SEASON.snow.paving); // #2096: the shared gravel map, mean colour kept
+    const mat=kind==='gravel'?gravelMaterial(P.surfaces[kind].color,{name:'park-gravel'}):wetGround(new THREE.MeshStandardMaterial({color:P.surfaces[kind].color,roughness:.9}),'asphalt');registerSnow(mat,SEASON.snow.paving); // #2096: the shared gravel map, mean colour kept
     if(kind==='gravel')strips.push(surfaceMesh(rampTriangles(true,.03))); // #1337: the ramps' gravel top joins the gravel batch (no extra draw call)
     const merged=mergeGeometries(strips);if(kind==='gravel')gravelUV(merged);const mesh=new THREE.Mesh(merged,mat);mesh.name=kind==='asphalt'?'park-paths-asphalt':'park-paths';mesh.receiveShadow=true;group.add(mesh);
   }

@@ -4,6 +4,7 @@ import { SITE, PATH_LIGHTS, ROAD_LIGHTS } from './config.js';
 import { pathLampSpots } from './pathlamps.js';
 import { roadLampSpots } from './roadlamps.js';
 import { registerSeasonal } from './seasons.js';
+import { wetGround } from './wetground.js';
 import { samples, onRoad, along, filletOutline, nearestS, pathStrip, vehicleTrim } from './roads.js';
 import { glowMaterial, poolGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { schoolWallPlan } from './schoolwall.js';
@@ -186,13 +187,13 @@ function shelterPaving(groundY) {
 
 export function buildStreet(groundY, pathGround = groundY, trees = []) {
   const group = new THREE.Group(); group.name='street-details';
-  const grey = new THREE.MeshStandardMaterial({ color: 0xa9a7a2, roughness: 0.85 });
+  const grey = wetGround(new THREE.MeshStandardMaterial({ color: 0xa9a7a2, roughness: 0.85 }), 'paving'); // #2099: kerbs and slabs wet in rain
   const curbs = curbGeometries(groundY);
   const island = bridgeheadIsland(pathGround); // #1554: the road's own surface follows the rendered terrain (pathGround), not the analytic groundY
   group.add(merged([...curbs, ...shelterPaving(groundY), island.kerb], grey, false)); // #1534: the shelter's slabs, pillar and stones share the curbs' grey
   // patched asphalt: darker, smoother rectangles a hair above the road
   group.add(merged(S.patches.map(([x, z, w, d]) => flatRect(x - w / 2, x + w / 2, z - d / 2, z + d / 2, 0.016)),
-    new THREE.MeshStandardMaterial({ color: 0x45484b, roughness: 0.5 }), false));
+    wetGround(new THREE.MeshStandardMaterial({ color: 0x45484b, roughness: 0.5 }), 'asphalt'), false));
   // zebra crossing: 50 cm white bars along the traffic, across the road
   const cr = S.crossing, bars = [];
   for (let z = cr.z0 + 0.25; z + 0.5 <= cr.z1; z += 1.0) bars.push(flatRect(cr.x0, cr.x1, z, z + 0.5, 0.018));
@@ -200,12 +201,12 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
     const I = S.bridgehead.island;
     for (let x = c.x0 + 0.25; x + 0.5 <= c.x1 + 1e-9; x += 1.0) if (x + 0.5 <= I.x0 || x >= I.x1) bars.push(groundRect(x, x + 0.5, c.z0, c.z1, 0.045, pathGround));
   }
-  group.add(merged(bars, new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.7 }), false));
+  group.add(merged(bars, wetGround(new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.7 }), 'paint'), false));
   // cobbled corner
   const cb = S.cobbles;
   const cobbleGround = (x, z) => Math.max(groundY(x, z), pathGround(x, z));
   cobbleGround.grid = pathGround.grid;
-  const cob = new THREE.Mesh(cobbledCornerGeometry(cobbleGround, cb), new THREE.MeshStandardMaterial({ map: cobbleTexture(), roughness: 0.8 }));
+  const cob = new THREE.Mesh(cobbledCornerGeometry(cobbleGround, cb), wetGround(new THREE.MeshStandardMaterial({ map: cobbleTexture(), roughness: 0.8 }), 'paving'));
   cob.name = 'street-cobbled-corner';
   cob.receiveShadow = true;
   group.add(cob);

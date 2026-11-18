@@ -9750,6 +9750,30 @@ export const GRAVEL_SURFACE = {
   depth: 0.0006, roughness: [0.78, 0.97], snowRoughness: 1,
   broadStrength: 0.05, broadScale: [0.43, 0.29, 0.17, -0.51],
 };
+// #2099: wet ground during and after rain (src/wetground.js). One shared state (`wet` = the surface film, `pool` = the puddles,
+// both 0…1) integrated on the game clock from what falls (rain or melting hail; snow and the snow months keep it dry): rain
+// of strength s soaks a dry surface in `wetUp` / s h and then fills the puddles in `poolUp` / s h; afterwards the film dries
+// in `dry` h and the puddles in `poolDry` h on a mild overcast day, faster by (1 + `sun` × daylight × clear sky + `warm` × °C).
+// At start (and after a clock jump over `jump` h) the last `spinUp` h are integrated in `step` h steps, so a dry afternoon
+// after a morning shower starts damp. Per surface kind (`kinds`): `dark` = linear albedo factor when soaked, `rough` = the
+// soaked roughness (never rougher than dry), `puddles` = how far the puddle threshold opens at a full pool (0 = none).
+// Puddles sit where a world-space value noise (`puddle.scale` m, two octaves) is highest on flat ground (face normal y over
+// `puddle.flat`), i.e. placed by *guess*, not by measured low points; in them the albedo × `puddle.dark`, roughness
+// `puddle.rough` and the bump is flattened. Both film and puddles reflect the sky's own horizon/zenith colours (DayCycle's
+// uniforms) by Schlick Fresnel (× `sky.film` / `sky.pool`); no mirror pass. Puddles draw from quality level
+// `puddleMinLevel` up and never on phones (lowMemory). Dry (wet = 0) skips every branch: unchanged pixels. All *guess*.
+export const WET_GROUND = {
+  wetUp: 0.25, poolUp: 0.75, dry: 2.5, poolDry: 6, sun: 1, warm: 0.03,
+  spinUp: 12, step: 0.1, jump: 3, puddleMinLevel: 1,
+  sky: { film: 0.45, pool: 1 },
+  kinds: {
+    asphalt: { dark: 0.55, rough: 0.3, puddles: 0.3 },
+    paving: { dark: 0.68, rough: 0.34, puddles: 0.24 },
+    gravel: { dark: 0.62, rough: 0.5, puddles: 0.16 },
+    paint: { dark: 0.85, rough: 0.32, puddles: 0 },
+  },
+  puddle: { scale: [3.4, 1.2], dark: 0.5, rough: 0.05, edge: 0.04, flat: [0.985, 0.998] },
+};
 // #2095: rendered (putsade) façade realism: Hus L's white render (exterior.js `renders`) and the Å-husen A/B/C's white
 // loggia / recess walls (surroundings.js loggias). One small shared linear map (`size` px square over `tile` m of wall,
 // world-projected per face) packs a fine render grain as bump height (R) and a slight roughness variation (G), and a second

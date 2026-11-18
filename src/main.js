@@ -42,7 +42,7 @@ import { installEntrancePlantBatch } from './entranceplantbatch.js';
 import { runCheat, cheatList, isCommand } from './cheats.js';
 import { cleanHome, cleanEverything } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
-import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, SHADOW_BOX, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING, VIEW_LOD, VIEW_NEAR, BIRDS } from './config.js';
+import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, SHADOW_BOX, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING, VIEW_LOD, VIEW_NEAR, BIRDS, WET_GROUND } from './config.js';
 import { fetchStartupJSON } from './startuprecovery.js';
 import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
 import { decideResourceProfile, resourceProfile, resourceProfileInfo } from './resourceprofile.js';
@@ -214,6 +214,7 @@ import { Greetings } from './greet.js';
 import { Nests } from './nest.js';
 import { LightModes } from './lightmodes.js';
 import { Weather } from './weather.js';
+import { GroundWetness, bindWetSky } from './wetground.js';
 import { createRealWeather } from './realweather.js';
 import { Posters, HeldDrawing, paperOnly } from './posters.js';
 import { PaperBalls } from './paperball.js';
@@ -485,6 +486,8 @@ const month = params0.has('month') ? Number(params0.get('month')) : newYearDebug
 const date = params0.has('day') ? Number(params0.get('day')) : newYearDebug ? 31 : params0.has('month') ? 15 : now.getDate();
 const day = new DayCycle({ scene, camera, renderer, lights: { sun, hemi, ambient, fill }, clouds: cloudTexture(), startHour, month, date, year: params0.has('year') ? Number(params0.get('year')) : now.getFullYear() }); // (&year= with &month= &day=: a date in another year, #674)
 const weather = new Weather(scene, camera, day, params0.get('weather')); // rain in spring and autumn, thunder in late summer (#248)
+const groundWet = new GroundWetness(weather, day); // #2099: wet ground in and after rain (shared uniform of the ground materials)
+bindWetSky(day.uniforms.uHorizon.value, day.uniforms.uZenith.value);
 const balloon = new Balloon({ scene, camera, forced: params0.has('balloon') }); world.balloon = balloon; // #1646: the hot-air balloon above the cloud deck (hidden / no work outside its scheduled window)
 const birds = params0.has('nobirds') ? null : new Birds({ scene, camera, day, center: BIRDS.center, lowMemory, count: params0.has('birds') ? Number(params0.get('birds')) : null }); // #1252: gulls circling by day
 weather.real = createRealWeather(params0); // real weather for the date, fetched after the first frames; the draw stays the fallback (#674)
@@ -3912,6 +3915,7 @@ function step(dt) {
   const moved = Math.hypot(player.pos.x - lastWeatherPos.x, player.pos.z - lastWeatherPos.z); // on foot (not a jump / spawn)
   lastWeatherPos.copy(player.pos);
   weather.update(dt, !player.outdoors || player.below || player.inCore, moved < 1 ? moved : 0, car.occupied ? car.openness : null, player.inPlayroom); // enclosed off-map clubhouse (#1485); (the garage: dry and muffled, #357) // after the day: it sets the overcast / flash the next day.update applies (#248)
+  groundWet.update(); // #2099: after the weather: the ground's film and puddles on the game clock
   riverFish?.update(dt, player.below, day.daylight); // #1752: drawn only within RIVER_FISH.drawDist m of the river
   fishHearts?.update(dt);
   ducks.update(dt, player.below || player.inCore || player.inPlayroom);
@@ -4034,6 +4038,8 @@ quality.register('mirrors', { // the one mirror image (#50): its resolution, off
   state: (l) => (QUALITY.mirror[l] ? `${QUALITY.mirror[l]}² every ${QUALITY.mirrorEvery[l]} frame(s)` : 'off'), cost: 'a third pass over the room in a mirror' });
 quality.register('weather', { // rain streaks / snowflakes / hail drawn (#248)
   apply: (l) => { weather.particleScale = QUALITY.particles[l]; }, state: (l) => `particles ×${QUALITY.particles[l]}`, cost: 'particle updates + overdraw' });
+quality.register('puddles', { // #2099: the wet ground's puddles (the darker, glossier film stays at every level); never on phones
+  apply: (l) => { groundWet.puddles = !lowMemory && l >= WET_GROUND.puddleMinLevel; }, state: () => (groundWet.puddles ? 'on' : 'off'), cost: 'two value-noise lookups per wet ground pixel' });
 /** Feed a frame time to the level (tests drive it directly). */
 function adaptResolution(dt) { return quality.update(dt); }
 function showPerf() {
