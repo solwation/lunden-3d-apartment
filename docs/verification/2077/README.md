@@ -39,3 +39,7 @@ Befintlig 128×128 färgcanvas och material behålls: **65536 RGBA8-basbyte / 87
 Begränsningar: ingen fullWorld-, fysisk telefon-, FPS- eller navigeringskörning. Befintliga väg-/gång-/kant-/lampusystem är bytebevarade och komponentens markfrågor lika, men inga nya verkliga mått har verifierats. Befintlig säsongskod och gatdetaljens vinterbeteende ändras inte. Neutral publik överföring är separat #299.
 
 Återskapa med lokal Three 0.170.0, HTTP-server 8203 och `PLAYWRIGHT_MODULE=/path/to/playwright tools/browsertest.sh node tools/cobbledcorner2077browser.cjs http://localhost:8203 docs/verification/2077`. Basmodulerna kommer från Git; inga råa före-bilder behålls.
+
+## Publicering
+
+Kod/bilder `71c55134018fb02942322c7f5d4f731cf88a3185`; faktiska run-ID [44275059130, 44275059753] success på exakt revision. Alla bilder HTTP200 och inbäddade före stängning: https://github.com/solwation/lunden-3d-apartment/issues/2077#issuecomment-6974356455. Slutkvittot är enbart dokumentation; originalets sökvägsfilter utlöser ingen ny apppublicering.
