@@ -41,3 +41,5 @@ Winter is unchanged by design (the map is removed under snow).
 
 Houses: A/B courtyard and C yard checked in the browser; Hus L and all other lawns share the same map and material
 (world.js, surroundings.js, streetlife.js, sitebackdrop.js), no house-specific geometry is involved.
+
+Publicering: Pages/Worker success på `3ad5cc7`; bilder HTTP 200 före stängning.
