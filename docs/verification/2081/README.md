@@ -94,3 +94,7 @@ from Git only in the test; the fixture uses an inline favicon and no personal re
 ## Integration review
 
 Root read the helper/consumer diff and all green groups, and opened all three final sheets. Product config/foliage/helper bytes exactly match tested63275360/aa74e307. No conflicts or unrelated source changes. The very subtle near-only effect and almost unchanged context/LOD views are accepted as documented, not advertised as a larger change. Source-bound results reused without another browser or broad gate.
+
+## Publicering
+
+Kod/bilder `957303341e153cc4bae3993a1e773f07a79dcd17`; faktiska run-ID [44280956587, 44280956549] success på exakt revision. Alla bilder HTTP200 och inbäddade före stängning: https://github.com/solwation/lunden-3d-apartment/issues/2081#issuecomment-6975196320. Slutkvittot är enbart dokumentation; originalets sökvägsfilter utlöser ingen ny apppublicering.
