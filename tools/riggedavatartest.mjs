@@ -254,16 +254,20 @@ test('#1995: posterior head keeps its authored profile and cannot follow nose co
   const { AVATAR_SURFACE: S, AVATAR_FACE: F } = await import('../src/config.js');
   const { bindAt } = await import('../src/olof.js');
   const { profileAt } = await import('../src/avatarcontour.js');
+  const { jawRise } = await import('../src/avatarsculpt.js');
   const g = avatarModelGeometry(decodeAvatarLook('240302101', 'posterior-invariant'));
   const p = g.attributes.position, b = bindAt('head'); let checked = 0;
   for (let i = 0; i < p.count; i++) {
     if (!g.attributes.rifleSkull.getX(i) || g.attributes.facePart.getX(i) !== 1 || p.getZ(i) - b.z >= 0) continue;
-    const y = p.getY(i) - b.y;
+    const x = (p.getX(i) - b.x) / F.warp.width, zr = p.getZ(i) - b.z;
+    // #2066: headSculpt lifts the lower lateral/rear jaw by jawRise(x, y, z) (a deliberate, smooth, monotone shift of the
+    // authored ring height), so undo it to find the authored ring the vertex was placed on.
+    let y = p.getY(i) - b.y;
+    for (let k = 0; k < 8; k++) y = p.getY(i) - b.y - jawRise(x, y, zr);
     if (y < S.head[0][0] - 1e-6) continue; // #2043: the chin's rounded underside (scaled rings below the authored profile)
     const [, rx, rz, z] = profileAt(S.head, y); // #2043: the authored rows joined by the head's monotone cubic
-    const x = (p.getX(i) - b.x) / F.warp.width;
     const authored = z - rz * Math.sqrt(Math.max(0, 1 - (x / rx) ** 2));
-    assert.ok(Math.abs((p.getZ(i) - b.z) - authored) < 2e-6, 'posterior vertex stays on the authored elliptical profile');
+    assert.ok(Math.abs(zr - authored) < 2e-6, 'posterior vertex stays on the authored elliptical profile');
     assert.equal(g.attributes.noseBlend.getX(i), 0, 'posterior vertex has no nose-size/width/mask influence');
     assert.equal(g.attributes.rifleNose.getX(i), 0, 'posterior skin is not classified as nasal contact');
     checked++;
