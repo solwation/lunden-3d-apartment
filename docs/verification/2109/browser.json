@@ -1,0 +1,93 @@
+{
+ "rev": "81bba3b2",
+ "summary": {
+  "walk-curve": {
+   "before": {
+    "head": 0.1187,
+    "torso": 0,
+    "roll": 0,
+    "headLead": 0.1187,
+    "headYRange": 0.0416,
+    "slipPerContactFrame": 0.00497
+   },
+   "after": {
+    "head": 0.3549,
+    "torso": 0.0988,
+    "roll": 0.0546,
+    "headLead": 0.2561,
+    "headYRange": 0.0415,
+    "slipPerContactFrame": 0.00497
+   }
+  },
+  "run-curve": {
+   "before": {
+    "head": 0.1255,
+    "torso": 0,
+    "roll": 0,
+    "headLead": 0.1255,
+    "headYRange": 0.0945,
+    "slipPerContactFrame": 0.01165
+   },
+   "after": {
+    "head": 0.3772,
+    "torso": 0.0923,
+    "roll": 0.1401,
+    "headLead": 0.285,
+    "headYRange": 0.0896,
+    "slipPerContactFrame": 0.01165
+   }
+  },
+  "walk-straight": {
+   "before": {
+    "head": 0,
+    "torso": 0,
+    "roll": 0,
+    "headLead": 0,
+    "headYRange": 0.0427,
+    "slipPerContactFrame": 0.00229
+   },
+   "after": {
+    "head": -0.0002,
+    "torso": -0.0001,
+    "roll": -0.0038,
+    "headLead": -0.0001,
+    "headYRange": 0.0426,
+    "slipPerContactFrame": 0.00229
+   }
+  },
+  "run-straight": {
+   "before": {
+    "head": 0,
+    "torso": 0,
+    "roll": 0,
+    "headLead": 0,
+    "headYRange": 0.1036,
+    "slipPerContactFrame": 0.00656
+   },
+   "after": {
+    "head": 0,
+    "torso": 0.0011,
+    "roll": -0.0001,
+    "headLead": -0.0011,
+    "headYRange": 0.1036,
+    "slipPerContactFrame": 0.00656
+   }
+  }
+ },
+ "bench": {
+  "unit": "µs/Ghost.animate",
+  "before": [
+   42.46666666679084,
+   26.566666666418314,
+   19.100000000248354,
+   24.266666666915018
+  ],
+  "after": [
+   12.033333333209157,
+   56.59999999962747,
+   33,
+   10.633333333457509
+  ]
+ },
+ "errors": []
+}

@@ -8229,6 +8229,22 @@ export const AVATAR_GAIT = {
   reach: 0.995, // share of the leg's length the hips keep the stance foot within (the knee stays a little bent)
   shoe: { heel: 0.084, toe: 0.194, sole: 0.05 }, // the shoe's heel / toe distance behind / in front of the ankle and the ankle's height over the sole (avatar.js)
 };
+// #2109: head and gaze lead into turns, the torso follows, the body leans slightly inwards in fast curves, the head is steadied against the
+// running bounce (src/avatarlean.js). Driven only by the rendered body's yaw rate, ground speed and the gait's own hip bounce / sway: no
+// network field. All *guess*es by eye against ordinary walking / running footage, not measured; model metres / seconds / radians.
+// `rateTau` s low-passes the yaw rate (`maxRate` rad/s caps it); `speed` [a, b] m/s blends the whole effect in from a slow walk.
+// `head` / `torso`: share of the yaw rate (s, i.e. how many seconds ahead the part looks), `max` rad, `tau` s how fast it gets there
+// (the head quick, the torso slower: it follows). `lean`: share of the physical lean atan(v·ω / g), `max` rad, `tau` s; `hipShare` of the
+// lean made by the hips shifting over the planted feet (`hipHeight` m lever), `hipRoll` share of it the pelvis tilts, `headRight` share
+// the head rights itself against it. `stab`: `distance` m the gaze is held at against the hip bounce (pitch), `meanTau` s the bounce's
+// running mean, `max` rad; `sway` share of the gait's side sway the torso tilts back so the head stays over the line (`torso` m lever).
+export const AVATAR_LEAN = {
+  rateTau: 0.12, maxRate: 3, speed: [0.35, 1.0], resetTurn: 1.4, resetTime: 0.25,
+  head: { share: 0.22, max: 0.3, tau: 0.08 },
+  torso: { share: 0.1, max: 0.14, tau: 0.28 },
+  lean: { share: 0.4, max: 0.14, tau: 0.18, hipShare: 0.45, hipHeight: 0.9, hipRoll: 0.4, headRight: 0.6 },
+  stab: { distance: 1.6, meanTau: 0.6, max: 0.05, sway: 0.6, torso: 0.5 },
+};
 
 // #1639: reactions in the BIO (cry, laugh, scream in terror). One-shot event { t: 'rx', k } (the room's PLAYERS.reactions = kinds.length),
 // never a state field. `duration` s of procedural pose, eased in / out over `ease`; `every` = our minimum gap between two (the room's

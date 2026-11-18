@@ -96,14 +96,16 @@ const lerp3 = (a, b, t) => a.map((x, i) => x + (b[i] - x) * t);
  * the knees' pole (x outward per side), flat 0 … 1 how far the feet are turned level on the floor (0: rigid with the shin)
  * and toes (rad) how far they then turn outward; #2003 `pitch` [left, right] (rad, toe up, default none) tilts each level foot about its own x (heel strike / toe-off; only with `flat`).
  * #2035 `hipRoll` (rad, + lifts the left side) tilts the hips sideways, the legs' IK following; `torsoRoll` (rad) the torso's own sideways tilt.
+ * #2109 `torsoYaw` (rad, + to the figure's left) turns the torso (shoulders, arms, head) about its upright; `turn` stays the head against the torso.
  */
-export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, can, knee = KNEE, flat = 0, toes = 0, pitch = null, footYaw = null, hipX = 0, hipRoll = 0, torsoRoll = 0 }) {
-  if (fig.collectPose) { fig.pendingPose = { hip, lean, head, turn, feet, hands, can, knee, flat, toes, pitch, footYaw, hipX, hipRoll, torsoRoll }; return; }
+export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, can, knee = KNEE, flat = 0, toes = 0, pitch = null, footYaw = null, hipX = 0, hipRoll = 0, torsoRoll = 0, torsoYaw = 0 }) {
+  if (fig.collectPose) { fig.pendingPose = { hip, lean, head, turn, feet, hands, can, knee, flat, toes, pitch, footYaw, hipX, hipRoll, torsoRoll, torsoYaw }; return; }
   const B = fig.bones, hy = hip[0], hz = hip[1];
   B.hips.position.set(hipX, hy, hz);
   const hq = hipRoll ? qH.setFromAxisAngle(Z, hipRoll) : qH.identity(); // #2035: the hips tilt sideways (+ lifts the left side)
   B.hips.quaternion.copy(hq);
   const tq = q3.setFromAxisAngle(X, -lean);
+  if (torsoYaw) tq.premultiply(q5.setFromAxisAngle(Y, torsoYaw)); // #2109: the torso follows a turn
   if (torsoRoll) tq.premultiply(q5.setFromAxisAngle(Z, torsoRoll)); // (the torso's rotation in the figure's frame, its own under the hips)
   B.torso.quaternion.copy(tq);
   if (hipRoll) B.torso.quaternion.premultiply(q5.copy(hq).invert());

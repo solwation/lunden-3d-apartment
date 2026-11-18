@@ -102,7 +102,7 @@ export function groundMotion(av, dt, gt, frame, moving, enabled, fx, fy, fz) {
 
 /** Copy a pose into reusable numeric storage. No bones are smoothed after IK. */
 export function copyPose(out, p) {
-  for (const k of ['lean', 'head', 'turn', 'flat', 'toes', 'hipX', 'hipRoll', 'torsoRoll']) out[k] = p[k] ?? 0;
+  for (const k of ['lean', 'head', 'turn', 'flat', 'toes', 'hipX', 'hipRoll', 'torsoRoll', 'torsoYaw']) out[k] = p[k] ?? 0;
   for (const k of ['hip', 'knee', 'pitch', 'footYaw']) {
     if (!p[k]) { out[k] = null; continue; }
     const a = out[k] ??= []; for (let i = 0; i < p[k].length; i++) a[i] = p[k][i];
@@ -149,7 +149,7 @@ export function transitionPose(av, dt, key, hands = {}, frame = null, carry = fa
   } else if (s.age < M.poseTime) {
     s.age = Math.min(M.poseTime, s.age + dt);
     const e = ease(s.age / M.poseTime), p = copyPose(s.out ??= {}, target), a = s.from;
-    for (const k of ['lean', 'head', 'turn', 'flat', 'toes', 'hipX', 'hipRoll', 'torsoRoll']) p[k] = a[k] + (p[k] - a[k]) * e;
+    for (const k of ['lean', 'head', 'turn', 'flat', 'toes', 'hipX', 'hipRoll', 'torsoRoll', 'torsoYaw']) p[k] = a[k] + (p[k] - a[k]) * e;
     p.lean -= M.poseLean * Math.sin(Math.PI * e);
     for (const k of ['pitch', 'footYaw']) { const a0 = a[k] ?? [0, 0], b0 = p[k] ?? [0, 0]; p[k] ??= [0, 0]; for (let i = 0; i < 2; i++) p[k][i] = a0[i] + (b0[i] - a0[i]) * e; }
     for (const k of ['hip', 'knee']) if (a[k] && p[k]) for (let j = 0; j < p[k].length; j++) p[k][j] = a[k][j] + (p[k][j] - a[k][j]) * e;

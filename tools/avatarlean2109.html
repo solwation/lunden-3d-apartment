@@ -1,0 +1,85 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Blicken leder i svängar #2109</title><link rel="icon" href="data:,">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<style>body{margin:0;background:#e9edef;font:16px system-ui;color:#192b38}canvas{display:block}</style>
+<script type="module">
+// #2109: the real remote consumer (Ghost.push 5 Hz → Ghost.draw → Avatar.update → poseOlof), before (/before/ = the base revision) and
+// after in lockstep, along one path: walk straight, a left curve walking, straight, run straight, a left curve running, straight.
+import * as T from 'three';
+import * as current from '../src/ghosts.js';
+import * as before from '/before/src/ghosts.js';
+import * as C from '../src/config.js';
+const W = 300, H = 400;
+const renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); renderer.setPixelRatio(1); renderer.setSize(W * 4, H * 2); document.body.append(renderer.domElement);
+let now = 10000; const nativeNow = performance.now.bind(performance); performance.now = () => now;
+localStorage.setItem('lunden.avatar', C.encodeAvatarLook(C.avatarLook('lean-2109')));
+// the path: speed (m/s) and yaw rate (rad/s, + left) over time; the state's `r` is the view = the heading
+const plan = [[1.2, 1.4, 0], [2.4, 1.4, 1.1], [1.0, 1.4, 0], [1.2, 4.5, 0], [1.6, 4.5, 1.3], [1.0, 4.5, 0]];
+const ends = []; { let e = 0; for (const p of plan) ends.push(e += p[0]); }
+const total = ends.at(-1);
+let st = { p: [0, 0, 0], r: 0, look: [0, 0] };
+const rows = [];
+for (const mod of [before, current]) {
+  const scene = new T.Scene(); scene.background = new T.Color(0xdce3e6); scene.add(new T.HemisphereLight(0xffffff, 0x828b71, 1.5));
+  const light = new T.DirectionalLight(0xffefdb, 2.1); light.position.set(-2, 5, -3); scene.add(light);
+  const plane = new T.Mesh(new T.PlaneGeometry(80, 80), new T.MeshStandardMaterial({ color: 0xa3ae99, roughness: 1 })); plane.rotation.x = -Math.PI / 2; scene.add(plane);
+  const grid = new T.GridHelper(80, 160, 0x75836e, 0x95a18c); grid.position.y = .001; scene.add(grid);
+  const cam = new T.PerspectiveCamera(30, W / H, .02, 80);
+  const owners = new mod.Ghosts({ scene, camera: cam, url: '', name: () => 'lean-2109', state: () => st, swim: () => null });
+  const ghost = new mod.Ghost(scene, 'lean-2109', 'Medspelare', false, owners.myLook); ghost.avatarCode = owners.avatarCode; if (ghost.tag) ghost.tag.visible = false;
+  rows.push({ scene, cam, owners, ghost, lastPush: -Infinity });
+}
+const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+const yawOf = (o) => { const z = new T.Vector3(0, 0, 1).applyQuaternion(o.getWorldQuaternion(new T.Quaternion())); return Math.atan2(z.x, z.z); };
+function sample(g) {
+  const av = g.avatar; av.object.updateMatrixWorld(true);
+  const body = yawOf(av.object), B = av.bones, up = new T.Vector3(0, 1, 0).applyQuaternion(B.torso.getWorldQuaternion(new T.Quaternion()));
+  const right = new T.Vector3(-Math.cos(body), 0, Math.sin(body)); // the figure's right in the world (its left is +x local)
+  return { head: wrap(yawOf(B.head) - body), torso: wrap(yawOf(B.torso) - body), roll: Math.asin(-up.dot(right)), // + leans towards the figure's left
+    headY: B.head.getWorldPosition(new T.Vector3()).y, feet: ['footL', 'footR'].map((k) => B[k].getWorldPosition(new T.Vector3()).toArray()), contact: av.gaitInfo?.contact?.slice() };
+}
+let t = 0;
+window.step = (dt = 1 / 60) => {
+  t += dt; now += dt * 1000;
+  let i = ends.findIndex((e) => t <= e); if (i < 0) i = plan.length - 1;
+  const [, v, w] = plan[i];
+  const r = st.r + w * dt, p = [st.p[0] - Math.sin(r) * v * dt, 0, st.p[2] - Math.cos(r) * v * dt];
+  st = { p, r, look: [0, 0] };
+  const out = [];
+  for (const row of rows) {
+    row.owners.track(st, now);
+    if (now - row.lastPush >= 200 - 1e-4) { row.ghost.push(st, now); row.lastPush = now; }
+    row.ghost.draw(now, new T.Vector3(...st.p)); if (row.ghost.tag) row.ghost.tag.visible = false;
+    out.push(sample(row.ghost));
+  }
+  return { t, phase: i, before: out[0], after: out[1] };
+};
+/** Renders both rows into column `col` (0 … 3) of the strip; `view`: 'front' (ahead of the figure, a little above) or 'top'. */
+window.shoot = (col, view = 'front') => {
+  renderer.setScissorTest(true);
+  rows.forEach((row, k) => {
+    const g = row.ghost, o = g.root.position, body = yawOf(g.avatar.object), fx = Math.sin(body), fz = Math.cos(body);
+    if (view === 'front') { row.cam.position.set(o.x + fx * 4.3 - fz * 1.1, 1.7, o.z + fz * 4.3 + fx * 1.1); row.cam.lookAt(o.x, 0.88, o.z); }
+    else { row.cam.position.set(o.x + fx * 0.4, 4.6, o.z + fz * 0.4); row.cam.up.set(fx, 0, fz); row.cam.lookAt(o.x, 1, o.z); row.cam.up.set(0, 1, 0); }
+    renderer.setViewport(col * W, (1 - k) * H, W, H); renderer.setScissor(col * W, (1 - k) * H, W, H); renderer.render(row.scene, row.cam);
+  });
+  renderer.setScissorTest(false);
+};
+/** The strip with its labels as a PNG (base64): title, the four moments, rows before / after. */
+window.labelled = (title, cols) => {
+  const c = document.createElement('canvas'); c.width = W * 4 + 70; c.height = H * 2 + 64; const x = c.getContext('2d');
+  x.fillStyle = '#edf0f2'; x.fillRect(0, 0, c.width, c.height); x.fillStyle = '#192b38'; x.font = 'bold 20px system-ui'; x.fillText(title, 12, 26);
+  x.font = '15px system-ui'; cols.forEach((s, i) => x.fillText(s, 70 + i * W + 10, 54));
+  x.save(); x.translate(44, 64 + H / 2 + 22); x.rotate(-Math.PI / 2); x.fillText('Före', 0, 0); x.restore();
+  x.save(); x.translate(44, 64 + H * 1.5 + 22); x.rotate(-Math.PI / 2); x.fillText('Efter', 0, 0); x.restore();
+  x.drawImage(renderer.domElement, 70, 64); return c.toDataURL('image/png').split(',')[1];
+};
+window.clearStrip = () => { renderer.setClearColor(0xe9edef); renderer.clear(); };
+window.reset = () => { t = 0; st = { p: [0, 0, 0], r: 0, look: [0, 0] }; };
+window.plan = { plan, ends, total };
+window.bench = () => { // microseconds per Ghost.animate, before vs after, walking a curve
+  const res = [];
+  for (const row of rows) { const g = row.ghost, b = []; for (let j = 0; j < 5; j++) { const at = nativeNow(); for (let n = 0; n < 3000; n++) { now += 1000 / 60; g.root.position.z -= 1.6 / 60; g.root.rotation.y += 0.02; g.animate(now, 1, 0, -1.6); } if (j) b.push((nativeNow() - at) * 1000 / 3000); } res.push(b); }
+  return { unit: 'µs/Ghost.animate', before: res[0], after: res[1] };
+};
+window.leanReady = true;
+</script></html>

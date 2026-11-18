@@ -45,6 +45,8 @@ Träningsskorna har ljus snörning, plös och diskreta panelkanter i dina valda 
 
 Avatarernas händer har ljusa naglar med nagelband, fina veck över lederna, knogar, rundade fingertoppar och en ljusare handflata; senorna på handryggen anas när handen greppar. [Bilder](docs/verification/2106/README.md).
 
+I svängar går avatarens huvud och blick före, bålen följer efter och kroppen lutar lätt inåt i snabba kurvor; vid löpning hålls blicken stadigare. [Före/efter och kontroller](docs/verification/2109/README.md).
+
 Hus L:s solpaneler har diskreta cellmellanrum, tunna ledarbanor och lugn glasstruktur, med oförändrad panelgeometri och takgång. [Egna jämförelsebilder, källbundna kontroller och exakt kostnad](docs/verification/2083/README.md).
 
 Längs Realgymnasiets tegelfasad vid Sankt Lars väg går en smal trottoar med anslutningar vid båda gavlarna; bredden är uppskattad.
