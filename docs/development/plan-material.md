@@ -23,7 +23,7 @@ material/              screenshots of our choices in Peab's option portal (local
 - Vertical reference (#344, `VERTICAL` in config): y 0 = the finished floor (FFL) of our Entréplan = våning 1 = street /
   courtyard level. Per level: FFL, RH (bofakta: 3.0 / 2.8 — *drawing*), the slab zone above it (0.25 between our floors,
   0.35 from Övre plan's ceiling to våning 3's floor = the loftgång deck — *assumption*); våning 3–4 floor-to-floor 3.0, the
-  roof build-up 0.3 + 0.05 capping and `SITE.storey` 3.0 for Hus A/B/C — all *assumption* (plan brochure S2 gives only
+  roof build-up 0.3 + 0.05 capping (a 0.3 m edge band, #2093) and `SITE.storey` 3.0 for Hus A/B/C — all *assumption* (plan brochure S2 gives only
   storey counts). `LEVELS` (floor, ceiling = RH, top), `SLAB`, `UNIT_TOP` (6.4), `storeyFloor(n)` and
   `HUS_L.storeyHeight` are derived from it; each slab is counted once. RH is not floor-to-floor; BH is from the FFL.
   Missing: a section with levels (plushöjder) — the stair's total rise, façade band, loftgång and roof heights hang on it.

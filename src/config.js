@@ -26,7 +26,10 @@ export const VERTICAL = {
   // Hus L våning 3–4 (L1201–L1209): floor-to-floor per storey; no RH or section for them here (assumption)
   upper: { storeys: 2, floorToFloor: 3.0, source: 'assumption' },
   // the flat roof over våning 4: its build-up over våning 4's structure top + the sheet-metal capping (assumption)
-  roof: { buildUp: 0.3, capping: 0.05, source: 'assumption' },
+  // #2093: the capping is the light sheet-metal edge round the roof (#110: "takkant i ljus plåt"), not a cover over it:
+  // `cappingWidth` = its top flange inwards from the outer edge, `cappingDrop` = how far it folds down over the build-up's
+  // face (both *guess*: no section or detail drawing in docs/peab/). Inside the band the felt shows (#2088).
+  roof: { buildUp: 0.3, capping: 0.05, cappingWidth: 0.3, cappingDrop: 0.1, source: 'assumption' },
 };
 // Derived: read these, do not redefine them. The FFL of each level = the FFL below + its RH + its slab zone (each slab
 // counted once): Entréplan 0, Övre plan 0 + 3.0 + 0.25 = 3.25, våning 3 (the top of our unit, the loftgång deck)

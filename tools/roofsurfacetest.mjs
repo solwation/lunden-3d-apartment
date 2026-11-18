@@ -65,8 +65,9 @@ test('every roof batch maps before merging and creates the map before registerSn
   const fn = (s, name) => s.slice(s.indexOf(`function ${name}(`), s.indexOf('\n}\n', s.indexOf(`function ${name}(`)));
   for (const name of ['hipRoof', 'roof', 'roofSpec', 'addSurroundingRoofWalk']) assert.equal(fn(su, name), fn(at('src/surroundings.js'), name), name);
   // the edits replace material/UV lines only: every added line names the roof map/UVs, nothing else in the builders moved
+  // (#2088's own commit; later deliberate geometry work, e.g. #2093's Hus L capping band, has its own tests)
   for (const f of ['src/sitebackdrop.js', 'src/southbackdrop.js', 'src/exterior.js', 'src/surroundings.js', 'src/schoolfacade.js']) {
-    const d = execFileSync('git', ['diff', '-U0', BASE, '--', f], { encoding: 'utf8' }).split('\n'), plus = d.filter((l) => /^\+(?!\+\+)/.test(l)), minus = d.filter((l) => /^-(?!--)/.test(l));
+    const d = execFileSync('git', ['diff', '-U0', BASE, process.env.ROOF_REV || '0c5f4a5', '--', f], { encoding: 'utf8' }).split('\n'), plus = d.filter((l) => /^\+(?!\+\+)/.test(l)), minus = d.filter((l) => /^-(?!--)/.test(l));
     for (const l of plus) assert(/roofUV|roofMap|roofColor|SCHOOL_ROOF_LEVEL|#2088|^\+\s*\/\/|^\+\/\*\*|^\+const lin =|^\+  add\(roofs\.map|^\+  registerSnow\(roofMat/.test(l), `${f}: ${l.slice(0, 120)}`);
     assert(minus.length <= plus.length + 3, f);
   }
