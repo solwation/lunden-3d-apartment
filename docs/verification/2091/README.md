@@ -40,3 +40,5 @@ removed and the block is compiled out (winter unchanged).
 Houses: A/B courtyard and the park checked in the browser; Hus C/L yards and all other lawns share the same material
 (world.js, surroundings.js, streetlife.js, sitebackdrop.js), no house-specific geometry is involved.
 Limit: the #1872 meshlet experiment's node translation (tools/meshlet1872/adapt.js) does not carry the blend.
+
+Publicering: Pages/Worker success på `1c3c899`; före-bilder borttagna vid stängning och visas från den commiten.
