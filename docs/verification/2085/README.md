@@ -106,3 +106,7 @@ texture sampling, or per-frame texture upload.
 ## Integrationsgranskning
 
 Dirigenten har granskat alla fem egna bildark, helper, foliagediff och källbundet grönt underlag. Vanlig närvy godtas som diskret toning; enskilda sidonerver främst nära, ingen extra förstärkning. Hela produkt-/fixture-/testkällan matchar överlämningen exakt och föregående config är byteidentisk. Engångskostnaden för två CPU-ytor och readback redovisas; ingen ny GPU-/framekostnad. Ingen rutinomkörning.
+
+## Publicering
+
+Kod/bilder `a2b5b1939ced3e0bca8ecf042c32d7783f34067d`; faktiska run-ID [44287040812] success på exakt revision. Alla bilder HTTP200 och inbäddade före stängning: https://github.com/solwation/lunden-3d-apartment/issues/2085#issuecomment-6976054131. Slutkvittot är enbart dokumentation; originalets sökvägsfilter utlöser ingen ny apppublicering.
