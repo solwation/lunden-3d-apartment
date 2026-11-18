@@ -10021,3 +10021,29 @@ export const CAR_FINISH = {
   trimReflection: 0.6, tyre: { roughness: 0.95 },
   far: { roughness: 0.4, metalness: 0.1, reflection: 0.6 },
 };
+
+// #2120: evening routines of the neighbours' lit windows (src/windowschedule.js, surroundings.js buildWindowLights). Every
+// window (a detailed window's panes together) draws its habit from a hash of its position, so the same window keeps it.
+// All *guess* values from ordinary evening life in a residential block, nothing measured. `empty` share of windows with
+// nobody home tonight; `kinds` evening habits by share: `on`/`off` hour ranges (off > 24 = after midnight); `minLit` h
+// shortest evening; `morning` share also lit `wake`…`leave`; `fade` h of the soft switch (smoothstep over it);
+// `colours` light colour by share (`jitter` ± per-window shift towards warm/cool); `tv` windows show blue flicker
+// (`rgb`, brightness 1 − `depth`…1 with `rate` scene cuts per s) from `from` to `until` h while lit, at most every
+// `step` s (one instance-colour upload of the existing mesh; no new light, draw or shader).
+export const WINDOW_SCHEDULE = {
+  empty: .14, minLit: .75, fade: .2, jitter: .05,
+  kinds: [
+    { name: 'early', share: .18, on: [15.5, 17.5], off: [20.5, 23] },
+    { name: 'evening', share: .5, on: [17.5, 20], off: [21.5, 24] },
+    { name: 'late', share: .24, on: [18, 21], off: [24, 25.6] },
+    { name: 'owl', share: .08, on: [19, 22.5], off: [26, 28.5] },
+  ],
+  morning: .35, wake: [5.5, 7], leave: [7, 8.5],
+  colours: [
+    { name: 'warm', share: .45, rgb: [1, .76, .48] },
+    { name: 'neutral', share: .28, rgb: [1, .86, .66] },
+    { name: 'cool', share: .17, rgb: [.86, .9, .95] },
+    { name: 'tv', share: .1, rgb: [1, .8, .55], tv: true },
+  ],
+  tv: { rgb: [.5, .66, 1], depth: .35, rate: [.25, .6], from: 19, until: 24.5, step: .12 },
+};

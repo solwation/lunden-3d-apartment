@@ -1290,3 +1290,17 @@ Inventory: only source 130681301 receives this record. HepCat and Hus A/B/C/L fo
 The full connected water inventory is bridges-water (local, upstream extension and appended downstream path) and both EDGE_BACKDROP.rivers courses, drawn by riverContinuationParts inside the existing edge-land batch. The shared normal hook retains all vertices/UV, waterYAt/shoreYAt/riverGround/fall, shoreline/bed/swimming/deck contracts and the two-way opaque surface. Existing edge water colour and exact water levels classify the mask; non-water land and other far ditches keep their older shading. Edge winter remains its original colourless snow shader.
 
 This is static normal detail only: main.js, swim/player, riverdrift/view, riverfish/swim, riveredge and terrain builders remain byte-identical. Drift and fish rings are not restarted, replaced or given another clock. No additional water batch, render loop or physical wave height. Artistic settings and existing mattness differences are not measured flow. [Both joins, actual GLSL normal readback, unchanged geometry/queries and own images](../verification/2082/README.md). Relevant neutral public adaptation is tracked separately as kvarteret-lunden#303.
+
+### Neighbours' evening window routines (#2120)
+
+`src/windowschedule.js` (pure; tunables `WINDOW_SCHEDULE`, all *guess*) gives each of `buildWindowLights`' instanced window quads (a
+detailed window's panes share one) a habit from a hash of its position or routine key, so a window keeps its routine regardless of build
+order: `empty` share dark tonight, evening kinds `early` / `evening` (most, 18–22) / `late` (round midnight) / `owl` (until 2–4.5), an
+optional morning, a light colour (warm / neutral / cool LED / TV) with a small per-window shift, and a smoothstep fade (`fade` h) instead of a
+hard switch. Shares lit in November (735 quads): 17 h 12 %, 20 h 72 %, 23 h 48 %, 02 h 8 % (before: 36 / 82 / 35 / 0 %). About 10 % are TVs:
+between `tv.from` and `tv.until` while lit they show blue and flicker (1 − `tv.depth` … 1, slow wave plus scene cuts), updated at most every
+`tv.step` s by rewriting only their instance colours in the existing buffer. Stair halls (#266), the power cut (#604) and the #1525 ground
+pools (which follow each window's level) are unchanged. No new light, draw, material, texture or shader variant (the phone profile gets the
+same single program). `tools/windowscheduletest.mjs` checks determinism, the share per hour, soft edges and bounded colour / flicker;
+`tools/windowlights2120browser.cjs` takes before/after views at 17 / 20 / 23 / 02 ([images](../verification/2120/README.md)).
+Not covered: Hus L's own courtyard units (`neighborLitGlass` in exterior.js) remain one emissive material lit after dusk.

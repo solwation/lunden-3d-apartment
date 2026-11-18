@@ -1,0 +1,122 @@
+{
+ "phase": "after",
+ "views": [
+  {
+   "name": "court",
+   "at": "0,75,0,8",
+   "hour": 17,
+   "windows": 735,
+   "lit": 92,
+   "share": 0.125,
+   "blue": 0,
+   "meanLit": 0.95,
+   "calls": 0,
+   "programs": 0,
+   "drawCalls": 552,
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/wl2120/after-court-17.png"
+  },
+  {
+   "name": "court",
+   "at": "0,75,0,8",
+   "hour": 20,
+   "windows": 735,
+   "lit": 526,
+   "share": 0.716,
+   "blue": 63,
+   "meanLit": 0.94,
+   "calls": 552,
+   "programs": 110,
+   "drawCalls": 552,
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/wl2120/after-court-20.png"
+  },
+  {
+   "name": "court",
+   "at": "0,75,0,8",
+   "hour": 23,
+   "windows": 735,
+   "lit": 351,
+   "share": 0.478,
+   "blue": 33,
+   "meanLit": 0.941,
+   "calls": 552,
+   "programs": 112,
+   "drawCalls": 553,
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/wl2120/after-court-23.png"
+  },
+  {
+   "name": "court",
+   "at": "0,75,0,8",
+   "hour": 2,
+   "windows": 735,
+   "lit": 58,
+   "share": 0.079,
+   "blue": 0,
+   "meanLit": 0.987,
+   "calls": 553,
+   "programs": 114,
+   "drawCalls": 553,
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/wl2120/after-court-02.png"
+  },
+  {
+   "name": "wide",
+   "at": "-25,105,-8,7",
+   "hour": 17,
+   "windows": 735,
+   "lit": 92,
+   "share": 0.125,
+   "blue": 0,
+   "meanLit": 0.95,
+   "calls": 0,
+   "programs": 0,
+   "drawCalls": 476,
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/wl2120/after-wide-17.png"
+  },
+  {
+   "name": "wide",
+   "at": "-25,105,-8,7",
+   "hour": 20,
+   "windows": 735,
+   "lit": 526,
+   "share": 0.716,
+   "blue": 63,
+   "meanLit": 0.941,
+   "calls": 476,
+   "programs": 105,
+   "drawCalls": 476,
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/wl2120/after-wide-20.png"
+  },
+  {
+   "name": "wide",
+   "at": "-25,105,-8,7",
+   "hour": 23,
+   "windows": 735,
+   "lit": 351,
+   "share": 0.478,
+   "blue": 33,
+   "meanLit": 0.941,
+   "calls": 476,
+   "programs": 107,
+   "drawCalls": 476,
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/wl2120/after-wide-23.png"
+  },
+  {
+   "name": "wide",
+   "at": "-25,105,-8,7",
+   "hour": 2,
+   "windows": 735,
+   "lit": 58,
+   "share": 0.079,
+   "blue": 0,
+   "meanLit": 0.987,
+   "calls": 476,
+   "programs": 107,
+   "drawCalls": 476,
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/wl2120/after-wide-02.png"
+  }
+ ],
+ "errors": [],
+ "flicker": {
+  "changedAfter400ms": 59,
+  "fullUpdateMs": 0.182
+ }
+}

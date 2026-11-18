@@ -15,11 +15,12 @@ import { addRoadFrame } from './streetwear.js';
 import { wetGround } from './wetground.js';
 import { grassUV, grassMaterial } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR, SOUTH_PLATEAU, PADDOCK, PARKING_SEAM, MUSSELS, RENDER_SURFACE } from './config.js';
+import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, WINDOW_SCHEDULE as W2120, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR, SOUTH_PLATEAU, PADDOCK, PARKING_SEAM, MUSSELS, RENDER_SURFACE } from './config.js';
 import { gridGround, southPointGround } from './elevation.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { neighborGlass } from './neighborglass.js';
 import { paneTints } from './glasspanes.js';
+import { windowHabit, windowLevel, windowRgb, tvOn, tvFlicker } from './windowschedule.js';
 import { railMetal } from './railmetal.js';
 import { registerTrees, registerSnow } from './seasons.js';
 import { siteWindBounds } from './sitewind.js';
@@ -1788,20 +1789,14 @@ export function buildWindowLights(detailed=[]) {
   const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }); // fog would add its colour to black (unlit) quads
   const mesh = new THREE.InstancedMesh(geo, mat, spots.length);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1), up = new THREE.Vector3(0, 1, 0);
-  const rand = rng(17);
   const routines=new Map();
   const habits = spots.map((p, i) => {
     q.setFromAxisAngle(up, Math.atan2(p.n[0], p.n[1]));
     mesh.setMatrixAt(i, m.compose(new THREE.Vector3(p.x, p.y, p.z), q, one.set(...p.s)));
     mesh.setColorAt(i, new THREE.Color(0, 0, 0));
     if(p.routine&&routines.has(p.routine))return routines.get(p.routine);
-    const home = rand() > 0.2; // some flats are empty tonight
-    const habit={
-      home, hall: p.hall, lunden: !!p.lunden, // a stair hall: lit all night (#266)
-      on: 15.5 + rand() * 4, off: 21 + rand() * 3.5, // evening
-      early: rand() < 0.4, wake: 5.5 + rand() * 1.5, leave: 7 + rand() * 1.5, // morning
-      tint: rand(), // warm … cool (TV)
-    };
+    // #2120: its own deterministic evening (schedule, colour, TV) from a hash of the window's place, not the build order
+    const habit={ ...windowHabit(p.routine ?? `${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)}`), hall: p.hall, lunden: !!p.lunden }; // a stair hall: lit all night (#266)
     if(p.routine)routines.set(p.routine,habit);return habit;
   });
   // #1525: Hus A–C's lit ground-floor windows spill a faint pool onto the ground in front (one additive mesh, no light
@@ -1834,20 +1829,29 @@ export function buildWindowLights(detailed=[]) {
     spill.material.vertexColors = true; spill.material.opacity = W.peak; spill.material.side = THREE.FrontSide; // seen from above only: one pass
     Object.assign(spill, { name: 'windowSpillPools', visible: false, renderOrder: 2 });
   }
-  const col = new THREE.Color();
-  let last = -1, lastPower = true;
+  const col = new THREE.Color(), levels = new Float32Array(habits.length), tvs = [];
+  let last = -1, lastPower = true, lastNight = -1, flickT = -1;
+  const paint = (i, k, rgb, f = 1) => mesh.setColorAt(i, col.setRGB(rgb[0] * k * f, rgb[1] * k * f, rgb[2] * k * f));
   return {
     object: mesh, spill,
-    /** hour 0–24, night 0 (day) … 1 (night): switch windows as their routines say; `power` false: Kv. Lunden's windows dark (#604). */
+    /** hour 0–24, night 0 (day) … 1 (night): switch windows as their routines say; `power` false: Kv. Lunden's windows dark (#604).
+     *  #2120: soft fades (re-evaluated every 0.01 h), and the few TV windows flicker blue at most every WINDOW_SCHEDULE.tv.step s. */
     update(hour, night, power = true) {
-      if (Math.abs(hour - last) < 0.05 && last >= 0 && power === lastPower) return;
-      last = hour; lastPower = power;
-      const levels = new Float32Array(habits.length);
+      const now = performance.now() / 1000;
+      if (Math.abs(hour - last) < 0.01 && last >= 0 && power === lastPower && Math.abs(night - lastNight) < 0.01) {
+        if (tvs.length && now - flickT >= W2120.tv.step) { // only the TVs' colours change: same buffer, one upload
+          flickT = now;
+          for (const i of tvs) paint(i, levels[i], W2120.tv.rgb, tvFlicker(habits[i], now));
+          mesh.instanceColor.needsUpdate = true;
+        }
+        return;
+      }
+      last = hour; lastPower = power; lastNight = night; flickT = now; tvs.length = 0;
       habits.forEach((h, i) => {
-        const lit = h.home && ((hour > h.on && hour < h.off) || (h.off > 24 && hour < h.off - 24) || (h.early && hour > h.wake && hour < h.leave));
-        const k = !power && h.lunden ? 0 : h.hall ? 0.85 * night : lit ? 0.25 + 0.75 * night : 0;
-        col.setRGB(1.0 * k, (0.78 + 0.12 * h.tint) * k, (0.5 + 0.45 * h.tint) * k);
-        mesh.setColorAt(i, col);
+        const k = !power && h.lunden ? 0 : h.hall ? 0.85 * night : windowLevel(h, hour) * (0.25 + 0.75 * night);
+        const tv = k > 0 && !h.hall && tvOn(h, hour);
+        if (tv) tvs.push(i);
+        paint(i, k, h.hall ? [1, 0.84, 0.6] : windowRgb(h, hour), tv ? tvFlicker(h, now) : 1);
         levels[i] = k;
       });
       mesh.instanceColor.needsUpdate = true;

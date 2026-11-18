@@ -49,6 +49,8 @@ Avatarernas händer har ljusa naglar med nagelband, fina veck över lederna, kno
 
 Avatarernas kläder har diskreta sömmar vid axlar, sidor och innerben, ribbade muddar och krage på tröjorna, fållar på T-shirt och byxben, en linning med hällor och fickor fram och bak, i oförändrade plaggfärger. [Bilder](docs/verification/2107/README.md).
 
+Grannhusens fönster har egna kvällsvanor: några tänds tidigt, de flesta mellan 18 och 22, de flesta släcks runt midnatt och enstaka nattugglor är vakna; ljuset skiftar lite i färg, tänds mjukt och i några fladdrar blått tv-sken. [Före/efter](docs/verification/2120/README.md).
+
 I spegelns inställningar (Ansikte → Hud) kan avataren få diskreta fräknar, några födelsemärken och lätt ojämn hudton, placerade likadant för alla spelare. [Bilder](docs/verification/2111/README.md).
 
 I svängar går avatarens huvud och blick före, bålen följer efter och kroppen lutar lätt inåt i snabba kurvor; vid löpning hålls blicken stadigare. [Före/efter och kontroller](docs/verification/2109/README.md).
