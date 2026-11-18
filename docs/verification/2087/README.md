@@ -18,12 +18,12 @@ reflexintensiteten är oförändrad.
 
 | Vy | Före | Efter |
 |---|---|---|
-| Hus L gatusida, dag | ![](husL-gata-dag-before.jpg) | ![](husL-gata-dag-after.jpg) |
-| Hus L gatusida, natt | ![](husL-gata-natt-before.jpg) | ![](husL-gata-natt-after.jpg) |
-| Granne Hus A från gården, dag | ![](granne-A-dag-before.jpg) | ![](granne-A-dag-after.jpg) |
-| Granne Hus A, natt | ![](granne-A-natt-before.jpg) | ![](granne-A-natt-after.jpg) |
-| Skolan över gatan (88457612), dag | ![](skola-dag-before.jpg) | ![](skola-dag-after.jpg) |
-| Skolan, natt | ![](skola-natt-before.jpg) | ![](skola-natt-after.jpg) |
+| Hus L gatusida, dag | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/47d8827e694d7b62983db3b6943c44f054dd0bb0/docs/verification/2087/husL-gata-dag-before.jpg) | ![](husL-gata-dag-after.jpg) |
+| Hus L gatusida, natt | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/47d8827e694d7b62983db3b6943c44f054dd0bb0/docs/verification/2087/husL-gata-natt-before.jpg) | ![](husL-gata-natt-after.jpg) |
+| Granne Hus A från gården, dag | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/47d8827e694d7b62983db3b6943c44f054dd0bb0/docs/verification/2087/granne-A-dag-before.jpg) | ![](granne-A-dag-after.jpg) |
+| Granne Hus A, natt | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/47d8827e694d7b62983db3b6943c44f054dd0bb0/docs/verification/2087/granne-A-natt-before.jpg) | ![](granne-A-natt-after.jpg) |
+| Skolan över gatan (88457612), dag | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/47d8827e694d7b62983db3b6943c44f054dd0bb0/docs/verification/2087/skola-dag-before.jpg) | ![](skola-dag-after.jpg) |
+| Skolan, natt | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/47d8827e694d7b62983db3b6943c44f054dd0bb0/docs/verification/2087/skola-natt-before.jpg) | ![](skola-natt-after.jpg) |
 
 Dag: rutorna skiftar lite i blått/grått och är ljusare upptill (pixeldiff mot före: Hus A max 18,
 skolan max 15 av 255 på glaset). Natt: glaset är mörkt som förut (diff ≤ 3); L1007:s upplysta,
@@ -62,3 +62,5 @@ Byggtid ≈ 21 ms för 42 000 vertexar i Node (enkelt mätt). Kända förhandsfe
 "redefinition" uppstår i båda faserna när `kit.shot` växlar kvalitet (`src/lampwash.js`), inte
 orsakat av denna ändring. Efter bildtagningen refaktorerades `paneColor` till en matematiskt identisk
 form (snabbare); config och färger är desamma. Ingen fysisk enhet testad.
+
+Före-bilderna togs bort vid stängning (bildretention) och visas från commit `47d8827`. Publicering: Pages/Worker success på `47d8827`.
