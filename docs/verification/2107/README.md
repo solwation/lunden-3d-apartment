@@ -29,3 +29,5 @@ Limits: the landmarks are the standard skeleton's bind pose (as #2034's folds); 
 the vest's binding is faint in places; the waistband shows only under a T-shirt / sweater / vest (the hoodie's long hem covers it);
 the fine stitches and ribs average out beyond ~1 m, leaving only a soft shade. The mirror preview (#1994) and avatar LOD (#1966) use the
 same material (not captured separately); the far figure (`ghostfar.js`) has none of it.
+
+Publicering: Pages/Worker success på `568098a`; före-bilder borttagna vid stängning och visas från den commiten.
