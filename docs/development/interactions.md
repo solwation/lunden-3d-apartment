@@ -524,7 +524,7 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        and 0–8 sliders (middle = the plain face) for eye size/opening, head width/length/jaw, nose size/width, ears and brow
                        thickness/height; the 2D preview follows them and stays sticky on desktop. The look code keeps its digits (nine, or
                        twelve with #1136's height) and appends tagged fields `[a-z]` + 1–3 digits, only non-default ones (`c` eye colour,
-                       `e o w l j n b r t y`); unknown tags are skipped. On the wire the digits stay `av` (older clients) and the rest goes as
+                       `e o w l j n b r t y`; #2111: `c` also carries the optional skin variation in its eights); unknown tags are skipped. On the wire the digits stay `av` (older clients) and the rest goes as
                        `ax` (ghosts.js `avatarWire`; Worker `cleanAvatarExt` checks only the form, ≤ 60 chars, and only beside a valid `av`).
                        #1139: "Kroppsbyggnad" slider (index.html `#avatar-build`, config.js `AVATAR_BUILD`, `avatarBuildStep`/`avatarBuildWidth`):
                        steps 0–8 scale the figure's x/z (Avatar object scale, no new draw call) 0.86 … 1 … 1.16; the seed's old build 0/1/2

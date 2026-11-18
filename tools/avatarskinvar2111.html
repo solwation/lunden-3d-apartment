@@ -1,0 +1,60 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar skin variation 2111</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<script>performance.__real = performance.now.bind(performance); { let a = 2111; Math.random = () => { a = (a * 1664525 + 1013904223) >>> 0; return a / 4294967296; }; } // the same figures in both passes</script>
+<style>html,body{margin:0;background:#263747}canvas{display:block}</style></head>
+<body><script type="module">
+// #2111 component page, driven by tools/avatarskinvar2111browser.cjs: the mirror's own preview (src/avatarpreview.js, face close-up, as the
+// customizer draws it) of the same look with the skin variation off / low / high, and a larger mirror-distance close-up of the three side by
+// side. The "before" pass serves the base revision's modules (the look fields are then unknown and ignored).
+import * as THREE from 'three';
+import { AvatarPreview } from '../src/avatarpreview.js';
+import { Avatar } from '../src/avatar.js';
+import { decodeAvatarLook, avatarEyeHeight, SKIN } from '../src/config.js';
+const LEVELS = { off: {}, low: { freckles: 1 }, high: { freckles: 3, marks: 1, blotch: 1 } };
+const look = (level, skin) => ({ ...decodeAvatarLook('210000100c5', 'skinvar'), tall: 1, build: 1, style: 1, skin: SKIN[skin], skinSeed: 2, ...LEVELS[level] });
+const out = document.createElement('canvas'); document.body.appendChild(out);
+let preview = null;
+window.__preview = (level, skin = 1, yaw = 0) => {
+  preview ??= new AvatarPreview(out);
+  preview.draw(look(level, skin), { closeup: true, yaw });
+  const i = preview.renderer.info; return { calls: i.render.calls, tris: i.render.triangles, textures: i.memory.textures, w: out.width, h: out.height };
+};
+// mirror distance: a 0.45 m wide view of three faces from about 0.6 m
+const W = 960, H = 600, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(W, H);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x263747);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+const cam = new THREE.PerspectiveCamera(30, W / H, 0.02, 30);
+let row = [];
+window.__mirror = (skin = 1, yaw = 0) => {
+  for (const a of row) { a.object.removeFromParent(); a.dispose(); }
+  row = Object.keys(LEVELS).map((lv, i) => {
+    const a = new Avatar(look(lv, skin)); a.object.position.set((i - 1) * 0.24, 1.62 - avatarEyeHeight(a.look), 0); a.object.rotation.y = yaw; a.update(0, {}); scene.add(a.object); return a;
+  });
+  scene.updateMatrixWorld(true);
+  const t = row[1].bones.head.getWorldPosition(new THREE.Vector3()); t.x = 0; t.y += 0.08;
+  cam.position.copy(t).add(new THREE.Vector3(0, 0, 0.95)); cam.lookAt(t);
+  renderer.info.reset(); renderer.render(scene, cam);
+  out.width = W; out.height = H; out.getContext('2d').drawImage(renderer.domElement, 0, 0);
+  return { calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures, programs: renderer.info.programs.length };
+};
+// matched A/B: the mirror row with every figure high vs every figure off (the same program), interleaved
+window.__ab = (n = 8, rounds = 3) => {
+  window.__mirror(1); const gl = renderer.getContext(), px = new Uint8Array(4), t = { high: 0, off: 0 };
+  const hi = row.map((a) => a.material.userData.u.uSkinVar?.value.clone());
+  for (let r = 0; r < rounds; r++) for (const k of ['high', 'off']) {
+    row.forEach((a, i) => { const u = a.material.userData.u.uSkinVar; if (u) { if (k === 'off') u.value.set(0, 0, 0, 0); else u.value.copy(hi[2]); } });
+    renderer.render(scene, cam); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    const t0 = performance.__real(); for (let i = 0; i < n; i++) renderer.render(scene, cam); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); t[k] += (performance.__real() - t0) / n / rounds;
+  }
+  return { high: +t.high.toFixed(1), off: +t.off.toFixed(1) };
+};
+window.__ready = true;
+</script></body></html>

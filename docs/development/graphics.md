@@ -1671,3 +1671,18 @@ heights) with #2034's; garment colours and choices are unchanged. No mesh, textu
 only at look set-up. `seamAt` mirrors the shader's placement for `tools/avatarseamtest.mjs`; `tools/avatarseam2107browser.cjs` takes
 before/after views ([images](../verification/2107/)). Limits: the landmarks are the standard skeleton's (like #2034), the armhole oval
 approximates #2001's 12-vertex hole, and the waistband is covered by the hoodie's long hem.
+
+### Optional skin variation: freckles, birthmarks, uneven tone (#2111)
+
+`src/avatarskinvar.js` (tunables `AVATAR_SKIN_VARIATION`, all *guess*; program key suffix `-skinvar2111`) adds an optional, discreet
+variation chosen in the mirror's settings (Ansikte → Hud: Fräknar Inga/Lite/Måttligt/Mycket, Födelsemärken, Hudton Jämn/Lätt ojämn,
+Ny placering). `skinVarSpots(look)` places 7 / 14 / 22 freckles over the nose bridge and upper cheeks, 1–3 birthmarks and three soft flush
+zones in the head bone's bind frame, deterministic from the look's `skinSeed` (0–6) and skin colour (a higher amount keeps the lower
+amount's freckles); lids, lips and brows (measured bind bounds plus a margin) are kept clear. The spots fill a per-avatar uniform array
+(`uSkinSpot[28]`, `uSkinVar` = count + under-eye strength); the fragment piece multiplies the bare head skin's albedo round each spot,
+projected from the front, plus a darker zone under each eye. Each pigment spot widens to the pixel footprint while keeping its area, so it
+fades instead of shimmering at distance. Look fields `freckles`, `marks`, `blotch`, `skinSeed` (missing = off) ride in the eye colour's `c`
+tag (`eye + 8 × (features + 16 × seed)`, config.js `skinVarCode`; older clients skip a `c` ≥ 8 and lose only the eye colour); the largest
+possible wire extension is exactly the Worker's 60 characters. No mesh, texture, attribute, draw call or network field; off = one uniform
+test. `tools/avatarskinvartest.mjs` checks placement, determinism, the kept-clear areas and the code round trip;
+`tools/avatarskinvar2111browser.cjs` takes before/after mirror-preview views ([images](../verification/2111/)).

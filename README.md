@@ -46,6 +46,9 @@ Träningsskorna har ljus snörning, plös och diskreta panelkanter i dina valda 
 Avatarernas händer har ljusa naglar med nagelband, fina veck över lederna, knogar, rundade fingertoppar och en ljusare handflata; senorna på handryggen anas när handen greppar. [Bilder](docs/verification/2106/README.md).
 
 Avatarernas kläder har diskreta sömmar vid axlar, sidor och innerben, ribbade muddar och krage på tröjorna, fållar på T-shirt och byxben, en linning med hällor och fickor fram och bak, i oförändrade plaggfärger. [Bilder](docs/verification/2107/README.md).
+
+I spegelns inställningar (Ansikte → Hud) kan avataren få diskreta fräknar, några födelsemärken och lätt ojämn hudton, placerade likadant för alla spelare. [Bilder](docs/verification/2111/README.md).
+
 I svängar går avatarens huvud och blick före, bålen följer efter och kroppen lutar lätt inåt i snabba kurvor; vid löpning hålls blicken stadigare. [Före/efter och kontroller](docs/verification/2109/README.md).
 
 Utomhus tar vinden i avatarernas långa hår, knut och tröjfåll med ett mjukt, oregelbundet fladder i vindriktningen, tydligare när det blåser; inomhus är det stilla. [Före/efter och kontroller](docs/verification/2110/README.md).

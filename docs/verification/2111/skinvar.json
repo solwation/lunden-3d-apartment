@@ -1,0 +1,133 @@
+{
+  "baseline": "33dc86f8",
+  "source": "04639ca5b9197a5f9c641c7ff4d51262422897f5",
+  "before": {
+    "preview": {
+      "preview-off-skin1": {
+        "calls": 1,
+        "tris": 17112,
+        "textures": 1,
+        "w": 330,
+        "h": 465
+      },
+      "preview-low-skin1": {
+        "calls": 1,
+        "tris": 17112,
+        "textures": 1,
+        "w": 330,
+        "h": 465
+      },
+      "preview-high-skin1": {
+        "calls": 1,
+        "tris": 17112,
+        "textures": 1,
+        "w": 330,
+        "h": 465
+      },
+      "preview-off-skin4": {
+        "calls": 1,
+        "tris": 17112,
+        "textures": 1,
+        "w": 330,
+        "h": 465
+      },
+      "preview-low-skin4": {
+        "calls": 1,
+        "tris": 17112,
+        "textures": 1,
+        "w": 330,
+        "h": 465
+      },
+      "preview-high-skin4": {
+        "calls": 1,
+        "tris": 17112,
+        "textures": 1,
+        "w": 330,
+        "h": 465
+      }
+    },
+    "mirror": {
+      "mirror-skin1": {
+        "calls": 3,
+        "tris": 51336,
+        "textures": 3,
+        "programs": 1
+      },
+      "mirror-skin4": {
+        "calls": 3,
+        "tris": 51336,
+        "textures": 3,
+        "programs": 1
+      }
+    },
+    "ab": {
+      "high": 4497.9,
+      "off": 4279.7
+    }
+  },
+  "after": {
+    "preview": {
+      "preview-off-skin1": {
+        "calls": 1,
+        "tris": 17112,
+        "textures": 1,
+        "w": 330,
+        "h": 465
+      },
+      "preview-low-skin1": {
+        "calls": 1,
+        "tris": 17112,
+        "textures": 1,
+        "w": 330,
+        "h": 465
+      },
+      "preview-high-skin1": {
+        "calls": 1,
+        "tris": 17112,
+        "textures": 1,
+        "w": 330,
+        "h": 465
+      },
+      "preview-off-skin4": {
+        "calls": 1,
+        "tris": 17112,
+        "textures": 1,
+        "w": 330,
+        "h": 465
+      },
+      "preview-low-skin4": {
+        "calls": 1,
+        "tris": 17112,
+        "textures": 1,
+        "w": 330,
+        "h": 465
+      },
+      "preview-high-skin4": {
+        "calls": 1,
+        "tris": 17112,
+        "textures": 1,
+        "w": 330,
+        "h": 465
+      }
+    },
+    "mirror": {
+      "mirror-skin1": {
+        "calls": 3,
+        "tris": 51336,
+        "textures": 3,
+        "programs": 1
+      },
+      "mirror-skin4": {
+        "calls": 3,
+        "tris": 51336,
+        "textures": 3,
+        "programs": 1
+      }
+    },
+    "ab": {
+      "high": 3174.6,
+      "off": 3689.2
+    }
+  },
+  "errors": []
+}

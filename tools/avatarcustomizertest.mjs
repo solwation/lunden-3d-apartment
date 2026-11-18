@@ -206,8 +206,8 @@ test('#1138 face fields: extension encoding, old codes unchanged, unknown tags s
   // newer fields (e.g. the height, h) are skipped; out-of-range values keep the default; garbage falls back to the seed
   const withHeight = decodeAvatarLook(code.slice(0, 9) + 'h120c5', 'p');
   assert.equal(withHeight.eyes, EYES[5]); assert.equal(withHeight.skin, back.skin);
-  assert.equal(decodeAvatarLook(code.slice(0, 9) + 'c99e9', 'p').eyes, EYES[0]);
-  assert.equal(decodeAvatarLook(code.slice(0, 9) + 'c99e9', 'p').eyeSize, AVATAR_SHAPE.mid);
+  assert.equal(decodeAvatarLook(code.slice(0, 9) + 'c999e9', 'p').eyes, EYES[0]); // (#2111: c8-c895 carry the skin variation)
+  assert.equal(decodeAvatarLook(code.slice(0, 9) + 'c999e9', 'p').eyeSize, AVATAR_SHAPE.mid);
   assert.equal(decodeAvatarLook(code.slice(0, 9) + 'C3', 'p').skin, avatarLook('p').skin, 'malformed extension → seeded look');
   // #1136's height (three more digits) and the face extension together; the wire keeps all digits in av
   const both = encodeAvatarLook({ ...face, height: 120 });

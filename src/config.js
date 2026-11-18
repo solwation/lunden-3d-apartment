@@ -4495,6 +4495,34 @@ export const AVATAR_SKIN_DETAIL = {
   sss: [1.0, 0.25, 0.12], wrap: 0.45, wrapK: 0.6, back: [0.35, 3.0, 0.65], thin: { ear: 1, nose: 0.4, finger: 0.55, other: 0 },
   earRim: { y: 0.095, h: 0.028, w: 0.014, inner: 0.3 },
 };
+// #2111 optional skin variation (src/avatarskinvar.js), all *guess* by eye, not measured. Look fields: `freckles` 0 none … 3 many,
+// `marks` 0/1 a few birthmarks, `blotch` 0/1 slightly uneven tone (flush zones, darker under the eyes), `skinSeed` 0 … seeds − 1 the placement
+// (missing = off / 0). They ride in the eye colour's `c` tag: value = eye index + 8 × (features + 16 × seed), features = freckles + 4 × marks
+// + 8 × blotch (all 26 tags are taken; older clients skip a `c` of 8 or more, losing only the eye colour). Head-bone frame, bind metres:
+// `counts` freckles per amount (a higher amount keeps the lower amount's freckles and adds more), `zone` [x half-width, y low, y high, centre y,
+// y spread, x spread] where freckles fall (nose bridge and upper cheeks), `r` [min, max] freckle radius m (stylised a little larger than real so
+// the mirror shows them), `k` [min, max] pigment strength, `gap` the minimum distance in radii; `eye` [x, y, half-width, half-height] and `lip`
+// [y, half-width, half-height] are kept clear (measured bind bounds of the lids / lips plus a margin), as the brows `brow` [y low, y high].
+// `mark` [count min, count max, r min, r max, k min, k max] in the `markZone` [x half-width, y low, y high]; `flush` [count, r min, r max, k]
+// soft zones on cheeks / chin / forehead; `under` [x, y, half-width, half-height, k] the darker skin under each eye. Tints multiply the albedo.
+export const AVATAR_SKIN_VARIATION = {
+  seeds: 7, counts: [0, 7, 14, 22], max: 28,
+  zone: [0.072, 0.06, 0.102, 0.084, 0.016, 0.05], r: [0.0013, 0.0022], k: [0.45, 0.85], gap: 2.4,
+  eye: [0.031, 0.108, 0.025, 0.0155], lip: [0.045, 0.028, 0.017], brow: [0.117, 0.138],
+  mark: [1, 3, 0.0017, 0.0026, 0.65, 0.9], markZone: [0.065, 0.02, 0.17],
+  flush: [3, 0.014, 0.022, 0.6], under: [0.031, 0.0935, 0.017, 0.0065, 0.55],
+  freckleTint: [0.74, 0.56, 0.44], markTint: [0.55, 0.4, 0.32], flushTint: [1.03, 0.85, 0.83], underTint: [0.86, 0.81, 0.86],
+};
+/** The look's skin variation (#2111), each field clamped; missing or invalid = off. */
+export function skinVarOf(look) {
+  const V = AVATAR_SKIN_VARIATION, i = (v, n) => (Number.isInteger(v) && v >= 0 && v < n ? v : 0);
+  return { freckles: i(look?.freckles, V.counts.length), marks: i(look?.marks, 2), blotch: i(look?.blotch, 2), skinSeed: i(look?.skinSeed, V.seeds) };
+}
+/** The skin variation's share of the `c` tag (#2111): 0 when every feature is off (the seed alone is not written). */
+export function skinVarCode(look) {
+  const v = skinVarOf(look), feat = v.freckles + 4 * v.marks + 8 * v.blotch;
+  return feat ? feat + 16 * v.skinSeed : 0;
+}
 // #2044 (part of #2042) the face's sculpted forms (src/avatarsculpt.js), all *guess* by eye against the avatar head in raking light and
 // backlight, not measured. Head-bone frame before faceWarp (metres; eye centre y 0.107, lip seam 0.043). Each form is
 // [depth m (+ out, − in), ax, ay, bx, by, σ m, smile gain, σ m left of a → b (default σ)]: a soft Gaussian ridge / groove round the
@@ -7362,8 +7390,8 @@ const LOOK_EXT = /^(?:[a-z][0-9]{1,3}){0,28}$/;
 export const AVATAR_LOOK_EXT_MAX = 60;
 function encodeLookExt(look) {
   let out = '';
-  const eyes = EYES.indexOf(look.eyes);
-  if (eyes > 0) out += `c${eyes}`;
+  const eyes = Math.max(0, EYES.indexOf(look.eyes)), skinVar = skinVarCode(look); // #2111: the skin variation above the eye colour
+  if (eyes > 0 || skinVar) out += `c${eyes + EYES.length * skinVar}`;
   const top = TOPS.indexOf(look.top);
   if (top >= TOPS_SEEDED) out += `u${top}`; // #1156: a top beyond the digit's ten
   const bb = look.bodyBuild; // #1139: a chosen body build, also the middle (the seed's own may differ)
@@ -7401,7 +7429,14 @@ function decodeLookExt(ext, lk) {
   if (!ext || ext.length > AVATAR_LOOK_EXT_MAX || !LOOK_EXT.test(ext)) return;
   for (const [, tag, digits] of ext.matchAll(/([a-z])([0-9]{1,3})/g)) {
     const v = Number(digits);
-    if (tag === 'c') { if (v < EYES.length) lk.eyes = EYES[v]; continue; }
+    if (tag === 'c') { // #2111: the skin variation in the eights (an old client reads only 0-7)
+      const sv = Math.floor(v / EYES.length), feat = sv % 16, seed = Math.floor(sv / 16);
+      if (seed < AVATAR_SKIN_VARIATION.seeds && (feat & 3) < AVATAR_SKIN_VARIATION.counts.length) {
+        lk.eyes = EYES[v % EYES.length];
+        if (sv) Object.assign(lk, { freckles: feat & 3, marks: (feat >> 2) & 1, blotch: (feat >> 3) & 1, skinSeed: seed });
+      }
+      continue;
+    }
     // #1175: the actual existing body build on the wire, independently of each receiver's player-id seed.
     if (tag === 'd') { if (v <= 2) lk.build = v; continue; }
     if (tag === 'u') { if (v < TOPS.length) lk.top = TOPS[v]; continue; } // #1156

@@ -1,6 +1,6 @@
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { BUILD } from './version.js';
-import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_NOSE_FORMS, noseFormOf } from './config.js';
+import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_NOSE_FORMS, noseFormOf, AVATAR_SKIN_VARIATION, skinVarOf } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
 const BROW_NAMES = ['Mörkbruna', 'Bruna', 'Ljusbruna', 'Guldbruna', 'Blonda', 'Grå', 'Röda', 'Svarta'];
@@ -519,6 +519,8 @@ function updateActiveSwatches() {
   groups.push({ type: 'bracelet', value: wristValue(currentLook.bracelet) }, { type: 'watch', value: wristValue(currentLook.watch) }); // #1334
   groups.push({ type: 'brows', value: HAIR.includes(currentLook.brows) ? HAIR.indexOf(currentLook.brows) : -1 }); // #1220 (-1: like the hair)
   groups.push({ type: 'noseForm', value: noseFormOf(currentLook) }); // #2049
+  const sv = skinVarOf(currentLook); // #2111
+  groups.push({ type: 'freckles', value: sv.freckles }, { type: 'marks', value: sv.marks }, { type: 'blotch', value: sv.blotch });
   groups.push({ type: 'eyes', value: EYES.includes(currentLook.eyes) ? currentLook.eyes : EYES[0], list: EYES });
   for (const name of Object.keys(AVATAR_SHAPE.fields)) { // #1138: the face sliders
     const input = customizerEl.querySelector(`input[data-shape="${name}"]`);
@@ -730,6 +732,7 @@ function initCustomizerDOM() {
   addNecklaceSection(customizerEl.querySelector('.customizer-controls')); // #1323
   addRingSection(customizerEl.querySelector('.customizer-controls')); // #1324
   addWristSection(customizerEl.querySelector('.customizer-controls')); // #1334
+  addSkinVarSection(customizerEl.querySelector('.customizer-controls')); // #2111
   organizeControls();
 
   // Handle swatches and style clicks
@@ -943,6 +946,39 @@ function addFaceSections(controls) {
     }
     controls.append(sec);
   }
+}
+
+/** #2111: optional skin variation in the face panel: freckles (an amount), a few birthmarks, a slightly uneven tone, and a new placement.
+ * The placement's seed is drawn once when a first feature is chosen and kept with the look, so other players see the same spots. */
+const SKIN_VAR_CHOICES = [['freckles', 'Fräknar', ['Inga', 'Lite', 'Måttligt', 'Mycket']], ['marks', 'Födelsemärken', ['Inga', 'Några']], ['blotch', 'Hudton', ['Jämn', 'Lätt ojämn']]];
+function addSkinVarSection(controls) {
+  if (!controls || controls.querySelector?.('[data-skin-var-section]')) return;
+  const sec = document.createElement('section');
+  sec.className = 'customizer-section';
+  sec.dataset.faceSection = ''; sec.dataset.skinVarSection = '';
+  const h = document.createElement('h3'); h.textContent = 'Hud'; sec.append(h);
+  for (const [type, title, names] of SKIN_VAR_CHOICES) {
+    const label = document.createElement('label'); label.className = 'customizer-select';
+    const span = document.createElement('span'); span.textContent = title;
+    const select = document.createElement('select'); select.dataset.type = type;
+    names.forEach((n, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = n; select.append(o); });
+    select.addEventListener('change', () => {
+      if (!currentLook) return;
+      currentLook[type] = Number(select.value);
+      if (!Number.isInteger(currentLook.skinSeed)) currentLook.skinSeed = Math.floor(Math.random() * AVATAR_SKIN_VARIATION.seeds);
+      applyAndRefresh();
+    });
+    label.append(span, select); sec.append(label);
+  }
+  const again = document.createElement('button');
+  again.type = 'button'; again.id = 'avatar-skin-seed'; again.textContent = 'Ny placering';
+  again.addEventListener('click', () => {
+    if (!currentLook) return;
+    currentLook.skinSeed = (skinVarOf(currentLook).skinSeed + 1) % AVATAR_SKIN_VARIATION.seeds;
+    applyAndRefresh();
+  });
+  const row = document.createElement('div'); row.className = 'btn-group'; row.append(again); sec.append(row);
+  controls.append(sec);
 }
 
 /** #1321 (#1318): an accessory section per kind (headwear, #1322 headphones; necklaces and rings follow in #1323, #1324, each its own section). */
