@@ -55,3 +55,7 @@ Each sheet is 2240×1672: two native 1120×800 cells per row, two rows with 36px
 ![Far fade and opaque underside](range-under.jpg)
 
 Component limits: not the complete World/weather/fog/underwater-wash/animation scene, physical flow simulation or device benchmark. Shader still uses the older Standard lighting and opaque two-sided water. Existing geometry/context irregularities seen at remote joins are unchanged and outside this material task. All own server/Chrome processes and wrapper locks stopped after verification. Neutral public adaptation remains separate #303, after accepted source publication.
+
+## Integrationsgranskning
+
+Dirigenten har granskat helper, de två materialhookarna, alla tre slutliga bildark och källbundet grönt underlag utan rutinomkörning. Produkt/fixture/test matchar överlämningen exakt; accepterad config behåller bark- och solblock och får endast RIVER_SURFACE. Delad grafiktekniktext rekonstruerad som tidigare accepterade bytes plus denna namngivna bilaga. Changelog tilldelad nästa unika id1613; äldre rader bevarade.
