@@ -1,0 +1,38 @@
+{
+  "sourceCommit": "c01298f0b73dd41e992e8cf45ed9430f11b10dcd",
+  "baselineCommit": "6e1576aa078b70730e73bb4ffb805dc32e1b3959",
+  "sourceSha256": {
+    "src/screenwallsurface.js": "0ac17c55d9e0e8a796b0f89b49a07938fc6cb1d9c9985e5fd55348bc491a64b0",
+    "src/screenwall.js": "2622d2c3bc736f31900350891d17014b9e3051502d5e36a7c9db1a634c4295af",
+    "src/world.js": "f176a6459eb891772ab04ac9053467377dcb6723491758c2ada62f60e326d20b",
+    "src/config.js": "aef5d9e2fecfda74ef7d0e57549629a3a35df6058364804f11a699c6c99534d0",
+    "tools/screenwallsurfacetest.mjs": "404c2516bc03964af52ddf614140a74f0ee6d9845960900d52d8a1c6aa9cff08",
+    "tools/screenwallsurface2075.html": "cc0ca0a880e236e0e0db37b2181f6e18ea8402c72b32e4361eeb01d10f51c8be",
+    "tools/screenwallsurface2075browser.cjs": "0853e0aa64dc9abfb94e53aaae2e33fadd6ad400503a96af23d09c8bb76b19c5"
+  },
+  "evidenceSha256": {
+    "ground-paired.png": "97ca57cda297af9c123bb20d31cd632269a0e59222d4455675a5fd8993252543",
+    "browser.json": "8fa1d2ff547d696a72ad15b5ec34ef48e9fc2ef4f93210f87fd11d47105f8c7d",
+    "roof-paired.png": "9e6c1020951df9d105cde4d39e7c866a094a6b7c2979a718b85d14306db2c37f"
+  },
+  "additionalTexture": {
+    "size": [
+      256,
+      512
+    ],
+    "format": "RGBA8",
+    "baseBytes": 524288,
+    "fullMipBytes": 699052,
+    "sharedFor": [
+      "bumpMap.R",
+      "roughnessMap.G"
+    ],
+    "perFrameUploads": 0
+  },
+  "verification": {
+    "node": "3/3 PASS, deterministic joints, frame masks and bounded fibre paths",
+    "browser": "one own wrapper run; actual production consumers, all four views, zero page/console errors",
+    "geometry": "screenWallParts/part source suffix byte-identical; exterior full positions/normals/UV/index hash unchanged",
+    "limits": "Controlled component with sun/hemi and actual World.M.fence, no full World, seasons, device FPS or unrelated building-layout verification"
+  }
+}
