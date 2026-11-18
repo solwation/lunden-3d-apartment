@@ -25,8 +25,24 @@ test('top-only UV assignment preserves every original box position/normal/index 
  const t=solarSurfaceTextures();assert.equal(t,solarSurfaceTextures());assert.equal(t.colour.colorSpace,T.SRGBColorSpace);assert.equal(t.roughness.colorSpace,T.NoColorSpace);for(const tex of Object.values(t)){assert.equal(tex.minFilter,T.LinearMipmapLinearFilter);assert.equal(tex.magFilter,T.LinearFilter);assert.equal(tex.wrapS,T.RepeatWrapping);assert.equal(tex.wrapT,T.ClampToEdgeWrapping);assert(tex.generateMipmaps);}
  const m=solarPanelMaterial();assert.equal(m.color.getHex(),COLORS.solar);assert.equal(m.metalness,.5);assert.equal(m.map,t.colour);assert.equal(m.roughnessMap,t.roughness);assert.equal(m.bumpMap,null);assert.equal(m.transparent,false);
 });
-test('only intended source integration lines and own config block differ; sibling roofs and roof-walk recipes stay exact',()=>{
- const now=readFileSync('src/exterior.js','utf8').replace("import {solarPanelUV,solarPanelMaterial} from './solarsurface.js';\n",'').replace('solarPanelUV(new THREE.BoxGeometry(xb - xa, t, zb - za), xb - xa, zb - za)','new THREE.BoxGeometry(xb - xa, t, zb - za)').replace('add(panels, solarPanelMaterial(), false);','add(panels, new THREE.MeshStandardMaterial({ color: COLORS.solar, roughness: 0.3, metalness: 0.5 }), false);');assert.equal(now,original);
- const config=readFileSync('src/config.js','utf8'),start=config.indexOf('// #2083: visual solar-cell/glass assumptions'),end=config.indexOf('export const COLORS',start);assert(start>0&&end>start);assert.equal(config.slice(0,start)+config.slice(end),execFileSync('git',['show',base+':src/config.js'],{encoding:'utf8'}));
- for(const file of['src/corehouse.js','src/surroundings.js','src/nordicgym.js','src/southbackdrop.js','src/roofs.js'])assert.equal(readFileSync(file,'utf8'),execFileSync('git',['show',base+':'+file],{encoding:'utf8'}));
+// Function/line-level contract (#2092): later unrelated edits in these files must not fail this test, so only the solar
+// functions and solar lines are compared with the frozen baseline, never whole files.
+const baseOf=(f)=>execFileSync('git',['show',base+':'+f],{encoding:'utf8'});
+const fn=(text,name)=>{const m=text.match(new RegExp('^(?:export )?(?:function '+name+'\\b[\\s\\S]*?^\\}|const '+name+' = [\\s\\S]*?^\\};)','m'));assert(m,name+' found');return m[0];};
+const solarLines=(text)=>text.split('\n').filter((l)=>/\bsolar|solarRise|tiltedPanelGeo|panels\b/i.test(l)&&!/^\s*(\/\/|\*|\/\*)/.test(l)).map((l)=>l.trim());
+test('solar functions/lines differ from the baseline only by the intended integration; sibling solar recipes stay exact',()=>{
+ const now=readFileSync('src/exterior.js','utf8');
+ const undo=(t)=>t.replace('solarPanelUV(new THREE.BoxGeometry(xb - xa, t, zb - za), xb - xa, zb - za)','new THREE.BoxGeometry(xb - xa, t, zb - za)');
+ assert.equal(undo(fn(now,'tiltedPanelGeo')),fn(original,'tiltedPanelGeo'));
+ assert.equal(fn(now,'solarRise'),fn(original,'solarRise'));
+ const unwrap=(t)=>t.replace("import {solarPanelUV,solarPanelMaterial} from './solarsurface.js';",'').replace('add(panels, solarPanelMaterial(), false);','add(panels, new THREE.MeshStandardMaterial({ color: COLORS.solar, roughness: 0.3, metalness: 0.5 }), false);');
+ const a=solarLines(unwrap(undo(now))).filter(Boolean),b=solarLines(original).filter(Boolean);assert.deepEqual(a,b);
+ assert(now.includes('add(panels, solarPanelMaterial(), false);'),'panels use the solar material');
+ assert(!/color: COLORS\.solar/.test(now),'no inline solar material left');
+ // config: the solar dimensions and colour are unchanged; only the own #2083 block was added
+ const cfg=readFileSync('src/config.js','utf8'),cb=baseOf('src/config.js');
+ assert(cfg.includes('// #2083: visual solar-cell/glass assumptions'));
+ for(const re of[/^  solar: \{ x: .*$/m,/^  solar: 0x[0-9a-f]+,$/m])assert.equal(cfg.match(re)?.[0],cb.match(re)?.[0]);
+ // sibling solar recipes (neighbour roofs and Hus L roof-walk) keep their solar lines exactly
+ for(const f of['src/corehouse.js','src/surroundings.js','src/nordicgym.js','src/southbackdrop.js','src/roofs.js'])assert.deepEqual(solarLines(readFileSync(f,'utf8')),solarLines(baseOf(f)),f);
 });
