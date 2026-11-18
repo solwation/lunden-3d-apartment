@@ -33,3 +33,5 @@ spelklocka (~0,2 ms) och tv-flimmer var 0,12 s (bara tv-fönstrens färger, en u
 
 Begränsningar: Hus L:s egna gårdsfönster (`neighborLitGlass`) har fortfarande ett gemensamt emissivt material; nivåerna är *guess*.
 Additiva rutor mättas nära vitt, så färgskillnaden mellan varmt och neutralt är diskret.
+
+Publicering: Pages/Worker success på `a0ec496`; bild-URL:er HTTP 200 före stängning.
