@@ -64,6 +64,8 @@ docs/development/rigged-cat-evaluation.md #1892 architecture & mobile performanc
 tools/riggedcattest.html  #1892 interactive & headless prototype for rigged vs procedural cat evaluation
 tools/riggedcattest.mjs   #1892 automated model validation for rigged GLB cat evaluation
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
+src/catlife.js         #2125 pure helpers: sitting habits, grooming kind, tail spring + mood flicks, ear aim/twitch, stretch (node test tools/catlifetest.mjs)
+src/catfur.js          #2125 coat shader on the cats' own materials: strand clumps, strand sheen, tail bend (browser tools/catlife2125browser.cjs)
 src/outdoorcatroute.js the outdoor cats' loops as a pure function of the clock (#1767; node test src/outdoorcatroute.test.mjs, #1882 coverage/site checks)
 tools/catrange1882browser.cjs  development planner/site capture for the #1882 loops (docs/verification/1882/site.json, proposed.json)
 tools/outdoorcats1882browser.cjs  #1882 real scene: added routes walkable, pictures of new cats, binder pages, meet/pet, draw-call delta
@@ -316,6 +318,26 @@ moves) to `CAT_FISH.stop` × its size short, following a fish held out. State `e
 blocked, faded or out of drawing range: it lets go (the fish whole again) and walks home. All numbers *guess*. Tests:
 `node --test tools/outdoorcatbraintest.mjs` (the food test); browser `tools/outdoorcatfishtest.cjs` (raw fish eaten with the ordinary cat
 busy, points once, cooked/burnt ignored, shy Smulan and a fish held out). Images: [docs/verification/1782](../verification/1782/).
+
+### Living cats (#2125)
+
+The fur materials of every cat (the ordinary cat, each puppet's clones, the outdoor cats' far LOD) carry one shared coat shader
+(`src/catfur.js`, cache key `|catfur1`; the nose, eyes and pupils get the same program with the effect off, so no program is added):
+strand clumps stretched along the lie of the coat (back and down per part, along the tube on the tail) fade out by screen size, and a
+Kajiya-Kay strand sheen follows the light the surface already gets. A sphynx gets `CAT_LIFE.fur.naked` of both. The tail bends in the
+vertex shader (`uCatTail`, uv.x along the tube; registered as a bounded vertex edit of `TAIL_SLACK` m); the tip blob uses the CPU twin
+`bendPoint`. `src/catlife.js` (no three.js) holds the behaviour: `TailMotion` (a spring trailing the body's turn rate plus mood flicks that
+are a pure function of the clock, low-passed and clamped), `earYaw`/`earTwitch`, `sitChoice` (blocks of `sit.block` s, a multiple of the
+6 s washing cycle: the first always grooming as before, then grooming, the tail round the paws or looking about), `groomKind` (some
+washing cycles lick the flank) and `stretchPose`. `CatSpawner.live` (run by `pose`) applies ears and tail for every cat; `senses` sets the
+ordinary cat's mood and listens to the visitor moving near it, a fish finger, a kitten's toy and a door opening (`onOpen` → `hear`). Up
+after `stretch.after` s of sitting (the tail-up idle) it stretches before it turns. Outdoors `OutdoorCats.animate` maps the brain's
+activity to a mood, folds the legs for `creep`/`crouch` (`CAT_LIFE.crouch`, a low stalk towards squirrels), aims the ears at the prey,
+the butterfly or a visitor walking near, picks sitting habits on the shared wall clock (`now − epoch`, so every client sees the same)
+and stretches over the last `stretch.secs` of a scheduled rest (`OutdoorCatBrain.restTimes`, read only; choices and tests unchanged).
+No new network field, draw call, texture or pass; ghost/held snapshots keep the unbent tail. Tunables: `CAT_LIFE` (all *guess*).
+Tests: `node --test tools/catlifetest.mjs`; browser `tools/catlife2125browser.cjs` (before/after frame sequences).
+[Verification](../verification/2125/README.md).
 
 ## Cat and sound
 

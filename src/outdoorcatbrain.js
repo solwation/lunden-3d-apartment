@@ -247,9 +247,20 @@ export class OutdoorCatBrain {
     if (r.bf && e > bfe.t1) r.bf.y += 0.6 * (e - bfe.t1);
     return r;
   }
+  /** #2125: how long the scheduled rest has lasted and has left (s; 0 while walking), for the stretch before it walks on. Read only. */
+  restTimes(s) {
+    let done = 0, left = 0;
+    if (!s.walking) {
+      if (this.explores && s.plan) { const sg = s.plan.segs[s.segment]; done = s.elapsed; left = (sg ? sg.t1 - sg.t0 : 0) - s.elapsed; }
+      else { left = s.restLeft; const g = lapPlan(this.plan, s.lap, this.id).legs[s.leg]; done = (g?.rest ?? 0) - s.restLeft; }
+    }
+    this.restDone = Number.isFinite(done) ? Math.max(0, done) : 0;
+    this.restLeft = Number.isFinite(left) ? Math.max(0, left) : 0;
+  }
   /** The scheduled pose now: on the loop while walking (or far away), the outing while resting near the visitor. */
   schedulePose(near) {
     const s = this.scheduled(); this.at = s;
+    this.restTimes(s); // #2125
     if (this.explores) {
       const h = s.elevated ? s.y - this.env.ground(s.x,s.z) : 0;
       const pose = { ...s,h,pitch:s.climbing?s.pitch:0,hop:0,bf:null };

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { createBestiaryModel } from './bestiarymodels.js';
 // Bump to drop cached portraits rendered with the old pixel-ratio-scaled viewport (#1984): they are cropped, tiny or blank.
-export const PORTRAIT_REV=2;
+export const PORTRAIT_REV=3;
 const hasPixels=pixels=>{for(let i=3;i<pixels.length;i+=4)if(pixels[i])return true;return false;};
 // A failed GPU readback used to become a valid, permanently blank cache hit. Check
 // disposable disk entries once on load; memory only receives validated portraits.

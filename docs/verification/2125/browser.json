@@ -1,0 +1,224 @@
+{
+  "baseline": "36005ad1",
+  "errors": [],
+  "external": [],
+  "phases": {
+    "after": {
+      "proof": {
+        "programs": 4,
+        "wrapT": 18,
+        "flankT": 6,
+        "owrap": 1800054,
+        "furKeys": [
+          ") {}|catfur1",
+          "erer */ ) {}"
+        ],
+        "lifeModule": true,
+        "geometries": 19,
+        "textures": 1,
+        "ms": 823
+      },
+      "frames": {
+        "indoor": [
+          {
+            "label": "sitter · tvättar ansiktet",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "sitter · tvättar flanken",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "sitter · svansen runt tassarna",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "dörr öppnas till vänster · öronen",
+            "calls": 20,
+            "triangles": 2434
+          },
+          {
+            "label": "reser sig efter vila · 0,9 s",
+            "calls": 25,
+            "triangles": 2698
+          },
+          {
+            "label": "reser sig efter vila · 1,6 s",
+            "calls": 25,
+            "triangles": 2698
+          },
+          {
+            "label": "vänder sig · svansen följer",
+            "calls": 25,
+            "triangles": 2698
+          }
+        ],
+        "fur": [
+          {
+            "label": "päls i sol · rödrandig",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "päls i sol · svart",
+            "calls": 22,
+            "triangles": 2594
+          },
+          {
+            "label": "päls i sol · grå",
+            "calls": 22,
+            "triangles": 2594
+          }
+        ],
+        "outdoor": [
+          {
+            "label": "går",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "smyger lågt mot ekorre",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "ligger i bakhåll",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "vilar · svansen runt tassarna",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "tvättar sig",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "sträcker på sig innan den går",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "långt bort · sammanslagen LOD",
+            "calls": 2,
+            "triangles": 2674
+          }
+        ]
+      }
+    },
+    "before": {
+      "proof": {
+        "programs": 4,
+        "wrapT": 18,
+        "flankT": 6,
+        "owrap": 1800054,
+        "furKeys": [
+          "erer */ ) {}"
+        ],
+        "lifeModule": false,
+        "geometries": 19,
+        "textures": 1,
+        "ms": 681
+      },
+      "frames": {
+        "indoor": [
+          {
+            "label": "sitter · tvättar ansiktet",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "sitter · tvättar flanken",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "sitter · svansen runt tassarna",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "dörr öppnas till vänster · öronen",
+            "calls": 21,
+            "triangles": 2514
+          },
+          {
+            "label": "reser sig efter vila · 0,9 s",
+            "calls": 25,
+            "triangles": 2698
+          },
+          {
+            "label": "reser sig efter vila · 1,6 s",
+            "calls": 25,
+            "triangles": 2698
+          },
+          {
+            "label": "vänder sig · svansen följer",
+            "calls": 25,
+            "triangles": 2698
+          }
+        ],
+        "fur": [
+          {
+            "label": "päls i sol · rödrandig",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "päls i sol · svart",
+            "calls": 22,
+            "triangles": 2594
+          },
+          {
+            "label": "päls i sol · grå",
+            "calls": 22,
+            "triangles": 2594
+          }
+        ],
+        "outdoor": [
+          {
+            "label": "går",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "smyger lågt mot ekorre",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "ligger i bakhåll",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "vilar · svansen runt tassarna",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "tvättar sig",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "sträcker på sig innan den går",
+            "calls": 23,
+            "triangles": 2674
+          },
+          {
+            "label": "långt bort · sammanslagen LOD",
+            "calls": 2,
+            "triangles": 2674
+          }
+        ]
+      }
+    }
+  }
+}

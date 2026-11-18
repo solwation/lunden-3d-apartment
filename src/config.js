@@ -3840,6 +3840,29 @@ export const CAT_FURNITURE = { chance: 0.4, reach: 5 };
 // the eye within `cone`° of straight behind it, within `dist` m, the X on screen, no wall between — it counts once per
 // tail-up (stats catButts, SCORE). Our picks.
 export const CAT_TAIL_UP = { every: [10, 25], seconds: [4, 8], standing: 3, blend: 0.4, turn: 1.5, leave: 0.6, x: 0.022, cone: 55, dist: 3.5 };
+// #2125: living cats (src/catlife.js pure helpers, src/catfur.js shader). All numbers *guess*, tuned by eye on the component views.
+// fur: strand clumps per metre across/along the lie of the coat (`freq`, `along`), their ±`streak` brightness, faded out once a clump is
+// smaller than `fade` px-ish (fwidth), the lie of the fur in each part's local frame (`dir`: back and down), a strand highlight
+// (Kajiya-Kay, exponent `shine`, strength `sheen`, `white` of it untinted so dark coats still shine); `naked` scales both for a sphynx.
+// tail: a spring (`stiff`, `damp`) trails the body's turn rate (`follow` rad per rad/s), mood flicks (per mood: flicks per second `rate`,
+// size `amp` rad, length `len` s, a constant `sway` rad at `hz`), `lift` rad up for an alert tail; every output bounded by `max`/`maxLift`.
+// ears: turned towards a sound or movement (up to `max` rad, at `speed` rad/s), a stimulus heard is followed `hold` s, the visitor
+// moving faster than `moving` m/s counts within `reach` m; a twitch now and then (`twitch` per s, `twitchAmp` rad); flattened `flat` rad
+// when cross. sit: blocks of `block` s (a multiple of the 6 s washing cycle) while it sits idle, the first always grooming (as before), then grooming / tail round the paws /
+// looking about with `weights`; `flank` of grooming cycles lick the flank. stretch: after `after` s at rest it stretches for `secs` s
+// as it gets up (front legs out, chest down, `bow` rad, `chest` m). crouch: a stalking cat's legs fold to (1 − `legs`), head `head` m low.
+export const CAT_LIFE = {
+  fur: { freq: 330, along: 0.16, streak: 0.11, fade: [0.35, 1], dir: [0, -0.55, -1], shine: 36, sheen: 0.3, white: 0.35, naked: 0.25 },
+  tail: { stiff: 26, damp: 7, follow: 0.22, max: 0.75, maxLift: 0.35, lift: 0.18,
+    moods: { calm: { rate: 0.07, amp: 0.22, len: 0.9, sway: 0.05, hz: 0.35 }, sleep: { rate: 0.02, amp: 0.1, len: 1.2, sway: 0, hz: 0 },
+      alert: { rate: 0.35, amp: 0.3, len: 0.45, sway: 0.04, hz: 1.4 }, stalk: { rate: 0.9, amp: 0.22, len: 0.3, sway: 0.03, hz: 2.6 },
+      play: { rate: 0.6, amp: 0.4, len: 0.4, sway: 0.12, hz: 1.8 }, cross: { rate: 1.3, amp: 0.6, len: 0.35, sway: 0.1, hz: 2.2 },
+      happy: { rate: 0.12, amp: 0.15, len: 1.1, sway: 0.08, hz: 0.6 } } },
+  ears: { max: 0.6, speed: 5, hold: 3, moving: 0.35, reach: 6, twitch: 0.12, twitchAmp: 0.22, flat: 0.55 },
+  sit: { block: 18, weights: { groom: 0.35, wrap: 0.4, look: 0.25 }, flank: 0.4, wrap: 0.8 },
+  stretch: { after: 20, secs: 2.4, bow: 0.32, chest: 0.055, reach: 0.95 },
+  crouch: { legs: 0.38, head: 0.03, speed: 3 },
+};
 
 // Steam over hot coffee (#216, cups.js): `strips` soft wisps rising `height` m from the surface, one mesh per cup;
 // fresh coffee is hot and cools over `seconds` (real ones steam a few minutes), cold milk cools it by `milk` × its share;

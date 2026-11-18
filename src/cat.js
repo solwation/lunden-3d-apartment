@@ -3,7 +3,9 @@ import { registerCats } from './bestiarymetadata.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { catPrimitive, installCatModel, applyCatModel } from './catmodel.js';
-import { LEVELS, CAT_FLOOR_HEADROOM, CAT_FISH, CAT_LEAVE, CAT_IGNORED, CAT_OUTDOOR, CAT_FURNITURE, CAT_SURFACE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, REST, MIELE, KITTEN } from './config.js';
+import { LEVELS, CAT_FLOOR_HEADROOM, CAT_FISH, CAT_LEAVE, CAT_IGNORED, CAT_OUTDOOR, CAT_FURNITURE, CAT_SURFACE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, CAT_LIFE, REST, MIELE, KITTEN } from './config.js';
+import { furMaterial, furState, setFurStrength, setTailBend, bendPoint } from './catfur.js';
+import { TailMotion, sitChoice, groomKind, flankLick, stretchPose, earYaw, earTwitch, approach, seedOf, hash01 } from './catlife.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { rugLift } from './rugs.js';
 import { sfx } from './audio.js';
@@ -116,9 +118,12 @@ export const catLabel = (breed, coat) => (breed.name === 'huskatt' ? coat.name :
 
 const fur = () => new THREE.MeshStandardMaterial({ roughness: 0.8, transparent: true });
 const ROLE = { coat: fur(), bib: fur(), paw: fur(), face: fur(), blaze: fur(), ear: fur(), tail: fur(), tip: fur() };
+for (const m of Object.values(ROLE)) furMaterial(m); // #2125: the lie of the coat and its sheen (catfur.js)
+setTailBend(ROLE.tail, 0, 0);
 const pink = new THREE.MeshStandardMaterial({ color: 0xd99a9a, roughness: 0.6, transparent: true });
 const eyeMat = new THREE.MeshStandardMaterial({ color: 0x9bbf3a, roughness: 0.3, emissiveIntensity: 0.25, transparent: true });
 const pupilMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.2, transparent: true });
+for (const m of [pink, eyeMat, pupilMat]) furMaterial(m, { bare: true }); // #2125: one program with the coat, no fur on them
 /** The cat's own materials (not the visitor's hand): faded out as it leaves (#206). */
 const catMats = () => [...Object.values(ROLE), pink, eyeMat, pupilMat];
 const skin = new THREE.MeshStandardMaterial({ color: 0xe8b996, roughness: 0.7 });
@@ -340,6 +345,8 @@ const POSE = {
 };
 // The tail held straight up (#262), blended over either pose; the X under the tail root, as an offset from the root (sit/stand)
 const TAIL_UP = [[0, 0, 0], [0, 0.07, -0.01], [0, 0.15, -0.015], [0, 0.23, -0.01], [0, 0.28, 0.015]];
+// #2125: sitting with the tail wrapped round the front paws (the paws at x ±0.04, z ≈ 0.1 of the cat; the root at z −0.13), blended over `sit`
+const TAIL_WRAP = [[0, 0, 0], [0.085, -0.015, 0.03], [0.1, -0.02, 0.15], [0.065, -0.02, 0.245], [-0.015, -0.02, 0.275]];
 const BUTT = { sit: [0, 0.035, -0.02], stand: [0, -0.022, -0.014] };
 const mix = (a, b, k) => a + (b - a) * k;
 const mix3 = (v, a, b, k, sx = 1) => v.set(mix(a[0], b[0], k) * sx, mix(a[1], b[1], k), mix(a[2], b[2], k));
@@ -471,6 +478,7 @@ function applySurfaceCoat(parts,coat) {
     mesh.geometry=geometry;
     if(!mesh.material.userData.catSurface) { mesh.material=mesh.material.clone();mesh.material.userData.catSurface=true; }
     mesh.material.copy(ROLE.coat);mesh.material.userData.catSurface=true;mesh.material.color.setHex(0xffffff);mesh.material.vertexColors=true;mesh.material.needsUpdate=true;
+    furMaterial(mesh.material,{share:ROLE.coat}); // #2125: follows the coat's fur strength
   }
 }
 
@@ -486,7 +494,7 @@ function applyBreed(p, b, sh = shapeOf(b)) {
   // The short kitten/Persian muzzle carries its nose with it; contact readers use this mesh.
   const nose=p.head.getObjectByName('cat-nose');
   nose.position.set(0,CAT_SURFACE.nose.y,p.muzzle.position.z+.035*sh.muzzle*CAT_SURFACE.nose.muzzleDepth+CAT_SURFACE.nose.offset);
-  for (const m of Object.values(ROLE)) m.roughness = b.name === 'sphynx' ? 0.55 : 0.8;
+  for (const m of Object.values(ROLE)) { m.roughness = b.name === 'sphynx' ? 0.55 : 0.8; setFurStrength(m, b.name === 'sphynx'); }
 }
 
 const smooth = (a, b, t) => {
@@ -522,6 +530,7 @@ export function createCatPuppet(breed, coat, kitten = false, { held = false, loa
       tailGroup: parts.tailGroup, eyes: parts.eyes, headOff: new THREE.Vector3(), stand: 0, wantStand: 0,
       gaitAmp: 0, gaitPhase: 0, tailU: 0, tailUK: -1, tailK: -1, t: 0,
     });
+    cat.initLife(seedOf(`${breed.name}/${coat.name}/${kitten}`));
     if (loadModel) {
       if (riggedCatData) cat.setupRigged(riggedCatData);
       else loadRiggedCatModel().then(g => cat.setupRigged(g)).catch(() => {});
@@ -533,6 +542,7 @@ export function createCatPuppet(breed, coat, kitten = false, { held = false, loa
       if (!o.material) return;
       if (!materials.has(o.material)) {
         const m = o.material.clone(); m.opacity = 1; m.transparent = !held; // (a roaming puppet fades in and out)
+        if (furState(o.material)) furMaterial(m, { copy: o.material }); // #2125 (its own tail bend)
         materials.set(o.material, m);
       }
       o.material = materials.get(o.material);
@@ -560,6 +570,7 @@ export class CatSpawner {
     const { cat, head, shoulder, leftShoulder, tailGroup, eyes, hand } = this.parts;
     Object.assign(this, { object: cat, head, shoulder, leftShoulder, tailGroup, eyes, hand });
     this.headOff = new THREE.Vector3(); // the behaviours' head offset on top of the pose (eating: down to the floor)
+    this.initLife(seedOf('cat'));       // #2125: tail motion, ears, stretching (seeded per cat in setCat)
     this.stand = 0;          // 0 sitting … 1 standing (#224), eased towards `wantStand` in CAT_WALK.rise s
     this.wantStand = 0;
     this.gaitPhase = 0;      // radians, one leg cycle per CAT_WALK.stride m
@@ -611,6 +622,80 @@ export class CatSpawner {
     this.door = null;          // door the cat was found behind
     this.closedSince = false;  // that door has been closed since the cat appeared
     this.t = 0;
+  }
+
+  // --- #2125: living cats (catlife.js): tail motion, ears, stretching, grooming, the tail round the paws, a low stalk -------------
+  /** The life state: `mood` (catlife moodOf), `earAt` (a world {x, z} it listens / looks to, or null), `wantWrap` / `wantCrouch` (0 … 1),
+   * `bow` (a stretchPose, set by the behaviour). `pose` eases and applies them. */
+  initLife(seed) {
+    Object.assign(this, { lifeSeed: seed | 0, lifeT: 0, mood: 'calm', earAt: null, earCur: [0, 0], wantWrap: 0, tailWrap: 0, tailWK: -1,
+      wantCrouch: 0, crouch: 0, bow: null, sitT: 0, stretchT: null, hearT: 0, lastYaw: null, tailMotion: new TailMotion(seed) });
+  }
+
+  /** It hears something at world (x, z): the ears turn there for CAT_LIFE.ears.hold s. */
+  hear(x, z) { if (Number.isFinite(x) && Number.isFinite(z)) { this.earAt = { x, z }; this.hearT = CAT_LIFE.ears.hold; } }
+
+  /** One grooming frame at `t` (the 6 s washing cycle): the face (paw licked, wiped over the face, as before) or, some cycles, the flank. */
+  groom(t) {
+    const c = t % 6;
+    if (groomKind(this.lifeSeed, t) === 'flank') {
+      const { turn, lick } = flankLick(c, t), side = hash01(this.lifeSeed, Math.floor(t / 6)) < 0.5 ? -1 : 1;
+      this.shoulder.rotation.set(0, 0, 0);
+      this.head.rotation.set(0.5 * turn + 0.12 * lick, 1.2 * turn * side, 0.25 * turn * side);
+      this.headOff.set(0.03 * turn * side, -0.045 * turn, -0.06 * turn);
+      this.tailGroup.rotation.y = 0.06 * Math.sin(t * 2.3) * (1 - turn);
+      return;
+    }
+    this.headOff.set(0, 0, 0);
+    const up = smooth(0.0, 0.5, c) * (1 - smooth(3.2, 3.7, c));
+    const wipe = smooth(2.0, 2.4, c) * (1 - smooth(2.9, 3.2, c));
+    const lick = Math.sin(t * 13) * 0.5 + 0.5;
+    // paw almost straight up beside the muzzle; the head turns down to it and licks
+    this.shoulder.rotation.x = -2.85 * up - 0.25 * wipe;
+    this.shoulder.rotation.z = 0.3 * up + 0.15 * wipe;
+    this.shoulder.rotation.y = 0;
+    this.head.rotation.x = 0.3 * up + 0.08 * lick * up * (1 - wipe) - 0.2 * wipe;
+    this.head.rotation.y = 0.4 * up * (1 - wipe);
+    this.head.rotation.z = -0.15 * up + 0.3 * wipe;
+    // idle: slow look around + tail tip twitch
+    const idle = 1 - up;
+    this.head.rotation.y += idle * 0.35 * Math.sin(t * 0.7);
+    this.tailGroup.rotation.y = 0.08 * Math.sin(t * 2.3) * idle;
+  }
+
+  /** Sitting idle, not grooming: the tail round the paws (`wrap`) or not, a slow look about. */
+  sitLook(t, wrap) {
+    this.headOff.set(0, 0, 0);
+    this.shoulder.rotation.set(0, 0, 0);
+    this.head.rotation.set(0.04 * Math.sin(t * 0.23), 0.4 * Math.sin(t * 0.5) + 0.12 * Math.sin(t * 1.3), 0.05 * Math.sin(t * 0.4));
+    this.tailGroup.rotation.y = 0;
+    this.wantWrap = wrap ? 1 : 0;
+  }
+
+  /** The ears, the tail and the eased life amounts; after `pose` has placed the parts. */
+  live(dt, k) {
+    const CL = CAT_LIFE, p = this.parts;
+    this.lifeT += dt;
+    // the ears: towards what it hears / sees (in the head's frame), a twitch now and then, flat when cross
+    if (this.hearT > 0 && (this.hearT -= dt) <= 0 && !this.keepEar) this.earAt = null;
+    const e = this.object.matrixWorld.elements, yaw = Math.atan2(e[8], e[10]);
+    let rel = null;
+    if (this.earAt) { rel = Math.atan2(this.earAt.x - e[12], this.earAt.z - e[14]) - yaw - this.head.rotation.y; if (!Number.isFinite(rel)) rel = null; }
+    const flat = this.mood === 'cross' ? CL.ears.flat : 0;
+    p.ears.forEach((ear, i) => {
+      const s = i ? 1 : -1, R = CAT_SURFACE.ear.rotation;
+      const to = this.mood === 'sleep' ? 0 : earYaw(rel, s) + (this.lifeT > 0 ? earTwitch(this.lifeSeed, s, this.lifeT) : 0);
+      this.earCur[i] = approach(this.earCur[i], to, CL.ears.speed * dt);
+      ear.rotation.set(R[0] - 0.4 * flat, R[1] + this.earCur[i], s * (R[2] - flat));
+    });
+    // the tail: a spring trailing the body's turns + mood flicks (catlife TailMotion), bent in the shader (catfur.js)
+    const turn = this.lastYaw == null || !(dt > 0) ? 0 : Math.atan2(Math.sin(yaw - this.lastYaw), Math.cos(yaw - this.lastYaw)) / dt;
+    this.lastYaw = yaw;
+    const m = this.tailMotion.step(dt, { turn, mood: this.mood, t: this.lifeT });
+    // lying round it on the floor the tail only stirs (and less still wrapped round the paws); on its feet it swings
+    const bend = m.bend * mix(mix(0.35, 0.15, this.tailWrap), 1, k), lift = m.lift * k;
+    setTailBend(p.tail.material, bend, lift);
+    if (p.tip.userData.base) bendPoint(p.tip.position.copy(p.tip.userData.base), bend, lift, 1);
   }
 
   setupRigged(gltf) {
@@ -691,6 +776,7 @@ export class CatSpawner {
     applyVariant(coat);
     applyBreed(this.parts, breed, this.shape);
     applySurfaceCoat(this.parts,coat);
+    if (this.tailMotion) this.initLife(seedOf(`${breed.name}/${coat.name}/${this.kitten}`)); // #2125 (the same cat moves the same way)
     const bl = coat.blaze3 ?? [0.016, 0.03, 0.01, 0.03]; // Miele: a short narrow stripe, the tip of her painted V (#328)
     this.parts.blaze.scale.set(bl[0], bl[1], bl[2]);
     this.parts.blaze.position.y = bl[3];
@@ -701,6 +787,7 @@ export class CatSpawner {
   /** Call when the player opens `door` from `from` (player position). */
   onOpen(door, from) {
     if (door.name === 'ytterdörren') return;
+    if (this.visible && door.segment) { const [ax, az, bx, bz] = door.segment(); this.hear((ax + bx) / 2, (az + bz) / 2); } // #2125: ears to the door
     if (this.awayFor > 0 && !this.visible) return; // a cat that was hurt keeps away for a while (#288)
     if (this.visible && this.door === door) {
       if (!this.closedSince) return;
@@ -728,6 +815,7 @@ export class CatSpawner {
     this.leaving = null;
     this.setOpacity(1);
     this.tailUp = false; this.tailU = 0; this.tailWait = this.nextTailWait(); // the next cat starts with its tail down
+    Object.assign(this, { bow: null, stretchT: null, sitT: 0, wantCrouch: 0, crouch: 0, wantWrap: 0, earAt: null }); // #2125
   }
 
   setOpacity(a) {
@@ -931,11 +1019,30 @@ export class CatSpawner {
     this.walked = false;
     this.hopY = 0;
     this.countIgnored(dt);
+    this.senses(dt);
     if (this.held) this.heldBehave(dt); // in the visitor's arms (#328)
     else if (this.released) this.releasedBehave(dt);
     else this.behave(dt);
     this.updateTail(dt);
     this.pose(dt);
+  }
+
+  /** #2125: its mood this frame (tail and ears) and what it listens to: the visitor moving near it, a fish finger, a kitten's toy;
+   * a door opening (`onOpen`) is heard too. While still at rest it counts how long it has sat (a stretch when it gets up). */
+  senses(dt) {
+    const E = CAT_LIFE.ears, o = this.object.position;
+    this.bow = null; // (set again each frame by a stretch in progress)
+    this.mood = this.held || this.petting || this.tailUp ? 'happy' : this.leaving?.hurt ? 'cross' : this.fish || this.toy ? 'alert' : this.play ? 'play' : 'calm';
+    this.wantCrouch = 0;
+    if (this.fish?.at) { this.earAt = this.fish.at; this.hearT = E.hold; }
+    else if (this.toy?.at) { this.earAt = this.toy.at; this.hearT = E.hold; }
+    const eye = this.watchPoint?.();
+    if (eye && dt > 0) {
+      const last = this.lastEye, moved = last ? Math.hypot(eye.x - last.x, eye.z - last.z) / dt : 0;
+      if (moved > E.moving && Math.hypot(eye.x - o.x, eye.z - o.z) < E.reach) this.hear(eye.x, eye.z);
+      this.lastEye = { x: eye.x, z: eye.z };
+    }
+    this.sitT = this.stand < 0.05 && !this.held ? this.sitT + dt : this.stand > 0.95 && this.stretchT == null ? 0 : this.sitT;
   }
 
   /**
@@ -1023,7 +1130,11 @@ export class CatSpawner {
     const bob = a * W.bob * Math.cos(2 * ph) + (this.hopY ?? 0); // (+ a kitten's hop, #363)
     // short legs (a kitten, #363): the front legs shortened by `dropF`, the hind ones by `dropH` (folded sitting, so less);
     // the body, head and shoulders come down with them, sitting the body gets squatter so it still sits on the floor
-    const L = sh.legs, dropF = (1 - L) * 0.17, dropH = (1 - L) * mix(0.075, 0.158, k);
+    // #2125: a stalking cat folds its legs and creeps low (CAT_LIFE.crouch), the same way a kitten's short legs lower it
+    const CL = CAT_LIFE;
+    this.crouch = approach(this.crouch ?? 0, this.wantCrouch ?? 0, dt * CL.crouch.speed);
+    this.tailWrap = approach(this.tailWrap ?? 0, (this.wantWrap ?? 0) * (1 - k), dt / CL.sit.wrap);
+    const L = sh.legs * (1 - CL.crouch.legs * this.crouch * k), dropF = (1 - L) * 0.17, dropH = (1 - L) * mix(0.075, 0.158, k);
     this.legDrop = dropF;
     // standing, the fluff makes it taller rather than longer
     p.torso.scale.set(fluff, mix(1, fluff, k), mix(fluff, 1, k));
@@ -1055,6 +1166,17 @@ export class CatSpawner {
     }
     mix3(this.head.position, S.head, T.head, k).add(this.headOff).y += bob - dropF;
     if (a > 1e-3) this.head.rotation.x += a * 0.06 * Math.sin(2 * ph + 0.6);
+    this.head.position.y -= CL.crouch.head * this.crouch;
+    // #2125: the stretch (stretchPose, set by the behaviour): front legs reaching out, chest down, bottom up
+    const bw = this.bow;
+    if (bw && bw.k > 0) {
+      p.body.rotation.x += bw.bow;
+      this.shoulder.rotation.set(-bw.reach, 0, 0.05 * bw.k); this.leftShoulder.rotation.set(-bw.reach, 0, -0.05 * bw.k);
+      this.shoulder.position.y -= bw.chest; this.leftShoulder.position.y -= bw.chest;
+      // the head follows the front of the tipped body (~0.19 m ahead of its middle) so the neck stays joined
+      this.head.position.y -= bw.chest * 0.4 + 0.19 * Math.sin(bw.bow); this.head.position.z -= 0.02 * bw.k;
+      this.head.rotation.x -= 0.5 * bw.k;
+    }
     mix3(this.tailGroup.position, S.tailRoot, T.tailRoot, k).y += bob - k * (1 - L) * 0.158;
     const u = smooth(0, 1, this.tailU);
     // the X under the tail root while the tail is up (#262); a fluffy coat sitting covers a little of it
@@ -1064,18 +1186,22 @@ export class CatSpawner {
       mix3(butt.position, BUTT.sit, BUTT.stand, k).add(this.tailGroup.position);
       butt.position.z -= 0.13 * (fluff - 1) * (1 - k);
     }
-    if (Math.abs(k - this.tailK) > 0.004 || Math.abs(u - this.tailUK) > 0.004) { // rebuilt only while the pose or the tail changes
-      this.tailK = k; this.tailUK = u;
-      const pts = S.tail.map((q, i) => mix3(new THREE.Vector3(), q, T.tail[i], k).lerp(new THREE.Vector3(...TAIL_UP[i]), u).multiplyScalar(sh.tailLen));
+    const w = smooth(0, 1, this.tailWrap ?? 0);
+    if (Math.abs(k - this.tailK) > 0.004 || Math.abs(u - this.tailUK) > 0.004 || Math.abs(w - this.tailWK) > 0.004 || Math.abs(L - (this.tailLK ?? L)) > 0.004) { // rebuilt only while the pose or the tail changes
+      this.tailK = k; this.tailUK = u; this.tailWK = w; this.tailLK = L;
+      // #2125: sitting, it may wrap the tail round its front paws (TAIL_WRAP)
+      const pts = S.tail.map((q, i) => mix3(new THREE.Vector3(), q, T.tail[i], k).lerp(new THREE.Vector3(...TAIL_WRAP[i]), w).lerp(new THREE.Vector3(...TAIL_UP[i]), u).multiplyScalar(sh.tailLen));
       // lying on the floor, a thick tail (and its tip) rests on it rather than in it (#414)
       const rootY = mix(S.tailRoot[1], T.tailRoot[1], k) - k * (1 - L) * 0.158, tube = 0.017 * sh.tail;
       pts.forEach((q, i) => { q.y = Math.max(q.y, (i === pts.length - 1 ? Math.max(tube, 0.018 * sh.tail) : tube) + 0.0005 - rootY); });
       p.tail.geometry.dispose();
       p.tail.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.017 * sh.tail, 8);
       p.tip.position.copy(pts[pts.length - 1]);
+      (p.tip.userData.base ??= new THREE.Vector3()).copy(p.tip.position);
       const r = sh.tail; // a thick tail gets a thick tip (it shows once the tail is up)
       p.tip.scale.set(0.02 * r, 0.018 * r, mix(mix(0.03, 0.02, k), 0.02, u) * r);
     }
+    this.live?.(dt, k);
   }
 
   /** What the cat is doing this frame (petting, leaving, a fish finger, washing). */
@@ -1103,23 +1229,12 @@ export class CatSpawner {
       this.nextMeow = 8 + this.rand() * 14;
     }
     if (this.tailUp) { this.tailIdle(dt); return; } // up on its feet with the tail up (#262)
-    this.tailTurn = null;
+    this.tailTurn = null; this.stretchT = null;
     if (this.kitten && this.updatePlay(dt)) return; // a kitten plays on the spot now and then (#363)
-    // washing cycle: lift paw, lick it a few times, wipe over the face, lower, pause
-    const c = this.t % 6;
-    const up = smooth(0.0, 0.5, c) * (1 - smooth(3.2, 3.7, c));
-    const wipe = smooth(2.0, 2.4, c) * (1 - smooth(2.9, 3.2, c));
-    const lick = Math.sin(this.t * 13) * 0.5 + 0.5;
-    // paw almost straight up beside the muzzle; the head turns down to it and licks
-    this.shoulder.rotation.x = -2.85 * up - 0.25 * wipe;
-    this.shoulder.rotation.z = 0.3 * up + 0.15 * wipe;
-    this.head.rotation.x = 0.3 * up + 0.08 * lick * up * (1 - wipe) - 0.2 * wipe;
-    this.head.rotation.y = 0.4 * up * (1 - wipe);
-    this.head.rotation.z = -0.15 * up + 0.3 * wipe;
-    // idle: slow look around + tail tip twitch
-    const idle = 1 - up;
-    this.head.rotation.y += idle * 0.35 * Math.sin(this.t * 0.7);
-    this.tailGroup.rotation.y = 0.08 * Math.sin(this.t * 2.3) * idle;
+    // #2125: sitting idle it grooms (the washing cycle: lift paw, lick it, wipe over the face, pause; or the flank), sits with the tail
+    // round its paws, or looks about: blocks of CAT_LIFE.sit.block s (catlife sitChoice), the first always grooming as before
+    const choice = sitChoice(this.lifeSeed, this.t);
+    if (choice === 'groom') { this.wantWrap = 0; this.groom(this.t); } else this.sitLook(this.t, choice === 'wrap');
   }
 
   /** Idle with the tail up (#262): it gets up, turns round on the spot (often showing its back) and looks about. */
@@ -1127,6 +1242,15 @@ export class CatSpawner {
     const o = this.object;
     this.wantStand = 1;
     this.shoulder.rotation.set(0, 0, 0);
+    // #2125: up after a long sit, it stretches first (front legs out, chest down), then turns round
+    if (!this.tailTurn && this.stretchT == null && this.sitT > CAT_LIFE.stretch.after) this.stretchT = 0;
+    if (this.stretchT != null) {
+      if (this.standing) this.stretchT += dt;
+      this.bow = stretchPose(this.stretchT / CAT_LIFE.stretch.secs);
+      this.head.rotation.set(0, 0, 0);
+      if (this.stretchT < CAT_LIFE.stretch.secs) return;
+      this.stretchT = null; this.bow = null; this.sitT = 0;
+    }
     if (!this.tailTurn) this.tailTurn = { from: o.rotation.y, by: (this.rand() < 0.5 ? -1 : 1) * Math.PI * (0.5 + this.rand() * 0.5), t: 0 };
     const T = this.tailTurn;
     if (this.standing && T.t < 1) {

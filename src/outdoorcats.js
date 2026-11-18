@@ -6,7 +6,9 @@ import {catNoseShape,poseCatNuzzle} from './catnuzzlepose.js';
 import {Hearts} from './pingping.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { OUTDOOR_CATS, SEASON, CAT_FISH, BUTTERFLY_SURFACE } from './config.js';
+import { OUTDOOR_CATS, SEASON, CAT_FISH, BUTTERFLY_SURFACE, CAT_LIFE } from './config.js';
+import { furMaterial } from './catfur.js';
+import { moodOf, seedOf, sitChoice, stretchPose } from './catlife.js';
 import { BREEDS, createCatPuppet, catLabel } from './cat.js';
 import {prepareClimbContact,alignClimbContact} from './catclimb.js';
 import { OutdoorCatBrain, turnTo } from './outdoorcatbrain.js';
@@ -36,7 +38,7 @@ const C = OUTDOOR_CATS;
 
 /** One merged, vertex-coloured mesh of the puppet in its current pose (relative to its root, without the root's own scale). */
 function bakePose(p, stand) {
-  Object.assign(p, { stand, wantStand: stand, gaitAmp: 0, walked: false, tailK: -1, hopY: 0 });
+  Object.assign(p, { stand, wantStand: stand, gaitAmp: 0, walked: false, tailK: -1, hopY: 0, bow: null, crouch: 0, wantCrouch: 0, tailWrap: 0, wantWrap: 0 });
   p.shoulder.rotation.set(0, 0, 0); p.leftShoulder.rotation.set(0, 0, 0); p.head.rotation.set(0, 0, 0);
   p.pose(0);
   const root = p.object;
@@ -113,11 +115,12 @@ export class OutdoorCats {
     const breed = BREEDS.find((b) => b.name === spec.breed) ?? BREEDS[0];
     const coat = breed.coats.find((v) => v.name === spec.coat) ?? breed.coats[0];
     const puppet = createCatPuppet(breed, coat);
+    puppet.initLife(seedOf(spec.name)); // #2125: its own tail flicks, ear twitches and sitting habits, the same on every client
     const group = new THREE.Group();
     group.name = `outdoor-cat-${spec.name}`;
     group.visible = false;
     group.rotation.order = 'YXZ'; // (yaw, then the pitch of a cat on a trunk)
-    const lodMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, transparent: true });
+    const lodMat = furMaterial(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, transparent: true }), { copy: puppet.parts.body.material }); // #2125: the same coat shader (one program with the near body)
     const lods = [bakePose(puppet, 0), bakePose(puppet, 1)].map((g) => {
       const m = new THREE.Mesh(g, lodMat);
       m.scale.copy(puppet.object.scale);
@@ -335,13 +338,20 @@ export class OutdoorCats {
   /** The full cat's pose this frame: walking (creeping, chasing, climbing), or sitting and washing / looking about / asleep /
    * sniffing / crouching / pouncing. */
   animate(c, dt, walking, moved, activity) {
-    const P = c.puppet;
+    const P = c.puppet, LF = CAT_LIFE, now = this.now() - C.epoch; // (#2125: sitting habits on the shared clock: every client sees the same)
     c.t += dt;
     P.walked = false; P.hopY = c.hop ?? 0; P.headOff.set(0, 0, 0);
-    const up = activity === 'sniff' || activity === 'crouch' || activity === 'pounce' || activity === 'nuzzle'; // (on its feet without walking)
+    // #2125: mood (tail and ears), a low stalk, what its ears follow (prey, the butterfly, the visitor walking near or meeting it)
+    P.mood = moodOf(c.st === 'flee' ? 'flee' : c.st === 'notice' || c.st === 'seek' ? 'alert' : activity);
+    P.wantCrouch = activity === 'creep' || activity === 'crouch' ? 1 : 0;
+    P.wantWrap = 0; P.bow = null;
+    const eye = this.camera.position;
+    P.earAt = c.st === 'prey' && c.prey ? c.prey : c.bf ? c.bf : c.faceEye || (this.still < 0.5 && Math.hypot(eye.x - c.x, eye.z - c.z) < LF.ears.reach) ? eye : null;
+    const stretch = !walking && c.st === 'route' && c.h < 0.05 && c.restLeft <= LF.stretch.secs && c.restDone >= LF.stretch.after && activity !== 'eat' && activity !== 'nuzzle';
+    const up = stretch || activity === 'sniff' || activity === 'crouch' || activity === 'pounce' || activity === 'nuzzle'; // (on its feet without walking)
     P.wantStand = walking || up ? 1 : 0;
     if (walking && P.stand > 0.5 && moved > 0) P.stride(moved);
-    const sleep = !walking && activity === 'sleep';
+    const sleep = !walking && !stretch && activity === 'sleep';
     for (const e of P.eyes) { e.eye.visible = !sleep; e.shut.visible = sleep; }
     P.leftShoulder.rotation.set(0, 0, 0);
     if (walking) {
@@ -351,6 +361,8 @@ export class OutdoorCats {
         const hop = c.hop ?? 0; P.head.rotation.set(-0.35, 0, 0); P.tailGroup.rotation.y = 0.5 * Math.sin(c.t * 7);
         P.shoulder.rotation.set(-12 * hop, 0, 0); P.leftShoulder.rotation.set(-12 * hop, 0, 0); // (front paws up after it)
       } else { P.head.rotation.set(activity === 'climb' ? -0.1 : 0.12, 0, 0); P.tailGroup.rotation.y = 0.3 * Math.sin(c.t * 4.5); }
+    } else if (stretch) { // #2125: the rest is ending: up, a long stretch, then off it walks
+      P.bow = stretchPose(1 - c.restLeft / LF.stretch.secs); P.head.rotation.set(0, 0, 0); P.tailGroup.rotation.y = 0;
     } else if(activity==='nuzzle'){P.shoulder.rotation.set(0,0,0);P.head.rotation.set(0,0,0);P.tailGroup.rotation.y=.08*Math.sin(c.t*2);
     } else if (activity === 'sniff') {
       P.shoulder.rotation.set(0, 0, 0); P.headOff.set(0, -0.05, 0.03);
@@ -363,17 +375,15 @@ export class OutdoorCats {
       const down = Math.min(1, (c.eatT ?? 0) / 0.4);
       P.shoulder.rotation.set(0, 0, 0); P.headOff.set(0, -0.2 * down, 0.09 * down);
       P.head.rotation.set(0.8 * down + 0.08 * Math.sin(c.t * 14), 0, 0); P.tailGroup.rotation.y = 0.12 * Math.sin(c.t * 2.3);
-    } else if (activity === 'wash') { // the CatSpawner's washing cycle (cat.js behave)
-      const t = c.t, cy = t % 6, sm = (a, b, x) => THREE.MathUtils.smoothstep(x, a, b);
-      const u = sm(0, 0.5, cy) * (1 - sm(3.2, 3.7, cy)), wipe = sm(2.0, 2.4, cy) * (1 - sm(2.9, 3.2, cy)), lick = Math.sin(t * 13) * 0.5 + 0.5;
-      P.shoulder.rotation.set(-2.85 * u - 0.25 * wipe, 0, 0.3 * u + 0.15 * wipe);
-      P.head.rotation.set(0.3 * u + 0.08 * lick * u * (1 - wipe) - 0.2 * wipe, 0.4 * u * (1 - wipe) + (1 - u) * 0.35 * Math.sin(t * 0.7), -0.15 * u + 0.3 * wipe);
-      P.tailGroup.rotation.y = 0.08 * Math.sin(t * 2.3) * (1 - u);
+    } else if (activity === 'wash') { // the CatSpawner's grooming (cat.js groom: the face as before, some cycles the flank)
+      P.groom(now);
     } else {
       P.shoulder.rotation.set(0, 0, 0);
-      if (sleep) P.head.rotation.set(0.5, 0.15, 0.1); // head down, eyes shut: asleep in the sun
-      else P.head.rotation.set(0, 0.45 * Math.sin(c.t * 0.6), 0);
-      P.tailGroup.rotation.y = sleep ? 0 : 0.08 * Math.sin(c.t * 2.3);
+      const choice = sleep || c.faceEye || c.st !== 'route' ? 'look' : sitChoice(P.lifeSeed, now); // #2125: sitting idle on its own
+      if (sleep) { P.head.rotation.set(0.5, 0.15, 0.1); P.tailGroup.rotation.y = 0; P.wantWrap = 1; } // head down, eyes shut: asleep in the sun, tail round it
+      else if (choice === 'groom') P.groom(now);
+      else if (choice === 'wrap') P.sitLook(now, true);
+      else { P.head.rotation.set(0, 0.45 * Math.sin(c.t * 0.6), 0); P.tailGroup.rotation.y = 0.08 * Math.sin(c.t * 2.3); }
     }
     P.pose(dt);
     if(c.st==='social'&&this.nuzzle.pair)poseCatNuzzle(c,this.nuzzle.pair,C.nuzzle);

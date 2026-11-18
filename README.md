@@ -47,6 +47,8 @@ Räcken och ledstänger utomhus har en matt, lätt borstad metallyta som lugnar 
 Gräsmattorna har mjuka torrare och frodigare fläckar och små tuvor i den delade gräskartan, med oförändrad medelfärg på håll. [Före/efter och kontroller](docs/verification/2086/README.md).
 Fasadernas fönsterglas har en lugn himmelsreflex som skiftar lite mellan rutorna. [Före/efter dag och natt](docs/verification/2087/README.md).
 
+Katterna har pälsriktning och mjuk glans, en svans som följer med och slår efter humöret, öron som vrids mot ljud, och de tvättar sig, sträcker på sig, smyger lågt och sitter med svansen runt tassarna. [Före/efter-sekvenser och kontroller](docs/verification/2125/README.md).
+
 Trädens och buskarnas löv har mjuka färgskiftningar och diskreta sidonerver i den befintliga lövtexturen. [Egna bilder, alfakontroller och startkostnad](docs/verification/2085/README.md).
 
 Höje ås vatten har små ljuskrusningar som tonar bort på avstånd; vattennivåer, stränder och den befintliga rörelsen är kvar.

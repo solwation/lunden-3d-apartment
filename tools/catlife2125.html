@@ -1,0 +1,104 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Katter #2125 · levande päls, svans, öron och vardagsbeteenden</title>
+<style>body{margin:0;background:#e9ece6}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+// #2125 component views of the actual consumers: the ordinary CatSpawner driven by its own update(dt) indoors, and the real OutdoorCats
+// puppets / far LOD driven by OutdoorCats.animate outdoors. Same script in both phases (before = base modules served by the runner).
+// window.__frames(scenario) → [{label, image, calls, triangles}], window.__proof() → programs, materials, errors.
+import * as T from 'three';
+import { CatSpawner, BREEDS, loadRiggedCatModel } from '../src/cat.js';
+import { OutdoorCats } from '../src/outdoorcats.js';
+import { OUTDOOR_CATS } from '../src/config.js';
+await loadRiggedCatModel();
+const W = 400, H = 300, q = new URLSearchParams(location.search);
+const renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); renderer.setSize(W, H); renderer.setPixelRatio(1);
+renderer.shadowMap.enabled = true; document.body.append(renderer.domElement);
+const scene = new T.Scene(); scene.background = new T.Color('#dfe5dc');
+scene.add(new T.HemisphereLight(0xdfe9ff, 0x5d6150, 1.4));
+const sun = new T.DirectionalLight(0xfff1dc, 2.6); sun.position.set(-2.2, 3.2, 1.6); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
+Object.assign(sun.shadow.camera, { left: -1.5, right: 1.5, top: 1.5, bottom: -1.5, near: 0.5, far: 10 }); scene.add(sun);
+const ground = new T.Mesh(new T.PlaneGeometry(40, 40), new T.MeshStandardMaterial({ color: 0x9aa58c, roughness: 0.95 }));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+const camera = new T.PerspectiveCamera(40, W / H, 0.02, 80);
+const life = await import('../src/catlife.js').catch(() => null); // (only the after phase has it)
+
+// --- indoors: the ordinary cat ---
+const room = { levels: [{ segments: [] }, { segments: [] }], doors: [] };
+const cat = new CatSpawner(room, (() => { let s = 7; return () => ((s = (s * 16807) % 2147483647) / 2147483647); })());
+scene.add(cat.object);
+const tabby = BREEDS.find((b) => b.name === 'huskatt');
+function freshCat(coatName = 'rödrandig') {
+  cat.hide(); cat.setCat(tabby, tabby.coats.find((c) => c.name === coatName) ?? tabby.coats[0]);
+  Object.assign(cat, { nextMeow: Infinity, tailWait: 1e9, ignored: -1e9, t: 0 }); cat.chance = { ...cat.chance, appear: 0, steal: 0, vanish: 0 };
+  cat.object.position.set(0, 0, 0); cat.object.rotation.set(0, 0, 0); cat.object.visible = true; cat.object.updateMatrixWorld(true);
+}
+const run = (s, step = (dt) => cat.update(dt)) => { for (let i = 0; i < Math.round(s * 30); i++) { step(1 / 30); scene.updateMatrixWorld(true); } };
+function shot(label, target, from) {
+  camera.position.copy(target).add(from); camera.lookAt(target); scene.updateMatrixWorld(true);
+  renderer.info.reset(); renderer.render(scene, camera);
+  return { label, image: renderer.domElement.toDataURL('image/jpeg', 0.92), calls: renderer.info.render.calls, triangles: renderer.info.render.triangles };
+}
+const quarter = new T.Vector3(0.62, 0.32, 0.78), side = new T.Vector3(0.95, 0.25, 0.05), back = new T.Vector3(-0.35, 0.4, -0.9);
+const at = (y = 0.2) => new T.Vector3(0, y, 0);
+
+// the first wrap block of this cat (after), passed to the before phase so both phases show the same moment of its clock
+freshCat(); // (the seed of the cat shown: rödrandig huskatt)
+const wrapT = Number(q.get('wrap')) || (() => { if (!life) return 36; let t = 18; while (life.sitChoice(cat.lifeSeed ?? 0, t + 1) !== 'wrap') t += 18; return t; })();
+const flankT = Number(q.get('flank')) || (() => { if (!life) return 6; for (let t = 6; ; t += 6) if (life.sitChoice(cat.lifeSeed ?? 0, t + 1) === 'groom' && life.groomKind(cat.lifeSeed ?? 0, t + 1) === 'flank') return t; })();
+
+const scenarios = {
+  indoor() {
+    const f = [];
+    freshCat(); cat.t = 1.2; run(0.6); f.push(shot('sitter · tvättar ansiktet', at(), quarter));
+    freshCat(); cat.t = flankT + 0.5; run(1.2); f.push(shot('sitter · tvättar flanken', at(), quarter));
+    freshCat(); cat.t = wrapT; run(2.5); f.push(shot('sitter · svansen runt tassarna', at(0.15), new T.Vector3(0.3, 0.45, 0.85)));
+    // a door opening to its left: the ears turn (CatSpawner.onOpen hears it)
+    freshCat(); cat.t = wrapT; run(1); cat.onOpen({ name: 'dörr', segment: () => [1.6, -0.4, 1.6, 0.4] }, { x: 0, z: 2 }); run(0.5);
+    f.push(shot('dörr öppnas till vänster · öronen', at(0.33), new T.Vector3(-0.05, 0.12, 0.6)));
+    // up after a long sit: stretch, then the turn with the tail up
+    freshCat(); cat.t = wrapT; run(1); cat.sitT = 60; cat.raiseTail(12);
+    run(0.9); f.push(shot('reser sig efter vila · 0,9 s', at(0.17), side));
+    run(0.7); f.push(shot('reser sig efter vila · 1,6 s', at(0.17), side));
+    run(1.6); f.push(shot('vänder sig · svansen följer', at(0.2), back));
+    return f;
+  },
+  fur() {
+    const f = [];
+    for (const coat of ['rödrandig', 'svart', 'grå']) { freshCat(coat); cat.t = 300; run(0.2, (dt) => { cat.update(dt); cat.head.rotation.set(0, 0.3, 0); cat.shoulder.rotation.set(0, 0, 0); }); f.push(shot(`päls i sol · ${coat}`, at(0.2), new T.Vector3(0.36, 0.1, 0.3))); }
+    return f;
+  },
+};
+
+// --- outdoors: the real OutdoorCats consumer (near puppet + far LOD), on a flat lawn ---
+const outdoor = new OutdoorCats({ scene, camera, cat: new CatSpawner(room, Math.random), ground: () => 0, walkable: () => true, free: () => true });
+const oc = outdoor.cats.find((c) => c.name === 'Kanel') ?? outdoor.cats[1];
+const T0 = 1800000;
+let clock = T0; outdoor.now = () => OUTDOOR_CATS.epoch + clock;
+function place(c) { for (const k of outdoor.cats) { k.group.visible = false; k.bfMesh.visible = false; } Object.assign(c, { x: 0, z: 0, h: 0, yaw: 0, pitch: 0, alpha: 1, st: 'route', faceEye: false, bf: null, prey: null }); c.group.position.set(0, 0, 0); c.group.rotation.set(0, 0, 0); c.group.visible = true; c.puppet.object.visible = true; for (const l of c.lods) l.visible = false; cat.object.visible = false; }
+const animate = (c, act, walking = false, s = 1, extra = () => {}) => run(s, (dt) => { clock += dt; extra(dt); if (walking) { c.z += 0.22 * dt; c.group.position.z = c.z; } outdoor.animate(c, dt, walking, walking ? 0.22 * dt : 0, act); });
+scenarios.outdoor = () => {
+  const f = [], c = oc, P = c.puppet, sz = P.object.scale.x;
+  const near = (y) => new T.Vector3(c.x, y * sz, c.z);
+  place(c); clock = T0; animate(c, 'walk', true, 1); f.push(shot('går', near(0.2), quarter.clone().multiplyScalar(sz * 1.15)));
+  place(c); clock = T0; c.prey = { x: 0.4, z: 3 }; c.st = 'prey'; animate(c, 'creep', true, 1.5); f.push(shot('smyger lågt mot ekorre', near(0.18), side.clone().multiplyScalar(sz * 1.2)));
+  place(c); clock = T0; animate(c, 'crouch', false, 1.2); f.push(shot('ligger i bakhåll', near(0.18), quarter.clone().multiplyScalar(sz * 1.2)));
+  // a wrap block on the shared clock (after); the same moment before
+  let tw = Number(q.get('owrap')) || T0; if (!q.get('owrap') && life) while (life.sitChoice(P.lifeSeed, tw - 0 + 1) !== 'wrap') tw += 18;
+  window.__owrap = tw; place(c); clock = tw; animate(c, 'look', false, 2.5); f.push(shot('vilar · svansen runt tassarna', near(0.15), new T.Vector3(0.3, 0.45, 0.85).multiplyScalar(sz)));
+  place(c); clock = T0; animate(c, 'wash', false, 1.3); f.push(shot('tvättar sig', near(0.22), quarter.clone().multiplyScalar(sz * 1.15)));
+  place(c); clock = T0; Object.assign(c, { restLeft: 1.3, restDone: 90 }); animate(c, 'look', false, 0.6, (dt) => { c.restLeft = Math.max(0, c.restLeft - dt); });
+  f.push(shot('sträcker på sig innan den går', near(0.17), side.clone().multiplyScalar(sz * 1.2)));
+  // far: the merged LOD (the coat shader on it too)
+  place(c); P.object.visible = false; c.lods[0].visible = true; c.lodMat.opacity = 1;
+  f.push(shot('långt bort · sammanslagen LOD', near(0.2), new T.Vector3(5, 2.2, 7)));
+  return f;
+};
+
+window.__frames = (name) => scenarios[name]();
+window.__proof = () => {
+  const programs = renderer.info.programs?.map((p) => p.cacheKey.split(',').length) ?? [];
+  const fur = []; cat.object.traverse((o) => { if (o.material) fur.push(o.material.customProgramCacheKey?.().slice(-12)); });
+  return { programs: renderer.info.programs?.length ?? 0, wrapT, flankT, owrap: window.__owrap ?? null, furKeys: [...new Set(fur)], lifeModule: !!life, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures };
+};
+window.__ready = true;
+</script>
