@@ -1,0 +1,88 @@
+{
+  "productCommit": "810cef8dd2ff4ba64a21135f9016dc58b81f7b03",
+  "fixture": "Same actual production chaise/Rest/Ghosts view; extra reader injected only into fixture response; no product mutation",
+  "question": "Is the coloured waist arc a30cm clipping-plane section?",
+  "sourceSha256": {
+    "src/avatarselfview.js": "f5a5ed533eec1b5e11c53ef18ec558631a443ab74735bc6792cc156f3ab13889",
+    "src/avatar.js": "8bfa407a8ec7ed8864cc7bc32f358bcc9325da71ec1cab5df4eaa3bc0ef40793",
+    "src/ghosts.js": "6fe294874595d36be5a9a988d8fd2b68dc7dcda1045744ec92f9ea064fd75348",
+    "src/main.js": "91ad31a3691b88c51e4a7e840af5835c0196844ce20f90c6ff91b8e7ebc01667",
+    "src/rest.js": "34622ed84b783b6969ac9c84cd5db3ae0a0d7b8298d3611d56ec93ecd771f10a",
+    "src/remote-pose.js": "4fa52f3924f40997aab40da35019ae70af1a81cf153b35b78354a44e1b3d5fa7",
+    "src/furniture.js": "aa1d068ca4996f2f07e1d8a90abbf5a4dddc372f99f792ed1feb964b6e185a96",
+    "src/hand.js": "a4ab8914a060f7fb0f76184e18674fe1ad4f4876133830897722c359c271ab75",
+    "tools/avatarselfview2080.html": "443fb667866c80531c3c282334cf54e545e32410059817c73663babeb102b309",
+    "tools/avatarselfview2080browser.cjs": "25bf0ee1a1add53d1cfe6d657169fc69998cef0e865a47225479a97fa4c9303c",
+    "tools/avatarselfviewtest.mjs": "ebcfe404771268e7d5a17e4354098bc4135336854034f53cd8883dfc0b0d7438",
+    "src/config.js": "c75980dbc90b586d9b6e651485de97c72c55ba31a4b21c23f19f640b13f789a1",
+    "src/reflections.js": "b8a63b3ec6c3ba4d01083c3e91de2b77065b40645842a643a45787571331e502",
+    "src/keep.js": "b34912eb232efdf85257fd37c8a9fc8f3bc2e7e06a90a582e2beba2fb344274d",
+    "src/resume.js": "78715ebf01c56d84a13dea9d89751be7a06bc22f045fad366f149eb09d515331",
+    "cloudflare/players.js": "e969b6c708b933c268f5ed56059f47ee241d5b824e9b1dd3042df332a154e08f"
+  },
+  "selectedActualSkinnedTriangles": [
+    {
+      "i": 558,
+      "bindY": [
+        0.875,
+        0.875,
+        0.8880000114440918
+      ],
+      "viewZ": [
+        -0.6460305319020937,
+        -0.6488235049583864,
+        -0.6351539950061424
+      ],
+      "ndc": [
+        [
+          0.08244448398217583,
+          -0.7134301508661772,
+          0.923405696189665
+        ],
+        [
+          -7.169588557636539e-16,
+          -0.7007257258439715,
+          0.9237389983479386
+        ],
+        [
+          0.08385628407939653,
+          -0.7060498024912376,
+          0.9220797998921838
+        ]
+      ]
+    },
+    {
+      "i": 561,
+      "bindY": [
+        0.875,
+        0.8880000114440918,
+        0.8880000114440918
+      ],
+      "viewZ": [
+        -0.6488235049583864,
+        -0.6379469680624354,
+        -0.6351539950061424
+      ],
+      "ndc": [
+        [
+          -7.169588557636539e-16,
+          -0.7007257258439715,
+          0.9237389983479386
+        ],
+        [
+          -2.1875474655222495e-15,
+          -0.6931610878035508,
+          0.922424589472176
+        ],
+        [
+          0.08385628407939653,
+          -0.7060498024912376,
+          0.9220797998921838
+        ]
+      ]
+    }
+  ],
+  "hipBindY": 0.9,
+  "bodyNearPlane": 0.3,
+  "conclusion": "Authored lower torso shirt hem at view depth0.635\u20130.649m, beyond the near-plane discard; follows real torso/hip."
+}
