@@ -49,3 +49,5 @@ draw/texture is the frame's own lazy-loading noise.
 - The optional link to #2099 (puddles collecting nearest the grates) is not done: it would need the grate positions in the
   shared wet-ground shader, which #2119 is changing in parallel. The covers themselves darken and shine with the wet street.
 - Phones get the covers with a hook-free material: they stay dry-looking in rain there.
+
+Publicering: Pages/Worker success på `82db1be`; bild-URL:er HTTP 200 före stängning.
