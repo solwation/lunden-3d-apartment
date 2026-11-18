@@ -11,10 +11,12 @@ kvalitetsbytet i sig.
 
 | Vy | Före | Efter |
 |---|---|---|
-| Närmaste parkerade bilar, dag | ![](bilar-dag-before.png) | ![](bilar-dag-after.png) |
-| Tänt rum, natt (lamp-wash) | ![](rum-natt-before.png) | ![](rum-natt-after.png) |
+| Närmaste parkerade bilar, dag | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/7360421118a45b9d727628c36db17e070458815e/docs/verification/2090/bilar-dag-before.png) | ![](bilar-dag-after.png) |
+| Tänt rum, natt (lamp-wash) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/7360421118a45b9d727628c36db17e070458815e/docs/verification/2090/rum-natt-before.png) | ![](rum-natt-after.png) |
 
 - `node tools/lampwash2090test.mjs` (three 0.170.0 som `three`): 2/2 (före åtgärden: 1 fel, `uLampData declared once`).
 - `THREE_DIR=… node tools/lampwash2090browser.cjs http://localhost:8290 docs/verification/2090`: före 3 redefinition-fel
   och 2 ogiltiga program (bilbatcher) efter bilvyn; efter 0 fel, 0 ogiltiga program. Rumsvyn pixelidentisk före/efter
   (lampans ljus oförändrat), samma 56 draw calls och 81 program. Rådata: [browser.json](browser.json).
+
+Publicering: Pages success på `7360421`; före-bilder borttagna vid stängning och visas från den commiten.
