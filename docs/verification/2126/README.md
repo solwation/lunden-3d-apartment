@@ -12,9 +12,9 @@ production code. Both phases run `tools/duckmotion2126browser.cjs` against the r
 
 | | Before | After |
 |---|---|---|
-| Swim, frame 0 | ![](before/swim-0.jpg) | ![](swim-0.jpg) |
-| Swim, +0.25 s | ![](before/swim-1.jpg) | ![](swim-1.jpg) |
-| Swim, +0.5 s | ![](before/swim-2.jpg) | ![](swim-2.jpg) |
+| Swim, frame 0 | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/361ad4fe8fc2b27ee8d318c9f401063b9a9cf8a2/docs/verification/2126/before/swim-0.jpg) | ![](swim-0.jpg) |
+| Swim, +0.25 s | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/361ad4fe8fc2b27ee8d318c9f401063b9a9cf8a2/docs/verification/2126/before/swim-1.jpg) | ![](swim-1.jpg) |
+| Swim, +0.5 s | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/361ad4fe8fc2b27ee8d318c9f401063b9a9cf8a2/docs/verification/2126/before/swim-2.jpg) | ![](swim-2.jpg) |
 
 The before/after swim frames come from the same seeded route but at different flock times (989 vs 1555 steps,
 because resting behaviours pause wandering), so the companions differ. The after frames show the faint V wake
@@ -60,3 +60,5 @@ the existing `flap` clip beats the wings but a side view shows them only modestl
 Poses are additive bone rotations on the stylised rig; no new clips or GLB change. Take-off is a hop-flight in place
 along the bird's existing route (it does not flee to a new territory). The wake is a static-shaped ribbon V, not a
 simulated wave field, and has no foam texture. Houses A/B/C/L are not applicable (river animals only).
+
+Publicering: Pages/Worker success på `361ad4f`; före-bilder borttagna vid stängning och visas från den commiten.
