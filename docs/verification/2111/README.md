@@ -25,3 +25,5 @@ satt bara när utseendet sätts. Av: ett uniformtest per fragment. På: upp till
 
 Begränsningar: fräknarna projiceras framifrån på huvudets bindningsläge (inte på kinder som vänder åt sidan eller på armar/axlar); gamla klienter
 som ser en `c` ≥ 8 tappar ögonfärgen (och visar ingen variation); 7 placeringsfrön per hudton.
+
+Publicering: Pages/Worker success på `a859a1c`; före-bilder borttagna vid stängning och visas från den commiten.
