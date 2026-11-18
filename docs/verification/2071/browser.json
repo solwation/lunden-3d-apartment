@@ -222,8 +222,28 @@
   "source": {
     "src/exterior.js": "6422c2e2b171ae91258b8b21a16b25ddb8dced6a49df2aa1fe2642a702bf0b38",
     "src/bricksurface.js": "da4f59365733e84122a7be9e29d3fad29176b3ee57d189b2d9c2fb2ead95ca3e",
-    "src/config.js": "009d571e27ef2fbbe7c69b5f14ca728d41882ce336047d4804423d61c0e59f42",
+    "src/config.js": "6652e716db91136963782330564ddfaabd9c9b7e152d239b8457e8c498d501e3",
     "tools/bricksurface2071.html": "a955607fb06561c7f4515b24c81d696c3fa81df2b7b87441724c38ac2cc43e1a",
-    "tools/bricksurface2071browser.cjs": "4fea41771dc31bb6faeeb45d84fa8fedc2ad2ea449720dca23e18fd86246ea40"
+    "tools/bricksurface2071browser.cjs": "1b5bf32af3de9efd2163bee2e5d03fa4771b060702776a4fe02853ff6c07f9fd"
+  },
+  "composition": {
+    "source": [
+      1200,
+      800
+    ],
+    "sheet": [
+      1200,
+      1676
+    ],
+    "labelHeight": 38,
+    "rowPitch": 838,
+    "scale": [
+      1,
+      1
+    ]
+  },
+  "imageCorrection": {
+    "productSource": "7b5f0f1740c02d7f7731e34a067563b4b88239e9",
+    "scope": "composer only; regenerated same four matched views; source products unchanged"
   }
 }

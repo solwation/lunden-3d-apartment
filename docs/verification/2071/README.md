@@ -12,7 +12,9 @@ There is no displacement, silhouette or opening change. `BRICK_SURFACE` values a
 assumptions, not verified specifications for Peab's brick: 2.52 mm virtual face-to-mortar
 depth (`bumpScale × red-channel range`) and about 0.11 mm face-grain amplitude.
 
-Each JPG is a matched sheet: **before above, after below**.
+Each JPG is a matched sheet: **before above, after below**. The corrected sheets are
+1200 × 1676: two native 1200 × 800 captures, each preceded by a 38-pixel label band.
+There is no scaling, aspect-ratio change or clipping.
 
 - `facade.jpg`: Hus L's full street facade from the west.
 - `entrance.jpg`: the existing neighbour entrance, window, trim and brick beside them.
@@ -95,9 +97,32 @@ storage or network service is used. The conductor owns publication and closure.
 Published on main as `7b5f0f1740c02d7f7731e34a067563b4b88239e9`.
 [Pages44262927980](https://github.com/solwation/lunden-3d-apartment/actions/runs/44262927980)
 and [Worker44262928008](https://github.com/solwation/lunden-3d-apartment/actions/runs/44262928008)
-both succeeded on that exact revision. The conductor inspected all four comparison sheets;
-three representative ones were embedded in the issue with permanent revision URLs verified
-HTTP200 before closure. Source modules and fixtures match the accepted worker bytes;
-only independent constant additions and changelog1601 differ from its base.
+both succeeded on that exact revision. Three representative sheets from that first publication were embedded in the issue with
+permanent revision URLs verified HTTP200 before its initial closure. Those sheets were later
+found to be vertically compressed by the contact composer; their visual evidence is superseded
+by the corrected sheets below. Product implementation and functional measurements were unaffected. At that first publication, source modules and fixtures matched the accepted worker bytes;
+only independent constant additions and changelog1601 differed from its base.
 The neutral public adaptation is tracked in
 [kvarteret-lunden#293](https://github.com/solwation/kvarteret-lunden/issues/293).
+
+
+## Image-only contact-sheet correction
+
+The issue was reopened after inspection found that the earlier composer drew each 1200 × 800
+capture into 1600 × 533 pixels, changing the facade proportions. Only the composer is corrected:
+the same four before/after views were recaptured at their original native 1200 × 800 pixels and
+placed unscaled into 1200 × 1676 sheets (38-pixel label bands, 838-pixel row pitch). Decoded image
+dimensions are checked before composition; no row is clipped. These four JPGs replace the
+old distorted sheets. All four corrected sheets were opened and inspected.
+
+Corrected fixture SHA-256: `1b5bf32af3de9efd2163bee2e5d03fa4771b060702776a4fe02853ff6c07f9fd`.
+`browser.json` records this exact fixture hash, source/module hashes and the composition's
+source/sheet dimensions and scale `[1,1]`. The new narrow browser run again passes all 153-pane,
+opening/bounds/geometry and four-view draw/triangle checks, with zero errors and unchanged
+counts above. Its peak was 1262 MiB under the 4 GiB wrapper ceiling. No Node tests or unrelated
+browser checks were repeated: product `src/exterior.js` and `src/bricksurface.js` were compared
+byte-for-byte with published source `7b5f0f1740c02d7f7731e34a067563b4b88239e9` and are unchanged.
+No product code, material, camera, rendering resolution or geometry was modified.
+
+The conductor publishes this correction and a new revision-pinned image comment before
+closing the reopened issue, and records any actual workflow run triggered by the correction.
