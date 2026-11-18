@@ -1,0 +1,88 @@
+{
+ "phase": "after",
+ "views": [
+  {
+   "name": "park-mid",
+   "at": "-8,52,200,-6",
+   "month": 6,
+   "file": "/tmp/grass2091/after-park-mid.png",
+   "calls": 83,
+   "triangles": 510913,
+   "textures": 33,
+   "geometries": 110,
+   "programs": 53,
+   "grassPrograms": [
+    {
+     "key": "tches-688-bed-7628363|lampwashV|lampwash",
+     "diag": null
+    }
+   ]
+  },
+  {
+   "name": "court-mid",
+   "at": "-4,22.6,95,-7",
+   "month": 6,
+   "file": "/tmp/grass2091/after-court-mid.png",
+   "calls": 260,
+   "triangles": 695350,
+   "textures": 59,
+   "geometries": 335,
+   "programs": 84,
+   "grassPrograms": [
+    {
+     "key": "rgb,grass-patches-688|lampwashV|lampwash",
+     "diag": null
+    },
+    {
+     "key": "tches-688-bed-7628363|lampwashV|lampwash",
+     "diag": null
+    }
+   ]
+  },
+  {
+   "name": "far-summer",
+   "at": "-8,52,200,-16,22",
+   "month": 6,
+   "file": "/tmp/grass2091/after-far-summer.png",
+   "calls": 75,
+   "triangles": 500056,
+   "textures": 29,
+   "geometries": 102,
+   "programs": 52,
+   "grassPrograms": [
+    {
+     "key": "tches-688-bed-7628363|lampwashV|lampwash",
+     "diag": null
+    },
+    {
+     "key": "rgb,grass-patches-688|lampwashV|lampwash",
+     "diag": null
+    }
+   ]
+  },
+  {
+   "name": "park-winter",
+   "at": "-8,52,200,-6",
+   "month": 1,
+   "file": "/tmp/grass2091/after-park-winter.png",
+   "calls": 80,
+   "triangles": 467741,
+   "textures": 28,
+   "geometries": 114,
+   "programs": 49,
+   "grassPrograms": [
+    {
+     "key": "tches-688-bed-7628363|lampwashV|lampwash",
+     "diag": null
+    }
+   ]
+  }
+ ],
+ "errors": [],
+ "console": [],
+ "mean": [
+  0.09319,
+  0.23944,
+  0.04383
+ ]
+}

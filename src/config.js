@@ -1611,6 +1611,10 @@ export const GRASS = {
   // untouched), radius in px (160 px/m), `shade` = alpha of the darker base, `dark`/`light` blade grey levels. All *guess*, by eye in walk view.
   detailPatches: { contrast: 1.5, dry: [0.26, 0.17, 0.02], lush: [0.19, 0.09, 0.22], seed: 2086, octaves: [{ cells: 8, amp: 0.5 }, { cells: 17, amp: 0.5 }] },
   tufts: { seed: 2086, count: 22, radius: [7, 14], blades: [10, 16], dark: [178, 208], light: [228, 252], shade: 0.14, width: 1 },
+  // #2091: the shader samples the same map a second time, rotated (`angle`, rad) and scaled (`scale` x tile) with a UV `offset`, and
+  // switches between both lookups in soft world-space blobs (`noiseScale` rad/m; `warp`/`freq` shape them; `edge` = soft band of the
+  // switch), so the 1.6 m lattice does not run on unbroken at 10–20 m. Same mean colour; all *guess*, by eye in park / courtyard views.
+  detailBlend: { angle: 0.61, scale: 1.37, offset: [0.37, 0.71], noiseScale: 0.85, warp: [0.83, 1.3], freq: [1.11, 0.47], edge: 0.35 },
 };
 
 export const COURTYARD = {

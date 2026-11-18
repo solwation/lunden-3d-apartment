@@ -1,5 +1,6 @@
 # Kv. Lunden L1007 i 3D
 
+Gräsmattorna har mjuka torrare och frodigare fläckar och små tuvor i den delade gräskartan, med oförändrad medelfärg på håll. [Före/efter och kontroller](docs/verification/2086/README.md). Stora gräsytor upprepar dessutom mönstret mindre på 10–20 m håll: shadern blandar två vridna lookups av samma karta ([#2091](docs/verification/2091/README.md)).
 Taken har diskreta plåtfalsar eller takpappsvåder och en vädrad, ojämn matthet. [Före/efter sommar och vinter](docs/verification/2088/README.md).
 
 Räcken och ledstänger utomhus har en matt, lätt borstad metallyta som lugnar sig på avstånd. [Före/efter dag och skymning](docs/verification/2089/README.md).

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GRASS as G, SEASON } from './config.js';
 import { registerSeasonal, registerSnow } from './seasons.js';
-import { applyGrassPatches, grassTufts, linearMean } from './grassdetail.js';
+import { applyGrassPatches, grassBlendGLSL, grassTufts, linearMean } from './grassdetail.js';
 
 let texture;
 /** One shared small seamless detail map; neutral straw/leaf tones are tinted by each lawn's seasonal colour. */
@@ -71,6 +71,7 @@ export function grassMeanColor(color = G.summer) {
 }
 
 /** Broad irregular tone patches use meter UVs too: no extra geometry, texture, lighting or render pass.
+ * #2091: <map_fragment> is replaced by two lookups of the same map (one rotated / scaled) switched in soft world-space blobs.
  * #1945: with `bed` ({ color }) the geometry's `bedMud` attribute (0 … 1 per vertex, surroundings.js) mixes that mud / sand tone in instead of
  * the grass (and instead of the snow): the river bed under the water. A program variant of its own, so the other lawns are untouched. */
 export function grassMaterial(color = G.summer, bed = null) {
@@ -83,7 +84,7 @@ export function grassMaterial(color = G.summer, bed = null) {
       .replace('#include <uv_vertex>', `#include <uv_vertex>\ngrassMeters = uv;${bed ? '\ngrassBed = bedMud;' : ''}`);
     const mud = bed && new THREE.Color(bed.color); // (linear, as diffuseColor)
     shader.fragmentShader = shader.fragmentShader.replace('#include <common>', `#include <common>\nvarying vec2 grassMeters;\nuniform float grassSnow;${bed ? '\nvarying float grassBed;' : ''}`)
-      .replace('#include <map_fragment>', `#include <map_fragment>
+      .replace('#include <map_fragment>', `${grassBlendGLSL(G.tile, G.detailBlend)}
         if (grassSnow < 0.5) {
           vec2 p = grassMeters * ${G.patchScale.toFixed(4)};
           float grassPatch = sin(p.x + sin(p.y * ${G.patchFrequencies[0].toFixed(4)})) * sin(p.y * ${G.patchFrequencies[1].toFixed(4)} - p.x * ${G.patchFrequencies[2].toFixed(4)});

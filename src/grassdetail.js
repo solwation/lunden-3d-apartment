@@ -86,3 +86,32 @@ export function grassTufts(n, T) {
   }
   return tufts;
 }
+
+/** #2091: the 1.6 m detail map repeated as a regular fine lattice at 10–20 m. The grass shader samples the same map a second
+ *  time, rotated by `angle` and scaled by `scale` (so its lattice neither lines up with nor shares a period with the first),
+ *  and switches between the two lookups with soft world-space blobs (`grassBlendWeight`, a few metres across). Both lookups
+ *  read the same map, so the mean colour (grassMeanColor(), far ground) is unchanged; no new texture, geometry or draw. */
+export function grassBlendWeight(x, z, B) {
+  const qx = x * B.noiseScale, qz = z * B.noiseScale;
+  const s = Math.sin(qx + B.warp[1] * Math.sin(qz * B.warp[0] + 0.4)) * Math.sin(qz * B.freq[0] - qx * B.freq[1] + 2.1);
+  const t = Math.max(0, Math.min(1, (s + B.edge) / (2 * B.edge)));
+  return t * t * (3 - 2 * t); // GLSL smoothstep(-edge, edge, s)
+}
+
+/** The second lookup's UV (map units: one map per `tile` × `scale` metres, rotated), as in the shader. */
+export function grassBlendUV(x, z, tile, B) {
+  const c = Math.cos(B.angle), s = Math.sin(B.angle), k = 1 / (tile * B.scale);
+  return [(c * x - s * z) * k + B.offset[0], (s * x + c * z) * k + B.offset[1]];
+}
+
+/** GLSL replacing three's <map_fragment> in the grass material (expects `grassMeters`, metre UVs). Same maths as above. */
+export function grassBlendGLSL(tile, B) {
+  const f = (v) => (+v).toFixed(5), c = Math.cos(B.angle), s = Math.sin(B.angle), k = 1 / (tile * B.scale);
+  return `#ifdef USE_MAP
+          vec2 grassQ = grassMeters * ${f(B.noiseScale)};
+          float grassSel = sin(grassQ.x + ${f(B.warp[1])} * sin(grassQ.y * ${f(B.warp[0])} + 0.4)) * sin(grassQ.y * ${f(B.freq[0])} - grassQ.x * ${f(B.freq[1])} + 2.1);
+          vec2 grassUvB = vec2(${f(c)} * grassMeters.x - ${f(s)} * grassMeters.y, ${f(s)} * grassMeters.x + ${f(c)} * grassMeters.y) * ${f(k)} + vec2(${f(B.offset[0])}, ${f(B.offset[1])});
+          vec4 sampledDiffuseColor = mix(texture2D(map, vMapUv), texture2D(map, grassUvB), smoothstep(${f(-B.edge)}, ${f(B.edge)}, grassSel));
+          diffuseColor *= sampledDiffuseColor;
+        #endif`;
+}

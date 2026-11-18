@@ -1,0 +1,126 @@
+{
+ "phase": "before",
+ "views": [
+  {
+   "name": "park-mid",
+   "at": "-8,52,200,-6",
+   "month": 6,
+   "file": "/tmp/grass2091/before-park-mid.png",
+   "calls": 85,
+   "triangles": 514813,
+   "textures": 34,
+   "geometries": 113,
+   "programs": 54,
+   "grassPrograms": [
+    {
+     "key": "tches-688-bed-7628363|lampwashV|lampwash",
+     "diag": null
+    }
+   ]
+  },
+  {
+   "name": "park-high",
+   "at": "-8,52,200,-14,4",
+   "month": 6,
+   "file": "/tmp/grass2091/before-park-high.png",
+   "calls": 83,
+   "triangles": 498205,
+   "textures": 32,
+   "geometries": 110,
+   "programs": 52,
+   "grassPrograms": [
+    {
+     "key": "tches-688-bed-7628363|lampwashV|lampwash",
+     "diag": null
+    }
+   ]
+  },
+  {
+   "name": "court-mid",
+   "at": "-4,22.6,95,-7",
+   "month": 6,
+   "file": "/tmp/grass2091/before-court-mid.png",
+   "calls": 259,
+   "triangles": 692678,
+   "textures": 59,
+   "geometries": 333,
+   "programs": 83,
+   "grassPrograms": [
+    {
+     "key": "rgb,grass-patches-688|lampwashV|lampwash",
+     "diag": null
+    },
+    {
+     "key": "tches-688-bed-7628363|lampwashV|lampwash",
+     "diag": null
+    }
+   ]
+  },
+  {
+   "name": "houseC-mid",
+   "at": "-55,45.3,60,-8",
+   "month": 6,
+   "file": "/tmp/grass2091/before-houseC-mid.png",
+   "calls": 110,
+   "triangles": 474949,
+   "textures": 32,
+   "geometries": 121,
+   "programs": 61,
+   "grassPrograms": [
+    {
+     "key": "rgb,grass-patches-688|lampwashV|lampwash",
+     "diag": null
+    },
+    {
+     "key": "tches-688-bed-7628363|lampwashV|lampwash",
+     "diag": null
+    }
+   ]
+  },
+  {
+   "name": "far-summer",
+   "at": "-8,52,200,-16,22",
+   "month": 6,
+   "file": "/tmp/grass2091/before-far-summer.png",
+   "calls": 76,
+   "triangles": 501284,
+   "textures": 30,
+   "geometries": 103,
+   "programs": 52,
+   "grassPrograms": [
+    {
+     "key": "tches-688-bed-7628363|lampwashV|lampwash",
+     "diag": null
+    },
+    {
+     "key": "rgb,grass-patches-688|lampwashV|lampwash",
+     "diag": null
+    }
+   ]
+  },
+  {
+   "name": "park-winter",
+   "at": "-8,52,200,-6",
+   "month": 1,
+   "file": "/tmp/grass2091/before-park-winter.png",
+   "calls": 80,
+   "triangles": 467741,
+   "textures": 28,
+   "geometries": 114,
+   "programs": 49,
+   "grassPrograms": [
+    {
+     "key": "tches-688-bed-7628363|lampwashV|lampwash",
+     "diag": null
+    }
+   ]
+  }
+ ],
+ "errors": [],
+ "console": [],
+ "mean": [
+  0.09319,
+  0.23944,
+  0.04383
+ ]
+}
