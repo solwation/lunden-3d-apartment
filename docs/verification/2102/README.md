@@ -19,3 +19,5 @@ roofs, render, hedges, railings, cars, benches and the hazed/fogged materials wi
 Node: `tools/cloudshadowtest.mjs` (5 tests: chunk patch + shared uniforms; zero at clear sky, full overcast, night and indoors; more
 shade with more cloud, shade keeps 1 − strength, soft edges; drift follows the wind exactly, wraps seamlessly, deterministic; walls
 and roofs share the ground's cloud along the sun ray), `tools/aerialhazetest.mjs` passes.
+
+Publicering: Pages/Worker success på `70131cb`; före-bilder borttagna vid stängning och visas från den commiten.
