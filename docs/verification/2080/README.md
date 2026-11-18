@@ -101,3 +101,9 @@ favicon and no production cloud writes.
 ## Integration review
 
 Root opened all five result sheets/views, reviewed the product diff, fifteen native checks and twenty lifecycle checks, and accepted the specific hem-depth proof. Product avatar/selfview/Ghosts/main bytes exactly match tested810cef8d. Config is unchanged from accepted main; all prior changelog rows retained with unique1610. Independent street/pavement/grade changes are preserved. Source-bound green component evidence reused without another browser or broad gate. README adds only the user-facing feature note.
+
+## Publicering
+
+Kod/bilder `315c489695740f90892b2d5fffdc760ff5f58d6d`; faktiska run-ID [44278879640] success på exakt revision. Alla bilder HTTP200 och inbäddade före stängning: https://github.com/solwation/lunden-3d-apartment/issues/2080#issuecomment-6974883276. Slutkvittot är enbart dokumentation; originalets sökvägsfilter utlöser ingen ny apppublicering.
+
+Live source check: deployed version315c489 and all four product modules match accepted bytes after the existing stamp.sh import/data cache-query substitutions. Initial raw-byte assertion omitted those substitutions; inspection showed only the expected stamp, then the exact stamped comparison passed. No live browser/full-world run claimed. Worker paths do not include these changed sources, so no Worker deployment was triggered or claimed.
