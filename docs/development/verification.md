@@ -9357,3 +9357,7 @@ Decor is hidden equally to expose the paving; this is not a full World/navigatio
 A bad initial portik camera is corrected only in the two affected views by
 `tools/pavingportik2074retake.cjs`, with unchanged product hashes and the other green
 captures preserved. [Source binding, images, costs and limitations](../verification/2074/README.md).
+
+### Realgymnasiet facade pavement (#2078)
+
+Three scoped groups: node --test tools/facadewalk2078test.mjs (continuity, both connections, finite/local terrain geometry, existing wall/foot/slope queries); pathaudit --json before/after plus exact preservation of old config/house/road/collision source; and tools/browsertest.sh node tools/facadewalk2078browser.cjs (actual surroundings generator through the first yield **after 0.46**, with attached Realgymnasiet 20 backdrop and production street). Five matched views. Generic pathaudit does not enumerate facadeWalks; its unchanged result is supplemented by the targeted new-strip audit. [Results, rejected fixture attempts, limits, hashes and inspected images](../verification/2078/README.md).

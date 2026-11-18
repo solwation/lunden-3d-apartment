@@ -1,0 +1,63 @@
+{
+  "baseline": "eb0e4265c1478661ce01cd666812687bf23a04d2",
+  "node": "3/3 passed; tools/facadewalk2078test.mjs",
+  "pathaudit": "before/after byte-identical; existing datasets only; facadeWalks checked separately",
+  "unchangedFiles": {
+    "src/realgym20.js": "ea8a6e16bc244867bb72baec05990ada102baf9d6e02ccf950759391dd6cdb77",
+    "src/sitebackdrop.js": "d32cf429db15dd9c28f320dcdb38ecd9d27b52fcf98d86c16bb599824af4d01e",
+    "src/farwalk.js": "38ce8c76f09a1e09c84c8dd853972a73d9386a86f707cbceb41ca8ce705da3f4",
+    "src/street.js": "cecbb58d44bc6748549fe90ac42c722291c9d29dd718a4d5c81c79d707ee0d0e",
+    "src/riverbridge.js": "c1b4ed0224449182fe1965783cec7d228f9f55ddc6c7b1854e0f8a95153ef3a8"
+  },
+  "oldConfigBytes": "exactly preserved outside the named #2078 block",
+  "source": {
+    "src/config.js": "ee0836193ee6a28bb4b5479c6af1321c20b949fd37cd4551704e278aacb4c519",
+    "src/roads.js": "570cfd4d9714218f9470947d5746ab0fe192a30936b0d2aeed69527b50c6dbe2",
+    "src/surroundings.js": "8ec578f95641be1c2fff2c3c5509935e147f4345d75063ab819a114549baacdd",
+    "src/realgym20.js": "ea8a6e16bc244867bb72baec05990ada102baf9d6e02ccf950759391dd6cdb77",
+    "src/sitebackdrop.js": "d32cf429db15dd9c28f320dcdb38ecd9d27b52fcf98d86c16bb599824af4d01e",
+    "src/farwalk.js": "38ce8c76f09a1e09c84c8dd853972a73d9386a86f707cbceb41ca8ce705da3f4",
+    "tools/facadewalk2078.html": "748c58ab82b86f8ebf6d7580cb795e7faf348fe27e5e18f019ee6ba3174e9a91",
+    "tools/facadewalk2078browser.cjs": "82b95be1e05efb52b23f2d938a41cebd7c0abd1e6eb2636c9c7e1700382158a2",
+    "tools/facadewalk2078test.mjs": "f2499610a2b580ab446e389f4a6395041d777f4888e6dcda145d501a39949102"
+  },
+  "pathauditbeforeSHA256": "19d741811c0ca7392f85bd4dcebc5c44b0ab620ad48aaf590daf111e9ad2e9d9",
+  "pathauditafterSHA256": "19d741811c0ca7392f85bd4dcebc5c44b0ab620ad48aaf590daf111e9ad2e9d9",
+  "images": {
+    "normal.jpg": {
+      "size": [
+        2200,
+        756
+      ],
+      "sha256": "38e128a56bf3afbea60d7a229896187c47e4e3d6d21b6c77f2756f6667ddbf08"
+    },
+    "winter.jpg": {
+      "size": [
+        2200,
+        756
+      ],
+      "sha256": "cf9f4b9a6dc80f69f6ce03553363a4696b48a66623db359dbae741e081b052b6"
+    },
+    "south.jpg": {
+      "size": [
+        2200,
+        756
+      ],
+      "sha256": "0e6abc099d04160b4d2e07e7ef81f6634d02af188d524519ff2eb5a00f38e2bc"
+    },
+    "north.jpg": {
+      "size": [
+        2200,
+        756
+      ],
+      "sha256": "0fac582b6de4ea7bf75edc5a1967a4ea46657fd4290040f34018d973f75799bb"
+    },
+    "near.jpg": {
+      "size": [
+        2200,
+        756
+      ],
+      "sha256": "43903e7f147af6d8797987205973b4ec0e9dc4d5f685af96db7123c8d2083f27"
+    }
+  }
+}

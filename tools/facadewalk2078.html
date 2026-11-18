@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><link rel="icon" href="data:,"><title>Production Realgymnasiet pavement #2078</title><style>body{margin:0}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as T from 'three';
+import {surroundingsParts,groundY,renderedTerrainY} from '../src/surroundings.js';
+import {COLORS,SITE} from '../src/config.js';
+import {surfaceY,slopeAt,farWalls} from '../src/farwalk.js';
+import {applySeason} from '../src/seasons.js';
+import {buildStreet} from '../src/street.js';
+let road;const add=T.Object3D.prototype.add;
+T.Object3D.prototype.add=function(...objects){const r=add.apply(this,objects);for(const o of objects)if(!road&&o.isMesh&&o.material.userData.asphaltSurface)road=o;return r};
+try{const it=surroundingsParts({grass:new T.MeshStandardMaterial({color:0x789664})});for(let i=0;i<20;i++){const n=it.next();if(n.done||n.value>.46){it.return();break}}}finally{T.Object3D.prototype.add=add}
+if(!road)throw Error('Production road batch missing');if(!road.parent.getObjectByName('east-backdrop')?.userData.buildings.some(b=>b.source==='130681301'))throw Error('Actual Realgymnasiet20 backdrop missing');const root=road.parent,paving=root.children[root.children.indexOf(road)+1];if(!paving)throw Error('Production paving batch missing');
+const ground=(x,z)=>Math.max(groundY(x,z),renderedTerrainY(x,z));ground.grid=()=>renderedTerrainY.grid();root.add(buildStreet(groundY,ground).object);
+const scene=new T.Scene();scene.background=new T.Color(0xcdd9e0);scene.add(root);scene.add(new T.HemisphereLight(0xf3f7ff,0x827b68,1.7));const sun=new T.DirectionalLight(0xfff0d9,2.4);sun.position.set(10,25,-20);scene.add(sun);
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(1);renderer.setSize(1100,720);renderer.toneMapping=T.NeutralToneMapping;document.body.append(renderer.domElement);const camera=new T.PerspectiveCamera(55,1100/720,.025,650);
+const sha=async a=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',a))].map(x=>x.toString(16).padStart(2,'0')).join('');
+window.__proof=async()=>{const meshes=[];root.traverse(o=>{if(!o.isMesh)return;const g=o.geometry;meshes.push({name:o===paving?'paving':o.name||'unnamed-'+meshes.length,arrays:Object.values(g.attributes).map(a=>a.array),index:g.index?.array})});const result=[];for(const m of meshes){const arrays=[...m.arrays,...m.index?[m.index]:[]],buf=new Uint8Array(arrays.reduce((n,a)=>n+a.byteLength,0));let p=0;for(const a of arrays){if(!a.every(Number.isFinite))throw Error('non-finite geometry');buf.set(new Uint8Array(a.buffer,a.byteOffset,a.byteLength),p);p+=a.byteLength}result.push({name:m.name,bytes:p,hash:await sha(buf)})}const walk=[];for(let z=19.5;z<58;z+=.5){const x=28.4-(z-19.19)*.4/39.09-.55;walk.push({x,z,feet:surfaceY(x,z,ground(x,z)),ground:ground(x,z),slope:slopeAt(x,z,ground(x,z)).s,walls:farWalls(x,z,ground(x,z)).filter(s=>{const u=s[2]-s[0],v=s[3]-s[1],t=Math.max(0,Math.min(1,((x-s[0])*u+(z-s[1])*v)/(u*u+v*v)));return Math.hypot(x-s[0]-u*t,z-s[1]-v*t)<.3}).length})}return{meshes:result,walk,source: SITE.east.buildings.find(b=>b.source==='130681301'),roads:SITE.roads,blocks:SITE.blocks}};
+window.__frame=view=>{applySeason(view==='winter'?1:6);const views={near:[[25.7,1.25,34],[27.6,.08,38]],normal:[[24,1.65,17],[27,1,43]],north:[[24.5,2,15],[28.2,.05,19.2]],south:[[24.5,2,62],[28,.05,58.2]],winter:[[24,1.65,17],[27,1,43]]};const[e,t]=views[view];camera.position.set(e[0],ground(e[0],e[2])+e[1],e[2]);camera.lookAt(t[0],ground(t[0],t[2])+t[1],t[2]);renderer.info.reset();renderer.render(scene,camera);return{view,camera:camera.position.toArray(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,geometries:renderer.info.memory.geometries,pavingColor:paving.material.color.getHex(),image:renderer.domElement.toDataURL('image/jpeg',.95)}};
+window.__ready=true;
+</script>

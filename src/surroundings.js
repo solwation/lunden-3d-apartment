@@ -24,7 +24,7 @@ import { buildStreet } from './street.js';
 import { buildHepcat, hepcatTexture, hepcatStone } from './hepcat.js';
 import { buildStreetSigns } from './streetsigns.js';
 import { buildGroundAO } from './groundao.js';
-import { onRoad, onWalk, pathStrip, filletGeometry, vehicleTrim } from './roads.js';
+import { onRoad, onWalk, pathStrip, filletGeometry, vehicleTrim, facadeWalkGeometries } from './roads.js';
 import { createParkingGrade, gradedCellTriangles, gradedCellPieces, fitDrawnPlane, clipConvex } from './parkinglot1442.js';
 import { wallLine, wallRect } from './roofs.js';
 import { buildingRoofWalk } from './buildingroofs.js';
@@ -1954,7 +1954,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   const pavementClip=(road)=>road.name==='Sankt Lars väg'?c=>roadBridgeSpan(c.reduce((s,p)=>s+p[0],0)/4,c.reduce((s,p)=>s+p[1],0)/4)||c.every(([x,z])=>onRoad(x,z,-.05,road)):true;
   const walks = S.roads.flatMap((r) => (r.walks || []).map((k) => k.side > 0
     ? pathStrip(r, (w) => w / 2, (w) => w / 2 + k.w, 0.008, roadGround, pavementClip(r), undefined, vehicleTrim()) : pathStrip(r, (w) => -w / 2 - k.w, (w) => -w / 2, 0.008, roadGround, pavementClip(r), undefined, vehicleTrim())));
-  flat([...[...S.paving, ...S.basementPaving].map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks], COLORS.paving, SEASON.snow.paving);
+  flat([...[...S.paving, ...S.basementPaving].map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks, ...facadeWalkGeometries(roadGround)], COLORS.paving, SEASON.snow.paving).name = 'site-paving';
   yield 0.15;
   group.add(buildRiverBridges(roadGround));
   yield 0.2;

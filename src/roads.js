@@ -170,6 +170,24 @@ export function onWalk(x, z, margin = 0) {
   return false;
 }
 
+/** #2078: a narrow pavement against a sourced facade, including short returns to the existing road pavement.
+ * The local road already extends beneath this facade: deliberately overlay only that road, trim other vehicle ways.
+ * Heights/grid use the same rendered road ground as the caller's ordinary pavements; no raised collision obstacle. */
+export function facadeWalkGeometries(ground) {
+  const road = SITE.roads.find(r => r.name === 'Sankt Lars väg');
+  return (SITE.facadeWalks ?? []).flatMap(k => {
+    const b = SITE.east.buildings.find(b => b.source === k.source);
+    const [a, c] = k.face.map(i => b.polygon[i]), len = Math.hypot(c[0]-a[0], c[1]-a[1]);
+    const dx = (c[0]-a[0])/len, dz = (c[1]-a[1])/len;
+    const strip = (path, lo, hi) => pathStrip({path, w: k.w}, () => lo, () => hi, k.lift, ground, false, undefined, vehicleTrim(road));
+    return [strip([a,c], 0, k.w), ...[[a,-1],[c,1]].map(([p,side]) => {
+      const q = [p[0]+dx*side*k.w, p[1]+dz*side*k.w];
+      // Keep the facade's direction so its right-hand normal still points out towards the road.
+      return strip(side < 0 ? [q,p] : [p,q], -k.return, k.w);
+    })];
+  });
+}
+
 /** The point on a path road nearest (x, z): its distance along the road. */
 export function nearestS(road, x, z) {
   let best = Infinity, s = 0;
