@@ -9744,6 +9744,23 @@ export const DUCKS = Object.freeze({
     paired: [[[.12,.65,.35],[.023,.025,.025],0x16130e],[[.12,.035,.04],[.075,.03,.13],0xd88c24]] },
 });
 
+// #2126: mallard swim strokes, dabbling, preening, shaking, short take-off and a faint V wake. All *guess* (look, not measured).
+// `every` s between idle-behaviour rolls per duck; `weights` relative odds (dabble only on water); `dur` [min, extra] s.
+// Pose angles in rad; pivot/lift in m in the model frame (origin at the feet, waterline about DUCKS.habitat.sink above it).
+// Take-off: player within `disturb` m, moving faster than `disturbSpeed` m/s toward the duck, without bread (above `maxSpeed` it is a teleport); `cooldown` s.
+// Wake: Kelvin half-angle `angle`, `length` m behind the breast, ribbon `width` [apex, end] m, peak `alpha`, `segments` per arm,
+// `lift` m over the water, `ease` per s, bank mask refreshed every `maskEvery` s; strength follows the duck's real swim speed and is zero ashore/airborne/still.
+export const DUCK_MOTION = Object.freeze({
+  every: [7, 14], weights: { dabble: .45, preen: .35, shake: .2 },
+  dur: { dabble: [2.6, 2.4], preen: [3, 3], shake: [.85, .2], takeoff: [2.1, .5] },
+  stroke: { surge: .018, neck: .07, head: -.05, roll: .025 },
+  dabble: { pitch: 1.35, pivot: [.2, .02], ease: .35, dips: 2, wag: .22, neck: .35 },
+  preen: { neckYaw: 1.75, neckPitch: -.35, headPitch: .85, nibble: .12, nibbleRate: 7, ease: .45 },
+  shake: { roll: .35, rate: 9, wings: .6, lift: .05, head: .5 },
+  takeoff: { lift: .75, rise: .55, pitch: -.35, wings: .45, disturb: 2.6, disturbSpeed: 2.2, maxSpeed: 15, cooldown: 25 },
+  wake: { angle: .34, length: 2.4, apex: .28, width: [.03, .2], alpha: .42, segments: 6, lift: .012, ease: 2.5, ripple: 9, maskEvery: .2, color: 0xe4ece9 },
+});
+
 // #1837 — guesses: 100 completed reps, 72 h linear wall-clock decay, +60% upper-arm circumference.
 export const GYM_PUMP = { repsToFull: 100, decayHours: 72, circumference: 0.6, sampleMs: 15000 };
 

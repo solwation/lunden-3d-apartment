@@ -1,0 +1,72 @@
+{
+ "phase": "before",
+ "frames": [
+  {
+   "name": "swim-0",
+   "file": "docs/verification/2126/before-swim-0.png",
+   "calls": 49,
+   "triangles": 351131,
+   "programs": 37,
+   "textures": 23,
+   "geometries": 53,
+   "wakeVisible": false,
+   "state": {
+    "swimming": true,
+    "moving": true,
+    "kind": null,
+    "wake": 0,
+    "y": -7.337,
+    "pitch": 0
+   }
+  },
+  {
+   "name": "swim-1",
+   "file": "docs/verification/2126/before-swim-1.png",
+   "calls": 49,
+   "triangles": 351237,
+   "programs": 39,
+   "textures": 23,
+   "geometries": 53,
+   "wakeVisible": false,
+   "state": {
+    "swimming": true,
+    "moving": true,
+    "kind": null,
+    "wake": 0,
+    "y": -7.349,
+    "pitch": 0
+   }
+  },
+  {
+   "name": "swim-2",
+   "file": "docs/verification/2126/before-swim-2.png",
+   "calls": 49,
+   "triangles": 351283,
+   "programs": 39,
+   "textures": 23,
+   "geometries": 53,
+   "wakeVisible": false,
+   "state": {
+    "swimming": true,
+    "moving": true,
+    "kind": null,
+    "wake": 0,
+    "y": -7.348,
+    "pitch": 0
+   }
+  }
+ ],
+ "errors": [],
+ "setup": {
+  "steps": 989,
+  "brain": {
+   "x": -183.91418773759597,
+   "y": -7.335479531170448,
+   "z": 207.07988038592103,
+   "yaw": 0.13842229477668352,
+   "swimming": true,
+   "moving": true
+  }
+ },
+ "cpu": 0.355
+}

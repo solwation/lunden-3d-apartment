@@ -1391,6 +1391,23 @@ template, increases 206,016→224,328 bytes; download falls 62,808→60,324 byte
 These remain stylised mallards, with visible part joins and broad colour patches.
 [Matched views, costs and limitations](../verification/1921/README.md).
 
+### Mallard body language and V wake (#2126)
+
+`src/duckmotion.js` is a pure, seeded layer over `DuckBrain`. Swimming birds get a small forward surge, roll and
+neck/head bob tied to the existing stroke phase. Every 7–21 s a resting behaviour may start: dabbling (water only; the
+model tips about a waterline pivot so the bill goes under and the tail up), preening (neck turned back, nibbling) or a
+short shake. These set `brain.hold`, which pauses wandering but never a bread lure; eating, a lure or a DuckKiss
+cancels them and a kissing bird keeps an exact neutral pose. A player running at a duck (within 2.6 m, over 2.2 m/s
+toward it, no bread) starts a 2–2.6 s take-off: lift to 0.75 m with the existing `flap` clip, 25 s cooldown. Each bird
+has its own seed stream, so goals/quacks, feeding, rewards and sync are unchanged and no network field is added.
+Rigged poses are added to the mixer result after resetting the touched bones to rest; the procedural fallback gets the
+body-level pitch/roll/lift. A faint V wake (Kelvin half-angle, fading ribbons with travelling ripple alpha) follows
+real swim speed only, never still/ashore/airborne birds, and is clipped where the drawn bank rises above the water
+(mask refreshed every 0.2 s). All four wakes share one transparent DoubleSide Lambert batch (112 vertices, 96
+triangles), hidden when no bird leaves a wake; #2082's water surface is untouched. Cost: one extra draw while any
+wake shows, one extra program, zero textures. Tunables: `DUCK_MOTION` in `src/config.js` (*guess*). Checks:
+`tools/duckmotiontest.mjs`, `tools/duckmotion2126browser.cjs`; [frame sequence](../verification/2126/README.md).
+
 ### Historical fish export quality correction (#1911)
 
 `riverfishmodel.js` supplies the same finned, eyed neutral geometry to the unit-sized

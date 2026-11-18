@@ -11,6 +11,14 @@ import { duckHabitat } from './duckhabitat.js';
 import { duckModel, duckRigGeometry } from './duckmodel.js';
 import { heldItem } from './holdable.js';
 import { sfx } from './audio.js';
+import { DuckActivity, duckPose, wakeVertices, wakeVertexCount, DUCK_MOTION } from './duckmotion.js';
+import { waterYAt } from './riverbridge.js';
+
+// #2126: bones given additive pose offsets after the mixer; reset to rest first so unanimated bones never accumulate.
+const POSE_BONES = ['Joint_Neck', 'Joint_Head', 'Joint_Tail', 'Joint_Wing_L', 'Joint_Wing_R'];
+const poseEuler = new THREE.Euler(), poseQuat = new THREE.Quaternion();
+const turnBone = (bone, x, y, z) => { if (bone && (x || y || z)) bone.quaternion.multiply(poseQuat.setFromEuler(poseEuler.set(x, y, z))); };
+
 
 // Rigged GLB loader; rounded anatomical forms and original colours restored in #1909.
 let riggedDuckModelPromise = null;
@@ -67,9 +75,11 @@ export class Ducks {
         blockedText: { get: () => brain.cooldown > 0 ? 'Ankan tuggar' : 'Håll en brödskiva utan pålägg' }
       });
       pick.userData.door = target;
-      return { brain, mesh, pick, target };
+      // Own seeded behaviour stream, separate from the brain's random sequence (goals/quacks stay identical).
+      return { brain, mesh, pick, target, activity: new DuckActivity(brain.seed * 31 + brain.id + 2126), pose: null };
     });
 
+    this.wake = this.buildWake(scene);
     loadRiggedDuckModel().then(gltf => {
       for (const a of this.animals) {
         this.setupRigged(a, gltf);
@@ -109,9 +119,50 @@ export class Ducks {
       }
     }
 
+    a.rest = POSE_BONES.map(n => a.bones[n] && [a.bones[n], a.bones[n].quaternion.clone()]).filter(Boolean);
     a.mesh.add(a.riggedScene);
     // Hide procedural geometry so only the single SkinnedMesh renders
     a.mesh.material = new THREE.MeshBasicMaterial({ visible: false });
+  }
+
+  /** One shared transparent ribbon batch for all V wakes; hidden (no draw) whenever no bird leaves a wake. */
+  buildWake(scene) {
+    const n = wakeVertexCount(), arm = DUCK_MOTION.wake.segments, count = this.animals.length;
+    const pos = new Float32Array(n * count * 3), col = new Float32Array(n * count * 4), index = [];
+    for (let d = 0; d < count; d++) for (let side = 0; side < 2; side++) for (let i = 0; i < arm; i++) {
+      const v = d * n + side * (arm + 1) * 2 + i * 2;
+      index.push(v, v + 2, v + 1, v + 1, v + 2, v + 3);
+    }
+    const g = new THREE.BufferGeometry(), c = new THREE.Color(DUCK_MOTION.wake.color);
+    for (let i = 0; i < n * count; i++) col.set([c.r, c.g, c.b, 0], i * 4);
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage));
+    g.setAttribute('color', new THREE.BufferAttribute(col, 4).setUsage(THREE.DynamicDrawUsage));
+    g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(n * count * 3).map((_, i) => i % 3 === 1 ? 1 : 0), 3));
+    g.setIndex(index);
+    const mesh = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, transparent: true, depthWrite: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 }));
+    Object.assign(mesh, { name: 'river-duck-wake', frustumCulled: false, visible: false, renderOrder: 1 });
+    scene.add(mesh);
+    return { mesh, alpha: new Float32Array(n), n };
+  }
+
+  updateWake(dt, hidden) {
+    const W = this.wake, g = W.mesh.geometry, pos = g.attributes.position.array, col = g.attributes.color.array, M = DUCK_MOTION.wake;
+    let any = false;
+    this.animals.forEach((a, d) => {
+      const s = !hidden && a.mesh.visible ? a.activity.wake : 0;
+      if (s <= 0) { if (a.wakeShown) { for (let i = 0; i < W.n; i++) col[(d * W.n + i) * 4 + 3] = 0; a.wakeShown = false; } return; }
+      const b = a.brain, mask = a.wakeMask ??= new Uint8Array(W.n / 2);
+      // Bank test (drawn ground above the water hides that part of an arm), refreshed a few times a second per bird.
+      const fresh = (a.wakeAge = (a.wakeAge ?? 0) - dt) <= 0 || !a.wakeShown;
+      if (fresh) { a.wakeAge = M.maskEvery; a.wakeLevel = waterYAt(b.x, b.z); }
+      let k = 0;
+      const water = fresh ? (x, z) => (mask[k++] = this.ground(x, z) < a.wakeLevel - M.lift) : () => mask[k++] === 1;
+      wakeVertices(b, s, a.wakeLevel + M.lift, water, pos.subarray(d * W.n * 3, (d + 1) * W.n * 3), W.alpha);
+      for (let i = 0; i < W.n; i++) col[(d * W.n + i) * 4 + 3] = W.alpha[i];
+      a.wakeShown = any = true;
+    });
+    if (any || W.mesh.visible) { g.attributes.position.needsUpdate = g.attributes.color.needsUpdate = true; }
+    W.mesh.visible = any;
   }
 
   kissVisible(b) {
@@ -149,6 +200,14 @@ export class Ducks {
     this.quackCooldown = Math.max(0, this.quackCooldown - dt);
     const bread = heldBread(this.life, heldItem()), p = this.camera.position;
     const food = bread ? { x: p.x, z: p.z, y: p.y } : null;
+    // #2126: a player rushing at a duck (not offering bread) startles it into a short take-off.
+    const last = this.lastPlayer ??= p.clone(), vx = dt > 0 ? (p.x - last.x) / dt : 0, vz = dt > 0 ? (p.z - last.z) / dt : 0, T = DUCK_MOTION.takeoff;
+    last.copy(p);
+    if (!hidden) for (const a of this.animals) {
+      const b = a.brain, dx = b.x - p.x, dz = b.z - p.z, d = Math.hypot(dx, dz);
+      const toward = (vx * dx + vz * dz) / (d || 1), disturbed = !food && d < T.disturb && toward < T.maxSpeed && Math.abs(p.y - b.y) < DUCKS.maxFeedHeight && toward > T.disturbSpeed;
+      a.activity.update(dt, b, { disturbed, asleep: d >= DUCKS.near });
+    }
     this.kiss.update(dt, this.flock, food, hidden);
     if (!hidden) {
       for (const b of this.flock.update(dt, food, b => !this.kiss.owns(b) && Math.hypot(p.x - b.x, p.z - b.z) < DUCKS.near)) {
@@ -162,11 +221,12 @@ export class Ducks {
     for (const a of this.animals) {
       const b = a.brain, d = Math.hypot(p.x - b.x, p.z - b.z);
       a.mesh.visible = !hidden && d < DUCKS.draw;
-      a.mesh.position.set(b.x, b.y + (b.swimming && !b.kissing ? DUCKS.bob * Math.sin(b.phase) : 0), b.z);
+      const o = a.pose = duckPose(b, a.activity, a.pose ?? undefined), fwd = o.surge + o.tz;
+      a.mesh.position.set(b.x + Math.sin(b.yaw) * fwd, b.y + (b.swimming && !b.kissing ? DUCKS.bob * Math.sin(b.phase) : 0) + o.lift + o.ty, b.z + Math.cos(b.yaw) * fwd);
       if (a.riggedScene) {
-        a.mesh.rotation.set(0, b.yaw, 0);
+        a.mesh.rotation.set(o.pitch, b.yaw, o.roll, 'YXZ');
       } else {
-        a.mesh.rotation.set(b.eating ? Math.sin(b.eating * DUCKS.eatPhase) * DUCKS.eatNod : 0, b.yaw, !b.kissing && !b.swimming && b.moving ? Math.sin(b.phase) * DUCKS.waddle : 0, 'YXZ');
+        a.mesh.rotation.set((b.eating ? Math.sin(b.eating * DUCKS.eatPhase) * DUCKS.eatNod : 0) + o.pitch, b.yaw, (!b.kissing && !b.swimming && b.moving ? Math.sin(b.phase) * DUCKS.waddle : 0) + o.roll, 'YXZ');
       }
       a.pick.position.set(b.x, b.y + DUCKS.pick.height, b.z);
       a.pick.rotation.y = b.yaw;
@@ -175,7 +235,9 @@ export class Ducks {
 
       if (a.mixer) {
         let targetName = 'idle';
-        if (b.eating > 0) {
+        if (o.flap) {
+          targetName = 'flap';
+        } else if (b.eating > 0) {
           targetName = 'eat';
         } else if (b.swimming) {
           targetName = b.moving ? 'swim' : 'idle';
@@ -190,9 +252,14 @@ export class Ducks {
             a.activeAction = nextAction;
           }
         }
+        for (const [bone, q] of a.rest) bone.quaternion.copy(q);
         a.mixer.update(dt);
+        const B = a.bones;
+        turnBone(B.Joint_Neck, o.neckX, o.neckY, 0); turnBone(B.Joint_Head, o.headX, 0, 0); turnBone(B.Joint_Tail, 0, o.tailY, 0);
+        turnBone(B.Joint_Wing_L, 0, 0, -o.wing); turnBone(B.Joint_Wing_R, 0, 0, o.wing);
       }
     }
+    this.updateWake(dt, hidden);
   }
 }
 

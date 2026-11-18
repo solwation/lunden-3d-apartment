@@ -1,5 +1,6 @@
 # Kv. Lunden L1007 i 3D
 
+Gräsänderna simmar med små simtag och lätt huvudnick och lämnar ett svagt V-kölvatten; ibland tippar de på huvudet med stjärten upp, putsar eller skakar fjädrarna, och flyger upp en kort bit om man springer rakt mot dem. [Bildsekvens före/efter](docs/verification/2126/README.md).
 Ponnyerna i hagen rör sig mer levande: man och svans följer vinden, de flyttar vikten och vilar ett bakben, tuggar med mulen i gräset och tar små steg vidare, vrider öronen var för sig och viftar med svansen och rycker i skinnet mot flugor på sommaren. [Före/efter-bildsekvens och kontroller](docs/verification/2127/README.md).
 Skuggiga norrsidor av husväggar, socklar och murar har diskret grön mossa och alger nertill och i fogarna, aldrig på soliga sydsidor och med samma medelton. [Före/efter nära och på avstånd](docs/verification/2122/README.md).
 

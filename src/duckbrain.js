@@ -15,7 +15,8 @@ export class DuckBrain {
     if (sound) this.quack = DUCKS.quackInterval[0] + this.random() * DUCKS.quackInterval[1];
     let goal = this.goal;
     // Only lure within the local river/shore reach, never up the valley wall.
-    if (food && (food.y === undefined || Math.abs(food.y-this.y)<DUCKS.maxFeedHeight) && this.habitat.contains(food.x, food.z) && Math.hypot(food.x-this.x, food.z-this.z) < DUCKS.lureReach) goal = food;
+    this.lured=false;
+    if (food && (food.y === undefined || Math.abs(food.y-this.y)<DUCKS.maxFeedHeight) && this.habitat.contains(food.x, food.z) && Math.hypot(food.x-this.x, food.z-this.z) < DUCKS.lureReach) { goal = food; this.lured = true; }
     else if (social?.goal && this.habitat.contains(social.goal.x,social.goal.z)) goal = social.goal;
     else if (!goal || Math.hypot(goal.x-this.x, goal.z-this.z) < DUCKS.goalReach) {
       this.mode = this.mode === 'swim' ? 'walk' : 'swim';
@@ -23,7 +24,8 @@ export class DuckBrain {
     }
     if (this.habitat.next) goal = this.habitat.next(this,goal);
     const dx=goal.x-this.x, dz=goal.z-this.z, d=Math.hypot(dx,dz), surface=this.habitat.surface(this.x,this.z);
-    this.swimming=surface.water; this.moving=d>DUCKS.stopReach && !this.eating;
+    this.swimming=surface.water; this.moving=d>DUCKS.stopReach && !this.eating && !(this.hold && !this.lured);
+    // #2126: `hold` (set by duckmotion's resting behaviours) pauses wandering, never a food approach.
     if(this.moving){
       const stride=dt*(surface.water?DUCKS.swimSpeed:DUCKS.speed)*(social?.speed ?? 1); let step=Math.min(d,stride);
       // Slow on the actual bank slope; keep the feet on its surface rather than interpolating through it.

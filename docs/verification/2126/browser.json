@@ -1,0 +1,153 @@
+{
+ "phase": "after",
+ "frames": [
+  {
+   "name": "swim-0",
+   "file": "docs/verification/2126/after-swim-0.png",
+   "calls": 51,
+   "triangles": 350817,
+   "programs": 39,
+   "textures": 23,
+   "geometries": 55,
+   "wakeVisible": true,
+   "state": {
+    "swimming": true,
+    "moving": true,
+    "kind": null,
+    "wake": 0.54,
+    "y": -7.332,
+    "pitch": 0
+   }
+  },
+  {
+   "name": "swim-1",
+   "file": "docs/verification/2126/after-swim-1.png",
+   "calls": 51,
+   "triangles": 350817,
+   "programs": 41,
+   "textures": 23,
+   "geometries": 55,
+   "wakeVisible": true,
+   "state": {
+    "swimming": true,
+    "moving": true,
+    "kind": null,
+    "wake": 0.764,
+    "y": -7.321,
+    "pitch": 0
+   }
+  },
+  {
+   "name": "swim-2",
+   "file": "docs/verification/2126/after-swim-2.png",
+   "calls": 51,
+   "triangles": 350817,
+   "programs": 41,
+   "textures": 23,
+   "geometries": 55,
+   "wakeVisible": true,
+   "state": {
+    "swimming": true,
+    "moving": true,
+    "kind": null,
+    "wake": 0.879,
+    "y": -7.325,
+    "pitch": 0
+   }
+  },
+  {
+   "name": "dabble",
+   "file": "docs/verification/2126/after-dabble.png",
+   "calls": 40,
+   "triangles": 342354,
+   "programs": 42,
+   "textures": 25,
+   "geometries": 58,
+   "wakeVisible": true,
+   "state": {
+    "swimming": true,
+    "moving": false,
+    "kind": "dabble",
+    "wake": 0,
+    "y": -7.146,
+    "pitch": 1.332
+   }
+  },
+  {
+   "name": "preen",
+   "file": "docs/verification/2126/after-preen.png",
+   "calls": 40,
+   "triangles": 342354,
+   "programs": 42,
+   "textures": 25,
+   "geometries": 58,
+   "wakeVisible": true,
+   "state": {
+    "swimming": true,
+    "moving": false,
+    "kind": "preen",
+    "wake": 0.009,
+    "y": -7.324,
+    "pitch": 0
+   }
+  },
+  {
+   "name": "shake",
+   "file": "docs/verification/2126/after-shake.png",
+   "calls": 40,
+   "triangles": 342200,
+   "programs": 42,
+   "textures": 25,
+   "geometries": 58,
+   "wakeVisible": true,
+   "state": {
+    "swimming": true,
+    "moving": false,
+    "kind": "shake",
+    "wake": 0.449,
+    "y": -7.283,
+    "pitch": 0
+   }
+  },
+  {
+   "name": "takeoff",
+   "file": "docs/verification/2126/after-takeoff.png",
+   "calls": 40,
+   "triangles": 342012,
+   "programs": 42,
+   "textures": 25,
+   "geometries": 58,
+   "wakeVisible": true,
+   "state": {
+    "swimming": true,
+    "moving": false,
+    "kind": "takeoff",
+    "wake": 0.154,
+    "y": -6.823,
+    "pitch": -0.303
+   }
+  }
+ ],
+ "errors": [],
+ "setup": {
+  "steps": 1555,
+  "brain": {
+   "x": -183.91418773759597,
+   "y": -7.335479531170448,
+   "z": 207.07988038592103,
+   "yaw": 0.13842229477668352,
+   "swimming": true,
+   "moving": true
+  }
+ },
+ "cpu": 0.233,
+ "still": {
+  "wakeVisible": false,
+  "wake": [
+   0,
+   0,
+   0,
+   0
+  ]
+ }
+}
