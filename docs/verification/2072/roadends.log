@@ -1,0 +1,25 @@
+PASS route generation preserves every original source coordinate, width and control-point order
+PASS Sankt Lars väg: outer endpoint at least 700 m from every walk/fly camera in WALK
+PASS 130442838: outer endpoint at least 700 m from every walk/fly camera in WALK
+PASS 44447965: outer endpoint at least 700 m from every walk/fly camera in WALK
+PASS 45211117: outer endpoint at least 700 m from every walk/fly camera in WALK
+PASS 61112064: outer endpoint at least 700 m from every walk/fly camera in WALK
+PASS 27185148: outer endpoint at least 700 m from every walk/fly camera in WALK
+PASS 61112061: outer endpoint at least 700 m from every walk/fly camera in WALK
+PASS edge-roads: the backdrop's own exposed end also reaches fog
+PASS edge-roads: the backdrop's own exposed end also reaches fog
+PASS edge-paths: the backdrop's own exposed end also reaches fog
+PASS edge-paths: the backdrop's own exposed end also reaches fog
+PASS school road continuation joins its exact mapped endpoint/width and retains both pavements
+PASS reversing the starting endpoint keeps each pavement on its original physical side
+PASS north house guard is retained; ordinary internal paths acquire no continuation
+PASS eastern park route includes the actual mapped 210 m beyond its drawing clip before the guessed continuation
+PASS restored paths overlap the last whole-quad sample by half width plus more than the original 1.5 m step (including oblique joins)
+PASS a mapped path leaving and re-entering the clip stays one connected outer section
+PASS degenerate directions cannot silently create invalid geometry
+PASS all road/path and two pavement strips emit finite mergeable geometry into the existing batch
+PASS routes follow raised terrain and never sink under its feathered skirt (2448 local vertices)
+PASS bounded continuation geometry: 4452 triangles, no extra material or draw call
+PASS actual whole-quad old/new join has no uncovered centreline (336 quarter-metre samples, 0 gaps)
+PASS geometry generation also leaves original source data intact
+ALL PASS

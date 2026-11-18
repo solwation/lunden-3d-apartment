@@ -1,0 +1,35 @@
+{
+  "sourceCommit": "a6bc5b371e52e8bf4d8cba500bcd2790ab9a8858",
+  "baseline": "0fd6db633ed861c1f8cf3d1f1829630b3b5963df",
+  "sha256": {
+    "src/asphaltsurface.js": "a41a3d2f63024d705105889ccf82c20805b881fdd71476eba32a2596a432fbfe",
+    "src/config.js": "ca7a1f3fdb6d4b2659a0c58b3f59f8895a97264ee8c4bd5c3c573f067ce0d36a",
+    "src/surroundings.js": "118933bf24a89b9802e142a2261b779d023b2360062b4487feaa6e57a667ad51",
+    "src/seasons.js": "a0398c24ce587b40be47ca552be3c7ce3bee900ef40ca7a74e48573f222476e7",
+    "src/street.js": "cecbb58d44bc6748549fe90ac42c722291c9d29dd718a4d5c81c79d707ee0d0e",
+    "src/vertexcompile.js": "3c05e3210ca47a780cc9433fa0939a7545a50bbd265a31f394793414d7eb7cbb",
+    "tools/asphaltsurfacetest.mjs": "bfb9346f6a36a78024e5170f69396b1fe18190abd7efb9e6ce22ef47431e8d5b",
+    "tools/asphaltsurface2072.html": "8a2b00e803bd690dddcad1bcb6dbd08f38fd3af905144f7bdf7d4660fcdc7b5a",
+    "tools/asphaltsurface2072browser.cjs": "c32f989a2375a1a3f931aa66fe6fde7e15aaa8f45d5d7c95249556282578315b"
+  },
+  "textures": {
+    "unique": 2,
+    "baseRGBABytes": 2097152,
+    "fullMipRGBABytes": 2796200
+  },
+  "assets": {
+    "winter-paired.png": {
+      "bytes": 51192,
+      "sha256": "cff9d63959475c71696d478e561c92873d2df878a84ff43a21a7ebd69533b27a"
+    },
+    "aggregate-paired.png": {
+      "bytes": 1347412,
+      "sha256": "031843be9fc482a10fd931ec441bb0a115d6bbf2697b9ee39844bf213f4d87e6"
+    }
+  },
+  "capturedWorkerCommit": "dfbc367792e26452305daa690d177e09d982129c",
+  "integration": {
+    "note": "Named ASPHALT_SURFACE block and every other captured production/fixture file match; config retains independent parquet/brick constants. Original full config hash is capture-time evidence, not a claim of identical integrated file.",
+    "checks": "3asphalt Node checks pass after insertion resolution; unchanged browser/roadends evidence reused"
+  }
+}

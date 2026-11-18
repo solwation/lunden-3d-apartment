@@ -1,0 +1,164 @@
+{
+  "baseline": "0fd6db63",
+  "fixture": "Actual surroundingsParts local road at existing yield0.15 + buildStreet; no full World/backdrops/trees; one directional + hemisphere,1100x720,DPR1,MSAA,NeutralToneMapping,SwiftShader",
+  "results": {
+    "before": {
+      "stats": {
+        "triangles": 4777,
+        "position": "acd2c882df857432bf9ac361496ec1112b418572312b6260059b1a16a86d5c1f",
+        "normal": "fcbb68616b1410cabd72a9d86d72bb6b64630a2b1548c7cb41a2fa213c5bec03",
+        "index": null,
+        "attributes": {
+          "position": 171972,
+          "uv": 114648,
+          "normal": 171972
+        },
+        "maps": [
+          null,
+          null,
+          null
+        ],
+        "roughness": 0.7,
+        "color": 6119265
+      },
+      "views": {
+        "near": {
+          "calls": 17,
+          "triangles": 140283,
+          "imageSha256": "adfcfb004e591634f6acc0b0d00f4062cacc9390beb99bc62e13f210dc73b72c"
+        },
+        "walking": {
+          "calls": 15,
+          "triangles": 140279,
+          "imageSha256": "81695b8044b4f169ee0d66fb4a0164f024fe2e6ea5138a97470a4c0e3032ada9"
+        },
+        "far": {
+          "calls": 15,
+          "triangles": 140279,
+          "imageSha256": "331c8d551dd4a97757408de91ec3dde7d33e95182c852e8f1e94a6b8faf25a42"
+        },
+        "winter": {
+          "calls": 15,
+          "triangles": 140279,
+          "imageSha256": "01d8f60e8f71d271b16430e1ece1d1f3fbea7b2c7a15b6c9ac72f31de7569430",
+          "material": {
+            "triangles": 4777,
+            "position": "acd2c882df857432bf9ac361496ec1112b418572312b6260059b1a16a86d5c1f",
+            "normal": "fcbb68616b1410cabd72a9d86d72bb6b64630a2b1548c7cb41a2fa213c5bec03",
+            "index": null,
+            "attributes": {
+              "position": 171972,
+              "uv": 114648,
+              "normal": 171972
+            },
+            "maps": [
+              null,
+              null,
+              null
+            ],
+            "roughness": 0.7,
+            "color": 14278628
+          }
+        }
+      },
+      "errors": []
+    },
+    "after": {
+      "stats": {
+        "triangles": 4777,
+        "position": "acd2c882df857432bf9ac361496ec1112b418572312b6260059b1a16a86d5c1f",
+        "normal": "fcbb68616b1410cabd72a9d86d72bb6b64630a2b1548c7cb41a2fa213c5bec03",
+        "index": null,
+        "attributes": {
+          "position": 171972,
+          "uv": 114648,
+          "normal": 171972
+        },
+        "maps": [
+          {
+            "id": "8ed71c8b-4f17-4382-ac41-9a1e1ff2f233",
+            "size": [
+              512,
+              512
+            ],
+            "bytes": 1048576,
+            "repeat": [
+              0.625,
+              0.625
+            ],
+            "mips": true
+          },
+          {
+            "id": "c6ae296a-266e-42d8-9b2b-974a8503a05d",
+            "size": [
+              512,
+              512
+            ],
+            "bytes": 1048576,
+            "repeat": [
+              0.625,
+              0.625
+            ],
+            "mips": true
+          },
+          {
+            "id": "c6ae296a-266e-42d8-9b2b-974a8503a05d",
+            "size": [
+              512,
+              512
+            ],
+            "bytes": 1048576,
+            "repeat": [
+              0.625,
+              0.625
+            ],
+            "mips": true
+          }
+        ],
+        "roughness": 1,
+        "color": 16777215
+      },
+      "views": {
+        "near": {
+          "calls": 17,
+          "triangles": 140283,
+          "imageSha256": "050aa2cc8202f5a9400fb5298ddf621b1a1b16b00841b5118d6c93ba012fe761"
+        },
+        "walking": {
+          "calls": 15,
+          "triangles": 140279,
+          "imageSha256": "4fe4e7d6bd4859b50c255f3a33f3b15bb94c119b17f1ee57a72e4251bea8ad07"
+        },
+        "far": {
+          "calls": 15,
+          "triangles": 140279,
+          "imageSha256": "ce852934d38e43ff627783d47eb67bb92b86b46b0f88f28db82dc6abe2ddff4b"
+        },
+        "winter": {
+          "calls": 15,
+          "triangles": 140279,
+          "imageSha256": "01d8f60e8f71d271b16430e1ece1d1f3fbea7b2c7a15b6c9ac72f31de7569430",
+          "material": {
+            "triangles": 4777,
+            "position": "acd2c882df857432bf9ac361496ec1112b418572312b6260059b1a16a86d5c1f",
+            "normal": "fcbb68616b1410cabd72a9d86d72bb6b64630a2b1548c7cb41a2fa213c5bec03",
+            "index": null,
+            "attributes": {
+              "position": 171972,
+              "uv": 114648,
+              "normal": 171972
+            },
+            "maps": [
+              null,
+              null,
+              null
+            ],
+            "roughness": 0.7,
+            "color": 14278628
+          }
+        }
+      },
+      "errors": []
+    }
+  }
+}
