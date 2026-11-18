@@ -1,5 +1,7 @@
 # Kv. Lunden L1007 i 3D
 
+Avståndsdiset har luftperspektiv: blåare på håll och ljust mot horisonten, varmare mot solen, tätare i regn och lättare en klar dag. [Före/efter dag, solnedgång och regn](docs/verification/2100/README.md).
+
 De parkerade bilarna har en lugn blank lack med svag himmelsreflex, matta plastlister och gummidäck. [Före/efter dag och natt](docs/verification/2097/README.md).
 
 De ljusa putsfasaderna (Hus L:s övre våningar, Å-husens loggior) har en fin putsstruktur och svaga smutsstrimmor under fönsterbleck och vid sockeln, med samma medelton. [Före/efter nära och från gatan](docs/verification/2095/README.md).

@@ -1,0 +1,172 @@
+{
+ "before": {
+  "phase": "before",
+  "views": [
+   {
+    "place": "park",
+    "when": "day",
+    "calls": 115,
+    "triangles": 552955,
+    "programs": 59,
+    "fog": {
+     "near": 45,
+     "far": 650,
+     "color": "cfe0ec"
+    },
+    "overcast": 0
+   },
+   {
+    "place": "park",
+    "when": "sunset",
+    "calls": 123,
+    "triangles": 617153,
+    "programs": 67,
+    "fog": {
+     "near": 45,
+     "far": 650,
+     "color": "cca695"
+    },
+    "overcast": 0
+   },
+   {
+    "place": "park",
+    "when": "rain",
+    "calls": 117,
+    "triangles": 552969,
+    "programs": 68,
+    "fog": {
+     "near": 45,
+     "far": 80,
+     "color": "a4b1bb"
+    },
+    "overcast": 1
+   },
+   {
+    "place": "street",
+    "when": "day",
+    "calls": 194,
+    "triangles": 715083,
+    "programs": 75,
+    "fog": {
+     "near": 45,
+     "far": 650,
+     "color": "cfe0ec"
+    },
+    "overcast": 0
+   },
+   {
+    "place": "street",
+    "when": "sunset",
+    "calls": 204,
+    "triangles": 790313,
+    "programs": 81,
+    "fog": {
+     "near": 45,
+     "far": 650,
+     "color": "cca695"
+    },
+    "overcast": 0
+   },
+   {
+    "place": "street",
+    "when": "rain",
+    "calls": 195,
+    "triangles": 715083,
+    "programs": 82,
+    "fog": {
+     "near": 45,
+     "far": 80,
+     "color": "a4b1bb"
+    },
+    "overcast": 1
+   }
+  ],
+  "errors": [],
+  "shaderErrors": []
+ },
+ "after": {
+  "phase": "after",
+  "views": [
+   {
+    "place": "park",
+    "when": "day",
+    "calls": 116,
+    "triangles": 554183,
+    "programs": 60,
+    "fog": {
+     "near": 45,
+     "far": 650,
+     "color": "cfe0ec"
+    },
+    "overcast": 0
+   },
+   {
+    "place": "park",
+    "when": "sunset",
+    "calls": 124,
+    "triangles": 618381,
+    "programs": 68,
+    "fog": {
+     "near": 45,
+     "far": 650,
+     "color": "cca695"
+    },
+    "overcast": 0
+   },
+   {
+    "place": "park",
+    "when": "rain",
+    "calls": 118,
+    "triangles": 554197,
+    "programs": 69,
+    "fog": {
+     "near": 45,
+     "far": 80,
+     "color": "a4b1bb"
+    },
+    "overcast": 1
+   },
+   {
+    "place": "street",
+    "when": "day",
+    "calls": 194,
+    "triangles": 715083,
+    "programs": 75,
+    "fog": {
+     "near": 45,
+     "far": 650,
+     "color": "cfe0ec"
+    },
+    "overcast": 0
+   },
+   {
+    "place": "street",
+    "when": "sunset",
+    "calls": 204,
+    "triangles": 790313,
+    "programs": 81,
+    "fog": {
+     "near": 45,
+     "far": 650,
+     "color": "cca695"
+    },
+    "overcast": 0
+   },
+   {
+    "place": "street",
+    "when": "rain",
+    "calls": 195,
+    "triangles": 715083,
+    "programs": 82,
+    "fog": {
+     "near": 45,
+     "far": 80,
+     "color": "a4b1bb"
+    },
+    "overcast": 1
+   }
+  ],
+  "errors": [],
+  "shaderErrors": []
+ }
+}

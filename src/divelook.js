@@ -3,6 +3,7 @@
 // after the eye leaves the water), and one fixed DOM element lays a colour wash with a darker rim (the mask's edge) over the picture.
 import { Color } from 'three';
 import { SWIM } from './config.js';
+import { clearHaze } from './aerialhaze.js';
 
 const L = SWIM.dive.look;
 
@@ -19,7 +20,7 @@ export class DiveLook {
   /** Each frame, after the day cycle set the fog. True while the eye is under the surface. */
   update() {
     const c = this.camera.position, under = !!this.player.swim && c.y < this.water(c.x, c.z);
-    if (under) { const f = this.scene.fog; f.color.multiply(this.tint); f.near = L.near; f.far = L.far; }
+    if (under) { const f = this.scene.fog; f.color.multiply(this.tint); f.near = L.near; f.far = L.far; clearHaze(); } // #2100: no sky haze under water
     if (under !== this.under) { this.under = under; this.el.style.opacity = under ? '1' : '0'; }
     return under;
   }

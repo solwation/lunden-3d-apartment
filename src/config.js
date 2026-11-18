@@ -4883,6 +4883,15 @@ export function jetThin(h) {
 // No textures: the density is procedural noise in the shader.
 export const SKYLAYER = { base: 150, top: 190, fade: 30, approach: 70, radius: 900, near: 1, far: 28, cloudy: 0.12, full: 0.6, scale: 0.006 };
 
+// Aerial perspective (#2100, src/aerialhaze.js): the distance fog's colour and curve. All artistic *guesses* tuned by eye against
+// the sky shader (not measured). `blue` multiplies the (linear) horizon colour for the mid-distance haze (peak at half fog; full fog
+// stays the horizon colour so silhouettes melt into the sky), weakened by `overcastBlue` x overcast; `scatter` adds a small
+// daytime forward-scatter halo round a low sun (`color` x `amount`, clear sky only) to both the sky and the haze; the fog curve
+// between near and far blends three's smoothstep towards a normalised exponential build-up of steepness `k` with weight `w`
+// (clear day lighter, overcast/rain denser mid-range). Night, under water and inside the cloud deck keep three's stock fog.
+export const HAZE = { blue: [0.6, 0.76, 1.08], overcastBlue: 0.8, scatter: { color: [1, 0.86, 0.66], amount: 0.12 }, k: 2.2,
+  clear: { w: 0.35 }, overcast: { w: 0.85 } };
+
 // Birds (#1252/#1924, src/birds.js): a few gulls circling the area, exclusive near/far instanced batches, no lights, no textures,
 // no sound. All numbers *guess*. `count` birds (`lowMemoryCount` on phones), the last `high` of them at flight altitude (`highAlt`
 // m, above the cloud deck of SKYLAYER; only drawn in clear weather or from above the deck), the rest between `alt` m round the

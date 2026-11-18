@@ -684,6 +684,14 @@ src/daycycle.js        real-time day (#1145; DAY.minutes = 24 × 60, was 60): it
                        above `top` + `fade` m `above` = 1: `oc` = 0 so the lighting is the clear-day blend (sun 3.0, exposure 1.5) whatever the weather below (night keeps the moon),
                        and weather.js drops the rain / flakes / sound by (1 − above). One shadow-casting light as before. #1266: sky and cloud deck shaders include `colorspace_fragment` so their fragment colors match the
                        output color space of the fogged ground, eliminating the horizon edge band. `node` check: climb with `&weather=rain&jetpack`, log `day.above`, `scene.fog`, sun.
+src/aerialhaze.js      aerial perspective (#2100, `HAZE`, artistic *guesses*): patches three's four fog chunks once at import (no pass, texture or extra program;
+                       one `vFogDir` varying, a pow and a few mixes per fogged fragment). Mid-distance haze turns bluer (`blue` x horizon), full fog stays the
+                       sky's horizon colour; towards the sun it takes the sky's own horizon glow (+ a small clear-day `scatter` halo the sky shader adds too), so
+                       far silhouettes melt into the sky at sunset. The near → far curve blends smoothstep towards a normalised exponential (`k`, weight `w`:
+                       clear 0.35, overcast/rain 0.85); nothing changes before fog near (45 m, so the 46–54 m tree LOD zone barely moves). Night, under water
+                       (`divelook.js` `clearHaze`), inside the cloud deck and during lightning = stock fog. Uniforms are plain `{x,y,z,w}` objects added to
+                       `UniformsLib.fog`/`ShaderLib`, which three's uniform cloning shares by reference; materials without them render stock fog.
+                       `tools/aerialhazetest.mjs`, [before/after](../verification/2100/README.md).
 src/balloon.js         hot-air balloon above the cloud deck (#1646, `BALLOON`, all numbers *guess*): one merged vertex-coloured Lambert mesh (envelope, basket, rim, ropes; ~900
                        triangles, no shadows, no light). `src/balloongeo.js` holds the pure parts: a wall-clock (`Date.now`) schedule so every client agrees (visible `window` s of
                        every `period` s, scaled in/out at the ends), the circling drift above the deck, the basket floor (`basketFloor`, a standable surface in Player.groundAt)

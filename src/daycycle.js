@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { DAY, WEATHER, GARAGE, LIGHTING, SKYLAYER } from './config.js';
+import { hazeState, applyHaze } from './aerialhaze.js';
 
 // Day and night: a whole day passes in DAY.minutes real minutes (24 × 60 = real time, #1145: the clock follows the
 // visitor's own clock; the wall clock's spool / pause become an offset from it). The sun follows its real path
@@ -72,7 +73,7 @@ const skyVert = /* glsl */`
   }`;
 
 const skyFrag = /* glsl */`
-  uniform vec3 uSun, uMoon, uZenith, uHorizon, uGlow;
+  uniform vec3 uSun, uMoon, uZenith, uHorizon, uGlow, uScatter;
   uniform float uNight, uGlowAmt, uOvercast, uFlash, uWhite, uAbove;
   uniform vec3 uCloudCol;
   uniform sampler2D uClouds;
@@ -84,7 +85,7 @@ const skyFrag = /* glsl */`
     vec3 col = mix(uHorizon, uZenith, pow(h, 0.55));
     // sunrise / sunset glow around the sun near the horizon
     float s = max(dot(d, uSun), 0.0);
-    col += uGlow * uGlowAmt * pow(s, 6.0) * (1.0 - h);
+    col += (uGlow * uGlowAmt + uScatter) * pow(s, 6.0) * (1.0 - h); // uScatter: the low sun's daytime halo, same as the haze (#2100)
     // sun and moon discs
     col = mix(col, vec3(1.0, 0.97, 0.88), smoothstep(0.9993, 0.9997, s) * step(-0.05, uSun.y));
     float m = max(dot(d, uMoon), 0.0);
@@ -160,7 +161,7 @@ export class DayCycle {
     this.base = { hemi: 0, ambient: 0, fill: 0, sun: 0, exposure: 1 }; // LIGHTING.sky blended overcast → clear each update (#1073)
     this.uniforms = {
       uSun: { value: new THREE.Vector3() }, uMoon: { value: new THREE.Vector3() },
-      uZenith: { value: new THREE.Color() }, uHorizon: { value: new THREE.Color() }, uGlow: { value: GLOW.clone() },
+      uZenith: { value: new THREE.Color() }, uHorizon: { value: new THREE.Color() }, uGlow: { value: GLOW.clone() }, uScatter: { value: new THREE.Color(0, 0, 0) },
       uNight: { value: 0 }, uGlowAmt: { value: 0 }, uClouds: { value: clouds }, uOvercast: { value: 0 }, uFlash: { value: 0 }, uWhite: { value: 0 }, uAbove: { value: 0 }, uCloudCol: { value: new THREE.Color(0.9, 0.92, 0.95) },
     };
     this.deckUniforms = {
@@ -256,6 +257,9 @@ export class DayCycle {
       this.scene.fog.near = this.fogNear + (L.near - this.fogNear) * inside;
       this.scene.fog.far += (L.far - this.scene.fog.far) * inside;
     } else this.scene.fog.near = this.fogNear;
+    // aerial perspective (#2100): haze colour per view ray and weather; off inside the deck and while lightning flashes
+    const haze = hazeState({ sunDir: this.sunDir, horizon: u.uHorizon.value, glow: u.uGlow.value, glowAmt: u.uGlowAmt.value, day, oc, off: Math.max(inside, Math.min(1, flash * 0.5)) });
+    applyHaze(haze); u.uScatter.value.copy(haze.scatter);
     const D = this.deckUniforms, up = cy > (L.base + L.top) / 2;
     this.deck.visible = cover > 0.01 && (up || cy > L.base - L.approach) && inside < 0.999;
     if (this.deck.visible) {
