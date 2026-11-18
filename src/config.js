@@ -5035,6 +5035,14 @@ export const STAIR = {
   },
 };
 
+// #2071: visual assumptions for Hus L's existing 4 × 8 half-bond brick tile; no displacement.
+// One packed linear texture: red = height, green = roughness; the original colour canvas is retained.
+export const BRICK_SURFACE = {
+  size: 512, columns: 4, rows: 8, jointPixels: 8, edgePixels: 2,
+  mortarHeight: 0.22, faceHeight: 0.78, grainHeight: 0.025, bump: 0.0045,
+  mortarRoughness: 0.97, faceRoughness: 0.90, grainRoughness: 0.025,
+};
+
 export const COLORS = {
   sky: 0xcfe0ec,   // horizon (fog); the sky above is a gradient, see surroundings.js
   wall: 0xf1f1ee,   // Väggfärg NCS S 0500-N (material choice)

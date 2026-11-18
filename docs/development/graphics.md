@@ -1039,6 +1039,29 @@ material. A/B/C use separate `aHouseParts`/CoreHouse builders; no common 6 mm ba
 cause was found there. [Exact mesh/depth evidence, own images and limits](../verification/1852/long-side/README.md).
 
 
+## Hus L brick surface (#2071)
+
+`src/bricksurface.js` adds shallow mortar and fine clay grain to the existing Hus L brick material in
+`exterior.js`. The original 512² colour canvas, half bond, palette and world-space UVs are unchanged.
+One cached 512² linear RGBA texture packs height in red and roughness in green, sampled as the Standard
+material's `bumpMap` and `roughnessMap`. The same eight courses / four bricks / 8 px joints and canvas
+orientation align the relief with the retained colour rectangles. Native mipmaps, linear filtering and
+anisotropy filter the fine grain at distance. `BRICK_SURFACE` numbers are visual guesses: the virtual
+face-to-mortar depth is about 2.52 mm and face-grain amplitude about 0.11 mm; geometry is not displaced.
+
+The main brick batch keeps its geometry, openings, shadows and draw count. Added storage is one 1 MiB
+CPU pixel array and about 1.333 MiB of RGBA8 GPU storage including the mip chain, independent of facade
+area. Standard bump adds three height samples plus the roughness sample and their UV varyings; no new
+light, draw or render pass is added. This is a material-detail tradeoff, not a measured frame-rate gain.
+A/B/C's `surroundings.js` / `aHouseParts` use separate grid/plain atlases and mapped opening variants;
+their painted windows, loggias and material mapping are not replaced by Hus L's tile. Hus L's existing
+plain-colour pilasters and white render remain separate materials.
+
+`tools/bricksurfacetest.mjs` checks deterministic aligned scalar channels, caching and distance filtering.
+`tools/bricksurface2071browser.cjs` compares the production exterior builder before/after with identical
+plan/window inputs, checks every emitted position/UV/index and opening record, and captures matched
+facade/entrance/grazing/distant views in one scoped browser test. [Evidence and limits](../verification/2071/README.md).
+
 ## Lens flare towards the sun (#1283)
 
 `src/flare.js` (`FLARE` in config.js; `?noflare` disables it): one ShaderMaterial mesh, one draw call, no texture and no light, parented to the camera and hidden unless the flare is active. Seven additive procedural quads (glow, corona, discs, halos) sit along the line from the sun's screen position through the screen centre. Visibility = sun above the horizon x sun inside the view x not occluded x weather: `day.overcast` damped by `day.above` (above the deck the sky is clear, #1251), rain and the cloud whiteout (`uWhite`) extinguish it. Occlusion is a cheap CPU ray test from the camera along `sunDir` against building AABBs (greet.js `occluders()` plus the `SITE` neighbour footprints), tree crowns (`aoTrees` from surroundings.js) and, indoors, the ceiling and the window openings of L1007; underground / garage / stairwell is always occluded. Intensity follows the target with an exponential smoothing (`FLARE.smoothTime`), so it never pops. Test: `tools/flaretest.html` (run through Playwright like the other tools pages); perfcount covers the budget (the flare only costs a draw call while visible).

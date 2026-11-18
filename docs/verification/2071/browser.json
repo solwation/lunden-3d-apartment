@@ -1,0 +1,229 @@
+{
+  "baseline": "8111f1e3",
+  "renderer": "Chromium / SwiftShader",
+  "viewport": [
+    1200,
+    800
+  ],
+  "errors": [],
+  "phases": {
+    "before": {
+      "invariants": {
+        "panes": 153,
+        "exposed": true,
+        "bounds": true,
+        "storeys": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "brickTriangles": 1468,
+        "material": {
+          "hasBump": false,
+          "hasRoughness": false,
+          "packed": true,
+          "colour": [
+            512,
+            512
+          ],
+          "surface": null
+        }
+      },
+      "geometry": "f9093f04a80b3254dcfbe83e02a90578cf238b925ece93ffeb8e97b252a40ef5",
+      "openings": "f9b0c98fdee6ae41cc7ee2b5b6da298d31ae765c5a1ce1f90f2f447aa56ef9d2",
+      "views": [
+        {
+          "view": "facade",
+          "camera": [
+            -35,
+            9,
+            -39
+          ],
+          "target": [
+            -18,
+            5,
+            0
+          ],
+          "calls": 24,
+          "triangles": 21460,
+          "textures": 5,
+          "geometries": 64,
+          "programs": 11
+        },
+        {
+          "view": "entrance",
+          "camera": [
+            -7.45,
+            1.62,
+            -3.1
+          ],
+          "target": [
+            -5.9,
+            1.55,
+            -0.006
+          ],
+          "calls": 35,
+          "triangles": 63286,
+          "textures": 5,
+          "geometries": 64,
+          "programs": 11
+        },
+        {
+          "view": "grazing",
+          "camera": [
+            -8,
+            1.65,
+            -0.85
+          ],
+          "target": [
+            -5.25,
+            1.6,
+            -0.006
+          ],
+          "calls": 43,
+          "triangles": 63122,
+          "textures": 5,
+          "geometries": 64,
+          "programs": 11
+        },
+        {
+          "view": "distant",
+          "camera": [
+            -42,
+            11,
+            -80
+          ],
+          "target": [
+            -15,
+            5,
+            0
+          ],
+          "calls": 117,
+          "triangles": 78342,
+          "textures": 5,
+          "geometries": 64,
+          "programs": 11
+        }
+      ]
+    },
+    "after": {
+      "invariants": {
+        "panes": 153,
+        "exposed": true,
+        "bounds": true,
+        "storeys": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "brickTriangles": 1468,
+        "material": {
+          "hasBump": true,
+          "hasRoughness": true,
+          "packed": true,
+          "colour": [
+            512,
+            512
+          ],
+          "surface": [
+            512,
+            512
+          ]
+        }
+      },
+      "geometry": "f9093f04a80b3254dcfbe83e02a90578cf238b925ece93ffeb8e97b252a40ef5",
+      "openings": "f9b0c98fdee6ae41cc7ee2b5b6da298d31ae765c5a1ce1f90f2f447aa56ef9d2",
+      "views": [
+        {
+          "view": "facade",
+          "camera": [
+            -35,
+            9,
+            -39
+          ],
+          "target": [
+            -18,
+            5,
+            0
+          ],
+          "calls": 24,
+          "triangles": 21460,
+          "textures": 6,
+          "geometries": 64,
+          "programs": 11
+        },
+        {
+          "view": "entrance",
+          "camera": [
+            -7.45,
+            1.62,
+            -3.1
+          ],
+          "target": [
+            -5.9,
+            1.55,
+            -0.006
+          ],
+          "calls": 35,
+          "triangles": 63286,
+          "textures": 6,
+          "geometries": 64,
+          "programs": 11
+        },
+        {
+          "view": "grazing",
+          "camera": [
+            -8,
+            1.65,
+            -0.85
+          ],
+          "target": [
+            -5.25,
+            1.6,
+            -0.006
+          ],
+          "calls": 43,
+          "triangles": 63122,
+          "textures": 6,
+          "geometries": 64,
+          "programs": 11
+        },
+        {
+          "view": "distant",
+          "camera": [
+            -42,
+            11,
+            -80
+          ],
+          "target": [
+            -15,
+            5,
+            0
+          ],
+          "calls": 117,
+          "triangles": 78342,
+          "textures": 6,
+          "geometries": 64,
+          "programs": 11
+        }
+      ]
+    }
+  },
+  "source": {
+    "src/exterior.js": "6422c2e2b171ae91258b8b21a16b25ddb8dced6a49df2aa1fe2642a702bf0b38",
+    "src/bricksurface.js": "da4f59365733e84122a7be9e29d3fad29176b3ee57d189b2d9c2fb2ead95ca3e",
+    "src/config.js": "009d571e27ef2fbbe7c69b5f14ca728d41882ce336047d4804423d61c0e59f42",
+    "tools/bricksurface2071.html": "a955607fb06561c7f4515b24c81d696c3fa81df2b7b87441724c38ac2cc43e1a",
+    "tools/bricksurface2071browser.cjs": "4fea41771dc31bb6faeeb45d84fa8fedc2ad2ea449720dca23e18fd86246ea40"
+  }
+}

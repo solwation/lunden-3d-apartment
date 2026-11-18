@@ -1,0 +1,49 @@
+<!doctype html><html><meta charset="utf-8"><title>Hus L brick surface — production exterior</title>
+<style>body{margin:0;background:#d7dee3}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as T from 'three';
+import {buildExterior} from '../src/exterior.js';
+import {LEVELS,WINDOWS,UNIT_TOP,DOOR_HEIGHT,COLORS,HUS_L_REVEAL as RV,storeyFloor} from '../src/config.js';
+const plan=await (await fetch('../data/plan.json')).json(),lo=plan.floors[0],W=lo.size.x,D=lo.size.z,north=[],south=[];
+// Production exterior builder and authored floor/window settings; no separate illustrative brick wall.
+for(const [li,floor] of plan.floors.entries()){
+ for(const pr of floor.windows){
+  const facade=pr.z0<D/2?'north':'south',cx=(pr.x0+pr.x1)/2;
+  const spec=WINDOWS.filter(w=>w.level===li&&w.facade===facade).sort((a,b)=>Math.abs(a.x-cx)-Math.abs(b.x-cx))[0];
+  const r=spec.width&&spec.width<pr.x1-pr.x0?{x0:cx-spec.width/2,x1:cx+spec.width/2}:pr;
+  (facade==='north'?north:south).push({x0:r.x0,x1:r.x1,y0:LEVELS[li].floor+spec.sill,y1:LEVELS[li].floor+spec.head,win:spec});
+ }
+ for(const door of floor.doors){
+  if(door.tip[1]>=0&&door.tip[1]<=D)continue;
+  (door.tip[1]<0?north:south).push({x0:Math.min(door.hinge[0],door.wall[0]),x1:Math.max(door.hinge[0],door.wall[0]),y0:LEVELS[li].floor,y1:LEVELS[li].floor+DOOR_HEIGHT});
+ }
+}
+const m=(color,roughness=.95)=>new T.MeshStandardMaterial({color,roughness});
+const exterior=buildExterior({W,D,roofTop:UNIT_TOP,north,south,site:lo.site,frame:m(COLORS.frame),wall:m(COLORS.wall),mats:{patio:m(COLORS.patio),hedge:m(COLORS.hedge),fence:m(COLORS.fence)}});
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(1);renderer.setSize(1200,800);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.NeutralToneMapping;document.body.append(renderer.domElement);
+const scene=new T.Scene();scene.background=new T.Color(0xd7dee3);scene.add(exterior);
+const ground=new T.Mesh(new T.PlaneGeometry(180,140),m(0xc6c5be));ground.rotation.x=-Math.PI/2;ground.position.y=-.035;scene.add(ground);
+const hemi=new T.HemisphereLight(0xe5edf5,0x80705b,1.7);scene.add(hemi);
+const sun=new T.DirectionalLight(0xfff2df,3);sun.position.set(-36,27,-9);scene.add(sun);
+const camera=new T.PerspectiveCamera(45,1.5,.05,300);
+const brick=[];exterior.traverse(o=>{const m=o.material;if(m?.isMeshStandardMaterial&&m.side===T.DoubleSide&&m.map?.image?.width===512&&m.map?.image?.height===512)brick.push(o)});
+if(brick.length!==1)throw new Error('Expected exactly one production brick batch, found '+brick.length);
+window.__brick=brick[0];
+window.__invariants=()=>{
+ const rows=exterior.userData.neighborOpenings,glasses=['neighborGlass','neighborLitGlass','neighborEntryGlass'].map(n=>exterior.getObjectByName(n));
+ const ray=new T.Raycaster();let count=0,exposed=true,bounds=true;
+ exterior.updateMatrixWorld(true);
+ for(const row of rows.filter(r=>r.panes))for(const p of row.panes){count++;bounds&&=p.x0>=row.x0&&p.x1<=row.x1&&p.y0>=row.y0&&p.y1<=row.y1;const sign=row.north?-1:1;ray.set(new T.Vector3((p.x0+p.x1)/2,(p.y0+p.y1)/2,p.z+sign*.12),new T.Vector3(0,0,-sign));ray.far=.2;exposed&&=glasses.includes(ray.intersectObject(exterior,true)[0]?.object);}
+ const storeys=[];for(const north of [true,false])for(let st=1;st<=4;st++)storeys.push(rows.some(o=>o.north===north&&o.y0>=storeyFloor(st)-.01&&o.y0<storeyFloor(st+1)-.01));
+ const geometry=[];exterior.traverse(o=>{if(o.isMesh){const a=o.geometry.attributes;geometry.push({type:o.type,position:[...a.position.array],uv:a.uv?[...a.uv.array]:null,index:o.geometry.index?[...o.geometry.index.array]:null})}});
+ const bm=brick[0].material;
+ return{panes:count,exposed,bounds,storeys,geometry,openings:rows,brickTriangles:brick[0].geometry.attributes.position.count/3,material:{hasBump:!!bm.bumpMap,hasRoughness:!!bm.roughnessMap,packed:bm.bumpMap===bm.roughnessMap,colour:[bm.map.image.width,bm.map.image.height],surface:bm.bumpMap?[bm.bumpMap.image.width,bm.bumpMap.image.height]:null}};
+};
+window.__frame=(view)=>{
+ const views={facade:[[-35,9,-39],[-18,5,0]],entrance:[[-7.45,1.62,-3.1],[-5.9,1.55,-.006]],grazing:[[-8,1.65,-.85],[-5.25,1.60,-.006]],distant:[[-42,11,-80],[-15,5,0]]};
+ const [eye,aim]=views[view];camera.position.set(...eye);camera.lookAt(...aim);camera.updateMatrixWorld(true);camera.updateProjectionMatrix();renderer.info.reset();renderer.render(scene,camera);
+ return{view,camera:eye,target:aim,calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,geometries:renderer.info.memory.geometries,programs:renderer.info.programs.length,image:renderer.domElement.toDataURL('image/jpeg',.94)};
+};
+window.__ready=true;
+</script></html>

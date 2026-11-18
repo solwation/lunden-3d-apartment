@@ -1,7 +1,7 @@
 import { neighborGlass } from './neighborglass.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { DECAL_OFFSET, HUS_L as H, HUS_L_REVEAL as RV, HUS_L_DOWNPIPES as DP, ENTRANCE_PLANTS as EP, NEIGHBOR_OPENINGS as O, COLORS, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE, DOOR_HEIGHT, DOOR_TRIM } from './config.js';
+import { DECAL_OFFSET, HUS_L as H, HUS_L_REVEAL as RV, HUS_L_DOWNPIPES as DP, ENTRANCE_PLANTS as EP, NEIGHBOR_OPENINGS as O, COLORS, BRICK_SURFACE, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE, DOOR_HEIGHT, DOOR_TRIM } from './config.js';
 import { registerSnow } from './seasons.js';
 import { entryParts, entryMaterials, entryHandleParts } from './entrancedoor.js';
 import { wallLine, wallRect } from './roofs.js';
@@ -15,6 +15,7 @@ import { buildEntrancePlants } from './entranceplants.js';
 import { buildTerraceDecor } from './terracedecor.js';
 import { buildPatioDecor } from './patiodecor.js';
 import { lowMemory } from './lowmemory.js';
+import { brickSurfaceTexture } from './bricksurface.js';
 
 // Brick: 250 × 65 mm + 10 mm joints → 0.26 m per brick, 0.075 m per course.
 const TILE_W = 1.04, TILE_H = 0.6; // one texture tile = 4 bricks × 8 courses
@@ -45,7 +46,11 @@ function brickTexture() {
   return tex;
 }
 
-const brickMat = () => new THREE.MeshStandardMaterial({ map: brickTexture(), roughness: 0.95, side: THREE.DoubleSide });
+const brickMat = () => {
+  const surface = brickSurfaceTexture();
+  return new THREE.MeshStandardMaterial({ map: brickTexture(), bumpMap: surface, bumpScale: BRICK_SURFACE.bump,
+    roughnessMap: surface, roughness: 1, side: THREE.DoubleSide });
+};
 
 /** Keep the simplified opaque backing behind the facade's 6 mm skin at distant depth precision.
  * Clone: the incoming wall material also belongs to real interior walls. Geometry/openings stay exact. */
