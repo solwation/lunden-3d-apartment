@@ -55,4 +55,4 @@ foreshortening, kept on purpose so the crowns do not thin. Far crowns (beyond 30
 The courtyard plantings and wall vines share the material and get the same fade up close. They were not photographed here. Not measured on a real
 phone. The phone profile gets the same fragment step.
 
-Publicerad: `48c80e0`, Pages 44419724847 success. Före-bilderna är borttagna; länkarna ovan är pinnade till publiceringscommiten.
+Publicerad: `48c80e0`, Pages 44419724847 success. Före-bilderna är borttagna; de finns kvar på [`48c80e0`](https://github.com/solwation/lunden-3d-apartment/tree/48c80e0e6b590f0824f370974f11fe8cccccc1a7/docs/verification/2133/before).
