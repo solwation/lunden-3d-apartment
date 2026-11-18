@@ -518,6 +518,16 @@ mesh remains the asynchronous fallback and the rug/interaction anchor.
 `tools/riggedponytest.mjs` tests actual neutral/posed skinning and grazing reach;
 `tools/ponyvisualtest.html` exercises actual Paddock consumers on controlled flat
 ground. [Scoped evidence and limits](../verification/1906/README.md).
+**Secondary motion (#2127):** `src/ponymotion.js` (no three.js objects, `tools/ponymotiontest.mjs`) advances a per-pony motion state
+from the existing synced state (no new network fields; followers derive it locally): the weight shifts between sides every 8–22 s
+(the body rolls ≈1.4° about its ground line in the shared instance matrix, so the winter rug follows, and the unloaded hind leg rests
+on its toe), chewing with the head down, ears turning independently (forward while watching/petted, flattened by a fly), a damped
+three-joint tail spring driven by `siteWind` (sitewind.js, real weather since #2117) via `ponyWind`, and in `PONY_MOTION.flies.months`
+(dry weather, not winter) a skin twitch at a random flank spot plus a tail swat. `Paddock.ponyOffsets` applies these as local
+post-rotations after the clip (restored before the next mixer update, like the head-turn offset); `patchPonyMotion` gives the rigged
+material `uPonyMane` (mane/forelock in the wind) and `uPonyTwitch` with one shared program key, no new pass or draw. While grazing on a
+cropped bite the pony takes a slow step of 0.4–0.9 m every 5–12 s (`driftPony`, fence/trunk-checked; the existing crop contract
+holds). Tunables: `PONY_MOTION` (*guess*). Browser: `tools/ponymotion2127browser.cjs`; [evidence](../verification/2127/README.md).
 Not targets for rays and darts (like the gulls). **Klappa (#1293):** `Paddock.targets()` gives
 one invisible pick box per pony (kept out of the scene, tested only by main.js's focus ray, `HOLD.reach`) with `userData.door` = {kind 'pony', verb 'klappa', pet()}; E / click runs `use()` → `pet()`: the arm reaches out (generic
 `hand.reach`), the pony stops (`state 'pet'`, `PADDOCK.pony.pet` s), turns its head and body to the visitor, lowers its muzzle, flicks its ears, swishes its tail and (**#1320**) whinnies happily (`sfx.whinny`, synthesised; `sfx.nicker` stays for other uses), pink hearts rise from its head (`Hearts` from pingping.js, one per pony, `PADDOCK.pony.hearts/heartScale`) and `Paddock.onPet` → `bump('ponyPets')` scores 1 point (`SCORE.each.ponyPets`). Only a fresh pat counts: re-patting while it is still in `state 'pet'` renews the pose without a new whinny, hearts or point. Stats panel shows "Klappade hästar" once non-zero. **Weather (#1316):** in rain they go under the shelter's roof or a shade tree and stand there until it has been dry for a while; in the snow months both stand visibly inside the field shelter (#1352). See environment.md, "Pony paddock".

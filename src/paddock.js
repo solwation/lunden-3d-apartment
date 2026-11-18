@@ -4,18 +4,20 @@ import { creature } from './bestiarymetadata.js';
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import * as THREE from 'three';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { PADDOCK as P, PONY_SURFACE as PS, SEASON } from './config.js';
+import { PADDOCK as P, PONY_SURFACE as PS, PONY_MOTION as PM, SEASON } from './config.js';
 import { outline, fenceLine, posts, gateSpan, stile, insideFence, insetRing, ringDist, centre } from './paddockgeo.js';
 import { stileBase } from './farwalk.js';
 import { riverAt } from './riverbridge.js';
 import { sfx } from './audio.js';
 import { Hearts } from './pingping.js';
-import { registerSeasonal } from './seasons.js';
+import { registerSeasonal, seasonState } from './seasons.js';
 import { shelterWinter } from './shelterwinter.js';
 import { PaddockFeed } from './paddockfeed.js';
 import { cutAtTerrain } from './roads.js';
 import { ponyBlankets } from './ponyblanket.js';
 import { shelterSpots, snowCovered, RainWatch, footprintGround, shelterSite, relocateShelter } from './paddockshelter.js';
+import { siteWind } from './sitewind.js';
+import { newPonyMotion, stepPonyMotion, ponyWind, flySeason, grazeDrift } from './ponymotion.js';
 
 // #1280: the pony paddock on the kidney-shaped meadow south of the timber footbridge: a merged post-and-rail fence with a closed gate, a
 // water trough and a three-sided shelter (ONE mesh, vertex colours, no textures), two C ponies (Zoey, white; Princess, brown) as ONE
@@ -268,6 +270,35 @@ function ponyMaterial() {
   return m;
 }
 
+/** #2127: the rigged pony's own material gets two uniforms: `uPonyMane` (local wind offset x, z in m, ripple m, seconds) moves the mane and
+ *  forelock (the mane/points palette region of the GLB UVs, above the withers and ahead of the shoulder: not the tail or the legs) in
+ *  bind space before skinning, so it rides on the neck; `uPonyTwitch` (bind-space centre, m) shivers the coat along its normal round
+ *  that spot (a fly). One program for both ponies (same cache key), no new pass; the shadow keeps the unpatched depth shader. */
+export function patchPonyMotion(material) {
+  const u = { uPonyMane: { value: new THREE.Vector4() }, uPonyTwitch: { value: new THREE.Vector4() } };
+  const prev = material.onBeforeCompile;
+  material.onBeforeCompile = (sh, r) => {
+    prev?.call(material, sh, r);
+    Object.assign(sh.uniforms, u);
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', `#include <common>
+        uniform vec4 uPonyMane; uniform vec4 uPonyTwitch;`)
+      .replace('#include <begin_vertex>', `#include <begin_vertex>
+        {
+          float hair = step(0.2, uv.x) * step(uv.x, 0.4) * step(1.15, position.y) * step(0.35, position.z);
+          float rip = sin(uPonyMane.w * 6.3 + position.z * 15.0) , rip2 = cos(uPonyMane.w * 4.7 + position.z * 11.0 + position.y * 7.0);
+          transformed.xz += hair * (uPonyMane.xy + uPonyMane.z * vec2(rip, rip2));
+          transformed.y += hair * 0.25 * length(uPonyMane.xy);
+          vec3 dv = position - uPonyTwitch.xyz;
+          float coat = 1.0 - step(0.2, uv.x);
+          transformed += objectNormal * (coat * uPonyTwitch.w * exp(-dot(dv, dv) / ${(PM.flies.radius ** 2).toFixed(4)}) * sin(uPonyMane.w * 55.0));
+        }`);
+  };
+  material.customProgramCacheKey = () => 'pony-motion-2127';
+  material.needsUpdate = true;
+  return u;
+}
+
 // --- Rigged GLB pony loader and dynamic canvas texture atlas -----------------------------------
 let riggedPonyData = null;
 let riggedPonyLoading = null;
@@ -454,7 +485,7 @@ export class Paddock {
     const start = [near(gm[0] + nx * 14, gm[1] + nz * 14), near(gm[0] + nx * 18 + nz * 12, gm[1] + nz * 18 - nx * 12)];
     this.ponies = animals.map((a, i) => {
       const w = start[i] ?? this.waypoints[i] ?? [centre.x, centre.z], rnd = mulberry(a.seed * 1000 + 1280);
-      return { name: a.name, rnd, x: w[0], z: w[1], y: ground(w[0], w[1]), yaw: rnd() * 6.283, state: 'graze', left: 2 + rnd() * 8, target: null, goal: null, phase: rnd() * 6.283, amp: 0, neck: 1.2, tail: 0, tailT: rnd() * 6, chew: rnd() * 6, ear: 0, earP: -1, earT: 2 + rnd() * 6, headYaw: 0, petT: 0, scale: P.pony.withers / 1.32 };
+      return { name: a.name, rnd, x: w[0], z: w[1], y: ground(w[0], w[1]), yaw: rnd() * 6.283, state: 'graze', left: 2 + rnd() * 8, target: null, goal: null, phase: rnd() * 6.283, amp: 0, neck: 1.2, tail: 0, tailT: rnd() * 6, chew: rnd() * 6, ear: 0, earP: -1, earT: 2 + rnd() * 6, headYaw: 0, petT: 0, scale: P.pony.withers / 1.32, motion: newPonyMotion(a.seed), windL: { x: 0, z: 0, power: 0 }, drift: null, legSpeed: P.pony.speed }; // motion: #2127
     });
     // "Klappa" (#1293): an invisible pick box per pony, kept out of the scene (so darts and other rays never see it); only main.js's focus ray tests them
     this.picks = this.ponies.map((p, i) => {
@@ -465,6 +496,7 @@ export class Paddock {
     this.hearts = this.ponies.map(() => new Hearts(scene, P.pony.hearts, P.pony.heartScale)); // #1320: pink hearts rise from a petted pony's head
     this.onPet = null; // set by main.js: scores a pat (#1320)
     this.matrix = new THREE.Matrix4(); this.quat = new THREE.Quaternion(); this.pos = new THREE.Vector3(); this.scl = new THREE.Vector3(); this.up = new THREE.Vector3(0, 1, 0);
+    this.fwd = new THREE.Vector3(0, 0, 1); this.axisX = new THREE.Vector3(1, 0, 0); this.rollQ = new THREE.Quaternion(); // #2127
     this.initGrass(scene, ground);
     this.initShelter();
     this.feed = new PaddockFeed(scene, ground, this.spots.shelter, this.sheds);
@@ -507,6 +539,7 @@ export class Paddock {
         skinnedMesh.material.roughness = 0.85;
         skinnedMesh.material.needsUpdate = true;
       }
+      const motionUniforms = skinnedMesh ? patchPonyMotion(skinnedMesh.material) : null; // #2127: mane in the wind, skin twitches
 
       let mixer = null;
       const actions = {};
@@ -524,6 +557,11 @@ export class Paddock {
 
       const headBone = clonedScene.getObjectByName('Joint_Head');
       const neckBone = clonedScene.getObjectByName('Joint_Neck');
+      // #2127: the bones that get procedural offsets, each with its clean (clip-only) pose
+      const J = (n) => clonedScene.getObjectByName('Joint_' + n), bones = { head: headBone, earL: J('Ear_L'), earR: J('Ear_R'), tail: ['Base', 'Mid', 'Tip'].map((n) => J('Tail_' + n)) };
+      for (const f of ['Front', 'Back']) for (const sd of ['L', 'R']) { bones['leg' + f + sd] = J(`Leg_${f}_${sd}`); bones['knee' + f + sd] = J(`Knee_${f}_${sd}`); bones['hoof' + f + sd] = J(`Hoof_${f}_${sd}`); }
+      const clean = new Map();
+      for (const b of [bones.earL, bones.earR, ...bones.tail, ...Object.keys(bones).filter((k) => /^(leg|knee|hoof)/.test(k)).map((k) => bones[k])]) if (b) clean.set(b, b.quaternion.clone());
 
       clonedScene.name = 'paddock-pony-' + a.name;
       scene.add(clonedScene);
@@ -537,7 +575,8 @@ export class Paddock {
         activeAction,
         currentClip: 'idle',
         baseHeadQ: headBone?.quaternion.clone(),
-        baseNeckQ: neckBone?.quaternion.clone()
+        baseNeckQ: neckBone?.quaternion.clone(),
+        bones, clean, motionUniforms
       });
     }
 
@@ -623,7 +662,8 @@ export class Paddock {
     this.shelterPlaces = shelterSpots(this.spots.shelter, (x, z) => insideFence(x, z, P.keep - 0.8));
     this.sheds = this.shelterPlaces.filter((q) => q.kind === 'shed');
     this.rainWatch = new RainWatch(); this.rainy = false; this.winter = false; this.winterSeen = false;
-    registerSeasonal((month) => { this.winter = snowCovered(month); });
+    this.month = seasonState().month > 0 ? seasonState().month : 7; this.rain = 0;
+    registerSeasonal((month) => { this.winter = snowCovered(month); this.month = month; }); // #2127: the fly months
     for (const p of this.ponies) { p.spot = null; p.seek = false; p.gone = false; }
   }
   stable(i) { return this.sheds.length ? this.sheds[i % this.sheds.length] : null; }
@@ -774,6 +814,8 @@ export class Paddock {
       const turn = p.state === 'pet' ? 1.4 : 0.8;
       p.yaw += Math.max(-turn * dt, Math.min(turn * dt, da));
     }
+    walking = this.driftPony(p, dt) || walking; // #2127: grazing ponies step slowly on to the next bite
+    p.legSpeed = p.drift ? PM.drift.speed : R.speed;
     this.feed.step(p, i, dt, this); // #1396: arrival, head alignment and consumption; petting pauses feeding
     if (p.state !== 'walk' && p.left <= 0) this.decide(p, i);
     if (p.state !== 'pet') p.face = null;
@@ -786,13 +828,34 @@ export class Paddock {
     }
     this.animate(p, dt, walking);
   }
+  /** #2127: while grazing in the open (not in rain cover, the winter shed or at the hay) on a cropped bite, every few seconds a slow step,
+   *  turning a little, head down; only where the way stays inside the fence and clear of trunks. Returns true while stepping. */
+  driftPony(p, dt) {
+    const grazing = p.state === 'graze' && !this.winter && !p.spot && p.neck > 1.1;
+    if (!grazing) { p.drift = null; grazeDrift(p.motion, dt, false); return false; }
+    if (!p.drift) {
+      const G = P.grass, e = G.reach * p.scale; // move on only once the bite under the muzzle is cropped short
+      const d = grazeDrift(p.motion, dt, this.grassAt(p.x + Math.sin(p.yaw) * e, p.z + Math.cos(p.yaw) * e) < G.hungry); if (!d) return false;
+      const yaw = p.yaw + d.turn, x = p.x + Math.sin(yaw) * d.dist, z = p.z + Math.cos(yaw) * d.dist;
+      if (!insideFence(x, z, P.keep - 0.8) || !this.clear(p.x, p.z, x, z)) return false;
+      p.drift = { left: d.dist, turn: d.turn };
+    }
+    const D = PM.drift, a = Math.max(-P.pony.turn * 0.5 * dt, Math.min(P.pony.turn * 0.5 * dt, p.drift.turn)), s = Math.min(p.drift.left, D.speed * dt);
+    p.yaw += a; p.drift.turn -= a;
+    const nx = p.x + Math.sin(p.yaw) * s, nz = p.z + Math.cos(p.yaw) * s;
+    if (!insideFence(nx, nz, P.keep - 1)) { p.drift = null; return false; }
+    p.x = nx; p.z = nz; p.drift.left -= s;
+    if (p.drift.left <= 1e-3) p.drift = null;
+    return true;
+  }
   /** #1644: a follower's pony glides from where it was drawn to the latest snapshot over one snapshot interval. */
   followPony(p, dt) {
     const f = p.net; if (!f) return;
     f.t = Math.min(1, f.t + dt / NET.every);
     const ox = p.x, oz = p.z;
     p.x = f.x0 + (f.x1 - f.x0) * f.t; p.z = f.z0 + (f.z1 - f.z0) * f.t; p.yaw = f.a0 + f.da * f.t;
-    this.animate(p, dt, Math.hypot(p.x - ox, p.z - oz) > 0.08 * dt);
+    const moved = Math.hypot(p.x - ox, p.z - oz); p.legSpeed = dt > 0 ? Math.min(P.pony.speed, moved / dt) : P.pony.speed; // #2127: a leader's slow grazing step reads as a slow step here too
+    this.animate(p, dt, moved > 0.08 * dt);
   }
   /** The local part of a pony's look, the same for the leader and a follower: head turn, ears, legs, neck, tail; and its grazing of the mask. */
   animate(p, dt, walking) {
@@ -809,20 +872,24 @@ export class Paddock {
     p.y = this.ground(p.x, p.z);
     // poses: legs swing while walking (diagonal pairs); the neck is down while grazing; the tail swishes now and then
     const k = Math.min(1, dt * 4), moving = walking ? 1 : 0;
-    p.amp += (moving * 0.5 - p.amp) * k;
-    p.phase += dt * (walking ? (R.speed / 0.95) * 6.2832 : 0);
+    const legSpeed = walking ? Math.max(0.15, p.legSpeed ?? R.speed) : 0; // #2127: a slow grazing step swings the legs less and slower
+    p.amp += (moving * 0.5 * Math.min(1, legSpeed / R.speed + 0.3) - p.amp) * k;
+    p.phase += dt * (legSpeed / 0.95) * 6.2832;
     const feeding = p.state === 'feed', grazing = p.state === 'graze' || feeding;
     const neckT = p.state === 'pet' ? 0.5 + Math.sin(p.petT * 7) * 0.06 : grazing ? 1.5 + Math.sin(p.chew * 6) * 0.04 : walking ? 0.12 : 0.08 + Math.sin(p.tailT * 0.8) * 0.03;
     p.neck += (neckT - p.neck) * Math.min(1, dt * (grazing ? 1.4 : 2.2));
     if (grazing && !feeding && p.neck > 1.1) { const G = P.grass, e = G.reach * p.scale; this.eatAt(p.x + Math.sin(p.yaw) * e, p.z + Math.cos(p.yaw) * e, G.bite, G.rate * dt); } // hay never consumes the grass mask (#1396)
     p.tail = Math.sin(p.tailT * (p.state === 'pet' ? 5 : 2.3)) * (p.state === 'pet' ? 0.4 : Math.max(0, Math.sin(p.tailT * 0.45)) * 0.35);
+    // #2127: weight shift, chewing, ears, wind in mane and tail, summer flies (local, derived from the synced state; no new net fields)
+    stepPonyMotion(p.motion, dt, { state: p.state, walking, headDown: p.neck > 1.1, wind: ponyWind(siteWind, p.x, p.z, p.yaw, p.windL), flies: flySeason(this.month, this.rain) && !this.winter });
   }
   write(dt = 0) {
     const a = this.anim.array, b = this.anim2.array, e = this.mesh.instanceMatrix;
     this.ponies.forEach((p, i) => {
-      this.quat.setFromAxisAngle(this.up, p.yaw); this.pos.set(p.x, p.y, p.z); this.scl.setScalar(p.gone ? 0 : p.scale); // Winter occupants retain their normal scale (#1352).
+      const roll = -p.motion.lean * PM.shift.roll; // #2127: the weight shift rolls the body about its ground line; the rug shares this matrix
+      this.quat.setFromAxisAngle(this.up, p.yaw).multiply(this.rollQ.setFromAxisAngle(this.fwd, roll)); this.pos.set(p.x, p.y, p.z); this.scl.setScalar(p.gone ? 0 : p.scale); // Winter occupants retain their normal scale (#1352).
       this.mesh.setMatrixAt(i, this.matrix.compose(this.pos, this.quat, this.scl));
-      a[i * 4] = p.phase; a[i * 4 + 1] = p.amp; a[i * 4 + 2] = p.neck; a[i * 4 + 3] = p.tail;
+      a[i * 4] = p.phase; a[i * 4 + 1] = p.amp; a[i * 4 + 2] = p.neck; a[i * 4 + 3] = p.tail + p.motion.tail[0].z;
       b[i * 4] = p.ear; b[i * 4 + 1] = p.headYaw;
       const pk = this.picks[i], s = Math.sin(p.yaw), c = Math.cos(p.yaw);
       pk.position.set(p.x + s * 0.15, p.y + 0.8, p.z + c * 0.15); pk.rotation.y = p.yaw; pk.updateMatrixWorld(true);
@@ -830,7 +897,7 @@ export class Paddock {
       if (this.riggedPonies && this.riggedPonies[i]) {
         const rp = this.riggedPonies[i];
         rp.object.position.set(p.x, p.y, p.z);
-        rp.object.rotation.y = p.yaw;
+        rp.object.rotation.set(0, p.yaw, roll);
         const sc = p.gone ? 0 : p.scale;
         rp.object.scale.set(sc, sc, sc);
         rp.object.visible = !p.gone && this.mesh.visible;
@@ -845,6 +912,7 @@ export class Paddock {
         // key these bones, so adding Euler yaw repeatedly would spin the head.
         if (rp.baseHeadQ) rp.headBone.quaternion.copy(rp.baseHeadQ);
         if (rp.baseNeckQ) rp.neckBone.quaternion.copy(rp.baseNeckQ);
+        for (const [b, q] of rp.clean) b.quaternion.copy(q); // #2127: the same for the procedural offsets below
         if (rp.mixer && rp.actions) {
           if (rp.currentClip !== targetClip) {
             const nextAction = rp.actions[targetClip] || rp.actions['idle'];
@@ -859,6 +927,8 @@ export class Paddock {
         }
         rp.baseHeadQ?.copy(rp.headBone.quaternion);
         rp.baseNeckQ?.copy(rp.neckBone.quaternion);
+        for (const [b, q] of rp.clean) q.copy(b.quaternion);
+        this.ponyOffsets(p, rp);
         if (p.headYaw) {
           if (rp.neckBone) rp.neckBone.rotation.y += p.headYaw * 0.5;
           if (rp.headBone) rp.headBone.rotation.y += p.headYaw * 0.5;
@@ -866,6 +936,30 @@ export class Paddock {
       }
     });
     e.needsUpdate = true; this.anim.needsUpdate = true; this.anim2.needsUpdate = true;
+  }
+  /** #2127: the procedural offsets on top of the clip pose (local post-rotations; undone before the next mixer update) and the
+   *  mane / skin-twitch uniforms of the pony's own material. */
+  ponyOffsets(p, rp) {
+    const m = p.motion, B = rp.bones, S = PM.shift, X = this.axisX, Y = this.up, Z = this.fwd;
+    const rot = (b, axis, a) => { if (b && a) b.quaternion.multiply(this.rollQ.setFromAxisAngle(axis, a)); };
+    rot(B.head, X, m.chew * PM.chew.nod); rot(B.head, Z, m.grind * PM.chew.grind);
+    rot(B.earL, Y, m.ears[0].y); rot(B.earL, X, -m.ears[0].x); rot(B.earR, Y, -m.ears[1].y); rot(B.earR, X, -m.ears[1].x);
+    for (let k = 0; k < 3; k++) { rot(B.tail[k], Z, m.tail[k].z); rot(B.tail[k], X, m.tail[k].x); }
+    // the unloaded hind leg (weight on the left, lean > 0 → the right one) rests on its toe
+    for (const [side, k] of [['R', Math.max(0, m.lean)], ['L', Math.max(0, -m.lean)]]) {
+      const a = k * m.rest; if (a < 1e-3) continue;
+      rot(B['legBack' + side], X, -S.hip * a); rot(B['kneeBack' + side], X, S.rest * a); rot(B['hoofBack' + side], X, S.toe * a);
+    }
+    // a slow grazing step: the clip has no leg keys, so swing the legs like the walk clip (diagonal pairs), scaled by `amp`
+    if (rp.currentClip !== 'walk' && p.amp > 0.02) {
+      const g = Math.min(1, p.amp * 2);
+      for (const [name, ph] of [['FrontL', 0], ['BackR', Math.PI / 2], ['FrontR', Math.PI], ['BackL', 3 * Math.PI / 2]]) {
+        const v = Math.sin(p.phase + ph);
+        rot(B['leg' + name], X, v * 0.16 * g); rot(B['knee' + name], X, Math.max(0, -v) * 0.16 * g); rot(B['hoof' + name], X, -v * 0.1 * g);
+      }
+    }
+    const u = rp.motionUniforms;
+    if (u) { u.uPonyMane.value.set(m.mane.x, m.mane.z, m.mane.ripple, m.t); u.uPonyTwitch.value.set(m.twitch.x, m.twitch.y, m.twitch.z, m.twitch.a * PM.flies.twitch); }
   }
   /** #1644: following a leader's snapshots (fresh within NET.stale ms) instead of simulating here. */
   following() { return !this.lead && performance.now() < this.followUntil; }
@@ -924,6 +1018,7 @@ export class Paddock {
   /** Per frame: nothing is simulated or drawn beyond PADDOCK.viewDist m from the paddock, or underground. No allocations. */
   update(dt, hidden = false, rain = 0) {
     for (const h of this.hearts) h.update(dt);
+    this.rain = rain;
     const c = this.camera.position, show = !hidden && Math.hypot(c.x - centre.x, c.z - centre.z) < P.viewDist;
     this.shelterTick(dt, rain, show); // #1316
     this.winterDecor.visible = show && this.winter; // #1345: same snow months and distance/underground culling as the occupants
