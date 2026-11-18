@@ -1,3 +1,4 @@
+import { trainerDetails } from './avatartrainers.js'; // #2084
 import { installSelfView } from './avatarselfview.js'; // #2080
 import { lipPoint, lipSeamPoint } from './avatarlips.js'; // #2065
 import { AVATAR_LIP_VOLUME } from './config.js';
@@ -624,17 +625,24 @@ function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
     add(new THREE.TorusGeometry(0.072, 0.024, 5, 14).rotateX(Math.PI / 2 - 0.35).scale(1.05, 1, 1), 'top', 'torso', [0, 0.625, -0.035], 0.92);
   }
   const lw = legs === 2 ? AVATAR_CLOTHES.legs.wide : 1, hy = AVATAR_CLOTHES.legs.shorts;
+  const trainerParts = []; // appended together: all pre-existing vertices retain their order
   for (const s of ['L', 'R']) {
     const top = SURFACE.leg[0][0], bottom = SURFACE.leg.at(-1)[0];
     if (legs === 1) {
       add(limbWeights(garment(ringSurface(ringRange(SURFACE.leg, top, hy)), true), s, true), 'pants', 'thigh' + s);
       add(limbWeights(ringSurface(ringRange(SURFACE.leg, hy + SURFACE.clothOverlap, bottom)), s, true), 'skin', 'thigh' + s);
     } else add(limbWeights(garment(ringSurface(SURFACE.leg), true, lw), s, true), 'pants', 'thigh' + s);
-    add(shape(sphere(0.5, 10, 4, 0, Math.PI * 2, 0, Math.PI / 2).scale(0.105, 0.18, 0.27), (v) => {
+    const upper = shape(sphere(0.5, 10, 4, 0, Math.PI * 2, 0, Math.PI / 2).scale(0.105, 0.18, 0.27), (v) => {
       v.y *= 1 - 0.58 * smoothstep(-0.02, 0.12, v.z); v.y += -0.442; v.z += 0.055;
-    }), 'fixed', 'foot' + s, [0, SHIN, 0], 1, 0); // (#1149: the shoe and its sole on the ankle, flat on the floor in a squat)
+    });
+    trainerParts.push(...trainerDetails(upper).map(part => ({ ...part, side: s })));
+    add(upper, 'fixed', 'foot' + s, [0, SHIN, 0], 1, 0); // (#1149: the shoe and its sole on the ankle, flat on the floor in a squat)
     shoePart();
     add(new THREE.CylinderGeometry(0.5, 0.5, 1, 10).scale(0.11, 0.018, 0.278).translate(0, -0.451, 0.055), 'fixed', 'foot' + s, [0, SHIN, 0], 1, 0xe9e6df); // the sole
+  }
+  for (const part of trainerParts) {
+    add(part.geometry, 'fixed', 'foot' + part.side, [0, SHIN, 0], part.shade, part.colour ?? 0);
+    if (part.colour === undefined) shoePart();
   }
   function shoePart() { add.last().shoe = true; }
 }
@@ -1171,7 +1179,7 @@ export function avatarModelGeometry(lk) {
   for (let i = 0; i < n; i++) {
     const r = reg[i];
     if (r === REGION.fixed) { col[i * 3] = base3[i * 3]; col[i * 3 + 1] = base3[i * 3 + 1]; col[i * 3 + 2] = base3[i * 3 + 2]; continue; }
-    const c = pal[r], s = r === 5 ? 1 : base3[i * 3];
+    const c = pal[r], s = base3[i * 3]; // #2084: old upper is exactly1; new panels inherit the chosen shoe tone
     col[i * 3] = c.r * s; col[i * 3 + 1] = c.g * s; col[i * 3 + 2] = c.b * s;
   }
   const g = new THREE.BufferGeometry();

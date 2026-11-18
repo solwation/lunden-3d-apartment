@@ -7181,6 +7181,15 @@ export const AVATAR_NECKLACE = { tag: 'x', names: ['Inget', 'Tunn kedja', 'Pärl
 // are not carried in the code. Legs: straight, shorts (mid-thigh, bare knees), wide. Tops: T-shirt / long sleeves (the `sleeves`
 // choice), tank (sleeveless), hoodie (always long-sleeved, a long hem, a pocket and a rolled hood). `wide` / `hem` scale the leg's
 // radii (*guess* by eye), `shorts` the hem's height on the thigh bone (m).
+// #2084: AVATAR_TRAINERS — visual guesses in the existing shoe-local metre frame.
+// Details stay within the authored upper/sole bounds; no contact or rig dimensions change.
+export const AVATAR_TRAINERS = {
+  tongue: { x: .020, z: [-.005, .108], lift: .00045, shade: .87 },
+  laces: { count: 3, x: .022, z: .004, step: .030, run: .023, width: .0045, lift: .0012, over: .0002 },
+  panels: { x: [.033, .036, .026], z: [-.012, .080, .137], width: .0025, lift: .00055, shade: .82 },
+  soleColour: 0xe9e6df,
+};
+
 export const AVATAR_CLOTHES = { legs: { tag: 'p', names: ['Raka', 'Shorts', 'Vida'], wide: 1.45, shorts: -0.2 }, cut: { tag: 'm', names: ['T-shirt', 'Linne', 'Luvtröja'] } };
 /** The value (scale or offset) of a face / head slider `name` at integer step `v` (#1138). */
 export function avatarShape(name, v) {
