@@ -91,3 +91,14 @@ entire previous configuration byte-for-byte and inserts only PARQUET_SURFACE, pr
 TILE_SURFACE and all existing exports; it likewise preserves every prior changelog row and
 adds id1600. The parquet module, World consumer and browser harness remain identical to the
 frozen source hashes. Both parquet and tile Node checks pass after this correction.
+
+## Corrected publication
+
+The accepted main revision is `3515bf9981c0f3df79d84d66305a24a7f16ffe9c`,
+with successful [Pages44262504672](https://github.com/solwation/lunden-3d-apartment/actions/runs/44262504672)
+and [Worker44262504544](https://github.com/solwation/lunden-3d-apartment/actions/runs/44262504544).
+The intermediate785a5b90 is explicitly rejected. Live config.js was fetched successfully
+with all9568lines and the retained FINISH/TILE_SURFACE/PARQUET_SURFACE exports.
+Both inspected comparison sheets were verified HTTP200 and embedded with this corrected
+revision in the issue before closure. Public transfer is tracked in
+[kvarteret-lunden#291](https://github.com/solwation/kvarteret-lunden/issues/291).
