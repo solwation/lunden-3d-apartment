@@ -1,6 +1,7 @@
 # Kv. Lunden L1007 i 3D
 
 Gatorna ser använda ut: svagt mörkare och blankare hjulspår, enstaka smala sprickor (några tätade med svart bitumen), sprickor längs vägkanten, mörkare lagningar och övergångsställets vita fält slitna där hjulen går. [Före/efter gata, korsning och regn](docs/verification/2103/README.md).
+
 Gatlyktorna har en mjuk varm gloria runt lamphuvudet på natten och en ljusare ljuspöl rakt under, lite starkare på blöt gata. [Före/efter nära och på avstånd](docs/verification/2104/README.md).
 
 Halvklart väder ger mjuka molnskuggor som driver med vinden över mark, tak och fasader. [Före/efter park och gård](docs/verification/2102/README.md).
