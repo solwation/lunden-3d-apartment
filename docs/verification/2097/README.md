@@ -15,3 +15,5 @@ Results (`browser.json`): zero console/shader errors and zero invalid programs i
 programs identical before/after in all six views (e.g. 61 / 227 / 376 calls by day); textures +1 (the 8 × 1 trim surface map,
 32 bytes). The car LOD's far paint and clones follow the night. Node: `tools/carfinishtest.mjs` (4 tests),
 `tools/vehiclelodtest.mjs`, `tools/lampwash2090test.mjs`, `tools/carglbtest.mjs` pass.
+
+Publicering: Pages/Worker success på `e88e4b5`; före-bilder borttagna vid stängning och visas från den commiten.
