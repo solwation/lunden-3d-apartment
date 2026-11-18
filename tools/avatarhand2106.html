@@ -1,0 +1,59 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar hands 2106</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<script>performance.__real = performance.now.bind(performance); { let a = 2106; Math.random = () => { a = (a * 1664525 + 1013904223) >>> 0; return a / 4294967296; }; } // the same figures, rest curls and gestures in both passes</script><style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2106 component page: close-ups of the avatars' hands (nails, joint creases, knuckles, rounded tips, palm and tendons) at rest, round a
+// cup and a Nerf gun, and in a talking gesture. Real Ghosts (other players' path). Driven by tools/avatarhand2106browser.cjs, which serves the
+// base revision's modules for the "before" pass.
+import * as THREE from 'three';
+import { Ghost } from '../src/ghosts.js';
+const CASES = [{ key: 'rest', hi: '', h: '' }, { key: 'cup', hi: 'cup', h: '' }, { key: 'nerf', hi: '', h: 'nerf' }, { key: 'talk', hi: '', h: '' }];
+const W = 640, Hh = 480, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, Hh); renderer.setPixelRatio(1); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+const cam = new THREE.PerspectiveCamera(24, W / Hh, 0.02, 80);
+let t = 1000;
+performance.now = () => t;
+const ghosts = CASES.map((c, i) => {
+  const g = new Ghost(scene, i + 1, 'Spelare ' + (i + 1), false);
+  if (g.tag) g.tag.visible = false;
+  g.root.position.set(i * 3, 0, 0); scene.add(g.root); g.root.visible = true;
+  g.root.rotation.y = Math.PI; g.have = false;
+  g.push({ p: [i * 3, 0, 0], r: Math.PI, h: c.h, hi: c.hi }, t);
+  return g;
+});
+const advance = (ms, step = 16.7) => { for (let e = 0; e < ms; e += step) { t += step; for (const g of ghosts) { g.root.rotation.y = Math.PI; g.animate(t, 1, 0, 0); } } };
+advance(2000);
+const idx = (k) => CASES.findIndex((c) => c.key === k);
+ghosts[idx('talk')].avatar.talk('Det här är en ganska lång mening så att händerna hinner gestikulera ordentligt medan vi pratar', 6);
+advance(1400);
+const fingers = (g, side) => g.avatar.material.userData.u.uFing.value.slice(side === 'L' ? 0 : 5, side === 'L' ? 5 : 10).map((v) => [+v.x.toFixed(3), +v.y.toFixed(3)]);
+/** A close-up of figure k's right hand from a direction in the hand bone's frame (right hand: +x out of the palm, -y along the fingers). */
+window.__hand = (k, dir = [0.3, -0.4, 1], dist = 0.32, which = 'R') => {
+  const g = ghosts[idx(k)], p = g.avatar.hand(which, new THREE.Vector3()), q = g.avatar.bones['hand' + which].getWorldQuaternion(new THREE.Quaternion());
+  p.add(new THREE.Vector3(0, -0.05, 0).applyQuaternion(q));
+  const d = new THREE.Vector3(...dir).normalize().multiplyScalar(dist).applyQuaternion(q);
+  cam.fov = 24; cam.updateProjectionMatrix(); cam.position.copy(p).add(d); cam.lookAt(p);
+  renderer.info.reset(); renderer.render(scene, cam);
+  return { fingers: fingers(g, which), grip: g.avatar.gripOf(which), calls: renderer.info.render.calls };
+};
+/** The figure at an ordinary game distance (no shimmer from the fine marks there). */
+window.__body = (k, dist = 2.4) => {
+  const g = ghosts[idx(k)], p = g.root.position.clone(); p.y = 1.1;
+  cam.fov = 50; cam.updateProjectionMatrix(); cam.position.copy(p).add(new THREE.Vector3(0.7, 0.2, 1.9).normalize().multiplyScalar(dist)); cam.lookAt(p); renderer.render(scene, cam);
+};
+/** Matched render cost: ms per frame for n frames of the same hand close-up (the hand fills much of the frame) and of the body view. */
+window.__time = (n = 40) => {
+  const gl = renderer.getContext(), px = new Uint8Array(4), run = (f) => { f(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); const t0 = performance.__real(); for (let i = 0; i < n; i++) f(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); return (performance.__real() - t0) / n; };
+  return { hand: +run(() => window.__hand('cup', [-1, -0.3, 0.3], 0.22)).toFixed(2), body: +run(() => window.__body('cup')).toFixed(2) };
+};
+window.__ready = true;
+</script></body></html>

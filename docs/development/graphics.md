@@ -1632,3 +1632,17 @@ preservation, rig/pose equivalence and source boundaries, alongside existing bod
 checks. `tools/avatartrainers2084browser.cjs` uses actual furniture/Rest/Ghosts/Avatar,
 production frame hooks and reflector. [Own captures, source hashes, budgets and limits](../verification/2084/README.md).
 This character change has no public downstream application.
+
+### Hands: nails, joint creases, knuckles and tendons (#2106)
+
+`src/avatarhand.js` (tunables `AVATAR_HAND_DETAIL`, all *guess*; program key suffix `-hand2106`) places per finger, from #2016's own
+joints (`fingerJoints`), a nail on the back of the distal segment (a light tint mixed into the skin, paler free edge, a pinkish cuticle
+band, a slightly raised plate rim and lower roughness for a discreet gloss), fine crease lines across the middle joint and an implied
+end joint on the back (flattening as the joint bends) with one deeper crease on the palm side (deepening), and a knuckle dome that rises
+with the bend. The hand itself gets a lighter, a little rougher palm with two soft creases and four tendons on the back that converge
+to the wrist and show more as the four fingers close (the mean knuckle angle from the #2016 `uFing` uniform, which the fragment now
+also reads). The vertex finger branch tapers and flattens the fingertip a little before the bend. All in bind-pose coordinates, so the
+marks move exactly with the skin under them; the lines and relief fade out between 0.4 and 0.9 mm per pixel (the nails' colour stays).
+No mesh, texture, draw call or network field; the far figure has none of it. Cost: on bare hand fragments roughly 60–90 ALU operations
+and a few `exp`, elsewhere one role test; per-avatar CPU 0. `tools/avatarhandtest.mjs` checks placement, mirroring, determinism and that
+the nails follow every grip shape; `tools/avatarhand2106browser.cjs` takes before/after close-ups ([images](../verification/2106/)).

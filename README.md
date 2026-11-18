@@ -41,6 +41,8 @@ När du sitter eller ligger syns din valda kropp när du tittar ned, med böjda 
 
 Träningsskorna har ljus snörning, plös och diskreta panelkanter i dina valda skofärger, synliga även med fötterna i divanen. [Bilder och kostnad](docs/verification/2084/README.md).
 
+Avatarernas händer har ljusa naglar med nagelband, fina veck över lederna, knogar, rundade fingertoppar och en ljusare handflata; senorna på handryggen anas när handen greppar. [Bilder](docs/verification/2106/README.md).
+
 Hus L:s solpaneler har diskreta cellmellanrum, tunna ledarbanor och lugn glasstruktur, med oförändrad panelgeometri och takgång. [Egna jämförelsebilder, källbundna kontroller och exakt kostnad](docs/verification/2083/README.md).
 
 Längs Realgymnasiets tegelfasad vid Sankt Lars väg går en smal trottoar med anslutningar vid båda gavlarna; bredden är uppskattad.

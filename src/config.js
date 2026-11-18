@@ -7288,6 +7288,29 @@ export const AVATAR_GRIP = { ease: 14, split: 0.6, compact: 0.25, sink: 0.004, t
   byCategory: { cup: 'cylinder', bottle: 'cylinder', plate: 'flat', book: 'flat', box: 'flat', gift: 'flat', paper: 'pinch', bag: 'cylinder', tool: 'cylinder', plant: 'cylinder', cue: 'cylinder', nut: 'pinch', binoculars: 'cylinder', spray: 'cylinder', rod: 'cylinder', fish: 'pinch', sharkfin: 'pinch', mussel: 'pinch',
     food: 'pinch', chicken: 'flat', drumstick: 'cylinder', fries: 'cylinder', popcorn: 'cylinder', fishfinger: 'pinch', banana: 'pinch', orange: 'pinch', pear: 'pinch', pan: 'cylinder', flashlight: 'cylinder', remote: 'cylinder', harpoon: 'pistol' },
   byWeapon: { nerf: 'pistol', rifle: 'pistol', wand: 'cylinder', saber: 'cylinder', bow: 'cylinder', ball: 'flat', web: 'cylinder' } };
+// #2106 the hands' finer detail (src/avatarhand.js), all *guess* tuned by eye in hand close-ups, not measured. Bind-pose metres in the
+// hand bone's frame; finger order little, ring, middle, index, thumb. `nail`: each nail's length as a `share` of the distance from the middle
+// joint to the fingertip, ending `end` × the tip radius short of the tip; it covers the back of the finger where the direction from the
+// finger's axis has `cos` (± `soft`) towards the back; its colour mixes `mix` of `tint` into the skin, the free edge (`edge` m) turns
+// `edgeTint`, the cuticle is a band `cuticle` [width m, strength] tinted `cuticleTint` just behind it, `plate` m the plate's raised rim,
+// `rough` its roughness (a discreet gloss). `crease`: lines across the joints (the middle joint at the segment seam, the end joint at `dip`
+// × the tip distance), `lines` on the back `gap` m apart, `width` m wide, `depth` m deep (flattening as the joint bends), `dark` how much
+// they darken; `palm` the deeper single crease on the palm side (deepens as it bends). `dome`: [height m, σ m] of the knuckle over each
+// joint, rising as it bends. `tip`: the fingertip's rounding: from `from` × the tip distance it tapers by `taper` and flattens front-to-back
+// by `flat`. `back`: four tendons on the back of the hand, `tendon` [half width m, height m, share shown at rest], converging from the
+// knuckles (y `knuckleY`) to `narrow` × their spread at the wrist (y `wristY`). `palm`: the palm's lighter, softer skin (albedo × `light`
+// + `lift`, weight `k`; + `rough`) and two creases [y at the middle m, slope dy/dz, depth m]. `fade` [from, to] bind metres per pixel:
+// the fine lines and relief vanish before they could shimmer (the nails' colour stays).
+export const AVATAR_HAND_DETAIL = {
+  nail: { share: [0.5, 0.5, 0.5, 0.5, 0.42], end: 0.3, cos: 0.42, soft: 0.14, tint: [0.95, 0.8, 0.77], mix: 0.3, edge: 0.0013, edgeTint: [0.94, 0.89, 0.83],
+    cuticle: [0.0012, 0.22], cuticleTint: [0.96, 0.78, 0.75], plate: 0.00018, rough: 0.3 },
+  crease: { dip: 0.3, lines: 3, gap: 0.0011, width: 0.00045, depth: 0.00012, dark: 0.1, palm: [0.0006, 0.00018, 0.2] },
+  dome: [0.0005, 0.0035],
+  tip: { from: 0.55, taper: 0.1, flat: 0.88 },
+  back: { tendon: [0.0024, 0.00045, 0.25], knuckleY: -0.05, wristY: 0.018, narrow: 0.55 },
+  palm: { light: [1.08, 1.04, 1.02], lift: [0.05, 0.032, 0.028], k: 0.6, rough: 0.06, creases: [[-0.031, 0.25, 0.00022], [-0.043, -0.18, 0.0002]] },
+  fade: [0.0004, 0.0009],
+};
 export const AVATAR_RING = { tag: 'i', metalTag: 'z', fingers: ['Tumme', 'Pekfinger', 'Långfinger', 'Ringfinger', 'Lillfinger'], sides: ['Vänster hand', 'Höger hand'], metals: ['Guld', 'Silver', 'Koppar', 'Svart titan'],
   colours: [0xe0b83c, 0xd2d6db, 0xc2703d, 0x2b2d33], sink: 0.0004, tube: 0.0022, at: 0.5, thumbAt: 0.55, shine: 0.12 };
 // #1334 (#1318, #1325): a bracelet and a wristwatch, look fields `bracelet` and `watch` (each 0 none, 1-3 the model on the left wrist, 4-6 the same on the right) in the metal
