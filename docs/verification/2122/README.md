@@ -14,11 +14,11 @@ Tonen följer ytans egen luminans, så medeltonen står kvar.
 
 | Vy | Före | Efter |
 |---|---|---|
-| Hus L norrfasad nära (tegel, fogar) | ![](before/husL-nara.jpg) | ![](husL-nara.jpg) |
-| Hus L från gatan (avstånd) | ![](before/husL-gata.jpg) | ![](husL-gata.jpg) |
-| Hus A norrsida från gården | ![](before/husA-nord.jpg) | ![](husA-nord.jpg) |
-| Hus B norrsida | ![](before/husB-nord.jpg) | ![](husB-nord.jpg) |
-| Hus C norrsida | ![](before/husC-nord.jpg) | ![](husC-nord.jpg) |
+| Hus L norrfasad nära (tegel, fogar) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/c609309103089f6a955ae1d34c0724c686d63f8c/docs/verification/2122/before/husL-nara.jpg) | ![](husL-nara.jpg) |
+| Hus L från gatan (avstånd) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/c609309103089f6a955ae1d34c0724c686d63f8c/docs/verification/2122/before/husL-gata.jpg) | ![](husL-gata.jpg) |
+| Hus A norrsida från gården | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/c609309103089f6a955ae1d34c0724c686d63f8c/docs/verification/2122/before/husA-nord.jpg) | ![](husA-nord.jpg) |
+| Hus B norrsida | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/c609309103089f6a955ae1d34c0724c686d63f8c/docs/verification/2122/before/husB-nord.jpg) | ![](husB-nord.jpg) |
+| Hus C norrsida | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/c609309103089f6a955ae1d34c0724c686d63f8c/docs/verification/2122/before/husC-nord.jpg) | ![](husC-nord.jpg) |
 
 Telefonprofil (`&lowmem`), Hus B: [husB-nord-telefon.jpg](husB-nord-telefon.jpg) — ingen mossa, inget nytt program.
 
@@ -52,3 +52,5 @@ knappt synlig).
 
 Låga tak och bänkfundament ingår inte (ingen skugginformation; bara väggbatcherna ovan), inte heller vågräta plattkanter.
 "Skugga" = norrläge, inte faktisk skuggning från grannhus. Ingen FPS-mätning.
+
+Publicering: Pages/Worker success på `c609309`; före-bilder borttagna vid stängning och visas från den commiten.
