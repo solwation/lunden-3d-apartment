@@ -1,5 +1,6 @@
 # Kv. Lunden L1007 i 3D
 
+Gräsmattorna har mjuka torrare och frodigare fläckar och små tuvor i den delade gräskartan, med oförändrad medelfärg på håll. [Före/efter och kontroller](docs/verification/2086/README.md).
 Fasadernas fönsterglas har en lugn himmelsreflex som skiftar lite mellan rutorna. [Före/efter dag och natt](docs/verification/2087/README.md).
 
 Trädens och buskarnas löv har mjuka färgskiftningar och diskreta sidonerver i den befintliga lövtexturen. [Egna bilder, alfakontroller och startkostnad](docs/verification/2085/README.md).

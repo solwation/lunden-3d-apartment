@@ -1604,6 +1604,13 @@ export const GRASS = {
   summer: 0x609548, autumn: 0x94845b, autumnMix: { 9: 0.12, 10: 0.5, 11: 0.6 },
   detailRange: [190, 244], detailNoise: 24, strawTint: 0.94, bladeTint: 0.91, strokeWidth: 0.7,
   patchScale: 0.45, patchStrength: 0.10, patchWarmth: 0.035, patchFrequencies: [0.73, 0.87, 0.31],
+  // #2086: inside the detail map (one 1.6 m tile), soft drier / lusher patches and small tussocks so a lawn in walk view is
+  // not an even carpet. `detailPatches`: linear-light multipliers per channel (r, g, b) at a patch core; dry = lighter,
+  // warmer straw, lush = darker, greener; `octaves`: seeded value noise lattices that wrap at the tile edge (src/grassdetail.js). The map's linear mean
+  // is restored afterwards, so grassMeanColor() / the far ground keep their colour. `tufts`: own seed (the blade sequence is
+  // untouched), radius in px (160 px/m), `shade` = alpha of the darker base, `dark`/`light` blade grey levels. All *guess*, by eye in walk view.
+  detailPatches: { contrast: 1.5, dry: [0.26, 0.17, 0.02], lush: [0.19, 0.09, 0.22], seed: 2086, octaves: [{ cells: 8, amp: 0.5 }, { cells: 17, amp: 0.5 }] },
+  tufts: { seed: 2086, count: 22, radius: [7, 14], blades: [10, 16], dark: [178, 208], light: [228, 252], shade: 0.14, width: 1 },
 };
 
 export const COURTYARD = {

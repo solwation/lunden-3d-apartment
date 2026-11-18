@@ -1,0 +1,94 @@
+{
+ "phase": "before",
+ "views": [
+  {
+   "name": "walk-summer",
+   "at": "-4,22.6,95,-18",
+   "month": 6,
+   "file": "docs/verification/2086/raw/before-walk-summer.png",
+   "calls": 252,
+   "triangles": 684253,
+   "textures": 58,
+   "geometries": 322
+  },
+  {
+   "name": "walk-winter",
+   "at": "-4,22.6,95,-18",
+   "month": 1,
+   "file": "docs/verification/2086/raw/before-walk-winter.png",
+   "calls": 250,
+   "triangles": 640993,
+   "textures": 52,
+   "geometries": 350
+  },
+  {
+   "name": "park-summer",
+   "at": "-8,52,200,-12",
+   "month": 6,
+   "file": "docs/verification/2086/raw/before-park-summer.png",
+   "calls": 83,
+   "triangles": 510567,
+   "textures": 33,
+   "geometries": 110
+  },
+  {
+   "name": "walk-houseC",
+   "at": "-55,45.3,60,-20",
+   "month": 6,
+   "file": "docs/verification/2086/raw/before-walk-houseC.png",
+   "calls": 110,
+   "triangles": 473875,
+   "textures": 32,
+   "geometries": 121
+  },
+  {
+   "name": "far-summer",
+   "at": "-8,52,200,-16,22",
+   "month": 6,
+   "file": "docs/verification/2086/raw/before-far-summer.png",
+   "calls": 74,
+   "triangles": 498828,
+   "textures": 28,
+   "geometries": 101
+  }
+ ],
+ "errors": [],
+ "texture": {
+  "size": [
+   256,
+   256
+  ],
+  "seam": {
+   "x": 25.13,
+   "y": 23.18,
+   "interiorX": 23.9,
+   "interiorY": 24.32
+  },
+  "hash": "7fc539975548e5aa",
+  "gens": [
+   {
+    "ms": 15,
+    "hash": "7fc539975548e5aa",
+    "import": 11.2
+   },
+   {
+    "ms": 13.7,
+    "hash": "7fc539975548e5aa",
+    "import": 15.4
+   },
+   {
+    "ms": 12,
+    "hash": "7fc539975548e5aa",
+    "import": 9.2
+   }
+  ],
+  "mean": [
+   0.09319,
+   0.23944,
+   0.04383
+  ],
+  "blockLumSD": 0.42,
+  "wrap": 1000,
+  "repeat": 0.625
+ }
+}

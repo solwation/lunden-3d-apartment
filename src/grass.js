@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GRASS as G, SEASON } from './config.js';
 import { registerSeasonal, registerSnow } from './seasons.js';
+import { applyGrassPatches, grassTufts, linearMean } from './grassdetail.js';
 
 let texture;
 /** One shared small seamless detail map; neutral straw/leaf tones are tinted by each lawn's seasonal colour. */
@@ -27,6 +28,23 @@ export function grassTexture() {
       ctx.lineTo(x + dx + Math.cos(a) * len, y + dy + Math.sin(a) * len); ctx.stroke();
     }
   }
+  // #2086: tussocks and soft dry / lush patches on top; the old blade layer's linear mean is kept (grassMeanColor, far ground).
+  const target = linearMean(ctx.getImageData(0, 0, n, n).data), T = G.tufts;
+  for (const t of grassTufts(n, T)) for (const dx of [-n, 0, n]) for (const dy of [-n, 0, n]) {
+    const x = t.x + dx, y = t.y + dy;
+    if (x < -t.r * 1.3 || y < -t.r * 1.3 || x > n + t.r * 1.3 || y > n + t.r * 1.3) continue;
+    const shade = ctx.createRadialGradient(x, y, 0, x, y, t.r * 0.8);
+    shade.addColorStop(0, `rgba(0,0,0,${T.shade})`); shade.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = shade; ctx.beginPath(); ctx.arc(x, y, t.r * 0.8, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = T.width;
+    for (const b of t.blades) {
+      const sx = x + b.x0, sy = y + b.y0, ex = sx + Math.cos(b.a) * b.len, ey = sy + Math.sin(b.a) * b.len;
+      ctx.strokeStyle = `rgb(${b.v},${b.v},${Math.round(b.v * G.bladeTint)})`; ctx.beginPath(); ctx.moveTo(sx, sy);
+      ctx.quadraticCurveTo((sx + ex) / 2 - Math.sin(b.a) * b.len * b.bend, (sy + ey) / 2 + Math.cos(b.a) * b.len * b.bend, ex, ey); ctx.stroke();
+    }
+  }
+  const detail = ctx.getImageData(0, 0, n, n);
+  applyGrassPatches(detail.data, n, target, G.detailPatches); ctx.putImageData(detail, 0, 0);
   texture = new THREE.CanvasTexture(canvas);
   texture.name = 'shared-grass-detail';
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
