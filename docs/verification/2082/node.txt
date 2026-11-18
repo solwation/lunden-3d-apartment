@@ -1,0 +1,18 @@
+✔ the extra plan positions reuse the archived river; only the final western fog tail is assumed (2.608092ms)
+✔ interpreted relative fall is tied to the checked source and preserves the road-bridge datum (5.32731ms)
+✔ rendered water vertices follow the same continuous downstream level as the terrain and splash logic (61.596597ms)
+✔ the default constant-deck bridge geometry and mapped park paths retain the pre-fall buffers (26.631593ms)
+✔ actual bank recovery is dry along the changing water level, and the outer terrain joins without a step (41.324606ms)
+✔ the timber deck and its ramp tops stay fixed while the front toes remain buried under the local shore (0.354043ms)
+✔ the water lies well under the bank crest along the whole river and the ribbon covers every submerged bank point (100.780496ms)
+✔ deterministic finite slopes stay below 0.055; distance and pixel footprint fully suppress far ripples (27.632784ms)
+✔ the two continuation water planes share the same world phase; mask excludes other colours/heights and winter colourless land (0.748256ms)
+✔ material hook is cached/idempotent, preserves native contracts and adds only stationary shader math (1.211529ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 559.541489

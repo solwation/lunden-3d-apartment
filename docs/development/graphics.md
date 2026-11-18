@@ -1489,3 +1489,11 @@ A/B/C roofSpec consumers have no equivalent solar panel batch. Nordic Wellness's
 share its glass batch; the eight villa solar quads share roof vertex colours. Their distinct
 geometry/materials remain untouched. Neutral public applicability is tracked separately in#304.
 [Own native checks, actual buildExterior views, exact source hashes and limits](../verification/2083/README.md).
+
+### Stationary river-lighting ripples (#2082)
+
+The native Standard material receives a bounded analytic normal perturbation from two curved world-XZ phases in riversurface.js, with artistic settings in RIVER_SURFACE. These are stationary lighting detail, not moving/displaced waves or measured hydrology. Their principal periods are approximately 0.67/0.44 m; gains 0.035/0.02 bound the summed slope by 0.055. Normal variation fades smoothly over 12–45 m camera distance and 0.035–0.12 m fragment footprint. Original colours, roughness/metalness, opacity/depth, DoubleSide and geometry/UV remain.
+
+Consumers: bridges-water plus the two continued water courses already merged into edge-land. The latter selects existing water-coloured vertices at the two exact adjacent water levels, preserving all other vertex colours/geometry. Both batches use identical world phases. The older local/continuation roughness difference remains; this change does not recalibrate it. The colourless edge snow variant returns the exact native shader/cache key, preserving its older winter policy.
+
+No texture, extra vertex attribute, uniform, time source, frame callback, displacement, reflection pass, new light or draw is added. Active ripple fragments add two sin/two cos calls, two fwidth calls, two smoothsteps, camera distance, small vector arithmetic and one normalization; a vec4 varying and world-position transform add vertex/interpolation work, and masked edge vertices also classify colour/height. Inactive/far fragments branch out of ripple math. Driver branch execution is not a measured FPS guarantee. A winter native program that previously shared with local water becomes a separate cached program: measured 6→7 total programs, other views 6→6. Shader binary/driver allocation is not exposed; new map/geometry bytes are exactly zero, total GPU cost is not zero. [Source-bound evidence, cost and limits](../verification/2082/README.md).

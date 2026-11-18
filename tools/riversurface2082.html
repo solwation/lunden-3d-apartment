@@ -1,0 +1,54 @@
+<!doctype html><meta charset="utf-8"><link rel="icon" href="data:,"><title>Actual river surface and continuation batches #2082</title><style>body{margin:0}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as T from 'three';
+import {buildRiverBridges,riverPath,waterYAt,shoreYAt,riverGround} from '../src/riverbridge.js';
+import {buildEdgeBackdrop} from '../src/edgebackdrop.js';
+import {surroundingsParts,groundY,groundBelowDeckY,renderedTerrainY} from '../src/surroundings.js';
+import {SITE,EDGE_BACKDROP as E,COLORS,RIVER_SURFACE as C} from '../src/config.js';
+import {riverRippleSlope} from '../src/riversurface.js';
+import {applySeason} from '../src/seasons.js';
+let local;const add=T.Object3D.prototype.add;T.Object3D.prototype.add=function(...os){const out=add.apply(this,os);if(!local&&os.some(o=>o.isMesh))local=this;return out};
+try{const it=surroundingsParts({grass:null});const r=it.next();if(r.value!==.05)throw Error('Terrain production yield changed');it.return()}finally{T.Object3D.prototype.add=add}
+if(!local?.getObjectByName('site-terrain'))throw Error('Actual terrain missing');
+const roadGround=(x,z)=>Math.max(groundY(x,z),renderedTerrainY(x,z));roadGround.grid=()=>renderedTerrainY.grid();
+const bridges=buildRiverBridges(roadGround),water=bridges.getObjectByName('bridges-water'),edge=buildEdgeBackdrop(groundBelowDeckY),land=edge.getObjectByName('edge-land');
+if(!water||!land||edge.children.length!==2)throw Error('Actual water/continuation batches missing');
+const scene=new T.Scene();scene.background=new T.Color(0xbacbd7);scene.add(local,bridges,edge);scene.add(new T.HemisphereLight(0xe6f1fa,0x767463,1.3));const sun=new T.DirectionalLight(0xfff1da,1.8);scene.add(sun,sun.target);
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(1);renderer.setSize(1120,800);renderer.toneMapping=T.NeutralToneMapping;document.body.append(renderer.domElement);
+const camera=new T.PerspectiveCamera(48,1.4,.015,2500),main={x:-37,z:145.04},a=E.rivers[0].path[0],b=E.rivers[1].path[0];
+const sha=async bytes=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');
+const mapInfo=m=>['map','normalMap','bumpMap','roughnessMap'].map(k=>({kind:k,present:!!m[k],version:m[k]?.version??null}));
+const matInfo=m=>({color:m.color.getHex(),roughness:m.roughness,metalness:m.metalness,side:m.side,opacity:m.opacity,transparent:m.transparent,depthWrite:m.depthWrite,vertexColors:m.vertexColors,maps:mapInfo(m)});
+window.__proof=async()=>{const meshes=[],objects=[];scene.traverse(o=>{if(o.isMesh)objects.push(o)});for(const o of objects){const g=o.geometry;g.computeBoundingBox();const arrays=Object.values(g.attributes).map(a=>a.array);if(g.index)arrays.push(g.index.array);const bytes=new Uint8Array(arrays.reduce((s,a)=>s+a.byteLength,0));let n=0;for(const a of arrays){if(!a.every(Number.isFinite))throw Error('Non-finite mesh');bytes.set(new Uint8Array(a.buffer,a.byteOffset,a.byteLength),n);n+=a.byteLength}meshes.push({name:o.name,bytes:n,triangles:(g.index?.count??g.attributes.position.count)/3,bounds:[g.boundingBox.min.toArray(),g.boundingBox.max.toArray()],hash:await sha(bytes),cast:o.castShadow,receive:o.receiveShadow})}
+ const col=new T.Color(COLORS.water).toArray(),g=land.geometry,p=g.attributes.position,c=g.attributes.color,levels=E.rivers.map(r=>waterYAt(...r.path[0]));let masked=0,dry=0,bad=0;for(let i=0;i<p.count;i++){const waterColor=Math.hypot(c.getX(i)-col[0],c.getY(i)-col[1],c.getZ(i)-col[2])<.00001,onLevel=Math.min(...levels.map(y=>Math.abs(p.getY(i)-y)))<C.levelTolerance;if(waterColor&&onLevel)masked++;else dry++;if(waterColor&&!onLevel)bad++}
+ return{meshes,water:matInfo(water.material),edge:matInfo(land.material),levels,edgeMask:{waterVertices:masked,dryVertices:dry,otherWaterVerticesExcluded:bad},queries:riverPath.map(([x,z])=>({x,z,water:waterYAt(x,z),shore:shoreYAt(x,z),ground:riverGround(x,z,-3)}))};
+};
+const views={
+ near:[main.x-.6,.55,main.z+1.7,main.x,main.z],walking:[main.x-1,1.65,main.z+5,main.x,main.z],
+ far:[main.x-3,80,main.z+28,main.x,main.z],under:[main.x-.2,-.7,main.z+.6,main.x,main.z],
+ east:[a[0]-3,1.65,a[1]+7,a[0],a[1]],west:[b[0]-3,1.65,b[1]+7,b[0],b[1]],
+ winter:[a[0]+8,3,a[1]+15,a[0]+10,a[1]]
+};
+window.__frame=view=>{applySeason(view==='winter'?1:6);local.visible=bridges.visible=scene.visible=true;edge.visible=true;if(view==='winter'){local.visible=false;bridges.visible=false}
+ const[x,h,z,tx,tz]=views[view],y=waterYAt(tx,tz);camera.position.set(x,y+h,z);camera.lookAt(tx,y,tz);sun.target.position.set(tx,y,tz);
+ // One diagnostic daylight direction per matched view, a little off the mirror angle to reveal the small normal variation.
+ sun.position.set(tx+(tx-x)*4+.7,y+Math.abs(h)*4+.3,tz+(tz-z)*4);renderer.info.reset();renderer.render(scene,camera);
+ return{view,camera:camera.position.toArray(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,geometries:renderer.info.memory.geometries,programs:renderer.info.programs.length,water:matInfo(water.material),edge:matInfo(land.material),image:renderer.domElement.toDataURL('image/jpeg',.95),timestamp:performance.now()};
+};
+window.__seams=()=>{
+ const out=[],ray=new T.Raycaster();scene.updateMatrixWorld(true);
+ for(const r of E.rivers){const[a,b]=r.path,l=Math.hypot(b[0]-a[0],b[1]-a[1]),dx=(b[0]-a[0])/l,dz=(b[1]-a[1])/l,x=a[0]-dx*.06,z=a[1]-dz*.06;
+  ray.set(new T.Vector3(x,20,z),new T.Vector3(0,-1,0));const localHit=ray.intersectObject(water)[0],edgeHit=ray.intersectObject(land)[0];if(!localHit||!edgeHit)throw Error('Actual seam overlap absent');
+  out.push({name:r.name,local:localHit.point.toArray(),edge:edgeHit.point.toArray(),slopeLocal:riverRippleSlope(localHit.point.x,localHit.point.z),slopeEdge:riverRippleSlope(edgeHit.point.x,edgeHit.point.z)});
+ }return out;
+};
+window.__normalProbes=()=>{
+ applySeason(6);const results=[],target=new T.WebGLRenderTarget(1,1),pix=new Uint8Array(4),cam=new T.PerspectiveCamera(20,1,.01,10),s=new T.Scene();
+ for(const r of E.rivers){const[a,b]=r.path,l=Math.hypot(b[0]-a[0],b[1]-a[1]),x=a[0]-(b[0]-a[0])/l*.06,z=a[1]-(b[1]-a[1])/l*.06,y=waterYAt(...a);cam.position.set(x,y+.3,z);cam.lookAt(x,y,z);const row={name:r.name,pixels:[]};
+  for(const original of [water,land]){const m=original.material.clone(),hook=original.material.onBeforeCompile;m.onBeforeCompile=(shader,r)=>{hook.call(m,shader,r);shader.fragmentShader=shader.fragmentShader.replace('#include <dithering_fragment>','#include <dithering_fragment>\ngl_FragColor=vec4(normal*0.5+0.5,1.0);')};m.customProgramCacheKey=()=>original.material.customProgramCacheKey()+':verification-normal';const mesh=new T.Mesh(original.geometry,m);s.add(mesh);renderer.setRenderTarget(target);renderer.render(s,cam);renderer.readRenderTargetPixels(target,0,0,1,1,pix);row.pixels.push([...pix]);s.remove(mesh);m.dispose();}
+  results.push(row);
+ }renderer.setRenderTarget(null);target.dispose();return results;
+};
+window.__ready=true;
+</script>

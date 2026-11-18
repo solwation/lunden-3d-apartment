@@ -1,5 +1,7 @@
 # Kv. Lunden L1007 i 3D
 
+Höje ås vatten har små ljuskrusningar som tonar bort på avstånd; vattennivåer, stränder och den befintliga rörelsen är kvar.
+
 Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spel: entréplan och
 övre plan med trappan emellan, byggt direkt från den måttsatta planritningen
 (`L1007_mattsatt_planritning.pdf`).
