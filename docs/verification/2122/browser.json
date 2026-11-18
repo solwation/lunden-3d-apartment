@@ -1,0 +1,296 @@
+{
+ "base": "7dced3769fbcb4a31b7caa0cc1666eaed6f3061e",
+ "phases": {
+  "before": {
+   "meshes": 5018,
+   "found": [],
+   "loadMs": 51733,
+   "views": {
+    "husL-nara": {
+     "calls": 253,
+     "triangles": 758020,
+     "textures": 101,
+     "programs": 118,
+     "eye": [
+      -8,
+      1.62,
+      -2.6
+     ]
+    },
+    "husL-gata": {
+     "calls": 443,
+     "triangles": 939524,
+     "textures": 115,
+     "programs": 129,
+     "eye": [
+      -6,
+      1.62,
+      -16
+     ]
+    },
+    "husA-nord": {
+     "calls": 210,
+     "triangles": 589863,
+     "textures": 126,
+     "programs": 139,
+     "eye": [
+      2,
+      1.62,
+      23
+     ]
+    },
+    "husB-nord": {
+     "calls": 186,
+     "triangles": 585745,
+     "textures": 133,
+     "programs": 140,
+     "eye": [
+      -32,
+      1.62,
+      27
+     ]
+    },
+    "husC-nord": {
+     "calls": 148,
+     "triangles": 647589,
+     "textures": 135,
+     "programs": 146,
+     "eye": [
+      -61,
+      1.62,
+      4
+     ]
+    }
+   }
+  },
+  "after": {
+   "meshes": 5018,
+   "found": [
+    {
+     "name": "?",
+     "kind": "bump",
+     "vertices": 4278,
+     "lowVertices": 902,
+     "height": [
+      0,
+      13.3
+     ],
+     "box": [
+      [
+       -45,
+       0,
+       -4
+      ],
+      [
+       12,
+       13,
+       13
+      ]
+     ],
+     "key": "{}|shademoss2122-bump|lampwashV|lampwash"
+    },
+    {
+     "name": "?",
+     "kind": "bump",
+     "vertices": 16026,
+     "lowVertices": 0,
+     "height": [
+      6.4,
+      13.21
+     ],
+     "box": [
+      [
+       -42,
+       6,
+       2
+      ],
+      [
+       12,
+       12,
+       11
+      ]
+     ],
+     "key": "{}|shademoss2122-bump|lampwashV|lampwash"
+    },
+    {
+     "name": "?",
+     "kind": "map",
+     "vertices": 702,
+     "lowVertices": 701,
+     "height": [
+      -3,
+      3.12
+     ],
+     "box": [
+      [
+       -71,
+       -3,
+       0
+      ],
+      [
+       14,
+       0,
+       53
+      ]
+     ],
+     "key": " {}|shademoss2122-map|lampwashV|lampwash"
+    },
+    {
+     "name": "?",
+     "kind": "plain",
+     "vertices": 816,
+     "lowVertices": 741,
+     "height": [
+      -3.01,
+      2.84
+     ],
+     "box": [
+      [
+       -70,
+       -3,
+       -3
+      ],
+      [
+       14,
+       0,
+       59
+      ]
+     ],
+     "key": "}|shademoss2122-plain|lampwashV|lampwash"
+    },
+    {
+     "name": "?",
+     "kind": "map",
+     "vertices": 2475,
+     "lowVertices": 1408,
+     "height": [
+      -3,
+      17.74
+     ],
+     "box": [
+      [
+       -71,
+       -3,
+       13
+      ],
+      [
+       9,
+       15,
+       57
+      ]
+     ],
+     "key": " {}|shademoss2122-map|lampwashV|lampwash"
+    },
+    {
+     "name": "?",
+     "kind": "bump",
+     "vertices": 85356,
+     "lowVertices": 14988,
+     "height": [
+      -1.9,
+      17.74
+     ],
+     "box": [
+      [
+       -71,
+       -3,
+       13
+      ],
+      [
+       9,
+       15,
+       57
+      ]
+     ],
+     "key": "{}|shademoss2122-bump|lampwashV|lampwash"
+    },
+    {
+     "name": "?",
+     "kind": "plain",
+     "vertices": 36,
+     "lowVertices": 34,
+     "height": [
+      -2.63,
+      2.77
+     ],
+     "box": [
+      [
+       -71,
+       -3,
+       13
+      ],
+      [
+       -70,
+       0,
+       37
+      ]
+     ],
+     "key": "}|shademoss2122-plain|lampwashV|lampwash"
+    }
+   ],
+   "loadMs": 49154,
+   "views": {
+    "husL-nara": {
+     "calls": 254,
+     "triangles": 759248,
+     "textures": 102,
+     "programs": 121,
+     "eye": [
+      -8,
+      1.62,
+      -2.6
+     ]
+    },
+    "husL-gata": {
+     "calls": 444,
+     "triangles": 940752,
+     "textures": 116,
+     "programs": 132,
+     "eye": [
+      -6,
+      1.62,
+      -16
+     ]
+    },
+    "husA-nord": {
+     "calls": 211,
+     "triangles": 591091,
+     "textures": 127,
+     "programs": 142,
+     "eye": [
+      2,
+      1.62,
+      23
+     ]
+    },
+    "husB-nord": {
+     "calls": 187,
+     "triangles": 586973,
+     "textures": 134,
+     "programs": 143,
+     "eye": [
+      -32,
+      1.62,
+      27
+     ]
+    },
+    "husC-nord": {
+     "calls": 149,
+     "triangles": 648817,
+     "textures": 136,
+     "programs": 150,
+     "eye": [
+      -61,
+      1.62,
+      4
+     ]
+    }
+   }
+  }
+ },
+ "errors": [],
+ "external": [
+  "https://lunden-l1007.olw.workers.dev/beer-shelf",
+  "https://lunden-l1007.olw.workers.dev/beer-shelf"
+ ]
+}

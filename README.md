@@ -1,5 +1,7 @@
 # Kv. Lunden L1007 i 3D
 
+Skuggiga norrsidor av husväggar, socklar och murar har diskret grön mossa och alger nertill och i fogarna, aldrig på soliga sydsidor och med samma medelton. [Före/efter nära och på avstånd](docs/verification/2122/README.md).
+
 På hösten ligger nedfallna löv i höstens färger glest på gräs och gångar, tätare under träden och längs kantstenen, och fler ju senare på hösten det blir; vintern och våren är marken fri från löv. [Före/efter gård, park och gata](docs/verification/2105/README.md).
 
 Gatorna ser använda ut: svagt mörkare och blankare hjulspår, enstaka smala sprickor (några tätade med svart bitumen), sprickor längs vägkanten, mörkare lagningar och övergångsställets vita fält slitna där hjulen går. [Före/efter gata, korsning och regn](docs/verification/2103/README.md).

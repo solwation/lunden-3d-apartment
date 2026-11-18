@@ -1542,6 +1542,22 @@ No new draw, texture, light or pass; cost: 8 bytes per asphalt/zebra vertex and 
 Test: `node --test tools/streetweartest.mjs`; browser: `tools/streetwear2103browser.cjs`
 ([before/after](../verification/2103/README.md)).
 
+## Moss on shaded north faces (#2122)
+
+`src/shademoss.js` chains a fragment patch (key `|shademoss2122-<joints>`) onto the wall batches: Hus L's brick
+(exterior.js; its render is all ≥ 6 m over the street, so unpatched), the Å-husen A/B/C brick façades (grid and plain), their plinths and white render, the brick retaining walls and
+the park stairs (surroundings.js). Where: the face's world normal from screen derivatives (north = −z; `north` smoothstep of
+−normal.z, so east/west/south faces and tops/soffits get none), the height above the ground in front of the face (one baked
+float per vertex, `mossHeight`, ground from `groundY` 0.3 m out along the normal, stored + `offset` so a mesh without it reads
+as underground) and a two-octave world noise: a patchy, ragged band up to ~`band` m, and a thinner green in mortar joints up
+to `joints.height` m (low bump height on bump-mapped brick/render, a light map texel = mortar on the Å-husen/retaining-wall
+canvases). The colour moves towards the moss hue at the surface's own luminance × `dark`, so a façade's mean tone stays
+within 2 % (shademosstest); roughness rises slightly. All values `SHADE_MOSS` *guesses*. Phones (lowMemory) skip it
+entirely: no attribute, no program change. No new draw, texture, light or pass; cost: 4 bytes per patched vertex and a few
+hashes per low north-facing fragment (others exit after a height test). Not covered: low roofs and bench foundations (no
+shade information; only the listed wall batches), horizontal paving edges. Test: `node --test tools/shademosstest.mjs`;
+browser: `tools/shademoss2122browser.cjs` ([before/after](../verification/2122/README.md)).
+
 ## Painted screen-wall surface (#2075)
 
 `screenwall.js` retains #1786's `SCREEN_WALL` palette, board spacing, frame bands and seeded board tints. Its fine colour strokes now follow gently curved, occasionally forked fibres within each existing board. `screenwallsurface.js` supplies one shared 256×512 linear RGBA texture: red holds only shallow, smooth-edged joint height; green holds matte roughness (about .85 on boards/frame and .96 in joints). `SCREEN_WALL_SURFACE` parameters are visual assumptions, not surveyed construction detail. Relief is shading only (maximum joint difference about .595 mm), never displacement.

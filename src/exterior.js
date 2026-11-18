@@ -22,6 +22,7 @@ import { lowMemory } from './lowmemory.js';
 import { brickSurfaceTexture } from './bricksurface.js';
 import { roofMap, roofColor, roofUV } from './roofsurface.js';
 import { renderMaterial, renderUV, dirtPatch } from './rendersurface.js';
+import { shadeMoss } from './shademoss.js';
 
 // Brick: 250 × 65 mm + 10 mm joints → 0.26 m per brick, 0.075 m per course.
 const TILE_W = 1.04, TILE_H = 0.6; // one texture tile = 4 bricks × 8 courses
@@ -689,8 +690,8 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     group.add(mesh);
     return mesh;
   };
-  add(bricks, brickMat());
-  add(renders.map(renderUV), renderMaterial({ color: H.render, roughness: 0.95 })); // #2095: fine render grain + faint dirt
+  shadeMoss(add(bricks, brickMat()), groundY, 'bump'); // #2122: moss low on the shaded north faces, greener in the joints
+  add(renders.map(renderUV), renderMaterial({ color: H.render, roughness: 0.95 })); // #2095: fine render grain + faint dirt (#2122: no moss: all ≥ 6 m over the street)
   add(pilasters, new THREE.MeshStandardMaterial({ color: COLORS.brick, roughness: 0.95 }));
   add(solids, exteriorBackingMaterial(wall));
   add(frames, frame).name='neighborFrames';

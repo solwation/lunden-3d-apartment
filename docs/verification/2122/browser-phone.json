@@ -1,0 +1,27 @@
+{
+ "base": "7dced3769fbcb4a31b7caa0cc1666eaed6f3061e",
+ "phases": {
+  "after": {
+   "meshes": 5504,
+   "found": [],
+   "loadMs": 40927,
+   "views": {
+    "husB-nord": {
+     "calls": 148,
+     "triangles": 578198,
+     "textures": 91,
+     "programs": 100,
+     "eye": [
+      -32,
+      1.62,
+      27
+     ]
+    }
+   }
+  }
+ },
+ "errors": [],
+ "external": [
+  "https://lunden-l1007.olw.workers.dev/beer-shelf"
+ ]
+}
