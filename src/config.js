@@ -545,7 +545,10 @@ export const SITE = {
       flag: { at: [76.5, 62], pole: 6.4, w: 0.9, h: 2.8, yaw: 0 }, // a banner hanging from the top of the pole
     },
     trafficLight: null, warnings: [], // #1843: this local work is complete; bridgehead bollards/other signs remain.
-    cobbles: { x0: 17.2, x1: 19.5, z0: -17.5, z1: -12.5 }, // inside the corner, by the end of our car park
+    // #2077: a short inset in the existing inner pavement, following its bend rather than crossing into the grass.
+    // Anchors select existing road samples near the old corner; extent and 0.8 m texture tile are photo-read guesses (#128).
+    // `lift` is 4 mm over the existing 8 mm pavement surface, shading separation only; no walking-support change.
+    cobbles: { road: 'Sankt Lars väg', side: 1, from: [17.2, -17.5], to: [19.5, -12.5], lift: 0.012, tile: 0.8 },
     leaves: { n: 1400, months: [9, 10, 11], areas: [[-60, 12, -24, -18], [-30, 10, -32.1, -30.05], [19, 21, -12, 12]] },
     // signs (#129/#1843): ordinary stops on both existing pole sites; the temporary red cover on ours has been removed.
     // a no-parking sign at the car park, HepCat's A-board on its pavement. [x, z, facing yaw°]

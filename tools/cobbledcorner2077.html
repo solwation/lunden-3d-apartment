@@ -1,0 +1,26 @@
+<!doctype html><meta charset="utf-8"><title>Cobbled corner production #2077</title><link rel="icon" href="data:,">
+<style>body{margin:0;background:#cbd8df;font:16px sans-serif}canvas{display:block}#label{position:absolute;top:12px;left:15px;padding:8px;background:#ffffffdd;color:#222}</style>
+<div id="label">Building the production road batch…</div>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { surroundingsParts, groundY, renderedTerrainY } from '../src/surroundings.js';
+import { COLORS, SITE } from '../src/config.js';
+import { applySeason } from '../src/seasons.js';
+import { buildStreet } from '../src/street.js';
+let road=null;
+// Observe the real generator's road addition and stop at its existing 0.15 yield, before bridges/backdrops/trees.
+const nativeAdd=THREE.Object3D.prototype.add;
+THREE.Object3D.prototype.add=function(...objects){const result=nativeAdd.apply(this,objects);for(const o of objects)if(o.isMesh&&(o.material.userData.asphaltSurface||(o.material.color?.getHex()===COLORS.asphalt&&o.material.roughness===.7)))road=o;return result;};
+try{const parts=surroundingsParts({grass:new THREE.MeshStandardMaterial({color:0x789664})});for(let i=0;i<10;i++){const r=parts.next();if(r.done||r.value>=.15){parts.return();break;}}}finally{THREE.Object3D.prototype.add=nativeAdd;}
+if(!road)throw Error('Production local road batch was not built');
+const root=road.parent,roadGround=(x,z)=>Math.max(groundY(x,z),renderedTerrainY(x,z));roadGround.grid=()=>renderedTerrainY.grid();const street=buildStreet(groundY,roadGround).object;root.add(street);
+let cobble;street.traverse(o=>{if(o.material?.map?.image?.width===128&&o.material?.roughness===.8){if(cobble)throw Error('Ambiguous cobble mesh');cobble=o}});if(!cobble)throw Error('Missing production cobble mesh');
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(1100,720);renderer.setPixelRatio(1);renderer.toneMapping=THREE.NeutralToneMapping;document.body.append(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xcbd8df);scene.add(root);scene.add(new THREE.HemisphereLight(0xf0f6ff,0x80746c,1.5));const sun=new THREE.DirectionalLight(0xfff1dc,2.4);sun.position.set(6,5,-5);scene.add(sun);
+const camera=new THREE.PerspectiveCamera(58,1100/720,.02,600);
+const views={normal:[[21.2,1.65,-9.5],[18.8,.012,-16]],near:[[20.3,.75,-12.6],[19.5,.012,-15.2]],northJoin:[[18.9,1.65,-20.5],[19.4,.012,-17.3]],southJoin:[[20.2,1.65,-8.2],[19.8,.012,-13.4]]};
+const digest=async array=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new Uint8Array(array.buffer,array.byteOffset,array.byteLength)))).map(n=>n.toString(16).padStart(2,'0')).join('');
+window.__stats=async()=>{const hashes=[],cost={meshes:0,triangles:0,bytes:0},surface=[];root.traverse(o=>{if(!o.isMesh)return;const g=o.geometry;if(o!==cobble){const arrays=Object.fromEntries(Object.entries(g.attributes).map(([k,v])=>[k,[...v.array]]));if(g.index)arrays.index=[...g.index.array];if(o.instanceMatrix)arrays.instanceMatrix=[...o.instanceMatrix.array];hashes.push({name:o.name,arrays});}cost.meshes++;cost.triangles+=(g.index?.count??g.attributes.position.count)/3*(o.isInstancedMesh?o.count:1);cost.bytes+=Object.values(g.attributes).reduce((n,a)=>n+a.array.byteLength,0)+(g.index?.array.byteLength??0);});const p=cobble.geometry.attributes.position;for(let i=0;i<p.count;i++)surface.push([p.getX(i),p.getY(i),p.getZ(i)]);let heightError=0;for(const[x,y,z]of surface)heightError=Math.max(heightError,Math.abs(y-roadGround(x,z)-.012));return{unchanged:hashes,cost,surface,cobble:{triangles:(cobble.geometry.index?.count??p.count)/3,attributes:Object.fromEntries(Object.entries(cobble.geometry.attributes).map(([k,v])=>[k,v.array.byteLength])),repeat:cobble.material.map.repeat.toArray(),size:[cobble.material.map.image.width,cobble.material.map.image.height],heightError},ground:Array.from({length:31},(_,i)=>{const z=-20+i*.4;return[18.5,z,groundY(18.5,z),groundY(20,z)]})};};
+window.__show=name=>{applySeason(6);const[pos,aim]=views[name];camera.position.fromArray(pos);camera.lookAt(new THREE.Vector3(...aim));document.querySelector('#label').textContent=`Cobbled corner — ${name}`;renderer.info.reset();renderer.render(scene,camera);return{camera:pos,target:aim,calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,image:renderer.domElement.toDataURL('image/png')};};window.__ready=true;
+</script>

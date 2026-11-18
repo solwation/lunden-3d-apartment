@@ -4,7 +4,7 @@ import { SITE, PATH_LIGHTS, ROAD_LIGHTS } from './config.js';
 import { pathLampSpots } from './pathlamps.js';
 import { roadLampSpots } from './roadlamps.js';
 import { registerSeasonal } from './seasons.js';
-import { samples, onRoad, along, filletOutline } from './roads.js';
+import { samples, onRoad, along, filletOutline, nearestS, pathStrip, vehicleTrim } from './roads.js';
 import { glowMaterial, poolGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { schoolWallPlan } from './schoolwall.js';
 import { cabinetBodyParts } from './elcabinetbody.js';
@@ -64,8 +64,22 @@ function cobbleTexture() {
     g.fillStyle = `hsl(30, ${6 + r() * 8}%, ${42 + r() * 18}%)`;
     g.beginPath(); g.ellipse(x + 8, y + 8, 6.5, 6, r(), 0, Math.PI * 2); g.fill();
   }
-  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.repeat.set(4, 3);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.repeat.setScalar(1 / S.cobbles.tile);
   return t;
+}
+
+/** #2077: the cobbled inset occupies the existing pavement strip, using the very same sampled edges/heights.
+ * The anchors choose a short section; no new road, kerb or walking surface is created. UVs keep stone scale in metres. */
+export function cobbledCornerGeometry(groundY, cb = S.cobbles) {
+  const road = SITE.roads.find(r => r.name === cb.road), width = road.walks.find(w => w.side === cb.side).w;
+  const a = nearestS(road, ...cb.from), b = nearestS(road, ...cb.to);
+  const selected = samples(road).filter(p => p.s >= Math.min(a, b) && p.s <= Math.max(a, b));
+  const strip = { ...road, _samples: selected }, lo = w => cb.side > 0 ? w / 2 : -w / 2 - width,
+    hi = w => cb.side > 0 ? w / 2 + width : -w / 2;
+  const g = pathStrip(strip, lo, hi, cb.lift, groundY, false, undefined, vehicleTrim());
+  const p = g.attributes.position, uv = g.attributes.uv;
+  for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i), p.getZ(i));
+  return g;
 }
 
 /** One street lamp along local −x… pointing its arm towards +z (rotated per spot): pole, arm, head. */
@@ -189,7 +203,10 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
   group.add(merged(bars, new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.7 }), false));
   // cobbled corner
   const cb = S.cobbles;
-  const cob = new THREE.Mesh(flatRect(cb.x0, cb.x1, cb.z0, cb.z1, 0.012), new THREE.MeshStandardMaterial({ map: cobbleTexture(), roughness: 0.8 }));
+  const cobbleGround = (x, z) => Math.max(groundY(x, z), pathGround(x, z));
+  cobbleGround.grid = pathGround.grid;
+  const cob = new THREE.Mesh(cobbledCornerGeometry(cobbleGround, cb), new THREE.MeshStandardMaterial({ map: cobbleTexture(), roughness: 0.8 }));
+  cob.name = 'street-cobbled-corner';
   cob.receiveShadow = true;
   group.add(cob);
   // street lamps (instanced): along our pavement facing the road, and along the east leg

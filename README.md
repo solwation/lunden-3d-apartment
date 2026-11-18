@@ -623,3 +623,5 @@ Roof picnic (#1858): two long-sitting places on the existing Karpvägen 6–8 ro
 Held-object placement (#1862) uses actual dry ground and existing walkable roofs throughout WALK, including the distant valley and Karpvägen8; home tops/stacking and special-item rules remain. [Checks and result views](docs/verification/1862/README.md).
 
 Painted patio and roof-terrace screens retain their board layout and cream frame, with quiet curved grain and shallow matte joints ([#2075 verification](docs/verification/2075/README.md)).
+
+Stenläggningen vid Sankt Lars vägs hörn följer trottoarens böjda kanter och ansluter till gångbanan ([verifiering #2077](docs/verification/2077/README.md)); utbredning och stenstorlek är visuella antaganden.
