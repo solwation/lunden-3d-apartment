@@ -5096,6 +5096,13 @@ export const PAVING_SURFACE = {
   faceRoughness: 0.93, groutRoughness: 0.99, snowRoughness: 0.95,
 };
 
+// #2083: visual solar-cell/glass assumptions only; no verified manufacturer/module specification.
+export const SOLAR_SURFACE = {
+  colourSize:256, roughnessSize:128, seed:2083, moduleWidth:1.68, columns:10, rows:6,
+  gap:.006, busbar:.003, busbars:3, frame:.015,
+  topV:[.1875,.9375], flatV:.0625, baseRoughness:.375, sideRoughness:.3,
+};
+
 export const COLORS = {
   sky: 0xcfe0ec,   // horizon (fog); the sky above is a gradient, see surroundings.js
   wall: 0xf1f1ee,   // Väggfärg NCS S 0500-N (material choice)

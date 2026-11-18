@@ -1466,3 +1466,26 @@ One extra existing skinned-body draw while resting, no second avatar, new geomet
 attribute, image map, light, pass, storage or wire field. First use can upload the
 existing bone texture if warm-up/mirrors have not done so. The skeleton updates while
 the body is drawn. [Scoped native views, costs and limits](../verification/2080/README.md).
+
+
+## Solar-cell and glass surface on Hus L (#2083)
+
+`solarsurface.js` adds two small cached atlases to the existing one panel material:256²sRGB
+colour multipliers and128²linear roughness. `SOLAR_SURFACE` records artistic guesses for a10×6
+cell grid per nominal1.68m repeat,6mm gaps, thin3mm buses and quiet glass roughness around0.33.
+Whole repeats fit each authored long strip, so these are approximate visual dimensions, not a
+verified panel model. The original dark blue/metalness remain; no new environment reflection.
+
+`solarPanelUV` changes only existing box UVs before hinge/tilt. Original+Yfaces map to the cell
+region; every side/bottom face samples a reserved flat swatch with original colour multiplier1
+and Float32 roughness0.3. The top-frame mask uses that same flat finish. Position/normal/index,
+12triangles per box,12boxes/one merge batch, shadows, placement10°tilt/5cmthickness/4cmlift and
+roof-walk/collision metadata remain exact. There is no bump/displacement/transparent layer,
+extra geometry/draw/light/pass or per-frame upload. Existing UV allocation stays3456bytes.
+Two maps cost327680CPU/basebytes /436904nominal GPUbytes including mipmaps, plus driver/program
+storage and ordinary map-sampling fragment work.
+
+A/B/C roofSpec consumers have no equivalent solar panel batch. Nordic Wellness's low blue boxes
+share its glass batch; the eight villa solar quads share roof vertex colours. Their distinct
+geometry/materials remain untouched. Neutral public applicability is tracked separately in#304.
+[Own native checks, actual buildExterior views, exact source hashes and limits](../verification/2083/README.md).

@@ -1,3 +1,4 @@
+import {solarPanelUV,solarPanelMaterial} from './solarsurface.js';
 import { neighborGlass } from './neighborglass.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -126,7 +127,7 @@ function boxGeo(x0, x1, y0, y1, z0, z1) {
  * HUS_L.solar.tilt degrees. `y` = the height of the low edge's underside; one box per panel, merged with the rest. */
 export function tiltedPanelGeo(xa, xb, y, za, zb) {
   const t = H.solar.thickness, a = (H.solar.tilt * Math.PI) / 180;
-  const geo = new THREE.BoxGeometry(xb - xa, t, zb - za);
+  const geo = solarPanelUV(new THREE.BoxGeometry(xb - xa, t, zb - za), xb - xa, zb - za);
   geo.translate(0, t / 2, -(zb - za) / 2); // hinge = the south edge's underside at the origin
   geo.rotateX(a); // rotation about +x by +a lifts -z (the north side) and tips the face normal to +z (south)
   geo.translate((xa + xb) / 2, y, zb);
@@ -751,7 +752,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const roofMat = new THREE.MeshStandardMaterial({ color: 0x4b5157, roughness: 0.9 });
   registerSnow(roofMat, SEASON.snow.roof);
   add(roofs, roofMat);
-  add(panels, new THREE.MeshStandardMaterial({ color: COLORS.solar, roughness: 0.3, metalness: 0.5 }), false);
+  add(panels, solarPanelMaterial(), false);
   add(patios, mats.patio, false);
   // Whole source hedges retain their geometry/shadows; tighter native frustums avoid drawing distant runs.
   for (const parts of lowMemory ? [hedges] : hedges.map((g) => [g])) add(parts, mats.hedge);
