@@ -10,10 +10,10 @@ spans under ~2 px.
 
 | View | `at` (x, z, yaw, pitch) | After | Before |
 |---|---|---|---|
-| Entrance boxwood, near | -20, -4.9, 180, -28 | [summer](box-near-sommar.jpg), [winter](box-near-vinter.jpg) | [summer](before/box-near-sommar.jpg), [winter](before/box-near-vinter.jpg) |
-| Entrance boxwood, walk view | -13, -6.8, 140, -6 | [summer](box-walk-sommar.jpg), [winter](box-walk-vinter.jpg) | [summer](before/box-walk-sommar.jpg), [winter](before/box-walk-vinter.jpg) |
-| Patio hedge, near | 4.6, 15.3, 180, -22 | [summer](patio-near-sommar.jpg), [winter](patio-near-vinter.jpg) | [summer](before/patio-near-sommar.jpg), [winter](before/patio-near-vinter.jpg) |
-| Patio hedges, walk view | 0.4, 13.2, 150, -6 | [summer](patio-walk-sommar.jpg), [winter](patio-walk-vinter.jpg) | [summer](before/patio-walk-sommar.jpg), [winter](before/patio-walk-vinter.jpg) |
+| Entrance boxwood, near | -20, -4.9, 180, -28 | [summer](box-near-sommar.jpg), [winter](box-near-vinter.jpg) | [summer](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/bac7e53979530e50f95513fb726ef80ead13a4d3/docs/verification/2094/before/box-near-sommar.jpg), [winter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/bac7e53979530e50f95513fb726ef80ead13a4d3/docs/verification/2094/before/box-near-vinter.jpg) |
+| Entrance boxwood, walk view | -13, -6.8, 140, -6 | [summer](box-walk-sommar.jpg), [winter](box-walk-vinter.jpg) | [summer](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/bac7e53979530e50f95513fb726ef80ead13a4d3/docs/verification/2094/before/box-walk-sommar.jpg), [winter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/bac7e53979530e50f95513fb726ef80ead13a4d3/docs/verification/2094/before/box-walk-vinter.jpg) |
+| Patio hedge, near | 4.6, 15.3, 180, -22 | [summer](patio-near-sommar.jpg), [winter](patio-near-vinter.jpg) | [summer](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/bac7e53979530e50f95513fb726ef80ead13a4d3/docs/verification/2094/before/patio-near-sommar.jpg), [winter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/bac7e53979530e50f95513fb726ef80ead13a4d3/docs/verification/2094/before/patio-near-vinter.jpg) |
+| Patio hedges, walk view | 0.4, 13.2, 150, -6 | [summer](patio-walk-sommar.jpg), [winter](patio-walk-vinter.jpg) | [summer](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/bac7e53979530e50f95513fb726ef80ead13a4d3/docs/verification/2094/before/patio-walk-sommar.jpg), [winter](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/bac7e53979530e50f95513fb726ef80ead13a4d3/docs/verification/2094/before/patio-walk-vinter.jpg) |
 
 Detail crops, before above / after below: [boxwood](box-near-detalj-fore-efter.jpg), [patio](patio-near-detalj-fore-efter.jpg).
 
@@ -39,3 +39,5 @@ Detail crops, before above / after below: [boxwood](box-near-detalj-fore-efter.j
 
 Clumps are colour and normal only (no silhouette change); in winter the patio hedges lose their map and stay plain snow by design.
 Cost: one 3 × 3 Worley loop per hedge fragment (no texture fetch), nothing per frame on the CPU, no new draws/textures/lights.
+
+Publicering: Pages/Worker success på `bac7e53`; före-bilder borttagna vid stängning och visas från den commiten.
