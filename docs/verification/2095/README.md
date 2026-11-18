@@ -17,11 +17,11 @@ och ett svagt stänkband 0,3 m över loftgångens, terrassens och loggiornas gol
 
 | Vy | Före | Efter |
 |---|---|---|
-| Hus L, loftgången nära (norrfasad i skugga): korn, strimma under blecket, stänkband | ![](before/husL-loftgang.jpg) | ![](husL-loftgang.jpg) |
-| Hus L, takterrassen i sol: indragen gårdsvåning | ![](before/husL-terrass.jpg) | ![](husL-terrass.jpg) |
-| Hus L från gatan (gatuavstånd) | ![](before/husL-gata.jpg) | ![](husL-gata.jpg) |
-| Hus A, nordvästra loggiorna från gården | ![](before/husA-loggia.jpg) | ![](husA-loggia.jpg) |
-| Hus C på avstånd | ![](before/husC-gata.jpg) | ![](husC-gata.jpg) |
+| Hus L, loftgången nära (norrfasad i skugga): korn, strimma under blecket, stänkband | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8fed7eca0c5f451040d8057d3aa921967daa948a/docs/verification/2095/before/husL-loftgang.jpg) | ![](husL-loftgang.jpg) |
+| Hus L, takterrassen i sol: indragen gårdsvåning | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8fed7eca0c5f451040d8057d3aa921967daa948a/docs/verification/2095/before/husL-terrass.jpg) | ![](husL-terrass.jpg) |
+| Hus L från gatan (gatuavstånd) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8fed7eca0c5f451040d8057d3aa921967daa948a/docs/verification/2095/before/husL-gata.jpg) | ![](husL-gata.jpg) |
+| Hus A, nordvästra loggiorna från gården | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8fed7eca0c5f451040d8057d3aa921967daa948a/docs/verification/2095/before/husA-loggia.jpg) | ![](husA-loggia.jpg) |
+| Hus C på avstånd | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8fed7eca0c5f451040d8057d3aa921967daa948a/docs/verification/2095/before/husC-gata.jpg) | ![](husC-gata.jpg) |
 
 Medelton i bild (RGB-medel över putsytan, före → efter): Hus L gata 181,8/183,4/182,3 → 181,5/183,5/182,0;
 terrass 222,3/220,1/211,1 → 222,2/220,2/210,9; Hus A loggia 169,8/168,8/166,9 → 169,9/168,9/167,0 (alla < 0,2 %).
@@ -48,3 +48,5 @@ Meshens areaviktade vertexfärg (smutsen): Hus L 0,996, Å-husen 0,998.
 - Strimmorna är avsiktligt svaga; i skugga på norrsidan syns de först på nära håll.
 - Karpvägens ljusa toppvåning, skolans/campus ljusa puts och södra bakgrundens puts ingår inte (inte A/B/C/L).
 - Kostnad: +18,8k trianglar totalt (remsorna), +2 små texturer (2 × 64 KiB), ingen per-frame-kod, inga nya draws.
+
+Publicering: Pages/Worker success på `8fed7ec`; före-bilder borttagna vid stängning och visas från den commiten.
