@@ -18,3 +18,5 @@ hedges, render, railings, parked cars and lamp washes (sunset), so the patched f
 Node: `tools/aerialhazetest.mjs` (5 tests: chunk patch and shared uniforms, near field 0 before fog near for every weather,
 clear lighter than overcast, night = stock, bluer mid haze by day, warm haze = the sky's horizon glow at full fog),
 `tools/lodtest.mjs` and `tools/grassdetailtest.mjs` pass. CPU: `hazeState` + `applyHaze` ~2 µs per frame.
+
+Publicering: Pages/Worker success på `c54c3b6`; före-bilder borttagna vid stängning och visas från den commiten.
