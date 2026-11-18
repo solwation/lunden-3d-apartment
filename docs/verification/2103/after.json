@@ -1,0 +1,158 @@
+{
+ "phase": "after",
+ "rev": "HEAD~1",
+ "shots": [
+  {
+   "name": "street",
+   "at": "-6,-28.6,90,-11",
+   "file": "after-street.png",
+   "calls": 162,
+   "triangles": 699441,
+   "textures": 49,
+   "geometries": 174,
+   "programs": 79,
+   "wearPrograms": 1,
+   "uGroundWet": [
+    0,
+    0,
+    0
+   ],
+   "worn": [
+    "site-asphalt",
+    "street-zebra"
+   ],
+   "asphalt": {
+    "vertices": 14223,
+    "attributes": [
+     "position",
+     "uv",
+     "normal",
+     "roadFrame"
+    ]
+   },
+   "quality": 0
+  },
+  {
+   "name": "intersection",
+   "at": "4,-26.2,-75,-13",
+   "file": "after-intersection.png",
+   "calls": 66,
+   "triangles": 451344,
+   "textures": 27,
+   "geometries": 106,
+   "programs": 53,
+   "wearPrograms": 2,
+   "uGroundWet": [
+    0,
+    0,
+    0
+   ],
+   "worn": [
+    "site-asphalt",
+    "street-zebra"
+   ],
+   "asphalt": {
+    "vertices": 14223,
+    "attributes": [
+     "position",
+     "uv",
+     "normal",
+     "roadFrame"
+    ]
+   },
+   "quality": 0
+  },
+  {
+   "name": "zebra",
+   "at": "11,-22.3,0,-40",
+   "file": "after-zebra.png",
+   "calls": 38,
+   "triangles": 295802,
+   "textures": 21,
+   "geometries": 61,
+   "programs": 41,
+   "wearPrograms": 2,
+   "uGroundWet": [
+    0,
+    0,
+    0
+   ],
+   "worn": [
+    "site-asphalt",
+    "street-zebra"
+   ],
+   "asphalt": {
+    "vertices": 14223,
+    "attributes": [
+     "position",
+     "uv",
+     "normal",
+     "roadFrame"
+    ]
+   },
+   "quality": 0
+  },
+  {
+   "name": "near",
+   "at": "-17,-27.2,95,-38",
+   "file": "after-near.png",
+   "calls": 110,
+   "triangles": 605679,
+   "textures": 37,
+   "geometries": 135,
+   "programs": 67,
+   "wearPrograms": 1,
+   "uGroundWet": [
+    0,
+    0,
+    0
+   ],
+   "worn": [
+    "site-asphalt",
+    "street-zebra"
+   ],
+   "asphalt": {
+    "vertices": 14223,
+    "attributes": [
+     "position",
+     "uv",
+     "normal",
+     "roadFrame"
+    ]
+   },
+   "quality": 0
+  },
+  {
+   "name": "rain-street",
+   "at": "-6,-28.6,90,-11",
+   "weather": "rain",
+   "file": "after-rain-street.png",
+   "calls": 163,
+   "triangles": 699441,
+   "textures": 49,
+   "geometries": 175,
+   "programs": 80,
+   "wearPrograms": 1,
+   "uGroundWet": [
+    1,
+    0,
+    0
+   ],
+   "worn": [
+    "site-asphalt",
+    "street-zebra"
+   ],
+   "asphalt": {
+    "vertices": 14223,
+    "attributes": [
+     "position",
+     "uv",
+     "normal",
+     "roadFrame"
+    ]
+   },
+   "quality": 0
+  }
+ ],
+ "errors": []
+}

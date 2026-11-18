@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE, PATH_LIGHTS, ROAD_LIGHTS } from './config.js';
+import { SITE, PATH_LIGHTS, ROAD_LIGHTS, STREET_WEAR, ASPHALT_SURFACE } from './config.js';
 import { pathLampSpots } from './pathlamps.js';
 import { roadLampSpots } from './roadlamps.js';
 import { registerSeasonal } from './seasons.js';
 import { wetGround } from './wetground.js';
+import { streetWear, addRoadFrame } from './streetwear.js';
+import { asphaltTextures, asphaltUV } from './asphaltsurface.js';
 import { samples, onRoad, along, filletOutline, nearestS, pathStrip, vehicleTrim } from './roads.js';
 import { glowMaterial, poolGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { buildLampHalos, fadeHalos, poolCore } from './lamphalo.js';
@@ -20,6 +22,10 @@ const S = SITE.street;
 const nonIndexed = (g) => (g.index ? g.toNonIndexed() : g);
 const keepPN = (g) => { g = nonIndexed(g); for (const k of Object.keys(g.attributes)) if (k !== 'position' && k !== 'normal') g.deleteAttribute(k); return g; };
 const merged = (geos, mat, shadow = true) => { const m = new THREE.Mesh(mergeGeometries(geos.map(keepPN)), mat); m.castShadow = shadow; m.receiveShadow = true; return m; };
+/** #2103: the repair patches' asphalt: the shared aggregate maps (world-metre UVs), a darker tone, a little smoother. */
+const patchMaterial = () => { const t = asphaltTextures(), P = STREET_WEAR.patch, c = new THREE.Color().setScalar(P.tone); // linear: × the aggregate map
+  const m = new THREE.MeshStandardMaterial({ color: c, map: t.color, bumpMap: t.surface, bumpScale: ASPHALT_SURFACE.depth, roughnessMap: t.surface, roughness: P.roughness });
+  m.name = 'street-asphalt-patch'; return m; };
 const flatRect = (x0, x1, z0, z1, y) => new THREE.PlaneGeometry(x1 - x0, z1 - z0).rotateX(-Math.PI / 2).translate((x0 + x1) / 2, y, (z0 + z1) / 2);
 
 /** #1554: a quad whose four corners follow the ground (a crossing bar on the sloping bridge approach), `lift` m over it. */
@@ -192,9 +198,11 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
   const curbs = curbGeometries(groundY);
   const island = bridgeheadIsland(pathGround); // #1554: the road's own surface follows the rendered terrain (pathGround), not the analytic groundY
   group.add(merged([...curbs, ...shelterPaving(groundY), island.kerb], grey, false)); // #1534: the shelter's slabs, pillar and stones share the curbs' grey
-  // patched asphalt: darker, smoother rectangles a hair above the road
-  group.add(merged(S.patches.map(([x, z, w, d]) => flatRect(x - w / 2, x + w / 2, z - d / 2, z + d / 2, 0.016)),
-    wetGround(new THREE.MeshStandardMaterial({ color: 0x45484b, roughness: 0.5 }), 'asphalt'), false));
+  // patched asphalt: darker, smoother rectangles a hair above the road (#2103: with the asphalt's own aggregate, a few more)
+  const patches = merged([...S.patches, ...STREET_WEAR.patches].map(([x, z, w, d]) => flatRect(x - w / 2, x + w / 2, z - d / 2, z + d / 2, 0.016)),
+    wetGround(patchMaterial(), 'asphalt'), false);
+  asphaltUV(patches.geometry); patches.name = 'street-asphalt-patches';
+  group.add(patches);
   // zebra crossing: 50 cm white bars along the traffic, across the road
   const cr = S.crossing, bars = [];
   for (let z = cr.z0 + 0.25; z + 0.5 <= cr.z1; z += 1.0) bars.push(flatRect(cr.x0, cr.x1, z, z + 0.5, 0.018));
@@ -202,7 +210,9 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
     const I = S.bridgehead.island;
     for (let x = c.x0 + 0.25; x + 0.5 <= c.x1 + 1e-9; x += 1.0) if (x + 0.5 <= I.x0 || x >= I.x1) bars.push(groundRect(x, x + 0.5, c.z0, c.z1, 0.045, pathGround));
   }
-  group.add(merged(bars, wetGround(new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.7 }), 'paint'), false));
+  const zebra = merged(bars, wetGround(streetWear(new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.7 }), 'paint'), 'paint'), false);
+  addRoadFrame(zebra.geometry); zebra.name = 'street-zebra'; // #2103: the bars flake where the wheels run
+  group.add(zebra);
   // cobbled corner
   const cb = S.cobbles;
   const cobbleGround = (x, z) => Math.max(groundY(x, z), pathGround(x, z));

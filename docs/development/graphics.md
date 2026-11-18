@@ -1491,6 +1491,23 @@ cost 2,097,152 base-level bytes, 2,796,200 bytes with every mip level. Native bu
 sampling and two fragment sine terms add work; no timing/FPS improvement is claimed.
 [Inspected paired images, exact counts, source provenance and limits](../verification/2072/README.md).
 
+## Street wear (#2103)
+
+`src/streetwear.js` chains a fragment patch onto the local asphalt (after #2072's aggregate, before #2099's wet patch, key
+`|wear2103-asphalt`) and the zebra paint (`|wear2103-paint`). Lanes come from one extra per-vertex attribute `roadFrame`
+(signed metres across the centre line, half width), computed once at build: each `SITE.roads` path strip uses only its own
+road's samples (a junction's neighbouring road never bends its lanes); car park and fillets get (0, 0) = no tracks; the zebra
+bars use the nearest local road. The vertex patch only passes varyings (`vRoadFrame`, world `vWearXZ`), registered as a
+fragment compile: positions, bounds and shadows unchanged. Asphalt (inside `USE_MAP`, so the snow look skips it): two
+slightly darker, polished wheel tracks per lane and a faint lane-centre strip, varying slowly along the road; per 8 m world
+cell a wavy crack with probability 0.42, 40 % of them sealed with a wider glossy black band; an intermittent wavy crack
+0.32 m inside the road edge. Line coverage is anti-aliased with `fwidth` and fades below a pixel. Paint: bars flake to the
+asphalt colour from a three-octave value noise, mostly where a wheel track runs. The repair patches (`SITE.street.patches`
+plus `STREET_WEAR.patches`) now use the shared aggregate maps at a darker tone. All values are `STREET_WEAR` *guesses*.
+No new draw, texture, light or pass; cost: 8 bytes per asphalt/zebra vertex and a few hashes/noise per road fragment.
+Test: `node --test tools/streetweartest.mjs`; browser: `tools/streetwear2103browser.cjs`
+([before/after](../verification/2103/README.md)).
+
 ## Painted screen-wall surface (#2075)
 
 `screenwall.js` retains #1786's `SCREEN_WALL` palette, board spacing, frame bands and seeded board tints. Its fine colour strokes now follow gently curved, occasionally forked fibres within each existing board. `screenwallsurface.js` supplies one shared 256×512 linear RGBA texture: red holds only shallow, smooth-edged joint height; green holds matte roughness (about .85 on boards/frame and .96 in joints). `SCREEN_WALL_SURFACE` parameters are visual assumptions, not surveyed construction detail. Relief is shading only (maximum joint difference about .595 mm), never displacement.

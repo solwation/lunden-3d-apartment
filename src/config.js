@@ -5136,6 +5136,25 @@ export const ASPHALT_SURFACE = {
   broadStrength: 0.035, broadScale: [0.27, 0.19, 0.11, -0.31],
 };
 
+// #2103: street wear on the local roads (src/streetwear.js), all *guess* (no survey of the real cracks, tracks or markings).
+// `tracks`: two slightly darker, a touch smoother wheel tracks per lane (`gauge` m either side of the lane centre, Gaussian
+// `sigma` m wide, `dark` share, `polish` roughness share); two lanes from `twoLanes` m road width, lane centres at a quarter
+// width; `oil` = a faint darker strip on the lane centre; `vary` = slow tone change along the road (world noise `scale` m).
+// `cracks`: per `cell` m world square a crack with probability `share` (length `length` m, `width` m, `dark`), wavy;
+// `sealed` share of them filled with a wider glossy black bitumen band (`sealWidth`, `sealDark`, `sealRough`); `edge`:
+// an intermittent wavy longitudinal crack `inset` m inside the road edge on `share` of its length. `paint`: zebra bars flake
+// to the asphalt colour, the most where a wheel track runs (`base` + `track` share of the flake noise, `edge` softness).
+// `patches`: extra repair rectangles [x, z, w, d] on the street-level asphalt (y 0, like SITE.street.patches) and their
+// look (the asphalt aggregate, `tone` × colour, `roughness`). No new draws, textures, lights or passes; GPU-only cost.
+export const STREET_WEAR = {
+  tracks: { gauge: 0.78, sigma: 0.26, dark: 0.2, polish: 0.12, twoLanes: 5.6, oil: 0.06, oilSigma: 0.28, vary: 0.45, scale: 7 },
+  cracks: { cell: 8, share: 0.42, length: [1.4, 3.6], width: 0.009, dark: 0.55, sealed: 0.4, sealWidth: 0.035, sealDark: 0.42, sealRough: 0.55, seed: 2103 },
+  edge: { inset: 0.32, share: 0.38, width: 0.008, dark: 0.5, wave: 0.12 },
+  paint: { base: 0.07, track: 0.55, sigma: 0.32, edge: 0.05, rough: 0.92 },
+  patches: [[-44, -26.2, 1.0, 3.2], [24.6, -4, 2.6, 1.3], [-20.5, -28.6, 3.2, 1.0]],
+  patch: { tone: 0.62, roughness: 0.75 }, // tone (linear) ≈ the old flat patch grey 0x45484b over the asphalt's 0x5d5f61
+};
+
 // #2074: artistic surface assumptions for the existing 40 cm patio slabs, not surveyed concrete profiles.
 export const PAVING_SURFACE = {
   ppm: 160, slabs: 6, depth: 0.0015, bevel: 0.002, minBevelPixels: 1.25,
