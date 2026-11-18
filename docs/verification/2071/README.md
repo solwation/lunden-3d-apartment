@@ -126,3 +126,5 @@ No product code, material, camera, rendering resolution or geometry was modified
 
 The conductor publishes this correction and a new revision-pinned image comment before
 closing the reopened issue, and records any actual workflow run triggered by the correction.
+
+Corrected image publication `c0145dc763a84ba5d1f75f540f2329ad2f69efc2`: Pages44264726768 success, all three embedded image URLs HTTP200. Replacement comment before reclosure: https://github.com/solwation/lunden-3d-apartment/issues/2071#issuecomment-6972896844. Worker not triggered by this tool/image correction; product bytes unchanged.
