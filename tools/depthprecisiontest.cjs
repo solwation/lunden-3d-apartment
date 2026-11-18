@@ -28,7 +28,7 @@ async function nearAt(browser, q) {
       const out = [];
       window.__app.scene.traverse((o) => {
         const ms = o.material ? [].concat(o.material) : [];
-        for (const m of ms) if (o.parent && /backdrop|neighborGlass|NeighborGlass/i.test(`${o.parent.name} ${o.name}`) && (m.metalness > 0.1 || m.type === 'MeshPhysicalMaterial' || m.color?.getHex() === 0x35444d))
+        for (const m of ms) if (o.parent && /backdrop|neighborGlass|NeighborGlass/i.test(`${o.parent.name} ${o.name}`) && (m.metalness > 0.1 || m.type === 'MeshPhysicalMaterial' || m.color?.getHex() === 0x35444d || /^south-glass$/.test(o.name)))
           out.push({ where: `${o.parent.name}/${o.name}`, po: m.polygonOffset, f: m.polygonOffsetFactor, u: m.polygonOffsetUnits });
       });
       return out;

@@ -537,6 +537,15 @@ src/neighborglass.js   opaque MeshPhysicalMaterial for unmodeled neighboring int
                        actual ABC pane visibility/bounds and night routines; eastbackdroptest retains source geometry.
                        NEIGHBOR_OPENINGS centralizes visual assumptions; reflection is a generic outdoor impression,
                        not a surveyed or live reflection of surrounding buildings. L1007's clear materials are independent.
+src/glasspanes.js      #2087: calm per-pane variation for opaque façade glass, baked once into vertex colours before the
+                       merge (GLASS_PANES, *guess*): lightness/tone picked from a hash of each pane's centre, a vertical
+                       gradient (top lighter) and, on the plain far glass, a soft sky tint at the top. neighborGlass() now
+                       has vertexColors, so every consumer (exterior.js neighborGlass/EntryGlass/LitGlass, surroundings
+                       siteNeighborGlass, sitebackdrop schoolGlass/karpGlass) calls paneTints first; sitebackdrop `glass`
+                       (west/east/north) and southbackdrop `glass` keep their old base colour (W.glass / 0x35444d) in the
+                       vertex colour, tinted frames/units in the east brick batch keep theirs. Batches >4 m vary per
+                       triangle. No draw, texture, uniform or per-frame work; CoreHouse's see-through lobby glass and
+                       L1007's clear glass are untouched. tools/glasspanestest.mjs; [views](../verification/2087/README.md).
 src/visitlights.js     lamps of the visitable empty flats (#620): a ceiling lamp per room (a flat fitting in Kök / matplats, Badrum,
                        WC/dusch, Tvätt; a lamp outlet with a bare bulb on a cord elsewhere — VISIT_LIGHTS, *guess*, the brochure
                        says nothing), a switch by each room's door (lights.js `switchSpots` + `Switch`, `VISIT_LIGHTS.manual` /

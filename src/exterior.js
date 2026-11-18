@@ -1,5 +1,6 @@
 import {solarPanelUV,solarPanelMaterial} from './solarsurface.js';
 import { neighborGlass } from './neighborglass.js';
+import { paneTints } from './glasspanes.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { DECAL_OFFSET, HUS_L as H, HUS_L_REVEAL as RV, HUS_L_DOWNPIPES as DP, ENTRANCE_PLANTS as EP, NEIGHBOR_OPENINGS as O, COLORS, BRICK_SURFACE, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE, DOOR_HEIGHT, DOOR_TRIM } from './config.js';
@@ -673,7 +674,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   add(seals,new THREE.MeshStandardMaterial({color:O.gasketColor,roughness:O.gasketRoughness})).name='neighborSeals';
   add(openingHardware,entryMaterials().handle).name='neighborHardware';
   const glassMaterial=neighborGlass();
-  add(glassGeo,glassMaterial,false).name='neighborGlass';
+  add(paneTints(glassGeo),glassMaterial,false).name='neighborGlass'; // #2087: calm per-pane variation
   group.userData.neighborOpenings=neighborOpenings;
   add(rails, new THREE.MeshStandardMaterial({ color: COLORS.balcony, roughness: 0.5, metalness: 0.3 }));
   add([...fascia, ...capping, ...flashings], new THREE.MeshStandardMaterial({ color: Lf.fascia, roughness: 0.4, metalness: 0.4 }));
@@ -685,7 +686,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   }
   group.userData.terraces = { list: terraces, y3, deck: deckY, parapet: par }; // #350
   const entryMats=entryMaterials();
-  add(entryWood,entryMats.wood);add(entryFrames,entryMats.frame);add(entryGlass,glassMaterial,false).name="neighborEntryGlass";
+  add(entryWood,entryMats.wood);add(entryFrames,entryMats.frame);add(paneTints(entryGlass),glassMaterial,false).name="neighborEntryGlass";
   add(entryHandles, entryMaterials().handle);
   group.userData.entryLeaves=entryLeaves;
   // #433: a wall light by every street-side front door on våning 1 (ours too): the box joins the lanterns' housings,
@@ -737,7 +738,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   /** night 0 … 1 (with the window lights): the lanterns by the loftgång doors glow after dusk. */
   // the upper units' courtyard windows (#337): a share of them lit after dusk (one material, its emissive switched)
   const litMat = glassMaterial.clone();litMat.emissive.setHex(0xffc98a);
-  add(litGlass, litMat, false).name="neighborLitGlass";
+  add(paneTints(litGlass), litMat, false).name="neighborLitGlass";
   group.userData.update = (night, power = true) => { // power false: a power cut in Kv. Lunden (#604): lanterns, windows, door lights out
     glassMaterial.envMapIntensity=litMat.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night);
     glowMat.color.copy(night > 0.35 && power ? lit : off);

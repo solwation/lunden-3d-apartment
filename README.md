@@ -1,5 +1,7 @@
 # Kv. Lunden L1007 i 3D
 
+Fasadernas fönsterglas har en lugn himmelsreflex som skiftar lite mellan rutorna. [Före/efter dag och natt](docs/verification/2087/README.md).
+
 Trädens och buskarnas löv har mjuka färgskiftningar och diskreta sidonerver i den befintliga lövtexturen. [Egna bilder, alfakontroller och startkostnad](docs/verification/2085/README.md).
 
 Höje ås vatten har små ljuskrusningar som tonar bort på avstånd; vattennivåer, stränder och den befintliga rörelsen är kvar.

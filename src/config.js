@@ -6927,6 +6927,18 @@ export const NEIGHBOR_OPENINGS = {frame: .06, depth: .1, sash: .045, sashDepth: 
   reflectionDay: 1.4, reflectionNight: .12, hinge: .012, hingeHeight: .085, hingeYs: [.25,1.05], hingeTop: .2, hingeZ: [-.04,-.025],
 };
 
+// #2087: calm per-pane variation of opaque façade glass (src/glasspanes.js), baked once into vertex colours at build:
+// `lightness` ± share of brightness and `tone` ± blue/warm shift picked per pane from a hash of its position,
+// `gradient` the vertical brightness spread inside a pane (top lighter, as the sky reflects in the upper part), `sky`
+// the share mixed towards `skyColor` at a pane's top (only where the material has no reflection map of its own).
+// `paneMax` (m): a geometry larger than this is a merged batch and is varied per triangle (a rectangle's two triangles
+// share its bounding box). `near`: neighborGlass() (exterior.js Hus L, surroundings ABC, school/Karpvägen), whose
+// envMap already gives the sky; `far`: the plain backdrop glass (sitebackdrop/southbackdrop). All *guess* values.
+export const GLASS_PANES = { paneMax: 4,
+  near: { lightness: .14, tone: .06, gradient: .3, sky: .1, skyColor: 0xc4d8e4 },
+  far: { lightness: .14, tone: .06, gradient: .3, sky: .22, skyColor: 0x9fb8c6 },
+};
+
 // #1076: Hus L's façade windows sit in brick (or render) reveals with a sheet-metal sill flashing, as on Peab's
 // courtyard illustration (docs/peab/hus-l-gardsfasad-illustration.png, not dimensioned). `frame` = the window frame's
 // centre behind the façade face: L1007's own frame position (world.js), kept so the blinds and window boards inside stay

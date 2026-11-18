@@ -1,0 +1,417 @@
+{
+ "base": "709825b08105a1e499470dae31b6e1b1cd8ec153",
+ "phases": {
+  "before": {
+   "glass": {
+    "/neighborGlass": {
+     "vertices": 816,
+     "index": null,
+     "color": false,
+     "vertexColors": [
+      false
+     ],
+     "type": "MeshPhysicalMaterial",
+     "envMap": true
+    },
+    "/neighborEntryGlass": {
+     "vertices": 468,
+     "index": null,
+     "color": false,
+     "vertexColors": [
+      false
+     ],
+     "type": "MeshPhysicalMaterial",
+     "envMap": true
+    },
+    "/neighborLitGlass": {
+     "vertices": 96,
+     "index": null,
+     "color": false,
+     "vertexColors": [
+      false
+     ],
+     "type": "MeshPhysicalMaterial",
+     "envMap": true
+    },
+    "west-backdrop/west-glass": {
+     "vertices": 1248,
+     "index": null,
+     "color": false,
+     "vertexColors": [
+      false
+     ],
+     "type": "MeshStandardMaterial",
+     "envMap": false
+    },
+    "west-backdrop/west-karpGlass": {
+     "vertices": 1968,
+     "index": null,
+     "color": false,
+     "vertexColors": [
+      false
+     ],
+     "type": "MeshPhysicalMaterial",
+     "envMap": true
+    },
+    "east-backdrop/east-glass": {
+     "vertices": 10788,
+     "index": null,
+     "color": true,
+     "vertexColors": [
+      true
+     ],
+     "type": "MeshStandardMaterial",
+     "envMap": false
+    },
+    "east-backdrop/east-schoolGlass": {
+     "vertices": 13794,
+     "index": null,
+     "color": false,
+     "vertexColors": [
+      false
+     ],
+     "type": "MeshPhysicalMaterial",
+     "envMap": true
+    },
+    "north-backdrop/north-glass": {
+     "vertices": 5112,
+     "index": null,
+     "color": true,
+     "vertexColors": [
+      true
+     ],
+     "type": "MeshStandardMaterial",
+     "envMap": false
+    },
+    "south-backdrop/south-glass": {
+     "vertices": 16602,
+     "index": null,
+     "color": false,
+     "vertexColors": [
+      false
+     ],
+     "type": "MeshStandardMaterial",
+     "envMap": false
+    },
+    "/siteNeighborGlass": {
+     "vertices": 7470,
+     "index": null,
+     "color": false,
+     "vertexColors": [
+      false
+     ],
+     "type": "MeshPhysicalMaterial",
+     "envMap": true
+    }
+   },
+   "missing": [],
+   "meshes": 5017,
+   "exPanes": 146,
+   "sitePanes": 597,
+   "siteSample": [
+    {
+     "n": [
+      0,
+      -1
+     ],
+     "p": {
+      "x": -4.44431,
+      "y": 1.3970100000000003,
+      "z": 28.768,
+      "width": 1.02538,
+      "height": 1.0280200000000002
+     }
+    },
+    {
+     "n": [
+      0,
+      -1
+     ],
+     "p": {
+      "x": -4.44431,
+      "y": 4.39701,
+      "z": 28.768,
+      "width": 1.02538,
+      "height": 1.0280200000000002
+     }
+    },
+    {
+     "n": [
+      0,
+      -1
+     ],
+     "p": {
+      "x": -4.44431,
+      "y": 7.39701,
+      "z": 28.768,
+      "width": 1.02538,
+      "height": 1.0280199999999997
+     }
+    }
+   ],
+   "school": [
+    [
+     -77.68606567382812,
+     -0.3656367063522339,
+     -153.90745544433594
+    ],
+    [
+     166.1151885986328,
+     17.528440475463867,
+     25.70088005065918
+    ]
+   ],
+   "loadMs": 35658,
+   "views": {
+    "husL-gata-dag": {
+     "calls": 428,
+     "triangles": 932388,
+     "textures": 108,
+     "programs": 111
+    },
+    "husL-gata-natt": {
+     "calls": 437,
+     "triangles": 1007492,
+     "textures": 110,
+     "programs": 121
+    },
+    "granne-A-dag": {
+     "calls": 130,
+     "triangles": 627749,
+     "textures": 110,
+     "programs": 126
+    },
+    "granne-A-natt": {
+     "calls": 136,
+     "triangles": 691813,
+     "textures": 110,
+     "programs": 126
+    },
+    "skola-dag": {
+     "calls": 42,
+     "triangles": 352568,
+     "textures": 111,
+     "programs": 129
+    },
+    "skola-natt": {
+     "calls": 43,
+     "triangles": 391808,
+     "textures": 111,
+     "programs": 129
+    }
+   }
+  },
+  "after": {
+   "glass": {
+    "/neighborGlass": {
+     "vertices": 816,
+     "index": null,
+     "color": true,
+     "vertexColors": [
+      true
+     ],
+     "type": "MeshPhysicalMaterial",
+     "envMap": true
+    },
+    "/neighborEntryGlass": {
+     "vertices": 468,
+     "index": null,
+     "color": true,
+     "vertexColors": [
+      true
+     ],
+     "type": "MeshPhysicalMaterial",
+     "envMap": true
+    },
+    "/neighborLitGlass": {
+     "vertices": 96,
+     "index": null,
+     "color": true,
+     "vertexColors": [
+      true
+     ],
+     "type": "MeshPhysicalMaterial",
+     "envMap": true
+    },
+    "west-backdrop/west-glass": {
+     "vertices": 1248,
+     "index": null,
+     "color": true,
+     "vertexColors": [
+      true
+     ],
+     "type": "MeshStandardMaterial",
+     "envMap": false
+    },
+    "west-backdrop/west-karpGlass": {
+     "vertices": 1968,
+     "index": null,
+     "color": true,
+     "vertexColors": [
+      true
+     ],
+     "type": "MeshPhysicalMaterial",
+     "envMap": true
+    },
+    "east-backdrop/east-glass": {
+     "vertices": 10788,
+     "index": null,
+     "color": true,
+     "vertexColors": [
+      true
+     ],
+     "type": "MeshStandardMaterial",
+     "envMap": false
+    },
+    "east-backdrop/east-schoolGlass": {
+     "vertices": 13794,
+     "index": null,
+     "color": true,
+     "vertexColors": [
+      true
+     ],
+     "type": "MeshPhysicalMaterial",
+     "envMap": true
+    },
+    "north-backdrop/north-glass": {
+     "vertices": 5112,
+     "index": null,
+     "color": true,
+     "vertexColors": [
+      true
+     ],
+     "type": "MeshStandardMaterial",
+     "envMap": false
+    },
+    "south-backdrop/south-glass": {
+     "vertices": 16602,
+     "index": null,
+     "color": true,
+     "vertexColors": [
+      true
+     ],
+     "type": "MeshStandardMaterial",
+     "envMap": false
+    },
+    "/siteNeighborGlass": {
+     "vertices": 7470,
+     "index": null,
+     "color": true,
+     "vertexColors": [
+      true
+     ],
+     "type": "MeshPhysicalMaterial",
+     "envMap": true
+    }
+   },
+   "missing": [],
+   "meshes": 5017,
+   "exPanes": 146,
+   "sitePanes": 597,
+   "siteSample": [
+    {
+     "n": [
+      0,
+      -1
+     ],
+     "p": {
+      "x": -4.44431,
+      "y": 1.3970100000000003,
+      "z": 28.768,
+      "width": 1.02538,
+      "height": 1.0280200000000002
+     }
+    },
+    {
+     "n": [
+      0,
+      -1
+     ],
+     "p": {
+      "x": -4.44431,
+      "y": 4.39701,
+      "z": 28.768,
+      "width": 1.02538,
+      "height": 1.0280200000000002
+     }
+    },
+    {
+     "n": [
+      0,
+      -1
+     ],
+     "p": {
+      "x": -4.44431,
+      "y": 7.39701,
+      "z": 28.768,
+      "width": 1.02538,
+      "height": 1.0280199999999997
+     }
+    }
+   ],
+   "school": [
+    [
+     -77.68606567382812,
+     -0.3656367063522339,
+     -153.90745544433594
+    ],
+    [
+     166.1151885986328,
+     17.528440475463867,
+     25.70088005065918
+    ]
+   ],
+   "loadMs": 39268,
+   "views": {
+    "husL-gata-dag": {
+     "calls": 428,
+     "triangles": 932388,
+     "textures": 108,
+     "programs": 111
+    },
+    "husL-gata-natt": {
+     "calls": 438,
+     "triangles": 1007500,
+     "textures": 110,
+     "programs": 121
+    },
+    "granne-A-dag": {
+     "calls": 129,
+     "triangles": 625077,
+     "textures": 110,
+     "programs": 125
+    },
+    "granne-A-natt": {
+     "calls": 135,
+     "triangles": 689141,
+     "textures": 110,
+     "programs": 125
+    },
+    "skola-dag": {
+     "calls": 42,
+     "triangles": 352568,
+     "textures": 111,
+     "programs": 127
+    },
+    "skola-natt": {
+     "calls": 43,
+     "triangles": 391808,
+     "textures": 111,
+     "programs": 128
+    }
+   }
+  }
+ },
+ "errors": [
+  "before: THREE.WebGLProgram: Shader Error 0 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:336: 'uLampData' : redefinition\nERROR: 0:337: 'uLampVis' : redefinition\nERROR: 0:340: 'lampWash' : function already has a body\n\n  331:   else if (i == 12) v = 15.0; else if (i == 13) v = 7.0; else if (i == 14) v = 13.0; else v = 5.0;\n  332:   return (v + 0.5) / 16.0;\n  333: }\n  334: \n  335: \n> 336:     uniform highp sampler2D uLampData; // per lamp (x): row 0 x y z range, row 1 colour × intensity and how much shows, row 2 ray origin x z, level, the y between its levels\n  337:     uniform highp sampler2D uLampVis;  // per lamp (row): the distance along each of LW_RAYS rays to what stops it\n  338:     #define LW_COUNT 37\n  339:     #define LW_RAYS 192.0\n  340:     vec3 lampWash(vec3 viewPos, vec3 viewNormal) {\n  341:       mat3 rt = transpose(mat3(viewMatrix));\n  342:       vec3 p = rt * (viewPos - viewMatrix[3].xyz), nw = rt * viewNormal;",
+  "before: THREE.WebGLProgram: Shader Error 1282 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:336: 'uLampData' : redefinition\nERROR: 0:337: 'uLampVis' : redefinition\nERROR: 0:340: 'lampWash' : function already has a body\n\n  331:   else if (i == 12) v = 15.0; else if (i == 13) v = 7.0; else if (i == 14) v = 13.0; else v = 5.0;\n  332:   return (v + 0.5) / 16.0;\n  333: }\n  334: \n  335: \n> 336:     uniform highp sampler2D uLampData; // per lamp (x): row 0 x y z range, row 1 colour × intensity and how much shows, row 2 ray origin x z, level, the y between its levels\n  337:     uniform highp sampler2D uLampVis;  // per lamp (row): the distance along each of LW_RAYS rays to what stops it\n  338:     #define LW_COUNT 37\n  339:     #define LW_RAYS 192.0\n  340:     vec3 lampWash(vec3 viewPos, vec3 viewNormal) {\n  341:       mat3 rt = transpose(mat3(viewMatrix));\n  342:       vec3 p = rt * (viewPos - viewMatrix[3].xyz), nw = rt * viewNormal;",
+  "before: THREE.WebGLProgram: Shader Error 1282 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:335: 'uLampData' : redefinition\nERROR: 0:336: 'uLampVis' : redefinition\nERROR: 0:339: 'lampWash' : function already has a body\n\n  330:   else if (i == 12) v = 15.0; else if (i == 13) v = 7.0; else if (i == 14) v = 13.0; else v = 5.0;\n  331:   return (v + 0.5) / 16.0;\n  332: }\n  333: \n  334: \n> 335:     uniform highp sampler2D uLampData; // per lamp (x): row 0 x y z range, row 1 colour × intensity and how much shows, row 2 ray origin x z, level, the y between its levels\n  336:     uniform highp sampler2D uLampVis;  // per lamp (row): the distance along each of LW_RAYS rays to what stops it\n  337:     #define LW_COUNT 37\n  338:     #define LW_RAYS 192.0\n  339:     vec3 lampWash(vec3 viewPos, vec3 viewNormal) {\n  340:       mat3 rt = transpose(mat3(viewMatrix));\n  341:       vec3 p = rt * (viewPos - viewMatrix[3].xyz), nw = rt * viewNormal;",
+  "after: THREE.WebGLProgram: Shader Error 0 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:336: 'uLampData' : redefinition\nERROR: 0:337: 'uLampVis' : redefinition\nERROR: 0:340: 'lampWash' : function already has a body\n\n  331:   else if (i == 12) v = 15.0; else if (i == 13) v = 7.0; else if (i == 14) v = 13.0; else v = 5.0;\n  332:   return (v + 0.5) / 16.0;\n  333: }\n  334: \n  335: \n> 336:     uniform highp sampler2D uLampData; // per lamp (x): row 0 x y z range, row 1 colour × intensity and how much shows, row 2 ray origin x z, level, the y between its levels\n  337:     uniform highp sampler2D uLampVis;  // per lamp (row): the distance along each of LW_RAYS rays to what stops it\n  338:     #define LW_COUNT 37\n  339:     #define LW_RAYS 192.0\n  340:     vec3 lampWash(vec3 viewPos, vec3 viewNormal) {\n  341:       mat3 rt = transpose(mat3(viewMatrix));\n  342:       vec3 p = rt * (viewPos - viewMatrix[3].xyz), nw = rt * viewNormal;",
+  "after: THREE.WebGLProgram: Shader Error 1282 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:336: 'uLampData' : redefinition\nERROR: 0:337: 'uLampVis' : redefinition\nERROR: 0:340: 'lampWash' : function already has a body\n\n  331:   else if (i == 12) v = 15.0; else if (i == 13) v = 7.0; else if (i == 14) v = 13.0; else v = 5.0;\n  332:   return (v + 0.5) / 16.0;\n  333: }\n  334: \n  335: \n> 336:     uniform highp sampler2D uLampData; // per lamp (x): row 0 x y z range, row 1 colour × intensity and how much shows, row 2 ray origin x z, level, the y between its levels\n  337:     uniform highp sampler2D uLampVis;  // per lamp (row): the distance along each of LW_RAYS rays to what stops it\n  338:     #define LW_COUNT 37\n  339:     #define LW_RAYS 192.0\n  340:     vec3 lampWash(vec3 viewPos, vec3 viewNormal) {\n  341:       mat3 rt = transpose(mat3(viewMatrix));\n  342:       vec3 p = rt * (viewPos - viewMatrix[3].xyz), nw = rt * viewNormal;",
+  "after: THREE.WebGLProgram: Shader Error 1282 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:335: 'uLampData' : redefinition\nERROR: 0:336: 'uLampVis' : redefinition\nERROR: 0:339: 'lampWash' : function already has a body\n\n  330:   else if (i == 12) v = 15.0; else if (i == 13) v = 7.0; else if (i == 14) v = 13.0; else v = 5.0;\n  331:   return (v + 0.5) / 16.0;\n  332: }\n  333: \n  334: \n> 335:     uniform highp sampler2D uLampData; // per lamp (x): row 0 x y z range, row 1 colour × intensity and how much shows, row 2 ray origin x z, level, the y between its levels\n  336:     uniform highp sampler2D uLampVis;  // per lamp (row): the distance along each of LW_RAYS rays to what stops it\n  337:     #define LW_COUNT 37\n  338:     #define LW_RAYS 192.0\n  339:     vec3 lampWash(vec3 viewPos, vec3 viewNormal) {\n  340:       mat3 rt = transpose(mat3(viewMatrix));\n  341:       vec3 p = rt * (viewPos - viewMatrix[3].xyz), nw = rt * viewNormal;"
+ ],
+ "external": [
+  "https://lunden-l1007.olw.workers.dev/beer-shelf",
+  "https://lunden-l1007.olw.workers.dev/beer-shelf"
+ ]
+}

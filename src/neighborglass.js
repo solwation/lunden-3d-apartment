@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { NEIGHBOR_OPENINGS as P, DECAL_OFFSET } from './config.js';
 let environment;
-/** Small shared procedural outdoor reflection, view-dependent through envMap; no live mirror passes. */
+/** Small shared procedural outdoor reflection, view-dependent through envMap; no live mirror passes. Every mesh using it
+ * carries glasspanes.js's per-pane colour (#2087: paneTints before merging). */
 export function neighborGlass() {
   if (!environment) {
     const faces = Array.from({length:6},(_,i)=>{
@@ -13,6 +14,6 @@ export function neighborGlass() {
     });
     environment=new THREE.CubeTexture(faces);environment.colorSpace=THREE.SRGBColorSpace;environment.needsUpdate=true;
   }
-  return new THREE.MeshPhysicalMaterial({color:P.glassColor,roughness:P.roughness,metalness:P.metalness,clearcoat:1,clearcoatRoughness:P.clearcoatRoughness,envMap:environment,envMapIntensity:P.reflectionDay,transparent:false,opacity:1,
+  return new THREE.MeshPhysicalMaterial({color:P.glassColor,roughness:P.roughness,metalness:P.metalness,clearcoat:1,clearcoatRoughness:P.clearcoatRoughness,envMap:environment,envMapIntensity:P.reflectionDay,vertexColors:true,transparent:false,opacity:1,
     polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units}); // #1276: wins over the façade 1–7 cm behind it at any distance (the depth step grows with d²)
 }
