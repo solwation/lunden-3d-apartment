@@ -1,0 +1,30 @@
+<!doctype html><html><meta charset="utf-8"><link rel="icon" href="data:,"><title>Production bridge concrete #2076</title><style>body{margin:0}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as T from 'three';
+import {buildRiverBridges,bridgeRecords,deckAt,deckUnderAt,pierBoxes,waterYAt} from '../src/riverbridge.js';
+import {groundY,renderedTerrainY} from '../src/surroundings.js';
+import {SITE,BRIDGE_CONCRETE as C} from '../src/config.js';
+const B=SITE.bridges,scene=new T.Scene();scene.background=new T.Color(0xbecdd2);
+// Same formula supplied by buildSurroundings; the component scene excludes its terrain and buildings.
+const roadGround=(x,z)=>Math.max(groundY(x,z),renderedTerrainY(x,z));
+const bridges=buildRiverBridges(roadGround);scene.add(bridges);
+scene.add(new T.HemisphereLight(0xe9f2f9,0x615e4d,1.3));const sun=new T.DirectionalLight(0xffefd5,3.2);sun.position.set(-12,35,-22);scene.add(sun);
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(1);renderer.setSize(1120,800);renderer.toneMapping=T.NeutralToneMapping;renderer.outputColorSpace=T.SRGBColorSpace;document.body.append(renderer.domElement);
+const camera=new T.PerspectiveCamera(40,1.4,.015,2000),r=bridgeRecords[0],gc=bridgeRecords[1];
+const point=(r,x,y,z)=>new T.Vector3(r.x+r.dz*x+r.dx*z,y,r.z-r.dx*x+r.dz*z);
+window.__proof=()=>{
+ const meshes={};for(const m of bridges.children){const g=m.geometry;meshes[m.name]={triangles:(g.index?.count??g.attributes.position.count)/3,bytes:Object.values(g.attributes).reduce((s,a)=>s+a.array.byteLength,0)+(g.index?.array.byteLength??0),attributes:Object.fromEntries(Object.entries(g.attributes).map(([k,a])=>[k,[...a.array]])),index:g.index?[...g.index.array]:null,shadow:[m.castShadow,m.receiveShadow],map:!!m.material.map,bump:!!m.material.bumpMap,roughness:m.material.roughness,shared:!!m.material.bumpMap&&m.material.bumpMap===m.material.roughnessMap};}
+ const material=bridges.getObjectByName('bridges-concrete').material,t=material.bumpMap;
+ return{meshes,records:bridgeRecords,queries:bridgeRecords.map(r=>({kind:r.kind,top:deckAt(r.x,r.z),under:deckUnderAt(r.x,r.z),water:waterYAt(r.x,r.z)})),piers:pierBoxes(),texture:t?{size:[t.image.width,t.image.height],bytes:t.image.data.byteLength,version:t.version,repeat:[...t.repeat],colorSpace:t.colorSpace}:null};
+};
+window.__frame=view=>{
+ let eye,target;
+ if(view==='pillar'){const x=-r.width*.29-r.pier/2,z=-r.len/3-r.pier/2;target=point(r,x,B.deckY-2.0,z);eye=point(r,x-.32,B.deckY-1.94,z-.27);}
+ if(view==='walking'){eye=point(r,r.width/2+r.ext/2,B.deckY+1.6,-r.len/2+2);target=point(r,r.width/2+r.ext/2,B.deckY+.4,-r.len/2+12);}
+ if(view==='full'){eye=point(r,-34,B.deckY+15,-39);target=point(r,-1,B.deckY-1,0);}
+ camera.position.copy(eye);camera.lookAt(target);camera.updateMatrixWorld(true);renderer.info.reset();renderer.render(scene,camera);
+ let patch=null;if(view==='pillar'){const gl=renderer.getContext(),px=new Uint8Array(100*150*4);gl.readPixels(280,320,100,150,gl.RGBA,gl.UNSIGNED_BYTE,px);const a=[];for(let i=0;i<px.length;i+=4)a.push((px[i]+px[i+1]+px[i+2])/3);const mean=a.reduce((s,x)=>s+x,0)/a.length;patch={mean,std:Math.sqrt(a.reduce((s,x)=>s+(x-mean)**2,0)/a.length),min:Math.min(...a),max:Math.max(...a)};}
+ return{view,patch,camera:[...eye],target:[...target],calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,image:renderer.domElement.toDataURL('image/jpeg',.96)};
+};window.__ready=true;
+</script></html>

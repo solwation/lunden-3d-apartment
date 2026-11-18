@@ -40,13 +40,14 @@ test('rendered water vertices follow the same continuous downstream level as the
 
 });
 
+// #2076 updates only the concrete UV snapshot (metric faces / flat granite swatch); position/normal/colour bytes are compared to the pinned baseline in its own browser.
 // #1944 re-baselined the concrete snapshot: the road bridge's piers and footings reach the pool's bed (bedY - SITE.bridges.pool).
 // #1684 re-baselined the concrete snapshot again: the abutments/piers reach the 0.8 m lower bed (SITE.bridges.bedY).
 // #1530 re-baselined the concrete/steel/asphalt snapshots for the photo-based road-bridge cross-section and vertex colours
 // #1704 re-baselined them again for the east G/C path on the road slab (cross-section only, same three batches).
 // (the river fall still does not touch them; deck datum and undersides are checked in southbanktest/bridgetest).
 test('the default constant-deck bridge geometry and mapped park paths retain the pre-fall buffers',()=>{
- const expected={'bridges-concrete':'bc2c2507c61b8e8209730ee7194ee656581b936fec0616076a1f9a79480d90f8','bridges-steel':'1070ca39faaaeb2318dc4af70d7a569a3236dfebb47b5e25df732606287915d9','bridges-asphalt':'93cfeb3ee56af0fb96877234d0e91b2ecc7a1c5d0558b60f5c59a6aca7d3bee5'};
+ const expected={'bridges-concrete':'8882971ab2141de2a531199fdb02ba2f814476305fa82a88ed50feaa0f474297','bridges-steel':'1070ca39faaaeb2318dc4af70d7a569a3236dfebb47b5e25df732606287915d9','bridges-asphalt':'93cfeb3ee56af0fb96877234d0e91b2ecc7a1c5d0558b60f5c59a6aca7d3bee5'};
  for(const m of buildRiverBridges().children.filter(m=>m.name!=='bridges-water')){const h=createHash('sha256'),g=m.geometry;for(const k of Object.keys(g.attributes).sort())h.update(k).update(Buffer.from(g.attributes[k].array.buffer));if(g.index)h.update(Buffer.from(g.index.array.buffer));assert.equal(h.digest('hex'),expected[m.name]);}
  assert.equal(hash(JSON.stringify(SITE.riverPark.paths)),'2e682c6a3361bbdab008dafb210f8b24b8b5566f784932735b1aafb153173150');
 });

@@ -621,6 +621,34 @@ Junction edges (#1351): `roads.js` `vehicleTrim` clips the emitted path/pavement
 The map-to-local-street join on Sankt Lars väg also omits the redundant 1.58 m right-angle jog and eases into the existing straight with an 8 m radius (*guess*); the width entry moves with its control point. This removes the sharp paving spur by Karpvägen without changing the local straight or carriageway widths. The junction browser fixture checks that the transition is eased and the per-point widths remain aligned. `northbackdroptest` (#1551) checks the 32 unchanged OSM controls in source order, then the eased join and retained local controls separately; the removed OSM point is not a literal map constraint on the adapted join.
 
 
+## Subtle bridge concrete surface (#2076)
+
+`bridgeconcrete.js` supplies one cached 128×128 linear RGBA DataTexture: red carries
+shallow pores/grain and green a narrow roughness multiplier. `BRIDGE_CONCRETE` in
+config contains artistic assumptions, not surveyed concrete properties. The material
+keeps its existing white/vertex-coloured albedo and base roughness 0.95; no painted
+weathering, cracks, joints, geometry displacement or new lights/passes are added.
+
+`riverbridge.js:buildRiverBridges` projects existing box UVs in local metres before
+each bridge's existing rotation. Road/GC deck edges and abutments, the road bridge's
+six piers and footings use the surface at 0.32 m/tile. The two granite kerbs in the
+same batch use constant UVs in an 8×8 flat swatch: zero bump derivatives and green
+255 preserve their original roughness. All positions, normals, vertex colours,
+indices, counts, bridge records, heights and collider queries remain exact.
+
+The four batches retain 8,838 triangles and 1,118,880 raw geometry bytes. Only UV
+values change; no attribute or geometry buffer is added. One shared texture adds
+65,536 retained CPU bytes and 87,380 nominal GPU RGBA8 bytes with a full mip chain,
+excluding driver overhead. Standard bump/roughness texture reads add fragment work;
+there is no per-frame rebuild/upload and no frame-time improvement claim. These
+bridge materials had no seasonal registration and keep that policy.
+
+`tools/bridgeconcrete2076test.mjs` plus the existing river-fall/bridge-fall checks
+cover scalar/cache/mask, finite metric UVs and both bridge variants' support and
+clearance. The own production-builder comparison checks exact non-UV buffers and
+queries, with matched near/walking/full views. [Evidence and component limits](../verification/2076/README.md).
+A/B/C/L are outside this bridge-only change; neutral public transfer is #298.
+
 ## Fine ground-height references for Höje å (#1349)
 
 The user chose an alternative the agent could obtain without a user account. `node tools/riverheight-api.mjs OUTPUT.json` samples the public `https://api.kart-api.se/v1/hojd` endpoint using the existing `SITE.river.path` and `sitegeo.js` registration. The provider identifies its source as Lantmäteriet Markhöjdmodell, a 1 m ground grid, RH 2000, CC BY 4.0 ([provider documentation](https://kart-api.se/en/guides/elevation-sweden/)). This is a point-API export through a third-party provider, not a downloaded original GeoTIFF or independent verification of its survey date. The tool makes 60 sequential bounded requests, preserves completed responses for resumption and marks incomplete exports explicitly.

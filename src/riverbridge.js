@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {SITE, COLORS, ELEVATION} from './config.js';
 import {pathStrip} from './roads.js';
+import {bridgeConcreteUV,bridgeConcreteMaterial} from './bridgeconcrete.js';
 const B=SITE.bridges,R=SITE.river;
 // #1814: append only; the historical source/station indices and bridge fall anchor stay unchanged.
 export const riverPath=R.path.concat(R.downstream?.path??[]);
@@ -121,7 +122,7 @@ export function buildRiverBridges(approachGround=()=>B.deckY){
  // Concrete and steel carry vertex colours (#1530: kerbs, green/black/galvanised steel) so they stay one batch each.
  const base={concrete:0xaaa79e,steel:0x575f5b},col=new THREE.Color();
  const add=(kind,g,hex)=>{if(g.index)g=g.toNonIndexed();if(base[kind]!==undefined){col.setHex(hex??base[kind]);const n=g.attributes.position.count,a=new Float32Array(n*3);for(let i=0;i<n;i++)a.set([col.r,col.g,col.b],i*3);g.setAttribute('color',new THREE.BufferAttribute(a,3));}parts[kind].push(g);};
- const box=(kind,w,h,d,x,y,z,hex)=>add(kind,new THREE.BoxGeometry(w,h,d).translate(x,y,z),hex);
+ const box=(kind,w,h,d,x,y,z,hex)=>{const g=new THREE.BoxGeometry(w,h,d).translate(x,y,z);if(kind==='concrete')bridgeConcreteUV(g,hex===B.roadDeck.colors.granite);add(kind,g,hex);};
  // `open` drops the two end caps (hidden against rails/deck) to save triangles; `depth` makes a flat bar.
  const beam=(kind,a,b,size,hex,open=false,depth=size)=>{const start=new THREE.Vector3(...a),end=new THREE.Vector3(...b),v=end.clone().sub(start);let g=new THREE.BoxGeometry(depth,v.length(),size);
   if(open){g=g.toNonIndexed();for(const k of Object.keys(g.attributes)){const at=g.attributes[k],s=at.itemSize;g.setAttribute(k,new THREE.BufferAttribute(new Float32Array([...at.array.slice(0,12*s),...at.array.slice(24*s)]),s));}}
@@ -168,7 +169,7 @@ export function buildRiverBridges(approachGround=()=>B.deckY){
  const [east,z]=R.upstream.boundary;
  parts.water.push(pathStrip({path:[[east,z],...riverPath],w:[widths[0],...widths]},w=>-w/2,w=>w/2,0,waterYAt));
  // (#1944: the water is drawn from both sides, so a diver looking up sees the surface, not the sky through it; opaque, still one draw call)
- const mats={concrete:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95}),steel:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,metalness:.45,roughness:.55}),asphalt:new THREE.MeshStandardMaterial({color:COLORS.asphalt,roughness:.85}),water:new THREE.MeshStandardMaterial({color:COLORS.water,roughness:.15,metalness:.2,side:THREE.DoubleSide})};
+ const mats={concrete:bridgeConcreteMaterial(),steel:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,metalness:.45,roughness:.55}),asphalt:new THREE.MeshStandardMaterial({color:COLORS.asphalt,roughness:.85}),water:new THREE.MeshStandardMaterial({color:COLORS.water,roughness:.15,metalness:.2,side:THREE.DoubleSide})};
  for(const[k,list]of Object.entries(parts)){const geo=mergeGeometries(list.map(g=>g.index?g.toNonIndexed():g));const mesh=new THREE.Mesh(geo,mats[k]);mesh.name=`bridges-${k}`;mesh.castShadow=k!=='water';mesh.receiveShadow=true;group.add(mesh);list.forEach(g=>g.dispose());}
  group.userData.records=bridgeRecords;return group;
 }

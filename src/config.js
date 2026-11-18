@@ -2433,6 +2433,12 @@ export const SWIM = {
 //   width) from the centre line; a `flower` share of the pads carries one. Leaves in the months `months`, flowers in `bloom`.
 // #2073: artistic shape assumptions for existing water lilies, not a species survey.
 // Pads retain the old depth-scaled Y axis: these low normalized heights keep their rim near the water.
+// #2076: artistic concrete surface assumptions, not surveyed bridge material measurements.
+export const BRIDGE_CONCRETE = {
+  size: 128, tile: 0.32, seed: 2076, pores: 0.018, flat: 8,
+  bump: 0.0008, roughness: [0.94, 1], baseRoughness: 0.95,
+};
+
 export const LILY_SURFACE = {
   padSegments: 24, padRings: 2, notch: 0.22, cup: 0.0045,
   veins: 7, veinWidth: 0.014, veinHeight: 0.00045, veinShade: 0.09,

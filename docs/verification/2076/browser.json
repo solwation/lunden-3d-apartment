@@ -1,0 +1,574 @@
+{
+  "baseline": "6e1576aa",
+  "viewport": [
+    1120,
+    800
+  ],
+  "renderer": "Chromium / SwiftShader",
+  "errors": [],
+  "phases": {
+    "before": {
+      "meshes": {
+        "bridges-concrete": {
+          "triangles": 288,
+          "bytes": 38016,
+          "index": null,
+          "shadow": [
+            true,
+            true
+          ],
+          "map": false,
+          "bump": false,
+          "roughness": 0.95,
+          "shared": false,
+          "hashes": {
+            "position": "37ac7ac76aa7860fc928c92811062da20b87bce7002d5595258a3e117a3f0c12",
+            "normal": "0024e1a75208c6c4d1a6b00f22b3d41e2aa2d0522a773addfa5c148e6ff8e349",
+            "uv": "0deacf8fd22798723632b8255d3210b9a5f7d18ab7c5a087d24662fdca726da7",
+            "color": "0ab6fc6a0ba36ea20b54c9b4cd07de8a80f9ae82e28fbd2fd04ff62b3b0fb4e6"
+          },
+          "attributeCounts": {
+            "position": 2592,
+            "normal": 2592,
+            "uv": 1728,
+            "color": 2592
+          }
+        },
+        "bridges-steel": {
+          "triangles": 7224,
+          "bytes": 953568,
+          "index": null,
+          "shadow": [
+            true,
+            true
+          ],
+          "map": false,
+          "bump": false,
+          "roughness": 0.55,
+          "shared": false,
+          "hashes": {
+            "position": "d63cb5799a59a496aeac14e8dbaa27bccf3ef4318bd08e1ca01b119d3b4b9719",
+            "normal": "9a4b948e51795a6325198f1476a24ddd6cf35471cf9a905022bbc5ec855e3e15",
+            "uv": "f7f4dbf5ebbd412ff986e6072661357f3c84212e80d0d7f37b6684b9746d841f",
+            "color": "7e338cfbef8a0c8c9a9e8c1e4cfc86f466f2e9c0fc3c427c6ee3e4d6a926c803"
+          },
+          "attributeCounts": {
+            "position": 65016,
+            "normal": 65016,
+            "uv": 43344,
+            "color": 65016
+          }
+        },
+        "bridges-asphalt": {
+          "triangles": 204,
+          "bytes": 19584,
+          "index": null,
+          "shadow": [
+            true,
+            true
+          ],
+          "map": false,
+          "bump": false,
+          "roughness": 0.85,
+          "shared": false,
+          "hashes": {
+            "position": "4bcaf943edbd3114ec8807a30368ae924374ebc51ec609a00ed4c144a8da134f",
+            "normal": "c51cf6d2a73ba77ae4dc7b82b7e96e36a6f960082d1f56b3f3509102c3406ad6",
+            "uv": "821db3a062842e5ef42efb71d955018d678e8a65a8928b933fdcdcf0dc8429ae"
+          },
+          "attributeCounts": {
+            "position": 1836,
+            "normal": 1836,
+            "uv": 1224
+          }
+        },
+        "bridges-water": {
+          "triangles": 1122,
+          "bytes": 107712,
+          "index": null,
+          "shadow": [
+            false,
+            true
+          ],
+          "map": false,
+          "bump": false,
+          "roughness": 0.15,
+          "shared": false,
+          "hashes": {
+            "position": "deeb201cd845abe6e5bb1a1ebb4c4224d1528d25d86be64f94a97d2d630f5fbf",
+            "uv": "95055f1a63352a46c94c71ccdd6253febbecfaaba1cecf7a164697b9a1b0cb29",
+            "normal": "b286e2094611b97d58ed656bc84def98ab9e3f99e015e26cee01cd01922c00b6"
+          },
+          "attributeCounts": {
+            "position": 10098,
+            "uv": 6732,
+            "normal": 10098
+          }
+        }
+      },
+      "records": [
+        {
+          "kind": "road",
+          "ends": [
+            [
+              23.9,
+              100
+            ],
+            [
+              23.3,
+              145.8
+            ]
+          ],
+          "width": 7.2,
+          "slab": 0.45,
+          "pier": 0.75,
+          "foot": 1.8,
+          "ext": 3.05,
+          "extW": 0.75,
+          "x": 23.6,
+          "z": 122.9,
+          "dx": -0.013099312667987124,
+          "dz": 0.9999142003230209,
+          "len": 45.80392996239516,
+          "full": 45.80392996239516
+        },
+        {
+          "kind": "gc",
+          "ends": [
+            [
+              18.1,
+              101
+            ],
+            [
+              17.8,
+              146.5
+            ]
+          ],
+          "length": 40,
+          "width": 3,
+          "slab": 0.18,
+          "truss": 1.45,
+          "panels": 10,
+          "steel": 0.1,
+          "ext": 0,
+          "extW": 0,
+          "x": 17.950000000000003,
+          "z": 123.75,
+          "dx": -0.006593263280462223,
+          "dz": 0.9999782642034348,
+          "len": 40,
+          "full": 45.50098900024042
+        }
+      ],
+      "queries": [
+        {
+          "kind": "road",
+          "top": -3,
+          "under": -3.45,
+          "water": -7
+        },
+        {
+          "kind": "gc",
+          "top": -3,
+          "under": -3.18,
+          "water": -7.005238124393923
+        }
+      ],
+      "piers": [
+        {
+          "x": 21.712179149725532,
+          "z": 107.60598196848258,
+          "half": 0.575,
+          "dx": -0.013099312667987124,
+          "dz": 0.9999142003230209
+        },
+        {
+          "x": 25.88782085027447,
+          "z": 107.6606846981841,
+          "half": 0.575,
+          "dx": -0.013099312667987124,
+          "dz": 0.9999142003230209
+        },
+        {
+          "x": 21.512179149725533,
+          "z": 122.87264863514925,
+          "half": 0.575,
+          "dx": -0.013099312667987124,
+          "dz": 0.9999142003230209
+        },
+        {
+          "x": 25.68782085027447,
+          "z": 122.92735136485076,
+          "half": 0.575,
+          "dx": -0.013099312667987124,
+          "dz": 0.9999142003230209
+        },
+        {
+          "x": 21.312179149725534,
+          "z": 138.1393153018159,
+          "half": 0.575,
+          "dx": -0.013099312667987124,
+          "dz": 0.9999142003230209
+        },
+        {
+          "x": 25.48782085027447,
+          "z": 138.19401803151743,
+          "half": 0.575,
+          "dx": -0.013099312667987124,
+          "dz": 0.9999142003230209
+        }
+      ],
+      "texture": null,
+      "views": [
+        {
+          "view": "pillar",
+          "patch": {
+            "mean": 126.00291111111036,
+            "std": 0.27752685466768356,
+            "min": 125.66666666666667,
+            "max": 126.33333333333333
+          },
+          "camera": [
+            21.025687837171887,
+            -4.9399999999999995,
+            106.95193328696999
+          ],
+          "target": [
+            21.342123566854895,
+            -5,
+            107.22610190111095
+          ],
+          "calls": 4,
+          "triangles": 8838,
+          "textures": 0
+        },
+        {
+          "view": "walking",
+          "patch": null,
+          "camera": [
+            28.99836165131951,
+            -1.4,
+            102.06696237806948
+          ],
+          "target": [
+            28.867368524639637,
+            -2.6,
+            112.06610438129968
+          ],
+          "calls": 4,
+          "triangles": 8838,
+          "textures": 0
+        },
+        {
+          "view": "full",
+          "patch": null,
+          "camera": [
+            -9.886209616931211,
+            12,
+            83.45796955669063
+          ],
+          "target": [
+            22.60008579967698,
+            -4,
+            122.88690068733202
+          ],
+          "calls": 4,
+          "triangles": 8838,
+          "textures": 0
+        }
+      ]
+    },
+    "after": {
+      "meshes": {
+        "bridges-concrete": {
+          "triangles": 288,
+          "bytes": 38016,
+          "index": null,
+          "shadow": [
+            true,
+            true
+          ],
+          "map": false,
+          "bump": true,
+          "roughness": 0.95,
+          "shared": true,
+          "hashes": {
+            "position": "37ac7ac76aa7860fc928c92811062da20b87bce7002d5595258a3e117a3f0c12",
+            "normal": "0024e1a75208c6c4d1a6b00f22b3d41e2aa2d0522a773addfa5c148e6ff8e349",
+            "uv": "2cc3a22dc7c285603a239319094c484591de8456813a01ad5dfb8869b77c1644",
+            "color": "0ab6fc6a0ba36ea20b54c9b4cd07de8a80f9ae82e28fbd2fd04ff62b3b0fb4e6"
+          },
+          "attributeCounts": {
+            "position": 2592,
+            "normal": 2592,
+            "uv": 1728,
+            "color": 2592
+          }
+        },
+        "bridges-steel": {
+          "triangles": 7224,
+          "bytes": 953568,
+          "index": null,
+          "shadow": [
+            true,
+            true
+          ],
+          "map": false,
+          "bump": false,
+          "roughness": 0.55,
+          "shared": false,
+          "hashes": {
+            "position": "d63cb5799a59a496aeac14e8dbaa27bccf3ef4318bd08e1ca01b119d3b4b9719",
+            "normal": "9a4b948e51795a6325198f1476a24ddd6cf35471cf9a905022bbc5ec855e3e15",
+            "uv": "f7f4dbf5ebbd412ff986e6072661357f3c84212e80d0d7f37b6684b9746d841f",
+            "color": "7e338cfbef8a0c8c9a9e8c1e4cfc86f466f2e9c0fc3c427c6ee3e4d6a926c803"
+          },
+          "attributeCounts": {
+            "position": 65016,
+            "normal": 65016,
+            "uv": 43344,
+            "color": 65016
+          }
+        },
+        "bridges-asphalt": {
+          "triangles": 204,
+          "bytes": 19584,
+          "index": null,
+          "shadow": [
+            true,
+            true
+          ],
+          "map": false,
+          "bump": false,
+          "roughness": 0.85,
+          "shared": false,
+          "hashes": {
+            "position": "4bcaf943edbd3114ec8807a30368ae924374ebc51ec609a00ed4c144a8da134f",
+            "normal": "c51cf6d2a73ba77ae4dc7b82b7e96e36a6f960082d1f56b3f3509102c3406ad6",
+            "uv": "821db3a062842e5ef42efb71d955018d678e8a65a8928b933fdcdcf0dc8429ae"
+          },
+          "attributeCounts": {
+            "position": 1836,
+            "normal": 1836,
+            "uv": 1224
+          }
+        },
+        "bridges-water": {
+          "triangles": 1122,
+          "bytes": 107712,
+          "index": null,
+          "shadow": [
+            false,
+            true
+          ],
+          "map": false,
+          "bump": false,
+          "roughness": 0.15,
+          "shared": false,
+          "hashes": {
+            "position": "deeb201cd845abe6e5bb1a1ebb4c4224d1528d25d86be64f94a97d2d630f5fbf",
+            "uv": "95055f1a63352a46c94c71ccdd6253febbecfaaba1cecf7a164697b9a1b0cb29",
+            "normal": "b286e2094611b97d58ed656bc84def98ab9e3f99e015e26cee01cd01922c00b6"
+          },
+          "attributeCounts": {
+            "position": 10098,
+            "uv": 6732,
+            "normal": 10098
+          }
+        }
+      },
+      "records": [
+        {
+          "kind": "road",
+          "ends": [
+            [
+              23.9,
+              100
+            ],
+            [
+              23.3,
+              145.8
+            ]
+          ],
+          "width": 7.2,
+          "slab": 0.45,
+          "pier": 0.75,
+          "foot": 1.8,
+          "ext": 3.05,
+          "extW": 0.75,
+          "x": 23.6,
+          "z": 122.9,
+          "dx": -0.013099312667987124,
+          "dz": 0.9999142003230209,
+          "len": 45.80392996239516,
+          "full": 45.80392996239516
+        },
+        {
+          "kind": "gc",
+          "ends": [
+            [
+              18.1,
+              101
+            ],
+            [
+              17.8,
+              146.5
+            ]
+          ],
+          "length": 40,
+          "width": 3,
+          "slab": 0.18,
+          "truss": 1.45,
+          "panels": 10,
+          "steel": 0.1,
+          "ext": 0,
+          "extW": 0,
+          "x": 17.950000000000003,
+          "z": 123.75,
+          "dx": -0.006593263280462223,
+          "dz": 0.9999782642034348,
+          "len": 40,
+          "full": 45.50098900024042
+        }
+      ],
+      "queries": [
+        {
+          "kind": "road",
+          "top": -3,
+          "under": -3.45,
+          "water": -7
+        },
+        {
+          "kind": "gc",
+          "top": -3,
+          "under": -3.18,
+          "water": -7.005238124393923
+        }
+      ],
+      "piers": [
+        {
+          "x": 21.712179149725532,
+          "z": 107.60598196848258,
+          "half": 0.575,
+          "dx": -0.013099312667987124,
+          "dz": 0.9999142003230209
+        },
+        {
+          "x": 25.88782085027447,
+          "z": 107.6606846981841,
+          "half": 0.575,
+          "dx": -0.013099312667987124,
+          "dz": 0.9999142003230209
+        },
+        {
+          "x": 21.512179149725533,
+          "z": 122.87264863514925,
+          "half": 0.575,
+          "dx": -0.013099312667987124,
+          "dz": 0.9999142003230209
+        },
+        {
+          "x": 25.68782085027447,
+          "z": 122.92735136485076,
+          "half": 0.575,
+          "dx": -0.013099312667987124,
+          "dz": 0.9999142003230209
+        },
+        {
+          "x": 21.312179149725534,
+          "z": 138.1393153018159,
+          "half": 0.575,
+          "dx": -0.013099312667987124,
+          "dz": 0.9999142003230209
+        },
+        {
+          "x": 25.48782085027447,
+          "z": 138.19401803151743,
+          "half": 0.575,
+          "dx": -0.013099312667987124,
+          "dz": 0.9999142003230209
+        }
+      ],
+      "texture": {
+        "size": [
+          128,
+          128
+        ],
+        "bytes": 65536,
+        "version": 1,
+        "repeat": [
+          3.125,
+          3.125
+        ],
+        "colorSpace": ""
+      },
+      "views": [
+        {
+          "view": "pillar",
+          "patch": {
+            "mean": 125.70375555557692,
+            "std": 0.10698895523934969,
+            "min": 125.66666666666667,
+            "max": 126.33333333333333
+          },
+          "camera": [
+            21.025687837171887,
+            -4.9399999999999995,
+            106.95193328696999
+          ],
+          "target": [
+            21.342123566854895,
+            -5,
+            107.22610190111095
+          ],
+          "calls": 4,
+          "triangles": 8838,
+          "textures": 1
+        },
+        {
+          "view": "walking",
+          "patch": null,
+          "camera": [
+            28.99836165131951,
+            -1.4,
+            102.06696237806948
+          ],
+          "target": [
+            28.867368524639637,
+            -2.6,
+            112.06610438129968
+          ],
+          "calls": 4,
+          "triangles": 8838,
+          "textures": 1
+        },
+        {
+          "view": "full",
+          "patch": null,
+          "camera": [
+            -9.886209616931211,
+            12,
+            83.45796955669063
+          ],
+          "target": [
+            22.60008579967698,
+            -4,
+            122.88690068733202
+          ],
+          "calls": 4,
+          "triangles": 8838,
+          "textures": 1
+        }
+      ]
+    }
+  },
+  "source": {
+    "src/riverbridge.js": "c1b4ed0224449182fe1965783cec7d228f9f55ddc6c7b1854e0f8a95153ef3a8",
+    "src/bridgeconcrete.js": "d0d939e319bd861e0c30a36b7b81cfd845caa25331436ebf4000ff71471cf548",
+    "src/config.js": "ae85630b2b8351bd57f1ca55ca1ae6bcb58df9f6e88c8462b492541650f16485",
+    "src/surroundings.js": "118933bf24a89b9802e142a2261b779d023b2360062b4487feaa6e57a667ad51",
+    "src/roads.js": "fdf667ec499503f29760da2fa03a4fb25eb73c3a9914889936f82901847e2543",
+    "tools/bridgeconcrete2076.html": "c005565db8ef14a5ec27375133739bd1e2dff2900a24d53c857e15184a9e312b",
+    "tools/bridgeconcrete2076browser.cjs": "930485778dcfaa87863bf202dea4c9986dfb4a76c2f9b5dfa2347a1a1f960660"
+  }
+}

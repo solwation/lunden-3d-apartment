@@ -1,0 +1,20 @@
+✔ one deterministic linear scalar texture has bounded pores/roughness and a flat unmodified-granite swatch (24.130099ms)
+✔ per-face UVs measure local metres without changing geometry; granite has zero UV derivatives (1.34203ms)
+✔ both real bridge variants keep four batches, deck clearance, piers and granite mask (73.878829ms)
+✔ north abutment flank cannot lose support at 20/30fps; reverse remains free (41.246241ms)
+✔ both earth ramps and full timber deck remain walkable in both directions at walk/sprint and 20/60fps (142.01725ms)
+✔ solid fill checks match analytic fill; road/GC sibling decks and outdoor sprint contract unchanged (24.593522ms)
+✔ interpreted relative fall is tied to the checked source and preserves the road-bridge datum (1.639337ms)
+✔ rendered water vertices follow the same continuous downstream level as the terrain and splash logic (58.026692ms)
+✔ the default constant-deck bridge geometry and mapped park paths retain the pre-fall buffers (26.218806ms)
+✔ actual bank recovery is dry along the changing water level, and the outer terrain joins without a step (39.765782ms)
+✔ the timber deck and its ramp tops stay fixed while the front toes remain buried under the local shore (0.366208ms)
+✔ the water lies well under the bank crest along the whole river and the ribbon covers every submerged bank point (100.438569ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 568.762927
