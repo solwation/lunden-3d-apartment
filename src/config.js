@@ -4945,6 +4945,23 @@ export const SKYLAYER = { base: 150, top: 190, fade: 30, approach: 70, radius: 9
 export const HAZE = { blue: [0.6, 0.76, 1.08], overcastBlue: 0.8, scatter: { color: [1, 0.86, 0.66], amount: 0.12 }, k: 2.2,
   clear: { w: 0.35 }, overcast: { w: 0.85 } };
 
+// Dawn / dusk sky colour depth (#2124, src/daycycle.js `duskSkyState` + sky shader). All artistic *guesses* tuned by eye (no source).
+// Every term is zero by day (sun y above the `*` envelopes) and at night, so the day and night sky, stars and moon are unchanged.
+// `band`: the sky blends by `amount` towards a pink → violet layer between `low` and `high` (fractions of the view's height above the horizon, faded in/out over
+// `soft`), `pink` (linear) on the sun's side, `violet` away from it, while the sun's y is inside the `sun` envelope
+// (fades in over `sun[0..1]`, out over `sun[2..3]`; zero at a December noon, y 0.19, so the low winter day sky stays as it was). `zenith`: the zenith deepens towards `color` by `amount`. `halo`: a tight bright
+// halo round a low sun (pow 48 of the view's sun cosine, also in the haze so far silhouettes match), `color` x `amount`.
+// `rim`: thin cloud edges and low clouds lit from below by the low sun (`color` x `amount`, stronger towards the sun); the cloud body
+// turns a cooler violet-grey `body` by `bodyAmount`. Overcast (#2102) damps the band/zenith/halo by `overcast` x oc, the rim by `rimOvercast`.
+export const SKY_DUSK = {
+  sun: [-0.17, -0.04, 0.03, 0.16],
+  band: { low: 0.02, high: 0.45, soft: [0.1, 0.27], pink: [0.6, 0.2, 0.26], violet: [0.17, 0.11, 0.32], amount: 0.42 },
+  zenith: { color: [0.012, 0.026, 0.095], amount: 0.6 },
+  halo: { color: [1, 0.72, 0.42], amount: 0.9, sun: [-0.05, 0.02, 0.06, 0.17] },
+  rim: { color: [1, 0.5, 0.28], amount: 0.9, sun: [-0.14, -0.01, 0.04, 0.16] },
+  body: [0.2, 0.17, 0.27], bodyAmount: 0.55, overcast: 0.85, rimOvercast: 0.55,
+};
+
 // Cloud shadows (#2102, src/cloudshadow.js): soft, large patches of dimmed direct sun drifting over ground, roofs and facades under a
 // partly cloudy sky. Artistic *guesses* tuned by eye (no source). The pattern is two octaves of periodic value noise with `cell` m cells,
 // tiling every `cells` cells (so the wrapped drift never jumps), cast from a deck `height` m up along the sun (facades and roofs see the

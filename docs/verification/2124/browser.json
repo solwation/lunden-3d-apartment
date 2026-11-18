@@ -1,0 +1,184 @@
+{
+ "before": {
+  "phase": "before",
+  "views": [
+   {
+    "when": "sunset-clear",
+    "file": "before-sunset-clear.png",
+    "calls": 112,
+    "triangles": 602353,
+    "programs": 68,
+    "fog": "c39781",
+    "sunY": 0.02,
+    "overcast": 0,
+    "zenith": "2d567f",
+    "halo": null
+   },
+   {
+    "when": "sunset-part",
+    "file": "before-sunset-part.png",
+    "calls": 112,
+    "triangles": 602353,
+    "programs": 68,
+    "fog": "ac8a7c",
+    "sunY": 0.02,
+    "overcast": 0.45,
+    "zenith": "455c78",
+    "halo": null
+   },
+   {
+    "when": "dawn-clear",
+    "file": "before-dawn-clear.png",
+    "calls": 201,
+    "triangles": 682941,
+    "programs": 92,
+    "fog": "bd917c",
+    "sunY": 0.009,
+    "overcast": 0,
+    "zenith": "294e74",
+    "halo": null
+   },
+   {
+    "when": "dawn-part",
+    "file": "before-dawn-part.png",
+    "calls": 199,
+    "triangles": 682593,
+    "programs": 92,
+    "fog": "a78576",
+    "sunY": 0.009,
+    "overcast": 0.45,
+    "zenith": "41556f",
+    "halo": null
+   },
+   {
+    "when": "dusk-away",
+    "file": "before-dusk-away.png",
+    "calls": 70,
+    "triangles": 521252,
+    "programs": 93,
+    "fog": "ab816d",
+    "sunY": -0.017,
+    "overcast": 0,
+    "zenith": "1d3a58",
+    "halo": null
+   },
+   {
+    "when": "noon",
+    "file": "before-noon.png",
+    "calls": 104,
+    "triangles": 537785,
+    "programs": 98,
+    "fog": "cfe0ec",
+    "sunY": 0.844,
+    "overcast": 0,
+    "zenith": "4f8fd0",
+    "halo": null
+   },
+   {
+    "when": "night",
+    "file": "before-night.png",
+    "calls": 112,
+    "triangles": 602353,
+    "programs": 98,
+    "fog": "10182a",
+    "sunY": -0.19,
+    "overcast": 0,
+    "zenith": "04070f",
+    "halo": null
+   }
+  ],
+  "errors": [],
+  "shaderErrors": []
+ },
+ "after": {
+  "phase": "after",
+  "views": [
+   {
+    "when": "sunset-clear",
+    "file": "after-sunset-clear.png",
+    "calls": 112,
+    "triangles": 602353,
+    "programs": 68,
+    "fog": "c39781",
+    "sunY": 0.02,
+    "overcast": 0,
+    "zenith": "244169",
+    "halo": "f3d3a5"
+   },
+   {
+    "when": "sunset-part",
+    "file": "after-sunset-part.png",
+    "calls": 112,
+    "triangles": 602353,
+    "programs": 68,
+    "fog": "ac8a7c",
+    "sunY": 0.02,
+    "overcast": 0.45,
+    "zenith": "435570",
+    "halo": "c5aa85"
+   },
+   {
+    "when": "dawn-clear",
+    "file": "after-dawn-clear.png",
+    "calls": 201,
+    "triangles": 682941,
+    "programs": 92,
+    "fog": "bd917c",
+    "sunY": 0.009,
+    "overcast": 0,
+    "zenith": "223d64",
+    "halo": "eccca0"
+   },
+   {
+    "when": "dawn-part",
+    "file": "after-dawn-part.png",
+    "calls": 199,
+    "triangles": 682593,
+    "programs": 92,
+    "fog": "a78576",
+    "sunY": 0.009,
+    "overcast": 0.45,
+    "zenith": "3f5069",
+    "halo": "bfa481"
+   },
+   {
+    "when": "dusk-away",
+    "file": "after-dusk-away.png",
+    "calls": 70,
+    "triangles": 521252,
+    "programs": 93,
+    "fog": "ab816d",
+    "sunY": -0.017,
+    "overcast": 0,
+    "zenith": "1d3357",
+    "halo": "ac9474"
+   },
+   {
+    "when": "noon",
+    "file": "after-noon.png",
+    "calls": 104,
+    "triangles": 537785,
+    "programs": 98,
+    "fog": "cfe0ec",
+    "sunY": 0.844,
+    "overcast": 0,
+    "zenith": "4f8fd0",
+    "halo": "000000"
+   },
+   {
+    "when": "night",
+    "file": "after-night.png",
+    "calls": 112,
+    "triangles": 602353,
+    "programs": 98,
+    "fog": "10182a",
+    "sunY": -0.19,
+    "overcast": 0,
+    "zenith": "04070f",
+    "halo": "000000"
+   }
+  ],
+  "errors": [],
+  "shaderErrors": []
+ }
+}

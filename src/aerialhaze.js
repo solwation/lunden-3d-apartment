@@ -17,6 +17,7 @@ export const hazeUniforms = {
   fogHazeSun: { value: { x: 0, y: 1, z: 0, w: 6 } },   // world direction to the sun, w = glow exponent (the sky's pow(s, 6))
   fogHazeWarm: { value: { x: 0, y: 0, z: 0, w: 0 } },  // output-space colour added towards the sun at full fog; w = curve weight
   fogHazeBlue: { value: { x: 0, y: 0, z: 0, w: HAZE.k } }, // output-space colour added at mid haze (peak at fogFactor .5); w = curve k
+  fogHazeHalo: { value: { x: 0, y: 0, z: 0, w: 0 } },  // #2124: output-space colour of the sky's tight low-sun halo (pow 48) at full fog
 };
 
 const PARS_V = /* glsl */`
@@ -30,7 +31,7 @@ const VERT = /* glsl */`
 const PARS_F = /* glsl */`
 #ifdef USE_FOG
 	varying vec3 vFogDir;
-	uniform vec4 fogHazeSun, fogHazeWarm, fogHazeBlue;
+	uniform vec4 fogHazeSun, fogHazeWarm, fogHazeBlue, fogHazeHalo;
 	// #2100: three's smoothstep(near, far) blended towards a normalised exponential build-up (weight w, steepness k)
 	float hazeCurve( float d, float near, float far ) {
 		float s = smoothstep( near, far, d ), x = clamp( ( d - near ) / max( far - near, 1e-3 ), 0.0, 1.0 );
@@ -42,7 +43,8 @@ const LINEAR = 'float fogFactor = smoothstep( fogNear, fogFar, vFogDepth );';
 const MIX = 'gl_FragColor.rgb = mix( gl_FragColor.rgb, fogColor, fogFactor );';
 const FRAG_MIX = /* glsl */`vec3 hazeDir = normalize( vFogDir + vec3( 0.0, 1e-4, 0.0 ) );
 	float hazeSun = pow( max( dot( hazeDir, fogHazeSun.xyz ), 0.0 ), max( fogHazeSun.w, 1.0 ) );
-	vec3 hazeColor = fogColor + fogHazeBlue.rgb * ( 4.0 * fogFactor * ( 1.0 - fogFactor ) ) + fogHazeWarm.rgb * ( hazeSun * fogFactor );
+	float hazeHalo = hazeSun * hazeSun; hazeHalo *= hazeHalo; hazeHalo *= hazeHalo; // #2124: (s^6)^8, the sky's halo
+	vec3 hazeColor = fogColor + fogHazeBlue.rgb * ( 4.0 * fogFactor * ( 1.0 - fogFactor ) ) + ( fogHazeWarm.rgb * hazeSun + fogHazeHalo.rgb * hazeHalo ) * fogFactor;
 	gl_FragColor.rgb = mix( gl_FragColor.rgb, hazeColor, fogFactor );`;
 
 /** Patch three's fog chunks once (idempotent). Throws if three's chunks changed shape, so a three upgrade cannot silently drop it. */
@@ -71,17 +73,21 @@ export function hazeCurve(d, near, far, w, k) {
 }
 
 /** The haze parameters for a sky state (pure; DayCycle feeds it each frame). horizon/glow are linear THREE.Colors as the sky
- * shader gets them; day 0…1, oc overcast 0…1 (below the deck), glowAmt the sky's uGlowAmt, off 0…1 (cloud inside / flash).
- * Returns { sun: Vector3, warm: Color (output space), blue: Color (output space), w, k, scatter: Color (linear, for the sky) }. */
-export function hazeState({ sunDir, horizon, glow, glowAmt, day, oc, off = 0 }) {
+ * shader gets them; day 0…1, oc overcast 0…1 (below the deck), glowAmt the sky's uGlowAmt, off 0…1 (cloud inside / flash);
+ * halo (#2124) the sky's linear low-sun halo colour (already damped by weather/off), default none.
+ * Returns { sun: Vector3, warm: Color (output space), blue: Color (output space), halo: Color (output space), w, k, scatter: Color (linear, for the sky) }. */
+export function hazeState({ sunDir, horizon, glow, glowAmt, day, oc, off = 0, halo = null }) {
   const on = 1 - off, clear = day * (1 - oc);
   // a small daytime forward-scatter halo around a low sun (clear sky only), drawn identically by the sky shader
   const scatter = new THREE.Color().setRGB(...HAZE.scatter.color).multiplyScalar(HAZE.scatter.amount * clear * smooth(-0.05, 0.1, sunDir.y) * on);
   const H = horizon, hazeOut = toOut(H);
-  const warm = minus(toOut(H.clone().add(glow.clone().multiplyScalar(glowAmt)).add(scatter)), hazeOut).multiplyScalar(on);
+  const glowLin = H.clone().add(glow.clone().multiplyScalar(glowAmt)).add(scatter);
+  const warm = minus(toOut(glowLin), hazeOut).multiplyScalar(on);
+  // #2124: the sky's halo on top of the glow, so at full fog straight towards the sun the haze = the sky there (in output space)
+  const haloOut = halo ? minus(toOut(glowLin.clone().add(halo)), toOut(glowLin)) : new THREE.Color(0, 0, 0); // (halo carries `off` already)
   const blue = minus(toOut(H.clone().multiply(new THREE.Color().setRGB(...HAZE.blue))), hazeOut).multiplyScalar(day * (1 - HAZE.overcastBlue * oc) * on);
   const w = (HAZE.clear.w + (HAZE.overcast.w - HAZE.clear.w) * oc) * day * on;
-  return { sun: sunDir.clone(), warm, blue, w, k: HAZE.k, scatter };
+  return { sun: sunDir.clone(), warm, blue, halo: haloOut, w, k: HAZE.k, scatter };
 }
 
 /** Write a hazeState into the shared uniforms. */
@@ -90,6 +96,8 @@ export function applyHaze(s) {
   Object.assign(U.fogHazeSun.value, { x: s.sun.x, y: s.sun.y, z: s.sun.z });
   Object.assign(U.fogHazeWarm.value, { x: s.warm.r, y: s.warm.g, z: s.warm.b, w: s.w });
   Object.assign(U.fogHazeBlue.value, { x: s.blue.r, y: s.blue.g, z: s.blue.b, w: s.k });
+  const h = s.halo || { r: 0, g: 0, b: 0 };
+  Object.assign(U.fogHazeHalo.value, { x: h.r, y: h.g, z: h.b });
 }
 
 /** Back to three's stock fog (under water, #1944: its own pulled-in fog colour). */
@@ -97,6 +105,7 @@ export function clearHaze() {
   const U = hazeUniforms;
   Object.assign(U.fogHazeWarm.value, { x: 0, y: 0, z: 0, w: 0 });
   Object.assign(U.fogHazeBlue.value, { x: 0, y: 0, z: 0 });
+  Object.assign(U.fogHazeHalo.value, { x: 0, y: 0, z: 0 });
 }
 
 installHaze();

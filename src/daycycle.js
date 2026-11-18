@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { DAY, WEATHER, GARAGE, LIGHTING, SKYLAYER, CLOUD_SHADOW } from './config.js';
+import { DAY, WEATHER, GARAGE, LIGHTING, SKYLAYER, CLOUD_SHADOW, SKY_DUSK } from './config.js';
 import { hazeState, applyHaze } from './aerialhaze.js';
 import { cloudShadowState, applyCloudShadows, cloudDrift, stepCloudDrift } from './cloudshadow.js';
 
@@ -78,15 +78,24 @@ const skyFrag = /* glsl */`
   uniform float uNight, uGlowAmt, uOvercast, uFlash, uWhite, uAbove;
   uniform vec3 uCloudCol;
   uniform sampler2D uClouds;
+  uniform vec3 uPink, uViolet, uHalo, uRim, uBody; // #2124 dawn / dusk colour depth (all zero by day and night)
+  uniform vec4 uBand; // x low, y high, z soft-in, w soft-out (fractions of the height above the horizon)
+  uniform float uBodyAmt, uBandAmt;
   varying vec3 vDir;
   float hash(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
   void main() {
     vec3 d = normalize(vDir);
     float h = max(d.y, 0.0);
     vec3 col = mix(uHorizon, uZenith, pow(h, 0.55));
+    // #2124: a pink (sun side) → violet (away) layer above the warm horizon; zero at the horizon itself, so the haze contract holds
+    float sd = dot(d, uSun);
+    float band = smoothstep(uBand.x, uBand.x + uBand.z, h) * (1.0 - smoothstep(uBand.y - uBand.w, uBand.y, h));
+    col = mix(col, mix(uViolet, uPink, smoothstep(-0.6, 0.9, sd)), band * uBandAmt);
     // sunrise / sunset glow around the sun near the horizon
-    float s = max(dot(d, uSun), 0.0);
-    col += (uGlow * uGlowAmt + uScatter) * pow(s, 6.0) * (1.0 - h); // uScatter: the low sun's daytime halo, same as the haze (#2100)
+    float s = max(sd, 0.0), s6 = pow(s, 6.0);
+    col += (uGlow * uGlowAmt + uScatter) * s6 * (1.0 - h); // uScatter: the low sun's daytime halo, same as the haze (#2100)
+    float s48 = s6 * s6; s48 *= s48; s48 *= s48;
+    col += uHalo * s48; // #2124: tight bright halo round a low sun (the haze adds the same, aerialhaze.js fogHazeHalo)
     // sun and moon discs
     col = mix(col, vec3(1.0, 0.97, 0.88), smoothstep(0.9993, 0.9997, s) * step(-0.05, uSun.y));
     float m = max(dot(d, uMoon), 0.0);
@@ -101,6 +110,10 @@ const skyFrag = /* glsl */`
     float c = max(texture2D(uClouds, uv).a, uOvercast * (0.85 + 0.15 * texture2D(uClouds, uv * vec2(3.0, 2.0)).a)) * smoothstep(0.0, 0.08, d.y);
     vec3 cloud = mix(vec3(0.95), vec3(0.16, 0.18, 0.24), uNight) + uGlow * uGlowAmt * 0.35;
     cloud = mix(cloud, mix(vec3(0.5, 0.53, 0.57), vec3(0.08, 0.09, 0.11), uNight), uOvercast * 0.8); // rain clouds (#248)
+    // #2124: a low sun lights thin edges and low clouds from below; the shaded body turns cooler violet-grey
+    cloud = mix(cloud, uBody, uBodyAmt);
+    float thin = 1.0 - smoothstep(0.2, 0.75, c);
+    cloud += uRim * (0.3 + 0.7 * thin) * (0.15 + 0.85 * pow(s, 3.0)) * (1.0 - 0.6 * smoothstep(0.05, 0.4, d.y));
     col = mix(col, cloud, c * 0.85 * (1.0 - uAbove)); // #1368: these clouds are below us above the deck
     col += vec3(0.75, 0.78, 0.95) * uFlash; // lightning
     col = mix(col, uCloudCol, uWhite); // flying through the cloud deck (#1251): all one colour
@@ -154,6 +167,20 @@ const DUSK_HORIZON = new THREE.Color(0xe8a070), GLOW = new THREE.Color(0xff8a3c)
 const OVERCAST = new THREE.Color(0x8d969f), FLASH = new THREE.Color(0xdfe4ff), tmpC = new THREE.Color();
 const SUN_LOW = new THREE.Color(0xffb070), SUN_HIGH = new THREE.Color(0xfff1dc), MOON = new THREE.Color(0x9fb4ff);
 
+/** Dawn / dusk colour depth (#2124, SKY_DUSK; pure, for tests too): sky-shader colours (linear) for the sun height `sunY`, overcast
+ * `oc` 0…1 and `off` 0…1 (inside the cloud deck / lightning). All zero when the sun is high (day) or deep below the horizon (night).
+ * Returns { tw (band envelope 0…1), bandAmt (sky → band blend), pink, violet, halo, rim, body (Colors), bodyAmt, zenithAmt, zenith (Color) }. */
+export function duskSkyState(sunY, oc = 0, off = 0) {
+  const K = SKY_DUSK, on = 1 - off, env = ([a, b, c, d]) => smooth(a, b, sunY) * (1 - smooth(c, d, sunY));
+  const col = (rgb, k) => new THREE.Color().setRGB(rgb[0] * k, rgb[1] * k, rgb[2] * k);
+  const tw = env(K.sun), calm = 1 - K.overcast * oc;
+  const lum = 0.3 + 0.7 * smooth(-0.15, 0.04, sunY); // the band dims as the sun sinks further
+  const bandAmt = K.band.amount * tw * calm * on, halo = K.halo.amount * env(K.halo.sun) * calm * on;
+  const rim = K.rim.amount * env(K.rim.sun) * (1 - K.rimOvercast * oc) * on;
+  return { tw, bandAmt, pink: col(K.band.pink, lum), violet: col(K.band.violet, lum), halo: col(K.halo.color, halo), rim: col(K.rim.color, rim),
+    body: col(K.body, 1), bodyAmt: K.bodyAmount * tw * on, zenithAmt: K.zenith.amount * tw * calm * on, zenith: col(K.zenith.color, 1) };
+}
+
 export class DayCycle {
   /** lights: { sun, hemi, ambient, fill } from main.js; clouds: canvas texture with alpha; renderer (optional): its exposure follows the sky (#1073). */
   constructor({ scene, camera, lights, clouds, startHour, month, date = 15, year = new Date().getFullYear(), renderer = null }) {
@@ -164,6 +191,9 @@ export class DayCycle {
       uSun: { value: new THREE.Vector3() }, uMoon: { value: new THREE.Vector3() },
       uZenith: { value: new THREE.Color() }, uHorizon: { value: new THREE.Color() }, uGlow: { value: GLOW.clone() }, uScatter: { value: new THREE.Color(0, 0, 0) },
       uNight: { value: 0 }, uGlowAmt: { value: 0 }, uClouds: { value: clouds }, uOvercast: { value: 0 }, uFlash: { value: 0 }, uWhite: { value: 0 }, uAbove: { value: 0 }, uCloudCol: { value: new THREE.Color(0.9, 0.92, 0.95) },
+      uPink: { value: new THREE.Color(0, 0, 0) }, uViolet: { value: new THREE.Color(0, 0, 0) }, uHalo: { value: new THREE.Color(0, 0, 0) }, uRim: { value: new THREE.Color(0, 0, 0) },
+      uBody: { value: new THREE.Color(0, 0, 0) }, uBodyAmt: { value: 0 }, uBandAmt: { value: 0 },
+      uBand: { value: new THREE.Vector4(SKY_DUSK.band.low, SKY_DUSK.band.high, SKY_DUSK.band.soft[0], SKY_DUSK.band.soft[1]) },
     };
     this.deckUniforms = {
       uCover: { value: 0 }, uDay: { value: 1 }, uOver: { value: 0 }, uAlpha: { value: 1 }, uRadius: { value: SKYLAYER.radius }, uScale: { value: SKYLAYER.scale },
@@ -250,6 +280,11 @@ export class DayCycle {
     const inside = smooth(L.base - 15, L.base + 15, cy) * (1 - smooth(L.top - 15, L.top + 15, cy)) * cover;
     const oc = this.overcast * (1 - above), flash = this.flash * (1 - above);
     u.uOvercast.value = oc; u.uFlash.value = flash;
+    // #2124: dawn / dusk colour depth (pink → violet band, deeper zenith, sun halo, lit cloud edges), damped by overcast
+    const dusk = this.dusk = duskSkyState(this.sunDir.y, oc, Math.max(inside, Math.min(1, flash * 0.5)));
+    u.uZenith.value.lerp(dusk.zenith, dusk.zenithAmt);
+    u.uPink.value.copy(dusk.pink); u.uViolet.value.copy(dusk.violet); u.uHalo.value.copy(dusk.halo); u.uRim.value.copy(dusk.rim);
+    u.uBody.value.copy(dusk.body); u.uBodyAmt.value = dusk.bodyAmt; u.uBandAmt.value = dusk.bandAmt;
     u.uZenith.value.lerp(tmpC.copy(OVERCAST).multiplyScalar(0.15 + 0.85 * day), oc * 0.85);
     u.uHorizon.value.lerp(tmpC.copy(OVERCAST).multiplyScalar(0.2 + 0.8 * day), oc * 0.7);
     this.scene.fog.color.copy(u.uHorizon.value).lerp(FLASH, Math.min(1, flash * 0.5));
@@ -262,7 +297,7 @@ export class DayCycle {
       this.scene.fog.far += (L.far - this.scene.fog.far) * inside;
     } else this.scene.fog.near = this.fogNear;
     // aerial perspective (#2100): haze colour per view ray and weather; off inside the deck and while lightning flashes
-    const haze = hazeState({ sunDir: this.sunDir, horizon: u.uHorizon.value, glow: u.uGlow.value, glowAmt: u.uGlowAmt.value, day, oc, off: Math.max(inside, Math.min(1, flash * 0.5)) });
+    const haze = hazeState({ sunDir: this.sunDir, horizon: u.uHorizon.value, glow: u.uGlow.value, glowAmt: u.uGlowAmt.value, day, oc, off: Math.max(inside, Math.min(1, flash * 0.5)), halo: dusk.halo });
     applyHaze(haze); u.uScatter.value.copy(haze.scatter);
     // cloud shadows (#2102): drifting with the wind under a partly cloudy sky; off indoors (eased), inside the deck, in the garage
     const ik = dt > 0 ? Math.min(1, dt / CLOUD_SHADOW.indoorFade) : 1;

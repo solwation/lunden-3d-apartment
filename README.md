@@ -10,6 +10,8 @@ Gatlyktorna har en mjuk varm gloria runt lamphuvudet på natten och en ljusare l
 
 Vindens riktning och styrka följer det riktiga vädret (Open-Meteo) bakåt i tiden och prognosen några dagar framåt, och slumpas därefter efter årstid (mest sydväst–väst, blåsigare på vintern); träden, regnet, snön, molnskuggorna och avatarernas hår följer samma vind. [Före/efter och kontroller](docs/verification/2117/README.md).
 
+Gryning och solnedgång har mer färg: varm horisont med en ljus gloria runt solen, rosa och violett högre upp, mörkare zenit och molnkanter som lyses upp underifrån; dämpat när det är molnigt. [Före/efter mot väst och öst](docs/verification/2124/README.md).
+
 Halvklart väder ger mjuka molnskuggor som driver med vinden över mark, tak och fasader. [Före/efter park och gård](docs/verification/2102/README.md).
 
 Träd, buskar och vass vid ån rör sig mjukt i vinden: knappt synligt en lugn dag, tydligt i blåst och storm, med skuggor som följer med. [Före/efter och kontroller](docs/verification/2101/README.md).

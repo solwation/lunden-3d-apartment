@@ -736,6 +736,14 @@ src/aerialhaze.js      aerial perspective (#2100, `HAZE`, artistic *guesses*): p
                        (`divelook.js` `clearHaze`), inside the cloud deck and during lightning = stock fog. Uniforms are plain `{x,y,z,w}` objects added to
                        `UniformsLib.fog`/`ShaderLib`, which three's uniform cloning shares by reference; materials without them render stock fog.
                        `tools/aerialhazetest.mjs`, [before/after](../verification/2100/README.md).
+                       #2124: the haze also carries the sky's tight low-sun halo (`fogHazeHalo`, (s^6)^8 from the same pow), so the contract
+                       "full fog towards the sun = the sky there" includes the halo.
+src/daycycle.js        dawn / dusk colour depth (#2124, `SKY_DUSK`, artistic *guesses*; `duskSkyState(sunY, oc, off)` is pure): while the sun is
+                       low the sky blends towards a pink (sun side) → violet (away) layer above the horizon (zero on the horizon row itself, so
+                       fog and haze match unchanged), the zenith deepens, a tight bright halo (pow 48) circles the sun and the sky clouds get
+                       cooler violet-grey bodies with warm edges lit from below. Zero by day (incl. a December noon, sun y 0.19) and at night,
+                       damped by overcast, off inside the cloud deck / lightning. One sky program, no pass or texture. `tools/skydusktest.mjs`,
+                       [before/after](../verification/2124/README.md).
 src/cloudshadow.js     cloud shadows (#2102, `CLOUD_SHADOW`, artistic *guesses*): patches three's `lights_pars_begin` / `lights_fragment_begin` once at import
                        (no pass, texture or extra program): the shadow-casting directional light (index < `NUM_DIR_LIGHT_SHADOWS`, i.e. the sun/moon) is
                        multiplied by two octaves of periodic analytic value noise (110 m cells, tile 5.3 km so the wrapped drift never jumps), looked up
