@@ -88,8 +88,7 @@ src/roads.js           the roads' shapes (SITE.roads, #257): rectangles, centre 
                        Sankt Lars väg turns south round the plot's NE corner in a curve; Karpvägen runs along Hus C, bends
                        west into the park and meets Sankt Lars väg with rounded corners
 src/street.js          Sankt Lars väg's details (SITE.street, #128): curbs (along every `path` road and fillet, not across
-                       another road), asphalt patches, street lamps in rows along a road (emissive at night with a soft halo, #2104; #434: a warm pool on
-                       another road), asphalt patches (#2103: the asphalt's aggregate, a darker tone, three more), street lamps in rows along a road (emissive at night; #434: a warm pool on
+                       another road), asphalt patches (#2103: the asphalt's aggregate, a darker tone, three more), street lamps in rows along a road (emissive at night with a soft halo, #2104; #434: a warm pool on
                        the ground under each head, `lamps.pool`, one merged additive mesh from groundglow.js, fading with dusk), zebra crossing, cobbles, autumn leaves; ordinary bus-stop boards on the two existing pole sites (#1843),
                        a no-parking sign and HepCat's A-board (#129); #1534: the bus shelter's concrete
                        slabs (`shelterPaving`, clipped at the curb along the bend), timetable pillar and the boulder at the wall's end (#1702) in the curbs' batch
