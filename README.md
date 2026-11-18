@@ -1,5 +1,7 @@
 # Kv. Lunden L1007 i 3D
 
+Halvklart väder ger mjuka molnskuggor som driver med vinden över mark, tak och fasader. [Före/efter park och gård](docs/verification/2102/README.md).
+
 Träd, buskar och vass vid ån rör sig mjukt i vinden: knappt synligt en lugn dag, tydligt i blåst och storm, med skuggor som följer med. [Före/efter och kontroller](docs/verification/2101/README.md).
 
 Vid och efter regn blir asfalt, plattor och grus mörkare och blankare, med några grunda pölar som speglar himlen; marken torkar upp gradvis efteråt och ser likadan ut som förut i torrt väder. [Före/efter torrt, regn och efter regn](docs/verification/2099/README.md).

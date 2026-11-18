@@ -4892,6 +4892,17 @@ export const SKYLAYER = { base: 150, top: 190, fade: 30, approach: 70, radius: 9
 export const HAZE = { blue: [0.6, 0.76, 1.08], overcastBlue: 0.8, scatter: { color: [1, 0.86, 0.66], amount: 0.12 }, k: 2.2,
   clear: { w: 0.35 }, overcast: { w: 0.85 } };
 
+// Cloud shadows (#2102, src/cloudshadow.js): soft, large patches of dimmed direct sun drifting over ground, roofs and facades under a
+// partly cloudy sky. Artistic *guesses* tuned by eye (no source). The pattern is two octaves of periodic value noise with `cell` m cells,
+// tiling every `cells` cells (so the wrapped drift never jumps), cast from a deck `height` m up along the sun (facades and roofs see the
+// same clouds as the ground below them). It drifts `speed` m/s along `wind` (x, z; the way the cloud deck drifts and the rain slants,
+// src/daycycle.js / WEATHER.wind). Overcast `oc` (DayCycle) drives it: the pattern fades in between `fade[0]` and `fade[1]`, out again
+// (everything shaded, the sun already cut by WEATHER.sunCut) between `solid[0]` and 1; the noise threshold goes from `thr[0]` (few
+// clouds) to `thr[1]` (mostly cloud) with edge softness `soft`; a shaded spot keeps 1 − `strength` of the direct sun. Off at night (the
+// sun below `sun` y), above / inside the cloud deck, indoors (eased over `indoorFade` s), at quality level < `minLevel` and on phones.
+export const CLOUD_SHADOW = { cell: 110, cells: 48, height: 1200, speed: 5, wind: [-1, -0.4], fade: [0.05, 0.25], solid: [0.8, 1],
+  thr: [0.64, 0.36], soft: 0.08, strength: 0.85, sun: [0.0, 0.12], indoorFade: 1.5, minLevel: 1 };
+
 // Birds (#1252/#1924, src/birds.js): a few gulls circling the area, exclusive near/far instanced batches, no lights, no textures,
 // no sound. All numbers *guess*. `count` birds (`lowMemoryCount` on phones), the last `high` of them at flight altitude (`highAlt`
 // m, above the cloud deck of SKYLAYER; only drawn in clear weather or from above the deck), the rest between `alt` m round the

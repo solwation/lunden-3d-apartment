@@ -43,7 +43,7 @@ import { installEntrancePlantBatch } from './entranceplantbatch.js';
 import { runCheat, cheatList, isCommand } from './cheats.js';
 import { cleanHome, cleanEverything } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
-import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD, SHADOW_BOX, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING, VIEW_LOD, VIEW_NEAR, BIRDS, WET_GROUND } from './config.js';
+import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, CLOUD_SHADOW, STANDARD, SHADOW_BOX, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING, VIEW_LOD, VIEW_NEAR, BIRDS, WET_GROUND } from './config.js';
 import { fetchStartupJSON } from './startuprecovery.js';
 import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
 import { decideResourceProfile, resourceProfile, resourceProfileInfo } from './resourceprofile.js';
@@ -3851,6 +3851,7 @@ function step(dt) {
     }
     if (sun.target.position.x !== fx || sun.target.position.z !== fz) { sun.target.position.x = fx; sun.target.position.z = fz; sun.target.updateMatrixWorld(); shadowState.hold = Math.max(shadowState.hold, 0.1); }
   }
+  day.indoor = !player.outdoors || player.inCore || player.below; // #2102: no cloud shadows indoors (same test as the rain's)
   day.update(dt);
   const eyeUnderWater = diveLook.update(); // #1944 (after the day cycle: it sets the fog anew each frame)
   riverFlora?.update(dt, camera.position, player.below, eyeUnderWater, day.month); // #1956
@@ -4040,6 +4041,8 @@ quality.register('mirrors', { // the one mirror image (#50): its resolution, off
   // #1359: an off phone mirror keeps a 1px warm-up target, not unused 512² MSAA buffers.
   apply: (l) => { const n = QUALITY.mirror[l] || (lowMemory ? 1 : 0); if (n && mirrorTarget().width !== n) mirrorTarget().setSize(n, n); },
   state: (l) => (QUALITY.mirror[l] ? `${QUALITY.mirror[l]}² every ${QUALITY.mirrorEvery[l]} frame(s)` : 'off'), cost: 'a third pass over the room in a mirror' });
+quality.register('cloudShadows', { // #2102: the drifting cloud shadows' noise per lit fragment (off at the lowest level and on phones)
+  apply: (l) => { day.cloudShadows = !lowMemory && l >= CLOUD_SHADOW.minLevel; }, state: () => (day.cloudShadows ? 'on' : 'off'), cost: 'two value-noise octaves per lit fragment under a partly cloudy sky' });
 quality.register('weather', { // rain streaks / snowflakes / hail drawn (#248)
   apply: (l) => { weather.particleScale = QUALITY.particles[l]; }, state: (l) => `particles ×${QUALITY.particles[l]}`, cost: 'particle updates + overdraw' });
 quality.register('puddles', { // #2099: the wet ground's puddles (the darker, glossier film stays at every level); never on phones

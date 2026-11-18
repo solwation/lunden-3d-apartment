@@ -704,6 +704,16 @@ src/aerialhaze.js      aerial perspective (#2100, `HAZE`, artistic *guesses*): p
                        (`divelook.js` `clearHaze`), inside the cloud deck and during lightning = stock fog. Uniforms are plain `{x,y,z,w}` objects added to
                        `UniformsLib.fog`/`ShaderLib`, which three's uniform cloning shares by reference; materials without them render stock fog.
                        `tools/aerialhazetest.mjs`, [before/after](../verification/2100/README.md).
+src/cloudshadow.js     cloud shadows (#2102, `CLOUD_SHADOW`, artistic *guesses*): patches three's `lights_pars_begin` / `lights_fragment_begin` once at import
+                       (no pass, texture or extra program): the shadow-casting directional light (index < `NUM_DIR_LIGHT_SHADOWS`, i.e. the sun/moon) is
+                       multiplied by two octaves of periodic analytic value noise (110 m cells, tile 5.3 km so the wrapped drift never jumps), looked up
+                       where the sun ray through the fragment meets a deck `height` m up, so walls, roofs and the ground below share one cloud. It drifts
+                       `speed` m/s along `wind` (−x, like the cloud deck and the rain slant). `DayCycle.update` sets strength from overcast (fades in
+                       0.05–0.25, out again 0.8–1 where WEATHER.sunCut already dims everything) × the sun's height; 0 = one uniform branch, no noise:
+                       clear sky, full overcast, night, inside the deck, the garage, indoors (`day.indoor` from main.js, eased `indoorFade` s, so the
+                       view out of a window has none either) and the `cloudShadows` quality knob (off at level 0 and on phones). Lit built-in
+                       materials (standard/physical/lambert/phong/toon and their onBeforeCompile variants) share the uniforms by reference.
+                       `tools/cloudshadowtest.mjs`, [before/after](../verification/2102/README.md).
 src/balloon.js         hot-air balloon above the cloud deck (#1646, `BALLOON`, all numbers *guess*): one merged vertex-coloured Lambert mesh (envelope, basket, rim, ropes; ~900
                        triangles, no shadows, no light). `src/balloongeo.js` holds the pure parts: a wall-clock (`Date.now`) schedule so every client agrees (visible `window` s of
                        every `period` s, scaled in/out at the ends), the circling drift above the deck, the basket floor (`basketFloor`, a standable surface in Player.groundAt)
