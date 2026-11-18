@@ -10,9 +10,9 @@ a faint flash of small splashes on the wet asphalt/paving film, fading out with 
 
 | View | Before | After |
 |---|---|---|
-| Street near, raining | ![](before/rain-street.jpg) | ![](rain-street-0.jpg) |
-| Puddle detail, raining (after: four frames ~0.6 s apart) | ![](before/rain-street-zoom.jpg) | ![](rain-street-zoom-sequence.jpg) |
-| Courtyard near, raining (puddle left, splashes on the paving right) | ![](before/rain-courtyard.jpg) | ![](rain-courtyard.jpg) |
+| Street near, raining | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/e30ed6f0dbbc173828e70920b6a2a430ea95cdaf/docs/verification/2119/before/rain-street.jpg) | ![](rain-street-0.jpg) |
+| Puddle detail, raining (after: four frames ~0.6 s apart) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/e30ed6f0dbbc173828e70920b6a2a430ea95cdaf/docs/verification/2119/before/rain-street-zoom.jpg) | ![](rain-street-zoom-sequence.jpg) |
+| Courtyard near, raining (puddle left, splashes on the paving right) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/e30ed6f0dbbc173828e70920b6a2a430ea95cdaf/docs/verification/2119/before/rain-courtyard.jpg) | ![](rain-courtyard.jpg) |
 | Street near, after the rain (no rings) | – | ![](afterrain-street.jpg) |
 
 Sequence frames: [0](rain-street-0.jpg) · [1](rain-street-1.jpg) · [2](rain-street-2.jpg) · [3](rain-street-3.jpg).
@@ -33,3 +33,5 @@ Checks
 
 Limits: drop density and ring size are visual guesses; rings are faint at steep view angles (low Fresnel), as on real puddles. Rings
 are per-cell (two grids), not physically overlapping waves. Not measured on the Surface Pro.
+
+Publicering: Pages/Worker success på `e30ed6f`; före-bilder borttagna vid stängning och visas från den commiten.
