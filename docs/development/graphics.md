@@ -688,6 +688,12 @@ src/wetground.js       wet ground in and after rain (#2099, WET_GROUND, all *gue
                        puddles add DayCycle's own horizon/zenith colour by Schlick Fresnel (no mirror pass). Wet = 0 skips every branch (dry pixels
                        unchanged); the `puddles` quality knob turns puddles off at level 0 and on phones. `tools/wetgroundtest.mjs`,
                        [before/after](../verification/2099/README.md).
+                       #2119 (RAIN_RIPPLES, all *guess*): while it rains `uGroundWet.z` = the live rain (rain only, eased over `fade` s, 0 after the
+                       shower, in the snow months and with puddles off; `uWetTime` = real seconds, wrapped) and `rippleGLSL` (after the puddles'
+                       flattening, only where puddles compile, never in the `-lite` shaders) bends the normal: two offset grids of drop rings
+                       (one hashed drop per cell per period, a share by rain strength) in the puddles, a faint flash of small splashes (lower
+                       roughness) on the film, fading out with view distance (rings 9–22 m, splashes 3–9 m). No new draws, textures or passes;
+                       desktop keys unchanged per kind. `tools/rainripplestest.mjs`, [before/after](../verification/2119/README.md).
 src/leaflitter.js      fallen autumn leaves on the ground (#2105, LEAF_LITTER, all *guess*): `litterAmount(month)` is the share of full litter (Sep < Oct
                        < Nov; none in summer, spring and SEASON.snowMonths). `LeafLitter` (main.js, a seasons hook) writes it and the month's [fresh,
                        old] leaf tones to shared uniforms and, on the first autumn month, bakes one R8 density map over WALK (1 m texels): a sparse

@@ -1,0 +1,207 @@
+{
+ "phase": "before",
+ "rev": "HEAD",
+ "shots": [
+  {
+   "weather": "rain",
+   "name": "street-near",
+   "at": "5,-5,74,-32",
+   "frame": 0,
+   "file": "b/before-rain-street-near-0.png",
+   "calls": 197,
+   "triangles": 711307,
+   "textures": 61,
+   "programs": 99,
+   "rain": 0.8,
+   "kind": "rain",
+   "quality": 3,
+   "uGroundWet": [
+    1,
+    1,
+    0
+   ],
+   "uWetTime": null
+  },
+  {
+   "weather": "rain",
+   "name": "street-near",
+   "at": "5,-5,74,-32",
+   "frame": 1,
+   "file": "b/before-rain-street-near-1.png",
+   "calls": 197,
+   "triangles": 711307,
+   "textures": 61,
+   "programs": 99,
+   "rain": 0.8,
+   "kind": "rain",
+   "quality": 3,
+   "uGroundWet": [
+    1,
+    1,
+    0
+   ],
+   "uWetTime": null
+  },
+  {
+   "weather": "rain",
+   "name": "street-near",
+   "at": "5,-5,74,-32",
+   "frame": 2,
+   "file": "b/before-rain-street-near-2.png",
+   "calls": 197,
+   "triangles": 711307,
+   "textures": 61,
+   "programs": 99,
+   "rain": 0.8,
+   "kind": "rain",
+   "quality": 3,
+   "uGroundWet": [
+    1,
+    1,
+    0
+   ],
+   "uWetTime": null
+  },
+  {
+   "weather": "rain",
+   "name": "street-near",
+   "at": "5,-5,74,-32",
+   "frame": 3,
+   "file": "b/before-rain-street-near-3.png",
+   "calls": 197,
+   "triangles": 711307,
+   "textures": 61,
+   "programs": 99,
+   "rain": 0.8,
+   "kind": "rain",
+   "quality": 3,
+   "uGroundWet": [
+    1,
+    1,
+    0
+   ],
+   "uWetTime": null
+  },
+  {
+   "weather": "rain",
+   "name": "courtyard-near",
+   "at": "-31.2,31.6,25,-38",
+   "frame": 0,
+   "file": "b/before-rain-courtyard-near-0.png",
+   "calls": 171,
+   "triangles": 630846,
+   "textures": 55,
+   "programs": 90,
+   "rain": 0.8,
+   "kind": "rain",
+   "quality": 3,
+   "uGroundWet": [
+    1,
+    1,
+    0
+   ],
+   "uWetTime": null
+  },
+  {
+   "weather": "rain",
+   "name": "courtyard-near",
+   "at": "-31.2,31.6,25,-38",
+   "frame": 1,
+   "file": "b/before-rain-courtyard-near-1.png",
+   "calls": 171,
+   "triangles": 630846,
+   "textures": 55,
+   "programs": 90,
+   "rain": 0.8,
+   "kind": "rain",
+   "quality": 3,
+   "uGroundWet": [
+    1,
+    1,
+    0
+   ],
+   "uWetTime": null
+  },
+  {
+   "weather": "rain",
+   "name": "courtyard-near",
+   "at": "-31.2,31.6,25,-38",
+   "frame": 2,
+   "file": "b/before-rain-courtyard-near-2.png",
+   "calls": 171,
+   "triangles": 630846,
+   "textures": 55,
+   "programs": 90,
+   "rain": 0.8,
+   "kind": "rain",
+   "quality": 3,
+   "uGroundWet": [
+    1,
+    1,
+    0
+   ],
+   "uWetTime": null
+  },
+  {
+   "weather": "rain",
+   "name": "courtyard-near",
+   "at": "-31.2,31.6,25,-38",
+   "frame": 3,
+   "file": "b/before-rain-courtyard-near-3.png",
+   "calls": 171,
+   "triangles": 630846,
+   "textures": 55,
+   "programs": 90,
+   "rain": 0.8,
+   "kind": "rain",
+   "quality": 3,
+   "uGroundWet": [
+    1,
+    1,
+    0
+   ],
+   "uWetTime": null
+  },
+  {
+   "weather": "afterrain",
+   "name": "street-near",
+   "at": "5,-5,74,-32",
+   "frame": 0,
+   "file": "b/before-afterrain-street-near.png",
+   "calls": 196,
+   "triangles": 711307,
+   "textures": 61,
+   "programs": 98,
+   "rain": 0,
+   "kind": null,
+   "quality": 3,
+   "uGroundWet": [
+    0.5101599977190044,
+    0.7958999990495852,
+    0
+   ],
+   "uWetTime": null
+  },
+  {
+   "weather": "afterrain",
+   "name": "courtyard-near",
+   "at": "-31.2,31.6,25,-38",
+   "frame": 0,
+   "file": "b/before-afterrain-courtyard-near.png",
+   "calls": 169,
+   "triangles": 630522,
+   "textures": 55,
+   "programs": 88,
+   "rain": 0,
+   "kind": null,
+   "quality": 3,
+   "uGroundWet": [
+    0.5101599977190044,
+    0.7958999990495852,
+    0
+   ],
+   "uWetTime": null
+  }
+ ],
+ "errors": []
+}

@@ -2396,3 +2396,5 @@ Mitigation: on phones `wetGround`/`leafLitter` compile without the puddle noise 
 them: `puddles` and `detail` are off there), under `-lite` keys; same pixels, desktop shaders and keys unchanged
 (`tools/phonegroundlite2118test.mjs`). Measured effect is small: 304 programs either way, shader source −28 KB. Fewer programs
 on phones would need dropping the rain film and autumn tint there (~6–7 programs), or the wind-sway depth variants (2), both visible.
+#2119's rain rings and splashes follow the same rule: compiled only with the puddle code, so never into the `-lite` ground shaders
+(`tools/rainripplestest.mjs`); on desktop they add ALU only while it rains within ~22 m (no draws, textures or passes).

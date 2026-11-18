@@ -9969,6 +9969,22 @@ export const WET_GROUND = {
   },
   puddle: { scale: [3.4, 1.2], dark: 0.5, rough: 0.05, edge: 0.04, flat: [0.985, 0.998] },
 };
+// #2119: rain on the wet ground (src/wetground.js, desktop only: never compiled into the phone profile's `-lite` shaders, and
+// off with the puddles' quality knob). While it rains (uGroundWet.z = the live rain strength, eased over `fade` s; 0 when dry,
+// after the shower, in the snow months and with puddles off) the puddles get small expanding drop rings and the wet film a
+// faint glitter of splashes; both are only a bent normal (and, for the splashes, a lower roughness), so the sky reflection
+// and the sun's highlight show them; no particles, textures, draws or passes. Rings: one drop per `cell` m square per
+// `period` s in each of two offset grids, a share drops[0]…drops[1] of the cells (light…heavy rain), the front `width` m
+// wide grows to `radius` m (+ two widths ≤ half a cell) and fades as it grows; `tilt` = the steepest normal tilt. Splashes: `cell` m
+// cells flash `rate` times a second each for a share `share` × rain, each a short random tilt (`tilt`) and roughness
+// down to `rough`; per surface kind × `kinds` (none where a kind has no puddles: road paint). Both fade out with the view
+// distance between near[0] and near[1] m (no shimmer far away). `wrap`: the shader clock wraps every `wrap` s. All *guess*.
+export const RAIN_RIPPLES = {
+  fade: 2.5, wrap: 600,
+  rings: { cell: 0.34, period: 1.2, drops: [0.3, 0.85], radius: 0.12, width: 0.011, tilt: 0.45, near: [9, 22] },
+  splash: { cell: 0.04, rate: 6, share: 0.05, tilt: 0.55, rough: 0.12, near: [3, 9] },
+  kinds: { asphalt: 1, paving: 0.85, gravel: 0.5 },
+};
 // #2105: fallen autumn leaves on the outdoor ground (src/leaflitter.js): a fragment patch chained onto the lit ground materials
 // (lawns via grass.js, and every surface wetground.js patches: asphalt, paving, kerbs, gravel, road paint) draws small procedural
 // leaves in two jittered world-space grids, `cells` m apart, each leaf `len` (half-length, share of a cell) × `wide` (of its length).

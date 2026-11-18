@@ -3921,7 +3921,7 @@ function step(dt) {
   const moved = Math.hypot(player.pos.x - lastWeatherPos.x, player.pos.z - lastWeatherPos.z); // on foot (not a jump / spawn)
   lastWeatherPos.copy(player.pos);
   weather.update(dt, !player.outdoors || player.below || player.inCore, moved < 1 ? moved : 0, car.occupied ? car.openness : null, player.inPlayroom); // enclosed off-map clubhouse (#1485); (the garage: dry and muffled, #357) // after the day: it sets the overcast / flash the next day.update applies (#248)
-  groundWet.update(); // #2099: after the weather: the ground's film and puddles on the game clock
+  groundWet.update(dt); // #2099: after the weather: the ground's film and puddles on the game clock (#2119: dt runs the rain rings)
   riverFish?.update(dt, player.below, day.daylight); // #1752: drawn only within RIVER_FISH.drawDist m of the river
   fishHearts?.update(dt);
   ducks.update(dt, player.below || player.inCore || player.inPlayroom);
