@@ -7,11 +7,11 @@ SwiftShader. Before = `src/courtyard.js`/`src/riverpark.js` from 80b8ba4 served 
 
 | View | Before | After |
 |---|---|---|
-| Boule court + gravel strip, walk view | ![](before/walk-boule.jpg) | ![](walk-boule.jpg) |
-| Boule court close | ![](before/close-boule.jpg) | ![](close-boule.jpg) |
-| Park gravel path, walk view | ![](before/walk-park.jpg) | ![](walk-park.jpg) |
-| Courtyard from above (far) | ![](before/far-courtyard.jpg) | ![](far-courtyard.jpg) |
-| Winter (snow) | ![](before/walk-winter.jpg) | ![](walk-winter.jpg) |
+| Boule court + gravel strip, walk view | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/b0581f3528fb38df5e2a7ac029736678234b4661/docs/verification/2096/before/walk-boule.jpg) | ![](walk-boule.jpg) |
+| Boule court close | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/b0581f3528fb38df5e2a7ac029736678234b4661/docs/verification/2096/before/close-boule.jpg) | ![](close-boule.jpg) |
+| Park gravel path, walk view | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/b0581f3528fb38df5e2a7ac029736678234b4661/docs/verification/2096/before/walk-park.jpg) | ![](walk-park.jpg) |
+| Courtyard from above (far) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/b0581f3528fb38df5e2a7ac029736678234b4661/docs/verification/2096/before/far-courtyard.jpg) | ![](far-courtyard.jpg) |
+| Winter (snow) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/b0581f3528fb38df5e2a7ac029736678234b4661/docs/verification/2096/before/walk-winter.jpg) | ![](walk-winter.jpg) |
 
 Checks
 - `node --test tools/gravelsurfacetest.mjs`: 3/3 – deterministic map, linear mean = 0.6 within 0.002 per channel, visible
@@ -27,3 +27,5 @@ Checks
 
 Limits: in snow months the boule court is now plain snow (the old sand mottle tinted it ~10 % darker). The far school-yard
 backdrops and the outdoor gym's gravel keep their flat colours (not in this issue's scope).
+
+Publicering: Pages/Worker success på `b0581f3`; före-bilder borttagna vid stängning och visas från den commiten; sida-vid-sida-ark `pair-*.jpg`.
