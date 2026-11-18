@@ -100,8 +100,9 @@ ${puddles ? `  if (uGroundWet.y > 0.0) {
     float wetFlat = smoothstep(${f(Q.flat[0])}, ${f(Q.flat[1])}, abs(normalize(cross(dFdx(wetWorld), dFdy(wetWorld))).y));
     wetP = smoothstep(wetT, wetT + ${f(Q.edge)}, wetN) * wetFlat;
   }` : ''}
-  diffuseColor.rgb *= mix(1.0, ${f(K.dark)}, wetW) * mix(1.0, ${f(Q.dark)}, wetP);
-  roughnessFactor = mix(roughnessFactor, min(roughnessFactor, ${f(K.rough)}), wetW);
+  // damp darkens soon (×1.6), the gloss comes only as it soaks (wet²)
+  diffuseColor.rgb *= mix(1.0, ${f(K.dark)}, min(1.0, wetW * 1.6)) * mix(1.0, ${f(Q.dark)}, wetP);
+  roughnessFactor = mix(roughnessFactor, min(roughnessFactor, ${f(K.rough)}), wetW * wetW);
   roughnessFactor = mix(roughnessFactor, ${f(Q.rough)}, wetP);
 }`;
   const flatten = puddles ? /* glsl */ `
@@ -112,7 +113,7 @@ if (wetW > 0.0) {
   float wetF = 0.02 + 0.98 * pow(1.0 - clamp(dot(normal, wetV), 0.0, 1.0), 5.0);
   vec3 wetR = transpose(mat3(viewMatrix)) * reflect(-wetV, normal);
   vec3 wetSky = mix(uWetHorizon, uWetZenith, sqrt(clamp(wetR.y, 0.0, 1.0)));
-  reflectedLight.indirectSpecular += wetSky * wetF * (${f(P.sky.film)} * wetW * (1.0 - wetP) + ${f(P.sky.pool)} * wetP);
+  reflectedLight.indirectSpecular += wetSky * wetF * (${f(P.sky.film)} * wetW * wetW * (1.0 - wetP) + ${f(P.sky.pool)} * wetP);
 }`;
   return { head, surface, flatten, sky };
 }

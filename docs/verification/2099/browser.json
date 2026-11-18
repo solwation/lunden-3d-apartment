@@ -1,0 +1,247 @@
+{
+ "url": "?shot&cloud=&at=\u2026&year=2026&month=9&day=25&time=10.5&freeze[&weather=clear|rain]&nobirds&test=lazy",
+ "before_rev": "bc217d9",
+ "before": [
+  {
+   "weather": "dry",
+   "name": "street",
+   "at": "5,-5,74,-10",
+   "calls": 235,
+   "triangles": 735323,
+   "textures": 61,
+   "programs": 91,
+   "rain": 0,
+   "kind": null,
+   "quality": 0,
+   "uGroundWet": null,
+   "wetMeshes": 0
+  },
+  {
+   "weather": "dry",
+   "name": "street-high",
+   "at": "5,-9,74,-22,3.5",
+   "calls": 240,
+   "triangles": 753461,
+   "textures": 63,
+   "programs": 93,
+   "rain": 0,
+   "kind": null,
+   "quality": 0,
+   "uGroundWet": null,
+   "wetMeshes": 0
+  },
+  {
+   "weather": "dry",
+   "name": "courtyard",
+   "at": "-31.2,31.6,25,-24",
+   "calls": 246,
+   "triangles": 777866,
+   "textures": 57,
+   "programs": 85,
+   "rain": 0,
+   "kind": null,
+   "quality": 0,
+   "uGroundWet": null,
+   "wetMeshes": 0
+  },
+  {
+   "weather": "rain",
+   "name": "street",
+   "at": "5,-5,74,-10",
+   "calls": 236,
+   "triangles": 735323,
+   "textures": 61,
+   "programs": 92,
+   "rain": 0.8,
+   "kind": "rain",
+   "quality": 0,
+   "uGroundWet": null,
+   "wetMeshes": 0
+  },
+  {
+   "weather": "rain",
+   "name": "courtyard",
+   "at": "-31.2,31.6,25,-24",
+   "calls": 246,
+   "triangles": 774804,
+   "textures": 56,
+   "programs": 85,
+   "rain": 0.8,
+   "kind": "rain",
+   "quality": 0,
+   "uGroundWet": null,
+   "wetMeshes": 0
+  }
+ ],
+ "after_dry": [
+  {
+   "weather": "dry",
+   "name": "street",
+   "at": "5,-5,74,-10",
+   "calls": 235,
+   "triangles": 735323,
+   "textures": 61,
+   "programs": 97,
+   "rain": 0,
+   "kind": null,
+   "quality": 0,
+   "uGroundWet": [
+    0,
+    0,
+    0
+   ],
+   "wetMeshes": 16
+  },
+  {
+   "weather": "dry",
+   "name": "street-high",
+   "at": "5,-9,74,-22,3.5",
+   "calls": 240,
+   "triangles": 753461,
+   "textures": 63,
+   "programs": 98,
+   "rain": 0,
+   "kind": null,
+   "quality": 0,
+   "uGroundWet": [
+    0,
+    0,
+    0
+   ],
+   "wetMeshes": 16
+  },
+  {
+   "weather": "dry",
+   "name": "courtyard",
+   "at": "-31.2,31.6,25,-24",
+   "calls": 245,
+   "triangles": 774804,
+   "textures": 56,
+   "programs": 89,
+   "rain": 0,
+   "kind": null,
+   "quality": 0,
+   "uGroundWet": [
+    0,
+    0,
+    0
+   ],
+   "wetMeshes": 16
+  }
+ ],
+ "after_wet_final": [
+  {
+   "weather": "rain",
+   "name": "street",
+   "at": "5,-5,74,-10",
+   "calls": 236,
+   "triangles": 735323,
+   "textures": 61,
+   "programs": 98,
+   "rain": 0.8,
+   "kind": "rain",
+   "quality": 0,
+   "uGroundWet": [
+    1,
+    0,
+    0
+   ],
+   "wetMeshes": 16
+  },
+  {
+   "weather": "rain",
+   "name": "courtyard",
+   "at": "-31.2,31.6,25,-24",
+   "calls": 246,
+   "triangles": 774804,
+   "textures": 56,
+   "programs": 90,
+   "rain": 0.8,
+   "kind": "rain",
+   "quality": 0,
+   "uGroundWet": [
+    1,
+    0,
+    0
+   ],
+   "wetMeshes": 16
+  },
+  {
+   "weather": "afterrain",
+   "name": "street",
+   "at": "5,-5,74,-10",
+   "calls": 235,
+   "triangles": 735323,
+   "textures": 61,
+   "programs": 97,
+   "rain": 0,
+   "kind": null,
+   "quality": 0,
+   "uGroundWet": [
+    0.5101599977190044,
+    0,
+    0
+   ],
+   "wetMeshes": 16
+  },
+  {
+   "weather": "afterrain",
+   "name": "courtyard",
+   "at": "-31.2,31.6,25,-24",
+   "calls": 245,
+   "triangles": 774804,
+   "textures": 56,
+   "programs": 89,
+   "rain": 0,
+   "kind": null,
+   "quality": 0,
+   "uGroundWet": [
+    0.5101599977190044,
+    0,
+    0
+   ],
+   "wetMeshes": 16
+  },
+  {
+   "weather": "rain",
+   "name": "street-high",
+   "at": "5,-9,74,-22,3.5",
+   "calls": 241,
+   "triangles": 753461,
+   "textures": 63,
+   "programs": 99,
+   "rain": 0.8,
+   "kind": "rain",
+   "quality": 0,
+   "uGroundWet": [
+    1,
+    0,
+    0
+   ],
+   "wetMeshes": 16
+  },
+  {
+   "weather": "afterrain",
+   "name": "street-high",
+   "at": "5,-9,74,-22,3.5",
+   "calls": 240,
+   "triangles": 753461,
+   "textures": 63,
+   "programs": 98,
+   "rain": 0,
+   "kind": null,
+   "quality": 0,
+   "uGroundWet": [
+    0.5101599977190044,
+    0,
+    0
+   ],
+   "wetMeshes": 16
+  }
+ ],
+ "dry_pixel_compare": {
+  "street": "max 0, 0 px differ",
+  "street-high": "max 0, 0 px differ",
+  "courtyard": "max 7, 252 px differ (of 1024000): settled state differs by 1 call / 3062 tris (246 vs 245) as in #2096, not the ground"
+ }
+}

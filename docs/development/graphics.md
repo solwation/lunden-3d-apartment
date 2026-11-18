@@ -673,7 +673,8 @@ src/wetground.js       wet ground in and after rain (#2099, WET_GROUND, all *gue
                        real data or the seeded draw), so a dry afternoon after a morning shower starts damp. `wetGround(material, kind)` chains a
                        fragment-only patch (unique cache key `|wet2099-<kind>`, lampwash wraps it as before) onto the outdoor ground: the site
                        asphalt and park asphalt paths, street kerbs / asphalt patches / zebra paint / cobbles, site pavements, courtyard paving and
-                       brick, the exposed patio and every gravel surface. Soaked: albedo × `dark`, roughness down to `rough`; puddles where a world
+                       brick, the exposed patio, every gravel surface and the west/east/north backdrops' access surfaces. Soaked: albedo × `dark` (damp
+                       darkens at wet × 1.6), roughness down to `rough` (by wet²); puddles where a world
                        value noise peaks on flat ground (placement *guess*, not measured low points): darker, roughness 0.05, bump flattened. Film and
                        puddles add DayCycle's own horizon/zenith colour by Schlick Fresnel (no mirror pass). Wet = 0 skips every branch (dry pixels
                        unchanged); the `puddles` quality knob turns puddles off at level 0 and on phones. `tools/wetgroundtest.mjs`,
