@@ -689,6 +689,9 @@ src/lampwash.js        every lamp's light wherever the visitor is (#276, #294, #
                        sees: its visibility polygon (rays to walls, closed doors but not wardrobe fronts (#297), the façades' outer faces) is a row of a float
                        texture; lamp data in a small float texture. It shows k × (1 − pool) and the pool light k × pool (cross-fade,
                        Lights.update → `set(i, k, pool)`), so a lit room looks the same near, far, upstairs or from outside
+                       The injection is idempotent per suffix (#2090): a material that inherits an already washed callback
+                       (viewlod.js's parked-car clones under their dither fade) gets each wash once, not a redefined second copy
+                       that failed to compile and hid the near cars (`tools/lampwash2090test.mjs`, `tools/lampwash2090browser.cjs`)
 src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors); the lit mirrors (Badrum LED, Hollywood, Klk) use `litMirrorMaterial` + `litEmissive` + `litReflect` (LIGHTING.mirror, #339)
 src/reflections.js     mirror images: a Reflector per mirror, only the nearest one in view (< 4 m) renders; `dim` scales a lit mirror's image (#339)
                        Our own avatar in the mirrors (#691): `setMirrorExtra({ before, after })` runs around each reflector pass (not on a held frame), ghosts.js

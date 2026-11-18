@@ -1,0 +1,69 @@
+{
+ "base": "e66fc9e801e690d6ee7d5a03d26df5b4150601c4",
+ "head": "e66fc9e801e690d6ee7d5a03d26df5b4150601c4",
+ "phases": {
+  "before": {
+   "errors": [
+    "THREE.WebGLProgram: Shader Error 0 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:336: 'uLampData' : redefinition\nERROR: 0:337: 'uLampVis' : redefinition\nERROR: 0:340: 'lampWash' : function already has a body\n\n  331:   else if (i == 12) v = 15.0; else if (i == 13) v = 7.0; else if (i == 14) v = 13.0; else v = 5.0;\n  332:   return (v + 0.5) / 16.0;\n  333: }\n  334: \n  335: \n> 336:     uniform highp sampler2D uLampData; // per lamp (x): row 0 x y z range, row 1 colour × intensity and how much sho",
+    "THREE.WebGLProgram: Shader Error 1282 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:336: 'uLampData' : redefinition\nERROR: 0:337: 'uLampVis' : redefinition\nERROR: 0:340: 'lampWash' : function already has a body\n\n  331:   else if (i == 12) v = 15.0; else if (i == 13) v = 7.0; else if (i == 14) v = 13.0; else v = 5.0;\n  332:   return (v + 0.5) / 16.0;\n  333: }\n  334: \n  335: \n> 336:     uniform highp sampler2D uLampData; // per lamp (x): row 0 x y z range, row 1 colour × intensity and how much ",
+    "THREE.WebGLProgram: Shader Error 1282 - VALIDATE_STATUS false\n\nMaterial Name: \nMaterial Type: MeshStandardMaterial\n\nProgram Info Log: Fragment shader is not compiled.\n\nFRAGMENT\n\nERROR: 0:335: 'uLampData' : redefinition\nERROR: 0:336: 'uLampVis' : redefinition\nERROR: 0:339: 'lampWash' : function already has a body\n\n  330:   else if (i == 12) v = 15.0; else if (i == 13) v = 7.0; else if (i == 14) v = 13.0; else v = 5.0;\n  331:   return (v + 0.5) / 16.0;\n  332: }\n  333: \n  334: \n> 335:     uniform highp sampler2D uLampData; // per lamp (x): row 0 x y z range, row 1 colour × intensity and how much "
+   ],
+   "redefinition": 3,
+   "loadMs": 52595,
+   "beforeSwitch": {
+    "redefinition": 0,
+    "invalid": []
+   },
+   "afterRoomShot": {
+    "redefinition": 0,
+    "invalid": []
+   },
+   "car": [
+    -59.25,
+    -13.707930564880371
+   ],
+   "afterCarShot": {
+    "redefinition": 3,
+    "invalid": [
+     ":MeshStandardMaterial",
+     "site-instance-:MeshStandardMaterial"
+    ]
+   },
+   "render": {
+    "calls": 56,
+    "programs": 81
+   },
+   "ms": 171731
+  },
+  "after": {
+   "errors": [],
+   "redefinition": 0,
+   "loadMs": 50979,
+   "beforeSwitch": {
+    "redefinition": 0,
+    "invalid": []
+   },
+   "afterRoomShot": {
+    "redefinition": 0,
+    "invalid": []
+   },
+   "car": [
+    -59.25,
+    -13.707930564880371
+   ],
+   "afterCarShot": {
+    "redefinition": 0,
+    "invalid": []
+   },
+   "render": {
+    "calls": 56,
+    "programs": 81
+   },
+   "ms": 176694
+  }
+ },
+ "external": [
+  "https://lunden-l1007.olw.workers.dev/beer-shelf",
+  "https://lunden-l1007.olw.workers.dev/beer-shelf"
+ ]
+}

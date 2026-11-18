@@ -169,6 +169,9 @@ class LampWashes {
         m.onBeforeCompile = function (shader, renderer) {
           before.call(this, shader, renderer);
           Object.assign(shader.uniforms, uniforms);
+          // a material can inherit an already washed callback (viewlod.js's car clones wrap it in their dither fade,
+          // #2090): this wash goes into the shader once, never as a second, redefined copy
+          if (shader.fragmentShader.includes(`vec3 lampWash${sfx}(vec3`)) return;
           shader.fragmentShader = shader.fragmentShader
             .replace('#include <common>', `#include <common>\n${head}`)
             .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${body}`);
