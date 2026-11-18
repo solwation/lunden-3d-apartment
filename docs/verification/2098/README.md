@@ -18,9 +18,9 @@ kedjas och körs före bänkens färgsteg, så dess mättnadsmask ser fortfarand
 
 | Vy | Före | Efter |
 |---|---|---|
-| Parkbänk vid boulebanan, nära | ![](before/gard-bank-nara-before.jpg) | ![](gard-bank-nara-after.jpg) |
-| Parkbänkarna på några meters håll | ![](before/gard-bank-before.jpg) | ![](gard-bank-after.jpg) |
-| Busskurens bänk | ![](before/busskur-bank-before.jpg) | ![](busskur-bank-after.jpg) |
+| Parkbänk vid boulebanan, nära | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/c96d77ed32fe3408bd244c018528d777b9eb43ce/docs/verification/2098/before/gard-bank-nara-before.jpg) | ![](gard-bank-nara-after.jpg) |
+| Parkbänkarna på några meters håll | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/c96d77ed32fe3408bd244c018528d777b9eb43ce/docs/verification/2098/before/gard-bank-before.jpg) | ![](gard-bank-after.jpg) |
+| Busskurens bänk | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/c96d77ed32fe3408bd244c018528d777b9eb43ce/docs/verification/2098/before/busskur-bank-before.jpg) | ![](busskur-bank-after.jpg) |
 
 Detalj (före | efter): ![](detalj-gard.jpg) ![](detalj-busskur.jpg)
 
@@ -45,3 +45,5 @@ Detalj (före | efter): ![](detalj-gard.jpg) ![](detalj-busskur.jpg)
 Gården (parkbänkarna och pergolornas bänkar) och södra busskuren. Skolgårdarnas lekbänkar ligger i
 bakgrundens stora `access`-batch och hållplatsbänken vid skolmuren i växthusramens batch; de är
 inte märkta (attributen skulle läggas på hela batcherna).
+
+Publicering: Pages/Worker success på `c96d77e`; före-bilder borttagna vid stängning och visas från den commiten.
