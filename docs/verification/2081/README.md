@@ -90,3 +90,7 @@ the existing consumer. Neutral public applicability is tracked separately in
 Reproduce with Three 0.170.0 at the ignored node_modules/three link, an HTTP server for
 this checkout on 8210, and the repository browser wrapper. Baseline modules are routed
 from Git only in the test; the fixture uses an inline favicon and no personal resources.
+
+## Integration review
+
+Root read the helper/consumer diff and all green groups, and opened all three final sheets. Product config/foliage/helper bytes exactly match tested63275360/aa74e307. No conflicts or unrelated source changes. The very subtle near-only effect and almost unchanged context/LOD views are accepted as documented, not advertised as a larger change. Source-bound results reused without another browser or broad gate.
