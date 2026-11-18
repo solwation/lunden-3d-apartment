@@ -10,9 +10,9 @@ Browser: `tools/lamphalo2104browser.cjs` (headless Chromium, SwiftShader, Octobe
 
 | View | Before | After |
 |---|---|---|
-| Night, near (Sankt Lars väg, looking west) | ![](before/natt-nara.jpg) | ![](natt-nara.jpg) |
-| Night, at a distance (round the corner) | ![](before/natt-avstand.jpg) | ![](natt-avstand.jpg) |
-| Noon, same as near (halos hidden) | ![](before/dag-nara.jpg) | ![](dag-nara.jpg) |
+| Night, near (Sankt Lars väg, looking west) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/01e9dbd9890a798056a8751bc149f773faedb0a2/docs/verification/2104/before/natt-nara.jpg) | ![](natt-nara.jpg) |
+| Night, at a distance (round the corner) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/01e9dbd9890a798056a8751bc149f773faedb0a2/docs/verification/2104/before/natt-avstand.jpg) | ![](natt-avstand.jpg) |
+| Noon, same as near (halos hidden) | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/01e9dbd9890a798056a8751bc149f773faedb0a2/docs/verification/2104/before/dag-nara.jpg) | ![](dag-nara.jpg) |
 
 Measured (`browser.json`): scene lights 9 → 9 in every view; night draw calls +1 (176 → 177 near, 358 → 359 far),
 +384 triangles (192 quads), +1–2 programs (the halo and the pool core programs); textures unchanged (the shared groundglow
@@ -21,3 +21,5 @@ animated sky and wind sway, mean < 1/255). Zero page or shader errors in both ph
 
 Not checked in the browser: rain (the wet boost is a uniform read checked by the node test), the phone profile (the halo is
 one draw of 192 quads at any quality), and the view from a balcony (the above-dimming is by eye in the shader).
+
+Publicering: Pages/Worker success på `01e9dbd`; före-bilder borttagna vid stängning och visas från den commiten.
