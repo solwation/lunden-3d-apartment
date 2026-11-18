@@ -8,6 +8,7 @@ import { COURTYARD as C, COLORS, SITE, PLAYER, BICYCLE, REST } from './config.js
 import { pavingTexture } from './patio.js';
 import { registerSnow, registerTrees } from './seasons.js';
 import { SEASON } from './config.js';
+import { gravelMaterial, gravelColor } from './gravelsurface.js';
 import { groundY } from './surroundings.js';
 import { restTarget } from './rest.js';
 import { surfaceBox } from './furniture.js';
@@ -149,6 +150,18 @@ function mottle(g) {
   return g;
 }
 
+/** #2096: the courtyard gravel's colour and the boule court's (its former sand tone); the court's tint is per vertex. */
+const GRAVEL_HEX = 0xcfc6b2, BOULE_HEX = 0xe0cfa0;
+const BOULE_TINT = (() => { const g = gravelColor(GRAVEL_HEX), b = gravelColor(BOULE_HEX); return [b.r / g.r, b.g / g.g, b.b / g.b]; })();
+/** Per-vertex tint (times any mottle already there) for the gravel batch; non-indexed, like the merge below wants. */
+function gravelTint(g, tint = [1, 1, 1]) {
+  g = g.index ? g.toNonIndexed() : g;
+  const n = g.attributes.position.count, old = g.attributes.color, col = new Float32Array(n * 3);
+  for (let j = 0; j < n; j++) for (let k = 0; k < 3; k++) col[j * 3 + k] = tint[k] * (old ? old.array[j * 3 + k] : 1);
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  return g;
+}
+
 /** Red brick pavers in a herringbone pattern, 1 × 1 m per tile (#149). */
 function herringbone() {
   const n = 256, c = document.createElement('canvas'); c.width = c.height = n;
@@ -179,7 +192,7 @@ export function buildCourtyard() {
     seats.segments.push(...segs); seats.footprints.push(quad);
   };
   for (const p of C.paths) geos.paving.push(plate(p, 0.006, p.x0 < R.x1 && p.x1 > R.x0 && p.z0 < R.z1 && p.z1 > R.z0));
-  for (const g of C.gravel) geos.gravel.push(plate(g, 0.003));
+  for (const g of C.gravel) geos.gravel.push(gravelTint(plate(g, 0.003))); // #2096: shared gravel map (metre UVs from plate())
   // pergolas: posts, beams, cross slats; a dining table and two benches under them
   for (const p of C.pergolas) {
     const bulbStart = bulbs.length;
@@ -280,7 +293,7 @@ export function buildCourtyard() {
   // the boule court: fine gravel with a low timber edge
   {
     const b = C.boule;
-    geos.sand.push(plate(b, 0.03));
+    geos.gravel.push(gravelTint(mottle(plate(b, 0.03)), BOULE_TINT)); // #2096: the gravel map in the court's own sandier tone
     geos.wood.push(box(b.x0, b.x1, 0, 0.1, b.z0, b.z0 + 0.08), box(b.x0, b.x1, 0, 0.1, b.z1 - 0.08, b.z1),
       box(b.x0, b.x0 + 0.08, 0, 0.1, b.z0, b.z1), box(b.x1 - 0.08, b.x1, 0, 0.1, b.z0, b.z1));
   }
@@ -443,7 +456,7 @@ export function buildCourtyard() {
   const paveTex = pavingTexture();
   const mats = {
     paving: new THREE.MeshStandardMaterial({ map: paveTex, roughness: 0.95 }),
-    gravel: new THREE.MeshStandardMaterial({ color: 0xcfc6b2, roughness: 1 }),
+    gravel: gravelMaterial(GRAVEL_HEX, { vertexColors: true, name: 'courtyard-gravel' }), // #2096: stones, mean colour kept
     sand: new THREE.MeshStandardMaterial({ color: 0xe0cfa0, vertexColors: true, roughness: 1 }), // mottled (#681)
     wood: new THREE.MeshStandardMaterial({ color: 0x8a6544, map: woodGrain(), vertexColors: true, roughness: 0.8 }), // grain + a tone per board (#682)
     metal: new THREE.MeshStandardMaterial({ color: 0x23262a, roughness: 0.5, metalness: 0.5 }),

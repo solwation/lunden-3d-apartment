@@ -1,0 +1,120 @@
+{
+ "phase": "before",
+ "views": [
+  {
+   "name": "walk-boule",
+   "at": "-31.2,31.6,25,-24",
+   "month": 6,
+   "file": "docs/verification/2096/before-walk-boule.png",
+   "calls": 245,
+   "triangles": 749076,
+   "textures": 52,
+   "geometries": 281,
+   "gravel": [
+    {
+     "name": "",
+     "tris": 4,
+     "map": false,
+     "vc": false
+    },
+    {
+     "name": "park-paths",
+     "tris": 2216,
+     "map": false,
+     "vc": false
+    }
+   ]
+  },
+  {
+   "name": "close-boule",
+   "at": "-33.6,29.6,20,-48",
+   "month": 6,
+   "file": "docs/verification/2096/before-close-boule.png",
+   "calls": 99,
+   "triangles": 458738,
+   "textures": 35,
+   "geometries": 166,
+   "gravel": [
+    {
+     "name": "",
+     "tris": 4,
+     "map": false,
+     "vc": false
+    },
+    {
+     "name": "park-paths",
+     "tris": 2216,
+     "map": false,
+     "vc": false
+    }
+   ]
+  },
+  {
+   "name": "walk-park",
+   "at": "-40.3,99,4,-16",
+   "month": 6,
+   "file": "docs/verification/2096/before-walk-park.png",
+   "calls": 413,
+   "triangles": 902444,
+   "textures": 79,
+   "geometries": 440,
+   "gravel": [
+    {
+     "name": "",
+     "tris": 4,
+     "map": false,
+     "vc": false
+    },
+    {
+     "name": "park-paths",
+     "tris": 2216,
+     "map": false,
+     "vc": false
+    }
+   ]
+  },
+  {
+   "name": "far-courtyard",
+   "at": "-14,46,30,-38,16",
+   "month": 6,
+   "file": "docs/verification/2096/before-far-courtyard.png",
+   "calls": 319,
+   "triangles": 772931,
+   "textures": 57,
+   "geometries": 353,
+   "gravel": [
+    {
+     "name": "",
+     "tris": 4,
+     "map": false,
+     "vc": false
+    },
+    {
+     "name": "park-paths",
+     "tris": 2216,
+     "map": false,
+     "vc": false
+    }
+   ]
+  },
+  {
+   "name": "walk-winter",
+   "at": "-31.2,31.6,25,-24",
+   "month": 1,
+   "file": "docs/verification/2096/before-walk-winter.png",
+   "calls": 243,
+   "triangles": 711672,
+   "textures": 44,
+   "geometries": 285,
+   "gravel": [
+    {
+     "name": "park-paths",
+     "tris": 2216,
+     "map": false,
+     "vc": false
+    }
+   ]
+  }
+ ],
+ "errors": []
+}
