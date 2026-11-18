@@ -44,3 +44,5 @@ camera before (left) and after (right), half size.
 - Repair patches stay axis-aligned flat rectangles at y 0.016 (street level north of Hus L and the east leg only).
 - Bridge/backdrop roads and park paths have their own materials and are unchanged. No FPS claim: a few hashes and value-noise
   taps per local road fragment were not timed on the target hardware.
+
+Publicering: Pages/Worker success på `7ce3213`; bild-URL:er HTTP 200 före stängning.
