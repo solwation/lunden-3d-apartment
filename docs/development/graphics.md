@@ -1373,3 +1373,31 @@ Checks: `node --test tools/tilesurfacetest.mjs` and the one matched production-b
 `tools/browsertest.sh node tools/tilesurface2070browser.cjs SITE docs/verification/2070`.
 The fixture uses the real plan and `buildInterior`/`buildStandardInterior` in controlled light;
 it is not a complete World/device test. [Images, source hashes, exact budget and limits](../verification/2070/README.md).
+
+
+## Local asphalt aggregate (#2072)
+
+`src/asphaltsurface.js` gives the existing local road mesh in `surroundings.js` one cached
+material and two shared 512² RGBA textures: sRGB aggregate colour and linear packed height
+(R)/absolute roughness (G). Geometry UVs use local world X/Z metres, so adjoining strips,
+fillets and sloping sections share a fixed 1.6 m repeat and phase. Positions, normals,
+indices, road shape, height and markings stay exact; the existing UV allocation is replaced
+at the same byte count. Bridge/distant road and pavement materials are outside this change.
+
+`ASPHALT_SURFACE` contains artistic guesses: roughly 7 mm aggregate cells, 0.45 mm shallow
+bump, roughness 0.69–0.88 and quiet ±3.5% broad colour modulation from two metre-based sine
+terms. These represent ordinary aggregate and binder, not surveyed wear, repairs or damage.
+Trilinear mipmaps and anisotropy 4 soften grain at distance. The fragment-only tone hook is
+registered with the native vertex policy; it changes no bounds or shadow geometry.
+
+The existing `flat()` / `registerSnow` path continues to own winter colour and colour map.
+Only this new material opts into auxiliary-map restoration: snow removes bump/roughness maps
+and restores the former road roughness 0.7; summer restores the same cached texture objects.
+The broad-tone fragment code is guarded by `USE_MAP`, so it also disappears under snow.
+No shared winter contract changes. No new light, pass, geometry or per-frame upload is added.
+
+Checks: three Node tests in `tools/asphaltsurfacetest.mjs`, existing `tools/roadendstest.mjs`,
+and one matched production-road browser pass (near/walking/far/winter). Two extra textures
+cost 2,097,152 base-level bytes, 2,796,200 bytes with every mip level. Native bump/roughness
+sampling and two fragment sine terms add work; no timing/FPS improvement is claimed.
+[Inspected paired images, exact counts, source provenance and limits](../verification/2072/README.md).

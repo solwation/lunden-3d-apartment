@@ -10,6 +10,7 @@ import {buildEdgeBackdrop} from './edgebackdrop.js';
 import {buildWestBackdrop,buildEastBackdrop,buildNorthBackdrop,westTreeSpots,eastTreeSpots,northTreeSpots} from './sitebackdrop.js';
 import { buildRiverPark, parkDeckAt, parkFillAt, renderedParkFillY, parkRampFill, parkTreeSpots, parkInfillSpots, parkShrubSpots } from './riverpark.js';
 import * as THREE from 'three';
+import { asphaltMaterial, asphaltUV } from './asphaltsurface.js';
 import { grassUV, grassMaterial } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR, SOUTH_PLATEAU, PADDOCK, PARKING_SEAM, MUSSELS } from './config.js';
@@ -1948,7 +1949,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   const roadGround = (x, z) => Math.max(groundY(x, z), renderedTerrainY(x, z)); roadGround.grid = () => renderedTerrainY.grid();
   const asphalt = [...S.roads, { x0: gd.drive, x1: gd.x + 0.05, z0: gd.z0 - 0.5, z1: gd.z1 + 0.5 }].flatMap((r) => r.path ? [pathStrip(r, (w) => -w / 2, (w) => w / 2, 0.012, roadGround)]
     : r.fillets ? r.fillets.map((f) => filletGeometry(f, 0.012, groundY)) : [groundStrip(r.x0, r.x1, r.z0, r.z1, 0.012)]);
-  flat(asphalt, new THREE.MeshStandardMaterial({ color: COLORS.asphalt, roughness: 0.7 }), 0xd9dfe4); // ploughed, a little grey; damp (#128)
+  flat(asphalt.map(asphaltUV), asphaltMaterial(), 0xd9dfe4).name = 'site-asphalt'; // ploughed, a little grey; damp (#128)
   // pavements along the roads (left out where they would lie on another road's asphalt: a junction's mouth)
   const pavementClip=(road)=>road.name==='Sankt Lars väg'?c=>roadBridgeSpan(c.reduce((s,p)=>s+p[0],0)/4,c.reduce((s,p)=>s+p[1],0)/4)||c.every(([x,z])=>onRoad(x,z,-.05,road)):true;
   const walks = S.roads.flatMap((r) => (r.walks || []).map((k) => k.side > 0

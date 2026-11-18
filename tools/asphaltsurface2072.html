@@ -1,0 +1,27 @@
+<!doctype html><meta charset="utf-8"><title>Local asphalt production batch #2072</title><link rel="icon" href="data:,">
+<style>body{margin:0;background:#cbd8df;font:16px sans-serif}canvas{display:block}#label{position:absolute;top:12px;left:15px;padding:8px;background:#ffffffdd;color:#222}</style>
+<div id="label">Building the production road batch…</div>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { surroundingsParts, groundY, renderedTerrainY } from '../src/surroundings.js';
+import { COLORS } from '../src/config.js';
+import { applySeason } from '../src/seasons.js';
+import { buildStreet } from '../src/street.js';
+let road=null;
+// Observe the real generator's road addition and stop at its existing 0.15 yield, before bridges/backdrops/trees.
+const nativeAdd=THREE.Object3D.prototype.add;
+THREE.Object3D.prototype.add=function(...objects){const result=nativeAdd.apply(this,objects);for(const o of objects)if(o.isMesh&&(o.material.userData.asphaltSurface||(o.material.color?.getHex()===COLORS.asphalt&&o.material.roughness===.7)))road=o;return result;};
+try{const parts=surroundingsParts({grass:new THREE.MeshStandardMaterial({color:0x789664})});for(let i=0;i<10;i++){const r=parts.next();if(r.done||r.value>=.15){parts.return();break;}}}finally{THREE.Object3D.prototype.add=nativeAdd;}
+if(!road)throw Error('Production local road batch was not built');
+const root=road.parent,roadGround=(x,z)=>Math.max(groundY(x,z),renderedTerrainY(x,z));roadGround.grid=()=>renderedTerrainY.grid();root.add(buildStreet(groundY,roadGround).object);
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(1100,720);renderer.setPixelRatio(1);renderer.toneMapping=THREE.NeutralToneMapping;document.body.append(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xcbd8df);scene.add(root);scene.add(new THREE.HemisphereLight(0xf0f6ff,0x80746c,1.5));
+const sun=new THREE.DirectionalLight(0xfff1dc,2.4);sun.position.set(6,5,-5);sun.target.position.set(-8,0,-12);scene.add(sun,sun.target);
+const camera=new THREE.PerspectiveCamera(48,1100/720,.02,600);
+const views={near:[[0,.25,-7],[.7,.012,-9.1]],walking:[[5,1.6,-5],[-12,.012,-10]],far:[[8,7,-1],[-29,.012,-11]],winter:[[5,1.6,-5],[-12,.012,-10]]};
+window.__show=name=>{applySeason(name==='winter'?1:6);const[pos,aim]=views[name];camera.position.fromArray(pos);camera.lookAt(new THREE.Vector3(...aim));document.querySelector('#label').textContent=`Local road — ${name}`;renderer.render(scene,camera);return{calls:renderer.info.render.calls,triangles:renderer.info.render.triangles};};
+const digest=async array=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new Uint8Array(array.buffer,array.byteOffset,array.byteLength)))).map(n=>n.toString(16).padStart(2,'0')).join('');
+window.__stats=async()=>{const g=road.geometry,m=road.material;return{triangles:(g.index?.count??g.attributes.position.count)/3,position:await digest(g.attributes.position.array),normal:await digest(g.attributes.normal.array),index:g.index?await digest(g.index.array):null,attributes:Object.fromEntries(Object.entries(g.attributes).map(([k,v])=>[k,v.array.byteLength])),maps:[m.map,m.bumpMap,m.roughnessMap].map(t=>t?{id:t.uuid,size:[t.image.width,t.image.height],bytes:t.image.data?.byteLength,repeat:t.repeat.toArray(),mips:t.generateMipmaps}:null),roughness:m.roughness,color:m.color.getHex()};};
+window.__ready=true;window.__show('walking');
+</script>

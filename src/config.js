@@ -5043,6 +5043,13 @@ export const BRICK_SURFACE = {
   mortarRoughness: 0.97, faceRoughness: 0.90, grainRoughness: 0.025,
 };
 
+// #2072: local asphalt's visual surface, artist *guesses*, not a surveyed aggregate or repair pattern.
+export const ASPHALT_SURFACE = {
+  size: 512, tile: 1.6, cells: 224, seed: 2072, colourVariation: 0.17,
+  depth: 0.00045, roughness: [0.69, 0.88], snowRoughness: 0.7,
+  broadStrength: 0.035, broadScale: [0.27, 0.19, 0.11, -0.31],
+};
+
 export const COLORS = {
   sky: 0xcfe0ec,   // horizon (fog); the sky above is a gradient, see surroundings.js
   wall: 0xf1f1ee,   // Väggfärg NCS S 0500-N (material choice)
