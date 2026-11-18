@@ -1,0 +1,44 @@
+<!doctype html><html><meta charset="utf-8"><title>Bark surfaces — actual production consumers</title><link rel="icon" href="data:,">
+<style>body{margin:0;background:#cdd8df}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as T from 'three';
+import {barkMaterial,barkTexture,trunkGeometry,lobeGeometry,lodLeafMaterial,lodBarkMaterial,lodFarTrunkMaterial} from '../src/foliage.js';
+import {FOLIAGE as F} from '../src/config.js';
+import {lodRange,InstanceLod,updateInstanceLods} from '../src/lod.js';
+import {registerTrees,applySeason} from '../src/seasons.js';
+import {hasNativeVertexCompile} from '../src/vertexcompile.js';
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(1);renderer.setSize(1100,720);renderer.toneMapping=T.NeutralToneMapping;document.body.append(renderer.domElement);
+const scene=new T.Scene();scene.background=new T.Color(0xcdd8df);
+const camera=new T.PerspectiveCamera(42,1100/720,.025,160),hemi=new T.HemisphereLight(0xe7f2ff,0x6d6859,1.3),sun=new T.DirectionalLight(0xffe8c9,3);sun.position.set(-4,3,1);scene.add(hemi,sun);
+const floor=new T.Mesh(new T.PlaneGeometry(160,160),new T.MeshStandardMaterial({color:0x8e9678,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.015;scene.add(floor);
+const close=new T.Group(),grove=new T.Group();scene.add(close,grove);
+const matrix=new T.Matrix4(),rotation=new T.Quaternion(),scale=new T.Vector3(2,5.5,2),materials={},standalones={};
+for(const kind of ['bark','birch']){const mat=materials[kind]=barkMaterial(kind),mesh=new T.InstancedMesh(trunkGeometry(),mat,1);mesh.setMatrixAt(0,matrix.compose(new T.Vector3(),rotation,scale));mesh.computeBoundingSphere();mesh.name=`actual-${kind}`;close.add(mesh);standalones[kind]=mesh;}
+const L=F.lod,range=lodRange(L.start,L.end),nearPairs={},sources=[];
+for(const [i,kind]of ['bark','birch'].entries()){
+ const pair=nearPairs[kind]=lodBarkMaterial(kind,range),mesh=new T.InstancedMesh(trunkGeometry(),pair.material,1);mesh.customDepthMaterial=pair.depth;
+ mesh.setMatrixAt(0,matrix.compose(new T.Vector3(i*4-2,0,0),rotation,scale));mesh.computeBoundingSphere();grove.add(mesh);
+ sources.push({mesh,tint:new T.Color(kind==='birch'?F.trunk.birchColor:F.trunk.color).multiplyScalar(L.trunkTint)});
+}
+const farPair=lodFarTrunkMaterial(range),far=new T.InstancedMesh(trunkGeometry(true),farPair.material,2);far.customDepthMaterial=farPair.depth;grove.add(far);
+const trunkLod=new InstanceLod(sources,far,{...L,range});
+const leafNear=lodLeafMaterial({far:false,range}),leafFar=lodLeafMaterial({far:true,range}),crowns=new T.InstancedMesh(lobeGeometry('tree'),leafNear.material,2),farCrowns=new T.InstancedMesh(lobeGeometry('far'),leafFar.material,2);
+crowns.customDepthMaterial=leafNear.depth;farCrowns.customDepthMaterial=leafFar.depth;
+const seeds=[0,1].map(i=>({pos:new T.Vector3(i*4-2,5.8,0),rot:new T.Quaternion(),scale:new T.Vector3(2.2,2.3,2.2),r1:.2+i*.3,r2:.5,r3:.5,r4:1}));
+seeds.forEach((s,i)=>{crowns.setMatrixAt(i,matrix.compose(s.pos,s.rot,s.scale));crowns.setColorAt(i,new T.Color(0x718a49))});crowns.computeBoundingSphere();registerTrees(crowns,seeds);grove.add(crowns,farCrowns);
+const crownLod=new InstanceLod([{mesh:crowns,seeds}],farCrowns,{...L,range});applySeason(7);
+const bytes=(t)=>{if(!t)return null;let w=t.image.width,h=t.image.height,mips=0;for(;;){mips+=w*h*4;if(w===1&&h===1)break;w=Math.max(1,w>>1);h=Math.max(1,h>>1)}return{width:t.image.width,height:t.image.height,base:t.image.width*t.image.height*4,mips,repeat:t.repeat.toArray(),flipY:t.flipY,colorSpace:t.colorSpace,version:t.version}};
+window.__frame=name=>{
+ const closeView=name.endsWith('Near'),kind=name.startsWith('birch')?'birch':'bark';close.visible=closeView;grove.visible=!closeView;
+ for(const [k,m]of Object.entries(standalones))m.visible=k===kind;
+ const winter=name==='winter';applySeason(winter?1:7);floor.material.color.set(winter?0xe8e8e2:0x8e9678);
+ if(closeView){camera.position.set(.12,1.6,1.15);camera.lookAt(0,1.6,0)}
+ else if(name==='lod'){camera.position.set(0,1.62,50);camera.lookAt(0,4,0)}
+ else {camera.position.set(0,1.62,14);camera.lookAt(0,3.5,0)}
+ camera.updateMatrixWorld(true);updateInstanceLods(camera);scene.updateMatrixWorld(true);renderer.info.reset();renderer.render(scene,camera);
+ return{camera:camera.position.toArray(),calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,programs:renderer.info.programs.length,trunkLod:trunkLod.state(),crownLod:crownLod.state(),crownVisible:crowns.visible,farCrownVisible:farCrowns.visible,nearCounts:sources.map(s=>s.mesh.count),farCount:far.count,matrices:sources.map(s=>Array.from(s.mesh.instanceMatrix.array)),farMatrix:Array.from(far.instanceMatrix.array),farColours:far.instanceColor?Array.from(far.instanceColor.array):null,crownMatrix:Array.from(crowns.instanceMatrix.array),crownColour:Array.from(crowns.instanceColor.array),image:renderer.domElement.toDataURL()};
+};
+window.__stats=()=>({geometry:[trunkGeometry(),trunkGeometry(true),lobeGeometry('tree'),lobeGeometry('far')].map(g=>({name:g.name,attributes:Object.fromEntries(Object.entries(g.attributes).map(([k,a])=>[k,Array.from(a.array)]))})),colours:Object.fromEntries(['bark','birch'].map(k=>{const c=barkTexture(k).image;return[k,Array.from(c.getContext('2d').getImageData(0,0,c.width,c.height).data)]})),maps:Object.fromEntries(Object.entries(materials).map(([k,m])=>[k,{colour:bytes(m.map),surface:bytes(m.bumpMap),shared:m.bumpMap===m.roughnessMap,sharedLod:m.bumpMap===nearPairs[k].material.bumpMap,bumpScale:m.bumpScale,native:hasNativeVertexCompile(m)&&hasNativeVertexCompile(nearPairs[k].material)}])),farMaps:[far.material.map,far.material.bumpMap,far.material.roughnessMap].map(Boolean),depthMaps:[nearPairs.bark.depth.map,nearPairs.birch.depth.map,farPair.depth.map].map(Boolean)});
+window.__ready=true;
+</script></html>

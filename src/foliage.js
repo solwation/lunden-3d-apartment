@@ -1,3 +1,4 @@
+import { applyBarkSurface } from './barksurface.js'; // #2081
 import { rememberFragmentCompile } from './vertexcompile.js';
 import * as THREE from 'three';
 import { FOLIAGE as F } from './config.js';
@@ -280,7 +281,7 @@ export function trunkGeometry(far = false) {
 /** The bark material for a trunk batch: `kind` 'bark' | 'birch'. */
 export function barkMaterial(kind = 'bark') {
   const tex = barkTexture(kind);
-  return new THREE.MeshStandardMaterial({ color: kind === 'birch' ? F.trunk.birchColor : F.trunk.color, map: tex, roughness: kind === 'birch' ? 0.85 : 1 });
+  return applyBarkSurface(new THREE.MeshStandardMaterial({ color: kind === 'birch' ? F.trunk.birchColor : F.trunk.color, map: tex, roughness: kind === 'birch' ? 0.85 : 1 }), kind);
 }
 
 /** Bark material pair for a LOD trunk batch (#1958): `kind` as barkMaterial; the far level has no texture, see lodTrunkFar. */

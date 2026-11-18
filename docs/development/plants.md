@@ -139,3 +139,26 @@ transformed by the stored instance matrices. They never trust or mutate the sour
 windBounds flag/sphere: compression has removed that old margin (#1460, separate).
 The foliage comparison switch leaves rigid batching active and shows original leaves
 when off; per-source near/distance/opaque eligibility and empty-group handling remain.
+
+
+## Near-trunk bark surfaces (#2081)
+
+`barksurface.js` / `BARK_SURFACE` add one cached linear64×128 RGBA8 map per bark
+kind to the existing `barkMaterial`: R for shallow bump shading, G for absolute
+roughness. `lodBarkMaterial` shares those textures; the far trunk and all depth
+materials remain without these maps. `barkTexture`'s exact colour canvas, RNG stream,
+UV/repeat, trunk/branch geometry, instancing, seasonal registration and LOD code stay
+unchanged. Data rows are explicitly reversed to match the original canvas upload.
+
+Ordinary bark's smooth furrows follow the old seed's painted vertical marks through a
+private mark generator. Birch's independent, gentle height waves keep its dark lenticels
+from becoming holes; those marks affect only the matte finish. All strengths/pattern
+values are visual guesses. Height-channel span times bumpScale is about1.176mm for bark
+and0.147mm for birch (shading only, no displacement); quantized roughness ranges about
+.902–.988 and.839–.914 respectively. Mipmaps/filtering quiet the detail with distance.
+
+The two packed maps cost **65,536 base bytes /87,384 bytes including mips** in total.
+No geometry, draw, pass, light or per-frame upload is added; existing PBR fragment
+sampling increases. The existing native-vertex compile classification remains valid
+for site instance compaction. The distant southern woodland has its own plain cylinder
+material and is outside this consumer. [Matched production-consumer views and scope](../verification/2081/README.md).
