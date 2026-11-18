@@ -37,6 +37,7 @@ import { buildingRoofWalk } from './buildingroofs.js';
 import { roofMap, roofColor, roofUV } from './roofsurface.js';
 import { renderMaterial, renderUV, plainUV, dirtPatch } from './rendersurface.js';
 import { shadeMoss } from './shademoss.js';
+import { snowCap } from './snowcap.js'; // #2123
 import { schoolWallPlan } from './schoolwall.js';
 import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan,bridgeRecords,riverAt,waterYAt} from './riverbridge.js';
 
@@ -1938,10 +1939,10 @@ export function* surroundingsParts({ grass, husL = null }) {
   const bw = boxWalls();
   group.userData.opaqueRects=mergeOpaqueRects(bw.opaque); // exact inscribed rectangles of the emitted solid wall faces, including doorway lintels
   const concrete = new THREE.MeshStandardMaterial({ color: 0xb9b4ab, roughness: 0.95, side: THREE.DoubleSide });
-  shadeMoss(flat(bw.walls, new THREE.MeshStandardMaterial({ map: historicBrick, roughness: 0.95, side: THREE.DoubleSide })), groundY, 'map'); // brick retaining walls (#148); #2122 moss
-  const lightRail = railMetal(new THREE.MeshStandardMaterial({ color: 0xb9bdbd, metalness: 0.3 })); // #2089: matt metal
+  shadeMoss(flat(bw.walls, snowCap(new THREE.MeshStandardMaterial({ map: historicBrick, roughness: 0.95, side: THREE.DoubleSide }))), groundY, 'map'); // brick retaining walls (#148); #2122 moss
+  const lightRail = snowCap(railMetal(new THREE.MeshStandardMaterial({ color: 0xb9bdbd, metalness: 0.3 }))); // #2089: matt metal; #2123 snow on the top rail and coping
   flat([...bw.rails, ...bw.stairs.rails.map((g) => g.toNonIndexed())].map((g) => { g = g.index ? g.toNonIndexed() : g; g.deleteAttribute('uv'); return g; }), lightRail).name = 'boxRails';
-  const boxSlats = new THREE.Mesh(mergeGeometries(bw.slats.map((g) => g.toNonIndexed())), railMetal(new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide })));
+  const boxSlats = new THREE.Mesh(mergeGeometries(bw.slats.map((g) => g.toNonIndexed())), snowCap(railMetal(new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide }))));
   boxSlats.name = 'boxSlats'; group.add(boxSlats);
   shadeMoss(flat(bw.stairs.solid, concrete, SEASON.snow.paving), groundY); // the stairs down to the park level (#148, #254); #2122 moss
   flat(T.stairs.filter((St) => St.walk).map((St) => groundStrip(St.walk.x0, St.walk.x1, St.walk.z0, St.walk.z1, 0.01)), COLORS.paving); // from a stair's foot on
@@ -2022,13 +2023,13 @@ export function* surroundingsParts({ grass, husL = null }) {
   const lg = loggias(modern); // corner loggias and entrances (#145, #258, #266)
   const details=detailedSiteWindows(modern);group.userData.siteNeighborOpenings=details.list;
   const bodies = modern.map(aHouseParts), grid = bodies.flatMap((p) => p.grid); // #345: listed faces plain, the rest the old grid
-  if (grid.length) shadeMoss(mesh(grid, new THREE.MeshStandardMaterial({ map: facadeTexture(), roughness: 0.95 })), groundY, 'map'); // #2122: moss low on the north faces
-  shadeMoss(mesh([...bodies.flatMap((p) => p.plain), ...lg.bricks.map((g) => g.index ? g.toNonIndexed() : g)], new THREE.MeshStandardMaterial({ map: facadeTexture(true), roughness: 0.95 })), groundY, 'map'); // + piers, parapets (#266)
+  if (grid.length) shadeMoss(mesh(grid, snowCap(new THREE.MeshStandardMaterial({ map: facadeTexture(), roughness: 0.95 }))), groundY, 'map'); // #2122: moss low on the north faces
+  shadeMoss(mesh([...bodies.flatMap((p) => p.plain), ...lg.bricks.map((g) => g.index ? g.toNonIndexed() : g)], snowCap(new THREE.MeshStandardMaterial({ map: facadeTexture(true), roughness: 0.95 }))), groundY, 'map'); // + piers, parapets (#266)
   mesh(modern.flatMap(openingDecals), new THREE.MeshStandardMaterial({ map: openingTexture(), roughness: 0.6, polygonOffset: true, polygonOffsetFactor: -0.5, polygonOffsetUnits: -1 })); // the listed windows (#345)
   // #2095: the white render (walls, slabs) gets the fine render grain and its dirt strips; the window frames stay plain
-  const white = renderMaterial({ color: O.site.frameColor, roughness: 0.85, side: THREE.DoubleSide });
+  const white = snowCap(renderMaterial({ color: O.site.frameColor, roughness: 0.85, side: THREE.DoubleSide })); // #2123: snow on slabs, parapets, sills
   shadeMoss(mesh([...lg.slabs.map((g) => renderUV(g.toNonIndexed())), ...lg.walls.map((g) => renderUV(g.index ? g.toNonIndexed() : g)), ...details.frames.map(g=>plainUV(g.index?g.toNonIndexed():g))], white), groundY, 'bump');
-  const railMesh = new THREE.Mesh(mergeGeometries(lg.rails.map((g) => g.toNonIndexed())), railMetal(new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide }))); // #2089
+  const railMesh = new THREE.Mesh(mergeGeometries(lg.rails.map((g) => g.toNonIndexed())), snowCap(railMetal(new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide })))); // #2089; #2123
   railMesh.name = 'loggiaRails';
   group.add(railMesh);
   if (lg.plants.length) mesh(lg.plants.map((g) => { g = g.index ? g.toNonIndexed() : g; g.deleteAttribute('uv'); return g; }), new THREE.MeshStandardMaterial({ color: 0x4f7d3a, roughness: 0.9, flatShading: true }));
@@ -2054,7 +2055,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   };
   mesh(bare(details.seals),new THREE.MeshStandardMaterial({color:O.gasketColor,roughness:O.gasketRoughness})).name='siteNeighborSeals';
   mesh(paneTints(bare([...lg.glass,...details.glass])),glassMaterial).name='siteNeighborGlass'; // glazing: loggia doors, windows, entrances
-  mesh(lg.signs, new THREE.MeshStandardMaterial({ map: letterTexture(lg.letters), roughness: 0.6 })); // the house letters
+  mesh(lg.signs, snowCap(new THREE.MeshStandardMaterial({ map: letterTexture(lg.letters), roughness: 0.6 }))); // the house letters
   yield 0.7;
   // low hip roofs of roofing felt (#258; Peab's aerial render, Q&A) over the light metal edge, a few vent hoods along the ridge;
   // #348: each house its own (roofSpec), with the roof box the roof plans draw (in the sheet metal below)
@@ -2085,7 +2086,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   mesh(modern.map((b) => { // #348: as far out as the house's eaves, its top at the eave line
     const R = roofSpec(b), o = R.overhang, d = R.edge + 0.1;
     return new THREE.BoxGeometry(b.x1 - b.x0 + 2 * o, d, b.z1 - b.z0 + 2 * o).translate((b.x0 + b.x1) / 2, R.eave - 0.01 - d / 2, (b.z0 + b.z1) / 2);
-  }).concat(lg.metal, roofBoxes), new THREE.MeshStandardMaterial({ color: 0xc7cacb, roughness: 0.45, metalness: 0.2 })); // light grey sheet metal (#146)
+  }).concat(lg.metal, roofBoxes), snowCap(new THREE.MeshStandardMaterial({ color: 0xc7cacb, roughness: 0.45, metalness: 0.2 }))); // light grey sheet metal (#146); #2123 snow on its tops
   for (const b of S.blocks) if (b.style) addSurroundingRoofWalk(b, walk); // all surrounding buildings (#1274)
   const G = S.school?.greenhouse;
   if (G) {

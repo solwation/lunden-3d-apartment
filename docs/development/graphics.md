@@ -1558,6 +1558,22 @@ hashes per low north-facing fragment (others exit after a height test). Not cove
 shade information; only the listed wall batches), horizontal paving edges. Test: `node --test tools/shademosstest.mjs`;
 browser: `tools/shademoss2122browser.cjs` ([before/after](../verification/2122/README.md)).
 
+## Snow caps on narrow upward faces (#2123)
+
+`src/snowcap.js` chains a fragment step (key `|snowcap2123`, after `normal_fragment_begin`, i.e. after every colour and
+roughness step of the chain: railMetal, benchWood, render, moss) onto the outdoor batches with narrow tops: Hus L's brick,
+render, pilasters, the fascia/roof capping ring (#2093)/copings/sill flashings batch and the loftgång and terrace rails
+(exterior.js); the Å-husen A/B/C brick façades, white render (loggia slabs, parapets), loggia rails, house letters and
+light sheet metal (edges, copings), the box walls and their rails/slats (surroundings.js); the courtyard benches, metal and
+pergola (courtyard.js) and the bus-stop bench (busstop.js). The view-space normal turned to world: `up` smoothstep of its y,
+so walls and soffits get none and slopes fade out by ~57°; a world-xz noise thins the cap in places; colour towards the roof
+snow white, roughness up, metalness to 0. Moss sits earlier in the shader, so a mossy top is white under snow. One shared
+uniform `uSnowCap` (1 in `SEASON.snowMonths`, set by a seasons hook; the shader branches on it), so a month change
+recompiles nothing and outside the snow months the colours are unchanged. Roofs and ground keep `registerSnow`; glass is
+not capped. Phones (lowMemory) only cap materials that already have their own compile step (rails, benches): no new program
+for a plain material. No geometry, draw, texture, light, pass or per-frame work. All values `SNOW_CAP` *guesses*.
+Test: `node --test tools/snowcaptest.mjs`; browser: `tools/snowcap2123browser.cjs` ([before/after](../verification/2123/README.md)).
+
 ## Painted screen-wall surface (#2075)
 
 `screenwall.js` retains #1786's `SCREEN_WALL` palette, board spacing, frame bands and seeded board tints. Its fine colour strokes now follow gently curved, occasionally forked fibres within each existing board. `screenwallsurface.js` supplies one shared 256×512 linear RGBA texture: red holds only shallow, smooth-edged joint height; green holds matte roughness (about .85 on boards/frame and .96 in joints). `SCREEN_WALL_SURFACE` parameters are visual assumptions, not surveyed construction detail. Relief is shading only (maximum joint difference about .595 mm), never displacement.

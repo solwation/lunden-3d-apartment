@@ -91,8 +91,9 @@ test('material chain: delegates, one copy, unique key, fragment-only; phones: no
 
 test('wired into the wall batches of Hus L and the Å-husen (A/B/C), retaining walls and park stairs', () => {
   const ex = readFileSync(new URL('../src/exterior.js', import.meta.url), 'utf8'), su = readFileSync(new URL('../src/surroundings.js', import.meta.url), 'utf8');
-  assert(/shadeMoss\(add\(bricks, brickMat\(\)\), groundY, 'bump'\)/.test(ex), 'Hus L brick');
+  assert(/shadeMoss\(add\(bricks, (snowCap\()?brickMat\(\)\)?\), groundY, 'bump'\)/.test(ex), 'Hus L brick'); // (#2123 may wrap the material)
   assert(!/shadeMoss\(add\(renders/.test(ex), 'Hus L render: all upper storeys (≥ 6 m), no program spent on it');
+  const flat = su.replace(/snowCap\(((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*)\)/g, '$1'); // (#2123's snowCap wrapper: read through it)
   for (const s of ["map: facadeTexture(), roughness: 0.95 })), groundY, 'map')", "map: facadeTexture(true), roughness: 0.95 })), groundY, 'map')", 'white), groundY, \'bump\')',
-    "color: 0x6e3326, roughness: 0.95 })), groundY)", "map: historicBrick, roughness: 0.95, side: THREE.DoubleSide })), groundY, 'map')", 'concrete, SEASON.snow.paving), groundY)']) assert(su.includes(s), s);
+    "color: 0x6e3326, roughness: 0.95 })), groundY)", "map: historicBrick, roughness: 0.95, side: THREE.DoubleSide })), groundY, 'map')", 'concrete, SEASON.snow.paving), groundY)']) assert(flat.includes(s), s);
 });

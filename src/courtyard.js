@@ -18,6 +18,7 @@ import { siteWindBounds } from './sitewind.js';
 import { glowMaterial, poolGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { bikeGeometry, bikeSpokeTexture, standGeometry } from './streetlife.js';
 import { benchSlat, benchWood, padBenchSlats } from './benchwood.js';
+import { snowCap } from './snowcap.js'; // #2123
 
 // The courtyard on the garage box (#80): stone walks, gravel round the playground (lawn elsewhere, #259), the Borggården's pergola
 // with a dining table and benches (pale timber, vines, string lights and herringbone brick: #149), a grill, sandboxes, a boule court, benches, raised beds,
@@ -464,10 +465,10 @@ export function buildCourtyard() {
     paving: new THREE.MeshStandardMaterial({ map: paveTex, roughness: 0.95 }),
     gravel: gravelMaterial(GRAVEL_HEX, { vertexColors: true, name: 'courtyard-gravel' }), // #2096: stones, mean colour kept
     sand: new THREE.MeshStandardMaterial({ color: 0xe0cfa0, vertexColors: true, roughness: 1 }), // mottled (#681)
-    wood: benchWood(new THREE.MeshStandardMaterial({ color: 0x8a6544, map: woodGrain(), vertexColors: true, roughness: 0.8 })), // grain + a tone per board (#682); #2098: weathered bench slats
-    metal: new THREE.MeshStandardMaterial({ color: 0x23262a, roughness: 0.5, metalness: 0.5 }),
+    wood: snowCap(benchWood(new THREE.MeshStandardMaterial({ color: 0x8a6544, map: woodGrain(), vertexColors: true, roughness: 0.8 }))), // grain + a tone per board (#682); #2098: weathered bench slats
+    metal: snowCap(new THREE.MeshStandardMaterial({ color: 0x23262a, roughness: 0.5, metalness: 0.5 })), // #2123: snow caps in the snow months
     soil: new THREE.MeshStandardMaterial({ color: 0x3e2f24, roughness: 1 }),
-    pergola: new THREE.MeshStandardMaterial({ color: 0xd8d0bf, roughness: 0.85 }),
+    pergola: snowCap(new THREE.MeshStandardMaterial({ color: 0xd8d0bf, roughness: 0.85 })),
     brick: new THREE.MeshStandardMaterial({ map: herringbone(), roughness: 0.9 }),
   };
   registerSnow(mats.brick, SEASON.snow.paving);

@@ -10116,6 +10116,15 @@ export const SHADE_MOSS = { north: [0.25, 0.75], vertical: [0.5, 0.8], band: 0.6
   joints: { height: 1.3, amount: 0.4, dark: 0.6, bump: [0.3, 0.45], map: [0.25, 0.42] }, strength: 0.65, dark: 0.78,
   hue: [0.82, 1.09, 0.67], rough: 0.5, reach: 0.3, grid: 0.25, offset: 100 };
 
+// #2123: a thin snow cap on narrow upward-facing outdoor surfaces in the snow months (src/snowcap.js): window sill flashings,
+// roof cappings and copings, railing top rails, benches, loggia slabs and parapets. A fragment step in the existing materials
+// gated by one shared uniform (0 outside SEASON.snowMonths). `up`: smoothstep of the world normal's y (1 = facing straight up),
+// so walls get none and a slope steeper than about 50° fades out. `scale`/`patch`: a world-xz noise (m) that thins the cap
+// in places (a patch share of up to `patch`). `strength`: the strongest mix towards `color` (sRGB hex, SEASON.snow.roof's
+// white); `rough`: the snow's roughness, metalness goes to 0 under it. Phones (lowMemory) only get it in materials that
+// already carry their own compile step (rails, benches): no new program for a plain material. All values are *guess*.
+export const SNOW_CAP = { up: [0.55, 0.85], scale: 0.45, patch: 0.35, strength: 0.92, color: 0xf4f7fa, rough: 0.9 };
+
 // #2097: parked-car finish (src/carfinish.js) for the street and east car parks' instanced batches and their far LOD. Paint:
 // a calm clear coat — a dielectric-ish body (`metalness`) with low `roughness` and the shared procedural outdoor reflection
 // (neighborglass.js) at `reflectionDay`, dimmed to `reflectionNight` in the dark (no per-car cubemaps, no live passes). The
