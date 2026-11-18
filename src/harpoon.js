@@ -145,8 +145,8 @@ export class Harpoon extends Holdable {
     const under = this.wet(this.camera.getWorldPosition(A));
     for (const f of rf.shown) {
       const len = RIVER_FISH.species.find((s) => s.name === f.species)?.len ?? 0.3, r = H.hit.fish + H.hit.len * len;
-      const x = f.x + (f.off?.[0] ?? 0), z = f.z + (f.off?.[2] ?? 0);
-      list.push({ x, y: f.y + (f.off?.[1] ?? 0), z, r, fish: f });
+      const x = f.x + (f.off?.[0] ?? 0) + (f.school?.[0] ?? 0), z = f.z + (f.off?.[2] ?? 0) + (f.school?.[2] ?? 0); // (#2130: where its school draws it)
+      list.push({ x, y: f.y + (f.off?.[1] ?? 0) + (f.school?.[1] ?? 0), z, r, fish: f });
       if (!under) list.push({ x, y: f.drawnY, z, r, fish: f });
     }
     const p = this.st;

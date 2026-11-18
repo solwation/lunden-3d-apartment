@@ -1090,6 +1090,20 @@ the fish within reach, `RiverFish.catchFish(id)` takes one out of the room (arbi
 Feeding and scaring (#1946) is a local drawing layer over these shared fish (`src/riverfishfeed.js`; a diver also sees the fish at their real
 depth): see [environment](environment.md#feeding-the-fish-with-mussels-fish-scared-by-strokes-1946).
 
+Schools, still moments and takes (#2130) are a second local drawing layer (`src/riverfishschool.js`, no three.js; tunables
+`RIVER_FISH_SCHOOL`, *guess*). Roach and bream (one group) and perch whose home stretches lie within `homeGap` m in the same swim stretch form a
+school under the lowest id (pike, trout and eel stay alone); a member whose own shared place is within `join` m of its leader's takes a slot
+beside it and follows the leader's path `lag` s per rank later, so the school turns together. In seeded slots a fish alone or a school stands
+still for 6–11 s in the lee of the nearest stone (≥ `minStone`) or lily pad within `reach` m (RiverFlora's `cover`, lilies only while their leaves
+are out; `main.js` sets `riverFish.flora`), heads against the current, and ends early once its shared place is `far` m off. Rarer seeded takes
+(about one in five minutes per fish or school) dart one fish to the surface and spread three brighter, wider rings there, visible from the road bridge;
+the shared rises' rings are moved to where the fish was drawn. Everything is a pure function of the seed, the present fish (id, life), the room
+clock and the cover, so clients agree; nothing is sent. `RiverFish.near`, `shown[i].x/y/z`, the room's catch check and the feeding layer keep
+the shared places (`shown[i].school` is the drawn offset, at most about 15 m; the harpoon aims at it); a fed or scared fish drops its school
+offset while `riverfishfeed.js` has it, and any sudden change is followed at `settle` m/s. Cost: no new draw call, program or texture (the ring
+batch holds `count × 5`); about 0.1 ms per `RiverFish.update` near a school in software rendering. Checks: `node --test
+tools/riverfishschooltest.mjs`, `tools/riverfishschool2130browser.cjs`; [frame sequences](../verification/2130/README.md).
+
 ## Fishing rod, bites and caught fish (#1753, part 2 of #1751)
 
 `src/fishing.js`, tunables `FISHING` (all *guess*). A 2 m rod (`FishingRod`, a Holdable, `isFishingRod`) lies on the north shore flat under the

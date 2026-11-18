@@ -7,7 +7,7 @@
 // river), and nothing is drawn further than `drawDist` m from the river. Nothing collides: a swimmer passes through all of it.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE, RIVER_FLORA, LILY_SURFACE as LS } from './config.js';
+import { SITE, RIVER_FLORA, LILY_SURFACE as LS, RIVER_FISH_SCHOOL as SCHOOL } from './config.js';
 import { driftHash } from './riverdrift.js';
 import { driftRiver } from './riverdriftview.js';
 import { floraLayout, floraWindow, floraSeason } from './riverflora.js';
@@ -146,6 +146,10 @@ export class RiverFlora {
       if (e.flower) { S.setScalar(e.r * 0.55); P.set(p.x + Math.cos(e.yaw) * e.r * 0.9, p.water + Li.lift, p.z + Math.sin(e.yaw) * e.r * 0.9); items.flowers.push({ s: e.s, m: new THREE.Matrix4().compose(P, Q, S), c: white }); }
     }
     this.items = items; this.near = {}; this.at = -1e9; this.t = 0;
+    // #2130: where a river fish may stand still in the lee (src/riverfishschool.js): the bigger stones, and the lily pads while their leaves are out
+    this.cover = { stones: [], lilies: [], leaves: true };
+    for (const e of lay.stones) { const p = e.size >= SCHOOL.minStone && at(e.s, e.u); if (p) this.cover.stones.push({ x: p.x, z: p.z, r: e.size, kind: 'stone' }); }
+    for (const e of lay.lilies) { const p = at(e.s, e.u); if (p) this.cover.lilies.push({ x: p.x, z: p.z, r: e.r, kind: 'lily' }); }
     // the weed's sway: bent downstream (its own +x) and swaying by the square of the height, each clump out of step by where it stands
     this.uniforms = { uFloraT: { value: 0 } };
     const weedMat = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
@@ -191,7 +195,7 @@ export class RiverFlora {
     if (!on) { for (const k in m) m[k].visible = false; return false; }
     this.t += dt; this.uniforms.uFloraT.value = this.t;
     if (Math.abs(near.s - this.at) > 8) this.fill(near.s);
-    const season = floraSeason(month);
+    const season = floraSeason(month); this.cover.leaves = season.leaves;
     m.stones.visible = under && m.stones.count > 0; m.weeds.visible = under && m.weeds.count > 0;
     m.lilies.visible = season.leaves && m.lilies.count > 0; m.flowers.visible = season.bloom && m.flowers.count > 0;
     return true;

@@ -646,6 +646,7 @@ if (squirrels) holdables.push(...squirrels.nutItems);
 const mussels = new Mussels({ scene, camera, player, say: (text) => badge(text, false) }); holdables.push(...mussels.items); // #1945: blue mussels on the bed of Höje å, taken like the nuts while diving
 // #1752: fish in Höje å and the rings they leave on the water, the same for every player (src/riverfish.js, src/riverfishsync.js, cloudflare/riverfish.js)
 const riverFish = params0.has('nofish') ? null : new RiverFish({ scene, camera });
+if (riverFish && riverFlora) riverFish.flora = riverFlora; // #2130: the stones and lily pads a fish may stand still behind
 // #1753: the fishing rod under the road bridge (a holdable, saved like any loose thing) and the fish caught with it (keep.js `fishing`)
 const fishing = new Fishing({ scene, camera, riverFish, player, groundY: (x, z) => player.groundAt(x, z, -4), onMessage: (t) => badge(t, false), touch: () => touch.enabled,
   onItem: (f) => { holdables.push(f);sharedFish?.attach(f); f.model.userData.keepHidden = () => f.broken; } });
