@@ -1,4 +1,4 @@
-import { SOUTH_BANK as S, SOUTH_PLATEAU, SITE } from './config.js';
+import { SOUTH_BANK as S, SOUTH_BRIDGE_APPROACH as A, SOUTH_PLATEAU, SITE } from './config.js';
 
 const clamp=t=>Math.max(0,Math.min(1,t));
 const smooth=t=>{t=clamp(t);return t*t*(3-2*t);};
@@ -32,6 +32,16 @@ export function southBankGround(x,z,baseAt){
  const lateral=smooth((width+feather-a)/feather),north=clamp((z-S.start)/(S.full-S.start)),south=1-smooth((z-S.fade[0])/(S.fade[1]-S.fade[0]));
  const cross=between(S.cross,z,r=>r[0],r=>section(r,offset)-section(r,0))*smooth((a-S.flat)/(crestEdge-S.flat));
  const flatten=1-smooth((z-last[1])/(S.fade[0]-last[1]));
- const target=southBankCrest(z)+cross*flatten;
+ let target=southBankCrest(z)+cross*flatten;
+ // The old five-metre bank blend mistook LM ground samples for an exact road/deck tie-in.
+ // Grade only this approach corridor. Hermite endpoints keep deck/start tangent and sourced
+ // crest/end tangent; far cross-sections and all later building-pad operations stay unchanged.
+ if(z<A.end){
+  const t=clamp((z-A.start)/(A.end-A.start)),d=A.end-A.start;
+  const end=southBankCrest(A.end),slope=(southBankCrest(A.end+.01)-end)/.01;
+  const grade=(2*t*t*t-3*t*t+1)*SITE.bridges.deckY+(-2*t*t*t+3*t*t)*end+(t*t*t-t*t)*d*slope;
+  const influence=1-smooth((a-A.flat)/(A.reach-A.flat));
+  target+=(grade+cross*flatten*smooth(t)-target)*influence;
+ }
  return base+(target-base)*lateral*north*south;
 }

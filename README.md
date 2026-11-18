@@ -529,6 +529,7 @@ Paddock surface (#1420): the existing worn track and field follow the actual ter
 Southern plateau (#1381): the existing terrain grid now draws through z460, with ten documented LM ground controls and consistently placed buildings, parking and paddock. Heights remain a relative model (not surveyed floors); the protected northern terrain and bridge geometry are preserved. Public transfer is tracked in kvarteret-lunden#98.
 
 Southern road bank (#1382): eleven LM ground controls and five separate cross-sections shape the southern road crest and both slopes; a bounded interpolated branch joins the plateau. Bridge deck heights remain explicit assumptions; the GC approach surface follows the same road/terrain sampler. Public transfer: kvarteret-lunden#99.
+Southern bridge approach (#2079): the abrupt five-metre guessed tie-in is replaced by a bounded, smoothly joined road/GC grade; raw LM controls, deck/water levels and building pads stay fixed. [Source-bound checks, exact component costs and limits](docs/verification/2079/README.md); neutral public transfer tracked in kvarteret-lunden#301.
 
 Phone rendering (#1383): complete opted-in furnishings share a visibility decision from outside the home; actual floor and retaining-wall support hides covered geometry. Nearby use and physical objects remain intact. See development/performance.md for profiles and limitations.
 

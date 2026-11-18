@@ -1037,9 +1037,10 @@ pin the new total, `parking1446test` accepts the guessed layout. Houses A/B/C/L:
 `SOUTH_BANK` holds the11road controls and five10-point cross-sections from the same77-point LM export.
 `src/southbank.js` interpolates the longitudinal crest and separate west/east section shapes; a4m half-width
 crest and15m outer feather are interpolation assumptions. The original bridge deck datum−3 remains
-a guess: ground samples do not measure deck elevation. A linear147..152tie-in preserves both existing
-decks and their undersides, piers and rails; the first smooth tie-in reached0.78gradient and was rejected
-as unwalkable. GC approach asphalt now samples the actual road/terrain support instead of a constant−3.
+a guess: ground samples do not measure deck elevation. The historical linear147..152tie-in preserved both existing
+decks but produced the abrupt road wall reported in #2079; the local approach correction below supersedes it.
+The earlier smooth five-metre tie-in had reached0.78gradient and was rejected as unwalkable.
+GC approach asphalt samples the actual road/terrain support instead of a constant−3.
 The crest continues along mapped road30633546 toward the plateau, with an assumed narrowing to6m and
 fade262..286. LM point registration stays approximately3–5m; no floor/bathymetry claim. All ten plateau
 controls, northern terrain, water, timber bridge and its lamp support stay outside this correction.
@@ -1056,6 +1057,32 @@ fails the known global triangle budget#1387:494draws/1042209triangles/~261MiB. P
 still fails the known call budget#1383:445draws/932900triangles/~97MiB. Both full checks exit1;
 no global budgets changed. These are browser measurements, not FPS or physical-phone stability.
 House A/B/C/L terrain lies north of the correction start147; their actual geometry is unchanged.
+
+
+### Southern bridge approach correction (#2079)
+
+The reported wall came from treating the LM ground controls near z152 as an exact road/deck tie-in:
+the previous five-metre blend raised the road from −3 to −0.34. `SOUTH_BRIDGE_APPROACH` now gives the
+existing `southBankGround` target a local Hermite grade from z147 to203.9. It starts at the unchanged
+deck datum with zero tangent and meets the existing crest height and outgoing tangent at203.9.
+Within an8m half-width the road/GC/walking corridor shares that grade; a smooth lateral fade ends
+at18m, and the original crossfall returns smoothly toward the southern join. These lengths, widths
+and the graded road heights are **guesses**, not new survey measurements. The11LM road points and
+all50cross-section points remain verbatim; the ground points do not establish road/deck elevations.
+
+The correction runs before the existing building pads. Bridge geometry/datum, piers, underpass,
+water, bathymetry, swimming and building-pad levels remain unchanged. Far banks at±20m and the
+analytic ground outside the local corridor remain exact. Existing terrain-edge interpolation carries
+a small adjacent-cell halo; the browser checks unchanged drawn terrain beyond z143..208 /24m
+half-width. The terrain grid/index/XZ are unchanged. Existing adaptive road/path subdivision emits
+438 fewer triangles and42072 fewer geometry bytes in the actual surroundings fixture; no new batch,
+material, map, light or pass. A/B/C/L lie north of the correction and have no equivalent approach.
+
+The three scoped check groups cover numeric profiles/tangents and actual Player traversal on road
+and GC in both directions, source/deck/water/building/budget invariants, and one isolated actual
+`buildSurroundings` browser comparison. See [evidence, exact sources and limits](../verification/2079/README.md).
+The neutral correction applies to the public project via its separately scoped issue#301; preserve
+its own terrain/deck/water setup when porting.
 
 
 ## Paddock track and field surface (#1420)

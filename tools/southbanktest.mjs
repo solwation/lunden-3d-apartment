@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {SOUTH_BANK as S,SITE,SOUTH_PLATEAU} from '../src/config.js';
+import {SOUTH_BANK as S,SOUTH_BRIDGE_APPROACH as A,SITE,SOUTH_PLATEAU} from '../src/config.js';
 import {southBankGround,southBankCentre} from '../src/southbank.js';
 import {groundY,groundBelowDeckY,buildingPadList} from '../src/surroundings.js';
 import {buildRiverBridges,bridgeRecords,deckAt,deckUnderAt} from '../src/riverbridge.js';
@@ -15,13 +15,13 @@ test('road and cross-section controls retain the sourced ground values and appro
  assert(source.registration.horizontalAccuracyM.includes('3–5'));assert.equal(SITE.bridges.deckY,-3);
 });
 test('the sampled crest is continuous and rises to the plateau without the former false descent',()=>{
- for(const[x,z,y]of S.road.filter(p=>p[1]>=S.full))near(groundY(x,z),y);
+ for(const[x,z,y]of S.road.filter(p=>p[1]>=A.end))near(groundY(x,z),y);
  let last=groundY(southBankCentre(S.start),S.start),step=0;
  for(let z=S.start+.02;z<=S.fade[0];z+=.02){const y=groundY(southBankCentre(z),z);assert(y>=last-1e-6,`descent at ${z}: ${last} to ${y}`);step=Math.max(step,Math.abs(y-last));last=y;}
- assert(step<.014,`walkable continuous road step ${step} per2cm`);
+ assert(step<.0025,`gently graded continuous road step ${step} per2cm`);
 });
 test('both actual bank sides are lower than the road, with separately sourced profiles',()=>{
- for(const z of [155,165,180]){const x=southBankCentre(z),top=groundY(x,z),west=groundY(x-20,z),east=groundY(x+20,z);assert(top-west>3);assert(top-east>2);assert(Math.abs(west-east)>.1);}
+ for(const z of [155,165,180]){const x=southBankCentre(z),top=groundY(x,z),west=groundY(x-20,z),east=groundY(x+20,z);assert(top-west>.5);assert(top-east>.5);assert(Math.abs(west-east)>.1);}
 });
 test('the bank is shaped before existing southern building pads and aprons',()=>{
  const pads=new Map(buildingPadList().map(p=>[p.name,p]));let affected=0;
