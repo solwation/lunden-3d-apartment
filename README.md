@@ -619,3 +619,5 @@ Fångade fiskar och nedlagda nötter kan lämnas på bord och plockas upp av and
 Roof picnic (#1858): two long-sitting places on the existing Karpvägen 6–8 roof, shared finite wine glasses and cheese/charcuterie, an extra750ml refill bottle and two claimed seats, and night-only lantern glow. The user-approved tentative Karpvägen 8 placement and river-park view are movable through `ROOF_PICNIC`; no roof geometry changes. [Original geometry](docs/verification/1858/picnic/README.md), [shared state and limits](docs/verification/1864/README.md).
 
 Held-object placement (#1862) uses actual dry ground and existing walkable roofs throughout WALK, including the distant valley and Karpvägen8; home tops/stacking and special-item rules remain. [Checks and result views](docs/verification/1862/README.md).
+
+Painted patio and roof-terrace screens retain their board layout and cream frame, with quiet curved grain and shallow matte joints ([#2075 verification](docs/verification/2075/README.md)).

@@ -3,7 +3,8 @@
 // its existing batch, so no material or draw call is added). UVs: u in metres along the wall / the texture repeat,
 // v from the wall's foot (0) to its top (1); the posts and the panel's top / bottom sample the cream rail.
 import * as THREE from 'three';
-import { SCREEN_WALL as S } from './config.js';
+import { SCREEN_WALL as S, SCREEN_WALL_SURFACE as F } from './config.js';
+import { screenGrainOffset } from './screenwallsurface.js';
 
 const REPEAT = S.board * S.boards; // m along the wall per texture repeat
 const RAIL_V = 0.995; // a v inside the cream rail band (posts, top face)
@@ -21,10 +22,22 @@ export function screenWallTexture() {
   for (let i = 0; i < S.boards; i++) {
     const k = 1 - S.vary + rand() * 2 * S.vary;
     g.fillStyle = rgb(S.color, k); g.fillRect(i * bw + 2, 0, bw - 4, h);
-    for (let j = 0; j < 14; j++) { // faint vertical grain
-      g.fillStyle = `rgba(${rand() < 0.5 ? '255,250,235' : '70,62,45'},${0.04 + rand() * 0.05})`;
-      g.fillRect(i * bw + 3 + rand() * (bw - 7), 0, 1, h);
+    g.save(); g.beginPath(); g.rect(i * bw + 2, 0, bw - 4, h); g.clip();
+    for (let j = 0; j < 14; j++) { // same three random draws: every original board tint remains registered
+      const light = rand() < .5, alpha = F.grainAlpha * (.6 + rand() * .8), x = i * bw + 3 + rand() * (bw - 7), phase = i * 2.1 + j * .73;
+      g.strokeStyle = `rgba(${light ? '255,250,235' : '70,62,45'},${alpha})`; g.lineWidth = F.grainWidth;
+      const path = (fork = false) => {
+        g.beginPath();
+        for (let k = 0; k <= 32; k++) {
+          const t = fork ? .32 + k / 32 * .35 : k / 32;
+          const px = x + screenGrainOffset(t, phase) + (fork ? (t - .32) ** 2 * 12 : 0);
+          if (k === 0) g.moveTo(px, t * h); else g.lineTo(px, t * h);
+        }
+        g.stroke();
+      };
+      path(); if (j % 5 === 0) path(true);
     }
+    g.restore();
   }
   const rail = Math.round((S.rail / 1.8) * h); // the canvas top is v = 1 (the wall's top)
   g.fillStyle = rgb(S.frame); g.fillRect(0, 0, w, rail);

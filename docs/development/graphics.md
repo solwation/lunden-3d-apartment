@@ -1401,3 +1401,11 @@ and one matched production-road browser pass (near/walking/far/winter). Two extr
 cost 2,097,152 base-level bytes, 2,796,200 bytes with every mip level. Native bump/roughness
 sampling and two fragment sine terms add work; no timing/FPS improvement is claimed.
 [Inspected paired images, exact counts, source provenance and limits](../verification/2072/README.md).
+
+## Painted screen-wall surface (#2075)
+
+`screenwall.js` retains #1786's `SCREEN_WALL` palette, board spacing, frame bands and seeded board tints. Its fine colour strokes now follow gently curved, occasionally forked fibres within each existing board. `screenwallsurface.js` supplies one shared 256×512 linear RGBA texture: red holds only shallow, smooth-edged joint height; green holds matte roughness (about .85 on boards/frame and .96 in joints). `SCREEN_WALL_SURFACE` parameters are visual assumptions, not surveyed construction detail. Relief is shading only (maximum joint difference about .595 mm), never displacement.
+
+`World.M.fence` uses the same map for standard-material bump and roughness. The existing UVs sample an exactly flat cream-rail band for posts and horizontal faces, so these do not acquire board grooves. All geometry, collision and occluder data remain unchanged; the original shared colour canvas retains its dimensions. The additional texture costs 524,288 base bytes or 699,052 bytes with the complete RGBA mip chain (512×256 down to 1×1). No geometry, draw, pass, light or per-frame texture update is added; standard bump/roughness sampling adds fragment work.
+
+`tools/screenwallsurfacetest.mjs` checks deterministic joint registration, seam continuity, flat frame UVs and bounded fibre paths. `tools/screenwallsurface2075browser.cjs` checks real `buildExterior` ground and roof consumers using the actual `World.M.fence`, exposed only by a test route. The [saved comparisons](../verification/2075/README.md) document identical geometry/collision data and per-view render counts. This controlled component check makes no full-world or device/FPS claim. Hus A/B/C have no consumers of this screen-wall builder; this material-only change does not alter house layouts. Public transfer is tracked separately in kvarteret-lunden #297.
