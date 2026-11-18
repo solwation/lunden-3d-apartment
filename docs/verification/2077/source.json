@@ -1,0 +1,48 @@
+{
+  "sourceCommit": "ef00ab80b5b4aff3e7c85e6df43fec58557f77f8",
+  "baselineCommit": "eb0e4265c1478661ce01cd666812687bf23a04d2",
+  "sourceSha256": {
+    "src/config.js": "2a34c554795a7d18c170be82fa25c3d96e2d4d6479ee19eecda471b72d9e489b",
+    "src/street.js": "60811a666cc6be47de6dfc8a03c17508cd05bd78f9398afaceab47e88251d969",
+    "src/roads.js": "fdf667ec499503f29760da2fa03a4fb25eb73c3a9914889936f82901847e2543",
+    "src/surroundings.js": "118933bf24a89b9802e142a2261b779d023b2360062b4487feaa6e57a667ad51",
+    "tools/cobbledcorner2077test.mjs": "22154ecee6d1549b0d39d0867c3bf03c9b2d499f2d9ed924fa4a36bb1d278fd3",
+    "tools/cobbledcorner2077.html": "197c48b82235e3390d518a66667096754eaadadecf647b016dfcfaaed436100a",
+    "tools/cobbledcorner2077browser.cjs": "98309bca2a24d70b2cdd1f25d35f38ba8e2a6165db4cc6f618a4491a2fe168da"
+  },
+  "referenceSha256": {
+    "docs/ingame-reports/cfd0a641-6a30-4d3c-b126-c435bfc173a4.jpg": "2eacdf8012d30cc94972131cbf508089029cb0317f4943216cb577e2191d0386",
+    "docs/foton/korsning-skola-hemso-flaggor.jpg": "5fb1254a7a74aa755beffc57e587521f97b5ee713503cf5d5cb29ab7aa32c1c2",
+    "docs/foton/gatan-tegelmur-trad-trafikljus.jpg": "8101f5a632527854a7b7cf9845ae3ba961ac3bb2c8c859e64b44f6d9c1e97e36",
+    "docs/foton/sidogatan-tegelhus-plattak-byggplats.jpg": "9dfae15f5eaabc87e5ece1cec848e14c17c0474b3da21498ef0df9935190fb44"
+  },
+  "evidenceSha256": {
+    "corner-paired.png": "d94c29e8a1c05988ce13335018cc70a06c5d6415edaa74928a9860761f409daa",
+    "preservation.json": "8760738f0d051f2e7bf1b46ac9f29ef4cf0e903dc9ddb22809bc0c3dddc792b7",
+    "browser.json": "c57f2925893038387489df8e5aeddb5113efb358b2ab434f46744fff0f33f18f",
+    "joins-paired.png": "a64adca161a293114cac1904b235b8e3653cdd10b94144979321b62a9343817e"
+  },
+  "checks": {
+    "node": "3/3 PASS",
+    "preservation": "unrelated config, old cobble canvas recipe except repeat, all other street code and roads/surroundings/lamp/sign sources exact",
+    "browser": "one own wrapper run, four actual production-consumer views, zero page/console errors, same all-other geometry/instance arrays and ground queries"
+  },
+  "delta": {
+    "cobbleTriangles": 15,
+    "rawGeometryBytes": 1492,
+    "drawCalls": 0,
+    "textures": 0,
+    "passes": 0,
+    "lights": 0,
+    "perFrameWork": 0
+  },
+  "retainedTexture": {
+    "size": [
+      128,
+      128
+    ],
+    "RGBA8BaseBytes": 65536,
+    "RGBA8FullMipBytes": 87380
+  },
+  "assumptions": "Photo-informed short pavement sector and 0.8m tile, not surveyed geometry. Component evidence, no fullWorld/deviceFPS/navigation run."
+}

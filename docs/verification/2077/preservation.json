@@ -1,0 +1,11 @@
+{
+  "configOutsideCobbles": "c75980dbc90b586d9b6e651485de97c72c55ba31a4b21c23f19f640b13f789a1",
+  "colorCanvasRecipeAndMaterialExceptRepeat": "5d18ceef0784eae2ff347e48041392f6d89a524d18e86c0ca3d28b585bc716a3",
+  "streetBeforeCobbleAndAfterCobbleUnchanged": true,
+  "src/roads.js": "fdf667ec499503f29760da2fa03a4fb25eb73c3a9914889936f82901847e2543",
+  "src/surroundings.js": "118933bf24a89b9802e142a2261b779d023b2360062b4487feaa6e57a667ad51",
+  "src/roadlamps.js": "3585bf54bfadf12a22dac32b07a704b6c34941ae202467b27522acca5efa9959",
+  "src/pathlamps.js": "50065539d88a30bd0758cc2bc1a18d087911d219f78140c22ea08fcbeb55a809",
+  "src/groundglow.js": "d1ab978350f50dfb7bace3602eb7c5d57a12c8f6429a6716b533017e5b5402d2",
+  "src/streetsigns.js": "7d5621f2232329ee2e952bbc2e8478f739a3395c632c861e4b6629da9891d751"
+}
