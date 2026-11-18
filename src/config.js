@@ -6091,6 +6091,18 @@ export const HEDGE = {
   dentShade: .8, topLight: 1.08, topWarm: 1.04, // dents darker, the sunny top a little fresher and warmer
   tone: .22, toneScale: 5, patch: .14, // slow per-hedge tone (≈ 5 m), smaller patches (0.5 m)
   stemRise: .4, stemDensity: 9, stemColor: 0x6b5236, // brown stems in leaf gaps in the lower 40 %, ~9 per m
+  topRise: [.3, .85],               // #2094: the top's fresher tone fades in with the normal's y over this range (was a hard step at .5)
+};
+// #2094: leaf clumps on the clipped hedges (src/hedgeclump.js, fragment only, all *guess* from photos of clipped box/privet):
+// rounded clumps in the leaf UV (m), darker crevices between them, darker still near the ground, lighter clump crowns on top.
+export const HEDGE_CLUMP = {
+  size: { boxwood: .13, patio: .21 }, // clump diameter (m): small-leaved box vs broader privet/hornbeam
+  jitter: .85,                        // cell-point jitter (1 = fully random Worley points)
+  edge: .5,                           // soft crevice width as a share of the clump size (F2 − F1): wide, so clumps read rounded, not cracked
+  creviceDark: .6, lowDark: .72,       // crevice brightness; near the ground (hedgeLow) multiplied again by lowDark
+  dome: .25, top: .1,                 // clump-centre lift; extra lift on upward faces
+  bump: .022,                         // relief for the normal (m-ish, like bumpScale)
+  fade: [16, 34], aa: [.25, .6],      // fade to the mean tone with distance (m) and once a clump spans only ~2 px
 };
 export const PATIO = {
   // #680: clipped privet/hornbeam appearance, visual guesses; original height/plan footprint retained.

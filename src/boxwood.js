@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SEASON } from './config.js';
+import { SEASON, HEDGE_CLUMP } from './config.js';
 import { registerSeasonal } from './seasons.js';
 import { hedgeBody, hedgeMaterial } from './hedgeform.js';
 
@@ -29,7 +29,7 @@ export function leafTexture(spec) {
 }
 export function boxwood(spec) {
   const group=new THREE.Group();group.name='front-boxwood';group.userData.runs=hedgeRuns(spec);group.userData.segments=[];
-  const map=leafTexture(spec),material=hedgeMaterial(new THREE.MeshStandardMaterial({color:spec.color,map,bumpMap:map,bumpScale:spec.bump,roughness:spec.roughness}));material.name='boxwood';
+  const map=leafTexture(spec),material=hedgeMaterial(new THREE.MeshStandardMaterial({color:spec.color,map,bumpMap:map,bumpScale:spec.bump,roughness:spec.roughness}),{size:HEDGE_CLUMP.size.boxwood,period:spec.texturePeriod});material.name='boxwood';
   const snowMaterial=new THREE.MeshStandardMaterial({color:SEASON.snow.hedge,roughness:1}),caps=[];
   for(const [x0,x1] of group.userData.runs) {
     // #1143: the shared dented hedge form (hedgeform.js) in world x/z; the group lifts it onto the bed.

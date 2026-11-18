@@ -1,0 +1,336 @@
+{
+ "base": "80b8ba46149ec9044b3b1793159230be698196a8",
+ "phases": {
+  "before": {
+   "summer": {
+    "hedges": {
+     "?/patio-hedge#0": {
+      "vertices": 1128,
+      "hash": -729699066,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     },
+     "?/patio-hedge#1": {
+      "vertices": 1128,
+      "hash": -418944582,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     },
+     "?/patio-hedge#2": {
+      "vertices": 1128,
+      "hash": 1518805070,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     },
+     "?/patio-hedge#3": {
+      "vertices": 1128,
+      "hash": 851973129,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     },
+     "?/patio-hedge#4": {
+      "vertices": 1128,
+      "hash": -1017830500,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     },
+     "?/patio-hedge#5": {
+      "vertices": 1128,
+      "hash": 1023465992,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     },
+     "?/patio-hedge#6": {
+      "vertices": 1128,
+      "hash": 1354595656,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     },
+     "?/patio-hedge#7": {
+      "vertices": 1128,
+      "hash": -1485450338,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     },
+     "front-boxwood/boxwood#8": {
+      "vertices": 1890,
+      "hash": 375231720,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     }
+    },
+    "programs": 82
+   },
+   "loadMs": 41155,
+   "views": {
+    "box-walk-sommar": {
+     "calls": 289,
+     "triangles": 744484,
+     "textures": 100,
+     "programs": 109,
+     "eye": [
+      -13,
+      1.62,
+      -6.8
+     ]
+    },
+    "box-walk-vinter": {
+     "calls": 284,
+     "triangles": 697712,
+     "textures": 100,
+     "programs": 113,
+     "eye": [
+      -13,
+      1.62,
+      -6.8
+     ]
+    }
+   },
+   "winter": {
+    "hedges": {
+     "?/patio-hedge#0": {
+      "vertices": 1128,
+      "hash": -729699066,
+      "map": false,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     },
+     "?/patio-hedge#1": {
+      "vertices": 1128,
+      "hash": -418944582,
+      "map": false,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     },
+     "?/patio-hedge#2": {
+      "vertices": 1128,
+      "hash": 1518805070,
+      "map": false,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     },
+     "?/patio-hedge#3": {
+      "vertices": 1128,
+      "hash": 851973129,
+      "map": false,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     },
+     "?/patio-hedge#4": {
+      "vertices": 1128,
+      "hash": -1017830500,
+      "map": false,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     },
+     "?/patio-hedge#5": {
+      "vertices": 1128,
+      "hash": 1023465992,
+      "map": false,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     },
+     "?/patio-hedge#6": {
+      "vertices": 1128,
+      "hash": 1354595656,
+      "map": false,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     },
+     "?/patio-hedge#7": {
+      "vertices": 1128,
+      "hash": -1485450338,
+      "map": false,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     },
+     "front-boxwood/boxwood#8": {
+      "vertices": 1890,
+      "hash": 375231720,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-1143|lampwashV|lampwash"
+     }
+    },
+    "programs": 113
+   }
+  },
+  "after": {
+   "summer": {
+    "hedges": {
+     "?/patio-hedge#0": {
+      "vertices": 1128,
+      "hash": -729699066,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     },
+     "?/patio-hedge#1": {
+      "vertices": 1128,
+      "hash": -418944582,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     },
+     "?/patio-hedge#2": {
+      "vertices": 1128,
+      "hash": 1518805070,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     },
+     "?/patio-hedge#3": {
+      "vertices": 1128,
+      "hash": 851973129,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     },
+     "?/patio-hedge#4": {
+      "vertices": 1128,
+      "hash": -1017830500,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     },
+     "?/patio-hedge#5": {
+      "vertices": 1128,
+      "hash": 1023465992,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     },
+     "?/patio-hedge#6": {
+      "vertices": 1128,
+      "hash": 1354595656,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     },
+     "?/patio-hedge#7": {
+      "vertices": 1128,
+      "hash": -1485450338,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     },
+     "front-boxwood/boxwood#8": {
+      "vertices": 1890,
+      "hash": 375231720,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     }
+    },
+    "programs": 82
+   },
+   "loadMs": 42051,
+   "views": {
+    "box-walk-sommar": {
+     "calls": 289,
+     "triangles": 744484,
+     "textures": 100,
+     "programs": 109,
+     "eye": [
+      -13,
+      1.62,
+      -6.8
+     ]
+    },
+    "box-walk-vinter": {
+     "calls": 284,
+     "triangles": 697712,
+     "textures": 100,
+     "programs": 113,
+     "eye": [
+      -13,
+      1.62,
+      -6.8
+     ]
+    }
+   },
+   "winter": {
+    "hedges": {
+     "?/patio-hedge#0": {
+      "vertices": 1128,
+      "hash": -729699066,
+      "map": false,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     },
+     "?/patio-hedge#1": {
+      "vertices": 1128,
+      "hash": -418944582,
+      "map": false,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     },
+     "?/patio-hedge#2": {
+      "vertices": 1128,
+      "hash": 1518805070,
+      "map": false,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     },
+     "?/patio-hedge#3": {
+      "vertices": 1128,
+      "hash": 851973129,
+      "map": false,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     },
+     "?/patio-hedge#4": {
+      "vertices": 1128,
+      "hash": -1017830500,
+      "map": false,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     },
+     "?/patio-hedge#5": {
+      "vertices": 1128,
+      "hash": 1023465992,
+      "map": false,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     },
+     "?/patio-hedge#6": {
+      "vertices": 1128,
+      "hash": 1354595656,
+      "map": false,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     },
+     "?/patio-hedge#7": {
+      "vertices": 1128,
+      "hash": -1485450338,
+      "map": false,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     },
+     "front-boxwood/boxwood#8": {
+      "vertices": 1890,
+      "hash": 375231720,
+      "map": true,
+      "visible": true,
+      "key": "hedge-form-2094|lampwashV|lampwash"
+     }
+    },
+    "programs": 113
+   }
+  }
+ },
+ "errors": [],
+ "external": [
+  "https://lunden-l1007.olw.workers.dev/beer-shelf",
+  "https://lunden-l1007.olw.workers.dev/beer-shelf"
+ ]
+}

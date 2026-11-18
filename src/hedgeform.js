@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { HEDGE } from './config.js';
+import { CLUMP_PARS, CLUMP_COLOR, CLUMP_NORMAL } from './hedgeclump.js';
 
 // Shared clipped-hedge form (#1143) for the patio hedges (patiohedge.js) and the entrance boxwood (boxwood.js):
 // a subdivided box, rounded at its edges, dented by smooth world-space noise, darker and thinner at the foot and
@@ -56,13 +57,15 @@ export function hedgeBody(spec, cx, cz, width, depth, topWave = null) {
     const taper = (spec.footScale ?? 1) + (1 - (spec.footScale ?? 1)) * t, pinch = 1 - HEDGE.footPinch * (1 - foot);
     const wave = topWave ? topWave(wx, wz) * t * t : 0;
     pos.setXYZ(i, wx, wy + wave, cz + p.z * taper * pinch);
+    // #2094: the top's fresher tone fades in with the face's slope instead of a hard step at the rounded edge
+    const up = THREE.MathUtils.smoothstep(dir.y, HEDGE.topRise[0], HEDGE.topRise[1]);
     // tone: per-hedge (slow) and per-patch variation, a darker foot, darker dents and a fresher top
     const tone = 1 + HEDGE.tone * (noise(wx / HEDGE.toneScale + 3.1, 0, wz / HEDGE.toneScale) - .5)
       + HEDGE.patch * (noise(wx / .5, wy / .5 + 11, wz / .5) - .5);
     const shade = (HEDGE.footDark + (1 - HEDGE.footDark) * THREE.MathUtils.smoothstep(t, 0, HEDGE.footShade))
-      * (1 + HEDGE.dentShade * (m - .5)) * (dir.y > .5 ? HEDGE.topLight : 1);
+      * (1 + HEDGE.dentShade * (m - .5)) * (1 + (HEDGE.topLight - 1) * up);
     const k = tone * shade;
-    colors[i * 3] = k * (dir.y > .5 ? HEDGE.topWarm : 1); colors[i * 3 + 1] = k; colors[i * 3 + 2] = k * .96;
+    colors[i * 3] = k * (1 + (HEDGE.topWarm - 1) * up); colors[i * 3 + 1] = k; colors[i * 3 + 2] = k * .96;
     low[i] = 1 - THREE.MathUtils.smoothstep(t, 0, HEDGE.stemRise);
   }
   box.setAttribute('color', new THREE.BufferAttribute(colors, 3));
@@ -88,16 +91,19 @@ export function hedgeBody(spec, cx, cz, width, depth, topWave = null) {
   return box;
 }
 
-// Material patch: vertex colours, plus brown (applied after the vertex colours, so the dark foot keeps them visible) stem/branch glimpses in the leaf gaps near the foot (map's dark texels).
-export function hedgeMaterial(material) {
+// Material patch: vertex colours, leaf clumps (#2094, hedgeclump.js: `clump` = {size, period} m, null = none), plus brown (applied after the vertex colours, so the dark foot keeps them visible) stem/branch glimpses in the leaf gaps near the foot (map's dark texels).
+export function hedgeMaterial(material, clump = null) {
+  const clumpSize = clump?.size;
   material.vertexColors = true;
   const stem = new THREE.Color(HEDGE.stemColor);
   material.onBeforeCompile = (shader) => {
     shader.uniforms.hedgeStem = { value: stem };
-    shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nattribute float hedgeLow;\nvarying float vHedgeLow;\nvarying vec3 vHedgePos;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvHedgeLow = hedgeLow;\nvHedgePos = position;');
-    shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 hedgeStem;\nvarying float vHedgeLow;\nvarying vec3 vHedgePos;')
-      .replace('#include <color_fragment>', `#include <color_fragment>
+    shader.uniforms.hcScale = { value: clumpSize ? clump.period / clumpSize : 0 };
+    shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nattribute float hedgeLow;\nvarying float vHedgeLow;\nvarying vec3 vHedgePos;\nvarying float vHedgeUp;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvHedgeLow = hedgeLow;\nvHedgePos = position;\nvHedgeUp = normal.y;');
+    shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 hedgeStem;\nvarying float vHedgeLow;\nvarying vec3 vHedgePos;' + CLUMP_PARS)
+      .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>' + (clumpSize ? CLUMP_NORMAL : ''))
+      .replace('#include <color_fragment>', `#include <color_fragment>${clumpSize ? CLUMP_COLOR : ''}
 #ifdef USE_MAP
 {
   // thin, slightly crooked near-vertical stems along the run, with a few forks; only where the leaves leave a gap
@@ -111,6 +117,6 @@ export function hedgeMaterial(material) {
 }
 #endif`);
   };
-  material.customProgramCacheKey = () => 'hedge-form-1143';
+  material.customProgramCacheKey = () => clumpSize ? 'hedge-form-2094' : 'hedge-form-1143';
   return material;
 }

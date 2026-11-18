@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { PATIO, SITE } from './config.js';
+import { HEDGE_CLUMP, PATIO, SITE } from './config.js';
 import { leafTexture } from './boxwood.js';
 import { hedgeBody, hedgeMaterial } from './hedgeform.js';
 
@@ -7,7 +7,7 @@ import { hedgeBody, hedgeMaterial } from './hedgeform.js';
 export function patioHedgeMaterial() {
   const map = leafTexture(SITE.life.strip.hedge), spec = PATIO.hedge;
   const material = hedgeMaterial(new THREE.MeshStandardMaterial({color: spec.color, map, bumpMap: map,
-    bumpScale: spec.bump, roughness: spec.roughness}));
+    bumpScale: spec.bump, roughness: spec.roughness}), {size: HEDGE_CLUMP.size.patio, period: spec.texturePeriod});
   material.name = 'patio-hedge';
   return material;
 }
