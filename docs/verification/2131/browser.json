@@ -1,0 +1,873 @@
+{
+ "baseline": "5498de36",
+ "phases": {
+  "before": {
+   "loadMs": 19313,
+   "views": {
+    "park-near": {
+     "tree": {
+      "x": -19.621974418229414,
+      "z": 192.28461805236742,
+      "kind": "big"
+     },
+     "camera": [
+      -30.62,
+      -1.38,
+      179.28
+     ],
+     "calls": 41,
+     "triangles": 344720,
+     "programs": 42,
+     "trees": {
+      "trunks": {
+       "meshes": 20,
+       "instances": 1907,
+       "drawn": 368,
+       "trianglesPerInstance": 46,
+       "drawnTriangles": 16928
+      },
+      "birches": {
+       "meshes": 4,
+       "instances": 15,
+       "drawn": 4,
+       "trianglesPerInstance": 46,
+       "drawnTriangles": 184
+      },
+      "crowns": {
+       "meshes": 21,
+       "instances": 2244,
+       "drawn": 396,
+       "trianglesPerInstance": 60,
+       "drawnTriangles": 23760
+      },
+      "crowns-far": {
+       "meshes": 1,
+       "instances": 2244,
+       "drawn": 36,
+       "trianglesPerInstance": 36,
+       "drawnTriangles": 1296
+      },
+      "trunks-far": {
+       "meshes": 1,
+       "instances": 1922,
+       "drawn": 31,
+       "trianglesPerInstance": 14,
+       "drawnTriangles": 434
+      }
+     },
+     "file": "docs/verification/2131/before/park-near.jpg"
+    },
+    "park-near-winter": {
+     "tree": {
+      "x": -19.621974418229414,
+      "z": 192.28461805236742,
+      "kind": "big"
+     },
+     "camera": [
+      -30.62,
+      -1.38,
+      179.28
+     ],
+     "calls": 40,
+     "triangles": 323940,
+     "programs": 49,
+     "trees": {
+      "trunks": {
+       "meshes": 20,
+       "instances": 1907,
+       "drawn": 368,
+       "trianglesPerInstance": 46,
+       "drawnTriangles": 16928
+      },
+      "birches": {
+       "meshes": 4,
+       "instances": 15,
+       "drawn": 4,
+       "trianglesPerInstance": 46,
+       "drawnTriangles": 184
+      },
+      "crowns": {
+       "meshes": 21,
+       "instances": 2244,
+       "drawn": 0,
+       "trianglesPerInstance": 60,
+       "drawnTriangles": 0
+      },
+      "crowns-far": {
+       "meshes": 1,
+       "instances": 2244,
+       "drawn": 0,
+       "trianglesPerInstance": 36,
+       "drawnTriangles": 0
+      },
+      "trunks-far": {
+       "meshes": 1,
+       "instances": 1922,
+       "drawn": 31,
+       "trianglesPerInstance": 14,
+       "drawnTriangles": 434
+      }
+     },
+     "file": "docs/verification/2131/before/park-near-winter.jpg"
+    },
+    "bridge": {
+     "tree": {
+      "x": -3,
+      "z": 117.6,
+      "kind": "tree"
+     },
+     "camera": [
+      -12,
+      -1.45,
+      106.6
+     ],
+     "calls": 46,
+     "triangles": 366528,
+     "programs": 52,
+     "trees": {
+      "trunks": {
+       "meshes": 20,
+       "instances": 1907,
+       "drawn": 171,
+       "trianglesPerInstance": 46,
+       "drawnTriangles": 7866
+      },
+      "birches": {
+       "meshes": 4,
+       "instances": 15,
+       "drawn": 13,
+       "trianglesPerInstance": 46,
+       "drawnTriangles": 598
+      },
+      "crowns": {
+       "meshes": 21,
+       "instances": 2244,
+       "drawn": 206,
+       "trianglesPerInstance": 60,
+       "drawnTriangles": 12360
+      },
+      "crowns-far": {
+       "meshes": 1,
+       "instances": 2244,
+       "drawn": 392,
+       "trianglesPerInstance": 36,
+       "drawnTriangles": 14112
+      },
+      "trunks-far": {
+       "meshes": 1,
+       "instances": 1922,
+       "drawn": 364,
+       "trianglesPerInstance": 14,
+       "drawnTriangles": 5096
+      }
+     },
+     "file": "docs/verification/2131/before/bridge.jpg"
+    },
+    "bridge-winter": {
+     "tree": {
+      "x": -3,
+      "z": 117.6,
+      "kind": "tree"
+     },
+     "camera": [
+      -12,
+      -1.45,
+      106.6
+     ],
+     "calls": 44,
+     "triangles": 331536,
+     "programs": 53,
+     "trees": {
+      "trunks": {
+       "meshes": 20,
+       "instances": 1907,
+       "drawn": 171,
+       "trianglesPerInstance": 46,
+       "drawnTriangles": 7866
+      },
+      "birches": {
+       "meshes": 4,
+       "instances": 15,
+       "drawn": 13,
+       "trianglesPerInstance": 46,
+       "drawnTriangles": 598
+      },
+      "crowns": {
+       "meshes": 21,
+       "instances": 2244,
+       "drawn": 0,
+       "trianglesPerInstance": 60,
+       "drawnTriangles": 0
+      },
+      "crowns-far": {
+       "meshes": 1,
+       "instances": 2244,
+       "drawn": 0,
+       "trianglesPerInstance": 36,
+       "drawnTriangles": 0
+      },
+      "trunks-far": {
+       "meshes": 1,
+       "instances": 1922,
+       "drawn": 364,
+       "trianglesPerInstance": 14,
+       "drawnTriangles": 5096
+      }
+     },
+     "file": "docs/verification/2131/before/bridge-winter.jpg"
+    },
+    "park-far": {
+     "tree": {
+      "x": -19.621974418229414,
+      "z": 192.28461805236742,
+      "kind": "big"
+     },
+     "camera": [
+      -79.62,
+      28.51,
+      112.28
+     ],
+     "calls": 45,
+     "triangles": 422448,
+     "programs": 54,
+     "trees": {
+      "trunks": {
+       "meshes": 20,
+       "instances": 1907,
+       "drawn": 88,
+       "trianglesPerInstance": 46,
+       "drawnTriangles": 4048
+      },
+      "birches": {
+       "meshes": 4,
+       "instances": 15,
+       "drawn": 5,
+       "trianglesPerInstance": 46,
+       "drawnTriangles": 230
+      },
+      "crowns": {
+       "meshes": 21,
+       "instances": 2244,
+       "drawn": 126,
+       "trianglesPerInstance": 60,
+       "drawnTriangles": 7560
+      },
+      "crowns-far": {
+       "meshes": 1,
+       "instances": 2244,
+       "drawn": 711,
+       "trianglesPerInstance": 36,
+       "drawnTriangles": 25596
+      },
+      "trunks-far": {
+       "meshes": 1,
+       "instances": 1922,
+       "drawn": 666,
+       "trianglesPerInstance": 14,
+       "drawnTriangles": 9324
+      }
+     },
+     "file": "docs/verification/2131/before/park-far.jpg"
+    },
+    "park-far-winter": {
+     "tree": {
+      "x": -19.621974418229414,
+      "z": 192.28461805236742,
+      "kind": "big"
+     },
+     "camera": [
+      -79.62,
+      28.51,
+      112.28
+     ],
+     "calls": 43,
+     "triangles": 344662,
+     "programs": 56,
+     "trees": {
+      "trunks": {
+       "meshes": 20,
+       "instances": 1907,
+       "drawn": 88,
+       "trianglesPerInstance": 46,
+       "drawnTriangles": 4048
+      },
+      "birches": {
+       "meshes": 4,
+       "instances": 15,
+       "drawn": 5,
+       "trianglesPerInstance": 46,
+       "drawnTriangles": 230
+      },
+      "crowns": {
+       "meshes": 21,
+       "instances": 2244,
+       "drawn": 0,
+       "trianglesPerInstance": 60,
+       "drawnTriangles": 0
+      },
+      "crowns-far": {
+       "meshes": 1,
+       "instances": 2244,
+       "drawn": 0,
+       "trianglesPerInstance": 36,
+       "drawnTriangles": 0
+      },
+      "trunks-far": {
+       "meshes": 1,
+       "instances": 1922,
+       "drawn": 666,
+       "trianglesPerInstance": 14,
+       "drawnTriangles": 9324
+      }
+     },
+     "file": "docs/verification/2131/before/park-far-winter.jpg"
+    },
+    "courtyard": {
+     "tree": {
+      "x": -18.5,
+      "z": 53.4,
+      "kind": "tree"
+     },
+     "camera": [
+      -16.6,
+      -1.38,
+      41.4
+     ],
+     "calls": 109,
+     "triangles": 584499,
+     "programs": 91,
+     "trees": {
+      "trunks": {
+       "meshes": 20,
+       "instances": 1907,
+       "drawn": 48,
+       "trianglesPerInstance": 46,
+       "drawnTriangles": 2208
+      },
+      "birches": {
+       "meshes": 4,
+       "instances": 15,
+       "drawn": 2,
+       "trianglesPerInstance": 46,
+       "drawnTriangles": 92
+      },
+      "crowns": {
+       "meshes": 21,
+       "instances": 2244,
+       "drawn": 50,
+       "trianglesPerInstance": 60,
+       "drawnTriangles": 3000
+      },
+      "crowns-far": {
+       "meshes": 1,
+       "instances": 2244,
+       "drawn": 981,
+       "trianglesPerInstance": 36,
+       "drawnTriangles": 35316
+      },
+      "trunks-far": {
+       "meshes": 1,
+       "instances": 1922,
+       "drawn": 869,
+       "trianglesPerInstance": 14,
+       "drawnTriangles": 12166
+      }
+     },
+     "file": "docs/verification/2131/before/courtyard.jpg"
+    },
+    "courtyard-winter": {
+     "tree": {
+      "x": -18.5,
+      "z": 53.4,
+      "kind": "tree"
+     },
+     "camera": [
+      -16.6,
+      -1.38,
+      41.4
+     ],
+     "calls": 104,
+     "triangles": 521429,
+     "programs": 94,
+     "trees": {
+      "trunks": {
+       "meshes": 20,
+       "instances": 1907,
+       "drawn": 48,
+       "trianglesPerInstance": 46,
+       "drawnTriangles": 2208
+      },
+      "birches": {
+       "meshes": 4,
+       "instances": 15,
+       "drawn": 2,
+       "trianglesPerInstance": 46,
+       "drawnTriangles": 92
+      },
+      "crowns": {
+       "meshes": 21,
+       "instances": 2244,
+       "drawn": 0,
+       "trianglesPerInstance": 60,
+       "drawnTriangles": 0
+      },
+      "crowns-far": {
+       "meshes": 1,
+       "instances": 2244,
+       "drawn": 0,
+       "trianglesPerInstance": 36,
+       "drawnTriangles": 0
+      },
+      "trunks-far": {
+       "meshes": 1,
+       "instances": 1922,
+       "drawn": 869,
+       "trianglesPerInstance": 14,
+       "drawnTriangles": 12166
+      }
+     },
+     "file": "docs/verification/2131/before/courtyard-winter.jpg"
+    }
+   },
+   "errors": [],
+   "consoleErrors": [
+    "Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+    "Failed to load resource: the server responded with a status of 404 (File not found)"
+   ]
+  },
+  "after": {
+   "loadMs": 20056,
+   "views": {
+    "park-near": {
+     "tree": {
+      "x": -19.621974418229414,
+      "z": 192.28461805236742,
+      "kind": "big"
+     },
+     "camera": [
+      -30.62,
+      -1.38,
+      179.28
+     ],
+     "calls": 41,
+     "triangles": 345432,
+     "programs": 41,
+     "trees": {
+      "trunks": {
+       "meshes": 20,
+       "instances": 812,
+       "drawn": 167,
+       "trianglesPerInstance": 166,
+       "drawnTriangles": 27722
+      },
+      "birches": {
+       "meshes": 4,
+       "instances": 15,
+       "drawn": 4,
+       "trianglesPerInstance": 166,
+       "drawnTriangles": 664
+      },
+      "crowns": {
+       "meshes": 21,
+       "instances": 3129,
+       "drawn": 529,
+       "trianglesPerInstance": 60,
+       "drawnTriangles": 31740
+      },
+      "crowns-far": {
+       "meshes": 1,
+       "instances": 3129,
+       "drawn": 40,
+       "trianglesPerInstance": 36,
+       "drawnTriangles": 1440
+      },
+      "trunks-far": {
+       "meshes": 1,
+       "instances": 827,
+       "drawn": 7,
+       "trianglesPerInstance": 32,
+       "drawnTriangles": 224
+      }
+     },
+     "file": "docs/verification/2131/park-near.jpg"
+    },
+    "park-near-winter": {
+     "tree": {
+      "x": -19.621974418229414,
+      "z": 192.28461805236742,
+      "kind": "big"
+     },
+     "camera": [
+      -30.62,
+      -1.38,
+      179.28
+     ],
+     "calls": 41,
+     "triangles": 323132,
+     "programs": 49,
+     "trees": {
+      "trunks": {
+       "meshes": 20,
+       "instances": 812,
+       "drawn": 167,
+       "trianglesPerInstance": 166,
+       "drawnTriangles": 27722
+      },
+      "birches": {
+       "meshes": 4,
+       "instances": 15,
+       "drawn": 4,
+       "trianglesPerInstance": 166,
+       "drawnTriangles": 664
+      },
+      "crowns": {
+       "meshes": 21,
+       "instances": 3129,
+       "drawn": 0,
+       "trianglesPerInstance": 60,
+       "drawnTriangles": 0
+      },
+      "crowns-far": {
+       "meshes": 1,
+       "instances": 3129,
+       "drawn": 0,
+       "trianglesPerInstance": 36,
+       "drawnTriangles": 0
+      },
+      "trunks-far": {
+       "meshes": 1,
+       "instances": 827,
+       "drawn": 7,
+       "trianglesPerInstance": 32,
+       "drawnTriangles": 224
+      }
+     },
+     "file": "docs/verification/2131/park-near-winter.jpg"
+    },
+    "bridge": {
+     "tree": {
+      "x": -3,
+      "z": 117.6,
+      "kind": "tree"
+     },
+     "camera": [
+      -12,
+      -1.45,
+      106.6
+     ],
+     "calls": 46,
+     "triangles": 382134,
+     "programs": 52,
+     "trees": {
+      "trunks": {
+       "meshes": 20,
+       "instances": 812,
+       "drawn": 129,
+       "trianglesPerInstance": 166,
+       "drawnTriangles": 21414
+      },
+      "birches": {
+       "meshes": 4,
+       "instances": 15,
+       "drawn": 13,
+       "trianglesPerInstance": 166,
+       "drawnTriangles": 2158
+      },
+      "crowns": {
+       "meshes": 21,
+       "instances": 3129,
+       "drawn": 363,
+       "trianglesPerInstance": 60,
+       "drawnTriangles": 21780
+      },
+      "crowns-far": {
+       "meshes": 1,
+       "instances": 3129,
+       "drawn": 518,
+       "trianglesPerInstance": 36,
+       "drawnTriangles": 18648
+      },
+      "trunks-far": {
+       "meshes": 1,
+       "instances": 827,
+       "drawn": 133,
+       "trianglesPerInstance": 32,
+       "drawnTriangles": 4256
+      }
+     },
+     "file": "docs/verification/2131/bridge.jpg"
+    },
+    "bridge-winter": {
+     "tree": {
+      "x": -3,
+      "z": 117.6,
+      "kind": "tree"
+     },
+     "camera": [
+      -12,
+      -1.45,
+      106.6
+     ],
+     "calls": 44,
+     "triangles": 339522,
+     "programs": 53,
+     "trees": {
+      "trunks": {
+       "meshes": 20,
+       "instances": 812,
+       "drawn": 129,
+       "trianglesPerInstance": 166,
+       "drawnTriangles": 21414
+      },
+      "birches": {
+       "meshes": 4,
+       "instances": 15,
+       "drawn": 13,
+       "trianglesPerInstance": 166,
+       "drawnTriangles": 2158
+      },
+      "crowns": {
+       "meshes": 21,
+       "instances": 3129,
+       "drawn": 0,
+       "trianglesPerInstance": 60,
+       "drawnTriangles": 0
+      },
+      "crowns-far": {
+       "meshes": 1,
+       "instances": 3129,
+       "drawn": 0,
+       "trianglesPerInstance": 36,
+       "drawnTriangles": 0
+      },
+      "trunks-far": {
+       "meshes": 1,
+       "instances": 827,
+       "drawn": 133,
+       "trianglesPerInstance": 32,
+       "drawnTriangles": 4256
+      }
+     },
+     "file": "docs/verification/2131/bridge-winter.jpg"
+    },
+    "park-far": {
+     "tree": {
+      "x": -19.621974418229414,
+      "z": 192.28461805236742,
+      "kind": "big"
+     },
+     "camera": [
+      -79.62,
+      28.51,
+      112.28
+     ],
+     "calls": 45,
+     "triangles": 437544,
+     "programs": 54,
+     "trees": {
+      "trunks": {
+       "meshes": 20,
+       "instances": 812,
+       "drawn": 31,
+       "trianglesPerInstance": 166,
+       "drawnTriangles": 5146
+      },
+      "birches": {
+       "meshes": 4,
+       "instances": 15,
+       "drawn": 5,
+       "trianglesPerInstance": 166,
+       "drawnTriangles": 830
+      },
+      "crowns": {
+       "meshes": 21,
+       "instances": 3129,
+       "drawn": 186,
+       "trianglesPerInstance": 60,
+       "drawnTriangles": 11160
+      },
+      "crowns-far": {
+       "meshes": 1,
+       "instances": 3129,
+       "drawn": 1002,
+       "trianglesPerInstance": 36,
+       "drawnTriangles": 36072
+      },
+      "trunks-far": {
+       "meshes": 1,
+       "instances": 827,
+       "drawn": 345,
+       "trianglesPerInstance": 32,
+       "drawnTriangles": 11040
+      }
+     },
+     "file": "docs/verification/2131/park-far.jpg"
+    },
+    "park-far-winter": {
+     "tree": {
+      "x": -19.621974418229414,
+      "z": 192.28461805236742,
+      "kind": "big"
+     },
+     "camera": [
+      -79.62,
+      28.51,
+      112.28
+     ],
+     "calls": 43,
+     "triangles": 347466,
+     "programs": 56,
+     "trees": {
+      "trunks": {
+       "meshes": 20,
+       "instances": 812,
+       "drawn": 31,
+       "trianglesPerInstance": 166,
+       "drawnTriangles": 5146
+      },
+      "birches": {
+       "meshes": 4,
+       "instances": 15,
+       "drawn": 5,
+       "trianglesPerInstance": 166,
+       "drawnTriangles": 830
+      },
+      "crowns": {
+       "meshes": 21,
+       "instances": 3129,
+       "drawn": 0,
+       "trianglesPerInstance": 60,
+       "drawnTriangles": 0
+      },
+      "crowns-far": {
+       "meshes": 1,
+       "instances": 3129,
+       "drawn": 0,
+       "trianglesPerInstance": 36,
+       "drawnTriangles": 0
+      },
+      "trunks-far": {
+       "meshes": 1,
+       "instances": 827,
+       "drawn": 345,
+       "trianglesPerInstance": 32,
+       "drawnTriangles": 11040
+      }
+     },
+     "file": "docs/verification/2131/park-far-winter.jpg"
+    },
+    "courtyard": {
+     "tree": {
+      "x": -18.5,
+      "z": 53.4,
+      "kind": "tree"
+     },
+     "camera": [
+      -16.6,
+      -1.38,
+      41.4
+     ],
+     "calls": 108,
+     "triangles": 599773,
+     "programs": 91,
+     "trees": {
+      "trunks": {
+       "meshes": 20,
+       "instances": 812,
+       "drawn": 48,
+       "trianglesPerInstance": 166,
+       "drawnTriangles": 7968
+      },
+      "birches": {
+       "meshes": 4,
+       "instances": 15,
+       "drawn": 2,
+       "trianglesPerInstance": 166,
+       "drawnTriangles": 332
+      },
+      "crowns": {
+       "meshes": 21,
+       "instances": 3129,
+       "drawn": 271,
+       "trianglesPerInstance": 60,
+       "drawnTriangles": 16260
+      },
+      "crowns-far": {
+       "meshes": 1,
+       "instances": 3129,
+       "drawn": 1372,
+       "trianglesPerInstance": 36,
+       "drawnTriangles": 49392
+      },
+      "trunks-far": {
+       "meshes": 1,
+       "instances": 827,
+       "drawn": 398,
+       "trianglesPerInstance": 32,
+       "drawnTriangles": 12736
+      }
+     },
+     "file": "docs/verification/2131/courtyard.jpg"
+    },
+    "courtyard-winter": {
+     "tree": {
+      "x": -18.5,
+      "z": 53.4,
+      "kind": "tree"
+     },
+     "camera": [
+      -16.6,
+      -1.38,
+      41.4
+     ],
+     "calls": 103,
+     "triangles": 520671,
+     "programs": 94,
+     "trees": {
+      "trunks": {
+       "meshes": 20,
+       "instances": 812,
+       "drawn": 48,
+       "trianglesPerInstance": 166,
+       "drawnTriangles": 7968
+      },
+      "birches": {
+       "meshes": 4,
+       "instances": 15,
+       "drawn": 2,
+       "trianglesPerInstance": 166,
+       "drawnTriangles": 332
+      },
+      "crowns": {
+       "meshes": 21,
+       "instances": 3129,
+       "drawn": 0,
+       "trianglesPerInstance": 60,
+       "drawnTriangles": 0
+      },
+      "crowns-far": {
+       "meshes": 1,
+       "instances": 3129,
+       "drawn": 0,
+       "trianglesPerInstance": 36,
+       "drawnTriangles": 0
+      },
+      "trunks-far": {
+       "meshes": 1,
+       "instances": 827,
+       "drawn": 398,
+       "trianglesPerInstance": 32,
+       "drawnTriangles": 12736
+      }
+     },
+     "file": "docs/verification/2131/courtyard-winter.jpg"
+    }
+   },
+   "errors": [],
+   "consoleErrors": [
+    "Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED",
+    "Failed to load resource: the server responded with a status of 404 (File not found)"
+   ]
+  }
+ }
+}

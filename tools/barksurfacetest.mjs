@@ -5,6 +5,7 @@ import { barkSurfaceData, barkMarks, barkSurfaceTexture, applyBarkSurface } from
 import { BARK_SURFACE as S } from '../src/config.js';
 import { lodFarTrunkMaterial, trunkGeometry } from '../src/foliage.js';
 import { lodRange, patchDitherLod } from '../src/lod.js';
+import { trunkTriangles } from '../src/treeform.js';
 import { hasNativeVertexCompile } from '../src/vertexcompile.js';
 const values=(d,channel)=>Array.from({length:d.width*d.height},(_,i)=>d.data[i*4+channel]/255);
 const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
@@ -39,5 +40,5 @@ test('shared maps retain UV/mip/cache/native vertex semantics; dither/depth/far 
  const m=applyBarkSurface(new T.MeshStandardMaterial());assert.equal(m.bumpMap,m.roughnessMap);assert.equal(m.bumpMap,t);assert.ok(hasNativeVertexCompile(m));
  const range=lodRange(46,54),near=patchDitherLod(m,{far:false,range}),far=lodFarTrunkMaterial(range);
  assert.ok(hasNativeVertexCompile(near));assert.equal(near.bumpMap,t);assert.equal(far.material.map,null);assert.equal(far.material.bumpMap,null);assert.equal(far.material.roughnessMap,null);assert.equal(far.depth.map,null);
- assert.equal(trunkGeometry().attributes.position.count/3,46);assert.equal(trunkGeometry(true).attributes.position.count/3,14);
+ assert.equal(trunkGeometry().attributes.position.count/3,trunkTriangles());assert.equal(trunkGeometry(true).attributes.position.count/3,trunkTriangles("bark",false,true)); // #2131: branch orders from treeform.js
 });

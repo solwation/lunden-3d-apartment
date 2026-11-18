@@ -1675,7 +1675,8 @@ materials, construct an `InstanceLod`. Node test: `tools/lodtest.mjs`.
 
 Trees (surroundings.js `trees()`, `FOLIAGE.lod`): zone 46..54 m desktop, 30..38 m phones (*guess*); far crowns are the existing 36-
 triangle (phone 30) `far` lobe, far trunks a 4-sided stem + leader (14 instead of 46 triangles, untextured, per-instance bark/birch
-tint). Cost: +0..+2 draw calls on desktop (far crown + far trunk), -1..-17 on phones, -1..-9 % / -5..-15 % triangles in the
+tint; #2131: 32 on desktop with three thickened main limbs, phones keep 14; the near trunks are 166 / phone 64 triangles with
+their branch orders, see [plants](plants.md#species-tree-forms-2131)). Cost: +0..+2 draw calls on desktop (far crown + far trunk), -1..-17 on phones, -1..-9 % / -5..-15 % triangles in the
 measured views; one program per material kind is shared by both levels. Limits: far-level shadows come only from
 instances in (or near) the main frustum, so at a very low sun a tree behind the camera beyond 54 m does not shade the ±14 m shadow
 box; the zone is measured to the instance centre, so a trunk (foot) and its crown (centre) fade a few metres apart. Courtyard

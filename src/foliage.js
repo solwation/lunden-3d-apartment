@@ -2,10 +2,11 @@ import {leafRgbContext,leafTone,leafSideVeins} from './leafrgb.js';
 import { applyBarkSurface } from './barksurface.js'; // #2081
 import { rememberFragmentCompile } from './vertexcompile.js';
 import * as THREE from 'three';
-import { FOLIAGE as F } from './config.js';
+import { FOLIAGE as F, TREE_FORM } from './config.js';
 import { lowMemory } from './lowmemory.js';
 import { patchDitherLod, lodDepthMaterial } from './lod.js';
 import { patchSiteWind, siteWindLeafDepth } from './sitewind.js'; // #2101
+import { trunkLayout, farTrunkLayout } from './treeform.js'; // #2131
 
 // Tree crowns and shrubs out of leaf cards (#679): instead of a flat-shaded icosahedron, every crown lobe is a slightly
 // lumpy opaque leaf mass (the "core", so a crown still reads as a full volume when the mipmapped cards thin out at a
@@ -15,7 +16,7 @@ import { patchSiteWind, siteWindLeafDepth } from './sitewind.js'; // #2101
 // + the opaque core), one material: still one InstancedMesh = one draw call per batch, and seasons.js keeps colouring
 // and shrinking the instances as before. The cards are single quads drawn two-sided, the back lit like the front (the
 // material keeps three from flipping the normal), so a lobe costs no more triangles than the old icosahedron. Shadows: three's depth material
-// copies `map` + `alphaTest`, so the cards cast lacy shadows. Trunks: tapered, with branches up into the crown, a small
+// copies `map` + `alphaTest`, so the cards cast lacy shadows. Trunks: tapered, with branch orders up into the crown (#2131, treeform.js), a small
 // tileable bark texture (birches white with dark streaks); in winter (no leaves) the branches carry the silhouette.
 
 /** A tiny seeded random generator, so the atlas and the geometry are the same on every load. */
@@ -249,36 +250,31 @@ export function barkTexture(kind = 'bark') {
 }
 
 /**
- * A trunk of height 1 from y 0 (scaled per instance like the old cylinder): tapering from `F.trunk.base` to `F.trunk.top`,
- * with `F.trunk.branches` branches leaving it in its upper part and reaching up into the crown (local units: the trunk's
- * instance scale stretches them with the tree). One merged geometry, one draw call per batch as before.
+ * A trunk of height 1 from y 0 (scaled per instance like the old cylinder): the stem tapering from the layout's base to its top
+ * radius, a leader and (#2131) the branch orders of `trunkLayout(kind)` (src/treeform.js: main limbs, second limbs and, on
+ * desktop, fine twigs, which carry the bare winter silhouette through the crown), in local units: the trunk's instance scale
+ * stretches them with the tree. One merged geometry per bark kind ('bark' | 'birch', each its own batch already), one draw call
+ * per batch as before.
  */
-let trunkGeo = null, trunkGeoFar = null;
-/** `far` (#1958): a cheap trunk for the distance LOD: a 4-sided stem and the leader only, no branches (14 triangles). */
-export function trunkGeometry(far = false) {
-  if (far ? trunkGeoFar : trunkGeo) return far ? trunkGeoFar : trunkGeo;
-  const T = F.trunk, r = rng(97), parts = [];
-  // open-ended: the foot is in the ground, the top inside the crown (or hidden by the branches in winter)
-  const stem = new THREE.CylinderGeometry(T.top, T.base, 1, far ? T.farSides : T.sides, 1, true).translate(0, 0.5, 0);
-  parts.push(stem);
+const trunkGeos = new Map();
+/** `far` (#1958): a cheap trunk for the distance LOD: a 4-sided stem and the leader (14 triangles), on desktop also three main
+ *  limbs (#2131, treeform.js farTrunkLayout: 32 triangles), one geometry for both bark kinds. */
+export function trunkGeometry(far = false, kind = 'bark') {
+  const key = `${far ? 'far' : kind}|${lowMemory}`;
+  if (trunkGeos.has(key)) return trunkGeos.get(key);
+  const parts = [];
   const up = new THREE.Vector3(0, 1, 0);
-  /** A tapering limb from `start` to `end` (radii r0 → r1), `sides` round, open (its ends are buried). */
+  /** A tapering limb from `start` to `end` (radii r0 → r1), `sides` round, open (its ends are buried or end in a point). */
   const limb = (start, end, r0, r1, sides) => {
     const v = end.clone().sub(start), len = v.length();
     const b = new THREE.CylinderGeometry(r1, r0, len, sides, 1, true).translate(0, len / 2, 0);
     b.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(up, v.normalize())).translate(start.x, start.y, start.z);
     parts.push(b);
   };
-  limb(new THREE.Vector3(0, 0.98, 0), new THREE.Vector3(0.02, 1 + T.rise, 0), T.top, T.top * 0.05, 3); // the leader: no open top
-  for (let i = 0; i < (far ? 0 : T.branches); i++) {
-    // main branches round the trunk, out and up (local units: the instance's y scale is ~3× its x/z, so a small `rise`
-    // still climbs steeply), the first `T.forks` forking once near the end
-    const a = (i / T.branches) * 6.28 + r() * 0.9, y0 = T.from + r() * (1 - T.from) * 0.85, k = 0.75 + r() * 0.5;
-    const start = new THREE.Vector3(0, y0, 0), end = new THREE.Vector3(Math.cos(a) * T.reach * k, y0 + T.rise * k, Math.sin(a) * T.reach * k);
-    limb(start, end, T.top * 0.6, T.top * 0.08, 3); // to a point: no open tip shows
-    const fork = start.clone().lerp(end, 0.6), b = a + (r() < 0.5 ? -1 : 1) * (0.5 + r() * 0.5), l = T.reach * 0.55;
-    if (i < T.forks) limb(fork, fork.clone().add(new THREE.Vector3(Math.cos(b) * l, T.rise * 0.9, Math.sin(b) * l)), T.top * 0.3, T.top * 0.03, 3);
-  }
+  // #2131: built in a space stretched `aspect` times in y and squeezed back after the merge, so the instance's own stretch
+  // (height ≈ aspect × width) leaves a sideways limb round in the world instead of a tall slab
+  const A = TREE_FORM.branch[far ? 'bark' : kind].aspect, at = (p) => new THREE.Vector3(p[0], p[1] * A, p[2]);
+  for (const l of far ? farTrunkLayout(lowMemory) : trunkLayout(kind, lowMemory)) limb(at(l.a), at(l.b), l.r0, l.r1, l.sides);
   // merge by hand (all non-indexed): keeps the module free of the addon import
   const flat = parts.map((p) => p.toNonIndexed());
   const count = flat.reduce((s, p) => s + p.attributes.position.count, 0);
@@ -289,9 +285,11 @@ export function trunkGeometry(far = false) {
     geo.setAttribute(name, new THREE.BufferAttribute(arr, size));
   }
   parts.forEach((p) => p.dispose()); flat.forEach((p) => p.dispose());
+  geo.scale(1, 1 / A, 1); // (normals follow through the normal matrix)
   geo.computeBoundingSphere();
   geo.name = far ? 'foliage-trunk-far' : 'foliage-trunk';
-  if (far) trunkGeoFar = geo; else trunkGeo = geo;
+  geo.userData.bark = far ? 'far' : kind;
+  trunkGeos.set(key, geo);
   return geo;
 }
 

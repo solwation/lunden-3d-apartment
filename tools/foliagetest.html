@@ -26,7 +26,7 @@ f.onload = async () => {
   let pass = true;
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
   try {
-    const { FOLIAGE: F } = await w.eval(`import('${new URL('../src/config.js', location.href).href}')`);
+    const { FOLIAGE: F, TREE_FORM } = await w.eval(`import('${new URL('../src/config.js', location.href).href}')`);
     const SE = await w.eval(`import('${new URL('../src/seasons.js', location.href).href}')`);
     const crowns = [], trunks = [];
     A.scene.traverse((o) => {
@@ -65,7 +65,7 @@ f.onload = async () => {
     check(crowns.some((c) => c.castShadow) && !!mat.map && mat.alphaTest > 0, 'crowns cast cut-out shadows (map + alphaTest)');
     // trunks: tapered (top narrower than the foot), branches (more than one cylinder), bark textures, birches white
     const tg = trunks[0]?.geometry;
-    check(trunks.length >= 2 && tg && tg.attributes.position.count > F.trunk.sides * 6 && tg.attributes.position.count <= 60 * 3, `${trunks.length} trunk batches with branches (${tg?.attributes.position.count / 3} triangles, the stem alone ${F.trunk.sides * 2})`);
+    check(trunks.length >= 2 && tg && tg.attributes.position.count > F.trunk.sides * 6 && tg.attributes.position.count <= TREE_FORM.budget.trunk[lowmem ? 1 : 0] * 3, /* #2131: branch orders */ `${trunks.length} trunk batches with branches (${tg?.attributes.position.count / 3} triangles, the stem alone ${F.trunk.sides * 2})`);
     check(trunks.every((t) => t.material.map) && trunks.some((t) => t.material.color.getHSL({}).l > 0.75), 'bark textures; the birches white');
     // seasons: winter empties every crown, July brings them back exactly
     const snap = () => crowns.map((c) => Array.from(c.instanceMatrix.array));

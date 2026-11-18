@@ -2085,9 +2085,8 @@ export const FOOTPRINTS = {
 // `size` their edge, `tilt` rad off the tangent plane, `jitter` of their normals; `ao` the vertex-colour darkening at the
 // bottom centre, `bright` an overall lift (the texture and `ao` darken; seasons' colours were set for flat faces);
 // `leafLight` the leaves' grey range in the atlas, `coreGround` the core's; `alphaTest` the card cut-off.
-// Trunk (height 1, instance-scaled): `base` / `top` radii, `sides`, a leader up the middle, `branches` (the first `forks`
-// of them forking once) from `from` up, reaching `reach` out and `rise` up (into the crown); ~46 triangles, the old
-// plain cylinder 28 (the crowns save more than the branches cost); `bark` px of the bark textures, `color` / `birchColor` their tints.
+// Trunk (height 1, instance-scaled): `sides` / `farSides` of the near / far stem (as treeform.js builds them); since #2131 its radii
+// and branch orders live in TREE_FORM.branch (src/treeform.js trunkLayout); `bark` px of the bark textures, `color` / `birchColor` their tints.
 export const FOLIAGE = {
   atlas: 512, atlasPhone: 256,
   cards: { tree: [20, 18], shrub: [14, 10], far: [8, 5] }, coreDetail: { tree: 0, shrub: 0, far: 0 }, coreHoles: 220,
@@ -2096,7 +2095,7 @@ export const FOLIAGE = {
   coreScale: { tree: 1, shrub: 1, far: 0.62 }, cardScale: { tree: 1, shrub: 1, far: 1.4 },
   core: 0.42, lump: 0.18, coreJitter: 0.45, coreShade: 0.95, shell: [0.45, 0.85], size: 0.72, tilt: 0.6, jitter: 0.35,
   ao: 0.45, bright: 1.22, leafLight: [0.62, 1.0], coreGround: 0.45, alphaTest: 0.4,
-  trunk: { base: 0.2, top: 0.1, sides: 5, farSides: 4, branches: 3, forks: 2, from: 0.5, reach: 0.95, rise: 0.3, color: 0x8a735f, birchColor: 0xf2efe8 },
+  trunk: { sides: 5, farSides: 4, color: 0x8a735f, birchColor: 0xf2efe8 },
   bark: 64,
   // #1083: a crown standing near an Å-hus (SITE.blocks) is narrowed so its leaf cards stay `wallClearance` m outside the
   // façade instead of poking through the brick and windows (a pruned crown; *guess*, by eye — no measurement)
@@ -2113,6 +2112,53 @@ export const FOLIAGE = {
   // as single cards; phones switch earlier (their frames are the tighter ones). `margin`/`step`: instances join a level's
   // buffer `margin` m before the shader needs them and the packing is redone when the camera moved `step` m (margin > step).
   lod: { start: 46, end: 54, startPhone: 30, endPhone: 38, margin: 2, step: 1, trunkTint: 0.72 },
+};
+
+// #2131: TREE_FORM — species-specific crowns, branch orders and per-tree variation of the site's trees (src/treeform.js,
+// surroundings.js trees()). Everything is a visual *guess* by eye from ordinary Skåne park/street trees (Norway maple broad
+// and round, small-leaved lime domed, pedunculate oak irregular and open, silver birch narrow and drooping), not a survey:
+// the species of a mapped tree is a deterministic draw from its position (`mix` per site kind), not a known fact.
+// `kinds`: each site kind's crown envelope in units of the tree's scale s (the pre-#2131 single crown): `h` stem height,
+// `yc` crown centre above the stem top, `R` / `V` the crown's lobe-scale half width / half height, `w` the trunk instance width,
+// `lobe` a lobe size factor (the river park's big trees keep their closed canopy, #1804).
+// Species lobes are in units of that envelope ([dx, dy, dz, sx, sy, sz]: x/z by R, y by V): `centre`, an optional `top`,
+// a `ring` of side lobes (`n`; `dist`, `y`, `size` ranges; `flat` sy/sx; `spread` 0 = even angles … 1 = irregular), and
+// `droop` lobes hanging low round a birch; `phone` = [small kinds, big kind] lobe cap on phones (lowMemory).
+// `width` / `height` scale the envelope per species; `lean` the trunk's maximum lean (rad), the crown following it and
+// pushed `skew` x R further that way (light-seeking, asymmetric); `tilt` the lobes' random tilt (rad).
+// `jitter`: per-tree spreads (± fractions) of height, width, lobe size and lobe offset. `branch`: the shared trunk geometry
+// per bark kind (foliage.js trunkGeometry: one geometry per batch, so no new draws): main limbs (`main`, starting from
+// `from` up the stem, `reach` radial in trunk-width units, `rise` in stem heights), `second` limbs per main (one on phones),
+// `third` twigs per second limb (desktop only), `droop` (birch) how far the finer orders hang down; `leader` its top (stem heights);
+// `aspect` the kind's usual stem height : trunk width, so a sideways limb's cross-section is round in the world, not a tall slab.
+export const TREE_FORM = {
+  seed: 2131,
+  mix: { tree: { maple: 0.45, lime: 0.3, oak: 0.25 }, big: { oak: 0.4, lime: 0.3, maple: 0.3 }, young: { youngMaple: 1 }, birch: { birch: 1 } },
+  kinds: {
+    tree: { h: 3.2, yc: 1.6, R: 2.4, V: 2.6, w: 1 },
+    young: { h: 2.6, yc: 1.7, R: 1.3, V: 2.1, w: 0.6 },
+    birch: { h: 4.4, yc: 1.2, R: 1.4, V: 2.6, w: 0.55 },
+    big: { h: 4.6, yc: 2.5, R: 4.6, V: 2.9, w: 2.0, lobe: 1.15 },
+  },
+  jitter: { height: 0.12, width: 0.1, lobe: 0.14, offset: 0.12 },
+  species: {
+    maple: { width: 1.06, height: 0.97, lean: 0.035, skew: 0.05, tilt: 0.14, phone: [2, 3],
+      centre: [0, 0.06, 0, 0.62, 0.66, 0.62], ring: { n: 4, dist: [0.36, 0.46], y: [-0.24, -0.02], size: [0.42, 0.52], flat: 0.9, spread: 0.35 } },
+    lime: { width: 0.9, height: 1.08, lean: 0.025, skew: 0.03, tilt: 0.1, phone: [2, 3],
+      centre: [0, -0.08, 0, 0.6, 0.62, 0.6], top: [0, 0.5, 0, 0.4, 0.46, 0.4], ring: { n: 3, dist: [0.3, 0.4], y: [-0.42, -0.26], size: [0.4, 0.48], flat: 1, spread: 0.3 } },
+    oak: { width: 1.04, height: 0.9, lean: 0.09, skew: 0.1, tilt: 0.3, phone: [2, 4],
+      centre: [0, 0, 0, 0.46, 0.48, 0.46], ring: { n: 5, dist: [0.3, 0.54], y: [-0.4, 0.3], size: [0.32, 0.46], flat: 0.78, spread: 0.95 } },
+    birch: { width: 0.9, height: 1.04, lean: 0.07, skew: 0.06, tilt: 0.12, phone: [2, 3],
+      centre: [0, 0.12, 0, 0.6, 0.72, 0.6], top: [0, 0.64, 0, 0.3, 0.38, 0.3], droop: { n: 3, dist: [0.5, 0.62], y: [-0.64, -0.5], size: [0.3, 0.5] } },
+    youngMaple: { width: 1, height: 1, lean: 0.03, skew: 0.04, tilt: 0.1, phone: [1, 1],
+      centre: [0, 0, 0, 0.82, 0.92, 0.82], ring: { n: 1, dist: [0.25, 0.35], y: [0.08, 0.24], size: [0.5, 0.6], flat: 1, spread: 1 } },
+  },
+  branch: {
+    bark: { base: 0.16, top: 0.085, aspect: 2.6, leader: 1.4, main: 5, from: 0.5, reach: [0.8, 1.25], rise: [0.32, 0.6], second: 2, third: 1, droop: 0 },
+    birch: { base: 0.16, top: 0.085, aspect: 7, leader: 1.8, main: 5, from: 0.45, reach: [0.8, 1.1], rise: [0.35, 0.55], second: 2, third: 1, droop: 0.32 },
+  },
+  // triangle budgets the helper test holds the shared trunk geometries to (desktop, phone) and the far trunk (#1958: 14)
+  budget: { trunk: [190, 70], farTrunk: [32, 14], lobes: 6 },
 };
 
 // #2081: BARK_SURFACE — shallow near-trunk shading only; all values visual guesses.

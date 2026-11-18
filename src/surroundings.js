@@ -26,6 +26,7 @@ import { registerTrees, registerSnow } from './seasons.js';
 import { siteWindBounds } from './sitewind.js';
 import { lobeGeometry, leafMaterial, trunkGeometry, barkMaterial, lodLeafMaterial, lodBarkMaterial, lodFarTrunkMaterial } from './foliage.js';
 import { InstanceLod, lodRange } from './lod.js';
+import { treeForm } from './treeform.js'; // #2131
 import { buildStreet } from './street.js';
 import { buildHepcat, hepcatTexture, hepcatStone } from './hepcat.js';
 import { buildStreetSigns } from './streetsigns.js';
@@ -1521,6 +1522,10 @@ export const treeFeet = [];
 export const southTreeFeet = [];
 /** Every tree's crown as built: [{ x, z, r (m), y (its centre) }] (groundao.js, #1079; flare.js, #1283). */
 export const aoTrees = [];
+/** #2131: every site tree's species form as built: [{ x, z, y (foot), kind, species, bark, matrix (its trunk instance, 16 numbers) }];
+ *  treeform.js `treeSkeleton(matrix, bark)` gives its trunk axis and main branches (the squirrels' climbing, #2132). Not the
+ *  weeping specimens, the understory twigs or the far woodland. */
+export const treeForms = [];
 
 /** #1083: narrow a crown lobe (centre `pos`, instance `scale`) so its cards stay FOLIAGE.wallClearance outside every
  * SITE.blocks footprint its height overlaps; the trunk's position and the crown's height stay as placed. */
@@ -1567,26 +1572,34 @@ function trees(rand) {
   for (const [x, z, s] of S.life.trees) spots.push({ x, z, y: groundY(x, z), s, kind: 'tree' }); // the bike yard's + one by the road (#260, #435)
   treeFeet.length = 0;
   treeFeet.push(...spots.map(({ x, z, y, kind, patch, source }) => ({ x, z, y, kind, patch, source })));
-  // crowns: one per tree, three to five lobes per big tree, an ellipsoid per young maple
+  // crowns: #2131 several lobes per tree in its species form (treeform.js), the weeping specimens as before
   const lobes = [];
   const trunkM = [], birchM = [], m = new THREE.Matrix4(), q = new THREE.Quaternion();
   aoTrees.length = 0; // each crown's radius and centre, for the distant ground shadows (#1079)
+  treeForms.length = 0;
+  /** #2131: one tree's species form (treeform.js): its leaning, turned trunk into the bark or birch batch, its lobes (each kept
+   *  clear of the houses: an outer lobe that fitCrown would squeeze to under 60 % is first pulled towards the crown's centre). */
+  const placeForm = (t, seeds, tone = {}) => {
+    const f = treeForm(t, lowMemory), mm = m.clone().compose(f.trunk.pos, f.trunk.quat, f.trunk.scale), c = f.lobes[0].pos;
+    (f.bark === 'birch' ? birchM : trunkM).push(mm);
+    for (const l of f.lobes) {
+      let sc = l.scale;
+      for (let i = 0; i < 3; i++) { sc = fitCrown(l.pos, l.scale.clone()); if (sc.x >= l.scale.x * 0.6 || l === f.lobes[0]) break; l.pos.lerp(c, 0.5); }
+      lobes.push({ pos: l.pos, rot: l.rot, scale: sc, ...seeds, ...tone });
+    }
+    aoTrees.push({ x: t.x, z: t.z, r: f.crown.r, y: f.crown.y });
+    treeForms.push({ x: t.x, z: t.z, y: t.y, kind: t.kind, species: f.species, bark: f.bark, matrix: mm.toArray() });
+  };
   for (const t of spots) {
     const r = { r1: rand(), r2: rand(), r3: rand(), r4: rand() }; // one tree, one colour (seasons.js)
     if (t.kind === 'big') {
-      const h = 4.6 * t.s;
-      trunkM.push(m.clone().compose(new THREE.Vector3(t.x, t.y, t.z), q.identity(), new THREE.Vector3(2.0 * t.s, h, 2.0 * t.s)));
-      if(t.patch)for(let k=0;k<S.riverPark.branchCount;k++){
-        const angle=k*Math.PI*2/S.riverPark.branchCount+rand(),start=new THREE.Vector3(t.x,t.y+h*.65,t.z),end=new THREE.Vector3(t.x+Math.cos(angle)*t.s*S.riverPark.branchReach,t.y+h+t.s*S.riverPark.branchRise,t.z+Math.sin(angle)*t.s*S.riverPark.branchReach),v=end.clone().sub(start);
-        trunkM.push(m.clone().compose(start,new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),new THREE.Vector3(t.s*S.riverPark.branchWidth,v.length(),t.s*S.riverPark.branchWidth)));
-      }
+      // #2131: the species form (treeform.js) replaces the old ring of lobes and the separate angled limb instances (the shared
+      // trunk geometry now carries the branch orders); the old draws of the site's random stream are kept, so every later tree,
+      // shrub and other random layout stays exactly where it was
+      if (t.patch) for (let k = 0; k < S.riverPark.branchCount; k++) rand();
       const n = 4 + Math.floor(rand() * 2);
-      for (let k = 0; k < n; k++) {
-        const a = (k / n) * 6.28 + rand() * 0.6, d = (k === 0 ? 0 : 1.9) * t.s;
-        const at = new THREE.Vector3(t.x + Math.cos(a) * d, t.y + h + (k === 0 ? 3.0 : 1.8 + rand() * 1.4) * t.s, t.z + Math.sin(a) * d);
-        lobes.push({ pos: at, rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: fitCrown(at, new THREE.Vector3(3.0, 2.6, 3.0).multiplyScalar(t.s * (0.8 + rand() * 0.3))), ...r });
-      }
-      aoTrees.push({ x: t.x, z: t.z, r: 4.6 * t.s, y: t.y + h + 2.2 * t.s }); // lobes 1.9·s out, ~2.7·s each
+      for (let k = 0; k < n; k++) { rand(); if (k) rand(); rand(); rand(); }
+      placeForm(t, r);
     } else if (t.kind === 'weepingBirch' || t.kind === 'willow') { // #1531 (riverPark.bridgeView): the photo's hängbjörk / hängpil by the bridges
       // The same trunk/crown batches: a tall crown plus a ring of narrow lobes hanging down round it (the weeping curtain).
       const willow = t.kind === 'willow', h = (willow ? 3.0 : 5.2) * t.s, crownY = t.y + h + (willow ? 2.2 : 1.6) * t.s;
@@ -1600,19 +1613,12 @@ function trees(rand) {
         lobes.push({ pos: at, rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: fitCrown(at, new THREE.Vector3(willow ? 1.5 : 1.0, willow ? 2.6 : 2.4, willow ? 1.5 : 1.0).multiplyScalar(t.s)), ...r, ...tone });
       }
       aoTrees.push({ x: t.x, z: t.z, r: reach + (willow ? 1.5 : 1.0) * t.s, y: crownY });
-    } else if (t.kind === 'birch') { // a tall white trunk, a narrow crown high up
-      const h = 4.4 * t.s;
-      birchM.push(m.clone().compose(new THREE.Vector3(t.x, t.y, t.z), q.identity(), new THREE.Vector3(0.55 * t.s, h, 0.55 * t.s)));
-      const at = new THREE.Vector3(t.x, t.y + h + 1.2 * t.s, t.z), sc = fitCrown(at, new THREE.Vector3(1.4, 2.6, 1.4).multiplyScalar(t.s));
-      lobes.push({ pos: at, rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: sc, ...r, r1: 0.75 + r.r1 * 0.25 }); // r1 high: they go yellow in autumn
-      aoTrees.push({ x: t.x, z: t.z, r: sc.x, y: t.y + h + 1.2 * t.s });
-    } else {
-      const young = t.kind === 'young', h = (young ? 2.6 : 3.2) * t.s;
-      trunkM.push(m.clone().compose(new THREE.Vector3(t.x, t.y, t.z), q.identity(), new THREE.Vector3(young ? 0.6 * t.s : t.s, h, young ? 0.6 * t.s : t.s)));
-      const sc = young ? new THREE.Vector3(1.3, 2.1, 1.3).multiplyScalar(t.s) : new THREE.Vector3(2.4, 2.6, 2.4).multiplyScalar(t.s);
-      const at = new THREE.Vector3(t.x, t.y + h + (young ? 1.7 : 1.6) * t.s, t.z);
-      lobes.push({ pos: at, rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: fitCrown(at, sc), ...r });
-      aoTrees.push({ x: t.x, z: t.z, r: sc.x, y: t.y + h + (young ? 1.7 : 1.6) * t.s });
+    } else if (t.kind === 'birch') { // a tall white trunk, a narrow drooping crown high up (#2131: treeform.js)
+      rand(); // (the old crown turn: kept so the site's random stream is unchanged)
+      placeForm(t, r, { r1: 0.75 + r.r1 * 0.25 }); // r1 high: they go yellow in autumn
+    } else { // ordinary trees (#2131: maple / lime / oak, treeform.js) and the young street maples
+      rand();
+      placeForm(t, r);
     }
   }
   // Park understory uses the same seasonal crown batch, plus persistent woody twigs in the trunk batch.
@@ -1633,11 +1639,8 @@ function trees(rand) {
   if (!lowMemory && S.riverPark.infill) {
     let seed = S.riverPark.infill.seed + 1; const ir = () => ((seed = seed * 16807 % 2147483647) / 2147483647);
     for (const t of parkInfillSpots(renderedTerrainY, park)) {
-      const h = 3.2 * t.s, sc = new THREE.Vector3(2.4, 2.6, 2.4).multiplyScalar(t.s), at = new THREE.Vector3(t.x, t.y + h + 1.6 * t.s, t.z);
       treeFeet.push({ x: t.x, z: t.z, y: t.y, kind: t.kind, source: t.source });
-      trunkM.push(m.clone().compose(new THREE.Vector3(t.x, t.y, t.z), q.identity(), new THREE.Vector3(t.s, h, t.s)));
-      lobes.push({ pos: at, rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, ir() * 6, 0)), scale: fitCrown(at, sc), r1: ir(), r2: ir(), r3: ir(), r4: ir() });
-      aoTrees.push({ x: t.x, z: t.z, r: sc.x, y: at.y });
+      ir(); placeForm(t, { r1: ir(), r2: ir(), r3: ir(), r4: ir() }); // (#2131: the old crown turn's draw kept, its stream unchanged)
     }
   }
   // #679: tapered trunks with branches into the crown, crowns of leaf cards round an opaque core (src/foliage.js)
@@ -1657,7 +1660,7 @@ function trees(rand) {
   const bark = lodBarkMaterial('bark', range), birchBark = lodBarkMaterial('birch', range), leaf = lodLeafMaterial({ far: false, range });
   const barkSrc = [], birchSrc = [], crownSrc = [];
   for (const [k, items] of cells(trunkM, (mm) => [mm.elements[12], mm.elements[14]])) barkSrc.push({ mesh: withDepth(batch(`tree-trunks ${k}`, trunkGeo, bark.material, items, (mesh, mm, i) => mesh.setMatrixAt(i, mm)), bark), tint: new THREE.Color(FOLIAGE.trunk.color).multiplyScalar(L.trunkTint) });
-  for (const [k, items] of cells(birchM, (mm) => [mm.elements[12], mm.elements[14]])) birchSrc.push({ mesh: withDepth(batch(`tree-birches ${k}`, trunkGeo, birchBark.material, items, (mesh, mm, i) => mesh.setMatrixAt(i, mm)), birchBark), tint: new THREE.Color(FOLIAGE.trunk.birchColor).multiplyScalar(L.trunkTint) });
+  for (const [k, items] of cells(birchM, (mm) => [mm.elements[12], mm.elements[14]])) birchSrc.push({ mesh: withDepth(batch(`tree-birches ${k}`, trunkGeometry(false, 'birch'), birchBark.material, items, (mesh, mm, i) => mesh.setMatrixAt(i, mm)), birchBark), tint: new THREE.Color(FOLIAGE.trunk.birchColor).multiplyScalar(L.trunkTint) });
   for (const [k, items] of cells(lobes, (l) => [l.pos.x, l.pos.z])) {
     const crown = withDepth(batch(`tree-crowns ${k}`, lobeGeometry('tree'), leaf.material, items, (mesh, l, i) => { mesh.setMatrixAt(i, m.compose(l.pos, l.rot, l.scale)); mesh.setColorAt(i, col.setHSL(0.27, 0.45, 0.3)); }), leaf);
     // colours and leaf cover come from the season (seasons.js); keep each tree's own variation

@@ -27,6 +27,9 @@ src/foliage.js         leaf-card crowns and branching trunks for the site's tree
                        southern woodland (#679, FOLIAGE): `lobeGeometry(level)` (core + alpha-tested cards, radial normals, AO
                        vertex colours), `leafMaterial()` (one shared, two-sided, `leafAtlas()` 512 / 256 px), `trunkGeometry()`,
                        `barkMaterial('bark' | 'birch')`; instancing and seasons.js unchanged
+src/treeform.js        species tree forms (#2131): `treeSpecies`, `treeForm` (lobes, leaning trunk, crown), `trunkLayout` / `farTrunkLayout`
+                       (branch orders of the shared trunk geometries), `treeSkeleton` (world trunk axis + main limbs for climbing, #2132)
+tools/treeformtest.mjs node test (#2131): deterministic species/forms, species shapes, per-tree budget, far-LOD contract, skeleton helper
 src/lod.js             shared distance LOD with a dithered crossfade (#1958): `InstanceLod`, `patchDitherLod`, `lodDepthMaterial`; the
                        site's trees (surroundings.js `trees()`) are its first user, see "Distance LOD of the site's trees" below
 tools/lodtest.mjs      node test (#1958): fade/zone/membership math, dither complementarity, buffer packing, seasons interplay
@@ -205,3 +208,24 @@ spheres grow by the same amount. Still: trunks, wall vines and the far southern 
 potted plants (their own window-driven `PlantWind`, #518). `&wind=power[,seconds]` pins the wind (A/B frames). `siteWind` and
 `siteWindOffset` (the shader's JS mirror) are exported for later consumers (#2110). Numbers are *guesses* in `SITE_WIND`.
 `tools/sitewindtest.mjs`, `tools/sitewind2101browser.cjs`; [verification](../verification/2101/README.md).
+
+
+## Species tree forms (#2131)
+
+`src/treeform.js` (`TREE_FORM` in config.js, all *guess*) gives every site tree of `surroundings.js` `trees()` a species from a
+deterministic draw on its position (ordinary trees: Norway maple / small-leaved lime / oak; the river park's big trees: oak / lime /
+maple; young street trees: young maples; birches stay birches; the weeping birch/willow specimens of #1531 and the understory are
+unchanged): maples broad and round (a centre lobe and four side lobes), limes domed (a top lobe over a lower ring), oaks irregular
+and lopsided (uneven, flattened side lobes, more lean, the crown pushed towards the lean), birches narrow with small lobes hanging
+low round them. Every tree also gets its own turn, a small lean and its own height/width/lobe spread. The lobes are ordinary
+instances of the shared lobe geometry in the same `tree-crowns` cells (no new draws; seasons, LOD, wind and `fitCrown` work per lobe
+as before; an outer lobe that would be squeezed against a house is first pulled in). The shared trunk geometries (`foliage.js`
+`trunkGeometry(far, kind)`, one per bark kind, so the birch batch has its own drooping one) are built from `trunkLayout`: stem and
+leader, five main limbs (each carried on by a second limb), a second side limb each and a fine twig on every second limb (166
+triangles; phones four main limbs and one second limb, 64), made in a space stretched by the kind's usual height:width (`aspect`) so
+sideways limbs stay round in the world. They replace the river park's separate angled limb instances (#533), whose random draws are
+still taken, so every later random layout is identical. The far trunk gains three thickened main limbs on desktop (32 triangles).
+`aoTrees` keeps one entry per tree with x/z at the foot (squirrels and cats match crowns by it); `treeForms` (surroundings.js) lists
+each tree's species and trunk matrix, and `treeSkeleton(matrix, bark)` returns its world trunk axis and main limbs (for #2132).
+Measured in the game (desktop, `tools/treeform2131browser.cjs`): tree instances 1922 trunks + 2244 lobes → 827 + 3129; frame triangles
+-0.3 … +4.3 % in park / bridge / courtyard views, draw calls within ±1 (the frame sequence). [Before/after](../verification/2131/README.md).
