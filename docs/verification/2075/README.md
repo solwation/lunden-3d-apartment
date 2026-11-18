@@ -19,3 +19,7 @@ Checks (three scoped groups):
 The existing colour texture remains 256×512. One additional cached linear RGBA8 texture (256×512) serves bump red and roughness green: **524,288 base bytes; 699,052 bytes including all mip levels**. Fixture resident texture count 9→10. Maximum joint shading depth ≈0.595 mm; board roughness ≈.844–.856, joint .96, frame .85 (8-bit quantized). Geometry, draw calls, passes, lights and per-frame uploads do not increase; standard-material fragment sampling increases. No FPS, device, winter or full-world performance claim is made. Existing seasonal behavior is untouched. Public neutral transfer is tracked by kvarteret-lunden #297.
 
 Reproduce with the existing ignored Three 0.170.0 dependency available under `node_modules/three`, an HTTP server for this checkout on the stated port, and the repository browser wrapper. The browser runner obtains the original baseline modules from Git and appends its private `M` export in memory; production sources expose no test API.
+
+## Publicering
+
+Kod/bilder `a95e1719379f73593c0b6e7ffeb8bfd3d9626484`; faktiska run-ID [44271371292, 44271371269] success på exakt revision. Alla bilder HTTP200 och inbäddade före stängning: https://github.com/solwation/lunden-3d-apartment/issues/2075#issuecomment-6973834283. Slutkvittot är enbart dokumentation; originalets sökvägsfilter utlöser ingen ny apppublicering.
