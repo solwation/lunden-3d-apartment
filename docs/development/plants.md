@@ -196,8 +196,8 @@ record the cost rather than claiming a free change.
 lobe batches (both LOD levels, `lodLeafMaterial`), the courtyard perennials (`windLeafMaterial()`, its own depth material) and
 the river park's reeds and bank tussocks (`siteWindBend` = m above the tuft's foot, mode `bend`). A lobe sways with its tree
 (more at its top, scaled by its world height) and its outer cards flutter a little (not on phones); stalks bend by height².
-Power 0…1 comes from the weather (`siteWindPower`: a light clear-day breeze, more under cloud and in rain, the most in a
-storm), eased in `SiteWind.update`; per frame only three shared uniforms change. Colour and shadow depth use the same GLSL and
+Power 0…1 and direction come from the weather's wind (#2117: `weather.wind`, the real 10 m wind or the seeded draw of
+`src/windsim.js`; `windPower(m/s)`; `siteWindPower` — cloud, rain, storm — only without one), both eased in `SiteWind.update`; per frame only three shared uniforms change. Colour and shadow depth use the same GLSL and
 uniform objects, so shadows sway alike; the LOD dither, seasons, instancing and collision are untouched, and power 0 leaves
 positions exactly as before. Every offset is clamped to `SITE_WIND.maxDisplacement`, registered as a bounded vertex edit
 (`vertexcompile.js` `vertexCompileSlack`) that the tight frustum and site instance batch add to their boxes; the culling

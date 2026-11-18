@@ -1,0 +1,390 @@
+{
+ "base": "8ea1e4a522b160c61b383d7ac0c307da53266a71",
+ "phases": {
+  "before": {
+   "loadSeconds": 27,
+   "view": {
+    "target": [
+     3.5,
+     -1.967809796333313,
+     118.5999984741211
+    ],
+    "from": [
+     -5.5,
+     107.5999984741211
+    ]
+   },
+   "conditions": {
+    "windy": {
+     "name": "windy",
+     "y": 2024,
+     "m": 6,
+     "d": 12,
+     "h": 12,
+     "shots": {
+      "a": {
+       "file": "before-windy-a.png",
+       "weatherWind": null,
+       "rain": 0.506,
+       "kind": "rain",
+       "source": "real",
+       "power": 0.39,
+       "dir": [
+        0.707,
+        -0.707
+       ],
+       "slant": null,
+       "cloudVelocity": null,
+       "cloudStrength": 0,
+       "calls": 0,
+       "triangles": 0
+      },
+      "b": {
+       "file": "before-windy-b.png",
+       "weatherWind": null,
+       "rain": 0.506,
+       "kind": "rain",
+       "source": "real",
+       "power": 0.39,
+       "dir": [
+        0.707,
+        -0.707
+       ],
+       "slant": null,
+       "cloudVelocity": null,
+       "cloudStrength": 0,
+       "calls": 48,
+       "triangles": 366944
+      }
+     },
+     "motion": {
+      "meanAbs": 3.238,
+      "changedPct": 5.61,
+      "file": "before-windy-motion.png"
+     }
+    },
+    "calm": {
+     "name": "calm",
+     "y": 2024,
+     "m": 6,
+     "d": 5,
+     "h": 12,
+     "shots": {
+      "a": {
+       "file": "before-calm-a.png",
+       "weatherWind": null,
+       "rain": 0,
+       "kind": null,
+       "source": "real",
+       "power": 0.12,
+       "dir": [
+        0.707,
+        -0.707
+       ],
+       "slant": null,
+       "cloudVelocity": null,
+       "cloudStrength": 0,
+       "calls": 48,
+       "triangles": 366944
+      },
+      "b": {
+       "file": "before-calm-b.png",
+       "weatherWind": null,
+       "rain": 0,
+       "kind": null,
+       "source": "real",
+       "power": 0.12,
+       "dir": [
+        0.707,
+        -0.707
+       ],
+       "slant": null,
+       "cloudVelocity": null,
+       "cloudStrength": 0,
+       "calls": 48,
+       "triangles": 367064
+      }
+     },
+     "motion": {
+      "meanAbs": 1.167,
+      "changedPct": 2.03,
+      "file": "before-calm-motion.png"
+     }
+    },
+    "future": {
+     "name": "future",
+     "y": 2027,
+     "m": 6,
+     "d": 10,
+     "h": 12,
+     "shots": {
+      "a": {
+       "file": "before-future-a.png",
+       "weatherWind": null,
+       "rain": 0,
+       "kind": null,
+       "source": "sim",
+       "power": 0.12,
+       "dir": [
+        0.707,
+        -0.707
+       ],
+       "slant": null,
+       "cloudVelocity": null,
+       "cloudStrength": 0,
+       "calls": 48,
+       "triangles": 367064
+      },
+      "b": {
+       "file": "before-future-b.png",
+       "weatherWind": null,
+       "rain": 0,
+       "kind": null,
+       "source": "sim",
+       "power": 0.12,
+       "dir": [
+        0.707,
+        -0.707
+       ],
+       "slant": null,
+       "cloudVelocity": null,
+       "cloudStrength": 0,
+       "calls": 48,
+       "triangles": 367064
+      }
+     },
+     "motion": {
+      "meanAbs": 1.165,
+      "changedPct": 2.02,
+      "file": "before-future-motion.png"
+     }
+    }
+   }
+  },
+  "after": {
+   "loadSeconds": 22,
+   "view": {
+    "target": [
+     3.5,
+     -1.967809796333313,
+     118.5999984741211
+    ],
+    "from": [
+     -5.5,
+     107.5999984741211
+    ]
+   },
+   "conditions": {
+    "windy": {
+     "name": "windy",
+     "y": 2024,
+     "m": 6,
+     "d": 12,
+     "h": 12,
+     "shots": {
+      "a": {
+       "file": "after-windy-a.png",
+       "weatherWind": {
+        "x": 11.276,
+        "z": -4.104,
+        "speed": 12
+       },
+       "rain": 0.506,
+       "kind": "rain",
+       "source": "real",
+       "power": 0.93,
+       "dir": [
+        0.94,
+        -0.342
+       ],
+       "slant": [
+        0.338,
+        -0.123
+       ],
+       "cloudVelocity": [
+        18.042,
+        -6.567
+       ],
+       "cloudStrength": 0,
+       "calls": 0,
+       "triangles": 0
+      },
+      "b": {
+       "file": "after-windy-b.png",
+       "weatherWind": {
+        "x": 11.276,
+        "z": -4.104,
+        "speed": 12
+       },
+       "rain": 0.506,
+       "kind": "rain",
+       "source": "real",
+       "power": 0.93,
+       "dir": [
+        0.94,
+        -0.342
+       ],
+       "slant": [
+        0.338,
+        -0.123
+       ],
+       "cloudVelocity": [
+        18.042,
+        -6.567
+       ],
+       "cloudStrength": 0,
+       "calls": 47,
+       "triangles": 365716
+      }
+     },
+     "motion": {
+      "meanAbs": 5.658,
+      "changedPct": 11.79,
+      "file": "after-windy-motion.png"
+     }
+    },
+    "calm": {
+     "name": "calm",
+     "y": 2024,
+     "m": 6,
+     "d": 5,
+     "h": 12,
+     "shots": {
+      "a": {
+       "file": "after-calm-a.png",
+       "weatherWind": {
+        "x": -0.8,
+        "z": 0,
+        "speed": 0.8
+       },
+       "rain": 0,
+       "kind": null,
+       "source": "real",
+       "power": 0.081,
+       "dir": [
+        -1,
+        0
+       ],
+       "slant": [
+        -0.024,
+        0
+       ],
+       "cloudVelocity": [
+        -1.28,
+        0
+       ],
+       "cloudStrength": 0,
+       "calls": 47,
+       "triangles": 365716
+      },
+      "b": {
+       "file": "after-calm-b.png",
+       "weatherWind": {
+        "x": -0.8,
+        "z": 0,
+        "speed": 0.8
+       },
+       "rain": 0,
+       "kind": null,
+       "source": "real",
+       "power": 0.081,
+       "dir": [
+        -1,
+        0
+       ],
+       "slant": [
+        -0.024,
+        0
+       ],
+       "cloudVelocity": [
+        -1.28,
+        0
+       ],
+       "cloudStrength": 0,
+       "calls": 47,
+       "triangles": 365836
+      }
+     },
+     "motion": {
+      "meanAbs": 1.133,
+      "changedPct": 2.06,
+      "file": "after-calm-motion.png"
+     }
+    },
+    "future": {
+     "name": "future",
+     "y": 2027,
+     "m": 6,
+     "d": 10,
+     "h": 12,
+     "shots": {
+      "a": {
+       "file": "after-future-a.png",
+       "weatherWind": {
+        "x": 1.631,
+        "z": -3.184,
+        "speed": 3.577
+       },
+       "rain": 0,
+       "kind": null,
+       "source": "sim",
+       "power": 0.313,
+       "dir": [
+        0.456,
+        -0.89
+       ],
+       "slant": [
+        0.049,
+        -0.096
+       ],
+       "cloudVelocity": [
+        2.609,
+        -5.094
+       ],
+       "cloudStrength": 0,
+       "calls": 47,
+       "triangles": 365836
+      },
+      "b": {
+       "file": "after-future-b.png",
+       "weatherWind": {
+        "x": 1.631,
+        "z": -3.184,
+        "speed": 3.577
+       },
+       "rain": 0,
+       "kind": null,
+       "source": "sim",
+       "power": 0.313,
+       "dir": [
+        0.456,
+        -0.89
+       ],
+       "slant": [
+        0.049,
+        -0.096
+       ],
+       "cloudVelocity": [
+        2.609,
+        -5.094
+       ],
+       "cloudStrength": 0,
+       "calls": 47,
+       "triangles": 365836
+      }
+     },
+     "motion": {
+      "meanAbs": 3.778,
+      "changedPct": 7.88,
+      "file": "after-future-motion.png"
+     }
+    }
+   }
+  }
+ },
+ "errors": [],
+ "external": [
+  "https://lunden-l1007.olw.workers.dev/beer-shelf",
+  "https://lunden-l1007.olw.workers.dev/beer-shelf"
+ ]
+}

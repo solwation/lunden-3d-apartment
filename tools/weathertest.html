@@ -17,6 +17,7 @@
 // thunderstorms only in late summer); with &weather=storm: rain streaks, none inside Hus L, a grey sky and a
 // weaker sun, a lightning flash; ⛈ in the HUD; snow flakes (not in Hus L), walking out in it counts once per
 // shower, not indoors (#249); forced clear = no rain.
+// #2117: the fixture's wind (m/s, direction) via RealWeather.at; tools/windsimtest.mjs has the rest.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/weathertest.html
 import { rainAt, showersOn } from '../src/weather.js';
 import { WEATHER } from '../src/config.js';
@@ -80,6 +81,9 @@ pass &= check(snow?.kind === 'snow' && snow.rain > 0.5 && Math.abs(snow.temp + 1
 pass &= check(rain?.kind === 'rain' && rain.rain > 0.5 && rain.temp > 5, `2024-01-15 12:00 rain, ${rain?.temp}°`);
 pass &= check(clear?.kind === null && clear.rain === 0 && clear.temp < 0 && cloud?.overcast > 0.4 && cloud.kind === null, 'a clear cold day; an overcast day without rain');
 pass &= check(hail?.kind === 'hail' && hail.storm, 'weather code 96: hail in a thunderstorm');
+// #2117: the 10 m wind in m/s, as a downwind vector in the scene (x east, z south): a SW–W gale on the 15th, calm on the 3rd
+pass &= check(u.searchParams.get('wind_speed_unit') === 'ms' && /wind_speed_10m/.test(u.searchParams.get('hourly')) && /wind_direction_10m/.test(u.searchParams.get('hourly')), 'the wind is asked for in m/s');
+pass &= check(Math.abs(Math.hypot(rain.wind.x, rain.wind.z) - 13) < 0.05 && rain.wind.x > 0 && rain.wind.z < 0 && Math.hypot(clear.wind.x, clear.wind.z) < 1.5, `wind: 15th ${Math.hypot(rain.wind.x, rain.wind.z).toFixed(1)} m/s towards east-north-east, 3rd ${Math.hypot(clear.wind.x, clear.wind.z).toFixed(1)} m/s`);
 const hmid = rw.at(2024, 1, 10, 7.5), early = rw.at(2024, 1, 10, 7), late = rw.at(2024, 1, 10, 8);
 pass &= check(hmid.rain > early.rain && hmid.rain < late.rain && hmid.temp < early.temp && hmid.temp > late.temp, `interpolated between the hours (${early.rain.toFixed(2)} → ${hmid.rain.toFixed(2)} → ${late.rain.toFixed(2)})`);
 pass &= check(rw.at(2024, 1, 10, 9).id === rw.at(2024, 1, 10, 15).id && rw.at(2024, 1, 10, 12).id !== rw.at(2024, 1, 15, 12).id, 'one id per shower');

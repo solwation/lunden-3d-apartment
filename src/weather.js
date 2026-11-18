@@ -3,6 +3,7 @@ import { WEATHER as W, UNIT_TOP, CAR } from './config.js';
 import { groundY } from './surroundings.js';
 import { occluders } from './greet.js';
 import { sfx, audioParts } from './audio.js';
+import { simWind, fallSlant } from './windsim.js';
 
 // Weather (#248, #249): rain in spring and autumn (a little in summer), thunderstorms in late summer, snow in the
 // winter, short hail showers in spring and at the start of some thunderstorms. Every date gets a
@@ -13,6 +14,8 @@ import { sfx, audioParts } from './audio.js';
 // the light, later the farther away. `&weather=rain|storm|clear` forces it, `&temp=` the temperature.
 // #674: a date the real-weather source (realweather.js) has data for gets that weather and temperature instead of the draw; the
 // temperature (`temp`, °C, outdoors even inside the flat) of a simulated day follows the month, the hour and what falls (simTemp).
+// #2117: `wind` { x, z } m/s downwind (windsim.js): the real hour's wind, else the seeded draw for the date and hour (with what falls); it
+// slants the rain, drifts the snow and is handed to DayCycle (`day.wind`: the cloud shadows) and SiteWind (the sway, the avatars' wind).
 
 /** A small seeded random (mulberry32: neighbouring seeds — neighbouring dates — give unrelated sequences). */
 function rng(seed) {
@@ -117,7 +120,7 @@ export class Weather {
   /** `force`: 'rain' | 'storm' | 'snow' | 'hail' | 'clear' | null (the &weather parameter). */
   constructor(scene, camera, day, force = null) {
     Object.assign(this, { scene, camera, day, force, rain: 0, overcast: 0, storm: false, kind: null, id: null, flashT: 9, flash: 0, flashK: 0,
-      strikes: 0, temp: null, real: null, forceTemp: null, particleScale: 1, sound: null, walked: {}, done: {} }); // particleScale: the quality level's share of the particles (#592)
+      strikes: 0, temp: null, real: null, forceTemp: null, particleScale: 1, sound: null, walked: {}, done: {}, wind: null, slant: { x: -W.wind, z: 0 }, drift: { x: 0, z: 0 } }); // particleScale: the quality level's share of the particles (#592)
     // the houses (greet.js) and our own unit, which greet.js leaves to the flat's walls: nothing falls inside them
     this.boxes = [...occluders(), { x0: 0, x1: 5.75, z0: 0.05, z1: 12.65, y0: 0, y1: UNIT_TOP }];
     // rain: streaks (one LineSegments)
@@ -175,7 +178,7 @@ export class Weather {
     const len = W.len, [x, y, z, floor] = this.place(fresh, len), p = this.pos, o = i * 6;
     this.floor[i] = floor;
     p[o] = x; p[o + 1] = y; p[o + 2] = z;
-    p[o + 3] = x - W.wind * len; p[o + 4] = y - len; p[o + 5] = z;
+    p[o + 3] = x + this.slant.x * len; p[o + 4] = y - len; p[o + 5] = z + this.slant.z * len;
   }
 
   /** Snowflake / hailstone `i` at a fresh place. */
@@ -210,6 +213,7 @@ export class Weather {
       s = { ...s, temp: this.tempVal };
     }
     if (this.forceTemp != null) s.temp = this.forceTemp;
+    if (!s.wind) s = { ...s, wind: simWind(d.year, d.month, d.date, d.hour, { rain: s.rain, storm: s.storm }) }; // (#2117: no real wind for the hour: the draw)
     s.source = f ? 'forced' : source;
     return s;
   }
@@ -227,7 +231,7 @@ export class Weather {
   ease(s, dt) {
     if (s.source === 'forced' || this.src === undefined) { this.src = s.source; this.from = null; return s; } // (forced weather, tests and the first frame: at once)
     if (s.source !== this.src) {
-      if (this.src !== 'forced') this.from = { rain: this.rain, overcast: this.overcast, temp: this.temp ?? s.temp, kind: this.kind, storm: this.storm };
+      if (this.src !== 'forced') this.from = { rain: this.rain, overcast: this.overcast, temp: this.temp ?? s.temp, kind: this.kind, storm: this.storm, wind: this.wind ?? s.wind };
       this.src = s.source; this.fade = 0;
     }
     if (!this.from) return s;
@@ -235,7 +239,8 @@ export class Weather {
     if (this.fade >= 1) { this.from = null; return s; }
     const k = this.fade, a = this.from, mix = (x, y) => x + (y - x) * k;
     const rain = mix(a.rain, s.rain), keep = !s.kind && a.kind && rain > 0.01;
-    return { ...s, rain, overcast: mix(a.overcast, s.overcast), temp: mix(a.temp, s.temp), kind: keep ? a.kind : s.kind, storm: keep ? a.storm && rain > 0.5 : s.storm, id: keep ? this.id : s.id };
+    return { ...s, rain, overcast: mix(a.overcast, s.overcast), temp: mix(a.temp, s.temp), kind: keep ? a.kind : s.kind, storm: keep ? a.storm && rain > 0.5 : s.storm, id: keep ? this.id : s.id,
+      wind: { x: mix(a.wind.x, s.wind.x), z: mix(a.wind.z, s.wind.z) } }; // (#2117: the wind as a vector: it turns and grows smoothly)
   }
 
   /** `inside`: the visitor is in the flat (muffled); `moved`: metres walked this frame (#249: out in it, it counts);
@@ -245,8 +250,10 @@ export class Weather {
     this.real?.tick(this.day.year, this.day.month, this.day.date); // (the first request waits for the first frames, #674)
     const s = this.ease(this.state(), dt);
     if (s.kind !== this.kind) this.seeded = null; // another kind: start the particles afresh
-    Object.assign(this, { rain: s.rain, storm: s.storm, overcast: s.overcast, kind: s.kind, id: s.id, temp: s.temp });
+    Object.assign(this, { rain: s.rain, storm: s.storm, overcast: s.overcast, kind: s.kind, id: s.id, temp: s.temp, wind: s.wind });
     this.day.overcast = this.overcast * (this.kind === 'snow' ? 0.7 : 1); // snow clouds are lighter
+    this.day.wind = this.wind; // #2117: the cloud shadows drift with it (DayCycle)
+    const sl = fallSlant(this.wind); this.slant.x = sl.x; this.slant.z = sl.z; this.drift.x = sl.dx; this.drift.z = sl.dz;
     this.clock += dt;
     const streaks = this.kind === 'rain', hail = this.kind === 'hail', active = Math.round((streaks ? W.drops : hail ? W.hail.stones : W.snow.flakes) * this.rain * this.particleScale * (1 - (this.day.above ?? 0))); // (none above the cloud deck, #1251)
     this.lines.visible = !enclosed && streaks && active > 0;
@@ -257,7 +264,8 @@ export class Weather {
       const p = this.pos, fall = W.speed * dt;
       for (let i = 0; i < active; i++) {
         const o = i * 6;
-        p[o + 1] -= fall; p[o + 4] -= fall; p[o] -= W.wind * fall; p[o + 3] -= W.wind * fall;
+        p[o + 1] -= fall; p[o + 4] -= fall; p[o] += this.slant.x * fall; p[o + 2] += this.slant.z * fall; // (#2117: downwind; the streak keeps the current slant)
+        p[o + 3] = p[o] + this.slant.x * W.len; p[o + 5] = p[o + 2] + this.slant.z * W.len;
         const dx = p[o] - c.x, dz = p[o + 2] - c.z;
         if (p[o + 4] < this.floor[i] || p[o + 1] < c.y - 4 || dx * dx + dz * dz > R2 || p[o + 4] < this.roofAt(p[o + 3], p[o + 5])) this.spawn(i, true); // (blown against a house: gone)
       }
@@ -279,7 +287,7 @@ export class Weather {
           if (p[o + 1] < this.ffloor[i] && this.ffloor[i] > -100) { p[o + 1] = this.ffloor[i] + 0.012; this.frest[i] = W.hail.lie * Math.random(); continue; }
         } else { // flakes: slow, swaying
           p[o + 1] -= W.snow.speed * dt * (0.75 + 0.5 * Math.sin(ph * 3.1));
-          p[o] += Math.sin(t * 1.3 + ph) * sway; p[o + 2] += Math.cos(t * 0.9 + ph * 1.7) * sway * 0.7;
+          p[o] += Math.sin(t * 1.3 + ph) * sway + this.drift.x * dt; p[o + 2] += Math.cos(t * 0.9 + ph * 1.7) * sway * 0.7 + this.drift.z * dt; // (#2117: drifting downwind)
         }
         const dx = p[o] - c.x, dz = p[o + 2] - c.z;
         if (p[o + 1] < this.ffloor[i] || p[o + 1] < c.y - 4 || dx * dx + dz * dz > R2 || p[o + 1] < this.roofAt(p[o], p[o + 2])) this.spawnFlake(i, true);

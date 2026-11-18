@@ -1,7 +1,8 @@
 import * as THREE from 'three';
-import { SITE_WIND as W, FOLIAGE } from './config.js';
+import { SITE_WIND as W, FOLIAGE, WIND } from './config.js';
 import { rememberBoundedVertexCompile } from './vertexcompile.js';
 import { lowMemory } from './lowmemory.js';
+import { windPower } from './windsim.js';
 
 // Outdoor vegetation sway (#2101): the site's tree crowns and shrubs (the leaf-card lobes of src/foliage.js), the courtyard
 // perennials and the river park's reeds and bank tussocks move softly in the wind, with a strength that follows the
@@ -19,6 +20,9 @@ import { lowMemory } from './lowmemory.js';
 //
 // Reuse (#2110): `siteWind` is the live state { time, power, dir } and `siteWindOffset` the JS mirror of the shader's
 // offset, so another module (an avatar's hair or clothes) can follow the same wind without a second source.
+// #2117: the power and direction now come from the weather's wind (`weather.wind`, m/s downwind: the real 10 m wind or windsim.js' seeded
+// draw) — power = `windPower(speed)`, direction = downwind — both eased; `siteWindPower` (cloud / rain / storm) remains the fallback for
+// a weather without wind. `SITE_WIND.dir` is only the start direction.
 
 /** The live wind state: seconds, power 0…1 (0 = still), unit downwind direction in the x/z plane; `force` / `hold`: see SiteWind. */
 export const siteWind = { time: 0, power: 0, dir: new THREE.Vector2(W.dir[0], W.dir[1]).normalize(), force: null, hold: false };
@@ -165,14 +169,26 @@ export class SiteWind {
     this.weather = weather;
     siteWind.force = Number.isFinite(force) ? Math.min(1, Math.max(0, force)) : null;
     siteWind.hold = Number.isFinite(time); if (siteWind.hold) siteWind.time = time;
-    this.power = siteWind.power = this.target();
+    this.power = siteWind.power = this.target(); this.steer(1);
     uniforms.uSiteWindPower.value = this.power; uniforms.uSiteWindTime.value = siteWind.time;
   }
-  target() { return siteWind.force ?? siteWindPower(this.weather ?? {}); }
+  target() {
+    const w = this.weather?.wind;
+    return siteWind.force ?? (w ? windPower(Math.hypot(w.x, w.z)) : siteWindPower(this.weather ?? {}));
+  }
+  /** Turn `siteWind.dir` (the uniform's own Vector2) towards the weather's downwind direction by `k` 0…1; a calm keeps the last one. */
+  steer(k) {
+    const w = this.weather?.wind, v = w ? Math.hypot(w.x, w.z) : 0, d = siteWind.dir;
+    if (!(v > WIND.still)) return;
+    const a = Math.atan2(d.y, d.x); let da = Math.atan2(w.z, w.x) - a;
+    da -= Math.round(da / (2 * Math.PI)) * 2 * Math.PI; // (the short way round; exactly opposite turns one way, never through zero)
+    d.set(Math.cos(a + da * k), Math.sin(a + da * k));
+  }
   update(dt) {
     if (!(dt >= 0 && Number.isFinite(dt))) return;
-    const target = this.target();
-    this.power = siteWind.hold ? target : this.power + (target - this.power) * (1 - Math.exp(-dt / W.easeSeconds));
+    const target = this.target(), k = 1 - Math.exp(-dt / W.easeSeconds);
+    this.steer(siteWind.hold ? 1 : k);
+    this.power = siteWind.hold ? target : this.power + (target - this.power) * k;
     if (!siteWind.hold) siteWind.time += dt;
     siteWind.power = this.power;
     uniforms.uSiteWindTime.value = siteWind.time; uniforms.uSiteWindPower.value = this.power;

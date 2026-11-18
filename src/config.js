@@ -2260,10 +2260,30 @@ export const WEATHER = {
   // `timeout` s per request, `retry` s before a failed month is tried again, `startAfter` ms after the first frame before the first
   // request (a test's &weatherapi=/path/fixture.json starts at once and replaces both URLs by that same-origin file).
   real: { archive: 'https://archive-api.open-meteo.com/v1/archive', forecast: 'https://api.open-meteo.com/v1/forecast',
-    hourly: 'temperature_2m,precipitation,rain,snowfall,weather_code', zone: 'Europe/Stockholm', digits: 3,
+    // #2117: + wind at 10 m (`windUnit` → `&wind_speed_unit=ms`: m/s instead of the default km/h; direction in degrees the wind comes FROM)
+    hourly: 'temperature_2m,precipitation,rain,snowfall,weather_code,wind_speed_10m,wind_direction_10m', windUnit: 'ms', zone: 'Europe/Stockholm', digits: 3,
     finalDays: 7, ahead: 6, ttl: 3 * 3600, timeout: 20, retry: 300, startAfter: 1500, keepMonths: 12, keyPrefix: 'lunden.weather.',
     rainMm: 2.5, snowCm: 1, // mm / cm per hour that count as a full strength shower (lighter falls weaker); *guess*
     cloud: { 1: 0.05, 2: 0.2, 3: 0.55, 45: 0.6, 48: 0.6 } }, // overcast by WMO weather code when nothing falls
+  // #2117: the wind slants what falls: rain streaks move `slant.perMs` m sideways per m of fall per m/s of wind (4 m/s ≈ the old fixed
+  // 0.12), at most `slant.max`; snowflakes drift `snowDrift.perMs` m/s per m/s of wind, at most `snowDrift.max` m/s. *guess* (looks).
+  slant: { perMs: 0.03, max: 0.45 }, snowDrift: { perMs: 0.22, max: 2.2 },
+};
+
+// Wind (#2117, src/windsim.js): where Open-Meteo has the hour (WEATHER.real) the real 10 m wind, else a seeded draw per date and hour for
+// Lund. `mean` = the monthly mean 10 m wind speed (m/s, Jan…Dec), stronger in winter: our *guess* from memory of SMHI's Skåne normals
+// (Lund ~3.5–5 m/s; Falsterbo/the coast more), not looked up. Directions (degrees the wind comes FROM, 0 = north, 90 = east): a share
+// `prevail` (by month) from the prevailing south-west–west sector round `from` ± `spread` (≈ σ, degrees), the rest from the easterly
+// sector round `other` ± `otherSpread` (spring's easterlies: the lower share in Mar–May). A weather regime lasts `regime` h (direction,
+// strength factor ×`regimeSpread`), smaller turns of ± `veer`° and ×`gustSpread` every `step` h, both blended smoothly (no jumps).
+// The day's swing: × (1 + `diurnal`[month] · cos(hour − `peak`)) (afternoon breeze, calm nights, more in summer). What falls adds
+// `rain` m/s × rain 0…1, a thunderstorm `storm` m/s. `power`: m/s → SiteWind power 0…1 = (speed / `full`)^`gamma` (a near gale sways
+// fully). `still`: below this speed the direction is kept (a calm has none). All *guesses*.
+export const WIND = {
+  mean: [5.0, 4.8, 4.6, 4.1, 3.8, 3.6, 3.5, 3.5, 3.9, 4.4, 4.8, 5.0],
+  prevail: [0.72, 0.68, 0.55, 0.5, 0.55, 0.62, 0.68, 0.68, 0.66, 0.7, 0.72, 0.72], from: 245, spread: 40, other: 95, otherSpread: 50,
+  regime: 36, regimeSpread: 0.35, step: 6, veer: 25, gustSpread: 0.2, diurnal: [0.05, 0.08, 0.15, 0.22, 0.25, 0.25, 0.25, 0.22, 0.15, 0.1, 0.06, 0.05], peak: 14,
+  rain: 2, storm: 6, max: 24, power: { full: 13, gamma: 0.9 }, still: 0.3,
 };
 
 // Speech bubbles (#247, src/greet.js): Olof's lines and your own show for `bubble` s. The neighbours to greet were
@@ -4933,8 +4953,10 @@ export const HAZE = { blue: [0.6, 0.76, 1.08], overcastBlue: 0.8, scatter: { col
 // (everything shaded, the sun already cut by WEATHER.sunCut) between `solid[0]` and 1; the noise threshold goes from `thr[0]` (few
 // clouds) to `thr[1]` (mostly cloud) with edge softness `soft`; a shaded spot keeps 1 − `strength` of the direct sun. Off at night (the
 // sun below `sun` y), above / inside the cloud deck, indoors (eased over `indoorFade` s), at quality level < `minLevel` and on phones.
+// #2117: with the weather's wind (DayCycle.wind, m/s downwind x/z) the deck drifts along it at `windScale` × the 10 m speed (the wind
+// at the cloud deck is stronger than at the ground), clamped to `drift` m/s; `speed` / `wind` remain the fallback without one. *guess*.
 export const CLOUD_SHADOW = { cell: 110, cells: 48, height: 1200, speed: 5, wind: [-1, -0.4], fade: [0.05, 0.25], solid: [0.8, 1],
-  thr: [0.64, 0.36], soft: 0.08, strength: 0.85, sun: [0.0, 0.12], indoorFade: 1.5, minLevel: 1 };
+  thr: [0.64, 0.36], soft: 0.08, strength: 0.85, sun: [0.0, 0.12], indoorFade: 1.5, minLevel: 1, windScale: 1.6, drift: [1, 25] };
 
 // Birds (#1252/#1924, src/birds.js): a few gulls circling the area, exclusive near/far instanced batches, no lights, no textures,
 // no sound. All numbers *guess*. `count` birds (`lowMemoryCount` on phones), the last `high` of them at flight altitude (`highAlt`

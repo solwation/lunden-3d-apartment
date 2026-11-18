@@ -5,7 +5,11 @@
 // leaves the simulated weather in weather.js in charge. Only the site's coordinates and the dates are sent (no cookies, no referrer).
 // NOT verified against the live service from the cloud session that wrote this (its egress is blocked): the request/response shape
 // follows Open-Meteo's documentation; tools/weathertest.html runs it against a fixture.
+// #2117: also the 10 m wind (`wind_speed_10m` in m/s via `&wind_speed_unit=ms`, `wind_direction_10m` in degrees it comes FROM); `at()`
+// returns it as `wind` { x, z } (m/s downwind in the scene, windsim.js) when the hour has it. A cached month from before (format v1,
+// no wind) still serves at once and is fetched again in the background to get its wind.
 import { WEATHER as W, SITE } from './config.js';
+import { windVector } from './windsim.js';
 
 const R = W.real, pad = (n) => String(n).padStart(2, '0');
 const daysIn = (y, m) => new Date(y, m, 0).getDate();
@@ -19,7 +23,9 @@ const utcDay = (y, m, d) => Math.floor(Date.UTC(y, m - 1, d) / DAY_MS); // calen
 export function parseMonth(json, y, m) {
   const h = json?.hourly;
   if (!h || !Array.isArray(h.time) || !Array.isArray(h.temperature_2m) || h.time.length < 24) return null;
-  const n = daysIn(y, m) * 24, rec = { y, m, t: new Float32Array(n).fill(NaN), p: new Float32Array(n), s: new Float32Array(n), c: new Int16Array(n).fill(-1) };
+  const n = daysIn(y, m) * 24, rec = { y, m, t: new Float32Array(n).fill(NaN), p: new Float32Array(n), s: new Float32Array(n), c: new Int16Array(n).fill(-1),
+    w: new Float32Array(n).fill(NaN), d: new Float32Array(n).fill(NaN) };
+  const unit = String(json.hourly_units?.wind_speed_10m ?? 'm/s').toLowerCase(), toMs = /km/.test(unit) ? 1 / 3.6 : /kn/.test(unit) ? 0.514444 : /mp/.test(unit) ? 0.44704 : 1;
   let got = 0;
   for (let i = 0; i < h.time.length; i++) {
     const mm = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):/.exec(h.time[i]);
@@ -30,16 +36,32 @@ export function parseMonth(json, y, m) {
     rec.p[k] = Math.max(Number(h.precipitation?.[i]) || 0, Number(h.rain?.[i]) || 0);
     rec.s[k] = Math.max(Number(h.snowfall?.[i]) || 0, 0);
     rec.c[k] = Number.isInteger(h.weather_code?.[i]) ? h.weather_code[i] : -1;
+    const ws = h.wind_speed_10m?.[i], wd = h.wind_direction_10m?.[i];
+    if (typeof ws === 'number' && Number.isFinite(ws) && ws >= 0 && typeof wd === 'number' && Number.isFinite(wd)) { rec.w[k] = ws * toMs; rec.d[k] = ((wd % 360) + 360) % 360; }
     got++;
   }
   return got >= 24 ? rec : null;
 }
 
-const pack = (rec) => ({ y: rec.y, m: rec.m, t: Array.from(rec.t, (v) => (Number.isNaN(v) ? null : Math.round(v * 10) / 10)), p: Array.from(rec.p, (v) => Math.round(v * 10) / 10), s: Array.from(rec.s, (v) => Math.round(v * 10) / 10), c: Array.from(rec.c) });
-const unpack = (o) => {
+const r1 = (v) => (Number.isNaN(v) ? null : Math.round(v * 10) / 10);
+/** A month record → its JSON-able cache form (v2: with `w` wind speed m/s and `d` direction °, null where missing). */
+export const pack = (rec) => ({ y: rec.y, m: rec.m, t: Array.from(rec.t, r1), p: Array.from(rec.p, (v) => Math.round(v * 10) / 10), s: Array.from(rec.s, (v) => Math.round(v * 10) / 10), c: Array.from(rec.c),
+  w: Array.from(rec.w, r1), d: Array.from(rec.d, (v) => (Number.isNaN(v) ? null : Math.round(v))) });
+/** The cache form → a record, or null when it is bad. A v1 entry (no `w` / `d`) gives NaN wind and `noWind` (fetched again for its wind). */
+export const unpack = (o) => {
   if (!o || !Array.isArray(o.t) || o.t.length !== daysIn(o.y, o.m) * 24 || o.p?.length !== o.t.length || o.s?.length !== o.t.length || o.c?.length !== o.t.length) return null;
-  return { y: o.y, m: o.m, t: Float32Array.from(o.t, (v) => (v == null ? NaN : v)), p: Float32Array.from(o.p), s: Float32Array.from(o.s), c: Int16Array.from(o.c) };
+  const n = o.t.length, wind = Array.isArray(o.w) && Array.isArray(o.d) && o.w.length === n && o.d.length === n, f = (v) => (v == null ? NaN : v);
+  const rec = { y: o.y, m: o.m, t: Float32Array.from(o.t, f), p: Float32Array.from(o.p), s: Float32Array.from(o.s), c: Int16Array.from(o.c),
+    w: wind ? Float32Array.from(o.w, f) : new Float32Array(n).fill(NaN), d: wind ? Float32Array.from(o.d, f) : new Float32Array(n).fill(NaN) };
+  if (!wind) rec.noWind = true;
+  return rec;
 };
+
+/** The wind of hour k as { x, z } m/s downwind, or null when the hour has none. */
+export function hourWind(rec, k) {
+  const w = rec.w?.[k], d = rec.d?.[k];
+  return w === w && d === d && w != null ? windVector(d, w) : null;
+}
 
 /** What falls and how much, from one hour's values: { temp, rain 0…1, kind 'rain' | 'snow' | 'hail' | null, storm, overcast 0…1 }. */
 export function hourState(rec, k) {
@@ -79,7 +101,7 @@ export class RealWeather {
     const first = utcDay(y, m, 1), last = utcDay(y, m, daysIn(y, m));
     if (!fin && first > today + R.ahead) return null;
     const end = fin ? last : Math.min(last, today + R.ahead), toDate = (n) => { const d = new Date(n * DAY_MS); return ymd(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate()); };
-    const q = `latitude=${this.lat}&longitude=${this.lon}&start_date=${toDate(first)}&end_date=${toDate(end)}&hourly=${R.hourly}&timezone=${encodeURIComponent(R.zone)}`;
+    const q = `latitude=${this.lat}&longitude=${this.lon}&start_date=${toDate(first)}&end_date=${toDate(end)}&hourly=${R.hourly}&wind_speed_unit=${R.windUnit}&timezone=${encodeURIComponent(R.zone)}`;
     return `${this.api || (fin ? R.archive : R.forecast)}?${q}`;
   }
 
@@ -95,7 +117,7 @@ export class RealWeather {
   writeCache(key, rec, final) {
     const s = this.store;
     if (!s) return;
-    const put = () => s.setItem(R.keyPrefix + key, JSON.stringify({ v: 1, at: this.now(), final, d: pack(rec) }));
+    const put = () => s.setItem(R.keyPrefix + key, JSON.stringify({ v: 2, at: this.now(), final, d: pack(rec) }));
     try { put(); } catch { // full: drop the oldest months (or all) and try once more
       try { this.prune(0); put(); } catch { /* no room: the memory copy still serves this visit */ }
     }
@@ -120,7 +142,7 @@ export class RealWeather {
       if (c) { this.months.set(key, have = { ...c }); this.version++; this.trim(key); }
     }
     const final = this.isFinal(y, m);
-    if (have && (have.final || (!final && this.now() - have.at < R.ttl * 1000))) return; // (a forecast copy of a month that is now over is fetched again, from the archive)
+    if (have && !have.rec.noWind && (have.final || (!final && this.now() - have.at < R.ttl * 1000))) return; // (a forecast copy of a month that is now over is fetched again, from the archive; a v1 copy without wind too, #2117)
     if (this.pending.has(key) || this.now() < (this.failed.get(key) ?? 0)) return;
     const url = this.url(y, m);
     if (!url) return;
@@ -169,8 +191,9 @@ export class RealWeather {
     const A = hourState(rec, k0);
     const k1 = k0 + 1 < rec.t.length && rec.t[k0 + 1] === rec.t[k0 + 1] ? k0 + 1 : k0, B = k1 === k0 ? A : hourState(rec, k1);
     const lerp = (x, z) => x + (z - x) * f, rain = lerp(A.rain, B.rain);
+    const wa = hourWind(rec, k0), wb = k1 === k0 ? wa : hourWind(rec, k1) ?? wa, wind = wa ? { x: lerp(wa.x, wb.x), z: lerp(wa.z, wb.z) } : null; // (#2117: blended as a vector, so it turns the short way)
     const pick = rain <= 0.01 ? null : !A.kind ? B : !B.kind ? A : (1 - f) * A.rain >= f * B.rain ? A : B; // the hour that weighs more names the kind
-    return { temp: lerp(A.temp, B.temp), rain, overcast: lerp(A.overcast, B.overcast), kind: pick?.kind ?? null, storm: !!pick?.storm,
+    return { temp: lerp(A.temp, B.temp), rain, overcast: lerp(A.overcast, B.overcast), kind: pick?.kind ?? null, storm: !!pick?.storm, wind,
       id: pick ? `real-${ymd(y, m, d)}-${pick.kind}-${this.episodeStart(rec, pick === A ? k0 : k1, pick.kind)}` : null };
   }
 

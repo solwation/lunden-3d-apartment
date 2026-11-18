@@ -662,6 +662,15 @@ src/weather.js         weather (WEATHER, #248): a seeded draw per date (`showers
                        session that wrote it had no access to the live service: **the real request/response were not verified against open-meteo.com** (built from its documentation, tested with
                        `tools/fixtures/openmeteo-2024-01.json`, a hand-made fixture) — try it once on a real machine (`?year=2024&month=1&day=10` should give real January weather). Automated
                        browsers (`navigator.webdriver`) and `&shot` never call the service unless `&weatherapi=/path/file.json` (same-origin fixture, replaces both URLs) is given; `&realweather=0` turns it off.
+                       Wind (#2117, `src/windsim.js`, `WIND`): `weather.wind` = { x, z } m/s downwind in scene axes (x east, z south, north −z; `windVector(fromDeg, speed)` converts
+                       the meteorological direction the wind comes FROM). Real hours: Open-Meteo `wind_speed_10m` (`&wind_speed_unit=ms`) and `wind_direction_10m`, blended between hours
+                       as a vector; elsewhere (the far future, gaps, offline, forced weather) `simWind`: a seeded draw per date and hour for Lund — a weather regime every 36 h (≈ 55 %
+                       south-west–west round 245°, the rest mostly easterly, more in spring) with smaller turns every 6 h, the monthly mean (≈ 5 m/s in winter, 3.5 in summer, *guess*),
+                       an afternoon swing and + 2 m/s in rain, + 6 in a thunderstorm, all smoothly blended (≤ 0.6 m/s per 6 min). `ease` fades the wind with rain/cloud/temperature when the
+                       source switches. It slants the rain streaks (`WEATHER.slant`: 0.03 m sideways per m of fall per m/s, ≤ 0.45; 4 m/s ≈ the old fixed 0.12) and drifts the snow
+                       (`WEATHER.snowDrift`), is handed to DayCycle (`day.wind`: the cloud shadows) and drives SiteWind's power (`windPower`: (m/s ÷ 13)^0.9) and direction, which #2110's
+                       avatar wind follows. `&wind=power[,seconds]` still pins the power; the direction always follows the weather. Not verified against the live service either
+                       (fixtures only). `tools/windsimtest.mjs`, `tools/wind2117browser.cjs`, [before/after](../verification/2117/README.md).
                        #249: each shower has a `kind`: snow (mostly Dec–Feb; slow swaying Points, a lighter sky, silent),
                        hail (spring, and at the start of some storms; white pellets that bounce once and lie a moment, a
                        louder rattle); ❄️ / 🧊 in the HUD. Walking WEATHER.experience.metres outdoors while it falls calls
@@ -725,7 +734,8 @@ src/cloudshadow.js     cloud shadows (#2102, `CLOUD_SHADOW`, artistic *guesses*)
                        (no pass, texture or extra program): the shadow-casting directional light (index < `NUM_DIR_LIGHT_SHADOWS`, i.e. the sun/moon) is
                        multiplied by two octaves of periodic analytic value noise (110 m cells, tile 5.3 km so the wrapped drift never jumps), looked up
                        where the sun ray through the fragment meets a deck `height` m up, so walls, roofs and the ground below share one cloud. It drifts
-                       `speed` m/s along `wind` (−x, like the cloud deck and the rain slant). `DayCycle.update` sets strength from overcast (fades in
+                       with the weather's wind (#2117: `day.wind` from weather.js, `stepCloudDrift` integrates `cloudVelocity` = 1.6 × the 10 m speed, 1–25 m/s, so a
+                       turn never jumps the pattern; without a wind the old `speed` m/s along `wind`, −x). `DayCycle.update` sets strength from overcast (fades in
                        0.05–0.25, out again 0.8–1 where WEATHER.sunCut already dims everything) × the sun's height; 0 = one uniform branch, no noise:
                        clear sky, full overcast, night, inside the deck, the garage, indoors (`day.indoor` from main.js, eased `indoorFade` s, so the
                        view out of a window has none either) and the `cloudShadows` quality knob (off at level 0 and on phones). Lit built-in

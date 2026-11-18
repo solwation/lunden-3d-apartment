@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { DAY, WEATHER, GARAGE, LIGHTING, SKYLAYER, CLOUD_SHADOW } from './config.js';
 import { hazeState, applyHaze } from './aerialhaze.js';
-import { cloudShadowState, applyCloudShadows } from './cloudshadow.js';
+import { cloudShadowState, applyCloudShadows, cloudDrift, stepCloudDrift } from './cloudshadow.js';
 
 // Day and night: a whole day passes in DAY.minutes real minutes (24 × 60 = real time, #1145: the clock follows the
 // visitor's own clock; the wall clock's spool / pause become an offset from it). The sun follows its real path
@@ -186,6 +186,7 @@ export class DayCycle {
     this.realAt = Date.now(); // (catch-up: dt is capped and stops in a hidden tab, the real clock does not, #1145)
     // cloud shadows (#2102): main.js sets `indoor` (the visitor is inside) and `cloudShadows` (the quality knob); cloudT drifts them
     this.indoor = false; this.cloudShadows = true; this.cloudT = 0; this.cloudIndoor = 0;
+    this.wind = null; this.cloudPos = { x: 0, z: 0, dx: 0, dz: 0 }; // #2117: weather.js sets `wind` ({ x, z } m/s downwind); the clouds drift along it
     this.sunDir = new THREE.Vector3();
     this.moonDir = new THREE.Vector3();
     this.update(0);
@@ -267,7 +268,7 @@ export class DayCycle {
     const ik = dt > 0 ? Math.min(1, dt / CLOUD_SHADOW.indoorFade) : 1;
     this.cloudIndoor += ((this.indoor ? 1 : 0) - this.cloudIndoor) * ik; this.cloudT += dt;
     this.cloudShadow = cloudShadowState({ sunDir: this.sunDir, oc, off: this.cloudShadows ? Math.max(inside, this.cloudIndoor, this.under) : 1 });
-    applyCloudShadows(this.cloudShadow, this.cloudT);
+    applyCloudShadows(this.cloudShadow, this.wind ? stepCloudDrift(this.cloudPos, dt > 0 ? dt : 0, this.wind) : cloudDrift(this.cloudT)); // (no wind: the fixed drift, #2102)
     const D = this.deckUniforms, up = cy > (L.base + L.top) / 2;
     this.deck.visible = cover > 0.01 && (up || cy > L.base - L.approach) && inside < 0.999;
     if (this.deck.visible) {

@@ -62,6 +62,25 @@ export function cloudDrift(t) {
   return { x: wrap(-WIND.x * d), z: wrap(-WIND.z * d), dx: WIND.x * d, dz: WIND.z * d };
 }
 
+/** #2117: the deck's drift velocity (m/s, x/z) for the weather's wind ({ x, z } m/s downwind at 10 m): along it at `windScale` × its speed,
+ * clamped to `drift`; a calm keeps `last` direction ({ x, z } unit) at the slowest drift; without a wind the fixed `speed` along `wind`. */
+export function cloudVelocity(wind, last = WIND) {
+  const v = wind ? Math.hypot(wind.x, wind.z) : -1;
+  if (v < 0) return { x: WIND.x * C.speed, z: WIND.z * C.speed };
+  const s = Math.min(C.drift[1], Math.max(C.drift[0], v * C.windScale));
+  return v > 1e-3 ? { x: (wind.x / v) * s, z: (wind.z / v) * s } : { x: last.x * s, z: last.z * s };
+}
+
+/** #2117: advance an integrated drift `pos` { x, z, dx, dz, ux, uz } by dt s in the weather's wind (dx, dz wrapped to the tile, so the
+ * pattern never jumps and the numbers stay small); x, z = the pattern offset as `cloudDrift` gives it. */
+export function stepCloudDrift(pos, dt, wind) {
+  const u = { x: pos.ux ?? WIND.x, z: pos.uz ?? WIND.z }, v = cloudVelocity(wind, u), l = Math.hypot(v.x, v.z);
+  if (l > 0) { pos.ux = v.x / l; pos.uz = v.z / l; }
+  pos.dx = wrap((pos.dx ?? 0) + v.x * dt); pos.dz = wrap((pos.dz ?? 0) + v.z * dt);
+  pos.x = wrap(-pos.dx); pos.z = wrap(-pos.dz);
+  return pos;
+}
+
 /** The cloud-shadow parameters for a sky state (pure; DayCycle feeds it each frame). oc: overcast below the deck 0…1; sunY: the
  * sun's height (unit direction y); off 0…1 (inside the deck / indoors / quality off). Returns { strength, thr, soft, slope: {x, z} }. */
 export function cloudShadowState({ sunDir, oc, off = 0 }) {
@@ -71,9 +90,9 @@ export function cloudShadowState({ sunDir, oc, off = 0 }) {
   return { strength, thr: C.thr[0] + (C.thr[1] - C.thr[0]) * Math.min(1, Math.max(0, oc)), soft: C.soft, slope: { x: sunDir.x / y, z: sunDir.z / y } };
 }
 
-/** Write a state and the drift at time t (s) into the shared uniforms. */
+/** Write a state and the drift at time t (s) — or an integrated drift { x, z } (stepCloudDrift, #2117) — into the shared uniforms. */
 export function applyCloudShadows(s, t) {
-  const A = cloudShadowUniforms.cloudShadowA.value, B = cloudShadowUniforms.cloudShadowB.value, d = cloudDrift(t);
+  const A = cloudShadowUniforms.cloudShadowA.value, B = cloudShadowUniforms.cloudShadowB.value, d = typeof t === 'number' ? cloudDrift(t) : t;
   Object.assign(A, { x: d.x, y: d.z, z: C.height, w: s.strength });
   Object.assign(B, { x: s.slope.x, y: s.slope.z, z: s.thr, w: s.soft });
 }
