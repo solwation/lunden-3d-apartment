@@ -8,7 +8,21 @@ test('opaque tint has bounded stops, no alpha and a quieter core without randomn
 test('side veins preserve context, use the current leaf clip and source-atop, with two or three pairs',()=>{
  for(const[l,pairs]of[[12,2],[30,3]]){const calls=[],g={save(){calls.push('save')},clip(){calls.push('clip')},beginPath(){calls.push('begin')},moveTo(...a){calls.push(['move',...a])},quadraticCurveTo(...a){assert(a.every(Number.isFinite));calls.push(['curve',...a])},stroke(){assert.equal(this.globalCompositeOperation,'source-atop');calls.push('stroke')},restore(){calls.push('restore')}};leafSideVeins(g,l,l*.4,512);assert.equal(calls[0],'save');assert.equal(calls[1],'clip');assert.equal(calls.at(-1),'restore');assert.equal(calls.filter(c=>Array.isArray(c)&&c[0]==='curve').length,pairs*2);assert(g.lineWidth<.5);}
 });
-test('all original RNG/draw/yield/cache/geometry/material/bark source is retained outside the colour-context and tint hooks',()=>{
- const original=execFileSync('git',['show',baseline+':src/foliage.js'],{encoding:'utf8'}),current=readFileSync('src/foliage.js','utf8').replace("import {leafRgbContext,leafTone,leafSideVeins} from './leafrgb.js';\n",'').replace("    if(g.globalCompositeOperation!=='destination-out')leafTone(g,k,l,w,!rib);\n",'').replace('    if(rib&&l>6)leafSideVeins(g,l,w,S);\n','').replace("const g = leafRgbContext(c.getContext('2d', { willReadFrequently: true })), r = rng(679);","const g = c.getContext('2d', { willReadFrequently: true }), r = rng(679);");assert.equal(current,original);
- for(const f of['src/config.js','src/lod.js','src/seasons.js','src/barksurface.js'])assert.equal(readFileSync(f,'utf8'),execFileSync('git',['show',baseline+':'+f],{encoding:'utf8'}));
+// Function-level contract (#2113, #2085): only leafAtlasParts (RNG order, draw order, yields, alpha) is compared with the frozen base;
+// whole files are not, so unrelated edits (config blocks, #2101 wind sway in foliage.js) cannot fail this test.
+const baseOf=(f)=>execFileSync('git',['show',baseline+':'+f],{encoding:'utf8'});
+const atlasFn=(text)=>{const m=text.match(/^export function\* leafAtlasParts\(\) \{[\s\S]*?^\}/m);assert(m,'leafAtlasParts found');return m[0];};
+test('leafAtlasParts keeps its original RNG/draw/yield/alpha source outside the colour-context and tint hooks',()=>{
+ const src=readFileSync('src/foliage.js','utf8'),hooks=[
+  ["import {leafRgbContext,leafTone,leafSideVeins} from './leafrgb.js';\n"],
+  ["    if(g.globalCompositeOperation!=='destination-out')leafTone(g,k,l,w,!rib);\n"],
+  ['    if(rib&&l>6)leafSideVeins(g,l,w,S);\n']];
+ for(const[h]of hooks)assert.equal(src.split(h).length,2,'exactly one hook: '+h.trim());
+ let fn=atlasFn(src);
+ for(const[h]of hooks.slice(1))fn=fn.replace(h,'');
+ fn=fn.replace("const g = leafRgbContext(c.getContext('2d', { willReadFrequently: true })), r = rng(679);","const g = c.getContext('2d', { willReadFrequently: true }), r = rng(679);");
+ assert.equal(fn,atlasFn(baseOf('src/foliage.js')));
+});
+test('the hooks are the only leafrgb use in the source; unrelated modules stay free of it',()=>{
+ for(const f of['src/config.js','src/lod.js','src/seasons.js','src/barksurface.js'])assert(!/leafrgb|leafTone|leafSideVeins/.test(readFileSync(f,'utf8')),f);
 });
