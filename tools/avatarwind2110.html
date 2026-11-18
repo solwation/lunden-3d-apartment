@@ -1,0 +1,87 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Vind i håret #2110</title><link rel="icon" href="data:,">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<style>body{margin:0;background:#e9edef;font:16px system-ui;color:#192b38}canvas{display:block}</style>
+<script type="module">
+// #2110: the real remote consumer (Ghost.push 5 Hz → Ghost.draw → Ghost.animate: updateWeather(wetEnv.outdoorAt), Avatar.update → updateSway),
+// before (/before/ = the base revision) and after side by side, each module with its own siteWind / wetEnv. Three conditions per module, each
+// its own standing figure (long hair, then a bun): outdoors in a calm clear breeze, outdoors in a storm, indoors in the same storm.
+import * as T from 'three';
+import * as current from '../src/ghosts.js';
+import * as before from '/before/src/ghosts.js';
+import * as curWind from '../src/sitewind.js';
+import * as befWind from '/before/src/sitewind.js';
+import * as curWet from '../src/avatarweather.js';
+import * as befWet from '/before/src/avatarweather.js';
+import * as C from '../src/config.js';
+const W = 300, H = 400, COLS = 5;
+const renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); renderer.setPixelRatio(1); renderer.setSize(W * COLS, H * 2); document.body.append(renderer.domElement);
+let now = 10000; const nativeNow = performance.now.bind(performance); performance.now = () => now;
+const style = +(new URLSearchParams(location.search).get('style') ?? 1);
+localStorage.setItem('lunden.avatar', C.encodeAvatarLook({ ...C.avatarLook('wind-2110'), style }));
+const CONDS = { calm: { power: C.SITE_WIND.calm, out: true }, storm: { power: 1, out: true }, indoor: { power: 1, out: false } };
+const st = { p: [0, 0, 0], r: 0, look: [0, 0] };
+const mods = [[before, befWind, befWet], [current, curWind, curWet]], rows = [];
+for (const [mod, wind, wet] of mods) {
+  wet.wetEnv.outdoorAt = (g) => CONDS[g.cond].out; // (main.js: the footprint / core / garage test)
+  for (const cond of Object.keys(CONDS)) {
+    const scene = new T.Scene(); scene.background = new T.Color(0xdce3e6); scene.add(new T.HemisphereLight(0xffffff, 0x828b71, 1.5));
+    const light = new T.DirectionalLight(0xffefdb, 2.1); light.position.set(-2, 5, 3); scene.add(light);
+    const plane = new T.Mesh(new T.PlaneGeometry(200, 200), new T.MeshStandardMaterial({ color: 0xa3ae99, roughness: 1 })); plane.rotation.x = -Math.PI / 2; scene.add(plane);
+    const cam = new T.PerspectiveCamera(19, W / H, .05, 80);
+    const owners = new mod.Ghosts({ scene, camera: cam, url: '', name: () => 'wind-2110', state: () => st, swim: () => null });
+    const ghost = new mod.Ghost(scene, 'wind-2110', 'Medspelare', false, owners.myLook); ghost.avatarCode = owners.avatarCode; if (ghost.tag) ghost.tag.visible = false;
+    ghost.cond = cond; ghost.avatar.noIdle = true; // (#2035 off: only the wind differs between frames)
+    rows.push({ scene, cam, owners, ghost, wind, cond, lastPush: -Infinity, k: rows.length < 3 ? 0 : 1 });
+  }
+}
+let t = 0;
+window.step = (dt = 1 / 60) => {
+  t += dt; now += dt * 1000; const out = {};
+  for (const row of rows) {
+    const sw = row.wind.siteWind; sw.time = t; sw.power = CONDS[row.cond].power; // (the module's live wind, as SiteWind.update leaves it)
+    row.owners.track(st, now);
+    if (now - row.lastPush >= 200 - 1e-4) { row.ghost.push(st, now); row.lastPush = now; }
+    row.ghost.draw(now, new T.Vector3(...st.p)); if (row.ghost.tag) row.ghost.tag.visible = false;
+    const s = row.ghost.avatar.sway; row.ghost.avatar.object.updateMatrixWorld(true);
+    out[(row.k ? 'after.' : 'before.') + row.cond] = s ? { hair: s.hair.p.map((v) => +v.toFixed(5)), bun: s.bun.p.map((v) => +v.toFixed(5)), hem: s.hem.p.map((v) => +v.toFixed(5)) } : null;
+  }
+  return { t, ...out };
+};
+/** Renders the figure of row (k, cond) into column `col`: from the side across the wind, so the downwind flare shows in profile. */
+window.shoot = (k, cond, col) => {
+  const row = rows.find((r) => r.k === k && r.cond === cond), o = row.ghost.root.position, d = row.wind.siteWind.dir;
+  row.cam.position.set(o.x - d.y * 3.4 - d.x * 0.6, 1.5, o.z + d.x * 3.4 - d.y * 0.6); row.cam.lookAt(o.x, 1.27, o.z);
+  renderer.setScissorTest(true);
+  renderer.setViewport(col * W, (1 - k) * H, W, H); renderer.setScissor(col * W, (1 - k) * H, W, H); renderer.render(row.scene, row.cam);
+  renderer.setScissorTest(false);
+};
+window.labelled = (title, cols) => {
+  const c = document.createElement('canvas'); c.width = W * COLS + 70; c.height = H * 2 + 64; const x = c.getContext('2d');
+  x.fillStyle = '#edf0f2'; x.fillRect(0, 0, c.width, c.height); x.fillStyle = '#192b38'; x.font = 'bold 20px system-ui'; x.fillText(title, 12, 26);
+  x.font = '15px system-ui'; cols.forEach((s, i) => x.fillText(s, 70 + i * W + 10, 54));
+  x.save(); x.translate(44, 64 + H / 2 + 22); x.rotate(-Math.PI / 2); x.fillText('Före', 0, 0); x.restore();
+  x.save(); x.translate(44, 64 + H * 1.5 + 22); x.rotate(-Math.PI / 2); x.fillText('Efter', 0, 0); x.restore();
+  x.drawImage(renderer.domElement, 70, 64);
+  x.strokeStyle = 'rgba(25,43,56,0.15)'; x.lineWidth = 1;
+  for (let xx = 70; xx < c.width; xx += 20) { x.beginPath(); x.moveTo(xx + 0.5, 64); x.lineTo(xx + 0.5, c.height); x.stroke(); }
+  return c.toDataURL('image/png').split(',')[1];
+};
+/** Changed pixels (|a − b| > 24/765) between two columns of one row. */
+window.changed = (k, a, b) => {
+  const src = renderer.domElement, tmp = document.createElement('canvas'); tmp.width = src.width; tmp.height = src.height;
+  const tx = tmp.getContext('2d'); tx.drawImage(src, 0, 0); const img = tx.getImageData(0, 0, tmp.width, tmp.height).data; let n = 0;
+  for (let yy = 0; yy < H; yy++) for (let xx = 0; xx < W; xx++) {
+    const at = (col) => ((k * H + yy) * src.width + col * W + xx) * 4, p = at(a), q = at(b);
+    if (Math.abs(img[p] - img[q]) + Math.abs(img[p + 1] - img[q + 1]) + Math.abs(img[p + 2] - img[q + 2]) > 24) n++;
+  }
+  return n;
+};
+window.clearStrip = () => { renderer.setClearColor(0xe9edef); renderer.clear(); };
+window.bench = () => { // µs per Ghost.animate standing in the storm, before vs after
+  const res = { before: [], after: [] }, storm = rows.filter((r) => r.cond === 'storm');
+  for (let j = 0; j < 7; j++) for (const row of j % 2 ? storm : [...storm].reverse()) { const g = row.ghost, at = nativeNow(); for (let n = 0; n < 3000; n++) { now += 1000 / 60; row.wind.siteWind.time += 1 / 60; g.animate(now, 1, 0, 0); } if (j) res[row.k ? 'after' : 'before'].push(+((nativeNow() - at) * 1000 / 3000).toFixed(2)); }
+  const med = (a) => [...a].sort((x, y) => x - y)[a.length >> 1];
+  return { unit: 'µs/Ghost.animate (interleaved, median)', before: med(res.before), after: med(res.after), runs: res, calls: renderer.info.render.calls };
+};
+window.windReady = true;
+</script></html>

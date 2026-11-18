@@ -18,6 +18,7 @@ import { irisDisc, pupilDisc, lidSurface, upperLashes, lidBlink } from './avatar
 import { lampUniforms, LAMP_FDECL, lampGlsl } from './avatarlight.js'; // #2039: the street lamps' light
 import { clothUniforms, clothDecl, clothNormal, installCloth } from './avatarcloth.js'; // #2034
 import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #2014
+import { newWind, stepWind } from './avatarwind.js'; import { siteWind } from './sitewind.js'; // #2110: outdoor wind on the sway springs
 import { newLean, stepLean } from './avatarlean.js'; // #2109
 import { chestBreath, chestUniforms, CHEST_DECL, chestGLSL, chestKey } from './avatarchest.js'; // #2108: visible breathing
 import { avatarSkinGLSL, skinKey } from './avatarskin.js'; // #2032
@@ -2045,6 +2046,7 @@ export class Avatar {
   updateWeather(outdoors, now = performance.now()) {
     const u = this.material?.userData.u;
     if (!u?.uWet) return;
+    this.windOutdoors = outdoors; // #2110: the wind on the hair only in the open
     const s = this.wetState ??= newWet(), dt = this.wetAt == null ? 0 : (now - this.wetAt) / 1000;
     this.wetAt = now;
     stepWet(s, dt, { ...falling(wetEnv.rain, wetEnv.kind), outdoors, temp: wetEnv.temp });
@@ -2056,7 +2058,8 @@ export class Avatar {
     const u = this.material?.userData.u, b = this.bones;
     if (!u?.uSwayHair || !b?.head || !b.torso || this.noSway) return;
     const sw = this.sway ??= newSway();
-    stepSway(sw, dt, b.head.matrixWorld.elements, b.torso.matrixWorld.elements);
+    const he = b.head.matrixWorld.elements, te = b.torso.matrixWorld.elements;
+    stepSway(sw, dt, he, te, stepWind(this.wind ??= newWind(), dt, siteWind, this.windOutdoors === true, he, te)); // #2110
     u.uSwayHair.value.fromArray(sw.hair.p); u.uSwayBun.value.fromArray(sw.bun.p); u.uSwayHem.value.fromArray(sw.hem.p);
   }
 

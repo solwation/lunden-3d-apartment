@@ -39,12 +39,14 @@ export function drive(h, e, dt) {
 
 /** Advances one group spring by `dt` under the drive (`a` in the bone's axes, `alpha` yaw acceleration). The offset relaxes to −gain·a/ω² and
  * overshoots by its damping; it is held between the group's walls (min/max) with the velocity into a wall removed, so hair stops at the neck,
- * shoulders and head instead of passing through. Fixed sub-steps keep the integration stable for any frame time. */
-export function stepSpring(s, G, dt, a, alpha) {
+ * shoulders and head instead of passing through. Fixed sub-steps keep the integration stable for any frame time.
+ * #2110 `push` ([x, y, z] m, bone frame, optional): a target the spring relaxes to on top of that (the outdoor wind, src/avatarwind.js). */
+export function stepSpring(s, G, dt, a, alpha, push = null) {
   dt = Math.min(dt, S.maxDt);
   const n = Math.max(1, Math.ceil(dt / S.step)), h = dt / n, w2 = G.omega * G.omega, c = 2 * G.zeta * G.omega;
   // a head that accelerates forward leaves the hair behind (−a); turning left drags a point behind it to the right: +x of the pseudo-force is +alpha·r
   const f = [G.gain * (-a[0] + alpha * G.r), G.gain * -a[1], G.gain * -a[2]];
+  if (push) for (let i = 0; i < 3; i++) f[i] += w2 * push[i];
   for (let k = 0; k < n; k++) for (let i = 0; i < 3; i++) {
     s.v[i] += (-w2 * s.p[i] - c * s.v[i] + f[i]) * h;
     s.p[i] += s.v[i] * h;
@@ -54,13 +56,14 @@ export function stepSpring(s, G, dt, a, alpha) {
   return s;
 }
 
-/** Steps all three groups from the head's and the torso's world matrix elements. True while anything still moves. */
-export function stepSway(sw, dt, headE, torsoE) {
+/** Steps all three groups from the head's and the torso's world matrix elements. True while anything still moves.
+ * `wind` (#2110, optional): src/avatarwind.js' state, whose per-group targets the springs swing round. */
+export function stepSway(sw, dt, headE, torsoE, wind = null) {
   sw.head ??= {}; sw.torso ??= {};
   const hd = drive(sw.head, headE, dt), td = drive(sw.torso, torsoE, dt);
-  stepSpring(sw.hair, S.hair, dt, hd.a, hd.alpha);
-  stepSpring(sw.bun, S.bun, dt, hd.a, hd.alpha);
-  stepSpring(sw.hem, S.hem, dt, td.a, td.alpha);
+  stepSpring(sw.hair, S.hair, dt, hd.a, hd.alpha, wind?.hair);
+  stepSpring(sw.bun, S.bun, dt, hd.a, hd.alpha, wind?.bun);
+  stepSpring(sw.hem, S.hem, dt, td.a, td.alpha, wind?.hem);
   return true;
 }
 

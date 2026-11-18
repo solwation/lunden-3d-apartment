@@ -7217,6 +7217,15 @@ export const AVATAR_SWAY = { maxDt: 0.05, step: 1 / 120, accelMax: 30, accelFilt
   bun: { omega: 20, zeta: 0.25, gain: 0.8, r: 0.07, min: [-0.012, 0, -0.012], max: [0.012, 0.012, 0.012] },
   hem: { omega: 16, zeta: 0.4, gain: 1.0, r: 0.17, min: [-0.025, 0, -0.025], max: [0.025, 0, 0.025] },
   hairDepth: 0.22, bunRadius: [0.045, 0.07], hemFade: [0.0, 0.14] };
+// #2110: outdoor wind on the same springs (src/avatarwind.js). Per group the target offset (bone frame, m) is #2101's `siteWindOffset` (weather
+// power, gusts, side sway and card flutter; the avatar's position picks the phase) with `weight` m per unit oscillation, `flutter` m of the fast
+// flutter, `freq` rad/s, plus `steady` m straight downwind (hair hangs downwind on average), `lift` (share of the sideways size that also raises
+// hair, 0 for the hem); `max` m caps it (well inside AVATAR_SWAY's walls). `ease` s: the fade at a door, so stepping in/out never pops.
+// All *guesses* by eye: a calm clear breeze (power ~0.12) barely stirs the hair, a storm (1) swings it a few cm downwind.
+export const AVATAR_WIND = { ease: 0.8,
+  hair: { weight: 0.012, flutter: 0.006, freq: 2.4, steady: 0.008, lift: 0.35, max: 0.032, seed: 0.0 },
+  bun: { weight: 0.004, flutter: 0.002, freq: 2.9, steady: 0.002, lift: 0.3, max: 0.011, seed: 1.7 },
+  hem: { weight: 0.009, flutter: 0.004, freq: 2.0, steady: 0.006, lift: 0, max: 0.022, seed: 3.1 } };
 // #2036: the body flinches when a shot hits it (src/avatarhit.js). Each hit is one under-damped spring response (`hz` natural frequency,
 // `zeta` damping ratio < 1 so it overshoots once) scaled to its peak and faded to exactly 0 over `fade` [start, end] s; `lag` s delays the
 // part that follows (the head after a body hit, the torso after a head hit). Peaks in rad, bone-local: `pitch` about x (+ the top forward),
