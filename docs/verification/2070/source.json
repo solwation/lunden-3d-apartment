@@ -1,0 +1,18 @@
+{
+  "sourceCommit": "d37b0be271ed7cb4dddd89167b524eaba4660b37",
+  "baseline": "8111f1e3",
+  "sha256": {
+    "src/tilesurface.js": "201612a37234ea8906766848b455fbe73805973c2f83bfe619f2f6ee86b5cb59",
+    "src/interior.js": "9fe5bfb03af1e31a286a05496741cf930fb589f9b4152f7a9f4b74cee08610df",
+    "src/standardinterior.js": "278434e8bc023967b2c8a500bc1349c02ef9d2a340563df394923ccbe61f7269",
+    "src/config.js": "842d1bc39245b83556926475b4a355944ce114d5ceb50d7a83d14e1c65a1ba4b",
+    "tools/tilesurfacetest.mjs": "69e7e45259a99bfe6487b238e4b322bd71979033ee74c42b90f2abb708adc725",
+    "tools/tilesurface2070.html": "9696c56f9b2179d9d068bb3fda8e7db6d377ed526c8e1a8910f650b1625deb17",
+    "tools/tilesurface2070browser.cjs": "9bde9fbaf7f02c0f2c0ef13b33d567348eabce5af823eaf08d594af64f5741b6"
+  },
+  "additionalTextures": 7,
+  "additionalRgbaBytes": 1544000,
+  "additionalRgbaBytesWithFullMips": 2058192,
+  "retainedImages": "paired sheets plus normal-height kitchen/bathroom; raw before images removed before handoff",
+  "harnessNote": "favicon404 fixed before green run; output paths moved to before/ after green result without changing renders/product source"
+}

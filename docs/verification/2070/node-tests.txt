@@ -1,0 +1,11 @@
+✔ shallow joints follow 20x10 cm half-bond, including both texture edges (11.848268ms)
+✔ relief never follows the colour, seed, mottling or per-tile shade (5.967973ms)
+✔ no-joint surfaces remain flat, repeat deterministically and keep their roughness (5.80784ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 132.937494

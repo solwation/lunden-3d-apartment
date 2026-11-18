@@ -1,0 +1,367 @@
+{
+  "baseline": "8111f1e3",
+  "fixture": "Production buildInterior/buildStandardInterior with actual plan floor0/wall bounding boxes; controlled one directional + hemisphere, no full World or collision run",
+  "results": {
+    "before": {
+      "stats": [
+        {
+          "meshes": 322,
+          "triangles": 93998,
+          "materials": [
+            {
+              "repeat": [
+                2.5,
+                5
+              ],
+              "size": [
+                320,
+                160
+              ],
+              "surface": null,
+              "colorSha256": "ecca7042d5a1cc53c1612eda9135d5f27d1543f04e0b98db97de687faf9dbbd0"
+            },
+            {
+              "repeat": [
+                0.8333333333333334,
+                0.8333333333333334
+              ],
+              "size": [
+                360,
+                360
+              ],
+              "surface": null,
+              "colorSha256": "e8d8bd8793b6f28e7c7a9b796207b6db6421256bcb5be5de12dddc9e589113f0"
+            },
+            {
+              "repeat": [
+                1.6666666666666667,
+                1.6666666666666667
+              ],
+              "size": [
+                240,
+                240
+              ],
+              "surface": null,
+              "colorSha256": "f57e5924cb393f034562fc2dcf5eb6ed31159b204a6795e40f33edc3ef98f6fd"
+            },
+            {
+              "repeat": [
+                1.25,
+                1.6666666666666665
+              ],
+              "size": [
+                320,
+                240
+              ],
+              "surface": null,
+              "colorSha256": "913568d0dcbd0168b12fa8abc857eef96bd01de854c6bae7228cbc1c0e0782c6"
+            }
+          ]
+        },
+        {
+          "meshes": 45,
+          "triangles": 18032,
+          "materials": [
+            {
+              "repeat": [
+                2.5,
+                5
+              ],
+              "size": [
+                160,
+                80
+              ],
+              "surface": null,
+              "colorSha256": "39915642074c14b2734abbba5f701df074f3a8d485f84099b5bf15a4f046a73d"
+            },
+            {
+              "repeat": [
+                2.5,
+                2.5
+              ],
+              "size": [
+                160,
+                160
+              ],
+              "surface": null,
+              "colorSha256": "65c1047bb697d8719c33b99ecc79169132ade931158561587e04f3814a5b0d60"
+            },
+            {
+              "repeat": [
+                1.6666666666666665,
+                1.6666666666666665
+              ],
+              "size": [
+                180,
+                180
+              ],
+              "surface": null,
+              "colorSha256": "b5f8ef9bdea1a55fe09cb56505cc3de1cc12153e19f395edd752162b8cd095ff"
+            }
+          ]
+        }
+      ],
+      "views": {
+        "0-kitchen": {
+          "calls": 138,
+          "triangles": 24360
+        },
+        "0-splash": {
+          "calls": 39,
+          "triangles": 20778
+        },
+        "0-bathroom": {
+          "calls": 24,
+          "triangles": 15736
+        },
+        "0-wall": {
+          "calls": 15,
+          "triangles": 15364
+        },
+        "0-floor": {
+          "calls": 21,
+          "triangles": 15532
+        },
+        "1-splash": {
+          "calls": 21,
+          "triangles": 16664
+        },
+        "1-wall": {
+          "calls": 18,
+          "triangles": 16280
+        },
+        "1-floor": {
+          "calls": 18,
+          "triangles": 16400
+        }
+      },
+      "errors": []
+    },
+    "after": {
+      "stats": [
+        {
+          "meshes": 322,
+          "triangles": 93998,
+          "materials": [
+            {
+              "repeat": [
+                2.5,
+                5
+              ],
+              "size": [
+                320,
+                160
+              ],
+              "surface": {
+                "size": [
+                  320,
+                  160
+                ],
+                "repeat": [
+                  2.5,
+                  5
+                ],
+                "bytes": 204800,
+                "sameTexture": true,
+                "roughness": 1,
+                "bumpScale": 0.0008
+              },
+              "colorSha256": "4b66553eba7ef85fa0833b298ca7f981b09d9bc33db537cca8ba78a93b4b58d6"
+            },
+            {
+              "repeat": [
+                0.8333333333333334,
+                0.8333333333333334
+              ],
+              "size": [
+                360,
+                360
+              ],
+              "surface": {
+                "size": [
+                  360,
+                  360
+                ],
+                "repeat": [
+                  0.8333333333333334,
+                  0.8333333333333334
+                ],
+                "bytes": 518400,
+                "sameTexture": true,
+                "roughness": 1,
+                "bumpScale": 0.0008
+              },
+              "colorSha256": "5465c667b5e6a01f5131a23fc06d5b786311e0b1df2d789580353006b9e08002"
+            },
+            {
+              "repeat": [
+                1.6666666666666667,
+                1.6666666666666667
+              ],
+              "size": [
+                240,
+                240
+              ],
+              "surface": {
+                "size": [
+                  240,
+                  240
+                ],
+                "repeat": [
+                  1.6666666666666667,
+                  1.6666666666666667
+                ],
+                "bytes": 230400,
+                "sameTexture": true,
+                "roughness": 1,
+                "bumpScale": 0.0008
+              },
+              "colorSha256": "fd32ac6e25d7d1afe2cdce1c40e5d6471ae3b5bf4ad293a8a22238be4d2f6783"
+            },
+            {
+              "repeat": [
+                1.25,
+                1.6666666666666665
+              ],
+              "size": [
+                320,
+                240
+              ],
+              "surface": {
+                "size": [
+                  320,
+                  240
+                ],
+                "repeat": [
+                  1.25,
+                  1.6666666666666665
+                ],
+                "bytes": 307200,
+                "sameTexture": true,
+                "roughness": 1,
+                "bumpScale": 0.0008
+              },
+              "colorSha256": "63c0a826052c0675bacc29d213edad34ddf1b9fab466285ae9b7688435a41c78"
+            }
+          ]
+        },
+        {
+          "meshes": 45,
+          "triangles": 18032,
+          "materials": [
+            {
+              "repeat": [
+                2.5,
+                5
+              ],
+              "size": [
+                160,
+                80
+              ],
+              "surface": {
+                "size": [
+                  160,
+                  80
+                ],
+                "repeat": [
+                  2.5,
+                  5
+                ],
+                "bytes": 51200,
+                "sameTexture": true,
+                "roughness": 1,
+                "bumpScale": 0.0008
+              },
+              "colorSha256": "fa338ad04a1353354cf5ffe8444ebde23aa2fcdc1d03baf8a13388ccf6ef3f4f"
+            },
+            {
+              "repeat": [
+                2.5,
+                2.5
+              ],
+              "size": [
+                160,
+                160
+              ],
+              "surface": {
+                "size": [
+                  160,
+                  160
+                ],
+                "repeat": [
+                  2.5,
+                  2.5
+                ],
+                "bytes": 102400,
+                "sameTexture": true,
+                "roughness": 1,
+                "bumpScale": 0.0008
+              },
+              "colorSha256": "e0137a8e0e9056efe5cc1b5226c4d308769f69c4672ba8def22bfb6a990c3acc"
+            },
+            {
+              "repeat": [
+                1.6666666666666665,
+                1.6666666666666665
+              ],
+              "size": [
+                180,
+                180
+              ],
+              "surface": {
+                "size": [
+                  180,
+                  180
+                ],
+                "repeat": [
+                  1.6666666666666665,
+                  1.6666666666666665
+                ],
+                "bytes": 129600,
+                "sameTexture": true,
+                "roughness": 1,
+                "bumpScale": 0.0008
+              },
+              "colorSha256": "c23521819c228e1371fe4f103a5aa0d941773f6645bf33d066c7fce53939785b"
+            }
+          ]
+        }
+      ],
+      "views": {
+        "0-kitchen": {
+          "calls": 138,
+          "triangles": 24360
+        },
+        "0-splash": {
+          "calls": 39,
+          "triangles": 20778
+        },
+        "0-bathroom": {
+          "calls": 24,
+          "triangles": 15736
+        },
+        "0-wall": {
+          "calls": 15,
+          "triangles": 15364
+        },
+        "0-floor": {
+          "calls": 21,
+          "triangles": 15532
+        },
+        "1-splash": {
+          "calls": 21,
+          "triangles": 16664
+        },
+        "1-wall": {
+          "calls": 18,
+          "triangles": 16280
+        },
+        "1-floor": {
+          "calls": 18,
+          "triangles": 16400
+        }
+      },
+      "errors": []
+    }
+  }
+}
