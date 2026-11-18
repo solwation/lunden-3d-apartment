@@ -2,6 +2,7 @@
 // Patches three's real MeshStandardMaterial sources, checks the anchors, that positions stay native, that the patch is
 // static (no uniforms/time) and that every railing consumer uses it on the same geometry calls as before.
 import test from 'node:test'; import assert from 'node:assert/strict'; import { readFileSync } from 'node:fs';
+const unwrapSnowCap = (s) => { for (let i = s.indexOf('snowCap('); i >= 0; i = s.indexOf('snowCap(')) { let d = 0, j = i + 7; for (; j < s.length; j++) { if (s[j] === '(') d++; else if (s[j] === ')' && --d === 0) break; } s = s.slice(0, i) + s.slice(i + 8, j) + s.slice(j + 1); } return s; }; // #2123 wraps materials in snowCap(...): check the material inside
 import { register } from 'node:module'; import { pathToFileURL } from 'node:url';
 if (!process.env.THREE_DIR) { console.log('# skip: THREE_DIR not set'); process.exit(0); }
 const root = pathToFileURL(process.env.THREE_DIR + '/').href;
@@ -38,7 +39,7 @@ test('material: one program key, fragment-only audit, mixed batch keeps its roug
 });
 
 test('consumers: every outdoor railing material, same geometry pushes as before', () => {
-  const src = (f) => readFileSync(`src/${f}`, 'utf8');
+  const src = (f) => unwrapSnowCap(readFileSync(`src/${f}`, 'utf8'));
   const ex = src('exterior.js'), su = src('surroundings.js'), bs = src('busstop.js');
   assert.match(ex, /add\(rails, railMetal\(/); assert.match(ex, /terraceRailMaterial = railMetal\(/);
   assert.match(su, /lightRail = railMetal\(/); assert.equal((su.match(/railMetal\(new THREE\.MeshStandardMaterial\(\{ map: railTexture\(\)/g) ?? []).length, 2);
