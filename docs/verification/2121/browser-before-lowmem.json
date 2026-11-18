@@ -1,0 +1,32 @@
+{
+ "phase": "before",
+ "rev": "HEAD",
+ "lowmem": true,
+ "shots": [
+  {
+   "name": "street",
+   "at": "-15,-25.6,90,-14",
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/d2121/before-lowmem-street.png",
+   "calls": 134,
+   "triangles": 673845,
+   "textures": 43,
+   "geometries": 150,
+   "programs": 74,
+   "drains": null,
+   "quality": 0
+  },
+  {
+   "name": "courtyard",
+   "at": "-27.5,20.4,0,-48",
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/d2121/before-lowmem-courtyard.png",
+   "calls": 89,
+   "triangles": 522460,
+   "textures": 38,
+   "geometries": 145,
+   "programs": 66,
+   "drains": null,
+   "quality": 0
+  }
+ ],
+ "errors": []
+}

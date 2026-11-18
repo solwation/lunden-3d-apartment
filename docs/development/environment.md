@@ -92,6 +92,12 @@ src/street.js          Sankt Lars väg's details (SITE.street, #128): curbs (alo
                        the ground under each head, `lamps.pool`, one merged additive mesh from groundglow.js, fading with dusk), zebra crossing, cobbles, autumn leaves; ordinary bus-stop boards on the two existing pole sites (#1843),
                        a no-parking sign and HepCat's A-board (#129); #1534: the bus shelter's concrete
                        slabs (`shelterPaving`, clipped at the curb along the bend), timetable pillar and the boulder at the wall's end (#1702) in the curbs' batch
+src/drains.js          #2121: cast-iron covers (STREET_DRAINS, every place *guess*): round manhole covers on the centre line of Sankt Lars väg and
+                       Karpvägen, gully grates in the gutter against a kerb on both sides, three small grates on courtyard walks; moved along
+                       or dropped where they would touch a repair patch, a crossing, the island, another road or a kerb-less mouth. Flat
+                       layers a few mm over each vertex's ground in ONE vertex-coloured mesh in street.js' group (no texture, no collision,
+                       hidden in the snow months); #2099 wet 'paint' patch on desktop; on phones no wet patch, so it reuses an existing program (#2118).
+                       Test: `node --test tools/drainstest.mjs`; browser: `tools/drains2121browser.cjs`.
 src/schoolwall.js      the school wall's plan (#126, #1534): wall, shelter gable + back wall boxes (the back wall continues east, #1702), roof, post, bench, bin, downpipe, plate, cabinet, boulder from
                        SITE.school.wall; shared by surroundings.js `schoolGrounds` (drawing + roof walk), street.js and farwalk.js
 src/streetsigns.js     street name signs (SITE.streetSigns, #583): a pole per junction of two differently named streets and at the two

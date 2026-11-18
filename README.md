@@ -4,6 +4,8 @@ På hösten ligger nedfallna löv i höstens färger glest på gräs och gångar
 
 Gatorna ser använda ut: svagt mörkare och blankare hjulspår, enstaka smala sprickor (några tätade med svart bitumen), sprickor längs vägkanten, mörkare lagningar och övergångsställets vita fält slitna där hjulen går. [Före/efter gata, korsning och regn](docs/verification/2103/README.md).
 
+Gatorna har runda gjutjärnslock mitt i körbanan och dagvattengaller i rännstenen längs kantstenen, och gårdens gångar några små galler; de blir mörka och blanka i regn med resten av gatan. [Före/efter gata, gård och regn](docs/verification/2121/README.md).
+
 Gatlyktorna har en mjuk varm gloria runt lamphuvudet på natten och en ljusare ljuspöl rakt under, lite starkare på blöt gata. [Före/efter nära och på avstånd](docs/verification/2104/README.md).
 
 Vindens riktning och styrka följer det riktiga vädret (Open-Meteo) bakåt i tiden och prognosen några dagar framåt, och slumpas därefter efter årstid (mest sydväst–väst, blåsigare på vintern); träden, regnet, snön, molnskuggorna och avatarernas hår följer samma vind. [Före/efter och kontroller](docs/verification/2117/README.md).

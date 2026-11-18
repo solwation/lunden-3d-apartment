@@ -1,0 +1,81 @@
+{
+ "phase": "before",
+ "rev": "HEAD",
+ "lowmem": false,
+ "shots": [
+  {
+   "name": "street",
+   "at": "-15,-25.6,90,-14",
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/d2121/before-street.png",
+   "calls": 148,
+   "triangles": 677795,
+   "textures": 43,
+   "geometries": 161,
+   "programs": 74,
+   "drains": null,
+   "quality": 0
+  },
+  {
+   "name": "manhole",
+   "at": "-21.6,-27,90,-50",
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/d2121/before-manhole.png",
+   "calls": 54,
+   "triangles": 379623,
+   "textures": 30,
+   "geometries": 92,
+   "programs": 51,
+   "drains": null,
+   "quality": 0
+  },
+  {
+   "name": "gully",
+   "at": "-11.8,-29.2,90,-45",
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/d2121/before-gully.png",
+   "calls": 68,
+   "triangles": 404879,
+   "textures": 33,
+   "geometries": 99,
+   "programs": 56,
+   "drains": null,
+   "quality": 0
+  },
+  {
+   "name": "karpvagen",
+   "at": "-75,-14,180,-16",
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/d2121/before-karpvagen.png",
+   "calls": 162,
+   "triangles": 664629,
+   "textures": 51,
+   "geometries": 178,
+   "programs": 77,
+   "drains": null,
+   "quality": 0
+  },
+  {
+   "name": "courtyard",
+   "at": "-27.5,20.4,0,-48",
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/d2121/before-courtyard.png",
+   "calls": 87,
+   "triangles": 463805,
+   "textures": 36,
+   "geometries": 192,
+   "programs": 62,
+   "drains": null,
+   "quality": 0
+  },
+  {
+   "name": "rain-street",
+   "at": "-15,-25.6,90,-14",
+   "weather": "rain",
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/d2121/before-rain-street.png",
+   "calls": 149,
+   "triangles": 677795,
+   "textures": 43,
+   "geometries": 162,
+   "programs": 75,
+   "drains": null,
+   "quality": 0
+  }
+ ],
+ "errors": []
+}

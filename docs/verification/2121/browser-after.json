@@ -1,0 +1,105 @@
+{
+ "phase": "after",
+ "rev": "HEAD~1",
+ "lowmem": false,
+ "shots": [
+  {
+   "name": "street",
+   "at": "-15,-25.6,90,-14",
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/d2121/after-street.png",
+   "calls": 149,
+   "triangles": 680359,
+   "textures": 43,
+   "geometries": 162,
+   "programs": 75,
+   "drains": {
+    "triangles": 2564,
+    "visible": true,
+    "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}|wet2099-paint|litter2105-paint|lampwashV|lampwash"
+   },
+   "quality": 0
+  },
+  {
+   "name": "manhole",
+   "at": "-21.6,-27,90,-50",
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/d2121/after-manhole.png",
+   "calls": 55,
+   "triangles": 382187,
+   "textures": 30,
+   "geometries": 93,
+   "programs": 52,
+   "drains": {
+    "triangles": 2564,
+    "visible": true,
+    "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}|wet2099-paint|litter2105-paint|lampwashV|lampwash"
+   },
+   "quality": 0
+  },
+  {
+   "name": "gully",
+   "at": "-11.8,-29.2,90,-45",
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/d2121/after-gully.png",
+   "calls": 69,
+   "triangles": 407443,
+   "textures": 33,
+   "geometries": 100,
+   "programs": 57,
+   "drains": {
+    "triangles": 2564,
+    "visible": true,
+    "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}|wet2099-paint|litter2105-paint|lampwashV|lampwash"
+   },
+   "quality": 0
+  },
+  {
+   "name": "karpvagen",
+   "at": "-75,-14,180,-16",
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/d2121/after-karpvagen.png",
+   "calls": 162,
+   "triangles": 665965,
+   "textures": 50,
+   "geometries": 178,
+   "programs": 78,
+   "drains": {
+    "triangles": 2564,
+    "visible": true,
+    "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}|wet2099-paint|litter2105-paint|lampwashV|lampwash"
+   },
+   "quality": 0
+  },
+  {
+   "name": "courtyard",
+   "at": "-27.5,20.4,0,-48",
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/d2121/after-courtyard.png",
+   "calls": 88,
+   "triangles": 466369,
+   "textures": 36,
+   "geometries": 193,
+   "programs": 63,
+   "drains": {
+    "triangles": 2564,
+    "visible": true,
+    "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}|wet2099-paint|litter2105-paint|lampwashV|lampwash"
+   },
+   "quality": 0
+  },
+  {
+   "name": "rain-street",
+   "at": "-15,-25.6,90,-14",
+   "weather": "rain",
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/d2121/after-rain-street.png",
+   "calls": 150,
+   "triangles": 680359,
+   "textures": 43,
+   "geometries": 163,
+   "programs": 76,
+   "drains": {
+    "triangles": 2564,
+    "visible": true,
+    "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}|wet2099-paint|litter2105-paint|lampwashV|lampwash"
+   },
+   "quality": 0
+  }
+ ],
+ "errors": []
+}

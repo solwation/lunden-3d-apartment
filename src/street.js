@@ -13,6 +13,7 @@ import { glowMaterial, poolGeometry, fadeGlow, fadeGlowWithFog } from './groundg
 import { buildLampHalos, fadeHalos, poolCore } from './lamphalo.js';
 import { schoolWallPlan } from './schoolwall.js';
 import { cabinetBodyParts } from './elcabinetbody.js';
+import { buildDrains } from './drains.js';
 
 // Sankt Lars väg's details (#128, SITE.street; the user's photos in docs/foton/): granite curbs, darker patches
 // in the asphalt, slender street lamps with a curved arm (their heads glow at night, and a soft pool of light lies on
@@ -204,6 +205,9 @@ export function buildStreet(groundY, pathGround = groundY, trees = []) {
     wetGround(patchMaterial(), 'asphalt'), false);
   asphaltUV(patches.geometry); patches.name = 'street-asphalt-patches';
   group.add(patches);
+  // #2121: manhole covers, gully grates by the kerbs and the courtyard's drain grates (one flat vertex-coloured mesh)
+  const roadGround = (x, z) => Math.max(groundY(x, z), pathGround(x, z));
+  group.add(buildDrains(roadGround, groundY));
   // zebra crossing: 50 cm white bars along the traffic, across the road
   const cr = S.crossing, bars = [];
   for (let z = cr.z0 + 0.25; z + 0.5 <= cr.z1; z += 1.0) bars.push(flatRect(cr.x0, cr.x1, z, z + 0.5, 0.018));

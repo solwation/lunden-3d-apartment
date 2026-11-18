@@ -1,0 +1,40 @@
+{
+ "phase": "after",
+ "rev": "HEAD~1",
+ "lowmem": true,
+ "shots": [
+  {
+   "name": "street",
+   "at": "-15,-25.6,90,-14",
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/d2121/after-lowmem-street.png",
+   "calls": 135,
+   "triangles": 676409,
+   "textures": 43,
+   "geometries": 151,
+   "programs": 74,
+   "drains": {
+    "triangles": 2564,
+    "visible": true,
+    "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}|lampwashV|lampwash"
+   },
+   "quality": 0
+  },
+  {
+   "name": "courtyard",
+   "at": "-27.5,20.4,0,-48",
+   "file": "/tmp/claude-0/-home-user/347b2560-9624-539f-b902-68164fbdc926/scratchpad/d2121/after-lowmem-courtyard.png",
+   "calls": 90,
+   "triangles": 525024,
+   "textures": 38,
+   "geometries": 146,
+   "programs": 66,
+   "drains": {
+    "triangles": 2564,
+    "visible": true,
+    "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}|lampwashV|lampwash"
+   },
+   "quality": 0
+  }
+ ],
+ "errors": []
+}

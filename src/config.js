@@ -5205,6 +5205,29 @@ export const STREET_WEAR = {
   patch: { tone: 0.62, roughness: 0.75 }, // tone (linear) ≈ the old flat patch grey 0x45484b over the asphalt's 0x5d5f61
 };
 
+// #2121: cast-iron covers in the local streets and the courtyard (src/drains.js), flat geometry lying on the existing surfaces in one
+// merged vertex-coloured mesh (one draw, no texture, no collision). Every size, colour, spacing and place is a *guess* (no drainage
+// drawing): round manhole covers (`manhole`: cover radius `r`, a dark frame `rim` m wide round a `gap`, raised studs on a `cell` m
+// grid) down the middle of the carriageway every `manholeStep` m; gully grates in the gutter (`gully`: `along` × `across` m, a
+// `frame`, `bars` slots across the gutter) against the kerb every `gullyStep` m on both sides (the far side `gullyPhase` of a
+// step later); small square grates on three courtyard walks (`yard`: [x, z, yaw°]). A cover whose spot would touch a repair
+// patch, a crossing or the island (`clear` m apart) or leaves its road moves along by the first free `shifts` m, else is
+// dropped. `lift`: m over the road's ground (the asphalt lies 0.012 up, patches 0.016, zebra 0.018); `step`: the raised layer.
+export const STREET_DRAINS = {
+  rows: [
+    { road: 'Sankt Lars väg', from: [-74, -27], to: [25.5, 92], manholeStep: 34, gullyStep: 22, gullyPhase: 0.5, across: 0 },
+    { road: 'Karpvägen', from: [-75.8, -20], to: [-79.5, 48], manholeStep: 34, gullyStep: 22, gullyPhase: 0.5, across: 0 },
+  ],
+  manhole: { r: 0.31, gap: 0.01, rim: 0.07, cell: 0.06, stud: 0.55, edge: 0.03, segs: 24 },
+  gully: { along: 0.56, across: 0.36, frame: 0.04, bars: 7, bar: 0.032, kerbGap: 0.02 },
+  yard: { size: 0.32, frame: 0.03, bars: 5, bar: 0.026, at: [[-27.5, 18.5, 0], [-34.5, 30.5, 0], [-45.9, 36, 90]] },
+  clear: 0.4, shifts: [1.5, -1.5, 3, -3, 4.5, -4.5],
+  lift: 0.019, yardLift: 0.009, step: 0.003,
+  // sRGB: frame / cover / raised studs and bars (worn bright) / the dark slots
+  colors: { rim: 0x26272a, cover: 0x3b3c3e, raised: 0x5a5b5e, bars: 0x4b4c4f, hole: 0x0c0c0d },
+  roughness: 0.5, metalness: 0.45,
+};
+
 // #2074: artistic surface assumptions for the existing 40 cm patio slabs, not surveyed concrete profiles.
 export const PAVING_SURFACE = {
   ppm: 160, slabs: 6, depth: 0.0015, bevel: 0.002, minBevelPixels: 1.25,
