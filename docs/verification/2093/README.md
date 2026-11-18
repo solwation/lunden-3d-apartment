@@ -16,12 +16,14 @@ från takplanen (#348, avsiktlig). Ej påverkade (syns oförändrade i bilderna 
 
 | Vy | Före | Efter |
 |---|---|---|
-| Hus L ovanifrån, sommar | ![](before/tak-L-ovan-sommar.jpg) | ![](tak-L-ovan-sommar.jpg) |
-| Hus L ovanifrån, vinter | ![](before/tak-L-ovan-vinter.jpg) | ![](tak-L-ovan-vinter.jpg) |
-| På taket mot öster, sommar | ![](before/tak-L-sommar.jpg) | ![](tak-L-sommar.jpg) |
-| På taket mot öster, vinter | ![](before/tak-L-vinter.jpg) | ![](tak-L-vinter.jpg) |
+| Hus L ovanifrån, sommar | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/9da798a2ef81f6a1c6e8e80a9c084c8af9448e9c/docs/verification/2093/before/tak-L-ovan-sommar.jpg) | ![](tak-L-ovan-sommar.jpg) |
+| Hus L ovanifrån, vinter | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/9da798a2ef81f6a1c6e8e80a9c084c8af9448e9c/docs/verification/2093/before/tak-L-ovan-vinter.jpg) | ![](tak-L-ovan-vinter.jpg) |
+| På taket mot öster, sommar | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/9da798a2ef81f6a1c6e8e80a9c084c8af9448e9c/docs/verification/2093/before/tak-L-sommar.jpg) | ![](tak-L-sommar.jpg) |
+| På taket mot öster, vinter | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/9da798a2ef81f6a1c6e8e80a9c084c8af9448e9c/docs/verification/2093/before/tak-L-vinter.jpg) | ![](tak-L-vinter.jpg) |
 
 Körning: `THREE_DIR=… BASE_REV=9a35a62 VIEWS='{"tak-L":[-38,5.5,-90,-18,12.75],"tak-L-ovan":[-15,-9,180,-42,26]}'
 node tools/roofsurface2088browser.cjs http://127.0.0.1:8293 <ut>` (1280×800, inga sidfel; `browser.json`).
 Tester: `node --test tools/roofcapping2093test.mjs` (2/2, takpapp synlig på 93,3 % av ytan),
 `node --test tools/roofsurfacetest.mjs` (4/4; dess proveniensvakt jämför nu #2088:s egen commit 0c5f4a5).
+
+Publicering: Pages/Worker success på `9da798a`; före-bilder borttagna vid stängning och visas från den commiten.
