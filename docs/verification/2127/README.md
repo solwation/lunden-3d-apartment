@@ -8,7 +8,7 @@ Zoey grazes (front, white), Princess stands (behind, bay); the wind comes from t
 
 Before (base `77796e26`, `src/paddock.js` of that revision served by the harness): only the idle clip's tail sway on the standing pony.
 
-![before](before/sequence.jpg)
+![before](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/09d773af91396f626dfed510fbca122b9fcc2abb/docs/verification/2127/before/sequence.jpg)
 
 After: both tails blow left in the gusting site wind and lag as a chain, Princess swats a fly (frames 7–8), ears turn, the bodies
 roll slightly as the weight shifts, Zoey chews with her head down.
@@ -52,3 +52,5 @@ unpatched shader (the mane's few cm of wind are not in the shadow). `src/ponymot
 - The mane offset is in bind space, so with the neck down it partly turns into a vertical lift rather than sideways.
 - The fallback instanced pony (shown only until the GLB loads) gets the roll and the tail wind/swat, not ears/chewing/mane.
 - No real-device (phone) run; the phone profile gets the same single program.
+
+Publicering: Pages/Worker success på `09d773a`; före-bilder borttagna vid stängning och visas från den commiten.
