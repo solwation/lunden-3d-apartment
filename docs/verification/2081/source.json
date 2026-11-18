@@ -1,0 +1,48 @@
+{
+  "baseline": "451e12ea1e82a220fc9934052c226cbfb6c1e71e",
+  "productCommit": "63275360aca19b98dc217110346ccc36c7f2f1b4",
+  "sha256": {
+    "src/barksurface.js": "337ff840bc8dc86a0f886a168e58fff0dfb89e5a81612d4297d795a62f9f0fe7",
+    "src/foliage.js": "bc0d0bc553898cee72115e1bfa28d017ab5fc514e01bf044fafb1839cb39cad1",
+    "src/config.js": "4c85f282d4cb9f62fcefc974cecfeb6770b9dac55881961296fc8339d0bde877",
+    "src/seasons.js": "a0398c24ce587b40be47ca552be3c7ce3bee900ef40ca7a74e48573f222476e7",
+    "src/lod.js": "191ed05a2ab1ec2ea5aa9f456518b9512b793921dcaf74803109eb42f8b0814b",
+    "src/surroundings.js": "8ec578f95641be1c2fff2c3c5509935e147f4345d75063ab819a114549baacdd",
+    "tools/barksurfacetest.mjs": "b654c38d6b9435a29cf8008b728ca89e3ea7420bec621760ae8c2d3985b2697e",
+    "tools/barksurface2081.html": "b568bbbed59944eae61bd63163f9e6d9253429cc4e0d227650afa28ca7c68236",
+    "tools/barksurface2081browser.cjs": "9d986c5a7ae473b2b1faf7bc3a3d74e8fe21549d3cb0c1414b94f3273a09003b",
+    "src/courtyard.js": "5a6022ebd647ee88972b68ab01a59dc57f6939b703b648e17b759b63cb972c7c",
+    "src/southbackdrop.js": "5e177d647b9229afd17ffeb2cfd279d191c2994fdb4a7ccc533c7f80c785c891",
+    "src/siteinstancebatch.js": "81bb72ae18b18d61d2f6b7581bbb407a126ebe43c679607773325d2e472a995f"
+  },
+  "preservation": {
+    "foliage.js": "byte-identical outside applyBarkSurface import and material wrapper",
+    "config.js": "byte-identical outside named BARK_SURFACE block",
+    "unchangedFiles": [
+      "src/seasons.js",
+      "src/lod.js",
+      "src/surroundings.js",
+      "src/courtyard.js",
+      "src/southbackdrop.js",
+      "src/siteinstancebatch.js"
+    ]
+  },
+  "checks": {
+    "nodePassed": 11,
+    "browserViews": 5,
+    "browserErrors": 0,
+    "browserPeakMiB": 697,
+    "syntaxAndDiff": "PASS"
+  },
+  "textures": {
+    "kinds": 2,
+    "each": [
+      64,
+      128
+    ],
+    "baseBytesEach": 32768,
+    "mipBytesEach": 43692,
+    "mipBytesTotal": 87384
+  },
+  "limits": "Bounded actual material/geometry/instancing/LOD/season consumers; no full World, device/FPS or full shadow sweep"
+}
