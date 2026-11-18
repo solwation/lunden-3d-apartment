@@ -91,3 +91,7 @@ PLAYWRIGHT_MODULE=/home/olof/github-dashboard/node_modules/playwright \
 The browser script routes the pinned Three.js URL to the existing local three-0.170.0
 cache; product source comes from the owned checkout. The conductor owns publishing the
 revision-pinned result images, actual main delivery, public follow-up and closure.
+
+## Integration and publication
+
+Accepted main source/images `75a21fdbe599186d738ab414b88e4b4c2c8cd4f0`; captured worker8ec71be4. Product/fixture source bytes match; captured full config hash is historical after unrelated constants. Every prior config/changelog byte preserved plus named LILY_SURFACE and changelog1603.9Node green again; source-bound browser reused. Pages44265137506 and Worker44265137431 success on exact revision; three images HTTP200 and embedded before closure: https://github.com/solwation/lunden-3d-apartment/issues/2073#issuecomment-6972956649. Final docs receipt triggers no deployment.
