@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE, SEASON, COLORS, DECAL_OFFSET, PADDOCK, GLASS_PANES } from './config.js';
 import { paneTints } from './glasspanes.js';
+import { roofMap, roofColor, roofUV } from './roofsurface.js';
 import { grassMeanColor } from './grass.js';
 import { pathStrip, cutAtTerrain } from './roads.js';
 import { registerTrees, registerSnow, registerSeasonal } from './seasons.js';
@@ -156,11 +157,12 @@ export function* southBackdropParts(ground){
  }
  if(S.yard&&!lowMemory)parts.land.push(...schoolyardParts(S.yard,farGround,null).map(g=>tint(g,g.userData.tint))); // #1805: clipped hedges along the hospital car parks (no lawns here: drape unused)
  yield .8;
- const mats={facade:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),roof:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),glass:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.7,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units}),land:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1,side:THREE.DoubleSide})};
+ const mats={facade:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),roof:new THREE.MeshStandardMaterial({map:roofMap(),color:roofColor(),vertexColors:true,roughness:.95,side:THREE.DoubleSide}),glass:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.7,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units}),land:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1,side:THREE.DoubleSide})};
  registerSnow(mats.roof,SEASON.snow.roof);registerSnow(mats.land,SEASON.snow.ground);
  parts.glass=paneTints(parts.glass,0x35444d,GLASS_PANES.far); // #2087: the old flat glass colour, calmly varied per pane
  registerSeasonal(month=>{const colored=!SEASON.snowMonths.includes(month);if(mats.land.vertexColors!==colored){mats.land.vertexColors=colored;mats.land.needsUpdate=true;}if(mats.roof.vertexColors!==colored){mats.roof.vertexColors=colored;mats.roof.needsUpdate=true;}}); // #1676: roofs carry vertex colours; snow months draw them white
  {const dc=new THREE.Color(S.roofColor);for(const g of parts.roof)if(!g.attributes.color){const n=g.attributes.position.count;g.setAttribute('color',new THREE.Float32BufferAttribute(Array.from({length:n},()=>[dc.r,dc.g,dc.b]).flat(),3));}} // nr 41's roof batch geometry keeps the shared roof colour
+ for(const g of parts.roof)roofUV(g,'metal'); // #2088: seams down each face's fall line (standing seam *guess*), shared roof map
  for(const[k,list]of Object.entries(parts)){if(!list.length)continue;const m=new THREE.Mesh(mergeGeometries(list),mats[k]);m.name='south-'+k;group.add(m);list.forEach(g=>g.dispose());}
  yield .9;
  for(const parts=leafAtlasParts();!parts.next().done;)yield .9; // the shared leaf atlas, drawn on first use: a long block of its own (#1133)

@@ -20,6 +20,7 @@ import { buildTerraceDecor } from './terracedecor.js';
 import { buildPatioDecor } from './patiodecor.js';
 import { lowMemory } from './lowmemory.js';
 import { brickSurfaceTexture } from './bricksurface.js';
+import { roofMap, roofColor, roofUV } from './roofsurface.js';
 
 // Brick: 250 × 65 mm + 10 mm joints → 0.26 m per brick, 0.075 m per course.
 const TILE_W = 1.04, TILE_H = 0.6; // one texture tile = 4 bricks × 8 courses
@@ -752,9 +753,9 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     for (const m of glows) doorGlow = fadeGlow(m, doorGlow, doorLit, m === glows[0] ? dt : 0, DL.fade, m.userData.peak);
     portikMat.color.lerpColors(portikOff, portikLit, doorGlow);
   };
-  const roofMat = new THREE.MeshStandardMaterial({ color: 0x4b5157, roughness: 0.9 });
+  const roofMat = new THREE.MeshStandardMaterial({ map: roofMap(), color: roofColor(0x4b5157), roughness: 0.9 }); // #2088: roofing-felt strips (flat: along x, *guess*)
   registerSnow(roofMat, SEASON.snow.roof);
-  add(roofs, roofMat);
+  add(roofs.map((g) => roofUV(g, 'felt')), roofMat);
   add(panels, solarPanelMaterial(), false);
   add(patios, mats.patio, false);
   // Whole source hedges retain their geometry/shadows; tighter native frustums avoid drawing distant runs.

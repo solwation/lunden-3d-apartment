@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE, SEASON, DECAL_OFFSET, PARKING_LOT, GLASS_PANES } from './config.js';
 import { pathStrip, onRoad, onWalk, cutAtTerrain, vehicleTrim, isVehicleWay } from './roads.js';
 import { registerSnow, registerSeasonal } from './seasons.js';
-import { buildSchoolFacade, schoolTextures, schoolRoofTint } from './schoolfacade.js';
+import { buildSchoolFacade, schoolTextures, schoolRoofTint, SCHOOL_ROOF_LEVEL } from './schoolfacade.js';
 import { buildCampusFacade } from './campusfacades.js';
 import { TowerClock } from './towerclock.js';
 import { lowMemory } from './lowmemory.js';
@@ -16,6 +16,7 @@ import { buildNordicGymSign } from './nordicgymsign.js';
 import { schoolyardParts } from './schoolyard.js';
 import { grassMaterial, grassUV } from './grass.js';
 import { paneTints } from './glasspanes.js';
+import { roofMap, roofColor, roofUV } from './roofsurface.js';
 const W=SITE.west;
 const PAVE_MESH=4, PAVE_LIFT=.03; // m: #1305, paved/gravel polygons (school yards, squares) are cut into triangles no longer than PAVE_MESH and lie PAVE_LIFT higher, so they stay on the sloping terrain whose own triangles differ (*guess*)
 const PAVE_CUT=100; // m: #1310, with the terrain's grid the paving is cut along the terrain's own lines (cutAtTerrain) instead of into PAVE_MESH triangles: it lies on the ground exactly and needs far fewer triangles
@@ -153,7 +154,7 @@ const parts={facade:[],roof:[],glass:[],access:[],...(brick||W.buildings.some(b=
   else{const pl=drape(p.polygon,PAVE_LIFT);pl.userData.tint=surfColor;parts.access.push(pl);if(p.yard)parts.access.push(...schoolyardParts(p.yard,ground,drape));} // #1737: a yard's lawn, sand, hedges and play frames join the same batch
  }
  if(key==='east')eastLotParts(ground,parts.access,p=>p.color??(p.surface==='asphalt'?0x5f6164:p.surface==='gravel'?0xb5ac90:0xa7a397));
- const mats={facade:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),roof:new THREE.MeshStandardMaterial({color:W.roof,roughness:.85,side:THREE.DoubleSide}),glass:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.3,metalness:.25,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units}),access:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units})}; // #1309: paths/asphalt wear the decal depth bias too, so a coarse sample cannot sink under a terrain crease as green slivers (same as kvarteret-lunden#70)
+ const mats={facade:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),roof:new THREE.MeshStandardMaterial({map:roofMap(),color:roofColor(W.roof),roughness:.85,side:THREE.DoubleSide}),glass:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.3,metalness:.25,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units}),access:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:DECAL_OFFSET.factor,polygonOffsetUnits:DECAL_OFFSET.units})}; // #1309: paths/asphalt wear the decal depth bias too, so a coarse sample cannot sink under a terrain crease as green slivers (same as kvarteret-lunden#70)
  // #1813: actual lawns use the same world-metre grass detail, autumn tint and snow as the surrounding terrain.
  // Keep their already-draped triangles/lifts intact; sand, play pads and every other school part stay in access.
  const lawns=parts.access.filter(g=>g.userData.schoolLawn);
@@ -162,14 +163,16 @@ const parts={facade:[],roof:[],glass:[],access:[],...(brick||W.buildings.some(b=
  if(brick)mats.facade.map=brick;
  if(parts.modern){mats.modern=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide});}
  if(parts.schoolGlass)mats.schoolGlass=reflectiveGlass;
- if(parts.karpBrick){mats.karpBrick=new THREE.MeshStandardMaterial({map:karpBrickTexture(),roughness:.95,side:THREE.DoubleSide});mats.karpGlass=karp.glass;mats.karpRoof=new THREE.MeshStandardMaterial({color:W.karp.colors.roof,roughness:.9,side:THREE.DoubleSide});registerSnow(mats.karpRoof,SEASON.snow.roof);}
- if(parts.schoolBrick){const maps=schoolTextures();mats.schoolBrick=new THREE.MeshStandardMaterial({map:maps.brick,vertexColors:true,roughness:.95,side:THREE.DoubleSide});mats.schoolRoof=new THREE.MeshStandardMaterial({map:maps.roof,vertexColors:true,roughness:.65,side:THREE.DoubleSide});registerSnow(mats.schoolRoof,SEASON.snow.roof);
+ if(parts.karpBrick){mats.karpBrick=new THREE.MeshStandardMaterial({map:karpBrickTexture(),roughness:.95,side:THREE.DoubleSide});mats.karpGlass=karp.glass;mats.karpRoof=new THREE.MeshStandardMaterial({map:roofMap(),color:roofColor(W.karp.colors.roof),roughness:.9,side:THREE.DoubleSide});registerSnow(mats.karpRoof,SEASON.snow.roof);}
+ if(parts.schoolBrick){const maps=schoolTextures();mats.schoolBrick=new THREE.MeshStandardMaterial({map:maps.brick,vertexColors:true,roughness:.95,side:THREE.DoubleSide});mats.schoolRoof=new THREE.MeshStandardMaterial({map:roofMap(),color:roofColor(0xffffff,SCHOOL_ROOF_LEVEL),vertexColors:true,roughness:.65,side:THREE.DoubleSide});registerSnow(mats.schoolRoof,SEASON.snow.roof);
   // #1679: snow-covered roofs stay white rather than taking the blue-grey roof tint (same toggle as busstop.js).
   const roofMat=mats.schoolRoof;registerSeasonal(month=>{const colored=!SEASON.snowMonths.includes(month);if(roofMat.vertexColors!==colored){roofMat.vertexColors=colored;roofMat.needsUpdate=true;}});}
  registerSnow(mats.roof,SEASON.snow.roof);registerSnow(mats.access,SEASON.snow.paving);
  // #2087: window panes vary calmly per pane (vertex colour); tinted frames/units in the brick glass batch keep their colour
  parts.glass=parts.glass.map(g=>brick&&(g.attributes.color||g.userData.tint!==undefined)?g:paneTints([g],W.glass,GLASS_PANES.far)[0]);
  for(const k of ['schoolGlass','karpGlass'])if(parts[k])parts[k]=paneTints(parts[k]); // neighborGlass() multiplies the colour
+ // #2088: the shared roof map's seams follow each roof face's fall line (startup-only UVs; same geometry, batches and draws)
+ for(const k of['roof','schoolRoof','karpRoof'])for(const g of parts[k]??[])roofUV(g,k==='karpRoof'?'felt':'metal');
  for(const [k,list]of Object.entries(parts)){if(['facade','modern','schoolBrick','schoolRoof','access'].includes(k)||k==='glass'&&brick)for(const g of k==='modern'&&lodOn?[...list,...farModern]:list)if(!g.attributes.color){const c=new THREE.Color(g.userData.tint??(k==='schoolRoof'?schoolRoofTint():k==='access'?0xa7a397:k==='glass'?W.glass:k==='schoolBrick'?0xffffff:W.facade)),cols=Array.from({length:g.attributes.position.count},()=>[c.r,c.g,c.b]).flat();g.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));}if(!list.length)continue;for(const g of list)if(k==='schoolBrick'||k==='facade'&&brick){const uv=[],a=g.attributes.position,n=g.attributes.normal;for(let i=0;i<a.count;i++)uv.push((Math.abs(n.getX(i))>Math.abs(n.getZ(i))?a.getZ(i):a.getX(i))/2,a.getY(i)/2);g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));}
   // Native per-camera/shadow frusta see complete source groups; phones retain the original master batch.
   const ends=key==='east'&&k==='modern'&&!lowMemory?[0,...modernEnds,list.length]:[0,list.length];

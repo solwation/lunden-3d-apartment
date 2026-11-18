@@ -30,6 +30,7 @@ import { onRoad, onWalk, pathStrip, filletGeometry, vehicleTrim, facadeWalkGeome
 import { createParkingGrade, gradedCellTriangles, gradedCellPieces, fitDrawnPlane, clipConvex } from './parkinglot1442.js';
 import { wallLine, wallRect } from './roofs.js';
 import { buildingRoofWalk } from './buildingroofs.js';
+import { roofMap, roofColor, roofUV } from './roofsurface.js';
 import { schoolWallPlan } from './schoolwall.js';
 import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan,bridgeRecords,riverAt,waterYAt} from './riverbridge.js';
 
@@ -2052,8 +2053,8 @@ export function* surroundingsParts({ grass, husL = null }) {
       walk.surfaces.push({ id: `roof-${b.name}`, name: `${b.name}s tak`, x0: x - s2 / 2, x1: x + s2 / 2, z0: z - d2 / 2, z1: z + d2 / 2, y: vy }); // a vent hood: in the way, or climbed
       wallRect(walk.walls, x - s2 / 2, x + s2 / 2, z - d2 / 2, z + d2 / 2, eave, vy);
     }
-    return geos.map((g) => { g.deleteAttribute('uv'); return g; });
-  }), new THREE.MeshStandardMaterial({ color: 0x6d7175, roughness: 0.9, side: THREE.DoubleSide }), SEASON.snow.roof);
+    return geos.map((g) => roofUV(g, 'felt')); // #2088: roofing-felt strips down each hip's fall line (shared roof map)
+  }), new THREE.MeshStandardMaterial({ map: roofMap(), color: roofColor(0x6d7175), roughness: 0.9, side: THREE.DoubleSide }), SEASON.snow.roof);
   // details (#109, #146): a light grey metal edge round the flat roofs, grey downpipes at the corners and every ~12 m
   mesh(modern.map((b) => { // #348: as far out as the house's eaves, its top at the eave line
     const R = roofSpec(b), o = R.overhang, d = R.edge + 0.1;
@@ -2094,7 +2095,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   if (school.length || S.east) { // the school across the street, its wall and greenhouse (#126)
     const white = new THREE.MeshStandardMaterial({ color: 0xf1eee6, roughness: 0.8 });
     if(school.length){mesh(school.map(block), new THREE.MeshStandardMaterial({ map: schoolFacadeTexture(), roughness: 0.95 }));
-    mesh(school.map(roof), new THREE.MeshStandardMaterial({ color: 0x5c6369, roughness: 0.5, metalness: 0.15, side: THREE.DoubleSide }), SEASON.snow.roof);
+    mesh(school.map((b) => roofUV(roof(b))), new THREE.MeshStandardMaterial({ map: roofMap(), color: roofColor(0x5c6369), roughness: 0.5, metalness: 0.15, side: THREE.DoubleSide }), SEASON.snow.roof);
     mesh(school.flatMap((b) => [...quoins(b, S.school.storey), new THREE.BoxGeometry(b.x1 - b.x0 + 0.36, 0.32, b.z1 - b.z0 + 0.36)
       .translate((b.x0 + b.x1) / 2, b.base + S.school.storey - 0.16, (b.z0 + b.z1) / 2)]), white); // quoins + cornice
     }
@@ -2109,16 +2110,16 @@ export function* surroundingsParts({ grass, husL = null }) {
   }
   const hc = hepcat();
   if (hc) { // HepCat Store (#127, rebuilt from the photos in #1533: src/hepcat.js) and the long brick building behind it
-    const metal = new THREE.MeshStandardMaterial({ color: 0x2c3034, roughness: 0.6, metalness: 0.1, side: THREE.DoubleSide }); // black standing seam (#1533)
+    const metal = new THREE.MeshStandardMaterial({ map: roofMap(), color: roofColor(0x2c3034), roughness: 0.6, metalness: 0.1, side: THREE.DoubleSide }); // black standing seam (#1533)
     const skirts = [...side('hepcat'), ...side('hepcatWhite')].map(plinth).filter(Boolean).map(hepcatStone); // stone down the slope (#142)
     mesh([hc.walls, ...skirts], new THREE.MeshStandardMaterial({ map: hepcatTexture(), roughness: 0.95 })).name = 'hepcat-walls';
     mesh(side('longhouse').map(block), new THREE.MeshStandardMaterial({ map: sideFacadeTexture('longhouse'), roughness: 0.95 }));
-    mesh([hc.roof, ...side('longhouse').map(roof), ...dormers(side('longhouse'))], metal, SEASON.snow.roof).name = 'hepcat-roof';
+    mesh([hc.roof, ...side('longhouse').map(roof), ...dormers(side('longhouse'))].map((g) => roofUV(g)), metal, SEASON.snow.roof).name = 'hepcat-roof';
     mesh(hc.dark, new THREE.MeshStandardMaterial({ color: 0x2a2b2d, roughness: 0.8 })).name = 'hepcat-dark';
   }
   if (oldB.length) {
     mesh(oldB.map(block), new THREE.MeshStandardMaterial({ map: oldFacadeTexture(), roughness: 0.95 }));
-    mesh(oldB.map(roof), new THREE.MeshStandardMaterial({ color: 0x33383c, roughness: 0.7, metalness: 0.15, side: THREE.DoubleSide }), SEASON.snow.roof);
+    mesh(oldB.map((b) => roofUV(roof(b))), new THREE.MeshStandardMaterial({ map: roofMap(), color: roofColor(0x33383c), roughness: 0.7, metalness: 0.15, side: THREE.DoubleSide }), SEASON.snow.roof);
     mesh(oldB.map((b) => {
       const h = b.base + b.storeys * S.old.storey, o = 0.18;
       const g = new THREE.BoxGeometry(b.x1 - b.x0 + 2 * o, 0.32, b.z1 - b.z0 + 2 * o);

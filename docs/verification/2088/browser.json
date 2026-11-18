@@ -1,0 +1,1052 @@
+{
+ "base": "3e33c99799f638de3297fc5ff090045c4907465e",
+ "phases": {
+  "before": {
+   "summer": {
+    "meshes": 5017,
+    "roofs": {
+     "?/?": {
+      "vertices": 72,
+      "index": null,
+      "hash": -2141839070,
+      "uv": true,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "4b5157",
+      "box": [
+       [
+        -42,
+        12,
+        1
+       ],
+       [
+        12,
+        13,
+        13
+       ]
+      ]
+     },
+     "west-backdrop/west-roof": {
+      "vertices": 72,
+      "index": null,
+      "hash": 803517149,
+      "uv": false,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "4a5664",
+      "box": [
+       [
+        -159,
+        3,
+        -11
+       ],
+       [
+        -93,
+        15,
+        88
+       ]
+      ]
+     },
+     "west-backdrop/west-karpRoof": {
+      "vertices": 48,
+      "index": null,
+      "hash": 2135441441,
+      "uv": false,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "465263",
+      "box": [
+       [
+        -245,
+        9,
+        33
+       ],
+       [
+        -102,
+        14,
+        124
+       ]
+      ]
+     },
+     "east-backdrop/east-roof": {
+      "vertices": 399,
+      "index": null,
+      "hash": 874011538,
+      "uv": false,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "454c51",
+      "box": [
+       [
+        -246,
+        -2,
+        -367
+       ],
+       [
+        296,
+        17,
+        68
+       ]
+      ]
+     },
+     "east-backdrop/east-schoolRoof": {
+      "vertices": 23370,
+      "index": null,
+      "hash": 1680051123,
+      "uv": true,
+      "color": true,
+      "map": true,
+      "vertexColors": true,
+      "matColor": "ffffff",
+      "box": [
+       [
+        -78,
+        3,
+        -154
+       ],
+       [
+        166,
+        28,
+        26
+       ]
+      ]
+     },
+     "north-backdrop/north-roof": {
+      "vertices": 144,
+      "index": null,
+      "hash": 1113631501,
+      "uv": false,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "555b5e",
+      "box": [
+       [
+        -232,
+        13,
+        -188
+       ],
+       [
+        -33,
+        17,
+        -28
+       ]
+      ]
+     },
+     "south-backdrop/south-roof": {
+      "vertices": 5904,
+      "index": null,
+      "hash": -1755390381,
+      "uv": false,
+      "color": true,
+      "map": false,
+      "vertexColors": true,
+      "matColor": "ffffff",
+      "box": [
+       [
+        -228,
+        1,
+        162
+       ],
+       [
+        296,
+        22,
+        535
+       ]
+      ]
+     },
+     "?/?#7": {
+      "vertices": 594,
+      "index": null,
+      "hash": -286710303,
+      "uv": false,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "6d7175",
+      "box": [
+       [
+        -71,
+        9,
+        12
+       ],
+       [
+        10,
+        17,
+        58
+       ]
+      ]
+     },
+     "?/hepcat-roof": {
+      "vertices": 1329,
+      "index": null,
+      "hash": -136313329,
+      "uv": true,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "2c3034",
+      "box": [
+       [
+        28,
+        4,
+        -11
+       ],
+       [
+        37,
+        8,
+        10
+       ]
+      ]
+     },
+     "?/?#9": {
+      "vertices": 18,
+      "index": null,
+      "hash": -1134763288,
+      "uv": true,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "33383c",
+      "box": [
+       [
+        -63,
+        8,
+        67
+       ],
+       [
+        -47,
+        13,
+        84
+       ]
+      ]
+     }
+    }
+   },
+   "loadMs": 41172,
+   "views": {
+    "gata-sommar": {
+     "calls": 73,
+     "triangles": 438788,
+     "textures": 97,
+     "programs": 98,
+     "eye": [
+      3,
+      1.62,
+      -14
+     ]
+    },
+    "tak-A-sommar": {
+     "calls": 183,
+     "triangles": 678681,
+     "textures": 103,
+     "programs": 111,
+     "eye": [
+      -15,
+      14.82,
+      6
+     ]
+    },
+    "tak-C-sommar": {
+     "calls": 205,
+     "triangles": 676660,
+     "textures": 107,
+     "programs": 120,
+     "eye": [
+      -15,
+      14.82,
+      6
+     ]
+    },
+    "gata-vinter": {
+     "calls": 70,
+     "triangles": 403028,
+     "textures": 107,
+     "programs": 124,
+     "eye": [
+      3,
+      1.62,
+      -14
+     ]
+    },
+    "tak-A-vinter": {
+     "calls": 175,
+     "triangles": 605701,
+     "textures": 107,
+     "programs": 129,
+     "eye": [
+      -15,
+      14.82,
+      6
+     ]
+    },
+    "tak-C-vinter": {
+     "calls": 204,
+     "triangles": 636544,
+     "textures": 107,
+     "programs": 130,
+     "eye": [
+      -15,
+      14.82,
+      6
+     ]
+    }
+   },
+   "winter": {
+    "meshes": 5010,
+    "roofs": {
+     "?/?": {
+      "vertices": 72,
+      "index": null,
+      "hash": -2141839070,
+      "uv": true,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -42,
+        12,
+        1
+       ],
+       [
+        12,
+        13,
+        13
+       ]
+      ]
+     },
+     "west-backdrop/west-roof": {
+      "vertices": 72,
+      "index": null,
+      "hash": 803517149,
+      "uv": false,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -159,
+        3,
+        -11
+       ],
+       [
+        -93,
+        15,
+        88
+       ]
+      ]
+     },
+     "west-backdrop/west-karpRoof": {
+      "vertices": 48,
+      "index": null,
+      "hash": 2135441441,
+      "uv": false,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -245,
+        9,
+        33
+       ],
+       [
+        -102,
+        14,
+        124
+       ]
+      ]
+     },
+     "east-backdrop/east-roof": {
+      "vertices": 399,
+      "index": null,
+      "hash": 874011538,
+      "uv": false,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -246,
+        -2,
+        -367
+       ],
+       [
+        296,
+        17,
+        68
+       ]
+      ]
+     },
+     "east-backdrop/east-schoolRoof": {
+      "vertices": 23370,
+      "index": null,
+      "hash": 1680051123,
+      "uv": true,
+      "color": true,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -78,
+        3,
+        -154
+       ],
+       [
+        166,
+        28,
+        26
+       ]
+      ]
+     },
+     "north-backdrop/north-roof": {
+      "vertices": 144,
+      "index": null,
+      "hash": 1113631501,
+      "uv": false,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -232,
+        13,
+        -188
+       ],
+       [
+        -33,
+        17,
+        -28
+       ]
+      ]
+     },
+     "south-backdrop/south-roof": {
+      "vertices": 5904,
+      "index": null,
+      "hash": -1755390381,
+      "uv": false,
+      "color": true,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -228,
+        1,
+        162
+       ],
+       [
+        296,
+        22,
+        535
+       ]
+      ]
+     },
+     "?/?#7": {
+      "vertices": 594,
+      "index": null,
+      "hash": -286710303,
+      "uv": false,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -71,
+        9,
+        12
+       ],
+       [
+        10,
+        17,
+        58
+       ]
+      ]
+     },
+     "?/hepcat-roof": {
+      "vertices": 1329,
+      "index": null,
+      "hash": -136313329,
+      "uv": true,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        28,
+        4,
+        -11
+       ],
+       [
+        37,
+        8,
+        10
+       ]
+      ]
+     },
+     "?/?#9": {
+      "vertices": 18,
+      "index": null,
+      "hash": -1134763288,
+      "uv": true,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -63,
+        8,
+        67
+       ],
+       [
+        -47,
+        13,
+        84
+       ]
+      ]
+     }
+    }
+   }
+  },
+  "after": {
+   "summer": {
+    "meshes": 5017,
+    "roofs": {
+     "?/?": {
+      "vertices": 72,
+      "index": null,
+      "hash": -2141839070,
+      "uv": true,
+      "color": false,
+      "map": true,
+      "vertexColors": false,
+      "matColor": "616870",
+      "box": [
+       [
+        -42,
+        12,
+        1
+       ],
+       [
+        12,
+        13,
+        13
+       ]
+      ]
+     },
+     "west-backdrop/west-roof": {
+      "vertices": 72,
+      "index": null,
+      "hash": 803517149,
+      "uv": true,
+      "color": false,
+      "map": true,
+      "vertexColors": false,
+      "matColor": "5f6e80",
+      "box": [
+       [
+        -159,
+        3,
+        -11
+       ],
+       [
+        -93,
+        15,
+        88
+       ]
+      ]
+     },
+     "west-backdrop/west-karpRoof": {
+      "vertices": 48,
+      "index": null,
+      "hash": 2135441441,
+      "uv": true,
+      "color": false,
+      "map": true,
+      "vertexColors": false,
+      "matColor": "5a697e",
+      "box": [
+       [
+        -245,
+        9,
+        33
+       ],
+       [
+        -102,
+        14,
+        124
+       ]
+      ]
+     },
+     "east-backdrop/east-roof": {
+      "vertices": 399,
+      "index": null,
+      "hash": 874011538,
+      "uv": true,
+      "color": false,
+      "map": true,
+      "vertexColors": false,
+      "matColor": "596268",
+      "box": [
+       [
+        -246,
+        -2,
+        -367
+       ],
+       [
+        296,
+        17,
+        68
+       ]
+      ]
+     },
+     "east-backdrop/east-schoolRoof": {
+      "vertices": 23370,
+      "index": null,
+      "hash": 1680051123,
+      "uv": true,
+      "color": true,
+      "map": true,
+      "vertexColors": true,
+      "matColor": "fbfbfb",
+      "box": [
+       [
+        -78,
+        3,
+        -154
+       ],
+       [
+        166,
+        28,
+        26
+       ]
+      ]
+     },
+     "north-backdrop/north-roof": {
+      "vertices": 144,
+      "index": null,
+      "hash": 1113631501,
+      "uv": true,
+      "color": false,
+      "map": true,
+      "vertexColors": false,
+      "matColor": "6d7578",
+      "box": [
+       [
+        -232,
+        13,
+        -188
+       ],
+       [
+        -33,
+        17,
+        -28
+       ]
+      ]
+     },
+     "south-backdrop/south-roof": {
+      "vertices": 5904,
+      "index": null,
+      "hash": -1755390381,
+      "uv": true,
+      "color": true,
+      "map": true,
+      "vertexColors": true,
+      "matColor": "ffffff",
+      "box": [
+       [
+        -228,
+        1,
+        162
+       ],
+       [
+        296,
+        22,
+        535
+       ]
+      ]
+     },
+     "?/?#7": {
+      "vertices": 594,
+      "index": null,
+      "hash": -286710303,
+      "uv": true,
+      "color": false,
+      "map": true,
+      "vertexColors": false,
+      "matColor": "8b9095",
+      "box": [
+       [
+        -71,
+        9,
+        12
+       ],
+       [
+        10,
+        17,
+        58
+       ]
+      ]
+     },
+     "?/hepcat-roof": {
+      "vertices": 1329,
+      "index": null,
+      "hash": -136313329,
+      "uv": true,
+      "color": false,
+      "map": true,
+      "vertexColors": false,
+      "matColor": "3a3f44",
+      "box": [
+       [
+        28,
+        4,
+        -11
+       ],
+       [
+        37,
+        8,
+        10
+       ]
+      ]
+     },
+     "?/?#9": {
+      "vertices": 18,
+      "index": null,
+      "hash": -1134763288,
+      "uv": true,
+      "color": false,
+      "map": true,
+      "vertexColors": false,
+      "matColor": "43494e",
+      "box": [
+       [
+        -63,
+        8,
+        67
+       ],
+       [
+        -47,
+        13,
+        84
+       ]
+      ]
+     }
+    }
+   },
+   "loadMs": 43309,
+   "views": {
+    "gata-sommar": {
+     "calls": 73,
+     "triangles": 438788,
+     "textures": 98,
+     "programs": 98,
+     "eye": [
+      3,
+      1.62,
+      -14
+     ]
+    },
+    "tak-A-sommar": {
+     "calls": 182,
+     "triangles": 677453,
+     "textures": 102,
+     "programs": 111,
+     "eye": [
+      -15,
+      14.82,
+      6
+     ]
+    },
+    "tak-C-sommar": {
+     "calls": 205,
+     "triangles": 676660,
+     "textures": 106,
+     "programs": 120,
+     "eye": [
+      -15,
+      14.82,
+      6
+     ]
+    },
+    "gata-vinter": {
+     "calls": 70,
+     "triangles": 403028,
+     "textures": 106,
+     "programs": 124,
+     "eye": [
+      3,
+      1.62,
+      -14
+     ]
+    },
+    "tak-A-vinter": {
+     "calls": 175,
+     "triangles": 605701,
+     "textures": 106,
+     "programs": 128,
+     "eye": [
+      -15,
+      14.82,
+      6
+     ]
+    },
+    "tak-C-vinter": {
+     "calls": 204,
+     "triangles": 636544,
+     "textures": 106,
+     "programs": 130,
+     "eye": [
+      -15,
+      14.82,
+      6
+     ]
+    }
+   },
+   "winter": {
+    "meshes": 5011,
+    "roofs": {
+     "?/?": {
+      "vertices": 72,
+      "index": null,
+      "hash": -2141839070,
+      "uv": true,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -42,
+        12,
+        1
+       ],
+       [
+        12,
+        13,
+        13
+       ]
+      ]
+     },
+     "west-backdrop/west-roof": {
+      "vertices": 72,
+      "index": null,
+      "hash": 803517149,
+      "uv": true,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -159,
+        3,
+        -11
+       ],
+       [
+        -93,
+        15,
+        88
+       ]
+      ]
+     },
+     "west-backdrop/west-karpRoof": {
+      "vertices": 48,
+      "index": null,
+      "hash": 2135441441,
+      "uv": true,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -245,
+        9,
+        33
+       ],
+       [
+        -102,
+        14,
+        124
+       ]
+      ]
+     },
+     "east-backdrop/east-roof": {
+      "vertices": 399,
+      "index": null,
+      "hash": 874011538,
+      "uv": true,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -246,
+        -2,
+        -367
+       ],
+       [
+        296,
+        17,
+        68
+       ]
+      ]
+     },
+     "east-backdrop/east-schoolRoof": {
+      "vertices": 23370,
+      "index": null,
+      "hash": 1680051123,
+      "uv": true,
+      "color": true,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -78,
+        3,
+        -154
+       ],
+       [
+        166,
+        28,
+        26
+       ]
+      ]
+     },
+     "north-backdrop/north-roof": {
+      "vertices": 144,
+      "index": null,
+      "hash": 1113631501,
+      "uv": true,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -232,
+        13,
+        -188
+       ],
+       [
+        -33,
+        17,
+        -28
+       ]
+      ]
+     },
+     "south-backdrop/south-roof": {
+      "vertices": 5904,
+      "index": null,
+      "hash": -1755390381,
+      "uv": true,
+      "color": true,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -228,
+        1,
+        162
+       ],
+       [
+        296,
+        22,
+        535
+       ]
+      ]
+     },
+     "?/?#7": {
+      "vertices": 594,
+      "index": null,
+      "hash": -286710303,
+      "uv": true,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -71,
+        9,
+        12
+       ],
+       [
+        10,
+        17,
+        58
+       ]
+      ]
+     },
+     "?/hepcat-roof": {
+      "vertices": 1329,
+      "index": null,
+      "hash": -136313329,
+      "uv": true,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        28,
+        4,
+        -11
+       ],
+       [
+        37,
+        8,
+        10
+       ]
+      ]
+     },
+     "?/?#9": {
+      "vertices": 18,
+      "index": null,
+      "hash": -1134763288,
+      "uv": true,
+      "color": false,
+      "map": false,
+      "vertexColors": false,
+      "matColor": "f4f7fa",
+      "box": [
+       [
+        -63,
+        8,
+        67
+       ],
+       [
+        -47,
+        13,
+        84
+       ]
+      ]
+     }
+    }
+   }
+  }
+ },
+ "errors": [],
+ "external": [
+  "https://lunden-l1007.olw.workers.dev/beer-shelf",
+  "https://lunden-l1007.olw.workers.dev/beer-shelf"
+ ]
+}

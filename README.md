@@ -1,5 +1,7 @@
 # Kv. Lunden L1007 i 3D
 
+Taken har diskreta plåtfalsar eller takpappsvåder och en vädrad, ojämn matthet. [Före/efter sommar och vinter](docs/verification/2088/README.md).
+
 Räcken och ledstänger utomhus har en matt, lätt borstad metallyta som lugnar sig på avstånd. [Före/efter dag och skymning](docs/verification/2089/README.md).
 
 Gräsmattorna har mjuka torrare och frodigare fläckar och små tuvor i den delade gräskartan, med oförändrad medelfärg på håll. [Före/efter och kontroller](docs/verification/2086/README.md).

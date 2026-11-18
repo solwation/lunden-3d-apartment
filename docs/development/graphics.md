@@ -557,6 +557,15 @@ src/railmetal.js       #2089: matt, lightly brushed / powder-coated outdoor rail
                        draw, uniform, light or per-frame work; geometry, merging and batches unchanged. Indoor stair rails
                        (corehouse/stairs.js) and sheet-metal copings are not railings here. tools/railmetaltest.mjs;
                        [views](../verification/2089/README.md).
+src/roofsurface.js     #2088: one shared 128 px neutral-grey roof map (ROOF_SURFACE, *guess*): a raised seam per strip (dark
+                       shadow line, light lip), slightly different strips, weathering mottle and faint rain streaks, and
+                       `roofUV` baking UVs so the seams run down each triangle's own fall line (flat faces: along x, *guess*).
+                       metal = standing seam 0.6 m c/c (sitebackdrop roof/schoolRoof, southbackdrop roof, surroundings
+                       school/HepCat/old roofs), felt = 1 m roofing-felt strips (Å-husen A/B/C, Hus L, Karpvägen caps).
+                       Material colour = old colour / the map's linear mean (school batch: / the old seam map's mean), so the
+                       average and far mip-mapped colour stay; snow still drops the map (seasons.js) and the vertex-colour
+                       toggles are untouched. Replaces the school's 64 px seam map; geometry, walk surfaces and draws unchanged.
+                       tools/roofsurfacetest.mjs; [views](../verification/2088/README.md).
 src/visitlights.js     lamps of the visitable empty flats (#620): a ceiling lamp per room (a flat fitting in Kök / matplats, Badrum,
                        WC/dusch, Tvätt; a lamp outlet with a bare bulb on a cord elsewhere — VISIT_LIGHTS, *guess*, the brochure
                        says nothing), a switch by each room's door (lights.js `switchSpots` + `Switch`, `VISIT_LIGHTS.manual` /

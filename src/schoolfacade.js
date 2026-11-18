@@ -121,12 +121,16 @@ export function buildSchoolFacade(p, base, bottom, eave, parts, lite = lowMemory
 // #1679: the roof batch's seam texture is neutral grey so every roof's colour comes from its vertex tint (per building,
 // `SITE.east.roofColors`); a roof without a tint keeps the school's dark metal (`P.metal[0]`) through `schoolRoofTint()`.
 const ROOF_TEXTURE=['#c8c8c8','#7c7c7c','#ffffff'];
+// #2088: the old 64 px seam map's linear mean (61 columns ROOF_TEXTURE[0], two [1], one [2]); the shared roof map's material
+// colour is scaled to it, so the school/campus roofs keep their average colour and their tints.
+const lin = (hex) => new THREE.Color(hex).r;
+export const SCHOOL_ROOF_LEVEL = (61 * lin(ROOF_TEXTURE[0]) + 2 * lin(ROOF_TEXTURE[1]) + lin(ROOF_TEXTURE[2])) / 64;
 export function schoolRoofTint(hex = P.metal[0]) {
   const c = new THREE.Color(hex), base = new THREE.Color(ROOF_TEXTURE[0]);
   return new THREE.Color(Math.min(1, c.r / base.r), Math.min(1, c.g / base.g), Math.min(1, c.b / base.b));
 }
 
-/** Deterministic muted masonry and metal seams, each shared by the whole school. */
+/** Deterministic muted masonry, shared by the whole school. */
 export function schoolTextures() {
   const brick=document.createElement('canvas');brick.width=brick.height=256;const g=brick.getContext('2d');
   g.fillStyle=P.brick.mortar;g.fillRect(0,0,256,256);
@@ -135,8 +139,6 @@ export function schoolTextures() {
     const v=Math.floor(rand()*P.brick.variation);g.fillStyle=`rgb(${P.brick.base[0]+v},${P.brick.base[1]+v*.7},${P.brick.base[2]+v*.65})`;
     g.fillRect(col*32+(row%2)*16+1,row*16+1,30,14);
   }
-  const metal=document.createElement('canvas');metal.width=metal.height=64;const m=metal.getContext('2d');
-  m.fillStyle=ROOF_TEXTURE[0];m.fillRect(0,0,64,64);m.fillStyle=ROOF_TEXTURE[1];m.fillRect(0,0,2,64);m.fillStyle=ROOF_TEXTURE[2];m.fillRect(2,0,1,64);
   const make=c=>{const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;};
-  return {brick:make(brick),roof:make(metal)};
+  return {brick:make(brick)}; // #2088: the roof batch uses the shared roof map (src/roofsurface.js)
 }

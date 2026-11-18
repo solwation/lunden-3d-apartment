@@ -9682,3 +9682,15 @@ export const AVATAR_LIGHT = { reference: 4.4, sunShare: 0.6, minScene: 0.12, min
   // share on vertical / downward-facing surfaces; `chest`: m over the feet where the height above a lamp head starts to count;
   // `bollard`: the courtyard bollards' strength against a street lamp (low, small pools).
   lamp: { level: 0.12, rgb: [1, 0.578, 0.242], gain: 0.9, side: 0.6, under: 0.25, chest: 1.2, bollard: 0.4 } };
+
+// #2088: roof surface realism. One small shared neutral-grey map (`size` px square, `panels` roof strips across it) multiplies
+// every roof colour: a raised seam per strip (dark shadow line, light lip), slightly different strips, low-frequency weathering
+// mottle and faint rain streaks along the fall line. The materials' colour is scaled by 1 / the map's linear mean, so a roof's
+// average colour (and every far, mip-mapped view) stays what it was. `kinds`: m between seams across the fall line and m of
+// map along it. metal = standing-seam sheet (falsad plåt, the common 600 mm c/c; per roof *guess* unless a source says plåt),
+// felt = roofing-felt strips (takpapp, 1 m rolls; the Å-husen and Hus L, Peab's Q&A: papp). Seams follow each face's fall line
+// (from its own normal); a face flatter than `flat` (horizontal normal share) has no known fall and lays its strips along world
+// x (*guess*). `anisotropy`: sampling of the grazing walk-view angle. Numbers are visual *guess* values tuned on screenshots.
+export const ROOF_SURFACE = { size: 128, panels: 8, seed: 2088, anisotropy: 4, flat: 0.01,
+  base: 206, strip: 10, seamShadow: 56, seamLip: 32, seamBack: 14, mottle: 20, mottleCells: 4, streak: 10, streakCells: 32,
+  kinds: { metal: { seam: 0.6, length: 6 }, felt: { seam: 1.0, length: 9 } } };
