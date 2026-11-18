@@ -118,7 +118,7 @@ mirror/Ghost networking bootstrap or broad World sweep was run.
 With Three0.170.0 and Playwright available, serve this checkout on8801 and run
 `tools/browsertest.sh node tools/avatarbodyart.cjs http://localhost:8801 --art-correction`
 with `ART_REVIEW_GATE` pointing to a local decision file (`revise`/`accept`).
-`node tools/avatarbodycost.mjs` records isolated baseline/current cold variants.
+`node tools/avatarbodycost.mjs [outdir]` records isolated baseline/current cold variants (without `outdir` it writes to a temp directory, #2116; pass `docs/verification/2001` to refresh this record).
 The final semantic correction harness uses the prior source reconstructed by
 reversing `hand-role.patch` into `/tmp/2001-prior-avatar.js`; its public route is local only.
 Initial rejected art attempts were stopped; only directly affected component views

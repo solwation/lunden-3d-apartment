@@ -1,11 +1,14 @@
 // #2001: bounded cold variant cost with isolated baseline config; no browser.
 import {performance} from 'node:perf_hooks';
-import {readFileSync,writeFileSync,unlinkSync} from 'node:fs';
+import {readFileSync,writeFileSync,unlinkSync,mkdtempSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {avatarModelGeometry as after} from '../src/avatar.js';
 import {avatarLook} from '../src/config.js';
-const baseline='3f7c3d0b1983bec2cde7fd44855c1c0af19744ba',out=process.argv[2]||'docs/verification/2001';
+const baseline='3f7c3d0b1983bec2cde7fd44855c1c0af19744ba',out=process.argv[2]||mkdtempSync(join(tmpdir(),'cost2001-')); // #2116: only an explicit directory argument rewrites the committed docs/verification/2001/build-cost.json
+
 const old=f=>execFileSync('git',['show',`${baseline}:${f}`],{maxBuffer:8e6});
 const moduleURL=new URL('../src/.avatar-2001-before.js',import.meta.url),configURL=new URL('../src/.avatar-2001-before-config.js',import.meta.url);
 try{

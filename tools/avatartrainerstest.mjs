@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { readFileSync, writeFileSync, unlinkSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, unlinkSync, mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { trainerDetails } from '../src/avatartrainers.js';
@@ -9,12 +11,17 @@ import { avatarModelGeometry, Avatar } from '../src/avatar.js';
 import { decodeAvatarLook, AVATAR_TRAINERS as S } from '../src/config.js';
 import { NAMES } from '../src/olof.js';
 import { applyRestPose } from '../src/remote-pose.js';
-const baseline='a366067a79ab90a67abc5a66b3db205f67788506',out='docs/verification/2084';
-const before=f=>execFileSync('git',['show',`${baseline}:${f}`],{maxBuffer:16e6}),sha=b=>createHash('sha256').update(b).digest('hex');
+const baseline='a366067a79ab90a67abc5a66b3db205f67788506';
+// #2116: the source contracts below are what #2084's own commit left alone (its delta), not a freeze of every later change to those files
+const trainerCommit='44b72175c8e60dfb3aaff11af3edead2ac4e9026',inTrainerCommit=f=>execFileSync('git',['diff','--quiet',trainerCommit+'^',trainerCommit,'--',f]);
+const before=f=>execFileSync('git',['show',`${baseline}:${f}`],{maxBuffer:16e6}),inCommit=(c,f)=>execFileSync('git',['show',`${c}:${f}`],{maxBuffer:16e6}).toString(),sha=b=>createHash('sha256').update(b).digest('hex');
 const path=new URL('../src/.avatar2084-before.js',import.meta.url);
 writeFileSync(path,before('src/avatar.js'));
 let old;
 try{old=await import(path.href)}finally{unlinkSync(path)}
+// #2116: the rig/gait contract compares #2084's own before/after avatar.js (later commits legitimately change the motion, e.g. lean and breathing)
+const pin=async(c)=>{const u=new URL('../src/.avatar2084-pin.js',import.meta.url);writeFileSync(u,inCommit(c,'src/avatar.js'));try{return await import(u.href+'?'+c)}finally{unlinkSync(u)}};
+const pinBefore=await pin(trainerCommit+'^'),pinAfter=await pin(trainerCommit);
 function upper(){const g=new T.SphereGeometry(.5,10,4,0,Math.PI*2,0,Math.PI/2).scale(.105,.18,.27),p=g.attributes.position;
  for(let i=0;i<p.count;i++){const z=p.getZ(i),t=Math.min(1,Math.max(0,(z+.02)/.14));p.setY(i,p.getY(i)*(1-.58*t*t*(3-2*t))-.442);p.setZ(i,z+.055)}g.computeVertexNormals();return g;}
 const rows=[];
@@ -48,15 +55,16 @@ test('all original attributes including sole/palette remain byte-identical; adde
 });
 test('rig, sole contact, gait/rest pose and self-view source contracts stay intact',()=>{
  const unchanged=['src/olof.js','src/avatarselfview.js','src/avatarfootik.js','src/ghosts.js','src/main.js','src/rest.js','src/remote-pose.js','src/furniture.js','src/reflections.js','src/hand.js'];
- for(const f of unchanged)assert.deepEqual(readFileSync(f),before(f),f);
- const cfg=readFileSync('src/config.js','utf8'),a=cfg.indexOf('// #2084: AVATAR_TRAINERS'),b=cfg.indexOf('export const AVATAR_CLOTHES',a);assert.equal(cfg.slice(0,a)+cfg.slice(b),before('src/config.js').toString());
- const look={...decodeAvatarLook('241302112','body2080'),height:180},av=new Avatar(look),prior=new old.Avatar(look);
+ for(const f of unchanged)assert.doesNotThrow(()=>inTrainerCommit(f),f+' is untouched by #2084');
+ const cfg=readFileSync('src/config.js','utf8'),a=cfg.indexOf('// #2084: AVATAR_TRAINERS'),b=cfg.indexOf('export const AVATAR_CLOTHES',a);const own=inCommit(trainerCommit,'src/config.js'),oa=own.indexOf('// #2084: AVATAR_TRAINERS');assert.equal(own.slice(0,oa)+own.slice(own.indexOf('export const AVATAR_CLOTHES',oa)),inCommit(trainerCommit+'^','src/config.js'),"#2084's config delta is only AVATAR_TRAINERS");assert.ok(a>0&&b>a,'AVATAR_TRAINERS is still declared');
+ const look={...decodeAvatarLook('241302112','body2080'),height:180},av=new Avatar(look),pa=new pinAfter.Avatar(look),prior=new pinBefore.Avatar(look);
  assert.ok(av.mesh.isSkinnedMesh);assert.equal(av.mesh.geometry.groups.length,0);assert.equal(Array.isArray(av.mesh.material),false);
  for(const state of[{speed:0},{speed:1.6},{speed:3.2},{speed:0,pose:1},{speed:0,pose:2},{speed:0,pose:3}])for(let i=0;i<4;i++){
-  av.update(1/60,state);prior.update(1/60,state);applyRestPose(av,state.pose);applyRestPose(prior,state.pose);av.object.updateMatrixWorld(true);prior.object.updateMatrixWorld(true);
-  for(const k of NAMES)assert.deepEqual(av.bones[k].matrixWorld.elements,prior.bones[k].matrixWorld.elements,k);
+  pa.update(1/60,state);prior.update(1/60,state);applyRestPose(pa,state.pose);applyRestPose(prior,state.pose);pa.object.updateMatrixWorld(true);prior.object.updateMatrixWorld(true);
+  for(const k of NAMES)assert.deepEqual(pa.bones[k].matrixWorld.elements,prior.bones[k].matrixWorld.elements,k);
  }
- const original=before('src/avatar.js').toString(),current=readFileSync('src/avatar.js','utf8');assert.equal(current.slice(current.indexOf('function walkGait(')),original.slice(original.indexOf('function walkGait(')));
- mkdirSync(out,{recursive:true});writeFileSync(out+'/native.json',JSON.stringify({baseline,rows,unchanged:Object.fromEntries(unchanged.map(f=>[f,sha(readFileSync(f))])),sourceSha256:Object.fromEntries(['src/avatartrainers.js','src/avatar.js','src/config.js','tools/avatartrainerstest.mjs'].map(f=>[f,sha(readFileSync(f))]))},null,2)+'\n');
- av.dispose();prior.dispose();
+ const original=inCommit(trainerCommit+'^','src/avatar.js'),current=inCommit(trainerCommit,'src/avatar.js');assert.equal(current.slice(current.indexOf('function walkGait(')),original.slice(original.indexOf('function walkGait(')));
+ const tmp=mkdtempSync(join(tmpdir(),'t2084-')); // #2116: never rewrite the tracked docs/verification/2084/native.json from a test
+ writeFileSync(join(tmp,'native.json'),JSON.stringify({baseline,rows,unchanged:Object.fromEntries(unchanged.map(f=>[f,sha(readFileSync(f))])),sourceSha256:Object.fromEntries(['src/avatartrainers.js','src/avatar.js','src/config.js','tools/avatartrainerstest.mjs'].map(f=>[f,sha(readFileSync(f))]))},null,2)+'\n');
+ av.dispose();pa.dispose();prior.dispose();
 });
