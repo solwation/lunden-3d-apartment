@@ -59,3 +59,5 @@ random stream (every other random layout is identical).
 
 Species are a deterministic draw per position, not a tree survey. Branches are straight tapered limbs (no curvature) and the lobes
 still use one shared leaf atlas, so leaf shapes do not differ by species. Not tested on a physical Iris 640 or phone.
+
+Publicering: Pages/Worker success på `2391335`; före-bilder borttagna vid stängning och visas från den commiten.
