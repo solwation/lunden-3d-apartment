@@ -29,3 +29,5 @@ Source: `src/snowcap.js` (chained in `src/exterior.js`, `src/surroundings.js`, `
 Houses: A, B, C and L checked (shared materials: Å-hus brick/render/rails/sheet metal; Hus L brick/render/pilasters/capping-flashing
 batch/rails). Limits: window sills of the Å-husen are painted in the façade canvas (no upward face) and get none; the Å-hus
 frames already render white; roofs and ground keep `registerSnow`; glass is not capped; phones skip plain materials.
+
+Publicering: Pages/Worker success på `cd6fd95`; före-bilder borttagna vid stängning och visas från den commiten.
