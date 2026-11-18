@@ -78,3 +78,14 @@ PLAYWRIGHT_MODULE=/path/to/playwright tools/browsertest.sh \
 Relevant public transfer: neutral helper and standard ceramic material consumers only;
 no personal finish selection, furniture, image, gameplay or Cloudflare integration.
 Conductor owns separate public issue, publication, revision-pinned image comment and closure.
+
+## Publication
+
+Code and all retained images were published on main as
+`0fd6db633ed861c1f8cf3d1f1829630b3b5963df`.
+[Pages44261707020](https://github.com/solwation/lunden-3d-apartment/actions/runs/44261707020)
+and [Worker44261706591](https://github.com/solwation/lunden-3d-apartment/actions/runs/44261706591)
+both completed successfully on that exact revision. Three inspected representative images
+were embedded in the issue with revision-pinned URLs, each verified HTTP200, before closure.
+The neutral public adaptation is tracked separately in
+[kvarteret-lunden#292](https://github.com/solwation/kvarteret-lunden/issues/292).
