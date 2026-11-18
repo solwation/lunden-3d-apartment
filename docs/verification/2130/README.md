@@ -6,15 +6,15 @@ phases run `tools/riverfishschool2130browser.cjs` against the real app (`?life&m
 and set the fish clock to the same room times, found with `src/riverfishschool.js` from `T0 = 1700000` s: the perch school
 (fish 0, 3, 10) while its leader turns more than 1 rad within 3 s; the first take within 40 m of the bridges; the first hold
 in the lee of a lily patch. Images are native 1280×800 captures (JPEG q85). Raw data: [browser.json](browser.json),
-[before/browser.json](before/browser.json).
+[before/browser.json](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/e2e28f35c0432d5235bab7745c36809ac601eb14/docs/verification/2130/before/browser.json).
 
 ## School from the bank (t = 1700046 s, +1.5 s, +3 s; eye 1.2 m beyond the bank edge, 40° view)
 
 | | Before | After |
 |---|---|---|
-| 0 s | ![](before/school-0.jpg) | ![](school-0.jpg) |
-| +1.5 s | ![](before/school-1.jpg) | ![](school-1.jpg) |
-| +3 s | ![](before/school-2.jpg) | ![](school-2.jpg) |
+| 0 s | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/e2e28f35c0432d5235bab7745c36809ac601eb14/docs/verification/2130/before/school-0.jpg) | ![](school-0.jpg) |
+| +1.5 s | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/e2e28f35c0432d5235bab7745c36809ac601eb14/docs/verification/2130/before/school-1.jpg) | ![](school-1.jpg) |
+| +3 s | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/e2e28f35c0432d5235bab7745c36809ac601eb14/docs/verification/2130/before/school-2.jpg) | ![](school-2.jpg) |
 
 Before, the three perch swim their own paths (two of them are off screen). After, they keep slots by the
 leader and turn with it. The faint ring in the after frame at 0 s is an ordinary shared rise, now drawn where its fish was drawn.
@@ -23,9 +23,9 @@ leader and turn with it. The faint ring in the after frame at 0 s is an ordinary
 
 | | Before | After |
 |---|---|---|
-| −0.15 s | ![](before/take-0.jpg) | ![](take-0.jpg) |
-| +0.6 s | ![](before/take-1.jpg) | ![](take-1.jpg) |
-| +1.6 s | ![](before/take-2.jpg) | ![](take-2.jpg) |
+| −0.15 s | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/e2e28f35c0432d5235bab7745c36809ac601eb14/docs/verification/2130/before/take-0.jpg) | ![](take-0.jpg) |
+| +0.6 s | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/e2e28f35c0432d5235bab7745c36809ac601eb14/docs/verification/2130/before/take-1.jpg) | ![](take-1.jpg) |
+| +1.6 s | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/e2e28f35c0432d5235bab7745c36809ac601eb14/docs/verification/2130/before/take-2.jpg) | ![](take-2.jpg) |
 
 After, the take's rings (up to 1.9 m, brighter than an ordinary rise's) spread on the water and are clearly seen from the
 deck through the railing; before, nothing happens at that moment.
@@ -34,7 +34,7 @@ deck through the railing; before, nothing happens at that moment.
 
 | Before | After |
 |---|---|
-| ![](before/hold.jpg) | ![](hold.jpg) |
+| ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/e2e28f35c0432d5235bab7745c36809ac601eb14/docs/verification/2130/before/hold.jpg) | ![](hold.jpg) |
 
 After, the trout stands still just downstream of the pads, head against the current, near the surface; before it was
 off screen on its own path.
@@ -62,3 +62,5 @@ shapes close together. With seed 1754 no school swims within 45 m of the bridges
 the bridges one sees the lone pike's takes and rises. Holds use RiverFlora's stones (seen only by a diver) and lily pads
 (May–September); with `&noflora` a hold is in open water. The rod's bites keep counting the shared places, up to about
 15 m from a drawn fish (usually a few metres).
+
+Publicering: Pages/Worker success på `e2e28f3`; före-bilder borttagna vid stängning och visas från den commiten.
