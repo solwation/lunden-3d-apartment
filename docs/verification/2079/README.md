@@ -106,3 +106,7 @@ do not import original gameplay, swimming parameters, personal assets or integra
 ## Integration review
 
 Root opened report/side final pairs and reviewed the worker’s inspected third transition pair and18green checks. Product southbank and fixture/test bytes exactly equal4f7365b8. Config adds only SOUTH_BRIDGE_APPROACH and its historical comment to accepted main; all prior bytes and changelog rows retained. Independent #2078 pavement nearz19–58 and #2077 street corner remain; the corrected corridor beginsz147, so source-bound results are reused without a duplicate full-world browser. Component totals above refer to the tested fixture baseline, not a global budget after those unrelated additions.
+
+## Publicering
+
+Kod/bilder `bc00a3e5b30fbacec71ec8ea76142ba9b16391eb`; faktiska run-ID [44277038706, 44277038897] success på exakt revision. Alla bilder HTTP200 och inbäddade före stängning: https://github.com/solwation/lunden-3d-apartment/issues/2079#issuecomment-6974611397. Slutkvittot är enbart dokumentation; originalets sökvägsfilter utlöser ingen ny apppublicering.
