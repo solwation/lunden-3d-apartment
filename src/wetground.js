@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { WET_GROUND as W, SEASON } from './config.js';
 import { rememberFragmentCompile } from './vertexcompile.js';
 import { leafLitter } from './leaflitter.js';
+import { lowMemory } from './lowmemory.js';
 
 /** The uniforms every patched material shares: uGroundWet = (film, puddles, 0), the sky's horizon / zenith colours. */
 export const wetUniforms = {
@@ -82,9 +83,11 @@ export function bindWetSky(horizon, zenith) {
 }
 
 const f = (x) => Number(x).toFixed(4);
-/** The GLSL for a surface kind: declarations, after roughnessmap (albedo/roughness), after normal maps (flatten in puddles), after lights (sky). */
-export function wetGLSL(kind, P = W) {
-  const K = P.kinds[kind], Q = P.puddle, puddles = K.puddles > 0;
+/** The GLSL for a surface kind: declarations, after roughnessmap (albedo/roughness), after normal maps (flatten in puddles), after lights (sky).
+ * `lite` (phones, #2118): no puddle code at all. Phones never get puddles (GroundWetness.puddles is off there, so uGroundWet.y = 0 and the
+ * puddle branch never ran); leaving it out gives the same pixels from a smaller shader to compile. */
+export function wetGLSL(kind, P = W, lite = false) {
+  const K = P.kinds[kind], Q = P.puddle, puddles = K.puddles > 0 && !lite;
   const head = /* glsl */ `
 uniform vec3 uGroundWet, uWetHorizon, uWetZenith;
 ${puddles ? `float wetHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -120,12 +123,12 @@ if (wetW > 0.0) {
 }
 
 /** Patch a lit ground material (MeshStandard) for `kind` (WET_GROUND.kinds): chains its onBeforeCompile and cache key. Once per material. */
-export function wetGround(material, kind) {
+export function wetGround(material, kind, lite = lowMemory) {
   const m = material;
   if (!m?.isMeshStandardMaterial || m.userData.wetGround) return m;
   if (!W.kinds[kind]) throw new Error(`wetGround: unknown kind ${kind}`);
   m.userData.wetGround = kind;
-  const glsl = wetGLSL(kind), before = m.onBeforeCompile, key = m.customProgramCacheKey;
+  const glsl = wetGLSL(kind, W, lite), before = m.onBeforeCompile, key = m.customProgramCacheKey;
   m.onBeforeCompile = function (shader, renderer) {
     before.call(this, shader, renderer);
     if (shader.fragmentShader.includes('uGroundWet')) return; // (an inherited, already wet callback)
@@ -138,7 +141,7 @@ export function wetGround(material, kind) {
   };
   rememberFragmentCompile(m.onBeforeCompile, before);
   const base = key === THREE.Material.prototype.customProgramCacheKey ? () => before.toString() : key;
-  m.customProgramCacheKey = function () { return `${base.call(this)}|wet2099-${kind}`; };
+  m.customProgramCacheKey = function () { return `${base.call(this)}|wet2099-${kind}${lite ? '-lite' : ''}`; };
   m.needsUpdate = true;
-  return leafLitter(m, kind); // #2105: autumn leaves on the same exposed ground (the outer wrapper inserts its step first: wet leaves darken and gloss too)
+  return leafLitter(m, kind, '', lite); // #2105: autumn leaves on the same exposed ground (the outer wrapper inserts its step first: wet leaves darken and gloss too)
 }

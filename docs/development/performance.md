@@ -2384,3 +2384,15 @@ The existing car split now uses complementary dither over 26–34 m on phones an
 Garage rack/storage rows use horizontal distance and the existing 10 m + row radius, now ±2 m. Each row retains its two real geometries and adds just one call while both draw. No spoke/light/shadow draw is added. Original phone shadow tiles remain frozen full-detail; untiled car colour/depth shaders share their range.
 
 Isolated actual-builder renders (including a floor, and the garage's existing spokes) measured cars at near 5 calls/5,138 triangles, mid 6/5,266, far 2/130; the hard control at mid was 2/130. A real garage row measured near 3/9,838, mid 4/14,366, far 3/4,706; its hard mid was 3/4,706. All six ordinary views exactly matched their same-camera hard controls. These are component submission counts, not whole-world, GPU timing or physical-phone performance claims. [Raw measurements, source hashes and images](../verification/1988/README.md).
+
+## Phone crashes of 2026-11-18: phone-profile measurement and lite ground shaders (#2118 — not verified on a device)
+
+Crash reports were not readable from the cloud session. iPhone profile (`phonememtest`-style route start, living, patio,
+street, park, `&lowmem`, SwiftShader) at 709825b (start of the day) vs main: GPU estimate 265 → 272 MB, JS heap flat (~148 MB),
+CPU canvases flat, no growth along the route, no context loss, no errors (709825b still had #2090's three lamp-wash compile
+errors). Programs 281 → 304 and shader source 20.6 → 23.3 MB: many small variants (wet ground/leaf litter ~+8, wind sway +4,
+rails/bench +3, lamp halo/pool +3, gravel +2), no single jump. Warm-up and its longest compile block grew ~20–35 % (noisy host).
+Mitigation: on phones `wetGround`/`leafLitter` compile without the puddle noise and the leaf-shape grids (phones never ran
+them: `puddles` and `detail` are off there), under `-lite` keys; same pixels, desktop shaders and keys unchanged
+(`tools/phonegroundlite2118test.mjs`). Measured effect is small: 304 programs either way, shader source −28 KB. Fewer programs
+on phones would need dropping the rain film and autumn tint there (~6–7 programs), or the wind-sway depth variants (2), both visible.

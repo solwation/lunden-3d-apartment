@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import { LEAF_LITTER as L, SEASON, WALK } from './config.js';
 import { registerSeasonal } from './seasons.js';
 import { rememberFragmentCompile } from './vertexcompile.js';
+import { lowMemory } from './lowmemory.js';
 
 const empty = new THREE.DataTexture(new Uint8Array(1), 1, 1, THREE.RedFormat);
 empty.needsUpdate = true;
@@ -103,13 +104,16 @@ const f = (x) => Number(x).toFixed(4);
 /** The mean leaf cover of one grid at full density (a pinched ellipse: ~0.9 of π · len · wide·len per cell). */
 export const leafShare = (P = L) => { const l = (P.len[0] + P.len[1]) / 2; return 0.9 * Math.PI * l * l * P.wide; };
 
-/** The GLSL for a surface kind: declarations and the albedo / roughness step (after roughnessmap); `mask`: an optional GLSL factor (0…1) of the material's own. */
-export function litterGLSL(kind, P = L, mask = '') {
+/** The GLSL for a surface kind: declarations and the albedo / roughness step (after roughnessmap); `mask`: an optional GLSL factor (0…1) of the material's own.
+ * `lite` (phones, #2118): the mean tint only, without the leaf shapes' code. Phones never draw the shapes (LeafLitter.detail is off there, so
+ * uLitter.y = 0 and litDetail was always 0); this is the same arithmetic with litDetail = 0, from a smaller shader to compile. */
+export function litterGLSL(kind, P = L, mask = '', lite = false) {
   const K = P.kinds[kind], share = leafShare(P);
-  const head = /* glsl */ `
+  const decl = /* glsl */ `
 uniform vec3 uLitter, uLitterFresh, uLitterOld;
 uniform sampler2D uLitterMap;
-uniform vec4 uLitterBox;
+uniform vec4 uLitterBox;`;
+  const head = lite ? decl : decl + /* glsl */ `
 vec4 litterHash(vec2 p) { vec4 q = fract(vec4(p.xyx, p.y) * vec4(0.1031, 0.1030, 0.0973, 0.1099)); q += dot(q, q.wzxy + 33.33); return fract((q.xxyz + q.yzzw) * q.zywx); }
 // one grid of leaves: coverage 0…1 of this pixel, the leaf's colour in col
 float litterLeaf(vec2 p, float cell, float seed, float c, float aa, inout vec3 col) {
@@ -128,6 +132,24 @@ float litterLeaf(vec2 p, float cell, float seed, float c, float aa, inout vec3 c
   col = mix(uLitterFresh, uLitterOld, fract(h.y * 13.7 + h.z * 5.3)) * (0.78 + 0.22 * (1.0 - min(r * r, 1.0)) + 0.25 * fract(h.w * 31.1)) * vein;
   return m;
 }`;
+  if (lite) return { head, surface: /* glsl */ `
+if (uLitter.x > 0.0) {
+  vec3 litW = transpose(mat3(viewMatrix)) * (-vViewPosition - viewMatrix[3].xyz);
+  float litFlat = smoothstep(0.7, 0.9, abs(normalize(cross(dFdx(litW), dFdy(litW))).y));
+  vec2 litUV = (litW.xz - uLitterBox.xy) * uLitterBox.zw;
+  float litC = 0.0;
+  if (litFlat > 0.0 && litUV.x > 0.0 && litUV.y > 0.0 && litUV.x < 1.0 && litUV.y < 1.0)
+    litC = texture2D(uLitterMap, litUV).r * uLitter.x * ${f(K)}${mask ? ` * (${mask})` : ''};
+  if (litC > 0.004) {
+    vec3 litMean = mix(uLitterFresh, uLitterOld, 0.5) * 0.92;
+    float litFar = clamp(litC * ${f(share)} * (2.0 - litC * ${f(share)}), 0.0, 1.0);
+    float litMulch = smoothstep(${f(P.mulch[0])}, 1.0, litC) * ${f(P.mulch[1])};
+    diffuseColor.rgb = mix(diffuseColor.rgb, litMean * 0.8, litMulch * litFlat);
+    float litAlpha = litFar * litFlat;
+    diffuseColor.rgb = mix(diffuseColor.rgb, litMean, litAlpha);
+    roughnessFactor = mix(roughnessFactor, ${f(P.rough)}, max(litAlpha, litMulch * litFlat));
+  }
+}` };
   const surface = /* glsl */ `
 if (uLitter.x > 0.0) {
   vec3 litW = transpose(mat3(viewMatrix)) * (-vViewPosition - viewMatrix[3].xyz);
@@ -165,12 +187,12 @@ if (uLitter.x > 0.0) {
 
 /** Patch a lit ground material (MeshStandard) for `kind` (LEAF_LITTER.kinds): chains its onBeforeCompile and cache key. Once per material.
  * `mask`: a GLSL factor the material's own patch declares (the river-bed lawn: no leaves on its mud). */
-export function leafLitter(material, kind, mask = '') {
+export function leafLitter(material, kind, mask = '', lite = lowMemory) {
   const m = material;
   if (!m?.isMeshStandardMaterial || m.userData.leafLitter) return m;
   if (!(kind in L.kinds)) throw new Error(`leafLitter: unknown kind ${kind}`);
   m.userData.leafLitter = kind;
-  const glsl = litterGLSL(kind, L, mask), before = m.onBeforeCompile, key = m.customProgramCacheKey;
+  const glsl = litterGLSL(kind, L, mask, lite), before = m.onBeforeCompile, key = m.customProgramCacheKey;
   m.onBeforeCompile = function (shader, renderer) {
     before.call(this, shader, renderer);
     if (shader.fragmentShader.includes('uLitterMap')) return; // (an inherited, already patched callback)
@@ -181,7 +203,7 @@ export function leafLitter(material, kind, mask = '') {
   };
   rememberFragmentCompile(m.onBeforeCompile, before);
   const base = key === THREE.Material.prototype.customProgramCacheKey ? () => before.toString() : key;
-  m.customProgramCacheKey = function () { return `${base.call(this)}|litter2105-${kind}${mask ? '-mask' : ''}`; };
+  m.customProgramCacheKey = function () { return `${base.call(this)}|litter2105-${kind}${mask ? '-mask' : ''}${lite ? '-lite' : ''}`; };
   m.needsUpdate = true;
   return m;
 }
