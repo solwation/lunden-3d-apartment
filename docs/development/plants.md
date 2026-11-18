@@ -162,3 +162,27 @@ No geometry, draw, pass, light or per-frame upload is added; existing PBR fragme
 sampling increases. The existing native-vertex compile classification remains valid
 for site instance compaction. The distant southern woodland has its own plain cylinder
 material and is outside this consumer. [Matched production-consumer views and scope](../verification/2081/README.md).
+
+
+## Leaf atlas colour details (#2085)
+
+`leafrgb.js` adds opaque local tone gradients and two or three pairs of quiet lateral
+veins to the existing leaf atlas RGB. Core leaves receive gentler tone variation;
+`rib=false` and destination-out core holes never acquire side veins. These are artistic
+leaf details, not a measured species model. In ordinary near views the tone variation
+is subtle; individual lateral veins are mainly readable close up.
+
+Canvas antialiasing/composition cannot be assumed to preserve alpha byte for byte.
+The small startup-only context adapter mirrors the original Canvas calls into a
+second colour canvas, applying detail only there. At the existing final readback it
+combines detailed RGB with the untouched original alpha before the original flip/
+transparent-edge guard. This preserves every512/256alpha byte, core holes and the
+fixed196/204/176transparent RGB. No random call or yield is added; the atlas cache,
+geometry, materials, instances, seasons, bark and distance LOD remain unchanged.
+
+The extra canvas and full-atlas readback add approximately2MiB at512²/512KiB at256²
+of temporary RGBA pixel storage; the detail canvas is reduced to1×1after readback.
+There is no per-leaf readback, new GPU texture, sampling, shader, draw, light, pass or
+per-frame upload. Actual startup CPU increased in the scoped browser measurement;
+[paired consumer views, full-alpha proof, timings and limits](../verification/2085/README.md)
+record the cost rather than claiming a free change.

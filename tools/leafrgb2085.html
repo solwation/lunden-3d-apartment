@@ -1,0 +1,38 @@
+<!doctype html><html><meta charset="utf-8"><link rel="icon" href="data:,"><title>Production foliage RGB #2085</title><style>body{margin:0}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as T from'three';
+import {registerTrees,applySeason}from'../src/seasons.js';
+import {InstanceLod,lodRange}from'../src/lod.js';
+const sha=async a=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',a)),x=>x.toString(16).padStart(2,'0')).join('');
+const pixelProof=async tex=>{
+ const p=tex.image.data,n=tex.image.width,alpha=new Uint8Array(n*n);let transparent=0,badRGB=0;for(let i=0;i<alpha.length;i++){alpha[i]=p[i*4+3];if(!alpha[i]){transparent++;if(p[i*4]!==196||p[i*4+1]!==204||p[i*4+2]!==176)badRGB++;}}
+ const mips=[];let w=n,a=alpha;while(w>1){const b=new Uint8Array(w*w/4);for(let y=0;y<w/2;y++)for(let x=0;x<w/2;x++)b[y*w/2+x]=Math.round((a[y*2*w+x*2]+a[y*2*w+x*2+1]+a[(y*2+1)*w+x*2]+a[(y*2+1)*w+x*2+1])/4);w/=2;a=b;mips.push(await sha(a));}
+ return{size:n,bytes:p.byteLength,rgba:await sha(p),alpha:await sha(alpha),transparent,badRGB,mipAlpha:mips};
+};
+const samples=[];let mod,tex;
+for(let run=0;run<3;run++){
+ window.__rng679=[];mod=await import('../src/foliage.js?atlasRun='+run);const generator=mod.leafAtlasParts(),steps=[];let r;
+ do{const t=performance.now();r=generator.next();steps.push(performance.now()-t);if(!r.done)await new Promise(requestAnimationFrame);}while(!r.done);
+ tex=r.value;const proof=await pixelProof(tex);samples.push({...proof,cpuMs:steps.reduce((s,x)=>s+x,0),maxStepMs:Math.max(...steps),steps,rngCount:window.__rng679.length,rng:await sha(new Float64Array(window.__rng679))});
+ if(mod.leafAtlas()!==tex)throw new Error('atlas cache changed');
+}
+const reads=window.__atlasReads??0,{leafMaterial,lobeGeometry,lodLeafMaterial,trunkGeometry,barkMaterial}=mod;
+const scene=new T.Scene();scene.background=new T.Color(0xd9e1e4);scene.add(new T.HemisphereLight(0xe7eff7,0x65734e,1.4));const sun=new T.DirectionalLight(0xfff1d8,3);sun.position.set(-5,9,6);scene.add(sun);
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(1);renderer.setSize(1200,800);renderer.toneMapping=T.NeutralToneMapping;renderer.outputColorSpace=T.SRGBColorSpace;document.body.append(renderer.domElement);
+const camera=new T.PerspectiveCamera(45,1.5,.02,500),ground=new T.Mesh(new T.PlaneGeometry(300,300),new T.MeshStandardMaterial({color:0x94a177,roughness:1}));ground.rotation.x=-Math.PI/2;scene.add(ground);
+const seeds=[[-.65,1.6,0,1.1],[.55,1.8,-.25,1.15],[0,2.5,-.2,.85]].map(([x,y,z,s],i)=>({pos:new T.Vector3(x,y,z),rot:new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),i*.75),scale:new T.Vector3(s,s*.9,s),r1:.25+i*.18,r2:.3+i*.17,r3:.4,r4:.8}));
+const fill=mesh=>{seeds.forEach((s,i)=>{mesh.setMatrixAt(i,new T.Matrix4().compose(s.pos,s.rot,s.scale));mesh.setColorAt(i,new T.Color(0x60863f));});mesh.computeBoundingSphere();mesh.computeBoundingBox();return mesh;};
+const regular=fill(new T.InstancedMesh(lobeGeometry('tree'),leafMaterial(),seeds.length));scene.add(regular);registerTrees(regular,seeds.map(s=>({...s,pos:s.pos.clone(),scale:s.scale.clone()})));
+const range=lodRange(46,54),nm=lodLeafMaterial({far:false,range}),fm=lodLeafMaterial({far:true,range}),near=fill(new T.InstancedMesh(lobeGeometry('tree'),nm.material,seeds.length)),far=new T.InstancedMesh(lobeGeometry('far'),fm.material,seeds.length);near.customDepthMaterial=nm.depth;far.customDepthMaterial=fm.depth;scene.add(near,far);
+const lodSeeds=seeds.map(s=>({...s,pos:s.pos.clone(),scale:s.scale.clone()})),lod=new InstanceLod([{mesh:near,seeds:lodSeeds}],far,{start:46,end:54,range});registerTrees(near,lodSeeds);
+const trunk=new T.Mesh(trunkGeometry(),barkMaterial());trunk.scale.set(.22,2.5,.22);scene.add(trunk);
+window.__proof=async()=>{
+ const geometry={};for(const kind of['tree','shrub','far']){const g=lobeGeometry(kind),attributes={};for(const[k,a]of Object.entries(g.attributes))attributes[k]={count:a.count,bytes:a.array.byteLength,sha:await sha(a.array)};geometry[kind]={attributes,index:g.index?await sha(g.index.array):null,triangles:(g.index?.count??g.attributes.position.count)/3};}
+ const material=leafMaterial();return{samples,atlasReads:reads,geometry,cache:material.map===tex&&leafMaterial()===material,material:{alphaTest:material.alphaTest,roughness:material.roughness,side:material.side,shadowSide:material.shadowSide,shader:material.onBeforeCompile.toString(),programKey:material.customProgramCacheKey(),depthMap:near.customDepthMaterial.map===tex&&far.customDepthMaterial.map===tex},texture:{size:tex.image.width,bytes:tex.image.data.byteLength,version:tex.version,colorSpace:tex.colorSpace,min:tex.minFilter,mag:tex.magFilter,mips:tex.generateMipmaps,anisotropy:tex.anisotropy},trunk:{position:await sha(trunk.geometry.attributes.position.array),normal:await sha(trunk.geometry.attributes.normal.array)}};
+};
+window.__frame=async view=>{
+ const defs={close:{eye:[1.3,2.1,1.5],aim:[0,1.9,0],month:7},normal:{eye:[3.1,2.2,4.5],aim:[0,1.65,0],month:7},autumn:{eye:[3.1,2.2,4.5],aim:[0,1.65,0],month:10},winter:{eye:[3.1,2.2,4.5],aim:[0,1.65,0],month:1},lod:{eye:[0,3,58],aim:[0,1.65,0],month:7}},d=defs[view];applySeason(d.month);regular.visible=view!=='lod'&&d.month!==1;near.visible=view==='lod';far.visible=view==='lod';camera.position.fromArray(d.eye);camera.lookAt(...d.aim);camera.updateMatrixWorld(true);lod.update(camera.position,true);if(view!=='lod'){near.visible=false;far.visible=false;}renderer.info.reset();renderer.render(scene,camera);
+ return{view,month:d.month,camera:d.eye,target:d.aim,calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,atlasVersion:tex.version,lod:lod.state(),regularVisible:regular.visible,matrices:await sha(regular.instanceMatrix.array),colours:await sha(regular.instanceColor.array),nearMatrices:await sha(near.instanceMatrix.array),farMatrices:await sha(far.instanceMatrix.array),image:renderer.domElement.toDataURL('image/jpeg',.96)};
+};window.__ready=true;
+</script></html>

@@ -1,3 +1,4 @@
+import {leafRgbContext,leafTone,leafSideVeins} from './leafrgb.js';
 import { applyBarkSurface } from './barksurface.js'; // #2081
 import { rememberFragmentCompile } from './vertexcompile.js';
 import * as THREE from 'three';
@@ -35,14 +36,16 @@ export function* leafAtlasParts() {
   c.width = c.height = S;
   // willReadFrequently (#1133): drawn on the CPU as it goes, so the readback below is no long flush of thousands of
   // queued GPU draws (24 s in one block in headless Chromium)
-  const g = c.getContext('2d', { willReadFrequently: true }), r = rng(679);
+  const g = leafRgbContext(c.getContext('2d', { willReadFrequently: true })), r = rng(679);
   /** One leaf: a pointed oval of length l, width w at (x, y), angle a, brightness v. */
   const leaf = (x, y, l, w, a, v, rib = true) => {
     g.save(); g.translate(x, y); g.rotate(a);
     const k = Math.round(v * 255);
     g.fillStyle = `rgb(${Math.round(k * 0.96)},${k},${Math.round(k * 0.86)})`;
+    if(g.globalCompositeOperation!=='destination-out')leafTone(g,k,l,w,!rib);
     g.beginPath(); g.moveTo(-l / 2, 0);
     g.quadraticCurveTo(-l * 0.1, -w, l / 2, 0); g.quadraticCurveTo(-l * 0.1, w, -l / 2, 0); g.fill();
+    if(rib&&l>6)leafSideVeins(g,l,w,S);
     if (rib && l > 6) { g.strokeStyle = `rgba(0,0,0,0.18)`; g.lineWidth = Math.max(0.6, S / 700); g.beginPath(); g.moveTo(-l / 2, 0); g.lineTo(l * 0.4, 0); g.stroke(); }
     g.restore();
   };

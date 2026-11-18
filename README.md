@@ -1,5 +1,7 @@
 # Kv. Lunden L1007 i 3D
 
+Trädens och buskarnas löv har mjuka färgskiftningar och diskreta sidonerver i den befintliga lövtexturen. [Egna bilder, alfakontroller och startkostnad](docs/verification/2085/README.md).
+
 Höje ås vatten har små ljuskrusningar som tonar bort på avstånd; vattennivåer, stränder och den befintliga rörelsen är kvar.
 
 Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spel: entréplan och
