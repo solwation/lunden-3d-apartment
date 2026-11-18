@@ -54,3 +54,5 @@ Cards seen at moderately oblique angles (|cos| above about 0.3) still look somew
 foreshortening, kept on purpose so the crowns do not thin. Far crowns (beyond 30 m), the far LOD and the south woodland are unchanged.
 The courtyard plantings and wall vines share the material and get the same fade up close. They were not photographed here. Not measured on a real
 phone. The phone profile gets the same fragment step.
+
+Publicerad: `48c80e0`, Pages 44419724847 success. Före-bilderna är borttagna; länkarna ovan är pinnade till publiceringscommiten.
