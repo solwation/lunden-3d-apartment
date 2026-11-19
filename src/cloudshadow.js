@@ -83,11 +83,13 @@ export function stepCloudDrift(pos, dt, wind) {
 
 /** The cloud-shadow parameters for a sky state (pure; DayCycle feeds it each frame). oc: overcast below the deck 0…1; sunY: the
  * sun's height (unit direction y); off 0…1 (inside the deck / indoors / quality off). Returns { strength, thr, soft, slope: {x, z} }. */
-export function cloudShadowState({ sunDir, oc, off = 0 }) {
+export function cloudShadowState({ sunDir, oc, off = 0 }, out = null) {
+  if (!out) out = { strength: 0, thr: 0, soft: 0, slope: { x: 0, z: 0 } }; // `out` (#2136): overwritten instead of allocating (per-frame caller)
   const cover = smooth(C.fade[0], C.fade[1], oc) * (1 - smooth(C.solid[0], C.solid[1], oc));
   const strength = C.strength * cover * smooth(C.sun[0], C.sun[1], sunDir.y) * (1 - Math.min(1, Math.max(0, off)));
   const y = Math.max(sunDir.y, 0.12);
-  return { strength, thr: C.thr[0] + (C.thr[1] - C.thr[0]) * Math.min(1, Math.max(0, oc)), soft: C.soft, slope: { x: sunDir.x / y, z: sunDir.z / y } };
+  out.strength = strength; out.thr = C.thr[0] + (C.thr[1] - C.thr[0]) * Math.min(1, Math.max(0, oc)); out.soft = C.soft; out.slope.x = sunDir.x / y; out.slope.z = sunDir.z / y;
+  return out;
 }
 
 /** Write a state and the drift at time t (s) — or an integrated drift { x, z } (stepCloudDrift, #2117) — into the shared uniforms. */

@@ -63,7 +63,6 @@ export function installHaze(T = THREE) {
 }
 
 const smooth = (a, b, x) => THREE.MathUtils.smoothstep(x, a, b);
-const toOut = (c) => c.clone().convertLinearToSRGB(); // fog is mixed after colorspace_fragment, i.e. in output (sRGB) space
 const minus = (a, b) => a.setRGB(a.r - b.r, a.g - b.g, a.b - b.b); // signed (Color.sub clamps at 0)
 
 /** The normalised fog curve of the shader (for tests): 0 … 1 over d from near to far. */
@@ -72,22 +71,30 @@ export function hazeCurve(d, near, far, w, k) {
   return s + ((1 - Math.exp(-kk * x)) / (1 - Math.exp(-kk)) - s) * Math.min(1, Math.max(0, w));
 }
 
+const hzA = new THREE.Color(), hzB = new THREE.Color(), hzGL = new THREE.Color(), hzBlue = new THREE.Color(); // scratch (#2136: hazeState runs every frame)
+
 /** The haze parameters for a sky state (pure; DayCycle feeds it each frame). horizon/glow are linear THREE.Colors as the sky
  * shader gets them; day 0…1, oc overcast 0…1 (below the deck), glowAmt the sky's uGlowAmt, off 0…1 (cloud inside / flash);
  * halo (#2124) the sky's linear low-sun halo colour (already damped by weather/off), default none.
+ * `out` (#2136, optional): a result object from an earlier call to overwrite instead of allocating (the per-frame caller keeps one);
+ * without it a fresh object is returned. Never pass `halo` the same Color as out.halo.
  * Returns { sun: Vector3, warm: Color (output space), blue: Color (output space), halo: Color (output space), w, k, scatter: Color (linear, for the sky) }. */
-export function hazeState({ sunDir, horizon, glow, glowAmt, day, oc, off = 0, halo = null }) {
+export function hazeState({ sunDir, horizon, glow, glowAmt, day, oc, off = 0, halo = null }, out = null) {
+  if (!out) out = { sun: new THREE.Vector3(), warm: new THREE.Color(), blue: new THREE.Color(), halo: new THREE.Color(), w: 0, k: 0, scatter: new THREE.Color() };
   const on = 1 - off, clear = day * (1 - oc);
   // a small daytime forward-scatter halo around a low sun (clear sky only), drawn identically by the sky shader
-  const scatter = new THREE.Color().setRGB(...HAZE.scatter.color).multiplyScalar(HAZE.scatter.amount * clear * smooth(-0.05, 0.1, sunDir.y) * on);
-  const H = horizon, hazeOut = toOut(H);
-  const glowLin = H.clone().add(glow.clone().multiplyScalar(glowAmt)).add(scatter);
-  const warm = minus(toOut(glowLin), hazeOut).multiplyScalar(on);
+  const scatter = out.scatter.setRGB(...HAZE.scatter.color).multiplyScalar(HAZE.scatter.amount * clear * smooth(-0.05, 0.1, sunDir.y) * on);
+  const H = horizon, hazeOut = hzA.copy(H).convertLinearToSRGB(); // fog is mixed in output (sRGB) space
+  const glowLin = hzGL.copy(H).add(hzB.copy(glow).multiplyScalar(glowAmt)).add(scatter);
+  minus(out.warm.copy(glowLin).convertLinearToSRGB(), hazeOut).multiplyScalar(on);
   // #2124: the sky's halo on top of the glow, so at full fog straight towards the sun the haze = the sky there (in output space)
-  const haloOut = halo ? minus(toOut(glowLin.clone().add(halo)), toOut(glowLin)) : new THREE.Color(0, 0, 0); // (halo carries `off` already)
-  const blue = minus(toOut(H.clone().multiply(new THREE.Color().setRGB(...HAZE.blue))), hazeOut).multiplyScalar(day * (1 - HAZE.overcastBlue * oc) * on);
-  const w = (HAZE.clear.w + (HAZE.overcast.w - HAZE.clear.w) * oc) * day * on;
-  return { sun: sunDir.clone(), warm, blue, halo: haloOut, w, k: HAZE.k, scatter };
+  if (halo) { out.halo.copy(glowLin).add(halo).convertLinearToSRGB(); minus(out.halo, hzB.copy(glowLin).convertLinearToSRGB()); } // (halo carries `off` already)
+  else out.halo.setRGB(0, 0, 0);
+  hzB.copy(H).multiply(hzBlue.setRGB(...HAZE.blue));
+  minus(out.blue.copy(hzB).convertLinearToSRGB(), hazeOut).multiplyScalar(day * (1 - HAZE.overcastBlue * oc) * on);
+  out.w = (HAZE.clear.w + (HAZE.overcast.w - HAZE.clear.w) * oc) * day * on; out.k = HAZE.k;
+  out.sun.copy(sunDir);
+  return out;
 }
 
 /** Write a hazeState into the shared uniforms. */

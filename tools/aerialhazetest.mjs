@@ -62,3 +62,21 @@ test('apply/clear write the shared uniforms', () => {
   assert.equal(hazeUniforms.fogHazeWarm.value.x, s.warm.r); assert.equal(hazeUniforms.fogHazeWarm.value.w, s.w); assert.equal(hazeUniforms.fogHazeSun.value.y, s.sun.y);
   clearHaze(); assert.equal(hazeUniforms.fogHazeWarm.value.w, 0); assert.equal(hazeUniforms.fogHazeBlue.value.x, 0);
 });
+
+test('per-frame states reuse their out object with unchanged numbers (#2136)', async () => {
+  const { duskSkyState } = await import('../src/daycycle.js');
+  const sunDir = sunDirection(21.75, 170), day = T.MathUtils.smoothstep(sunDir.y, -0.08, 0.18);
+  const args = { sunDir, horizon: HOR.clone(), glow: GLOW, glowAmt: 0.4, day, oc: 0.45, off: 0.2, halo: new T.Color(0.3, 0.2, 0.1) };
+  const a = hazeState(args), b = hazeState({ ...args, oc: 0, off: 0 }, a), c = hazeState(args, a);
+  assert.notEqual(hazeState(args), hazeState(args), 'without out every call is fresh');
+  assert.equal(b, a); assert.equal(c, a);
+  const got = [a.warm.r, a.warm.g, a.warm.b, a.blue.r, a.blue.g, a.blue.b, a.halo.r, a.halo.g, a.halo.b, a.w, a.scatter.r];
+  // recorded from the allocating implementation before #2136
+  const want = [0.1601432120079208, 0.042000516438451735, 0.007869809514706727, -0.020011814669806314, -0.01214623441913084, 0.0038477424839439655, 0.12019216986364412, 0.09073991364520739, 0.046491047691600174, 0.10819709066207972, 0.003432545280056753];
+  got.forEach((v, i) => assert.ok(Math.abs(v - want[i]) < 1e-12, `haze[${i}] ${v} vs ${want[i]}`));
+  assert.deepEqual(a.sun.toArray(), sunDir.toArray());
+  const d = duskSkyState(0.01, 0.45, 0.2), d2 = duskSkyState(0.5, 0, 0, d);
+  assert.equal(d2, d); duskSkyState(0.01, 0.45, 0.2, d);
+  const dw = [d.tw, d.bandAmt, d.pink.r, d.violet.b, d.halo.r, d.rim.g, d.bodyAmt, d.zenithAmt, d.zenith.b], dwant = [1, 0.20748, 0.5718938620790202, 0.3050100597754774, 0.41997201166180753, 0.27090000000000003, 0.44000000000000006, 0.29639999999999994, 0.095];
+  dw.forEach((v, i) => assert.ok(Math.abs(v - dwant[i]) < 1e-12, `dusk[${i}]`));
+});

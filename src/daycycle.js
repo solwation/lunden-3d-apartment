@@ -169,16 +169,21 @@ const SUN_LOW = new THREE.Color(0xffb070), SUN_HIGH = new THREE.Color(0xfff1dc),
 
 /** Dawn / dusk colour depth (#2124, SKY_DUSK; pure, for tests too): sky-shader colours (linear) for the sun height `sunY`, overcast
  * `oc` 0…1 and `off` 0…1 (inside the cloud deck / lightning). All zero when the sun is high (day) or deep below the horizon (night).
+ * `out` (#2136, optional): a result to overwrite instead of allocating (the per-frame caller keeps one).
  * Returns { tw (band envelope 0…1), bandAmt (sky → band blend), pink, violet, halo, rim, body (Colors), bodyAmt, zenithAmt, zenith (Color) }. */
-export function duskSkyState(sunY, oc = 0, off = 0) {
+export function duskSkyState(sunY, oc = 0, off = 0, out = null) {
+  if (!out) out = { tw: 0, bandAmt: 0, pink: new THREE.Color(), violet: new THREE.Color(), halo: new THREE.Color(), rim: new THREE.Color(),
+    body: new THREE.Color(), bodyAmt: 0, zenithAmt: 0, zenith: new THREE.Color() };
   const K = SKY_DUSK, on = 1 - off, env = ([a, b, c, d]) => smooth(a, b, sunY) * (1 - smooth(c, d, sunY));
-  const col = (rgb, k) => new THREE.Color().setRGB(rgb[0] * k, rgb[1] * k, rgb[2] * k);
+  const col = (c, rgb, k) => c.setRGB(rgb[0] * k, rgb[1] * k, rgb[2] * k);
   const tw = env(K.sun), calm = 1 - K.overcast * oc;
   const lum = 0.3 + 0.7 * smooth(-0.15, 0.04, sunY); // the band dims as the sun sinks further
   const bandAmt = K.band.amount * tw * calm * on, halo = K.halo.amount * env(K.halo.sun) * calm * on;
   const rim = K.rim.amount * env(K.rim.sun) * (1 - K.rimOvercast * oc) * on;
-  return { tw, bandAmt, pink: col(K.band.pink, lum), violet: col(K.band.violet, lum), halo: col(K.halo.color, halo), rim: col(K.rim.color, rim),
-    body: col(K.body, 1), bodyAmt: K.bodyAmount * tw * on, zenithAmt: K.zenith.amount * tw * calm * on, zenith: col(K.zenith.color, 1) };
+  col(out.pink, K.band.pink, lum); col(out.violet, K.band.violet, lum); col(out.halo, K.halo.color, halo); col(out.rim, K.rim.color, rim);
+  col(out.body, K.body, 1); col(out.zenith, K.zenith.color, 1);
+  out.tw = tw; out.bandAmt = bandAmt; out.bodyAmt = K.bodyAmount * tw * on; out.zenithAmt = K.zenith.amount * tw * calm * on;
+  return out;
 }
 
 export class DayCycle {
@@ -281,7 +286,7 @@ export class DayCycle {
     const oc = this.overcast * (1 - above), flash = this.flash * (1 - above);
     u.uOvercast.value = oc; u.uFlash.value = flash;
     // #2124: dawn / dusk colour depth (pink → violet band, deeper zenith, sun halo, lit cloud edges), damped by overcast
-    const dusk = this.dusk = duskSkyState(this.sunDir.y, oc, Math.max(inside, Math.min(1, flash * 0.5)));
+    const dusk = this.dusk = duskSkyState(this.sunDir.y, oc, Math.max(inside, Math.min(1, flash * 0.5)), this.dusk); // (#2136: the same object every frame)
     u.uZenith.value.lerp(dusk.zenith, dusk.zenithAmt);
     u.uPink.value.copy(dusk.pink); u.uViolet.value.copy(dusk.violet); u.uHalo.value.copy(dusk.halo); u.uRim.value.copy(dusk.rim);
     u.uBody.value.copy(dusk.body); u.uBodyAmt.value = dusk.bodyAmt; u.uBandAmt.value = dusk.bandAmt;
@@ -297,12 +302,12 @@ export class DayCycle {
       this.scene.fog.far += (L.far - this.scene.fog.far) * inside;
     } else this.scene.fog.near = this.fogNear;
     // aerial perspective (#2100): haze colour per view ray and weather; off inside the deck and while lightning flashes
-    const haze = hazeState({ sunDir: this.sunDir, horizon: u.uHorizon.value, glow: u.uGlow.value, glowAmt: u.uGlowAmt.value, day, oc, off: Math.max(inside, Math.min(1, flash * 0.5)), halo: dusk.halo });
-    applyHaze(haze); u.uScatter.value.copy(haze.scatter);
+    const haze = hazeState({ sunDir: this.sunDir, horizon: u.uHorizon.value, glow: u.uGlow.value, glowAmt: u.uGlowAmt.value, day, oc, off: Math.max(inside, Math.min(1, flash * 0.5)), halo: dusk.halo }, this.haze);
+    this.haze = haze; applyHaze(haze); u.uScatter.value.copy(haze.scatter);
     // cloud shadows (#2102): drifting with the wind under a partly cloudy sky; off indoors (eased), inside the deck, in the garage
     const ik = dt > 0 ? Math.min(1, dt / CLOUD_SHADOW.indoorFade) : 1;
     this.cloudIndoor += ((this.indoor ? 1 : 0) - this.cloudIndoor) * ik; this.cloudT += dt;
-    this.cloudShadow = cloudShadowState({ sunDir: this.sunDir, oc, off: this.cloudShadows ? Math.max(inside, this.cloudIndoor, this.under) : 1 });
+    this.cloudShadow = cloudShadowState({ sunDir: this.sunDir, oc, off: this.cloudShadows ? Math.max(inside, this.cloudIndoor, this.under) : 1 }, this.cloudShadow);
     applyCloudShadows(this.cloudShadow, this.wind ? stepCloudDrift(this.cloudPos, dt > 0 ? dt : 0, this.wind) : cloudDrift(this.cloudT)); // (no wind: the fixed drift, #2102)
     const D = this.deckUniforms, up = cy > (L.base + L.top) / 2;
     this.deck.visible = cover > 0.01 && (up || cy > L.base - L.approach) && inside < 0.999;
