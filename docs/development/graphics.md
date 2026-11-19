@@ -818,6 +818,12 @@ src/reflections.js     mirror images: a Reflector per mirror, only the nearest o
                        A lazy shared 512×96 RGBA atlas (192 KiB, no mipmaps) holds twelve pre-drawn “Skriver”/dot phases; frames change UV offsets,
                        without repainting or marking the texture dirty. The sprite reuses ghost tag dimensions and its existing above-head anchor (there is no own name tag). Owners lease one
                        material/texture; reset, self-name replacement and disposal release the lease, with the last owner disposing both resources.
+src/roomprobe.js       glossy surfaces indoors reflect the room (#2151, ROOM_PROBE): materials tagged `userData.roomProbe = '<class>'`
+                       (interior.js, standardinterior.js, toilet.js, hood.js, fridge.js, ovens.js, world.js) get one env map: a 64 px
+                       cube-camera view of the visitor's room zone, PMREM-filtered, kept per zone (LRU); `roomEnv()` (the painted room,
+                       #307, re-exported by lights.js) below ROOM_PROBE.minLevel. See [Room reflections](#room-reflections-in-glossy-surfaces-2151)
+tools/roomprobetest.mjs node test: mode per quality level / phones, capture plan (load, new zone, light change, settle, LRU, once), bands, zones
+tools/roomprobe2151browser.cjs before | after pictures in the real game (kitchen, bathroom; day, evening with lamps) and the probe's numbers
 src/seasons.js         month → tree colours/leaf cover and snow on ground, roofs, hedges, paving (SEASON)
 src/footprints.js      footprints in the snow (#1773, FOOTPRINTS): one InstancedMesh of atlas quads (shoe | paw, a canvas), fade by
                        age and distance in the shader (onBeforeCompile), hidden while no live print is within drawDist; walkers fed by main.js
@@ -1760,3 +1766,44 @@ tag (`eye + 8 × (features + 16 × seed)`, config.js `skinVarCode`; older client
 possible wire extension is exactly the Worker's 60 characters. No mesh, texture, attribute, draw call or network field; off = one uniform
 test. `tools/avatarskinvartest.mjs` checks placement, determinism, the kept-clear areas and the code round trip;
 `tools/avatarskinvar2111browser.cjs` takes before/after mirror-preview views ([images](../verification/2111/)).
+
+## Room reflections in glossy surfaces (#2151)
+
+Chrome, stainless steel, porcelain, glossy glass and tiles indoors had nothing to reflect (no environment map; only the copper
+pendants, the toaster and the fruit bowl used the painted `roomEnv()`, #307), so taps, fridge, hood and WC looked flat grey.
+`src/roomprobe.js` (ROOM_PROBE in config) gives every material tagged `userData.roomProbe = '<class>'` one env map:
+
+- **Zones.** The visitor's room in L1007 or in a visited flat (`probeZone`: key `L:<level>:<room>` / `<unit id>:<level>:<room>`)
+  from the room maps; outdoors, in a doorway, the stairwell, the garage or the playroom the last map stays. The probe stands at
+  the room's centre (the largest region; the visitor's spot when the centre is not in the room) `height` m above the floor.
+- **Capture.** A `CubeCamera` (64 px faces, `near`/`far` 0.05/18 m, the main camera's layers) draws one face per frame (never in
+  a frame that redraws the shadow map), then three's `PMREMGenerator.fromCubemap` filters it into the zone's target. The mirrors'
+  Reflectors are hidden during a face (they would draw their own pass). `ProbePlan` (pure) decides: the first capture at once
+  (after the warm-up), a zone without a fresh map or a light change after `settle` s, at most `keep` zones (LRU). The light's
+  signature = the daylight band (`daylightBand`, with hysteresis) + every room switch, small lamp, visited flat's lamp and the mains.
+  No pass in any other frame.
+- **Programs.** 64 px everywhere, because the painted room's PMREM is 64 px too: the shiny materials have the same program
+  whichever map they show, so a quality step or a capture never compiles. Desktop draws the faces into a linear half-float
+  target (the mirror variants the warm-up compiled); phones (lowMemory) into an `isXRRenderTarget` sRGB RGBA8 target (#1561's
+  screen-output trick: the screen programs) and the PMREM's cube material decodes it (`sRGBTransferEOTF`, a setter on three
+  r170's private `_cubemapMaterial`). The faces are tone-mapped on phones before they are reflected (slightly flatter).
+- **Levels.** `probeMode`: below `minLevel` (Lägsta) the painted room, dimmed at night (`paintedScale`); phones capture once
+  (the first zone after the warm-up; the cube target and PMREM are freed) and never again; `&noprobe` = no env map at all (the old
+  look, for A/B). A quality knob `roomProbe` (`&perf` shows mode, zone and captures).
+- **Strength.** `ROOM_PROBE.k` per class (*guess*, by eye): chrome 1, steel 0.8 … porcelain 0.25, tiles 0.12, floor tiles 0.06
+  (#271). three scales the env map's diffuse irradiance by the same factor, so a higher value on tiles/porcelain lightens them
+  overall rather than adding gloss; that is why they stay low.
+
+Tagged: interior.js (chrome, steel, dishwasher, handles/brass, hob glass, glassDark, porcelain, white appliances, splash and
+wall tiles, wet-room floor), standardinterior.js (the visited flats' same classes), toilet.js, hood.js, fridge.js, ovens.js,
+world.js (the fallback porcelain, which is also L1007's window-sill material). The copper keeps its own painted map.
+Measured (`tools/roomprobe2151perf.cjs`, headless SwiftShader, kitchen, noon, `&warm`; `perf.json`): programs after the warm-up
+`&quality=0` 623 → 633 (+10: the tagged materials' env-map variants, screen + mirror), phone profile `&lowmem` 310 → 315 (+5,
+screen only) and 0 new programs from its one capture; `&quality=3` 633 after the warm-up, 634 after the first capture (+1:
+PMREM's cube material). Draw calls of the view unchanged (270 / 279 at quality 0 / lowmem). A capture face drew 285 calls in
+18.9 ms against the view's 28.5 ms (SwiftShader: relative only), six frames per capture. GPU memory: one 64 px half-float cube
+(≈ 0.2 MB) + ≈ 0.7 MB per kept zone (≤ 6) + PMREM's ping-pong target; phones free all but the one map. Not measured on the
+Surface Pro or a phone.
+Not done: window glass (#2179), mirrors (their Reflector), black matt mixers (metalness 0.22: no visible gain).
+`tools/roomprobetest.mjs` (pure), `tools/roomprobe2151browser.cjs` (before | after images),
+`tools/roomprobe2151perf.cjs` (programs / calls). [Images and numbers](../verification/2151/).

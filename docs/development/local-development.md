@@ -29,6 +29,7 @@ URL parameters (debugging / screenshots):
 - `&spidersuit` — the Spider-Man suit on (#597; climbing outdoors only).
 - `&weather=rain|storm|snow|hail|clear` — force the weather (#248, #249).
 - `&noflora` — no stones, weed or water lilies in Höje å (#1956).
+- `&noprobe` — no room reflections in chrome, steel, porcelain and tiles indoors (#2151, `src/roomprobe.js`): the old look, for A/B.
 - `&nodrift` — no drifting flecks on Höje å and no specks under its surface (#1952).
 - `&blinds=0…1` — every pleated blind drawn up that far (#273; not saved).
 - `&fries` — golden, steaming fries in the open air-fryer basket (#301).

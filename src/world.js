@@ -59,7 +59,7 @@ const M = {
   cabinet: mat(COLORS.cabinet, { roughness: 0.5 }),
   counter: mat(COLORS.counter, { roughness: 0.35 }),
   appliance: mat(COLORS.appliance, { roughness: 0.3 }),
-  porcelain: mat(COLORS.porcelain, { roughness: 0.15 }),
+  porcelain: mat(COLORS.porcelain, { roughness: 0.15, userData: { roomProbe: 'porcelain' } }), // #2151: reflects the room (roomprobe.js)
   frame: mat(COLORS.frame, { roughness: 0.5 }),
   glass: new THREE.MeshPhysicalMaterial({
     color: COLORS.glass, transparent: true, opacity: 0.1, roughness: 0.02, metalness: 0, depthWrite: false,

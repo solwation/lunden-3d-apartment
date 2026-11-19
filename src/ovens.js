@@ -12,6 +12,7 @@ import { sfx } from './audio.js';
 const black = new THREE.MeshStandardMaterial({ color: 0x141516, roughness: 0.18 });
 const glass = new THREE.MeshStandardMaterial({ color: 0x050606, roughness: 0.08 });
 const steel = new THREE.MeshStandardMaterial({ color: 0xc3c7ca, roughness: 0.32, metalness: 0.35 });
+black.userData.roomProbe = 'black'; glass.userData.roomProbe = 'glass'; steel.userData.roomProbe = 'steel'; // #2151 (roomprobe.js)
 
 const box = (sx, sy, sz, x, y, z, m) => {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m);

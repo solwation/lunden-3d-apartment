@@ -68,6 +68,9 @@ const M = {
 };
 
 for (const k of ['splash', 'wallTile', 'hallTile', 'wetTile']) M[k].userData.skin = true;
+// #2151: what reflects the room (roomprobe.js; strengths per class in ROOM_PROBE.k): metal, glossy glass, porcelain, tiles
+for (const [cls, keys] of Object.entries({ chrome: ['chrome'], steel: ['steel', 'dishwasher'], steelDark: ['steelDark'], handle: ['handle', 'brass'],
+  glass: ['glassDark'], black: ['black'], porcelain: ['porcelain'], appliance: ['appliance'], tile: ['splash', 'wallTile'], floorTile: ['wetTile'] })) for (const k of keys) M[k].userData.roomProbe = cls;
 
 /**
  * Light-emitting parts (spots, globe, LED strips, mirror light) get one material per room so

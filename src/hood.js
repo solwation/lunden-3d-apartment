@@ -27,6 +27,7 @@ function hoodFinishes() {
     filter: new THREE.MeshStandardMaterial({ map: texture(filter), roughness: 0.6, metalness: 0.35 }),
     glass: new THREE.MeshStandardMaterial({ color: 0x151b20, roughness: 0.14, metalness: 0.25 }),
   };
+  finishes.steel.userData.roomProbe = 'steel'; finishes.filter.userData.roomProbe = 'steelDark'; finishes.glass.userData.roomProbe = 'glass'; // #2151 (roomprobe.js)
   return finishes;
 }
 

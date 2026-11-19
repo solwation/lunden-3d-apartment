@@ -29,6 +29,9 @@ const M = {
   wetWall: tileMaterial({ tw: S.wetWall.w, th: S.wetWall.h, nx: 3, ny: 3, color: S.wetWall.color, vary: 0.02, grout: 0xcfd1d0, ppm: 300, seed: 25 }, 0.55),
 };
 for (const k of ['splash', 'wet', 'wetWall']) M[k].userData.skin = true;
+// #2151: what reflects the room (roomprobe.js; strengths per class in ROOM_PROBE.k)
+for (const [cls, keys] of Object.entries({ chrome: ['chrome'], steel: ['steel'], handle: ['handle'], glass: ['glass'], porcelain: ['porcelain'],
+  appliance: ['appliance'], tile: ['splash', 'wetWall'], floorTile: ['wet'] })) for (const k of keys) M[k].userData.roomProbe = cls;
 // An opening front is ONE mesh (#621: a draw call each, not one per material — the kitchens have ~30 of them): its parts'
 // colours as vertex colours on one material; the handles' metal is shaded down to look like M.handle's (no env map:
 // metalness 0.6 shows ~half the colour; `HANDLE_SHADE` *guess*, matched by eye in a screenshot).

@@ -6,6 +6,7 @@ import { sfx } from './audio.js';
 import { stairHeight } from './stairs.js';
 import { buildLampWashes } from './lampwash.js';
 import { Pendant } from './pendants.js';
+import { roomEnv } from './roomprobe.js';
 
 // Room lights: a switch by every room's door (E) turns the room's lamps on and off — a ceiling
 // lamp per room (spots / globe / LED strips where interior.js built those) — and floor lamps
@@ -20,27 +21,8 @@ function ceilingAt(level, x, z) {
   return LEVELS[level].floor + (s ? s.height : LEVELS[level].ceiling);
 }
 
-/** A little painted room for glossy metal to reflect (#307; the scene has no environment map): an equirectangular
- * canvas — a pale ceiling, cream walls with two bright windows, a light oak floor. Made once. */
-let envTex = null;
-export function roomEnv() {
-  if (envTex) return envTex;
-  const c = document.createElement('canvas');
-  c.width = 256; c.height = 128;
-  const g = c.getContext('2d');
-  const grad = g.createLinearGradient(0, 0, 0, 128);
-  grad.addColorStop(0, '#f2eee8'); grad.addColorStop(0.38, '#e2dbd0'); grad.addColorStop(0.5, '#cbc1b2');
-  grad.addColorStop(0.56, '#b9a993'); grad.addColorStop(1, '#8f7d68');
-  g.fillStyle = grad; g.fillRect(0, 0, 256, 128);
-  g.fillStyle = '#ffffff';
-  g.fillRect(40, 40, 30, 28); g.fillRect(170, 44, 22, 24); // windows
-  g.fillStyle = '#3d3a36';
-  g.fillRect(100, 52, 24, 20); // a dark doorway / cabinets
-  envTex = new THREE.CanvasTexture(c);
-  envTex.mapping = THREE.EquirectangularReflectionMapping;
-  envTex.colorSpace = THREE.SRGBColorSpace;
-  return envTex;
-}
+// The little painted room for glossy metal (#307) lives in roomprobe.js now (#2151: the room probe's fallback); re-exported.
+export { roomEnv };
 
 /** The mains (#604, power.js): 1 = power, 0 = a power cut; in between while the fuse box crackles (the lamps flicker).
  * Switches and small lamps keep their own on / off through a cut (`room.on`), so they come back as they were; only

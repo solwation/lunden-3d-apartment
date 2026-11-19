@@ -11,6 +11,7 @@ import { sfx } from './audio.js';
 
 const porcelain = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.12 });
 const chrome = new THREE.MeshStandardMaterial({ color: 0xd7dadc, roughness: 0.15, metalness: 0.6 });
+porcelain.userData.roomProbe = 'porcelain'; chrome.userData.roomProbe = 'chrome'; // #2151: they reflect the room (roomprobe.js)
 
 const ellipse = (rx, rz) => {
   const s = new THREE.Shape();

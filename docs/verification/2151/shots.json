@@ -1,0 +1,47 @@
+{
+  "errors": [],
+  "scenes": {
+    "day": {
+      "kitchen": {
+        "mode": "live",
+        "zone": "L:0:Kök / matplats",
+        "sig": "3|P0000000000000000000000000000000000000000000000000000000000",
+        "captures": 1,
+        "faces": 6,
+        "mats": 58,
+        "maps": 1
+      },
+      "bath": {
+        "mode": "live",
+        "zone": "L:0:Badrum",
+        "sig": "3|P0000000000000000000000000000000000000000000000000000000000",
+        "captures": 2,
+        "faces": 12,
+        "mats": 58,
+        "maps": 2
+      },
+      "programs": 247
+    },
+    "evening": {
+      "kitchen": {
+        "mode": "live",
+        "zone": "L:0:Kök / matplats",
+        "sig": "0|P1111111111111110111111111111111111111111111111111111111111",
+        "captures": 1,
+        "faces": 6,
+        "mats": 58,
+        "maps": 1
+      },
+      "bath": {
+        "mode": "live",
+        "zone": "L:0:Badrum",
+        "sig": "0|P1111111111111110111111111111111111111111111111111111111111",
+        "captures": 2,
+        "faces": 12,
+        "mats": 58,
+        "maps": 2
+      },
+      "programs": 262
+    }
+  }
+}

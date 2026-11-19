@@ -10401,6 +10401,26 @@ export const GRAVEL_SURFACE = {
   depth: 0.0006, roughness: [0.78, 0.97], snowRoughness: 1,
   broadStrength: 0.05, broadScale: [0.43, 0.29, 0.17, -0.51],
 };
+// #2151: glossy surfaces indoors reflect the room (src/roomprobe.js). One low-resolution environment map per room zone
+// (a room of L1007 or of a visited flat, `zone` from the visitor's position), drawn by six cube-camera views from the room's
+// centre `height` m above its floor (*guess*: between worktop and eye height; the visitor's own spot when the centre is
+// outside the room) and pre-filtered by three's PMREM. `size` px per cube face on every device: 64 gives the same
+// pre-filtered texture size as the painted roomEnv() (256 × 128 → 64), so the shiny materials keep ONE shader program
+// whichever map they show (128 would add a second set of CUBEUV variants, #1561). `far` m: the probe's views end there
+// (*guess*: the flat is ~5 × 15 m; outdoors past it shows as sky), so a capture draws little beyond the rooms. A capture is
+// spread over frames (`facesPerFrame` cube faces per frame, none in a frame that redraws the shadow map) and happens only at
+// world load, when the visitor enters a zone whose map is missing or stale, or when the light changed: the daylight band
+// (`bands`: edges of daylight × (1 − 0.6 × overcast) with `margin` hysteresis, *guess*) or any lamp / the mains switched;
+// a change must hold for `settle` s first (lamps fade in). `keep` zones' maps are kept (least recently used dropped; each is
+// a 336 × 256 half-float target ≈ 0.7 MB). From quality level `minLevel` up; below it, and with `&noprobe` off entirely
+// (no env map: the old look), the painted roomEnv() shows, dimmed at night to `paintedNight` of its day strength. Phones
+// (lowMemory) capture once (the first zone after the warm-up) and never again. `k`: envMapIntensity per surface class
+// (the `userData.roomProbe` tag the modules set; tiles low, #271); all *guess*, by eye against the before/after shots.
+export const ROOM_PROBE = {
+  size: 64, far: 18, near: 0.05, height: 1.3, facesPerFrame: 1, keep: 6, settle: 0.6, check: 0.25,
+  bands: [0.06, 0.3, 0.7], margin: 0.03, minLevel: 1, paintedNight: 0.3,
+  k: { chrome: 1, steel: 0.8, steelDark: 0.6, handle: 0.6, glass: 0.6, black: 0.5, porcelain: 0.25, appliance: 0.2, tile: 0.12, floorTile: 0.06 },
+};
 // #2099: wet ground during and after rain (src/wetground.js). One shared state (`wet` = the surface film, `pool` = the puddles,
 // both 0…1) integrated on the game clock from what falls (rain or melting hail; snow and the snow months keep it dry): rain
 // of strength s soaks a dry surface in `wetUp` / s h and then fills the puddles in `poolUp` / s h; afterwards the film dries

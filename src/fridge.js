@@ -30,6 +30,7 @@ function brushedSteel() {
 }
 const steel = brushedSteel();
 const steelDark = new THREE.MeshStandardMaterial({ color: 0x8f9497, roughness: 0.35, metalness: 0.35 });
+steel.userData.roomProbe = 'steel'; steelDark.userData.roomProbe = 'steelDark'; // #2151: they reflect the room (roomprobe.js)
 const fridgeLiner = new THREE.MeshStandardMaterial({ color: 0xf6f8f8, roughness: 0.4, emissive: 0xffffff, emissiveIntensity: 0.18 });
 const fridgeLamp = new THREE.MeshBasicMaterial({ color: 0xffffff });
 const frost = new THREE.MeshStandardMaterial({ color: 0xeaf4fb, roughness: 0.85, emissive: 0xcfe6ff, emissiveIntensity: 0.22 });

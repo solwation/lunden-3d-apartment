@@ -125,6 +125,8 @@ import { WallClock, ClockPanel } from './wallclock.js';
 import { TimeSync } from './timesync.js'; // #1774
 import { Patio, buildStringLights } from './patio.js';
 import { updateReflections, reflectors, mirrorTarget } from './reflections.js';
+import { RoomProbe, probeZone, daylightBand } from './roomprobe.js';
+import { ROOM_PROBE } from './config.js';
 import { WarmUp } from './warmup.js';
 import { loadingStep, loadingYield } from './loadingstep.js';
 import { Quality } from './quality.js';
@@ -4134,6 +4136,25 @@ const warm = new WarmUp({ renderer, scene, camera, shadowCamera: sun.shadow.came
 posters.onBuilt = (p) => warm.add(p.mesh); // #1514: saved drawings arrive from IndexedDB during/after the compile stages
 freeSceneGeometryCopies(scene, renderer); // phone: normals / uv / colours leave the CPU after the first upload (#628)
 detail.buildProxies(scene, things, blinds.curtains); // phone (#1540, #1545): whole furnishings, the bottles / glasses at home and each curtain seen from outside, merged; before the first upload
+// #2151: glossy surfaces indoors reflect the room — a small cube-map probe per room zone, drawn at load (after the warm-up),
+// on entering a zone without a fresh map and when the light changes; never every frame (src/roomprobe.js, ROOM_PROBE).
+// The tagged materials get their env map now, before the warm-up compiles them. `&noprobe`: none at all (the old look).
+const probeHome = { roomMaps: world.roomMaps, floorOf: (l) => LEVELS[l].floor };
+const roomProbe = new RoomProbe(renderer, scene, camera, { lowMemory, off: params0.has('noprobe'), hide: () => reflectors().map((m) => m.r) });
+roomProbe.collect();
+quality.register('roomProbe', { apply: (l) => roomProbe.setLevel(l), state: () => `${roomProbe.mode} ${roomProbe.plan.current ?? ''} (${roomProbe.stats.captures} captures)`,
+  cost: 'six small views of the room per capture (load, a new room, a light change)' });
+const probeLight = { band: null, sig: '', t: 0 }; // the light's signature, re-read every ROOM_PROBE.check s
+function probeSignature(daylight, dt) {
+  if ((probeLight.t -= dt) > 0 && probeLight.band !== null) return probeLight.sig;
+  probeLight.t = ROOM_PROBE.check;
+  probeLight.band = daylightBand(daylight, probeLight.band);
+  let lit = lights.supply > 0.5 ? 'P' : 'p';
+  for (const R of lights.rooms.values()) lit += R.on ? '1' : '0';
+  for (const f of lights.floorLamps) lit += f.room.on ? '1' : '0';
+  for (const r of visitLights.rooms) lit += r.on ? '1' : '0';
+  return (probeLight.sig = `${probeLight.band}|${lit}`);
+}
 let mirrorFrame = 0;
 // The slowest frame since the crash heartbeat last looked (#669): its CPU time, the new programs it compiled, whether it redrew the shadow map and the warm-up state
 const frameDiag = { ms: 0, progs: 0, shadow: 0, warm: '', passes: 0, held: 0, lastShadow: 0 };
@@ -4180,6 +4201,11 @@ function frame(raw) {
   const mirror = viewDue && updateReflections(camera, player.aloft ? -1 : Math.max(0, player.level), QUALITY.mirror[quality.level] > 0 && !warm.blocksView, mirrorSkip);
   updateListener(camera);
   if ((roomZoneClock += dt) > 0.25) { roomZoneClock = 0; setRoomZone(reverbZone(world, player.pos)); } // #2153: room acoustics follow the listener
+  if (viewDue && !warm.blocksView && roomProbe.mode !== 'off') { // #2151: the room probe (at most a cube face, rarely)
+    const sky = day.daylight * (1 - 0.6 * weather.overcast), u = player.outdoors || player.inCore || player.below || player.inPlayroom ? undefined : player.unit;
+    const zone = u === undefined ? null : u ? probeZone(player.pos, player.unitLevel, null, u) : probeZone(player.pos, player.aloft ? -1 : player.level, probeHome);
+    roomProbe.update(dt, zone, probeSignature(sky, dt), sky, warm.done && !renderer.shadowMap.needsUpdate);
+  }
   hitch.phase('update');
   if (hitch.enabled) Object.assign(hitch.frameInfo, { shadow: renderer.shadowMap.needsUpdate, mirror: mirror ? (reflectors().find((m) => m.r.visible)?.name || 'yes') + (mirrorSkip ? ' (held)' : '') : '', quality: quality.level,
     yaw: Math.round(camera.rotation.y * 180 / Math.PI), at: `${camera.position.x.toFixed(1)},${camera.position.z.toFixed(1)}` });
@@ -4539,4 +4565,4 @@ const openPanel = () => !overlay.hidden ? 'menu' : !reading ? (lowMemory && port
   : viewing ? 'poster' : isAvatarCustomizerOpen() ? 'avatar' : cinema.open || computerHub.open || tvMedia.open ? 'video' : 'other';
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag, viewportBinding, panel: openPanel }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { riverFlora, riverDrift, mussels, diveAir, sharkHunt, picnicSync, roofPicnic, football, sharedFish, ghosts, outdoorGym, ducks, medals, squirrels, outdoorCats, footprints, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, cookStores, vesselBusy, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, bestiary, bestiaryPhotos, bestiaryImages, bestiaryRegistry:registry, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen, checkPublishedHtml, prepareUpdateUrl };
+window.__app = { roomProbe, riverFlora, riverDrift, mussels, diveAir, sharkHunt, picnicSync, roofPicnic, football, sharedFish, ghosts, outdoorGym, ducks, medals, squirrels, outdoorCats, footprints, riverFish, fishing, fishQuest, balloon, billiardCues, cueRack: playroom.cueRack, popcornTubs, santa, santaTV, christmasGifts, colorFrustum, siteInstances, computerHub, tvMedia, phoneFrustum, slideRide, cinema, flare, outdoorSpot, paddock, birds, microwave, carLodState, showFireworks, newYear, sausages, frameRate, fpsDiag: { events: fpsDiagEvents, get active() { return lastFpsActiveState; }, get whyNot() { return lastFpsActiveReason; } }, testMode, visitLights, power, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, cookStores, vesselBusy, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, combat, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, lightModes, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, timeSync, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, bestiary, bestiaryPhotos, bestiaryImages, bestiaryRegistry:registry, catCards, catCardsLoaded, binderPanel, showBinder, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS, avatarCustomizer: { open: openAvatarCustomizer, close: closeAvatarCustomizer, isOpen: isAvatarCustomizerOpen, getLook: () => ghosts.myLook, setLook: setMyLook }, openAvatarCustomizer, closeAvatarCustomizer, isAvatarCustomizerOpen, checkPublishedHtml, prepareUpdateUrl };
