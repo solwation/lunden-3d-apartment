@@ -759,7 +759,7 @@ src/cloudshadow.js     cloud shadows (#2102, `CLOUD_SHADOW`, artistic *guesses*)
                        the shadows) read where the view ray meets the shadows' deck plane (`cloudShadowA.xy` offset + `.z` height, the shared uniform object), so clouds drift with the
                        wind exactly like their shadows and a cloud overhead casts its shadow below it. Coverage follows `oc` (the weather's overcast, real WMO codes 1/2/3 = 0.05 / 0.2 / 0.55):
                        `skyCloudState(oc)` gives the threshold (`CLOUD_SHADOW.sky`, *guess*: nothing at a clear sky, equal to the shadows' threshold from `ramp`, overcast fills through the
-                       shader's floor). Two finer octaves roughen the edges and fade out towards the horizon (pixel footprint > a cell). Dusk colours / lit edges (#2124) and the deck (#1251) are
+                       shader's floor). The shared field has a low octave (clusters, gaps; cell 200 m); the sky adds two finer octaves that erode the edges and fade out towards the horizon, a wide soft edge, thickness shading (grey cores, bright thin rims) and one sun-ward sample for self-shadow. Dusk colours / lit edges (#2124) and the deck (#1251) are
                        untouched. One program (an uniform branch), no pass; `quality.register('skyClouds')` falls back to the old texture at level 0 and on phones. `tools/skycloudstest.mjs`,
                        `tools/skyclouds2154browser.cjs`, [evidence](../verification/2154/).
 src/balloon.js         hot-air balloon above the cloud deck (#1646, `BALLOON`, all numbers *guess*): one merged vertex-coloured Lambert mesh (envelope, basket, rim, ropes; ~900

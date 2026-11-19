@@ -5156,13 +5156,13 @@ export const SKY_DUSK = {
 // sun below `sun` y), above / inside the cloud deck, indoors (eased over `indoorFade` s), at quality level < `minLevel` and on phones.
 // #2117: with the weather's wind (DayCycle.wind, m/s downwind x/z) the deck drifts along it at `windScale` × the 10 m speed (the wind
 // at the cloud deck is stronger than at the ground), clamped to `drift` m/s; `speed` / `wind` remain the fallback without one. *guess*.
-export const CLOUD_SHADOW = { cell: 110, cells: 48, height: 1200, speed: 5, wind: [-1, -0.4], fade: [0.05, 0.25], solid: [0.8, 1],
+export const CLOUD_SHADOW = { cell: 200, cells: 26, height: 1200, speed: 5, wind: [-1, -0.4], fade: [0.05, 0.25], solid: [0.8, 1],
   thr: [0.64, 0.36], soft: 0.08, strength: 0.85, sun: [0.0, 0.12], indoorFade: 1.5, minLevel: 1, windScale: 1.6, drift: [1, 25],
   // #2154: the sky's own clouds read the same noise (same cell / height / drift) so they match the shadows. *guess* look: `clearThr` = the
   // threshold over a clear sky (almost nothing is above it), `ramp` = overcast from which it equals the shadows', `soft` edge width (sky
   // clouds are fluffier than the shadows), `detail` weights of two finer octaves (4x, 8x) and `lowY` / `fineY` the elevations (unit-direction y)
   // above which the base / fine octaves are shown (below them the pixel footprint is wider than a cell: the field fades to its mean 0.5).
-  sky: { clearThr: 0.92, ramp: 0.25, soft: 0.1, detail: [0.16, 0.08], lowY: [0.04, 0.28], fineY: [0.15, 0.5], minLevel: 1 } };
+  sky: { clearThr: 0.92, ramp: 0.25, soft: 0.16, detail: [0.2, 0.1], lowY: [0.1, 0.4], fineY: [0.3, 0.65], horizon: [0.03, 0.22], shade: 0.45, selfShade: 0.5, sunStep: 0.3, minLevel: 1 } };
 
 // Birds (#1252/#1924, src/birds.js): a few gulls circling the area, exclusive near/far instanced batches, no lights, no textures,
 // no sound. All numbers *guess*. `count` birds (`lowMemoryCount` on phones), the last `high` of them at flight altitude (`highAlt`

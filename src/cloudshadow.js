@@ -24,7 +24,7 @@ float csNoise( vec2 p, float n ) { // value noise, periodic every n cells (#2102
 	vec2 i = floor( p ), t = fract( p ); t = t * t * ( 3.0 - 2.0 * t );
 	return mix( mix( csHash( i, n ), csHash( i + vec2( 1.0, 0.0 ), n ), t.x ), mix( csHash( i + vec2( 0.0, 1.0 ), n ), csHash( i + vec2( 1.0, 1.0 ), n ), t.x ), t.y );
 }
-float csField( vec2 p ) { return 0.62 * csNoise( p, ${f(C.cells)} ) + 0.38 * csNoise( p * 2.0 + vec2( 17.0, 5.0 ), ${f(2 * C.cells)} ); }
+float csField( vec2 p ) { return 0.26 * csNoise( p * 0.5 + vec2( 7.0, 23.0 ), ${f(C.cells / 2)} ) + 0.44 * csNoise( p, ${f(C.cells)} ) + 0.30 * csNoise( p * 2.0 + vec2( 17.0, 5.0 ), ${f(2 * C.cells)} ); } // #2154: + a low octave: clusters and gaps, uneven cloud sizes
 `;
 const PARS = /* glsl */`
 uniform vec4 cloudShadowA, cloudShadowB;
@@ -122,10 +122,11 @@ function noise(px, pz, n) {
   const a = hash(ix, iz, n), b = hash(ix + 1, iz, n), c = hash(ix, iz + 1, n), d = hash(ix + 1, iz + 1, n);
   return (a + (b - a) * tx) + ((c + (d - c) * tx) - (a + (b - a) * tx)) * tz;
 }
+const field = (px, pz) => 0.26 * noise(px * 0.5 + 7, pz * 0.5 + 23, C.cells / 2) + 0.44 * noise(px, pz, C.cells) + 0.30 * noise(px * 2 + 17, pz * 2 + 5, 2 * C.cells);
 /** The base cloud field at deck-plane world point (x, z) for the drift currently applied (JS mirror of csField; the sky adds fine octaves on top). */
 export function cloudFieldAt(x, z) {
   const A = cloudShadowUniforms.cloudShadowA.value, px = (x + A.x) / C.cell, pz = (z + A.y) / C.cell;
-  return 0.62 * noise(px, pz, C.cells) + 0.38 * noise(px * 2 + 17, pz * 2 + 5, 2 * C.cells);
+  return field(px, pz);
 }
 /** Cloud density 0…1 of the sky in unit direction (dx, dy, dz) seen from (cx, cz), base octaves only: the same plane / offset as the shadows. */
 export function skyCloudDensity(dx, dy, dz, cx, cz, s) {
@@ -136,7 +137,7 @@ export function cloudShadowAt(x, y, z) {
   const A = cloudShadowUniforms.cloudShadowA.value, B = cloudShadowUniforms.cloudShadowB.value;
   if (A.w <= 0) return 1;
   const px = (x + B.x * (A.z - y) + A.x) / C.cell, pz = (z + B.y * (A.z - y) + A.y) / C.cell;
-  const n = 0.62 * noise(px, pz, C.cells) + 0.38 * noise(px * 2 + 17, pz * 2 + 5, 2 * C.cells);
+  const n = field(px, pz);
   return 1 - A.w * smooth(B.z - B.w, B.z + B.w, n);
 }
 

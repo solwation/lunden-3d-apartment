@@ -89,14 +89,17 @@ const skyFrag = /* glsl */`
   ${CLOUD_NOISE_GLSL}
   // #2154: cloud density from the SAME periodic noise as the ground shadows, read where the view ray meets the shadows' deck plane
   // (same offset, so sky and shadows drift together); two finer octaves roughen the edges; flat (its mean) towards the horizon
-  float skyCloud(vec3 d, out float field) {
+  float skyCloud(vec3 d, out float thick, out float shade) {
     float y = max(d.y, 0.04);
     vec2 p = (cameraPosition.xz + d.xz / y * cloudShadowA.z + cloudShadowA.xy) * ${(1 / C_CELL).toString()};
-    float n = csField(p), fine = smoothstep(${SK.fineY[0].toFixed(3)}, ${SK.fineY[1].toFixed(3)}, d.y);
+    float base = csField(p), n = base, fine = smoothstep(${SK.fineY[0].toFixed(3)}, ${SK.fineY[1].toFixed(3)}, d.y);
     n += fine * (${SK.detail[0].toFixed(3)} * (csNoise(p * 4.0 + vec2(3.0, 11.0), ${(4 * C_CELLS).toFixed(1)}) - 0.5) + ${SK.detail[1].toFixed(3)} * (csNoise(p * 8.0 + vec2(29.0, 7.0), ${(8 * C_CELLS).toFixed(1)}) - 0.5));
     n = mix(0.5, n, smoothstep(${SK.lowY[0].toFixed(3)}, ${SK.lowY[1].toFixed(3)}, d.y));
-    field = n;
-    return smoothstep(uSkyCl.y - uSkyCl.z, uSkyCl.y + uSkyCl.z, n);
+    thick = smoothstep(uSkyCl.y - uSkyCl.z, uSkyCl.y + 0.3, n); // wide falloff: thin wispy rims, thick grey cores
+    // self-shadow: denser cloud towards the sun in the plane = this spot lies in its shade (one cheap extra sample)
+    vec2 sd = normalize(uSun.xz + vec2(1e-4)) * ${SK.sunStep.toFixed(3)};
+    shade = clamp((csField(p + sd) - base) * 3.0, 0.0, 1.0) * smoothstep(0.0, 0.3, uSun.y) * thick;
+    return smoothstep(uSkyCl.y - uSkyCl.z, uSkyCl.y + uSkyCl.z * 0.6, n) * smoothstep(${SK.horizon[0].toFixed(3)}, ${SK.horizon[1].toFixed(3)}, d.y);
   }
   void main() {
     vec3 d = normalize(vDir);
@@ -122,11 +125,15 @@ const skyFrag = /* glsl */`
     col += vec3(star) * (0.6 + 0.4 * hash(q + 1.0));
     // clouds (equirectangular alpha map), lit by day, dark at night, tinted at sunset
     vec2 uv = vec2(atan(d.x, d.z) / 6.2831853 + 0.5, 0.5 - asin(clamp(d.y, -1.0, 1.0)) / 3.1415927);
-    float c;
-    if (uSkyCl.x > 0.5) { float fld; c = max(skyCloud(d, fld), uOvercast * (0.8 + 0.2 * smoothstep(0.3, 0.7, fld))) * smoothstep(0.0, 0.08, d.y); } // #2154
+    float c, thick = 0.5, shade = 0.0;
+    if (uSkyCl.x > 0.5) { c = skyCloud(d, thick, shade); c = max(c, uOvercast * (0.8 + 0.2 * thick) * smoothstep(${SK.horizon[0].toFixed(3)}, ${SK.horizon[1].toFixed(3)}, d.y)); } // #2154
     else c = max(texture2D(uClouds, uv).a, uOvercast * (0.85 + 0.15 * texture2D(uClouds, uv * vec2(3.0, 2.0)).a)) * smoothstep(0.0, 0.08, d.y); // the old texture (lowest quality / phones)
     vec3 cloud = mix(vec3(0.95), vec3(0.16, 0.18, 0.24), uNight) + uGlow * uGlowAmt * 0.35;
     cloud = mix(cloud, mix(vec3(0.5, 0.53, 0.57), vec3(0.08, 0.09, 0.11), uNight), uOvercast * 0.8); // rain clouds (#248)
+    if (uSkyCl.x > 0.5) { // #2154 volume: grey cores and shaded undersides, bright thin rims, blue-grey ambient in thin parts; overcast darkens with thickness
+      cloud *= 1.0 - ${SK.shade.toFixed(3)} * thick * (0.6 + 0.4 * uOvercast) - ${SK.selfShade.toFixed(3)} * shade * (1.0 - 0.75 * uOvercast);
+      cloud = mix(cloud * vec3(0.9, 0.95, 1.04), cloud, thick) * (1.0 + 0.1 * (1.0 - thick) * (1.0 - shade));
+    }
     // #2124: a low sun lights thin edges and low clouds from below; the shaded body turns cooler violet-grey
     cloud = mix(cloud, uBody, uBodyAmt);
     float thin = 1.0 - smoothstep(0.2, 0.75, c);

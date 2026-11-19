@@ -9,7 +9,7 @@ const VIEWS = process.env.ONLY ? ALL.filter((v) => process.env.ONLY.split(',').i
 (async () => {
   const browser = await kit.launch(), result = { phase, views: [], errors: [], shaderErrors: [] };
   let baseFile = null;
-  if (phase === 'before') { baseFile = path.join(out, 'base-daycycle.js'); fs.mkdirSync(out, { recursive: true }); fs.writeFileSync(baseFile, execFileSync('git', ['show', `${process.env.BASE_REV || 'ade56ca5'}:src/daycycle.js`])); }
+  if (phase === 'before') { baseFile = path.join(out, 'base-daycycle.js'); fs.mkdirSync(out, { recursive: true }); fs.writeFileSync(baseFile, execFileSync('git', ['show', `${process.env.BASE_REV || '9f55bc1a'}:src/daycycle.js`])); }
   try {
     const ctx = await browser.newContext({ viewport: kit.SMALL, deviceScaleFactor: 1 });
     if (process.env.THREE_DIR) await ctx.route('https://cdn.jsdelivr.net/npm/three@0.170.0/**', (r) => r.fulfill({ path: path.join(process.env.THREE_DIR, new URL(r.request().url()).pathname.split('three@0.170.0/')[1]), contentType: 'text/javascript' }));
