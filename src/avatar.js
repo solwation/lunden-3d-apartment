@@ -1,6 +1,7 @@
 import { trainerDetails } from './avatartrainers.js'; // #2084
 import { installSelfView } from './avatarselfview.js'; // #2080
-import { lipPoint, lipSeamPoint } from './avatarlips.js'; // #2065
+import { lipPoint } from './avatarlips.js'; // #2065
+import { teethStrip } from './avatarteeth.js'; // #2150
 import { AVATAR_LIP_VOLUME } from './config.js';
 import { groundMotion } from './avatarmotion.js';
 import { modelURL } from './modelurl.js';
@@ -1018,8 +1019,15 @@ function addFace(add, sphere, P) {
     }
   }
   // The closed mouth is a thin ribbon; its bottom edge follows the lower lip while talking.
-  add(faceGrid(M.cols, 1, (u, v) => lipSeamPoint(u, v, headFront)), 'fixed', 'head', [0, 0, 0], 1, F.lips.seam);
-  add.last().mouth = 'seam'; add.last().face = FACE_PART.cowlHide;
+  // #2150: the dark cavity (the old ribbon, now with a lip-dark to deep-dark gradient), the teeth and the tongue: strips whose
+  // vertex jaw weights make them as high as the mouth is open (zero when shut), all in the same head part set.
+  for (const kind of ['cavity', 'upper', 'lower', 'tongue']) {
+    const s = teethStrip(kind, headFront), g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(s.position, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(s.normal, 3));
+    g.setAttribute('vcolor', new THREE.Float32BufferAttribute(s.color, 3)); g.setAttribute('jawWeight', new THREE.Float32BufferAttribute(s.weight, 1)); g.setIndex(s.index);
+    add(g, 'fixed', 'head', [0, 0, 0], 1, F.lips.seam);
+    add.last().mouth = 'seam'; add.last().face = FACE_PART.cowlHide;
+  }
   // The chin and brow ridge are part of the continuous head, not separate bumps.
 }
 // the tops' torso (hip at 0; scaled 1.15 / 1.08 × 1 × 0.7): a narrower waist, the chest, sloping shoulders (the trapezius)
@@ -1180,7 +1188,7 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
     if (anc) anchor.set(anc.subarray(0, n * 3)); else if (part.anchor) for (let i = 0; i < n; i++) anchor.set(part.anchor, i * 3);
     for (let i = 0; i < n; i++) {
       if (shoulder && !g.attributes.armPump) { const [w, d] = armPumpShape(gp.getY(i) - shoulder.y, UPPER); pump.set([shoulder.x, shoulder.z, w, d], i * 4); }
-      if (region === REGION.fixed && !part.shoe) { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; } else col.fill((vs ? shade * vs[i] : shade) * (g0.userData.sewn ? 1 : clothShade(part.bone, region, g.attributes.position, i)), i * 3, i * 3 + 3);
+      if (region === REGION.fixed && !part.shoe) { const vc = g.attributes.vcolor; if (vc) /* #2150: per-vertex colours of the cavity / teeth */ { col[i * 3] = vc.getX(i); col[i * 3 + 1] = vc.getY(i); col[i * 3 + 2] = vc.getZ(i); } else { col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; } } else col.fill((vs ? shade * vs[i] : shade) * (g0.userData.sewn ? 1 : clothShade(part.bone, region, g.attributes.position, i)), i * 3, i * 3 + 3);
       bare[i] = region === REGION.skin ? 1 : 0;
       // Pull the adjacent muzzle skin with the lips, so a pout never leaves floating lip islands.
       if (hb) {
@@ -1191,7 +1199,7 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
         // The new lip-to-skin band joins full lip motion to the adjacent muzzle's motion.
         pucker[i] = Math.round(255 * (follow === undefined ? (['upper', 'lower', 'seam'].includes(part.mouth) ? 1 : skin) : skin + (1 - skin) * follow));
       }
-      if (hb) mouth[i] = mouthWeight(part.mouth, gp.getX(i) - hb.x, gp.getY(i) - hb.y, gp.getZ(i) - hb.z);
+      if (hb) mouth[i] = g.attributes.jawWeight ? g.attributes.jawWeight.getX(i) : mouthWeight(part.mouth, gp.getX(i) - hb.x, gp.getY(i) - hb.y, gp.getZ(i) - hb.z); // (#2150: the cavity / teeth strips carry their own weight)
       jaw[i] = part.rifleJaw || (part.continuousHead && gp.getY(i) - hb.y < SURFACE.jawTop) ? 1 : 0; nose[i] = part.rifleNose || noseBlend.getX(i) > 0.25 ? 1 : 0; contact[i] = part.rifleSkull ? 1 : 0; reg[i] = part.shoe ? 5 : region; if (g.attributes.skinIndex) { for (let j = 0; j < 4; j++) { si[i * 4 + j] = g.attributes.skinIndex.array[i * 4 + j]; sw[i * 4 + j] = g.attributes.skinWeight.array[i * 4 + j]; } } else { si[i * 4] = k; sw[i * 4] = 1; }
     }
     g.setAttribute('color', new THREE.BufferAttribute(col, 3));

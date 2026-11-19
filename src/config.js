@@ -4513,6 +4513,17 @@ export const AVATAR_FACE = {
 // a spoken line follows the voice's start / word boundaries / end, closed after `liveMax` s if the end never comes.
 export const AVATAR_MOUTH = { drop: 0.009, below: 0.004, chinY: -0.03, halfWidth: 0.024, frontZ: [0.05, 0.085],
   rate: 13, vowel: 1, consonant: 0.4, space: 0.08, pause: 3, follow: 22, maxSecs: 6, liveMax: 20 };
+// #2150: teeth, mouth cavity and tongue inside the opening mouth (src/avatarteeth.js) *guess* by eye. Strips of the same avatar mesh whose
+// vertices carry a jaw weight (0 stays with the upper lip, 1 follows the lower one) and sit on the seam's height, so a strip is
+// (band[1] - band[0]) × the opening high: nothing when the mouth is shut. `band` the weight range, `reach` the share of the mouth's half
+// width, `front` m in front of the dark cavity (which keeps the old seam's depth), `corner` m of fall-back at the corners, `cols`
+// columns; `colour` the tooth / tongue colour, `gap` the darker share between teeth, `root` the share darker at the gum;
+// the cavity: `cavityRows` rows, a gradient from `cavityDeep` under the upper lip to the lip-dark `cavityEdge` at the lower lip; `minHeight` m under which a row counts as hidden.
+export const AVATAR_TEETH = {
+  upper: { band: [0, 0.4], reach: 0.58, front: 0.0006, corner: 0.0018, cols: 6, colour: 0xece6d8, gap: 0.14, root: 0.18 },
+  lower: { band: [0.86, 1], reach: 0.46, front: 0.0009, corner: 0.0018, cols: 4, colour: 0xe2dccb, gap: 0.16, root: 0.22 },
+  tongue: { band: [0.6, 0.93], reach: 0.3, front: 0.0004, corner: 0.001, cols: 2, colour: 0x8f4543 },
+  cavityRows: 1, cavityEdge: 0x4a2a28, cavityDeep: 0x1b0d0c, minHeight: 0.0004 };
 // #2038: small conversational gestures while a figure talks (src/avatartalk.js), *guess* by eye; local, no network field. The talking
 // amount follows `avatar.talking` at `rise` / `fall` 1/s (exactly 0 once quiet). A gesture every `gap` [min, max] s lasts `dur` [min, max] s:
 // a free hand lifts by `lift` [towards the middle, up, forward] m (scaled `amp` [min, max] per gesture; the right hand, the left

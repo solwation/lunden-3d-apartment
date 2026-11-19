@@ -866,7 +866,12 @@ Outer layer (#2147): the customizer's Kläder panel chooses `outer` (0 none / 1 
                        draw call or traffic: a shared per-vertex `mouth` weight (`mouthWeight`: lower lip whole, the dark lip seam's lower
                        half, chin / jaw front / lower beard fading to the corners and under the chin; with beard + moustache only below the
                        opening's lower edge) and one `uMouth` uniform move vertices down by up to MOUTH.drop in the vertex shader before
-                       skinning. Hit regions and the three-box collider keep the closed bind pose. Driven by chat.js `bubble` (a received
+                       skinning. **Teeth, cavity and tongue (#2150, `AVATAR_TEETH`, `src/avatarteeth.js`, *guess*):** the dark seam ribbon is a
+                       jaw-weighted strip with a deep-dark to lip-dark vertex gradient, plus an upper and a lower tooth row and a tongue (24 extra
+                       triangles in the same mesh, per-vertex `vcolor` / `jawWeight` read by `base()`): each strip sits on the seam's height with
+                       jaw weights `band`, so it is (band[1] - band[0]) × MOUTH.drop × the mouth value high - nothing when shut, never outside the
+                       lips; `teethHeight / teethVisible` give that height. Same shader path for talking, laughing, screaming and surprise (all drive
+                       `uMouth`). Test `tools/avatarteethtest.mjs`, browser `tools/avatarteeth2150browser.cjs`. Hit regions and the three-box collider keep the closed bind pose. Driven by chat.js `bubble` (a received
                        line; never for "skriver…", stopped with the bubble), ghosts.js `selfTalk` (our sent line, the mirror image),
                        greet.js `sayMine` (our spoken lines → the mirror image, `greet.mineAvatar`) and `onGreet` (a greeting player's avatar).
                        Component screenshots: `tools/avatarmouthtest.cjs BASE OUT` on `tools/avatarmouth.html` (four facial-hair variants
