@@ -23,7 +23,7 @@ const smooth = (e0, e1, x) => { const t = clamp01((x - e0) / (e1 - e0)); return 
  * temple (extra grey share in the temples), bag (0 … 1), matte (added roughness). All 0 at step 0. */
 export function ageParams(step) {
   const last = A.steps - 1, a = Math.min(last, Math.max(0, Math.round(Number(step) || 0)));
-  const fold = clamp01((a - A.fold.from) / (last - A.fold.from));
+  const fold = clamp01((a - A.fold.from) / (last - A.fold.from)) ** A.fold.power;
   const grey = A.grey.max * clamp01((a - A.grey.from) / (last - A.grey.from)) ** A.grey.power;
   const temple = a > 0 ? A.temple[0] * clamp01(a / 4) : 0;
   return { age: a, fold, grey, white: clamp01((a - A.white.from) / (last - A.white.from)), temple, bag: clamp01((a - 1) / (last - 1)), matte: A.matte * fold };
@@ -85,12 +85,12 @@ export function ageColor({ head, part, region }) {
           float agN = fract(sin(dot(agC, vec3(12.9898, 78.233, 37.719)) + uAge.w * 91.7) * 43758.5453);
           float agN2 = fract(sin(dot(agC, vec3(39.346, 11.135, 83.155)) + uAge.w * 53.1) * 24634.6345);
           float agFrac = clamp((uAge.y * (agBrow ? ${f(A.brow)} : 1.0)) + uAge2.z * agTemple + agMouth * uAge.y, 0.0, 1.0);
-          float agFar = smoothstep(${f(A.cell * 0.6)}, ${f(A.cell * 1.8)}, agFp); // beyond a strand's size: the mean tone
-          float agGrey = mix(1.0 - smoothstep(agFrac - 0.04, agFrac + 0.04, agN), agFrac, agFar);
+          float agFar = smoothstep(${f(A.cell * 0.4)}, ${f(A.cell * 1.2)}, agFp); // beyond a strand's size: the mean tone
+          float agGrey = mix(1.0 - smoothstep(agFrac - 0.12, agFrac + 0.12, agN), agFrac, agFar); // soft threshold, then the mean
           float agW = clamp(uAge2.y * 1.4 - 0.2 + (agN2 - 0.5) * 0.7, 0.0, 1.0); // salt-and-pepper: mid grey strands, white ones later
           float agCov = agBeard ? beardCov : agBrow ? browCov : 1.0;
-          vec3 agTone = vec3(mix(${f(A.tone[0])}, ${f(A.tone[1])}, agW)) * (0.85 + 0.3 * agN2);
-          diffuseColor.rgb = mix(diffuseColor.rgb, agTone, agGrey * agCov * (agBrow ? 0.9 : 1.0));
+          vec3 agTone = ${v3(A.warm)} * mix(${f(A.tone[0])}, ${f(A.tone[1])}, agW) * (0.9 + 0.2 * agN2);
+          diffuseColor.rgb = mix(diffuseColor.rgb, agTone, agGrey * agCov * ${f(A.strength)} * (agBrow ? 0.9 : 1.0));
         }
       }
     }`;

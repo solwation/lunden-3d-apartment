@@ -4688,28 +4688,29 @@ export function skinVarCode(look) {
 //    crow's feet, an under-eye bag with the tear trough below it and a deeper nasolabial fold. `shade` = how much a groove darkens the albedo
 //    (per `shadeDepth` m of depth), `bag` the under-eye bag's darker tint ([x, y, half-width, half-height], `bagTint` colour, `bagK` strength).
 //  - `grey`: the share of grey strands = `grey.max` × ((step − `grey.from`) / (last − from))^`grey.power`; `temple` = extra share in the temples
-//    (zone [|x| from, to, y, σ y]) and `mouth` around the mouth for the beard; `cell` m = one strand's width for the salt-and-pepper noise, `stretch` × as long (hair mostly runs down);
+//    (zone [|x| from, to, y, σ y]) and `mouth` around the mouth for the beard; `cell` m = one strand's width for the fine salt-and-pepper noise (a soft blend, not black / white; averaged out by the pixel footprint), `stretch` × as long (hair mostly runs down);
 //    `tone` [mid grey, white] linear albedo the strands move between from `white.from` to the last step; `brow` = the brows' share of it.
 //  - `matte`: the skin's added roughness at the last step.
 export const AVATAR_AGE = {
   tag: 'q', steps: 11,
-  fold: { from: 1 },
-  forms: {
-    forehead1: [-0.0009, 0, 0.1495, 0.046, 0.146, 0.0021, 0],
-    forehead2: [-0.0008, 0, 0.1605, 0.042, 0.1575, 0.0021, 0],
-    forehead3: [-0.0006, 0, 0.1395, 0.038, 0.137, 0.002, 0],
-    glabella: [-0.0006, 0.0045, 0.1225, 0.0052, 0.1305, 0.0016, 0.3],
-    crow1: [-0.0007, 0.052, 0.1085, 0.064, 0.1135, 0.0015, 0.5],
-    crow2: [-0.0008, 0.052, 0.1055, 0.066, 0.1055, 0.0015, 0.5],
-    crow3: [-0.0007, 0.051, 0.1025, 0.063, 0.097, 0.0015, 0.5],
-    bag: [0.0007, 0.02, 0.0885, 0.044, 0.0885, 0.0055, 0],
-    trough: [-0.0005, 0.025, 0.0805, 0.042, 0.0825, 0.0024, 0],
-    nasolabial: [0.0013, 0.0225, 0.0735, 0.033, 0.040, 0.0028, 1.2, 0.008],
-    nasolabialLine: [-0.0007, 0.0205, 0.0735, 0.031, 0.040, 0.0018, 1.2],
+  fold: { from: 1, power: 1.5 },
+  forms: { // soft, slightly curved, broken lines (chains of short segments, mirrored in x): follow the anatomy, not a ruler
+    forehead1a: [-0.0006, 0, 0.1495, 0.02, 0.1505, 0.0027, 0], forehead1b: [-0.0005, 0.02, 0.1505, 0.037, 0.1478, 0.0026, 0],
+    forehead2a: [-0.0005, 0.007, 0.1608, 0.023, 0.1614, 0.0026, 0], forehead2b: [-0.0004, 0.023, 0.1614, 0.034, 0.1592, 0.0024, 0],
+    forehead3a: [-0.0004, 0.003, 0.1395, 0.016, 0.1404, 0.0025, 0], forehead3b: [-0.0003, 0.016, 0.1404, 0.028, 0.1384, 0.0024, 0],
+    glabella: [-0.0004, 0.0045, 0.1225, 0.0052, 0.1305, 0.0022, 0.3],
+    crow1a: [-0.0005, 0.052, 0.1085, 0.058, 0.1112, 0.0015, 0.5], crow1b: [-0.0003, 0.058, 0.1112, 0.063, 0.1122, 0.0014, 0.5],
+    crow2a: [-0.0006, 0.052, 0.1055, 0.06, 0.1058, 0.0016, 0.5], crow2b: [-0.0003, 0.06, 0.1058, 0.066, 0.1044, 0.0015, 0.5],
+    crow3a: [-0.0005, 0.051, 0.1025, 0.057, 0.0997, 0.0015, 0.5], crow3b: [-0.0002, 0.057, 0.0997, 0.061, 0.0968, 0.0014, 0.5],
+    bag: [0.0006, 0.02, 0.0885, 0.044, 0.0885, 0.0065, 0],
+    trough: [-0.0003, 0.025, 0.0805, 0.042, 0.0825, 0.0034, 0],
+    nasolabial: [0.0009, 0.0225, 0.0735, 0.033, 0.040, 0.0034, 1.2, 0.009],
+    nasolabialLineA: [-0.0004, 0.0205, 0.0735, 0.0252, 0.0575, 0.0042, 1.2], nasolabialLineB: [-0.0004, 0.0252, 0.0575, 0.0302, 0.0425, 0.0042, 1.2],
+    marionette: [-0.0003, 0.0262, 0.039, 0.0268, 0.022, 0.0035, 0], jowl: [0.0004, 0.05, 0.034, 0.04, 0.012, 0.007, 0],
   },
-  shade: 0.32, shadeDepth: 0.0009, bag: [0.032, 0.0885, 0.022, 0.0085], bagTint: [0.74, 0.62, 0.7], bagK: 0.75,
-  grey: { from: 2, max: 0.95, power: 1.1 }, temple: [0.5, 0.055, 0.075, 0.135, 0.035], mouth: 0.35, cell: 0.0026, stretch: 2.2,
-  white: { from: 3 }, tone: [0.3, 0.8], brow: 0.8, matte: 0.22,
+  shade: 0.2, shadeDepth: 0.0007, bag: [0.032, 0.0885, 0.022, 0.0085], bagTint: [0.8, 0.7, 0.76], bagK: 0.6,
+  grey: { from: 2, max: 0.95, power: 1.1 }, temple: [0.5, 0.055, 0.075, 0.135, 0.035], mouth: 0.35, cell: 0.0011, stretch: 3, strength: 0.8,
+  white: { from: 3 }, tone: [0.27, 0.66], warm: [1.0, 0.975, 0.93], brow: 0.8, matte: 0.22,
 };
 // #2044 (part of #2042) the face's sculpted forms (src/avatarsculpt.js), all *guess* by eye against the avatar head in raking light and
 // backlight, not measured. Head-bone frame before faceWarp (metres; eye centre y 0.107, lip seam 0.043). Each form is
