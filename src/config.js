@@ -10507,3 +10507,21 @@ export const BIKE_RIDE = {
   gripX: 0.31, gripZ: 0.25, gripY: 0.95, // BICYCLE_GRIP: the handlebar's grips (bike frame: x forward, z right)
   cameraRoll: 0, // rad per rad of lean on the player's own camera (0 = off; ~0.1 is "very small") *guess*
 };
+
+// #2149: how a remote figure aims its weapon (src/avataraim.js; ghosts.js Ghost.animate): from `h` (COMBAT.weapons) and the gaze pitch only (no wire
+// field). Metres in the unscaled figure frame (+x its left, +y up, +z forward; the right hand is x < 0), like AVATAR_CARRY: the wrist sits on the line
+// from the shoulder at the look's elevation, `reach` out (R = the hand the prop sits in; L = the support hand at the rifle's fore-end / the bow
+// string's draw position, null = the left arm keeps its ordinary pose). `kind`s: long (a rifle / Nerf blaster: two hands), bow (the bow out in the
+// right arm, the string drawn back by the left), one (a wand / web shooter pointing along the gaze, one hand), swing (the saber / ball: the old
+// forward hand with its cut, no aim). `lean` the torso's tilt per rad of pitch (negative = back when looking up, forward when looking down).
+// All *guess*, tuned by eye against close-ups.
+export const AVATAR_AIM = {
+  byWeapon: { rifle: 'long', nerf: 'long', bow: 'bow', wand: 'one', web: 'one', saber: 'swing', ball: 'swing' },
+  pitchLimit: 1.1, // rad: the largest gaze pitch the arms follow
+  kinds: {
+    long: { y0: 1.36, R: { x: -0.1, reach: 0.34 }, L: { x: 0.05, reach: 0.6, dy: -0.01 }, lean: -0.12, elbowR: 0.5, elbowL: 0.6 },
+    bow: { y0: 1.4, R: { x: -0.14, reach: 0.5 }, L: { x: 0.0, reach: 0.17, dy: -0.04 }, lean: -0.1, elbowR: 0.4, elbowL: 1.0 },
+    one: { y0: 1.38, R: { x: -0.2, reach: 0.46 }, L: null, lean: -0.05, elbowR: 0.6, elbowL: 0 },
+    swing: {},
+  },
+};

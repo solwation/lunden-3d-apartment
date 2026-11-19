@@ -33,6 +33,7 @@ import { canHug, hugAmount, playerChoices } from './hug.js';
 import { Hearts } from './pingping.js';
 import { cleanHeldCategory } from './heldcategory.js';
 import { carryPose, newCarry, easeLean } from './avatarcarry.js'; // #2144: the carry pose by what is held
+import { aimPose, newAim } from './avataraim.js'; // #2149: a weapon follows the gaze pitch, the support hand on it
 import { trimOutbox } from './outbox.js';
 import { AvatarLight } from './avatarlight.js'; // #2017: the avatars' light follows the room's light level
 import { AvatarShadows } from './avatarshadow.js'; // #2010: soft contact shadows, one draw call
@@ -419,6 +420,9 @@ export class Ghost { // (exported for tools/ghostprops.html)
       hands.R = armTarget.forward(-1, 0.04);
       hands.R.at[0] += 0.45 * sw; hands.R.at[1] += 0.1 * sw;
     }
+    const aim = this.aim ??= newAim();
+    aimPose(this.h && this.h !== 'jetpack' ? this.h : '', this.look?.[1] ?? 0, aim); // #2149: a weapon follows the gaze pitch (no new wire field); the saber keeps its swing
+    if (aim.R) { hands.R = aim.R; hands.R.at[2] -= 0.05 * sw; if (aim.L) hands.L = aim.L; } // (a small recoil on a shot)
     const showItem = !!this.itemProp && !this.prop && !this.bikeMesh && !(this.hi === 'cue' && this.cue); // (while aiming at the table billiards.js draws their cue, #1637 / #1687) // a weapon or the handlebar has the hands (#1297)
     if (this.itemProp) this.itemProp.visible = showItem;
     const carry = this.carry ??= newCarry();
@@ -427,6 +431,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
       hands.R = carry.R ?? armTarget.forward(-1, 0.04);
       if (carry.L) hands.L = carry.L;
     } else carryPose('', 0, carry);
+    if (aim.R) carry.lean = aim.lean; // #2149: leans back looking up / forward looking down (a weapon takes precedence over what is held)
     if (this.waveT > 0) { // (#673) up for the wave, the hand going side to side; down again at the end
       this.waveT = Math.max(0, this.waveT - dt);
       hands.R = armTarget.up(-1, (G.wave - this.waveT) * 11);
@@ -506,7 +511,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
       this.avatar.object.updateMatrixWorld(true);
       this.root.worldToLocal(this.avatar.hand('R', tmpV));
       this.prop.position.copy(tmpV);
-      this.prop.rotation.set(-0.6 * sw, 1.4 * sw, 0);
+      this.prop.rotation.set(-0.6 * sw + (aim.R ? aim.tilt : 0), 1.4 * sw, 0); // #2149: the barrel / bow follows the gaze
     }
   }
 
