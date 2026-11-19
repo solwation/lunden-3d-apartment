@@ -319,6 +319,19 @@ improvement. See [source-bound checks and complete figure/app views](../verifica
 Publication of `models/` is tracked separately by #1913; local loading does not
 establish deployed asset availability. This personal/gameplay feature is original-only.
 
+## Ålder (#2155)
+
+Ett åldersreglage (customizer.js, avsnittet Hud, `#avatar-age`, steg 0–10; 0 = ung = utseendet som förut) styr `src/avatarage.js`
+(tal i `AVATAR_AGE`, *guess*; programnyckel `-age2155`). Fältet `look.age` går i hattens `q`-tagg som hatt + 10 × steg (alla 26 taggar är
+upptagna; en äldre klient hoppar över `q` ≥ 5 och tappar bara hatten, Workern kontrollerar bara formen, ingen ny trådfält); saknat värde = ung.
+Allt härleds per pixel ur steget och bindpositionen, så alla klienter ritar samma ansikte och hår: pann-, kråksparks- och
+glabellaveck, en lätt påse med ränna under ögat och ett djupare nasolabialveck är extra former i `avatarsculpt.js` (`ageHeight`,
+GLSL `scAge` i `scHeight`, alltså samma normalbump och hålrumsskugga som #2044:s veck; spåren mörknar dessutom albedot lite och påsen får
+en svag mörkare ton i `ageColor`); hår, skägg och bryn blir salt-och-peppar (en hash av bindpositionen i avlånga strån, `ageSeed` ger
+varje figur sin egen fördelning, tinningarna och området runt munnen på ett skägg först, mot vitt vid de sista stegen); huden blir lite
+mattare (`uAge.z` läggs på råheten). Två vec4-uniformer, ingen mesh, textur eller ny draw. `ageParams`/`greyAt`/`ageSeed` är rena och
+testas i `tools/avataragetest.mjs`; före/efter (ung | medel | gammal): `tools/avatarage2155browser.cjs` ([bilder](../verification/2155/)).
+
 ## Kön i ansiktets grundform (#2142)
 
 `src/avatarfacegender.js` ger det valda könet (`gender`, 0 man / 1 kvinna, inget nytt fält) en liten, begränsad

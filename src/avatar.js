@@ -25,6 +25,7 @@ import { newLean, stepLean } from './avatarlean.js'; // #2109
 import { chestBreath, chestUniforms, CHEST_DECL, chestGLSL, chestKey } from './avatarchest.js'; // #2108: visible breathing
 import { bodyShape, buildUniforms, BUILD_DECL, buildGLSL, buildKey, applyBodyShape, spreadBones } from './avatarbuild.js'; // #2141: the build as body shape
 import { avatarSkinGLSL, skinKey } from './avatarskin.js'; // #2032
+import { ageUniforms, applyAgeLook, ageColor, ageRoughness, ageKey } from './avatarage.js'; // #2155: age (folds, grey hair, matte skin)
 import { skinVarUniforms, applySkinVarLook, skinVarDecl, skinVarColor, skinVarKey } from './avatarskinvar.js'; // #2111: freckles, birthmarks, uneven tone
 import { handVertexGLSL, handFragmentGLSL, handKey } from './avatarhand.js'; // #2106: nails, creases, knuckles, tendons
 import { seamKey } from './avatarseam.js'; // #2107: garment seams, ribs, hems and pockets (spliced by avatarcloth.js)
@@ -1279,6 +1280,7 @@ function makeMaterial(rim, headProjection) {
   Object.assign(u, curlUniforms()); // #2054
   Object.assign(u, shortHairUniforms()); // #2055
   Object.assign(u, skinVarUniforms()); // #2111
+  Object.assign(u, ageUniforms()); // #2155
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: SURFACE.finish.cloth, metalness: 0, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
@@ -1333,11 +1335,12 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       ${hairlineColor({ hb: bindAt('head'), region: REGION.hair, jag: shortHairJag(), below: shortHairBelow() })}
       ${beardColor({ hb: bindAt('head'), region: REGION.beard, skinTone: `${skinArea('cheek', SK.cheek)} ${skinArea('lipRim', SK.lipRim)} float under = ${SK.under[2].toFixed(3)} * (1.0 - smoothstep(${SK.under[0].toFixed(3)}, ${SK.under[1].toFixed(3)}, q.y)); vec3 beardTone = mix(vec3(1.0), ${v3(SK.blush)}, clamp(cheek + lipRim, 0.0, 1.0)) * mix(vec3(1.0), ${v3(SK.underTint)}, clamp(under, 0.0, 1.0));` })}
       ${shortHairColor({ hb: bindAt('head'), region: REGION.hair })}
+      ${ageColor({ head: bindAt('head'), part: FACE_PART, region: REGION })} // #2155
       diffuseColor.rgb = mix(diffuseColor.rgb, uRingColor, vRing); // #1324: the ring's metal
       float wetSnow = 0.0; // #2018
       ${wetColor(bindAt('torso').y)}
       ${flyAlpha()}`)
-      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>\n${surfaceRoughness()}\n${browRoughness({ region: REGION.brow, part: FACE_PART.brow, skin: SURFACE.finish.skin })}\n${beardRoughness({ region: REGION.beard, skin: SURFACE.finish.skin })}\n${wetRoughness()}\n${eyeWet(FACE_PART.eye, FACE_PART.iris)}`)
+      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>\n${surfaceRoughness()}\n${browRoughness({ region: REGION.brow, part: FACE_PART.brow, skin: SURFACE.finish.skin })}\n${beardRoughness({ region: REGION.beard, skin: SURFACE.finish.skin })}\n${ageRoughness()}\n${wetRoughness()}\n${eyeWet(FACE_PART.eye, FACE_PART.iris)}`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\n${skin.normal}\n${hand.normal}`) // #2032, #2106
       .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${skin.light}\n${noseFragmentGLSL(bindAt('head'), FACE_PART.head).light}\n${flyLight({ hair: REGION.hair, beard: REGION.beard })}`) // #2032, #2040
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\nmetalnessFactor = vRing * ${SURFACE.finish.metalness.toFixed(3)};`)
@@ -1358,7 +1361,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     const gloss = { head: bindAt('head'), region: REGION, part: FACE_PART }; // #2052
     sh.vertexShader = glossVertex(sh.vertexShader, gloss); sh.fragmentShader = curlGloss(glossFragment(sh.fragmentShader, gloss)); // (#2054: the curls turn its strands)
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey() + chestKey() + skinVarKey() + selfShadowKey() + buildKey(); // #2108, #2111, #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey() + chestKey() + skinVarKey() + ageKey() + selfShadowKey() + buildKey(); // #2108, #2111, #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
   installSelfView(m); // #2080: the own camera hides head/hair; mirrors and peers keep the full figure
   return m;
 }
@@ -1496,6 +1499,7 @@ function applyFaceShape(u, lk) {
   applyBeardLook(u, lk); // #2051
   applyShortHairLook(u, lk); // #2055
   applySkinVarLook(u, lk); // #2111
+  applyAgeLook(u, lk); // #2155
   u.uHair.value = v('hairLength'); // #1165
   u.uGlasses.value = Number.isInteger(lk.glasses) && lk.glasses > 0 && lk.glasses < GLASSES.names.length ? lk.glasses : 0;
   u.uEarrings.value = Number.isInteger(lk.earrings) && lk.earrings > 0 && lk.earrings < EARR.names.length ? lk.earrings : 0; // #1325

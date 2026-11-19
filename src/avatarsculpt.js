@@ -11,7 +11,7 @@
 // part lip colour on the skin), so the lips no longer read as stickers. No mesh, texture, light, pass or draw call.
 // Numbers: config.js AVATAR_SCULPT.
 import * as THREE from 'three';
-import { AVATAR_SCULPT as S, AVATAR_FACE as FACE, AVATAR_SURFACE as SURFACE } from './config.js';
+import { AVATAR_SCULPT as S, AVATAR_FACE as FACE, AVATAR_SURFACE as SURFACE, AVATAR_AGE as AGE } from './config.js';
 
 const f = (v) => (+v).toFixed(6);
 const smooth = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
@@ -33,6 +33,9 @@ export function jawRise(x, y, z) {
   const J = S.jawRise;
   return J.height * smooth(...J.x, Math.abs(x)) * smooth(...J.y, y) * (1 - smooth(...J.z, z));
 }
+
+/** #2155: the age forms' height (m, − = groove) at head-local (x, y) before faceWarp; `k` the fold strength 0 … 1 (avatarage.js ageParams().fold). */
+export const ageHeight = (x, y, k, smile = 0) => k * sum(AGE.forms, x, y, smile);
 
 /** The lips' outline as addFace draws it (#2002): the seam's height and the upper / lower lip's height at x; `edge` 0 at the corners. */
 export function lipOutline(x) {
@@ -81,10 +84,15 @@ vec2 scLip(vec2 p) {
   float up = ${f(M.upper)} * (0.75 + 0.3 * exp(-ax * ax / 0.000016)) * k, lo = ${f(M.lower)} * k;
   return vec2(p.y > seam ? p.y - seam - up : seam - lo - p.y, e);
 }
+uniform vec4 uAge, uAge2; // #2155 (src/avatarage.js): x fold strength, y grey share, z matte, w seed; uAge2: x bag, y whiteness
+float scAge(vec2 p, float s) { // #2155: forehead lines, crow's feet, the bag and its trough, a deeper nasolabial fold (p.x already |x|)
+  return uAge.x > 0.0 ? uAge.x * (${Object.values(AGE.forms).map(formGlsl).join('\n    + ')}) : 0.0;
+}
 vec2 scHeight(vec2 p, float s) { // (cheekbone forms, fine forms)
   vec2 l = scLip(p); p.x = abs(p.x);
   return vec2(${Object.values(S.form).map(formGlsl).join('\n    + ')},
     ${Object.values(S.fine).map(formGlsl).join('\n    + ')}
+    + scAge(p, s)
     + ${f(r)} * exp(-pow((l.x - ${f(off)}) / ${f(rs)}, 2.0)) * smoothstep(0.0, 0.25, l.y));
 }
 // head-local bind position before faceWarp (its x squeeze undone) and the squeeze itself

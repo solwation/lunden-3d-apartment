@@ -4679,6 +4679,38 @@ export function skinVarCode(look) {
   const v = skinVarOf(look), feat = v.freckles + 4 * v.marks + 8 * v.blotch;
   return feat ? feat + 16 * v.skinSeed : 0;
 }
+// #2155 (part of the avatar realism round) age: an optional slider step 0 … `steps` − 1 (0 = young = the look as it was before; missing = 0).
+// It rides in the hat's `q` tag as hat + 10 × step (all 26 tags are taken; an old client skips a `q` of 5 or more, losing only the hat of an
+// aged avatar; the Worker checks the form only). Everything is derived per pixel from the step and the head-frame bind position, so every
+// client draws the same face and hair: no texture, mesh, draw call or network field. All numbers *guess* by eye on the mirror preview.
+//  - `fold`: the folds start at step `fold.from` and reach full depth at the last step (linear); `forms` use the avatarsculpt.js form format
+//    [depth m (− = groove), ax, ay, bx, by, σ m, smile gain, σ left] in the head frame before faceWarp: forehead lines, the glabella,
+//    crow's feet, an under-eye bag with the tear trough below it and a deeper nasolabial fold. `shade` = how much a groove darkens the albedo
+//    (per `shadeDepth` m of depth), `bag` the under-eye bag's darker tint ([x, y, half-width, half-height], `bagTint` colour, `bagK` strength).
+//  - `grey`: the share of grey strands = `grey.max` × ((step − `grey.from`) / (last − from))^`grey.power`; `temple` = extra share in the temples
+//    (zone [|x| from, to, y, σ y]) and `mouth` around the mouth for the beard; `cell` m = one strand's width for the salt-and-pepper noise, `stretch` × as long (hair mostly runs down);
+//    `tone` [mid grey, white] linear albedo the strands move between from `white.from` to the last step; `brow` = the brows' share of it.
+//  - `matte`: the skin's added roughness at the last step.
+export const AVATAR_AGE = {
+  tag: 'q', steps: 11,
+  fold: { from: 1 },
+  forms: {
+    forehead1: [-0.0009, 0, 0.1495, 0.046, 0.146, 0.0021, 0],
+    forehead2: [-0.0008, 0, 0.1605, 0.042, 0.1575, 0.0021, 0],
+    forehead3: [-0.0006, 0, 0.1395, 0.038, 0.137, 0.002, 0],
+    glabella: [-0.0006, 0.0045, 0.1225, 0.0052, 0.1305, 0.0016, 0.3],
+    crow1: [-0.0007, 0.052, 0.1085, 0.064, 0.1135, 0.0015, 0.5],
+    crow2: [-0.0008, 0.052, 0.1055, 0.066, 0.1055, 0.0015, 0.5],
+    crow3: [-0.0007, 0.051, 0.1025, 0.063, 0.097, 0.0015, 0.5],
+    bag: [0.0007, 0.02, 0.0885, 0.044, 0.0885, 0.0055, 0],
+    trough: [-0.0005, 0.025, 0.0805, 0.042, 0.0825, 0.0024, 0],
+    nasolabial: [0.0013, 0.0225, 0.0735, 0.033, 0.040, 0.0028, 1.2, 0.008],
+    nasolabialLine: [-0.0007, 0.0205, 0.0735, 0.031, 0.040, 0.0018, 1.2],
+  },
+  shade: 0.32, shadeDepth: 0.0009, bag: [0.032, 0.0885, 0.022, 0.0085], bagTint: [0.74, 0.62, 0.7], bagK: 0.75,
+  grey: { from: 2, max: 0.95, power: 1.1 }, temple: [0.5, 0.055, 0.075, 0.135, 0.035], mouth: 0.35, cell: 0.0026, stretch: 2.2,
+  white: { from: 3 }, tone: [0.3, 0.8], brow: 0.8, matte: 0.22,
+};
 // #2044 (part of #2042) the face's sculpted forms (src/avatarsculpt.js), all *guess* by eye against the avatar head in raking light and
 // backlight, not measured. Head-bone frame before faceWarp (metres; eye centre y 0.107, lip seam 0.043). Each form is
 // [depth m (+ out, − in), ax, ay, bx, by, σ m, smile gain, σ m left of a → b (default σ)]: a soft Gaussian ridge / groove round the
@@ -7678,7 +7710,8 @@ function encodeLookExt(look) {
   const gl = Number.isInteger(look.glasses) && look.glasses > 0 && look.glasses < AVATAR_GLASSES.names.length ? look.glasses : 0;
   const er = Number.isInteger(look.earrings) && look.earrings > 0 && look.earrings < AVATAR_EARRINGS.names.length ? look.earrings : 0; // #1325: shares the `g` tag, see AVATAR_EARRINGS
   if (gl || er) out += `${AVATAR_GLASSES.tag}${gl + 10 * er}`;
-  if (Number.isInteger(look.hat) && look.hat > 0 && look.hat < AVATAR_HAT.names.length) out += `${AVATAR_HAT.tag}${look.hat}`; // #1321
+  const hatV = Number.isInteger(look.hat) && look.hat > 0 && look.hat < AVATAR_HAT.names.length ? look.hat : 0, ageV = ageStepOf(look);
+  if (hatV || ageV) out += `${AVATAR_HAT.tag}${hatV + 10 * ageV}`; // #1321; #2155: the age step in the tens
   if (Number.isInteger(look.phones) && look.phones > 0 && look.phones < AVATAR_PHONES.names.length) out += `${AVATAR_PHONES.tag}${look.phones}`; // #1322
   if (Number.isInteger(look.necklace) && look.necklace > 0 && look.necklace < AVATAR_NECKLACE.names.length) out += `${AVATAR_NECKLACE.tag}${look.necklace}`; // #1323
   const hasRing = Number.isInteger(look.ring) && look.ring > 0 && look.ring <= 10;
@@ -7693,6 +7726,11 @@ function encodeLookExt(look) {
   const cutV = look.cut > 0 && look.cut < AVATAR_CLOTHES.cut.names.length ? look.cut : 0, ow = outerValue(look.outer), om = ow && look.outerMode === 1 ? 1 : 0; // #2147
   if (cutV || ow) out += `${AVATAR_CLOTHES.cut.tag}${cutV + 3 * (ow + 3 * om)}`;
   return out;
+}
+/** The look's age step (#2155): an integer 0 … steps − 1, 0 (young: the look as it was) for a missing or invalid value. */
+export function ageStepOf(look) {
+  const v = look?.age;
+  return Number.isInteger(v) && v > 0 && v < AVATAR_AGE.steps ? v : 0;
 }
 /** The look's nose shape variant (#2049): 0 straight (also for any missing or unknown value), 1 convex, 2 upturned, 3 broad. */
 export function noseFormOf(look) {
@@ -7719,7 +7757,10 @@ function decodeLookExt(ext, lk) {
       if (v % 10 < AVATAR_GLASSES.names.length && Math.floor(v / 10) < AVATAR_EARRINGS.names.length) { lk.glasses = v % 10; lk.earrings = Math.floor(v / 10); }
       continue;
     }
-    if (tag === AVATAR_HAT.tag) { if (v < AVATAR_HAT.names.length) lk.hat = v; continue; } // #1321
+    if (tag === AVATAR_HAT.tag) { // #1321 the hat in the units, #2155 the age step in the tens
+      if (v % 10 < AVATAR_HAT.names.length && Math.floor(v / 10) < AVATAR_AGE.steps) { lk.hat = v % 10; if (v >= 10) lk.age = Math.floor(v / 10); }
+      continue;
+    }
     if (tag === AVATAR_PHONES.tag) { if (v < AVATAR_PHONES.names.length) lk.phones = v; continue; } // #1322
     if (tag === AVATAR_NECKLACE.tag) { if (v < AVATAR_NECKLACE.names.length) lk.necklace = v; continue; } // #1323
     if (tag === AVATAR_RING.tag) { if (v >= 1 && v <= 10) lk.ring = v; continue; } // #1324
@@ -9208,7 +9249,7 @@ export const RIVER_FISH = {
   ends: 15, range: [8, 22], periods: [90, 200], side: 0.85, edge: 0.35, depth: [0.12, 0.1], pierClear: 0.6,
   rise: { every: [16, 36], chance: 0.6, up: 1.1, down: 0.9, show: 0.35 },
   ring: { life: 3.2, r: [0.1, 1.5], second: 0.5, glow: 0.5, night: 0.15 },
-  drawDist: 45, wag: [0.14, 7.5], murk: 0.5, opacity: 0.85, look: { flat: 0.45, wide: 1.9, shade: 0.55, deepTone: 0.6 },
+  drawDist: 45, wag: [0.14, 7.5], murk: 0.5, opacity: 0.85, look: { flat: 0.45, wide: 1.9, shade: 0.32, deepTone: 0.6 },
   sync: { enter: 70, leave: 90, reach: 30, catchEvery: 2, respawn: [300, 600] },
   // #1946: feeding from the hand and scaring, a local drawing layer (src/riverfishfeed.js); every number a *guess* (the user: "like the
   // squirrels take nuts", "if you move the fish get scared and swim away"). A swimmer making no stroke with a cracked mussel in the hand for
@@ -10192,7 +10233,7 @@ export const MUSSELS = {
 // lighter); one-pixel lines do not thin with distance, so beyond `fadeNear` m from the eye the darkening fades smoothly to
 // `fadeMin` of that at `fadeFar` m, where dense joints otherwise merge into ink. All *guesses* by eye against
 // before/after shots of the kitchen, a bathroom and a façade (docs/verification/1957/).
-export const EDGE_LOOK = { strength: 0.2, shade: 0.55, fadeNear: 2.5, fadeFar: 10, fadeMin: 0.45 };
+export const EDGE_LOOK = { strength: 0.2, shade: 0.32, fadeNear: 2.5, fadeFar: 10, fadeMin: 0.45 };
 
 // #2010: the soft contact shadow under other players (src/avatarshadow.js): one InstancedMesh of flat blobs for ALL avatars (a body
 // blob + one per shoe), so it is one extra draw call. Alphas / radii (m) are by eye against the sun-lit courtyard and a light floor (*guess*).
@@ -10309,7 +10350,7 @@ export const AVATAR_FOOT_IK = {
 // `reference` / `sunShare`: the scene-light sum (hemi + ambient + fill + sunShare x sun) of a clear day; `min`/`max`: the factor's bounds;
 // `tau`: easing (s); `probe`: zone re-probe interval (s); `minScene`: lowest scene level divided by (night).
 export const AVATAR_LIGHT = { reference: 4.4, sunShare: 0.6, minScene: 0.12, min: 0.4, max: 2, tau: 0.4, probe: 0.25,
-  level: { overcastCut: 0.25, shade: 0.55, windowShare: 0.65, lamp: 0.35, night: 0.08, coreBase: 0.38, coreDay: 0.12, garage: 0.5, playroom: 0.6 },
+  level: { overcastCut: 0.25, shade: 0.32, windowShare: 0.65, lamp: 0.35, night: 0.08, coreBase: 0.38, coreDay: 0.12, garage: 0.5, playroom: 0.6 },
   // #2039: outdoor lamps at night (avatarlight.js lampLight; all *guess*, tuned by eye against night shots under / between the street
   // lamps). `level`: the zone level a figure right under a lit lamp gains (the pupils); `rgb`: the street lamps' pool colour (#434,
   // 0xffc887 in linear RGB); `gain`: the added light's strength on a surface facing up (its own colour × gain); `side` / `under`: the

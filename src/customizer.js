@@ -1,7 +1,7 @@
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { BUILD } from './version.js';
 import { wornLook, outerColour } from './avataroutwear.js'; // #2147
-import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_OUTERWEAR, outerValue, AVATAR_NOSE_FORMS, noseFormOf, AVATAR_SKIN_VARIATION, skinVarOf } from './config.js';
+import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_OUTERWEAR, outerValue, AVATAR_NOSE_FORMS, noseFormOf, AVATAR_SKIN_VARIATION, skinVarOf, AVATAR_AGE, ageStepOf } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
 const BROW_NAMES = ['Mörkbruna', 'Bruna', 'Ljusbruna', 'Guldbruna', 'Blonda', 'Grå', 'Röda', 'Svarta'];
@@ -551,6 +551,16 @@ function updateHeightSlider() {
   if (out) out.textContent = `${cm} cm`;
 }
 
+/** #2155: the age slider shows the look's age step and a word for it. */
+const AGE_WORDS = ['Ung', 'Ung', 'Ung vuxen', 'Ung vuxen', 'Medelålders', 'Medelålders', 'Medelålders', 'Äldre', 'Äldre', 'Gammal', 'Mycket gammal'];
+function updateAgeSlider() {
+  const input = customizerEl?.querySelector('#avatar-age'), out = customizerEl?.querySelector('#avatar-age-value');
+  if (!input) return;
+  const k = ageStepOf(currentLook);
+  input.value = String(k);
+  if (out) out.textContent = AGE_WORDS[k] ?? '';
+}
+
 /** The body-build slider (#1139) shows the look's step (the seed's own until one is chosen) and a word for it. */
 const BUILD_WORDS = ['Mycket smal', 'Smal', 'Smal', 'Ganska smal', 'Medel', 'Ganska kraftig', 'Kraftig', 'Kraftig', 'Mycket kraftig'];
 function updateBuildSlider() {
@@ -568,6 +578,7 @@ function applyAndRefresh() {
   updateActiveSwatches();
   updateHeightSlider();
   updateBuildSlider();
+  updateAgeSlider(); // #2155
   customizerEl.querySelector('[data-group="sleeves"]').hidden = Number(currentLook.cut) > 0;
   const modeGroup = customizerEl.querySelector('[data-group="outerMode"]'); if (modeGroup) modeGroup.hidden = !outerValue(currentLook.outer); // #2147
   callbacks.setLook?.(currentLook);
@@ -980,6 +991,20 @@ function addSkinVarSection(controls) {
       applyAndRefresh();
     });
     label.append(span, select); sec.append(label);
+  }
+  { // #2155: the age slider (young … old): folds, bags, grey hair and beard, matter skin
+    const label = document.createElement('label'); label.className = 'customizer-select';
+    const span = document.createElement('span'); span.textContent = 'Ålder';
+    const out = document.createElement('output'); out.id = 'avatar-age-value'; out.htmlFor = 'avatar-age';
+    const input = document.createElement('input'); input.type = 'range'; input.id = 'avatar-age'; input.min = '0'; input.max = String(AVATAR_AGE.steps - 1); input.step = '1'; input.value = '0';
+    input.setAttribute('aria-label', 'Ålder, ung till gammal');
+    input.addEventListener('input', () => {
+      const v = Number(input.value);
+      if (!currentLook || !Number.isInteger(v) || v < 0 || v >= AVATAR_AGE.steps) return;
+      currentLook.age = v;
+      applyAndRefresh();
+    });
+    label.append(span, out, input); sec.append(label);
   }
   const again = document.createElement('button');
   again.type = 'button'; again.id = 'avatar-skin-seed'; again.textContent = 'Ny placering';
