@@ -6139,6 +6139,24 @@ export const FLARE = {
   ],
 };
 
+// #2152: daylight indoors falls off with the distance from the windows (src/windowlight.js). Inside the flat the visitor is
+// in or nearest to (L1007 or a visitable flat), by day the global hemi + ambient light keeps only `base` of its share and the
+// shadowless fill loses `fillCut`; each window's glass instead lights the room as a soft sky source: a Lambert area-light
+// approximation E = L·A·cosW·cosR / (π·(r / spread)² + A) from the nearest point on the glass (`spread` > 1 stands in for
+// the room's own bounce, which flattens the bare form factor's fall-off), only where its visibility polygon sees (rays from
+// just inside the inner façade face, stopped by walls and doors as they stand, re-cast while a door moves), dimmed by its
+// own blinds / curtains. L = `gain` × the day's hemi sky intensity (LIGHTING.sky blend × daylight × overcast). `wrap`
+// softens the receiver's cosine, `glassWrap` the glass's (light spreads sideways out of a deep reveal). `max` windows and
+// `rays` rays per window are the shader's fixed loop / array sizes; `minLevel` = the lowest quality level that has it
+// (below: today's even global light; never on phones); `exposure` = extra tone-mapping exposure eased in indoors by day
+// while it is on (the eye adapts); `inset` = the region starts this far inside the glass plane (the outer reveal and the
+// façade keep the global light); `recast` = s between re-casts while a door moves; `near` = m within which the camera's
+// nearest flat is chosen from outdoors. Tuned by eye and mean luminance on before/after shots (docs/verification/2152); *guess*.
+export const WINDOW_LIGHT = {
+  max: 6, rays: 32, base: 0.45, fillCut: 0.6, gain: 4, spread: 2, wrap: 0.5, glassWrap: 0.3, minLevel: 1, exposure: 0.1,
+  inset: 0.03, recast: 0.15, near: 25,
+};
+
 // Room lights (src/lights.js). Intensities are candela-ish (three.js physical lights), tuned by
 // eye at night. `pool` = point lights shared by the nearest lit lamps (keep small: Iris 640).
 export const LIGHTING = {

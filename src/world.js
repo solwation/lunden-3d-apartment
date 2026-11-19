@@ -615,7 +615,7 @@ function* levelParts(floor, li, group, how = OURS) {
     const iz1 = Math.max(fz, inner + (facade === 'north' ? 0.03 : -0.03));
     group.add(box(r.x0 - 0.02, r.x1 + 0.02, iz0, iz1, sill - 0.03, sill, M.sill ?? M.porcelain)); // (the standard: limestone)
     sills.push({ x0: r.x0, x1: r.x1, z0: Math.min(iz0, iz1), z1: Math.max(iz0, iz1), y: sill, blind: fz - (facade === 'north' ? -1 : 1) * BLINDS.gap, out: facade === 'north' ? -1 : 1 }); // `blind`: the folded pack's plane (#290)
-    openings[facade].push({ x0: r.x0, x1: r.x1, y0: sill, y1: head, win: spec }); // `win`: the neighbours copy its parts
+    openings[facade].push({ x0: r.x0, x1: r.x1, y0: sill, y1: head, win: spec, glass: fz, inner }); // `win`: the neighbours copy its parts; `glass` / `inner`: the frame's and the inner face's z (windowlight.js, #2152)
     addRadiator(group, M, r.x0, r.x1, inner, facade === 'north' ? 1 : -1, sill, y0, [...floor.cabinets, li === 1 ? hole : null]); // under the board (#1071)
     segments.push(...rectSegments(pr));
   }

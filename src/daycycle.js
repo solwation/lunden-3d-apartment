@@ -246,6 +246,7 @@ export class DayCycle {
     this.realAt = Date.now(); // (catch-up: dt is capped and stops in a hidden tab, the real clock does not, #1145)
     // cloud shadows (#2102): main.js sets `indoor` (the visitor is inside) and `cloudShadows` (the quality knob); cloudT drifts them
     this.indoor = false; this.cloudShadows = true; this.skyClouds = true; this.skyCloud = { thr: 1, soft: 0 }; this.cloudT = 0; this.cloudIndoor = 0;
+    this.windowExposure = 0; this.skyLight = 0; this.dayShare = 0; // #2152: main.js sets windowExposure while the windows' sky light is on
     this.wind = null; this.cloudPos = { x: 0, z: 0, dx: 0, dz: 0 }; // #2117: weather.js sets `wind` ({ x, z } m/s downwind); the clouds drift along it
     this.sunDir = new THREE.Vector3();
     this.moonDir = new THREE.Vector3();
@@ -354,7 +355,10 @@ export class DayCycle {
     // a clear sky by day: a stronger sun against a darker shade side (#1073); rain clouds, night and the garage keep the even light
     const clear = day * (1 - oc) * (1 - this.under), { overcast: o, clear: c } = LIGHTING.sky, b = this.base;
     for (const k in b) b[k] = o[k] + (c[k] - o[k]) * clear;
-    if (this.renderer) this.renderer.toneMappingExposure = b.exposure;
+    // #2152: what the windows' sky light reads (windowlight.js, main.js) and its exposure, eased in indoors by day while it is on
+    this.skyLight = b.hemi * day * (1 - this.under) * (1 - 0.3 * oc);
+    this.dayShare = day * (1 - this.under);
+    if (this.renderer) this.renderer.toneMappingExposure = b.exposure * (1 + this.windowExposure * this.cloudIndoor * this.dayShare);
     const useMoon = this.sunDir.y < -0.02;
     const dir = useMoon ? this.moonDir : this.sunDir;
     sun.position.copy(sun.target.position).addScaledVector(dir, 30);

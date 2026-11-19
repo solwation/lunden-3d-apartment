@@ -762,6 +762,20 @@ src/cloudshadow.js     cloud shadows (#2102, `CLOUD_SHADOW`, artistic *guesses*)
                        shader's floor). The shared field has a low octave (clusters, gaps; cell 200 m); the sky adds two finer octaves that erode the edges and fade out towards the horizon, a wide soft edge, thickness shading (grey cores, bright thin rims) and one sun-ward sample for self-shadow. Dusk colours / lit edges (#2124) and the deck (#1251) are
                        untouched. One program (an uniform branch), no pass; `quality.register('skyClouds')` falls back to the old texture at level 0 and on phones. `tools/skycloudstest.mjs`,
                        `tools/skyclouds2154browser.cjs`, [evidence](../verification/2154/).
+src/windowlight.js     the windows' daylight indoors (#2152, `WINDOW_LIGHT`, *guesses* tuned by eye/mean luminance): patches three's `lights_pars_begin` /
+                       `lights_fragment_end` once at import like cloudshadow.js (no pass, texture or extra program; never installed on phones). Inside the
+                       active flat's box (L1007, or a visitable flat from visitunit.js, each with its own box between its windows' glass planes and its own
+                       storey bands: `homeRegion` / `visitRegion`; the flat the camera is in or nearest within `near` m) the hemi + ambient irradiance keeps
+                       `base` of itself by day (`baseFactor`, 1 at night), the shadowless fill loses `fillCut`, and up to `max` nearest windows each add a soft
+                       sky source: E = L·A·cosW·cosR / (π·(r/spread)² + A) from the nearest point on the glass, softened cosines (`wrap`, `glassWrap`),
+                       L = `gain` × `day.skyLight` (the hemi sky intensity × daylight × overcast) in the hemi sky colour. Only inside its visibility polygon
+                       (`rays` rays fanned over the room side from just inside the inner façade face, cast with lampwash.js `cast` against walls, doors as
+                       they stand — re-cast at most every `recast` s while a door moves, so an open bedroom door lets light into the hall — and the outline).
+                       Each window's strength is what its own blinds / curtains let through (`windowPass`: BLINDS.dim per tone × cover, the curtains'
+                       daylightCut; same level, façade and x overlap). The sun's patches are untouched. Exposure × (1 + `exposure`) eased in indoors by day
+                       while it lights a flat (`day.windowExposure`). Quality knob `windowLight`: off below `minLevel` (level 0 = the old even light).
+                       world.js openings carry `glass` / `inner` z for it. `tools/windowlighttest.mjs`, `tools/windowlight2152browser.cjs`,
+                       [before/after](../verification/2152/README.md).
 src/balloon.js         hot-air balloon above the cloud deck (#1646, `BALLOON`, all numbers *guess*): one merged vertex-coloured Lambert mesh (envelope, basket, rim, ropes; ~900
                        triangles, no shadows, no light). `src/balloongeo.js` holds the pure parts: a wall-clock (`Date.now`) schedule so every client agrees (visible `window` s of
                        every `period` s, scaled in/out at the ends), the circling drift above the deck, the basket floor (`basketFloor`, a standable surface in Player.groundAt)

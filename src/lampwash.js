@@ -21,7 +21,7 @@ export { hasNativeVertexCompile } from './vertexcompile.js';
 const W = LIGHTING.wash;
 
 /** Nearest hit of the ray (ox, oz) + t·(dx, dz) on a segment: { t, i } (i = the segment's index), t ≤ max. */
-function cast(segs, ox, oz, dx, dz, max) {
+export function cast(segs, ox, oz, dx, dz, max) { // (also the windows' sky light, windowlight.js #2152)
   let best = { t: max, i: -1 };
   segs.forEach(([ax, az, bx, bz], i) => {
     const ex = bx - ax, ez = bz - az, den = dx * ez - dz * ex;

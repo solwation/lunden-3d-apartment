@@ -58,6 +58,7 @@ export class VisitUnit {
     // fixed walls / windows / fittings and the walls alone (line of sight), per level, in world coordinates
     this.fixed = built.map((l) => l.segments.map((s) => shift(s, ox, oz)));
     this.walls = built.map((l) => l.wallSegments.map((s) => shift(s, ox, oz)));
+    this.openings = built.map((l) => l.openings); // its windows, plan coordinates (the windows' sky light, windowlight.js #2152)
     this.doors = doors;
     this.lids = lids;
     this.doorLevel = new Map(doors.map((d) => [d, this.levelAt(d.object.position.y)]));
