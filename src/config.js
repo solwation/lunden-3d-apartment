@@ -4264,6 +4264,28 @@ export const GHOSTS = { enabled: true, hz: 5, move: 0.02, turn: 0.03, beatMs: 10
   // name), at most one every `greetEvery` s (the room allows the same), the greeter's ghost waves its right arm `wave` s for
   // everybody who sees it. Our picks (*guess*).
   hello: ['Hej {n}!', 'Tjena {n}!', 'Hallå där, {n}!', 'Hej {n}, vad kul att ses!', 'Hej hej!', 'Tjenare!'], greetEvery: 3, wave: 2.5 };
+// #2139: how other players' snapshots are played back on a jittery network (src/ghostinterp.js). GHOSTS.delay stays the
+// buffer's floor (a steady link plays exactly as before) and GHOSTS.jump the always-teleport distance. All *guess*es by eye
+// against simulated jitter (tools/ghostinterptest.mjs, tools/ghostjitter.html), none measured on a real network.
+export const GHOST_PLAYBACK = {
+  gain: 1 / 8,        // weight of each new arrival interval in the running mean / mean deviation (RFC 3550 uses 1/16 for its jitter)
+  jitterK: 2.5,       // the delay aims at the mean interval + this many mean deviations, so the next snapshot is usually there in time
+  maxDelay: 400,      // ms: never further behind than this (the hit tests read the drawn figure; more lag = more lead to aim)
+  slewUp: 0.2,        // ms of delay per ms: the playhead slows at most 20 % while the buffer grows …
+  slewDown: 0.05,     // … and hurries at most 5 % while it shrinks again
+  holdK: 4,           // a moving player's gap longer than the mean interval + this many deviations is a pause (hold point) …
+  holdMax: 800,       // … and always beyond this many ms; a still player keeps the old 1.5 intervals …
+  keepPace: 0.5,      // … but not below holdMax when the new state is at least this share of one interval at the old pace further on (it kept going)
+  timeGain: 0.1,      // a moving player's snapshot is timed at the expected cadence, pulled this much towards its jittery arrival
+  minSpacing: 0.5,    // sender intervals between two snapshots' playback times: a burst after a stall plays out, never at once
+  extrapMs: 150,      // a late snapshot: the last velocity dies away linearly over this (lead at most v × extrapMs / 2) …
+  settleAfter: 500,   // … waits there and, nothing new this many ms past the last snapshot (playhead time: it really stopped) …
+  settleMs: 300,      // … eases back onto the last known point over this
+  blendMs: 150,       // the drawn point's jump when a new snapshot changes the curve fades with this time constant
+  blendMax: 3,        // m: a larger jump than this is not blended (it is drawn at once)
+  teleportMin: 6,     // m horizontally: a shorter move is never a teleport …
+  teleportSpeed: 45,  // … a longer one faster than this (m/s) is: the jetpack in thin air flies ≤ 22.5, a web swing ~16–20
+};
 // Join / leave notices (#1333, src/joinnotice.js, shown as a badge at the top by main.js): someone else is only announced as gone
 // after `graceMs` without coming back (an Alt+Tab or short tab switch disconnects at once, so it must not count; they are
 // recognised by name), notices within `batchMs` become one line naming at most `names` players (then "och N till"). `anon` =

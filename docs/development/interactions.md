@@ -729,6 +729,23 @@ src/ghosts.js #673     greeting another player: each ghost has an invisible pick
                        Everybody else sees the greeter's avatar wave (`Ghost.wave`: the right hand to avatar.js `armTarget.up` for
                        GHOSTS.wave s, no extra mesh or draw call) with the line in a bubble over it (greet.js `say`, `Ghost.head`). Points:
                        bump('greets', 1, 'player:<name>') once per player and session (SCORE.first / again.greets). tools/ghosttest.cjs
+src/ghostinterp.js     #2139: playback of other players' 5 Hz states on a jittery network (pure, no three.js; tunables GHOST_PLAYBACK in
+                       config.js, all *guess*). `receive` (Ghost.push): the arrival intervals of a moving player give a running mean and
+                       mean deviation; a moving player's state is timed at the expected cadence (lost states counted from the distance at
+                       the old pace), pulled only `timeGain` towards its jittery arrival; a gap is a pause (hold point, as before) only
+                       when it is long or the player did not keep its pace; a teleport (snaps cleared, drawn at once) is beyond GHOSTS.jump
+                       OR ≥ `teleportMin` m horizontally faster than `teleportSpeed` m/s (a respawn nearby, no streak), never a fall.
+                       `playStep` (Ghost.draw): the delay aims at mean + `jitterK` deviations, floor GHOSTS.delay (a steady link plays as
+                       before), cap `maxDelay`, slewed (`slewUp` / `slewDown`); a cubic Hermite curve with neighbour (centred) velocities,
+                       limited per axis so it never overshoots a snapshot (stops, landings); past the last state a velocity that dies away
+                       over `extrapMs` (lead ≤ v × extrapMs / 2), from `settleAfter` eased back onto the last state (a real stop ends
+                       exactly where the room says); a curve change under the playhead fades as an offset (`blendMs`). The gait / footsteps
+                       get the curve's velocity (`vh`, `vy`, `animate`), so lateness no longer reads as a stop (#2004). Hit tests
+                       (combat.js `foes`, `feet`, rotation, crouch, pose) still read the drawn figure: same render-time playhead as what is
+                       seen, never less than GHOSTS.delay behind; the room's head-box checks use its own latest state (unchanged, no new
+                       wire field). Tests: `node --test tools/ghostinterptest.mjs` (`--print`: before/after freeze counts) and
+                       `tools/browsertest.sh node tools/ghostjitterbrowser.cjs BASE OUT [BEFORE_REV]` (component page tools/ghostjitter.html:
+                       the real Ghost before / after on a jittery series, trail + gait speed plots). [Results](../verification/2139/).
 src/combat.js          fights between players (#667, on the ghosts of #666): only two players who BOTH hold a weapon (COMBAT.weapons:
                        saber, nerf, wand, rifle, ball, web = the suit with empty hands; the jetpack is NO weapon (#1705: it neither hurts nor arms, only a held weapon counts, also while flying); main.js `weaponKey`, in that
                        order; remove a key to leave it out) can damage each other (+ a small prop in the

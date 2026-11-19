@@ -1,0 +1,94 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Ghost jitter</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#f4f6f7;font:14px system-ui}canvas{display:block}</style></head>
+<body><canvas id="plot" width="1200" height="760"></canvas><script type="module">
+// #2139 component page: the real Ghost (a remote avatar) fed a deterministic jittery 5 Hz snapshot series (the sender's 200 ms
+// cadence on 60 fps frames, 70 ms latency + up to `jitter` ms, a share of states lost, in order like a WebSocket) and drawn at
+// 60 fps; the drawn feet and the speed the gait gets are plotted. `/before/src/ghosts.js` is the previous source (served by
+// tools/ghostjitterbrowser.cjs from git), `../src/ghosts.js` the current one. __run({ which, jitter, drop, seed }) → summary.
+import * as THREE from 'three';
+import * as current from '../src/ghosts.js';
+import * as before from '/before/src/ghosts.js';
+const FRAME = 1000 / 60, NOMINAL = 200, T_END = 9500;
+const rng = (seed) => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+// stands 1 s, walks a gentle S at ~1.6–1.9 m/s, stops at 7.5 s
+const path = (t) => { const s = Math.min(Math.max(0, t - 1000), 6500) / 1000; return [s * 1.6, 0, 0.6 * Math.sin(s * 1.2)]; };
+function series({ jitter, drop, seed }) {
+  const r = rng(seed), out = []; let last = -Infinity, lastP = null, floor = -Infinity, i = 0;
+  for (let t = 0; t <= T_END; t += FRAME) {
+    const p = path(t);
+    if (t - last < NOMINAL || (lastP && Math.hypot(p[0] - lastP[0], p[2] - lastP[2]) <= 0.02)) continue;
+    last = t; lastP = p; i++;
+    const lost = r() < drop, j = r() * jitter;
+    if (lost && i > 3) continue;
+    floor = Math.max(floor, t + 70 + j); out.push({ t: floor, send: t, p });
+  }
+  return out;
+}
+const scene = new THREE.Scene();
+window.__run = ({ which, jitter = 140, drop = 0.05, seed = 3 }) => {
+  const mod = which === 'before' ? before : current, net = series({ jitter, drop, seed });
+  const g = new mod.Ghost(scene, 'jitter-' + which, 'Medspelare'); scene.add(g.root);
+  const eye = new THREE.Vector3(4, 1.6, 6), frames = []; let n = 0;
+  for (let t = 0; t <= T_END; t += FRAME) {
+    while (n < net.length && net[n].t <= t) { const m = net[n++]; g.push({ p: m.p, r: -Math.PI / 2, look: [0, 0] }, m.t); }
+    if (!g.snaps.length) continue;
+    g.draw(t, eye);
+    frames.push({ t, x: g.root.position.x, z: g.root.position.z, vh: g.vh, speed: g.speed, motion: g.avatar.gaitInfo?.motion ?? null });
+  }
+  g.dispose?.();
+  let frozen = 0, slow = 0, maxStep = 0, stops = 0, prevMotion = null;
+  for (let i = 1; i < frames.length; i++) {
+    const f = frames[i], p = frames[i - 1], d = Math.hypot(f.x - p.x, f.z - p.z);
+    if (f.t > 2500 && f.t < 7300) { if (d < 1e-4) frozen++; if (f.vh < 0.5) slow++; maxStep = Math.max(maxStep, d); if (f.motion !== prevMotion && /stop/i.test(String(f.motion))) stops++; }
+    prevMotion = f.motion;
+  }
+  return { which, jitter, drop, seed, frames, net: net.map((m) => ({ t: m.t, send: m.send, x: m.p[0], z: m.p[2] })), frozen, slow, maxStep, stops };
+};
+/** Draw one or two runs: top-down trail (a dot per frame: bunched dots = the figure stopped) and the speed the gait got. */
+window.__plot = (runs, title) => {
+  const c = document.getElementById('plot'), ctx = c.getContext('2d'), W = c.width;
+  ctx.fillStyle = '#f4f6f7'; ctx.fillRect(0, 0, W, c.height);
+  ctx.fillStyle = '#18242e'; ctx.font = 'bold 22px system-ui'; ctx.fillText(title, 24, 34);
+  const colors = { before: '#c2410c', after: '#1d5fa8' }, label = { before: 'Före (c0be4dfd)', after: 'Efter (#2139)' };
+  const rowH = 200, top = 60;
+  runs.forEach((run, ri) => {
+    const y0 = top + ri * (rowH + 20), sx = (x) => 40 + (x - 2) * 130, sz = (z) => y0 + rowH / 2 + z * 120;
+    ctx.fillStyle = '#fff'; ctx.fillRect(24, y0, W - 48, rowH);
+    ctx.strokeStyle = '#b8c0c6'; ctx.lineWidth = 2; ctx.beginPath();
+    for (let t = 2500; t <= 7300; t += 20) { const p = path(t - 0); const X = sx(p[0]), Z = sz(p[2]); t === 2500 ? ctx.moveTo(X, Z) : ctx.lineTo(X, Z); }
+    ctx.stroke();
+    ctx.fillStyle = colors[run.which];
+    for (const f of run.frames) if (f.x >= 2 && f.x <= 10.9) { ctx.beginPath(); ctx.arc(sx(f.x), sz(f.z), 2.2, 0, Math.PI * 2); ctx.fill(); }
+    ctx.strokeStyle = colors[run.which]; ctx.lineWidth = 2.5; // a frame where the gait got (almost) no speed: the figure stopped mid-walk
+    for (const f of run.frames) if (f.t > 2500 && f.t < 7300 && f.vh < 0.5) { const X = sx(f.x), Z = sz(f.z) - 16; ctx.beginPath(); ctx.moveTo(X - 6, Z - 6); ctx.lineTo(X + 6, Z + 6); ctx.moveTo(X + 6, Z - 6); ctx.lineTo(X - 6, Z + 6); ctx.stroke(); }
+    ctx.strokeStyle = '#18242e'; ctx.lineWidth = 1.5;
+    for (const m of run.net) if (m.x >= 2 && m.x <= 10.9) { ctx.beginPath(); ctx.arc(sx(m.x), sz(m.z), 5, 0, Math.PI * 2); ctx.stroke(); }
+    ctx.fillStyle = '#18242e'; ctx.font = 'bold 17px system-ui';
+    ctx.fillText(`${label[run.which]} · bana uppifrån: prick = bildruta (60 fps), ring = mottaget läge, kryss = stannar (< 0,5 m/s)`, 36, y0 + 22);
+    ctx.font = '15px system-ui';
+    ctx.fillText(`stillastående rutor under gång: ${run.frozen} · rutor med fart < 0,5 m/s: ${run.slow} · största steg: ${(run.maxStep * 100).toFixed(1)} cm`, 36, y0 + rowH - 12);
+  });
+  const y0 = top + runs.length * (rowH + 20), h = c.height - y0 - 30, sx = (t) => 60 + (t - 2500) / 4800 * (W - 100), sy = (v) => y0 + h - 8 - v / 4 * (h - 44);
+  ctx.fillStyle = '#fff'; ctx.fillRect(24, y0, W - 48, h);
+  ctx.strokeStyle = '#d8dde1'; ctx.lineWidth = 1; ctx.fillStyle = '#4a5560'; ctx.font = '13px system-ui';
+  for (let v = 0; v <= 4; v++) { ctx.beginPath(); ctx.moveTo(56, sy(v)); ctx.lineTo(W - 36, sy(v)); ctx.stroke(); ctx.fillText(`${v} m/s`, 28, sy(v) + 4); }
+  ctx.strokeStyle = '#b8c0c6'; ctx.lineWidth = 2; ctx.beginPath();
+  for (let t = 2500; t <= 7300; t += 20) { const a = path(t - 330), b = path(t - 310), v = Math.hypot(b[0] - a[0], b[2] - a[2]) / 0.02; t === 2500 ? ctx.moveTo(sx(t), sy(v)) : ctx.lineTo(sx(t), sy(v)); }
+  ctx.stroke();
+  for (const run of runs) {
+    ctx.strokeStyle = colors[run.which]; ctx.lineWidth = 2; ctx.beginPath(); let first = true;
+    for (const f of run.frames) if (f.t >= 2500 && f.t <= 7300) { const v = Math.min(4, f.vh); first ? ctx.moveTo(sx(f.t), sy(v)) : ctx.lineTo(sx(f.t), sy(v)); first = false; }
+    ctx.stroke();
+  }
+  ctx.fillStyle = '#18242e'; ctx.font = 'bold 17px system-ui';
+  ctx.fillText('Farten som gången får (m/s) över tid · grå = verklig fart', 36, y0 + 22);
+};
+window.__ready = true;
+</script></body></html>

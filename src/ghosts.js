@@ -14,6 +14,8 @@ import { FALL, TOAST, SOUNDS, KISS, HUG, REACT } from './config.js';
 import { chooseGazeTarget } from './avatargaze.js';
 import { AVATAR_GAZE } from './config.js';
 import { makesSteps, strideFor } from './spatialsound.js';
+import { newPlayback, receive, playStep } from './ghostinterp.js'; // #2139
+import { GHOST_PLAYBACK as PLAY } from './config.js';
 import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, AVATAR_MOTION as MOTION, CHAT, SWIM, encodeAvatarLook, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
 import { Avatar, armTarget, swimLineFar } from './avatar.js';
 import { aheadSample } from './avatarjump.js'; // #2140
@@ -43,8 +45,8 @@ import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js';
 //
 // Each other player is one avatar (#705, src/avatar.js: a human figure, one skinned mesh = one draw call, shared geometry per
 // variant; an outline without a weapon, solid when both are armed; no shadow, depth-tested so walls and floors hide it) and one name tag sprite ("Anonym" without a name; the canvas
-// texture is shared by everyone with the same name and score, released when unused). States are drawn GHOSTS.delay ms late, interpolated between the
-// last two received, so the motion is smooth at 5 Hz.
+// texture is shared by everyone with the same name and score, released when unused). States are drawn at least GHOSTS.delay ms late (#2139:
+// more on a jittery link, src/ghostinterp.js) on a Hermite curve through the received ones, so the motion is smooth at 5 Hz.
 
 const CAP_KEY = 'lunden.mp.capMonth';
 const monthNow = () => new Date().toISOString().slice(0, 7);
@@ -119,7 +121,7 @@ const pickMat = new THREE.MeshBasicMaterial();
 export class Ghost { // (exported for tools/ghostprops.html)
   /** `self`: our own reflection in the mirrors (#691): no name tag, also reused for the resting first-person body (#2080). */
   constructor(parent, id, name, self = false, look = null) {
-    this.id = id; this.name = name || ANON; this.snaps = []; this.h = ''; this.hi = ''; this.itemProp = null; this.itemHold = new THREE.Vector3(); this.solid = false; this.prop = null; this.self = self;
+    this.id = id; this.name = name || ANON; this.snaps = []; this.play = newPlayback(1000 / G.hz); this.playOut = { p: { x: 0, y: 0, z: 0 }, v: { x: 0, y: 0, z: 0 } }; /* #2139 */ this.h = ''; this.hi = ''; this.itemProp = null; this.itemHold = new THREE.Vector3(); this.solid = false; this.prop = null; this.self = self;
     this.avatarLook = look ?? (self ? `me:${name}` : id);
     this.avatar = new Avatar(this.avatarLook, tint(name));
     this.avatar.idleSeed = id; this.avatar.idleLook = !self; // #2035: each player rests in its own rhythm; our mirror image keeps our view
@@ -196,11 +198,11 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.bikeWire = Number.isFinite(bk) ? bk : null; // (#1286: the bicycle's heading while riding)
     this.setJetpack(h === 'jetpack' && !jp ? 1 : jp); // (an older client only says h: 'jetpack', which is no weapon, #1705)
     this.refreshBadge();
-    const prev = this.snaps.at(-1);
-    if (prev && Math.hypot(p[0] - prev.p.x, p[1] - prev.p.y, p[2] - prev.p.z) > G.jump) this.snaps.length = 0; // a teleport (#1319: into / out of the children's room): appear there, no streak across the map
-    const last = this.snaps.at(-1);
-    if (last && t - last.t > 1000 / G.hz * 1.5) this.snaps.push({ t: t - 1000 / G.hz, p: last.p, r: last.r, c: last.c, pose: last.pose, look: last.look, bk: last.bk, dn: last.dn, am: last.am, gx:last.gx });
-    this.snaps.push({ t, look, gx:gymPoseWire(gx), dn: dn === 1 || dn === 2 ? dn : 0, am: airMode(am), bk: this.bikeWire, p: new THREE.Vector3(...p), r, c: c === true ? 1 : 0, pose: pose >= 1 && pose <= 3 && Number.isInteger(pose) ? pose : 0 });
+    // #2139 (src/ghostinterp.js): the arrival feeds the jitter buffer; a teleport (#1319: into / out of the children's room; a respawn:
+    // an implausible speed or GHOSTS.jump m) appears there, no streak across the map; after a pause it walks off from where it stood
+    const p3 = new THREE.Vector3(...p);
+    const ts = receive(this.play, this.snaps, p3, t, G.jump, PLAY, (last, at) => ({ t: at, p: last.p, r: last.r, c: last.c, pose: last.pose, look: last.look, bk: last.bk, dn: last.dn, am: last.am, gx:last.gx }));
+    this.snaps.push({ t: ts, look, gx:gymPoseWire(gx), dn: dn === 1 || dn === 2 ? dn : 0, am: airMode(am), bk: this.bikeWire, p: p3, r, c: c === true ? 1 : 0, pose: pose >= 1 && pose <= 3 && Number.isInteger(pose) ? pose : 0 });
     if (this.snaps.length > 8) this.snaps.splice(0, this.snaps.length - 8);
   }
 
@@ -317,11 +319,10 @@ export class Ghost { // (exported for tools/ghostprops.html)
   draw(t, eye) {
     const s = this.snaps;
     if (!s.length) return;
-    const at = t - G.delay;
-    let a = s[0], b = s[0];
-    for (let i = s.length - 1; i >= 0; i--) if (s[i].t <= at) { a = s[i]; b = s[i + 1] ?? s[i]; break; }
-    const k = b === a ? 1 : THREE.MathUtils.clamp((at - a.t) / (b.t - a.t), 0, 1);
-    this.root.position.lerpVectors(a.p, b.p, k);
+    // #2139: the adaptive jitter buffer's playhead (never less than GHOSTS.delay behind), a Hermite curve through the snapshots,
+    // a short decaying extrapolation when the next one is late; combat reads the figure placed here (`feet`, rotation, crouch, pose)
+    const play = playStep(this.play, s, t, G.delay, PLAY, this.playOut), { a, b, k } = play, v = play.v;
+    this.root.position.set(play.p.x, play.p.y, play.p.z);
     this.root.rotation.y = lerpAngle(a.r, b.r, k);
     this.crouch = THREE.MathUtils.lerp(a.c, b.c, k);
     this.poseCarry = k < 1 && a.pose !== b.pose && [0,1].includes(a.pose) && [0,1].includes(b.pose);
@@ -330,15 +331,15 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.air = (k < 1 ? a : b).am ?? 0; // #1799: 0 on the ground (or an older client), 1 flying, 2 swinging, 3 climbing
     this.look = [THREE.MathUtils.lerp(a.look[0], b.look[0], k), THREE.MathUtils.lerp(a.look[1], b.look[1], k)];
     this.bikeAt(a, b, k);
-    const d = this.root.position.distanceTo(eye), sec = b === a ? 0 : (b.t - a.t) / 1000;
+    const d = this.root.position.distanceTo(eye);
     this.root.visible = d < G.far;
-    this.dEye = d; this.vh = sec ? Math.hypot(b.p.x - a.p.x, b.p.z - a.p.z) / sec : 0; this.vy = sec ? (b.p.y - a.p.y) / sec : 0; // (#1302: what the footsteps derive from)
+    this.dEye = d; this.vh = Math.hypot(v.x, v.z); this.vy = v.y; // (#1302: what the footsteps derive from; #2139: the curve's velocity)
     if (this.tag) { // (#1296) beyond tagFar the tag grows with distance: constant size on screen, no pop-out
       this.tag.visible = d < G.far;
       const f = Math.max(1, d / G.tagFar);
       this.tag.scale.set(G.tagWidth * f, (this.tagH ?? G.tagHeight) * f, 1);
     }
-    if (this.root.visible) this.animate(t, d, sec ? (b.p.x - a.p.x) / sec : 0, sec ? (b.p.z - a.p.z) / sec : 0);
+    if (this.root.visible) this.animate(t, d, v.x, v.z);
   }
 
   /** The avatar's pose: the gait follows the ground speed (vx, vz) m/s; the body turns towards where it goes, the head to
