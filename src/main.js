@@ -3979,7 +3979,7 @@ function step(dt) {
   cat.update(dt);
   bestiaryObserver.update(dt);
   if(bestiaryEnabled())bestiaryPhotos.update(dt);
-  olofDriver.update(dt);
+  olofDriver.update(dt, camera.position); // #2146: he looks at the visitor
   checkCatButt();
   checkMiele();
   fireworks.update(dt);

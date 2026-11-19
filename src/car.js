@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { CAR as C, REST, SONOS, SITE } from './config.js';
 import { along, nearestS } from './roads.js';
 import { buildCar, MEGANE, drawScreen, SCREEN_BUTTONS } from './carmodel.js';
+import { curvature, wheelAngle, curveWindow } from './olofdrive.js';
+import { OLOF_DRIVE as OD } from './config.js';
 import { sfx } from './audio.js';
 import { CarRadio } from './sonos.js';
 
@@ -102,6 +104,8 @@ export class Car {
     }
     this.learnerSign = learnerSign(); g.add(this.learnerSign);
     this.wheels = m.wheels;
+    this.steering = m.steering; // #2146: the steering wheel turns with the path's curvature
+    this.drive = { steer: 0, accel: 0, lat: 0, reversing: false }; // #2146: what the driver feels (olof.js): wheel angle (rad, + left), forward / sideways acceleration (m/s²)
     // the doors: E on one opens / closes it while the car is parked
     this.doors = m.doors.map((d) => {
       const name = DOOR_NAMES[`${d.front ? 1 : 0},${d.side}`];
@@ -216,10 +220,10 @@ export class Car {
   }
 
   /** Parked in front of the house at once (&car, screenshots). */
-  park() { this.via = 'street'; this.path = this.arrival(); this.d = this.total(); this.state = 'parked'; this.object.visible = true; this.place(); }
+  park() { this.resetDrive(); this.via = 'street'; this.path = this.arrival(); this.d = this.total(); this.state = 'parked'; this.object.visible = true; this.place(); }
 
   /** In its stall in the garage (#358: where it lives). */
-  toGarage() { this.via = 'garage'; this.path = this.departure(); this.d = this.total(); this.state = 'garage'; this.speed = 0; this.object.visible = true; this.place(); }
+  toGarage() { this.resetDrive(); this.via = 'garage'; this.path = this.departure(); this.d = this.total(); this.state = 'garage'; this.speed = 0; this.object.visible = true; this.place(); }
 
   /** To our door: from the street (`via` 'street') or out of the garage (#358). */
   arrival() {
@@ -254,6 +258,19 @@ export class Car {
     while (k < pts.length - 1 && len[k] < d) k++;
     const [ax, az] = pts[k - 1], [bx, bz] = pts[k], u = Math.min(1, Math.max(0, (d - len[k - 1]) / (len[k] - len[k - 1] || 1)));
     return { x: ax + (bx - ax) * u, z: az + (bz - az) * u, yaw: Math.atan2(-(bz - az), bx - ax) + (d < (this.path.revEnd ?? 0) ? Math.PI : 0) }; // local +x along the way (backing out: the other way, #358)
+  }
+
+  /** #2146: a standing car: the wheel straight, no push, not reversing. */
+  resetDrive() { Object.assign(this.drive, { steer: 0, accel: 0, lat: 0, reversing: false }); this.steering?.quaternion.identity(); }
+
+  /** #2146: eases the driver's inputs (this.drive) and turns the steering wheel mesh; `accel` is along the path (backing up it is the other way for the car). */
+  driveFeel(dt, steer, accel, lat, reversing, speed) {
+    const f = this.drive, k = Math.min(1, dt * OD.ease);
+    f.steer += (steer - f.steer) * k;
+    f.accel += ((reversing ? -accel : accel) - f.accel) * Math.min(1, dt * OD.bodyEase);
+    f.lat += (lat - f.lat) * Math.min(1, dt * OD.bodyEase);
+    f.reversing = reversing && speed > 0.02;
+    if (this.steering) this.steering.quaternion.setFromAxisAngle(this.steering.userData.axis, f.steer);
   }
 
   place() {
@@ -316,7 +333,7 @@ export class Car {
     }
     this.screenMat.emissiveIntensity += ((this.awake > 0 ? 0.9 : 0) - this.screenMat.emissiveIntensity) * Math.min(1, dt * 3);
     if (this.leaveWhenShut && this.doorsShut) { this.leaveWhenShut = false; this.leave(); }
-    if (this.state !== 'arriving' && this.state !== 'leaving') return;
+    if (this.state !== 'arriving' && this.state !== 'leaving') { this.driveFeel(dt, 0, 0, 0, false, 0); return; } // (stopped: the wheel centres)
     const left = this.total() - this.d;
     let want = C.speed;
     if (this.state === 'arriving') want = Math.min(C.speed, Math.max(0.4, Math.sqrt(2 * C.brake * left)));
@@ -329,10 +346,15 @@ export class Car {
       if (ahead > 0 && ahead < C.l / 2 + 1.5 + this.speed ** 2 / (3 * C.brake) && this.garage.door.t < 0.97) want = 0; // stops short of it
     }
     if (this.blocked(player)) want = 0; // never into the visitor
+    const v0 = this.speed;
     this.speed += Math.sign(want - this.speed) * Math.min(Math.abs(want - this.speed), C.brake * 1.5 * dt);
     const was = this.d;
     this.d = Math.min(this.total(), this.d + this.speed * dt);
     if (was < P.revEnd && this.d > P.revEnd) { this.d = P.revEnd; this.speed = 0; } // stop at the cusp before driving off forwards
+    { // #2146: the wheel follows the path's curvature; the driver feels the speed change and the bend
+      const rev = this.d < P.revEnd || was < P.revEnd, [d0, d1] = curveWindow(Math.min(this.d, this.total()), this.total(), P.revEnd), k = curvature(this.at(d0).yaw, this.at(d1).yaw, d0, d1);
+      this.driveFeel(dt, this.speed > 0.02 ? wheelAngle(k, rev) : this.drive.steer, (this.speed - v0) / Math.max(dt, 1e-4), this.speed ** 2 * (rev ? -k : k), rev, this.speed);
+    }
     for (const w of this.wheels) w.rotation.z -= (this.speed * dt) / MEGANE.wheelR;
     this.place();
     if (!this.hum) this.hum = sfx.evHum(this.object.position); // (driving on after a reload: the sound once the audio runs, #277)

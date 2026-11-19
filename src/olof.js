@@ -1,8 +1,11 @@
 import { discoverCreature } from './bestiaryevents.js';
 import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
-import { OLOF as O, defaultFaceLook } from './config.js';
+import { OLOF as O, OLOF_DRIVE as OD, defaultFaceLook } from './config.js';
 import { Avatar } from './avatar.js';
+import { newBreath, stepBreath } from './avatarbreath.js'; // #2146: his breathing is the avatars' (rhythm, then avatarchest.js)
+import { chestBreath } from './avatarchest.js';
+import { wheelHands, shoulderWeight, driverFocus, headToward, bodyMotion } from './olofdrive.js';
 
 // Olof is only the driver of our car (#900). The skeleton and IK here are shared with the players' avatars (src/avatar.js).
 //
@@ -175,13 +178,16 @@ export function seatedPose(seat, { w = 0, wave = 0, ph = 0, up = 0, fwd = 0 } = 
 
 /** The driving pose in the figure's frame (floor of the foot well at y 0): hips on the cushion, leaning into the backrest,
  * the feet at the pedals, both hands on the wheel (`wave`: the left hand up, waving). */
-export function drivingPose({ seat, wheel, pedals, wave = 0, ph = 0, turn = 0 }) {
-  const hip = [seat + 0.075, 0], [wx, wy, wz] = wheel, r = 0.15;
-  const handR = { at: [wx - r, wy - 0.04, wz], pole: [-0.6, -0.8, -0.3] };
-  const restL = [wx + r, wy - 0.04, wz], waveL = [0.3 + 0.05 * Math.sin(ph), hip[0] + 0.66, 0.2]; // (under the roof, by the window)
-  const handL = { at: lerp3(restL, waveL, ease(wave)), pole: lerp3([0.6, -0.8, -0.3], [1, -0.7, -0.1], ease(wave)) };
-  return { hip, lean: O.car.lean, head: 0, turn, feet: [[0.12, 0.06, pedals], [-0.12, 0.06, pedals]], hands: [handL, handR], can: null };
+export function drivingPose({ seat, wheel, pedals, wave = 0, ph = 0, turn = 0, head = 0, steer = 0, leanExtra = 0, torsoYaw = 0, torsoRoll = 0 }) {
+  const hip = [seat + 0.075, 0], [wx, wy, wz] = wheel;
+  const [gL, gR] = wheelHands([wx, wy - 0.04, wz], 0.15, 0.42, steer); // #2146: the hands go round with the wheel
+  const handR = { at: gR, pole: [-0.6, -0.8, -0.3] };
+  const waveL = [0.3 + 0.05 * Math.sin(ph), hip[0] + 0.66, 0.2]; // (under the roof, by the window)
+  const handL = { at: lerp3(gL, waveL, ease(wave)), pole: lerp3([0.6, -0.8, -0.3], [1, -0.7, -0.1], ease(wave)) };
+  return { hip, lean: O.car.lean + leanExtra, head, turn, torsoYaw, torsoRoll, feet: [[0.12, 0.06, pedals], [-0.12, 0.06, pedals]], hands: [handL, handR], can: null };
 }
+
+const wv1 = new THREE.Vector3(), wv2 = new THREE.Vector3();
 
 export class OlofDriver {
   /** `car`: Car (car.js; its group, built facing local +x, gets the figure). */
@@ -203,6 +209,8 @@ export class OlofDriver {
     this.fig.pick.userData.door = this.interact;
     this.state = 'away'; // away / drive / joke
     this.t = 0; this.scored = false; this.waveK = 0; this.look = 0; this.lookT = 4;
+    this.pitch = 0; this.shoulderK = 0; this.revT = 0; this.eyeTurn = 0; this.eyePitch = 0; // #2146: head pitch / look over the shoulder / the eyes' extra head turn
+    this.breath = newBreath(); this.chest = null;
     this.onSay = null; // (line, secs) => {} his joke in a bubble (main.js → greet.js)
   }
 
@@ -236,23 +244,47 @@ export class OlofDriver {
   /** Is this greeting the first since he arrived (it scores)? Call once per greeting. */
   claimScore() { const first = !this.scored; this.scored = true; return first; }
 
+  /** The pose from his current state; #2146: the hands go round with the wheel, the body leans on braking / starting and sways in bends, he breathes. */
   pose() {
-    const D = O.car, wave = this.waveK;
-    poseOlof(this.fig, drivingPose({ seat: D.seat, wheel: D.wheel, pedals: D.pedals, wave, ph: this.t * 9, turn: this.look }));
+    const D = O.car, F = this.car.drive, bm = bodyMotion(F.accel, F.lat), br = this.chest = chestBreath(this.breath, 1, this.chest ?? undefined), g = OD.breathGain;
+    const u = this.fig.material.userData.u?.uBreathe?.value; if (u) { u[0] = br.chest * g; u[1] = br.belly * g; u[2] = br.shoulder * g; }
+    const pose = drivingPose({ seat: D.seat, wheel: D.wheel, pedals: D.pedals, wave: this.waveK, ph: this.t * 9, steer: F.steer,
+      turn: this.look + this.eyeTurn - OD.shoulderHead * this.shoulderK, head: this.pitch + this.eyePitch - br.lean * g,
+      leanExtra: bm.lean + br.lean * g, torsoYaw: -OD.shoulderTorso * this.shoulderK, torsoRoll: bm.roll });
+    pose.hip[0] += br.hip * g;
+    poseOlof(this.fig, pose);
   }
 
   /** Is the car out (on its way, parked, leaving)? Then he is in it (#663); in its stall or gone, nobody is. */
   get carOut() { const c = this.car; return c.object.visible && c.state !== 'garage' && c.state !== 'gone'; }
 
-  update(dt) {
+  /** `visitor`: the visitor's head (world Vector3) or null (#2146: he looks at it when greeted or while parked close by). */
+  update(dt, visitor = null) {
     const c = this.car;
     if (this.state === 'away') { if (this.carOut) this.show(); return; } // (a car restored out on the road, #663)
     if (!this.carOut) { this.hide(); return; } // back home / driven off: nobody in it
     this.t += dt;
     this.waveK = this.state === 'joke' ? Math.min(1, this.t / 0.4) : Math.max(0, this.waveK - dt / 0.4); // (the hand comes down after the joke)
     // a glance to the side now and then (towards the house while parked)
-    if ((this.lookT -= dt) <= 0) { this.lookT = 3 + Math.random() * 5; this.lookTo = this.lookTo ? 0 : (this.state === 'drive' && c.parked ? 0.7 : 0.35); }
-    this.look += ((this.state === 'joke' ? 0.8 : this.lookTo ?? 0) - this.look) * Math.min(1, dt * 3);
+    if ((this.lookT -= dt) <= 0) { this.lookT = 3 + Math.random() * 5; this.lookTo = this.lookTo ? 0 : (this.state === 'drive' && c.parked ? OD.glance[0] : OD.glance[1]); }
+    // #2146: what he looks at: over his shoulder while backing up, the visitor's head (the head turns, the eyes take the rest: avatargaze.js), else the road
+    const rev = c.drive.reversing, o = this.fig.object, B = this.fig.bones;
+    this.revT = rev ? this.revT + dt : 0;
+    const dist = visitor ? Math.hypot(visitor.x - c.object.position.x, visitor.z - c.object.position.z) : Infinity;
+    const focus = driverFocus({ state: this.state, parked: c.parked, reversing: rev, dist });
+    let wantTurn = this.lookTo ?? 0, wantPitch = 0, target = null;
+    if (focus === 'visitor' && visitor) {
+      o.updateWorldMatrix(true, false);
+      B.head.getWorldPosition(wv1); o.worldToLocal(wv1); o.worldToLocal(wv2.copy(visitor)).sub(wv1);
+      const h = headToward(wv2.x, wv2.y, wv2.z); wantTurn = h.turn; wantPitch = h.pitch; target = visitor;
+    } else if (focus === 'shoulder') wantTurn = 0;
+    const k = Math.min(1, dt * OD.turnEase);
+    this.look += (wantTurn - this.look) * k; this.pitch += (wantPitch - this.pitch) * k;
+    this.shoulderK += ((rev ? shoulderWeight(this.revT) : 0) - this.shoulderK) * Math.min(1, dt * OD.shoulderEase);
+    this.fig.avatar.lookAt(target);
+    const eyes = this.fig.avatar.updateEyes(dt, this.look, this.pitch, false); // blinks and saccades always; the gaze only with a target
+    this.eyeTurn = eyes.yaw; this.eyePitch = eyes.pitch;
+    stepBreath(this.breath, dt, 0);
     if (this.state === 'joke') {
       if (!this.said && this.t > 0.6) { this.said = true; this.onSay?.(O.car.jokes[Math.floor(Math.random() * O.car.jokes.length)], O.car.jokeTime); }
       if (this.t >= 0.6 + O.car.jokeTime) { this.state = 'drive'; this.t = 0; } // he sits on (#658)

@@ -317,12 +317,14 @@ function buildMeganeFromGLB(gltf, paint) {
   ];
 
   const screen = group.getObjectByName('Screen_OpenR');
+  const steering = group.getObjectByName('Steering_Wheel_plastic'); // #2146: its own node, turned about the column by car.js
+  if (steering) steering.userData.axis = new THREE.Vector3(Math.cos(0.42), Math.sin(0.42), 0);
   const seats = [
     { x: -0.02, y: 0.54, z: -0.37, name: 'förarsätet' },
     { x: -0.02, y: 0.54, z: 0.37, name: 'passagerarsätet' }
   ];
 
-  return { group, parts: {}, doors, seats, screen, materials: mats, wheels };
+  return { group, parts: {}, doors, seats, screen, steering, materials: mats, wheels };
 }
 
 function buildParkedFromGLB(gltf, paint) {
@@ -427,7 +429,7 @@ export function buildProceduralCar(S = MEGANE, { doors: withDoors = false, paint
   for (const x of [wx, -wx]) for (const s of [-1, 1]) wheels.push({ x, s, z: s * (hw * planK(S, x) - 0.12) });
   // ---- doors (our car) or the closed sides' handles (parked cars)
   const doors = [], seats = [];
-  let screen = null; // the OpenR sheet (our car)
+  let screen = null, steering = null; // the OpenR sheet and the steering wheel (our car)
   const mats = {
     paint: new THREE.MeshStandardMaterial({ color: paint, roughness: 0.22, metalness: 0.35 }),
     black: new THREE.MeshStandardMaterial({ color: 0x0c0d0f, roughness: 0.25, metalness: 0.2 }),
@@ -485,7 +487,10 @@ export function buildProceduralCar(S = MEGANE, { doors: withDoors = false, paint
     I.add('plastic', rbox(xA - xC - 0.05, 0.05, W - 0.2, (xA + xC) / 2, 0.29, 0, 0.01));
     I.add('plastic', rbox(0.38, 0.26, W - 0.14, 0.73, 0.84, 0, 0.06), rbox(0.3, 0.05, W - 0.16, 0.9, 0.96, 0, 0.02));
     I.add('plastic', rbox(0.75, 0.28, 0.22, 0.12, 0.45, 0, 0.05)); // centre console
-    I.add('plastic', new THREE.TorusGeometry(0.17, 0.022, 8, 28).rotateY(Math.PI / 2).rotateZ(0.42).translate(0.42, 0.93, -0.37), rbox(0.06, 0.08, 0.08, 0.45, 0.92, -0.37, 0.02));
+    // #2146: the wheel (rim + hub) is its own small mesh (one extra draw, the car only) so it can turn about its column with the path's curvature
+    const wheelAxis = new THREE.Vector3(Math.cos(0.42), Math.sin(0.42), 0), wheelAt = new THREE.Vector3(0.42, 0.93, -0.37);
+    steering = new THREE.Mesh(mergeGeometries([clean(new THREE.TorusGeometry(0.17, 0.022, 8, 28).rotateY(Math.PI / 2).rotateZ(0.42)), clean(rbox(0.06, 0.08, 0.08, 0.03, -0.01, 0, 0.02)), clean(rbox(0.03, 0.03, 0.33, 0, 0, 0, 0.01).rotateZ(0.42)), clean(rbox(0.03, 0.15, 0.03, 0, -0.08, 0, 0.01).rotateZ(0.42))]), mats.plastic);
+    steering.position.copy(wheelAt); steering.userData.axis = wheelAxis; group.add(steering);
     I.add('plastic', new THREE.CylinderGeometry(0.025, 0.025, 0.3, 8).rotateZ(Math.PI / 2 - 0.42).translate(0.55, 0.88, -0.37));
     for (const z of [-0.37, 0.37]) {
       I.add('fabric', rbox(0.5, 0.12, 0.5, -0.04, 0.48, z, 0.05));
@@ -518,7 +523,7 @@ export function buildProceduralCar(S = MEGANE, { doors: withDoors = false, paint
     t.castShadow = true; o.add(t, r); group.add(o);
     return o;
   });
-  return { group, parts, doors, seats, screen, materials: mats, wheels: wheelObjs };
+  return { group, parts, doors, seats, screen, steering, materials: mats, wheels: wheelObjs };
 }
 
 /** After mirroring a geometry (scale z −1) its triangles wind the wrong way: swap two corners of each. */

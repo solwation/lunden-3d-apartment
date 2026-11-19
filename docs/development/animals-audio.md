@@ -84,6 +84,14 @@ src/fireworks.js       midnight fireworks over the block (#1200, FIREWORKS in co
                        a stand-in position ≤ `soundDistance` m away, delayed by distance/340. `?fireworks` starts it 4 s after load (add `&time=0`
                        for night); #1199's midnight trigger calls `showFireworks.start()`. Game feature: not carried to the public downstream.
 src/olof.js            OlofDriver only (#900): existing car driver/greeting; the skeleton and pose/IK exports also serve Avatar.
+                       #2146 Olof lives at the wheel: `OlofDriver.update(dt, visitorHead)` uses the avatars' own `updateEyes` (blinks, saccades, gaze; avatargaze.js) and
+                       chest breathing (avatarbreath/avatarchest, times OLOF_DRIVE.breathGain), looks at the visitor's head when greeted or while the car is parked within
+                       OLOF_DRIVE.range (head turns, eyes take the rest; no more fixed angles), turns the wheel and his hands with the path's curvature (`Car.drive`:
+                       steer / accel / lat / reversing, car.js `driveFeel`; the wheel is its own node `Steering_Wheel_plastic` in models/car-megane.glb (tools/buildcarglb.mjs) and a small mesh in the procedural fallback: one extra draw, the car only),
+                       looks over his shoulder while backing out of the garage (glancing back to the road every few seconds) and leans / sways on braking, starting and bends.
+src/olofdrive.js       #2146 pure helpers (curvature, wheelAngle, curveWindow, wheelHands, shoulderWeight, driverFocus, headToward, bodyMotion); numbers OLOF_DRIVE in config.js.
+tools/olofdrivetest.mjs  node --test: the helpers above (wheel sign / reverse flip / cap, gaze target choice, reverse look rhythm, hands on the rim, body motion).
+tools/olofdrive2146browser.cjs  tools/browsertest.sh: before/after through the cabin (bend, reversing, greeted, blink) into docs/verification/2146.
                        #1156: `buildOlof` draws him with the players' Avatar in a fixed look (`olofLook`: OLOF.look + OLOF.colors;
                        top = TOPS[10], a grey beard via the look's `beard`), one SkinnedMesh/draw call like one player, no shadow;
                        his mouth follows the joke (main.js passes `olofDriver.avatar` to greet.say, `Avatar.updateMouth`).

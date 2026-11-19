@@ -289,7 +289,6 @@ export function buildMeganeDrivableModel(S = MEGANE) {
   I.add('plastic', rbox(xA - xC - 0.05, 0.05, W - 0.2, (xA + xC) / 2, 0.29, 0, 0.01));
   I.add('plastic', rbox(0.38, 0.26, W - 0.14, 0.73, 0.84, 0, 0.06), rbox(0.3, 0.05, W - 0.16, 0.9, 0.96, 0, 0.02));
   I.add('plastic', rbox(0.75, 0.28, 0.22, 0.12, 0.45, 0, 0.05));
-  I.add('plastic', new THREE.TorusGeometry(0.17, 0.022, 8, 28).rotateY(Math.PI / 2).rotateZ(0.42).translate(0.42, 0.93, -0.37), rbox(0.06, 0.08, 0.08, 0.45, 0.92, -0.37, 0.02));
   I.add('plastic', new THREE.CylinderGeometry(0.025, 0.025, 0.3, 8).rotateZ(Math.PI / 2 - 0.42).translate(0.55, 0.88, -0.37));
 
   for (const z of [-0.37, 0.37]) {
@@ -304,6 +303,14 @@ export function buildMeganeDrivableModel(S = MEGANE) {
     m.name = `Interior_${name}`;
     interiorGroup.add(m);
   }
+
+  // #2146: the steering wheel (rim, hub, two spokes) is its own node at the wheel's centre, so src/car.js can turn it about its column with the path's curvature
+  const wheelGeo = mergeGeometries([new THREE.TorusGeometry(0.17, 0.022, 8, 28).rotateY(Math.PI / 2).rotateZ(0.42), rbox(0.06, 0.08, 0.08, 0.03, -0.01, 0, 0.02),
+    rbox(0.03, 0.03, 0.33, 0, 0, 0, 0.01).rotateZ(0.42), rbox(0.03, 0.15, 0.03, 0, -0.08, 0, 0.01).rotateZ(0.42)].map(clean));
+  const steer = new THREE.Mesh(wheelGeo, mats.plastic);
+  steer.name = 'Steering_Wheel_plastic';
+  steer.position.set(0.42, 0.93, -0.37);
+  interiorGroup.add(steer);
 
   // OpenR screen
   const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.19), mats.screen);

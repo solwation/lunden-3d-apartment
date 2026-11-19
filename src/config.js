@@ -2384,6 +2384,20 @@ export const OLOF = {
       'Varför tog trafikljuset inte semester? Det hade fullt upp med att byta om.', 'Vad gör en bil på gymmet? Den kör på!'] },
 };
 
+// #2146: Olof comes alive at the wheel (src/olofdrive.js, src/olof.js OlofDriver; the wheel mesh src/carmodel.js, its angle src/car.js). All *guess*es by eye, not measured.
+// `span` m of path round the car over which the heading change gives the curvature; `wheelBase` m (MEGANE's), `ratio` steering-wheel turns per road-wheel angle
+// (a big ratio so a normal bend turns the wheel visibly), `maxWheel` rad the most the wheel turns either way, `ease` /s how fast the wheel follows (and
+// centres once parked). Body: `accel` rad of lean per m/s² of braking (forward) / starting (back), `roll` rad of sideways tilt per m/s² of cornering force
+// (to the outside), each capped by `maxLean` / `maxRoll`, `bodyEase` /s. Reversing: the torso turns `shoulderTorso` rad and the head `shoulderHead` rad over the
+// right shoulder (he looks through the rear window), every `forwardEvery` s back to the road for `forwardFor` s. The visitor: looked at within `range` m while
+// parked (and always when greeted), the head takes `headShare` of the angle up to `maxTurn` rad / `maxPitch`, the eyes the rest (avatargaze.js); `turnEase` /s.
+// The idle glance sideways (a window, a mirror): `glance` [near the house, otherwise] rad. Breathing: avatarchest.js amplitudes times `breathGain`
+// (seated, in a hoodie: the avatars' own values are a few millimetres, too little to read at this distance).
+export const OLOF_DRIVE = { span: 4, wheelBase: 2.69, ratio: 9, maxWheel: 1.9, ease: 5,
+  accel: 0.035, roll: 0.022, maxLean: 0.12, maxRoll: 0.1, bodyEase: 5,
+  shoulderTorso: 0.3, shoulderHead: 1.05, forwardEvery: 3.2, forwardFor: 0.9, shoulderEase: 3.5,
+  range: 6, headShare: 0.85, maxTurn: 1.15, maxPitch: 0.45, turnEase: 4, glance: [0.7, 0.35], breathGain: 4 };
+
 // The walkable area outdoors (#355): the whole block Kv. Lunden — the car park in front of Hus L (z0, as before), Karpvägen
 // with the garage drive (x0: its far kerb, Karpvägen's `w` 5.8 about x −75.8), the park level south of the box (z1: short of
 // the park's woods, SITE.treeAreas) and Sankt Lars väg's east leg (x1: short of HepCat Store's west face, 27.9). Inside it
