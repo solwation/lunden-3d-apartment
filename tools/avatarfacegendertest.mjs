@@ -11,7 +11,7 @@ test('offsets are bounded (a few mm) for every gender weight, part and probe poi
   for (const g of [0, 0.5, 1]) for (const part of GENDER_PARTS) for (const [x, y, z] of grid) {
     const d = off(x, y, z, g, part);
     assert(d.every(Number.isFinite));
-    assert(Math.hypot(...d) < 0.0085, `${part} ${g} @${x},${y},${z}: ${d}`);
+    assert(Math.hypot(...d) < 0.0155, `${part} ${g} @${x},${y},${z}: ${d}`);
   }
 });
 test('symmetric: the mirrored point gets the mirrored offset', () => {
@@ -24,7 +24,7 @@ test('zero inside the eye opening and on the lip seam; lips fade to nothing at t
   for (const g of [0, 1]) for (const s of [-1, 1]) for (const [dx, dy] of [[0, 0], [0.01, 0.005], [-0.012, -0.01]]) {
     const d = off(s * (G.keep.at[0] + dx), G.keep.at[1] + dy, 0.1, g, 'head');
     assert(Math.hypot(d[0], d[2]) < 4e-4, `eye ${d}`);
-    assert.equal(off(s * (G.keep.at[0] + dx), G.keep.at[1] + dy, 0.1, g, 'brow')[1], G.browY[g]); // brow hairs only move in y there
+    assert(Math.abs(off(s * (G.keep.at[0] + dx), G.keep.at[1] + dy, 0.1, g, 'brow')[1] - G.browY[g]) < 1e-9); // brow hairs only move in y there
   }
   for (const g of [0, 1]) for (let x = -0.02; x <= 0.0201; x += 0.004) {
     const seam = lipOutline(x).seam, lip = off(x, seam, 0.11, g, 'lip'), head = off(x, seam, 0.11, g, 'head');
@@ -41,7 +41,7 @@ test('direction: a male brow ridge and jaw are stronger, female cheeks and lips 
   const seam = FACE.mouth.seamY, up = off(0, seam + 0.0045, 0.11, 1, 'lip'), dn = off(0, seam - 0.0045, 0.11, 1, 'lip');
   assert(up[2] - off(0, seam + 0.0045, 0.11, 1, 'head')[2] > 0.0005 && up[1] > 0 && dn[1] < 0, 'fuller lips open up/down from the seam');
   assert(off(0, 0.12, 0.1, 1, 'brow')[1] - off(0, 0.12, 0.1, 0, 'brow')[1] > 0.003, 'higher brows');
-  assert.equal(off(0, 0.12, 0.1, 1, 'head')[1] - off(0, 0.12, 0.1, 0, 'head')[1], 0, 'skin does not move in y');
+  assert(Math.abs(off(0, 0.12, 0.1, 1, 'head')[1] - off(0, 0.12, 0.1, 0, 'head')[1]) < 1e-9, 'skin does not move in y');
 });
 test('GLSL is generated from the same constants and carries the same terms', () => {
   const s = genderFaceGLSL();

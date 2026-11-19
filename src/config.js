@@ -4412,12 +4412,13 @@ export const AVATAR_CONTOUR = {
 // from `r[1]`); the lip band is zero on the seam and back to zero at the lips' outer edge; every term is symmetric in x.
 export const AVATAR_FACE_GENDER = {
   keep: { at: [0.034, 0.107], r: [0.021, 0.032] },
-  ridge: { y: 0.135, h: 0.009, w: 0.05, z: [0.005, -0.0006] }, // brow ridge: heavier for the male face
-  browY: [-0.002, 0.003], // brow height (the hairs only): lower male, higher female
-  jaw: { y: 0.02, h: 0.022, z: [0.01, 0.05], x: [0.005, -0.0018] }, // jaw angle: wider and squarer corner (male) / softer (female)
-  chin: { y: -0.012, h: 0.014, x: [0.09, -0.06] }, // chin width (share of x)
-  cheek: { at: [0.046, 0.072], r: 0.022, z: [0, 0.004] }, // cheek fullness (female)
-  lip: { band: [0.001, 0.004, 0.006, 0.0095], x: [0.016, 0.023], z: [0, 0.0012], y: [0, 0.0007] }, // lip fullness (female)
+  ridge: { y: 0.135, h: 0.011, w: 0.055, z: [0.008, -0.0012] }, // brow ridge: heavier for the male face
+  browY: [-0.004, 0.005], // brow height (the hairs only): lower, flatter male / higher female
+  browZ: 0.0025, // the hairs also stand this far out so the ridge's skin does not show through them
+  jaw: { y: 0.02, h: 0.03, z: [0.01, 0.07], x: [0.007, -0.004] }, // jaw angle: wider, squarer corner (male) / softer (female)
+  chin: { y: -0.012, h: 0.016, x: [0.14, -0.09], y2: [-0.005, 0.003] }, // chin width (share of x) and height: broader, taller male chin / smaller female chin
+  cheek: { at: [0.046, 0.072], r: 0.026, z: [0, 0.007] }, // cheek fullness (female)
+  lip: { band: [0.001, 0.004, 0.006, 0.0095], x: [0.016, 0.023], z: [0, 0.002], y: [0, 0.0012] }, // lip fullness (female)
 };
 // #2047 the avatar ear (src/avatarear.js), head-bone metres before the face warp, in the ear's own frame: origin at the old
 // attachment point [±0.1, 0.095, 0], `L` outwards, y up, z forwards. *Guess* by eye against adult ear proportions (about 6 × 3 cm,

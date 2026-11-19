@@ -17,12 +17,13 @@ export function genderFaceOffset(x, y, z, g, part = 'head') {
   const ax = Math.abs(x), sx = Math.sign(x), front = smooth(0.04, 0.09, z);
   const eye = smooth(G.keep.r[0], G.keep.r[1], Math.hypot(ax - G.keep.at[0], y - G.keep.at[1]));
   let dx = 0, dy = 0, dz = 0;
-  if (part === 'brow') dy += mix(G.browY, g);
+  if (part === 'brow') { dy += mix(G.browY, g); dz += G.browZ; }
   // the field is evaluated at the vertex before the brow's own lift, so hairs and skin under them move alike
   const R = G.ridge, J = G.jaw, C = G.chin, K = G.cheek;
   dz += mix(R.z, g) * bell(y, R.y, R.h) * (1 - smooth(R.w * 0.6, R.w, ax)) * front * eye;
   dx += sx * mix(J.x, g) * bell(y, J.y, J.h) * bell(z, J.z[0], J.z[1]) * smooth(0.03, 0.05, ax);
   dx += x * mix(C.x, g) * bell(y, C.y, C.h);
+  dy += mix(C.y2, g) * bell(y, C.y, C.h) * smooth(0.0, 0.03, 0.07 - ax) * smooth(0.03, 0.08, z);
   dz += mix(K.z, g) * bell(Math.hypot(ax - K.at[0], y - K.at[1]), 0, K.r) * front * eye;
   if (part === 'lip') {
     const L = G.lip, M = FACE.mouth, u = x / M.halfWidth, seam = M.seamY + 0.0012 * u * u, d = Math.abs(y - seam);
@@ -41,10 +42,11 @@ vec3 genderFaceDelta(vec3 q, float kind, float g) {
   float ax = abs(q.x), sx = sign(q.x), front = smoothstep(0.04, 0.09, q.z);
   float eye = smoothstep(${f(G.keep.r[0])}, ${f(G.keep.r[1])}, length(vec2(ax - ${f(G.keep.at[0])}, q.y - ${f(G.keep.at[1])})));
   vec3 d = vec3(0.0);
-  if (kind > 1.5) d.y += ${p(G.browY)};
+  if (kind > 1.5) { d.y += ${p(G.browY)}; d.z += ${f(G.browZ)}; }
   d.z += ${p(R.z)} * exp(-gsq((q.y - ${f(R.y)}) / ${f(R.h)})) * (1.0 - smoothstep(${f(R.w * 0.6)}, ${f(R.w)}, ax)) * front * eye;
   d.x += sx * ${p(J.x)} * exp(-gsq((q.y - ${f(J.y)}) / ${f(J.h)})) * exp(-gsq((q.z - ${f(J.z[0])}) / ${f(J.z[1])})) * smoothstep(0.03, 0.05, ax);
   d.x += q.x * ${p(C.x)} * exp(-gsq((q.y - ${f(C.y)}) / ${f(C.h)}));
+  d.y += ${p(C.y2)} * exp(-gsq((q.y - ${f(C.y)}) / ${f(C.h)})) * smoothstep(0.0, 0.03, 0.07 - ax) * smoothstep(0.03, 0.08, q.z);
   d.z += ${p(K.z)} * exp(-gsq(length(vec2(ax - ${f(K.at[0])}, q.y - ${f(K.at[1])})) / ${f(K.r)})) * front * eye;
   if (kind > 0.5 && kind < 1.5) {
     float u = q.x / ${f(M.halfWidth)}, seam = ${f(M.seamY)} + 0.0012 * u * u, dd = abs(q.y - seam);

@@ -1,18 +1,24 @@
 {
   "baseline": "c0be4dfd",
   "triangles": {
-    "before": [
-      16012,
-      16052,
-      16012,
-      16052
-    ],
-    "after": [
-      16012,
-      16052,
-      16012,
-      16052
-    ]
+    "before": {
+      "gender.png": [
+        16012,
+        16052
+      ],
+      "gender-beard.png": [
+        17016
+      ]
+    },
+    "after": {
+      "gender.png": [
+        16012,
+        16052
+      ],
+      "gender-beard.png": [
+        17016
+      ]
+    }
   },
   "errors": {
     "before": [],
