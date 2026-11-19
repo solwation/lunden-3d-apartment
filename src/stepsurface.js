@@ -45,3 +45,17 @@ export function stepSurface(world, { x, y, z }) {
   for (const { p, bounds } of paths) if (inRect(bounds, x, z) && contains(p, x, z)) return p.surface === 'gravel' ? 'gravel' : 'hard';
   return 'grass';
 }
+
+/** #2153: the listener's indoor room class for the reverb: 'concrete' (stairwell, garage/basement), 'bright' (bathroom, laundry, tiled
+ * halls), 'soft' (other rooms, playroom), or null outdoors. Same data and conditions as `stepSurface`'s indoor branches. */
+export function indoorRoomClass(world, { x, y, z }) {
+  if (world.playroom?.contains(x, z)) return 'soft';
+  if (world.core?.contains(x, z, y) || (world.garage?.inside(x, z) && y < GARAGE.floor + F.garageHeadroom)) return 'concrete';
+  const unit = world.unitAt?.(x, z, y);
+  if (unit) return /hall|badrum|wc|dusch|tvätt/i.test(unit.roomAt(unit.levelAt(y), x, z) ?? '') ? 'bright' : 'soft';
+  if (x > 0 && z > 0 && x < world.size.x && z < world.size.z && y < UNIT_TOP - F.indoorTopMargin) {
+    const level = y > LEVELS[1].floor - F.floorBand ? 1 : 0;
+    return TILED_ROOMS.some(r => r.level === level && inRect(r, x, z)) ? 'bright' : 'soft';
+  }
+  return null;
+}

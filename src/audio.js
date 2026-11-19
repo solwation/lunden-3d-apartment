@@ -5,8 +5,10 @@ import { synthFootstep } from './footsteps.js';
 
 import { SOUNDS, KISS, PLAYROOM, SANTA, FOOTSTEPS, SQUIRRELS, SWIM } from './config.js';
 import { distanceGain, VoiceCap } from './spatialsound.js';
+import { RoomReverb } from './roomreverb.js';
+import { lowMemory } from './lowmemory.js';
 
-let ctx = null, master = null, noiseBuf = null;
+let ctx = null, master = null, noiseBuf = null, reverb = null; // #2153: `reverb` = the shared room-acoustics send bus (effects only; music/TV connect to master directly and stay dry)
 const listenerAt = { x: 0, y: 0, z: 0 }, voices = new VoiceCap(SOUNDS.maxVoices); // (#1302: where we hear from; the cap on other players' sounds)
 let muted = false;
 
@@ -18,6 +20,7 @@ export function initAudio() {
   master = ctx.createGain();
   master.gain.value = muted ? 0 : 0.8;
   master.connect(ctx.destination);
+  try { reverb = new RoomReverb(ctx, master, lowMemory); } catch { reverb = null; } // a failed convolver never costs the sound
   noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
   const d = noiseBuf.getChannelData(0);
   for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -29,6 +32,9 @@ export function toggleMuted() {
   return muted;
 }
 export const isMuted = () => muted;
+/** #2153: the listener's acoustic zone ('soft' | 'bright' | 'concrete' | 'courtyard' | 'open'); cheap no-op when unchanged. */
+export function setRoomZone(zone) { reverb?.setZone(zone); }
+export const roomReverb = () => reverb;
 /** #1949: under water everything is heard dull: the master goes through one low-pass at `hz` while `on` (rewired only at the change, so
  * the ordinary path is untouched on land). Mute and volume stay the master's. */
 let muffle = null;
@@ -73,8 +79,10 @@ function out(pos, gain = 1, ref = 1.2) { // `ref`: m within which a positional s
     p.rolloffFactor = 1.2;
     p.positionX.value = pos.x; p.positionY.value = pos.y; p.positionZ.value = pos.z;
     g.connect(p).connect(master);
+    if (reverb) p.connect(reverb.input); // #2153: effects get the room (one send per effect, after the distance fade)
   } else {
     g.connect(master);
+    if (reverb) g.connect(reverb.input);
   }
   return g;
 }

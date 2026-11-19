@@ -1,0 +1,207 @@
+{
+ "desktop": {
+  "rows": [
+   {
+    "zone": "soft",
+    "convolvers": 2,
+    "rt60": 0.304,
+    "wetTailEnergy": 0.0000023609457878128423,
+    "dryTailEnergy": 0,
+    "sfxTailEnergy": 5.076410454882218e-7,
+    "sfxTotalEnergy": 1.0429000508375041
+   },
+   {
+    "zone": "bright",
+    "convolvers": 2,
+    "rt60": 0.718,
+    "wetTailEnergy": 0.0005316561698493991,
+    "dryTailEnergy": 0,
+    "sfxTailEnergy": 0.0001759871640370199,
+    "sfxTotalEnergy": 1.004512975012186
+   },
+   {
+    "zone": "concrete",
+    "convolvers": 2,
+    "rt60": 1.86,
+    "wetTailEnergy": 0.007784910084906169,
+    "dryTailEnergy": 0,
+    "sfxTailEnergy": 0.020428975070194783,
+    "sfxTotalEnergy": 1.1112880395914
+   },
+   {
+    "zone": "courtyard",
+    "convolvers": 2,
+    "rt60": 0.627,
+    "wetTailEnergy": 0.0002973404843138537,
+    "dryTailEnergy": 0,
+    "sfxTailEnergy": 0.00039013643549891223,
+    "sfxTotalEnergy": 1.0330874153667047
+   },
+   {
+    "zone": "open",
+    "convolvers": 2,
+    "rt60": 0,
+    "wetTailEnergy": 0,
+    "dryTailEnergy": 0,
+    "sfxTailEnergy": 0,
+    "sfxTotalEnergy": 1.0411997165841258
+   }
+  ],
+  "muffle": {
+   "normalHf": 0.0002839323900600036,
+   "underwaterHf": 0.0002492711509859972,
+   "underwaterTail": 0.02074020377535482
+  }
+ },
+ "lowMemory": {
+  "rows": [
+   {
+    "zone": "soft",
+    "convolvers": 1,
+    "rt60": 0.301,
+    "wetTailEnergy": 0.000004708032448962853,
+    "dryTailEnergy": 0,
+    "sfxTailEnergy": 0.000004351666286235359,
+    "sfxTotalEnergy": 1.050639919287269
+   },
+   {
+    "zone": "bright",
+    "convolvers": 1,
+    "rt60": 0.566,
+    "wetTailEnergy": 0.00030552340443865513,
+    "dryTailEnergy": 0,
+    "sfxTailEnergy": 0.00004486793751692699,
+    "sfxTotalEnergy": 0.9843963757230417
+   },
+   {
+    "zone": "concrete",
+    "convolvers": 1,
+    "rt60": 0.513,
+    "wetTailEnergy": 0.00020097990417948817,
+    "dryTailEnergy": 0,
+    "sfxTailEnergy": 0.00007426996514123817,
+    "sfxTotalEnergy": 1.0387255798268926
+   },
+   {
+    "zone": "courtyard",
+    "convolvers": 1,
+    "rt60": 0.541,
+    "wetTailEnergy": 0.0002644031300230612,
+    "dryTailEnergy": 0,
+    "sfxTailEnergy": 0.00008833911488306711,
+    "sfxTotalEnergy": 1.0870491727985283
+   },
+   {
+    "zone": "open",
+    "convolvers": 1,
+    "rt60": 0,
+    "wetTailEnergy": 0,
+    "dryTailEnergy": 0,
+    "sfxTailEnergy": 0,
+    "sfxTotalEnergy": 1.0411997165841258
+   }
+  ],
+  "muffle": {
+   "normalHf": 0.0002886925310687818,
+   "underwaterHf": 0.00025271828294341184,
+   "underwaterTail": 0.0000754277850114673
+  }
+ },
+ "world": {
+  "seen": {
+   "open": [
+    [
+     -70,
+     0,
+     -5
+    ],
+    [
+     -70,
+     0,
+     -4.5
+    ],
+    [
+     -70,
+     0,
+     -4
+    ]
+   ],
+   "courtyard": [
+    [
+     -66,
+     0,
+     12
+    ],
+    [
+     -66,
+     0,
+     12.5
+    ],
+    [
+     -66,
+     0,
+     13
+    ]
+   ],
+   "concrete": [
+    [
+     -64.5,
+     0,
+     23.5
+    ],
+    [
+     -64.5,
+     0,
+     24
+    ],
+    [
+     -64.5,
+     0,
+     24.5
+    ]
+   ],
+   "bright": [
+    [
+     -24.5,
+     0,
+     0.5
+    ],
+    [
+     -24.5,
+     0,
+     1
+    ],
+    [
+     -24.5,
+     0,
+     1.5
+    ]
+   ],
+   "soft": [
+    [
+     -24.5,
+     0,
+     5
+    ],
+    [
+     -24.5,
+     0,
+     8
+    ],
+    [
+     -24.5,
+     0,
+     8.5
+    ]
+   ]
+  },
+  "start": "soft",
+  "rooms": [
+   "open",
+   "courtyard",
+   "concrete",
+   "bright",
+   "soft"
+  ]
+ }
+}

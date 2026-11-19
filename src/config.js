@@ -8877,6 +8877,26 @@ export const TOAST_LINES = [...TOAST.lines, ...TOAST.newYear, ...TOAST.answer];
 export const SOUNDS = { kinds: ['bell'], every: 0.5, maxVoices: 8, range: { bell: 40, step: 25, jet: 35 },
   stride: { walk: 0.62, run: 0.95, runSpeed: 3.6, minSpeed: 0.5, maxSpeed: 8, maxClimb: 1.5 }, jetNearest: 2, jetEvery: 0.35, bellKey: 'KeyB', gain: { bell: 1, step: 0.7, jet: 0.7 } };
 
+// #2153: room acoustics. One shared reverb send bus feeds two ConvolverNodes (crossfaded between zones) with procedural impulse
+// responses (decaying noise, no files). All values are *guess*: no acoustic measurements exist; chosen to be audible but modest.
+// rt60 = seconds to -60 dB; damp = [lowpass Hz at t=0, Hz at rt60] (the tail darkens); pre = pre-delay s; wet = send level into the
+// convolver; taps = [[delay s, level]] discrete slap echoes. Zones: soft = living room/bedroom/playroom, bright = bathroom/laundry/
+// hall tile, concrete = stairwells/garage/basement, courtyard = between the facades, open = no reverb.
+export const ROOM_REVERB = {
+  profiles: {
+    soft:      { rt60: 0.35, damp: [5500, 1400], pre: 0.004, wet: 0.35 },
+    bright:    { rt60: 0.75, damp: [14000, 7000], pre: 0.003, wet: 0.5 },
+    concrete:  { rt60: 2.2,  damp: [8000, 1800], pre: 0.012, wet: 0.55 },
+    courtyard: { rt60: 0.7,  damp: [6500, 2500], pre: 0.02, wet: 0.45, taps: [[0.095, 1.6], [0.19, 0.9]] }, // facades ~16-30 m apart: 2d/343 s
+    open:      { rt60: 0.2,  damp: [4000, 1500], pre: 0.0, wet: 0 },
+  },
+  courtyard: { x0: -66, x1: 12, z0: 12, z1: 53, maxY: 8 }, // *guess* from COURTYARD.paths extents: the yard between Hus A/B/C and L
+  fade: 0.35,            // s time constant of the crossfade between zones
+  lowMemory: { rt60Cap: 0.6, wetCap: 0.4 }, // phones: one short mono convolver, no crossfade between impulse responses
+  irRate: 24000,         // Hz default for helper/test generation; the app generates at the AudioContext's own rate (ConvolverNode requires it)
+  seed: 2153,
+};
+
 // #1363: walking-route lamp placements and dimensions are visual guesses, not surveyed fittings.
 // Paths themselves retain their sourced OSM coordinates. Existing street head/glow/material batches are reused.
 export const PATH_LIGHTS = { height: 4.6, step: 18, edge: 0.65, pathClear: 0.25, treeClear: 1.2, fenceClear: 0.8,

@@ -1536,3 +1536,18 @@ publication/full-app acceptance is tracked by #1913/#1914.
 
 Final whole-model/actual-consumer audit of all12 new GLBs, independent visual
 acceptance and published full-app delivery: [#1905](../verification/1905/README.md).
+
+## Room acoustics (#2153)
+
+`src/roomreverb.js` gives every effect the room it is heard in. `audio.js` `out()` adds one send (after the positional panner, so
+distance fades the wet signal too) into ONE shared bus, `RoomReverb.input`, which feeds two `ConvolverNode`s (crossfaded between
+zones, time constant `ROOM_REVERB.fade`) and returns into `master`, so the volume setting, mute and the underwater low-pass (#1949)
+apply to the wet signal. Music, TV and rain connect to `master` directly and stay dry. Impulse responses are generated at startup/first
+use from decaying, darkening, seeded noise at the context's sample rate (no files; a `ConvolverNode` requires the context rate) and cached
+per zone. Zones come from the listener's feet (`reverbZone`, sampled every 0.25 s in `main.js`): `stepsurface.js` `indoorRoomClass`
+(same data as the footstep surface: playroom/rooms = `soft`, bathroom/WC/laundry/hall tile = `bright`, stairwell core and garage =
+`concrete`), then the `ROOM_REVERB.courtyard` rectangle (`courtyard`: short tail plus two slap taps between the facades), else `open` (dry).
+`lowMemory` creates one mono convolver with a capped tail (`ROOM_REVERB.lowMemory`) and swaps its impulse response per zone. All
+numbers are *guess* values in `config.js`. Tests: `tools/roomreverbtest.mjs` (zones, IR RT60/determinism, crossfade plan, phone mode) and
+`tools/roomreverbbrowser.cjs` (real `audio.js` in an OfflineAudioContext: graph, per-zone RT60 and tail energy, dry music path, phone
+mode, underwater; real-world zone coverage); measured values are saved in `docs/verification/2153/roomreverb.json`.

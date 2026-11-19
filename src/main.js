@@ -83,7 +83,9 @@ import { setupTouch } from './touch.js';
 import { setupTouchLayout } from './touchlayout.js';
 import { watchForUpdates, BUILD } from './version.js';
 import { CatSpawner, VARIANTS, BREEDS, kittenName, MieleDaily } from './cat.js';
-import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
+import { initAudio, sfx, toggleMuted, isMuted, updateListener, setRoomZone } from './audio.js';
+import { reverbZone } from './roomreverb.js';
+let roomZoneClock = 0;
 import { stairHeight, stairUnderside } from './stairs.js';
 import { rugLift } from './rugs.js';
 import { loadChangelog, retryChangelog, renderChangelog, buildNote, scrollNote } from './changelog.js';
@@ -4177,6 +4179,7 @@ function frame(raw) {
   const mirrorSkip = renderer.shadowMap.needsUpdate || ++mirrorFrame % QUALITY.mirrorEvery[quality.level] !== 0;
   const mirror = viewDue && updateReflections(camera, player.aloft ? -1 : Math.max(0, player.level), QUALITY.mirror[quality.level] > 0 && !warm.blocksView, mirrorSkip);
   updateListener(camera);
+  if ((roomZoneClock += dt) > 0.25) { roomZoneClock = 0; setRoomZone(reverbZone(world, player.pos)); } // #2153: room acoustics follow the listener
   hitch.phase('update');
   if (hitch.enabled) Object.assign(hitch.frameInfo, { shadow: renderer.shadowMap.needsUpdate, mirror: mirror ? (reflectors().find((m) => m.r.visible)?.name || 'yes') + (mirrorSkip ? ' (held)' : '') : '', quality: quality.level,
     yaw: Math.round(camera.rotation.y * 180 / Math.PI), at: `${camera.position.x.toFixed(1)},${camera.position.z.toFixed(1)}` });
