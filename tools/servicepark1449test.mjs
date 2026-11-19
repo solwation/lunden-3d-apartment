@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as T from 'three';
 import { SITE, WALK } from '../src/config.js';
+const OLD_WALK_Z1=250; // #2137: WALK.z1 was 250 when this way was added and is now larger (#1714); the way must still lie south of that former edge, so the test pins it instead of the live bound.
 import { geoToPlan } from '../src/sitegeo.js';
 import { pathStrip, isVehicleWay } from '../src/roads.js';
 import { subtractConvex } from '../src/polygoncut.js';
@@ -21,9 +22,9 @@ const inside=(poly,[x,z])=>{let c=false;for(let i=0,j=poly.length-1;i<poly.lengt
 test('both ways follow the saved OSM ways with only guessed width/asphalt marked',()=>{
  const s5=source.features.find(f=>f.id==='335403605'),s6=source.features.find(f=>f.id==='335403606');
  assert.deepEqual(s5.tags,{highway:'service'});assert.deepEqual(s6.tags,{highway:'service',surface:'paved'});
- for(const[r,s]of[[r5,s5],[r6,s6]]){assert.equal(r.highway,'service');assert.equal(r.w,4.5);assert.equal(r.widthSource,'guess');assert.equal(r.terrain,'triangles');assert.deepEqual(r.path,plan(s));assert(isVehicleWay(r));assert(r.path.every(([,z])=>z>WALK.z1))}
+ for(const[r,s]of[[r5,s5],[r6,s6]]){assert.equal(r.highway,'service');assert.equal(r.w,4.5);assert.equal(r.widthSource,'guess');assert.equal(r.terrain,'triangles');assert.deepEqual(r.path,plan(s));assert(isVehicleWay(r));assert(r.path.every(([,z])=>z>OLD_WALK_Z1))}
  assert.equal(r5.surfaceSource,'guess');assert.equal(r6.surfaceSource,'osm:paved');
- assert(Math.abs(len(r5.path)-56.399)<.05,len(r5.path));assert(Math.abs(len(r6.path)-31)<1,len(r6.path));assert.equal(WALK.z1,250);
+ assert(Math.abs(len(r5.path)-56.399)<.05,len(r5.path));assert(Math.abs(len(r6.path)-31)<1,len(r6.path));assert(WALK.z1>=OLD_WALK_Z1);
 });
 
 test('joints sit at mapped nodes; footways stay footways',()=>{

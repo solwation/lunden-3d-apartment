@@ -21,7 +21,7 @@ test('only the four sourced service links use guessed width/material and exact p
  const main=roads[0];assert.deepEqual(main.path.at(-1),SITE.south.paths.find(r=>r.source==='30633546').path.find(p=>p[0]===3.68));
  assert.deepEqual(main.path[2],SITE.south.access.find(r=>r.source==='145221590').path[0]);
  for(const r of roads.slice(1))assert(main.path.some(p=>p[0]===r.path[0][0]&&p[1]===r.path[0][1]));
- assert.equal(WALK.z1,250);assert(roads[0].path.some(p=>p[1]<250)&&roads[0].path.some(p=>p[1]>250));
+ assert(WALK.z1>=250);assert(roads[0].path.some(p=>p[1]<250)&&roads[0].path.some(p=>p[1]>250)); // #2137: WALK.z1 grew past 250 (#1714); the way still crosses the former edge z 250, which is what this pins
 });
 
 test('opted-in strips preserve their area and follow actual refined triangle folds through their interiors',()=>{

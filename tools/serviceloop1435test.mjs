@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as T from 'three';
 import { SITE, WALK } from '../src/config.js';
+const OLD_WALK_Z1=250; // #2137: WALK.z1 was 250 when this way was added and is now larger (#1714); the way must still lie south of that former edge, so the test pins it instead of the live bound.
 import { geoToPlan } from '../src/sitegeo.js';
 import { pathStrip } from '../src/roads.js';
 import { subtractConvex } from '../src/polygoncut.js';
@@ -22,7 +23,7 @@ test('inner service loop follows the saved OSM ways and declares guessed dimensi
   assert.equal(raw.tags.highway,'service');assert.equal(raw.tags.width,undefined);assert.equal(raw.tags.surface,undefined);
   assert.equal(road.w,4.5);assert.equal(road.widthSource,'guess');assert.equal(road.surfaceSource,'guess');assert.equal(road.terrain,'triangles');
   assert.deepEqual(road.path,raw.points.map(p=>geoToPlan(...p).map(v=>+v.toFixed(2))));
-  assert(road.path.every(([x,z])=>z>WALK.z1),`${road.source} does not extend WALK`);
+  assert(road.path.every(([x,z])=>z>OLD_WALK_Z1),`${road.source} is not south of the former WALK edge`);
  }
  const main=roads[0],branchIds=roads.slice(1);
  for(const branch of branchIds)assert(main.path.some(([x,z])=>x===branch.path.at(-1)[0]&&z===branch.path.at(-1)[1])||main.path.some(([x,z])=>x===branch.path[0][0]&&z===branch.path[0][1]),branch.source+' shares a mapped node with the loop');
@@ -30,7 +31,7 @@ test('inner service loop follows the saved OSM ways and declares guessed dimensi
  assert.deepEqual(main.path[3],existing.path[0]);
  const outer=source.features.find(f=>f.id==='95036048').points.map(p=>geoToPlan(...p).map(v=>+v.toFixed(2)));
  assert(outer.some(([x,z])=>x===main.path[0][0]&&z===main.path[0][1]));assert(outer.some(([x,z])=>x===main.path.at(-1)[0]&&z===main.path.at(-1)[1]));
- assert.equal(WALK.z1,250);
+ assert(WALK.z1>=OLD_WALK_Z1);
 });
 
 test('complete emitted road strips clear southern buildings and woodland',()=>{

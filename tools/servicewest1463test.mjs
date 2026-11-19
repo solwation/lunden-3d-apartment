@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as T from 'three';
 import { SITE, WALK } from '../src/config.js';
+const OLD_WALK_Z1=250; // #2137: WALK.z1 was 250 when this way was added and is now larger (#1714); the way must still lie south of that former edge, so the test pins it instead of the live bound.
 import { geoToPlan } from '../src/sitegeo.js';
 import { pathStrip, isVehicleWay } from '../src/roads.js';
 import { subtractConvex } from '../src/polygoncut.js';
@@ -22,7 +23,7 @@ test('western service way follows the whole saved OSM way with guessed dimension
  assert.equal(road.highway,'service');assert.equal(road.w,4.5);assert.equal(road.widthSource,'guess');assert.equal(road.surfaceSource,'guess');assert.equal(road.terrain,'triangles');
  assert.deepEqual(road.path,plan(raw));assert(isVehicleWay(road));
  const length=road.path.slice(1).reduce((s,p,i)=>s+Math.hypot(p[0]-road.path[i][0],p[1]-road.path[i][1]),0);assert(Math.abs(length-113.3156)<.01,length);
- assert(road.path.every(([,z])=>z>WALK.z1));assert.equal(WALK.z1,250);
+ assert(road.path.every(([,z])=>z>OLD_WALK_Z1));assert(WALK.z1>=OLD_WALK_Z1);
 });
 
 test('it joins the three existing roads at mapped nodes and meets outer ring 95036048 at its mapped outer node',()=>{

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as T from 'three';
 import { SITE, WALK } from '../src/config.js';
+const OLD_WALK_Z1=250; // #2137: WALK.z1 was 250 when this way was added and is now larger (#1714); the way must still lie south of that former edge, so the test pins it instead of the live bound.
 import { geoToPlan } from '../src/sitegeo.js';
 import { pathStrip, isVehicleWay } from '../src/roads.js';
 import { subtractConvex } from '../src/polygoncut.js';
@@ -24,9 +25,9 @@ test('outer service ring and footway follow the whole saved OSM ways with guesse
   assert.deepEqual(raw.tags,{highway});assert.equal(road.highway,highway);assert.equal(road.w,w);
   assert.equal(road.surface,'asphalt');assert.equal(road.widthSource,'guess');assert.equal(road.surfaceSource,'guess');assert.equal(road.terrain,'triangles');
   assert.deepEqual(road.path,plan(raw));assert(Math.abs(length(road)-len)<.01,road.source+' '+length(road));
-  assert(road.path.every(([,z])=>z>WALK.z1));
+  assert(road.path.every(([,z])=>z>OLD_WALK_Z1));
  }
- assert(isVehicleWay(ring));assert(!isVehicleWay(foot),'the footway keeps footway semantics');assert.equal(WALK.z1,250);
+ assert(isVehicleWay(ring));assert(!isVehicleWay(foot),'the footway keeps footway semantics');assert(WALK.z1>=OLD_WALK_Z1);
 });
 
 test('ring and footway join existing ways only at mapped nodes',()=>{

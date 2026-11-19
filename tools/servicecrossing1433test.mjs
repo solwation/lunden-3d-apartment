@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as T from 'three';
 import { SITE, WALK } from '../src/config.js';
+const OLD_WALK_Z1=250; // #2137: WALK.z1 was 250 when this way was added and is now larger (#1714); the way must still lie south of that former edge, so the test pins it instead of the live bound.
 import { geoToPlan } from '../src/sitegeo.js';
 import { pathStrip, isVehicleWay } from '../src/roads.js';
 import { subtractConvex } from '../src/polygoncut.js';
@@ -17,11 +18,11 @@ const overlap=(tri,cutters)=>{let result=[tri];for(const c of cutters)result=res
 
 test('two sourced service ways preserve exact shared nodes, explicit width guesses and vehicle semantics',()=>{
  assert.deepEqual(roads.map(r=>r.source),ids);
- for(const road of roads){const raw=source.features.find(f=>f.id===road.source);assert.equal(raw.tags.highway,'service');assert.equal(raw.tags.width,undefined);assert.equal(raw.tags.surface,undefined);assert.equal(road.highway,'service');assert.equal(road.w,road.source==='199056948'?3:4.5);assert.equal(road.widthSource,'guess');assert.equal(road.surfaceSource,'guess');assert.equal(road.terrain,'triangles');assert.deepEqual(road.path,raw.points.map(p=>geoToPlan(...p).map(v=>+v.toFixed(2))));assert(isVehicleWay(road));assert(road.path.every(p=>p[1]>WALK.z1))}
+ for(const road of roads){const raw=source.features.find(f=>f.id===road.source);assert.equal(raw.tags.highway,'service');assert.equal(raw.tags.width,undefined);assert.equal(raw.tags.surface,undefined);assert.equal(road.highway,'service');assert.equal(road.w,road.source==='199056948'?3:4.5);assert.equal(road.widthSource,'guess');assert.equal(road.surfaceSource,'guess');assert.equal(road.terrain,'triangles');assert.deepEqual(road.path,raw.points.map(p=>geoToPlan(...p).map(v=>+v.toFixed(2))));assert(isVehicleWay(road));assert(road.path.every(p=>p[1]>OLD_WALK_Z1))}
  const main=roads[0],link=roads[1];assert.deepEqual(main.path.at(-1),SITE.south.paths.find(r=>r.source==='36918924').path.find(p=>p[0]===76.61));
  assert.deepEqual(link.path[0],SITE.south.access.find(r=>r.source==='145221573').path.find(p=>p[0]===-10.07));assert.deepEqual(link.path.at(-1),main.path[2]);
  for(const key of ['west','north','east','south'])for(const road of [...SITE[key].paths,...SITE[key].access].filter(r=>r.path&&!ids.includes(r.source)))assert.equal(!!isVehicleWay(road),road.surface==='asphalt'&&road.w>=3.9,road.source);
- const foot=source.features.find(f=>f.id==='199056947');assert.equal(foot.tags.highway,'footway');assert(!isVehicleWay({path:foot.points,surface:'asphalt',w:3,highway:foot.tags.highway}));assert.equal(WALK.z1,250);
+ const foot=source.features.find(f=>f.id==='199056947');assert.equal(foot.tags.highway,'footway');assert(!isVehicleWay({path:foot.points,surface:'asphalt',w:3,highway:foot.tags.highway}));assert(WALK.z1>=OLD_WALK_Z1);
 });
 
 test('complete emitted service footprints clear building bodies and preserve courtyard holes',()=>{
