@@ -30,6 +30,7 @@ import { exertUniforms, exertShader } from './avatarbreath.js'; // #2037
 import { sculptShape, jawRise, sculptShader, sculptKey, sealLipEdge } from './avatarsculpt.js'; // #2044: sculpted face forms
 import { addFlyaways, flyUniforms, flyMaterial, flyKey, FLY_VDECL, FLY_FDECL, flyBind, flyProject, flyAlpha, flyLight } from './avatarflyaway.js'; // #2040
 import { browSurface, browSlide, browUniforms, applyBrowLook, browFDecl, browColor, browRoughness } from './avatarbrow.js'; // #2046
+import { genderFaceGLSL } from './avatarfacegender.js'; // #2142
 import { hairlineAt, hairlineShell, hairlineAvoid, hairlineUniforms, applyHairlineLook, hairlineFDecl, hairlineColor } from './avatarhairline.js'; // #2050
 import { refineNose, noseHeight, noseVertexGLSL, noseFragmentGLSL, noseKey, NOSE_SKIN, noseUniforms, applyNoseLook, noseFormDecl, noseNormalGLSL } from './avatarnose.js'; // #2048: the nose (#2049: its shape variants)
 import { glossUniforms, applyGlossLook, glossVertex, glossFragment, glossKey } from './avatarhairgloss.js'; // #2052: gloss along the strands
@@ -1209,7 +1210,7 @@ function releaseSuitTexture() { if (--suitUsers === 0) { suitTexture.dispose(); 
 function makeMaterial(rim, headProjection) {
   const headMin = headProjection.min, headSize = headProjection.getSize(new THREE.Vector3()), headFront = headProjection.getCenter(new THREE.Vector3()).z;
   const u = { uPump: { value: 0 }, uLight: { value: 1 }, uOutline: { value: 0 }, uFill: { value: A.fill }, uRim: { value: A.rim }, uRimColor: { value: rim }, uSuit: { value: 0 }, uFing: { value: Array.from({ length: 10 }, () => new THREE.Vector2()) }, uSuitTexture: { value: null }, uSuitMaskBand: { value: 0 }, uMouth: { value: 0 }, uKiss: { value: 0 }, uBlink: { value: 0 }, uGaze: { value: new THREE.Vector2() }, uSwayHair: { value: new THREE.Vector3() }, uSwayBun: { value: new THREE.Vector3() }, uSwayHem: { value: new THREE.Vector3() }, uSwayOn: { value: new THREE.Vector3(0, 0, 1) }, uWet: { value: 0 }, uSnow: { value: 0 }, uArmFix: { value: new THREE.Vector2() },
-    uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uEarrings: { value: 0 }, uHat: { value: 0 }, uPhones: { value: 0 }, uNecklace: { value: 0 }, uRingFinger: { value: 0 }, uBracelet: { value: 0 }, uWatch: { value: 0 }, uRingColor: { value: new THREE.Color(RING.colours[0]) }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) } };
+    uEye: { value: new THREE.Vector3(1, 1, 1) }, uNose: { value: new THREE.Vector3(1, 1, 1) }, uEar: { value: 1 }, uHair: { value: 1 }, uGlasses: { value: 0 }, uEarrings: { value: 0 }, uHat: { value: 0 }, uPhones: { value: 0 }, uNecklace: { value: 0 }, uRingFinger: { value: 0 }, uBracelet: { value: 0 }, uWatch: { value: 0 }, uRingColor: { value: new THREE.Color(RING.colours[0]) }, uNeck: { value: 0 }, uBrow: { value: new THREE.Vector2(1, 0) }, uHead: { value: new THREE.Vector3(1, 1, 0) }, uGender: { value: 0 } };
   Object.assign(u, faceExprUniforms()); // #2031: the expression weights
   Object.assign(u, eyeUniforms()); // #2033
   Object.assign(u, exertUniforms()); // #2037: flush and sweat sheen
@@ -1314,7 +1315,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
 let gripGlsl = null; // #2016 (lazily: olof.js and this module import each other)
 const GRIP_GLSL = () => gripGlsl ??= fingerGLSL(bindAt('handL'), bindAt('handR'), FACE_PART.finger);
 const HAND_VGLSL = () => handVertexGLSL(bindAt('handL'), bindAt('handR'), FACE_PART.finger); // #2106 (follows HAND_DETAIL.on)
-const FACE_SHAPE_DECL = () => 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform vec2 uGaze; uniform float uBlink; uniform float uEar, uHair, uGlasses, uEarrings, uHat, uPhones, uNecklace, uRingFinger, uBracelet, uWatch, uNeck, uSuit; uniform vec2 uBrow; ' + GRIP_GLSL().decl + HAND_VGLSL().decl + SWAY_DECL + noseFormDecl(); // (#2049)
+const FACE_SHAPE_DECL = () => 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform float uGender; uniform vec2 uGaze; uniform float uBlink; uniform float uEar, uHair, uGlasses, uEarrings, uHat, uPhones, uNecklace, uRingFinger, uBracelet, uWatch, uNeck, uSuit; uniform vec2 uBrow; ' + GRIP_GLSL().decl + HAND_VGLSL().decl + SWAY_DECL + noseFormDecl() + genderFaceGLSL(); // (#2049; #2142: the gender's face form)
 const CHIN_Y = RH.jaw.centre[1] - RH.jaw.radius * RH.jaw.scale[1]; // the head lengthens from its chin
 function swayShader() { // #2014 (src/avatarsway.js): hair, bun and hem sway, after the face shape
   return swayGLSL({ head: bindAt('head').toArray(), hairY: HAIR.centre[1], bun: [HAIR.bunAt[1], HAIR.bunAt[2]], torsoY: bindAt('torso').y, torso: NAMES.indexOf('torso'), hair: FACE_PART.hair, hat: 'uHat' });
@@ -1411,6 +1412,7 @@ function faceShape() {
           float low = (1.0 - smoothstep(${f(W.y[1])}, ${f(W.y[0])}, q.y)) * smoothstep(${f(W.z[0])}, ${f(W.z[1])}, q.z);
           q.x *= uHead.x * (1.0 + uHead.z * low);
           q.y = ${f(CHIN_Y)} + (q.y - ${f(CHIN_Y)}) * uHead.y;
+          { float gk = abs(facePart - ${P.head}.0) < 0.5 ? 0.0 : abs(facePart - ${P.cowlHide}.0) < 0.5 ? 1.0 : abs(facePart - ${P.brow}.0) < 0.5 ? 2.0 : -1.0; if (gk > -0.5) q += genderFaceDelta(q, gk, uGender); } // #2142: brow ridge, jaw, chin, cheeks, lips
           transformed = q + vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)});
         }
         float ny = transformed.y - ${f(hb.y)};
@@ -1447,6 +1449,7 @@ function applyFaceShape(u, lk) {
   u.uHat.value = Number.isInteger(lk.hat) && lk.hat > 0 && lk.hat < HAT.names.length ? lk.hat : 0; // #1321
   u.uPhones.value = Number.isInteger(lk.phones) && lk.phones > 0 && lk.phones < PHONES.names.length ? lk.phones : 0; // #1322
   u.uHead.value.set(v('headWidth'), v('headLength'), v('jaw'));
+  u.uGender.value = Math.min(1, Math.max(0, Number(lk.gender ?? lk.figure) || 0)); // #2142
   u.uNeck.value = v('neck'); // #1191
   u.uSwayOn.value.set(lk.style === 1 || lk.style === 4 ? 1 : 0, lk.style === 2 ? 1 : 0, 1); // #2014: which groups sway
 }

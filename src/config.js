@@ -4406,6 +4406,19 @@ export const AVATAR_CONTOUR = {
   neck: { sides: 16, larynx: [0.0, 0.012, 0.011], larynxAmp: [0.0035, 0.0012],
     rings: [[0.07, 0.044, 0.043, -0.008], [0.014, 0.045, 0.043, -0.006], [-0.012, 0.048, 0.046, -0.004], [-0.042, 0.055, 0.053, 0]] },
 };
+// #2142 gender in the face's base form (src/avatarfacegender.js): a small bounded vertex-shader offset on the head skin, lips and
+// brow hairs, on top of the face sliders, in the head bone's frame after the slider warp (metres, the face looks +z, *guess* by eye
+// against adult face proportions; each pair is [male, female]). `keep` leaves the lids/eyes untouched (centre [x, y], full effect
+// from `r[1]`); the lip band is zero on the seam and back to zero at the lips' outer edge; every term is symmetric in x.
+export const AVATAR_FACE_GENDER = {
+  keep: { at: [0.034, 0.107], r: [0.021, 0.032] },
+  ridge: { y: 0.135, h: 0.009, w: 0.05, z: [0.005, -0.0006] }, // brow ridge: heavier for the male face
+  browY: [-0.002, 0.003], // brow height (the hairs only): lower male, higher female
+  jaw: { y: 0.02, h: 0.022, z: [0.01, 0.05], x: [0.005, -0.0018] }, // jaw angle: wider and squarer corner (male) / softer (female)
+  chin: { y: -0.012, h: 0.014, x: [0.09, -0.06] }, // chin width (share of x)
+  cheek: { at: [0.046, 0.072], r: 0.022, z: [0, 0.004] }, // cheek fullness (female)
+  lip: { band: [0.001, 0.004, 0.006, 0.0095], x: [0.016, 0.023], z: [0, 0.0012], y: [0, 0.0007] }, // lip fullness (female)
+};
 // #2047 the avatar ear (src/avatarear.js), head-bone metres before the face warp, in the ear's own frame: origin at the old
 // attachment point [±0.1, 0.095, 0], `L` outwards, y up, z forwards. *Guess* by eye against adult ear proportions (about 6 × 3 cm,
 // the helix standing 1.5–2 cm off the scalp). `cols` columns round the outline, `outline` [up, down, front, back] half-extents,

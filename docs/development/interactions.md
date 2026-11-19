@@ -319,6 +319,17 @@ improvement. See [source-bound checks and complete figure/app views](../verifica
 Publication of `models/` is tracked separately by #1913; local loading does not
 establish deployed asset availability. This personal/gameplay feature is original-only.
 
+## Kön i ansiktets grundform (#2142)
+
+`src/avatarfacegender.js` ger det valda könet (`gender`, 0 man / 1 kvinna, inget nytt fält) en liten, begränsad
+förskjutning i vertex-shadern ovanpå ansiktsreglagen: ögonbrynsbåge, käkvinkel, hakans bredd, kindfyllighet,
+läppfyllighet och brynens höjd. Talen (några millimeter, *guess*) ligger i `AVATAR_FACE_GENDER` i `src/config.js`.
+`genderFaceOffset` (JS, testad) och `genderFaceGLSL` (shaderns `genderFaceDelta`) delar siffror; fältet är symmetriskt i x,
+noll vid ögonöppningarna (`keep`) och på läppspalten, och läppdelen tonar ut före läpparnas ytterkant. Ett uniform
+(`uGender`, satt i `applyFaceShape`) styr det; träffytor på CPU-sidan använder bindposen och berörs inte. Test:
+`node --test tools/avatarfacegendertest.mjs`; före/efter: `tools/avatargender2142browser.cjs` ([bilder](../verification/2142/)).
+Skägg följer inte med fältet (några mm vid haka/käke).
+
 ## Spegelns avatarval (#1994)
 
 `customizer.js` grupperar de befintliga valen i Kropp, Hår, Ansikte, Kläder och
