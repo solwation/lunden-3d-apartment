@@ -483,6 +483,13 @@ src/spidersuit.js      the Spider-Man suit (#597, SPIDER, all values *guess*): o
                        hands: onto the anchor's façade when it is one to climb (`climb`), else let go; Space / the jump button,
                        `max` s or `stall` s getting no closer let go, the speed carries on in the air (`player.fling`, `fling`
                        drag) until the landing, and flung into a façade holds you on it. The strand stays taut while you swing.
+                       #2140: the ordinary jump on figures (`src/avatarjump.js`, `AVATAR_JUMP`; no wire field). `Ghost.animate` passes `jump` { vy, height over `Ghost.ground`, ahead, off }
+                       into `Avatar.update`; `stepJump` (pure) gives a phase (ground / crouch / rise / fall / land) and the amounts: a crouch before take-off (a remote figure's
+                       `aheadSample` reads the 200 ms delayed snapshots `lead` s on; the mirror image has none), legs tucked on the way up and stretched, one foot ahead, on the
+                       way down, arms out for balance, flailing arms after a fall of more than `flail.fall` m, and hips that compress by the fall height on landing and spring back.
+                       The gait, ground anchors, foot IK and idle are suspended while airborne (`jumpOn`); `off` (jetpack, flying/swinging/climbing, swimming, seated, dance, hug,
+                       BIO reaction) gives no jump pose at all. First person: `Fall.land` dips the eye a little after an ordinary jump (`AVATAR_JUMP.cameraDip`). Tests:
+                       `tools/avatarjumptest.mjs`; before/after frames: `tools/avatarjump.html` + `tools/avatarjumpbrowser.cjs` (evidence `docs/verification/2140/`).
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
 src/touchlayout.js     own touch layout (#1090): pause-menu editor, per-device localStorage, offsets/scale/opacity/mirror, clamping
 src/viewport.js        early CSS-surface observer: keeps canvas buffer/camera in sync through startup rotation (#567)

@@ -1,0 +1,59 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Avatarhopp #2140</title><link rel="icon" href="data:,">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<style>body{margin:0;background:#e9edef;font:14px system-ui;color:#192b38}canvas{display:block}</style>
+<script type="module">
+// #2140 verification page: one remote figure (5 Hz snapshots, 200 ms delay) and our own mirror image jumping; before = a base revision (/before/ route), after = this tree.
+// ?cols=<n>. window.jumpFrames(kind, times) renders one row per figure: [before remote, after remote, after self] x times.
+import * as T from 'three';
+import * as after from '../src/ghosts.js';
+import * as before from '/before/src/ghosts.js';
+import * as C from '../src/config.js';
+const W = 190, H = 300, G = 9.8;
+localStorage.setItem('lunden.avatar', C.encodeAvatarLook(C.avatarLook('jump-2140')));
+let now = 10000; performance.now = () => now;
+const profile = { jump: (t) => { const u = t - 1.0; return u < 0 ? 0 : Math.max(0, 3.7 * u - G * u * u / 2); }, drop: (t) => { const u = t - 0.4; return u < 0 ? 4.5 : Math.max(0, 4.5 - G * u * u / 2); } };
+let kind = 'jump';
+const stateAt = (t) => ({ p: [0, profile[kind](t), 0], r: 0, look: [0, 0] });
+const rows = [];
+for (const [label, mod, self] of [['before remote', before, false], ['after remote', after, false], ['after mirror', after, true]]) {
+  const scene = new T.Scene(); scene.background = new T.Color(0xdce3e6); scene.add(new T.HemisphereLight(0xffffff, 0x828b71, 1.5));
+  const light = new T.DirectionalLight(0xffefdb, 2.1); light.position.set(-2, 5, -3); scene.add(light);
+  const plane = new T.Mesh(new T.PlaneGeometry(30, 30), new T.MeshStandardMaterial({ color: 0xa3ae99, roughness: 1 })); plane.rotation.x = -Math.PI / 2; scene.add(plane);
+  const grid = new T.GridHelper(30, 150, 0x75836e, 0x95a18c); grid.position.y = 0.001; scene.add(grid);
+  const cam = new T.PerspectiveCamera(32, W / H, 0.02, 60);
+  const ground = () => 0;
+  const owners = new mod.Ghosts({ scene, camera: cam, url: '', name: () => 'jump-2140', state: () => stateAt(0), ground });
+  const ghost = new mod.Ghost(scene, 'jump-2140', 'Medspelare', false, owners.myLook); ghost.avatarCode = owners.avatarCode; ghost.ground = ground; if (ghost.tag) ghost.tag.visible = false;
+  rows.push({ label, scene, cam, owners, ghost, self, last: -Infinity });
+}
+const renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); renderer.setPixelRatio(1);
+document.body.append(renderer.domElement);
+window.jumpFrames = (k, times) => {
+  kind = k; renderer.setSize(W * times.length, H * rows.length); renderer.setScissorTest(true);
+  const end = Math.max(...times) + 0.01; let col = 0;
+  for (const row of rows) { row.last = -Infinity; row.ghost.snaps.length = 0; }
+  const t0 = now, fall = k === 'drop';
+  for (let t = fall ? 0 : 0.3; t <= end; t += 1 / 60) {
+    now = t0 + t * 1000; const st = stateAt(t);
+    for (const row of rows) {
+      const { owners, ghost, self } = row;
+      if (self) { owners.track(st, now); owners.beforeMirror(); owners.myGhost.root.visible = true; owners.myGhost.draw ? 0 : 0; }
+      else { if (now - row.last >= 200 - 1e-4) { ghost.push(st, now); row.last = now; } ghost.draw(now, new T.Vector3(0, 0, 0)); if (ghost.tag) ghost.tag.visible = false; }
+      row.fig = self ? owners.myGhost : ghost;
+    }
+    const hit = times.findIndex((x) => Math.abs(x - t) < 1 / 120);
+    if (hit >= 0) {
+      rows.forEach((row, ri) => {
+        for (const r of rows) r.fig.root.visible = r === row;
+        const y = row.fig.root.position.y, sub = new T.Vector3(0, y + 0.9, 0);
+        row.cam.position.set(2.6, Math.max(1.5, y + 0.9), -4.3); row.cam.lookAt(0, y + 0.88, 0);
+        renderer.setViewport(hit * W, (rows.length - 1 - ri) * H, W, H); renderer.setScissor(hit * W, (rows.length - 1 - ri) * H, W, H); renderer.render(row.scene, row.cam);
+      });
+      for (const r of rows) r.fig.root.visible = true;
+    }
+    for (const row of rows) if (row.self) row.owners.afterMirror();
+  }
+  renderer.setScissorTest(false); return rows.map((r) => r.label);
+};
+window.jumpReady = true;
+</script>

@@ -1,7 +1,7 @@
 // Falling: harmful free drops request the same Combat life damage as shots. Only a confirmed death blacks out
 // and wakes at the shared safe outdoor spawn. A survivor gets the red/jolt reaction and fall penalty in place.
 // Spider-Man's suit keeps every drop soft; stairs and small gaps do not request damage.
-import { FALL, PLAYER } from './config.js';
+import { FALL, PLAYER, AVATAR_JUMP } from './config.js';
 import { sfx } from './audio.js';
 import { respawnOutdoors } from './respawn.js';
 
@@ -17,6 +17,10 @@ export class Fall {
 
   /** Landed after a drop of `drop` m; `gap` = the deepest free drop under the feet on the way (stairs never reach FALL.free). */
   land(drop, gap) {
+    if (!this.pending && !(this.fatal && this.t >= 0) && drop <= FALL.soft) { // #2140: an ordinary jump / small step down: a small dip of the eye (it eases back up by itself, player.update)
+      const D = AVATAR_JUMP.cameraDip;
+      if (drop >= D.min) this.player.eyeY -= Math.min(D.max, D.per * drop);
+    }
     if (gap < FALL.free || this.pending || (this.fatal && this.t >= 0)) return null;
     const suit = !!this.player.suit?.worn; // the Spider-Man suit (#600): never hurt, a soft landing with a knee-bend
     if (drop > FALL.hurt && !suit) {

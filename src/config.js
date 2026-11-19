@@ -8534,6 +8534,27 @@ export const AVATAR_AIR = {
   climb: { hipDrop: .08, feetZ: .2, feetX: .15, footY: .12, lift: .26, stride: .55, knees: [.9, .15, .7], lean: -.06 }, // stride: m climbed per whole step cycle; lift: m one foot rises per step; knees: the knee pole, x outward
 };
 
+// #2140: the ordinary jump seen on a figure (src/avatarjump.js, Avatar.update). Everything derives from the vertical speed `vy` and the height over
+// the ground (no wire field); a remote figure also looks `lead` s ahead in its 200 ms delayed snapshots, to crouch before it leaves the ground. *guess*:
+// the pose proportions by eye, not from reference footage. Metres in the unscaled figure frame.
+export const AVATAR_JUMP = {
+  airHeight: 0.12, // m the feet must be over the ground below to count as airborne (stairs and slopes stay under it)
+  takeoffVy: 2.0, // m/s up that counts as a jump even before the feet are over `airHeight` (and without a ground height)
+  fallVy: 1.8, // m/s down that counts as falling when no ground height is known
+  lead: 0.12, // s a remote figure looks ahead in its snapshots (the delay is G.delay 200 ms)
+  anticipateVy: 1.8, // m/s the ahead sample must go up with, while still on the ground, to start the crouch
+  ease: 16, // 1/s, how fast the air weight blends in and out
+  crouchEase: 14, // 1/s, how fast the pre-jump crouch comes and goes
+  crouch: { dip: 0.11, lean: 0.14 }, // hips down (m) and torso forward (rad) before take-off
+  extendVy: 3.2, // m/s down at which the legs are fully stretched towards the ground
+  tuck: { lift: 0.3, back: 0.07 }, // feet up (m) and back (m) on the way up (the right foot 15% less); the knees keep poseOlof's forward pole
+  extend: { forward: 0.12, stagger: 0.06 }, // feet forward and one ahead of the other on the way down
+  arms: { amount: 0.85, out: 0.42, up: 0.1, front: 0.04 }, // balance: hands out to the sides, a little up
+  flail: { fall: 2.2, full: 5, hz: 3.4, up: 0.32, swing: 0.2, minVy: 3 }, // arms flail from a fall of more than `fall` m (full at `full` m), once falling faster than `minVy`
+  land: { min: 0.05, max: 0.26, full: 3, attack: 35, damp: 4.5, lean: 0.22 }, // hips compress by min .. max m with the fall height (full at `full` m): down at `attack` 1/s, back up at `damp` 1/s; torso lean (rad) at max
+  cameraDip: { min: 0.35, per: 0.1, max: 0.09 }, // first person (fall.js): a jump of at least `min` m dips the eye by per * drop (m), at most `max`
+};
+
 // #974: ordinary gameplay approximation, independent of hair, facial polygons and animation history.
 // Three stacked head boxes (metres in the unscaled standing avatar), narrower at the crown; *guess* by the existing head.
 export const PVP_HEAD_BOXES = {

@@ -16,6 +16,8 @@ import { AVATAR_GAZE } from './config.js';
 import { makesSteps, strideFor } from './spatialsound.js';
 import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, AVATAR_MOTION as MOTION, CHAT, SWIM, encodeAvatarLook, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
 import { Avatar, armTarget, swimLineFar } from './avatar.js';
+import { aheadSample } from './avatarjump.js'; // #2140
+const finiteOr = (h) => (Number.isFinite(h) ? h : NaN); // (no ground under the feet, e.g. in the stairwell: unknown, not infinitely high)
 import { gripFor } from './avatargrip.js';
 import { AVATAR_GRIP as GRIP } from './config.js'; // #2016: the grip of what is held
 import { totalScore } from './stats.js';
@@ -423,9 +425,14 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const motionFrame = this.motionFrame ??= [0, 0, 0];
     motionFrame[0] = this.root.position.x; motionFrame[1] = this.root.position.z; motionFrame[2] = by;
     const groundEnabled = !this.pose && !this.gx && !this.bikeMesh && !amount;
+    // #2140: the jump pose derives from the vertical speed and the height over the ground; a remote figure's delayed snapshots also show the take-off coming
+    const ji = this.jumpArg ??= { vy: 0, height: NaN, ahead: null, off: false, aheadIn: { vy: 0, height: NaN } }, rp = this.root.position;
+    ji.vy = this.vy ?? 0; ji.height = this.ground ? finiteOr(rp.y - this.ground(rp.x, rp.z, rp.y + 0.3)) : NaN; ji.off = !!(this.jp || this.pose || this.gx || this.bikeMesh || amount || react || this.dance);
+    const nx = this.snaps.length > 1 ? aheadSample(this.snaps, t - G.delay) : null;
+    ji.ahead = nx ? Object.assign(ji.aheadIn, { vy: nx.vy, height: this.ground ? finiteOr(nx.y - this.ground(nx.x, nx.z, nx.y + 0.3)) : NaN }) : null;
     this.avatar.collectPose = true;
     this.avatar.updateWeather(wetEnv.outdoorAt(this)); // #2018
-    this.avatar.update(dt, { ground: this.ground, floorY: this.root.position.y, motionFrame, groundSpeed: groundEnabled && groundSpeed <= 8 ? groundSpeed : 0, groundEnabled, gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: wet ? 0 : this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive });
+    this.avatar.update(dt, { ground: this.ground, floorY: this.root.position.y, motionFrame, groundSpeed: groundEnabled && groundSpeed <= 8 ? groundSpeed : 0, groundEnabled, gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: wet ? 0 : this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive, jump: ji });
     updateFace(this.avatar, dt, { wave: this.waveT > 0, hug: hugged, kiss: kissed, react: react ? REACT.kinds[react.kind]?.id : null, gym: this.gx ? 0.6 + 0.4 * Math.sin(Math.PI * this.gx[1]) : 0, run: this.avatar.gt?.run ?? 0 }); // #2031: the face follows what the figure does
     updateBreath(this.avatar, dt, { run: this.avatar.gt?.run ?? 0, gym: this.gx ? 1 : 0 }, this.self ? null : this); // #2037: the face's run / gym signal: flush, sweat, breath in the cold
     if (wet) sink(this.avatar.swimAmt, this.avatar.swimLine, this.avatar.diveAmt); // (blending in from standing on the bed)
