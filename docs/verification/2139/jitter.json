@@ -1,0 +1,24 @@
+{
+ "opts": {
+  "jitter": 140,
+  "drop": 0.05,
+  "seed": 3
+ },
+ "revision": "c0be4dfd",
+ "summary": [
+  {
+   "which": "before",
+   "frozen": 33,
+   "slow": 44,
+   "maxStep": 0.1165,
+   "stops": 9
+  },
+  {
+   "which": "after",
+   "frozen": 2,
+   "slow": 5,
+   "maxStep": 0.0442,
+   "stops": 1
+  }
+ ]
+}

@@ -429,7 +429,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     // #2140: the jump pose derives from the vertical speed and the height over the ground; a remote figure's delayed snapshots also show the take-off coming
     const ji = this.jumpArg ??= { vy: 0, height: NaN, ahead: null, off: false, aheadIn: { vy: 0, height: NaN } }, rp = this.root.position;
     ji.vy = this.vy ?? 0; ji.height = this.ground ? finiteOr(rp.y - this.ground(rp.x, rp.z, rp.y + 0.3)) : NaN; ji.off = !!(this.jp || this.pose || this.gx || this.bikeMesh || amount || react || this.dance);
-    const nx = this.snaps.length > 1 ? aheadSample(this.snaps, t - G.delay) : null;
+    const nx = this.snaps.length > 1 ? aheadSample(this.snaps, this.playOut.at ?? t - G.delay) : null; // (#2139: from the jitter buffer's playhead)
     ji.ahead = nx ? Object.assign(ji.aheadIn, { vy: nx.vy, height: this.ground ? finiteOr(nx.y - this.ground(nx.x, nx.z, nx.y + 0.3)) : NaN }) : null;
     this.avatar.collectPose = true;
     this.avatar.updateWeather(wetEnv.outdoorAt(this)); // #2018
