@@ -100,7 +100,7 @@ const lerp3 = (a, b, t) => a.map((x, i) => x + (b[i] - x) * t);
  */
 export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, can, knee = KNEE, flat = 0, toes = 0, pitch = null, footYaw = null, hipX = 0, hipRoll = 0, torsoRoll = 0, torsoYaw = 0 }) {
   if (fig.collectPose) { fig.pendingPose = { hip, lean, head, turn, feet, hands, can, knee, flat, toes, pitch, footYaw, hipX, hipRoll, torsoRoll, torsoYaw }; return; }
-  const B = fig.bones, hy = hip[0], hz = hip[1];
+  const B = fig.bones, hy = hip[0], hz = hip[1]; // (#2141: fig.spread = the body build's shoulder / thigh joint factors, src/avatarbuild.js; the hand / foot targets stay exact)
   B.hips.position.set(hipX, hy, hz);
   const hq = hipRoll ? qH.setFromAxisAngle(Z, hipRoll) : qH.identity(); // #2035: the hips tilt sideways (+ lifts the left side)
   B.hips.quaternion.copy(hq);
@@ -114,7 +114,7 @@ export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, 
   const S = new THREE.Vector3(), T = new THREE.Vector3(), P = new THREE.Vector3(), out = new THREE.Quaternion();
   ['L', 'R'].forEach((s, i) => {
     const sx = i ? -1 : 1, [fx, fy, fz] = feet[i];
-    ik(B['thigh' + s], B['knee' + s], hipRoll ? hq : I, S.set(sx * 0.085, 0, 0).applyQuaternion(hq), T.set(fx, fy - hy, fz - hz), THIGH, SHIN, P.set(sx * knee[0], knee[1], knee[2]), out);
+    ik(B['thigh' + s], B['knee' + s], hipRoll ? hq : I, S.set(sx * 0.085 * (fig.spread?.hip ?? 1), 0, 0).applyQuaternion(hq), T.set(fx, fy - hy, fz - hz), THIGH, SHIN, P.set(sx * knee[0], knee[1], knee[2]), out);
     const foot = B['foot' + s];
     if (foot) { // the shin's rotation undone (level, the toes turned out) as far as `flat`
       if (flat > 0) {
@@ -125,7 +125,7 @@ export function poseOlof(fig, { hip, lean = 0, head = 0, turn = 0, feet, hands, 
       else foot.quaternion.identity();
     }
     const h = hands[i];
-    ik(B['shoulder' + s], B['elbow' + s], tq, S.set(sx * SH[0], SH[1], 0).applyQuaternion(tq), T.set(h.at[0], h.at[1] - hy, h.at[2] - hz),
+    ik(B['shoulder' + s], B['elbow' + s], tq, S.set(sx * SH[0] * (fig.spread?.shoulder ?? 1), SH[1], 0).applyQuaternion(tq), T.set(h.at[0], h.at[1] - hy, h.at[2] - hz),
       UPPER, FORE + HAND, P.set(...h.pole), out);
     const hand = B['hand' + s];
     if (i === 1 && can) { // the can's axis = the hand's y, the fist's front (z) along the forearm

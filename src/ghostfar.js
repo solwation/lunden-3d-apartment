@@ -87,7 +87,7 @@ export class GhostFar {
       av.lodCentre?.value.copy(far ? g.root.position : eye); // (not fitting: distance 0 to the shader, the real figure in full)
       av.object.visible = !(far && d > end + margin);
       if (!far || d < start - margin || n >= mesh.instanceMatrix.count) continue;
-      _q.setFromAxisAngle(UP, g.root.rotation.y + Math.PI); _s.copy(av.object.scale);
+      _q.setFromAxisAngle(UP, g.root.rotation.y + Math.PI); _s.copy(av.object.scale); _s.x *= av.farWidth ?? 1; _s.z *= av.farWidth ?? 1; // (#2141: the build's old sideways factor)
       mesh.setMatrixAt(n, _m.compose(g.root.position, _q, _s));
       LOOK.forEach((k, i) => { _c.set(av.look[k] ?? 0x808080); mesh.geometry.attributes[COLORS[i]].setXYZ(n, _c.r, _c.g, _c.b); });
       n++;

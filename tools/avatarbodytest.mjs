@@ -61,3 +61,23 @@ for (const cm of HEIGHTS) test(`${cm} cm: seated / lying head and body follow th
   const lie = { p: [0, 0.5 - 0.8 * body0, 0], r: 0, c: false, pose: 2 };
   assert.ok(Number.isFinite(base(seed, { ...lie, ...splitAvatarCode(code) })));
 });
+
+// #2141: the body build shapes the body below the neck (src/avatarbuild.js), so the head boxes are the same for every build step and
+// both figures; only a chosen height scales them. Probed with horizontal rays from the side and the front through each box.
+test('#2141 head boxes: the same for slim, medium and heavy (no build width), at every chosen height', () => {
+  const edges = (st, m) => { const out = [];
+    for (const y of [0.88, 0.93, 0.975].map((f) => f * m)) for (const [o, d] of [[[3, y, 0], [-1, 0, 0]], [[0, y, 3], [0, 0, -1]], [[0, y, -3], [0, 0, 1]]]) {
+      const h = hit(seed, st, o, d, 10); out.push(h ? +h.distance.toFixed(6) : null); }
+    return out; };
+  for (const cm of [undefined, 120, 195]) for (const gender of [0, 1]) {
+    const code = (bodyBuild) => encodeAvatarLook({ ...decodeAvatarLook('241302112', seed), gender, bodyBuild, ...(cm ? { height: cm } : {}) });
+    const st = (bodyBuild) => ({ p: [0, 0, 0], r: -Math.PI, ...splitAvatarCode(code(bodyBuild)) });
+    const m = cm ? cm / 100 : 1.78, mid = edges(st(4), m);
+    assert.ok(mid.filter(Number.isFinite).length >= 6, `the probes hit the head (${cm}, ${gender})`);
+    for (const k of [0, 2, 6, 8]) {
+      assert.equal(decodeAvatarLook(code(k), seed).bodyBuild, k, 'the step travels in the code');
+      assert.deepEqual(edges(st(k), m), mid, `build ${k} keeps the head boxes (${cm} cm, gender ${gender})`);
+      assert.equal(base(seed, st(k)), base(seed, st(4)));
+    }
+  }
+});

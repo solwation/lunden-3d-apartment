@@ -7696,8 +7696,34 @@ function decodeLookExt(ext, lk) {
 // through 1 in the middle like AVATAR_SHAPE. Without a chosen step the seed's old build (0 slim, 1 average, 2 broad) draws
 // as before: `seeded` are its steps, so 0.93 / 1 / 1.08 stay exact. Range by eye (*guess*): every end still looks like a
 // person. The look code carries a chosen step as the extension's `tag` (only when chosen; older clients skip the tag and
-// keep reading the wire's `d`, sent as the nearest old build). The head boxes follow the same width (rifleBoxPose).
+// keep reading the wire's `d`, sent as the nearest old build). Since #2141 the width is the body's shape gain (AVATAR_BODY_SHAPE), not an
+// object scale: the head boxes no longer follow it (rifleBoxPose).
 export const AVATAR_BUILD = { steps: 9, mid: 4, min: 0.86, max: 1.16, seeded: [2, 4, 6], tag: 'k', label: 'Kroppsbyggnad' };
+// #2141: the build as body shape instead of one sideways scale. The step's old width w (avatarBuildWidth, kept as the slider's
+// scale) gives a signed gain g = w − 1 (−0.14 slim … 0 … +0.16 heavy); src/avatarbuild.js turns it into per-region radial offsets in
+// the vertex shader (bind pose, before skinning) and a wider/narrower joint spread, while the head, the hands and the feet keep their
+// size and the Avatar's object scale is the height alone. Every number is a *guess* tuned by eye on the mirror preview
+// (tools/avatarbuild2141.html), chosen so slim / heavy and female / male read clearly but stay ordinary, respectful bodies.
+//  - trunk: `knots` = torso-local heights (m above the hips bone) of hips, waist, chest and shoulders; the trunk's x / z scale gain is
+//    linear between them, constant below the hips and fades to 0 between `fade` (the neck and the head never change).
+//    Per gender: `x` / `z` gains = base + slope · g at each knot.
+//  - `belly` / `bust`: forward Gaussian bumps on the front (centre height, half width, half height, m) of `bellyAmp` / `bustAmp` metres =
+//    base + (g < 0 ? slim : heavy slope) · g (a heavy man's belly grows most, a heavy woman's hips and thighs).
+//  - `limb`: radial gains of the upper arm, forearm, thigh and calf about the bind-pose bone axis (slope · g), zero at the wrist / ankle;
+//    the legs' front (+z, the side a crouch folds onto the belly) takes `leg.front` of it.
+//  - `spread`: joint x factors 1 + base + (slim | heavy slope) · g — the shoulder bones, the thigh bones and the resting hands' sideways target
+//    (so the hanging arms clear the wider hips; held hands, seats and grips are not moved).
+export const AVATAR_BODY_SHAPE = {
+  knots: [.03, .25, .45, .55], fade: [.55, .63], front: [.02, .09], headBelow: [.54, .48],
+  belly: [.19, .13, .09], bust: [.43, .14, .075],
+  arm: { top: [1.42, 1.33], elbow: [1.17, 1.1], wrist: [.98, .93] }, leg: { knee: [.62, .5], ankle: [.2, .12], front: .25 },
+  female: { x: [[.02, 1.5], [-.06, 1.1], [0, .85], [-.035, .75]], z: [[.04, 1.45], [0, 1.2], [0, .9], [0, .6]],
+    bellyAmp: [0, .05, .12], bustAmp: [.006, .04, .1], limb: [1.05, .5, 1.4, .8],
+    spread: { shoulder: [0, .75, .7], hip: [0, 1.0, 1.1], hand: [0, 1.0, 1.5] } },
+  male: { x: [[-.025, .95], [0, 1.2], [.035, 1.05], [.05, 1.05]], z: [[-.02, .9], [0, 1.5], [.03, 1.0], [0, .7]],
+    bellyAmp: [0, .05, .23], bustAmp: [.003, .01, .03], limb: [1.15, .7, 1.0, .6],
+    spread: { shoulder: [.02, .9, 1.0], hip: [0, .8, .8], hand: [.02, .9, 1.0] } },
+};
 /** The look's body-build step (#1139): the chosen `bodyBuild`, else the seed's old build's step. */
 export function avatarBuildStep(look) {
   const v = look?.bodyBuild, B = AVATAR_BUILD;
@@ -8596,13 +8622,13 @@ function rifleBoxPose(seed, state) {
   const crouch = state.c === undefined || state.c === false ? 0 : state.c === true ? 1 : state.c;
   if (!Number.isFinite(crouch) || crouch < 0 || crouch > 1) return null;
   const look = avatarLook(seed), wire = decodeAvatarLook(typeof state.av === 'string' ? state.av + (state.ax ?? '') : null, seed);
-  // #1175: use the same existing build as the rendered avatar, including chosen-height looks.
-  look.build = wire.build; look.bodyBuild = wire.bodyBuild; // (#1139: a chosen body build too)
+  // #2141: the body build no longer scales the figure sideways (it shapes the body below the neck, src/avatarbuild.js), so the head
+  // boxes keep their size for every build: x/z scale only with a chosen height (before #2141: × avatarBuildWidth, 0.86 … 1.16).
   // #1173: follow the transmitted legacy vertical scale.
   if (!Number.isInteger(wire.height)) look.tall = wire.tall;
-  // #1137: a chosen height scales the figure uniformly (Avatar: body × build sideways) and a child's head bone around
+  // #1137: a chosen height scales the figure uniformly (Avatar: body, #2141 without the build) and a child's head bone around
   // its pivot (AVATAR_HEIGHT.pivot), so the three shared boxes grow with the head the same way.
-  let width = avatarBuildWidth(look), tall = look.tall, boxes = PVP_HEAD_BOXES.boxes;
+  let width = 1, tall = look.tall, boxes = PVP_HEAD_BOXES.boxes;
   const neckDelta = avatarShape('neck', wire.neck ?? look.neck); // #1191: head boxes follow neck length
   if (neckDelta) boxes = boxes.map(b => ({ ...b, low: b.low + neckDelta, high: b.high + neckDelta }));
   if (Number.isInteger(wire.height)) {

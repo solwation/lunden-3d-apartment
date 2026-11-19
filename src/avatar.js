@@ -22,6 +22,7 @@ import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #20
 import { newWind, stepWind } from './avatarwind.js'; import { siteWind } from './sitewind.js'; // #2110: outdoor wind on the sway springs
 import { newLean, stepLean } from './avatarlean.js'; // #2109
 import { chestBreath, chestUniforms, CHEST_DECL, chestGLSL, chestKey } from './avatarchest.js'; // #2108: visible breathing
+import { bodyShape, buildUniforms, BUILD_DECL, buildGLSL, buildKey, applyBodyShape, spreadBones } from './avatarbuild.js'; // #2141: the build as body shape
 import { avatarSkinGLSL, skinKey } from './avatarskin.js'; // #2032
 import { skinVarUniforms, applySkinVarLook, skinVarDecl, skinVarColor, skinVarKey } from './avatarskinvar.js'; // #2111: freckles, birthmarks, uneven tone
 import { handVertexGLSL, handFragmentGLSL, handKey } from './avatarhand.js'; // #2106: nails, creases, knuckles, tendons
@@ -1217,6 +1218,7 @@ function makeMaterial(rim, headProjection) {
   Object.assign(u, eyeUniforms()); // #2033
   Object.assign(u, exertUniforms()); // #2037: flush and sweat sheen
   Object.assign(u, chestUniforms()); // #2108: breathing
+  Object.assign(u, buildUniforms()); // #2141: the body build's shape
   Object.assign(u, lampUniforms()); // #2039
   Object.assign(u, selfShadowUniforms()); // #2143
   Object.assign(u, flyUniforms()); // #2040
@@ -1249,6 +1251,7 @@ float pumpD = uPump * ${GYM_PUMP.circumference} * armPump.w;
 objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / pumpF * dot(position.xz - armPump.xy, objectNormal.xz), objectNormal.z / pumpF));`)
       .replace('#include <begin_vertex>', `#include <begin_vertex>\ntransformed.xz = armPump.xy + (transformed.xz - armPump.xy) * (1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z);\nvSuitRole = suitRole; ${wetVertex()} vSurface = vec2(region, facePart); vNose = noseBlend; vSuitAt = position; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart) * step(facePart, ${FACE_PART.watchStrap}.0 - 0.5); // (#1334: the rings, bracelets and watch cases are metal)\n${faceShape()}${swayShader()}${chestGLSL()}\n${flyBind(FACE_PART, bindAt('head').add(new THREE.Vector3(...HAIR.centre)))}\ntransformed.x *= 1.0 - uKiss * pucker * ${KISS.narrow.toFixed(5)};\ntransformed.z += uKiss * pucker * ${KISS.pucker.toFixed(5)};\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
     sh.vertexShader = faceExprShader(sh.vertexShader, { hb: bindAt('head'), chinY: CHIN_Y, P: FACE_PART }); // #2031
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', `#include <common>\n${BUILD_DECL}`).replace('#include <skinning_vertex>', `${buildGLSL()}\n#include <skinning_vertex>`); // #2141: after the face shape and breathing, before skinning
     sh.vertexShader = sh.vertexShader.replace('#include <skinning_vertex>', `${eyeView()}\n#include <skinning_vertex>`); // #2033: after every bind-pose shape (face, expression), before skinning
     sh.vertexShader = sh.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>\n${flyProject(bindAt('head').add(new THREE.Vector3(...HAIR.centre)))}`); // #2040
     sh.fragmentShader = sh.fragmentShader
@@ -1306,7 +1309,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     const gloss = { head: bindAt('head'), region: REGION, part: FACE_PART }; // #2052
     sh.vertexShader = glossVertex(sh.vertexShader, gloss); sh.fragmentShader = curlGloss(glossFragment(sh.fragmentShader, gloss)); // (#2054: the curls turn its strands)
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey() + chestKey() + skinVarKey() + selfShadowKey(); // #2108, #2111, #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey() + chestKey() + skinVarKey() + selfShadowKey() + buildKey(); // #2108, #2111, #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
   installSelfView(m); // #2080: the own camera hides head/hair; mirrors and peers keep the full figure
   return m;
 }
@@ -1741,12 +1744,14 @@ export class Avatar {
     this.object.name = 'avatar';
     this.object.rotation.y = Math.PI; // the figure faces +z, a ghost's heading −z
 
-    const w = avatarBuildWidth(lk);
+    // #2141: the object scale is the height alone; the build shapes the body (src/avatarbuild.js: shader offsets + joint spread), so the
+    // head, hands and feet keep their size. `farWidth`: the old sideways factor, for the far LOD figure's coarse silhouette (ghostfar.js).
+    this.bodyShape = bodyShape(lk); this.spread = this.bodyShape.spread; this.farWidth = avatarBuildWidth(lk);
     if (Number.isInteger(lk.height)) {
       const { body } = avatarProportions(lk.height);
-      this.object.scale.set(w * body, body, w * body);
+      this.object.scale.setScalar(body);
     } else {
-      this.object.scale.set(w, lk.tall ?? 1, w);
+      this.object.scale.set(1, lk.tall ?? 1, 1);
     }
 
     if (riggedAvatarData) {
@@ -1763,8 +1768,10 @@ export class Avatar {
     const geometry = avatarModelGeometry(lk);
     this.material = makeMaterial(new THREE.Color(rim), geometry.userData.headProjection);
     applyFaceShape(this.material.userData.u, lk);
+    applyBodyShape(this.material.userData.u, lk); // #2141
     this.mesh = new THREE.SkinnedMesh(geometry, this.material);
     this.bones = attachSkeleton(this.mesh);
+    spreadBones(this.bones, this.bodyShape); // #2141
     installArmFix(this.mesh, this.material.userData.u.uArmFix); // #2022
     installCloth(this.mesh, this.material.userData.u, lk); // #2034
     this.mesh.castShadow = this.mesh.receiveShadow = false;
@@ -1808,6 +1815,7 @@ export class Avatar {
     if (!mat) {
       mat = makeMaterial(new THREE.Color(this.rim), geom.userData.headProjection);
       applyFaceShape(mat.userData.u, lk);
+      applyBodyShape(mat.userData.u, lk); // #2141
       this.material = mat;
     }
 
@@ -1817,6 +1825,7 @@ export class Avatar {
 
     this.mesh = clonedMesh;
     this.bones = bones;
+    spreadBones(bones, this.bodyShape); // #2141
     installArmFix(clonedMesh, mat.userData.u.uArmFix); // #2022
     installCloth(clonedMesh, mat.userData.u, lk); // #2034
     this.riggedScene = clonedScene;
@@ -2022,6 +2031,7 @@ export class Avatar {
     const armL = THREE.MathUtils.clamp(-gt.arm[0] * armK, -GAIT.armMax, GAIT.armMax), armR = THREE.MathUtils.clamp(-gt.arm[1] * armK, -GAIT.armMax, GAIT.armMax);
     const rest = (side, swing) => {
       const r = armTarget.rest(side, swing), R = CR.rest;
+      r.at[0] *= this.spread?.hand ?? 1; // #2141: the hanging hands clear the build's hips
       return c ? { at: r.at.map((v, i) => v + ((i ? R.at[i] : side * R.at[0]) - v) * c), pole: r.pole.map((v, i) => v + ((i ? R.pole[i] : side * R.pole[0]) - v) * c) } : r;
     };
     // a hand held out (a weapon, a wave) moves with the shoulder as the body goes down

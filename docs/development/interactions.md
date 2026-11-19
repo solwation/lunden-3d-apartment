@@ -545,9 +545,25 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        `e o w l j n b r t y`; #2111: `c` also carries the optional skin variation in its eights); unknown tags are skipped. On the wire the digits stay `av` (older clients) and the rest goes as
                        `ax` (ghosts.js `avatarWire`; Worker `cleanAvatarExt` checks only the form, ≤ 60 chars, and only beside a valid `av`).
                        #1139: "Kroppsbyggnad" slider (index.html `#avatar-build`, config.js `AVATAR_BUILD`, `avatarBuildStep`/`avatarBuildWidth`):
-                       steps 0–8 scale the figure's x/z (Avatar object scale, no new draw call) 0.86 … 1 … 1.16; the seed's old build 0/1/2
-                       is steps 2/4/6 (0.93/1/1.08 exact), so codes without the field draw as before. A chosen step (`look.bodyBuild`) is
-                       the `k<step>` tag; the wire also sends the nearest old `d` for older clients; rifleBoxPose's head boxes use the same width.
+                       steps 0–8 give a width 0.86 … 1 … 1.16; the seed's old build 0/1/2 is steps 2/4/6 (0.93/1/1.08 exact), so codes
+                       without the field keep their step. A chosen step (`look.bodyBuild`) is the `k<step>` tag; the wire also sends the
+                       nearest old `d` for older clients (no new wire field for #2141).
+                       #2141: the width is no longer an object scale (Avatar's object scale is the height alone). src/avatarbuild.js turns
+                       its gain g = width − 1 and the gender into a body shape (config.js `AVATAR_BODY_SHAPE`, *guesses*): a vertex-shader
+                       field on the bind pose before skinning (4 vec4 uniforms `uBodyX/Z/Bump/Limb`, weighted by the vertex's own skin
+                       weights) scales the trunk sideways / in depth at hips, waist, chest and shoulders, adds a forward belly and bust bump
+                       and thickens the upper arm, forearm, thigh and calf about their bone axes (the legs' front only `leg.front` of it);
+                       head-, hand- and foot-weighted vertices never move (long hair and a necklace below the neck follow the trunk).
+                       Joints: `spreadBones` moves the shoulder / thigh bones by `spread`, poseOlof's IK reads `fig.spread`, and the resting
+                       hands' x follows `spread.hand` (Avatar.update's rest arms only; held hands, seats and grips land exactly). Gender adds
+                       a small base shape at every build (narrower waist and rounder hips / broader chest and shoulders); the medium build's
+                       joints and resting hands equal the old figure's, so tools/avatarshouldertest.mjs keeps its pinned numbers there.
+                       The head boxes no longer follow the build (rifleBoxPose: x/z only × a chosen height's body scale; the Worker shares
+                       config.js); the far LOD figure keeps the old width as `avatar.farWidth` (ghostfar.js). CPU raycasts (the rifle's
+                       body contact) see the spread bones but not the shader offsets, as with #2108. No new triangles, draws or textures.
+                       Tests: tools/avatarbuildtest.mjs (regions per build/gender, head/hands/feet fixed on the real geometry, old looks,
+                       sit/crouch/standing proxies on the posed skeleton), tools/avatarbodytest.mjs (head boxes equal for every build);
+                       before/after images: tools/avatarbuild2141browser.cjs → [docs/verification/2141](../verification/2141/).
                        #1156: TOPS[10] is Olof's burgundy hoodie (OLOF.colors.hoodie). Tops past 9 write a fallback digit (TOPS_DIGIT: 10 → red,
                        what older clients show) plus a `u<index>` tag; seeded looks still pick among the first ten (TOPS_SEEDED).
                        § / Meny opens clickable rearrangement controls with a free cursor; Esc exits the mode and cancels the preview,

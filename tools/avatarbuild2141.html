@@ -1,0 +1,63 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Kroppsform #2141</title><link rel="icon" href="data:,">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<style>body{margin:0;background:#e9edef;font:16px system-ui;color:#192b38}canvas{display:block}</style>
+<script type="module">
+// #2141: the body build as body shape, before (/before/ = the base revision, served by tools/avatarbuild2141browser.cjs) and after:
+// slim / medium / heavy × female / male in the mirror preview's look (the real Avatar, standing rest pose, the preview's lights),
+// from the front and from the side, full figure at a fixed scale so widths, the belly and the head size compare directly.
+import * as T from 'three';
+import * as current from '../src/avatar.js';
+import * as before from '/before/src/avatar.js';
+import * as C from '../src/config.js';
+const W = 170, H = 400, LOW = 0.5, TOP = 1.9, COLS = [[1, 0], [1, 4], [1, 8], [0, 0], [0, 4], [0, 8]];
+const renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); renderer.setPixelRatio(1); renderer.setSize(W * COLS.length, H * 2); document.body.append(renderer.domElement);
+const base = C.avatarLook('build-2141');
+const lookOf = ([gender, bodyBuild]) => ({ ...base, gender, bodyBuild, style: gender ? 2 : 0, cut: 0, sleeves: 0, legs: 0, hat: 0, glasses: 0, phones: 0, facial: 0,
+  skin: 0xd9a582, top: 0x6f8fb3, pants: 0x3b4250, shoes: 0x2b2b2b, hair: 0x5a3a24, tall: 1, height: undefined });
+const scenes = [before, current].map((mod) => COLS.map((col) => {
+  const scene = new T.Scene(); scene.background = new T.Color(0x263747);
+  scene.add(new T.HemisphereLight(0xffffff, 0x8a7f72, 1.6)); const sun = new T.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+  const av = new mod.Avatar(lookOf(col)); av.noIdle = true; av.update(0, {}); scene.add(av.object); return { scene, av };
+}));
+const SPAN = TOP - LOW, MID = (TOP + LOW) / 2, cam = new T.OrthographicCamera(-W / H * SPAN / 2, W / H * SPAN / 2, SPAN / 2, -SPAN / 2, 0.01, 20);
+window.ready = true;
+/** Renders the before (row 0) and after (row 1) figures turned `yaw` (0 front, π/2 the left side) and returns a labelled PNG (base64). */
+window.shot = (yaw, title) => {
+  renderer.setScissorTest(true);
+  scenes.forEach((row, r) => row.forEach(({ scene, av }, c) => {
+    av.object.rotation.y = yaw; av.update(0, {}); av.object.updateMatrixWorld(true);
+    cam.position.set(0, MID, 4); cam.lookAt(0, MID, 0); cam.updateProjectionMatrix();
+    renderer.setViewport(c * W, (1 - r) * H, W, H); renderer.setScissor(c * W, (1 - r) * H, W, H); renderer.render(scene, cam);
+  }));
+  renderer.setScissorTest(false);
+  const cv = document.createElement('canvas'); cv.width = W * COLS.length + 60; cv.height = H * 2 + 70; const x = cv.getContext('2d');
+  x.fillStyle = '#edf0f2'; x.fillRect(0, 0, cv.width, cv.height); x.fillStyle = '#192b38'; x.font = 'bold 19px system-ui'; x.fillText(title, 12, 26);
+  x.font = '15px system-ui'; ['kvinna smal', 'kvinna medel', 'kvinna kraftig', 'man smal', 'man medel', 'man kraftig'].forEach((s, i) => x.fillText(s, 60 + i * W + 8, 56));
+  [['Före', 0], ['Efter', 1]].forEach(([s, r]) => { x.save(); x.translate(36, 66 + H * r + H / 2 + 20); x.rotate(-Math.PI / 2); x.fillText(s, 0, 0); x.restore(); });
+  x.drawImage(renderer.domElement, 60, 66);
+  // the before figure's outline (orange) over the after row, so every change of width / depth reads directly
+  const full = W * COLS.length, img = x.getImageData(60, 66, full, H * 2), d = img.data, bg = [0x26, 0x37, 0x47];
+  const on = (i, y) => { const k = (y * full + i) * 4; return Math.abs(d[k] - bg[0]) + Math.abs(d[k + 1] - bg[1]) + Math.abs(d[k + 2] - bg[2]) > 30; };
+  const mask = new Uint8Array(full * H); for (let y = 0; y < H; y++) for (let i = 0; i < full; i++) mask[y * full + i] = on(i, y) ? 1 : 0;
+  for (let y = 1; y < H - 1; y++) for (let i = 1; i < full - 1; i++) {
+    const m = mask[y * full + i]; if (!m || (mask[y * full + i - 1] && mask[y * full + i + 1] && mask[(y - 1) * full + i] && mask[(y + 1) * full + i])) continue;
+    const k = ((y + H) * full + i) * 4; d[k] = 255; d[k + 1] = 150; d[k + 2] = 40;
+  }
+  x.putImageData(img, 60, 66);
+  x.strokeStyle = 'rgba(237,240,242,0.3)'; x.lineWidth = 1; // the same heights in every tile: every 10 cm
+  for (let r = 0; r < 2; r++) for (let m = Math.ceil(LOW * 10) / 10; m <= TOP; m += 0.1) { const y = 66 + H * r + H - (m - LOW) / SPAN * H; x.beginPath(); x.moveTo(60, Math.round(y) + 0.5); x.lineTo(cv.width, Math.round(y) + 0.5); x.stroke(); }
+  x.font = '14px system-ui'; x.fillStyle = '#b55f00'; x.fillText('orange kontur i efter-raden = före', cv.width - 250, 26);
+  return cv.toDataURL('image/png').split(',')[1];
+};
+/** Per figure: the rendered silhouette's width (px → m) at a few heights (from the after row's own pixels), and the head width. */
+window.widths = (yaw) => {
+  window.shot(yaw, '');
+  const gl = renderer.getContext(), w = W * COLS.length, h = H * 2, px = new Uint8Array(w * h * 4); gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px);
+  const bg = [0x26, 0x37, 0x47], out = {};
+  const at = (r, c, m) => { const y = (1 - r) * H + Math.round((m - LOW) / SPAN * H); let n = 0;
+    for (let i = c * W; i < (c + 1) * W; i++) { const k = (y * w + i) * 4; if (Math.abs(px[k] - bg[0]) + Math.abs(px[k + 1] - bg[1]) + Math.abs(px[k + 2] - bg[2]) > 30) n++; }
+    return +(n / H * TOP).toFixed(3); };
+  ['before', 'after'].forEach((key, r) => { out[key] = COLS.map((col, c) => ({ col, head: at(r, c, 1.68), chest: at(r, c, 1.33), waist: at(r, c, 1.13), belly: at(r, c, 1.03), hips: at(r, c, 0.95), thigh: at(r, c, 0.7) })); });
+  return out;
+};
+</script></html>

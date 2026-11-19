@@ -85,7 +85,9 @@ const BEFORE = [
  { up: [1.862, .726], wave: [1.739, .78], forward: [1.349, .953], rifle: [1.379, .778], cross: [1.119, .256] },
 ];
 for (const gender of [0, 1]) for (const sleeves of [0, 1]) test(`shoulder volume never regresses vs before #2013 (lift, reach, cross), gender${gender} sleeves${sleeves}`, () => {
- const m = shoulderMetrics({ ...avatarLook('vol2013'), gender, sleeves, cut: 0 });
+ // #2141: pinned to the medium build. These numbers were build-invariant while the build was a uniform sideways object scale; since
+ // #2141 the build moves the shoulder joints and the resting hands, so slim / heavy are bounded separately (tools/avatarbuildtest.mjs).
+ const m = shoulderMetrics({ ...avatarLook('vol2013'), gender, sleeves, cut: 0, bodyBuild: 4 });
  for (const [pose, v] of Object.entries(m)) {
   const [edge, area] = BEFORE[gender][pose];
   assert.ok(v.areaP1 >= area - 1e-9, `${pose}: worst-1% area ${v.areaP1} >= before ${area}`);

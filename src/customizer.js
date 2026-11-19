@@ -86,7 +86,7 @@ export function drawAvatarPreview(canvas, look) {
 
   const cx = width / 2;
 
-  // #1139: the body build widens everything below the head about the middle (the 3D figure's x/z scale)
+  // #1139: the body build widens everything below the head about the middle (a 2D stand-in for the 3D body shape, #2141)
   const bw = avatarBuildWidth(look);
   ctx.save();
   ctx.translate(cx, 0); ctx.scale(bw, 1); ctx.translate(-cx, 0);

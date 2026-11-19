@@ -44,11 +44,11 @@ const check = (ok, label) => { checks++; console.log(`${ok ? 'PASS' : 'FAIL'} ${
         window.tick=setInterval(()=>{if(moving)pose.p[0]+=.02;ghosts.update();combat.update(.04);scene.updateMatrixWorld(true);},40);
         window.aim = (kind, index=1) => {
           const foe=combat.foes()[0], H=config.PVP_HEAD_BOXES, look=config.avatarLook(foe.id), box=H.boxes[index];
-          // #1332: mirror config.rifleBoxPose: the boxes follow the foe's wire look (neck #1191, build, chosen height #1137),
+          // #1332: mirror config.rifleBoxPose: the boxes follow the foe's wire look (neck #1191, chosen height #1137; not the build since #2141),
           // which varies with the random seed; the aim point must not assume the default figure.
-          const wire=config.decodeAvatarLook(foe.avatarCode,foe.id); look.build=wire.build; look.bodyBuild=wire.bodyBuild;
+          const wire=config.decodeAvatarLook(foe.avatarCode,foe.id); // (#2141: the build no longer scales the head boxes)
           if(!Number.isInteger(wire.height))look.tall=wire.tall;
-          let width=config.avatarBuildWidth(look),tall=look.tall,low=box.low,high=box.high,back=box.back,front=box.front;
+          let width=1,tall=look.tall,low=box.low,high=box.high,back=box.back,front=box.front;
           const neck=config.avatarShape('neck',wire.neck??look.neck)||0;low+=neck;high+=neck;
           if(Number.isInteger(wire.height)){const {body,head}=config.avatarProportions(wire.height),P=config.AVATAR_HEIGHT.pivot;
             width*=body;tall=body;if(head!==1){low=P+(low-P)*head;high=P+(high-P)*head;back*=head;front*=head;}}

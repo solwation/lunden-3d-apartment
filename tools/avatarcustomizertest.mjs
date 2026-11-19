@@ -319,7 +319,7 @@ test('#1175 wire-only build preserves own width and saved codes across receiver 
     const look={...own,build,...(height?{height}:{})}, saved=encodeAvatarLook(look), wire=encodeAvatarWireLook(look);
     assert.equal(encodeAvatarLook(look),saved,'persistent encoding unchanged');
     for (const seed of ['peer-id','new-peer','reconnected-id']) assert.equal(decodeAvatarLook(wire,seed).build,build);
-    const state={p:[0,0,0],r:0,...splitAvatarCode(wire)}, width=[.93,1,1.08][build];
+    const state={p:[0,0,0],r:0,...splitAvatarCode(wire)}, width=1; // (#2141: the build no longer widens the head boxes; before [.93,1,1.08][build])
     // A side ray's entry must follow the logical middle box's exact canonical width.
     // #1137: a chosen height scales the boxes by its body scale and a child's head around the head pivot.
     const P=height?avatarProportions(height):{body:own.tall,head:1}, sx=height?P.body:1, pivot=AVATAR_HEIGHT.pivot;
@@ -374,10 +374,10 @@ test('#1139: body build slim … heavy round-trips; old codes keep the seed\'s b
     assert.equal(decodeAvatarLook(av + ax, 'peer').build, [0, 0, 0, 0, 1, 1, 2, 2, 2][k], 'the nearest old build');
   }
   assert.equal(decodeAvatarLook('240302101k9', 'x').bodyBuild, undefined, 'an out-of-range step is skipped');
-  // The head boxes follow the same width (a heavier build hits wider).
+  // #2141: the build shapes the body below the neck, so the head boxes keep the same width for every step (before #2141 they followed it).
   const state = { p: [0, 0, 0], r: 0 };
   const hit = (k, x) => rifleBoxHeadContact('x', { ...state, av: '240302101175', ax: `k${k}` }, [x, 1.64, -3], [0, 0, 1], 10);
-  assert.ok(hit(4, 0.1) && hit(8, 0.115) && !hit(4, 0.115) && !hit(0, 0.1), 'heavy wider than slim at the head boxes\' edge');
+  for (const k of [0, 4, 8]) assert.ok(hit(k, 0.1) && !hit(k, 0.11), `the head boxes' edge at build ${k}`);
 });
 
 test('#1140: Slumpa gives a valid look (palettes, ranges, wire code valid); Återställ is the default look', async () => {
