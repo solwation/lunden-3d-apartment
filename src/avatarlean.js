@@ -2,7 +2,9 @@
 // running bounce. Pure helpers (no three.js, headless-testable; numbers AVATAR_LEAN in config.js). Everything comes from what the figure
 // already renders locally: the body's yaw (the rendered root / motion frame), its ground speed and the gait's own hip bounce and side sway.
 // No network field, no bone beyond the existing rig: the result is a few angles added to poseOlof's hips / torso / head.
-import { AVATAR_LEAN as L } from './config.js';
+// #2159: a third term from the forward speed's derivative (`stepAccel`): the torso pitches into a start and back against a sudden stop,
+// through a damped spring (a light over-swing), with a braking counterweight for the free arms.
+import { AVATAR_LEAN as L, AVATAR_ACCEL_LEAN as AC } from './config.js';
 
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -10,8 +12,41 @@ const smooth = (v, [a, b]) => { const t = clamp((v - a) / (b - a), 0, 1); return
 const follow = (cur, to, dt, tau) => cur + (to - cur) * (1 - Math.exp(-dt / tau));
 
 /** A fresh state for one avatar. */
-export const newLean = () => ({ yaw: null, rate: 0, head: 0, torso: 0, lean: 0, mean: 0, pitch: 0,
-  out: { headYaw: 0, headPitch: 0, headRoll: 0, torsoYaw: 0, torsoRoll: 0, hipX: 0, hipRoll: 0, rate: 0, lean: 0 } });
+export const newLean = () => ({ yaw: null, rate: 0, head: 0, torso: 0, lean: 0, mean: 0, pitch: 0, acc: newAccel(),
+  out: { headYaw: 0, headPitch: 0, headRoll: 0, torsoYaw: 0, torsoRoll: 0, hipX: 0, hipRoll: 0, rate: 0, lean: 0, accel: 0, brace: 0 } });
+
+/** #2159: a fresh acceleration-lean state: `v` the slew-limited input speed (null: not started), `f` its low-pass, `a` the filtered
+ * acceleration (m/s²), `x` / `xv` the spring's pitch (rad, + forward) and its rate, `target` the pitch the spring pulls towards. */
+export const newAccel = () => ({ v: null, f: 0, a: 0, x: 0, xv: 0, target: 0 });
+
+/** #2159: advances the acceleration lean by `dt` s for the forward speed `fwd` m/s (signed, along the body's heading); `on` as in stepLean
+ * (off: the speed is only tracked, the pitch springs back to zero). Returns the pitch (rad, + forward), always within
+ * [−AC.back, AC.forward]. Noise immunity: the input may change by at most AC.slew·dt per frame (a one-frame glitch is cut down to that),
+ * is low-passed before and after differentiating and a dead band takes out the playback's ripple; a gap over AC.resetTime restarts the
+ * tracking at the current speed. */
+export function stepAccel(s, dt, fwd, on = true) {
+  if (!(dt > 0)) return s.x;
+  const v = Number.isFinite(fwd) ? fwd : 0;
+  if (s.v == null || !on || dt > AC.resetTime) { s.v = v; s.f = v; s.a = 0; }
+  else {
+    const lim = AC.slew * dt;
+    s.v += clamp(v - s.v, -lim, lim);
+    const f0 = s.f;
+    s.f = follow(s.f, s.v, dt, AC.speedTau);
+    s.a = follow(s.a, clamp((s.f - f0) / dt, -AC.maxAccel, AC.maxAccel), dt, AC.accelTau);
+  }
+  const ae = Math.sign(s.a) * Math.max(0, Math.abs(s.a) - AC.dead);
+  s.target = on ? clamp(AC.share * Math.atan(ae / 9.81), -AC.back, AC.forward) : 0;
+  // the upper body as a damped spring towards the target (semi-implicit Euler in steps of at most 1/120 s: stable for any frame time)
+  const h = Math.min(dt, AC.resetTime), n = Math.ceil(h * 120), k = h / n, w = AC.omega;
+  for (let i = 0; i < n; i++) {
+    s.xv += (w * w * (s.target - s.x) - 2 * AC.zeta * w * s.xv) * k;
+    s.x += s.xv * k;
+  }
+  if (s.x > AC.forward) { s.x = AC.forward; s.xv = Math.min(0, s.xv); }
+  if (s.x < -AC.back) { s.x = -AC.back; s.xv = Math.max(0, s.xv); }
+  return s.x;
+}
 
 /** The physical inward lean (rad, + towards the figure's left = a left turn) for ground speed `v` m/s and yaw rate `rate` rad/s, before the share. */
 export const physicalLean = (v, rate) => Math.atan(v * rate / 9.81);
@@ -21,8 +56,10 @@ export const physicalLean = (v, rate) => Math.atan(v * rate / 9.81);
  * `bounce` m: the gait's hip drop this frame (+ lower), `sway` m: the gait's hip shift (+ to the left).
  * Returns poseOlof additions: headYaw (rad, the head against the BODY's front, already including the torso's share: subtract torsoYaw for the
  * head bone), headPitch (+ back), headRoll (Euler z, + tips the top to the right), torsoYaw, torsoRoll (+ tips the top to the right), hipX (m, + left),
- * hipRoll (+ lifts the left side). Every output is bounded; a teleport / long gap restarts the rate at zero; straight walking gives zero turn terms. */
-export function stepLean(s, dt, { yaw, speed = 0, on = true, bounce = 0, sway = 0 } = {}) {
+ * hipRoll (+ lifts the left side). Every output is bounded; a teleport / long gap restarts the rate at zero; straight walking gives zero turn terms.
+ * #2159 `fwd` m/s: the forward speed (signed; default `speed`) whose change gives `accel` (rad torso pitch, + forward: subtract it from
+ * poseOlof's lean) and `brace` (0 … 1, how far the free arms go forward as a counterweight while braking). */
+export function stepLean(s, dt, { yaw, speed = 0, on = true, bounce = 0, sway = 0, fwd = speed } = {}) {
   const o = s.out;
   if (!(dt > 0)) return o;
   const w = on ? smooth(speed, L.speed) : 0;
@@ -53,5 +90,7 @@ export function stepLean(s, dt, { yaw, speed = 0, on = true, bounce = 0, sway = 
   o.headRoll = L.lean.headRight * lean - counter;
   o.headPitch = s.pitch;
   o.rate = s.rate; o.lean = lean;
+  o.accel = stepAccel(s.acc ??= newAccel(), dt, fwd, on); // #2159
+  o.brace = clamp(-o.accel / AC.back, 0, 1);
   return o;
 }

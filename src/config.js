@@ -8673,6 +8673,22 @@ export const AVATAR_LEAN = {
   stab: { distance: 1.6, meanTau: 0.6, max: 0.05, sway: 0.6, torso: 0.5 },
 };
 
+// #2159: the body leans into a change of speed: forward when setting off (most at a sprint start), back against a sudden stop with the free
+// arms thrown forward as a counterweight, and the upper body springs lightly past upright afterwards (src/avatarlean.js `stepAccel`, the
+// third term of `stepLean`). Derived locally from the rendered forward speed (a remote figure's #2139 playback curve): no network field.
+// All *guess*es by eye against ordinary start / stop footage, not measured. `slew` m/s² is the most the input speed may change per second
+// (a single-frame glitch or a teleport frame is cut off), `speedTau` / `accelTau` s low-pass the speed before and the acceleration after
+// differentiating, `maxAccel` m/s² clamps it and `dead` m/s² ignores the playback's small ripple. The target torso pitch is `share` of the
+// physical atan(a / g), within `forward` / `back` rad; the upper body follows it as a spring (`omega` rad/s, damping ratio `zeta` < 1:
+// a light over-swing). `head`: share of the pitch the head takes back (the gaze stays level); `arm` m: how far the free hands go forward /
+// up at full braking lean; `resetTime` s: a longer frame gap restarts the speed tracking (no spike).
+export const AVATAR_ACCEL_LEAN = {
+  slew: 16, speedTau: 0.06, accelTau: 0.25, maxAccel: 14, dead: 0.8,
+  share: 0.3, forward: 0.26, back: 0.26,
+  omega: 8, zeta: 0.27,
+  head: 0.45, arm: { fwd: 0.2, up: 0.12 }, resetTime: 0.25,
+};
+
 // #1639: reactions in the BIO (cry, laugh, scream in terror). One-shot event { t: 'rx', k } (the room's PLAYERS.reactions = kinds.length),
 // never a state field. `duration` s of procedural pose, eased in / out over `ease`; `every` = our minimum gap between two (the room's
 // PLAYERS.reactEvery * .8 is shorter). Keys and labels are the player-facing controls. Pose numbers are by eye (*guess*): m / rad / Hz.

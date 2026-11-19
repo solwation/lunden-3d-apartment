@@ -42,6 +42,7 @@ import { glossUniforms, applyGlossLook, glossVertex, glossFragment, glossKey } f
 import { beardShell, moustacheShell, beardCore, skinProbe, beardUniforms, applyBeardLook, beardFDecl, beardColor, beardRoughness, beardKey } from './avatarbeard.js'; // #2051
 import { AVATAR_SHORT_HAIR as SHORT } from './config.js'; // #2055
 import { AVATAR_OUTERWEAR } from './config.js';
+import { AVATAR_ACCEL_LEAN as ACL } from './config.js'; // #2159
 import { outerColour } from './avataroutwear.js'; // #2147
 import { newJump, stepJump } from './avatarjump.js'; // #2140
 import { hairLocks, bunParts, shortHairDrop, shortHairBump, shortHairUniforms, applyShortHairLook, shortHairFDecl, shortHairJag, shortHairBelow, shortHairColor, shortHairKey } from './avatarshorthair.js'; // #2055: layered short hair and a wound bun
@@ -1573,7 +1574,7 @@ const smin = (a, b, k) => { const h = Math.max(k - Math.abs(a - b), 0) / k; retu
  * consumers (contact flags, stance progress, footfall counter; see Avatar.gaitInfo). `dir` [x, z]: the travel direction in the figure's
  * frame (+z forward, +x its left; null = forward). `fx`, `fz`, `fy`: the standing ankle spot; `c`: crouch 0 … 1. */
 // #2109: a figure posed without the lean (`noLean`, fixed-pose measurements), and the rendered root's world yaw when no motion frame is given (last frame's matrix)
-const NO_LEAN = { headYaw: 0, headPitch: 0, headRoll: 0, torsoYaw: 0, torsoRoll: 0, hipX: 0, hipRoll: 0 };
+const NO_LEAN = { headYaw: 0, headPitch: 0, headRoll: 0, torsoYaw: 0, torsoRoll: 0, hipX: 0, hipRoll: 0, accel: 0, brace: 0 };
 const objectYaw = (o) => { const e = o.matrixWorld.elements; return Math.atan2(e[8], e[10]); };
 function walkGait(av, dt, speed, walking, dir, fx, fy, fz, c) {
   const G = GAIT, gt = av.gt ??= { feet: [[0, 0, 0], [0, 0, 0]], pitch: [0, 0], arm: [0, 0], hip: 0, sway: 0, run: 0 };
@@ -2005,8 +2006,10 @@ export class Avatar {
    * `swimAmt` (0 … 1) and `swimLine` (the water line's height in the figure's frame) tell the owner how deep to set the figure.
    * #1944 `dive` 0 … 1 (with `swim`): under the surface, lying level with the diving mask on; `diveAmt` is the eased amount.
    * #2140 `jump` { vy, height, ahead, off }: the vertical speed (m/s), the height over the ground (NaN: unknown), the figure a moment on ({ vy, height } or null)
-   * and `off` (no jump pose: jetpack, sitting, a hug …); the jump pose (src/avatarjump.js) then comes from them, no wire field. */
-  update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null, air = 0, airV = null, swim = false, dive = 0, gaitDir = null, motionFrame = null, groundSpeed = speed, groundEnabled = true, ground = null, floorY = NaN, jump = null } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
+   * and `off` (no jump pose: jetpack, sitting, a hug …); the jump pose (src/avatarjump.js) then comes from them, no wire field.
+   * #2159 `fwd`: the forward speed (m/s, signed, along the body's heading; default the ground speed along `gaitDir`) whose change leans the
+   * body into a start and back against a stop (src/avatarlean.js `stepAccel`), no wire field. */
+  update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null, air = 0, airV = null, swim = false, dive = 0, gaitDir = null, motionFrame = null, groundSpeed = speed, groundEnabled = true, ground = null, floorY = NaN, jump = null, fwd = null } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
     this.time += dt;
     this.updateSway(dt); // #2014
     this.updateSelfShadow(dt); // #2143
@@ -2060,7 +2063,7 @@ export class Avatar {
     const gt = walkGait(this, dt, gaitSpeed, walking, gaitDir, fx, F.y, fz, c); // #2003: explicit stance / swing phases
     groundMotion(this, dt, gt, motionFrame, walking, groundEnabled && !am && !jumpOn && !swim && !dance && !react && !kiss && c < MOTION.groundCrouch, fx, F.y, fz);
     const stepHip = footGround(this, dt, gt, motionFrame, floorY, this.object.scale.z || 1, ground, !!ground && groundEnabled && !am && !jumpOn && !swim && !dance && !react && !kiss && c < MOTION.groundCrouch); // #2015: feet onto the real steps / slope
-    const ln = this.noLean ? NO_LEAN : stepLean(this.lean ??= newLean(), dt, { yaw: motionFrame ? motionFrame[2] : objectYaw(this.object), speed: walking ? groundSpeed * (1 - c) : 0, on: groundEnabled && !am && !jumpOn && !swim && !dance && !react && !kiss, bounce: gt.hip, sway: gt.sway }); // #2109: head leads, torso follows, inward lean
+    const ln = this.noLean ? NO_LEAN : stepLean(this.lean ??= newLean(), dt, { yaw: motionFrame ? motionFrame[2] : objectYaw(this.object), speed: walking ? groundSpeed * (1 - c) : 0, on: groundEnabled && !am && !jumpOn && !swim && !dance && !react && !kiss, bounce: gt.hip, sway: gt.sway, fwd: (Number.isFinite(fwd) ? fwd : groundSpeed * (gaitDir ? gaitDir[1] : 1)) * (1 - c) }); // #2109: head leads, torso follows, inward lean; #2159: leans into a start / stop
     const idle = groundEnabled && !walking && !am && !jumpOn && !swim && !dance && !react && !kiss ? (1 - g) * (1 - c) : 0;
     const iv = this.updateIdle(dt, idle > 0.5 && c < MOTION.groundCrouch, (1 - g) * (1 - c), !hands.L && !hands.R, turn, pitch); // #2035: weight shift, glances, arms
     const sway = flossSway + gt.sway + MOTION.idleSway * idle * Math.sin(this.time * Math.PI * 2 * MOTION.idleHz) + iv.hipX + ln.hipX;
@@ -2092,7 +2095,9 @@ export class Avatar {
     };
     // a hand held out (a weapon, a wave) moves with the shoulder as the body goes down
     const held = (h) => { if (!c || !h) return h; const d = shoulderShift(c, hipY - (HIP - 0.02 + breathe), hipZ); return { ...h, at: h.at.map((v, i) => v + d[i]) }; };
-    const swung = (side, sw) => { const h = rest(side, sw); if (rr > 0.001) h.at[1] += GAIT.armLift * rr * (1 + sw / GAIT.armMax) / 2; return h; }; // running: the elbows bend, the forward hand rises
+    const swung = (side, sw) => { const h = rest(side, sw); if (rr > 0.001) h.at[1] += GAIT.armLift * rr * (1 + sw / GAIT.armMax) / 2; // running: the elbows bend, the forward hand rises
+      if (ln.brace > 0.001) { h.at[2] += ACL.arm.fwd * ln.brace; h.at[1] += ACL.arm.up * ln.brace; } // #2159: braking, the free arms go forward as a counterweight
+      return h; };
     let handL = held(hands.L) ?? swung(1, armL), handR = held(hands.R) ?? swung(-1, armR);
     if (fa > 0.001) { // #1622: the floss. Both straight arms swing across the hips one way while the hips go the other; the arms pass each other in depth.
       if (!hands.L) handL = mixHand(handL, flossArm(1, 1, flossSn, flossCs), fa);
@@ -2137,7 +2142,7 @@ export class Avatar {
     let knee = c ? CR.knees.map((v, i) => KNEE_REST[i] + (v - KNEE_REST[i]) * c) : KNEE_REST;
     if (climbA > 0.001) knee = knee.map((v, i) => v + (AIR.climb.knees[i] - v) * climbA); // #1799: knees out on the wall
     const airLean = AIR.fly.lean * aa[0] + AIR.swing.lean * aa[1] + AIR.climb.lean * climbA;
-    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: airLean - swimLean(st, dv) * sa + 0.03 * g - GAIT.runLean * rr + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach + iv.lean + br.lean + jp.lean, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + SW.head * swimLean(st, dv) * sa + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach + iv.head + ln.headPitch - br.lean, turn: turn + iv.turn + ln.headYaw - ln.torsoYaw, feet, hands: [handL, handR], can: null,
+    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: airLean - swimLean(st, dv) * sa + 0.03 * g - GAIT.runLean * rr + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach + iv.lean + br.lean + jp.lean - ln.accel, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + SW.head * swimLean(st, dv) * sa + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach + iv.head + ln.headPitch - br.lean + ACL.head * ln.accel, turn: turn + iv.turn + ln.headYaw - ln.torsoYaw, feet, hands: [handL, handR], can: null,
       hipX: sway, hipRoll: iv.roll + ln.hipRoll, torsoRoll: iv.torsoRoll + ln.torsoRoll, torsoYaw: ln.torsoYaw, knee, flat: Math.max(c, g, motionFrame && groundEnabled && !am && !swim && !jumpOn ? 1 : 0), toes: F.turn * c, pitch: g > 0.001 || this.groundMotion || this.footIK?.active ? gt.pitch : null, footYaw: this.groundMotion ? gt.yaw : null });
   }
 

@@ -1,0 +1,128 @@
+{
+ "rev": "cea65011",
+ "runs": {
+  "sprint-start-stop": {
+   "times": [
+    1.6333,
+    3.2,
+    4.2667,
+    4.7833
+   ],
+   "moments": {
+    "start": {
+     "pitchBefore": 0.0852,
+     "pitchAfter": 0.3017,
+     "handBefore": 0.38,
+     "handAfter": 0.38,
+     "accel": 0.2468
+    },
+    "run": {
+     "pitchBefore": 0.0731,
+     "pitchAfter": 0.0826,
+     "handBefore": -0.3305,
+     "handAfter": -0.3282,
+     "accel": 0.0002
+    },
+    "stop": {
+     "pitchBefore": -0.0011,
+     "pitchAfter": -0.2606,
+     "handBefore": 0.0187,
+     "handAfter": 0.2082,
+     "accel": -0.2585
+    },
+    "overSwing": {
+     "pitchBefore": -0.0096,
+     "pitchAfter": 0.0493,
+     "handBefore": 0.0186,
+     "handAfter": 0.0204,
+     "accel": 0.0527
+    }
+   },
+   "steadyRun": {
+    "pitchBefore": 0.0788,
+    "pitchAfter": 0.0776,
+    "accelMaxAbs": 0.0199
+   },
+   "settled": {
+    "accelAbsAfter1_5s": 0.0088
+   },
+   "bench": {
+    "unit": "µs/Ghost.animate",
+    "before": [
+     48.13333333345751,
+     45.53333333320916,
+     39.89999999975165,
+     36.80000000012418
+    ],
+    "after": [
+     39.933333333581686,
+     39.30000000012418,
+     31.76666666629414,
+     29.90000000037253
+    ]
+   }
+  },
+  "walk-start-stop": {
+   "times": [
+    1.55,
+    3.2,
+    4.1667,
+    4.6
+   ],
+   "moments": {
+    "start": {
+     "pitchBefore": -0.0319,
+     "pitchAfter": 0.0492,
+     "handBefore": -0.2001,
+     "handAfter": -0.1922,
+     "accel": 0.0845
+    },
+    "run": {
+     "pitchBefore": -0.0286,
+     "pitchAfter": -0.0273,
+     "handBefore": 0.1242,
+     "handAfter": 0.1242,
+     "accel": 0.0023
+    },
+    "stop": {
+     "pitchBefore": -0.002,
+     "pitchAfter": -0.0788,
+     "handBefore": 0.0191,
+     "handAfter": 0.0824,
+     "accel": -0.0812
+    },
+    "overSwing": {
+     "pitchBefore": -0.002,
+     "pitchAfter": 0.0284,
+     "handBefore": 0.0191,
+     "handAfter": 0.0199,
+     "accel": 0.0303
+    }
+   },
+   "steadyRun": {
+    "pitchBefore": -0.0291,
+    "pitchAfter": -0.0297,
+    "accelMaxAbs": 0.013
+   },
+   "settled": {
+    "accelAbsAfter1_5s": 0.0021
+   },
+   "bench": {
+    "unit": "µs/Ghost.animate",
+    "before": [
+     19.033333333209157,
+     18.86666666654249,
+     21.466666666790843,
+     18.066666667039197
+    ],
+    "after": [
+     20.833333333333332,
+     20.666666666666668,
+     20.633333332836628,
+     19.53333333383004
+    ]
+   }
+  }
+ },
+ "errors": []
+}

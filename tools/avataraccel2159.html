@@ -1,0 +1,89 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Lutning vid start och stopp #2159</title><link rel="icon" href="data:,">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<style>body{margin:0;background:#e9edef;font:16px system-ui;color:#192b38}canvas{display:block}</style>
+<script type="module">
+// #2159: the real remote consumer (Ghost.push 5 Hz → #2139 playback → Ghost.draw → Avatar.update → poseOlof), before (/before/ = the base
+// revision) and after in lockstep, along one straight path: stand, an instant sprint start, a steady run, an instant stop, stand.
+import * as T from 'three';
+import * as current from '../src/ghosts.js';
+import * as before from '/before/src/ghosts.js';
+import * as C from '../src/config.js';
+const W = 300, H = 400;
+const renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); renderer.setPixelRatio(1); renderer.setSize(W * 4, H * 2); document.body.append(renderer.domElement);
+let now = 10000; const nativeNow = performance.now.bind(performance); performance.now = () => now;
+localStorage.setItem('lunden.avatar', C.encodeAvatarLook(C.avatarLook('accel-2159')));
+// the path: [duration s, speed m/s, yaw rate rad/s]; the sender changes speed at once (as the local player does), the playback draws it
+const V = Number(new URLSearchParams(location.search).get('v') || 4.8);
+const plan = [[1.0, 0, 0], [2.6, V, 0], [2.4, 0, 0]];
+const ends = []; { let e = 0; for (const p of plan) ends.push(e += p[0]); }
+const total = ends.at(-1);
+let st = { p: [0, 0, 0], r: 0, look: [0, 0] };
+let rows = [];
+function build() { rows = [];
+for (const mod of [before, current]) {
+  const scene = new T.Scene(); scene.background = new T.Color(0xdce3e6); scene.add(new T.HemisphereLight(0xffffff, 0x828b71, 1.5));
+  const light = new T.DirectionalLight(0xffefdb, 2.1); light.position.set(-2, 5, -3); scene.add(light);
+  const plane = new T.Mesh(new T.PlaneGeometry(80, 80), new T.MeshStandardMaterial({ color: 0xa3ae99, roughness: 1 })); plane.rotation.x = -Math.PI / 2; scene.add(plane);
+  const grid = new T.GridHelper(80, 160, 0x75836e, 0x95a18c); grid.position.y = .001; scene.add(grid);
+  const cam = new T.PerspectiveCamera(30, W / H, .02, 80);
+  const owners = new mod.Ghosts({ scene, camera: cam, url: '', name: () => 'accel-2159', state: () => st, swim: () => null });
+  const ghost = new mod.Ghost(scene, 'accel-2159', 'Medspelare', false, owners.myLook); ghost.avatarCode = owners.avatarCode; if (ghost.tag) ghost.tag.visible = false;
+  rows.push({ scene, cam, owners, ghost, lastPush: -Infinity });
+} }
+build();
+const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+const yawOf = (o) => { const z = new T.Vector3(0, 0, 1).applyQuaternion(o.getWorldQuaternion(new T.Quaternion())); return Math.atan2(z.x, z.z); };
+function sample(g) {
+  const av = g.avatar; av.object.updateMatrixWorld(true);
+  const body = yawOf(av.object), B = av.bones, fw = new T.Vector3(Math.sin(body), 0, Math.cos(body)); // the figure's front in the world
+  const hips = B.hips.getWorldPosition(new T.Vector3()), neck = B.head.getWorldPosition(new T.Vector3()), hand = B.handL.getWorldPosition(new T.Vector3());
+  const d = neck.clone().sub(hips);
+  return { pitch: Math.atan2(d.dot(fw), d.y), // + the trunk (hips → neck) leans forward
+    hand: hand.clone().sub(hips).dot(fw), speed: Math.hypot(g.playOut.v.x, g.playOut.v.z),
+    accel: g.avatar.lean?.out?.accel ?? 0, feet: ['footL', 'footR'].map((k) => B[k].getWorldPosition(new T.Vector3()).toArray()), contact: av.gaitInfo?.contact?.slice() };
+}
+let t = 0;
+window.step = (dt = 1 / 60) => {
+  t += dt; now += dt * 1000;
+  let i = ends.findIndex((e) => t <= e); if (i < 0) i = plan.length - 1;
+  const [, v, w] = plan[i];
+  const r = st.r + w * dt, p = [st.p[0] - Math.sin(r) * v * dt, 0, st.p[2] - Math.cos(r) * v * dt];
+  st = { p, r, look: [0, 0] };
+  const out = [];
+  for (const row of rows) {
+    row.owners.track(st, now);
+    if (now - row.lastPush >= 200 - 1e-4) { row.ghost.push(st, now); row.lastPush = now; }
+    row.ghost.draw(now, new T.Vector3(...st.p)); if (row.ghost.tag) row.ghost.tag.visible = false;
+    out.push(sample(row.ghost));
+  }
+  return { t, phase: i, before: out[0], after: out[1] };
+};
+/** Renders both rows into column `col` (0 … 3) of the strip, from the figure's right side (a pure side view: the trunk's pitch reads). */
+window.shoot = (col) => {
+  renderer.setScissorTest(true);
+  rows.forEach((row, k) => {
+    const g = row.ghost, o = g.root.position, body = yawOf(g.avatar.object), fx = Math.sin(body), fz = Math.cos(body);
+    row.cam.position.set(o.x - fz * 4.6, 0.95, o.z + fx * 4.6); row.cam.lookAt(o.x, 0.92, o.z);
+    renderer.setViewport(col * W, (1 - k) * H, W, H); renderer.setScissor(col * W, (1 - k) * H, W, H); renderer.render(row.scene, row.cam);
+  });
+  renderer.setScissorTest(false);
+};
+/** The strip with its labels as a PNG (base64): title, the four moments, rows before / after. */
+window.labelled = (title, cols) => {
+  const c = document.createElement('canvas'); c.width = W * 4 + 70; c.height = H * 2 + 64; const x = c.getContext('2d');
+  x.fillStyle = '#edf0f2'; x.fillRect(0, 0, c.width, c.height); x.fillStyle = '#192b38'; x.font = 'bold 20px system-ui'; x.fillText(title, 12, 26);
+  x.font = '15px system-ui'; cols.forEach((s, i) => x.fillText(s, 70 + i * W + 10, 54));
+  x.save(); x.translate(44, 64 + H / 2 + 22); x.rotate(-Math.PI / 2); x.fillText('Före', 0, 0); x.restore();
+  x.save(); x.translate(44, 64 + H * 1.5 + 22); x.rotate(-Math.PI / 2); x.fillText('Efter', 0, 0); x.restore();
+  x.drawImage(renderer.domElement, 70, 64); return c.toDataURL('image/png').split(',')[1];
+};
+window.clearStrip = () => { renderer.setClearColor(0xe9edef); renderer.clear(); };
+window.reset = () => { t = 0; now = 10000; st = { p: [0, 0, 0], r: 0, look: [0, 0] }; build(); };
+window.plan = { plan, ends, total };
+window.bench = () => { // microseconds per Ghost.animate, before vs after, running
+  const res = [];
+  for (const row of rows) { const g = row.ghost, b = []; for (let j = 0; j < 5; j++) { const at = nativeNow(); for (let n = 0; n < 3000; n++) { now += 1000 / 60; g.root.position.z -= 4.8 / 60; g.animate(now, 1, 0, -4.8); } if (j) b.push((nativeNow() - at) * 1000 / 3000); } res.push(b); }
+  return { unit: 'µs/Ghost.animate', before: res[0], after: res[1] };
+};
+window.accelReady = true;
+</script></html>
