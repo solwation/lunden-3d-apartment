@@ -38,9 +38,11 @@ test('details are deterministic finite facet-registered surfaces inside the exis
  }
  assert.ok(tris*2<=400,`bounded added triangles ${tris*2}`);
 });
+// #2150 replaced the lip seam with teeth strips (a legitimate later geometry change), so the byte contract compares #2084's own
+// before/after avatar.js like the rig contract below (#2116), not the baseline against today's file.
 test('all original attributes including sole/palette remain byte-identical; added details bind only to the existing feet',()=>{
  for(const[cm,code,cut,legs]of[[180,'241302112',0,0],[120,'413211212',2,2]]){
-  const look={...decodeAvatarLook(code,'body2080'),height:cm,cut,legs},a=old.avatarModelGeometry(look),b=avatarModelGeometry(look),ap=a.attributes.position.array,bp=b.attributes.position.array,extra=b.attributes.position.count-a.attributes.position.count;
+  const look={...decodeAvatarLook(code,'body2080'),height:cm,cut,legs},a=pinBefore.avatarModelGeometry(look),b=pinAfter.avatarModelGeometry(look),ap=a.attributes.position.array,bp=b.attributes.position.array,extra=b.attributes.position.count-a.attributes.position.count;
   let first=0;while(first<ap.length&&ap[first]===bp[first])first++;assert.equal(first%3,0);const at=first/3;
   assert.deepEqual(Object.keys(a.attributes),Object.keys(b.attributes));
   for(const[k,aa]of Object.entries(a.attributes)){const ba=b.attributes[k],start=at*aa.itemSize,end=(at+extra)*aa.itemSize;const restored=new aa.array.constructor([...ba.array.subarray(0,start),...ba.array.subarray(end)]);assert.deepEqual(restored,aa.array,k+' old bytes');}
