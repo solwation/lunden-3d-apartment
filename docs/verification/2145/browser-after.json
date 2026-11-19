@@ -1,0 +1,40 @@
+{
+ "res": {
+  "standStart": {
+   "calls": 66,
+   "tris": 422399,
+   "y": 0,
+   "z": 26.2,
+   "crouched": false
+  },
+  "walk": {
+   "calls": 61,
+   "tris": 430659,
+   "y": -0.3,
+   "z": 27.78,
+   "crouched": false
+  },
+  "run": {
+   "calls": 54,
+   "tris": 414981,
+   "y": -1.73,
+   "z": 32.9,
+   "crouched": false
+  },
+  "stand": {
+   "calls": 55,
+   "tris": 415147,
+   "y": -2.01,
+   "z": 35.36,
+   "crouched": false
+  },
+  "crouch": {
+   "calls": 53,
+   "tris": 397510,
+   "y": -2.01,
+   "z": 35.36,
+   "crouched": true
+  }
+ },
+ "errors": []
+}

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { restBodyReady, installSelfView } from '../src/avatarselfview.js';
+import { restBodyReady, standBodyReady, standRoot, installSelfView } from '../src/avatarselfview.js';
 import { Rest, restTarget } from '../src/rest.js';
 import { restState } from '../src/remote-pose.js';
 import { decodeAvatarLook, encodeAvatarLook, REST, avatarBody } from '../src/config.js';
@@ -46,8 +46,26 @@ test('mask composes with the established shader and defaults to complete remote/
   assert.match(shader.vertexShader, /vec4\(3\.0 - 0\.5\)/); assert.match(shader.vertexShader, /vec4\(8\.0 \+ 0\.5\)/);
   assert.match(shader.vertexShader, /abs\(armPump.x\)/); // torso-weighted first sewn row belongs to the sleeve too
   assert.match(shader.fragmentShader, /uSelfView.y > 0.5 && vSelfPart.y > 0.00001/);
-  assert.match(shader.fragmentShader, /uSelfView.x > 0.5 && vViewPosition.z < 0.30/);
+  assert.match(shader.fragmentShader, /uSelfView.x > 0.5 && vViewPosition.z < selfNear/); assert.match(shader.fragmentShader, /: 0\.30;/);
   assert.equal(material.customProgramCacheKey(), 'existing-selfview2080');
   assert.equal(material.depthTest, true); assert.equal(material.depthWrite, true); assert.equal(material.transparent, false);
   assert.equal((shader.vertexShader.match(/attribute /g) ?? []).length, (T.ShaderLib.standard.vertexShader.match(/attribute /g) ?? []).length);
+});
+
+test('#2145: the standing body shows only where it fits (stand, walk, crouch), never in vehicles, water, air, gym or seats', () => {
+  const mine = { pose: 0, gx: 0, bk: null, jp: 0, am: 0, c: true }, ok = { playing: true };
+  assert.equal(standBodyReady(mine, ok), true); // crouching is still a standing-family state
+  assert.equal(standBodyReady({ ...mine, c: false }, ok), true);
+  assert.equal(standBodyReady(null, ok), false);
+  assert.equal(standBodyReady(mine, { ...ok, playing: false }), false);
+  assert.equal(standBodyReady(mine, { ...ok, on: false }), false);
+  for (const k of ['rest', 'reaction', 'swim', 'riding', 'flying', 'climbing', 'swinging', 'falling', 'gym']) assert.equal(standBodyReady(mine, { ...ok, [k]: true }), false, k);
+  for (const patch of [{ pose: 1 }, { gx: 3 }, { bk: 0 }, { bk: 1.2 }, { jp: 1 }, { jp: 2 }, { am: 1 }, { am: 3 }]) assert.equal(standBodyReady({ ...mine, ...patch }, ok), false, JSON.stringify(patch));
+});
+
+test('#2145: the standing body is rooted behind the eye along its heading', () => {
+  const p = { x: 3, z: -2 };
+  const a = standRoot(p, 0, 0); assert.ok(Math.abs(a.x - 3) < 1e-12 && a.z > -2); // facing north (-z): back is +z
+  const b = standRoot(p, Math.PI / 2, 0); assert.ok(b.x > 3 && Math.abs(b.z + 2) < 1e-9); // facing west (-x): back is +x
+  assert.ok(Math.hypot(standRoot(p, .7, 1).x - 3, standRoot(p, .7, 1).z + 2) >= Math.hypot(standRoot(p, .7, 0).x - 3, standRoot(p, .7, 0).z + 2) - 1e-12);
 });

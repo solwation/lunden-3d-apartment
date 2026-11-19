@@ -1644,6 +1644,20 @@ existing bone texture if warm-up/mirrors have not done so. The skeleton updates 
 the body is drawn. [Scoped native views, costs and limits](../verification/2080/README.md).
 
 
+#### Standing, walking and crouching (#2145)
+
+`Ghosts.showRestBody(rest, stand)` also shows the same self avatar outside Rest: `main.js` passes the
+game-only flags (swim, riding, flying, climbing, swinging, falling) and `standBodyReady`
+(`src/avatarselfview.js`) additionally requires wire pose 0, no gym pose, bike, jetpack or air mode
+and no active `Rest` (seats and car/bench keep the #2080 path); BIO reactions keep the full third-person body.
+`showStandBody` reuses `showSelf` (gait, steps and crouch ramp come from the ordinary mirror animation of
+`mine`), roots the body `SELF_STAND.back` m (+ `crouchBack` when down) behind the eye along the heading (`standRoot`, *guess*) and
+applies the same head/arm mask with its own, smaller inner near plane `SELF_STAND.near` (`uSelfView.x` = 2 + near; the sitting body keeps 0.30), so chest/belly, legs and both shoes show when looking down, so the camera `Hand` stays the only arms. No new draw beyond the one body
+draw (+1 call measured at `&quality=0`), no wire field. `&noselfbody` turns it off.
+Limits: running/crouch alignment was checked by eye only; the white silhouette fringe on legs/shoes is not a rim (`uOutline` is 0) and also appears in the #2080 images; before the first step at the stair-top spawn the body was missing in one test position (`standStart.png`), unresolved. Tests: `tools/avatarselfviewtest.mjs`, game views `tools/selfstand2145browser.cjs`
+([images](../verification/2145/)).
+
+
 ## Solar-cell and glass surface on Hus L (#2083)
 
 `solarsurface.js` adds two small cached atlases to the existing one panel material:256²sRGB

@@ -1,4 +1,4 @@
-import { restBodyReady } from './avatarselfview.js'; // #2080
+import { restBodyReady, standBodyReady, standRoot } from './avatarselfview.js'; // #2080
 import { wetEnv } from './avatarweather.js'; // #2018
 import { newOuter, stepOuter, wornLook } from './avataroutwear.js'; // #2147
 import { transitionPose } from './avatarmotion.js';
@@ -11,7 +11,7 @@ import { pumpWire } from './gympump.js';
 import { updateFace } from './avatarface.js'; // #2031
 import { updateBreath, BreathPuffs } from './avatarbreath.js'; // #2037
 import * as THREE from 'three';
-import { FALL, TOAST, SOUNDS, KISS, HUG, REACT } from './config.js';
+import { FALL, SELF_STAND, TOAST, SOUNDS, KISS, HUG, REACT } from './config.js';
 import { chooseGazeTarget } from './avatargaze.js';
 import { AVATAR_GAZE } from './config.js';
 import { makesSteps, strideFor } from './spatialsound.js';
@@ -1041,13 +1041,13 @@ export class Ghosts {
   }
 
   /** First-person body only: the camera already owns held objects, hands and their accessories. */
-  setSelfView(body = false, arms = false) {
+  setSelfView(body = false, arms = false, near = 0) {
     for (const [object, visible] of this.selfHidden ?? []) object.visible = visible;
     this.selfHidden = [];
     this.selfBody = body; this.selfArms = arms;
     const g = this.myGhost;
     if (!g) return;
-    g.avatar.material.userData.u.uSelfView.value.set(body ? 1 : 0, body && arms ? 1 : 0);
+    g.avatar.material.userData.u.uSelfView.value.set(body ? (near > 0 ? 2 + near : 1) : 0, body && arms ? 1 : 0);
     if (body) g.root.traverse(object => {
       if ((object.isMesh || object.isSprite || object.isPoints) && object !== g.mesh) {
         this.selfHidden.push([object, object.visible]); object.visible = false;
@@ -1056,7 +1056,8 @@ export class Ghosts {
   }
 
   /** Pose even with no nearby mirror. Root/heading come from restState, never camera yaw. */
-  showRestBody(rest) {
+  showRestBody(rest, stand = null) {
+    if (!restBodyReady(rest, this.active()) && stand && standBodyReady(this.mine, { ...stand, playing: this.active(), rest: rest.active })) return this.showStandBody();
     if (!restBodyReady(rest, this.active()) || !this.mine || this.mine.gx || ![1, 2, 3].includes(this.mine.pose)) {
       if (this.myGhost) this.myGhost.firstRestSpot = null;
       this.showSelf(false); return;
@@ -1068,6 +1069,16 @@ export class Ghosts {
     g.body = this.mine.r;
     this.showSelf(true);
     this.setSelfView(true, true); // the existing first-person Hand owns arms; no open shoulder sections at the eye
+  }
+
+  /** #2145: standing, walking or crouching: the ordinary animated self (gait, steps, crouch) with head and arms clipped (setSelfView). */
+  showStandBody() {
+    const g = this.selfGhost();
+    g.firstRestSpot = null;
+    this.showSelf(true);
+    standRoot(this.mine.p, this.mine.r, g.crouch ?? 0, this.standAt ??= { x: 0, z: 0 });
+    g.root.position.x = this.standAt.x; g.root.position.z = this.standAt.z;
+    this.setSelfView(true, true, SELF_STAND.near);
   }
 
   /** Show our solid avatar directly (third-person view during BIO reactions, #1869). */

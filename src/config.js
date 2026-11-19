@@ -4934,6 +4934,12 @@ export const OUTDOOR_GYM = {
   ],
 };
 
+// #2145: the own body in first person while standing/walking/crouching (avatarselfview.js standRoot). The body is rooted
+// `back` m behind the eye (along the heading; metres before avatar scaling) so the clipped chest does not reach past the camera,
+// `crouchBack` more at full crouch (the squat moves the hips back). *guesses*, tuned by eye from looking straight down.
+// The standing body has its own inner near plane `near` (m along the view axis; the sitting body keeps 0.30).
+export const SELF_STAND = { back: 0.2, crouchBack: 0.1, near: 0.12 };
+
 export const REST = {
   sitEye: 0.72, lieEye: 0.22, move: 0.5,
   // #1150: visual rest anchors, guesses based on the shared Olof skeleton (metres before avatar scaling).

@@ -314,6 +314,7 @@ fill.position.set(...SKY.fill.pos);
 scene.add(fill);
 
 const params0 = new URLSearchParams(location.search);
+const noSelfBody = params0.has('noselfbody'); // #2145: no own body while standing/walking (debug / if it disturbs)
 // The quality level and its pixel ratio are settled before the house is built (#1160): a later setPixelRatio
 // reallocates the drawing buffer after the house is built: one ~12 s block on phones.
 const shotMode = new URLSearchParams(location.search).has('shot'); // screenshots: always full resolution
@@ -4184,7 +4185,7 @@ function frame(raw) {
     if (viewDue && (testMode?.wantsFrame() ?? true)) {
       frameDiag.lastShadow = renderer.shadowMap.needsUpdate ? 1 : 0; // #1628: this frame's renderer.info totals include the shadow pass (crash heartbeat `gl3.sf`)
       if (reactionCam.active) ghosts.showSelf(true);
-      else ghosts.showRestBody(rest);
+      else ghosts.showRestBody(rest, noSelfBody ? null : { reaction: false, swim: !!player.swim, riding: !!player.riding, flying: player.flying, climbing: !!player.climb, swinging: !!(player.swing || player.fling), falling: fall.active, gym: false });
       try { renderer.render(scene, camera); }
       finally { if (!reactionCam.active) ghosts.showSelf(false); } // #2080: no stale body in picking/menu/next view
       reportCapture.afterRender();
