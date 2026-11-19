@@ -1,7 +1,7 @@
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { BUILD } from './version.js';
 import { wornLook, outerColour } from './avataroutwear.js'; // #2147
-import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_OUTERWEAR, outerValue, AVATAR_NOSE_FORMS, noseFormOf, AVATAR_SKIN_VARIATION, skinVarOf, AVATAR_AGE, ageStepOf } from './config.js';
+import { SKIN, SKIN_TONES, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_OUTERWEAR, outerValue, AVATAR_NOSE_FORMS, noseFormOf, AVATAR_SKIN_VARIATION, skinVarOf, AVATAR_AGE, ageStepOf } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
 const BROW_NAMES = ['Mörkbruna', 'Bruna', 'Ljusbruna', 'Guldbruna', 'Blonda', 'Grå', 'Röda', 'Svarta'];
@@ -482,7 +482,8 @@ export function drawAvatarPreview(canvas, look) {
 export function randomAvatarLook(base, rnd = Math.random) {
   const pick = (n) => Math.min(n - 1, Math.floor(rnd() * n));
   const lk = { ...base };
-  lk.skin = SKIN[pick(SKIN.length)]; lk.hair = HAIR[pick(HAIR.length)]; lk.top = TOPS[pick(TOPS.length)];
+  lk.skin = SKIN_TONES[pick(SKIN_TONES.length)].c; // #2156: all ten tones
+  lk.hair = HAIR[pick(HAIR.length)]; lk.top = TOPS[pick(TOPS.length)];
   lk.pants = PANTS[pick(PANTS.length)]; lk.shoes = SHOES[pick(SHOES.length)]; lk.eyes = EYES[pick(EYES.length)];
   lk.style = pick(5); lk.legs = pick(AVATAR_CLOTHES.legs.names.length); lk.cut = pick(AVATAR_CLOTHES.cut.names.length); lk.sleeves = pick(2); lk.gender = pick(2); lk.facial = pick(4);
   for (const name of Object.keys(AVATAR_SHAPE.fields)) lk[name] = pick(AVATAR_SHAPE.steps);
@@ -501,7 +502,7 @@ function updateActiveSwatches() {
   const groups = [
     { type: 'gender', value: Number(currentLook.gender ?? currentLook.figure) || 0 },
     { type: 'facial', value: Number(currentLook.facial ?? currentLook.facialHair) || 0 },
-    { type: 'skin', value: currentLook.skin, list: SKIN },
+    { type: 'skin', value: currentLook.skin, list: SKIN_TONES.map((t) => t.c) }, // #2156
     { type: 'top', value: currentLook.top, list: TOPS },
     { type: 'sleeves', value: currentLook.sleeves },
     { type: 'pants', value: currentLook.pants, list: PANTS },
@@ -764,8 +765,8 @@ function initCustomizerDOM() {
     } else if (type === 'facial') {
       currentLook.facial = idx;
       applyAndRefresh();
-    } else if (type === 'skin' && SKIN[idx] !== undefined) {
-      currentLook.skin = SKIN[idx];
+    } else if (type === 'skin' && SKIN_TONES[idx] !== undefined) {
+      currentLook.skin = SKIN_TONES[idx].c; // #2156
       applyAndRefresh();
     } else if (type === 'top' && TOPS[idx] !== undefined) {
       currentLook.top = TOPS[idx];

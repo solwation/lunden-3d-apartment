@@ -90,7 +90,7 @@ void skWave(vec3 p, vec3 d, float k, float ph, inout float s, inout vec3 g) { fl
     if (vBare > 0.5 && uSuit < 0.5) { // #2032: light through thin skin
       vec3 qe = vSuitAt - ${v3([head.x, head.y, head.z])}; float skRim = smoothstep(0.45, 1.0, length(vec2((qe.y - ${f(E.y)}) / ${f(E.h)}, qe.z / ${f(E.w)})));
       float skThin = max(max(${f(T.ear)} * mix(${f(E.inner)}, 1.0, skRim) * ${isPart(part.ear)}, ${f(T.nose)} * ${isNose}), max(${f(T.finger)} * ${finger}, ${f(T.other)}));
-      vec3 skTint = sqrt(max(material.diffuseColor, vec3(0.0))) * ${v3(D.sss)};
+      vec3 skTint = sqrt(max(material.diffuseColor, vec3(0.0))) * uSkSss;
       for (int i = 0; i < NUM_DIR_LIGHTS; i++) {
         vec3 L = directionalLights[i].direction;
         float ndl = dot(normal, L);

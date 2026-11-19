@@ -6,7 +6,7 @@
 // brows are kept clear. Each spot widens to the pixel footprint while its area-weighted strength falls, so nothing shimmers at
 // distance. Numbers: config.js AVATAR_SKIN_VARIATION. `SKIN_VAR.on = false` (before a material compiles) leaves the shader out.
 import { Vector4 } from 'three';
-import { AVATAR_SKIN_VARIATION as V, SKIN, skinVarOf } from './config.js';
+import { AVATAR_SKIN_VARIATION as V, skinToneIndex, skinVarOf } from './config.js';
 
 export const SKIN_VAR = { on: true };
 /** The program cache key's suffix. */
@@ -39,7 +39,7 @@ export function skinVarClear(x, y, pad = 0) {
 /** The look's spots: { freckles, marks, flush } lists of { x, y, r, k } (head frame, m) and `under` (0 … 1, the darker skin under the eyes).
  * A higher freckle amount keeps the lower amount's freckles (the first ones of the same list) and adds more. */
 export function skinVarSpots(look) {
-  const s = skinVarOf(look), tone = Math.max(0, SKIN.indexOf(look?.skin));
+  const s = skinVarOf(look), tone = skinToneIndex(look);
   const out = { freckles: [], marks: [], flush: [], under: s.blotch ? V.under[4] : 0 };
   const take = (list, n, rand, zone, rad, kk, gap, weight) => {
     for (let tries = 0; list.length < n && tries < 4000; tries++) {

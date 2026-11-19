@@ -332,6 +332,17 @@ varje figur sin egen fördelning, tinningarna och området runt munnen på ett s
 mattare (`uAge.z` läggs på råheten). Två vec4-uniformer, ingen mesh, textur eller ny draw. `ageParams`/`greyAt`/`ageSeed` är rena och
 testas i `tools/avataragetest.mjs`; före/efter (ung | medel | gammal): `tools/avatarage2155browser.cjs` ([bilder](../verification/2155/)).
 
+## Hudtoner och undertoner (#2156)
+
+Tio hudtoner (`SKIN_TONES` i `config.js`, från mycket ljus till djupt mörk; deep-undertonen tar dessutom bort råhet = mjuk glans (`sheen`); de fem första är de gamla `SKIN`) med en undertonsgrupp var
+(`AVATAR_UNDERTONES`: warm, neutral, olive, deep, *guess*) som styr kinder/näsa/läpp/öra-rodnaden, ljusgenomsläppet (`sss`) och kantfärgen
+(`rim`). Kodning som toppen i #1156: hudsiffran får närmaste gamla ton (`near`) och den riktiga tonen packas i `u`-taggen som topp + 16 × (ton − 4);
+en äldre klient hoppar över `u` ≥ 11 och visar den närmaste tonen (tappar bara en ev. Olof-hoodie), saknad tagg = som förut, seedade
+utseenden väljer bara bland de gamla fem. Tre uniformer per figur (`uSkBlush`, `uSkSss`, `uSkRim`, `src/avatartone.js`, programnyckel
+`-tone2156`), ingen mesh eller draw; warm är exakt de gamla fasta färgerna. Rena hjälpare (`skinToneIndex`, `skinUndertone`,
+`skinUndertoneOf`) testas i `tools/avatarskintonetest.mjs`; före/efter i dagsljus och lampljus: `tools/avatarskintone2156browser.cjs`
+([bilder](../verification/2156/)). Speglens hudfärgsknappar (`index.html`, ordnade ljus till mörk) använder `SKIN_TONES`-index.
+
 ## Kön i ansiktets grundform (#2142)
 
 `src/avatarfacegender.js` ger det valda könet (`gender`, 0 man / 1 kvinna, inget nytt fält) en liten, begränsad

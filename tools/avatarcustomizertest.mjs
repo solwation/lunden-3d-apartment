@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  SKIN, HAIR, TOPS, PANTS, SHOES,
+  SKIN, SKIN_TONES, HAIR, TOPS, PANTS, SHOES,
   avatarLook, encodeAvatarLook, encodeAvatarWireLook, decodeAvatarLook, RESET_KEEP, AVATAR_SEEDED_TALL, splitAvatarCode, rifleHeadBaseY, rifleBoxHeadContact, PVP_HEAD_BOXES,
   AVATAR_HEIGHT, PLAYER, avatarHeightCm, avatarProportions, avatarEyeHeight, avatarCodeValid
 } from '../src/config.js';
@@ -387,7 +387,7 @@ test('#1140: Slumpa gives a valid look (palettes, ranges, wire code valid); Åte
   const base = avatarLook('editor-base'), seen = new Set();
   for (let i = 0; i < 300; i++) {
     const lk = randomAvatarLook(base, rnd);
-    assert.ok(SKIN.includes(lk.skin) && HAIR.includes(lk.hair) && TOPS.includes(lk.top) && PANTS.includes(lk.pants) && SHOES.includes(lk.shoes) && C.EYES.includes(lk.eyes));
+    assert.ok(SKIN_TONES.some((t) => t.c === lk.skin) && HAIR.includes(lk.hair) && TOPS.includes(lk.top) && PANTS.includes(lk.pants) && SHOES.includes(lk.shoes) && C.EYES.includes(lk.eyes));
     assert.ok(lk.style >= 0 && lk.style < 5 && [0, 1].includes(lk.sleeves) && [0, 1].includes(lk.gender) && lk.facial >= 0 && lk.facial < 4);
     for (const n of Object.keys(C.AVATAR_SHAPE.fields)) assert.ok(Number.isInteger(lk[n]) && lk[n] >= 0 && lk[n] < C.AVATAR_SHAPE.steps, n);
     assert.ok(lk.height >= AVATAR_HEIGHT.min && lk.height <= AVATAR_HEIGHT.max);

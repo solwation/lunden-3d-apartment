@@ -4633,6 +4633,15 @@ export const AVATAR_SKIN = {
   hand: [1.03, 0.94, 0.92], limb: [1.02, 0.96, 0.95], rimTint: [1.0, 0.86, 0.8, 0.6],
   cloth: { armpit: 0.22, crotch: 0.1, knee: 0.12, hairUnder: 0.25 },
 };
+// #2156 undertones (src/avatartone.js): per undertone the cheek / nose / lip / ear `blush` multiplier (default warm = the values above), the
+// backlight colour `sss` (AVATAR_SKIN_DETAIL.sss's default) and `rim` [r, g, b, strength] (AVATAR_SKIN.rimTint's). `deep` is a stronger red
+// (a multiplier changes little on very dark albedo) and adds `sheen` (roughness taken off bare skin so forehead, nose and cheeks catch a soft highlight; 0 for the others). All *guess* by eye on the mirror preview in day and lamp light.
+export const AVATAR_UNDERTONES = {
+  warm: { blush: [1.08, 0.8, 0.76], sss: [1.0, 0.25, 0.12], rim: [1.0, 0.86, 0.8, 0.6] },
+  neutral: { blush: [1.07, 0.86, 0.9], sss: [0.95, 0.3, 0.24], rim: [0.98, 0.9, 0.9, 0.55] },
+  olive: { blush: [1.0, 0.9, 0.78], sss: [0.7, 0.46, 0.22], rim: [0.94, 0.92, 0.82, 0.5] },
+  deep: { blush: [1.45, 0.86, 0.8], sss: [1.0, 0.2, 0.1], rim: [1.1, 0.86, 0.8, 0.7], sheen: 0.16 },
+};
 // #2032 living skin (src/avatarskin.js), all *guess* tuned by eye in day light and backlight, not measured. Bind-pose metres.
 // `pore` / `grain`: [period m, depth m] of the procedural micro-normal (pits / broad shallow dimples; stylised larger than real pores so they
 // survive a close-up), each fading out between `fade` [start, end] pixels per period (no shimmer at distance or in the far fade).
@@ -7432,13 +7441,32 @@ export const STARTUP = { pointCacheEntries: 32768, dataTimeout: 5000, planTimeou
 
 // #892: canonical appearance shared by Avatar and future authoritative contact profiles.
 export const SKIN = [0xf1c9a8, 0xe0ae8a, 0xc68863, 0x9a6643, 0x6b4430];
+// #2156: ten skin tones, very light to deep dark, with an undertone each (AVATAR_UNDERTONES). The first five are the old SKIN (the look
+// code's skin digit, unchanged); the rest are written as that digit's nearest old tone (`near`, what older clients show) and the real tone
+// in the `u` tag (see encodeLookExt). Seeded default looks and old codes keep SKIN only. All colours *guess* by eye.
+export const SKIN_TONES = [
+  { c: SKIN[0], u: 'warm', near: 0 }, { c: SKIN[1], u: 'warm', near: 1 }, { c: SKIN[2], u: 'warm', near: 2 }, { c: SKIN[3], u: 'warm', near: 3 }, { c: SKIN[4], u: 'warm', near: 4 },
+  { c: 0xf5d7c5, u: 'neutral', near: 0 }, // very fair, a touch of warmth
+  { c: 0xd3b393, u: 'olive', near: 1 }, // light olive: muted golden beige
+  { c: 0xad8a68, u: 'olive', near: 2 }, // medium olive
+  { c: 0x8c5e4e, u: 'neutral', near: 3 }, // brown, cool red
+  { c: 0x4c3329, u: 'deep', near: 4 }, // deep dark: rich brown, not near-black
+];
 export const HAIR = [0x2b2118, 0x4a3320, 0x7a5532, 0xb79052, 0xd9c28a, 0x8a8c90, 0x6b2d1f, 0x15151a];
 // #1156: Olof's burgundy hoodie (OLOF.colors.hoodie) is appended as top 10. Only indexes 0–9 fit the look code's single
 // top digit (avatarCodeValid; old codes keep their colours): a higher index writes TOPS_DIGIT[index] there (the nearest
 // old colour, what older clients show) and the real index in the extension's `u` tag. Seeded default looks pick among the
 // first TOPS_SEEDED only, so every seed keeps its old colour.
 export const TOPS = [0x2f6db5, 0xb5372f, 0x3c8a4e, 0xe0a82e, 0x7a4fb0, 0xe07a9a, 0x2e9aa8, 0xe8e8e0, 0x3a3f4a, 0xd9722e, OLOF.colors.hoodie];
-const TOPS_SEEDED = 10, TOPS_DIGIT = { 10: 1 }; // (10 → red)
+const TOPS_SEEDED = 10, TOPS_DIGIT = { 10: 1 }, TOPS_PACK = 16; // (10 → red; #2156: the `u` tag = top + TOPS_PACK × extended skin tone)
+/** The look's skin tone index in SKIN_TONES (#2156), 0 for an unknown colour. */
+export function skinToneIndex(look) { return Math.max(0, SKIN_TONES.findIndex((t) => t.c === look?.skin)); }
+/** The extended skin tone written in the `u` tag (#2156): 0 for the old five (the digit says it all), else 1 … 5. */
+function skinToneExt(look) { const i = skinToneIndex(look); return i >= SKIN.length ? i - SKIN.length + 1 : 0; }
+/** The look's undertone name (#2156): warm for the old tones and any unknown colour. */
+export function skinUndertone(look) { const i = SKIN_TONES.findIndex((t) => t.c === look?.skin); return i < 0 ? 'warm' : SKIN_TONES[i].u; }
+/** The undertone's colours { blush, sss, rim } of a look (#2156; AVATAR_UNDERTONES). */
+export function skinUndertoneOf(look) { return AVATAR_UNDERTONES[skinUndertone(look)]; }
 export const PANTS = [0x2c3140, 0x3a3c41, 0x4b5a78, 0x6d5a45, 0x23272e, 0x5b6068];
 export const SHOES = [0x2a2523, 0xe8e8e8, 0x40342b, 0x1f3a5c];
 // #1138: iris colours (index 0 = the face's original brown, AVATAR_FACE.eye.irisColour): brown, dark brown, hazel, green,
@@ -7698,8 +7726,8 @@ function encodeLookExt(look) {
   let out = '';
   const eyes = Math.max(0, EYES.indexOf(look.eyes)), skinVar = skinVarCode(look); // #2111: the skin variation above the eye colour
   if (eyes > 0 || skinVar) out += `c${eyes + EYES.length * skinVar}`;
-  const top = TOPS.indexOf(look.top);
-  if (top >= TOPS_SEEDED) out += `u${top}`; // #1156: a top beyond the digit's ten
+  const top = TOPS.indexOf(look.top), tone = skinToneExt(look); // #2156: a tone beyond the old five rides above the top
+  if (top >= TOPS_SEEDED || tone) out += `u${Math.max(0, top) + TOPS_PACK * tone}`; // #1156: a top beyond the digit's ten
   const bb = look.bodyBuild; // #1139: a chosen body build, also the middle (the seed's own may differ)
   if (Number.isInteger(bb) && bb >= 0 && bb < AVATAR_BUILD.steps) out += `${AVATAR_BUILD.tag}${bb}`;
   const form = noseFormOf(look); // #2049: shares the nose size's tag, see AVATAR_NOSE_FORMS
@@ -7752,7 +7780,11 @@ function decodeLookExt(ext, lk) {
     }
     // #1175: the actual existing body build on the wire, independently of each receiver's player-id seed.
     if (tag === 'd') { if (v <= 2) lk.build = v; continue; }
-    if (tag === 'u') { if (v < TOPS.length) lk.top = TOPS[v]; continue; } // #1156
+    if (tag === 'u') { // #1156 the top in the units (below TOPS_PACK), #2156 the extended skin tone above it (older clients skip a `u` of 11 or more)
+      const t = v % TOPS_PACK, k = Math.floor(v / TOPS_PACK);
+      if (t < TOPS.length && k <= SKIN_TONES.length - SKIN.length) { lk.top = TOPS[t]; if (k) lk.skin = SKIN_TONES[SKIN.length - 1 + k].c; }
+      continue;
+    }
     if (tag === AVATAR_BUILD.tag) { if (v < AVATAR_BUILD.steps) lk.bodyBuild = v; continue; } // #1139
     if (tag === AVATAR_GLASSES.tag) { // #1165 glasses, #1325 earrings in the tens
       if (v % 10 < AVATAR_GLASSES.names.length && Math.floor(v / 10) < AVATAR_EARRINGS.names.length) { lk.glasses = v % 10; lk.earrings = Math.floor(v / 10); }
@@ -8131,7 +8163,7 @@ export function avatarCodeValid(str) {
 
 export function encodeAvatarLook(look) {
   if (!look) return '';
-  const s = Math.max(0, SKIN.indexOf(look.skin));
+  const s = SKIN_TONES[skinToneIndex(look)].near; // #2156: an extended tone writes its nearest old tone here
   const ti = Math.max(0, TOPS.indexOf(look.top)), t = TOPS_DIGIT[ti] ?? ti; // (#1156: the `u` tag carries the rest)
   const p = Math.max(0, PANTS.indexOf(look.pants));
   const sh = Math.max(0, SHOES.indexOf(look.shoes));
