@@ -755,6 +755,13 @@ src/cloudshadow.js     cloud shadows (#2102, `CLOUD_SHADOW`, artistic *guesses*)
                        view out of a window has none either) and the `cloudShadows` quality knob (off at level 0 and on phones). Lit built-in
                        materials (standard/physical/lambert/phong/toon and their onBeforeCompile variants) share the uniforms by reference.
                        `tools/cloudshadowtest.mjs`, [before/after](../verification/2102/README.md).
+                       #2154 sky clouds: the sky shader's cloud layer is no longer the static `cloudTexture` but the SAME periodic noise (`CLOUD_NOISE_GLSL` / `csField`, shared with
+                       the shadows) read where the view ray meets the shadows' deck plane (`cloudShadowA.xy` offset + `.z` height, the shared uniform object), so clouds drift with the
+                       wind exactly like their shadows and a cloud overhead casts its shadow below it. Coverage follows `oc` (the weather's overcast, real WMO codes 1/2/3 = 0.05 / 0.2 / 0.55):
+                       `skyCloudState(oc)` gives the threshold (`CLOUD_SHADOW.sky`, *guess*: nothing at a clear sky, equal to the shadows' threshold from `ramp`, overcast fills through the
+                       shader's floor). Two finer octaves roughen the edges and fade out towards the horizon (pixel footprint > a cell). Dusk colours / lit edges (#2124) and the deck (#1251) are
+                       untouched. One program (an uniform branch), no pass; `quality.register('skyClouds')` falls back to the old texture at level 0 and on phones. `tools/skycloudstest.mjs`,
+                       `tools/skyclouds2154browser.cjs`, [evidence](../verification/2154/).
 src/balloon.js         hot-air balloon above the cloud deck (#1646, `BALLOON`, all numbers *guess*): one merged vertex-coloured Lambert mesh (envelope, basket, rim, ropes; ~900
                        triangles, no shadows, no light). `src/balloongeo.js` holds the pure parts: a wall-clock (`Date.now`) schedule so every client agrees (visible `window` s of
                        every `period` s, scaled in/out at the ends), the circling drift above the deck, the basket floor (`basketFloor`, a standable surface in Player.groundAt)

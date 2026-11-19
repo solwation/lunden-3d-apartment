@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { DAY, WEATHER, GARAGE, LIGHTING, SKYLAYER, CLOUD_SHADOW, SKY_DUSK } from './config.js';
 import { hazeState, applyHaze } from './aerialhaze.js';
-import { cloudShadowState, applyCloudShadows, cloudDrift, stepCloudDrift } from './cloudshadow.js';
+import { cloudShadowState, applyCloudShadows, cloudDrift, stepCloudDrift, cloudShadowUniforms, skyCloudState, CLOUD_NOISE_GLSL } from './cloudshadow.js';
 
 // Day and night: a whole day passes in DAY.minutes real minutes (24 × 60 = real time, #1145: the clock follows the
 // visitor's own clock; the wall clock's spool / pause become an offset from it). The sun follows its real path
@@ -64,6 +64,7 @@ export const daysIn = (year, month) => new Date(year, month, 0).getDate();
 /** Day of year (1…366) of a date. */
 export const dayOfYear = (year, month, date) => Math.round((Date.UTC(year, month - 1, date) - Date.UTC(year, 0, 0)) / 864e5);
 
+const SKY_SOFT = CLOUD_SHADOW.sky.soft, SK = CLOUD_SHADOW.sky, C_CELL = CLOUD_SHADOW.cell, C_CELLS = CLOUD_SHADOW.cells;
 const skyVert = /* glsl */`
   varying vec3 vDir;
   void main() {
@@ -78,11 +79,25 @@ const skyFrag = /* glsl */`
   uniform float uNight, uGlowAmt, uOvercast, uFlash, uWhite, uAbove;
   uniform vec3 uCloudCol;
   uniform sampler2D uClouds;
+  uniform vec4 cloudShadowA; // #2154: the shadows' shared drift offset (xy) and deck height (z)
+  uniform vec3 uSkyCl; // #2154: x procedural clouds on (0 = the old texture), y coverage threshold, z edge softness
   uniform vec3 uPink, uViolet, uHalo, uRim, uBody; // #2124 dawn / dusk colour depth (all zero by day and night)
   uniform vec4 uBand; // x low, y high, z soft-in, w soft-out (fractions of the height above the horizon)
   uniform float uBodyAmt, uBandAmt;
   varying vec3 vDir;
   float hash(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
+  ${CLOUD_NOISE_GLSL}
+  // #2154: cloud density from the SAME periodic noise as the ground shadows, read where the view ray meets the shadows' deck plane
+  // (same offset, so sky and shadows drift together); two finer octaves roughen the edges; flat (its mean) towards the horizon
+  float skyCloud(vec3 d, out float field) {
+    float y = max(d.y, 0.04);
+    vec2 p = (cameraPosition.xz + d.xz / y * cloudShadowA.z + cloudShadowA.xy) * ${(1 / C_CELL).toString()};
+    float n = csField(p), fine = smoothstep(${SK.fineY[0].toFixed(3)}, ${SK.fineY[1].toFixed(3)}, d.y);
+    n += fine * (${SK.detail[0].toFixed(3)} * (csNoise(p * 4.0 + vec2(3.0, 11.0), ${(4 * C_CELLS).toFixed(1)}) - 0.5) + ${SK.detail[1].toFixed(3)} * (csNoise(p * 8.0 + vec2(29.0, 7.0), ${(8 * C_CELLS).toFixed(1)}) - 0.5));
+    n = mix(0.5, n, smoothstep(${SK.lowY[0].toFixed(3)}, ${SK.lowY[1].toFixed(3)}, d.y));
+    field = n;
+    return smoothstep(uSkyCl.y - uSkyCl.z, uSkyCl.y + uSkyCl.z, n);
+  }
   void main() {
     vec3 d = normalize(vDir);
     float h = max(d.y, 0.0);
@@ -107,7 +122,9 @@ const skyFrag = /* glsl */`
     col += vec3(star) * (0.6 + 0.4 * hash(q + 1.0));
     // clouds (equirectangular alpha map), lit by day, dark at night, tinted at sunset
     vec2 uv = vec2(atan(d.x, d.z) / 6.2831853 + 0.5, 0.5 - asin(clamp(d.y, -1.0, 1.0)) / 3.1415927);
-    float c = max(texture2D(uClouds, uv).a, uOvercast * (0.85 + 0.15 * texture2D(uClouds, uv * vec2(3.0, 2.0)).a)) * smoothstep(0.0, 0.08, d.y);
+    float c;
+    if (uSkyCl.x > 0.5) { float fld; c = max(skyCloud(d, fld), uOvercast * (0.8 + 0.2 * smoothstep(0.3, 0.7, fld))) * smoothstep(0.0, 0.08, d.y); } // #2154
+    else c = max(texture2D(uClouds, uv).a, uOvercast * (0.85 + 0.15 * texture2D(uClouds, uv * vec2(3.0, 2.0)).a)) * smoothstep(0.0, 0.08, d.y); // the old texture (lowest quality / phones)
     vec3 cloud = mix(vec3(0.95), vec3(0.16, 0.18, 0.24), uNight) + uGlow * uGlowAmt * 0.35;
     cloud = mix(cloud, mix(vec3(0.5, 0.53, 0.57), vec3(0.08, 0.09, 0.11), uNight), uOvercast * 0.8); // rain clouds (#248)
     // #2124: a low sun lights thin edges and low clouds from below; the shaded body turns cooler violet-grey
@@ -198,6 +215,7 @@ export class DayCycle {
       uNight: { value: 0 }, uGlowAmt: { value: 0 }, uClouds: { value: clouds }, uOvercast: { value: 0 }, uFlash: { value: 0 }, uWhite: { value: 0 }, uAbove: { value: 0 }, uCloudCol: { value: new THREE.Color(0.9, 0.92, 0.95) },
       uPink: { value: new THREE.Color(0, 0, 0) }, uViolet: { value: new THREE.Color(0, 0, 0) }, uHalo: { value: new THREE.Color(0, 0, 0) }, uRim: { value: new THREE.Color(0, 0, 0) },
       uBody: { value: new THREE.Color(0, 0, 0) }, uBodyAmt: { value: 0 }, uBandAmt: { value: 0 },
+      cloudShadowA: cloudShadowUniforms.cloudShadowA, uSkyCl: { value: new THREE.Vector3(1, 1, SKY_SOFT) }, // #2154: shared drift with the cloud shadows; procedural sky clouds on
       uBand: { value: new THREE.Vector4(SKY_DUSK.band.low, SKY_DUSK.band.high, SKY_DUSK.band.soft[0], SKY_DUSK.band.soft[1]) },
     };
     this.deckUniforms = {
@@ -220,7 +238,7 @@ export class DayCycle {
     scene.background = null;
     this.realAt = Date.now(); // (catch-up: dt is capped and stops in a hidden tab, the real clock does not, #1145)
     // cloud shadows (#2102): main.js sets `indoor` (the visitor is inside) and `cloudShadows` (the quality knob); cloudT drifts them
-    this.indoor = false; this.cloudShadows = true; this.cloudT = 0; this.cloudIndoor = 0;
+    this.indoor = false; this.cloudShadows = true; this.skyClouds = true; this.skyCloud = { thr: 1, soft: 0 }; this.cloudT = 0; this.cloudIndoor = 0;
     this.wind = null; this.cloudPos = { x: 0, z: 0, dx: 0, dz: 0 }; // #2117: weather.js sets `wind` ({ x, z } m/s downwind); the clouds drift along it
     this.sunDir = new THREE.Vector3();
     this.moonDir = new THREE.Vector3();
@@ -308,6 +326,7 @@ export class DayCycle {
     const ik = dt > 0 ? Math.min(1, dt / CLOUD_SHADOW.indoorFade) : 1;
     this.cloudIndoor += ((this.indoor ? 1 : 0) - this.cloudIndoor) * ik; this.cloudT += dt;
     this.cloudShadow = cloudShadowState({ sunDir: this.sunDir, oc, off: this.cloudShadows ? Math.max(inside, this.cloudIndoor, this.under) : 1 }, this.cloudShadow);
+    this.skyCloud = skyCloudState(oc, this.skyCloud); u.uSkyCl.value.set(this.skyClouds ? 1 : 0, this.skyCloud.thr, this.skyCloud.soft); // #2154: the sky's clouds follow the weather's cloudiness
     applyCloudShadows(this.cloudShadow, this.wind ? stepCloudDrift(this.cloudPos, dt > 0 ? dt : 0, this.wind) : cloudDrift(this.cloudT)); // (no wind: the fixed drift, #2102)
     const D = this.deckUniforms, up = cy > (L.base + L.top) / 2;
     this.deck.visible = cover > 0.01 && (up || cy > L.base - L.approach) && inside < 0.999;

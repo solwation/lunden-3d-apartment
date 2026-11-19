@@ -4089,6 +4089,8 @@ quality.register('mirrors', { // the one mirror image (#50): its resolution, off
   state: (l) => (QUALITY.mirror[l] ? `${QUALITY.mirror[l]}² every ${QUALITY.mirrorEvery[l]} frame(s)` : 'off'), cost: 'a third pass over the room in a mirror' });
 quality.register('cloudShadows', { // #2102: the drifting cloud shadows' noise per lit fragment (off at the lowest level and on phones)
   apply: (l) => { day.cloudShadows = !lowMemory && l >= CLOUD_SHADOW.minLevel; }, state: () => (day.cloudShadows ? 'on' : 'off'), cost: 'two value-noise octaves per lit fragment under a partly cloudy sky' });
+quality.register('skyClouds', { // #2154: the sky's procedural clouds (the old cloud texture at the lowest level and on phones)
+  apply: (l) => { day.skyClouds = !lowMemory && l >= CLOUD_SHADOW.sky.minLevel; }, state: () => (day.skyClouds ? 'noise' : 'texture'), cost: 'four value-noise octaves per sky pixel' });
 quality.register('weather', { // rain streaks / snowflakes / hail drawn (#248)
   apply: (l) => { weather.particleScale = QUALITY.particles[l]; }, state: (l) => `particles ×${QUALITY.particles[l]}`, cost: 'particle updates + overdraw' });
 quality.register('puddles', { // #2099: the wet ground's puddles (the darker, glossier film stays at every level); never on phones

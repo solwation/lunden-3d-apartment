@@ -17,18 +17,23 @@ export const cloudShadowUniforms = {
 };
 
 const f = (v) => (Number.isInteger(v) ? v.toFixed(1) : String(v));
-const PARS = /* glsl */`
-uniform vec4 cloudShadowA, cloudShadowB;
+/** The noise both the ground shadows and the sky's clouds read (#2154): csField(p) with p in cell units on the deck plane. */
+export const CLOUD_NOISE_GLSL = /* glsl */`
 float csHash( vec2 i, float n ) { i = mod( i, n ); return fract( sin( dot( i, vec2( 127.1, 311.7 ) ) ) * 43758.5453 ); }
 float csNoise( vec2 p, float n ) { // value noise, periodic every n cells (#2102)
 	vec2 i = floor( p ), t = fract( p ); t = t * t * ( 3.0 - 2.0 * t );
 	return mix( mix( csHash( i, n ), csHash( i + vec2( 1.0, 0.0 ), n ), t.x ), mix( csHash( i + vec2( 0.0, 1.0 ), n ), csHash( i + vec2( 1.0, 1.0 ), n ), t.x ), t.y );
 }
+float csField( vec2 p ) { return 0.62 * csNoise( p, ${f(C.cells)} ) + 0.38 * csNoise( p * 2.0 + vec2( 17.0, 5.0 ), ${f(2 * C.cells)} ); }
+`;
+const PARS = /* glsl */`
+uniform vec4 cloudShadowA, cloudShadowB;
+${CLOUD_NOISE_GLSL}
 float cloudShadowAt( vec3 viewPos ) { // direct-sun factor at a view-space point: 1 = no cloud
 	if ( cloudShadowA.w <= 0.0 ) return 1.0;
 	vec3 w = cameraPosition + viewPos * mat3( viewMatrix ); // world position
 	vec2 p = ( w.xz + cloudShadowB.xy * ( cloudShadowA.z - w.y ) + cloudShadowA.xy ) * ${f(1 / C.cell)};
-	float n = 0.62 * csNoise( p, ${f(C.cells)} ) + 0.38 * csNoise( p * 2.0 + vec2( 17.0, 5.0 ), ${f(2 * C.cells)} );
+	float n = csField( p );
 	return 1.0 - cloudShadowA.w * smoothstep( cloudShadowB.z - cloudShadowB.w, cloudShadowB.z + cloudShadowB.w, n );
 }
 `;
@@ -92,6 +97,16 @@ export function cloudShadowState({ sunDir, oc, off = 0 }, out = null) {
   return out;
 }
 
+/** #2154: the sky's cloud coverage for the weather's overcast `oc` (0…1), as threshold / softness on the SAME noise the ground shadows
+ * read: from `oc` = `sky.ramp` it is exactly the shadows' threshold (so a cloud overhead casts its shadow where the sky shows it);
+ * below that the threshold rises to `sky.clearThr` (nothing above a clear sky). Overcast fills the rest through the shader's floor. */
+export function skyCloudState(oc, out = null) {
+  if (!out) out = { thr: 1, soft: 0 };
+  const o = Math.min(1, Math.max(0, oc)), thr = C.thr[0] + (C.thr[1] - C.thr[0]) * o;
+  out.thr = C.sky.clearThr + (thr - C.sky.clearThr) * smooth(0, C.sky.ramp, o); out.soft = C.sky.soft;
+  return out;
+}
+
 /** Write a state and the drift at time t (s) — or an integrated drift { x, z } (stepCloudDrift, #2117) — into the shared uniforms. */
 export function applyCloudShadows(s, t) {
   const A = cloudShadowUniforms.cloudShadowA.value, B = cloudShadowUniforms.cloudShadowB.value, d = typeof t === 'number' ? cloudDrift(t) : t;
@@ -106,6 +121,16 @@ function noise(px, pz, n) {
   const ix = Math.floor(px), iz = Math.floor(pz); let tx = px - ix, tz = pz - iz; tx = tx * tx * (3 - 2 * tx); tz = tz * tz * (3 - 2 * tz);
   const a = hash(ix, iz, n), b = hash(ix + 1, iz, n), c = hash(ix, iz + 1, n), d = hash(ix + 1, iz + 1, n);
   return (a + (b - a) * tx) + ((c + (d - c) * tx) - (a + (b - a) * tx)) * tz;
+}
+/** The base cloud field at deck-plane world point (x, z) for the drift currently applied (JS mirror of csField; the sky adds fine octaves on top). */
+export function cloudFieldAt(x, z) {
+  const A = cloudShadowUniforms.cloudShadowA.value, px = (x + A.x) / C.cell, pz = (z + A.y) / C.cell;
+  return 0.62 * noise(px, pz, C.cells) + 0.38 * noise(px * 2 + 17, pz * 2 + 5, 2 * C.cells);
+}
+/** Cloud density 0…1 of the sky in unit direction (dx, dy, dz) seen from (cx, cz), base octaves only: the same plane / offset as the shadows. */
+export function skyCloudDensity(dx, dy, dz, cx, cz, s) {
+  if (dy < 0.05) return 0;
+  return smooth(s.thr - s.soft, s.thr + s.soft, cloudFieldAt(cx + dx / dy * C.height, cz + dz / dy * C.height));
 }
 export function cloudShadowAt(x, y, z) {
   const A = cloudShadowUniforms.cloudShadowA.value, B = cloudShadowUniforms.cloudShadowB.value;
