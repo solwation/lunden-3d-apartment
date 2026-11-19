@@ -7,7 +7,8 @@ const path = require('node:path');
   let checks = 0;
   const check = (ok, name) => { assert.ok(ok, name); console.log(`PASS ${name}`); checks++; };
   const near = (a, b) => Math.abs(a - b) < 1e-8;
-  const seed = 'headboxes', look = avatarLook(seed), width = [.93, 1, 1.08][look.build];
+  // #2141: the head boxes no longer follow the build (seed 'headboxes' is the old slim build 0: before #2141 width .93, now 1).
+  const seed = 'headboxes', look = avatarLook(seed), width = 1;
   const standing = { p: [2, 3, 4], r: -Math.PI };
   for (const [i, box] of H.boxes.entries()) {
     const height = standing.p[1] + look.tall * (box.low + box.high) / 2;

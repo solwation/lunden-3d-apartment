@@ -44,7 +44,7 @@ const check = (ok, label) => { checks++; console.log(`${ok ? 'PASS' : 'FAIL'} ${
         window.tick=setInterval(()=>{if(moving)pose.p[0]+=.02;ghosts.update();combat.update(.04);scene.updateMatrixWorld(true);},40);
         window.aim = (kind, index=1) => {
           const foe=combat.foes()[0], H=config.PVP_HEAD_BOXES, look=config.avatarLook(foe.id), box=H.boxes[index];
-          const c=foe.crouch, yaw=foe.root.rotation.y+Math.PI, width=[.93,1,1.08][look.build];
+          const c=foe.crouch, yaw=foe.root.rotation.y+Math.PI, width=1; // (#2141: the head boxes no longer follow the build)
           const center=new T.Vector3(0,(box.low+box.high)/2-H.hipY,(box.back+box.front)/2);
           center.applyAxisAngle(new T.Vector3(1,0,0),-H.crouchLean*c);
           center.y+=H.hipY-H.hipDrop*c;center.z+=H.hipForward*c;
