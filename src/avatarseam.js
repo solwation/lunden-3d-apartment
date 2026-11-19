@@ -8,7 +8,7 @@
 // distance. Pure data + GLSL strings, so tools/avatarseamtest.mjs checks the placement under node (`seamAt` mirrors the shader).
 // Numbers: config.js AVATAR_SEAM (guesses). `SEAM_DETAIL.on = false` (before a material compiles) leaves it all out, for cost tests.
 import { Vector4 } from 'three';
-import { AVATAR_SEAM as M, AVATAR_SURFACE as SURFACE, AVATAR_CLOTHES } from './config.js';
+import { AVATAR_SEAM as M, AVATAR_SURFACE as SURFACE, AVATAR_CLOTHES, AVATAR_OUTERWEAR } from './config.js';
 import { bindAt } from './olof.js';
 
 export const SEAM_DETAIL = { on: true };
@@ -39,9 +39,9 @@ export function seamFrame() {
 /** What a look wears, as the seams see it: the top kind, whether its sleeves are long, the jeans / trousers, shorts, and the edges' y. */
 export function seamLook(lk = {}) {
   const F = seamFrame(), cut = lk.cut | 0, long = !!lk.sleeves, legs = lk.legs | 0;
-  const top = cut === 1 ? 'vest' : cut === 2 ? 'hoodie' : long ? 'sweater' : 'tshirt';
-  return { top, long, jeans: legs !== 2, shorts: legs === 1, rib: top === 'sweater' || top === 'hoodie',
-    hemY: top === 'hoodie' ? F.hem.hoodie : F.hem.tee, sleeveY: top === 'vest' ? 0 : long ? F.sleeve.long : F.sleeve.short,
+  const outer = cut > 2, top = outer ? 'tshirt' : cut === 1 ? 'vest' : cut === 2 ? 'hoodie' : long ? 'sweater' : 'tshirt'; // #2147: an outer layer is plain jersey-like cloth with its own hem
+  return { top, long: long || outer, jeans: legs !== 2, shorts: legs === 1, rib: top === 'sweater' || top === 'hoodie',
+    hemY: outer ? (cut === 4 ? F.torsoY + AVATAR_OUTERWEAR.coat.hem : F.hem.tee - AVATAR_OUTERWEAR.jacket.length) : top === 'hoodie' ? F.hem.hoodie : F.hem.tee, sleeveY: top === 'vest' ? 0 : long || outer ? F.sleeve.long : F.sleeve.short,
     legY: legs === 1 ? F.leg.shorts : F.leg.long };
 }
 

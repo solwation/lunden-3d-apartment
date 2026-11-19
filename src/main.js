@@ -228,7 +228,7 @@ import { Presence } from './presence.js';
 import { heldCatState } from './ghostcat.js';
 import { FrameRate } from './fps.js';
 let resetFrameRate = () => {}; // safe before the HUD is initialized during startup
-import { Ghosts } from './ghosts.js';
+import { Ghosts, Ghost } from './ghosts.js';
 import { Combat } from './combat.js';
 import { Bow, Arrows } from './bow.js';
 import { Harpoon } from './harpoon.js'; // #1953: the harpoon gun in the box by Höje å
@@ -4155,6 +4155,7 @@ function frame(raw) {
   hitch.phase('adapt');
   step(dt);
   wetEnv.rain = weather.rain; wetEnv.kind = weather.kind; wetEnv.temp = weather.temp ?? 10; // #2018
+  Ghost.outerPreview = isAvatarCustomizerOpen(); // #2147: the mirror image shows the chosen layer while choosing it
   ghosts.update(dt);
   sharedFish?.update();picnicSync.update();
   football?.update(active()&&overlay.hidden&&!reading&&!document.hidden);

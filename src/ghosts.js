@@ -1,5 +1,6 @@
 import { restBodyReady } from './avatarselfview.js'; // #2080
 import { wetEnv } from './avatarweather.js'; // #2018
+import { newOuter, stepOuter, wornLook } from './avataroutwear.js'; // #2147
 import { transitionPose } from './avatarmotion.js';
 import {gymPoseWire} from './gymposewire.js';
 import {applyGymBodyPose} from './gymbodypose.js';
@@ -16,7 +17,7 @@ import { AVATAR_GAZE } from './config.js';
 import { makesSteps, strideFor } from './spatialsound.js';
 import { newPlayback, receive, playStep } from './ghostinterp.js'; // #2139
 import { GHOST_PLAYBACK as PLAY } from './config.js';
-import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, AVATAR_MOTION as MOTION, CHAT, SWIM, encodeAvatarLook, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
+import { GHOSTS as G, COMBAT, AVATAR, AVATAR_CROUCH, AVATAR_MOTION as MOTION, CHAT, SWIM, encodeAvatarLook, outerValue, encodeAvatarWireLook, decodeAvatarLook, splitAvatarCode, playerBodySegment } from './config.js';
 import { Avatar, armTarget, swimLineFar } from './avatar.js';
 import { aheadSample } from './avatarjump.js'; // #2140
 const finiteOr = (h) => (Number.isFinite(h) ? h : NaN); // (no ground under the feet, e.g. in the stairwell: unknown, not infinitely high)
@@ -124,7 +125,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
   constructor(parent, id, name, self = false, look = null) {
     this.id = id; this.name = name || ANON; this.snaps = []; this.play = newPlayback(1000 / G.hz); this.playOut = { p: { x: 0, y: 0, z: 0 }, v: { x: 0, y: 0, z: 0 } }; /* #2139 */ this.h = ''; this.hi = ''; this.itemProp = null; this.itemHold = new THREE.Vector3(); this.solid = false; this.prop = null; this.self = self;
     this.avatarLook = look ?? (self ? `me:${name}` : id);
-    this.avatar = new Avatar(this.avatarLook, tint(name));
+    this.outer = newOuter(); // #2147
+    this.avatar = new Avatar(this.wornOf(this.avatarLook), tint(name));
     this.avatar.idleSeed = id; this.avatar.idleLook = !self; // #2035: each player rests in its own rhythm; our mirror image keeps our view
     this.avatar.setPump(this.pump ?? 0);
     this.avatar.setSolid(true); // always solid (#1025)
@@ -160,12 +162,15 @@ export class Ghost { // (exported for tools/ghostprops.html)
     parent.add(this.root);
   }
 
+  wornOf(look) { return this.outer.worn && look && typeof look === 'object' ? wornLook(look, true) : look; } // #2147
+
   setAvatarLook(look) {
     this.avatarLook = look;
-    const hadSuit = !!this.avatar.suit;
+    const hadSuit = !!this.avatar.suit, { wetState, wetAt, idleSeed, idleLook } = this.avatar;
     this.avatar.object.removeFromParent();
     this.avatar.dispose();
-    this.avatar = new Avatar(look, tint(this.name));
+    this.avatar = new Avatar(this.wornOf(look), tint(this.name)); // #2147: with the layer on while it is worn
+    Object.assign(this.avatar, { wetState, wetAt, idleSeed, idleLook }); // (a rebuilt body keeps its wetness and its idle)
     this.avatar.setPump(this.pump ?? 0);
     this.avatar.setSolid(true); // always solid (#1025)
     if (hadSuit) this.avatar.setSuit(true);
@@ -178,6 +183,15 @@ export class Ghost { // (exported for tools/ghostprops.html)
       this.tagY = G.tagY + (this.avatar.look.tall - 1) * 1.8;
       this.tag.position.y = this.tagY;
     }
+  }
+
+  /** #2147: the outer layer, derived locally from the chosen look, the weather and `outdoors`; the body is rebuilt only when it goes on or off.
+   * `outerPreview` (the customizer is open): our own mirror image wears the chosen layer. */
+  updateOuter(dt, outdoors) {
+    const lk = this.avatarLook, was = this.outer.worn;
+    if (typeof lk !== 'object' || !lk || (!outerValue(lk.outer) && !was)) return; // (a seed's look has no layer)
+    const now = stepOuter(this.outer, dt, lk, outdoors, wetEnv, this.self && Ghost.outerPreview === true);
+    if (now !== was) this.setAvatarLook(this.avatarLook);
   }
 
   /** A state from the room at time t (ms). After a pause the last one is repeated just before it, so it walks off smoothly. */
@@ -440,7 +454,9 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const nx = this.snaps.length > 1 ? aheadSample(this.snaps, this.playOut.at ?? t - G.delay) : null; // (#2139: from the jitter buffer's playhead)
     ji.ahead = nx ? Object.assign(ji.aheadIn, { vy: nx.vy, height: this.ground ? finiteOr(nx.y - this.ground(nx.x, nx.z, nx.y + 0.3)) : NaN }) : null;
     this.avatar.collectPose = true;
-    this.avatar.updateWeather(wetEnv.outdoorAt(this)); // #2018
+    const outdoors = wetEnv.outdoorAt(this);
+    this.updateOuter(dt, outdoors); // #2147
+    this.avatar.updateWeather(outdoors); // #2018
     this.avatar.update(dt, { ground: this.ground, floorY: this.root.position.y, motionFrame, groundSpeed: groundEnabled && groundSpeed <= 8 ? groundSpeed : 0, groundEnabled, gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: wet ? 0 : this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive, jump: ji });
     updateFace(this.avatar, dt, { wave: this.waveT > 0, hug: hugged, kiss: kissed, react: react ? REACT.kinds[react.kind]?.id : null, gym: this.gx ? 0.6 + 0.4 * Math.sin(Math.PI * this.gx[1]) : 0, run: this.avatar.gt?.run ?? 0 }); // #2031: the face follows what the figure does
     updateBreath(this.avatar, dt, { run: this.avatar.gt?.run ?? 0, gym: this.gx ? 1 : 0 }, this.self ? null : this); // #2037: the face's run / gym signal: flush, sweat, breath in the cold

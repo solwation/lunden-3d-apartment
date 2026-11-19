@@ -1,0 +1,38 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar outer layer</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2147 component page: the outer layer (jacket, coat) on a female and a male figure, next to the plain T-shirt. Driven by tools/avataroutweartest.cjs.
+import * as THREE from 'three';
+import { Avatar, avatarTriangles } from '../src/avatar.js';
+import { avatarLook } from '../src/config.js';
+import { wornLook } from '../src/avataroutwear.js';
+const W = 1600, Hh = 760, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, Hh); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+const avatars = []; // [gender, outer]: 0 = the plain T-shirt
+[[1, 0], [1, 1], [1, 2], [0, 0], [0, 1], [0, 2]].forEach(([gender, outer], s) => {
+  const lk = { ...avatarLook('ow' + gender), style: gender ? 2 : 0, hair: 0x3b2a1e, top: 0x3d6b8f, pants: 0x2c3140, skin: 0xe0ae8a, tall: 1, build: 1, gender, facial: 0, legs: 0, cut: 0, sleeves: 0, outer, outerMode: 1 };
+  const a = new Avatar(wornLook(lk, outer > 0)); a.object.position.set((s - 2.5) * 0.7, 0, 0); scene.add(a.object); avatars.push(a);
+});
+const cam = new THREE.PerspectiveCamera(22, W / Hh, 0.05, 50);
+// view: front / q (three-quarter) / side / back; `far` frames the whole figures, else the upper body
+window.__shot = (view, far = false, arms = 0) => {
+  const yaw = { front: 0, q: -Math.PI / 4, side: -Math.PI / 2, back: Math.PI }[view];
+  for (const a of avatars) { a.object.rotation.y = yaw; a.update(0, {}); }
+  cam.fov = far ? 22 : 14; cam.updateProjectionMatrix();
+  cam.position.set(0, far ? 1.0 : 1.05, far ? 7.5 : 8); cam.lookAt(0, far ? 0.95 : 1.0, 0);
+  renderer.render(scene, cam);
+  return true;
+};
+window.__info = () => ({ tris: [[0, 0], [1, 0], [0, 3], [0, 4]].map(([l, c]) => avatarTriangles(0, l, c)), calls: renderer.info.render.calls });
+window.__ready = true;
+</script></body></html>

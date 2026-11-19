@@ -16,7 +16,7 @@ const smooth = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); ret
 
 /** The garment kinds of a look: the top ('tshirt' | 'sweater' | 'hoodie'; a vest is jersey like the T-shirt) and the trousers. */
 export function clothKinds(lk = {}) {
-  const cut = lk.cut | 0, top = cut === 2 ? 'hoodie' : cut === 0 && lk.sleeves ? 'sweater' : 'tshirt';
+  const cut = lk.cut | 0, top = cut > 2 ? 'sweater' : cut === 2 ? 'hoodie' : cut === 0 && lk.sleeves ? 'sweater' : 'tshirt';
   return { top, pants: (lk.legs | 0) === 2 ? 'trousers' : 'jeans' };
 }
 

@@ -7582,6 +7582,8 @@ export const AVATAR_RING = { tag: 'i', metalTag: 'z', fingers: ['Tumme', 'Pekfin
 // position along the wrist (z) and its ellipse's half axes (x, y) in m.
 export const AVATAR_WRIST = { tag: 'z', bracelets: ['Inget', 'Tunt band', 'Flätat', 'Bred manschett'], watches: ['Ingen', 'Klassiskt', 'Fyrkantigt', 'Sport'], sides: ['Vänster handled', 'Höger handled'],
   strap: [0x5b3a25, 0x23252b, 0x2f5d4a], dial: 0x14161b, face: 0xe9e6dc, r: 0.0262, yWatch: -0.254, yBracelet: -0.2675, fp: { watchZ: 0.004, braceletZ: 0.017, half: [0.0215, 0.0335] } };
+/** The look's outer layer (#2147): 0 none, 1 jacket, 2 coat (anything else, or a missing field, is none). */
+export function outerValue(v) { return v === 1 || v === 2 ? v : 0; }
 export function wristValue(v) { return Number.isInteger(v) && v >= 0 && v <= 6 ? v : 0; }
 export const AVATAR_NECKLACE = { tag: 'x', names: ['Inget', 'Tunn kedja', 'Pärlor', 'Hänge', 'Guldkedja'], neckY: 0.665, drop: 0.115, tube: 0.0028, gold: 0.0062, bead: 0.0085, pendant: 0.017,
   colours: { chain: 0xc9ccd1, pearl: 0xf1ece2, pendant: 0xd4af37, gold: 0xe0b83c } };
@@ -7599,6 +7601,22 @@ export const AVATAR_TRAINERS = {
 };
 
 export const AVATAR_CLOTHES = { legs: { tag: 'p', names: ['Raka', 'Shorts', 'Vida'], wide: 1.45, shorts: -0.2 }, cut: { tag: 'm', names: ['T-shirt', 'Linne', 'Luvtröja'] } };
+// #2147: the outer layer (look fields `outer` 0 none / 1 jacket / 2 coat and `outerMode` 0 automatic / 1 always). It shares the top's tag `m`
+// (`cut` + 3 × (`outer` + 3 × `outerMode`)), so an older client, which reads only m0-m2, skips it and shows the base top (T-shirt unless the
+// seed's own). Worn = the top model `cut` 3 (jacket) / 4 (coat) in the geometry only, derived locally (src/avataroutwear.js), never sent.
+// Automatic: worn in the open when it is colder than `coldBelow` °C or rain / snow / hail falls; taken off `takeOffDelay` s after
+// stepping indoors, or when it is `warmAbove` °C and dry (the gap is a hysteresis, so a temperature near the line does not flicker).
+// All numbers *guess* by eye. Geometry (torso-local metres, src/avatar.js upperBody): `length` the hem's extra drop on the jacket, `ease` the
+// fabric's extra radius, `hem` the coat's hem height with `flare` / `flareZ` its radii at the hem, `collar` [radius, tube], `gap` the coat's
+// open front (columns each side of the centre line left out below `gapTo` m), `lining` the dark inside seen through it.
+export const AVATAR_OUTERWEAR = {
+  tag: 'm', names: ['Ingen', 'Jacka', 'Kappa'], modes: ['Automatiskt', 'Alltid'],
+  coldBelow: 10, warmAbove: 13, rainMin: 0.05, takeOffDelay: 4,
+  jacket: { length: 0.075, ease: 0.016, collar: [0.062, 0.017], zip: 0.007 },
+  coat: { hem: -0.27, ease: 0.02, flare: 0.225, flareZ: 0.2, collar: [0.082, 0.024], gap: 1, gapTo: 0.4, lining: 0.42 },
+  colours: { jacket: [0x2f4a6b, 0x5b6b3a, 0xa83a2c, 0x3d3f46], coat: [0xb08a5a, 0x2d2f36, 0x5e4a3c, 0x44546a] },
+  zipColour: 0x2a2c30,
+};
 /** The value (scale or offset) of a face / head slider `name` at integer step `v` (#1138). */
 export function avatarShape(name, v) {
   const f = AVATAR_SHAPE.fields[name], n = AVATAR_SHAPE.steps - 1;
@@ -7641,7 +7659,8 @@ function encodeLookExt(look) {
   const brows = look.brows == null ? -1 : HAIR.indexOf(look.brows); // #1220
   if (brows >= 0) out += `${AVATAR_BROWS.tag}${brows}`;
   if (look.legs > 0 && look.legs < AVATAR_CLOTHES.legs.names.length) out += `${AVATAR_CLOTHES.legs.tag}${look.legs}`; // #1244
-  if (look.cut > 0 && look.cut < AVATAR_CLOTHES.cut.names.length) out += `${AVATAR_CLOTHES.cut.tag}${look.cut}`;
+  const cutV = look.cut > 0 && look.cut < AVATAR_CLOTHES.cut.names.length ? look.cut : 0, ow = outerValue(look.outer), om = ow && look.outerMode === 1 ? 1 : 0; // #2147
+  if (cutV || ow) out += `${AVATAR_CLOTHES.cut.tag}${cutV + 3 * (ow + 3 * om)}`;
   return out;
 }
 /** The look's nose shape variant (#2049): 0 straight (also for any missing or unknown value), 1 convex, 2 upturned, 3 broad. */
@@ -7680,7 +7699,11 @@ function decodeLookExt(ext, lk) {
     }
     if (tag === AVATAR_BROWS.tag) { if (v < HAIR.length) lk.brows = HAIR[v]; continue; } // #1220
     if (tag === AVATAR_CLOTHES.legs.tag) { if (v < AVATAR_CLOTHES.legs.names.length) lk.legs = v; continue; } // #1244
-    if (tag === AVATAR_CLOTHES.cut.tag) { if (v < AVATAR_CLOTHES.cut.names.length) lk.cut = v; continue; }
+    if (tag === AVATAR_CLOTHES.cut.tag) { // #2147: the top in the units, the outer layer in the threes, its mode above
+      const c = v % 3, w = Math.floor(v / 3) % 3, m = Math.floor(v / 9);
+      if (m <= 1 && (w > 0 || !m)) { lk.cut = c; if (w) { lk.outer = w; lk.outerMode = m; } }
+      continue;
+    }
     // #1173: wire-only seeded scale; explicit chosen cm always take precedence.
     if (tag === 's') { if (!Number.isInteger(lk.height) && v < AVATAR_SEEDED_TALL.length) lk.tall = AVATAR_SEEDED_TALL[v]; continue; }
     if (tag === AVATAR_SHAPE.fields.noseSize.tag) { // #2049: the size in the units, the shape variant in the tens

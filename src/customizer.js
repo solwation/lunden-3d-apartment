@@ -1,6 +1,7 @@
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { BUILD } from './version.js';
-import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_NOSE_FORMS, noseFormOf, AVATAR_SKIN_VARIATION, skinVarOf } from './config.js';
+import { wornLook, outerColour } from './avataroutwear.js'; // #2147
+import { SKIN, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_OUTERWEAR, outerValue, AVATAR_NOSE_FORMS, noseFormOf, AVATAR_SKIN_VARIATION, skinVarOf } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
 const BROW_NAMES = ['Mörkbruna', 'Bruna', 'Ljusbruna', 'Guldbruna', 'Blonda', 'Grå', 'Röda', 'Svarta'];
@@ -40,6 +41,7 @@ function toHex(num) {
 
 /** Draw 2D avatar representation onto the preview canvas. */
 export function drawAvatarPreview(canvas, look) {
+  if (outerValue(look?.outer)) look = { ...wornLook(look, true), top: outerColour(look) }; // #2147: the picture shows the chosen layer on
   if (!canvas || !look) return;
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
@@ -73,7 +75,7 @@ export function drawAvatarPreview(canvas, look) {
   const brows = toHex(HAIR.includes(look.brows) ? look.brows : look.hair); // #1220: own colour, else the hair's
   const style = look.style ?? 0;
   const legs = Number(look.legs) || 0, cut = Number(look.cut) || 0; // #1244: trouser / top models
-  const sleeves = cut === 2 ? 1 : cut === 1 ? 0 : look.sleeves ?? 0;
+  const sleeves = cut >= 2 ? 1 : cut === 1 ? 0 : look.sleeves ?? 0;
   const gender = Number(look.gender ?? look.figure) || 0;
   const facial = Number(look.facial ?? look.facialHair) || 0;
   // #1138: the face and head sliders (the middle draws the plain face)
@@ -147,7 +149,7 @@ export function drawAvatarPreview(canvas, look) {
     ctx.fill();
   }
 
-  if (cut === 2) { // hoodie: a longer body with a pocket
+  if (cut >= 2) { // hoodie (#2147: also the jacket and coat): a longer body
     ctx.fillStyle = top;
     ctx.fillRect(cx - 25, 148, 50, 16);
     ctx.fillStyle = 'rgba(0, 0, 0, 0.14)';
@@ -507,6 +509,8 @@ function updateActiveSwatches() {
     { type: 'style', value: currentLook.style },
     { type: 'legs', value: Number(currentLook.legs) || 0 }, // #1244
     { type: 'cut', value: Number(currentLook.cut) || 0 },
+    { type: 'outer', value: outerValue(currentLook.outer) }, // #2147
+    { type: 'outerMode', value: currentLook.outerMode === 1 ? 1 : 0 },
     { type: 'hair', value: currentLook.hair, list: HAIR },
   ];
   groups.push({ type: 'glasses', value: Number(currentLook.glasses) || 0 }); // #1165
@@ -565,6 +569,7 @@ function applyAndRefresh() {
   updateHeightSlider();
   updateBuildSlider();
   customizerEl.querySelector('[data-group="sleeves"]').hidden = Number(currentLook.cut) > 0;
+  const modeGroup = customizerEl.querySelector('[data-group="outerMode"]'); if (modeGroup) modeGroup.hidden = !outerValue(currentLook.outer); // #2147
   callbacks.setLook?.(currentLook);
 }
 
@@ -768,6 +773,12 @@ function initCustomizerDOM() {
       applyAndRefresh();
     } else if (type === 'cut' && AVATAR_CLOTHES.cut.names[idx] !== undefined) {
       currentLook.cut = idx;
+      applyAndRefresh();
+    } else if (type === 'outer' && AVATAR_OUTERWEAR.names[idx] !== undefined) { // #2147
+      currentLook.outer = idx;
+      applyAndRefresh();
+    } else if (type === 'outerMode' && AVATAR_OUTERWEAR.modes[idx] !== undefined) {
+      currentLook.outerMode = idx;
       applyAndRefresh();
     } else if (type === 'style') {
       currentLook.style = idx;

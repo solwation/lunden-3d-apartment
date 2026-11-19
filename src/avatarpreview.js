@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Avatar } from './avatar.js';
+import { wornLook } from './avataroutwear.js'; // #2147
 
 /** On-demand mirror preview of the same model, shaders and proportions as the game.
  * Its private, capped drawing buffer is copied into a 2D canvas; no animation loop or world renderer state. */
@@ -21,7 +22,7 @@ export class AvatarPreview {
   draw(look, { closeup = false, yaw = 0, grip = '' } = {}) { // #2016: `grip` shows a hand shape (avatargrip.js) in the right hand
     this.avatar?.object.removeFromParent();
     this.avatar?.dispose();
-    const avatar = this.avatar = new Avatar(look);
+    const avatar = this.avatar = new Avatar(wornLook(look, true)); // #2147: the preview wears the chosen outer layer
     avatar.object.rotation.y = yaw;
     avatar.update(0, {});
     if (grip) { avatar.setGrip('R', grip); avatar.updateGrip(10); }

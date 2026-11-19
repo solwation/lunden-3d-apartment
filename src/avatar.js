@@ -38,6 +38,8 @@ import { refineNose, noseHeight, noseVertexGLSL, noseFragmentGLSL, noseKey, NOSE
 import { glossUniforms, applyGlossLook, glossVertex, glossFragment, glossKey } from './avatarhairgloss.js'; // #2052: gloss along the strands
 import { beardShell, moustacheShell, beardCore, skinProbe, beardUniforms, applyBeardLook, beardFDecl, beardColor, beardRoughness, beardKey } from './avatarbeard.js'; // #2051
 import { AVATAR_SHORT_HAIR as SHORT } from './config.js'; // #2055
+import { AVATAR_OUTERWEAR } from './config.js';
+import { outerColour } from './avataroutwear.js'; // #2147
 import { newJump, stepJump } from './avatarjump.js'; // #2140
 import { hairLocks, bunParts, shortHairDrop, shortHairBump, shortHairUniforms, applyShortHairLook, shortHairFDecl, shortHairJag, shortHairBelow, shortHairColor, shortHairKey } from './avatarshorthair.js'; // #2055: layered short hair and a wound bun
 import { topTexture } from './spidersuit.js';
@@ -99,7 +101,7 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
   const cap = (r, h) => new THREE.CapsuleGeometry(r, h, 1, 5);
   // the body below the head (#1103): torso, shoulders, arms, hands, trousers, belt and shoes (bodyParts below)
   const isFemale = (Number(gender) || 0) === 1;
-  bodyParts(add, cut === 2 ? 1 : cut === 1 ? 0 : sleeves, isFemale, legs, cut);
+  bodyParts(add, cut === 2 || cut > 2 ? 1 : cut === 1 ? 0 : sleeves, isFemale, legs, cut);
   // the head: neck, head, ears, face, hair
   add(neckGeometry(isFemale), 'skin', 'head'); // #2043: a tapered column set back under the jaw (was an 8-sided cylinder)
   P[P.length - 1].face = FACE_PART.neck;
@@ -486,15 +488,45 @@ function garment(g, leg = false, wide = 1) {
 /** #2001 one welded torso/shoulder surface, split into palette parts only after
  * normal generation. The armhole boundary has identical positions AND weights on
  * both sides of the split, so a raised arm stretches fabric instead of opening a gap. */
-function upperBody(sleeves, female, cut) {
-  const B = SURFACE.body, S = B.sides, stride = S + 1;
-  const rings = (female ? B.female : B.male).map(r => [...r]);
-  if (cut === 2) for (const r of rings) {
-    r[0] -= B.hoodieLength * (1 - smoothstep(0, B.hoodieTaper, r[0]));
-    r[1] += B.hoodieEase * (1 - smoothstep(B.hoodieTaper, B.hole[0], r[0]));
-    r[2] += B.hoodieEase;
+/** The torso's ring table [y, rx, rz, centre] for the top model `cut` (#2147: 3 jacket, 4 coat: a longer, looser body; the coat's hem a flared skirt). */
+function shapedRings(female, cut) {
+  const B = SURFACE.body, rings = (female ? B.female : B.male).map(r => [...r]);
+  const OW = cut === 4 ? AVATAR_OUTERWEAR.coat : AVATAR_OUTERWEAR.jacket;
+  if (cut === 2 || cut > 2) for (const r of rings) {
+    const ease = cut > 2 ? OW.ease : B.hoodieEase;
+    r[0] -= (cut === 3 ? OW.length : cut === 4 ? 0 : B.hoodieLength) * (1 - smoothstep(0, B.hoodieTaper, r[0]));
+    r[1] += ease * (1 - smoothstep(B.hoodieTaper, B.hole[0], r[0]));
+    r[2] += ease;
   }
   for (const r of rings) { const k = B.hemFlare * (1 - smoothstep(...B.hemFlareTo, r[0])); r[1] += k; r[2] += k; } // #2019
+  if (cut === 4) { // #2147 the coat: an A-line skirt below the waist, four more rings down to the hem
+    const [y0, rx0, rz0] = rings[0], hem = AVATAR_OUTERWEAR.coat, down = [];
+    for (const t of [0.22, 0.45, 0.72, 1]) down.unshift([y0 + (hem.hem - y0) * t, rx0 + (hem.flare - rx0) * t ** 1.3, rz0 + (hem.flareZ - rz0) * t ** 1.3]);
+    rings.unshift(...down);
+  }
+  return rings;
+}
+
+/** #2147 a narrow strip down the front centre of the torso (`rows` ring rows from, to; half-angle `half` rad; `off` m out from the surface). */
+function frontStrip(rings, female, rows, half, off) {
+  const B = SURFACE.body, pos = [], idx = [], cols = 3;
+  for (let row = rows[0]; row <= rows[1]; row++) {
+    const [y, rx, rz, centre = 0] = rings[row];
+    for (let c = 0; c < cols; c++) {
+      const a = half * (c / (cols - 1) * 2 - 1);
+      pos.push(Math.sin(a) * (rx + off), y, Math.cos(a) * (rz + off) + centre + (female ? B.bust : B.chest) * Math.cos(a) ** 2 * bump(y, B.chestAt, B.chestWidth) + (off > 0 ? SURFACE.cloth.waistFold : 0));
+    }
+  }
+  for (let r = 0; r < rows[1] - rows[0]; r++) for (let c = 0; c < cols - 1; c++) { const a = r * cols + c, b = a + cols; idx.push(a, b, a + 1, a + 1, b, b + 1); }
+  const g = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx); g.computeVertexNormals();
+  if (g.attributes.normal.getZ(0) < 0) { g.setIndex(idx.map((v, i) => idx[i - (i % 3) + [0, 2, 1][i % 3]])); g.computeVertexNormals(); }
+  return g;
+}
+
+function upperBody(sleeves, female, cut) {
+  const B = SURFACE.body, S = B.sides, stride = S + 1;
+  const rings = shapedRings(female, cut);
   const holeRows = B.hole.map(y => rings.findIndex(r => r[0] === y));
   const pos = [], weights = [], ids = [], pump = [], shade = [], groups = [[], [], []];
   const torso = NAMES.indexOf('torso');
@@ -517,6 +549,7 @@ function upperBody(sleeves, female, cut) {
   }
   for (let row = 0; row < rings.length - 1; row++) for (let j = 0; j < S; j++) {
     if (row >= holeRows[0] && row < holeRows[2] && ((j >= 4 && j < 8) || (j >= 16 && j < 20))) continue;
+    if (cut === 4 && row < holeRows[0] && (j === 0 || j === S - 1)) continue; // #2147 the coat's open front edge
     const a = row * stride + j, b = a + stride;
     groups[0].push(a, a + 1, b, a + 1, b + 1, b);
   }
@@ -633,6 +666,14 @@ function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
     shape(pocket, v => { v.y += .17; v.z = .124 * Math.sqrt(1 - (v.x / .18) ** 2) + .009; });
     add(pocket, 'top', 'torso', [], .9);
     add(new THREE.TorusGeometry(0.072, 0.024, 5, 14).rotateX(Math.PI / 2 - 0.35).scale(1.05, 1, 1), 'top', 'torso', [0, 0.625, -0.035], 0.92);
+  }
+  if (cut > 2) { // #2147 outer layer: a collar and a front closure (a zip on the jacket; the coat's open edge shows a dark lining)
+    const OW = cut === 4 ? AVATAR_OUTERWEAR.coat : AVATAR_OUTERWEAR.jacket, rings = shapedRings(isFemale, cut), top = rings.length - 1, hole = rings.findIndex(r => r[0] === SURFACE.body.hole[0]);
+    if (cut === 3) add(frontStrip(rings, isFemale, [0, top - 1], OW.zip / rings[hole][1], 0.0015), 'fixed', 'torso', [], 1, AVATAR_OUTERWEAR.zipColour);
+    else add(frontStrip(rings, isFemale, [0, hole], Math.PI * 2 / SURFACE.body.sides * OW.gap + 0.01, -0.012), 'top', 'torso', [], OW.lining);
+    const [cr, ct] = OW.collar, arc = cut === 4 ? Math.PI * 1.75 : Math.PI * 2, ring = new THREE.TorusGeometry(cr, ct, 5, 16, arc);
+    if (cut === 4) ring.rotateZ(Math.PI / 2 - (Math.PI + arc / 2));
+    add(ring.rotateX(Math.PI / 2 - (cut === 4 ? 0.25 : 0.05)), 'top', 'torso', [0, 0.6, cut === 4 ? -0.012 : -0.005], 0.96);
   }
   const lw = legs === 2 ? AVATAR_CLOTHES.legs.wide : 1, hy = AVATAR_CLOTHES.legs.shorts;
   const trainerParts = []; // appended together: all pre-existing vertices retain their order
@@ -1180,7 +1221,7 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
 /** A geometry for one player: the variant's shared position / normal / skin attributes and an own colour attribute. */
 export function avatarModelGeometry(lk) {
   const b = base(lk.style, lk.sleeves, lk.gender ?? lk.figure ?? 0, lk.facial ?? lk.facialHair ?? 0, lk.legs | 0, lk.cut | 0), n = b.attributes.position.count;
-  const pal = [lk.skin, lk.top, lk.pants, lk.hair, 0, lk.shoes].map((c) => new THREE.Color(c));
+  const pal = [lk.skin, (lk.cut | 0) > 2 ? outerColour(lk) : lk.top, lk.pants, lk.hair, 0, lk.shoes].map((c) => new THREE.Color(c)); // #2147: a worn layer has its own colour
   pal[6] = pal[0].clone().lerp(new THREE.Color(FACE.lipTint), 0.35).multiplyScalar(0.92); // #1101: the lips, from the skin
   pal[7] = new THREE.Color(EYES.includes(lk.eyes) ? lk.eyes : EYES[0]); // #1138: the irises
   pal[8] = new THREE.Color(lk.beard ?? lk.hair); // #1156: a beard of its own colour (Olof's grey one; players' follow their hair)
