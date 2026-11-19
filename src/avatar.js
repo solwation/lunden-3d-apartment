@@ -16,6 +16,7 @@ import { newWet, stepWet, falling, wetEnv, WET_DECL, wetVertex, wetColor, wetRou
 import { eyeUniforms, EyeLight, EYE_VDECL, EYE_FDECL, eyePupil, eyeAt, eyeBall, eyeView, eyeWet, eyeGlint } from './avatareyes.js'; // #2033
 import { irisDisc, pupilDisc, lidSurface, upperLashes, lidBlink } from './avatarlids.js'; // #2045
 import { lampUniforms, LAMP_FDECL, lampGlsl } from './avatarlight.js'; // #2039: the street lamps' light
+import { SelfShadow, selfShadowUniforms, SELF_VDECL, SELF_VCODE, SELF_FDECL, selfLightsChunk, selfShadowKey } from './avatarselfshadow.js'; // #2143: the sun's self-shadow
 import { clothUniforms, clothDecl, clothNormal, installCloth } from './avatarcloth.js'; // #2034
 import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #2014
 import { newWind, stepWind } from './avatarwind.js'; import { siteWind } from './sitewind.js'; // #2110: outdoor wind on the sway springs
@@ -1217,6 +1218,7 @@ function makeMaterial(rim, headProjection) {
   Object.assign(u, exertUniforms()); // #2037: flush and sweat sheen
   Object.assign(u, chestUniforms()); // #2108: breathing
   Object.assign(u, lampUniforms()); // #2039
+  Object.assign(u, selfShadowUniforms()); // #2143
   Object.assign(u, flyUniforms()); // #2040
   Object.assign(u, browUniforms()); // #2046
   Object.assign(u, hairlineUniforms()); // #2050
@@ -1297,12 +1299,14 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       outgoingLight *= mix(vec3(1.0), ${v3(SK.rimTint.slice(0, 3))}, vBare * (1.0 - uSuit) * edge * ${SK.rimTint[3].toFixed(3)}); // light scattered through skin reddens its edges
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
       #include <opaque_fragment>`);
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', `#include <common>\n${SELF_VDECL}`).replace('#include <project_vertex>', `#include <project_vertex>\n${SELF_VCODE}`); // #2143
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>\n${SELF_FDECL}`).replace('#include <lights_fragment_begin>', selfLightsChunk()); // #2143
     sh.fragmentShader = exertShader(sh.fragmentShader, { head: bindAt('head') }); // #2037
     sh.fragmentShader = sculptShader(sh.fragmentShader, { head: bindAt('head'), part: FACE_PART }); // #2044
     const gloss = { head: bindAt('head'), region: REGION, part: FACE_PART }; // #2052
     sh.vertexShader = glossVertex(sh.vertexShader, gloss); sh.fragmentShader = curlGloss(glossFragment(sh.fragmentShader, gloss)); // (#2054: the curls turn its strands)
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey() + chestKey() + skinVarKey(); // #2108, #2111, #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey() + chestKey() + skinVarKey() + selfShadowKey(); // #2108, #2111, #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
   installSelfView(m); // #2080: the own camera hides head/hair; mirrors and peers keep the full figure
   return m;
 }
@@ -1836,6 +1840,15 @@ export class Avatar {
   setLight(f) { const u = this.material?.userData.u.uLight; if (u) u.value = f; }
   /** #2039: the share of a lit outdoor lamp's warm light on the figure (0 … 1; src/avatarlight.js). */
   setLamp(v) { const u = this.material?.userData.u.uLamp; if (u) u.value = v; }
+  /** #2143: the sun's direction (world, towards it) and strength 0 … 1 on this figure (src/avatarlight.js); 0 = no self shadow. */
+  setSun(dir, k) { (this.selfShadow ??= new SelfShadow(null)).setSun(dir, k); }
+  /** #2143: the capsules / brim uniforms from the bones' world matrices (last frame's pose), once per update; free while the strength is 0. */
+  updateSelfShadow(dt = 0.016) {
+    const ss = this.selfShadow, u = this.material?.userData.u, b = this.bones;
+    if (!ss || !u?.uSelfK) return;
+    if (!b?.elbowL || (!ss.k && !ss.kNow)) { u.uSelfK.value = 0; return; }
+    ss.u = u; ss.setHat(u.uHat.value); ss.update(b, this.object.scale.y, dt);
+  }
   /** #2033: the light the eyes stand in (avatarlight.js zone / env): the pupil follows it in updateEyes, the sun's glint dims indoors. */
   setEyeLight(zone, env) { (this.eyeLight ??= new EyeLight()).set(zone, env); }
 
@@ -1931,6 +1944,7 @@ export class Avatar {
   update(dt, { speed = 0, turn = 0, pitch = 0, hands = {}, crouch = 0, kiss = 0, kissReach = 1, kissLift = 0, dance = 0, react = null, air = 0, airV = null, swim = false, dive = 0, gaitDir = null, motionFrame = null, groundSpeed = speed, groundEnabled = true, ground = null, floorY = NaN, jump = null } = {}) { // react: { kind, age } of a BIO reaction (#1639, src/reactpose.js)
     this.time += dt;
     this.updateSway(dt); // #2014
+    this.updateSelfShadow(dt); // #2143
     this.handBusy = [!!hands.L, !!hands.R]; // #2038: a hand held by something keeps its grip exactly
     this.updateGrip(dt); // #2016
     const eyes = this.updateEyes(dt, turn, pitch, kiss > 0 || !!react || swim || air === 3);

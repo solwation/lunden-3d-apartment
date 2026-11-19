@@ -7,7 +7,7 @@
 // how much of the nearby lit lamps reaches a figure (0 … 1, from the lamp sets' heads and pool reach), it raises the zone's level (so
 // the pupils of #2033 narrow under a lamp too) and drives one more uniform (`uLamp`): a warm light added on top of the dimmed scene
 // light, stronger on surfaces facing up. Between the lamps only the dark night level is left. Still no light and no shadow caster.
-import { AVATAR_LIGHT as C } from './config.js';
+import { AVATAR_LIGHT as C, AVATAR_SELF_SHADOW as S } from './config.js';
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
@@ -100,7 +100,19 @@ export class AvatarLight {
     avatar.setLight(st.f);
     st.lamp = approach(st.lamp, lampShare(st.zone), dt); // #2039
     avatar.setLamp?.(st.lamp);
+    avatar.setSun?.(...sunSelf(st.zone, env, this.lights)); // #2143: the sun's self-shadow on the figure
     avatar.setEyeLight?.(st.zone, env); // #2033: the pupils and the eyes' sun glint (src/avatareyes.js)
     return st.f;
   }
+}
+
+const _sun = { x: 0, y: 1, z: 0, normalize() { const l = Math.hypot(this.x, this.y, this.z) || 1; this.x /= l; this.y /= l; this.z /= l; return this; }, copy(v) { this.x = v.x; this.y = v.y; this.z = v.z; return this; } };
+/** #2143: [direction towards the sun, strength 0 … 1] for the avatars' self-shadow: only in the open sun (not under a roof, not indoors), as the sun's
+ * intensity over a clear day's (so overcast / dusk / night fade it out). The direction is the shared light's position minus its target. */
+export function sunSelf(zone, env, lights) {
+  const sun = lights?.sun;
+  if (!sun || (zone?.kind ?? 'outdoors') !== 'outdoors' || zone?.shade) return [null, 0];
+  const p = sun.position, t = sun.target?.position;
+  _sun.x = p.x - (t?.x ?? 0); _sun.y = p.y - (t?.y ?? 0); _sun.z = p.z - (t?.z ?? 0); _sun.normalize();
+  return [_sun, clamp(sun.intensity / S.sunRef, 0, 1)];
 }

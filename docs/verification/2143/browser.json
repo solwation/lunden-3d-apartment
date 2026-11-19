@@ -1,0 +1,23 @@
+{
+  "report": {
+    "rigged": true,
+    "body-before": {
+      "calls": 6,
+      "tris": 88258
+    },
+    "body-after": {
+      "calls": 6,
+      "tris": 88258
+    },
+    "head-before": {
+      "calls": 4,
+      "tris": 49998
+    },
+    "head-after": {
+      "calls": 4,
+      "tris": 49998
+    },
+    "cpuUsPerUpdate": 1
+  },
+  "errors": []
+}

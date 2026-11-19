@@ -10195,6 +10195,22 @@ export const AVATAR_LIGHT = { reference: 4.4, sunShare: 0.6, minScene: 0.12, min
   // `bollard`: the courtyard bollards' strength against a street lamp (low, small pools).
   lamp: { level: 0.12, rgb: [1, 0.578, 0.242], gain: 0.9, side: 0.6, under: 0.25, chest: 1.2, bollard: 0.4 } };
 
+// #2143 (src/avatarselfshadow.js): analytic sun self-shadowing of an avatar in its own shader: the sun's ray from a surface point is tested
+// against six capsules (head, torso, both upper arms and forearms, from the bone positions each frame) and the cap's peak / hat's brim (an
+// ellipse in the head's frame), and the SUN light alone is dimmed (sky and ambient stay). No shadow map, no new draw. Capsule radii are
+// deliberately smaller than the body (`r` m, the inner proxy; a surface point at < `skin` x r is skipped so a part never shades itself);
+// `a` / `b`: the ends in the bone frame (m along its +y from the bone; `bone` = from that bone to `to`), all *guess*, tuned by eye on
+// midday shots. `max`: the strongest dimming of the sun (the rest is sky light); `soft`: penumbra as a share of r; `pen`: extra penumbra
+// per metre the ray travels (the sun's disc); `sunRef`: the sun intensity of a clear day (full strength; overcast fades it out); `ease`: 1/s of the strength's fade; `minK`: below it, off.
+// `brimSoft`: the peak / brim ellipse's edge softness (share of its radius); `brimDrop`: m it hangs below the plane it is tested in; its shape is
+// derived from AVATAR_HAT and the skull (avatarselfshadow.js `brimShape`).
+export const AVATAR_SELF_SHADOW = { max: 0.92, soft: 0.25, pen: 0.09, skin: [0.9, 1.15], sunRef: 3, minK: 0.02, ease: 6, brimSoft: 0.3, brimDrop: 0.004,
+  capsules: {
+    head: { bone: 'head', a: 0.07, b: 0.17, r: 0.078 },
+    torso: { bone: 'torso', a: 0.05, b: 0.5, r: 0.1 },
+    upperL: { bone: 'shoulderL', to: 'elbowL', r: 0.05 }, upperR: { bone: 'shoulderR', to: 'elbowR', r: 0.05 },
+    foreL: { bone: 'elbowL', to: 'handL', r: 0.042 }, foreR: { bone: 'elbowR', to: 'handR', r: 0.042 } } };
+
 // #2088: roof surface realism. One small shared neutral-grey map (`size` px square, `panels` roof strips across it) multiplies
 // every roof colour: a raised seam per strip (dark shadow line, light lip), slightly different strips, low-frequency weathering
 // mottle and faint rain streaks along the fall line. The materials' colour is scaled by 1 / the map's linear mean, so a roof's

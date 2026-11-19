@@ -1,0 +1,53 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Egenskugga #2143</title><link rel="icon" href="data:,">
+<style>body{margin:0;background:#bfc6cc}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+// #2143 component page: real avatars (the production rigged body) in a midday sun with the self shadow off / on: no hat, cap, brimmed hat; arms at the
+// sides, raised, held forward. Driven by tools/avatarselfshadowbrowser.cjs. __draw(mode, on, view) -> { calls, tris }, __cost() -> CPU us per update.
+import * as T from 'three';
+import { Avatar, loadRiggedAvatarModel, armTarget } from '../src/avatar.js';
+import { avatarLook } from '../src/config.js';
+const rigged = await loadRiggedAvatarModel();
+const W = 1200, H = 560;
+const renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); renderer.setPixelRatio(1); renderer.setSize(W, H); document.body.append(renderer.domElement);
+const scene = new T.Scene(); scene.background = new T.Color('#bfc6cc');
+// the game's clear-day lights (config: hemi 1.5, sun 3.0), the sun ~42 deg up, in front and to the left (a spring or autumn noon; a high June sun shades less)
+scene.add(new T.HemisphereLight(0xdfe9ff, 0x8a7f72, 1.5)); scene.add(new T.AmbientLight(0xffffff, 0.25));
+const sun = new T.DirectionalLight(0xfff2e0, 3); sun.position.set(-4, 9, 9); scene.add(sun, sun.target);
+const ground = new T.Mesh(new T.PlaneGeometry(40, 10), new T.MeshLambertMaterial({ color: 0x8aa66a })); ground.rotation.x = -Math.PI / 2; scene.add(ground);
+const dir = new T.Vector3().subVectors(sun.position, sun.target.position).normalize();
+const CASES = [{ hat: 0 }, { hat: 1 }, { hat: 4 }, { hat: 1, pose: 'up' }, { hat: 0, pose: 'chest' }];
+const avatars = CASES.map((c, i) => {
+  const a = new Avatar({ ...avatarLook('2143-' + i), style: i % 5, gender: i % 2, height: 178, bodyBuild: 4, hat: c.hat, phones: 0, glasses: 0, facial: 0 });
+  a.object.position.set((i - 2) * 0.95, 0, 0); a.object.rotation.y = 0; scene.add(a.object); a.pose = c.pose; return a;
+});
+const hands = (p) => p === 'up' ? { L: armTarget.up(1, 0), R: armTarget.up(-1, 0) } : p === 'chest' ? { L: armTarget.forward(1, 0.12), R: armTarget.forward(-1, 0.12) } : {};
+const step = () => avatars.forEach((a) => { a.update(0.016, { hands: hands(a.pose) }); a.object.updateMatrixWorld(true); });
+const cam = new T.PerspectiveCamera(30, W / H, 0.05, 100);
+window.__draw = (on, view = 'body') => {
+  avatars.forEach((a) => { a.setSun(dir, on ? 1 : 0); a.selfShadow.kNow = on ? 1 : 0; });
+  for (let i = 0; i < 4; i++) step();
+  const f = view === 'head' ? { c: [0, 1.62, 0], d: 1.7, fov: 22, y: 0.35 } : { c: [0, 1.0, 0], d: 6.4, fov: 30, y: 0.25 };
+  cam.fov = f.fov; cam.updateProjectionMatrix(); cam.position.set(f.c[0] + 0.1 * f.d / 2, f.c[1] + f.y * f.d / 3, f.c[2] + f.d); cam.lookAt(...f.c);
+  renderer.info.reset(); renderer.render(scene, cam);
+  return { calls: renderer.info.render.calls, tris: renderer.info.render.triangles };
+};
+/** Side by side, same camera: the self shadow off (left half) and on (right half), figure `i` alone. */
+window.__pair = (i, off = [0.15, 0.1, 1.1], lookY = 1.55, fov = 24) => {
+  avatars.forEach((a, j) => { a.object.visible = i === j; });
+  const p = avatars[i].object.position, w = W / 2; cam.aspect = w / H; cam.fov = fov; cam.updateProjectionMatrix();
+  cam.position.set(p.x + off[0], lookY + off[1], p.z + off[2]); cam.lookAt(p.x, lookY, p.z);
+  renderer.setScissorTest(true);
+  [false, true].forEach((on, k) => {
+    avatars.forEach((a) => { a.setSun(dir, on ? 1 : 0); a.selfShadow.kNow = on ? 1 : 0; });
+    for (let n = 0; n < 4; n++) step();
+    renderer.setViewport(k * w, 0, w, H); renderer.setScissor(k * w, 0, w, H); renderer.render(scene, cam);
+  });
+  renderer.setScissorTest(false); cam.aspect = W / H; cam.updateProjectionMatrix(); avatars.forEach((a) => (a.object.visible = true));
+};
+window.__cost = (n = 2000) => {
+  const a = avatars[1]; a.setSun(dir, 1); a.selfShadow.kNow = 1; step();
+  const t0 = performance.now(); for (let i = 0; i < n; i++) a.updateSelfShadow(0.016); return ((performance.now() - t0) / n) * 1000;
+};
+window.__av = avatars; window.__ready = true; window.__rigged = !!rigged;
+</script></html>
