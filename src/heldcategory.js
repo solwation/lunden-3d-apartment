@@ -6,7 +6,7 @@
 /** The whitelist: one simple proxy model per key (ghostprops.js ghostItem). */
 export const HELD_CATEGORIES = Object.freeze(['cup', 'plate', 'food', 'bottle', 'book', 'paper', 'tool', 'plant', 'cue', 'box', 'nut', 'binoculars', 'spray', 'gift', 'bag', 'rod', 'fish', 'sharkfin', 'mussel',
   // #1963: what was one generic 'food' / 'tool' / nothing: the other players see WHAT is carried
-  'chicken', 'drumstick', 'fries', 'popcorn', 'fishfinger', 'banana', 'orange', 'pear', 'pan', 'flashlight', 'remote', 'harpoon']); // 'nut' (#1686): a squirrel nut; a crouched, still player holding one lures the squirrels for the shared leader. #1755: binoculars (#1706), spray can (#1707), Christmas gift, rubbish/laundry bag: no longer the generic box. #1753: the fishing rod and a caught fish. #1769: a shark fin
+  'chicken', 'drumstick', 'fries', 'popcorn', 'fishfinger', 'banana', 'orange', 'pear', 'pan', 'flashlight', 'remote', 'harpoon', 'plush']); // 'nut' (#1686): a squirrel nut; a crouched, still player holding one lures the squirrels for the shared leader. #1755: binoculars (#1706), spray can (#1707), Christmas gift, rubbish/laundry bag: no longer the generic box. #1753: the fishing rod and a caught fish. #1769: a shark fin. #2144: 'plush' = a soft toy carried in both arms (Pingping: handPose 'hug'); the Worker takes the whitelist from here, so deploy it before the client
 const SET = new Set(HELD_CATEGORIES);
 /** `hi` as it goes on the wire / into a Ghost: a whitelisted key, else '' (none). */
 export const cleanHeldCategory = (v) => (typeof v === 'string' && SET.has(v) ? v : '');
@@ -58,6 +58,7 @@ export function heldCategory(item) {
   if (item.isSprayCan) return 'spray';
   if (item.isCloth) return 'tool';
   if (item.isPaper) return 'paper';
+  if (item.handPose === 'hug') return 'plush'; // #2144: Pingping (Miele returned above and travels as `cat`)
   if (item.kind && (cls === 'Thing' || cls === 'Bottle' || cls === 'Glass' || cls === 'Photo')) return { glass: 'cup', plant: 'plant', photo: 'paper' }[item.kind] ?? 'bottle';
   return BY_CLASS[cls] ?? 'box';
 }

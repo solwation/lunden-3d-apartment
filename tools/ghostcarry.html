@@ -1,0 +1,40 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Ghost carry poses</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2144 component page: remote avatars (Ghost) carrying a box, a bag, a plush toy, binoculars, a cup and a torch (looking up), seen from the front-left
+// and from the side. `?plush=box` shows the old state (the toy was the generic box). Driven by tools/ghostcarrytest.cjs.
+import * as THREE from 'three';
+import { Ghost } from '../src/ghosts.js';
+const q = new URLSearchParams(location.search);
+const CASES = [{ hi: 'box' }, { hi: 'bag' }, { hi: q.get('plush') ?? 'plush' }, { hi: 'binoculars' }, { hi: 'cup' }, { hi: 'flashlight', look: [0, 0.6] }];
+const W = 1500, H = 560, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+const ghosts = CASES.map(({ hi, look }, i) => {
+  const g = new Ghost(scene, i + 1, 'Spelare ' + (i + 1));
+  if (g.tag) g.tag.visible = false;
+  g.root.position.set((i - (CASES.length - 1) / 2) * 0.95, 0, 0); scene.add(g.root); g.root.visible = true;
+  g.push({ p: [g.root.position.x, 0, 0], r: Math.PI, hi, look: look ?? [0, 0] }, 1000); g.look = look ?? [0, 0]; // (animate() is driven directly here, without the interpolation that sets .look)
+  return g;
+});
+const cam = new THREE.PerspectiveCamera(24, W / H, 0.05, 50);
+window.__shot = (view) => { // 'front' (three-quarter) or 'side'
+  if (view === 'side') { cam.position.set(7.0, 1.15, 0); cam.lookAt(0, 1.05, 0); } // from the right: the avatars face +z, so the profile is seen from +x
+  else { cam.position.set(-1.2, 1.35, 6.4); cam.lookAt(0, 1.05, 0); }
+  ghosts.forEach((g, i) => { g.root.position.set(view === 'side' ? 0 : (i - (CASES.length - 1) / 2) * 0.95, 0, view === 'side' ? (i - (CASES.length - 1) / 2) * 0.95 : 0); });
+  let t = 1000;
+  for (const g of ghosts) { g.root.rotation.y = Math.PI; g.have = false; for (let k = 0; k < 60; k++) g.animate(t += 33, 1, 0, 0); }
+  renderer.render(scene, cam);
+  return { items: ghosts.map((g) => g.itemProp?.name ?? null), hi: ghosts.map((g) => g.hi), leans: ghosts.map((g) => g.carryLean ?? null) };
+};
+window.__ready = true;
+</script></body></html>

@@ -31,6 +31,7 @@ import { canKiss, kissAmount } from './kiss.js';
 import { canHug, hugAmount, playerChoices } from './hug.js';
 import { Hearts } from './pingping.js';
 import { cleanHeldCategory } from './heldcategory.js';
+import { carryPose, newCarry, easeLean } from './avatarcarry.js'; // #2144: the carry pose by what is held
 import { trimOutbox } from './outbox.js';
 import { AvatarLight } from './avatarlight.js'; // #2017: the avatars' light follows the room's light level
 import { AvatarShadows } from './avatarshadow.js'; // #2010: soft contact shadows, one draw call
@@ -398,7 +399,12 @@ export class Ghost { // (exported for tools/ghostprops.html)
     }
     const showItem = !!this.itemProp && !this.prop && !this.bikeMesh && !(this.hi === 'cue' && this.cue); // (while aiming at the table billiards.js draws their cue, #1637 / #1687) // a weapon or the handlebar has the hands (#1297)
     if (this.itemProp) this.itemProp.visible = showItem;
-    if (showItem) hands.R = armTarget.forward(-1, 0.04);
+    const carry = this.carry ??= newCarry();
+    if (showItem) { // #2144: both hands / a hanging arm / up to the eyes / following the gaze, by what is held (a plain one-handed thing: out in front as before)
+      carryPose(this.hi, this.look?.[1] ?? 0, carry);
+      hands.R = carry.R ?? armTarget.forward(-1, 0.04);
+      if (carry.L) hands.L = carry.L;
+    } else carryPose('', 0, carry);
     if (this.waveT > 0) { // (#673) up for the wave, the hand going side to side; down again at the end
       this.waveT = Math.max(0, this.waveT - dt);
       hands.R = armTarget.up(-1, (G.wave - this.waveT) * 11);
@@ -414,6 +420,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
       this.avatar.object.rotation.y = lerpAngle(this.avatar.object.rotation.y, direction - this.root.rotation.y, kissed);
     }
     if (hugged) this.poseHug(hug, hugged, hands);
+    const carryOn = !this.pose && !this.gx && !this.bikeMesh && !wet && !this.dance && !this.waveT;
+    this.carryLean = easeLean(this.carryLean ?? 0, carryOn ? carry.lean : 0, dt); // #2144: the back-lean under a heavy thing, eased in and out
     let react = null; // #1639
     if (this.react) { const ra = (t - this.react.start) / 1000; if (ra >= REACT.duration) this.react = null; else if (!kissed && !hugged) react = { kind: this.react.kind, age: ra }; }
     const amount = Math.max(kissed, hugged); // (the look and gait give way to either embrace)
@@ -446,6 +454,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     poseFrame[3] = by; poseFrame[4] = this.avatar.object.scale.z; poseFrame[5] = this.avatar.object.scale.y;
     transitionPose(this.avatar, dt, poseKey, hands, poseFrame, this.poseCarry);
     this.avatar.collectPose = false;
+    if (this.carryLean && this.avatar.pendingPose && !amount && !air) this.avatar.pendingPose.lean += this.carryLean; // #2144
     poseOlof(this.avatar, this.avatar.pendingPose);
     this.heldCat.update(this.avatar, this.root);
     if (this.tag) {
@@ -466,6 +475,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
       this.avatar.object.updateMatrixWorld(true);
       this.root.worldToLocal(this.avatar.gripAt('R', tmpV)); // #2016: where the curled fingers close round it (a compact thing by its middle)
       this.itemProp.position.copy(tmpV).sub(this.itemHold);
+      this.itemProp.rotation.x = carry.tilt; // #2144: a torch / spray can / harpoon points where the gaze goes
+      if (carry.item) this.itemProp.position.x += carry.item[0], this.itemProp.position.y += carry.item[1], this.itemProp.position.z += carry.item[2]; // #2144: centred between two hands
     }
     if (this.prop && this.prop.name !== 'ghost-prop:jetpack') {
       this.avatar.object.updateMatrixWorld(true);

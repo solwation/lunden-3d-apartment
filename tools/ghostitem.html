@@ -44,7 +44,9 @@ window.__shot = (i = null, far = false) => {
   for (const g of ghosts) { g.root.rotation.y = Math.PI; g.have = false; for (let k = 0; k < 30; k++) g.animate(t += 33, far ? 1000 : 1, 0, 0); }
   const x = i === null ? 0 : ghosts[i].root.position.x;
   cam.fov = i === null ? 24 : 7; cam.updateProjectionMatrix();
-  cam.position.set(x + (i === null ? 0 : -0.5), 1.2, i === null ? overviewDistance : 4.6); cam.lookAt(x - (i === null ? 0 : 0.15), i === null ? 0.95 : 1.05, 0);
+  // #2144: the carry pose moves the hands (eyes, hip, aimed ahead): the close-up looks at where the proxy actually is
+  const at = i === null || !ghosts[i].itemProp?.visible ? null : ghosts[i].itemProp.getWorldPosition(new THREE.Vector3());
+  cam.position.set(x + (i === null ? 0 : -0.5), at ? at.y + 0.15 : 1.2, i === null ? overviewDistance : 4.6); cam.lookAt(at ? at.x : x - (i === null ? 0 : 0.15), at ? at.y : i === null ? 0.95 : 1.05, 0);
   renderer.info.reset(); renderer.render(scene, cam);
   const calls = renderer.info.render.calls, tris = renderer.info.render.triangles;
   let transformsFinite = [cam.matrixWorld, cam.matrixWorldInverse, cam.projectionMatrix, cam.projectionMatrixInverse].every((m) => finite(m.elements));

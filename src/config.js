@@ -7547,7 +7547,7 @@ export const AVATAR_GRIP = { ease: 14, split: 0.6, compact: 0.25, sink: 0.004, t
     flat: { fingers: [[0.08, 0.06], [0.06, 0.05], [0.05, 0.04], [0.04, 0.03]], thumb: [0.1, 0.05], point: [0.035, -0.035, 0.005] },
   },
   byCategory: { cup: 'cylinder', bottle: 'cylinder', plate: 'flat', book: 'flat', box: 'flat', gift: 'flat', paper: 'pinch', bag: 'cylinder', tool: 'cylinder', plant: 'cylinder', cue: 'cylinder', nut: 'pinch', binoculars: 'cylinder', spray: 'cylinder', rod: 'cylinder', fish: 'pinch', sharkfin: 'pinch', mussel: 'pinch',
-    food: 'pinch', chicken: 'flat', drumstick: 'cylinder', fries: 'cylinder', popcorn: 'cylinder', fishfinger: 'pinch', banana: 'pinch', orange: 'pinch', pear: 'pinch', pan: 'cylinder', flashlight: 'cylinder', remote: 'cylinder', harpoon: 'pistol' },
+    food: 'pinch', chicken: 'flat', drumstick: 'cylinder', fries: 'cylinder', popcorn: 'cylinder', fishfinger: 'pinch', banana: 'pinch', orange: 'pinch', pear: 'pinch', pan: 'cylinder', flashlight: 'cylinder', remote: 'cylinder', harpoon: 'pistol', plush: 'flat' },
   byWeapon: { nerf: 'pistol', rifle: 'pistol', wand: 'cylinder', saber: 'cylinder', bow: 'cylinder', ball: 'flat', web: 'cylinder' } };
 // #2106 the hands' finer detail (src/avatarhand.js), all *guess* tuned by eye in hand close-ups, not measured. Bind-pose metres in the
 // hand bone's frame; finger order little, ring, middle, index, thumb. `nail`: each nail's length as a `share` of the distance from the middle
@@ -10400,4 +10400,29 @@ export const WINDOW_SCHEDULE = {
     { name: 'tv', share: .1, rgb: [1, .8, .55], tv: true },
   ],
   tv: { rgb: [.5, .66, 1], depth: .35, rate: [.25, .6], from: 19, until: 24.5, step: .12 },
+};
+
+// #2144: how the figure carries what it holds (src/avatarcarry.js; ghosts.js Ghost.animate): per held category (heldcategory.js `hi`) an
+// arm / torso pose, derived from the category and the gaze pitch only (no wire field). Metres in the unscaled figure frame (+x its left, +y up,
+// +z forward; the right hand is x < 0); shoulder at [±0.2, 1.45]. All *guess*, tuned by eye against close-ups, not measured.
+// `kind`s: one (a hand held out in front, the default), heavy (both hands round it, a back-lean to carry the weight), tray (both hands under
+// something flat), hang (the arm relaxed at the side, the thing hanging), hug (a soft toy in both arms), eyes (up to the eyes, both hands),
+// aim (one arm following the gaze pitch: it points where the player looks). `kinds[k]`: `side` the hands' distance from the middle, `y` / `z`
+// their height / reach (aim: `reach` from the shoulder, `y0` the height at level gaze), `lean` the torso's tilt (rad, negative = back), `elbow`
+// the elbow pole's outward share, `item` where the middle of the proxy is moved to relative to its grip, in the root frame ([right, up, back]).
+export const AVATAR_CARRY = {
+  byCategory: { box: 'heavy', gift: 'heavy', plant: 'heavy', plate: 'tray', book: 'tray', bag: 'hang', fish: 'hang', plush: 'hug', binoculars: 'eyes',
+    flashlight: 'aim', rod: 'aim', spray: 'aim', harpoon: 'aim', cue: 'aim',
+    cup: 'one', bottle: 'one', food: 'one', paper: 'one', tool: 'one', nut: 'one', sharkfin: 'one', mussel: 'one', chicken: 'one', drumstick: 'one', fries: 'one', popcorn: 'one',
+    fishfinger: 'one', banana: 'one', orange: 'one', pear: 'one', pan: 'one', remote: 'one' },
+  ease: 7, pitchLimit: 1.1, // 1/s the lean follows; the largest gaze pitch (rad) an aiming arm follows
+  kinds: {
+    one: { lean: 0 },
+    heavy: { side: 0.1, y: 1.1, z: 0.33, lean: -0.16, elbow: 0.55, item: [-0.12, 0.0, 0.06] },
+    tray: { side: 0.13, y: 1.08, z: 0.34, lean: -0.05, elbow: 0.6, item: [-0.13, 0.0, 0.1] },
+    hang: { side: 0.24, y: 0.76, z: 0.04, lean: 0.03, elbow: 0.3, item: [0, 0, 0] },
+    hug: { side: 0.17, y: 1.12, z: 0.27, lean: -0.07, elbow: 0.8, item: [-0.17, 0.0, 0.06] },
+    eyes: { side: 0.05, y: 1.62, z: 0.22, lean: 0, elbow: 0.9, item: [-0.05, 0.0, 0.0] },
+    aim: { side: 0.2, y0: 1.38, reach: 0.46, lean: 0, elbow: 0.6, item: [0, 0, 0] },
+  },
 };

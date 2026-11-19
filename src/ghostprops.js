@@ -173,6 +173,9 @@ const ITEM_PARTS = {
   // #1755: a wrapped Christmas gift: a red box with a crossed ribbon
   gift: () => [[new THREE.BoxGeometry(0.14, 0.12, 0.14), 0xb02a2a, [0, 0.03, -0.12]], [new THREE.BoxGeometry(0.146, 0.126, 0.026), 0xe8c24a, [0, 0.03, -0.12]], [new THREE.BoxGeometry(0.026, 0.126, 0.146), 0xe8c24a, [0, 0.03, -0.12]]],
   // #1755: a rubbish / laundry bag: a soft sack with a knotted neck
+  // #2144: a soft toy (Pingping): a round body and head, two ears, so it reads as a plush in the arms (all *guess*)
+  plush: () => [[new THREE.IcosahedronGeometry(0.1, 0).scale(1, 1.1, 0.9), 0xf2d9e0, [0, 0.0, -0.12]], [new THREE.IcosahedronGeometry(0.075, 0), 0xf2d9e0, [0, 0.14, -0.12]],
+    [new THREE.IcosahedronGeometry(0.03, 0), 0xe5b9c6, [-0.05, 0.22, -0.12]], [new THREE.IcosahedronGeometry(0.03, 0), 0xe5b9c6, [0.05, 0.22, -0.12]]],
   bag: () => [[new THREE.IcosahedronGeometry(0.085, 0).scale(1, 1.15, 1), 0x56606b, [0, 0.03, -0.12]], [new THREE.CylinderGeometry(0.014, 0.022, 0.04, 5), 0x56606b, [0, 0.14, -0.12]]],
   // #1753: the fishing rod, pointing ahead and up from the hand (ROD_PROXY_TIP: where src/fishing.js starts another player's line), and a caught fish hanging from the hand
   rod: () => { const up = (g) => g.rotateX(-(Math.PI / 2 - ROD_UP));
