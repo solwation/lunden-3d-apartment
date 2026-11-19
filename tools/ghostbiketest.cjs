@@ -48,6 +48,13 @@ const check = (ok, label, d = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} ${la
     const s1 = await wait((s) => s.bike);
     check(s1?.bike === true, 'peer sees the rider on a bicycle', JSON.stringify(s1));
     if (s1?.bike) await shot('bike');
+    // #2148: pedalling a few frames turns the own bike's wheels / crank (player.riding.ride)
+    const own = await app.evaluate(() => { const a = window.__app, p = a.player, r = p.riding; if (!r) return null;
+      p.analog.y = 1; // (the player's own update, as a joystick push; a bike in a rack row may be hemmed in: turn round until it rolls)
+      for (let k = 0; k < 8 && !(r.speed > 0.5); k++) { p.camera.rotation.y += Math.PI / 4; for (let i = 0; i < 25; i++) p.update(1 / 30); }
+      p.analog.y = 0;
+      return { wheel: r.ride?.wheel ?? 0, crank: r.ride?.crank ?? 0, speed: r.speed }; });
+    check(!!own && Math.abs(own.wheel) > 0.01 && own.speed > 0, 'the own bike\'s wheel turns when riding', JSON.stringify(own));
     await app.evaluate(() => { const a = window.__app; a.player.dismountBicycle(); a.jetpack.putOn(); });
     const s2 = await wait((s) => !s.bike && s.pack);
     check(s2 && !s2.bike && s2.pack >= 1, 'after dismounting: no bicycle; the jetpack is seen', JSON.stringify(s2));

@@ -2557,3 +2557,18 @@ Figures take no shadow map, so `src/avatarselfshadow.js` shades the sun on them 
 ## Carry pose by held category (#2144)
 
 `src/avatarcarry.js` (pure; `tools/avatarcarrytest.mjs`) maps the held category (`hi`, `src/heldcategory.js`) and the gaze pitch to hand targets, a torso lean and the proxy's shift/tilt; `Ghost.animate` (`src/ghosts.js`, the held-item block) applies it to remote avatars and the mirror self-ghost, so nothing new goes over the wire. Kinds (`AVATAR_CARRY` in `src/config.js`, all *guess* by eye): `one` (default, one hand out), `heavy` (box, gift, plant: both hands, back-lean), `tray` (plate, book), `hang` (bag, fish: relaxed arm at the side), `hug` (`plush`), `eyes` (binoculars, both hands up to the eyes), `aim` (flashlight, rod, spray can, harpoon, cue: the arm and proxy follow the gaze pitch, clamped). Every `HELD_CATEGORIES` entry has an explicit kind (tested). The lean is eased and added to the pending pose after `Avatar.update`; it is off when seated, in gym/bike/water, dancing, waving, hugging or airborne. `plush` is a new category (Pingping, `handPose: 'hug'`; Miele travels as the carried cat): the Worker's `cleanState` takes its whitelist from `heldcategory.js`, so **deploy the Worker before the client** (an old Worker drops `plush` to none). Browser check: `tools/ghostcarry.html` + `tools/ghostcarrytest.cjs` (front and side shots; `?plush=box` shows the old state); `tools/ghostitemtest.cjs` frames each close-up on the proxy's actual position.
+
+## Cycling motion for riders and bicycles (#2148)
+
+`src/bikeride.js` (pure, no three.js; `BIKE_RIDE` in `src/config.js`, all *guess* values) turns the speed, yaw rate and slope that every peer already
+sees into a ride state: crank cadence from an auto-shifting gear (about 54 rpm at 5 m/s, 80 at 11, instead of the old ~240), a freewheel (crank stops, wheels
+keep turning) when decelerating or on a downhill steeper than 3.4 degrees, lean into the curve (`atan(v * yawRate / g)`, bounded, smoothed; bike and rider roll
+together), bike and rider pitch from the slope, standing out of the saddle on a steep climb (hip up, torso forward, small rocking with the pedals), the fork's
+steering angle and where the hands sit on the turned handlebar (`bikeGrip`). `Ghost.poseBike` (`src/ghosts.js`, remote riders and the mirror self-ghost) feeds it
+from the interpolated heading and `vy`; the bike mesh uses Euler order `YZX` (heading, pitch about z, roll about the forward x), the avatar object `YXZ`.
+Wheels, crank (pedals stay level) and the fork/handlebar/front wheel turn in the vertex shader (`src/bikeshader.js`: `aBike` = part, steered; uniform `uBike` =
+wheel, crank, steer, one material per bicycle so three.js re-uploads it, one shared program, no extra draw call): the ghost bike (`ghostBike`, now with six spokes and a
+reflector per wheel so the turning shows), and the ridden garage bikes (`garage.js`, `place(p, yaw, pitch, ride)`). Courtyard rack bikes live in a merged batch, so
+`place()` rewrites their vertices on the CPU with the same classifier (`bikeVertexParts` / `bikeVertexAt`). The player keeps `riding.ride` (`Player.bikeStep`); an optional
+camera roll `BIKE_RIDE.cameraRoll` is 0 (off). Tests: `node --test tools/avatarbiketest.mjs` (helper), `tools/avatarbike.html` + `tools/avatarbiketest.cjs` (component page,
+before/after images in `docs/verification/2148/`), `tools/ghostbiketest.cjs` (the real app, also checks the own bike's wheel turns).

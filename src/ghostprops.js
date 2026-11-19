@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SABER, TOYS, FISH_SURFACE, SHARK } from './config.js';
+import { newBikeRide } from './bikeride.js';
+import { addBikeParts, turnableBikeMaterial } from './bikeshader.js';
 import { sharkFinSurface } from './sharksurface.js';
 import { buildFishSurface } from './fishsurface.js';
 import { rifleModel } from './rifle.js';
@@ -107,19 +109,26 @@ export function ghostJetpack() {
 }
 
 let bikeGeo = null;
-/** A bicycle under a riding avatar (#1286): the storage bikes' own near model (streetlife.js bikeGeometry, spokes left out),
- * frame / tyres / metal baked into one vertex-coloured mesh (one draw call). Origin at the bike, its x forward, like Bicycle.place. */
+/** A bicycle under a riding avatar (#1286): the storage bikes' own near model (streetlife.js bikeGeometry), frame / tyres / metal
+ * baked into one vertex-coloured mesh (one draw call) with six spokes and a reflector on each wheel so that the turning shows (#2148).
+ * Origin at the bike, its x forward, like Bicycle.place. `mesh.userData.ride` (a bikeride.js state) drives the wheels, crank and steering. */
 export function ghostBike() {
   bikeGeo ??= (() => {
-    const paint = (geo, hex) => { const g = geo.index ? geo.toNonIndexed() : geo.clone(), c = new THREE.Color(hex), n = g.attributes.position.count, a = new Float32Array(n * 3);
+    const paint = (geo, hex, kind) => { const g = geo.index ? geo.toNonIndexed() : geo.clone(), c = new THREE.Color(hex), n = g.attributes.position.count, a = new Float32Array(n * 3);
       for (let i = 0; i < n; i++) { a[i * 3] = c.r; a[i * 3 + 1] = c.g; a[i * 3 + 2] = c.b; }
-      g.deleteAttribute('uv'); g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g; };
+      g.deleteAttribute('uv'); g.setAttribute('color', new THREE.BufferAttribute(a, 3));
+      return addBikeParts(g, kind); };
     const [frame, tyres, metal] = bikeGeometry();
-    return mergeGeometries([paint(frame, 0x1d3c6e), paint(tyres, 0x1c1c1e), paint(metal, 0xb4b9bd)]);
+    const spokes = (hubX) => [0, 1, 2].map((k) => new THREE.BoxGeometry(0.62, 0.008, 0.006).rotateZ(k * Math.PI / 3).translate(hubX, 0.34, 0));
+    const reflector = (hubX) => new THREE.BoxGeometry(0.04, 0.05, 0.016).translate(hubX, 0.34 + 0.3, 0); // (a bright block on the rim: the turning reads at a glance)
+    const spokeGeo = mergeGeometries([...spokes(-0.5), ...spokes(0.42)].map((g) => g.toNonIndexed())), reflGeo = [reflector(-0.5), reflector(0.42)];
+    return mergeGeometries([paint(frame, 0x1d3c6e, 'frame'), paint(tyres, 0x1c1c1e, 'tyres'), paint(metal, 0xb4b9bd, 'metal'),
+      ...[[spokeGeo, 0xd7dbde]].map(([g, h]) => { const c = paint(g, h, 'spokes'); return c; }), ...reflGeo.map((g, i) => paint(g, 0xe8742a, 'spokes'))]);
   })();
-  packMat ??= new THREE.MeshLambertMaterial({ vertexColors: true });
-  const m = new THREE.Mesh(bikeGeo, packMat);
-  m.raycast = () => {}; m.name = 'ghost-bike';
+  const mat = new THREE.MeshLambertMaterial({ vertexColors: true }), uBike = turnableBikeMaterial(mat), m = new THREE.Mesh(bikeGeo, mat);
+  m.raycast = () => {}; m.name = 'ghost-bike'; m.rotation.order = 'YZX'; // (heading, then pitch about z, then roll about the forward x)
+  m.userData.ride = newBikeRide(); m.frustumCulled = false; // (the turning parts stay within the unturned bounds, but the pivot of the pitch is the origin)
+  m.onBeforeRender = () => { const r = m.userData.ride; uBike.value.set(r.wheel, r.crank, r.steer, 0); };
   return m;
 }
 

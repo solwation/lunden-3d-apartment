@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { bicycleSpeed, bicycleTakeoff } from './bikemotion.js';
 import { basketFloor, basketCollide } from './balloongeo.js';
 import { parkFillAt } from './riverpark.js';
-import { SITE, WALK, LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, jetThin, SPIDER, SOFFITS, BICYCLE, SWIM } from './config.js';
+import { SITE, WALK, LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, jetThin, SPIDER, SOFFITS, BICYCLE, SWIM, BIKE_RIDE } from './config.js';
+import { newBikeRide, stepBikeRide } from './bikeride.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY, groundBelowDeckY } from './surroundings.js';
 import { deckAt, deckUnderAt, waterYAt, upstreamRiverZone, riverAt } from './riverbridge.js';
@@ -669,10 +670,11 @@ export class Player {
 
   bikePose() {
     const r = this.riding, C = BICYCLE, pitch = r.pitch ?? 0;
-    r.bike.place(this.pos, r.yaw, pitch);
+    const ride = r.ride ??= newBikeRide();
+    r.bike.place(this.pos, r.yaw, pitch, ride); // #2148: the own bike's wheels, crank and fork turn too (ride.wheel / crank / steer)
     this.eyeY = this.pos.y + C.eye;
     this.camera.position.set(this.pos.x - Math.cos(r.yaw) * C.cameraBack, this.eyeY, this.pos.z + Math.sin(r.yaw) * C.cameraBack);
-    this.camera.rotation.set(BICYCLE.pitch + pitch, r.yaw - Math.PI / 2, 0, 'YXZ');
+    this.camera.rotation.set(BICYCLE.pitch + pitch, r.yaw - Math.PI / 2, ride.roll * BIKE_RIDE.cameraRoll, 'YXZ'); // (cameraRoll 0: off)
   }
 
   /** #1304: the bicycle cannot climb ground steeper than `WALK.maxSlope` (it stops; riding down such a slope is allowed, so a bank still leads
@@ -757,6 +759,7 @@ export class Player {
     this.bikeSplash(); // #1304: into the river
     this.edgeNotice(WALK.bikeEdge); // #1719: the bicycle stops ~1 m short of the edge, so a wider margin than on foot
     this.camera.rotation.y = r.yaw - Math.PI / 2; this.sprinting = false; this.jumpPress = false; this.crouch = this.crouched = false;
+    { const ride = r.ride ??= newBikeRide(), dy = Math.atan2(Math.sin(r.yaw - (r.lastYaw ?? r.yaw)), Math.cos(r.yaw - (r.lastYaw ?? r.yaw))); r.lastYaw = r.yaw; stepBikeRide(ride, dt, r.speed, dy / dt, r.pitch ?? 0); } // #2148: wheels / crank / fork of the own bike
     this.bikePose();
   }
 

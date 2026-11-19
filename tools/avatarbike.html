@@ -1,0 +1,59 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Ghost bicycle motion</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2148 component page: remote riders (Ghost) on their bicycle. __shot('cases') = four riders (pedalling straight / left curve from behind /
+// coasting downhill / steep climb) in a 2x2 view; __shot('wheel') = the same pedalling rider 0.06 s apart (wheel, crank).
+// Runs unchanged on the old code (before images): there the bike is rigid. Driven by tools/avatarbiketest.cjs.
+import * as THREE from 'three';
+import { Ghost } from '../src/ghosts.js';
+const W = 1400, H = 700, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H); renderer.setScissorTest(true); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.7));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+const grass = new THREE.MeshLambertMaterial({ color: 0x8a9a7a });
+const CASES = {
+  straight: { speed: 5, yawRate: 0, slope: 0, view: 'side' },
+  curve: { speed: 6, yawRate: 0.7, slope: 0, view: 'behind' },
+  downhill: { speed: 8, yawRate: 0, slope: -0.15, view: 'side' },
+  climb: { speed: 4, yawRate: 0, slope: 0.25, view: 'side' },
+};
+const make = (c, i) => {
+  const g = new Ghost(scene, i + 1, 'Cyklist ' + (i + 1)); if (g.tag) g.tag.visible = false;
+  g.root.position.set(i * 30, 0, 0); scene.add(g.root); g.root.visible = true; g.have = true; g.bikeYaw = 0; g.setBike(true); g.bikeAt({ bk: 0 }, { bk: 0 }, 1);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(c.yawRate ? 140 : 28, c.yawRate ? 140 : 100).rotateX(-Math.PI / 2), grass); floor.position.set(i * 30, 0, 0); floor.rotation.x = c.slope; scene.add(floor); // (the slope runs along the initial heading, -z)
+  g.look = [0, 0]; g.sim = { ...c, yaw: 0, t: 1000, x: i * 30, z: 0 }; return g;
+};
+const riders = Object.fromEntries(Object.entries(CASES).map(([k, c], i) => [k, make(c, i)]));
+const advance = (g, seconds) => { const s = g.sim, dt = 1 / 60;
+  for (let t = 0; t < seconds - 1e-9; t += dt) {
+    s.yaw += s.yawRate * dt; s.t += dt * 1000; const fx = -Math.sin(s.yaw), fz = -Math.cos(s.yaw);
+    s.x += fx * s.speed * dt; s.z += fz * s.speed * dt; g.root.position.set(s.x, -(s.z * Math.tan(s.slope)) * (s.yawRate ? 0 : 1), s.z); g.root.rotation.y = s.yaw; g.bikeAt({ bk: s.yaw }, { bk: s.yaw }, 1);
+    g.vy = s.speed * Math.tan(s.slope); g.animate(s.t, 1, fx * s.speed, fz * s.speed);
+  } };
+const camFor = (g, view, scale = 1) => { const s = g.sim, f = [-Math.sin(s.yaw), -Math.cos(s.yaw)], r = [Math.cos(s.yaw), -Math.sin(s.yaw)], p = g.root.position;
+  const cam = new THREE.PerspectiveCamera(view === 'close' ? 22 : 30, 1, 0.05, 80);
+  if (view === 'behind') { cam.position.set(p.x - f[0] * 4.8 + r[0] * 1.3, p.y + 1.5, p.z - f[1] * 4.8 + r[1] * 1.3); cam.lookAt(p.x + f[0] * 0.4, p.y + 0.95, p.z + f[1] * 0.4); }
+  else { const d = (view === 'close' ? 3.4 : 5.2) * scale; cam.position.set(p.x + r[0] * d, p.y + (view === 'close' ? 0.8 : 1.15), p.z + r[1] * d); cam.lookAt(p.x, p.y + (view === 'close' ? 0.55 : 0.7), p.z); }
+  return cam; };
+const draw = (g, cam, x, y, w, h) => { renderer.setViewport(x, y, w, h); renderer.setScissor(x, y, w, h); cam.aspect = w / h; cam.updateProjectionMatrix(); renderer.render(scene, cam); };
+window.__shot = (name) => {
+  if (name === 'wheel') {
+    const g = riders.straight; advance(g, 2); renderer.setClearColor(0xbfc6cc);
+    draw(g, camFor(g, 'close'), 0, 0, W / 2, H); const a = { ...g.bikeMesh.userData.ride };
+    advance(g, 0.06); draw(g, camFor(g, 'close'), W / 2, 0, W / 2, H); const b = { ...g.bikeMesh.userData.ride };
+    return { a, b };
+  }
+  const order = ['straight', 'curve', 'downhill', 'climb'], out = {};
+  order.forEach((k, i) => { const g = riders[k]; advance(g, 3); out[k] = { ...g.bikeMesh.userData.ride }; draw(g, camFor(g, CASES[k].view), (i % 2) * W / 2, i < 2 ? H / 2 : 0, W / 2, H / 2); });
+  return out;
+};
+window.__ready = true;
+</script></body></html>

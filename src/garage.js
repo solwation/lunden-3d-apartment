@@ -4,6 +4,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GARAGE as G, SITE, CORE, PLAYER, BICYCLE } from './config.js';
 import { carGeometry, bikeGeometry, bikeSpokeTexture, standGeometry } from './streetlife.js';
 import { groundY } from './surroundings.js';
+import { addBikeParts, turnableBikeMaterial } from './bikeshader.js';
 import { sfx } from './audio.js';
 import { escapeField, exitTexture, EXIT_CELLS, planTexture } from './escape.js';
 import { garageBikeRowLod } from './garagelods.js';
@@ -204,6 +205,12 @@ function plate(s, x, y, z, ry, w) {
 /** The rotation of a plate facing (ox, oz) (a PlaneGeometry faces +z). */
 const facing = (ox, oz) => Math.atan2(ox, oz);
 const FACES = { n: [0, -1], s: [0, 1], e: [1, 0], w: [-1, 0] };
+
+/** #2148: the detached (ridden) bicycle's wheels, crank and fork turn in the vertex shader by the ride state `ride()` (bikeride.js): `mesh` (and `spoke`) get the aBike attribute and a per-mesh uniform. */
+function turnBike(mesh, geo, kind, spoke, spokeGeo, ride) {
+  const set = (m, g, k) => { addBikeParts(g, k); const u = turnableBikeMaterial(m.material); m.onBeforeRender = () => { const r = ride(); if (r) u.value.set(r.wheel, r.crank, r.steer, 0); else u.value.set(0, 0, 0, 0); }; };
+  set(mesh, geo, kind); if (spoke) set(spoke, spokeGeo, 'spokes');
+}
 
 export class Garage {
   constructor(options = {}) {
@@ -587,6 +594,7 @@ export class Garage {
       const detachedSpoke = new THREE.Mesh(spokeGeo, spokeMaterial);
       detachedSolid.raycast = () => {};
       detachedSpoke.raycast = () => {};
+      turnBike(detachedSolid, solidGeo, 'any', detachedSpoke, spokeGeo, () => bicycle.ride); // #2148
 
       const detachedGroup = new THREE.Group();
       detachedGroup.add(detachedSolid, detachedSpoke);
@@ -684,7 +692,8 @@ export class Garage {
           this.material.color.setScalar(v);
           this.spokeMaterial.color.setScalar(v);
         },
-        place(p, yaw, pitch = 0) {
+        place(p, yaw, pitch = 0, ride = null) { // `ride` (#2148, bikeride.js): wheel / crank / steer, turned in the vertex shader
+          this.ride = ride;
           if (!this.detached) this.detach();
           if (this.matrix && this.position.equals(p) && this.yaw === yaw && (this.pitch ?? 0) === pitch) return;
           this.position.copy(p);
@@ -842,6 +851,7 @@ export class Garage {
 
       const detachedSolid = new THREE.Mesh(solidGeo, material);
       detachedSolid.raycast = () => {};
+      turnBike(detachedSolid, solidGeo, 'any', null, null, () => bicycle.ride); // #2148
 
       const detachedGroup = new THREE.Group();
       detachedGroup.add(detachedSolid);
@@ -870,6 +880,7 @@ export class Garage {
         }
         const detachedSpoke = new THREE.Mesh(spokeGeo, spokeMaterial);
         detachedSpoke.raycast = () => {};
+        turnBike(detachedSpoke, spokeGeo, 'spokes', null, null, () => bicycle.ride); // #2148
         detachedGroup.add(detachedSpoke);
       }
 
@@ -983,7 +994,8 @@ export class Garage {
           this.material.color.setScalar(v);
           this.spokeMaterial.color.setScalar(v);
         },
-        place(p, yaw, pitch = 0) {
+        place(p, yaw, pitch = 0, ride = null) { // `ride` (#2148, bikeride.js): wheel / crank / steer, turned in the vertex shader
+          this.ride = ride;
           if (!this.detached) this.detach();
           if (this.matrix && this.position.equals(p) && this.yaw === yaw && (this.pitch ?? 0) === pitch) return;
           this.position.copy(p);

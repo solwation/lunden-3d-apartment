@@ -10475,3 +10475,21 @@ export const AVATAR_CARRY = {
     aim: { side: 0.2, y0: 1.38, reach: 0.46, lean: 0, elbow: 0.6, item: [0, 0, 0] },
   },
 };
+
+// #2148: how a riding avatar's bicycle and body move with the ride (src/bikeride.js). All *guess* game-feel values, derived from
+// the speed, yaw rate and slope the peers already see (no new wire field). Gear: an auto-shifting ratio (wheel turns per crank
+// turn) so the crank is ~50-75 rpm at 5-11 m/s instead of the old ~240 rpm; below `freewheelDecel` m/s2 of deceleration or on
+// a downhill steeper than `freewheelSlope` rad the crank stops while the wheels keep turning.
+export const BIKE_RIDE = {
+  wheelRadius: 0.35, // BICYCLE.wheelRadius (the model's wheels)
+  gear: { low: 1.4, perSpeed: 0.22, high: 4 }, // wheel revolutions per crank revolution = clamp(low + speed * perSpeed, low, high)
+  crankEase: 6, // 1/s: how fast the crank speeds up / stops
+  freewheelDecel: 0.35, freewheelSlope: 0.06, // m/s2 decelerating, rad downhill (~3.4 deg)
+  accelTau: 0.25, yawTau: 0.12, slopeTau: 0.25, // s, low-pass of the measured acceleration, yaw rate and slope
+  leanMax: 0.45, leanGain: 1.1, leanEase: 7, // rad of bike + rider roll (v * yawRate / g, times the gain), 1/s approach
+  pitchMax: 0.5, // rad, bike pitch from the slope
+  stand: { from: 0.1, to: 0.16, ease: 4, hip: [1.12, -0.02], lean: -0.8, rock: 0.07 }, // rad slope where the rider rises out of the saddle, the standing hip [y, z], torso lean, bike roll rocking (rad) with the pedals
+  steerMax: 0.45, steerEase: 10, wheelbase: 0.92, steerPivotX: 0.375, // rad, 1/s, m, the fork's axis x on the bike
+  gripX: 0.31, gripZ: 0.25, gripY: 0.95, // BICYCLE_GRIP: the handlebar's grips (bike frame: x forward, z right)
+  cameraRoll: 0, // rad per rad of lean on the player's own camera (0 = off; ~0.1 is "very small") *guess*
+};

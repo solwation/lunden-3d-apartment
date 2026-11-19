@@ -37,6 +37,7 @@ import { trimOutbox } from './outbox.js';
 import { AvatarLight } from './avatarlight.js'; // #2017: the avatars' light follows the room's light level
 import { AvatarShadows } from './avatarshadow.js'; // #2010: soft contact shadows, one draw call
 import { GhostFar } from './ghostfar.js'; // #1966: far players as one draw call
+import { stepBikeRide, bikeGrip, bikeSeat } from './bikeride.js';
 import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
 
 // Other players as ghosts (#666): a WebSocket to the Worker's players' room (cloudflare/players.js, one Durable Object for
@@ -272,8 +273,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
   /** The bicycle under a rider (#1286): `bk` the bike's heading (camera-yaw convention, as `r`), null when not riding. */
   setBike(on) {
     if (on === !!this.bikeMesh) return;
-    if (!on) { this.bikeMesh.removeFromParent(); this.bikeMesh = null; this.bikeYaw = null; return; }
-    this.bikeMesh = ghostBike(); this.root.add(this.bikeMesh);
+    if (!on) { this.bikeMesh.removeFromParent(); this.bikeMesh.material.dispose(); this.bikeMesh = null; this.bikeYaw = null; this.avatar.object.rotation.set(0, this.avatar.object.rotation.y, 0, 'XYZ'); return; }
+    this.bikeMesh = ghostBike(); this.root.add(this.bikeMesh); this.bikeLastYaw = null;
   }
 
   /** The riding state at render time: the heading is interpolated like `r`. */
@@ -284,13 +285,20 @@ export class Ghost { // (exported for tools/ghostprops.html)
     if (this.bikeMesh) this.bikeMesh.rotation.y = Math.PI / 2 + wrap(this.bikeYaw - this.root.rotation.y); // (the bike's heading against the look; its x is forward)
   }
 
-  /** Seated on the saddle, the hands on the handlebar, the feet turning the pedals (animate, after the ordinary pose). */
-  poseBike(dt, speed, turn = 0) {
-    this.bikePhase = ((this.bikePhase ?? 0) + dt * speed * 5) % (Math.PI * 2);
-    const ph = this.bikePhase, pedal = (s) => [s * 0.115, 0.44 + 0.17 * Math.sin(ph + (s > 0 ? 0 : Math.PI)), -0.05 + 0.17 * Math.cos(ph + (s > 0 ? 0 : Math.PI))];
-    poseOlof(this.avatar, { hip: [0.86, -0.12], lean: -0.45, head: -0.25 + (this.look?.[1] ?? 0), turn,
+  /** Seated on the saddle (or standing on a steep climb), the hands on the turned handlebar, the feet on the cranks, which turn
+   * with a cadence from the speed and stop when freewheeling; the bike and the rider lean into the curve and follow the slope (#2148).
+   * `vy`: the climb rate m/s; the yaw rate comes from the bicycle's heading between frames. */
+  poseBike(dt, speed, turn = 0, vy = 0) {
+    const ride = this.bikeMesh.userData.ride, yaw = this.bikeYaw;
+    const yawRate = this.bikeLastYaw != null && dt > 0 ? wrap(yaw - this.bikeLastYaw) / dt : 0; this.bikeLastYaw = yaw;
+    stepBikeRide(ride, dt, speed, yawRate, speed > 0.5 ? Math.atan2(vy, speed) : 0);
+    const ph = ride.crank - Math.PI / 2, pedal = (s) => [s * 0.115, 0.44 + 0.17 * Math.sin(ph + (s > 0 ? 0 : Math.PI)), -0.05 + 0.17 * Math.cos(ph + (s > 0 ? 0 : Math.PI))];
+    const seat = bikeSeat(ride.stand);
+    this.bikeMesh.rotation.x = ride.roll; this.bikeMesh.rotation.z = ride.pitch;
+    const o = this.avatar.object; o.rotation.order = 'YXZ'; o.rotation.x = -ride.pitch; o.rotation.z = ride.roll;
+    poseOlof(this.avatar, { hip: seat.hip, lean: seat.lean, head: -0.25 + (this.look?.[1] ?? 0), turn,
       feet: [pedal(1), pedal(-1)], knee: [0.3, 0.9, 1],
-      hands: [1, -1].map((s) => ({ at: [s * 0.27, 0.95, 0.31], pole: [s, 0, -0.5] })), can: null });
+      hands: [1, -1].map((s) => ({ at: bikeGrip(s, ride.steer), pole: [s, 0, -0.5] })), can: null });
   }
 
   /** A hug (#1405), `amount` 0 … 1: the body turns to the partner and steps half the way in (the feet's network
@@ -463,7 +471,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     if (wet) sink(this.avatar.swimAmt, this.avatar.swimLine, this.avatar.diveAmt); // (blending in from standing on the bed)
     applyRestPose(this.avatar, this.pose, this.look, react);
     applyGymBodyPose(this.avatar,this.gx,this.look);
-    if (this.bikeMesh) this.poseBike(dt, Math.hypot(vx, vz), turn);
+    if (this.bikeMesh) this.poseBike(dt, Math.hypot(vx, vz), turn, this.vy ?? 0);
     const poseKey = this.gx || this.bikeMesh || air || wet || amount ? -1 : this.pose || 0;
     const poseFrame = this.poseFrame ??= [0, 0, 0, 0, 1, 1];
     poseFrame[0] = this.root.position.x; poseFrame[1] = this.root.position.y; poseFrame[2] = this.root.position.z;

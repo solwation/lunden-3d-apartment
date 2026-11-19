@@ -17,6 +17,7 @@ import { lobeGeometry, leafMaterial, windLeafMaterial } from './foliage.js';
 import { siteWindBounds } from './sitewind.js';
 import { glowMaterial, poolGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { bikeGeometry, bikeSpokeTexture, standGeometry } from './streetlife.js';
+import { bikeVertexParts, bikeVertexAt } from './bikeride.js';
 import { benchSlat, benchWood, padBenchSlats } from './benchwood.js';
 import { snowCap } from './snowcap.js'; // #2123
 
@@ -541,6 +542,7 @@ export function buildCourtyard() {
     mesh.geometry.attributes.position.setUsage(THREE.DynamicDrawUsage);
     mesh.geometry.attributes.normal.setUsage(THREE.DynamicDrawUsage);
   }
+  const nOf = (g) => g.index?.count ?? g.attributes.position.count, bikeFrameN = nOf(bikes[0]), bikeTyresN = nOf(bikes[1]), bikeMetalN = nOf(bikes[2]), tmp = [0, 0, 0]; // (#2148: the three parts of one bike in the solid batch)
   const counts = [bikes.slice(0, 3).reduce((n, g) => n + (g.index?.count ?? g.attributes.position.count), 0),
     bikeSpokes[0].index?.count ?? bikeSpokes[0].attributes.position.count];
   for (const bicycle of bicycles) {
@@ -549,19 +551,35 @@ export function buildCourtyard() {
     pick.userData.moving = true; group.add(pick);
     const ranges = components.map((mesh, k) => {
       const start = bicycle.index * counts[k], count = counts[k], a = mesh.geometry.attributes;
-      return { start, count, position: a.position.array.slice(start * 3, (start + count) * 3),
+      const r = { start, count, position: a.position.array.slice(start * 3, (start + count) * 3),
         normal: a.normal.array.slice(start * 3, (start + count) * 3) };
+      // #2148: which vertices turn with the wheels, the crank and the handlebar (bikeride.js), in the bike's own frame (origin = the rack position, yaw 0)
+      const local = new Float32Array(r.position.length), o = bicycle.position;
+      for (let i = 0; i < count; i++) { local[i * 3] = r.position[i * 3] - o.x; local[i * 3 + 1] = r.position[i * 3 + 1] - o.y; local[i * 3 + 2] = r.position[i * 3 + 2] - o.z; }
+      const parts = new Uint8Array(count), steered = new Uint8Array(count);
+      if (k === 1) bikeVertexParts(local, 'spokes', count, parts, steered);
+      else { let at = 0; [[bikeFrameN, 'frame'], [bikeTyresN, 'tyres'], [bikeMetalN, 'metal']].forEach(([n, kind]) => { bikeVertexParts(local.subarray(at * 3, (at + n) * 3), kind, n, parts.subarray(at, at + n), steered.subarray(at, at + n)); at += n; }); }
+      r.local = local; r.moving = []; for (let i = 0; i < count; i++) if (parts[i] || steered[i]) r.moving.push(i);
+      r.parts = parts; r.steered = steered; r.origin = o.clone(); r.turnedPos = Float32Array.from(r.position);
+      return r;
     });
     Object.assign(bicycle, { original, matrix: original.clone(), rackSegments: bicycleRack, atSource: true, ridden: false,
       components, ranges, pick,
-      place(p, yaw, pitch = 0) {
-        if (this.position.equals(p) && this.yaw === yaw && (this.pitch ?? 0) === pitch) return;
+      place(p, yaw, pitch = 0, anim = null) { // `anim` (#2148): { wheel, crank, steer } rad, turning the wheels, the crank and the fork
+        const aw = anim?.wheel ?? 0, ac = anim?.crank ?? 0, as = anim?.steer ?? 0;
+        if (this.position.equals(p) && this.yaw === yaw && (this.pitch ?? 0) === pitch && this.animKey === `${aw}|${ac}|${as}`) return;
+        this.animKey = `${aw}|${ac}|${as}`;
         const delta = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(0,yaw,pitch,'YXZ')).setPosition(p).multiply(original.clone().invert());
         const normal = new THREE.Matrix3().getNormalMatrix(delta), v = new THREE.Vector3();
         components.forEach((mesh, k) => {
           const range = ranges[k], a = mesh.geometry.attributes;
+          if (aw || ac || as) for (const i of range.moving) { // (the own bike's wheels / crank / fork, applied to the unturned positions below)
+            bikeVertexAt(range.local.subarray(i * 3, i * 3 + 3), range.parts[i], range.steered[i], aw, ac, as, tmp);
+            range.turnedPos[i * 3] = tmp[0] + range.origin.x; range.turnedPos[i * 3 + 1] = tmp[1] + range.origin.y; range.turnedPos[i * 3 + 2] = tmp[2] + range.origin.z;
+          }
+          const src = aw || ac || as ? range.turnedPos : range.position;
           for (let i = 0; i < range.count; i++) {
-            v.fromArray(range.position, i * 3).applyMatrix4(delta); a.position.setXYZ(range.start + i, v.x, v.y, v.z);
+            v.fromArray(src, i * 3).applyMatrix4(delta); a.position.setXYZ(range.start + i, v.x, v.y, v.z);
             v.fromArray(range.normal, i * 3).applyMatrix3(normal); a.normal.setXYZ(range.start + i, v.x, v.y, v.z);
           }
           a.position.needsUpdate = a.normal.needsUpdate = true;
