@@ -91,6 +91,7 @@ docs/verification/2178/README.md.
 docs/development/rigged-cat-evaluation.md #1892 architecture & mobile performance evaluation for rigged GLB cats
 tools/riggedcattest.html  #1892 interactive & headless prototype for rigged vs procedural cat evaluation
 tools/riggedcattest.mjs   #1892 automated model validation for rigged GLB cat evaluation
+src/corvids.js         #2196 corvid counts by species/season, CorvidFlock (walk/hop gaits) (node test tools/corvidtest.mjs, browser tools/corvids2196browser.cjs)
 src/birdsong.js        #2178 bird song / gull call schedule, phrases, perch pick, scheduler (node test tools/birdsongtest.mjs, browser tools/birdsongbrowser.cjs)
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
 src/catlife.js         #2125 pure helpers: sitting habits, grooming kind, tail spring + mood flicks, ear aim/twitch, stretch (node test tools/catlifetest.mjs)
@@ -965,6 +966,21 @@ someone within 9 m sends a standing gull up early. Everything is seeded and loca
 unchanged (the observer reads a landed gull's real position via `Birds.gullPoint`). `Birds.groundBirds()` lists birds sitting on the ground: an
 optional hook for stalking cats (#2125), not used yet. Tunables: `BIRD_LIFE` (*guess*). Browser: `tools/birds2129browser.cjs`;
 [evidence](../verification/2129/README.md).
+
+### Corvids all year (#2196)
+
+Jackdaws, hooded crows and magpies (`CORVIDS` in config.js, all *guesses*) live in the same two home areas as the #2129 flocks and use the same perches
+(`collectPerches` groups are shared) and the same `SmallFlock` rules; `src/corvids.js` (no three.js; `tools/corvidtest.mjs`) adds `corvidCount`
+(species x home x month: jackdaws gather in winter and pair off while nesting, crows stay a pair, phones keep only courtyard jackdaws and crows at half
+the number) and `CorvidFlock`, which overrides the ground behaviour: jackdaw and crow STRIDE (`walkSpeed` m/s, `stride` legs, body rock per step,
+pauses, pecks), the magpie hops and flicks its tail (a short pitch kick of the whole body; there is no separate tail bone). Drawing: `corvidGeometry(kind)`
+(gullmodel.js, ~150 triangles each, legs included) on the gull shader, ONE instanced mesh per species (three draws at most, none on phones for the
+magpie) with a CLONE of the gull material (same shader source, so no new program) whose `uFade`/`uTime` are the corvids' own: they are shown by
+daylight in the area whatever the weather or snow (the gulls and small birds stay gated by rain/snowfall and the cloud whiteout). Cats stalk their ground
+birds and chatter at their perched ones through the existing `groundBirds()` / `perchedBirds()`. Calls: `corvidCall(species)` (birdsong.js; jackdaw
+"kjack", crow "kraa", magpie chatter) and `corvidRate`, drawn by `BirdSong` from a random corvid within `corvidRange` m through `sfx.birdCall`, so the
+shared `VoiceCap(2)` and `BIRD_SONG.indoors` apply. Debug `&nocorvids`. Not done: bestiary entries (`bird:*` has no sparrow entries either), winter
+gull/redwing numbers. Browser: `tools/corvids2196browser.cjs`.
 
 ## Squirrels and nuts (#1672)
 

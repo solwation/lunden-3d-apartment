@@ -783,7 +783,7 @@ const plantWind=new PlantWind(world,weather);scene.traverse(windShadow);
 const curtainWind=new CurtainWind(blinds.curtains,world,LEVELS); // #2198
 const [windForce, windTime] = (params0.get('wind') ?? '').split(',').map((v) => (v === '' ? NaN : Number(v)));
 let windSoundT = 0, windBed = null, ambientBed = null; // #2177, #2190
-let birdSongT = 0; const birdSong = new BirdSong((c, p, l) => sfx.birdCall(c, p, l)), birdEye = { x: 0, y: 0, z: 0 }, gullTmp = new THREE.Vector3(), birdGulls = { n: 0, at: (i, o) => { birds.gullPoint(i, gullTmp); o.x = gullTmp.x; o.y = gullTmp.y; o.z = gullTmp.z; } }; // #2178
+let birdSongT = 0; const birdSong = new BirdSong((c, p, l) => sfx.birdCall(c, p, l)), birdEye = { x: 0, y: 0, z: 0 }, gullTmp = new THREE.Vector3(), birdCorvids = { n: 0, at: (i, o) => birds.corvidAt(i, o) }, birdGulls = { n: 0, at: (i, o) => { birds.gullPoint(i, gullTmp); o.x = gullTmp.x; o.y = gullTmp.y; o.z = gullTmp.z; } }; // #2178
 const siteWind = new SiteWind(weather, { force: windForce, time: windTime }); // #2101: trees, shrubs and reeds sway; &wind=power[,seconds] pins it
 const tableSetting = new TableSetting(life,world);
 const hallCare = new HallCare(life,world);
@@ -4055,8 +4055,9 @@ function step(dt) {
     const step = birdSongT; birdSongT = 0;
     const st = sunTimes(day.doy), eye = camera.position; birdEye.x = eye.x; birdEye.y = eye.y; birdEye.z = eye.z;
     birdGulls.n = birds?.count ?? 0;
+    birdCorvids.n = birds?.corvidTotal() ?? 0; // #2196
     birdSong.update(step, { month: day.month, hour: day.hour, rise: st?.[0] ?? 6, set: st?.[1] ?? 18, rain: weather.rain, indoors: !player.outdoors || player.inCore || player.inPlayroom,
-      eye: birdEye, crowns: aoTrees, gulls: birds && birds.fade > 0.5 ? birdGulls : null, flushed: birds?.gullFlushes ?? 0, flushAt: birds?.gullFlushAt ?? null });
+      eye: birdEye, crowns: aoTrees, gulls: birds && birds.fade > 0.5 ? birdGulls : null, corvids: birds && birdCorvids.n ? birdCorvids : null, flushed: birds?.gullFlushes ?? 0, flushAt: birds?.gullFlushAt ?? null });
   }
   greet.update(dt); conversation.update(); // speech bubbles (#247)
   if (cat.visible && !cat.held && !cat.released) cat.followRug(); // #1009: idle floor support also follows material previews.

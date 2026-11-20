@@ -2386,14 +2386,14 @@ export const AMBIENT_BED = {
 // birds at once (VoiceCap); `peak` phrases per minute at the strongest hour of the strongest month; `month[m-1]` = [season level 0…1,
 // blackbird, chaffinch, great tit, robin weights]; `dawn`/`evening` = hours around sunrise / sunset (chorus months only: `chorus`);
 // `day` the base share of the peak by day; `rain` precipitation 0…1 from `rainFrom` to `rainTo` thins song to `rainLeft` of its rate;
-// `gull` calls per minute by day, `gullAlarm` flushed-flock cry calls; `level` loudness (songbird / gull / alarm), `indoors` the extra share heard through walls (1 since #2181: occlusion applies it).
+// `gull` calls per minute by day, `gullAlarm` flushed-flock cry calls, `corvid` calls per minute per corvid in range (x up to 3; daylight, all year, #2196) heard within `corvidRange` m; `level` loudness (songbird / gull / alarm), `indoors` the extra share heard through walls (1 since #2181: occlusion applies it).
 export const BIRD_SONG = {
   every: 0.25, range: 40, gullRange: 60, maxVoices: 2, peak: 14, day: 0.3, chorus: [3, 4, 5, 6, 7],
   month: [[0.2, 0, 0, 0.5, 0.6], [0.3, 0.1, 0, 0.7, 0.7], [0.7, 0.7, 0.5, 0.9, 0.8], [1, 1, 1, 1, 0.8], [1, 1, 1, 0.9, 0.7], [0.9, 1, 0.9, 0.7, 0.6],
     [0.6, 0.6, 0.4, 0.4, 0.5], [0.15, 0.05, 0, 0.15, 0.5], [0.2, 0, 0, 0.2, 0.6], [0.25, 0, 0, 0.3, 0.7], [0.2, 0, 0, 0.4, 0.6], [0.15, 0, 0, 0.4, 0.5]],
   dawn: { from: -1.1, full: -0.4, hold: 0.6, to: 1.8, boost: 0.7 }, evening: { from: -2, full: -1.2, hold: -0.2, to: 0.4, boost: 0.3 },
   night: { before: -1.2, after: 0.5 }, nonChorusBoost: 0.1,
-  rainFrom: 0.03, rainTo: 0.4, rainLeft: 0.04, gull: 3, gullAlarm: 8, level: { song: 0.2, gull: 0.3, alarm: 0.4 }, indoors: 1, ref: 6, // #2181: indoors = 1: the walls/facade now dull a bird call themselves (soundocclusion.js via audio.js out()); the old x0.2 would double it
+  rainFrom: 0.03, rainTo: 0.4, rainLeft: 0.04, gull: 3, gullAlarm: 8, corvid: 2.5, corvidRange: 50, level: { song: 0.2, gull: 0.3, alarm: 0.4, corvid: 0.35 }, indoors: 1, ref: 6, // #2181: indoors = 1: the walls/facade now dull a bird call themselves (soundocclusion.js via audio.js out()); the old x0.2 would double it
 };
 
 // Speech bubbles (#247, src/greet.js): Olof's lines and your own show for `bubble` s. The neighbours to greet were
@@ -5344,6 +5344,27 @@ export const BIRD_LIFE = {
   hop: [0.08, 0.28], hopTime: 0.22, hopHeight: 0.05, hopEvery: [0.7, 2.6], peckEvery: [0.4, 1.6], peckTime: 0.28, peckPitch: 0.75, turnEvery: [1.5, 5],
   flush: { ground: 7, rail: 5.5, roof: 3.5, tree: 3 }, flushUp: 5, flee: 14, react: 0.3,
   gull: { minRoofY: 8, area: 115, period: [150, 320], glide: 7, stand: [35, 90], takeoff: 9, flush: 9, standY: 0.07, perRoof: 2, spots: 24, flapHz: 2.6 },
+};
+
+// #2196: corvids all year (jackdaw, hooded crow, magpie), drawn as their own instanced batches (one draw per species) with the gull
+// shader and driven by the #2129 SmallFlock rules, so they stay when snow hides the gulls and the small birds. All *guess* by eye and by
+// what is common in Lund. Per species: `size` m body+tail length (the model is 1 unit long), `standY` m belly height over the ground,
+// `flapHz`, `gait` 'walk' (strides with a rocking head and body, pauses to peck) or 'hop' (hops, a flick of the tail after a landing),
+// `base` birds per home area (gården / parken), `season[month-1]` multiplier on it (jackdaws gather in flocks in winter and pair off while
+// nesting), `phone` whether the phone profile keeps them (courtyard only, half the number, at least one), `life` overrides of BIRD_LIFE.
+// `walkSpeed` m/s of a stride, `stride` [min, max] m of one walk leg, `rock` rad of body pitch per step, `stepHz` steps/s, `flick` rad / s of the
+// magpie's tail flick (a pitch kick of the whole body, there is no separate tail bone), `pause` [min, max] s standing between legs.
+export const CORVIDS = {
+  species: {
+    jackdaw: { name: 'kaja', gait: 'walk', size: 0.36, standY: 0.1, flapHz: 6.5, base: { gården: 4, parken: 3 }, season: [1.5, 1.5, 1.2, 0.5, 0.5, 0.5, 0.75, 1, 1.2, 1.5, 1.5, 1.5], phone: true, seed: 11,
+      life: { speed: [7, 10], burst: [0.8, 1.8], glide: [0.08, 0.2], flush: { ground: 7, rail: 5, roof: 4, tree: 3 }, dwell: { tree: [30, 80], roof: [40, 120], rail: [25, 60], ground: [25, 70] } } },
+    crow: { name: 'gråkråka', gait: 'walk', size: 0.47, standY: 0.13, flapHz: 4.5, base: { gården: 2, parken: 2 }, season: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], phone: true, seed: 23,
+      life: { speed: [8, 11], burst: [1, 2.2], glide: [0.1, 0.25], flush: { ground: 9, rail: 6, roof: 5, tree: 4 }, dwell: { tree: [30, 90], roof: [30, 90], rail: [25, 60], ground: [30, 80] } } },
+    magpie: { name: 'skata', gait: 'hop', size: 0.46, standY: 0.12, flapHz: 5.5, base: { gården: 2, parken: 2 }, season: [1.5, 1.5, 1, 1, 1, 1, 1, 1, 1, 1, 1.5, 1.5], phone: false, seed: 37,
+      life: { speed: [7, 9.5], burst: [0.6, 1.4], glide: [0.1, 0.25], hop: [0.2, 0.55], hopTime: 0.3, hopHeight: 0.1, hopEvery: [0.6, 2], flush: { ground: 8, rail: 5.5, roof: 4.5, tree: 3.5 }, dwell: { tree: [25, 70], roof: [25, 70], rail: [20, 50], ground: [25, 60] } } },
+  },
+  walkSpeed: 0.55, stride: [0.8, 2.6], rock: 0.14, stepHz: 2.4, pause: [0.6, 2.2], flick: 0.5, flickEvery: [1.2, 3.5], flickTime: 0.22,
+  fadeIn: 1.5,
 };
 
 // Hot-air balloon (#1646, src/balloon.js, src/balloongeo.js): now and then one drifts round the area above the cloud deck (SKYLAYER) and a

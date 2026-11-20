@@ -75,3 +75,47 @@ export function sparrowGeometry() {
   g.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3)); g.setAttribute('aWing', new THREE.Float32BufferAttribute(wings, 1));
   g.computeBoundingSphere(); return (sparrow = g);
 }
+
+// #2196: the corvids (jackdaw, hooded crow, magpie): the same attribute layout and shader as the gull and the sparrow (no new program), one
+// geometry per species so each is ONE instanced draw. The model is ~1 unit long (bill to tail tip excluded of the long magpie tail), the
+// pose's `size` is its length in m. Heavier body, bill and head than the sparrow, long dark legs (belly at y -0.14, feet at -0.34),
+// broad wings (half-span `wing`), and a tail of `tail` units. Colours *guess* by eye: jackdaw black with a grey nape, hooded crow grey
+// body with black head, wings and tail, magpie black and white with a long dark tail and white shoulder/belly. ~140 triangles each.
+const corvidCache = {};
+const CORVID_LOOK = {
+  jackdaw: { wing: 1.0, tail: 0.3, bill: 0.12, body: 0x2c2e33, head: 0x1d1f23, nape: 0x8c9096, wingC: 0x25272b, tip: 0x15161a, tailC: 0x1d1e22, billC: 0x15161a, belly: 0x34363b },
+  crow: { wing: 1.05, tail: 0.32, bill: 0.15, body: 0x9d9fa1, head: 0x18191c, nape: 0x18191c, wingC: 0x1b1c20, tip: 0x111215, tailC: 0x17181b, billC: 0x111215, belly: 0xa9aaab, hood: true },
+  magpie: { wing: 0.68, tail: 0.62, bill: 0.1, body: 0x15171b, head: 0x14161a, nape: 0x14161a, wingC: 0x1a2c44, tip: 0x12202f, tailC: 0x1c3a3c, billC: 0x0e0f12, belly: 0xf1f1ee, patch: 0xf4f4f1, white: true },
+};
+export function corvidGeometry(kind) {
+  if (corvidCache[kind]) return corvidCache[kind];
+  const K = CORVID_LOOK[kind], positions = [], normals = [], colors = [], wings = [], col = (h) => new THREE.Color(h);
+  const body = col(K.body), head = col(K.head), nape = col(K.nape), wingC = col(K.wingC), tip = col(K.tip), tailC = col(K.tailC), billC = col(K.billC), belly = col(K.belly), patch = K.patch ? col(K.patch) : null, leg = col(0x121212);
+  function add(g, color, wing = 0) {
+    const flat = g.index ? g.toNonIndexed() : g, p = flat.attributes.position, n = flat.attributes.normal;
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), y = p.getY(i), z = p.getZ(i), c = typeof color === 'function' ? color(x, y, z) : color;
+      positions.push(x, y, z); normals.push(n.getX(i), n.getY(i), n.getZ(i)); colors.push(c.r, c.g, c.b); wings.push(wing);
+    }
+    if (flat !== g) flat.dispose(); g.dispose();
+  }
+  const sheet = (pts, side, y, color, wing = 0) => {
+    const ring = pts.map(([x, z]) => new THREE.Vector2(x * side, z)), p = [];
+    for (const f of THREE.ShapeUtils.triangulateShape(ring, [])) { for (const i of f) p.push(ring[i].x, y, ring[i].y); for (const i of f.slice().reverse()) p.push(ring[i].x, y - 0.012, ring[i].y); }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); g.computeVertexNormals(); add(g, color, wing);
+  };
+  // body: the hooded crow's mantle and belly are grey but its breast front (z > 0.12) is black like the hood; the magpie's belly is white
+  add(new THREE.SphereGeometry(1, 8, 6).scale(0.15, 0.14, 0.32).translate(0, 0, -0.04), (x, y, z) => (K.hood && z > 0.14 ? head : y < -0.02 && !(K.white && z >= 0.2) ? belly : body));
+  add(new THREE.SphereGeometry(1, 7, 5).scale(0.105, 0.105, 0.13).translate(0, 0.11, 0.3), (x, y, z) => (z < 0.29 ? nape : head));
+  add(new THREE.ConeGeometry(0.05, K.bill + 0.1, 5).rotateX(Math.PI / 2).translate(0, 0.095, 0.44 + K.bill * 0.4), billC);
+  sheet([[-0.06, -0.24], [-0.1 - K.tail * 0.1, -0.5 - K.tail], [0.1 + K.tail * 0.1, -0.5 - K.tail], [0.06, -0.24]], 1, 0.03, tailC);
+  for (const side of [-1, 1]) {
+    const w = K.wing; // broad wing, fingered tip: the outer part darker
+    sheet([[0.06, 0.14], [0.26 * w, 0.1], [0.62 * w, -0.02], [0.98 * w, -0.1], [0.8 * w, -0.2], [0.5 * w, -0.2], [0.24 * w, -0.2], [0.06, -0.2]], side, 0.07, (x) => (Math.abs(x) > 0.62 * w ? tip : (patch && Math.abs(x) < 0.4 * w ? patch : wingC)), side);
+  }
+  for (const side of [-1, 1]) add(new THREE.BoxGeometry(0.028, 0.22, 0.028).translate(side * 0.06, -0.24, 0.02), leg);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3)); g.setAttribute('aWing', new THREE.Float32BufferAttribute(wings, 1));
+  g.computeBoundingSphere(); return (corvidCache[kind] = g);
+}

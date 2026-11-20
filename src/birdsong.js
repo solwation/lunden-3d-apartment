@@ -88,6 +88,23 @@ export function gullCall(kind, rnd = Math.random) {
   return { species: 'gull', kind, type: 'sawtooth', hz: kind === 'alarm' ? 1500 : 1600, q: 1.3, dur: t, notes };
 }
 
+/** Corvid calls per minute (a flock within range): by day, all year; crows keep quieter in rain. */
+export function corvidRate({ hour = 12, rise = 6, set = 18, rain = 0 } = {}) {
+  const lit = smooth(0, 0.6, hour - rise) * (1 - smooth(-0.6, 0, hour - set));
+  return S.corvid * lit * (1 - 0.7 * smooth(0.1, 0.5, rain));
+}
+
+/** #2196: one call of a corvid: 'jackdaw' (1-3 sharp "kjack"s), 'crow' (2-3 hoarse "kraa"s) or 'magpie' (a dry chatter "tjek-tjek-tjek-tjek"). Same shape as gullCall. */
+export function corvidCall(species, rnd = Math.random) {
+  const notes = [];
+  let t = 0, hz = 1800, q = 1.3, type = 'sawtooth';
+  const note = (d, f0, f1, g, gap) => { notes.push({ t, d, f0, f1, g }); t += d + gap; };
+  if (species === 'jackdaw') { hz = 2100; for (let n = 1 + Math.floor(rnd() * 3), f = rr(rnd, 1500, 1900); n > 0; n--) note(rr(rnd, 0.07, 0.11), f, f * rr(rnd, 0.6, 0.75), rr(rnd, 0.8, 1), rr(rnd, 0.12, 0.3)); }
+  else if (species === 'crow') { hz = 1100; q = 0.9; for (let n = 2 + Math.floor(rnd() * 2), f = rr(rnd, 480, 600); n > 0; n--) note(rr(rnd, 0.25, 0.4), f, f * rr(rnd, 0.75, 0.9), rr(rnd, 0.8, 1), rr(rnd, 0.2, 0.4)); }
+  else { hz = 2600; q = 1.8; type = 'square'; for (let n = 5 + Math.floor(rnd() * 4), f = rr(rnd, 2200, 2600); n > 0; n--) note(0.05, f, f * 0.85, rr(rnd, 0.6, 0.9), 0.045); }
+  return { species, kind: 'corvid', type, hz, q, dur: t, notes };
+}
+
 const range3 = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
 
 /**
@@ -107,11 +124,11 @@ export function pickPerch(crowns, eye, range, rnd, out = { x: 0, y: 0, z: 0 }) {
 /**
  * The scheduler. `play(call, pos, level)` → true when a voice was taken (audio.js sfx.birdCall: the VoiceCap lives there).
  * `update(dt, st)`: st = { month, hour, rise, set, rain, indoors, eye: { x, y, z }, crowns, gulls: { n, at(i, out) } | null,
- * flushed (a running count of flushes of the gull flock), flushAt: { x, y, z } }.
+ * flushed (a running count of flushes of the gull flock), flushAt: { x, y, z }, corvids: { n, at(i, out) → species | null } | null (#2196) }.
  */
 export class BirdSong {
   constructor(play, rnd = Math.random) {
-    Object.assign(this, { play, rnd, perch: { x: 0, y: 0, z: 0 }, gull: { x: 0, y: 0, z: 0 }, flushed: null, stats: { song: 0, gull: 0, alarm: 0, skipped: 0 } });
+    Object.assign(this, { play, rnd, perch: { x: 0, y: 0, z: 0 }, gull: { x: 0, y: 0, z: 0 }, flushed: null, stats: { song: 0, gull: 0, alarm: 0, corvid: 0, skipped: 0 } });
   }
   /** Poisson: does an event of `perMin` per minute happen within `dt` s? */
   hit(perMin, dt) { return perMin > 0 && this.rnd() < 1 - Math.exp(-perMin * dt / 60); }
@@ -125,6 +142,11 @@ export class BirdSong {
     if (this.hit(plan.rate, dt)) {
       const pos = pickPerch(st.crowns, st.eye, S.range, rnd, this.perch), sp = pickSpecies(plan.mix, rnd());
       if (pos && sp) this.play(songPhrase(sp, rnd), pos, S.level.song * level) ? T.song++ : T.skipped++;
+    }
+    if (st.corvids && st.corvids.n > 0 && this.hit(corvidRate(st) * Math.min(3, st.corvids.n), dt)) { // #2196: a call from a random corvid within range
+      let near = 0, c = this.gull, pick = -1, kind = null;
+      for (let i = 0; i < st.corvids.n; i++) { const k = st.corvids.at(i, c); if (k && range3(c, st.eye) <= S.corvidRange && rnd() * ++near < 1) { pick = i; kind = k; } }
+      if (pick >= 0) { st.corvids.at(pick, c); this.play(corvidCall(kind, rnd), c, S.level.corvid * level) ? T.corvid++ : T.skipped++; }
     }
     if (st.gulls && this.hit(gullRate(st), dt)) {
       let near = 0, g = this.gull, pick = -1;

@@ -1,8 +1,9 @@
 import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
-import { BIRDS, SKYLAYER, GULL_SURFACE as S, BIRD_LIFE as L } from './config.js';
-import { gullGeometry, sparrowGeometry } from './gullmodel.js';
+import { BIRDS, SKYLAYER, GULL_SURFACE as S, BIRD_LIFE as L, CORVIDS as CV } from './config.js';
+import { gullGeometry, sparrowGeometry, corvidGeometry } from './gullmodel.js';
 import { collectPerches, gullSpots, SmallFlock, GullRoost } from './birdflock.js';
+import { CorvidFlock, CORVID_KINDS, corvidCount, corvidCapacity } from './corvids.js';
 
 // Seeded gull motion stays in the GPU. Two exclusive LOD batches keep distant flock costs tiny.
 // A bounded allocation-free CPU pass only chooses each seed's batch; no pose/geometry is built per frame.
@@ -56,6 +57,7 @@ const frag=/* glsl */`
     #include <colorspace_fragment>
   }`;
 const smooth=(a,b,x)=>THREE.MathUtils.smoothstep(x,a,b);
+const params_noCorvids=()=>typeof location!=='undefined'&&new URLSearchParams(location.search).has('nocorvids'); // debug: &nocorvids (the before view)
 /** #2129: an explicit pose into slot k of a batch (`p.on` false: the circling gull, all zero). */
 function writePose(t,k,p,size,hz,enlarge){
   const q=k*4;
@@ -117,7 +119,21 @@ export class Birds {
     for(let i=0;i<smallMax;i++)this.smallSeeds.b[i*2]=rnd()*6.283;
     this.smallMesh=small&&smallMax?new THREE.Mesh(birdGeometry(0,this.smallSeeds,false,sparrowGeometry()),material):null;
     this.smallMesh&&(this.smallMesh.name='small-birds');
-    for(const mesh of [...this.meshes,this.smallMesh].filter(Boolean)){
+    // #2196: corvids, one instanced mesh per species (own geometry colours), a CLONE of the material so the gulls' fade/time uniforms do not
+    // drive them (they stay when snow hides the gulls); the clone has the same shader source, so it reuses the same program
+    this.corvidMeshes=[];this.ctime=0;this.cfade=0;
+    if(small&&!params_noCorvids()){
+      this.corvidMaterial=material.clone();
+      const cu=this.corvidMaterial.uniforms;cu.uFade.value=1;cu.uHigh.value=1;
+      for(const kind of CORVID_KINDS){
+        const cap=L.flocks.reduce((a,f)=>a+corvidCapacity(kind,f.name,lowMemory),0);if(!cap)continue;
+        const seeds={a:new Float32Array(cap*4),b:new Float32Array(cap*2)};
+        for(let i=0;i<cap;i++)seeds.b[i*2]=rnd()*6.283;
+        const mesh=new THREE.Mesh(birdGeometry(0,seeds,false,corvidGeometry(kind)),this.corvidMaterial);
+        mesh.name='corvids-'+kind;mesh.userData.kind=kind;mesh.userData.seeds=seeds;this.corvidMeshes.push(mesh);
+      }
+    }
+    for(const mesh of [...this.meshes,this.smallMesh,...this.corvidMeshes].filter(Boolean)){
       mesh.frustumCulled=false;mesh.visible=false;mesh.raycast=()=>{};
       mesh.userData.warmDraw=true;mesh.userData.noDetail=true;scene.add(mesh);
     }
@@ -125,21 +141,25 @@ export class Birds {
 
   /** #2129: the perches and gull spots, built once from `sources` (the trees, roofs and rails exist by then). */
   setupLife() {
-    const src = this.sources?.(); if (!src) return (this.life = { flocks: [], roost: null });
+    const src = this.sources?.(); if (!src) return (this.life = { flocks: [], corvids: [], roost: null });
     const R = src.roofs, roofs = R && { surfaces: R.surfaces, topAt: (x, z) => R.topAt(x, z), above: (x, z, y) => R.above(x, z, y), on: R.on ?? R.constructor.on, height: R.height ?? R.constructor.height };
-    const flocks = [];
+    const flocks = [], corvids = [], month = this.day?.month ?? 6;
     for (const f of L.flocks) {
       const n = this.lowMemory ? (f.lowMemory ? f.lowMemoryN : 0) : f.n;
-      if (!n || !this.smallMesh) continue;
+      const kinds = this.corvidMeshes.map((m) => m.userData.kind).filter((k) => corvidCount(k, f.name, month, this.lowMemory));
+      if ((!n || !this.smallMesh) && !kinds.length) continue;
       const groups = collectPerches({ home: f, crowns: src.crowns ?? [], roofs, rails: src.rails ?? [], patches: src.patches?.(f) ?? [], groundY: src.groundY, groundOk: src.groundOk, clear: src.clear, C: L });
       if (groups.length < 2) continue;
-      const flock = new SmallFlock({ groups, n, seed: f.seed, C: L, topAt: src.topAt });
-      flock.home = f; flocks.push(flock);
+      if (n && this.smallMesh) { const flock = new SmallFlock({ groups, n, seed: f.seed, C: L, topAt: src.topAt }); flock.home = f; flocks.push(flock); }
+      for (const kind of kinds) { // #2196: the corvids share the perches, each species its own flock (own seed)
+        const flock = new CorvidFlock({ kind, groups, n: corvidCount(kind, f.name, month, this.lowMemory), seed: f.seed + CV.species[kind].seed, topAt: src.topAt });
+        flock.home = f; corvids.push(flock);
+      }
     }
     const c = this.uniforms.uCenter.value, spots = gullSpots({ center: { x: c.x, z: c.z }, roofs, bank: src.bank ?? [], C: L });
     const a = this.seeds.a, circle = (i, t, o) => { const j = i * 4, p = a[j] + t * a[j + 3]; o.x = c.x + Math.cos(p) * a[j + 1]; o.z = c.z + Math.sin(p) * a[j + 1]; o.y = a[j + 2] + Math.sin(t * S.bobHz + a[j] * S.seedPhase) * S.bobAmplitude; return o; };
     const roost = this.low > 0 && spots.length ? new GullRoost({ count: this.low, spots, circle, seed: 1252, C: L }) : null;
-    return (this.life = { flocks, roost, spots, threats: [] });
+    return (this.life = { flocks, corvids, roost, spots, threats: [] });
   }
 
   /** #2178: the gull flock's running flush count and where the last flush was, for the alarm call. */
@@ -158,6 +178,7 @@ export class Birds {
   groundBirds(out = []) {
     out.length = 0;
     for (const f of this.life?.flocks ?? []) if (f.visible) for (const b of f.groundBirds(f.scratch ??= [])) out.push(b);
+    for (const f of this.life?.corvids ?? []) if (f.visible) for (const b of f.groundBirds(f.scratch ??= [])) out.push(b); // #2196: cats may stalk corvids too
     return out;
   }
 
@@ -165,7 +186,19 @@ export class Birds {
   perchedBirds(out = []) {
     out.length = 0;
     for (const f of this.life?.flocks ?? []) if (f.visible) for (const b of f.perchedBirds(f.scratch2 ??= [])) out.push(b);
+    for (const f of this.life?.corvids ?? []) if (f.visible) for (const b of f.perchedBirds(f.scratch2 ??= [])) out.push(b);
     return out;
+  }
+
+  /** #2196: how many corvids are shown now, and where / which species corvid `i` is (into `out`; returns the species or null). For the calls. */
+  corvidTotal() { let n = 0; for (const f of this.life?.corvids ?? []) if (f.visible) n += f.birds.length; return n; }
+  corvidAt(i, out) {
+    for (const f of this.life?.corvids ?? []) {
+      if (!f.visible) continue;
+      if (i < f.birds.length) { const b = f.birds[i]; out.x = b.x; out.y = b.y; out.z = b.z; return f.kind; }
+      i -= f.birds.length;
+    }
+    return null;
   }
 
   /** Per frame: `rain` = the weather's strength 0…1, `hidden` = underground. No allocations. */
@@ -178,6 +211,8 @@ export class Birds {
     this.fade += Math.sign(want - this.fade) * Math.min(Math.abs(want - this.fade), dt * B.fade);
     this.mesh.visible = this.nearMesh.visible = this.fade > 0.01;
     if (this.smallMesh) this.smallMesh.visible = false;
+    // #2196: the corvids need neither the gulls' fine weather nor snow-free ground: daylight and the area only
+    this.updateCorvids(dt, !hidden && inArea && d.daylight >= B.day);
     if (!this.mesh.visible) return;
     this.time += dt;
     u.uTime.value = this.time;
@@ -208,6 +243,37 @@ export class Birds {
     this.mesh.visible=far>0;this.nearMesh.visible=near>0;
     for(const mesh of this.meshes)if(mesh.visible)for(const name of DYNAMIC)mesh.geometry.attributes[name].needsUpdate=true;
     this.updateSmall(dt, threats);
+  }
+
+  /** #2196: step and draw the corvid flocks (`on`: daylight, in the area, not underground). One instanced draw per species. */
+  updateCorvids(dt, on) {
+    if (!this.corvidMeshes.length) return;
+    this.cfade += Math.sign((on ? 1 : 0) - this.cfade) * Math.min(Math.abs((on ? 1 : 0) - this.cfade), dt * CV.fadeIn);
+    const show = this.cfade > 0.01;
+    for (const m of this.corvidMeshes) m.visible = false;
+    if (!show) { for (const f of this.life?.corvids ?? []) f.visible = false; return; }
+    if (!this.life && this.sources) this.setupLife();
+    const flocks = this.life?.corvids; if (!flocks?.length) return;
+    this.ctime += dt;
+    const cu = this.corvidMaterial.uniforms, d = this.day;
+    cu.uTime.value = this.ctime; cu.uFade.value = this.cfade;
+    cu.uCol.value.setRGB(0.97, 0.97, 0.95).multiplyScalar(0.35 + 0.65 * d.daylight);
+    const threats = this.threats?.(this.life.threats) ?? (this.life.threats.length = 0, this.life.threats), cam = this.camera.position;
+    for (const f of flocks) { f.visible = Math.hypot(cam.x - f.home.x, cam.z - f.home.z) < f.home.r + L.wake; if (f.visible) f.step(dt, threats); }
+    for (const m of this.corvidMeshes) {
+      const kind = m.userData.kind, s = m.userData.seeds, spec = CV.species[kind], q = this.smallPose ??= { on: true };
+      let k = 0;
+      for (const f of flocks) {
+        if (f.kind !== kind || !f.visible) continue;
+        for (const bird of f.birds) {
+          if (k * 4 >= s.a.length) break;
+          q.x = bird.x; q.y = bird.y + spec.standY; q.z = bird.z; q.yaw = bird.yaw; q.flap = bird.flap; q.fold = bird.fold; q.bank = bird.bank; q.pitch = bird.pitch;
+          writePose(s, k++, q, spec.size, spec.flapHz, L.farEnlarge);
+        }
+      }
+      m.geometry.instanceCount = k; m.visible = k > 0;
+      if (k) for (const name of DYNAMIC) m.geometry.attributes[name].needsUpdate = true;
+    }
   }
 
   /** #2129: step the flocks near the eye and pack their birds into the small-bird batch. */
