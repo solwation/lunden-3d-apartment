@@ -3,9 +3,10 @@ import { registerCats } from './bestiarymetadata.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { catPrimitive, installCatModel, applyCatModel } from './catmodel.js';
-import { LEVELS, CAT_FLOOR_HEADROOM, CAT_FISH, CAT_LEAVE, CAT_IGNORED, CAT_OUTDOOR, CAT_FURNITURE, CAT_SURFACE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, CAT_LIFE, REST, MIELE, KITTEN } from './config.js';
+import { LEVELS, CAT_FLOOR_HEADROOM, CAT_FISH, CAT_LEAVE, CAT_IGNORED, CAT_OUTDOOR, CAT_FURNITURE, CAT_SURFACE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, CAT_LIFE, CAT_REST, REST, MIELE, KITTEN } from './config.js';
 import { furMaterial, furState, setFurStrength, setTailBend, bendPoint } from './catfur.js';
 import { TailMotion, sitChoice, groomKind, flankLick, stretchPose, earYaw, earTwitch, approach, seedOf, hash01 } from './catlife.js';
+import { windowsOf, restPlan, sunOnFloor, inWarmZone, pickOne } from './catrest.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { rugLift } from './rugs.js';
 import { sfx } from './audio.js';
@@ -571,6 +572,8 @@ export class CatSpawner {
     Object.assign(this, { object: cat, head, shoulder, leftShoulder, tailGroup, eyes, hand });
     this.headOff = new THREE.Vector3(); // the behaviours' head offset on top of the pose (eating: down to the floor)
     this.initLife(seedOf('cat'));       // #2125: tail motion, ears, stretching (seeded per cat in setCat)
+    this.comfortSource = null; // #2192: () => { sunDir, overcast, hour } (main.js): where it likes to sleep; null = chosen at random as before
+    this.rest = null;          // #2192: asleep { kind: 'sun' | 'warm' | 'bed', wake: null | s since it began to get up }
     this.stand = 0;          // 0 sitting … 1 standing (#224), eased towards `wantStand` in CAT_WALK.rise s
     this.wantStand = 0;
     this.gaitPhase = 0;      // radians, one leg cycle per CAT_WALK.stride m
@@ -816,6 +819,7 @@ export class CatSpawner {
     this.setOpacity(1);
     this.tailUp = false; this.tailU = 0; this.tailWait = this.nextTailWait(); // the next cat starts with its tail down
     Object.assign(this, { bow: null, stretchT: null, sitT: 0, wantCrouch: 0, crouch: 0, wantWrap: 0, earAt: null }); // #2125
+    this.wakeNow();
   }
 
   setOpacity(a) {
@@ -904,6 +908,8 @@ export class CatSpawner {
     this.nextMeow = 0.4 + this.rand() * 0.8;
     this.object.position.set(spot.x, spot.y, spot.z);
     this.object.rotation.y = spot.yaw;
+    this.wakeNow();
+    this.rest = spot.sleep ? { kind: spot.sleep, wake: null } : null; // #2192: asleep in the sun / by a radiator / on the bed
     this.on = spot.on ?? null; // 'sit' / 'lie' / 'table' when it is up on the furniture (#200)
     this.rugY = this.on ? null : (spot.lift ?? 0); // how far a rug lifts it now; followed as it walks (#317)
     this.object.visible = true;
@@ -939,6 +945,9 @@ export class CatSpawner {
     const side = Math.sign((from.x - center[0]) * normal[0] + (from.z - center[1]) * normal[1]) || 1;
     const nx = -side * normal[0], nz = -side * normal[1];
     const sx = center[0] + nx * 0.35, sz = center[1] + nz * 0.35;
+    const valid = (x, z) => !(stairHeight(x, z) !== null && (level !== 0 || stairUnderside(x, z) < y0 + CAT_FLOOR_HEADROOM)) && !segs.some((s) => distToSeg(x, z, s) < 0.24) && !segs.some((s) => segIntersect(sx, sz, x, z, s));
+    const rest = this.restSpot(level, y0, [sx, sz], [nx, nz], [center[0], center[1]], door, valid); // #2192: a sun patch / a warm place / the bed, asleep
+    if (rest) return rest;
     // sometimes up on a bed, a sofa, a chair or a table in that room instead (#200)
     const up = this.chance.furniture ? (this.kittenNext ? Math.max(this.chance.furniture, KITTEN.furniture) : this.chance.furniture) : 0;
     if (this.rand() < up) {
@@ -966,7 +975,7 @@ export class CatSpawner {
    * door in between), in front of it (direction n) and within CAT_FURNITURE.reach. The height comes from a ray down onto
    * the furniture there, so the cat sits on the cushion / mattress, and never in something standing on a table.
    */
-  furnitureSpot(level, y0, [sx, sz], [nx, nz], door) {
+  furnitureSpot(level, y0, [sx, sz], [nx, nz], door, soft = false) {
     const W = this.world;
     if (W.furnitureOn === false) return null;
     const walls = [...(W.levels[level].wallSegments ?? []), ...W.doors.filter((d) => d !== door).map((d) => d.segment())];
@@ -975,11 +984,12 @@ export class CatSpawner {
       if (t.kind !== 'rest' || (t.level ?? 0) !== level) continue;
       for (const sp of t.spots) {
         if (sp.pc) continue; // the gaming chair / the film spot: they start things
+        if (soft && sp.kind !== 'lie') continue; // #2192: the bed, not the sofa's sitting places or a chair
         cands.push({ x: sp.pos.x, z: sp.pos.z, y: sp.pos.y - (sp.kind === 'lie' ? REST.lieEye : REST.sitEye), kind: sp.kind });
       }
     }
     const box = new THREE.Box3();
-    for (const m of W.cupSurfaces ?? []) {
+    for (const m of soft ? [] : W.cupSurfaces ?? []) {
       if (m.userData.soft || m.userData.gate) continue; // a bed / sofa seat (#269): those are rest spots already; not a flap / lid that moves (#447)
       box.setFromObject(m);
       const sy = m.userData.surface;
@@ -1006,6 +1016,72 @@ export class CatSpawner {
     return null;
   }
 
+  /**
+   * #2192: where the moment says it would sleep (catrest.js restPlan): on the floor in the sun patch a window throws, by a radiator
+   * under a window, or on the bed in the evening; null = no comfortable place here (or this time, or the die said otherwise), so the
+   * old random choice runs unchanged. The floor points tried are the ordinary free, doorway-visible ones (`valid`).
+   */
+  restSpot(level, y0, from, n, door0, door, valid) {
+    const src = this.comfortSource?.();
+    if (!src || !(this.rand() < CAT_REST.chance)) return null;
+    const plan = restPlan(src), wins = windowsOf(this.world.levels[level].openings);
+    if (plan.mode === 'bed') {
+      const b = this.furnitureSpot(level, y0, from, n, door, true);
+      return b ? { ...b, sleep: 'bed' } : null;
+    }
+    const lit = [];
+    for (let i = 0; i < CAT_REST.samples && lit.length < 6; i++) {
+      const dist = 0.4 + this.rand() * (CAT_REST.reach - 0.4), lat = (this.rand() - 0.5) * (1 + dist);
+      const x = door0[0] + n[0] * dist - n[1] * lat, z = door0[1] + n[1] * dist + n[0] * lat;
+      if (!(plan.mode === 'sun' ? sunOnFloor(src.sunDir, wins, x, y0 + 0.02, z) : inWarmZone(wins, x, z)) || !valid(x, z)) continue;
+      lit.push({ x, z });
+    }
+    const q = pickOne(lit, this.rand());
+    if (!q) return null;
+    const lift = rugLift(level, q.x, q.z);
+    return { x: q.x, y: y0 + lift, z: q.z, yaw: Math.atan2(door0[0] - q.x, door0[1] - q.z) + (this.rand() - 0.5) * 1.6, lift, sleep: plan.mode };
+  }
+
+  /** #2192: it is up and about (hurt, petted, picked up, hidden, a visitor too close): the eyes open, no more sleep. */
+  wakeNow() {
+    if (!this.rest) return;
+    this.rest = null;
+    for (const e of this.eyes) { e.eye.visible = true; e.shut.visible = false; }
+    this.headOff.set(0, 0, 0);
+  }
+
+  /**
+   * #2192: asleep curled up (head down, tail round it, eyes shut, a slow breath); a visitor within CAT_REST.wake m makes it get up and
+   * stretch (stretchPose), then it sits as any found cat. True while it sleeps or stretches (the rest of `behave` waits).
+   */
+  restBehave(dt) {
+    const R = this.rest, eye = this.watchPoint?.(), o = this.object.position;
+    if (R.wake == null && eye && Math.hypot(eye.x - o.x, eye.z - o.z) < CAT_REST.wake) { R.wake = 0; this.hear(eye.x, eye.z); }
+    if (R.wake != null) {
+      this.wantStand = 1; // up on its feet for the stretch
+      this.shoulder.rotation.set(0, 0, 0);
+      if (this.standing) R.wake += dt;
+      const secs = CAT_LIFE.stretch.secs;
+      if (R.wake < secs) {
+        for (const e of this.eyes) { e.eye.visible = true; e.shut.visible = false; }
+        this.headOff.set(0, 0, 0); this.head.rotation.set(0, 0, 0); this.wantWrap = 0;
+        this.bow = stretchPose(R.wake / secs);
+        return true;
+      }
+      this.wakeNow(); this.sitT = 0; this.ignored = 0; this.nextMeow = 0.5 + this.rand();
+      return false;
+    }
+    this.nextMeow = Math.max(this.nextMeow, 5); // (asleep: no meowing)
+    for (const e of this.eyes) { e.eye.visible = false; e.shut.visible = true; }
+    const breath = Math.sin(this.t * 1.7);
+    this.shoulder.rotation.set(0, 0, 0);
+    this.headOff.set(0.01, -0.07 + 0.004 * breath, 0.05);
+    this.head.rotation.set(0.62, 0.22, 0.14);
+    this.tailGroup.rotation.y = 0;
+    this.wantWrap = 1;
+    return true;
+  }
+
   /** Is this mesh actually shown (it and its parents visible, not the cat itself)? Pick boxes are invisible. */
   shownMesh(m) {
     for (let p = m; p; p = p.parent) { if (!p.visible || p === this.object) return false; }
@@ -1018,6 +1094,7 @@ export class CatSpawner {
     this.wantStand = 0;
     this.walked = false;
     this.hopY = 0;
+    if (this.rest && (this.held || this.released || this.petting || this.leaving)) this.wakeNow();
     this.countIgnored(dt);
     this.senses(dt);
     if (this.held) this.heldBehave(dt); // in the visitor's arms (#328)
@@ -1032,7 +1109,7 @@ export class CatSpawner {
   senses(dt) {
     const E = CAT_LIFE.ears, o = this.object.position;
     this.bow = null; // (set again each frame by a stretch in progress)
-    this.mood = this.held || this.petting || this.tailUp ? 'happy' : this.leaving?.hurt ? 'cross' : this.fish || this.toy ? 'alert' : this.play ? 'play' : 'calm';
+    this.mood = this.rest && this.rest.wake == null ? 'sleep' : this.held || this.petting || this.tailUp ? 'happy' : this.leaving?.hurt ? 'cross' : this.fish || this.toy ? 'alert' : this.play ? 'play' : 'calm';
     this.wantCrouch = 0;
     if (this.fish?.at) { this.earAt = this.fish.at; this.hearT = E.hold; }
     else if (this.toy?.at) { this.earAt = this.toy.at; this.hearT = E.hold; }
@@ -1051,7 +1128,7 @@ export class CatSpawner {
    */
   countIgnored(dt) {
     if (this.held || this.released || this.petting || this.leaving || this.fish || this.toy || this.treadmill) { this.ignored = 0; return; }
-    this.ignored += dt;
+    this.ignored += dt * (this.rest ? CAT_REST.stayScale : 1); // (a sleeper is left to sleep longer, #2192)
     if (this.ignored < (this.outdoor ? CAT_OUTDOOR.stay : CAT_IGNORED.after)) return;
     this.ignored = 0;
     const eye = this.watchPoint?.();
@@ -1218,6 +1295,7 @@ export class CatSpawner {
       this.updatePetting(dt);
       return;
     }
+    if (this.rest && this.restBehave(dt)) return; // #2192
     if (this.leaving) { this.updateLeaving(dt); return; } // after a pat it walks off and is gone (#206)
     if (!this.on && this.updateFish(dt)) return; // after a fish finger on the floor (#163; not while up on the furniture)
     if (this.kitten && !this.on && this.updateToy(dt)) return; // a kitten: after a cup on the floor, to bat it over (#363)

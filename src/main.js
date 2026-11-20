@@ -1187,6 +1187,7 @@ if (fish) {
   fishing.onCatFed = () => bump('catFishFeeds');
   cat.watchPoint = () => camera.position;
 }
+cat.comfortSource = () => ({ sunDir: day.sunDir, overcast: weather.overcast, hour: day.hour }); // #2192: where a cat that turns up chooses to sleep (sun patch, bed, radiator)
 cat.onFound = (label, rare, breed, kitten) => { catFound(label, rare, breed); if (kitten) bump('kittens', 1, 'kattunge'); }; // a kitten (#363): more points
 // a kitten bats a cup standing on its floor over (#363): it falls away from the kitten, what it held splashes out (the
 // kitten's fault: no deduction); put down again, it may be knocked over again
@@ -1545,6 +1546,7 @@ if (params.has('cat')) {
   if (params.has('catwalk')) cat.walkOnTheSpot();
   // &cattail: the tail always up, the X showing (#262)
   if (params.has('cattail')) { cat.forceTail = true; cat.updateTail(0); cat.tailU = 1; }
+  if (params.has('catsleep')) { cat.rest = { kind: params.get('catsleep') || 'sun', wake: null }; cat.ignored = -1e9; } // &catsleep[=sun|warm|bed]: asleep curled up there (#2192 screenshots)
   cat.update(0);
   // &pet: the cat is being petted (screenshots)
   if (params.has('pet')) { cat.pet(player.pos); cat.petT = 1e9; cat.update(1.1); }

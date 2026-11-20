@@ -3988,6 +3988,15 @@ export const CAT_LIFE = {
   crouch: { legs: 0.38, head: 0.03, speed: 3 },
 };
 
+// Where the indoor cat likes to sleep (#2192, src/catrest.js; every value a *guess*, tuned on screenshots). A cat that turns up behind
+// a door picks (with probability `chance`) a comfortable place: a sun patch on the floor while the sun shines in through a window
+// (sun strength >= `minSun`: sun height x clear sky), else on a bed / sofa in the evening and night (`evening`: from / before hour),
+// else by a radiator under a window (`warmDepth` m of floor in front of the window, `warmMargin` m wider than its glass); it looks for such a place up to `reach` m beyond the door. It then
+// sleeps curled up (head down, tail round it, eyes shut) until the visitor comes within `wake` m: it gets up with a stretch.
+// `stayScale` = how much slower the "left alone, it walks off" timer (CAT_IGNORED) runs for a sleeper. `margin` shrinks the window
+// rectangle the sun ray must pass (reveal and frame shade the edge); `samples` floor points tried; `lowSun` = the lowest sun height.
+export const CAT_REST = { chance: 0.75, minSun: 0.35, lowSun: 0.06, evening: [17.5, 7], warmDepth: 0.5, warmMargin: 0.15, reach: 6, wake: 1.5, stayScale: 0.3, margin: 0.08, samples: 200 };
+
 // Steam over hot coffee (#216, cups.js): `strips` soft wisps rising `height` m from the surface, one mesh per cup;
 // fresh coffee is hot and cools over `seconds` (real ones steam a few minutes), cold milk cools it by `milk` × its share;
 // `opacity` at the hottest, full cup. Our picks, tuned on screenshots.

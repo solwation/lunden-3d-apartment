@@ -21,6 +21,7 @@ URL parameters (debugging / screenshots):
 - `&olof[=i]` — Olof in seat i at once (0–2 the sofa, 3 the armchair; random without i) (#586); `&car&olofcar` — at the wheel of the parked car (#599).
 - `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&miele` — Miele instead (with `&cat=`), else the next cat to turn up is her (#328); `&catv=i` coat variant, `&catt=s` animation time, `&catwalk` walking (#224), `&cattail` its tail up (#262);
   `&kitten` a kitten (#363; with `&cat=`, else the next cat to turn up is one).
+  `&catsleep[=sun|warm|bed]` (with `&cat=`) the cat asleep curled up there, eyes shut (#2192).
 - `&time=HH[.h]` — start at that hour (default: the browser's time), `&month=1–12`, `&day=1–31` (default: today), `&freeze` pauses the clock,
   `&clock` opens the wall clock's strip (its "Nu" / N returns to the real time, #1145; the day runs in real time),
   `&lights` turns every lamp on, ceiling lamps too, and keeps the small ones on (#234).

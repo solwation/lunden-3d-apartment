@@ -1,0 +1,57 @@
+{
+  "errors": [
+    "before: Failed to load resource: the server responded with a status of 404 (File not found)",
+    "after: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "phases": {
+    "before": {
+      "tries": 0,
+      "cat": [
+        3.0835070871101022,
+        3.25,
+        9.587352062288964
+      ],
+      "rest": null,
+      "cam": [
+        3.182427577481891,
+        7.790072246404803
+      ],
+      "yawDeg": 176.8496758995843,
+      "on": null,
+      "kitten": false,
+      "breed": "siames",
+      "calls": 382,
+      "triangles": 893083,
+      "programs": 196,
+      "file": "docs/verification/2192/before/cat-sun.png"
+    },
+    "after": {
+      "tries": 0,
+      "cat": [
+        3.9610145333110727,
+        3.25,
+        10.603631861191722
+      ],
+      "rest": "sun",
+      "cam": [
+        3.4782524280059604,
+        8.869578589322206
+      ],
+      "yawDeg": -164.4427460394394,
+      "on": null,
+      "kitten": false,
+      "breed": "huskatt",
+      "calls": 346,
+      "triangles": 812205,
+      "programs": 188,
+      "file": "docs/verification/2192/cat-sun.png",
+      "woke": {
+        "rest": {
+          "kind": "sun",
+          "wake": 0
+        },
+        "stand": 0.16666666666666669
+      }
+    }
+  }
+}
