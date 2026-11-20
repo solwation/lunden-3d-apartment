@@ -157,6 +157,17 @@ without a second full-app bootstrap. [Raw output and nonvisual verification reco
 Historical #1823/#1824 evidence truthfully retains its then-failing stale assertion; this fix supplies
 the later green harness result. No player-visible change or result image applies.
 
+## Mallard calls and shore sleep (#2202)
+
+`node --test tools/ducklifetest.mjs tools/duckrangetest.mjs tools/duckkisstest.mjs tools/duckrewardtest.mjs`,
+`node tools/ducktest.mjs` and `node tools/duckmotiontest.mjs` cover the night ramp, both sex-call recipes/voice cap,
+real-river supported pair rest, no sleeping quacks, bread/alert/day wake-up, distance freeze and retained feeding/pairs/motion.
+`BEFORE_DIR=/private/baseline PLAYWRIGHT_MODULE=… tools/browsertest.sh node tools/ducklife2202browser.cjs GAME OUT`
+uses baseline source files from `6965828e` listed in the tool's header, then current source in two contexts of one browser run.
+It captures the same camera at dusk and a readable matched night-pose view, morning wake-up, real drawn-terrain rest contact,
+actual quack/wing audio entry points (two voices, third refused, mute) and component mesh cost. The corrected close-up holds12:00 lighting while the actual duck schedule stays at23:00; `night-real.png` also records the true23:00 scene. The matched effect-off pose control resets only the existing rig pose; it is separate from the original-source control. No physical-device
+performance or acoustic fidelity is claimed. [Exact sources, evidence and limitations](../verification/2202/README.md).
+
 ## River ducks (#1815)
 
 Scoped checks: `node tools/ducktest.mjs` covers pure swim/shore transitions, surface continuity,

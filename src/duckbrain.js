@@ -1,5 +1,6 @@
 // #1815: small local flock; pure state, terrain and food supplied by the caller.
-import { DUCKS } from './config.js';
+import { DUCKS, DUCK_LIFE } from './config.js';
+import { duckLureNear } from './ducklife.js';
 export { DUCKS };
 export class DuckBrain {
   constructor({ home, habitat, seed = 1 }) {
@@ -10,7 +11,7 @@ export class DuckBrain {
   feed() { if (this.cooldown > 0) return false; this.eating = DUCKS.eat; this.cooldown = DUCKS.cooldown; return true; }
   update(dt, food = null, social = null) {
     dt = Math.min(Math.max(dt, 0), DUCKS.maxStep); this.cooldown = Math.max(0, this.cooldown - dt);
-    this.eating = Math.max(0, this.eating - dt); this.quack -= dt;
+    this.eating = Math.max(0, this.eating - dt); this.quack -= dt * (social?.quiet ?? 1);
     const sound = this.quack <= 0;
     if (sound) this.quack = DUCKS.quackInterval[0] + this.random() * DUCKS.quackInterval[1];
     let goal = this.goal;
@@ -24,7 +25,8 @@ export class DuckBrain {
     }
     if (this.habitat.next) goal = this.habitat.next(this,goal);
     const dx=goal.x-this.x, dz=goal.z-this.z, d=Math.hypot(dx,dz), surface=this.habitat.surface(this.x,this.z);
-    this.swimming=surface.water; this.moving=d>DUCKS.stopReach && !this.eating && !(this.hold && !this.lured);
+    this.swimming=surface.water; this.sleeping=!!(social?.rest && !this.lured && !this.eating && !surface.water && d<=DUCK_LIFE.arrive);
+    this.moving=!this.sleeping && d>DUCKS.stopReach && !this.eating && !(this.hold && !this.lured);
     // #2126: `hold` (set by duckmotion's resting behaviours) pauses wandering, never a food approach.
     if(this.moving){
       const stride=dt*(surface.water?DUCKS.swimSpeed:DUCKS.speed)*(social?.speed ?? 1); let step=Math.min(d,stride);
@@ -35,7 +37,7 @@ export class DuckBrain {
       this.moving=step>0; this.x+=dx/d*step;this.z+=dz/d*step;this.yaw=Math.atan2(dx,dz);this.phase+=step*(surface.water?DUCKS.phaseSwim:DUCKS.phaseWalk);
     }
     this.y=this.habitat.surface(this.x,this.z).y;
-    return sound;
+    return sound && !this.sleeping;
   }
 }
 
@@ -58,24 +60,32 @@ export class DuckFlock {
     const p={x:b.x-Math.sin(b.yaw)*lag+Math.cos(b.yaw)*side,z:b.z-Math.cos(b.yaw)*lag-Math.sin(b.yaw)*side};
     return this.habitat.contains(p.x,p.z)?p:{x:b.x,z:b.z};
   }
-  update(dt,food=null,active=()=>true) {
+  update(dt,food=null,active=()=>true,night=0) {
     const C=DUCKS.social, sounds=[],near=active;
     // Freeze both partners at the distance boundary, never run a far bird's AI to catch up.
     active=b=>near(b)&&near(this.brains[b.pair*2+(b.female?1:0)]);
     if(!this.brains.some(active))return sounds;
     this.time+=Math.min(Math.max(dt,0),DUCKS.maxStep);
-    this.grouping=this.time%C.groupPeriod<C.groupSeconds && this.brains.filter(b=>b.female).every(active);
+    this.grouping=night<DUCK_LIFE.settle && this.time%C.groupPeriod<C.groupSeconds && this.brains.filter(b=>b.female).every(active);
     const lead=this.brains[0];
     for(let i=0;i<this.brains.length;i+=2){
       const female=this.brains[i],male=this.brains[i+1];
+      if(!active(female))continue;
+      // Both partners keep their original ids and territory; no nocturnal grouping or teleporting to shore.
+      const rest=night>=DUCK_LIFE.settle && !duckLureNear(female,food,this.habitat) && !duckLureNear(male,food,this.habitat) && !female.eating && !male.eating && !female.restAlert && !male.restAlert;
+      const quiet=1-night*(1-DUCK_LIFE.quiet);
+      female.roosting=male.roosting=rest;
+      // Terrain is fixed: find the dry resting places once, rather than rescan the bank each frame.
+      if(rest&&!this.sleepGoals)this.sleepGoals=this.brains.map(b=>this.habitat.sleep?.(b.pair,b.female)??b.home);
+      const resting=b=>({goal:this.sleepGoals[b.pair*2+(b.female?0:1)],rest:true,quiet});
       if(active(female)){
         const regroup=this.grouping&&i>0;
         const goal=regroup?this.behind(lead,C.follow,C.groupSide):null;
         const wait=active(male)&&Math.hypot(female.x-male.x,female.z-male.z)>C.pairWait;
-        const social=goal?{goal,speed:wait?0:C.catchup}:wait?{goal:female,speed:0}:null;
+        const social=rest?resting(female):goal?{goal,speed:wait?0:C.catchup,quiet}:wait?{goal:female,speed:0,quiet}:{quiet};
         if(female.update(dt,food,social))sounds.push(female);
       }
-      if(active(male)&&male.update(dt,food,{goal:this.behind(female,C.follow),speed:C.catchup}))sounds.push(male);
+      if(active(male)&&male.update(dt,food,rest?resting(male):{goal:this.behind(female,C.follow),speed:C.catchup,quiet}))sounds.push(male);
     }
     return sounds;
   }

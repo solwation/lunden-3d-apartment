@@ -1,0 +1,254 @@
+{
+  "source": "6965828e baseline; working tree #2202",
+  "environment": "Chromium SwiftShader, 1280x800 DPR1 captures, quality3",
+  "phases": [
+    {
+      "phase": "after",
+      "setup": {
+        "url": "http://localhost:8422/?life&cloud=&month=9&day=20&time=19&freeze&weather=clear&test=lazy",
+        "home": {
+          "x": -160.17284823529775,
+          "z": 200.89982638892167
+        },
+        "camera": [
+          -158.67284823529775,
+          -4.553830778497289,
+          201.77482638892167
+        ],
+        "hour": 19
+      },
+      "dusk": [
+        {
+          "id": 0,
+          "x": -160.17284823529775,
+          "y": -5.703844415667763,
+          "z": 200.89982638892167,
+          "roosting": true,
+          "sleeping": true,
+          "weight": 0.9999999999994844
+        },
+        {
+          "id": 3,
+          "x": -160.90529167911694,
+          "y": -5.704511202084569,
+          "z": 200.72013257159855,
+          "roosting": true,
+          "sleeping": true,
+          "weight": 0.9999999999860051
+        },
+        {
+          "id": 2,
+          "x": -208.39124784027905,
+          "y": -5.747865194288732,
+          "z": 212.33507645459107,
+          "roosting": true,
+          "sleeping": true,
+          "weight": 0.9999999999994844
+        },
+        {
+          "id": 1,
+          "x": -209.08397127059607,
+          "y": -5.748504534109508,
+          "z": 212.49880644890214,
+          "roosting": true,
+          "sleeping": true,
+          "weight": 0.9999999999702396
+        }
+      ],
+      "night": {
+        "steps": 0,
+        "hour": 23,
+        "birds": [
+          {
+            "id": 0,
+            "female": true,
+            "x": -160.17284823529775,
+            "y": -5.703844415667763,
+            "z": 200.89982638892167,
+            "water": false,
+            "moving": false,
+            "sleeping": true,
+            "weight": 0.9999999999995308,
+            "pose": {
+              "pitch": 0,
+              "roll": 0,
+              "lift": 0,
+              "surge": 0,
+              "ty": -0.02246858595514461,
+              "tz": 0,
+              "neckX": -0.4799999999997748,
+              "neckY": 2.6499999999987565,
+              "neckSide": 0.09999999999995308,
+              "neckDown": -0.129999999999939,
+              "neckBack": -0.129999999999939,
+              "headX": 0.8999999999995778,
+              "tailY": 0,
+              "wing": 0,
+              "flap": false
+            },
+            "neck": [
+              -0.05783989345412022,
+              0.9421433078907516,
+              -0.23055820379141123,
+              0.2363544981301743
+            ]
+          },
+          {
+            "id": 3,
+            "female": false,
+            "x": -160.90529167911694,
+            "y": -5.704511202084569,
+            "z": 200.72013257159855,
+            "water": false,
+            "moving": false,
+            "sleeping": true,
+            "weight": 0.9999999999872646,
+            "pose": {
+              "pitch": 0,
+              "roll": 0,
+              "lift": 0,
+              "surge": 0,
+              "ty": -0.022468585954869003,
+              "tz": 0,
+              "neckX": -0.479999999993887,
+              "neckY": -2.6499999999662514,
+              "neckSide": -0.09999999999872647,
+              "neckDown": -0.1299999999983444,
+              "neckBack": -0.1299999999983444,
+              "headX": 0.8999999999885382,
+              "tailY": 0,
+              "wing": 0,
+              "flap": false
+            },
+            "neck": [
+              -0.057839893457171575,
+              -0.942143307887589,
+              0.23055820378769765,
+              0.2363544981456568
+            ]
+          },
+          {
+            "id": 2,
+            "female": true,
+            "x": -208.39124784027905,
+            "y": -5.747865194288732,
+            "z": 212.33507645459107,
+            "water": false,
+            "moving": false,
+            "sleeping": true,
+            "weight": 0.9999999999995308,
+            "pose": {
+              "pitch": 0,
+              "roll": 0,
+              "lift": 0,
+              "surge": 0,
+              "ty": -0.02246858595514461,
+              "tz": 0,
+              "neckX": -0.4799999999997748,
+              "neckY": 2.6499999999987565,
+              "neckSide": 0.09999999999995308,
+              "neckDown": -0.129999999999939,
+              "neckBack": -0.129999999999939,
+              "headX": 0.8999999999995778,
+              "tailY": 0,
+              "wing": 0,
+              "flap": false
+            },
+            "neck": [
+              -0.05783989345412022,
+              0.9421433078907516,
+              -0.23055820379141123,
+              0.2363544981301743
+            ]
+          },
+          {
+            "id": 1,
+            "female": false,
+            "x": -209.08397127059607,
+            "y": -5.748504534109508,
+            "z": 212.49880644890214,
+            "water": false,
+            "moving": false,
+            "sleeping": true,
+            "weight": 0.999999999972918,
+            "pose": {
+              "pitch": 0,
+              "roll": 0,
+              "lift": 0,
+              "surge": 0,
+              "ty": -0.022468585954546653,
+              "tz": 0,
+              "neckX": -0.4799999999870006,
+              "neckY": -2.6499999999282324,
+              "neckSide": -0.09999999999729181,
+              "neckDown": -0.12999999999647935,
+              "neckBack": -0.12999999999647935,
+              "headX": 0.8999999999756262,
+              "tailY": 0,
+              "wing": 0,
+              "flap": false
+            },
+            "neck": [
+              -0.057839893460740546,
+              -0.9421433078838899,
+              0.23055820378335415,
+              0.23635449816376558
+            ]
+          }
+        ]
+      },
+      "render": {
+        "calls": 44,
+        "triangles": 344044,
+        "programs": 52,
+        "duckMeshes": [
+          1312,
+          1312,
+          1312,
+          1312
+        ],
+        "wake": false
+      },
+      "dawn": [
+        {
+          "roosting": false,
+          "sleeping": false,
+          "moving": true,
+          "weight": 0.00008019351175903564
+        },
+        {
+          "roosting": false,
+          "sleeping": false,
+          "moving": false,
+          "weight": 0.00008019351175805195
+        },
+        {
+          "roosting": false,
+          "sleeping": false,
+          "moving": true,
+          "weight": 0.00008019351175903564
+        },
+        {
+          "roosting": false,
+          "sleeping": false,
+          "moving": true,
+          "weight": 0.00008019351175690146
+        }
+      ],
+      "food": {
+        "slept": true,
+        "nowSleeping": false,
+        "lured": true,
+        "moving": true
+      },
+      "audio": {
+        "context": "running",
+        "first": true,
+        "second": true,
+        "capped": false,
+        "muted": false
+      }
+    }
+  ],
+  "errors": []
+}

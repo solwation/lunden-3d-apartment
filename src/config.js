@@ -10605,6 +10605,17 @@ export const DUCKS = Object.freeze({
     paired: [[[.12,.65,.35],[.023,.025,.025],0x16130e],[[.12,.035,.04],[.075,.03,.13],0xd88c24]] },
 });
 
+// #2202: local mallard dusk/night schedule, tucked-head rest and synthesised calls. All values are *guess* (not recordings).
+// Hour ramps: settle from 18–20, wake from 05–07; quiet scales the brain's existing quack clock, not its random stream.
+export const DUCK_LIFE = Object.freeze({
+  dusk: [18, 20], dawn: [5, 7], settle: .2, quiet: .08, alert: 15, arrive: .28, mateOffset: .9,
+  poseEase: 1.8, neckYaw: 2.65, neckPitch: -.48, headPitch: .9, neckShift: [.10, -.13, -.13], crouch: .025, breath: .003,
+  sound: { maxVoices: 2, ref: 2, femaleGain: .32, maleGain: .19, wingGain: .23,
+    female: { notes: 4, gap: .24, dur: .19, from: 440, to: 270, decay: .19, hz: 950 },
+    male: { notes: 2, gap: .12, dur: .17, from: 155, to: 105, decay: .18, hz: 650 },
+    wing: { dur: .58, beats: 3, gap: .16, whistle: 1800, whistleEnd: 1050, splash: 650 } },
+});
+
 // #2126: mallard swim strokes, dabbling, preening, shaking, short take-off and a faint V wake. All *guess* (look, not measured).
 // `every` s between idle-behaviour rolls per duck; `weights` relative odds (dabble only on water); `dur` [min, extra] s.
 // Pose angles in rad; pivot/lift in m in the model frame (origin at the feet, waterline about DUCKS.habitat.sink above it).

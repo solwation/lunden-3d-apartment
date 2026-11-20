@@ -1,0 +1,16 @@
+{
+  "baseline": "6965828e881fac294545142656fc672d0465230d",
+  "testedFiles": {
+    "src/audio.js": "a25b047486a7962b8b800569b7323ec2debdb1ce2f127e7469daa542bccd58f4",
+    "src/config.js": "3c6dedc5bfef99d1d02321e4b48d00e9185863d7de891be48f68648034d4b7b3",
+    "src/duckbrain.js": "b372ea796943a0dbc8bc6f2e7bcd4da656194f1171d8107af4b6d2d49f490a55",
+    "src/duckhabitat.js": "a1b8caba42e94b1b3a784ff3729d8574c433d9dc6622835a1bffd03cb8802548",
+    "src/duckkiss.js": "30eda6ac35583a20c304035031d18bea4056ca01f3c15df81d325bd78343e3f8",
+    "src/duckmotion.js": "ffa55ba428f1e5f8b4a6712388f1700439092895779cf47d16ca998f1ed728b3",
+    "src/ducks.js": "301c6fd03b72575449d5d3fbfad7cfb680ca9a382adb2bb6ac7ab85c10b7af12",
+    "src/ducklife.js": "2560922324f295a640ff5be3d304e5502dcd316919a6d16ef5b233c013a21ac5",
+    "src/main.js": "33d57da66f0bb254e9a6b222d8b264c8dc63d6b4e429a9c0920da5d2b9e1d449"
+  },
+  "port": 8422,
+  "browser": "Chromium SwiftShader; shared wrapper; current checkout; final after-only view correction"
+}

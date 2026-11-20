@@ -6,6 +6,7 @@ import { synthFootstep } from './footsteps.js';
 import { windowWindParams } from './windsound.js';
 import { SOUNDS, OCCLUSION, BIRD_SONG, PONY_VOICE, KISS, PLAYROOM, SANTA, FOOTSTEPS, SQUIRRELS, SWIM, RAIN_SURFACE } from './config.js';
 import { distanceGain, VoiceCap } from './spatialsound.js';
+import { duckCall, DUCK_LIFE } from './ducklife.js';
 import { RoomReverb } from './roomreverb.js';
 import { occlusionFor } from './soundocclusion.js';
 import { lowMemory } from './lowmemory.js';
@@ -16,6 +17,7 @@ let muted = false;
 let acousticWorld = null; // #2181: the world whose rooms, walls and doors dull obscured sounds (main.js setAcousticWorld)
 const ponyVoices = new VoiceCap(PONY_VOICE.maxVoices); // #2188: at most two pony sounds at once (hoof beats, snorts and calls of both ponies)
 const birdVoices = new VoiceCap(BIRD_SONG.maxVoices); // #2178: at most two birds at once (songbirds and gulls together)
+const duckVoices = new VoiceCap(DUCK_LIFE.sound.maxVoices); // #2202: calls and wing beats share two slots.
 const windows = new Set(); let windNow = 0.35; // #2177: the open windows' wind (sfx.wind) and the wind power they follow (setWindPower)
 
 export function initAudio() {
@@ -172,12 +174,27 @@ function thump(t, dest, gain = 0.8) {
 }
 
 export const sfx = {
-  /** #1815: short nasal quack, ordinary positional/mute path; caller limits the flock to one per 3 s. */
-  quack(pos) {
-    if (!ready()) return;
-    const t=ctx.currentTime,d=out(pos,.32,2);
-    tone(t,.23,d,{type:'sawtooth',from:420,to:255,gain:.22});
-    noise(t,.22,d,{freq:950,q:2.5,gain:.45,attack:.018});
+  /** #2202: one fading female phrase or low drake rasp, under the same bounded voice budget as wing sounds. */
+  quack(pos, female = true) {
+    if (!ready()) return false;
+    const call=duckCall(female),t=ctx.currentTime;
+    if(!duckVoices.take(t,call.dur))return false;
+    const d=out(pos,call.gain,DUCK_LIFE.sound.ref);
+    for(const n of call.notes){
+      tone(t+n.t,n.dur,d,{type:'sawtooth',from:n.from,to:n.to,gain:.22*n.gain});
+      noise(t+n.t,n.dur,d,{freq:n.hz,q:female?2.5:1.1,gain:(female ? .45 : .6)*n.gain,attack:.018});
+    }
+    return true;
+  },
+  /** Wing whistle and three short beats; water adds a splash at the existing take-off/landing, no per-frame voices. */
+  duckWings(pos, water = false) {
+    const C=DUCK_LIFE.sound.wing;
+    if(!ready()||!duckVoices.take(ctx.currentTime,C.dur+.05))return false;
+    const t=ctx.currentTime,d=out(pos,DUCK_LIFE.sound.wingGain,DUCK_LIFE.sound.ref);
+    tone(t,C.dur,d,{type:'sine',from:C.whistle,to:C.whistleEnd,gain:.1});
+    for(let i=0;i<C.beats;i++)noise(t+i*C.gap,.12,d,{type:'bandpass',freq:1600,q:.7,gain:.4,attack:.018});
+    if(water)noise(t,.25,d,{type:'lowpass',freq:C.splash,gain:.65,attack:.012});
+    return true;
   },
   /** #1711: a new medal level: a short bright fanfare (four rising notes and a shimmer), not positional; mutes with the rest. */
   medal() {

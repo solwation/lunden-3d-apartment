@@ -1,0 +1,77 @@
+TAP version 13
+# Subtest: existing stable mates only; bounded approach/contact, graceful return, goals preserved and cooldown
+ok 1 - existing stable mates only; bounded approach/contact, graceful return, goals preserved and cooldown
+  ---
+  duration_ms: 4.031597
+  type: 'test'
+  ...
+# Subtest: feeding/lure, hidden/far, incompatible surfaces and zero probability cancel without rewards or pair mutation
+ok 2 - feeding/lure, hidden/far, incompatible surfaces and zero probability cancel without rewards or pair mutation
+  ---
+  duration_ms: 0.956799
+  type: 'test'
+  ...
+# Subtest: real merged male/female model bill fronts touch and body extents stay apart
+ok 3 - real merged male/female model bill fronts touch and body extents stay apart
+  ---
+  duration_ms: 66.378752
+  type: 'test'
+  ...
+# Subtest: smooth dusk, night, dawn and distinct descending female / low drake phrases, bounded shared voices
+ok 4 - smooth dusk, night, dawn and distinct descending female / low drake phrases, bounded shared voices
+  ---
+  duration_ms: 1.495899
+  type: 'test'
+  ...
+# Subtest: real habitat pairs walk to supported dry shore at night, sleep without swimming/wake; bread wakes and day resumes
+ok 5 - real habitat pairs walk to supported dry shore at night, sleep without swimming/wake; bread wakes and day resumes
+  ---
+  duration_ms: 2765.429895
+  type: 'test'
+  ...
+# Subtest: night quack clock is slower, food and alert cancel sleep, hidden pairs freeze; pose tucks neck without a new mesh
+ok 6 - night quack clock is slower, food and alert cancel sleep, hidden pairs freeze; pose tucks neck without a new mesh
+  ---
+  duration_ms: 9.058791
+  type: 'test'
+  ...
+# {"maxPair":2.718259062669744,"femaleLeads":0.985513608428446,"formed":3,"dissolved":3,"range":[-1.5764575979891333,72.1942640264009],"surfaceTypes":[false,true]}
+# Subtest: seeded stable mixed pairs, female leadership, occasional groups, sourced river range and idle gate
+ok 7 - seeded stable mixed pairs, female leadership, occasional groups, sourced river range and idle gate
+  ---
+  duration_ms: 10091.040493
+  type: 'test'
+  ...
+# Subtest: female/male identical topology and four-mesh budget; only vertex colours differ; feeding cap unchanged
+ok 8 - female/male identical topology and four-mesh budget; only vertex colours differ; feeding cap unchanged
+  ---
+  duration_ms: 10.618886
+  type: 'test'
+  ...
+# Subtest: actual bump counts every feeding once but game score stops at daily ceiling; no uncapped generic path
+ok 9 - actual bump counts every feeding once but game score stops at daily ceiling; no uncapped generic path
+  ---
+  duration_ms: 3.146298
+  type: 'test'
+  ...
+# Subtest: finite kitchen bread, no bread/package/stale or consumed slice grants no successful feed event
+ok 10 - finite kitchen bread, no bread/package/stale or consumed slice grants no successful feed event
+  ---
+  duration_ms: 1.674498
+  type: 'test'
+  ...
+# Subtest: duck medal advances beyond daily score cap, pays once, Worker accepts counter and derives medal
+ok 11 - duck medal advances beyond daily score cap, pays once, Worker accepts counter and derives medal
+  ---
+  duration_ms: 3.197698
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10285.688135

@@ -13,6 +13,7 @@ import { heldItem } from './holdable.js';
 import { sfx } from './audio.js';
 import { DuckActivity, duckPose, wakeVertices, wakeVertexCount, DUCK_MOTION } from './duckmotion.js';
 import { waterYAt } from './riverbridge.js';
+import { duckNight, duckSleepPose, duckLureNear, DUCK_LIFE } from './ducklife.js';
 
 // #2126: bones given additive pose offsets after the mixer; reset to rest first so unanimated bones never accumulate.
 const POSE_BONES = ['Joint_Neck', 'Joint_Head', 'Joint_Tail', 'Joint_Wing_L', 'Joint_Wing_R'];
@@ -47,8 +48,8 @@ export function loadRiggedDuckModel() {
 }
 
 export class Ducks {
-  constructor({ scene, camera, life, ground, say }) {
-    Object.assign(this, { camera, life, ground, say, quackCooldown: 0, quacks: 0, feeds: 0 });
+  constructor({ scene, camera, life, ground, say, hour = () => 12 }) {
+    Object.assign(this, { camera, life, ground, say, hour, quackCooldown: 0, quacks: 0, feeds: 0 });
     this.habitat = duckHabitat(ground);
     this.flock = new DuckFlock(this.habitat);
     const geometries = [duckModel(false), duckModel(true)], mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 });
@@ -119,7 +120,7 @@ export class Ducks {
       }
     }
 
-    a.rest = POSE_BONES.map(n => a.bones[n] && [a.bones[n], a.bones[n].quaternion.clone()]).filter(Boolean);
+    a.rest = POSE_BONES.map(n => a.bones[n] && [a.bones[n], a.bones[n].quaternion.clone(), a.bones[n].position.clone()]).filter(Boolean);
     a.mesh.add(a.riggedScene);
     // Hide procedural geometry so only the single SkinnedMesh renders
     a.mesh.material = new THREE.MeshBasicMaterial({ visible: false });
@@ -193,7 +194,7 @@ export class Ducks {
     if (this.quackCooldown > 0) return;
     this.quackCooldown = DUCKS.quackCooldown;
     this.quacks++;
-    sfx.quack({ x: b.x, y: b.y + .5, z: b.z });
+    sfx.quack({ x: b.x, y: b.y + .5, z: b.z }, b.female);
   }
 
   update(dt, hidden) {
@@ -206,11 +207,16 @@ export class Ducks {
     if (!hidden) for (const a of this.animals) {
       const b = a.brain, dx = b.x - p.x, dz = b.z - p.z, d = Math.hypot(dx, dz);
       const toward = (vx * dx + vz * dz) / (d || 1), disturbed = !food && d < T.disturb && toward < T.maxSpeed && Math.abs(p.y - b.y) < DUCKS.maxFeedHeight && toward > T.disturbSpeed;
+      b.restAlert=Math.max(0,(b.restAlert??0)-dt); if(disturbed)b.restAlert=DUCK_LIFE.alert;
+      if(disturbed||duckLureNear(b,food,this.habitat)){b.roosting=false;b.sleeping=false;}
+      const wasAir=a.activity.airborne;
       a.activity.update(dt, b, { disturbed, asleep: d >= DUCKS.near });
+      if(wasAir!==a.activity.airborne && d<DUCKS.near) sfx.duckWings({x:b.x,y:b.y+.3,z:b.z},b.swimming);
+      if(a.activity.airborne)b.restAlert=DUCK_LIFE.alert;
     }
     this.kiss.update(dt, this.flock, food, hidden);
     if (!hidden) {
-      for (const b of this.flock.update(dt, food, b => !this.kiss.owns(b) && Math.hypot(p.x - b.x, p.z - b.z) < DUCKS.near)) {
+      for (const b of this.flock.update(dt, food, b => !this.kiss.owns(b) && Math.hypot(p.x - b.x, p.z - b.z) < DUCKS.near, duckNight(this.hour()))) {
         this.quack(b);
       }
     }
@@ -221,7 +227,13 @@ export class Ducks {
     for (const a of this.animals) {
       const b = a.brain, d = Math.hypot(p.x - b.x, p.z - b.z);
       a.mesh.visible = !hidden && d < DUCKS.draw;
-      const o = a.pose = duckPose(b, a.activity, a.pose ?? undefined), fwd = o.surge + o.tz;
+      const o = a.pose = duckPose(b, a.activity, a.pose ?? undefined);
+      const busy=b.kissing||b.eating||b.lured||a.activity.airborne;
+      if(busy)a.sleepWeight=0; // Feeding/flight and exact kiss bill contact take precedence immediately.
+      const sleep=b.sleeping&&!busy?1:0;
+      a.sleepWeight=(a.sleepWeight??0)+(sleep-(a.sleepWeight??0))*Math.min(1,dt*DUCK_LIFE.poseEase);
+      if(a.sleepWeight>1e-4) duckSleepPose(o,a.sleepWeight,a.activity.time,b.female?1:-1);
+      const fwd = o.surge + o.tz;
       a.mesh.position.set(b.x + Math.sin(b.yaw) * fwd, b.y + (b.swimming && !b.kissing ? DUCKS.bob * Math.sin(b.phase) : 0) + o.lift + o.ty, b.z + Math.cos(b.yaw) * fwd);
       if (a.riggedScene) {
         a.mesh.rotation.set(o.pitch, b.yaw, o.roll, 'YXZ');
@@ -252,9 +264,10 @@ export class Ducks {
             a.activeAction = nextAction;
           }
         }
-        for (const [bone, q] of a.rest) bone.quaternion.copy(q);
+        for (const [bone, q, p] of a.rest) { bone.quaternion.copy(q); bone.position.copy(p); }
         a.mixer.update(dt);
         const B = a.bones;
+        if(B.Joint_Neck){ B.Joint_Neck.position.x+=o.neckSide; B.Joint_Neck.position.y+=o.neckDown; B.Joint_Neck.position.z+=o.neckBack; }
         turnBone(B.Joint_Neck, o.neckX, o.neckY, 0); turnBone(B.Joint_Head, o.headX, 0, 0); turnBone(B.Joint_Tail, 0, o.tailY, 0);
         turnBone(B.Joint_Wing_L, 0, 0, -o.wing); turnBone(B.Joint_Wing_R, 0, 0, o.wing);
       }

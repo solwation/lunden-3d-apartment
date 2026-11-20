@@ -1,0 +1,4 @@
+PASS autonomous swim/shore transitions, continuous surface, waddle distance and bounded quacks
+PASS held-food approach, eating pause and duplicate-feed cooldown
+PASS real Items bread: exactly four bites, removal at zero, no package/infinite bread
+PASS action reservation, stale/stowed hand and topped-food refusal; bounded flock

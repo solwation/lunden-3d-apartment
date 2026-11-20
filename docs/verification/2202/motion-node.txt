@@ -1,0 +1,6 @@
+PASS behaviour distribution {"starts":{"shake":57,"preen":115,"dabble":37},"share":{"none":0.798,"shake":0.016,"preen":0.146,"dabble":0.04}}
+PASS seeded, local and repeatable (no shared/network state)
+PASS wake only while swimming forward
+PASS food/eating/kiss precedence and take-off cooldown
+PASS dabble/take-off/stroke poses
+PASS V wake shape, fade and bank clipping

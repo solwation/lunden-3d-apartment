@@ -1581,6 +1581,23 @@ triangles), hidden when no bird leaves a wake; #2082's water surface is untouche
 wake shows, one extra program, zero textures. Tunables: `DUCK_MOTION` in `src/config.js` (*guess*). Checks:
 `tools/duckmotiontest.mjs`, `tools/duckmotion2126browser.cjs`; [frame sequence](../verification/2126/README.md).
 
+### Mallard calls and shore sleep (#2202)
+
+`ducklife.js` supplies a smooth fixed local-hour night weight (settle 18–20, wake 05–07; artistic guesses, not a seasonal
+sunrise model), a four-note fading female quack, a shorter/lower drake rasp and a tucked-neck sleeping pose. `main.js` passes
+`day.hour` to `Ducks`; `DuckFlock` sends each stable pair to two cached dry-bank points within its original territory at dusk.
+The normal habitat waypoints/slope checks get it there; no teleport, new brain range, mesh, light or render pass. At arrival
+wandering stops and the existing rig's idle mix receives additive neck/head offsets and a slight low breathing body. The
+procedural asset-failure fallback retains its whole-body rest but has no neck bones to tuck. Morning resumes existing goals.
+Nearby valid bread, eating and a rushing visitor wake the pair; take-off holds it awake for 15 seconds. Kisses cannot start
+while roosting and their exact neutral bill pose, feeding/rewards, pair ids, distance freeze and network protocol are retained.
+The original quack clock runs at eight percent at full night and sleeping birds emit no ambient quack; a feeding response
+still calls. `sfx.quack(pos, female)` and `sfx.duckWings(pos, water)` share a two-slot VoiceCap; the existing take-off/landing
+transitions emit one short whistle/wing-beat phrase, with splash noise only over water. All use the existing positional/mute
+and room-acoustics path; sounds are synthesised approximations, no new files. `DUCK_LIFE` holds explicit guesses.
+Checks: `tools/ducklifetest.mjs`, original duck/motion/pair/kiss/reward checks, and `tools/ducklife2202browser.cjs` in the real
+app. [Own views, exact setup and limits](../verification/2202/README.md).
+
 ### Historical fish export quality correction (#1911)
 
 `riverfishmodel.js` supplies the same finned, eyed neutral geometry to the unit-sized
