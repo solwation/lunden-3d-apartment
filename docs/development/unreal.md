@@ -11,10 +11,11 @@ Shared data/export from the web scene: #2245. Packaging and updates: #2248, #224
 **Only the original repository.** The public downstream `solwation/kvarteret-lunden` does not receive the Unreal
 version, its scripts or this document (no transfer, no downstream issue; #2242).
 
-**Status (2026-11-20):** #2243 phase A (skeleton, version lock, Git LFS rules, Pages protection, scripts) and
-phase B are done. On UE 5.8.4 (CL 58902052) with VS 2022 17.14 / MSVC 14.44 / Windows SDK 10.0.22621, the editor
-module builds, headless Python and the Automation Test pass, the MCP server answers, and the first `.uasset` is in
-Git LFS. Verified results are listed under [Phase B results](#phase-b-results-verified-2026-11-20).
+**Status (2026-11-20).** Lunden is content-only (#2268). The installed Epic
+editor opens the project directly. Smart App Control stays enabled on the build
+PC. Gameplay and tests use assets, Blueprint and editor Python. Adding a native
+project module requires a new decision. The original C++ foundation and tools
+were verified in [the historical #2243 results](#phase-b-results-verified-2026-11-20).
 Phase A of #2245 adds the shared data contract (`shared/`), the coordinate mapping, the headless web → GLB
 export with measurement data, the staleness check and the third-party notices
 ([below](#shared-data-web--unreal-2245)). Phase B of #2245 verified the import on 5.8.4: one level per zone with an
@@ -25,17 +26,14 @@ are versioned is an open user decision ([Generated assets](#generated-assets-ver
 ## Module and file map
 
 ```text
-unreal/Lunden/Lunden.uproject      C++ project "Lunden", EngineAssociation "5.8"; plugins PythonScriptPlugin,
-                                   EditorScriptingUtilities, ModelContextProtocol, AllToolsets on; AndroidFileServer
-                                   off (Windows only; it otherwise writes a token section into DefaultEngine.ini)
+unreal/Lunden/Lunden.uproject      content-only project, EngineAssociation "5.8"; editor scripting and MCP tools;
+                                   AndroidFileServer disabled in the editor, installed engine defaults in Shipping
 unreal/Lunden/ENGINE_VERSION       exact locked engine version (5.8.4); compared with Engine/Build/Build.version
 unreal/Lunden/Config/              DefaultEngine.ini (Lumen/VSM/DX12 SM6, desktop/maximum), DefaultGame.ini
                                    (project id/name, packaging defaults, Asset Manager GameFeatureData rule),
                                    DefaultEditor.ini (Python, no remote exec), DefaultInput.ini (5.8.4 template
                                    defaults written by the editor: Enhanced Input classes, default axes)
-unreal/Lunden/Source/              Lunden.Target.cs (game), LundenEditor.Target.cs (editor),
-                                   Lunden/Lunden.Build.cs, Lunden.h/.cpp (primary module),
-                                   Lunden/Tests/LundenSmokeTest.cpp (Automation Test "Lunden.Smoke.ModuleLoaded")
+unreal/Lunden/Content/Python/      test_fixture_material.py (Editor.Python.Lunden.test_fixture_material)
 unreal/Lunden/Content/Lunden/      hand-made content: Materials/, Blueprints/, Maps/, Lighting/ (.gitkeep until real
                                    assets exist); Generated/ is reserved for imports from #2245, never hand-edited;
                                    Fixtures/M_LundenFixture.uasset: empty material (2 KB, LFS) the smoke test loads
@@ -43,7 +41,7 @@ unreal/Lunden/.gitignore           Binaries, Intermediate, Saved, DerivedDataCac
 .gitattributes, .lfsconfig         Git LFS rules for unreal/** only; LFS downloads of unreal/** off by default
 tools/unreal-engine/common.ps1                    shared functions (engine/VS/SDK discovery, exit codes, logs); dot-sourced
 tools/unreal-engine/check-environment.ps1         environment report and check (read-only)
-tools/unreal-engine/build-editor.ps1              builds LundenEditor with Build.bat
+tools/unreal-engine/build-editor.ps1              compatibility entry point; reports that the installed editor is ready
 tools/unreal-engine/run-python.ps1                runs a Python script headless (UnrealEditor-Cmd -run=pythonscript)
 tools/unreal-engine/run-tests.ps1                 runs Automation Tests headless and reads the exported report
 tools/unreal-engine/release.ps1                     runs a clean Win64 Shipping build, archives it with build-info.json and keeps the log
@@ -80,7 +78,7 @@ Engine: **Unreal Engine 5.8.x**, locked to **5.8.4** (latest stable hotfix 2026-
 installed with the Epic Games Launcher. A source build of the engine is not needed for a client game (a dedicated
 server would need one; not planned).
 
-Toolchain for UE 5.8 on Windows (Epic's
+The editor and its Python tests only need the installed engine. The packaging workstation also has the UE 5.8 Windows toolchain (Epic's
 [Visual Studio setup](https://dev.epicgames.com/documentation/unreal-engine/setting-up-visual-studio-development-environment-for-cplusplus-projects-in-unreal-engine)
 and [hardware/software specifications](https://dev.epicgames.com/documentation/unreal-engine/hardware-and-software-specifications-for-unreal-engine)):
 
@@ -110,7 +108,7 @@ The development PC (i9-10900K, RTX 3080, 32 GB RAM, Windows 11 Pro) is above Epi
    .NET Framework 4.6.2 targeting pack, C++ diagnostic tools and `Component.Unreal.Ide` (IDE support for Unreal
    Engine). The separate "Unreal Engine installer" component is not included: the engine comes from the Launcher.
    VS 2026 also satisfies Epic's requirements.
-3. Check: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/check-environment.ps1` must end with
+3. Check: `powershell.exe -NoProfile -File tools/unreal-engine/check-environment.ps1` must end with
    `OK: the Unreal environment matches the project lock.`
 
 `check-environment.ps1` deliberately checks only what a build needs: a VS 2022 17.14+/2026 instance with MSVC 14.38+, a
@@ -145,13 +143,14 @@ git lfs pull
 ```
 
 The scripts refuse to run the engine on a WSL/UNC checkout (exit code 6) and only warn in `check-environment.ps1`.
-Renaming or moving the clone invalidates the absolute paths in `unreal/Lunden/Intermediate`; delete `Intermediate/`
-and `Binaries/` and run `build-editor.ps1` again.
+For the first content-only cook, use a fresh Windows checkout. Earlier native or temporary
+build targets in an old checkout’s ignored `Intermediate/` or `Binaries/` can make UAT
+look for a project-specific editor receipt.
 
 - WSL Git has **no git-lfs**. A `.uasset` committed from WSL would bypass the LFS filter and land in normal Git
   history. Commit Unreal binaries only with Windows Git (`"/mnt/c/Program Files/Git/cmd/git.exe"` from WSL, or
   Git for Windows directly) until git-lfs is installed in WSL.
-- Text files (`.uproject`, `Config/`, `Source/`, `tools/unreal-engine/`, this document) can be edited and committed
+- Text files (`.uproject`, `Config/`, `Content/Python/`, `tools/unreal-engine/`, this document) can be edited and committed
   from the ext4 mirror as usual; the LFS rules do not touch them.
 - **LFS and the WSL mirror (verified 2026-11-20 with throwaway clones):** WSL Git without git-lfs checks out an LFS
   commit as the 129-byte pointer text and `git status` stays clean (`git hash-object` of the pointer equals the
@@ -168,13 +167,13 @@ and `Binaries/` and run `build-editor.ps1` again.
 All scripts are PowerShell (Windows PowerShell 5.1 or PowerShell 7), run on Windows and callable from WSL:
 
 ```text
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/check-environment.ps1
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/build-editor.ps1 [-Configuration Development|DebugGame]
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/smoke_create_asset.py [args…]
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 [-Filter Lunden.] [-WithRhi]
+powershell.exe -NoProfile -File tools/unreal-engine/check-environment.ps1
+powershell.exe -NoProfile -File tools/unreal-engine/build-editor.ps1 [-Configuration Development|DebugGame]
+powershell.exe -NoProfile -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/smoke_create_asset.py [args…]
+powershell.exe -NoProfile -File tools/unreal-engine/run-tests.ps1 [-Filter Editor.Python.Lunden.] [-WithRhi]
 ```
 
-`-ExecutionPolicy Bypass` is needed because Windows 11's default policy blocks unsigned scripts. Every script
+Run repository scripts on a Windows host whose existing policy permits them. Every engine script
 takes `-EngineDir <root>` (or the environment variable `LUNDEN_UNREAL_ENGINE_ROOT`); otherwise the engine is found through the
 registry (`HKLM\SOFTWARE\EpicGames\Unreal Engine\5.8`), the Launcher's `LauncherInstalled.dat` and finally the
 default path. Logs go to `unreal/Lunden/Saved/Logs/<script>-<time>.log` and test reports to
@@ -183,9 +182,9 @@ default path. Logs go to `unreal/Lunden/Saved/Logs/<script>-<time>.log` and test
 | Script | Runs | Success means |
 |---|---|---|
 | `check-environment.ps1` | nothing; reports project, engine, VS/MSVC, SDK, .NET | exit 0 and `OK: …` |
-| `build-editor.ps1` | `Build.bat LundenEditor Win64 Development -Project=… -WaitMutex` | Build.bat exit 0 |
+| `build-editor.ps1` | reports the content-only project status | exit 0 |
 | `run-python.ps1` | `UnrealEditor-Cmd.exe <uproject> -run=pythonscript -script="<file> <args>" -unattended -nullrhi …` | exit 0 **and** no `LogPython: Error`/traceback in the log |
-| `run-tests.ps1` | `UnrealEditor-Cmd.exe <uproject> -ExecCmds="Automation RunTests <filter>; Quit" -TestExit="Automation Test Queue Empty" -ReportExportPath=… -nullrhi` | report `index.json`: ≥ 1 passed, 0 failed |
+| `run-tests.ps1` | `UnrealEditor-Cmd.exe <uproject> -ExecCmds="Automation RunTests <filter>; Quit" -TestExit="Automation Test Queue Empty" -ReportExportPath=… -nullrhi` | editor exit 0 and report `index.json` with ≥ 1 passed, 0 failed and 0 not run |
 
 Exit codes (all scripts): 0 ok, 1 command failed, 2 engine not found, 3 wrong engine version, 4 toolchain
 (VS/MSVC/SDK/.NET targeting pack) missing, 5 project files invalid, 6 checkout on a WSL/UNC path.
@@ -198,8 +197,18 @@ a Python script raises or cannot be loaded, and 255 when an Automation Test fail
 path with forward slashes, because with arguments the commandlet parses `-script` as a command line in which a
 backslash is an escape (`\tools` became `<TAB>ools`); paths with spaces are not supported in that form.
 `index.json` from the Automation report has the fields `succeeded`, `succeededWithWarnings`, `failed` and `notRun`.
-The scripts listed in the table store their logs and reports under `unreal/Lunden/Saved`. The smoke script creates and
-removes its own ignored `/Game/Lunden/_Smoke` folder.
+`run-tests.ps1` activates Epic's prebuilt `PythonAutomationTest` editor plugin and selects
+`Editor.Python.Lunden.` by default. The fixture test loads the versioned LFS material
+through the editor. `run-python.ps1` and `run-tests.ps1` check the engine lock without
+requiring a C++ compiler. Use `check-environment.ps1 -SkipToolchain` for the same
+editor-only check. The scripts that start the editor store their logs and reports under `unreal/Lunden/Saved`. The smoke script creates and
+removes its own ignored `/Game/Lunden/_Smoke` folder. In the #2268 isolated content-only
+check on UE 5.8.4, the Epic-signed editor returned 0 and `LUNDEN_SMOKE_OK`.
+Automation reported one pass for `Editor.Python.Lunden.test_fixture_material`.
+With the material removed from that copy, the same test reported one failure
+and exit 255. The check produced no project DLL and no new Code Integrity
+3033/3077 events for Lunden DLLs. These command lines ran directly through
+the installed editor on the Smart App Control host.
 
 For local Shipping archives, see [Build location](#build-location-decision-2244).
 
@@ -362,7 +371,7 @@ and pilot content (#2243/#2248).
 
 ## Phase B results (verified 2026-11-20)
 
-Run in `C:\Users\Olof\Documents\lunden-unreal-engine` (i9-10900K, RTX 3080, 32 GB):
+These results describe the original native project before the content-only conversion (#2268). The checks ran in `C:\Users\Olof\Documents\lunden-unreal-engine` (i9-10900K, RTX 3080, 32 GB).
 
 1. `check-environment.ps1` → `OK: the Unreal environment matches the project lock.` (exit 0; engine 5.8.4
    CL 58902052; VS Community 2022 and VS Build Tools 2022 17.14, MSVC 14.44.35207; SDK 10.0.22621 + 10.0.26100).

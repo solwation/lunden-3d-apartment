@@ -7,13 +7,13 @@
   and checks Visual Studio (components of tools/unreal-engine/lunden-unreal.vsconfig), MSVC and the Windows SDK.
   Read-only. Exit codes: see common.ps1 (0 ok, 2 engine missing, 3 wrong version, 4 toolchain, 5 project, 6 path).
 .EXAMPLE
-  powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/check-environment.ps1
+  powershell.exe -NoProfile -File tools/unreal-engine/check-environment.ps1
 #>
 [CmdletBinding()]
-param([string]$EngineDir)
+param([string]$EngineDir, [switch]$SkipToolchain)
 . (Join-Path $PSScriptRoot 'common.ps1')
 
-$envr = Test-UnrealEnvironment -EngineDir $EngineDir
+$envr = Test-UnrealEnvironment -EngineDir $EngineDir -SkipToolchain:$SkipToolchain
 Write-UnrealEnvironment $envr
 if ($envr.Code -eq $UnrealExit.Ok) { Write-Host 'OK: the Unreal environment matches the project lock.' -ForegroundColor Green }
 exit $envr.Code

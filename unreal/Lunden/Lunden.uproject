@@ -3,13 +3,6 @@
 	"EngineAssociation": "5.8",
 	"Category": "",
 	"Description": "Lunden L1007 - Unreal Engine version for Windows (#2242). See docs/development/unreal.md.",
-	"Modules": [
-		{
-			"Name": "Lunden",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		}
-	],
 	"Plugins": [
 		{
 			"Name": "PythonScriptPlugin",
@@ -21,15 +14,24 @@
 		},
 		{
 			"Name": "ModelContextProtocol",
-			"Enabled": true
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
 		},
 		{
 			"Name": "AllToolsets",
-			"Enabled": true
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
 		},
 		{
 			"Name": "AndroidFileServer",
-			"Enabled": false
+			"Enabled": true,
+			"TargetDenyList": [
+				"Editor"
+			]
 		}
 	],
 	"TargetPlatforms": [

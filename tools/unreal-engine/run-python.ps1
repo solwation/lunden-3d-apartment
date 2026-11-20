@@ -3,10 +3,9 @@
   Lunden (#2243): run a Python script headless in the Unreal editor (no window, no GPU).
 .DESCRIPTION
   UnrealEditor-Cmd.exe <uproject> -run=pythonscript -script="<script> <args>" -unattended -nullrhi -nosplash ...
-  Fails (exit 1) when the editor exits non-zero or the log contains a Python error. Requires a built editor
-  module (build-editor.ps1). Without a usable engine it only prints the command. Log under unreal/Lunden/Saved/Logs.
+  Fails (exit 1) when the editor exits non-zero or the log contains a Python error. Uses the prebuilt Epic editor. Without a usable engine it only prints the command. Log under unreal/Lunden/Saved/Logs.
 .EXAMPLE
-  powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/smoke_create_asset.py
+  powershell.exe -NoProfile -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/smoke_create_asset.py
 #>
 [CmdletBinding()]
 param(
@@ -29,7 +28,7 @@ $log = '<unreal/Lunden/Saved/Logs/run-python-TIME.log>'
 $argsFor = { param($logPath)
 	$inner = (@($scriptPath) + $ScriptArgs) -join ' '
 	"$(ConvertTo-UnrealArg $p.UProject) -run=pythonscript -script=$(ConvertTo-UnrealArg $inner) -unattended -nullrhi -nosplash -nosound -nop4 -stdout -FullStdOutLogOutput -abslog=$(ConvertTo-UnrealArg $logPath)" }
-$envr = Resolve-UnrealForRun $EngineDir 'run-python' { param($root) Format-UnrealCommand (Join-Path $root 'Engine\Binaries\Win64\UnrealEditor-Cmd.exe') (& $argsFor $log) }
+$envr = Resolve-UnrealForRun $EngineDir 'run-python' -SkipToolchain { param($root) Format-UnrealCommand (Join-Path $root 'Engine\Binaries\Win64\UnrealEditor-Cmd.exe') (& $argsFor $log) }
 
 $log = New-UnrealLogPath 'run-python'
 $code = Invoke-UnrealProcess $envr.Engine.EditorCmd (& $argsFor $log)

@@ -221,10 +221,10 @@ function New-UnrealLogPath([string]$Name) {
 	Join-Path $dir ("{0}-{1}.log" -f $Name, (Get-Date -Format 'yyyyMMdd-HHmmss'))
 }
 
-function Resolve-UnrealForRun([string]$EngineDir, [string]$What, [scriptblock]$Describe) {
+function Resolve-UnrealForRun([string]$EngineDir, [string]$What, [scriptblock]$Describe, [switch]$SkipToolchain) {
 	<# Checks the environment for a script that runs the engine. On failure prints the problems and what it WOULD run
 	   (via $Describe, given a placeholder engine root) and exits with the matching code. Returns the environment. #>
-	$envr = Test-UnrealEnvironment -EngineDir $EngineDir
+	$envr = Test-UnrealEnvironment -EngineDir $EngineDir -SkipToolchain:$SkipToolchain
 	if ($envr.Project.IsUncPath -and $envr.Code -eq $UnrealExit.Ok) {
 		[void]$envr.Errors.Add("Refusing to run $What on a WSL/UNC checkout ($($envr.Project.RepoRoot)); use the Windows-drive checkout.")
 		$envr.Code = $UnrealExit.Path
