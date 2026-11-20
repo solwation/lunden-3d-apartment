@@ -7904,7 +7904,9 @@ export const AVATAR_HIT = { hz: 2.2, zeta: 0.3, fade: [0.7, 1.0], lag: 0.05, max
 // #1165: glasses, 0 none, 1 round, 2 square frames: a look field `glasses`, the extension's `g` tag (absent when 0). The frames are part
 // of the shared head geometry and collapse to a point in the vertex shader when not chosen (src/avatar.js), so no extra draw call.
 // #1325: kind 3 sunglasses (the square frames plus dark lenses, `lens`).
-export const AVATAR_GLASSES = { tag: 'g', names: ['Inga', 'Runda', 'Fyrkantiga', 'Solglasögon'], colour: 0x1c1c20, lens: 0x0e0f14 };
+export const AVATAR_GLASSES = { tag: 'g', names: ['Inga', 'Runda', 'Fyrkantiga', 'Solglasögon', 'Pilotsolglasögon'], colour: 0x1c1c20, lens: 0x0e0f14,
+  aviator: { kind: 4, segments: 20, rx: 0.025, hy: 0.020, wire: 0.0013, browHeight: 0.015,
+    drop: 0.30, tilt: 0.18 } }; // #2234: estimated thin metal rim and teardrop shape, in the same plane as the square glasses
 // #2173: the avatar's reflections and glasses. Everything is *guess*, tuned by eye. `env`: the painted room (roomEnv, #307) sampled in the avatar's
 // own fragment shader (a shared texture, no per-avatar one) by metal (rings, bracelets, watch case, earrings, chains, pendants), the glasses' frames and
 // the wet eyeball, added before the local light level `uLight` so a dark room dims it; outdoors (the sun share uEyeLit.y) the hemisphere light's sky and

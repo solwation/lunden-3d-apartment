@@ -144,7 +144,7 @@ import { Quality } from './quality.js';
 import { stairDayUniforms, dayBlend } from './stairdaylight.js'; // #2183
 import { QualitySetting } from './qualitysetting.js';
 import { HitchLog } from './hitchlog.js';
-import { applySeason, registeredTrees } from './seasons.js';
+import { applySeason, registerSeasonal, registeredTrees } from './seasons.js';
 import { SnowCover, snowState, calendarCover } from './snowcover.js';
 import { FrostCover } from './frost.js'; // #2195
 import { buildSnowShelter } from './snowground.js';
@@ -1064,7 +1064,8 @@ try { localStorage.removeItem('lunden.bygge'); } catch { /* the removed building
 // speech bubbles (#247): Olof's lines and your own (the neighbours outside were removed in #670)
 const greet = new Greetings(camera, document.getElementById('speech'));
 // Olof exists only at the wheel of our car (#900); apartment seats stay free.
-const olofDriver = new OlofDriver(car);
+const olofDriver = new OlofDriver(car, day.month);
+registerSeasonal(month => olofDriver.setSeason(month));
 olofDriver.onSay = (line, secs) => greet.say({ head: olofDriver.fig.head, s: 1 }, line, { pitch: 0.85, rate: 1, voice: 3 }, secs, olofDriver.avatar); // (his mouth moves with it, #1156)
 car.driverTaken = () => olofDriver.visible; // he drives (#663): you sit beside him
 car.garage = garage; // it lives in the garage, its door opens for it (#358)
@@ -3265,7 +3266,7 @@ document.getElementById('score').append(document.getElementById('terminal-btn'))
 
 const menuPresenceEl = document.getElementById('menu-presence');
 let presenceAvatar = '';
-try { presenceAvatar = encodeAvatarWireLook(sessionStartLook(leaderboard.name, localStorage.getItem('lunden.avatar'), leaderboard.name)); } catch { /* storage blocked */ }
+try { presenceAvatar = encodeAvatarWireLook(sessionStartLook(leaderboard.name, localStorage.getItem('lunden.avatar'), leaderboard.name, day.month)); } catch { /* storage blocked */ }
 const renderMenuPresence = p => renderPlayingNow(menuPresenceEl, p);
 
 const presence = new Presence(cloud.url, document.getElementById('presence'), {
@@ -3309,7 +3310,7 @@ const weaponKey = () => { if (player.riding) return ''; const h = heldItem(); re
 const gymPumpState = pumpSampler(() => stats.gymPump);
 const smoothStep = (t) => { const c = Math.min(1, Math.max(0, t)); return c * c * (3 - 2 * c); };
 let reactionCam = { active: false, start: 0, camFrom: null, camTo: null, kind: -1 };
-const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey,
+const ghosts = new Ghosts({ scene, camera, month: day.month, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey,
   ground: (x, z, y) => player.groundAt(x, z, y), // #2010: the contact shadows rest on the real ground (stairs, grass, floors)
   seatFloor: (x, z, y) => car.cabinFloorAt(x, z, y), // #2158: a seated figure's feet on our car's cabin floor (the walkable ground does not know it)
   // #1943: a figure whose feet are under the river's surface swims (the bed is far below every other walkable level, so the cheap height test rejects everyone else)

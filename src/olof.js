@@ -1,7 +1,7 @@
 import { discoverCreature } from './bestiaryevents.js';
 import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
-import { OLOF as O, OLOF_DRIVE as OD, defaultFaceLook, ageInYears, ageStepFromYears } from './config.js';
+import { OLOF as O, OLOF_DRIVE as OD, defaultFaceLook, ageInYears, ageStepFromYears, AVATAR_GLASSES } from './config.js';
 import { Avatar } from './avatar.js';
 import { newBreath, stepBreath } from './avatarbreath.js'; // #2146: his breathing is the avatars' (rhythm, then avatarchest.js)
 import { chestBreath } from './avatarchest.js';
@@ -53,9 +53,15 @@ export function olofLook(now = new Date()) {
   return { ...defaultFaceLook(), ...O.look, age: ageStepFromYears(ageInYears(O.born, now)), skin: C.skin, hair: C.hair, beard: C.beard, top: C.hoodie, pants: C.jeans, shoes: C.shoe };
 }
 
+// #2234: June through August on the same simulated calendar as the game's trees.
+const olofGlasses = month => month >= 6 && month <= 8 ? AVATAR_GLASSES.aviator.kind : 0;
+export function seasonalOlofLook(month) {
+  return { ...olofLook(), glasses: olofGlasses(month) };
+}
+
 /** The figure: the Avatar in Olof's look, { object (put it where he is), mesh, bones, pick, material, head, avatar }. */
-export function buildOlof() {
-  const avatar = new Avatar(olofLook()), object = avatar.object;
+export function buildOlof(month) {
+  const avatar = new Avatar(seasonalOlofLook(month)), object = avatar.object;
   object.name = 'olof';
   object.rotation.set(0, 0, 0); // (his own frame faces +z, as poseOlof's; the Avatar's faces −z for the ghosts)
   // what the look ray hits: an invisible box round the seated figure (the raycaster ignores `visible`)
@@ -191,10 +197,10 @@ const wv1 = new THREE.Vector3(), wv2 = new THREE.Vector3();
 
 export class OlofDriver {
   /** `car`: Car (car.js; its group, built facing local +x, gets the figure). */
-  constructor(car) {
+  constructor(car, month) {
     const D = O.car;
     this.car = car;
-    this.fig = buildOlof();
+    this.fig = buildOlof(month);
     const o = this.fig.object;
     o.userData = {}; // (a part of the car: the car's own detail flags judge it)
     o.position.set(D.at[0], D.floor, D.at[1]);
@@ -212,6 +218,12 @@ export class OlofDriver {
     this.pitch = 0; this.shoulderK = 0; this.revT = 0; this.eyeTurn = 0; this.eyePitch = 0; // #2146: head pitch / look over the shoulder / the eyes' extra head turn
     this.breath = newBreath(); this.chest = null;
     this.onSay = null; // (line, secs) => {} his joke in a bubble (main.js → greet.js)
+  }
+
+  setSeason(month) {
+    const glasses = olofGlasses(month);
+    this.avatar.look.glasses = glasses;
+    this.avatar.material.userData.u.uGlasses.value = glasses;
   }
 
   /** The Avatar he is drawn with (#1156): greet.js moves its mouth with his line. */

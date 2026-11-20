@@ -8,7 +8,7 @@ import { envShade, envDecl, eyeEnv, envKey, curveLens } from '../src/avatarenv.j
 import { AVATAR_ENV as E } from '../src/config.js';
 import * as THREE from 'three';
 
-const FP = { rimRound: 8, specs: 10, studs: 21, drops: 23, chain: 30, pearls: 31, goldChain: 33, lensRound: 27, lensSquare: 28 };
+const FP = { rimRound: 8, specs: 10, studs: 21, drops: 23, chain: 30, pearls: 31, goldChain: 33, lensRound: 27, lensSquare: 28, aviator: 29 };
 
 test('lens coverage: faint head-on, stronger at grazing angles, monotonic', () => {
   const head = lensAlpha(1), mid = lensAlpha(0.5), graze = lensAlpha(0.1);

@@ -987,7 +987,7 @@ function addFaceSections(controls) {
       AVATAR_GLASSES.names.forEach((n, i) => {
         const b = document.createElement('button');
         Object.assign(b.dataset, { type: 'glasses', index: String(i) });
-        b.textContent = i === 3 ? n : i ? `${n} glasögon` : 'Inga glasögon';
+        b.textContent = i < 3 ? `${n} glasögon` : n;
         row.append(b);
       });
       sec.append(row);

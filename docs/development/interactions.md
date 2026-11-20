@@ -432,6 +432,13 @@ steg 0 till och med 25 år, sedan ett steg per 5 år (26–30 → 1, 31–35 →
 `ageInYears` räknar hela år (födelsedagen räknas), `ageStepFromYears` mappar (båda i `src/config.js`). Test:
 `tools/olofage2233test.mjs`; bilder: `tools/olofage2233browser.cjs` ([bilder](../verification/2233/)). Personligt, förs inte till den publika versionen.
 
+Pilotsolglasögonen (#2234) finns i spegelns Tillbehör. De använder glasögontaggens lediga värde 4.
+En äldre avkodare som bara känner till 0–3 hoppar över den taggen. Övriga taggar läses som tidigare.
+Spelets kalendermånad styr Olofs glasögon. Juni–augusti ger pilotsolglasögon i bilen och när en
+Olof-spelare börjar sin session. Föraren följer också månadsbyten under besöket. Spelarens eget
+spegelval gäller som vanligt till nästa sessionsstart. Bågar och mörka glas sitter i huvudets
+befintliga geometri och delar avatarens material och miljöreflektion.
+
 ## Module and test map
 
 ```text

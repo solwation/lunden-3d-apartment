@@ -3,7 +3,7 @@
 // rim (parts lensRound / lensSquare, collapsed unless that kind is chosen). The lens is drawn by alpha-to-coverage in the avatar's own material
 // (see src/avatarenv.js); `lensAlpha` is its coverage. Numbers: AVATAR_ENV in config.js. Pure helpers first (tools/avatarglassestest.mjs).
 import * as THREE from 'three';
-import { AVATAR_ENV as ENV } from './config.js';
+import { AVATAR_ENV as ENV, AVATAR_GLASSES } from './config.js';
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
@@ -47,6 +47,26 @@ export function lensShape(kind, rx, hy) {
   if (kind === 1) return new THREE.CircleGeometry(rx, 16);
   return new THREE.ShapeGeometry(new THREE.Shape(superellipse(rx, hy, ENV.frame.n, 24).map(([x, y]) => new THREE.Vector2(x, y))));
 }
+// #2234: map a unit ring and disc to the same teardrop outline. The lower half
+// hangs deeper towards the temple. The rim's inner edge is raised to catch light.
+export function aviatorShape(side, rim) {
+  const { rx, hy, segments, wire, drop, tilt } = AVATAR_GLASSES.aviator;
+  const g = rim ? new THREE.RingGeometry(0.5, 1, segments) : new THREE.CircleGeometry(1, segments);
+  const p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), radius = Math.hypot(x, y);
+    if (!radius) continue;
+    const c = x / radius, s = y / radius;
+    const inner = rim && radius < 0.75;
+    const lower = Math.max(0, -s);
+    p.setXYZ(i, (c + side * tilt * lower * lower) * (rx - (inner ? wire : 0)),
+      s * (hy - (inner ? wire : 0)) * (1 - tilt * Math.max(0, s) + drop * lower) - side * c * hy * tilt,
+      rim ? (inner ? wire : 0) : 0);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
 /** A round bar from a to b (Vector3). */
 export function bar(a, b, radius) {
   const d = b.clone().sub(a), g = new THREE.CylinderGeometry(radius, radius, d.length(), ENV.frame.temple);
@@ -62,5 +82,6 @@ export function glassesExtraTriangles() {
   const v = (x, y, z) => new THREE.Vector3(x, y, z);
   const rx = 0.0225, hy = 0.0165;
   const now = 2 * (tris(roundRim(rx, 0.001)) + tris(squareRim(rx, hy, 0.001)) + tris(bar(v(0, 0, 0), v(0, 0, 1), 0.001)) + tris(lensShape(1, rx, hy)) + tris(lensShape(2, rx, hy))) + tris(bar(v(0, 0, 0), v(1, 0, 0), 0.001));
-  return now - OLD;
+  const aviator = 2 * (tris(aviatorShape(1, true)) + tris(aviatorShape(1, false))) + tris(bar(v(0, 0, 0), v(1, 0, 0), 0.001));
+  return now + aviator - OLD;
 }

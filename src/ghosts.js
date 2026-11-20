@@ -713,12 +713,12 @@ function avatarWire(code) {
 export class Ghosts {
   /** scene; url: the Worker ('' = off); name(): our name; state(): { p: [x, y, z] feet, r: yaw, c?: actual crouched boolean }; active(): playing (not the
    * start screen); weapon(): the key (COMBAT.weapons) of what we hold or ''; score(): displayed points (defaults to stats.totalScore); onHit / onHurt: the room's word on a hit (#667). */
-  constructor({ scene, camera, url, name = () => '', state, active = () => true, weapon = () => '', score = totalScore, onHit = () => {}, onHurt = () => {}, mirrored = () => true, swim = null, ground = null, seatFloor = null }) {
+  constructor({ scene, camera, url, month, name = () => '', state, active = () => true, weapon = () => '', score = totalScore, onHit = () => {}, onHurt = () => {}, mirrored = () => true, swim = null, ground = null, seatFloor = null }) {
     swimProbe = swim ?? swimProbe; // #1943
     Object.assign(this, { scene, camera, name, state, active, weapon, score, onHit, onHurt, mirrored, mine: null, myGhost: null, rules: null, ws: null, me: null, others: new Map(), sent: null, prev: null,
       lastSent: 0, lastBeat: 0, outbox: [], shots: 0, dropped: 0, greetAt: -1e9, greetsSeen: 0, lastMove: -Infinity, retryAt: 0, backoff: 0, openedAt: 0, connects: 0, messages: 0, resends: 0, resent: null, stateAt: 0 });
     const savedAv = (() => { try { return localStorage.getItem('lunden.avatar'); } catch { return null; } })();
-    this.myLook = sessionStartLook(this.name(), savedAv, this.name()); // #2218: an "Olof" name starts as Olof's look
+    this.myLook = sessionStartLook(this.name(), savedAv, this.name(), month); // #2218: an "Olof" name starts as Olof's look
     if (!savedAv) { try { localStorage.setItem('lunden.avatar', encodeAvatarLook(this.myLook)); } catch { /* visit-only */ } }
     this.avatarCode = encodeAvatarWireLook(this.myLook);
     this.sentAv = null;

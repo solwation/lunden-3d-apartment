@@ -43,7 +43,7 @@ export function envShade(part) {
   return `if (uSuit < 0.5) { // #2173
       float avP = vSurface.y;
       float avMetal = clamp(vRing + step(${part.studs}.0 - 0.5, avP) * step(avP, ${part.drops}.5) + step(${part.chain}.0 - 0.5, avP) * step(avP, ${part.goldChain}.5) * (1.0 - step(abs(avP - ${part.pearls}.0), 0.5)), 0.0, 1.0);
-      float avFrame = step(${part.rimRound}.0 - 0.5, avP) * step(avP, ${part.specs}.5);
+      float avFrame = step(${part.rimRound}.0 - 0.5, avP) * step(avP, ${part.specs}.5) + step(abs(avP - ${part.aviator}.0), 0.5);
       float avLens = step(${part.lensRound}.0 - 0.5, avP) * step(avP, ${part.lensSquare}.5);
       vec3 avV = normalize(vViewPosition), avN = normalize(normal);
       if (avMetal + avFrame > 0.5) {

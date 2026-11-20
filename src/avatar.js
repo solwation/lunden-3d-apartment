@@ -41,7 +41,7 @@ import { faceExprUniforms, faceExprShader } from './avatarface.js'; // #2031
 import { exertUniforms, exertShader } from './avatarbreath.js'; // #2037
 import { sculptShape, jawRise, sculptShader, sculptKey, sealLipEdge } from './avatarsculpt.js'; // #2044: sculpted face forms
 import { envUniforms, envDecl, envShade, eyeEnv, envKey, curveLens } from './avatarenv.js'; // #2173
-import { roundRim, squareRim, lensShape, bar } from './avatarglasses.js'; // #2173
+import { roundRim, squareRim, lensShape, aviatorShape, bar } from './avatarglasses.js'; // #2173
 import { PHONE_PART, phoneFrame, phoneMatrix, phoneParts, phoneUniforms, PHONE_VDECL, PHONE_FDECL, phoneVertexGLSL, phoneColorGLSL, phoneRoughGLSL, phoneLightGLSL, phoneKey, installPhone, screenFlicker } from './avatarphone.js'; // #2217
 import { addFlyaways, flyUniforms, flyMaterial, flyKey, FLY_VDECL, FLY_FDECL, flyBind, flyProject, flyAlpha, flyLight } from './avatarflyaway.js'; // #2040
 import { browSurface, browSlide, browUniforms, applyBrowLook, browFDecl, browColor, browRoughness } from './avatarbrow.js'; // #2046
@@ -94,7 +94,7 @@ const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4, lips: 6, iris: 7,
 // #1138: which face part a head-bone vertex belongs to (the `facePart` attribute; 0 = not on the head), see faceShape
 // #1165: hair (the scalp shell / curtain, lengthened below the crown), round and square glasses frames and the temples + bridge shared by both
 // #1241: cowlHide collapses protruding facial features (lips, brow ridge) under the Spider-Man mask
-const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10, cowlHide: 11, hatDome: 12, peakFront: 13, peakBack: 14, knit: 15, hatCrown: 16, hatBrim: 17, phoneBand: 18, phoneCup: 19, phoneNeck: 20, studs: 21, hoops: 22, drops: 23, pearlStuds: 24, lens: 25, iris: 26, /* #2011: iris + pupil, moved by the gaze */ lensRound: 27, lensSquare: 28, /* #2173: clear lenses */ // #1325: earrings (head bone, follow the ear) and sunglass lenses
+const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10, cowlHide: 11, hatDome: 12, peakFront: 13, peakBack: 14, knit: 15, hatCrown: 16, hatBrim: 17, phoneBand: 18, phoneCup: 19, phoneNeck: 20, studs: 21, hoops: 22, drops: 23, pearlStuds: 24, lens: 25, iris: 26, /* #2011: iris + pupil, moved by the gaze */ lensRound: 27, lensSquare: 28, aviator: 29, /* #2173: clear lenses */ // #1325: earrings (head bone, follow the ear) and sunglass lenses
  
   chain: 30, pearls: 31, pendant: 32, goldChain: 33,
   finger: 100, /* #2016: 100 + side * 10 + finger * 2 + segment (src/avatargrip.js) */ ring: 40, braceletBase: 50, watchCase: 60, watchStrap: 70, watchDial: 80, watchFace: 90, phone: PHONE_PART.body, phoneScreen: PHONE_PART.screen, phoneIsland: PHONE_PART.island }; // (#2217: 96-98 the smartphone) // 50-55 #1334 bracelets, 60-95 watches (case / strap / dial / glass, + side * 3 + model - 1)
@@ -181,10 +181,14 @@ function addGlasses(add, P) {
     add(roundRim(rx, t * 0.8).translate(x, y, z), 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.rimRound); // #2173: rounder rims (were a 4-sided torus and boxes)
     add(squareRim(rx, hy, t * 0.55).translate(x, y, z), 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.rimSquare);
     add(bar(V(s * (E.at[0] + rx), y + 0.004, z), V(s * 0.101, y + 0.001, 0.03), t * 0.6), 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.specs);
+    add(aviatorShape(s, true).translate(x, y, z), 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.aviator);
+    add(curveLens(aviatorShape(s, false)).translate(x, y, z - 0.0004), 'fixed', 'head', [0, 0, 0], 1, GLASSES.lens); mark(FACE_PART.aviator);
     for (const [kind, id] of [[1, FACE_PART.lensRound], [2, FACE_PART.lensSquare]]) { // clear lenses (alpha-to-coverage, src/avatarenv.js), a hair behind the rim's front
       add(curveLens(lensShape(kind, rx, hy)).translate(x, y, z - 0.0004), 'fixed', 'head', [0, 0, 0], 1, 0xffffff); mark(id);
     }
   }
+  const brow = y + GLASSES.aviator.browHeight, inner = E.at[0] - GLASSES.aviator.rx * 0.77;
+  add(bar(V(-inner, brow, z), V(inner, brow, z), GLASSES.aviator.wire), 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.aviator);
   add(bar(V(-(E.at[0] - rx), y + 0.004, z), V(E.at[0] - rx, y + 0.004, z), t * 0.65), 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.specs);
 }
 /** #1325 (#1318): earrings on the lobes (head bone frame, around the ear ellipsoid at [±0.1, H - 0.005, 0], radii 0.0154 / 0.028 / 0.02): gold studs, hoops through the lobe
@@ -1517,11 +1521,12 @@ function faceShape() {
           }
         }
         else if (abs(facePart - ${P.rimRound}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(0.5, uGlasses) * step(uGlasses, 1.5);
-        else if (abs(facePart - ${P.rimSquare}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(1.5, uGlasses);
+        else if (abs(facePart - ${P.rimSquare}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(1.5, uGlasses) * step(uGlasses, 3.5);
         else if (abs(facePart - ${P.lensRound}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(0.5, uGlasses) * step(uGlasses, 1.5); // #2173: the clear lenses
         else if (abs(facePart - ${P.lensSquare}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(1.5, uGlasses) * step(uGlasses, 2.5);
         else if (abs(facePart - ${P.specs}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(0.5, uGlasses);
-        else if (abs(facePart - ${P.lens}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(2.5, uGlasses); // #1325: sunglasses' lenses
+        else if (abs(facePart - ${P.lens}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(2.5, uGlasses) * step(uGlasses, 3.5); // #1325: sunglasses' lenses
+        else if (abs(facePart - ${P.aviator}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(3.5, uGlasses);
         else if (facePart > ${P.phoneNeck}.5 && facePart < ${P.lens}.5) { // #1325: earrings follow the ear's size; the chosen kind stays (1 studs, 2 hoops, 3 drops, 4 pearl studs)
           float on = step(abs(uEarrings - (facePart - ${P.studs}.0 + 1.0)), 0.5);
           transformed = faceAnchor + (transformed - faceAnchor) * on * uEar;
@@ -2298,7 +2303,7 @@ export class Avatar {
   lookAt(point) { if (point) (this.gazeTarget ??= new THREE.Vector3()).copy(point); else this.gazeTarget = null; }
 
   /** #2011: true when the eyes cannot be seen (the Spider-Man mask, sunglasses, the diving mask): then nothing blinks or looks. */
-  get eyesHidden() { return !!this.suit || this.material?.userData.u.uGlasses.value === 3 || !!this.mask?.visible; }
+  get eyesHidden() { return !!this.suit || this.material?.userData.u.uGlasses.value >= 3 || !!this.mask?.visible; }
 
   /** #2011: blinking and the gaze, once per update. Returns the head's extra { yaw, pitch } (rad); sets uBlink / uGaze on the material.
    * `still` (a kiss, a BIO reaction, swimming, a wall): the head is left alone, the eyes keep blinking. */
