@@ -6,6 +6,7 @@ import { sfx } from './audio.js';
 import { stairHeight } from './stairs.js';
 import { buildLampWashes } from './lampwash.js';
 import { Pendant } from './pendants.js';
+import { ShadePools } from './shadepools.js';
 import { roomEnv } from './roomprobe.js';
 
 // Room lights: a switch by every room's door (E) turns the room's lamps on and off — a ceiling
@@ -201,7 +202,9 @@ class FloorLamp {
     // the bench light's long strip, #285): each is a candidate of its own, the pool lights the ones that matter
     for (const a of spec.anchors ?? [{ offset: spec.offset, height: spec.height, light: spec.light }]) {
       const [ox, oz] = a.offset ?? [0, 0];
-      this.room.lamps.push({ pos: new THREE.Vector3(p.x + ox, p.y + a.height, p.z + oz), ...L.floorLamp, ...(a.light ?? {}), level: spec.level, owner: this });
+      const lamp = { pos: new THREE.Vector3(p.x + ox, p.y + a.height, p.z + oz), ...L.floorLamp, ...(a.light ?? {}), level: spec.level, owner: this };
+      if (lamp.axis) lamp.axis = new THREE.Vector3(...lamp.axis).normalize(); // (a shaded lamp's mouth, #2191)
+      this.room.lamps.push(lamp);
     }
     spec.object.traverse((m) => { m.userData.door = this; });
     spec.mirrorReflector?.traverse((m) => { m.userData.door = this; });
@@ -377,7 +380,7 @@ export class Lights {
         const holder = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, p.bulbDrop - p.bulb / 2, 10), black);
         holder.position.set(p.x, top - (p.bulbDrop - p.bulb / 2) / 2, p.z);
         scene.add(plate, wire, cup, cone, ...rims, bulb, holder);
-        R.lamps.push({ pos: new THREE.Vector3(p.x, top - p.bulbDrop, p.z), ...L.pendant, level: p.level });
+        R.lamps.push({ pos: new THREE.Vector3(p.x, top - p.bulbDrop, p.z), ...L.pendant, level: p.level }); // (the string lamp: a bare filament bulb in an open weave, no shade)
         continue;
       }
       if (p.style === 'paper') {
@@ -390,13 +393,13 @@ export class Lights {
         const hook = new THREE.Mesh(new THREE.TorusGeometry(0.012, 0.0025, 6, 12), cord.material);
         hook.position.set(p.x, y - 0.014, p.z);
         scene.add(cord, lamp, hook);
-        R.lamps.push({ pos: new THREE.Vector3(p.x, y - p.drop - p.h / 2, p.z), ...L.pendant, level: p.level });
+        R.lamps.push({ pos: new THREE.Vector3(p.x, y - p.drop - p.h / 2, p.z), ...L.pendant, shade: L.shades.paper, level: p.level });
         continue;
       }
       const cone = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.22, 32, 1, true), shade);
       cone.position.set(p.x, y - p.drop - 0.05, p.z);
       scene.add(cord, cone);
-      R.lamps.push({ pos: new THREE.Vector3(p.x, y - p.drop - 0.2, p.z), ...L.pendant, level: p.level });
+      R.lamps.push({ pos: new THREE.Vector3(p.x, y - p.drop - 0.2, p.z), ...L.pendant, shade: L.shades.cone, level: p.level });
     }
     // #1106: the pendants as pieces for Möblera om (main.js adds `pendants` to the movable furniture); their light
     // anchors are the ones their builder added to the room
@@ -425,6 +428,8 @@ export class Lights {
       ...[...this.rooms.values()].flatMap((R) => R.lamps.map((lamp) => ({ owner: R, lamp, k: 1 }))),
     ]);
     this.wash.lamps = this.wash.entries.map((e) => e.owner); // (tests)
+    this.shadePools = new ShadePools(this.wash.entries, (level) => LEVELS[level].floor, ceilingAt); // (#2191: the shaded lamps' floor / ceiling pools)
+    if (this.shadePools.mesh) scene.add(this.shadePools.mesh);
     this.scene = scene;
     this.patchIn = 0; // frames to the next look for new materials to give the lamps' light
     // the lit parts of every lamp are never culled as small far-away detail (#294, detail.js)
@@ -501,7 +506,7 @@ export class Lights {
       scene.add(mesh);
     }
     (this.copper ??= []).push({ material: copper, room: R });
-    R.lamps.push({ pos: new THREE.Vector3(p.x, floor + (p.bottoms[0] + p.bottoms[1]) / 2 - 0.06, p.z), ...L.pendant, level: p.level });
+    R.lamps.push({ pos: new THREE.Vector3(p.x, floor + (p.bottoms[0] + p.bottoms[1]) / 2 - 0.06, p.z), ...L.pendant, shade: L.shades.copper, level: p.level });
   }
 
   /**
@@ -573,7 +578,7 @@ export class Lights {
     const meshes = [new THREE.Mesh(geo, copper), new THREE.Mesh(geo, inner), new THREE.Mesh(bulb, bulbMat), new THREE.Mesh(mergeGeometries([cup, cord, hub]), white)];
     for (const m of meshes) { m.name = 'silvialampan'; scene.add(m); }
     (this.copper ??= []).push({ material: copper, room: R });
-    R.lamps.push({ pos: new THREE.Vector3(p.x, top - H * 0.45, p.z), ...L.pendant, level: p.level });
+    R.lamps.push({ pos: new THREE.Vector3(p.x, top - H * 0.45, p.z), ...L.pendant, shade: L.shades.silvia, level: p.level });
   }
 
   addSwitch(R, x, y, z, normal, scene) {
@@ -689,10 +694,11 @@ export class Lights {
   update(level, pos, dt = 1 / 60, dir = null) {
     const on = new Set(), cands = [];
     // small lamps hidden with the furniture (F) give no light
-    for (const R of this.rooms.values()) if (R.on) for (const lamp of R.lamps) { on.add(lamp); if (lamp.level === level) cands.push([lamp, 1, R.name]); }
+    // a shaded lamp (#2191) is lit by the wash alone: a point light would throw its light evenly round, with a seam where it took over
+    for (const R of this.rooms.values()) if (R.on) for (const lamp of R.lamps) { on.add(lamp); if (lamp.level === level && !lamp.shade) cands.push([lamp, 1, R.name]); }
     for (const f of this.floorLamps) {
       if (f.k <= 0.001 || !shown(f)) continue;
-      for (const lamp of f.room.lamps) { on.add(lamp); if (lamp.level === level) cands.push([lamp, f.k, this.lampRoom(lamp)]); }
+      for (const lamp of f.room.lamps) { on.add(lamp); if (lamp.level === level && !lamp.shade) cands.push([lamp, f.k, this.lampRoom(lamp)]); }
     }
     // extra lamps that switch themselves (the patio string lights, #81): k = how far on they are
     for (const lamp of this.extra) if (lamp.k > 0.01) { on.add(lamp); if (lamp.level === level) cands.push([lamp, lamp.k, null]); }
@@ -743,10 +749,13 @@ export class Lights {
       if (owner.recolored) this.wash.recolor(i);
       let f = 0;
       for (const s of this.slots) if (s.lamp === lamp) f += s.f;
-      this.wash.set(i, (owner instanceof FloorLamp ? (shown(owner) ? owner.k : 0) : owner.on ? 1 : 0) * supply, Math.min(1, f));
+      const on = (owner instanceof FloorLamp ? (shown(owner) ? owner.k : 0) : owner.on ? 1 : 0) * supply;
+      this.wash.set(i, on, Math.min(1, f));
+      this.shadePools.set(lamp, on);
     });
     for (const f of this.floorLamps) f.recolored = false;
     this.wash.commit();
+    this.shadePools.commit();
     if (--this.patchIn <= 0) { this.patchIn = 120; this.wash.patch(this.scene); } // (things built later: cups, cat coats …)
   }
 }

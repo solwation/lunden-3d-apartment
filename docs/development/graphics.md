@@ -841,6 +841,17 @@ src/lampwash.js        every lamp's light wherever the visitor is (#276, #294, #
                        The injection is idempotent per suffix (#2090): a material that inherits an already washed callback
                        (viewlod.js's parked-car clones under their dither fade) gets each wash once, not a redefined second copy
                        that failed to compile and hid the near cars (`tools/lampwash2090test.mjs`, `tools/lampwash2090browser.cjs`)
+src/lampshade.js       shaded lamps throw light up and down (#2191): a lamp carries `shade` (a `LIGHTING.shades` profile: `inner`/`outer` cosines,
+                       `up`, `leak`, `boost`, *guesses* by eye) and `axis` (a Vector3, default straight down; NYMÅNE's follows its shade's tilt and
+                       the item's rotation, rearrange.js turns it with a move). `shadeGain(cos, shade)` (mirrored in lampwash.js's GLSL, lamp data
+                       texture rows 3-4) = a lobe along the axis, a weaker one the other way, a leak between: a table cone with a soft edge, a pool
+                       on the ceiling, a darker band beside. Copper pendants, the Silvia, the paper lamp, the cone pendant and the NYMÅNE reading
+                       lamps; the string lamp and everything else stay bare. A shaded lamp is lit by the wash alone (never a pool-light candidate:
+                       a point light would be even all round and seam when it took over; it gives up the pool light's specular glint). `src/shadepools.js` adds the visible part (the
+                       shader alone is faint against the room's ambient): additive floor / ceiling decals per `shade.pool` ([radius, peak]), ONE merged
+                       mesh, vertex colour = the lamp's on-ness, re-seated when a pendant moves. No new light or pass; +1 draw call; one more
+                       `texelFetch` pair per lamp in the lit shaders. `tools/lampshade2191test.mjs`,
+                       `tools/lampshade2191browser.cjs`, [before/after](../verification/2191/README.md).
 src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors); the lit mirrors (Badrum LED, Hollywood, Klk) use `litMirrorMaterial` + `litEmissive` + `litReflect` (LIGHTING.mirror, #339)
 src/reflections.js     mirror images: a Reflector per mirror, only the nearest one in view (< 4 m) renders; `dim` scales a lit mirror's image (#339)
                        Our own avatar in the mirrors (#691): `setMirrorExtra({ before, after })` runs around each reflector pass (not on a held frame), ghosts.js

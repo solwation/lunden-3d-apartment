@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { INTERACTION_MATERIAL_SOURCE } from './interactionoutline.js';
 import { LEVELS, LIGHTING } from './config.js';
+import { shadeRows } from './lampshade.js';
 
 import { rememberFragmentCompile } from './vertexcompile.js';
 export { hasNativeVertexCompile } from './vertexcompile.js';
@@ -36,7 +37,7 @@ export function cast(segs, ox, oz, dx, dz, max) { // (also the windows' sky ligh
 /** The GLSL added to a lit material: declarations (after <common>) and the light (after <lights_fragment_end>). */
 function chunks(n, boxes, sfx) {
   const head = /* glsl */ `
-    uniform highp sampler2D uLampData${sfx}; // per lamp (x): row 0 x y z range, row 1 colour × intensity and how much shows, row 2 ray origin x z, level, the y between its levels
+    uniform highp sampler2D uLampData${sfx}; // per lamp (x): row 0 x y z range, row 1 colour × intensity and how much shows, row 2 ray origin x z, level, the y between its levels, rows 3-4 the shade (axis + inner cos; outer cos, leak, up, boost; boost 0 = bare)
     uniform highp sampler2D uLampVis${sfx};  // per lamp (row): the distance along each of LW_RAYS rays to what stops it
     #define LW_COUNT${sfx} ${n}
     #define LW_RAYS${sfx} ${W.rays}.0
@@ -64,7 +65,15 @@ function chunks(n, boxes, sfx) {
         float reach = mix(texelFetch(uLampVis${sfx}, ivec2(r0, i), 0).r, texelFetch(uLampVis${sfx}, ivec2(r1, i), 0).r, t - t0);
         if (length(o) > reach + 0.05) continue;
         float q = clamp(1.0 - pow(r / a.w, 4.0), 0.0, 1.0);
-        sum += b.rgb * (b.w * cosT * q * q / max(r2, 0.01));
+        // a shaded lamp (#2191, lampshade.js shadeGain): a lobe along its axis, a weaker one the other way, a leak between
+        vec4 s4 = texelFetch(uLampData${sfx}, ivec2(i, 4), 0);
+        float shape = 1.0;
+        if (s4.w > 0.0) {
+          vec4 s3 = texelFetch(uLampData${sfx}, ivec2(i, 3), 0);
+          float cA = dot(s3.xyz, -d / r);
+          shape = s4.w * max(max(s4.y, smoothstep(s4.x, s3.w, cA)), s4.z * smoothstep(s4.x, s3.w, -cA));
+        }
+        sum += b.rgb * (b.w * shape * cosT * q * q / max(r2, 0.01));
       }
       return sum;
     }`;
@@ -83,7 +92,7 @@ export function buildLampWashes(scene, world, entries, opts = {}) {
   const n = Math.max(1, used.length), RAYS = W.rays, sfx = opts.suffix ?? '';
   const { x: SX, z: SZ } = world?.size ?? {}, [zN, zS] = W.facade;
   const levelOf = (d) => (d.object.position.y > LEVELS[0].floor + 1.6 ? 1 : 0);
-  const vis = new Float32Array(n * RAYS), data = new Float32Array(n * 3 * 4);
+  const vis = new Float32Array(n * RAYS), data = new Float32Array(n * 5 * 4);
   const split = LEVELS[1].floor - 0.1; // (L1007's: where its two levels meet)
   const bake = (e, i) => {
     const { lamp, k } = e, level = lamp.level;
@@ -102,6 +111,7 @@ export function buildLampWashes(scene, world, entries, opts = {}) {
     data.set([lamp.pos.x, lamp.pos.y, lamp.pos.z, lamp.range], (0 * n + i) * 4);
     data.set([c.r, c.g, c.b, 0], (1 * n + i) * 4);
     data.set([ox, oz, level, lamp.split ?? split], (2 * n + i) * 4);
+    data.set(shadeRows(lamp), (3 * n + i) * 4); // (rows 3 and 4: the shade's axis and lobes, #2191)
   };
   used.forEach(bake);
   const tex = (arr, w, h, format) => {
@@ -112,7 +122,7 @@ export function buildLampWashes(scene, world, entries, opts = {}) {
   };
   const top = LEVELS[1].floor + LEVELS[1].ceiling;
   const box = opts.boxes ?? [{ x0: -0.05, x1: SX + 0.05, z0: -0.05, z1: SZ + 0.05, y0: LEVELS[0].floor - 0.1, y1: top + 0.1 }];
-  const wash = new LampWashes(used, n, data, tex(data, n, 3, THREE.RGBAFormat), tex(vis, RAYS, n, THREE.RedFormat), chunks(n, box, sfx), sfx);
+  const wash = new LampWashes(used, n, data, tex(data, n, 5, THREE.RGBAFormat), tex(vis, RAYS, n, THREE.RedFormat), chunks(n, box, sfx), sfx);
   wash.relocate = (lamps) => {
     used.forEach((e, i) => { if (lamps.has(e.lamp)) { bake(e, i); wash.set(i, wash.k[i], wash.pool[i]); } });
     wash.uniforms[`uLampData${sfx}`].value.needsUpdate = true;

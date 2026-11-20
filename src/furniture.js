@@ -1,5 +1,5 @@
 import { ceramicOwl, craftUnicorn, plasticDino, brickFigure, miniDuck } from './smallfigures.js';
-import { SMALL_FIGURES } from './config.js';
+import { LIGHTING, SMALL_FIGURES } from './config.js';
 import { tillydesk, batmanchair } from './tillydesk.js';
 import { COMPUTER_MEDIA } from './config.js';
 import { upholsterySurface } from './upholstery.js';
@@ -2283,7 +2283,8 @@ function walllamp(item, lights) {
   const mouth = new THREE.Vector3(0, ay, jz).addScaledVector(down, S.h + 0.05);
   const yaw = THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI;
   lights.push({ object: g, shade: lens, height: mouth.y, level: item.level, name: 'läslampan', berth: item.berth, room: item.room,
-    light: N.light, offset: [Math.sin(yaw) * mouth.z, Math.cos(yaw) * mouth.z] });
+    light: { ...N.light, shade: LIGHTING.shades[N.light.shade], // the arc on the wall (#2191): its axis = the shade's mouth, turned like the group
+      axis: [Math.sin(yaw) * down.z, down.y, Math.cos(yaw) * down.z] }, offset: [Math.sin(yaw) * mouth.z, Math.cos(yaw) * mouth.z] });
   g.position.y = item.y;
   g.userData.footprint = [];
   g.userData.walllamp = `${item.room} ${item.berth}`; // (tests find them by this)

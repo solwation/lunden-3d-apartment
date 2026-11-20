@@ -6328,6 +6328,19 @@ export const LIGHTING = {
   // `facade` = the inner faces of the north/south façade walls (data/plan.json, both levels): a lamp on a window board
   // casts its rays from just inside them.
   wash: { rays: 192, facade: [0.465, 12.234] },
+  // #2191 (src/lampshade.js): shaded lamps throw their light up and down, not evenly round. A lamp spec's `shade` names one of
+  // these profiles: `inner` / `outer` = the cosines (from the shade's axis) where the lobe is full / gone (a soft edge),
+  // `up` = the share of the opposite lobe (the open top lights the ceiling), `leak` = the light everywhere else (through
+  // paper, round the rim), `boost` = scales it all so the lamp keeps about its old energy, `pool` = the additive floor / ceiling decals ([radius m, peak], shadepools.js; the shader alone is too faint against the room's ambient). By eye; the real shades' light
+  // distributions are not given. Pendants: copper shades (opaque dome: down, a little up the neck), the Silvia and the
+  // folded paper shade (open top and bottom: ceiling and floor, a dimmer band between), the cone; NYMÅNE: a spot arc.
+  shades: {
+    copper: { inner: 0.85, outer: 0.45, leak: 0.03, up: 0.12, boost: 2.1, pool: { floor: [0.8, 0.1] } },
+    silvia: { inner: 0.8, outer: 0.35, leak: 0.05, up: 0.7, boost: 1.9, pool: { floor: [1.2, 0.2], ceiling: [1.0, 0.3] } },
+    paper: { inner: 0.8, outer: 0.3, leak: 0.12, up: 0.9, boost: 1.7, pool: { floor: [1.0, 0.18], ceiling: [0.8, 0.28] } },
+    cone: { inner: 0.85, outer: 0.4, leak: 0.04, up: 0.3, boost: 2.0, pool: { floor: [0.9, 0.14] } },
+    reading: { inner: 0.95, outer: 0.7, leak: 0.02, up: 0, boost: 2.6 },
+  },
   wetRooms: ['Badrum', 'WC/dusch'],       // spots in the soffit instead of a ceiling lamp
   pendants: [
     // over the dining table (SKANSNAS.table): the family's three copper pendants (#307, docs/kopparlampor-koksbord.jpg).
@@ -6895,7 +6908,7 @@ export const NYMANE_WALL = {
   plate: { w: 0.06, h: 0.11, d: 0.025 }, button: 0.012, arm: 0.07, shade: { r: 0.035, h: 0.08, tilt: 0.6 }, cord: 0.45,
   fromHead: 0.42, aboveMattress: 0.42, mattress: MYDAL.base.map((b) => b + MYDAL.mattress), // the bunks' mattress tops (#227)
   colors: { white: 0xf2f2ef, black: 0x1c1c1e }, cordColors: { white: 0xe8e6e0, black: 0x222224 },
-  light: { intensity: 0.9, range: 3.5, color: 0xffd59a }, // weaker than the floor lamp: one GU10 bulb
+  light: { intensity: 0.9, range: 3.5, color: 0xffd59a, shade: 'reading' }, // weaker than the floor lamp: one GU10 bulb; throws a tight arc (#2191)
   berths: [
     { room: 'Sovrum 3', color: 'white', x: 0.2, head: 0.47 + 0.05, dir: 1, rot: -90 },   // Livia & Tuva, west wall
     { room: 'Sovrum 2', color: 'black', x: 5.55, head: 12.23 - 0.05, dir: -1, rot: 90 }, // Walter & Kian, east wall

@@ -411,7 +411,7 @@ export class Rearrange {
     for (const spot of rest?.spots ?? []) { spot.pos.applyMatrix4(delta); spot.aimPos?.applyMatrix4(delta); spot.yaw += new THREE.Euler().setFromRotationMatrix(delta, 'YXZ').y; }
     this.marks.invalidate(p.object);
     for (const spec of this.world.lamps) if (within(spec.object, p.object)) {
-      for (const lamp of spec.lamp?.room.lamps ?? []) { lamp.pos.applyMatrix4(delta); delete lamp.roomName; }
+      for (const lamp of spec.lamp?.room.lamps ?? []) { lamp.pos.applyMatrix4(delta); lamp.axis?.transformDirection(delta); delete lamp.roomName; }
     }
     worldPose(p.object, matrix);
     p.placed?.(); // a pendant's cords and light (#1106)
