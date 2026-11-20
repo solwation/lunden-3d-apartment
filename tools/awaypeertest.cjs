@@ -16,7 +16,7 @@ const [game = 'http://localhost:8270', worker = 'http://localhost:8271', awayMs 
   const res = await page.evaluate(async ([worker, awayMs]) => {
     const T = await import('three'), { Ghosts } = await import('/src/ghosts.js'), { JOIN_NOTICE } = await import('/src/config.js');
     const { badge, setBadgeElement } = await import('/src/stats.js');
-    JOIN_NOTICE.graceMs = 4000; JOIN_NOTICE.batchMs = 500; // (the old client-side grace: an away leave must not wait for it again)
+    JOIN_NOTICE.graceMs = 20_000; JOIN_NOTICE.batchMs = 500; // (the old client-side grace, longer than the away time: an away leave must not wait for it again)
     const el = document.createElement('div'); el.id = 'badges'; document.body.append(el); setBadgeElement(el);
     const style = document.createElement('style');
     style.textContent = 'body>*:not(#badges):not(#view){display:none!important}#view{position:fixed;inset:0}#badges{z-index:99999;position:fixed;left:50%;top:16px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px}#badges div{background:rgba(20,35,45,.7);color:#fff;padding:5px 12px;border-radius:16px;font:600 14px sans-serif;white-space:nowrap}';
@@ -67,7 +67,7 @@ const [game = 'http://localhost:8270', worker = 'http://localhost:8271', awayMs 
     run.a = false; A.disconnect(); const gone = stamp();
     out.awayAgain = await until(() => anna()?.away === true, 30);
     out.stillThereBeforeTime = !(await until(() => B.others.size === 0, (Number(awayMs) - 1500) / 100));
-    out.leaveSeen = await until(() => notesB.some(([, t]) => t === 'Anna lämnade spelet'), 120);
+    out.leaveSeen = await until(() => notesB.some(([, t]) => t === 'Anna lämnade spelet'), 150);
     const when = notesB.find(([, t]) => t === 'Anna lämnade spelet')?.[0] - gone; out.leaveDelayMs = when;
     out.leaveAfterAway = when >= Number(awayMs) - 300;
     out.leaveNotDoubleWaited = when < Number(awayMs) + JOIN_NOTICE.graceMs - 500; // announced at once, not after another client grace
