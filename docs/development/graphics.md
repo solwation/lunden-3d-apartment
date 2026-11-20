@@ -539,6 +539,7 @@ src/neighborglass.js   opaque MeshPhysicalMaterial for unmodeled neighboring int
                        actual ABC pane visibility/bounds and night routines; eastbackdroptest retains source geometry.
                        NEIGHBOR_OPENINGS centralizes visual assumptions; reflection is a generic outdoor impression,
                        not a surveyed or live reflection of surrounding buildings. L1007's clear materials are independent.
+src/interiormap.js     #2180: fake rooms behind near façade glass (fragment patch + baked room attributes; see environment.md).
 src/glasspanes.js      #2087: calm per-pane variation for opaque façade glass, baked once into vertex colours before the
                        merge (GLASS_PANES, *guess*): lightness/tone picked from a hash of each pane's centre, a vertical
                        gradient (top lighter) and, on the plain far glass, a soft sky tint at the top. neighborGlass() now

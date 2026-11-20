@@ -15,10 +15,11 @@ import { addRoadFrame } from './streetwear.js';
 import { wetGround } from './wetground.js';
 import { grassUV, grassMaterial } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, WINDOW_SCHEDULE as W2120, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR, SOUTH_PLATEAU, PADDOCK, PARKING_SEAM, MUSSELS, RENDER_SURFACE } from './config.js';
+import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O, WINDOW_SCHEDULE as W2120, HUS_L, FOLIAGE, ELEVATION, TERRAIN_FAR, SOUTH_PLATEAU, PADDOCK, PARKING_SEAM, MUSSELS, RENDER_SURFACE, GLASS_PANES } from './config.js';
 import { gridGround, southPointGround } from './elevation.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow, fadeGlowWithFog } from './groundglow.js';
 import { neighborGlass } from './neighborglass.js';
+import { interiorGlass, roomLightGlow, roomVertex, roomsOn, setRoomNight } from './interiormap.js';
 import { paneTints } from './glasspanes.js';
 import { windowHabit, windowLevel, windowRgb, tvOn, tvFlicker } from './windowschedule.js';
 import { railMetal } from './railmetal.js';
@@ -1792,7 +1793,7 @@ export function buildWindowLights(detailed=[]) {
     }
   }
   const geo = new THREE.PlaneGeometry(1.25, 1.45);
-  const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }); // fog would add its colour to black (unlit) quads
+  const mat = roomLightGlow(new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false })); // fog would add its colour to black (unlit) quads
   const mesh = new THREE.InstancedMesh(geo, mat, spots.length);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1), up = new THREE.Vector3(0, 1, 0);
   const routines=new Map();
@@ -1920,7 +1921,7 @@ export function buildSurroundings(opts) {
 /** buildSurroundings in parts (#1133): yields a rough share (0–1) between its long synchronous parts (world.js). */
 export function* surroundingsParts({ grass, husL = null }) {
   const group = new THREE.Group();
-  const historicBrick=brickTexture(),glassMaterial=neighborGlass();
+  const historicBrick=brickTexture(),glassMaterial=neighborGlass(),roomGlass=interiorGlass(glassMaterial.clone()); // #2180: the loggia/entrance glass of Hus A–C gets a fake room; the backdrops keep the plain material
   const flat = (geos, color, snow) => {
     const mat = color.isMaterial ? color : new THREE.MeshStandardMaterial({ color, roughness: 1 });
     if (snow) registerSnow(mat, snow);
@@ -2058,7 +2059,7 @@ export function* surroundingsParts({ grass, husL = null }) {
     lampGlass.color.copy(lampLit ? glassLit : glassOff);
   };
   mesh(bare(details.seals),new THREE.MeshStandardMaterial({color:O.gasketColor,roughness:O.gasketRoughness})).name='siteNeighborSeals';
-  mesh(paneTints(bare([...lg.glass,...details.glass])),glassMaterial).name='siteNeighborGlass'; // glazing: loggia doors, windows, entrances
+  mesh(paneTints(bare([...lg.glass,...details.glass]),0xffffff,GLASS_PANES.near,roomsOn?roomVertex:null),roomGlass).name='siteNeighborGlass'; // glazing: loggia doors, windows, entrances
   mesh(lg.signs, snowCap(new THREE.MeshStandardMaterial({ map: letterTexture(lg.letters), roughness: 0.6 }))); // the house letters
   yield 0.7;
   // low hip roofs of roofing felt (#258; Peab's aerial render, Q&A) over the light metal edge, a few vent hoods along the ridge;
@@ -2168,6 +2169,6 @@ export function* surroundingsParts({ grass, husL = null }) {
   const windows = buildWindowLights(details.list), street = buildStreet(groundY, lampGroundY, treeFeet); // #1363: path poles/pools follow actual terrain
   group.add(windows.object, ...(windows.spill ? [windows.spill] : []), street.object, buildStreetSigns(groundY)); // + street name signs at the junctions (#583)
   group.userData.streetLamps = street.lamps; // #2039: the avatars' lamp light
-  group.userData.windows = { object: windows.object, update(hour, night, power = true) { for (const b of backdrops) b.userData.updateClocks(hour); windows.update(hour, night, power); updateLoggiaLamps(night, power); street.update(night);glassMaterial.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night); } };
+  group.userData.windows = { object: windows.object, update(hour, night, power = true) { for (const b of backdrops) b.userData.updateClocks(hour); windows.update(hour, night, power); updateLoggiaLamps(night, power); street.update(night);setRoomNight(night);glassMaterial.envMapIntensity=roomGlass.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night); } };
   return group;
 }

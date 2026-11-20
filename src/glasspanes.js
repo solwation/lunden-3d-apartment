@@ -20,8 +20,9 @@ export function paneColor(x, y, z, t, baseHex = 0xffffff, P = GLASS_PANES.near) 
 }
 /** Gives every geometry a `color` attribute (replacing one it has) and returns the list; a geometry larger than
  * GLASS_PANES.paneMax is a merged batch: made non-indexed and varied per triangle (a rectangle's two triangles share
- * its bounding box, so a pane stays one colour). */
-export function paneTints(geos, baseHex = 0xffffff, P = GLASS_PANES.near) {
+ * its bounding box, so a pane stays one colour). `rooms` (#2180, interiormap.js roomVertex) also bakes each pane's fake room into
+ * the roomC / roomA / roomB vec4 attributes (a function of the pane's bounding box; omit it for glass without the room shader). */
+export function paneTints(geos, baseHex = 0xffffff, P = GLASS_PANES.near, rooms = null) {
   const base = linear(baseHex), sky = linear(P.skyColor);
   return geos.map((g) => {
     let p = g.attributes.position;
@@ -30,14 +31,16 @@ export function paneTints(geos, baseHex = 0xffffff, P = GLASS_PANES.near) {
       return [lo, hi]; };
     const [lo, hi] = box(0, p.count), whole = Math.max(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) <= GLASS_PANES.paneMax;
     if (!whole && g.index) { g = g.toNonIndexed(); p = g.attributes.position; }
-    const c = new Float32Array(p.count * 3);
+    const c = new Float32Array(p.count * 3), room = rooms ? new Float32Array(p.count * 12) : null;
     const paint = (from, to, [x0, y0, z0], [x1, y1, z1]) => {
+      if (room) { const v = rooms([x0, y0, z0], [x1, y1, z1]); for (let i = from; i < to; i++) room.set(v, i * 12); }
       const f = pane((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2, base, sky, P);
       for (let i = from; i < to; i++) f(y1 - y0 > 1e-4 ? (p.getY(i) - y0) / (y1 - y0) : 0.5, c, i * 3);
     };
     if (whole) paint(0, p.count, lo, hi);
     else for (let i = 0; i + 2 < p.count; i += 3) paint(i, i + 3, ...box(i, i + 3));
     g.setAttribute('color', new p.constructor(c, 3));
+    if (room) for (const [k, i] of [['roomC', 0], ['roomA', 4], ['roomB', 8]]) g.setAttribute(k, new p.constructor(room.filter((_, j) => j % 12 >= i && j % 12 < i + 4), 4));
     return g;
   });
 }

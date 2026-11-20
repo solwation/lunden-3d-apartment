@@ -32,8 +32,8 @@ test('one colour per pane for single panes and for merged batches; positions and
 test('every consumer of the varied glass materials paints its panes before merging', () => {
   const src = (f) => readFileSync(f, 'utf8');
   assert.match(src('src/neighborglass.js'), /vertexColors:true/);
-  for (const s of ["add(paneTints(glassGeo)", "add(paneTints(entryGlass)", "add(paneTints(litGlass)"]) assert(src('src/exterior.js').includes(s), s);
-  assert(src('src/surroundings.js').includes('mesh(paneTints(bare([...lg.glass,...details.glass])),glassMaterial)'));
+  for (const s of ["add(paneTints(glassGeo,", "add(paneTints(entryGlass,", "add(paneTints(litGlass,"]) assert(src('src/exterior.js').includes(s), s);
+  assert(src('src/surroundings.js').includes('mesh(paneTints(bare([...lg.glass,...details.glass]),0xffffff,GLASS_PANES.near,roomsOn?roomVertex:null),roomGlass)'));
   assert(/for\(const k of \['schoolGlass','karpGlass'\]\)if\(parts\[k\]\)parts\[k\]=paneTints/.test(src('src/sitebackdrop.js')));
   assert(src('src/southbackdrop.js').includes('parts.glass=paneTints(parts.glass,0x35444d,GLASS_PANES.far)'));
 });

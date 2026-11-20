@@ -1309,4 +1309,17 @@ between `tv.from` and `tv.until` while lit they show blue and flicker (1 − `tv
 pools (which follow each window's level) are unchanged. No new light, draw, material, texture or shader variant (the phone profile gets the
 same single program). `tools/windowscheduletest.mjs` checks determinism, the share per hour, soft edges and bounded colour / flicker;
 `tools/windowlights2120browser.cjs` takes before/after views at 17 / 20 / 23 / 02 ([images](../verification/2120/README.md)).
+
+### Rooms behind the neighbours' windows (#2180)
+
+`src/interiormap.js` (tunables `ROOM_MAP`, all *guess*; rooms are invented) patches the existing `neighborGlass()` material with an
+interior-mapping ray box: floor, ceiling, side and back wall, a furniture block, plus per-window curtains / slatted blinds / sheers /
+rollers drawn in the pane plane. The room is a pure function of the pane's centre (`roomSpec`, deterministic); `paneTints(…, rooms)`
+bakes it once into three vec4 vertex attributes (`roomC/roomA/roomB`, 12 floats per vertex, no texture, geometry, draw or light).
+One uniform (`setRoomNight`, from the two `update(night)` hooks) dims rooms by day/night; the sky reflection still shows at grazing
+angles (Fresnel). Used by Hus A–C's courtyard/street glass (`exterior.js`, incl. Hus L's `neighborLitGlass`, emissive kept) and the
+loggia / entrance glass (`surroundings.js`, a clone `roomGlass` so the shared backdrop glass stays plain). The #2120 additive quads
+get a small patch (`roomLightGlow`: lamp pool, darker floor, drawn curtains) so a lit window is a lit room, not a flat square; the
+schedule is unchanged. Phones (`lowMemory`): plain glass and flat quads, no attributes. Not covered: the far backdrops, school,
+Kårp and hepcat glass. `tools/interiormaptest.mjs`; `tools/roommap2180browser.cjs` ([images](../verification/2180/README.md)).
 Not covered: Hus L's own courtyard units (`neighborLitGlass` in exterior.js) remain one emissive material lit after dusk.

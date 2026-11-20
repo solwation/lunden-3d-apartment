@@ -1,0 +1,86 @@
+{
+ "rev": "090115e94d2676e233d72984ef8d1c4e542178e0",
+ "shots": [
+  {
+   "phase": "before",
+   "view": "court",
+   "hour": 12,
+   "file": "docs/verification/2180/before/court-12-before.jpg",
+   "calls": 541,
+   "triangles": 1119504,
+   "programs": 124,
+   "renderMs": 39.6
+  },
+  {
+   "phase": "before",
+   "view": "court",
+   "hour": 21,
+   "file": "docs/verification/2180/before/court-21-before.jpg",
+   "calls": 542,
+   "triangles": 1122444,
+   "programs": 127,
+   "renderMs": 26.1
+  },
+  {
+   "phase": "before",
+   "view": "near",
+   "hour": 12,
+   "file": "docs/verification/2180/before/near-12-before.jpg",
+   "calls": 512,
+   "triangles": 1079908,
+   "programs": 120,
+   "renderMs": 39.9
+  },
+  {
+   "phase": "before",
+   "view": "near",
+   "hour": 21,
+   "file": "docs/verification/2180/before/near-21-before.jpg",
+   "calls": 513,
+   "triangles": 1082848,
+   "programs": 123,
+   "renderMs": 30.2
+  },
+  {
+   "phase": "after",
+   "view": "court",
+   "hour": 12,
+   "file": "docs/verification/2180/court-12-after.jpg",
+   "calls": 542,
+   "triangles": 1122176,
+   "programs": 125,
+   "renderMs": 66.2
+  },
+  {
+   "phase": "after",
+   "view": "court",
+   "hour": 21,
+   "file": "docs/verification/2180/court-21-after.jpg",
+   "calls": 543,
+   "triangles": 1125116,
+   "programs": 128,
+   "renderMs": 28.6
+  },
+  {
+   "phase": "after",
+   "view": "near",
+   "hour": 12,
+   "file": "docs/verification/2180/near-12-after.jpg",
+   "calls": 513,
+   "triangles": 1082580,
+   "programs": 122,
+   "renderMs": 37.6
+  },
+  {
+   "phase": "after",
+   "view": "near",
+   "hour": 21,
+   "file": "docs/verification/2180/near-21-after.jpg",
+   "calls": 514,
+   "triangles": 1085520,
+   "programs": 125,
+   "renderMs": 26.1
+  }
+ ],
+ "errors": []
+}

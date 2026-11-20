@@ -7445,6 +7445,30 @@ export const GLASS_PANES = { paneMax: 4,
   far: { lightness: .14, tone: .06, gradient: .3, sky: .22, skyColor: 0x9fb8c6 },
 };
 
+// #2180: a fake room behind the neighbours' near window glass (src/interiormap.js, one fragment patch of the existing
+// neighborGlass material + a few per-vertex numbers baked at build; no texture, draw, light or per-frame work). All *guess*
+// values (nothing measured; the rooms are invented): `depth` room depth behind the pane (m), `sill` pane bottom above the floor
+// (full-height glass doors: `doorSill`, panes taller than `doorMin`), `height` floor to ceiling, `margin` extra room width
+// beyond each pane edge, `kinds` the window dressing with its `share` and `cover` range (curtains: the width share drawn in from
+// EACH side; blind / roller: the height share drawn from the top; sheer: the whole pane, semi-transparent). `palette*` linear
+// colours picked per room. `day` interior brightness at noon, `night` the faint level in the dark (lit windows come from
+// #2120's additive quads, `glow*` shapes those so a lit window shows lamp light and drawn curtains instead of a flat square),
+// `strength` the share of the glass showing the room at normal incidence (less at grazing angles, where the sky reflects).
+export const ROOM_MAP = {
+  depth: [2.8, 5.2], sill: [0.8, 1.0], doorSill: 0.05, doorMin: 1.7, height: [2.45, 2.6], margin: [0.1, 1.5], minPane: 0.25, maxThickness: 0.3,
+  kinds: [
+    { name: 'open', share: 0.2, cover: [0, 0] },
+    { name: 'curtain', share: 0.3, cover: [0.12, 0.42] },
+    { name: 'blind', share: 0.25, cover: [0.2, 0.95] },
+    { name: 'sheer', share: 0.15, cover: [1, 1] },
+    { name: 'roller', share: 0.1, cover: [0.45, 1] },
+  ],
+  paletteWall: [[0.55, 0.5, 0.42], [0.5, 0.52, 0.5], [0.58, 0.52, 0.45], [0.45, 0.5, 0.55], [0.6, 0.58, 0.55], [0.5, 0.42, 0.38]],
+  paletteFloor: [[0.28, 0.18, 0.1], [0.38, 0.28, 0.17], [0.18, 0.13, 0.1]],
+  paletteFabric: [[0.75, 0.72, 0.65], [0.55, 0.6, 0.6], [0.62, 0.45, 0.4], [0.45, 0.5, 0.62], [0.8, 0.8, 0.78], [0.35, 0.4, 0.33], [0.7, 0.62, 0.4]],
+  day: 0.5, night: 0.035, strength: 0.88, glow: { base: 0.5, lamp: 0.55, floor: 0.45, curtain: 0.4 },
+};
+
 // #2089: matt, lightly brushed / powder-coated metal on outdoor railings (src/railmetal.js, a fragment-only patch of the
 // existing materials; no texture, draw, uniform or per-frame work). All *guess* values from the look of painted steel
 // railings, nothing measured. `roughness` the new base of the railing materials (was 0.45–0.6), `streak` ± roughness of
