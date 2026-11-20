@@ -2459,7 +2459,17 @@ export const OLOF = {
   // `lean` into the backrest (`wheel`, `pedals` in his own frame: x his left, z forward, y up from the foot well);
   // `box` the pick box [x0, y0, z0, x1, y1, z1] in his frame, out through the driver's window
   // (above the door's handle, so the door still opens). Placement by eye (*guess*); `jokeTime` s his bubble.
+  // #2265: `seat`, `wheel`, `pedals` and `lean` were tuned for the standard 175 cm figure; the figure is scaled by its height, so they are
+  // car-fixed places (olof.js drivingPose divides them by the scale) and `fit` adjusts the seat for a taller driver (olof.js driverFit):
+  // the crown at the most forward lean (braking, OLOF_DRIVE.maxLean) must stay `headroom` m under `roof`, the roof's inner surface over
+  // his head (car frame, the road at 0; the GLB's Body_roof measures 1.416–1.424 m over x −0.25…−0.05 at z −0.37 by a ray up, #2265
+  // browser run). That need is taken first by lowering the seat (`maxDrop` m: its height adjustment plus a heavier body's sink into
+  // the cushion), the rest by reclining the backrest (`maxRecline` rad), and the seat then slides (at most `maxSlide` m either way)
+  // until his hands reach the wheel with the same share of his arm as the 175 cm pose. `crown` m: the skull's top above the head
+  // bone along the torso (PVP_RIFLE_HEAD.skull: centre .1 + radius .11 × 1.1) plus ~1.5 cm of short hair; `base` cm the height the
+  // pose was tuned for. All *guess*es by eye, not measured on a real seat.
   car: { at: [0, -0.37], floor: 0.315, seat: 0.17, wheel: [0, 0.6, 0.4], pedals: 0.76, lean: 0.2,
+    fit: { base: 175, roof: 1.42, headroom: 0.03, crown: 0.236, maxDrop: 0.08, maxRecline: 0.25, maxSlide: 0.06 },
     box: [-0.27, 0.6, -0.3, 0.62, 1.17, 0.35], jokeTime: 5,
     hello: ['Hej Olof!', 'Tjena Olof!', 'Hallå där, Olof!', 'Hej chauffören!'],
     jokes: ['Varför är matteboken så ledsen? Den har så många problem.', 'Vad sa nollan till åttan? Snyggt bälte!',

@@ -1,7 +1,7 @@
 import { discoverCreature } from './bestiaryevents.js';
 import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
-import { OLOF as O, OLOF_DRIVE as OD, defaultFaceLook, ageInYears, ageStepFromYears, AVATAR_GLASSES } from './config.js';
+import { OLOF as O, OLOF_DRIVE as OD, defaultFaceLook, ageInYears, ageStepFromYears, AVATAR_GLASSES, avatarProportions, avatarHeightCm } from './config.js';
 import { Avatar } from './avatar.js';
 import { newBreath, stepBreath } from './avatarbreath.js'; // #2146: his breathing is the avatars' (rhythm, then avatarchest.js)
 import { chestBreath } from './avatarchest.js';
@@ -182,15 +182,49 @@ export function seatedPose(seat, { w = 0, wave = 0, ph = 0, up = 0, fwd = 0 } = 
 // (the driver's seat is his, main.js `car.driverTaken`), a car restored arriving / parked / leaving has him too; his only
 // absence is the car in its stall in the garage (and gone): the next call brings him again (the sitting itself is not saved).
 
+const SIT = 0.075; // the hip joints above the cushion (metres before avatar scaling)
+const GRIP = [0.04, 0.15, 0.42]; // the hands on the wheel: [below its centre, its radius] m, its tilt rad (car-fixed, wheelHands)
+const NO_FIT = { s: 1, drop: 0, recline: 0, slide: 0 };
+
+/** #2265: the driving seat set for a driver `cm` tall (OLOF.car.fit; `D` OLOF.car, `maxLean` his most forward lean on braking).
+ * Returns { s, drop, recline, slide }: `s` the figure's scale (avatarProportions), `drop` m the hips lower, `recline` rad more lean
+ * into the backrest, `slide` m the hips further back (− forward). Each comes from his size against the 175 cm pose `D` was tuned for:
+ * the crown's height at the most forward lean over the room under the roof (lowered first, then reclined), then the slide that keeps
+ * the shoulder-to-wheel distance the same share of his (scaled) arm as at 175 cm. Pure (no figure needed). */
+export function driverFit(cm, D = O.car, maxLean = OD.maxLean) {
+  const F = D.fit, s = avatarProportions(cm).body, s0 = avatarProportions(F.base).body, U = NECK + F.crown;
+  const worst = D.lean - maxLean, room = F.roof - F.headroom - D.floor - D.seat; // the crown's room above the cushion
+  const need = s * (SIT + U * Math.cos(worst)) - room;
+  let drop = 0, recline = 0;
+  if (need > 0) {
+    drop = Math.min(F.maxDrop, need);
+    const c = ((room + drop) / s - SIT) / U; // cos of the lean that puts the crown at the top of the room
+    recline = Math.min(F.maxRecline, Math.max(0, Math.acos(Math.min(1, c)) - worst));
+  }
+  const [g] = wheelHands([D.wheel[0], D.wheel[1] - GRIP[0], D.wheel[2]], GRIP[1], GRIP[2], 0); // the left grip (car-fixed)
+  const reach = (k, d, r, slide) => { // the left shoulder to its grip, as a share of the arm, for figure scale k
+    const L = D.lean + r, hy = D.seat - d + SIT * k;
+    return Math.hypot(SH[0] * k - g[0], hy + k * SH[1] * Math.cos(L) - g[1], -slide - k * SH[1] * Math.sin(L) - g[2]) / (k * (UPPER + FORE + HAND));
+  };
+  const want = reach(s0, 0, 0, 0); // (the reach grows as the seat slides back)
+  let a = -F.maxSlide, b = F.maxSlide;
+  if (reach(s, drop, recline, a) >= want) b = a;
+  else if (reach(s, drop, recline, b) <= want) a = b;
+  else for (let i = 0; i < 30; i++) { const m = (a + b) / 2; if (reach(s, drop, recline, m) < want) a = m; else b = m; }
+  return { s, drop, recline, slide: (a + b) / 2 };
+}
+
 /** The driving pose in the figure's frame (floor of the foot well at y 0): hips on the cushion, leaning into the backrest,
- * the feet at the pedals, both hands on the wheel (`wave`: the left hand up, waving). */
-export function drivingPose({ seat, wheel, pedals, wave = 0, ph = 0, turn = 0, head = 0, steer = 0, leanExtra = 0, torsoYaw = 0, torsoRoll = 0 }) {
-  const hip = [seat + 0.075, 0], [wx, wy, wz] = wheel;
-  const [gL, gR] = wheelHands([wx, wy - 0.04, wz], 0.15, 0.42, steer); // #2146: the hands go round with the wheel
+ * the feet at the pedals, both hands on the wheel (`wave`: the left hand up, waving). #2265: `seat`, `wheel` and `pedals` are
+ * car-fixed (as tuned for the 175 cm figure); `adjust` (driverFit) sets the seat for his height and brings them into his scaled frame. */
+export function drivingPose({ seat, wheel, pedals, wave = 0, ph = 0, turn = 0, head = 0, steer = 0, leanExtra = 0, torsoYaw = 0, torsoRoll = 0, adjust = NO_FIT }) {
+  const k = 1 / adjust.s, hip = [(seat - adjust.drop) * k + SIT, -adjust.slide * k], [wx, wy, wz] = wheel;
+  const [gL, gR] = wheelHands([wx, wy - GRIP[0], wz], GRIP[1], GRIP[2], steer).map((p) => p.map((v) => v * k)); // #2146: the hands go round with the wheel
   const handR = { at: gR, pole: [-0.6, -0.8, -0.3] };
   const waveL = [0.3 + 0.05 * Math.sin(ph), hip[0] + 0.66, 0.2]; // (under the roof, by the window)
   const handL = { at: lerp3(gL, waveL, ease(wave)), pole: lerp3([0.6, -0.8, -0.3], [1, -0.7, -0.1], ease(wave)) };
-  return { hip, lean: O.car.lean + leanExtra, head, turn, torsoYaw, torsoRoll, feet: [[0.12, 0.06, pedals], [-0.12, 0.06, pedals]], hands: [handL, handR], can: null };
+  return { hip, lean: O.car.lean + adjust.recline + leanExtra, head: head - adjust.recline, turn, // (the head keeps the 175 cm pose's gaze)
+    torsoYaw, torsoRoll, feet: [[0.12, 0.06, pedals * k], [-0.12, 0.06, pedals * k]], hands: [handL, handR], can: null };
 }
 
 const wv1 = new THREE.Vector3(), wv2 = new THREE.Vector3();
@@ -201,6 +235,7 @@ export class OlofDriver {
     const D = O.car;
     this.car = car;
     this.fig = buildOlof(month);
+    this.fit = driverFit(avatarHeightCm(this.fig.avatar.look)); // #2265: the seat set for his height (186 cm)
     const o = this.fig.object;
     o.userData = {}; // (a part of the car: the car's own detail flags judge it)
     o.position.set(D.at[0], D.floor, D.at[1]);
@@ -262,7 +297,7 @@ export class OlofDriver {
     const u = this.fig.material.userData.u?.uBreathe?.value; if (u) { u[0] = br.chest * g; u[1] = br.belly * g; u[2] = br.shoulder * g; }
     const pose = drivingPose({ seat: D.seat, wheel: D.wheel, pedals: D.pedals, wave: this.waveK, ph: this.t * 9, steer: F.steer,
       turn: this.look + this.eyeTurn - OD.shoulderHead * this.shoulderK, head: this.pitch + this.eyePitch - br.lean * g,
-      leanExtra: bm.lean + br.lean * g, torsoYaw: -OD.shoulderTorso * this.shoulderK, torsoRoll: bm.roll });
+      leanExtra: bm.lean + br.lean * g, torsoYaw: -OD.shoulderTorso * this.shoulderK, torsoRoll: bm.roll, adjust: this.fit });
     pose.hip[0] += br.hip * g;
     poseOlof(this.fig, pose);
   }

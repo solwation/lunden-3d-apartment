@@ -432,6 +432,16 @@ steg 0 till och med 25 år, sedan ett steg per 5 år (26–30 → 1, 31–35 →
 `ageInYears` räknar hela år (födelsedagen räknas), `ageStepFromYears` mappar (båda i `src/config.js`). Test:
 `tools/olofage2233test.mjs`; bilder: `tools/olofage2233browser.cjs` ([bilder](../verification/2233/)). Personligt, förs inte till den publika versionen.
 
+**Sätet ställs efter längden (#2265).** Figuren skalas med längden, så `OLOF.car` `seat`, `wheel` och `pedals` (inställda för
+175 cm) är fasta platser i bilen: `drivingPose` delar dem med skalan, och `driverFit(cm)` (`src/olof.js`, ren) ställer sätet med
+`OLOF.car.fit`. Hjässan (skallens topp, `PVP_RIFLE_HEAD.skull`, plus kort hår) ska vid den mest framåtlutade posen (inbromsning,
+`OLOF_DRIVE.maxLean`) ligga `headroom` under takets insida `roof` (1,42 m, uppmätt på GLB-modellens `Body_roof` med en stråle uppåt).
+Behovet tas först genom att sänka sätet (högst `maxDrop`), resten genom att luta ryggstödet bakåt (högst `maxRecline`). Sedan glider
+sätet (högst `maxSlide` åt något håll) tills axel–ratt-avståndet är samma andel av armen som i 175 cm-posen. För 186 cm blir det
+8 cm lägre, 0,16 rad mer bakåtlutad och 3,5 cm framåt; huvudet nickar lika mycket framåt så att blicken är som förut. Värdena är *guess*.
+Spelare i passagerarsätet (vilopose, `src/remote-pose.js`) påverkas inte av detta. Test: `tools/olofroof2265test.mjs`. Mätning och
+bilder: `tools/olofroof2265browser.cjs` ([bilder](../verification/2265/)). Personligt, förs inte till den publika versionen.
+
 Pilotsolglasögonen (#2234) finns i spegelns Tillbehör. De använder glasögontaggens lediga värde 4.
 En äldre avkodare som bara känner till 0–3 hoppar över den taggen. Övriga taggar läses som tidigare.
 Spelets kalendermånad styr Olofs glasögon. Juni–augusti ger pilotsolglasögon i bilen och när en
