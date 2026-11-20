@@ -13,7 +13,8 @@ const BASE_REV = process.env.BASE_REV || 'origin/main', touched = ['config.js', 
 const SEATS = {
   soffa: { find: "a.world.furnitureTargets.find((t) => t.kind === 'rest' && t.name === 'soffan').spots[0]", side: 1, az: 0.55, dist: 2.1, eye: 0.75, look: 0.35, fwd: 0.35 },
   biostol: { find: "a.world.playroom.targets.find((t) => t.name === 'biostol 1').spots[0]", room: true, side: -1, az: 0.6, dist: 2.0, eye: 0.75, look: 0.35, fwd: 0.35 },
-  gamingstol: { find: "a.world.furnitureTargets.find((t) => t.kind === 'rest' && t.name === 'gamingstolen').spots[0]", side: 1, az: 0.15, dist: 1.7, eye: 0.7, look: 0.35, fwd: 0.3 },
+  dynbox: { find: "a.world.furnitureTargets.find((t) => t.kind === 'rest' && t.name === 'dynboxen').spots[0]", side: 1, az: 0.5, dist: 1.8, eye: 0.7, look: 0.3, fwd: 0.3 },
+  gamingstol: { find: "a.world.furnitureTargets.find((t) => t.kind === 'rest' && t.name === 'gamingstolen').spots[0]", side: -1, az: 0.5, dist: 1.3, eye: 0.7, look: 0.35, fwd: 0.3 },
   bil: { find: "(() => { const c = a.car, s = c.seats.find((t) => t.name === 'passagerarsätet'); const d = s.door; if (!d.isOpen) d.toggle(); return s.spots[0]; })()", car: true, side: -1, az: -0.35, dist: 1.9, eye: 0.95, look: 0.5, fwd: 0.35 },
 };
 async function route(ctx, phase, log) {
@@ -23,7 +24,7 @@ async function route(ctx, phase, log) {
     if (m && three) return r.fulfill({ contentType: 'text/javascript', body: fs.readFileSync(path.join(three, m[1].split('?')[0])) });
     if (!u.startsWith(base + '/')) { log.push(u); return r.abort(); }
     const f = new URL(u).pathname.match(/^\/src\/([a-z0-9-]+\.js)$/);
-    if (phase === 'before' && f && touched.includes(f[1])) return r.fulfill({ contentType: 'text/javascript', body: execFileSync('git', ['show', `${BASE_REV}:src/${f[1]}`]) });
+    if (phase === 'before' && f && touched.includes(f[1])) return r.fulfill({ contentType: 'text/javascript', body: execFileSync('git', ['show', `${BASE_REV}:src/${f[1]}`], { maxBuffer: 1 << 28 }) });
     return r.continue();
   });
 }
