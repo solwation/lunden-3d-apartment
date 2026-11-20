@@ -51,7 +51,7 @@ mvPosition.xy += haloCorner.xy * haloS;
 gl_Position = projectionMatrix * mvPosition;`;
 
 /** The halos' material: groundglow's additive glow (opacity = the level), fading into the fog, billboarded per head. */
-export function haloMaterial(color, { size = 0.9, minPx = 3, toward = 0.3, above = 0.35 } = {}) {
+export function haloMaterial(color, { size = 0.9, minPx = 3, toward = 0.3, above = 0.35, instanced = false } = {}) {
   const material = fadeGlowWithFog(glowMaterial(color));
   material.polygonOffset = false;
   material.side = THREE.FrontSide;
@@ -62,13 +62,13 @@ export function haloMaterial(color, { size = 0.9, minPx = 3, toward = 0.3, above
     Object.assign(shader.uniforms, uniforms);
     const project = '#include <project_vertex>', alpha = '#include <premultiplied_alpha_fragment>';
     if (!shader.vertexShader.includes(project) || !shader.fragmentShader.includes(alpha)) throw new Error('Halo material: missing chunks');
-    shader.vertexShader = shader.vertexShader.replace('#include <common>', `#include <common>\n${HALO_VERT_HEAD}`).replace(project, HALO_VERT);
+    shader.vertexShader = shader.vertexShader.replace('#include <common>', `#include <common>\n${HALO_VERT_HEAD}`).replace(project, instanced ? HALO_VERT.replace('modelViewMatrix * vec4( transformed, 1.0 )', 'modelViewMatrix * instanceMatrix * vec4( transformed, 1.0 )').replace('modelMatrix * vec4( transformed, 1.0 )', 'modelMatrix * instanceMatrix * vec4( transformed, 1.0 )') : HALO_VERT);
     // the fall-off cubed: a bright core round the glass and a long soft tail instead of an even disc
     shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vHaloFade;')
       .replace('#include <map_fragment>', '#include <map_fragment>\ndiffuseColor.rgb *= sampledDiffuseColor.r * sampledDiffuseColor.r;')
       .replace(alpha, `gl_FragColor.a *= vHaloFade;\n${alpha}`);
   };
-  material.customProgramCacheKey = () => 'street-lamp-halo-v1';
+  material.customProgramCacheKey = () => instanced ? 'indoor-lamp-halo-v1' : 'street-lamp-halo-v1';
   material.userData.halo = uniforms;
   return material;
 }

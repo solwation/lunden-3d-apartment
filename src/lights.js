@@ -8,6 +8,7 @@ import { buildLampWashes } from './lampwash.js';
 import { Pendant } from './pendants.js';
 import { ShadePools } from './shadepools.js';
 import { roomEnv } from './roomprobe.js';
+import { IndoorHalos, shadeEmission } from './indoorhalo.js';
 
 // Room lights: a switch by every room's door (E) turns the room's lamps on and off — a ceiling
 // lamp per room (spots / globe / LED strips where interior.js built those) — and floor lamps
@@ -279,7 +280,7 @@ function blocked(segs, ax, az, bx, bz) {
 
 export class Lights {
   /** world: from buildWorld (roomMaps, doors, lamps); scene: where switches + fixtures go. */
-  constructor(scene, world) {
+  constructor(scene, world, { quality, lowMemory = false } = {}) {
     this.rooms = new Map();
     this.switches = [];
     const room = (level, name) => {
@@ -430,6 +431,11 @@ export class Lights {
     this.wash.lamps = this.wash.entries.map((e) => e.owner); // (tests)
     this.shadePools = new ShadePools(this.wash.entries, (level) => LEVELS[level].floor, ceilingAt); // (#2191: the shaded lamps' floor / ceiling pools)
     if (this.shadePools.mesh) scene.add(this.shadePools.mesh);
+    this.halos = new IndoorHalos(this.wash.entries, { lowMemory });
+    if (this.halos.mesh) scene.add(this.halos.mesh);
+    quality?.register('lamp halos', { cost: 'one indoor halo draw', apply: (level) => { this.halos.level = level; this.halos.commit(); } });
+    for (const R of this.rooms.values()) for (const m of R.mats) shadeEmission(m);
+    for (const f of this.floorLamps) shadeEmission(f.spec.shade);
     this.scene = scene;
     this.patchIn = 0; // frames to the next look for new materials to give the lamps' light
     // the lit parts of every lamp are never culled as small far-away detail (#294, detail.js)
@@ -656,6 +662,7 @@ export class Lights {
    * that state switches them, so a lamp toggled by hand stays as it is until the next dusk / dawn. The first call
    * sets them at once; later changes fade. `forced` (&lights) keeps everything on. */
   updateAuto(daylight, dt) {
+    this.halos.daylight = daylight;
     const A = L.auto, first = this.dark === undefined;
     const dark = first ? daylight < (A.on + A.off) / 2 : this.dark ? daylight < A.off : daylight < A.on;
     if (dark !== this.dark) {
@@ -752,10 +759,12 @@ export class Lights {
       const on = (owner instanceof FloorLamp ? (shown(owner) ? owner.k : 0) : owner.on ? 1 : 0) * supply;
       this.wash.set(i, on, Math.min(1, f));
       this.shadePools.set(lamp, on);
+      this.halos.set(i, on);
     });
     for (const f of this.floorLamps) f.recolored = false;
     this.wash.commit();
     this.shadePools.commit();
+    this.halos.commit();
     if (--this.patchIn <= 0) { this.patchIn = 120; this.wash.patch(this.scene); } // (things built later: cups, cat coats …)
   }
 }

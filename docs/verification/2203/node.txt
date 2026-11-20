@@ -1,0 +1,82 @@
+TAP version 13
+# Subtest: night halo fades continuously to zero by day and compensates exposure
+ok 1 - night halo fades continuously to zero by day and compensates exposure
+  ---
+  duration_ms: 3.692793
+  type: 'test'
+  ...
+# Subtest: shade light has a smooth bright centre, dim rims, and preserves an existing emissive map
+ok 2 - shade light has a smooth bright centre, dim rims, and preserves an existing emissive map
+  ---
+  duration_ms: 1.410297
+  type: 'test'
+  ...
+# Subtest: one instanced batch follows independent lamps, movement and colour, hides off/day/lowest/phone
+ok 3 - one instanced batch follows independent lamps, movement and colour, hides off/day/lowest/phone
+  ---
+  duration_ms: 3.936092
+  type: 'test'
+  ...
+# Subtest: one quad per head, centred under its glass, path lamps smaller
+ok 4 - one quad per head, centred under its glass, path lamps smaller
+  ---
+  duration_ms: 3.703493
+  type: 'test'
+  ...
+# Subtest: the material is patched once: billboard + fog fade, own cache key, additive and not lit
+ok 5 - the material is patched once: billboard + fog fade, own cache key, additive and not lit
+  ---
+  duration_ms: 4.930791
+  type: 'test'
+  ...
+# Subtest: no lights, one mesh, hidden by day and following the glow at night
+ok 6 - no lights, one mesh, hidden by day and following the glow at night
+  ---
+  duration_ms: 1.033298
+  type: 'test'
+  ...
+# Subtest: the street pools get one core patch on top of the fog fade, with their own cache key and the shared wet uniform
+ok 7 - the street pools get one core patch on top of the fog fade, with their own cache key and the shared wet uniform
+  ---
+  duration_ms: 1.552097
+  type: 'test'
+  ...
+# Subtest: a bare lamp gives 1 everywhere
+ok 8 - a bare lamp gives 1 everywhere
+  ---
+  duration_ms: 1.665397
+  type: 'test'
+  ...
+# Subtest: copper dome: strong straight down, weak up, dark sideways
+ok 9 - copper dome: strong straight down, weak up, dark sideways
+  ---
+  duration_ms: 0.424299
+  type: 'test'
+  ...
+# Subtest: paper / Silvia: ceiling and floor lit, a dimmer band between
+ok 10 - paper / Silvia: ceiling and floor lit, a dimmer band between
+  ---
+  duration_ms: 0.458199
+  type: 'test'
+  ...
+# Subtest: the profile is monotone and soft at the edge
+ok 11 - the profile is monotone and soft at the edge
+  ---
+  duration_ms: 0.477099
+  type: 'test'
+  ...
+# Subtest: rows: bare = zeros (boost 0), shaded carries axis and lobes, default axis down
+ok 12 - rows: bare = zeros (boost 0), shaded carries axis and lobes, default axis down
+  ---
+  duration_ms: 1.356397
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 267.827094

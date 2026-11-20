@@ -495,7 +495,7 @@ const notePaper = noteEl.querySelector('.paper');
 // under pointer lock the wheel goes to the canvas: pass it on to the open note (#275)
 document.addEventListener('wheel', (e) => { if (locked && !noteEl.hidden) notePaper.scrollTop += e.deltaY * (e.deltaMode === 1 ? 40 : 1); }, { passive: true });
 
-const lights = new Lights(scene, world);
+const lights = new Lights(scene, world, { quality, lowMemory });
 const visitLights = new VisitLights(scene, world.units); // the visitable flats' ceiling lamps and switches (#620)
 for (const u of world.units) u.buildMid(); // #1965: their merged mid level (after the lamps and switches are in them)
 const windowLight = new WindowLight([homeRegion(world), ...world.units.map(visitRegion)]); // #2152: each window a soft sky source indoors

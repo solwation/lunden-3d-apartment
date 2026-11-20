@@ -1,0 +1,59 @@
+{
+  "views": {
+    "living": {
+      "before": {
+        "calls": 365,
+        "triangles": 980021,
+        "programs": 141,
+        "halos": 37,
+        "visible": false,
+        "opacity": 0.22,
+        "daylight": 0,
+        "exposure": 1
+      },
+      "after": {
+        "calls": 366,
+        "triangles": 980095,
+        "programs": 142,
+        "halos": 37,
+        "visible": true,
+        "opacity": 0.22,
+        "daylight": 0,
+        "exposure": 1
+      }
+    },
+    "paper": {
+      "before": {
+        "calls": 290,
+        "triangles": 765943,
+        "programs": 145,
+        "halos": 37,
+        "visible": false,
+        "opacity": 0.22,
+        "daylight": 0,
+        "exposure": 1
+      },
+      "after": {
+        "calls": 291,
+        "triangles": 766017,
+        "programs": 145,
+        "halos": 37,
+        "visible": true,
+        "opacity": 0.22,
+        "daylight": 0,
+        "exposure": 1
+      }
+    }
+  },
+  "checks": {
+    "allOff": true,
+    "on": true,
+    "powerCut": true,
+    "restored": true,
+    "lowest": true,
+    "qualityRestored": true,
+    "daylight": true,
+    "moved": true
+  },
+  "errors": []
+}

@@ -6348,6 +6348,11 @@ export const LIGHTING = {
   // line of sight `hidden` times nearer than one behind a wall (none for one behind a wall in another room), and a
   // lamp that has a pool light keeps it unless another is `stick` times nearer (no flicker on a doorstep). By eye.
   auto: { on: 0.3, off: 0.4, fade: 1 },
+  // #2203: indoor lamp glare and the bulb's radial light through a shade (src/indoorhalo.js). *Guesses* by eye:
+  // halo radius/toward in m, peak additive opacity, daylight fade, exposure floor; shade rim share / Gaussian falloff.
+  // One instanced batch, no scene light or pass; no halos at quality 0 / lowMemory. Shade map is shared 1×64 linear data.
+  halo: { size: 0.5, minPx: 0, toward: 0.08, above: 1, peak: 0.22, day: [0.02, 0.5], exposureMin: 0.7,
+    shadeRim: 0.28, shadeFalloff: 2.8, textureSize: 64 },
   poolFade: 0.4,
   poolPick: { otherRoom: 3, hidden: 6, stick: 1.5, behind: 1.6, near: 1.5 },
   // #276, #294, #295: every lamp's light wherever the visitor is (src/lampwash.js): each pool anchor of every small lamp

@@ -844,6 +844,13 @@ src/lampwash.js        every lamp's light wherever the visitor is (#276, #294, #
                        The injection is idempotent per suffix (#2090): a material that inherits an already washed callback
                        (viewlod.js's parked-car clones under their dither fade) gets each wash once, not a redefined second copy
                        that failed to compile and hid the near cars (`tools/lampwash2090test.mjs`, `tools/lampwash2090browser.cjs`)
+src/indoorhalo.js      indoor lamps' soft evening halos (#2203, `LIGHTING.halo`, *guesses*): one instanced billboard batch using
+                       lamphalo.js's depth-tested/fog-faded material, individual linear colours × actual on/fade/supply; moved anchors
+                       and recolouring upload only on change. `indoorHaloStrength` fades by daylight and compensates renderer exposure.
+                       No halo at quality 0; lowMemory allocates none. `shadeEmission` gives untextured shades a shared 1×64 radial
+                       bulb falloff map; existing paper/fold emissive maps keep their texture and receive the same factor in their
+                       existing shader. No light or pass. `tools/indoorhalo2203test.mjs`, real-room before/after and switch/power/quality
+                       checks in `tools/indoorhalo2203browser.cjs`; [evidence](../verification/2203/README.md).
 src/lampshade.js       shaded lamps throw light up and down (#2191): a lamp carries `shade` (a `LIGHTING.shades` profile: `inner`/`outer` cosines,
                        `up`, `leak`, `boost`, *guesses* by eye) and `axis` (a Vector3, default straight down; NYMÅNE's follows its shade's tilt and
                        the item's rotation, rearrange.js turns it with a move). `shadeGain(cos, shade)` (mirrored in lampwash.js's GLSL, lamp data
