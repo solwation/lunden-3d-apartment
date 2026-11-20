@@ -439,10 +439,29 @@ The verifier checks the signature over the exact manifest bytes, the
 content ABI, launcher versions and the stock runtime inventory where applicable. It then
 streams one anonymous GET per unique asset URL (including the launcher), follows CDN
 redirects and checks the final byte count and SHA-256. Repeated URLs must agree on both.
-Only a successful exit authorizes the publishing workflow to proceed to its separate
-promotion step. Use `--channel stable` for the stable manifest. HTTP loopback is supported
+A successful exit completes the local preflight. Use `--channel stable` for the stable manifest. HTTP loopback is supported
 only on the test channel. Run the offline delivery fixture with
 `node --test tools/unreal-engine/tests/verify-published.test.mjs`.
+
+#### Promote an existing release to latest
+
+Publish the package files and signed channel manifest pairs under the versioned tag first,
+with **Set as latest release** cleared. In Actions, select **Verify and promote a published
+Unreal release**, choose `main` and enter the exact `app-vMAJOR.MINOR.PATCH` or `content-N`
+tag. The manually dispatched workflow uses the repository's `LUNDEN_MANIFEST_PUBLIC_KEY`
+variable (the launcher's public SPKI key). The candidate must be a published full release.
+
+GitHub maintains one global latest pointer. The workflow checks every manifest pair on
+the candidate and preserves every channel present on the current latest release. A first
+test-only release can carry `lunden-manifest-test.json` and its `.sig`; once stable and
+test are both published, every promotion needs both signed pairs. Each manifest and
+payload must be available through anonymous HTTPS. On a successful check, a separate job
+rechecks the release ID, the current latest ID and the candidate's asset inventory, then
+marks the verified release ID as latest. These promotions run one at a time. Keep versioned
+assets immutable across the check and promotion, including any referenced from older tags.
+
+Run `node --test tools/unreal-engine/tests/promote-release.test.mjs` for the simulated
+release API and CDN cases. [Manual promotion workflow](../../.github/workflows/promote-unreal-release.yml).
 
 ## Phase B results (verified 2026-11-20)
 

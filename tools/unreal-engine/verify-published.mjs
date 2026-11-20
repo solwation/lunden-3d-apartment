@@ -35,9 +35,10 @@ function parseManifest(bytes) {
   return manifest;
 }
 
-function downloadUrl(value, channel) {
+function downloadUrl(value, channel, publicOnly = false) {
   const url = new URL(value);
   const loopback = url.hostname === 'localhost' || url.hostname === '[::1]' || isIPv4(url.hostname) && url.hostname.startsWith('127.');
+  if (publicOnly && (url.protocol !== 'https:' || loopback)) throw Error('Published releases require public HTTPS asset URLs.');
   if (url.username || url.password || url.href.includes('#') ||
       !(url.protocol === 'https:' || channel === 'test' && url.protocol === 'http:' && loopback))
     throw Error('Expected HTTPS or test-channel loopback HTTP, without credentials or fragments.');
@@ -115,7 +116,8 @@ function releaseObjects(manifest, channel) {
   return objects;
 }
 
-async function verifyDownload(url, entry, channel) {
+async function verifyDownload(url, entry, channel, publicOnly) {
+  url = downloadUrl(url, channel, publicOnly);
   const name = entry.path ?? 'launcher';
   for (let redirect = 0; redirect <= 10; redirect++) {
     // Manual redirects apply the channel's URL policy at every hop, including GitHub's asset CDN.
@@ -124,7 +126,7 @@ async function verifyDownload(url, entry, channel) {
       await response.body?.cancel();
       const location = response.headers.get('location');
       if (!location) throw Error('Missing redirect location for ' + name);
-      url = downloadUrl(new URL(location, url), channel);
+      url = downloadUrl(new URL(location, url), channel, publicOnly);
       continue;
     }
     if (response.status !== 200 || !response.body) {
@@ -169,10 +171,14 @@ export function readVerifiedManifest(bytes, signatureBytes, publicKeyPem, channe
 
 export async function verifyPublished({ manifest, signature, publicKey, channel }) {
   const [bytes, sig, pem] = await Promise.all([readFile(manifest), readFile(signature), readFile(publicKey, 'utf8')]);
+  return verifyPublishedBytes(bytes, sig, pem, channel);
+}
+
+export async function verifyPublishedBytes(bytes, sig, pem, channel, { publicOnly = false } = {}) {
   const { objects } = verifiedRelease(bytes, sig, pem, channel);
   let total = 0n;
   for (const [url, entry] of objects) {
-    await verifyDownload(url, entry, channel);
+    await verifyDownload(url, entry, channel, publicOnly);
     total += BigInt(entry.size);
   }
   return { objects: objects.size, bytes: total };

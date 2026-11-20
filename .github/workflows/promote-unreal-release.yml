@@ -1,0 +1,59 @@
+name: Verify and promote a published Unreal release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Published release tag (app-vMAJOR.MINOR.PATCH or content-N)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: unreal-global-latest
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/main' && github.repository == 'solwation/lunden-3d-apartment'
+    runs-on: ubuntu-latest
+    outputs:
+      id: ${{ steps.verify.outputs.id }}
+      digest: ${{ steps.verify.outputs.digest }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: Verify the tagged release and every channel payload anonymously
+        id: verify
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+          LUNDEN_MANIFEST_PUBLIC_KEY: ${{ vars.LUNDEN_MANIFEST_PUBLIC_KEY }}
+        run: node tools/unreal-engine/promote-release.mjs check
+
+  promote:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: Recheck the release ID and mark the verified release as latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          CHECKED_ID: ${{ needs.verify.outputs.id }}
+          CHECKED_DIGEST: ${{ needs.verify.outputs.digest }}
+        run: node tools/unreal-engine/promote-release.mjs promote
