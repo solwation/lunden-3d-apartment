@@ -1,0 +1,15 @@
+{
+  "on": {
+    "on": true,
+    "ch": 0
+  },
+  "next": {
+    "on": true,
+    "ch": 6
+  },
+  "viaButton": {
+    "on": true,
+    "ch": 4
+  },
+  "errors": []
+}

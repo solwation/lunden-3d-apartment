@@ -54,8 +54,8 @@ export class Remote extends Holdable {
     const at = tv.pickable.getWorldPosition(new THREE.Vector3());
     if(!power&&this.onVideo){this.onVideo(tv);return tv;}
     if(power&&this.onPower?.(tv))return tv;
-    if (power || !tv.isOpen) { const on = tv.toggle(); sfx.tvClick(at, on); }
-    else { tv.channel(); sfx.tvStatic(at); }
+    if (power || !tv.isOpen) { const on = this.onTvSwitch?.(tv, 'toggle') ? !tv.isOpen : tv.toggle(); sfx.tvClick(at, on); }
+    else { if (!this.onTvSwitch?.(tv, 'channel')) tv.channel(); sfx.tvStatic(at); }
     return tv;
   }
 

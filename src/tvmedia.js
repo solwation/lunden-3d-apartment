@@ -1,10 +1,11 @@
 import { CinemaPlayer } from './cinemaplayer.js';
 import { CinemaSurface } from './cinemasurface.js';
 import { TV_MEDIA, tvViewer } from './config.js';
+import { PROGRAMS } from './screens.js';
 
 /** Independent shared films on every registered home TV; one chooser per screen. */
 export class TVMedia {
-  constructor({canvas,targets,template,onClose,onOpen,endpoint}) {
+  constructor({canvas,targets,template,onClose,onOpen,endpoint,onNotice}) {
     this.onOpen=onOpen;
     this.sessions=new Map();
     for(const target of targets.filter(t=>t.kind==='tv'&&t.mediaId)) {
@@ -16,7 +17,9 @@ export class TVMedia {
       const channels=document.createElement('button');channels.type='button';channels.textContent='Vanliga TV-kanaler';channels.dataset.tvChannels='';
       el.querySelector('[data-cinema=off]').after(channels);document.body.append(el);
       const player=new CinemaPlayer(el,onClose,endpoint,{id:info.id,label:info.name,place:'TV-skärmen'});
-      player.soundSource=target.mesh;
+      player.soundSource=target.mesh;player.onNotice=onNotice;
+      // #2257: the controller's ordinary channel and on/off reach every viewer; a state without `tv` leaves the local TV alone.
+      player.onState=s=>{if(!s.tv||target.mediaLocked?.())return;if(!!target.isOpen!==s.tv.on)target.toggle();if(s.tv.on&&target.screen.channel!==s.tv.ch%PROGRAMS.length)target.screen.tune(s.tv.ch%PROGRAMS.length);};
       player.surface=new CinemaSurface(canvas,target.mesh,`tv-world-${info.id}`);
       target.videoMaterial=player.surface.aperture;
       const show=player.surface.show.bind(player.surface);
@@ -25,9 +28,16 @@ export class TVMedia {
       player.command=(kind,extra)=>target.mediaLocked?.()&&!['get','release'].includes(kind)?false:command(kind,extra);
       const controls=player.controls.bind(player);
       player.controls=()=>{controls();channels.disabled=!player.owns;};player.controls();
-      channels.addEventListener('click',()=>{if(!player.owns)return;player.command('stop');if(!target.isOpen)target.toggle();else target.channel();player.close();});
+      channels.addEventListener('click',()=>{if(!player.owns)return;player.command('stop');if(!this.switchTv(target,target.isOpen?'channel':'toggle')){if(!target.isOpen)target.toggle();else target.channel();}player.close();});
       this.sessions.set(info.id,{target,player});
     }
+  }
+  /** #2257: the remote / E switch. `kind` 'toggle' or 'channel'; returns true when the shared session handled it (the change shows on every viewer's TV
+   * once the Worker confirms), false to let the caller act locally. */
+  switchTv(target,kind) {
+    const session=this.sessions.get(target.mediaId);if(!session||target.mediaLocked?.())return false;
+    const n=PROGRAMS.length,cur=target.screen.channel;
+    return session.player.shareTv(kind==='toggle'?{on:!target.isOpen,ch:cur}:{on:true,ch:(cur+1+Math.floor(Math.random()*(n-1)))%n});
   }
   get open(){return [...this.sessions.values()].some(s=>s.player.open);}
   get watching(){return [...this.sessions.values()].some(s=>s.player.inside&&!!s.player.state?.video);}

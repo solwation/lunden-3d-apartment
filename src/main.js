@@ -1631,8 +1631,8 @@ const closeVideoControls = reason => {
 };
 const cinema = new CinemaPlayer(document.getElementById('cinema-player'),closeVideoControls,cloudUrl() ? `${cloudUrl()}/youtube-search` : '');
 const openVideoControls=()=>{reading=true;player.keys.clear();touch.analog.x=touch.analog.y=0;if(locked){binderFreed=true;document.exitPointerLock();}};
-const tvMedia=new TVMedia({canvas,targets:world.furnitureTargets,template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:''});
-remote.onVideo=tv=>santaTV.active&&tv===santaTV.tv&&santaTV.activate()||tvMedia.show(tv);remote.onPower=tv=>tvMedia.power(tv);
+const tvMedia=new TVMedia({canvas,targets:world.furnitureTargets,template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:'',onNotice:t=>badge(t,false)});
+remote.onVideo=tv=>santaTV.active&&tv===santaTV.tv&&santaTV.activate()||tvMedia.show(tv);remote.onPower=tv=>tvMedia.power(tv);remote.onTvSwitch=(tv,kind)=>tvMedia.switchTv(tv,kind);
 remote.onSeek=(tv,delta)=>{const ok=tvMedia.seek(tv,delta);if(!ok)badge('Någon annan styr TV:n just nu. Försök igen om en stund.',false);return ok;};
 const computerHub=new ComputerHub({lowMemory,onNotice:text=>badge(text,false),canvas,targets:[...world.furnitureTargets,...playroom.devices.computers.map(s=>s.target)],template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:'',boards:new GameBoards({url:cloudUrl(),id:()=>leaderboard.id,name:()=>leaderboard.name,look:()=>leaderboard.lookCode})}); // #1577: game top lists
 playroom.devices.onComputerRequest=target=>computerHub.show(target);
@@ -2238,7 +2238,8 @@ function use(thing) {
   } else if (thing.kind === 'tv') {
     if (thing === santaTV.tv && santaTV.activate()) return;
     if(tvMedia.show(thing))return;
-    const on = thing.toggle();
+    const shared = tvMedia.switchTv(thing, 'toggle');
+    const on = shared ? !thing.isOpen : thing.toggle();
     if (on) bump('tv', 1, idOf(thing));
     sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on);
   } else if (thing.kind === 'parasol') {

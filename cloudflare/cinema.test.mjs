@@ -101,6 +101,25 @@ test('TV identities and outsider commands are bounded; hibernation keeps live TV
  a.ws.close();await settle(env);assert.equal(tv.state,null);assert.equal(env.PLAYERS.ctx('world').data.has('cinema:lounge'),false);
 });
 
+test('#2257: the controller shares the home TV channel and on/off; bounds, owner and old clients',async()=>{
+ const tv=(extra={})=>JSON.stringify({t:'cinema',screen:'lounge',k:'tv',q:0,on:true,ch:3,...extra});
+ assert.deepEqual(cleanCinema(tv({owner:'x'})),{k:'tv',q:0,screen:'lounge',on:true,ch:3});
+ for(const bad of [{on:'yes'},{ch:-1},{ch:1.5},{ch:64},{ch:undefined},{screen:'pc-home'},{screen:undefined}])assert.equal(cleanCinema(tv(bad)),null);
+ const env=setup(),a=await connect(env,'Anna'),b=await connect(env,'Bo');
+ const st=(c)=>c.messages().filter(m=>m.screen==='lounge'&&m.k==='state').at(-1)?.s;
+ const go=async(c,k,extra={})=>{now+=1100;c.send({t:'cinema',screen:'lounge',k,q:st(c)?.q??0,...extra});await settle(env);};
+ await place(env,a,[4,0,9]);await place(env,b,[3,0,10]);await go(a,'claim');
+ assert.equal(st(b).tv,undefined);// older state shape: clients keep their local TV
+ await go(b,'tv',{on:true,ch:2});assert.equal(st(a).tv,undefined);assert.equal(b.messages().at(-2).why,'owner');
+ await go(a,'tv',{on:true,ch:5});assert.deepEqual(st(b).tv,{on:true,ch:5});
+ await go(a,'tv',{on:true,ch:2,q:0});assert.deepEqual(st(b).tv,{on:true,ch:2});// a stale q is fine: it is an idempotent set
+ await go(a,'tv',{on:false,ch:2});assert.deepEqual(st(b).tv,{on:false,ch:2});
+ await go(a,'release');const late=await connect(env,'Cia');await place(env,late,[4,0,9]);assert.deepEqual(st(late).tv,{on:false,ch:2});
+ env.PLAYERS.hibernate('world');await settle(env);await go(late,'get');assert.deepEqual(st(late).tv,{on:false,ch:2});
+ const stored=await env.PLAYERS.ctx('world').storage.get('cinema:lounge');stored.tv={on:true,ch:999};await env.PLAYERS.ctx('world').storage.put('cinema:lounge',stored);
+ env.PLAYERS.hibernate('world');await settle(env);await go(late,'get');assert.equal(st(late).tv,undefined);// a corrupt stored value is dropped, not served
+});
+
 test('shared seek preserves play/pause, rejects stale/foreign writes and bounds positions',async()=>{
  for(const p of [undefined,-1,Infinity,'10',R.cinemaSync.maxPosition+1])assert.equal(cleanCinema(JSON.stringify({t:'cinema',k:'seek',q:1,...(p===undefined?{}:{p})})),null);
  assert.deepEqual(cleanCinema('{"t":"cinema","k":"seek","q":1,"p":0,"owner":"fake"}'),{k:'seek',q:1,p:0});

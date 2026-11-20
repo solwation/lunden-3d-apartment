@@ -124,7 +124,7 @@ export class CinemaPlayer {
     if(!this.inside)return;
     if(m.k==='no') {
       const poster=this.pendingChoice;this.pendingChoice=undefined;
-      this.pendingSeek=undefined;this.pendingVideo=null;this.surface?.loading(false);if(!this.open)this.wantsControl=false;
+      this.pendingSeek=undefined;this.pendingTv=undefined;this.pendingVideo=null;this.surface?.loading(false);if(!this.open)this.wantsControl=false;
       if(m.why==='away'&&this.wantsControl)this.awaitingPresence=true;
       this.status.textContent=({off:'Starta datorn först.',owned:'Någon annan styr skärmen just nu.',owner:'Bara den som styr får ändra filmen.',stale:'Filmen har ändrats. Försök igen.',away:`Gå fram till ${this.place} för att välja film.`})[m.why]??'Bion kunde inte ändras.';
       if(poster&&!this.open)this.onNotice?.(this.status.textContent);
@@ -140,8 +140,9 @@ export class CinemaPlayer {
     if(this.pendingVideo===s.video)this.pendingVideo=null;
     if(this.pendingChoice&&s.owner&&!this.owns){this.pendingChoice=undefined;this.awaitingPresence=false;if(!this.open)this.wantsControl=false;this.onNotice?.('Någon annan styr skärmen just nu.');} // #1575
     if(this.awaitingPresence&&this.wantsControl&&!s.owner){this.awaitingPresence=false;this.command('claim');}
-    this.receivedServerNow=m.now;this.receivedAt=performance.now();this.controls();
+    this.receivedServerNow=m.now;this.receivedAt=performance.now();this.onState?.(s);this.controls();
     if(this.owns&&this.pendingSeek!==undefined){const delta=this.pendingSeek;this.pendingSeek=undefined;this.seek(delta);if(!this.open)this.wantsControl=false;}
+    if(this.owns&&this.pendingTv){const tv=this.pendingTv;this.pendingTv=undefined;this.command('tv',tv);if(!this.open)this.wantsControl=false;}
     if(this.owns&&this.pendingChoice){const id=this.pendingChoice;this.pendingChoice=undefined;this.choose(id);}
     if(this.owns&&!this.wantsControl)this.command('release');
     this.status.textContent=this.owns?`Du styr ${this.label}. Filmen visas på ${this.place}.`:s.owner?`${s.name} styr ${this.label}. Du tittar på samma film.`:`Ingen styr ${this.label} just nu.`;
@@ -203,6 +204,14 @@ export class CinemaPlayer {
     this.pendingChoice=id;this.wantsControl=true;this.awaitingPresence=!this.state;
     if(this.state)this.command('claim');
     return 'Filmen startar på bioduken';
+  }
+  /** #2257: share an ordinary-channel / on-off change `{on,ch}` of the home TV. Returns false when it must stay local (no shared session),
+   * otherwise true: sent at once by the controller, sent after a short claim when nobody controls, refused with a notice otherwise. */
+  shareTv(tv) {
+    if(!this.inside||!this.connected||!this.state)return false;
+    if(this.state.owner&&!this.owns){this.onNotice?.('Någon annan styr TV:n just nu.');return true;}
+    if(this.owns)return this.command('tv',tv);
+    this.pendingTv=tv;this.wantsControl=true;return this.command('claim');
   }
   remoteSeek(delta) {
     if(!this.connected||!this.state?.video||this.state.owner&&!this.owns)return false;

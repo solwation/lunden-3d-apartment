@@ -9561,6 +9561,7 @@ export const TV_MEDIA = {
     // times the weight below in power (RMS), so the nearest speaker dominates. Levels are *guess*es.
     speakerGain: { front: .25, center: .3, surround: .25, rear: .25, height: .15 } },
   floorTolerance: .7, // Feet/crouch/stair-edge tolerance around the current storey's finished floor.
+  channelLimit: 64, // #2257: the Worker accepts a shared ordinary-channel index below this; clients wrap it to their programme count.
   screens: [
     { id: 'lounge', name: 'TV · Vardagsrummet', level: 0, bounds: [.18,5.57,7.8,12.52] },
     { id: 'bedroom1', name: 'TV · Sovrum 1', level: 1, bounds: [2.75,5.57,.18,4.42] },

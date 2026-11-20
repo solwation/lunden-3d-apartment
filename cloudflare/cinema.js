@@ -6,24 +6,26 @@ const APPS=['menu','youtube','snake','blocks','meteors'];
 export function cleanCinema(text) {
   let m;
   try { m=JSON.parse(text); } catch { return null; }
-  if(m?.t!=='cinema' || !['claim','release','get','select','play','pause','stop','app','seek','power'].includes(m.k)) return null;
+  if(m?.t!=='cinema' || !['claim','release','get','select','play','pause','stop','app','seek','power','tv'].includes(m.k)) return null;
   if(m.screen!==undefined&&![...TV_MEDIA.screens,...COMPUTER_MEDIA.stations].some(s=>s.id===m.screen))return null;
   const screen=m.screen===undefined?{}:{screen:m.screen};
   if(m.k==='power'&&(!COMPUTER_MEDIA.stations.some(s=>s.id===m.screen)||typeof m.on!=='boolean'))return null;
+  // #2257: the home TVs' ordinary channel and on/off, written by the controller like a film.
+  if(m.k==='tv'&&(!TV_MEDIA.screens.some(s=>s.id===m.screen)||typeof m.on!=='boolean'||!Number.isSafeInteger(m.ch)||m.ch<0||m.ch>=TV_MEDIA.channelLimit))return null;
   if(m.k==='app'&&(!COMPUTER_MEDIA.stations.some(s=>s.id===m.screen)||!APPS.includes(m.app)))return null;
   if(['claim','release','get'].includes(m.k)) return {k:m.k,...screen};
   if(!Number.isSafeInteger(m.q)||m.q<0) return null;
   if(m.k==='select' && (typeof m.v!=='string'||!/^[A-Za-z0-9_-]{11}$/.test(m.v))) return null;
   if(m.k==='seek'&&m.p===undefined)return null;
   if(m.p!==undefined && (!Number.isFinite(m.p)||m.p<0||m.p>PLAYROOM.cinemaSync.maxPosition)) return null;
-  return {k:m.k,q:m.q,...screen,...(m.k==='select'?{v:m.v}:{}),...(m.k==='app'?{app:m.app}:{}),...(m.k==='power'?{on:m.on}:{}),...(['pause','seek'].includes(m.k)&&m.p!==undefined?{p:m.p}:{})};
+  return {k:m.k,q:m.q,...screen,...(m.k==='select'?{v:m.v}:{}),...(m.k==='app'?{app:m.app}:{}),...(m.k==='power'||m.k==='tv'?{on:m.on}:{}),...(m.k==='tv'?{ch:m.ch}:{}),...(['pause','seek'].includes(m.k)&&m.p!==undefined?{p:m.p}:{})};
 }
 
 const fresh = () => ({q:0,owner:null,name:'',video:'',playing:false,position:0,at:Date.now()});
 const valid = s => s && Number.isSafeInteger(s.q) && s.q>=0 &&
   (s.owner===null||typeof s.owner==='string') && typeof s.name==='string' &&
   (s.video===''||/^[A-Za-z0-9_-]{11}$/.test(s.video)) && typeof s.playing==='boolean' &&
-  (s.app===undefined||APPS.includes(s.app))&&(s.power===undefined||typeof s.power==='boolean')&&
+  (s.app===undefined||APPS.includes(s.app))&&(s.power===undefined||typeof s.power==='boolean')&&(s.tv===undefined||typeof s.tv?.on==='boolean'&&Number.isSafeInteger(s.tv.ch)&&s.tv.ch>=0&&s.tv.ch<TV_MEDIA.channelLimit)&&
   Number.isFinite(s.position)&&s.position>=0&&s.position<=PLAYROOM.cinemaSync.maxPosition&&Number.isFinite(s.at);
 
 /** One authoritative cinema per players room; no playback ticker or ball/media stream. */
@@ -85,9 +87,10 @@ export class RoomCinema {
       this.state={...s,q:s.q+1,owner:a.i,name:a.n??'En spelare'};
     } else {
       if(s.owner!==a.i)return this.refuse(ws,'owner');
-      if(m.k!=='release'&&m.q!==s.q)return this.refuse(ws,'stale');
+      if(m.k!=='release'&&m.k!=='tv'&&m.q!==s.q)return this.refuse(ws,'stale');
       this.state={...s,q:s.q+1};
       if(m.k==='release')Object.assign(this.state,{owner:null,name:''});
+      else if(m.k==='tv')this.state.tv={on:m.on,ch:m.ch};
       else if(m.k==='select')Object.assign(this.state,{video:m.v,position:0,playing:true,at:now,...(this.computer?{app:'youtube'}:{})});
       else if(m.k==='app')Object.assign(this.state,{app:m.app,video:'',position:0,playing:false,at:now});
       else if(m.k==='stop')Object.assign(this.state,{video:'',position:0,playing:false,at:now});

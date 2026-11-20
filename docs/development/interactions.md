@@ -2350,6 +2350,11 @@ and disabled editing. Closing releases control and keeps the film playing.
 There are no separate activation buttons. If the browser requires a sound/playback gesture, the next interaction with the physical screen activates that viewer locally before opening any chooser; TV, cinema and computer routes check this before unlocking the pointer. “Vanliga TV-kanaler”
 returns to existing programmes. During a shared film the remote's power action
 opens the same shared controls, preserving the exclusive owner rule.
+#2257: ordinary channel and on/off are shared too. The controller sends `{k:'tv',on,ch}` (Worker `cinema.js`, `TV_MEDIA.channelLimit`;
+stored as optional `state.tv`, owner-only, no stale check because it is an idempotent set); `TVMedia.switchTv` (remote, E, "Vanliga TV-kanaler")
+claims control briefly when nobody has it, a non-controller gets a notice, and every viewer applies `state.tv` through `CinemaPlayer.onState`
+(channel index wrapped to `PROGRAMS.length`). No shared session (offline, outside the room) or a state without `tv` keeps the old local behaviour,
+and older clients ignore the field. The position inside a programme is not shared.
 Unique dialog/input/title IDs and shared CSS replace the earlier cinema-only
 selectors; `showNote(false)` also closes an open TV chooser.
 
