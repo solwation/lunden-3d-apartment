@@ -1,0 +1,45 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Avatarsömn #2163</title><link rel="icon" href="data:,">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<style>body{margin:0;background:#e9edef}canvas{display:block}</style>
+<script type="module">
+// #2163 component page, driven by tools/avatarsleep2163.cjs: the real Ghost.animate (before = frozen base modules under /before/, after = current)
+// lying down, getting up and sleeping beside a bed block. Frame strips and a head close-up.
+import * as T from 'three';
+import * as current from '../src/ghosts.js';
+import * as before from '/before/src/ghosts.js';
+import * as C from '../src/config.js';
+const W=360,H=300,renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(1);renderer.setSize(W*4,H);document.body.append(renderer.domElement);
+let now=10000;const nativeNow=performance.now.bind(performance);performance.now=()=>now;
+const FLOOR=.33;
+function make(mod){
+ const scene=new T.Scene();scene.background=new T.Color(0xdce3e6);scene.add(new T.HemisphereLight(0xffffff,0x828b71,1.5));const light=new T.DirectionalLight(0xffefdb,2.1);light.position.set(-2,5,-3);scene.add(light);
+ const plane=new T.Mesh(new T.PlaneGeometry(30,30),new T.MeshStandardMaterial({color:0xa3ae99,roughness:1}));plane.rotation.x=-Math.PI/2;plane.position.y=FLOOR;scene.add(plane);
+ const bed=new T.Mesh(new T.BoxGeometry(1.5,.34,2.2),new T.MeshStandardMaterial({color:0xf2eee6,roughness:.9}));bed.position.set(0,.88-.17-.04,.2);scene.add(bed);
+ const pillow=new T.Mesh(new T.BoxGeometry(.6,.14,.4),new T.MeshStandardMaterial({color:0xffffff}));pillow.position.set(0,.88+.03,.9);scene.add(pillow);
+ const owners=new mod.Ghosts({scene,camera:new T.PerspectiveCamera(),url:'',name:()=> 'sleep-2163',state:()=>({p:[0,0,0],r:0,look:[0,0]})});
+ const g=new mod.Ghost(scene,'sleep-2163','Medspelare',false,owners.myLook);g.avatarCode=owners.avatarCode;if(g.tag)g.tag.visible=false;scene.add(g.root);g.root.visible=true;
+ return {scene,owners,g};
+}
+const rows={before:make(before),after:make(current)};
+const cam=new T.PerspectiveCamera(30,W/H,.02,50);
+window.ready=true;
+// scenario: [{t, pose, x}] changes (x = root x), times: seconds at which a column is rendered; view: 'side' | 'head'
+window.run=(version,script,times,view='side',pre=0)=>{
+ const {scene,g}=rows[version];g.avatar.sleep=null;g.avatar.poseMotion=null;g.avatar.sleepEyes=0;
+ const set=t=>{let s=script[0];for(const e of script)if(e.t<=t)s=e;g.pose=s.pose;g.root.position.set(s.x,s.pose===2?0:FLOOR,0);g.root.rotation.y=0;};
+ renderer.setScissorTest(true);renderer.setClearColor(0xdce3e6);renderer.clear();
+ const dt=1/30;let col=0,t=-pre;
+ const end=Math.max(...times);
+ while(t<=end+1e-6){
+  set(Math.max(t,0));now+=dt*1000;g.animate(now,1,0,0);
+  if(col<times.length&&t>=times[col]-1e-6){
+   cam.up.set(0,1,0);if(view==='side')cam.position.set(5.2,.8,.15),cam.lookAt(0,.72,.15),cam.fov=26;else if(view==='foot')cam.position.set(1.9,2.1,-2.6),cam.lookAt(0,.95,.35),cam.fov=24;else{g.avatar.object.updateMatrixWorld(true);const h=g.avatar.bones.head.getWorldPosition(new T.Vector3());const hb=g.avatar.bones.head,eye=hb.localToWorld(new T.Vector3(0,.1,.62)),at=hb.localToWorld(new T.Vector3(0,.1,0)),upv=hb.localToWorld(new T.Vector3(0,1,0)).sub(h);cam.up.copy(upv);cam.position.copy(eye);cam.lookAt(at);cam.fov=11;}
+   cam.updateProjectionMatrix();renderer.setViewport(col*W,0,W,H);renderer.setScissor(col*W,0,W,H);renderer.render(scene,cam);col++;
+  }
+  t+=dt;
+ }
+ renderer.setScissorTest(false);
+ return renderer.domElement.toDataURL('image/png').split(',')[1];
+};
+window.probe=(version)=>{const {g}=rows[version];return{eyes:g.avatar.sleepEyes,roll:g.avatar.sleep?.roll,depth:g.avatar.sleep?.depth,t:g.avatar.sleep?.t};};
+</script>

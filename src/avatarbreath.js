@@ -8,7 +8,7 @@
 //    (`BreathPuffs`, one draw call while any puff is alive, none otherwise), soft procedural discs without a texture.
 // Pure helpers first (headless-testable: tools/avatarbreathtest.mjs), then the GLSL hook and the shared puff pool. Numbers: AVATAR_BREATH.
 import * as THREE from 'three';
-import { AVATAR_BREATH as B } from './config.js';
+import { AVATAR_BREATH as B, AVATAR_SLEEP as S } from './config.js';
 import { wetEnv } from './avatarweather.js';
 import { sceneLevel } from './avatarlight.js';
 
@@ -42,7 +42,7 @@ export function stepBreath(s, dt, effort = 0) {
   const k = Math.max(e, s.pant);
   s.drive = Math.max(k, s.heat * B.heatBreath);
   const before = s.phase;
-  s.phase = (s.phase + breathRate(k, s.heat) * dt) % 1;
+  s.phase = (s.phase + breathRate(k, s.heat) * (1 - (1 - S.breath) * clamp01(s.sleep)) * dt) % 1; // #2163: slower while asleep
   const crossed = before < B.exhale ? s.phase >= B.exhale || s.phase < before : s.phase >= B.exhale && s.phase < before;
   return crossed ? 1 : 0;
 }
@@ -85,6 +85,7 @@ export function updateBreath(avatar, dt, cues, figure, puffs = shared) {
   const u = avatar?.material?.userData.u;
   if (!u?.uExert) return;
   const s = avatar.breath ??= newBreath(), e = effortOf(cues);
+  s.sleep = cues.sleep || 0; // #2163
   const exhale = stepBreath(s, dt, e);
   u.uExert.value.set(s.flush, s.sheen);
   if (!exhale || !puffs || !figure) return;

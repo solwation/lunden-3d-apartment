@@ -1,4 +1,4 @@
-import { AVATAR_MOTION as M, AVATAR_GAIT as G } from './config.js';
+import { AVATAR_MOTION as M, AVATAR_GAIT as G, AVATAR_SLEEP as SL } from './config.js';
 
 const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
 const ease = u => { u = Math.max(0, Math.min(1, u)); return u * u * u * (10 + u * (-15 + 6 * u)); };
@@ -113,6 +113,44 @@ export function copyPose(out, p) {
   out.can = p.can; return out;
 }
 
+const mixN = (a, b, e) => a + (b - a) * e;
+/** Blend two collected poses (same shape as copyPose's) into `out`; null leg arrays take the other side's. */
+export function mixPose(out, a, b, e) {
+  copyPose(out, b);
+  for (const k of ['lean', 'head', 'turn', 'flat', 'toes', 'hipX', 'hipRoll', 'torsoRoll', 'torsoYaw']) out[k] = mixN(a[k] ?? 0, b[k] ?? 0, e);
+  for (const k of ['pitch', 'footYaw']) { const a0 = a[k] ?? [0, 0], b0 = b[k] ?? [0, 0]; out[k] ??= [0, 0]; for (let i = 0; i < 2; i++) out[k][i] = mixN(a0[i], b0[i], e); }
+  for (const k of ['hip', 'knee']) if (a[k] && b[k]) for (let j = 0; j < b[k].length; j++) out[k][j] = mixN(a[k][j], b[k][j], e);
+  for (let i = 0; i < 2; i++) for (let j = 0; j < 3; j++) {
+    out.feet[i][j] = mixN(a.feet[i][j], b.feet[i][j], e);
+    for (const k of ['at', 'pole']) out.hands[i][k][j] = mixN(a.hands[i][k][j], b.hands[i][k][j], e);
+  }
+  return out;
+}
+
+/** #2163: the stations of lying down / getting up, in the bed's frame, built from the collected seated pose `seat` (pose 1) and lying pose `lie`
+ * (pose 2): `sit` = the seated torso with its hips where the lying hips are (feet flat on the mattress, knees up), `legs` = legs swung up straight, the torso
+ * propped `AVATAR_SLEEP.legsMix` of the way back, `lie`. */
+export function lieKeyframes(seat, lie, mix = SL.legsMix) {
+  const sit = copyPose({}, seat), dy = lie.hip[0] - seat.hip[0];
+  sit.hip[0] += dy;
+  for (let i = 0; i < 2; i++) { sit.feet[i][1] = lie.feet[i][1]; sit.feet[i][2] = SL.sitFeet; sit.hands[i].at[1] += dy; } // feet flat on the mattress, knees up
+  const legs = mixPose({}, sit, lie, mix);
+  for (let i = 0; i < 2; i++) copy(legs.feet[i], lie.feet[i]);
+  legs.knee = lie.knee ? lie.knee.slice() : legs.knee;
+  return { sit, legs, lie: copyPose({}, lie) };
+}
+
+/** #2163: where a lying-down (`dir` 'down') or getting-up ('up') sequence is `age` s in: the stations `a` -> `b` (indices into
+ * down: from, sit, legs, lie / up: lie, legs, sit, to), the eased share `e` of that leg and `done`. Pure. */
+export function sequenceAt(dir, age, times = SL[dir]) {
+  let t = Math.max(0, age);
+  for (let i = 0; i < times.length; i++) {
+    if (t < times[i]) return { a: i, b: i + 1, e: ease(t / times[i]), done: false };
+    t -= times[i];
+  }
+  return { a: times.length - 1, b: times.length, e: 1, done: true };
+}
+
 /** Transition only ordinary standing <-> seated targets in the destination seat
  * frame. Explicit lie/gym/bike/air poses bypass it. Root/colliders remain direct;
  * standing held-hand targets win immediately. Explicit rest/interaction hands keep their final authority. */
@@ -131,7 +169,7 @@ function reframePose(p, from, to) {
   }
   p.footYaw ??= [0, 0]; p.footYaw[0] += yaw; p.footYaw[1] += yaw;
 }
-export function transitionPose(av, dt, key, hands = {}, frame = null, carry = false) {
+export function transitionPose(av, dt, key, hands = {}, frame = null, carry = false, restKeys = null) {
   const target = av.pendingPose;
   if (!target) return;
   let s = av.poseMotion;
@@ -139,12 +177,36 @@ export function transitionPose(av, dt, key, hands = {}, frame = null, carry = fa
   const jumped = frame && s.frame && Math.hypot(frame[0] - s.frame[0], frame[1] - s.frame[1], frame[2] - s.frame[2]) > M.resetDistance;
   if (jumped) s.age = M.poseTime;
   const ordinary = k => k === 0 || k === 1;
+  const lying = (a, b) => (a === 2 && (b === 0 || b === 1 || b === 3)) || (b === 2 && (a === 0 || a === 1 || a === 3));
+  const far = frame && s.frame && Math.hypot(frame[0] - s.frame[0], frame[1] - s.frame[1], frame[2] - s.frame[2]) > SL.reset;
+  if (far) s.seq = null;
   if (s.key !== key) {
-    if (!jumped && ordinary(key) && ordinary(s.key) && s.last.feet) { copyPose(s.from, s.last); if (frame && s.frame) reframePose(s.from, s.frame, frame); s.age = 0; }
-    else s.age = M.poseTime;
+    if (restKeys && !far && frame && s.frame && s.last.feet && lying(s.key, key)) {
+      // #2163: sit -> swing the legs up -> lie (and back) instead of a one-frame switch; keys are built in the bed's frame
+      const down = key === 2, bed = (down ? frame : s.frame).slice(), k = lieKeyframes(restKeys(1), restKeys(2));
+      const from = copyPose({}, s.last); if (down) reframePose(from, s.frame, frame);
+      s.seq = { dir: down ? 'down' : 'up', age: 0, bed, k, keys: down ? [from, k.sit, k.legs, k.lie] : [k.lie, k.legs, k.sit, null], a: {}, b: {} };
+      if (!down) copyPose(k.lie, s.last);
+      s.age = M.poseTime;
+    } else if (!jumped && ordinary(key) && ordinary(s.key) && s.last.feet) { copyPose(s.from, s.last); if (frame && s.frame) reframePose(s.from, s.frame, frame); s.age = 0; }
+    else { s.age = M.poseTime; s.seq = null; }
     s.key = key;
   }
-  if (carry && ordinary(key) && frame && s.frame && s.last.feet && !jumped) {
+  const seq = s.seq;
+  if (seq) {
+    seq.age += dt;
+    const q = sequenceAt(seq.dir, seq.age);
+    if (q.done) s.seq = null;
+    else {
+      const get = (i, out) => { // station i in the current frame: the bed's stations reframed from the bed, the destination pose as is
+        const p = seq.keys[i]; if (!p) return copyPose(out, target);
+        copyPose(out, p); if (seq.dir === 'up' && frame) reframePose(out, seq.bed, frame); return out;
+      };
+      av.pendingPose = mixPose(s.out ??= {}, get(q.a, seq.a), get(q.b, seq.b), q.e);
+    }
+  }
+  if (seq && s.seq) { /* the sequence owns the pose */ }
+  else if (carry && ordinary(key) && frame && s.frame && s.last.feet && !jumped) {
     av.pendingPose = copyPose(s.out ??= {}, s.last); reframePose(av.pendingPose, s.frame, frame);
   } else if (s.age < M.poseTime) {
     s.age = Math.min(M.poseTime, s.age + dt);
@@ -161,7 +223,7 @@ export function transitionPose(av, dt, key, hands = {}, frame = null, carry = fa
     }
     av.pendingPose = p;
   }
-  for (const [i, side] of ['L', 'R'].entries()) if (key === 0 && hands[side]) { copy(av.pendingPose.hands[i].at, hands[side].at); copy(av.pendingPose.hands[i].pole, hands[side].pole); }
+  for (const [i, side] of ['L', 'R'].entries()) if (key === 0 && hands[side] && !s.seq) { copy(av.pendingPose.hands[i].at, hands[side].at); copy(av.pendingPose.hands[i].pole, hands[side].pole); }
   copyPose(s.last, av.pendingPose);
   if (frame) { s.frame ??= []; for (let i = 0; i < frame.length; i++) s.frame[i] = frame[i]; }
 }

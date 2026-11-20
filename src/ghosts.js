@@ -1,11 +1,12 @@
 import { restBodyReady, standBodyReady, standRoot } from './avatarselfview.js'; // #2080
 import { wetEnv } from './avatarweather.js'; // #2018
 import { newOuter, stepOuter, wornLook } from './avataroutwear.js'; // #2147
-import { transitionPose } from './avatarmotion.js';
+import { transitionPose, copyPose } from './avatarmotion.js';
 import {gymPoseWire} from './gymposewire.js';
 import {applyGymBodyPose} from './gymbodypose.js';
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { applyRestPose } from './remote-pose.js';
+import { newSleep, stepSleep, applySleepRoll } from './avatarsleep.js'; // #2163
 import { seatedLegs, localFloor, seatPump } from './seatlegs.js'; // #2158
 import { poseOlof } from './olof.js';
 import { pumpWire } from './gympump.js';
@@ -423,6 +424,13 @@ export class Ghost { // (exported for tools/ghostprops.html)
     return (this.seatLegs = seatedLegs(REST.avatarSeat, localFloor(at.y, rp.y, k, REST.avatarSeat), this.seatPumpK, this.seatLegs ?? undefined)).feet;
   }
 
+  /** #2163: the collected pose of rest pose `n` (1 seated, 2 lying) for the get-down / get-up sequence; the pending pose stays as it was. */
+  restKey(n) {
+    const av = this.avatar, was = av.pendingPose;
+    applyRestPose(av, n, [0, 0], null, null);
+    const p = copyPose({}, av.pendingPose); av.pendingPose = was; return p;
+  }
+
   /** The avatar's pose: the gait follows the ground speed (vx, vz) m/s; the body turns towards where it goes, the head to
    * where it looks; a weapon is held out in the right hand and the prop sits in it. `d`: distance to the eye (far away: not
    * posed). `this.hands` (optional { L, R }, see armTarget in avatar.js) overrides an arm: the surface for a wave (#673). */
@@ -545,13 +553,16 @@ export class Ghost { // (exported for tools/ghostprops.html)
     ji.vy = this.vy ?? 0; ji.height = this.ground ? finiteOr(rp.y - this.ground(rp.x, rp.z, rp.y + 0.3)) : NaN; ji.off = !!(this.jp || this.pose || this.gx || this.bikeMesh || amount || react || this.dance);
     const nx = this.snaps.length > 1 ? aheadSample(this.snaps, this.playOut.at ?? t - G.delay) : null; // (#2139: from the jitter buffer's playhead)
     ji.ahead = nx ? Object.assign(ji.aheadIn, { vy: nx.vy, height: this.ground ? finiteOr(nx.y - this.ground(nx.x, nx.z, nx.y + 0.3)) : NaN }) : null;
+    const sl = this.avatar.sleep ??= newSleep(); // #2163: asleep after a while in pose 2 (eyes shut, slower breath, now and then on the side)
+    stepSleep(sl, dt, this.pose === 2 && !this.gx && !this.bikeMesh);
+    this.avatar.sleepEyes = sl.eyes;
     this.avatar.collectPose = true;
     const outdoors = wetEnv.outdoorAt(this);
     this.updateOuter(dt, outdoors); // #2147
     this.avatar.updateWeather(outdoors); // #2018
     this.avatar.update(dt, { ground: this.ground, floorY: this.root.position.y, motionFrame, groundSpeed: groundEnabled && groundSpeed <= 8 ? groundSpeed : 0, groundEnabled, gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged + mouthHead, hands, crouch: wet ? 0 : Math.max(this.crouch ?? 0, reachCrouch), dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive, jump: ji, fwd: groundEnabled && sp <= 8 ? vx * Math.sin(by) + vz * Math.cos(by) : 0 }); // #2159: the playback curve's forward speed (its change leans the body)
     updateFace(this.avatar, dt, { wave: this.waveT > 0, hug: hugged, kiss: kissed, react: react ? REACT.kinds[react.kind]?.id : null, gym: this.gx ? 0.6 + 0.4 * Math.sin(Math.PI * this.gx[1]) : 0, run: this.avatar.gt?.run ?? 0 }); // #2031: the face follows what the figure does
-    updateBreath(this.avatar, dt, { run: this.avatar.gt?.run ?? 0, gym: this.gx ? 1 : 0 }, this.self ? null : this); // #2037: the face's run / gym signal: flush, sweat, breath in the cold
+    updateBreath(this.avatar, dt, { run: this.avatar.gt?.run ?? 0, gym: this.gx ? 1 : 0, sleep: sl.depth }, this.self ? null : this); // #2037: the face's run / gym signal: flush, sweat, breath in the cold
     if (wet) sink(this.avatar.swimAmt, this.avatar.swimLine, this.avatar.diveAmt); // (blending in from standing on the bed)
     applyRestPose(this.avatar, this.pose, this.look, react, this.pose === 1 && !this.gx ? this.seatFeet(dt, vx, vz) : this.seatFeet(-1));
     applyGymBodyPose(this.avatar,this.gx,this.look);
@@ -560,12 +571,13 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const poseFrame = this.poseFrame ??= [0, 0, 0, 0, 1, 1];
     poseFrame[0] = this.root.position.x; poseFrame[1] = this.root.position.y; poseFrame[2] = this.root.position.z;
     poseFrame[3] = by; poseFrame[4] = this.avatar.object.scale.z; poseFrame[5] = this.avatar.object.scale.y;
-    transitionPose(this.avatar, dt, poseKey, hands, poseFrame, this.poseCarry);
+    transitionPose(this.avatar, dt, poseKey, hands, poseFrame, this.poseCarry, n => this.restKey(n)); // #2163
     this.avatar.collectPose = false;
     if (this.carryLean && this.avatar.pendingPose && !amount && !air) this.avatar.pendingPose.lean += this.carryLean; // #2144
     if (mouthLean && this.avatar.pendingPose && !amount && !air) this.avatar.pendingPose.lean += mouthLean; // #2160
     if (cueLean && this.avatar.pendingPose && !amount && !air && !this.pose) this.avatar.pendingPose.lean += cueLean; // #2162
     poseOlof(this.avatar, this.avatar.pendingPose);
+    if (sl.roll || this.sleepRolled) { applySleepRoll(this.avatar.object, sl.roll, REST.avatarLieHip); this.sleepRolled = !!sl.roll; } // #2163
     this.heldCat.update(this.avatar, this.root);
     if (this.tag) {
       const lift = ((this.tagH ?? G.tagHeight) - G.tagHeight) / 2; // #2007: the life row grows the badge upwards; name/score keep their place

@@ -2217,7 +2217,7 @@ export class Avatar {
     if (!u?.uBlink) return none;
     const G = AVATAR_GAZE, e = this.eyes ??= { blink: newBlink(), saccade: {}, yaw: 0, pitch: 0, ex: 0, ey: 0, sx: 0, sy: 0 };
     if (this.eyesHidden) { u.uBlink.value = 0; u.uGaze.value.set(0, 0); e.yaw = e.pitch = e.ex = e.ey = 0; return none; }
-    u.uBlink.value = stepBlink(e.blink, dt);
+    u.uBlink.value = Math.max(stepBlink(e.blink, dt), this.sleepEyes || 0); // #2163: shut while asleep
     (this.eyeLight ??= new EyeLight()).step(u, dt); // #2033: the pupil follows the light
     let want = null;
     if (this.gazeTarget && !still) { // the target's angles in the figure's own frame (+z forward, +x its left)
