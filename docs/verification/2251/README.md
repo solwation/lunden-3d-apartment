@@ -64,3 +64,14 @@ Own browser processes exited and own server 8454 was stopped. Approximate phases
 reading/plan 2 min, implementation/contracts 1 min, browser commands under 1 min,
 failure/source review and documentation 2 min. Stopped at the first out-of-scope
 runtime failures as assigned, well before the 10-minute verification threshold.
+
+## Published integration
+
+Integrated as `ce2bc335305900ca6201900d7677beb2648c9b20` on external2229's
+`24ab1b3b`, preserving its scooter/screwdriver fixture defaults. The five cheap
+extraction contracts also pass against this newer actual main. Frozen browser
+hashes/logs above belong to the recorded pre-scooter base, not a rerun on this main.
+[Pages44778830811](https://github.com/solwation/lunden-3d-apartment/actions/runs/44778830811)
+is green on the exact integrated revision; it does not make either failed browser suite green.
+[Completion](https://github.com/solwation/lunden-3d-apartment/issues/2251#issuecomment-7045522023)
+was posted before closure. Both missing-binding failures remain separately in2252.
