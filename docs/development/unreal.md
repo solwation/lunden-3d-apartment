@@ -20,8 +20,8 @@ Phase A of #2245 adds the shared data contract (`shared/`), the coordinate mappi
 export with measurement data, the staleness check and the third-party notices
 ([below](#shared-data-web--unreal-2245)). Phase B of #2245 verified the import on 5.8.4: one level per zone with an
 actor per object, ids as actor names and tags, the fixture within 0.000 cm, an idempotent re-import and a working
-round trip ([Import into Unreal](#import-into-unreal-verified-2026-11-20)). Whether the ~249 MB of generated assets
-are versioned is an open user decision ([Generated assets](#generated-assets-versioned-or-rebuilt-open-decision)).
+round trip ([Import into Unreal](#import-into-unreal-verified-2026-11-20)). The ~249 MB of generated assets are rebuilt
+locally, not versioned ([Generated assets](#generated-assets-rebuilt-not-versioned-decided)).
 
 ## Module and file map
 
@@ -370,6 +370,24 @@ of the installed runtime and have a valid Epic Games Inc. Authenticode signature
 can leave files and its log in its own build directory. Hand off only a completed
 archive. For #2248, build twice from one commit and compare the resulting program
 and container files across the two archives.
+
+**Verified end to end (#2244, 2026-11-20).** Two real `release.ps1` runs from the clean revision `c70a0bd2` in the
+Windows clone (UE 5.8.4, content-only project) both exited 0 in 58 s and 31 s, each with its own build directory,
+`BuildCookRun.log` and `build-info.json`. Both records hold the same `commit`, `engineVersion` 5.8.4,
+`releaseScriptBlob` `d4164443` and runtime SHA-256 `E083AD2F…95953` (Epic Games Inc.); only `builtUtc` differs. Of the
+26 archived files, 22 are byte-identical across the two runs, including every `.ucas`/`.utoc` container and all
+executables. The other differences are `build-info.json` (time), UAT's two `Manifest_*UFSFiles_Win64.txt` (file
+timestamps and order) and `Lunden-Windows.pak`. Extracting both paks with `UnrealPak -Extract` gives the same 1,730
+files with identical SHA-256, so the pak differs only in entry order. For updates (#2248) this means the small
+chunk-0 pak (about 11 MB) is re-sent with every release, even when its content is unchanged.
+With an untracked file in the checkout, the script stops with `Release requires a clean Git worktree` (exit 1) and
+creates no build directory.
+
+The Windows PowerShell execution policy on the build PC is unset (`Undefined` in every scope), which means the
+Windows default `Restricted`. That refuses every `.ps1` started without an explicit policy. It is not Smart App
+Control: the language mode is `FullLanguage`, and Code Integrity logged no script block. Start the scripts with
+`powershell.exe -NoProfile -ExecutionPolicy Bypass -File …`. That applies to the one process only and changes no
+machine or user policy.
 
 The [Windows build-script tests](../../.github/workflows/unreal-build-tools-tests.yml)
 exercise the release wrapper against temporary Windows Git and UAT fixtures and
@@ -770,8 +788,8 @@ furniture is detailed; the ZZ plant alone is 62k), `l1007-uteplats.glb` ≈ 7.5 
 about 25 s and peaks near 2.8 GB of browser memory.
 
 **Decision (#2245; can be overturned in one sentence):** the export is rebuilt locally and **not committed**
-(`unreal/Lunden/Import/` is ignored). Whether the imported assets are versioned is open: see
-[Generated assets](#generated-assets-versioned-or-rebuilt-open-decision).
+(`unreal/Lunden/Import/` is ignored). The imported assets are not versioned either: see
+[Generated assets](#generated-assets-rebuilt-not-versioned-decided).
 
 ### Staleness check
 
@@ -878,16 +896,18 @@ asset (class; for meshes vertices, triangles, bounds to 0.01, slot materials and
   `door_l0_x80_z0` went from `size [100.39, 13.40, 209.70] cm` to `[100.39, 13.40, 219.70] cm` with the same id.
   Importing the original export again restored 209.70 cm and fingerprint `6f9231fb7625c1f3`.
 
-### Generated assets: versioned or rebuilt (open decision)
+### Generated assets: rebuilt, not versioned (decided)
 
 The three zones import to **249 MB** (248,848,382 bytes) (l1007: StaticMeshes 166 MB, Materials 35 MB, SceneImport asset 30 MB, level
 6 MB). A re-import writes every package anew (new GUIDs), so each import that is committed stores the full size again
 in Git LFS (GitHub Free: 10 GiB storage, 10 GiB download per month). **Recommendation: do not version generated
 assets**; every Unreal checkout rebuilds them (export ≈ 2 min, import ≈ 2 min), and packaging (#2248) runs export +
-import before cooking. `/Content/Lunden/Generated/` is Git-ignored until the user decides. Hand-made content that
+import before cooking. `/Content/Lunden/Generated/` is Git-ignored. Hand-made content that
 references generated assets (#2246 levels/Blueprints) would then reference them by path/tag, which the stable ids
-make possible. Alternatives: version them in LFS (budget ≈ 250 MB per committed import), or shrink first (drop the
-`InterchangeSceneImportAsset`, decimate the heaviest furniture) and re-measure.
+make possible. **Decision (#2245, 2026-11-20; can be overturned in one sentence):** they are not versioned and
+`/Content/Lunden/Generated/` stays Git-ignored. Alternatives if that changes: version them in LFS (budget ≈ 250 MB
+per committed import), or shrink first (drop the `InterchangeSceneImportAsset`, decimate the heaviest furniture) and
+re-measure.
 
 ### Screenshots
 
@@ -922,5 +942,5 @@ packaging (#2248) ships it next to the executable. Add a section to `notices.mjs
 
 ### Remaining for #2245
 
-The user's decision on [generated assets](#generated-assets-versioned-or-rebuilt-open-decision). More zones
+More zones
 (`l1007-entre`, `hus-l`, `gard`, `omgivning`) need the merged exterior meshes split by zone first (see Export).
