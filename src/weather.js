@@ -1,10 +1,11 @@
 import * as THREE from 'three';
-import { WEATHER as W, VALLEY_MIST as VM, UNIT_TOP, CAR } from './config.js';
+import { WEATHER as W, RAIN_SURFACE as RS, VALLEY_MIST as VM, UNIT_TOP, CAR } from './config.js';
 import { groundY } from './surroundings.js';
 import { occluders } from './greet.js';
 import { sfx, audioParts } from './audio.js';
 import { simWind, fallSlant } from './windsim.js';
 import { mistDensity } from './valleymist.js';
+import { rainSurfaceMix } from './rainsurface.js'; // #2200
 
 // Weather (#248, #249): rain in spring and autumn (a little in summer), thunderstorms in late summer, snow in the
 // winter, short hail showers in spring and at the start of some thunderstorms. Every date gets a
@@ -144,6 +145,7 @@ export class Weather {
     this.flakes = new THREE.Points(this.fgeo, new THREE.PointsMaterial({ size: W.snow.size, map: flakeTexture(), transparent: true, depthWrite: false, color: 0xffffff }));
     for (const o of [this.lines, this.flakes]) { o.frustumCulled = false; o.raycast = () => {}; o.visible = false; scene.add(o); }
     this.seeded = null;
+    this.mixT = 0; this.surfMix = null; this.surround = {}; // #2200
     this.clock = 0;
     this.next = between(Math.random, W.flash.every);
   }
@@ -316,7 +318,14 @@ export class Weather {
     const loud = this.kind === 'snow' ? 0 : this.kind === 'hail' ? 1.6 : 1;
     const mix = cabin == null ? null : cabinMix(cabin); // in the car: the shut doors keep most of it out (#664)
     this.mix = mix;
-    this.sound?.set(this.rain * (1 - (this.day.above ?? 0)) * W.sound * loud * (inside ? 0.3 : 1) * (mix?.gain ?? 1), Math.min(inside ? 900 : this.kind === 'hail' ? 9000 : 6500, mix?.cutoff ?? Infinity));
+    // #2200: the rain's spectrum by surround (roof drum, metal ping, leaves, water, grass), re-evaluated a few times a second; `surround` is main.js's
+    // { trees, leaves, riverDist, metal, grass }; the level and the indoor muffling below stay the one model
+    this.mixT += dt;
+    if (this.mixT >= RS.every || !this.surfMix) {
+      this.mixT = 0;
+      this.surfMix = rainSurfaceMix({ ...this.surround, indoors: inside, underRoof: !inside && this.roofAt(c.x, c.z) > c.y });
+    }
+    this.sound?.set(this.rain * (1 - (this.day.above ?? 0)) * W.sound * loud * (inside ? 0.3 : 1) * (mix?.gain ?? 1), Math.min(inside ? 900 : this.kind === 'hail' ? 9000 : 6500, mix?.cutoff ?? Infinity), this.surfMix);
     // out in it (#249): walking about outdoors while it falls counts once per shower
     if (!inside && moved > 0 && this.id && this.rain > W.experience.min && !this.done[this.id]) {
       this.walked[this.id] = (this.walked[this.id] ?? 0) + moved;

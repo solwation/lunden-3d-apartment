@@ -86,6 +86,7 @@ import { setupTouch } from './touch.js';
 import { setupTouchLayout } from './touchlayout.js';
 import { watchForUpdates, BUILD } from './version.js';
 import { CatSpawner, VARIANTS, BREEDS, kittenName, MieleDaily } from './cat.js';
+import { metalNearness } from './rainsurface.js'; // #2200
 import { riverBabbleParams, cityHumParams, distToPolyline } from './ambientbed.js'; // #2190
 import { initAudio, sfx, toggleMuted, isMuted, updateListener, setRoomZone, setAcousticWorld, updateOcclusion, setWindPower, audioParts } from './audio.js';
 import { windSoundParams, gustAt, windStrength, treeNearness } from './windsound.js'; // #2177: the wind's sound
@@ -4035,6 +4036,10 @@ function step(dt) {
     const indoors = !player.outdoors || player.below || player.inCore || player.inPlayroom;
     windBed?.set(windSoundParams({ speed, gust, leaves: SEASON.trees[day.month]?.[3] ?? 1, near: treeNearness(treeFeet, player.pos.x, player.pos.z), indoors }), WIND_SOUND.ease);
     setWindPower(windStrength(speed, gust));
+    const rd = distToPolyline(riverPath, player.pos.x, player.pos.z), cb = car.box?.()?.[0]; // #2200: what the rain falls on around us
+    weather.surround = { trees: treeNearness(treeFeet, player.pos.x, player.pos.z), leaves: SEASON.trees[day.month]?.[3] ?? 1, riverDist: rd,
+      metal: car.occupied ? 1 : cb ? metalNearness(Math.hypot(Math.max(cb.x0 - player.pos.x, 0, player.pos.x - cb.x1), Math.max(cb.z0 - player.pos.z, 0, player.pos.z - cb.z1))) : 0,
+      grass: onRoad(player.pos.x, player.pos.z, 0) || onWalk(player.pos.x, player.pos.z) ? 0 : 1 };
     ambientBed ??= sfx.ambientBed(); // #2190: Höje å babble by distance to the river, far city hum by the hour; the wind's own indoors test
     ambientBed?.set({ river: riverBabbleParams({ dist: distToPolyline(riverPath, player.pos.x, player.pos.z), indoors }), city: cityHumParams({ hour: day.hour, indoors }) }, AMBIENT_BED.ease);
   }

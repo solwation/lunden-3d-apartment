@@ -4,7 +4,7 @@ import { synthFootstep } from './footsteps.js';
 // The AudioContext can only start after a user gesture — call initAudio() from a click.
 
 import { windowWindParams } from './windsound.js';
-import { SOUNDS, OCCLUSION, BIRD_SONG, PONY_VOICE, KISS, PLAYROOM, SANTA, FOOTSTEPS, SQUIRRELS, SWIM } from './config.js';
+import { SOUNDS, OCCLUSION, BIRD_SONG, PONY_VOICE, KISS, PLAYROOM, SANTA, FOOTSTEPS, SQUIRRELS, SWIM, RAIN_SURFACE } from './config.js';
 import { distanceGain, VoiceCap } from './spatialsound.js';
 import { RoomReverb } from './roomreverb.js';
 import { occlusionFor } from './soundocclusion.js';
@@ -669,21 +669,35 @@ export const sfx = {
     for (let i = 0; i < n; i++) noise(t0 + i * (0.062 + 0.012 * Math.random()), 0.03, d, { type: 'bandpass', freq: 2300 + 700 * Math.random(), q: 2.2, gain: 0.7 + 0.3 * Math.random(), attack: 0.002 });
     return true;
   },
-  /** Rain (#248): a looping hiss whose level and muffling are set every frame (`set(gain, cutoff)`); null before audio. */
+  /** Rain (#248): ONE looping noise; `set(gain, cutoff, mix)` (every frame) sets the overall level and muffling (the one indoor model, Weather's).
+   *  #2200: `mix` ({ base, baseHz, roof, metal, leaf, water }, rainsurface.js) weights a base hiss and four band-pass layers on the same source;
+   *  without `mix` it is the plain hiss. Null before audio. */
   rain() {
     if (!ctx) return null;
     const src = ctx.createBufferSource();
     src.buffer = noiseBuf; src.loop = true;
     const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 400;
+    const baseLp = ctx.createBiquadFilter(); baseLp.type = 'lowpass'; baseLp.frequency.value = 7000;
+    const gBase = ctx.createGain(), bus = ctx.createGain();
     const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 7000;
     const g = ctx.createGain(); g.gain.value = 0;
-    src.connect(hp).connect(lp).connect(g).connect(master);
+    src.connect(hp).connect(baseLp).connect(gBase).connect(bus);
+    const layers = {};
+    for (const k of ['roof', 'metal', 'leaf', 'water']) {
+      const [hz, q] = RAIN_SURFACE[k], f = ctx.createBiquadFilter(), gl = ctx.createGain();
+      f.type = 'bandpass'; f.frequency.value = hz; f.Q.value = q; gl.gain.value = 0;
+      src.connect(f).connect(gl).connect(bus); layers[k] = gl;
+    }
+    bus.connect(lp).connect(g).connect(master);
     src.start();
     return {
-      set(gain, cutoff) {
-        const t = ctx.currentTime;
+      set(gain, cutoff, mix) {
+        const t = ctx.currentTime, tc = mix ? RAIN_SURFACE.ease : 0.3;
         g.gain.setTargetAtTime(gain, t, 0.3);
         lp.frequency.setTargetAtTime(cutoff, t, 0.3);
+        gBase.gain.setTargetAtTime(mix ? mix.base : 1, t, tc);
+        baseLp.frequency.setTargetAtTime(mix ? mix.baseHz : 7000, t, tc);
+        for (const k in layers) layers[k].gain.setTargetAtTime(mix ? mix[k] : 0, t, tc);
       },
     };
   },

@@ -11227,3 +11227,15 @@ export const VALLEY_MIST = {
 // outward pull in a lull, `ripple` the fold shimmer, `freq` rad/s, `gustFreq` slow gust, `fullDrop` m of drop that gets the full swing
 // (the 0.5 m kitchen valance swings less), `reachZ` / `reachX` / `reachDoor` m: which openings feed a curtain (its rail z, glass x).
 export const CURTAIN_WIND = { amp: 0.42, calm: 0.3, suck: 0.12, ripple: 0.22, freq: 1.7, gustFreq: 0.45, fullDrop: 1.6, reachZ: 1.2, reachX: 0.6, reachDoor: 1.4 };
+
+// #2200: what the rain sounds like on what is around the listener (src/rainsurface.js, sfx.rain layers in audio.js). The one rain noise loop
+// gets four band-pass layers beside its base hiss: `roof` = drumming on a roof over you (indoors: the top-floor ceiling, share `indoorRoof`),
+// `metal` = a ringing ping on sheet metal (our car's roof / cabin), `leaf` = big leafy hiss near trees (needs leaves), `water` = splashing
+// near Höje å (full within `waterFull` m, none at `waterRange`). Each layer: [centre Hz, Q, peak weight]. `grassHz` = the base hiss's low-pass
+// over grass (soft) vs `hardHz` on paving / roads. `others` = share of the open-air layers that survives under a roof / indoors; `thin` = how
+// much the base hiss gives way to the layers. `every` s between updates (the wind block's cadence), `near` m for the car's roof. All *guesses* by ear.
+export const RAIN_SURFACE = {
+  every: 0.25, ease: 0.4, near: 4, waterFull: 8, waterRange: 60, others: 0.25, indoorRoof: 0.6, thin: 0.45,
+  grassHz: 4500, hardHz: 7000,
+  roof: [450, 0.9, 3], metal: [3300, 6, 2], leaf: [4800, 0.7, 1.3], water: [1800, 0.5, 1.1],
+};

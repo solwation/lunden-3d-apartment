@@ -646,6 +646,16 @@ Not modelled: stones/rapids hot spots, closed vs open windows, rain/wind masking
 `tools/ambientbedbrowser.cjs` (real audio.js graph in an OfflineAudioContext: 2 sources / 2 filters built once, RMS by distance and hour). Evidence:
 [docs/verification/2190/](../verification/2190/README.md). Public downstream: the public walkthrough has no audio engine, so no port applies for now.
 
+#### Rain by surround (#2200)
+
+`src/rainsurface.js` (pure, config-only; `RAIN_SURFACE` in config.js, *guesses* by ear) turns the listener's surround into layer weights for the ONE
+rain loop `sfx.rain()` (audio.js): base hiss (low-pass softer over grass) plus four band-pass layers on the same source: roof drumming (under a roof
+via `weather.roofAt`, or indoors at `indoorRoof`), metal ping (in / near our car), leafy hiss (`treeNearness` x leaf season, #2177) and splashes
+(`distToPolyline` to Höje å, #2190). main.js sets `weather.surround` in the wind block's cadence; Weather re-mixes every `RAIN_SURFACE.every` s. The
+overall level and the indoor muffling stay Weather's single model (#1470, #248): layers sum into one bus before the shared low-pass and gain, so
+the indoor model is not doubled. Not modelled: balcony rails / pergola as separate metal sources, drip after rain. Tests: `tools/rainsurfacetest.mjs`
+(pure), `tools/rainsurfacebrowser.cjs` (real graph). Evidence: `docs/verification/2200/`.
+
 ## Blinking and living gaze (#2011)
 
 Every avatar blinks (random 2-6 s apart, one in five twice) and looks at the nearest other player within `AVATAR_GAZE.range` m, the one talking first (`avatar.talking`, our own mirror image counts at the camera). Local only: nothing is sent, no new network field, mesh or draw call. The eye parts stay in the shared geometry: the iris and pupil have their own face part (`FACE_PART.iris`, 26) next to the eyeball and lids (`eye`), and the avatars' vertex shader (`faceShape` in `src/avatar.js`) squeezes both about the eye's centre by `uBlink` and moves the iris/pupil by `uGaze`, clamped inside the almond so the lids cover the rest. `Avatar.updateEyes` (called from `update`) adds the head's share to the `turn` / `pitch` it poses: `solveGaze` in `src/avatargaze.js` takes `headShare` of the angle, at most `maxYaw` / `maxPitch`; the eyes the remainder up to `eye` m; a target more than `cone` rad off the head, a kiss, a BIO reaction, swimming or a wall climb leave the head alone. Small saccades run at rest. `Avatar.eyesHidden` (Spider-Man suit, sunglasses, diving mask): nothing blinks or looks. `Ghosts.updateGazes` picks the target every `retarget` s (`chooseGazeTarget`) and `Avatar.lookAt` takes it. Tunables `AVATAR_BLINK` / `AVATAR_GAZE` (*guess*, by eye). Checks: `node --test tools/avatargazetest.mjs` (blink timing, clamps, hidden eyes) and `tools/browsertest.sh node tools/avatargazetest.cjs SITE docs/verification/2011` on `tools/avatargaze.html` (frames and `joints.json`).
