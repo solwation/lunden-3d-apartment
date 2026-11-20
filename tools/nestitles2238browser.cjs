@@ -30,7 +30,7 @@ const ID=mode==='phone'?'pc-lime':'pc-home';
   const result=[],START={lightcatch:0,thwaite:3,'lan-master':1,'lawn-mower':1};
   for(const t of NES_TITLES){
    await p.locator(`#computer-${ID} [data-nes-title=${t.id}]`).click();
-   await p.waitForFunction(([id,tid])=>__app.computerHub.sessions.get(id).nesTitle===tid,[ID,t.id]);
+   await p.waitForFunction(([id,tid])=>__app.computerHub.sessions.get(id).run?.game.title===tid,[ID,t.id]);
    await p.keyboard.press('Space');
    await p.waitForFunction(id=>__app.computerHub.arcadeGame(__app.computerHub.sessions.get(id))?.phase==='running',ID,{timeout:60000});
    await p.waitForTimeout(2500);const title=await tex();

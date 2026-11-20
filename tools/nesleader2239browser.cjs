@@ -1,11 +1,12 @@
 // #2239: one real ROM round on Speldatorn, followed by a second fresh client reading the Worker's board.
-// Run with tools/browsertest.sh node tools/nesleader2239browser.cjs GAME FRESH_LOCAL_WORKER OUT
+// Run with tools/browsertest.sh node tools/nesleader2239browser.cjs GAME FRESH_LOCAL_WORKER OUT [titles]
+// titles checks all four release boards in one client without taking screenshots.
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 
-const [game, worker, out] = process.argv.slice(2);
+const [game, worker, out, mode] = process.argv.slice(2);
 const station = 'pc-home';
 const panel = '#computer-pc-home';
 const board = panel + ' .computer-arcade .computer-top';
@@ -77,6 +78,40 @@ const boardResponse = (response, method) => {
 
     const first = await visit(player);
     const p = first.page;
+    if (mode === 'titles') {
+      const titles = [
+        ['lightcatch', 'Fånga ljuset', 'Fångade ljus'],
+        ['thwaite', 'Thwaite', 'Poäng · en spelare'],
+        ['lan-master', 'LAN Master', 'Klarade banor från start'],
+        ['lawn-mower', 'Lawn Mower', 'Klarade gräsmattor'],
+      ];
+      for (const [id, name, unit] of titles) {
+        const key = 'nes-' + id;
+        // visit() already checked the first board's GET. Switching requests the other three.
+        const next = id === 'lightcatch' ? null : p.waitForResponse(response =>
+          response.url() === worker + '/games/' + key && response.request().method() === 'GET');
+        const button = p.locator(panel + ' [data-nes-title="' + id + '"]');
+        await button.click();
+        await p.waitForFunction(([station, id]) => __app.computerHub.sessions.get(station).run?.game.title === id,
+          [station, id]);
+        if (next) assert.equal((await next).status(), 200);
+        assert.equal(await button.getAttribute('aria-pressed'), 'true');
+        const heading = 'Topplista · ' + name + ' · ' + unit + ' (klientrapporterade resultat)';
+        await p.waitForFunction(([selector, text]) => document.querySelector(selector)?.innerText === text,
+          [board + '-title', heading]);
+        assert(await p.locator(board + '-title').isVisible());
+        assert(await p.locator(board).isVisible());
+        await p.locator(panel + ' [data-arcade=start]').click();
+        await p.waitForFunction(([station, key]) => {
+          const game = __app.computerHub.sessions.get(station).run.game;
+          return game.phase === 'running' && game.reader?.game === key;
+        }, [station, key]);
+        console.log('PASS', key, heading);
+      }
+      assert.deepEqual(errors, []);
+      await first.context.close();
+      return;
+    }
     await p.locator(panel + ' [data-arcade=start]').click();
     await p.waitForFunction(id => __app.computerHub.sessions.get(id).run?.game?.phase === 'running', station);
     await p.keyboard.down('ArrowRight');
