@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { WINDOW_LIGHT as WL, BLINDS, LEVELS, STAIR } from './config.js';
 import { cast } from './lampwash.js';
 import { lowMemory } from './lowmemory.js';
+import { sunPatch, clampPatch, bounceColor } from './sunbounce.js';
 
 // The windows' daylight indoors (#2152, WINDOW_LIGHT in config). Without it a room got as much sky light deep in by the hall
 // as by its window: three's hemisphere + ambient lights and the shadowless fill light every surface alike. Now, inside the
@@ -38,13 +39,16 @@ export const windowLightUniforms = {
   winFill: { value: new Float32Array(4) },     // the fill light's colour × intensity × fillCut (taken away inside)
   winFillDir: { value: new Float32Array(4) },  // towards the fill light (world, unit)
   winSrc: { value: new Float32Array(MAX * 4 * 4) }, // per window: glass centre x y z, strength | inward normal x z, half width, half height | ray origin x z, y0, y1 of its level | bounce share
+  winSun: { value: new Float32Array(MAX * 4) },    // per window (#2197): its sun patch on the floor: centre x y z, flux (0 = none)
+  winSunC: { value: new Float32Array(4) },       // the patch bounce's colour (sun × floor × gain)
   winVis: { value: new Float32Array(MAX * RAYS) },  // per window: the reach of each ray (m)
 };
 
 const PARS = /* glsl */`
 #define WL_MAX ${MAX}
 #define WL_RAYS ${RAYS}
-uniform vec4 winA, winBox, winY, winSky, winWarm, winTint, winFill, winFillDir;
+uniform vec4 winA, winBox, winY, winSky, winWarm, winTint, winFill, winFillDir, winSunC;
+uniform vec4 winSun[ WL_MAX ];
 uniform vec4 winSrc[ WL_MAX * 4 ];
 uniform vec4 winVis[ WL_MAX * WL_RAYS / 4 ];
 float wlReach( int i, int k ) { int j = i * WL_RAYS + k; return winVis[ j / 4 ][ j % 4 ]; }
@@ -53,7 +57,7 @@ vec3 windowLight( vec3 irr, vec3 viewPos, vec3 viewNormal ) { // #2152: the indi
 	vec3 p = cameraPosition + viewPos * mat3( viewMatrix ); // world position
 	if ( p.x < winBox.x || p.x > winBox.z || p.z < winBox.y || p.z > winBox.w || p.y < winY.x || p.y > winY.y ) return irr;
 	vec3 n = viewNormal * mat3( viewMatrix );
-	float sky = 0.0, bounce = 0.0;
+	float sky = 0.0, bounce = 0.0, sunB = 0.0;
 	for ( int i = 0; i < WL_MAX; i ++ ) {
 		if ( float( i ) >= winA.z ) break;
 		vec4 a = winSrc[ i * 4 ], b = winSrc[ i * 4 + 1 ], c = winSrc[ i * 4 + 2 ];
@@ -82,11 +86,16 @@ vec3 windowLight( vec3 irr, vec3 viewPos, vec3 viewNormal ) { // #2152: the indi
 			float reach = mix( wlReach( i, k ), wlReach( i, k + 1 ), t - float( k ) );
 			float v = 1.0 - smoothstep( reach + 0.02, reach + 0.2, length( o ) );
 			e *= v; eb *= v;
+			vec4 sp = winSun[ i ]; // #2197: the sun patch on the floor as a warm source (the floor's exitance) for walls and ceiling
+			if ( sp.w > 0.0 ) {
+				vec3 dp = sp.xyz - p; float rp = max( dot( dp, dp ), 1e-3 ); vec3 lp = dp * inversesqrt( rp );
+				sunB += sp.w * max( - lp.y, 0.0 ) * max( dot( n, lp ) + ${f(WL.sunWrap)}, 0.0 ) * ${f(1 / (1 + WL.sunWrap))} / ( ${f(Math.PI)} * rp + winSrc[ i * 4 + 3 ].y ) * v;
+			}
 		}
 		sky += e; bounce += eb;
 	}
 	vec3 fill = winFill.rgb * max( dot( n, winFillDir.xyz ), 0.0 );
-	return max( irr * winA.x * winTint.rgb - fill + winSky.rgb * sky + winWarm.rgb * bounce, vec3( 0.0 ) );
+	return max( irr * winA.x * winTint.rgb - fill + winSky.rgb * sky + winWarm.rgb * bounce + winSunC.rgb * sunB, vec3( 0.0 ) );
 }
 `;
 const END = /* glsl */`#if defined( RE_IndirectDiffuse )
@@ -269,7 +278,7 @@ export class WindowLight {
   /**
    * Every frame after DayCycle.update. env: { eye (Vector3), sky (Color: the sky's colour), skyLight (the day's hemi sky
    * intensity, LIGHTING.sky blend × daylight × overcast), day (daylight share 0 … 1, 0 under the courtyard), fill
-   * (DirectionalLight: colour, intensity, position → target), blinds, curtains }.
+   * (DirectionalLight: colour, intensity, position → target), blinds, curtains, sunLight (the sun DirectionalLight, #2197), sunDir }.
    */
   update(dt, env) {
     const u = this.u, A = u.winA.value;
@@ -286,14 +295,22 @@ export class WindowLight {
     for (const s of r.sources) if (!s.well) { s.pass = windowPass(s, env.blinds, env.curtains); if (s.level === 0) { below += s.pass; nb++; } }
     for (const s of r.sources) if (s.well) s.pass = WL.well * (nb ? below / nb : 0);
     const list = this.shown = pickWindows(r.sources, env.eye.x, env.eye.y, env.eye.z);
-    const S = u.winSrc.value, V = u.winVis.value;
+    const S = u.winSrc.value, V = u.winVis.value, SU = u.winSun.value;
     list.forEach((s, i) => {
       S.set([s.x, s.y, s.z, s.pass], i * 16);
       S.set([s.nx, s.nz, s.hw, s.hh], i * 16 + 4);
       S.set([s.ox, s.oz, s.y0, s.y1], i * 16 + 8);
-      S.set([s.share ?? WL.bounce, 0, 0, 0], i * 16 + 12);
+      // #2197: this window's sun patch (flux 0 without sun / indoors-only fallback), pulled in to the room's reach along its direction
+      let p = env.sunDir && env.sunLight && !s.well ? sunPatch(s, env.sunDir, s.y0 + 0.1, env.sunLight.intensity, s.pass) : null;
+      if (p) {
+        const dx = p.x - s.ox, dz = p.z - s.oz, k = clamp((Math.atan2(dx * -s.nz + dz * s.nx, dx * s.nx + dz * s.nz) / Math.PI + 0.5) * (RAYS - 1), 0, RAYS - 1), k0 = Math.min(Math.floor(k), RAYS - 2);
+        p = clampPatch(p, s.ox, s.oz, s.vis[k0] + (s.vis[k0 + 1] - s.vis[k0]) * (k - k0));
+      }
+      SU.set(p ? [p.x, p.y, p.z, p.flux] : [0, 0, 0, 0], i * 4);
+      S.set([s.share ?? WL.bounce, p ? p.area : 0, 0, 0], i * 16 + 12);
       V.set(s.vis, i * RAYS);
     });
+    if (env.sunLight) { const c = env.sunLight.color; bounceColor([c.r, c.g, c.b], WL.floor, u.winSunC.value); }
     A[0] = baseFactor(env.day); A[2] = list.length; A[3] = 1;
     const B = u.winBox.value, Y = u.winY.value;
     B[0] = r.box.x0; B[1] = r.box.z0; B[2] = r.box.x1; B[3] = r.box.z1; Y[0] = r.box.y0; Y[1] = r.box.y1;

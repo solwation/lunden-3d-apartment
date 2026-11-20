@@ -6305,6 +6305,11 @@ export const WINDOW_LIGHT = {
   max: 8, rays: 32, base: 0.6, fillCut: 0.6, gain: 2.2, spread: 2.3, wrap: 1, glassWrap: 0.3, minLevel: 1, exposure: 0.05,
   inset: 0.03, recast: 0.15, near: 25,
   bounce: 0.6, bounceWrap: 2, warm: 0xfff2e6, tint: [1.02, 1.0, 0.96], skyWarm: 0.5, well: 0.35, wellH: 1.2,
+  // #2197: the sun patch on the floor lights the nearest wall and the ceiling warmly (src/sunbounce.js; all *guess*, tuned by eye):
+  // `sunGain` × the flux, `sunClip` = the share of the glass the sun really passes (reveals, frame, mullions), `sunMinHeight` = the
+  // lowest sun (sin elevation) that counts, `sunMaxArea` m² cap on the patch, `sunWrap` = how far a surface turned from the patch still
+  // gets some, `sunBeyond` = flux kept when the patch would land past the room's wall, `floor` = the parquet's sRGB colour (FINISH).
+  sunGain: 8.0, sunClip: 0.7, sunMinHeight: 0.05, sunMaxArea: 12, sunWrap: 0.5, sunBeyond: 0.5, floor: [204, 180, 146],
 };
 
 // Room lights (src/lights.js). Intensities are candela-ish (three.js physical lights), tuned by

@@ -785,7 +785,10 @@ src/windowlight.js     the windows' daylight indoors (#2152, `WINDOW_LIGHT`, *gu
                        hardly any facing (`bounceWrap`), so the window wall, reveals and a soffit's face turned from the glass keep their light; the
                        kept base is tinted warm (`tint`) and the sky term pulled `skyWarm` towards warm. An upper storey's stairwell opening is a
                        bounce-only "well" source (`wellSources`, two ±x fans, `well` × the storey below's mean window strength): light rising up the
-                       stairs into the upper hall. The sun's patches are untouched. #2151's room probes re-capture when it switches (probe signature). Exposure × (1 + `exposure`) eased in indoors by day
+                       stairs into the upper hall. The sun's own patches are untouched, but (#2197) each window's sun patch on the floor is also a warm bounce source: `src/sunbounce.js`
+                       (pure, `tools/sunbouncetest.mjs`) projects the glass along `day.sunDir` to the floor (`sunPatch`: centre, flux = sun intensity × glass area × cos × `sunClip` × the blinds' pass, area = glass area × cos / sin elevation,
+                       pulled in to the room's own ray reach by `clampPatch`) and the window-light shader adds colour × flux × cosE × cosR / (π r² + A) inside the window's visibility polygon (colour = sun × parquet `floor` × `sunGain`, *guesses*,
+                       one `winSun` vec4 per window + `winSunC`; no light, pass or program; the window-light quality knob and phones skip it). `tools/sunbounce2197browser.cjs` (before = `sunGain` 0). #2151's room probes re-capture when it switches (probe signature). Exposure × (1 + `exposure`) eased in indoors by day
                        while it lights a flat (`day.windowExposure`). Quality knob `windowLight`: off below `minLevel` (level 0 = the old even light).
                        world.js openings carry `glass` / `inner` z for it. `tools/windowlighttest.mjs`, `tools/windowlight2152browser.cjs`,
                        [before/after](../verification/2152/README.md).

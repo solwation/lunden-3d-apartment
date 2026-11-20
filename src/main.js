@@ -3945,7 +3945,7 @@ function step(dt) {
   }
   day.indoor = !player.outdoors || player.inCore || player.below; // #2102: no cloud shadows indoors (same test as the rain's)
   day.update(dt);
-  windowLight.update(dt, { eye: camera.position, sky: hemi.color, skyLight: day.skyLight, day: day.dayShare, fill, blinds: blinds.list, curtains: blinds.curtains });
+  windowLight.update(dt, { eye: camera.position, sky: hemi.color, skyLight: day.skyLight, day: day.dayShare, fill, blinds: blinds.list, curtains: blinds.curtains, sunLight: sun, sunDir: day.sunDir });
   day.windowExposure = windowLight.active ? WINDOW_LIGHT.exposure : 0; // (applied with the next day.update)
   const eyeUnderWater = diveLook.update(); // #1944 (after the day cycle: it sets the fog anew each frame)
   riverFlora?.update(dt, camera.position, player.below, eyeUnderWater, day.month); // #1956
