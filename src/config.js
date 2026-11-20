@@ -8991,9 +8991,9 @@ export const SOUNDS = { kinds: ['bell', 'sip', 'bite'], every: 0.5, maxVoices: 8
 // (+z forward, the mouth is about y 1.5 on a 1.8 m figure) and `pole` the elbow direction. The event is a 'snd' kind (SOUNDS.kinds):
 // the player's own sip / bite sends it, the room passes it on within PLAYERS.soundRange; a toast uses the existing 'c' event.
 export const MOUTH = {
-  sip:   { dur: 1.3, up: 0.3, down: 0.3, head: 0.42, lean: 0.06, hand: [-0.04, 1.47, 0.2], pole: [-0.9, -0.4, -0.3] },
-  bite:  { dur: 1.0, up: 0.3, down: 0.3, head: 0.18, lean: 0.03, hand: [-0.03, 1.45, 0.17], pole: [-0.9, -0.5, -0.3] },
-  toast: { dur: 1.6, up: 0.25, down: 0.3, head: 0.1, lean: 0.0, hand: [-0.2, 1.38, 0.52], pole: [-0.8, -0.4, -0.3] },
+  sip:   { dur: 1.3, up: 0.3, down: 0.3, head: 0.42, lean: 0.06, hand: [-0.04, 1.52, 0.22], pole: [-0.9, -0.4, -0.3] },
+  bite:  { dur: 1.0, up: 0.3, down: 0.3, head: 0.18, lean: 0.03, hand: [-0.03, 1.5, 0.2], pole: [-0.9, -0.5, -0.3] },
+  toast: { dur: 1.6, up: 0.25, down: 0.3, head: 0.1, lean: 0.0, hand: [-0.2, 1.5, 0.5], pole: [-0.8, -0.4, -0.3] },
 };
 
 // #2153: room acoustics. One shared reverb send bus feeds two ConvolverNodes (crossfaded between zones) with procedural impulse

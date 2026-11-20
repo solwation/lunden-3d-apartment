@@ -26,6 +26,11 @@ test('pose: at the top the hand is at the mouth and the head tipped back; mirror
   const T = mouthPose('toast', MOUTH.toast.dur / 2);
   assert.ok(T.hand.at[1] > 1.3 && T.hand.at[2] > 0.4, 'toast: glass up and forward');
 });
+test('sip and bite: the wrist at the top is within 3 cm of the mouth point height (about 1.5 m on the 1.8 m figure, *guess*); toast at chin height', () => {
+  const MOUTH_Y = 1.5;
+  for (const k of ['sip', 'bite']) assert.ok(Math.abs(mouthPose(k, MOUTH[k].dur / 2).hand.at[1] - MOUTH_Y) <= 0.03, k);
+  assert.ok(Math.abs(mouthPose('toast', MOUTH.toast.dur / 2).hand.at[1] - MOUTH_Y) <= 0.06);
+});
 test('unknown or bad input is ignored', () => {
   for (const k of ['bell', 'x', undefined, null, '__proto__', 'constructor']) { assert.equal(mouthWeight(k, 0.5), 0); assert.equal(mouthPose(k, 0.5), null); }
   assert.equal(mouthWeight('sip', NaN), 0);
