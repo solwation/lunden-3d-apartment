@@ -1,75 +1,75 @@
 {
-  "baseline": "d7f1335a",
-  "source": "d7f1335ab3536cf3396280aa8cb6074fd7ac20f7",
+  "baseline": "43249c46d109118def4f9b45478e38f9c0ce9169",
+  "source": "0443ff1dd722a73d7c1873d8ee1fa0058e16e9fe",
   "before": {
     "shots": {
       "sun-group": {
         "calls": 4,
-        "tris": 64460,
-        "textures": 4,
+        "tris": 70372,
+        "textures": 5,
         "programs": 1
       },
       "posed-walk": {
         "calls": 4,
-        "tris": 64460,
-        "textures": 4,
+        "tris": 70372,
+        "textures": 5,
         "programs": 1
       },
       "torso-close": {
         "calls": 3,
-        "tris": 48228,
-        "textures": 4,
+        "tris": 52662,
+        "textures": 5,
         "programs": 1
       },
       "marl-close": {
         "calls": 4,
-        "tris": 64460,
-        "textures": 4,
+        "tris": 70372,
+        "textures": 5,
         "programs": 1
       },
       "sleeve-close": {
         "calls": 3,
-        "tris": 48228,
-        "textures": 4,
+        "tris": 52662,
+        "textures": 5,
         "programs": 1
       }
     },
-    "ms": 885.7
+    "ms": 898.1
   },
   "after": {
     "shots": {
       "sun-group": {
         "calls": 4,
-        "tris": 64460,
-        "textures": 4,
+        "tris": 70372,
+        "textures": 5,
         "programs": 1
       },
       "posed-walk": {
         "calls": 4,
-        "tris": 64460,
-        "textures": 4,
+        "tris": 70372,
+        "textures": 5,
         "programs": 1
       },
       "torso-close": {
         "calls": 3,
-        "tris": 48228,
-        "textures": 4,
+        "tris": 52662,
+        "textures": 5,
         "programs": 1
       },
       "marl-close": {
         "calls": 4,
-        "tris": 64460,
-        "textures": 4,
+        "tris": 70372,
+        "textures": 5,
         "programs": 1
       },
       "sleeve-close": {
         "calls": 3,
-        "tris": 48228,
-        "textures": 4,
+        "tris": 52662,
+        "textures": 5,
         "programs": 1
       }
     },
-    "ms": 857.9
+    "ms": 1143.3
   },
   "errors": []
 }
