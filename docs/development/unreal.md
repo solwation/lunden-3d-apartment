@@ -393,8 +393,24 @@ dotnet publish unreal/Launcher -c Release -r win-x64 --self-contained true \
   -p:LundenSignerSha256="$LUNDEN_SIGNER_SHA256" -o /path/to/build-output
 ```
 
-Set `LUNDEN_SIGNER_SHA256` to the 64 hexadecimal characters in the public certificate fingerprint. A checkout contains no release
-key or fingerprint. A build without the public key supports `--help` and declines updates.
+For a release, derive `LUNDEN_SIGNER_SHA256` from the Windows installer and its entry
+in `SHA256SUMS` from the same tagged booster-ai release (the profile selected in #2250).
+On Windows the following prints the signing certificate's SHA-256 after verifying
+the file checksum, embedded Authenticode signature and timestamp.
+
+```powershell
+./tools/unreal-engine/get-signer-fingerprint.ps1 -Path ./BoosterAI-Setup-0.39.0-win-x64.exe -ExpectedFileSha256 8a3a68b5672163d45fce48bda7aa72047672dc43626c0f13ad4cfb33aae2c442
+```
+
+The [v0.39.0 release](https://github.com/solwation/booster-ai/releases/tag/v0.39.0)
+verified on 2026-11-20 as **Svep Design Center AB** with a Microsoft timestamp.
+Its certificate SHA-256 was `A4B57A9FB4ECE5F088E2A8FE84871CF7958E5F33470DE45760222B0113A3AFE8`.
+That leaf expires on 2026-11-22 at 04:29:09 UTC. Use an approved current pin at
+publish time and verify the signed Lunden output against the pin embedded at build time.
+If the certificate has rotated, stop the release and review the replacement.
+Previously installed launchers trust the old leaf and require a separately verified
+transition or installer before they accept the replacement.
+A build without the public manifest key supports `--help` and declines updates.
 
 - Start-menu installation by #2250 places `Lunden.exe` in `%LOCALAPPDATA%\Programs\Lunden\`.
   `--channel test` uses a separate `Lunden-Test` installation and user directory and requests
