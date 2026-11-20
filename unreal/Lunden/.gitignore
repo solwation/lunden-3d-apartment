@@ -65,5 +65,10 @@ Build/*/**
 # maps produce no lightmaps; whether built data is versioned or rebuilt at packaging is decided in #2246.
 
 # The web → Unreal export (#2245, tools/unreal-engine/export-world.mjs): GLBs, measurements.json and export-manifest.json are
-# rebuilt locally from the web source and never committed (the imported .uasset under Content/Lunden/Generated/ are).
+# rebuilt locally from the web source and never committed.
 /Import/
+
+# The importer's output (tools/unreal-engine/python/import_world.py): one level and its meshes/materials per zone,
+# ~249 MB for l1007 + l1007-uteplats + fixture (#2245 phase B). Rebuilt locally (export + import, ~4 minutes) until
+# the user decides whether generated assets are versioned in Git LFS (docs/development/unreal.md, "Generated assets").
+/Content/Lunden/Generated/

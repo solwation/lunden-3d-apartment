@@ -17,7 +17,10 @@ module builds, headless Python and the Automation Test pass, the MCP server answ
 Git LFS. Verified results are listed under [Phase B results](#phase-b-results-verified-2026-11-20).
 Phase A of #2245 adds the shared data contract (`shared/`), the coordinate mapping, the headless web → GLB
 export with measurement data, the staleness check and the third-party notices
-([below](#shared-data-web--unreal-2245)); the Unreal-side import is still to be verified.
+([below](#shared-data-web--unreal-2245)). Phase B of #2245 verified the import on 5.8.4: one level per zone with an
+actor per object, ids as actor names and tags, the fixture within 0.000 cm, an idempotent re-import and a working
+round trip ([Import into Unreal](#import-into-unreal-verified-2026-11-20)). Whether the ~249 MB of generated assets
+are versioned is an open user decision ([Generated assets](#generated-assets-versioned-or-rebuilt-open-decision)).
 
 ## Module and file map
 
@@ -57,7 +60,13 @@ tools/unreal-engine/sources.mjs               the export's source list (import c
 tools/unreal-engine/check-export.mjs          staleness + schema check of an export, no Unreal or browser needed
 tools/unreal-engine/json-schema.mjs            small dependency-free JSON Schema validator for shared/schema/ (and GLB JSON reader)
 tools/unreal-engine/notices.mjs               writes/checks unreal/Lunden/THIRD_PARTY_NOTICES.md from the web's attribution files
-tools/unreal-engine/python/import_world.py    DRAFT, UNTESTED until phase B: Interchange import into Content/Lunden/Generated/
+tools/unreal-engine/python/import_world.py    Interchange scene import of the export into Content/Lunden/Generated/<zone>/
+                                   (level + actors with id names/tags), stamp-based idempotency; --check = headless checks
+tools/unreal-engine/python/create_base_materials.py  makes the hand-made materials that material-map.json lists
+tools/unreal-engine/python/screenshot_level.py       headless GPU screenshots of an imported level (verification only)
+tools/unreal-engine/material-map.json         export material keys → hand-made Unreal materials (stub; the look is #2246)
+unreal/Lunden/Content/Lunden/Materials/       M_LundenWallPaint, M_LundenCollision (LFS, 6 KB each; made by create_base_materials.py)
+unreal/Lunden/Content/Lunden/Generated/       importer output per zone + import-stamp.json; Git-ignored pending a decision
 ```
 
 The rendering values in `Config/DefaultEngine.ini` are **assumptions** modelled on what a UE 5.x Blank C++ template
@@ -503,8 +512,10 @@ Unreal −Y). Yaw: `unrealYaw = −90° − yawDeg` for `?at=`/`START` (web 0 no
 (radians) → `unrealYaw = 90° − a`; pitch unchanged. Implemented in `tools/unreal-engine/coordinates.mjs`;
 `node tools/unreal-engine/coordinatestest.mjs` checks L1007's four outer corners (`data/plan.json`), the stair foot, START at eye
 height and Övre plan's floor within 1 cm, a north arrow → Unreal −Y, and the yaw formula against the camera's real view
-direction for 97 yaws. **Assumption until phase B:** how Interchange converts glTF axes on import (the GLBs keep the
-web axes); the `fixture` zone exists to measure it.
+direction for 97 yaws. **Verified in phase B (5.8.4):** Interchange's glTF translator converts glTF (metres, +Y up,
+the web's axes) into exactly this mapping (`X = 100·x`, `Y = 100·z`, `Z = 100·y`): all seven fixture points and both
+arrow tips land with 0.000 cm error and the north arrow points to Unreal −Y. Neither the exporter nor the importer
+applies an axis correction, so there is no second place to keep in step.
 
 ### Export
 
@@ -536,12 +547,16 @@ What is exported:
   part`), `zone`, `level`, `source` (a pointer such as `data/plan.json#/floors/0/doors/0` or
   `src/config.js#FURNITURE[12]`), the web's display `name`, `webId` (furniture's saved-layout id) and `materialKeys`.
   Walls are recognised as the plan's wall polygons; other static building geometry is `structure`.
+- **Mesh names:** `export-world.mjs` names every glTF mesh after the first node that uses it and the glTF scene
+  `<zone>__scene` (GLTFExporter leaves them unnamed; Interchange would then name assets `<zone>_mesh_<index>`, so one
+  added node renamed every later asset). Only the GLB's JSON chunk changes; still deterministic.
 - **Materials** are not the web's: canvas textures and `onBeforeCompile` shader tweaks do not travel. Each mesh gets a
   plain PBR material named by a key built from its look (`std_f1f1ee_r85_m0` = standard, colour f1f1ee, roughness
   0.85, metalness 0; suffixes for opacity, emissive, vertex colours, textures, double-sided). `measurements.json`
   `materials` lists every key; Unreal maps keys to hand-made materials (#2246).
 - **Left out** (web-only look, not geometry): `wall-ao`, contact shadows, architecture edge lines, glows/halos
-  (non-normal blending), invisible pick/surface helpers, lights, hidden objects. Instanced meshes become one node per
+  (non-normal blending), invisible pick/surface helpers, lights, hidden objects, instances scaled to zero (the web's way
+  of hiding an instance, e.g. seven boule balls; their matrix has no rotation and wrote `null` quaternions). Instanced meshes become one node per
   instance. Seasonal pieces (the Christmas tree) are exported with `extras.seasonal`.
 - **`measurements.json`** (`shared/schema/measurements.schema.json`): levels (FFL, RH, next floor, Unreal Z), START
   (feet/eye, Unreal location/yaw/pitch), player sizes and speeds, stair (foot, rise, riser, treads, opening), every door
@@ -555,13 +570,13 @@ What is exported:
 Determinism: Date is fixed (2026-06-15 12:00 UTC: summer, no Christmas), `Math.random` is seeded (mulberry32, 2245),
 three.js is served from `node_modules/three` when it is the pinned 0.170.0 (else the CDN), the build and the
 collection run synchronously before any later load, and nothing time-dependent is written. Two runs from the same
-commit give byte-identical files. Size (2026-11-20): `l1007.glb` ≈ 81 MB, 2,621 nodes, ≈ 884k triangles (the
+commit give byte-identical files. Size (2026-11-20): `l1007.glb` ≈ 81 MB, 2,614 nodes, ≈ 881k triangles (the
 furniture is detailed; the ZZ plant alone is 62k), `l1007-uteplats.glb` ≈ 7.5 MB, `fixture.glb` 12 kB; a run takes
 about 25 s and peaks near 2.8 GB of browser memory.
 
 **Decision (#2245; can be overturned in one sentence):** the export is rebuilt locally and **not committed**
-(`unreal/Lunden/Import/` is ignored), while the imported `.uasset` under `Content/Lunden/Generated/` will be versioned
-(LFS) so a clone opens without exporting. This avoids two copies of the same data in Git.
+(`unreal/Lunden/Import/` is ignored). Whether the imported assets are versioned is open: see
+[Generated assets](#generated-assets-versioned-or-rebuilt-open-decision).
 
 ### Staleness check
 
@@ -573,16 +588,116 @@ Exit 0 current, 1 **STALE** (lists the changed sources: export and import again)
 `--allow-missing`), 3 invalid (unknown `formatVersion`, schema error, edited or missing file). It is not wired into the
 Pages workflow (no export exists there); run it before an Unreal import or build.
 
-### Import into Unreal (phase B)
+### Import into Unreal (verified 2026-11-20)
 
-`tools/unreal-engine/python/import_world.py` is a **draft that has never run**: it reads the manifest (refusing an unknown
-`formatVersion` or a changed file), imports each zone GLB with Interchange into `/Game/Lunden/Generated/<zone>/`
-(deleting the previous import first: idempotent, never hand-edited), checks the fixture markers against
-`measurements.json` within 1 cm and logs `LUNDEN_IMPORT_OK`. Its open `PHASE B` points: whether `.glb` goes through
-Interchange via `AssetImportTask`, scene import (actors with transforms) versus static-mesh assets, whether node
-`extras` arrive as metadata/tags, the axis conversion, material-key mapping, and turning `collision` nodes into simple
-collision. Instancing: the export expands instances into nodes, so `EXT_mesh_gpu_instancing` support does not matter
-yet (larger zones may need ISM/HISM from a transform list).
+```text
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/import_world.py [<export dir>] [--zones l1007,fixture] [--force] [--measure <id>,…]
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/import_world.py --check [--measure <id>,…]
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/create_base_materials.py [--force]
+```
+
+Run in the Windows clone after copying (or writing) the export to `unreal/Lunden/Import/`. Every run reads the
+manifest (refusing a newer `formatVersion` or a changed file), imports or skips each zone, then loads each zone level
+and checks it: ids, the fixture (zone `fixture`) and, with `--check`, the stamp and content fingerprint without
+importing. It ends with `LUNDEN_IMPORT_OK` / `LUNDEN_CHECK_OK`; any failure raises, so `run-python.ps1` exits 1. This
+`--check` run is the headless position test (no C++ Automation Test: the project becomes content-only, #2268).
+`--measure` logs the world bounds of named objects (`LUNDEN_IMPORT_MEASURE`), for round-trip checks.
+`create_base_materials.py` is only needed when `material-map.json` names a material that does not exist yet.
+
+What 5.8.4 does, and what the importer does about it:
+
+- **Scene import, not asset import.** `.glb` goes through Interchange's glTF translator either way. An
+  `AssetImportTask` creates static meshes only, with node transforms **baked into the vertices** (every pivot at the
+  world origin) and no actors. The importer uses `InterchangeManager.import_scene` with the project's default glTF
+  scene stack (`DefaultGLTFSceneAssetsPipeline`, `DefaultGLTFPipeline`, `DefaultSceneLevelPipeline`) into a blank
+  map: one actor per glTF node with its transform and attachment (a door's actor pivots at its hinge), StaticMeshes in
+  local space under `<zone>/StaticMeshes/`, one MaterialInstanceConstant per material key under `<zone>/Materials/`
+  and an `InterchangeSceneImportAsset`. The map is saved as `/Game/Lunden/Generated/<zone>/Level_<zone>` (a plain
+  level, not World Partition: generated, one owner). Shared glTF meshes stay one shared asset.
+- **Names and tags.** Interchange names actors `<zone>_node_<index>` and labels them with the node name; the importer
+  renames each actor object to its id and keeps the id as label. Interchange stores node extras only as asset
+  metadata on a StaticMesh (`INTERCHANGE.<node>.id` …, `EditorAssetLibrary.get_metadata_tag_values`), for the first
+  node of a shared mesh, never on actors. The importer therefore reads the extras from the GLB and writes actor tags
+  `[<id>, kind:<kind>, zone:<zone>, level:<n>, webId:<id>, source:<pointer>, parent:<id>]` (absent values left out).
+  Tags and object names survive packaging (labels are editor-only); Blueprints find objects with *Get All Actors
+  With Tag* on the id.
+- **Collision.** `collision` nodes (the web's wall rectangles and floor plates, one shared unit cube) get a single
+  simple box on the cube mesh, `BlockAll`, hidden in game (54 in l1007). `StaticMeshEditorSubsystem` is `None` in the
+  commandlet, so the deprecated `EditorStaticMeshLibrary` does it (a deprecation warning in the log). Visible meshes
+  keep Interchange's default collision; what the player collides with is #2246.
+- **Materials.** `tools/unreal-engine/material-map.json` rules (a regex on the key, first match wins) replace the
+  imported instances on the mesh slots by hand-made materials: `M_LundenWallPaint` for the walls' `std_f1f1ee_r85_m0`
+  and `M_LundenCollision` (87 slots in l1007). Other keys keep Interchange's glTF material instance (colour, roughness
+  and metalness from the export). The real look is #2246; add rules there.
+- **Clearing a zone.** `EditorAssetLibrary.delete_directory` left the `.umap` behind, logged *Error opening file* for
+  every package and was still working after 7 minutes on l1007's 2,426 assets (killed). `Generated/<zone>/` belongs to
+  the importer alone, so it removes the folder on disk and rescans the asset registry when none of its packages is
+  loaded (else the editor deletion). `LevelEditorSubsystem.new_level` saves an empty level at once and then refuses
+  the path after a failed import, so the importer builds in a blank map and saves it with `save_map` at the end.
+
+**Idempotency, defined.** `Generated/<zone>/import-stamp.json` records the GLB's SHA-256 and source commit, the
+importer version, the engine version, the hash of `material-map.json`, a content fingerprint and the SHA-256 of every
+package file. When all of these match and every package file is byte-identical, the zone is **skipped and nothing is
+written**; the check for "a second import changes no asset" is a byte comparison of every file under `Generated/`
+before and after the run. A changed export, importer version, engine or material map, and any edited or missing
+package file (a hand edit), re-imports the zone. A *forced* re-import (`--force`) is never byte-identical: every new
+package gets a new persistent GUID (2,501 of 2,501 files differed). Its check is the **content fingerprint**, a SHA-256
+over every actor (name, label, class, parent, transform to 0.01, tags, mesh, collision profile, hidden flag) and every
+asset (class; for meshes vertices, triangles, bounds to 0.01, slot materials and simple boxes).
+
+**Results (2026-11-20, UE 5.8.4, export of 3b4b65fe with this change):**
+
+| Zone | Actors | Assets | Bytes on disk | Import |
+|---|---|---|---|---|
+| `fixture` | 15 | 8 | 0.69 MB | 1 s |
+| `l1007-uteplats` | 56 | 64 | 6.7 MB | 2 s |
+| `l1007` | 2,615 | 2,426 (1,929 meshes, 497 materials) | 241.4 MB | 80 s |
+
+- Fixture: `LUNDEN_IMPORT_FIXTURE max error 0.000 cm over 9 markers (tolerance 1.0 cm)` (four outer corners, stair
+  foot, START at eye height, Övre plan floor; north tip at (0, −100, 50), east tip at (100, 0, 50)).
+- Ids: `LUNDEN_IMPORT_IDS zone l1007: 186 ids present as actor name, label and tag {"door": 18, "furniture": 88,
+  "interactive": 48, "light": 26, "window": 6}`; l1007-uteplats: 9 furniture.
+- Second import: every zone `skipped, unchanged since import of …`; all 2,501 files under `Generated/` byte-identical
+  (sha256 list before = after), 28 s. Forced re-import: fingerprints unchanged (fixture `70a3715f2b59d0eb`,
+  l1007-uteplats `2f45bb0b2a310c96`, l1007 `6f9231fb7625c1f3`). `--check`: `LUNDEN_CHECK_OK`.
+- Round trip: `DOOR_HEIGHT` 2.1 → 2.2 in `src/config.js` (a scratch checkout, reverted, never committed) changed only
+  `l1007.glb`; the import skipped `fixture` and `l1007-uteplats` (`changed: glb` for l1007) and the front door
+  `door_l0_x80_z0` went from `size [100.39, 13.40, 209.70] cm` to `[100.39, 13.40, 219.70] cm` with the same id.
+  Importing the original export again restored 209.70 cm and fingerprint `6f9231fb7625c1f3`.
+
+### Generated assets: versioned or rebuilt (open decision)
+
+The three zones import to **249 MB** (248,848,382 bytes) (l1007: StaticMeshes 166 MB, Materials 35 MB, SceneImport asset 30 MB, level
+6 MB). A re-import writes every package anew (new GUIDs), so each import that is committed stores the full size again
+in Git LFS (GitHub Free: 10 GiB storage, 10 GiB download per month). **Recommendation: do not version generated
+assets**; every Unreal checkout rebuilds them (export ≈ 2 min, import ≈ 2 min), and packaging (#2248) runs export +
+import before cooking. `/Content/Lunden/Generated/` is Git-ignored until the user decides. Hand-made content that
+references generated assets (#2246 levels/Blueprints) would then reference them by path/tag, which the stable ids
+make possible. Alternatives: version them in LFS (budget ≈ 250 MB per committed import), or shrink first (drop the
+`InterchangeSceneImportAsset`, decimate the heaviest furniture) and re-measure.
+
+### Screenshots
+
+`tools/unreal-engine/python/screenshot_level.py <out dir> [zone]` renders fixed views of an imported level with a
+SceneCapture2D and temporary sun/sky light (nothing is saved). It needs the GPU: run `UnrealEditor-Cmd.exe` directly
+with `-run=pythonscript -AllowCommandletRendering` (commandlets otherwise load NullDrv and every render target is
+"released"); `run-python.ps1` always passes `-nullrhi`. The first GPU run compiles the editor's SM6 shaders (about
+20 minutes on the development PC, cached in the DDC afterwards; later runs take 20 s). The script waits for mesh and
+shader compilation (`AutomationLibrary.finish_loading_before_screenshot`), hides the collision boxes (hidden in game
+only, so an editor-world capture would draw them) and renders without Lumen and virtual shadow maps, which need many
+frames to converge.
+
+```text
+"C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" unreal\Lunden\Lunden.uproject -run=pythonscript "-script=C:/…/tools/unreal-engine/python/screenshot_level.py C:/…/unreal/Lunden/Saved/Screenshots" -AllowCommandletRendering -unattended -nosplash -nosound
+```
+
+Verification pictures (2026-11-20, untuned glTF materials and temporary light, so they show geometry and placement,
+not the look): [cutaway of Entréplan](../verification/2245/unreal-cutaway-entreplan.jpg) (everything above 2.45 m
+hidden) and [living room at eye height](../verification/2245/unreal-interior-vardagsrum.jpg). **Open observation:** the
+`exterior-southwest` view renders the outer wall faces as a grey 0.5 m checker, although the same `M_LundenWallPaint`
+walls are white in the cutaway and nothing else lies outside them (checked: no actor's bounds reach past x = 0); with
+Lumen, virtual shadow maps and sky-light shadows off it is unchanged. Not investigated further here; the exterior look
+belongs to #2246.
 
 ### Third-party notices
 
@@ -592,9 +707,7 @@ Copernicus licence, Lantmäteriet (CC BY 4.0, via kart-api.se), OpenStreetMap (O
 statement that all models are project-authored. `node tools/unreal-engine/notices.mjs --check` fails when it is out of date;
 packaging (#2248) ships it next to the executable. Add a section to `notices.mjs` for every new third-party source.
 
-### Remaining for #2245 (needs the engine)
+### Remaining for #2245
 
-`node tools/unreal-engine/check-export.mjs` → current; `run-python.ps1 tools/unreal-engine/python/import_world.py` imports
-   `l1007`, `l1007-uteplats` and `fixture` into `Content/Lunden/Generated/`, the fixture markers land within 1 cm
-   (`LUNDEN_IMPORT_FIXTURE max error`), ids of doors/windows/lamps/furniture survive as names/tags, a second import
-   of the same export changes no asset; then a changed measure in `src/config.js` → export → import shows in Unreal.
+The user's decision on [generated assets](#generated-assets-versioned-or-rebuilt-open-decision). More zones
+(`l1007-entre`, `hus-l`, `gard`, `omgivning`) need the merged exterior meshes split by zone first (see Export).

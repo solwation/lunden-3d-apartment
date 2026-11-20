@@ -27,6 +27,28 @@ export function mergeStatic(root, keep = [], cellOf = () => '', opts = {}) {
 }
 `;
 
+/** Name every glTF mesh after the first node (in node order) that uses it, and the scene after its zone. three's
+ *  GLTFExporter leaves meshes unnamed, and Unreal's Interchange then names the StaticMesh assets `<zone>_mesh_<index>`,
+ *  so adding one node anywhere would rename every later asset. Node names are the stable ids (shared/README.md), so the
+ *  asset of a mesh used by one object is named by that object's id. Only the JSON chunk changes; deterministic. */
+function nameGlbMeshes(buf, zone) {
+  if (buf.readUInt32LE(0) !== 0x46546c67 || buf.readUInt32LE(16) !== 0x4e4f534a) throw new Error(`${zone}.glb: not a GLB with a JSON chunk`);
+  const jsonLen = buf.readUInt32LE(12);
+  const json = JSON.parse(buf.subarray(20, 20 + jsonLen).toString('utf8'));
+  for (const node of json.nodes ?? []) {
+    const mesh = node.mesh !== undefined ? json.meshes[node.mesh] : null;
+    if (mesh && mesh.name === undefined && node.name) mesh.name = node.name;
+  }
+  if (json.scenes?.[0]) json.scenes[0].name = `${zone}__scene`;
+  let text = Buffer.from(JSON.stringify(json), 'utf8');
+  if (text.length % 4) text = Buffer.concat([text, Buffer.alloc(4 - (text.length % 4), 0x20)]);
+  const rest = buf.subarray(20 + jsonLen);
+  const head = Buffer.alloc(20);
+  head.writeUInt32LE(0x46546c67, 0); head.writeUInt32LE(2, 4); head.writeUInt32LE(20 + text.length + rest.length, 8);
+  head.writeUInt32LE(text.length, 12); head.writeUInt32LE(0x4e4f534a, 16);
+  return Buffer.concat([head, text, rest]);
+}
+
 const args = process.argv.slice(2);
 const opt = (name, dflt) => { const i = args.indexOf(`--${name}`); return i >= 0 ? args[i + 1] : dflt; };
 const outDir = path.resolve(ROOT, opt('out', 'unreal/Lunden/Import'));
@@ -108,9 +130,9 @@ async function main() {
   }
   const files = [];
   for (const [name, b64] of Object.entries(result.glbs).sort(([a], [b]) => a.localeCompare(b))) {
-    const buf = Buffer.from(b64, 'base64');
-    fs.writeFileSync(path.join(outDir, name), buf);
     const z = result.report.zones.find((r) => `${r.zone}.glb` === name);
+    const buf = nameGlbMeshes(Buffer.from(b64, 'base64'), z.zone);
+    fs.writeFileSync(path.join(outDir, name), buf);
     files.push({ path: name, kind: 'glb', zone: z.zone, sha256: sha256(buf), bytes: buf.length, nodes: z.nodes, triangles: z.triangles });
   }
   const mBuf = Buffer.from(JSON.stringify(result.measurements, null, 1) + '\n');

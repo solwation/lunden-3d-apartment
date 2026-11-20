@@ -52,7 +52,9 @@ negative values get `m`, e.g. `xm350`), so they are identical between exports of
 changes. A duplicate gets `_2`, `_3` … in scene order. Moving an object changes its id: Unreal-side references to
 moved objects must be updated with the move. Furniture also carries the web's saved-layout id (`webId`). Child
 nodes of an object are `part`s named `<id>__<n>`; ids use only letters, digits, `_` and `-` (Unreal object names
-cannot contain dots).
+cannot contain dots). Each glTF mesh is named after the first node that uses it. In Unreal the id is the actor's
+object name and label and its first tag (further tags `kind:`, `zone:`, `level:`, `webId:`, `source:`, `parent:`), and
+the StaticMesh asset of a mesh is named by that first node's id (docs/development/unreal.md).
 
 ## Axes and units
 
@@ -68,6 +70,7 @@ above keeps its orientation. Yaw: `unrealYaw = −90° − yawDeg` for the web's
 180 south, −90 east), so START's 180 is Unreal 90 (+Y, south); an object's `rotation.y` = a (radians) points its local +z
 at Unreal yaw `90° − a`. Pitch is unchanged (positive looks up).
 
-**Assumption (phase B):** how Unreal's Interchange glTF import converts glTF axes itself. The importer measures it
-with the `fixture` zone (markers on L1007's corners, the stair foot, START, Övre plan; north and east arrows) and must
-end with every marker within 1 cm of its `unreal` position in `measurements.json`.
+**Verified (phase B, UE 5.8.4):** Unreal's Interchange glTF import performs exactly this conversion itself; nothing
+else converts axes. `tools/unreal-engine/python/import_world.py` measures it on every run with the `fixture` zone
+(markers on L1007's corners, the stair foot, START, Övre plan; north and east arrows): every marker within 1 cm of its
+`unreal` position in `measurements.json` (measured: 0.000 cm), the north arrow along Unreal −Y.

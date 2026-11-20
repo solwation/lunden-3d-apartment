@@ -139,7 +139,7 @@ export async function exportWorld({ zones: wanted = ['l1007', 'l1007-uteplats', 
   // ---- walk the scene into atoms: the units that are exported as one node each ----
   const atoms = [], skipped = {};
   const skip = (why) => { skipped[why] = (skipped[why] ?? 0) + 1; };
-  const box = new THREE.Box3(), centre = new THREE.Vector3();
+  const box = new THREE.Box3(), centre = new THREE.Vector3(), hiddenProbe = new THREE.Matrix4();
   const visibleBox = (o) => { // world box of the visible, exported meshes under o
     const b = new THREE.Box3();
     o.traverseVisible((m) => { if (m.isMesh && !webOnly(m)) { if (!m.geometry.boundingBox) m.geometry.computeBoundingBox();
@@ -156,8 +156,11 @@ export async function exportWorld({ zones: wanted = ['l1007', 'l1007-uteplats', 
     if (furnitureRoots.has(o)) return atoms.push({ object: o, kind: 'furniture', movable: furnitureOf.get(o) });
     if (lampOf.has(o)) return atoms.push({ object: o, kind: 'light', lamp: lampOf.get(o) });
     if (lightGroupKids.has(o)) return atoms.push({ object: o, kind: 'light', fixture: true });
-    if (o.isInstancedMesh) {
-      for (let i = 0; i < o.count; i++) atoms.push({ object: o, kind: ctx.kind ?? null, instance: i });
+    if (o.isInstancedMesh) { // an instance scaled to zero is the web's way of hiding it (its matrix has no rotation: NaN in glTF)
+      for (let i = 0; i < o.count; i++) {
+        if (Math.abs((o.getMatrixAt(i, hiddenProbe), hiddenProbe).determinant()) < 1e-12) { skip('zero-scale instance (hidden)'); continue; }
+        atoms.push({ object: o, kind: ctx.kind ?? null, instance: i });
+      }
       return;
     }
     if (o.isMesh) return atoms.push({ object: o, kind: ctx.kind ?? null });

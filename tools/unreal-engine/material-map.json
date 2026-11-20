@@ -1,0 +1,12 @@
+{
+ "formatVersion": 1,
+ "description": "Export material keys (measurements.json `materials`, shared/README.md) -> hand-made Unreal materials. tools/unreal-engine/python/import_world.py replaces every imported material instance whose key matches a rule (first match wins, Python regex on the key); unmatched keys keep Interchange's glTF material instance. tools/unreal-engine/python/create_base_materials.py makes the materials listed under `materials` (a stub for #2246, which owns the real look).",
+ "materials": {
+  "/Game/Lunden/Materials/M_LundenWallPaint": { "baseColor": "#f1f1ee", "roughness": 0.85, "metallic": 0, "note": "matt white wall paint (web key std_f1f1ee_r85_m0)" },
+  "/Game/Lunden/Materials/M_LundenCollision": { "baseColor": "#ff00ff", "roughness": 1, "metallic": 0, "note": "collision boxes: visible in the editor only (the actors are hidden in game)" }
+ },
+ "rules": [
+  { "match": "^std_f1f1ee_r85_m0$", "material": "/Game/Lunden/Materials/M_LundenWallPaint.M_LundenWallPaint" },
+  { "match": "^collision$", "material": "/Game/Lunden/Materials/M_LundenCollision.M_LundenCollision" }
+ ]
+}
