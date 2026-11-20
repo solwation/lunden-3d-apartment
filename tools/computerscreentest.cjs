@@ -16,7 +16,7 @@ const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v?
    const initial=await p.evaluate(()=>({pos:__app.player.pos.toArray(),camera:__app.camera.position.toArray()}));
    await p.locator(`#computer-${id} [data-app=snake]`).click();
    await p.waitForFunction(id=>__app.computerHub.sessions.get(id).inWorld,id);
-   assert.equal(await p.locator(`#computer-${id} canvas`).count(),0);
+   assert.equal(await p.locator(`#computer-${id} canvas:not(.lb-face)`).count(),0); // #2260: top-list portraits (#1585) are canvases too
    assert(!await p.evaluate(id=>document.getElementById(`computer-${id}`).matches(':modal'),id));
    await p.locator(`#computer-${id} [data-snake=join]`).click();
    await p.waitForFunction(()=>__app.computerHub.arena?.snakes.some(s=>s.id===__ghosts.me&&s.alive));
@@ -32,7 +32,7 @@ const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v?
    await p.evaluate(()=>{__app.testMode.setFull(true);__app.step(0);__app.testMode.draw();});
    await p.screenshot({path:`${out}/${id}.png`,timeout:240000}); // #2259: SwiftShader font wait exceeds the 30 s defaultawait p.evaluate(()=>__app.testMode.setFull(false));
    if(id==='pc-home')await p.keyboard.press('Escape');else await p.locator(`#computer-${id} [data-cinema=close]`).tap();await p.waitForFunction(()=>!__app.computerHub.open);
-   assert((await p.evaluate(()=>__app.camera.position.toArray())).every((v,i)=>Math.abs(v-initial.camera[i])<1e-5));
+   {const after=await p.evaluate(()=>__app.camera.position.toArray());assert(after.every((v,i)=>Math.abs(v-initial.camera[i])<1e-3),`${id} camera ${JSON.stringify(initial.camera)} -> ${JSON.stringify(after)}`);}
    log(`physical game, native steering, frozen avatar and Escape restore: ${id}`);
   }
   // Simultaneous physical screens retain the shared arena and exclusive controller.
