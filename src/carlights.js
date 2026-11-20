@@ -28,8 +28,8 @@ export function buildCarGlow(length) {
   const add = (geo, color, key) => { geo.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(geo.attributes.position.count * 3), 3)); parts.push({ geo, color: new THREE.Color(color), key }); };
   const nose = length / 2, tail = -length / 2;
   for (const s of [-1, 1]) add(poolGeometry(nose + K.beam.len / 2 - 0.4, s * K.beam.side, 1, 0, K.beam.len / 2, K.beam.width, flat, { lift: 0.04, rings: 6, segs: 20 }), K.beam.color, 'head');
-  add(poolGeometry(tail - K.red.len * 0.35, 0, 1, 0, K.red.len, K.red.width, flat, { lift: 0.045, rings: 5, segs: 20 }), K.red.color, 'brake');
-  add(poolGeometry(tail - K.white.len * 0.4, 0, 1, 0, K.white.len, K.white.width, flat, { lift: 0.05, rings: 5, segs: 20 }), K.white.color, 'reverse');
+  add(poolGeometry(tail - K.red.off, 0, 1, 0, K.red.len, K.red.width, flat, { lift: 0.045, rings: 5, segs: 20 }), K.red.color, 'brake');
+  add(poolGeometry(tail - K.white.off, 0, 1, 0, K.white.len, K.white.width, flat, { lift: 0.05, rings: 5, segs: 20 }), K.white.color, 'reverse');
   const mats = parts.map((p) => p.geo);
   const geometry = mergeParts(mats);
   const mesh = new THREE.Mesh(geometry, fadeGlowWithFog(glowMaterial(0xffffff)));

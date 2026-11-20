@@ -10940,8 +10940,8 @@ export const CAR_LIGHTS = {
   fadeOn: 0.12, fadeOff: 0.35, // s to full / to nothing
   tailDay: 0.2, tailNight: 1.2, tailBrake: 4, // the tail lamps' emissive intensity (was 0.2 / 1.2): day, night, braking
   beam: { len: 9, width: 1.5, side: 0.62, color: 0xfff1cf, peak: 0.34 }, // two forward lobes (m): length, half width, lateral offset
-  red: { len: 1.4, width: 1.6, color: 0xff2418, peak: 0.5 }, // the red pool behind (m)
-  white: { len: 2.2, width: 1.4, color: 0xf4f6ff, peak: 0.6 }, // the reversing pool behind (m)
+  red: { len: 1.3, width: 1.05, off: 0.2, color: 0xff2418, peak: 0.28 }, // the red wash behind (m): half length, half width (a little wider than the car), centre behind the bumper; fades out from the bumper
+  white: { len: 2.0, width: 1.1, off: 0.3, color: 0xf4f6ff, peak: 0.4 }, // the reversing wash behind (m), same meaning
   reverseLamp: { y: 0.86, z: 0.5 }, // the two white lenses on the tailgate (m)
 };
 
