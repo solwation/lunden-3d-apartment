@@ -246,6 +246,7 @@ export class FishFinger {
     if (!this.held || this.bite > 0) return;
     this.bite = 1;
     sfx.chew(this.model.getWorldPosition(new THREE.Vector3()), this.fried ? 1.35 : 1); // fried: a crunchier bite
+    sfx.mouth?.('bite'); // #2160
   }
 
   /** In the pan on a lit zone: it fries; hot ones steam, burning ones smoke. */

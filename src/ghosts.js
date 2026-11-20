@@ -38,6 +38,7 @@ import { trimOutbox } from './outbox.js';
 import { AvatarLight } from './avatarlight.js'; // #2017: the avatars' light follows the room's light level
 import { AvatarShadows } from './avatarshadow.js'; // #2010: soft contact shadows, one draw call
 import { GhostFar } from './ghostfar.js'; // #1966: far players as one draw call
+import { mouthPose, blendHand } from './avatarmouth.js'; // #2160
 import { stepBikeRide, bikeGrip, bikeSeat } from './bikeride.js';
 import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
 
@@ -316,6 +317,9 @@ export class Ghost { // (exported for tools/ghostprops.html)
     }
   }
 
+  /** #2160: start a sip / bite / toast move now (`t` as animate's clock); unknown kinds are ignored by mouthPose. */
+  startMouth(kind, t = performance.now()) { this.mouth = { kind, start: t }; }
+
   /** A wave (#673): the right arm up and waving for GHOSTS.wave s (armTarget.up, the surface #705 left for it). */
   wave() { this.waveT = G.wave; }
 
@@ -439,6 +443,12 @@ export class Ghost { // (exported for tools/ghostprops.html)
     if (this.heldCat.object) Object.assign(hands, this.heldCat.hands());
     this.avatar.setGrip('R', gripFor(showItem ? this.hi : '', this.prop ? this.h : '')); // #2016: the fingers close round what is held (no new wire field: `hi` / `h`)
     Object.assign(hands, this.hands);
+    let mouthHead = 0, mouthLean = 0; // #2160: a sip / bite / toast: the right wrist to the mouth (or the glass up), the head tipped back
+    if (this.mouth) {
+      const mp = mouthPose(this.mouth.kind, (t - this.mouth.start) / 1000, -1, this.mouthOut ??= { w: 0, hand: { at: [0, 0, 0], pole: [0, 0, 0] }, head: 0, lean: 0 });
+      if (!mp) this.mouth = null;
+      else { hands.R = blendHand(hands.R ?? armTarget.rest(-1), mp.hand, mp.w); mouthHead = mp.head; mouthLean = mp.lean; }
+    }
     const kiss = this.kiss;
     const age = kiss ? (t - kiss.start) / 1000 : -1, kissed = kissAmount(age);
     if (kiss && age >= KISS.duration) this.kiss = null;
@@ -470,7 +480,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const outdoors = wetEnv.outdoorAt(this);
     this.updateOuter(dt, outdoors); // #2147
     this.avatar.updateWeather(outdoors); // #2018
-    this.avatar.update(dt, { ground: this.ground, floorY: this.root.position.y, motionFrame, groundSpeed: groundEnabled && groundSpeed <= 8 ? groundSpeed : 0, groundEnabled, gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged, hands, crouch: wet ? 0 : this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive, jump: ji, fwd: groundEnabled && sp <= 8 ? vx * Math.sin(by) + vz * Math.cos(by) : 0 }); // #2159: the playback curve's forward speed (its change leans the body)
+    this.avatar.update(dt, { ground: this.ground, floorY: this.root.position.y, motionFrame, groundSpeed: groundEnabled && groundSpeed <= 8 ? groundSpeed : 0, groundEnabled, gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged + mouthHead, hands, crouch: wet ? 0 : this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive, jump: ji, fwd: groundEnabled && sp <= 8 ? vx * Math.sin(by) + vz * Math.cos(by) : 0 }); // #2159: the playback curve's forward speed (its change leans the body)
     updateFace(this.avatar, dt, { wave: this.waveT > 0, hug: hugged, kiss: kissed, react: react ? REACT.kinds[react.kind]?.id : null, gym: this.gx ? 0.6 + 0.4 * Math.sin(Math.PI * this.gx[1]) : 0, run: this.avatar.gt?.run ?? 0 }); // #2031: the face follows what the figure does
     updateBreath(this.avatar, dt, { run: this.avatar.gt?.run ?? 0, gym: this.gx ? 1 : 0 }, this.self ? null : this); // #2037: the face's run / gym signal: flush, sweat, breath in the cold
     if (wet) sink(this.avatar.swimAmt, this.avatar.swimLine, this.avatar.diveAmt); // (blending in from standing on the bed)
@@ -484,6 +494,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     transitionPose(this.avatar, dt, poseKey, hands, poseFrame, this.poseCarry);
     this.avatar.collectPose = false;
     if (this.carryLean && this.avatar.pendingPose && !amount && !air) this.avatar.pendingPose.lean += this.carryLean; // #2144
+    if (mouthLean && this.avatar.pendingPose && !amount && !air) this.avatar.pendingPose.lean += mouthLean; // #2160
     poseOlof(this.avatar, this.avatar.pendingPose);
     this.heldCat.update(this.avatar, this.root);
     if (this.tag) {
@@ -648,9 +659,9 @@ export class Ghosts {
       else { const g = this.others.get(m.i); if (g) { g.wave(); this.greetsSeen++; this.onGreet?.(m, g, this.others.get(m.to) ?? null); } }
     }
     else if (m.t === 'cv') this.onConversation?.(m);
-    else if (m.t === 'c') { const g = this.others.get(m.i); if (g) this.onToast?.(m, g); } // a toast (#1222): the room sends it only from within PLAYERS.toastRange
+    else if (m.t === 'c') { const g = this.others.get(m.i); if (g) { g.startMouth('toast'); this.onToast?.(m, g); } } // a toast (#1222): the room sends it only from within PLAYERS.toastRange
     else if (m.t === 'rx') { const g = this.others.get(m.i); if (g && Number.isInteger(m.k)) { g.startReact(m.k, t); this.onReact?.(m, g); } } // a BIO reaction (#1639): the room sends it only from within PLAYERS.soundRange
-    else if (m.t === 'snd') { const g = this.others.get(m.i); if (g && SOUNDS.kinds.includes(m.k)) this.onPlayerSound?.(m, g); } // a sound event (#1302): the room sends it only from within PLAYERS.soundRange
+    else if (m.t === 'snd') { const g = this.others.get(m.i); if (g && SOUNDS.kinds.includes(m.k)) { if (m.k === 'sip' || m.k === 'bite') g.startMouth(m.k); else this.onPlayerSound?.(m, g); } } // a sound event (#1302): the room sends it only from within PLAYERS.soundRange
     else if (m.t === 'cinema') this.onCinema?.(m);
     else if (m.t === 'snake') this.onSnake?.(m);
     else if (m.t === 'mus') this.onMusic?.(m); // the shared children's-room music (#1624, src/playroommusic.js): only sent to players inside the room

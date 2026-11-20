@@ -191,6 +191,7 @@ export class Beer extends Holdable {
     this.gulps++;
     this.onGulp?.();
     sfx.gulp(this.where());
+    sfx.mouth?.('sip'); // #2160
     const step = Math.min(this.level, B.gulp);
     this.setLevel(this.level - B.gulp);
     if (this.portion) {

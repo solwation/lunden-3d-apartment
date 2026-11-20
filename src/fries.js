@@ -249,6 +249,7 @@ export class FriesBunch {
     if (!this.held || this.bite > 0) return;
     this.bite = 1;
     sfx.chew(this.model.getWorldPosition(new THREE.Vector3()), this.cook >= FR.golden ? 1.3 : 1);
+    sfx.mouth?.('bite'); // #2160
   }
 
   update(dt) {

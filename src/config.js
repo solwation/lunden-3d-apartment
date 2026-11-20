@@ -8982,8 +8982,19 @@ export const TOAST_LINES = [...TOAST.lines, ...TOAST.newYear, ...TOAST.answer];
 // others' state (no traffic): steps only from a ghost walking on the ground (not crouched, seated, riding or thrusting) within
 // `range.step`, one per stride; the jetpack roar only from the `jetNearest` nearest thrusting ghosts, a burst every `jetEvery` s.
 // Our picks (*guess*).
-export const SOUNDS = { kinds: ['bell'], every: 0.5, maxVoices: 8, range: { bell: 40, step: 25, jet: 35 },
+export const SOUNDS = { kinds: ['bell', 'sip', 'bite'], every: 0.5, maxVoices: 8, range: { bell: 40, step: 25, jet: 35 },
   stride: { walk: 0.62, run: 0.95, runSpeed: 3.6, minSpeed: 0.5, maxSpeed: 8, maxClimb: 1.5 }, jetNearest: 2, jetEvery: 0.35, bellKey: 'KeyB', gain: { bell: 1, step: 0.7, jet: 0.7 } };
+
+// #2160: what others see when a player drinks, eats or toasts (all *guess*, tuned by eye). Per kind: `dur` s of the whole move,
+// `up` / `down` the shares of it spent raising and lowering (the rest is held at the mouth / raised), `head` rad the head tips back
+// at the top (added to the look's pitch), `lean` rad the torso leans back, `hand` the right wrist target in the figure's frame
+// (+z forward, the mouth is about y 1.5 on a 1.8 m figure) and `pole` the elbow direction. The event is a 'snd' kind (SOUNDS.kinds):
+// the player's own sip / bite sends it, the room passes it on within PLAYERS.soundRange; a toast uses the existing 'c' event.
+export const MOUTH = {
+  sip:   { dur: 1.3, up: 0.3, down: 0.3, head: 0.42, lean: 0.06, hand: [-0.04, 1.47, 0.2], pole: [-0.9, -0.4, -0.3] },
+  bite:  { dur: 1.0, up: 0.3, down: 0.3, head: 0.18, lean: 0.03, hand: [-0.03, 1.45, 0.17], pole: [-0.9, -0.5, -0.3] },
+  toast: { dur: 1.6, up: 0.25, down: 0.3, head: 0.1, lean: 0.0, hand: [-0.2, 1.38, 0.52], pole: [-0.8, -0.4, -0.3] },
+};
 
 // #2153: room acoustics. One shared reverb send bus feeds two ConvolverNodes (crossfaded between zones) with procedural impulse
 // responses (decaying noise, no files). All values are *guess*: no acoustic measurements exist; chosen to be audible but modest.

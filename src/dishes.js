@@ -279,6 +279,7 @@ export function dishActions(life) {
       if (kind === 'milk' && it.clean !== 'dirty') I.set(it, { clean: 'dirty' }); // a milky film (#383)
       else if (it.clean === 'clean') I.set(it, { clean: 'used' });
       sfx.gulp(c.heldView?.where());
+      sfx.mouth?.('sip'); // #2160
       life.bump(kind, 1);
       life.emit('drank', { item: it, drink: kind, ml: got });
       return got;

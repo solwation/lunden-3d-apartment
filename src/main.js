@@ -3601,6 +3601,7 @@ ghosts.onToast = (m, g) => {
 };
 // sounds from other players (#1302): the bicycle bell is a sound event (the room passes it to the players nearby, never echoed);
 // their footsteps and jetpack roar are derived here from their state (ghosts.js soundTick), all through sfx.playAt (fade, direction, voice cap)
+sfx.onMouth = (kind) => { ghosts.sound(kind); }; // #2160: our sip / bite goes to the room (others see the arm go to the mouth); their toast / sip / bite is posed in ghosts.js
 ghosts.onPlayerSound = (m, g) => { if (m.k === 'bell') sfx.playAt(g.head, 'bell'); };
 ghosts.onStep = (g) => sfx.playAt(g.feet, 'step', 1, stepSurface(world, g.feet));
 ghosts.onJet = (g) => sfx.playAt(g.head, 'jet');

@@ -417,6 +417,7 @@ export class Cup {
     const a = this.contents.a, coffee = Math.min(C.sip, this.fill) * (a.coffee ?? 0) / this.fill; // cups of coffee in this sip (#217)
     this.onSip?.(this.kask ? 'kask' : this.contents.main, coffee); // coffee with whisky in it counts as kaffekask (#169)
     sfx.gulp(this.model.getWorldPosition(new THREE.Vector3()));
+    sfx.mouth?.('sip'); // #2160
     this.contents.sip(C.sip);
     this.dirty = true; // drunk from: it needs washing up before it goes back in the cabinet (#383)
     this.show();

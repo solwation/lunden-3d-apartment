@@ -61,7 +61,7 @@ export { GRAFFITI_SYNC };
 // else is dropped.
 // A toast (#1222) { t: 'c', k, b? } (k: a line index, b: true when it answers a toast) goes to the players within
 // PLAYERS.toastRange m as { t: 'c', i, k, b? }; no text, at most one per toastEvery s per connection.
-// A sound event (#1302) { t: 'snd', k } (k: a key of PLAYERS.sounds, today only 'bell' = the bicycle bell) goes to the players
+// A sound event (#1302) { t: 'snd', k } (k: a key of PLAYERS.sounds, 'bell' = the bicycle bell, #2160 'sip' / 'bite') goes to the players
 // within PLAYERS.soundRange m as { t: 'snd', i, k }; no text, at most one per soundEvery s per connection, never echoed.
 // A reaction (#1639) { t: 'rx', k } (k: an integer below PLAYERS.reactions: 0 cry, 1 laugh, 2 scream in terror) goes to the players
 // within PLAYERS.soundRange m as { t: 'rx', i, k }, only from a sender last seen in the BIO (PLAYERS.bio); no text, at most one per
@@ -115,7 +115,7 @@ export const PLAYERS = {
   reactions: 3,        // #1639: reaction kinds (0 cry, 1 laugh, 2 scream), an index into the client's REACT.kinds
   reactEvery: 3,       // #1639: a reaction at most this often per connection (s; the client's REACT.duration is a little longer, so ×.8 here)
   soundRange: 45,      // #1302: only players within this many metres of the sender's last known position get it (*guess*; the client fades it out earlier)
-  sounds: ['bell'],    // #1302: the whitelist of sound-event keys (the client's SOUNDS.kinds), never free text
+  sounds: ['bell', 'sip', 'bite'], // #1302 (+ #2160: sip / bite shown as an arm to the mouth): the whitelist of sound-event keys (the client's SOUNDS.kinds), never free text
   pool: { every: 0.5, reach: 3, margin: 0.3 }, // #1355: one table action per connection at most this often (s); within `reach` m of the table; room edge slack (m) (*guess*)
   music: { every: 0.4 }, // #1624: one room-music command per connection at most this often (s)
   toastPhrases: 8,     // #1222: the line is an index below this into the client's TOAST.all, never text

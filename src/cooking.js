@@ -192,6 +192,7 @@ export function cookingActions(life) {
       const it = c.target, d = I.def(it), bite = d.amount / d.bites;
       const got = I.consume(it, bite);
       sfx.chew(c.heldView?.where(), 0.7);
+      sfx.mouth?.('bite'); // #2160
       life.emit('bite', { item: it, amount: got });
       const plate = I.get(it.machine?.plate); // (the plate it was taken from, #380: crumbs on it)
       if (plate && (plate.clean !== 'dirty' || !plate.machine.crumbs)) I.set(plate, { clean: 'dirty', machine: { crumbs: 1 } }); // food eaten off it: crumbs, dirty (#383)

@@ -138,6 +138,7 @@ export class BeerCan extends Holdable {
     if (this.ml < 0.5) this.ml = 0; // (n × full/n is not quite full in floats)
     this.onGulp?.();
     sfx.gulp(this.where());
+    sfx.mouth?.('sip'); // #2160
     if (this.portion) {
       const res = this.portion.drink(canDrink);
       if (res.terminal) this.onConsume?.(this, this.portionId);

@@ -221,6 +221,7 @@ export class PopcornTub extends Holdable {
     if (this.bites <= 0) return;
     this.bites--; this.nibble = 1;
     sfx.chew(this.where(), 0.7);
+    sfx.mouth?.('bite'); // #2160
     this.show();
   }
   tick(dt) {

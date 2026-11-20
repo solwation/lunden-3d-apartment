@@ -409,6 +409,7 @@ export class ChickenPiece {
     if (!this.held || this.bite > 0) return;
     this.bite = 1;
     sfx.chew(this.model.getWorldPosition(new THREE.Vector3()), 0.8);
+    sfx.mouth?.('bite'); // #2160
   }
 
   update(dt) {

@@ -161,6 +161,7 @@ export class Glass extends Thing {
     this.sipT = 1; this.used = true;
     this.onSip?.(this.contents.main);
     sfx.gulp(this.where());
+    sfx.mouth?.('sip'); // #2160
     for (const id of this.contents.sip(D.sip)) this.onConsume?.(this, id);
     this.liquid.show(this.contents);
   }

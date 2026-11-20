@@ -906,6 +906,8 @@ export const sfx = {
     noise(t, 0.12, d, { type: 'bandpass', freq: 2600, q: 2.5, gain: 0.3, attack: 0.004 });
     tone(t, 0.1, d, { type: 'sine', from: 900, to: 2200, gain: 0.05 });
   },
+  /** #2160: our own mouth action ('sip' / 'bite'); main.js sets `onMouth` to tell the room so others see the arm go to the mouth. */
+  mouth(kind) { this.onMouth?.(kind); },
     /** A gulp: a soft throat-click and a short low swallow (beer, coffee). */
   gulp(pos) {
     if (!ready()) return;

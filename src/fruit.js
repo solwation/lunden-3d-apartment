@@ -342,6 +342,7 @@ export class Fruit {
     if (!this.held || this.bite > 0 || this.isRemnant) return;
     this.bite = 1;
     sfx.chew(this.model.getWorldPosition(new THREE.Vector3()), this.kind === 'apple' || this.kind === 'pear' ? 1.3 : 0.6); // an apple crunches
+    sfx.mouth?.('bite'); // #2160
   }
 
   update(dt) {
