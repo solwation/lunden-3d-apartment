@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/solwation/lunden-3d-apartment/shared/schema/measurements.schema.json",
+  "title": "Lunden measurement data for Unreal (#2245)",
+  "description": "measurements.json written by tools/unreal-engine/export-world.mjs from src/config.js, data/plan.json, data/elevation.json and the built web world: the numbers Unreal logic reads instead of copying them (levels, spawn, player, stair, doors with hinge and swing, windows, lights, terrain grid reference, site, material keys, the position-test fixture). Points carry both web metres (`web`, x east / y up / z south) and Unreal centimetres (`unreal`, X = 100x, Y = 100z, Z = 100y; tools/unreal-engine/coordinates.mjs).",
+  "type": "object",
+  "required": ["formatVersion", "kind", "sourceCommit", "units", "axes", "zones", "plan", "spawn", "stair", "doors", "windows", "lights", "terrain", "site", "materials", "fixture"],
+  "additionalProperties": false,
+  "properties": {
+    "formatVersion": { "const": 1 },
+    "kind": { "const": "lunden-measurements" },
+    "sourceCommit": { "type": ["string", "null"] },
+    "units": { "type": "object" },
+    "axes": { "type": "object", "required": ["web", "unreal", "yaw"] },
+    "zones": {
+      "type": "array",
+      "items": {
+        "type": "object", "required": ["id", "what", "status", "box"], "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "what": { "type": "string" },
+          "status": { "enum": ["exported", "planned"] },
+          "box": { "type": ["object", "null"], "description": "plan metres {x0, x1, z0, z1, y0, y1}: a node belongs to the zone that holds the centre of its world bounding box" }
+        }
+      }
+    },
+    "plan": {
+      "type": "object", "required": ["size", "source", "unitTop", "levels", "vertical", "doorHeight"],
+      "properties": {
+        "size": { "type": "object", "required": ["x", "z"] },
+        "levels": {
+          "type": "array", "minItems": 2,
+          "items": { "type": "object", "required": ["name", "storey", "floor", "ceiling", "top", "unreal"],
+            "properties": { "name": { "type": "string" }, "storey": { "type": "integer" }, "floor": { "type": "number" }, "ceiling": { "type": "number", "description": "clear room height RH above `floor`" }, "top": { "type": "number", "description": "the next level's finished floor" }, "unreal": { "type": "object", "required": ["floorZ", "ceilingZ", "topZ"] } } }
+        },
+        "doorHeight": { "type": "number" }
+      }
+    },
+    "spawn": {
+      "type": "object", "required": ["start", "player"],
+      "properties": {
+        "start": { "type": "object", "required": ["web", "unreal", "feetY", "eyeY", "yawDeg", "pitchDeg", "unrealEye", "unrealYaw", "unrealPitch", "source"] },
+        "player": { "type": "object", "required": ["eye", "radius", "walk", "run", "source"] }
+      }
+    },
+    "stair": { "type": "object", "required": ["foot", "rise", "riser", "treads", "hole", "source"], "properties": { "foot": { "$ref": "#/$defs/point" } } },
+    "doors": {
+      "type": "array",
+      "items": {
+        "type": "object", "required": ["id", "zone", "kind", "level", "source", "name"],
+        "properties": {
+          "id": { "type": ["string", "null"], "description": "node id in the zone GLB (null: the door is in a zone not exported)" },
+          "kind": { "enum": ["swing", "sliding", "wardrobe"], "description": "src/doors.js: swing = SwingDoor (hinge + angles), sliding / wardrobe = sliding panels (centre + size)" },
+          "level": { "type": "integer", "minimum": 0, "maximum": 1 },
+          "hinge": { "$ref": "#/$defs/point" },
+          "width": { "type": "number" },
+          "height": { "type": "number" },
+          "closed": { "$ref": "#/$defs/rotation" },
+          "open": { "$ref": "#/$defs/rotation" },
+          "centre": { "$ref": "#/$defs/point" },
+          "size": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 }
+        }
+      }
+    },
+    "windows": {
+      "type": "array",
+      "items": { "type": "object", "required": ["ids", "level", "facade", "source", "rect", "sill", "head", "floorY"],
+        "properties": { "ids": { "type": "array", "items": { "type": "string" }, "description": "the opening sashes' node ids" }, "facade": { "enum": ["north", "south"] }, "rect": { "type": "object", "required": ["x0", "x1", "z0", "z1"] } } }
+    },
+    "lights": {
+      "type": "array",
+      "items": { "type": "object", "required": ["id", "kind", "level", "position"],
+        "properties": { "kind": { "enum": ["lamp", "room"], "description": "lamp = a light-giving object (world.lamps); room = a room's ceiling/pendant light point (src/lights.js)" }, "position": { "$ref": "#/$defs/point" } } }
+    },
+    "terrain": { "type": "object", "required": ["file", "sha256", "x0", "z0", "step", "cols", "rows", "unit", "source", "licence"], "description": "a reference to data/elevation.json (grid origin/step/size and its hash), not a copy of the heights" },
+    "site": { "type": "object", "required": ["geo", "planNorthDeg", "source"] },
+    "materials": {
+      "type": "object",
+      "description": "material key → the web material's look (no web material has a name; the key is built from type, colour, roughness, metalness, opacity, emissive, vertex colours, textures, sides). Unreal maps keys to hand-made materials.",
+      "additionalProperties": { "type": "object", "required": ["type", "color", "roughness", "metalness", "opacity", "emissive", "vertexColors", "textured", "doubleSided", "hint"] }
+    },
+    "fixture": {
+      "type": "object", "required": ["points", "arrows"],
+      "properties": {
+        "points": { "type": "array", "minItems": 4, "items": { "type": "object", "required": ["id", "name", "web", "unreal"] } },
+        "arrows": { "type": "array", "minItems": 2, "items": { "type": "object", "required": ["id", "direction", "web", "unreal"] } }
+      }
+    }
+  },
+  "$defs": {
+    "vec3": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+    "point": { "type": "object", "required": ["web", "unreal"], "properties": { "web": { "$ref": "#/$defs/vec3" }, "unreal": { "$ref": "#/$defs/vec3" } } },
+    "rotation": { "type": "object", "required": ["webRotationY", "unrealYaw"], "additionalProperties": false,
+      "properties": { "webRotationY": { "type": "number", "description": "radians about web +Y (three.js rotation.y; the leaf runs along (sin a, cos a))" }, "unrealYaw": { "type": "number", "description": "degrees; the leaf's direction from the hinge in Unreal" } } }
+  }
+}

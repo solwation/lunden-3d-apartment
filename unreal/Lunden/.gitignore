@@ -63,3 +63,7 @@ Build/*/**
 
 # NOT ignored on purpose (template ignores it): *_BuiltData.uasset. With Lumen only (r.AllowStaticLighting=False)
 # maps produce no lightmaps; whether built data is versioned or rebuilt at packaging is decided in #2246.
+
+# The web → Unreal export (#2245, tools/unreal-engine/export-world.mjs): GLBs, measurements.json and export-manifest.json are
+# rebuilt locally from the web source and never committed (the imported .uasset under Content/Lunden/Generated/ are).
+/Import/

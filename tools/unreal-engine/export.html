@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Unreal export (#2245)</title></head>
+<body>
+<!-- Headless host page for tools/unreal-engine/export-world.mjs: only the import map the game uses (three pinned like index.html).
+     The driver imports tools/unreal-engine/export-scene.js here; nothing runs on its own. Not part of the published site (tools/). -->
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<pre id="out">ready</pre>
+</body>
+</html>

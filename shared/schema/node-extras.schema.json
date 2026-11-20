@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/solwation/lunden-3d-apartment/shared/schema/node-extras.schema.json",
+  "title": "Lunden glTF node extras (#2245)",
+  "description": "The `extras` object of every node in an exported zone GLB (three.js GLTFExporter writes Object3D.userData there). Node names equal `id`. Ids are built from kind, level and the object's position in centimetres (doors: the hinge; furniture: the piece's centre), so they stay the same between exports and across unrelated changes; a duplicate gets _2, _3 … in scene order. Unreal keeps them as actor tags / asset metadata so Blueprints and the measurement data can find the object.",
+  "type": "object",
+  "required": ["id", "kind"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$", "maxLength": 160, "description": "letters, digits, _ and - only (Unreal object names cannot hold dots); a part is <parent id>__<n>" },
+    "kind": {
+      "enum": ["zone", "wall", "structure", "door", "window", "furniture", "interactive", "light", "collision", "collision-group", "fixture", "part"],
+      "description": "zone = the GLB's root; wall = a plan wall polygon extruded floor → ceiling; structure = other static building geometry (floors, ceilings, frames, stair, fittings); door / window = an opening leaf or sash (moves); furniture = a FURNITURE piece; interactive = another openable (cabinet door, drawer, appliance lid); light = a lamp or ceiling fixture; collision = a simple box (never rendered); fixture = an axis/position test marker; part = a child of one of these"
+    },
+    "zone": { "type": "string" },
+    "level": { "type": "integer", "minimum": 0, "maximum": 1, "description": "0 = Entréplan, 1 = Övre plan (by the node's lowest point)" },
+    "formatVersion": { "type": "integer", "minimum": 1, "description": "on the zone root only" },
+    "source": { "type": ["string", "null"], "description": "where the object comes from: a JSON pointer into data/plan.json, src/config.js#NAME[i], or a world.* list; null when no single source exists" },
+    "name": { "type": ["string", "null"], "description": "the web's Swedish display name (E prompt), if any" },
+    "webId": { "type": ["string", "null"], "description": "the web's own id (furniture: the saved-layout id from src/furniture.js `movable`)" },
+    "materialKeys": { "type": "array", "items": { "type": "string" }, "description": "material keys used under this node (measurements.json `materials`)" },
+    "parent": { "type": "string", "description": "part: the id of the object it belongs to" },
+    "box": {
+      "type": "object", "required": ["x0", "x1", "y0", "y1", "z0", "z1"], "additionalProperties": false,
+      "properties": { "x0": { "type": "number" }, "x1": { "type": "number" }, "y0": { "type": "number" }, "y1": { "type": "number" }, "z0": { "type": "number" }, "z1": { "type": "number" } },
+      "description": "collision: the box in web metres"
+    },
+    "direction": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3, "description": "fixture arrow: unit direction in web axes" },
+    "seasonal": {
+      "type": "object", "required": ["what", "from", "to"], "additionalProperties": false,
+      "properties": { "what": { "type": "string" }, "from": { "type": "array", "items": { "type": "integer" } }, "to": { "type": "array", "items": { "type": "integer" } } },
+      "description": "shown only in a season ([month, day], inclusive; src/christmas.js)"
+    }
+  }
+}
