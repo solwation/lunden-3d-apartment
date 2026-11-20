@@ -377,6 +377,17 @@ med produktens riktiga HTML, huvudappens spegelval och riktiga bildpunkter.
 Se [kontroller, före-/resultatbilder och begränsningar](../verification/1994/README.md).
 Detta är personligt avatarinnehåll/gameplay och förs inte till den publika versionen.
 
+## Olof-utseende efter namn (#2218)
+
+Heter spelaren något med "olof" (skiftlägesokänslig delsträng, så Olof, olof w och Olofsson räknas; ingen diakritikvikning)
+börjar varje session med `olofLook()` (bilens Olof, `src/olof.js`) i stället för det sparade utseendet. Regeln och valet
+av startutseende ligger i `src/olofname.js` (`nameGetsOlofLook`, `sessionStartLook`), anropade en gång vid start från
+`Ghosts` (spegeln, bilden till rummet) och `main.js` (menyns närvaro). Det sparade `lunden.avatar` skrivs inte över vid
+start; ändringar i spegeln sparas som vanligt och gäller resten av sessionen, men nästa start väljer Olof-utseendet igen.
+Namnbyte under sessionen ändrar inget. På nätet (`encodeAvatarWireLook`) följer allt utom hudens/hårets exakta färg
+(närmaste palettfärg) och skäggets färg (finns inte i koden). Test: `tools/olofnametest.mjs`;
+före/efter: `tools/olofname2218browser.cjs` ([bilder](../verification/2218/)). Personligt innehåll, förs inte till den publika versionen.
+
 ## Module and test map
 
 ```text

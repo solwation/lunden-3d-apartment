@@ -54,6 +54,7 @@ import { BeerShelf } from './beershelf.js';
 import { initHudIcons, fitChoiceLabels, setIcon, setPressed, setWeatherIcon, formatTemp } from './hudicons.js';
 import {SharedFish} from './sharedfishclient.js';
 import * as THREE from 'three';
+import { sessionStartLook } from './olofname.js';
 import { POPCORN, FRIES, FISH, THING_SYNC, UNIT_TOP, SITE, COURTYARD, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C, PLAYROOM, BOULE, encodeAvatarWireLook, decodeAvatarLook, avatarLook, avatarBody, avatarHeightCm } from './config.js';
 import { wetEnv } from './avatarweather.js';
 import { lampLight } from './avatarlight.js'; // #2039: the street lamps on the avatars
@@ -3191,7 +3192,7 @@ document.getElementById('score').append(document.getElementById('terminal-btn'))
 
 const menuPresenceEl = document.getElementById('menu-presence');
 let presenceAvatar = '';
-try { presenceAvatar = encodeAvatarWireLook(decodeAvatarLook(localStorage.getItem('lunden.avatar'), leaderboard.name)); } catch { /* storage blocked */ }
+try { presenceAvatar = encodeAvatarWireLook(sessionStartLook(leaderboard.name, localStorage.getItem('lunden.avatar'), leaderboard.name)); } catch { /* storage blocked */ }
 const renderMenuPresence = p => renderPlayingNow(menuPresenceEl, p);
 
 const presence = new Presence(cloud.url, document.getElementById('presence'), {
