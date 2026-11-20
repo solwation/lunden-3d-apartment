@@ -88,11 +88,12 @@ test('mean tone of a render wall with a window, its sill streak and splash band 
 
 test('consumers: Hus L render and the Å-husen white render bake UVs before merging; strips only where planned; builders unchanged', () => {
   const ex = src('src/exterior.js'), su = src('src/surroundings.js');
-  assert(ex.includes("add(renders.map(renderUV), renderMaterial({ color: H.render, roughness: 0.95 }))"));
+  // Tolerant of material wrappers (wetSurface #2095, snowCap #2123/#2176): only the UV bake + the render material must stay.
+  assert(/add\(renders\.map\(renderUV\),[^\n]*renderMaterial\(\{ color: H\.render, roughness: 0\.95 \}\)/.test(ex), 'Hus L render bakes UVs with the render material');
   assert(/if \(skin === renders\) \{[^}]*dirtPatch\([^}]*'sill'\)/.test(ex), 'sill streaks only under render reveals');
   assert(ex.includes("facade(renders, x0, x1, roofTop, upperTop, loftD - eps, true, holes, false, roofTop);") && ex.includes('facade(renders, ta, x1, y3, upperTop, zs + eps, false, up, false, deckY);'), 'splash bands over the loftgång / terrace floor');
   assert.equal((ex.match(/facade\(bricks,[^\n]*\)/g) ?? []).filter((l) => /, (roofTop|deckY)\);$/.test(l)).length, 0, 'brick façades get no strips');
-  assert(su.includes('const white = renderMaterial({ color: O.site.frameColor, roughness: 0.85, side: THREE.DoubleSide });'));
+  assert(/const white = [^\n]*renderMaterial\(\{ color: O\.site\.frameColor, roughness: 0\.85, side: THREE\.DoubleSide \}\)/.test(su), 'Å-husen white render material');
   assert(su.includes('...lg.slabs.map((g) => renderUV(g.toNonIndexed())), ...lg.walls.map((g) => renderUV(g.index ? g.toNonIndexed() : g)), ...details.frames.map(g=>plainUV('), 'frames stay plain');
   const fn = (s, name) => s.slice(s.indexOf(`function ${name}(`), s.indexOf('\n}\n', s.indexOf(`function ${name}(`)));
   for (const name of ['complement', 'quadZ', 'quadX', 'quadY', 'boxGeo']) assert.equal(fn(ex, name), fn(at('src/exterior.js'), name), name);
