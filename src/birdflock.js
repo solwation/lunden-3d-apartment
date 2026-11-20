@@ -200,10 +200,12 @@ export class SmallFlock {
   /** Any sitting (or landing) bird within its perch kind's flush distance of a threat → that threat, else null. */
   danger(threats) {
     const C = this.C, kind = this.group?.kind ?? 'tree', d0 = C.flush[kind];
-    for (const t of threats) for (const b of this.birds) {
-      const p = b.mode === FLY ? b.spot : b; if (!p) continue;
+    const up = C.flushUp + (kind === 'tree' ? 3 : 0), birds = this.birds;
+    for (let i = 0; i < threats.length; i++) for (let j = 0; j < birds.length; j++) { // #2220: indexed loops, no iterator objects (runs per flock per frame)
+      const t = threats[i], b = birds[j], p = b.mode === FLY ? b.spot : b; if (!p) continue;
       const d = d0 * (t.k ?? 1); // (#2182: a stalking cat is low and slow: `k` < 1 shortens its flush distance)
-      if (Math.abs(t.y - p.y) < C.flushUp + (kind === 'tree' ? 3 : 0) && (t.x - p.x) ** 2 + (t.z - p.z) ** 2 < d * d) return t;
+      const dx = t.x - p.x, dz = t.z - p.z;
+      if (Math.abs(t.y - p.y) < up && dx * dx + dz * dz < d * d) return t;
     }
     return null;
   }

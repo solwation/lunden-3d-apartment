@@ -562,7 +562,7 @@ const birdCatPool = [];
 function birdThreats(out) { // the eye and every outdoor cat that is out (#2129: they flush the birds); pooled, no allocation per frame
   out.length = 0; out.push(camera.position);
   let k = 0;
-  for (const c of outdoorCats?.cats ?? []) if (c.st !== 'away' && outdoorCats.isOut(c)) { const p = birdCatPool[k++] ??= {}; p.x = c.x; p.y = parkGround(c.x, c.z); p.z = c.z; p.k = c.st === 'prey' && c.prey?.kind === 'bird' ? OUTDOOR_CATS.brain.hunt.stalkFlush : c.walking || c.st === 'leap' ? 1 : OUTDOOR_CATS.brain.hunt.restFlush; out.push(p); } // (#2182: a low, slow or sitting cat startles birds later)
+  for (const c of outdoorCats?.cats ?? []) if (c.st !== 'away' && outdoorCats.isOut(c)) { const p = birdCatPool[k++] ??= {}; if (p.x !== c.x || p.z !== c.z || p.y === undefined) p.y = parkGround(c.x, c.z); p.x = c.x; p.z = c.z; /* #2220: ground height only when the cat moved (groundY allocates ~10 KB per call; this runs twice per frame) */ p.k = c.st === 'prey' && c.prey?.kind === 'bird' ? OUTDOOR_CATS.brain.hunt.stalkFlush : c.walking || c.st === 'leap' ? 1 : OUTDOOR_CATS.brain.hunt.restFlush; out.push(p); } // (#2182: a low, slow or sitting cat startles birds later)
   return out;
 }
 const birds = params0.has('nobirds') ? null : new Birds({ scene, camera, day, center: BIRDS.center, lowMemory, count: params0.has('birds') ? Number(params0.get('birds')) : null, // #1252: gulls circling by day

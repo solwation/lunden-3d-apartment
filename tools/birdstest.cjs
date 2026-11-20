@@ -38,14 +38,31 @@ const state = (page, { hour = 12, weather = null, y = null, steps = 90 }) => pag
   check(await calls(page) === 1, 'exactly one draw call');
   const pos = () => page.evaluate(() => { const a = window.__app; a.step(1 / 30); return a.birds.uniforms.uTime.value; });
   const t1 = await pos(); await pos(); check((await pos()) > t1, 'animation time advances');
-  // determinism: a second page has the same instance seeds
-  const seeds = (p) => p.evaluate(() => Array.from(window.__app.birds.mesh.geometry.attributes.aSeed.array).map((v) => v.toFixed(4)).join());
+  // determinism: a second page has the same instance seeds. #2220: read the source seeds (birds.seeds), not mesh.geometry.attributes.aSeed:
+  // since the LOD split (#1924) that attribute is rewritten every frame (far/near batches in camera-distance order), so it differs per visit.
+  const seeds = (p) => p.evaluate(() => { const s = window.__app.birds.seeds; return Array.from(s.a).concat(Array.from(s.b)).map((v) => v.toFixed(4)).join(); });
   const page2 = await open(browser, '&weather=clear');
   check((await seeds(page)) === (await seeds(page2)), 'same flock every visit (seeded)');
   await page2.close();
-  // allocation: update() creates no objects (heap delta over many calls stays tiny)
-  const alloc = await page.evaluate(() => { const b = window.__app.birds; const h0 = performance.memory?.usedJSHeapSize ?? 0; for (let i = 0; i < 20000; i++) b.update(1 / 60, 0, false); return (performance.memory?.usedJSHeapSize ?? 0) - h0; });
-  check(alloc < 1.5e6, 'update() does not allocate per call', `${alloc} bytes over 20000 calls`);
+  // allocation: update() stays cheap on the heap. #2220: performance.memory is a coarse, GC-timing-dependent number (+13 MB / -1 MB between
+  // identical runs, and a young-gen GC mid-run makes the delta meaningless), so use the sampling heap profiler, which counts every allocation
+  // (also collected ones) with its allocating function. Per call this is NOT zero: V8 boxes doubles and the flocks' for-of loops allocate
+  // iterators (a few KB per call, measured ~17 KB with 13 outdoor cats out). The regression that failed before #2220 was a terrain query per
+  // cat per frame in birdThreats (groundY -> riverAt, ~105 KB per call). The bound sits between the two; a positive control proves the sampler works.
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('HeapProfiler.enable');
+  const sampled = async (fn) => {
+    await cdp.send('HeapProfiler.startSampling', { samplingInterval: 2048, includeObjectsCollectedByMajorGC: true, includeObjectsCollectedByMinorGC: true });
+    await page.evaluate(fn);
+    const { profile } = await cdp.send('HeapProfiler.stopSampling');
+    let all = 0; const walk = (n) => { all += n.selfSize; n.children.forEach(walk); }; walk(profile.head); return all;
+  };
+  const CALLS = 5000;
+  await page.evaluate(() => { const b = window.__app.birds; for (let i = 0; i < 4000; i++) b.update(1 / 60, 0, false); }); // warm-up (perch setup, JIT)
+  const control = await sampled(() => { for (let i = 0; i < 5000; i++) window.__sink = [i, i + 1, i + 2, i + 3, i + 4, i + 5, i + 6, i + 7]; });
+  check(control > 1e5, 'heap sampler sees allocations (positive control)', `${control} bytes`);
+  const alloc = await sampled(() => { const b = window.__app.birds; for (let i = 0; i < 5000; i++) b.update(1 / 60, 0, false); });
+  check(alloc / CALLS < 40e3, 'update() allocation stays small per call', `${Math.round(alloc / CALLS)} bytes per call over ${CALLS} calls (limit 40000)`);
   await page.screenshot({ path: `${out}/ground.png`, timeout: 60000 }).catch(() => {});
   // night
   s = await state(page, { hour: 1 }); check(!s.visible, 'hidden at night', JSON.stringify(s));
