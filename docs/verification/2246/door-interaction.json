@@ -1,0 +1,89 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "map": "/Game/Lunden/Generated/PilotDoors/Level_l1007_doors",
+  "hinges": [
+    "door_l0_x215_z525",
+    "door_l0_x335_z570",
+    "door_l0_x80_z0",
+    "door_l0_x85_z305",
+    "door_l0_x95_z1270",
+    "door_l1_x154_z705",
+    "door_l1_x255_z501",
+    "door_l1_x263_z780",
+    "door_l1_x275_z501",
+    "door_l1_x275_z780"
+  ],
+  "entrance": "door_l0_x80_z0",
+  "beyondReachAndClosed": {
+    "hingeCm": [
+      80.47,
+      0.0,
+      0.0
+    ],
+    "yaw": 0.0,
+    "colliderCm": [
+      130.665,
+      -0.0,
+      105.0
+    ],
+    "visiblePanelCm": [
+      130.665,
+      0.0,
+      190.2
+    ]
+  },
+  "opening": {
+    "hingeCm": [
+      80.47,
+      0.0,
+      0.0
+    ],
+    "yaw": -24.614,
+    "colliderCm": [
+      126.104,
+      -20.907,
+      105.0
+    ],
+    "visiblePanelCm": [
+      126.104,
+      -20.907,
+      190.2
+    ]
+  },
+  "openedWithE": {
+    "hingeCm": [
+      80.47,
+      0.0,
+      0.0
+    ],
+    "yaw": -90.0,
+    "colliderCm": [
+      80.47,
+      -50.195,
+      105.0
+    ],
+    "visiblePanelCm": [
+      80.47,
+      -50.195,
+      190.2
+    ]
+  },
+  "closedWithMouse": {
+    "hingeCm": [
+      80.47,
+      0.0,
+      0.0
+    ],
+    "yaw": 0.0,
+    "colliderCm": [
+      130.665,
+      -0.0,
+      105.0
+    ],
+    "visiblePanelCm": [
+      130.665,
+      0.0,
+      190.2
+    ]
+  }
+}
