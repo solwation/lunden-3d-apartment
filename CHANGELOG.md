@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.14.5 — 2026-11-19
+
+- `scripts/prune-worktrees.sh` no longer treats a clone whose only unpublished work is
+  a `git stash` as integrated: `--apply` deleted it together with the stash. Such a
+  clone is now `unproven` with its stash count shown, and `--archive` bundles every
+  stash entry as `refs/orchestra-stash/<n>`; worktrees were not affected, since their
+  stash lives in the shared git directory. A regression test covers both (#81).
+
 ## 0.14.4 — 2026-11-15
 
 - Platform-created worktree directories: ORCHESTRA.md, PROJECT.example.md and
