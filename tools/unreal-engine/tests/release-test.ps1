@@ -127,3 +127,5 @@ finally {
     $env:LUNDEN_FIXTURE_MODE = $previousMode
     if (Test-Path -LiteralPath $temp) { Remove-Item -LiteralPath $temp -Recurse -Force }
 }
+# The last child may be an expected negative probe. Actions inherits its exit code otherwise.
+exit 0

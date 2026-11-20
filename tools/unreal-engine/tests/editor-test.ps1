@@ -43,3 +43,5 @@ function Invoke-UnrealProcess([string]$Exe, [string]$ArgLine) {
     $env:LUNDEN_TEST_EDITOR = $previous
     if (Test-Path $temp) { Remove-Item -LiteralPath $temp -Recurse -Force }
 }
+# The last child may be an expected negative probe. Actions inherits its exit code otherwise.
+exit 0
