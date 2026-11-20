@@ -6,6 +6,7 @@ on:
     paths:
       - 'unreal/Launcher/**'
       - 'unreal/Launcher.Tests/**'
+      - 'tools/unreal-engine/get-signer-fingerprint.ps1'
       - '.github/workflows/launcher-tests.yml'
   workflow_dispatch:
 
@@ -23,6 +24,7 @@ jobs:
           sparse-checkout: |
             unreal/Launcher
             unreal/Launcher.Tests
+            tools/unreal-engine
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'

@@ -3,6 +3,7 @@
 param([string]$SignedBinary = (Get-Command dotnet.exe -ErrorAction Stop).Source)
 $ErrorActionPreference = 'Stop'
 $source = Join-Path $PSScriptRoot '../Launcher/Authenticode.cs'
+$getFingerprint = Join-Path $PSScriptRoot '../../tools/unreal-engine/get-signer-fingerprint.ps1'
 $temp = Join-Path ([IO.Path]::GetTempPath()) ('Lunden-Authenticode-' + [Guid]::NewGuid().ToString('N'))
 New-Item -Type Directory -Path $temp | Out-Null
 Push-Location $temp
@@ -15,6 +16,18 @@ try {
     $sha = [Security.Cryptography.SHA256]::Create()
     try { $pin = [BitConverter]::ToString($sha.ComputeHash($signature.SignerCertificate.RawData)).Replace('-', '') }
     finally { $sha.Dispose() }
+
+    $fileHash = (Get-FileHash -LiteralPath signed.exe -Algorithm SHA256).Hash
+    if ((& $getFingerprint -Path signed.exe -ExpectedFileSha256 $fileHash) -ne $pin) {
+        throw 'Release fingerprint did not match the trusted signing certificate.'
+    }
+    try {
+        & $getFingerprint -Path signed.exe -ExpectedFileSha256 ('0' * 64)
+        throw 'Expected checksum rejection.'
+    } catch {
+        if ($_.Exception.Message -notmatch 'differs from the published SHA-256') { throw }
+    }
+    Write-Output 'PASS release fingerprint and checksum rejection'
 
     $major = [int]((dotnet --version).Split('.')[0])
     if ($major -lt 9) { throw 'Install a .NET SDK version 9 or later to run this test.' }
@@ -57,6 +70,14 @@ Console.WriteLine("PASS altered signed PE rejected");
 '@
     dotnet run --project Probe.csproj -- $pin
     if ($LASTEXITCODE -ne 0) { throw "Authenticode probe failed ($LASTEXITCODE)" }
+    $damagedHash = (Get-FileHash -LiteralPath damaged.exe -Algorithm SHA256).Hash
+    try {
+        & $getFingerprint -Path damaged.exe -ExpectedFileSha256 $damagedHash
+        throw 'Expected signature rejection.'
+    } catch {
+        if ($_.Exception.Message -notmatch 'Expected a valid, timestamped, embedded Authenticode signature') { throw }
+    }
+    Write-Output 'PASS damaged reference rejected even with a matching file hash'
 }
 finally {
     Pop-Location
