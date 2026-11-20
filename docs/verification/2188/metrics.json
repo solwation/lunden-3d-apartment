@@ -1,0 +1,158 @@
+{
+ "phase": "after",
+ "errors": [],
+ "scr": [
+  [
+   242,
+   216,
+   0.3,
+   0.95
+  ],
+  [
+   233,
+   226,
+   0.3,
+   0.95
+  ],
+  [
+   225,
+   237,
+   0.3,
+   0.95
+  ],
+  [
+   236,
+   219,
+   0.3,
+   0.95
+  ],
+  [
+   227,
+   230,
+   0.3,
+   0.95
+  ],
+  [
+   218,
+   241,
+   0.3,
+   0.95
+  ],
+  [
+   378,
+   200,
+   0.3,
+   0.95
+  ],
+  [
+   374,
+   205,
+   0.3,
+   0.95
+  ],
+  [
+   370,
+   209,
+   0.3,
+   0.95
+  ],
+  [
+   378,
+   201,
+   0.3,
+   0.95
+  ],
+  [
+   374,
+   206,
+   0.3,
+   0.95
+  ],
+  [
+   370,
+   210,
+   0.3,
+   0.95
+  ]
+ ],
+ "maxLive": 12,
+ "best": 12,
+ "calls": 27,
+ "triangles": 280039,
+ "programs": 23,
+ "poolVisible": true,
+ "sounds": {
+  "snort": {
+   "accepted": 1,
+   "osc": 1,
+   "noise": 3,
+   "rms": 0.002898,
+   "peak": 0.0608,
+   "hfRatio": 0.191,
+   "audibleSecs": 0.374
+  },
+  "nicker": {
+   "accepted": 1,
+   "osc": 5,
+   "noise": 5,
+   "rms": 0.001545,
+   "peak": 0.0193,
+   "hfRatio": 0.057,
+   "audibleSecs": 0.604
+  },
+  "whinny": {
+   "accepted": 1,
+   "osc": 5,
+   "noise": 4,
+   "rms": 0.001931,
+   "peak": 0.0247,
+   "hfRatio": 0.106,
+   "audibleSecs": 0.843
+  },
+  "step": {
+   "accepted": 1,
+   "osc": 1,
+   "noise": 1,
+   "rms": 0.006279,
+   "peak": 0.1245,
+   "hfRatio": 0,
+   "audibleSecs": 0.068
+  },
+  "shuffle": {
+   "accepted": 1,
+   "osc": 3,
+   "noise": 3,
+   "rms": 0.002722,
+   "peak": 0.0389,
+   "hfRatio": 0.004,
+   "audibleSecs": 0.364
+  },
+  "tear": {
+   "accepted": 1,
+   "osc": 0,
+   "noise": 1,
+   "rms": 0.0004715,
+   "peak": 0.0158,
+   "hfRatio": 0.247,
+   "audibleSecs": 0.041
+  },
+  "capStep5": {
+   "accepted": 2,
+   "osc": 2,
+   "noise": 2,
+   "rms": 0.01245,
+   "peak": 0.2403,
+   "hfRatio": 0,
+   "audibleSecs": 0.08
+  },
+  "capSnort5": {
+   "accepted": 2,
+   "osc": 2,
+   "noise": 6,
+   "rms": 0.004232,
+   "peak": 0.0973,
+   "hfRatio": 0.186,
+   "audibleSecs": 0.389
+  }
+ }
+}

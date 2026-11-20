@@ -5,11 +5,14 @@ import { creature } from './bestiarymetadata.js';
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import * as THREE from 'three';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { PADDOCK as P, PONY_SURFACE as PS, PONY_MOTION as PM, SEASON } from './config.js';
+import { PADDOCK as P, PONY_SURFACE as PS, PONY_MOTION as PM, PONY_VOICE as PV, SEASON } from './config.js';
 import { outline, fenceLine, posts, gateSpan, stile, insideFence, insetRing, ringDist, centre } from './paddockgeo.js';
 import { stileBase } from './farwalk.js';
 import { riverAt } from './riverbridge.js';
 import { sfx } from './audio.js';
+import { sharedPuffs } from './avatarbreath.js';
+import { wetEnv } from './avatarweather.js';
+import { newPonyVoice, stepPonyVoice, stepPonyBreath, breathCold } from './ponysound.js';
 import { Hearts } from './pingping.js';
 import { registerSeasonal, seasonState } from './seasons.js';
 import { shelterWinter } from './shelterwinter.js';
@@ -739,6 +742,38 @@ export class Paddock {
     return true;
   }
   petShow(p, i) { const head = this.headPos(p); sfx.whinny(head, i ? 0.92 : 1.08); this.hearts[i].burst(head); } // a happy whinny and hearts (#1320)
+  /** #2188: the pony's muzzle (world) into `to` and the way the head points into `dir`, from the head bone (so a grazing pony's puff is down in the
+   *  grass and a watching one's is level); without the rig a point in front of the body. */
+  muzzle(p, i, to, dir = null) {
+    const hb = this.riggedPonies?.[i]?.headBone, B = PV.breath;
+    if (hb) {
+      to.set(...B.muzzle); hb.localToWorld(to);
+      if (dir) dir.set(...B.snout).transformDirection(hb.matrixWorld);
+    } else {
+      to.set(p.x + Math.sin(p.yaw) * B.front * p.scale, p.y + (P.pony.neck[1] - B.down) * p.scale, p.z + Math.cos(p.yaw) * B.front * p.scale);
+      dir?.set(Math.sin(p.yaw), 0, Math.cos(p.yaw));
+    }
+    return to;
+  }
+  /** #2188: per pony and frame: its ambient sound (snort, hoof beats, shuffles, tearing grass, a greeting nicker; audio.js caps the voices) and,
+   *  in the cold, its exhales as vapour in the avatars' shared puff pool (one nostril each side; no meshes, no extra draw call). */
+  voices(dt) {
+    const cold = breathCold(wetEnv.temp, wetEnv.kind), puffs = cold > 0.02 ? sharedPuffs() : null, c = this.camera.position;
+    this.ponies.forEach((p, i) => {
+      if (p.gone) return;
+      const v = p.voice ??= newPonyVoice(), b = p.exhale ??= {}, d = Math.hypot(c.x - p.x, c.z - p.z);
+      const ev = stepPonyVoice(v, dt, p.state, d, cold);
+      if (ev) sfx.ponySound(this.muzzle(p, i, this.vTmp ??= new THREE.Vector3()), ev, i ? 0.92 : 1.08);
+      const k = stepPonyBreath(b, dt, p.state, d < PV.range ? cold : 0, ev === 'snort');
+      if (!k || !puffs) return;
+      this.vDir ??= new THREE.Vector3(); this.vAt ??= new THREE.Vector3();
+      const m = this.muzzle(p, i, this.vTmp ??= new THREE.Vector3(), this.vDir), side = PV.breath.nostril * p.scale, nx = this.vDir.z, nz = -this.vDir.x, nl = Math.hypot(nx, nz) || 1;
+      for (const e of [-1, 1]) for (let j = 0; j < PV.breath.plume.length; j++) { // a short plume per nostril: puffs trailing out along the head's line
+        const f = j * PV.breath.gap, z = PV.breath.plume[j];
+        puffs.emit(this.vAt.set(m.x + nx / nl * e * side + this.vDir.x * f, m.y + this.vDir.y * f, m.z + nz / nl * e * side + this.vDir.z * f), this.vDir, Math.min(1, PV.breath.alpha * k), 1, 1, PV.breath.size * z);
+      }
+    });
+  }
   /** World point just above pony `p`'s head (the muzzle end of the neck, lifted a little so hearts rise clear of it). */
   headPos(p) {
     const s = p.scale, n = P.pony.neck, c = this.lookAt(p), d = Math.hypot(c.x - p.x, c.z - p.z) || 1; // it turns to face the visitor while petted, so its head ends up on that side
@@ -1040,6 +1075,7 @@ export class Paddock {
     const follow = this.following();
     if (!follow && this.ponies.some((p) => p.net)) this.resume(); // #1644: the leader's snapshots stopped: simulate here again
     this.ponies.forEach((p, i) => { if (!p.gone) { if (follow) this.followPony(p, dt); else this.stepPony(p, i, dt); } });
+    this.voices(dt);
     this.netTick(dt);
     const g = this.gm; g.t += dt;
     if (g.dirty && g.t >= P.grass.period) { g.t = 0; this.uploadGrass(); }

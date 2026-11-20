@@ -1,0 +1,11 @@
+{
+ "phase": "before",
+ "errors": [],
+ "scr": null,
+ "maxLive": 0,
+ "best": -1,
+ "calls": 26,
+ "triangles": 280007,
+ "programs": 22,
+ "poolVisible": false
+}

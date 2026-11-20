@@ -76,6 +76,8 @@ export function exertShader(fs, { head }) {
 }
 
 const _m = new THREE.Vector3(), _d = new THREE.Vector3(), MOUTH = new THREE.Vector3(...B.mouth);
+/** The scene's shared puff pool, or null before Ghosts made it (#2188: the paddock's ponies breathe into the same one). */
+export const sharedPuffs = () => shared;
 let shared = null; // the scene's puff pool (Ghosts makes it); without one, breath still runs but nothing shows
 
 /** Once per frame for a posed avatar (Ghost.animate, after its update): steps its exertion and breath from the face `cues` ({ run, gym })
@@ -145,12 +147,12 @@ export class BreathPuffs {
 
   /** A puff at `at` (world) leaving along `dir` (unit), `alpha` its peak opacity, `effort` 0 … 1 (a runner's puffs are bigger and faster),
    * `light` the avatar's local light factor. The oldest puff makes room when the pool is full. */
-  emit(at, dir, alpha, effort = 0, light = 1) {
+  emit(at, dir, alpha, effort = 0, light = 1, scale = 1) { // `scale`: a bigger muzzle's puff (#2188, the ponies)
     if (!(alpha > 0.002)) return;
     if (this.list.length >= this.max) this.list.shift();
     const v = B.speed[0] + (B.speed[1] - B.speed[0]) * effort;
     this.list.push({ x: at.x, y: at.y, z: at.z, vx: dir.x * v, vy: dir.y * v + B.rise, vz: dir.z * v, age: 0, life: B.life[0] + (B.life[1] - B.life[0]) * effort,
-      size: B.size[0] + (B.size[1] - B.size[0]) * effort, alpha, light, seed: Math.random() });
+      size: (B.size[0] + (B.size[1] - B.size[0]) * effort) * scale, alpha, light, seed: Math.random() });
   }
 
   /** Each frame: ages, drifts and fades every puff and uploads the live ones (none left: hidden, no draw call). */

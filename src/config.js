@@ -5390,6 +5390,15 @@ export const PONY_MOTION = {
   drift: { every: [5, 12], dist: [0.4, 0.9], speed: 0.28, turn: 0.35 },
 };
 
+// #2188: the ponies' voices and visible breath (src/ponysound.js). All numbers *guess* (feel, not measurement).
+//  every: [min, max] s between a pony's ambient events per state; cooldown s after a greeting; range m beyond which nothing is scheduled
+//  (the paddock is simulated out to viewDist, sound only where it can be heard); maxVoices = ponies' sounds at once (VoiceCap in audio.js)
+//  breath: visible below `warm` degC, full at `cold`; `period` s between exhales (idle / graze / walk, 15-30 breaths a minute at rest in the
+//  cold), `size` = puff size relative to a person's (a pony's muzzle is bigger), `plume` = relative sizes of the puffs trailing `gap` m apart per nostril, `alpha` peak opacity, `snort` = the burst of a snort.
+export const PONY_VOICE = {
+  every: { idle: { snort: [22, 55], shuffle: [8, 18], whinny: [70, 160] }, watch: { snort: [14, 35], shuffle: [6, 14] }, graze: { tear: [1.1, 2.1], shuffle: [14, 30], snort: [30, 70] }, walk: {} },
+  stride: 0.56, cooldown: 45, greetRange: 14, range: 45, maxVoices: 2, gain: { snort: 1, nicker: 0.9, whinny: 1, step: 0.8, shuffle: 0.6, tear: 0.5 },
+  breath: { warm: 9, cold: -1, snowMin: 0.7, period: { idle: 3.2, graze: 3.8, watch: 2.8, walk: 2.2, pet: 2.4 }, size: 2, plume: [0.8, 1.1, 1.5], gap: 0.09, alpha: 0.95, snort: 1.6, nostril: 0.05, muzzle: [0, -0.4, 0.36], snout: [0, -0.73, 0.68], front: 0.5, down: 0.45 } }; // muzzle / snout: the nostrils and the head's pointing in the Joint_Head bone frame (read off models/pony-rigged.glb's skinned head: its foremost vertex is at [0, -0.416, 0.385]); front/down m: the fallback without the rig
 export const PADDOCK = {
   field: '237019759', inset: 1.2, postStep: 3, post: { w: 0.13, h: 1.3 }, rails: [0.55, 0.95, 1.25], rail: { w: 0.06, h: 0.12 },
   gate: { w: 3.2, near: [-116.2, 219.98] }, track: { w: 0.9, inset: 3.2, color: 0x80724c }, color: 0x7f9a4f,

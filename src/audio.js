@@ -4,7 +4,7 @@ import { synthFootstep } from './footsteps.js';
 // The AudioContext can only start after a user gesture — call initAudio() from a click.
 
 import { windowWindParams } from './windsound.js';
-import { SOUNDS, OCCLUSION, BIRD_SONG, KISS, PLAYROOM, SANTA, FOOTSTEPS, SQUIRRELS, SWIM } from './config.js';
+import { SOUNDS, OCCLUSION, BIRD_SONG, PONY_VOICE, KISS, PLAYROOM, SANTA, FOOTSTEPS, SQUIRRELS, SWIM } from './config.js';
 import { distanceGain, VoiceCap } from './spatialsound.js';
 import { RoomReverb } from './roomreverb.js';
 import { occlusionFor } from './soundocclusion.js';
@@ -14,6 +14,7 @@ let ctx = null, master = null, noiseBuf = null, reverb = null; // #2153: `reverb
 const listenerAt = { x: 0, y: 0, z: 0 }, voices = new VoiceCap(SOUNDS.maxVoices); // (#1302: where we hear from; the cap on other players' sounds)
 let muted = false;
 let acousticWorld = null; // #2181: the world whose rooms, walls and doors dull obscured sounds (main.js setAcousticWorld)
+const ponyVoices = new VoiceCap(PONY_VOICE.maxVoices); // #2188: at most two pony sounds at once (hoof beats, snorts and calls of both ponies)
 const birdVoices = new VoiceCap(BIRD_SONG.maxVoices); // #2178: at most two birds at once (songbirds and gulls together)
 const windows = new Set(); let windNow = 0.35; // #2177: the open windows' wind (sfx.wind) and the wind power they follow (setWindPower)
 
@@ -310,6 +311,26 @@ export const sfx = {
     const t = ctx.currentTime + 0.4, d = out({ x: p.x, y: p.y + 0.5, z: p.z }, 0.8);
     noise(t, 0.04, d, { type: 'highpass', freq: 1800, gain: opening ? 0.2 : 0.35 });
     tone(t, 0.06, d, { from: 900, to: 600, gain: opening ? 0.08 : 0.14 });
+  },
+  /** #2188: a pony's ambient sound `kind` ('snort' | 'nicker' | 'whinny' | 'step' | 'shuffle' | 'tear') at `pos`, under a voice cap (false when
+   * dropped). Synthesised from the same tone + noise parts as the other animals; `pitch` ~1 = an average pony. */
+  ponySound(pos, kind, pitch = 1) {
+    const dur = { snort: 0.55, nicker: 0.85, whinny: 1.1, step: 0.18, shuffle: 0.5, tear: 0.16 }[kind];
+    if (!ready() || !dur || !ponyVoices.take(ctx.currentTime, dur)) return false;
+    if (kind === 'nicker' || kind === 'whinny') { sfx[kind](pos, pitch); return true; }
+    const t = ctx.currentTime, d = out(pos, PONY_VOICE.gain[kind] ?? 1, 2);
+    if (kind === 'snort') { // a sharp blow through the nostrils: a rattling noise burst, a low flutter under it, a short second puff
+      noise(t, 0.28, d, { type: 'bandpass', freq: 1500, q: 0.8, gain: 0.34, attack: 0.012 });
+      noise(t, 0.3, d, { type: 'lowpass', freq: 500, q: 0.7, gain: 0.3, attack: 0.02 });
+      tone(t, 0.22, d, { type: 'sawtooth', from: 190 * pitch, to: 120 * pitch, gain: 0.05 });
+      noise(t + 0.3, 0.2, d, { type: 'bandpass', freq: 1200, q: 0.8, gain: 0.2, attack: 0.01 });
+    } else if (kind === 'step') { // an unshod hoof on the track: a dull thud and a little grit
+      tone(t, 0.14, d, { from: 110 * pitch, to: 55, gain: 0.5 });
+      noise(t, 0.08, d, { type: 'lowpass', freq: 700, q: 0.7, gain: 0.35 });
+    } else if (kind === 'shuffle') { // weight shifted from hoof to hoof: two or three soft scuffs
+      for (let i = 0; i < 3; i++) { noise(t + i * 0.16, 0.12, d, { type: 'bandpass', freq: 350 + i * 80, q: 0.9, gain: 0.28 }); tone(t + i * 0.16, 0.1, d, { from: 95, to: 60, gain: 0.18 }); }
+    } else noise(t, 0.12, d, { type: 'bandpass', freq: 2200, q: 1.6, gain: 0.22, attack: 0.01 }); // grass torn off and chewed
+    return true;
   },
   /** A pony's soft nicker (#1293): a few short low chuffs, then a falling breath. `pitch` ~1 = an average pony. */
   nicker(pos, pitch = 1) {
