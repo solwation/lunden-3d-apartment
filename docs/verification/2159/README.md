@@ -32,3 +32,5 @@ At constant speed the term stays below 0.02 rad (sprint) and 0.013 rad (walk) on
 
 Reproduce: `python3 -m http.server 8234` in the checkout, then
 `PLAYWRIGHT_MODULE=… THREE_DIR=… tools/browsertest.sh node tools/avataraccel2159browser.cjs http://127.0.0.1:8234 docs/verification/2159 cea65011`.
+
+Published result: [#2159 comment](https://github.com/solwation/lunden-3d-apartment/issues/2159#issuecomment-7032404278) (images pinned to `6ecf1b98`).
