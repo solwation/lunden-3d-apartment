@@ -1,0 +1,11 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<title>NES-förstudie · Fånga ljuset</title><style>
+body{background:#101928;color:#eef3fc;font:17px system-ui;margin:24px auto;max-width:740px;padding:0 16px}h1{font-size:26px}canvas{display:block;width:min(100%,512px);height:auto;image-rendering:pixelated;border:1px solid #8495ab;background:#000}button{font:inherit;color:#fff;background:#304765;border:1px solid #8495ab;border-radius:7px;padding:12px;margin:4px;touch-action:none}#pad{max-width:420px}small{display:block;color:#bac7db;margin:10px 0}a{color:#a5d5ff}
+</style><h1>Fånga ljuset · NES-prototyp</h1><p>Egen liten MIT-homebrew för #2231. Detta är ett tekniskt bevis, inte en befintlig retrotitel eller en del av lägenhetsspelet.</p>
+<canvas width="256" height="240" aria-label="NES-spel: röd ruta fångar gult ljus"></canvas>
+<p id="status" aria-live="polite">Välj Starta. Emulator och ROM laddas först då.</p>
+<button id="start">Starta</button><button id="pause" disabled>Pausa</button><button id="leave" disabled>Lämna</button>
+<div id="pad" aria-label="NES-pekknappar"><button data-key="4" aria-label="Upp">↑</button><button data-key="5" aria-label="Ner">↓</button><button data-key="6" aria-label="Vänster">←</button><button data-key="7" aria-label="Höger">→</button><button data-key="0">A</button><button data-key="1">B</button><button data-key="2">Select</button><button data-key="3">Start</button></div>
+<small>Pilar flyttar den röda rutan till ljuset. Esc / E lämnar. Pausar vid dold sida eller förlorat fokus; återuppta själv. Denna ROM har inget ljud, A/B/Start/Select saknar spelåtgärd.</small><small>jsnes 1.2.1 · Apache 2.0. Egen ROM och testsida · MIT. Inga topplistor, externa tjänster eller sparfiler.</small><a href="LICENSE">Egen MIT-licens</a> · <a href="vendor/LICENSE.apache-2.0">Emulatorns licens</a>
+<script type="module" src="driver.js"></script></html>

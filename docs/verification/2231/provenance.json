@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-20",
+  "base": "6c2e4f65",
+  "jsnes": {
+    "version": "1.2.1",
+    "tagCommit": "9a312c983be1bbb7dea5e6a6e1aafcdb9496e0cb",
+    "tarball": "https://registry.npmjs.org/jsnes/-/jsnes-1.2.1.tgz",
+    "integrity": "sha512-Gn+lnv5B5c/TVwFSc8vzo7amiSogRyfMI9UL7VjYgKDrlTLf7GKuK2WD+t0gEcLbzh/NfMpkIlopzN/3cq760A==",
+    "tarballSHA256": "736788f2399fef26e064022aede00174152141e8809e7f229d236e7f573d37d6",
+    "license": "Apache-2.0",
+    "bundleUnmodified": true
+  },
+  "files": {
+    "tools/retro2231/LICENSE": {
+      "bytes": 1212,
+      "gzipEstimate": 740,
+      "sha256": "1b24da7b4951cd816915f33b19bf01163e0e690cd599f44644a515d66fd3842d"
+    },
+    "tools/retro2231/browser.cjs": {
+      "bytes": 4241,
+      "gzipEstimate": 1810,
+      "sha256": "1796c226ee038a8be4f44a703ec5bafee16d79abbdf60784cf5c4b496c8922c3"
+    },
+    "tools/retro2231/driver.js": {
+      "bytes": 3727,
+      "gzipEstimate": 1699,
+      "sha256": "f5682ca0aa113b08e9f266a41c3181d9b9364f5ea639ee4412c862bd6f1fc4ee"
+    },
+    "tools/retro2231/index.html": {
+      "bytes": 2186,
+      "gzipEstimate": 1176,
+      "sha256": "e7d60a5de8da0dd2f62f77a013bd20de272de7ed26e627fa6e93ff638d630cef"
+    },
+    "tools/retro2231/lightcatch.nes": {
+      "bytes": 24592,
+      "gzipEstimate": 322,
+      "sha256": "5fda8dc68af7b39acfb6bbe59e7dfce2b790c5be2a171fc0bc0f1e7316024306"
+    },
+    "tools/retro2231/make_rom.py": {
+      "bytes": 2863,
+      "gzipEstimate": 1354,
+      "sha256": "05c5582e786286f6e3e558299fcfcc47a4f84d45bdf78869a228af8b045b918f"
+    },
+    "tools/retro2231/vendor/LICENSE.apache-2.0": {
+      "bytes": 10758,
+      "gzipEstimate": 3741,
+      "sha256": "530136cec696ac1fcdeb792a77472cb273f9f814ad0ed795dccdc95db7423e0a"
+    },
+    "tools/retro2231/vendor/jsnes.js": {
+      "bytes": 200387,
+      "gzipEstimate": 36058,
+      "sha256": "00e288a3f888a2f6ac5fb97c111b3abf661ffa6069cde589a1d69e99b9f5f2f5"
+    },
+    "tools/retro2231/README.md": {
+      "bytes": 2433,
+      "gzipEstimate": 1415,
+      "sha256": "dde2ecb5b78d88b0eacb485a285a03e2908ebdad9f39496917708fcfd071aad9"
+    }
+  },
+  "npmPreferredSourcesAndLicenseMatchPinnedTag": true
+}

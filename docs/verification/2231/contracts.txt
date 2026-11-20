@@ -1,0 +1,6 @@
+24592 bytes; 272 bytes own 6502 code
+PASS own complete-source ROM regeneration byte-identical; NROM header/bytes
+PASS all 10 npm preferred-source modules and LICENSE byte-identical to pinned upstream Git commit
+PASS tested source hashes retained; original npm bundle byte-identical and SHA512 checked separately
+24592 bytes; 272 bytes own 6502 code
+PASS final accumulator driver/browser/doc source hashes retained; regenerated ROM identical; production src/data/Worker/CI/stamp unchanged
