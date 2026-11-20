@@ -39,3 +39,21 @@ test('#2164: the far figure has limbs to swing and one hair variant per style th
   assert.deepEqual([...limbs].sort(), [0, 1, 2]);
   assert.deepEqual([...hairs].sort(), [0, 1, 2, 3, 4]);
 });
+
+test('#2164: hair stays behind and above the face from the front; the arms touch the torso at the shoulder', () => {
+  const g = farBodyGeometry(), pl = g.attributes.pl, p = g.attributes.position;
+  for (let i = 0; i < pl.count; i++) {
+    const hv = pl.getZ(i), x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    if (pl.getX(i) === 3 && (hv > 0 || (y > 1.5 && pl.getY(i) === 0))) { // hair parts (the beanie is `top`: its cuff edge is the brow)
+      if (y < 1.6 && Math.abs(x) < 0.1) assert.ok(z < 0.02, `hair variant ${hv} in front of the face at y ${y.toFixed(3)}, z ${z.toFixed(3)}`);
+    }
+    if (hv === 1) assert.ok(z <= 0.001, `long hair vertex in front of the head's middle (z ${z.toFixed(3)})`);
+  }
+  let torso = 0, arm = 9;
+  for (let i = 0; i < pl.count; i++) {
+    const y = p.getY(i), ax = Math.abs(p.getX(i));
+    if (pl.getY(i) === 0 && pl.getX(i) === 1 && pl.getZ(i) === 0 && y > 1.44 && y < 1.46) torso = Math.max(torso, ax);
+    if (pl.getY(i) === 2 && y > 1.4) arm = Math.min(arm, ax);
+  }
+  assert.ok(torso > 0.15 && Math.abs(arm - torso) <= 0.01, `arm inner edge ${arm.toFixed(3)} vs torso shoulder ${torso.toFixed(3)}`);
+});

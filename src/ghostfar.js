@@ -44,10 +44,10 @@ export function farBodyGeometry() {
   for (const s of [-1, 1]) {
     box(0.1, 0.07, 0.25, PARTS.shoes, s * 0.095, 0.035, 0.035);
     lathe([[0.042, 0.07], [0.052, 0.3], [0.05, H - 0.005], [0.05, H + 0.005], [0.066, 0.75], [0.078, 0.93]], 6, PARTS.pants, s * 0.095, LIMB.leg, 1, 1.05); // thigh to ankle; the hem rings let a skirt flare from the hem
-    lathe([[0.052, 1.43], [0.048, 1.3], [0.043, 1.2], [0.04, 1.12], [0.034, 0.95], [0.03, 0.88], [0.036, 0.82]], 6, PARTS.skin, s * 0.245, LIMB.arm); // shoulder to hand; sleeve / skin is cut per fragment
+    lathe([[0.052, 1.43], [0.048, 1.3], [0.043, 1.2], [0.04, 1.12], [0.034, 0.95], [0.03, 0.88], [0.036, 0.82]], 6, PARTS.skin, s * 0.235, LIMB.arm); // shoulder to hand; sleeve / skin is cut per fragment
   }
   lathe([[0.16, 0.84], [0.158, 0.97]], 8, PARTS.pants, 0, LIMB.none, 1.2, 0.66); // the hips
-  lathe([[0.152, 0.96], [0.15, 1.06], [0.172, 1.22], [0.18, 1.37], [0.1, 1.45]], 8, PARTS.top, 0, LIMB.none, 1.14, 0.62); // waist, chest, shoulders
+  lathe([[0.152, 0.96], [0.15, 1.06], [0.172, 1.22], [0.18, 1.37], [0.16, 1.45], [0.0001, 1.47]], 8, PARTS.top, 0, LIMB.none, 1.14, 0.62); // waist, chest, shoulders
   put(new THREE.CylinderGeometry(0.045, 0.05, 0.1, 6, 1, true), PARTS.skin, 0, 1.49, 0);
   put(new THREE.IcosahedronGeometry(0.115, 1).scale(0.95, 1.12, 1), PARTS.skin, 0, 1.615, 0.005); // (the head: an egg)
   const cap = (r, part, hair, y, z, sy = 1) => put(new THREE.SphereGeometry(r, 8, 4, 0, Math.PI * 2, 0, Math.PI * 0.5).scale(1, sy, 1), part, 0, y, z, 0, hair);
@@ -55,7 +55,7 @@ export function farBodyGeometry() {
   put(new THREE.CylinderGeometry(0.14, 0.11, 0.34, 8, 1, true, Math.PI / 2, Math.PI), PARTS.hair, 0, 1.45, -0.012, 0, HAIRS.long, 1, 0.85); // long hair: a sheet down the back and sides
   put(new THREE.SphereGeometry(0.055, 6, 4), PARTS.hair, 0, 1.705, -0.115, 0, HAIRS.bun);
   cap(0.14, PARTS.top, HAIRS.beanie, 1.615, -0.012);
-  put(new THREE.SphereGeometry(0.165, 7, 5).scale(1, 0.88, 1), PARTS.hair, 0, 1.64, -0.01, 0, HAIRS.curly);
+  cap(0.15, PARTS.hair, HAIRS.curly, 1.625, -0.012, 0.95); // curls: a fuller cap (a whole ball would cover the face)
   const g = mergeGeometries(list);
   g.computeBoundingSphere();
   return g;
