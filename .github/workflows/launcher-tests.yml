@@ -6,6 +6,10 @@ on:
     paths:
       - 'unreal/Launcher/**'
       - 'unreal/Launcher.Tests/**'
+      - 'tools/unreal-engine/make-manifest.mjs'
+      - 'tools/unreal-engine/tests/make-manifest.test.mjs'
+      - 'tools/unreal-engine/verify-published.mjs'
+      - 'shared/schema/release-manifest.schema.json'
       - 'tools/unreal-engine/get-signer-fingerprint.ps1'
       - 'tools/unreal-engine/package-signed-launcher.ps1'
       - 'tools/unreal-engine/tests/signed-launcher-package-test.ps1'
@@ -27,10 +31,20 @@ jobs:
             unreal/Launcher
             unreal/Launcher.Tests
             tools/unreal-engine
+            shared/schema
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.x'
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
+      - name: Generate the stock manifest fixture and check release asset mapping
+        env:
+          LUNDEN_GENERATED_TEST_MANIFEST: ${{ runner.temp }}/generated-stock-manifest.json
+        run: node --test tools/unreal-engine/tests/make-manifest.test.mjs
       - name: Run launcher tests on Windows
+        env:
+          LUNDEN_GENERATED_TEST_MANIFEST: ${{ runner.temp }}/generated-stock-manifest.json
         run: dotnet test unreal/Launcher.Tests/Lunden.Launcher.Tests.csproj --configuration Release --logger "console;verbosity=normal"
       - name: Verify Windows Authenticode acceptance and rejection
         shell: pwsh
