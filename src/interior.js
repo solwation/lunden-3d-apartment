@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { tileTexture, tileMaterial } from './tilesurface.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABINET, VANITY_BASIN, HAVBACK, LIGHTING, KITCHEN_SOCKETS, TAP_LEVER, LAUNDRY, SHOWER_FITTINGS, FLOOR_DRAIN } from './config.js';
+import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABINET, VANITY_BASIN, HAVBACK, LIGHTING, KITCHEN_SOCKETS, TAP_LEVER, LAUNDRY, SHOWER_FITTINGS, FLOOR_DRAIN, SHOWER_MOIST } from './config.js';
 import { wallCabinet } from './cabinets.js';
 import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
@@ -13,6 +13,7 @@ import { Openable, pivotAround } from './openables.js';
 import { buildRacks } from './dishwasher.js';
 import { Moccamaster } from './coffee.js';
 import { socketGeometry } from './sockets.js';
+import { wetTiles } from './showermoisture.js';
 import { mirrorMaterial, litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { SPONGE, spongeMaterials } from './sponge.js';
@@ -68,6 +69,7 @@ const M = {
 };
 
 for (const k of ['splash', 'wallTile', 'hallTile', 'wetTile']) M[k].userData.skin = true;
+wetTiles(M.wallTile); wetTiles(M.wetTile, SHOWER_MOIST.floorDark); // #2189: darker, glossier in the shower zone after a shower
 // #2151: what reflects the room (roomprobe.js; strengths per class in ROOM_PROBE.k): metal, glossy glass, porcelain, tiles
 for (const [cls, keys] of Object.entries({ chrome: ['chrome'], steel: ['steel', 'dishwasher'], steelDark: ['steelDark'], handle: ['handle', 'brass'],
   glass: ['glassDark'], black: ['black'], porcelain: ['porcelain'], appliance: ['appliance'], tile: ['splash', 'wallTile'], floorTile: ['wetTile'] })) for (const k of keys) M[k].userData.roomProbe = cls;
@@ -982,7 +984,7 @@ function mirrorReflector(group, geo, x, y, z, level, opts = {}) {
   holder.position.set(x, y, z);
   holder.rotation.y = Math.PI / 2; // local +z → world +x
   group.add(holder);
-  addReflector(holder, geo, { level, ...opts });
+  addReflector(holder, geo, { level, mist: true, ...opts }); // (#2189: fogs over after a shower)
   return holder;
 }
 
@@ -1550,7 +1552,7 @@ function buildBathroom(B, group, floor, room, y0, handled, taps, appliances) {
       glassPanel(B, [s.x0, zOpen], [s.x1, zOpen], y0);
       glassPanel(B, [s.x1, s.z0], [s.x1, s.z1], y0);
     }
-    taps.push(...showerSet(B, room.x0, (s.z0 + s.z1) / 2, y0, !upstairs));
+    taps.push(...showerSet(B, room.x0, (s.z0 + s.z1) / 2, y0, !upstairs).map((t) => ({ ...t, room: [room.x0, room.z0, room.x1, room.z1] }))); // #2189: the bathroom's rectangle (showermoisture.js)
     floorDrain(B, ...showerDrainAt(s), y0 + 0.004, M.steel, M.black); // on the room's tiles (buildInterior)
     if (!upstairs) segs.push(havback(B, group, appliances, room, y0)); // not in WC/dusch: no room beside its shower (HAVBACK)
   }

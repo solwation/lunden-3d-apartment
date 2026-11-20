@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Reflector } from 'three/addons/objects/Reflector.js';
 import { lowMemory } from './lowmemory.js';
+import { mistReflector } from './showermoisture.js';
 
 // Mirror images (#50): every mirror gets a planar reflector over its glass, but only ONE is ever
 // active — the nearest mirror the visitor is looking at, within MAX_DIST, on the visitor's level —
@@ -59,7 +60,7 @@ class SharedReflector extends Reflector {
 }
 
 /** Put a reflector over a mirror. `geometry` lies in the parent's local frame facing +z. */
-export function addReflector(parent, geometry, { level = 0, offset = 0.0015, color = 0xc6ccd0, name = '', dim = 1 } = {}) {
+export function addReflector(parent, geometry, { level = 0, offset = 0.0015, color = 0xc6ccd0, name = '', dim = 1, mist = false } = {}) {
   const r = new SharedReflector(geometry, { color, clipBias: 0.003 });
   if (SCREEN_OUTPUT_MIRROR) { // #1561: the image is already tone-mapped and sRGB-encoded: decode it, tint, encode once
     const m = r.material;
@@ -72,6 +73,7 @@ export function addReflector(parent, geometry, { level = 0, offset = 0.0015, col
     m.fragmentShader = m.fragmentShader.replace('uniform vec3 color;', 'uniform vec3 color;\nuniform float dim;')
       .replace('gl_FragColor = vec4( blendOverlay( base.rgb, color ), 1.0 );', 'gl_FragColor = vec4( blendOverlay( base.rgb, color ) * dim, 1.0 );');
   }
+  if (mist) mistReflector(r.material); // #2189: a bathroom mirror that fogs over after a shower
   r.position.z = offset;
   r.visible = false;
   parent.add(r);

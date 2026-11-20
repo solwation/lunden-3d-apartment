@@ -11146,3 +11146,11 @@ export const VEHICLE_SHADOW = {
   bike: { x: -0.04, half: [1.15, 0.38], strength: 0.85, rings: 2, segs: 10 }, // a narrow strip along the two wheels (bikeGeometry: wheels at x -0.5 / 0.42)
   plateau: 0.55, // the wheel and bike pools stay at full strength out to this share of its radius (so the band beyond the body stays dark), then eases out to nothing at the rim
 };
+// #2189: steam, a misted mirror and wet tiles after a shower (src/showermoisture.js). One moisture state per bathroom (L1007's two running
+// showers). All *guess*es by eye against an ordinary warm shower, not measured: seconds are real-time. `mistRise` / `wetRise` = time constants
+// (s) of the build-up with the water on, `mistClear` / `wetDry` = seconds to fully clear / dry with the door shut; an open door divides
+// them by (1 + `door` × openness) and the room's ventilation (no fan in the plan: `vent`, 0 = none) by (1 + `vent`); an open door also
+// slows the build-up by `doorRise`. Steam: puffs/s at full mist through the shared puff pool (scaled by QUALITY.particles), only within `range` m.
+export const SHOWER_MOIST = { mistRise: 18, wetRise: 10, mistClear: 150, wetDry: 260, door: 2.5, vent: 0.3, doorRise: 0.35,
+  fogColor: [0.80, 0.84, 0.86], fogMax: 0.9, streak: 0.55, streakSoft: 0.18, columns: 38, wallDark: 0.5, floorDark: 0.55, wetRough: 0.08,
+  zoneNear: 1.6, zoneFar: 4.2, roomMargin: 0.15, height: 3, steamRate: 14, steamAlpha: 1, steamScale: 9, steamLife: 2.6, steamRange: 8, steamSource: 0.25 };
