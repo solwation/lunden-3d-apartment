@@ -19,7 +19,7 @@ param(
 . (Join-Path $PSScriptRoot 'common.ps1')
 
 $p = Get-LundenProject
-$stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+$stamp = '{0}-{1}' -f (Get-Date -Format 'yyyyMMdd-HHmmss'), [guid]::NewGuid().ToString('N')
 $report = Join-Path $p.Dir "Saved\Automation\$stamp"
 $log = '<unreal/Lunden/Saved/Logs/run-tests-TIME.log>'
 $argsFor = { param($logPath)

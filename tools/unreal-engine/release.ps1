@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Build a local unsigned Win64 Shipping archive and record its source revision (#2244).
+  Cook a local Win64 Shipping archive with the installed Epic runtime and record its source revision.
 .EXAMPLE
   .\tools\unreal-engine\release.ps1 -Version 0.1.0 -Content 12 -OutputRoot D:\LundenBuilds
 #>
@@ -36,7 +36,7 @@ $build = Join-Path $base ("{0}-{1}" -f $commit.Substring(0, 12), [guid]::NewGuid
 $archive = Join-Path $build 'archive'
 $stage = Join-Path $build 'stage'
 $uatArgs = @('BuildCookRun', "-project=$($project.UProject)", '-platform=Win64', '-clientconfig=Shipping',
-    '-build', '-cook', '-stage', '-pak', '-iostore', '-package', '-nodebuginfo', '-archive',
+    '-nocompileuat', '-nocompile', '-skipbuild', '-cook', '-stage', '-pak', '-iostore', '-package', '-nodebuginfo', '-nobootstrapexe', '-archive',
     "-stagingdirectory=$stage", "-archivedirectory=$archive", '-unattended', '-nop4', '-utf8output')
 $report = Resolve-UnrealForRun $EngineDir 'release' {
     param($root)
@@ -56,18 +56,29 @@ try {
 if ($code -ne 0) { throw "BuildCookRun failed (exit $code); see $log" }
 
 $package = Join-Path $archive 'Windows'
-$game = Join-Path $package 'Lunden\Binaries\Win64\Lunden-Win64-Shipping.exe'
+$runtimePath = 'Engine/Binaries/Win64/UnrealGame-Win64-Shipping.exe'
+$game = Join-Path $package $runtimePath
 if (-not (Test-Path -LiteralPath $game -PathType Leaf) -or (Get-Item -LiteralPath $game).Length -eq 0) {
     throw "BuildCookRun produced no Win64 Shipping executable in the archive; see $log"
 }
+$stock = Join-Path $report.Engine.Root $runtimePath
+$sha256 = (Get-FileHash -LiteralPath $game -Algorithm SHA256).Hash
+if ($sha256 -ne (Get-FileHash -LiteralPath $stock -Algorithm SHA256).Hash) {
+    throw 'The archived Shipping executable differs from the installed Epic runtime.'
+}
+$signature = Get-AuthenticodeSignature -LiteralPath $game
+if ($signature.Status -ne 'Valid') { throw "Invalid Shipping executable signature: $($signature.Status)" }
+$publisher = $signature.SignerCertificate.GetNameInfo('SimpleName', $false)
+if ($publisher -ne 'Epic Games Inc.') { throw "Unexpected Shipping executable publisher: $publisher" }
 if ((Get-CleanRevision) -ne $commit) { throw "Git HEAD changed during BuildCookRun; see $log" }
 $info = [ordered]@{
     appVersion = $Version; contentVersion = $Content; commit = $commit
     engineVersion = $report.Engine.Version; releaseScriptBlob = $scriptBlob
+    runtime = [ordered]@{ path = $runtimePath; sha256 = $sha256; publisher = $publisher }
     builtUtc = [DateTime]::UtcNow.ToString('o')
 }
 # build-info.json is the completion marker; a failed run keeps its diagnostics separately.
 $pending = Join-Path $build 'build-info.tmp'
 [IO.File]::WriteAllText($pending, ($info | ConvertTo-Json), (New-Object Text.UTF8Encoding($false)))
 [IO.File]::Move($pending, (Join-Path $package 'build-info.json'))
-Write-Host "Unsigned Windows archive ready: $package"
+Write-Host "Windows archive with verified Epic runtime ready: $package"

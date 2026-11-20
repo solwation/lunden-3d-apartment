@@ -330,15 +330,14 @@ with scripts on the Windows development PC**; signing and publishing happen late
   The repository is public, and a self-hosted runner on a public repository can be made to run code from other
   people's pull requests (booster-ai avoids it for the same reason). A cloud GPU VM costs money per hour and is not
   justified now.
-- Security boundary: keep all signing keys and Azure credentials off the build PC. The local step produces an unsigned
-  archive. A separate handoff to a draft release or artifact and signing/publication belong to #2248/#2250.
+- Security boundary: keep all signing keys and Azure credentials off the build PC. The local step retains the vendor signatures in the archive. A separate handoff to a draft release or artifact and signing/publication belong to #2248/#2250.
 - Derived Data Cache: use the local Zen DDC on a fast disk outside the checkout. The default on Windows is
   `%LOCALAPPDATA%\UnrealEngine\Common\Zen\Data`. Set `UE-ZenDataPath` for a different local disk.
   [Epic documents the Zen data location and overrides](https://dev.epicgames.com/documentation/en-us/unreal-engine/using-zen-storage-server-as-cooked-output-store-for-unreal-engine).
 - Another Windows PC can take over by following the install steps above, cloning the repository, running
   `git config lfs.fetchexclude ""` + `git lfs pull` and `check-environment.ps1`.
 
-### Building an unsigned archive
+### Building a local Shipping archive
 
 Use Windows Git to check out the intended commit with all Unreal LFS objects. Verify
 `check-environment.ps1` on that checkout. From Windows PowerShell run
@@ -351,7 +350,12 @@ Use Windows Git to check out the intended commit with all Unreal LFS objects. Ve
 (nonnegative integer). The default output root is `%LOCALAPPDATA%\Lunden\Builds`.
 The script checks for staged, modified and untracked files before calling
 `RunUAT.bat BuildCookRun` for a Win64 Shipping cook, stage, IoStore package and
-archive. It checks HEAD and worktree cleanliness again after UAT. Each invocation
+archive. It uses the installed target with `-nocompileuat -nocompile -skipbuild`
+and omits the locally customized bootstrap with `-nobootstrapexe`. The MCP and
+toolset plugins are enabled for Editor, and AndroidFileServer stays disabled in
+Editor. Shipping uses the plugins compiled into Epic's stock UnrealGame.
+Changing the runtime plugin set makes UAT generate a temporary native target.
+The script checks HEAD and worktree cleanliness again after UAT. Each invocation
 creates a separate directory under the output root containing `BuildCookRun.log`,
 `stage/` and `archive/Windows/`. UAT can also use the engine's ordinary ignored
 intermediate files in the project.
@@ -359,15 +363,36 @@ intermediate files in the project.
 A completed archive contains the Shipping executable and `build-info.json` beside
 the packaged `Lunden/` folder. The metadata contains `appVersion`, `contentVersion`,
 the full Git `commit`, the actual `engineVersion`, the committed script blob ID
-(`releaseScriptBlob`) and completion time in UTC (`builtUtc`). A failed build
+(`releaseScriptBlob`), completion time in UTC (`builtUtc`) and the verified
+`runtime.path`, `runtime.sha256` and `runtime.publisher`. The archived
+`Engine/Binaries/Win64/UnrealGame-Win64-Shipping.exe` must match the SHA-256
+of the installed runtime and have a valid Epic Games Inc. Authenticode signature. A failed build
 can leave files and its log in its own build directory. Hand off only a completed
 archive. For #2248, build twice from one commit and compare the resulting program
 and container files across the two archives.
 
-Run `tools/unreal-engine/tests/release-test.ps1` with Windows PowerShell for a disposable
-Windows Git and simulated UAT check. The real cook, archived layout, container
-hash comparison and cross-cook compatibility need the installed 5.8.4 engine
-and pilot content (#2243/#2248).
+The [Windows build-script tests](../../.github/workflows/unreal-build-tools-tests.yml)
+exercise the release wrapper against temporary Windows Git and UAT fixtures and
+check the editor wrapper’s exit codes against synthetic Automation reports.
+For the #2268 real stock-map cook on UE 5.8.4, BuildCookRun completed in 164 s.
+It packaged the engine map `/Engine/Maps/Templates/OpenWorld`; the imported L1007
+pilot and its zone comparisons are tracked in #2246/#2248. Both the installed
+and archived Shipping game had SHA-256
+`E083AD2F827B2FBAB8EB4E04D6D1D541BE3D42D4883AADDF26BAB3DF62195953`.
+All 14 staged EXE/DLL files had valid Authenticode signatures. Six were signed by
+Epic Games Inc., six by Microsoft Corporation, one by Microsoft Windows Publisher
+and one by NVIDIA Corporation.
+
+The runtime takes `..\..\..\Lunden\Lunden.uproject` as its first argument, as
+in Epic's Windows bootstrap for content-only games. UE switches to the executable
+directory on initialization. The stock cook stores `Lunden/Lunden.uproject` in
+`Lunden/Content/Paks/Lunden-Windows.pak`, mounted at `../../../`.
+From the archive root, the signed game ran headlessly for 46 s with that first
+argument, `-UserDir=<fresh directory> -nullrhi -nosound -unattended`. The process
+had 37 threads, accumulated 63 s of CPU time and created its configuration under
+the supplied directory. Shipping ignores `-seconds=10`, so the test ended its own
+headless process at the timeout. A normal user shutdown and a rendered pilot view
+are separate tests.
 
 ## Phase B results (verified 2026-11-20)
 

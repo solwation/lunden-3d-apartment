@@ -1,0 +1,42 @@
+name: Unreal build script tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/unreal-engine/release.ps1'
+      - 'tools/unreal-engine/common.ps1'
+      - 'tools/unreal-engine/tests/release-test.ps1'
+      - 'tools/unreal-engine/run-tests.ps1'
+      - 'tools/unreal-engine/tests/editor-test.ps1'
+      - 'unreal/Lunden/Lunden.uproject'
+      - 'unreal/Lunden/ENGINE_VERSION'
+      - '.github/workflows/unreal-build-tools-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-fixtures:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /tools/unreal-engine/release.ps1
+            /tools/unreal-engine/common.ps1
+            /tools/unreal-engine/tests/release-test.ps1
+            /tools/unreal-engine/run-tests.ps1
+            /tools/unreal-engine/tests/editor-test.ps1
+            /unreal/Lunden/Lunden.uproject
+            /unreal/Lunden/ENGINE_VERSION
+      - name: Check editor wrapper exit codes
+        shell: powershell
+        run: ./tools/unreal-engine/tests/editor-test.ps1
+      - name: Exercise the release script in a temporary Git project
+        shell: powershell
+        run: ./tools/unreal-engine/tests/release-test.ps1

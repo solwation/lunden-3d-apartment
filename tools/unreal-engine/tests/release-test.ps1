@@ -12,7 +12,7 @@ $previousMode = $env:LUNDEN_FIXTURE_MODE
 function Run-Release([string]$output = $out, [string]$failure) {
     try {
         $ErrorActionPreference = 'Continue'
-        $result = & $ps -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $fixture 'release.ps1') -Version 0.1.0 -Content 12 -EngineDir $engine -OutputRoot $output 2>&1
+        $result = & $ps -NoProfile -NonInteractive -File (Join-Path $fixture 'release.ps1') -Version 0.1.0 -Content 12 -EngineDir $engine -OutputRoot $output 2>&1
         $code = $LASTEXITCODE
     } finally { $ErrorActionPreference = 'Stop' }
     $text = $result | Out-String
@@ -39,31 +39,46 @@ function Find-VisualStudio {
         Components=@('Microsoft.Net.Component.4.6.2.TargetingPack'); MissingComponents=@() }
 }
 function Find-WindowsSdk { [version]'10.0.22621.0' }
+# The fixture bytes only model UAT file placement. Production uses the Windows signature provider.
+function Get-AuthenticodeSignature([string]$LiteralPath) {
+    $cert = [pscustomobject]@{}
+    $cert | Add-Member ScriptMethod GetNameInfo {
+        param($nameType, $issuer)
+        if ($env:LUNDEN_FIXTURE_MODE -eq 'other-publisher') { return 'Other Publisher' }
+        'Epic Games Inc.'
+    }
+    $status = if ($env:LUNDEN_FIXTURE_MODE -eq 'unsigned-runtime') { 'NotSigned' } else { 'Valid' }
+    [pscustomobject]@{ Status = $status; SignerCertificate = $cert }
+}
 '@
     '{"MajorVersion":5,"MinorVersion":8,"PatchVersion":4,"Changelist":1,"BranchName":"fixture"}' |
         Set-Content (Join-Path $engine 'Engine\Build\Build.version')
     New-Item -Type Directory -Path (Join-Path $engine 'Engine\Binaries\Win64') | Out-Null
     New-Item -Type File -Path (Join-Path $engine 'Engine\Binaries\Win64\UnrealEditor-Cmd.exe') | Out-Null
+    Set-Content (Join-Path $engine 'Engine\Binaries\Win64\UnrealGame-Win64-Shipping.exe') 'synthetic stock runtime'
     Set-Content (Join-Path $batDir 'RunUAT.bat') @'
 @echo off
 echo FAKE BuildCookRun fixture
 if "%LUNDEN_FIXTURE_MODE%"=="uat-failure" exit /b 19
 if "%LUNDEN_FIXTURE_MODE%"=="no-game" exit /b 0
-powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%~dp0fixture.ps1" %*
+powershell.exe -NoProfile -NonInteractive -File "%~dp0fixture.ps1" %*
 exit /b %ERRORLEVEL%
 '@
     Set-Content (Join-Path $batDir 'fixture.ps1') @'
 $ErrorActionPreference = 'Stop'
-foreach ($flag in 'BuildCookRun','-platform=Win64','-clientconfig=Shipping','-build','-cook','-stage','-pak','-iostore','-package','-archive') {
+foreach ($flag in 'BuildCookRun','-platform=Win64','-clientconfig=Shipping','-skipbuild','-nocompile','-nocompileuat','-nobootstrapexe','-cook','-stage','-pak','-iostore','-package','-archive') {
     if ($args -notcontains $flag) { throw "Missing expected flag $flag" }
 }
+if ($args -contains '-build') { throw 'Content-only project must use the installed game executable.' }
 $project = ($args -like '-project=*').Substring(9)
 if (-not (Test-Path -LiteralPath $project)) { throw "Invalid project path $project" }
 if ($env:LUNDEN_FIXTURE_MODE -eq 'dirty-during') { Add-Content $project 'changed during UAT fixture' }
 $archive = ($args -like '-archivedirectory=*').Substring(18)
-$dir = Join-Path $archive 'Windows\Lunden\Binaries\Win64'
+$dir = Join-Path $archive 'Windows\Engine\Binaries\Win64'
 New-Item -ItemType Directory -Path $dir | Out-Null
-Set-Content (Join-Path $dir 'Lunden-Win64-Shipping.exe') 'synthetic game fixture'
+$game = Join-Path $dir 'UnrealGame-Win64-Shipping.exe'
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot '..\..\Binaries\Win64\UnrealGame-Win64-Shipping.exe') -Destination $game
+if ($env:LUNDEN_FIXTURE_MODE -eq 'changed-runtime') { Add-Content $game 'changed executable' }
 '@
     Git-Fixture init --quiet
     Git-Fixture add .
@@ -79,7 +94,9 @@ Set-Content (Join-Path $dir 'Lunden-Win64-Shipping.exe') 'synthetic game fixture
         $info = Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
         Require ($info.commit -eq $sha -and $info.releaseScriptBlob -eq $blob -and $info.engineVersion -eq '5.8.4') 'Incorrect source provenance'
         Require ($info.appVersion -eq '0.1.0' -and $info.contentVersion -eq 12 -and $info.builtUtc -match 'Z$') 'Incorrect build metadata'
-        Require (Test-Path (Join-Path $file.DirectoryName 'Lunden\Binaries\Win64\Lunden-Win64-Shipping.exe')) 'Missing fake game'
+        Require ($info.runtime.path -eq 'Engine/Binaries/Win64/UnrealGame-Win64-Shipping.exe') 'Wrong runtime path'
+        $hash = (Get-FileHash (Join-Path $file.DirectoryName $info.runtime.path)).Hash
+        Require ($info.runtime.sha256 -eq $hash -and $info.runtime.publisher -eq 'Epic Games Inc.') 'Missing runtime verification metadata'
     }
     $logs = @(Get-ChildItem -LiteralPath $out -Recurse -Filter BuildCookRun.log)
     Require ($logs.Count -eq 2 -and @(Select-String -Path $logs.FullName -Pattern 'FAKE BuildCookRun fixture').Count -eq 2) 'Missing UAT logs'
@@ -95,6 +112,12 @@ Set-Content (Join-Path $dir 'Lunden-Win64-Shipping.exe') 'synthetic game fixture
     Run-Release $out 'exit 19'
     $env:LUNDEN_FIXTURE_MODE = 'no-game'
     Run-Release $out 'no Win64 Shipping executable'
+    $env:LUNDEN_FIXTURE_MODE = 'changed-runtime'
+    Run-Release $out 'differs from the installed Epic runtime'
+    $env:LUNDEN_FIXTURE_MODE = 'unsigned-runtime'
+    Run-Release $out 'Invalid Shipping executable signature'
+    $env:LUNDEN_FIXTURE_MODE = 'other-publisher'
+    Run-Release $out 'Unexpected Shipping executable publisher'
     $env:LUNDEN_FIXTURE_MODE = 'dirty-during'
     Run-Release $out 'clean Git worktree'
     Require (@(Get-ChildItem -LiteralPath $out -Recurse -Filter build-info.json).Count -eq 2) 'Failed build got a completion marker'
