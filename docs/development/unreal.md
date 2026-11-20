@@ -11,23 +11,28 @@ Shared data/export from the web scene: #2245. Packaging and updates: #2248, #224
 **Only the original repository.** The public downstream `solwation/kvarteret-lunden` does not receive the Unreal
 version, its scripts or this document (no transfer, no downstream issue; #2242).
 
-**Status (2026-11-20):** phase A of #2243 is in place: project skeleton, version lock, Git LFS rules, Pages
-protection, PowerShell scripts and this document. Nothing has been built or opened in the engine yet, because
-Unreal Engine and Visual Studio were not installed. Phase B (below) needs the engine.
+**Status (2026-11-20):** #2243 phase A (skeleton, version lock, Git LFS rules, Pages protection, scripts) and
+phase B are done. On UE 5.8.4 (CL 58902052) with VS 2022 17.14 / MSVC 14.44 / Windows SDK 10.0.22621, the editor
+module builds, headless Python and the Automation Test pass, the MCP server answers, and the first `.uasset` is in
+Git LFS. Verified results are listed under [Phase B results](#phase-b-results-verified-2026-11-20).
 
 ## Module and file map
 
 ```text
 unreal/Lunden/Lunden.uproject      C++ project "Lunden", EngineAssociation "5.8"; plugins PythonScriptPlugin,
-                                   EditorScriptingUtilities, ModelContextProtocol, AllToolsets; target platform Windows
+                                   EditorScriptingUtilities, ModelContextProtocol, AllToolsets on; AndroidFileServer
+                                   off (Windows only; it otherwise writes a token section into DefaultEngine.ini)
 unreal/Lunden/ENGINE_VERSION       exact locked engine version (5.8.4); compared with Engine/Build/Build.version
 unreal/Lunden/Config/              DefaultEngine.ini (Lumen/VSM/DX12 SM6, desktop/maximum), DefaultGame.ini
-                                   (project id/name, packaging defaults), DefaultEditor.ini (Python, no remote exec)
+                                   (project id/name, packaging defaults, Asset Manager GameFeatureData rule),
+                                   DefaultEditor.ini (Python, no remote exec), DefaultInput.ini (5.8.4 template
+                                   defaults written by the editor: Enhanced Input classes, default axes)
 unreal/Lunden/Source/              Lunden.Target.cs (game), LundenEditor.Target.cs (editor),
                                    Lunden/Lunden.Build.cs, Lunden.h/.cpp (primary module),
                                    Lunden/Tests/LundenSmokeTest.cpp (Automation Test "Lunden.Smoke.ModuleLoaded")
 unreal/Lunden/Content/Lunden/      hand-made content: Materials/, Blueprints/, Maps/, Lighting/ (.gitkeep until real
-                                   assets exist); Generated/ is reserved for imports from #2245, never hand-edited
+                                   assets exist); Generated/ is reserved for imports from #2245, never hand-edited;
+                                   Fixtures/M_LundenFixture.uasset: empty material (2 KB, LFS) the smoke test loads
 unreal/Lunden/.gitignore           Binaries, Intermediate, Saved, DerivedDataCache, .vs, *.sln, packaged builds, .mcp.json
 .gitattributes, .lfsconfig         Git LFS rules for unreal/** only; LFS downloads of unreal/** off by default
 tools/unreal-engine/common.ps1                    shared functions (engine/VS/SDK discovery, exit codes, logs); dot-sourced
@@ -36,14 +41,15 @@ tools/unreal-engine/build-editor.ps1              builds LundenEditor with Build
 tools/unreal-engine/run-python.ps1                runs a Python script headless (UnrealEditor-Cmd -run=pythonscript)
 tools/unreal-engine/run-tests.ps1                 runs Automation Tests headless and reads the exported report
 tools/unreal-engine/release.ps1                     runs a clean Win64 Shipping build, archives it with build-info.json and keeps the log
-tools/unreal-engine/python/smoke_create_asset.py  phase-B smoke test: create, save, reload, delete a material asset
+tools/unreal-engine/python/smoke_create_asset.py  smoke test: scratch material round trip + load the LFS fixture
+tools/unreal-engine/mcp-bridge.py                 stdio bridge: Claude Code in WSL -> editor MCP server (curl.exe)
 tools/unreal-engine/lunden-unreal.vsconfig        Visual Studio 2022 component list for Unreal C++ development
 ```
 
-The configuration values in `Config/*.ini` are **assumptions** modelled on what a UE 5.x Blank C++ template writes
-(Lumen global illumination and reflections, virtual shadow maps, DX12 with SM6, no static lighting). They were
-written without the engine installed; the first editor start in phase B confirms or adjusts them. Look/lighting
-decisions belong to #2246 and packaging settings to #2248.
+The rendering values in `Config/DefaultEngine.ini` are **assumptions** modelled on what a UE 5.x Blank C++ template
+writes (Lumen global illumination and reflections, virtual shadow maps, DX12 with SM6, no static lighting). The
+5.8.4 editor and commandlets load them without errors or rewrites (phase B), but their visual effect is
+unreviewed. Look/lighting decisions belong to #2246 and packaging settings to #2248.
 
 ## Requirements
 
@@ -101,18 +107,38 @@ missing are listed for information; Unreal-specific VS components are never chec
 
 The global WSL rule is to work in ext4 mirrors, but the Unreal editor, UnrealBuildTool and Visual Studio are
 Windows programs: building a project on a `\\wsl.localhost\…` path is slow or fails. **Decision (#2243, can be
-overturned in one sentence): Unreal work runs in a Windows-drive checkout** (today the Windows clone
-`C:\Users\Olof\Documents\lunden-3d-apartment`, the `winc` side of the mirror), and is committed with **Windows Git**,
-which has Git LFS (3.8.1). The scripts refuse to run the engine on a WSL/UNC checkout (exit code 6) and only warn in
-`check-environment.ps1`.
+overturned in one sentence): Unreal work runs in a dedicated Windows clone,
+`C:\Users\Olof\Documents\lunden-unreal-engine`**, made and committed with **Windows Git** (Git LFS 3.8.1). It is a
+plain clone of GitHub, **not** the `winc` side of the WSL mirror (`C:\Users\Olof\Documents\lunden-3d-apartment`)
+and **not** registered with `wsl-repo-sync`: the mirror must stay clean for the sync (see below), and engine output
+(`Binaries/`, `Intermediate/`, `Saved/`, `DerivedDataCache/`) would otherwise sit in the synced tree. One-time setup:
+
+```text
+git clone --filter=blob:none https://github.com/solwation/lunden-3d-apartment C:\Users\Olof\Documents\lunden-unreal-engine
+cd C:\Users\Olof\Documents\lunden-unreal-engine
+git lfs install --local
+git config lfs.fetchexclude ""
+git lfs pull
+```
+
+The scripts refuse to run the engine on a WSL/UNC checkout (exit code 6) and only warn in `check-environment.ps1`.
+Renaming or moving the clone invalidates the absolute paths in `unreal/Lunden/Intermediate`; delete `Intermediate/`
+and `Binaries/` and run `build-editor.ps1` again.
 
 - WSL Git has **no git-lfs**. A `.uasset` committed from WSL would bypass the LFS filter and land in normal Git
   history. Commit Unreal binaries only with Windows Git (`"/mnt/c/Program Files/Git/cmd/git.exe"` from WSL, or
   Git for Windows directly) until git-lfs is installed in WSL.
-- Text files (`.uproject`, `Config/`, `Source/`, `tools/unreal-engine/`, this document) can be edited and committed from the
-  ext4 mirror as usual; the LFS rules do not touch them.
-- How the `wsl-repo-sync` mirror (`winc` remote, `updateInstead`) behaves with LFS pointers is verified in phase B
-  (#2243 point 5); the ext4 mirror only ever needs the pointers because `.lfsconfig` excludes `unreal/**`.
+- Text files (`.uproject`, `Config/`, `Source/`, `tools/unreal-engine/`, this document) can be edited and committed
+  from the ext4 mirror as usual; the LFS rules do not touch them.
+- **LFS and the WSL mirror (verified 2026-11-20 with throwaway clones):** WSL Git without git-lfs checks out an LFS
+  commit as the 129-byte pointer text and `git status` stays clean (`git hash-object` of the pointer equals the
+  committed blob). A WSL push to an `updateInstead` mirror on `/mnt/c` writes the pointer too, and Windows Git in
+  that mirror also reports it clean; a Windows Git checkout there keeps the pointer (`.lfsconfig` excludes
+  `unreal/**`) and marks the `lockable` file read-only, which a later WSL push still replaces. **The one way to break
+  the sync:** real LFS content in the mirror (someone runs `git lfs pull` or clears `lfs.fetchexclude` in
+  `C:\Users\Olof\Documents\lunden-3d-apartment`). Both Gits then report the `.uasset` as modified, `updateInstead`
+  rejects every push ("Working directory has unstaged changes") and `wsl-repo-sync` stops with a warning. Never
+  pull LFS content into the mirror; Unreal work belongs in the dedicated clone.
 
 ## Scripts (`tools/unreal-engine/`)
 
@@ -141,8 +167,16 @@ default path. Logs go to `unreal/Lunden/Saved/Logs/<script>-<time>.log` and test
 Exit codes (all scripts): 0 ok, 1 command failed, 2 engine not found, 3 wrong engine version, 4 toolchain
 (VS/MSVC/SDK/.NET targeting pack) missing, 5 project files invalid, 6 checkout on a WSL/UNC path.
 When the environment is not usable the scripts run **nothing**: they print the problems and the exact command they
-would have run. The scripts listed in the table store their logs and reports under
-`unreal/Lunden/Saved`. The smoke script creates and removes its own ignored `/Game/Lunden/_Smoke` folder.
+would have run.
+
+Verified engine behaviour (5.8.4): `UnrealEditor-Cmd` returns non-zero whenever the log's final *Warning/Error
+Summary* contains an error (exit 1, e.g. two Asset Manager errors before the GameFeatureData rule existed), −1 when
+a Python script raises or cannot be loaded, and 255 when an Automation Test fails. `run-python.ps1` passes the script
+path with forward slashes, because with arguments the commandlet parses `-script` as a command line in which a
+backslash is an escape (`\tools` became `<TAB>ools`); paths with spaces are not supported in that form.
+`index.json` from the Automation report has the fields `succeeded`, `succeededWithWarnings`, `failed` and `notRun`.
+The scripts listed in the table store their logs and reports under `unreal/Lunden/Saved`. The smoke script creates and
+removes its own ignored `/Game/Lunden/_Smoke` folder.
 
 For local Shipping archives, see [Build location](#build-location-decision-2244).
 
@@ -191,30 +225,44 @@ Stable automation does not depend on MCP: headless Python (`run-python.ps1`), co
 (`run-tests.ps1`) and later `RunUAT BuildCookRun` are the primary route. MCP is a complement for interactive work in
 an open editor.
 
-- **Plugins in `Lunden.uproject`:** `ModelContextProtocol` (the server, experimental in UE 5.8) and `AllToolsets`
-  (provides the tools; without it the server exposes none). Both names are taken from Epic's plugin setup guide
-  ([setup.md](https://github.com/EpicGames/unreal-engine-skills-for-claude-code-plugin/blob/main/skills/unreal-mcp/references/setup.md),
-  plugin v3.1.2) and still have to be confirmed against the installed 5.8.4 engine in phase B; if the editor
-  reports one as missing, disable that entry and fall back to headless Python.
+- **Plugins in `Lunden.uproject`:** `ModelContextProtocol` (the server, "Unreal MCP", experimental in UE 5.8) and
+  `AllToolsets` (mounts the toolset plugins; without it the server exposes no tools). Both exist in 5.8.4 under
+  `Engine/Plugins/Experimental/` (verified). Names first came from Epic's
+  [setup.md](https://github.com/EpicGames/unreal-engine-skills-for-claude-code-plugin/blob/main/skills/unreal-mcp/references/setup.md).
 - **Claude Code plugin** (Epic, MIT): https://github.com/EpicGames/unreal-engine-skills-for-claude-code-plugin.
-  Install on the Unreal PC: `/plugin install unreal-engine-skills-for-claude-code@claude-plugins-official`. It
-  ships skills (`unreal-mcp`, `unreal-skill`, `create-toolset`) and a SessionStart hook that needs `bash` (Git Bash
-  or WSL); it has no MCP server of its own.
-- **Start the server** per session in the editor console: `ModelContextProtocol.StartServer` (default
-  `http://127.0.0.1:8000/mcp`). Auto-start is per user only
+  Optional: `/plugin install unreal-engine-skills-for-claude-code@claude-plugins-official`. It ships skills
+  (`unreal-mcp`, `unreal-skill`, `create-toolset`) and a SessionStart hook that needs `bash`; no MCP server of its
+  own. Not installed by #2243.
+- **Start the server** per session: editor console `ModelContextProtocol.StartServer [port]` (stop:
+  `ModelContextProtocol.StopServer`), or start the editor with `-ModelContextProtocolStartServer`
+  (`-ModelContextProtocolPort=N` to change the port). Auto-start is per user only
   (`Saved/Config/WindowsEditor/EditorPerProjectUserSettings.ini`, `[/Script/ModelContextProtocolEngine.ModelContextProtocolSettings]`
-  `bAutoStartServer=True`); it is deliberately not in the shared `DefaultEditor.ini`. Commandlets start it only with
-  `-ModelContextProtocolStartServer`.
-- **Connect Claude Code** without committing machine config: `claude mcp add --transport http unreal-mcp http://127.0.0.1:8000/mcp`
-  (local scope), or `ModelContextProtocol.GenerateClientConfig ClaudeCode`, which writes `.mcp.json` next to the
-  `.uproject` for a Launcher engine (ignored by `unreal/Lunden/.gitignore`; start Claude Code in `unreal/Lunden/`
-  to use it). Verify with `/mcp` and a read-only call such as `list_toolsets`.
-- **Security boundary:** the server binds localhost **without authentication**; any process of the same user can
-  connect. `ProgrammaticToolset.execute_tool_script` runs arbitrary Python in the editor. Do not run the editor's
-  MCP server on a shared machine, never expose the port, commit before long MCP sessions and review the diff.
-- **Known issue:** forum reports of the 5.8 server dropping connections
-  ([thread](https://forums.unrealengine.com/t/5-8-experimental-modelcontextprotocol-mcp-server-instantly-drops-connections/2729488)).
-  If MCP does not work, document it in the issue and use headless Python; #2243 accepts either outcome.
+  `bAutoStartServer=True`) and deliberately not in the shared `DefaultEditor.ini`; commandlets never auto-start it.
+- **Verified 2026-11-20:** the editor logs `Created new HttpListener on 127.0.0.1:8000`; the listener binds loopback
+  because `[HTTPServer.Listeners] DefaultBindAddress` defaults to `localhost` (leave it unset; `any` would expose it).
+  `initialize` → protocol `2025-06-18`; `tools/list` returns the three meta-tools `list_toolsets`, `describe_toolset`
+  and `call_tool` (tool search), and `list_toolsets` lists the toolsets (Automation tests, config settings, editor,
+  logs, …). The [forum report](https://forums.unrealengine.com/t/5-8-experimental-modelcontextprotocol-mcp-server-instantly-drops-connections/2729488)
+  of 5.8 dropping connections did not reproduce over plain HTTP requests.
+- **From WSL:** this PC runs WSL2 in **NAT** networking (`wslinfo --networking-mode` = `nat`). A WSL process cannot
+  reach Windows loopback (`curl http://127.0.0.1:8000/mcp` → connection refused; the host IP times out because the
+  server is not bound there). Mirrored networking or a wider bind would change Windows/WSL settings or expose the
+  port, so instead `tools/unreal-engine/mcp-bridge.py` is a stdio MCP server for Claude Code that forwards each
+  JSON-RPC message with the Windows `curl.exe` (WSL interop) to `127.0.0.1:8000`; the server stays loopback-only.
+  Verified from WSL: `initialize`, `tools/list` and `describe_toolset` through the bridge. Register it **locally**
+  (machine config, never committed), from the ext4 checkout:
+
+  ```text
+  claude mcp add --scope local unreal-editor -- python3 /mnt/c/Users/Olof/Documents/lunden-unreal-engine/tools/unreal-engine/mcp-bridge.py
+  ```
+
+  Claude Code running on Windows can instead connect directly: `claude mcp add --transport http unreal-editor
+  http://127.0.0.1:8000/mcp`. Check with `/mcp` and a read-only `list_toolsets`. Limits of the bridge: one request
+  at a time, no server-initiated stream. Without a running editor every call returns a clear error.
+- **Security boundary:** the server has **no authentication**; any process of the same Windows user (and, through
+  the bridge, of the WSL user) can call it. `ProgrammaticToolset.execute_tool_script` runs arbitrary Python in the
+  editor. Do not run the MCP server on a shared machine, never expose the port, commit before long MCP sessions and
+  review the diff. Stop the server (or the editor) when done.
 
 ## Parallel work: levels and Blueprints
 
@@ -279,20 +327,28 @@ Windows Git and simulated UAT check. The real cook, archived layout, container
 hash comparison and cross-cook compatibility need the installed 5.8.4 engine
 and pilot content (#2243/#2248).
 
-## Phase B (needs the engine)
+## Phase B results (verified 2026-11-20)
 
-1. `check-environment.ps1` → OK on the Windows checkout (engine 5.8.4, VS, SDK, targeting pack).
-2. `git config lfs.fetchexclude ""` in that checkout; open `Lunden.uproject` once (accept module build), confirm the
-   ModelContextProtocol/AllToolsets plugin names and let the editor add missing template config keys; commit
-   reviewed config changes.
-3. `build-editor.ps1` builds the C++ module; pin `BuildSettingsVersion`/`EngineIncludeOrderVersion` if UBT asks.
-4. `run-python.ps1 tools/unreal-engine/python/smoke_create_asset.py` exits 0 and logs `LUNDEN_SMOKE_OK`; confirm whether the
-   pythonscript commandlet itself returns non-zero on a Python exception (the script checks the log either way).
-5. `run-tests.ps1` runs `Lunden.Smoke.ModuleLoaded` and reports 1 passed, 0 failed (confirm the `index.json` field
-   names).
-6. MCP: `ModelContextProtocol.StartServer`, `claude mcp add …`, `list_toolsets` — or document why not.
-7. First real `.uasset` commit with Windows Git: `git lfs ls-files` shows it, `git check-attr` matrix, a push with
-   only `unreal/` changes produces no Pages run (`gh run list --workflow pages.yml`); check the `winc` mirror sync.
+Run in `C:\Users\Olof\Documents\lunden-unreal-engine` (i9-10900K, RTX 3080, 32 GB):
+
+1. `check-environment.ps1` → `OK: the Unreal environment matches the project lock.` (exit 0; engine 5.8.4
+   CL 58902052; VS Community 2022 and VS Build Tools 2022 17.14, MSVC 14.44.35207; SDK 10.0.22621 + 10.0.26100).
+2. `build-editor.ps1` → `Result: Succeeded` (first build 74 s, 8 actions; UBT picked the Build Tools instance).
+   `BuildSettingsVersion.Latest`/`EngineIncludeOrderVersion.Latest` resolve to `Unreal5_8` without UBT asking for a
+   pin; they stay `Latest` because the engine lock already fixes the version.
+3. `run-python.ps1 tools/unreal-engine/python/smoke_create_asset.py` → `LUNDEN_SMOKE_OK …; loaded fixture
+   /Game/Lunden/Fixtures/M_LundenFixture.M_LundenFixture (2067 bytes) (engine 5.8.4-58902052+++UE5+Release-5.8)`,
+   `Success - 0 error(s), 0 warning(s)`, exit 0. With the fixture replaced by its pointer text: exit 1 and
+   `… is a Git LFS pointer, not the asset. In this checkout run: git config lfs.fetchexclude "" && git lfs pull`.
+4. `run-tests.ps1` → `Automation 'Lunden.': passed 1 (with warnings 0), failed 0, not run 0; editor exit code 0`,
+   exit 0. A deliberately failing build of the test → `passed 0 …, failed 1 …; editor exit code 255`, exit 1; a
+   filter without tests (`-Filter Lunden.NoSuchTest`) → no report, exit 1.
+5. MCP: see [Claude Code and MCP](#claude-code-and-mcp).
+6. Git LFS: `git lfs ls-files` lists `e89abbc8bc * unreal/Lunden/Content/Lunden/Fixtures/M_LundenFixture.uasset`;
+   `git check-attr` shows `filter: lfs`, `diff: lfs`, `merge: lfs`, `text: unset`, `lockable: set`; the committed
+   blob is the pointer (`size 2067`). WSL mirror behaviour: see [Where the Unreal checkout lives](#where-the-unreal-checkout-lives).
+   Still open at integration: the first push with only `unreal/` changes must produce no Pages run
+   (`gh run list --workflow pages.yml`), and `git lfs push` uploads the object (counts towards the LFS quota).
 
 ## Windows launcher (#2249)
 

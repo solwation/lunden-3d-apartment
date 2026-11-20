@@ -21,8 +21,8 @@ PATH = f"{FOLDER}/{NAME}"
 FIXTURE_FOLDER = "/Game/Lunden/Fixtures"
 FIXTURE_NAME = "M_LundenFixture"
 FIXTURE_PATH = f"{FIXTURE_FOLDER}/{FIXTURE_NAME}"
-FIXTURE_FILE = os.path.join(unreal.Paths.convert_relative_path_to_full(unreal.Paths.project_content_dir()),
-                            "Lunden", "Fixtures", f"{FIXTURE_NAME}.uasset")
+FIXTURE_FILE = os.path.normpath(os.path.join(unreal.Paths.convert_relative_path_to_full(unreal.Paths.project_content_dir()),
+                                             "Lunden", "Fixtures", f"{FIXTURE_NAME}.uasset"))
 LFS_POINTER_PREFIX = b"version https://git-lfs.github.com/spec/v1"
 
 eal = unreal.EditorAssetLibrary

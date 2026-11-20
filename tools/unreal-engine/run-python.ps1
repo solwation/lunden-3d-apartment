@@ -33,8 +33,8 @@ $envr = Resolve-UnrealForRun $EngineDir 'run-python' { param($root) Format-Unrea
 
 $log = New-UnrealLogPath 'run-python'
 $code = Invoke-UnrealProcess $envr.Engine.EditorCmd (& $argsFor $log)
-# ASSUMPTION (verify in phase B): the pythonscript commandlet may return 0 after a Python exception, so the log is
-# checked as well.
+# Verified on 5.8.4 (#2243): a raised exception or an unloadable script makes the commandlet exit -1, and any error in
+# the final log summary makes it exit 1. The log is still checked so a swallowed Python error also fails.
 $pyErrors = @()
 if (Test-Path -LiteralPath $log) { $pyErrors = @(Select-String -LiteralPath $log -Pattern 'LogPython: Error:|Traceback \(most recent call last\)' | Select-Object -First 20) }
 foreach ($e in $pyErrors) { Write-Host "PYTHON ERROR: $($e.Line)" -ForegroundColor Red }
