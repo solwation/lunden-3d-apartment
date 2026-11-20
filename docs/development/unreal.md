@@ -262,3 +262,58 @@ with scripts on the Windows development PC**; signing and publishing happen late
 6. MCP: `ModelContextProtocol.StartServer`, `claude mcp add …`, `list_toolsets` — or document why not.
 7. First real `.uasset` commit with Windows Git: `git lfs ls-files` shows it, `git check-attr` matrix, a push with
    only `unreal/` changes produces no Pages run (`gh run list --workflow pages.yml`); check the `winc` mirror sync.
+
+## Windows launcher (#2249)
+
+The .NET 10 console launcher in `unreal/Launcher/` uses the proposed v1 manifest in #2248.
+The signature is a sibling `.json.sig` file containing a 64-byte ECDSA P-256 signature
+(IEEE P1363, SHA-256) over the exact UTF-8 manifest bytes. The launcher embeds the **public**
+SPKI PEM and the expected Authenticode leaf certificate's SHA-256 fingerprint at build time.
+The publisher must hash binaries after signing. Each executable and DLL must pass both the
+manifest check and Windows Authenticode verification for the configured certificate.
+
+```sh
+dotnet test unreal/Launcher.Tests
+dotnet publish unreal/Launcher -c Release -r win-x64 --self-contained true \
+  -p:PublishSingleFile=true -p:LundenManifestKey=/absolute/path/to/public.pem \
+  -p:LundenSignerSha256="$LUNDEN_SIGNER_SHA256" -o /path/to/build-output
+```
+
+Set `LUNDEN_SIGNER_SHA256` to the 64 hexadecimal characters in the public certificate fingerprint. A checkout contains no release
+key or fingerprint. A build without the public key supports `--help` and declines updates.
+On Windows, run `unreal/Launcher.Tests/Test-Authenticode.ps1` with a .NET SDK for the four
+native certificate checks. It uses temporary copies of an already signed binary and leaves
+the certificate stores untouched.
+
+- Start-menu installation by #2250 places `Lunden.exe` in `%LOCALAPPDATA%\Programs\Lunden\`.
+  `--channel test` uses a separate `Lunden-Test` installation and user directory and requests
+  `lunden-manifest-test.json`. `--manifest <file-or-url> --dry-run` lists the files and bytes
+  the manifest requires. Production URLs use HTTPS. The test channel also accepts loopback HTTP.
+- `state.json` identifies a complete app/content pair in `versions/<id>/game/`; unchanged files
+  are copied into a new tree. Each version stores its signed manifest beside the game tree.
+  Partial downloads in `staging/` resume with HTTP Range. A transient transfer failure gets one
+  automatic retry. The active pair changes with one state-file replacement after verification.
+  The last successful pair is retained. Older generated versions are pruned on launch while the
+  game is stopped. A version containing a project-local `Saved` directory is retained.
+- The launcher verifies installed bytes and the cached manifest before offline play. The shipping
+  executable starts in its complete package tree with `-UserDir=%LOCALAPPDATA%\Lunden` (or
+  `Lunden-Test`). An immediate nonzero exit within eight seconds on the new version triggers
+  rollback when a previous installation exists. For troubleshooting, launch
+  `Lunden/Binaries/Win64/Lunden-Win64-Shipping.exe` in the active game tree with the same
+  `-UserDir` argument. `Lunden.exe --offline` bypasses the network explicitly.
+- A minimum launcher upgrade starts a verified copy of the current launcher as a helper. It
+  waits for the parent to exit, acquires the installation lock, rechecks the signed replacement
+  and swaps it into place. If starting the replacement fails, it restores the previous verified
+  executable and starts it offline. The installed channel and manifest override survive restart.
+
+**Verification on 2026-11-20.** The isolated loopback fixture covered changed-file-only updates,
+interruption and resumption, incompatible ABI, signature/publisher/hash rejection, interrupted
+state writes, early failure and offline rollback with preserved fixture user data. A real CLI
+dry run read a locally signed test manifest, listed two files totalling six bytes, wrote no
+installation state and rejected an edited manifest. The win-x64 self-contained cross-build produced
+a PE32+ console executable. Four native Windows checks passed for correct, wrong-publisher,
+unsigned and modified signatures. Application Control blocked execution of the unsigned process
+fixture on the Windows host, so the Windows file-lock and full helper/restart tests still need an
+approved signed build or CI environment. The release-manifest generator, test-channel publishing,
+actual IoStore mounting, UE 5.8 user-data location, quick-crash threshold and real signed
+N-to-N+1/offline pilot remain to be verified with #2246, #2248 and #2250.

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Lunden</AssemblyName>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+  <Target Name="CheckManifestPublicKey" BeforeTargets="PrepareForBuild" Condition="'$(LundenManifestKey)' != ''">
+    <PropertyGroup>
+      <_PublicKeyFile>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(LundenManifestKey)'))</_PublicKeyFile>
+      <_HasPublicHeader>$([System.IO.File]::ReadAllText('$(_PublicKeyFile)').TrimStart().StartsWith('-----BEGIN PUBLIC KEY-----'))</_HasPublicHeader>
+      <_HasPrivateKey>$([System.IO.File]::ReadAllText('$(_PublicKeyFile)').Contains('PRIVATE KEY'))</_HasPrivateKey>
+    </PropertyGroup>
+    <Error Condition="'$(_HasPublicHeader)' != 'True' Or '$(_HasPrivateKey)' == 'True'"
+           Text="LundenManifestKey must contain only the public manifest verification key (SPKI PEM)." />
+  </Target>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Lunden.Launcher.Tests" />
+    <EmbeddedResource Include="$(LundenManifestKey)" LogicalName="Lunden.ManifestKey.pem" Condition="'$(LundenManifestKey)' != ''" />
+    <AssemblyMetadata Include="LundenSignerSha256" Value="$(LundenSignerSha256)" />
+  </ItemGroup>
+</Project>
