@@ -119,7 +119,7 @@ export function clubhouseMaterial() {
           float q = clamp(1.0 - dot(d, d) / (uClubGlowP[i].w * uClubGlowP[i].w), 0.0, 1.0);
           clubSpill += uClubGlowC[i] * (q * q * clamp(dot(clubWorldNormal, normalize(d)) * 0.8 + 0.2, 0.0, 1.0));
         }
-        reflectedLight.directDiffuse += BRDF_Lambert(material.diffuseColor) * clubSpill * uClubGlowK;
+        reflectedLight.directDiffuse += BRDF_Lambert(material.diffuseColor) * clubSpill * uClubGlowK * (clubWorldNormal.y < -0.5 ? ${R.posters.spill.ceiling} : 1.0); // (the ceiling: an accent, not a wash)
       }
       if(vClubFinish>1.5 && vClubFinish<2.5) {
         float clubGrazing = pow(1.0-max(dot(normal,normalize(vViewPosition)),0.0),3.0);
