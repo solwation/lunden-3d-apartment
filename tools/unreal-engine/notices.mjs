@@ -65,7 +65,7 @@ Starter Content asset is included.
 
 const text = notices();
 if (process.argv.includes('--check')) {
-  const ok = fs.existsSync(OUT) && fs.readFileSync(OUT, 'utf8') === text;
+  const ok = fs.existsSync(OUT) && fs.readFileSync(OUT, 'utf8').replace(/\r\n/g, '\n') === text;
   console.log(ok ? `${path.relative(ROOT, OUT)} is current` : `${path.relative(ROOT, OUT)} is OUT OF DATE: run node tools/unreal-engine/notices.mjs`);
   process.exit(ok ? 0 : 1);
 }
